@@ -1,7 +1,7 @@
 package model
 
 import (
-	"CBCTF/internal/utils"
+	"RayWar/internal/utils"
 	"gorm.io/gorm"
 )
 
