@@ -1,7 +1,7 @@
 package utils
 
 import (
-	i18n2 "CBCTF/internal/i18n"
+	i18n2 "RayWar/internal/i18n"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/nicksnyder/go-i18n/v2/i18n"

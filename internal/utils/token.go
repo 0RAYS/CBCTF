@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"CBCTF/internal/log"
+	"RayWar/internal/log"
 	"errors"
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"

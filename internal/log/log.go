@@ -1,7 +1,7 @@
 package log
 
 import (
-	"CBCTF/internal/config"
+	"RayWar/internal/config"
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
