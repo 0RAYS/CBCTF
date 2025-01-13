@@ -1,7 +1,7 @@
 package db
 
 import (
-	"RayWar/internal/model"
+	"CBCTF/internal/model"
 	"regexp"
 )
 

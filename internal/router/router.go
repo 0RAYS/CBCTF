@@ -1,8 +1,8 @@
 package router
 
 import (
-	"RayWar/internal/config"
-	"RayWar/internal/middleware"
+	"CBCTF/internal/config"
+	"CBCTF/internal/middleware"
 	"github.com/gin-gonic/gin"
 )
 

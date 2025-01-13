@@ -1,11 +1,11 @@
 package router
 
 import (
-	"RayWar/internal/config"
-	"RayWar/internal/db"
-	"RayWar/internal/log"
-	"RayWar/internal/middleware"
-	"RayWar/internal/utils"
+	"CBCTF/internal/config"
+	"CBCTF/internal/db"
+	"CBCTF/internal/log"
+	"CBCTF/internal/middleware"
+	"CBCTF/internal/utils"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"

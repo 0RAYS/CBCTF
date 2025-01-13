@@ -1,9 +1,9 @@
 package middleware
 
 import (
-	"RayWar/internal/db"
-	"RayWar/internal/log"
-	"RayWar/internal/utils"
+	"CBCTF/internal/db"
+	"CBCTF/internal/log"
+	"CBCTF/internal/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
