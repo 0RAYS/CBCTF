@@ -1,9 +1,9 @@
 package db
 
 import (
-	"RayWar/internal/config"
-	"RayWar/internal/log"
-	"RayWar/internal/model"
+	"CBCTF/internal/config"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"strings"
