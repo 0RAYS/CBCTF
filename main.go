@@ -1,18 +1,24 @@
 package main
 
 import (
-	"CBCTF/router"
-	"github.com/sirupsen/logrus"
-	"log"
+	"CBCTF/internal/config"
+	"CBCTF/internal/db"
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/router"
+	"fmt"
 )
 
 func init() {
-
+	i18n.Init()
+	config.Init()
+	log.Init()
+	db.Init()
 }
 
 func main() {
-	logrus.Info("test")
-	if err := router.Init().Run(); err != nil {
-		log.Fatalf("Failed to run router: %s", err)
+	ip, port := config.Env.GetString("gin.ip"), config.Env.GetString("gin.port")
+	if err := router.Init().Run(fmt.Sprintf("%s:%s", ip, port)); err != nil {
+		log.Logger.Panicf("Failed to start: %s", err)
 	}
 }

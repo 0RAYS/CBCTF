@@ -1,8 +1,8 @@
 package db
 
 import (
-	"RayWar/internal/log"
-	"RayWar/internal/model"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"gorm.io/gorm"
 )
 
