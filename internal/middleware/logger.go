@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"RayWar/internal/log"
+	"CBCTF/internal/log"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"time"

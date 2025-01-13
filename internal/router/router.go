@@ -1,12 +1,12 @@
 package router
 
 import (
-	"RayWar/internal/config"
-	"RayWar/internal/middleware"
+	"CBCTF/internal/config"
+	"CBCTF/internal/middleware"
 	"github.com/gin-gonic/gin"
 )
 
-func InitRouters() *gin.Engine {
+func Init() *gin.Engine {
 	gin.SetMode(config.Env.GetString("gin.mode"))
 	router := gin.New()
 

@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"RayWar/internal/model"
+	"CBCTF/internal/model"
 	"github.com/gin-gonic/gin"
 )
 
