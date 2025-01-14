@@ -139,7 +139,7 @@ func LeaveTeam(ctx context.Context, userID uint, contestID uint, teamID uint) (b
 	if !ok {
 		return false, msg
 	}
-	// 退出后队伍人数为0，删除队伍
+	// 退出后队伍人数为0, 删除队伍
 	if len(team.Users) == 1 {
 		DeleteTeam(ctx, team.ID)
 	}
