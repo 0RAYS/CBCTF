@@ -1,0 +1,15 @@
+log:
+  # DEBUG INFO WARNING ERROR
+  level: info
+gin:
+  mode: release
+  host: 127.0.0.1
+  port: 8000
+gorm:
+  file: data.db
+  log:
+    # INFO WARNING ERROR SILENT
+    level: silent
+upload:
+  path: ./uploads
+  max: 8
