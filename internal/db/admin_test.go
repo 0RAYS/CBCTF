@@ -27,22 +27,22 @@ func TestCreateAdmin(t *testing.T) {
 	InitAdminTest()
 	var ctx context.Context
 	if _, ok, _ := CreateAdmin(ctx, "test", "password", "test_email"); ok {
-		t.Fatalf("Should not create admin with invalid email")
+		t.Fatal("Should not create admin with invalid email")
 	}
 	if _, ok, _ := CreateAdmin(ctx, "admin1", "password", "test@0rays.club"); ok {
-		t.Fatalf("Should not create duplicated admin")
+		t.Fatal("Should not create duplicated admin")
 	}
 	if _, ok, _ := CreateAdmin(ctx, "test", "password", "admin1@0rays.club"); ok {
-		t.Fatalf("Should not create duplicated email")
+		t.Fatal("Should not create duplicated email")
 	}
 	if _, ok, _ := CreateUser(ctx, "admin1", "password", "test@0rays.club"); !ok {
-		t.Fatalf("Failed to create user which name is duplicated with admin")
+		t.Fatal("Failed to create user which name is duplicated with admin")
 	}
 	if _, ok, _ := CreateUser(ctx, "test", "password", "admin1@0rays.club"); !ok {
-		t.Fatalf("Failed to create user which email is duplicated with admin")
+		t.Fatal("Failed to create user which email is duplicated with admin")
 	}
 	if admin1, _, _ := GetAdminByID(ctx, 1); admin1.Password == "password" {
-		t.Fatalf("Failed to hash password")
+		t.Fatal("Failed to hash password")
 	}
 }
 
@@ -50,10 +50,10 @@ func TestGetAdminByID(t *testing.T) {
 	InitAdminTest()
 	var ctx context.Context
 	if _, ok, _ := GetAdminByID(ctx, 0); ok {
-		t.Fatalf("Should not get admin with invalid id")
+		t.Fatal("Should not get admin with invalid id")
 	}
 	if _, ok, _ := GetAdminByID(ctx, 1); !ok {
-		t.Fatalf("Failed to get admin by id")
+		t.Fatal("Failed to get admin by id")
 	}
 }
 
@@ -61,7 +61,7 @@ func TestDeleteAdmin(t *testing.T) {
 	InitAdminTest()
 	var ctx context.Context
 	if ok, _ := DeleteAdmin(ctx, 0); !ok {
-		t.Fatalf("Should return true when delete invalid admin")
+		t.Fatal("Should return true when delete invalid admin")
 	}
 	if ok, msg := DeleteAdmin(ctx, 1); !ok {
 		t.Fatalf("Failed to delete admin by id: %s", msg)
