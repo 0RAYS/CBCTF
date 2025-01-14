@@ -1,6 +1,7 @@
 log:
   # DEBUG INFO WARNING ERROR
   level: info
+  save: true
 gin:
   mode: release
   host: 127.0.0.1
