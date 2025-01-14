@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-// Cors 临时使用，后续一定要去除
+// Cors 临时使用, 后续一定要去除
 func Cors(ctx *gin.Context) {
 	method := ctx.Request.Method
 	if ctx.Request.Header.Get("Origin") != "" {

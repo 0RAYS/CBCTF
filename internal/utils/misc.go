@@ -38,7 +38,7 @@ func M(ctx *gin.Context, msg string) string {
 	})
 }
 
-// TidyRetData struct 转 json，同时去除一些敏感字段和结构体字段
+// TidyRetData struct 转 json, 同时去除一些敏感字段和结构体字段
 func TidyRetData(data interface{}, bannedL ...string) []interface{} {
 	var ret []interface{}
 	value := reflect.ValueOf(data)
@@ -76,7 +76,7 @@ func TidyRetData(data interface{}, bannedL ...string) []interface{} {
 	return ret
 }
 
-// Form2Map 将Update请求的数据提取出被赋值的结果，为区分默认的0值和赋值的0值，表单中的字段都为指针类型
+// Form2Map 将Update请求的数据提取出被赋值的结果, 为区分默认的0值和赋值的0值, 表单中的字段都为指针类型
 func Form2Map(s interface{}) map[string]interface{} {
 	data := map[string]interface{}{}
 	types := reflect.TypeOf(s)
