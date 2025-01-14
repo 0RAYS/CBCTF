@@ -45,7 +45,7 @@ func TestGetContestByID(t *testing.T) {
 		t.Fatal("Should not get contest with invalid id")
 	}
 	log.Logger.Debug(test, msg)
-	// 测试递归预加载
+	// 递归预加载
 	contest1, ok, msg := GetContestByID(ctx, 1, true, true)
 	if !ok {
 		t.Fatal("Failed to get contest by id")
@@ -71,7 +71,7 @@ func TestGetContestByID(t *testing.T) {
 	}
 	log.Logger.Debug(contest1.Users[0].Teams[0])
 
-	// 测试不预加载
+	// 不预加载
 	contest1, ok, msg = GetContestByID(ctx, 1, false)
 	if !ok {
 		t.Fatal("Failed to get contest by id")
@@ -85,7 +85,7 @@ func TestGetContestByID(t *testing.T) {
 	}
 	log.Logger.Debug(contest1.Teams)
 
-	// 测试预加载但不递归
+	// 预加载但不递归
 	contest1, ok, msg = GetContestByID(ctx, 1, true, false)
 	if !ok {
 		t.Fatal("Failed to get contest by id")

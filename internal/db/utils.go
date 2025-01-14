@@ -63,9 +63,19 @@ func isUniqueTeamName(name string, id uint) bool {
 // isUniqueTeamMember model.User 不能在同一个 model.Contest 出现多次
 func isUniqueTeamMember(contestID uint, userID uint) bool {
 	var tmp []model.User
-	err := DB.Model(&model.User{ID: userID}).Where("id = ?", userID).Where("contest_id = ?", contestID).Association("Contests").Find(&tmp)
+	err := DB.Model(&model.User{ID: userID}).Where("contest_id = ?", contestID).Association("Contests").Find(&tmp)
 	if len(tmp) > 0 || err != nil {
 		return false
 	}
 	return true
+}
+
+// isMemberInTeam model.User 是否在 model.Team 中
+func isMemberInTeam(teamID uint, userID uint) bool {
+	var tmp []model.Team
+	err := DB.Model(&model.User{ID: userID}).Where("team_id = ?", teamID).Association("Teams").Find(&tmp)
+	if len(tmp) > 0 || err != nil {
+		return true
+	}
+	return false
 }
