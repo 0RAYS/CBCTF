@@ -28,7 +28,7 @@ func CreateUser(ctx context.Context, name string, password string, email string)
 	return user, true, "Success"
 }
 
-// GetUserByID 根据 ID 获取 model.User, preloadL[0] 为是否预加载，preloadL[1] 为是否嵌套预加载
+// GetUserByID 根据 ID 获取 model.User, preloadL[0] 为是否预加载, preloadL[1] 为是否嵌套预加载
 func GetUserByID(ctx context.Context, id uint, preloadL ...bool) (model.User, bool, string) {
 	var user model.User
 	var res *gorm.DB
@@ -60,7 +60,7 @@ func GetUserByID(ctx context.Context, id uint, preloadL ...bool) (model.User, bo
 	return user, true, "Success"
 }
 
-// DeleteUser 根据 id 删除 model.User，同时删除与 model.Team, model.Contest 的关联
+// DeleteUser 根据 id 删除 model.User, 同时删除与 model.Team, model.Contest 的关联
 func DeleteUser(ctx context.Context, id uint) (bool, string) {
 	user, ok, msg := GetUserByID(ctx, id, true, true)
 	if !ok {
@@ -77,6 +77,17 @@ func DeleteUser(ctx context.Context, id uint) (bool, string) {
 	if err := DB.WithContext(ctx).Model(&model.User{}).Select(clause.Associations).Delete(&model.User{}, id).Error; err != nil {
 		log.Logger.Warningf("Failed to delete user: %s", err.Error())
 		return false, "DeleteUserError"
+	}
+	return true, "Success"
+}
+
+// UpdateUser 更新用户, 使用 map 更新属性, 结构体会导致零值未更新, 对字段值的具体要求应当交给上层实现
+func UpdateUser(ctx context.Context, id uint, updateData map[string]interface{}) (bool, string) {
+	res := DB.WithContext(ctx).Model(&model.User{}).Where("id = ?", id).
+		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
+	if res.Error != nil {
+		log.Logger.Errorf("Failed to update user: %s", res.Error.Error())
+		return false, "UpdateError"
 	}
 	return true, "Success"
 }
