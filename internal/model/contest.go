@@ -11,11 +11,11 @@ type Contest struct {
 	Desc     string        `json:"desc"`
 	Password string        `json:"password"`
 	Avatar   string        `json:"avatar"`
-	Size     uint          `json:"size"`
+	Size     int           `json:"size"`
 	Start    time.Time     `json:"start"`
 	Duration time.Duration `json:"duration"`
 	Hidden   bool          `gorm:"default:true" json:"hidden"`
-	Teams    []*Team       `gorm:"many2many:team_contests;" json:"-"`
+	Teams    []*Team       `json:"-"`
 	Users    []*User       `gorm:"many2many:user_contests;" json:"-"`
 	gorm.Model
 }

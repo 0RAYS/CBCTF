@@ -14,12 +14,11 @@ type Team struct {
 	Hidden    bool    `gorm:"default:false" json:"hidden"`
 	CaptainID uint    `json:"captain_id"`
 	ContestID uint    `json:"contest_id"`
-	Contest   Contest `json:"-"`
 	Users     []*User `gorm:"many2many:user_teams;" json:"-"`
 	gorm.Model
 }
 
-func InitTeam(name string, captain User, contest Contest) Team {
+func InitTeam(name string, captainID uint) Team {
 	return Team{
 		Name:      name,
 		Desc:      "",
@@ -27,8 +26,6 @@ func InitTeam(name string, captain User, contest Contest) Team {
 		Avatar:    "",
 		Banned:    false,
 		Hidden:    false,
-		CaptainID: captain.ID,
-		Contest:   contest,
-		ContestID: contest.ID,
+		CaptainID: captainID,
 	}
 }
