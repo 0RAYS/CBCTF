@@ -3,6 +3,7 @@ package db
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"strings"
@@ -29,8 +30,8 @@ func Init() {
 	if err != nil {
 		log.Logger.Panicf("failed to connect database: %v", err)
 	}
-	//err = DB.AutoMigrate(&model.User{}, &model.Team{}, &model.Contest{}, &model.File{})
-	//if err != nil {
-	//	log.Logger.Panicf("failed to migrate database: %v", err)
-	//}
+	err = DB.AutoMigrate(&model.Admin{}, &model.User{}, &model.Team{}, &model.Contest{})
+	if err != nil {
+		log.Logger.Panicf("failed to migrate database: %v", err)
+	}
 }
