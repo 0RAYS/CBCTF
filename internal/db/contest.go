@@ -52,7 +52,7 @@ func GetContestByID(ctx context.Context, id uint, preloadL ...bool) (model.Conte
 	return contest, true, "Success"
 }
 
-// DeleteContest 根据 id 删除 model.Contest，同时删除与 model.Team, model.User 的关联，同时删除 model.Team
+// DeleteContest 根据 id 删除 model.Contest, 同时删除与 model.Team, model.User 的关联, 同时删除 model.Team
 func DeleteContest(ctx context.Context, id uint) (bool, string) {
 	contest, ok, msg := GetContestByID(ctx, id)
 	if !ok {
@@ -66,6 +66,17 @@ func DeleteContest(ctx context.Context, id uint) (bool, string) {
 	if err := DB.WithContext(ctx).Model(&model.Contest{}).Select(clause.Associations).Delete(&contest).Error; err != nil {
 		log.Logger.Warningf("Failed to delete contest: %s", err.Error())
 		return false, "DeleteContestError"
+	}
+	return true, "Success"
+}
+
+// UpdateContest 使用 map 更新属性, 结构体会导致零值未更新, 对字段值的具体要求应当交给上层实现
+func UpdateContest(ctx context.Context, id uint, updateData map[string]interface{}) (bool, string) {
+	res := DB.WithContext(ctx).Model(&model.Contest{}).Where("id = ?", id).
+		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to update contest: %v", res.Error.Error())
+		return false, "UpdateError"
 	}
 	return true, "Success"
 }

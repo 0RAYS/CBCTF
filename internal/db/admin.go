@@ -44,3 +44,14 @@ func DeleteAdmin(ctx context.Context, id uint) (bool, string) {
 	}
 	return true, "Success"
 }
+
+// UpdateAdmin 更新管理员, 使用 map 更新属性, 结构体会导致零值未更新, 对字段值的具体要求应当交给上层实现
+func UpdateAdmin(ctx context.Context, id uint, updateData map[string]interface{}) (bool, string) {
+	res := DB.WithContext(ctx).Model(&model.Admin{}).Where("id = ?", id).
+		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to update Admin: %v", res.Error.Error())
+		return false, "UpdateAdminError"
+	}
+	return true, "Success"
+}
