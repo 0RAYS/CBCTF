@@ -16,20 +16,22 @@ func Init() {
 	})
 	Logger.SetReportCaller(true)
 	Logger.SetFormatter(Formatter{})
-	writer, err := rotatelogs.New("logs/%Y%m%d.log")
-	if err != nil {
-		Logger.Fatal(err)
+	if config.Env.GetBool("log.file") {
+		writer, err := rotatelogs.New("logs/%Y%m%d.log")
+		if err != nil {
+			Logger.Fatal(err)
+		}
+		Logger.AddHook(lfshook.NewHook(
+			lfshook.WriterMap{
+				logrus.InfoLevel:  writer,
+				logrus.ErrorLevel: writer,
+				logrus.DebugLevel: writer,
+				logrus.WarnLevel:  writer,
+				logrus.TraceLevel: writer,
+				logrus.FatalLevel: writer,
+			}, TextFormatter{},
+		))
 	}
-	Logger.AddHook(lfshook.NewHook(
-		lfshook.WriterMap{
-			logrus.InfoLevel:  writer,
-			logrus.ErrorLevel: writer,
-			logrus.DebugLevel: writer,
-			logrus.WarnLevel:  writer,
-			logrus.TraceLevel: writer,
-			logrus.FatalLevel: writer,
-		}, TextFormatter{},
-	))
 	level := strings.ToUpper(config.Env.GetString("log.level"))
 	switch level {
 	case "DEBUG":

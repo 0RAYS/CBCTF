@@ -133,7 +133,8 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 			LevelColor(t+"-"+LevelText),
 			entry.Time.Format("2006-01-02 15:04:05"),
 		)
-		_, _ = fmt.Fprintf(ret, "| %s rows %s %s | %s",
+		_, _ = fmt.Fprintf(ret, "%s | %s rows %s %s | %s",
+			safeGetValue[string](entry, "TraceID"),
 			colors["Debug"](safeGetValue[string](entry, "rows")),
 			colors["Debug"](safeGetValue[string](entry, "duration")),
 			strings.Replace(safeGetValue[string](entry, "fileWithLineNum"), base, "", 1),
@@ -189,7 +190,8 @@ func (f TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		)
 	case "GORM":
 		_, _ = fmt.Fprintf(ret, "%s %s | ", t+"-"+LevelText, entry.Time.Format("2006-01-02 15:04:05"))
-		_, _ = fmt.Fprintf(ret, "| %s rows %s %s | %s",
+		_, _ = fmt.Fprintf(ret, "%s | %s rows %s %s | %s",
+			safeGetValue[string](entry, "TraceID"),
 			safeGetValue[string](entry, "rows"),
 			safeGetValue[string](entry, "duration"),
 			strings.Replace(safeGetValue[string](entry, "fileWithLineNum"), base, "", 1),
