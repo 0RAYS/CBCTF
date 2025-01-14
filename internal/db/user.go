@@ -49,8 +49,6 @@ func GetUserByID(ctx context.Context, id uint, preloadL ...bool) (model.User, bo
 			res = DB.WithContext(ctx).Model(&model.User{}).Where("id = ?", id).Preload(clause.Associations).
 				Find(&user).Limit(1)
 		}
-		res = DB.WithContext(ctx).Model(&model.User{}).Where("id = ?", id).Preload(clause.Associations).
-			Find(&user).Limit(1)
 	} else {
 		res = DB.WithContext(ctx).Model(&model.User{}).Where("id = ?", id).Find(&user).Limit(1)
 	}
