@@ -99,6 +99,9 @@ func JoinTeam(ctx context.Context, userID uint, contestID uint, teamID uint) (bo
 	if !ok {
 		return false, msg
 	}
+	if !isUniqueTeamMember(contestID, userID) {
+		return false, "TeamMemberExists"
+	}
 	contest, ok, msg := GetContestByID(ctx, contestID, false)
 	if !ok {
 		return false, msg
@@ -131,13 +134,19 @@ func LeaveTeam(ctx context.Context, userID uint, contestID uint, teamID uint) (b
 	if !ok {
 		return false, msg
 	}
+	team, ok, msg := GetTeamByID(ctx, teamID, true)
+	if !ok {
+		return false, msg
+	}
+	if !isMemberInTeam(team.ID, user.ID) {
+		return false, "UserNotInTeam"
+	}
 	contest, ok, msg := GetContestByID(ctx, contestID, false)
 	if !ok {
 		return false, msg
 	}
-	team, ok, msg := GetTeamByID(ctx, teamID, true)
-	if !ok {
-		return false, msg
+	if len(team.Users) > 1 && team.CaptainID == userID {
+		return false, "CaptainCannotLeave"
 	}
 	// 退出后队伍人数为0, 删除队伍
 	if len(team.Users) == 1 {
