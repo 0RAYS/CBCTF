@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func init() {
+func InitAdminTest() {
 	config.Env = viper.New()
 	config.Env.Set("gorm.file", ":memory:")
 	config.Env.Set("gorm.log.level", "silent")
@@ -17,11 +17,14 @@ func init() {
 	log.Init()
 	Init()
 	var ctx context.Context
-	_, _, _ = CreateAdmin(ctx, "admin1", "password", "admin1@0rays.club")
-	_, _, _ = CreateUser(ctx, "user1", "password", "user1@0rays.club")
+	admin1, ok, msg := CreateAdmin(ctx, "admin1", "password", "admin1@0rays.club")
+	log.Logger.Info(admin1.ID, ok, msg)
+	user1, ok, msg := CreateUser(ctx, "user1", "password", "user1@0rays.club")
+	log.Logger.Info(user1.ID, ok, msg)
 }
 
 func TestCreateAdmin(t *testing.T) {
+	InitAdminTest()
 	var ctx context.Context
 	if _, ok, _ := CreateAdmin(ctx, "test", "password", "test_email"); ok {
 		t.Fatalf("Should not create admin with invalid email")
@@ -44,6 +47,7 @@ func TestCreateAdmin(t *testing.T) {
 }
 
 func TestGetAdminByID(t *testing.T) {
+	InitAdminTest()
 	var ctx context.Context
 	if _, ok, _ := GetAdminByID(ctx, 0); ok {
 		t.Fatalf("Should not get admin with invalid id")
@@ -54,6 +58,7 @@ func TestGetAdminByID(t *testing.T) {
 }
 
 func TestDeleteAdmin(t *testing.T) {
+	InitAdminTest()
 	var ctx context.Context
 	if ok, _ := DeleteAdmin(ctx, 0); !ok {
 		t.Fatalf("Should return true when delete invalid admin")

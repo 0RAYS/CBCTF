@@ -12,7 +12,7 @@ func AppendUserToTeam(ctx context.Context, user model.User, team model.Team) err
 
 // AppendUserToContest Many2Many
 func AppendUserToContest(ctx context.Context, user model.User, contest model.Contest) error {
-	return DB.WithContext(ctx).Model(&contest).Association("Contests").Append(&user)
+	return DB.WithContext(ctx).Model(&contest).Association("Users").Append(&user)
 }
 
 // AppendTeamToContest HasMany
