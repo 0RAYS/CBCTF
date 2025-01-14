@@ -6,6 +6,7 @@ import (
 )
 
 type Admin struct {
+	ID       uint   `gorm:"primarykey"`
 	Name     string `gorm:"unique;not null" json:"name"`
 	Password string `gorm:"not null" json:"-"`
 	Email    string `gorm:"unique;not null" json:"email"`
