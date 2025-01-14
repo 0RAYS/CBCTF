@@ -6,6 +6,7 @@ import (
 )
 
 type Team struct {
+	ID        uint    `gorm:"primarykey"`
 	Name      string  `gorm:"not null" json:"name"`
 	Desc      string  `json:"desc"`
 	Password  string  `json:"-"`
