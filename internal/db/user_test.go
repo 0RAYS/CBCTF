@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func init() {
+func InitUserTest() {
 	config.Env = viper.New()
 	config.Env.Set("gorm.file", ":memory:")
 	config.Env.Set("gorm.log.level", "silent")
@@ -22,6 +22,7 @@ func init() {
 }
 
 func TestCreateUser(t *testing.T) {
+	InitUserTest()
 	var ctx context.Context
 	if _, ok, _ := CreateUser(ctx, "test", "password", "test_email"); ok {
 		t.Fatalf("Should not create user with invalid email")
@@ -44,6 +45,7 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestGetUserByID(t *testing.T) {
+	InitUserTest()
 	var ctx context.Context
 	if _, ok, _ := GetUserByID(ctx, 0); ok {
 		t.Fatalf("Should not get user with invalid id")
@@ -55,6 +57,7 @@ func TestGetUserByID(t *testing.T) {
 
 // 2025-01-14 不完全测试
 func TestDeleteUser(t *testing.T) {
+	InitUserTest()
 	var ctx context.Context
 	if ok, _ := DeleteUser(ctx, 0); ok {
 		t.Fatalf("Should return false when delete invalid user")
