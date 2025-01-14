@@ -1,0 +1,46 @@
+package db
+
+import (
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
+	"context"
+)
+
+// CreateAdmin 创建管理员
+func CreateAdmin(ctx context.Context, name string, password string, email string) (model.Admin, bool, string) {
+	if !isValidEmail(email) {
+		return model.Admin{}, false, "InvalidEmail"
+	}
+	if !isUniqueName(name, model.Admin{}) {
+		return model.Admin{}, false, "AdminNameExists"
+	}
+	if !isUniqueEmail(email, model.Admin{}) {
+		return model.Admin{}, false, "EmailExists"
+	}
+	admin := model.InitAdmin(name, password, email)
+	res := DB.WithContext(ctx).Model(&model.Admin{}).Create(&admin)
+	if res.Error != nil {
+		log.Logger.Errorf("Failed to create Admin: %s", res.Error.Error())
+		return model.Admin{}, false, "CreateAdminError"
+	}
+	return admin, true, "Success"
+}
+
+func GetAdminByID(ctx context.Context, id uint) (model.Admin, bool, string) {
+	var admin model.Admin
+	res := DB.WithContext(ctx).Model(&model.Admin{}).Where("id = ?", id).Find(&admin)
+	if res.RowsAffected != 1 {
+		return model.Admin{}, false, "AdminNotFound"
+	}
+	return admin, true, "Success"
+}
+
+// DeleteAdmin 根据 id 删除 model.Admin
+func DeleteAdmin(ctx context.Context, id uint) (bool, string) {
+	res := DB.WithContext(ctx).Model(&model.Admin{}).Where("id = ?", id).Delete(&model.Admin{})
+	if res.Error != nil {
+		log.Logger.Errorf("Failed to delete Admin: %s", res.Error.Error())
+		return false, "DeleteAdminError"
+	}
+	return true, "Success"
+}
