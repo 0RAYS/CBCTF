@@ -10,7 +10,7 @@ type Team struct {
 	ID        uint           `gorm:"primarykey"`
 	Name      string         `gorm:"not null" json:"name"`
 	Desc      string         `json:"desc"`
-	Captcha   string         `json:"captcha"`
+	Captcha   string         `json:"-"`
 	Avatar    string         `json:"avatar"`
 	Banned    bool           `gorm:"default:false" json:"banned"`
 	Hidden    bool           `gorm:"default:false" json:"hidden"`
