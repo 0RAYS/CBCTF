@@ -34,4 +34,5 @@ func Init() {
 	if err != nil {
 		log.Logger.Panicf("failed to migrate database: %v", err)
 	}
+	InitAdmin()
 }

@@ -3,6 +3,7 @@ package db
 import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
 	"context"
 )
 
@@ -54,4 +55,27 @@ func UpdateAdmin(ctx context.Context, id uint, updateData map[string]interface{}
 		return false, "UpdateAdminError"
 	}
 	return true, "Success"
+}
+
+func VerifyAdmin(ctx context.Context, username string, password string) (model.Admin, bool, string) {
+	var admin model.Admin
+	res := DB.WithContext(ctx).Model(&model.Admin{}).Where("name = ? OR email = ?", username, username).
+		Find(&admin).Limit(1)
+	if res.RowsAffected != 1 {
+		return model.Admin{}, false, "NameOrPasswordError"
+	}
+	if utils.CompareHashAndPassword(admin.Password, password) {
+		return admin, true, "Success"
+	}
+	return model.Admin{}, false, "NameOrPasswordError"
+}
+
+func InitAdmin() {
+	var count int64
+	DB.Model(&model.Admin{}).Count(&count)
+	if count == 0 {
+		pwd := utils.RandomString()
+		CreateAdmin(context.Background(), "admin", pwd, "admin@0rays.club")
+		log.Logger.Infof("Init admin: admin/%s/admin@0rays.club", pwd)
+	}
 }
