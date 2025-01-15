@@ -1,4 +1,4 @@
-package route
+package router
 
 type LoginForm struct {
 	Name     string `json:"name" binding:"required"`
