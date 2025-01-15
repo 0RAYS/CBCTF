@@ -9,3 +9,8 @@ import (
 func Trace(ctx *gin.Context) {
 	ctx.Set("TraceID", utils.RandomString())
 }
+
+// GetTraceID 从 gin.Context 中获取 trace，该值由 middleware.Trace 设置
+func GetTraceID(ctx *gin.Context) string {
+	return ctx.GetString("TraceID")
+}
