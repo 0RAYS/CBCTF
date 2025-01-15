@@ -9,7 +9,7 @@ type Team struct {
 	ID        uint    `gorm:"primarykey"`
 	Name      string  `gorm:"not null" json:"name"`
 	Desc      string  `json:"desc"`
-	Password  string  `json:"-"`
+	Captcha   string  `json:"captcha"`
 	Avatar    string  `json:"avatar"`
 	Banned    bool    `gorm:"default:false" json:"banned"`
 	Hidden    bool    `gorm:"default:false" json:"hidden"`
@@ -23,7 +23,7 @@ func InitTeam(name string, captainID uint) Team {
 	return Team{
 		Name:      name,
 		Desc:      "",
-		Password:  utils.RandomString(),
+		Captcha:   utils.RandomString(),
 		Avatar:    "",
 		Banned:    false,
 		Hidden:    false,
