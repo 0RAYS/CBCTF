@@ -3,20 +3,23 @@ package model
 import (
 	"CBCTF/internal/utils"
 	"gorm.io/gorm"
+	"time"
 )
 
 type Team struct {
-	ID        uint    `gorm:"primarykey"`
-	Name      string  `gorm:"not null" json:"name"`
-	Desc      string  `json:"desc"`
-	Captcha   string  `json:"captcha"`
-	Avatar    string  `json:"avatar"`
-	Banned    bool    `gorm:"default:false" json:"banned"`
-	Hidden    bool    `gorm:"default:false" json:"hidden"`
-	CaptainID uint    `json:"captain_id"`
-	ContestID uint    `json:"contest_id"`
-	Users     []*User `gorm:"many2many:user_teams;" json:"-"`
-	gorm.Model
+	ID        uint           `gorm:"primarykey"`
+	Name      string         `gorm:"not null" json:"name"`
+	Desc      string         `json:"desc"`
+	Captcha   string         `json:"captcha"`
+	Avatar    string         `json:"avatar"`
+	Banned    bool           `gorm:"default:false" json:"banned"`
+	Hidden    bool           `gorm:"default:false" json:"hidden"`
+	CaptainID uint           `json:"captain_id"`
+	ContestID uint           `json:"contest_id"`
+	Users     []*User        `gorm:"many2many:user_teams;" json:"-"`
+	CreatedAt time.Time      `json:"-"`
+	UpdatedAt time.Time      `json:"-"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 func InitTeam(name string, captainID uint) Team {
