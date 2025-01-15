@@ -14,6 +14,7 @@ func InitAdminTest() {
 	config.Env.Set("gorm.log.level", "silent")
 	config.Env.Set("log.level", "info")
 	config.Env.Set("log.file", false)
+	config.Env.Set("upload.max", 8)
 	log.Init()
 	Init()
 	var ctx context.Context
@@ -38,8 +39,8 @@ func TestCreateAdmin(t *testing.T) {
 	if _, ok, _ := CreateUser(ctx, "admin1", "password", "test@0rays.club"); !ok {
 		t.Fatal("Failed to create user which name is duplicated with admin")
 	}
-	if _, ok, _ := CreateUser(ctx, "test", "password", "admin1@0rays.club"); !ok {
-		t.Fatal("Failed to create user which email is duplicated with admin")
+	if _, ok, _ := CreateUser(ctx, "test", "password", "admin1@0rays.club"); ok {
+		t.Fatal("Should not create user which email is duplicated with admin")
 	}
 	if admin1, _, _ := GetAdminByID(ctx, 1); admin1.Password == "password" {
 		t.Fatal("Failed to hash password")
