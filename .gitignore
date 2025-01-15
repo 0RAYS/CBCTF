@@ -7,6 +7,9 @@ uploads
 config.yml
 *.db
 
+node_modules
+frontend
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
