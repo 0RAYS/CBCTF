@@ -17,7 +17,7 @@ import (
 func InitAuthTest() *gin.Engine {
 	i18n.Init()
 	config.Env = viper.New()
-	config.Env.Set("gorm.file", "test.db")
+	config.Env.Set("gorm.file", ":memory:")
 	config.Env.Set("gorm.log.level", "silent")
 	config.Env.Set("log.level", "info")
 	config.Env.Set("log.file", false)
