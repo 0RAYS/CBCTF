@@ -3,6 +3,7 @@ package db
 import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
 	"context"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -88,4 +89,19 @@ func UpdateUser(ctx context.Context, id uint, updateData map[string]interface{})
 		return false, "UpdateError"
 	}
 	return true, "Success"
+}
+
+func VerifyUser(ctx context.Context, username string, password string) (model.User, bool, string) {
+	var user model.User
+	var res *gorm.DB
+	res = DB.WithContext(ctx).Model(&model.User{}).Where("name = ? OR email = ?", username, username).
+		Find(&user).Limit(1)
+	if res.RowsAffected != 1 {
+		// 保持 用户名不存在 与 密码错误 行为相同
+		return model.User{}, false, "NameOrPasswordError"
+	}
+	if utils.CompareHashAndPassword(user.Password, password) {
+		return user, true, "Success"
+	}
+	return model.User{}, false, "NameOrPasswordError"
 }
