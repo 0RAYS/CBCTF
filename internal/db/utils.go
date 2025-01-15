@@ -18,14 +18,11 @@ func isValidEmail(email string) bool {
 // isUniqueEmail 邮箱不能重复
 func isUniqueEmail(email string, v interface{}) bool {
 	var res *gorm.DB
-	switch v.(type) {
-	case model.User:
-		res = DB.Model(&model.User{}).Where("email = ?", email).Find(&model.User{}).Limit(1)
-	case model.Admin:
-		res = DB.Model(&model.Admin{}).Where("email = ?", email).Find(&model.Admin{}).Limit(1)
-	default:
+	res = DB.Model(&model.User{}).Where("email = ?", email).Find(&model.User{}).Limit(1)
+	if res.RowsAffected > 0 {
 		return false
 	}
+	res = DB.Model(&model.Admin{}).Where("email = ?", email).Find(&model.Admin{}).Limit(1)
 	if res.RowsAffected > 0 {
 		return false
 	}
