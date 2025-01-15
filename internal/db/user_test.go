@@ -3,6 +3,7 @@ package db
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"context"
 	"github.com/spf13/viper"
 	"testing"
@@ -12,13 +13,15 @@ func InitUserTest() {
 	config.Env = viper.New()
 	config.Env.Set("gorm.file", ":memory:")
 	config.Env.Set("gorm.log.level", "silent")
-	config.Env.Set("log.level", "info")
+	config.Env.Set("log.level", "debug")
 	config.Env.Set("log.file", false)
 	log.Init()
 	Init()
 	var ctx context.Context
 	_, _, _ = CreateAdmin(ctx, "admin1", "password", "admin1@0rays.club")
 	_, _, _ = CreateUser(ctx, "user1", "password", "user1@0rays.club")
+	_, _, _ = CreateContest(ctx, "contest1")
+	_, _, _ = CreateTeam(ctx, "team1", 1, 1)
 }
 
 func TestCreateUser(t *testing.T) {
@@ -55,14 +58,72 @@ func TestGetUserByID(t *testing.T) {
 	}
 }
 
-// 2025-01-14 不完全测试
 func TestDeleteUser(t *testing.T) {
 	InitUserTest()
 	var ctx context.Context
 	if ok, _ := DeleteUser(ctx, 0); ok {
-		t.Fatalf("Should return false when delete invalid user")
+		t.Fatalf("Sest hould return false when delete invalid user")
 	}
+
+	user1, ok, msg := GetUserByID(ctx, 1)
+	if !ok {
+		t.Fatalf(msg)
+	}
+	contest1, ok, msg := GetContestByID(ctx, 1)
+	if !ok {
+		t.Fatalf(msg)
+	}
+
+	var tmp []model.Team
+	if err := DB.WithContext(ctx).Model(&user1).Association("Teams").Find(&tmp); err != nil {
+		t.Fatalf(err.Error())
+	}
+	if len(tmp) == 0 {
+		t.Fatalf("Failed to find association between user and team")
+	}
+	log.Logger.Debug(tmp)
+	var tmp2 []model.Contest
+	if err := DB.WithContext(ctx).Model(&user1).Association("Contests").Find(&tmp2); err != nil {
+		t.Fatalf(err.Error())
+	}
+	if len(tmp2) == 0 {
+		t.Fatalf("Failed to find association between user and contest")
+	}
+	log.Logger.Debug(tmp2)
+
+	if err := DB.WithContext(ctx).Model(&contest1).Association("Teams").Find(&tmp); err != nil {
+		t.Fatalf(err.Error())
+	}
+	if len(tmp) == 0 {
+		t.Fatalf("Failed to find association between contest and team")
+	}
+	log.Logger.Debug(tmp)
+
 	if ok, _ := DeleteUser(ctx, 1); !ok {
 		t.Fatalf("Failed to delete user")
 	}
+
+	if err := DB.WithContext(ctx).Model(&user1).Association("Teams").Find(&tmp); err != nil {
+		t.Fatalf(err.Error())
+	}
+	if len(tmp) != 0 {
+		t.Fatalf("Should not find association between user and team")
+	}
+	log.Logger.Debug(tmp)
+	if err := DB.WithContext(ctx).Model(&user1).Association("Contests").Find(&tmp2); err != nil {
+		t.Fatalf(err.Error())
+	}
+	if len(tmp2) != 0 {
+		t.Fatalf("Should not find association between user and contest")
+	}
+	log.Logger.Debug(tmp2)
+
+	if err := DB.WithContext(ctx).Model(&contest1).Association("Teams").Find(&tmp); err != nil {
+		t.Fatalf(err.Error())
+	}
+	if len(tmp) != 0 {
+		t.Fatalf("Should not find association between contest and team")
+	}
+	log.Logger.Debug(tmp)
+
 }
