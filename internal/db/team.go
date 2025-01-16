@@ -10,10 +10,10 @@ import (
 
 // CreateTeam 创建队伍, 名称在 model.Contest 中唯一
 func CreateTeam(ctx context.Context, name string, captainID uint, contestID uint) (model.Team, bool, string) {
-	if !isUniqueTeamName(name, contestID) {
+	if !IsUniqueTeamName(name, contestID) {
 		return model.Team{}, false, "TeamNameExists"
 	}
-	if !isUniqueTeamMember(contestID, captainID) {
+	if !IsUniqueTeamMember(contestID, captainID) {
 		return model.Team{}, false, "TeamMemberExists"
 	}
 	team := model.InitTeam(name, captainID)
@@ -99,7 +99,7 @@ func JoinTeam(ctx context.Context, userID uint, contestID uint, teamID uint) (bo
 	if !ok {
 		return false, msg
 	}
-	if !isUniqueTeamMember(contestID, userID) {
+	if !IsUniqueTeamMember(contestID, userID) {
 		return false, "TeamMemberExists"
 	}
 	contest, ok, msg := GetContestByID(ctx, contestID, false)
@@ -138,7 +138,7 @@ func LeaveTeam(ctx context.Context, userID uint, contestID uint, teamID uint) (b
 	if !ok {
 		return false, msg
 	}
-	if !isMemberInTeam(team.ID, user.ID) {
+	if !IsMemberInTeam(team.ID, user.ID) {
 		return false, "UserNotInTeam"
 	}
 	contest, ok, msg := GetContestByID(ctx, contestID, false)

@@ -10,14 +10,14 @@ import (
 )
 
 func Register(ctx *gin.Context) {
-	var registerForm RegisterForm
+	var form RegisterForm
 	trace := middleware.GetTraceID(ctx)
-	if err := ctx.ShouldBind(&registerForm); err == nil {
-		username, password, email := registerForm.Name, registerForm.Password, registerForm.Email
+	if err := ctx.ShouldBind(&form); err == nil {
+		username, password, email := form.Name, form.Password, form.Email
 		user, ok, msg := db.CreateUser(ctx, username, password, email)
 		if !ok {
 			log.Logger.Infof("%s | %s", trace, msg)
-			ctx.JSONP(http.StatusUnauthorized, gin.H{"trace": trace, "msg": utils.M(ctx, msg), "data": nil})
+			ctx.JSONP(http.StatusInternalServerError, gin.H{"trace": trace, "msg": utils.M(ctx, msg), "data": nil})
 			return
 		}
 		if Token, err := utils.Generate(user.ID, user.Name, "user"); err == nil {
@@ -39,10 +39,10 @@ func Register(ctx *gin.Context) {
 }
 
 func Login(ctx *gin.Context) {
-	var loginForm LoginForm
+	var form LoginForm
 	trace := middleware.GetTraceID(ctx)
-	if err := ctx.ShouldBind(&loginForm); err == nil {
-		username, password := loginForm.Name, loginForm.Password
+	if err := ctx.ShouldBind(&form); err == nil {
+		username, password := form.Name, form.Password
 		user, ok, msg := db.VerifyUser(ctx, username, password)
 		if !ok {
 			log.Logger.Infof("%s | %s", trace, msg)
@@ -68,10 +68,10 @@ func Login(ctx *gin.Context) {
 }
 
 func AdminLogin(ctx *gin.Context) {
-	var loginForm LoginForm
+	var form LoginForm
 	trace := middleware.GetTraceID(ctx)
-	if err := ctx.ShouldBind(&loginForm); err == nil {
-		username, password := loginForm.Name, loginForm.Password
+	if err := ctx.ShouldBind(&form); err == nil {
+		username, password := form.Name, form.Password
 		admin, ok, msg := db.VerifyAdmin(ctx, username, password)
 		if !ok {
 			log.Logger.Infof("%s | %s", trace, msg)

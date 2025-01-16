@@ -6,8 +6,8 @@ import (
 	"regexp"
 )
 
-// isValidEmail 邮箱格式验证
-func isValidEmail(email string) bool {
+// IsValidEmail 邮箱格式验证
+func IsValidEmail(email string) bool {
 	pattern := `\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*`
 	if regexp.MustCompile(pattern).MatchString(email) {
 		return true
@@ -15,8 +15,8 @@ func isValidEmail(email string) bool {
 	return false
 }
 
-// isUniqueEmail 邮箱不能重复
-func isUniqueEmail(email string, v interface{}) bool {
+// IsUniqueEmail 邮箱不能重复
+func IsUniqueEmail(email string) bool {
 	var res *gorm.DB
 	res = DB.Model(&model.User{}).Where("email = ?", email).Find(&model.User{}).Limit(1)
 	if res.RowsAffected > 0 {
@@ -29,8 +29,8 @@ func isUniqueEmail(email string, v interface{}) bool {
 	return true
 }
 
-// isUniqueName 对象名不能重复, 但在此处不考虑Team
-func isUniqueName(name string, v interface{}) bool {
+// IsUniqueName 对象名不能重复, 但在此处不考虑Team
+func IsUniqueName(name string, v interface{}) bool {
 	var res *gorm.DB
 	switch v.(type) {
 	case model.User:
@@ -48,8 +48,8 @@ func isUniqueName(name string, v interface{}) bool {
 	return true
 }
 
-// isUniqueTeamName 在每个Contest中, 队伍名不能重复
-func isUniqueTeamName(name string, id uint) bool {
+// IsUniqueTeamName 在每个Contest中, 队伍名不能重复
+func IsUniqueTeamName(name string, id uint) bool {
 	res := DB.Model(&model.Team{}).Where("name = ? AND contest_id = ?", name, id).Find(&model.Team{}).Limit(1)
 	if res.RowsAffected > 0 {
 		return false
@@ -57,8 +57,8 @@ func isUniqueTeamName(name string, id uint) bool {
 	return true
 }
 
-// isUniqueTeamMember model.User 不能在同一个 model.Contest 出现多次
-func isUniqueTeamMember(contestID uint, userID uint) bool {
+// IsUniqueTeamMember model.User 不能在同一个 model.Contest 出现多次
+func IsUniqueTeamMember(contestID uint, userID uint) bool {
 	var tmp []model.User
 	err := DB.Model(&model.User{ID: userID}).Where("contest_id = ?", contestID).Association("Contests").Find(&tmp)
 	if len(tmp) > 0 || err != nil {
@@ -67,8 +67,8 @@ func isUniqueTeamMember(contestID uint, userID uint) bool {
 	return true
 }
 
-// isMemberInTeam model.User 是否在 model.Team 中
-func isMemberInTeam(teamID uint, userID uint) bool {
+// IsMemberInTeam model.User 是否在 model.Team 中
+func IsMemberInTeam(teamID uint, userID uint) bool {
 	var tmp []model.Team
 	err := DB.Model(&model.User{ID: userID}).Where("team_id = ?", teamID).Association("Teams").Find(&tmp)
 	if len(tmp) > 0 || err != nil {
