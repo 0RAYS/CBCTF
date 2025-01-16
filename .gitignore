@@ -9,6 +9,7 @@ config.yml
 
 node_modules
 frontend
+tmp
 
 # Binaries for programs and plugins
 *.exe

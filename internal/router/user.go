@@ -35,9 +35,9 @@ func ChangePassword(ctx *gin.Context) {
 		}
 		ok, msg := db.ChangePasswordUser(ctx, self.(map[string]interface{})["ID"].(uint), form.OldPassword, form.NewPassword)
 		if !ok {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"trace": trace, "msg": utils.M(ctx, msg)})
+			ctx.JSON(http.StatusOK, gin.H{"trace": trace, "msg": utils.M(ctx, msg), "data": nil})
 		} else {
-			ctx.JSON(http.StatusOK, gin.H{"trace": trace, "msg": utils.M(ctx, "Success")})
+			ctx.JSON(http.StatusOK, gin.H{"trace": trace, "msg": utils.M(ctx, "Success"), "data": nil})
 		}
 	} else {
 		ctx.JSON(http.StatusForbidden, gin.H{"trace": trace, "msg": utils.M(ctx, "Forbidden")})
