@@ -16,7 +16,11 @@ func Init() *gin.Engine {
 	router.POST("/login", Login)
 	router.POST("/admin/login", AdminLogin)
 
-	_ = router.Group("/admin")
+	user := router.Group("/user", middleware.CheckLogin)
+	user.GET("/info", GetUser)
+
+	admin := router.Group("/admin", middleware.CheckLogin, middleware.CheckAdmin)
+	admin.GET("/info", GetAdmin)
 
 	return router
 
