@@ -10,7 +10,7 @@ import (
 
 // CreateContest 创建比赛
 func CreateContest(ctx context.Context, name string) (model.Contest, bool, string) {
-	if !isUniqueName(name, model.Contest{}) {
+	if !IsUniqueName(name, model.Contest{}) {
 		return model.Contest{}, false, "ContestNameExists"
 	}
 	contest := model.InitContest(name)

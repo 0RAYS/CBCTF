@@ -9,13 +9,13 @@ import (
 
 // CreateAdmin 创建管理员
 func CreateAdmin(ctx context.Context, name string, password string, email string) (model.Admin, bool, string) {
-	if !isValidEmail(email) {
+	if !IsValidEmail(email) {
 		return model.Admin{}, false, "InvalidEmail"
 	}
-	if !isUniqueName(name, model.Admin{}) {
+	if !IsUniqueName(name, model.Admin{}) {
 		return model.Admin{}, false, "AdminNameExists"
 	}
-	if !isUniqueEmail(email, model.Admin{}) {
+	if !IsUniqueEmail(email) {
 		return model.Admin{}, false, "EmailExists"
 	}
 	admin := model.InitAdmin(name, password, email)
@@ -78,4 +78,22 @@ func InitAdmin() {
 		CreateAdmin(context.Background(), "admin", pwd, "admin@0rays.club")
 		log.Logger.Infof("Init admin: admin/%s/admin@0rays.club", pwd)
 	}
+}
+
+func ChangePasswordAdmin(ctx context.Context, id uint, oldPassword string, newPassword string) (bool, string) {
+	admin, ok, msg := GetAdminByID(ctx, id)
+	if !ok {
+		return false, msg
+	}
+	if !utils.CompareHashAndPassword(admin.Password, oldPassword) {
+		return false, "PasswordError"
+	}
+	if utils.CompareHashAndPassword(admin.Password, newPassword) {
+		return false, "PasswordSame"
+	}
+	hash := utils.HashPassword(newPassword)
+	if ok, msg := UpdateAdmin(ctx, id, map[string]interface{}{"password": hash}); !ok {
+		return false, msg
+	}
+	return true, "Success"
 }

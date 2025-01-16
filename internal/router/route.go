@@ -18,9 +18,12 @@ func Init() *gin.Engine {
 
 	user := router.Group("/user", middleware.CheckLogin)
 	user.GET("/info", GetUser)
+	user.PUT("/password", ChangePassword)
+	user.PUT("/update", UpdateUser)
 
 	admin := router.Group("/admin", middleware.CheckLogin, middleware.CheckAdmin)
 	admin.GET("/info", GetAdmin)
+	admin.PUT("/password", AdminChangePassword)
 
 	return router
 

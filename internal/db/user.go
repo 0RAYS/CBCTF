@@ -11,13 +11,13 @@ import (
 
 // CreateUser 创建用户
 func CreateUser(ctx context.Context, name string, password string, email string) (model.User, bool, string) {
-	if !isValidEmail(email) {
+	if !IsValidEmail(email) {
 		return model.User{}, false, "InvalidEmail"
 	}
-	if !isUniqueName(name, model.User{}) {
+	if !IsUniqueName(name, model.User{}) {
 		return model.User{}, false, "UserNameExists"
 	}
-	if !isUniqueEmail(email, model.User{}) {
+	if !IsUniqueEmail(email) {
 		return model.User{}, false, "EmailExists"
 	}
 	user := model.InitUser(name, password, email)
@@ -104,4 +104,22 @@ func VerifyUser(ctx context.Context, username string, password string) (model.Us
 		return user, true, "Success"
 	}
 	return model.User{}, false, "NameOrPasswordError"
+}
+
+func ChangePasswordUser(ctx context.Context, id uint, oldPassword string, newPassword string) (bool, string) {
+	user, ok, msg := GetUserByID(ctx, id)
+	if !ok {
+		return false, msg
+	}
+	if !utils.CompareHashAndPassword(user.Password, oldPassword) {
+		return false, "PasswordError"
+	}
+	if utils.CompareHashAndPassword(user.Password, newPassword) {
+		return false, "PasswordSame"
+	}
+	hash := utils.HashPassword(newPassword)
+	if ok, msg = UpdateUser(ctx, id, map[string]interface{}{"password": hash}); !ok {
+		return false, msg
+	}
+	return true, "Success"
 }
