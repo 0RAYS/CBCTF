@@ -54,8 +54,8 @@ func CheckLogin(ctx *gin.Context) {
 
 func CheckAdmin(ctx *gin.Context) {
 	trace := GetTraceID(ctx)
-	self, ok1 := ctx.Get("Self")
-	if !ok1 || self.(map[string]interface{})["Type"].(string) != "admin" {
+	self, ok := ctx.Get("Self")
+	if !ok || self.(map[string]interface{})["Type"].(string) != "admin" {
 		ctx.JSON(http.StatusForbidden, gin.H{"trace": trace, "msg": utils.M(ctx, "Forbidden")})
 		ctx.Abort()
 		return
