@@ -17,7 +17,7 @@ func Register(ctx *gin.Context) {
 		user, ok, msg := db.CreateUser(ctx, username, password, email)
 		if !ok {
 			log.Logger.Infof("%s | %s", trace, msg)
-			ctx.JSONP(http.StatusInternalServerError, gin.H{"trace": trace, "msg": utils.M(ctx, msg), "data": nil})
+			ctx.JSONP(http.StatusOK, gin.H{"trace": trace, "msg": utils.M(ctx, msg), "data": nil})
 			return
 		}
 		if Token, err := utils.Generate(user.ID, user.Name, "user"); err == nil {
