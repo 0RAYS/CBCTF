@@ -3,7 +3,6 @@ package router
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"context"
 	"github.com/gin-gonic/gin"
@@ -15,11 +14,10 @@ import (
 )
 
 func InitAuthTest() *gin.Engine {
-	i18n.Init()
 	config.Env = viper.New()
 	config.Env.Set("gorm.file", ":memory:")
 	config.Env.Set("gorm.log.level", "silent")
-	config.Env.Set("log.level", "info")
+	config.Env.Set("log.level", "debug")
 	config.Env.Set("log.file", false)
 	config.Env.Set("gin.mode", "release")
 	log.Init()
@@ -53,7 +51,8 @@ func TestRegister(t *testing.T) {
 	req.Header.Set("Accept-Language", "")
 
 	router.ServeHTTP(w, req)
-	if w.Code != http.StatusUnauthorized {
+	if w.Code != http.StatusOK || !strings.Contains(w.Body.String(), "\"code\":400") {
+		log.Logger.Debug(w.Body.String())
 		t.Errorf("Expected status %d but got %d", http.StatusInternalServerError, w.Code)
 	}
 }
