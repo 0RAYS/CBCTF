@@ -7,6 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -79,8 +80,18 @@ func statusCodeColor(code int) func(a ...interface{}) string {
 	}
 }
 
-func safeGetValue[T any](entry *logrus.Entry, key string) T {
-	V, _ := entry.Data[key].(T)
+func safeGetValue[T any](entry *logrus.Entry, key string, defaultV ...any) T {
+	V, err := entry.Data[key].(T)
+	if !err {
+		if len(defaultV) > 0 {
+			var tmp T
+			if reflect.TypeOf(tmp) != reflect.TypeOf(defaultV[0]) {
+				Logger.Fatalf("type mismatch: want %v, got %v", reflect.TypeOf(tmp), reflect.TypeOf(defaultV[0]))
+			}
+			return defaultV[0].(T)
+		}
+		return V
+	}
 	return V
 }
 
