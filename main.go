@@ -3,14 +3,12 @@ package main
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/router"
 	"fmt"
 )
 
 func init() {
-	i18n.Init()
 	config.Init()
 	log.Init()
 	db.Init()
