@@ -31,8 +31,6 @@ func CreateUser(ctx context.Context, name string, password string, email string)
 
 // GetUserByID 根据 ID 获取 model.User, preloadL[0] 为是否预加载, preloadL[1] 为是否嵌套预加载
 func GetUserByID(ctx context.Context, id uint, preloadL ...bool) (model.User, bool, string) {
-	var user model.User
-	var res *gorm.DB
 	preload := true
 	nest := false
 	if len(preloadL) > 0 {
@@ -41,18 +39,15 @@ func GetUserByID(ctx context.Context, id uint, preloadL ...bool) (model.User, bo
 	if len(preloadL) > 1 {
 		nest = preloadL[1]
 	}
+	var user model.User
+	res := DB.WithContext(ctx).Model(&model.User{}).Where("id = ?", id)
 	if preload {
 		if nest {
-			res = DB.WithContext(ctx).Model(&model.User{}).Where("id = ?", id).
-				Preload("Teams.Users").Preload("Contests.Users").Preload("Contests.Teams").
-				Preload(clause.Associations).Find(&user).Limit(1)
-		} else {
-			res = DB.WithContext(ctx).Model(&model.User{}).Where("id = ?", id).Preload(clause.Associations).
-				Find(&user).Limit(1)
+			res = res.Preload("Teams.Users").Preload("Contests.Users").Preload("Contests.Teams")
 		}
-	} else {
-		res = DB.WithContext(ctx).Model(&model.User{}).Where("id = ?", id).Find(&user).Limit(1)
+		res = res.Preload(clause.Associations)
 	}
+	res = res.Find(&user).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.User{}, false, "UserNotFound"
 	}
@@ -122,4 +117,38 @@ func ChangePasswordUser(ctx context.Context, id uint, oldPassword string, newPas
 		return false, msg
 	}
 	return true, "Success"
+}
+
+func GetUsers(ctx context.Context, limit int, offset int, all bool, preloadL ...bool) ([]model.User, int, bool, string) {
+	if limit <= 0 {
+		limit = -1
+	}
+	if offset <= 0 {
+		offset = -1
+	}
+	preload := true
+	nest := false
+	if len(preloadL) > 0 {
+		preload = preloadL[0]
+	}
+	if len(preloadL) > 1 {
+		nest = preloadL[1]
+	}
+	var users []model.User
+	res := DB.WithContext(ctx).Model(&model.User{})
+	if !all {
+		res = res.Where("hidden = ? AND banned = ?", false, false)
+	}
+	if preload {
+		if nest {
+			res = res.Preload("Teams.Users").Preload("Contests.Users").Preload("Contests.Teams")
+		}
+		res = res.Preload(clause.Associations)
+	}
+	if res = res.Limit(limit).Offset(offset).Find(&users); res.Error != nil {
+		log.Logger.Errorf("Failed to get users: %s", res.Error.Error())
+		return nil, 0, false, "GetUsersError"
+	}
+	return users, len(users), true, "Success"
+
 }

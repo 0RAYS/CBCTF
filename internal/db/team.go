@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
-	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -30,8 +29,6 @@ func CreateTeam(ctx context.Context, name string, captainID uint, contestID uint
 
 // GetTeamByID 根据 ID 获取 model.Team
 func GetTeamByID(ctx context.Context, id uint, preloadL ...bool) (model.Team, bool, string) {
-	var team model.Team
-	var res *gorm.DB
 	preload := true
 	nest := false
 	if len(preloadL) > 0 {
@@ -40,18 +37,15 @@ func GetTeamByID(ctx context.Context, id uint, preloadL ...bool) (model.Team, bo
 	if len(preloadL) > 1 {
 		nest = preloadL[1]
 	}
+	var team model.Team
+	res := DB.WithContext(ctx).Model(&model.Team{}).Where("id = ?", id)
 	if preload {
 		if nest {
-			res = DB.WithContext(ctx).Model(&model.Team{}).Where("id = ?", id).
-				Preload("Users.Teams").Preload("Users.Contests").Preload(clause.Associations).
-				Find(&team).Limit(1)
-		} else {
-			res = DB.WithContext(ctx).Model(&model.Team{}).Where("id = ?", id).Preload(clause.Associations).
-				Find(&team).Limit(1)
+			res = res.Preload("Users.Teams").Preload("Users.Contests")
 		}
-	} else {
-		res = DB.WithContext(ctx).Model(&model.Team{}).Where("id = ?", id).Find(&team).Limit(1)
+		res = res.Preload(clause.Associations)
 	}
+	res = res.Find(&team).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.Team{}, false, "TeamNotFound"
 	}
@@ -161,4 +155,38 @@ func LeaveTeam(ctx context.Context, userID uint, contestID uint, teamID uint) (b
 		return false, "DeleteTeamFromContestError"
 	}
 	return true, "Success"
+}
+
+func GetTeams(ctx context.Context, contestID uint, limit int, offset int, all bool, preloadL ...bool) ([]model.Team, int, bool, string) {
+	if limit <= 0 {
+		limit = -1
+	}
+	if offset <= 0 {
+		offset = -1
+	}
+	preload := true
+	nest := false
+	if len(preloadL) > 0 {
+		preload = preloadL[0]
+	}
+	if len(preloadL) > 1 {
+		nest = preloadL[1]
+	}
+	var teams []model.Team
+	res := DB.WithContext(ctx).Model(&model.Team{ContestID: contestID})
+	if !all {
+		res = res.Where("hidden = ? AND banned = ?", false, false)
+	}
+	if preload {
+		if nest {
+			res = res.Preload("Users.Teams").Preload("Users.Contests")
+		}
+		res = res.Preload(clause.Associations)
+	}
+	if res = res.Limit(limit).Offset(offset).Find(&teams); res.Error != nil {
+		log.Logger.Warningf("Failed to get teams: %s", res.Error.Error())
+		return nil, 0, false, "UnknownError"
+	}
+	return teams, len(teams), true, "Success"
+
 }

@@ -39,8 +39,8 @@ func TestCreateUser(t *testing.T) {
 	if _, ok, _ := CreateAdmin(ctx, "user1", "password", "test@0rays.club"); !ok {
 		t.Fatalf("Failed to create admin which name is duplicated with user")
 	}
-	if _, ok, _ := CreateAdmin(ctx, "test", "password", "user1@0rays.club"); !ok {
-		t.Fatalf("Failed to create admin which email is duplicated with user")
+	if _, ok, _ := CreateAdmin(ctx, "test", "password", "user1@0rays.club"); ok {
+		t.Fatalf("Should not create admin which email is duplicated with user")
 	}
 	if user1, _, _ := GetUserByID(ctx, 1); user1.Password == "password" {
 		t.Fatalf("Failed to hash password")
@@ -125,5 +125,21 @@ func TestDeleteUser(t *testing.T) {
 		t.Fatalf("Should not find association between contest and team")
 	}
 	log.Logger.Debug(tmp)
+}
 
+func TestGetUsers(t *testing.T) {
+	InitUserTest()
+	test, _, _ := CreateUser(context.Background(), "test", "password", "test@0rays.club")
+	_, _ = UpdateUser(context.Background(), test.ID, map[string]interface{}{"hidden": true})
+	var ctx context.Context
+	users, count, ok, msg := GetUsers(ctx, 0, 0, true)
+	log.Logger.Info(users, count, ok, msg)
+	if count != 2 {
+		t.Fatalf("Failed to get all users")
+	}
+	users, count, ok, msg = GetUsers(ctx, 0, 0, false)
+	log.Logger.Info(users, count, ok, msg)
+	if count != 1 {
+		t.Fatalf("Failed to filter hidden users")
+	}
 }

@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
-	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -24,8 +23,6 @@ func CreateContest(ctx context.Context, name string) (model.Contest, bool, strin
 
 // GetContestByID 根据 ID 获取 model.Contest
 func GetContestByID(ctx context.Context, id uint, preloadL ...bool) (model.Contest, bool, string) {
-	var contest model.Contest
-	var res *gorm.DB
 	preload := true
 	nest := false
 	if len(preloadL) > 0 {
@@ -34,18 +31,15 @@ func GetContestByID(ctx context.Context, id uint, preloadL ...bool) (model.Conte
 	if len(preloadL) > 1 {
 		nest = preloadL[1]
 	}
+	var contest model.Contest
+	res := DB.WithContext(ctx).Model(&model.Contest{}).Where("id = ?", id)
 	if preload {
 		if nest {
-			res = DB.WithContext(ctx).Model(&model.Contest{}).Where("id = ?", id).
-				Preload("Teams.Users").Preload("Users.Contests").Preload("Users.Teams").
-				Preload(clause.Associations).Find(&contest).Limit(1)
-		} else {
-			res = DB.WithContext(ctx).Model(&model.Contest{}).Where("id = ?", id).Preload(clause.Associations).
-				Find(&contest).Limit(1)
+			res = res.Preload("Teams.Users").Preload("Users.Contests").Preload("Users.Teams")
 		}
-	} else {
-		res = DB.WithContext(ctx).Model(&model.Contest{}).Where("id = ?", id).Find(&contest).Limit(1)
+		res = res.Preload(clause.Associations)
 	}
+	res = res.Find(&contest).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.Contest{}, false, "ContestNotFound"
 	}
@@ -79,4 +73,38 @@ func UpdateContest(ctx context.Context, id uint, updateData map[string]interface
 		return false, "UpdateError"
 	}
 	return true, "Success"
+}
+
+func GetContests(ctx context.Context, limit int, offset int, all bool, preloadL ...bool) ([]model.Contest, int, bool, string) {
+	if limit <= 0 {
+		limit = -1
+	}
+	if offset <= 0 {
+		offset = -1
+	}
+	preload := true
+	nest := false
+	if len(preloadL) > 0 {
+		preload = preloadL[0]
+	}
+	if len(preloadL) > 1 {
+		nest = preloadL[1]
+	}
+	var contests []model.Contest
+	res := DB.WithContext(ctx).Model(&model.Contest{})
+	if !all {
+		res = res.Where("hidden = ?", false)
+	}
+	if preload {
+		if nest {
+			res = res.Preload("Teams.Users").Preload("Users.Contests").Preload("Users.Teams")
+		}
+		res = res.Preload(clause.Associations)
+	}
+	if res = res.Limit(limit).Offset(offset).Find(&contests); res.Error != nil {
+		log.Logger.Errorf("Failed to get contests: %s", res.Error.Error())
+		return nil, 0, false, "UnknownError"
+	}
+	return contests, len(contests), true, "Success"
+
 }

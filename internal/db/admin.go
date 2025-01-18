@@ -97,3 +97,19 @@ func ChangePasswordAdmin(ctx context.Context, id uint, oldPassword string, newPa
 	}
 	return true, "Success"
 }
+
+func GetAdmins(ctx context.Context, limit int, offset int) ([]model.Admin, int, bool, string) {
+	if limit <= 0 {
+		limit = -1
+	}
+	if offset <= 0 {
+		offset = -1
+	}
+	var admins []model.Admin
+	res := DB.WithContext(ctx).Model(&model.Admin{}).Limit(limit).Offset(offset).Find(&admins)
+	if res.Error != nil {
+		log.Logger.Errorf("Failed to get admins: %s", res.Error.Error())
+		return nil, 0, false, "GetAdminsError"
+	}
+	return admins, len(admins), true, "Success"
+}
