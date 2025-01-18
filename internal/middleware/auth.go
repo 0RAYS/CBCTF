@@ -52,13 +52,14 @@ func CheckLogin(ctx *gin.Context) {
 	}
 }
 
-func CheckAdmin(ctx *gin.Context) {
-	trace := GetTraceID(ctx)
-	self, ok := ctx.Get("Self")
-	if !ok || self.(map[string]interface{})["Type"].(string) != "admin" {
-		ctx.JSON(http.StatusForbidden, gin.H{"trace": trace, "msg": "Forbidden"})
-		ctx.Abort()
-		return
+func CheckType(t string) func(ctx *gin.Context) {
+	return func(ctx *gin.Context) {
+		trace := GetTraceID(ctx)
+		self, ok := ctx.Get("Self")
+		if !ok || self.(map[string]interface{})["Type"].(string) != t {
+			ctx.JSON(http.StatusForbidden, gin.H{"trace": trace, "msg": "Forbidden"})
+			ctx.Abort()
+		}
+		ctx.Next()
 	}
-	ctx.Next()
 }
