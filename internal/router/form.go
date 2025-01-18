@@ -23,3 +23,16 @@ type UpdateForm struct {
 	Country *string `json:"country"`
 	Website *string `json:"website"`
 }
+
+type GetContestsForm struct {
+	Offset int `form:"offset"`
+	Limit  int `form:"limit"`
+}
+
+type GetUsersForm GetContestsForm
+
+type GetTeamsForm struct {
+	Offset    int  `form:"offset"`
+	Limit     int  `form:"limit"`
+	ContestID uint `form:"contest_id"`
+}
