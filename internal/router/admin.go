@@ -7,34 +7,26 @@ import (
 )
 
 func GetAdmin(ctx *gin.Context) {
-	self, ok := ctx.Get("Self")
-	if ok || self.(map[string]interface{})["Type"].(string) == "admin" {
-		admin, ok, msg := db.GetAdminByID(ctx, self.(map[string]interface{})["ID"].(uint))
-		if !ok {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
-		} else {
-			ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": admin})
-		}
+	self, _ := ctx.Get("Self")
+	admin, ok, msg := db.GetAdminByID(ctx, self.(map[string]interface{})["ID"].(uint))
+	if !ok {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
 	} else {
-		ctx.JSON(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": admin})
 	}
 }
 
 func AdminChangePassword(ctx *gin.Context) {
-	self, ok := ctx.Get("Self")
-	if ok || self.(map[string]interface{})["Type"].(string) == "admin" {
-		var form ChangePasswordForm
-		if err := ctx.ShouldBindJSON(&form); err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
-			return
-		}
-		ok, msg := db.ChangePasswordAdmin(ctx, self.(map[string]interface{})["ID"].(uint), form.OldPassword, form.NewPassword)
-		if !ok {
-			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		} else {
-			ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
-		}
+	self, _ := ctx.Get("Self")
+	var form ChangePasswordForm
+	if err := ctx.ShouldBindJSON(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	ok, msg := db.ChangePasswordAdmin(ctx, self.(map[string]interface{})["ID"].(uint), form.OldPassword, form.NewPassword)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 	} else {
-		ctx.JSON(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
 	}
 }
