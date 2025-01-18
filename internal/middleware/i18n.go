@@ -59,7 +59,7 @@ type Data struct {
 	Trace string `json:"trace"`
 }
 
-func I18n() gin.HandlerFunc {
+func I18n() func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		w := &i18nResponseWriter{
 			ResponseWriter: ctx.Writer,
