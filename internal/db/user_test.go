@@ -134,12 +134,12 @@ func TestGetUsers(t *testing.T) {
 	var ctx context.Context
 	users, count, ok, msg := GetUsers(ctx, 0, 0, true)
 	log.Logger.Info(users, count, ok, msg)
-	if count != 2 {
+	if len(users) != 2 {
 		t.Fatalf("Failed to get all users")
 	}
 	users, count, ok, msg = GetUsers(ctx, 0, 0, false)
 	log.Logger.Info(users, count, ok, msg)
-	if count != 1 {
+	if len(users) != 1 {
 		t.Fatalf("Failed to filter hidden users")
 	}
 }

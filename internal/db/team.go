@@ -157,7 +157,7 @@ func LeaveTeam(ctx context.Context, userID uint, contestID uint, teamID uint) (b
 	return true, "Success"
 }
 
-func GetTeams(ctx context.Context, contestID uint, limit int, offset int, all bool, preloadL ...bool) ([]model.Team, int, bool, string) {
+func GetTeams(ctx context.Context, contestID uint, limit int, offset int, all bool, preloadL ...bool) ([]model.Team, int64, bool, string) {
 	if limit <= 0 {
 		limit = -1
 	}
@@ -173,9 +173,14 @@ func GetTeams(ctx context.Context, contestID uint, limit int, offset int, all bo
 		nest = preloadL[1]
 	}
 	var teams []model.Team
+	var count int64
 	res := DB.WithContext(ctx).Model(&model.Team{ContestID: contestID})
 	if !all {
 		res = res.Where("hidden = ? AND banned = ?", false, false)
+	}
+	if res.Count(&count).Error != nil {
+		log.Logger.Errorf("Failed to get contest count: %s", res.Error.Error())
+		return nil, 0, false, "UnknownError"
 	}
 	if preload {
 		if nest {
@@ -187,6 +192,6 @@ func GetTeams(ctx context.Context, contestID uint, limit int, offset int, all bo
 		log.Logger.Warningf("Failed to get teams: %s", res.Error.Error())
 		return nil, 0, false, "UnknownError"
 	}
-	return teams, len(teams), true, "Success"
+	return teams, count, true, "Success"
 
 }

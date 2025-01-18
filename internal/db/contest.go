@@ -75,7 +75,7 @@ func UpdateContest(ctx context.Context, id uint, updateData map[string]interface
 	return true, "Success"
 }
 
-func GetContests(ctx context.Context, limit int, offset int, all bool, preloadL ...bool) ([]model.Contest, int, bool, string) {
+func GetContests(ctx context.Context, limit int, offset int, all bool, preloadL ...bool) ([]model.Contest, int64, bool, string) {
 	if limit <= 0 {
 		limit = -1
 	}
@@ -91,9 +91,14 @@ func GetContests(ctx context.Context, limit int, offset int, all bool, preloadL 
 		nest = preloadL[1]
 	}
 	var contests []model.Contest
+	var count int64
 	res := DB.WithContext(ctx).Model(&model.Contest{})
 	if !all {
 		res = res.Where("hidden = ?", false)
+	}
+	if res.Count(&count).Error != nil {
+		log.Logger.Errorf("Failed to get contest count: %s", res.Error.Error())
+		return nil, 0, false, "UnknownError"
 	}
 	if preload {
 		if nest {
@@ -105,6 +110,6 @@ func GetContests(ctx context.Context, limit int, offset int, all bool, preloadL 
 		log.Logger.Errorf("Failed to get contests: %s", res.Error.Error())
 		return nil, 0, false, "UnknownError"
 	}
-	return contests, len(contests), true, "Success"
+	return contests, count, true, "Success"
 
 }
