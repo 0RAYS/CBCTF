@@ -36,6 +36,7 @@ var resp = map[string]map[string]interface{}{
 	"TeamSizeIsLess":        {"zh-CN": "队伍最大人数不可减少", "en-EN": "Team size cannot be reduced", "code": 400},
 	"Unauthorized":          {"zh-CN": "未登录", "en-EN": "Unauthorized", "code": 401},
 	"UnknownError":          {"zh-CN": "未知错误，请联系管理员", "en-EN": "UnknownError, please contact the administrator", "code": 500},
+	"UnverifiedEmail":       {"zh-CN": "邮箱未验证", "en-EN": "Email not verified", "code": 403},
 	"UploadFileError":       {"zh-CN": "文件上传失败", "en-EN": "File upload failed", "code": 500},
 	"UserNameExists":        {"zh-CN": "用户名已被占用", "en-EN": "Username already taken", "code": 400},
 	"UserNotFound":          {"zh-CN": "用户不存在", "en-EN": "User not found", "code": 404},
@@ -70,10 +71,11 @@ func I18n() func(ctx *gin.Context) {
 		ctx.Next()
 
 		var result Data
+		old := w.body.String()
 
-		err := json.Unmarshal([]byte(w.body.String()), &result)
+		err := json.Unmarshal([]byte(old), &result)
 		if err != nil {
-			log.Logger.Errorf("Rewrite response error: %v", err)
+			_, _ = w.ResponseWriter.Write([]byte(old))
 			return
 		}
 		result.Code = resp[result.Msg]["code"].(int)
