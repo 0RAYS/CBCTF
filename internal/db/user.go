@@ -119,7 +119,7 @@ func ChangePasswordUser(ctx context.Context, id uint, oldPassword string, newPas
 	return true, "Success"
 }
 
-func GetUsers(ctx context.Context, limit int, offset int, all bool, preloadL ...bool) ([]model.User, int, bool, string) {
+func GetUsers(ctx context.Context, limit int, offset int, all bool, preloadL ...bool) ([]model.User, int64, bool, string) {
 	if limit <= 0 {
 		limit = -1
 	}
@@ -135,9 +135,14 @@ func GetUsers(ctx context.Context, limit int, offset int, all bool, preloadL ...
 		nest = preloadL[1]
 	}
 	var users []model.User
+	var count int64
 	res := DB.WithContext(ctx).Model(&model.User{})
 	if !all {
 		res = res.Where("hidden = ? AND banned = ?", false, false)
+	}
+	if res.Count(&count).Error != nil {
+		log.Logger.Errorf("Failed to get contest count: %s", res.Error.Error())
+		return nil, 0, false, "UnknownError"
 	}
 	if preload {
 		if nest {
@@ -149,6 +154,6 @@ func GetUsers(ctx context.Context, limit int, offset int, all bool, preloadL ...
 		log.Logger.Errorf("Failed to get users: %s", res.Error.Error())
 		return nil, 0, false, "GetUsersError"
 	}
-	return users, len(users), true, "Success"
+	return users, count, true, "Success"
 
 }
