@@ -66,6 +66,34 @@ func UpdateAdmin(ctx *gin.Context) {
 	}
 }
 
+func CreateUser(ctx *gin.Context) {
+	var form RegisterForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	user, ok, msg := db.CreateUser(ctx, form.Name, form.Password, form.Email)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": user})
+}
+
+func GetUsers(ctx *gin.Context) {
+	var form GetModelsForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	users, count, ok, msg := db.GetUsers(ctx, form.Limit, form.Offset, true)
+	if !ok {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"count": count, "users": users}})
+}
+
 func UpdateUser(ctx *gin.Context) {
 	var form UpdateUserForm
 	type userIDUri struct {
@@ -108,4 +136,48 @@ func UpdateUser(ctx *gin.Context) {
 	} else {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
 	}
+}
+
+func GetContestTeams(ctx *gin.Context) {
+	var form GetModelsForm
+	self, _ := ctx.Get("Self")
+	all := false
+	type contestIDUri struct {
+		ContestID uint `uri:"contestID" binding:"required"`
+	}
+	var uri contestIDUri
+	if self.(map[string]interface{})["Type"].(string) == "admin" {
+		all = true
+	}
+	if err := ctx.ShouldBindUri(&uri); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	teams, count, ok, msg := db.GetTeams(ctx, uri.ContestID, form.Limit, form.Offset, all)
+	if !ok {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"count": count, "teams": teams}})
+}
+
+func GetTeamUsers(ctx *gin.Context) {
+	type teamIDUri struct {
+		TeamID uint `uri:"teamID" binding:"required"`
+	}
+	var uri teamIDUri
+	if err := ctx.ShouldBindUri(&uri); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	team, ok, msg := db.GetTeamByID(ctx, uri.TeamID, true)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": team.Users})
 }
