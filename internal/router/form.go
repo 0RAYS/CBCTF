@@ -16,12 +16,17 @@ type ChangePasswordForm struct {
 	NewPassword string `json:"newPassword" binding:"required"`
 }
 
-type UpdateForm struct {
+type UserUpdateForm struct {
 	Name    *string `json:"name"`
 	Email   *string `json:"email"`
 	Desc    *string `json:"desc"`
 	Country *string `json:"country"`
 	Website *string `json:"website"`
+}
+
+type AdminUpdateForm struct {
+	Name  *string `json:"name"`
+	Email *string `json:"email"`
 }
 
 type GetContestsForm struct {

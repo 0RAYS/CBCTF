@@ -27,6 +27,8 @@ func Init() *gin.Engine {
 	admin := router.Group("/admin", middleware.CheckLogin, middleware.CheckType("admin"))
 	admin.GET("/info", GetAdmin)
 	admin.PUT("/password", AdminChangePassword)
+	admin.PUT("/update", UpdateAdmin)
+
 	adminUser := admin.Group("/user")
 	adminUser.GET("/list", GetUsers)
 
