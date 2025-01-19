@@ -18,19 +18,20 @@ func Init() *gin.Engine {
 
 	user := router.Group("/user", middleware.CheckLogin, middleware.CheckType("user"))
 	user.GET("/info", GetUser)
-	user.PUT("/password", ChangePassword)
-	user.PUT("/update", UpdateUser)
+	user.POST("/password", ChangePassword)
+	user.POST("/update", UpdateSelf)
 
 	contest := router.Group("/contest", middleware.CheckLogin)
 	contest.GET("/list", GetContests)
 
 	admin := router.Group("/admin", middleware.CheckLogin, middleware.CheckType("admin"))
 	admin.GET("/info", GetAdmin)
-	admin.PUT("/password", AdminChangePassword)
-	admin.PUT("/update", UpdateAdmin)
+	admin.POST("/password", AdminChangePassword)
+	admin.POST("/update", UpdateAdmin)
 
 	adminUser := admin.Group("/user")
 	adminUser.GET("/list", GetUsers)
+	adminUser.POST("/:userID/update", UpdateUser)
 
 	adminContest := admin.Group("/contest")
 	adminContest.GET("/list", GetContests)

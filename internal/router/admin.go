@@ -35,7 +35,7 @@ func AdminChangePassword(ctx *gin.Context) {
 
 func UpdateAdmin(ctx *gin.Context) {
 	self, _ := ctx.Get("Self")
-	var form AdminUpdateForm
+	var form UpdateAdminForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
@@ -59,6 +59,50 @@ func UpdateAdmin(ctx *gin.Context) {
 		return
 	}
 	ok, msg = db.UpdateAdmin(ctx, admin.ID, data)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	} else {
+		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
+	}
+}
+
+func UpdateUser(ctx *gin.Context) {
+	var form UpdateUserForm
+	type userIDUri struct {
+		UserID uint `uri:"userID" binding:"required"`
+	}
+	var uri userIDUri
+	if err := ctx.ShouldBindUri(&uri); err != nil {
+		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	if err := ctx.ShouldBindJSON(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	user, ok, msg := db.GetUserByID(ctx, uri.UserID, false)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	data := utils.Form2Map(form)
+	if user.Email != data["email"].(string) {
+		if !db.IsUniqueEmail(data["email"].(string)) {
+			ctx.JSON(http.StatusOK, gin.H{"msg": "EmailExists", "data": nil})
+			return
+		}
+		db.UpdateUser(ctx, user.ID, map[string]interface{}{"verified": false})
+	}
+	if user.Name != data["name"].(string) && !db.IsUniqueName(data["name"].(string), model.User{}) {
+		ctx.JSON(http.StatusOK, gin.H{"msg": "UserNameExists", "data": nil})
+		return
+	}
+	if data["password"] != "" {
+		data["password"] = utils.HashPassword(data["password"].(string))
+	} else {
+		data["password"] = user.Password
+	}
+	ok, msg = db.UpdateUser(ctx, user.ID, data)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 	} else {
