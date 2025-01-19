@@ -49,7 +49,7 @@ func ChangePassword(ctx *gin.Context) {
 
 func UpdateUser(ctx *gin.Context) {
 	self, _ := ctx.Get("Self")
-	var form UpdateForm
+	var form UserUpdateForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
@@ -65,16 +65,16 @@ func UpdateUser(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": "EmailExists", "data": nil})
 			return
 		}
-		db.UpdateUser(ctx, self.(map[string]interface{})["ID"].(uint), map[string]interface{}{"verified": false})
+		db.UpdateUser(ctx, user.ID, map[string]interface{}{"verified": false})
 	}
 	if user.Name != data["name"].(string) && !db.IsUniqueName(data["name"].(string), model.User{}) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "UserNameExists", "data": nil})
 		return
 	}
-	ok, msg = db.UpdateUser(ctx, self.(map[string]interface{})["ID"].(uint), data)
+	ok, msg = db.UpdateUser(ctx, user.ID, data)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 	} else {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
 	}
 }
