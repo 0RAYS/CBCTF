@@ -47,9 +47,9 @@ func ChangePassword(ctx *gin.Context) {
 	}
 }
 
-func UpdateUser(ctx *gin.Context) {
+func UpdateSelf(ctx *gin.Context) {
 	self, _ := ctx.Get("Self")
-	var form UserUpdateForm
+	var form UpdateSelfForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
