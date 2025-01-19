@@ -41,10 +41,6 @@ func Parse(t string) (*Claims, error) {
 		return []byte(secret), nil
 	})
 	switch {
-	case token.Valid:
-		if claims, ok := token.Claims.(*Claims); ok {
-			return claims, nil
-		}
 	case errors.Is(err, jwt.ErrTokenMalformed):
 		err = errors.New("that's not even a token")
 	case errors.Is(err, jwt.ErrTokenSignatureInvalid):
@@ -53,6 +49,10 @@ func Parse(t string) (*Claims, error) {
 	case errors.Is(err, jwt.ErrTokenExpired) || errors.Is(err, jwt.ErrTokenNotValidYet):
 		// Token is either expired or not active yet
 		err = errors.New("invalid signature")
+	case token.Valid:
+		if claims, ok := token.Claims.(*Claims); ok {
+			return claims, nil
+		}
 	default:
 		err = errors.New("couldn't handle this token")
 	}
