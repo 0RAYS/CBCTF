@@ -23,6 +23,7 @@ func Init() *gin.Engine {
 
 	contest := router.Group("/contest", middleware.CheckLogin)
 	contest.GET("/list", GetContests)
+	contest.GET("/:contestID/team/list", GetContestTeams)
 
 	admin := router.Group("/admin", middleware.CheckLogin, middleware.CheckType("admin"))
 	admin.GET("/info", GetAdmin)
@@ -31,10 +32,21 @@ func Init() *gin.Engine {
 
 	adminUser := admin.Group("/user")
 	adminUser.GET("/list", GetUsers)
+	adminUser.POST("/create", CreateUser)
 	adminUser.POST("/:userID/update", UpdateUser)
 
 	adminContest := admin.Group("/contest")
 	adminContest.GET("/list", GetContests)
+	adminContest.GET("/:contestID", GetContest)
+
+	adminContestTeam := adminContest.Group("/:contestID/team")
+	adminContestTeam.GET("/list", GetContestTeams)
+	adminContestTeam.POST("/:teamID/update", UpdateTeam)
+
+	adminContestTeamUser := adminContestTeam.Group("/:teamID/user")
+	adminContestTeamUser.GET("/list", GetTeamUsers)
+	adminContestTeamUser.POST("/:userID/delete", KickMember)
+
 	//adminContest.POST("/create", CreateContest)
 	//adminContest.PUT("/update", UpdateContest)
 	//adminContest.DELETE("/delete", DeleteContest)

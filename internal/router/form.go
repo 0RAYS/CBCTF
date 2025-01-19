@@ -41,15 +41,16 @@ type UpdateUserForm struct {
 	Verified *bool   `json:"verified"`
 }
 
-type GetContestsForm struct {
-	Offset int `form:"offset"`
-	Limit  int `form:"limit"`
+type UpdateTeamForm struct {
+	Name      *string `json:"name"`
+	Desc      *string `json:"desc"`
+	Hidden    *bool   `json:"hidden"`
+	Banned    *bool   `json:"banned"`
+	Captcha   *string `json:"captcha"`
+	CaptainID *uint   `json:"captain_id"`
 }
 
-type GetUsersForm GetContestsForm
-
-type GetTeamsForm struct {
-	Offset    int  `form:"offset"`
-	Limit     int  `form:"limit"`
-	ContestID uint `form:"contest_id"`
+type GetModelsForm struct {
+	Offset int `form:"offset"`
+	Limit  int `form:"limit"`
 }

@@ -18,20 +18,6 @@ func GetUser(ctx *gin.Context) {
 	}
 }
 
-func GetUsers(ctx *gin.Context) {
-	var form GetUsersForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
-		return
-	}
-	users, count, ok, msg := db.GetUsers(ctx, form.Limit, form.Offset, true)
-	if !ok {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"count": count, "users": users}})
-}
-
 func ChangePassword(ctx *gin.Context) {
 	self, _ := ctx.Get("Self")
 	var form ChangePasswordForm
