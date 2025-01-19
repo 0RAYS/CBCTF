@@ -174,7 +174,7 @@ func GetTeams(ctx context.Context, contestID uint, limit int, offset int, all bo
 	}
 	var teams []model.Team
 	var count int64
-	res := DB.WithContext(ctx).Model(&model.Team{ContestID: contestID})
+	res := DB.WithContext(ctx).Model(&model.Team{}).Where("contest_id = ?", contestID)
 	if !all {
 		res = res.Where("hidden = ? AND banned = ?", false, false)
 	}
