@@ -106,7 +106,7 @@ func GetContests(ctx context.Context, limit int, offset int, all bool, preloadL 
 		}
 		res = res.Preload(clause.Associations)
 	}
-	if res = res.Limit(limit).Offset(offset).Find(&contests); res.Error != nil {
+	if res = res.Order("Start desc").Limit(limit).Offset(offset).Find(&contests); res.Error != nil {
 		log.Logger.Errorf("Failed to get contests: %s", res.Error.Error())
 		return nil, 0, false, "UnknownError"
 	}

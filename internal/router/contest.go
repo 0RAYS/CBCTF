@@ -11,7 +11,7 @@ import (
 func GetContest(ctx *gin.Context) {
 	contest, ok, msg := db.GetContestByID(ctx, middleware.GetContestID(ctx))
 	if !ok {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": contest})
@@ -29,7 +29,7 @@ func GetContests(ctx *gin.Context) {
 	}
 	contests, count, ok, msg := db.GetContests(ctx, form.Limit, form.Offset, all)
 	if !ok {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "contests": contests}})
@@ -43,7 +43,7 @@ func CreateContest(ctx *gin.Context) {
 	}
 	contest, ok, msg := db.CreateContest(ctx, form.Name)
 	if !ok {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": contest})
@@ -57,7 +57,7 @@ func UpdateContest(ctx *gin.Context) {
 	}
 	contest, ok, msg := db.GetContestByID(ctx, middleware.GetContestID(ctx))
 	if !ok {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	data := utils.Form2Map(form)
