@@ -15,35 +15,35 @@ import (
 	"time"
 )
 
-func Upload(ctx *gin.Context) {
-	form, err := ctx.MultipartForm()
-	if err != nil || len(form.File["files"]) == 0 {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
-		return
-	}
-	basePath := config.Env.GetString("upload.path")
-	allowed := []string{".png", ".jpg", ".jpeg", ".zip", ".rar", ".gz", ".tar", ".7z"}
-	var records []model.File
-	for _, file := range form.File["files"] {
-		suffix := strings.ToLower(p.Ext(file.Filename))
-		if !utils.In(suffix, allowed) {
-			ctx.JSON(http.StatusForbidden, gin.H{"msg": "FileNotAllowed", "data": file.Filename})
-			return
-		}
-		path := fmt.Sprintf("%s/%s/%s%s", basePath, time.Now().Format("2006-01-02"), utils.RandomString(), suffix)
-		if err = ctx.SaveUploadedFile(file, path); err != nil {
-			ctx.JSONP(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
-			return
-		}
-		record, ok, msg := db.RecordFile(ctx, path, middleware.GetSelfID(ctx), middleware.GetRole(ctx) == "admin", file)
-		if !ok {
-			ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
-			return
-		}
-		records = append(records, record)
-	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"count": len(records), "records": records}})
-}
+//func Upload(ctx *gin.Context) {
+//	form, err := ctx.MultipartForm()
+//	if err != nil || len(form.File["files"]) == 0 {
+//		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+//		return
+//	}
+//	basePath := config.Env.GetString("upload.path")
+//	allowed := []string{".png", ".jpg", ".jpeg", ".zip", ".rar", ".gz", ".tar", ".7z"}
+//	var records []model.File
+//	for _, file := range form.File["files"] {
+//		suffix := strings.ToLower(p.Ext(file.Filename))
+//		if !utils.In(suffix, allowed) {
+//			ctx.JSON(http.StatusForbidden, gin.H{"msg": "FileNotAllowed", "data": file.Filename})
+//			return
+//		}
+//		path := fmt.Sprintf("%s/%s/%s%s", basePath, time.Now().Format("2006-01-02"), utils.RandomString(), suffix)
+//		if err = ctx.SaveUploadedFile(file, path); err != nil {
+//			ctx.JSONP(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
+//			return
+//		}
+//		record, ok, msg := db.RecordFile(ctx, path, middleware.GetSelfID(ctx), file)
+//		if !ok {
+//			ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+//			return
+//		}
+//		records = append(records, record)
+//	}
+//	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"count": len(records), "records": records}})
+//}
 
 func Download(ctx *gin.Context) {
 	file, ok, msg := db.GetFile(ctx, middleware.GetFileID(ctx))
@@ -80,7 +80,7 @@ func Avatar(v interface{}) func(ctx *gin.Context) {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
 			return
 		}
-		record, ok, msg := db.RecordFile(ctx, path, middleware.GetSelfID(ctx), middleware.GetRole(ctx) == "admin", file)
+		record, ok, msg := db.RecordFile(ctx, path, middleware.GetSelfID(ctx), file, false)
 		if !ok {
 			ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
