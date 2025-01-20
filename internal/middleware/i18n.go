@@ -44,6 +44,7 @@ var resp = map[string]map[string]interface{}{
 	"UserNotInTeam":         {"zh-CN": "用户不在队伍中", "en-US": "User is not in the team", "code": 400},
 	"ContestNameExists":     {"zh-CN": "赛事名已被占用", "en-US": "Contest name already taken", "code": 400},
 	"ContestNotFound":       {"zh-CN": "赛事不存在", "en-US": "Contest not found", "code": 404},
+	"TooManyRequests":       {"zh-CN": "请求过于频繁", "en-US": "Too many requests", "code": 429},
 }
 
 type i18nResponseWriter struct {
