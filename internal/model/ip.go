@@ -6,7 +6,7 @@ import (
 )
 
 type IP struct {
-	ID        uint           `gorm:"primaryKey"`
+	ID        uint           `gorm:"primaryKey" json:"id"`
 	IP        string         `gorm:"size:45;not null" json:"ip"`
 	Time      time.Time      `gorm:"not null" json:"time"`
 	Method    string         `gorm:"size:10;not null" json:"method"`

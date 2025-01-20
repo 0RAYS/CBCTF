@@ -7,7 +7,7 @@ import (
 )
 
 type Contest struct {
-	ID        uint           `gorm:"primarykey"`
+	ID        uint           `gorm:"primarykey" json:"id"`
 	Name      string         `gorm:"unique;not null" json:"name"`
 	Desc      string         `json:"desc"`
 	Captcha   string         `json:"-"`
