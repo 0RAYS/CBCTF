@@ -58,6 +58,10 @@ func CheckLogin(ctx *gin.Context) {
 		ctx.Set("Self", user)
 		ctx.Next()
 		return
+	} else {
+		ctx.JSON(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
+		ctx.Abort()
+		return
 	}
 }
 
@@ -127,7 +131,7 @@ func CheckCaptain(ctx *gin.Context) {
 func CheckVerified(ctx *gin.Context) {
 	verified, ok := ctx.Get("Verified")
 	if !ok || !verified.(bool) {
-		ctx.JSON(http.StatusForbidden, gin.H{"msg": "UnverifiedEmail", "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": "UnverifiedEmail", "data": nil})
 		ctx.Abort()
 	}
 	ctx.Next()
