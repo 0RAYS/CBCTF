@@ -191,10 +191,6 @@ func LeaveTeam(ctx context.Context, userID uint, contestID uint, teamID uint) (b
 		log.Logger.Warningf("Failed to delete user_team: " + err.Error())
 		return false, "DeleteUserFromTeamError"
 	}
-	if err := DeleteTeamFromContest(ctx, team, contest); err != nil {
-		log.Logger.Warningf("Failed to delete contest_team: " + err.Error())
-		return false, "DeleteTeamFromContestError"
-	}
 	return true, "Success"
 }
 
