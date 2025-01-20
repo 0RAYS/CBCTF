@@ -127,7 +127,7 @@ func GetUsers(ctx *gin.Context) {
 	}
 	users, count, ok, msg := db.GetUsers(ctx, form.Limit, form.Offset, true)
 	if !ok {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "users": users}})
