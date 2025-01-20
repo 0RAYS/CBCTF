@@ -33,7 +33,7 @@ var resp = map[string]map[string]interface{}{
 	"TeamIsFull":            {"zh-CN": "队伍人数已满", "en-EN": "Team is full", "code": 400},
 	"TeamNameExists":        {"zh-CN": "队伍名已被占用", "en-EN": "Team name already taken", "code": 400},
 	"TeamNotFound":          {"zh-CN": "队伍不存在", "en-EN": "Team not found", "code": 404},
-	"TeamSizeIsLess":        {"zh-CN": "队伍最大人数不可减少", "en-EN": "Team size cannot be reduced", "code": 400},
+	"TeamFull":              {"zh-CN": "队伍已满", "en-EN": "Team is full", "code": 400},
 	"Unauthorized":          {"zh-CN": "未登录", "en-EN": "Unauthorized", "code": 401},
 	"UnknownError":          {"zh-CN": "未知错误，请联系管理员", "en-EN": "UnknownError, please contact the administrator", "code": 500},
 	"UnverifiedEmail":       {"zh-CN": "邮箱未验证", "en-EN": "Email not verified", "code": 403},

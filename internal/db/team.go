@@ -52,6 +52,44 @@ func GetTeamByID(ctx context.Context, id uint, preloadL ...bool) (model.Team, bo
 	return team, true, "Success"
 }
 
+func GetTeamByName(ctx context.Context, name string, contestID uint, preloadL ...bool) (model.Team, bool, string) {
+	preload := true
+	nest := false
+	if len(preloadL) > 0 {
+		preload = preloadL[0]
+	}
+	if len(preloadL) > 1 {
+		nest = preloadL[1]
+	}
+	var team model.Team
+	res := DB.WithContext(ctx).Model(&model.Team{}).Where("name = ? AND contest_id = ?", name, contestID)
+	if preload {
+		if nest {
+			res = res.Preload("Users.Teams").Preload("Users.Contests")
+		}
+		res = res.Preload(clause.Associations)
+	}
+	res = res.Find(&team).Limit(1)
+	if res.RowsAffected != 1 {
+		return model.Team{}, false, "TeamNotFound"
+	}
+	return team, true, "Success"
+}
+
+// GetTeamByUserID 根据 UserID 获取 model.Team, 结果等同于 GetTeam preload = true, nest = false
+func GetTeamByUserID(ctx context.Context, userID uint, contestID uint) (model.Team, bool, string) {
+	user, ok, msg := GetUserByID(ctx, userID, true, true)
+	if !ok {
+		return model.Team{}, false, msg
+	}
+	for _, team := range user.Teams {
+		if team.ContestID == contestID {
+			return *team, true, "Success"
+		}
+	}
+	return model.Team{}, false, "UserNotInTeam"
+}
+
 // DeleteTeam 根据 id 删除 model.Team, 同时删除与 model.User, model.Contest 的关联
 func DeleteTeam(ctx context.Context, id uint) (bool, string) {
 	team, ok, msg := GetTeamByID(ctx, id, true)
@@ -100,9 +138,12 @@ func JoinTeam(ctx context.Context, userID uint, contestID uint, teamID uint) (bo
 	if !ok {
 		return false, msg
 	}
-	team, ok, msg := GetTeamByID(ctx, teamID, false)
+	team, ok, msg := GetTeamByID(ctx, teamID, true)
 	if !ok {
 		return false, msg
+	}
+	if len(team.Users)+1 >= contest.Size {
+		return false, "TeamFull"
 	}
 	// 关联 Team User Many2Many
 	if err := AppendUserToTeam(ctx, user, team); err != nil {

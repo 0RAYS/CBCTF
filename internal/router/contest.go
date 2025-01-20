@@ -2,32 +2,25 @@ package router
 
 import (
 	"CBCTF/internal/db"
+	"CBCTF/internal/middleware"
+	"CBCTF/internal/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 func GetContest(ctx *gin.Context) {
-	type contestIDUri struct {
-		ContestID uint `uri:"contestID" binding:"required"`
-	}
-	var uri contestIDUri
-	if err := ctx.ShouldBindUri(&uri); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
-		return
-	}
-	contest, ok, msg := db.GetContestByID(ctx, uri.ContestID)
+	contest, ok, msg := db.GetContestByID(ctx, middleware.GetContestID(ctx))
 	if !ok {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": contest})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": contest})
 }
 
 func GetContests(ctx *gin.Context) {
 	var form GetModelsForm
-	self, _ := ctx.Get("Self")
 	all := false
-	if self.(map[string]interface{})["Type"].(string) == "admin" {
+	if middleware.GetRole(ctx) == "admin" {
 		all = true
 	}
 	if err := ctx.ShouldBind(&form); err != nil {
@@ -39,5 +32,44 @@ func GetContests(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"count": count, "contests": contests}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "contests": contests}})
+}
+
+func CreateContest(ctx *gin.Context) {
+	var form CreateContestForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	contest, ok, msg := db.CreateContest(ctx, form.Name)
+	if !ok {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": contest})
+}
+
+func UpdateContest(ctx *gin.Context) {
+	var form UpdateContestForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	contest, ok, msg := db.GetContestByID(ctx, middleware.GetContestID(ctx))
+	if !ok {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	data := utils.Form2Map(form)
+	if data["name"].(string) != contest.Name && !db.IsUniqueTeamName(data["name"].(string), contest.ID) {
+		ctx.JSON(http.StatusOK, gin.H{"msg": "ContestNameExists", "data": nil})
+		return
+	}
+	_, msg = db.UpdateContest(ctx, contest.ID, data)
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}
+
+func DeleteContest(ctx *gin.Context) {
+	_, msg := db.DeleteContest(ctx, middleware.GetContestID(ctx))
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
