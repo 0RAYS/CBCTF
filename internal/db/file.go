@@ -8,8 +8,8 @@ import (
 )
 
 // RecordFile 添加文件记录
-func RecordFile(ctx context.Context, path string, uploader uint, admin bool, fileHeader *multipart.FileHeader) (model.File, bool, string) {
-	file := model.InitFile(path, uploader, admin, fileHeader)
+func RecordFile(ctx context.Context, path string, uploader uint, fileHeader *multipart.FileHeader, challenge bool) (model.File, bool, string) {
+	file := model.InitFile(path, uploader, fileHeader, challenge)
 	res := DB.WithContext(ctx).Model(model.File{}).Create(&file)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to record file: %v", res.Error)

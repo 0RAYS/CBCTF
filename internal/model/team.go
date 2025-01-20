@@ -7,7 +7,7 @@ import (
 )
 
 type Team struct {
-	ID        uint           `gorm:"primarykey"`
+	ID        uint           `gorm:"primarykey" json:"id"`
 	Name      string         `gorm:"not null" json:"name"`
 	Desc      string         `json:"desc"`
 	Captcha   string         `json:"-"`
