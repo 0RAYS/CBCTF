@@ -55,6 +55,7 @@ func Init() *gin.Engine {
 	adminContest.GET("/:contestID/info", middleware.SetContestID, GetContest)
 	adminContest.POST("/:contestID/update", middleware.SetContestID, UpdateContest)
 	adminContest.POST("/:contestID/delete", middleware.SetContestID, DeleteContest)
+	adminContest.POST("/:contestID/avatar", middleware.SetContestID)
 
 	adminContestTeam := adminContest.Group("/:contestID/team", middleware.SetContestID)
 	adminContestTeam.GET("/list", GetTeams)
@@ -63,6 +64,7 @@ func Init() *gin.Engine {
 	adminContestTeam.POST("/:teamID/update", middleware.SetTeamID, UpdateTeam)
 	adminContestTeam.POST("/:teamID/delete", middleware.SetTeamID, DeleteTeam)
 	adminContestTeam.POST("/:teamID/kick", middleware.SetTeamID, KickMember)
+	adminContestTeam.POST("/:teamID/avatar", middleware.SetTeamID)
 
 	return router
 
