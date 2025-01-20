@@ -67,7 +67,7 @@ func UpdateUser(ctx *gin.Context) {
 		data = utils.Form2Map(form)
 		data["password"] = user.Password
 	} else {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
+		ctx.JSON(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
 		return
 	}
 	if email, ok := data["email"]; ok && email.(string) != user.Email {

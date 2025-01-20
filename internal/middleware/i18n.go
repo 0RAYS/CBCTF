@@ -40,6 +40,7 @@ var resp = map[string]map[string]interface{}{
 	"UploadFileError":       {"zh-CN": "文件上传失败", "en-EN": "File upload failed", "code": 500},
 	"UserNameExists":        {"zh-CN": "用户名已被占用", "en-EN": "Username already taken", "code": 400},
 	"UserNotFound":          {"zh-CN": "用户不存在", "en-EN": "User not found", "code": 404},
+	"UserNotInTeam":         {"zh-CN": "用户不在队伍中", "en-EN": "User is not in the team", "code": 400},
 	"ContestNameExists":     {"zh-CN": "赛事名已被占用", "en-EN": "Contest name already taken", "code": 400},
 	"ContestNotFound":       {"zh-CN": "赛事不存在", "en-EN": "Contest not found", "code": 404},
 }

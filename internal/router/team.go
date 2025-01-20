@@ -18,6 +18,15 @@ func GetTeam(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": team})
 }
 
+func GetTeamCaptcha(ctx *gin.Context) {
+	team, ok, msg := db.GetTeamByUserID(ctx, middleware.GetSelfID(ctx), middleware.GetContestID(ctx))
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": team.Captcha})
+}
+
 func GetTeams(ctx *gin.Context) {
 	var form GetModelsForm
 	all := false
@@ -120,7 +129,7 @@ func UpdateTeam(ctx *gin.Context) {
 		}
 		data = utils.Form2Map(form)
 	} else {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
+		ctx.JSON(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
 		return
 	}
 	if name, ok := data["name"]; ok && name.(string) != team.Name {
@@ -162,6 +171,15 @@ func KickMember(ctx *gin.Context) {
 
 func GetTeamUsers(ctx *gin.Context) {
 	team, ok, msg := db.GetTeamByID(ctx, middleware.GetTeamID(ctx), true)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": team.Users})
+}
+
+func GetTeammates(ctx *gin.Context) {
+	team, ok, msg := db.GetTeamByUserID(ctx, middleware.GetSelfID(ctx), middleware.GetContestID(ctx))
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
