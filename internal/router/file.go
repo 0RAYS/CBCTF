@@ -48,7 +48,7 @@ func Upload(ctx *gin.Context) {
 func Download(ctx *gin.Context) {
 	file, ok, msg := db.GetFile(ctx, middleware.GetFileID(ctx))
 	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.JSON(http.StatusNotFound, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	if _, err := os.Stat(file.Path); os.IsNotExist(err) {
