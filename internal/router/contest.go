@@ -61,7 +61,7 @@ func UpdateContest(ctx *gin.Context) {
 		return
 	}
 	data := utils.Form2Map(form)
-	if data["name"].(string) != contest.Name && !db.IsUniqueTeamName(data["name"].(string), contest.ID) {
+	if name, ok := data["name"]; ok && name.(string) != contest.Name && !db.IsUniqueTeamName(name.(string), contest.ID) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "ContestNameExists", "data": nil})
 		return
 	}

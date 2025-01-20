@@ -32,14 +32,14 @@ func UpdateAdmin(ctx *gin.Context) {
 	admin := middleware.GetSelf(ctx).(model.Admin)
 	data := utils.Form2Map(form)
 	// 在预期的想法中，admin 的邮箱似乎没有什么用，先保留
-	if admin.Email != data["email"].(string) {
+	if email, ok := data["email"]; ok && email.(string) != admin.Email {
 		if !db.IsUniqueEmail(data["email"].(string)) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": "EmailExists", "data": nil})
 			return
 		}
 		db.UpdateUser(ctx, admin.ID, map[string]interface{}{"verified": false})
 	}
-	if admin.Name != data["name"].(string) && !db.IsUniqueName(data["name"].(string), model.Admin{}) {
+	if name, ok := data["name"]; ok && name.(string) != admin.Name && !db.IsUniqueName(name.(string), model.Admin{}) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "UserNameExists", "data": nil})
 		return
 	}

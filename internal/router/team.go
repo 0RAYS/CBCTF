@@ -123,14 +123,14 @@ func UpdateTeam(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
 		return
 	}
-	if data["name"].(string) != team.Name {
-		if !db.IsUniqueTeamName(data["name"].(string), middleware.GetContestID(ctx)) {
+	if name, ok := data["name"]; ok && name.(string) != team.Name {
+		if !db.IsUniqueTeamName(name.(string), middleware.GetContestID(ctx)) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": "TeamNameExists", "data": nil})
 			return
 		}
 	}
-	if data["captain_id"].(uint) != team.CaptainID {
-		if !db.IsMemberInTeam(team.ID, data["captain_id"].(uint)) {
+	if captainID, ok := data["captain_id"]; ok && captainID.(uint) != team.CaptainID {
+		if !db.IsMemberInTeam(team.ID, captainID.(uint)) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": "UserNotInTeam", "data": nil})
 			return
 		}
