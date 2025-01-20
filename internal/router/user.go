@@ -52,8 +52,8 @@ func UpdateUser(ctx *gin.Context) {
 			return
 		}
 		data = utils.Form2Map(form)
-		if data["password"] != "" {
-			data["password"] = utils.HashPassword(data["password"].(string))
+		if password, ok := data["password"]; ok && password.(string) != "" {
+			data["password"] = utils.HashPassword(password.(string))
 		} else {
 			data["password"] = user.Password
 		}
@@ -70,14 +70,14 @@ func UpdateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
 		return
 	}
-	if user.Email != data["email"].(string) {
-		if !db.IsUniqueEmail(data["email"].(string)) {
+	if email, ok := data["email"]; ok && email.(string) != user.Email {
+		if !db.IsUniqueEmail(email.(string)) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": "EmailExists", "data": nil})
 			return
 		}
 		db.UpdateUser(ctx, user.ID, map[string]interface{}{"verified": false})
 	}
-	if user.Name != data["name"].(string) && !db.IsUniqueName(data["name"].(string), model.User{}) {
+	if name, ok := data["name"]; ok && name.(string) != user.Name && !db.IsUniqueName(name.(string), model.User{}) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "UserNameExists", "data": nil})
 		return
 	}
