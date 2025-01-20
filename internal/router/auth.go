@@ -12,28 +12,25 @@ import (
 func Register(ctx *gin.Context) {
 	var form RegisterForm
 	trace := middleware.GetTraceID(ctx)
-	if err := ctx.ShouldBind(&form); err == nil {
-		username, password, email := form.Name, form.Password, form.Email
-		user, ok, msg := db.CreateUser(ctx, username, password, email)
-		if !ok {
-			log.Logger.Infof("%s | %s", trace, msg)
-			ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
-			return
-		}
-		if Token, err := utils.Generate(user.ID, user.Name, "user"); err == nil {
-			log.Logger.Infof("%s | %s:%d register", trace, user.Name, user.ID)
-			ctx.Writer.Header().Set("Authorization", "Bearer "+Token)
-			ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": user})
-			return
-		} else {
-			msg = "UnknownError"
-			log.Logger.Errorf("%s | Generate token error: %s", trace, err)
-			ctx.JSONP(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
-			return
-		}
-	} else {
-		log.Logger.Infof("%s | %s", trace, err)
+	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	username, password, email := form.Name, form.Password, form.Email
+	user, ok, msg := db.CreateUser(ctx, username, password, email)
+	if !ok {
+		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	if Token, err := utils.Generate(user.ID, user.Name, "user"); err == nil {
+		log.Logger.Infof("%s | %s:%d register", trace, user.Name, user.ID)
+		ctx.Writer.Header().Set("Authorization", "Bearer "+Token)
+		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": user})
+		return
+	} else {
+		msg = "UnknownError"
+		log.Logger.Errorf("%s | Generate token error: %s", trace, err)
+		ctx.JSONP(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
 		return
 	}
 }
@@ -41,28 +38,25 @@ func Register(ctx *gin.Context) {
 func Login(ctx *gin.Context) {
 	var form LoginForm
 	trace := middleware.GetTraceID(ctx)
-	if err := ctx.ShouldBind(&form); err == nil {
-		username, password := form.Name, form.Password
-		user, ok, msg := db.VerifyUser(ctx, username, password)
-		if !ok {
-			log.Logger.Infof("%s | %s", trace, msg)
-			ctx.JSONP(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
-			return
-		}
-		if Token, err := utils.Generate(user.ID, user.Name, "user"); err == nil {
-			log.Logger.Infof("%s | %s:%d login", trace, user.Name, user.ID)
-			ctx.Writer.Header().Set("Authorization", "Bearer "+Token)
-			ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": user})
-			return
-		} else {
-			msg = "UnknownError"
-			log.Logger.Errorf("%s | Generate token error: %s", trace, err)
-			ctx.JSONP(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
-			return
-		}
-	} else {
-		log.Logger.Infof("%s | %s", trace, err)
+	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	username, password := form.Name, form.Password
+	user, ok, msg := db.VerifyUser(ctx, username, password)
+	if !ok {
+		ctx.JSONP(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	if Token, err := utils.Generate(user.ID, user.Name, "user"); err == nil {
+		log.Logger.Infof("%s | %s:%d login", trace, user.Name, user.ID)
+		ctx.Writer.Header().Set("Authorization", "Bearer "+Token)
+		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": user})
+		return
+	} else {
+		msg = "UnknownError"
+		log.Logger.Errorf("%s | Generate token error: %s", trace, err)
+		ctx.JSONP(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
 		return
 	}
 }
@@ -70,28 +64,25 @@ func Login(ctx *gin.Context) {
 func AdminLogin(ctx *gin.Context) {
 	var form LoginForm
 	trace := middleware.GetTraceID(ctx)
-	if err := ctx.ShouldBind(&form); err == nil {
-		username, password := form.Name, form.Password
-		admin, ok, msg := db.VerifyAdmin(ctx, username, password)
-		if !ok {
-			log.Logger.Infof("%s | %s", trace, msg)
-			ctx.JSONP(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
-			return
-		}
-		if Token, err := utils.Generate(admin.ID, admin.Name, "admin"); err == nil {
-			log.Logger.Infof("%s | %s:%d login", trace, admin.Name, admin.ID)
-			ctx.Writer.Header().Set("Authorization", "Bearer "+Token)
-			ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": admin})
-			return
-		} else {
-			msg = "UnknownError"
-			log.Logger.Errorf("%s | Generate token error: %s", trace, err)
-			ctx.JSONP(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
-			return
-		}
-	} else {
-		log.Logger.Infof("%s | %s", trace, err)
+	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	username, password := form.Name, form.Password
+	admin, ok, msg := db.VerifyAdmin(ctx, username, password)
+	if !ok {
+		ctx.JSONP(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	if Token, err := utils.Generate(admin.ID, admin.Name, "admin"); err == nil {
+		log.Logger.Infof("%s | %s:%d login", trace, admin.Name, admin.ID)
+		ctx.Writer.Header().Set("Authorization", "Bearer "+Token)
+		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": admin})
+		return
+	} else {
+		msg = "UnknownError"
+		log.Logger.Errorf("%s | Generate token error: %s", trace, err)
+		ctx.JSONP(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
 		return
 	}
 }

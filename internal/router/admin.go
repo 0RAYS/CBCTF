@@ -2,6 +2,7 @@ package router
 
 import (
 	"CBCTF/internal/db"
+	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 	"github.com/gin-gonic/gin"
@@ -9,42 +10,26 @@ import (
 )
 
 func GetAdmin(ctx *gin.Context) {
-	self, _ := ctx.Get("Self")
-	admin, ok, msg := db.GetAdminByID(ctx, self.(map[string]interface{})["ID"].(uint))
-	if !ok {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
-	} else {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": admin})
-	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": middleware.GetSelf(ctx).(model.Admin)})
 }
 
 func AdminChangePassword(ctx *gin.Context) {
-	self, _ := ctx.Get("Self")
 	var form ChangePasswordForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	ok, msg := db.ChangePasswordAdmin(ctx, self.(map[string]interface{})["ID"].(uint), form.OldPassword, form.NewPassword)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-	} else {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
-	}
+	_, msg := db.ChangePasswordAdmin(ctx, middleware.GetSelfID(ctx), form.OldPassword, form.NewPassword)
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
 func UpdateAdmin(ctx *gin.Context) {
-	self, _ := ctx.Get("Self")
 	var form UpdateAdminForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	admin, ok, msg := db.GetAdminByID(ctx, self.(map[string]interface{})["ID"].(uint))
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
+	admin := middleware.GetSelf(ctx).(model.Admin)
 	data := utils.Form2Map(form)
 	// 在预期的想法中，admin 的邮箱似乎没有什么用，先保留
 	if admin.Email != data["email"].(string) {
@@ -58,126 +43,6 @@ func UpdateAdmin(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "UserNameExists", "data": nil})
 		return
 	}
-	ok, msg = db.UpdateAdmin(ctx, admin.ID, data)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-	} else {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
-	}
-}
-
-func CreateUser(ctx *gin.Context) {
-	var form RegisterForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
-		return
-	}
-	user, ok, msg := db.CreateUser(ctx, form.Name, form.Password, form.Email)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": user})
-}
-
-func GetUsers(ctx *gin.Context) {
-	var form GetModelsForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
-		return
-	}
-	users, count, ok, msg := db.GetUsers(ctx, form.Limit, form.Offset, true)
-	if !ok {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"count": count, "users": users}})
-}
-
-func UpdateUser(ctx *gin.Context) {
-	var form UpdateUserForm
-	type userIDUri struct {
-		UserID uint `uri:"userID" binding:"required"`
-	}
-	var uri userIDUri
-	if err := ctx.ShouldBindUri(&uri); err != nil {
-		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
-		return
-	}
-	if err := ctx.ShouldBindJSON(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
-		return
-	}
-	user, ok, msg := db.GetUserByID(ctx, uri.UserID, false)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	data := utils.Form2Map(form)
-	if user.Email != data["email"].(string) {
-		if !db.IsUniqueEmail(data["email"].(string)) {
-			ctx.JSON(http.StatusOK, gin.H{"msg": "EmailExists", "data": nil})
-			return
-		}
-		db.UpdateUser(ctx, user.ID, map[string]interface{}{"verified": false})
-	}
-	if user.Name != data["name"].(string) && !db.IsUniqueName(data["name"].(string), model.User{}) {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "UserNameExists", "data": nil})
-		return
-	}
-	if data["password"] != "" {
-		data["password"] = utils.HashPassword(data["password"].(string))
-	} else {
-		data["password"] = user.Password
-	}
-	ok, msg = db.UpdateUser(ctx, user.ID, data)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-	} else {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
-	}
-}
-
-func GetContestTeams(ctx *gin.Context) {
-	var form GetModelsForm
-	self, _ := ctx.Get("Self")
-	all := false
-	type contestIDUri struct {
-		ContestID uint `uri:"contestID" binding:"required"`
-	}
-	var uri contestIDUri
-	if self.(map[string]interface{})["Type"].(string) == "admin" {
-		all = true
-	}
-	if err := ctx.ShouldBindUri(&uri); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
-		return
-	}
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
-		return
-	}
-	teams, count, ok, msg := db.GetTeams(ctx, uri.ContestID, form.Limit, form.Offset, all)
-	if !ok {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"count": count, "teams": teams}})
-}
-
-func GetTeamUsers(ctx *gin.Context) {
-	type teamIDUri struct {
-		TeamID uint `uri:"teamID" binding:"required"`
-	}
-	var uri teamIDUri
-	if err := ctx.ShouldBindUri(&uri); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
-		return
-	}
-	team, ok, msg := db.GetTeamByID(ctx, uri.TeamID, true)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": team.Users})
+	_, msg := db.UpdateAdmin(ctx, admin.ID, data)
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
