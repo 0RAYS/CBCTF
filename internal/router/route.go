@@ -76,6 +76,11 @@ func Init() *gin.Engine {
 	adminSystem := admin.Group("/system")
 	adminSystem.GET("/status", SystemStatus)
 
+	adminFile := admin.Group("/file")
+	adminFile.GET("/list", GetFiles)
+	adminFile.POST("/delete", DeleteFile)
+	adminFile.POST("/:fileID/delete", middleware.SetFileID, DeleteFile)
+
 	return router
 
 }

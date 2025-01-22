@@ -16,21 +16,29 @@ type File struct {
 	Path        string         `json:"-"`
 	Uploader    uint           `json:"uploader"`
 	Type        string         `json:"type"`
-	Challenge   bool           `json:"challenge"`
+	Hash        string         `json:"hash"`
+	Admin       bool           `json:"isadmin"`
+	Attachment  bool           `json:"isattachment"`
 	ChallengeID uint           `json:"challenge_id"`
 	CreatedAt   time.Time      `json:"-"`
 	UpdatedAt   time.Time      `json:"-"`
 	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index" `
 }
 
-func InitFile(path string, uploader uint, fileHeader *multipart.FileHeader, challenge bool) File {
-	return File{
-		ID:        utils.RandomString(),
-		Filename:  fileHeader.Filename,
-		Size:      fileHeader.Size,
-		Path:      path,
-		Uploader:  uploader,
-		Type:      strings.ToLower(p.Ext(fileHeader.Filename)),
-		Challenge: false,
+func InitFile(path string, uploader uint, file *multipart.FileHeader, hash string, isAdmin bool, isAttachment bool, idL ...uint) File {
+	tmp := File{
+		ID:         utils.RandomString(),
+		Filename:   file.Filename,
+		Size:       file.Size,
+		Path:       path,
+		Uploader:   uploader,
+		Hash:       hash,
+		Type:       strings.ToLower(p.Ext(file.Filename)),
+		Admin:      isAdmin,
+		Attachment: isAttachment,
 	}
+	if len(idL) > 0 {
+		tmp.ChallengeID = idL[0]
+	}
+	return tmp
 }

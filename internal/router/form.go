@@ -83,6 +83,11 @@ type DeleteUserForm struct {
 	UserID uint `json:"user_id" binding:"required"`
 }
 
+type DeleteFileForm struct {
+	Force bool     `json:"force"`
+	Files []string `json:"file_ids"`
+}
+
 type JoinTeamForm struct {
 	Name    string `json:"name" binding:"required"`
 	Captcha string `json:"captcha" binding:"required"`

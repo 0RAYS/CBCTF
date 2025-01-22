@@ -8,20 +8,29 @@ import (
 )
 
 // RecordFile 添加文件记录
-func RecordFile(ctx context.Context, path string, uploader uint, fileHeader *multipart.FileHeader, challenge bool) (model.File, bool, string) {
-	file := model.InitFile(path, uploader, fileHeader, challenge)
-	res := DB.WithContext(ctx).Model(model.File{}).Create(&file)
+func RecordFile(ctx context.Context, path string, uploader uint, file *multipart.FileHeader, hash string, isAdmin bool, isAttachment bool) (model.File, bool, string) {
+	f := model.InitFile(path, uploader, file, hash, isAdmin, isAttachment)
+	res := DB.WithContext(ctx).Model(model.File{}).Create(&f)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to record file: %v", res.Error)
 		return model.File{}, false, "CreateFileRecordError"
 	}
+	return f, true, "Success"
+}
+
+// GetFileByID 以 ID 获取文件记录
+func GetFileByID(ctx context.Context, id string) (model.File, bool, string) {
+	var file model.File
+	res := DB.WithContext(ctx).Model(model.File{}).Where("id = ?", id).Find(&file).Limit(1)
+	if res.RowsAffected != 1 {
+		return model.File{}, false, "FileNotFound"
+	}
 	return file, true, "Success"
 }
 
-// GetFile 以 ID 获取文件记录
-func GetFile(ctx context.Context, id string) (model.File, bool, string) {
+func GetFileByHash(ctx context.Context, hash string) (model.File, bool, string) {
 	var file model.File
-	res := DB.WithContext(ctx).Model(model.File{}).Where("id = ?", id).Find(&file).Limit(1)
+	res := DB.WithContext(ctx).Model(model.File{}).Where("hash = ?", hash).Find(&file).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.File{}, false, "FileNotFound"
 	}
