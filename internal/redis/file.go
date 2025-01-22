@@ -5,7 +5,6 @@ import (
 	"CBCTF/internal/model"
 	"context"
 	"errors"
-	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/vmihailenco/msgpack/v4"
 	"time"
@@ -25,7 +24,7 @@ func GetFileCache(key string) (model.File, bool) {
 	if err != nil {
 		return model.File{}, false
 	}
-	log.Logger.Debugf("GetFileCache: %s", file.ID)
+	log.Logger.Debug("GetFileCache: ", file.ID)
 	return file, true
 }
 
@@ -43,7 +42,7 @@ func GetFilesCache(key string) ([]model.File, bool) {
 	if err != nil {
 		return nil, false
 	}
-	log.Logger.Debugf("GetFilesCache: %d", len(files))
+	log.Logger.Debug("GetFilesCache: ", len(files))
 	return files, true
 }
 
@@ -57,6 +56,7 @@ func SetFileCache(key string, file model.File) error {
 	if err = RDB.Set(ctx, key, data, 1*time.Hour).Err(); err != nil {
 		return err
 	}
+	log.Logger.Debug("SetFileCache: ", file.ID)
 	return nil
 }
 
@@ -70,17 +70,13 @@ func SetFilesCache(key string, files []model.File) error {
 	if err = RDB.Set(ctx, key, data, 1*time.Hour).Err(); err != nil {
 		return err
 	}
+	log.Logger.Debug("SetFilesCache: ", len(files))
 	return nil
-}
-
-func DelFileCache(id string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
-	defer cancel()
-	return RDB.Del(ctx, fmt.Sprintf("file:%s", id)).Err()
 }
 
 func DelFilesCache() error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
 	defer cancel()
-	return RDB.Del(ctx, "file:list").Err()
+	log.Logger.Debug("DelFilesCache")
+	return RDB.Del(ctx, "file:*").Err()
 }

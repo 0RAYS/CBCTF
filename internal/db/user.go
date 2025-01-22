@@ -90,7 +90,7 @@ func DeleteUser(ctx context.Context, id uint) (bool, string) {
 		return false, "DeleteUserError"
 	}
 	go func() {
-		if err := redis.DelUserCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelUsersCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete user cache: %s", err.Error())
 		}
 	}()

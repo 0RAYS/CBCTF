@@ -5,7 +5,6 @@ import (
 	"CBCTF/internal/model"
 	"context"
 	"errors"
-	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/vmihailenco/msgpack/v4"
 	"time"
@@ -25,7 +24,7 @@ func GetContestCache(key string) (model.Contest, bool) {
 	if err != nil {
 		return model.Contest{}, false
 	}
-	log.Logger.Debugf("GetContestCache: %d", contest.ID)
+	log.Logger.Debug("GetContestCache: ", contest.ID)
 	return contest, true
 }
 
@@ -43,7 +42,7 @@ func GetContestsCache(key string) ([]model.Contest, bool) {
 	if err != nil {
 		return nil, false
 	}
-	log.Logger.Debugf("GetContestsCache: %d", len(contests))
+	log.Logger.Debug("GetContestsCache: ", len(contests))
 	return contests, true
 }
 
@@ -57,6 +56,7 @@ func SetContestCache(key string, contest model.Contest) error {
 	if err = RDB.Set(ctx, key, data, 1*time.Hour).Err(); err != nil {
 		return err
 	}
+	log.Logger.Debug("SetContestCache: ", contest.ID)
 	return nil
 }
 
@@ -70,28 +70,7 @@ func SetContestsCache(key string, contests []model.Contest) error {
 	if err = RDB.Set(ctx, key, data, 1*time.Hour).Err(); err != nil {
 		return err
 	}
-	return nil
-}
-
-func DelContestCache(id uint) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
-	defer cancel()
-	var cursor uint64
-	for {
-		keys, cursor, err := RDB.Scan(ctx, cursor, fmt.Sprintf("contest:%d:*", id), 10).Result()
-		if err != nil {
-			log.Logger.Warningf("Failed to scan contest keys: %s", err)
-		}
-
-		for _, key := range keys {
-			if err := RDB.Del(ctx, key).Err(); err != nil {
-				return err
-			}
-		}
-		if cursor == 0 {
-			break
-		}
-	}
+	log.Logger.Debug("SetContestsCache: ", len(contests))
 	return nil
 }
 
@@ -100,7 +79,7 @@ func DelContestsCache() error {
 	defer cancel()
 	var cursor uint64
 	for {
-		keys, cursor, err := RDB.Scan(ctx, cursor, "contest:list:*", 10).Result()
+		keys, cursor, err := RDB.Scan(ctx, cursor, "contest:*", 10).Result()
 		if err != nil {
 			log.Logger.Warningf("Failed to scan contest keys: %s", err)
 		}
@@ -114,5 +93,6 @@ func DelContestsCache() error {
 			break
 		}
 	}
+	log.Logger.Debug("DelContestsCache")
 	return nil
 }

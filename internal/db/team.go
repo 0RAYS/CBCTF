@@ -130,7 +130,7 @@ func DeleteTeam(ctx context.Context, id uint) (bool, string) {
 		return false, "DeleteTeamError"
 	}
 	go func() {
-		if err := redis.DelTeamCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelTeamsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete team cache: %s", err.Error())
 		}
 	}()
@@ -146,7 +146,7 @@ func UpdateTeam(ctx context.Context, id uint, updateData map[string]interface{})
 		return false, "UpdateError"
 	}
 	go func() {
-		if err := redis.DelTeamCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelTeamsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete team cache: %s", err.Error())
 		}
 	}()
@@ -189,13 +189,13 @@ func JoinTeam(ctx context.Context, userID uint, contestID uint, teamID uint) (bo
 		return false, "AppendContestToUserError"
 	}
 	go func() {
-		if err := redis.DelUserCache(userID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelUsersCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete user cache: %s", err.Error())
 		}
-		if err := redis.DelTeamCache(teamID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelTeamsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete teams cache: %s", err.Error())
 		}
-		if err := redis.DelContestCache(userID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelContestsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete user cache: %s", err.Error())
 		}
 	}()
@@ -235,13 +235,13 @@ func LeaveTeam(ctx context.Context, userID uint, contestID uint, teamID uint) (b
 		return false, "DeleteUserFromContestError"
 	}
 	go func() {
-		if err := redis.DelUserCache(userID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelUsersCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete user cache: %s", err.Error())
 		}
-		if err := redis.DelTeamCache(teamID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelTeamsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete teams cache: %s", err.Error())
 		}
-		if err := redis.DelContestCache(userID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelContestsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete user cache: %s", err.Error())
 		}
 	}()
