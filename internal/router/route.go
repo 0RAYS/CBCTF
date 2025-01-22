@@ -73,6 +73,9 @@ func Init() *gin.Engine {
 	adminContestTeam.POST("/:teamID/kick", middleware.SetTeamID, KickMember)
 	adminContestTeam.POST("/:teamID/avatar", middleware.SetTeamID, Avatar(model.Team{}))
 
+	adminSystem := admin.Group("/system")
+	adminSystem.GET("/status", SystemStatus)
+
 	return router
 
 }

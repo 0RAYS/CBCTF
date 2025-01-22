@@ -5,14 +5,15 @@ import (
 	"CBCTF/internal/model"
 	"context"
 	"gorm.io/gorm/clause"
+	"time"
 )
 
 // CreateContest 创建比赛
-func CreateContest(ctx context.Context, name string) (model.Contest, bool, string) {
+func CreateContest(ctx context.Context, name string, desc string, size int, start time.Time, duration time.Duration, hidden bool) (model.Contest, bool, string) {
 	if !IsUniqueName(name, model.Contest{}) {
 		return model.Contest{}, false, "ContestNameExists"
 	}
-	contest := model.InitContest(name)
+	contest := model.InitContest(name, desc, size, start, duration, hidden)
 	res := DB.WithContext(ctx).Model(&model.Contest{}).Create(&contest)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to create contest: %s", res.Error.Error())
@@ -73,6 +74,12 @@ func UpdateContest(ctx context.Context, id uint, updateData map[string]interface
 		return false, "UpdateError"
 	}
 	return true, "Success"
+}
+
+func CountContests(ctx context.Context) int64 {
+	var count int64
+	DB.WithContext(ctx).Model(&model.Contest{}).Count(&count)
+	return count
 }
 
 func GetContests(ctx context.Context, limit int, offset int, all bool, preloadL ...bool) ([]model.Contest, int64, bool, string) {

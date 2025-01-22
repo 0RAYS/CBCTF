@@ -2,6 +2,7 @@ package model
 
 import (
 	"CBCTF/internal/utils"
+	"encoding/json"
 	"gorm.io/gorm"
 	"time"
 )
@@ -23,6 +24,19 @@ type User struct {
 	CreatedAt time.Time      `json:"-"`
 	UpdatedAt time.Time      `json:"-"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
+func (m User) MarshalJSON() ([]byte, error) {
+	type Tmp User // 定义一个别名以避免递归调用
+	return json.Marshal(&struct {
+		Tmp
+		Contests int `json:"contests"`
+		Teams    int `json:"teams"`
+	}{
+		Tmp:      Tmp(m),
+		Contests: len(m.Contests),
+		Teams:    len(m.Teams),
+	})
 }
 
 func InitUser(name string, password string, email string) User {

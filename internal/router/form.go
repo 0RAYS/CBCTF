@@ -96,4 +96,11 @@ type CreateTeamForm struct {
 	Name string `json:"name" binding:"required"`
 }
 
-type CreateContestForm CreateTeamForm
+type CreateContestForm struct {
+	Name     string        `json:"name" binding:"required"`
+	Desc     string        `json:"desc"`
+	Start    time.Time     `json:"start" binding:"required"`
+	Duration time.Duration `json:"duration" binding:"required"`
+	Size     int           `json:"size" binding:"required"`
+	Hidden   bool          `json:"hidden"`
+}

@@ -98,6 +98,12 @@ func ChangePasswordAdmin(ctx context.Context, id uint, oldPassword string, newPa
 	return true, "Success"
 }
 
+func CountAdmins(ctx context.Context) int64 {
+	var count int64
+	DB.WithContext(ctx).Model(&model.Admin{}).Count(&count)
+	return count
+}
+
 func GetAdmins(ctx context.Context, limit int, offset int) ([]model.Admin, int, bool, string) {
 	if limit <= 0 {
 		limit = -1
