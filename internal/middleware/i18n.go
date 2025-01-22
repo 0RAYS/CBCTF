@@ -45,6 +45,7 @@ var resp = map[string]map[string]interface{}{
 	"ContestNameExists":     {"zh-CN": "赛事名已被占用", "en-US": "Contest name already taken", "code": 400},
 	"ContestNotFound":       {"zh-CN": "赛事不存在", "en-US": "Contest not found", "code": 404},
 	"TooManyRequests":       {"zh-CN": "请求过于频繁", "en-US": "Too many requests", "code": 429},
+	"CaptchaError":          {"zh-CN": "邀请码错误", "en-US": "Captcha error", "code": 400},
 }
 
 type i18nResponseWriter struct {

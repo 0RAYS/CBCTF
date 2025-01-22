@@ -58,7 +58,7 @@ func JoinTeam(ctx *gin.Context) {
 		return
 	}
 	if form.Captcha != team.Captcha {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "PasswordError", "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": "CaptchaError", "data": nil})
 		return
 	}
 	_, msg = db.JoinTeam(ctx, middleware.GetSelfID(ctx), contestID, team.ID)
