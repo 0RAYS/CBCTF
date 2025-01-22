@@ -2,6 +2,7 @@ package model
 
 import (
 	"CBCTF/internal/utils"
+	"encoding/json"
 	"gorm.io/gorm"
 	"time"
 )
@@ -20,6 +21,17 @@ type Team struct {
 	CreatedAt time.Time      `json:"-"`
 	UpdatedAt time.Time      `json:"-"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
+func (m Team) MarshalJSON() ([]byte, error) {
+	type Tmp Team // 定义一个别名以避免递归调用
+	return json.Marshal(&struct {
+		Tmp
+		Users int `json:"users"`
+	}{
+		Tmp:   Tmp(m),
+		Users: len(m.Users),
+	})
 }
 
 func InitTeam(name string, captainID uint) Team {

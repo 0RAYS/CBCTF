@@ -119,6 +119,12 @@ func ChangePasswordUser(ctx context.Context, id uint, oldPassword string, newPas
 	return true, "Success"
 }
 
+func CountUsers(ctx context.Context) int64 {
+	var count int64
+	DB.WithContext(ctx).Model(&model.User{}).Count(&count)
+	return count
+}
+
 func GetUsers(ctx context.Context, limit int, offset int, all bool, preloadL ...bool) ([]model.User, int64, bool, string) {
 	if limit <= 0 {
 		limit = -1

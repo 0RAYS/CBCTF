@@ -9,9 +9,9 @@ import (
 )
 
 type Claims struct {
-	Name string `json:"name"`
-	ID   uint   `json:"id"`
-	Type string `json:"type"`
+	Name   string `json:"name"`
+	UserID uint   `json:"id"`
+	Type   string `json:"type"`
 	jwt.RegisteredClaims
 }
 
@@ -21,9 +21,9 @@ var secret = "0RAYS-JBNRZ"
 // Generate 生成token
 func Generate(id uint, name string, t string) (tokenString string, err error) {
 	claim := Claims{
-		ID:   id,
-		Name: name,
-		Type: t,
+		UserID: id,
+		Name:   name,
+		Type:   t,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(1))),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

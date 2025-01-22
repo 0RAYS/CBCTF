@@ -41,7 +41,7 @@ func CreateContest(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	contest, ok, msg := db.CreateContest(ctx, form.Name)
+	contest, ok, msg := db.CreateContest(ctx, form.Name, form.Desc, form.Size, form.Start, form.Duration, form.Hidden)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

@@ -2,6 +2,7 @@ package model
 
 import (
 	"CBCTF/internal/utils"
+	"encoding/json"
 	"gorm.io/gorm"
 	"time"
 )
@@ -23,15 +24,28 @@ type Contest struct {
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
-func InitContest(name string) Contest {
+func (m Contest) MarshalJSON() ([]byte, error) {
+	type Tmp Contest // 定义一个别名以避免递归调用
+	return json.Marshal(&struct {
+		Tmp
+		Users int `json:"users"`
+		Teams int `json:"teams"`
+	}{
+		Tmp:   Tmp(m),
+		Users: len(m.Users),
+		Teams: len(m.Teams),
+	})
+}
+
+func InitContest(name string, desc string, size int, start time.Time, duration time.Duration, hidden bool) Contest {
 	return Contest{
 		Name:     name,
-		Desc:     "",
+		Desc:     desc,
 		Captcha:  utils.RandomString(),
 		Avatar:   "",
-		Size:     1,
-		Start:    time.Now(),
-		Hidden:   true,
-		Duration: 2 * 24 * time.Hour,
+		Size:     size,
+		Start:    start,
+		Hidden:   hidden,
+		Duration: duration,
 	}
 }

@@ -11,3 +11,9 @@ func RecordIP(ctx context.Context, ip model.IP) {
 		log.Logger.Warningf("Failed to record IP %s", ip.IP)
 	}
 }
+
+func CountIP(ctx context.Context) int64 {
+	var ips []model.IP
+	DB.WithContext(ctx).Model(&model.IP{}).Distinct("ip").Find(&ips)
+	return int64(len(ips))
+}
