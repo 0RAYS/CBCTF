@@ -10,12 +10,11 @@ import (
 	"github.com/shirou/gopsutil/net"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 func SystemStatus(ctx *gin.Context) {
 	ret := make(map[string]string)
-	cpuPercent, err := cpu.Percent(time.Second, false)
+	cpuPercent, err := cpu.Percent(0, false)
 	if err != nil || len(cpuPercent) == 0 {
 		ret["cpu"] = "0.00"
 	} else {
