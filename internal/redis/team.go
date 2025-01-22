@@ -1,0 +1,104 @@
+package redis
+
+import (
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
+	"context"
+	"errors"
+	"fmt"
+	"github.com/go-redis/redis/v8"
+	"github.com/vmihailenco/msgpack/v4"
+	"time"
+)
+
+func GetTeamCache(ctx context.Context, key string) (model.Team, bool) {
+	data, err := RDB.Get(ctx, key).Result()
+	if errors.Is(err, redis.Nil) {
+		return model.Team{}, false
+	} else if err != nil {
+		return model.Team{}, false
+	}
+	var team model.Team
+	err = msgpack.Unmarshal([]byte(data), &team)
+	if err != nil {
+		return model.Team{}, false
+	}
+	return team, true
+}
+
+func GetTeamsCache(ctx context.Context, key string) ([]model.Team, bool) {
+	data, err := RDB.Get(ctx, key).Result()
+	if errors.Is(err, redis.Nil) {
+		return nil, false
+	} else if err != nil {
+		return nil, false
+	}
+	var teams []model.Team
+	err = msgpack.Unmarshal([]byte(data), &teams)
+	if err != nil {
+		return nil, false
+	}
+	return teams, true
+}
+
+func SetTeamCache(ctx context.Context, key string, team model.Team) error {
+	data, err := msgpack.Marshal(team)
+	if err != nil {
+		return err
+	}
+	if err = RDB.Set(ctx, key, data, 10*time.Minute).Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func SetTeamsCache(ctx context.Context, key string, teams []model.Team) error {
+	data, err := msgpack.Marshal(teams)
+	if err != nil {
+		return err
+	}
+	if err = RDB.Set(ctx, key, data, 2*time.Minute).Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func DelTeamCache(ctx context.Context, id uint) error {
+	var cursor uint64
+	for {
+		keys, cursor, err := RDB.Scan(ctx, cursor, fmt.Sprintf("team:%d:*", id), 10).Result()
+		if err != nil {
+			log.Logger.Warningf("Failed to scan team keys: %s", err)
+		}
+
+		for _, key := range keys {
+			if err := RDB.Del(ctx, key).Err(); err != nil {
+				return err
+			}
+		}
+		if cursor == 0 {
+			break
+		}
+	}
+	return nil
+}
+
+func DelTeamsCache(ctx context.Context) error {
+	var cursor uint64
+	for {
+		keys, cursor, err := RDB.Scan(ctx, cursor, "team:list:*", 10).Result()
+		if err != nil {
+			log.Logger.Warningf("Failed to scan teams keys: %s", err)
+		}
+
+		for _, key := range keys {
+			if err := RDB.Del(ctx, key).Err(); err != nil {
+				return err
+			}
+		}
+		if cursor == 0 {
+			break
+		}
+	}
+	return nil
+}

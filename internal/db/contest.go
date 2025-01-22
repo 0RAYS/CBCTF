@@ -3,7 +3,9 @@ package db
 import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/redis"
 	"context"
+	"fmt"
 	"gorm.io/gorm/clause"
 	"time"
 )
@@ -19,6 +21,12 @@ func CreateContest(ctx context.Context, name string, desc string, size int, star
 		log.Logger.Warningf("Failed to create contest: %s", res.Error.Error())
 		return model.Contest{}, false, "CreateContestError"
 	}
+	go func() {
+		err := redis.DelContestsCache(ctx)
+		if err != nil {
+			log.Logger.Warningf("Failed to delete contests cache: %s", err.Error())
+		}
+	}()
 	return contest, true, "Success"
 }
 
@@ -32,6 +40,10 @@ func GetContestByID(ctx context.Context, id uint, preloadL ...bool) (model.Conte
 	if len(preloadL) > 1 {
 		nest = preloadL[1]
 	}
+	cacheKey := fmt.Sprintf("contest:%d:%v:%v", id, preload, nest)
+	if contest, ok := redis.GetContestCache(ctx, cacheKey); ok {
+		return contest, true, "Success"
+	}
 	var contest model.Contest
 	res := DB.WithContext(ctx).Model(&model.Contest{}).Where("id = ?", id)
 	if preload {
@@ -44,6 +56,12 @@ func GetContestByID(ctx context.Context, id uint, preloadL ...bool) (model.Conte
 	if res.RowsAffected != 1 {
 		return model.Contest{}, false, "ContestNotFound"
 	}
+	go func() {
+		err := redis.SetContestCache(ctx, cacheKey, contest)
+		if err != nil {
+			log.Logger.Warningf("Failed to set contest cache: %s", err.Error())
+		}
+	}()
 	return contest, true, "Success"
 }
 
@@ -62,6 +80,12 @@ func DeleteContest(ctx context.Context, id uint) (bool, string) {
 		log.Logger.Warningf("Failed to delete contest: %s", err.Error())
 		return false, "DeleteContestError"
 	}
+	go func() {
+		err := redis.DelContestCache(ctx, id)
+		if err != nil {
+			log.Logger.Warningf("Failed to delete contests cache: %s", err.Error())
+		}
+	}()
 	return true, "Success"
 }
 
@@ -73,6 +97,12 @@ func UpdateContest(ctx context.Context, id uint, updateData map[string]interface
 		log.Logger.Warningf("Failed to update contest: %v", res.Error.Error())
 		return false, "UpdateError"
 	}
+	go func() {
+		err := redis.DelContestCache(ctx, id)
+		if err != nil {
+			log.Logger.Warningf("Failed to delete contests cache: %s", err.Error())
+		}
+	}()
 	return true, "Success"
 }
 
@@ -107,6 +137,10 @@ func GetContests(ctx context.Context, limit int, offset int, all bool, preloadL 
 		log.Logger.Errorf("Failed to get contest count: %s", res.Error.Error())
 		return nil, 0, false, "UnknownError"
 	}
+	cacheKey := fmt.Sprintf("contest:list:%v:%v:%d:%d", preload, nest, limit, offset)
+	if contests, ok := redis.GetContestsCache(ctx, cacheKey); ok {
+		return contests, count, true, "Success"
+	}
 	if preload {
 		if nest {
 			res = res.Preload("Teams.Users").Preload("Users.Contests").Preload("Users.Teams")
@@ -117,6 +151,12 @@ func GetContests(ctx context.Context, limit int, offset int, all bool, preloadL 
 		log.Logger.Errorf("Failed to get contests: %s", res.Error.Error())
 		return nil, 0, false, "UnknownError"
 	}
+	go func() {
+		err := redis.SetContestsCache(ctx, cacheKey, contests)
+		if err != nil {
+			log.Logger.Warningf("Failed to set contests cache: %s", err.Error())
+		}
+	}()
 	return contests, count, true, "Success"
 
 }
