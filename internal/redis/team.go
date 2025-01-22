@@ -85,6 +85,7 @@ func DelTeamsCache() error {
 		}
 
 		for _, key := range keys {
+			log.Logger.Debug("DelTeamsCache: ", key)
 			if err := RDB.Del(ctx, key).Err(); err != nil {
 				return err
 			}

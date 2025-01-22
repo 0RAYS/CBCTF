@@ -109,6 +109,7 @@ func DelUsersCache() error {
 		}
 
 		for _, key := range keys {
+			log.Logger.Debug("DelUsersCache: ", key)
 			if err := RDB.Del(ctx, key).Err(); err != nil {
 				return err
 			}
