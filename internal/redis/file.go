@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
 	"errors"
@@ -10,7 +11,9 @@ import (
 	"time"
 )
 
-func GetFileCache(ctx context.Context, key string) (model.File, bool) {
+func GetFileCache(key string) (model.File, bool) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
 		return model.File{}, false
@@ -22,10 +25,13 @@ func GetFileCache(ctx context.Context, key string) (model.File, bool) {
 	if err != nil {
 		return model.File{}, false
 	}
+	log.Logger.Debugf("GetFileCache: %s", file.ID)
 	return file, true
 }
 
-func GetFilesCache(ctx context.Context, key string) ([]model.File, bool) {
+func GetFilesCache(key string) ([]model.File, bool) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
 		return nil, false
@@ -37,10 +43,13 @@ func GetFilesCache(ctx context.Context, key string) ([]model.File, bool) {
 	if err != nil {
 		return nil, false
 	}
+	log.Logger.Debugf("GetFilesCache: %d", len(files))
 	return files, true
 }
 
-func SetFileCache(ctx context.Context, key string, file model.File) error {
+func SetFileCache(key string, file model.File) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	data, err := msgpack.Marshal(file)
 	if err != nil {
 		return err
@@ -51,7 +60,9 @@ func SetFileCache(ctx context.Context, key string, file model.File) error {
 	return nil
 }
 
-func SetFilesCache(ctx context.Context, key string, files []model.File) error {
+func SetFilesCache(key string, files []model.File) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	data, err := msgpack.Marshal(files)
 	if err != nil {
 		return err
@@ -62,10 +73,14 @@ func SetFilesCache(ctx context.Context, key string, files []model.File) error {
 	return nil
 }
 
-func DelFileCache(ctx context.Context, id string) error {
+func DelFileCache(id string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	return RDB.Del(ctx, fmt.Sprintf("file:%s", id)).Err()
 }
 
-func DelFilesCache(ctx context.Context) error {
+func DelFilesCache() error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	return RDB.Del(ctx, "file:list").Err()
 }

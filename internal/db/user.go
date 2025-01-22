@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/redis"
 	"CBCTF/internal/utils"
 	"context"
+	"errors"
 	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -29,8 +30,7 @@ func CreateUser(ctx context.Context, name string, password string, email string)
 		return model.User{}, false, "CreateUserError"
 	}
 	go func() {
-		err := redis.DelUsersCache(ctx)
-		if err != nil {
+		if err := redis.DelUsersCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete users cache: %s", err.Error())
 		}
 	}()
@@ -48,7 +48,7 @@ func GetUserByID(ctx context.Context, id uint, preloadL ...bool) (model.User, bo
 		nest = preloadL[1]
 	}
 	cacheKey := fmt.Sprintf("user:%d:%v:%v", id, preload, nest)
-	if user, ok := redis.GetUserCache(ctx, cacheKey); ok {
+	if user, ok := redis.GetUserCache(cacheKey); ok {
 		return user, true, "Success"
 	}
 	var user model.User
@@ -64,8 +64,7 @@ func GetUserByID(ctx context.Context, id uint, preloadL ...bool) (model.User, bo
 		return model.User{}, false, "UserNotFound"
 	}
 	go func() {
-		err := redis.SetUserCache(ctx, cacheKey, user)
-		if err != nil {
+		if err := redis.SetUserCache(cacheKey, user); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to set user cache: %s", err.Error())
 		}
 	}()
@@ -91,8 +90,7 @@ func DeleteUser(ctx context.Context, id uint) (bool, string) {
 		return false, "DeleteUserError"
 	}
 	go func() {
-		err := redis.DelUserCache(ctx, id)
-		if err != nil {
+		if err := redis.DelUserCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete user cache: %s", err.Error())
 		}
 	}()
@@ -108,8 +106,7 @@ func UpdateUser(ctx context.Context, id uint, updateData map[string]interface{})
 		return false, "UpdateError"
 	}
 	go func() {
-		err := redis.DelUserCache(ctx, id)
-		if err != nil {
+		if err := redis.DelUserCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete user cache: %s", err.Error())
 		}
 	}()
@@ -147,8 +144,7 @@ func ChangePasswordUser(ctx context.Context, id uint, oldPassword string, newPas
 		return false, msg
 	}
 	go func() {
-		err := redis.DelUserCache(ctx, id)
-		if err != nil {
+		if err := redis.DelUserCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete user cache: %s", err.Error())
 		}
 	}()
@@ -187,7 +183,7 @@ func GetUsers(ctx context.Context, limit int, offset int, all bool, preloadL ...
 		return nil, 0, false, "UnknownError"
 	}
 	cacheKey := fmt.Sprintf("user:list:%v:%v:%d:%d", preload, nest, limit, offset)
-	if users, ok := redis.GetUsersCache(ctx, cacheKey); ok {
+	if users, ok := redis.GetUsersCache(cacheKey); ok {
 		return users, count, true, "Success"
 	}
 	if preload {
@@ -201,7 +197,7 @@ func GetUsers(ctx context.Context, limit int, offset int, all bool, preloadL ...
 		return nil, 0, false, "GetUsersError"
 	}
 	go func() {
-		if err := redis.SetUsersCache(ctx, cacheKey, users); err != nil {
+		if err := redis.SetUsersCache(cacheKey, users); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to set users cache: %s", err.Error())
 		}
 	}()

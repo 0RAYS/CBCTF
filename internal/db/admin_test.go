@@ -3,6 +3,7 @@ package db
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/log"
+	"CBCTF/internal/redis"
 	"context"
 	"github.com/spf13/viper"
 	"testing"
@@ -17,6 +18,7 @@ func InitAdminTest() {
 	config.Env.Set("upload.max", 8)
 	log.Init()
 	Init()
+	redis.Init()
 	var ctx context.Context
 	admin1, ok, msg := CreateAdmin(ctx, "admin1", "password", "admin1@0rays.club")
 	log.Logger.Info(admin1.ID, ok, msg)

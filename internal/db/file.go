@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
 	"context"
+	"errors"
 	"fmt"
 	"mime/multipart"
 )
@@ -18,8 +19,7 @@ func RecordFile(ctx context.Context, path string, uploader uint, file *multipart
 		return model.File{}, false, "CreateFileRecordError"
 	}
 	go func() {
-		err := redis.DelFilesCache(ctx)
-		if err != nil {
+		if err := redis.DelFilesCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete files cache: %v", err)
 		}
 	}()
@@ -29,7 +29,7 @@ func RecordFile(ctx context.Context, path string, uploader uint, file *multipart
 // GetFileByID 以 ID 获取文件记录
 func GetFileByID(ctx context.Context, id string) (model.File, bool, string) {
 	cacheKey := fmt.Sprintf("file:%s", id)
-	if file, ok := redis.GetFileCache(ctx, cacheKey); ok {
+	if file, ok := redis.GetFileCache(cacheKey); ok {
 		return file, true, "Success"
 	}
 	var file model.File
@@ -38,8 +38,7 @@ func GetFileByID(ctx context.Context, id string) (model.File, bool, string) {
 		return model.File{}, false, "FileNotFound"
 	}
 	go func() {
-		err := redis.SetFileCache(ctx, cacheKey, file)
-		if err != nil {
+		if err := redis.SetFileCache(cacheKey, file); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Errorf("Failed to delete file cache: %v", err)
 		}
 	}()
@@ -48,7 +47,7 @@ func GetFileByID(ctx context.Context, id string) (model.File, bool, string) {
 
 func GetFileByHash(ctx context.Context, hash string) (model.File, bool, string) {
 	cacheKey := fmt.Sprintf("file:hash:%s", hash)
-	if file, ok := redis.GetFileCache(ctx, cacheKey); ok {
+	if file, ok := redis.GetFileCache(cacheKey); ok {
 		return file, true, "Success"
 	}
 	var file model.File
@@ -57,8 +56,7 @@ func GetFileByHash(ctx context.Context, hash string) (model.File, bool, string) 
 		return model.File{}, false, "FileNotFound"
 	}
 	go func() {
-		err := redis.SetFileCache(ctx, cacheKey, file)
-		if err != nil {
+		if err := redis.SetFileCache(cacheKey, file); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Errorf("Failed to delete file cache: %v", err)
 		}
 	}()
@@ -72,8 +70,7 @@ func DeleteFile(ctx context.Context, id string) (bool, string) {
 		return false, "DeleteFileError"
 	}
 	go func() {
-		err := redis.DelFileCache(ctx, id)
-		if err != nil {
+		if err := redis.DelFileCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete file cache: %v", err)
 		}
 	}()
@@ -96,7 +93,7 @@ func GetFiles(ctx context.Context, limit int, offset int) ([]model.File, int64, 
 		return nil, 0, false, "UnknownError"
 	}
 	cacheKey := fmt.Sprintf("file:list:%d:%d", limit, offset)
-	if files, ok := redis.GetFilesCache(ctx, cacheKey); ok {
+	if files, ok := redis.GetFilesCache(cacheKey); ok {
 		return files, int64(len(files)), true, "Success"
 	}
 	if res = res.Limit(limit).Offset(offset).Find(&files); res.Error != nil {
@@ -104,8 +101,7 @@ func GetFiles(ctx context.Context, limit int, offset int) ([]model.File, int64, 
 		return nil, 0, false, "FileNotFound"
 	}
 	go func() {
-		err := redis.SetFilesCache(ctx, cacheKey, files)
-		if err != nil {
+		if err := redis.SetFilesCache(cacheKey, files); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Errorf("Failed to delete file cache: %v", err)
 		}
 	}()

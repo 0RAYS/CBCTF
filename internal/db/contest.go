@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
 	"context"
+	"errors"
 	"fmt"
 	"gorm.io/gorm/clause"
 	"time"
@@ -22,8 +23,7 @@ func CreateContest(ctx context.Context, name string, desc string, size int, star
 		return model.Contest{}, false, "CreateContestError"
 	}
 	go func() {
-		err := redis.DelContestsCache(ctx)
-		if err != nil {
+		if err := redis.DelContestsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete contests cache: %s", err.Error())
 		}
 	}()
@@ -41,7 +41,7 @@ func GetContestByID(ctx context.Context, id uint, preloadL ...bool) (model.Conte
 		nest = preloadL[1]
 	}
 	cacheKey := fmt.Sprintf("contest:%d:%v:%v", id, preload, nest)
-	if contest, ok := redis.GetContestCache(ctx, cacheKey); ok {
+	if contest, ok := redis.GetContestCache(cacheKey); ok {
 		return contest, true, "Success"
 	}
 	var contest model.Contest
@@ -57,8 +57,7 @@ func GetContestByID(ctx context.Context, id uint, preloadL ...bool) (model.Conte
 		return model.Contest{}, false, "ContestNotFound"
 	}
 	go func() {
-		err := redis.SetContestCache(ctx, cacheKey, contest)
-		if err != nil {
+		if err := redis.SetContestCache(cacheKey, contest); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to set contest cache: %s", err.Error())
 		}
 	}()
@@ -81,8 +80,7 @@ func DeleteContest(ctx context.Context, id uint) (bool, string) {
 		return false, "DeleteContestError"
 	}
 	go func() {
-		err := redis.DelContestCache(ctx, id)
-		if err != nil {
+		if err := redis.DelContestCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete contests cache: %s", err.Error())
 		}
 	}()
@@ -98,8 +96,7 @@ func UpdateContest(ctx context.Context, id uint, updateData map[string]interface
 		return false, "UpdateError"
 	}
 	go func() {
-		err := redis.DelContestCache(ctx, id)
-		if err != nil {
+		if err := redis.DelContestCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete contests cache: %s", err.Error())
 		}
 	}()
@@ -138,7 +135,7 @@ func GetContests(ctx context.Context, limit int, offset int, all bool, preloadL 
 		return nil, 0, false, "UnknownError"
 	}
 	cacheKey := fmt.Sprintf("contest:list:%v:%v:%d:%d", preload, nest, limit, offset)
-	if contests, ok := redis.GetContestsCache(ctx, cacheKey); ok {
+	if contests, ok := redis.GetContestsCache(cacheKey); ok {
 		return contests, count, true, "Success"
 	}
 	if preload {
@@ -152,8 +149,7 @@ func GetContests(ctx context.Context, limit int, offset int, all bool, preloadL 
 		return nil, 0, false, "UnknownError"
 	}
 	go func() {
-		err := redis.SetContestsCache(ctx, cacheKey, contests)
-		if err != nil {
+		if err := redis.SetContestsCache(cacheKey, contests); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to set contests cache: %s", err.Error())
 		}
 	}()

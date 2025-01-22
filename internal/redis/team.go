@@ -11,7 +11,9 @@ import (
 	"time"
 )
 
-func GetTeamCache(ctx context.Context, key string) (model.Team, bool) {
+func GetTeamCache(key string) (model.Team, bool) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
 		return model.Team{}, false
@@ -23,10 +25,13 @@ func GetTeamCache(ctx context.Context, key string) (model.Team, bool) {
 	if err != nil {
 		return model.Team{}, false
 	}
+	log.Logger.Debugf("GetTeamCache: %d", team.ID)
 	return team, true
 }
 
-func GetTeamsCache(ctx context.Context, key string) ([]model.Team, bool) {
+func GetTeamsCache(key string) ([]model.Team, bool) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
 		return nil, false
@@ -38,10 +43,13 @@ func GetTeamsCache(ctx context.Context, key string) ([]model.Team, bool) {
 	if err != nil {
 		return nil, false
 	}
+	log.Logger.Debugf("GetTeamsCache: %d", len(teams))
 	return teams, true
 }
 
-func SetTeamCache(ctx context.Context, key string, team model.Team) error {
+func SetTeamCache(key string, team model.Team) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	data, err := msgpack.Marshal(team)
 	if err != nil {
 		return err
@@ -52,7 +60,9 @@ func SetTeamCache(ctx context.Context, key string, team model.Team) error {
 	return nil
 }
 
-func SetTeamsCache(ctx context.Context, key string, teams []model.Team) error {
+func SetTeamsCache(key string, teams []model.Team) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	data, err := msgpack.Marshal(teams)
 	if err != nil {
 		return err
@@ -63,7 +73,9 @@ func SetTeamsCache(ctx context.Context, key string, teams []model.Team) error {
 	return nil
 }
 
-func DelTeamCache(ctx context.Context, id uint) error {
+func DelTeamCache(id uint) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	var cursor uint64
 	for {
 		keys, cursor, err := RDB.Scan(ctx, cursor, fmt.Sprintf("team:%d:*", id), 10).Result()
@@ -83,7 +95,9 @@ func DelTeamCache(ctx context.Context, id uint) error {
 	return nil
 }
 
-func DelTeamsCache(ctx context.Context) error {
+func DelTeamsCache() error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	var cursor uint64
 	for {
 		keys, cursor, err := RDB.Scan(ctx, cursor, "team:list:*", 10).Result()

@@ -11,7 +11,9 @@ import (
 	"time"
 )
 
-func GetContestCache(ctx context.Context, key string) (model.Contest, bool) {
+func GetContestCache(key string) (model.Contest, bool) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
 		return model.Contest{}, false
@@ -23,10 +25,13 @@ func GetContestCache(ctx context.Context, key string) (model.Contest, bool) {
 	if err != nil {
 		return model.Contest{}, false
 	}
+	log.Logger.Debugf("GetContestCache: %d", contest.ID)
 	return contest, true
 }
 
-func GetContestsCache(ctx context.Context, key string) ([]model.Contest, bool) {
+func GetContestsCache(key string) ([]model.Contest, bool) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
 		return nil, false
@@ -38,10 +43,13 @@ func GetContestsCache(ctx context.Context, key string) ([]model.Contest, bool) {
 	if err != nil {
 		return nil, false
 	}
+	log.Logger.Debugf("GetContestsCache: %d", len(contests))
 	return contests, true
 }
 
-func SetContestCache(ctx context.Context, key string, contest model.Contest) error {
+func SetContestCache(key string, contest model.Contest) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	data, err := msgpack.Marshal(contest)
 	if err != nil {
 		return err
@@ -52,7 +60,9 @@ func SetContestCache(ctx context.Context, key string, contest model.Contest) err
 	return nil
 }
 
-func SetContestsCache(ctx context.Context, key string, contests []model.Contest) error {
+func SetContestsCache(key string, contests []model.Contest) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	data, err := msgpack.Marshal(contests)
 	if err != nil {
 		return err
@@ -63,7 +73,9 @@ func SetContestsCache(ctx context.Context, key string, contests []model.Contest)
 	return nil
 }
 
-func DelContestCache(ctx context.Context, id uint) error {
+func DelContestCache(id uint) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	var cursor uint64
 	for {
 		keys, cursor, err := RDB.Scan(ctx, cursor, fmt.Sprintf("contest:%d:*", id), 10).Result()
@@ -83,7 +95,9 @@ func DelContestCache(ctx context.Context, id uint) error {
 	return nil
 }
 
-func DelContestsCache(ctx context.Context) error {
+func DelContestsCache() error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	var cursor uint64
 	for {
 		keys, cursor, err := RDB.Scan(ctx, cursor, "contest:list:*", 10).Result()

@@ -4,9 +4,11 @@ import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/redis"
 	"context"
 	"github.com/spf13/viper"
 	"testing"
+	"time"
 )
 
 func InitTeamTest() {
@@ -17,15 +19,16 @@ func InitTeamTest() {
 	config.Env.Set("log.file", false)
 	log.Init()
 	Init()
+	redis.Init()
 	var ctx context.Context
 
 	user1, ok, msg := CreateUser(ctx, "user1", "password", "user1@0rays.club")
 	log.Logger.Debug(user1.ID, ok, msg)
 	user2, ok, msg := CreateUser(ctx, "user2", "password", "user2@0rays.club")
 	log.Logger.Debug(user2.ID, ok, msg)
-	contest1, ok, msg := CreateContest(ctx, "contest1")
+	contest1, ok, msg := CreateContest(ctx, "contest1", "test", 1, time.Now(), time.Duration(10), false)
 	log.Logger.Debug(contest1.ID, ok, msg)
-	contest2, ok, msg := CreateContest(ctx, "contest2")
+	contest2, ok, msg := CreateContest(ctx, "contest2", "test", 1, time.Now(), time.Duration(10), false)
 	log.Logger.Debug(contest2.ID, ok, msg)
 	team1, ok, msg := CreateTeam(ctx, "team1", user1.ID, contest1.ID)
 	log.Logger.Debug(team1.ID, ok, msg)
