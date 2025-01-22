@@ -11,7 +11,9 @@ import (
 	"time"
 )
 
-func GetUserCache(ctx context.Context, key string) (model.User, bool) {
+func GetUserCache(key string) (model.User, bool) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
 		return model.User{}, false
@@ -23,10 +25,13 @@ func GetUserCache(ctx context.Context, key string) (model.User, bool) {
 	if err != nil {
 		return model.User{}, false
 	}
+	log.Logger.Debug("GetUserCache: ", user.ID)
 	return user, true
 }
 
-func GetUsersCache(ctx context.Context, key string) ([]model.User, bool) {
+func GetUsersCache(key string) ([]model.User, bool) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
 		return nil, false
@@ -38,10 +43,13 @@ func GetUsersCache(ctx context.Context, key string) ([]model.User, bool) {
 	if err != nil {
 		return nil, false
 	}
+	log.Logger.Debug("GetUsersCache: ", len(users))
 	return users, true
 }
 
-func SetUserCache(ctx context.Context, key string, user model.User) error {
+func SetUserCache(key string, user model.User) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	data, err := msgpack.Marshal(user)
 	if err != nil {
 		return err
@@ -52,7 +60,9 @@ func SetUserCache(ctx context.Context, key string, user model.User) error {
 	return nil
 }
 
-func SetUsersCache(ctx context.Context, key string, users []model.User) error {
+func SetUsersCache(key string, users []model.User) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	data, err := msgpack.Marshal(users)
 	if err != nil {
 		return err
@@ -63,7 +73,9 @@ func SetUsersCache(ctx context.Context, key string, users []model.User) error {
 	return nil
 }
 
-func DelUserCache(ctx context.Context, id uint) error {
+func DelUserCache(id uint) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	var cursor uint64
 	for {
 		keys, cursor, err := RDB.Scan(ctx, cursor, fmt.Sprintf("user:%d:*", id), 10).Result()
@@ -83,7 +95,9 @@ func DelUserCache(ctx context.Context, id uint) error {
 	return nil
 }
 
-func DelUsersCache(ctx context.Context) error {
+func DelUsersCache() error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	var cursor uint64
 	for {
 		keys, cursor, err := RDB.Scan(ctx, cursor, "user:list:*", 10).Result()
