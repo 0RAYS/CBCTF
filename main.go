@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/log"
+	"CBCTF/internal/redis"
 	"CBCTF/internal/router"
 	"fmt"
 )
@@ -11,6 +12,7 @@ import (
 func init() {
 	config.Init()
 	log.Init()
+	redis.Init()
 	db.Init()
 }
 

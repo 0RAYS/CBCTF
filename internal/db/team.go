@@ -3,7 +3,9 @@ package db
 import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/redis"
 	"context"
+	"fmt"
 	"gorm.io/gorm/clause"
 )
 
@@ -24,6 +26,12 @@ func CreateTeam(ctx context.Context, name string, captainID uint, contestID uint
 	if ok, msg := JoinTeam(ctx, captainID, contestID, team.ID); !ok {
 		return model.Team{}, false, msg
 	}
+	go func() {
+		err := redis.DelTeamsCache(ctx)
+		if err != nil {
+			log.Logger.Warningf("Failed to delete teams cache: %s", err.Error())
+		}
+	}()
 	return team, true, "Success"
 }
 
@@ -37,6 +45,10 @@ func GetTeamByID(ctx context.Context, id uint, preloadL ...bool) (model.Team, bo
 	if len(preloadL) > 1 {
 		nest = preloadL[1]
 	}
+	cacheKey := fmt.Sprintf("team:%d:%v:%v", id, preload, nest)
+	if team, ok := redis.GetTeamCache(ctx, cacheKey); ok {
+		return team, true, "Success"
+	}
 	var team model.Team
 	res := DB.WithContext(ctx).Model(&model.Team{}).Where("id = ?", id)
 	if preload {
@@ -49,9 +61,16 @@ func GetTeamByID(ctx context.Context, id uint, preloadL ...bool) (model.Team, bo
 	if res.RowsAffected != 1 {
 		return model.Team{}, false, "TeamNotFound"
 	}
+	go func() {
+		err := redis.SetTeamCache(ctx, cacheKey, team)
+		if err != nil {
+			log.Logger.Warningf("Failed to set team cache: %s", err.Error())
+		}
+	}()
 	return team, true, "Success"
 }
 
+// GetTeamByName 根据名称获取 model.Team, name 用户可控, 不进行缓存
 func GetTeamByName(ctx context.Context, name string, contestID uint, preloadL ...bool) (model.Team, bool, string) {
 	preload := true
 	nest := false
@@ -111,6 +130,12 @@ func DeleteTeam(ctx context.Context, id uint) (bool, string) {
 		log.Logger.Warningf("Failed to delete team: %s", err.Error())
 		return false, "DeleteTeamError"
 	}
+	go func() {
+		err := redis.DelTeamCache(ctx, id)
+		if err != nil {
+			log.Logger.Warningf("Failed to delete team cache: %s", err.Error())
+		}
+	}()
 	return true, "Success"
 }
 
@@ -122,6 +147,12 @@ func UpdateTeam(ctx context.Context, id uint, updateData map[string]interface{})
 		log.Logger.Warningf("Failed to update team: %s", res.Error.Error())
 		return false, "UpdateError"
 	}
+	go func() {
+		err := redis.DelTeamCache(ctx, id)
+		if err != nil {
+			log.Logger.Warningf("Failed to delete team cache: %s", err.Error())
+		}
+	}()
 	return true, "Success"
 }
 
@@ -160,6 +191,17 @@ func JoinTeam(ctx context.Context, userID uint, contestID uint, teamID uint) (bo
 		log.Logger.Warningf("Failed to insert user_contest: %s", err.Error())
 		return false, "AppendContestToUserError"
 	}
+	go func() {
+		if err := redis.DelUserCache(ctx, userID); err != nil {
+			log.Logger.Warningf("Failed to delete user cache: %s", err.Error())
+		}
+		if err := redis.DelTeamCache(ctx, teamID); err != nil {
+			log.Logger.Warningf("Failed to delete teams cache: %s", err.Error())
+		}
+		if err := redis.DelContestCache(ctx, userID); err != nil {
+			log.Logger.Warningf("Failed to delete user cache: %s", err.Error())
+		}
+	}()
 	return ok, "Success"
 }
 
@@ -195,6 +237,17 @@ func LeaveTeam(ctx context.Context, userID uint, contestID uint, teamID uint) (b
 		log.Logger.Warningf("Failed to delete user_contest: " + err.Error())
 		return false, "DeleteUserFromContestError"
 	}
+	go func() {
+		if err := redis.DelUserCache(ctx, userID); err != nil {
+			log.Logger.Warningf("Failed to delete user cache: %s", err.Error())
+		}
+		if err := redis.DelTeamCache(ctx, teamID); err != nil {
+			log.Logger.Warningf("Failed to delete teams cache: %s", err.Error())
+		}
+		if err := redis.DelContestCache(ctx, userID); err != nil {
+			log.Logger.Warningf("Failed to delete user cache: %s", err.Error())
+		}
+	}()
 	return true, "Success"
 }
 
@@ -223,6 +276,10 @@ func GetTeams(ctx context.Context, contestID uint, limit int, offset int, all bo
 		log.Logger.Errorf("Failed to get contest count: %s", res.Error.Error())
 		return nil, 0, false, "UnknownError"
 	}
+	cacheKey := fmt.Sprintf("team:list:%d:%v:%v:%d:%d", contestID, all, preload, limit, offset)
+	if teams, ok := redis.GetTeamsCache(ctx, cacheKey); ok {
+		return teams, count, true, "Success"
+	}
 	if preload {
 		if nest {
 			res = res.Preload("Users.Teams").Preload("Users.Contests")
@@ -233,6 +290,11 @@ func GetTeams(ctx context.Context, contestID uint, limit int, offset int, all bo
 		log.Logger.Warningf("Failed to get teams: %s", res.Error.Error())
 		return nil, 0, false, "UnknownError"
 	}
+	go func() {
+		err := redis.SetTeamsCache(ctx, cacheKey, teams)
+		if err != nil {
+			log.Logger.Warningf("Failed to set teams cache: %s", err.Error())
+		}
+	}()
 	return teams, count, true, "Success"
-
 }

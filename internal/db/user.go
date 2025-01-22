@@ -3,8 +3,10 @@ package db
 import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/redis"
 	"CBCTF/internal/utils"
 	"context"
+	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -26,6 +28,12 @@ func CreateUser(ctx context.Context, name string, password string, email string)
 		log.Logger.Errorf("Failed to create user: %s", res.Error.Error())
 		return model.User{}, false, "CreateUserError"
 	}
+	go func() {
+		err := redis.DelUsersCache(ctx)
+		if err != nil {
+			log.Logger.Warningf("Failed to delete users cache: %s", err.Error())
+		}
+	}()
 	return user, true, "Success"
 }
 
@@ -39,6 +47,10 @@ func GetUserByID(ctx context.Context, id uint, preloadL ...bool) (model.User, bo
 	if len(preloadL) > 1 {
 		nest = preloadL[1]
 	}
+	cacheKey := fmt.Sprintf("user:%d:%v:%v", id, preload, nest)
+	if user, ok := redis.GetUserCache(ctx, cacheKey); ok {
+		return user, true, "Success"
+	}
 	var user model.User
 	res := DB.WithContext(ctx).Model(&model.User{}).Where("id = ?", id)
 	if preload {
@@ -51,6 +63,12 @@ func GetUserByID(ctx context.Context, id uint, preloadL ...bool) (model.User, bo
 	if res.RowsAffected != 1 {
 		return model.User{}, false, "UserNotFound"
 	}
+	go func() {
+		err := redis.SetUserCache(ctx, cacheKey, user)
+		if err != nil {
+			log.Logger.Warningf("Failed to set user cache: %s", err.Error())
+		}
+	}()
 	return user, true, "Success"
 }
 
@@ -72,6 +90,12 @@ func DeleteUser(ctx context.Context, id uint) (bool, string) {
 		log.Logger.Warningf("Failed to delete user: %s", err.Error())
 		return false, "DeleteUserError"
 	}
+	go func() {
+		err := redis.DelUserCache(ctx, id)
+		if err != nil {
+			log.Logger.Warningf("Failed to delete user cache: %s", err.Error())
+		}
+	}()
 	return true, "Success"
 }
 
@@ -83,6 +107,12 @@ func UpdateUser(ctx context.Context, id uint, updateData map[string]interface{})
 		log.Logger.Errorf("Failed to update user: %s", res.Error.Error())
 		return false, "UpdateError"
 	}
+	go func() {
+		err := redis.DelUserCache(ctx, id)
+		if err != nil {
+			log.Logger.Warningf("Failed to delete user cache: %s", err.Error())
+		}
+	}()
 	return true, "Success"
 }
 
@@ -116,6 +146,12 @@ func ChangePasswordUser(ctx context.Context, id uint, oldPassword string, newPas
 	if ok, msg = UpdateUser(ctx, id, map[string]interface{}{"password": hash}); !ok {
 		return false, msg
 	}
+	go func() {
+		err := redis.DelUserCache(ctx, id)
+		if err != nil {
+			log.Logger.Warningf("Failed to delete user cache: %s", err.Error())
+		}
+	}()
 	return true, "Success"
 }
 
@@ -150,6 +186,10 @@ func GetUsers(ctx context.Context, limit int, offset int, all bool, preloadL ...
 		log.Logger.Errorf("Failed to get contest count: %s", res.Error.Error())
 		return nil, 0, false, "UnknownError"
 	}
+	cacheKey := fmt.Sprintf("user:list:%v:%v:%d:%d", preload, nest, limit, offset)
+	if users, ok := redis.GetUsersCache(ctx, cacheKey); ok {
+		return users, count, true, "Success"
+	}
 	if preload {
 		if nest {
 			res = res.Preload("Teams.Users").Preload("Contests.Users").Preload("Contests.Teams")
@@ -160,6 +200,11 @@ func GetUsers(ctx context.Context, limit int, offset int, all bool, preloadL ...
 		log.Logger.Errorf("Failed to get users: %s", res.Error.Error())
 		return nil, 0, false, "GetUsersError"
 	}
+	go func() {
+		if err := redis.SetUsersCache(ctx, cacheKey, users); err != nil {
+			log.Logger.Warningf("Failed to set users cache: %s", err.Error())
+		}
+	}()
 	return users, count, true, "Success"
 
 }
