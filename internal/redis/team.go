@@ -5,7 +5,6 @@ import (
 	"CBCTF/internal/model"
 	"context"
 	"errors"
-	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/vmihailenco/msgpack/v4"
 	"time"
@@ -25,7 +24,7 @@ func GetTeamCache(key string) (model.Team, bool) {
 	if err != nil {
 		return model.Team{}, false
 	}
-	log.Logger.Debugf("GetTeamCache: %d", team.ID)
+	log.Logger.Debug("GetTeamCache: ", team.ID)
 	return team, true
 }
 
@@ -43,7 +42,7 @@ func GetTeamsCache(key string) ([]model.Team, bool) {
 	if err != nil {
 		return nil, false
 	}
-	log.Logger.Debugf("GetTeamsCache: %d", len(teams))
+	log.Logger.Debug("GetTeamsCache: ", len(teams))
 	return teams, true
 }
 
@@ -57,6 +56,7 @@ func SetTeamCache(key string, team model.Team) error {
 	if err = RDB.Set(ctx, key, data, 10*time.Minute).Err(); err != nil {
 		return err
 	}
+	log.Logger.Debug("SetTeamCache: ", team.ID)
 	return nil
 }
 
@@ -70,28 +70,7 @@ func SetTeamsCache(key string, teams []model.Team) error {
 	if err = RDB.Set(ctx, key, data, 2*time.Minute).Err(); err != nil {
 		return err
 	}
-	return nil
-}
-
-func DelTeamCache(id uint) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
-	defer cancel()
-	var cursor uint64
-	for {
-		keys, cursor, err := RDB.Scan(ctx, cursor, fmt.Sprintf("team:%d:*", id), 10).Result()
-		if err != nil {
-			log.Logger.Warningf("Failed to scan team keys: %s", err)
-		}
-
-		for _, key := range keys {
-			if err := RDB.Del(ctx, key).Err(); err != nil {
-				return err
-			}
-		}
-		if cursor == 0 {
-			break
-		}
-	}
+	log.Logger.Debug("SetTeamsCache: ", len(teams))
 	return nil
 }
 
@@ -100,7 +79,7 @@ func DelTeamsCache() error {
 	defer cancel()
 	var cursor uint64
 	for {
-		keys, cursor, err := RDB.Scan(ctx, cursor, "team:list:*", 10).Result()
+		keys, cursor, err := RDB.Scan(ctx, cursor, "team:*", 10).Result()
 		if err != nil {
 			log.Logger.Warningf("Failed to scan teams keys: %s", err)
 		}
@@ -114,5 +93,6 @@ func DelTeamsCache() error {
 			break
 		}
 	}
+	log.Logger.Debug("DelTeamsCache")
 	return nil
 }

@@ -57,6 +57,7 @@ func SetUserCache(key string, user model.User) error {
 	if err = RDB.Set(ctx, key, data, 10*time.Minute).Err(); err != nil {
 		return err
 	}
+	log.Logger.Debug("SetUserCache: ", user.ID)
 	return nil
 }
 
@@ -70,6 +71,7 @@ func SetUsersCache(key string, users []model.User) error {
 	if err = RDB.Set(ctx, key, data, 2*time.Minute).Err(); err != nil {
 		return err
 	}
+	log.Logger.Debug("SetUsersCache: ", len(users))
 	return nil
 }
 
@@ -92,6 +94,7 @@ func DelUserCache(id uint) error {
 			break
 		}
 	}
+	log.Logger.Debug("DelUserCache: ", id)
 	return nil
 }
 
@@ -100,7 +103,7 @@ func DelUsersCache() error {
 	defer cancel()
 	var cursor uint64
 	for {
-		keys, cursor, err := RDB.Scan(ctx, cursor, "user:list:*", 10).Result()
+		keys, cursor, err := RDB.Scan(ctx, cursor, "user:*", 10).Result()
 		if err != nil {
 			log.Logger.Warningf("Failed to scan users keys: %s", err)
 		}
@@ -114,5 +117,6 @@ func DelUsersCache() error {
 			break
 		}
 	}
+	log.Logger.Debug("DelUsersCache")
 	return nil
 }

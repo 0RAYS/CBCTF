@@ -70,7 +70,7 @@ func DeleteFile(ctx context.Context, id string) (bool, string) {
 		return false, "DeleteFileError"
 	}
 	go func() {
-		if err := redis.DelFileCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelFilesCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete file cache: %v", err)
 		}
 	}()

@@ -80,7 +80,7 @@ func DeleteContest(ctx context.Context, id uint) (bool, string) {
 		return false, "DeleteContestError"
 	}
 	go func() {
-		if err := redis.DelContestCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelContestsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete contests cache: %s", err.Error())
 		}
 	}()
@@ -96,7 +96,7 @@ func UpdateContest(ctx context.Context, id uint, updateData map[string]interface
 		return false, "UpdateError"
 	}
 	go func() {
-		if err := redis.DelContestCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelContestsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete contests cache: %s", err.Error())
 		}
 	}()
