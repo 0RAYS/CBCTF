@@ -19,11 +19,11 @@ func Init() {
 		ReadTimeout:  1 * time.Second,
 		WriteTimeout: 1 * time.Second,
 	})
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	_, err := RDB.Ping(ctx).Result()
 	if err != nil {
-		log.Logger.Error("Failed to connect to Redis")
+		log.Logger.Errorf("Failed to connect to Redis: %s", err)
 		return
 	}
 	log.Logger.Debugf("Connected to Redis: %s", config.Env.Redis.Addr)

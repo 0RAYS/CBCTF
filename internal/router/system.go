@@ -1,6 +1,7 @@
 package router
 
 import (
+	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -50,4 +51,8 @@ func SystemStatus(ctx *gin.Context) {
 	ret["contests"] = strconv.FormatInt(db.CountContests(ctx), 10)
 	ret["ip"] = strconv.FormatInt(db.CountIP(ctx), 10)
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": ret})
+}
+
+func SystemConfig(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": config.Env})
 }

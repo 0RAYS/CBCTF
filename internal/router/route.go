@@ -48,6 +48,10 @@ func Init() *gin.Engine {
 	admin.POST("/update", UpdateAdmin)
 	admin.POST("/avatar", Avatar(model.Admin{}))
 
+	adminSystem := admin.Group("/system")
+	adminSystem.GET("/status", SystemStatus)
+	adminSystem.GET("/config", SystemConfig)
+
 	adminUser := admin.Group("/user")
 	adminUser.GET("/list", GetUsers)
 	adminUser.POST("/create", CreateUser)
@@ -72,9 +76,6 @@ func Init() *gin.Engine {
 	adminContestTeam.POST("/:teamID/delete", middleware.SetTeamID, DeleteTeam)
 	adminContestTeam.POST("/:teamID/kick", middleware.SetTeamID, KickMember)
 	adminContestTeam.POST("/:teamID/avatar", middleware.SetTeamID, Avatar(model.Team{}))
-
-	adminSystem := admin.Group("/system")
-	adminSystem.GET("/status", SystemStatus)
 
 	adminFile := admin.Group("/file")
 	adminFile.GET("/list", GetFiles)
