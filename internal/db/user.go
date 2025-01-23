@@ -90,8 +90,11 @@ func DeleteUser(ctx context.Context, id uint) (bool, string) {
 		return false, "DeleteUserError"
 	}
 	go func() {
-		if err := redis.DelUsersCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelUserCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete user cache: %s", err.Error())
+		}
+		if err := redis.DelUsersCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+			log.Logger.Warningf("Failed to delete users cache: %s", err.Error())
 		}
 	}()
 	return true, "Success"
@@ -106,8 +109,11 @@ func UpdateUser(ctx context.Context, id uint, updateData map[string]interface{})
 		return false, "UpdateError"
 	}
 	go func() {
-		if err := redis.DelUsersCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelUserCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete user cache: %s", err.Error())
+		}
+		if err := redis.DelUsersCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+			log.Logger.Warningf("Failed to delete users cache: %s", err.Error())
 		}
 	}()
 	return true, "Success"
@@ -182,7 +188,7 @@ func GetUsers(ctx context.Context, limit int, offset int, all bool, preloadL ...
 		log.Logger.Errorf("Failed to get contest count: %s", res.Error.Error())
 		return nil, 0, false, "UnknownError"
 	}
-	cacheKey := fmt.Sprintf("user:list:%v:%v:%d:%d", preload, nest, limit, offset)
+	cacheKey := fmt.Sprintf("users:%v:%v:%d:%d", preload, nest, limit, offset)
 	if users, ok := redis.GetUsersCache(cacheKey); ok {
 		return users, count, true, "Success"
 	}

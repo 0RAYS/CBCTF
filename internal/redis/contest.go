@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/model"
 	"context"
 	"errors"
+	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/vmihailenco/msgpack/v4"
 	"time"
@@ -74,21 +75,45 @@ func SetContestsCache(key string, contests []model.Contest) error {
 	return nil
 }
 
-func DelContestsCache() error {
+func DelContestCache(id uint) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
 	defer cancel()
 	var cursor uint64
 	for {
-		keys, cursor, err := RDB.Scan(ctx, cursor, "contest:*", 10).Result()
+		keys, cursor, err := RDB.Scan(ctx, cursor, fmt.Sprintf("contest:%d:*", id), 10).Result()
 		if err != nil {
 			log.Logger.Warningf("Failed to scan contest keys: %s", err)
 		}
 
 		for _, key := range keys {
-			log.Logger.Debug("DelContestsCache: ", key)
 			if err := RDB.Del(ctx, key).Err(); err != nil {
 				return err
 			}
+			log.Logger.Debug("DelContestCache: ", key)
+		}
+		if cursor == 0 {
+			break
+		}
+	}
+	log.Logger.Debug("DelContestsCache")
+	return nil
+}
+
+func DelContestsCache() error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
+	var cursor uint64
+	for {
+		keys, cursor, err := RDB.Scan(ctx, cursor, "contests:*", 10).Result()
+		if err != nil {
+			log.Logger.Warningf("Failed to scan contest keys: %s", err)
+		}
+
+		for _, key := range keys {
+			if err := RDB.Del(ctx, key).Err(); err != nil {
+				return err
+			}
+			log.Logger.Debug("DelContestsCache: ", key)
 		}
 		if cursor == 0 {
 			break

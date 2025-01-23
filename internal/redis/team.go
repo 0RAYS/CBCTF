@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/model"
 	"context"
 	"errors"
+	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/vmihailenco/msgpack/v4"
 	"time"
@@ -74,21 +75,45 @@ func SetTeamsCache(key string, teams []model.Team) error {
 	return nil
 }
 
-func DelTeamsCache() error {
+func DelTeamCache(id uint) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
 	defer cancel()
 	var cursor uint64
 	for {
-		keys, cursor, err := RDB.Scan(ctx, cursor, "team:*", 10).Result()
+		keys, cursor, err := RDB.Scan(ctx, cursor, fmt.Sprintf("team:%d:*", id), 10).Result()
 		if err != nil {
 			log.Logger.Warningf("Failed to scan teams keys: %s", err)
 		}
 
 		for _, key := range keys {
-			log.Logger.Debug("DelTeamsCache: ", key)
 			if err := RDB.Del(ctx, key).Err(); err != nil {
 				return err
 			}
+			log.Logger.Debug("DelTeamCache: ", key)
+		}
+		if cursor == 0 {
+			break
+		}
+	}
+	log.Logger.Debug("DelTeamCache")
+	return nil
+}
+
+func DelTeamsCache() error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
+	var cursor uint64
+	for {
+		keys, cursor, err := RDB.Scan(ctx, cursor, "teams:*", 10).Result()
+		if err != nil {
+			log.Logger.Warningf("Failed to scan teams keys: %s", err)
+		}
+
+		for _, key := range keys {
+			if err := RDB.Del(ctx, key).Err(); err != nil {
+				return err
+			}
+			log.Logger.Debug("DelTeamsCache: ", key)
 		}
 		if cursor == 0 {
 			break

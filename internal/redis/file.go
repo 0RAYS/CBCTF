@@ -74,21 +74,32 @@ func SetFilesCache(key string, files []model.File) error {
 	return nil
 }
 
+func DelFileCache(id string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
+	key := "file:" + id
+	if err := RDB.Del(ctx, key).Err(); err != nil {
+		return err
+	}
+	log.Logger.Debug("DelFileCache: ", id)
+	return nil
+}
+
 func DelFilesCache() error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
 	defer cancel()
 	var cursor uint64
 	for {
-		keys, cursor, err := RDB.Scan(ctx, cursor, "file:*", 10).Result()
+		keys, cursor, err := RDB.Scan(ctx, cursor, "files:*", 10).Result()
 		if err != nil {
 			log.Logger.Warningf("Failed to scan file keys: %s", err)
 		}
 
 		for _, key := range keys {
-			log.Logger.Debug("DelFilesCache: ", key)
 			if err := RDB.Del(ctx, key).Err(); err != nil {
 				return err
 			}
+			log.Logger.Debug("DelFilesCache: ", key)
 		}
 		if cursor == 0 {
 			break

@@ -80,6 +80,9 @@ func DeleteContest(ctx context.Context, id uint) (bool, string) {
 		return false, "DeleteContestError"
 	}
 	go func() {
+		if err := redis.DelContestCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+			log.Logger.Warningf("Failed to delete contest cache: %s", err.Error())
+		}
 		if err := redis.DelContestsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete contests cache: %s", err.Error())
 		}
@@ -96,6 +99,9 @@ func UpdateContest(ctx context.Context, id uint, updateData map[string]interface
 		return false, "UpdateError"
 	}
 	go func() {
+		if err := redis.DelContestCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+			log.Logger.Warningf("Failed to delete contest cache: %s", err.Error())
+		}
 		if err := redis.DelContestsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete contests cache: %s", err.Error())
 		}
@@ -134,7 +140,7 @@ func GetContests(ctx context.Context, limit int, offset int, all bool, preloadL 
 		log.Logger.Errorf("Failed to get contest count: %s", res.Error.Error())
 		return nil, 0, false, "UnknownError"
 	}
-	cacheKey := fmt.Sprintf("contest:list:%v:%v:%d:%d", preload, nest, limit, offset)
+	cacheKey := fmt.Sprintf("contests:%v:%v:%d:%d", preload, nest, limit, offset)
 	if contests, ok := redis.GetContestsCache(cacheKey); ok {
 		return contests, count, true, "Success"
 	}
