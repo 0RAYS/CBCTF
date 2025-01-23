@@ -89,6 +89,7 @@ func DelUserCache(id uint) error {
 			if err := RDB.Del(ctx, key).Err(); err != nil {
 				return err
 			}
+			log.Logger.Debug("DelUserCache: ", key)
 		}
 		if cursor == 0 {
 			break
@@ -103,7 +104,7 @@ func DelUsersCache() error {
 	defer cancel()
 	var cursor uint64
 	for {
-		keys, cursor, err := RDB.Scan(ctx, cursor, "user:*", 10).Result()
+		keys, cursor, err := RDB.Scan(ctx, cursor, "users:*", 10).Result()
 		if err != nil {
 			log.Logger.Warningf("Failed to scan users keys: %s", err)
 		}

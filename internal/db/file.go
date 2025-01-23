@@ -70,8 +70,11 @@ func DeleteFile(ctx context.Context, id string) (bool, string) {
 		return false, "DeleteFileError"
 	}
 	go func() {
-		if err := redis.DelFilesCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelFileCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete file cache: %v", err)
+		}
+		if err := redis.DelFilesCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+			log.Logger.Warningf("Failed to delete files cache: %v", err)
 		}
 	}()
 	return true, "Success"
@@ -92,7 +95,7 @@ func GetFiles(ctx context.Context, limit int, offset int) ([]model.File, int64, 
 		log.Logger.Warningf("Failed to get files: %s", res.Error.Error())
 		return nil, 0, false, "UnknownError"
 	}
-	cacheKey := fmt.Sprintf("file:list:%d:%d", limit, offset)
+	cacheKey := fmt.Sprintf("files:%d:%d", limit, offset)
 	if files, ok := redis.GetFilesCache(cacheKey); ok {
 		return files, int64(len(files)), true, "Success"
 	}
