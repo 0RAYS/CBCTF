@@ -3,6 +3,7 @@ package router
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
+	"CBCTF/internal/redis"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/cpu"
@@ -10,11 +11,10 @@ import (
 	"github.com/shirou/gopsutil/mem"
 	"github.com/shirou/gopsutil/net"
 	"net/http"
-	"strconv"
 )
 
 func SystemStatus(ctx *gin.Context) {
-	ret := make(map[string]string)
+	ret := make(map[string]interface{})
 	cpuPercent, err := cpu.Percent(0, false)
 	if err != nil || len(cpuPercent) == 0 {
 		ret["cpu"] = "0.00"
@@ -38,18 +38,27 @@ func SystemStatus(ctx *gin.Context) {
 
 	ioStats, err := net.IOCounters(false)
 	if err != nil || len(ioStats) == 0 {
-		ret["io"] = "0.00"
-		ret["sent"] = "0"
-		ret["recv"] = "0"
+		ret["io"] = 0
+		ret["sent"] = 0
+		ret["recv"] = 0
 	} else {
-		ret["io"] = fmt.Sprintf("%v", ioStats[0].BytesSent+ioStats[0].BytesRecv)
-		ret["sent"] = fmt.Sprintf("%v", ioStats[0].BytesSent)
-		ret["recv"] = fmt.Sprintf("%v", ioStats[0].BytesRecv)
+		ret["io"] = ioStats[0].BytesSent + ioStats[0].BytesRecv
+		ret["sent"] = ioStats[0].BytesSent
+		ret["recv"] = ioStats[0].BytesRecv
 	}
 
-	ret["users"] = strconv.FormatInt(db.CountUsers(ctx), 10)
-	ret["contests"] = strconv.FormatInt(db.CountContests(ctx), 10)
-	ret["ip"] = strconv.FormatInt(db.CountIP(ctx), 10)
+	ret["users"] = db.CountUsers(ctx)
+	ret["contests"] = db.CountContests(ctx)
+	ret["ip"] = db.CountIP(ctx)
+
+	total, hit, miss := redis.Status()
+	ret["cache"] = total
+	ret["hit"] = hit
+	if hit+miss == 0 {
+		ret["rate"] = "0.00"
+	} else {
+		ret["rate"] = fmt.Sprintf("%.2f", float64(hit)/float64(hit+miss)*100)
+	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": ret})
 }
 
