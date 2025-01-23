@@ -6,34 +6,17 @@ import (
 	"CBCTF/internal/redis"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/shirou/gopsutil/cpu"
-	"github.com/shirou/gopsutil/disk"
-	"github.com/shirou/gopsutil/mem"
 	"github.com/shirou/gopsutil/net"
 	"net/http"
 )
 
 func SystemStatus(ctx *gin.Context) {
 	ret := make(map[string]interface{})
-	cpuPercent, err := cpu.Percent(0, false)
-	if err != nil || len(cpuPercent) == 0 {
-		ret["cpu"] = "0.00"
+	metrics, err := redis.GetMetrics()
+	if err != nil {
+		ret["metrics"] = nil
 	} else {
-		ret["cpu"] = fmt.Sprintf("%.2f", cpuPercent[0])
-	}
-
-	vm, err := mem.VirtualMemory()
-	if err != nil || vm == nil {
-		ret["mem"] = "0.00"
-	} else {
-		ret["mem"] = fmt.Sprintf("%.2f", vm.UsedPercent)
-	}
-
-	diskStat, err := disk.Usage("/") // 根目录
-	if err != nil || diskStat == nil {
-		ret["disk"] = "0.00"
-	} else {
-		ret["disk"] = fmt.Sprintf("%.2f", diskStat.UsedPercent)
+		ret["metrics"] = metrics
 	}
 
 	ioStats, err := net.IOCounters(false)
