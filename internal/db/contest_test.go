@@ -22,7 +22,7 @@ func InitContestTest() {
 	redis.Init()
 	var ctx context.Context
 
-	user1, ok, msg := CreateUser(ctx, "user1", "password", "user1@0rays.club")
+	user1, ok, msg := CreateUser(ctx, "user1", "password", "user1@0rays.club", "", "", false, false, false)
 	log.Logger.Debug(user1.ID, ok, msg)
 	contest1, ok, msg := CreateContest(ctx, "contest1", "test", 1, time.Now(), time.Duration(10), false)
 	log.Logger.Debug(contest1.ID, ok, msg)

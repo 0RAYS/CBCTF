@@ -22,7 +22,7 @@ func InitAdminTest() {
 	var ctx context.Context
 	admin1, ok, msg := CreateAdmin(ctx, "admin1", "password", "admin1@0rays.club")
 	log.Logger.Info(admin1.ID, ok, msg)
-	user1, ok, msg := CreateUser(ctx, "user1", "password", "user1@0rays.club")
+	user1, ok, msg := CreateUser(ctx, "user1", "password", "user1@0rays.club", "", "", false, false, false)
 	log.Logger.Info(user1.ID, ok, msg)
 }
 
@@ -38,10 +38,10 @@ func TestCreateAdmin(t *testing.T) {
 	if _, ok, _ := CreateAdmin(ctx, "test", "password", "admin1@0rays.club"); ok {
 		t.Fatal("Should not create duplicated email")
 	}
-	if _, ok, _ := CreateUser(ctx, "admin1", "password", "test@0rays.club"); !ok {
+	if _, ok, _ := CreateUser(ctx, "admin1", "password", "test@0rays.club", "", "", false, false, false); !ok {
 		t.Fatal("Failed to create user which name is duplicated with admin")
 	}
-	if _, ok, _ := CreateUser(ctx, "test", "password", "admin1@0rays.club"); ok {
+	if _, ok, _ := CreateUser(ctx, "test", "password", "admin1@0rays.club", "", "", false, false, false); ok {
 		t.Fatal("Should not create user which email is duplicated with admin")
 	}
 	if admin1, _, _ := GetAdminByID(ctx, 1); admin1.Password == "password" {

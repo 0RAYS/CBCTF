@@ -106,12 +106,12 @@ func DeleteUser(ctx *gin.Context) {
 }
 
 func CreateUser(ctx *gin.Context) {
-	var form RegisterForm
+	var form CreateUserForm
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	user, ok, msg := db.CreateUser(ctx, form.Name, form.Password, form.Email)
+	user, ok, msg := db.CreateUser(ctx, form.Name, form.Password, form.Email, form.Desc, form.Country, form.Hidden, form.Banned, form.Verified)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

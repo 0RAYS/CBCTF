@@ -13,7 +13,7 @@ import (
 )
 
 // CreateUser 创建用户
-func CreateUser(ctx context.Context, name string, password string, email string) (model.User, bool, string) {
+func CreateUser(ctx context.Context, name string, password string, email string, desc string, country string, hidden bool, verified bool, banned bool) (model.User, bool, string) {
 	if !IsValidEmail(email) {
 		return model.User{}, false, "InvalidEmail"
 	}
@@ -23,7 +23,7 @@ func CreateUser(ctx context.Context, name string, password string, email string)
 	if !IsUniqueEmail(email) {
 		return model.User{}, false, "EmailExists"
 	}
-	user := model.InitUser(name, password, email)
+	user := model.InitUser(name, password, email, desc, country, hidden, verified, banned)
 	res := DB.WithContext(ctx).Model(&model.User{}).Create(&user)
 	if res.Error != nil {
 		log.Logger.Errorf("Failed to create user: %s", res.Error.Error())
@@ -106,7 +106,7 @@ func UpdateUser(ctx context.Context, id uint, updateData map[string]interface{})
 		return false, "UpdateError"
 	}
 	go func() {
-		if err := redis.DelUserCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelUsersCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete user cache: %s", err.Error())
 		}
 	}()
