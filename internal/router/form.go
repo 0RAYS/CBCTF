@@ -28,7 +28,6 @@ type UpdateSelfForm struct {
 	Email   *string `json:"email"`
 	Desc    *string `json:"desc"`
 	Country *string `json:"country"`
-	Website *string `json:"website"`
 }
 
 type UpdateAdminForm struct {
@@ -41,7 +40,6 @@ type UpdateUserForm struct {
 	Email    *string `json:"email"`
 	Desc     *string `json:"desc"`
 	Country  *string `json:"country"`
-	Website  *string `json:"website"`
 	Password *string `json:"password"`
 	Hidden   *bool   `json:"hidden"`
 	Banned   *bool   `json:"banned"`
@@ -95,6 +93,17 @@ type JoinTeamForm struct {
 
 type KickMemberForm struct {
 	UserID uint `json:"user_id" binding:"required"`
+}
+
+type CreateUserForm struct {
+	Name     string `json:"name" binding:"required"`
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
+	Desc     string `json:"desc"`
+	Country  string `json:"country"`
+	Hidden   bool   `json:"hidden"`
+	Verified bool   `json:"verified"`
+	Banned   bool   `json:"banned"`
 }
 
 type CreateTeamForm struct {

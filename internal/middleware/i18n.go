@@ -10,7 +10,7 @@ import (
 
 var resp = map[string]map[string]interface{}{
 	"Success":               {"zh-CN": "操作成功", "en-US": "Success", "code": 200},
-	"BadRequest":            {"zh-CN": "请求错误", "en-US": "Bad request", "code": 400},
+	"BadRequest":            {"zh-CN": "参数错误", "en-US": "Bad request", "code": 400},
 	"CreateUserError":       {"zh-CN": "创建用户失败", "en-US": "Failed to create user", "code": 500},
 	"CreateTeamError":       {"zh-CN": "创建队伍失败", "en-US": "Failed to create team", "code": 500},
 	"CreateContestError":    {"zh-CN": "创建赛事失败", "en-US": "Failed to create contest", "code": 500},

@@ -12,7 +12,6 @@ type User struct {
 	Name      string         `gorm:"unique;not null" json:"name"`
 	Password  string         `gorm:"not null" json:"-"`
 	Email     string         `gorm:"unique;not null" json:"email"`
-	Website   string         `json:"website"`
 	Country   string         `gorm:"default:'cn'" json:"country"`
 	Avatar    string         `json:"avatar"`
 	Desc      string         `json:"desc"`
@@ -39,17 +38,16 @@ func (m User) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func InitUser(name string, password string, email string) User {
+func InitUser(name string, password string, email string, desc string, country string, hidden bool, verified bool, banned bool) User {
 	return User{
 		Name:     name,
 		Password: utils.HashPassword(password),
 		Email:    email,
-		Website:  "",
-		Country:  "cn",
-		Desc:     "",
+		Country:  country,
+		Desc:     desc,
 		Avatar:   "",
-		Verified: false,
-		Hidden:   false,
-		Banned:   false,
+		Verified: verified,
+		Hidden:   hidden,
+		Banned:   banned,
 	}
 }

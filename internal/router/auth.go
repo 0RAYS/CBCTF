@@ -17,7 +17,7 @@ func Register(ctx *gin.Context) {
 		return
 	}
 	username, password, email := form.Name, form.Password, form.Email
-	user, ok, msg := db.CreateUser(ctx, username, password, email)
+	user, ok, msg := db.CreateUser(ctx, username, password, email, "", "", false, false, false)
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
