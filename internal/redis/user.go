@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
@@ -12,7 +13,7 @@ import (
 )
 
 func GetUserCache(key string) (model.User, bool) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
@@ -30,7 +31,7 @@ func GetUserCache(key string) (model.User, bool) {
 }
 
 func GetUsersCache(key string) ([]model.User, bool) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
@@ -48,7 +49,7 @@ func GetUsersCache(key string) ([]model.User, bool) {
 }
 
 func SetUserCache(key string, user model.User) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := msgpack.Marshal(user)
 	if err != nil {
@@ -62,7 +63,7 @@ func SetUserCache(key string, user model.User) error {
 }
 
 func SetUsersCache(key string, users []model.User) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := msgpack.Marshal(users)
 	if err != nil {
@@ -76,7 +77,7 @@ func SetUsersCache(key string, users []model.User) error {
 }
 
 func DelUserCache(id uint) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	var cursor uint64
 	for {
@@ -100,7 +101,7 @@ func DelUserCache(id uint) error {
 }
 
 func DelUsersCache() error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	var cursor uint64
 	for {

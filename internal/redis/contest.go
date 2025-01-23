@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
@@ -12,7 +13,7 @@ import (
 )
 
 func GetContestCache(key string) (model.Contest, bool) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
@@ -30,7 +31,7 @@ func GetContestCache(key string) (model.Contest, bool) {
 }
 
 func GetContestsCache(key string) ([]model.Contest, bool) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
@@ -48,7 +49,7 @@ func GetContestsCache(key string) ([]model.Contest, bool) {
 }
 
 func SetContestCache(key string, contest model.Contest) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := msgpack.Marshal(contest)
 	if err != nil {
@@ -62,7 +63,7 @@ func SetContestCache(key string, contest model.Contest) error {
 }
 
 func SetContestsCache(key string, contests []model.Contest) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := msgpack.Marshal(contests)
 	if err != nil {
@@ -76,7 +77,7 @@ func SetContestsCache(key string, contests []model.Contest) error {
 }
 
 func DelContestCache(id uint) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	var cursor uint64
 	for {
@@ -100,7 +101,7 @@ func DelContestCache(id uint) error {
 }
 
 func DelContestsCache() error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	var cursor uint64
 	for {

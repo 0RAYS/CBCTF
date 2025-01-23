@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
@@ -11,7 +12,7 @@ import (
 )
 
 func GetFileCache(key string) (model.File, bool) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
@@ -29,7 +30,7 @@ func GetFileCache(key string) (model.File, bool) {
 }
 
 func GetFilesCache(key string) ([]model.File, bool) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
@@ -47,7 +48,7 @@ func GetFilesCache(key string) ([]model.File, bool) {
 }
 
 func SetFileCache(key string, file model.File) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := msgpack.Marshal(file)
 	if err != nil {
@@ -61,7 +62,7 @@ func SetFileCache(key string, file model.File) error {
 }
 
 func SetFilesCache(key string, files []model.File) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := msgpack.Marshal(files)
 	if err != nil {
@@ -75,7 +76,7 @@ func SetFilesCache(key string, files []model.File) error {
 }
 
 func DelFileCache(id string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	key := "file:" + id
 	if err := RDB.Del(ctx, key).Err(); err != nil {
@@ -86,7 +87,7 @@ func DelFileCache(id string) error {
 }
 
 func DelFilesCache() error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	var cursor uint64
 	for {

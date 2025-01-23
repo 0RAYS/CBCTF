@@ -12,33 +12,34 @@ import (
 
 type Config struct {
 	Log struct {
-		Level string `mapstructure:"level"` // 日志级别：DEBUG, INFO, WARNING, ERROR
-		Save  bool   `mapstructure:"save"`  // 是否保存日志到文件
-	} `mapstructure:"log"`
+		Level string `mapstructure:"level" json:"level"` // 日志级别：DEBUG, INFO, WARNING, ERROR
+		Save  bool   `mapstructure:"save" json:"save"`   // 是否保存日志到文件
+	} `mapstructure:"log" json:"log"`
 
 	Gin struct {
-		Mode   string `mapstructure:"mode"` // Gin 模式：debug, release, test
-		Host   string `mapstructure:"host"` // Gin 服务监听地址
-		Port   int    `mapstructure:"port"` // Gin 服务监听端口
+		Mode   string `mapstructure:"mode" json:"mode"` // Gin 模式：debug, release, test
+		Host   string `mapstructure:"host" json:"host"` // Gin 服务监听地址
+		Port   int    `mapstructure:"port" json:"port"` // Gin 服务监听端口
 		Upload struct {
-			Path string `mapstructure:"path"` // 上传文件路径
-			Max  int    `mapstructure:"max"`  // 上传文件最大大小（单位：MB）
-		} `mapstructure:"upload"`
-	} `mapstructure:"gin"`
+			Path string `mapstructure:"path" json:"path"` // 上传文件路径
+			Max  int    `mapstructure:"max" json:"max"`   // 上传文件最大大小（单位：MB）
+		} `mapstructure:"upload" json:"upload"`
+	} `mapstructure:"gin" json:"gin"`
 
 	Gorm struct {
-		File string `mapstructure:"file"` // 数据库文件路径
+		File string `mapstructure:"file" json:"file"` // 数据库文件路径
 		Log  struct {
-			Level string `mapstructure:"level"` // GORM 日志级别：INFO, WARNING, ERROR, SILENT
-		} `mapstructure:"log"`
-	} `mapstructure:"gorm"`
+			Level string `mapstructure:"level" json:"level"` // GORM 日志级别：INFO, WARNING, ERROR, SILENT
+		} `mapstructure:"log" json:"log"`
+	} `mapstructure:"gorm" json:"gorm"`
 
 	Redis struct {
-		Addr string `mapstructure:"addr"` // Redis 地址
-		Pwd  string `mapstructure:"pwd"`  // Redis 密码
-	} `mapstructure:"redis"`
+		Addr    string `mapstructure:"addr" json:"addr"`       // Redis 地址
+		Pwd     string `mapstructure:"pwd" json:"pwd"`         // Redis 密码
+		Timeout uint   `mapstructure:"timeout" json:"timeout"` // Redis 连接超时时间（单位：毫秒）
+	} `mapstructure:"redis" json:"redis"`
 
-	Url string `mapstructure:"url"` // 主机地址
+	Url string `mapstructure:"url" json:"url"` // 主机地址
 }
 
 var Env *Config

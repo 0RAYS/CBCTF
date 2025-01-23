@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
@@ -12,7 +13,7 @@ import (
 )
 
 func GetTeamCache(key string) (model.Team, bool) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
@@ -30,7 +31,7 @@ func GetTeamCache(key string) (model.Team, bool) {
 }
 
 func GetTeamsCache(key string) ([]model.Team, bool) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
@@ -48,7 +49,7 @@ func GetTeamsCache(key string) ([]model.Team, bool) {
 }
 
 func SetTeamCache(key string, team model.Team) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := msgpack.Marshal(team)
 	if err != nil {
@@ -62,7 +63,7 @@ func SetTeamCache(key string, team model.Team) error {
 }
 
 func SetTeamsCache(key string, teams []model.Team) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := msgpack.Marshal(teams)
 	if err != nil {
@@ -76,7 +77,7 @@ func SetTeamsCache(key string, teams []model.Team) error {
 }
 
 func DelTeamCache(id uint) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	var cursor uint64
 	for {
@@ -100,7 +101,7 @@ func DelTeamCache(id uint) error {
 }
 
 func DelTeamsCache() error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	var cursor uint64
 	for {
