@@ -134,7 +134,7 @@ func Avatar(v interface{}) func(ctx *gin.Context) {
 		)
 		hash := hex.EncodeToString(sha256Sum.Sum(nil))
 		if record, ok, _ = db.GetFileByHash(ctx, hash); !ok {
-			basePath := fmt.Sprintf("%s/avatar", config.Env.GetString("upload.path"))
+			basePath := fmt.Sprintf("%s/avatar", config.Env.Gin.Upload.Path)
 			allowed := []string{".png", ".jpg", ".jpeg"}
 			suffix := strings.ToLower(p.Ext(file.Filename))
 			if !utils.In(suffix, allowed) {
@@ -152,7 +152,7 @@ func Avatar(v interface{}) func(ctx *gin.Context) {
 				return
 			}
 		}
-		path := fmt.Sprintf("%s/download/%s", config.Env.GetString("host"), record.ID)
+		path := fmt.Sprintf("%s/download/%s", config.Env.Url, record.ID)
 		switch v.(type) {
 		case model.Admin:
 			_, msg = db.UpdateAdmin(ctx, middleware.GetSelfID(ctx), map[string]interface{}{"avatar": path})

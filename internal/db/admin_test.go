@@ -5,17 +5,14 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/redis"
 	"context"
-	"github.com/spf13/viper"
 	"testing"
 )
 
 func InitAdminTest() {
-	config.Env = viper.New()
-	config.Env.Set("gorm.file", ":memory:")
-	config.Env.Set("gorm.log.level", "silent")
-	config.Env.Set("log.level", "info")
-	config.Env.Set("log.file", false)
-	config.Env.Set("upload.max", 8)
+	config.Env.Gorm.File = ":memory:"
+	config.Env.Gorm.Log.Level = "debug"
+	config.Env.Log.Level = "debug"
+	config.Env.Log.Save = false
 	log.Init()
 	Init()
 	redis.Init()

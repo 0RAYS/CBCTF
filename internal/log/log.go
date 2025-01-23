@@ -16,7 +16,7 @@ func Init() {
 	})
 	Logger.SetReportCaller(true)
 	Logger.SetFormatter(Formatter{})
-	if config.Env.GetBool("log.file") {
+	if config.Env.Log.Save {
 		writer, err := rotatelogs.New("logs/%Y%m%d.log")
 		if err != nil {
 			Logger.Fatal(err)
@@ -32,7 +32,7 @@ func Init() {
 			}, TextFormatter{},
 		))
 	}
-	level := strings.ToUpper(config.Env.GetString("log.level"))
+	level := strings.ToUpper(config.Env.Log.Level)
 	switch level {
 	case "DEBUG":
 		Logger.SetLevel(logrus.DebugLevel)

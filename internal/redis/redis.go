@@ -12,8 +12,8 @@ var RDB *redis.Client
 
 func Init() {
 	RDB = redis.NewClient(&redis.Options{
-		Addr:         config.Env.GetString("redis.addr"),
-		Password:     config.Env.GetString("redis.pwd"),
+		Addr:         config.Env.Redis.Addr,
+		Password:     config.Env.Redis.Pwd,
 		DB:           0,
 		DialTimeout:  3 * time.Second,
 		ReadTimeout:  1 * time.Second,
@@ -26,5 +26,12 @@ func Init() {
 		log.Logger.Error("Failed to connect to Redis")
 		return
 	}
-	log.Logger.Debugf("Connected to Redis: %s", config.Env.GetString("redis.addr"))
+	log.Logger.Debugf("Connected to Redis: %s", config.Env.Redis.Addr)
+}
+
+func Close() {
+	if RDB != nil {
+		_ = RDB.Close()
+	}
+	log.Logger.Info("Redis connection closed")
 }

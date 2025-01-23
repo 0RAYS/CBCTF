@@ -14,7 +14,7 @@ var DB *gorm.DB
 func Init() {
 	var err error
 	var level log.Level
-	switch strings.ToUpper(config.Env.GetString("gorm.log.level")) {
+	switch strings.ToUpper(config.Env.Gorm.Log.Level) {
 	case "INFO":
 		level = log.Info
 	case "WARNING":
@@ -26,7 +26,7 @@ func Init() {
 	default:
 		level = log.Silent
 	}
-	DB, err = gorm.Open(sqlite.Open(config.Env.GetString("gorm.file")), &gorm.Config{Logger: log.NewGormLogger(level)})
+	DB, err = gorm.Open(sqlite.Open(config.Env.Gorm.File), &gorm.Config{Logger: log.NewGormLogger(level)})
 	if err != nil {
 		log.Logger.Panicf("failed to connect database: %v", err)
 	}
@@ -35,4 +35,16 @@ func Init() {
 		log.Logger.Panicf("failed to migrate database: %v", err)
 	}
 	InitAdmin()
+}
+
+func Close() {
+	if DB != nil {
+		db, err := DB.DB()
+		if err != nil {
+			log.Logger.Errorf("failed to get database: %v", err)
+		} else {
+			_ = db.Close()
+		}
+	}
+	log.Logger.Info("Database connection closed")
 }

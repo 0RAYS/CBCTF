@@ -8,9 +8,9 @@ import (
 )
 
 func Init() *gin.Engine {
-	gin.SetMode(config.Env.GetString("gin.mode"))
+	gin.SetMode(config.Env.Gin.Mode)
 	router := gin.New()
-	router.MaxMultipartMemory = config.Env.GetInt64("upload.max") << 20
+	router.MaxMultipartMemory = int64(config.Env.Gin.Upload.Max << 20)
 	router.Use(middleware.Logger(), gin.Recovery(), middleware.Cors, middleware.Trace, middleware.I18n(), middleware.AccessLog, middleware.RateLimit())
 
 	router.GET("/download/:fileID", middleware.SetFileID, Download)
