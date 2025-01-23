@@ -8,6 +8,7 @@ import (
 	"errors"
 	"github.com/go-redis/redis/v8"
 	"github.com/vmihailenco/msgpack/v4"
+	"sync/atomic"
 	"time"
 )
 
@@ -16,6 +17,7 @@ func GetFileCache(key string) (model.File, bool) {
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
+		atomic.AddInt64(&CacheMiss, 1)
 		return model.File{}, false
 	} else if err != nil {
 		return model.File{}, false
@@ -25,6 +27,7 @@ func GetFileCache(key string) (model.File, bool) {
 	if err != nil {
 		return model.File{}, false
 	}
+	atomic.AddInt64(&CacheHit, 1)
 	log.Logger.Debug("GetFileCache: ", file.ID)
 	return file, true
 }
@@ -34,6 +37,7 @@ func GetFilesCache(key string) ([]model.File, bool) {
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
+		atomic.AddInt64(&CacheMiss, 1)
 		return nil, false
 	} else if err != nil {
 		return nil, false
@@ -43,6 +47,7 @@ func GetFilesCache(key string) ([]model.File, bool) {
 	if err != nil {
 		return nil, false
 	}
+	atomic.AddInt64(&CacheHit, 1)
 	log.Logger.Debug("GetFilesCache: ", len(files))
 	return files, true
 }

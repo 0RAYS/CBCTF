@@ -5,10 +5,15 @@ import (
 	"CBCTF/internal/log"
 	"context"
 	"github.com/go-redis/redis/v8"
+	"sync/atomic"
 	"time"
 )
 
-var RDB *redis.Client
+var (
+	RDB       *redis.Client
+	CacheHit  int64
+	CacheMiss int64
+)
 
 func Init() {
 	RDB = redis.NewClient(&redis.Options{
@@ -34,4 +39,17 @@ func Close() {
 		_ = RDB.Close()
 	}
 	log.Logger.Info("Redis connection closed")
+}
+
+func Status() (int64, int64, int64) {
+	hit := atomic.LoadInt64(&CacheHit)
+	miss := atomic.LoadInt64(&CacheMiss)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
+	defer cancel()
+	count, err := RDB.DBSize(ctx).Result()
+	if err != nil {
+		log.Logger.Error("Failed to get cache total: ", err)
+		return 0, hit, miss
+	}
+	return count, hit, miss
 }

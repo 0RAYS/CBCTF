@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/vmihailenco/msgpack/v4"
+	"sync/atomic"
 	"time"
 )
 
@@ -17,6 +18,7 @@ func GetUserCache(key string) (model.User, bool) {
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
+		atomic.AddInt64(&CacheMiss, 1)
 		return model.User{}, false
 	} else if err != nil {
 		return model.User{}, false
@@ -26,6 +28,7 @@ func GetUserCache(key string) (model.User, bool) {
 	if err != nil {
 		return model.User{}, false
 	}
+	atomic.AddInt64(&CacheHit, 1)
 	log.Logger.Debug("GetUserCache: ", user.ID)
 	return user, true
 }
@@ -35,6 +38,7 @@ func GetUsersCache(key string) ([]model.User, bool) {
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
+		atomic.AddInt64(&CacheMiss, 1)
 		return nil, false
 	} else if err != nil {
 		return nil, false
@@ -44,6 +48,7 @@ func GetUsersCache(key string) ([]model.User, bool) {
 	if err != nil {
 		return nil, false
 	}
+	atomic.AddInt64(&CacheHit, 1)
 	log.Logger.Debug("GetUsersCache: ", len(users))
 	return users, true
 }

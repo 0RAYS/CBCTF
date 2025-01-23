@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/vmihailenco/msgpack/v4"
+	"sync/atomic"
 	"time"
 )
 
@@ -17,6 +18,7 @@ func GetContestCache(key string) (model.Contest, bool) {
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
+		atomic.AddInt64(&CacheMiss, 1)
 		return model.Contest{}, false
 	} else if err != nil {
 		return model.Contest{}, false
@@ -26,6 +28,7 @@ func GetContestCache(key string) (model.Contest, bool) {
 	if err != nil {
 		return model.Contest{}, false
 	}
+	atomic.AddInt64(&CacheHit, 1)
 	log.Logger.Debug("GetContestCache: ", contest.ID)
 	return contest, true
 }
@@ -35,6 +38,7 @@ func GetContestsCache(key string) ([]model.Contest, bool) {
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
+		atomic.AddInt64(&CacheMiss, 1)
 		return nil, false
 	} else if err != nil {
 		return nil, false
@@ -44,6 +48,7 @@ func GetContestsCache(key string) ([]model.Contest, bool) {
 	if err != nil {
 		return nil, false
 	}
+	atomic.AddInt64(&CacheHit, 1)
 	log.Logger.Debug("GetContestsCache: ", len(contests))
 	return contests, true
 }
