@@ -6,6 +6,9 @@ gin:
   mode: release
   host: 127.0.0.1
   port: 8000
+  upload:
+    path: ./uploads
+    max: 8
 gorm:
   file: data.db
   log:
@@ -14,7 +17,4 @@ gorm:
 redis:
   addr: 127.0.0.1:6379
   pwd: ""
-upload:
-  path: ./uploads
-  max: 8
-host: http://127.0.0.1:8000
+url: http://127.0.0.1:8000

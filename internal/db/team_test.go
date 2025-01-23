@@ -6,17 +6,15 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
 	"context"
-	"github.com/spf13/viper"
 	"testing"
 	"time"
 )
 
 func InitTeamTest() {
-	config.Env = viper.New()
-	config.Env.Set("gorm.file", ":memory:")
-	config.Env.Set("gorm.log.level", "silent")
-	config.Env.Set("log.level", "debug")
-	config.Env.Set("log.file", false)
+	config.Env.Gorm.File = ":memory:"
+	config.Env.Gorm.Log.Level = "debug"
+	config.Env.Log.Level = "debug"
+	config.Env.Log.Save = false
 	log.Init()
 	Init()
 	redis.Init()
