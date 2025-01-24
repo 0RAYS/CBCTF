@@ -51,6 +51,7 @@ func Init() *gin.Engine {
 	adminSystem := admin.Group("/system")
 	adminSystem.GET("/status", SystemStatus)
 	adminSystem.GET("/config", SystemConfig)
+	adminSystem.POST("/update", SystemUpdate)
 
 	adminUser := admin.Group("/user")
 	adminUser.GET("/list", GetUsers)

@@ -3,6 +3,7 @@ package config
 import (
 	"bytes"
 	_ "embed"
+	"encoding/json"
 	"errors"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
@@ -64,6 +65,28 @@ func Init() {
 	if err := viper.Unmarshal(&Env); err != nil {
 		log.Panicf("error unmarshalling config: %s", err)
 	}
+}
+
+func Save(env Config) error {
+	config := make(map[string]interface{})
+	data, err := json.Marshal(env)
+	if err != nil {
+		log.Panicf("Failed to marshal Env to JSON: %s", err)
+		return err
+	}
+	if err = json.Unmarshal(data, &config); err != nil {
+		log.Panicf("Failed to unmarshal JSON to map: %s", err)
+		return err
+	}
+	if err := viper.MergeConfigMap(config); err != nil {
+		log.Panicf("Failed to merge Env to viper: %s", err)
+		return err
+	}
+	if err := viper.WriteConfig(); err != nil {
+		log.Panicf("Failed to save config: %s", err)
+		return err
+	}
+	return nil
 }
 
 func Watch(onChange func()) {
