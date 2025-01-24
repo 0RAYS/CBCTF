@@ -17,7 +17,7 @@ func Init() *gin.Engine {
 	router.POST("/register", Register)
 	router.POST("/login", Login)
 	router.POST("/admin/login", AdminLogin)
-	router.GET("/download/:fileID", middleware.SetFileID, Download)
+	router.GET("/avatar/:fileID", middleware.SetFileID, DownloadAvatar)
 	auth := router.Group("", middleware.CheckLogin)
 	//auth.POST("/upload", Upload)
 
@@ -26,7 +26,7 @@ func Init() *gin.Engine {
 	user.POST("/password", ChangePassword)
 	user.POST("/update", UpdateUser)
 	user.POST("/delete", DeleteUser)
-	user.POST("/avatar", Avatar(model.User{}))
+	user.POST("/avatar", UploadAvatar(model.User{}))
 
 	contest := auth.Group("/contest", middleware.CheckRole("user"))
 	contest.GET("/list", GetContests)
@@ -37,7 +37,7 @@ func Init() *gin.Engine {
 	contest.POST("/:contestID/team/join", middleware.CheckVerified, middleware.SetContestID, JoinTeam)
 	contest.POST("/:contestID/team/create", middleware.CheckVerified, middleware.SetContestID, CreateTeam)
 	contest.POST("/:contestID/team/update", middleware.CheckVerified, middleware.SetContestID, middleware.CheckCaptain, UpdateTeam)
-	contest.POST("/:contestID/team/avatar", middleware.CheckVerified, middleware.SetContestID, middleware.CheckCaptain, Avatar(model.Team{}))
+	contest.POST("/:contestID/team/avatar", middleware.CheckVerified, middleware.SetContestID, middleware.CheckCaptain, UploadAvatar(model.Team{}))
 	contest.POST("/:contestID/team/delete", middleware.CheckVerified, middleware.SetContestID, middleware.CheckCaptain, DeleteTeam)
 	contest.POST("/:contestID/team/kick", middleware.CheckVerified, middleware.SetContestID, middleware.CheckCaptain, KickMember)
 	contest.POST("/:contestID/team/leave", middleware.CheckVerified, middleware.SetContestID, LeaveTeam)
@@ -46,7 +46,7 @@ func Init() *gin.Engine {
 	admin.GET("/info", GetAdmin)
 	admin.POST("/password", AdminChangePassword)
 	admin.POST("/update", UpdateAdmin)
-	admin.POST("/avatar", Avatar(model.Admin{}))
+	admin.POST("/avatar", UploadAvatar(model.Admin{}))
 
 	adminSystem := admin.Group("/system")
 	adminSystem.GET("/status", SystemStatus)
@@ -59,7 +59,7 @@ func Init() *gin.Engine {
 	adminUser.GET("/:userID/info", middleware.SetUserID, GetUser)
 	adminUser.POST("/:userID/update", middleware.SetUserID, UpdateUser)
 	adminUser.POST("/:userID/delete", middleware.SetUserID, DeleteUser)
-	adminUser.POST("/:userID/avatar", middleware.SetUserID, Avatar(model.User{}))
+	adminUser.POST("/:userID/avatar", middleware.SetUserID, UploadAvatar(model.User{}))
 
 	adminContest := admin.Group("/contest")
 	adminContest.GET("/list", GetContests)
@@ -68,7 +68,7 @@ func Init() *gin.Engine {
 	adminContest.GET("/:contestID/captcha", middleware.SetContestID, GetContestCaptcha)
 	adminContest.POST("/:contestID/update", middleware.SetContestID, UpdateContest)
 	adminContest.POST("/:contestID/delete", middleware.SetContestID, DeleteContest)
-	adminContest.POST("/:contestID/avatar", middleware.SetContestID, Avatar(model.Contest{}))
+	adminContest.POST("/:contestID/avatar", middleware.SetContestID, UploadAvatar(model.Contest{}))
 
 	adminContestTeam := adminContest.Group("/:contestID/team", middleware.SetContestID)
 	adminContestTeam.GET("/list", GetTeams)
@@ -78,12 +78,12 @@ func Init() *gin.Engine {
 	adminContestTeam.POST("/:teamID/update", middleware.SetTeamID, UpdateTeam)
 	adminContestTeam.POST("/:teamID/delete", middleware.SetTeamID, DeleteTeam)
 	adminContestTeam.POST("/:teamID/kick", middleware.SetTeamID, KickMember)
-	adminContestTeam.POST("/:teamID/avatar", middleware.SetTeamID, Avatar(model.Team{}))
+	adminContestTeam.POST("/:teamID/avatar", middleware.SetTeamID, UploadAvatar(model.Team{}))
 
 	adminFile := admin.Group("/file")
-	adminFile.GET("/list", GetFiles)
-	adminFile.POST("/delete", DeleteFile)
-	adminFile.POST("/:fileID/delete", middleware.SetFileID, DeleteFile)
+	adminFile.GET("/list", GetAvatars)
+	adminFile.POST("/delete", DeleteAvatar)
+	adminFile.POST("/:fileID/delete", middleware.SetFileID, DeleteAvatar)
 
 	return router
 

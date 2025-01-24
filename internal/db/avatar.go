@@ -10,8 +10,8 @@ import (
 	"mime/multipart"
 )
 
-// RecordFile 添加文件记录
-func RecordFile(ctx context.Context, path string, uploader uint, file *multipart.FileHeader, hash string) (model.Avatar, bool, string) {
+// RecordAvatar 添加头像记录
+func RecordAvatar(ctx context.Context, path string, uploader uint, file *multipart.FileHeader, hash string) (model.Avatar, bool, string) {
 	f := model.InitFile(path, uploader, file, hash)
 	res := DB.WithContext(ctx).Model(model.Avatar{}).Create(&f)
 	if res.Error != nil {
@@ -26,8 +26,8 @@ func RecordFile(ctx context.Context, path string, uploader uint, file *multipart
 	return f, true, "Success"
 }
 
-// GetFileByID 以 ID 获取文件记录
-func GetFileByID(ctx context.Context, id string) (model.Avatar, bool, string) {
+// GetAvatarByID 以 ID 获取文件记录
+func GetAvatarByID(ctx context.Context, id string) (model.Avatar, bool, string) {
 	cacheKey := fmt.Sprintf("file:%s", id)
 	if file, ok := redis.GetFileCache(cacheKey); ok {
 		return file, true, "Success"
@@ -45,7 +45,7 @@ func GetFileByID(ctx context.Context, id string) (model.Avatar, bool, string) {
 	return file, true, "Success"
 }
 
-func GetFileByHash(ctx context.Context, hash string) (model.Avatar, bool, string) {
+func GetAvatarByHash(ctx context.Context, hash string) (model.Avatar, bool, string) {
 	cacheKey := fmt.Sprintf("file:hash:%s", hash)
 	if file, ok := redis.GetFileCache(cacheKey); ok {
 		return file, true, "Success"
@@ -63,8 +63,8 @@ func GetFileByHash(ctx context.Context, hash string) (model.Avatar, bool, string
 	return file, true, "Success"
 }
 
-// DeleteFile 以 ID 删除文件记录
-func DeleteFile(ctx context.Context, id string) (bool, string) {
+// DeleteAvatar 以 ID 删除文件记录
+func DeleteAvatar(ctx context.Context, id string) (bool, string) {
 	if err := DB.WithContext(ctx).Model(model.Avatar{}).Where("id = ?", id).Delete(&model.Avatar{}).Error; err != nil {
 		log.Logger.Warningf("Failed to delete file: %v", id)
 		return false, "DeleteFileError"
@@ -80,8 +80,8 @@ func DeleteFile(ctx context.Context, id string) (bool, string) {
 	return true, "Success"
 }
 
-// GetFiles 批量获取文件记录
-func GetFiles(ctx context.Context, limit int, offset int) ([]model.Avatar, int64, bool, string) {
+// GetAvatars 批量获取文件记录
+func GetAvatars(ctx context.Context, limit int, offset int) ([]model.Avatar, int64, bool, string) {
 	if limit <= 0 {
 		limit = -1
 	}
