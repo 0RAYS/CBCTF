@@ -9,7 +9,7 @@ import (
 type StaticChallenge struct {
 	ID        uint            `json:"id" gorm:"primaryKey"`
 	Name      string          `json:"name" gorm:"unique;not null"`
-	Msg       string          `json:"msg"`
+	Desc      string          `json:"desc"`
 	Flag      string          `json:"flag"`
 	Category  string          `json:"category"`
 	Files     []model.Avatar  `json:"files" gorm:"many2many:challenge_files;"`

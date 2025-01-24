@@ -12,6 +12,7 @@ type Contest struct {
 	Desc      string         `json:"desc"`
 	Captcha   string         `json:"-"`
 	Avatar    string         `json:"avatar"`
+	Prefix    string         `json:"prefix" gorm:"default:'CBCTF'"`
 	Size      int            `json:"size"`
 	Start     time.Time      `json:"start"`
 	Duration  time.Duration  `json:"duration"`
