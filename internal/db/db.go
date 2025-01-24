@@ -49,7 +49,7 @@ func Init() {
 	if err != nil {
 		log.Logger.Panicf("failed to connect database: %v", err)
 	}
-	err = DB.AutoMigrate(&model.Admin{}, &model.User{}, &model.Team{}, &model.Contest{}, &model.File{}, &model.IP{})
+	err = DB.AutoMigrate(&model.Admin{}, &model.User{}, &model.Team{}, &model.Contest{}, &model.Avatar{}, &model.IP{})
 	if err != nil {
 		log.Logger.Panicf("failed to migrate database: %v", err)
 	}

@@ -11,12 +11,12 @@ import (
 )
 
 // RecordFile 添加文件记录
-func RecordFile(ctx context.Context, path string, uploader uint, file *multipart.FileHeader, hash string, isAdmin bool, isAttachment bool) (model.File, bool, string) {
-	f := model.InitFile(path, uploader, file, hash, isAdmin, isAttachment)
-	res := DB.WithContext(ctx).Model(model.File{}).Create(&f)
+func RecordFile(ctx context.Context, path string, uploader uint, file *multipart.FileHeader, hash string) (model.Avatar, bool, string) {
+	f := model.InitFile(path, uploader, file, hash)
+	res := DB.WithContext(ctx).Model(model.Avatar{}).Create(&f)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to record file: %v", res.Error)
-		return model.File{}, false, "CreateFileRecordError"
+		return model.Avatar{}, false, "CreateFileRecordError"
 	}
 	go func() {
 		if err := redis.DelFilesCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
@@ -27,15 +27,15 @@ func RecordFile(ctx context.Context, path string, uploader uint, file *multipart
 }
 
 // GetFileByID 以 ID 获取文件记录
-func GetFileByID(ctx context.Context, id string) (model.File, bool, string) {
+func GetFileByID(ctx context.Context, id string) (model.Avatar, bool, string) {
 	cacheKey := fmt.Sprintf("file:%s", id)
 	if file, ok := redis.GetFileCache(cacheKey); ok {
 		return file, true, "Success"
 	}
-	var file model.File
-	res := DB.WithContext(ctx).Model(model.File{}).Where("id = ?", id).Find(&file).Limit(1)
+	var file model.Avatar
+	res := DB.WithContext(ctx).Model(model.Avatar{}).Where("id = ?", id).Find(&file).Limit(1)
 	if res.RowsAffected != 1 {
-		return model.File{}, false, "FileNotFound"
+		return model.Avatar{}, false, "FileNotFound"
 	}
 	go func() {
 		if err := redis.SetFileCache(cacheKey, file); err != nil && !errors.Is(err, context.DeadlineExceeded) {
@@ -45,15 +45,15 @@ func GetFileByID(ctx context.Context, id string) (model.File, bool, string) {
 	return file, true, "Success"
 }
 
-func GetFileByHash(ctx context.Context, hash string) (model.File, bool, string) {
+func GetFileByHash(ctx context.Context, hash string) (model.Avatar, bool, string) {
 	cacheKey := fmt.Sprintf("file:hash:%s", hash)
 	if file, ok := redis.GetFileCache(cacheKey); ok {
 		return file, true, "Success"
 	}
-	var file model.File
-	res := DB.WithContext(ctx).Model(model.File{}).Where("hash = ?", hash).Find(&file).Limit(1)
+	var file model.Avatar
+	res := DB.WithContext(ctx).Model(model.Avatar{}).Where("hash = ?", hash).Find(&file).Limit(1)
 	if res.RowsAffected != 1 {
-		return model.File{}, false, "FileNotFound"
+		return model.Avatar{}, false, "FileNotFound"
 	}
 	go func() {
 		if err := redis.SetFileCache(cacheKey, file); err != nil && !errors.Is(err, context.DeadlineExceeded) {
@@ -65,7 +65,7 @@ func GetFileByHash(ctx context.Context, hash string) (model.File, bool, string) 
 
 // DeleteFile 以 ID 删除文件记录
 func DeleteFile(ctx context.Context, id string) (bool, string) {
-	if err := DB.WithContext(ctx).Model(model.File{}).Where("id = ?", id).Delete(&model.File{}).Error; err != nil {
+	if err := DB.WithContext(ctx).Model(model.Avatar{}).Where("id = ?", id).Delete(&model.Avatar{}).Error; err != nil {
 		log.Logger.Warningf("Failed to delete file: %v", id)
 		return false, "DeleteFileError"
 	}
@@ -81,16 +81,16 @@ func DeleteFile(ctx context.Context, id string) (bool, string) {
 }
 
 // GetFiles 批量获取文件记录
-func GetFiles(ctx context.Context, limit int, offset int) ([]model.File, int64, bool, string) {
+func GetFiles(ctx context.Context, limit int, offset int) ([]model.Avatar, int64, bool, string) {
 	if limit <= 0 {
 		limit = -1
 	}
 	if offset <= 0 {
 		offset = -1
 	}
-	var files []model.File
+	var files []model.Avatar
 	var count int64
-	res := DB.WithContext(ctx).Model(&model.File{})
+	res := DB.WithContext(ctx).Model(&model.Avatar{})
 	if res = res.Count(&count); res.Error != nil {
 		log.Logger.Warningf("Failed to get files: %s", res.Error.Error())
 		return nil, 0, false, "UnknownError"
