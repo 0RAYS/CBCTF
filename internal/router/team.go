@@ -19,7 +19,16 @@ func GetTeam(ctx *gin.Context) {
 }
 
 func GetTeamCaptcha(ctx *gin.Context) {
-	team, ok, msg := db.GetTeamByUserID(ctx, middleware.GetSelfID(ctx), middleware.GetContestID(ctx))
+	var (
+		team model.Team
+		ok   bool
+		msg  string
+	)
+	if id := middleware.GetTeamID(ctx); id != 0 {
+		team, ok, msg = db.GetTeamByID(ctx, id, false)
+	} else {
+		team, ok, msg = db.GetTeamByUserID(ctx, middleware.GetSelfID(ctx), middleware.GetContestID(ctx))
+	}
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -71,9 +80,13 @@ func CreateTeam(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	contestID := middleware.GetContestID(ctx)
+	contest, ok, msg := db.GetContestByID(ctx, middleware.GetContestID(ctx), false)
+	if form.Captcha != contest.Captcha {
+		ctx.JSON(http.StatusOK, gin.H{"msg": "CaptchaError", "data": nil})
+		return
+	}
 	userID := middleware.GetSelfID(ctx)
-	team, ok, msg := db.CreateTeam(ctx, form.Name, userID, contestID)
+	team, ok, msg := db.CreateTeam(ctx, form.Name, userID, contest.ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

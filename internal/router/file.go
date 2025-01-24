@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"os"
 	p "path"
@@ -120,7 +121,12 @@ func Avatar(v interface{}) func(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": "BadRequest", "data": nil})
 			return
 		}
-		defer src.Close()
+		defer func(src multipart.File) {
+			err := src.Close()
+			if err != nil {
+				log.Logger.Warningf("Failed to close file: %v", err)
+			}
+		}(src)
 		sha256Sum := sha256.New()
 		if _, err := io.Copy(sha256Sum, src); err != nil {
 			log.Logger.Warningf("Failed to hash file: %v", err)
