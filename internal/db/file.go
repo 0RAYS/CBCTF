@@ -11,8 +11,8 @@ import (
 )
 
 // RecordFile 添加文件记录
-func RecordFile(ctx context.Context, path string, uploader uint, username string, file *multipart.FileHeader, hash string) (model.Avatar, bool, string) {
-	f := model.InitFile(path, uploader, username, file, hash)
+func RecordFile(ctx context.Context, path string, uploader uint, file *multipart.FileHeader, hash string) (model.Avatar, bool, string) {
+	f := model.InitFile(path, uploader, file, hash)
 	res := DB.WithContext(ctx).Model(model.Avatar{}).Create(&f)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to record file: %v", res.Error)
