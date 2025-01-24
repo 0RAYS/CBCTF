@@ -3,11 +3,14 @@ package router
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
+	"CBCTF/internal/log"
 	"CBCTF/internal/redis"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/net"
 	"net/http"
+	"reflect"
+	"time"
 )
 
 func SystemStatus(ctx *gin.Context) {
@@ -47,4 +50,25 @@ func SystemStatus(ctx *gin.Context) {
 
 func SystemConfig(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": config.Env})
+}
+
+func SystemUpdate(ctx *gin.Context) {
+	var env config.Config
+	if err := ctx.ShouldBind(&env); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	if reflect.DeepEqual(env, *config.Env) {
+		log.Logger.Info("Config not change")
+		ctx.JSON(http.StatusOK, gin.H{"msg": "ConfigNotChange", "data": nil})
+		return
+	}
+	go func() {
+		time.Sleep(time.Second * 2)
+		err := config.Save(env)
+		if err != nil {
+			log.Logger.Error("Failed to save config: ", err)
+		}
+	}()
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
 }
