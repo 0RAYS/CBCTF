@@ -22,14 +22,14 @@ import (
 
 //func Upload(ctx *gin.Context) {
 //	form, err := ctx.MultipartForm()
-//	if err != nil || len(form.File["files"]) == 0 {
+//	if err != nil || len(form.Avatar["files"]) == 0 {
 //		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 //		return
 //	}
 //	basePath := config.Env.GetString("upload.path")
 //	allowed := []string{".png", ".jpg", ".jpeg", ".zip", ".rar", ".gz", ".tar", ".7z"}
-//	var records []model.File
-//	for _, file := range form.File["files"] {
+//	var records []model.Avatar
+//	for _, file := range form.Avatar["files"] {
 //		suffix := strings.ToLower(p.Ext(file.Filename))
 //		if !utils.In(suffix, allowed) {
 //			ctx.JSON(http.StatusForbidden, gin.H{"msg": "FileNotAllowed", "data": file.Filename})
@@ -134,7 +134,7 @@ func Avatar(v interface{}) func(ctx *gin.Context) {
 			return
 		}
 		var (
-			record model.File
+			record model.Avatar
 			ok     bool
 			msg    string
 		)
@@ -152,7 +152,7 @@ func Avatar(v interface{}) func(ctx *gin.Context) {
 				ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
 				return
 			}
-			record, ok, msg = db.RecordFile(ctx, path, middleware.GetSelfID(ctx), file, hash, middleware.GetRole(ctx) == "admin", false)
+			record, ok, msg = db.RecordFile(ctx, path, middleware.GetSelfID(ctx), file, hash)
 			if !ok {
 				ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 				return

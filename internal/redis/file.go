@@ -12,27 +12,27 @@ import (
 	"time"
 )
 
-func GetFileCache(key string) (model.File, bool) {
+func GetFileCache(key string) (model.Avatar, bool) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
 	if errors.Is(err, redis.Nil) {
 		atomic.AddInt64(&CacheMiss, 1)
-		return model.File{}, false
+		return model.Avatar{}, false
 	} else if err != nil {
-		return model.File{}, false
+		return model.Avatar{}, false
 	}
-	var file model.File
+	var file model.Avatar
 	err = msgpack.Unmarshal([]byte(data), &file)
 	if err != nil {
-		return model.File{}, false
+		return model.Avatar{}, false
 	}
 	atomic.AddInt64(&CacheHit, 1)
 	log.Logger.Debug("GetFileCache: ", file.ID)
 	return file, true
 }
 
-func GetFilesCache(key string) ([]model.File, bool) {
+func GetFilesCache(key string) ([]model.Avatar, bool) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
@@ -42,7 +42,7 @@ func GetFilesCache(key string) ([]model.File, bool) {
 	} else if err != nil {
 		return nil, false
 	}
-	var files []model.File
+	var files []model.Avatar
 	err = msgpack.Unmarshal([]byte(data), &files)
 	if err != nil {
 		return nil, false
@@ -52,7 +52,7 @@ func GetFilesCache(key string) ([]model.File, bool) {
 	return files, true
 }
 
-func SetFileCache(key string, file model.File) error {
+func SetFileCache(key string, file model.Avatar) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := msgpack.Marshal(file)
@@ -66,7 +66,7 @@ func SetFileCache(key string, file model.File) error {
 	return nil
 }
 
-func SetFilesCache(key string, files []model.File) error {
+func SetFilesCache(key string, files []model.Avatar) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := msgpack.Marshal(files)
