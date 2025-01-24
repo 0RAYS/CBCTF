@@ -71,7 +71,7 @@ func saveMetrics(metrics *SystemMetrics) error {
 	if err != nil {
 		return err
 	}
-	err = RDB.LTrim(ctx, "system_metrics", -3600, -1).Err()
+	err = RDB.LTrim(ctx, "system_metrics", -900, -1).Err()
 	if err != nil {
 		return err
 	}
