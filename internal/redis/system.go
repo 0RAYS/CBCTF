@@ -53,7 +53,7 @@ func collectMetrics() (*SystemMetrics, error) {
 		return nil, err
 	}
 	return &SystemMetrics{
-		Timestamp: time.Now().Format("2006-01-02T15:04:05Z"),
+		Timestamp: time.Now().Format("2006-01-02 15:04:05"),
 		CPU:       c[0],
 		Mem:       m.UsedPercent,
 		Disk:      d.UsedPercent,
