@@ -179,8 +179,6 @@ func (f TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 			entry.Caller.Line, entry.Message,
 		)
 	case "GIN":
-		StatusCodeColor := statusCodeColor(safeGetValue[int](entry, "StatusCode"))
-		MethodColor := methodColor(safeGetValue[string](entry, "Method"))
 		Latency := safeGetValue[time.Duration](entry, "Latency")
 		if Latency > time.Minute {
 			Latency = Latency.Truncate(time.Second)
@@ -189,14 +187,14 @@ func (f TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 			t+"-"+LevelText,
 			entry.Time.Format("2006-01-02 15:04:05"),
 		)
-		_, _ = fmt.Fprintf(ret, "%s | %s | %13v | ",
+		_, _ = fmt.Fprintf(ret, "%s | %d | %13v | ",
 			safeGetValue[string](entry, "TraceID"),
-			StatusCodeColor(safeGetValue[int](entry, "StatusCode")),
+			safeGetValue[int](entry, "StatusCode"),
 			Latency,
 		)
 		_, _ = fmt.Fprintf(ret, "%s | %s | \"%s\"",
 			safeGetValue[string](entry, "ClientIP"),
-			MethodColor(safeGetValue[string](entry, "Method")),
+			safeGetValue[string](entry, "Method"),
 			safeGetValue[string](entry, "Path"),
 		)
 	case "GORM":
