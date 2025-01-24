@@ -11,7 +11,7 @@ import (
 )
 
 func InitUserTest() {
-	config.Env.Gorm.File = ":memory:"
+	config.Env.Gorm.SQLite.File = ":memory:"
 	config.Env.Gorm.Log.Level = "debug"
 	config.Env.Log.Level = "debug"
 	config.Env.Log.Save = false
