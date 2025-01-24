@@ -28,8 +28,18 @@ type Config struct {
 	} `mapstructure:"gin" json:"gin"`
 
 	Gorm struct {
-		File string `mapstructure:"file" json:"file"` // 数据库文件路径
-		Log  struct {
+		Type   string `mapstructure:"type" json:"type"` // 数据库类型：sqlite, mysql
+		SQLite struct {
+			File string `mapstructure:"file" json:"file"` // 数据库文件路径
+		} `mapstructure:"sqlite" json:"sqlite"`
+		MySQL struct {
+			Host string `mapstructure:"host" json:"host"` // 数据库地址
+			Port int    `mapstructure:"port" json:"port"` // 数据库端口
+			User string `mapstructure:"user" json:"user"` //
+			Pwd  string `mapstructure:"pwd" json:"pwd"`   // 数据库密码
+			DB   string `mapstructure:"db" json:"db"`     // 数据库名称
+		} `mapstructure:"mysql" json:"mysql"`
+		Log struct {
 			Level string `mapstructure:"level" json:"level"` // GORM 日志级别：INFO, WARNING, ERROR, SILENT
 		} `mapstructure:"log" json:"log"`
 	} `mapstructure:"gorm" json:"gorm"`

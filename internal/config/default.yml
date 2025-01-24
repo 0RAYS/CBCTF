@@ -1,23 +1,32 @@
 log:
-  # DEBUG INFO WARNING ERROR
-  level: info
-  save: true
+    # DEBUG INFO WARNING ERROR
+    level: info
+    save: true
 gin:
-  mode: release
-  host: 127.0.0.1
-  port: 8000
-  upload:
-    path: ./uploads
-    max: 8
+    mode: release
+    host: 127.0.0.1
+    port: 8000
+    upload:
+        path: ./uploads
+        max: 8
 gorm:
-  file: data.db
-  log:
-    # INFO WARNING ERROR SILENT
-    level: silent
+    # mysql sqlite
+    type: sqlite
+    sqlite:
+        file: data.db
+    mysql:
+        host: 127.0.0.1
+        port: 3306
+        user: cbctf
+        pwd: password
+        db: cbctf
+    log:
+        # INFO WARNING ERROR SILENT
+        level: silent
 redis:
-  addr: 127.0.0.1:6379
-  pwd: ""
-  # millisecond
-  timeout: 10
+    addr: 127.0.0.1:6379
+    pwd: ""
+    # millisecond
+    timeout: 10
 frontend: http://127.0.0.1:3000
 backend: http://127.0.0.1:8000
