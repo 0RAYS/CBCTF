@@ -22,7 +22,7 @@ func InitContestTest() {
 
 	user1, ok, msg := CreateUser(ctx, "user1", "password", "user1@0rays.club", "", "", false, false, false)
 	log.Logger.Debug(user1.ID, ok, msg)
-	contest1, ok, msg := CreateContest(ctx, "contest1", "test", 1, time.Now(), time.Duration(10), false)
+	contest1, ok, msg := CreateContest(ctx, "contest1", "test", "", 1, time.Now(), time.Duration(10), false)
 	log.Logger.Debug(contest1.ID, ok, msg)
 	team1, ok, msg := CreateTeam(ctx, "team1", user1.ID, contest1.ID)
 	log.Logger.Debug(team1.ID, ok, msg)
@@ -31,7 +31,7 @@ func InitContestTest() {
 func TestCreateContest(t *testing.T) {
 	InitContestTest()
 	var ctx context.Context
-	test, ok, msg := CreateContest(ctx, "contest1", "test", 1, time.Now(), time.Duration(10), false)
+	test, ok, msg := CreateContest(ctx, "contest1", "test", "", 1, time.Now(), time.Duration(10), false)
 	if ok {
 		t.Fatal("Should not create duplicated admin")
 	}

@@ -107,7 +107,8 @@ type CreateUserForm struct {
 }
 
 type CreateTeamForm struct {
-	Name string `form:"name" json:"name" binding:"required"`
+	Name    string `form:"name" json:"name" binding:"required"`
+	Captcha string `form:"captcha" json:"captcha"`
 }
 
 type CreateContestForm struct {
@@ -116,5 +117,6 @@ type CreateContestForm struct {
 	Start    time.Time     `form:"start" json:"start" binding:"required"`
 	Duration time.Duration `form:"duration" json:"duration" binding:"required"`
 	Size     int           `form:"size" json:"size" binding:"required"`
+	Captcha  string        `form:"captcha" json:"captcha"`
 	Hidden   bool          `form:"hidden" json:"hidden"`
 }

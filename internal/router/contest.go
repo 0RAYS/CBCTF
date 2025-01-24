@@ -17,6 +17,15 @@ func GetContest(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": contest})
 }
 
+func GetContestCaptcha(ctx *gin.Context) {
+	contest, ok, msg := db.GetContestByID(ctx, middleware.GetContestID(ctx))
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": contest.Captcha})
+}
+
 func GetContests(ctx *gin.Context) {
 	var form GetModelsForm
 	all := false
@@ -41,7 +50,7 @@ func CreateContest(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	contest, ok, msg := db.CreateContest(ctx, form.Name, form.Desc, form.Size, form.Start, form.Duration, form.Hidden)
+	contest, ok, msg := db.CreateContest(ctx, form.Name, form.Desc, form.Captcha, form.Size, form.Start, form.Duration, form.Hidden)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
