@@ -19,4 +19,5 @@ redis:
   pwd: ""
   # millisecond
   timeout: 10
-url: http://127.0.0.1:8000
+frontend: http://127.0.0.1:3000
+backend: http://127.0.0.1:8000

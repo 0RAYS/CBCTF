@@ -8,16 +8,16 @@ import (
 )
 
 func Init() *gin.Engine {
+
 	gin.SetMode(config.Env.Gin.Mode)
 	router := gin.New()
 	router.MaxMultipartMemory = int64(config.Env.Gin.Upload.Max << 20)
-	router.Use(middleware.Logger(), gin.Recovery(), middleware.Cors, middleware.Trace, middleware.I18n(), middleware.AccessLog, middleware.RateLimit())
+	router.Use(middleware.Logger(), gin.Recovery(), middleware.Trace, middleware.Cors, middleware.I18n(), middleware.AccessLog, middleware.RateLimit())
 
-	router.GET("/download/:fileID", middleware.SetFileID, Download)
 	router.POST("/register", Register)
 	router.POST("/login", Login)
 	router.POST("/admin/login", AdminLogin)
-
+	router.GET("/download/:fileID", middleware.SetFileID, Download)
 	auth := router.Group("", middleware.CheckLogin)
 	//auth.POST("/upload", Upload)
 

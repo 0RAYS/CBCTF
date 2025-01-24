@@ -39,7 +39,8 @@ type Config struct {
 		Timeout uint   `mapstructure:"timeout" json:"timeout"` // Redis 连接超时时间（单位：毫秒）
 	} `mapstructure:"redis" json:"redis"`
 
-	Url string `mapstructure:"url" json:"url"` // 主机地址
+	Frontend string `mapstructure:"frontend" json:"frontend"` // 前端地址
+	Backend  string `mapstructure:"backend" json:"backend"`   // 后端地址
 }
 
 var Env *Config

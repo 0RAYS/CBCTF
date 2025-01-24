@@ -21,6 +21,7 @@ func Init() {
 }
 
 func Start() {
+
 	ip, port := config.Env.Gin.Host, config.Env.Gin.Port
 	server = &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", ip, port),
