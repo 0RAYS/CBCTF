@@ -88,3 +88,24 @@ func GetAvatarID(ctx *gin.Context) string {
 		return avatarID.(string)
 	}
 }
+
+func SetChallengeID(ctx *gin.Context) {
+	type challengeIDUri struct {
+		ChallengeID uint `uri:"challengeID" binding:"required"`
+	}
+	var challengeID challengeIDUri
+	if err := ctx.ShouldBindUri(&challengeID); err != nil {
+		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.Abort()
+	}
+	ctx.Set("ChallengeID", challengeID.ChallengeID)
+	ctx.Next()
+}
+
+func GetChallengeID(ctx *gin.Context) uint {
+	if challengeID, ok := ctx.Get("ChallengeID"); !ok {
+		return 0
+	} else {
+		return challengeID.(uint)
+	}
+}

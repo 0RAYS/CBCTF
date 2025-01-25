@@ -8,11 +8,14 @@ import (
 )
 
 func CreateChallenge(ctx context.Context, form constants.CreateChallengeForm) (model.Challenge, bool, string) {
+	if !IsValidChallengeType(form.Type) {
+		return model.Challenge{}, false, "InvalidChallengeType"
+	}
 	challenge := model.InitChallenge(form)
 	result := DB.WithContext(ctx).Model(model.Challenge{}).Create(&challenge)
 	if result.Error != nil {
 		log.Logger.Errorf("Failed to create Challenge: %s", result.Error.Error())
-		return model.Challenge{}, false, "UnknownError"
+		return model.Challenge{}, false, "CreateChallengeError"
 	}
 	return challenge, true, "Success"
 }
@@ -24,6 +27,21 @@ func GetChallengeByID(ctx context.Context, id uint) (model.Challenge, bool, stri
 		return model.Challenge{}, false, "ChallengeNotFound"
 	}
 	return challenge, true, "Success"
+}
+
+func GetChallenges(ctx context.Context, limit, offset int) ([]model.Challenge, int64, bool, string) {
+	var challenges []model.Challenge
+	var count int64
+	res := DB.WithContext(ctx).Model(model.Challenge{})
+	if res.Count(&count).Error != nil {
+		log.Logger.Warningf("Failed to get challenge count: %v", res.Error.Error())
+		return nil, 0, false, "UnknownError"
+	}
+	if res = res.Limit(limit).Offset(offset).Find(&challenges); res.Error != nil {
+		log.Logger.Warningf("Failed to get Challenges: %v", res.Error.Error())
+		return nil, 0, false, "UnknownError"
+	}
+	return challenges, count, true, "Success"
 }
 
 func UpdateChallenge(ctx context.Context, id uint, updateData map[string]interface{}) (bool, string) {
