@@ -178,7 +178,7 @@ func JoinTeam(ctx context.Context, userID uint, contestID uint, teamID uint) (bo
 		return false, msg
 	}
 	if len(team.Users)+1 > contest.Size {
-		return false, "TeamFull"
+		return false, "TeamIsFull"
 	}
 	// 关联 Team User Many2Many
 	if err := AppendUserToTeam(ctx, user, team); err != nil {
