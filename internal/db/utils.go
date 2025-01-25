@@ -77,8 +77,8 @@ func IsMemberInTeam(teamID uint, userID uint) bool {
 	return false
 }
 
-func IsValidChallengeType(t uint) bool {
-	if t > 0 && t < 4 {
+func IsValidChallengeType(t int) bool {
+	if t >= 0 && t < 3 {
 		return true
 	}
 	return false

@@ -3,6 +3,7 @@ package utils
 import (
 	"github.com/google/uuid"
 	"reflect"
+	"strings"
 )
 
 // In 实现 in 判断
@@ -39,4 +40,11 @@ func Form2Map(s interface{}) map[string]interface{} {
 		}
 	}
 	return data
+}
+
+func ToTitle(s string) string {
+	if len(s) == 0 {
+		return strings.ToUpper(s)
+	}
+	return strings.ToUpper(string(s[0])) + s[1:]
 }

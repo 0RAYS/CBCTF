@@ -48,17 +48,26 @@ type CreateContestForm struct {
 
 // CreateChallengeForm for create challenge
 type CreateChallengeForm struct {
-	Name     string `form:"name" json:"name" binding:"required"`
-	Desc     string `form:"desc" json:"desc"`
-	Flag     string `form:"flag" json:"flag"`
-	Category string `form:"category" json:"category"`
-	Type     uint   `form:"type" json:"type" binding:"required"`
+	Name           string `form:"name" json:"name" binding:"required"`
+	Desc           string `form:"desc" json:"desc"`
+	Flag           string `form:"flag" json:"flag"`
+	Category       string `form:"category" json:"category"`
+	Type           int    `form:"type" json:"type"`
+	GeneratorImage string `form:"generator" json:"generator"`
+	DockerImage    string `form:"docker" json:"docker"`
 }
 
 // GetModelsForm for get models list
 type GetModelsForm struct {
 	Offset int `form:"offset" json:"offset"`
 	Limit  int `form:"limit" json:"limit"`
+}
+
+type GetChallengesForm struct {
+	Offset   int    `form:"offset" json:"offset"`
+	Limit    int    `form:"limit" json:"limit"`
+	Type     int    `form:"type" json:"type"`
+	Category string `form:"category" json:"category"`
 }
 
 // ChangePasswordForm for user or admin change password
@@ -126,11 +135,13 @@ type UpdateContestForm struct {
 
 // UpdateChallengeForm for admin update challenge info
 type UpdateChallengeForm struct {
-	Name     *string `form:"name" json:"name"`
-	Desc     *string `form:"desc" json:"desc"`
-	Flag     *string `form:"flag" json:"flag"`
-	Category *string `form:"category" json:"category"`
-	Type     *uint   `form:"type" json:"type"`
+	Name           *string `form:"name" json:"name"`
+	Desc           *string `form:"desc" json:"desc"`
+	Flag           *string `form:"flag" json:"flag"`
+	Category       *string `form:"category" json:"category"`
+	Type           *int    `form:"type" json:"type"`
+	GeneratorImage *string `form:"generator" json:"generator"`
+	DockerImage    *string `form:"docker" json:"docker"`
 }
 
 // DeleteSelfForm for user delete self
@@ -158,4 +169,8 @@ type JoinTeamForm struct {
 // KickMemberForm for admin or captain kick member
 type KickMemberForm struct {
 	UserID uint `form:"user_id" json:"user_id" binding:"required"`
+}
+
+type GetCategoriesForm struct {
+	Type int `form:"type" json:"type"`
 }

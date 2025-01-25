@@ -46,6 +46,8 @@ var resp = map[string]map[string]interface{}{
 	"UpdateChallengeError": {"zh-CN": "更新题目失败", "en-US": "Failed to update challenge", "code": 500},
 	"InvalidChallengeType": {"zh-CN": "无效的题目类型", "en-US": "Invalid challenge type", "code": 400},
 	"CreateDirError":       {"zh-CN": "创建目录失败", "en-US": "Failed to create directory", "code": 500},
+	"ReadDirError":         {"zh-CN": "读取目录失败", "en-US": "Failed to read directory", "code": 500},
+	"InvalidFileName":      {"zh-CN": "无效的文件名，必须为attachment.zip", "en-US": "Invalid file name, must be attachment.zip", "code": 400},
 
 	"CreateContestError": {"zh-CN": "创建赛事失败", "en-US": "Failed to create contest", "code": 500},
 	"DeleteContestError": {"zh-CN": "删除赛事失败", "en-US": "Failed to delete contest", "code": 500},
