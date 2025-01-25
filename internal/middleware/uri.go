@@ -68,23 +68,23 @@ func GetTeamID(ctx *gin.Context) uint {
 	}
 }
 
-func SetFileID(ctx *gin.Context) {
-	type fileIDUri struct {
-		FileID string `uri:"fileID" binding:"required"`
+func SetAvatarID(ctx *gin.Context) {
+	type avatarIDUri struct {
+		AvatarID string `uri:"avatarID" binding:"required"`
 	}
-	var fileID fileIDUri
-	if err := ctx.ShouldBindUri(&fileID); err != nil {
+	var avatarID avatarIDUri
+	if err := ctx.ShouldBindUri(&avatarID); err != nil {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		ctx.Abort()
 	}
-	ctx.Set("FileID", fileID.FileID)
+	ctx.Set("AvatarID", avatarID.AvatarID)
 	ctx.Next()
 }
 
-func GetFileID(ctx *gin.Context) string {
-	if fileID, ok := ctx.Get("FileID"); !ok {
+func GetAvatarID(ctx *gin.Context) string {
+	if avatarID, ok := ctx.Get("AvatarID"); !ok {
 		return ""
 	} else {
-		return fileID.(string)
+		return avatarID.(string)
 	}
 }
