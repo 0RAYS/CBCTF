@@ -123,3 +123,11 @@ type CreateContestForm struct {
 	Duration time.Duration `form:"duration" json:"duration" binding:"required"`
 	Hidden   bool          `form:"hidden" json:"hidden"`
 }
+
+type CreateChallengeForm struct {
+	Name     string `form:"name" json:"name" binding:"required"`
+	Desc     string `form:"desc" json:"desc"`
+	Flag     string `form:"flag" json:"flag"`
+	Category string `form:"category" json:"category"`
+	Type     string `form:"type" json:"type" binding:"required"`
+}

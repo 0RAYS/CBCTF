@@ -147,7 +147,7 @@ func UpdateTeam(ctx context.Context, id uint, updateData map[string]interface{})
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to update team: %s", res.Error.Error())
-		return false, "UpdateError"
+		return false, "UpdateTeamError"
 	}
 	go func() {
 		if err := redis.DelTeamCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {

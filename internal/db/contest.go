@@ -96,7 +96,7 @@ func UpdateContest(ctx context.Context, id uint, updateData map[string]interface
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to update contest: %v", res.Error.Error())
-		return false, "UpdateError"
+		return false, "UpdateContestError"
 	}
 	go func() {
 		if err := redis.DelContestCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
