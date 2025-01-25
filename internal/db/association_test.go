@@ -2,6 +2,7 @@ package db
 
 import (
 	"CBCTF/internal/config"
+	"CBCTF/internal/constants"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
@@ -11,6 +12,8 @@ import (
 )
 
 func InitAssociationTest() {
+	config.Env = &config.Config{}
+	config.Env.Gorm.Type = "sqlite"
 	config.Env.Gorm.SQLite.File = ":memory:"
 	config.Env.Gorm.Log.Level = "debug"
 	config.Env.Log.Level = "debug"
@@ -19,17 +22,16 @@ func InitAssociationTest() {
 	Init()
 	redis.Init()
 	var ctx context.Context
-	user1, ok, msg := CreateUser(ctx, "user1", "password", "user1@0rays.club", "", "", false, false, false)
+	user1, ok, msg := CreateUser(ctx, constants.CreateUserForm{Name: "user1", Password: "password", Email: "user1@0rays.club"})
 	log.Logger.Debug(user1.ID, ok, msg)
-	user2, ok, msg := CreateUser(ctx, "user2", "password", "user2@0rays.club", "", "", false, false, false)
+	user2, ok, msg := CreateUser(ctx, constants.CreateUserForm{Name: "user2", Password: "password", Email: "user2@0rays.club"})
 	log.Logger.Debug(user2.ID, ok, msg)
 
-	contest1, ok, msg := CreateContest(ctx, "contest1", "test", "", 1, time.Now(), time.Duration(10), false)
+	contest1, ok, msg := CreateContest(ctx, constants.CreateContestForm{Name: "contest1", Size: 1, Start: time.Now(), Duration: time.Duration(10)})
 	log.Logger.Debug(contest1.ID, ok, msg)
-	contest2, ok, msg := CreateContest(ctx, "contest2", "test", "", 1, time.Now(), time.Duration(10), false)
+	contest2, ok, msg := CreateContest(ctx, constants.CreateContestForm{Name: "contest2", Size: 1, Start: time.Now(), Duration: time.Duration(10)})
 	log.Logger.Debug(contest2.ID, ok, msg)
-
-	team1, ok, msg := CreateTeam(ctx, "team1", user1.ID, contest1.ID)
+	team1, ok, msg := CreateTeam(ctx, constants.CreateTeamForm{Name: "team1", Captcha: contest1.Captcha}, user1.ID, contest1.ID)
 	log.Logger.Debug(team1.ID, ok, msg)
 }
 

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"CBCTF/internal/constants"
 	"CBCTF/internal/utils"
 	"encoding/json"
 	"gorm.io/gorm"
@@ -38,16 +39,16 @@ func (m User) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func InitUser(name string, password string, email string, desc string, country string, hidden bool, verified bool, banned bool) User {
+func InitUser(form constants.CreateUserForm) User {
 	return User{
-		Name:     name,
-		Password: utils.HashPassword(password),
-		Email:    email,
-		Country:  country,
-		Desc:     desc,
+		Name:     form.Name,
+		Password: utils.HashPassword(form.Password),
+		Email:    form.Email,
+		Country:  form.Country,
+		Desc:     form.Desc,
 		Avatar:   "",
-		Verified: verified,
-		Hidden:   hidden,
-		Banned:   banned,
+		Verified: form.Verified,
+		Hidden:   form.Hidden,
+		Banned:   form.Banned,
 	}
 }

@@ -2,6 +2,7 @@ package db
 
 import (
 	"CBCTF/internal/config"
+	"CBCTF/internal/constants"
 	"CBCTF/internal/log"
 	"CBCTF/internal/redis"
 	"context"
@@ -9,6 +10,8 @@ import (
 )
 
 func InitAdminTest() {
+	config.Env = &config.Config{}
+	config.Env.Gorm.Type = "sqlite"
 	config.Env.Gorm.SQLite.File = ":memory:"
 	config.Env.Gorm.Log.Level = "debug"
 	config.Env.Log.Level = "debug"
@@ -19,7 +22,7 @@ func InitAdminTest() {
 	var ctx context.Context
 	admin1, ok, msg := CreateAdmin(ctx, "admin1", "password", "admin1@0rays.club")
 	log.Logger.Info(admin1.ID, ok, msg)
-	user1, ok, msg := CreateUser(ctx, "user1", "password", "user1@0rays.club", "", "", false, false, false)
+	user1, ok, msg := CreateUser(ctx, constants.CreateUserForm{Name: "user1", Password: "password", Email: "user1@0rays.club"})
 	log.Logger.Info(user1.ID, ok, msg)
 }
 
@@ -35,10 +38,10 @@ func TestCreateAdmin(t *testing.T) {
 	if _, ok, _ := CreateAdmin(ctx, "test", "password", "admin1@0rays.club"); ok {
 		t.Fatal("Should not create duplicated email")
 	}
-	if _, ok, _ := CreateUser(ctx, "admin1", "password", "test@0rays.club", "", "", false, false, false); !ok {
+	if _, ok, _ := CreateUser(ctx, constants.CreateUserForm{Name: "admin1", Password: "password", Email: "test@0rays.club"}); !ok {
 		t.Fatal("Failed to create user which name is duplicated with admin")
 	}
-	if _, ok, _ := CreateUser(ctx, "test", "password", "admin1@0rays.club", "", "", false, false, false); ok {
+	if _, ok, _ := CreateUser(ctx, constants.CreateUserForm{Name: "test", Password: "password", Email: "admin1@0rays.club"}); ok {
 		t.Fatal("Should not create user which email is duplicated with admin")
 	}
 	if admin1, _, _ := GetAdminByID(ctx, 1); admin1.Password == "password" {

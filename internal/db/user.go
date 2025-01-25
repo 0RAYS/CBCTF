@@ -1,6 +1,7 @@
 package db
 
 import (
+	"CBCTF/internal/constants"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
@@ -13,17 +14,17 @@ import (
 )
 
 // CreateUser 创建用户
-func CreateUser(ctx context.Context, name string, password string, email string, desc string, country string, hidden bool, verified bool, banned bool) (model.User, bool, string) {
-	if !IsValidEmail(email) {
+func CreateUser(ctx context.Context, form constants.CreateUserForm) (model.User, bool, string) {
+	if !IsValidEmail(form.Email) {
 		return model.User{}, false, "InvalidEmail"
 	}
-	if !IsUniqueName(name, model.User{}) {
+	if !IsUniqueName(form.Name, model.User{}) {
 		return model.User{}, false, "UserNameExists"
 	}
-	if !IsUniqueEmail(email) {
+	if !IsUniqueEmail(form.Email) {
 		return model.User{}, false, "EmailExists"
 	}
-	user := model.InitUser(name, password, email, desc, country, hidden, verified, banned)
+	user := model.InitUser(form)
 	res := DB.WithContext(ctx).Model(&model.User{}).Create(&user)
 	if res.Error != nil {
 		log.Logger.Errorf("Failed to create user: %s", res.Error.Error())

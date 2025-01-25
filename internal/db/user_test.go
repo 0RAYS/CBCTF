@@ -2,6 +2,7 @@ package db
 
 import (
 	"CBCTF/internal/config"
+	"CBCTF/internal/constants"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
@@ -11,6 +12,8 @@ import (
 )
 
 func InitUserTest() {
+	config.Env = &config.Config{}
+	config.Env.Gorm.Type = "sqlite"
 	config.Env.Gorm.SQLite.File = ":memory:"
 	config.Env.Gorm.Log.Level = "debug"
 	config.Env.Log.Level = "debug"
@@ -20,21 +23,21 @@ func InitUserTest() {
 	redis.Init()
 	var ctx context.Context
 	_, _, _ = CreateAdmin(ctx, "admin1", "password", "admin1@0rays.club")
-	_, _, _ = CreateUser(ctx, "user1", "password", "user1@0rays.club", "", "", false, false, false)
-	_, _, _ = CreateContest(ctx, "contest1", "test", "", 1, time.Now(), time.Duration(10), false)
-	_, _, _ = CreateTeam(ctx, "team1", 1, 1)
+	_, _, _ = CreateUser(ctx, constants.CreateUserForm{Name: "user1", Password: "password", Email: "user1@0rays.club"})
+	_, _, _ = CreateContest(ctx, constants.CreateContestForm{Name: "contest1", Size: 1, Start: time.Now(), Duration: time.Duration(10)})
+	_, _, _ = CreateTeam(ctx, constants.CreateTeamForm{Name: "team1"}, 1, 1)
 }
 
 func TestCreateUser(t *testing.T) {
 	InitUserTest()
 	var ctx context.Context
-	if _, ok, _ := CreateUser(ctx, "test", "password", "test_email", "", "", false, false, false); ok {
+	if _, ok, _ := CreateUser(ctx, constants.CreateUserForm{Name: "test", Password: "password", Email: "test_email"}); ok {
 		t.Fatalf("Should not create user with invalid email")
 	}
-	if _, ok, _ := CreateUser(ctx, "user1", "password", "test@0rays.club", "", "", false, false, false); ok {
+	if _, ok, _ := CreateUser(ctx, constants.CreateUserForm{Name: "user1", Password: "password", Email: "test@0rays.club"}); ok {
 		t.Fatalf("Should not create duplicated user")
 	}
-	if _, ok, _ := CreateUser(ctx, "test", "password", "user1@0rays.club", "", "", false, false, false); ok {
+	if _, ok, _ := CreateUser(ctx, constants.CreateUserForm{Name: "test", Password: "password", Email: "user1@0rays.club"}); ok {
 		t.Fatalf("Should not create duplicated email")
 	}
 	if _, ok, _ := CreateAdmin(ctx, "user1", "password", "test@0rays.club"); !ok {
@@ -130,7 +133,7 @@ func TestDeleteUser(t *testing.T) {
 
 func TestGetUsers(t *testing.T) {
 	InitUserTest()
-	test, _, _ := CreateUser(context.Background(), "test", "password", "test@0rays.club", "", "", false, false, false)
+	test, _, _ := CreateUser(context.Background(), constants.CreateUserForm{Name: "test", Password: "password", Email: "test@0rays.club"})
 	_, _ = UpdateUser(context.Background(), test.ID, map[string]interface{}{"hidden": true})
 	var ctx context.Context
 	users, count, ok, msg := GetUsers(ctx, 0, 0, true)

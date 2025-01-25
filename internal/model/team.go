@@ -1,6 +1,7 @@
 package model
 
 import (
+	"CBCTF/internal/constants"
 	"CBCTF/internal/utils"
 	"encoding/json"
 	"gorm.io/gorm"
@@ -34,11 +35,15 @@ func (m Team) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func InitTeam(name string, captainID uint) Team {
+func InitTeam(form constants.CreateTeamForm, captainID uint) Team {
+	captcha := utils.RandomString()
+	if form.Captcha != "" {
+		captcha = form.Captcha
+	}
 	return Team{
-		Name:      name,
-		Desc:      "",
-		Captcha:   utils.RandomString(),
+		Name:      form.Name,
+		Desc:      form.Desc,
+		Captcha:   captcha,
 		Avatar:    "",
 		Banned:    false,
 		Hidden:    false,

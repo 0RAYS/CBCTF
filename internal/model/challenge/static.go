@@ -7,7 +7,7 @@ import (
 
 type StaticChallenge struct {
 	ID        uint           `json:"id" gorm:"primaryKey"`
-	Name      string         `json:"name" gorm:"unique;not null"`
+	Name      string         `json:"name" gorm:"not null"`
 	Desc      string         `json:"desc"`
 	Flag      string         `json:"flag"`
 	Category  string         `json:"category"`

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"CBCTF/internal/constants"
 	"encoding/json"
 	"gorm.io/gorm"
 	"time"
@@ -37,15 +38,15 @@ func (m Contest) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func InitContest(name string, desc string, captcha string, size int, start time.Time, duration time.Duration, hidden bool) Contest {
+func InitContest(form constants.CreateContestForm) Contest {
 	return Contest{
-		Name:     name,
-		Desc:     desc,
-		Captcha:  captcha,
+		Name:     form.Name,
+		Desc:     form.Desc,
+		Captcha:  form.Captcha,
 		Avatar:   "",
-		Size:     size,
-		Start:    start,
-		Hidden:   hidden,
-		Duration: duration,
+		Size:     form.Size,
+		Start:    form.Start,
+		Hidden:   form.Hidden,
+		Duration: form.Duration,
 	}
 }

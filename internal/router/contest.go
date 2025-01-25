@@ -1,6 +1,7 @@
 package router
 
 import (
+	"CBCTF/internal/constants"
 	"CBCTF/internal/db"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/utils"
@@ -27,7 +28,7 @@ func GetContestCaptcha(ctx *gin.Context) {
 }
 
 func GetContests(ctx *gin.Context) {
-	var form GetModelsForm
+	var form constants.GetModelsForm
 	all := false
 	if middleware.GetRole(ctx) == "admin" {
 		all = true
@@ -45,12 +46,12 @@ func GetContests(ctx *gin.Context) {
 }
 
 func CreateContest(ctx *gin.Context) {
-	var form CreateContestForm
+	var form constants.CreateContestForm
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	contest, ok, msg := db.CreateContest(ctx, form.Name, form.Desc, form.Captcha, form.Size, form.Start, form.Duration, form.Hidden)
+	contest, ok, msg := db.CreateContest(ctx, form)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -59,7 +60,7 @@ func CreateContest(ctx *gin.Context) {
 }
 
 func UpdateContest(ctx *gin.Context) {
-	var form UpdateContestForm
+	var form constants.UpdateContestForm
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return

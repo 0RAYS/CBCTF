@@ -1,6 +1,7 @@
 package router
 
 import (
+	"CBCTF/internal/constants"
 	"CBCTF/internal/db"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
@@ -23,7 +24,7 @@ func GetUser(ctx *gin.Context) {
 }
 
 func ChangePassword(ctx *gin.Context) {
-	var form ChangePasswordForm
+	var form constants.ChangePasswordForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest"})
 		return
@@ -41,7 +42,7 @@ func UpdateUser(ctx *gin.Context) {
 		data map[string]interface{}
 	)
 	if middleware.GetRole(ctx) == "admin" {
-		var form UpdateUserForm
+		var form constants.UpdateUserForm
 		if err := ctx.ShouldBindJSON(&form); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 			return
@@ -58,7 +59,7 @@ func UpdateUser(ctx *gin.Context) {
 			data["password"] = user.Password
 		}
 	} else if middleware.GetRole(ctx) == "user" {
-		var form UpdateSelfForm
+		var form constants.UpdateSelfForm
 		if err := ctx.ShouldBindJSON(&form); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 			return
@@ -88,7 +89,7 @@ func UpdateUser(ctx *gin.Context) {
 func DeleteUser(ctx *gin.Context) {
 	var userID uint
 	if middleware.GetRole(ctx) != "admin" {
-		var form DeleteSelfForm
+		var form constants.DeleteSelfForm
 		if err := ctx.ShouldBindJSON(&form); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest"})
 			return
@@ -106,12 +107,12 @@ func DeleteUser(ctx *gin.Context) {
 }
 
 func CreateUser(ctx *gin.Context) {
-	var form CreateUserForm
+	var form constants.CreateUserForm
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	user, ok, msg := db.CreateUser(ctx, form.Name, form.Password, form.Email, form.Desc, form.Country, form.Hidden, form.Banned, form.Verified)
+	user, ok, msg := db.CreateUser(ctx, form)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -120,7 +121,7 @@ func CreateUser(ctx *gin.Context) {
 }
 
 func GetUsers(ctx *gin.Context) {
-	var form GetModelsForm
+	var form constants.GetModelsForm
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
