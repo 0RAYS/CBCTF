@@ -177,6 +177,9 @@ func JoinTeam(ctx context.Context, userID uint, contestID uint, teamID uint) (bo
 	if !ok {
 		return false, msg
 	}
+	if team.Banned {
+		return false, "TeamIsBanned"
+	}
 	if len(team.Users)+1 > contest.Size {
 		return false, "TeamIsFull"
 	}

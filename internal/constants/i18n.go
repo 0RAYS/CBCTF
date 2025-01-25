@@ -12,6 +12,7 @@ var resp = map[string]map[string]interface{}{
 	"EmailExists":         {"zh-CN": "该邮箱已注册", "en-US": "Email already registered", "code": 400},
 	"NameOrPasswordError": {"zh-CN": "用户名或密码错误，请重试", "en-US": "Username or password error, please try again", "code": 401},
 	"TeamIsFull":          {"zh-CN": "队伍人数已满", "en-US": "Team is full", "code": 400},
+	"TeamIsBanned":        {"zh-CN": "队伍已被禁止", "en-US": "Team is banned", "code": 400},
 	"UnverifiedEmail":     {"zh-CN": "邮箱未验证", "en-US": "Email not verified", "code": 403},
 	"CaptchaError":        {"zh-CN": "邀请码错误", "en-US": "Captcha error", "code": 400},
 	"IsNotPlayer":         {"zh-CN": "该用户未加入任何队伍", "en-US": "User has not joined any team", "code": 400},
