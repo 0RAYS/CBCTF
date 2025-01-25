@@ -1,10 +1,8 @@
 package router
 
 import (
-	"CBCTF/internal/config"
 	"CBCTF/internal/constants"
 	"CBCTF/internal/db"
-	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
@@ -17,19 +15,18 @@ import (
 
 func CreateChallenge(ctx *gin.Context) {
 	var form constants.CreateChallengeForm
-	form.Category = strings.ToTitle(strings.TrimSpace(form.Category))
-	challenge := model.InitChallenge(form)
-	base := fmt.Sprintf("%s/challenges/%s", config.Env.Gin.Upload.Path, challenge.Path)
-	var failed []string
-	for _, p := range []string{"attachment", "mounted", "generator"} {
-		path := fmt.Sprintf("%s/%s", base, p)
-		if err := os.MkdirAll(path, 0755); err != nil {
-			failed = append(failed, path)
-			log.Logger.Errorf("Create path %s failed: %s", path, err)
-		}
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
 	}
-	if len(failed) > 0 {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "CreateDirError", "data": failed})
+	form.Category = utils.ToTitle(strings.TrimSpace(form.Category))
+	challenge, ok, msg := db.CreateChallenge(ctx, form)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	if err := os.MkdirAll(challenge.Path, 0755); err != nil {
+		ctx.JSON(http.StatusOK, gin.H{"msg": "CreateDirError", "data": nil})
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": challenge})
@@ -45,17 +42,49 @@ func GetChallenge(ctx *gin.Context) {
 }
 
 func GetChallenges(ctx *gin.Context) {
-	var form constants.GetModelsForm
+	var form constants.GetChallengesForm
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	challenges, count, ok, msg := db.GetChallenges(ctx, form.Limit, form.Offset)
+	challenges, count, ok, msg := db.GetChallenges(ctx, form.Limit, form.Offset, form.Type, form.Category)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "challenges": challenges}})
+}
+
+func GetChallengeFiles(ctx *gin.Context) {
+	challenge, ok, msg := db.GetChallengeByID(ctx, middleware.GetChallengeID(ctx))
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	dir, err := os.ReadDir(challenge.Path)
+	if err != nil {
+		ctx.JSON(http.StatusOK, gin.H{"msg": "ReadDirError", "data": nil})
+		return
+	}
+	var files []string
+	for _, file := range dir {
+		files = append(files, file.Name())
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": files})
+}
+
+func GetCategories(ctx *gin.Context) {
+	var form constants.GetCategoriesForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	categories, ok, msg := db.GetCategories(ctx, form.Type)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": categories})
 }
 
 func UpdateChallenge(ctx *gin.Context) {
@@ -75,10 +104,10 @@ func UpdateChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tmp := strings.ToTitle(strings.TrimSpace(*form.Category))
+	tmp := utils.ToTitle(strings.TrimSpace(*form.Category))
 	form.Category = &tmp
 	data = utils.Form2Map(form)
-	if t, ok := data["type"]; ok && !db.IsValidChallengeType(t.(uint)) {
+	if t, ok := data["type"]; ok && !db.IsValidChallengeType(t.(int)) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidChallengeType", "data": nil})
 		return
 	}
@@ -95,5 +124,43 @@ func DeleteChallenge(ctx *gin.Context) {
 }
 
 func UploadChallenge(ctx *gin.Context) {
-
+	challenge, ok, msg := db.GetChallengeByID(ctx, middleware.GetChallengeID(ctx))
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	file, err := ctx.FormFile("file")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	var path string
+	switch challenge.Type {
+	case model.Static:
+		if file.Filename != "attachment.zip" {
+			ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
+			return
+		}
+		path = fmt.Sprintf("%s/%s", challenge.Path, "attachment.zip")
+	case model.Dynamic:
+		if file.Filename != "generator.zip" {
+			ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
+			return
+		}
+		path = fmt.Sprintf("%s/%s", challenge.Path, "generator.zip")
+	case model.Container:
+		if file.Filename != "mount.zip" {
+			ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
+			return
+		}
+		path = fmt.Sprintf("%s/%s", challenge.Path, "mount.zip")
+	default:
+		ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidChallengeType", "data": nil})
+		return
+	}
+	if err := ctx.SaveUploadedFile(file, path); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
 }

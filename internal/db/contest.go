@@ -160,5 +160,4 @@ func GetContests(ctx context.Context, limit int, offset int, all bool, preloadL 
 		}
 	}()
 	return contests, count, true, "Success"
-
 }
