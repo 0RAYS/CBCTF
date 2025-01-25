@@ -1,6 +1,7 @@
 package db
 
 import (
+	"CBCTF/internal/constants"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
@@ -11,14 +12,14 @@ import (
 )
 
 // CreateTeam 创建队伍, 名称在 model.Contest 中唯一
-func CreateTeam(ctx context.Context, name string, captainID uint, contestID uint) (model.Team, bool, string) {
-	if !IsUniqueTeamName(name, contestID) {
+func CreateTeam(ctx context.Context, form constants.CreateTeamForm, captainID uint, contestID uint) (model.Team, bool, string) {
+	if !IsUniqueTeamName(form.Name, contestID) {
 		return model.Team{}, false, "TeamNameExists"
 	}
 	if !IsUniqueTeamMember(contestID, captainID) {
 		return model.Team{}, false, "TeamMemberExists"
 	}
-	team := model.InitTeam(name, captainID)
+	team := model.InitTeam(form, captainID)
 	res := DB.WithContext(ctx).Model(&model.Team{}).Create(&team)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to create team: %s", res.Error.Error())

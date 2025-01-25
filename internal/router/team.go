@@ -1,6 +1,7 @@
 package router
 
 import (
+	"CBCTF/internal/constants"
 	"CBCTF/internal/db"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
@@ -37,7 +38,7 @@ func GetTeamCaptcha(ctx *gin.Context) {
 }
 
 func GetTeams(ctx *gin.Context) {
-	var form GetModelsForm
+	var form constants.GetModelsForm
 	all := false
 	if middleware.GetRole(ctx) == "admin" {
 		all = true
@@ -55,7 +56,7 @@ func GetTeams(ctx *gin.Context) {
 }
 
 func JoinTeam(ctx *gin.Context) {
-	var form JoinTeamForm
+	var form constants.JoinTeamForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
@@ -75,7 +76,7 @@ func JoinTeam(ctx *gin.Context) {
 }
 
 func CreateTeam(ctx *gin.Context) {
-	var form CreateTeamForm
+	var form constants.CreateTeamForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
@@ -86,7 +87,7 @@ func CreateTeam(ctx *gin.Context) {
 		return
 	}
 	userID := middleware.GetSelfID(ctx)
-	team, ok, msg := db.CreateTeam(ctx, form.Name, userID, contest.ID)
+	team, ok, msg := db.CreateTeam(ctx, form, userID, contest.ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -114,7 +115,7 @@ func UpdateTeam(ctx *gin.Context) {
 		data map[string]interface{}
 	)
 	if middleware.GetRole(ctx) == "admin" {
-		var form AdminUpdateTeamForm
+		var form constants.AdminUpdateTeamForm
 		if err := ctx.ShouldBindJSON(&form); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 			return
@@ -126,7 +127,7 @@ func UpdateTeam(ctx *gin.Context) {
 		}
 		data = utils.Form2Map(form)
 	} else if middleware.GetRole(ctx) == "user" {
-		var form UpdateTeamForm
+		var form constants.UpdateTeamForm
 		if err := ctx.ShouldBindJSON(&form); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 			return
@@ -168,7 +169,7 @@ func DeleteTeam(ctx *gin.Context) {
 }
 
 func KickMember(ctx *gin.Context) {
-	var form KickMemberForm
+	var form constants.KickMemberForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return

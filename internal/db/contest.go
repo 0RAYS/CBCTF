@@ -1,6 +1,7 @@
 package db
 
 import (
+	"CBCTF/internal/constants"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
@@ -8,15 +9,14 @@ import (
 	"errors"
 	"fmt"
 	"gorm.io/gorm/clause"
-	"time"
 )
 
 // CreateContest 创建比赛
-func CreateContest(ctx context.Context, name string, desc string, captcha string, size int, start time.Time, duration time.Duration, hidden bool) (model.Contest, bool, string) {
-	if !IsUniqueName(name, model.Contest{}) {
+func CreateContest(ctx context.Context, form constants.CreateContestForm) (model.Contest, bool, string) {
+	if !IsUniqueName(form.Name, model.Contest{}) {
 		return model.Contest{}, false, "ContestNameExists"
 	}
-	contest := model.InitContest(name, desc, captcha, size, start, duration, hidden)
+	contest := model.InitContest(form)
 	res := DB.WithContext(ctx).Model(&model.Contest{}).Create(&contest)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to create contest: %s", res.Error.Error())

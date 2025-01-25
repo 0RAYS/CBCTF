@@ -1,4 +1,4 @@
-package router
+package constants
 
 import "time"
 
@@ -98,10 +98,10 @@ type KickMemberForm struct {
 
 type CreateUserForm struct {
 	Name     string `form:"name" json:"name" binding:"required"`
-	Email    string `form:"email" json:"email" binding:"required"`
 	Password string `form:"password" json:"password" binding:"required"`
-	Desc     string `form:"desc" json:"desc"`
+	Email    string `form:"email" json:"email" binding:"required"`
 	Country  string `form:"country" json:"country"`
+	Desc     string `form:"desc" json:"desc"`
 	Hidden   bool   `form:"hidden" json:"hidden"`
 	Verified bool   `form:"verified" json:"verified"`
 	Banned   bool   `form:"banned" json:"banned"`
@@ -109,15 +109,17 @@ type CreateUserForm struct {
 
 type CreateTeamForm struct {
 	Name    string `form:"name" json:"name" binding:"required"`
+	Desc    string `form:"desc" json:"desc"`
 	Captcha string `form:"captcha" json:"captcha"`
 }
 
 type CreateContestForm struct {
 	Name     string        `form:"name" json:"name" binding:"required"`
 	Desc     string        `form:"desc" json:"desc"`
+	Captcha  string        `form:"captcha" json:"captcha"`
+	Prefix   string        `form:"prefix" json:"prefix"`
+	Size     int           `form:"size" json:"size" binding:"required"`
 	Start    time.Time     `form:"start" json:"start" binding:"required"`
 	Duration time.Duration `form:"duration" json:"duration" binding:"required"`
-	Size     int           `form:"size" json:"size" binding:"required"`
-	Captcha  string        `form:"captcha" json:"captcha"`
 	Hidden   bool          `form:"hidden" json:"hidden"`
 }

@@ -1,6 +1,7 @@
 package router
 
 import (
+	"CBCTF/internal/constants"
 	"CBCTF/internal/db"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
@@ -14,7 +15,7 @@ func GetAdmin(ctx *gin.Context) {
 }
 
 func AdminChangePassword(ctx *gin.Context) {
-	var form ChangePasswordForm
+	var form constants.ChangePasswordForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
@@ -24,7 +25,7 @@ func AdminChangePassword(ctx *gin.Context) {
 }
 
 func UpdateAdmin(ctx *gin.Context) {
-	var form UpdateAdminForm
+	var form constants.UpdateAdminForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
