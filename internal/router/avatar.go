@@ -129,7 +129,7 @@ func UploadAvatar(v interface{}) func(ctx *gin.Context) {
 				return
 			}
 		}
-		path := fmt.Sprintf("%s/download/%s", config.Env.Backend, record.ID)
+		path := fmt.Sprintf("%s/avatar/%s", config.Env.Backend, record.ID)
 		switch v.(type) {
 		case model.Admin:
 			_, msg = db.UpdateAdmin(ctx, middleware.GetSelfID(ctx), map[string]interface{}{"avatar": path})

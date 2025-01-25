@@ -24,7 +24,7 @@ func InitUserTest() {
 	var ctx context.Context
 	_, _, _ = CreateAdmin(ctx, "admin1", "password", "admin1@0rays.club")
 	_, _, _ = CreateUser(ctx, constants.CreateUserForm{Name: "user1", Password: "password", Email: "user1@0rays.club"})
-	_, _, _ = CreateContest(ctx, constants.CreateContestForm{Name: "contest1", Size: 1, Start: time.Now(), Duration: time.Duration(10)})
+	_, _, _ = CreateContest(ctx, constants.CreateContestForm{Name: "contest1", Size: 1, Start: time.Now(), Duration: time.Duration(10), Hidden: false})
 	_, _, _ = CreateTeam(ctx, constants.CreateTeamForm{Name: "team1"}, 1, 1)
 }
 
