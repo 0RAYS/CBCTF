@@ -115,7 +115,7 @@ func GetAdmins(ctx context.Context, limit int, offset int) ([]model.Admin, int, 
 	res := DB.WithContext(ctx).Model(&model.Admin{}).Limit(limit).Offset(offset).Find(&admins)
 	if res.Error != nil {
 		log.Logger.Errorf("Failed to get admins: %s", res.Error.Error())
-		return nil, 0, false, "GetAdminsError"
+		return nil, 0, false, "UnknownError"
 	}
 	return admins, len(admins), true, "Success"
 }

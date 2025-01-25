@@ -107,7 +107,7 @@ func UpdateUser(ctx context.Context, id uint, updateData map[string]interface{})
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
 	if res.Error != nil {
 		log.Logger.Errorf("Failed to update user: %s", res.Error.Error())
-		return false, "UpdateError"
+		return false, "UpdateUserError"
 	}
 	go func() {
 		if err := redis.DelUserCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
@@ -201,7 +201,7 @@ func GetUsers(ctx context.Context, limit int, offset int, all bool, preloadL ...
 	}
 	if res = res.Limit(limit).Offset(offset).Find(&users); res.Error != nil {
 		log.Logger.Errorf("Failed to get users: %s", res.Error.Error())
-		return nil, 0, false, "GetUsersError"
+		return nil, 0, false, "UnknownError"
 	}
 	go func() {
 		if err := redis.SetUsersCache(cacheKey, users); err != nil && !errors.Is(err, context.DeadlineExceeded) {
