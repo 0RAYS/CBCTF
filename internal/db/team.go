@@ -170,7 +170,7 @@ func JoinTeam(ctx context.Context, userID uint, contestID uint, teamID uint) (bo
 		return false, "TeamMemberExists"
 	}
 	contest, ok, msg := GetContestByID(ctx, contestID, false)
-	if !ok {
+	if !ok || contest.Hidden {
 		return false, msg
 	}
 	team, ok, msg := GetTeamByID(ctx, teamID, true)

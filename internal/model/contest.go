@@ -17,7 +17,7 @@ type Contest struct {
 	Size      int            `json:"size"`
 	Start     time.Time      `json:"start"`
 	Duration  time.Duration  `json:"duration"`
-	Hidden    bool           `gorm:"default:true" json:"hidden"`
+	Hidden    bool           `gorm:"default:false" json:"hidden"`
 	Teams     []*Team        `json:"-"`
 	Users     []*User        `gorm:"many2many:user_contests;" json:"-"`
 	CreatedAt time.Time      `json:"-"`

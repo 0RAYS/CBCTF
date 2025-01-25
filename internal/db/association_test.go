@@ -31,7 +31,7 @@ func InitAssociationTest() {
 	log.Logger.Debug(contest1.ID, ok, msg)
 	contest2, ok, msg := CreateContest(ctx, constants.CreateContestForm{Name: "contest2", Size: 1, Start: time.Now(), Duration: time.Duration(10)})
 	log.Logger.Debug(contest2.ID, ok, msg)
-	team1, ok, msg := CreateTeam(ctx, constants.CreateTeamForm{Name: "team1", Captcha: contest1.Captcha}, user1.ID, contest1.ID)
+	team1, ok, msg := CreateTeam(ctx, constants.CreateTeamForm{Name: "team1"}, user1.ID, contest1.ID)
 	log.Logger.Debug(team1.ID, ok, msg)
 }
 
