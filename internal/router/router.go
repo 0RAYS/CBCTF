@@ -80,6 +80,14 @@ func Init() *gin.Engine {
 	adminContestTeam.POST("/:teamID/kick", middleware.SetTeamID, KickMember)
 	adminContestTeam.POST("/:teamID/avatar", middleware.SetTeamID, UploadAvatar(model.Team{}))
 
+	adminChallenge := admin.Group("/challenge")
+	adminChallenge.GET("/list", GetChallenges)
+	adminChallenge.GET("/:challengeID/info", middleware.SetChallengeID, GetChallenge)
+	adminChallenge.POST("/create", CreateChallenge)
+	adminChallenge.POST("/:challengeID/update", middleware.SetChallengeID, UpdateChallenge)
+	adminChallenge.POST("/:challengeID/delete", middleware.SetChallengeID, DeleteChallenge)
+	adminChallenge.POST("/:challengeID/upload", middleware.SetChallengeID, UploadChallenge)
+
 	adminFile := admin.Group("/file")
 	adminFile.GET("/list", GetAvatars)
 	adminFile.POST("/delete", DeleteAvatar)

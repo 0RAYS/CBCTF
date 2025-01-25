@@ -59,6 +59,7 @@ var Env *Config
 //go:embed default.yml
 var defaultConf []byte
 
+// Init 初始化配置
 func Init() {
 	viper.SetConfigType("yaml")
 	viper.SetConfigName("config")
@@ -77,6 +78,7 @@ func Init() {
 	}
 }
 
+// Save 保存配置，用于动态刷新配置
 func Save(env Config) error {
 	config := make(map[string]interface{})
 	data, err := json.Marshal(env)
@@ -99,6 +101,7 @@ func Save(env Config) error {
 	return nil
 }
 
+// Watch 监听配置文件变化
 func Watch(onChange func()) {
 	viper.WatchConfig()
 	viper.OnConfigChange(func(e fsnotify.Event) {

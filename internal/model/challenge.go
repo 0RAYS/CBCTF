@@ -14,7 +14,7 @@ type Challenge struct {
 	Flag      string         `json:"flag"`
 	Category  string         `json:"category"`
 	Path      string         `json:"path"`
-	Type      string         `json:"type"`
+	Type      uint           `json:"type"`
 	CreatedAt time.Time      `json:"-"`
 	UpdatedAt time.Time      `json:"-"`
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
