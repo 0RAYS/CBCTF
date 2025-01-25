@@ -17,7 +17,7 @@ func Init() *gin.Engine {
 	router.POST("/register", Register)
 	router.POST("/login", Login)
 	router.POST("/admin/login", AdminLogin)
-	router.GET("/avatar/:fileID", middleware.SetFileID, DownloadAvatar)
+	router.GET("/avatar/:avatarID", middleware.SetAvatarID, DownloadAvatar)
 	auth := router.Group("", middleware.CheckLogin)
 	//auth.POST("/upload", Upload)
 
@@ -83,7 +83,7 @@ func Init() *gin.Engine {
 	adminFile := admin.Group("/file")
 	adminFile.GET("/list", GetAvatars)
 	adminFile.POST("/delete", DeleteAvatar)
-	adminFile.POST("/:fileID/delete", middleware.SetFileID, DeleteAvatar)
+	adminFile.POST("/:avatarID/delete", middleware.SetAvatarID, DeleteAvatar)
 
 	return router
 

@@ -22,7 +22,7 @@ import (
 )
 
 func DownloadAvatar(ctx *gin.Context) {
-	file, ok, msg := db.GetAvatarByID(ctx, middleware.GetFileID(ctx))
+	file, ok, msg := db.GetAvatarByID(ctx, middleware.GetAvatarID(ctx))
 	if !ok {
 		ctx.JSON(http.StatusNotFound, gin.H{"msg": msg, "data": nil})
 		return
@@ -44,7 +44,7 @@ func DeleteAvatar(ctx *gin.Context) {
 		return
 	}
 	files := form.Files
-	if id := middleware.GetFileID(ctx); id != "" {
+	if id := middleware.GetAvatarID(ctx); id != "" {
 		files = append(files, id)
 	}
 	for _, id := range files {
