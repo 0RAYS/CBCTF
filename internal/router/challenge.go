@@ -137,23 +137,23 @@ func UploadChallenge(ctx *gin.Context) {
 	var path string
 	switch challenge.Type {
 	case model.Static:
-		if file.Filename != "attachment.zip" {
+		if file.Filename != model.StaticFile {
 			ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
 			return
 		}
-		path = fmt.Sprintf("%s/%s", challenge.Path, "attachment.zip")
+		path = fmt.Sprintf("%s/%s", challenge.Path, model.StaticFile)
 	case model.Dynamic:
-		if file.Filename != "generator.zip" {
+		if file.Filename != model.DynamicFile {
 			ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
 			return
 		}
-		path = fmt.Sprintf("%s/%s", challenge.Path, "generator.zip")
+		path = fmt.Sprintf("%s/%s", challenge.Path, model.DynamicFile)
 	case model.Container:
-		if file.Filename != "mount.zip" {
+		if file.Filename != model.ContainerFile {
 			ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
 			return
 		}
-		path = fmt.Sprintf("%s/%s", challenge.Path, "mount.zip")
+		path = fmt.Sprintf("%s/%s", challenge.Path, model.ContainerFile)
 	default:
 		ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidChallengeType", "data": nil})
 		return
@@ -163,4 +163,23 @@ func UploadChallenge(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
+}
+
+func DownloadChallenge(ctx *gin.Context) {
+	var form constants.DownloadChallengeForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	challenge, ok, msg := db.GetChallengeByID(ctx, middleware.GetChallengeID(ctx))
+	if !ok {
+		ctx.JSON(http.StatusNotFound, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	path := fmt.Sprintf("%s/%s", challenge.Path, form.File)
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		ctx.JSON(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": nil})
+		return
+	}
+	ctx.File(path)
 }

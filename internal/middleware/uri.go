@@ -91,7 +91,7 @@ func GetAvatarID(ctx *gin.Context) string {
 
 func SetChallengeID(ctx *gin.Context) {
 	type challengeIDUri struct {
-		ChallengeID uint `uri:"challengeID" binding:"required"`
+		ChallengeID string `uri:"challengeID" binding:"required"`
 	}
 	var challengeID challengeIDUri
 	if err := ctx.ShouldBindUri(&challengeID); err != nil {
@@ -102,10 +102,10 @@ func SetChallengeID(ctx *gin.Context) {
 	ctx.Next()
 }
 
-func GetChallengeID(ctx *gin.Context) uint {
+func GetChallengeID(ctx *gin.Context) string {
 	if challengeID, ok := ctx.Get("ChallengeID"); !ok {
-		return 0
+		return ""
 	} else {
-		return challengeID.(uint)
+		return challengeID.(string)
 	}
 }

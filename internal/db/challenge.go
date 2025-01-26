@@ -24,7 +24,7 @@ func CreateChallenge(ctx context.Context, form constants.CreateChallengeForm) (m
 	return challenge, true, "Success"
 }
 
-func GetChallengeByID(ctx context.Context, id uint) (model.Challenge, bool, string) {
+func GetChallengeByID(ctx context.Context, id string) (model.Challenge, bool, string) {
 	var challenge model.Challenge
 	result := DB.WithContext(ctx).Model(model.Challenge{}).Where("id = ?", id).Find(&challenge)
 	if result.RowsAffected != 1 {
@@ -54,7 +54,7 @@ func GetChallenges(ctx context.Context, limit, offset, t int, category string) (
 	return challenges, count, true, "Success"
 }
 
-func UpdateChallenge(ctx context.Context, id uint, updateData map[string]interface{}) (bool, string) {
+func UpdateChallenge(ctx context.Context, id string, updateData map[string]interface{}) (bool, string) {
 	result := DB.WithContext(ctx).Model(model.Challenge{}).Where("id = ?", id).
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
 	if result.Error != nil {
@@ -64,7 +64,7 @@ func UpdateChallenge(ctx context.Context, id uint, updateData map[string]interfa
 	return true, "Success"
 }
 
-func DeleteChallenge(ctx context.Context, id uint) (bool, string) {
+func DeleteChallenge(ctx context.Context, id string) (bool, string) {
 	result := DB.WithContext(ctx).Model(model.Challenge{}).Where("id = ?", id).Delete(&model.Challenge{})
 	if result.Error != nil {
 		log.Logger.Warningf("Failed to delete Challenge: %v", result.Error.Error())
