@@ -174,3 +174,7 @@ type KickMemberForm struct {
 type GetCategoriesForm struct {
 	Type int `form:"type" json:"type"`
 }
+
+type DownloadChallengeForm struct {
+	File string `form:"file" json:"file" binding:"required"`
+}

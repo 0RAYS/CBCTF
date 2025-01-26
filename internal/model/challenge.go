@@ -2,6 +2,7 @@ package model
 
 import (
 	"CBCTF/internal/constants"
+	"CBCTF/internal/utils"
 	"gorm.io/gorm"
 	"time"
 )
@@ -10,8 +11,12 @@ var Static int = 0
 var Dynamic int = 1
 var Container int = 2
 
+var StaticFile string = "attachment.zip"
+var DynamicFile string = "generator.zip"
+var ContainerFile string = "mounted.zip"
+
 type Challenge struct {
-	ID             uint           `json:"id" gorm:"primaryKey"`
+	ID             string         `json:"id" gorm:"primaryKey"`
 	Name           string         `json:"name" gorm:"not null"`
 	Desc           string         `json:"desc"`
 	Flag           string         `json:"flag"`
@@ -27,6 +32,7 @@ type Challenge struct {
 
 func InitChallenge(form constants.CreateChallengeForm, path string) Challenge {
 	return Challenge{
+		ID:       utils.RandomString(),
 		Name:     form.Name,
 		Desc:     form.Desc,
 		Flag:     form.Flag,
