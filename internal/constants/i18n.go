@@ -55,6 +55,13 @@ var resp = map[string]map[string]interface{}{
 	"ContestNameExists":  {"zh-CN": "赛事名已被占用", "en-US": "Contest name already taken", "code": 400},
 	"ContestNotFound":    {"zh-CN": "赛事不存在", "en-US": "Contest not found", "code": 404},
 
+	"CreateUsageError":  {"zh-CN": "添加题目到比赛失败", "en-US": "Failed to add challenge to contest", "code": 500},
+	"GetUsageError":     {"zh-CN": "获取题目失败", "en-US": "Failed to get challenge", "code": 500},
+	"UsageNotFound":     {"zh-CN": "题目不存在", "en-US": "Challenge not found", "code": 404},
+	"UpdateUsageError":  {"zh-CN": "更新题目失败", "en-US": "Failed to update challenge", "code": 500},
+	"DeleteUsageError":  {"zh-CN": "移除题目失败", "en-US": "Failed to delete challenge", "code": 500},
+	"UsageAlreadyExist": {"zh-CN": "题目已存在", "en-US": "Challenge already exists", "code": 400},
+
 	"CreateFileRecordError": {"zh-CN": "保存文件失败", "en-US": "Failed to save file", "code": 500},
 	"DeleteFileError":       {"zh-CN": "删除文件失败", "en-US": "Failed to delete file", "code": 500},
 	"FileNotAllowed":        {"zh-CN": "不支持的文件类型", "en-US": "Unsupported file type", "code": 400},

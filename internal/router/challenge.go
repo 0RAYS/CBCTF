@@ -129,6 +129,12 @@ func DeleteChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	usages, ok, msg := db.GetUsageByChallengeID(ctx, challenge.ID)
+	if ok {
+		for _, usage := range usages {
+			db.DeleteUsage(ctx, usage.ID)
+		}
+	}
 	_, msg = db.DeleteChallenge(ctx, middleware.GetChallengeID(ctx))
 	if form.Force && os.RemoveAll(challenge.Path) != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})

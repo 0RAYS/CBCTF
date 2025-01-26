@@ -57,6 +57,15 @@ type CreateChallengeForm struct {
 	DockerImage    string `form:"docker" json:"docker"`
 }
 
+type CreateUsageForm struct {
+	ChallengeID string `form:"challenge_id" json:"challenge_id" binding:"required"`
+	Score       int    `form:"score" json:"score"`
+	Attempt     int    `form:"attempt" json:"attempt"`
+	Hidden      bool   `form:"hidden" json:"hidden"`
+	Hint        string `form:"hint" json:"hint"`
+	Tag         string `form:"tag" json:"tag"`
+}
+
 // GetModelsForm for get models list
 type GetModelsForm struct {
 	Offset int `form:"offset" json:"offset"`
@@ -142,6 +151,16 @@ type UpdateChallengeForm struct {
 	Type           *int    `form:"type" json:"type"`
 	GeneratorImage *string `form:"generator" json:"generator"`
 	DockerImage    *string `form:"docker" json:"docker"`
+}
+
+// UpdateUsageForm for admin update usage info
+type UpdateUsageForm struct {
+	Hidden      *bool     `form:"hidden" json:"hidden"`
+	Score       *int      `form:"score" json:"score"`
+	Attempt     *int      `form:"attempt" json:"attempt"`
+	Hints       *[]string `form:"hints" json:"hints"`
+	Tags        *[]string `form:"tags" json:"tags"`
+	Requirement *[]uint   `form:"requirement" json:"requirement"`
 }
 
 // DeleteSelfForm for user delete self
