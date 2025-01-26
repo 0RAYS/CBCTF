@@ -119,7 +119,21 @@ func UpdateChallenge(ctx *gin.Context) {
 }
 
 func DeleteChallenge(ctx *gin.Context) {
-	_, msg := db.DeleteChallenge(ctx, middleware.GetChallengeID(ctx))
+	var form constants.DeleteChallengeForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	challenge, ok, msg := db.GetChallengeByID(ctx, middleware.GetChallengeID(ctx))
+	if !ok {
+		ctx.JSON(http.StatusNotFound, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	_, msg = db.DeleteChallenge(ctx, middleware.GetChallengeID(ctx))
+	if form.Force && os.RemoveAll(challenge.Path) != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
+		return
+	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
