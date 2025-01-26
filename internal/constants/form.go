@@ -156,8 +156,12 @@ type DeleteUserForm struct {
 
 // DeleteFileForm for delete files
 type DeleteFileForm struct {
-	Force bool     `form:"file_ids" json:"force"`
+	Force bool     `form:"force" json:"force"`
 	Files []string `form:"file_ids" json:"file_ids"`
+}
+
+type DeleteChallengeForm struct {
+	Force bool `form:"force" json:"force"`
 }
 
 // JoinTeamForm for user join team
