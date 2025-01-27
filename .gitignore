@@ -8,10 +8,6 @@ bak
 config.yml
 *.db
 
-node_modules
-frontend
-tmp
-
 # Binaries for programs and plugins
 *.exe
 *.exe~
