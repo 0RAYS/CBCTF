@@ -1,7 +1,6 @@
 package config
 
 import (
-	"bytes"
 	_ "embed"
 	"encoding/json"
 	"errors"
@@ -70,7 +69,7 @@ func Init() {
 			if err := os.WriteFile("./config.yml", defaultConf, 0666); err != nil {
 				log.Panicf("Failed to init config: %s", err)
 			}
-			_ = viper.ReadConfig(bytes.NewReader(defaultConf))
+			log.Panicf("Please configure the config.yml file and restart the program")
 		}
 	}
 	if err := viper.Unmarshal(&Env); err != nil {
