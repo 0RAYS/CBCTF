@@ -18,7 +18,6 @@ import (
 	"os"
 	p "path"
 	"strings"
-	"time"
 )
 
 func DownloadAvatar(ctx *gin.Context) {
@@ -118,7 +117,7 @@ func UploadAvatar(v interface{}) func(ctx *gin.Context) {
 				ctx.JSON(http.StatusForbidden, gin.H{"msg": "FileNotAllowed", "data": file.Filename})
 				return
 			}
-			path := fmt.Sprintf("%s/%s/%s%s", basePath, time.Now().Format("2006-01-02"), utils.RandomString(), suffix)
+			path := fmt.Sprintf("%s/%s%s", basePath, utils.RandomString(), suffix)
 			if err = ctx.SaveUploadedFile(file, path); err != nil {
 				ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
 				return
