@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
+	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -21,7 +22,13 @@ func AddUsage(ctx *gin.Context) {
 }
 
 func GetUsages(ctx *gin.Context) {
-	usages, ok, msg := db.GetUsageByContestID(ctx, middleware.GetContestID(ctx))
+	var (
+		usages []model.Usage
+		ok     bool
+		msg    string
+		all    = middleware.GetRole(ctx) == "admin"
+	)
+	usages, ok, msg = db.GetUsageByContestID(ctx, middleware.GetContestID(ctx), all)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -33,6 +40,13 @@ func GetUsages(ctx *gin.Context) {
 		if !ok {
 			log.Logger.Warningf("Failed to get challenge %s: %s", usage.ChallengeID, msg)
 			continue
+		}
+		if !all {
+			usage.Flag = ""
+			challenge.Path = ""
+			challenge.Flag = ""
+			challenge.DockerImage = ""
+			challenge.GeneratorImage = ""
 		}
 		tmp["usage"] = usage
 		tmp["challenge"] = challenge
