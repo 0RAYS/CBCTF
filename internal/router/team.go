@@ -11,6 +11,15 @@ import (
 )
 
 func GetTeam(ctx *gin.Context) {
+	if middleware.GetRole(ctx) == "admin" {
+		team, ok, msg := db.GetTeamByID(ctx, middleware.GetTeamID(ctx))
+		if !ok {
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": team})
+		return
+	}
 	team, ok, msg := db.GetTeamByUserID(ctx, middleware.GetSelfID(ctx), middleware.GetContestID(ctx))
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
