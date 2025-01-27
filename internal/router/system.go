@@ -39,8 +39,13 @@ func SystemStatus(ctx *gin.Context) {
 	ret["ip"] = db.CountIP(ctx)
 	ret["challenges"] = db.CountChallenges(ctx)
 	middleware.MU.Lock()
-	ret["requests"] = middleware.TotalRequests
-	ret["duration"] = middleware.TotalDuration.Milliseconds() / int64(middleware.TotalRequests)
+	if middleware.TotalRequests == 0 {
+		ret["requests"] = 0
+		ret["duration"] = 0
+	} else {
+		ret["requests"] = middleware.TotalRequests
+		ret["duration"] = middleware.TotalDuration.Milliseconds() / int64(middleware.TotalRequests)
+	}
 	middleware.MU.Unlock()
 
 	total, hit, miss := redis.Status()
