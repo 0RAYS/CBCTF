@@ -25,10 +25,12 @@ func Logger() func(ctx *gin.Context) {
 		// Stop timer
 		n := time.Now()
 		latency := n.Sub(start)
-		MU.Lock()
-		TotalDuration += latency
-		TotalRequests++
-		MU.Unlock()
+		if r.Request.Method != "OPTIONS" {
+			MU.Lock()
+			TotalDuration += latency
+			TotalRequests++
+			MU.Unlock()
+		}
 		if raw != "" {
 			path = path + "?" + raw
 		}
