@@ -13,7 +13,7 @@ func RecordIP(ctx context.Context, ip model.IP) {
 }
 
 func CountIP(ctx context.Context) int64 {
-	var ips []model.IP
-	DB.WithContext(ctx).Model(&model.IP{}).Distinct("ip").Find(&ips)
-	return int64(len(ips))
+	var count int64
+	DB.WithContext(ctx).Model(&model.IP{}).Distinct("ip").Count(&count)
+	return count
 }

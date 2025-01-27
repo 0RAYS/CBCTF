@@ -59,6 +59,12 @@ func GetChallenges(ctx context.Context, limit, offset, t int, category string) (
 	return challenges, count, true, "Success"
 }
 
+func CountChallenges(ctx context.Context) int64 {
+	var count int64
+	DB.WithContext(ctx).Model(&model.Challenge{}).Count(&count)
+	return count
+}
+
 func UpdateChallenge(ctx context.Context, id string, updateData map[string]interface{}) (bool, string) {
 	result := DB.WithContext(ctx).Model(model.Challenge{}).Where("id = ?", id).
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)

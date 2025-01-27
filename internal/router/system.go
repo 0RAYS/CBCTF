@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/log"
+	"CBCTF/internal/middleware"
 	"CBCTF/internal/redis"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -36,6 +37,11 @@ func SystemStatus(ctx *gin.Context) {
 	ret["users"] = db.CountUsers(ctx)
 	ret["contests"] = db.CountContests(ctx)
 	ret["ip"] = db.CountIP(ctx)
+	ret["challenges"] = db.CountChallenges(ctx)
+	middleware.MU.Lock()
+	ret["requests"] = middleware.TotalRequests
+	ret["duration"] = middleware.TotalDuration.Milliseconds() / int64(middleware.TotalRequests)
+	middleware.MU.Unlock()
 
 	total, hit, miss := redis.Status()
 	ret["cache"] = total
