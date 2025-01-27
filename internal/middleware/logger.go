@@ -4,8 +4,13 @@ import (
 	"CBCTF/internal/log"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"sync"
 	"time"
 )
+
+var TotalDuration time.Duration
+var TotalRequests int
+var MU sync.Mutex
 
 func Logger() func(ctx *gin.Context) {
 	l := log.Logger.WithField("type", "GIN")
@@ -19,11 +24,16 @@ func Logger() func(ctx *gin.Context) {
 		r.Next()
 		// Stop timer
 		n := time.Now()
+		latency := n.Sub(start)
+		MU.Lock()
+		TotalDuration += latency
+		TotalRequests++
+		MU.Unlock()
 		if raw != "" {
 			path = path + "?" + raw
 		}
 		e := l.WithFields(logrus.Fields{
-			"Latency":    n.Sub(start),
+			"Latency":    latency,
 			"StatusCode": r.Writer.Status(),
 			"Method":     r.Request.Method,
 			"ClientIP":   r.ClientIP(),
