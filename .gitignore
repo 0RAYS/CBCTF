@@ -4,7 +4,6 @@
 .idea
 logs
 uploads
-bak
 config.yml
 *.db
 
