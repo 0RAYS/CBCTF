@@ -7,17 +7,21 @@ import (
 	"context"
 )
 
-func CreateUsage(ctx context.Context, form constants.CreateUsageForm, contestID uint) (model.Usage, bool, string) {
-	challenge, ok, msg := GetChallengeByID(ctx, form.ChallengeID)
-	if !ok {
-		return model.Usage{}, false, msg
+func CreateUsage(ctx context.Context, form constants.CreateUsageForm, contestID uint) ([]model.Usage, bool, string) {
+	var usages []model.Usage
+	for _, c := range form.ChallengeID {
+		challenge, ok, _ := GetChallengeByID(ctx, c)
+		if !ok {
+			log.Logger.Warningf("Failed to get challenge by ID: %s", c)
+			continue
+		}
+		usage := model.InitUsage(c, contestID, challenge.Flag)
+		if err := DB.WithContext(ctx).Model(model.Usage{}).Create(&usage).Error; err != nil {
+			continue
+		}
+		usages = append(usages, usage)
 	}
-	usage := model.InitUsage(form, contestID, challenge.Flag)
-	if err := DB.WithContext(ctx).Model(model.Usage{}).Create(&usage).Error; err != nil {
-		log.Logger.Errorf("Failed to create Usage: %s", err.Error())
-		return model.Usage{}, false, "CreateUsageError"
-	}
-	return usage, true, "Success"
+	return usages, true, "Success"
 }
 
 func GetUsageByContestID(ctx context.Context, contestID uint) ([]model.Usage, bool, string) {

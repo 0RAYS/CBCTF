@@ -58,12 +58,7 @@ type CreateChallengeForm struct {
 }
 
 type CreateUsageForm struct {
-	ChallengeID string `form:"challenge_id" json:"challenge_id" binding:"required"`
-	Score       int    `form:"score" json:"score"`
-	Attempt     int    `form:"attempt" json:"attempt"`
-	Hidden      bool   `form:"hidden" json:"hidden"`
-	Hint        string `form:"hint" json:"hint"`
-	Tag         string `form:"tag" json:"tag"`
+	ChallengeID []string `form:"challenge_id" json:"challenge_id" binding:"required"`
 }
 
 // GetModelsForm for get models list
@@ -155,12 +150,11 @@ type UpdateChallengeForm struct {
 
 // UpdateUsageForm for admin update usage info
 type UpdateUsageForm struct {
-	Hidden      *bool     `form:"hidden" json:"hidden"`
-	Score       *int      `form:"score" json:"score"`
-	Attempt     *int      `form:"attempt" json:"attempt"`
-	Hints       *[]string `form:"hints" json:"hints"`
-	Tags        *[]string `form:"tags" json:"tags"`
-	Requirement *[]uint   `form:"requirement" json:"requirement"`
+	Hidden  *bool   `form:"hidden" json:"hidden"`
+	Score   *int    `form:"score" json:"score"`
+	Attempt *int    `form:"attempt" json:"attempt"`
+	Hints   *string `form:"hints" json:"hints"`
+	Tags    *string `form:"tags" json:"tags"`
 }
 
 // DeleteSelfForm for user delete self
