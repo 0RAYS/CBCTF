@@ -26,7 +26,7 @@ func CreateChallenge(ctx context.Context, form constants.CreateChallengeForm) (m
 
 func GetChallengeByID(ctx context.Context, id string) (model.Challenge, bool, string) {
 	var challenge model.Challenge
-	result := DB.WithContext(ctx).Model(model.Challenge{}).Where("id = ?", id).Find(&challenge)
+	result := DB.WithContext(ctx).Model(model.Challenge{}).Where("id = ?", id).Find(&challenge).Limit(1)
 	if result.RowsAffected != 1 {
 		return model.Challenge{}, false, "ChallengeNotFound"
 	}

@@ -5,7 +5,6 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
-	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -17,17 +16,8 @@ func AddUsage(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	usage, ok, msg := db.GetUsageBy2ID(ctx, middleware.GetContestID(ctx), form.ChallengeID)
-	if ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "UsageAlreadyExist", "data": nil})
-		return
-	}
-	usage, ok, msg = db.CreateUsage(ctx, form, middleware.GetContestID(ctx))
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": usage})
+	usages, _, msg := db.CreateUsage(ctx, form, middleware.GetContestID(ctx))
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": usages})
 }
 
 func GetUsages(ctx *gin.Context) {
@@ -36,14 +26,17 @@ func GetUsages(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	var challenges []model.Challenge
+	var challenges []map[string]interface{}
 	for _, usage := range usages {
+		tmp := map[string]interface{}{}
 		challenge, ok, msg := db.GetChallengeByID(ctx, usage.ChallengeID)
 		if !ok {
-			log.Logger.Warningf("Failed to get challenge %d: %s", usage.ChallengeID, msg)
+			log.Logger.Warningf("Failed to get challenge %s: %s", usage.ChallengeID, msg)
 			continue
 		}
-		challenges = append(challenges, challenge)
+		tmp["usage"] = usage
+		tmp["challenge"] = challenge
+		challenges = append(challenges, tmp)
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": challenges})
 }
