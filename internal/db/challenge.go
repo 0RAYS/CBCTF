@@ -43,9 +43,9 @@ func GetChallenges(ctx context.Context, limit, offset, t int, category string) (
 	var challenges []model.Challenge
 	var count int64
 	res := DB.WithContext(ctx).Model(model.Challenge{})
-	if t != 0 && category != "" {
+	if t != -1 && category != "" {
 		res = res.Where("type = ? AND category = ?", t, category)
-	} else if !(t == 0 && category == "") {
+	} else if !(t == -1 && category == "") {
 		res = res.Where("type = ? OR category = ?", t, category)
 	}
 	if res.Count(&count).Error != nil {

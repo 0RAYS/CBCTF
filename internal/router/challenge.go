@@ -47,6 +47,10 @@ func GetChallenges(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
+	if ctx.Query("type") == "" && ctx.Query("category") == "" {
+		form.Type = -1
+		form.Category = ""
+	}
 	challenges, count, ok, msg := db.GetChallenges(ctx, form.Limit, form.Offset, form.Type, form.Category)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

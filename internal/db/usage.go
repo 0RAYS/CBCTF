@@ -24,10 +24,15 @@ func CreateUsage(ctx context.Context, form constants.CreateUsageForm, contestID 
 	return usages, true, "Success"
 }
 
-func GetUsageByContestID(ctx context.Context, contestID uint) ([]model.Usage, bool, string) {
+func GetUsageByContestID(ctx context.Context, contestID uint, all bool) ([]model.Usage, bool, string) {
 	var usages []model.Usage
-	res := DB.WithContext(ctx).Model(model.Usage{}).Where("contest_id = ?", contestID).Find(&usages)
-	if res.Error != nil {
+	res := DB.WithContext(ctx).Model(model.Usage{})
+	if all {
+		res = res.Where("contest_id = ?", contestID)
+	} else {
+		res = res.Where("contest_id = ? AND hidden = ?", contestID, false)
+	}
+	if res := res.Find(&usages); res.Error != nil {
 		log.Logger.Errorf("Failed to get Usage: %s", res.Error.Error())
 		return nil, false, "GetUsageError"
 	}
