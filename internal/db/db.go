@@ -44,10 +44,10 @@ func Init() {
 		DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: log.NewGormLogger(level)})
 		log.Logger.Infof("Connecting to MySQL database: %s:%d", config.Env.Gorm.MySQL.Host, config.Env.Gorm.MySQL.Port)
 	default:
-		log.Logger.Panicf("unsupported database type: %s", config.Env.Gorm.Type)
+		log.Logger.Fatalf("Unsupported database type: %s", config.Env.Gorm.Type)
 	}
 	if err != nil {
-		log.Logger.Panicf("failed to connect database: %v", err)
+		log.Logger.Fatalf("failed to connect database: %v", err)
 	}
 	err = DB.AutoMigrate(
 		&model.Admin{}, &model.User{}, &model.Team{},
@@ -55,7 +55,7 @@ func Init() {
 		&model.Challenge{}, &model.Usage{},
 	)
 	if err != nil {
-		log.Logger.Panicf("failed to migrate database: %v", err)
+		log.Logger.Fatalf("failed to migrate database: %v", err)
 	}
 	log.Logger.Info("Connected to database")
 	InitAdmin()
