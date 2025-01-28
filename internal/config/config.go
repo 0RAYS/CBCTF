@@ -48,7 +48,10 @@ type Config struct {
 		Pwd     string `mapstructure:"pwd" json:"pwd"`         // Redis 密码
 		Timeout uint   `mapstructure:"timeout" json:"timeout"` // Redis 连接超时时间（单位：毫秒）
 	} `mapstructure:"redis" json:"redis"`
-
+	K8S struct {
+		Config    string `mapstructure:"config" json:"config"`       // Kubernetes 配置文件路径
+		Namespace string `mapstructure:"namespace" json:"namespace"` // Kubernetes 命名空间
+	} `mapstructure:"k8s" json:"k8s"`
 	Frontend string `mapstructure:"frontend" json:"frontend"` // 前端地址
 	Backend  string `mapstructure:"backend" json:"backend"`   // 后端地址
 }

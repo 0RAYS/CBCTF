@@ -7,13 +7,13 @@ import (
 	"time"
 )
 
-var Static int = 0
-var Dynamic int = 1
-var Container int = 2
+var Static = 0
+var Dynamic = 1
+var Container = 2
 
-var StaticFile string = "attachment.zip"
-var DynamicFile string = "generator.zip"
-var ContainerFile string = "mounted.zip"
+var StaticFile = "attachment.zip"
+var DynamicFile = "generator.zip"
+var ContainerFile = "mounted.zip"
 
 type Challenge struct {
 	ID             string         `json:"id" gorm:"primaryKey"`
@@ -39,5 +39,18 @@ func InitChallenge(form constants.CreateChallengeForm, path string) Challenge {
 		Category: form.Category,
 		Type:     form.Type,
 		Path:     path,
+	}
+}
+
+func (c *Challenge) GetFlag() string {
+	switch c.Type {
+	case Static:
+		return c.Flag
+	case Dynamic:
+		return c.Flag
+	case Container:
+		return c.Flag
+	default:
+		return ""
 	}
 }
