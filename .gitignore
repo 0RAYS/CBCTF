@@ -5,6 +5,7 @@
 logs
 uploads
 config.yml
+*.conf
 *.db
 
 # Binaries for programs and plugins
