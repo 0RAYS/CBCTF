@@ -62,6 +62,10 @@ func levelColor(level logrus.Level) func(a ...interface{}) string {
 		return colors["Warning"]
 	case logrus.InfoLevel:
 		return colors["Info"]
+	case logrus.PanicLevel:
+		return colors["Panic"]
+	case logrus.FatalLevel:
+		return colors["Error"]
 	default:
 		return colors["Time"]
 	}
