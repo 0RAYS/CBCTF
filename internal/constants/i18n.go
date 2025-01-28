@@ -67,6 +67,11 @@ var resp = map[string]map[string]interface{}{
 	"FileNotFound":          {"zh-CN": "文件不存在", "en-US": "File not found", "code": 404},
 	"UploadFileError":       {"zh-CN": "文件上传失败", "en-US": "File upload failed", "code": 500},
 
+	"CreateFlagError": {"zh-CN": "创建flag失败", "en-US": "Failed to create flag", "code": 500},
+	"FlagNotFound":    {"zh-CN": "flag不存在", "en-US": "Flag not found", "code": 404},
+	"UpdateFlagError": {"zh-CN": "更新flag失败", "en-US": "Failed to update flag", "code": 500},
+	"FlagNotMatch":    {"zh-CN": "flag不匹配", "en-US": "Flag not match", "code": 400},
+
 	"AppendUserToTeamError":      {"zh-CN": "添加用户到队伍失败", "en-US": "Failed to add user to team", "code": 500},
 	"AppendTeamToContestError":   {"zh-CN": "添加队伍到赛事失败", "en-US": "Failed to add team to contest", "code": 500},
 	"AppendContestToUserError":   {"zh-CN": "添加用户到赛事失败", "en-US": "Failed to add user to contest", "code": 500},

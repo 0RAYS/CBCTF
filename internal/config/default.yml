@@ -28,5 +28,9 @@ redis:
     pwd: ""
     # millisecond
     timeout: 10
+k8s:
+    config: ./admin.conf
+    # also as prefix of resources
+    namespace: cbctf
 frontend: http://127.0.0.1:3000
 backend: http://127.0.0.1:8000

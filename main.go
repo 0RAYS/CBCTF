@@ -3,6 +3,7 @@ package main
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
+	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/router"
@@ -18,6 +19,7 @@ func Init() {
 	log.Init()
 	redis.Init()
 	db.Init()
+	k8s.Init()
 }
 
 func Start() {
