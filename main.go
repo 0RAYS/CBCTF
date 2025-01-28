@@ -29,7 +29,7 @@ func Start() {
 	}
 	go func() {
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Logger.Panicf("Failed to start: %s", err)
+			log.Logger.Fatalf("Failed to start: %s", err)
 		}
 	}()
 	log.Logger.Infof("Server started at %s:%d", ip, port)
