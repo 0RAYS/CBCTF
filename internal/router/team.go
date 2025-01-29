@@ -34,8 +34,8 @@ func GetTeamCaptcha(ctx *gin.Context) {
 		ok   bool
 		msg  string
 	)
-	if id := middleware.GetTeamID(ctx); id != 0 {
-		team, ok, msg = db.GetTeamByID(ctx, id, false)
+	if middleware.GetRole(ctx) == "admin" {
+		team, ok, msg = db.GetTeamByID(ctx, middleware.GetTeamID(ctx), false)
 	} else {
 		team, ok, msg = db.GetTeamByUserID(ctx, middleware.GetSelfID(ctx), middleware.GetContestID(ctx))
 	}
