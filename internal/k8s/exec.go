@@ -9,16 +9,16 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 )
 
-func ExecInPod(namespace, pod, container, command string, stdin io.Reader, stdout *bytes.Buffer, stderr *bytes.Buffer) error {
+func ExecInPod(pod, container, command string, stdin io.Reader, stdout *bytes.Buffer, stderr *bytes.Buffer) error {
 	cmd := []string{"sh", "-c", command}
-	return ExecInPodWithStream(namespace, pod, container, cmd, stdin, stdout, stderr)
+	return ExecInPodWithStream(pod, container, cmd, stdin, stdout, stderr)
 }
 
-func ExecInPodWithStream(namespace, pod, container string, command []string, stdin io.Reader, stdout, stderr *bytes.Buffer) error {
+func ExecInPodWithStream(pod, container string, command []string, stdin io.Reader, stdout, stderr *bytes.Buffer) error {
 	req := Client.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Name(pod).
-		Namespace(namespace).
+		Namespace(NamespaceName).
 		SubResource("exec").
 		VersionedParams(&corev1.PodExecOptions{
 			Container: container,

@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 )
 
-func CopyToPod(namespace, podName, containerName, src, dst string) error {
+func CopyToPod(podName, containerName, src, dst string) error {
 	var buf bytes.Buffer
 	file, err := os.Open(src)
 	if err != nil {
@@ -28,7 +28,7 @@ func CopyToPod(namespace, podName, containerName, src, dst string) error {
 	req := Client.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Name(podName).
-		Namespace(namespace).
+		Namespace(NamespaceName).
 		SubResource("exec").
 		VersionedParams(&corev1.PodExecOptions{
 			Container: containerName,
@@ -50,10 +50,10 @@ func CopyToPod(namespace, podName, containerName, src, dst string) error {
 	return nil
 }
 
-func CopyFromPod(namespace, podName, containerName, src, dst string) error {
+func CopyFromPod(podName, containerName, src, dst string) error {
 	command := fmt.Sprintf("cat %s", src)
 	var buf bytes.Buffer
-	err := ExecInPod(namespace, podName, containerName, command, nil, &buf, nil)
+	err := ExecInPod(podName, containerName, command, nil, &buf, nil)
 	if err != nil {
 		return err
 	}
