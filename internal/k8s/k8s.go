@@ -38,6 +38,8 @@ func Init() {
 	if err != nil {
 		log.Logger.Errorf("Failed to load k8s admin config")
 	}
+	Config.QPS = 100
+	Config.Burst = 200
 	Client, err = kubernetes.NewForConfig(Config)
 	if err != nil {
 		log.Logger.Errorf("Failed to init k8s client")

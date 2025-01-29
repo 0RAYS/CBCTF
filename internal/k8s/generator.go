@@ -10,10 +10,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/utils/ptr"
 	"os"
 )
 
-func Generate(challenge model.Challenge) (bool, string) {
+func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, string) {
 	var err error
 	if challenge.Type != model.Dynamic {
 		return false, "InvalidChallengeType"
@@ -22,14 +23,14 @@ func Generate(challenge model.Challenge) (bool, string) {
 		log.Logger.Errorf("%s:%s generator image not found", challenge.ID, challenge.Name)
 		return false, "EmptyGeneratorImage"
 	}
-	generatorPath := fmt.Sprintf("%s/challenges/%s/generator.zip", config.Env.Gin.Upload.Path, challenge.ID)
+	generatorPath := fmt.Sprintf("%s/generator.zip", challenge.Path)
 	if _, err := os.Stat(generatorPath); err != nil {
-		log.Logger.Warningf("%s:%s generator.zip not found", challenge.ID, challenge.Name)
+		log.Logger.Warningf("%s/generator.zip not found", challenge.Path)
 		return false, "FileNotFound"
 	}
 	log.Logger.Debugf("Creating pod for challenge %s:%s", challenge.Name, challenge.ID)
-	podName := fmt.Sprintf("%s-generator-pod", challenge.ID)
-	containerName := fmt.Sprintf("%s-generator-container", challenge.ID)
+	podName := fmt.Sprintf("%s-%d-pod", challenge.ID, flag.TeamID)
+	containerName := fmt.Sprintf("%s-%d-container", challenge.ID, flag.TeamID)
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      podName,
@@ -43,7 +44,8 @@ func Generate(challenge model.Challenge) (bool, string) {
 					Command: []string{"sleep", "infinity"},
 				},
 			},
-			RestartPolicy: corev1.RestartPolicyNever,
+			TerminationGracePeriodSeconds: ptr.To[int64](3),
+			RestartPolicy:                 corev1.RestartPolicyNever,
 		},
 	}
 	pod, err = Client.CoreV1().Pods(NamespaceName).Create(context.TODO(), pod, metav1.CreateOptions{})
@@ -73,7 +75,7 @@ func Generate(challenge model.Challenge) (bool, string) {
 			return false, "PodNotRunning"
 		}
 	}
-	err = CopyToPod(NamespaceName, pod.Name, containerName, generatorPath, "/root/generator.zip")
+	err = CopyToPod(pod.Name, containerName, generatorPath, "/root/generator.zip")
 	if err != nil {
 		log.Logger.Errorf("Failed to copy file: %v", err)
 		return false, "CopyFileError"
@@ -81,21 +83,20 @@ func Generate(challenge model.Challenge) (bool, string) {
 	commands := []string{
 		"unzip /root/generator.zip -d /root",
 		"pip install -r requirements.txt",
-		"python /root/generator.py 1 this_is_flag",
-		"zip -r /root/attachments.zip ./attachments/*",
+		fmt.Sprintf("python generator.py %d %s", flag.TeamID, flag.Value),
 	}
 	for _, command := range commands {
 		log.Logger.Debugf("Executing command: %s", command)
 		var buf bytes.Buffer
-		if ExecInPod(NamespaceName, pod.Name, containerName, command, nil, &buf, nil) != nil {
+		if ExecInPod(pod.Name, containerName, command, nil, &buf, nil) != nil {
 			log.Logger.Errorf("Failed to execute command: %v", err)
 			return false, "ExecCommandError"
 		}
 	}
 	err = CopyFromPod(
-		NamespaceName, pod.Name, containerName,
-		"/root/attachments.zip",
-		fmt.Sprintf("%s/attachments/%s/attachments.zip", config.Env.Gin.Upload.Path, challenge.ID),
+		pod.Name, containerName,
+		fmt.Sprintf("/root/attachments/%d.zip", flag.TeamID),
+		fmt.Sprintf("%s/attachments/%s/%d.zip", config.Env.Gin.Upload.Path, challenge.ID, flag.TeamID),
 	)
 	if err != nil {
 		log.Logger.Errorf("Failed to copy output file: %v", err)
