@@ -52,7 +52,7 @@ func Init() {
 	err = DB.AutoMigrate(
 		&model.Admin{}, &model.User{}, &model.Team{},
 		&model.Contest{}, &model.Avatar{}, &model.IP{},
-		&model.Challenge{}, &model.Usage{},
+		&model.Challenge{}, &model.Usage{}, &model.Flag{},
 	)
 	if err != nil {
 		log.Logger.Fatalf("failed to migrate database: %v", err)

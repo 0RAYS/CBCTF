@@ -1,8 +1,10 @@
 package db
 
 import (
+	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
 	"context"
 )
 
@@ -12,9 +14,9 @@ func GenerateFlag(ctx context.Context, contestID, teamID uint) {
 	var (
 		usages    []model.Usage
 		challenge model.Challenge
-		//flag      model.Flag
-		ok  bool
-		msg string
+		flag      model.Flag
+		ok        bool
+		msg       string
 	)
 	usages, ok, msg = GetUsageByContestID(ctx, contestID, true)
 	if !ok {
@@ -26,14 +28,21 @@ func GenerateFlag(ctx context.Context, contestID, teamID uint) {
 			log.Logger.Warningf("Failed to get challenge %s: %s", usage.ChallengeID, msg)
 			continue
 		}
-
+		log.Logger.Debugf("Generating flag for team %d challenge %s", teamID, usage.ChallengeID)
 		switch challenge.Type {
 		case model.Static:
-			_, ok, msg = CreateFlag(ctx, contestID, teamID, usage.ChallengeID, usage.Flag)
+			flag, ok, msg = CreateFlag(ctx, contestID, teamID, usage.ChallengeID, challenge.Flag)
 		case model.Dynamic:
-			_, ok, msg = CreateFlag(ctx, contestID, teamID, usage.ChallengeID, "")
+			flag, ok, msg = CreateFlag(ctx, contestID, teamID, usage.ChallengeID, utils.RandFlag(challenge.Flag))
+			go func(c model.Challenge, f model.Flag) {
+				log.Logger.Infof("Generating attachment for team %d challenge %s", teamID, usage.ChallengeID)
+				ok, msg = k8s.GenerateAttachment(c, f)
+				if !ok {
+					log.Logger.Warningf("Failed to generate flag for challenge %s: %s", usage.ChallengeID, msg)
+				}
+			}(challenge, flag)
 		case model.Container:
-			_, ok, msg = CreateFlag(ctx, contestID, teamID, usage.ChallengeID, "")
+			flag, ok, msg = CreateFlag(ctx, contestID, teamID, usage.ChallengeID, utils.RandomString())
 		default:
 			continue
 		}
@@ -49,12 +58,24 @@ func GenerateFlag(ctx context.Context, contestID, teamID uint) {
 
 // CreateFlag is a function to create a new flag
 func CreateFlag(ctx context.Context, contestID, teamID uint, challengeID, value string) (model.Flag, bool, string) {
-	flag := model.InitFlag(contestID, teamID, challengeID, value)
-	res := DB.WithContext(ctx).Model(model.Flag{}).Create(&flag)
-	if res.Error != nil {
-		log.Logger.Errorf("Failed to create Flag: %s", res.Error.Error())
-		return model.Flag{}, false, "CreateFlagError"
+	var (
+		flag model.Flag
+		ok   bool
+	)
+	if flag, ok, _ = GetFlagBy3ID(ctx, contestID, teamID, challengeID); ok {
+		ok, _ = UpdateFlag(ctx, contestID, teamID, challengeID, value)
+		if !ok {
+			return model.Flag{}, false, "UpdateFlagError"
+		}
+	} else {
+		flag = model.InitFlag(contestID, teamID, challengeID, value)
+		res := DB.WithContext(ctx).Model(model.Flag{}).Create(&flag)
+		if res.Error != nil {
+			log.Logger.Errorf("Failed to create Flag: %s", res.Error.Error())
+			return model.Flag{}, false, "CreateFlagError"
+		}
 	}
+	flag.Value = value
 	return flag, true, "Success"
 }
 
