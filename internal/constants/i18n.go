@@ -48,6 +48,7 @@ var resp = map[string]map[string]interface{}{
 	"CreateDirError":       {"zh-CN": "创建目录失败", "en-US": "Failed to create directory", "code": 500},
 	"ReadDirError":         {"zh-CN": "读取目录失败", "en-US": "Failed to read directory", "code": 500},
 	"InvalidFileName":      {"zh-CN": "无效的文件名，必须符合当前题目类型", "en-US": "Invalid file name, must be matched with challenge type", "code": 400},
+	"EmptyGeneratorImage":  {"zh-CN": "未找到生成器镜像", "en-US": "Generator image not found", "code": 400},
 
 	"CreateContestError": {"zh-CN": "创建赛事失败", "en-US": "Failed to create contest", "code": 500},
 	"DeleteContestError": {"zh-CN": "删除赛事失败", "en-US": "Failed to delete contest", "code": 500},
@@ -71,6 +72,10 @@ var resp = map[string]map[string]interface{}{
 	"FlagNotFound":    {"zh-CN": "flag不存在", "en-US": "Flag not found", "code": 404},
 	"UpdateFlagError": {"zh-CN": "更新flag失败", "en-US": "Failed to update flag", "code": 500},
 	"FlagNotMatch":    {"zh-CN": "flag不匹配", "en-US": "Flag not match", "code": 400},
+
+	"CreatePodError": {"zh-CN": "创建Pod失败", "en-US": "Failed to create Pod", "code": 500},
+	"GetPodError":    {"zh-CN": "获取Pod失败", "en-US": "Failed to get Pod", "code": 500},
+	"CopyFileError":  {"zh-CN": "复制文件失败", "en-US": "Failed to copy file", "code": 500},
 
 	"AppendUserToTeamError":      {"zh-CN": "添加用户到队伍失败", "en-US": "Failed to add user to team", "code": 500},
 	"AppendTeamToContestError":   {"zh-CN": "添加队伍到赛事失败", "en-US": "Failed to add team to contest", "code": 500},
