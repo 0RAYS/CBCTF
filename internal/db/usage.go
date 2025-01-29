@@ -15,6 +15,9 @@ func CreateUsage(ctx context.Context, form constants.CreateUsageForm, contestID 
 			log.Logger.Warningf("Failed to get challenge by ID: %s", c)
 			continue
 		}
+		if _, ok, _ = GetUsageBy2ID(ctx, contestID, c); ok {
+			continue
+		}
 		usage := model.InitUsage(c, contestID, challenge.Flag)
 		if err := DB.WithContext(ctx).Model(model.Usage{}).Create(&usage).Error; err != nil {
 			continue
