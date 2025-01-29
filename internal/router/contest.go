@@ -11,7 +11,7 @@ import (
 
 func GetContest(ctx *gin.Context) {
 	contest, ok, msg := db.GetContestByID(ctx, middleware.GetContestID(ctx))
-	if !ok {
+	if !ok || contest.Hidden {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
