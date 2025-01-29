@@ -83,13 +83,13 @@ func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, strin
 	commands := []string{
 		"unzip /root/generator.zip -d /root",
 		"pip install -r requirements.txt",
-		fmt.Sprintf("python generator.py %d %s", flag.TeamID, flag.Value),
+		fmt.Sprintf("python generator.py %d '%s'", flag.TeamID, flag.Value),
 	}
 	for _, command := range commands {
 		log.Logger.Debugf("Executing command: %s", command)
 		var buf bytes.Buffer
 		if ExecInPod(pod.Name, containerName, command, nil, &buf, nil) != nil {
-			log.Logger.Errorf("Failed to execute command: %v", err)
+			log.Logger.Errorf("Failed to execute command %s: %v", command, err)
 			return false, "ExecCommandError"
 		}
 	}
