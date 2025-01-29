@@ -8,7 +8,7 @@ import (
 type Usage struct {
 	ID          uint           `json:"id" gorm:"primaryKey"`
 	ContestID   uint           `json:"contest_id"`
-	ChallengeID string         `json:"challenge_id" gorm:"unique"`
+	ChallengeID string         `json:"challenge_id"`
 	Hidden      bool           `json:"hidden"`
 	Score       int            `json:"score"`
 	Flag        string         `json:"flag"`
