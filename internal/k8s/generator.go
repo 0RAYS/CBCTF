@@ -82,7 +82,6 @@ func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, strin
 	}
 	commands := []string{
 		"unzip /root/generator.zip -d /root",
-		"pip install -r requirements.txt",
 		// TODO 有 RCE 的风险，虽然是在容器内
 		fmt.Sprintf("python generator.py %d '%s'", flag.TeamID, flag.Value),
 	}
