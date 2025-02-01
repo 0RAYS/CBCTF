@@ -56,12 +56,15 @@ func (c *Challenge) AttachmentPath(teamID uint) string {
 
 func InitChallenge(form constants.CreateChallengeForm) Challenge {
 	return Challenge{
-		ID:       utils.RandomString(),
-		Name:     form.Name,
-		Desc:     form.Desc,
-		Flag:     form.Flag,
-		Category: form.Category,
-		Type:     form.Type,
+		ID:             utils.RandomString(),
+		Name:           form.Name,
+		Desc:           form.Desc,
+		Flag:           form.Flag,
+		Category:       form.Category,
+		Type:           form.Type,
+		GeneratorImage: form.GeneratorImage,
+		DockerImage:    form.DockerImage,
+		Port:           form.Port,
 	}
 }
 

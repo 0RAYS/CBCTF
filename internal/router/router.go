@@ -42,9 +42,13 @@ func Init() *gin.Engine {
 	contest.POST("/:contestID/team/kick", middleware.CheckVerified, middleware.SetContestID, middleware.CheckCaptain, KickMember)
 	contest.POST("/:contestID/team/leave", middleware.CheckVerified, middleware.SetContestID, LeaveTeam)
 
-	contestChallenge := contest.Group("/:contestID/challenge", middleware.SetContestID, middleware.CheckBanned)
+	contestChallenge := contest.Group("/:contestID/challenge", middleware.CheckVerified, middleware.SetContestID, middleware.CheckBanned)
 	contestChallenge.GET("/list", GetUsages)
 	contestChallenge.GET("/:challengeID/attachment", middleware.SetChallengeID, GetAttachment)
+	contestChallenge.GET("/:challengeID/remote", middleware.SetChallengeID, GetContainer)
+	contestChallenge.POST("/:challengeID/start", middleware.SetChallengeID, StartContainer)
+	contestChallenge.POST("/:challengeID/increase", middleware.SetChallengeID, IncreaseDuration)
+	contestChallenge.POST("/:challengeID/stop", middleware.SetChallengeID, StopContainer)
 
 	admin := auth.Group("/admin", middleware.CheckRole("admin"))
 	admin.GET("/info", GetAdmin)
