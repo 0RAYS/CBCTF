@@ -55,6 +55,7 @@ type CreateChallengeForm struct {
 	Type           int    `form:"type" json:"type"`
 	GeneratorImage string `form:"generator" json:"generator"`
 	DockerImage    string `form:"docker" json:"docker"`
+	Port           int32  `form:"port" json:"port"`
 }
 
 type CreateUsageForm struct {
@@ -146,6 +147,7 @@ type UpdateChallengeForm struct {
 	Type           *int    `form:"type" json:"type"`
 	GeneratorImage *string `form:"generator" json:"generator"`
 	DockerImage    *string `form:"docker" json:"docker"`
+	Port           *int32  `form:"port" json:"port"`
 }
 
 // UpdateUsageForm for admin update usage info

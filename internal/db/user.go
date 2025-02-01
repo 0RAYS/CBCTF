@@ -24,12 +24,12 @@ func CreateUser(ctx context.Context, form constants.CreateUserForm) (model.User,
 	user := model.InitUser(form)
 	res := DB.WithContext(ctx).Model(&model.User{}).Create(&user)
 	if res.Error != nil {
-		log.Logger.Errorf("Failed to create user: %s", res.Error.Error())
+		log.Logger.Errorf("Failed to create user: %s", res.Error)
 		return model.User{}, false, "CreateUserError"
 	}
 	//go func() {
 	//	if err := redis.DelUsersCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete users cache: %s", err.Error())
+	//		log.Logger.Warningf("Failed to delete users cache: %s", err)
 	//	}
 	//}()
 	return user, true, "Success"
@@ -63,7 +63,7 @@ func GetUserByID(ctx context.Context, id uint, preloadL ...bool) (model.User, bo
 	}
 	//go func() {
 	//	if err := redis.SetUserCache(cacheKey, user); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to set user cache: %s", err.Error())
+	//		log.Logger.Warningf("Failed to set user cache: %s", err)
 	//	}
 	//}()
 	return user, true, "Success"
@@ -84,15 +84,15 @@ func DeleteUser(ctx context.Context, id uint) (bool, string) {
 		}
 	}
 	if err := DB.WithContext(ctx).Model(&model.User{}).Select(clause.Associations).Delete(&model.User{}, id).Error; err != nil {
-		log.Logger.Warningf("Failed to delete user: %s", err.Error())
+		log.Logger.Warningf("Failed to delete user: %s", err)
 		return false, "DeleteUserError"
 	}
 	//go func() {
 	//	if err := redis.DelUserCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete user cache: %s", err.Error())
+	//		log.Logger.Warningf("Failed to delete user cache: %s", err)
 	//	}
 	//	if err := redis.DelUsersCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete users cache: %s", err.Error())
+	//		log.Logger.Warningf("Failed to delete users cache: %s", err)
 	//	}
 	//}()
 	return true, "Success"
@@ -103,15 +103,15 @@ func UpdateUser(ctx context.Context, id uint, updateData map[string]interface{})
 	res := DB.WithContext(ctx).Model(&model.User{}).Where("id = ?", id).
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
 	if res.Error != nil {
-		log.Logger.Errorf("Failed to update user: %s", res.Error.Error())
+		log.Logger.Errorf("Failed to update user: %s", res.Error)
 		return false, "UpdateUserError"
 	}
 	//go func() {
 	//	if err := redis.DelUserCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete user cache: %s", err.Error())
+	//		log.Logger.Warningf("Failed to delete user cache: %s", err)
 	//	}
 	//	if err := redis.DelUsersCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete users cache: %s", err.Error())
+	//		log.Logger.Warningf("Failed to delete users cache: %s", err)
 	//	}
 	//}()
 	return true, "Success"
@@ -149,7 +149,7 @@ func ChangePasswordUser(ctx context.Context, id uint, oldPassword string, newPas
 	}
 	//go func() {
 	//	if err := redis.DelUserCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete user cache: %s", err.Error())
+	//		log.Logger.Warningf("Failed to delete user cache: %s", err)
 	//	}
 	//}()
 	return true, "Success"
@@ -183,7 +183,7 @@ func GetUsers(ctx context.Context, limit int, offset int, all bool, preloadL ...
 		res = res.Where("hidden = ? AND banned = ?", false, false)
 	}
 	if res.Count(&count).Error != nil {
-		log.Logger.Errorf("Failed to get contest count: %s", res.Error.Error())
+		log.Logger.Errorf("Failed to get contest count: %s", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
 	//cacheKey := fmt.Sprintf("users:%v:%v:%d:%d", preload, nest, limit, offset)
@@ -197,12 +197,12 @@ func GetUsers(ctx context.Context, limit int, offset int, all bool, preloadL ...
 		res = res.Preload(clause.Associations)
 	}
 	if res = res.Limit(limit).Offset(offset).Find(&users); res.Error != nil {
-		log.Logger.Errorf("Failed to get users: %s", res.Error.Error())
+		log.Logger.Errorf("Failed to get users: %s", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
 	//go func() {
 	//	if err := redis.SetUsersCache(cacheKey, users); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to set users cache: %s", err.Error())
+	//		log.Logger.Warningf("Failed to set users cache: %s", err)
 	//	}
 	//}()
 	return users, count, true, "Success"

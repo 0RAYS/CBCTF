@@ -80,7 +80,7 @@ func TestDeleteUser(t *testing.T) {
 
 	var tmp []model.Team
 	if err := DB.WithContext(ctx).Model(&user1).Association("Teams").Find(&tmp); err != nil {
-		t.Fatalf(err.Error())
+		t.Fatalf(err)
 	}
 	if len(tmp) == 0 {
 		t.Fatalf("Failed to find association between user and team")
@@ -88,7 +88,7 @@ func TestDeleteUser(t *testing.T) {
 	log.Logger.Debug(tmp)
 	var tmp2 []model.Contest
 	if err := DB.WithContext(ctx).Model(&user1).Association("Contests").Find(&tmp2); err != nil {
-		t.Fatalf(err.Error())
+		t.Fatalf(err)
 	}
 	if len(tmp2) == 0 {
 		t.Fatalf("Failed to find association between user and contest")
@@ -96,7 +96,7 @@ func TestDeleteUser(t *testing.T) {
 	log.Logger.Debug(tmp2)
 
 	if err := DB.WithContext(ctx).Model(&contest1).Association("Teams").Find(&tmp); err != nil {
-		t.Fatalf(err.Error())
+		t.Fatalf(err)
 	}
 	if len(tmp) == 0 {
 		t.Fatalf("Failed to find association between contest and team")
@@ -108,14 +108,14 @@ func TestDeleteUser(t *testing.T) {
 	}
 
 	if err := DB.WithContext(ctx).Model(&user1).Association("Teams").Find(&tmp); err != nil {
-		t.Fatalf(err.Error())
+		t.Fatalf(err)
 	}
 	if len(tmp) != 0 {
 		t.Fatalf("Should not find association between user and team")
 	}
 	log.Logger.Debug(tmp)
 	if err := DB.WithContext(ctx).Model(&user1).Association("Contests").Find(&tmp2); err != nil {
-		t.Fatalf(err.Error())
+		t.Fatalf(err)
 	}
 	if len(tmp2) != 0 {
 		t.Fatalf("Should not find association between user and contest")
@@ -123,7 +123,7 @@ func TestDeleteUser(t *testing.T) {
 	log.Logger.Debug(tmp2)
 
 	if err := DB.WithContext(ctx).Model(&contest1).Association("Teams").Find(&tmp); err != nil {
-		t.Fatalf(err.Error())
+		t.Fatalf(err)
 	}
 	if len(tmp) != 0 {
 		t.Fatalf("Should not find association between contest and team")

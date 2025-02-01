@@ -71,7 +71,7 @@ func CreateFlag(ctx context.Context, contestID, teamID uint, challengeID, value 
 		flag = model.InitFlag(contestID, teamID, challengeID, value)
 		res := DB.WithContext(ctx).Model(model.Flag{}).Create(&flag)
 		if res.Error != nil {
-			log.Logger.Errorf("Failed to create Flag: %s", res.Error.Error())
+			log.Logger.Errorf("Failed to create Flag: %s", res.Error)
 			return model.Flag{}, false, "CreateFlagError"
 		}
 	}
@@ -94,7 +94,7 @@ func UpdateFlag(ctx context.Context, contestID, teamID uint, challengeID, value 
 	res := DB.WithContext(ctx).Model(model.Flag{}).
 		Where("contest_id = ? AND team_id = ? AND challenge_id = ?", contestID, teamID, challengeID).Update("value", value)
 	if res.Error != nil {
-		log.Logger.Errorf("Failed to update Flag: %s", res.Error.Error())
+		log.Logger.Errorf("Failed to update Flag: %s", res.Error)
 		return false, "UpdateFlagError"
 	}
 	return true, "Success"

@@ -35,10 +35,10 @@ func I18n() func(ctx *gin.Context) {
 
 		ctx.Next()
 
-		var result Data
+		var res Data
 		old := w.body.String()
 
-		err := json.Unmarshal([]byte(old), &result)
+		err := json.Unmarshal([]byte(old), &res)
 		if err != nil {
 			_, _ = w.ResponseWriter.Write([]byte(old))
 			return
@@ -49,9 +49,9 @@ func I18n() func(ctx *gin.Context) {
 		} else {
 			language = "en-US"
 		}
-		result.Msg, result.Code = constants.I18N(result.Msg, language)
-		result.Trace = GetTraceID(ctx)
-		ret, err := json.Marshal(result)
+		res.Msg, res.Code = constants.I18N(res.Msg, language)
+		res.Trace = GetTraceID(ctx)
+		ret, err := json.Marshal(res)
 		if err != nil {
 			log.Logger.Errorf("Rewrite response error: %v", err)
 			return

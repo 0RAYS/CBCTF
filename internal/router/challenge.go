@@ -179,7 +179,7 @@ func UploadChallenge(ctx *gin.Context) {
 	}
 	var path string
 	switch challenge.Type {
-	case model.Static:
+	case model.Static, model.Container:
 		if file.Filename != model.StaticFile {
 			ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
 			return
@@ -191,12 +191,6 @@ func UploadChallenge(ctx *gin.Context) {
 			return
 		}
 		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), model.DynamicFile)
-	case model.Container:
-		if file.Filename != model.ContainerFile && file.Filename != model.StaticFile {
-			ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
-			return
-		}
-		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), file.Filename)
 	default:
 		ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidChallengeType", "data": nil})
 		return
@@ -221,7 +215,7 @@ func DownloadChallenge(ctx *gin.Context) {
 	}
 	var path string
 	switch form.File {
-	case model.StaticFile, model.DynamicFile, model.ContainerFile:
+	case model.StaticFile, model.DynamicFile:
 		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), form.File)
 	default:
 		ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
