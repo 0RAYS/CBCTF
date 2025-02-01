@@ -29,7 +29,7 @@ func Register(ctx *gin.Context) {
 		return
 	} else {
 		msg = "UnknownError"
-		log.Logger.Errorf("%s | Generate token error: %s", trace, err)
+		log.Logger.Warningf("%s | Generate token error: %s", trace, err)
 		ctx.JSONP(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
 		return
 	}
@@ -55,7 +55,7 @@ func Login(ctx *gin.Context) {
 		return
 	} else {
 		msg = "UnknownError"
-		log.Logger.Errorf("%s | Generate token error: %s", trace, err)
+		log.Logger.Warningf("%s | Generate token error: %s", trace, err)
 		ctx.JSONP(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
 		return
 	}
@@ -81,7 +81,7 @@ func AdminLogin(ctx *gin.Context) {
 		return
 	} else {
 		msg = "UnknownError"
-		log.Logger.Errorf("%s | Generate token error: %s", trace, err)
+		log.Logger.Warningf("%s | Generate token error: %s", trace, err)
 		ctx.JSONP(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
 		return
 	}

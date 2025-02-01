@@ -14,7 +14,7 @@ func CreateChallenge(ctx context.Context, form constants.CreateChallengeForm) (m
 	challenge := model.InitChallenge(form)
 	res := DB.WithContext(ctx).Model(model.Challenge{}).Create(&challenge)
 	if res.Error != nil {
-		log.Logger.Errorf("Failed to create Challenge: %s", res.Error)
+		log.Logger.Warningf("Failed to create Challenge: %s", res.Error)
 		return model.Challenge{}, false, "CreateChallengeError"
 	}
 	return challenge, true, "Success"
@@ -84,7 +84,7 @@ func GetCategories(ctx context.Context, t int) ([]string, bool, string) {
 	var categories []string
 	res := DB.WithContext(ctx).Model(&model.Challenge{}).Where("type = ?", t).Select("distinct category").Find(&categories)
 	if res.Error != nil {
-		log.Logger.Errorf("Failed to get categories: %s", res.Error)
+		log.Logger.Warningf("Failed to get categories: %s", res.Error)
 		return nil, false, "UnknownError"
 	}
 	return categories, true, "Success"

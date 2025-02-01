@@ -25,13 +25,15 @@ func CreateDocker(ctx context.Context, flag model.Flag, creatorID uint) (model.D
 	docker = model.InitDocker(flag, challenge, creatorID)
 	res := DB.WithContext(ctx).Model(model.Docker{}).Create(&docker)
 	if res.Error != nil {
-		log.Logger.Errorf("Failed to create Docker: %s", res.Error)
+		log.Logger.Warningf("Failed to create Docker: %s", res.Error)
 		return model.Docker{}, false, "CreateDockerError"
 	}
 	log.Logger.Debugf("Starting container for team %d challenge %s", flag.TeamID, flag.ChallengeID)
 	port, ok, msg = k8s.StartContainer(challenge, flag, docker)
 	if !ok {
 		log.Logger.Warningf("Failed to start container for challenge %s: %s", flag.ChallengeID, msg)
+		_, _ = DeleteDocker(ctx, docker.ID)
+		return model.Docker{}, false, msg
 	}
 	UpdateDocker(ctx, docker.ID, map[string]interface{}{"port": port})
 	docker.Port = int32(port)
@@ -67,7 +69,7 @@ func DeleteDocker(ctx context.Context, id uint) (bool, string) {
 		return false, msg
 	}
 	go func(d model.Docker) {
-		log.Logger.Infof("Stopping container for team %d challenge %s", d.TeamID, d.ChallengeID)
+		log.Logger.Debugf("Stopping container for team %d challenge %s", d.TeamID, d.ChallengeID)
 		ok, msg = k8s.StopContainer(d)
 		if !ok {
 			log.Logger.Warningf("Failed to stop container for challenge %s: %s", d.ChallengeID, msg)

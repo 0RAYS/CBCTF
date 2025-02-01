@@ -21,7 +21,7 @@ func CreateAdmin(ctx context.Context, name string, password string, email string
 	admin := model.InitAdmin(name, password, email)
 	res := DB.WithContext(ctx).Model(&model.Admin{}).Create(&admin)
 	if res.Error != nil {
-		log.Logger.Errorf("Failed to create Admin: %s", res.Error)
+		log.Logger.Warningf("Failed to create Admin: %s", res.Error)
 		return model.Admin{}, false, "CreateAdminError"
 	}
 	return admin, true, "Success"
@@ -40,7 +40,7 @@ func GetAdminByID(ctx context.Context, id uint) (model.Admin, bool, string) {
 func DeleteAdmin(ctx context.Context, id uint) (bool, string) {
 	res := DB.WithContext(ctx).Model(&model.Admin{}).Where("id = ?", id).Delete(&model.Admin{})
 	if res.Error != nil {
-		log.Logger.Errorf("Failed to delete Admin: %s", res.Error)
+		log.Logger.Warningf("Failed to delete Admin: %s", res.Error)
 		return false, "DeleteAdminError"
 	}
 	return true, "Success"

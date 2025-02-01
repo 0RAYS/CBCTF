@@ -36,7 +36,7 @@ func GetUsageByContestID(ctx context.Context, contestID uint, all bool) ([]model
 		res = res.Where("contest_id = ? AND hidden = ?", contestID, false)
 	}
 	if res := res.Find(&usages); res.Error != nil {
-		log.Logger.Errorf("Failed to get Usage: %s", res.Error)
+		log.Logger.Warningf("Failed to get Usage: %s", res.Error)
 		return nil, false, "GetUsageError"
 	}
 	return usages, true, "Success"
@@ -46,7 +46,7 @@ func GetUsageByChallengeID(ctx context.Context, challengeID string) ([]model.Usa
 	var usages []model.Usage
 	res := DB.WithContext(ctx).Model(model.Usage{}).Where("challenge_id = ?", challengeID).Find(&usages)
 	if res.Error != nil {
-		log.Logger.Errorf("Failed to get Usage: %s", res.Error)
+		log.Logger.Warningf("Failed to get Usage: %s", res.Error)
 		return nil, false, "GetUsageError"
 	}
 	return usages, true, "Success"
@@ -74,7 +74,7 @@ func UpdateUsage(ctx context.Context, id uint, updateData map[string]interface{}
 	res := DB.WithContext(ctx).Model(model.Usage{}).Where("id = ?", id).
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
 	if res.Error != nil {
-		log.Logger.Errorf("Failed to update Usage: %s", res.Error)
+		log.Logger.Warningf("Failed to update Usage: %s", res.Error)
 		return false, "UpdateUsageError"
 	}
 	return true, "Success"
@@ -83,7 +83,7 @@ func UpdateUsage(ctx context.Context, id uint, updateData map[string]interface{}
 func DeleteUsage(ctx context.Context, id uint) (bool, string) {
 	res := DB.WithContext(ctx).Model(model.Usage{}).Where("id = ?", id).Delete(&model.Usage{})
 	if res.Error != nil {
-		log.Logger.Errorf("Failed to delete Usage: %s", res.Error)
+		log.Logger.Warningf("Failed to delete Usage: %s", res.Error)
 		return false, "DeleteUsageError"
 	}
 	return true, "Success"
