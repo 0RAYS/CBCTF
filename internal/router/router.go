@@ -42,7 +42,7 @@ func Init() *gin.Engine {
 	contest.POST("/:contestID/team/kick", middleware.CheckVerified, middleware.SetContestID, middleware.CheckCaptain, KickMember)
 	contest.POST("/:contestID/team/leave", middleware.CheckVerified, middleware.SetContestID, LeaveTeam)
 
-	contestChallenge := contest.Group("/:contestID/challenge", middleware.SetContestID)
+	contestChallenge := contest.Group("/:contestID/challenge", middleware.SetContestID, middleware.CheckBanned)
 	contestChallenge.GET("/list", GetUsages)
 	contestChallenge.GET("/:challengeID/attachment", middleware.SetChallengeID, GetAttachment)
 

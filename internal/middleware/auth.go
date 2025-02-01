@@ -136,3 +136,18 @@ func CheckVerified(ctx *gin.Context) {
 	}
 	ctx.Next()
 }
+
+func CheckBanned(ctx *gin.Context) {
+	team, ok, msg := db.GetTeamByUserID(ctx, GetSelfID(ctx), GetContestID(ctx))
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.Abort()
+		return
+	}
+	if team.Banned {
+		ctx.JSON(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
+		ctx.Abort()
+		return
+	}
+	ctx.Next()
+}
