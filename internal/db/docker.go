@@ -28,19 +28,10 @@ func CreateDocker(ctx context.Context, flag model.Flag, creatorID uint) (model.D
 		log.Logger.Errorf("Failed to create Docker: %s", res.Error)
 		return model.Docker{}, false, "CreateDockerError"
 	}
-	ch := make(chan int)
-	go func(c model.Challenge, f model.Flag, d model.Docker) {
-		log.Logger.Infof("Starting container for team %d challenge %s", flag.TeamID, flag.ChallengeID)
-		port, ok, msg = k8s.StartContainer(c, f, d)
-		if !ok {
-			log.Logger.Warningf("Failed to start container for challenge %s: %s", flag.ChallengeID, msg)
-		}
-		ch <- port
-	}(challenge, flag, docker)
-	port = <-ch
-	if port == -1 {
-		_, _ = DeleteDocker(ctx, docker.ID)
-		return model.Docker{}, false, "CreateDockerError"
+	log.Logger.Debugf("Starting container for team %d challenge %s", flag.TeamID, flag.ChallengeID)
+	port, ok, msg = k8s.StartContainer(challenge, flag, docker)
+	if !ok {
+		log.Logger.Warningf("Failed to start container for challenge %s: %s", flag.ChallengeID, msg)
 	}
 	UpdateDocker(ctx, docker.ID, map[string]interface{}{"port": port})
 	docker.Port = int32(port)

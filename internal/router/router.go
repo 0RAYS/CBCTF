@@ -19,7 +19,6 @@ func Init() *gin.Engine {
 	router.POST("/admin/login", AdminLogin)
 	router.GET("/avatar/:avatarID", middleware.SetAvatarID, DownloadAvatar)
 	auth := router.Group("", middleware.CheckLogin)
-	//auth.POST("/upload", Upload)
 
 	user := auth.Group("/user", middleware.CheckRole("user"))
 	user.GET("/info", GetUser)
