@@ -17,7 +17,7 @@ func Register(ctx *gin.Context) {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	user, ok, msg := db.CreateUser(ctx, constants.CreateUserForm{Name: form.Email, Password: form.Password, Email: form.Email})
+	user, ok, msg := db.CreateUser(ctx, constants.CreateUserForm{Name: form.Name, Password: form.Password, Email: form.Email})
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
