@@ -219,7 +219,15 @@ func DownloadChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	path := fmt.Sprintf("%s/%s", challenge.BasicDir(), form.File)
+	var path string
+	switch form.File {
+	case model.StaticFile, model.DynamicFile, model.ContainerFile:
+		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), form.File)
+	default:
+		ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
+		return
+
+	}
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		ctx.JSON(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": nil})
 		return
