@@ -15,7 +15,7 @@ func CreateDocker(ctx context.Context, flag model.Flag, creatorID uint) (model.D
 		port   int
 	)
 	if docker, ok, _ = GetDockerBy3ID(ctx, flag.ContestID, flag.TeamID, flag.ChallengeID); ok {
-		return model.Docker{}, ok, "Success"
+		return docker, ok, "Success"
 	}
 	challenge, ok, msg := GetChallengeByID(ctx, flag.ChallengeID)
 	if !ok {
