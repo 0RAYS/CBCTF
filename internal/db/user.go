@@ -24,7 +24,7 @@ func CreateUser(ctx context.Context, form constants.CreateUserForm) (model.User,
 	user := model.InitUser(form)
 	res := DB.WithContext(ctx).Model(&model.User{}).Create(&user)
 	if res.Error != nil {
-		log.Logger.Errorf("Failed to create user: %s", res.Error)
+		log.Logger.Warningf("Failed to create user: %s", res.Error)
 		return model.User{}, false, "CreateUserError"
 	}
 	//go func() {
@@ -78,7 +78,7 @@ func DeleteUser(ctx context.Context, id uint) (bool, string) {
 	for _, team := range user.Teams {
 		if len(team.Users) == 1 {
 			if ok, msg = DeleteTeam(ctx, team.ID); !ok {
-				log.Logger.Errorf("Failed to delete empty team: %s", msg)
+				log.Logger.Warningf("Failed to delete empty team: %s", msg)
 				return false, msg
 			}
 		}
@@ -103,7 +103,7 @@ func UpdateUser(ctx context.Context, id uint, updateData map[string]interface{})
 	res := DB.WithContext(ctx).Model(&model.User{}).Where("id = ?", id).
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
 	if res.Error != nil {
-		log.Logger.Errorf("Failed to update user: %s", res.Error)
+		log.Logger.Warningf("Failed to update user: %s", res.Error)
 		return false, "UpdateUserError"
 	}
 	//go func() {
@@ -183,7 +183,7 @@ func GetUsers(ctx context.Context, limit int, offset int, all bool, preloadL ...
 		res = res.Where("hidden = ? AND banned = ?", false, false)
 	}
 	if res.Count(&count).Error != nil {
-		log.Logger.Errorf("Failed to get contest count: %s", res.Error)
+		log.Logger.Warningf("Failed to get contest count: %s", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
 	//cacheKey := fmt.Sprintf("users:%v:%v:%d:%d", preload, nest, limit, offset)
@@ -197,7 +197,7 @@ func GetUsers(ctx context.Context, limit int, offset int, all bool, preloadL ...
 		res = res.Preload(clause.Associations)
 	}
 	if res = res.Limit(limit).Offset(offset).Find(&users); res.Error != nil {
-		log.Logger.Errorf("Failed to get users: %s", res.Error)
+		log.Logger.Warningf("Failed to get users: %s", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
 	//go func() {

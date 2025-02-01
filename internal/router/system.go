@@ -70,7 +70,7 @@ func SystemUpdate(ctx *gin.Context) {
 		return
 	}
 	if reflect.DeepEqual(env, *config.Env) {
-		log.Logger.Info("Config not change")
+		log.Logger.Debug("Config not change")
 		ctx.JSON(http.StatusOK, gin.H{"msg": "ConfigNotChange", "data": nil})
 		return
 	}
@@ -78,7 +78,7 @@ func SystemUpdate(ctx *gin.Context) {
 		time.Sleep(time.Second * 2)
 		err := config.Save(env)
 		if err != nil {
-			log.Logger.Error("Failed to save config: ", err)
+			log.Logger.Warningf("Failed to save config: %s", err)
 		}
 	}()
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})

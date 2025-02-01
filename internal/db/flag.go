@@ -41,7 +41,7 @@ func GenerateFlag(ctx context.Context, contestID, teamID uint) {
 		case model.Dynamic:
 			flag, ok, msg = CreateFlag(ctx, contestID, teamID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.RandFlag(challenge.Flag)))
 			go func(c model.Challenge, f model.Flag) {
-				log.Logger.Infof("Generating attachment for team %d challenge %s", teamID, usage.ChallengeID)
+				log.Logger.Debugf("Generating attachment for team %d challenge %s", teamID, usage.ChallengeID)
 				ok, msg = k8s.GenerateAttachment(c, f)
 				if !ok {
 					log.Logger.Warningf("Failed to generate flag for challenge %s: %s", usage.ChallengeID, msg)
@@ -77,7 +77,7 @@ func CreateFlag(ctx context.Context, contestID, teamID uint, challengeID, value 
 		flag = model.InitFlag(contestID, teamID, challengeID, value)
 		res := DB.WithContext(ctx).Model(model.Flag{}).Create(&flag)
 		if res.Error != nil {
-			log.Logger.Errorf("Failed to create Flag: %s", res.Error)
+			log.Logger.Warningf("Failed to create Flag: %s", res.Error)
 			return model.Flag{}, false, "CreateFlagError"
 		}
 	}
@@ -100,7 +100,7 @@ func UpdateFlag(ctx context.Context, contestID, teamID uint, challengeID, value 
 	res := DB.WithContext(ctx).Model(model.Flag{}).
 		Where("contest_id = ? AND team_id = ? AND challenge_id = ?", contestID, teamID, challengeID).Update("value", value)
 	if res.Error != nil {
-		log.Logger.Errorf("Failed to update Flag: %s", res.Error)
+		log.Logger.Warningf("Failed to update Flag: %s", res.Error)
 		return false, "UpdateFlagError"
 	}
 	return true, "Success"

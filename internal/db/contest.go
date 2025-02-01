@@ -134,7 +134,7 @@ func GetContests(ctx context.Context, limit int, offset int, all bool, preloadL 
 		res = res.Where("hidden = ?", false)
 	}
 	if res.Count(&count).Error != nil {
-		log.Logger.Errorf("Failed to get contest count: %s", res.Error)
+		log.Logger.Warningf("Failed to get contest count: %s", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
 	//cacheKey := fmt.Sprintf("contests:%v:%v:%d:%d", preload, nest, limit, offset)
@@ -148,7 +148,7 @@ func GetContests(ctx context.Context, limit int, offset int, all bool, preloadL 
 		res = res.Preload(clause.Associations)
 	}
 	if res = res.Order("Start desc").Limit(limit).Offset(offset).Find(&contests); res.Error != nil {
-		log.Logger.Errorf("Failed to get contests: %s", res.Error)
+		log.Logger.Warningf("Failed to get contests: %s", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
 	//go func() {

@@ -295,7 +295,7 @@ func GetTeams(ctx context.Context, contestID uint, limit int, offset int, all bo
 		res = res.Where("hidden = ? AND banned = ?", false, false)
 	}
 	if res.Count(&count).Error != nil {
-		log.Logger.Errorf("Failed to get contest count: %s", res.Error)
+		log.Logger.Warningf("Failed to get contest count: %s", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
 	//cacheKey := fmt.Sprintf("teams:%d:%v:%v:%d:%d", contestID, all, preload, limit, offset)
