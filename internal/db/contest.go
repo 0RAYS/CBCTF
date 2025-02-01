@@ -16,12 +16,12 @@ func CreateContest(ctx context.Context, form constants.CreateContestForm) (model
 	contest := model.InitContest(form)
 	res := DB.WithContext(ctx).Model(&model.Contest{}).Create(&contest)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to create contest: %s", res.Error.Error())
+		log.Logger.Warningf("Failed to create contest: %s", res.Error)
 		return model.Contest{}, false, "CreateContestError"
 	}
 	//go func() {
 	//	if err := redis.DelContestsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete contests cache: %s", err.Error())
+	//		log.Logger.Warningf("Failed to delete contests cache: %s", err)
 	//	}
 	//}()
 	return contest, true, "Success"
@@ -55,7 +55,7 @@ func GetContestByID(ctx context.Context, id uint, preloadL ...bool) (model.Conte
 	}
 	//go func() {
 	//	if err := redis.SetContestCache(cacheKey, contest); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to set contest cache: %s", err.Error())
+	//		log.Logger.Warningf("Failed to set contest cache: %s", err)
 	//	}
 	//}()
 	return contest, true, "Success"
@@ -73,15 +73,15 @@ func DeleteContest(ctx context.Context, id uint) (bool, string) {
 		}
 	}
 	if err := DB.WithContext(ctx).Model(&model.Contest{}).Select(clause.Associations).Delete(&contest).Error; err != nil {
-		log.Logger.Warningf("Failed to delete contest: %s", err.Error())
+		log.Logger.Warningf("Failed to delete contest: %s", err)
 		return false, "DeleteContestError"
 	}
 	//go func() {
 	//	if err := redis.DelContestCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete contest cache: %s", err.Error())
+	//		log.Logger.Warningf("Failed to delete contest cache: %s", err)
 	//	}
 	//	if err := redis.DelContestsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete contests cache: %s", err.Error())
+	//		log.Logger.Warningf("Failed to delete contests cache: %s", err)
 	//	}
 	//}()
 	return true, "Success"
@@ -92,15 +92,15 @@ func UpdateContest(ctx context.Context, id uint, updateData map[string]interface
 	res := DB.WithContext(ctx).Model(&model.Contest{}).Where("id = ?", id).
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to update contest: %v", res.Error.Error())
+		log.Logger.Warningf("Failed to update contest: %v", res.Error)
 		return false, "UpdateContestError"
 	}
 	//go func() {
 	//	if err := redis.DelContestCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete contest cache: %s", err.Error())
+	//		log.Logger.Warningf("Failed to delete contest cache: %s", err)
 	//	}
 	//	if err := redis.DelContestsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete contests cache: %s", err.Error())
+	//		log.Logger.Warningf("Failed to delete contests cache: %s", err)
 	//	}
 	//}()
 	return true, "Success"
@@ -134,7 +134,7 @@ func GetContests(ctx context.Context, limit int, offset int, all bool, preloadL 
 		res = res.Where("hidden = ?", false)
 	}
 	if res.Count(&count).Error != nil {
-		log.Logger.Errorf("Failed to get contest count: %s", res.Error.Error())
+		log.Logger.Errorf("Failed to get contest count: %s", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
 	//cacheKey := fmt.Sprintf("contests:%v:%v:%d:%d", preload, nest, limit, offset)
@@ -148,12 +148,12 @@ func GetContests(ctx context.Context, limit int, offset int, all bool, preloadL 
 		res = res.Preload(clause.Associations)
 	}
 	if res = res.Order("Start desc").Limit(limit).Offset(offset).Find(&contests); res.Error != nil {
-		log.Logger.Errorf("Failed to get contests: %s", res.Error.Error())
+		log.Logger.Errorf("Failed to get contests: %s", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
 	//go func() {
 	//	if err := redis.SetContestsCache(cacheKey, contests); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to set contests cache: %s", err.Error())
+	//		log.Logger.Warningf("Failed to set contests cache: %s", err)
 	//	}
 	//}()
 	return contests, count, true, "Success"

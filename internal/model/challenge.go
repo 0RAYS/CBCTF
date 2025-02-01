@@ -15,7 +15,6 @@ var Container = 2
 
 var StaticFile = "attachment.zip"
 var DynamicFile = "generator.zip"
-var ContainerFile = "mounted.zip"
 
 type Challenge struct {
 	ID             string         `json:"id" gorm:"primaryKey"`
@@ -26,6 +25,7 @@ type Challenge struct {
 	Type           int            `json:"type" gorm:"default:0"`
 	GeneratorImage string         `json:"generator" gorm:"column:generator"`
 	DockerImage    string         `json:"docker" gorm:"column:docker"`
+	Port           int32          `json:"port" gorm:"default:8080"`
 	CreatedAt      time.Time      `json:"-"`
 	UpdatedAt      time.Time      `json:"-"`
 	DeletedAt      gorm.DeletedAt `json:"-" gorm:"index"`

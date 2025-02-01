@@ -29,8 +29,8 @@ func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, strin
 		return false, "FileNotFound"
 	}
 	log.Logger.Debugf("Creating pod for challenge %s:%s", challenge.Name, challenge.ID)
-	podName := fmt.Sprintf("%s-%d-pod", challenge.ID, flag.TeamID)
-	containerName := fmt.Sprintf("%s-%d-container", challenge.ID, flag.TeamID)
+	podName := fmt.Sprintf("%s-%d-generator-pod", challenge.ID, flag.TeamID)
+	containerName := fmt.Sprintf("%s-%d-generator", challenge.ID, flag.TeamID)
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      podName,
@@ -57,8 +57,9 @@ func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, strin
 		err = pods.Delete(ctx, name, opts)
 		if err != nil {
 			log.Logger.Errorf("Failed to delete pod: %v", err)
+		} else {
+			log.Logger.Debugf("%s:%s deleted successfully", challenge.Name, pod.Name)
 		}
-		log.Logger.Debugf("%s:%s deleted successfully", challenge.Name, pod.Name)
 	}(Client.CoreV1().Pods(NamespaceName), context.TODO(), pod.Name, metav1.DeleteOptions{})
 
 	for {

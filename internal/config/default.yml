@@ -30,7 +30,11 @@ redis:
     timeout: 10
 k8s:
     config: ./admin.conf
+    master: 192.168.0.1
     # also as prefix of resources
     namespace: cbctf
+    ports:
+        start: 30000
+        end: 32767
 frontend: http://127.0.0.1:3000
 backend: http://127.0.0.1:8000

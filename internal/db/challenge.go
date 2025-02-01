@@ -12,9 +12,9 @@ func CreateChallenge(ctx context.Context, form constants.CreateChallengeForm) (m
 		return model.Challenge{}, false, "InvalidChallengeType"
 	}
 	challenge := model.InitChallenge(form)
-	result := DB.WithContext(ctx).Model(model.Challenge{}).Create(&challenge)
-	if result.Error != nil {
-		log.Logger.Errorf("Failed to create Challenge: %s", result.Error.Error())
+	res := DB.WithContext(ctx).Model(model.Challenge{}).Create(&challenge)
+	if res.Error != nil {
+		log.Logger.Errorf("Failed to create Challenge: %s", res.Error)
 		return model.Challenge{}, false, "CreateChallengeError"
 	}
 	return challenge, true, "Success"
@@ -22,8 +22,8 @@ func CreateChallenge(ctx context.Context, form constants.CreateChallengeForm) (m
 
 func GetChallengeByID(ctx context.Context, id string) (model.Challenge, bool, string) {
 	var challenge model.Challenge
-	result := DB.WithContext(ctx).Model(model.Challenge{}).Where("id = ?", id).Find(&challenge).Limit(1)
-	if result.RowsAffected != 1 {
+	res := DB.WithContext(ctx).Model(model.Challenge{}).Where("id = ?", id).Find(&challenge).Limit(1)
+	if res.RowsAffected != 1 {
 		return model.Challenge{}, false, "ChallengeNotFound"
 	}
 	return challenge, true, "Success"
@@ -45,11 +45,11 @@ func GetChallenges(ctx context.Context, limit, offset, t int, category string) (
 		res = res.Where("type = ? OR category = ?", t, category)
 	}
 	if res.Count(&count).Error != nil {
-		log.Logger.Warningf("Failed to get challenge count: %v", res.Error.Error())
+		log.Logger.Warningf("Failed to get challenge count: %v", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
 	if res = res.Limit(limit).Offset(offset).Find(&challenges); res.Error != nil {
-		log.Logger.Warningf("Failed to get Challenges: %v", res.Error.Error())
+		log.Logger.Warningf("Failed to get Challenges: %v", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
 	return challenges, count, true, "Success"
@@ -62,19 +62,19 @@ func CountChallenges(ctx context.Context) int64 {
 }
 
 func UpdateChallenge(ctx context.Context, id string, updateData map[string]interface{}) (bool, string) {
-	result := DB.WithContext(ctx).Model(model.Challenge{}).Where("id = ?", id).
+	res := DB.WithContext(ctx).Model(model.Challenge{}).Where("id = ?", id).
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
-	if result.Error != nil {
-		log.Logger.Warningf("Failed to update Challenge: %v", result.Error.Error())
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to update Challenge: %v", res.Error)
 		return false, "UpdateChallengeError"
 	}
 	return true, "Success"
 }
 
 func DeleteChallenge(ctx context.Context, id string) (bool, string) {
-	result := DB.WithContext(ctx).Model(model.Challenge{}).Where("id = ?", id).Delete(&model.Challenge{})
-	if result.Error != nil {
-		log.Logger.Warningf("Failed to delete Challenge: %v", result.Error.Error())
+	res := DB.WithContext(ctx).Model(model.Challenge{}).Where("id = ?", id).Delete(&model.Challenge{})
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to delete Challenge: %v", res.Error)
 		return false, "DeleteChallengeError"
 	}
 	return true, "Success"
@@ -84,7 +84,7 @@ func GetCategories(ctx context.Context, t int) ([]string, bool, string) {
 	var categories []string
 	res := DB.WithContext(ctx).Model(&model.Challenge{}).Where("type = ?", t).Select("distinct category").Find(&categories)
 	if res.Error != nil {
-		log.Logger.Errorf("Failed to get categories: %s", res.Error.Error())
+		log.Logger.Errorf("Failed to get categories: %s", res.Error)
 		return nil, false, "UnknownError"
 	}
 	return categories, true, "Success"

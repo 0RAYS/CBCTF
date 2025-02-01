@@ -142,14 +142,14 @@ func checkPermission() bool {
 				ResourceAttributes: resourceAttributes,
 			},
 		}
-		result, err := Client.AuthorizationV1().SelfSubjectAccessReviews().Create(context.TODO(), accessReview, metav1.CreateOptions{})
+		res, err := Client.AuthorizationV1().SelfSubjectAccessReviews().Create(context.TODO(), accessReview, metav1.CreateOptions{})
 		if err != nil {
 			log.Logger.Errorf("Failed to check permissions for verb %s: %v", verb, err)
 		}
-		if !result.Status.Allowed {
+		if !res.Status.Allowed {
 			log.Logger.Errorf("User does NOT have permission to %s all resources in namespace cbctf.", verb)
-			log.Logger.Errorf("Reason: %s", result.Status.Reason)
-			log.Logger.Errorf("EvaluationError: %s", result.Status.EvaluationError)
+			log.Logger.Errorf("Reason: %s", res.Status.Reason)
+			log.Logger.Errorf("EvaluationError: %s", res.Status.EvaluationError)
 			return false
 		}
 	}

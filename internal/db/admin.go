@@ -21,7 +21,7 @@ func CreateAdmin(ctx context.Context, name string, password string, email string
 	admin := model.InitAdmin(name, password, email)
 	res := DB.WithContext(ctx).Model(&model.Admin{}).Create(&admin)
 	if res.Error != nil {
-		log.Logger.Errorf("Failed to create Admin: %s", res.Error.Error())
+		log.Logger.Errorf("Failed to create Admin: %s", res.Error)
 		return model.Admin{}, false, "CreateAdminError"
 	}
 	return admin, true, "Success"
@@ -40,7 +40,7 @@ func GetAdminByID(ctx context.Context, id uint) (model.Admin, bool, string) {
 func DeleteAdmin(ctx context.Context, id uint) (bool, string) {
 	res := DB.WithContext(ctx).Model(&model.Admin{}).Where("id = ?", id).Delete(&model.Admin{})
 	if res.Error != nil {
-		log.Logger.Errorf("Failed to delete Admin: %s", res.Error.Error())
+		log.Logger.Errorf("Failed to delete Admin: %s", res.Error)
 		return false, "DeleteAdminError"
 	}
 	return true, "Success"
@@ -51,7 +51,7 @@ func UpdateAdmin(ctx context.Context, id uint, updateData map[string]interface{}
 	res := DB.WithContext(ctx).Model(&model.Admin{}).Where("id = ?", id).
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to update Admin: %v", res.Error.Error())
+		log.Logger.Warningf("Failed to update Admin: %v", res.Error)
 		return false, "UpdateAdminError"
 	}
 	return true, "Success"
@@ -114,7 +114,7 @@ func GetAdmins(ctx context.Context, limit int, offset int) ([]model.Admin, int, 
 	var admins []model.Admin
 	res := DB.WithContext(ctx).Model(&model.Admin{}).Limit(limit).Offset(offset).Find(&admins)
 	if res.Error != nil {
-		log.Logger.Errorf("Failed to get admins: %s", res.Error.Error())
+		log.Logger.Errorf("Failed to get admins: %s", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
 	return admins, len(admins), true, "Success"

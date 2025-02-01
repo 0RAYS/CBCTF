@@ -89,7 +89,7 @@ func GetAvatars(ctx context.Context, limit int, offset int) ([]model.Avatar, int
 	var count int64
 	res := DB.WithContext(ctx).Model(&model.Avatar{})
 	if res = res.Count(&count); res.Error != nil {
-		log.Logger.Warningf("Failed to get files: %s", res.Error.Error())
+		log.Logger.Warningf("Failed to get files: %s", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
 	//cacheKey := fmt.Sprintf("files:%d:%d", limit, offset)
@@ -97,7 +97,7 @@ func GetAvatars(ctx context.Context, limit int, offset int) ([]model.Avatar, int
 	//	return files, int64(len(files)), true, "Success"
 	//}
 	if res = res.Limit(limit).Offset(offset).Find(&files); res.Error != nil {
-		log.Logger.Warningf("Failed to get files: %s", res.Error.Error())
+		log.Logger.Warningf("Failed to get files: %s", res.Error)
 		return nil, 0, false, "FileNotFound"
 	}
 	//go func() {

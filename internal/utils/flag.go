@@ -42,11 +42,11 @@ func repeat(s string, max int) string {
 		}
 	}
 	char := []byte{tmp[p]}
-	var result []byte
-	result = append(result, tmp[:p]...)
-	result = append(result, bytes.Repeat(char, rand.Int()%max)...)
-	result = append(result, tmp[p:]...)
-	return string(result)
+	var res []byte
+	res = append(res, tmp[:p]...)
+	res = append(res, bytes.Repeat(char, rand.Int()%max)...)
+	res = append(res, tmp[p:]...)
+	return string(res)
 }
 
 func replace(s string, max int) string {
