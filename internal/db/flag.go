@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 	"context"
+	"fmt"
 )
 
 // GenerateFlag is a function to generate team all flags, should be call after team join contest
@@ -18,6 +19,11 @@ func GenerateFlag(ctx context.Context, contestID, teamID uint) {
 		ok        bool
 		msg       string
 	)
+	contest, ok, msg := GetContestByID(ctx, contestID)
+	if !ok {
+		log.Logger.Warningf("Failed to get contest %d: %s", contestID, msg)
+		return
+	}
 	usages, ok, msg = GetUsageByContestID(ctx, contestID, true)
 	if !ok {
 		log.Logger.Warningf("Failed to get %d challenges: %s", contestID, msg)
@@ -31,9 +37,9 @@ func GenerateFlag(ctx context.Context, contestID, teamID uint) {
 		log.Logger.Debugf("Generating flag for team %d challenge %s", teamID, usage.ChallengeID)
 		switch challenge.Type {
 		case model.Static:
-			flag, ok, msg = CreateFlag(ctx, contestID, teamID, usage.ChallengeID, challenge.Flag)
+			flag, ok, msg = CreateFlag(ctx, contestID, teamID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, challenge.Flag))
 		case model.Dynamic:
-			flag, ok, msg = CreateFlag(ctx, contestID, teamID, usage.ChallengeID, utils.RandFlag(challenge.Flag))
+			flag, ok, msg = CreateFlag(ctx, contestID, teamID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.RandFlag(challenge.Flag)))
 			go func(c model.Challenge, f model.Flag) {
 				log.Logger.Infof("Generating attachment for team %d challenge %s", teamID, usage.ChallengeID)
 				ok, msg = k8s.GenerateAttachment(c, f)
@@ -42,7 +48,7 @@ func GenerateFlag(ctx context.Context, contestID, teamID uint) {
 				}
 			}(challenge, flag)
 		case model.Container:
-			flag, ok, msg = CreateFlag(ctx, contestID, teamID, usage.ChallengeID, utils.RandomString())
+			flag, ok, msg = CreateFlag(ctx, contestID, teamID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.RandomString()))
 		default:
 			continue
 		}
