@@ -1,21 +1,17 @@
 package db
 
 import (
-	"CBCTF/internal/config"
 	"CBCTF/internal/constants"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/utils"
 	"context"
-	"fmt"
 )
 
 func CreateChallenge(ctx context.Context, form constants.CreateChallengeForm) (model.Challenge, bool, string) {
 	if !IsValidChallengeType(form.Type) {
 		return model.Challenge{}, false, "InvalidChallengeType"
 	}
-	path := fmt.Sprintf("%s/challenges/%s", config.Env.Gin.Upload.Path, utils.RandomString())
-	challenge := model.InitChallenge(form, path)
+	challenge := model.InitChallenge(form)
 	result := DB.WithContext(ctx).Model(model.Challenge{}).Create(&challenge)
 	if result.Error != nil {
 		log.Logger.Errorf("Failed to create Challenge: %s", result.Error.Error())

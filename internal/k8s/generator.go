@@ -23,9 +23,9 @@ func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, strin
 		log.Logger.Errorf("%s:%s generator image not found", challenge.ID, challenge.Name)
 		return false, "EmptyGeneratorImage"
 	}
-	generatorPath := fmt.Sprintf("%s/generator.zip", challenge.Path)
+	generatorPath := challenge.GeneratorPath()
 	if _, err := os.Stat(generatorPath); err != nil {
-		log.Logger.Warningf("%s/generator.zip not found", challenge.Path)
+		log.Logger.Warningf("%s not found", generatorPath)
 		return false, "FileNotFound"
 	}
 	log.Logger.Debugf("Creating pod for challenge %s:%s", challenge.Name, challenge.ID)
