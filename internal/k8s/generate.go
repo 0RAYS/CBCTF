@@ -20,12 +20,10 @@ func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, strin
 		return false, "InvalidChallengeType"
 	}
 	if challenge.GeneratorImage == "" {
-		log.Logger.Errorf("%s:%s generator image not found", challenge.ID, challenge.Name)
 		return false, "EmptyGeneratorImage"
 	}
 	generatorPath := challenge.GeneratorPath()
 	if _, err := os.Stat(generatorPath); err != nil {
-		log.Logger.Warningf("%s not found", generatorPath)
 		return false, "FileNotFound"
 	}
 	log.Logger.Debugf("Creating pod for challenge %s:%s", challenge.Name, challenge.ID)
@@ -50,13 +48,13 @@ func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, strin
 	}
 	pod, err = Client.CoreV1().Pods(NamespaceName).Create(context.TODO(), pod, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Errorf("Failed to create pod: %v", err)
+		log.Logger.Warningf("Failed to create pod: %v", err)
 		return false, "CreatePodError"
 	}
 	defer func(pods v1.PodInterface, ctx context.Context, name string, opts metav1.DeleteOptions) {
 		err = pods.Delete(ctx, name, opts)
 		if err != nil {
-			log.Logger.Errorf("Failed to delete pod: %v", err)
+			log.Logger.Warningf("Failed to delete pod: %v", err)
 		} else {
 			log.Logger.Debugf("%s:%s deleted successfully", challenge.Name, pod.Name)
 		}
@@ -65,20 +63,20 @@ func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, strin
 	for {
 		pod, err = Client.CoreV1().Pods(NamespaceName).Get(context.TODO(), pod.Name, metav1.GetOptions{})
 		if err != nil {
-			log.Logger.Errorf("Failed to get pod: %v", err)
+			log.Logger.Warningf("Failed to get pod: %v", err)
 			return false, "GetPodError"
 		}
 		if pod.Status.Phase == corev1.PodRunning {
 			break
 		}
 		if pod.Status.Phase != corev1.PodPending {
-			log.Logger.Errorf("Pod %s is not running", pod.Name)
+			log.Logger.Warningf("Pod %s is not running", pod.Name)
 			return false, "PodNotRunning"
 		}
 	}
 	err = CopyToPod(pod.Name, containerName, generatorPath, "/root/generator.zip")
 	if err != nil {
-		log.Logger.Errorf("Failed to copy file: %v", err)
+		log.Logger.Warningf("Failed to copy file: %v", err)
 		return false, "CopyFileError"
 	}
 	commands := []string{
@@ -90,7 +88,7 @@ func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, strin
 		log.Logger.Debugf("Executing command: %s", command)
 		var buf bytes.Buffer
 		if ExecInPod(pod.Name, containerName, command, nil, &buf, nil) != nil {
-			log.Logger.Errorf("Failed to execute command %s: %v", command, err)
+			log.Logger.Warningf("Failed to execute command %s: %v", command, err)
 			return false, "ExecCommandError"
 		}
 	}
@@ -100,7 +98,7 @@ func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, strin
 		fmt.Sprintf("%s/attachments/%s/%d.zip", config.Env.Gin.Upload.Path, challenge.ID, flag.TeamID),
 	)
 	if err != nil {
-		log.Logger.Errorf("Failed to copy output file: %v", err)
+		log.Logger.Warningf("Failed to copy output file: %v", err)
 		return false, "CopyFileError"
 	}
 	return true, ""

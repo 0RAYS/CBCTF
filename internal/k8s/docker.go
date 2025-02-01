@@ -21,7 +21,7 @@ func isPortAvailable(port int) bool {
 	}
 	err = ln.Close()
 	if err != nil {
-		log.Logger.Errorf("Failed to close listener: %v", err)
+		log.Logger.Warningf("Failed to close listener: %v", err)
 		return false
 	}
 	return true
@@ -79,7 +79,7 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 	}
 	pod, err = Client.CoreV1().Pods(NamespaceName).Create(context.TODO(), pod, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Errorf("Failed to create pod: %v", err)
+		log.Logger.Warningf("Failed to create pod: %v", err)
 		return -1, false, "CreatePodError"
 	}
 	port := getAvailablePort()
@@ -108,20 +108,20 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 	}
 	_, err = Client.CoreV1().Services(NamespaceName).Create(context.TODO(), service, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Errorf("Error creating service: %s", err)
+		log.Logger.Warningf("Error creating service: %s", err)
 		return -1, false, "CreateServiceError"
 	}
 	for {
 		pod, err = Client.CoreV1().Pods(NamespaceName).Get(context.TODO(), docker.PodName, metav1.GetOptions{})
 		if err != nil {
-			log.Logger.Errorf("Failed to get pod: %v", err)
+			log.Logger.Warningf("Failed to get pod: %v", err)
 			return -1, false, "GetPodError"
 		}
 		if pod.Status.Phase == corev1.PodRunning {
 			break
 		}
 		if pod.Status.Phase != corev1.PodPending {
-			log.Logger.Errorf("Pod %s:%s failed to run", challenge.Name, pod.Name)
+			log.Logger.Warningf("Pod %s:%s failed to run", challenge.Name, pod.Name)
 			return -1, false, "CreatePodError"
 		}
 	}
@@ -132,12 +132,12 @@ func StopContainer(docker model.Docker) (bool, string) {
 	var err error
 	err = Client.CoreV1().Services(NamespaceName).Delete(context.TODO(), docker.ServiceName, metav1.DeleteOptions{})
 	if err != nil {
-		log.Logger.Errorf("Failed to delete service: %v", err)
+		log.Logger.Warningf("Failed to delete service: %v", err)
 		return false, "DeleteServiceError"
 	}
 	err = Client.CoreV1().Pods(NamespaceName).Delete(context.TODO(), docker.PodName, metav1.DeleteOptions{})
 	if err != nil {
-		log.Logger.Errorf("Failed to delete pod: %v", err)
+		log.Logger.Warningf("Failed to delete pod: %v", err)
 		return false, "DeletePodError"
 	}
 	return true, "Success"

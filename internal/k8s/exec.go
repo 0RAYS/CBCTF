@@ -31,7 +31,7 @@ func ExecInPodWithStream(pod, container string, command []string, stdin io.Reade
 
 	exec, err := remotecommand.NewSPDYExecutor(Config, "POST", req.URL())
 	if err != nil {
-		log.Logger.Errorf("Failed to create SPDY executor: %v", err)
+		log.Logger.Warningf("Failed to create SPDY executor: %v", err)
 		return err
 	}
 	if stderr == nil {

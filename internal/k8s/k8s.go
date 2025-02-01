@@ -36,23 +36,23 @@ func Init() {
 	RoleBindingName = fmt.Sprintf("%s-admin-role-binding", NamespaceName)
 	Config, err = clientcmd.BuildConfigFromFlags("", config.Env.K8S.Config)
 	if err != nil {
-		log.Logger.Errorf("Failed to load k8s admin config")
+		log.Logger.Fatal("Failed to load k8s admin config")
 	}
 	Config.QPS = 100
 	Config.Burst = 200
 	Client, err = kubernetes.NewForConfig(Config)
 	if err != nil {
-		log.Logger.Errorf("Failed to init k8s client")
+		log.Logger.Fatal("Failed to init k8s client")
 	}
 	if !checkPermission() {
-		log.Logger.Fatalf("Failed to check permission")
+		log.Logger.Fatal("Failed to check permission")
 	}
 	initResources()
 }
 
 func initResources() {
 	var err error
-	log.Logger.Infof("Checking resources in namespace %s", NamespaceName)
+	log.Logger.Debugf("Checking resources in namespace %s", NamespaceName)
 	if Namespace, err = Client.CoreV1().Namespaces().Get(context.TODO(), NamespaceName, metav1.GetOptions{}); err != nil {
 		log.Logger.Infof("Namespace %s not found, creating...", NamespaceName)
 		Namespace = &corev1.Namespace{
@@ -126,7 +126,7 @@ func initResources() {
 }
 
 func checkPermission() bool {
-	log.Logger.Infof("Checking permissions for k8s")
+	log.Logger.Debugf("Checking permissions for k8s")
 	verbs := []string{"get", "list", "create", "update", "delete"}
 	resourceAttributes := &authorizationv1.ResourceAttributes{
 		Namespace: NamespaceName,
@@ -144,12 +144,12 @@ func checkPermission() bool {
 		}
 		res, err := Client.AuthorizationV1().SelfSubjectAccessReviews().Create(context.TODO(), accessReview, metav1.CreateOptions{})
 		if err != nil {
-			log.Logger.Errorf("Failed to check permissions for verb %s: %v", verb, err)
+			log.Logger.Warningf("Failed to check permissions for verb %s: %v", verb, err)
 		}
 		if !res.Status.Allowed {
-			log.Logger.Errorf("User does NOT have permission to %s all resources in namespace cbctf.", verb)
-			log.Logger.Errorf("Reason: %s", res.Status.Reason)
-			log.Logger.Errorf("EvaluationError: %s", res.Status.EvaluationError)
+			log.Logger.Warningf("User does NOT have permission to %s all resources in namespace cbctf.", verb)
+			log.Logger.Warningf("Reason: %s", res.Status.Reason)
+			log.Logger.Warningf("EvaluationError: %s", res.Status.EvaluationError)
 			return false
 		}
 	}
