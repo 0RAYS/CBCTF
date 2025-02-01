@@ -43,7 +43,6 @@ func GetUsages(ctx *gin.Context) {
 		}
 		if !all {
 			usage.Flag = ""
-			challenge.Path = ""
 			challenge.Flag = ""
 			challenge.DockerImage = ""
 			challenge.GeneratorImage = ""

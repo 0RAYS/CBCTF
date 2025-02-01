@@ -1,8 +1,10 @@
 package model
 
 import (
+	"CBCTF/internal/config"
 	"CBCTF/internal/constants"
 	"CBCTF/internal/utils"
+	"fmt"
 	"gorm.io/gorm"
 	"time"
 )
@@ -21,7 +23,6 @@ type Challenge struct {
 	Desc           string         `json:"desc"`
 	Flag           string         `json:"flag"`
 	Category       string         `json:"category"`
-	Path           string         `json:"path"`
 	Type           int            `json:"type" gorm:"default:0"`
 	GeneratorImage string         `json:"generator" gorm:"column:generator"`
 	DockerImage    string         `json:"docker" gorm:"column:docker"`
@@ -30,7 +31,30 @@ type Challenge struct {
 	DeletedAt      gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
-func InitChallenge(form constants.CreateChallengeForm, path string) Challenge {
+func (c *Challenge) BasicDir() string {
+	return fmt.Sprintf("%s/challenges/%s", config.Env.Gin.Upload.Path, c.ID)
+}
+
+func (c *Challenge) StaticPath() string {
+	return fmt.Sprintf("%s/challenges/%s/%s", config.Env.Gin.Upload.Path, c.ID, StaticFile)
+}
+
+func (c *Challenge) GeneratorPath() string {
+	return fmt.Sprintf("%s/challenges/%s/%s", config.Env.Gin.Upload.Path, c.ID, DynamicFile)
+}
+
+func (c *Challenge) AttachmentPath(teamID uint) string {
+	switch c.Type {
+	case Static:
+		return c.StaticPath()
+	case Dynamic:
+		return fmt.Sprintf("%s/attachments/%s/%d.zip", config.Env.Gin.Upload.Path, c.ID, teamID)
+	default:
+		return c.StaticPath()
+	}
+}
+
+func InitChallenge(form constants.CreateChallengeForm) Challenge {
 	return Challenge{
 		ID:       utils.RandomString(),
 		Name:     form.Name,
@@ -38,7 +62,6 @@ func InitChallenge(form constants.CreateChallengeForm, path string) Challenge {
 		Flag:     form.Flag,
 		Category: form.Category,
 		Type:     form.Type,
-		Path:     path,
 	}
 }
 

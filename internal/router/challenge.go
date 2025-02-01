@@ -25,7 +25,7 @@ func CreateChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	if err := os.MkdirAll(challenge.Path, 0755); err != nil {
+	if err := os.MkdirAll(challenge.BasicDir(), 0755); err != nil {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "CreateDirError", "data": nil})
 		return
 	}
@@ -59,13 +59,32 @@ func GetChallenges(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "challenges": challenges}})
 }
 
+func GetAttachment(ctx *gin.Context) {
+	challenge, ok, msg := db.GetChallengeByID(ctx, middleware.GetChallengeID(ctx))
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	team, ok, msg := db.GetTeamByUserID(ctx, middleware.GetUserID(ctx), middleware.GetContestID(ctx))
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	path := challenge.AttachmentPath(team.ID)
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		ctx.JSON(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": nil})
+		return
+	}
+	ctx.File(path)
+}
+
 func GetChallengeFiles(ctx *gin.Context) {
 	challenge, ok, msg := db.GetChallengeByID(ctx, middleware.GetChallengeID(ctx))
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	dir, err := os.ReadDir(challenge.Path)
+	dir, err := os.ReadDir(challenge.BasicDir())
 	if err != nil {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "ReadDirError", "data": nil})
 		return
@@ -140,7 +159,7 @@ func DeleteChallenge(ctx *gin.Context) {
 		}
 	}
 	_, msg = db.DeleteChallenge(ctx, middleware.GetChallengeID(ctx))
-	if form.Force && os.RemoveAll(challenge.Path) != nil {
+	if form.Force && os.RemoveAll(challenge.BasicDir()) != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
 		return
 	}
@@ -165,19 +184,19 @@ func UploadChallenge(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
 			return
 		}
-		path = fmt.Sprintf("%s/%s", challenge.Path, model.StaticFile)
+		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), model.StaticFile)
 	case model.Dynamic:
 		if file.Filename != model.DynamicFile {
 			ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
 			return
 		}
-		path = fmt.Sprintf("%s/%s", challenge.Path, model.DynamicFile)
+		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), model.DynamicFile)
 	case model.Container:
-		if file.Filename != model.ContainerFile {
+		if file.Filename != model.ContainerFile && file.Filename != model.StaticFile {
 			ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
 			return
 		}
-		path = fmt.Sprintf("%s/%s", challenge.Path, model.ContainerFile)
+		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), file.Filename)
 	default:
 		ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidChallengeType", "data": nil})
 		return
@@ -200,7 +219,7 @@ func DownloadChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	path := fmt.Sprintf("%s/%s", challenge.Path, form.File)
+	path := fmt.Sprintf("%s/%s", challenge.BasicDir(), form.File)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		ctx.JSON(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": nil})
 		return

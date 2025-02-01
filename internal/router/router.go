@@ -44,6 +44,7 @@ func Init() *gin.Engine {
 
 	contestChallenge := contest.Group("/:contestID/challenge", middleware.SetContestID)
 	contestChallenge.GET("/list", GetUsages)
+	contestChallenge.GET("/:challengeID/attachment", middleware.SetChallengeID, GetAttachment)
 
 	admin := auth.Group("/admin", middleware.CheckRole("admin"))
 	admin.GET("/info", GetAdmin)
