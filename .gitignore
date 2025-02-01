@@ -5,6 +5,7 @@
 logs
 uploads
 config.yml
+build.bat
 *.conf
 *.db
 
