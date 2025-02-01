@@ -65,7 +65,7 @@ func GetAttachment(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	team, ok, msg := db.GetTeamByUserID(ctx, middleware.GetUserID(ctx), middleware.GetContestID(ctx))
+	team, ok, msg := db.GetTeamByUserID(ctx, middleware.GetSelfID(ctx), middleware.GetContestID(ctx))
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
