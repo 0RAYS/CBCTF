@@ -53,10 +53,6 @@ type Config struct {
 		Config    string `mapstructure:"config" json:"config"`       // Kubernetes 配置文件路径
 		Master    string `mapstructure:"master" json:"master"`       // Kubernetes Master 地址
 		Namespace string `mapstructure:"namespace" json:"namespace"` // Kubernetes 命名空间
-		Ports     struct {
-			Start int `mapstructure:"start" json:"start"` // 端口起始值
-			End   int `mapstructure:"end" json:"end"`     // 端口结束值
-		} `mapstructure:"ports" json:"ports"`
 	} `mapstructure:"k8s" json:"k8s"`
 	Frontend string `mapstructure:"frontend" json:"frontend"` // 前端地址
 	Backend  string `mapstructure:"backend" json:"backend"`   // 后端地址

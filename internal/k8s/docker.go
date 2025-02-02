@@ -5,37 +5,11 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
-	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/ptr"
-	"net"
 )
-
-func isPortAvailable(port int) bool {
-	address := fmt.Sprintf("127.0.0.1:%d", port)
-	ln, err := net.Listen("tcp", address)
-	if err != nil {
-		return false // 端口已被占用
-	}
-	err = ln.Close()
-	if err != nil {
-		log.Logger.Warningf("Failed to close listener: %v", err)
-		return false
-	}
-	return true
-}
-
-func getAvailablePort() int {
-	start, end := config.Env.K8S.Ports.Start, config.Env.K8S.Ports.End
-	for port := start; port <= end; port++ {
-		if isPortAvailable(port) {
-			return port
-		}
-	}
-	return -1
-}
 
 func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Docker) (int32, bool, string) {
 	var err error
