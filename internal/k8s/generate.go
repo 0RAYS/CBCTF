@@ -22,10 +22,6 @@ func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, strin
 	if challenge.GeneratorImage == "" {
 		return false, "EmptyGeneratorImage"
 	}
-	generatorPath := challenge.GeneratorPath()
-	if _, err := os.Stat(generatorPath); err != nil {
-		log.Logger.Warning("Generator file not found, make sure the generator docker can work correctly")
-	}
 	log.Logger.Debugf("Creating pod for challenge %s:%s", challenge.Name, challenge.ID)
 	podName := fmt.Sprintf("%s-%d-generator-pod", challenge.ID, flag.TeamID)
 	containerName := fmt.Sprintf("%s-%d-generator", challenge.ID, flag.TeamID)
@@ -74,16 +70,20 @@ func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, strin
 			return false, "PodNotRunning"
 		}
 	}
-	err = CopyToPod(pod.Name, containerName, generatorPath, "/root/generator.zip")
-	if err != nil {
-		log.Logger.Warningf("Failed to copy file: %v", err)
-		return false, "CopyFileError"
+	var commands []string
+	generatorPath := challenge.GeneratorPath()
+	if _, err := os.Stat(generatorPath); err == nil {
+		err = CopyToPod(pod.Name, containerName, generatorPath, "/root/generator.zip")
+		if err != nil {
+			log.Logger.Warningf("Failed to copy file: %v", err)
+			return false, "CopyFileError"
+		}
+		commands = append(commands, "unzip /root/generator.zip -d /root")
+	} else {
+		log.Logger.Warning("Generator file not found, make sure the generator docker can work correctly")
 	}
-	commands := []string{
-		"unzip /root/generator.zip -d /root",
-		// TODO 有 RCE 的风险，虽然是在容器内
-		fmt.Sprintf("python generator.py %d '%s'", flag.TeamID, flag.Value),
-	}
+	// TODO 有 RCE 的风险，虽然是在容器内
+	commands = append(commands, fmt.Sprintf("python generator.py %d '%s'", flag.TeamID, flag.Value))
 	for _, command := range commands {
 		log.Logger.Debugf("Executing command: %s", command)
 		var buf bytes.Buffer
