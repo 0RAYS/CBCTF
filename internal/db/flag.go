@@ -9,9 +9,8 @@ import (
 	"fmt"
 )
 
-// GenerateFlag is a function to generate team all flags, should be call after team join contest
-// 未完成
-func GenerateFlag(ctx context.Context, contestID, teamID uint) {
+// InitFlag is a function to generate team all flags, should be call after team join contest
+func InitFlag(ctx context.Context, contestID, teamID uint) {
 	var (
 		usages    []model.Usage
 		challenge model.Challenge
@@ -37,9 +36,9 @@ func GenerateFlag(ctx context.Context, contestID, teamID uint) {
 		log.Logger.Debugf("Generating flag for team %d challenge %s", teamID, usage.ChallengeID)
 		switch challenge.Type {
 		case model.Static:
-			flag, ok, msg = CreateFlag(ctx, contestID, teamID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, challenge.Flag))
+			flag, ok, msg = RecordFlag(ctx, contestID, teamID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, challenge.Flag))
 		case model.Dynamic:
-			flag, ok, msg = CreateFlag(ctx, contestID, teamID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.RandFlag(challenge.Flag)))
+			flag, ok, msg = RecordFlag(ctx, contestID, teamID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.RandFlag(challenge.Flag)))
 			go func(c model.Challenge, f model.Flag) {
 				log.Logger.Debugf("Generating attachment for team %d challenge %s", teamID, usage.ChallengeID)
 				ok, msg = k8s.GenerateAttachment(c, f)
@@ -48,7 +47,7 @@ func GenerateFlag(ctx context.Context, contestID, teamID uint) {
 				}
 			}(challenge, flag)
 		case model.Container:
-			flag, ok, msg = CreateFlag(ctx, contestID, teamID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.RandomString()))
+			flag, ok, msg = RecordFlag(ctx, contestID, teamID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.RandomString()))
 		default:
 			continue
 		}
@@ -62,8 +61,8 @@ func GenerateFlag(ctx context.Context, contestID, teamID uint) {
 	}
 }
 
-// CreateFlag is a function to create a new flag
-func CreateFlag(ctx context.Context, contestID, teamID uint, challengeID, value string) (model.Flag, bool, string) {
+// RecordFlag is a function to create a new flag
+func RecordFlag(ctx context.Context, contestID, teamID uint, challengeID, value string) (model.Flag, bool, string) {
 	var (
 		flag model.Flag
 		ok   bool
