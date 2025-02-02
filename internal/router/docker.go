@@ -52,6 +52,10 @@ func IncreaseDuration(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	if !docker.Start.Add(docker.Duration).Before(time.Now().Add(20 * time.Second)) {
+		ctx.JSON(http.StatusOK, gin.H{"msg": "HasMuchTime", "data": nil})
+		return
+	}
 	ok, msg = db.UpdateDocker(ctx, docker.ID, map[string]interface{}{"duration": docker.Duration + 1*time.Hour})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
