@@ -1,6 +1,7 @@
 package db
 
 import (
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
 )
@@ -12,4 +13,25 @@ func CreateSubmission(ctx context.Context, contestID, teamID, userID uint, chall
 		return model.Submission{}, false, "CreateSubmissionError"
 	}
 	return submission, true, "Success"
+}
+
+func GetSubmissions(ctx context.Context, limit, offset int) ([]model.Submission, int64, bool, string) {
+	if limit <= 0 {
+		limit = -1
+	}
+	if offset <= 0 {
+		offset = -1
+	}
+	var submissions []model.Submission
+	var count int64
+	res := DB.WithContext(ctx).Model(model.Submission{})
+	if res.Count(&count).Error != nil {
+		log.Logger.Warningf("Failed to count submissions: %v", res.Error)
+		return nil, 0, false, "UnknownError"
+	}
+	if res = res.Order("CreatedAt desc").Limit(limit).Offset(offset).Find(&submissions); res.Error != nil {
+		log.Logger.Warningf("Failed to get submissions: %v", res.Error)
+		return nil, 0, false, "UnknownError"
+	}
+	return submissions, count, true, "Success"
 }

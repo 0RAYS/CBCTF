@@ -32,3 +32,17 @@ func SubmitFlag(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": "FlagNotMatch", "data": nil})
 	return
 }
+
+func GetSubmissions(ctx *gin.Context) {
+	var form constants.GetModelsForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	submissions, count, ok, msg := db.GetSubmissions(ctx, form.Limit, form.Offset)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"submissions": submissions, "count": count}})
+}

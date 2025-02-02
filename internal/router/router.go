@@ -92,6 +92,7 @@ func Init() *gin.Engine {
 	adminContestChallenge := adminContest.Group("/:contestID/challenge", middleware.SetContestID)
 	adminContestChallenge.GET("/list", GetUsages)
 	adminContestChallenge.POST("/add", AddUsage)
+	adminContestChallenge.GET("/submissions", GetSubmissions)
 	adminContestChallenge.POST("/:challengeID/update", middleware.SetChallengeID, UpdateUsage)
 	adminContestChallenge.POST("/:challengeID/remove", middleware.SetChallengeID, RemoveUsage)
 
