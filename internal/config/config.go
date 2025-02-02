@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/viper"
 	"log"
 	"os"
+	"time"
 )
 
 type Config struct {
@@ -112,6 +113,7 @@ func Save(env Config) error {
 func Watch(onChange func()) {
 	viper.WatchConfig()
 	viper.OnConfigChange(func(e fsnotify.Event) {
+		time.Sleep(1 * time.Second)
 		log.Printf("Config file changed: %s", e.Name)
 		onChange()
 	})
