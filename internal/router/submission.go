@@ -25,12 +25,15 @@ func SubmitFlag(ctx *gin.Context) {
 		return
 	}
 	submission, ok, msg := db.CreateSubmission(ctx, contest.ID, team.ID, middleware.GetSelfID(ctx), middleware.GetChallengeID(ctx), form.Flag)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
 	if submission.Solved {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": "FlagNotMatch", "data": nil})
-	return
 }
 
 func GetSubmissions(ctx *gin.Context) {

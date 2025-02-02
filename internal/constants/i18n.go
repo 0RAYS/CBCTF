@@ -77,10 +77,13 @@ var resp = map[string]map[string]interface{}{
 	"FileNotFound":          {"zh-CN": "文件不存在", "en-US": "File not found", "code": 404},
 	"UploadFileError":       {"zh-CN": "文件上传失败", "en-US": "File upload failed", "code": 500},
 
-	"CreateFlagError": {"zh-CN": "创建flag失败", "en-US": "Failed to create flag", "code": 500},
-	"FlagNotFound":    {"zh-CN": "题目未初始化", "en-US": "Flag not found", "code": 404},
-	"UpdateFlagError": {"zh-CN": "更新flag失败", "en-US": "Failed to update flag", "code": 500},
-	"FlagNotMatch":    {"zh-CN": "flag错误", "en-US": "Flag not match", "code": 400},
+	"CreateFlagError":       {"zh-CN": "创建flag失败", "en-US": "Failed to create flag", "code": 500},
+	"FlagNotFound":          {"zh-CN": "题目未初始化", "en-US": "Flag not found", "code": 404},
+	"UpdateFlagError":       {"zh-CN": "更新flag失败", "en-US": "Failed to update flag", "code": 500},
+	"FlagNotMatch":          {"zh-CN": "flag错误", "en-US": "Flag not match", "code": 400},
+	"SubmissionNotFound":    {"zh-CN": "提交记录不存在", "en-US": "Submission not found", "code": 404},
+	"CreateSubmissionError": {"zh-CN": "提交失败", "en-US": "Failed to create submission", "code": 500},
+	"SubmissionExists":      {"zh-CN": "已提交过flag", "en-US": "Flag already submitted", "code": 400},
 
 	"CreatePodError":     {"zh-CN": "创建Pod失败", "en-US": "Failed to create Pod", "code": 500},
 	"GetPodError":        {"zh-CN": "获取Pod失败", "en-US": "Failed to get Pod", "code": 500},
