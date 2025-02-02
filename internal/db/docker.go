@@ -40,6 +40,16 @@ func CreateDocker(ctx context.Context, flag model.Flag, creatorID uint) (model.D
 	return docker, true, "Success"
 }
 
+func GetDockers(ctx context.Context) ([]model.Docker, bool, string) {
+	var dockers []model.Docker
+	res := DB.WithContext(ctx).Model(model.Docker{}).Find(&dockers)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Dockers: %s", res.Error)
+		return nil, false, "GetDockersError"
+	}
+	return dockers, true, "Success"
+}
+
 func GetDockerByID(ctx context.Context, id uint) (model.Docker, bool, string) {
 	var docker model.Docker
 	res := DB.WithContext(ctx).Model(model.Docker{}).Where("id = ?", id).Find(&docker).Limit(1)
