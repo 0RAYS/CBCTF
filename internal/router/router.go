@@ -78,6 +78,7 @@ func Init() *gin.Engine {
 	adminContest.POST("/:contestID/update", middleware.SetContestID, UpdateContest)
 	adminContest.POST("/:contestID/delete", middleware.SetContestID, DeleteContest)
 	adminContest.POST("/:contestID/avatar", middleware.SetContestID, UploadAvatar(model.Contest{}))
+	adminContest.GET("/:contestID/submissions", middleware.SetContestID, GetSubmissions)
 
 	adminContestTeam := adminContest.Group("/:contestID/team", middleware.SetContestID)
 	adminContestTeam.GET("/list", GetTeams)
@@ -92,7 +93,6 @@ func Init() *gin.Engine {
 	adminContestChallenge := adminContest.Group("/:contestID/challenge", middleware.SetContestID)
 	adminContestChallenge.GET("/list", GetUsages)
 	adminContestChallenge.POST("/add", AddUsage)
-	adminContestChallenge.GET("/submissions", GetSubmissions)
 	adminContestChallenge.POST("/:challengeID/update", middleware.SetChallengeID, UpdateUsage)
 	adminContestChallenge.POST("/:challengeID/remove", middleware.SetChallengeID, RemoveUsage)
 
