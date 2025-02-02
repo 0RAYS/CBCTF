@@ -13,16 +13,16 @@ func Init() *gin.Engine {
 	router.MaxMultipartMemory = int64(config.Env.Gin.Upload.Max << 20)
 	router.Use(middleware.Logger(), gin.Recovery(), middleware.Trace, middleware.Cors, middleware.I18n(), middleware.AccessLog, middleware.RateLimit())
 
-	// 公共路由
+	// 公共
 	router.POST("/register", Register)
 	router.POST("/login", Login)
 	router.POST("/admin/login", AdminLogin)
 	router.GET("/avatar/:avatarID", middleware.SetAvatarID, DownloadAvatar)
 
-	// 鉴权路由
+	// 鉴权
 	auth := router.Group("", middleware.CheckLogin)
 
-	// 用户路由
+	// 用户
 	user := auth.Group("/user", middleware.CheckRole("user"))
 	{
 		user.GET("/info", GetUser)
@@ -32,39 +32,40 @@ func Init() *gin.Engine {
 		user.POST("/avatar", UploadAvatar(model.User{}))
 	}
 
-	// 比赛相关路由
-	contest := auth.Group("/contest", middleware.CheckRole("user"))
+	// 比赛
+	auth.GET("/contest/list", middleware.CheckRole("user"), GetContests)
+	contest := auth.Group("/contest/:contestID", middleware.CheckRole("user"), middleware.SetContestID)
 	{
-		contest.GET("/list", GetContests)
-		contest.GET("/:contestID/info", middleware.SetContestID, GetContest)
-		contest.GET("/:contestID/team/info", middleware.SetContestID, GetTeam)
-		contest.GET("/:contestID/team/captcha", middleware.SetContestID, GetTeamCaptcha)
-		contest.GET("/:contestID/team/list", middleware.SetContestID, GetTeammates)
-		contest.POST("/:contestID/team/join", middleware.CheckVerified, middleware.SetContestID, JoinTeam)
-		contest.POST("/:contestID/team/create", middleware.CheckVerified, middleware.SetContestID, CreateTeam)
-		contest.POST("/:contestID/team/update", middleware.CheckVerified, middleware.SetContestID, middleware.CheckCaptain, UpdateTeam)
-		contest.POST("/:contestID/team/avatar", middleware.CheckVerified, middleware.SetContestID, middleware.CheckCaptain, UploadAvatar(model.Team{}))
-		contest.POST("/:contestID/team/delete", middleware.CheckVerified, middleware.SetContestID, middleware.CheckCaptain, DeleteTeam)
-		contest.POST("/:contestID/team/kick", middleware.CheckVerified, middleware.SetContestID, middleware.CheckCaptain, KickMember)
-		contest.POST("/:contestID/team/leave", middleware.CheckVerified, middleware.SetContestID, LeaveTeam)
+		contest.GET("/info", GetContest)
+		contest.GET("/team/info", GetTeam)
+		contest.GET("/team/captcha", GetTeamCaptcha)
+		contest.GET("/team/list", GetTeammates)
+		contest.POST("/team/join", middleware.CheckVerified, JoinTeam)
+		contest.POST("/team/create", middleware.CheckVerified, CreateTeam)
+		contest.POST("/team/update", middleware.CheckVerified, middleware.CheckCaptain, UpdateTeam)
+		contest.POST("/team/avatar", middleware.CheckVerified, middleware.CheckCaptain, UploadAvatar(model.Team{}))
+		contest.POST("/team/delete", middleware.CheckVerified, middleware.CheckCaptain, DeleteTeam)
+		contest.POST("/team/kick", middleware.CheckVerified, middleware.CheckCaptain, KickMember)
+		contest.POST("/team/leave", middleware.CheckVerified, LeaveTeam)
 
-		contestChallenge := contest.Group("/:contestID/challenge", middleware.CheckVerified, middleware.SetContestID, middleware.CheckBanned)
+		// 比赛题目
+		contest.GET("/challenge/list", middleware.CheckVerified, middleware.CheckBanned, GetUsages)
+		contestChallenge := contest.Group("/challenge/:challengeID", middleware.CheckVerified, middleware.CheckBanned, middleware.SetChallengeID)
 		{
-			contestChallenge.GET("/list", GetUsages)
-			contestChallenge.POST("/:challengeID/init", middleware.SetChallengeID, InitChallenge)
-			contestChallenge.GET("/:challengeID/attachment", middleware.SetChallengeID, GetAttachment)
-			contestChallenge.GET("/:challengeID/remote", middleware.SetChallengeID, GetContainer)
-			contestChallenge.POST("/:challengeID/start", middleware.SetChallengeID, StartContainer)
-			contestChallenge.POST("/:challengeID/increase", middleware.SetChallengeID, IncreaseDuration)
-			contestChallenge.POST("/:challengeID/stop", middleware.SetChallengeID, StopContainer)
-			contestChallenge.POST("/:challengeID/submit", middleware.SetChallengeID, SubmitFlag)
+			contestChallenge.POST("/init", InitChallenge)
+			contestChallenge.GET("/attachment", GetAttachment)
+			contestChallenge.GET("/remote", GetContainer)
+			contestChallenge.POST("/start", StartContainer)
+			contestChallenge.POST("/increase", IncreaseDuration)
+			contestChallenge.POST("/stop", StopContainer)
+			contestChallenge.POST("/submit", SubmitFlag)
 		}
 	}
 
-	// 管理员路由
+	// 管理员
 	admin := auth.Group("/admin", middleware.CheckRole("admin"))
 	{
-		// 管理员信息
+		// 管理员
 		admin.GET("/info", GetAdmin)
 		admin.POST("/password", AdminChangePassword)
 		admin.POST("/update", UpdateAdmin)
@@ -79,71 +80,71 @@ func Init() *gin.Engine {
 		}
 
 		// 用户管理
-		adminUser := admin.Group("/user")
+		admin.GET("/user/list", GetUsers)
+		admin.POST("/user/create", CreateUser)
+		adminUser := admin.Group("/user/:userID", middleware.SetUserID)
 		{
-			adminUser.GET("/list", GetUsers)
-			adminUser.POST("/create", CreateUser)
-			adminUser.GET("/:userID/info", middleware.SetUserID, GetUser)
-			adminUser.POST("/:userID/update", middleware.SetUserID, UpdateUser)
-			adminUser.POST("/:userID/delete", middleware.SetUserID, DeleteUser)
-			adminUser.POST("/:userID/avatar", middleware.SetUserID, UploadAvatar(model.User{}))
+			adminUser.GET("/info", GetUser)
+			adminUser.POST("/update", UpdateUser)
+			adminUser.POST("/delete", DeleteUser)
+			adminUser.POST("/avatar", UploadAvatar(model.User{}))
 		}
 
 		// 比赛管理
-		adminContest := admin.Group("/contest")
+		admin.GET("/contest/list", GetContests)
+		admin.POST("/contest/create", CreateContest)
+		adminContest := admin.Group("/contest/:contestID", middleware.SetContestID)
 		{
-			adminContest.GET("/list", GetContests)
-			adminContest.POST("/create", CreateContest)
-			adminContest.GET("/:contestID/info", middleware.SetContestID, GetContest)
-			adminContest.GET("/:contestID/captcha", middleware.SetContestID, GetContestCaptcha)
-			adminContest.POST("/:contestID/update", middleware.SetContestID, UpdateContest)
-			adminContest.POST("/:contestID/delete", middleware.SetContestID, DeleteContest)
-			adminContest.POST("/:contestID/avatar", middleware.SetContestID, UploadAvatar(model.Contest{}))
-			adminContest.GET("/:contestID/submissions", middleware.SetContestID, GetSubmissions)
+			adminContest.GET("/info", GetContest)
+			adminContest.GET("/captcha", GetContestCaptcha)
+			adminContest.POST("/update", UpdateContest)
+			adminContest.POST("/delete", DeleteContest)
+			adminContest.POST("/avatar", UploadAvatar(model.Contest{}))
+			adminContest.GET("/submissions", GetSubmissions)
 
 			// 比赛队伍管理
-			adminContestTeam := adminContest.Group("/:contestID/team", middleware.SetContestID)
+			adminContest.GET("/team/list", GetTeams)
+			adminContestTeam := adminContest.Group("/team/:teamID", middleware.SetTeamID)
 			{
-				adminContestTeam.GET("/list", GetTeams)
-				adminContestTeam.GET("/:teamID/info", middleware.SetTeamID, GetTeam)
-				adminContestTeam.GET("/:teamID/captcha", middleware.SetTeamID, GetTeamCaptcha)
-				adminContestTeam.GET("/:teamID/list", middleware.SetTeamID, GetTeamUsers)
-				adminContestTeam.POST("/:teamID/update", middleware.SetTeamID, UpdateTeam)
-				adminContestTeam.POST("/:teamID/delete", middleware.SetTeamID, DeleteTeam)
-				adminContestTeam.POST("/:teamID/kick", middleware.SetTeamID, KickMember)
-				adminContestTeam.POST("/:teamID/avatar", middleware.SetTeamID, UploadAvatar(model.Team{}))
+				adminContestTeam.GET("/info", GetTeam)
+				adminContestTeam.GET("/captcha", GetTeamCaptcha)
+				adminContestTeam.GET("/list", GetTeamUsers)
+				adminContestTeam.POST("/update", UpdateTeam)
+				adminContestTeam.POST("/delete", DeleteTeam)
+				adminContestTeam.POST("/kick", KickMember)
+				adminContestTeam.POST("/avatar", UploadAvatar(model.Team{}))
 			}
 
 			// 比赛题目管理
-			adminContestChallenge := adminContest.Group("/:contestID/challenge", middleware.SetContestID)
+			adminContest.GET("/challenge/list", GetUsages)
+			adminContest.POST("/challenge/add", AddUsage)
+			adminContestChallenge := adminContest.Group("/challenge/:challengeID", middleware.SetChallengeID)
 			{
-				adminContestChallenge.GET("/list", GetUsages)
-				adminContestChallenge.POST("/add", AddUsage)
-				adminContestChallenge.POST("/:challengeID/update", middleware.SetChallengeID, UpdateUsage)
-				adminContestChallenge.POST("/:challengeID/remove", middleware.SetChallengeID, RemoveUsage)
+				adminContestChallenge.POST("/update", UpdateUsage)
+				adminContestChallenge.POST("/remove", RemoveUsage)
 			}
 		}
 
-		// 挑战管理
-		adminChallenge := admin.Group("/challenge")
+		// 题库管理
+		admin.GET("/challenge/list", GetChallenges)
+		admin.GET("/challenge/categories", GetCategories)
+		admin.POST("/challenge/create", CreateChallenge)
+		adminChallenge := admin.Group("/challenge/:challengeID", middleware.SetChallengeID)
 		{
-			adminChallenge.GET("/list", GetChallenges)
-			adminChallenge.GET("/categories", GetCategories)
-			adminChallenge.GET("/:challengeID/info", middleware.SetChallengeID, GetChallenge)
-			adminChallenge.GET("/:challengeID/files", middleware.SetChallengeID, GetChallengeFiles)
-			adminChallenge.GET("/:challengeID/download", middleware.SetChallengeID, DownloadChallenge)
-			adminChallenge.POST("/create", CreateChallenge)
-			adminChallenge.POST("/:challengeID/update", middleware.SetChallengeID, UpdateChallenge)
-			adminChallenge.POST("/:challengeID/delete", middleware.SetChallengeID, DeleteChallenge)
-			adminChallenge.POST("/:challengeID/upload", middleware.SetChallengeID, UploadChallenge)
+			adminChallenge.GET("/info", GetChallenge)
+			adminChallenge.GET("/files", GetChallengeFiles)
+			adminChallenge.GET("/download", DownloadChallenge)
+			adminChallenge.POST("/update", UpdateChallenge)
+			adminChallenge.POST("/delete", DeleteChallenge)
+			adminChallenge.POST("/upload", UploadChallenge)
 		}
 
 		// 头像管理
-		adminFile := admin.Group("/avatar")
+		admin.GET("/avatar/list", GetAvatars)
+		admin.POST("/avatar/delete", DeleteAvatar)
+		adminAvatar := admin.Group("/avatar/:avatarID", middleware.SetAvatarID)
 		{
-			adminFile.GET("/list", GetAvatars)
-			adminFile.POST("/delete", DeleteAvatar)
-			adminFile.POST("/:avatarID/delete", middleware.SetAvatarID, DeleteAvatar)
+			adminAvatar.POST("/delete", DeleteAvatar)
 		}
 	}
 
