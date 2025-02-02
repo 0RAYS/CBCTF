@@ -63,6 +63,7 @@ var resp = map[string]map[string]interface{}{
 	"UpdateContestError": {"zh-CN": "更新赛事失败", "en-US": "Failed to update contest", "code": 500},
 	"ContestNameExists":  {"zh-CN": "赛事名已被占用", "en-US": "Contest name already taken", "code": 400},
 	"ContestNotFound":    {"zh-CN": "赛事不存在", "en-US": "Contest not found", "code": 404},
+	"ContestNotRunning":  {"zh-CN": "赛事未开始", "en-US": "Contest not running", "code": 400},
 
 	"CreateUsageError": {"zh-CN": "添加题目到比赛失败", "en-US": "Failed to add challenge to contest", "code": 500},
 	"GetUsageError":    {"zh-CN": "获取题目失败", "en-US": "Failed to get challenge", "code": 500},
@@ -77,9 +78,9 @@ var resp = map[string]map[string]interface{}{
 	"UploadFileError":       {"zh-CN": "文件上传失败", "en-US": "File upload failed", "code": 500},
 
 	"CreateFlagError": {"zh-CN": "创建flag失败", "en-US": "Failed to create flag", "code": 500},
-	"FlagNotFound":    {"zh-CN": "flag不存在", "en-US": "Flag not found", "code": 404},
+	"FlagNotFound":    {"zh-CN": "题目未初始化", "en-US": "Flag not found", "code": 404},
 	"UpdateFlagError": {"zh-CN": "更新flag失败", "en-US": "Failed to update flag", "code": 500},
-	"FlagNotMatch":    {"zh-CN": "flag不匹配", "en-US": "Flag not match", "code": 400},
+	"FlagNotMatch":    {"zh-CN": "flag错误", "en-US": "Flag not match", "code": 400},
 
 	"CreatePodError":     {"zh-CN": "创建Pod失败", "en-US": "Failed to create Pod", "code": 500},
 	"GetPodError":        {"zh-CN": "获取Pod失败", "en-US": "Failed to get Pod", "code": 500},

@@ -43,6 +43,7 @@ func Init() *gin.Engine {
 
 	contestChallenge := contest.Group("/:contestID/challenge", middleware.CheckVerified, middleware.SetContestID, middleware.CheckBanned)
 	contestChallenge.GET("/list", GetUsages)
+	contestChallenge.POST("/:challengeID/init", middleware.SetChallengeID, InitChallenge)
 	contestChallenge.GET("/:challengeID/attachment", middleware.SetChallengeID, GetAttachment)
 	contestChallenge.GET("/:challengeID/remote", middleware.SetChallengeID, GetContainer)
 	contestChallenge.POST("/:challengeID/start", middleware.SetChallengeID, StartContainer)

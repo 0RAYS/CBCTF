@@ -2,6 +2,7 @@ package main
 
 import (
 	"CBCTF/internal/config"
+	"CBCTF/internal/cron"
 	"CBCTF/internal/db"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
@@ -20,6 +21,7 @@ func Init() {
 	redis.Init()
 	db.Init()
 	k8s.Init()
+	cron.Init()
 }
 
 func Start() {
@@ -35,9 +37,11 @@ func Start() {
 		}
 	}()
 	log.Logger.Infof("Server started at %s:%d", ip, port)
+	cron.Start()
 }
 
 func Stop() {
+	cron.Stop()
 	if err := server.Close(); err != nil {
 		log.Logger.Errorf("Failed to stop: %s", err)
 		return

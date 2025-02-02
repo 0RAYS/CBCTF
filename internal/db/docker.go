@@ -18,7 +18,7 @@ func CreateDocker(ctx context.Context, flag model.Flag, creatorID uint) (model.D
 		return docker, ok, "Success"
 	}
 	challenge, ok, msg := GetChallengeByID(ctx, flag.ChallengeID)
-	if !ok {
+	if !ok || challenge.Type != model.Container {
 		return model.Docker{}, false, msg
 	}
 

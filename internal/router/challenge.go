@@ -228,3 +228,34 @@ func DownloadChallenge(ctx *gin.Context) {
 	}
 	ctx.File(path)
 }
+
+func InitChallenge(ctx *gin.Context) {
+	var (
+		team    model.Team
+		contest model.Contest
+		usage   model.Usage
+		ok      bool
+		msg     string
+	)
+	team, ok, msg = db.GetTeamByUserID(ctx, middleware.GetSelfID(ctx), middleware.GetContestID(ctx))
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	contest, ok, msg = db.GetContestByID(ctx, middleware.GetContestID(ctx))
+	if !ok || !contest.IsRunning() {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	usage, ok, msg = db.GetUsageBy2ID(ctx, contest.ID, middleware.GetChallengeID(ctx))
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	if _, ok, msg = db.GetFlagBy3ID(ctx, contest.ID, team.ID, usage.ChallengeID); ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	_, ok, msg = db.InitFlag(ctx, contest, team, usage)
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}
