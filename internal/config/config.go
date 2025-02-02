@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/viper"
 	"log"
 	"os"
+	"time"
 )
 
 type Config struct {
@@ -62,6 +63,7 @@ type Config struct {
 }
 
 var Env *Config
+var last time.Time
 
 //go:embed default.yml
 var defaultConf []byte
@@ -112,6 +114,10 @@ func Save(env Config) error {
 func Watch(onChange func()) {
 	viper.WatchConfig()
 	viper.OnConfigChange(func(e fsnotify.Event) {
+		if time.Since(last) < time.Second {
+			return
+		}
+		last = time.Now()
 		log.Printf("Config file changed: %s", e.Name)
 		onChange()
 	})

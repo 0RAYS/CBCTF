@@ -44,6 +44,7 @@ func Close() {
 		_ = RDB.Close()
 	}
 	if collectCancel != nil {
+		log.Logger.Info("Stop collecting Redis metrics")
 		collectCancel()
 	}
 	log.Logger.Info("Redis connection closed")
