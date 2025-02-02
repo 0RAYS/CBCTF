@@ -57,6 +57,7 @@ var resp = map[string]map[string]interface{}{
 	"StartDockerError":     {"zh-CN": "启动容器失败", "en-US": "Failed to start Docker", "code": 500},
 	"StopDockerError":      {"zh-CN": "停止容器失败", "en-US": "Failed to stop Docker", "code": 500},
 	"DockerNotFound":       {"zh-CN": "容器不存在", "en-US": "Docker not found", "code": 404},
+	"HasMuchTime":          {"zh-CN": "距容器关闭20分钟内才可延长时间", "en-US": "Can only extend time within 20 minutes before the container closes", "code": 400},
 
 	"CreateContestError": {"zh-CN": "创建赛事失败", "en-US": "Failed to create contest", "code": 500},
 	"DeleteContestError": {"zh-CN": "删除赛事失败", "en-US": "Failed to delete contest", "code": 500},
