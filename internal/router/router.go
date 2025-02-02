@@ -70,6 +70,7 @@ func Init() *gin.Engine {
 		admin.POST("/password", AdminChangePassword)
 		admin.POST("/update", UpdateAdmin)
 		admin.POST("/avatar", UploadAvatar(model.Admin{}))
+		admin.POST("/create", CreateAdmin)
 
 		// 系统管理
 		adminSystem := admin.Group("/system")
