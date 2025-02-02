@@ -15,6 +15,9 @@ type RegisterForm struct {
 	Email    string `form:"email" json:"email" binding:"required"`
 }
 
+// CreateAdminForm for create admin
+type CreateAdminForm RegisterForm
+
 // CreateUserForm for create user
 type CreateUserForm struct {
 	Name     string `form:"name" json:"name" binding:"required"`
