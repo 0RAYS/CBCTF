@@ -41,7 +41,7 @@ func GetSubmissions(ctx context.Context, limit, offset int) ([]model.Submission,
 		log.Logger.Warningf("Failed to count submissions: %v", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
-	if res = res.Order("CreatedAt desc").Limit(limit).Offset(offset).Find(&submissions); res.Error != nil {
+	if res = res.Order("created_at desc").Limit(limit).Offset(offset).Find(&submissions); res.Error != nil {
 		log.Logger.Warningf("Failed to get submissions: %v", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
