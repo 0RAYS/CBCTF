@@ -37,7 +37,7 @@ func getAvailablePort() int {
 	return -1
 }
 
-func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Docker) (int, bool, string) {
+func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Docker) (int32, bool, string) {
 	var err error
 	if challenge.Type != model.Container {
 		return -1, false, "InvalidChallengeType"
@@ -82,7 +82,6 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 		log.Logger.Warningf("Failed to create pod: %v", err)
 		return -1, false, "CreatePodError"
 	}
-	port := getAvailablePort()
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      docker.ServiceName,
@@ -97,7 +96,6 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 					Protocol:   corev1.ProtocolTCP,
 					Port:       challenge.Port,
 					TargetPort: intstr.FromInt32(challenge.Port),
-					NodePort:   int32(port),
 				},
 			},
 			Type: corev1.ServiceTypeNodePort,
@@ -106,7 +104,7 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 			},
 		},
 	}
-	_, err = Client.CoreV1().Services(NamespaceName).Create(context.TODO(), service, metav1.CreateOptions{})
+	service, err = Client.CoreV1().Services(NamespaceName).Create(context.TODO(), service, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Error creating service: %s", err)
 		return -1, false, "CreateServiceError"
@@ -125,6 +123,7 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 			return -1, false, "CreatePodError"
 		}
 	}
+	port := service.Spec.Ports[0].NodePort
 	return port, true, "Success"
 }
 

@@ -12,7 +12,7 @@ func CreateDocker(ctx context.Context, flag model.Flag, creatorID uint) (model.D
 	var (
 		docker model.Docker
 		ok     bool
-		port   int
+		port   int32
 	)
 	if docker, ok, _ = GetDockerBy3ID(ctx, flag.ContestID, flag.TeamID, flag.ChallengeID); ok {
 		return docker, ok, "Success"
@@ -36,7 +36,7 @@ func CreateDocker(ctx context.Context, flag model.Flag, creatorID uint) (model.D
 		return model.Docker{}, false, msg
 	}
 	UpdateDocker(ctx, docker.ID, map[string]interface{}{"port": port})
-	docker.Port = int32(port)
+	docker.Port = port
 	return docker, true, "Success"
 }
 
