@@ -24,7 +24,7 @@ func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, strin
 	}
 	generatorPath := challenge.GeneratorPath()
 	if _, err := os.Stat(generatorPath); err != nil {
-		return false, "FileNotFound"
+		log.Logger.Warning("Generator file not found, make sure the generator docker can work correctly")
 	}
 	log.Logger.Debugf("Creating pod for challenge %s:%s", challenge.Name, challenge.ID)
 	podName := fmt.Sprintf("%s-%d-generator-pod", challenge.ID, flag.TeamID)
