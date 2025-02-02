@@ -197,3 +197,7 @@ type GetCategoriesForm struct {
 type DownloadChallengeForm struct {
 	File string `form:"file" json:"file" binding:"required"`
 }
+
+type SubmitFlagForm struct {
+	Flag string `form:"flag" json:"flag" binding:"required"`
+}

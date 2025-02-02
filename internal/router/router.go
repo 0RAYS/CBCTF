@@ -49,6 +49,7 @@ func Init() *gin.Engine {
 	contestChallenge.POST("/:challengeID/start", middleware.SetChallengeID, StartContainer)
 	contestChallenge.POST("/:challengeID/increase", middleware.SetChallengeID, IncreaseDuration)
 	contestChallenge.POST("/:challengeID/stop", middleware.SetChallengeID, StopContainer)
+	contestChallenge.POST("/:challengeID/submit", middleware.SetChallengeID, SubmitFlag)
 
 	admin := auth.Group("/admin", middleware.CheckRole("admin"))
 	admin.GET("/info", GetAdmin)
