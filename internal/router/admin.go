@@ -14,6 +14,15 @@ func GetAdmin(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": middleware.GetSelf(ctx).(model.Admin)})
 }
 
+func GetAdmins(ctx *gin.Context) {
+	admins, count, ok, msg := db.GetAdmins(ctx)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "admins": admins}})
+}
+
 func CreateAdmin(ctx *gin.Context) {
 	var form constants.CreateAdminForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {

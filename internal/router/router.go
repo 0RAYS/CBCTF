@@ -67,6 +67,7 @@ func Init() *gin.Engine {
 	{
 		// 管理员
 		admin.GET("/info", GetAdmin)
+		admin.GET("/list", GetAdmins)
 		admin.POST("/password", AdminChangePassword)
 		admin.POST("/update", UpdateAdmin)
 		admin.POST("/avatar", UploadAvatar(model.Admin{}))
