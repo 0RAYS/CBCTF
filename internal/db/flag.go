@@ -9,56 +9,42 @@ import (
 	"fmt"
 )
 
-// InitFlag is a function to generate team all flags, should be call after team join contest
-func InitFlag(ctx context.Context, contestID, teamID uint) {
+// InitFlag is a function to generate team flag
+func InitFlag(ctx context.Context, contest model.Contest, team model.Team, usage model.Usage) (model.Flag, bool, string) {
 	var (
-		usages    []model.Usage
 		challenge model.Challenge
 		flag      model.Flag
 		ok        bool
 		msg       string
 	)
-	contest, ok, msg := GetContestByID(ctx, contestID)
+	challenge, ok, msg = GetChallengeByID(ctx, usage.ChallengeID)
 	if !ok {
-		log.Logger.Warningf("Failed to get contest %d: %s", contestID, msg)
-		return
+		return model.Flag{}, false, msg
 	}
-	usages, ok, msg = GetUsageByContestID(ctx, contestID, true)
+	switch challenge.Type {
+	case model.Static:
+		flag, ok, msg = RecordFlag(ctx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, challenge.Flag))
+	case model.Dynamic:
+		flag, ok, msg = RecordFlag(ctx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.RandFlag(challenge.Flag)))
+		go func(c model.Challenge, f model.Flag) {
+			log.Logger.Debugf("Generating attachment for team %d challenge %s", team.ID, usage.ChallengeID)
+			ok, msg = k8s.GenerateAttachment(c, f)
+			if !ok {
+				log.Logger.Warningf("Failed to generate flag for challenge %s: %s", usage.ChallengeID, msg)
+			}
+		}(challenge, flag)
+	case model.Container:
+		flag, ok, msg = RecordFlag(ctx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.RandomString()))
+	default:
+		flag, ok, msg = model.Flag{}, false, "InvalidChallengeType"
+	}
 	if !ok {
-		log.Logger.Warningf("Failed to get %d challenges: %s", contestID, msg)
+		log.Logger.Warningf(
+			"Failed to generator flag for contest %d team %d challenge %s: %s",
+			contest.ID, team.ID, usage.ChallengeID, msg,
+		)
 	}
-	for _, usage := range usages {
-		challenge, ok, msg = GetChallengeByID(ctx, usage.ChallengeID)
-		if !ok {
-			log.Logger.Warningf("Failed to get challenge %s: %s", usage.ChallengeID, msg)
-			continue
-		}
-		log.Logger.Debugf("Generating flag for team %d challenge %s", teamID, usage.ChallengeID)
-		switch challenge.Type {
-		case model.Static:
-			flag, ok, msg = RecordFlag(ctx, contestID, teamID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, challenge.Flag))
-		case model.Dynamic:
-			flag, ok, msg = RecordFlag(ctx, contestID, teamID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.RandFlag(challenge.Flag)))
-			go func(c model.Challenge, f model.Flag) {
-				log.Logger.Debugf("Generating attachment for team %d challenge %s", teamID, usage.ChallengeID)
-				ok, msg = k8s.GenerateAttachment(c, f)
-				if !ok {
-					log.Logger.Warningf("Failed to generate flag for challenge %s: %s", usage.ChallengeID, msg)
-				}
-			}(challenge, flag)
-		case model.Container:
-			flag, ok, msg = RecordFlag(ctx, contestID, teamID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.RandomString()))
-		default:
-			continue
-		}
-		if !ok {
-			log.Logger.Warningf(
-				"Failed to generator flag for contest %d team %d challenge %s: %s",
-				contestID, teamID, usage.ChallengeID, msg,
-			)
-			continue
-		}
-	}
+	return flag, ok, msg
 }
 
 // RecordFlag is a function to create a new flag

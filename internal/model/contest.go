@@ -25,17 +25,21 @@ type Contest struct {
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
-func (m Contest) MarshalJSON() ([]byte, error) {
+func (c Contest) MarshalJSON() ([]byte, error) {
 	type Tmp Contest // 定义一个别名以避免递归调用
 	return json.Marshal(&struct {
 		Tmp
 		Users int `json:"users"`
 		Teams int `json:"teams"`
 	}{
-		Tmp:   Tmp(m),
-		Users: len(m.Users),
-		Teams: len(m.Teams),
+		Tmp:   Tmp(c),
+		Users: len(c.Users),
+		Teams: len(c.Teams),
 	})
+}
+
+func (c Contest) IsRunning() bool {
+	return time.Now().After(c.Start) && time.Now().Before(c.Start.Add(c.Duration))
 }
 
 func InitContest(form constants.CreateContestForm) Contest {

@@ -101,7 +101,6 @@ func CreateTeam(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	go db.InitFlag(ctx, contest.ID, team.ID)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": team})
 }
 
