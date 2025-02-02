@@ -7,10 +7,22 @@ import (
 )
 
 func CreateSubmission(ctx context.Context, contestID, teamID, userID uint, challengeID, value string) (model.Submission, bool, string) {
+	if _, ok, _ := GetSubmission(ctx, contestID, teamID, challengeID); ok {
+		return model.Submission{}, false, "SubmissionExists"
+	}
 	solved := VerifyFlag(ctx, contestID, teamID, challengeID, value)
 	submission := model.InitSubmission(contestID, challengeID, teamID, userID, value, solved)
 	if err := DB.WithContext(ctx).Model(model.Submission{}).Create(&submission).Error; err != nil {
 		return model.Submission{}, false, "CreateSubmissionError"
+	}
+	return submission, true, "Success"
+}
+
+func GetSubmission(ctx context.Context, contestID, teamID uint, challengeID string) (model.Submission, bool, string) {
+	var submission model.Submission
+	res := DB.WithContext(ctx).Model(model.Submission{}).Where("contest_id = ? AND team_id = ? AND challenge_id = ?", contestID, teamID, challengeID).Find(&submission).Limit(1)
+	if res.RowsAffected != 1 {
+		return model.Submission{}, false, "SubmissionNotFound"
 	}
 	return submission, true, "Success"
 }
