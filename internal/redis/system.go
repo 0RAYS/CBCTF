@@ -23,7 +23,6 @@ func StartCollect(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
-			log.Logger.Info("Stop collecting Redis metrics")
 			return
 		default:
 			metrics, err := collectMetrics()
