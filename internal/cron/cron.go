@@ -9,7 +9,7 @@ var c *cron.Cron
 
 func Init() {
 	c = cron.New(cron.WithSeconds())
-	//GenerateFlag(c)
+	CloseDockers(c)
 }
 
 func Start() {
