@@ -10,21 +10,12 @@ import (
 )
 
 func GetContest(ctx *gin.Context) {
-	contest, ok, msg := db.GetContestByID(ctx, middleware.GetContestID(ctx))
-	if !ok || contest.Hidden {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": contest})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": middleware.GetContest(ctx)})
 }
 
 func GetContestCaptcha(ctx *gin.Context) {
-	contest, ok, msg := db.GetContestByID(ctx, middleware.GetContestID(ctx))
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": contest.Captcha})
+	contest := middleware.GetContest(ctx)
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": contest.Captcha})
 }
 
 func GetContests(ctx *gin.Context) {
@@ -65,21 +56,17 @@ func UpdateContest(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	contest, ok, msg := db.GetContestByID(ctx, middleware.GetContestID(ctx))
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
+	contest := middleware.GetContest(ctx)
 	data := utils.Form2Map(form)
 	if name, ok := data["name"]; ok && name.(string) != contest.Name && !db.IsUniqueTeamName(name.(string), contest.ID) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "ContestNameExists", "data": nil})
 		return
 	}
-	_, msg = db.UpdateContest(ctx, contest.ID, data)
+	_, msg := db.UpdateContest(ctx, contest.ID, data)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
 func DeleteContest(ctx *gin.Context) {
-	_, msg := db.DeleteContest(ctx, middleware.GetContestID(ctx))
+	_, msg := db.DeleteContest(ctx, middleware.GetContest(ctx).ID)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

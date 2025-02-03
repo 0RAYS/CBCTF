@@ -21,11 +21,7 @@ import (
 )
 
 func DownloadAvatar(ctx *gin.Context) {
-	file, ok, msg := db.GetAvatarByID(ctx, middleware.GetAvatarID(ctx))
-	if !ok {
-		ctx.JSON(http.StatusNotFound, gin.H{"msg": msg, "data": nil})
-		return
-	}
+	file := middleware.GetAvatar(ctx)
 	if _, err := os.Stat(file.Path); os.IsNotExist(err) {
 		_, _ = db.DeleteAvatar(ctx, file.ID)
 		ctx.JSONP(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": file.ID})
@@ -37,21 +33,30 @@ func DownloadAvatar(ctx *gin.Context) {
 }
 
 func DeleteAvatar(ctx *gin.Context) {
-	var form constants.DeleteFileForm
+	var (
+		form constants.DeleteFileForm
+		file model.Avatar
+		ok   bool
+		msg  string
+	)
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	files := form.Files
-	if id := middleware.GetAvatarID(ctx); id != "" {
-		files = append(files, id)
+	filesID := form.FilesID
+	var files []model.Avatar
+	if uri := middleware.GetAvatar(ctx); uri.ID != "" {
+		files = append(files, uri)
 	}
-	for _, id := range files {
-		file, ok, msg := db.GetAvatarByID(ctx, id)
+	for _, id := range filesID {
+		file, ok, msg = db.GetAvatarByID(ctx, id)
 		if !ok {
 			ctx.JSON(http.StatusNotFound, gin.H{"msg": msg, "data": nil})
 			return
 		}
+		files = append(files, file)
+	}
+	for _, file = range files {
 		if ok, msg = db.DeleteAvatar(ctx, file.ID); !ok {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
 			return
@@ -135,9 +140,9 @@ func UploadAvatar(v interface{}) func(ctx *gin.Context) {
 		case model.User:
 			_, msg = db.UpdateUser(ctx, middleware.GetSelfID(ctx), map[string]interface{}{"avatar": path})
 		case model.Contest:
-			_, msg = db.UpdateContest(ctx, middleware.GetContestID(ctx), map[string]interface{}{"avatar": path})
+			_, msg = db.UpdateContest(ctx, middleware.GetContest(ctx).ID, map[string]interface{}{"avatar": path})
 		case model.Team:
-			_, msg = db.UpdateTeam(ctx, middleware.GetTeamID(ctx), map[string]interface{}{"avatar": path})
+			_, msg = db.UpdateTeam(ctx, middleware.GetTeam(ctx).ID, map[string]interface{}{"avatar": path})
 		}
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": path})
 	}

@@ -15,12 +15,7 @@ func GetUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": middleware.GetSelf(ctx).(model.User)})
 		return
 	}
-	user, ok, msg := db.GetUserByID(ctx, middleware.GetUserID(ctx), false)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": user})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": middleware.GetUser(ctx)})
 }
 
 func ChangePassword(ctx *gin.Context) {
@@ -37,7 +32,6 @@ func ChangePassword(ctx *gin.Context) {
 func UpdateUser(ctx *gin.Context) {
 	var (
 		user model.User
-		ok   bool
 		msg  string
 		data map[string]interface{}
 	)
@@ -47,11 +41,7 @@ func UpdateUser(ctx *gin.Context) {
 			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 			return
 		}
-		user, ok, msg = db.GetUserByID(ctx, middleware.GetUserID(ctx), false)
-		if !ok {
-			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-			return
-		}
+		user = middleware.GetUser(ctx)
 		data = utils.Form2Map(form)
 		if password, ok := data["password"]; ok && password.(string) != "" {
 			data["password"] = utils.HashPassword(password.(string))
@@ -100,7 +90,7 @@ func DeleteUser(ctx *gin.Context) {
 		}
 		userID = middleware.GetSelfID(ctx)
 	} else {
-		userID = middleware.GetUserID(ctx)
+		userID = middleware.GetUser(ctx).ID
 	}
 	_, msg := db.DeleteUser(ctx, userID)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

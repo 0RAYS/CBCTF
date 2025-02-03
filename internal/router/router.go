@@ -17,7 +17,7 @@ func Init() *gin.Engine {
 	router.POST("/register", Register)
 	router.POST("/login", Login)
 	router.POST("/admin/login", AdminLogin)
-	router.GET("/avatar/:avatarID", middleware.SetAvatarID, DownloadAvatar)
+	router.GET("/avatar/:avatarID", middleware.SetAvatar, DownloadAvatar)
 
 	// 鉴权
 	auth := router.Group("", middleware.CheckLogin)
@@ -34,23 +34,26 @@ func Init() *gin.Engine {
 
 	// 比赛
 	auth.GET("/contest/list", middleware.CheckRole("user"), GetContests)
-	contest := auth.Group("/contest/:contestID", middleware.CheckRole("user"), middleware.SetContestID)
+	contest := auth.Group("/contest/:contestID", middleware.CheckRole("user"), middleware.SetContest)
 	{
+		contest.POST("/join", middleware.CheckVerified, JoinTeam)
+		contest.POST("/create", middleware.CheckVerified, CreateTeam)
 		contest.GET("/info", GetContest)
-		contest.GET("/team/info", GetTeam)
-		contest.GET("/team/captcha", GetTeamCaptcha)
-		contest.GET("/team/list", GetTeammates)
-		contest.POST("/team/join", middleware.CheckVerified, JoinTeam)
-		contest.POST("/team/create", middleware.CheckVerified, CreateTeam)
-		contest.POST("/team/update", middleware.CheckVerified, middleware.CheckCaptain, UpdateTeam)
-		contest.POST("/team/avatar", middleware.CheckVerified, middleware.CheckCaptain, UploadAvatar(model.Team{}))
-		contest.POST("/team/delete", middleware.CheckVerified, middleware.CheckCaptain, DeleteTeam)
-		contest.POST("/team/kick", middleware.CheckVerified, middleware.CheckCaptain, KickMember)
-		contest.POST("/team/leave", middleware.CheckVerified, LeaveTeam)
+
+		contestTeam := contest.Group("/team", middleware.SetTeamByUser)
+
+		contestTeam.GET("/info", GetTeam)
+		contestTeam.GET("/captcha", GetTeamCaptcha)
+		contestTeam.GET("/list", GetTeammates)
+		contestTeam.POST("/update", middleware.CheckVerified, middleware.CheckCaptain, UpdateTeam)
+		contestTeam.POST("/avatar", middleware.CheckVerified, middleware.CheckCaptain, UploadAvatar(model.Team{}))
+		contestTeam.POST("/delete", middleware.CheckVerified, middleware.CheckCaptain, DeleteTeam)
+		contestTeam.POST("/kick", middleware.CheckVerified, middleware.CheckCaptain, KickMember)
+		contestTeam.POST("/leave", middleware.CheckVerified, LeaveTeam)
 
 		// 比赛题目
-		contest.GET("/challenge/list", middleware.CheckVerified, middleware.CheckBanned, GetUsages)
-		contestChallenge := contest.Group("/challenge/:challengeID", middleware.CheckVerified, middleware.CheckBanned, middleware.SetChallengeID)
+		contest.GET("/challenge/list", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, GetUsages)
+		contestChallenge := contest.Group("/challenge/:challengeID", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.SetChallenge)
 		{
 			contestChallenge.GET("/status", ChallengeStatus)
 			contestChallenge.POST("/init", InitChallenge)
@@ -86,7 +89,7 @@ func Init() *gin.Engine {
 		// 用户管理
 		admin.GET("/user/list", GetUsers)
 		admin.POST("/user/create", CreateUser)
-		adminUser := admin.Group("/user/:userID", middleware.SetUserID)
+		adminUser := admin.Group("/user/:userID", middleware.SetUser)
 		{
 			adminUser.GET("/info", GetUser)
 			adminUser.POST("/update", UpdateUser)
@@ -97,7 +100,7 @@ func Init() *gin.Engine {
 		// 比赛管理
 		admin.GET("/contest/list", GetContests)
 		admin.POST("/contest/create", CreateContest)
-		adminContest := admin.Group("/contest/:contestID", middleware.SetContestID)
+		adminContest := admin.Group("/contest/:contestID", middleware.SetContest)
 		{
 			adminContest.GET("/info", GetContest)
 			adminContest.GET("/captcha", GetContestCaptcha)
@@ -108,11 +111,11 @@ func Init() *gin.Engine {
 
 			// 比赛队伍管理
 			adminContest.GET("/team/list", GetTeams)
-			adminContestTeam := adminContest.Group("/team/:teamID", middleware.SetTeamID)
+			adminContestTeam := adminContest.Group("/team/:teamID", middleware.SetTeamByURI)
 			{
 				adminContestTeam.GET("/info", GetTeam)
 				adminContestTeam.GET("/captcha", GetTeamCaptcha)
-				adminContestTeam.GET("/list", GetTeamUsers)
+				adminContestTeam.GET("/list", GetTeammates)
 				adminContestTeam.POST("/update", UpdateTeam)
 				adminContestTeam.POST("/delete", DeleteTeam)
 				adminContestTeam.POST("/kick", KickMember)
@@ -122,7 +125,7 @@ func Init() *gin.Engine {
 			// 比赛题目管理
 			adminContest.GET("/challenge/list", GetUsages)
 			adminContest.POST("/challenge/add", AddUsage)
-			adminContestChallenge := adminContest.Group("/challenge/:challengeID", middleware.SetChallengeID)
+			adminContestChallenge := adminContest.Group("/challenge/:challengeID", middleware.SetChallenge)
 			{
 				adminContestChallenge.POST("/update", UpdateUsage)
 				adminContestChallenge.POST("/remove", RemoveUsage)
@@ -133,7 +136,7 @@ func Init() *gin.Engine {
 		admin.GET("/challenge/list", GetChallenges)
 		admin.GET("/challenge/categories", GetCategories)
 		admin.POST("/challenge/create", CreateChallenge)
-		adminChallenge := admin.Group("/challenge/:challengeID", middleware.SetChallengeID)
+		adminChallenge := admin.Group("/challenge/:challengeID", middleware.SetChallenge)
 		{
 			adminChallenge.GET("/info", GetChallenge)
 			adminChallenge.GET("/files", GetChallengeFiles)
@@ -146,7 +149,7 @@ func Init() *gin.Engine {
 		// 头像管理
 		admin.GET("/avatar/list", GetAvatars)
 		admin.POST("/avatar/delete", DeleteAvatar)
-		adminAvatar := admin.Group("/avatar/:avatarID", middleware.SetAvatarID)
+		adminAvatar := admin.Group("/avatar/:avatarID", middleware.SetAvatar)
 		{
 			adminAvatar.POST("/delete", DeleteAvatar)
 		}
