@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// CreateDocker 创建 Docker, 并注入 flag
 func CreateDocker(ctx context.Context, flag model.Flag, challenge model.Challenge, creatorID uint) (model.Docker, bool, string) {
 	var (
 		docker model.Docker
@@ -40,6 +41,7 @@ func CreateDocker(ctx context.Context, flag model.Flag, challenge model.Challeng
 	return docker, true, "Success"
 }
 
+// GetDockers 获取所有 Docker
 func GetDockers(ctx context.Context) ([]model.Docker, bool, string) {
 	var dockers []model.Docker
 	res := DB.WithContext(ctx).Model(model.Docker{}).Find(&dockers)
@@ -50,6 +52,7 @@ func GetDockers(ctx context.Context) ([]model.Docker, bool, string) {
 	return dockers, true, "Success"
 }
 
+// GetDockerByID 根据 ID 获取 Docker
 func GetDockerByID(ctx context.Context, id uint) (model.Docker, bool, string) {
 	var docker model.Docker
 	res := DB.WithContext(ctx).Model(model.Docker{}).Where("id = ?", id).Find(&docker).Limit(1)
@@ -59,6 +62,7 @@ func GetDockerByID(ctx context.Context, id uint) (model.Docker, bool, string) {
 	return docker, true, "Success"
 }
 
+// GetDockerBy3ID 根据 contestID, teamID, challengeID 获取 Docker
 func GetDockerBy3ID(ctx context.Context, contestID, teamID uint, challengeID string) (model.Docker, bool, string) {
 	var docker model.Docker
 	res := DB.WithContext(ctx).Model(model.Docker{}).
@@ -73,6 +77,7 @@ func GetDockerBy3ID(ctx context.Context, contestID, teamID uint, challengeID str
 	return docker, true, "Success"
 }
 
+// DeleteDocker 删除 Docker
 func DeleteDocker(ctx context.Context, docker model.Docker) (bool, string) {
 	go func(d model.Docker) {
 		log.Logger.Debugf("Stopping container for team %d challenge %s", d.TeamID, d.ChallengeID)
@@ -89,6 +94,7 @@ func DeleteDocker(ctx context.Context, docker model.Docker) (bool, string) {
 	return true, "Success"
 }
 
+// UpdateDocker 更新 Docker, 使用 map 更新属性, 结构体会导致零值未更新, 对字段值的具体要求应当交给上层实现
 func UpdateDocker(ctx context.Context, id uint, updateData map[string]interface{}) (bool, string) {
 	res := DB.WithContext(ctx).Model(model.Docker{}).Where("id = ?", id).
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)

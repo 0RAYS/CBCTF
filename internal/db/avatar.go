@@ -45,6 +45,7 @@ func GetAvatarByID(ctx context.Context, id string) (model.Avatar, bool, string) 
 	return file, true, "Success"
 }
 
+// GetAvatarByHash 以 Hash 获取文件记录
 func GetAvatarByHash(ctx context.Context, hash string) (model.Avatar, bool, string) {
 	cacheKey := fmt.Sprintf("file:hash:%s", hash)
 	if file, ok := redis.GetFileCache(cacheKey); ok {

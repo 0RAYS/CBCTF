@@ -77,6 +77,7 @@ func IsMemberInTeam(teamID uint, userID uint) bool {
 	return false
 }
 
+// IsValidChallengeType 题目类型验证
 func IsValidChallengeType(t int) bool {
 	if t >= 0 && t < 3 {
 		return true

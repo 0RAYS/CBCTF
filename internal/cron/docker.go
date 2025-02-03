@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// CloseDockers 关闭并删除超时 dockers
 func CloseDockers(c *cron.Cron) {
 	c.Schedule(cron.Every(1*time.Minute), cron.FuncJob(func() {
 		dockers, ok, msg := db.GetDockers(context.Background())

@@ -72,7 +72,7 @@ func GetUserByID(ctx context.Context, id uint, preloadL ...bool) (model.User, bo
 	return user, true, "Success"
 }
 
-// DeleteUser 根据 id 删除 model.User, 同时删除与 model.Team, model.Contest 的关联
+// DeleteUser 根据 id 删除 model.User, 同时删除与 model.Team, model.Contest 的关联, 此处需嵌套预加载, 所以不接受中间件保存的值
 func DeleteUser(ctx context.Context, id uint) (bool, string) {
 	user, ok, msg := GetUserByID(ctx, id, true, true)
 	if !ok {
@@ -120,6 +120,7 @@ func UpdateUser(ctx context.Context, id uint, updateData map[string]interface{})
 	return true, "Success"
 }
 
+// VerifyUser 验证用户
 func VerifyUser(ctx context.Context, username string, password string) (model.User, bool, string) {
 	var user model.User
 	var res *gorm.DB
@@ -135,6 +136,7 @@ func VerifyUser(ctx context.Context, username string, password string) (model.Us
 	return model.User{}, false, "NameOrPasswordError"
 }
 
+// ChangePasswordUser 修改密码
 func ChangePasswordUser(ctx context.Context, user model.User, oldPassword string, newPassword string) (bool, string) {
 	if !utils.CompareHashAndPassword(user.Password, oldPassword) {
 		return false, "PasswordError"
@@ -154,12 +156,14 @@ func ChangePasswordUser(ctx context.Context, user model.User, oldPassword string
 	return true, "Success"
 }
 
+// CountUsers 获取用户数量
 func CountUsers(ctx context.Context) int64 {
 	var count int64
 	DB.WithContext(ctx).Model(&model.User{}).Count(&count)
 	return count
 }
 
+// GetUsers 获取用户列表, 可接受 limit, offset, all 参数, preloadL[0] 为是否预加载, preloadL[1] 为是否嵌套预加载
 func GetUsers(ctx context.Context, limit int, offset int, all bool, preloadL ...bool) ([]model.User, int64, bool, string) {
 	if limit <= 0 {
 		limit = -1

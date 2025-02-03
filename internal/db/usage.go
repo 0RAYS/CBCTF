@@ -7,6 +7,7 @@ import (
 	"context"
 )
 
+// CreateUsage 创建将题目添加至比赛的记录
 func CreateUsage(ctx context.Context, form constants.CreateUsageForm, contestID uint) ([]model.Usage, bool, string) {
 	var usages []model.Usage
 	for _, c := range form.ChallengeID {
@@ -27,6 +28,7 @@ func CreateUsage(ctx context.Context, form constants.CreateUsageForm, contestID 
 	return usages, true, "Success"
 }
 
+// GetUsageByContestID 获取引用
 func GetUsageByContestID(ctx context.Context, contestID uint, all bool) ([]model.Usage, bool, string) {
 	var usages []model.Usage
 	res := DB.WithContext(ctx).Model(model.Usage{})
@@ -42,6 +44,7 @@ func GetUsageByContestID(ctx context.Context, contestID uint, all bool) ([]model
 	return usages, true, "Success"
 }
 
+// GetUsageByChallengeID 获取引用
 func GetUsageByChallengeID(ctx context.Context, challengeID string) ([]model.Usage, bool, string) {
 	var usages []model.Usage
 	res := DB.WithContext(ctx).Model(model.Usage{}).Where("challenge_id = ?", challengeID).Find(&usages)
@@ -52,6 +55,7 @@ func GetUsageByChallengeID(ctx context.Context, challengeID string) ([]model.Usa
 	return usages, true, "Success"
 }
 
+// GetUsageBy2ID 获取引用
 func GetUsageBy2ID(ctx context.Context, contestID uint, challengeID string) (model.Usage, bool, string) {
 	var usage model.Usage
 	res := DB.WithContext(ctx).Model(model.Usage{}).Where("contest_id = ? AND challenge_id = ?", contestID, challengeID).Find(&usage).Limit(1)
@@ -61,6 +65,7 @@ func GetUsageBy2ID(ctx context.Context, contestID uint, challengeID string) (mod
 	return usage, true, "Success"
 }
 
+// GetUsageByID 获取引用
 func GetUsageByID(ctx context.Context, id uint) (model.Usage, bool, string) {
 	var usage model.Usage
 	res := DB.WithContext(ctx).Model(model.Usage{}).Where("id = ?", id).Find(&usage).Limit(1)
@@ -70,6 +75,7 @@ func GetUsageByID(ctx context.Context, id uint) (model.Usage, bool, string) {
 	return usage, true, "Success"
 }
 
+// UpdateUsage 更新引用
 func UpdateUsage(ctx context.Context, id uint, updateData map[string]interface{}) (bool, string) {
 	res := DB.WithContext(ctx).Model(model.Usage{}).Where("id = ?", id).
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
@@ -80,6 +86,7 @@ func UpdateUsage(ctx context.Context, id uint, updateData map[string]interface{}
 	return true, "Success"
 }
 
+// DeleteUsage 删除引用
 func DeleteUsage(ctx context.Context, id uint) (bool, string) {
 	res := DB.WithContext(ctx).Model(model.Usage{}).Where("id = ?", id).Delete(&model.Usage{})
 	if res.Error != nil {

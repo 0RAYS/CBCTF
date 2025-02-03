@@ -61,6 +61,7 @@ type CreateChallengeForm struct {
 	Port           int32  `form:"port" json:"port"`
 }
 
+// CreateUsageForm 将题目添加至比赛
 type CreateUsageForm struct {
 	ChallengeID []string `form:"challenge_id" json:"challenge_id" binding:"required"`
 }
@@ -71,6 +72,7 @@ type GetModelsForm struct {
 	Limit  int `form:"limit" json:"limit"`
 }
 
+// GetChallengesForm for get challenges list
 type GetChallengesForm struct {
 	Offset   int    `form:"offset" json:"offset"`
 	Limit    int    `form:"limit" json:"limit"`
@@ -193,14 +195,17 @@ type KickMemberForm struct {
 	UserID uint `form:"user_id" json:"user_id" binding:"required"`
 }
 
+// GetCategoriesForm for get categories list
 type GetCategoriesForm struct {
 	Type int `form:"type" json:"type"`
 }
 
+// DownloadChallengeForm for download challenge
 type DownloadChallengeForm struct {
 	File string `form:"file" json:"file" binding:"required"`
 }
 
+// SubmitFlagForm for submit flag
 type SubmitFlagForm struct {
 	Flag string `form:"flag" json:"flag" binding:"required"`
 }

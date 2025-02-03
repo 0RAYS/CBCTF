@@ -7,6 +7,7 @@ import (
 	"context"
 )
 
+// CreateChallenge 创建题目
 func CreateChallenge(ctx context.Context, form constants.CreateChallengeForm) (model.Challenge, bool, string) {
 	if !IsValidChallengeType(form.Type) {
 		return model.Challenge{}, false, "InvalidChallengeType"
@@ -20,6 +21,7 @@ func CreateChallenge(ctx context.Context, form constants.CreateChallengeForm) (m
 	return challenge, true, "Success"
 }
 
+// GetChallengeByID 根据 id 获取题目
 func GetChallengeByID(ctx context.Context, id string) (model.Challenge, bool, string) {
 	var challenge model.Challenge
 	res := DB.WithContext(ctx).Model(model.Challenge{}).Where("id = ?", id).Find(&challenge).Limit(1)
@@ -29,6 +31,7 @@ func GetChallengeByID(ctx context.Context, id string) (model.Challenge, bool, st
 	return challenge, true, "Success"
 }
 
+// GetChallenges 获取题目列表, 可接受 type 和 category 参数
 func GetChallenges(ctx context.Context, limit, offset, t int, category string) ([]model.Challenge, int64, bool, string) {
 	if limit <= 0 {
 		limit = -1
@@ -55,12 +58,14 @@ func GetChallenges(ctx context.Context, limit, offset, t int, category string) (
 	return challenges, count, true, "Success"
 }
 
+// CountChallenges 获取题目数量
 func CountChallenges(ctx context.Context) int64 {
 	var count int64
 	DB.WithContext(ctx).Model(&model.Challenge{}).Count(&count)
 	return count
 }
 
+// UpdateChallenge 更新题目, 使用 map 更新属性, 结构体会导致零值未更新, 对字段值的具体要求应当交给上层实现
 func UpdateChallenge(ctx context.Context, id string, updateData map[string]interface{}) (bool, string) {
 	res := DB.WithContext(ctx).Model(model.Challenge{}).Where("id = ?", id).
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
@@ -71,6 +76,7 @@ func UpdateChallenge(ctx context.Context, id string, updateData map[string]inter
 	return true, "Success"
 }
 
+// DeleteChallenge 删除题目
 func DeleteChallenge(ctx context.Context, id string) (bool, string) {
 	res := DB.WithContext(ctx).Model(model.Challenge{}).Where("id = ?", id).Delete(&model.Challenge{})
 	if res.Error != nil {
@@ -80,6 +86,7 @@ func DeleteChallenge(ctx context.Context, id string) (bool, string) {
 	return true, "Success"
 }
 
+// GetCategories 获取 type 下所有的题目分类
 func GetCategories(ctx context.Context, t int) ([]string, bool, string) {
 	var categories []string
 	res := DB.WithContext(ctx).Model(&model.Challenge{}).Where("type = ?", t).Select("distinct category").Find(&categories)

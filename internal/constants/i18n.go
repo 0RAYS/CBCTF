@@ -102,6 +102,7 @@ var resp = map[string]map[string]interface{}{
 	"DeleteUserFromContestError": {"zh-CN": "删除用户从赛事失败", "en-US": "Failed to delete user from contest", "code": 500},
 }
 
+// I18N rewrite the response message
 func I18N(key string, language string) (string, int) {
 	if v, ok := resp[key]; !ok {
 		return key, 400

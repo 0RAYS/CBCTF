@@ -64,7 +64,7 @@ func GetContestByID(ctx context.Context, id uint, preloadL ...bool) (model.Conte
 	return contest, true, "Success"
 }
 
-// DeleteContest 根据 id 删除 model.Contest, 同时删除与 model.Team, model.User 的关联, 同时删除 model.Team
+// DeleteContest 删除 model.Contest, 同时删除与 model.Team, model.User 的关联, 同时删除 model.Team
 func DeleteContest(ctx context.Context, contest model.Contest) (bool, string) {
 	for _, team := range contest.Teams {
 		if ok, msg := DeleteTeam(ctx, *team); !ok {
@@ -105,12 +105,14 @@ func UpdateContest(ctx context.Context, id uint, updateData map[string]interface
 	return true, "Success"
 }
 
+// CountContests 获取比赛数量
 func CountContests(ctx context.Context) int64 {
 	var count int64
 	DB.WithContext(ctx).Model(&model.Contest{}).Count(&count)
 	return count
 }
 
+// GetContests 获取比赛列表
 func GetContests(ctx context.Context, limit int, offset int, all bool, preloadL ...bool) ([]model.Contest, int64, bool, string) {
 	if limit <= 0 {
 		limit = -1
