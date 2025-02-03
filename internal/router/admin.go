@@ -43,7 +43,7 @@ func AdminChangePassword(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	_, msg := db.ChangePasswordAdmin(ctx, middleware.GetSelfID(ctx), form.OldPassword, form.NewPassword)
+	_, msg := db.ChangePasswordAdmin(ctx, middleware.GetSelf(ctx).(model.Admin), form.OldPassword, form.NewPassword)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 

@@ -80,11 +80,7 @@ func InitAdmin() {
 	}
 }
 
-func ChangePasswordAdmin(ctx context.Context, id uint, oldPassword string, newPassword string) (bool, string) {
-	admin, ok, msg := GetAdminByID(ctx, id)
-	if !ok {
-		return false, msg
-	}
+func ChangePasswordAdmin(ctx context.Context, admin model.Admin, oldPassword string, newPassword string) (bool, string) {
 	if !utils.CompareHashAndPassword(admin.Password, oldPassword) {
 		return false, "PasswordError"
 	}
@@ -92,7 +88,7 @@ func ChangePasswordAdmin(ctx context.Context, id uint, oldPassword string, newPa
 		return false, "PasswordSame"
 	}
 	hash := utils.HashPassword(newPassword)
-	if ok, msg := UpdateAdmin(ctx, id, map[string]interface{}{"password": hash}); !ok {
+	if ok, msg := UpdateAdmin(ctx, admin.ID, map[string]interface{}{"password": hash}); !ok {
 		return false, msg
 	}
 	return true, "Success"

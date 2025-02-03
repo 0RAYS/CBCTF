@@ -24,7 +24,7 @@ func ChangePassword(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest"})
 		return
 	}
-	_, msg := db.ChangePasswordUser(ctx, middleware.GetSelfID(ctx), form.OldPassword, form.NewPassword)
+	_, msg := db.ChangePasswordUser(ctx, middleware.GetSelf(ctx).(model.User), form.OldPassword, form.NewPassword)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 
 }
@@ -92,6 +92,7 @@ func DeleteUser(ctx *gin.Context) {
 	} else {
 		userID = middleware.GetUser(ctx).ID
 	}
+	// DeleteUser 需要嵌套预加载数据, 不可传入中间件保存的 ctx 数据
 	_, msg := db.DeleteUser(ctx, userID)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

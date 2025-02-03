@@ -80,7 +80,7 @@ func DeleteUser(ctx context.Context, id uint) (bool, string) {
 	}
 	for _, team := range user.Teams {
 		if len(team.Users) == 1 {
-			if ok, msg = DeleteTeam(ctx, team.ID); !ok {
+			if ok, msg = DeleteTeam(ctx, *team); !ok {
 				log.Logger.Warningf("Failed to delete empty team: %s", msg)
 				return false, msg
 			}
@@ -135,11 +135,7 @@ func VerifyUser(ctx context.Context, username string, password string) (model.Us
 	return model.User{}, false, "NameOrPasswordError"
 }
 
-func ChangePasswordUser(ctx context.Context, id uint, oldPassword string, newPassword string) (bool, string) {
-	user, ok, msg := GetUserByID(ctx, id)
-	if !ok {
-		return false, msg
-	}
+func ChangePasswordUser(ctx context.Context, user model.User, oldPassword string, newPassword string) (bool, string) {
 	if !utils.CompareHashAndPassword(user.Password, oldPassword) {
 		return false, "PasswordError"
 	}
@@ -147,11 +143,11 @@ func ChangePasswordUser(ctx context.Context, id uint, oldPassword string, newPas
 		return false, "PasswordSame"
 	}
 	hash := utils.HashPassword(newPassword)
-	if ok, msg = UpdateUser(ctx, id, map[string]interface{}{"password": hash}); !ok {
+	if ok, msg := UpdateUser(ctx, user.ID, map[string]interface{}{"password": hash}); !ok {
 		return false, msg
 	}
 	go func() {
-		if err := redis.DelUserCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelUserCache(user.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete user cache: %s", err)
 		}
 	}()

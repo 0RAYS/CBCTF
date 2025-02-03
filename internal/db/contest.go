@@ -65,11 +65,7 @@ func GetContestByID(ctx context.Context, id uint, preloadL ...bool) (model.Conte
 }
 
 // DeleteContest 根据 id 删除 model.Contest, 同时删除与 model.Team, model.User 的关联, 同时删除 model.Team
-func DeleteContest(ctx context.Context, id uint) (bool, string) {
-	contest, ok, msg := GetContestByID(ctx, id)
-	if !ok {
-		return false, msg
-	}
+func DeleteContest(ctx context.Context, contest model.Contest) (bool, string) {
 	for _, team := range contest.Teams {
 		if ok, msg := DeleteTeam(ctx, team.ID); !ok {
 			return false, msg
@@ -80,7 +76,7 @@ func DeleteContest(ctx context.Context, id uint) (bool, string) {
 		return false, "DeleteContestError"
 	}
 	go func() {
-		if err := redis.DelContestCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelContestCache(contest.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete contest cache: %s", err)
 		}
 		if err := redis.DelContestsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
