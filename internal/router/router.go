@@ -54,6 +54,7 @@ func Init() *gin.Engine {
 		{
 			contestChallenge.GET("/status", ChallengeStatus)
 			contestChallenge.POST("/init", InitChallenge)
+			contestChallenge.GET("/files", GetChallengeFiles)
 			contestChallenge.GET("/attachment", GetAttachment)
 			contestChallenge.GET("/remote", GetContainer)
 			contestChallenge.POST("/start", StartContainer)
