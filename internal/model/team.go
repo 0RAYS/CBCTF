@@ -40,7 +40,7 @@ func (m Team) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func InitTeam(form constants.CreateTeamForm, captainID uint) Team {
+func InitTeam(form constants.CreateTeamForm, captainID, contestID uint) Team {
 	captcha := utils.RandomString()
 	if form.Captcha != "" {
 		captcha = form.Captcha
@@ -53,5 +53,6 @@ func InitTeam(form constants.CreateTeamForm, captainID uint) Team {
 		Banned:    false,
 		Hidden:    false,
 		CaptainID: captainID,
+		ContestID: contestID,
 	}
 }
