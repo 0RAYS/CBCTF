@@ -17,7 +17,7 @@ func CloseDockers(c *cron.Cron) {
 		}
 		for _, docker := range dockers {
 			if docker.Start.Add(docker.Duration).Before(time.Now()) {
-				_, _ = db.DeleteDocker(context.Background(), docker.ID)
+				_, _ = db.DeleteDocker(context.Background(), docker)
 			}
 		}
 	}))
