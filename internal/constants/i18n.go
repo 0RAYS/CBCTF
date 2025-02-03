@@ -66,6 +66,7 @@ var resp = map[string]map[string]interface{}{
 	"ContestNotFound":    {"zh-CN": "赛事不存在", "en-US": "Contest not found", "code": 404},
 	"ContestNotRunning":  {"zh-CN": "赛事未开始", "en-US": "Contest not running", "code": 400},
 	"ContestIsOver":      {"zh-CN": "赛事已结束", "en-US": "Contest is over", "code": 400},
+	"ContestIsRunning":   {"zh-CN": "赛事进行中", "en-US": "Contest is running", "code": 400},
 
 	"CreateUsageError": {"zh-CN": "添加题目到比赛失败", "en-US": "Failed to add challenge to contest", "code": 500},
 	"GetUsageError":    {"zh-CN": "获取题目失败", "en-US": "Failed to get challenge", "code": 500},
