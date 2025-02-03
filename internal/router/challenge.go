@@ -263,8 +263,12 @@ func InitChallenge(ctx *gin.Context) {
 		return
 	}
 	contest, ok, msg = db.GetContestByID(ctx, middleware.GetContestID(ctx))
-	if !ok || !contest.IsRunning() {
+	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	if !contest.IsRunning() {
+		ctx.JSON(http.StatusOK, gin.H{"msg": contest.Status(), "data": nil})
 		return
 	}
 	usage, ok, msg = db.GetUsageBy2ID(ctx, contest.ID, middleware.GetChallengeID(ctx))
