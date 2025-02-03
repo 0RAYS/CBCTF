@@ -39,7 +39,7 @@ func (c Contest) MarshalJSON() ([]byte, error) {
 		Tmp:    Tmp(c),
 		Users:  len(c.Users),
 		Teams:  len(c.Teams),
-		Avatar: fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimSuffix(c.Avatar, "/")),
+		Avatar: fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(c.Avatar, "/")),
 	})
 }
 

@@ -29,7 +29,7 @@ func (m Admin) MarshalJSON() ([]byte, error) {
 		Avatar string `json:"avatar"`
 	}{
 		Tmp:    Tmp(m),
-		Avatar: fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimSuffix(m.Avatar, "/")),
+		Avatar: fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(m.Avatar, "/")),
 	})
 }
 
