@@ -1,9 +1,11 @@
 package model
 
 import (
+	"CBCTF/internal/config"
 	"CBCTF/internal/constants"
 	"CBCTF/internal/utils"
 	"encoding/json"
+	"fmt"
 	"gorm.io/gorm"
 	"time"
 )
@@ -13,7 +15,7 @@ type Team struct {
 	Name      string         `gorm:"not null" json:"name"`
 	Desc      string         `json:"desc"`
 	Captcha   string         `json:"-"`
-	Avatar    string         `json:"avatar"`
+	Avatar    string         `json:"-"`
 	Banned    bool           `gorm:"default:false" json:"banned"`
 	Hidden    bool           `gorm:"default:false" json:"hidden"`
 	CaptainID uint           `json:"captain_id"`
@@ -28,10 +30,12 @@ func (m Team) MarshalJSON() ([]byte, error) {
 	type Tmp Team // 定义一个别名以避免递归调用
 	return json.Marshal(&struct {
 		Tmp
-		Users int `json:"users"`
+		Users  int    `json:"users"`
+		Avatar string `json:"avatar"`
 	}{
-		Tmp:   Tmp(m),
-		Users: len(m.Users),
+		Tmp:    Tmp(m),
+		Users:  len(m.Users),
+		Avatar: fmt.Sprintf("%s/%s", config.Env.Backend, m.Avatar),
 	})
 }
 
