@@ -16,10 +16,6 @@ gin:
         path: ./uploads
         max: 8
 gorm:
-    # mysql sqlite
-    type: sqlite
-    sqlite:
-        file: data.db
     mysql:
         host: 127.0.0.1
         port: 3306
