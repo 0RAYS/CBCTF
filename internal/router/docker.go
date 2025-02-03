@@ -9,12 +9,7 @@ import (
 )
 
 func GetContainer(ctx *gin.Context) {
-	team, ok, msg := db.GetTeamByUserID(ctx, middleware.GetSelfID(ctx), middleware.GetContestID(ctx))
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	docker, ok, msg := db.GetDockerBy3ID(ctx, middleware.GetContestID(ctx), team.ID, middleware.GetChallengeID(ctx))
+	docker, ok, msg := db.GetDockerBy3ID(ctx, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -23,12 +18,7 @@ func GetContainer(ctx *gin.Context) {
 }
 
 func StartContainer(ctx *gin.Context) {
-	team, ok, msg := db.GetTeamByUserID(ctx, middleware.GetSelfID(ctx), middleware.GetContestID(ctx))
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	flag, ok, msg := db.GetFlagBy3ID(ctx, middleware.GetContestID(ctx), team.ID, middleware.GetChallengeID(ctx))
+	flag, ok, msg := db.GetFlagBy3ID(ctx, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -42,12 +32,7 @@ func StartContainer(ctx *gin.Context) {
 }
 
 func IncreaseDuration(ctx *gin.Context) {
-	team, ok, msg := db.GetTeamByUserID(ctx, middleware.GetSelfID(ctx), middleware.GetContestID(ctx))
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	docker, ok, msg := db.GetDockerBy3ID(ctx, middleware.GetContestID(ctx), team.ID, middleware.GetChallengeID(ctx))
+	docker, ok, msg := db.GetDockerBy3ID(ctx, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -65,12 +50,7 @@ func IncreaseDuration(ctx *gin.Context) {
 }
 
 func StopContainer(ctx *gin.Context) {
-	team, ok, msg := db.GetTeamByUserID(ctx, middleware.GetSelfID(ctx), middleware.GetContestID(ctx))
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	docker, ok, msg := db.GetDockerBy3ID(ctx, middleware.GetContestID(ctx), team.ID, middleware.GetChallengeID(ctx))
+	docker, ok, msg := db.GetDockerBy3ID(ctx, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

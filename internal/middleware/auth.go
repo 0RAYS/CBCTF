@@ -27,22 +27,17 @@ func CheckLogin(ctx *gin.Context) {
 	}
 	if claims.Type == "admin" {
 		admin, ok, msg := db.GetAdminByID(ctx, claims.UserID)
-		ctx.Set("Verified", true)
-		ctx.Set("Hidden", false)
 		if !ok {
 			ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			ctx.Abort()
 			return
 		}
-		ctx.Set("SelfID", admin.ID)
 		ctx.Set("Role", "admin")
 		ctx.Set("Self", admin)
 		ctx.Next()
 		return
 	} else if claims.Type == "user" {
 		user, ok, msg := db.GetUserByID(ctx, claims.UserID, false)
-		ctx.Set("Verified", user.Verified)
-		ctx.Set("Hidden", user.Banned)
 		if !ok {
 			ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			ctx.Abort()
@@ -53,7 +48,6 @@ func CheckLogin(ctx *gin.Context) {
 			ctx.Abort()
 			return
 		}
-		ctx.Set("SelfID", user.ID)
 		ctx.Set("Role", "user")
 		ctx.Set("Self", user)
 		ctx.Next()
@@ -76,11 +70,20 @@ func GetRole(ctx *gin.Context) string {
 
 // GetSelfID 获取当前登录 admin 或 user 的ID
 func GetSelfID(ctx *gin.Context) uint {
-	if selfID, ok := ctx.Get("SelfID"); !ok {
-		return 0
-	} else {
-		return selfID.(uint)
+	var id uint
+	switch GetRole(ctx) {
+	case "admin":
+		if self, ok := GetSelf(ctx).(model.Admin); ok {
+			id = self.ID
+		}
+	case "user":
+		if self, ok := GetSelf(ctx).(model.User); ok {
+			id = self.ID
+		}
+	default:
+		id = 0
 	}
+	return id
 }
 
 // GetSelf 获取当前登录 admin 或 user
@@ -88,14 +91,7 @@ func GetSelf(ctx *gin.Context) interface{} {
 	if self, ok := ctx.Get("Self"); !ok {
 		return nil
 	} else {
-		switch GetRole(ctx) {
-		case "admin":
-			return self.(model.Admin)
-		case "user":
-			return self.(model.User)
-		default:
-			return nil
-		}
+		return self
 	}
 }
 
@@ -112,25 +108,18 @@ func CheckRole(t string) func(ctx *gin.Context) {
 
 // CheckCaptain 检查是否为队伍队长, 要求 uri 中必须包含 contestID, admin 路由不能使用
 func CheckCaptain(ctx *gin.Context) {
-	team, ok, msg := db.GetTeamByUserID(ctx, GetSelfID(ctx), GetContestID(ctx))
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		ctx.Abort()
-		return
-	}
+	team := GetTeam(ctx)
 	if team.CaptainID != GetSelfID(ctx) {
 		ctx.JSON(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
 		ctx.Abort()
 		return
 	}
-	ctx.Set("TeamID", team.ID)
 	ctx.Next()
 }
 
 // CheckVerified 检查邮箱是否已验证
 func CheckVerified(ctx *gin.Context) {
-	verified, ok := ctx.Get("Verified")
-	if !ok || !verified.(bool) {
+	if self, ok := GetSelf(ctx).(model.User); GetRole(ctx) == "user" && ok && !self.Verified {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "UnverifiedEmail", "data": nil})
 		ctx.Abort()
 	}
@@ -138,12 +127,7 @@ func CheckVerified(ctx *gin.Context) {
 }
 
 func CheckBanned(ctx *gin.Context) {
-	team, ok, msg := db.GetTeamByUserID(ctx, GetSelfID(ctx), GetContestID(ctx))
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		ctx.Abort()
-		return
-	}
+	team := GetTeam(ctx)
 	if team.Banned {
 		ctx.JSON(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
 		ctx.Abort()

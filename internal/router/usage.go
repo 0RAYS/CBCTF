@@ -17,7 +17,7 @@ func AddUsage(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	usages, _, msg := db.CreateUsage(ctx, form, middleware.GetContestID(ctx))
+	usages, _, msg := db.CreateUsage(ctx, form, middleware.GetContest(ctx).ID)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": usages})
 }
 
@@ -28,7 +28,7 @@ func GetUsages(ctx *gin.Context) {
 		msg    string
 		all    = middleware.GetRole(ctx) == "admin"
 	)
-	usages, ok, msg = db.GetUsageByContestID(ctx, middleware.GetContestID(ctx), all)
+	usages, ok, msg = db.GetUsageByContestID(ctx, middleware.GetContest(ctx).ID, all)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -55,7 +55,7 @@ func GetUsages(ctx *gin.Context) {
 }
 
 func RemoveUsage(ctx *gin.Context) {
-	usage, ok, msg := db.GetUsageBy2ID(ctx, middleware.GetContestID(ctx), middleware.GetChallengeID(ctx))
+	usage, ok, msg := db.GetUsageBy2ID(ctx, middleware.GetContest(ctx).ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -65,7 +65,7 @@ func RemoveUsage(ctx *gin.Context) {
 }
 
 func UpdateUsage(ctx *gin.Context) {
-	usage, ok, msg := db.GetUsageBy2ID(ctx, middleware.GetContestID(ctx), middleware.GetChallengeID(ctx))
+	usage, ok, msg := db.GetUsageBy2ID(ctx, middleware.GetContest(ctx).ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

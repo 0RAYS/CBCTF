@@ -33,12 +33,7 @@ func CreateChallenge(ctx *gin.Context) {
 }
 
 func GetChallenge(ctx *gin.Context) {
-	contest, ok, msg := db.GetChallengeByID(ctx, middleware.GetChallengeID(ctx))
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": contest})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": middleware.GetContest(ctx)})
 }
 
 func GetChallenges(ctx *gin.Context) {
@@ -60,16 +55,8 @@ func GetChallenges(ctx *gin.Context) {
 }
 
 func GetAttachment(ctx *gin.Context) {
-	challenge, ok, msg := db.GetChallengeByID(ctx, middleware.GetChallengeID(ctx))
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	team, ok, msg := db.GetTeamByUserID(ctx, middleware.GetSelfID(ctx), middleware.GetContestID(ctx))
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
+	challenge := middleware.GetChallenge(ctx)
+	team := middleware.GetTeam(ctx)
 	path := challenge.AttachmentPath(team.ID)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		ctx.JSON(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": nil})
@@ -79,11 +66,7 @@ func GetAttachment(ctx *gin.Context) {
 }
 
 func GetChallengeFiles(ctx *gin.Context) {
-	challenge, ok, msg := db.GetChallengeByID(ctx, middleware.GetChallengeID(ctx))
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
+	challenge := middleware.GetChallenge(ctx)
 	dir, err := os.ReadDir(challenge.BasicDir())
 	if err != nil {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "ReadDirError", "data": nil})
@@ -113,7 +96,6 @@ func GetCategories(ctx *gin.Context) {
 func UpdateChallenge(ctx *gin.Context) {
 	var (
 		challenge model.Challenge
-		ok        bool
 		msg       string
 		data      map[string]interface{}
 	)
@@ -122,11 +104,7 @@ func UpdateChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	challenge, ok, msg = db.GetChallengeByID(ctx, middleware.GetChallengeID(ctx))
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
+	challenge = middleware.GetChallenge(ctx)
 	tmp := utils.ToTitle(strings.TrimSpace(*form.Category))
 	form.Category = &tmp
 	data = utils.Form2Map(form)
@@ -147,18 +125,14 @@ func DeleteChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	challenge, ok, msg := db.GetChallengeByID(ctx, middleware.GetChallengeID(ctx))
-	if !ok {
-		ctx.JSON(http.StatusNotFound, gin.H{"msg": msg, "data": nil})
-		return
-	}
+	challenge := middleware.GetChallenge(ctx)
 	usages, ok, msg := db.GetUsageByChallengeID(ctx, challenge.ID)
 	if ok {
 		for _, usage := range usages {
 			db.DeleteUsage(ctx, usage.ID)
 		}
 	}
-	_, msg = db.DeleteChallenge(ctx, middleware.GetChallengeID(ctx))
+	_, msg = db.DeleteChallenge(ctx, challenge.ID)
 	if form.Force && os.RemoveAll(challenge.BasicDir()) != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
 		return
@@ -167,11 +141,7 @@ func DeleteChallenge(ctx *gin.Context) {
 }
 
 func UploadChallenge(ctx *gin.Context) {
-	challenge, ok, msg := db.GetChallengeByID(ctx, middleware.GetChallengeID(ctx))
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
+	challenge := middleware.GetChallenge(ctx)
 	file, err := ctx.FormFile("file")
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
@@ -208,11 +178,7 @@ func DownloadChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	challenge, ok, msg := db.GetChallengeByID(ctx, middleware.GetChallengeID(ctx))
-	if !ok {
-		ctx.JSON(http.StatusNotFound, gin.H{"msg": msg, "data": nil})
-		return
-	}
+	challenge := middleware.GetChallenge(ctx)
 	var path string
 	switch form.File {
 	case model.StaticFile, model.DynamicFile:
@@ -235,12 +201,8 @@ func ChallengeStatus(ctx *gin.Context) {
 		ok   bool
 		msg  string
 	)
-	team, ok, msg = db.GetTeamByUserID(ctx, middleware.GetSelfID(ctx), middleware.GetContestID(ctx))
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	_, ok, msg = db.GetFlagBy3ID(ctx, middleware.GetContestID(ctx), team.ID, middleware.GetChallengeID(ctx))
+	team = middleware.GetTeam(ctx)
+	_, ok, msg = db.GetFlagBy3ID(ctx, middleware.GetContest(ctx).ID, team.ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": false})
 		return
@@ -257,21 +219,13 @@ func InitChallenge(ctx *gin.Context) {
 		ok      bool
 		msg     string
 	)
-	team, ok, msg = db.GetTeamByUserID(ctx, middleware.GetSelfID(ctx), middleware.GetContestID(ctx))
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	contest, ok, msg = db.GetContestByID(ctx, middleware.GetContestID(ctx))
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
+	team = middleware.GetTeam(ctx)
+	contest = middleware.GetContest(ctx)
 	if !contest.IsRunning() {
 		ctx.JSON(http.StatusOK, gin.H{"msg": contest.Status(), "data": nil})
 		return
 	}
-	usage, ok, msg = db.GetUsageBy2ID(ctx, contest.ID, middleware.GetChallengeID(ctx))
+	usage, ok, msg = db.GetUsageBy2ID(ctx, contest.ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

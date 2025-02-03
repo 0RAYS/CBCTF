@@ -1,11 +1,13 @@
 package middleware
 
 import (
+	"CBCTF/internal/db"
+	"CBCTF/internal/model"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-func SetUserID(ctx *gin.Context) {
+func SetUser(ctx *gin.Context) {
 	type userIDUri struct {
 		UserID uint `uri:"userID" binding:"required"`
 	}
@@ -14,19 +16,24 @@ func SetUserID(ctx *gin.Context) {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		ctx.Abort()
 	}
-	ctx.Set("UserID", userID.UserID)
+	user, ok, msg := db.GetUserByID(ctx, userID.UserID)
+	if !ok {
+		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.Abort()
+	}
+	ctx.Set("User", user)
 	ctx.Next()
 }
 
-func GetUserID(ctx *gin.Context) uint {
-	if userID, ok := ctx.Get("UserID"); !ok {
-		return 0
+func GetUser(ctx *gin.Context) model.User {
+	if user, ok := ctx.Get("User"); !ok {
+		return model.User{}
 	} else {
-		return userID.(uint)
+		return user.(model.User)
 	}
 }
 
-func SetContestID(ctx *gin.Context) {
+func SetContest(ctx *gin.Context) {
 	type contestIDUri struct {
 		ContestID uint `uri:"contestID" binding:"required"`
 	}
@@ -35,19 +42,50 @@ func SetContestID(ctx *gin.Context) {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		ctx.Abort()
 	}
-	ctx.Set("ContestID", contestID.ContestID)
+	contest, ok, msg := db.GetContestByID(ctx, contestID.ContestID)
+	if !ok {
+		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.Abort()
+	}
+	ctx.Set("Contest", contest)
 	ctx.Next()
 }
 
-func GetContestID(ctx *gin.Context) uint {
-	if contestID, ok := ctx.Get("ContestID"); !ok {
-		return 0
+func GetContest(ctx *gin.Context) model.Contest {
+	if contest, ok := ctx.Get("Contest"); !ok {
+		return model.Contest{}
 	} else {
-		return contestID.(uint)
+		return contest.(model.Contest)
 	}
 }
 
-func SetTeamID(ctx *gin.Context) {
+func SetTeamByUser(ctx *gin.Context) {
+	var (
+		self model.User
+		team model.Team
+		ok   bool
+		msg  string
+	)
+	self, ok = GetSelf(ctx).(model.User)
+	if !ok {
+		ctx.JSONP(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
+		ctx.Abort()
+	}
+	team, ok, msg = db.GetTeamByUserID(ctx, self.ID, GetContest(ctx).ID)
+	if !ok {
+		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.Abort()
+	}
+	ctx.Set("Team", team)
+	ctx.Next()
+}
+
+func SetTeamByURI(ctx *gin.Context) {
+	var (
+		team model.Team
+		ok   bool
+		msg  string
+	)
 	type teamIDUri struct {
 		TeamID uint `uri:"teamID" binding:"required"`
 	}
@@ -56,19 +94,24 @@ func SetTeamID(ctx *gin.Context) {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		ctx.Abort()
 	}
-	ctx.Set("TeamID", teamID.TeamID)
+	team, ok, msg = db.GetTeamByID(ctx, teamID.TeamID)
+	if !ok {
+		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.Abort()
+	}
+	ctx.Set("Team", team)
 	ctx.Next()
 }
 
-func GetTeamID(ctx *gin.Context) uint {
-	if teamID, ok := ctx.Get("TeamID"); !ok {
-		return 0
+func GetTeam(ctx *gin.Context) model.Team {
+	if team, ok := ctx.Get("Team"); !ok {
+		return model.Team{}
 	} else {
-		return teamID.(uint)
+		return team.(model.Team)
 	}
 }
 
-func SetAvatarID(ctx *gin.Context) {
+func SetAvatar(ctx *gin.Context) {
 	type avatarIDUri struct {
 		AvatarID string `uri:"avatarID" binding:"required"`
 	}
@@ -77,19 +120,24 @@ func SetAvatarID(ctx *gin.Context) {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		ctx.Abort()
 	}
-	ctx.Set("AvatarID", avatarID.AvatarID)
+	avatar, ok, msg := db.GetAvatarByID(ctx, avatarID.AvatarID)
+	if !ok {
+		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.Abort()
+	}
+	ctx.Set("Avatar", avatar)
 	ctx.Next()
 }
 
-func GetAvatarID(ctx *gin.Context) string {
-	if avatarID, ok := ctx.Get("AvatarID"); !ok {
-		return ""
+func GetAvatar(ctx *gin.Context) model.Avatar {
+	if avatar, ok := ctx.Get("Avatar"); !ok {
+		return model.Avatar{}
 	} else {
-		return avatarID.(string)
+		return avatar.(model.Avatar)
 	}
 }
 
-func SetChallengeID(ctx *gin.Context) {
+func SetChallenge(ctx *gin.Context) {
 	type challengeIDUri struct {
 		ChallengeID string `uri:"challengeID" binding:"required"`
 	}
@@ -98,14 +146,19 @@ func SetChallengeID(ctx *gin.Context) {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		ctx.Abort()
 	}
-	ctx.Set("ChallengeID", challengeID.ChallengeID)
+	challenge, ok, msg := db.GetChallengeByID(ctx, challengeID.ChallengeID)
+	if !ok {
+		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.Abort()
+	}
+	ctx.Set("Challenge", challenge)
 	ctx.Next()
 }
 
-func GetChallengeID(ctx *gin.Context) string {
-	if challengeID, ok := ctx.Get("ChallengeID"); !ok {
-		return ""
+func GetChallenge(ctx *gin.Context) model.Challenge {
+	if challenge, ok := ctx.Get("Challenge"); !ok {
+		return model.Challenge{}
 	} else {
-		return challengeID.(string)
+		return challenge.(model.Challenge)
 	}
 }
