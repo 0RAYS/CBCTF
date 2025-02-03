@@ -1,9 +1,11 @@
 package model
 
 import (
+	"CBCTF/internal/config"
 	"CBCTF/internal/constants"
 	"CBCTF/internal/utils"
 	"encoding/json"
+	"fmt"
 	"gorm.io/gorm"
 	"time"
 )
@@ -14,7 +16,7 @@ type User struct {
 	Password  string         `gorm:"not null" json:"-"`
 	Email     string         `gorm:"unique;not null" json:"email"`
 	Country   string         `gorm:"default:'cn'" json:"country"`
-	Avatar    string         `json:"avatar"`
+	Avatar    string         `json:"-"`
 	Desc      string         `json:"desc"`
 	Verified  bool           `gorm:"default:false" json:"verified"`
 	Hidden    bool           `gorm:"default:false" json:"hidden"`
@@ -30,12 +32,14 @@ func (m User) MarshalJSON() ([]byte, error) {
 	type Tmp User // 定义一个别名以避免递归调用
 	return json.Marshal(&struct {
 		Tmp
-		Contests int `json:"contests"`
-		Teams    int `json:"teams"`
+		Contests int    `json:"contests"`
+		Teams    int    `json:"teams"`
+		Avatar   string `json:"avatar"`
 	}{
 		Tmp:      Tmp(m),
 		Contests: len(m.Contests),
 		Teams:    len(m.Teams),
+		Avatar:   fmt.Sprintf("%s/%s", config.Env.Backend, m.Avatar),
 	})
 }
 
