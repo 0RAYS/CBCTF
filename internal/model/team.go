@@ -36,7 +36,7 @@ func (m Team) MarshalJSON() ([]byte, error) {
 	}{
 		Tmp:    Tmp(m),
 		Users:  len(m.Users),
-		Avatar: fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimSuffix(m.Avatar, "/")),
+		Avatar: fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(m.Avatar, "/")),
 	})
 }
 
