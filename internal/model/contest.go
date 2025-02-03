@@ -43,8 +43,26 @@ func (c Contest) MarshalJSON() ([]byte, error) {
 	})
 }
 
+func (c Contest) IsOver() bool {
+	return time.Now().After(c.Start.Add(c.Duration))
+}
+
+func (c Contest) IsNotStart() bool {
+	return time.Now().Before(c.Start)
+}
+
 func (c Contest) IsRunning() bool {
-	return time.Now().After(c.Start) && time.Now().Before(c.Start.Add(c.Duration))
+	return (c.IsOver() && c.IsNotStart()) == false
+}
+
+func (c Contest) Status() string {
+	if c.IsOver() {
+		return "ContestIsOver"
+	}
+	if c.IsNotStart() {
+		return "ContestNotRunning"
+	}
+	return "ContestIsRunning"
 }
 
 func InitContest(form constants.CreateContestForm) Contest {
