@@ -67,7 +67,7 @@ func GetContestByID(ctx context.Context, id uint, preloadL ...bool) (model.Conte
 // DeleteContest 根据 id 删除 model.Contest, 同时删除与 model.Team, model.User 的关联, 同时删除 model.Team
 func DeleteContest(ctx context.Context, contest model.Contest) (bool, string) {
 	for _, team := range contest.Teams {
-		if ok, msg := DeleteTeam(ctx, team.ID); !ok {
+		if ok, msg := DeleteTeam(ctx, *team); !ok {
 			return false, msg
 		}
 	}
