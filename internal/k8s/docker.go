@@ -11,6 +11,7 @@ import (
 	"k8s.io/utils/ptr"
 )
 
+// StartContainer 启动容器, 并且注入 flag
 func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Docker) (int32, bool, string) {
 	var err error
 	if challenge.Type != model.Container {
@@ -101,6 +102,7 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 	return port, true, "Success"
 }
 
+// StopContainer 停止容器
 func StopContainer(docker model.Docker) (bool, string) {
 	var err error
 	err = Client.CoreV1().Services(NamespaceName).Delete(context.TODO(), docker.ServiceName, metav1.DeleteOptions{})
