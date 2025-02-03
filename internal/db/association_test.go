@@ -13,13 +13,11 @@ import (
 
 func InitAssociationTest() {
 	config.Env = &config.Config{}
-	config.Env.Gorm.Type = "sqlite"
-	config.Env.Gorm.SQLite.File = ":memory:"
 	config.Env.Gorm.Log.Level = "debug"
 	config.Env.Log.Level = "debug"
 	config.Env.Log.Save = false
 	log.Init()
-	Init()
+	InitTest()
 	redis.Init()
 	var ctx context.Context
 	user1, ok, msg := CreateUser(ctx, constants.CreateUserForm{Name: "user1", Password: "password", Email: "user1@0rays.club"})
@@ -31,7 +29,7 @@ func InitAssociationTest() {
 	log.Logger.Debug(contest1.ID, ok, msg)
 	contest2, ok, msg := CreateContest(ctx, constants.CreateContestForm{Name: "contest2", Size: 1, Start: time.Now(), Duration: time.Duration(10)})
 	log.Logger.Debug(contest2.ID, ok, msg)
-	team1, ok, msg := CreateTeam(ctx, constants.CreateTeamForm{Name: "team1"}, user1.ID, contest1.ID)
+	team1, ok, msg := CreateTeam(ctx, constants.CreateTeamForm{Name: "team1"}, user1, contest1)
 	log.Logger.Debug(team1.ID, ok, msg)
 }
 

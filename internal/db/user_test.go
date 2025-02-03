@@ -13,19 +13,17 @@ import (
 
 func InitUserTest() {
 	config.Env = &config.Config{}
-	config.Env.Gorm.Type = "sqlite"
-	config.Env.Gorm.SQLite.File = ":memory:"
 	config.Env.Gorm.Log.Level = "debug"
 	config.Env.Log.Level = "debug"
 	config.Env.Log.Save = false
 	log.Init()
-	Init()
+	InitTest()
 	redis.Init()
 	var ctx context.Context
 	_, _, _ = CreateAdmin(ctx, "admin1", "password", "admin1@0rays.club")
-	_, _, _ = CreateUser(ctx, constants.CreateUserForm{Name: "user1", Password: "password", Email: "user1@0rays.club"})
-	_, _, _ = CreateContest(ctx, constants.CreateContestForm{Name: "contest1", Size: 1, Start: time.Now(), Duration: time.Duration(10), Hidden: false})
-	_, _, _ = CreateTeam(ctx, constants.CreateTeamForm{Name: "team1"}, 1, 1)
+	user1, _, _ := CreateUser(ctx, constants.CreateUserForm{Name: "user1", Password: "password", Email: "user1@0rays.club"})
+	contest1, _, _ := CreateContest(ctx, constants.CreateContestForm{Name: "contest1", Size: 1, Start: time.Now(), Duration: time.Duration(10), Hidden: false})
+	_, _, _ = CreateTeam(ctx, constants.CreateTeamForm{Name: "team1"}, user1, contest1)
 }
 
 func TestCreateUser(t *testing.T) {
@@ -80,7 +78,7 @@ func TestDeleteUser(t *testing.T) {
 
 	var tmp []model.Team
 	if err := DB.WithContext(ctx).Model(&user1).Association("Teams").Find(&tmp); err != nil {
-		t.Fatalf(err)
+		t.Fatalf(err.Error())
 	}
 	if len(tmp) == 0 {
 		t.Fatalf("Failed to find association between user and team")
@@ -88,7 +86,7 @@ func TestDeleteUser(t *testing.T) {
 	log.Logger.Debug(tmp)
 	var tmp2 []model.Contest
 	if err := DB.WithContext(ctx).Model(&user1).Association("Contests").Find(&tmp2); err != nil {
-		t.Fatalf(err)
+		t.Fatalf(err.Error())
 	}
 	if len(tmp2) == 0 {
 		t.Fatalf("Failed to find association between user and contest")
@@ -96,7 +94,7 @@ func TestDeleteUser(t *testing.T) {
 	log.Logger.Debug(tmp2)
 
 	if err := DB.WithContext(ctx).Model(&contest1).Association("Teams").Find(&tmp); err != nil {
-		t.Fatalf(err)
+		t.Fatalf(err.Error())
 	}
 	if len(tmp) == 0 {
 		t.Fatalf("Failed to find association between contest and team")
@@ -108,14 +106,14 @@ func TestDeleteUser(t *testing.T) {
 	}
 
 	if err := DB.WithContext(ctx).Model(&user1).Association("Teams").Find(&tmp); err != nil {
-		t.Fatalf(err)
+		t.Fatalf(err.Error())
 	}
 	if len(tmp) != 0 {
 		t.Fatalf("Should not find association between user and team")
 	}
 	log.Logger.Debug(tmp)
 	if err := DB.WithContext(ctx).Model(&user1).Association("Contests").Find(&tmp2); err != nil {
-		t.Fatalf(err)
+		t.Fatalf(err.Error())
 	}
 	if len(tmp2) != 0 {
 		t.Fatalf("Should not find association between user and contest")
@@ -123,7 +121,7 @@ func TestDeleteUser(t *testing.T) {
 	log.Logger.Debug(tmp2)
 
 	if err := DB.WithContext(ctx).Model(&contest1).Association("Teams").Find(&tmp); err != nil {
-		t.Fatalf(err)
+		t.Fatalf(err.Error())
 	}
 	if len(tmp) != 0 {
 		t.Fatalf("Should not find association between contest and team")
