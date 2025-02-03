@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/model"
 	"fmt"
 	"gorm.io/driver/mysql"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"strings"
 )
@@ -28,24 +27,16 @@ func Init() {
 	default:
 		level = log.Silent
 	}
-	switch strings.ToLower(config.Env.Gorm.Type) {
-	case "sqlite":
-		DB, err = gorm.Open(sqlite.Open(config.Env.Gorm.SQLite.File), &gorm.Config{Logger: log.NewGormLogger(level)})
-		log.Logger.Infof("Connecting to SQLite database: %s", config.Env.Gorm.SQLite.File)
-	case "mysql":
-		dsn := fmt.Sprintf(
-			"%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-			config.Env.Gorm.MySQL.User,
-			config.Env.Gorm.MySQL.Pwd,
-			config.Env.Gorm.MySQL.Host,
-			config.Env.Gorm.MySQL.Port,
-			config.Env.Gorm.MySQL.DB,
-		)
-		DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: log.NewGormLogger(level)})
-		log.Logger.Infof("Connecting to MySQL database: %s:%d", config.Env.Gorm.MySQL.Host, config.Env.Gorm.MySQL.Port)
-	default:
-		log.Logger.Fatalf("Unsupported database type: %s", config.Env.Gorm.Type)
-	}
+	dsn := fmt.Sprintf(
+		"%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		config.Env.Gorm.MySQL.User,
+		config.Env.Gorm.MySQL.Pwd,
+		config.Env.Gorm.MySQL.Host,
+		config.Env.Gorm.MySQL.Port,
+		config.Env.Gorm.MySQL.DB,
+	)
+	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: log.NewGormLogger(level)})
+	log.Logger.Infof("Connecting to MySQL database: %s:%d", config.Env.Gorm.MySQL.Host, config.Env.Gorm.MySQL.Port)
 	if err != nil {
 		log.Logger.Fatalf("failed to connect database: %v", err)
 	}
