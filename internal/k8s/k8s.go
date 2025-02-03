@@ -50,6 +50,7 @@ func Init() {
 	initResources()
 }
 
+// initResources initializes resources in the namespace
 func initResources() {
 	var err error
 	log.Logger.Debugf("Checking resources in namespace %s", NamespaceName)
@@ -125,6 +126,7 @@ func initResources() {
 	}
 }
 
+// checkPermission checks if the user has permission to access the resources
 func checkPermission() bool {
 	log.Logger.Debugf("Checking permissions for k8s")
 	verbs := []string{"get", "list", "create", "update", "delete"}

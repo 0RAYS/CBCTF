@@ -14,6 +14,7 @@ import (
 	"os"
 )
 
+// GenerateAttachment 启动容器, 生成附件
 func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, string) {
 	var err error
 	if challenge.Type != model.Dynamic {
