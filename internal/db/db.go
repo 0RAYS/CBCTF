@@ -54,6 +54,7 @@ func Init() {
 	InitAdmin()
 }
 
+// InitTest 初始化测试数据库
 func InitTest() {
 	var level log.Level
 	switch strings.ToUpper(config.Env.Gorm.Log.Level) {

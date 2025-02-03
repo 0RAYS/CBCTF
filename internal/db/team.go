@@ -109,7 +109,7 @@ func GetTeamByUserID(ctx context.Context, userID uint, contestID uint) (model.Te
 	return model.Team{}, false, "UserNotInTeam"
 }
 
-// DeleteTeam 根据 id 删除 model.Team, 同时删除与 model.User, model.Contest 的关联
+// DeleteTeam 删除 model.Team, 同时删除与 model.User, model.Contest 的关联
 func DeleteTeam(ctx context.Context, team model.Team) (bool, string) {
 	contest, ok, msg := GetContestByID(ctx, team.ContestID)
 	if !ok {
@@ -248,6 +248,7 @@ func LeaveTeam(ctx context.Context, user model.User, team model.Team, contest mo
 	return true, "Success"
 }
 
+// GetTeams 获取 model.Team 列表, preloadL[0] 是否预加载, preloadL[1] 是否嵌套预加载
 func GetTeams(ctx context.Context, contestID uint, limit int, offset int, all bool, preloadL ...bool) ([]model.Team, int64, bool, string) {
 	if limit <= 0 {
 		limit = -1

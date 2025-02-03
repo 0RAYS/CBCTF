@@ -81,6 +81,7 @@ func GetFlagBy3ID(ctx context.Context, contestID, teamID uint, challengeID strin
 	return flag, true, "Success"
 }
 
+// UpdateFlag is a function to update flag
 func UpdateFlag(ctx context.Context, contestID, teamID uint, challengeID, value string) (bool, string) {
 	res := DB.WithContext(ctx).Model(model.Flag{}).
 		Where("contest_id = ? AND team_id = ? AND challenge_id = ?", contestID, teamID, challengeID).Update("value", value)
@@ -91,6 +92,7 @@ func UpdateFlag(ctx context.Context, contestID, teamID uint, challengeID, value 
 	return true, "Success"
 }
 
+// VerifyFlag is a function to verify flag
 func VerifyFlag(ctx context.Context, contestID, teamID uint, challengeID, value string) bool {
 	flag, ok, _ := GetFlagBy3ID(ctx, contestID, teamID, challengeID)
 	if !ok {

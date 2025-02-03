@@ -27,6 +27,7 @@ func CreateAdmin(ctx context.Context, name string, password string, email string
 	return admin, true, "Success"
 }
 
+// GetAdminByID 根据 id 获取 model.Admin
 func GetAdminByID(ctx context.Context, id uint) (model.Admin, bool, string) {
 	var admin model.Admin
 	res := DB.WithContext(ctx).Model(&model.Admin{}).Where("id = ?", id).Find(&admin)
@@ -57,6 +58,7 @@ func UpdateAdmin(ctx context.Context, id uint, updateData map[string]interface{}
 	return true, "Success"
 }
 
+// VerifyAdmin 验证管理员
 func VerifyAdmin(ctx context.Context, username string, password string) (model.Admin, bool, string) {
 	var admin model.Admin
 	res := DB.WithContext(ctx).Model(&model.Admin{}).Where("name = ? OR email = ?", username, username).
@@ -70,6 +72,7 @@ func VerifyAdmin(ctx context.Context, username string, password string) (model.A
 	return model.Admin{}, false, "NameOrPasswordError"
 }
 
+// InitAdmin 初始化管理员
 func InitAdmin() {
 	var count int64
 	DB.Model(&model.Admin{}).Count(&count)
@@ -80,6 +83,7 @@ func InitAdmin() {
 	}
 }
 
+// ChangePasswordAdmin 修改管理员密码
 func ChangePasswordAdmin(ctx context.Context, admin model.Admin, oldPassword string, newPassword string) (bool, string) {
 	if !utils.CompareHashAndPassword(admin.Password, oldPassword) {
 		return false, "PasswordError"
@@ -94,6 +98,7 @@ func ChangePasswordAdmin(ctx context.Context, admin model.Admin, oldPassword str
 	return true, "Success"
 }
 
+// GetAdmins 获取所有管理员
 func GetAdmins(ctx context.Context) ([]model.Admin, int, bool, string) {
 	var admins []model.Admin
 	res := DB.WithContext(ctx).Model(&model.Admin{}).Find(&admins)

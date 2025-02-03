@@ -6,6 +6,7 @@ import (
 	"context"
 )
 
+// CreateSubmission is a function to create a new submission
 func CreateSubmission(ctx context.Context, contestID, teamID, userID uint, challengeID, value string) (model.Submission, bool, string) {
 	if _, ok, _ := GetSubmission(ctx, contestID, teamID, challengeID); ok {
 		return model.Submission{}, false, "SubmissionExists"
@@ -18,6 +19,7 @@ func CreateSubmission(ctx context.Context, contestID, teamID, userID uint, chall
 	return submission, true, "Success"
 }
 
+// GetSubmission is a function to get submission
 func GetSubmission(ctx context.Context, contestID, teamID uint, challengeID string) (model.Submission, bool, string) {
 	var submission model.Submission
 	res := DB.WithContext(ctx).Model(model.Submission{}).Where("contest_id = ? AND team_id = ? AND challenge_id = ?", contestID, teamID, challengeID).Find(&submission).Limit(1)
@@ -27,6 +29,7 @@ func GetSubmission(ctx context.Context, contestID, teamID uint, challengeID stri
 	return submission, true, "Success"
 }
 
+// GetSubmissions is a function to get submissions
 func GetSubmissions(ctx context.Context, limit, offset int) ([]model.Submission, int64, bool, string) {
 	if limit <= 0 {
 		limit = -1
