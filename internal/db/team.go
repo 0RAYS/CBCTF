@@ -12,20 +12,20 @@ import (
 )
 
 // CreateTeam 创建队伍, 名称在 model.Contest 中唯一
-func CreateTeam(ctx context.Context, form constants.CreateTeamForm, captainID uint, contestID uint) (model.Team, bool, string) {
-	if !IsUniqueTeamName(form.Name, contestID) {
+func CreateTeam(ctx context.Context, form constants.CreateTeamForm, captain model.User, contest model.Contest) (model.Team, bool, string) {
+	if !IsUniqueTeamName(form.Name, contest.ID) {
 		return model.Team{}, false, "TeamNameExists"
 	}
-	if !IsUniqueTeamMember(contestID, captainID) {
+	if !IsUniqueTeamMember(contest.ID, captain.ID) {
 		return model.Team{}, false, "TeamMemberExists"
 	}
-	team := model.InitTeam(form, captainID, contestID)
+	team := model.InitTeam(form, captain.ID, contest.ID)
 	res := DB.WithContext(ctx).Model(&model.Team{}).Create(&team)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to create team: %s", res.Error)
 		return model.Team{}, false, "CreateTeamError"
 	}
-	if ok, msg := JoinTeam(ctx, captainID, contestID, team.ID); !ok {
+	if ok, msg := JoinTeam(ctx, captain, team, contest); !ok {
 		return model.Team{}, false, msg
 	}
 	go func() {
@@ -110,12 +110,8 @@ func GetTeamByUserID(ctx context.Context, userID uint, contestID uint) (model.Te
 }
 
 // DeleteTeam 根据 id 删除 model.Team, 同时删除与 model.User, model.Contest 的关联
-func DeleteTeam(ctx context.Context, id uint) (bool, string) {
-	team, ok, msg := GetTeamByID(ctx, id, true)
-	if !ok {
-		return false, msg
-	}
-	contest, ok, msg := GetContestByID(ctx, team.ContestID, true)
+func DeleteTeam(ctx context.Context, team model.Team) (bool, string) {
+	contest, ok, msg := GetContestByID(ctx, team.ContestID)
 	if !ok {
 		return false, msg
 	}
@@ -131,7 +127,7 @@ func DeleteTeam(ctx context.Context, id uint) (bool, string) {
 		return false, "DeleteTeamError"
 	}
 	go func() {
-		if err := redis.DelTeamCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelTeamCache(team.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete team cache: %s", err)
 		}
 		if err := redis.DelTeamsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
@@ -161,21 +157,9 @@ func UpdateTeam(ctx context.Context, id uint, updateData map[string]interface{})
 }
 
 // JoinTeam model.User 加入 model.Team, 建立三个模型直接的关联关系
-func JoinTeam(ctx context.Context, userID uint, contestID uint, teamID uint) (bool, string) {
-	user, ok, msg := GetUserByID(ctx, userID, false)
-	if !ok {
-		return false, msg
-	}
-	if !IsUniqueTeamMember(contestID, userID) {
+func JoinTeam(ctx context.Context, user model.User, team model.Team, contest model.Contest) (bool, string) {
+	if !IsUniqueTeamMember(contest.ID, user.ID) {
 		return false, "TeamMemberExists"
-	}
-	contest, ok, msg := GetContestByID(ctx, contestID, false)
-	if !ok || contest.Hidden {
-		return false, msg
-	}
-	team, ok, msg := GetTeamByID(ctx, teamID, true)
-	if !ok {
-		return false, msg
 	}
 	if team.Banned {
 		return false, "TeamIsBanned"
@@ -199,51 +183,39 @@ func JoinTeam(ctx context.Context, userID uint, contestID uint, teamID uint) (bo
 		return false, "AppendContestToUserError"
 	}
 	go func() {
-		if err := redis.DelUserCache(userID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelUserCache(user.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete user cache: %s", err)
 		}
 		if err := redis.DelUsersCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete users cache: %s", err)
 		}
-		if err := redis.DelTeamCache(teamID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelTeamCache(team.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete team cache: %s", err)
 		}
 		if err := redis.DelTeamsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete teams cache: %s", err)
 		}
-		if err := redis.DelContestCache(contestID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelContestCache(contest.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete contest cache: %s", err)
 		}
 		if err := redis.DelContestsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete contests cache: %s", err)
 		}
 	}()
-	return ok, "Success"
+	return true, "Success"
 }
 
 // LeaveTeam model.User 离开 model.Team, 删除三个模型直接的关联关系
-func LeaveTeam(ctx context.Context, userID uint, contestID uint, teamID uint) (bool, string) {
-	user, ok, msg := GetUserByID(ctx, userID, false)
-	if !ok {
-		return false, msg
-	}
-	team, ok, msg := GetTeamByID(ctx, teamID, true)
-	if !ok {
-		return false, msg
-	}
+func LeaveTeam(ctx context.Context, user model.User, team model.Team, contest model.Contest) (bool, string) {
 	if !IsMemberInTeam(team.ID, user.ID) {
 		return false, "UserNotInTeam"
 	}
-	contest, ok, msg := GetContestByID(ctx, contestID, false)
-	if !ok {
-		return false, msg
-	}
-	if len(team.Users) > 1 && team.CaptainID == userID {
+	if len(team.Users) > 1 && team.CaptainID == user.ID {
 		return false, "CaptainCannotLeave"
 	}
 	// 退出后队伍人数为0, 删除队伍
 	if len(team.Users) == 1 {
-		DeleteTeam(ctx, team.ID)
+		DeleteTeam(ctx, team)
 	}
 	if err := DeleteUserFromTeam(ctx, user, team); err != nil {
 		log.Logger.Warningf("Failed to delete user_team: %s", err)
@@ -254,19 +226,19 @@ func LeaveTeam(ctx context.Context, userID uint, contestID uint, teamID uint) (b
 		return false, "DeleteUserFromContestError"
 	}
 	go func() {
-		if err := redis.DelUserCache(userID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelUserCache(user.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete user cache: %s", err)
 		}
 		if err := redis.DelUsersCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete users cache: %s", err)
 		}
-		if err := redis.DelTeamCache(teamID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelTeamCache(team.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete team cache: %s", err)
 		}
 		if err := redis.DelTeamsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete teams cache: %s", err)
 		}
-		if err := redis.DelContestCache(contestID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.DelContestCache(contest.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete contest cache: %s", err)
 		}
 		if err := redis.DelContestsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {

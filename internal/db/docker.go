@@ -8,18 +8,18 @@ import (
 	"time"
 )
 
-func CreateDocker(ctx context.Context, flag model.Flag, creatorID uint) (model.Docker, bool, string) {
+func CreateDocker(ctx context.Context, flag model.Flag, challenge model.Challenge, creatorID uint) (model.Docker, bool, string) {
 	var (
 		docker model.Docker
 		ok     bool
+		msg    string
 		port   int32
 	)
 	if docker, ok, _ = GetDockerBy3ID(ctx, flag.ContestID, flag.TeamID, flag.ChallengeID); ok {
 		return docker, ok, "Success"
 	}
-	challenge, ok, msg := GetChallengeByID(ctx, flag.ChallengeID)
-	if !ok || challenge.Type != model.Container {
-		return model.Docker{}, false, msg
+	if challenge.Type != model.Container {
+		return model.Docker{}, false, "InvalidChallengeType"
 	}
 
 	docker = model.InitDocker(flag, challenge, creatorID)
@@ -32,7 +32,7 @@ func CreateDocker(ctx context.Context, flag model.Flag, creatorID uint) (model.D
 	port, ok, msg = k8s.StartContainer(challenge, flag, docker)
 	if !ok {
 		log.Logger.Warningf("Failed to start container for challenge %s: %s", flag.ChallengeID, msg)
-		_, _ = DeleteDocker(ctx, docker.ID)
+		_, _ = DeleteDocker(ctx, docker)
 		return model.Docker{}, false, msg
 	}
 	UpdateDocker(ctx, docker.ID, map[string]interface{}{"port": port})
@@ -67,26 +67,22 @@ func GetDockerBy3ID(ctx context.Context, contestID, teamID uint, challengeID str
 		return model.Docker{}, false, "DockerNotFound"
 	}
 	if docker.Start.Add(docker.Duration).Before(time.Now()) {
-		_, _ = DeleteDocker(ctx, docker.ID)
+		_, _ = DeleteDocker(ctx, docker)
 		return model.Docker{}, false, "DockerNotFound"
 	}
 	return docker, true, "Success"
 }
 
-func DeleteDocker(ctx context.Context, id uint) (bool, string) {
-	docker, ok, msg := GetDockerByID(ctx, id)
-	if !ok {
-		return false, msg
-	}
+func DeleteDocker(ctx context.Context, docker model.Docker) (bool, string) {
 	go func(d model.Docker) {
 		log.Logger.Debugf("Stopping container for team %d challenge %s", d.TeamID, d.ChallengeID)
-		ok, msg = k8s.StopContainer(d)
+		ok, msg := k8s.StopContainer(d)
 		if !ok {
 			log.Logger.Warningf("Failed to stop container for challenge %s: %s", d.ChallengeID, msg)
 		}
 	}(docker)
 	res := DB.WithContext(ctx).Model(model.Docker{}).
-		Where("id = ?", id).Delete(&model.Docker{})
+		Where("id = ?", docker.ID).Delete(&model.Docker{})
 	if res.Error != nil {
 		return false, "DeleteDockerError"
 	}

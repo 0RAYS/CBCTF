@@ -23,7 +23,7 @@ func StartContainer(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	docker, ok, msg := db.CreateDocker(ctx, flag, middleware.GetSelfID(ctx))
+	docker, ok, msg := db.CreateDocker(ctx, flag, middleware.GetChallenge(ctx), middleware.GetSelfID(ctx))
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -55,7 +55,7 @@ func StopContainer(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ok, msg = db.DeleteDocker(ctx, docker.ID)
+	ok, msg = db.DeleteDocker(ctx, docker)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

@@ -15,11 +15,7 @@ func SubmitFlag(ctx *gin.Context) {
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	team, ok, msg := db.GetTeamByUserID(ctx, middleware.GetSelfID(ctx), contest.ID)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
+	team := middleware.GetTeam(ctx)
 	submission, ok, msg := db.CreateSubmission(ctx, contest.ID, team.ID, middleware.GetSelfID(ctx), middleware.GetChallenge(ctx).ID, form.Flag)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

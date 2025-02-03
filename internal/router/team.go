@@ -43,7 +43,7 @@ func JoinTeam(ctx *gin.Context) {
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	team, ok, msg := db.GetTeamByName(ctx, form.Name, contest.ID, false)
+	team, ok, msg := db.GetTeamByName(ctx, form.Name, contest.ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -52,7 +52,7 @@ func JoinTeam(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "CaptchaError", "data": nil})
 		return
 	}
-	_, msg = db.JoinTeam(ctx, middleware.GetSelfID(ctx), contest.ID, team.ID)
+	_, msg = db.JoinTeam(ctx, middleware.GetSelf(ctx).(model.User), team, contest)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
@@ -67,8 +67,7 @@ func CreateTeam(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "CaptchaError", "data": nil})
 		return
 	}
-	userID := middleware.GetSelfID(ctx)
-	team, ok, msg := db.CreateTeam(ctx, form, userID, contest.ID)
+	team, ok, msg := db.CreateTeam(ctx, form, middleware.GetSelf(ctx).(model.User), contest)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -77,10 +76,10 @@ func CreateTeam(ctx *gin.Context) {
 }
 
 func LeaveTeam(ctx *gin.Context) {
-	userID := middleware.GetSelfID(ctx)
+	user := middleware.GetSelf(ctx).(model.User)
 	contest := middleware.GetContest(ctx)
 	team := middleware.GetTeam(ctx)
-	_, msg := db.LeaveTeam(ctx, userID, contest.ID, team.ID)
+	_, msg := db.LeaveTeam(ctx, user, team, contest)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
@@ -130,7 +129,7 @@ func UpdateTeam(ctx *gin.Context) {
 }
 
 func DeleteTeam(ctx *gin.Context) {
-	_, msg := db.DeleteTeam(ctx, middleware.GetTeam(ctx).ID)
+	_, msg := db.DeleteTeam(ctx, middleware.GetTeam(ctx))
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
@@ -145,7 +144,12 @@ func KickMember(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "UserNotInTeam", "data": nil})
 		return
 	}
-	_, msg := db.LeaveTeam(ctx, form.UserID, middleware.GetContest(ctx).ID, team.ID)
+	user, ok, msg := db.GetUserByID(ctx, form.UserID)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	_, msg = db.LeaveTeam(ctx, user, team, middleware.GetContest(ctx))
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 

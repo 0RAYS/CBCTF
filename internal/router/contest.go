@@ -14,8 +14,7 @@ func GetContest(ctx *gin.Context) {
 }
 
 func GetContestCaptcha(ctx *gin.Context) {
-	contest := middleware.GetContest(ctx)
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": contest.Captcha})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": middleware.GetContest(ctx).Captcha})
 }
 
 func GetContests(ctx *gin.Context) {
@@ -67,6 +66,6 @@ func UpdateContest(ctx *gin.Context) {
 }
 
 func DeleteContest(ctx *gin.Context) {
-	_, msg := db.DeleteContest(ctx, middleware.GetContest(ctx).ID)
+	_, msg := db.DeleteContest(ctx, middleware.GetContest(ctx))
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
