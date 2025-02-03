@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/viper"
 	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -81,10 +82,14 @@ func Init() {
 	if err := viper.Unmarshal(&Env); err != nil {
 		log.Panicf("error unmarshalling config: %s", err)
 	}
+	Env.Backend = strings.TrimSuffix(Env.Backend, "/")
+	Env.Frontend = strings.TrimSuffix(Env.Frontend, "/")
 }
 
 // Save 保存配置，用于动态刷新配置
 func Save(env Config) error {
+	env.Backend = strings.TrimSuffix(env.Backend, "/")
+	env.Frontend = strings.TrimSuffix(env.Frontend, "/")
 	config := make(map[string]interface{})
 	data, err := json.Marshal(env)
 	if err != nil {
