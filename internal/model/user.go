@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"gorm.io/gorm"
+	"strings"
 	"time"
 )
 
@@ -39,7 +40,7 @@ func (m User) MarshalJSON() ([]byte, error) {
 		Tmp:      Tmp(m),
 		Contests: len(m.Contests),
 		Teams:    len(m.Teams),
-		Avatar:   fmt.Sprintf("%s/%s", config.Env.Backend, m.Avatar),
+		Avatar:   fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimSuffix(m.Avatar, "/")),
 	})
 }
 
