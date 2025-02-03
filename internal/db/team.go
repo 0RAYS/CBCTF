@@ -19,7 +19,7 @@ func CreateTeam(ctx context.Context, form constants.CreateTeamForm, captainID ui
 	if !IsUniqueTeamMember(contestID, captainID) {
 		return model.Team{}, false, "TeamMemberExists"
 	}
-	team := model.InitTeam(form, captainID)
+	team := model.InitTeam(form, captainID, contestID)
 	res := DB.WithContext(ctx).Model(&model.Team{}).Create(&team)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to create team: %s", res.Error)
