@@ -11,13 +11,11 @@ import (
 
 func InitAdminTest() {
 	config.Env = &config.Config{}
-	config.Env.Gorm.Type = "sqlite"
-	config.Env.Gorm.SQLite.File = ":memory:"
 	config.Env.Gorm.Log.Level = "debug"
 	config.Env.Log.Level = "debug"
 	config.Env.Log.Save = false
 	log.Init()
-	Init()
+	InitTest()
 	redis.Init()
 	var ctx context.Context
 	admin1, ok, msg := CreateAdmin(ctx, "admin1", "password", "admin1@0rays.club")

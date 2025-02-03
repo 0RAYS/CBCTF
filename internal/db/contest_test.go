@@ -13,13 +13,11 @@ import (
 
 func InitContestTest() {
 	config.Env = &config.Config{}
-	config.Env.Gorm.Type = "sqlite"
-	config.Env.Gorm.SQLite.File = ":memory:"
 	config.Env.Gorm.Log.Level = "debug"
 	config.Env.Log.Level = "debug"
 	config.Env.Log.Save = false
 	log.Init()
-	Init()
+	InitTest()
 	redis.Init()
 	var ctx context.Context
 
@@ -27,7 +25,7 @@ func InitContestTest() {
 	log.Logger.Debug(user1.ID, ok, msg)
 	contest1, ok, msg := CreateContest(ctx, constants.CreateContestForm{Name: "contest1", Size: 1, Start: time.Now(), Duration: time.Duration(10)})
 	log.Logger.Debug(contest1.ID, ok, msg)
-	team1, ok, msg := CreateTeam(ctx, constants.CreateTeamForm{Name: "team1", Captcha: contest1.Captcha}, user1.ID, contest1.ID)
+	team1, ok, msg := CreateTeam(ctx, constants.CreateTeamForm{Name: "team1", Captcha: contest1.Captcha}, user1, contest1)
 	log.Logger.Debug(team1.ID, ok, msg)
 }
 
@@ -119,7 +117,7 @@ func TestGetContestByID(t *testing.T) {
 func TestDeleteContest(t *testing.T) {
 	InitContestTest()
 	var ctx context.Context
-	if ok, _ := DeleteContest(ctx, 0); ok {
+	if ok, _ := DeleteContest(ctx, model.Contest{ID: 0}); ok {
 		t.Fatal("Should return true when delete invalid contest")
 	}
 	user1, ok, _ := GetUserByID(ctx, 1)
@@ -156,7 +154,7 @@ func TestDeleteContest(t *testing.T) {
 	}
 	log.Logger.Debug(tmp)
 
-	if ok, msg := DeleteContest(ctx, 1); !ok {
+	if ok, msg := DeleteContest(ctx, contest1); !ok {
 		t.Fatalf("Failed to delete contest by id: %s", msg)
 	}
 	if err := DB.WithContext(ctx).Model(&contest1).Association("Teams").Find(&tmp); err != nil {

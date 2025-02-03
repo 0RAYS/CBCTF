@@ -210,10 +210,10 @@ func LeaveTeam(ctx context.Context, user model.User, team model.Team, contest mo
 	if !IsMemberInTeam(team.ID, user.ID) {
 		return false, "UserNotInTeam"
 	}
-	if len(team.Users) > 1 && team.CaptainID == user.ID {
+	if team.CaptainID == user.ID {
 		return false, "CaptainCannotLeave"
 	}
-	// 退出后队伍人数为0, 删除队伍
+	// 队伍人数为 1 时一定是队长, 无法到达这个代码, 暂且保留; 退出后队伍人数为0, 删除队伍;
 	if len(team.Users) == 1 {
 		DeleteTeam(ctx, team)
 	}
