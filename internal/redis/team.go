@@ -58,7 +58,7 @@ func SetTeamCache(key string, team model.Team) error {
 	if err != nil {
 		return err
 	}
-	if err = RDB.Set(ctx, key, data, 10*time.Minute).Err(); err != nil {
+	if err = RDB.Set(ctx, key, data, time.Minute).Err(); err != nil {
 		return err
 	}
 	log.Logger.Debug("SetTeamCache: ", team.ID)
@@ -72,7 +72,7 @@ func SetTeamsCache(key string, teams []model.Team) error {
 	if err != nil {
 		return err
 	}
-	if err = RDB.Set(ctx, key, data, 2*time.Minute).Err(); err != nil {
+	if err = RDB.Set(ctx, key, data, time.Minute).Err(); err != nil {
 		return err
 	}
 	log.Logger.Debug("SetTeamsCache: ", len(teams))

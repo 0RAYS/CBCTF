@@ -60,7 +60,7 @@ func SetContestCache(key string, contest model.Contest) error {
 	if err != nil {
 		return err
 	}
-	if err = RDB.Set(ctx, key, data, 1*time.Hour).Err(); err != nil {
+	if err = RDB.Set(ctx, key, data, time.Minute).Err(); err != nil {
 		return err
 	}
 	log.Logger.Debug("SetContestCache: ", contest.ID)
@@ -74,7 +74,7 @@ func SetContestsCache(key string, contests []model.Contest) error {
 	if err != nil {
 		return err
 	}
-	if err = RDB.Set(ctx, key, data, 1*time.Hour).Err(); err != nil {
+	if err = RDB.Set(ctx, key, data, time.Minute).Err(); err != nil {
 		return err
 	}
 	log.Logger.Debug("SetContestsCache: ", len(contests))

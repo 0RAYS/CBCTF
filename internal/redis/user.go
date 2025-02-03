@@ -60,7 +60,7 @@ func SetUserCache(key string, user model.User) error {
 	if err != nil {
 		return err
 	}
-	if err = RDB.Set(ctx, key, data, 10*time.Minute).Err(); err != nil {
+	if err = RDB.Set(ctx, key, data, time.Minute).Err(); err != nil {
 		return err
 	}
 	log.Logger.Debug("SetUserCache: ", user.ID)
@@ -74,7 +74,7 @@ func SetUsersCache(key string, users []model.User) error {
 	if err != nil {
 		return err
 	}
-	if err = RDB.Set(ctx, key, data, 2*time.Minute).Err(); err != nil {
+	if err = RDB.Set(ctx, key, data, time.Minute).Err(); err != nil {
 		return err
 	}
 	log.Logger.Debug("SetUsersCache: ", len(users))
