@@ -16,6 +16,11 @@ func CreateSubmission(ctx context.Context, contest model.Contest, team model.Tea
 		return model.Submission{}, false, "NotAllowSubmit"
 	}
 	solved := VerifyFlag(ctx, contest.ID, team.ID, challenge.ID, value)
+	if solved {
+		if ok, msg := AddSolvers(ctx, usage.ID); !ok {
+			return model.Submission{}, false, msg
+		}
+	}
 	submission := model.InitSubmission(contest.ID, challenge.ID, team.ID, user.ID, value, solved)
 	if err := DB.WithContext(ctx).Model(model.Submission{}).Create(&submission).Error; err != nil {
 		return model.Submission{}, false, "CreateSubmissionError"

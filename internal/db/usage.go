@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
+	"gorm.io/gorm"
 )
 
 // CreateUsage 创建将题目添加至比赛的记录
@@ -79,6 +80,16 @@ func GetUsageByID(ctx context.Context, id uint) (model.Usage, bool, string) {
 func UpdateUsage(ctx context.Context, id uint, updateData map[string]interface{}) (bool, string) {
 	res := DB.WithContext(ctx).Model(model.Usage{}).Where("id = ?", id).
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to update Usage: %s", res.Error)
+		return false, "UpdateUsageError"
+	}
+	return true, "Success"
+}
+
+func AddSolvers(ctx context.Context, id uint) (bool, string) {
+	res := DB.WithContext(ctx).Model(model.Usage{}).Where("id = ?", id).
+		UpdateColumn("solvers", gorm.Expr("solvers + ?", 1))
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to update Usage: %s", res.Error)
 		return false, "UpdateUsageError"

@@ -13,6 +13,7 @@ type Usage struct {
 	Score       int            `json:"score"`
 	Flag        string         `json:"flag"`
 	Attempt     int64          `json:"attempt" gorm:"default:0"`
+	Solvers     int64          `json:"solvers" gorm:"default:0"`
 	Hints       string         `json:"hints"`
 	Tags        string         `json:"tags"`
 	CreatedAt   time.Time      `json:"-"`
