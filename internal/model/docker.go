@@ -28,6 +28,10 @@ func (d *Docker) RemoteAddr() string {
 	return fmt.Sprintf("%s:%d", config.Env.K8S.Master, d.Port)
 }
 
+func (d *Docker) Remaining() time.Duration {
+	return d.Start.Add(d.Duration).Sub(time.Now())
+}
+
 func InitDocker(flag Flag, challenge Challenge, creatorID uint) Docker {
 	podName := fmt.Sprintf("docker-%s-%d-pod", challenge.ID, flag.TeamID)
 	serviceName := fmt.Sprintf("docker-%s-%d-service", challenge.ID, flag.TeamID)
