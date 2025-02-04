@@ -22,7 +22,7 @@ type Avatar struct {
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"index" `
 }
 
-func InitFile(path string, uploader uint, file *multipart.FileHeader, hash string) Avatar {
+func InitAvatar(path string, uploader uint, file *multipart.FileHeader, hash string) Avatar {
 	tmp := Avatar{
 		ID:       utils.RandomString(),
 		Filename: file.Filename,
