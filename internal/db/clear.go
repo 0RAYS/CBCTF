@@ -17,6 +17,7 @@ var associations = map[string][]interface{}{
 
 // ClearByID 清除所有与指定 ID 相关的数据
 func ClearByID(ctx context.Context, column string, id interface{}) {
+	tx := DB.WithContext(ctx).Begin()
 	var ok bool
 	switch column {
 	case "user_id", "team_id", "contest_id", "docker_id":
@@ -29,8 +30,11 @@ func ClearByID(ctx context.Context, column string, id interface{}) {
 		return
 	}
 	for _, v := range associations[column] {
-		if err := DB.WithContext(ctx).Model(&v).Where(fmt.Sprintf("%s = ?", column), id).Delete(&v).Error; err != nil {
+		if err := tx.Model(&v).Where(fmt.Sprintf("%s = ?", column), id).Delete(&v).Error; err != nil {
+			tx.Rollback()
 			log.Logger.Warningf("Failed to delete %s by %s: %v", v, column, err)
+			return
 		}
 	}
+	tx.Commit()
 }

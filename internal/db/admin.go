@@ -37,6 +37,26 @@ func GetAdminByID(ctx context.Context, id uint) (model.Admin, bool, string) {
 	return admin, true, "Success"
 }
 
+func GetAdminByName(ctx context.Context, name string) (model.Admin, bool, string) {
+	var admin model.Admin
+	res := DB.WithContext(ctx).Model(&model.Admin{}).Where("name = ?", name).Find(&admin)
+	if res.RowsAffected != 1 {
+		return model.Admin{}, false, "AdminNotFound"
+	}
+	return admin, true, "Success"
+}
+
+// GetAdmins 获取所有管理员
+func GetAdmins(ctx context.Context) ([]model.Admin, int, bool, string) {
+	var admins []model.Admin
+	res := DB.WithContext(ctx).Model(&model.Admin{}).Find(&admins)
+	if res.Error != nil {
+		log.Logger.Errorf("Failed to get admins: %s", res.Error)
+		return nil, 0, false, "UnknownError"
+	}
+	return admins, len(admins), true, "Success"
+}
+
 // DeleteAdmin 根据 id 删除 model.Admin
 func DeleteAdmin(ctx context.Context, id uint) (bool, string) {
 	res := DB.WithContext(ctx).Model(&model.Admin{}).Where("id = ?", id).Delete(&model.Admin{})
@@ -60,11 +80,9 @@ func UpdateAdmin(ctx context.Context, id uint, updateData map[string]interface{}
 
 // VerifyAdmin 验证管理员
 func VerifyAdmin(ctx context.Context, username string, password string) (model.Admin, bool, string) {
-	var admin model.Admin
-	res := DB.WithContext(ctx).Model(&model.Admin{}).Where("name = ? OR email = ?", username, username).
-		Find(&admin).Limit(1)
-	if res.RowsAffected != 1 {
-		return model.Admin{}, false, "NameOrPasswordError"
+	admin, ok, msg := GetAdminByName(ctx, username)
+	if !ok {
+		return model.Admin{}, false, msg
 	}
 	if utils.CompareHashAndPassword(admin.Password, password) {
 		return admin, true, "Success"
@@ -96,15 +114,4 @@ func ChangePasswordAdmin(ctx context.Context, admin model.Admin, oldPassword str
 		return false, msg
 	}
 	return true, "Success"
-}
-
-// GetAdmins 获取所有管理员
-func GetAdmins(ctx context.Context) ([]model.Admin, int, bool, string) {
-	var admins []model.Admin
-	res := DB.WithContext(ctx).Model(&model.Admin{}).Find(&admins)
-	if res.Error != nil {
-		log.Logger.Errorf("Failed to get admins: %s", res.Error)
-		return nil, 0, false, "UnknownError"
-	}
-	return admins, len(admins), true, "Success"
 }
