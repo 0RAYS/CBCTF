@@ -9,6 +9,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"strings"
+	"time"
 )
 
 var DB *gorm.DB
@@ -41,6 +42,14 @@ func Init() {
 	if err != nil {
 		log.Logger.Fatalf("failed to connect database: %v", err)
 	}
+	if sql, err := DB.DB(); err != nil {
+		log.Logger.Fatalf("failed to get database: %v", err)
+	} else {
+		sql.SetMaxIdleConns(1000)
+		sql.SetMaxOpenConns(100)
+		sql.SetConnMaxLifetime(1 * time.Second)
+	}
+
 	err = DB.AutoMigrate(
 		&model.Admin{}, &model.User{}, &model.Team{},
 		&model.Contest{}, &model.Avatar{}, &model.IP{},
