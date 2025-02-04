@@ -49,6 +49,12 @@ func GetUsages(ctx *gin.Context) {
 		}
 		tmp["usage"] = usage
 		tmp["challenge"] = challenge
+		if !all {
+			tmp["status"] = gin.H{
+				"solved":   db.IsSolved(ctx, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, challenge.ID),
+				"attempts": db.CountAttempts(ctx, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, challenge.ID),
+			}
+		}
 		challenges = append(challenges, tmp)
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": challenges})
