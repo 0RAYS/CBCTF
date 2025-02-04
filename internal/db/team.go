@@ -126,6 +126,7 @@ func DeleteTeam(ctx context.Context, team model.Team) (bool, string) {
 		log.Logger.Warningf("Failed to delete team: %s", err)
 		return false, "DeleteTeamError"
 	}
+	ClearByID(ctx, "team_id", team.ID)
 	go func() {
 		if err := redis.DelTeamCache(team.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete team cache: %s", err)

@@ -75,6 +75,7 @@ func DeleteContest(ctx context.Context, contest model.Contest) (bool, string) {
 		log.Logger.Warningf("Failed to delete contest: %s", err)
 		return false, "DeleteContestError"
 	}
+	ClearByID(ctx, "contest_id", contest.ID)
 	go func() {
 		if err := redis.DelContestCache(contest.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete contest cache: %s", err)

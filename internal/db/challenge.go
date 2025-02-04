@@ -83,6 +83,7 @@ func DeleteChallenge(ctx context.Context, id string) (bool, string) {
 		log.Logger.Warningf("Failed to delete Challenge: %v", res.Error)
 		return false, "DeleteChallengeError"
 	}
+	ClearByID(ctx, "challenge_id", id)
 	return true, "Success"
 }
 
