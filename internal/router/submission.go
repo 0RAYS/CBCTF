@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/constants"
 	"CBCTF/internal/db"
 	"CBCTF/internal/middleware"
+	"CBCTF/internal/model"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -16,7 +17,7 @@ func SubmitFlag(ctx *gin.Context) {
 	}
 	contest := middleware.GetContest(ctx)
 	team := middleware.GetTeam(ctx)
-	submission, ok, msg := db.CreateSubmission(ctx, contest.ID, team.ID, middleware.GetSelfID(ctx), middleware.GetChallenge(ctx).ID, form.Flag)
+	submission, ok, msg := db.CreateSubmission(ctx, contest, team, middleware.GetSelf(ctx).(model.User), middleware.GetChallenge(ctx), form.Flag)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

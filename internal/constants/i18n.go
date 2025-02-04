@@ -87,6 +87,7 @@ var resp = map[string]map[string]interface{}{
 	"SubmissionNotFound":    {"zh-CN": "提交记录不存在", "en-US": "Submission not found", "code": 404},
 	"CreateSubmissionError": {"zh-CN": "提交失败", "en-US": "Failed to create submission", "code": 500},
 	"AlreadySolved":         {"zh-CN": "已提交过flag", "en-US": "Flag already submitted", "code": 200},
+	"NotAllowSubmit":        {"zh-CN": "不允许提交flag", "en-US": "Not allowed to submit flag", "code": 400},
 
 	"CreatePodError":     {"zh-CN": "创建Pod失败", "en-US": "Failed to create Pod", "code": 500},
 	"GetPodError":        {"zh-CN": "获取Pod失败", "en-US": "Failed to get Pod", "code": 500},

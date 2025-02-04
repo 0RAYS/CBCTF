@@ -159,7 +159,7 @@ type UpdateChallengeForm struct {
 type UpdateUsageForm struct {
 	Hidden  *bool   `form:"hidden" json:"hidden"`
 	Score   *int    `form:"score" json:"score"`
-	Attempt *int    `form:"attempt" json:"attempt"`
+	Attempt *int64  `form:"attempt" json:"attempt"`
 	Hints   *string `form:"hints" json:"hints"`
 	Tags    *string `form:"tags" json:"tags"`
 }
