@@ -51,8 +51,8 @@ func GetUsages(ctx *gin.Context) {
 		tmp["challenge"] = challenge
 		if !all {
 			tmp["status"] = gin.H{
-				"solved":   db.IsSolved(ctx, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, challenge.ID),
-				"attempts": db.CountAttempts(ctx, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, challenge.ID),
+				"solved":   db.IsSolved(ctx, middleware.GetContest(ctx), middleware.GetTeam(ctx), challenge),
+				"attempts": db.CountAttempts(ctx, middleware.GetContest(ctx), middleware.GetTeam(ctx), challenge),
 			}
 		}
 		challenges = append(challenges, tmp)
