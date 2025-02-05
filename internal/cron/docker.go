@@ -21,6 +21,7 @@ func CloseDockers(c *cron.Cron) {
 				// 每次删除都作为一个单独的事务, 不回滚之前的删除
 				tx := db.DB.Begin()
 				if ok, msg = db.DeleteDocker(tx, docker); !ok {
+					tx.Rollback()
 					log.Logger.Warningf("Failed to delete docker %s", msg)
 					continue
 				}
