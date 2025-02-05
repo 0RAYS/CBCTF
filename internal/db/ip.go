@@ -11,7 +11,6 @@ import (
 func RecordIP(tx *gorm.DB, ip model.IP) {
 	if tx.Create(&ip).Error != nil {
 		log.Logger.Warningf("Failed to record IP %s", ip.IP)
-
 	}
 }
 

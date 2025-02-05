@@ -83,7 +83,6 @@ func UpdateUsage(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool,
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to update Usage: %s", res.Error)
-
 		return false, "UpdateUsageError"
 	}
 	return true, "Success"
@@ -94,7 +93,6 @@ func AddSolvers(tx *gorm.DB, id uint) (bool, string) {
 		UpdateColumn("solvers", gorm.Expr("solvers + ?", 1))
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to update Usage: %s", res.Error)
-
 		return false, "UpdateUsageError"
 	}
 	return true, "Success"
@@ -105,7 +103,6 @@ func DeleteUsage(tx *gorm.DB, id uint) (bool, string) {
 	res := tx.Model(model.Usage{}).Where("id = ?", id).Delete(&model.Usage{})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete Usage: %s", res.Error)
-
 		return false, "DeleteUsageError"
 	}
 	return true, "Success"
