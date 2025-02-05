@@ -18,10 +18,10 @@ func CreateUser(tx *gorm.DB, form constants.CreateUserForm) (model.User, bool, s
 	if !IsValidEmail(form.Email) {
 		return model.User{}, false, "InvalidEmail"
 	}
-	if !IsUniqueName(form.Name, model.User{}) {
+	if !IsUniqueName(tx, form.Name, model.User{}) {
 		return model.User{}, false, "UserNameExists"
 	}
-	if !IsUniqueEmail(form.Email) {
+	if !IsUniqueEmail(tx, form.Email) {
 		return model.User{}, false, "EmailExists"
 	}
 	user := model.InitUser(form)
@@ -39,7 +39,7 @@ func CreateUser(tx *gorm.DB, form constants.CreateUserForm) (model.User, bool, s
 }
 
 // GetUserByID 根据 ID 获取 model.User, preloadL[0] 为是否预加载, preloadL[1] 为是否嵌套预加载
-func GetUserByID(ctx context.Context, id uint, preloadL ...bool) (model.User, bool, string) {
+func GetUserByID(tx *gorm.DB, id uint, preloadL ...bool) (model.User, bool, string) {
 	preload := true
 	nest := false
 	if len(preloadL) > 0 {
@@ -53,7 +53,7 @@ func GetUserByID(ctx context.Context, id uint, preloadL ...bool) (model.User, bo
 		return user, true, "Success"
 	}
 	var user model.User
-	res := DB.WithContext(ctx).Model(&model.User{}).Where("id = ?", id)
+	res := tx.Model(&model.User{}).Where("id = ?", id)
 	if preload {
 		if nest {
 			res = res.Preload("Teams.Users").Preload("Contests.Users").Preload("Contests.Teams")
@@ -73,14 +73,14 @@ func GetUserByID(ctx context.Context, id uint, preloadL ...bool) (model.User, bo
 }
 
 // DeleteUser 根据 id 删除 model.User, 同时删除与 model.Team, model.Contest 的关联, 此处需嵌套预加载, 所以不接受中间件保存的值
-func DeleteUser(tx *gorm.DB, ctx context.Context, id uint) (bool, string) {
-	user, ok, msg := GetUserByID(ctx, id, true, true)
+func DeleteUser(tx *gorm.DB, id uint) (bool, string) {
+	user, ok, msg := GetUserByID(tx, id, true, true)
 	if !ok {
 		return false, msg
 	}
 	for _, team := range user.Teams {
 		if len(team.Users) == 1 {
-			if ok, msg = DeleteTeam(tx, ctx, *team); !ok {
+			if ok, msg = DeleteTeam(tx, *team); !ok {
 				log.Logger.Warningf("Failed to delete empty team: %s", msg)
 				return false, msg
 			}
@@ -124,10 +124,10 @@ func UpdateUser(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool, 
 }
 
 // VerifyUser 验证用户
-func VerifyUser(ctx context.Context, username string, password string) (model.User, bool, string) {
+func VerifyUser(tx *gorm.DB, username string, password string) (model.User, bool, string) {
 	var user model.User
 	var res *gorm.DB
-	res = DB.WithContext(ctx).Model(&model.User{}).Where("name = ? OR email = ?", username, username).
+	res = tx.Model(&model.User{}).Where("name = ? OR email = ?", username, username).
 		Find(&user).Limit(1)
 	if res.RowsAffected != 1 {
 		// 保持 用户名不存在 与 密码错误 行为相同
@@ -160,14 +160,14 @@ func ChangePasswordUser(tx *gorm.DB, user model.User, oldPassword string, newPas
 }
 
 // CountUsers 获取用户数量
-func CountUsers(ctx context.Context) int64 {
+func CountUsers(tx *gorm.DB) int64 {
 	var count int64
-	DB.WithContext(ctx).Model(&model.User{}).Count(&count)
+	tx.Model(&model.User{}).Count(&count)
 	return count
 }
 
 // GetUsers 获取用户列表, 可接受 limit, offset, all 参数, preloadL[0] 为是否预加载, preloadL[1] 为是否嵌套预加载
-func GetUsers(ctx context.Context, limit int, offset int, all bool, preloadL ...bool) ([]model.User, int64, bool, string) {
+func GetUsers(tx *gorm.DB, limit int, offset int, all bool, preloadL ...bool) ([]model.User, int64, bool, string) {
 	if limit <= 0 {
 		limit = -1
 	}
@@ -184,7 +184,7 @@ func GetUsers(ctx context.Context, limit int, offset int, all bool, preloadL ...
 	}
 	var users []model.User
 	var count int64
-	res := DB.WithContext(ctx).Model(&model.User{})
+	res := tx.Model(&model.User{})
 	if !all {
 		res = res.Where("hidden = ? AND banned = ?", false, false)
 	}

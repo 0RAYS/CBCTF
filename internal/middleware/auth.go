@@ -26,7 +26,7 @@ func CheckLogin(ctx *gin.Context) {
 		return
 	}
 	if claims.Type == "admin" {
-		admin, ok, msg := db.GetAdminByID(ctx, claims.UserID)
+		admin, ok, msg := db.GetAdminByID(db.DB.WithContext(ctx), claims.UserID)
 		if !ok {
 			ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			ctx.Abort()
@@ -37,7 +37,7 @@ func CheckLogin(ctx *gin.Context) {
 		ctx.Next()
 		return
 	} else if claims.Type == "user" {
-		user, ok, msg := db.GetUserByID(ctx, claims.UserID, false)
+		user, ok, msg := db.GetUserByID(db.DB.WithContext(ctx), claims.UserID, false)
 		if !ok {
 			ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			ctx.Abort()

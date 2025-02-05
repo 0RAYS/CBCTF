@@ -14,10 +14,10 @@ import (
 
 // CreateTeam 创建队伍, 名称在 model.Contest 中唯一
 func CreateTeam(tx *gorm.DB, form constants.CreateTeamForm, captain model.User, contest model.Contest) (model.Team, bool, string) {
-	if !IsUniqueTeamName(form.Name, contest.ID) {
+	if !IsUniqueTeamName(tx, form.Name, contest.ID) {
 		return model.Team{}, false, "TeamNameExists"
 	}
-	if !IsUniqueTeamMember(contest.ID, captain.ID) {
+	if !IsUniqueTeamMember(tx, contest.ID, captain.ID) {
 		return model.Team{}, false, "TeamMemberExists"
 	}
 	team := model.InitTeam(form, captain.ID, contest.ID)
@@ -38,7 +38,7 @@ func CreateTeam(tx *gorm.DB, form constants.CreateTeamForm, captain model.User, 
 }
 
 // GetTeamByID 根据 ID 获取 model.Team
-func GetTeamByID(ctx context.Context, id uint, preloadL ...bool) (model.Team, bool, string) {
+func GetTeamByID(tx *gorm.DB, id uint, preloadL ...bool) (model.Team, bool, string) {
 	preload := true
 	nest := false
 	if len(preloadL) > 0 {
@@ -52,7 +52,7 @@ func GetTeamByID(ctx context.Context, id uint, preloadL ...bool) (model.Team, bo
 		return team, true, "Success"
 	}
 	var team model.Team
-	res := DB.WithContext(ctx).Model(&model.Team{}).Where("id = ?", id)
+	res := tx.Model(&model.Team{}).Where("id = ?", id)
 	if preload {
 		if nest {
 			res = res.Preload("Users.Teams").Preload("Users.Contests")
@@ -72,7 +72,7 @@ func GetTeamByID(ctx context.Context, id uint, preloadL ...bool) (model.Team, bo
 }
 
 // GetTeamByName 根据名称获取 model.Team, name 用户可控, 不进行缓存
-func GetTeamByName(ctx context.Context, name string, contestID uint, preloadL ...bool) (model.Team, bool, string) {
+func GetTeamByName(tx *gorm.DB, name string, contestID uint, preloadL ...bool) (model.Team, bool, string) {
 	preload := true
 	nest := false
 	if len(preloadL) > 0 {
@@ -82,7 +82,7 @@ func GetTeamByName(ctx context.Context, name string, contestID uint, preloadL ..
 		nest = preloadL[1]
 	}
 	var team model.Team
-	res := DB.WithContext(ctx).Model(&model.Team{}).Where("name = ? AND contest_id = ?", name, contestID)
+	res := tx.Model(&model.Team{}).Where("name = ? AND contest_id = ?", name, contestID)
 	if preload {
 		if nest {
 			res = res.Preload("Users.Teams").Preload("Users.Contests")
@@ -97,8 +97,8 @@ func GetTeamByName(ctx context.Context, name string, contestID uint, preloadL ..
 }
 
 // GetTeamByUserID 根据 UserID 获取 model.Team, 结果等同于 GetTeam preload = true, nest = false
-func GetTeamByUserID(ctx context.Context, userID uint, contestID uint) (model.Team, bool, string) {
-	user, ok, msg := GetUserByID(ctx, userID, true, true)
+func GetTeamByUserID(tx *gorm.DB, userID uint, contestID uint) (model.Team, bool, string) {
+	user, ok, msg := GetUserByID(tx, userID, true, true)
 	if !ok {
 		return model.Team{}, false, msg
 	}
@@ -111,8 +111,8 @@ func GetTeamByUserID(ctx context.Context, userID uint, contestID uint) (model.Te
 }
 
 // DeleteTeam 删除 model.Team, 同时删除与 model.User, model.Contest 的关联
-func DeleteTeam(tx *gorm.DB, ctx context.Context, team model.Team) (bool, string) {
-	contest, ok, msg := GetContestByID(ctx, team.ContestID)
+func DeleteTeam(tx *gorm.DB, team model.Team) (bool, string) {
+	contest, ok, msg := GetContestByID(tx, team.ContestID)
 	if !ok {
 		return false, msg
 	}
@@ -163,7 +163,7 @@ func UpdateTeam(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool, 
 
 // JoinTeam model.User 加入 model.Team, 建立三个模型直接的关联关系
 func JoinTeam(tx *gorm.DB, user model.User, team model.Team, contest model.Contest) (bool, string) {
-	if !IsUniqueTeamMember(contest.ID, user.ID) {
+	if !IsUniqueTeamMember(tx, contest.ID, user.ID) {
 		return false, "TeamMemberExists"
 	}
 	if team.Banned {
@@ -211,8 +211,8 @@ func JoinTeam(tx *gorm.DB, user model.User, team model.Team, contest model.Conte
 }
 
 // LeaveTeam model.User 离开 model.Team, 删除三个模型直接的关联关系
-func LeaveTeam(tx *gorm.DB, ctx context.Context, user model.User, team model.Team, contest model.Contest) (bool, string) {
-	if !IsMemberInTeam(team.ID, user.ID) {
+func LeaveTeam(tx *gorm.DB, user model.User, team model.Team, contest model.Contest) (bool, string) {
+	if !IsMemberInTeam(tx, team.ID, user.ID) {
 		return false, "UserNotInTeam"
 	}
 	if team.CaptainID == user.ID {
@@ -220,7 +220,7 @@ func LeaveTeam(tx *gorm.DB, ctx context.Context, user model.User, team model.Tea
 	}
 	// 队伍人数为 1 时一定是队长, 无法到达这个代码, 暂且保留; 退出后队伍人数为0, 删除队伍;
 	if len(team.Users) == 1 {
-		DeleteTeam(tx, ctx, team)
+		DeleteTeam(tx, team)
 	}
 	if err := DeleteUserFromTeam(tx, user, team); err != nil {
 		log.Logger.Warningf("Failed to delete user_team: %s", err)
@@ -254,7 +254,7 @@ func LeaveTeam(tx *gorm.DB, ctx context.Context, user model.User, team model.Tea
 }
 
 // GetTeams 获取 model.Team 列表, preloadL[0] 是否预加载, preloadL[1] 是否嵌套预加载
-func GetTeams(ctx context.Context, contestID uint, limit int, offset int, all bool, preloadL ...bool) ([]model.Team, int64, bool, string) {
+func GetTeams(tx *gorm.DB, contestID uint, limit int, offset int, all bool, preloadL ...bool) ([]model.Team, int64, bool, string) {
 	if limit <= 0 {
 		limit = -1
 	}
@@ -271,7 +271,7 @@ func GetTeams(ctx context.Context, contestID uint, limit int, offset int, all bo
 	}
 	var teams []model.Team
 	var count int64
-	res := DB.WithContext(ctx).Model(&model.Team{}).Where("contest_id = ?", contestID)
+	res := tx.Model(&model.Team{}).Where("contest_id = ?", contestID)
 	if !all {
 		res = res.Where("hidden = ? AND banned = ?", false, false)
 	}

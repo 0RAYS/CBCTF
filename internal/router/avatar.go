@@ -53,7 +53,7 @@ func DeleteAvatar(ctx *gin.Context) {
 		files = append(files, uri)
 	}
 	for _, id := range filesID {
-		file, ok, msg = db.GetAvatarByID(ctx, id)
+		file, ok, msg = db.GetAvatarByID(db.DB.WithContext(ctx), id)
 		if !ok {
 			ctx.JSON(http.StatusNotFound, gin.H{"msg": msg, "data": nil})
 			return
@@ -82,7 +82,7 @@ func GetAvatars(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	files, count, ok, msg := db.GetAvatars(ctx, form.Limit, form.Offset)
+	files, count, ok, msg := db.GetAvatars(db.DB.WithContext(ctx), form.Limit, form.Offset)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -122,7 +122,7 @@ func UploadAvatar(v interface{}) func(ctx *gin.Context) {
 		)
 		hash := hex.EncodeToString(sha256Sum.Sum(nil))
 		tx := db.DB.WithContext(ctx).Begin()
-		if record, ok, _ = db.GetAvatarByHash(ctx, hash); !ok {
+		if record, ok, _ = db.GetAvatarByHash(tx, hash); !ok {
 			basePath := fmt.Sprintf("%s/avatar", config.Env.Gin.Upload.Path)
 			allowed := []string{".png", ".jpg", ".jpeg"}
 			suffix := strings.ToLower(p.Ext(file.Filename))

@@ -48,7 +48,7 @@ func TestCreateAdmin(t *testing.T) {
 	if _, ok, _ := CreateUser(tx, constants.CreateUserForm{Name: "test", Password: "password", Email: "admin1@0rays.club"}); ok {
 		t.Fatal("Should not create user which email is duplicated with admin")
 	}
-	if admin1, _, _ := GetAdminByID(ctx, 1); admin1.Password == "password" {
+	if admin1, _, _ := GetAdminByID(DB, 1); admin1.Password == "password" {
 		t.Fatal("Failed to hash password")
 	}
 	tx.Commit()
@@ -58,11 +58,10 @@ func TestGetAdminByID(t *testing.T) {
 	InitAdminTest()
 	defer os.Remove("test.db")
 	defer Close()
-	var ctx context.Context
-	if _, ok, _ := GetAdminByID(ctx, 0); ok {
+	if _, ok, _ := GetAdminByID(DB, 0); ok {
 		t.Fatal("Should not get admin with invalid id")
 	}
-	if _, ok, _ := GetAdminByID(ctx, 1); !ok {
+	if _, ok, _ := GetAdminByID(DB, 1); !ok {
 		t.Fatal("Failed to get admin by id")
 	}
 }

@@ -4,19 +4,18 @@ import (
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"context"
 	"gorm.io/gorm"
 )
 
 // CreateDocker 创建 Docker, 并注入 flag
-func CreateDocker(tx *gorm.DB, ctx context.Context, flag model.Flag, challenge model.Challenge, creatorID uint) (model.Docker, bool, string) {
+func CreateDocker(tx *gorm.DB, flag model.Flag, challenge model.Challenge, creatorID uint) (model.Docker, bool, string) {
 	var (
 		docker model.Docker
 		ok     bool
 		msg    string
 		port   int32
 	)
-	if docker, ok, _ = GetDockerBy3ID(ctx, flag.ContestID, flag.TeamID, flag.ChallengeID); ok {
+	if docker, ok, _ = GetDockerBy3ID(tx, flag.ContestID, flag.TeamID, flag.ChallengeID); ok {
 		return docker, ok, "Success"
 	}
 	if challenge.Type != model.Container {
@@ -42,9 +41,9 @@ func CreateDocker(tx *gorm.DB, ctx context.Context, flag model.Flag, challenge m
 }
 
 // GetDockers 获取所有 Docker
-func GetDockers(ctx context.Context) ([]model.Docker, bool, string) {
+func GetDockers(tx *gorm.DB) ([]model.Docker, bool, string) {
 	var dockers []model.Docker
-	res := DB.WithContext(ctx).Model(model.Docker{}).Find(&dockers)
+	res := tx.Model(model.Docker{}).Find(&dockers)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Dockers: %s", res.Error)
 		return nil, false, "GetDockersError"
@@ -53,9 +52,9 @@ func GetDockers(ctx context.Context) ([]model.Docker, bool, string) {
 }
 
 // GetDockerByID 根据 ID 获取 Docker
-func GetDockerByID(ctx context.Context, id uint) (model.Docker, bool, string) {
+func GetDockerByID(tx *gorm.DB, id uint) (model.Docker, bool, string) {
 	var docker model.Docker
-	res := DB.WithContext(ctx).Model(model.Docker{}).Where("id = ?", id).Find(&docker).Limit(1)
+	res := tx.Model(model.Docker{}).Where("id = ?", id).Find(&docker).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.Docker{}, false, "DockerNotFound"
 	}
@@ -63,9 +62,9 @@ func GetDockerByID(ctx context.Context, id uint) (model.Docker, bool, string) {
 }
 
 // GetDockerBy3ID 根据 contestID, teamID, challengeID 获取 Docker
-func GetDockerBy3ID(ctx context.Context, contestID, teamID uint, challengeID string) (model.Docker, bool, string) {
+func GetDockerBy3ID(tx *gorm.DB, contestID, teamID uint, challengeID string) (model.Docker, bool, string) {
 	var docker model.Docker
-	res := DB.WithContext(ctx).Model(model.Docker{}).
+	res := tx.Model(model.Docker{}).
 		Where("contest_id = ? AND team_id = ? AND challenge_id = ?", contestID, teamID, challengeID).Find(&docker).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.Docker{}, false, "DockerNotFound"

@@ -29,13 +29,13 @@ func RecordAvatar(tx *gorm.DB, path string, uploader uint, file *multipart.FileH
 }
 
 // GetAvatarByID 以 ID 获取文件记录
-func GetAvatarByID(ctx context.Context, id string) (model.Avatar, bool, string) {
+func GetAvatarByID(tx *gorm.DB, id string) (model.Avatar, bool, string) {
 	cacheKey := fmt.Sprintf("file:%s", id)
 	if file, ok := redis.GetFileCache(cacheKey); ok {
 		return file, true, "Success"
 	}
 	var file model.Avatar
-	res := DB.WithContext(ctx).Model(model.Avatar{}).Where("id = ?", id).Find(&file).Limit(1)
+	res := tx.Model(model.Avatar{}).Where("id = ?", id).Find(&file).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.Avatar{}, false, "FileNotFound"
 	}
@@ -48,13 +48,13 @@ func GetAvatarByID(ctx context.Context, id string) (model.Avatar, bool, string) 
 }
 
 // GetAvatarByHash 以 Hash 获取文件记录
-func GetAvatarByHash(ctx context.Context, hash string) (model.Avatar, bool, string) {
+func GetAvatarByHash(tx *gorm.DB, hash string) (model.Avatar, bool, string) {
 	cacheKey := fmt.Sprintf("file:hash:%s", hash)
 	if file, ok := redis.GetFileCache(cacheKey); ok {
 		return file, true, "Success"
 	}
 	var file model.Avatar
-	res := DB.WithContext(ctx).Model(model.Avatar{}).Where("hash = ?", hash).Find(&file).Limit(1)
+	res := tx.Model(model.Avatar{}).Where("hash = ?", hash).Find(&file).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.Avatar{}, false, "FileNotFound"
 	}
@@ -85,7 +85,7 @@ func DeleteAvatar(tx *gorm.DB, id string) (bool, string) {
 }
 
 // GetAvatars 批量获取文件记录
-func GetAvatars(ctx context.Context, limit int, offset int) ([]model.Avatar, int64, bool, string) {
+func GetAvatars(tx *gorm.DB, limit int, offset int) ([]model.Avatar, int64, bool, string) {
 	if limit <= 0 {
 		limit = -1
 	}
@@ -94,7 +94,7 @@ func GetAvatars(ctx context.Context, limit int, offset int) ([]model.Avatar, int
 	}
 	var files []model.Avatar
 	var count int64
-	res := DB.WithContext(ctx).Model(&model.Avatar{})
+	res := tx.Model(&model.Avatar{})
 	if res = res.Count(&count); res.Error != nil {
 		log.Logger.Warningf("Failed to get files: %s", res.Error)
 		return nil, 0, false, "UnknownError"

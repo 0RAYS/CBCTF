@@ -50,7 +50,7 @@ func TestCreateUser(t *testing.T) {
 	if _, ok, _ := CreateAdmin(tx, "test", "password", "user1@0rays.club"); ok {
 		t.Fatalf("Should not create admin which email is duplicated with user")
 	}
-	if user1, _, _ := GetUserByID(ctx, 1); user1.Password == "password" {
+	if user1, _, _ := GetUserByID(DB, 1); user1.Password == "password" {
 		t.Fatalf("Failed to hash password")
 	}
 	tx.Commit()
@@ -60,11 +60,10 @@ func TestGetUserByID(t *testing.T) {
 	InitUserTest()
 	defer os.Remove("test.db")
 	defer Close()
-	var ctx context.Context
-	if _, ok, _ := GetUserByID(ctx, 0); ok {
+	if _, ok, _ := GetUserByID(DB, 0); ok {
 		t.Fatalf("Should not get user with invalid id")
 	}
-	if _, ok, _ := GetUserByID(ctx, 1); !ok {
+	if _, ok, _ := GetUserByID(DB, 1); !ok {
 		t.Fatalf("Failed to get user by id")
 	}
 }
@@ -75,15 +74,15 @@ func TestDeleteUser(t *testing.T) {
 	defer Close()
 	var ctx context.Context
 	tx := DB.WithContext(ctx).Begin()
-	if ok, _ := DeleteUser(tx, ctx, 0); ok {
+	if ok, _ := DeleteUser(tx, 0); ok {
 		t.Fatalf("Sest hould return false when delete invalid user")
 	}
 
-	user1, ok, msg := GetUserByID(ctx, 1)
+	user1, ok, msg := GetUserByID(DB, 1)
 	if !ok {
 		t.Fatalf(msg)
 	}
-	contest1, ok, msg := GetContestByID(ctx, 1)
+	contest1, ok, msg := GetContestByID(DB, 1)
 	if !ok {
 		t.Fatalf(msg)
 	}
@@ -113,7 +112,7 @@ func TestDeleteUser(t *testing.T) {
 	}
 	log.Logger.Debug(tmp)
 
-	if ok, _ := DeleteUser(tx, ctx, 1); !ok {
+	if ok, _ := DeleteUser(tx, 1); !ok {
 		t.Fatalf("Failed to delete user")
 	}
 	tx.Commit()
@@ -151,12 +150,12 @@ func TestGetUsers(t *testing.T) {
 	test, _, _ := CreateUser(tx, constants.CreateUserForm{Name: "test", Password: "password", Email: "test@0rays.club"})
 	_, _ = UpdateUser(tx, test.ID, map[string]interface{}{"hidden": true})
 	tx.Commit()
-	users, count, ok, msg := GetUsers(ctx, 0, 0, true)
+	users, count, ok, msg := GetUsers(DB, 0, 0, true)
 	log.Logger.Info(users, count, ok, msg)
 	if len(users) != 2 {
 		t.Fatalf("Failed to get all users")
 	}
-	users, count, ok, msg = GetUsers(ctx, 0, 0, false)
+	users, count, ok, msg = GetUsers(DB, 0, 0, false)
 	log.Logger.Info(users, count, ok, msg)
 	if len(users) != 1 {
 		t.Fatalf("Failed to filter hidden users")

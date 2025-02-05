@@ -16,7 +16,7 @@ func SetUser(ctx *gin.Context) {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		ctx.Abort()
 	}
-	user, ok, msg := db.GetUserByID(ctx, userID.UserID)
+	user, ok, msg := db.GetUserByID(db.DB.WithContext(ctx), userID.UserID)
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
@@ -42,7 +42,7 @@ func SetContest(ctx *gin.Context) {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		ctx.Abort()
 	}
-	contest, ok, msg := db.GetContestByID(ctx, contestID.ContestID)
+	contest, ok, msg := db.GetContestByID(db.DB.WithContext(ctx), contestID.ContestID)
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
@@ -71,7 +71,7 @@ func SetTeamByUser(ctx *gin.Context) {
 		ctx.JSONP(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
 		ctx.Abort()
 	}
-	team, ok, msg = db.GetTeamByUserID(ctx, self.ID, GetContest(ctx).ID)
+	team, ok, msg = db.GetTeamByUserID(db.DB.WithContext(ctx), self.ID, GetContest(ctx).ID)
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
@@ -94,7 +94,7 @@ func SetTeamByURI(ctx *gin.Context) {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		ctx.Abort()
 	}
-	team, ok, msg = db.GetTeamByID(ctx, teamID.TeamID)
+	team, ok, msg = db.GetTeamByID(db.DB.WithContext(ctx), teamID.TeamID)
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
@@ -120,7 +120,7 @@ func SetAvatar(ctx *gin.Context) {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		ctx.Abort()
 	}
-	avatar, ok, msg := db.GetAvatarByID(ctx, avatarID.AvatarID)
+	avatar, ok, msg := db.GetAvatarByID(db.DB.WithContext(ctx), avatarID.AvatarID)
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
@@ -146,7 +146,7 @@ func SetChallenge(ctx *gin.Context) {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		ctx.Abort()
 	}
-	challenge, ok, msg := db.GetChallengeByID(ctx, challengeID.ChallengeID)
+	challenge, ok, msg := db.GetChallengeByID(db.DB.WithContext(ctx), challengeID.ChallengeID)
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()

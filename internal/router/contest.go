@@ -27,7 +27,7 @@ func GetContests(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	contests, count, ok, msg := db.GetContests(ctx, form.Limit, form.Offset, all)
+	contests, count, ok, msg := db.GetContests(db.DB.WithContext(ctx), form.Limit, form.Offset, all)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -60,7 +60,7 @@ func UpdateContest(ctx *gin.Context) {
 	}
 	contest := middleware.GetContest(ctx)
 	data := utils.Form2Map(form)
-	if name, ok := data["name"]; ok && name.(string) != contest.Name && !db.IsUniqueTeamName(name.(string), contest.ID) {
+	if name, ok := data["name"]; ok && name.(string) != contest.Name && !db.IsUniqueTeamName(db.DB.WithContext(ctx), name.(string), contest.ID) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "ContestNameExists", "data": nil})
 		return
 	}
@@ -76,7 +76,7 @@ func UpdateContest(ctx *gin.Context) {
 
 func DeleteContest(ctx *gin.Context) {
 	tx := db.DB.WithContext(ctx).Begin()
-	ok, msg := db.DeleteContest(tx, ctx, middleware.GetContest(ctx))
+	ok, msg := db.DeleteContest(tx, middleware.GetContest(ctx))
 	if !ok {
 		tx.Rollback()
 	} else {

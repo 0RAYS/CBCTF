@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
-	"context"
 	"gorm.io/gorm"
 )
 
@@ -13,10 +12,10 @@ func CreateAdmin(tx *gorm.DB, name string, password string, email string) (model
 	if !IsValidEmail(email) {
 		return model.Admin{}, false, "InvalidEmail"
 	}
-	if !IsUniqueName(name, model.Admin{}) {
+	if !IsUniqueName(tx, name, model.Admin{}) {
 		return model.Admin{}, false, "AdminNameExists"
 	}
-	if !IsUniqueEmail(email) {
+	if !IsUniqueEmail(tx, email) {
 		return model.Admin{}, false, "EmailExists"
 	}
 	admin := model.InitAdmin(name, password, email)
@@ -29,18 +28,18 @@ func CreateAdmin(tx *gorm.DB, name string, password string, email string) (model
 }
 
 // GetAdminByID 根据 id 获取 model.Admin
-func GetAdminByID(ctx context.Context, id uint) (model.Admin, bool, string) {
+func GetAdminByID(tx *gorm.DB, id uint) (model.Admin, bool, string) {
 	var admin model.Admin
-	res := DB.WithContext(ctx).Model(&model.Admin{}).Where("id = ?", id).Find(&admin)
+	res := tx.Model(&model.Admin{}).Where("id = ?", id).Find(&admin)
 	if res.RowsAffected != 1 {
 		return model.Admin{}, false, "AdminNotFound"
 	}
 	return admin, true, "Success"
 }
 
-func GetAdminByName(ctx context.Context, name string) (model.Admin, bool, string) {
+func GetAdminByName(tx *gorm.DB, name string) (model.Admin, bool, string) {
 	var admin model.Admin
-	res := DB.WithContext(ctx).Model(&model.Admin{}).Where("name = ?", name).Find(&admin)
+	res := tx.Model(&model.Admin{}).Where("name = ?", name).Find(&admin)
 	if res.RowsAffected != 1 {
 		return model.Admin{}, false, "AdminNotFound"
 	}
@@ -48,9 +47,9 @@ func GetAdminByName(ctx context.Context, name string) (model.Admin, bool, string
 }
 
 // GetAdmins 获取所有管理员
-func GetAdmins(ctx context.Context) ([]model.Admin, int, bool, string) {
+func GetAdmins(tx *gorm.DB) ([]model.Admin, int, bool, string) {
 	var admins []model.Admin
-	res := DB.WithContext(ctx).Model(&model.Admin{}).Find(&admins)
+	res := tx.Model(&model.Admin{}).Find(&admins)
 	if res.Error != nil {
 		log.Logger.Errorf("Failed to get admins: %s", res.Error)
 		return nil, 0, false, "UnknownError"
@@ -80,8 +79,8 @@ func UpdateAdmin(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool,
 }
 
 // VerifyAdmin 验证管理员
-func VerifyAdmin(ctx context.Context, username string, password string) (model.Admin, bool, string) {
-	admin, ok, msg := GetAdminByName(ctx, username)
+func VerifyAdmin(tx *gorm.DB, username string, password string) (model.Admin, bool, string) {
+	admin, ok, msg := GetAdminByName(tx, username)
 	if !ok {
 		return model.Admin{}, false, msg
 	}

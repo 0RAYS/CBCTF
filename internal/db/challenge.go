@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/constants"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"context"
 	"gorm.io/gorm"
 )
 
@@ -23,9 +22,9 @@ func CreateChallenge(tx *gorm.DB, form constants.CreateChallengeForm) (model.Cha
 }
 
 // GetChallengeByID 根据 id 获取题目
-func GetChallengeByID(ctx context.Context, id string) (model.Challenge, bool, string) {
+func GetChallengeByID(tx *gorm.DB, id string) (model.Challenge, bool, string) {
 	var challenge model.Challenge
-	res := DB.WithContext(ctx).Model(model.Challenge{}).Where("id = ?", id).Find(&challenge).Limit(1)
+	res := tx.Model(model.Challenge{}).Where("id = ?", id).Find(&challenge).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.Challenge{}, false, "ChallengeNotFound"
 	}
@@ -33,7 +32,7 @@ func GetChallengeByID(ctx context.Context, id string) (model.Challenge, bool, st
 }
 
 // GetChallenges 获取题目列表, 可接受 type 和 category 参数
-func GetChallenges(ctx context.Context, limit, offset, t int, category string) ([]model.Challenge, int64, bool, string) {
+func GetChallenges(tx *gorm.DB, limit, offset, t int, category string) ([]model.Challenge, int64, bool, string) {
 	if limit <= 0 {
 		limit = -1
 	}
@@ -42,7 +41,7 @@ func GetChallenges(ctx context.Context, limit, offset, t int, category string) (
 	}
 	var challenges []model.Challenge
 	var count int64
-	res := DB.WithContext(ctx).Model(model.Challenge{})
+	res := tx.Model(model.Challenge{})
 	if t != -1 && category != "" {
 		res = res.Where("type = ? AND category = ?", t, category)
 	} else if !(t == -1 && category == "") {
@@ -60,9 +59,9 @@ func GetChallenges(ctx context.Context, limit, offset, t int, category string) (
 }
 
 // CountChallenges 获取题目数量
-func CountChallenges(ctx context.Context) int64 {
+func CountChallenges(tx *gorm.DB) int64 {
 	var count int64
-	DB.WithContext(ctx).Model(&model.Challenge{}).Count(&count)
+	tx.Model(&model.Challenge{}).Count(&count)
 	return count
 }
 
@@ -91,9 +90,9 @@ func DeleteChallenge(tx *gorm.DB, id string) (bool, string) {
 }
 
 // GetCategories 获取 type 下所有的题目分类
-func GetCategories(ctx context.Context, t int) ([]string, bool, string) {
+func GetCategories(tx *gorm.DB, t int) ([]string, bool, string) {
 	var categories []string
-	res := DB.WithContext(ctx).Model(&model.Challenge{}).Where("type = ?", t).Select("distinct category").Find(&categories)
+	res := tx.Model(&model.Challenge{}).Where("type = ?", t).Select("distinct category").Find(&categories)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get categories: %s", res.Error)
 		return nil, false, "UnknownError"

@@ -3,7 +3,6 @@ package cron
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/log"
-	"context"
 	"github.com/robfig/cron/v3"
 	"time"
 )
@@ -11,7 +10,7 @@ import (
 // CloseDockers 关闭并删除超时 dockers
 func CloseDockers(c *cron.Cron) {
 	c.Schedule(cron.Every(1*time.Minute), cron.FuncJob(func() {
-		dockers, ok, msg := db.GetDockers(context.Background())
+		dockers, ok, msg := db.GetDockers(db.DB)
 		if !ok {
 			log.Logger.Warningf("Failed to get dockers %s", msg)
 			return

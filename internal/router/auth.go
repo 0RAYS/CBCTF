@@ -46,7 +46,7 @@ func Login(ctx *gin.Context) {
 		return
 	}
 	username, password := form.Name, form.Password
-	user, ok, msg := db.VerifyUser(ctx, username, password)
+	user, ok, msg := db.VerifyUser(db.DB.WithContext(ctx), username, password)
 	if !ok {
 		ctx.JSONP(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
 		return
@@ -72,7 +72,7 @@ func AdminLogin(ctx *gin.Context) {
 		return
 	}
 	username, password := form.Name, form.Password
-	admin, ok, msg := db.VerifyAdmin(ctx, username, password)
+	admin, ok, msg := db.VerifyAdmin(db.DB.WithContext(ctx), username, password)
 	if !ok {
 		ctx.JSONP(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
 		return

@@ -50,14 +50,13 @@ func TestGetContestByID(t *testing.T) {
 	InitContestTest()
 	defer os.Remove("test.db")
 	defer Close()
-	var ctx context.Context
-	test, ok, msg := GetContestByID(ctx, 0)
+	test, ok, msg := GetContestByID(DB, 0)
 	if ok {
 		t.Fatal("Should not get contest with invalid id")
 	}
 	log.Logger.Debug(test, msg)
 	// 递归预加载
-	contest1, ok, msg := GetContestByID(ctx, 1, true, true)
+	contest1, ok, msg := GetContestByID(DB, 1, true, true)
 	if !ok {
 		t.Fatal("Failed to get contest by id")
 	}
@@ -83,7 +82,7 @@ func TestGetContestByID(t *testing.T) {
 	log.Logger.Debug(contest1.Users[0].Teams[0])
 
 	// 不预加载
-	contest1, ok, msg = GetContestByID(ctx, 1, false)
+	contest1, ok, msg = GetContestByID(DB, 1, false)
 	if !ok {
 		t.Fatal("Failed to get contest by id")
 	}
@@ -97,7 +96,7 @@ func TestGetContestByID(t *testing.T) {
 	log.Logger.Debug(contest1.Teams)
 
 	// 预加载但不递归
-	contest1, ok, msg = GetContestByID(ctx, 1, true, false)
+	contest1, ok, msg = GetContestByID(DB, 1, true, false)
 	if !ok {
 		t.Fatal("Failed to get contest by id")
 	}
@@ -129,16 +128,16 @@ func TestDeleteContest(t *testing.T) {
 	defer Close()
 	var ctx context.Context
 	tx := DB.WithContext(ctx).Begin()
-	if ok, _ := DeleteContest(tx, ctx, model.Contest{ID: 0}); ok {
+	if ok, _ := DeleteContest(tx, model.Contest{ID: 0}); ok {
 		tx.Commit()
 		t.Fatal("Should return true when delete invalid contest")
 	}
 	tx.Rollback()
-	user1, ok, _ := GetUserByID(ctx, 1)
+	user1, ok, _ := GetUserByID(DB, 1)
 	if !ok {
 		t.Fatal("Failed to get user by id")
 	}
-	contest1, ok, _ := GetContestByID(ctx, 1)
+	contest1, ok, _ := GetContestByID(DB, 1)
 	if !ok {
 		t.Fatal("Failed to get contest by id")
 	}
@@ -169,7 +168,7 @@ func TestDeleteContest(t *testing.T) {
 	log.Logger.Debug(tmp)
 
 	tx = DB.WithContext(ctx).Begin()
-	if ok, msg := DeleteContest(tx, ctx, contest1); !ok {
+	if ok, msg := DeleteContest(tx, contest1); !ok {
 		t.Fatalf("Failed to delete contest by id: %s", msg)
 	}
 	tx.Commit()
