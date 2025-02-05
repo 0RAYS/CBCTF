@@ -14,6 +14,9 @@ import (
 )
 
 func GetContestCache(key string) (model.Contest, bool) {
+	if !config.Env.Redis.On {
+		return model.Contest{}, false
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
@@ -34,6 +37,9 @@ func GetContestCache(key string) (model.Contest, bool) {
 }
 
 func GetContestsCache(key string) ([]model.Contest, bool) {
+	if !config.Env.Redis.On {
+		return nil, false
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
@@ -54,6 +60,9 @@ func GetContestsCache(key string) ([]model.Contest, bool) {
 }
 
 func SetContestCache(key string, contest model.Contest) error {
+	if !config.Env.Redis.On {
+		return errors.New("redis off")
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := msgpack.Marshal(contest)
@@ -68,6 +77,9 @@ func SetContestCache(key string, contest model.Contest) error {
 }
 
 func SetContestsCache(key string, contests []model.Contest) error {
+	if !config.Env.Redis.On {
+		return errors.New("redis off")
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := msgpack.Marshal(contests)
@@ -82,10 +94,12 @@ func SetContestsCache(key string, contests []model.Contest) error {
 }
 
 func DelContestCache(id uint) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
+	if !config.Env.Redis.On {
+		return errors.New("redis off")
+	}
 	var cursor uint64
 	for {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 		keys, cursor, err := RDB.Scan(ctx, cursor, fmt.Sprintf("contest:%d:*", id), 10).Result()
 		if err != nil {
 			log.Logger.Warningf("Failed to scan contest keys: %s", err)
@@ -93,10 +107,12 @@ func DelContestCache(id uint) error {
 
 		for _, key := range keys {
 			if err := RDB.Del(ctx, key).Err(); err != nil {
+				cancel()
 				return err
 			}
 			log.Logger.Debug("DelContestCache: ", key)
 		}
+		cancel()
 		if cursor == 0 {
 			break
 		}
@@ -106,10 +122,12 @@ func DelContestCache(id uint) error {
 }
 
 func DelContestsCache() error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
+	if !config.Env.Redis.On {
+		return errors.New("redis off")
+	}
 	var cursor uint64
 	for {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 		keys, cursor, err := RDB.Scan(ctx, cursor, "contests:*", 10).Result()
 		if err != nil {
 			log.Logger.Warningf("Failed to scan contest keys: %s", err)
@@ -117,10 +135,12 @@ func DelContestsCache() error {
 
 		for _, key := range keys {
 			if err := RDB.Del(ctx, key).Err(); err != nil {
+				cancel()
 				return err
 			}
 			log.Logger.Debug("DelContestsCache: ", key)
 		}
+		cancel()
 		if cursor == 0 {
 			break
 		}
