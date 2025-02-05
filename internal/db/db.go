@@ -85,7 +85,7 @@ func InitTest() {
 		&model.Admin{}, &model.User{}, &model.Team{},
 		&model.Contest{}, &model.Avatar{}, &model.IP{},
 		&model.Challenge{}, &model.Usage{}, &model.Flag{},
-		&model.Docker{}, &model.Submission{},
+		&model.Docker{}, &model.Submission{}, &model.Scoreboard{},
 	)
 	tx := DB.Begin()
 	InitAdmin(tx)
