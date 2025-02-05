@@ -49,7 +49,7 @@ func GetChallenges(ctx *gin.Context) {
 		form.Type = -1
 		form.Category = ""
 	}
-	challenges, count, ok, msg := db.GetChallenges(ctx, form.Limit, form.Offset, form.Type, form.Category)
+	challenges, count, ok, msg := db.GetChallenges(db.DB.WithContext(ctx), form.Limit, form.Offset, form.Type, form.Category)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -88,7 +88,7 @@ func GetCategories(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	categories, ok, msg := db.GetCategories(ctx, form.Type)
+	categories, ok, msg := db.GetCategories(db.DB.WithContext(ctx), form.Type)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -137,7 +137,7 @@ func DeleteChallenge(ctx *gin.Context) {
 	}
 	challenge := middleware.GetChallenge(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
-	usages, ok, msg := db.GetUsageByChallengeID(ctx, challenge.ID)
+	usages, ok, msg := db.GetUsageByChallengeID(tx, challenge.ID)
 	if ok {
 		for _, usage := range usages {
 			if ok, msg := db.DeleteUsage(tx, usage.ID); !ok {
@@ -222,7 +222,7 @@ func ChallengeStatus(ctx *gin.Context) {
 		msg  string
 	)
 	team = middleware.GetTeam(ctx)
-	_, ok, msg = db.GetFlagBy3ID(ctx, middleware.GetContest(ctx).ID, team.ID, middleware.GetChallenge(ctx).ID)
+	_, ok, msg = db.GetFlagBy3ID(db.DB.WithContext(ctx), middleware.GetContest(ctx).ID, team.ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": false})
 		return
@@ -245,17 +245,17 @@ func InitChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": contest.Status(), "data": nil})
 		return
 	}
-	usage, ok, msg = db.GetUsageBy2ID(ctx, contest.ID, middleware.GetChallenge(ctx).ID)
+	usage, ok, msg = db.GetUsageBy2ID(db.DB.WithContext(ctx), contest.ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	if _, ok, msg = db.GetFlagBy3ID(ctx, contest.ID, team.ID, usage.ChallengeID); ok {
+	if _, ok, msg = db.GetFlagBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID); ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
-	_, ok, msg = db.InitFlag(tx, ctx, contest, team, usage)
+	_, ok, msg = db.InitFlag(tx, contest, team, usage)
 	if !ok {
 		tx.Rollback()
 	} else {

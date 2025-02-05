@@ -69,7 +69,7 @@ func UpdateUser(ctx *gin.Context) {
 	}
 	tx := db.DB.WithContext(ctx).Begin()
 	if email, ok := data["email"]; ok && email.(string) != user.Email {
-		if !db.IsUniqueEmail(email.(string)) {
+		if !db.IsUniqueEmail(tx, email.(string)) {
 			tx.Rollback()
 			ctx.JSON(http.StatusOK, gin.H{"msg": "EmailExists", "data": nil})
 			return
@@ -81,7 +81,7 @@ func UpdateUser(ctx *gin.Context) {
 			return
 		}
 	}
-	if name, ok := data["name"]; ok && name.(string) != user.Name && !db.IsUniqueName(name.(string), model.User{}) {
+	if name, ok := data["name"]; ok && name.(string) != user.Name && !db.IsUniqueName(tx, name.(string), model.User{}) {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": "UserNameExists", "data": nil})
 		return
@@ -113,7 +113,7 @@ func DeleteUser(ctx *gin.Context) {
 	}
 	tx := db.DB.WithContext(ctx).Begin()
 	// DeleteUser 需要嵌套预加载数据, 不可传入中间件保存的 ctx 数据
-	ok, msg := db.DeleteUser(tx, ctx, userID)
+	ok, msg := db.DeleteUser(tx, userID)
 	if !ok {
 		tx.Rollback()
 	} else {
@@ -145,7 +145,7 @@ func GetUsers(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	users, count, ok, msg := db.GetUsers(ctx, form.Limit, form.Offset, true)
+	users, count, ok, msg := db.GetUsers(db.DB.WithContext(ctx), form.Limit, form.Offset, true)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

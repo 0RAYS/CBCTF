@@ -41,9 +41,9 @@ func TestAppendUserToTeam(t *testing.T) {
 	defer os.Remove("test.db")
 	defer Close()
 	var ctx context.Context
-	user2, ok, msg := GetUserByID(ctx, 2)
+	user2, ok, msg := GetUserByID(DB, 2)
 	log.Logger.Debug(user2, ok, msg)
-	team1, ok, msg := GetTeamByID(ctx, 1)
+	team1, ok, msg := GetTeamByID(DB, 1)
 	log.Logger.Debug(team1, ok, msg)
 	tx := DB.WithContext(ctx).Begin()
 	if err := AppendUserToTeam(tx, user2, team1); err != nil {
@@ -66,9 +66,9 @@ func TestAppendUserToContest(t *testing.T) {
 	defer os.Remove("test.db")
 	defer Close()
 	var ctx context.Context
-	user2, ok, msg := GetUserByID(ctx, 2)
+	user2, ok, msg := GetUserByID(DB, 2)
 	log.Logger.Debug(user2, ok, msg)
-	contest1, ok, msg := GetContestByID(ctx, 1)
+	contest1, ok, msg := GetContestByID(DB, 1)
 	log.Logger.Debug(contest1, ok, msg)
 	tx := DB.WithContext(ctx).Begin()
 	if err := AppendUserToContest(tx, user2, contest1); err != nil {
@@ -91,9 +91,9 @@ func TestAppendTeamToContest(t *testing.T) {
 	defer os.Remove("test.db")
 	defer Close()
 	var ctx context.Context
-	team1, ok, msg := GetTeamByID(ctx, 1)
+	team1, ok, msg := GetTeamByID(DB, 1)
 	log.Logger.Debug(team1, ok, msg)
-	contest2, ok, msg := GetContestByID(ctx, 2)
+	contest2, ok, msg := GetContestByID(DB, 2)
 	log.Logger.Debug(contest2, ok, msg)
 	tx := DB.WithContext(ctx).Begin()
 	if err := AppendTeamToContest(tx, team1, contest2); err != nil {
@@ -116,9 +116,9 @@ func TestDeleteUserFromTeam(t *testing.T) {
 	defer os.Remove("test.db")
 	defer Close()
 	var ctx context.Context
-	user1, ok, msg := GetUserByID(ctx, 1)
+	user1, ok, msg := GetUserByID(DB, 1)
 	log.Logger.Debug(user1, ok, msg)
-	team1, ok, msg := GetTeamByID(ctx, 1)
+	team1, ok, msg := GetTeamByID(DB, 1)
 	log.Logger.Debug(team1, ok, msg)
 	tx := DB.WithContext(ctx).Begin()
 	if err := DeleteUserFromTeam(tx, user1, team1); err != nil {
@@ -141,9 +141,9 @@ func TestDeleteUserFromContest(t *testing.T) {
 	defer os.Remove("test.db")
 	defer Close()
 	var ctx context.Context
-	user1, ok, msg := GetUserByID(ctx, 1)
+	user1, ok, msg := GetUserByID(DB, 1)
 	log.Logger.Debug(user1, ok, msg)
-	contest1, ok, msg := GetContestByID(ctx, 1)
+	contest1, ok, msg := GetContestByID(DB, 1)
 	log.Logger.Debug(contest1, ok, msg)
 	tx := DB.WithContext(ctx).Begin()
 	if err := DeleteUserFromContest(tx, user1, contest1); err != nil {
@@ -166,9 +166,9 @@ func TestDeleteTeamFromContest(t *testing.T) {
 	defer os.Remove("test.db")
 	defer Close()
 	var ctx context.Context
-	team1, ok, msg := GetTeamByID(ctx, 1)
+	team1, ok, msg := GetTeamByID(DB, 1)
 	log.Logger.Debug(team1, ok, msg)
-	contest1, ok, msg := GetContestByID(ctx, 1)
+	contest1, ok, msg := GetContestByID(DB, 1)
 	log.Logger.Debug(contest1, ok, msg)
 	tx := DB.WithContext(ctx).Begin()
 	if err := DeleteTeamFromContest(tx, team1, contest1); err != nil {

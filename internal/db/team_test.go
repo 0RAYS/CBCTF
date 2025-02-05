@@ -41,10 +41,10 @@ func TestCreateTeam(t *testing.T) {
 	defer os.Remove("test.db")
 	defer Close()
 	var ctx context.Context
-	user1, ok, msg := GetUserByID(ctx, 1)
-	user2, ok, msg := GetUserByID(ctx, 2)
-	contest1, ok, msg := GetContestByID(ctx, 1)
-	contest2, ok, msg := GetContestByID(ctx, 2)
+	user1, ok, msg := GetUserByID(DB, 1)
+	user2, ok, msg := GetUserByID(DB, 2)
+	contest1, ok, msg := GetContestByID(DB, 1)
+	contest2, ok, msg := GetContestByID(DB, 2)
 	tx := DB.WithContext(ctx).Begin()
 	test, ok, msg := CreateTeam(tx, constants.CreateTeamForm{Name: "team1"}, user1, contest1)
 	if ok {
@@ -73,20 +73,19 @@ func TestGetTeamByID(t *testing.T) {
 	InitTeamTest()
 	defer os.Remove("test.db")
 	defer Close()
-	var ctx context.Context
-	_, ok, msg := GetTeamByID(ctx, 1)
+	_, ok, msg := GetTeamByID(DB, 1)
 	if !ok {
 		t.Fatal("Should get team successfully")
 	}
 	log.Logger.Debug(msg)
-	_, ok, msg = GetTeamByID(ctx, 0)
+	_, ok, msg = GetTeamByID(DB, 0)
 	if ok {
 		t.Fatal("Should not get team successfully")
 	}
 	log.Logger.Debug(msg)
 
 	// 不预加载
-	team1, ok, msg := GetTeamByID(ctx, 1, false)
+	team1, ok, msg := GetTeamByID(DB, 1, false)
 	if !ok {
 		t.Fatal("Should get team successfully")
 	}
@@ -96,7 +95,7 @@ func TestGetTeamByID(t *testing.T) {
 	log.Logger.Debug(team1, ok, msg)
 
 	// 预加载但不递归
-	team1, ok, msg = GetTeamByID(ctx, 1, true, false)
+	team1, ok, msg = GetTeamByID(DB, 1, true, false)
 	if !ok {
 		t.Fatal("Should get team successfully")
 	}
@@ -110,7 +109,7 @@ func TestGetTeamByID(t *testing.T) {
 	log.Logger.Debug(team1.Users[0].Teams, ok, msg)
 
 	// 递归预加载
-	team1, ok, msg = GetTeamByID(ctx, 1, true, true)
+	team1, ok, msg = GetTeamByID(DB, 1, true, true)
 	if !ok {
 		t.Fatal("Should get team successfully")
 	}
@@ -130,7 +129,7 @@ func TestDeleteTeam(t *testing.T) {
 	defer Close()
 	var ctx context.Context
 	tx := DB.WithContext(ctx).Begin()
-	ok, msg := DeleteTeam(tx, ctx, model.Team{ID: 0})
+	ok, msg := DeleteTeam(tx, model.Team{ID: 0})
 	if ok {
 		tx.Commit()
 		t.Fatal("Should not delete team successfully")
@@ -138,11 +137,11 @@ func TestDeleteTeam(t *testing.T) {
 	log.Logger.Debug(msg)
 	tx.Rollback()
 
-	team1, ok, msg := GetTeamByID(ctx, 1)
+	team1, ok, msg := GetTeamByID(DB, 1)
 	if !ok {
 		t.Fatal("Should get team successfully")
 	}
-	contest1, ok, msg := GetContestByID(ctx, 1)
+	contest1, ok, msg := GetContestByID(DB, 1)
 	if !ok {
 		t.Fatal("Should get contest successfully")
 	}
@@ -171,9 +170,9 @@ func TestDeleteTeam(t *testing.T) {
 		t.Fatal("Failed to find association between user and team")
 	}
 	log.Logger.Debug(tmp)
-	team1, _, _ = GetTeamByID(ctx, 1)
+	team1, _, _ = GetTeamByID(DB, 1)
 	tx = DB.WithContext(ctx).Begin()
-	ok, msg = DeleteTeam(tx, ctx, team1)
+	ok, msg = DeleteTeam(tx, team1)
 	if !ok {
 		tx.Rollback()
 		t.Fatal("Should delete team successfully")
@@ -181,7 +180,7 @@ func TestDeleteTeam(t *testing.T) {
 	tx.Commit()
 	log.Logger.Debug(msg)
 
-	user1, ok, msg := GetUserByID(ctx, 1)
+	user1, ok, msg := GetUserByID(DB, 1)
 	if !ok {
 		t.Fatal("Failed to get user by id")
 	}
@@ -216,10 +215,10 @@ func TestJoinTeam(t *testing.T) {
 	defer os.Remove("test.db")
 	defer Close()
 	var ctx context.Context
-	user1, ok, msg := GetUserByID(ctx, 1)
-	user2, ok, msg := GetUserByID(ctx, 2)
-	team1, ok, msg := GetTeamByID(ctx, 1)
-	contest1, ok, msg := GetContestByID(ctx, 1)
+	user1, ok, msg := GetUserByID(DB, 1)
+	user2, ok, msg := GetUserByID(DB, 2)
+	team1, ok, msg := GetTeamByID(DB, 1)
+	contest1, ok, msg := GetContestByID(DB, 1)
 	tx := DB.WithContext(ctx).Begin()
 	ok, msg = JoinTeam(tx, user1, team1, contest1)
 	if ok {
@@ -241,10 +240,10 @@ func TestLeaveTeam(t *testing.T) {
 	defer os.Remove("test.db")
 	defer Close()
 	var ctx context.Context
-	user1, ok, msg := GetUserByID(ctx, 1)
-	user2, ok, msg := GetUserByID(ctx, 2)
-	team1, ok, msg := GetTeamByID(ctx, 1)
-	contest1, ok, msg := GetContestByID(ctx, 1)
+	user1, ok, msg := GetUserByID(DB, 1)
+	user2, ok, msg := GetUserByID(DB, 2)
+	team1, ok, msg := GetTeamByID(DB, 1)
+	contest1, ok, msg := GetContestByID(DB, 1)
 	tx := DB.WithContext(ctx).Begin()
 	ok, msg = JoinTeam(tx, user2, team1, contest1)
 	if !ok {
@@ -252,17 +251,17 @@ func TestLeaveTeam(t *testing.T) {
 	}
 	tx.Commit()
 	tx = DB.WithContext(ctx).Begin()
-	ok, msg = LeaveTeam(tx, ctx, user1, team1, contest1)
+	ok, msg = LeaveTeam(tx, user1, team1, contest1)
 	if ok {
 		t.Fatal("Should not leave team successfully")
 	}
 	log.Logger.Debug(msg)
-	ok, msg = LeaveTeam(tx, ctx, user2, team1, contest1)
+	ok, msg = LeaveTeam(tx, user2, team1, contest1)
 	if !ok {
 		t.Fatal("Should leave team successfully")
 	}
 	log.Logger.Debug(msg)
-	ok, msg = LeaveTeam(tx, ctx, user1, team1, contest1)
+	ok, msg = LeaveTeam(tx, user1, team1, contest1)
 	if ok {
 		t.Fatal("Should not leave team successfully")
 	}

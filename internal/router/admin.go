@@ -15,7 +15,7 @@ func GetAdmin(ctx *gin.Context) {
 }
 
 func GetAdmins(ctx *gin.Context) {
-	admins, count, ok, msg := db.GetAdmins(ctx)
+	admins, count, ok, msg := db.GetAdmins(db.DB.WithContext(ctx))
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -68,7 +68,7 @@ func UpdateAdmin(ctx *gin.Context) {
 	tx := db.DB.WithContext(ctx).Begin()
 	// 在预期的想法中，admin 的邮箱似乎没有什么用，先保留
 	if email, ok := data["email"]; ok && email.(string) != admin.Email {
-		if !db.IsUniqueEmail(data["email"].(string)) {
+		if !db.IsUniqueEmail(tx, data["email"].(string)) {
 			tx.Rollback()
 			ctx.JSON(http.StatusOK, gin.H{"msg": "EmailExists", "data": nil})
 			return
@@ -79,7 +79,7 @@ func UpdateAdmin(ctx *gin.Context) {
 			return
 		}
 	}
-	if name, ok := data["name"]; ok && name.(string) != admin.Name && !db.IsUniqueName(name.(string), model.Admin{}) {
+	if name, ok := data["name"]; ok && name.(string) != admin.Name && !db.IsUniqueName(tx, name.(string), model.Admin{}) {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": "UserNameExists", "data": nil})
 		return

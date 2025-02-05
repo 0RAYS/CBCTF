@@ -28,7 +28,7 @@ func GetTeams(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	teams, count, ok, msg := db.GetTeams(ctx, middleware.GetContest(ctx).ID, form.Limit, form.Offset, all)
+	teams, count, ok, msg := db.GetTeams(db.DB.WithContext(ctx), middleware.GetContest(ctx).ID, form.Limit, form.Offset, all)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -43,7 +43,7 @@ func JoinTeam(ctx *gin.Context) {
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	team, ok, msg := db.GetTeamByName(ctx, form.Name, contest.ID)
+	team, ok, msg := db.GetTeamByName(db.DB.WithContext(ctx), form.Name, contest.ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -89,7 +89,7 @@ func LeaveTeam(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
 	team := middleware.GetTeam(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
-	ok, msg := db.LeaveTeam(tx, ctx, user, team, contest)
+	ok, msg := db.LeaveTeam(tx, user, team, contest)
 	if !ok {
 		tx.Rollback()
 	} else {
@@ -128,13 +128,13 @@ func UpdateTeam(ctx *gin.Context) {
 		return
 	}
 	if name, ok := data["name"]; ok && name.(string) != team.Name {
-		if !db.IsUniqueTeamName(name.(string), middleware.GetContest(ctx).ID) {
+		if !db.IsUniqueTeamName(db.DB.WithContext(ctx), name.(string), middleware.GetContest(ctx).ID) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": "TeamNameExists", "data": nil})
 			return
 		}
 	}
 	if captainID, ok := data["captain_id"]; ok && captainID.(uint) != team.CaptainID {
-		if !db.IsMemberInTeam(team.ID, captainID.(uint)) {
+		if !db.IsMemberInTeam(db.DB.WithContext(ctx), team.ID, captainID.(uint)) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": "UserNotInTeam", "data": nil})
 			return
 		}
@@ -151,7 +151,7 @@ func UpdateTeam(ctx *gin.Context) {
 
 func DeleteTeam(ctx *gin.Context) {
 	tx := db.DB.WithContext(ctx).Begin()
-	ok, msg := db.DeleteTeam(tx, ctx, middleware.GetTeam(ctx))
+	ok, msg := db.DeleteTeam(tx, middleware.GetTeam(ctx))
 	if !ok {
 		tx.Rollback()
 	} else {
@@ -167,17 +167,17 @@ func KickMember(ctx *gin.Context) {
 		return
 	}
 	team := middleware.GetTeam(ctx)
-	if !db.IsMemberInTeam(team.ID, form.UserID) {
+	if !db.IsMemberInTeam(db.DB.WithContext(ctx), team.ID, form.UserID) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "UserNotInTeam", "data": nil})
 		return
 	}
-	user, ok, msg := db.GetUserByID(ctx, form.UserID)
+	user, ok, msg := db.GetUserByID(db.DB.WithContext(ctx), form.UserID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
-	ok, msg = db.LeaveTeam(tx, ctx, user, team, middleware.GetContest(ctx))
+	ok, msg = db.LeaveTeam(tx, user, team, middleware.GetContest(ctx))
 	if !ok {
 		tx.Rollback()
 	} else {

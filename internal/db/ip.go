@@ -3,7 +3,6 @@ package db
 import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"context"
 	"gorm.io/gorm"
 )
 
@@ -15,8 +14,8 @@ func RecordIP(tx *gorm.DB, ip model.IP) {
 }
 
 // CountIP 获取 IP 数量
-func CountIP(ctx context.Context) int64 {
+func CountIP(tx *gorm.DB) int64 {
 	var count int64
-	DB.WithContext(ctx).Model(&model.IP{}).Distinct("ip").Count(&count)
+	tx.Model(&model.IP{}).Distinct("ip").Count(&count)
 	return count
 }

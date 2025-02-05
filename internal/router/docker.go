@@ -9,7 +9,7 @@ import (
 )
 
 func GetContainer(ctx *gin.Context) {
-	docker, ok, msg := db.GetDockerBy3ID(ctx, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
+	docker, ok, msg := db.GetDockerBy3ID(db.DB.WithContext(ctx), middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -18,13 +18,13 @@ func GetContainer(ctx *gin.Context) {
 }
 
 func StartContainer(ctx *gin.Context) {
-	flag, ok, msg := db.GetFlagBy3ID(ctx, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
+	flag, ok, msg := db.GetFlagBy3ID(db.DB.WithContext(ctx), middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
-	docker, ok, msg := db.CreateDocker(tx, ctx, flag, middleware.GetChallenge(ctx), middleware.GetSelfID(ctx))
+	docker, ok, msg := db.CreateDocker(tx, flag, middleware.GetChallenge(ctx), middleware.GetSelfID(ctx))
 	if !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -35,7 +35,7 @@ func StartContainer(ctx *gin.Context) {
 }
 
 func IncreaseDuration(ctx *gin.Context) {
-	docker, ok, msg := db.GetDockerBy3ID(ctx, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
+	docker, ok, msg := db.GetDockerBy3ID(db.DB.WithContext(ctx), middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -56,7 +56,7 @@ func IncreaseDuration(ctx *gin.Context) {
 }
 
 func StopContainer(ctx *gin.Context) {
-	docker, ok, msg := db.GetDockerBy3ID(ctx, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
+	docker, ok, msg := db.GetDockerBy3ID(db.DB.WithContext(ctx), middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

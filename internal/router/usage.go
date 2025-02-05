@@ -18,7 +18,7 @@ func AddUsage(ctx *gin.Context) {
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
-	usages, ok, msg := db.CreateUsage(tx, ctx, form, middleware.GetContest(ctx).ID)
+	usages, ok, msg := db.CreateUsage(tx, form, middleware.GetContest(ctx).ID)
 	if !ok {
 		tx.Rollback()
 	} else {
@@ -34,7 +34,7 @@ func GetUsages(ctx *gin.Context) {
 		msg    string
 		all    = middleware.GetRole(ctx) == "admin"
 	)
-	usages, ok, msg = db.GetUsageByContestID(ctx, middleware.GetContest(ctx).ID, all)
+	usages, ok, msg = db.GetUsageByContestID(db.DB.WithContext(ctx), middleware.GetContest(ctx).ID, all)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -42,7 +42,7 @@ func GetUsages(ctx *gin.Context) {
 	var challenges []map[string]interface{}
 	for _, usage := range usages {
 		tmp := map[string]interface{}{}
-		challenge, ok, msg := db.GetChallengeByID(ctx, usage.ChallengeID)
+		challenge, ok, msg := db.GetChallengeByID(db.DB.WithContext(ctx), usage.ChallengeID)
 		if !ok {
 			log.Logger.Warningf("Failed to get challenge %s: %s", usage.ChallengeID, msg)
 			continue
@@ -57,8 +57,8 @@ func GetUsages(ctx *gin.Context) {
 		tmp["challenge"] = challenge
 		if !all {
 			tmp["status"] = gin.H{
-				"solved":   db.IsSolved(ctx, middleware.GetContest(ctx), middleware.GetTeam(ctx), challenge),
-				"attempts": db.CountAttempts(ctx, middleware.GetContest(ctx), middleware.GetTeam(ctx), challenge),
+				"solved":   db.IsSolved(db.DB.WithContext(ctx), middleware.GetContest(ctx), middleware.GetTeam(ctx), challenge),
+				"attempts": db.CountAttempts(db.DB.WithContext(ctx), middleware.GetContest(ctx), middleware.GetTeam(ctx), challenge),
 			}
 		}
 		challenges = append(challenges, tmp)
@@ -67,7 +67,7 @@ func GetUsages(ctx *gin.Context) {
 }
 
 func RemoveUsage(ctx *gin.Context) {
-	usage, ok, msg := db.GetUsageBy2ID(ctx, middleware.GetContest(ctx).ID, middleware.GetChallenge(ctx).ID)
+	usage, ok, msg := db.GetUsageBy2ID(db.DB.WithContext(ctx), middleware.GetContest(ctx).ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -83,7 +83,7 @@ func RemoveUsage(ctx *gin.Context) {
 }
 
 func UpdateUsage(ctx *gin.Context) {
-	usage, ok, msg := db.GetUsageBy2ID(ctx, middleware.GetContest(ctx).ID, middleware.GetChallenge(ctx).ID)
+	usage, ok, msg := db.GetUsageBy2ID(db.DB.WithContext(ctx), middleware.GetContest(ctx).ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

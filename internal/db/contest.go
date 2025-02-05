@@ -14,7 +14,7 @@ import (
 
 // CreateContest 创建比赛
 func CreateContest(tx *gorm.DB, form constants.CreateContestForm) (model.Contest, bool, string) {
-	if !IsUniqueName(form.Name, model.Contest{}) {
+	if !IsUniqueName(tx, form.Name, model.Contest{}) {
 		return model.Contest{}, false, "ContestNameExists"
 	}
 	contest := model.InitContest(form)
@@ -32,7 +32,7 @@ func CreateContest(tx *gorm.DB, form constants.CreateContestForm) (model.Contest
 }
 
 // GetContestByID 根据 ID 获取 model.Contest
-func GetContestByID(ctx context.Context, id uint, preloadL ...bool) (model.Contest, bool, string) {
+func GetContestByID(tx *gorm.DB, id uint, preloadL ...bool) (model.Contest, bool, string) {
 	preload := true
 	nest := false
 	if len(preloadL) > 0 {
@@ -46,7 +46,7 @@ func GetContestByID(ctx context.Context, id uint, preloadL ...bool) (model.Conte
 		return contest, true, "Success"
 	}
 	var contest model.Contest
-	res := DB.WithContext(ctx).Model(&model.Contest{}).Where("id = ?", id)
+	res := tx.Model(&model.Contest{}).Where("id = ?", id)
 	if preload {
 		if nest {
 			res = res.Preload("Teams.Users").Preload("Users.Contests").Preload("Users.Teams")
@@ -66,9 +66,9 @@ func GetContestByID(ctx context.Context, id uint, preloadL ...bool) (model.Conte
 }
 
 // DeleteContest 删除 model.Contest, 同时删除与 model.Team, model.User 的关联, 同时删除 model.Team
-func DeleteContest(tx *gorm.DB, ctx context.Context, contest model.Contest) (bool, string) {
+func DeleteContest(tx *gorm.DB, contest model.Contest) (bool, string) {
 	for _, team := range contest.Teams {
-		if ok, msg := DeleteTeam(tx, ctx, *team); !ok {
+		if ok, msg := DeleteTeam(tx, *team); !ok {
 			return false, msg
 		}
 	}
@@ -110,14 +110,14 @@ func UpdateContest(tx *gorm.DB, id uint, updateData map[string]interface{}) (boo
 }
 
 // CountContests 获取比赛数量
-func CountContests(ctx context.Context) int64 {
+func CountContests(tx *gorm.DB) int64 {
 	var count int64
-	DB.WithContext(ctx).Model(&model.Contest{}).Count(&count)
+	tx.Model(&model.Contest{}).Count(&count)
 	return count
 }
 
 // GetContests 获取比赛列表
-func GetContests(ctx context.Context, limit int, offset int, all bool, preloadL ...bool) ([]model.Contest, int64, bool, string) {
+func GetContests(tx *gorm.DB, limit int, offset int, all bool, preloadL ...bool) ([]model.Contest, int64, bool, string) {
 	if limit <= 0 {
 		limit = -1
 	}
@@ -134,7 +134,7 @@ func GetContests(ctx context.Context, limit int, offset int, all bool, preloadL 
 	}
 	var contests []model.Contest
 	var count int64
-	res := DB.WithContext(ctx).Model(&model.Contest{})
+	res := tx.Model(&model.Contest{})
 	if !all {
 		res = res.Where("hidden = ?", false)
 	}
