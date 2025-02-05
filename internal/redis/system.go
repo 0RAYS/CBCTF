@@ -5,7 +5,6 @@ import (
 	"CBCTF/internal/log"
 	"context"
 	"encoding/json"
-	"errors"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/mem"
@@ -44,7 +43,7 @@ func StartCollect(ctx context.Context) {
 
 func collectMetrics() (*SystemMetrics, error) {
 	if !config.Env.Redis.On {
-		return nil, errors.New("redis off")
+		return nil, nil
 	}
 	c, err := cpu.Percent(0, false)
 	if err != nil {
@@ -68,7 +67,7 @@ func collectMetrics() (*SystemMetrics, error) {
 
 func saveMetrics(metrics *SystemMetrics) error {
 	if !config.Env.Redis.On {
-		return errors.New("redis off")
+		return nil
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
@@ -89,7 +88,7 @@ func saveMetrics(metrics *SystemMetrics) error {
 
 func GetMetrics() ([]SystemMetrics, error) {
 	if !config.Env.Redis.On {
-		return nil, errors.New("redis off")
+		return nil, nil
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	data, err := RDB.LRange(ctx, "system_metrics", 0, -1).Result()
