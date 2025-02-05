@@ -13,14 +13,14 @@ import (
 
 type Team struct {
 	ID        uint           `gorm:"primarykey" json:"id"`
-	Name      string         `gorm:"not null" json:"name"`
+	Name      string         `gorm:"index:idx_name_contest,unique,not null" json:"name"`
+	ContestID uint           `gorm:"index:idx_name_contest,unique,not null" json:"contest_id"`
 	Desc      string         `json:"desc"`
 	Captcha   string         `json:"-"`
 	Avatar    string         `json:"-"`
 	Banned    bool           `gorm:"default:false" json:"banned"`
 	Hidden    bool           `gorm:"default:false" json:"hidden"`
 	CaptainID uint           `json:"captain_id"`
-	ContestID uint           `json:"contest_id"`
 	Users     []*User        `gorm:"many2many:user_teams;" json:"-"`
 	CreatedAt time.Time      `json:"-"`
 	UpdatedAt time.Time      `json:"-"`
