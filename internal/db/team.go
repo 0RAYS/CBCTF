@@ -24,7 +24,6 @@ func CreateTeam(tx *gorm.DB, form constants.CreateTeamForm, captain model.User, 
 	res := tx.Model(&model.Team{}).Create(&team)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to create team: %s", res.Error)
-
 		return model.Team{}, false, "CreateTeamError"
 	}
 	if ok, msg := JoinTeam(tx, captain, team, contest); !ok {
@@ -121,7 +120,6 @@ func DeleteTeam(tx *gorm.DB, ctx context.Context, team model.Team) (bool, string
 	for _, user := range team.Users {
 		if err := DeleteUserFromContest(tx, *user, contest); err != nil {
 			log.Logger.Warningf("Failed to delete user_contest: %s", err)
-
 			return false, "DeleteUserFromContestError"
 		}
 	}
@@ -130,7 +128,9 @@ func DeleteTeam(tx *gorm.DB, ctx context.Context, team model.Team) (bool, string
 
 		return false, "DeleteTeamError"
 	}
-	ClearByID(tx, "team_id", team.ID)
+	if !ClearByID(tx, "team_id", team.ID) {
+		return false, "DeleteAssociatedDataError"
+	}
 	go func() {
 		if err := redis.DelTeamCache(team.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete team cache: %s", err)
@@ -148,7 +148,6 @@ func UpdateTeam(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool, 
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to update team: %s", res.Error)
-
 		return false, "UpdateTeamError"
 	}
 	go func() {
@@ -176,19 +175,16 @@ func JoinTeam(tx *gorm.DB, user model.User, team model.Team, contest model.Conte
 	// 关联 Team User Many2Many
 	if err := AppendUserToTeam(tx, user, team); err != nil {
 		log.Logger.Warningf("Failed to insert user_team: %s", err)
-
 		return false, "AppendUserToTeamError"
 	}
 	// 关联 Contest Team HasMany
 	if err := AppendTeamToContest(tx, team, contest); err != nil {
 		log.Logger.Warningf("Failed to insert contest_team: %s", err)
-
 		return false, "AppendTeamToContestError"
 	}
 	// 关联 User Contest Many2Many
 	if err := AppendUserToContest(tx, user, contest); err != nil {
 		log.Logger.Warningf("Failed to insert user_contest: %s", err)
-
 		return false, "AppendContestToUserError"
 	}
 	go func() {
@@ -228,12 +224,10 @@ func LeaveTeam(tx *gorm.DB, ctx context.Context, user model.User, team model.Tea
 	}
 	if err := DeleteUserFromTeam(tx, user, team); err != nil {
 		log.Logger.Warningf("Failed to delete user_team: %s", err)
-
 		return false, "DeleteUserFromTeamError"
 	}
 	if err := DeleteUserFromContest(tx, user, contest); err != nil {
 		log.Logger.Warningf("Failed to delete user_contest: %s", err)
-
 		return false, "DeleteUserFromContestError"
 	}
 	go func() {

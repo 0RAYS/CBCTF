@@ -101,6 +101,7 @@ var resp = map[string]map[string]interface{}{
 	"AppendContestToUserError":   {"zh-CN": "添加用户到赛事失败", "en-US": "Failed to add user to contest", "code": 500},
 	"DeleteUserFromTeamError":    {"zh-CN": "删除用户从队伍失败", "en-US": "Failed to delete user from team", "code": 500},
 	"DeleteUserFromContestError": {"zh-CN": "删除用户从赛事失败", "en-US": "Failed to delete user from contest", "code": 500},
+	"DeleteAssociatedDataError":  {"zh-CN": "删除关联数据失败", "en-US": "Failed to delete associated data", "code": 500},
 }
 
 // I18N rewrite the response message

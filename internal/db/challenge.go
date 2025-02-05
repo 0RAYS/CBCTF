@@ -17,7 +17,6 @@ func CreateChallenge(tx *gorm.DB, form constants.CreateChallengeForm) (model.Cha
 	res := tx.Model(model.Challenge{}).Create(&challenge)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to create Challenge: %s", res.Error)
-
 		return model.Challenge{}, false, "CreateChallengeError"
 	}
 	return challenge, true, "Success"
@@ -73,7 +72,6 @@ func UpdateChallenge(tx *gorm.DB, id string, updateData map[string]interface{}) 
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to update Challenge: %v", res.Error)
-
 		return false, "UpdateChallengeError"
 	}
 	return true, "Success"
@@ -84,10 +82,11 @@ func DeleteChallenge(tx *gorm.DB, id string) (bool, string) {
 	res := tx.Model(model.Challenge{}).Where("id = ?", id).Delete(&model.Challenge{})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete Challenge: %v", res.Error)
-
 		return false, "DeleteChallengeError"
 	}
-	ClearByID(tx, "challenge_id", id)
+	if !ClearByID(tx, "challenge_id", id) {
+		return false, "DeleteAssociatedDataError"
+	}
 	return true, "Success"
 }
 

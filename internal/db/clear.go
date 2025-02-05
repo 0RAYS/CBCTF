@@ -16,7 +16,7 @@ var associations = map[string][]interface{}{
 }
 
 // ClearByID 清除所有与指定 ID 相关的数据
-func ClearByID(tx *gorm.DB, column string, id interface{}) {
+func ClearByID(tx *gorm.DB, column string, id interface{}) bool {
 	var ok bool
 	switch column {
 	case "user_id", "team_id", "contest_id", "docker_id":
@@ -26,13 +26,13 @@ func ClearByID(tx *gorm.DB, column string, id interface{}) {
 	}
 	if !ok {
 		log.Logger.Warningf("Invalid type of id: %v", id)
-		return
+		return false
 	}
 	for _, v := range associations[column] {
 		if err := tx.Model(&v).Where(fmt.Sprintf("%s = ?", column), id).Delete(&v).Error; err != nil {
 			log.Logger.Warningf("Failed to delete %s by %s: %v", v, column, err)
-
-			return
+			return false
 		}
 	}
+	return true
 }
