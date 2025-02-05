@@ -60,7 +60,7 @@ func GetFilesCache(key string) ([]model.Avatar, bool) {
 
 func SetFileCache(key string, file model.Avatar) error {
 	if !config.Env.Redis.On {
-		return errors.New("redis off")
+		return nil
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
@@ -77,7 +77,7 @@ func SetFileCache(key string, file model.Avatar) error {
 
 func SetFilesCache(key string, files []model.Avatar) error {
 	if !config.Env.Redis.On {
-		return errors.New("redis off")
+		return nil
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
@@ -94,7 +94,7 @@ func SetFilesCache(key string, files []model.Avatar) error {
 
 func DelFileCache(id string) error {
 	if !config.Env.Redis.On {
-		return errors.New("redis off")
+		return nil
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
@@ -108,7 +108,7 @@ func DelFileCache(id string) error {
 
 func DelFilesCache() error {
 	if !config.Env.Redis.On {
-		return errors.New("redis off")
+		return nil
 	}
 	var cursor uint64
 	for {

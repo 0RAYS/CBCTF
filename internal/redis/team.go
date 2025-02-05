@@ -59,7 +59,7 @@ func GetTeamsCache(key string) ([]model.Team, bool) {
 
 func SetTeamCache(key string, team model.Team) error {
 	if !config.Env.Redis.On {
-		return errors.New("redis off")
+		return nil
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
@@ -76,7 +76,7 @@ func SetTeamCache(key string, team model.Team) error {
 
 func SetTeamsCache(key string, teams []model.Team) error {
 	if !config.Env.Redis.On {
-		return errors.New("redis off")
+		return nil
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
@@ -93,7 +93,7 @@ func SetTeamsCache(key string, teams []model.Team) error {
 
 func DelTeamCache(id uint) error {
 	if !config.Env.Redis.On {
-		return errors.New("redis off")
+		return nil
 	}
 	var cursor uint64
 	for {
@@ -121,7 +121,7 @@ func DelTeamCache(id uint) error {
 
 func DelTeamsCache() error {
 	if !config.Env.Redis.On {
-		return errors.New("redis off")
+		return nil
 	}
 	var cursor uint64
 	for {

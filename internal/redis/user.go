@@ -61,7 +61,7 @@ func GetUsersCache(key string) ([]model.User, bool) {
 
 func SetUserCache(key string, user model.User) error {
 	if !config.Env.Redis.On {
-		return errors.New("redis off")
+		return nil
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
@@ -78,7 +78,7 @@ func SetUserCache(key string, user model.User) error {
 
 func SetUsersCache(key string, users []model.User) error {
 	if !config.Env.Redis.On {
-		return errors.New("redis off")
+		return nil
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
@@ -95,7 +95,7 @@ func SetUsersCache(key string, users []model.User) error {
 
 func DelUserCache(id uint) error {
 	if !config.Env.Redis.On {
-		return errors.New("redis off")
+		return nil
 	}
 	var cursor uint64
 	for {
@@ -123,7 +123,7 @@ func DelUserCache(id uint) error {
 
 func DelUsersCache() error {
 	if !config.Env.Redis.On {
-		return errors.New("redis off")
+		return nil
 	}
 	var cursor uint64
 	for {

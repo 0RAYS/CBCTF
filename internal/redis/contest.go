@@ -61,7 +61,7 @@ func GetContestsCache(key string) ([]model.Contest, bool) {
 
 func SetContestCache(key string, contest model.Contest) error {
 	if !config.Env.Redis.On {
-		return errors.New("redis off")
+		return nil
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
@@ -78,7 +78,7 @@ func SetContestCache(key string, contest model.Contest) error {
 
 func SetContestsCache(key string, contests []model.Contest) error {
 	if !config.Env.Redis.On {
-		return errors.New("redis off")
+		return nil
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
@@ -95,7 +95,7 @@ func SetContestsCache(key string, contests []model.Contest) error {
 
 func DelContestCache(id uint) error {
 	if !config.Env.Redis.On {
-		return errors.New("redis off")
+		return nil
 	}
 	var cursor uint64
 	for {
@@ -123,7 +123,7 @@ func DelContestCache(id uint) error {
 
 func DelContestsCache() error {
 	if !config.Env.Redis.On {
-		return errors.New("redis off")
+		return nil
 	}
 	var cursor uint64
 	for {
