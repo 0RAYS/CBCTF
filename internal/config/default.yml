@@ -20,6 +20,7 @@ gorm:
         # INFO WARNING ERROR SILENT
         level: silent
 redis:
+    on: true
     addr: 127.0.0.1:6379
     pwd: ""
     # millisecond

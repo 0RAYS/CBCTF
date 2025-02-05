@@ -23,6 +23,9 @@ var (
 )
 
 func Init() {
+	if !config.Env.Redis.On {
+		return
+	}
 	RDB = redis.NewClient(&redis.Options{
 		Addr:         config.Env.Redis.Addr,
 		Password:     config.Env.Redis.Pwd,
@@ -56,6 +59,9 @@ func Close() {
 }
 
 func Status() (int64, int64, int64) {
+	if !config.Env.Redis.On {
+		return 0, 0, 0
+	}
 	hit := atomic.LoadInt64(&CacheHit)
 	miss := atomic.LoadInt64(&CacheMiss)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))

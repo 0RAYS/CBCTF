@@ -82,10 +82,9 @@ func SetUsersCache(key string, users []model.User) error {
 }
 
 func DelUserCache(id uint) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
 	var cursor uint64
 	for {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 		keys, cursor, err := RDB.Scan(ctx, cursor, fmt.Sprintf("user:%d:*", id), 10).Result()
 		if err != nil {
 			log.Logger.Warningf("Failed to scan user keys: %s", err)
@@ -93,10 +92,12 @@ func DelUserCache(id uint) error {
 
 		for _, key := range keys {
 			if err := RDB.Del(ctx, key).Err(); err != nil {
+				cancel()
 				return err
 			}
 			log.Logger.Debug("DelUserCache: ", key)
 		}
+		cancel()
 		if cursor == 0 {
 			break
 		}
@@ -106,10 +107,9 @@ func DelUserCache(id uint) error {
 }
 
 func DelUsersCache() error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
 	var cursor uint64
 	for {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 		keys, cursor, err := RDB.Scan(ctx, cursor, "users:*", 10).Result()
 		if err != nil {
 			log.Logger.Warningf("Failed to scan users keys: %s", err)
@@ -118,9 +118,11 @@ func DelUsersCache() error {
 		for _, key := range keys {
 			log.Logger.Debug("DelUsersCache: ", key)
 			if err := RDB.Del(ctx, key).Err(); err != nil {
+				cancel()
 				return err
 			}
 		}
+		cancel()
 		if cursor == 0 {
 			break
 		}
