@@ -30,11 +30,13 @@ type Config struct {
 
 	Gorm struct {
 		MySQL struct {
-			Host string `mapstructure:"host" json:"host"` // 数据库地址
-			Port int    `mapstructure:"port" json:"port"` // 数据库端口
-			User string `mapstructure:"user" json:"user"` //
-			Pwd  string `mapstructure:"pwd" json:"pwd"`   // 数据库密码
-			DB   string `mapstructure:"db" json:"db"`     // 数据库名称
+			Host         string `mapstructure:"host" json:"host"`     // 数据库地址
+			Port         int    `mapstructure:"port" json:"port"`     // 数据库端口
+			User         string `mapstructure:"user" json:"user"`     //
+			Pwd          string `mapstructure:"pwd" json:"pwd"`       // 数据库密码
+			DB           string `mapstructure:"db" json:"db"`         // 数据库名称
+			MaxOpenConns int    `mapstructure:"mxopen" json:"mxopen"` // 最大连接数
+			MaxIdleConns int    `mapstructure:"mxidle" json:"mxidle"` // 最大空闲连接数
 		} `mapstructure:"mysql" json:"mysql"`
 		Log struct {
 			Level string `mapstructure:"level" json:"level"` // GORM 日志级别：INFO, WARNING, ERROR, SILENT

@@ -16,6 +16,8 @@ gorm:
         user: cbctf
         pwd: password
         db: cbctf
+        mxopen: 100
+        mxidle: 10
     log:
         # INFO WARNING ERROR SILENT
         level: silent
