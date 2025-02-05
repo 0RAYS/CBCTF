@@ -60,7 +60,9 @@ func Init() {
 		log.Logger.Fatalf("failed to migrate database: %v", err)
 	}
 	log.Logger.Info("Connected to database")
-	InitAdmin()
+	tx := DB.Begin()
+	InitAdmin(tx)
+	tx.Commit()
 }
 
 // InitTest 初始化测试数据库
@@ -85,7 +87,9 @@ func InitTest() {
 		&model.Challenge{}, &model.Usage{}, &model.Flag{},
 		&model.Docker{}, &model.Submission{},
 	)
-	InitAdmin()
+	tx := DB.Begin()
+	InitAdmin(tx)
+	tx.Commit()
 }
 
 func Close() {

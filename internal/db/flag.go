@@ -7,10 +7,11 @@ import (
 	"CBCTF/internal/utils"
 	"context"
 	"fmt"
+	"gorm.io/gorm"
 )
 
 // InitFlag is a function to generate team flag
-func InitFlag(ctx context.Context, contest model.Contest, team model.Team, usage model.Usage) (model.Flag, bool, string) {
+func InitFlag(tx *gorm.DB, ctx context.Context, contest model.Contest, team model.Team, usage model.Usage) (model.Flag, bool, string) {
 	var (
 		challenge model.Challenge
 		flag      model.Flag
@@ -23,9 +24,9 @@ func InitFlag(ctx context.Context, contest model.Contest, team model.Team, usage
 	}
 	switch challenge.Type {
 	case model.Static:
-		flag, ok, msg = RecordFlag(ctx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, challenge.Flag))
+		flag, ok, msg = RecordFlag(tx, ctx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, challenge.Flag))
 	case model.Dynamic:
-		flag, ok, msg = RecordFlag(ctx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.RandFlag(challenge.Flag)))
+		flag, ok, msg = RecordFlag(tx, ctx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.RandFlag(challenge.Flag)))
 		go func(c model.Challenge, f model.Flag) {
 			log.Logger.Debugf("Generating attachment for team %d challenge %s", team.ID, usage.ChallengeID)
 			ok, msg = k8s.GenerateAttachment(c, f)
@@ -34,7 +35,7 @@ func InitFlag(ctx context.Context, contest model.Contest, team model.Team, usage
 			}
 		}(challenge, flag)
 	case model.Container:
-		flag, ok, msg = RecordFlag(ctx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.RandomString()))
+		flag, ok, msg = RecordFlag(tx, ctx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.RandomString()))
 	default:
 		flag, ok, msg = model.Flag{}, false, "InvalidChallengeType"
 	}
@@ -48,21 +49,22 @@ func InitFlag(ctx context.Context, contest model.Contest, team model.Team, usage
 }
 
 // RecordFlag is a function to create a new flag
-func RecordFlag(ctx context.Context, contestID, teamID uint, challengeID, value string) (model.Flag, bool, string) {
+func RecordFlag(tx *gorm.DB, ctx context.Context, contestID, teamID uint, challengeID, value string) (model.Flag, bool, string) {
 	var (
 		flag model.Flag
 		ok   bool
 	)
 	if flag, ok, _ = GetFlagBy3ID(ctx, contestID, teamID, challengeID); ok {
-		ok, _ = UpdateFlag(ctx, contestID, teamID, challengeID, value)
+		ok, _ = UpdateFlag(tx, contestID, teamID, challengeID, value)
 		if !ok {
 			return model.Flag{}, false, "UpdateFlagError"
 		}
 	} else {
 		flag = model.InitFlag(contestID, teamID, challengeID, value)
-		res := DB.WithContext(ctx).Model(model.Flag{}).Create(&flag)
+		res := tx.Model(model.Flag{}).Create(&flag)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to create Flag: %s", res.Error)
+
 			return model.Flag{}, false, "CreateFlagError"
 		}
 	}
@@ -82,11 +84,12 @@ func GetFlagBy3ID(ctx context.Context, contestID, teamID uint, challengeID strin
 }
 
 // UpdateFlag is a function to update flag
-func UpdateFlag(ctx context.Context, contestID, teamID uint, challengeID, value string) (bool, string) {
-	res := DB.WithContext(ctx).Model(model.Flag{}).
+func UpdateFlag(tx *gorm.DB, contestID, teamID uint, challengeID, value string) (bool, string) {
+	res := tx.Model(model.Flag{}).
 		Where("contest_id = ? AND team_id = ? AND challenge_id = ?", contestID, teamID, challengeID).Update("value", value)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to update Flag: %s", res.Error)
+
 		return false, "UpdateFlagError"
 	}
 	return true, "Success"

@@ -24,7 +24,13 @@ func ChangePassword(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest"})
 		return
 	}
-	_, msg := db.ChangePasswordUser(ctx, middleware.GetSelf(ctx).(model.User), form.OldPassword, form.NewPassword)
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := db.ChangePasswordUser(tx, middleware.GetSelf(ctx).(model.User), form.OldPassword, form.NewPassword)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 
 }
@@ -61,18 +67,31 @@ func UpdateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
 		return
 	}
+	tx := db.DB.WithContext(ctx).Begin()
 	if email, ok := data["email"]; ok && email.(string) != user.Email {
 		if !db.IsUniqueEmail(email.(string)) {
+			tx.Rollback()
 			ctx.JSON(http.StatusOK, gin.H{"msg": "EmailExists", "data": nil})
 			return
 		}
-		db.UpdateUser(ctx, user.ID, map[string]interface{}{"verified": false})
+		ok, msg = db.UpdateUser(tx, user.ID, map[string]interface{}{"verified": false})
+		if !ok {
+			tx.Rollback()
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
+		}
 	}
 	if name, ok := data["name"]; ok && name.(string) != user.Name && !db.IsUniqueName(name.(string), model.User{}) {
+		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": "UserNameExists", "data": nil})
 		return
 	}
-	_, msg = db.UpdateUser(ctx, user.ID, data)
+	ok, msg := db.UpdateUser(tx, user.ID, data)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
@@ -92,8 +111,14 @@ func DeleteUser(ctx *gin.Context) {
 	} else {
 		userID = middleware.GetUser(ctx).ID
 	}
+	tx := db.DB.WithContext(ctx).Begin()
 	// DeleteUser 需要嵌套预加载数据, 不可传入中间件保存的 ctx 数据
-	_, msg := db.DeleteUser(ctx, userID)
+	ok, msg := db.DeleteUser(tx, ctx, userID)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
@@ -103,11 +128,14 @@ func CreateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	user, ok, msg := db.CreateUser(ctx, form)
+	tx := db.DB.WithContext(ctx).Begin()
+	user, ok, msg := db.CreateUser(tx, form)
 	if !ok {
+		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	tx.Commit()
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": user})
 }
 

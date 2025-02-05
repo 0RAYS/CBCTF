@@ -52,7 +52,13 @@ func JoinTeam(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "CaptchaError", "data": nil})
 		return
 	}
-	_, msg = db.JoinTeam(ctx, middleware.GetSelf(ctx).(model.User), team, contest)
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg = db.JoinTeam(tx, middleware.GetSelf(ctx).(model.User), team, contest)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
@@ -67,11 +73,14 @@ func CreateTeam(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "CaptchaError", "data": nil})
 		return
 	}
-	team, ok, msg := db.CreateTeam(ctx, form, middleware.GetSelf(ctx).(model.User), contest)
+	tx := db.DB.WithContext(ctx).Begin()
+	team, ok, msg := db.CreateTeam(tx, form, middleware.GetSelf(ctx).(model.User), contest)
 	if !ok {
+		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	tx.Commit()
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": team})
 }
 
@@ -79,7 +88,13 @@ func LeaveTeam(ctx *gin.Context) {
 	user := middleware.GetSelf(ctx).(model.User)
 	contest := middleware.GetContest(ctx)
 	team := middleware.GetTeam(ctx)
-	_, msg := db.LeaveTeam(ctx, user, team, contest)
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := db.LeaveTeam(tx, ctx, user, team, contest)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
@@ -124,12 +139,24 @@ func UpdateTeam(ctx *gin.Context) {
 			return
 		}
 	}
-	_, msg = db.UpdateTeam(ctx, team.ID, data)
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := db.UpdateTeam(tx, team.ID, data)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
 func DeleteTeam(ctx *gin.Context) {
-	_, msg := db.DeleteTeam(ctx, middleware.GetTeam(ctx))
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := db.DeleteTeam(tx, ctx, middleware.GetTeam(ctx))
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
@@ -149,7 +176,13 @@ func KickMember(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	_, msg = db.LeaveTeam(ctx, user, team, middleware.GetContest(ctx))
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg = db.LeaveTeam(tx, ctx, user, team, middleware.GetContest(ctx))
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 

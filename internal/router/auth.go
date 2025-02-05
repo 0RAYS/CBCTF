@@ -17,11 +17,14 @@ func Register(ctx *gin.Context) {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	user, ok, msg := db.CreateUser(ctx, constants.CreateUserForm{Name: form.Name, Password: form.Password, Email: form.Email})
+	tx := db.DB.WithContext(ctx).Begin()
+	user, ok, msg := db.CreateUser(tx, constants.CreateUserForm{Name: form.Name, Password: form.Password, Email: form.Email})
 	if !ok {
+		tx.Rollback()
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	tx.Commit()
 	if Token, err := utils.Generate(user.ID, user.Name, "user"); err == nil {
 		log.Logger.Infof("%s | %s:%d register", trace, user.Name, user.ID)
 		ctx.Writer.Header().Set("Authorization", "Bearer "+Token)

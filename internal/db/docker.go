@@ -5,11 +5,11 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
-	"time"
+	"gorm.io/gorm"
 )
 
 // CreateDocker 创建 Docker, 并注入 flag
-func CreateDocker(ctx context.Context, flag model.Flag, challenge model.Challenge, creatorID uint) (model.Docker, bool, string) {
+func CreateDocker(tx *gorm.DB, ctx context.Context, flag model.Flag, challenge model.Challenge, creatorID uint) (model.Docker, bool, string) {
 	var (
 		docker model.Docker
 		ok     bool
@@ -24,19 +24,20 @@ func CreateDocker(ctx context.Context, flag model.Flag, challenge model.Challeng
 	}
 
 	docker = model.InitDocker(flag, challenge, creatorID)
-	res := DB.WithContext(ctx).Model(model.Docker{}).Create(&docker)
+	res := tx.Model(model.Docker{}).Create(&docker)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to create Docker: %s", res.Error)
+
 		return model.Docker{}, false, "CreateDockerError"
 	}
 	log.Logger.Debugf("Starting container for team %d challenge %s", flag.TeamID, flag.ChallengeID)
 	port, ok, msg = k8s.StartContainer(challenge, flag, docker)
 	if !ok {
 		log.Logger.Warningf("Failed to start container for challenge %s: %s", flag.ChallengeID, msg)
-		_, _ = DeleteDocker(ctx, docker)
+		_, _ = DeleteDocker(tx, docker)
 		return model.Docker{}, false, msg
 	}
-	UpdateDocker(ctx, docker.ID, map[string]interface{}{"port": port})
+	UpdateDocker(tx, docker.ID, map[string]interface{}{"port": port})
 	docker.Port = port
 	return docker, true, "Success"
 }
@@ -70,15 +71,11 @@ func GetDockerBy3ID(ctx context.Context, contestID, teamID uint, challengeID str
 	if res.RowsAffected != 1 {
 		return model.Docker{}, false, "DockerNotFound"
 	}
-	if docker.Start.Add(docker.Duration).Before(time.Now()) {
-		_, _ = DeleteDocker(ctx, docker)
-		return model.Docker{}, false, "DockerNotFound"
-	}
 	return docker, true, "Success"
 }
 
 // DeleteDocker 删除 Docker
-func DeleteDocker(ctx context.Context, docker model.Docker) (bool, string) {
+func DeleteDocker(tx *gorm.DB, docker model.Docker) (bool, string) {
 	go func(d model.Docker) {
 		log.Logger.Debugf("Stopping container for team %d challenge %s", d.TeamID, d.ChallengeID)
 		ok, msg := k8s.StopContainer(d)
@@ -86,20 +83,22 @@ func DeleteDocker(ctx context.Context, docker model.Docker) (bool, string) {
 			log.Logger.Warningf("Failed to stop container for challenge %s: %s", d.ChallengeID, msg)
 		}
 	}(docker)
-	res := DB.WithContext(ctx).Model(model.Docker{}).
+	res := tx.Model(model.Docker{}).
 		Where("id = ?", docker.ID).Delete(&model.Docker{})
 	if res.Error != nil {
+
 		return false, "DeleteDockerError"
 	}
 	return true, "Success"
 }
 
 // UpdateDocker 更新 Docker, 使用 map 更新属性, 结构体会导致零值未更新, 对字段值的具体要求应当交给上层实现
-func UpdateDocker(ctx context.Context, id uint, updateData map[string]interface{}) (bool, string) {
-	res := DB.WithContext(ctx).Model(model.Docker{}).Where("id = ?", id).
+func UpdateDocker(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool, string) {
+	res := tx.Model(model.Docker{}).Where("id = ?", id).
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to update Docker: %v", res.Error)
+
 		return false, "UpdateDockerError"
 	}
 	return true, "Success"

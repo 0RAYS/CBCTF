@@ -17,7 +17,13 @@ func AddUsage(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	usages, _, msg := db.CreateUsage(ctx, form, middleware.GetContest(ctx).ID)
+	tx := db.DB.WithContext(ctx).Begin()
+	usages, ok, msg := db.CreateUsage(tx, ctx, form, middleware.GetContest(ctx).ID)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": usages})
 }
 
@@ -66,7 +72,13 @@ func RemoveUsage(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	_, msg = db.DeleteUsage(ctx, usage.ID)
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg = db.DeleteUsage(tx, usage.ID)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
@@ -82,6 +94,12 @@ func UpdateUsage(ctx *gin.Context) {
 		return
 	}
 	data := utils.Form2Map(form)
-	_, msg = db.UpdateUsage(ctx, usage.ID, data)
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg = db.UpdateUsage(tx, usage.ID, data)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

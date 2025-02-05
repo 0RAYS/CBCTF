@@ -5,17 +5,19 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
+	"gorm.io/gorm"
 )
 
 // CreateChallenge 创建题目
-func CreateChallenge(ctx context.Context, form constants.CreateChallengeForm) (model.Challenge, bool, string) {
+func CreateChallenge(tx *gorm.DB, form constants.CreateChallengeForm) (model.Challenge, bool, string) {
 	if !IsValidChallengeType(form.Type) {
 		return model.Challenge{}, false, "InvalidChallengeType"
 	}
 	challenge := model.InitChallenge(form)
-	res := DB.WithContext(ctx).Model(model.Challenge{}).Create(&challenge)
+	res := tx.Model(model.Challenge{}).Create(&challenge)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to create Challenge: %s", res.Error)
+
 		return model.Challenge{}, false, "CreateChallengeError"
 	}
 	return challenge, true, "Success"
@@ -66,24 +68,26 @@ func CountChallenges(ctx context.Context) int64 {
 }
 
 // UpdateChallenge 更新题目, 使用 map 更新属性, 结构体会导致零值未更新, 对字段值的具体要求应当交给上层实现
-func UpdateChallenge(ctx context.Context, id string, updateData map[string]interface{}) (bool, string) {
-	res := DB.WithContext(ctx).Model(model.Challenge{}).Where("id = ?", id).
+func UpdateChallenge(tx *gorm.DB, id string, updateData map[string]interface{}) (bool, string) {
+	res := tx.Model(model.Challenge{}).Where("id = ?", id).
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to update Challenge: %v", res.Error)
+
 		return false, "UpdateChallengeError"
 	}
 	return true, "Success"
 }
 
 // DeleteChallenge 删除题目
-func DeleteChallenge(ctx context.Context, id string) (bool, string) {
-	res := DB.WithContext(ctx).Model(model.Challenge{}).Where("id = ?", id).Delete(&model.Challenge{})
+func DeleteChallenge(tx *gorm.DB, id string) (bool, string) {
+	res := tx.Model(model.Challenge{}).Where("id = ?", id).Delete(&model.Challenge{})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete Challenge: %v", res.Error)
+
 		return false, "DeleteChallengeError"
 	}
-	ClearByID(ctx, "challenge_id", id)
+	ClearByID(tx, "challenge_id", id)
 	return true, "Success"
 }
 

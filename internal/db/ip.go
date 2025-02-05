@@ -4,12 +4,14 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
+	"gorm.io/gorm"
 )
 
 // RecordIP 记录请求的 IP
-func RecordIP(ctx context.Context, ip model.IP) {
-	if DB.WithContext(ctx).Create(&ip).Error != nil {
+func RecordIP(tx *gorm.DB, ip model.IP) {
+	if tx.Create(&ip).Error != nil {
 		log.Logger.Warningf("Failed to record IP %s", ip.IP)
+
 	}
 }
 

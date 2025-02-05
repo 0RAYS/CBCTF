@@ -9,7 +9,7 @@ import (
 )
 
 // CreateUsage 创建将题目添加至比赛的记录
-func CreateUsage(ctx context.Context, form constants.CreateUsageForm, contestID uint) ([]model.Usage, bool, string) {
+func CreateUsage(tx *gorm.DB, ctx context.Context, form constants.CreateUsageForm, contestID uint) ([]model.Usage, bool, string) {
 	var usages []model.Usage
 	for _, c := range form.ChallengeID {
 		challenge, ok, _ := GetChallengeByID(ctx, c)
@@ -21,7 +21,8 @@ func CreateUsage(ctx context.Context, form constants.CreateUsageForm, contestID 
 			continue
 		}
 		usage := model.InitUsage(c, contestID, challenge.Flag)
-		if err := DB.WithContext(ctx).Model(model.Usage{}).Create(&usage).Error; err != nil {
+		// 如果创建失败则跳过, 不回滚
+		if err := tx.Model(model.Usage{}).Create(&usage).Error; err != nil {
 			continue
 		}
 		usages = append(usages, usage)
@@ -77,31 +78,34 @@ func GetUsageByID(ctx context.Context, id uint) (model.Usage, bool, string) {
 }
 
 // UpdateUsage 更新引用
-func UpdateUsage(ctx context.Context, id uint, updateData map[string]interface{}) (bool, string) {
-	res := DB.WithContext(ctx).Model(model.Usage{}).Where("id = ?", id).
+func UpdateUsage(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool, string) {
+	res := tx.Model(model.Usage{}).Where("id = ?", id).
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to update Usage: %s", res.Error)
+
 		return false, "UpdateUsageError"
 	}
 	return true, "Success"
 }
 
-func AddSolvers(ctx context.Context, id uint) (bool, string) {
-	res := DB.WithContext(ctx).Model(model.Usage{}).Where("id = ?", id).
+func AddSolvers(tx *gorm.DB, id uint) (bool, string) {
+	res := tx.Model(model.Usage{}).Where("id = ?", id).
 		UpdateColumn("solvers", gorm.Expr("solvers + ?", 1))
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to update Usage: %s", res.Error)
+
 		return false, "UpdateUsageError"
 	}
 	return true, "Success"
 }
 
 // DeleteUsage 删除引用
-func DeleteUsage(ctx context.Context, id uint) (bool, string) {
-	res := DB.WithContext(ctx).Model(model.Usage{}).Where("id = ?", id).Delete(&model.Usage{})
+func DeleteUsage(tx *gorm.DB, id uint) (bool, string) {
+	res := tx.Model(model.Usage{}).Where("id = ?", id).Delete(&model.Usage{})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete Usage: %s", res.Error)
+
 		return false, "DeleteUsageError"
 	}
 	return true, "Success"

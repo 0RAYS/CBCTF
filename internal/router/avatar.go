@@ -23,9 +23,13 @@ import (
 func DownloadAvatar(ctx *gin.Context) {
 	file := middleware.GetAvatar(ctx)
 	if _, err := os.Stat(file.Path); os.IsNotExist(err) {
-		_, _ = db.DeleteAvatar(ctx, file.ID)
-		ctx.JSONP(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": file.ID})
-		return
+		tx := db.DB.WithContext(ctx).Begin()
+		if ok, _ := db.DeleteAvatar(tx, file.ID); !ok {
+			tx.Rollback()
+			ctx.JSONP(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": file.ID})
+			return
+		}
+		tx.Commit()
 	}
 	ctx.Writer.Header().Add("Content-Disposition", "attachment; filename="+file.Filename)
 	ctx.Writer.Header().Add("Content-Type", "application/octet-stream")
@@ -57,10 +61,13 @@ func DeleteAvatar(ctx *gin.Context) {
 		files = append(files, file)
 	}
 	for _, file = range files {
-		if ok, msg = db.DeleteAvatar(ctx, file.ID); !ok {
+		tx := db.DB.WithContext(ctx).Begin()
+		if ok, msg = db.DeleteAvatar(tx, file.ID); !ok {
+			tx.Rollback()
 			ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
 			return
 		}
+		tx.Commit()
 		if form.Force && os.Remove(file.Path) != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
 			return
@@ -114,21 +121,25 @@ func UploadAvatar(v interface{}) func(ctx *gin.Context) {
 			msg    string
 		)
 		hash := hex.EncodeToString(sha256Sum.Sum(nil))
+		tx := db.DB.WithContext(ctx).Begin()
 		if record, ok, _ = db.GetAvatarByHash(ctx, hash); !ok {
 			basePath := fmt.Sprintf("%s/avatar", config.Env.Gin.Upload.Path)
 			allowed := []string{".png", ".jpg", ".jpeg"}
 			suffix := strings.ToLower(p.Ext(file.Filename))
 			if !utils.In(suffix, allowed) {
+				tx.Rollback()
 				ctx.JSON(http.StatusForbidden, gin.H{"msg": "FileNotAllowed", "data": file.Filename})
 				return
 			}
 			path := fmt.Sprintf("%s/%s%s", basePath, utils.RandomString(), suffix)
 			if err = ctx.SaveUploadedFile(file, path); err != nil {
+				tx.Rollback()
 				ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
 				return
 			}
-			record, ok, msg = db.RecordAvatar(ctx, path, middleware.GetSelfID(ctx), file, hash)
+			record, ok, msg = db.RecordAvatar(tx, path, middleware.GetSelfID(ctx), file, hash)
 			if !ok {
+				tx.Rollback()
 				ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 				return
 			}
@@ -136,14 +147,20 @@ func UploadAvatar(v interface{}) func(ctx *gin.Context) {
 		path := fmt.Sprintf("/avatar/%s", record.ID)
 		switch v.(type) {
 		case model.Admin:
-			_, msg = db.UpdateAdmin(ctx, middleware.GetSelfID(ctx), map[string]interface{}{"avatar": path})
+			ok, msg = db.UpdateAdmin(tx, middleware.GetSelfID(ctx), map[string]interface{}{"avatar": path})
 		case model.User:
-			_, msg = db.UpdateUser(ctx, middleware.GetSelfID(ctx), map[string]interface{}{"avatar": path})
+			ok, msg = db.UpdateUser(tx, middleware.GetSelfID(ctx), map[string]interface{}{"avatar": path})
 		case model.Contest:
-			_, msg = db.UpdateContest(ctx, middleware.GetContest(ctx).ID, map[string]interface{}{"avatar": path})
+			ok, msg = db.UpdateContest(tx, middleware.GetContest(ctx).ID, map[string]interface{}{"avatar": path})
 		case model.Team:
-			_, msg = db.UpdateTeam(ctx, middleware.GetTeam(ctx).ID, map[string]interface{}{"avatar": path})
+			ok, msg = db.UpdateTeam(tx, middleware.GetTeam(ctx).ID, map[string]interface{}{"avatar": path})
 		}
+		if !ok {
+			tx.Rollback()
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
+		}
+		tx.Commit()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": path})
 	}
 }

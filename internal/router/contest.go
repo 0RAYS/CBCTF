@@ -41,11 +41,14 @@ func CreateContest(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	contest, ok, msg := db.CreateContest(ctx, form)
+	tx := db.DB.WithContext(ctx).Begin()
+	contest, ok, msg := db.CreateContest(tx, form)
 	if !ok {
+		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	tx.Commit()
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": contest})
 }
 
@@ -61,11 +64,23 @@ func UpdateContest(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "ContestNameExists", "data": nil})
 		return
 	}
-	_, msg := db.UpdateContest(ctx, contest.ID, data)
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := db.UpdateContest(tx, contest.ID, data)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
 func DeleteContest(ctx *gin.Context) {
-	_, msg := db.DeleteContest(ctx, middleware.GetContest(ctx))
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := db.DeleteContest(tx, ctx, middleware.GetContest(ctx))
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

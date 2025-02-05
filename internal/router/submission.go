@@ -17,11 +17,14 @@ func SubmitFlag(ctx *gin.Context) {
 	}
 	contest := middleware.GetContest(ctx)
 	team := middleware.GetTeam(ctx)
-	submission, ok, msg := db.CreateSubmission(ctx, contest, team, middleware.GetSelf(ctx).(model.User), middleware.GetChallenge(ctx), form.Flag)
+	tx := db.DB.WithContext(ctx).Begin()
+	submission, ok, msg := db.CreateSubmission(tx, ctx, contest, team, middleware.GetSelf(ctx).(model.User), middleware.GetChallenge(ctx), form.Flag)
 	if !ok {
+		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	tx.Commit()
 	if submission.Solved {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
 		return

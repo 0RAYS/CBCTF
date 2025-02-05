@@ -11,7 +11,7 @@ func Init() *gin.Engine {
 	gin.SetMode(config.Env.Gin.Mode)
 	router := gin.New()
 	router.MaxMultipartMemory = int64(config.Env.Gin.Upload.Max << 20)
-	router.Use(middleware.Logger(), gin.Recovery(), middleware.Trace, middleware.Cors, middleware.I18n(), middleware.AccessLog, middleware.RateLimit())
+	router.Use(middleware.Logger(), gin.Recovery(), middleware.Trace, middleware.Cors, middleware.I18n(), middleware.AccessLog) //, middleware.RateLimit())
 
 	// 公共
 	router.POST("/register", Register)

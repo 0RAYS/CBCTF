@@ -20,11 +20,14 @@ func CreateChallenge(ctx *gin.Context) {
 		return
 	}
 	form.Category = utils.ToTitle(strings.TrimSpace(form.Category))
-	challenge, ok, msg := db.CreateChallenge(ctx, form)
+	tx := db.DB.WithContext(ctx).Begin()
+	challenge, ok, msg := db.CreateChallenge(tx, form)
 	if !ok {
+		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	tx.Commit()
 	if err := os.MkdirAll(challenge.BasicDir(), 0755); err != nil {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "CreateDirError", "data": nil})
 		return
@@ -115,7 +118,14 @@ func UpdateChallenge(ctx *gin.Context) {
 	if category, ok := data["category"]; ok && category.(string) != challenge.Category {
 		data["category"] = category.(string)
 	}
-	_, msg = db.UpdateChallenge(ctx, challenge.ID, data)
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := db.UpdateChallenge(tx, challenge.ID, data)
+	if !ok {
+		tx.Rollback()
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	tx.Commit()
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
@@ -126,13 +136,23 @@ func DeleteChallenge(ctx *gin.Context) {
 		return
 	}
 	challenge := middleware.GetChallenge(ctx)
+	tx := db.DB.WithContext(ctx).Begin()
 	usages, ok, msg := db.GetUsageByChallengeID(ctx, challenge.ID)
 	if ok {
 		for _, usage := range usages {
-			db.DeleteUsage(ctx, usage.ID)
+			if ok, msg := db.DeleteUsage(tx, usage.ID); !ok {
+				tx.Rollback()
+				ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
+				return
+			}
 		}
 	}
-	_, msg = db.DeleteChallenge(ctx, challenge.ID)
+	ok, msg = db.DeleteChallenge(tx, challenge.ID)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
 	if form.Force && os.RemoveAll(challenge.BasicDir()) != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
 		return
@@ -234,6 +254,12 @@ func InitChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	_, ok, msg = db.InitFlag(ctx, contest, team, usage)
+	tx := db.DB.WithContext(ctx).Begin()
+	_, ok, msg = db.InitFlag(tx, ctx, contest, team, usage)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
