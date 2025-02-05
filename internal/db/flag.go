@@ -89,7 +89,6 @@ func UpdateFlag(tx *gorm.DB, contestID, teamID uint, challengeID, value string) 
 		Where("contest_id = ? AND team_id = ? AND challenge_id = ?", contestID, teamID, challengeID).Update("value", value)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to update Flag: %s", res.Error)
-
 		return false, "UpdateFlagError"
 	}
 	return true, "Success"

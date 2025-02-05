@@ -24,7 +24,6 @@ func CreateSubmission(tx *gorm.DB, ctx context.Context, contest model.Contest, t
 	}
 	submission := model.InitSubmission(contest.ID, challenge.ID, team.ID, user.ID, value, solved)
 	if err := tx.Model(model.Submission{}).Create(&submission).Error; err != nil {
-
 		return model.Submission{}, false, "CreateSubmissionError"
 	}
 	return submission, true, "Success"

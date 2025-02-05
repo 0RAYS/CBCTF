@@ -27,7 +27,6 @@ func CreateDocker(tx *gorm.DB, ctx context.Context, flag model.Flag, challenge m
 	res := tx.Model(model.Docker{}).Create(&docker)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to create Docker: %s", res.Error)
-
 		return model.Docker{}, false, "CreateDockerError"
 	}
 	log.Logger.Debugf("Starting container for team %d challenge %s", flag.TeamID, flag.ChallengeID)
@@ -86,7 +85,6 @@ func DeleteDocker(tx *gorm.DB, docker model.Docker) (bool, string) {
 	res := tx.Model(model.Docker{}).
 		Where("id = ?", docker.ID).Delete(&model.Docker{})
 	if res.Error != nil {
-
 		return false, "DeleteDockerError"
 	}
 	return true, "Success"
@@ -98,7 +96,6 @@ func UpdateDocker(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to update Docker: %v", res.Error)
-
 		return false, "UpdateDockerError"
 	}
 	return true, "Success"
