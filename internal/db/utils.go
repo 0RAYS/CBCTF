@@ -51,7 +51,7 @@ func IsUniqueName(name string, v interface{}) bool {
 // IsUniqueTeamName 在每个Contest中, 队伍名不能重复, 锁定 Team 表
 func IsUniqueTeamName(name string, id uint) bool {
 	tx := DB.Begin()
-	if tx.Exec("LOCK TABLE teams WRITE").Error != nil {
+	if tx.Exec("LOCK TABLES teams WRITE").Error != nil {
 		tx.Rollback()
 		return false
 	}
@@ -71,7 +71,7 @@ func IsUniqueTeamName(name string, id uint) bool {
 // IsUniqueTeamMember model.User 不能在同一个 model.Contest 出现多次, 锁定关联表
 func IsUniqueTeamMember(contestID uint, userID uint) bool {
 	tx := DB.Begin()
-	if tx.Exec("LOCK TABLE user_contests WRITE").Error != nil {
+	if tx.Exec("LOCK TABLES user_contests WRITE").Error != nil {
 		tx.Rollback()
 		return false
 	}
@@ -92,7 +92,7 @@ func IsUniqueTeamMember(contestID uint, userID uint) bool {
 // IsMemberInTeam model.User 是否在 model.Team 中, 锁定关联表
 func IsMemberInTeam(teamID uint, userID uint) bool {
 	tx := DB.Begin()
-	if tx.Exec("LOCK TABLE user_teams WRITE").Error != nil {
+	if tx.Exec("LOCK TABLES user_teams WRITE").Error != nil {
 		tx.Rollback()
 		return false
 	}
