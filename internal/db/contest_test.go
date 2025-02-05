@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
 	"context"
+	"os"
 	"testing"
 	"time"
 )
@@ -20,27 +21,35 @@ func InitContestTest() {
 	InitTest()
 	redis.Init()
 	var ctx context.Context
-
-	user1, ok, msg := CreateUser(ctx, constants.CreateUserForm{Name: "user1", Password: "password", Email: "user1@0rays.club"})
+	tx := DB.WithContext(ctx).Begin()
+	user1, ok, msg := CreateUser(tx, constants.CreateUserForm{Name: "user1", Password: "password", Email: "user1@0rays.club"})
 	log.Logger.Debug(user1.ID, ok, msg)
-	contest1, ok, msg := CreateContest(ctx, constants.CreateContestForm{Name: "contest1", Size: 1, Start: time.Now(), Duration: time.Duration(10)})
+	contest1, ok, msg := CreateContest(tx, constants.CreateContestForm{Name: "contest1", Size: 1, Start: time.Now(), Duration: time.Duration(10)})
 	log.Logger.Debug(contest1.ID, ok, msg)
-	team1, ok, msg := CreateTeam(ctx, constants.CreateTeamForm{Name: "team1", Captcha: contest1.Captcha}, user1, contest1)
+	team1, ok, msg := CreateTeam(tx, constants.CreateTeamForm{Name: "team1", Captcha: contest1.Captcha}, user1, contest1)
 	log.Logger.Debug(team1.ID, ok, msg)
+	tx.Commit()
 }
 
 func TestCreateContest(t *testing.T) {
 	InitContestTest()
+	defer os.Remove("test.db")
+	defer Close()
 	var ctx context.Context
-	test, ok, msg := CreateContest(ctx, constants.CreateContestForm{Name: "contest1", Size: 1, Start: time.Now(), Duration: time.Duration(10)})
+	tx := DB.WithContext(ctx).Begin()
+	test, ok, msg := CreateContest(tx, constants.CreateContestForm{Name: "contest1", Size: 1, Start: time.Now(), Duration: time.Duration(10)})
 	if ok {
+		tx.Commit()
 		t.Fatal("Should not create duplicated admin")
 	}
+	tx.Rollback()
 	log.Logger.Debug(test, msg)
 }
 
 func TestGetContestByID(t *testing.T) {
 	InitContestTest()
+	defer os.Remove("test.db")
+	defer Close()
 	var ctx context.Context
 	test, ok, msg := GetContestByID(ctx, 0)
 	if ok {
@@ -116,10 +125,15 @@ func TestGetContestByID(t *testing.T) {
 
 func TestDeleteContest(t *testing.T) {
 	InitContestTest()
+	defer os.Remove("test.db")
+	defer Close()
 	var ctx context.Context
-	if ok, _ := DeleteContest(ctx, model.Contest{ID: 0}); ok {
+	tx := DB.WithContext(ctx).Begin()
+	if ok, _ := DeleteContest(tx, ctx, model.Contest{ID: 0}); ok {
+		tx.Commit()
 		t.Fatal("Should return true when delete invalid contest")
 	}
+	tx.Rollback()
 	user1, ok, _ := GetUserByID(ctx, 1)
 	if !ok {
 		t.Fatal("Failed to get user by id")
@@ -154,9 +168,11 @@ func TestDeleteContest(t *testing.T) {
 	}
 	log.Logger.Debug(tmp)
 
-	if ok, msg := DeleteContest(ctx, contest1); !ok {
+	tx = DB.WithContext(ctx).Begin()
+	if ok, msg := DeleteContest(tx, ctx, contest1); !ok {
 		t.Fatalf("Failed to delete contest by id: %s", msg)
 	}
+	tx.Commit()
 	if err := DB.WithContext(ctx).Model(&contest1).Association("Teams").Find(&tmp); err != nil {
 		t.Fatal(err)
 	}

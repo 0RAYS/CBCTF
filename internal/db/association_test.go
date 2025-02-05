@@ -7,42 +7,50 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
 	"context"
+	"os"
 	"testing"
 	"time"
 )
 
 func InitAssociationTest() {
 	config.Env = &config.Config{}
-	config.Env.Gorm.Log.Level = "debug"
+	config.Env.Gorm.Log.Level = "info"
 	config.Env.Log.Level = "debug"
 	config.Env.Log.Save = false
 	log.Init()
 	InitTest()
 	redis.Init()
 	var ctx context.Context
-	user1, ok, msg := CreateUser(ctx, constants.CreateUserForm{Name: "user1", Password: "password", Email: "user1@0rays.club"})
+	tx := DB.WithContext(ctx).Begin()
+	user1, ok, msg := CreateUser(tx, constants.CreateUserForm{Name: "user1", Password: "password", Email: "user1@0rays.club"})
 	log.Logger.Debug(user1.ID, ok, msg)
-	user2, ok, msg := CreateUser(ctx, constants.CreateUserForm{Name: "user2", Password: "password", Email: "user2@0rays.club"})
+	user2, ok, msg := CreateUser(tx, constants.CreateUserForm{Name: "user2", Password: "password", Email: "user2@0rays.club"})
 	log.Logger.Debug(user2.ID, ok, msg)
 
-	contest1, ok, msg := CreateContest(ctx, constants.CreateContestForm{Name: "contest1", Size: 1, Start: time.Now(), Duration: time.Duration(10)})
+	contest1, ok, msg := CreateContest(tx, constants.CreateContestForm{Name: "contest1", Size: 1, Start: time.Now(), Duration: time.Duration(10)})
 	log.Logger.Debug(contest1.ID, ok, msg)
-	contest2, ok, msg := CreateContest(ctx, constants.CreateContestForm{Name: "contest2", Size: 1, Start: time.Now(), Duration: time.Duration(10)})
+	contest2, ok, msg := CreateContest(tx, constants.CreateContestForm{Name: "contest2", Size: 1, Start: time.Now(), Duration: time.Duration(10)})
 	log.Logger.Debug(contest2.ID, ok, msg)
-	team1, ok, msg := CreateTeam(ctx, constants.CreateTeamForm{Name: "team1"}, user1, contest1)
+	team1, ok, msg := CreateTeam(tx, constants.CreateTeamForm{Name: "team1"}, user1, contest1)
 	log.Logger.Debug(team1.ID, ok, msg)
+	tx.Commit()
 }
 
 func TestAppendUserToTeam(t *testing.T) {
 	InitAssociationTest()
+	defer os.Remove("test.db")
+	defer Close()
 	var ctx context.Context
 	user2, ok, msg := GetUserByID(ctx, 2)
 	log.Logger.Debug(user2, ok, msg)
 	team1, ok, msg := GetTeamByID(ctx, 1)
 	log.Logger.Debug(team1, ok, msg)
-	if err := AppendUserToTeam(ctx, user2, team1); err != nil {
+	tx := DB.WithContext(ctx).Begin()
+	if err := AppendUserToTeam(tx, user2, team1); err != nil {
+		tx.Rollback()
 		log.Logger.Error(err)
 	}
+	tx.Commit()
 	var tmp []model.User
 	if err := DB.WithContext(ctx).Model(&team1).Association("Users").Find(&tmp); err != nil {
 		log.Logger.Error(err)
@@ -55,14 +63,19 @@ func TestAppendUserToTeam(t *testing.T) {
 
 func TestAppendUserToContest(t *testing.T) {
 	InitAssociationTest()
+	defer os.Remove("test.db")
+	defer Close()
 	var ctx context.Context
 	user2, ok, msg := GetUserByID(ctx, 2)
 	log.Logger.Debug(user2, ok, msg)
 	contest1, ok, msg := GetContestByID(ctx, 1)
 	log.Logger.Debug(contest1, ok, msg)
-	if err := AppendUserToContest(ctx, user2, contest1); err != nil {
+	tx := DB.WithContext(ctx).Begin()
+	if err := AppendUserToContest(tx, user2, contest1); err != nil {
+		tx.Rollback()
 		log.Logger.Error(err)
 	}
+	tx.Commit()
 	var tmp []model.User
 	if err := DB.WithContext(ctx).Model(&contest1).Association("Users").Find(&tmp); err != nil {
 		log.Logger.Error(err)
@@ -75,14 +88,19 @@ func TestAppendUserToContest(t *testing.T) {
 
 func TestAppendTeamToContest(t *testing.T) {
 	InitAssociationTest()
+	defer os.Remove("test.db")
+	defer Close()
 	var ctx context.Context
 	team1, ok, msg := GetTeamByID(ctx, 1)
 	log.Logger.Debug(team1, ok, msg)
 	contest2, ok, msg := GetContestByID(ctx, 2)
 	log.Logger.Debug(contest2, ok, msg)
-	if err := AppendTeamToContest(ctx, team1, contest2); err != nil {
+	tx := DB.WithContext(ctx).Begin()
+	if err := AppendTeamToContest(tx, team1, contest2); err != nil {
+		tx.Rollback()
 		log.Logger.Error(err)
 	}
+	tx.Commit()
 	var tmp []model.Team
 	if err := DB.WithContext(ctx).Model(&contest2).Association("Teams").Find(&tmp); err != nil {
 		log.Logger.Error(err)
@@ -95,14 +113,19 @@ func TestAppendTeamToContest(t *testing.T) {
 
 func TestDeleteUserFromTeam(t *testing.T) {
 	InitAssociationTest()
+	defer os.Remove("test.db")
+	defer Close()
 	var ctx context.Context
 	user1, ok, msg := GetUserByID(ctx, 1)
 	log.Logger.Debug(user1, ok, msg)
 	team1, ok, msg := GetTeamByID(ctx, 1)
 	log.Logger.Debug(team1, ok, msg)
-	if err := DeleteUserFromTeam(ctx, user1, team1); err != nil {
+	tx := DB.WithContext(ctx).Begin()
+	if err := DeleteUserFromTeam(tx, user1, team1); err != nil {
+		tx.Rollback()
 		log.Logger.Error(err)
 	}
+	tx.Commit()
 	var tmp []model.User
 	if err := DB.WithContext(ctx).Model(&team1).Association("Users").Find(&tmp); err != nil {
 		log.Logger.Error(err)
@@ -115,14 +138,19 @@ func TestDeleteUserFromTeam(t *testing.T) {
 
 func TestDeleteUserFromContest(t *testing.T) {
 	InitAssociationTest()
+	defer os.Remove("test.db")
+	defer Close()
 	var ctx context.Context
 	user1, ok, msg := GetUserByID(ctx, 1)
 	log.Logger.Debug(user1, ok, msg)
 	contest1, ok, msg := GetContestByID(ctx, 1)
 	log.Logger.Debug(contest1, ok, msg)
-	if err := DeleteUserFromContest(ctx, user1, contest1); err != nil {
+	tx := DB.WithContext(ctx).Begin()
+	if err := DeleteUserFromContest(tx, user1, contest1); err != nil {
+		tx.Rollback()
 		log.Logger.Error(err)
 	}
+	tx.Commit()
 	var tmp []model.User
 	if err := DB.WithContext(ctx).Model(&contest1).Association("Users").Find(&tmp); err != nil {
 		log.Logger.Error(err)
@@ -135,14 +163,19 @@ func TestDeleteUserFromContest(t *testing.T) {
 
 func TestDeleteTeamFromContest(t *testing.T) {
 	InitAssociationTest()
+	defer os.Remove("test.db")
+	defer Close()
 	var ctx context.Context
 	team1, ok, msg := GetTeamByID(ctx, 1)
 	log.Logger.Debug(team1, ok, msg)
 	contest1, ok, msg := GetContestByID(ctx, 1)
 	log.Logger.Debug(contest1, ok, msg)
-	if err := DeleteTeamFromContest(ctx, team1, contest1); err != nil {
+	tx := DB.WithContext(ctx).Begin()
+	if err := DeleteTeamFromContest(tx, team1, contest1); err != nil {
+		tx.Rollback()
 		log.Logger.Error(err)
 	}
+	tx.Commit()
 	var tmp []model.Team
 	if err := DB.WithContext(ctx).Model(&contest1).Association("Teams").Find(&tmp); err != nil {
 		log.Logger.Error(err)

@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
 	"context"
+	"os"
 	"testing"
 	"time"
 )
@@ -20,37 +21,45 @@ func InitUserTest() {
 	InitTest()
 	redis.Init()
 	var ctx context.Context
-	_, _, _ = CreateAdmin(ctx, "admin1", "password", "admin1@0rays.club")
-	user1, _, _ := CreateUser(ctx, constants.CreateUserForm{Name: "user1", Password: "password", Email: "user1@0rays.club"})
-	contest1, _, _ := CreateContest(ctx, constants.CreateContestForm{Name: "contest1", Size: 1, Start: time.Now(), Duration: time.Duration(10), Hidden: false})
-	_, _, _ = CreateTeam(ctx, constants.CreateTeamForm{Name: "team1"}, user1, contest1)
+	tx := DB.WithContext(ctx).Begin()
+	_, _, _ = CreateAdmin(tx, "admin1", "password", "admin1@0rays.club")
+	user1, _, _ := CreateUser(tx, constants.CreateUserForm{Name: "user1", Password: "password", Email: "user1@0rays.club"})
+	contest1, _, _ := CreateContest(tx, constants.CreateContestForm{Name: "contest1", Size: 1, Start: time.Now(), Duration: time.Duration(10), Hidden: false})
+	_, _, _ = CreateTeam(tx, constants.CreateTeamForm{Name: "team1"}, user1, contest1)
+	tx.Commit()
 }
 
 func TestCreateUser(t *testing.T) {
 	InitUserTest()
+	defer os.Remove("test.db")
+	defer Close()
 	var ctx context.Context
-	if _, ok, _ := CreateUser(ctx, constants.CreateUserForm{Name: "test", Password: "password", Email: "test_email"}); ok {
+	tx := DB.WithContext(ctx).Begin()
+	if _, ok, _ := CreateUser(tx, constants.CreateUserForm{Name: "test", Password: "password", Email: "test_email"}); ok {
 		t.Fatalf("Should not create user with invalid email")
 	}
-	if _, ok, _ := CreateUser(ctx, constants.CreateUserForm{Name: "user1", Password: "password", Email: "test@0rays.club"}); ok {
+	if _, ok, _ := CreateUser(tx, constants.CreateUserForm{Name: "user1", Password: "password", Email: "test@0rays.club"}); ok {
 		t.Fatalf("Should not create duplicated user")
 	}
-	if _, ok, _ := CreateUser(ctx, constants.CreateUserForm{Name: "test", Password: "password", Email: "user1@0rays.club"}); ok {
+	if _, ok, _ := CreateUser(tx, constants.CreateUserForm{Name: "test", Password: "password", Email: "user1@0rays.club"}); ok {
 		t.Fatalf("Should not create duplicated email")
 	}
-	if _, ok, _ := CreateAdmin(ctx, "user1", "password", "test@0rays.club"); !ok {
+	if _, ok, _ := CreateAdmin(tx, "user1", "password", "test@0rays.club"); !ok {
 		t.Fatalf("Failed to create admin which name is duplicated with user")
 	}
-	if _, ok, _ := CreateAdmin(ctx, "test", "password", "user1@0rays.club"); ok {
+	if _, ok, _ := CreateAdmin(tx, "test", "password", "user1@0rays.club"); ok {
 		t.Fatalf("Should not create admin which email is duplicated with user")
 	}
 	if user1, _, _ := GetUserByID(ctx, 1); user1.Password == "password" {
 		t.Fatalf("Failed to hash password")
 	}
+	tx.Commit()
 }
 
 func TestGetUserByID(t *testing.T) {
 	InitUserTest()
+	defer os.Remove("test.db")
+	defer Close()
 	var ctx context.Context
 	if _, ok, _ := GetUserByID(ctx, 0); ok {
 		t.Fatalf("Should not get user with invalid id")
@@ -62,8 +71,11 @@ func TestGetUserByID(t *testing.T) {
 
 func TestDeleteUser(t *testing.T) {
 	InitUserTest()
+	defer os.Remove("test.db")
+	defer Close()
 	var ctx context.Context
-	if ok, _ := DeleteUser(ctx, 0); ok {
+	tx := DB.WithContext(ctx).Begin()
+	if ok, _ := DeleteUser(tx, ctx, 0); ok {
 		t.Fatalf("Sest hould return false when delete invalid user")
 	}
 
@@ -101,9 +113,10 @@ func TestDeleteUser(t *testing.T) {
 	}
 	log.Logger.Debug(tmp)
 
-	if ok, _ := DeleteUser(ctx, 1); !ok {
+	if ok, _ := DeleteUser(tx, ctx, 1); !ok {
 		t.Fatalf("Failed to delete user")
 	}
+	tx.Commit()
 
 	if err := DB.WithContext(ctx).Model(&user1).Association("Teams").Find(&tmp); err != nil {
 		t.Fatalf(err.Error())
@@ -131,9 +144,13 @@ func TestDeleteUser(t *testing.T) {
 
 func TestGetUsers(t *testing.T) {
 	InitUserTest()
-	test, _, _ := CreateUser(context.Background(), constants.CreateUserForm{Name: "test", Password: "password", Email: "test@0rays.club"})
-	_, _ = UpdateUser(context.Background(), test.ID, map[string]interface{}{"hidden": true})
+	defer os.Remove("test.db")
+	defer Close()
 	var ctx context.Context
+	tx := DB.WithContext(ctx).Begin()
+	test, _, _ := CreateUser(tx, constants.CreateUserForm{Name: "test", Password: "password", Email: "test@0rays.club"})
+	_, _ = UpdateUser(tx, test.ID, map[string]interface{}{"hidden": true})
+	tx.Commit()
 	users, count, ok, msg := GetUsers(ctx, 0, 0, true)
 	log.Logger.Info(users, count, ok, msg)
 	if len(users) != 2 {

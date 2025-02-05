@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
 	"context"
+	"os"
 	"testing"
 	"time"
 )
@@ -21,49 +22,57 @@ func InitTeamTest() {
 	redis.Init()
 	var ctx context.Context
 
-	user1, ok, msg := CreateUser(ctx, constants.CreateUserForm{Name: "user1", Password: "password", Email: "user1@0rays.club"})
+	tx := DB.WithContext(ctx).Begin()
+	user1, ok, msg := CreateUser(tx, constants.CreateUserForm{Name: "user1", Password: "password", Email: "user1@0rays.club"})
 	log.Logger.Debug(user1.ID, ok, msg)
-	user2, ok, msg := CreateUser(ctx, constants.CreateUserForm{Name: "user2", Password: "password", Email: "user2@0rays.club"})
+	user2, ok, msg := CreateUser(tx, constants.CreateUserForm{Name: "user2", Password: "password", Email: "user2@0rays.club"})
 	log.Logger.Debug(user2.ID, ok, msg)
-	contest1, ok, msg := CreateContest(ctx, constants.CreateContestForm{Name: "contest1", Size: 4, Start: time.Now(), Duration: time.Duration(10), Hidden: false})
+	contest1, ok, msg := CreateContest(tx, constants.CreateContestForm{Name: "contest1", Size: 4, Start: time.Now(), Duration: time.Duration(10), Hidden: false})
 	log.Logger.Debug(contest1.ID, ok, msg)
-	contest2, ok, msg := CreateContest(ctx, constants.CreateContestForm{Name: "contest2", Size: 4, Start: time.Now(), Duration: time.Duration(10), Hidden: false})
+	contest2, ok, msg := CreateContest(tx, constants.CreateContestForm{Name: "contest2", Size: 4, Start: time.Now(), Duration: time.Duration(10), Hidden: false})
 	log.Logger.Debug(contest2.ID, ok, msg)
-	team1, ok, msg := CreateTeam(ctx, constants.CreateTeamForm{Name: "team1", Captcha: contest1.Captcha}, user1, contest1)
+	team1, ok, msg := CreateTeam(tx, constants.CreateTeamForm{Name: "team1", Captcha: contest1.Captcha}, user1, contest1)
 	log.Logger.Debug(team1.ID, ok, msg)
+	tx.Commit()
 }
 
 func TestCreateTeam(t *testing.T) {
 	InitTeamTest()
+	defer os.Remove("test.db")
+	defer Close()
 	var ctx context.Context
 	user1, ok, msg := GetUserByID(ctx, 1)
 	user2, ok, msg := GetUserByID(ctx, 2)
 	contest1, ok, msg := GetContestByID(ctx, 1)
 	contest2, ok, msg := GetContestByID(ctx, 2)
-	test, ok, msg := CreateTeam(ctx, constants.CreateTeamForm{Name: "team1"}, user1, contest1)
+	tx := DB.WithContext(ctx).Begin()
+	test, ok, msg := CreateTeam(tx, constants.CreateTeamForm{Name: "team1"}, user1, contest1)
 	if ok {
 		t.Fatal("Should not create duplicated team")
 	}
 	log.Logger.Debug(test, msg)
-	test, ok, msg = CreateTeam(ctx, constants.CreateTeamForm{Name: "team2"}, user1, contest1)
+	test, ok, msg = CreateTeam(tx, constants.CreateTeamForm{Name: "team2"}, user1, contest1)
 	if ok {
 		t.Fatal("Team member should not be repeated")
 	}
 	log.Logger.Debug(test, msg)
-	test, ok, msg = CreateTeam(ctx, constants.CreateTeamForm{Name: "team2"}, user2, contest1)
+	test, ok, msg = CreateTeam(tx, constants.CreateTeamForm{Name: "team2"}, user2, contest1)
 	if !ok {
 		t.Fatal("Should create team successfully", msg)
 	}
 	log.Logger.Debug(test, msg)
-	test, ok, msg = CreateTeam(ctx, constants.CreateTeamForm{Name: "team2"}, user1, contest2)
+	test, ok, msg = CreateTeam(tx, constants.CreateTeamForm{Name: "team2"}, user1, contest2)
 	if !ok {
 		t.Fatal("Should create team successfully")
 	}
 	log.Logger.Debug(test, msg)
+	tx.Commit()
 }
 
 func TestGetTeamByID(t *testing.T) {
 	InitTeamTest()
+	defer os.Remove("test.db")
+	defer Close()
 	var ctx context.Context
 	_, ok, msg := GetTeamByID(ctx, 1)
 	if !ok {
@@ -117,12 +126,17 @@ func TestGetTeamByID(t *testing.T) {
 
 func TestDeleteTeam(t *testing.T) {
 	InitTeamTest()
+	defer os.Remove("test.db")
+	defer Close()
 	var ctx context.Context
-	ok, msg := DeleteTeam(ctx, model.Team{ID: 0})
+	tx := DB.WithContext(ctx).Begin()
+	ok, msg := DeleteTeam(tx, ctx, model.Team{ID: 0})
 	if ok {
+		tx.Commit()
 		t.Fatal("Should not delete team successfully")
 	}
 	log.Logger.Debug(msg)
+	tx.Rollback()
 
 	team1, ok, msg := GetTeamByID(ctx, 1)
 	if !ok {
@@ -158,10 +172,13 @@ func TestDeleteTeam(t *testing.T) {
 	}
 	log.Logger.Debug(tmp)
 	team1, _, _ = GetTeamByID(ctx, 1)
-	ok, msg = DeleteTeam(ctx, team1)
+	tx = DB.WithContext(ctx).Begin()
+	ok, msg = DeleteTeam(tx, ctx, team1)
 	if !ok {
+		tx.Rollback()
 		t.Fatal("Should delete team successfully")
 	}
+	tx.Commit()
 	log.Logger.Debug(msg)
 
 	user1, ok, msg := GetUserByID(ctx, 1)
@@ -196,47 +213,59 @@ func TestDeleteTeam(t *testing.T) {
 
 func TestJoinTeam(t *testing.T) {
 	InitTeamTest()
+	defer os.Remove("test.db")
+	defer Close()
 	var ctx context.Context
 	user1, ok, msg := GetUserByID(ctx, 1)
 	user2, ok, msg := GetUserByID(ctx, 2)
 	team1, ok, msg := GetTeamByID(ctx, 1)
 	contest1, ok, msg := GetContestByID(ctx, 1)
-	ok, msg = JoinTeam(ctx, user1, team1, contest1)
+	tx := DB.WithContext(ctx).Begin()
+	ok, msg = JoinTeam(tx, user1, team1, contest1)
 	if ok {
+		tx.Commit()
 		t.Fatal("Should not join team successfully", msg)
 	}
 	log.Logger.Debug(msg)
-	ok, msg = JoinTeam(ctx, user2, team1, contest1)
+	ok, msg = JoinTeam(tx, user2, team1, contest1)
 	if !ok {
+		tx.Rollback()
 		t.Fatal("Should join team successfully", msg)
 	}
+	tx.Commit()
 	log.Logger.Debug(msg)
 }
 
 func TestLeaveTeam(t *testing.T) {
 	InitTeamTest()
+	defer os.Remove("test.db")
+	defer Close()
 	var ctx context.Context
 	user1, ok, msg := GetUserByID(ctx, 1)
 	user2, ok, msg := GetUserByID(ctx, 2)
 	team1, ok, msg := GetTeamByID(ctx, 1)
 	contest1, ok, msg := GetContestByID(ctx, 1)
-	ok, msg = JoinTeam(ctx, user2, team1, contest1)
+	tx := DB.WithContext(ctx).Begin()
+	ok, msg = JoinTeam(tx, user2, team1, contest1)
 	if !ok {
 		t.Fatal("Should join team successfully")
 	}
-	ok, msg = LeaveTeam(ctx, user1, team1, contest1)
+	tx.Commit()
+	tx = DB.WithContext(ctx).Begin()
+	ok, msg = LeaveTeam(tx, ctx, user1, team1, contest1)
 	if ok {
 		t.Fatal("Should not leave team successfully")
 	}
 	log.Logger.Debug(msg)
-	ok, msg = LeaveTeam(ctx, user2, team1, contest1)
+	ok, msg = LeaveTeam(tx, ctx, user2, team1, contest1)
 	if !ok {
 		t.Fatal("Should leave team successfully")
 	}
 	log.Logger.Debug(msg)
-	ok, msg = LeaveTeam(ctx, user1, team1, contest1)
+	ok, msg = LeaveTeam(tx, ctx, user1, team1, contest1)
 	if ok {
 		t.Fatal("Should not leave team successfully")
 	}
+	tx.Commit()
 	log.Logger.Debug(msg)
 }
