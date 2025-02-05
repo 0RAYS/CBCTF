@@ -9,6 +9,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"strings"
+	"time"
 )
 
 var DB *gorm.DB
@@ -46,6 +47,7 @@ func Init() {
 	} else {
 		sql.SetMaxIdleConns(config.Env.Gorm.MySQL.MaxIdleConns)
 		sql.SetMaxOpenConns(config.Env.Gorm.MySQL.MaxOpenConns)
+		sql.SetConnMaxLifetime(time.Hour)
 	}
 
 	err = DB.AutoMigrate(

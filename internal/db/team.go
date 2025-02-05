@@ -20,14 +20,11 @@ func CreateTeam(tx *gorm.DB, form constants.CreateTeamForm, captain model.User, 
 	if !IsUniqueTeamMember(tx, contest.ID, captain.ID) {
 		return model.Team{}, false, "TeamMemberExists"
 	}
-	team := model.InitTeam(form, captain.ID, contest.ID)
+	team := model.InitTeam(form, captain, contest.ID)
 	res := tx.Model(&model.Team{}).Create(&team)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to create team: %s", res.Error)
 		return model.Team{}, false, "CreateTeamError"
-	}
-	if ok, msg := JoinTeam(tx, captain, team, contest); !ok {
-		return model.Team{}, false, msg
 	}
 	go func() {
 		if err := redis.DelTeamsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
@@ -176,11 +173,6 @@ func JoinTeam(tx *gorm.DB, user model.User, team model.Team, contest model.Conte
 	if err := AppendUserToTeam(tx, user, team); err != nil {
 		log.Logger.Warningf("Failed to insert user_team: %s", err)
 		return false, "AppendUserToTeamError"
-	}
-	// 关联 Contest Team HasMany
-	if err := AppendTeamToContest(tx, team, contest); err != nil {
-		log.Logger.Warningf("Failed to insert contest_team: %s", err)
-		return false, "AppendTeamToContestError"
 	}
 	// 关联 User Contest Many2Many
 	if err := AppendUserToContest(tx, user, contest); err != nil {
