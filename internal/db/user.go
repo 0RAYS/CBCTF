@@ -28,7 +28,6 @@ func CreateUser(tx *gorm.DB, form constants.CreateUserForm) (model.User, bool, s
 	res := tx.Model(&model.User{}).Create(&user)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to create user: %s", res.Error)
-
 		return model.User{}, false, "CreateUserError"
 	}
 	go func() {
@@ -89,10 +88,11 @@ func DeleteUser(tx *gorm.DB, ctx context.Context, id uint) (bool, string) {
 	}
 	if err := tx.Model(&model.User{}).Select(clause.Associations).Delete(&model.User{}, id).Error; err != nil {
 		log.Logger.Warningf("Failed to delete user: %s", err)
-
 		return false, "DeleteUserError"
 	}
-	ClearByID(tx, "user_id", id)
+	if !ClearByID(tx, "user_id", id) {
+		return false, "DeleteAssociatedDataError"
+	}
 	go func() {
 		if err := redis.DelUserCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete user cache: %s", err)
@@ -110,7 +110,6 @@ func UpdateUser(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool, 
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to update user: %s", res.Error)
-
 		return false, "UpdateUserError"
 	}
 	go func() {

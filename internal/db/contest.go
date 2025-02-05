@@ -21,7 +21,6 @@ func CreateContest(tx *gorm.DB, form constants.CreateContestForm) (model.Contest
 	res := tx.Model(&model.Contest{}).Create(&contest)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to create contest: %s", res.Error)
-
 		return model.Contest{}, false, "CreateContestError"
 	}
 	go func() {
@@ -75,10 +74,11 @@ func DeleteContest(tx *gorm.DB, ctx context.Context, contest model.Contest) (boo
 	}
 	if err := tx.Model(&model.Contest{}).Select(clause.Associations).Delete(&contest).Error; err != nil {
 		log.Logger.Warningf("Failed to delete contest: %s", err)
-
 		return false, "DeleteContestError"
 	}
-	ClearByID(tx, "contest_id", contest.ID)
+	if !ClearByID(tx, "contest_id", contest.ID) {
+		return false, "DeleteAssociatedDataError"
+	}
 	go func() {
 		if err := redis.DelContestCache(contest.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete contest cache: %s", err)
@@ -96,7 +96,6 @@ func UpdateContest(tx *gorm.DB, id uint, updateData map[string]interface{}) (boo
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to update contest: %v", res.Error)
-
 		return false, "UpdateContestError"
 	}
 	go func() {
