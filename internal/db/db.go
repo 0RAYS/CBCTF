@@ -87,6 +87,8 @@ func InitTest() {
 		&model.Challenge{}, &model.Usage{}, &model.Flag{},
 		&model.Docker{}, &model.Submission{}, &model.Scoreboard{},
 	)
+	_ = DB.SetupJoinTable(&model.User{}, "Teams", &model.UserTeam{})
+	_ = DB.SetupJoinTable(&model.User{}, "Contests", &model.UserContest{})
 	tx := DB.Begin()
 	InitAdmin(tx)
 	tx.Commit()
