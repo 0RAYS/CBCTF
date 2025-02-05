@@ -42,6 +42,7 @@ type Config struct {
 	} `mapstructure:"gorm" json:"gorm"`
 
 	Redis struct {
+		On      bool   `mapstructure:"on" json:"on"`           // Redis 开关
 		Addr    string `mapstructure:"addr" json:"addr"`       // Redis 地址
 		Pwd     string `mapstructure:"pwd" json:"pwd"`         // Redis 密码
 		Timeout uint   `mapstructure:"timeout" json:"timeout"` // Redis 连接超时时间（单位：毫秒）

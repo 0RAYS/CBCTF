@@ -14,6 +14,9 @@ import (
 )
 
 func GetTeamCache(key string) (model.Team, bool) {
+	if !config.Env.Redis.On {
+		return model.Team{}, false
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
@@ -32,6 +35,9 @@ func GetTeamCache(key string) (model.Team, bool) {
 }
 
 func GetTeamsCache(key string) ([]model.Team, bool) {
+	if !config.Env.Redis.On {
+		return nil, false
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
@@ -52,6 +58,9 @@ func GetTeamsCache(key string) ([]model.Team, bool) {
 }
 
 func SetTeamCache(key string, team model.Team) error {
+	if !config.Env.Redis.On {
+		return errors.New("redis off")
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := msgpack.Marshal(team)
@@ -66,6 +75,9 @@ func SetTeamCache(key string, team model.Team) error {
 }
 
 func SetTeamsCache(key string, teams []model.Team) error {
+	if !config.Env.Redis.On {
+		return errors.New("redis off")
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := msgpack.Marshal(teams)
@@ -80,10 +92,12 @@ func SetTeamsCache(key string, teams []model.Team) error {
 }
 
 func DelTeamCache(id uint) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
+	if !config.Env.Redis.On {
+		return errors.New("redis off")
+	}
 	var cursor uint64
 	for {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 		keys, cursor, err := RDB.Scan(ctx, cursor, fmt.Sprintf("team:%d:*", id), 10).Result()
 		if err != nil {
 			log.Logger.Warningf("Failed to scan teams keys: %s", err)
@@ -91,10 +105,12 @@ func DelTeamCache(id uint) error {
 
 		for _, key := range keys {
 			if err := RDB.Del(ctx, key).Err(); err != nil {
+				cancel()
 				return err
 			}
 			log.Logger.Debug("DelTeamCache: ", key)
 		}
+		cancel()
 		if cursor == 0 {
 			break
 		}
@@ -104,10 +120,12 @@ func DelTeamCache(id uint) error {
 }
 
 func DelTeamsCache() error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
+	if !config.Env.Redis.On {
+		return errors.New("redis off")
+	}
 	var cursor uint64
 	for {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 		keys, cursor, err := RDB.Scan(ctx, cursor, "teams:*", 10).Result()
 		if err != nil {
 			log.Logger.Warningf("Failed to scan teams keys: %s", err)
@@ -115,10 +133,12 @@ func DelTeamsCache() error {
 
 		for _, key := range keys {
 			if err := RDB.Del(ctx, key).Err(); err != nil {
+				cancel()
 				return err
 			}
 			log.Logger.Debug("DelTeamsCache: ", key)
 		}
+		cancel()
 		if cursor == 0 {
 			break
 		}

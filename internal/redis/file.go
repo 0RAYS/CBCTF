@@ -13,6 +13,9 @@ import (
 )
 
 func GetFileCache(key string) (model.Avatar, bool) {
+	if !config.Env.Redis.On {
+		return model.Avatar{}, false
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
@@ -33,6 +36,9 @@ func GetFileCache(key string) (model.Avatar, bool) {
 }
 
 func GetFilesCache(key string) ([]model.Avatar, bool) {
+	if !config.Env.Redis.On {
+		return nil, false
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
@@ -53,6 +59,9 @@ func GetFilesCache(key string) ([]model.Avatar, bool) {
 }
 
 func SetFileCache(key string, file model.Avatar) error {
+	if !config.Env.Redis.On {
+		return errors.New("redis off")
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := msgpack.Marshal(file)
@@ -67,6 +76,9 @@ func SetFileCache(key string, file model.Avatar) error {
 }
 
 func SetFilesCache(key string, files []model.Avatar) error {
+	if !config.Env.Redis.On {
+		return errors.New("redis off")
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := msgpack.Marshal(files)
@@ -81,6 +93,9 @@ func SetFilesCache(key string, files []model.Avatar) error {
 }
 
 func DelFileCache(id string) error {
+	if !config.Env.Redis.On {
+		return errors.New("redis off")
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	key := "file:" + id
@@ -92,10 +107,12 @@ func DelFileCache(id string) error {
 }
 
 func DelFilesCache() error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
+	if !config.Env.Redis.On {
+		return errors.New("redis off")
+	}
 	var cursor uint64
 	for {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 		keys, cursor, err := RDB.Scan(ctx, cursor, "files:*", 10).Result()
 		if err != nil {
 			log.Logger.Warningf("Failed to scan file keys: %s", err)
@@ -103,10 +120,12 @@ func DelFilesCache() error {
 
 		for _, key := range keys {
 			if err := RDB.Del(ctx, key).Err(); err != nil {
+				cancel()
 				return err
 			}
 			log.Logger.Debug("DelFilesCache: ", key)
 		}
+		cancel()
 		if cursor == 0 {
 			break
 		}
