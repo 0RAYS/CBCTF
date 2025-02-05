@@ -65,7 +65,7 @@ func Init() {
 	tx.Commit()
 }
 
-// InitTest 初始化测试数据库
+// InitTest 初始化测试数据库, SQLite 不支持锁表, 单元测试无法通过，需手动移除 utils.go 锁表部分
 func InitTest() {
 	var level log.Level
 	switch strings.ToUpper(config.Env.Gorm.Log.Level) {
