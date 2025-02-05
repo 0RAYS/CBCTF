@@ -4,10 +4,11 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
+	"gorm.io/gorm"
 )
 
 // CreateSubmission is a function to create a new submission
-func CreateSubmission(ctx context.Context, contest model.Contest, team model.Team, user model.User, challenge model.Challenge, value string) (model.Submission, bool, string) {
+func CreateSubmission(tx *gorm.DB, ctx context.Context, contest model.Contest, team model.Team, user model.User, challenge model.Challenge, value string) (model.Submission, bool, string) {
 	if IsSolved(ctx, contest, team, challenge) {
 		return model.Submission{}, false, "AlreadySolved"
 	}
@@ -17,12 +18,13 @@ func CreateSubmission(ctx context.Context, contest model.Contest, team model.Tea
 	}
 	solved := VerifyFlag(ctx, contest.ID, team.ID, challenge.ID, value)
 	if solved {
-		if ok, msg := AddSolvers(ctx, usage.ID); !ok {
+		if ok, msg := AddSolvers(tx, usage.ID); !ok {
 			return model.Submission{}, false, msg
 		}
 	}
 	submission := model.InitSubmission(contest.ID, challenge.ID, team.ID, user.ID, value, solved)
-	if err := DB.WithContext(ctx).Model(model.Submission{}).Create(&submission).Error; err != nil {
+	if err := tx.Model(model.Submission{}).Create(&submission).Error; err != nil {
+
 		return model.Submission{}, false, "CreateSubmissionError"
 	}
 	return submission, true, "Success"
@@ -81,9 +83,9 @@ func GetSubmissions(ctx context.Context, limit, offset int) ([]model.Submission,
 	return submissions, count, true, "Success"
 }
 
-func DeleteSubmission(ctx context.Context, id uint) (bool, string) {
+func DeleteSubmission(tx *gorm.DB, id uint) (bool, string) {
 	var submission model.Submission
-	res := DB.WithContext(ctx).Model(model.Submission{}).Where("id = ?", id).Delete(&submission)
+	res := tx.Model(model.Submission{}).Where("id = ?", id).Delete(&submission)
 	if res.RowsAffected != 1 {
 		return false, "SubmissionNotFound"
 	}

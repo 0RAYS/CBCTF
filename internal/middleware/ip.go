@@ -31,7 +31,9 @@ func AccessLog(ctx *gin.Context) {
 		Status:    statusCode,
 		Referer:   referer,
 	}
-	db.RecordIP(ctx, log)
+	tx := db.DB.WithContext(ctx).Begin()
+	db.RecordIP(tx, log)
+	tx.Commit()
 }
 
 // 频率限制的配置

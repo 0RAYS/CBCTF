@@ -7,15 +7,17 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"gorm.io/gorm"
 	"mime/multipart"
 )
 
 // RecordAvatar 添加头像记录
-func RecordAvatar(ctx context.Context, path string, uploader uint, file *multipart.FileHeader, hash string) (model.Avatar, bool, string) {
+func RecordAvatar(tx *gorm.DB, path string, uploader uint, file *multipart.FileHeader, hash string) (model.Avatar, bool, string) {
 	f := model.InitAvatar(path, uploader, file, hash)
-	res := DB.WithContext(ctx).Model(model.Avatar{}).Create(&f)
+	res := tx.Model(model.Avatar{}).Create(&f)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to record file: %v", res.Error)
+
 		return model.Avatar{}, false, "CreateFileRecordError"
 	}
 	go func() {
@@ -65,9 +67,10 @@ func GetAvatarByHash(ctx context.Context, hash string) (model.Avatar, bool, stri
 }
 
 // DeleteAvatar 以 ID 删除文件记录
-func DeleteAvatar(ctx context.Context, id string) (bool, string) {
-	if err := DB.WithContext(ctx).Model(model.Avatar{}).Where("id = ?", id).Delete(&model.Avatar{}).Error; err != nil {
+func DeleteAvatar(tx *gorm.DB, id string) (bool, string) {
+	if err := tx.Model(model.Avatar{}).Where("id = ?", id).Delete(&model.Avatar{}).Error; err != nil {
 		log.Logger.Warningf("Failed to delete file: %v", id)
+
 		return false, "DeleteFileError"
 	}
 	go func() {

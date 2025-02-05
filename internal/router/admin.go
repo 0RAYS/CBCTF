@@ -29,11 +29,14 @@ func CreateAdmin(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	admin, ok, msg := db.CreateAdmin(ctx, form.Name, form.Password, form.Email)
+	tx := db.DB.WithContext(ctx).Begin()
+	admin, ok, msg := db.CreateAdmin(tx, form.Name, form.Password, form.Email)
 	if !ok {
+		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	tx.Commit()
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": admin})
 }
 
@@ -43,7 +46,14 @@ func AdminChangePassword(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	_, msg := db.ChangePasswordAdmin(ctx, middleware.GetSelf(ctx).(model.Admin), form.OldPassword, form.NewPassword)
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := db.ChangePasswordAdmin(tx, middleware.GetSelf(ctx).(model.Admin), form.OldPassword, form.NewPassword)
+	if !ok {
+		tx.Rollback()
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	tx.Commit()
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
@@ -55,18 +65,31 @@ func UpdateAdmin(ctx *gin.Context) {
 	}
 	admin := middleware.GetSelf(ctx).(model.Admin)
 	data := utils.Form2Map(form)
+	tx := db.DB.WithContext(ctx).Begin()
 	// 在预期的想法中，admin 的邮箱似乎没有什么用，先保留
 	if email, ok := data["email"]; ok && email.(string) != admin.Email {
 		if !db.IsUniqueEmail(data["email"].(string)) {
+			tx.Rollback()
 			ctx.JSON(http.StatusOK, gin.H{"msg": "EmailExists", "data": nil})
 			return
 		}
-		db.UpdateUser(ctx, admin.ID, map[string]interface{}{"verified": false})
+		if ok, msg := db.UpdateAdmin(tx, admin.ID, map[string]interface{}{"verified": false}); !ok {
+			tx.Rollback()
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
+		}
 	}
 	if name, ok := data["name"]; ok && name.(string) != admin.Name && !db.IsUniqueName(name.(string), model.Admin{}) {
+		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": "UserNameExists", "data": nil})
 		return
 	}
-	_, msg := db.UpdateAdmin(ctx, admin.ID, data)
+	ok, msg := db.UpdateAdmin(tx, admin.ID, data)
+	if !ok {
+		tx.Rollback()
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	tx.Commit()
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

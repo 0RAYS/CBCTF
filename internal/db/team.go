@@ -8,11 +8,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
 // CreateTeam 创建队伍, 名称在 model.Contest 中唯一
-func CreateTeam(ctx context.Context, form constants.CreateTeamForm, captain model.User, contest model.Contest) (model.Team, bool, string) {
+func CreateTeam(tx *gorm.DB, form constants.CreateTeamForm, captain model.User, contest model.Contest) (model.Team, bool, string) {
 	if !IsUniqueTeamName(form.Name, contest.ID) {
 		return model.Team{}, false, "TeamNameExists"
 	}
@@ -20,12 +21,13 @@ func CreateTeam(ctx context.Context, form constants.CreateTeamForm, captain mode
 		return model.Team{}, false, "TeamMemberExists"
 	}
 	team := model.InitTeam(form, captain.ID, contest.ID)
-	res := DB.WithContext(ctx).Model(&model.Team{}).Create(&team)
+	res := tx.Model(&model.Team{}).Create(&team)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to create team: %s", res.Error)
+
 		return model.Team{}, false, "CreateTeamError"
 	}
-	if ok, msg := JoinTeam(ctx, captain, team, contest); !ok {
+	if ok, msg := JoinTeam(tx, captain, team, contest); !ok {
 		return model.Team{}, false, msg
 	}
 	go func() {
@@ -110,23 +112,25 @@ func GetTeamByUserID(ctx context.Context, userID uint, contestID uint) (model.Te
 }
 
 // DeleteTeam 删除 model.Team, 同时删除与 model.User, model.Contest 的关联
-func DeleteTeam(ctx context.Context, team model.Team) (bool, string) {
+func DeleteTeam(tx *gorm.DB, ctx context.Context, team model.Team) (bool, string) {
 	contest, ok, msg := GetContestByID(ctx, team.ContestID)
 	if !ok {
 		return false, msg
 	}
 	// 删除 User 和 Contest 关联
 	for _, user := range team.Users {
-		if err := DeleteUserFromContest(ctx, *user, contest); err != nil {
+		if err := DeleteUserFromContest(tx, *user, contest); err != nil {
 			log.Logger.Warningf("Failed to delete user_contest: %s", err)
+
 			return false, "DeleteUserFromContestError"
 		}
 	}
-	if err := DB.WithContext(ctx).Model(&model.Team{}).Select(clause.Associations).Delete(&team).Error; err != nil {
+	if err := tx.Model(&model.Team{}).Select(clause.Associations).Delete(&team).Error; err != nil {
 		log.Logger.Warningf("Failed to delete team: %s", err)
+
 		return false, "DeleteTeamError"
 	}
-	ClearByID(ctx, "team_id", team.ID)
+	ClearByID(tx, "team_id", team.ID)
 	go func() {
 		if err := redis.DelTeamCache(team.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete team cache: %s", err)
@@ -139,11 +143,12 @@ func DeleteTeam(ctx context.Context, team model.Team) (bool, string) {
 }
 
 // UpdateTeam 使用 map 更新属性, 使用结构体会导致零值未更新, 对字段值的具体要求应当交给上层实现
-func UpdateTeam(ctx context.Context, id uint, updateData map[string]interface{}) (bool, string) {
-	res := DB.WithContext(ctx).Model(&model.Team{}).Where("id = ?", id).
+func UpdateTeam(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool, string) {
+	res := tx.Model(&model.Team{}).Where("id = ?", id).
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to update team: %s", res.Error)
+
 		return false, "UpdateTeamError"
 	}
 	go func() {
@@ -158,7 +163,7 @@ func UpdateTeam(ctx context.Context, id uint, updateData map[string]interface{})
 }
 
 // JoinTeam model.User 加入 model.Team, 建立三个模型直接的关联关系
-func JoinTeam(ctx context.Context, user model.User, team model.Team, contest model.Contest) (bool, string) {
+func JoinTeam(tx *gorm.DB, user model.User, team model.Team, contest model.Contest) (bool, string) {
 	if !IsUniqueTeamMember(contest.ID, user.ID) {
 		return false, "TeamMemberExists"
 	}
@@ -169,18 +174,21 @@ func JoinTeam(ctx context.Context, user model.User, team model.Team, contest mod
 		return false, "TeamIsFull"
 	}
 	// 关联 Team User Many2Many
-	if err := AppendUserToTeam(ctx, user, team); err != nil {
+	if err := AppendUserToTeam(tx, user, team); err != nil {
 		log.Logger.Warningf("Failed to insert user_team: %s", err)
+
 		return false, "AppendUserToTeamError"
 	}
 	// 关联 Contest Team HasMany
-	if err := AppendTeamToContest(ctx, team, contest); err != nil {
+	if err := AppendTeamToContest(tx, team, contest); err != nil {
 		log.Logger.Warningf("Failed to insert contest_team: %s", err)
+
 		return false, "AppendTeamToContestError"
 	}
 	// 关联 User Contest Many2Many
-	if err := AppendUserToContest(ctx, user, contest); err != nil {
+	if err := AppendUserToContest(tx, user, contest); err != nil {
 		log.Logger.Warningf("Failed to insert user_contest: %s", err)
+
 		return false, "AppendContestToUserError"
 	}
 	go func() {
@@ -207,7 +215,7 @@ func JoinTeam(ctx context.Context, user model.User, team model.Team, contest mod
 }
 
 // LeaveTeam model.User 离开 model.Team, 删除三个模型直接的关联关系
-func LeaveTeam(ctx context.Context, user model.User, team model.Team, contest model.Contest) (bool, string) {
+func LeaveTeam(tx *gorm.DB, ctx context.Context, user model.User, team model.Team, contest model.Contest) (bool, string) {
 	if !IsMemberInTeam(team.ID, user.ID) {
 		return false, "UserNotInTeam"
 	}
@@ -216,14 +224,16 @@ func LeaveTeam(ctx context.Context, user model.User, team model.Team, contest mo
 	}
 	// 队伍人数为 1 时一定是队长, 无法到达这个代码, 暂且保留; 退出后队伍人数为0, 删除队伍;
 	if len(team.Users) == 1 {
-		DeleteTeam(ctx, team)
+		DeleteTeam(tx, ctx, team)
 	}
-	if err := DeleteUserFromTeam(ctx, user, team); err != nil {
+	if err := DeleteUserFromTeam(tx, user, team); err != nil {
 		log.Logger.Warningf("Failed to delete user_team: %s", err)
+
 		return false, "DeleteUserFromTeamError"
 	}
-	if err := DeleteUserFromContest(ctx, user, contest); err != nil {
+	if err := DeleteUserFromContest(tx, user, contest); err != nil {
 		log.Logger.Warningf("Failed to delete user_contest: %s", err)
+
 		return false, "DeleteUserFromContestError"
 	}
 	go func() {

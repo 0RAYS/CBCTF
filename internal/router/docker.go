@@ -23,11 +23,14 @@ func StartContainer(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	docker, ok, msg := db.CreateDocker(ctx, flag, middleware.GetChallenge(ctx), middleware.GetSelfID(ctx))
+	tx := db.DB.WithContext(ctx).Begin()
+	docker, ok, msg := db.CreateDocker(tx, ctx, flag, middleware.GetChallenge(ctx), middleware.GetSelfID(ctx))
 	if !ok {
+		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	tx.Commit()
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"target": docker.RemoteAddr(), "remaining": docker.Remaining()}})
 }
 
@@ -41,11 +44,14 @@ func IncreaseDuration(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "HasMuchTime", "data": nil})
 		return
 	}
-	ok, msg = db.UpdateDocker(ctx, docker.ID, map[string]interface{}{"duration": docker.Duration + 1*time.Hour})
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg = db.UpdateDocker(tx, docker.ID, map[string]interface{}{"duration": docker.Duration + 1*time.Hour})
 	if !ok {
+		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	tx.Commit()
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"target": docker.RemoteAddr(), "remaining": docker.Remaining()}})
 }
 
@@ -55,10 +61,13 @@ func StopContainer(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ok, msg = db.DeleteDocker(ctx, docker)
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg = db.DeleteDocker(tx, docker)
 	if !ok {
+		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	tx.Commit()
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
 }

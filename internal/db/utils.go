@@ -48,32 +48,65 @@ func IsUniqueName(name string, v interface{}) bool {
 	return true
 }
 
-// IsUniqueTeamName 在每个Contest中, 队伍名不能重复
+// IsUniqueTeamName 在每个Contest中, 队伍名不能重复, 锁定 Team 表
 func IsUniqueTeamName(name string, id uint) bool {
-	res := DB.Model(&model.Team{}).Where("name = ? AND contest_id = ?", name, id).Find(&model.Team{}).Limit(1)
+	tx := DB.Begin()
+	if tx.Exec("LOCK TABLE teams WRITE").Error != nil {
+		tx.Rollback()
+		return false
+	}
+	res := tx.Model(&model.Team{}).Where("name = ? AND contest_id = ?", name, id).Find(&model.Team{}).Limit(1)
 	if res.RowsAffected > 0 {
+		tx.Rollback()
 		return false
 	}
+	if tx.Exec("UNLOCK TABLES").Error != nil {
+
+		return false
+	}
+	tx.Commit()
 	return true
 }
 
-// IsUniqueTeamMember model.User 不能在同一个 model.Contest 出现多次
+// IsUniqueTeamMember model.User 不能在同一个 model.Contest 出现多次, 锁定关联表
 func IsUniqueTeamMember(contestID uint, userID uint) bool {
-	var tmp []model.User
-	err := DB.Model(&model.User{ID: userID}).Where("contest_id = ?", contestID).Association("Contests").Find(&tmp)
-	if len(tmp) > 0 || err != nil {
+	tx := DB.Begin()
+	if tx.Exec("LOCK TABLE user_contests WRITE").Error != nil {
+		tx.Rollback()
 		return false
 	}
+	var tmp []model.User
+	err := tx.Model(&model.User{ID: userID}).Where("contest_id = ?", contestID).Association("Contests").Find(&tmp)
+	if len(tmp) > 0 || err != nil {
+		tx.Rollback()
+		return false
+	}
+	if tx.Exec("UNLOCK TABLES").Error != nil {
+		tx.Rollback()
+		return false
+	}
+	tx.Commit()
 	return true
 }
 
-// IsMemberInTeam model.User 是否在 model.Team 中
+// IsMemberInTeam model.User 是否在 model.Team 中, 锁定关联表
 func IsMemberInTeam(teamID uint, userID uint) bool {
+	tx := DB.Begin()
+	if tx.Exec("LOCK TABLE user_teams WRITE").Error != nil {
+		tx.Rollback()
+		return false
+	}
 	var tmp []model.Team
-	err := DB.Model(&model.User{ID: userID}).Where("team_id = ?", teamID).Association("Teams").Find(&tmp)
+	err := tx.Model(&model.User{ID: userID}).Where("team_id = ?", teamID).Association("Teams").Find(&tmp)
 	if len(tmp) > 0 || err != nil {
+		tx.Rollback()
 		return true
 	}
+	if tx.Exec("UNLOCK TABLES").Error != nil {
+		tx.Rollback()
+		return false
+	}
+	tx.Commit()
 	return false
 }
 

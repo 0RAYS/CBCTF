@@ -8,18 +8,20 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
 // CreateContest 创建比赛
-func CreateContest(ctx context.Context, form constants.CreateContestForm) (model.Contest, bool, string) {
+func CreateContest(tx *gorm.DB, form constants.CreateContestForm) (model.Contest, bool, string) {
 	if !IsUniqueName(form.Name, model.Contest{}) {
 		return model.Contest{}, false, "ContestNameExists"
 	}
 	contest := model.InitContest(form)
-	res := DB.WithContext(ctx).Model(&model.Contest{}).Create(&contest)
+	res := tx.Model(&model.Contest{}).Create(&contest)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to create contest: %s", res.Error)
+
 		return model.Contest{}, false, "CreateContestError"
 	}
 	go func() {
@@ -65,17 +67,18 @@ func GetContestByID(ctx context.Context, id uint, preloadL ...bool) (model.Conte
 }
 
 // DeleteContest 删除 model.Contest, 同时删除与 model.Team, model.User 的关联, 同时删除 model.Team
-func DeleteContest(ctx context.Context, contest model.Contest) (bool, string) {
+func DeleteContest(tx *gorm.DB, ctx context.Context, contest model.Contest) (bool, string) {
 	for _, team := range contest.Teams {
-		if ok, msg := DeleteTeam(ctx, *team); !ok {
+		if ok, msg := DeleteTeam(tx, ctx, *team); !ok {
 			return false, msg
 		}
 	}
-	if err := DB.WithContext(ctx).Model(&model.Contest{}).Select(clause.Associations).Delete(&contest).Error; err != nil {
+	if err := tx.Model(&model.Contest{}).Select(clause.Associations).Delete(&contest).Error; err != nil {
 		log.Logger.Warningf("Failed to delete contest: %s", err)
+
 		return false, "DeleteContestError"
 	}
-	ClearByID(ctx, "contest_id", contest.ID)
+	ClearByID(tx, "contest_id", contest.ID)
 	go func() {
 		if err := redis.DelContestCache(contest.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete contest cache: %s", err)
@@ -88,11 +91,12 @@ func DeleteContest(ctx context.Context, contest model.Contest) (bool, string) {
 }
 
 // UpdateContest 使用 map 更新属性, 结构体会导致零值未更新, 对字段值的具体要求应当交给上层实现
-func UpdateContest(ctx context.Context, id uint, updateData map[string]interface{}) (bool, string) {
-	res := DB.WithContext(ctx).Model(&model.Contest{}).Where("id = ?", id).
+func UpdateContest(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool, string) {
+	res := tx.Model(&model.Contest{}).Where("id = ?", id).
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to update contest: %v", res.Error)
+
 		return false, "UpdateContestError"
 	}
 	go func() {

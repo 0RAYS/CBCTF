@@ -14,7 +14,7 @@ import (
 )
 
 // CreateUser 创建用户
-func CreateUser(ctx context.Context, form constants.CreateUserForm) (model.User, bool, string) {
+func CreateUser(tx *gorm.DB, form constants.CreateUserForm) (model.User, bool, string) {
 	if !IsValidEmail(form.Email) {
 		return model.User{}, false, "InvalidEmail"
 	}
@@ -25,9 +25,10 @@ func CreateUser(ctx context.Context, form constants.CreateUserForm) (model.User,
 		return model.User{}, false, "EmailExists"
 	}
 	user := model.InitUser(form)
-	res := DB.WithContext(ctx).Model(&model.User{}).Create(&user)
+	res := tx.Model(&model.User{}).Create(&user)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to create user: %s", res.Error)
+
 		return model.User{}, false, "CreateUserError"
 	}
 	go func() {
@@ -73,24 +74,25 @@ func GetUserByID(ctx context.Context, id uint, preloadL ...bool) (model.User, bo
 }
 
 // DeleteUser 根据 id 删除 model.User, 同时删除与 model.Team, model.Contest 的关联, 此处需嵌套预加载, 所以不接受中间件保存的值
-func DeleteUser(ctx context.Context, id uint) (bool, string) {
+func DeleteUser(tx *gorm.DB, ctx context.Context, id uint) (bool, string) {
 	user, ok, msg := GetUserByID(ctx, id, true, true)
 	if !ok {
 		return false, msg
 	}
 	for _, team := range user.Teams {
 		if len(team.Users) == 1 {
-			if ok, msg = DeleteTeam(ctx, *team); !ok {
+			if ok, msg = DeleteTeam(tx, ctx, *team); !ok {
 				log.Logger.Warningf("Failed to delete empty team: %s", msg)
 				return false, msg
 			}
 		}
 	}
-	if err := DB.WithContext(ctx).Model(&model.User{}).Select(clause.Associations).Delete(&model.User{}, id).Error; err != nil {
+	if err := tx.Model(&model.User{}).Select(clause.Associations).Delete(&model.User{}, id).Error; err != nil {
 		log.Logger.Warningf("Failed to delete user: %s", err)
+
 		return false, "DeleteUserError"
 	}
-	ClearByID(ctx, "user_id", id)
+	ClearByID(tx, "user_id", id)
 	go func() {
 		if err := redis.DelUserCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete user cache: %s", err)
@@ -103,11 +105,12 @@ func DeleteUser(ctx context.Context, id uint) (bool, string) {
 }
 
 // UpdateUser 更新用户, 使用 map 更新属性, 结构体会导致零值未更新, 对字段值的具体要求应当交给上层实现
-func UpdateUser(ctx context.Context, id uint, updateData map[string]interface{}) (bool, string) {
-	res := DB.WithContext(ctx).Model(&model.User{}).Where("id = ?", id).
+func UpdateUser(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool, string) {
+	res := tx.Model(&model.User{}).Where("id = ?", id).
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to update user: %s", res.Error)
+
 		return false, "UpdateUserError"
 	}
 	go func() {
@@ -138,7 +141,7 @@ func VerifyUser(ctx context.Context, username string, password string) (model.Us
 }
 
 // ChangePasswordUser 修改密码
-func ChangePasswordUser(ctx context.Context, user model.User, oldPassword string, newPassword string) (bool, string) {
+func ChangePasswordUser(tx *gorm.DB, user model.User, oldPassword string, newPassword string) (bool, string) {
 	if !utils.CompareHashAndPassword(user.Password, oldPassword) {
 		return false, "PasswordError"
 	}
@@ -146,7 +149,7 @@ func ChangePasswordUser(ctx context.Context, user model.User, oldPassword string
 		return false, "PasswordSame"
 	}
 	hash := utils.HashPassword(newPassword)
-	if ok, msg := UpdateUser(ctx, user.ID, map[string]interface{}{"password": hash}); !ok {
+	if ok, msg := UpdateUser(tx, user.ID, map[string]interface{}{"password": hash}); !ok {
 		return false, msg
 	}
 	go func() {

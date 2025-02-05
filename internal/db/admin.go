@@ -5,10 +5,11 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 	"context"
+	"gorm.io/gorm"
 )
 
 // CreateAdmin 创建管理员
-func CreateAdmin(ctx context.Context, name string, password string, email string) (model.Admin, bool, string) {
+func CreateAdmin(tx *gorm.DB, name string, password string, email string) (model.Admin, bool, string) {
 	if !IsValidEmail(email) {
 		return model.Admin{}, false, "InvalidEmail"
 	}
@@ -19,7 +20,7 @@ func CreateAdmin(ctx context.Context, name string, password string, email string
 		return model.Admin{}, false, "EmailExists"
 	}
 	admin := model.InitAdmin(name, password, email)
-	res := DB.WithContext(ctx).Model(&model.Admin{}).Create(&admin)
+	res := tx.Model(&model.Admin{}).Create(&admin)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to create Admin: %s", res.Error)
 		return model.Admin{}, false, "CreateAdminError"
@@ -58,8 +59,8 @@ func GetAdmins(ctx context.Context) ([]model.Admin, int, bool, string) {
 }
 
 // DeleteAdmin 根据 id 删除 model.Admin
-func DeleteAdmin(ctx context.Context, id uint) (bool, string) {
-	res := DB.WithContext(ctx).Model(&model.Admin{}).Where("id = ?", id).Delete(&model.Admin{})
+func DeleteAdmin(tx *gorm.DB, id uint) (bool, string) {
+	res := tx.Model(&model.Admin{}).Where("id = ?", id).Delete(&model.Admin{})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete Admin: %s", res.Error)
 		return false, "DeleteAdminError"
@@ -68,8 +69,8 @@ func DeleteAdmin(ctx context.Context, id uint) (bool, string) {
 }
 
 // UpdateAdmin 更新管理员, 使用 map 更新属性, 结构体会导致零值未更新, 对字段值的具体要求应当交给上层实现
-func UpdateAdmin(ctx context.Context, id uint, updateData map[string]interface{}) (bool, string) {
-	res := DB.WithContext(ctx).Model(&model.Admin{}).Where("id = ?", id).
+func UpdateAdmin(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool, string) {
+	res := tx.Model(&model.Admin{}).Where("id = ?", id).
 		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to update Admin: %v", res.Error)
@@ -91,18 +92,18 @@ func VerifyAdmin(ctx context.Context, username string, password string) (model.A
 }
 
 // InitAdmin 初始化管理员
-func InitAdmin() {
+func InitAdmin(tx *gorm.DB) {
 	var count int64
-	DB.Model(&model.Admin{}).Count(&count)
+	tx.Model(&model.Admin{}).Count(&count)
 	if count == 0 {
 		pwd := utils.RandomString()
-		CreateAdmin(context.Background(), "admin", pwd, "admin@0rays.club")
+		CreateAdmin(tx, "admin", pwd, "admin@0rays.club")
 		log.Logger.Infof("Init admin: admin/%s/admin@0rays.club", pwd)
 	}
 }
 
 // ChangePasswordAdmin 修改管理员密码
-func ChangePasswordAdmin(ctx context.Context, admin model.Admin, oldPassword string, newPassword string) (bool, string) {
+func ChangePasswordAdmin(tx *gorm.DB, admin model.Admin, oldPassword string, newPassword string) (bool, string) {
 	if !utils.CompareHashAndPassword(admin.Password, oldPassword) {
 		return false, "PasswordError"
 	}
@@ -110,7 +111,7 @@ func ChangePasswordAdmin(ctx context.Context, admin model.Admin, oldPassword str
 		return false, "PasswordSame"
 	}
 	hash := utils.HashPassword(newPassword)
-	if ok, msg := UpdateAdmin(ctx, admin.ID, map[string]interface{}{"password": hash}); !ok {
+	if ok, msg := UpdateAdmin(tx, admin.ID, map[string]interface{}{"password": hash}); !ok {
 		return false, msg
 	}
 	return true, "Success"
