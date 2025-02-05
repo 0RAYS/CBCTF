@@ -80,7 +80,7 @@ func InitTest() {
 	default:
 		level = log.Silent
 	}
-	DB, _ = gorm.Open(sqlite.Open(":memory:"), &gorm.Config{Logger: log.NewGormLogger(level)})
+	DB, _ = gorm.Open(sqlite.Open("test.db"), &gorm.Config{Logger: log.NewGormLogger(level)})
 	_ = DB.AutoMigrate(
 		&model.Admin{}, &model.User{}, &model.Team{},
 		&model.Contest{}, &model.Avatar{}, &model.IP{},
