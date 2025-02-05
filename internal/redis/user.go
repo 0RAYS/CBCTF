@@ -14,6 +14,9 @@ import (
 )
 
 func GetUserCache(key string) (model.User, bool) {
+	if !config.Env.Redis.On {
+		return model.User{}, false
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
@@ -34,6 +37,9 @@ func GetUserCache(key string) (model.User, bool) {
 }
 
 func GetUsersCache(key string) ([]model.User, bool) {
+	if !config.Env.Redis.On {
+		return nil, false
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := RDB.Get(ctx, key).Result()
@@ -54,6 +60,9 @@ func GetUsersCache(key string) ([]model.User, bool) {
 }
 
 func SetUserCache(key string, user model.User) error {
+	if !config.Env.Redis.On {
+		return errors.New("redis off")
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := msgpack.Marshal(user)
@@ -68,6 +77,9 @@ func SetUserCache(key string, user model.User) error {
 }
 
 func SetUsersCache(key string, users []model.User) error {
+	if !config.Env.Redis.On {
+		return errors.New("redis off")
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	data, err := msgpack.Marshal(users)
@@ -82,6 +94,9 @@ func SetUsersCache(key string, users []model.User) error {
 }
 
 func DelUserCache(id uint) error {
+	if !config.Env.Redis.On {
+		return errors.New("redis off")
+	}
 	var cursor uint64
 	for {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
@@ -107,6 +122,9 @@ func DelUserCache(id uint) error {
 }
 
 func DelUsersCache() error {
+	if !config.Env.Redis.On {
+		return errors.New("redis off")
+	}
 	var cursor uint64
 	for {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
