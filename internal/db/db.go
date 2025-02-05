@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/model"
 	"fmt"
 	"gorm.io/driver/mysql"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"strings"
 	"time"
@@ -60,35 +59,6 @@ func Init() {
 		log.Logger.Fatalf("failed to migrate database: %v", err)
 	}
 	log.Logger.Info("Connected to database")
-	tx := DB.Begin()
-	InitAdmin(tx)
-	tx.Commit()
-}
-
-// InitTest 初始化测试数据库, SQLite 不支持锁表, 单元测试无法通过，需手动移除 utils.go 锁表部分
-func InitTest() {
-	var level log.Level
-	switch strings.ToUpper(config.Env.Gorm.Log.Level) {
-	case "INFO":
-		level = log.Info
-	case "WARNING":
-		level = log.Warn
-	case "ERROR":
-		level = log.Error
-	case "SILENT":
-		level = log.Silent
-	default:
-		level = log.Silent
-	}
-	DB, _ = gorm.Open(sqlite.Open("test.db"), &gorm.Config{Logger: log.NewGormLogger(level)})
-	_ = DB.AutoMigrate(
-		&model.Admin{}, &model.User{}, &model.Team{},
-		&model.Contest{}, &model.Avatar{}, &model.IP{},
-		&model.Challenge{}, &model.Usage{}, &model.Flag{},
-		&model.Docker{}, &model.Submission{}, &model.Scoreboard{},
-	)
-	_ = DB.SetupJoinTable(&model.User{}, "Teams", &model.UserTeam{})
-	_ = DB.SetupJoinTable(&model.User{}, "Contests", &model.UserContest{})
 	tx := DB.Begin()
 	InitAdmin(tx)
 	tx.Commit()
