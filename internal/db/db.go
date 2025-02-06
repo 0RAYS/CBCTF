@@ -58,6 +58,15 @@ func Init() {
 	if err != nil {
 		log.Logger.Fatalf("failed to migrate database: %v", err)
 	}
+	err = DB.SetupJoinTable(&model.User{}, "Teams", &model.UserTeam{})
+	if err != nil {
+		log.Logger.Fatalf("failed to setup join table: %v", err)
+	}
+	err = DB.SetupJoinTable(&model.User{}, "Contests", &model.UserContest{})
+	if err != nil {
+		log.Logger.Fatalf("failed to setup join table: %v", err)
+	}
+
 	log.Logger.Info("Connected to database")
 	tx := DB.Begin()
 	InitAdmin(tx)
