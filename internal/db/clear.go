@@ -10,9 +10,9 @@ import (
 // associations 排除过使用了 Gorm 关联关系的其余关联关系
 var associations = map[string][]interface{}{
 	"user_id":      {model.Submission{}},
-	"team_id":      {model.Docker{}, model.Submission{}, model.Flag{}, model.Scoreboard{}},
+	"team_id":      {model.Docker{}, model.Submission{}, model.Flag{}},
 	"challenge_id": {model.Flag{}, model.Submission{}, model.Usage{}, model.Docker{}},
-	"contest_id":   {model.Docker{}, model.Flag{}, model.Submission{}, model.Usage{}, model.Scoreboard{}},
+	"contest_id":   {model.Docker{}, model.Flag{}, model.Submission{}, model.Usage{}},
 }
 
 // ClearByID 清除所有与指定 ID 相关的数据

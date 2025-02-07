@@ -56,5 +56,6 @@ func InitUsage(challengeID string, contestID uint, flag string) Usage {
 		ContestID:   contestID,
 		ChallengeID: challengeID,
 		Flag:        flag,
+		Last:        time.Now(),
 	}
 }

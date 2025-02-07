@@ -18,7 +18,7 @@ func Register(ctx *gin.Context) {
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
-	user, ok, msg := db.CreateUser(tx, form.CreateUserForm{Name: form.Name, Password: form.Password, Email: form.Email})
+	user, ok, msg := db.CreateUser(tx, f.CreateUserForm{Name: form.Name, Password: form.Password, Email: form.Email})
 	if !ok {
 		tx.Rollback()
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})

@@ -12,8 +12,11 @@ func CreateSubmission(tx *gorm.DB, contest model.Contest, team model.Team, user 
 		return model.Submission{}, false, "AlreadySolved"
 	}
 	usage, ok, _ := GetUsageBy2ID(tx, contest.ID, challenge.ID)
-	if !ok || usage.Attempt <= CountAttempts(tx, contest, team, challenge) || !contest.IsRunning() {
+	if !ok || (usage.Attempt != 0 && usage.Attempt <= CountAttempts(tx, contest, team, challenge)) || !contest.IsRunning() {
 		return model.Submission{}, false, "NotAllowSubmit"
+	}
+	if _, ok, msg := GetFlagBy3ID(tx, contest.ID, team.ID, challenge.ID); !ok {
+		return model.Submission{}, false, msg
 	}
 	solved := VerifyFlag(tx, contest.ID, team.ID, challenge.ID, value)
 	if solved {
@@ -41,8 +44,8 @@ func GetTeamSubmissions(tx *gorm.DB, contest model.Contest, team model.Team, cha
 func IsSolved(tx *gorm.DB, contest model.Contest, team model.Team, challenge model.Challenge) bool {
 	var submission model.Submission
 	res := tx.Model(model.Submission{}).
-		Where("contest_id = ? AND team_id = ? AND challenge_id = ? AND solved = ?", contest.ID, team.ID, challenge.ID, true).Find(&submission)
-	if res.RowsAffected != 1 {
+		Where("contest_id = ? AND team_id = ? AND challenge_id = ? AND solved = ?", contest.ID, team.ID, challenge.ID, true).Find(&submission).Limit(1)
+	if res.RowsAffected < 1 {
 		return false
 	}
 	return true
