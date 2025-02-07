@@ -89,13 +89,20 @@ func UpdateUsage(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool,
 	return true, "Success"
 }
 
-func Solve(tx *gorm.DB, id uint, team model.Team, contest model.Contest) (bool, string) {
+func Solve(tx *gorm.DB, id, teamID uint, blood bool) (bool, string) {
 	var usage model.Usage
+	var team model.Team
 	err := tx.Model(model.Usage{}).Clauses(clause.Locking{Strength: "UPDATE"}).
 		Where("id = ?", id).Find(&usage).Limit(1).Error
 	if err != nil {
 		log.Logger.Warningf("Failed to get Usage: %s", err)
 		return false, "GetUsageError"
+	}
+	err = tx.Model(model.Team{}).Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("id = ?", teamID).Find(&team).Limit(1).Error
+	if err != nil {
+		log.Logger.Warningf("Failed to get Team: %s", err)
+		return false, "GetTeamError"
 	}
 	currentScore := usage.CalcScore(usage.Solvers + 1)
 	last := time.Now()
@@ -123,7 +130,7 @@ func Solve(tx *gorm.DB, id uint, team model.Team, contest model.Contest) (bool, 
 		}
 		break
 	}
-	if !contest.Blood {
+	if !blood {
 		rate = 0.0
 	}
 	ok, msg := UpdateTeam(tx, team.ID, map[string]interface{}{
