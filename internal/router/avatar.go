@@ -38,7 +38,7 @@ func DownloadAvatar(ctx *gin.Context) {
 
 func DeleteAvatar(ctx *gin.Context) {
 	var (
-		form form.DeleteAvatarForm
+		form f.DeleteAvatarForm
 		file model.Avatar
 		ok   bool
 		msg  string
