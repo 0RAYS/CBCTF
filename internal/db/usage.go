@@ -1,7 +1,7 @@
 package db
 
 import (
-	"CBCTF/internal/constants"
+	"CBCTF/internal/form"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"gorm.io/gorm"
@@ -10,7 +10,7 @@ import (
 )
 
 // CreateUsage 创建将题目添加至比赛的记录
-func CreateUsage(tx *gorm.DB, form constants.CreateUsageForm, contestID uint) ([]model.Usage, bool, string) {
+func CreateUsage(tx *gorm.DB, form form.CreateUsageForm, contestID uint) ([]model.Usage, bool, string) {
 	var usages []model.Usage
 	for _, c := range form.ChallengeID {
 		challenge, ok, _ := GetChallengeByID(tx, c)
@@ -89,7 +89,7 @@ func UpdateUsage(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool,
 	return true, "Success"
 }
 
-func AddSolvers(tx *gorm.DB, id uint, team model.Team, contest model.Contest) (bool, string) {
+func Solve(tx *gorm.DB, id uint, team model.Team, contest model.Contest) (bool, string) {
 	var usage model.Usage
 	err := tx.Model(model.Usage{}).Clauses(clause.Locking{Strength: "UPDATE"}).
 		Where("id = ?", id).Find(&usage).Limit(1).Error

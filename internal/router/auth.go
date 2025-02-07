@@ -1,8 +1,8 @@
 package router
 
 import (
-	"CBCTF/internal/constants"
 	"CBCTF/internal/db"
+	f "CBCTF/internal/form"
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/utils"
@@ -11,14 +11,14 @@ import (
 )
 
 func Register(ctx *gin.Context) {
-	var form constants.RegisterForm
+	var form f.RegisterForm
 	trace := middleware.GetTraceID(ctx)
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
-	user, ok, msg := db.CreateUser(tx, constants.CreateUserForm{Name: form.Name, Password: form.Password, Email: form.Email})
+	user, ok, msg := db.CreateUser(tx, form.CreateUserForm{Name: form.Name, Password: form.Password, Email: form.Email})
 	if !ok {
 		tx.Rollback()
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -39,7 +39,7 @@ func Register(ctx *gin.Context) {
 }
 
 func Login(ctx *gin.Context) {
-	var form constants.LoginForm
+	var form f.LoginForm
 	trace := middleware.GetTraceID(ctx)
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
@@ -65,7 +65,7 @@ func Login(ctx *gin.Context) {
 }
 
 func AdminLogin(ctx *gin.Context) {
-	var form constants.LoginForm
+	var form f.LoginForm
 	trace := middleware.GetTraceID(ctx)
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})

@@ -1,8 +1,8 @@
 package router
 
 import (
-	"CBCTF/internal/constants"
 	"CBCTF/internal/db"
+	f "CBCTF/internal/form"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/utils"
 	"github.com/gin-gonic/gin"
@@ -18,7 +18,7 @@ func GetContestCaptcha(ctx *gin.Context) {
 }
 
 func GetContests(ctx *gin.Context) {
-	var form constants.GetModelsForm
+	var form f.GetModelsForm
 	all := false
 	if middleware.GetRole(ctx) == "admin" {
 		all = true
@@ -36,7 +36,7 @@ func GetContests(ctx *gin.Context) {
 }
 
 func CreateContest(ctx *gin.Context) {
-	var form constants.CreateContestForm
+	var form f.CreateContestForm
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
@@ -53,7 +53,7 @@ func CreateContest(ctx *gin.Context) {
 }
 
 func UpdateContest(ctx *gin.Context) {
-	var form constants.UpdateContestForm
+	var form f.UpdateContestForm
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return

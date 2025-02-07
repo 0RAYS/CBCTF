@@ -2,7 +2,7 @@ package model
 
 import (
 	"CBCTF/internal/config"
-	"CBCTF/internal/constants"
+	"CBCTF/internal/form"
 	"CBCTF/internal/utils"
 	"encoding/json"
 	"fmt"
@@ -44,7 +44,7 @@ func (m User) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func InitUser(form constants.CreateUserForm) User {
+func InitUser(form form.CreateUserForm) User {
 	return User{
 		Name:     form.Name,
 		Password: utils.HashPassword(form.Password),

@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"CBCTF/internal/constants"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"bytes"
 	"encoding/json"
@@ -49,7 +49,7 @@ func I18n() func(ctx *gin.Context) {
 		} else {
 			language = "en-US"
 		}
-		res.Msg, res.Code = constants.I18N(res.Msg, language)
+		res.Msg, res.Code = i18n.I18N(res.Msg, language)
 		res.Trace = GetTraceID(ctx)
 		ret, err := json.Marshal(res)
 		if err != nil {

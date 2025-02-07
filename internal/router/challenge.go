@@ -1,8 +1,8 @@
 package router
 
 import (
-	"CBCTF/internal/constants"
 	"CBCTF/internal/db"
+	f "CBCTF/internal/form"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
@@ -14,7 +14,7 @@ import (
 )
 
 func CreateChallenge(ctx *gin.Context) {
-	var form constants.CreateChallengeForm
+	var form f.CreateChallengeForm
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
@@ -40,7 +40,7 @@ func GetChallenge(ctx *gin.Context) {
 }
 
 func GetChallenges(ctx *gin.Context) {
-	var form constants.GetChallengesForm
+	var form f.GetChallengesForm
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
@@ -83,7 +83,7 @@ func GetChallengeFiles(ctx *gin.Context) {
 }
 
 func GetCategories(ctx *gin.Context) {
-	var form constants.GetCategoriesForm
+	var form f.GetCategoriesForm
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
@@ -102,7 +102,7 @@ func UpdateChallenge(ctx *gin.Context) {
 		msg       string
 		data      map[string]interface{}
 	)
-	var form constants.UpdateChallengeForm
+	var form f.UpdateChallengeForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
@@ -130,7 +130,7 @@ func UpdateChallenge(ctx *gin.Context) {
 }
 
 func DeleteChallenge(ctx *gin.Context) {
-	var form constants.DeleteChallengeForm
+	var form f.DeleteChallengeForm
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
@@ -193,7 +193,7 @@ func UploadChallenge(ctx *gin.Context) {
 }
 
 func DownloadChallenge(ctx *gin.Context) {
-	var form constants.DownloadChallengeForm
+	var form f.DownloadChallengeForm
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return

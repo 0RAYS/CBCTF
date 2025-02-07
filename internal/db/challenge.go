@@ -1,14 +1,14 @@
 package db
 
 import (
-	"CBCTF/internal/constants"
+	"CBCTF/internal/form"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"gorm.io/gorm"
 )
 
 // CreateChallenge 创建题目
-func CreateChallenge(tx *gorm.DB, form constants.CreateChallengeForm) (model.Challenge, bool, string) {
+func CreateChallenge(tx *gorm.DB, form form.CreateChallengeForm) (model.Challenge, bool, string) {
 	if !IsValidChallengeType(form.Type) {
 		return model.Challenge{}, false, "InvalidChallengeType"
 	}

@@ -1,8 +1,8 @@
 package router
 
 import (
-	"CBCTF/internal/constants"
 	"CBCTF/internal/db"
+	f "CBCTF/internal/form"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
@@ -19,7 +19,7 @@ func GetTeamCaptcha(ctx *gin.Context) {
 }
 
 func GetTeams(ctx *gin.Context) {
-	var form constants.GetModelsForm
+	var form f.GetModelsForm
 	all := false
 	if middleware.GetRole(ctx) == "admin" {
 		all = true
@@ -37,7 +37,7 @@ func GetTeams(ctx *gin.Context) {
 }
 
 func JoinTeam(ctx *gin.Context) {
-	var form constants.JoinTeamForm
+	var form f.JoinTeamForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
@@ -63,7 +63,7 @@ func JoinTeam(ctx *gin.Context) {
 }
 
 func CreateTeam(ctx *gin.Context) {
-	var form constants.CreateTeamForm
+	var form f.CreateTeamForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
@@ -106,14 +106,14 @@ func UpdateTeam(ctx *gin.Context) {
 	)
 	team = middleware.GetTeam(ctx)
 	if middleware.GetRole(ctx) == "admin" {
-		var form constants.AdminUpdateTeamForm
+		var form f.AdminUpdateTeamForm
 		if err := ctx.ShouldBindJSON(&form); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 			return
 		}
 		data = utils.Form2Map(form)
 	} else if middleware.GetRole(ctx) == "user" {
-		var form constants.UpdateTeamForm
+		var form f.UpdateTeamForm
 		if err := ctx.ShouldBindJSON(&form); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 			return
@@ -161,7 +161,7 @@ func DeleteTeam(ctx *gin.Context) {
 }
 
 func KickMember(ctx *gin.Context) {
-	var form constants.KickMemberForm
+	var form f.KickMemberForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return

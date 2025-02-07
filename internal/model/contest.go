@@ -2,7 +2,7 @@ package model
 
 import (
 	"CBCTF/internal/config"
-	"CBCTF/internal/constants"
+	"CBCTF/internal/form"
 	"encoding/json"
 	"fmt"
 	"gorm.io/gorm"
@@ -66,7 +66,7 @@ func (c Contest) Status() string {
 	return "ContestIsRunning"
 }
 
-func InitContest(form constants.CreateContestForm) Contest {
+func InitContest(form form.CreateContestForm) Contest {
 	return Contest{
 		Name:     form.Name,
 		Desc:     form.Desc,

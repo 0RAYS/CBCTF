@@ -1,7 +1,7 @@
 package db
 
 import (
-	"CBCTF/internal/constants"
+	"CBCTF/internal/form"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
@@ -14,7 +14,7 @@ import (
 )
 
 // CreateUser 创建用户
-func CreateUser(tx *gorm.DB, form constants.CreateUserForm) (model.User, bool, string) {
+func CreateUser(tx *gorm.DB, form form.CreateUserForm) (model.User, bool, string) {
 	if !IsValidEmail(form.Email) {
 		return model.User{}, false, "InvalidEmail"
 	}

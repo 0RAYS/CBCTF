@@ -2,7 +2,7 @@ package model
 
 import (
 	"CBCTF/internal/config"
-	"CBCTF/internal/constants"
+	"CBCTF/internal/form"
 	"CBCTF/internal/utils"
 	"encoding/json"
 	"fmt"
@@ -42,7 +42,7 @@ func (m Team) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func InitTeam(form constants.CreateTeamForm, captain User, contestID uint) Team {
+func InitTeam(form form.CreateTeamForm, captain User, contestID uint) Team {
 	captcha := utils.RandomString()
 	if form.Captcha != "" {
 		captcha = form.Captcha

@@ -1,4 +1,4 @@
-package constants
+package i18n
 
 var resp = map[string]map[string]interface{}{
 	"Success":         {"zh-CN": "操作成功", "en-US": "Success", "code": 200},

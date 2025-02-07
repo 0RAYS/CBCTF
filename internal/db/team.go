@@ -1,7 +1,7 @@
 package db
 
 import (
-	"CBCTF/internal/constants"
+	"CBCTF/internal/form"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
@@ -13,7 +13,7 @@ import (
 )
 
 // CreateTeam 创建队伍, 名称在 model.Contest 中唯一
-func CreateTeam(tx *gorm.DB, form constants.CreateTeamForm, captain model.User, contest model.Contest) (model.Team, bool, string) {
+func CreateTeam(tx *gorm.DB, form form.CreateTeamForm, captain model.User, contest model.Contest) (model.Team, bool, string) {
 	if !IsUniqueTeamName(tx, form.Name, contest.ID) {
 		return model.Team{}, false, "TeamNameExists"
 	}

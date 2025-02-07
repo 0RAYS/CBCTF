@@ -1,8 +1,8 @@
 package router
 
 import (
-	"CBCTF/internal/constants"
 	"CBCTF/internal/db"
+	f "CBCTF/internal/form"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
@@ -19,7 +19,7 @@ func GetUser(ctx *gin.Context) {
 }
 
 func ChangePassword(ctx *gin.Context) {
-	var form constants.ChangePasswordForm
+	var form f.ChangePasswordForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest"})
 		return
@@ -42,7 +42,7 @@ func UpdateUser(ctx *gin.Context) {
 		data map[string]interface{}
 	)
 	if middleware.GetRole(ctx) == "admin" {
-		var form constants.UpdateUserForm
+		var form f.UpdateUserForm
 		if err := ctx.ShouldBindJSON(&form); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 			return
@@ -55,7 +55,7 @@ func UpdateUser(ctx *gin.Context) {
 			data["password"] = user.Password
 		}
 	} else if middleware.GetRole(ctx) == "user" {
-		var form constants.UpdateSelfForm
+		var form f.UpdateSelfForm
 		if err := ctx.ShouldBindJSON(&form); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 			return
@@ -98,7 +98,7 @@ func UpdateUser(ctx *gin.Context) {
 func DeleteUser(ctx *gin.Context) {
 	var userID uint
 	if middleware.GetRole(ctx) != "admin" {
-		var form constants.DeleteSelfForm
+		var form f.DeleteSelfForm
 		if err := ctx.ShouldBindJSON(&form); err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest"})
 			return
@@ -123,7 +123,7 @@ func DeleteUser(ctx *gin.Context) {
 }
 
 func CreateUser(ctx *gin.Context) {
-	var form constants.CreateUserForm
+	var form f.CreateUserForm
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
@@ -140,7 +140,7 @@ func CreateUser(ctx *gin.Context) {
 }
 
 func GetUsers(ctx *gin.Context) {
-	var form constants.GetModelsForm
+	var form f.GetModelsForm
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return

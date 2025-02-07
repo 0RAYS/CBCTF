@@ -1,8 +1,8 @@
 package router
 
 import (
-	"CBCTF/internal/constants"
 	"CBCTF/internal/db"
+	f "CBCTF/internal/form"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"github.com/gin-gonic/gin"
@@ -10,7 +10,7 @@ import (
 )
 
 func SubmitFlag(ctx *gin.Context) {
-	var form constants.SubmitFlagForm
+	var form f.SubmitFlagForm
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
@@ -33,7 +33,7 @@ func SubmitFlag(ctx *gin.Context) {
 }
 
 func GetSubmissions(ctx *gin.Context) {
-	var form constants.GetModelsForm
+	var form f.GetModelsForm
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
