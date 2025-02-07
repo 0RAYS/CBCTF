@@ -283,7 +283,7 @@ func GetTeams(tx *gorm.DB, contestID uint, limit int, offset int, all bool, prel
 	}
 	if res = res.Limit(limit).Offset(offset).Find(&teams); res.Error != nil {
 		log.Logger.Warningf("Failed to get teams: %s", res.Error)
-		return nil, 0, false, "UnknownError"
+		return nil, 0, false, "GetTeamError"
 	}
 	go func() {
 		if err := redis.SetTeamsCache(cacheKey, teams); err != nil && !errors.Is(err, context.DeadlineExceeded) {
