@@ -1,7 +1,7 @@
 package db
 
 import (
-	"CBCTF/internal/constants"
+	"CBCTF/internal/form"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
@@ -13,7 +13,7 @@ import (
 )
 
 // CreateContest 创建比赛
-func CreateContest(tx *gorm.DB, form constants.CreateContestForm) (model.Contest, bool, string) {
+func CreateContest(tx *gorm.DB, form form.CreateContestForm) (model.Contest, bool, string) {
 	if !IsUniqueName(tx, form.Name, model.Contest{}) {
 		return model.Contest{}, false, "ContestNameExists"
 	}

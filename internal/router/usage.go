@@ -1,8 +1,8 @@
 package router
 
 import (
-	"CBCTF/internal/constants"
 	"CBCTF/internal/db"
+	f "CBCTF/internal/form"
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
@@ -12,7 +12,7 @@ import (
 )
 
 func AddUsage(ctx *gin.Context) {
-	var form constants.CreateUsageForm
+	var form f.CreateUsageForm
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
@@ -88,7 +88,7 @@ func UpdateUsage(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	var form constants.UpdateUsageForm
+	var form f.UpdateUsageForm
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return

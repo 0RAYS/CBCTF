@@ -2,7 +2,7 @@ package model
 
 import (
 	"CBCTF/internal/config"
-	"CBCTF/internal/constants"
+	"CBCTF/internal/form"
 	"CBCTF/internal/utils"
 	"fmt"
 	"gorm.io/gorm"
@@ -54,7 +54,7 @@ func (c *Challenge) AttachmentPath(teamID uint) string {
 	}
 }
 
-func InitChallenge(form constants.CreateChallengeForm) Challenge {
+func InitChallenge(form form.CreateChallengeForm) Challenge {
 	return Challenge{
 		ID:             utils.RandomString(),
 		Name:           form.Name,

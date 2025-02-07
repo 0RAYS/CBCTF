@@ -2,8 +2,8 @@ package router
 
 import (
 	"CBCTF/internal/config"
-	"CBCTF/internal/constants"
 	"CBCTF/internal/db"
+	f "CBCTF/internal/form"
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
@@ -38,7 +38,7 @@ func DownloadAvatar(ctx *gin.Context) {
 
 func DeleteAvatar(ctx *gin.Context) {
 	var (
-		form constants.DeleteFileForm
+		form form.DeleteAvatarForm
 		file model.Avatar
 		ok   bool
 		msg  string
@@ -77,7 +77,7 @@ func DeleteAvatar(ctx *gin.Context) {
 }
 
 func GetAvatars(ctx *gin.Context) {
-	var form constants.GetModelsForm
+	var form f.GetModelsForm
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
