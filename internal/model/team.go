@@ -56,6 +56,7 @@ func InitTeam(form form.CreateTeamForm, captain User, contestID uint) Team {
 		Hidden:    false,
 		CaptainID: captain.ID,
 		ContestID: contestID,
+		Last:      time.Now(),
 		Users:     []*User{&captain},
 	}
 }

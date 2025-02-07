@@ -134,7 +134,7 @@ func Solve(tx *gorm.DB, id, teamID uint, blood bool) (bool, string) {
 		rate = 0.0
 	}
 	ok, msg := UpdateTeam(tx, team.ID, map[string]interface{}{
-		"score": team.Score + int64(float64(currentScore)*rate),
+		"score": team.Score + int64(float64(currentScore)*(1+rate)),
 		"last":  last,
 	})
 	if !ok {
