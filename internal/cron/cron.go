@@ -10,6 +10,7 @@ var c *cron.Cron
 func Init() {
 	c = cron.New(cron.WithSeconds())
 	CloseDockers(c)
+	UpdateRanking(c)
 }
 
 func Start() {
