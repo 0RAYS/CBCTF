@@ -20,6 +20,7 @@ type Contest struct {
 	Size      int            `json:"size"`
 	Start     time.Time      `json:"start"`
 	Duration  time.Duration  `json:"duration"`
+	Blood     bool           `json:"blood" gorm:"default:false"`
 	Hidden    bool           `gorm:"default:false" json:"hidden"`
 	Teams     []*Team        `json:"-"`
 	Users     []*User        `gorm:"many2many:user_contests;" json:"-"`
@@ -71,6 +72,7 @@ func InitContest(form constants.CreateContestForm) Contest {
 		Desc:     form.Desc,
 		Captcha:  form.Captcha,
 		Avatar:   "",
+		Blood:    form.Blood,
 		Size:     form.Size,
 		Start:    form.Start,
 		Hidden:   form.Hidden,

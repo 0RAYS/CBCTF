@@ -17,7 +17,7 @@ func CreateSubmission(tx *gorm.DB, contest model.Contest, team model.Team, user 
 	}
 	solved := VerifyFlag(tx, contest.ID, team.ID, challenge.ID, value)
 	if solved {
-		if ok, msg := AddSolvers(tx, usage.ID, team); !ok {
+		if ok, msg := AddSolvers(tx, usage.ID, team, contest); !ok {
 			return model.Submission{}, false, msg
 		}
 	}

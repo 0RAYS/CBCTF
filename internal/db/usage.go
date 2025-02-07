@@ -89,7 +89,7 @@ func UpdateUsage(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool,
 	return true, "Success"
 }
 
-func AddSolvers(tx *gorm.DB, id uint, team model.Team) (bool, string) {
+func AddSolvers(tx *gorm.DB, id uint, team model.Team, contest model.Contest) (bool, string) {
 	var usage model.Usage
 	err := tx.Model(model.Usage{}).Clauses(clause.Locking{Strength: "UPDATE"}).
 		Where("id = ?", id).Find(&usage).Limit(1).Error
@@ -97,25 +97,41 @@ func AddSolvers(tx *gorm.DB, id uint, team model.Team) (bool, string) {
 		log.Logger.Warningf("Failed to get Usage: %s", err)
 		return false, "GetUsageError"
 	}
+	currentScore := usage.CalcScore(usage.Solvers + 1)
+	last := time.Now()
 	data := map[string]interface{}{
 		"solvers":       usage.Solvers + 1,
-		"last":          time.Now(),
-		"current_score": usage.CalcScore(usage.Solvers + 1),
+		"last":          last,
+		"current_score": currentScore,
 	}
+	rate := 0.0
 	for {
 		if usage.First == 0 {
 			data["first"] = team.ID
+			rate = 0.05
 			break
 		}
 		if usage.Second == 0 {
 			data["second"] = team.ID
+			rate = 0.03
 			break
 		}
 		if usage.Third == 0 {
 			data["third"] = team.ID
+			rate = 0.01
 			break
 		}
 		break
+	}
+	if !contest.Blood {
+		rate = 0.0
+	}
+	ok, msg := UpdateTeam(tx, team.ID, map[string]interface{}{
+		"score": team.Score + int64(float64(currentScore)*rate),
+		"last":  last,
+	})
+	if !ok {
+		return false, msg
 	}
 	return UpdateUsage(tx, id, data)
 }
