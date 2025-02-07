@@ -5,6 +5,8 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+	"time"
 )
 
 // CreateUsage 创建将题目添加至比赛的记录
@@ -87,14 +89,35 @@ func UpdateUsage(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool,
 	return true, "Success"
 }
 
-func AddSolvers(tx *gorm.DB, id uint) (bool, string) {
-	res := tx.Model(model.Usage{}).Where("id = ?", id).
-		UpdateColumn("solvers", gorm.Expr("solvers + ?", 1))
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to update Usage: %s", res.Error)
-		return false, "UpdateUsageError"
+func AddSolvers(tx *gorm.DB, id uint, team model.Team) (bool, string) {
+	var usage model.Usage
+	err := tx.Model(model.Usage{}).Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("id = ?", id).Find(&usage).Limit(1).Error
+	if err != nil {
+		log.Logger.Warningf("Failed to get Usage: %s", err)
+		return false, "GetUsageError"
 	}
-	return true, "Success"
+	data := map[string]interface{}{
+		"solvers":       usage.Solvers + 1,
+		"last":          time.Now(),
+		"current_score": usage.CalcScore(usage.Solvers + 1),
+	}
+	for {
+		if usage.First == 0 {
+			data["first"] = team.ID
+			break
+		}
+		if usage.Second == 0 {
+			data["second"] = team.ID
+			break
+		}
+		if usage.Third == 0 {
+			data["third"] = team.ID
+			break
+		}
+		break
+	}
+	return UpdateUsage(tx, id, data)
 }
 
 // DeleteUsage 删除引用

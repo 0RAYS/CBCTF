@@ -157,11 +157,15 @@ type UpdateChallengeForm struct {
 
 // UpdateUsageForm for admin update usage info
 type UpdateUsageForm struct {
-	Hidden  *bool   `form:"hidden" json:"hidden"`
-	Score   *int    `form:"score" json:"score"`
-	Attempt *int64  `form:"attempt" json:"attempt"`
-	Hints   *string `form:"hints" json:"hints"`
-	Tags    *string `form:"tags" json:"tags"`
+	Hidden       *bool   `form:"hidden" json:"hidden"`
+	Score        *int64  `form:"score" json:"score"`
+	ScoreType    *uint   `form:"score_type" json:"score_type"`
+	CurrentScore *int64  `form:"current_score" json:"current_score"`
+	MinScore     *int64  `form:"min_score" json:"min_score"`
+	Decay        *int64  `form:"decay" json:"decay"`
+	Attempt      *int64  `form:"attempt" json:"attempt"`
+	Hints        *string `form:"hints" json:"hints"`
+	Tags         *string `form:"tags" json:"tags"`
 }
 
 // DeleteSelfForm for user delete self
