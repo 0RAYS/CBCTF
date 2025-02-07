@@ -41,7 +41,7 @@ func Init() {
 		log.Logger.Errorf("Failed to connect to Redis: %s", err)
 		return
 	}
-	log.Logger.Debugf("Connected to Redis: %s", config.Env.Redis.Addr)
+	log.Logger.Infof("Connected to Redis: %s", config.Env.Redis.Addr)
 
 	collectCTX, collectCancel = context.WithCancel(context.Background())
 	go StartCollect(collectCTX)
