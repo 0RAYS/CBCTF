@@ -20,6 +20,7 @@ type Team struct {
 	Avatar    string         `json:"-"`
 	Score     int64          `json:"score" gorm:"default:0"`
 	Last      time.Time      `json:"last"`
+	Rank      int64          `json:"rank"`
 	Banned    bool           `gorm:"default:false" json:"banned"`
 	Hidden    bool           `gorm:"default:false" json:"hidden"`
 	CaptainID uint           `json:"captain_id"`
