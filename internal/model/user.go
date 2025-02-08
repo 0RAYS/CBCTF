@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+// User TODO 由于软删除, 即使数据被删除后 unique 字段仍会受到影响, 有待解决
 type User struct {
 	ID        uint           `gorm:"primarykey" json:"id"`
 	Name      string         `gorm:"unique;not null" json:"name"`
