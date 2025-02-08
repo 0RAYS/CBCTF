@@ -69,8 +69,7 @@ func saveMetrics(metrics *SystemMetrics) error {
 	if !config.Env.Redis.On {
 		return nil
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
+	ctx := context.Background()
 	data, err := json.Marshal(metrics)
 	if err != nil {
 		return err

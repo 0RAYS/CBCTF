@@ -12,8 +12,7 @@ func SetEmailVerifyToken(userID uint, token string) (bool, string) {
 	if !config.Env.Redis.On {
 		return false, "RedisOff"
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
+	ctx := context.Background()
 	err := RDB.Set(ctx, fmt.Sprintf("email:verify:%d", userID), token, time.Hour*24).Err()
 	if err != nil {
 		log.Logger.Warningf("Failed to set email verify token: %s", err)
@@ -26,8 +25,7 @@ func GetEmailVerifyToken(userID uint) (string, bool) {
 	if !config.Env.Redis.On {
 		return "RedisOff", false
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
+	ctx := context.Background()
 	data, err := RDB.Get(ctx, fmt.Sprintf("email:verify:%d", userID)).Result()
 	if err != nil {
 		return "GetEmailVerifyTokenError", false
@@ -39,8 +37,7 @@ func DelEmailVerifyToken(userID uint) (bool, string) {
 	if !config.Env.Redis.On {
 		return false, "RedisOff"
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
+	ctx := context.Background()
 	err := RDB.Del(ctx, fmt.Sprintf("email:verify:%d", userID)).Err()
 	if err != nil {
 		log.Logger.Warningf("Failed to delete email verify token: %s", err)
