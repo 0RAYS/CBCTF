@@ -44,10 +44,15 @@ func VerifyEmail(ctx *gin.Context) {
 
 func ActivateEmail(ctx *gin.Context) {
 	user := middleware.GetSelf(ctx).(model.User)
-	token, err := utils.Generate(user.ID, user.Name, "email")
 	id := utils.RandomString()
-	if err != nil || !redis.SetEmailVerifyToken(user.ID, id) {
+	token, err := utils.Generate(user.ID, user.Name, "email")
+	if err != nil {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "UnknownError", "data": nil})
+		return
+	}
+	ok, msg := redis.SetEmailVerifyToken(user.ID, id)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	if err := utils.SendVerifyEmail(user.Email, token, id); err != nil {
