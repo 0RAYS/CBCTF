@@ -13,13 +13,17 @@ import (
 	"time"
 )
 
-func GetContestCache(key string) (model.Contest, bool) {
+const (
+	ContestPattern  = "c:%d:%v" // c:<contest_id>:<preload>
+	ContestsPattern = "cs:%v"   // cs:<preload>
+)
+
+func GetContestCache(id uint, preload int) (model.Contest, bool) {
 	if !config.Env.Redis.On {
 		return model.Contest{}, false
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
-	data, err := RDB.Get(ctx, key).Result()
+	ctx := context.Background()
+	data, err := RDB.Get(ctx, fmt.Sprintf(ContestPattern, id, preload)).Result()
 	if errors.Is(err, redis.Nil) {
 		atomic.AddInt64(&CacheMiss, 1)
 		return model.Contest{}, false
@@ -36,13 +40,12 @@ func GetContestCache(key string) (model.Contest, bool) {
 	return contest, true
 }
 
-func GetContestsCache(key string) ([]model.Contest, bool) {
+func GetContestsCache(preload int) ([]model.Contest, bool) {
 	if !config.Env.Redis.On {
 		return nil, false
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
-	data, err := RDB.Get(ctx, key).Result()
+	ctx := context.Background()
+	data, err := RDB.Get(ctx, fmt.Sprintf(ContestsPattern, preload)).Result()
 	if errors.Is(err, redis.Nil) {
 		atomic.AddInt64(&CacheMiss, 1)
 		return nil, false
@@ -59,34 +62,32 @@ func GetContestsCache(key string) ([]model.Contest, bool) {
 	return contests, true
 }
 
-func SetContestCache(key string, contest model.Contest) error {
+func SetContestCache(contest model.Contest, preload int) error {
 	if !config.Env.Redis.On {
 		return nil
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
+	ctx := context.Background()
 	data, err := msgpack.Marshal(contest)
 	if err != nil {
 		return err
 	}
-	if err = RDB.Set(ctx, key, data, time.Minute).Err(); err != nil {
+	if err = RDB.Set(ctx, fmt.Sprintf(ContestPattern, contest.ID, preload), data, time.Minute).Err(); err != nil {
 		return err
 	}
 	log.Logger.Debug("SetContestCache: ", contest.ID)
 	return nil
 }
 
-func SetContestsCache(key string, contests []model.Contest) error {
+func SetContestsCache(contests []model.Contest, preload int) error {
 	if !config.Env.Redis.On {
 		return nil
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
+	ctx := context.Background()
 	data, err := msgpack.Marshal(contests)
 	if err != nil {
 		return err
 	}
-	if err = RDB.Set(ctx, key, data, time.Minute).Err(); err != nil {
+	if err = RDB.Set(ctx, fmt.Sprintf(ContestsPattern, preload), data, time.Minute).Err(); err != nil {
 		return err
 	}
 	log.Logger.Debug("SetContestsCache: ", len(contests))
@@ -97,54 +98,12 @@ func DelContestCache(id uint) error {
 	if !config.Env.Redis.On {
 		return nil
 	}
-	var cursor uint64
-	for {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-		keys, cursor, err := RDB.Scan(ctx, cursor, fmt.Sprintf("contest:%d:*", id), 10).Result()
-		if err != nil {
-			log.Logger.Warningf("Failed to scan contest keys: %s", err)
-		}
-
-		for _, key := range keys {
-			if err := RDB.Del(ctx, key).Err(); err != nil {
-				cancel()
-				return err
-			}
-			log.Logger.Debug("DelContestCache: ", key)
-		}
-		cancel()
-		if cursor == 0 {
-			break
-		}
-	}
-	log.Logger.Debug("DelContestsCache")
-	return nil
+	return DeleteKeysByPattern(fmt.Sprintf(ContestPattern, id, "*"))
 }
 
 func DelContestsCache() error {
 	if !config.Env.Redis.On {
 		return nil
 	}
-	var cursor uint64
-	for {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-		keys, cursor, err := RDB.Scan(ctx, cursor, "contests:*", 10).Result()
-		if err != nil {
-			log.Logger.Warningf("Failed to scan contest keys: %s", err)
-		}
-
-		for _, key := range keys {
-			if err := RDB.Del(ctx, key).Err(); err != nil {
-				cancel()
-				return err
-			}
-			log.Logger.Debug("DelContestsCache: ", key)
-		}
-		cancel()
-		if cursor == 0 {
-			break
-		}
-	}
-	log.Logger.Debug("DelContestsCache")
-	return nil
+	return DeleteKeysByPattern(fmt.Sprintf(ContestsPattern, "*"))
 }

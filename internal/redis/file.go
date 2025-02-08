@@ -6,19 +6,24 @@ import (
 	"CBCTF/internal/model"
 	"context"
 	"errors"
+	"fmt"
 	"github.com/go-redis/redis/v8"
 	"github.com/vmihailenco/msgpack/v4"
 	"sync/atomic"
 	"time"
 )
 
-func GetFileCache(key string) (model.Avatar, bool) {
+const (
+	FilePattern  = "f:%s"
+	FilesPattern = "fs"
+)
+
+func GetFileCache(id string) (model.Avatar, bool) {
 	if !config.Env.Redis.On {
 		return model.Avatar{}, false
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
-	data, err := RDB.Get(ctx, key).Result()
+	ctx := context.Background()
+	data, err := RDB.Get(ctx, fmt.Sprintf(FilePattern, id)).Result()
 	if errors.Is(err, redis.Nil) {
 		atomic.AddInt64(&CacheMiss, 1)
 		return model.Avatar{}, false
@@ -35,13 +40,12 @@ func GetFileCache(key string) (model.Avatar, bool) {
 	return file, true
 }
 
-func GetFilesCache(key string) ([]model.Avatar, bool) {
+func GetFilesCache() ([]model.Avatar, bool) {
 	if !config.Env.Redis.On {
 		return nil, false
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
-	data, err := RDB.Get(ctx, key).Result()
+	ctx := context.Background()
+	data, err := RDB.Get(ctx, FilesPattern).Result()
 	if errors.Is(err, redis.Nil) {
 		atomic.AddInt64(&CacheMiss, 1)
 		return nil, false
@@ -58,34 +62,32 @@ func GetFilesCache(key string) ([]model.Avatar, bool) {
 	return files, true
 }
 
-func SetFileCache(key string, file model.Avatar) error {
+func SetFileCache(file model.Avatar) error {
 	if !config.Env.Redis.On {
 		return nil
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
+	ctx := context.Background()
 	data, err := msgpack.Marshal(file)
 	if err != nil {
 		return err
 	}
-	if err = RDB.Set(ctx, key, data, 1*time.Hour).Err(); err != nil {
+	if err = RDB.Set(ctx, fmt.Sprintf(FilePattern, file.ID), data, 1*time.Hour).Err(); err != nil {
 		return err
 	}
 	log.Logger.Debug("SetFileCache: ", file.ID)
 	return nil
 }
 
-func SetFilesCache(key string, files []model.Avatar) error {
+func SetFilesCache(files []model.Avatar) error {
 	if !config.Env.Redis.On {
 		return nil
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
+	ctx := context.Background()
 	data, err := msgpack.Marshal(files)
 	if err != nil {
 		return err
 	}
-	if err = RDB.Set(ctx, key, data, 1*time.Hour).Err(); err != nil {
+	if err = RDB.Set(ctx, FilesPattern, data, 1*time.Hour).Err(); err != nil {
 		return err
 	}
 	log.Logger.Debug("SetFilesCache: ", len(files))
@@ -96,10 +98,8 @@ func DelFileCache(id string) error {
 	if !config.Env.Redis.On {
 		return nil
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
-	key := "file:" + id
-	if err := RDB.Del(ctx, key).Err(); err != nil {
+	ctx := context.Background()
+	if err := RDB.Del(ctx, fmt.Sprintf(FilePattern, id)).Err(); err != nil {
 		return err
 	}
 	log.Logger.Debug("DelFileCache: ", id)
@@ -110,26 +110,5 @@ func DelFilesCache() error {
 	if !config.Env.Redis.On {
 		return nil
 	}
-	var cursor uint64
-	for {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-		keys, cursor, err := RDB.Scan(ctx, cursor, "files:*", 10).Result()
-		if err != nil {
-			log.Logger.Warningf("Failed to scan file keys: %s", err)
-		}
-
-		for _, key := range keys {
-			if err := RDB.Del(ctx, key).Err(); err != nil {
-				cancel()
-				return err
-			}
-			log.Logger.Debug("DelFilesCache: ", key)
-		}
-		cancel()
-		if cursor == 0 {
-			break
-		}
-	}
-	log.Logger.Debug("DelFilesCache")
-	return nil
+	return DeleteKeysByPattern(FilesPattern)
 }

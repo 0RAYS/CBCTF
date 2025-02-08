@@ -5,9 +5,9 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
+	"CBCTF/internal/utils"
 	"context"
 	"errors"
-	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -44,8 +44,7 @@ func GetTeamByID(tx *gorm.DB, id uint, preloadL ...bool) (model.Team, bool, stri
 	if len(preloadL) > 1 {
 		nest = preloadL[1]
 	}
-	cacheKey := fmt.Sprintf("team:%d:%v:%v", id, preload, nest)
-	if team, ok := redis.GetTeamCache(cacheKey); ok {
+	if team, ok := redis.GetTeamCache(id, redis.GetType(preload, nest)); ok {
 		return team, true, "Success"
 	}
 	var team model.Team
@@ -61,7 +60,7 @@ func GetTeamByID(tx *gorm.DB, id uint, preloadL ...bool) (model.Team, bool, stri
 		return model.Team{}, false, "TeamNotFound"
 	}
 	go func() {
-		if err := redis.SetTeamCache(cacheKey, team); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.SetTeamCache(team, redis.GetType(preload, nest)); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to set team cache: %s", err)
 		}
 	}()
@@ -247,12 +246,6 @@ func LeaveTeam(tx *gorm.DB, user model.User, team model.Team, contest model.Cont
 
 // GetTeams 获取 model.Team 列表, preloadL[0] 是否预加载, preloadL[1] 是否嵌套预加载
 func GetTeams(tx *gorm.DB, contestID uint, limit int, offset int, all bool, preloadL ...bool) ([]model.Team, int64, bool, string) {
-	if limit <= 0 {
-		limit = -1
-	}
-	if offset <= 0 {
-		offset = -1
-	}
 	preload := true
 	nest := false
 	if len(preloadL) > 0 {
@@ -271,9 +264,9 @@ func GetTeams(tx *gorm.DB, contestID uint, limit int, offset int, all bool, prel
 		log.Logger.Warningf("Failed to get contest count: %s", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
-	cacheKey := fmt.Sprintf("teams:%d:%v:%v:%d:%d", contestID, all, preload, limit, offset)
-	if teams, ok := redis.GetTeamsCache(cacheKey); ok {
-		return teams, count, true, "Success"
+	if teams, ok := redis.GetTeamsCache(redis.GetType(preload, nest)); ok {
+		limit, offset = utils.TidyPaginate(len(teams), limit, offset)
+		return teams[limit:offset], count, true, "Success"
 	}
 	if preload {
 		if nest {
@@ -281,14 +274,15 @@ func GetTeams(tx *gorm.DB, contestID uint, limit int, offset int, all bool, prel
 		}
 		res = res.Preload(clause.Associations)
 	}
-	if res = res.Limit(limit).Offset(offset).Find(&teams); res.Error != nil {
+	if res = res.Find(&teams); res.Error != nil {
 		log.Logger.Warningf("Failed to get teams: %s", res.Error)
 		return nil, 0, false, "GetTeamError"
 	}
 	go func() {
-		if err := redis.SetTeamsCache(cacheKey, teams); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.SetTeamsCache(teams, redis.GetType(preload, nest)); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to set teams cache: %s", err)
 		}
 	}()
-	return teams, count, true, "Success"
+	limit, offset = utils.TidyPaginate(len(teams), limit, offset)
+	return teams[limit:offset], count, true, "Success"
 }

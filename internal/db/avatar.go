@@ -4,9 +4,9 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
+	"CBCTF/internal/utils"
 	"context"
 	"errors"
-	"fmt"
 	"gorm.io/gorm"
 	"mime/multipart"
 )
@@ -30,8 +30,7 @@ func RecordAvatar(tx *gorm.DB, path string, uploader uint, file *multipart.FileH
 
 // GetAvatarByID 以 ID 获取文件记录
 func GetAvatarByID(tx *gorm.DB, id string) (model.Avatar, bool, string) {
-	cacheKey := fmt.Sprintf("file:%s", id)
-	if file, ok := redis.GetFileCache(cacheKey); ok {
+	if file, ok := redis.GetFileCache(id); ok {
 		return file, true, "Success"
 	}
 	var file model.Avatar
@@ -40,7 +39,7 @@ func GetAvatarByID(tx *gorm.DB, id string) (model.Avatar, bool, string) {
 		return model.Avatar{}, false, "FileNotFound"
 	}
 	go func() {
-		if err := redis.SetFileCache(cacheKey, file); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.SetFileCache(file); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Errorf("Failed to delete file cache: %v", err)
 		}
 	}()
@@ -49,20 +48,11 @@ func GetAvatarByID(tx *gorm.DB, id string) (model.Avatar, bool, string) {
 
 // GetAvatarByHash 以 Hash 获取文件记录
 func GetAvatarByHash(tx *gorm.DB, hash string) (model.Avatar, bool, string) {
-	cacheKey := fmt.Sprintf("file:hash:%s", hash)
-	if file, ok := redis.GetFileCache(cacheKey); ok {
-		return file, true, "Success"
-	}
 	var file model.Avatar
 	res := tx.Model(model.Avatar{}).Where("hash = ?", hash).Find(&file).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.Avatar{}, false, "FileNotFound"
 	}
-	go func() {
-		if err := redis.SetFileCache(cacheKey, file); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-			log.Logger.Errorf("Failed to delete file cache: %v", err)
-		}
-	}()
 	return file, true, "Success"
 }
 
@@ -70,7 +60,6 @@ func GetAvatarByHash(tx *gorm.DB, hash string) (model.Avatar, bool, string) {
 func DeleteAvatar(tx *gorm.DB, id string) (bool, string) {
 	if err := tx.Model(model.Avatar{}).Where("id = ?", id).Delete(&model.Avatar{}).Error; err != nil {
 		log.Logger.Warningf("Failed to delete file: %v", id)
-
 		return false, "DeleteFileError"
 	}
 	go func() {
@@ -86,12 +75,6 @@ func DeleteAvatar(tx *gorm.DB, id string) (bool, string) {
 
 // GetAvatars 批量获取文件记录
 func GetAvatars(tx *gorm.DB, limit int, offset int) ([]model.Avatar, int64, bool, string) {
-	if limit <= 0 {
-		limit = -1
-	}
-	if offset <= 0 {
-		offset = -1
-	}
 	var files []model.Avatar
 	var count int64
 	res := tx.Model(&model.Avatar{})
@@ -99,18 +82,19 @@ func GetAvatars(tx *gorm.DB, limit int, offset int) ([]model.Avatar, int64, bool
 		log.Logger.Warningf("Failed to get files: %s", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
-	cacheKey := fmt.Sprintf("files:%d:%d", limit, offset)
-	if files, ok := redis.GetFilesCache(cacheKey); ok {
-		return files, int64(len(files)), true, "Success"
+	if files, ok := redis.GetFilesCache(); ok {
+		limit, offset = utils.TidyPaginate(len(files), limit, offset)
+		return files[limit:offset], int64(len(files)), true, "Success"
 	}
-	if res = res.Limit(limit).Offset(offset).Find(&files); res.Error != nil {
+	if res = res.Find(&files); res.Error != nil {
 		log.Logger.Warningf("Failed to get files: %s", res.Error)
 		return nil, 0, false, "FileNotFound"
 	}
 	go func() {
-		if err := redis.SetFilesCache(cacheKey, files); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.SetFilesCache(files); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Errorf("Failed to delete file cache: %v", err)
 		}
 	}()
-	return files, count, true, "Success"
+	limit, offset = utils.TidyPaginate(int(count), limit, offset)
+	return files[limit:offset], count, true, "Success"
 }

@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
+	"CBCTF/internal/utils"
 	"gorm.io/gorm"
 )
 
@@ -49,19 +50,6 @@ func GetRanking(contestID uint, args ...int) ([]model.Team, bool, string) {
 		return nil, false, "GetTeamError"
 	}
 	go UpdateRanking(DB, contestID)
-	var (
-		data []model.Team
-		tmp  []model.Team
-	)
-	if limit <= 0 {
-		tmp = teams[offset:]
-	} else {
-		tmp = teams[offset:limit]
-	}
-	for _, t := range tmp {
-		if t.ID != 0 {
-			data = append(data, t)
-		}
-	}
-	return data, true, "Success"
+	limit, offset = utils.TidyPaginate(len(teams), limit, offset)
+	return teams[limit:offset], true, "Success"
 }
