@@ -35,16 +35,16 @@ func GetEmailVerifyToken(userID uint) (string, bool) {
 	return data, true
 }
 
-func DelEmailVerifyToken(userID uint) bool {
+func DelEmailVerifyToken(userID uint) (bool, string) {
 	if !config.Env.Redis.On {
-		return false
+		return false, "RedisOff"
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	defer cancel()
 	err := RDB.Del(ctx, fmt.Sprintf("email:verify:%d", userID)).Err()
 	if err != nil {
 		log.Logger.Warningf("Failed to delete email verify token: %s", err)
-		return false
+		return false, "DelEmailVerifyTokenError"
 	}
-	return true
+	return true, "Success"
 }
