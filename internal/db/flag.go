@@ -26,11 +26,11 @@ func InitFlag(tx *gorm.DB, contest model.Contest, team model.Team, usage model.U
 		flag, ok, msg = RecordFlag(tx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, challenge.Flag))
 	case model.Dynamic:
 		flag, ok, msg = RecordFlag(tx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.RandFlag(challenge.Flag)))
+		// 默认附件全部生成成功
 		go func(c model.Challenge, f model.Flag) {
-			log.Logger.Debugf("Generating attachment for team %d challenge %s", team.ID, usage.ChallengeID)
 			ok, msg = k8s.GenerateAttachment(c, f)
 			if !ok {
-				log.Logger.Warningf("Failed to generate flag for challenge %s: %s", usage.ChallengeID, msg)
+				log.Logger.Warningf("Failed to generate flag for challenge %s: %s", f.ChallengeID, msg)
 			}
 		}(challenge, flag)
 	case model.Container:
@@ -103,4 +103,14 @@ func VerifyFlag(tx *gorm.DB, contestID, teamID uint, challengeID, value string) 
 		return true
 	}
 	return false
+}
+
+func DeleteFlag(tx *gorm.DB, id uint) (bool, string) {
+	res := tx.Model(model.Flag{}).
+		Where("id = ?", id).Delete(&model.Flag{})
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to delete Flag: %s", res.Error)
+		return false, "DeleteFlagError"
+	}
+	return true, "Success"
 }

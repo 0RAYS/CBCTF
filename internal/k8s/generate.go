@@ -16,6 +16,7 @@ import (
 
 // GenerateAttachment 启动容器, 生成附件
 func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, string) {
+	log.Logger.Debugf("Generating attachment for team %d challenge %s", flag.TeamID, flag.ChallengeID)
 	var err error
 	if challenge.Type != model.Dynamic {
 		return false, "InvalidChallengeType"

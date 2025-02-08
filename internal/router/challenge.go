@@ -231,35 +231,40 @@ func ChallengeStatus(ctx *gin.Context) {
 
 }
 
-func InitChallenge(ctx *gin.Context) {
-	var (
-		team    model.Team
-		contest model.Contest
-		usage   model.Usage
-		ok      bool
-		msg     string
-	)
-	team = middleware.GetTeam(ctx)
-	contest = middleware.GetContest(ctx)
-	if !contest.IsRunning() {
-		ctx.JSON(http.StatusOK, gin.H{"msg": contest.Status(), "data": nil})
-		return
-	}
-	usage, ok, msg = db.GetUsageBy2ID(db.DB.WithContext(ctx), contest.ID, middleware.GetChallenge(ctx).ID)
-	if !ok {
+func InitChallenge(reset bool) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var (
+			team    model.Team
+			contest model.Contest
+			usage   model.Usage
+			ok      bool
+			msg     string
+		)
+		team = middleware.GetTeam(ctx)
+		contest = middleware.GetContest(ctx)
+		if !contest.IsRunning() {
+			ctx.JSON(http.StatusOK, gin.H{"msg": contest.Status(), "data": nil})
+			return
+		}
+		usage, ok, msg = db.GetUsageBy2ID(db.DB.WithContext(ctx), contest.ID, middleware.GetChallenge(ctx).ID)
+		if !ok {
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
+		}
+		if !reset {
+			if _, ok, msg = db.GetFlagBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID); ok {
+				ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+				return
+			}
+		}
+		tx := db.DB.WithContext(ctx).Begin()
+		_, ok, msg = db.InitFlag(tx, contest, team, usage)
+		if !ok {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
 	}
-	if _, ok, msg = db.GetFlagBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID); ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	tx := db.DB.WithContext(ctx).Begin()
-	_, ok, msg = db.InitFlag(tx, contest, team, usage)
-	if !ok {
-		tx.Rollback()
-	} else {
-		tx.Commit()
-	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+
 }
