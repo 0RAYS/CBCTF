@@ -13,13 +13,17 @@ import (
 	"time"
 )
 
-func GetTeamCache(key string) (model.Team, bool) {
+const (
+	TeamPattern  = "t:%d:%v" // team:<team_id>:<preload>
+	TeamsPattern = "ts:%v"   // teams:<preload>
+)
+
+func GetTeamCache(id uint, preload int) (model.Team, bool) {
 	if !config.Env.Redis.On {
 		return model.Team{}, false
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
-	data, err := RDB.Get(ctx, key).Result()
+	ctx := context.Background()
+	data, err := RDB.Get(ctx, fmt.Sprintf(TeamPattern, id, preload)).Result()
 	if errors.Is(err, redis.Nil) {
 		return model.Team{}, false
 	} else if err != nil {
@@ -34,13 +38,12 @@ func GetTeamCache(key string) (model.Team, bool) {
 	return team, true
 }
 
-func GetTeamsCache(key string) ([]model.Team, bool) {
+func GetTeamsCache(preload int) ([]model.Team, bool) {
 	if !config.Env.Redis.On {
 		return nil, false
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
-	data, err := RDB.Get(ctx, key).Result()
+	ctx := context.Background()
+	data, err := RDB.Get(ctx, fmt.Sprintf(TeamsPattern, preload)).Result()
 	if errors.Is(err, redis.Nil) {
 		atomic.AddInt64(&CacheMiss, 1)
 		return nil, false
@@ -57,34 +60,32 @@ func GetTeamsCache(key string) ([]model.Team, bool) {
 	return teams, true
 }
 
-func SetTeamCache(key string, team model.Team) error {
+func SetTeamCache(team model.Team, preload int) error {
 	if !config.Env.Redis.On {
 		return nil
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
+	ctx := context.Background()
 	data, err := msgpack.Marshal(team)
 	if err != nil {
 		return err
 	}
-	if err = RDB.Set(ctx, key, data, time.Minute).Err(); err != nil {
+	if err = RDB.Set(ctx, fmt.Sprintf(TeamPattern, team.ID, preload), data, time.Minute).Err(); err != nil {
 		return err
 	}
 	log.Logger.Debug("SetTeamCache: ", team.ID)
 	return nil
 }
 
-func SetTeamsCache(key string, teams []model.Team) error {
+func SetTeamsCache(teams []model.Team, preload int) error {
 	if !config.Env.Redis.On {
 		return nil
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
+	ctx := context.Background()
 	data, err := msgpack.Marshal(teams)
 	if err != nil {
 		return err
 	}
-	if err = RDB.Set(ctx, key, data, time.Minute).Err(); err != nil {
+	if err = RDB.Set(ctx, fmt.Sprintf(TeamsPattern, preload), data, time.Minute).Err(); err != nil {
 		return err
 	}
 	log.Logger.Debug("SetTeamsCache: ", len(teams))
@@ -95,54 +96,12 @@ func DelTeamCache(id uint) error {
 	if !config.Env.Redis.On {
 		return nil
 	}
-	var cursor uint64
-	for {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-		keys, cursor, err := RDB.Scan(ctx, cursor, fmt.Sprintf("team:%d:*", id), 10).Result()
-		if err != nil {
-			log.Logger.Warningf("Failed to scan teams keys: %s", err)
-		}
-
-		for _, key := range keys {
-			if err := RDB.Del(ctx, key).Err(); err != nil {
-				cancel()
-				return err
-			}
-			log.Logger.Debug("DelTeamCache: ", key)
-		}
-		cancel()
-		if cursor == 0 {
-			break
-		}
-	}
-	log.Logger.Debug("DelTeamCache")
-	return nil
+	return DeleteKeysByPattern(fmt.Sprintf(TeamPattern, id, "*"))
 }
 
 func DelTeamsCache() error {
 	if !config.Env.Redis.On {
 		return nil
 	}
-	var cursor uint64
-	for {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-		keys, cursor, err := RDB.Scan(ctx, cursor, "teams:*", 10).Result()
-		if err != nil {
-			log.Logger.Warningf("Failed to scan teams keys: %s", err)
-		}
-
-		for _, key := range keys {
-			if err := RDB.Del(ctx, key).Err(); err != nil {
-				cancel()
-				return err
-			}
-			log.Logger.Debug("DelTeamsCache: ", key)
-		}
-		cancel()
-		if cursor == 0 {
-			break
-		}
-	}
-	log.Logger.Debug("DelTeamsCache")
-	return nil
+	return DeleteKeysByPattern(fmt.Sprintf(TeamsPattern, "*"))
 }

@@ -13,13 +13,17 @@ import (
 	"time"
 )
 
-func GetUserCache(key string) (model.User, bool) {
+const (
+	UserPattern  = "u:%d:%v" // user:<user_id>:<preload>
+	UsersPattern = "us:%v"   // users:<preload>
+)
+
+func GetUserCache(id uint, preload int) (model.User, bool) {
 	if !config.Env.Redis.On {
 		return model.User{}, false
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
-	data, err := RDB.Get(ctx, key).Result()
+	ctx := context.Background()
+	data, err := RDB.Get(ctx, fmt.Sprintf(UserPattern, id, preload)).Result()
 	if errors.Is(err, redis.Nil) {
 		atomic.AddInt64(&CacheMiss, 1)
 		return model.User{}, false
@@ -36,13 +40,12 @@ func GetUserCache(key string) (model.User, bool) {
 	return user, true
 }
 
-func GetUsersCache(key string) ([]model.User, bool) {
+func GetUsersCache(preload int) ([]model.User, bool) {
 	if !config.Env.Redis.On {
 		return nil, false
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
-	data, err := RDB.Get(ctx, key).Result()
+	ctx := context.Background()
+	data, err := RDB.Get(ctx, fmt.Sprintf(UsersPattern, preload)).Result()
 	if errors.Is(err, redis.Nil) {
 		atomic.AddInt64(&CacheMiss, 1)
 		return nil, false
@@ -59,34 +62,32 @@ func GetUsersCache(key string) ([]model.User, bool) {
 	return users, true
 }
 
-func SetUserCache(key string, user model.User) error {
+func SetUserCache(user model.User, preload int) error {
 	if !config.Env.Redis.On {
 		return nil
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
+	ctx := context.Background()
 	data, err := msgpack.Marshal(user)
 	if err != nil {
 		return err
 	}
-	if err = RDB.Set(ctx, key, data, time.Minute).Err(); err != nil {
+	if err = RDB.Set(ctx, fmt.Sprintf(UserPattern, user.ID, preload), data, time.Minute).Err(); err != nil {
 		return err
 	}
 	log.Logger.Debug("SetUserCache: ", user.ID)
 	return nil
 }
 
-func SetUsersCache(key string, users []model.User) error {
+func SetUsersCache(users []model.User, preload int) error {
 	if !config.Env.Redis.On {
 		return nil
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
+	ctx := context.Background()
 	data, err := msgpack.Marshal(users)
 	if err != nil {
 		return err
 	}
-	if err = RDB.Set(ctx, key, data, time.Minute).Err(); err != nil {
+	if err = RDB.Set(ctx, fmt.Sprintf(UsersPattern, preload), data, time.Minute).Err(); err != nil {
 		return err
 	}
 	log.Logger.Debug("SetUsersCache: ", len(users))
@@ -97,54 +98,12 @@ func DelUserCache(id uint) error {
 	if !config.Env.Redis.On {
 		return nil
 	}
-	var cursor uint64
-	for {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-		keys, cursor, err := RDB.Scan(ctx, cursor, fmt.Sprintf("user:%d:*", id), 10).Result()
-		if err != nil {
-			log.Logger.Warningf("Failed to scan user keys: %s", err)
-		}
-
-		for _, key := range keys {
-			if err := RDB.Del(ctx, key).Err(); err != nil {
-				cancel()
-				return err
-			}
-			log.Logger.Debug("DelUserCache: ", key)
-		}
-		cancel()
-		if cursor == 0 {
-			break
-		}
-	}
-	log.Logger.Debug("DelUserCache: ", id)
-	return nil
+	return DeleteKeysByPattern(fmt.Sprintf(UserPattern, id, "*"))
 }
 
 func DelUsersCache() error {
 	if !config.Env.Redis.On {
 		return nil
 	}
-	var cursor uint64
-	for {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-		keys, cursor, err := RDB.Scan(ctx, cursor, "users:*", 10).Result()
-		if err != nil {
-			log.Logger.Warningf("Failed to scan users keys: %s", err)
-		}
-
-		for _, key := range keys {
-			log.Logger.Debug("DelUsersCache: ", key)
-			if err := RDB.Del(ctx, key).Err(); err != nil {
-				cancel()
-				return err
-			}
-		}
-		cancel()
-		if cursor == 0 {
-			break
-		}
-	}
-	log.Logger.Debug("DelUsersCache")
-	return nil
+	return DeleteKeysByPattern(fmt.Sprintf(UsersPattern, "*"))
 }

@@ -22,6 +22,12 @@ var (
 	collectCancel context.CancelFunc
 )
 
+const (
+	PreloadNone   = 0 // 0: 不预加载
+	PreloadSimple = 1 // 1: 简单预加载
+	PreloadNested = 2 // 2: 嵌套预加载
+)
+
 func Init() {
 	if !config.Env.Redis.On {
 		return

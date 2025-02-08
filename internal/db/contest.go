@@ -5,9 +5,9 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
+	"CBCTF/internal/utils"
 	"context"
 	"errors"
-	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -41,8 +41,7 @@ func GetContestByID(tx *gorm.DB, id uint, preloadL ...bool) (model.Contest, bool
 	if len(preloadL) > 1 {
 		nest = preloadL[1]
 	}
-	cacheKey := fmt.Sprintf("contest:%d:%v:%v", id, preload, nest)
-	if contest, ok := redis.GetContestCache(cacheKey); ok {
+	if contest, ok := redis.GetContestCache(id, redis.GetType(preload, nest)); ok {
 		return contest, true, "Success"
 	}
 	var contest model.Contest
@@ -58,7 +57,7 @@ func GetContestByID(tx *gorm.DB, id uint, preloadL ...bool) (model.Contest, bool
 		return model.Contest{}, false, "ContestNotFound"
 	}
 	go func() {
-		if err := redis.SetContestCache(cacheKey, contest); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.SetContestCache(contest, redis.GetType(preload, nest)); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to set contest cache: %s", err)
 		}
 	}()
@@ -118,12 +117,6 @@ func CountContests(tx *gorm.DB) int64 {
 
 // GetContests 获取比赛列表
 func GetContests(tx *gorm.DB, limit int, offset int, all bool, preloadL ...bool) ([]model.Contest, int64, bool, string) {
-	if limit <= 0 {
-		limit = -1
-	}
-	if offset <= 0 {
-		offset = -1
-	}
 	preload := true
 	nest := false
 	if len(preloadL) > 0 {
@@ -142,9 +135,9 @@ func GetContests(tx *gorm.DB, limit int, offset int, all bool, preloadL ...bool)
 		log.Logger.Warningf("Failed to get contest count: %s", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
-	cacheKey := fmt.Sprintf("contests:%v:%v:%d:%d", preload, nest, limit, offset)
-	if contests, ok := redis.GetContestsCache(cacheKey); ok {
-		return contests, count, true, "Success"
+	if contests, ok := redis.GetContestsCache(redis.GetType(preload, nest)); ok {
+		limit, offset = utils.TidyPaginate(len(contests), limit, offset)
+		return contests[limit:offset], count, true, "Success"
 	}
 	if preload {
 		if nest {
@@ -152,14 +145,15 @@ func GetContests(tx *gorm.DB, limit int, offset int, all bool, preloadL ...bool)
 		}
 		res = res.Preload(clause.Associations)
 	}
-	if res = res.Order("Start desc").Limit(limit).Offset(offset).Find(&contests); res.Error != nil {
+	if res = res.Order("Start desc").Find(&contests); res.Error != nil {
 		log.Logger.Warningf("Failed to get contests: %s", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
 	go func() {
-		if err := redis.SetContestsCache(cacheKey, contests); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.SetContestsCache(contests, redis.GetType(preload, nest)); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to set contests cache: %s", err)
 		}
 	}()
-	return contests, count, true, "Success"
+	limit, offset = utils.TidyPaginate(len(contests), limit, offset)
+	return contests[limit:offset], count, true, "Success"
 }

@@ -8,7 +8,6 @@ import (
 	"CBCTF/internal/utils"
 	"context"
 	"errors"
-	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -48,8 +47,7 @@ func GetUserByID(tx *gorm.DB, id uint, preloadL ...bool) (model.User, bool, stri
 	if len(preloadL) > 1 {
 		nest = preloadL[1]
 	}
-	cacheKey := fmt.Sprintf("user:%d:%v:%v", id, preload, nest)
-	if user, ok := redis.GetUserCache(cacheKey); ok {
+	if user, ok := redis.GetUserCache(id, redis.GetType(preload, nest)); ok {
 		return user, true, "Success"
 	}
 	var user model.User
@@ -65,7 +63,7 @@ func GetUserByID(tx *gorm.DB, id uint, preloadL ...bool) (model.User, bool, stri
 		return model.User{}, false, "UserNotFound"
 	}
 	go func() {
-		if err := redis.SetUserCache(cacheKey, user); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.SetUserCache(user, redis.GetType(preload, nest)); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to set user cache: %s", err)
 		}
 	}()
@@ -168,12 +166,6 @@ func CountUsers(tx *gorm.DB) int64 {
 
 // GetUsers 获取用户列表, 可接受 limit, offset, all 参数, preloadL[0] 为是否预加载, preloadL[1] 为是否嵌套预加载
 func GetUsers(tx *gorm.DB, limit int, offset int, all bool, preloadL ...bool) ([]model.User, int64, bool, string) {
-	if limit <= 0 {
-		limit = -1
-	}
-	if offset <= 0 {
-		offset = -1
-	}
 	preload := true
 	nest := false
 	if len(preloadL) > 0 {
@@ -192,9 +184,9 @@ func GetUsers(tx *gorm.DB, limit int, offset int, all bool, preloadL ...bool) ([
 		log.Logger.Warningf("Failed to get contest count: %s", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
-	cacheKey := fmt.Sprintf("users:%v:%v:%d:%d", preload, nest, limit, offset)
-	if users, ok := redis.GetUsersCache(cacheKey); ok {
-		return users, count, true, "Success"
+	if users, ok := redis.GetUsersCache(redis.GetType(preload, nest)); ok {
+		limit, offset = utils.TidyPaginate(len(users), limit, offset)
+		return users[limit:offset], count, true, "Success"
 	}
 	if preload {
 		if nest {
@@ -202,15 +194,16 @@ func GetUsers(tx *gorm.DB, limit int, offset int, all bool, preloadL ...bool) ([
 		}
 		res = res.Preload(clause.Associations)
 	}
-	if res = res.Limit(limit).Offset(offset).Find(&users); res.Error != nil {
+	if res = res.Find(&users); res.Error != nil {
 		log.Logger.Warningf("Failed to get users: %s", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
 	go func() {
-		if err := redis.SetUsersCache(cacheKey, users); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+		if err := redis.SetUsersCache(users, redis.GetType(preload, nest)); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to set users cache: %s", err)
 		}
 	}()
-	return users, count, true, "Success"
+	limit, offset = utils.TidyPaginate(len(users), limit, offset)
+	return users[limit:offset], count, true, "Success"
 
 }
