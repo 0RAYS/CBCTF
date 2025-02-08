@@ -12,6 +12,13 @@ import (
 	"time"
 )
 
+type Sender struct {
+	Address  string `json:"address"`
+	Host     string `json:"host"`
+	Port     int    `json:"port"`
+	Password string `json:"password"`
+}
+
 type Config struct {
 	Log struct {
 		Level string `mapstructure:"level" json:"level"` // 日志级别：DEBUG, INFO, WARNING, ERROR
@@ -49,11 +56,17 @@ type Config struct {
 		Pwd     string `mapstructure:"pwd" json:"pwd"`         // Redis 密码
 		Timeout uint   `mapstructure:"timeout" json:"timeout"` // Redis 连接超时时间（单位：毫秒）
 	} `mapstructure:"redis" json:"redis"`
+
 	K8S struct {
 		Config    string `mapstructure:"config" json:"config"`       // Kubernetes 配置文件路径
 		Master    string `mapstructure:"master" json:"master"`       // Kubernetes Master 地址
 		Namespace string `mapstructure:"namespace" json:"namespace"` // Kubernetes 命名空间
 	} `mapstructure:"k8s" json:"k8s"`
+
+	Email struct {
+		Senders []Sender `mapstructure:"senders" json:"senders"` // 发件人列表
+	} `mapstructure:"email" json:"email"`
+
 	Frontend string `mapstructure:"frontend" json:"frontend"` // 前端地址
 	Backend  string `mapstructure:"backend" json:"backend"`   // 后端地址
 }
