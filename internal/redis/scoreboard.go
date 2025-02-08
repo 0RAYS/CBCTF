@@ -15,8 +15,7 @@ func UpdateRanking(contestID uint, teams []model.Team) error {
 		return nil
 	}
 	key := fmt.Sprintf("%d:rank", contestID)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
+	ctx := context.Background()
 	pipe := RDB.Pipeline()
 	pipe.Del(ctx, key)
 
@@ -41,8 +40,7 @@ func GetCachedRanking(contestID uint, limit int64, offset int64) ([]model.Team, 
 		return nil, nil
 	}
 	key := fmt.Sprintf("%d:rank", contestID)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
-	defer cancel()
+	ctx := context.Background()
 	results, err := RDB.ZRevRangeWithScores(ctx, key, offset, limit).Result()
 	if err != nil {
 		return nil, err
