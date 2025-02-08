@@ -103,6 +103,11 @@ var resp = map[string]map[string]interface{}{
 	"DeleteUserFromTeamError":    {"zh-CN": "删除用户从队伍失败", "en-US": "Failed to delete user from team", "code": 500},
 	"DeleteUserFromContestError": {"zh-CN": "删除用户从赛事失败", "en-US": "Failed to delete user from contest", "code": 500},
 	"DeleteAssociatedDataError":  {"zh-CN": "删除关联数据失败", "en-US": "Failed to delete associated data", "code": 500},
+
+	"SendEmailError":           {"zh-CN": "发送邮件失败", "en-US": "Failed to send email", "code": 500},
+	"GetEmailVerifyTokenError": {"zh-CN": "获取token失败", "en-US": "Failed to get token", "code": 500},
+	"BadEmailVerifyToken":      {"zh-CN": "无效的token", "en-US": "Invalid token", "code": 400},
+	"RedisOff":                 {"zh-CN": "Redis服务未开启", "en-US": "Redis service is not enabled", "code": 500},
 }
 
 // I18N rewrite the response message

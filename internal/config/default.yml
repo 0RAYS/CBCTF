@@ -32,5 +32,11 @@ k8s:
     master: 192.168.0.1
     # also as prefix of resources
     namespace: cbctf
+email:
+    senders:
+        - address: noreply@example.com
+          password: your_smtp_password
+          host: smtp.example.com
+          port: 587
 frontend: http://127.0.0.1:3000
 backend: http://127.0.0.1:8000
