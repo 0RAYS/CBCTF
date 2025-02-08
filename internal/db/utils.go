@@ -59,9 +59,8 @@ func IsUniqueTeamName(tx *gorm.DB, name string, id uint) bool {
 
 // IsUniqueTeamMember model.User 不能在同一个 model.Contest 出现多次
 func IsUniqueTeamMember(tx *gorm.DB, contestID uint, userID uint) bool {
-	var tmp []model.User
-	err := tx.Model(&model.User{ID: userID}).Where("contest_id = ?", contestID).Association("Contests").Find(&tmp)
-	if len(tmp) > 0 || err != nil {
+	res := tx.Model(&model.UserContest{}).Where("contest_id = ? AND user_id = ?", contestID, userID).Find(&model.UserContest{}).Limit(1)
+	if res.RowsAffected > 0 {
 		return false
 	}
 	return true
@@ -69,9 +68,8 @@ func IsUniqueTeamMember(tx *gorm.DB, contestID uint, userID uint) bool {
 
 // IsMemberInTeam model.User 是否在 model.Team 中
 func IsMemberInTeam(tx *gorm.DB, teamID uint, userID uint) bool {
-	var tmp []model.Team
-	err := tx.Model(&model.User{ID: userID}).Where("team_id = ?", teamID).Association("Teams").Find(&tmp)
-	if err != nil || len(tmp) <= 0 {
+	res := tx.Model(&model.UserTeam{}).Where("team_id = ? AND user_id = ?", teamID, userID).Find(&model.UserTeam{}).Limit(1)
+	if res.RowsAffected > 0 {
 		return false
 	}
 	return true
