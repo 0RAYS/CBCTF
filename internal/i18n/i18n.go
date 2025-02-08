@@ -1,5 +1,7 @@
 package i18n
 
+import "fmt"
+
 var resp = map[string]map[string]interface{}{
 	"Success":         {"zh-CN": "操作成功", "en-US": "Success", "code": 200},
 	"ConfigNotChange": {"zh-CN": "配置未改变", "en-US": "Configuration unchanged", "code": 200},
@@ -115,7 +117,12 @@ var resp = map[string]map[string]interface{}{
 // I18N rewrite the response message
 func I18N(key string, language string) (string, int) {
 	if v, ok := resp[key]; !ok {
-		return key, 400
+		switch language {
+		case "zh-CN":
+			return fmt.Sprintf("I18N 配置不完全: %s", key), 400
+		case "en-US":
+			return fmt.Sprintf("I18N configuration is incomplete: %s", key), 400
+		}
 	} else {
 		return v[language].(string), v["code"].(int)
 	}
