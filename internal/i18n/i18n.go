@@ -105,8 +105,9 @@ var resp = map[string]map[string]interface{}{
 	"DeleteAssociatedDataError":  {"zh-CN": "删除关联数据失败", "en-US": "Failed to delete associated data", "code": 500},
 
 	"SendEmailError":           {"zh-CN": "发送邮件失败", "en-US": "Failed to send email", "code": 500},
-	"SetEmailVerifyTokenError": {"zh-CN": "设置token失败", "en-US": "Failed to set token", "code": 500},
+	"SetEmailVerifyTokenError": {"zh-CN": "缓存token失败", "en-US": "Failed to set token", "code": 500},
 	"GetEmailVerifyTokenError": {"zh-CN": "获取token失败", "en-US": "Failed to get token", "code": 500},
+	"DelEmailVerifyTokenError": {"zh-CN": "删除token失败", "en-US": "Failed to delete token", "code": 500},
 	"BadEmailVerifyToken":      {"zh-CN": "无效的token", "en-US": "Invalid token", "code": 400},
 	"RedisOff":                 {"zh-CN": "Redis服务未开启", "en-US": "Redis service is not enabled", "code": 500},
 }
