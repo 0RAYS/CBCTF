@@ -118,10 +118,10 @@ var resp = map[string]map[string]interface{}{
 func I18N(key string, language string) (string, int) {
 	if v, ok := resp[key]; !ok {
 		switch language {
-		case "zh-CN":
-			return fmt.Sprintf("I18N 配置不完全: %s", key), 400
 		case "en-US":
 			return fmt.Sprintf("I18N configuration is incomplete: %s", key), 400
+		default:
+			return fmt.Sprintf("I18N 配置不完全: %s", key), 400
 		}
 	} else {
 		return v[language].(string), v["code"].(int)
