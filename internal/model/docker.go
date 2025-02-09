@@ -2,7 +2,6 @@ package model
 
 import (
 	"CBCTF/internal/config"
-	"encoding/json"
 	"fmt"
 	"gorm.io/gorm"
 	"time"
@@ -18,29 +17,18 @@ type Docker struct {
 	PodName       string         `json:"pod"`
 	ContainerName string         `json:"container"`
 	ServiceName   string         `json:"service"`
-	Duration      time.Duration  `json:"-"`
+	Duration      time.Duration  `json:"duration"`
 	CreatorID     uint           `json:"creator_id"`
 	CreatedAt     time.Time      `json:"-"`
 	UpdatedAt     time.Time      `json:"-"`
 	DeletedAt     gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
-func (d Docker) MarshalJSON() ([]byte, error) {
-	type Tmp Docker // 定义一个别名以避免递归调用
-	return json.Marshal(&struct {
-		Tmp
-		Duration int64 `json:"duration"`
-	}{
-		Tmp:      Tmp(d),
-		Duration: int64(d.Duration.Seconds()),
-	})
-}
-
-func (d Docker) RemoteAddr() string {
+func (d *Docker) RemoteAddr() string {
 	return fmt.Sprintf("%s:%d", config.Env.K8S.Master, d.Port)
 }
 
-func (d Docker) Remaining() time.Duration {
+func (d *Docker) Remaining() time.Duration {
 	return d.Start.Add(d.Duration).Sub(time.Now())
 }
 
