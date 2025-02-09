@@ -20,7 +20,7 @@ type Contest struct {
 	Prefix    string         `json:"prefix" gorm:"default:'CBCTF'"`
 	Size      int            `json:"size"`
 	Start     time.Time      `json:"start"`
-	Duration  time.Duration  `json:"duration"`
+	Duration  time.Duration  `json:"-"`
 	Blood     bool           `json:"blood" gorm:"default:false"`
 	Hidden    bool           `gorm:"default:false" json:"hidden"`
 	Teams     []*Team        `json:"-"`
@@ -34,14 +34,16 @@ func (c Contest) MarshalJSON() ([]byte, error) {
 	type Tmp Contest // 定义一个别名以避免递归调用
 	return json.Marshal(&struct {
 		Tmp
-		Users  int    `json:"users"`
-		Teams  int    `json:"teams"`
-		Avatar string `json:"avatar"`
+		Users    int    `json:"users"`
+		Teams    int    `json:"teams"`
+		Avatar   string `json:"avatar"`
+		Duration int64  `json:"duration"`
 	}{
-		Tmp:    Tmp(c),
-		Users:  len(c.Users),
-		Teams:  len(c.Teams),
-		Avatar: fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(c.Avatar, "/")),
+		Tmp:      Tmp(c),
+		Users:    len(c.Users),
+		Teams:    len(c.Teams),
+		Avatar:   fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(c.Avatar, "/")),
+		Duration: int64(c.Duration.Seconds()),
 	})
 }
 
