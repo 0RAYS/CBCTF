@@ -79,6 +79,6 @@ func InitContest(form form.CreateContestForm) Contest {
 		Size:     form.Size,
 		Start:    form.Start,
 		Hidden:   form.Hidden,
-		Duration: form.Duration,
+		Duration: time.Duration(form.Duration),
 	}
 }
