@@ -2,6 +2,7 @@ package router
 
 import (
 	"CBCTF/internal/config"
+	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"github.com/gin-gonic/gin"
@@ -10,6 +11,10 @@ import (
 func Init() *gin.Engine {
 	gin.SetMode(config.Env.Gin.Mode)
 	router := gin.New()
+	log.Logger.Infof("Trust proxies: %v", config.Env.Gin.Proxies)
+	if err := router.SetTrustedProxies(config.Env.Gin.Proxies); err != nil {
+		log.Logger.Warningf("Set trusted proxies failed: %v", err)
+	}
 	router.MaxMultipartMemory = int64(config.Env.Gin.Upload.Max << 20)
 	router.Use(middleware.Logger(), gin.Recovery(), middleware.Trace, middleware.Cors, middleware.I18n(), middleware.AccessLog, middleware.RateLimit())
 

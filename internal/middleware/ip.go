@@ -49,6 +49,10 @@ func RateLimit() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		ip := c.ClientIP()
+		if ip == "::1" || ip == "127.0.0.1" {
+			c.Next()
+			return
+		}
 		now := time.Now()
 
 		mu.Lock()

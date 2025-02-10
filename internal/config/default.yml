@@ -6,6 +6,8 @@ gin:
     mode: release
     host: 127.0.0.1
     port: 8000
+    proxies:
+        - null
     upload:
         path: ./uploads
         max: 8
