@@ -14,7 +14,7 @@ func GetContainer(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"target": docker.RemoteAddr(), "remaining": docker.Remaining()}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"target": docker.RemoteAddr(), "remaining": docker.Remaining().Seconds()}})
 }
 
 func StartContainer(ctx *gin.Context) {
@@ -31,7 +31,7 @@ func StartContainer(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"target": docker.RemoteAddr(), "remaining": docker.Remaining()}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"target": docker.RemoteAddr(), "remaining": docker.Remaining().Seconds()}})
 }
 
 func IncreaseDuration(ctx *gin.Context) {
@@ -52,7 +52,7 @@ func IncreaseDuration(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"target": docker.RemoteAddr(), "remaining": docker.Remaining()}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"target": docker.RemoteAddr(), "remaining": docker.Remaining().Seconds()}})
 }
 
 func StopContainer(ctx *gin.Context) {
