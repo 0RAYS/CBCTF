@@ -44,10 +44,13 @@ func I18n() func(ctx *gin.Context) {
 			return
 		}
 		language := ctx.GetHeader("Accept-Language")
-		if strings.HasPrefix(language, "zh-CN") {
-			language = "zh-CN"
-		} else {
+		if strings.HasPrefix(language, "en-US") {
 			language = "en-US"
+		} else if strings.HasPrefix(language, "origin") {
+			language = "origin"
+		} else {
+			language = "zh-CN"
+
 		}
 		res.Msg, res.Code = i18n.I18N(res.Msg, language)
 		res.Trace = GetTraceID(ctx)

@@ -119,6 +119,8 @@ var resp = map[string]map[string]interface{}{
 func I18N(key string, language string) (string, int) {
 	if v, ok := resp[key]; !ok {
 		switch language {
+		case "origin":
+			return key, v["code"].(int)
 		case "en-US":
 			return fmt.Sprintf("I18N configuration is incomplete: %s", key), 400
 		default:
