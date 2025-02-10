@@ -10,17 +10,16 @@ import (
 	"time"
 )
 
-// Admin TODO 由于软删除, 即使数据被删除后 unique 字段仍会受到影响, 有待解决
 type Admin struct {
 	ID        uint           `gorm:"primarykey" json:"id"`
-	Name      string         `gorm:"unique;not null" json:"name"`
+	Name      string         `gorm:"index:idx_name_deleted,unique;not null" json:"name"`
 	Password  string         `gorm:"not null" json:"-"`
-	Email     string         `gorm:"unique;not null" json:"email"`
+	Email     string         `gorm:"index:idx_email_deleted,unique;not null" json:"email"`
 	Avatar    string         `json:"-"`
 	Verified  bool           `gorm:"default:false" json:"verified"`
 	CreatedAt time.Time      `json:"-"`
 	UpdatedAt time.Time      `json:"-"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+	DeletedAt gorm.DeletedAt `gorm:"index;index:idx_name_deleted,unique;index:idx_email_deleted,unique" json:"-"`
 }
 
 func (m Admin) MarshalJSON() ([]byte, error) {

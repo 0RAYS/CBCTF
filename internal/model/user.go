@@ -11,12 +11,11 @@ import (
 	"time"
 )
 
-// User TODO 由于软删除, 即使数据被删除后 unique 字段仍会受到影响, 有待解决
 type User struct {
 	ID        uint           `gorm:"primarykey" json:"id"`
-	Name      string         `gorm:"unique;not null" json:"name"`
+	Name      string         `gorm:"index:idx_name_deleted,unique;not null" json:"name"`
 	Password  string         `gorm:"not null" json:"-"`
-	Email     string         `gorm:"unique;not null" json:"email"`
+	Email     string         `gorm:"index:idx_email_deleted,unique;not null" json:"email"`
 	Country   string         `gorm:"default:'cn'" json:"country"`
 	Avatar    string         `json:"-"`
 	Desc      string         `json:"desc"`
@@ -27,7 +26,7 @@ type User struct {
 	Contests  []*Contest     `gorm:"many2many:user_contests;" json:"-"`
 	CreatedAt time.Time      `json:"-"`
 	UpdatedAt time.Time      `json:"-"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+	DeletedAt gorm.DeletedAt `gorm:"index;index:idx_name_deleted,unique;index:idx_email_deleted,unique" json:"-"`
 }
 
 func (m User) MarshalJSON() ([]byte, error) {
