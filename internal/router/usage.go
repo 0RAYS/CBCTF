@@ -33,8 +33,9 @@ func GetUsages(ctx *gin.Context) {
 		ok     bool
 		msg    string
 		all    = middleware.GetRole(ctx) == "admin"
+		DB 	   = db.DB.WithContext(ctx)
 	)
-	usages, ok, msg = db.GetUsageByContestID(db.DB.WithContext(ctx), middleware.GetContest(ctx).ID, all)
+	usages, ok, msg = db.GetUsageByContestID(DB, middleware.GetContest(ctx).ID, all)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -42,7 +43,7 @@ func GetUsages(ctx *gin.Context) {
 	var challenges []map[string]interface{}
 	for _, usage := range usages {
 		tmp := map[string]interface{}{}
-		challenge, ok, msg := db.GetChallengeByID(db.DB.WithContext(ctx), usage.ChallengeID)
+		challenge, ok, msg := db.GetChallengeByID(DB, usage.ChallengeID)
 		if !ok {
 			log.Logger.Warningf("Failed to get challenge %s: %s", usage.ChallengeID, msg)
 			continue
@@ -57,8 +58,8 @@ func GetUsages(ctx *gin.Context) {
 		tmp["challenge"] = challenge
 		if !all {
 			tmp["status"] = gin.H{
-				"solved":   db.IsSolved(db.DB.WithContext(ctx), middleware.GetContest(ctx), middleware.GetTeam(ctx), challenge),
-				"attempts": db.CountAttempts(db.DB.WithContext(ctx), middleware.GetContest(ctx), middleware.GetTeam(ctx), challenge),
+				"solved":   db.IsSolved(DB, middleware.GetContest(ctx), middleware.GetTeam(ctx), challenge),
+				"attempts": db.CountAttempts(DB, middleware.GetContest(ctx), middleware.GetTeam(ctx), challenge),
 			}
 		}
 		challenges = append(challenges, tmp)
@@ -67,12 +68,13 @@ func GetUsages(ctx *gin.Context) {
 }
 
 func RemoveUsage(ctx *gin.Context) {
-	usage, ok, msg := db.GetUsageBy2ID(db.DB.WithContext(ctx), middleware.GetContest(ctx).ID, middleware.GetChallenge(ctx).ID)
+	var DB = db.DB.WithContext(ctx)
+	usage, ok, msg := db.GetUsageBy2ID(DB, middleware.GetContest(ctx).ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := DB.Begin()
 	ok, msg = db.DeleteUsage(tx, usage.ID)
 	if !ok {
 		tx.Rollback()
@@ -83,7 +85,8 @@ func RemoveUsage(ctx *gin.Context) {
 }
 
 func UpdateUsage(ctx *gin.Context) {
-	usage, ok, msg := db.GetUsageBy2ID(db.DB.WithContext(ctx), middleware.GetContest(ctx).ID, middleware.GetChallenge(ctx).ID)
+	var DB = db.DB.WithContext(ctx)
+	usage, ok, msg := db.GetUsageBy2ID(DB, middleware.GetContest(ctx).ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -94,7 +97,7 @@ func UpdateUsage(ctx *gin.Context) {
 		return
 	}
 	data := utils.Form2Map(form)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := DB.Begin()
 	ok, msg = db.UpdateUsage(tx, usage.ID, data)
 	if !ok {
 		tx.Rollback()
