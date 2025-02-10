@@ -33,6 +33,7 @@ type Config struct {
 			Path string `mapstructure:"path" json:"path"` // 上传文件路径
 			Max  int    `mapstructure:"max" json:"max"`   // 上传文件最大大小（单位：MB）
 		} `mapstructure:"upload" json:"upload"`
+		Proxies []string `mapstructure:"proxies" json:"proxies"` // 信任的代理服务器
 	} `mapstructure:"gin" json:"gin"`
 
 	Gorm struct {
