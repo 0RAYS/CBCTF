@@ -42,6 +42,7 @@ func DeleteAvatar(ctx *gin.Context) {
 		file model.Avatar
 		ok   bool
 		msg  string
+		DB   = db.DB.WithContext(ctx)
 	)
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
@@ -53,7 +54,7 @@ func DeleteAvatar(ctx *gin.Context) {
 		files = append(files, uri)
 	}
 	for _, id := range filesID {
-		file, ok, msg = db.GetAvatarByID(db.DB.WithContext(ctx), id)
+		file, ok, msg = db.GetAvatarByID(DB, id)
 		if !ok {
 			ctx.JSON(http.StatusNotFound, gin.H{"msg": msg, "data": nil})
 			return
@@ -61,7 +62,7 @@ func DeleteAvatar(ctx *gin.Context) {
 		files = append(files, file)
 	}
 	for _, file = range files {
-		tx := db.DB.WithContext(ctx).Begin()
+		tx := DB.Begin()
 		if ok, msg = db.DeleteAvatar(tx, file.ID); !ok {
 			tx.Rollback()
 			ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})

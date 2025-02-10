@@ -54,17 +54,18 @@ func CreateContest(ctx *gin.Context) {
 
 func UpdateContest(ctx *gin.Context) {
 	var form f.UpdateContestForm
+	var DB = db.DB.WithContext(ctx)
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
 	contest := middleware.GetContest(ctx)
 	data := utils.Form2Map(form)
-	if name, ok := data["name"]; ok && name.(string) != contest.Name && !db.IsUniqueTeamName(db.DB.WithContext(ctx), name.(string), contest.ID) {
+	if name, ok := data["name"]; ok && name.(string) != contest.Name && !db.IsUniqueTeamName(DB, name.(string), contest.ID) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "ContestNameExists", "data": nil})
 		return
 	}
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := DB.Begin()
 	ok, msg := db.UpdateContest(tx, contest.ID, data)
 	if !ok {
 		tx.Rollback()

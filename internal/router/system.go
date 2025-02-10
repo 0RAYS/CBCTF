@@ -34,10 +34,11 @@ func SystemStatus(ctx *gin.Context) {
 		ret["recv"] = ioStats[0].BytesRecv
 	}
 
-	ret["users"] = db.CountUsers(db.DB.WithContext(ctx))
-	ret["contests"] = db.CountContests(db.DB.WithContext(ctx))
-	ret["ip"] = db.CountIP(db.DB.WithContext(ctx))
-	ret["challenges"] = db.CountChallenges(db.DB.WithContext(ctx))
+	var DB = db.DB.WithContext(ctx)
+	ret["users"] = db.CountUsers(DB)
+	ret["contests"] = db.CountContests(DB)
+	ret["ip"] = db.CountIP(DB)
+	ret["challenges"] = db.CountChallenges(DB)
 	middleware.MU.Lock()
 	if middleware.TotalRequests == 0 {
 		ret["requests"] = 0

@@ -38,12 +38,13 @@ func GetTeams(ctx *gin.Context) {
 
 func JoinTeam(ctx *gin.Context) {
 	var form f.JoinTeamForm
+	var DB = db.DB.WithContext(ctx)
 	if err := ctx.ShouldBindJSON(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	team, ok, msg := db.GetTeamByName(db.DB.WithContext(ctx), form.Name, contest.ID)
+	team, ok, msg := db.GetTeamByName(DB, form.Name, contest.ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -52,7 +53,7 @@ func JoinTeam(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "CaptchaError", "data": nil})
 		return
 	}
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := DB.Begin()
 	ok, msg = db.JoinTeam(tx, middleware.GetSelf(ctx).(model.User), team, contest)
 	if !ok {
 		tx.Rollback()
@@ -103,6 +104,7 @@ func UpdateTeam(ctx *gin.Context) {
 		team model.Team
 		msg  string
 		data map[string]interface{}
+		DB  = db.DB.WithContext(ctx)
 	)
 	team = middleware.GetTeam(ctx)
 	if middleware.GetRole(ctx) == "admin" {
@@ -128,18 +130,18 @@ func UpdateTeam(ctx *gin.Context) {
 		return
 	}
 	if name, ok := data["name"]; ok && name.(string) != team.Name {
-		if !db.IsUniqueTeamName(db.DB.WithContext(ctx), name.(string), middleware.GetContest(ctx).ID) {
+		if !db.IsUniqueTeamName(DB, name.(string), middleware.GetContest(ctx).ID) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": "TeamNameExists", "data": nil})
 			return
 		}
 	}
 	if captainID, ok := data["captain_id"]; ok && captainID.(uint) != team.CaptainID {
-		if !db.IsMemberInTeam(db.DB.WithContext(ctx), team.ID, captainID.(uint)) {
+		if !db.IsMemberInTeam(DB, team.ID, captainID.(uint)) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": "UserNotInTeam", "data": nil})
 			return
 		}
 	}
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := DB.Begin()
 	ok, msg := db.UpdateTeam(tx, team.ID, data)
 	if !ok {
 		tx.Rollback()
@@ -162,21 +164,22 @@ func DeleteTeam(ctx *gin.Context) {
 
 func KickMember(ctx *gin.Context) {
 	var form f.KickMemberForm
+	var DB = db.DB.WithContext(ctx)
 	if err := ctx.ShouldBindJSON(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
 	team := middleware.GetTeam(ctx)
-	if !db.IsMemberInTeam(db.DB.WithContext(ctx), team.ID, form.UserID) {
+	if !db.IsMemberInTeam(DB, team.ID, form.UserID) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "UserNotInTeam", "data": nil})
 		return
 	}
-	user, ok, msg := db.GetUserByID(db.DB.WithContext(ctx), form.UserID)
+	user, ok, msg := db.GetUserByID(DB, form.UserID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := DB.Begin()
 	ok, msg = db.LeaveTeam(tx, user, team, middleware.GetContest(ctx))
 	if !ok {
 		tx.Rollback()

@@ -239,6 +239,7 @@ func InitChallenge(reset bool) gin.HandlerFunc {
 			usage   model.Usage
 			ok      bool
 			msg     string
+			DB      = db.DB.WithContext(ctx)
 		)
 		team = middleware.GetTeam(ctx)
 		contest = middleware.GetContest(ctx)
@@ -246,22 +247,22 @@ func InitChallenge(reset bool) gin.HandlerFunc {
 			ctx.JSON(http.StatusOK, gin.H{"msg": contest.Status(), "data": nil})
 			return
 		}
-		usage, ok, msg = db.GetUsageBy2ID(db.DB.WithContext(ctx), contest.ID, middleware.GetChallenge(ctx).ID)
+		usage, ok, msg = db.GetUsageBy2ID(DB, contest.ID, middleware.GetChallenge(ctx).ID)
 		if !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
 		if !reset {
-			if _, ok, msg = db.GetFlagBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID); ok {
+			if _, ok, msg = db.GetFlagBy3ID(DB, contest.ID, team.ID, usage.ChallengeID); ok {
 				ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 				return
 			}
 		}
-		docker, ok, _ := db.GetDockerBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID)
+		docker, ok, _ := db.GetDockerBy3ID(DB, contest.ID, team.ID, usage.ChallengeID)
 		if ok {
-			_, _ = db.DeleteDocker(db.DB.WithContext(ctx), docker)
+			_, _ = db.DeleteDocker(DB, docker)
 		}
-		tx := db.DB.WithContext(ctx).Begin()
+		tx := DB.Begin()
 		_, ok, msg = db.InitFlag(tx, contest, team, usage)
 		if !ok {
 			tx.Rollback()

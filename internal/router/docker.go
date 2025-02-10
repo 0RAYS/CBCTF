@@ -18,12 +18,13 @@ func GetContainer(ctx *gin.Context) {
 }
 
 func StartContainer(ctx *gin.Context) {
-	flag, ok, msg := db.GetFlagBy3ID(db.DB.WithContext(ctx), middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
+	var DB = db.DB.WithContext(ctx)
+	flag, ok, msg := db.GetFlagBy3ID(DB, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := DB.Begin()
 	docker, ok, msg := db.CreateDocker(tx, flag, middleware.GetChallenge(ctx), middleware.GetSelfID(ctx))
 	if !ok {
 		tx.Rollback()
@@ -35,7 +36,8 @@ func StartContainer(ctx *gin.Context) {
 }
 
 func IncreaseDuration(ctx *gin.Context) {
-	docker, ok, msg := db.GetDockerBy3ID(db.DB.WithContext(ctx), middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
+	var DB = db.DB.WithContext(ctx)
+	docker, ok, msg := db.GetDockerBy3ID(DB, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -44,7 +46,7 @@ func IncreaseDuration(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "HasMuchTime", "data": nil})
 		return
 	}
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := DB.Begin()
 	ok, msg = db.UpdateDocker(tx, docker.ID, map[string]interface{}{"duration": docker.Duration + 1*time.Hour})
 	if !ok {
 		tx.Rollback()
@@ -56,12 +58,13 @@ func IncreaseDuration(ctx *gin.Context) {
 }
 
 func StopContainer(ctx *gin.Context) {
-	docker, ok, msg := db.GetDockerBy3ID(db.DB.WithContext(ctx), middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
+	var DB = db.DB.WithContext(ctx)
+	docker, ok, msg := db.GetDockerBy3ID(DB, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := DB.Begin()
 	ok, msg = db.DeleteDocker(tx, docker)
 	if !ok {
 		tx.Rollback()
