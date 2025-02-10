@@ -34,11 +34,11 @@ func IsUniqueName(tx *gorm.DB, name string, v interface{}) bool {
 	var res *gorm.DB
 	switch v.(type) {
 	case model.User:
-		res = tx.Model(&model.User{}).Unscoped().Where("name = ?", name).Find(&model.User{}).Limit(1)
+		res = tx.Model(&model.User{}).Where("name = ?", name).Find(&model.User{}).Limit(1)
 	case model.Admin:
-		res = tx.Model(&model.Admin{}).Unscoped().Where("name = ?", name).Find(&model.Admin{}).Limit(1)
+		res = tx.Model(&model.Admin{}).Where("name = ?", name).Find(&model.Admin{}).Limit(1)
 	case model.Contest:
-		res = tx.Model(&model.Contest{}).Unscoped().Where("name = ?", name).Find(&model.Contest{}).Limit(1)
+		res = tx.Model(&model.Contest{}).Where("name = ?", name).Find(&model.Contest{}).Limit(1)
 	default:
 		return false
 	}
@@ -50,7 +50,7 @@ func IsUniqueName(tx *gorm.DB, name string, v interface{}) bool {
 
 // IsUniqueTeamName 在每个Contest中, 队伍名不能重复
 func IsUniqueTeamName(tx *gorm.DB, name string, id uint) bool {
-	res := tx.Model(&model.Team{}).Unscoped().Where("name = ? AND contest_id = ?", name, id).Find(&model.Team{}).Limit(1)
+	res := tx.Model(&model.Team{}).Where("name = ? AND contest_id = ?", name, id).Find(&model.Team{}).Limit(1)
 	if res.RowsAffected > 0 {
 		return false
 	}
