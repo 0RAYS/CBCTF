@@ -5,6 +5,7 @@ import (
 	f "CBCTF/internal/form"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
+	"CBCTF/internal/redis"
 	"CBCTF/internal/utils"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -242,6 +243,7 @@ func InitChallenge(reset bool) gin.HandlerFunc {
 			usage   model.Usage
 			ok      bool
 			msg     string
+			err     error
 			DB      = db.DB.WithContext(ctx)
 		)
 		team = middleware.GetTeam(ctx)
@@ -255,6 +257,11 @@ func InitChallenge(reset bool) gin.HandlerFunc {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
+		if ok, err = redis.CheckChallengeInit(team.ID, usage.ChallengeID); ok || err != nil {
+			ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooQuick", "data": nil})
+			return
+		}
+		_ = redis.RecordChallengeInit(team.ID, usage.ChallengeID)
 		if !reset {
 			if _, ok, msg = db.GetFlagBy3ID(DB, contest.ID, team.ID, usage.ChallengeID); ok {
 				ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
