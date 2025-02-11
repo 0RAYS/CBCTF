@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/model"
 	"context"
 	corev1 "k8s.io/api/core/v1"
+	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/ptr"
@@ -104,12 +105,12 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 func StopContainer(docker model.Docker) (bool, string) {
 	var err error
 	err = Client.CoreV1().Services(NamespaceName).Delete(context.TODO(), docker.ServiceName, metav1.DeleteOptions{})
-	if err != nil {
+	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete service: %v", err)
 		return false, "DeleteServiceError"
 	}
 	err = Client.CoreV1().Pods(NamespaceName).Delete(context.TODO(), docker.PodName, metav1.DeleteOptions{})
-	if err != nil {
+	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete pod: %v", err)
 		return false, "DeletePodError"
 	}
