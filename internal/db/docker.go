@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"gorm.io/gorm"
+	"time"
 )
 
 // CreateDocker 创建 Docker, 并注入 flag
@@ -74,6 +75,7 @@ func GetDockerBy3ID(tx *gorm.DB, contestID, teamID uint, challengeID string) (mo
 // DeleteDocker 删除 Docker
 func DeleteDocker(tx *gorm.DB, docker model.Docker) (bool, string) {
 	go func(d model.Docker) {
+		time.Sleep(5 * time.Second)
 		log.Logger.Debugf("Stopping container for team %d challenge %s", d.TeamID, d.ChallengeID)
 		ok, msg := k8s.StopContainer(d)
 		if !ok {

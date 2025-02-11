@@ -23,11 +23,11 @@ func CheckChallengeInit(teamID uint, challengeID string) (bool, error) {
 		return false, errors.New("RedisOff")
 	}
 	ctx := context.Background()
-	data, err := RDB.Get(ctx, fmt.Sprintf("c:i:%d:%s", teamID, challengeID)).Result()
+	_, err := RDB.Get(ctx, fmt.Sprintf("c:i:%d:%s", teamID, challengeID)).Result()
 	if errors.Is(err, redis.Nil) {
 		return false, nil
 	} else if err != nil {
 		return false, err
 	}
-	return data == "1", nil
+	return true, nil
 }
