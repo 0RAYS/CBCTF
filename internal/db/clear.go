@@ -7,12 +7,12 @@ import (
 	"gorm.io/gorm"
 )
 
-// associations 排除过使用了 Gorm 关联关系的其余关联关系
+// associations 排除过使用了 Gorm 关联关系的其余关联关系, 不包含 model.Docker, 由定时任务删除
 var associations = map[string][]interface{}{
 	"user_id":      {model.Submission{}},
-	"team_id":      {model.Docker{}, model.Submission{}, model.Flag{}},
-	"challenge_id": {model.Flag{}, model.Submission{}, model.Usage{}, model.Docker{}},
-	"contest_id":   {model.Docker{}, model.Flag{}, model.Submission{}, model.Usage{}},
+	"team_id":      {model.Submission{}, model.Flag{}},
+	"challenge_id": {model.Flag{}, model.Submission{}, model.Usage{}},
+	"contest_id":   {model.Flag{}, model.Submission{}, model.Usage{}},
 }
 
 // ClearByID 清除所有与指定 ID 相关的数据
