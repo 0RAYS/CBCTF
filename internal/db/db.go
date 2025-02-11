@@ -46,7 +46,7 @@ func Init() {
 	} else {
 		sql.SetMaxIdleConns(config.Env.Gorm.MySQL.MaxIdleConns)
 		sql.SetMaxOpenConns(config.Env.Gorm.MySQL.MaxOpenConns)
-		sql.SetConnMaxLifetime(time.Hour)
+		sql.SetConnMaxLifetime(30 * time.Second)
 	}
 
 	err = DB.AutoMigrate(
