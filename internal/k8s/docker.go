@@ -10,10 +10,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/ptr"
+	"time"
 )
 
 // StartContainer 启动容器, 并且注入 flag
 func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Docker) (int32, bool, string) {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	defer cancel()
 	var err error
 	if challenge.Type != model.Container {
 		return -1, false, "InvalidChallengeType"
@@ -53,7 +56,7 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 			RestartPolicy:                 corev1.RestartPolicyNever,
 		},
 	}
-	pod, err = Client.CoreV1().Pods(NamespaceName).Create(context.TODO(), pod, metav1.CreateOptions{})
+	pod, err = Client.CoreV1().Pods(NamespaceName).Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create pod: %v", err)
 		return -1, false, "CreatePodError"
@@ -78,13 +81,13 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 			ExternalIPs: config.Env.K8S.Nodes,
 		},
 	}
-	service, err = Client.CoreV1().Services(NamespaceName).Create(context.TODO(), service, metav1.CreateOptions{})
+	service, err = Client.CoreV1().Services(NamespaceName).Create(ctx, service, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Error creating service: %s", err)
 		return -1, false, "CreateServiceError"
 	}
 	for {
-		pod, err = Client.CoreV1().Pods(NamespaceName).Get(context.TODO(), docker.PodName, metav1.GetOptions{})
+		pod, err = Client.CoreV1().Pods(NamespaceName).Get(ctx, docker.PodName, metav1.GetOptions{})
 		if err != nil {
 			log.Logger.Warningf("Failed to get pod: %v", err)
 			return -1, false, "GetPodError"
