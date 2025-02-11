@@ -2,8 +2,10 @@ package utils
 
 import (
 	"github.com/google/uuid"
+	"math/rand"
 	"reflect"
 	"strings"
+	"time"
 )
 
 // In 实现 in 判断
@@ -24,6 +26,19 @@ func In(value interface{}, slice interface{}) bool {
 // UUID 生成随机uuid
 func UUID() string {
 	return uuid.New().String()
+}
+
+const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+func RandomString(n int) string {
+	rand.New(rand.NewSource(time.Now().UnixNano()))
+	var builder strings.Builder
+	builder.Grow(n)
+	charsetLength := len(charset)
+	for i := 0; i < n; i++ {
+		builder.WriteByte(charset[rand.Intn(charsetLength)])
+	}
+	return builder.String()
 }
 
 // Form2Map 将Update请求的数据提取出被赋值的结果, 为区分默认的0值和赋值的0值, 表单中的字段都为指针类型
