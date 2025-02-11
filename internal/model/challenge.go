@@ -36,11 +36,11 @@ func (c *Challenge) BasicDir() string {
 }
 
 func (c *Challenge) StaticPath() string {
-	return fmt.Sprintf("%s/challenges/%s/%s", config.Env.Gin.Upload.Path, c.ID, StaticFile)
+	return fmt.Sprintf("%s/%s", c.BasicDir(), StaticFile)
 }
 
 func (c *Challenge) GeneratorPath() string {
-	return fmt.Sprintf("%s/challenges/%s/%s", config.Env.Gin.Upload.Path, c.ID, DynamicFile)
+	return fmt.Sprintf("/%s/%s", c.BasicDir(), DynamicFile)
 }
 
 func (c *Challenge) AttachmentPath(teamID uint) string {
