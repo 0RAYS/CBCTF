@@ -21,8 +21,8 @@ func In(value interface{}, slice interface{}) bool {
 	return false
 }
 
-// RandomString 生成随机uuid
-func RandomString() string {
+// UUID 生成随机uuid
+func UUID() string {
 	return uuid.New().String()
 }
 

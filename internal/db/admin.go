@@ -95,7 +95,7 @@ func InitAdmin(tx *gorm.DB) {
 	var count int64
 	tx.Model(&model.Admin{}).Count(&count)
 	if count == 0 {
-		pwd := utils.RandomString()
+		pwd := utils.UUID()
 		CreateAdmin(tx, "admin", pwd, "admin@0rays.club")
 		log.Logger.Infof("Init admin: admin/%s/admin@0rays.club", pwd)
 	}

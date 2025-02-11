@@ -54,7 +54,7 @@ func (c *Challenge) AttachmentPath(teamID uint) string {
 
 func InitChallenge(form form.CreateChallengeForm) Challenge {
 	return Challenge{
-		ID:             utils.RandomString(),
+		ID:             utils.UUID(),
 		Name:           form.Name,
 		Desc:           form.Desc,
 		Flag:           form.Flag,

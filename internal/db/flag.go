@@ -34,7 +34,7 @@ func InitFlag(tx *gorm.DB, contest model.Contest, team model.Team, usage model.U
 			}
 		}(challenge, flag)
 	case model.Container:
-		flag, ok, msg = RecordFlag(tx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.RandomString()))
+		flag, ok, msg = RecordFlag(tx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.UUID()))
 	default:
 		flag, ok, msg = model.Flag{}, false, "InvalidChallengeType"
 	}

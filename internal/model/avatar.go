@@ -24,7 +24,7 @@ type Avatar struct {
 
 func InitAvatar(path string, uploader uint, file *multipart.FileHeader, hash string) Avatar {
 	tmp := Avatar{
-		ID:       utils.RandomString(),
+		ID:       utils.UUID(),
 		Filename: file.Filename,
 		Size:     file.Size,
 		Path:     path,
