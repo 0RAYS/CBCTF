@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/utils"
 	"bytes"
 	"context"
 	"fmt"
@@ -26,9 +25,8 @@ func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, strin
 		return false, "EmptyGeneratorImage"
 	}
 	log.Logger.Debugf("Creating pod for challenge %s:%s", challenge.Name, challenge.ID)
-	salt := utils.RandomString(8)
-	podName := fmt.Sprintf("%s-%d-generator-%s-pod", challenge.ID, flag.TeamID, salt)
-	containerName := fmt.Sprintf("%s-%d-generator-%s", challenge.ID, flag.TeamID, salt)
+	podName := fmt.Sprintf("%s-%d-generator-pod", challenge.ID, flag.TeamID)
+	containerName := fmt.Sprintf("%s-%d-generator", challenge.ID, flag.TeamID)
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      podName,

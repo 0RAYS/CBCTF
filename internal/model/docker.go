@@ -2,7 +2,6 @@ package model
 
 import (
 	"CBCTF/internal/config"
-	"CBCTF/internal/utils"
 	"encoding/json"
 	"fmt"
 	"gorm.io/gorm"
@@ -48,10 +47,9 @@ func (d Docker) Remaining() time.Duration {
 }
 
 func InitDocker(flag Flag, challenge Challenge, creatorID uint) Docker {
-	salt := utils.RandomString(8)
-	podName := fmt.Sprintf("docker-%s-%d-%s-pod", challenge.ID, flag.TeamID, salt)
-	serviceName := fmt.Sprintf("docker-%s-%d-%s-service", challenge.ID, flag.TeamID, salt)
-	containerName := fmt.Sprintf("%s-%d-%s-docker", challenge.ID, flag.TeamID, salt)
+	podName := fmt.Sprintf("docker-%s-%d-pod", challenge.ID, flag.TeamID)
+	serviceName := fmt.Sprintf("docker-%s-%d-service", challenge.ID, flag.TeamID)
+	containerName := fmt.Sprintf("%s-%d-docker", challenge.ID, flag.TeamID)
 	return Docker{
 		ContestID:     flag.ContestID,
 		ChallengeID:   flag.ChallengeID,
