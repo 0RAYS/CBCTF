@@ -45,8 +45,6 @@ func (c *Challenge) GeneratorPath() string {
 
 func (c *Challenge) AttachmentPath(teamID uint) string {
 	switch c.Type {
-	case Static:
-		return c.StaticPath()
 	case Dynamic:
 		return fmt.Sprintf("%s/attachments/%s/%d.zip", config.Env.Gin.Upload.Path, c.ID, teamID)
 	default:
