@@ -270,7 +270,14 @@ func InitChallenge(reset bool) gin.HandlerFunc {
 		}
 		docker, ok, _ := db.GetDockerBy3ID(DB, contest.ID, team.ID, usage.ChallengeID)
 		if ok {
-			_, _ = db.DeleteDocker(DB, docker)
+			tx := DB.Begin()
+			ok, msg = db.DeleteDocker(tx, docker)
+			if !ok {
+				tx.Rollback()
+				ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+				return
+			}
+			tx.Commit()
 		}
 		tx := DB.Begin()
 		_, ok, msg = db.InitFlag(tx, contest, team, usage)
