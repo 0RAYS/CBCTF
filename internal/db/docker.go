@@ -70,7 +70,7 @@ func GetDockerBy3ID(tx *gorm.DB, contestID, teamID uint, challengeID string) (mo
 
 // DeleteDocker 删除 Docker
 func DeleteDocker(tx *gorm.DB, docker model.Docker) (bool, string) {
-	log.Logger.Debugf("Stopping container for team %d challenge %s", docker.TeamID, docker.ChallengeID)
+	log.Logger.Infof("Stopping container for team %d challenge %s", docker.TeamID, docker.ChallengeID)
 	ok, msg := k8s.StopContainer(docker)
 	if !ok {
 		log.Logger.Warningf("Failed to stop container for challenge %s: %s", docker.ChallengeID, msg)
