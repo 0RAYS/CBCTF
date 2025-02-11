@@ -132,7 +132,7 @@ func UploadAvatar(v interface{}) func(ctx *gin.Context) {
 				ctx.JSON(http.StatusForbidden, gin.H{"msg": "FileNotAllowed", "data": file.Filename})
 				return
 			}
-			path := fmt.Sprintf("%s/%s%s", basePath, utils.RandomString(), suffix)
+			path := fmt.Sprintf("%s/%s%s", basePath, utils.UUID(), suffix)
 			if err = ctx.SaveUploadedFile(file, path); err != nil {
 				tx.Rollback()
 				ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})

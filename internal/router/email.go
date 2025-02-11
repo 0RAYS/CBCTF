@@ -44,7 +44,7 @@ func VerifyEmail(ctx *gin.Context) {
 
 func ActivateEmail(ctx *gin.Context) {
 	user := middleware.GetSelf(ctx).(model.User)
-	id := utils.RandomString()
+	id := utils.UUID()
 	token, err := utils.Generate(user.ID, user.Name, "email")
 	if err != nil {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "UnknownError", "data": nil})
