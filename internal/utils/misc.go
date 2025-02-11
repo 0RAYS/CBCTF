@@ -28,7 +28,7 @@ func UUID() string {
 	return uuid.New().String()
 }
 
-const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
 
 func RandomString(n int) string {
 	rand.New(rand.NewSource(time.Now().UnixNano()))
