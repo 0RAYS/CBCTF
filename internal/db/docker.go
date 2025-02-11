@@ -22,21 +22,18 @@ func CreateDocker(tx *gorm.DB, flag model.Flag, challenge model.Challenge, creat
 	if challenge.Type != model.Container {
 		return model.Docker{}, false, "InvalidChallengeType"
 	}
-
-	docker = model.InitDocker(flag, challenge, creatorID)
-	res := tx.Model(model.Docker{}).Create(&docker)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to create Docker: %s", res.Error)
-		return model.Docker{}, false, "CreateDockerError"
-	}
 	log.Logger.Debugf("Starting container for team %d challenge %s", flag.TeamID, flag.ChallengeID)
 	port, ok, msg = k8s.StartContainer(challenge, flag, docker)
 	if !ok {
 		log.Logger.Warningf("Failed to start container for challenge %s: %s", flag.ChallengeID, msg)
 		return model.Docker{}, false, msg
 	}
-	UpdateDocker(tx, docker.ID, map[string]interface{}{"port": port})
-	docker.Port = port
+	docker = model.InitDocker(flag, challenge, creatorID, port)
+	res := tx.Model(model.Docker{}).Create(&docker)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to create Docker: %s", res.Error)
+		return model.Docker{}, false, "CreateDockerError"
+	}
 	return docker, true, "Success"
 }
 
