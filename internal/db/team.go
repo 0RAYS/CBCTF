@@ -26,6 +26,11 @@ func CreateTeam(tx *gorm.DB, form form.CreateTeamForm, captain model.User, conte
 		log.Logger.Warningf("Failed to create team: %s", res.Error)
 		return model.Team{}, false, "CreateTeamError"
 	}
+	// 关联 Contest User Many2Many
+	if err := AppendUserToContest(tx, captain, contest); err != nil {
+		log.Logger.Warningf("Failed to insert user_contest: %s", err)
+		return model.Team{}, false, "AppendUserToContestError"
+	}
 	go func() {
 		if err := redis.DelTeamsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete teams cache: %s", err)
