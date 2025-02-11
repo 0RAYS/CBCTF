@@ -76,6 +76,9 @@ func GetChallengeFiles(ctx *gin.Context) {
 		return
 	}
 	var files []string
+	if challenge.Type == model.Dynamic {
+		files = append(files, model.DynamicFile)
+	}
 	for _, file := range dir {
 		files = append(files, file.Name())
 	}
