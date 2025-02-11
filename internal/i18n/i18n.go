@@ -9,6 +9,7 @@ var resp = map[string]map[string]interface{}{
 	"Unauthorized":    {"zh-CN": "未登录", "en-US": "Unauthorized", "code": 401},
 	"Forbidden":       {"zh-CN": "禁止访问", "en-US": "Forbidden", "code": 403},
 	"TooManyRequests": {"zh-CN": "请求过于频繁", "en-US": "Too many requests", "code": 429},
+	"TooQuick":        {"zh-CN": "操作过于频繁", "en-US": "Operation too frequent", "code": 429},
 	"UnknownError":    {"zh-CN": "未知错误，请联系管理员", "en-US": "UnknownError, please contact the administrator", "code": 500},
 
 	"EmailExists":         {"zh-CN": "该邮箱已注册", "en-US": "Email already registered", "code": 400},

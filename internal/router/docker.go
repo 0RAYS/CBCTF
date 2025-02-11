@@ -3,6 +3,7 @@ package router
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/middleware"
+	"CBCTF/internal/redis"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
@@ -24,6 +25,7 @@ func StartContainer(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	_ = redis.RecordDockerCreate(middleware.GetTeam(ctx).ID, flag.ChallengeID)
 	tx := DB.Begin()
 	docker, ok, msg := db.CreateDocker(tx, flag, middleware.GetChallenge(ctx), middleware.GetSelfID(ctx))
 	if !ok {
@@ -62,6 +64,10 @@ func StopContainer(ctx *gin.Context) {
 	docker, ok, msg := db.GetDockerBy3ID(DB, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	if ok, err := redis.CheckDockerCreate(middleware.GetTeam(ctx).ID, docker.ChallengeID); ok || err != nil {
+		ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooQuick", "data": nil})
 		return
 	}
 	tx := DB.Begin()
