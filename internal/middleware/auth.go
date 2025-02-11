@@ -119,15 +119,11 @@ func CheckCaptain(ctx *gin.Context) {
 
 // CheckVerified 检查邮箱是否已验证
 func CheckVerified(ctx *gin.Context) {
-	if _, ok := GetSelf(ctx).(model.User); GetRole(ctx) == "user" && ok {
-
+	if self, ok := GetSelf(ctx).(model.User); GetRole(ctx) == "user" && ok && !self.Verified {
+		ctx.JSON(http.StatusOK, gin.H{"msg": "UnverifiedEmail", "data": nil})
+		ctx.Abort()
 	}
 	ctx.Next()
-	//if self, ok := GetSelf(ctx).(model.User); GetRole(ctx) == "user" && ok && !self.Verified {
-	//	ctx.JSON(http.StatusOK, gin.H{"msg": "UnverifiedEmail", "data": nil})
-	//	ctx.Abort()
-	//}
-	//ctx.Next()
 }
 
 func CheckBanned(ctx *gin.Context) {
