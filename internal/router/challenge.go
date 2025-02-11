@@ -271,5 +271,4 @@ func InitChallenge(reset bool) gin.HandlerFunc {
 		}
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 	}
-
 }
