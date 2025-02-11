@@ -247,6 +247,11 @@ func InitChallenge(reset bool) gin.HandlerFunc {
 			DB      = db.DB.WithContext(ctx)
 		)
 		team = middleware.GetTeam(ctx)
+		if ok, err = redis.CheckChallengeInit(team.ID, middleware.GetChallenge(ctx).ID); ok || err != nil {
+			ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooQuick", "data": nil})
+			return
+		}
+		_ = redis.RecordChallengeInit(team.ID, middleware.GetChallenge(ctx).ID)
 		contest = middleware.GetContest(ctx)
 		if !contest.IsRunning() {
 			ctx.JSON(http.StatusOK, gin.H{"msg": contest.Status(), "data": nil})
@@ -257,11 +262,6 @@ func InitChallenge(reset bool) gin.HandlerFunc {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
-		if ok, err = redis.CheckChallengeInit(team.ID, usage.ChallengeID); ok || err != nil {
-			ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooQuick", "data": nil})
-			return
-		}
-		_ = redis.RecordChallengeInit(team.ID, usage.ChallengeID)
 		if !reset {
 			if _, ok, msg = db.GetFlagBy3ID(DB, contest.ID, team.ID, usage.ChallengeID); ok {
 				ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
