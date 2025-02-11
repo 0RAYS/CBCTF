@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"gorm.io/gorm"
+	"math/rand"
 	"time"
 )
 
@@ -37,7 +38,8 @@ func (d Docker) MarshalJSON() ([]byte, error) {
 }
 
 func (d Docker) RemoteAddr() string {
-	return fmt.Sprintf("%s:%d", config.Env.K8S.Master, d.Port)
+	ip := config.Env.K8S.Nodes[rand.Intn(len(config.Env.K8S.Nodes))]
+	return fmt.Sprintf("%s:%d", ip, d.Port)
 }
 
 func (d Docker) Remaining() time.Duration {

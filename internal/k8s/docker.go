@@ -73,10 +73,8 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 					TargetPort: intstr.FromInt32(challenge.Port),
 				},
 			},
-			Type: corev1.ServiceTypeNodePort,
-			ExternalIPs: []string{
-				config.Env.K8S.Master,
-			},
+			Type:        corev1.ServiceTypeNodePort,
+			ExternalIPs: config.Env.K8S.Nodes,
 		},
 	}
 	service, err = Client.CoreV1().Services(NamespaceName).Create(context.TODO(), service, metav1.CreateOptions{})
