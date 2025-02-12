@@ -13,4 +13,5 @@ type IP struct {
 	UserAgent string    `gorm:"size:255;not null" json:"user_agent"`
 	Status    int       `gorm:"not null" json:"status"`
 	Referer   string    `gorm:"size:255" json:"referer"`
+	Magic     string    `json:"magic"`
 }

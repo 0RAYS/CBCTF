@@ -17,6 +17,7 @@ func AccessLog(ctx *gin.Context) {
 	url := ctx.Request.URL.Path
 	userAgent := ctx.Request.UserAgent()
 	referer := ctx.Request.Referer()
+	magic := ctx.GetHeader("X-M")
 
 	ctx.Next()
 
@@ -30,6 +31,7 @@ func AccessLog(ctx *gin.Context) {
 		UserAgent: userAgent,
 		Status:    statusCode,
 		Referer:   referer,
+		Magic:     magic,
 	}
 	tx := db.DB.WithContext(ctx).Begin()
 	db.RecordIP(tx, log)
