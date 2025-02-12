@@ -8,8 +8,8 @@ import (
 
 // RecordIP 记录请求的 IP
 func RecordIP(tx *gorm.DB, ip model.IP) {
-	if tx.Model(&model.IP{}).Create(&ip).Error != nil {
-		log.Logger.Warningf("Failed to record IP %s", ip.IP)
+	if err := tx.Model(&model.IP{}).Create(&ip).Error; err != nil {
+		log.Logger.Warningf("Failed to record IP %s: %s", ip.IP, err)
 	}
 }
 
