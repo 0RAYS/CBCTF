@@ -80,9 +80,9 @@ func UpdateAdmin(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool,
 
 // VerifyAdmin 验证管理员
 func VerifyAdmin(tx *gorm.DB, username string, password string) (model.Admin, bool, string) {
-	admin, ok, msg := GetAdminByName(tx, username)
+	admin, ok, _ := GetAdminByName(tx, username)
 	if !ok {
-		return model.Admin{}, false, msg
+		return model.Admin{}, false, "NameOrPasswordError"
 	}
 	if utils.CompareHashAndPassword(admin.Password, password) {
 		return admin, true, "Success"

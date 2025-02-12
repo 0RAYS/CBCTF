@@ -43,6 +43,7 @@ var resp = map[string]map[string]interface{}{
 	"CreateAdminError": {"zh-CN": "创建管理员失败", "en-US": "Failed to create admin", "code": 500},
 	"DeleteAdminError": {"zh-CN": "删除管理员失败", "en-US": "Failed to delete admin", "code": 500},
 	"UpdateAdminError": {"zh-CN": "更新管理员失败", "en-US": "Failed to update admin", "code": 500},
+	"AdminNotFound":    {"zh-CN": "管理员不存在", "en-US": "Admin not found", "code": 404},
 
 	"CreateChallengeError": {"zh-CN": "创建题目失败", "en-US": "Failed to create challenge", "code": 500},
 	"ChallengeNotFound":    {"zh-CN": "题目不存在", "en-US": "Challenge not found", "code": 404},
