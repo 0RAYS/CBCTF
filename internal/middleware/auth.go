@@ -43,6 +43,11 @@ func CheckLogin(ctx *gin.Context) {
 			ctx.Abort()
 			return
 		}
+		if magic := ctx.GetHeader("X-M"); magic != "" {
+			tx := db.DB.WithContext(ctx).Begin()
+			db.RecordDevice(tx, model.Device{UserID: user.ID, Magic: magic})
+			tx.Commit()
+		}
 		if user.Banned {
 			ctx.JSONP(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
 			ctx.Abort()
