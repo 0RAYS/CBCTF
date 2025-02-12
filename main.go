@@ -1,8 +1,6 @@
 package main
 
-import (
-	"CBCTF/cmd"
-)
+import "CBCTF/cmd"
 
 func main() {
 	cmd.Cmd()
