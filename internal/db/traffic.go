@@ -11,6 +11,9 @@ import (
 func SaveTraffic(tx *gorm.DB, docker model.Docker) (bool, string) {
 	connections, ok, msg := traffic.ReadPcap(docker.TrafficPath())
 	if !ok {
+		if docker.DeletedAt.Valid && msg == "PcapNotFound" {
+			msg = "HasNoTraffic"
+		}
 		return ok, msg
 	}
 	for _, conn := range connections {
