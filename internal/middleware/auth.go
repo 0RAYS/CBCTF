@@ -35,7 +35,6 @@ func CheckLogin(ctx *gin.Context) {
 		ctx.Set("Role", "admin")
 		ctx.Set("Self", admin)
 		ctx.Next()
-		return
 	} else if claims.Type == "user" {
 		user, ok, msg := db.GetUserByID(db.DB.WithContext(ctx), claims.UserID, false)
 		if !ok {
@@ -56,11 +55,9 @@ func CheckLogin(ctx *gin.Context) {
 		ctx.Set("Role", "user")
 		ctx.Set("Self", user)
 		ctx.Next()
-		return
 	} else {
 		ctx.JSON(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
 		ctx.Abort()
-		return
 	}
 }
 
@@ -106,6 +103,7 @@ func CheckRole(t string) func(ctx *gin.Context) {
 		if GetRole(ctx) != t {
 			ctx.JSON(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
 			ctx.Abort()
+			return
 		}
 		ctx.Next()
 	}
@@ -127,6 +125,7 @@ func CheckVerified(ctx *gin.Context) {
 	if self, ok := GetSelf(ctx).(model.User); GetRole(ctx) == "user" && ok && !self.Verified {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "UnverifiedEmail", "data": nil})
 		ctx.Abort()
+		return
 	}
 	ctx.Next()
 }

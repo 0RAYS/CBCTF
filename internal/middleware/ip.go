@@ -49,10 +49,10 @@ func RateLimit() gin.HandlerFunc {
 	var requestCounts = make(map[string][]time.Time)
 	var mu sync.Mutex
 
-	return func(c *gin.Context) {
-		ip := c.ClientIP()
+	return func(ctx *gin.Context) {
+		ip := ctx.ClientIP()
 		if ip == "::1" || ip == "127.0.0.1" {
-			c.Next()
+			ctx.Next()
 			return
 		}
 		now := time.Now()
@@ -69,11 +69,11 @@ func RateLimit() gin.HandlerFunc {
 		}
 		requestCounts[ip] = validTimes
 		if len(requestCounts[ip]) >= RateLimitMaxRequests {
-			c.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooManyRequests", "data": nil})
-			c.Abort()
+			ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooManyRequests", "data": nil})
+			ctx.Abort()
 			return
 		}
 		requestCounts[ip] = append(requestCounts[ip], now)
-		c.Next()
+		ctx.Next()
 	}
 }

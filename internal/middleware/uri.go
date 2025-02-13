@@ -15,11 +15,13 @@ func SetUser(ctx *gin.Context) {
 	if err := ctx.ShouldBindUri(&userID); err != nil {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		ctx.Abort()
+		return
 	}
 	user, ok, msg := db.GetUserByID(db.DB.WithContext(ctx), userID.UserID)
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
+		return
 	}
 	ctx.Set("User", user)
 	ctx.Next()
@@ -41,11 +43,13 @@ func SetContest(ctx *gin.Context) {
 	if err := ctx.ShouldBindUri(&contestID); err != nil {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		ctx.Abort()
+		return
 	}
 	contest, ok, msg := db.GetContestByID(db.DB.WithContext(ctx), contestID.ContestID)
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
+		return
 	}
 	ctx.Set("Contest", contest)
 	ctx.Next()
@@ -70,11 +74,13 @@ func SetTeamByUser(ctx *gin.Context) {
 	if !ok {
 		ctx.JSONP(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
 		ctx.Abort()
+		return
 	}
 	team, ok, msg = db.GetTeamByUserID(db.DB.WithContext(ctx), self.ID, GetContest(ctx).ID)
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
+		return
 	}
 	ctx.Set("Team", team)
 	ctx.Next()
@@ -93,11 +99,13 @@ func SetTeamByURI(ctx *gin.Context) {
 	if err := ctx.ShouldBindUri(&teamID); err != nil {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		ctx.Abort()
+		return
 	}
 	team, ok, msg = db.GetTeamByID(db.DB.WithContext(ctx), teamID.TeamID)
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
+		return
 	}
 	ctx.Set("Team", team)
 	ctx.Next()
@@ -119,11 +127,13 @@ func SetAvatar(ctx *gin.Context) {
 	if err := ctx.ShouldBindUri(&avatarID); err != nil {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		ctx.Abort()
+		return
 	}
 	avatar, ok, msg := db.GetAvatarByID(db.DB.WithContext(ctx), avatarID.AvatarID)
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
+		return
 	}
 	ctx.Set("Avatar", avatar)
 	ctx.Next()
@@ -145,11 +155,13 @@ func SetChallenge(ctx *gin.Context) {
 	if err := ctx.ShouldBindUri(&challengeID); err != nil {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		ctx.Abort()
+		return
 	}
 	challenge, ok, msg := db.GetChallengeByID(db.DB.WithContext(ctx), challengeID.ChallengeID)
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
+		return
 	}
 	ctx.Set("Challenge", challenge)
 	ctx.Next()
@@ -171,11 +183,13 @@ func SetContainer(ctx *gin.Context) {
 	if err := ctx.ShouldBindUri(&containerID); err != nil {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		ctx.Abort()
+		return
 	}
 	container, ok, msg := db.GetDockerByID(db.DB.WithContext(ctx), containerID.ContainerID, true)
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
+		return
 	}
 	ctx.Set("Container", container)
 	ctx.Next()
