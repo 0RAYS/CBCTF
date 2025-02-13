@@ -1,6 +1,12 @@
 # CBCTF
 预期中，是一个CTF平台
 
+## Requirements
+```bash
+apt-get update
+apt-get install libpcap-dev 
+```
+
 ## Config
 初次运行会创建`config.json`，配置后重新启动
 ```yaml
@@ -12,6 +18,8 @@ gin:
     mode: release
     host: 127.0.0.1
     port: 8000
+    proxies:
+        - null
     upload:
         path: ./uploads
         max: 8
@@ -22,18 +30,31 @@ gorm:
         user: cbctf
         pwd: password
         db: cbctf
+        mxopen: 100
+        mxidle: 10
     log:
         # INFO WARNING ERROR SILENT
         level: silent
 redis:
+    on: true
     addr: 127.0.0.1:6379
     pwd: ""
     # millisecond
     timeout: 10
 k8s:
     config: ./admin.conf
+    master: 192.168.0.1
     # also as prefix of resources
     namespace: cbctf
+    # nodes of k8s cluster, used for external service
+    nodes:
+        - 192.168.0.1
+email:
+    senders:
+        - address: noreply@example.com
+          password: your_smtp_password
+          host: smtp.example.com
+          port: 587
 frontend: http://127.0.0.1:3000
 backend: http://127.0.0.1:8000
 ```
