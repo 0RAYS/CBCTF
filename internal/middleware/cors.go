@@ -15,6 +15,7 @@ func Cors(ctx *gin.Context) {
 	ctx.Header("Access-Control-Allow-Credentials", "true")
 	if ctx.Request.Method == "OPTIONS" {
 		ctx.AbortWithStatus(http.StatusNoContent)
+		return
 	}
 	ctx.Next()
 }
