@@ -67,7 +67,7 @@ func Init() *gin.Engine {
 			contestChallenge.POST("/init", InitChallenge(false))
 			contestChallenge.GET("/files", GetChallengeFiles)
 			contestChallenge.GET("/attachment", GetAttachment)
-			contestChallenge.GET("/remote", GetContainer)
+			contestChallenge.GET("/remote", GetContainer(false))
 			contestChallenge.POST("/reset", InitChallenge(true))
 			contestChallenge.POST("/start", StartContainer)
 			contestChallenge.POST("/increase", IncreaseDuration)
@@ -129,6 +129,16 @@ func Init() *gin.Engine {
 				adminContestTeam.POST("/delete", DeleteTeam)
 				adminContestTeam.POST("/kick", KickMember)
 				adminContestTeam.POST("/avatar", UploadAvatar(model.Team{}))
+
+				adminContestTeam.GET("/container/list", GetContainers)
+				adminContainer := adminContestTeam.Group("/container/:dockerID", middleware.SetContainer)
+				{
+					adminContainer.GET("/info", GetContainer(true))
+
+					adminTraffic := adminContainer.Group("/traffic")
+					adminTraffic.POST("/load", LoadTraffic)
+					adminTraffic.GET("/show", GetTraffics)
+				}
 			}
 
 			// 比赛题目管理
