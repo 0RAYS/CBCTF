@@ -16,7 +16,7 @@ func CreateDocker(tx *gorm.DB, flag model.Flag, challenge model.Challenge, creat
 		ip     string
 		port   int32
 	)
-	if docker, ok, _ = GetDockerBy3ID(tx, flag.ContestID, flag.TeamID, flag.ChallengeID, false); ok {
+	if docker, ok, _ = GetDockerBy3ID(tx, flag.ContestID, flag.TeamID, flag.ChallengeID); ok {
 		return docker, ok, "Success"
 	}
 	if challenge.Type != model.Container {
@@ -69,10 +69,10 @@ func GetDockerByID(tx *gorm.DB, id uint, deleted bool) (model.Docker, bool, stri
 }
 
 func GetDockerByTeamID(tx *gorm.DB, teamID uint, limit, offset int, deleted bool) ([]model.Docker, int64, bool, string) {
-	if limit < 0 {
+	if limit <= 0 {
 		limit = -1
 	}
-	if offset < 0 {
+	if offset <= 0 {
 		offset = -1
 	}
 	res := tx.Model(model.Docker{})
@@ -94,13 +94,10 @@ func GetDockerByTeamID(tx *gorm.DB, teamID uint, limit, offset int, deleted bool
 }
 
 // GetDockerBy3ID 根据 contestID, teamID, challengeID 获取 Docker
-func GetDockerBy3ID(tx *gorm.DB, contestID, teamID uint, challengeID string, deleted bool) (model.Docker, bool, string) {
+func GetDockerBy3ID(tx *gorm.DB, contestID, teamID uint, challengeID string) (model.Docker, bool, string) {
 	var docker model.Docker
-	res := tx.Model(model.Docker{})
-	if deleted {
-		res = res.Unscoped()
-	}
-	res = res.Where("contest_id = ? AND team_id = ? AND challenge_id = ?", contestID, teamID, challengeID).Find(&docker).Limit(1)
+	res := tx.Model(model.Docker{}).
+		Where("contest_id = ? AND team_id = ? AND challenge_id = ?", contestID, teamID, challengeID).Find(&docker).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.Docker{}, false, "DockerNotFound"
 	}
