@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
+	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,15 +15,15 @@ import (
 )
 
 // StartContainer 启动容器, 并且注入 flag
-func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Docker) (int32, bool, string) {
+func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Docker) (string, int32, bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 	var err error
 	if challenge.Type != model.Container {
-		return -1, false, "InvalidChallengeType"
+		return "", -1, false, "InvalidChallengeType"
 	}
 	if challenge.DockerImage == "" {
-		return -1, false, "EmptyDockerImage"
+		return "", -1, false, "EmptyDockerImage"
 	}
 	log.Logger.Debugf("Creating pod for challenge %s:%s", challenge.Name, challenge.ID)
 	env := []corev1.EnvVar{
@@ -51,6 +52,11 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 						},
 					},
 				},
+				{
+					Name:    "tcpdump",
+					Image:   "docker.0rays.club/test/netshoot:test",
+					Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/traffic.pcap"},
+				},
 			},
 			TerminationGracePeriodSeconds: ptr.To[int64](3),
 			RestartPolicy:                 corev1.RestartPolicyNever,
@@ -59,7 +65,7 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 	pod, err = Client.CoreV1().Pods(NamespaceName).Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create pod: %v", err)
-		return -1, false, "CreatePodError"
+		return "", -1, false, "CreatePodError"
 	}
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -77,36 +83,61 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 					TargetPort: intstr.FromInt32(challenge.Port),
 				},
 			},
-			Type:        corev1.ServiceTypeNodePort,
-			ExternalIPs: config.Env.K8S.Nodes,
+			Type:                  corev1.ServiceTypeNodePort,
+			ExternalIPs:           config.Env.K8S.Nodes,
+			ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeLocal,
 		},
 	}
 	service, err = Client.CoreV1().Services(NamespaceName).Create(ctx, service, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Error creating service: %s", err)
-		return -1, false, "CreateServiceError"
+		return "", -1, false, "CreateServiceError"
 	}
 	for {
 		pod, err = Client.CoreV1().Pods(NamespaceName).Get(ctx, docker.PodName, metav1.GetOptions{})
 		if err != nil {
 			log.Logger.Warningf("Failed to get pod: %v", err)
-			return -1, false, "GetPodError"
+			return "", -1, false, "GetPodError"
 		}
 		if pod.Status.Phase == corev1.PodRunning {
 			break
 		}
 		if pod.Status.Phase != corev1.PodPending {
 			log.Logger.Warningf("Pod %s:%s failed to run", challenge.Name, pod.Name)
-			return -1, false, "CreatePodError"
+			return "", -1, false, "CreatePodError"
+		}
+	}
+	node, err := Client.CoreV1().Nodes().Get(ctx, pod.Spec.NodeName, metav1.GetOptions{})
+	if err != nil {
+		log.Logger.Warningf("Failed to get node: %v", err)
+		return "", -1, false, "GetNodeError"
+	}
+	ip := ""
+	for _, address := range node.Status.Addresses {
+		if address.Type == corev1.NodeInternalIP && address.Address != "" {
+			ip = address.Address
+			continue
+		}
+		if address.Type == corev1.NodeExternalIP && address.Address != "" {
+			ip = address.Address
+			break
 		}
 	}
 	port := service.Spec.Ports[0].NodePort
-	return port, true, "Success"
+	log.Logger.Infof("Pod %s:%s is running on %s:%d", challenge.Name, pod.Name, ip, port)
+	return ip, port, true, "Success"
 }
 
 // StopContainer 停止容器
 func StopContainer(docker model.Docker) (bool, string) {
 	var err error
+	err = CopyFromPod(
+		docker.PodName, "tcpdump", "/root/traffic.pcap",
+		fmt.Sprintf("%s/traffic/%s/%d.pcap", config.Env.Gin.Upload.Path, docker.ChallengeID, docker.TeamID),
+	)
+	if err != nil {
+		log.Logger.Warningf("Failed to copy %d traffic: %v", docker.TeamID, err)
+	}
 	err = Client.CoreV1().Services(NamespaceName).Delete(context.TODO(), docker.ServiceName, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete service: %v", err)
