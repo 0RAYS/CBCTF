@@ -1,6 +1,7 @@
 package model
 
 import (
+	"CBCTF/internal/config"
 	"encoding/json"
 	"fmt"
 	"gorm.io/gorm"
@@ -34,6 +35,10 @@ func (d Docker) MarshalJSON() ([]byte, error) {
 		Tmp:      Tmp(d),
 		Duration: int64(d.Duration.Seconds()),
 	})
+}
+
+func (d Docker) TrafficPath() string {
+	return fmt.Sprintf("%s/traffic/%s/%d/%d.pcap", config.Env.Gin.Upload.Path, d.ChallengeID, d.TeamID, d.ID)
 }
 
 func (d Docker) RemoteAddr() string {

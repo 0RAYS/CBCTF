@@ -5,7 +5,6 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
-	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -133,7 +132,7 @@ func StopContainer(docker model.Docker) (bool, string) {
 	var err error
 	err = CopyFromPod(
 		docker.PodName, "tcpdump", "/root/traffic.pcap",
-		fmt.Sprintf("%s/traffic/%s/%d.pcap", config.Env.Gin.Upload.Path, docker.ChallengeID, docker.TeamID),
+		docker.TrafficPath(),
 	)
 	if err != nil {
 		log.Logger.Warningf("Failed to copy %d traffic: %v", docker.TeamID, err)
