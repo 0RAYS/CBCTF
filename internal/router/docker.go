@@ -13,7 +13,12 @@ import (
 
 func GetContainer(deleted bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		docker, ok, msg := db.GetDockerBy3ID(db.DB.WithContext(ctx), middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID, deleted)
+		if deleted {
+			docker := middleware.GetContainer(ctx)
+			ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": docker})
+			return
+		}
+		docker, ok, msg := db.GetDockerBy3ID(db.DB.WithContext(ctx), middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
 		if !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
@@ -59,7 +64,7 @@ func StartContainer(ctx *gin.Context) {
 
 func IncreaseDuration(ctx *gin.Context) {
 	var DB = db.DB.WithContext(ctx)
-	docker, ok, msg := db.GetDockerBy3ID(DB, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID, false)
+	docker, ok, msg := db.GetDockerBy3ID(DB, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -85,7 +90,7 @@ func StopContainer(ctx *gin.Context) {
 		ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooQuick", "data": nil})
 		return
 	}
-	docker, ok, msg := db.GetDockerBy3ID(DB, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID, false)
+	docker, ok, msg := db.GetDockerBy3ID(DB, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
