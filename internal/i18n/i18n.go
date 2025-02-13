@@ -116,6 +116,11 @@ var resp = map[string]map[string]interface{}{
 	"DelEmailVerifyTokenError": {"zh-CN": "删除token失败", "en-US": "Failed to delete token", "code": 500},
 	"BadEmailVerifyToken":      {"zh-CN": "无效的token", "en-US": "Invalid token", "code": 400},
 	"RedisOff":                 {"zh-CN": "Redis服务未开启", "en-US": "Redis service is not enabled", "code": 500},
+
+	"PcapNotFound":     {"zh-CN": "pcap文件不存在, 请先停止容器", "en-US": "Pcap file not found, stop container first", "code": 404},
+	"ReadPcapError":    {"zh-CN": "加载pcap文件失败", "en-US": "Failed to load pcap file", "code": 500},
+	"SaveTrafficError": {"zh-CN": "加载流量失败", "en-US": "Failed to load traffic", "code": 500},
+	"GetTrafficError":  {"zh-CN": "读取流量失败, 请先加载pcap", "en-US": "Failed to get traffic, load .pcap file first", "code": 500},
 }
 
 // I18N rewrite the response message
