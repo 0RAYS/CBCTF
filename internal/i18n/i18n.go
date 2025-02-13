@@ -118,6 +118,7 @@ var resp = map[string]map[string]interface{}{
 	"RedisOff":                 {"zh-CN": "Redis服务未开启", "en-US": "Redis service is not enabled", "code": 500},
 
 	"PcapNotFound":     {"zh-CN": "pcap文件不存在, 请先停止容器", "en-US": "Pcap file not found, stop container first", "code": 404},
+	"HasNoTraffic":     {"zh-CN": "容器未保存流量", "en-US": "No traffic saved by the container", "code": 404},
 	"ReadPcapError":    {"zh-CN": "加载pcap文件失败", "en-US": "Failed to load pcap file", "code": 500},
 	"SaveTrafficError": {"zh-CN": "加载流量失败", "en-US": "Failed to load traffic", "code": 500},
 	"GetTrafficError":  {"zh-CN": "读取流量失败, 请先加载pcap", "en-US": "Failed to get traffic, load .pcap file first", "code": 500},
