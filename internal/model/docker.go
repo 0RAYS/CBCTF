@@ -1,11 +1,9 @@
 package model
 
 import (
-	"CBCTF/internal/config"
 	"encoding/json"
 	"fmt"
 	"gorm.io/gorm"
-	"math/rand"
 	"time"
 )
 
@@ -19,6 +17,7 @@ type Docker struct {
 	PodName       string         `json:"pod"`
 	ContainerName string         `json:"container"`
 	ServiceName   string         `json:"service"`
+	IP            string         `json:"ip"`
 	Duration      time.Duration  `json:"-"`
 	CreatorID     uint           `json:"creator_id"`
 	CreatedAt     time.Time      `json:"-"`
@@ -38,8 +37,7 @@ func (d Docker) MarshalJSON() ([]byte, error) {
 }
 
 func (d Docker) RemoteAddr() string {
-	ip := config.Env.K8S.Nodes[rand.Intn(len(config.Env.K8S.Nodes))]
-	return fmt.Sprintf("%s:%d", ip, d.Port)
+	return fmt.Sprintf("%s:%d", d.IP, d.Port)
 }
 
 func (d Docker) Remaining() time.Duration {
@@ -47,9 +45,9 @@ func (d Docker) Remaining() time.Duration {
 }
 
 func InitDocker(flag Flag, challenge Challenge, creatorID uint) Docker {
-	podName := fmt.Sprintf("docker-%s-%d-pod", challenge.ID, flag.TeamID)
-	serviceName := fmt.Sprintf("docker-%s-%d-service", challenge.ID, flag.TeamID)
-	containerName := fmt.Sprintf("%s-%d-docker", challenge.ID, flag.TeamID)
+	podName := fmt.Sprintf("victim-%s-%d-pod", challenge.ID, flag.TeamID)
+	serviceName := fmt.Sprintf("victim-%s-%d-svc", challenge.ID, flag.TeamID)
+	containerName := fmt.Sprintf("victim-%s-%d", challenge.ID, flag.TeamID)
 	return Docker{
 		ContestID:     flag.ContestID,
 		ChallengeID:   flag.ChallengeID,

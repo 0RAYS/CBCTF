@@ -63,7 +63,7 @@ func CopyFromPod(podName, containerName, src, dst string) error {
 	if err != nil {
 		return err
 	}
-	file, err := os.OpenFile(dst, os.O_CREATE|os.O_RDWR, os.ModePerm)
+	file, err := os.OpenFile(dst, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		return err
 	}
