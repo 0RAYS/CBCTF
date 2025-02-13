@@ -134,6 +134,7 @@ func Init() *gin.Engine {
 				adminContainer := adminContestTeam.Group("/container/:containerID", middleware.SetContainer)
 				{
 					adminContainer.GET("/info", GetContainer(true))
+					adminContainer.POST("/stop", StopContainer)
 
 					adminTraffic := adminContainer.Group("/traffic")
 					adminTraffic.POST("/load", LoadTraffic)

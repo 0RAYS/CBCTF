@@ -85,23 +85,41 @@ func IncreaseDuration(ctx *gin.Context) {
 }
 
 func StopContainer(ctx *gin.Context) {
-	var DB = db.DB.WithContext(ctx)
-	if ok, err := redis.CheckDockerCreate(middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID); ok || err != nil {
-		ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooQuick", "data": nil})
+	if middleware.GetRole(ctx) == "admin" {
+		docker := middleware.GetContainer(ctx)
+		if docker.DeletedAt.Valid {
+			ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
+			return
+		}
+		tx := db.DB.WithContext(ctx).Begin()
+		ok, msg := db.DeleteDocker(tx, docker)
+		if !ok {
+			tx.Rollback()
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
+		}
+		tx.Commit()
+		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
 		return
+	} else {
+		var DB = db.DB.WithContext(ctx)
+		if ok, err := redis.CheckDockerCreate(middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID); ok || err != nil {
+			ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooQuick", "data": nil})
+			return
+		}
+		docker, ok, msg := db.GetDockerBy3ID(DB, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
+		if !ok {
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
+		}
+		tx := DB.Begin()
+		ok, msg = db.DeleteDocker(tx, docker)
+		if !ok {
+			tx.Rollback()
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
+		}
+		tx.Commit()
+		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
 	}
-	docker, ok, msg := db.GetDockerBy3ID(DB, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	tx := DB.Begin()
-	ok, msg = db.DeleteDocker(tx, docker)
-	if !ok {
-		tx.Rollback()
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	tx.Commit()
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
 }
