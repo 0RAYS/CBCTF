@@ -10,7 +10,7 @@ import (
 // CloseDockers 关闭并删除超时 dockers
 func CloseDockers(c *cron.Cron) {
 	c.Schedule(cron.Every(1*time.Minute), cron.FuncJob(func() {
-		dockers, ok, msg := db.GetDockers(db.DB)
+		dockers, ok, msg := db.GetDockers(db.DB, false)
 		if !ok {
 			log.Logger.Warningf("Failed to get dockers %s", msg)
 			return

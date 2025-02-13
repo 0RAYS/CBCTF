@@ -162,3 +162,29 @@ func GetChallenge(ctx *gin.Context) model.Challenge {
 		return challenge.(model.Challenge)
 	}
 }
+
+func SetContainer(ctx *gin.Context) {
+	type containerIDUri struct {
+		ContainerID uint `uri:"containerID" binding:"required"`
+	}
+	var containerID containerIDUri
+	if err := ctx.ShouldBindUri(&containerID); err != nil {
+		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.Abort()
+	}
+	container, ok, msg := db.GetDockerByID(db.DB.WithContext(ctx), containerID.ContainerID, true)
+	if !ok {
+		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.Abort()
+	}
+	ctx.Set("Container", container)
+	ctx.Next()
+}
+
+func GetContainer(ctx *gin.Context) model.Docker {
+	if container, ok := ctx.Get("Container"); !ok {
+		return model.Docker{}
+	} else {
+		return container.(model.Docker)
+	}
+}
