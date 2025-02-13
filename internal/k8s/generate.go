@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
+	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/utils/ptr"
@@ -51,7 +52,7 @@ func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, strin
 	}
 	defer func(pods v1.PodInterface, ctx context.Context, name string, opts metav1.DeleteOptions) {
 		err = pods.Delete(ctx, name, opts)
-		if err != nil {
+		if err != nil && !apierror.IsNotFound(err) {
 			log.Logger.Warningf("Failed to delete pod: %v", err)
 		} else {
 			log.Logger.Debugf("%s:%s deleted successfully", challenge.Name, pod.Name)
