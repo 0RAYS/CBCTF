@@ -14,7 +14,8 @@ func SaveTraffic(tx *gorm.DB, docker model.Docker) (bool, string) {
 		return ok, msg
 	}
 	for _, conn := range connections {
-		res := tx.Model(&model.Traffic{}).Create(model.InitTraffic(conn, docker))
+		t := model.InitTraffic(conn, docker)
+		res := tx.Model(&model.Traffic{}).Create(&t)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to save traffic: %s", res.Error)
 			return false, "SaveTrafficError"
@@ -24,10 +25,10 @@ func SaveTraffic(tx *gorm.DB, docker model.Docker) (bool, string) {
 }
 
 func getTrafficByID(tx *gorm.DB, column string, id uint, limit, offset int) ([]model.Traffic, int64, bool, string) {
-	if limit < 0 {
+	if limit <= 0 {
 		limit = -1
 	}
-	if offset < 0 {
+	if offset <= 0 {
 		offset = -1
 	}
 	var traffics []model.Traffic
