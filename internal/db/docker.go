@@ -16,7 +16,7 @@ func CreateDocker(tx *gorm.DB, flag model.Flag, challenge model.Challenge, creat
 		ip     string
 		port   int32
 	)
-	if docker, ok, _ = GetDockerBy3ID(tx, flag.ContestID, flag.TeamID, flag.ChallengeID); ok {
+	if docker, ok, _ = GetDockerBy3ID(tx, flag.ContestID, flag.TeamID, flag.ChallengeID, false); ok {
 		return docker, ok, "Success"
 	}
 	if challenge.Type != model.Container {
@@ -40,9 +40,13 @@ func CreateDocker(tx *gorm.DB, flag model.Flag, challenge model.Challenge, creat
 }
 
 // GetDockers 获取所有 Docker
-func GetDockers(tx *gorm.DB) ([]model.Docker, bool, string) {
+func GetDockers(tx *gorm.DB, deleted bool) ([]model.Docker, bool, string) {
 	var dockers []model.Docker
-	res := tx.Model(model.Docker{}).Find(&dockers)
+	res := tx.Model(model.Docker{})
+	if deleted {
+		res = res.Unscoped()
+	}
+	res = res.Find(&dockers)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Dockers: %s", res.Error)
 		return nil, false, "GetDockersError"
@@ -51,20 +55,52 @@ func GetDockers(tx *gorm.DB) ([]model.Docker, bool, string) {
 }
 
 // GetDockerByID 根据 ID 获取 Docker
-func GetDockerByID(tx *gorm.DB, id uint) (model.Docker, bool, string) {
+func GetDockerByID(tx *gorm.DB, id uint, deleted bool) (model.Docker, bool, string) {
 	var docker model.Docker
-	res := tx.Model(model.Docker{}).Where("id = ?", id).Find(&docker).Limit(1)
+	res := tx.Model(model.Docker{})
+	if deleted {
+		res = res.Unscoped()
+	}
+	res = res.Where("id = ?", id).Find(&docker).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.Docker{}, false, "DockerNotFound"
 	}
 	return docker, true, "Success"
 }
 
+func GetDockerByTeamID(tx *gorm.DB, teamID uint, limit, offset int, deleted bool) ([]model.Docker, int64, bool, string) {
+	if limit < 0 {
+		limit = -1
+	}
+	if offset < 0 {
+		offset = -1
+	}
+	res := tx.Model(model.Docker{})
+	if deleted {
+		res = res.Unscoped()
+	}
+	var dockers []model.Docker
+	var count int64
+	if err := res.Count(&count).Error; err != nil {
+		log.Logger.Warningf("Failed to count Dockers: %s", err)
+		return nil, -1, false, "UnknownError"
+	}
+	res = res.Limit(limit).Offset(offset).Where("team_id = ?", teamID).Find(&dockers)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Dockers: %s", res.Error)
+		return nil, -1, false, "GetDockersError"
+	}
+	return dockers, count, true, "Success"
+}
+
 // GetDockerBy3ID 根据 contestID, teamID, challengeID 获取 Docker
-func GetDockerBy3ID(tx *gorm.DB, contestID, teamID uint, challengeID string) (model.Docker, bool, string) {
+func GetDockerBy3ID(tx *gorm.DB, contestID, teamID uint, challengeID string, deleted bool) (model.Docker, bool, string) {
 	var docker model.Docker
-	res := tx.Model(model.Docker{}).
-		Where("contest_id = ? AND team_id = ? AND challenge_id = ?", contestID, teamID, challengeID).Find(&docker).Limit(1)
+	res := tx.Model(model.Docker{})
+	if deleted {
+		res = res.Unscoped()
+	}
+	res = res.Where("contest_id = ? AND team_id = ? AND challenge_id = ?", contestID, teamID, challengeID).Find(&docker).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.Docker{}, false, "DockerNotFound"
 	}
