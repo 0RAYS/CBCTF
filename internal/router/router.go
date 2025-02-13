@@ -131,7 +131,7 @@ func Init() *gin.Engine {
 				adminContestTeam.POST("/avatar", UploadAvatar(model.Team{}))
 
 				adminContestTeam.GET("/container/list", GetContainers)
-				adminContainer := adminContestTeam.Group("/container/:dockerID", middleware.SetContainer)
+				adminContainer := adminContestTeam.Group("/container/:containerID", middleware.SetContainer)
 				{
 					adminContainer.GET("/info", GetContainer(true))
 
