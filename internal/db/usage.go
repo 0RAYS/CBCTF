@@ -24,6 +24,7 @@ func CreateUsage(tx *gorm.DB, form form.CreateUsageForm, contestID uint) ([]mode
 		usage := model.InitUsage(c, contestID, challenge.Flag)
 		// 如果创建失败则跳过, 不回滚
 		if err := tx.Model(model.Usage{}).Create(&usage).Error; err != nil {
+			log.Logger.Warningf("Failed to create Usage: %s", err)
 			continue
 		}
 		usages = append(usages, usage)
