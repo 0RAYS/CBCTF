@@ -19,7 +19,8 @@ func UpdateRanking(contestID uint, teams []model.Team) error {
 	pipe := RDB.Pipeline()
 	pipe.Del(ctx, key)
 
-	for _, team := range teams {
+	for i := len(teams) - 1; i >= 0; i-- {
+		team := teams[i]
 		timestamp := team.Last.UnixNano()
 		compositeScore := float64(team.Score)*1e13 + float64(1e18-timestamp)
 		pipe.ZAdd(ctx, key, &redis.Z{
@@ -29,7 +30,6 @@ func UpdateRanking(contestID uint, teams []model.Team) error {
 		data, _ := json.Marshal(team)
 		pipe.Set(ctx, fmt.Sprintf("team:%d", team.ID), data, 1*time.Hour)
 	}
-
 	pipe.Expire(ctx, key, time.Minute)
 	_, err := pipe.Exec(ctx)
 	return err
