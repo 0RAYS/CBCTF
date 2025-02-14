@@ -40,7 +40,7 @@ func GetCachedRanking(contestID uint, limit int64, offset int64) ([]model.Team, 
 	}
 	key := fmt.Sprintf("%d:rank", contestID)
 	ctx := context.Background()
-	results, err := RDB.ZRevRangeWithScores(ctx, key, offset, limit).Result()
+	results, err := RDB.ZRangeWithScores(ctx, key, offset, limit).Result()
 	if err != nil {
 		return nil, err
 	}
