@@ -9,6 +9,10 @@ import (
 )
 
 func SaveTraffic(tx *gorm.DB, docker model.Docker) (bool, string) {
+	res := tx.Model(&model.Traffic{}).Where("path = ?", docker.TrafficPath()).Find(&model.Traffic{}).Limit(1)
+	if res.RowsAffected > 0 || res.Error != nil {
+		return true, "Success"
+	}
 	connections, ok, msg := traffic.ReadPcap(docker.TrafficPath())
 	if !ok {
 		if docker.DeletedAt.Valid && msg == "PcapNotFound" {
