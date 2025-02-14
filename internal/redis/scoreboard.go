@@ -27,7 +27,7 @@ func UpdateRanking(contestID uint, teams []model.Team) error {
 			Member: team.ID,
 		})
 		data, _ := json.Marshal(team)
-		pipe.Set(ctx, fmt.Sprintf("team:%d", team.ID), data, 1*time.Hour)
+		pipe.Set(ctx, fmt.Sprintf("team:%d", team.ID), data, 5*time.Minute)
 	}
 	pipe.Expire(ctx, key, time.Minute)
 	_, err := pipe.Exec(ctx)
