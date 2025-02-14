@@ -137,6 +137,7 @@ func Init() *gin.Engine {
 					adminContainer.POST("/stop", StopContainer)
 
 					adminTraffic := adminContainer.Group("/traffic")
+					adminTraffic.GET("/download", DownloadTraffic)
 					adminTraffic.POST("/load", LoadTraffic)
 					adminTraffic.GET("/show", GetTraffics)
 				}
