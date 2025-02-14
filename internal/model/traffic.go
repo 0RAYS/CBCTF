@@ -19,6 +19,7 @@ type Traffic struct {
 	ContestID   uint           `json:"contest"`
 	ChallengeID string         `json:"challenge"`
 	DockerID    uint           `json:"docker"`
+	Path        string         `json:"path"`
 	CreatedAt   time.Time      `json:"-"`
 	UpdatedAt   time.Time      `json:"-"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
@@ -37,5 +38,6 @@ func InitTraffic(conn traffic.Connection, docker Docker) Traffic {
 		ContestID:   docker.ContestID,
 		ChallengeID: docker.ChallengeID,
 		DockerID:    docker.ID,
+		Path:        docker.TrafficPath(),
 	}
 }
