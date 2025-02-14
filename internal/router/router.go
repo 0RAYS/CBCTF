@@ -92,7 +92,7 @@ func Init() *gin.Engine {
 		{
 			adminSystem.GET("/status", SystemStatus)
 			adminSystem.GET("/config", SystemConfig)
-			adminSystem.POST("/update", SystemUpdate)
+			//adminSystem.POST("/update", SystemUpdate)
 		}
 
 		// 用户管理

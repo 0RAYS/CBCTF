@@ -2,7 +2,6 @@ package config
 
 import (
 	_ "embed"
-	"encoding/json"
 	"errors"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
@@ -101,29 +100,29 @@ func Init() {
 }
 
 // Save 保存配置，用于动态刷新配置
-func Save(env Config) error {
-	env.Backend = strings.TrimSuffix(env.Backend, "/")
-	env.Frontend = strings.TrimSuffix(env.Frontend, "/")
-	config := make(map[string]interface{})
-	data, err := json.Marshal(env)
-	if err != nil {
-		log.Panicf("Failed to marshal Env to JSON: %s", err)
-		return err
-	}
-	if err = json.Unmarshal(data, &config); err != nil {
-		log.Panicf("Failed to unmarshal JSON to map: %s", err)
-		return err
-	}
-	if err := viper.MergeConfigMap(config); err != nil {
-		log.Panicf("Failed to merge Env to viper: %s", err)
-		return err
-	}
-	if err := viper.WriteConfig(); err != nil {
-		log.Panicf("Failed to save config: %s", err)
-		return err
-	}
-	return nil
-}
+//func Save(env Config) error {
+//	env.Backend = strings.TrimSuffix(env.Backend, "/")
+//	env.Frontend = strings.TrimSuffix(env.Frontend, "/")
+//	config := make(map[string]interface{})
+//	data, err := json.Marshal(env)
+//	if err != nil {
+//		log.Panicf("Failed to marshal Env to JSON: %s", err)
+//		return err
+//	}
+//	if err = json.Unmarshal(data, &config); err != nil {
+//		log.Panicf("Failed to unmarshal JSON to map: %s", err)
+//		return err
+//	}
+//	if err := viper.MergeConfigMap(config); err != nil {
+//		log.Panicf("Failed to merge Env to viper: %s", err)
+//		return err
+//	}
+//	if err := viper.WriteConfig(); err != nil {
+//		log.Panicf("Failed to save config: %s", err)
+//		return err
+//	}
+//	return nil
+//}
 
 // Watch 监听配置文件变化
 func Watch(onChange func()) {
