@@ -57,11 +57,11 @@ func GetDockers(tx *gorm.DB, deleted bool) ([]model.Docker, bool, string) {
 // GetDockerByID 根据 ID 获取 Docker
 func GetDockerByID(tx *gorm.DB, id uint, deleted bool) (model.Docker, bool, string) {
 	var docker model.Docker
-	res := tx.Model(model.Docker{})
+	res := tx.Model(model.Docker{}).Where("id = ?", id)
 	if deleted {
 		res = res.Unscoped()
 	}
-	res = res.Where("id = ?", id).Find(&docker).Limit(1)
+	res = res.Find(&docker).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.Docker{}, false, "DockerNotFound"
 	}
