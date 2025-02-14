@@ -4,6 +4,7 @@
 .idea
 logs
 uploads
+dist
 config.yml
 build.bat
 *.conf
