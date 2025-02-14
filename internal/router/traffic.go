@@ -4,8 +4,10 @@ import (
 	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
 	"CBCTF/internal/middleware"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"os"
 )
 
 func LoadTraffic(ctx *gin.Context) {
@@ -34,4 +36,13 @@ func GetTraffics(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"traffics": traffics, "count": count}})
+}
+
+func DownloadTraffic(ctx *gin.Context) {
+	docker := middleware.GetContainer(ctx)
+	if _, err := os.Stat(docker.TrafficPath()); errors.Is(err, os.ErrNotExist) {
+		ctx.JSON(http.StatusOK, gin.H{"msg": "FileNotFound", "data": nil})
+		return
+	}
+	ctx.File(docker.TrafficPath())
 }
