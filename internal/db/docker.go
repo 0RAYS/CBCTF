@@ -75,7 +75,7 @@ func GetDockerByTeamID(tx *gorm.DB, teamID uint, limit, offset int, deleted bool
 	if offset <= 0 {
 		offset = -1
 	}
-	res := tx.Model(model.Docker{})
+	res := tx.Model(model.Docker{}).Where("team_id = ?", teamID)
 	if deleted {
 		res = res.Unscoped()
 	}
@@ -85,7 +85,7 @@ func GetDockerByTeamID(tx *gorm.DB, teamID uint, limit, offset int, deleted bool
 		log.Logger.Warningf("Failed to count Dockers: %s", err)
 		return nil, -1, false, "UnknownError"
 	}
-	res = res.Limit(limit).Offset(offset).Where("team_id = ?", teamID).Find(&dockers)
+	res = res.Limit(limit).Offset(offset).Find(&dockers)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Dockers: %s", res.Error)
 		return nil, -1, false, "GetDockersError"
