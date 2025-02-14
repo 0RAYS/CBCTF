@@ -19,8 +19,7 @@ func UpdateRanking(contestID uint, teams []model.Team) error {
 	pipe := RDB.Pipeline()
 	pipe.Del(ctx, key)
 
-	for i := len(teams) - 1; i >= 0; i-- {
-		team := teams[i]
+	for _, team := range teams {
 		timestamp := team.Last.UnixNano()
 		compositeScore := float64(team.Score)*1e13 + float64(1e18-timestamp)
 		pipe.ZAdd(ctx, key, &redis.Z{
