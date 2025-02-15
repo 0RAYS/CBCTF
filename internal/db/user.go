@@ -186,7 +186,7 @@ func GetUsers(tx *gorm.DB, limit int, offset int, all bool, preloadL ...bool) ([
 	}
 	if users, ok := redis.GetUsersCache(redis.GetType(preload, nest)); ok {
 		limit, offset = utils.TidyPaginate(len(users), limit, offset)
-		return users[limit:offset], count, true, "Success"
+		return users[offset:limit], count, true, "Success"
 	}
 	if preload {
 		if nest {
@@ -204,6 +204,6 @@ func GetUsers(tx *gorm.DB, limit int, offset int, all bool, preloadL ...bool) ([
 		}
 	}()
 	limit, offset = utils.TidyPaginate(len(users), limit, offset)
-	return users[limit:offset], count, true, "Success"
+	return users[offset:limit], count, true, "Success"
 
 }

@@ -51,5 +51,5 @@ func GetRanking(contestID uint, args ...int) ([]model.Team, bool, string) {
 	}
 	go UpdateRanking(DB, contestID)
 	limit, offset = utils.TidyPaginate(len(teams), limit, offset)
-	return teams[limit:offset], true, "Success"
+	return teams[offset:limit], true, "Success"
 }
