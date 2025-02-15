@@ -15,10 +15,10 @@ func GetRank(ctx *gin.Context) {
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	teams, ok, msg := db.GetRanking(contest.ID, form.Limit, form.Offset)
+	teams, count, ok, msg := db.GetRanking(contest.ID, form.Limit, form.Offset)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": teams})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"count": count, "teams": teams}})
 }
