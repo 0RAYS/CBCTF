@@ -117,6 +117,7 @@ func Init() *gin.Engine {
 			adminContest.POST("/delete", DeleteContest)
 			adminContest.POST("/avatar", UploadAvatar(model.Contest{}))
 			adminContest.GET("/submissions", GetSubmissions)
+			adminContest.GET("/rank", GetRank)
 
 			// 比赛队伍管理
 			adminContest.GET("/team/list", GetTeams)
