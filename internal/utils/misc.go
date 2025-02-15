@@ -84,5 +84,5 @@ func TidyPaginate(length, limit, offset int) (int, int) {
 	if end > length {
 		end = length
 	}
-	return offset, end
+	return end, limit
 }
