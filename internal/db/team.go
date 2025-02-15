@@ -271,7 +271,7 @@ func GetTeams(tx *gorm.DB, contestID uint, limit int, offset int, all bool, prel
 	}
 	if teams, ok := redis.GetTeamsCache(redis.GetType(preload, nest)); ok {
 		limit, offset = utils.TidyPaginate(len(teams), limit, offset)
-		return teams[limit:offset], count, true, "Success"
+		return teams[offset:limit], count, true, "Success"
 	}
 	if preload {
 		if nest {
@@ -289,5 +289,5 @@ func GetTeams(tx *gorm.DB, contestID uint, limit int, offset int, all bool, prel
 		}
 	}()
 	limit, offset = utils.TidyPaginate(len(teams), limit, offset)
-	return teams[limit:offset], count, true, "Success"
+	return teams[offset:limit], count, true, "Success"
 }
