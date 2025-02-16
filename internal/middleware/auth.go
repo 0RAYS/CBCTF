@@ -130,6 +130,7 @@ func CheckVerified(ctx *gin.Context) {
 	ctx.Next()
 }
 
+// CheckBanned 检查队伍是否被封禁
 func CheckBanned(ctx *gin.Context) {
 	team := GetTeam(ctx)
 	if team.Banned {

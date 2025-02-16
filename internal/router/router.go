@@ -60,8 +60,8 @@ func Init() *gin.Engine {
 		contestTeam.POST("/leave", middleware.CheckVerified, LeaveTeam)
 
 		// 比赛题目
-		contest.GET("/challenge/list", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, GetUsages)
-		contestChallenge := contest.Group("/challenge/:challengeID", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.SetChallenge)
+		contest.GET("/challenge/list", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.CheckRunning, GetUsages)
+		contestChallenge := contest.Group("/challenge/:challengeID", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.CheckRunning, middleware.SetChallenge)
 		{
 			contestChallenge.GET("/status", ChallengeStatus)
 			contestChallenge.POST("/init", InitChallenge(false))
