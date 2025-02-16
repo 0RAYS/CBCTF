@@ -4,10 +4,7 @@ import (
 	"CBCTF/internal/form"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/redis"
 	"CBCTF/internal/utils"
-	"context"
-	"errors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -23,11 +20,11 @@ func CreateContest(tx *gorm.DB, form form.CreateContestForm) (model.Contest, boo
 		log.Logger.Warningf("Failed to create contest: %s", res.Error)
 		return model.Contest{}, false, "CreateContestError"
 	}
-	go func() {
-		if err := redis.DelContestsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-			log.Logger.Warningf("Failed to delete contests cache: %s", err)
-		}
-	}()
+	//go func() {
+	//	if err := redis.DelContestsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+	//		log.Logger.Warningf("Failed to delete contests cache: %s", err)
+	//	}
+	//}()
 	return contest, true, "Success"
 }
 
@@ -41,9 +38,9 @@ func GetContestByID(tx *gorm.DB, id uint, preloadL ...bool) (model.Contest, bool
 	if len(preloadL) > 1 {
 		nest = preloadL[1]
 	}
-	if contest, ok := redis.GetContestCache(id, redis.GetType(preload, nest)); ok {
-		return contest, true, "Success"
-	}
+	//if contest, ok := redis.GetContestCache(id, redis.GetType(preload, nest)); ok {
+	//	return contest, true, "Success"
+	//}
 	var contest model.Contest
 	res := tx.Model(&model.Contest{}).Where("id = ?", id)
 	if preload {
@@ -56,11 +53,11 @@ func GetContestByID(tx *gorm.DB, id uint, preloadL ...bool) (model.Contest, bool
 	if res.RowsAffected != 1 {
 		return model.Contest{}, false, "ContestNotFound"
 	}
-	go func() {
-		if err := redis.SetContestCache(contest, redis.GetType(preload, nest)); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-			log.Logger.Warningf("Failed to set contest cache: %s", err)
-		}
-	}()
+	//go func() {
+	//	if err := redis.SetContestCache(contest, redis.GetType(preload, nest)); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+	//		log.Logger.Warningf("Failed to set contest cache: %s", err)
+	//	}
+	//}()
 	return contest, true, "Success"
 }
 
@@ -78,14 +75,14 @@ func DeleteContest(tx *gorm.DB, contest model.Contest) (bool, string) {
 	if !ClearByID(tx, "contest_id", contest.ID) {
 		return false, "DeleteAssociatedDataError"
 	}
-	go func() {
-		if err := redis.DelContestCache(contest.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-			log.Logger.Warningf("Failed to delete contest cache: %s", err)
-		}
-		if err := redis.DelContestsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-			log.Logger.Warningf("Failed to delete contests cache: %s", err)
-		}
-	}()
+	//go func() {
+	//	if err := redis.DelContestCache(contest.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+	//		log.Logger.Warningf("Failed to delete contest cache: %s", err)
+	//	}
+	//	if err := redis.DelContestsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+	//		log.Logger.Warningf("Failed to delete contests cache: %s", err)
+	//	}
+	//}()
 	return true, "Success"
 }
 
@@ -97,14 +94,14 @@ func UpdateContest(tx *gorm.DB, id uint, updateData map[string]interface{}) (boo
 		log.Logger.Warningf("Failed to update contest: %v", res.Error)
 		return false, "UpdateContestError"
 	}
-	go func() {
-		if err := redis.DelContestCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-			log.Logger.Warningf("Failed to delete contest cache: %s", err)
-		}
-		if err := redis.DelContestsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-			log.Logger.Warningf("Failed to delete contests cache: %s", err)
-		}
-	}()
+	//go func() {
+	//	if err := redis.DelContestCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+	//		log.Logger.Warningf("Failed to delete contest cache: %s", err)
+	//	}
+	//	if err := redis.DelContestsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+	//		log.Logger.Warningf("Failed to delete contests cache: %s", err)
+	//	}
+	//}()
 	return true, "Success"
 }
 
@@ -135,10 +132,10 @@ func GetContests(tx *gorm.DB, limit int, offset int, all bool, preloadL ...bool)
 		log.Logger.Warningf("Failed to get contest count: %s", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
-	if contests, ok := redis.GetContestsCache(redis.GetType(preload, nest)); ok {
-		limit, offset = utils.TidyPaginate(len(contests), limit, offset)
-		return contests[offset:limit], count, true, "Success"
-	}
+	//if contests, ok := redis.GetContestsCache(redis.GetType(preload, nest)); ok {
+	//	limit, offset = utils.TidyPaginate(len(contests), limit, offset)
+	//	return contests[offset:limit], count, true, "Success"
+	//}
 	if preload {
 		if nest {
 			res = res.Preload("Teams.Users").Preload("Users.Contests").Preload("Users.Teams")
@@ -149,11 +146,11 @@ func GetContests(tx *gorm.DB, limit int, offset int, all bool, preloadL ...bool)
 		log.Logger.Warningf("Failed to get contests: %s", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
-	go func() {
-		if err := redis.SetContestsCache(contests, redis.GetType(preload, nest)); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-			log.Logger.Warningf("Failed to set contests cache: %s", err)
-		}
-	}()
+	//go func() {
+	//	if err := redis.SetContestsCache(contests, redis.GetType(preload, nest)); err != nil && !errors.Is(err, context.DeadlineExceeded) {
+	//		log.Logger.Warningf("Failed to set contests cache: %s", err)
+	//	}
+	//}()
 	limit, offset = utils.TidyPaginate(len(contests), limit, offset)
 	return contests[offset:limit], count, true, "Success"
 }
