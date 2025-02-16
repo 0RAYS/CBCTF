@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/redis"
 	"CBCTF/internal/utils"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 func UpdateRanking(tx *gorm.DB, contestID uint) (bool, string) {
@@ -49,7 +50,7 @@ func GetRanking(contestID uint, args ...int) ([]model.Team, int64, bool, string)
 		return teams, count, true, "Success"
 	}
 	var teams []model.Team
-	res = res.Order("score DESC, last ASC").Find(&teams)
+	res = res.Preload(clause.Associations).Order("score DESC, last ASC").Find(&teams)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get teams: %v", res.Error)
 		return nil, -1, false, "GetTeamError"
