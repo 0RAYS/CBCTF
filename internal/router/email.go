@@ -1,7 +1,6 @@
 package router
 
 import (
-	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
 	"CBCTF/internal/middleware"
@@ -39,7 +38,7 @@ func VerifyEmail(ctx *gin.Context) {
 		}
 		tx.Commit()
 	}
-	ctx.Redirect(http.StatusMovedPermanently, config.Env.Frontend)
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
 }
 
 func ActivateEmail(ctx *gin.Context) {
