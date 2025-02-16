@@ -253,10 +253,6 @@ func InitChallenge(reset bool) gin.HandlerFunc {
 		}
 		_ = redis.RecordChallengeInit(team.ID, middleware.GetChallenge(ctx).ID)
 		contest = middleware.GetContest(ctx)
-		if !contest.IsRunning() {
-			ctx.JSON(http.StatusOK, gin.H{"msg": contest.Status(), "data": nil})
-			return
-		}
 		usage, ok, msg = db.GetUsageBy2ID(DB, contest.ID, middleware.GetChallenge(ctx).ID)
 		if !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
