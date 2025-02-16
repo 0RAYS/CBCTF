@@ -12,7 +12,7 @@ func CreateSubmission(tx *gorm.DB, contest model.Contest, team model.Team, user 
 		return model.Submission{}, false, "AlreadySolved"
 	}
 	usage, ok, _ := GetUsageBy2ID(tx, contest.ID, challenge.ID)
-	if !ok || (usage.Attempt != 0 && usage.Attempt <= CountAttempts(tx, contest, team, challenge)) || !contest.IsRunning() {
+	if !ok || (usage.Attempt != 0 && usage.Attempt <= CountAttempts(tx, contest, team, challenge)) {
 		return model.Submission{}, false, "NotAllowSubmit"
 	}
 	if _, ok, msg := GetFlagBy3ID(tx, contest.ID, team.ID, challenge.ID); !ok {
