@@ -55,7 +55,7 @@ func (c Contest) IsNotStart() bool {
 }
 
 func (c Contest) IsRunning() bool {
-	return (c.IsOver() && c.IsNotStart()) == false
+	return (c.IsOver() || c.IsNotStart()) != true
 }
 
 func (c Contest) Status() string {
