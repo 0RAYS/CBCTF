@@ -44,5 +44,5 @@ func GetSubmissions(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"submissions": submissions, "count": count}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"submissions": &submissions, "count": count}})
 }

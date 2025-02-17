@@ -35,7 +35,7 @@ func GetTraffics(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"traffics": traffics, "count": count}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"traffics": &traffics, "count": count}})
 }
 
 func DownloadTraffic(ctx *gin.Context) {

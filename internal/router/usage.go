@@ -24,7 +24,7 @@ func AddUsage(ctx *gin.Context) {
 	} else {
 		tx.Commit()
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": usages})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": &usages})
 }
 
 func GetUsages(ctx *gin.Context) {
@@ -33,7 +33,7 @@ func GetUsages(ctx *gin.Context) {
 		ok     bool
 		msg    string
 		all    = middleware.GetRole(ctx) == "admin"
-		DB 	   = db.DB.WithContext(ctx)
+		DB     = db.DB.WithContext(ctx)
 	)
 	usages, ok, msg = db.GetUsageByContestID(DB, middleware.GetContest(ctx).ID, all)
 	if !ok {
@@ -64,7 +64,7 @@ func GetUsages(ctx *gin.Context) {
 		}
 		challenges = append(challenges, tmp)
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": challenges})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": &challenges})
 }
 
 func RemoveUsage(ctx *gin.Context) {
