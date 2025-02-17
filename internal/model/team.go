@@ -29,14 +29,14 @@ type Team struct {
 	DeletedAt gorm.DeletedAt `gorm:"index;index:idx_name_contest_id_deleted,unique" json:"-"`
 }
 
-func (m *Team) MarshalJSON() ([]byte, error) {
+func (m Team) MarshalJSON() ([]byte, error) {
 	type Tmp Team // 定义一个别名以避免递归调用
 	return json.Marshal(&struct {
 		Tmp
 		Users  int    `json:"users"`
 		Avatar string `json:"avatar"`
 	}{
-		Tmp:    Tmp(*m), // 使用解引用将指针转换为结构体
+		Tmp:    Tmp(m),
 		Users:  len(m.Users),
 		Avatar: fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(m.Avatar, "/")),
 	})
