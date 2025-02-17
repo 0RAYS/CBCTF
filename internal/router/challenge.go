@@ -33,11 +33,12 @@ func CreateChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "CreateDirError", "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": challenge})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &challenge})
 }
 
 func GetChallenge(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": middleware.GetContest(ctx)})
+	challenge := middleware.GetChallenge(ctx)
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &challenge})
 }
 
 func GetChallenges(ctx *gin.Context) {
@@ -55,7 +56,7 @@ func GetChallenges(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "challenges": challenges}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "challenges": &challenges}})
 }
 
 func GetAttachment(ctx *gin.Context) {
@@ -83,7 +84,7 @@ func GetChallengeFiles(ctx *gin.Context) {
 	for _, file := range dir {
 		files = append(files, file.Name())
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": files})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &files})
 }
 
 func GetCategories(ctx *gin.Context) {
@@ -97,7 +98,7 @@ func GetCategories(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": categories})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &categories})
 }
 
 func UpdateChallenge(ctx *gin.Context) {

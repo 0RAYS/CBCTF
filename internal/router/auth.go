@@ -28,7 +28,7 @@ func Register(ctx *gin.Context) {
 	if Token, err := utils.Generate(user.ID, user.Name, "user"); err == nil {
 		log.Logger.Infof("%s | %s:%d register", trace, user.Name, user.ID)
 		ctx.Writer.Header().Set("Authorization", "Bearer "+Token)
-		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": user})
+		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": &user})
 		return
 	} else {
 		msg = "UnknownError"
@@ -54,7 +54,7 @@ func Login(ctx *gin.Context) {
 	if Token, err := utils.Generate(user.ID, user.Name, "user"); err == nil {
 		log.Logger.Infof("%s | %s:%d login", trace, user.Name, user.ID)
 		ctx.Writer.Header().Set("Authorization", "Bearer "+Token)
-		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": user})
+		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": &user})
 		return
 	} else {
 		msg = "UnknownError"
@@ -80,7 +80,7 @@ func AdminLogin(ctx *gin.Context) {
 	if Token, err := utils.Generate(admin.ID, admin.Name, "admin"); err == nil {
 		log.Logger.Infof("%s | %s:%d login", trace, admin.Name, admin.ID)
 		ctx.Writer.Header().Set("Authorization", "Bearer "+Token)
-		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": admin})
+		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": &admin})
 		return
 	} else {
 		msg = "UnknownError"

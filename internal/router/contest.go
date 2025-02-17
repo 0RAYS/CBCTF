@@ -10,7 +10,8 @@ import (
 )
 
 func GetContest(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": middleware.GetContest(ctx)})
+	contest := middleware.GetContest(ctx)
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &contest})
 }
 
 func GetContestCaptcha(ctx *gin.Context) {
@@ -32,7 +33,7 @@ func GetContests(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "contests": contests}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "contests": &contests}})
 }
 
 func CreateContest(ctx *gin.Context) {
@@ -49,7 +50,7 @@ func CreateContest(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": contest})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": &contest})
 }
 
 func UpdateContest(ctx *gin.Context) {

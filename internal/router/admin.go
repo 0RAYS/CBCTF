@@ -11,7 +11,8 @@ import (
 )
 
 func GetAdmin(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": middleware.GetSelf(ctx).(model.Admin)})
+	admin := middleware.GetSelf(ctx).(model.Admin)
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &admin})
 }
 
 func GetAdmins(ctx *gin.Context) {
@@ -20,7 +21,7 @@ func GetAdmins(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "admins": admins}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "admins": &admins}})
 }
 
 func CreateAdmin(ctx *gin.Context) {
@@ -37,7 +38,7 @@ func CreateAdmin(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": admin})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": &admin})
 }
 
 func AdminChangePassword(ctx *gin.Context) {

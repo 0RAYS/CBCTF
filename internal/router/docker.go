@@ -38,7 +38,7 @@ func GetContainers(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"dockers": dockers, "count": count}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"dockers": &dockers, "count": count}})
 }
 
 func StartContainer(ctx *gin.Context) {

@@ -11,7 +11,8 @@ import (
 )
 
 func GetTeam(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": middleware.GetTeam(ctx)})
+	team := middleware.GetTeam(ctx)
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &team})
 }
 
 func GetTeamCaptcha(ctx *gin.Context) {
@@ -33,7 +34,7 @@ func GetTeams(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "teams": teams}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "teams": &teams}})
 }
 
 func JoinTeam(ctx *gin.Context) {
@@ -82,7 +83,7 @@ func CreateTeam(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": team})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": &team})
 }
 
 func LeaveTeam(ctx *gin.Context) {
