@@ -26,6 +26,7 @@ func UpdateRanking(contestID uint, teams []model.Team) error {
 			Score:  compositeScore,
 			Member: team.ID,
 		})
+		// 传递指针或者值都可以
 		data, _ := json.Marshal(team)
 		pipe.Set(ctx, fmt.Sprintf("team:%d", team.ID), data, 5*time.Minute)
 	}
