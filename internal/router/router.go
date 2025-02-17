@@ -53,6 +53,7 @@ func Init() *gin.Engine {
 		contestTeam.GET("/info", GetTeam)
 		contestTeam.GET("/captcha", GetTeamCaptcha)
 		contestTeam.GET("/list", GetTeammates)
+		contestTeam.POST("/captcha", UpdateCaptcha)
 		contestTeam.POST("/update", middleware.CheckVerified, middleware.CheckCaptain, UpdateTeam)
 		contestTeam.POST("/avatar", middleware.CheckVerified, middleware.CheckCaptain, UploadAvatar(model.Team{}))
 		contestTeam.POST("/delete", middleware.CheckVerified, middleware.CheckCaptain, DeleteTeam)

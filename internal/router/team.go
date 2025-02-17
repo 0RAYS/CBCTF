@@ -104,7 +104,7 @@ func UpdateTeam(ctx *gin.Context) {
 		team model.Team
 		msg  string
 		data map[string]interface{}
-		DB  = db.DB.WithContext(ctx)
+		DB   = db.DB.WithContext(ctx)
 	)
 	team = middleware.GetTeam(ctx)
 	if middleware.GetRole(ctx) == "admin" {
@@ -191,4 +191,17 @@ func KickMember(ctx *gin.Context) {
 
 func GetTeammates(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": middleware.GetTeam(ctx).Users})
+}
+
+func UpdateCaptcha(ctx *gin.Context) {
+	captcha := utils.UUID()
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := db.UpdateTeam(tx, middleware.GetTeam(ctx).ID, map[string]interface{}{"captcha": captcha})
+	if !ok {
+		tx.Rollback()
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	tx.Commit()
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": captcha})
 }
