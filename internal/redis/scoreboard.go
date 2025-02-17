@@ -20,8 +20,8 @@ func UpdateRanking(contestID uint, teams []model.Team) error {
 	pipe.Del(ctx, key)
 
 	for _, team := range teams {
-		timestamp := team.Last.UnixNano()
-		compositeScore := float64(team.Score)*1e13 + float64(1e18-timestamp)
+		timestamp := team.Last.UnixMilli()
+		compositeScore := float64(team.Score)*1e13 + float64(1e13-timestamp)
 		pipe.ZAdd(ctx, key, &redis.Z{
 			Score:  compositeScore,
 			Member: team.ID,
@@ -40,7 +40,7 @@ func GetCachedRanking(contestID uint, limit int64, offset int64) ([]model.Team, 
 	}
 	key := fmt.Sprintf("%d:rank", contestID)
 	ctx := context.Background()
-	results, err := RDB.ZRangeWithScores(ctx, key, offset, limit).Result()
+	results, err := RDB.ZRevRangeWithScores(ctx, key, offset, limit).Result()
 	if err != nil {
 		return nil, err
 	}
