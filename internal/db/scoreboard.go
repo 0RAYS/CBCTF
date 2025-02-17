@@ -16,7 +16,7 @@ func UpdateRanking(tx *gorm.DB, contestID uint) (bool, string) {
 	}
 	var teams []model.Team
 	res := tx.Model(&model.Team{}).Where("contest_id = ? AND banned = ?", contestID, false).
-		Order("score DESC, last ASC").Find(&teams)
+		Preload(clause.Associations).Order("score DESC, last ASC").Find(&teams)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get teams: %v", res.Error)
 		return false, "GetTeamError"
