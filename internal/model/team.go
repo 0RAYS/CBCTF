@@ -17,7 +17,7 @@ type Team struct {
 	ContestID uint           `gorm:"index:idx_name_contest_id_deleted,unique;not null" json:"contest_id"`
 	Desc      string         `json:"desc"`
 	Captcha   string         `json:"-"`
-	Avatar    string         `json:"-"`
+	Avatar    string         `json:"avatar"`
 	Score     int64          `json:"score" gorm:"default:0"`
 	Last      time.Time      `json:"last"`
 	Banned    bool           `gorm:"default:false" json:"banned"`

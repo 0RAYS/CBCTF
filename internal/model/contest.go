@@ -15,7 +15,7 @@ type Contest struct {
 	Name      string         `gorm:"index:idx_name_deleted,unique;not null" json:"name"`
 	Desc      string         `json:"desc"`
 	Captcha   string         `json:"-"`
-	Avatar    string         `json:"-"`
+	Avatar    string         `json:"avatar"`
 	Prefix    string         `json:"prefix" gorm:"default:'CBCTF'"`
 	Size      int            `json:"size"`
 	Start     time.Time      `json:"start"`
