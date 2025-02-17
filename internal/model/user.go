@@ -29,7 +29,7 @@ type User struct {
 	DeletedAt gorm.DeletedAt `gorm:"index;index:idx_name_deleted,unique;index:idx_email_deleted,unique" json:"-"`
 }
 
-func (m User) MarshalJSON() ([]byte, error) {
+func (m *User) MarshalJSON() ([]byte, error) {
 	type Tmp User // 定义一个别名以避免递归调用
 	return json.Marshal(&struct {
 		Tmp
@@ -37,7 +37,7 @@ func (m User) MarshalJSON() ([]byte, error) {
 		Teams    int    `json:"teams"`
 		Avatar   string `json:"avatar"`
 	}{
-		Tmp:      Tmp(m),
+		Tmp:      Tmp(*m),
 		Contests: len(m.Contests),
 		Teams:    len(m.Teams),
 		Avatar:   fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(m.Avatar, "/")),
