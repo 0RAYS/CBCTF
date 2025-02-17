@@ -22,14 +22,14 @@ type Admin struct {
 	DeletedAt gorm.DeletedAt `gorm:"index;index:idx_name_deleted,unique;index:idx_email_deleted,unique" json:"-"`
 }
 
-func (m Admin) MarshalJSON() ([]byte, error) {
+func (a *Admin) MarshalJSON() ([]byte, error) {
 	type Tmp Admin
 	return json.Marshal(&struct {
-		Tmp
+		*Tmp
 		Avatar string `json:"avatar"`
 	}{
-		Tmp:    Tmp(m),
-		Avatar: fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(m.Avatar, "/")),
+		Tmp:    (*Tmp)(a),
+		Avatar: fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(a.Avatar, "/")),
 	})
 }
 

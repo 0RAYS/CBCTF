@@ -29,31 +29,31 @@ type Team struct {
 	DeletedAt gorm.DeletedAt `gorm:"index;index:idx_name_contest_id_deleted,unique" json:"-"`
 }
 
-func (m Team) MarshalJSON() ([]byte, error) {
+func (t *Team) MarshalJSON() ([]byte, error) {
 	type Tmp Team // 定义一个别名以避免递归调用
 	return json.Marshal(&struct {
-		Tmp
+		*Tmp
 		Users  int    `json:"users"`
 		Avatar string `json:"avatar"`
 	}{
-		Tmp:    Tmp(m),
-		Users:  len(m.Users),
-		Avatar: fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(m.Avatar, "/")),
+		Tmp:    (*Tmp)(t),
+		Users:  len(t.Users),
+		Avatar: fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(t.Avatar, "/")),
 	})
 }
 
-func (m *Team) UnmarshalJSON(data []byte) error {
-	type Alias Team
+func (t *Team) UnmarshalJSON(data []byte) error {
+	type Tmp Team
 	aux := &struct {
-		*Alias
+		*Tmp
 		Avatar string `json:"avatar"`
 	}{
-		Alias: (*Alias)(m),
+		Tmp: (*Tmp)(t),
 	}
 	if err := json.Unmarshal(data, &aux); err != nil {
 		return err
 	}
-	m.Avatar = strings.TrimPrefix(aux.Avatar, config.Env.Backend)
+	t.Avatar = strings.TrimPrefix(aux.Avatar, config.Env.Backend)
 	return nil
 }
 

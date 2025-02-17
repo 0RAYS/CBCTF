@@ -29,16 +29,16 @@ type Contest struct {
 	DeletedAt gorm.DeletedAt `gorm:"index;index:idx_name_deleted,unique;" json:"-"`
 }
 
-func (c Contest) MarshalJSON() ([]byte, error) {
+func (c *Contest) MarshalJSON() ([]byte, error) {
 	type Tmp Contest // 定义一个别名以避免递归调用
 	return json.Marshal(&struct {
-		Tmp
+		*Tmp
 		Users    int    `json:"users"`
 		Teams    int    `json:"teams"`
 		Avatar   string `json:"avatar"`
 		Duration int64  `json:"duration"`
 	}{
-		Tmp:      Tmp(c),
+		Tmp:      (*Tmp)(c),
 		Users:    len(c.Users),
 		Teams:    len(c.Teams),
 		Avatar:   fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(c.Avatar, "/")),
@@ -46,19 +46,19 @@ func (c Contest) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (c Contest) IsOver() bool {
+func (c *Contest) IsOver() bool {
 	return time.Now().After(c.Start.Add(c.Duration))
 }
 
-func (c Contest) IsNotStart() bool {
+func (c *Contest) IsNotStart() bool {
 	return time.Now().Before(c.Start)
 }
 
-func (c Contest) IsRunning() bool {
+func (c *Contest) IsRunning() bool {
 	return (c.IsOver() || c.IsNotStart()) != true
 }
 
-func (c Contest) Status() string {
+func (c *Contest) Status() string {
 	if c.IsOver() {
 		return "ContestIsOver"
 	}
