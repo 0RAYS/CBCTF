@@ -150,7 +150,7 @@ func UploadAvatar(v interface{}) func(ctx *gin.Context) {
 		case model.Admin:
 			ok, msg = db.UpdateAdmin(tx, middleware.GetSelfID(ctx), map[string]interface{}{"avatar": path})
 		case model.User:
-			ok, msg = db.UpdateUser(tx, middleware.GetSelfID(ctx), map[string]interface{}{"avatar": path})
+			ok, msg = db.UpdateUser(tx, middleware.GetUser(ctx).ID, map[string]interface{}{"avatar": path})
 		case model.Contest:
 			ok, msg = db.UpdateContest(tx, middleware.GetContest(ctx).ID, map[string]interface{}{"avatar": path})
 		case model.Team:
