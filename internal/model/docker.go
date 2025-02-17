@@ -26,26 +26,26 @@ type Docker struct {
 	DeletedAt     gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
-func (d Docker) MarshalJSON() ([]byte, error) {
+func (d *Docker) MarshalJSON() ([]byte, error) {
 	type Tmp Docker // 定义一个别名以避免递归调用
 	return json.Marshal(&struct {
 		Tmp
 		Duration int64 `json:"duration"`
 	}{
-		Tmp:      Tmp(d),
+		Tmp:      Tmp(*d),
 		Duration: int64(d.Duration.Seconds()),
 	})
 }
 
-func (d Docker) TrafficPath() string {
+func (d *Docker) TrafficPath() string {
 	return fmt.Sprintf("%s/traffic/%s/%d/%d.pcap", config.Env.Gin.Upload.Path, d.ChallengeID, d.TeamID, d.ID)
 }
 
-func (d Docker) RemoteAddr() string {
+func (d *Docker) RemoteAddr() string {
 	return fmt.Sprintf("%s:%d", d.IP, d.Port)
 }
 
-func (d Docker) Remaining() time.Duration {
+func (d *Docker) Remaining() time.Duration {
 	return d.Start.Add(d.Duration).Sub(time.Now())
 }
 
