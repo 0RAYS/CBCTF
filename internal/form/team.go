@@ -11,7 +11,6 @@ type CreateTeamForm struct {
 type UpdateTeamForm struct {
 	Name      *string `form:"name" json:"name"`
 	Desc      *string `form:"desc" json:"desc"`
-	Captcha   *string `form:"captcha" json:"captcha"`
 	CaptainID *uint   `form:"captain_id" json:"captain_id"`
 }
 
