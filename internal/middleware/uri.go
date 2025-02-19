@@ -202,3 +202,31 @@ func GetContainer(ctx *gin.Context) model.Docker {
 		return container.(model.Docker)
 	}
 }
+
+func SetNotice(ctx *gin.Context) {
+	type noticeIDUri struct {
+		NoticeID uint `uri:"noticeID" binding:"required"`
+	}
+	var noticeID noticeIDUri
+	if err := ctx.ShouldBindUri(&noticeID); err != nil {
+		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.Abort()
+		return
+	}
+	notice, ok, msg := db.GetNoticeByID(db.DB.WithContext(ctx), noticeID.NoticeID)
+	if !ok {
+		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.Abort()
+		return
+	}
+	ctx.Set("Notice", notice)
+	ctx.Next()
+}
+
+func GetNotice(ctx *gin.Context) model.Notice {
+	if notice, ok := ctx.Get("Notice"); !ok {
+		return model.Notice{}
+	} else {
+		return notice.(model.Notice)
+	}
+}
