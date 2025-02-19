@@ -1,14 +1,14 @@
 package db
 
 import (
-	"CBCTF/internal/form"
+	f "CBCTF/internal/form"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"gorm.io/gorm"
 )
 
-func CreateNotice(tx *gorm.DB, contest model.Contest, f form.CreateNoticeForm) (model.Notice, bool, string) {
-	notice := model.InitNotice(contest.ID, f)
+func CreateNotice(tx *gorm.DB, contest model.Contest, form f.CreateNoticeForm) (model.Notice, bool, string) {
+	notice := model.InitNotice(contest.ID, form)
 	res := tx.Model(&model.Notice{}).Create(&notice)
 	if res.Error != nil {
 		return model.Notice{}, false, "CreateNoticeError"
