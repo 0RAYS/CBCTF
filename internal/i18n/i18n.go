@@ -73,6 +73,12 @@ var resp = map[string]map[string]interface{}{
 	"ContestIsOver":      {"zh-CN": "赛事已结束", "en-US": "Contest is over", "code": 400},
 	"ContestIsRunning":   {"zh-CN": "赛事进行中", "en-US": "Contest is running", "code": 400},
 
+	"CreateNoticeError": {"zh-CN": "创建公告失败", "en-US": "Failed to create notice", "code": 500},
+	"DeleteNoticeError": {"zh-CN": "删除公告失败", "en-US": "Failed to delete notice", "code": 500},
+	"UpdateNoticeError": {"zh-CN": "更新公告失败", "en-US": "Failed to update notice", "code": 500},
+	"NoticeNotFound":    {"zh-CN": "公告不存在", "en-US": "Notice not found", "code": 404},
+	"GetNoticesError":   {"zh-CN": "获取公告失败", "en-US": "Failed to get notices", "code": 500},
+
 	"CreateUsageError": {"zh-CN": "添加题目到比赛失败", "en-US": "Failed to add challenge to contest", "code": 500},
 	"GetUsageError":    {"zh-CN": "获取题目失败", "en-US": "Failed to get challenge", "code": 500},
 	"UsageNotFound":    {"zh-CN": "题目不存在", "en-US": "Challenge not found", "code": 404},

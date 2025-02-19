@@ -60,6 +60,12 @@ func Init() *gin.Engine {
 		contestTeam.POST("/kick", middleware.CheckVerified, middleware.CheckCaptain, KickMember)
 		contestTeam.POST("/leave", middleware.CheckVerified, LeaveTeam)
 
+		// 比赛公告
+		{
+			contest.GET("/notice/list", GetNotices)
+			contest.GET("/notice/:noticeID/info", middleware.SetNotice, GetNotice)
+		}
+
 		// 比赛题目
 		contest.GET("/challenge/list", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.CheckRunning, GetUsages)
 		contestChallenge := contest.Group("/challenge/:challengeID", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.CheckRunning, middleware.SetChallenge)
@@ -143,6 +149,16 @@ func Init() *gin.Engine {
 					adminTraffic.POST("/load", LoadTraffic)
 					adminTraffic.GET("/show", GetTraffics)
 				}
+			}
+
+			// 比赛公告管理
+			adminContest.GET("/notice/list", GetNotices)
+			adminContest.POST("/notice/create", CreateNotice)
+			adminContestNotice := adminContest.Group("/notice/:noticeID", middleware.SetNotice)
+			{
+				adminContestNotice.GET("/info", GetNotice)
+				adminContestNotice.POST("/update", UpdateNotice)
+				adminContestNotice.POST("/delete", DeleteNotice)
 			}
 
 			// 比赛题目管理

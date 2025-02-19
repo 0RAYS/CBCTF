@@ -24,6 +24,7 @@ type Contest struct {
 	Hidden    bool           `gorm:"default:false" json:"hidden"`
 	Teams     []*Team        `json:"-"`
 	Users     []*User        `gorm:"many2many:user_contests;" json:"-"`
+	Notices   []*Notice      `json:"-"`
 	CreatedAt time.Time      `json:"-"`
 	UpdatedAt time.Time      `json:"-"`
 	DeletedAt gorm.DeletedAt `gorm:"index;index:idx_name_deleted,unique;" json:"-"`
@@ -35,12 +36,14 @@ func (c *Contest) MarshalJSON() ([]byte, error) {
 		*Tmp
 		Users    int    `json:"users"`
 		Teams    int    `json:"teams"`
+		Notices  int    `json:"notices"`
 		Avatar   string `json:"avatar"`
 		Duration int64  `json:"duration"`
 	}{
 		Tmp:      (*Tmp)(c),
 		Users:    len(c.Users),
 		Teams:    len(c.Teams),
+		Notices:  len(c.Notices),
 		Avatar:   fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(c.Avatar, "/")),
 		Duration: int64(c.Duration.Seconds()),
 	})
