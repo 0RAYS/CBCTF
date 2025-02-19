@@ -1,7 +1,7 @@
 package model
 
 import (
-	"CBCTF/internal/form"
+	f "CBCTF/internal/form"
 	"gorm.io/gorm"
 	"time"
 )
@@ -16,10 +16,10 @@ type Notice struct {
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
-func InitNotice(contestID uint, f form.CreateNoticeForm) Notice {
+func InitNotice(contestID uint, form f.CreateNoticeForm) Notice {
 	return Notice{
-		Title:     f.Title,
-		Content:   f.Content,
+		Title:     form.Title,
+		Content:   form.Content,
 		ContestID: contestID,
 	}
 }
