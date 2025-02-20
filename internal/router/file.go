@@ -140,7 +140,7 @@ func UploadAvatar(v interface{}) func(ctx *gin.Context) {
 				ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
 				return
 			}
-			record, ok, msg = db.RecordFile(tx, path, middleware.GetSelfID(ctx), file, hash, "image")
+			record, ok, msg = db.RecordFile(tx, path, middleware.GetSelfID(ctx), file, hash, model.Avatar)
 			if !ok {
 				tx.Rollback()
 				ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
