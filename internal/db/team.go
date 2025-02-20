@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/form"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -205,6 +206,7 @@ func GetTeams(tx *gorm.DB, contestID uint, limit int, offset int, all bool, prel
 		}
 		res = res.Preload(clause.Associations)
 	}
+	limit, offset = utils.TidyPaginate(int(count), limit, offset)
 	if res = res.Limit(limit).Offset(offset).Find(&teams); res.Error != nil {
 		log.Logger.Warningf("Failed to get teams: %s", res.Error)
 		return nil, 0, false, "GetTeamError"

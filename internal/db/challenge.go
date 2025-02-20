@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/form"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
 	"gorm.io/gorm"
 )
 
@@ -51,6 +52,7 @@ func GetChallenges(tx *gorm.DB, limit, offset, t int, category string) ([]model.
 		log.Logger.Warningf("Failed to get challenge count: %v", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
+	limit, offset = utils.TidyPaginate(int(count), limit, offset)
 	if res = res.Limit(limit).Offset(offset).Find(&challenges); res.Error != nil {
 		log.Logger.Warningf("Failed to get Challenges: %v", res.Error)
 		return nil, 0, false, "UnknownError"

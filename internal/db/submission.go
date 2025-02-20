@@ -3,6 +3,7 @@ package db
 import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
 	"gorm.io/gorm"
 )
 
@@ -70,6 +71,7 @@ func GetSubmissions(tx *gorm.DB, limit, offset int, teamIDL ...uint) ([]model.Su
 		log.Logger.Warningf("Failed to count submissions: %v", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
+	limit, offset = utils.TidyPaginate(int(count), limit, offset)
 	if res = res.Order("created_at desc").Limit(limit).Offset(offset).Find(&submissions); res.Error != nil {
 		log.Logger.Warningf("Failed to get submissions: %v", res.Error)
 		return nil, 0, false, "UnknownError"

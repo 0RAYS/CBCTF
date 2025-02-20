@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/form"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -108,6 +109,7 @@ func GetContests(tx *gorm.DB, limit int, offset int, all bool, preloadL ...bool)
 		}
 		res = res.Preload(clause.Associations)
 	}
+	limit, offset = utils.TidyPaginate(int(count), limit, offset)
 	if res = res.Order("Start desc").Limit(limit).Offset(offset).Find(&contests); res.Error != nil {
 		log.Logger.Warningf("Failed to get contests: %s", res.Error)
 		return nil, 0, false, "UnknownError"
