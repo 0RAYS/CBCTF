@@ -24,8 +24,7 @@ func Register(ctx *gin.Context) {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ok, msg = SendEmail(user)
-	if !ok {
+	if ok, msg = SendEmail(user); !ok {
 		tx.Rollback()
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
