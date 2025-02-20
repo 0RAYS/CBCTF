@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/model"
 	"bytes"
 	"context"
+	"encoding/base64"
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
@@ -86,7 +87,7 @@ func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, strin
 		log.Logger.Warning("Generator file not found, make sure the generator docker can work correctly")
 	}
 	// TODO 有 RCE 的风险，虽然是在容器内
-	commands = append(commands, fmt.Sprintf("python generator.py %d '%s'", flag.TeamID, flag.Value))
+	commands = append(commands, fmt.Sprintf("./run.sh %d %s", flag.TeamID, base64.StdEncoding.EncodeToString([]byte(flag.Value))))
 	for _, command := range commands {
 		log.Logger.Debugf("Executing command: %s", command)
 		var buf bytes.Buffer
