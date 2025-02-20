@@ -22,3 +22,13 @@ func GetRank(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"count": count, "teams": &teams}})
 }
+
+func GetRankDetail(ctx *gin.Context) {
+	contest := middleware.GetContest(ctx)
+	data, ok, msg := db.GetRankDetail(contest.ID)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
+}

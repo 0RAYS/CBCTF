@@ -29,23 +29,14 @@ func UpdateRanking(tx *gorm.DB, contestID uint) (bool, string) {
 	return true, "Success"
 }
 
-func GetRanking(contestID uint, args ...int) ([]model.Team, int64, bool, string) {
-	limit, offset := -1, 0
-	if len(args) > 0 {
-		if args[0] == 0 {
-			args[0] = -1
-		}
-		limit = args[0]
-	}
-	if len(args) > 1 {
-		offset = args[1]
-	}
+func GetRanking(contestID uint, limit, offset int) ([]model.Team, int64, bool, string) {
 	var count int64
 	res := DB.Model(&model.Team{}).Where("contest_id = ? AND banned = ?", contestID, false)
 	if err := res.Count(&count).Error; err != nil {
 		log.Logger.Warningf("Failed to count teams: %v", err)
 		return nil, -1, false, "UnknownError"
 	}
+	limit, offset = utils.TidyPaginate(int(count), limit, offset)
 	if teams, err := redis.GetCachedRanking(contestID, int64(limit), int64(offset)); err == nil && teams != nil {
 		return teams, count, true, "Success"
 	}
@@ -56,6 +47,29 @@ func GetRanking(contestID uint, args ...int) ([]model.Team, int64, bool, string)
 		return nil, -1, false, "GetTeamError"
 	}
 	go UpdateRanking(DB, contestID)
-	limit, offset = utils.TidyPaginate(int(count), limit, offset)
 	return teams[offset:limit], count, true, "Success"
+}
+
+func GetRankDetail(contestID uint) ([]map[string]interface{}, bool, string) {
+	var data []map[string]interface{}
+	teams, _, ok, msg := GetRanking(contestID, 10, 0)
+	if !ok {
+		return data, false, msg
+	}
+	for _, team := range teams {
+		submissions, ok, msg := GetTeamSolved(DB, contestID, team.ID)
+		if !ok {
+			return data, false, msg
+		}
+		var history []map[string]interface{}
+		for _, submission := range submissions {
+			history = append(history, map[string]interface{}{
+				"challenge": submission.ChallengeID,
+				"score":     submission.Score,
+				"time":      submission.CreatedAt,
+			})
+		}
+		data = append(data, map[string]interface{}{"team": team, "history": history})
+	}
+	return data, true, "Success"
 }
