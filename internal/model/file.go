@@ -9,6 +9,11 @@ import (
 	"time"
 )
 
+const (
+	Avatar  = "avatar"
+	WriteUP = "writeup"
+)
+
 type File struct {
 	ID        string         `json:"id" gorm:"primarykey"`
 	Filename  string         `json:"filename"`

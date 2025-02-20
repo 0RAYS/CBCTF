@@ -193,7 +193,7 @@ func Init() *gin.Engine {
 		}
 
 		// 头像管理
-		admin.GET("/avatar/list", GetFiles("image"))
+		admin.GET("/avatar/list", GetFiles(model.Avatar))
 		admin.POST("/avatar/delete", DeleteFile)
 		adminAvatar := admin.Group("/avatar/:fileID", middleware.SetFile)
 		{
