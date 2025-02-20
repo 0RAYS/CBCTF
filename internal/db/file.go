@@ -73,11 +73,11 @@ func DeleteFile(tx *gorm.DB, id string) (bool, string) {
 	return true, "Success"
 }
 
-// GetFiles 批量获取文件记录
-func GetFiles(tx *gorm.DB, t string, limit int, offset int) ([]model.File, int64, bool, string) {
+// GetAvatars 批量获取文件记录
+func GetAvatars(tx *gorm.DB, limit int, offset int) ([]model.File, int64, bool, string) {
 	var files []model.File
 	var count int64
-	res := tx.Model(&model.File{}).Where("type = ?", t)
+	res := tx.Model(&model.File{}).Where("type = ?", model.Avatar)
 	if res = res.Count(&count); res.Error != nil {
 		log.Logger.Warningf("Failed to get files: %s", res.Error)
 		return nil, 0, false, "UnknownError"

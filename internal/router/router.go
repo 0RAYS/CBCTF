@@ -23,7 +23,7 @@ func Init() *gin.Engine {
 	router.POST("/login", Login)
 	router.POST("/admin/login", AdminLogin)
 	router.GET("/verify", Verify)
-	router.GET("/avatar/:fileID", middleware.SetFile, DownloadFile)
+	router.GET("/avatar/:fileID", middleware.SetFile(model.Avatar), DownloadFile)
 
 	// 鉴权
 	auth := router.Group("", middleware.CheckLogin)
@@ -82,6 +82,13 @@ func Init() *gin.Engine {
 			contestChallenge.POST("/increase", IncreaseDuration)
 			contestChallenge.POST("/stop", StopContainer)
 			contestChallenge.POST("/submit", SubmitFlag)
+		}
+
+		// WriteUp
+		contestWriteUp := contest.Group("/writeup", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.CheckRunning)
+		{
+			contestWriteUp.POST("/upload", UploadWriteUp)
+			contestWriteUp.GET("/list", GetWriteUPs)
 		}
 	}
 
@@ -156,6 +163,10 @@ func Init() *gin.Engine {
 					adminTraffic.POST("/load", LoadTraffic)
 					adminTraffic.GET("/show", GetTraffics)
 				}
+
+				// WriteUp
+				adminContestTeam.GET("/writeup/list", GetWriteUPs)
+				adminContestTeam.GET("/writeup/:fileID", middleware.SetFile(model.WriteUP), DownloadFile)
 			}
 
 			// 比赛公告管理
@@ -193,9 +204,9 @@ func Init() *gin.Engine {
 		}
 
 		// 头像管理
-		admin.GET("/avatar/list", GetFiles(model.Avatar))
+		admin.GET("/avatar/list", GetAvatars)
 		admin.POST("/avatar/delete", DeleteFile)
-		adminAvatar := admin.Group("/avatar/:fileID", middleware.SetFile)
+		adminAvatar := admin.Group("/avatar/:fileID", middleware.SetFile(model.Avatar))
 		{
 			adminAvatar.POST("/delete", DeleteFile)
 		}

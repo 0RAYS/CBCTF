@@ -119,24 +119,31 @@ func GetTeam(ctx *gin.Context) model.Team {
 	}
 }
 
-func SetFile(ctx *gin.Context) {
-	type fileIDUri struct {
-		FileID string `uri:"fileID" binding:"required"`
+func SetFile(t string) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		type fileIDUri struct {
+			FileID string `uri:"fileID" binding:"required"`
+		}
+		var fileID fileIDUri
+		if err := ctx.ShouldBindUri(&fileID); err != nil {
+			ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+			ctx.Abort()
+			return
+		}
+		file, ok, msg := db.GetFileByID(db.DB.WithContext(ctx), fileID.FileID)
+		if !ok {
+			ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			ctx.Abort()
+			return
+		}
+		if file.Type != t {
+			ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+			ctx.Abort()
+			return
+		}
+		ctx.Set("File", file)
+		ctx.Next()
 	}
-	var fileID fileIDUri
-	if err := ctx.ShouldBindUri(&fileID); err != nil {
-		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
-		ctx.Abort()
-		return
-	}
-	file, ok, msg := db.GetFileByID(db.DB.WithContext(ctx), fileID.FileID)
-	if !ok {
-		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		ctx.Abort()
-		return
-	}
-	ctx.Set("File", file)
-	ctx.Next()
 }
 
 func GetFile(ctx *gin.Context) model.File {
