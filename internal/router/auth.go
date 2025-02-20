@@ -24,10 +24,16 @@ func Register(ctx *gin.Context) {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	ok, msg = SendEmail(user)
+	if !ok {
+		tx.Rollback()
+		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
 	tx.Commit()
-	if Token, err := utils.Generate(user.ID, user.Name, "user"); err == nil {
+	if token, err := utils.Generate(user.ID, user.Name, "user"); err == nil {
 		log.Logger.Infof("%s | %s:%d register", trace, user.Name, user.ID)
-		ctx.Writer.Header().Set("Authorization", "Bearer "+Token)
+		ctx.Writer.Header().Set("Authorization", "Bearer "+token)
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": &user})
 		return
 	} else {

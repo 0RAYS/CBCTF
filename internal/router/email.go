@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-func VerifyEmail(ctx *gin.Context) {
+func Verify(ctx *gin.Context) {
 	var form f.VerifyEmail
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
@@ -41,22 +41,24 @@ func VerifyEmail(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
 }
 
-func ActivateEmail(ctx *gin.Context) {
-	user := middleware.GetSelf(ctx).(model.User)
+func SendEmail(user model.User) (bool, string) {
 	id := utils.UUID()
 	token, err := utils.Generate(user.ID, user.Name, "email")
 	if err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "UnknownError", "data": nil})
-		return
+		return false, "UnknownError"
 	}
 	ok, msg := redis.SetEmailVerifyToken(user.ID, id)
 	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
+		return false, msg
 	}
 	if err := utils.SendVerifyEmail(user.Email, token, id); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "SendEmailError", "data": nil})
-		return
+		return false, "SendEmailFailed"
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
+	return true, "Success"
+}
+
+func Activate(ctx *gin.Context) {
+	user := middleware.GetSelf(ctx).(model.User)
+	_, msg := SendEmail(user)
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
