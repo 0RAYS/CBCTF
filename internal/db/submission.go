@@ -31,16 +31,6 @@ func CreateSubmission(tx *gorm.DB, contest model.Contest, team model.Team, user 
 	return submission, true, "Success"
 }
 
-// GetTeamSubmissions is a function to get submission
-func GetTeamSubmissions(tx *gorm.DB, contest model.Contest, team model.Team, challenge model.Challenge) ([]model.Submission, bool, string) {
-	var submissions []model.Submission
-	res := tx.Model(model.Submission{}).Where("contest_id = ? AND team_id = ? AND challenge_id = ?", contest.ID, team.ID, challenge.ID).Find(&submissions)
-	if res.RowsAffected != 1 {
-		return []model.Submission{}, false, "SubmissionNotFound"
-	}
-	return submissions, true, "Success"
-}
-
 func IsSolved(tx *gorm.DB, contest model.Contest, team model.Team, challenge model.Challenge) bool {
 	var submission model.Submission
 	res := tx.Model(model.Submission{}).
@@ -63,7 +53,7 @@ func CountAttempts(tx *gorm.DB, contest model.Contest, team model.Team, challeng
 }
 
 // GetSubmissions is a function to get submissions
-func GetSubmissions(tx *gorm.DB, limit, offset int) ([]model.Submission, int64, bool, string) {
+func GetSubmissions(tx *gorm.DB, limit, offset int, teamIDL ...uint) ([]model.Submission, int64, bool, string) {
 	if limit <= 0 {
 		limit = -1
 	}
@@ -73,6 +63,9 @@ func GetSubmissions(tx *gorm.DB, limit, offset int) ([]model.Submission, int64, 
 	var submissions []model.Submission
 	var count int64
 	res := tx.Model(model.Submission{})
+	if len(teamIDL) > 0 {
+		res = res.Where("team_id IN ?", teamIDL)
+	}
 	if res.Count(&count).Error != nil {
 		log.Logger.Warningf("Failed to count submissions: %v", res.Error)
 		return nil, 0, false, "UnknownError"
