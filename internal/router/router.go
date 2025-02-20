@@ -22,7 +22,7 @@ func Init() *gin.Engine {
 	router.POST("/register", Register)
 	router.POST("/login", Login)
 	router.POST("/admin/login", AdminLogin)
-	router.GET("/verify", VerifyEmail)
+	router.GET("/verify", Verify)
 	router.GET("/avatar/:avatarID", middleware.SetAvatar, DownloadAvatar)
 
 	// 鉴权
@@ -36,7 +36,7 @@ func Init() *gin.Engine {
 		user.POST("/update", UpdateUser)
 		user.POST("/delete", DeleteUser)
 		user.POST("/avatar", UploadAvatar(model.User{}))
-		user.POST("/activate", ActivateEmail)
+		user.POST("/activate", Activate)
 	}
 
 	// 比赛
