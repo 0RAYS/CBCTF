@@ -26,11 +26,6 @@ func CreateUser(tx *gorm.DB, form form.CreateUserForm) (model.User, bool, string
 		log.Logger.Warningf("Failed to create user: %s", res.Error)
 		return model.User{}, false, "CreateUserError"
 	}
-	//go func() {
-	//	if err := redis.DelUsersCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete users cache: %s", err)
-	//	}
-	//}()
 	return user, true, "Success"
 }
 
@@ -44,9 +39,6 @@ func GetUserByID(tx *gorm.DB, id uint, preloadL ...bool) (model.User, bool, stri
 	if len(preloadL) > 1 {
 		nest = preloadL[1]
 	}
-	//if user, ok := redis.GetUserCache(id, redis.GetType(preload, nest)); ok {
-	//	return user, true, "Success"
-	//}
 	var user model.User
 	res := tx.Model(&model.User{}).Where("id = ?", id)
 	if preload {
@@ -59,11 +51,6 @@ func GetUserByID(tx *gorm.DB, id uint, preloadL ...bool) (model.User, bool, stri
 	if res.RowsAffected != 1 {
 		return model.User{}, false, "UserNotFound"
 	}
-	//go func() {
-	//	if err := redis.SetUserCache(user, redis.GetType(preload, nest)); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to set user cache: %s", err)
-	//	}
-	//}()
 	return user, true, "Success"
 }
 
@@ -88,14 +75,6 @@ func DeleteUser(tx *gorm.DB, id uint) (bool, string) {
 	if !ClearByID(tx, "user_id", id) {
 		return false, "DeleteAssociatedDataError"
 	}
-	//go func() {
-	//	if err := redis.DelUserCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete user cache: %s", err)
-	//	}
-	//	if err := redis.DelUsersCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete users cache: %s", err)
-	//	}
-	//}()
 	return true, "Success"
 }
 
@@ -107,14 +86,6 @@ func UpdateUser(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool, 
 		log.Logger.Warningf("Failed to update user: %s", res.Error)
 		return false, "UpdateUserError"
 	}
-	//go func() {
-	//	if err := redis.DelUserCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete user cache: %s", err)
-	//	}
-	//	if err := redis.DelUsersCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete users cache: %s", err)
-	//	}
-	//}()
 	return true, "Success"
 }
 
@@ -146,11 +117,6 @@ func ChangePasswordUser(tx *gorm.DB, user model.User, oldPassword string, newPas
 	if ok, msg := UpdateUser(tx, user.ID, map[string]interface{}{"password": hash}); !ok {
 		return false, msg
 	}
-	//go func() {
-	//	if err := redis.DelUserCache(user.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete user cache: %s", err)
-	//	}
-	//}()
 	return true, "Success"
 }
 
@@ -181,26 +147,16 @@ func GetUsers(tx *gorm.DB, limit int, offset int, all bool, preloadL ...bool) ([
 		log.Logger.Warningf("Failed to get contest count: %s", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
-	//if users, ok := redis.GetUsersCache(redis.GetType(preload, nest)); ok {
-	//	limit, offset = utils.TidyPaginate(len(users), limit, offset)
-	//	return users[offset:limit], count, true, "Success"
-	//}
 	if preload {
 		if nest {
 			res = res.Preload("Teams.Users").Preload("Contests.Users").Preload("Contests.Teams")
 		}
 		res = res.Preload(clause.Associations)
 	}
-	if res = res.Find(&users); res.Error != nil {
+	if res = res.Limit(limit).Offset(offset).Find(&users); res.Error != nil {
 		log.Logger.Warningf("Failed to get users: %s", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
-	//go func() {
-	//	if err := redis.SetUsersCache(users, redis.GetType(preload, nest)); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to set users cache: %s", err)
-	//	}
-	//}()
-	limit, offset = utils.TidyPaginate(len(users), limit, offset)
-	return users[offset:limit], count, true, "Success"
+	return users, count, true, "Success"
 
 }
