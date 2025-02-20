@@ -105,12 +105,12 @@ func VerifyFlag(tx *gorm.DB, contestID, teamID uint, challengeID, value string) 
 	return false
 }
 
-func DeleteFlag(tx *gorm.DB, id uint) (bool, string) {
-	res := tx.Model(model.Flag{}).
-		Where("id = ?", id).Delete(&model.Flag{})
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to delete Flag: %s", res.Error)
-		return false, "DeleteFlagError"
-	}
-	return true, "Success"
-}
+//func DeleteFlag(tx *gorm.DB, id uint) (bool, string) {
+//	res := tx.Model(model.Flag{}).
+//		Where("id = ?", id).Delete(&model.Flag{})
+//	if res.Error != nil {
+//		log.Logger.Warningf("Failed to delete Flag: %s", res.Error)
+//		return false, "DeleteFlagError"
+//	}
+//	return true, "Success"
+//}
