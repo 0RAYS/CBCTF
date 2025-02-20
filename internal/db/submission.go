@@ -76,12 +76,3 @@ func GetSubmissions(tx *gorm.DB, limit, offset int, teamIDL ...uint) ([]model.Su
 	}
 	return submissions, count, true, "Success"
 }
-
-func DeleteSubmission(tx *gorm.DB, id uint) (bool, string) {
-	var submission model.Submission
-	res := tx.Model(model.Submission{}).Where("id = ?", id).Delete(&submission)
-	if res.RowsAffected != 1 {
-		return false, "SubmissionNotFound"
-	}
-	return true, "Success"
-}
