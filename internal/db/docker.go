@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
 	"gorm.io/gorm"
 )
 
@@ -85,6 +86,7 @@ func GetDockerByTeamID(tx *gorm.DB, teamID uint, limit, offset int, deleted bool
 		log.Logger.Warningf("Failed to count Dockers: %s", err)
 		return nil, -1, false, "UnknownError"
 	}
+	limit, offset = utils.TidyPaginate(int(count), limit, offset)
 	res = res.Limit(limit).Offset(offset).Find(&dockers)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Dockers: %s", res.Error)

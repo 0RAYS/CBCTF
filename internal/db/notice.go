@@ -4,6 +4,7 @@ import (
 	f "CBCTF/internal/form"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
 	"gorm.io/gorm"
 )
 
@@ -50,6 +51,7 @@ func GetNotices(tx *gorm.DB, limit, offset int, contestID uint) ([]model.Notice,
 		log.Logger.Warningf("Failed to count notices: %s", res.Error)
 		return []model.Notice{}, 0, false, "UnknownError"
 	}
+	limit, offset = utils.TidyPaginate(int(count), limit, offset)
 	res = res.Limit(limit).Offset(offset).Find(&notices)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get notices: %s", res.Error)

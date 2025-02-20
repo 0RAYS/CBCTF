@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/traffic"
+	"CBCTF/internal/utils"
 	"fmt"
 	"gorm.io/gorm"
 )
@@ -45,6 +46,7 @@ func getTrafficByID(tx *gorm.DB, column string, id uint, limit, offset int) ([]m
 		log.Logger.Warningf("Failed to count traffic: %s", err)
 		return []model.Traffic{}, -1, false, "UnknownError"
 	}
+	limit, offset = utils.TidyPaginate(int(count), limit, offset)
 	res = res.Limit(limit).Offset(offset).Find(&traffics)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get traffic: %s", res.Error)
