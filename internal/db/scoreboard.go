@@ -50,9 +50,9 @@ func GetRanking(contestID uint, limit, offset int) ([]model.Team, int64, bool, s
 	return teams[offset:limit], count, true, "Success"
 }
 
-func GetRankDetail(contestID uint) ([]map[string]interface{}, bool, string) {
+func GetRankDetail(contestID uint, limit, offset int) ([]map[string]interface{}, bool, string) {
 	var data []map[string]interface{}
-	teams, _, ok, msg := GetRanking(contestID, 10, 0)
+	teams, _, ok, msg := GetRanking(contestID, limit, offset)
 	if !ok {
 		return data, false, msg
 	}
