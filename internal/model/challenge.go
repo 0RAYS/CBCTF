@@ -9,12 +9,14 @@ import (
 	"time"
 )
 
-var Static = 0
-var Dynamic = 1
-var Container = 2
+const (
+	Static    = 0
+	Dynamic   = 1
+	Container = 2
 
-var StaticFile = "attachment.zip"
-var DynamicFile = "generator.zip"
+	StaticFile  = "attachment.zip"
+	DynamicFile = "generator.zip"
+)
 
 type Challenge struct {
 	ID             string         `json:"id" gorm:"primaryKey"`
