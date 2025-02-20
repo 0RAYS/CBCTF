@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/form"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/utils"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -28,11 +27,6 @@ func CreateTeam(tx *gorm.DB, form form.CreateTeamForm, captain model.User, conte
 		log.Logger.Warningf("Failed to insert user_contest: %s", err)
 		return model.Team{}, false, "AppendUserToContestError"
 	}
-	//go func() {
-	//	if err := redis.DelTeamsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete teams cache: %s", err)
-	//	}
-	//}()
 	return team, true, "Success"
 }
 
@@ -61,11 +55,6 @@ func GetTeamByID(tx *gorm.DB, id uint, preloadL ...bool) (model.Team, bool, stri
 	if res.RowsAffected != 1 {
 		return model.Team{}, false, "TeamNotFound"
 	}
-	//go func() {
-	//	if err := redis.SetTeamCache(team, redis.GetType(preload, nest)); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to set team cache: %s", err)
-	//	}
-	//}()
 	return team, true, "Success"
 }
 
@@ -129,14 +118,6 @@ func DeleteTeam(tx *gorm.DB, team model.Team) (bool, string) {
 	if !ClearByID(tx, "team_id", team.ID) {
 		return false, "DeleteAssociatedDataError"
 	}
-	//go func() {
-	//	if err := redis.DelTeamCache(team.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete team cache: %s", err)
-	//	}
-	//	if err := redis.DelTeamsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete teams cache: %s", err)
-	//	}
-	//}()
 	return true, "Success"
 }
 
@@ -148,14 +129,6 @@ func UpdateTeam(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool, 
 		log.Logger.Warningf("Failed to update team: %s", res.Error)
 		return false, "UpdateTeamError"
 	}
-	//go func() {
-	//	if err := redis.DelTeamCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete team cache: %s", err)
-	//	}
-	//	if err := redis.DelTeamsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete teams cache: %s", err)
-	//	}
-	//}()
 	return true, "Success"
 }
 
@@ -180,26 +153,6 @@ func JoinTeam(tx *gorm.DB, user model.User, team model.Team, contest model.Conte
 		log.Logger.Warningf("Failed to insert user_contest: %s", err)
 		return false, "AppendContestToUserError"
 	}
-	//go func() {
-	//	if err := redis.DelUserCache(user.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete user cache: %s", err)
-	//	}
-	//	if err := redis.DelUsersCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete users cache: %s", err)
-	//	}
-	//	if err := redis.DelTeamCache(team.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete team cache: %s", err)
-	//	}
-	//	if err := redis.DelTeamsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete teams cache: %s", err)
-	//	}
-	//	if err := redis.DelContestCache(contest.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete contest cache: %s", err)
-	//	}
-	//	if err := redis.DelContestsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete contests cache: %s", err)
-	//	}
-	//}()
 	return true, "Success"
 }
 
@@ -223,26 +176,6 @@ func LeaveTeam(tx *gorm.DB, user model.User, team model.Team, contest model.Cont
 		log.Logger.Warningf("Failed to delete user_contest: %s", err)
 		return false, "DeleteUserFromContestError"
 	}
-	//go func() {
-	//	if err := redis.DelUserCache(user.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete user cache: %s", err)
-	//	}
-	//	if err := redis.DelUsersCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete users cache: %s", err)
-	//	}
-	//	if err := redis.DelTeamCache(team.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete team cache: %s", err)
-	//	}
-	//	if err := redis.DelTeamsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete teams cache: %s", err)
-	//	}
-	//	if err := redis.DelContestCache(contest.ID); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete contest cache: %s", err)
-	//	}
-	//	if err := redis.DelContestsCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to delete contests cache: %s", err)
-	//	}
-	//}()
 	return true, "Success"
 }
 
@@ -266,25 +199,15 @@ func GetTeams(tx *gorm.DB, contestID uint, limit int, offset int, all bool, prel
 		log.Logger.Warningf("Failed to get contest count: %s", res.Error)
 		return nil, 0, false, "UnknownError"
 	}
-	//if teams, ok := redis.GetTeamsCache(redis.GetType(preload, nest)); ok {
-	//	limit, offset = utils.TidyPaginate(len(teams), limit, offset)
-	//	return teams[offset:limit], count, true, "Success"
-	//}
 	if preload {
 		if nest {
 			res = res.Preload("Users.Teams").Preload("Users.Contests")
 		}
 		res = res.Preload(clause.Associations)
 	}
-	if res = res.Find(&teams); res.Error != nil {
+	if res = res.Limit(limit).Offset(offset).Find(&teams); res.Error != nil {
 		log.Logger.Warningf("Failed to get teams: %s", res.Error)
 		return nil, 0, false, "GetTeamError"
 	}
-	//go func() {
-	//	if err := redis.SetTeamsCache(teams, redis.GetType(preload, nest)); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-	//		log.Logger.Warningf("Failed to set teams cache: %s", err)
-	//	}
-	//}()
-	limit, offset = utils.TidyPaginate(len(teams), limit, offset)
-	return teams[offset:limit], count, true, "Success"
+	return teams, count, true, "Success"
 }
