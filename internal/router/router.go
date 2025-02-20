@@ -139,6 +139,10 @@ func Init() *gin.Engine {
 				adminContestTeam.POST("/kick", KickMember)
 				adminContestTeam.POST("/avatar", UploadAvatar(model.Team{}))
 
+				// 比赛队伍提交管理
+				adminContestTeam.GET("/submission/list", GetTeamSubmissions)
+
+				// 比赛队伍容器管理
 				adminContestTeam.GET("/container/list", GetContainers)
 				adminContainer := adminContestTeam.Group("/container/:containerID", middleware.SetContainer)
 				{

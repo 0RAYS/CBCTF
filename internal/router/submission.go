@@ -46,3 +46,17 @@ func GetSubmissions(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"submissions": &submissions, "count": count}})
 }
+
+func GetTeamSubmissions(ctx *gin.Context) {
+	var form f.GetModelsForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	submissions, count, ok, msg := db.GetSubmissions(db.DB.WithContext(ctx), form.Limit, form.Offset, middleware.GetTeam(ctx).ID)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"submissions": &submissions, "count": count}})
+}
