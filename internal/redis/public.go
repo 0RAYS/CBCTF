@@ -4,17 +4,6 @@ import (
 	"context"
 )
 
-func GetType(preload, nest bool) int {
-	t := PreloadSimple
-	if nest {
-		t = PreloadNested
-		if !preload {
-			t = PreloadNone
-		}
-	}
-	return t
-}
-
 // DeleteKeysByPattern 删除匹配模式的缓存键
 func DeleteKeysByPattern(pattern string) error {
 	ctx := context.Background()
