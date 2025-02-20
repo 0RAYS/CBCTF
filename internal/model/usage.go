@@ -5,9 +5,11 @@ import (
 	"time"
 )
 
-var StaticScore uint = 0
-var LinearScore uint = 1
-var LogarithmicScore uint = 2
+const (
+	StaticScore      uint = 0
+	LinearScore      uint = 1
+	LogarithmicScore uint = 2
+)
 
 type Usage struct {
 	ID           uint           `json:"id" gorm:"primaryKey"`
