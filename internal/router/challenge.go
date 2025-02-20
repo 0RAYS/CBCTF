@@ -72,14 +72,21 @@ func GetAttachment(ctx *gin.Context) {
 
 func GetChallengeFiles(ctx *gin.Context) {
 	challenge := middleware.GetChallenge(ctx)
-	dir, err := os.ReadDir(challenge.BasicDir())
-	if err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "ReadDirError", "data": nil})
-		return
-	}
 	var files []string
-	for _, file := range dir {
-		files = append(files, file.Name())
+	if middleware.GetRole(ctx) == "admin" {
+		dir, err := os.ReadDir(challenge.BasicDir())
+		if err != nil {
+			ctx.JSON(http.StatusOK, gin.H{"msg": "ReadDirError", "data": nil})
+			return
+		}
+		for _, file := range dir {
+			files = append(files, file.Name())
+		}
+	} else {
+		team := middleware.GetTeam(ctx)
+		if _, err := os.Stat(challenge.AttachmentPath(team.ID)); err == nil {
+			files = append(files, model.DynamicFile)
+		}
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &files})
 }
