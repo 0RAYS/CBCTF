@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 	"gorm.io/gorm"
+	"time"
 )
 
 // CreateDocker 创建 Docker, 并注入 flag
@@ -114,6 +115,9 @@ func DeleteDocker(tx *gorm.DB, docker model.Docker) (bool, string) {
 	if !ok {
 		log.Logger.Warningf("Failed to stop container for challenge %s: %s", docker.ChallengeID, msg)
 		return false, "DeleteDockerError"
+	}
+	if ok, msg = UpdateDocker(tx, docker.ID, map[string]interface{}{"duration": time.Now().Sub(docker.Start)}); !ok {
+		return false, msg
 	}
 	res := tx.Model(model.Docker{}).
 		Where("id = ?", docker.ID).Delete(&model.Docker{})
