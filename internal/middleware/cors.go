@@ -6,7 +6,6 @@ import (
 	"net/http"
 )
 
-// Cors 临时使用, 后续一定要去除
 func Cors(ctx *gin.Context) {
 	ctx.Header("Access-Control-Allow-Origin", config.Env.Frontend) // 可将将 * 替换为指定的域名
 	ctx.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
