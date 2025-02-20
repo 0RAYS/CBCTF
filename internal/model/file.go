@@ -9,28 +9,30 @@ import (
 	"time"
 )
 
-type Avatar struct {
+type File struct {
 	ID        string         `json:"id" gorm:"primarykey"`
 	Filename  string         `json:"filename"`
 	Size      int64          `json:"size"`
 	Path      string         `json:"-"`
 	Uploader  uint           `json:"uploader"`
-	Type      string         `json:"type"`
+	Suffix    string         `json:"suffix"`
 	Hash      string         `json:"hash"`
+	Type      string         `json:"type"`
 	CreatedAt time.Time      `json:"-"`
 	UpdatedAt time.Time      `json:"-"`
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"index" `
 }
 
-func InitAvatar(path string, uploader uint, file *multipart.FileHeader, hash string) Avatar {
-	tmp := Avatar{
+func InitFile(path string, uploader uint, file *multipart.FileHeader, hash string, t string) File {
+	tmp := File{
 		ID:       utils.UUID(),
 		Filename: file.Filename,
 		Size:     file.Size,
 		Path:     path,
 		Uploader: uploader,
 		Hash:     hash,
-		Type:     strings.ToLower(p.Ext(file.Filename)),
+		Suffix:   strings.ToLower(p.Ext(file.Filename)),
+		Type:     t,
 	}
 	return tmp
 }

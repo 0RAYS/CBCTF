@@ -119,31 +119,31 @@ func GetTeam(ctx *gin.Context) model.Team {
 	}
 }
 
-func SetAvatar(ctx *gin.Context) {
-	type avatarIDUri struct {
-		AvatarID string `uri:"avatarID" binding:"required"`
+func SetFile(ctx *gin.Context) {
+	type fileIDUri struct {
+		FileID string `uri:"fileID" binding:"required"`
 	}
-	var avatarID avatarIDUri
-	if err := ctx.ShouldBindUri(&avatarID); err != nil {
+	var fileID fileIDUri
+	if err := ctx.ShouldBindUri(&fileID); err != nil {
 		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		ctx.Abort()
 		return
 	}
-	avatar, ok, msg := db.GetAvatarByID(db.DB.WithContext(ctx), avatarID.AvatarID)
+	file, ok, msg := db.GetFileByID(db.DB.WithContext(ctx), fileID.FileID)
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
 		return
 	}
-	ctx.Set("Avatar", avatar)
+	ctx.Set("File", file)
 	ctx.Next()
 }
 
-func GetAvatar(ctx *gin.Context) model.Avatar {
-	if avatar, ok := ctx.Get("Avatar"); !ok {
-		return model.Avatar{}
+func GetFile(ctx *gin.Context) model.File {
+	if file, ok := ctx.Get("File"); !ok {
+		return model.File{}
 	} else {
-		return avatar.(model.Avatar)
+		return file.(model.File)
 	}
 }
 

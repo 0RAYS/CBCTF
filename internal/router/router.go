@@ -23,7 +23,7 @@ func Init() *gin.Engine {
 	router.POST("/login", Login)
 	router.POST("/admin/login", AdminLogin)
 	router.GET("/verify", Verify)
-	router.GET("/avatar/:avatarID", middleware.SetAvatar, DownloadAvatar)
+	router.GET("/avatar/:fileID", middleware.SetFile, DownloadFile)
 
 	// 鉴权
 	auth := router.Group("", middleware.CheckLogin)
@@ -193,11 +193,11 @@ func Init() *gin.Engine {
 		}
 
 		// 头像管理
-		admin.GET("/avatar/list", GetAvatars)
-		admin.POST("/avatar/delete", DeleteAvatar)
-		adminAvatar := admin.Group("/avatar/:avatarID", middleware.SetAvatar)
+		admin.GET("/avatar/list", GetFiles("image"))
+		admin.POST("/avatar/delete", DeleteFile)
+		adminAvatar := admin.Group("/avatar/:fileID", middleware.SetFile)
 		{
-			adminAvatar.POST("/delete", DeleteAvatar)
+			adminAvatar.POST("/delete", DeleteFile)
 		}
 	}
 

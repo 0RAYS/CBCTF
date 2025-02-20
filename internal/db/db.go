@@ -51,7 +51,7 @@ func Init() {
 
 	err = DB.AutoMigrate(
 		&model.Admin{}, &model.User{}, &model.Team{},
-		&model.Contest{}, &model.Avatar{}, &model.IP{},
+		&model.Contest{}, &model.File{}, &model.IP{},
 		&model.Challenge{}, &model.Usage{}, &model.Flag{},
 		&model.Docker{}, &model.Submission{}, &model.Device{},
 		&model.Traffic{}, &model.Notice{},

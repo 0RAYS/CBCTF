@@ -20,11 +20,11 @@ import (
 	"strings"
 )
 
-func DownloadAvatar(ctx *gin.Context) {
-	file := middleware.GetAvatar(ctx)
+func DownloadFile(ctx *gin.Context) {
+	file := middleware.GetFile(ctx)
 	if _, err := os.Stat(file.Path); os.IsNotExist(err) {
 		tx := db.DB.WithContext(ctx).Begin()
-		if ok, _ := db.DeleteAvatar(tx, file.ID); !ok {
+		if ok, _ := db.DeleteFile(tx, file.ID); !ok {
 			tx.Rollback()
 			ctx.JSONP(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": file.ID})
 			return
@@ -36,10 +36,10 @@ func DownloadAvatar(ctx *gin.Context) {
 	ctx.File(file.Path)
 }
 
-func DeleteAvatar(ctx *gin.Context) {
+func DeleteFile(ctx *gin.Context) {
 	var (
-		form f.DeleteAvatarForm
-		file model.Avatar
+		form f.DeleteFileForm
+		file model.File
 		ok   bool
 		msg  string
 		DB   = db.DB.WithContext(ctx)
@@ -49,12 +49,12 @@ func DeleteAvatar(ctx *gin.Context) {
 		return
 	}
 	filesID := form.FilesID
-	var files []model.Avatar
-	if uri := middleware.GetAvatar(ctx); uri.ID != "" {
+	var files []model.File
+	if uri := middleware.GetFile(ctx); uri.ID != "" {
 		files = append(files, uri)
 	}
 	for _, id := range filesID {
-		file, ok, msg = db.GetAvatarByID(DB, id)
+		file, ok, msg = db.GetFileByID(DB, id)
 		if !ok {
 			ctx.JSON(http.StatusNotFound, gin.H{"msg": msg, "data": nil})
 			return
@@ -63,7 +63,7 @@ func DeleteAvatar(ctx *gin.Context) {
 	}
 	for _, file = range files {
 		tx := DB.Begin()
-		if ok, msg = db.DeleteAvatar(tx, file.ID); !ok {
+		if ok, msg = db.DeleteFile(tx, file.ID); !ok {
 			tx.Rollback()
 			ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
 			return
@@ -77,18 +77,20 @@ func DeleteAvatar(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
 }
 
-func GetAvatars(ctx *gin.Context) {
-	var form f.GetModelsForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
-		return
+func GetFiles(t string) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var form f.GetModelsForm
+		if err := ctx.ShouldBind(&form); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+			return
+		}
+		files, count, ok, msg := db.GetFiles(db.DB.WithContext(ctx), t, form.Limit, form.Offset)
+		if !ok {
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "files": &files}})
 	}
-	files, count, ok, msg := db.GetAvatars(db.DB.WithContext(ctx), form.Limit, form.Offset)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "files": &files}})
 }
 
 func UploadAvatar(v interface{}) func(ctx *gin.Context) {
@@ -117,13 +119,13 @@ func UploadAvatar(v interface{}) func(ctx *gin.Context) {
 			return
 		}
 		var (
-			record model.Avatar
+			record model.File
 			ok     bool
 			msg    string
 		)
 		hash := hex.EncodeToString(sha256Sum.Sum(nil))
 		tx := db.DB.WithContext(ctx).Begin()
-		if record, ok, _ = db.GetAvatarByHash(tx, hash); !ok {
+		if record, ok, _ = db.GetFileByHash(tx, hash); !ok {
 			basePath := fmt.Sprintf("%s/avatar", config.Env.Gin.Upload.Path)
 			allowed := []string{".png", ".jpg", ".jpeg"}
 			suffix := strings.ToLower(p.Ext(file.Filename))
@@ -138,7 +140,7 @@ func UploadAvatar(v interface{}) func(ctx *gin.Context) {
 				ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
 				return
 			}
-			record, ok, msg = db.RecordAvatar(tx, path, middleware.GetSelfID(ctx), file, hash)
+			record, ok, msg = db.RecordFile(tx, path, middleware.GetSelfID(ctx), file, hash, "image")
 			if !ok {
 				tx.Rollback()
 				ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})

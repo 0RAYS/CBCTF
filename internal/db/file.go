@@ -11,14 +11,14 @@ import (
 	"mime/multipart"
 )
 
-// RecordAvatar 添加头像记录
-func RecordAvatar(tx *gorm.DB, path string, uploader uint, file *multipart.FileHeader, hash string) (model.Avatar, bool, string) {
-	f := model.InitAvatar(path, uploader, file, hash)
-	res := tx.Model(model.Avatar{}).Create(&f)
+// RecordFile 添加头像记录
+func RecordFile(tx *gorm.DB, path string, uploader uint, file *multipart.FileHeader, hash string, t string) (model.File, bool, string) {
+	f := model.InitFile(path, uploader, file, hash, t)
+	res := tx.Model(model.File{}).Create(&f)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to record file: %v", res.Error)
 
-		return model.Avatar{}, false, "CreateFileRecordError"
+		return model.File{}, false, "CreateFileRecordError"
 	}
 	go func() {
 		if err := redis.DelFilesCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
@@ -28,15 +28,15 @@ func RecordAvatar(tx *gorm.DB, path string, uploader uint, file *multipart.FileH
 	return f, true, "Success"
 }
 
-// GetAvatarByID 以 ID 获取文件记录
-func GetAvatarByID(tx *gorm.DB, id string) (model.Avatar, bool, string) {
+// GetFileByID 以 ID 获取文件记录
+func GetFileByID(tx *gorm.DB, id string) (model.File, bool, string) {
 	if file, ok := redis.GetFileCache(id); ok {
 		return file, true, "Success"
 	}
-	var file model.Avatar
-	res := tx.Model(model.Avatar{}).Where("id = ?", id).Find(&file).Limit(1)
+	var file model.File
+	res := tx.Model(model.File{}).Where("id = ?", id).Find(&file).Limit(1)
 	if res.RowsAffected != 1 {
-		return model.Avatar{}, false, "FileNotFound"
+		return model.File{}, false, "FileNotFound"
 	}
 	go func() {
 		if err := redis.SetFileCache(file); err != nil && !errors.Is(err, context.DeadlineExceeded) {
@@ -46,19 +46,19 @@ func GetAvatarByID(tx *gorm.DB, id string) (model.Avatar, bool, string) {
 	return file, true, "Success"
 }
 
-// GetAvatarByHash 以 Hash 获取文件记录
-func GetAvatarByHash(tx *gorm.DB, hash string) (model.Avatar, bool, string) {
-	var file model.Avatar
-	res := tx.Model(model.Avatar{}).Where("hash = ?", hash).Find(&file).Limit(1)
+// GetFileByHash 以 Hash 获取文件记录
+func GetFileByHash(tx *gorm.DB, hash string) (model.File, bool, string) {
+	var file model.File
+	res := tx.Model(model.File{}).Where("hash = ?", hash).Find(&file).Limit(1)
 	if res.RowsAffected != 1 {
-		return model.Avatar{}, false, "FileNotFound"
+		return model.File{}, false, "FileNotFound"
 	}
 	return file, true, "Success"
 }
 
-// DeleteAvatar 以 ID 删除文件记录
-func DeleteAvatar(tx *gorm.DB, id string) (bool, string) {
-	if err := tx.Model(model.Avatar{}).Where("id = ?", id).Delete(&model.Avatar{}).Error; err != nil {
+// DeleteFile 以 ID 删除文件记录
+func DeleteFile(tx *gorm.DB, id string) (bool, string) {
+	if err := tx.Model(model.File{}).Where("id = ?", id).Delete(&model.File{}).Error; err != nil {
 		log.Logger.Warningf("Failed to delete file: %v", id)
 		return false, "DeleteFileError"
 	}
@@ -73,11 +73,11 @@ func DeleteAvatar(tx *gorm.DB, id string) (bool, string) {
 	return true, "Success"
 }
 
-// GetAvatars 批量获取文件记录
-func GetAvatars(tx *gorm.DB, limit int, offset int) ([]model.Avatar, int64, bool, string) {
-	var files []model.Avatar
+// GetFiles 批量获取文件记录
+func GetFiles(tx *gorm.DB, t string, limit int, offset int) ([]model.File, int64, bool, string) {
+	var files []model.File
 	var count int64
-	res := tx.Model(&model.Avatar{})
+	res := tx.Model(&model.File{}).Where("type = ?", t)
 	if res = res.Count(&count); res.Error != nil {
 		log.Logger.Warningf("Failed to get files: %s", res.Error)
 		return nil, 0, false, "UnknownError"
