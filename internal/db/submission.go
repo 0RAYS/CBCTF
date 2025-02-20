@@ -25,7 +25,11 @@ func CreateSubmission(tx *gorm.DB, contest model.Contest, team model.Team, user 
 			return model.Submission{}, false, msg
 		}
 	}
-	submission := model.InitSubmission(contest.ID, challenge.ID, team.ID, user.ID, value, solved)
+	team, ok, msg := GetTeamByID(tx, team.ID)
+	if !ok {
+		return model.Submission{}, false, msg
+	}
+	submission := model.InitSubmission(contest.ID, challenge.ID, team.ID, user.ID, value, solved, team.Score)
 	if err := tx.Model(model.Submission{}).Create(&submission).Error; err != nil {
 		return model.Submission{}, false, "CreateSubmissionError"
 	}
@@ -77,4 +81,15 @@ func GetSubmissions(tx *gorm.DB, limit, offset int, teamIDL ...uint) ([]model.Su
 		return nil, 0, false, "UnknownError"
 	}
 	return submissions, count, true, "Success"
+}
+
+func GetTeamSolved(tx *gorm.DB, contestID, teamID uint) ([]model.Submission, bool, string) {
+	var submissions []model.Submission
+	res := tx.Model(model.Submission{}).Order("created_at asc").
+		Where("contest_id = ? AND team_id = ? AND solved = ?", contestID, teamID, true).Find(&submissions)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get submissions: %v", res.Error)
+		return nil, false, "UnknownError"
+	}
+	return submissions, true, "Success"
 }

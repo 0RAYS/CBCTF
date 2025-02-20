@@ -45,6 +45,7 @@ func Init() *gin.Engine {
 	{
 		contest.GET("/info", GetContest)
 		contest.GET("/rank", GetRank)
+		contest.GET("/rank/detail", GetRankDetail)
 		contest.POST("/join", middleware.CheckVerified, JoinTeam)
 		contest.POST("/create", middleware.CheckVerified, CreateTeam)
 
@@ -126,6 +127,7 @@ func Init() *gin.Engine {
 			adminContest.POST("/avatar", UploadAvatar(model.Contest{}))
 			adminContest.GET("/submissions", GetSubmissions)
 			adminContest.GET("/rank", GetRank)
+			contest.GET("/rank/detail", GetRankDetail)
 
 			// 比赛队伍管理
 			adminContest.GET("/team/list", GetTeams)
