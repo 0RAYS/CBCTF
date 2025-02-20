@@ -27,6 +27,7 @@ func CreateDocker(tx *gorm.DB, flag model.Flag, challenge model.Challenge, creat
 	log.Logger.Debugf("Starting container for team %d challenge %s", flag.TeamID, flag.ChallengeID)
 	ip, port, ok, msg = k8s.StartContainer(challenge, flag, docker)
 	if !ok {
+		go k8s.StopContainer(docker)
 		log.Logger.Warningf("Failed to start container for challenge %s: %s", flag.ChallengeID, msg)
 		return model.Docker{}, false, msg
 	}
