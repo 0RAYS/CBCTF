@@ -49,16 +49,17 @@ func Init() *gin.Engine {
 		contest.POST("/create", middleware.CheckVerified, CreateTeam)
 
 		contestTeam := contest.Group("/team", middleware.SetTeamByUser)
-
-		contestTeam.GET("/info", GetTeam)
-		contestTeam.GET("/captcha", GetTeamCaptcha)
-		contestTeam.GET("/list", GetTeammates)
-		contestTeam.POST("/captcha", UpdateCaptcha)
-		contestTeam.POST("/update", middleware.CheckVerified, middleware.CheckCaptain, UpdateTeam)
-		contestTeam.POST("/avatar", middleware.CheckVerified, middleware.CheckCaptain, UploadAvatar(model.Team{}))
-		contestTeam.POST("/delete", middleware.CheckVerified, middleware.CheckCaptain, DeleteTeam)
-		contestTeam.POST("/kick", middleware.CheckVerified, middleware.CheckCaptain, KickMember)
-		contestTeam.POST("/leave", middleware.CheckVerified, LeaveTeam)
+		{
+			contestTeam.GET("/info", GetTeam)
+			contestTeam.GET("/captcha", GetTeamCaptcha)
+			contestTeam.GET("/list", GetTeammates)
+			contestTeam.POST("/captcha", UpdateCaptcha)
+			contestTeam.POST("/update", middleware.CheckVerified, middleware.CheckCaptain, UpdateTeam)
+			contestTeam.POST("/avatar", middleware.CheckVerified, middleware.CheckCaptain, UploadAvatar(model.Team{}))
+			contestTeam.POST("/delete", middleware.CheckVerified, middleware.CheckCaptain, DeleteTeam)
+			contestTeam.POST("/kick", middleware.CheckVerified, middleware.CheckCaptain, KickMember)
+			contestTeam.POST("/leave", middleware.CheckVerified, LeaveTeam)
+		}
 
 		// 比赛公告
 		{
