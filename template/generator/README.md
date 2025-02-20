@@ -76,6 +76,7 @@ python3 generator.py $1 $flag
 通过上传不同的 generator.zip 文件, 其中包含 generator.py 和 template.py (本示例中), 生成不同题目的密码学附件
 ```
 
+该文件由管理员上传, 作为生成器的可选依赖存在, 当该依赖不存在时, 务必保证生成器镜像可独立正确生成附件
 
 ## Attention
 1. 容器中务必存在一下命令
