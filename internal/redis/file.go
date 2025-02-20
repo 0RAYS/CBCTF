@@ -18,29 +18,29 @@ const (
 	FilesPattern = "fs"
 )
 
-func GetFileCache(id string) (model.Avatar, bool) {
+func GetFileCache(id string) (model.File, bool) {
 	if !config.Env.Redis.On {
-		return model.Avatar{}, false
+		return model.File{}, false
 	}
 	ctx := context.Background()
 	data, err := RDB.Get(ctx, fmt.Sprintf(FilePattern, id)).Result()
 	if errors.Is(err, redis.Nil) {
 		atomic.AddInt64(&CacheMiss, 1)
-		return model.Avatar{}, false
+		return model.File{}, false
 	} else if err != nil {
-		return model.Avatar{}, false
+		return model.File{}, false
 	}
-	var file model.Avatar
+	var file model.File
 	err = msgpack.Unmarshal([]byte(data), &file)
 	if err != nil {
-		return model.Avatar{}, false
+		return model.File{}, false
 	}
 	atomic.AddInt64(&CacheHit, 1)
 	log.Logger.Debug("GetFileCache: ", file.ID)
 	return file, true
 }
 
-func GetFilesCache() ([]model.Avatar, bool) {
+func GetFilesCache() ([]model.File, bool) {
 	if !config.Env.Redis.On {
 		return nil, false
 	}
@@ -52,7 +52,7 @@ func GetFilesCache() ([]model.Avatar, bool) {
 	} else if err != nil {
 		return nil, false
 	}
-	var files []model.Avatar
+	var files []model.File
 	err = msgpack.Unmarshal([]byte(data), &files)
 	if err != nil {
 		return nil, false
@@ -62,7 +62,7 @@ func GetFilesCache() ([]model.Avatar, bool) {
 	return files, true
 }
 
-func SetFileCache(file model.Avatar) error {
+func SetFileCache(file model.File) error {
 	if !config.Env.Redis.On {
 		return nil
 	}
@@ -78,7 +78,7 @@ func SetFileCache(file model.Avatar) error {
 	return nil
 }
 
-func SetFilesCache(files []model.Avatar) error {
+func SetFilesCache(files []model.File) error {
 	if !config.Env.Redis.On {
 		return nil
 	}
