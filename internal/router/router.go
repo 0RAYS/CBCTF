@@ -127,7 +127,7 @@ func Init() *gin.Engine {
 			adminContest.POST("/avatar", UploadAvatar(model.Contest{}))
 			adminContest.GET("/submissions", GetSubmissions)
 			adminContest.GET("/rank", GetRank)
-			contest.GET("/rank/detail", GetRankDetail)
+			adminContest.GET("/rank/detail", GetRankDetail)
 
 			// 比赛队伍管理
 			adminContest.GET("/team/list", GetTeams)
