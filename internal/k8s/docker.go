@@ -16,7 +16,10 @@ import (
 func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Docker) (string, int32, bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
-	var err error
+	var (
+		err error
+		ok  bool
+	)
 	if challenge.Type != model.Container {
 		return "", -1, false, "InvalidChallengeType"
 	}
@@ -92,7 +95,7 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 		return "", -1, false, "CreateServiceError"
 	}
 	for {
-		pod, ok, _ := GetPod(pod.Name)
+		pod, ok, _ = GetPod(pod.Name)
 		if !ok {
 			log.Logger.Warningf("Failed to get pod: %v", err)
 			return "", -1, false, "GetPodError"
