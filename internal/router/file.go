@@ -121,32 +121,34 @@ func UploadAvatar(v string) func(ctx *gin.Context) {
 			record model.File
 			ok     bool
 			msg    string
+			path   string
 		)
-		hash := hex.EncodeToString(sha256Sum.Sum(nil))
+		allowed := []string{".png", ".jpg", ".jpeg"}
+		suffix := strings.ToLower(p.Ext(file.Filename))
+		if !utils.In(suffix, allowed) {
+			ctx.JSON(http.StatusForbidden, gin.H{"msg": "FileNotAllowed", "data": file.Filename})
+			return
+		}
 		tx := db.DB.WithContext(ctx).Begin()
+		hash := hex.EncodeToString(sha256Sum.Sum(nil))
 		if record, ok, _ = db.GetFileByHash(tx, hash); !ok {
 			basePath := fmt.Sprintf("%s/avatar", config.Env.Gin.Upload.Path)
-			allowed := []string{".png", ".jpg", ".jpeg"}
-			suffix := strings.ToLower(p.Ext(file.Filename))
-			if !utils.In(suffix, allowed) {
-				tx.Rollback()
-				ctx.JSON(http.StatusForbidden, gin.H{"msg": "FileNotAllowed", "data": file.Filename})
-				return
-			}
-			path := fmt.Sprintf("%s/%s%s", basePath, utils.UUID(), suffix)
+			path = fmt.Sprintf("%s/%s%s", basePath, utils.UUID(), suffix)
 			if err = ctx.SaveUploadedFile(file, path); err != nil {
 				tx.Rollback()
 				ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
 				return
 			}
-			record, ok, msg = db.RecordFile(tx, path, middleware.GetSelfID(ctx), file, hash, model.Avatar)
-			if !ok {
-				tx.Rollback()
-				ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
-				return
-			}
+		} else {
+			path = record.Path
 		}
-		path := fmt.Sprintf("/avatar/%s", record.ID)
+		record, ok, msg = db.RecordFile(tx, path, middleware.GetSelfID(ctx), file, hash, model.Avatar)
+		if !ok {
+			tx.Rollback()
+			ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
+		}
+		path = fmt.Sprintf("/avatar/%s", record.ID)
 		switch v {
 		case "self-admin":
 			ok, msg = db.UpdateAdmin(tx, middleware.GetSelfID(ctx), map[string]interface{}{"avatar": path})
