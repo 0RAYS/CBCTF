@@ -27,13 +27,13 @@ func StartGenerator(challenge model.Challenge) (*corev1.Pod, bool, string) {
 		return &corev1.Pod{}, false, "EmptyGeneratorImage"
 	}
 	log.Logger.Debugf("Creating pod for challenge %s:%s", challenge.Name, challenge.ID)
-	podName := fmt.Sprintf("%s-generator-pod", challenge.ID)
+	podName := fmt.Sprintf("generator-%s-pod", challenge.ID)
 	pod, ok, _ := GetPod(podName)
 	if ok && pod.Status.Phase == corev1.PodRunning {
 		log.Logger.Infof("Pod %s is already running", pod.Name)
 		return pod, true, "Success"
 	}
-	containerName := fmt.Sprintf("%s-generator", challenge.ID)
+	containerName := fmt.Sprintf("generator-%s", challenge.ID)
 	pod = &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      podName,
@@ -95,7 +95,7 @@ func StartGenerator(challenge model.Challenge) (*corev1.Pod, bool, string) {
 
 func StopGenerator(challenge model.Challenge) (bool, string) {
 	log.Logger.Infof("Stopping generator for challenge %s-%s", challenge.ID, challenge.Name)
-	podName := fmt.Sprintf("%s-generator-pod", challenge.ID)
+	podName := fmt.Sprintf("generator-%s-pod", challenge.ID)
 	return DeletePod(podName)
 }
 
