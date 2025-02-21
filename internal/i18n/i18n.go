@@ -101,10 +101,11 @@ var resp = map[string]map[string]interface{}{
 	"AlreadySolved":         {"zh-CN": "已提交过flag", "en-US": "Flag already submitted", "code": 200},
 	"NotAllowSubmit":        {"zh-CN": "不允许提交flag", "en-US": "Not allowed to submit flag", "code": 400},
 
-	"CreatePodError":     {"zh-CN": "创建Pod失败", "en-US": "Failed to create Pod", "code": 500},
-	"GetPodError":        {"zh-CN": "获取Pod失败", "en-US": "Failed to get Pod", "code": 500},
 	"CopyFileError":      {"zh-CN": "复制文件失败", "en-US": "Failed to copy file", "code": 500},
+	"CreatePodError":     {"zh-CN": "创建Pod失败", "en-US": "Failed to create Pod", "code": 500},
 	"CreateServiceError": {"zh-CN": "创建Service失败", "en-US": "Failed to create Service", "code": 500},
+	"GetPodError":        {"zh-CN": "获取Pod失败", "en-US": "Failed to get Pod", "code": 500},
+	"GetServiceError":    {"zh-CN": "获取Service失败", "en-US": "Failed to get Service", "code": 500},
 	"DeletePodError":     {"zh-CN": "删除Pod失败", "en-US": "Failed to delete Pod", "code": 500},
 	"DeleteServiceError": {"zh-CN": "删除Service失败", "en-US": "Failed to delete Service", "code": 500},
 	"GetNodeError":       {"zh-CN": "获取Node失败", "en-US": "Failed to get Node", "code": 500},
