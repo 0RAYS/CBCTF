@@ -35,7 +35,7 @@ func Init() *gin.Engine {
 		user.POST("/password", ChangePassword)
 		user.POST("/update", UpdateUser)
 		user.POST("/delete", DeleteUser)
-		user.POST("/avatar", UploadAvatar(model.User{}))
+		user.POST("/avatar", UploadAvatar("self"))
 		user.POST("/activate", Activate)
 	}
 
@@ -56,7 +56,7 @@ func Init() *gin.Engine {
 			contestTeam.GET("/list", GetTeammates)
 			contestTeam.POST("/captcha", UpdateCaptcha)
 			contestTeam.POST("/update", middleware.CheckVerified, middleware.CheckCaptain, UpdateTeam)
-			contestTeam.POST("/avatar", middleware.CheckVerified, middleware.CheckCaptain, UploadAvatar(model.Team{}))
+			contestTeam.POST("/avatar", middleware.CheckVerified, middleware.CheckCaptain, UploadAvatar("team"))
 			contestTeam.POST("/delete", middleware.CheckVerified, middleware.CheckCaptain, DeleteTeam)
 			contestTeam.POST("/kick", middleware.CheckVerified, middleware.CheckCaptain, KickMember)
 			contestTeam.POST("/leave", middleware.CheckVerified, LeaveTeam)
@@ -100,7 +100,7 @@ func Init() *gin.Engine {
 		admin.GET("/list", GetAdmins)
 		admin.POST("/password", AdminChangePassword)
 		admin.POST("/update", UpdateAdmin)
-		admin.POST("/avatar", UploadAvatar(model.Admin{}))
+		admin.POST("/avatar", UploadAvatar("self"))
 		admin.POST("/create", CreateAdmin)
 
 		// 系统管理
@@ -119,7 +119,7 @@ func Init() *gin.Engine {
 			adminUser.GET("/info", GetUser)
 			adminUser.POST("/update", UpdateUser)
 			adminUser.POST("/delete", DeleteUser)
-			adminUser.POST("/avatar", UploadAvatar(model.User{}))
+			adminUser.POST("/avatar", UploadAvatar("user"))
 		}
 
 		// 比赛管理
@@ -131,7 +131,7 @@ func Init() *gin.Engine {
 			adminContest.GET("/captcha", GetContestCaptcha)
 			adminContest.POST("/update", UpdateContest)
 			adminContest.POST("/delete", DeleteContest)
-			adminContest.POST("/avatar", UploadAvatar(model.Contest{}))
+			adminContest.POST("/avatar", UploadAvatar("contest"))
 			adminContest.GET("/submissions", GetSubmissions)
 			adminContest.GET("/rank", GetRank)
 			adminContest.GET("/rank/detail", GetRankDetail)
@@ -146,7 +146,7 @@ func Init() *gin.Engine {
 				adminContestTeam.POST("/update", UpdateTeam)
 				adminContestTeam.POST("/delete", DeleteTeam)
 				adminContestTeam.POST("/kick", KickMember)
-				adminContestTeam.POST("/avatar", UploadAvatar(model.Team{}))
+				adminContestTeam.POST("/avatar", UploadAvatar("team"))
 
 				// 比赛队伍提交管理
 				adminContestTeam.GET("/submission/list", GetTeamSubmissions)
