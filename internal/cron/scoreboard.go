@@ -7,7 +7,7 @@ import (
 )
 
 func UpdateRanking(c *cron.Cron) {
-	c.Schedule(cron.Every(1*time.Minute), cron.FuncJob(func() {
+	function := func() {
 		contests, _, ok, _ := db.GetContests(db.DB, -1, -1, false, false)
 		if !ok {
 			return
@@ -18,5 +18,7 @@ func UpdateRanking(c *cron.Cron) {
 			}
 			go db.UpdateRanking(db.DB, contest.ID)
 		}
-	}))
+	}
+	function()
+	c.Schedule(cron.Every(1*time.Minute), cron.FuncJob(function))
 }

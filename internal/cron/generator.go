@@ -11,7 +11,7 @@ import (
 )
 
 func PrepareGenerator(c *cron.Cron) {
-	c.Schedule(cron.Every(30*time.Minute), cron.FuncJob(func() {
+	function := func() {
 		var (
 			ok        bool
 			msg       string
@@ -46,7 +46,9 @@ func PrepareGenerator(c *cron.Cron) {
 				}
 			}
 		}
-	}))
+	}
+	function()
+	c.Schedule(cron.Every(30*time.Minute), cron.FuncJob(function))
 }
 
 func CloseGenerator(c *cron.Cron) {
