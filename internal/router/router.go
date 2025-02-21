@@ -35,7 +35,7 @@ func Init() *gin.Engine {
 		user.POST("/password", ChangePassword)
 		user.POST("/update", UpdateUser)
 		user.POST("/delete", DeleteUser)
-		user.POST("/avatar", UploadAvatar("self"))
+		user.POST("/avatar", UploadAvatar("self-user"))
 		user.POST("/activate", Activate)
 	}
 
@@ -100,7 +100,7 @@ func Init() *gin.Engine {
 		admin.GET("/list", GetAdmins)
 		admin.POST("/password", AdminChangePassword)
 		admin.POST("/update", UpdateAdmin)
-		admin.POST("/avatar", UploadAvatar("self"))
+		admin.POST("/avatar", UploadAvatar("self-admin"))
 		admin.POST("/create", CreateAdmin)
 
 		// 系统管理

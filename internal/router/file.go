@@ -148,9 +148,9 @@ func UploadAvatar(v string) func(ctx *gin.Context) {
 		}
 		path := fmt.Sprintf("/avatar/%s", record.ID)
 		switch v {
-		case "self":
+		case "self-admin":
 			ok, msg = db.UpdateAdmin(tx, middleware.GetSelfID(ctx), map[string]interface{}{"avatar": path})
-		case "user":
+		case "user", "self-user":
 			ok, msg = db.UpdateUser(tx, middleware.GetUser(ctx).ID, map[string]interface{}{"avatar": path})
 		case "contest":
 			ok, msg = db.UpdateContest(tx, middleware.GetContest(ctx).ID, map[string]interface{}{"avatar": path})
