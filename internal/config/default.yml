@@ -34,6 +34,7 @@ k8s:
     master: 192.168.0.1
     # also as prefix of resources
     namespace: cbctf
+    tcpdump: "nicolaka/netshoot:latest"
     # nodes of k8s cluster, used for external service
     nodes:
         - 192.168.0.1

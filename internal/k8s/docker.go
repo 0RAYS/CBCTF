@@ -52,7 +52,7 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 				},
 				{
 					Name:    "tcpdump",
-					Image:   "docker.0rays.club/test/netshoot:test",
+					Image:   config.Env.K8S.TCPDumpImage,
 					Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/traffic.pcap"},
 				},
 			},

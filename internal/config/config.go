@@ -58,10 +58,11 @@ type Config struct {
 	} `mapstructure:"redis" json:"redis"`
 
 	K8S struct {
-		Config    string   `mapstructure:"config" json:"config"`       // Kubernetes 配置文件路径
-		Master    string   `mapstructure:"master" json:"master"`       // Kubernetes Master 地址
-		Namespace string   `mapstructure:"namespace" json:"namespace"` // Kubernetes 命名空间
-		Nodes     []string `mapstructure:"nodes" json:"nodes"`         // Kubernetes 节点列表
+		Config       string   `mapstructure:"config" json:"config"`       // Kubernetes 配置文件路径
+		Master       string   `mapstructure:"master" json:"master"`       // Kubernetes Master 地址
+		Namespace    string   `mapstructure:"namespace" json:"namespace"` // Kubernetes 命名空间
+		TCPDumpImage string   `mapstructure:"tcpdump" json:"tcpdump"`     // TCPDump 镜像
+		Nodes        []string `mapstructure:"nodes" json:"nodes"`         // Kubernetes 节点列表
 	} `mapstructure:"k8s" json:"k8s"`
 
 	Email struct {
