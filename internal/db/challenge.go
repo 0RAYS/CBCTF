@@ -34,12 +34,6 @@ func GetChallengeByID(tx *gorm.DB, id string) (model.Challenge, bool, string) {
 
 // GetChallenges 获取题目列表, 可接受 type 和 category 参数
 func GetChallenges(tx *gorm.DB, limit, offset, t int, category string) ([]model.Challenge, int64, bool, string) {
-	if limit <= 0 {
-		limit = -1
-	}
-	if offset <= 0 {
-		offset = -1
-	}
 	var challenges []model.Challenge
 	var count int64
 	res := tx.Model(model.Challenge{})
