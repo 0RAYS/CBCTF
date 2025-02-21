@@ -2,8 +2,10 @@ package cron
 
 import (
 	"CBCTF/internal/db"
+	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"github.com/robfig/cron/v3"
+	"strings"
 	"time"
 )
 
@@ -25,6 +27,24 @@ func CloseDockers(c *cron.Cron) {
 					continue
 				}
 				tx.Commit()
+			}
+		}
+	}))
+}
+
+// CloseUnCtrlDockers 移除意外超时的 pod
+func CloseUnCtrlDockers(c *cron.Cron) {
+	c.Schedule(cron.Every(1*time.Hour), cron.FuncJob(func() {
+		pods, ok, msg := k8s.GetPods()
+		if !ok {
+			log.Logger.Warningf("Failed to get pods %s", msg)
+			return
+		}
+		for _, pod := range pods.Items {
+			if strings.Contains(pod.Name, "victim") && time.Now().Sub(pod.CreationTimestamp.Time) > 4*time.Hour {
+				if _, ok, _ := db.GetDockerByPodName(db.DB, pod.Name); !ok {
+					_, _ = k8s.DeletePod(pod.Name)
+				}
 			}
 		}
 	}))

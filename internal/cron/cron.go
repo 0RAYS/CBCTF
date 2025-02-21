@@ -13,6 +13,7 @@ func Init() {
 	UpdateRanking(c)
 	PrepareGenerator(c)
 	CloseGenerator(c)
+	CloseUnCtrlDockers(c)
 }
 
 func Start() {
