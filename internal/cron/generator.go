@@ -11,6 +11,7 @@ import (
 )
 
 func PrepareGenerator(c *cron.Cron) {
+	log.Logger.Info("Prepare generator")
 	function := func() {
 		var (
 			ok        bool
