@@ -30,19 +30,11 @@ func RecordFile(tx *gorm.DB, path string, uploader uint, file *multipart.FileHea
 
 // GetFileByID 以 ID 获取文件记录
 func GetFileByID(tx *gorm.DB, id string) (model.File, bool, string) {
-	if file, ok := redis.GetFileCache(id); ok {
-		return file, true, "Success"
-	}
 	var file model.File
 	res := tx.Model(model.File{}).Where("id = ?", id).Find(&file).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.File{}, false, "FileNotFound"
 	}
-	go func() {
-		if err := redis.SetFileCache(file); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-			log.Logger.Errorf("Failed to delete file cache: %v", err)
-		}
-	}()
 	return file, true, "Success"
 }
 
@@ -63,9 +55,6 @@ func DeleteFile(tx *gorm.DB, id string) (bool, string) {
 		return false, "DeleteFileError"
 	}
 	go func() {
-		if err := redis.DelFileCache(id); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-			log.Logger.Warningf("Failed to delete file cache: %v", err)
-		}
 		if err := redis.DelFilesCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
 			log.Logger.Warningf("Failed to delete files cache: %v", err)
 		}
