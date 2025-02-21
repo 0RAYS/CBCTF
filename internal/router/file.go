@@ -92,7 +92,7 @@ func GetAvatars(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "files": &files}})
 }
 
-func UploadAvatar(v interface{}) func(ctx *gin.Context) {
+func UploadAvatar(v string) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		file, err := ctx.FormFile("avatar")
 		if err != nil {
@@ -147,14 +147,14 @@ func UploadAvatar(v interface{}) func(ctx *gin.Context) {
 			}
 		}
 		path := fmt.Sprintf("/avatar/%s", record.ID)
-		switch v.(type) {
-		case model.Admin:
+		switch v {
+		case "self":
 			ok, msg = db.UpdateAdmin(tx, middleware.GetSelfID(ctx), map[string]interface{}{"avatar": path})
-		case model.User:
+		case "user":
 			ok, msg = db.UpdateUser(tx, middleware.GetUser(ctx).ID, map[string]interface{}{"avatar": path})
-		case model.Contest:
+		case "contest":
 			ok, msg = db.UpdateContest(tx, middleware.GetContest(ctx).ID, map[string]interface{}{"avatar": path})
-		case model.Team:
+		case "team":
 			ok, msg = db.UpdateTeam(tx, middleware.GetTeam(ctx).ID, map[string]interface{}{"avatar": path})
 		}
 		if !ok {
