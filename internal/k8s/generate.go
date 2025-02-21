@@ -9,27 +9,32 @@ import (
 	"encoding/base64"
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
-	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/utils/ptr"
 	"os"
+	"time"
 )
 
-// GenerateAttachment 启动容器, 生成附件
-func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, string) {
-	log.Logger.Debugf("Generating attachment for team %d challenge %s", flag.TeamID, flag.ChallengeID)
+func StartGenerator(challenge model.Challenge) (*corev1.Pod, bool, string) {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	defer cancel()
+	log.Logger.Infof("Starting generator for challenge %s-%s", challenge.ID, challenge.Name)
 	var err error
 	if challenge.Type != model.Dynamic {
-		return false, "InvalidChallengeType"
+		return &corev1.Pod{}, false, "InvalidChallengeType"
 	}
 	if challenge.GeneratorImage == "" {
-		return false, "EmptyGeneratorImage"
+		return &corev1.Pod{}, false, "EmptyGeneratorImage"
 	}
 	log.Logger.Debugf("Creating pod for challenge %s:%s", challenge.Name, challenge.ID)
-	podName := fmt.Sprintf("%s-%d-generator-pod", challenge.ID, flag.TeamID)
-	containerName := fmt.Sprintf("%s-%d-generator", challenge.ID, flag.TeamID)
-	pod := &corev1.Pod{
+	podName := fmt.Sprintf("%s-generator-pod", challenge.ID)
+	pod, ok, _ := GetPod(podName)
+	if ok && pod.Status.Phase == corev1.PodRunning {
+		log.Logger.Infof("Pod %s is already running", pod.Name)
+		return pod, true, "Success"
+	}
+	containerName := fmt.Sprintf("%s-generator", challenge.ID)
+	pod = &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      podName,
 			Namespace: NamespaceName,
@@ -46,58 +51,72 @@ func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, strin
 			RestartPolicy:                 corev1.RestartPolicyNever,
 		},
 	}
-	pod, err = Client.CoreV1().Pods(NamespaceName).Create(context.TODO(), pod, metav1.CreateOptions{})
+	pod, err = Client.CoreV1().Pods(NamespaceName).Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create pod: %v", err)
-		return false, "CreatePodError"
+		return &corev1.Pod{}, false, "CreatePodError"
 	}
-	defer func(pods v1.PodInterface, ctx context.Context, name string, opts metav1.DeleteOptions) {
-		err = pods.Delete(ctx, name, opts)
-		if err != nil && !apierror.IsNotFound(err) {
-			log.Logger.Warningf("Failed to delete pod: %v", err)
-		} else {
-			log.Logger.Debugf("%s:%s deleted successfully", challenge.Name, pod.Name)
-		}
-	}(Client.CoreV1().Pods(NamespaceName), context.TODO(), pod.Name, metav1.DeleteOptions{})
-
 	for {
-		pod, err = Client.CoreV1().Pods(NamespaceName).Get(context.TODO(), pod.Name, metav1.GetOptions{})
-		if err != nil {
+		pod, ok, _ = GetPod(podName)
+		if !ok {
 			log.Logger.Warningf("Failed to get pod: %v", err)
-			return false, "GetPodError"
+			return &corev1.Pod{}, false, "GetPodError"
 		}
 		if pod.Status.Phase == corev1.PodRunning {
 			break
 		}
 		if pod.Status.Phase != corev1.PodPending {
 			log.Logger.Warningf("Pod %s is not running", pod.Name)
-			return false, "PodNotRunning"
+			return &corev1.Pod{}, false, "PodNotRunning"
 		}
 	}
 	var commands []string
 	generatorPath := challenge.GeneratorPath()
 	if _, err := os.Stat(generatorPath); err == nil {
-		err = CopyToPod(pod.Name, containerName, generatorPath, "/root/generator.zip")
+		err = CopyToPod(podName, containerName, generatorPath, "/root/generator.zip")
 		if err != nil {
 			log.Logger.Warningf("Failed to copy file: %v", err)
-			return false, "CopyFileError"
+			return &corev1.Pod{}, false, "CopyFileError"
 		}
 		commands = append(commands, "unzip /root/generator.zip -d /root")
 	} else {
 		log.Logger.Warning("Generator file not found, make sure the generator docker can work correctly")
 	}
-	// TODO 有 RCE 的风险，虽然是在容器内
-	commands = append(commands, fmt.Sprintf("./run.sh %d %s", flag.TeamID, base64.StdEncoding.EncodeToString([]byte(flag.Value))))
 	for _, command := range commands {
 		log.Logger.Debugf("Executing command: %s", command)
 		var buf bytes.Buffer
-		if ExecInPod(pod.Name, containerName, command, nil, &buf, nil) != nil {
+		if ExecInPod(podName, containerName, command, nil, &buf, nil) != nil {
 			log.Logger.Warningf("Failed to execute command %s: %v", command, err)
-			return false, "ExecCommandError"
+			return &corev1.Pod{}, false, "ExecCommandError"
 		}
 	}
+	return pod, true, "Success"
+}
+
+func StopGenerator(challenge model.Challenge) (bool, string) {
+	log.Logger.Infof("Stopping generator for challenge %s-%s", challenge.ID, challenge.Name)
+	podName := fmt.Sprintf("%s-generator-pod", challenge.ID)
+	return DeletePod(podName)
+}
+
+// GenerateAttachment 启动容器, 生成附件
+func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, string) {
+	var err error
+	log.Logger.Debugf("Generating attachment for team %d challenge %s", flag.TeamID, flag.ChallengeID)
+	pod, ok, msg := StartGenerator(challenge)
+	if !ok {
+		_, _ = StopGenerator(challenge)
+		return false, msg
+	}
+	command := fmt.Sprintf("./run.sh %d %s", flag.TeamID, base64.StdEncoding.EncodeToString([]byte(flag.Value)))
+	log.Logger.Debugf("Executing command: %s", command)
+	var buf bytes.Buffer
+	if ExecInPod(pod.Name, pod.Spec.Containers[0].Name, command, nil, &buf, nil) != nil {
+		log.Logger.Warningf("Failed to execute command %s: %v", command, err)
+		return false, "ExecCommandError"
+	}
 	err = CopyFromPod(
-		pod.Name, containerName,
+		pod.Name, pod.Spec.Containers[0].Name,
 		fmt.Sprintf("/root/attachments/%d.zip", flag.TeamID),
 		fmt.Sprintf("%s/attachments/%s/%d.zip", config.Env.Gin.Upload.Path, challenge.ID, flag.TeamID),
 	)

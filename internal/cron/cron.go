@@ -11,6 +11,8 @@ func Init() {
 	c = cron.New(cron.WithSeconds())
 	CloseDockers(c)
 	UpdateRanking(c)
+	PrepareGenerator(c)
+	CloseGenerator(c)
 }
 
 func Start() {
