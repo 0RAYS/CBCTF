@@ -71,6 +71,15 @@ func GetDockerByID(tx *gorm.DB, id uint, deleted bool) (model.Docker, bool, stri
 	return docker, true, "Success"
 }
 
+func GetDockerByPodName(tx *gorm.DB, podName string) (model.Docker, bool, string) {
+	var docker model.Docker
+	res := tx.Model(model.Docker{}).Where("pod = ?", podName).Find(&docker).Limit(1)
+	if res.RowsAffected != 1 {
+		return model.Docker{}, false, "DockerNotFound"
+	}
+	return docker, true, "Success"
+}
+
 func GetDockerByTeamID(tx *gorm.DB, teamID uint, limit, offset int, deleted bool) ([]model.Docker, int64, bool, string) {
 	if limit <= 0 {
 		limit = -1

@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/model"
 	"context"
 	corev1 "k8s.io/api/core/v1"
-	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/ptr"
@@ -93,8 +92,8 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 		return "", -1, false, "CreateServiceError"
 	}
 	for {
-		pod, err = Client.CoreV1().Pods(NamespaceName).Get(ctx, docker.PodName, metav1.GetOptions{})
-		if err != nil {
+		pod, ok, _ := GetPod(pod.Name)
+		if !ok {
 			log.Logger.Warningf("Failed to get pod: %v", err)
 			return "", -1, false, "GetPodError"
 		}
@@ -106,10 +105,9 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 			return "", -1, false, "CreatePodError"
 		}
 	}
-	node, err := Client.CoreV1().Nodes().Get(ctx, pod.Spec.NodeName, metav1.GetOptions{})
-	if err != nil {
-		log.Logger.Warningf("Failed to get node: %v", err)
-		return "", -1, false, "GetNodeError"
+	node, ok, msg := GetNode(pod.Spec.NodeName)
+	if !ok {
+		return "", -1, false, msg
 	}
 	ip := ""
 	for _, address := range node.Status.Addresses {
@@ -137,15 +135,8 @@ func StopContainer(docker model.Docker) (bool, string) {
 	if err != nil {
 		log.Logger.Warningf("Failed to copy %d traffic: %v", docker.TeamID, err)
 	}
-	err = Client.CoreV1().Services(NamespaceName).Delete(context.TODO(), docker.ServiceName, metav1.DeleteOptions{})
-	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete service: %v", err)
-		return false, "DeleteServiceError"
+	if ok, msg := DeleteService(docker.ServiceName); !ok {
+		return false, msg
 	}
-	err = Client.CoreV1().Pods(NamespaceName).Delete(context.TODO(), docker.PodName, metav1.DeleteOptions{})
-	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete pod: %v", err)
-		return false, "DeletePodError"
-	}
-	return true, "Success"
+	return DeletePod(docker.PodName)
 }
