@@ -45,7 +45,7 @@ jobs:
         install-only: true
 
     - name: Build
-      run: go build -ldflags "-w -s" -trimpath -o CBCTF -v ./...
+      run: go build -v ./...
 
     - name: Compress
       run: upx -9 CBCTF
