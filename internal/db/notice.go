@@ -49,13 +49,13 @@ func GetNotices(tx *gorm.DB, limit, offset int, contestID uint) ([]model.Notice,
 	res := tx.Model(&model.Notice{}).Where("contest_id = ?", contestID)
 	if res.Count(&count).Error != nil {
 		log.Logger.Warningf("Failed to count notices: %s", res.Error)
-		return []model.Notice{}, 0, false, "UnknownError"
+		return make([]model.Notice, 0), 0, false, "UnknownError"
 	}
 	limit, offset = utils.TidyPaginate(int(count), limit, offset)
 	res = res.Limit(limit).Offset(offset).Find(&notices)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get notices: %s", res.Error)
-		return []model.Notice{}, 0, false, "GetNoticesError"
+		return make([]model.Notice, 0), 0, false, "GetNoticesError"
 	}
 	return notices, count, true, "Success"
 }
