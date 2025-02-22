@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         # 构建多种架构的二进制文件
-        architecture: [amd64, arm64, armv7]  # 可以根据需要添加更多架构
+        architecture: [amd64, arm64]  # 可以根据需要添加更多架构
 
     steps:
       # Step 1: Checkout the code
@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libpcap-dev
+          sudo apt-get install -y --no-install-recommends libpcap-dev
 
       # Step 4: Set GOARCH for the corresponding architecture
       - name: Set GOARCH
