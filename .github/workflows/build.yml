@@ -26,5 +26,13 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends libpcap-dev
 
+    - name: Install UPX
+      uses: crazy-max/ghaction-upx@v3
+      with:
+        install-only: true
+
     - name: Build
-      run: go build -v ./...
+      run: go build -v ./... -o CBCTF -ldflags "-w -s" -trimpath
+
+    - name: Compress
+      run: upx -9 CBCTF
