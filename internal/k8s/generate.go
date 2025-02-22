@@ -124,5 +124,5 @@ func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, strin
 		log.Logger.Warningf("Failed to copy output file: %v", err)
 		return false, "CopyFileError"
 	}
-	return true, ""
+	return true, "Success"
 }
