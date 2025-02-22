@@ -53,7 +53,7 @@ func PrepareGenerator(c *cron.Cron) {
 }
 
 func CloseGenerator(c *cron.Cron) {
-	c.Schedule(cron.Every(1*time.Hour), cron.FuncJob(func() {
+	function := func() {
 		pods, ok, msg := k8s.GetPods()
 		if !ok {
 			log.Logger.Warningf("Failed to get pods %s", msg)
@@ -67,5 +67,7 @@ func CloseGenerator(c *cron.Cron) {
 				}
 			}
 		}
-	}))
+	}
+	function()
+	c.Schedule(cron.Every(1*time.Hour), cron.FuncJob(function))
 }
