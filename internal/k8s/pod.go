@@ -24,6 +24,9 @@ func GetPod(name string) (*corev1.Pod, bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 	pod, err := Client.CoreV1().Pods(NamespaceName).Get(ctx, name, metav1.GetOptions{})
+	if apierror.IsNotFound(err) {
+		return &corev1.Pod{}, false, "PodNotFound"
+	}
 	if err != nil {
 		log.Logger.Warningf("Failed to get pod: %v", err)
 		return &corev1.Pod{}, false, "GetPodError"
