@@ -47,7 +47,7 @@ jobs:
     - name: Build
       run: | 
         go build -v ./...
-        ls -al
+        du -a
 
     - name: Compress
       run: upx -9 CBCTF
