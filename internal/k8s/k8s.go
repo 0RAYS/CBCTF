@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/log"
 	"context"
 	"fmt"
+	"time"
 
 	authorizationv1 "k8s.io/api/authorization/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -53,20 +54,22 @@ func Init() {
 // initResources initializes resources in the namespace
 func initResources() {
 	var err error
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	defer cancel()
 	log.Logger.Debugf("Checking resources in namespace %s", NamespaceName)
-	if Namespace, err = Client.CoreV1().Namespaces().Get(context.TODO(), NamespaceName, metav1.GetOptions{}); err != nil {
+	if Namespace, err = Client.CoreV1().Namespaces().Get(ctx, NamespaceName, metav1.GetOptions{}); err != nil {
 		log.Logger.Infof("Namespace %s not found, creating...", NamespaceName)
 		Namespace = &corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: NamespaceName,
 			},
 		}
-		_, err = Client.CoreV1().Namespaces().Create(context.TODO(), Namespace, metav1.CreateOptions{})
+		_, err = Client.CoreV1().Namespaces().Create(ctx, Namespace, metav1.CreateOptions{})
 		if err != nil {
 			log.Logger.Fatalf("Error creating namespace: %v", err)
 		}
 	}
-	if SvcAccount, err = Client.CoreV1().ServiceAccounts(NamespaceName).Get(context.TODO(), SvcAccountName, metav1.GetOptions{}); err != nil {
+	if SvcAccount, err = Client.CoreV1().ServiceAccounts(NamespaceName).Get(ctx, SvcAccountName, metav1.GetOptions{}); err != nil {
 		log.Logger.Infof("ServiceAccount %s not found in %s namespace, creating...", SvcAccountName, NamespaceName)
 		SvcAccount = &corev1.ServiceAccount{
 			ObjectMeta: metav1.ObjectMeta{
@@ -74,12 +77,12 @@ func initResources() {
 				Namespace: NamespaceName,
 			},
 		}
-		SvcAccount, err = Client.CoreV1().ServiceAccounts(NamespaceName).Create(context.TODO(), SvcAccount, metav1.CreateOptions{})
+		SvcAccount, err = Client.CoreV1().ServiceAccounts(NamespaceName).Create(ctx, SvcAccount, metav1.CreateOptions{})
 		if err != nil {
 			log.Logger.Fatalf("Error creating ServiceAccount: %v", err)
 		}
 	}
-	if Role, err = Client.RbacV1().Roles(NamespaceName).Get(context.TODO(), RoleName, metav1.GetOptions{}); err != nil {
+	if Role, err = Client.RbacV1().Roles(NamespaceName).Get(ctx, RoleName, metav1.GetOptions{}); err != nil {
 		log.Logger.Infof("Role %s not found in %s namespace, creating...", RoleName, NamespaceName)
 		Role = &rbacv1.Role{
 			ObjectMeta: metav1.ObjectMeta{
@@ -94,12 +97,12 @@ func initResources() {
 				},
 			},
 		}
-		Role, err = Client.RbacV1().Roles(NamespaceName).Create(context.TODO(), Role, metav1.CreateOptions{})
+		Role, err = Client.RbacV1().Roles(NamespaceName).Create(ctx, Role, metav1.CreateOptions{})
 		if err != nil {
 			log.Logger.Fatalf("Error creating Role: %v", err)
 		}
 	}
-	if RoleBinding, err = Client.RbacV1().RoleBindings(NamespaceName).Get(context.TODO(), RoleBindingName, metav1.GetOptions{}); err != nil {
+	if RoleBinding, err = Client.RbacV1().RoleBindings(NamespaceName).Get(ctx, RoleBindingName, metav1.GetOptions{}); err != nil {
 		log.Logger.Infof("RoleBinding %s not found in %s namespace, creating...", RoleBindingName, NamespaceName)
 		RoleBinding = &rbacv1.RoleBinding{
 			ObjectMeta: metav1.ObjectMeta{
@@ -119,7 +122,7 @@ func initResources() {
 				APIGroup: "rbac.authorization.k8s.io",
 			},
 		}
-		RoleBinding, err = Client.RbacV1().RoleBindings(NamespaceName).Create(context.TODO(), RoleBinding, metav1.CreateOptions{})
+		RoleBinding, err = Client.RbacV1().RoleBindings(NamespaceName).Create(ctx, RoleBinding, metav1.CreateOptions{})
 		if err != nil {
 			log.Logger.Fatalf("Error creating RoleBinding: %v", err)
 		}
@@ -136,7 +139,8 @@ func checkPermission() bool {
 		Version:   "*",
 		Resource:  "*",
 	}
-
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	defer cancel()
 	for _, verb := range verbs {
 		resourceAttributes.Verb = verb
 		accessReview := &authorizationv1.SelfSubjectAccessReview{
@@ -144,7 +148,7 @@ func checkPermission() bool {
 				ResourceAttributes: resourceAttributes,
 			},
 		}
-		res, err := Client.AuthorizationV1().SelfSubjectAccessReviews().Create(context.TODO(), accessReview, metav1.CreateOptions{})
+		res, err := Client.AuthorizationV1().SelfSubjectAccessReviews().Create(ctx, accessReview, metav1.CreateOptions{})
 		if err != nil {
 			log.Logger.Warningf("Failed to check permissions for verb %s: %v", verb, err)
 		}
