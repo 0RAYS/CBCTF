@@ -109,6 +109,7 @@ var resp = map[string]map[string]interface{}{
 	"DeletePodError":     {"zh-CN": "删除Pod失败", "en-US": "Failed to delete Pod", "code": 500},
 	"DeleteServiceError": {"zh-CN": "删除Service失败", "en-US": "Failed to delete Service", "code": 500},
 	"GetNodeError":       {"zh-CN": "获取Node失败", "en-US": "Failed to get Node", "code": 500},
+	"PodNotFound":        {"zh-CN": "Pod不存在", "en-US": "Pod not found", "code": 404},
 
 	"AppendUserToTeamError":      {"zh-CN": "添加用户到队伍失败", "en-US": "Failed to add user to team", "code": 500},
 	"AppendTeamToContestError":   {"zh-CN": "添加队伍到赛事失败", "en-US": "Failed to add team to contest", "code": 500},
