@@ -17,14 +17,14 @@ jobs:
     strategy:
       matrix:
         include:
-          -   goarch: amd64
-              goos: linux
-          -   goarch: amd64
-              goos: darwin
-          -   goarch: arm64
-              goos: linux
-          -   goarch: arm64
-              goos: darwin
+          - goarch: amd64
+            goos: linux
+          - goarch: amd64
+            goos: darwin
+          - goarch: arm64
+            goos: linux
+          - goarch: arm64
+            goos: darwin
 
     steps:
     - uses: actions/checkout@v4
@@ -45,9 +45,8 @@ jobs:
         install-only: true
 
     - name: Build
-      run: | 
+      run:
         go build -v ./...
-        du -a
 
     - name: Compress
       run: upx -9 CBCTF
