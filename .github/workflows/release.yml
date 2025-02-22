@@ -1,0 +1,88 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  build:
+    name: Build for ${{ matrix.target.GOOS }}/${{ matrix.target.GOARCH }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          - { GOOS: linux, GOARCH: amd64 }
+          - { GOOS: linux, GOARCH: arm64 }
+          - { GOOS: windows, GOARCH: amd64 }
+          - { GOOS: windows, GOARCH: arm64 }
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libpcap-dev \
+            mingw-w64
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'latest'
+          cache: true
+
+      - name: Build
+        env:
+          GOOS: ${{ matrix.target.GOOS }}
+          GOARCH: ${{ matrix.target.GOARCH }}
+          CGO_ENABLED: 1
+          CC: |
+            ${{ 
+              matrix.target.GOOS == 'windows' && (
+                matrix.target.GOARCH == 'amd64' ? 'x86_64-w64-mingw32-gcc' : 
+                matrix.target.GOARCH == 'arm64' ? 'aarch64-w64-mingw32-gcc' : ''
+              ) || 'gcc'
+            }}
+        run: |
+          OUTPUT="bin/$(basename "$PWD")-${GOOS}-${GOARCH}"
+          if [ "$GOOS" = "windows" ]; then
+            OUTPUT="${OUTPUT}.exe"
+          fi
+          go build -ldflags="-s -w" -o "$OUTPUT"
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target.GOOS }}-${{ matrix.target.GOARCH }}-binary
+          path: bin/
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download Artifacts
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: ${{ github.workflow }}
+          run_id: ${{ github.run_id }}
+          pattern: "*binary"
+          merge: true
+          path: release
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: build-${{ github.run_id }}
+          name: "Multiarch Build ${{ github.run_id }}"
+          body: |
+            ### Dependencies
+            - libpcap v1.10.4
+            - Built with Go ${{ env.GO_VERSION }}
+          draft: false
+          prerelease: true
+          files: |
+            release/*
