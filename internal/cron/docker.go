@@ -34,7 +34,7 @@ func CloseDockers(c *cron.Cron) {
 
 // CloseUnCtrlDockers 移除意外超时的 pod
 func CloseUnCtrlDockers(c *cron.Cron) {
-	c.Schedule(cron.Every(1*time.Hour), cron.FuncJob(func() {
+	function := func() {
 		pods, ok, msg := k8s.GetPods()
 		if !ok {
 			log.Logger.Warningf("Failed to get pods %s", msg)
@@ -47,5 +47,7 @@ func CloseUnCtrlDockers(c *cron.Cron) {
 				}
 			}
 		}
-	}))
+	}
+	function()
+	c.Schedule(cron.Every(1*time.Hour), cron.FuncJob(function))
 }
