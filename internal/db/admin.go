@@ -52,7 +52,7 @@ func GetAdmins(tx *gorm.DB) ([]model.Admin, int, bool, string) {
 	res := tx.Model(&model.Admin{}).Find(&admins)
 	if res.Error != nil {
 		log.Logger.Errorf("Failed to get admins: %s", res.Error)
-		return nil, 0, false, "UnknownError"
+		return make([]model.Admin, 0), 0, false, "UnknownError"
 	}
 	return admins, len(admins), true, "Success"
 }

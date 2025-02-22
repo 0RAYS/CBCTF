@@ -34,7 +34,7 @@ func GetRanking(contestID uint, limit, offset int) ([]model.Team, int64, bool, s
 	res := DB.Model(&model.Team{}).Where("contest_id = ? AND banned = ?", contestID, false)
 	if err := res.Count(&count).Error; err != nil {
 		log.Logger.Warningf("Failed to count teams: %v", err)
-		return nil, -1, false, "UnknownError"
+		return make([]model.Team, 0), -1, false, "UnknownError"
 	}
 	limit, offset = utils.TidyPaginate(int(count), limit, offset)
 	if teams, err := redis.GetCachedRanking(contestID, int64(limit), int64(offset)); err == nil && teams != nil {
@@ -44,7 +44,7 @@ func GetRanking(contestID uint, limit, offset int) ([]model.Team, int64, bool, s
 	res = res.Preload(clause.Associations).Order("score DESC, last ASC").Find(&teams)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get teams: %v", res.Error)
-		return nil, -1, false, "GetTeamError"
+		return make([]model.Team, 0), -1, false, "GetTeamError"
 	}
 	go UpdateRanking(DB, contestID)
 	return teams[offset:limit], count, true, "Success"

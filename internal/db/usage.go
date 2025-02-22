@@ -43,7 +43,7 @@ func GetUsageByContestID(tx *gorm.DB, contestID uint, all bool) ([]model.Usage, 
 	}
 	if res := res.Find(&usages); res.Error != nil {
 		log.Logger.Warningf("Failed to get Usage: %s", res.Error)
-		return nil, false, "GetUsageError"
+		return make([]model.Usage, 0), false, "GetUsageError"
 	}
 	return usages, true, "Success"
 }
@@ -54,7 +54,7 @@ func GetUsageByChallengeID(tx *gorm.DB, challengeID string) ([]model.Usage, bool
 	res := tx.Model(model.Usage{}).Where("challenge_id = ?", challengeID).Find(&usages)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Usage: %s", res.Error)
-		return nil, false, "GetUsageError"
+		return make([]model.Usage, 0), false, "GetUsageError"
 	}
 	return usages, true, "Success"
 }

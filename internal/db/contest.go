@@ -101,7 +101,7 @@ func GetContests(tx *gorm.DB, limit int, offset int, all bool, preloadL ...bool)
 	}
 	if res.Count(&count).Error != nil {
 		log.Logger.Warningf("Failed to get contest count: %s", res.Error)
-		return nil, 0, false, "UnknownError"
+		return make([]model.Contest, 0), 0, false, "UnknownError"
 	}
 	if preload {
 		if nest {
@@ -112,7 +112,7 @@ func GetContests(tx *gorm.DB, limit int, offset int, all bool, preloadL ...bool)
 	limit, offset = utils.TidyPaginate(int(count), limit, offset)
 	if res = res.Order("Start desc").Limit(limit).Offset(offset).Find(&contests); res.Error != nil {
 		log.Logger.Warningf("Failed to get contests: %s", res.Error)
-		return nil, 0, false, "UnknownError"
+		return make([]model.Contest, 0), 0, false, "UnknownError"
 	}
 	return contests, count, true, "Success"
 }

@@ -145,7 +145,7 @@ func GetUsers(tx *gorm.DB, limit int, offset int, all bool, preloadL ...bool) ([
 	}
 	if res.Count(&count).Error != nil {
 		log.Logger.Warningf("Failed to get contest count: %s", res.Error)
-		return nil, 0, false, "UnknownError"
+		return make([]model.User, 0), 0, false, "UnknownError"
 	}
 	if preload {
 		if nest {
@@ -156,7 +156,7 @@ func GetUsers(tx *gorm.DB, limit int, offset int, all bool, preloadL ...bool) ([
 	limit, offset = utils.TidyPaginate(int(count), limit, offset)
 	if res = res.Limit(limit).Offset(offset).Find(&users); res.Error != nil {
 		log.Logger.Warningf("Failed to get users: %s", res.Error)
-		return nil, 0, false, "UnknownError"
+		return make([]model.User, 0), 0, false, "UnknownError"
 	}
 	return users, count, true, "Success"
 

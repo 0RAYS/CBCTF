@@ -69,7 +69,7 @@ func GetAvatars(tx *gorm.DB, limit int, offset int) ([]model.File, int64, bool, 
 	res := tx.Model(&model.File{}).Where("type = ?", model.Avatar)
 	if res = res.Count(&count); res.Error != nil {
 		log.Logger.Warningf("Failed to get files: %s", res.Error)
-		return nil, 0, false, "UnknownError"
+		return make([]model.File, 0), 0, false, "UnknownError"
 	}
 	if files, ok := redis.GetFilesCache(); ok {
 		limit, offset = utils.TidyPaginate(len(files), limit, offset)
@@ -77,7 +77,7 @@ func GetAvatars(tx *gorm.DB, limit int, offset int) ([]model.File, int64, bool, 
 	}
 	if res = res.Find(&files); res.Error != nil {
 		log.Logger.Warningf("Failed to get files: %s", res.Error)
-		return nil, 0, false, "FileNotFound"
+		return make([]model.File, 0), 0, false, "FileNotFound"
 	}
 	go func() {
 		if err := redis.SetFilesCache(files); err != nil && !errors.Is(err, context.DeadlineExceeded) {

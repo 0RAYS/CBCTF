@@ -52,7 +52,7 @@ func GetDockers(tx *gorm.DB, deleted bool) ([]model.Docker, bool, string) {
 	res = res.Find(&dockers)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Dockers: %s", res.Error)
-		return nil, false, "GetDockersError"
+		return make([]model.Docker, 0), false, "GetDockersError"
 	}
 	return dockers, true, "Success"
 }
@@ -95,13 +95,13 @@ func GetDockerByTeamID(tx *gorm.DB, teamID uint, limit, offset int, deleted bool
 	var count int64
 	if err := res.Count(&count).Error; err != nil {
 		log.Logger.Warningf("Failed to count Dockers: %s", err)
-		return nil, -1, false, "UnknownError"
+		return make([]model.Docker, 0), -1, false, "UnknownError"
 	}
 	limit, offset = utils.TidyPaginate(int(count), limit, offset)
 	res = res.Limit(limit).Offset(offset).Find(&dockers)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Dockers: %s", res.Error)
-		return nil, -1, false, "GetDockersError"
+		return make([]model.Docker, 0), -1, false, "GetDockersError"
 	}
 	return dockers, count, true, "Success"
 }

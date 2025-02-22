@@ -44,12 +44,12 @@ func GetChallenges(tx *gorm.DB, limit, offset, t int, category string) ([]model.
 	}
 	if res.Count(&count).Error != nil {
 		log.Logger.Warningf("Failed to get challenge count: %v", res.Error)
-		return nil, 0, false, "UnknownError"
+		return make([]model.Challenge, 0), 0, false, "UnknownError"
 	}
 	limit, offset = utils.TidyPaginate(int(count), limit, offset)
 	if res = res.Limit(limit).Offset(offset).Find(&challenges); res.Error != nil {
 		log.Logger.Warningf("Failed to get Challenges: %v", res.Error)
-		return nil, 0, false, "UnknownError"
+		return make([]model.Challenge, 0), 0, false, "UnknownError"
 	}
 	return challenges, count, true, "Success"
 }
@@ -91,7 +91,7 @@ func GetCategories(tx *gorm.DB, t int) ([]string, bool, string) {
 	res := tx.Model(&model.Challenge{}).Where("type = ?", t).Select("distinct category").Find(&categories)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get categories: %s", res.Error)
-		return nil, false, "UnknownError"
+		return make([]string, 0), false, "UnknownError"
 	}
 	return categories, true, "Success"
 }
