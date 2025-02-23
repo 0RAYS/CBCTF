@@ -16,11 +16,11 @@ type Usage struct {
 	ContestID    uint           `json:"contest_id"`
 	ChallengeID  string         `json:"challenge_id"`
 	Hidden       bool           `json:"hidden" default:"true"`
-	Score        float64        `json:"score" gorm:"default:100"`
-	CurrentScore float64        `json:"current_score" gorm:"default:100"`
+	Score        float64        `json:"score" gorm:"default:1000"`
+	CurrentScore float64        `json:"current_score" gorm:"default:1000"`
 	ScoreType    uint           `json:"score_type" gorm:"default:0"`
-	MinScore     float64        `json:"min_score" gorm:"default:10"`
-	Decay        float64        `json:"decay" gorm:"default:10"`
+	MinScore     float64        `json:"min_score" gorm:"default:100"`
+	Decay        float64        `json:"decay" gorm:"default:100"`
 	Flag         string         `json:"flag"`
 	Attempt      int64          `json:"attempt" gorm:"default:0"`
 	Solvers      int64          `json:"solvers" gorm:"default:0"`
