@@ -16,11 +16,11 @@ type Usage struct {
 	ContestID    uint           `json:"contest_id"`
 	ChallengeID  string         `json:"challenge_id"`
 	Hidden       bool           `json:"hidden" default:"true"`
-	Score        int64          `json:"score" gorm:"default:100"`
-	CurrentScore int64          `json:"current_score" gorm:"default:100"`
+	Score        float64        `json:"score" gorm:"default:100"`
+	CurrentScore float64        `json:"current_score" gorm:"default:100"`
 	ScoreType    uint           `json:"score_type" gorm:"default:0"`
-	MinScore     int64          `json:"min_score" gorm:"default:10"`
-	Decay        int64          `json:"decay" gorm:"default:10"`
+	MinScore     float64        `json:"min_score" gorm:"default:10"`
+	Decay        float64        `json:"decay" gorm:"default:10"`
 	Flag         string         `json:"flag"`
 	Attempt      int64          `json:"attempt" gorm:"default:0"`
 	Solvers      int64          `json:"solvers" gorm:"default:0"`
@@ -39,16 +39,16 @@ func (u *Usage) CalcScore(solvers int64) float64 {
 	var calc float64 = 0
 	switch u.ScoreType {
 	case StaticScore:
-		calc = float64(u.CurrentScore)
+		calc = u.CurrentScore
 	case LinearScore:
-		calc = float64(u.CurrentScore - solvers*u.Decay)
+		calc = u.CurrentScore - float64(solvers)*u.Decay
 	case LogarithmicScore:
-		calc = (((float64(u.MinScore) - float64(u.CurrentScore)) / float64(u.Decay*u.Decay)) * float64(solvers*solvers)) + float64(u.CurrentScore)
+		calc = (((u.MinScore - u.CurrentScore) / (u.Decay * u.Decay)) * float64(solvers*solvers)) + u.CurrentScore
 	default:
-		calc = float64(u.CurrentScore)
+		calc = u.CurrentScore
 	}
-	if calc < float64(u.MinScore) {
-		calc = float64(u.MinScore)
+	if calc < u.MinScore {
+		calc = u.MinScore
 	}
 	return calc
 }
