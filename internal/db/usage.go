@@ -113,26 +113,25 @@ func Solve(tx *gorm.DB, id, teamID uint, blood bool) (bool, string) {
 		"current_score": currentScore,
 	}
 	rate := 0.0
-	for {
-		if usage.First == 0 {
-			data["first"] = team.ID
-			rate = 0.05
+	if blood {
+		for {
+			if usage.First == 0 {
+				data["first"] = team.ID
+				rate = 0.05
+				break
+			}
+			if usage.Second == 0 {
+				data["second"] = team.ID
+				rate = 0.03
+				break
+			}
+			if usage.Third == 0 {
+				data["third"] = team.ID
+				rate = 0.01
+				break
+			}
 			break
 		}
-		if usage.Second == 0 {
-			data["second"] = team.ID
-			rate = 0.03
-			break
-		}
-		if usage.Third == 0 {
-			data["third"] = team.ID
-			rate = 0.01
-			break
-		}
-		break
-	}
-	if !blood {
-		rate = 0.0
 	}
 	score, ok, msg := CalcTeamScore(tx, team.ContestID, teamID)
 	if !ok {
