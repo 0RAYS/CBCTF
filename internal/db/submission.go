@@ -125,7 +125,11 @@ func CalcTeamScore(tx *gorm.DB, contestID, teamID uint) (float64, bool, string) 
 			}
 			break
 		}
-		score += usage.CurrentScore * (rate * usage.Score)
+		if rate > 0 {
+			score += usage.Score * (1 + rate)
+		} else {
+			score += usage.CurrentScore
+		}
 	}
 	return score, true, "Success"
 }
