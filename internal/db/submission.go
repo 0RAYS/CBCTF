@@ -109,7 +109,7 @@ func CalcTeamScore(tx *gorm.DB, contestID, teamID uint) (float64, bool, string) 
 			log.Logger.Warningf("Failed to get usage: %s", msg)
 			continue
 		}
-		score += usage.Score
+		score += usage.CurrentScore
 	}
 	return score, true, "Success"
 }
