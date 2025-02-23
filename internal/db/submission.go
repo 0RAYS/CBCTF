@@ -89,18 +89,15 @@ func GetTeamSolved(tx *gorm.DB, teamID uint) ([]model.Submission, bool, string) 
 		Where("team_id = ? AND solved = ?", teamID, true).Find(&submissions)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get submissions: %v", res.Error)
-		return make([]model.Submission, 0), false, "UnknownError"
+		return make([]model.Submission, 0), false, "GetSubmissionError"
 	}
 	return submissions, true, "Success"
 }
 
 func CalcTeamScore(tx *gorm.DB, contestID, teamID uint) (float64, bool, string) {
-	var solved []model.Submission
-	res := tx.Model(model.Submission{}).Where("team_id = ? AND solved = ?", teamID, true).
-		Select("challenge_id").Find(&solved)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to get challengeIDs: %v", res.Error)
-		return 0, false, "GetSubmissionError"
+	solved, ok, msg := GetTeamSolved(tx, teamID)
+	if !ok {
+		return 0, false, msg
 	}
 	var score float64
 	for _, submission := range solved {
