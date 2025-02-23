@@ -18,7 +18,7 @@ type Team struct {
 	Desc      string         `json:"desc"`
 	Captcha   string         `json:"-"`
 	Avatar    string         `json:"avatar"`
-	Score     int64          `json:"score" gorm:"default:0"`
+	Score     float64        `json:"score" gorm:"default:0"`
 	Last      time.Time      `json:"last"`
 	Banned    bool           `gorm:"default:false" json:"banned"`
 	Hidden    bool           `gorm:"default:false" json:"hidden"`

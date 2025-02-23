@@ -13,13 +13,13 @@ type Submission struct {
 	UserID      uint           `json:"user_id"`
 	Value       string         `json:"value"`
 	Solved      bool           `json:"solved"`
-	Score       int64          `json:"score" gorm:"default:0"`
+	Score       float64        `json:"score" gorm:"default:0"`
 	CreatedAt   time.Time      `json:"-"`
 	UpdatedAt   time.Time      `json:"-"`
 	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
-func InitSubmission(contestID uint, challengeID string, teamID, userID uint, value string, solved bool, score int64) Submission {
+func InitSubmission(contestID uint, challengeID string, teamID, userID uint, value string, solved bool, score float64) Submission {
 	return Submission{
 		ContestID:   contestID,
 		ChallengeID: challengeID,
