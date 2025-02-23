@@ -20,7 +20,7 @@ type Usage struct {
 	CurrentScore int64          `json:"current_score" gorm:"default:100"`
 	ScoreType    uint           `json:"score_type" gorm:"default:0"`
 	MinScore     int64          `json:"min_score" gorm:"default:10"`
-	Decay        int64          `json:"decay" gorm:"default:0"`
+	Decay        int64          `json:"decay" gorm:"default:10"`
 	Flag         string         `json:"flag"`
 	Attempt      int64          `json:"attempt" gorm:"default:0"`
 	Solvers      int64          `json:"solvers" gorm:"default:0"`
@@ -39,13 +39,13 @@ func (u *Usage) CalcScore(solvers int64) int64 {
 	var calc int64 = 0
 	switch u.ScoreType {
 	case StaticScore:
-		calc = u.Score
+		calc = u.CurrentScore
 	case LinearScore:
-		calc = u.Score - solvers*u.Decay
+		calc = u.CurrentScore - solvers*u.Decay
 	case LogarithmicScore:
-		calc = (((u.MinScore - u.Score) / (u.Decay * u.Decay)) * (solvers * solvers)) + u.Score
+		calc = (((u.MinScore - u.CurrentScore) / (u.Decay * u.Decay)) * (solvers * solvers)) + u.CurrentScore
 	default:
-		calc = u.Score
+		calc = u.CurrentScore
 	}
 	if calc < u.MinScore {
 		calc = u.MinScore
