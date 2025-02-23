@@ -21,6 +21,10 @@ func UpdateRanking(tx *gorm.DB, contestID uint) (bool, string) {
 		log.Logger.Warningf("Failed to get teams: %v", res.Error)
 		return false, "GetTeamError"
 	}
+	for _, team := range teams {
+		team.Score, _, _ = CalcTeamScore(tx, team.ContestID, team.ID)
+		go UpdateTeam(tx, team.ID, map[string]interface{}{"score": team.Score})
+	}
 	err := redis.UpdateRanking(contestID, teams)
 	if err != nil {
 		log.Logger.Warningf("Failed to update ranking: %v", err)
