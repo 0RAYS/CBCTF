@@ -105,7 +105,7 @@ func Solve(tx *gorm.DB, id, teamID uint, blood bool) (bool, string) {
 		log.Logger.Warningf("Failed to get Team: %s", err)
 		return false, "GetTeamError"
 	}
-	currentScore := usage.CalcScore(usage.Solvers + 1)
+	currentScore := usage.CalcScore(usage.Solvers)
 	last := time.Now()
 	data := map[string]interface{}{
 		"solvers":       usage.Solvers + 1,
