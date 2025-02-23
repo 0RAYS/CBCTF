@@ -35,20 +35,20 @@ type Usage struct {
 	DeletedAt    gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
-func (u *Usage) CalcScore(solvers int64) int64 {
-	var calc int64 = 0
+func (u *Usage) CalcScore(solvers int64) float64 {
+	var calc float64 = 0
 	switch u.ScoreType {
 	case StaticScore:
-		calc = u.CurrentScore
+		calc = float64(u.CurrentScore)
 	case LinearScore:
-		calc = u.CurrentScore - solvers*u.Decay
+		calc = float64(u.CurrentScore - solvers*u.Decay)
 	case LogarithmicScore:
-		calc = (((u.MinScore - u.CurrentScore) / (u.Decay * u.Decay)) * (solvers * solvers)) + u.CurrentScore
+		calc = (((float64(u.MinScore) - float64(u.CurrentScore)) / float64(u.Decay*u.Decay)) * float64(solvers*solvers)) + float64(u.CurrentScore)
 	default:
-		calc = u.CurrentScore
+		calc = float64(u.CurrentScore)
 	}
-	if calc < u.MinScore {
-		calc = u.MinScore
+	if calc < float64(u.MinScore) {
+		calc = float64(u.MinScore)
 	}
 	return calc
 }
