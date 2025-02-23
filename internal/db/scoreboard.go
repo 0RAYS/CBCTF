@@ -63,7 +63,7 @@ func GetRankDetail(contestID uint, limit, offset int) ([]map[string]interface{},
 		return data, false, msg
 	}
 	for _, team := range teams {
-		submissions, ok, msg := GetTeamSolved(DB, contestID, team.ID)
+		submissions, ok, msg := GetTeamSolved(DB, team.ID)
 		if !ok {
 			return data, false, msg
 		}
