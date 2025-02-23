@@ -78,7 +78,7 @@ func GetSubmissions(tx *gorm.DB, limit, offset int, teamIDL ...uint) ([]model.Su
 	limit, offset = utils.TidyPaginate(int(count), limit, offset)
 	if res = res.Order("created_at desc").Limit(limit).Offset(offset).Find(&submissions); res.Error != nil {
 		log.Logger.Warningf("Failed to get submissions: %v", res.Error)
-		return nil, 0, false, "UnknownError"
+		return nil, 0, false, "GetSubmissionError"
 	}
 	return submissions, count, true, "Success"
 }
@@ -92,4 +92,24 @@ func GetTeamSolved(tx *gorm.DB, contestID, teamID uint) ([]model.Submission, boo
 		return make([]model.Submission, 0), false, "UnknownError"
 	}
 	return submissions, true, "Success"
+}
+
+func CalcTeamScore(tx *gorm.DB, contestID, teamID uint) (int64, bool, string) {
+	var solved []model.Submission
+	res := tx.Model(model.Submission{}).Where("contest_id = ? AND team_id = ? AND solved = ?", contestID, teamID, true).
+		Select("challenge_id").Find(&solved)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get challengeIDs: %v", res.Error)
+		return 0, false, "GetSubmissionError"
+	}
+	var score int64
+	for _, submission := range solved {
+		usage, ok, msg := GetUsageBy2ID(tx, contestID, submission.ChallengeID)
+		if !ok {
+			log.Logger.Warningf("Failed to get usage: %s", msg)
+			continue
+		}
+		score += usage.Score
+	}
+	return score, true, "Success"
 }
