@@ -21,7 +21,7 @@ func UpdateRanking(contestID uint, teams []model.Team) error {
 
 	for _, team := range teams {
 		timestamp := team.Last.UnixMilli()
-		compositeScore := float64(team.Score)*1e13 + float64(1e13-timestamp)
+		compositeScore := team.Score*1e13 + float64(1e13-timestamp)
 		pipe.ZAdd(ctx, key, &redis.Z{
 			Score:  compositeScore,
 			Member: team.ID,
