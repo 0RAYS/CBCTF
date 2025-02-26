@@ -3,12 +3,66 @@ package model
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/form"
+	"database/sql/driver"
 	"encoding/json"
 	"fmt"
 	"gorm.io/gorm"
 	"strings"
 	"time"
 )
+
+type Rules []string
+
+func (r Rules) Value() (driver.Value, error) {
+	return json.Marshal(r)
+}
+
+func (r *Rules) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan Rules value")
+	}
+	return json.Unmarshal(bytes, r)
+}
+
+type Prize struct {
+	Amount string `json:"amount"`
+	Desc   string `json:"desc"`
+}
+
+type Prizes []Prize
+
+func (p Prizes) Value() (driver.Value, error) {
+	return json.Marshal(p)
+}
+
+func (p *Prizes) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan Prizes value")
+	}
+	return json.Unmarshal(bytes, p)
+}
+
+type Timeline struct {
+	Date  time.Time `json:"date"`
+	Title string    `json:"title"`
+	Desc  string    `json:"desc"`
+}
+
+type Timelines []Timeline
+
+func (t Timelines) Value() (driver.Value, error) {
+	return json.Marshal(t)
+}
+
+func (t *Timelines) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan Timelines value")
+	}
+	return json.Unmarshal(bytes, t)
+}
 
 type Contest struct {
 	ID        uint           `gorm:"primarykey" json:"id"`
@@ -22,6 +76,9 @@ type Contest struct {
 	Duration  time.Duration  `json:"-"`
 	Blood     bool           `json:"blood" gorm:"default:true"`
 	Hidden    bool           `gorm:"default:true" json:"hidden"`
+	Rules     Rules          `json:"rules" gorm:"type:json"`
+	Prizes    Prizes         `json:"prizes" gorm:"type:json"`
+	Timelines Timelines      `json:"timelines" gorm:"type:json"`
 	Teams     []*Team        `json:"-"`
 	Users     []*User        `gorm:"many2many:user_contests;" json:"-"`
 	Notices   []*Notice      `json:"-"`
