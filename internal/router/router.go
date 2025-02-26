@@ -25,6 +25,8 @@ func Init() *gin.Engine {
 	router.GET("/verify", Verify)
 	router.GET("/avatar/:fileID", middleware.SetFile(model.Avatar), DownloadFile)
 
+	router.GET("/contest/list", GetContests)
+
 	// 鉴权
 	auth := router.Group("", middleware.CheckLogin)
 
@@ -40,7 +42,7 @@ func Init() *gin.Engine {
 	}
 
 	// 比赛
-	auth.GET("/contest/list", middleware.CheckRole("user"), GetContests)
+	//auth.GET("/contest/list", middleware.CheckRole("user"), GetContests)
 	contest := auth.Group("/contest/:contestID", middleware.CheckRole("user"), middleware.SetContest)
 	{
 		contest.GET("/info", GetContest)
