@@ -10,9 +10,9 @@ import (
 )
 
 const (
-	Static    = 0
-	Dynamic   = 1
-	Container = 2
+	Static    = "static"
+	Dynamic   = "dynamic"
+	Container = "container"
 
 	StaticFile  = "attachment.zip"
 	DynamicFile = "generator.zip"
@@ -24,7 +24,7 @@ type Challenge struct {
 	Desc           string         `json:"desc"`
 	Flag           string         `json:"flag"`
 	Category       string         `json:"category"`
-	Type           int            `json:"type" gorm:"default:0"`
+	Type           string         `json:"type" gorm:"default:'static'"`
 	GeneratorImage string         `json:"generator" gorm:"column:generator"`
 	DockerImage    string         `json:"docker" gorm:"column:docker"`
 	Port           int32          `json:"port" gorm:"default:8080"`

@@ -48,7 +48,7 @@ func GetChallenges(ctx *gin.Context) {
 		return
 	}
 	if ctx.Query("type") == "" && ctx.Query("category") == "" {
-		form.Type = -1
+		form.Type = ""
 		form.Category = ""
 	}
 	challenges, count, ok, msg := db.GetChallenges(db.DB.WithContext(ctx), form.Limit, form.Offset, form.Type, form.Category)
@@ -113,7 +113,7 @@ func UpdateChallenge(ctx *gin.Context) {
 	tmp := utils.ToTitle(strings.TrimSpace(*form.Category))
 	form.Category = &tmp
 	data = utils.Form2Map(form)
-	if t, ok := data["type"]; ok && !db.IsValidChallengeType(t.(int)) {
+	if t, ok := data["type"]; ok && !db.IsValidChallengeType(t.(string)) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidChallengeType", "data": nil})
 		return
 	}
