@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
@@ -129,4 +130,37 @@ func CalcTeamScore(tx *gorm.DB, contestID, teamID uint) (float64, bool, string) 
 		}
 	}
 	return score, true, "Success"
+}
+
+func GetTeamSolvedState(tx *gorm.DB, team model.Team) ([]gin.H, bool, string) {
+	solved, ok, msg := GetTeamSolved(tx, team.ID)
+	if !ok {
+		return make([]gin.H, 0), false, msg
+	}
+	usages, ok, msg := GetUsageByContestID(tx, team.ContestID, false)
+	if !ok {
+		return make([]gin.H, 0), false, msg
+	}
+	allCount := make(map[string]int64)
+	for _, usage := range usages {
+		challenge, ok, _ := GetChallengeByID(tx, usage.ChallengeID)
+		if ok {
+			allCount[challenge.Category] += 1
+		}
+	}
+	solvedCount := make(map[string]int64)
+	for _, submission := range solved {
+		challenge, ok, _ := GetChallengeByID(tx, submission.ChallengeID)
+		if ok {
+			solvedCount[challenge.Category] += 1
+		}
+	}
+	var tmp []gin.H
+	for k, v := range allCount {
+		if _, ok := solvedCount[k]; !ok {
+			solvedCount[k] = 0
+		}
+		tmp = append(tmp, gin.H{"category": k, "solved": solvedCount[k], "all": v})
+	}
+	return tmp, true, "Success"
 }

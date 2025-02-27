@@ -20,7 +20,15 @@ func GetRank(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"count": count, "teams": &teams}})
+	var tmp []gin.H
+	for _, team := range teams {
+		state, _, _ := db.GetTeamSolvedState(db.DB.WithContext(ctx), team)
+		tmp = append(tmp, gin.H{
+			"team":   &team,
+			"solved": state,
+		})
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"count": count, "teams": tmp}})
 }
 
 func GetRankDetail(ctx *gin.Context) {
