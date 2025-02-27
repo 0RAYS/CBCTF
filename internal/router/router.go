@@ -76,9 +76,7 @@ func Init() *gin.Engine {
 		{
 			contestChallenge.GET("/status", ChallengeStatus)
 			contestChallenge.POST("/init", InitChallenge(false))
-			contestChallenge.GET("/files", GetChallengeFiles)
 			contestChallenge.GET("/attachment", GetAttachment)
-			contestChallenge.GET("/remote", GetContainer(false))
 			contestChallenge.POST("/reset", InitChallenge(true))
 			contestChallenge.POST("/start", StartContainer)
 			contestChallenge.POST("/increase", IncreaseDuration)
@@ -157,7 +155,7 @@ func Init() *gin.Engine {
 				adminContestTeam.GET("/container/list", GetContainers)
 				adminContainer := adminContestTeam.Group("/container/:containerID", middleware.SetContainer)
 				{
-					adminContainer.GET("/info", GetContainer(true))
+					adminContainer.GET("/info", GetContainer)
 					adminContainer.POST("/stop", StopContainer)
 
 					adminTraffic := adminContainer.Group("/traffic")

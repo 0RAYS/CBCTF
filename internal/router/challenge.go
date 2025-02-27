@@ -73,20 +73,13 @@ func GetAttachment(ctx *gin.Context) {
 func GetChallengeFiles(ctx *gin.Context) {
 	challenge := middleware.GetChallenge(ctx)
 	var files []string
-	if middleware.GetRole(ctx) == "admin" {
-		dir, err := os.ReadDir(challenge.BasicDir())
-		if err != nil {
-			ctx.JSON(http.StatusOK, gin.H{"msg": "ReadDirError", "data": nil})
-			return
-		}
-		for _, file := range dir {
-			files = append(files, file.Name())
-		}
-	} else {
-		team := middleware.GetTeam(ctx)
-		if _, err := os.Stat(challenge.AttachmentPath(team.ID)); err == nil {
-			files = append(files, model.DynamicFile)
-		}
+	dir, err := os.ReadDir(challenge.BasicDir())
+	if err != nil {
+		ctx.JSON(http.StatusOK, gin.H{"msg": "ReadDirError", "data": nil})
+		return
+	}
+	for _, file := range dir {
+		files = append(files, file.Name())
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &files})
 }
@@ -225,19 +218,31 @@ func DownloadChallenge(ctx *gin.Context) {
 }
 
 func ChallengeStatus(ctx *gin.Context) {
-	var (
-		team model.Team
-		ok   bool
-		msg  string
-	)
-	team = middleware.GetTeam(ctx)
-	_, ok, msg = db.GetFlagBy3ID(db.DB.WithContext(ctx), middleware.GetContest(ctx).ID, team.ID, middleware.GetChallenge(ctx).ID)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": false})
+	data := gin.H{
+		"status": false,
+		"files":  "",
+		"remote": gin.H{},
+	}
+	team := middleware.GetTeam(ctx)
+	challenge := middleware.GetChallenge(ctx)
+	contest := middleware.GetContest(ctx)
+	if _, ok, msg := db.GetFlagBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, challenge.ID); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": data})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": true})
-
+	data["status"] = true
+	if _, err := os.Stat(challenge.AttachmentPath(team.ID)); err == nil {
+		data["files"] = model.StaticFile
+	}
+	if challenge.Type == model.Container {
+		if docker, ok, _ := db.GetDockerBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, challenge.ID); ok {
+			data["remote"] = gin.H{
+				"target":    docker.RemoteAddr(),
+				"remaining": docker.Remaining().Seconds(),
+			}
+		}
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
 }
 
 func InitChallenge(reset bool) gin.HandlerFunc {
