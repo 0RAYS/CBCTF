@@ -11,15 +11,17 @@ type Notice struct {
 	ContestID uint           `json:"contest_id"`
 	Title     string         `json:"title"`
 	Content   string         `json:"content"`
-	CreatedAt time.Time      `json:"-"`
-	UpdatedAt time.Time      `json:"-"`
+	CreatorID uint           `json:"creator_id"`
+	CreatedAt time.Time      `json:"created"`
+	UpdatedAt time.Time      `json:"updated"`
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
-func InitNotice(contestID uint, form f.CreateNoticeForm) Notice {
+func InitNotice(contestID uint, form f.CreateNoticeForm, creatorID uint) Notice {
 	return Notice{
 		Title:     form.Title,
 		Content:   form.Content,
 		ContestID: contestID,
+		CreatorID: creatorID,
 	}
 }
