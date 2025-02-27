@@ -11,8 +11,16 @@ import (
 )
 
 func GetTeam(ctx *gin.Context) {
+	data := make(gin.H)
 	team := middleware.GetTeam(ctx)
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &team})
+	data["team"] = &team
+	tmp, ok, msg := db.GetTeamSolvedState(db.DB.WithContext(ctx), team)
+	data["solved"] = tmp
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": data})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
 }
 
 func GetTeamCaptcha(ctx *gin.Context) {
