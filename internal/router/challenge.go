@@ -221,7 +221,10 @@ func ChallengeStatus(ctx *gin.Context) {
 	data := gin.H{
 		"status": false,
 		"files":  "",
-		"remote": gin.H{},
+		"remote": gin.H{
+			"target":    "",
+			"remaining": "",
+		},
 	}
 	team := middleware.GetTeam(ctx)
 	challenge := middleware.GetChallenge(ctx)
