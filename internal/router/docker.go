@@ -11,20 +11,9 @@ import (
 	"time"
 )
 
-func GetContainer(deleted bool) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		if deleted {
-			docker := middleware.GetContainer(ctx)
-			ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": docker})
-			return
-		}
-		docker, ok, msg := db.GetDockerBy3ID(db.DB.WithContext(ctx), middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetChallenge(ctx).ID)
-		if !ok {
-			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-			return
-		}
-		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"target": docker.RemoteAddr(), "remaining": docker.Remaining().Seconds()}})
-	}
+func GetContainer(ctx *gin.Context) {
+	docker := middleware.GetContainer(ctx)
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": docker})
 }
 
 func GetContainers(ctx *gin.Context) {
