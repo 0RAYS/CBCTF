@@ -8,8 +8,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateNotice(tx *gorm.DB, contest model.Contest, form f.CreateNoticeForm) (model.Notice, bool, string) {
-	notice := model.InitNotice(contest.ID, form)
+func CreateNotice(tx *gorm.DB, contest model.Contest, form f.CreateNoticeForm, creatorID uint) (model.Notice, bool, string) {
+	notice := model.InitNotice(contest.ID, form, creatorID)
 	res := tx.Model(&model.Notice{}).Create(&notice)
 	if res.Error != nil {
 		return model.Notice{}, false, "CreateNoticeError"
