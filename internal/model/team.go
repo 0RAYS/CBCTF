@@ -42,21 +42,6 @@ func (t *Team) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (t *Team) UnmarshalJSON(data []byte) error {
-	type Tmp Team
-	aux := &struct {
-		*Tmp
-		Avatar string `json:"avatar"`
-	}{
-		Tmp: (*Tmp)(t),
-	}
-	if err := json.Unmarshal(data, &aux); err != nil {
-		return err
-	}
-	t.Avatar = strings.TrimPrefix(aux.Avatar, config.Env.Backend)
-	return nil
-}
-
 func InitTeam(form form.CreateTeamForm, captain User, contestID uint) Team {
 	captcha := utils.UUID()
 	if form.Captcha != "" {
