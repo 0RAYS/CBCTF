@@ -4,9 +4,9 @@ import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/model"
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/go-redis/redis/v8"
+	"github.com/vmihailenco/msgpack/v4"
 	"time"
 )
 
@@ -27,7 +27,7 @@ func UpdateRanking(contestID uint, teams []model.Team) error {
 			Member: team.ID,
 		})
 		// 传递指针或者值都可以
-		data, _ := json.Marshal(team)
+		data, _ := msgpack.Marshal(&team)
 		pipe.Set(ctx, fmt.Sprintf("team:%d", team.ID), data, 5*time.Minute)
 	}
 	pipe.Expire(ctx, key, time.Minute)
@@ -57,7 +57,7 @@ func GetCachedRanking(contestID uint, limit int64, offset int64) ([]model.Team, 
 	for _, cmd := range cmds {
 		str, _ := cmd.(*redis.StringCmd).Bytes()
 		var t model.Team
-		err := json.Unmarshal(str, &t)
+		err := msgpack.Unmarshal(str, &t)
 		if err != nil {
 			return nil, err
 		}
