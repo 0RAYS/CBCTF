@@ -33,13 +33,13 @@ func GetChallengeByID(tx *gorm.DB, id string) (model.Challenge, bool, string) {
 }
 
 // GetChallenges 获取题目列表, 可接受 type 和 category 参数
-func GetChallenges(tx *gorm.DB, limit, offset, t int, category string) ([]model.Challenge, int64, bool, string) {
+func GetChallenges(tx *gorm.DB, limit, offset int, t string, category string) ([]model.Challenge, int64, bool, string) {
 	var challenges []model.Challenge
 	var count int64
 	res := tx.Model(model.Challenge{})
-	if t != -1 && category != "" {
+	if t != "" && category != "" {
 		res = res.Where("type = ? AND category = ?", t, category)
-	} else if !(t == -1 && category == "") {
+	} else if !(t == "" && category == "") {
 		res = res.Where("type = ? OR category = ?", t, category)
 	}
 	if res.Count(&count).Error != nil {
