@@ -34,13 +34,13 @@ func UpdateRanking(contestID uint, teams []model.Team) error {
 	return err
 }
 
-func GetCachedRanking(contestID uint, limit int64, offset int64) ([]model.Team, error) {
+func GetCachedRanking(contestID uint, start int64, end int64) ([]model.Team, error) {
 	if !config.Env.Redis.On {
 		return nil, nil
 	}
 	key := fmt.Sprintf("%d:rank", contestID)
 	ctx := context.Background()
-	results, err := RDB.ZRevRangeWithScores(ctx, key, offset, limit).Result()
+	results, err := RDB.ZRevRangeWithScores(ctx, key, start, end).Result()
 	if err != nil {
 		return nil, err
 	}
