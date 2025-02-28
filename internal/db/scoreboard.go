@@ -41,8 +41,8 @@ func GetRanking(contestID uint, limit, offset int) ([]model.Team, int64, bool, s
 		return make([]model.Team, 0), -1, false, "UnknownError"
 	}
 	limit, offset = utils.TidyPaginate(int(count), limit, offset)
-	if teams, err := redis.GetCachedRanking(contestID, int64(limit), int64(offset)); err == nil && teams != nil {
-		return teams[offset:limit], count, true, "Success"
+	if teams, err := redis.GetCachedRanking(contestID, int64(offset), int64(limit)-1); err == nil && teams != nil {
+		return teams, count, true, "Success"
 	}
 	var teams []model.Team
 	res = res.Preload(clause.Associations).Order("score DESC, last ASC").Find(&teams)
