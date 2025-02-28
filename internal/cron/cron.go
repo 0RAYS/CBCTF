@@ -10,7 +10,8 @@ var c *cron.Cron
 func Init() {
 	c = cron.New(cron.WithSeconds())
 	CloseDockers(c)
-	UpdateRanking(c)
+	UpdateGlobalRanking(c)
+	UpdateTeamRank(c)
 	PrepareGenerator(c)
 	CloseGenerator(c)
 	CloseUnCtrlDockers(c)

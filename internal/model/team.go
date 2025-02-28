@@ -23,6 +23,7 @@ type Team struct {
 	Banned    bool           `gorm:"default:false" json:"banned"`
 	Hidden    bool           `gorm:"default:false" json:"hidden"`
 	CaptainID uint           `json:"captain_id"`
+	Rank      int            `json:"rank" gorm:"default:-1"`
 	Users     []*User        `gorm:"many2many:user_teams;" json:"-"`
 	CreatedAt time.Time      `json:"-"`
 	UpdatedAt time.Time      `json:"-"`
