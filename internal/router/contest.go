@@ -11,7 +11,13 @@ import (
 
 func GetContest(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &contest})
+	totalSolved, _, _ := db.GetContestSolved(db.DB.WithContext(ctx), contest.ID)
+	champion, _, _, _ := db.GetRanking(db.DB.WithContext(ctx), contest.ID, 1, 0)
+	var maxScore float64
+	if len(champion) > 0 {
+		maxScore = champion[0].Score
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"contest": &contest, "solved": len(totalSolved), "highest": maxScore}})
 }
 
 func GetContestCaptcha(ctx *gin.Context) {

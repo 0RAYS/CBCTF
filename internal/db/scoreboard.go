@@ -33,9 +33,9 @@ func UpdateRanking(tx *gorm.DB, contestID uint) (bool, string) {
 	return true, "Success"
 }
 
-func GetRanking(contestID uint, limit, offset int) ([]model.Team, int64, bool, string) {
+func GetRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Team, int64, bool, string) {
 	var count int64
-	res := DB.Model(&model.Team{}).Where("contest_id = ? AND banned = ?", contestID, false)
+	res := tx.Model(&model.Team{}).Where("contest_id = ? AND banned = ?", contestID, false)
 	if err := res.Count(&count).Error; err != nil {
 		log.Logger.Warningf("Failed to count teams: %v", err)
 		return make([]model.Team, 0), -1, false, "UnknownError"
@@ -50,11 +50,11 @@ func GetRanking(contestID uint, limit, offset int) ([]model.Team, int64, bool, s
 		log.Logger.Warningf("Failed to get teams: %v", res.Error)
 		return make([]model.Team, 0), -1, false, "GetTeamError"
 	}
-	go UpdateRanking(DB, contestID)
+	go UpdateRanking(tx, contestID)
 	return teams[offset:limit], count, true, "Success"
 }
 
-func GetRankDetail(contestID uint, limit, offset int) ([]map[string]interface{}, bool, string) {
+func GetRankDetail(tx *gorm.DB, contestID uint, limit, offset int) ([]map[string]interface{}, bool, string) {
 	if limit <= 0 {
 		limit = 10
 	}
@@ -62,12 +62,12 @@ func GetRankDetail(contestID uint, limit, offset int) ([]map[string]interface{},
 		offset = 0
 	}
 	var data []map[string]interface{}
-	teams, _, ok, msg := GetRanking(contestID, limit, offset)
+	teams, _, ok, msg := GetRanking(tx, contestID, limit, offset)
 	if !ok {
 		return data, false, msg
 	}
 	for _, team := range teams {
-		submissions, ok, msg := GetTeamSolved(DB, team.ID)
+		submissions, ok, msg := GetTeamSolved(tx, team.ID)
 		if !ok {
 			return data, false, msg
 		}
