@@ -164,3 +164,14 @@ func GetTeamSolvedState(tx *gorm.DB, team model.Team) ([]gin.H, bool, string) {
 	}
 	return tmp, true, "Success"
 }
+
+func GetContestSolved(tx *gorm.DB, contestID uint) ([]model.Submission, bool, string) {
+	var submissions []model.Submission
+	res := tx.Model(model.Submission{}).
+		Where("contest_id = ? AND solved = ?", contestID, true).Find(&submissions)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get submissions: %v", res.Error)
+		return make([]model.Submission, 0), false, "GetSubmissionError"
+	}
+	return submissions, true, "Success"
+}
