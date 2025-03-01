@@ -29,13 +29,15 @@ func AddUsage(ctx *gin.Context) {
 
 func GetUsages(ctx *gin.Context) {
 	var (
-		usages []model.Usage
-		ok     bool
-		msg    string
-		all    = middleware.GetRole(ctx) == "admin"
-		DB     = db.DB.WithContext(ctx)
+		usages  []model.Usage
+		ok      bool
+		msg     string
+		all     = middleware.GetRole(ctx) == "admin"
+		DB      = db.DB.WithContext(ctx)
+		contest = middleware.GetContest(ctx)
+		team    = middleware.GetTeam(ctx)
 	)
-	usages, ok, msg = db.GetUsageByContestID(DB, middleware.GetContest(ctx).ID, all)
+	usages, ok, msg = db.GetUsageByContestID(DB, contest.ID, all)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -58,8 +60,12 @@ func GetUsages(ctx *gin.Context) {
 		tmp["challenge"] = challenge
 		if !all {
 			tmp["status"] = gin.H{
-				"solved":   db.IsSolved(DB, middleware.GetContest(ctx), middleware.GetTeam(ctx), challenge),
-				"attempts": db.CountAttempts(DB, middleware.GetContest(ctx), middleware.GetTeam(ctx), challenge),
+				"solved":   db.IsSolved(DB, contest, team, challenge),
+				"attempts": db.CountAttempts(DB, contest, team, challenge),
+				"init": func() bool {
+					_, ok, _ = db.GetFlagBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, challenge.ID)
+					return ok
+				},
 			}
 		}
 		challenges = append(challenges, tmp)
