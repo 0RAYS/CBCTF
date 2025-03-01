@@ -65,7 +65,7 @@ func GetUsages(ctx *gin.Context) {
 				"init": func() bool {
 					_, ok, _ = db.GetFlagBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, challenge.ID)
 					return ok
-				},
+				}(),
 			}
 		}
 		challenges = append(challenges, tmp)
