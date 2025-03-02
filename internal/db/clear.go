@@ -20,7 +20,7 @@ var associations = map[string][]interface{}{
 func ClearByID(tx *gorm.DB, column string, id interface{}) bool {
 	var ok bool
 	switch column {
-	case "user_id", "team_id", "contest_id", "docker_id":
+	case "user_id", "team_id", "contest_id", "docker_id", "usage_id":
 		id, ok = id.(uint)
 	case "challenge_id":
 		id, ok = id.(string)
