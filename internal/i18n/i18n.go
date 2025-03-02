@@ -93,7 +93,7 @@ var resp = map[string]map[string]interface{}{
 
 	"CreateFlagError":       {"zh-CN": "创建flag失败", "en-US": "Failed to create flag", "code": 500},
 	"DeleteFlagError":       {"zh-CN": "重置flag失败", "en-US": "Failed to delete flag", "code": 500},
-	"FlagNotFound":          {"zh-CN": "题目未初始化", "en-US": "Challenge not initialized", "code": 404},
+	"FlagNotFound":          {"zh-CN": "题目未初始化", "en-US": "Challenge not initialized", "code": 200},
 	"UpdateFlagError":       {"zh-CN": "更新flag失败", "en-US": "Failed to update flag", "code": 500},
 	"FlagNotMatch":          {"zh-CN": "flag错误", "en-US": "Flag not match", "code": 400},
 	"GetSubmissionError":    {"zh-CN": "获取提交记录失败", "en-US": "Failed to get submission", "code": 500},
