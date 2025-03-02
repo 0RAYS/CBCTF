@@ -52,7 +52,7 @@ func SendEmail(user model.User) (bool, string) {
 		return false, msg
 	}
 	if err := utils.SendVerifyEmail(user.Email, token, id); err != nil {
-		return false, "SendEmailFailed"
+		return false, "SendEmailError"
 	}
 	return true, "Success"
 }
