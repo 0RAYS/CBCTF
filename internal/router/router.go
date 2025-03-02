@@ -48,8 +48,8 @@ func Init() *gin.Engine {
 		contest.GET("/info", GetContest)
 		contest.GET("/rank", GetRank)
 		contest.GET("/rank/detail", GetRankDetail)
-		contest.POST("/join", middleware.CheckVerified, JoinTeam)
-		contest.POST("/create", middleware.CheckVerified, CreateTeam)
+		contest.POST("/join", middleware.CheckRunning, middleware.CheckVerified, JoinTeam)
+		contest.POST("/create", middleware.CheckRunning, middleware.CheckVerified, CreateTeam)
 
 		contestTeam := contest.Group("/team", middleware.SetTeamByUser)
 		{
@@ -57,11 +57,11 @@ func Init() *gin.Engine {
 			contestTeam.GET("/captcha", GetTeamCaptcha)
 			contestTeam.GET("/list", GetTeammates)
 			contestTeam.POST("/captcha", UpdateCaptcha)
-			contestTeam.POST("/update", middleware.CheckVerified, middleware.CheckCaptain, UpdateTeam)
-			contestTeam.POST("/avatar", middleware.CheckVerified, middleware.CheckCaptain, UploadAvatar("team"))
-			contestTeam.POST("/delete", middleware.CheckVerified, middleware.CheckCaptain, DeleteTeam)
-			contestTeam.POST("/kick", middleware.CheckVerified, middleware.CheckCaptain, KickMember)
-			contestTeam.POST("/leave", middleware.CheckVerified, LeaveTeam)
+			contestTeam.POST("/update", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, UpdateTeam)
+			contestTeam.POST("/avatar", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, UploadAvatar("team"))
+			contestTeam.POST("/delete", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, DeleteTeam)
+			contestTeam.POST("/kick", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, KickMember)
+			contestTeam.POST("/leave", middleware.CheckRunning, middleware.CheckVerified, LeaveTeam)
 		}
 
 		// 比赛公告
@@ -71,17 +71,17 @@ func Init() *gin.Engine {
 		}
 
 		// 比赛题目
-		contest.GET("/challenge/list", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.CheckRunning, GetUsages)
-		contestChallenge := contest.Group("/challenge/:challengeID", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.CheckRunning, middleware.SetChallenge)
+		contest.GET("/challenge/list", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, GetUsages)
+		contestChallenge := contest.Group("/challenge/:challengeID", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.SetChallenge)
 		{
 			contestChallenge.GET("/status", ChallengeStatus)
-			contestChallenge.POST("/init", InitChallenge(false))
+			contestChallenge.POST("/init", middleware.CheckRunning, InitChallenge(false))
 			contestChallenge.GET("/attachment", GetAttachment)
-			contestChallenge.POST("/reset", InitChallenge(true))
+			contestChallenge.POST("/reset", middleware.CheckRunning, InitChallenge(true))
 			contestChallenge.POST("/start", StartContainer)
-			contestChallenge.POST("/increase", IncreaseDuration)
+			contestChallenge.POST("/increase", middleware.CheckRunning, IncreaseDuration)
 			contestChallenge.POST("/stop", StopContainer)
-			contestChallenge.POST("/submit", SubmitFlag)
+			contestChallenge.POST("/submit", middleware.CheckRunning, SubmitFlag)
 		}
 
 		// WriteUp
