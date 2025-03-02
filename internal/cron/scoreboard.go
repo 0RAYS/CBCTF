@@ -2,6 +2,7 @@ package cron
 
 import (
 	"CBCTF/internal/db"
+	"CBCTF/internal/log"
 	"CBCTF/internal/redis"
 	"github.com/robfig/cron/v3"
 	"time"
@@ -9,6 +10,7 @@ import (
 
 func UpdateGlobalRanking(c *cron.Cron) {
 	function := func() {
+		log.Logger.Infof("Start update global ranking")
 		contests, _, ok, _ := db.GetContests(db.DB, -1, -1, false, false)
 		if !ok {
 			return
@@ -19,6 +21,7 @@ func UpdateGlobalRanking(c *cron.Cron) {
 			}
 			go db.UpdateRanking(db.DB, contest.ID)
 		}
+		log.Logger.Infof("Updated global ranking")
 	}
 	function()
 	c.Schedule(cron.Every(1*time.Minute), cron.FuncJob(function))
@@ -26,6 +29,7 @@ func UpdateGlobalRanking(c *cron.Cron) {
 
 func UpdateTeamRank(c *cron.Cron) {
 	function := func() {
+		log.Logger.Infof("Start update team ranking")
 		contests, _, ok, _ := db.GetContests(db.DB, -1, -1, false, false)
 		if !ok {
 			return
@@ -50,6 +54,7 @@ func UpdateTeamRank(c *cron.Cron) {
 				tx.Commit()
 			}
 		}
+		log.Logger.Infof("Updated team ranking")
 	}
 	function()
 	c.Schedule(cron.Every(1*time.Minute), cron.FuncJob(function))
