@@ -52,6 +52,8 @@ func GetUsages(ctx *gin.Context) {
 		}
 		if !all {
 			usage.Flag = ""
+			usage.DockerImage = ""
+			usage.GeneratorImage = ""
 			challenge.Flag = ""
 			challenge.DockerImage = ""
 			challenge.GeneratorImage = ""
