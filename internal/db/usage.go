@@ -154,5 +154,8 @@ func DeleteUsage(tx *gorm.DB, id uint) (bool, string) {
 		log.Logger.Warningf("Failed to delete Usage: %s", res.Error)
 		return false, "DeleteUsageError"
 	}
+	if !ClearByID(tx, "usage_id", id) {
+		return false, "DeleteAssociatedDataError"
+	}
 	return true, "Success"
 }

@@ -7,6 +7,7 @@ import (
 
 type Submission struct {
 	ID          uint           `json:"id" gorm:"primaryKey"`
+	UsageID     uint           `json:"usage_id"`
 	ContestID   uint           `json:"contest_id"`
 	ChallengeID string         `json:"challenge_id"`
 	TeamID      uint           `json:"team_id"`
@@ -19,8 +20,9 @@ type Submission struct {
 	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
-func InitSubmission(contestID uint, challengeID string, teamID, userID uint, value string, solved bool, score float64) Submission {
+func InitSubmission(usage, contestID uint, challengeID string, teamID, userID uint, value string, solved bool, score float64) Submission {
 	return Submission{
+		UsageID:     usage,
 		ContestID:   contestID,
 		ChallengeID: challengeID,
 		TeamID:      teamID,
