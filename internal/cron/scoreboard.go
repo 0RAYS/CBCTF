@@ -34,7 +34,7 @@ func UpdateTeamRank(c *cron.Cron) {
 			if !contest.IsRunning() {
 				continue
 			}
-			teams, err := redis.GetCachedRanking(contest.ID, -1, 0)
+			teams, err := redis.GetCachedRanking(contest.ID, 0, -1)
 			if err != nil {
 				continue
 			}
