@@ -13,6 +13,7 @@ var associations = map[string][]interface{}{
 	"team_id":      {model.Submission{}, model.Flag{}},
 	"challenge_id": {model.Flag{}, model.Submission{}, model.Usage{}},
 	"contest_id":   {model.Flag{}, model.Submission{}, model.Usage{}, model.Notice{}},
+	"usage_id":     {model.Submission{}},
 }
 
 // ClearByID 清除所有与指定 ID 相关的数据
