@@ -141,19 +141,17 @@ func GetTeamSolvedState(tx *gorm.DB, team model.Team) ([]gin.H, bool, string) {
 	if !ok {
 		return make([]gin.H, 0), false, msg
 	}
+	categories := make(map[string]string)
+	for _, v := range usages {
+		categories[v.ChallengeID] = v.Category
+	}
 	allCount := make(map[string]int64)
 	for _, usage := range usages {
-		challenge, ok, _ := GetChallengeByID(tx, usage.ChallengeID)
-		if ok {
-			allCount[challenge.Category] += 1
-		}
+		allCount[usage.Category] += 1
 	}
 	solvedCount := make(map[string]int64)
 	for _, submission := range solved {
-		challenge, ok, _ := GetChallengeByID(tx, submission.ChallengeID)
-		if ok {
-			solvedCount[challenge.Category] += 1
-		}
+		solvedCount[categories[submission.ChallengeID]] += 1
 	}
 	var tmp []gin.H
 	for k, v := range allCount {
