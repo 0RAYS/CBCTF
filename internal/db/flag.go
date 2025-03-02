@@ -26,13 +26,11 @@ func InitFlag(tx *gorm.DB, contest model.Contest, team model.Team, usage model.U
 		flag, ok, msg = RecordFlag(tx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, challenge.Flag))
 	case model.Dynamic:
 		flag, ok, msg = RecordFlag(tx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.RandFlag(challenge.Flag)))
-		// 默认附件全部生成成功
-		go func(c model.Challenge, f model.Flag) {
-			ok, msg = k8s.GenerateAttachment(c, f)
-			if !ok {
-				log.Logger.Warningf("Failed to generate flag for challenge %s: %s", f.ChallengeID, msg)
-			}
-		}(challenge, flag)
+		ok, msg = k8s.GenerateAttachment(challenge, flag)
+		if !ok {
+			log.Logger.Warningf("Failed to generate flag for challenge %s: %s", flag.ChallengeID, msg)
+			return model.Flag{}, false, msg
+		}
 	case model.Container:
 		flag, ok, msg = RecordFlag(tx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.UUID()))
 	default:
