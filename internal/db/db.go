@@ -54,7 +54,7 @@ func Init() {
 		&model.Contest{}, &model.File{}, &model.IP{},
 		&model.Challenge{}, &model.Usage{}, &model.Flag{},
 		&model.Docker{}, &model.Submission{}, &model.Device{},
-		&model.Traffic{}, &model.Notice{},
+		&model.Traffic{}, &model.Notice{}, &model.Cheat{},
 	)
 	if err != nil {
 		log.Logger.Fatalf("failed to migrate database: %v", err)
