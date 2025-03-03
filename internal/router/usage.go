@@ -3,7 +3,6 @@ package router
 import (
 	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
-	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
@@ -45,27 +44,18 @@ func GetUsages(ctx *gin.Context) {
 	var challenges []map[string]interface{}
 	for _, usage := range usages {
 		tmp := map[string]interface{}{}
-		challenge, ok, msg := db.GetChallengeByID(DB, usage.ChallengeID)
-		if !ok {
-			log.Logger.Warningf("Failed to get challenge %s: %s", usage.ChallengeID, msg)
-			continue
-		}
 		if !all {
 			usage.Flag = ""
 			usage.DockerImage = ""
 			usage.GeneratorImage = ""
-			challenge.Flag = ""
-			challenge.DockerImage = ""
-			challenge.GeneratorImage = ""
 		}
 		tmp["usage"] = usage
-		tmp["challenge"] = challenge
 		if !all {
 			tmp["status"] = gin.H{
-				"solved":   db.IsSolved(DB, contest, team, challenge),
-				"attempts": db.CountAttempts(DB, contest, team, challenge),
+				"solved":   db.IsSolved(DB, contest.ID, team.ID, usage.ChallengeID),
+				"attempts": db.CountAttempts(DB, contest.ID, team.ID, usage.ChallengeID),
 				"init": func() bool {
-					_, ok, _ = db.GetFlagBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, challenge.ID)
+					_, ok, _ = db.GetFlagBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID)
 					return ok
 				}(),
 			}

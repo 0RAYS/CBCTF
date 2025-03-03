@@ -10,11 +10,11 @@ import (
 
 // CreateSubmission is a function to create a new submission
 func CreateSubmission(tx *gorm.DB, contest model.Contest, team model.Team, user model.User, challenge model.Challenge, value string) (model.Submission, bool, string) {
-	if IsSolved(tx, contest, team, challenge) {
+	if IsSolved(tx, contest.ID, team.ID, challenge.ID) {
 		return model.Submission{}, false, "AlreadySolved"
 	}
 	usage, ok, _ := GetUsageBy2ID(tx, contest.ID, challenge.ID)
-	if !ok || (usage.Attempt != 0 && usage.Attempt <= CountAttempts(tx, contest, team, challenge)) {
+	if !ok || (usage.Attempt != 0 && usage.Attempt <= CountAttempts(tx, contest.ID, team.ID, challenge.ID)) {
 		return model.Submission{}, false, "NotAllowSubmit"
 	}
 	if _, ok, msg := GetFlagBy3ID(tx, contest.ID, team.ID, challenge.ID); !ok {
@@ -37,20 +37,20 @@ func CreateSubmission(tx *gorm.DB, contest model.Contest, team model.Team, user 
 	return submission, true, "Success"
 }
 
-func IsSolved(tx *gorm.DB, contest model.Contest, team model.Team, challenge model.Challenge) bool {
+func IsSolved(tx *gorm.DB, contestID, teamID uint, challengeID string) bool {
 	var submission model.Submission
 	res := tx.Model(model.Submission{}).
-		Where("contest_id = ? AND team_id = ? AND challenge_id = ? AND solved = ?", contest.ID, team.ID, challenge.ID, true).Find(&submission).Limit(1)
+		Where("contest_id = ? AND team_id = ? AND challenge_id = ? AND solved = ?", contestID, teamID, challengeID, true).Find(&submission).Limit(1)
 	if res.RowsAffected < 1 {
 		return false
 	}
 	return true
 }
 
-func CountAttempts(tx *gorm.DB, contest model.Contest, team model.Team, challenge model.Challenge) int64 {
+func CountAttempts(tx *gorm.DB, contestID, teamID uint, challengeID string) int64 {
 	var count int64
 	res := tx.Model(model.Submission{}).
-		Where("contest_id = ? AND team_id = ? AND challenge_id = ?", contest.ID, team.ID, challenge.ID).Count(&count)
+		Where("contest_id = ? AND team_id = ? AND challenge_id = ?", contestID, teamID, challengeID).Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count attempts: %v", res.Error)
 		return 0
