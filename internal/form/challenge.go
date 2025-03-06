@@ -7,7 +7,7 @@ type DownloadChallengeForm struct {
 
 // GetCategoriesForm for get categories list
 type GetCategoriesForm struct {
-	Type int `form:"type" json:"type"`
+	Type string `form:"type" json:"type"`
 }
 
 type DeleteChallengeForm struct {
