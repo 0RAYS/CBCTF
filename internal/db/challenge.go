@@ -86,7 +86,7 @@ func DeleteChallenge(tx *gorm.DB, id string) (bool, string) {
 }
 
 // GetCategories 获取 type 下所有的题目分类
-func GetCategories(tx *gorm.DB, t int) ([]string, bool, string) {
+func GetCategories(tx *gorm.DB, t string) ([]string, bool, string) {
 	var categories []string
 	res := tx.Model(&model.Challenge{}).Where("type = ?", t).Select("distinct category").Find(&categories)
 	if res.Error != nil {
