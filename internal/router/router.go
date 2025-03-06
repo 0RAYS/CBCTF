@@ -23,7 +23,7 @@ func Init() *gin.Engine {
 	router.POST("/login", Login)
 	router.POST("/admin/login", AdminLogin)
 	router.GET("/verify", Verify)
-	router.GET("/avatar/:fileID", middleware.SetFile(model.Avatar), DownloadFile)
+	router.GET("/avatars/:fileID", middleware.SetFile(model.Avatar), DownloadFile)
 
 	router.GET("/contests", GetContests)
 
