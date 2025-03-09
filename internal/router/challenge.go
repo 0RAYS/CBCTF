@@ -271,6 +271,10 @@ func InitChallenge(reset bool) gin.HandlerFunc {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
+		if db.IsSolved(DB, contest.ID, team.ID, usage.ChallengeID) {
+			ctx.JSON(http.StatusOK, gin.H{"msg": "AlreadySolved", "data": nil})
+			return
+		}
 		if !reset {
 			if _, ok, msg = db.GetFlagBy3ID(DB, contest.ID, team.ID, usage.ChallengeID); ok {
 				ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
