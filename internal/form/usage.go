@@ -7,6 +7,7 @@ type CreateUsageForm struct {
 
 // UpdateUsageForm for admin update usage info
 type UpdateUsageForm struct {
+	Desc         *string  `form:"desc" json:"desc"`
 	Hidden       *bool    `form:"hidden" json:"hidden"`
 	Score        *float64 `form:"score" json:"score"`
 	ScoreType    *uint    `form:"score_type" json:"score_type"`
