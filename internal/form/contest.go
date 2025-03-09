@@ -28,20 +28,6 @@ func (d *SecondDuration) UnmarshalText(b []byte) error {
 	return nil
 }
 
-type Strings []string
-
-func (s Strings) Value() (driver.Value, error) {
-	return json.Marshal(s)
-}
-
-func (s *Strings) Scan(value interface{}) error {
-	bytes, ok := value.([]byte)
-	if !ok {
-		return fmt.Errorf("failed to scan Strings value")
-	}
-	return json.Unmarshal(bytes, s)
-}
-
 type Prize struct {
 	Amount string `json:"amount"`
 	Desc   string `json:"desc"`
