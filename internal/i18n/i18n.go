@@ -99,7 +99,7 @@ var resp = map[string]map[string]interface{}{
 	"GetSubmissionError":    {"zh-CN": "获取提交记录失败", "en-US": "Failed to get submission", "code": 500},
 	"SubmissionNotFound":    {"zh-CN": "提交记录不存在", "en-US": "Submission not found", "code": 404},
 	"CreateSubmissionError": {"zh-CN": "提交失败", "en-US": "Failed to create submission", "code": 500},
-	"AlreadySolved":         {"zh-CN": "已提交过flag", "en-US": "Flag already submitted", "code": 200},
+	"AlreadySolved":         {"zh-CN": "已解决该题目", "en-US": "Challenge has already been solved", "code": 200},
 	"NotAllowSubmit":        {"zh-CN": "不允许提交flag", "en-US": "Not allowed to submit flag", "code": 400},
 
 	"CopyFileError":      {"zh-CN": "复制文件失败", "en-US": "Failed to copy file", "code": 500},
