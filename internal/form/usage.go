@@ -14,6 +14,6 @@ type UpdateUsageForm struct {
 	MinScore     *float64 `form:"min_score" json:"min_score"`
 	Decay        *float64 `form:"decay" json:"decay"`
 	Attempt      *int64   `form:"attempt" json:"attempt"`
-	Hints        *string  `form:"hints" json:"hints"`
-	Tags         *string  `form:"tags" json:"tags"`
+	Hints        *Strings `form:"hints" json:"hints"`
+	Tags         *Strings `form:"tags" json:"tags"`
 }
