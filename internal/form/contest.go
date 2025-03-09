@@ -28,18 +28,18 @@ func (d *SecondDuration) UnmarshalText(b []byte) error {
 	return nil
 }
 
-type Rules []string
+type Strings []string
 
-func (r Rules) Value() (driver.Value, error) {
-	return json.Marshal(r)
+func (s Strings) Value() (driver.Value, error) {
+	return json.Marshal(s)
 }
 
-func (r *Rules) Scan(value interface{}) error {
+func (s *Strings) Scan(value interface{}) error {
 	bytes, ok := value.([]byte)
 	if !ok {
-		return fmt.Errorf("failed to scan Rules value")
+		return fmt.Errorf("failed to scan Strings value")
 	}
-	return json.Unmarshal(bytes, r)
+	return json.Unmarshal(bytes, s)
 }
 
 type Prize struct {
@@ -91,7 +91,7 @@ type CreateContestForm struct {
 	Size      int            `form:"size" json:"size" binding:"required"`
 	Start     time.Time      `form:"start" json:"start" binding:"required"`
 	Duration  SecondDuration `form:"duration" json:"duration" binding:"required"`
-	Rules     Rules          `form:"rules" json:"rules"`
+	Rules     Strings        `form:"rules" json:"rules"`
 	Prizes    Prizes         `form:"prizes" json:"prizes"`
 	Timelines Timelines      `form:"timelines" json:"timelines"`
 	Hidden    bool           `form:"hidden" json:"hidden"`
@@ -107,7 +107,7 @@ type UpdateContestForm struct {
 	Size      *int            `form:"start" json:"size"`
 	Start     *time.Time      `form:"start" json:"start"`
 	Duration  *SecondDuration `form:"duration" json:"duration"`
-	Rules     *Rules          `form:"rules" json:"rules"`
+	Rules     *Strings        `form:"rules" json:"rules"`
 	Prizes    *Prizes         `form:"prizes" json:"prizes"`
 	Timelines *Timelines      `form:"timelines" json:"timelines"`
 	Hidden    *bool           `form:"hidden" json:"hidden"`
