@@ -22,7 +22,7 @@ type Contest struct {
 	Duration  time.Duration  `json:"-"`
 	Blood     bool           `json:"blood" gorm:"default:true"`
 	Hidden    bool           `gorm:"default:true" json:"hidden"`
-	Rules     f.Rules        `json:"rules" gorm:"type:json"`
+	Rules     f.Strings      `json:"rules" gorm:"type:json"`
 	Prizes    f.Prizes       `json:"prizes" gorm:"type:json"`
 	Timelines f.Timelines    `json:"timelines" gorm:"type:json"`
 	Teams     []*Team        `json:"-"`
@@ -76,7 +76,7 @@ func (c *Contest) Status() string {
 
 func InitContest(form f.CreateContestForm) Contest {
 	if len(form.Rules) == 0 {
-		form.Rules = f.Rules{
+		form.Rules = f.Strings{
 			"参赛者必须遵守比赛规则和道德准则",
 			"禁止攻击比赛平台和其他参赛者",
 			"禁止分享题目答案和解题思路",
