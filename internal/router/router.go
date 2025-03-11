@@ -16,7 +16,10 @@ func Init() *gin.Engine {
 		log.Logger.Warningf("Set trusted proxies failed: %v", err)
 	}
 	router.MaxMultipartMemory = int64(config.Env.Gin.Upload.Max << 20)
-	router.Use(middleware.Logger(), gin.Recovery(), middleware.Trace, middleware.Cors, middleware.I18n(), middleware.AccessLog, middleware.RateLimit())
+	router.Use(
+		middleware.Logger(), gin.Recovery(), middleware.Trace, middleware.Cors,
+		middleware.I18n(), middleware.AccessLog, middleware.RateLimit(), middleware.SetMagic,
+	)
 
 	// 公共
 	router.POST("/register", Register)
@@ -71,7 +74,10 @@ func Init() *gin.Engine {
 
 		// 比赛题目
 		contest.GET("/challenges", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, GetUsages)
-		contestChallenge := contest.Group("/challenges/:challengeID", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.SetChallenge)
+		contestChallenge := contest.Group(
+			"/challenges/:challengeID",
+			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.SetChallenge,
+		)
 		{
 			contestChallenge.GET("", ChallengeStatus)
 			contestChallenge.POST("/init", middleware.CheckRunning, middleware.CheckSolved, InitChallenge(false))
@@ -84,7 +90,10 @@ func Init() *gin.Engine {
 		}
 
 		// WriteUp
-		contestWriteUp := contest.Group("/writeups", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.CheckRunning)
+		contestWriteUp := contest.Group(
+			"/writeups",
+			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.CheckRunning,
+		)
 		{
 			contestWriteUp.POST("", UploadWriteUp)
 			contestWriteUp.GET("", GetWriteUPs)

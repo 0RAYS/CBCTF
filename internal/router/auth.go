@@ -30,7 +30,7 @@ func Register(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	if token, err := utils.Generate(user.ID, user.Name, "user"); err == nil {
+	if token, err := utils.Generate(user.ID, user.Name, "user", middleware.GetMagic(ctx)); err == nil {
 		log.Logger.Infof("%s | %s:%d register", trace, user.Name, user.ID)
 		ctx.Writer.Header().Set("Authorization", "Bearer "+token)
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": &user})
@@ -56,7 +56,7 @@ func Login(ctx *gin.Context) {
 		ctx.JSONP(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	if Token, err := utils.Generate(user.ID, user.Name, "user"); err == nil {
+	if Token, err := utils.Generate(user.ID, user.Name, "user", middleware.GetMagic(ctx)); err == nil {
 		log.Logger.Infof("%s | %s:%d login", trace, user.Name, user.ID)
 		ctx.Writer.Header().Set("Authorization", "Bearer "+Token)
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": &user})
@@ -82,7 +82,7 @@ func AdminLogin(ctx *gin.Context) {
 		ctx.JSONP(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	if Token, err := utils.Generate(admin.ID, admin.Name, "admin"); err == nil {
+	if Token, err := utils.Generate(admin.ID, admin.Name, "admin", middleware.GetMagic(ctx)); err == nil {
 		log.Logger.Infof("%s | %s:%d login", trace, admin.Name, admin.ID)
 		ctx.Writer.Header().Set("Authorization", "Bearer "+Token)
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": &admin})
