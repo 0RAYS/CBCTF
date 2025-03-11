@@ -10,6 +10,10 @@ const (
 	Cheater string = "cheater"
 )
 
+const (
+	TokenMagicNotMatch string = "Magic in token and request headers are not matched"
+)
+
 type Cheat struct {
 	ID        string         `json:"id" gorm:"primaryKey"`
 	UserID    uint           `json:"user_id"`

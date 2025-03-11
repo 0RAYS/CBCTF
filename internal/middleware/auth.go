@@ -45,6 +45,9 @@ func CheckLogin(ctx *gin.Context) {
 		if magic := ctx.GetHeader("X-M"); magic != "" {
 			tx := db.DB.WithContext(ctx).Begin()
 			db.RecordDevice(tx, model.Device{UserID: user.ID, Magic: magic})
+			if magic != claims.X {
+				db.RecordCheat(tx, user.ID, -1, -1, model.TokenMagicNotMatch, model.Suspect)
+			}
 			tx.Commit()
 		}
 		if user.Banned {
