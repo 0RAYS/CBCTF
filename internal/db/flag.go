@@ -10,36 +10,31 @@ import (
 )
 
 // InitFlag is a function to generate team flag
-func InitFlag(tx *gorm.DB, contest model.Contest, team model.Team, usage model.Usage) (model.Flag, bool, string) {
+func InitFlag(tx *gorm.DB, contest model.Contest, team model.Team, challenge model.Challenge) (model.Flag, bool, string) {
 	var (
-		challenge model.Challenge
-		flag      model.Flag
-		ok        bool
-		msg       string
+		flag model.Flag
+		ok   bool
+		msg  string
 	)
-	challenge, ok, msg = GetChallengeByID(tx, usage.ChallengeID)
-	if !ok {
-		return model.Flag{}, false, msg
-	}
 	switch challenge.Type {
 	case model.Static:
-		flag, ok, msg = RecordFlag(tx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, challenge.Flag))
+		flag, ok, msg = RecordFlag(tx, contest.ID, team.ID, challenge.ID, fmt.Sprintf("%s{%s}", contest.Prefix, challenge.Flag))
 	case model.Dynamic:
-		flag, ok, msg = RecordFlag(tx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.RandFlag(challenge.Flag)))
+		flag, ok, msg = RecordFlag(tx, contest.ID, team.ID, challenge.ID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.RandFlag(challenge.Flag)))
 		ok, msg = k8s.GenerateAttachment(challenge, flag)
 		if !ok {
 			log.Logger.Warningf("Failed to generate flag for challenge %s: %s", flag.ChallengeID, msg)
 			return model.Flag{}, false, msg
 		}
 	case model.Container:
-		flag, ok, msg = RecordFlag(tx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.UUID()))
+		flag, ok, msg = RecordFlag(tx, contest.ID, team.ID, challenge.ID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.UUID()))
 	default:
 		flag, ok, msg = model.Flag{}, false, "InvalidChallengeType"
 	}
 	if !ok {
 		log.Logger.Warningf(
 			"Failed to generator flag for contest %d team %d challenge %s: %s",
-			contest.ID, team.ID, usage.ChallengeID, msg,
+			contest.ID, team.ID, challenge.ID, msg,
 		)
 	}
 	return flag, ok, msg

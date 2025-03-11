@@ -74,13 +74,13 @@ func Init() *gin.Engine {
 		contestChallenge := contest.Group("/challenges/:challengeID", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.SetChallenge)
 		{
 			contestChallenge.GET("", ChallengeStatus)
-			contestChallenge.POST("/init", middleware.CheckRunning, InitChallenge(false))
+			contestChallenge.POST("/init", middleware.CheckRunning, middleware.CheckSolved, InitChallenge(false))
 			contestChallenge.GET("/attachment", GetAttachment)
-			contestChallenge.POST("/reset", middleware.CheckRunning, InitChallenge(true))
+			contestChallenge.POST("/reset", middleware.CheckRunning, middleware.CheckSolved, InitChallenge(true))
 			contestChallenge.POST("/start", StartContainer)
 			contestChallenge.POST("/increase", middleware.CheckRunning, IncreaseDuration)
 			contestChallenge.POST("/stop", StopContainer)
-			contestChallenge.POST("/submit", middleware.CheckRunning, SubmitFlag)
+			contestChallenge.POST("/submit", middleware.CheckRunning, middleware.CheckSolved, SubmitFlag)
 		}
 
 		// WriteUp
