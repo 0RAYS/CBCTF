@@ -256,37 +256,26 @@ func ChallengeStatus(ctx *gin.Context) {
 func InitChallenge(reset bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var (
-			team    model.Team
-			contest model.Contest
-			usage   model.Usage
-			ok      bool
-			msg     string
-			err     error
-			DB      = db.DB.WithContext(ctx)
+			team      = middleware.GetTeam(ctx)
+			contest   = middleware.GetContest(ctx)
+			challenge = middleware.GetChallenge(ctx)
+			DB        = db.DB.WithContext(ctx)
+			ok        bool
+			msg       string
+			err       error
 		)
-		team = middleware.GetTeam(ctx)
-		if ok, err = redis.CheckChallengeInit(team.ID, middleware.GetChallenge(ctx).ID); ok || err != nil {
+		if ok, err = redis.CheckChallengeInit(team.ID, challenge.ID); ok || err != nil {
 			ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooQuick", "data": nil})
 			return
 		}
-		_ = redis.RecordChallengeInit(team.ID, middleware.GetChallenge(ctx).ID)
-		contest = middleware.GetContest(ctx)
-		usage, ok, msg = db.GetUsageBy2ID(DB, contest.ID, middleware.GetChallenge(ctx).ID)
-		if !ok {
-			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-			return
-		}
-		if db.IsSolved(DB, contest.ID, team.ID, usage.ChallengeID) {
-			ctx.JSON(http.StatusOK, gin.H{"msg": "AlreadySolved", "data": nil})
-			return
-		}
+		_ = redis.RecordChallengeInit(team.ID, challenge.ID)
 		if !reset {
-			if _, ok, msg = db.GetFlagBy3ID(DB, contest.ID, team.ID, usage.ChallengeID); ok {
+			if _, ok, msg = db.GetFlagBy3ID(DB, contest.ID, team.ID, challenge.ID); ok {
 				ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 				return
 			}
 		}
-		docker, ok, _ := db.GetDockerBy3ID(DB, contest.ID, team.ID, usage.ChallengeID)
+		docker, ok, _ := db.GetDockerBy3ID(DB, contest.ID, team.ID, challenge.ID)
 		if ok {
 			tx := DB.Begin()
 			ok, msg = db.DeleteDocker(tx, docker)
@@ -298,7 +287,7 @@ func InitChallenge(reset bool) gin.HandlerFunc {
 			tx.Commit()
 		}
 		tx := DB.Begin()
-		_, ok, msg = db.InitFlag(tx, contest, team, usage)
+		_, ok, msg = db.InitFlag(tx, contest, team, challenge)
 		if !ok {
 			tx.Rollback()
 		} else {

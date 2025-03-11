@@ -18,7 +18,7 @@ func SubmitFlag(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
 	team := middleware.GetTeam(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
-	submission, ok, msg := db.CreateSubmission(tx, contest, team, middleware.GetSelf(ctx).(model.User), middleware.GetChallenge(ctx), form.Flag)
+	submission, ok, msg := db.CreateSubmission(tx, contest, team, middleware.GetSelf(ctx).(model.User), middleware.GetUsage(ctx), form.Flag)
 	if !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

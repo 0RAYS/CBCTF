@@ -9,18 +9,14 @@ import (
 )
 
 // CreateSubmission is a function to create a new submission
-func CreateSubmission(tx *gorm.DB, contest model.Contest, team model.Team, user model.User, challenge model.Challenge, value string) (model.Submission, bool, string) {
-	if IsSolved(tx, contest.ID, team.ID, challenge.ID) {
-		return model.Submission{}, false, "AlreadySolved"
-	}
-	usage, ok, _ := GetUsageBy2ID(tx, contest.ID, challenge.ID)
-	if !ok || (usage.Attempt != 0 && usage.Attempt <= CountAttempts(tx, contest.ID, team.ID, challenge.ID)) {
+func CreateSubmission(tx *gorm.DB, contest model.Contest, team model.Team, user model.User, usage model.Usage, value string) (model.Submission, bool, string) {
+	if usage.Attempt != 0 && usage.Attempt <= CountAttempts(tx, contest.ID, team.ID, usage.ChallengeID) {
 		return model.Submission{}, false, "NotAllowSubmit"
 	}
-	if _, ok, msg := GetFlagBy3ID(tx, contest.ID, team.ID, challenge.ID); !ok {
+	if _, ok, msg := GetFlagBy3ID(tx, contest.ID, team.ID, usage.ChallengeID); !ok {
 		return model.Submission{}, false, msg
 	}
-	solved := VerifyFlag(tx, contest.ID, team.ID, challenge.ID, value)
+	solved := VerifyFlag(tx, contest.ID, team.ID, usage.ChallengeID, value)
 	if solved {
 		if ok, msg := Solve(tx, usage.ID, team.ID, contest.Blood); !ok {
 			return model.Submission{}, false, msg
@@ -30,7 +26,7 @@ func CreateSubmission(tx *gorm.DB, contest model.Contest, team model.Team, user 
 	if !ok {
 		return model.Submission{}, false, msg
 	}
-	submission := model.InitSubmission(usage.ID, contest.ID, challenge.ID, team.ID, user.ID, value, solved, team.Score)
+	submission := model.InitSubmission(usage.ID, contest.ID, usage.ChallengeID, team.ID, user.ID, value, solved, team.Score)
 	if err := tx.Model(model.Submission{}).Create(&submission).Error; err != nil {
 		return model.Submission{}, false, "CreateSubmissionError"
 	}
