@@ -3,11 +3,12 @@ package middleware
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strings"
 )
 
 func SetMagic(ctx *gin.Context) {
 	magic := ctx.GetHeader("X-M")
-	if magic == "" {
+	if !(strings.HasPrefix(ctx.Request.RequestURI, "/avatars/") && len(ctx.Request.RequestURI) == 36) && magic == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		ctx.Abort()
 		return
