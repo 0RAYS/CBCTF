@@ -170,7 +170,14 @@ func SetChallenge(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
+	usage, ok, msg := db.GetUsageBy2ID(db.DB.WithContext(ctx), GetContest(ctx).ID, challenge.ID)
+	if !ok {
+		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.Abort()
+		return
+	}
 	ctx.Set("Challenge", challenge)
+	ctx.Set("Usage", usage)
 	ctx.Next()
 }
 
@@ -179,6 +186,14 @@ func GetChallenge(ctx *gin.Context) model.Challenge {
 		return model.Challenge{}
 	} else {
 		return challenge.(model.Challenge)
+	}
+}
+
+func GetUsage(ctx *gin.Context) model.Usage {
+	if usage, ok := ctx.Get("Usage"); !ok {
+		return model.Usage{}
+	} else {
+		return usage.(model.Usage)
 	}
 }
 
