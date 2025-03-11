@@ -24,7 +24,7 @@ func Generate(id uint, name string, magic string, t string) (tokenString string,
 	claim := Claims{
 		UserID: id,
 		Name:   name,
-		X:      magic,
+		X:      EncryptMagic(magic),
 		Type:   t,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(1))),
