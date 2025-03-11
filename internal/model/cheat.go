@@ -15,7 +15,7 @@ const (
 )
 
 type Cheat struct {
-	ID        string         `json:"id" gorm:"primaryKey"`
+	ID        uint           `json:"id" gorm:"primaryKey"`
 	UserID    uint           `json:"user_id"`
 	TeamID    uint           `json:"team_id"`
 	ContestID uint           `json:"contest_id"`
