@@ -225,6 +225,7 @@ func ChallengeStatus(ctx *gin.Context) {
 			"target":    "",
 			"remaining": "",
 		},
+		"solved": false,
 	}
 	team := middleware.GetTeam(ctx)
 	challenge := middleware.GetChallenge(ctx)
@@ -234,6 +235,9 @@ func ChallengeStatus(ctx *gin.Context) {
 		return
 	}
 	data["status"] = true
+	if db.IsSolved(db.DB.WithContext(ctx), contest.ID, team.ID, challenge.ID) {
+		data["solved"] = true
+	}
 	if _, err := os.Stat(challenge.AttachmentPath(team.ID)); err == nil {
 		data["files"] = model.StaticFile
 	}
@@ -245,6 +249,7 @@ func ChallengeStatus(ctx *gin.Context) {
 			}
 		}
 	}
+
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
 }
 
