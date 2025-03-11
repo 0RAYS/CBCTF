@@ -20,12 +20,12 @@ type Claims struct {
 var secret = "0RAYS-JBNRZ"
 
 // Generate 生成token
-func Generate(id uint, name string, magic string, t string) (tokenString string, err error) {
+func Generate(id uint, name string, t string, magic string) (tokenString string, err error) {
 	claim := Claims{
 		UserID: id,
 		Name:   name,
-		X:      EncryptMagic(magic),
 		Type:   t,
+		X:      EncryptMagic(magic),
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * time.Duration(1))),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
