@@ -20,7 +20,7 @@ func UpdateGlobalRanking(c *cron.Cron) {
 			if !contest.IsRunning() {
 				continue
 			}
-			go db.UpdateRanking(db.DB, contest.ID)
+			go db.UpdateTeamRanking(db.DB, contest.ID)
 		}
 		log.Logger.Infof("Updated global ranking")
 	}
@@ -39,7 +39,7 @@ func UpdateTeamRank(c *cron.Cron) {
 			if !contest.IsRunning() {
 				continue
 			}
-			teams, err := redis.GetCachedRanking(contest.ID, 0, -1)
+			teams, err := redis.GetTeamRanking(contest.ID, 0, -1)
 			if err != nil {
 				continue
 			}

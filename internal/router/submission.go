@@ -26,7 +26,7 @@ func SubmitFlag(ctx *gin.Context) {
 	}
 	tx.Commit()
 	if submission.Solved {
-		go db.UpdateRanking(db.DB, contest.ID)
+		go db.UpdateTeamRanking(db.DB, contest.ID)
 		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
 		return
 	}

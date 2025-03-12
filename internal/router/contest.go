@@ -12,7 +12,7 @@ import (
 func GetContest(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
 	totalSolved, _, _ := db.GetContestSolved(db.DB.WithContext(ctx), contest.ID)
-	champion, _, _, _ := db.GetRanking(db.DB.WithContext(ctx), contest.ID, 1, 0)
+	champion, _, _, _ := db.GetTeamRanking(db.DB.WithContext(ctx), contest.ID, 1, 0)
 	var maxScore float64
 	if len(champion) > 0 {
 		maxScore = champion[0].Score
