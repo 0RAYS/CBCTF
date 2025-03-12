@@ -18,19 +18,19 @@ func Init() *gin.Engine {
 	router.MaxMultipartMemory = int64(config.Env.Gin.Upload.Max << 20)
 	router.Use(
 		middleware.Logger(), gin.Recovery(), middleware.Trace, middleware.Cors,
-		middleware.I18n(), middleware.AccessLog, middleware.RateLimit(), middleware.SetMagic,
+		middleware.I18n(), middleware.AccessLog, middleware.RateLimit(),
 	)
 
 	// 公共
 	{
-		router.POST("/register", Register)
-		router.POST("/login", Login)
-		router.POST("/admin/login", AdminLogin)
-		router.GET("/verify", Verify)
-		router.GET("/avatars/:fileID", middleware.SetFile(model.Avatar), DownloadFile)
+		router.POST("/register", middleware.SetMagic(true), Register)
+		router.POST("/login", middleware.SetMagic(true), Login)
+		router.POST("/admin/login", middleware.SetMagic(true), AdminLogin)
+		router.GET("/verify", middleware.SetMagic(false), Verify)
+		router.GET("/avatars/:fileID", middleware.SetMagic(false), middleware.SetFile(model.Avatar), DownloadFile)
 
-		router.GET("/stats", HomePage)
-		router.GET("/contests", GetContests)
+		router.GET("/stats", middleware.SetMagic(true), HomePage)
+		router.GET("/contests", middleware.SetMagic(true), GetContests)
 
 	}
 
@@ -38,7 +38,7 @@ func Init() *gin.Engine {
 	auth := router.Group("", middleware.CheckLogin)
 
 	// 用户
-	user := auth.Group("/me", middleware.CheckRole("user"))
+	user := auth.Group("/me", middleware.SetMagic(true), middleware.CheckRole("user"))
 	{
 		user.GET("", GetUser)
 		user.PUT("/password", ChangePassword)
@@ -49,7 +49,7 @@ func Init() *gin.Engine {
 	}
 
 	// 比赛
-	contest := auth.Group("/contests/:contestID", middleware.CheckRole("user"), middleware.SetContest)
+	contest := auth.Group("/contests/:contestID", middleware.SetMagic(true), middleware.CheckRole("user"), middleware.SetContest)
 	{
 		contest.GET("", GetContest)
 		contest.GET("/rank", GetRank)
@@ -105,7 +105,7 @@ func Init() *gin.Engine {
 	}
 
 	// 管理员
-	admin := auth.Group("/admin", middleware.CheckRole("admin"))
+	admin := auth.Group("/admin", middleware.SetMagic(false), middleware.CheckRole("admin"))
 	{
 		// 管理员
 		admin.GET("/me", GetAdmin)
