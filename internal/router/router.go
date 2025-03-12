@@ -22,13 +22,17 @@ func Init() *gin.Engine {
 	)
 
 	// 公共
-	router.POST("/register", Register)
-	router.POST("/login", Login)
-	router.POST("/admin/login", AdminLogin)
-	router.GET("/verify", Verify)
-	router.GET("/avatars/:fileID", middleware.SetFile(model.Avatar), DownloadFile)
+	{
+		router.POST("/register", Register)
+		router.POST("/login", Login)
+		router.POST("/admin/login", AdminLogin)
+		router.GET("/verify", Verify)
+		router.GET("/avatars/:fileID", middleware.SetFile(model.Avatar), DownloadFile)
 
-	router.GET("/contests", GetContests)
+		router.GET("/stats", HomePage)
+		router.GET("/contests", GetContests)
+
+	}
 
 	// 鉴权
 	auth := router.Group("", middleware.CheckLogin)
