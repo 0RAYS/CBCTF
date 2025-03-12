@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -55,7 +56,7 @@ func CountAttempts(tx *gorm.DB, contestID, teamID uint, challengeID string) int6
 }
 
 // GetSubmissions is a function to get submissions
-func GetSubmissions(tx *gorm.DB, limit, offset int, teamIDL ...uint) ([]model.Submission, int64, bool, string) {
+func GetSubmissions(tx *gorm.DB, limit, offset int, column string, modelIDL ...uint) ([]model.Submission, int64, bool, string) {
 	if limit <= 0 {
 		limit = -1
 	}
@@ -65,8 +66,8 @@ func GetSubmissions(tx *gorm.DB, limit, offset int, teamIDL ...uint) ([]model.Su
 	var submissions []model.Submission
 	var count int64
 	res := tx.Model(model.Submission{})
-	if len(teamIDL) > 0 {
-		res = res.Where("team_id IN ?", teamIDL)
+	if len(modelIDL) > 0 {
+		res = res.Where(fmt.Sprintf("%s IN ?", column), modelIDL)
 	}
 	if res.Count(&count).Error != nil {
 		log.Logger.Warningf("Failed to count submissions: %v", res.Error)
