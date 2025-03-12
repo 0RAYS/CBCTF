@@ -11,6 +11,54 @@ import (
 	"net/http"
 )
 
+func HomePage(ctx *gin.Context) {
+	data := gin.H{
+		"upcoming":   []gin.H{},
+		"stats":      []gin.H{},
+		"scoreboard": []gin.H{},
+	}
+	DB := db.DB.WithContext(ctx)
+	contests, contestCount, ok, _ := db.GetContests(DB, 3, 0, false, true, true)
+	if ok {
+		count := func() int {
+			if len(contests) > 3 {
+				return 3
+			}
+			return len(contests)
+		}()
+		if count > 0 {
+			for i := 1; i < count; i++ {
+				contest := contests[i]
+				info := gin.H{
+					"name":     contest.Name,
+					"start":    contest.Start,
+					"duration": contest.Duration.Seconds(),
+					"users":    len(contest.Users),
+					"avatar":   contest.Avatar,
+				}
+				data["upcoming"] = append(data["upcoming"].([]gin.H), info)
+			}
+		}
+	}
+	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "CTF Events", "value": contestCount})
+	_, userCount, _, _ := db.GetUsers(DB, 0, 0, true, false)
+	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "Activate CTFers", "value": userCount})
+	_, challengeCount, _, _ := db.GetChallenges(DB, 0, 0, "", "")
+	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "Challenges", "value": challengeCount})
+	_, submissionCount, _, _ := db.GetSubmissions(DB, 0, 0, "")
+	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "Submissions", "value": submissionCount})
+	users, _, _, _ := db.GetUserRanking(DB, 5, 0)
+	for _, user := range users {
+		data["scoreboard"] = append(data["scoreboard"].([]gin.H), gin.H{
+			"name":    user.Name,
+			"score":   user.Score,
+			"solved":  user.Solved,
+			"country": user.Country,
+		})
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
+}
+
 func SystemStatus(ctx *gin.Context) {
 	ret := make(map[string]interface{})
 	metrics, err := redis.GetMetrics()
