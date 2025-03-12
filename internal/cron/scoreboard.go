@@ -75,9 +75,6 @@ func UpdateUserScore(c *cron.Cron) {
 			return
 		}
 		for _, contest := range contests {
-			if contest.IsRunning() {
-				continue
-			}
 			users = contest.Users
 			for _, user := range users {
 				submissions, _, ok, _ = db.GetSubmissions(db.DB, -1, -1, "user_id", user.ID)
