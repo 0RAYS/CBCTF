@@ -22,6 +22,8 @@ type User struct {
 	Verified  bool           `gorm:"default:false" json:"verified"`
 	Hidden    bool           `gorm:"default:false" json:"hidden"`
 	Banned    bool           `gorm:"default:false" json:"banned"`
+	Score     float64        `gorm:"default:0" json:"score"`
+	Solved    int64          `gorm:"default:0" json:"solved"`
 	Teams     []*Team        `gorm:"many2many:user_teams;" json:"-"`
 	Contests  []*Contest     `gorm:"many2many:user_contests;" json:"-"`
 	CreatedAt time.Time      `json:"-"`
