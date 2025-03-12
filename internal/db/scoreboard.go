@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func UpdateRanking(tx *gorm.DB, contestID uint) (bool, string) {
+func UpdateTeamRanking(tx *gorm.DB, contestID uint) (bool, string) {
 	if !config.Env.Redis.On {
 		return false, "RedisOff"
 	}
@@ -25,7 +25,7 @@ func UpdateRanking(tx *gorm.DB, contestID uint) (bool, string) {
 		team.Score, _, _ = CalcTeamScore(tx, team.ContestID, team.ID)
 		go UpdateTeam(tx, team.ID, map[string]interface{}{"score": team.Score})
 	}
-	err := redis.UpdateRanking(contestID, teams)
+	err := redis.UpdateTeamRanking(contestID, teams)
 	if err != nil {
 		log.Logger.Warningf("Failed to update ranking: %v", err)
 		return false, "UpdateRankingError"
@@ -33,7 +33,7 @@ func UpdateRanking(tx *gorm.DB, contestID uint) (bool, string) {
 	return true, "Success"
 }
 
-func GetRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Team, int64, bool, string) {
+func GetTeamRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Team, int64, bool, string) {
 	var count int64
 	res := tx.Model(&model.Team{}).Where("contest_id = ? AND banned = ?", contestID, false)
 	if err := res.Count(&count).Error; err != nil {
@@ -41,7 +41,7 @@ func GetRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Team, i
 		return make([]model.Team, 0), -1, false, "UnknownError"
 	}
 	limit, offset = utils.TidyPaginate(int(count), limit, offset)
-	if teams, err := redis.GetCachedRanking(contestID, int64(offset), int64(limit)-1); err == nil && teams != nil {
+	if teams, err := redis.GetTeamRanking(contestID, int64(offset), int64(limit)-1); err == nil && teams != nil {
 		return teams, count, true, "Success"
 	}
 	var teams []model.Team
@@ -50,11 +50,11 @@ func GetRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Team, i
 		log.Logger.Warningf("Failed to get teams: %v", res.Error)
 		return make([]model.Team, 0), -1, false, "GetTeamError"
 	}
-	go UpdateRanking(tx, contestID)
+	go UpdateTeamRanking(tx, contestID)
 	return teams[offset:limit], count, true, "Success"
 }
 
-func GetRankDetail(tx *gorm.DB, contestID uint, limit, offset int) ([]map[string]interface{}, bool, string) {
+func GetTeamRankDetail(tx *gorm.DB, contestID uint, limit, offset int) ([]map[string]interface{}, bool, string) {
 	if limit <= 0 {
 		limit = 10
 	}
@@ -62,7 +62,7 @@ func GetRankDetail(tx *gorm.DB, contestID uint, limit, offset int) ([]map[string
 		offset = 0
 	}
 	var data []map[string]interface{}
-	teams, _, ok, msg := GetRanking(tx, contestID, limit, offset)
+	teams, _, ok, msg := GetTeamRanking(tx, contestID, limit, offset)
 	if !ok {
 		return data, false, msg
 	}

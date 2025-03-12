@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func UpdateRanking(contestID uint, teams []model.Team) error {
+func UpdateTeamRanking(contestID uint, teams []model.Team) error {
 	if !config.Env.Redis.On {
 		return nil
 	}
@@ -34,7 +34,7 @@ func UpdateRanking(contestID uint, teams []model.Team) error {
 	return err
 }
 
-func GetCachedRanking(contestID uint, start int64, end int64) ([]model.Team, error) {
+func GetTeamRanking(contestID uint, start int64, end int64) ([]model.Team, error) {
 	if !config.Env.Redis.On {
 		return nil, nil
 	}

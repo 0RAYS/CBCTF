@@ -15,7 +15,7 @@ func GetRank(ctx *gin.Context) {
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	teams, count, ok, msg := db.GetRanking(db.DB.WithContext(ctx), contest.ID, form.Limit, form.Offset)
+	teams, count, ok, msg := db.GetTeamRanking(db.DB.WithContext(ctx), contest.ID, form.Limit, form.Offset)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -38,7 +38,7 @@ func GetRankDetail(ctx *gin.Context) {
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	data, ok, msg := db.GetRankDetail(db.DB.WithContext(ctx), contest.ID, form.Limit, form.Offset)
+	data, ok, msg := db.GetTeamRankDetail(db.DB.WithContext(ctx), contest.ID, form.Limit, form.Offset)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
