@@ -27,7 +27,7 @@ func HomePage(ctx *gin.Context) {
 			return len(contests)
 		}()
 		if count > 0 {
-			for i := 1; i < count; i++ {
+			for i := 0; i < count; i++ {
 				contest := contests[i]
 				info := gin.H{
 					"name":     contest.Name,
