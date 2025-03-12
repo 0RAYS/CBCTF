@@ -74,7 +74,7 @@ func GetSubmissions(tx *gorm.DB, limit, offset int, column string, modelIDL ...u
 		return make([]model.Submission, 0), 0, false, "UnknownError"
 	}
 	limit, offset = utils.TidyPaginate(int(count), limit, offset)
-	if res = res.Order("created_at desc").Limit(limit).Offset(offset).Find(&submissions); res.Error != nil {
+	if res = res.Order("created_at DESC").Limit(limit).Offset(offset).Find(&submissions); res.Error != nil {
 		log.Logger.Warningf("Failed to get submissions: %v", res.Error)
 		return nil, 0, false, "GetSubmissionError"
 	}
