@@ -34,6 +34,7 @@ func HomePage(ctx *gin.Context) {
 					"start":    contest.Start,
 					"duration": contest.Duration.Seconds(),
 					"users":    len(contest.Users),
+					"teams":    len(contest.Teams),
 					"avatar":   contest.Avatar,
 				}
 				data["upcoming"] = append(data["upcoming"].([]gin.H), info)
