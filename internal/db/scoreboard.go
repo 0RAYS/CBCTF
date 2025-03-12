@@ -54,6 +54,46 @@ func GetTeamRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Tea
 	return teams[offset:limit], count, true, "Success"
 }
 
+func UpdateUserRanking(tx *gorm.DB) (bool, string) {
+	if !config.Env.Redis.On {
+		return false, "RedisOff"
+	}
+	var users []model.User
+	res := tx.Model(&model.User{}).Where("banned = ?", false).Find(&users).
+		Order("score DESC, solved DESC").Find(&users)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get users: %v", res.Error)
+		return false, "GetUserError"
+	}
+	err := redis.UpdateUserRanking(users)
+	if err != nil {
+		log.Logger.Warningf("Failed to update ranking: %v", err)
+		return false, "UpdateRankingError"
+	}
+	return true, "Success"
+}
+
+func GetUserRanking(tx *gorm.DB, limit, offset int) ([]model.User, int64, bool, string) {
+	var count int64
+	res := tx.Model(&model.User{}).Where("banned = ?", false)
+	if err := res.Count(&count).Error; err != nil {
+		log.Logger.Warningf("Failed to count users: %v", err)
+		return make([]model.User, 0), -1, false, "UnknownError"
+	}
+	limit, offset = utils.TidyPaginate(int(count), limit, offset)
+	if users, err := redis.GetUserRanking(int64(offset), int64(limit)-1); err == nil && users != nil {
+		return users, count, true, "Success"
+	}
+	var users []model.User
+	res = tx.Model(&model.User{}).Where("banned = ?", false).Order("score DESC, solved DESC").Find(&users)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get users: %v", res.Error)
+		return make([]model.User, 0), -1, false, "UnknownError"
+	}
+	go UpdateUserRanking(tx)
+	return users, count, true, "Success"
+}
+
 func GetTeamRankDetail(tx *gorm.DB, contestID uint, limit, offset int) ([]map[string]interface{}, bool, string) {
 	if limit <= 0 {
 		limit = 10
