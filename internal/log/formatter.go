@@ -118,10 +118,9 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 			LevelColor(t+"-"+LevelText),
 			entry.Time.Format("2006-01-02 15:04:05"),
 		)
-		_, _ = fmt.Fprintf(ret, "%s:%d | %s",
-			strings.Replace(entry.Caller.File, base, "", 1),
-			entry.Caller.Line, LevelColor(entry.Message),
-		)
+		caller := fmt.Sprintf("%s:%d", strings.Replace(entry.Caller.File, base, "", 1), entry.Caller.Line)
+		caller = fmt.Sprintf("%-36s", caller)
+		_, _ = fmt.Fprintf(ret, "%s | %s", caller, LevelColor(entry.Message))
 	case "GIN":
 		StatusCodeColor := statusCodeColor(safeGetValue[int](entry, "StatusCode"))
 		MethodColor := methodColor(safeGetValue[string](entry, "Method"))
@@ -178,10 +177,9 @@ func (f TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 			t+"-"+LevelText,
 			entry.Time.Format("2006-01-02 15:04:05"),
 		)
-		_, _ = fmt.Fprintf(ret, "%s:%d | %s",
-			strings.Replace(entry.Caller.File, base, "", 1),
-			entry.Caller.Line, entry.Message,
-		)
+		caller := fmt.Sprintf("%s:%d", strings.Replace(entry.Caller.File, base, "", 1), entry.Caller.Line)
+		caller = fmt.Sprintf("%-36s", caller)
+		_, _ = fmt.Fprintf(ret, "%s | %s", caller, entry.Message)
 	case "GIN":
 		Latency := safeGetValue[time.Duration](entry, "Latency")
 		if Latency > time.Minute {
