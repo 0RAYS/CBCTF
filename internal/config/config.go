@@ -2,11 +2,13 @@ package config
 
 import (
 	_ "embed"
+	"encoding/json"
 	"errors"
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 	"log"
 	"os"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -15,7 +17,7 @@ type Sender struct {
 	Address  string `json:"address"`
 	Host     string `json:"host"`
 	Port     int    `json:"port"`
-	Password string `json:"password"`
+	Password string `json:"password" secret:"true"`
 }
 
 type Config struct {
@@ -40,13 +42,13 @@ type Config struct {
 
 	Gorm struct {
 		MySQL struct {
-			Host         string `mapstructure:"host" json:"host"`     // 数据库地址
-			Port         int    `mapstructure:"port" json:"port"`     // 数据库端口
-			User         string `mapstructure:"user" json:"user"`     //
-			Pwd          string `mapstructure:"pwd" json:"pwd"`       // 数据库密码
-			DB           string `mapstructure:"db" json:"db"`         // 数据库名称
-			MaxOpenConns int    `mapstructure:"mxopen" json:"mxopen"` // 最大连接数
-			MaxIdleConns int    `mapstructure:"mxidle" json:"mxidle"` // 最大空闲连接数
+			Host         string `mapstructure:"host" json:"host"`             // 数据库地址
+			Port         int    `mapstructure:"port" json:"port"`             // 数据库端口
+			User         string `mapstructure:"user" json:"user"`             //
+			Pwd          string `mapstructure:"pwd" json:"pwd" secret:"true"` // 数据库密码
+			DB           string `mapstructure:"db" json:"db"`                 // 数据库名称
+			MaxOpenConns int    `mapstructure:"mxopen" json:"mxopen"`         // 最大连接数
+			MaxIdleConns int    `mapstructure:"mxidle" json:"mxidle"`         // 最大空闲连接数
 		} `mapstructure:"mysql" json:"mysql"`
 		Log struct {
 			Level string `mapstructure:"level" json:"level"` // GORM 日志级别：INFO, WARNING, ERROR, SILENT
@@ -54,10 +56,10 @@ type Config struct {
 	} `mapstructure:"gorm" json:"gorm"`
 
 	Redis struct {
-		On      bool   `mapstructure:"on" json:"on"`           // Redis 开关
-		Addr    string `mapstructure:"addr" json:"addr"`       // Redis 地址
-		Pwd     string `mapstructure:"pwd" json:"pwd"`         // Redis 密码
-		Timeout uint   `mapstructure:"timeout" json:"timeout"` // Redis 连接超时时间（单位：毫秒）
+		On      bool   `mapstructure:"on" json:"on"`                 // Redis 开关
+		Addr    string `mapstructure:"addr" json:"addr"`             // Redis 地址
+		Pwd     string `mapstructure:"pwd" json:"pwd" secret:"true"` // Redis 密码
+		Timeout uint   `mapstructure:"timeout" json:"timeout"`       // Redis 连接超时时间（单位：毫秒）
 	} `mapstructure:"redis" json:"redis"`
 
 	K8S struct {
@@ -74,6 +76,61 @@ type Config struct {
 
 	Frontend string `mapstructure:"frontend" json:"frontend"` // 前端地址
 	Backend  string `mapstructure:"backend" json:"backend"`   // 后端地址
+}
+
+func MaskSecrets(input interface{}) interface{} {
+	val := reflect.ValueOf(input)
+
+	switch val.Kind() {
+	case reflect.Ptr: // 指针类型
+		if val.IsNil() {
+			return nil
+		}
+		return MaskSecrets(val.Elem().Interface())
+
+	case reflect.Struct: // 结构体类型
+		result := make(map[string]interface{})
+		typ := val.Type()
+		for i := 0; i < val.NumField(); i++ {
+			field := typ.Field(i)
+			jsonKey := field.Tag.Get("json")
+			if jsonKey == "" {
+				jsonKey = field.Name
+			}
+
+			if field.Tag.Get("secret") == "true" {
+				result[jsonKey] = "******"
+			} else {
+				result[jsonKey] = MaskSecrets(val.Field(i).Interface())
+			}
+		}
+		return result
+
+	case reflect.Slice: // 切片类型
+		length := val.Len()
+		sliceResult := make([]interface{}, length)
+		for i := 0; i < length; i++ {
+			sliceResult[i] = MaskSecrets(val.Index(i).Interface())
+		}
+		return sliceResult
+
+	case reflect.Map: // 映射类型
+		mapResult := make(map[string]interface{})
+		for _, key := range val.MapKeys() {
+			mapResult[key.String()] = MaskSecrets(val.MapIndex(key).Interface())
+		}
+		return mapResult
+
+	default: // 其他类型（string、int、bool...）
+		return input
+	}
+}
+
+func (c Config) MarshalJSON() ([]byte, error) {
+	type Alias Config
+	tmp := Alias(c)
+	data := MaskSecrets(tmp)
+	return json.Marshal(data)
 }
 
 var Env *Config
