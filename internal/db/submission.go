@@ -104,6 +104,9 @@ func CalcTeamScore(tx *gorm.DB, contestID, teamID uint) (float64, bool, string) 
 			log.Logger.Warningf("Failed to get usage: %s", msg)
 			continue
 		}
+		if usage.Hidden {
+			continue
+		}
 		rate := 0.0
 		for {
 			if usage.First == teamID {
