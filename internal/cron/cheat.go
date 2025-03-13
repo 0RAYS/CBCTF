@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
 	"github.com/robfig/cron/v3"
 	"time"
 )
@@ -37,8 +38,12 @@ func checkFlag(contest model.Contest) (bool, string) {
 		return false, msg
 	}
 	teamsSubmission := map[string][]model.Submission{}
+	var teamsID []uint
 	for _, submission := range submissions {
-		teamsSubmission[submission.Value] = append(teamsSubmission[submission.Value], submission)
+		if !utils.In(submission.TeamID, teamsID) {
+			teamsSubmission[submission.Value] = append(teamsSubmission[submission.Value], submission)
+			teamsID = append(teamsID, submission.TeamID)
+		}
 	}
 	challenges := map[string]model.Challenge{}
 	for _, flag := range teamsSubmission {
