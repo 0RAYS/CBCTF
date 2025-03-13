@@ -1,7 +1,6 @@
 package redis
 
 import (
-	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
@@ -17,21 +16,18 @@ const (
 )
 
 func GetFilesCache() ([]model.File, bool) {
-	if !config.Env.Redis.On {
-		return nil, false
-	}
 	ctx := context.Background()
 	data, err := RDB.Get(ctx, FilesPattern).Result()
 	if errors.Is(err, redis.Nil) {
 		atomic.AddInt64(&CacheMiss, 1)
-		return nil, false
+		return make([]model.File, 0), false
 	} else if err != nil {
-		return nil, false
+		return make([]model.File, 0), false
 	}
 	var files []model.File
 	err = msgpack.Unmarshal([]byte(data), &files)
 	if err != nil {
-		return nil, false
+		return make([]model.File, 0), false
 	}
 	atomic.AddInt64(&CacheHit, 1)
 	log.Logger.Debug("GetFilesCache: ", len(files))
@@ -39,9 +35,6 @@ func GetFilesCache() ([]model.File, bool) {
 }
 
 func SetFilesCache(files []model.File) error {
-	if !config.Env.Redis.On {
-		return nil
-	}
 	ctx := context.Background()
 	data, err := msgpack.Marshal(files)
 	if err != nil {
@@ -55,8 +48,5 @@ func SetFilesCache(files []model.File) error {
 }
 
 func DelFilesCache() error {
-	if !config.Env.Redis.On {
-		return nil
-	}
 	return DeleteKeysByPattern(FilesPattern)
 }

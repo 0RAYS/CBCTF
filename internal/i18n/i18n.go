@@ -124,7 +124,6 @@ var resp = map[string]map[string]interface{}{
 	"GetEmailVerifyTokenError": {"zh-CN": "获取token失败", "en-US": "Failed to get token", "code": 500},
 	"DelEmailVerifyTokenError": {"zh-CN": "删除token失败", "en-US": "Failed to delete token", "code": 500},
 	"BadEmailVerifyToken":      {"zh-CN": "无效的token", "en-US": "Invalid token", "code": 400},
-	"RedisOff":                 {"zh-CN": "Redis服务未开启", "en-US": "Redis service is not enabled", "code": 500},
 
 	"PcapNotFound":     {"zh-CN": "pcap文件不存在, 请先停止容器", "en-US": "Pcap file not found, stop container first", "code": 404},
 	"HasNoTraffic":     {"zh-CN": "容器未保存流量", "en-US": "No traffic saved by the container", "code": 404},
