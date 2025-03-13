@@ -12,8 +12,6 @@ import (
 	"time"
 )
 
-const maxLength = 7
-
 var colors = map[string]func(a ...interface{}) string{
 	"Time":    color.New(color.FgGreen).Add(color.Bold).SprintFunc(),
 	"Warning": color.New(color.FgYellow).Add(color.Bold).SprintFunc(),
