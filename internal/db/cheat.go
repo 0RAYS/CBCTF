@@ -7,8 +7,12 @@ import (
 	"gorm.io/gorm"
 )
 
-func RecordCheat(tx *gorm.DB, userID, teamID, contestID uint, reason string, t string) (model.Cheat, bool, string) {
+func CreateCheat(tx *gorm.DB, userID, teamID, contestID uint, reason string, t string) (model.Cheat, bool, string) {
 	cheat := model.InitCheat(userID, teamID, contestID, reason, t)
+	return RecordCheat(tx, cheat)
+}
+
+func RecordCheat(tx *gorm.DB, cheat model.Cheat) (model.Cheat, bool, string) {
 	res := tx.Model(model.Cheat{}).Create(&cheat)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to record cheat: %v", res.Error)
