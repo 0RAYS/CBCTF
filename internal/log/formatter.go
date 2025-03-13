@@ -114,7 +114,7 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	ret := new(bytes.Buffer)
 	switch t {
 	case "LOG":
-		_, _ = fmt.Fprintf(ret, "%s  %s | ",
+		_, _ = fmt.Fprintf(ret, "%s %s | ",
 			LevelColor(LevelText),
 			entry.Time.Format("2006-01-02 15:04:05"),
 		)
@@ -128,7 +128,7 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 		if Latency > time.Minute {
 			Latency = Latency.Truncate(time.Second)
 		}
-		_, _ = fmt.Fprintf(ret, "%s  %s | ",
+		_, _ = fmt.Fprintf(ret, "%s %s | ",
 			LevelColor(LevelText),
 			entry.Time.Format("2006-01-02 15:04:05"),
 		)
@@ -173,7 +173,7 @@ func (f TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	ret := new(bytes.Buffer)
 	switch t {
 	case "LOG":
-		_, _ = fmt.Fprintf(ret, "%s  %s | ",
+		_, _ = fmt.Fprintf(ret, "%s %s | ",
 			LevelText,
 			entry.Time.Format("2006-01-02 15:04:05"),
 		)
@@ -185,7 +185,7 @@ func (f TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		if Latency > time.Minute {
 			Latency = Latency.Truncate(time.Second)
 		}
-		_, _ = fmt.Fprintf(ret, "%s  %s | ",
+		_, _ = fmt.Fprintf(ret, "%s %s | ",
 			LevelText,
 			entry.Time.Format("2006-01-02 15:04:05"),
 		)
