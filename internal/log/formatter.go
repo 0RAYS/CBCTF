@@ -108,14 +108,14 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	}
 	t = strings.ToUpper(t)
 	LevelColor := levelColor(entry.Level)
-	LevelText := strings.ToUpper(entry.Level.String()) + strings.Repeat(" ", maxLength-len(entry.Level.String()))
+	LevelText := fmt.Sprintf("%-12s", t+"-"+entry.Level.String())
 	base, _ := os.Getwd()
 	base = strings.ReplaceAll(base, "\\", "/") + "/"
 	ret := new(bytes.Buffer)
 	switch t {
 	case "LOG":
 		_, _ = fmt.Fprintf(ret, "%s  %s | ",
-			LevelColor(t+"-"+LevelText),
+			LevelColor(LevelText),
 			entry.Time.Format("2006-01-02 15:04:05"),
 		)
 		caller := fmt.Sprintf("%s:%d", strings.Replace(entry.Caller.File, base, "", 1), entry.Caller.Line)
@@ -129,7 +129,7 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 			Latency = Latency.Truncate(time.Second)
 		}
 		_, _ = fmt.Fprintf(ret, "%s  %s | ",
-			LevelColor(t+"-"+LevelText),
+			LevelColor(LevelText),
 			entry.Time.Format("2006-01-02 15:04:05"),
 		)
 		_, _ = fmt.Fprintf(ret, "%s | %s | %13v | ",
@@ -144,7 +144,7 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 		)
 	case "GORM":
 		_, _ = fmt.Fprintf(ret, "%s %s | ",
-			LevelColor(t+"-"+LevelText),
+			LevelColor(LevelText),
 			entry.Time.Format("2006-01-02 15:04:05"),
 		)
 		_, _ = fmt.Fprintf(ret, "%s | %s rows %s %s | %s",
@@ -167,14 +167,14 @@ func (f TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		t = "LOG"
 	}
 	t = strings.ToUpper(t)
-	LevelText := strings.ToUpper(entry.Level.String()) + strings.Repeat(" ", maxLength-len(entry.Level.String()))
+	LevelText := fmt.Sprintf("%-12s", t+"-"+entry.Level.String())
 	base, _ := os.Getwd()
 	base = strings.ReplaceAll(base, "\\", "/") + "/"
 	ret := new(bytes.Buffer)
 	switch t {
 	case "LOG":
 		_, _ = fmt.Fprintf(ret, "%s  %s | ",
-			t+"-"+LevelText,
+			LevelText,
 			entry.Time.Format("2006-01-02 15:04:05"),
 		)
 		caller := fmt.Sprintf("%s:%d", strings.Replace(entry.Caller.File, base, "", 1), entry.Caller.Line)
@@ -186,7 +186,7 @@ func (f TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 			Latency = Latency.Truncate(time.Second)
 		}
 		_, _ = fmt.Fprintf(ret, "%s  %s | ",
-			t+"-"+LevelText,
+			LevelText,
 			entry.Time.Format("2006-01-02 15:04:05"),
 		)
 		_, _ = fmt.Fprintf(ret, "%s | %d | %13v | ",
@@ -200,7 +200,7 @@ func (f TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 			safeGetValue[string](entry, "Path"),
 		)
 	case "GORM":
-		_, _ = fmt.Fprintf(ret, "%s %s | ", t+"-"+LevelText, entry.Time.Format("2006-01-02 15:04:05"))
+		_, _ = fmt.Fprintf(ret, "%s %s | ", LevelText, entry.Time.Format("2006-01-02 15:04:05"))
 		_, _ = fmt.Fprintf(ret, "%s | %s rows %s %s | %s",
 			safeGetValue[string](entry, "TraceID"),
 			safeGetValue[string](entry, "rows"),
