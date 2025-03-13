@@ -89,7 +89,7 @@ func UpdateUserScore(c *cron.Cron) {
 				for _, submission := range submissions {
 					if submission.Solved {
 						usage, ok, _ := db.GetUsageBy2ID(db.DB, submission.ContestID, submission.ChallengeID)
-						if ok {
+						if ok && !usage.Hidden {
 							data["solved"] = data["solved"].(int) + 1
 							data["score"] = data["score"].(float64) + usage.Score
 						}
