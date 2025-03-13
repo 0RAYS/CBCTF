@@ -33,6 +33,9 @@ type Config struct {
 			Max  int    `mapstructure:"max" json:"max"`   // 上传文件最大大小（单位：MB）
 		} `mapstructure:"upload" json:"upload"`
 		Proxies []string `mapstructure:"proxies" json:"proxies"` // 信任的代理服务器
+		Magic   struct {
+			Whitelist []string `mapstructure:"whitelist" json:"whitelist"`
+		} `mapstructure:"magic" json:"magic"`
 	} `mapstructure:"gin" json:"gin"`
 
 	Gorm struct {
