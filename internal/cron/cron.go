@@ -13,6 +13,7 @@ func Init() {
 	UpdateUserScore(c)
 	UpdateGlobalRanking(c)
 	UpdateTeamRank(c)
+	CheckCheat(c)
 	PrepareGenerator(c)
 	CloseGenerator(c)
 	CloseUnCtrlDockers(c)
