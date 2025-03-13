@@ -46,7 +46,7 @@ func CheckLogin(ctx *gin.Context) {
 			tx := db.DB.WithContext(ctx).Begin()
 			db.RecordDevice(tx, model.Device{UserID: user.ID, Magic: magic})
 			if utils.EncryptMagic(magic) != claims.X {
-				db.RecordCheat(tx, user.ID, 0, 0, model.TokenMagicNotMatch, model.Suspect)
+				db.RecordCheat(tx, user.ID, 0, 0, model.MagicNotMatch, model.Suspect)
 			}
 			tx.Commit()
 		}
