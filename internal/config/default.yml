@@ -11,6 +11,11 @@ gin:
     upload:
         path: ./uploads
         max: 8
+    magic:
+        whitelist:
+            - '^/admin'
+            - '^/verify'
+            - '^/avatars/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$'
 gorm:
     mysql:
         host: 127.0.0.1
