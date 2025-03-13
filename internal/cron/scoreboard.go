@@ -26,7 +26,7 @@ func UpdateGlobalRanking(c *cron.Cron) {
 		go db.UpdateUserRanking(db.DB)
 	}
 	function()
-	c.Schedule(cron.Every(1*time.Minute), cron.FuncJob(function))
+	c.Schedule(cron.Every(5*time.Minute), cron.FuncJob(function))
 }
 
 func UpdateTeamRank(c *cron.Cron) {
@@ -59,7 +59,7 @@ func UpdateTeamRank(c *cron.Cron) {
 		log.Logger.Infof("Updated team ranking")
 	}
 	function()
-	c.Schedule(cron.Every(1*time.Minute), cron.FuncJob(function))
+	c.Schedule(cron.Every(5*time.Minute), cron.FuncJob(function))
 }
 
 func UpdateUserScore(c *cron.Cron) {
