@@ -1,7 +1,7 @@
 package model
 
 import (
-	f "CBCTF/internal/form"
+	"CBCTF/internal/utils"
 	"gorm.io/gorm"
 	"time"
 )
@@ -32,8 +32,8 @@ type Usage struct {
 	Decay          float64        `json:"decay" gorm:"default:100"`
 	Attempt        int64          `json:"attempt" gorm:"default:0"`
 	Solvers        int64          `json:"solvers" gorm:"default:0"`
-	Hints          f.Strings      `json:"hints"`
-	Tags           f.Strings      `json:"tags"`
+	Hints          utils.Strings  `json:"hints"`
+	Tags           utils.Strings  `json:"tags"`
 	First          uint           `json:"first" gorm:"default:0"`
 	Second         uint           `json:"second" gorm:"default:0"`
 	Third          uint           `json:"third" gorm:"default:0"`

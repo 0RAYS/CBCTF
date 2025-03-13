@@ -3,6 +3,7 @@ package model
 import (
 	"CBCTF/internal/config"
 	f "CBCTF/internal/form"
+	"CBCTF/internal/utils"
 	"encoding/json"
 	"fmt"
 	"gorm.io/gorm"
@@ -11,26 +12,26 @@ import (
 )
 
 type Contest struct {
-	ID        uint           `gorm:"primarykey" json:"id"`
-	Name      string         `gorm:"index:idx_name_deleted,unique;not null" json:"name"`
-	Desc      string         `json:"desc"`
-	Captcha   string         `json:"-"`
-	Avatar    string         `json:"avatar"`
-	Prefix    string         `json:"prefix" gorm:"default:'CBCTF'"`
-	Size      int            `json:"size"`
-	Start     time.Time      `json:"start"`
-	Duration  time.Duration  `json:"-"`
-	Blood     bool           `json:"blood" gorm:"default:true"`
-	Hidden    bool           `gorm:"default:true" json:"hidden"`
-	Rules     f.Strings      `json:"rules" gorm:"type:json"`
-	Prizes    f.Prizes       `json:"prizes" gorm:"type:json"`
-	Timelines f.Timelines    `json:"timelines" gorm:"type:json"`
-	Teams     []*Team        `json:"-"`
-	Users     []*User        `gorm:"many2many:user_contests;" json:"-"`
-	Notices   []*Notice      `json:"-"`
-	CreatedAt time.Time      `json:"-"`
-	UpdatedAt time.Time      `json:"-"`
-	DeletedAt gorm.DeletedAt `gorm:"index;index:idx_name_deleted,unique;" json:"-"`
+	ID        uint            `gorm:"primarykey" json:"id"`
+	Name      string          `gorm:"index:idx_name_deleted,unique;not null" json:"name"`
+	Desc      string          `json:"desc"`
+	Captcha   string          `json:"-"`
+	Avatar    string          `json:"avatar"`
+	Prefix    string          `json:"prefix" gorm:"default:'CBCTF'"`
+	Size      int             `json:"size"`
+	Start     time.Time       `json:"start"`
+	Duration  time.Duration   `json:"-"`
+	Blood     bool            `json:"blood" gorm:"default:true"`
+	Hidden    bool            `gorm:"default:true" json:"hidden"`
+	Rules     utils.Strings   `json:"rules" gorm:"type:json"`
+	Prizes    utils.Prizes    `json:"prizes" gorm:"type:json"`
+	Timelines utils.Timelines `json:"timelines" gorm:"type:json"`
+	Teams     []*Team         `json:"-"`
+	Users     []*User         `gorm:"many2many:user_contests;" json:"-"`
+	Notices   []*Notice       `json:"-"`
+	CreatedAt time.Time       `json:"-"`
+	UpdatedAt time.Time       `json:"-"`
+	DeletedAt gorm.DeletedAt  `gorm:"index;index:idx_name_deleted,unique;" json:"-"`
 }
 
 func (c *Contest) MarshalJSON() ([]byte, error) {
@@ -76,7 +77,7 @@ func (c *Contest) Status() string {
 
 func InitContest(form f.CreateContestForm) Contest {
 	if len(form.Rules) == 0 {
-		form.Rules = f.Strings{
+		form.Rules = utils.Strings{
 			"参赛者必须遵守比赛规则和道德准则",
 			"禁止攻击比赛平台和其他参赛者",
 			"禁止分享题目答案和解题思路",
@@ -87,13 +88,13 @@ func InitContest(form f.CreateContestForm) Contest {
 		}
 	}
 	if len(form.Timelines) == 0 {
-		form.Timelines = f.Timelines{
-			f.Timeline{
+		form.Timelines = utils.Timelines{
+			utils.Timeline{
 				Date:  form.Start,
 				Title: "比赛开始",
 				Desc:  "题目公布，正式开始解题",
 			},
-			f.Timeline{
+			utils.Timeline{
 				Date:  form.Start.Add(time.Duration(form.Duration)),
 				Title: "比赛结束",
 				Desc:  "停止计分，公布最终排名",
@@ -101,8 +102,8 @@ func InitContest(form f.CreateContestForm) Contest {
 		}
 	}
 	if len(form.Prizes) == 0 {
-		form.Prizes = f.Prizes{
-			f.Prize{
+		form.Prizes = utils.Prizes{
+			utils.Prize{
 				Amount: "$0",
 				Desc:   "",
 			},
