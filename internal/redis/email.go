@@ -1,7 +1,6 @@
 package redis
 
 import (
-	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"context"
 	"fmt"
@@ -9,9 +8,6 @@ import (
 )
 
 func SetEmailVerifyToken(userID uint, token string) (bool, string) {
-	if !config.Env.Redis.On {
-		return false, "RedisOff"
-	}
 	ctx := context.Background()
 	err := RDB.Set(ctx, fmt.Sprintf("email:verify:%d", userID), token, time.Hour*24).Err()
 	if err != nil {
@@ -22,9 +18,6 @@ func SetEmailVerifyToken(userID uint, token string) (bool, string) {
 }
 
 func GetEmailVerifyToken(userID uint) (string, bool) {
-	if !config.Env.Redis.On {
-		return "RedisOff", false
-	}
 	ctx := context.Background()
 	data, err := RDB.Get(ctx, fmt.Sprintf("email:verify:%d", userID)).Result()
 	if err != nil {
@@ -34,9 +27,6 @@ func GetEmailVerifyToken(userID uint) (string, bool) {
 }
 
 func DelEmailVerifyToken(userID uint) (bool, string) {
-	if !config.Env.Redis.On {
-		return false, "RedisOff"
-	}
 	ctx := context.Background()
 	err := RDB.Del(ctx, fmt.Sprintf("email:verify:%d", userID)).Err()
 	if err != nil {

@@ -1,7 +1,6 @@
 package redis
 
 import (
-	"CBCTF/internal/config"
 	"CBCTF/internal/model"
 	"context"
 	"fmt"
@@ -11,9 +10,6 @@ import (
 )
 
 func UpdateTeamRanking(contestID uint, teams []model.Team) error {
-	if !config.Env.Redis.On {
-		return nil
-	}
 	key := fmt.Sprintf("%d:rank", contestID)
 	ctx := context.Background()
 	pipe := RDB.Pipeline()
@@ -35,9 +31,6 @@ func UpdateTeamRanking(contestID uint, teams []model.Team) error {
 }
 
 func GetTeamRanking(contestID uint, start int64, end int64) ([]model.Team, error) {
-	if !config.Env.Redis.On {
-		return make([]model.Team, 0), nil
-	}
 	key := fmt.Sprintf("%d:rank", contestID)
 	ctx := context.Background()
 	results, err := RDB.ZRevRangeWithScores(ctx, key, start, end).Result()
@@ -66,9 +59,6 @@ func GetTeamRanking(contestID uint, start int64, end int64) ([]model.Team, error
 }
 
 func UpdateUserRanking(users []model.User) error {
-	if !config.Env.Redis.On {
-		return nil
-	}
 	key := "users:rank"
 	ctx := context.Background()
 	pipe := RDB.Pipeline()
@@ -88,9 +78,6 @@ func UpdateUserRanking(users []model.User) error {
 }
 
 func GetUserRanking(start int64, end int64) ([]model.User, error) {
-	if !config.Env.Redis.On {
-		return make([]model.User, 0), nil
-	}
 	key := "users:rank"
 	ctx := context.Background()
 	results, err := RDB.ZRevRangeWithScores(ctx, key, start, end).Result()

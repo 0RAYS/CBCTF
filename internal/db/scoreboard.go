@@ -1,7 +1,6 @@
 package db
 
 import (
-	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
@@ -11,9 +10,6 @@ import (
 )
 
 func UpdateTeamRanking(tx *gorm.DB, contestID uint) (bool, string) {
-	if !config.Env.Redis.On {
-		return false, "RedisOff"
-	}
 	var teams []model.Team
 	res := tx.Model(&model.Team{}).Where("contest_id = ? AND banned = ?", contestID, false).
 		Preload(clause.Associations).Order("score DESC, last ASC").Find(&teams)
@@ -55,9 +51,6 @@ func GetTeamRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Tea
 }
 
 func UpdateUserRanking(tx *gorm.DB) (bool, string) {
-	if !config.Env.Redis.On {
-		return false, "RedisOff"
-	}
 	var users []model.User
 	res := tx.Model(&model.User{}).Where("banned = ?", false).Find(&users).
 		Order("score DESC, solved DESC").Find(&users)

@@ -19,9 +19,6 @@ type SystemMetrics struct {
 }
 
 func StartCollect(ctx context.Context) {
-	if !config.Env.Redis.On {
-		return
-	}
 	log.Logger.Info("Start collecting Redis metrics")
 	for {
 		select {
@@ -42,9 +39,6 @@ func StartCollect(ctx context.Context) {
 }
 
 func collectMetrics() (*SystemMetrics, error) {
-	if !config.Env.Redis.On {
-		return nil, nil
-	}
 	c, err := cpu.Percent(0, false)
 	if err != nil {
 		return nil, err
@@ -66,9 +60,6 @@ func collectMetrics() (*SystemMetrics, error) {
 }
 
 func saveMetrics(metrics *SystemMetrics) error {
-	if !config.Env.Redis.On {
-		return nil
-	}
 	ctx := context.Background()
 	data, err := json.Marshal(metrics)
 	if err != nil {
@@ -86,14 +77,11 @@ func saveMetrics(metrics *SystemMetrics) error {
 }
 
 func GetMetrics() ([]SystemMetrics, error) {
-	if !config.Env.Redis.On {
-		return nil, nil
-	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
 	data, err := RDB.LRange(ctx, "system_metrics", 0, -1).Result()
 	if err != nil {
 		cancel()
-		return nil, err
+		return make([]SystemMetrics, 0), err
 	}
 	cancel()
 	var metrics []SystemMetrics
@@ -101,7 +89,7 @@ func GetMetrics() ([]SystemMetrics, error) {
 		var m SystemMetrics
 		err = json.Unmarshal([]byte(d), &m)
 		if err != nil {
-			return nil, err
+			return make([]SystemMetrics, 0), err
 		}
 		metrics = append(metrics, m)
 	}
