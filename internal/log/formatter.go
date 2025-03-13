@@ -138,8 +138,8 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 			Latency,
 		)
 		_, _ = fmt.Fprintf(ret, "%s | %s | \"%s\"",
-			safeGetValue[string](entry, "ClientIP"),
-			MethodColor(safeGetValue[string](entry, "Method")),
+			fmt.Sprintf("%-15s", safeGetValue[string](entry, "ClientIP")),
+			MethodColor(fmt.Sprintf("%-7s", safeGetValue[string](entry, "Method"))),
 			safeGetValue[string](entry, "Path"),
 		)
 	case "GORM":
@@ -195,8 +195,8 @@ func (f TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 			Latency,
 		)
 		_, _ = fmt.Fprintf(ret, "%s | %s | \"%s\"",
-			safeGetValue[string](entry, "ClientIP"),
-			safeGetValue[string](entry, "Method"),
+			fmt.Sprintf("%-15s", safeGetValue[string](entry, "ClientIP")),
+			fmt.Sprintf("%-7s", safeGetValue[string](entry, "Method")),
 			safeGetValue[string](entry, "Path"),
 		)
 	case "GORM":
