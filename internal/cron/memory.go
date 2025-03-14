@@ -2,16 +2,18 @@ package cron
 
 import (
 	"CBCTF/internal/db"
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"github.com/robfig/cron/v3"
 	"time"
 )
 
-// ClearUsageMutex 定时任务清理flag提交锁 db.UsagesMutex
+// ClearUsageMutex 定时任务清理flag提交锁 db.SubmissionMutex
 func ClearUsageMutex(c *cron.Cron) {
 	function := func() {
+		log.Logger.Debug("Clear submission mutex")
 		var contests map[uint]model.Contest
-		db.UsagesMutex.Range(func(k, v interface{}) bool {
+		db.SubmissionMutex.Range(func(k, v interface{}) bool {
 			usage, ok, _ := db.GetUsageByID(db.DB, k.(uint))
 			if !ok {
 				return true
@@ -23,7 +25,7 @@ func ClearUsageMutex(c *cron.Cron) {
 				}
 				contests[usage.ContestID] = contest
 				if !contest.IsRunning() {
-					db.UsagesMutex.Delete(k)
+					db.SubmissionMutex.Delete(k)
 				}
 			}
 			return true
