@@ -11,7 +11,7 @@ import (
 
 func UpdateGlobalRanking(c *cron.Cron) {
 	function := func() {
-		log.Logger.Infof("Update global ranking")
+		log.Logger.Debug("Update global ranking")
 		contests, _, ok, _ := db.GetContests(db.DB, -1, -1, false, false)
 		if !ok {
 			return
@@ -30,7 +30,7 @@ func UpdateGlobalRanking(c *cron.Cron) {
 
 func UpdateTeamRank(c *cron.Cron) {
 	function := func() {
-		log.Logger.Infof("Update team ranking")
+		log.Logger.Debug("Update team ranking")
 		contests, _, ok, _ := db.GetContests(db.DB, -1, -1, false, false)
 		if !ok {
 			return
@@ -68,7 +68,7 @@ func UpdateUserScore(c *cron.Cron) {
 			submissions []model.Submission
 			ok          bool
 		)
-		log.Logger.Infof("Update user score")
+		log.Logger.Debug("Update user score")
 		contests, _, ok, _ = db.GetContests(db.DB, -1, -1, false, true, true)
 		if !ok {
 			return

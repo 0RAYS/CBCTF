@@ -11,7 +11,7 @@ import (
 )
 
 func PrepareGenerator(c *cron.Cron) {
-	log.Logger.Info("Prepare generator")
+	log.Logger.Debug("Prepare generator")
 	function := func() {
 		var (
 			ok        bool
@@ -54,7 +54,7 @@ func PrepareGenerator(c *cron.Cron) {
 
 func CloseGenerator(c *cron.Cron) {
 	function := func() {
-		log.Logger.Info("Close timeout generator")
+		log.Logger.Debug("Close timeout generator")
 		pods, ok, msg := k8s.GetPods()
 		if !ok {
 			log.Logger.Warningf("Failed to get pods %s", msg)
