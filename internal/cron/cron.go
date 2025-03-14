@@ -15,10 +15,10 @@ func Init() {
 	// UpdateGlobalRanking UpdateTeamRank 顺序不可调换
 	UpdateGlobalRanking(c)
 	UpdateTeamRank(c)
-
 	CheckCheat(c)
 	CloseGenerator(c)
 	PrepareGenerator(c)
+	ClearUsageMutex(c)
 }
 
 func Start() {

@@ -7,7 +7,10 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"sync"
 )
+
+var UsagesMutex sync.Map
 
 // CreateSubmission is a function to create a new submission
 func CreateSubmission(tx *gorm.DB, contest model.Contest, team model.Team, user model.User, usage model.Usage, value string) (model.Submission, bool, string) {
@@ -19,9 +22,13 @@ func CreateSubmission(tx *gorm.DB, contest model.Contest, team model.Team, user 
 	}
 	solved := VerifyFlag(tx, contest.ID, team.ID, usage.ChallengeID, value)
 	if solved {
+		mu, _ := UsagesMutex.LoadOrStore(usage.ID, &sync.Mutex{})
+		mu.(*sync.Mutex).Lock()
 		if ok, msg := Solve(tx, usage.ID, team.ID, contest.Blood); !ok {
+			mu.(*sync.Mutex).Unlock()
 			return model.Submission{}, false, msg
 		}
+		mu.(*sync.Mutex).Unlock()
 	}
 	team, ok, msg := GetTeamByID(tx, team.ID)
 	if !ok {

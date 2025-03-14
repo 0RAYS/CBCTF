@@ -70,14 +70,14 @@ func GetUsageBy2ID(tx *gorm.DB, contestID uint, challengeID string) (model.Usage
 }
 
 // GetUsageByID 获取引用
-//func GetUsageByID(tx *gorm.DB, id uint) (model.Usage, bool, string) {
-//	var usage model.Usage
-//	res := tx.Model(&model.Usage{}).Where("id = ?", id).Find(&usage).Limit(1)
-//	if res.RowsAffected != 1 {
-//		return model.Usage{}, false, "UsageNotFound"
-//	}
-//	return usage, true, "Success"
-//}
+func GetUsageByID(tx *gorm.DB, id uint) (model.Usage, bool, string) {
+	var usage model.Usage
+	res := tx.Model(&model.Usage{}).Where("id = ?", id).Find(&usage).Limit(1)
+	if res.RowsAffected != 1 {
+		return model.Usage{}, false, "UsageNotFound"
+	}
+	return usage, true, "Success"
+}
 
 // UpdateUsage 更新引用
 func UpdateUsage(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool, string) {
