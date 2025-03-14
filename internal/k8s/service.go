@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// DeleteService 删除 Service, 目前主要是靶机的端口映射
 func DeleteService(name string) (bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()

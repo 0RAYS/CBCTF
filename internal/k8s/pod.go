@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// GetPods 获取所有 Pod
 func GetPods() (*corev1.PodList, bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
@@ -20,6 +21,7 @@ func GetPods() (*corev1.PodList, bool, string) {
 	return pods, true, "Success"
 }
 
+// GetPod 依据 name 获取 Pod
 func GetPod(name string) (*corev1.Pod, bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
@@ -34,6 +36,7 @@ func GetPod(name string) (*corev1.Pod, bool, string) {
 	return pod, true, "Success"
 }
 
+// DeletePod 依据 name 删除 Pod
 func DeletePod(name string) (bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()

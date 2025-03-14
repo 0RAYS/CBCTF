@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// GetNode 获取 Node 信息
 func GetNode(name string) (*corev1.Node, bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
