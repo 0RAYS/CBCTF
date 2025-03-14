@@ -23,6 +23,7 @@ var (
 )
 
 func Init() {
+	log.Logger.Info("Connecting to Redis: %s", config.Env.Redis.Addr)
 	RDB = redis.NewClient(&redis.Options{
 		Addr:         config.Env.Redis.Addr,
 		Password:     config.Env.Redis.Pwd,
