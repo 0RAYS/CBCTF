@@ -20,7 +20,7 @@ func GetRank(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	var tmp []gin.H
+	tmp := make([]gin.H, 0)
 	for _, team := range teams {
 		state, _, _ := db.GetTeamSolvedState(db.DB.WithContext(ctx), team)
 		tmp = append(tmp, gin.H{
