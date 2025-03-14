@@ -133,7 +133,7 @@ var resp = map[string]map[string]interface{}{
 	"GetTrafficError":  {"zh-CN": "读取流量失败, 请先加载pcap", "en-US": "Failed to get traffic, load .pcap file first", "code": 500},
 }
 
-// I18N rewrite the response message
+// I18N 获取翻译与状态码, 非http响应状态码
 func I18N(key string, language string) (string, int) {
 	if v, ok := resp[key]; !ok {
 		switch language {
