@@ -28,6 +28,7 @@ type Docker struct {
 	Version       optimisticlock.Version `json:"-" gorm:"default:1"`
 }
 
+// MarshalJSON Duration 转为秒
 func (d *Docker) MarshalJSON() ([]byte, error) {
 	type Tmp Docker // 定义一个别名以避免递归调用
 	return json.Marshal(&struct {
@@ -39,14 +40,17 @@ func (d *Docker) MarshalJSON() ([]byte, error) {
 	})
 }
 
+// TrafficPath 流量文件路径
 func (d *Docker) TrafficPath() string {
 	return fmt.Sprintf("%s/traffic/%s/%d/%d.pcap", config.Env.Gin.Upload.Path, d.ChallengeID, d.TeamID, d.ID)
 }
 
+// RemoteAddr 返回远程地址
 func (d *Docker) RemoteAddr() string {
 	return fmt.Sprintf("%s:%d", d.IP, d.Port)
 }
 
+// Remaining 返回剩余时间
 func (d *Docker) Remaining() time.Duration {
 	return d.Start.Add(d.Duration).Sub(time.Now())
 }

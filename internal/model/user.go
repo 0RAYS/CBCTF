@@ -33,6 +33,7 @@ type User struct {
 	Version   optimisticlock.Version `json:"-" gorm:"default:1"`
 }
 
+// MarshalJSON 重写 MarshalJSON 方法, 使 Avatar 返回完整的 URL, 转换 Teams Contests 为数量
 func (u *User) MarshalJSON() ([]byte, error) {
 	type Tmp User // 定义一个别名以避免递归调用
 	return json.Marshal(&struct {

@@ -35,18 +35,22 @@ type Challenge struct {
 	Version        optimisticlock.Version `json:"-" gorm:"default:1"`
 }
 
+// BasicDir 获取题目相关文件的目录
 func (c *Challenge) BasicDir() string {
 	return fmt.Sprintf("%s/challenges/%s", config.Env.Gin.Upload.Path, c.ID)
 }
 
+// StaticPath 获取静态题目文件的路径
 func (c *Challenge) StaticPath() string {
 	return fmt.Sprintf("%s/%s", c.BasicDir(), StaticFile)
 }
 
+// GeneratorPath 获取动态题目生成器的路径
 func (c *Challenge) GeneratorPath() string {
 	return fmt.Sprintf("/%s/%s", c.BasicDir(), DynamicFile)
 }
 
+// AttachmentPath 获取下载时, 题目附件的路径
 func (c *Challenge) AttachmentPath(teamID uint) string {
 	switch c.Type {
 	case Dynamic:
@@ -67,18 +71,5 @@ func InitChallenge(form form.CreateChallengeForm) Challenge {
 		GeneratorImage: form.GeneratorImage,
 		DockerImage:    form.DockerImage,
 		Port:           form.Port,
-	}
-}
-
-func (c *Challenge) GetFlag() string {
-	switch c.Type {
-	case Static:
-		return c.Flag
-	case Dynamic:
-		return c.Flag
-	case Container:
-		return c.Flag
-	default:
-		return ""
 	}
 }
