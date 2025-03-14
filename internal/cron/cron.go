@@ -10,13 +10,15 @@ var c *cron.Cron
 func Init() {
 	c = cron.New(cron.WithSeconds())
 	CloseDockers(c)
+	CloseUnCtrlDockers(c)
 	UpdateUserScore(c)
+	// UpdateGlobalRanking UpdateTeamRank 顺序不可调换
 	UpdateGlobalRanking(c)
 	UpdateTeamRank(c)
+
 	CheckCheat(c)
-	PrepareGenerator(c)
 	CloseGenerator(c)
-	CloseUnCtrlDockers(c)
+	PrepareGenerator(c)
 }
 
 func Start() {
