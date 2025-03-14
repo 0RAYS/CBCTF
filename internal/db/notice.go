@@ -33,7 +33,7 @@ func UpdateNotice(tx *gorm.DB, id uint, updateDate map[string]interface{}) (bool
 		if res.RowsAffected != 1 {
 			return false, "NoticeNotFound"
 		}
-		res = tx.Model(&notice).Where("id = ?", id).Updates(updateDate)
+		res = tx.Model(&notice).Updates(updateDate)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Notice: %s", res.Error)
 			return false, "UpdateNoticeError"
