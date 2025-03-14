@@ -2,7 +2,7 @@ package form
 
 import "CBCTF/internal/utils"
 
-// CreateUsageForm 将题目添加至比赛
+// CreateUsageForm add challenge to contest
 type CreateUsageForm struct {
 	ChallengeID []string `form:"challenge_id" json:"challenge_id" binding:"required"`
 }
