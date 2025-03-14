@@ -13,7 +13,7 @@ import (
 // SubmissionMutex 使用定时任务 cron.ClearUsageMutex 清理锁
 var SubmissionMutex sync.Map
 
-// CreateSubmission is a function to create a new submission
+// CreateSubmission 记录 flag 提交记录
 func CreateSubmission(tx *gorm.DB, contest model.Contest, team model.Team, user model.User, usage model.Usage, value string) (model.Submission, bool, string) {
 	if usage.Attempt != 0 && usage.Attempt <= CountAttempts(tx, contest.ID, team.ID, usage.ChallengeID) {
 		return model.Submission{}, false, "NotAllowSubmit"
@@ -23,6 +23,7 @@ func CreateSubmission(tx *gorm.DB, contest model.Contest, team model.Team, user 
 	}
 	solved := VerifyFlag(tx, contest.ID, team.ID, usage.ChallengeID, value)
 	if solved {
+		// 正确时需要更新分数等信息, 加锁
 		mu, _ := SubmissionMutex.LoadOrStore(usage.ID, &sync.Mutex{})
 		mu.(*sync.Mutex).Lock()
 		if ok, msg := Solve(tx, usage.ID, team.ID, contest.Blood); !ok {
@@ -42,6 +43,7 @@ func CreateSubmission(tx *gorm.DB, contest model.Contest, team model.Team, user 
 	return submission, true, "Success"
 }
 
+// IsSolved 判断 model.Team 是否解决 model.Challenge
 func IsSolved(tx *gorm.DB, contestID, teamID uint, challengeID string) bool {
 	var submission model.Submission
 	res := tx.Model(&model.Submission{}).
@@ -52,6 +54,7 @@ func IsSolved(tx *gorm.DB, contestID, teamID uint, challengeID string) bool {
 	return true
 }
 
+// CountAttempts 计算 model.Team 在 model.Challenge 上的提交次数
 func CountAttempts(tx *gorm.DB, contestID, teamID uint, challengeID string) int64 {
 	var count int64
 	res := tx.Model(&model.Submission{}).
@@ -63,7 +66,7 @@ func CountAttempts(tx *gorm.DB, contestID, teamID uint, challengeID string) int6
 	return count
 }
 
-// GetSubmissions is a function to get submissions
+// GetSubmissions 获取提交记录
 func GetSubmissions(tx *gorm.DB, limit, offset int, column string, modelIDL ...uint) ([]model.Submission, int64, bool, string) {
 	if limit <= 0 {
 		limit = -1
@@ -89,6 +92,7 @@ func GetSubmissions(tx *gorm.DB, limit, offset int, column string, modelIDL ...u
 	return submissions, count, true, "Success"
 }
 
+// GetTeamSolved 获取 model.Team 解出题目的 []model.Submission
 func GetTeamSolved(tx *gorm.DB, teamID uint) ([]model.Submission, bool, string) {
 	var submissions []model.Submission
 	res := tx.Model(&model.Submission{}).Order("created_at asc").
@@ -100,6 +104,7 @@ func GetTeamSolved(tx *gorm.DB, teamID uint) ([]model.Submission, bool, string) 
 	return submissions, true, "Success"
 }
 
+// CalcTeamScore 计算 model.Team 的分数
 func CalcTeamScore(tx *gorm.DB, contestID, teamID uint) (float64, bool, string) {
 	solved, ok, msg := GetTeamSolved(tx, teamID)
 	if !ok {
@@ -140,6 +145,7 @@ func CalcTeamScore(tx *gorm.DB, contestID, teamID uint) (float64, bool, string) 
 	return score, true, "Success"
 }
 
+// GetTeamSolvedState 获取 model.Team 各方向的解题情况
 func GetTeamSolvedState(tx *gorm.DB, team model.Team) ([]gin.H, bool, string) {
 	solved, ok, msg := GetTeamSolved(tx, team.ID)
 	if !ok {
@@ -171,6 +177,7 @@ func GetTeamSolvedState(tx *gorm.DB, team model.Team) ([]gin.H, bool, string) {
 	return tmp, true, "Success"
 }
 
+// GetContestSolved 获取所有比赛解出题目的 []model.Submission
 func GetContestSolved(tx *gorm.DB, contestID uint) ([]model.Submission, bool, string) {
 	var submissions []model.Submission
 	res := tx.Model(&model.Submission{}).

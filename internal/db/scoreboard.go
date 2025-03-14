@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+// UpdateTeamRanking 更新队伍分数和排名, 更新 redis 排行榜
 func UpdateTeamRanking(tx *gorm.DB, contestID uint) (bool, string) {
 	var teams []model.Team
 	res := tx.Model(&model.Team{}).Where("contest_id = ? AND banned = ?", contestID, false).
@@ -19,7 +20,8 @@ func UpdateTeamRanking(tx *gorm.DB, contestID uint) (bool, string) {
 	}
 	for _, team := range teams {
 		team.Score, _, _ = CalcTeamScore(tx, team.ContestID, team.ID)
-		go UpdateTeam(tx, team.ID, map[string]interface{}{"score": team.Score})
+		// 不考虑更新失败的情况
+		UpdateTeam(tx, team.ID, map[string]interface{}{"score": team.Score})
 	}
 	err := redis.UpdateTeamRanking(contestID, teams)
 	if err != nil {
@@ -29,6 +31,7 @@ func UpdateTeamRanking(tx *gorm.DB, contestID uint) (bool, string) {
 	return true, "Success"
 }
 
+// GetTeamRanking 获取队伍排名
 func GetTeamRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Team, int64, bool, string) {
 	var count int64
 	res := tx.Model(&model.Team{}).Where("contest_id = ? AND banned = ?", contestID, false)
@@ -50,6 +53,7 @@ func GetTeamRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Tea
 	return teams[offset:limit], count, true, "Success"
 }
 
+// UpdateUserRanking 更新用户分数和排名, 更新 redis 排行榜, 主要依赖定时任务调用
 func UpdateUserRanking(tx *gorm.DB) (bool, string) {
 	var users []model.User
 	res := tx.Model(&model.User{}).Where("banned = ?", false).
@@ -66,6 +70,7 @@ func UpdateUserRanking(tx *gorm.DB) (bool, string) {
 	return true, "Success"
 }
 
+// GetUserRanking 获取用户排名
 func GetUserRanking(tx *gorm.DB, limit, offset int) ([]model.User, int64, bool, string) {
 	var count int64
 	res := tx.Model(&model.User{}).Where("banned = ?", false)
@@ -87,6 +92,7 @@ func GetUserRanking(tx *gorm.DB, limit, offset int) ([]model.User, int64, bool, 
 	return users, count, true, "Success"
 }
 
+// GetTeamRankDetail 获取队伍排名详情, 提供额外的分数变动记录
 func GetTeamRankDetail(tx *gorm.DB, contestID uint, limit, offset int) ([]map[string]interface{}, bool, string) {
 	if limit <= 0 {
 		limit = 10

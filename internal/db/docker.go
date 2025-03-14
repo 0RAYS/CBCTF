@@ -42,7 +42,7 @@ func CreateDocker(tx *gorm.DB, flag model.Flag, challenge model.Challenge, creat
 	return docker, true, "Success"
 }
 
-// GetDockers 获取所有 Docker
+// GetDockers 获取所有 Docker, deleted 为 true 时获取已删除的 Docker
 func GetDockers(tx *gorm.DB, deleted bool) ([]model.Docker, bool, string) {
 	var dockers []model.Docker
 	res := tx.Model(&model.Docker{})
@@ -71,6 +71,7 @@ func GetDockerByID(tx *gorm.DB, id uint, deleted bool) (model.Docker, bool, stri
 	return docker, true, "Success"
 }
 
+// GetDockerByPodName 根据 podName 获取 Docker
 func GetDockerByPodName(tx *gorm.DB, podName string) (model.Docker, bool, string) {
 	var docker model.Docker
 	res := tx.Model(&model.Docker{}).Where("pod = ?", podName).Find(&docker).Limit(1)
@@ -80,6 +81,7 @@ func GetDockerByPodName(tx *gorm.DB, podName string) (model.Docker, bool, string
 	return docker, true, "Success"
 }
 
+// GetDockerByTeamID 根据 teamID 获取 Docker
 func GetDockerByTeamID(tx *gorm.DB, teamID uint, limit, offset int, deleted bool) ([]model.Docker, int64, bool, string) {
 	if limit <= 0 {
 		limit = -1

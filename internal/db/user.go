@@ -106,7 +106,7 @@ func UpdateUser(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool, 
 	return true, "Success"
 }
 
-// VerifyUser 验证用户
+// VerifyUser 验证用户名和密码是否匹配
 func VerifyUser(tx *gorm.DB, username string, password string) (model.User, bool, string) {
 	var user model.User
 	var res *gorm.DB

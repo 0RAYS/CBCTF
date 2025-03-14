@@ -22,7 +22,7 @@ func CreateChallenge(tx *gorm.DB, form form.CreateChallengeForm) (model.Challeng
 	return challenge, true, "Success"
 }
 
-// GetChallengeByID 根据 id 获取题目
+// GetChallengeByID 根据 ID 获取题目
 func GetChallengeByID(tx *gorm.DB, id string) (model.Challenge, bool, string) {
 	var challenge model.Challenge
 	res := tx.Model(&model.Challenge{}).Where("id = ?", id).Find(&challenge).Limit(1)
