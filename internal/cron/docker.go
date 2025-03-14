@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// CloseDockers 关闭并删除超时 dockers
+// CloseDockers 关闭并删除数据库中存在记录的超时 dockers
 func CloseDockers(c *cron.Cron) {
 	function := func() {
 		log.Logger.Debug("Close timeout dockers")
@@ -35,7 +35,7 @@ func CloseDockers(c *cron.Cron) {
 	c.Schedule(cron.Every(5*time.Minute), cron.FuncJob(function))
 }
 
-// CloseUnCtrlDockers 移除意外超时的 pod
+// CloseUnCtrlDockers 移除数据库中无记录的超时 docker
 func CloseUnCtrlDockers(c *cron.Cron) {
 	function := func() {
 		log.Logger.Debug("Close timeout pods")

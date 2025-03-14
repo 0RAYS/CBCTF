@@ -64,7 +64,7 @@ func CheckLogin(ctx *gin.Context) {
 	}
 }
 
-// GetRole 获取角色， user 或 admin
+// GetRole 获取角色,  user 或 admin
 func GetRole(ctx *gin.Context) string {
 	if role, ok := ctx.Get("Role"); !ok {
 		return ""
