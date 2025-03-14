@@ -10,6 +10,7 @@ import (
 	"sync"
 )
 
+// UsagesMutex 使用定时任务 cron.ClearUsageMutex 清理锁
 var UsagesMutex sync.Map
 
 // CreateSubmission is a function to create a new submission
