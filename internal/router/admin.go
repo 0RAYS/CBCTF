@@ -67,7 +67,7 @@ func UpdateAdmin(ctx *gin.Context) {
 	admin := middleware.GetSelf(ctx).(model.Admin)
 	data := utils.Form2Map(form)
 	tx := db.DB.WithContext(ctx).Begin()
-	// 在预期的想法中，admin 的邮箱似乎没有什么用，先保留
+	// 在预期的想法中, admin 的邮箱似乎没有什么用, 先保留
 	if email, ok := data["email"]; ok && email.(string) != admin.Email {
 		if !db.IsUniqueEmail(tx, data["email"].(string)) {
 			tx.Rollback()

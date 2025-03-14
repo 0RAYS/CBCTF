@@ -73,7 +73,7 @@ func ToTitle(s string) string {
 	return strings.ToUpper(string(s[0])) + s[1:]
 }
 
-// TidyPaginate 实现内存分页逻辑，处理各类边界场景
+// TidyPaginate 实现内存分页逻辑, 处理各类边界场景
 func TidyPaginate(length, limit, offset int) (int, int) {
 	if length == 0 {
 		return 0, 0

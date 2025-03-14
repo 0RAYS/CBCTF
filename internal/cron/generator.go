@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// PrepareGenerator 预开动态题目生成器, 后续生成附件时直接附加执行
 func PrepareGenerator(c *cron.Cron) {
 	log.Logger.Debug("Prepare generator")
 	function := func() {
@@ -52,6 +53,7 @@ func PrepareGenerator(c *cron.Cron) {
 	c.Schedule(cron.Every(30*time.Minute), cron.FuncJob(function))
 }
 
+// CloseGenerator 关闭超时的动态题目生成器, 释放部分资源
 func CloseGenerator(c *cron.Cron) {
 	function := func() {
 		log.Logger.Debug("Close timeout generator")

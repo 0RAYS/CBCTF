@@ -77,6 +77,7 @@ type Config struct {
 	Backend  string `mapstructure:"backend" json:"backend"`   // 后端地址
 }
 
+// MaskSecrets 用于将结构体中的 secret 标签的字段值替换为 "******"
 func MaskSecrets(input interface{}) interface{} {
 	val := reflect.ValueOf(input)
 
@@ -125,6 +126,7 @@ func MaskSecrets(input interface{}) interface{} {
 	}
 }
 
+// MarshalJSON 将 Config 结构体转换为 JSON 字符串时, 调用 MaskSecrets 方法
 func (c Config) MarshalJSON() ([]byte, error) {
 	type Alias Config
 	tmp := Alias(c)
@@ -158,7 +160,7 @@ func Init() {
 	Env.Frontend = strings.TrimSuffix(Env.Frontend, "/")
 }
 
-// Save 保存配置，用于动态刷新配置
+// Save 保存配置, 用于动态刷新配置
 //func Save(env Config) error {
 //	env.Backend = strings.TrimSuffix(env.Backend, "/")
 //	env.Frontend = strings.TrimSuffix(env.Frontend, "/")

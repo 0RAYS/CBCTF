@@ -94,12 +94,12 @@ func InitContest(form f.CreateContestForm) Contest {
 			utils.Timeline{
 				Date:  form.Start,
 				Title: "比赛开始",
-				Desc:  "题目公布，正式开始解题",
+				Desc:  "题目公布, 正式开始解题",
 			},
 			utils.Timeline{
 				Date:  form.Start.Add(time.Duration(form.Duration)),
 				Title: "比赛结束",
-				Desc:  "停止计分，公布最终排名",
+				Desc:  "停止计分, 公布最终排名",
 			},
 		}
 	}

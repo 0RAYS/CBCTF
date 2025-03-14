@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// CheckCheat 检查作弊事件
 func CheckCheat(c *cron.Cron) {
 	function := func() {
 		log.Logger.Debug("Check cheats")
@@ -27,6 +28,7 @@ func CheckCheat(c *cron.Cron) {
 	c.Schedule(cron.Every(30*time.Minute), cron.FuncJob(function))
 }
 
+// checkFlag 检查是否提交他人 flag
 func checkFlag(contest model.Contest) (bool, string) {
 	var (
 		submissions []model.Submission
@@ -59,6 +61,7 @@ func checkFlag(contest model.Contest) (bool, string) {
 		}
 		if challenge.Type != model.Static {
 			var cheats []model.Cheat
+			// 不论 flag 是否正确, 都记录作弊事件
 			for _, submission := range flag {
 				cheat := model.InitCheat(submission.UserID, submission.TeamID, submission.ContestID, model.SameFlag, model.Cheater)
 				cheats = append(cheats, cheat)
