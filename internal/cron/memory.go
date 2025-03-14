@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// ClearUsageMutex 定时任务清理flag提交锁 db.UsagesMutex
 func ClearUsageMutex(c *cron.Cron) {
 	function := func() {
 		db.UsagesMutex.Range(func(k, v interface{}) bool {
