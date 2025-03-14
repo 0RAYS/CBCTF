@@ -32,7 +32,7 @@ func CloseDockers(c *cron.Cron) {
 		}
 	}
 	function()
-	c.Schedule(cron.Every(1*time.Minute), cron.FuncJob(function))
+	c.Schedule(cron.Every(5*time.Minute), cron.FuncJob(function))
 }
 
 // CloseUnCtrlDockers 移除意外超时的 pod
