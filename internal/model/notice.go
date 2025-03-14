@@ -3,18 +3,20 @@ package model
 import (
 	f "CBCTF/internal/form"
 	"gorm.io/gorm"
+	"gorm.io/plugin/optimisticlock"
 	"time"
 )
 
 type Notice struct {
-	ID        uint           `json:"id" gorm:"primaryKey"`
-	ContestID uint           `json:"contest_id"`
-	Title     string         `json:"title"`
-	Content   string         `json:"content"`
-	CreatorID uint           `json:"creator_id"`
-	CreatedAt time.Time      `json:"created"`
-	UpdatedAt time.Time      `json:"updated"`
-	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
+	ID        uint                   `json:"id" gorm:"primaryKey"`
+	ContestID uint                   `json:"contest_id"`
+	Title     string                 `json:"title"`
+	Content   string                 `json:"content"`
+	CreatorID uint                   `json:"creator_id"`
+	CreatedAt time.Time              `json:"created"`
+	UpdatedAt time.Time              `json:"updated"`
+	DeletedAt gorm.DeletedAt         `json:"-" gorm:"index"`
+	Version   optimisticlock.Version `json:"-"`
 }
 
 func InitNotice(contestID uint, form f.CreateNoticeForm, creatorID uint) Notice {

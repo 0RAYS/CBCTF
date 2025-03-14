@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/utils"
 	"fmt"
 	"gorm.io/gorm"
+	"gorm.io/plugin/optimisticlock"
 	"time"
 )
 
@@ -19,18 +20,19 @@ const (
 )
 
 type Challenge struct {
-	ID             string         `json:"id" gorm:"primaryKey"`
-	Name           string         `json:"name" gorm:"not null"`
-	Desc           string         `json:"desc"`
-	Flag           string         `json:"flag"`
-	Category       string         `json:"category"`
-	Type           string         `json:"type" gorm:"default:'static'"`
-	GeneratorImage string         `json:"generator" gorm:"column:generator"`
-	DockerImage    string         `json:"docker" gorm:"column:docker"`
-	Port           int32          `json:"port" gorm:"default:8080"`
-	CreatedAt      time.Time      `json:"-"`
-	UpdatedAt      time.Time      `json:"-"`
-	DeletedAt      gorm.DeletedAt `json:"-" gorm:"index"`
+	ID             string                 `json:"id" gorm:"primaryKey"`
+	Name           string                 `json:"name" gorm:"not null"`
+	Desc           string                 `json:"desc"`
+	Flag           string                 `json:"flag"`
+	Category       string                 `json:"category"`
+	Type           string                 `json:"type" gorm:"default:'static'"`
+	GeneratorImage string                 `json:"generator" gorm:"column:generator"`
+	DockerImage    string                 `json:"docker" gorm:"column:docker"`
+	Port           int32                  `json:"port" gorm:"default:8080"`
+	CreatedAt      time.Time              `json:"-"`
+	UpdatedAt      time.Time              `json:"-"`
+	DeletedAt      gorm.DeletedAt         `json:"-" gorm:"index"`
+	Version        optimisticlock.Version `json:"-"`
 }
 
 func (c *Challenge) BasicDir() string {

@@ -5,25 +5,27 @@ import (
 	"encoding/json"
 	"fmt"
 	"gorm.io/gorm"
+	"gorm.io/plugin/optimisticlock"
 	"time"
 )
 
 type Docker struct {
-	ID            uint           `json:"id" gorm:"primaryKey"`
-	Port          int32          `json:"port"`
-	ContestID     uint           `json:"contest_id"`
-	TeamID        uint           `json:"team_id"`
-	ChallengeID   string         `json:"challenge_id"`
-	Start         time.Time      `json:"start"`
-	PodName       string         `json:"pod"`
-	ContainerName string         `json:"container"`
-	ServiceName   string         `json:"service"`
-	IP            string         `json:"ip"`
-	Duration      time.Duration  `json:"-"`
-	CreatorID     uint           `json:"creator_id"`
-	CreatedAt     time.Time      `json:"-"`
-	UpdatedAt     time.Time      `json:"-"`
-	DeletedAt     gorm.DeletedAt `json:"-" gorm:"index"`
+	ID            uint                   `json:"id" gorm:"primaryKey"`
+	Port          int32                  `json:"port"`
+	ContestID     uint                   `json:"contest_id"`
+	TeamID        uint                   `json:"team_id"`
+	ChallengeID   string                 `json:"challenge_id"`
+	Start         time.Time              `json:"start"`
+	PodName       string                 `json:"pod"`
+	ContainerName string                 `json:"container"`
+	ServiceName   string                 `json:"service"`
+	IP            string                 `json:"ip"`
+	Duration      time.Duration          `json:"-"`
+	CreatorID     uint                   `json:"creator_id"`
+	CreatedAt     time.Time              `json:"-"`
+	UpdatedAt     time.Time              `json:"-"`
+	DeletedAt     gorm.DeletedAt         `json:"-" gorm:"index"`
+	Version       optimisticlock.Version `json:"-"`
 }
 
 func (d *Docker) MarshalJSON() ([]byte, error) {

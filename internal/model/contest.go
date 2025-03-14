@@ -7,31 +7,33 @@ import (
 	"encoding/json"
 	"fmt"
 	"gorm.io/gorm"
+	"gorm.io/plugin/optimisticlock"
 	"strings"
 	"time"
 )
 
 type Contest struct {
-	ID        uint            `gorm:"primarykey" json:"id"`
-	Name      string          `gorm:"index:idx_name_deleted,unique;not null" json:"name"`
-	Desc      string          `json:"desc"`
-	Captcha   string          `json:"-"`
-	Avatar    string          `json:"avatar"`
-	Prefix    string          `json:"prefix" gorm:"default:'CBCTF'"`
-	Size      int             `json:"size"`
-	Start     time.Time       `json:"start"`
-	Duration  time.Duration   `json:"-"`
-	Blood     bool            `json:"blood" gorm:"default:true"`
-	Hidden    bool            `gorm:"default:true" json:"hidden"`
-	Rules     utils.Strings   `json:"rules" gorm:"type:json"`
-	Prizes    utils.Prizes    `json:"prizes" gorm:"type:json"`
-	Timelines utils.Timelines `json:"timelines" gorm:"type:json"`
-	Teams     []*Team         `json:"-"`
-	Users     []*User         `gorm:"many2many:user_contests;" json:"-"`
-	Notices   []*Notice       `json:"-"`
-	CreatedAt time.Time       `json:"-"`
-	UpdatedAt time.Time       `json:"-"`
-	DeletedAt gorm.DeletedAt  `gorm:"index;index:idx_name_deleted,unique;" json:"-"`
+	ID        uint                   `gorm:"primarykey" json:"id"`
+	Name      string                 `gorm:"index:idx_name_deleted,unique;not null" json:"name"`
+	Desc      string                 `json:"desc"`
+	Captcha   string                 `json:"-"`
+	Avatar    string                 `json:"avatar"`
+	Prefix    string                 `json:"prefix" gorm:"default:'CBCTF'"`
+	Size      int                    `json:"size"`
+	Start     time.Time              `json:"start"`
+	Duration  time.Duration          `json:"-"`
+	Blood     bool                   `json:"blood" gorm:"default:true"`
+	Hidden    bool                   `gorm:"default:true" json:"hidden"`
+	Rules     utils.Strings          `json:"rules" gorm:"type:json"`
+	Prizes    utils.Prizes           `json:"prizes" gorm:"type:json"`
+	Timelines utils.Timelines        `json:"timelines" gorm:"type:json"`
+	Teams     []*Team                `json:"-"`
+	Users     []*User                `gorm:"many2many:user_contests;" json:"-"`
+	Notices   []*Notice              `json:"-"`
+	CreatedAt time.Time              `json:"-"`
+	UpdatedAt time.Time              `json:"-"`
+	DeletedAt gorm.DeletedAt         `gorm:"index;index:idx_name_deleted,unique;" json:"-"`
+	Version   optimisticlock.Version `json:"-"`
 }
 
 func (c *Contest) MarshalJSON() ([]byte, error) {

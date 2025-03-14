@@ -124,11 +124,22 @@ func DeleteTeam(tx *gorm.DB, team model.Team) (bool, string) {
 
 // UpdateTeam 使用 map 更新属性, 使用结构体会导致零值未更新, 对字段值的具体要求应当交给上层实现
 func UpdateTeam(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool, string) {
-	res := tx.Model(&model.Team{}).Where("id = ?", id).
-		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to update team: %s", res.Error)
-		return false, "UpdateTeamError"
+	for {
+		var team model.Team
+		res := tx.Model(&model.Team{}).Where("id = ?", id).Find(&team).Limit(1)
+		if res.RowsAffected != 1 {
+			return false, "TeamNotFound"
+		}
+		res = tx.Model(&team).Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
+		if res.Error != nil {
+			log.Logger.Warningf("Failed to update team: %s", res.Error)
+			return false, "UpdateTeamError"
+		}
+		if res.RowsAffected == 0 {
+			log.Logger.Debug("Failed to update team due to optimistic lock")
+			continue
+		}
+		break
 	}
 	return true, "Success"
 }

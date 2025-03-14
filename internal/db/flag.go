@@ -53,7 +53,7 @@ func RecordFlag(tx *gorm.DB, contestID, teamID uint, challengeID, value string) 
 		}
 	} else {
 		flag = model.InitFlag(contestID, teamID, challengeID, value)
-		res := tx.Model(model.Flag{}).Create(&flag)
+		res := tx.Model(&model.Flag{}).Create(&flag)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to create Flag: %s", res.Error)
 
@@ -67,7 +67,7 @@ func RecordFlag(tx *gorm.DB, contestID, teamID uint, challengeID, value string) 
 // GetFlagBy3ID is a function to get flag
 func GetFlagBy3ID(tx *gorm.DB, contestID, teamID uint, challengeID string) (model.Flag, bool, string) {
 	var flag model.Flag
-	res := tx.Model(model.Flag{}).
+	res := tx.Model(&model.Flag{}).
 		Where("contest_id = ? AND team_id = ? AND challenge_id = ?", contestID, teamID, challengeID).Find(&flag).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.Flag{}, false, "FlagNotFound"
@@ -77,11 +77,22 @@ func GetFlagBy3ID(tx *gorm.DB, contestID, teamID uint, challengeID string) (mode
 
 // UpdateFlag is a function to update flag
 func UpdateFlag(tx *gorm.DB, contestID, teamID uint, challengeID, value string) (bool, string) {
-	res := tx.Model(model.Flag{}).
-		Where("contest_id = ? AND team_id = ? AND challenge_id = ?", contestID, teamID, challengeID).Update("value", value)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to update Flag: %s", res.Error)
-		return false, "UpdateFlagError"
+	for {
+		var flag model.Flag
+		res := tx.Model(&model.Flag{}).Where("contest_id = ? AND team_id = ? AND challenge_id = ?", contestID, teamID, challengeID).Find(&flag).Limit(1)
+		if res.RowsAffected != 1 {
+			return false, "FlagNotFound"
+		}
+		res = tx.Model(&flag).Update("value", value)
+		if res.Error != nil {
+			log.Logger.Warningf("Failed to update Flag: %s", res.Error)
+			return false, "UpdateFlagError"
+		}
+		if res.RowsAffected == 0 {
+			log.Logger.Debug("Failed to update flag due to optimistic lock")
+			continue
+		}
+		break
 	}
 	return true, "Success"
 }
@@ -99,7 +110,7 @@ func VerifyFlag(tx *gorm.DB, contestID, teamID uint, challengeID, value string) 
 }
 
 //func DeleteFlag(tx *gorm.DB, id uint) (bool, string) {
-//	res := tx.Model(model.Flag{}).
+//	res := tx.Model(&model.Flag{}).
 //		Where("id = ?", id).Delete(&model.Flag{})
 //	if res.Error != nil {
 //		log.Logger.Warningf("Failed to delete Flag: %s", res.Error)

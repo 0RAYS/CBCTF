@@ -14,7 +14,7 @@ import (
 // RecordFile 添加头像记录
 func RecordFile(tx *gorm.DB, path string, uploader uint, file *multipart.FileHeader, hash string, t string) (model.File, bool, string) {
 	f := model.InitFile(path, uploader, file, hash, t)
-	res := tx.Model(model.File{}).Create(&f)
+	res := tx.Model(&model.File{}).Create(&f)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to record file: %v", res.Error)
 
@@ -31,7 +31,7 @@ func RecordFile(tx *gorm.DB, path string, uploader uint, file *multipart.FileHea
 // GetFileByID 以 ID 获取文件记录
 func GetFileByID(tx *gorm.DB, id string) (model.File, bool, string) {
 	var file model.File
-	res := tx.Model(model.File{}).Where("id = ?", id).Find(&file).Limit(1)
+	res := tx.Model(&model.File{}).Where("id = ?", id).Find(&file).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.File{}, false, "FileNotFound"
 	}
@@ -41,7 +41,7 @@ func GetFileByID(tx *gorm.DB, id string) (model.File, bool, string) {
 // GetFileByHash 以 Hash 获取文件记录
 func GetFileByHash(tx *gorm.DB, hash string) (model.File, bool, string) {
 	var file model.File
-	res := tx.Model(model.File{}).Where("hash = ?", hash).Find(&file).Limit(1)
+	res := tx.Model(&model.File{}).Where("hash = ?", hash).Find(&file).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.File{}, false, "FileNotFound"
 	}
@@ -50,7 +50,7 @@ func GetFileByHash(tx *gorm.DB, hash string) (model.File, bool, string) {
 
 // DeleteFile 以 ID 删除文件记录
 func DeleteFile(tx *gorm.DB, id string) (bool, string) {
-	if err := tx.Model(model.File{}).Where("id = ?", id).Delete(&model.File{}).Error; err != nil {
+	if err := tx.Model(&model.File{}).Where("id = ?", id).Delete(&model.File{}).Error; err != nil {
 		log.Logger.Warningf("Failed to delete file: %v", id)
 		return false, "DeleteFileError"
 	}

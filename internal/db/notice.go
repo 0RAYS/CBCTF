@@ -27,10 +27,22 @@ func GetNoticeByID(tx *gorm.DB, id uint) (model.Notice, bool, string) {
 }
 
 func UpdateNotice(tx *gorm.DB, id uint, updateDate map[string]interface{}) (bool, string) {
-	res := tx.Model(&model.Notice{}).Where("id = ?", id).
-		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateDate)
-	if res.Error != nil {
-		return false, "UpdateNoticeError"
+	for {
+		var notice model.Notice
+		res := tx.Model(&model.Notice{}).Where("id = ?", id).Find(&notice).Limit(1)
+		if res.RowsAffected != 1 {
+			return false, "NoticeNotFound"
+		}
+		res = tx.Model(&notice).Where("id = ?", id).Updates(updateDate)
+		if res.Error != nil {
+			log.Logger.Warningf("Failed to update Notice: %s", res.Error)
+			return false, "UpdateNoticeError"
+		}
+		if res.RowsAffected == 0 {
+			log.Logger.Debug("Failed to update notice due to optimistic lock")
+			continue
+		}
+		break
 	}
 	return true, "Success"
 }

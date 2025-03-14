@@ -23,7 +23,7 @@ func CreateUsage(tx *gorm.DB, form form.CreateUsageForm, contestID uint) ([]mode
 		}
 		usage := model.InitUsage(challenge, contestID)
 		// 如果创建失败则跳过, 不回滚
-		if err := tx.Model(model.Usage{}).Create(&usage).Error; err != nil {
+		if err := tx.Model(&model.Usage{}).Create(&usage).Error; err != nil {
 			log.Logger.Warningf("Failed to create Usage: %s", err)
 			continue
 		}
@@ -35,7 +35,7 @@ func CreateUsage(tx *gorm.DB, form form.CreateUsageForm, contestID uint) ([]mode
 // GetUsageByContestID 获取引用
 func GetUsageByContestID(tx *gorm.DB, contestID uint, all bool) ([]model.Usage, bool, string) {
 	var usages []model.Usage
-	res := tx.Model(model.Usage{})
+	res := tx.Model(&model.Usage{})
 	if all {
 		res = res.Where("contest_id = ?", contestID)
 	} else {
@@ -51,7 +51,7 @@ func GetUsageByContestID(tx *gorm.DB, contestID uint, all bool) ([]model.Usage, 
 // GetUsageByChallengeID 获取引用
 func GetUsageByChallengeID(tx *gorm.DB, challengeID string) ([]model.Usage, bool, string) {
 	var usages []model.Usage
-	res := tx.Model(model.Usage{}).Where("challenge_id = ?", challengeID).Find(&usages)
+	res := tx.Model(&model.Usage{}).Where("challenge_id = ?", challengeID).Find(&usages)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Usage: %s", res.Error)
 		return make([]model.Usage, 0), false, "GetUsageError"
@@ -62,7 +62,7 @@ func GetUsageByChallengeID(tx *gorm.DB, challengeID string) ([]model.Usage, bool
 // GetUsageBy2ID 获取引用
 func GetUsageBy2ID(tx *gorm.DB, contestID uint, challengeID string) (model.Usage, bool, string) {
 	var usage model.Usage
-	res := tx.Model(model.Usage{}).Where("contest_id = ? AND challenge_id = ?", contestID, challengeID).Find(&usage).Limit(1)
+	res := tx.Model(&model.Usage{}).Where("contest_id = ? AND challenge_id = ?", contestID, challengeID).Find(&usage).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.Usage{}, false, "UsageNotFound"
 	}
@@ -72,7 +72,7 @@ func GetUsageBy2ID(tx *gorm.DB, contestID uint, challengeID string) (model.Usage
 // GetUsageByID 获取引用
 //func GetUsageByID(tx *gorm.DB, id uint) (model.Usage, bool, string) {
 //	var usage model.Usage
-//	res := tx.Model(model.Usage{}).Where("id = ?", id).Find(&usage).Limit(1)
+//	res := tx.Model(&model.Usage{}).Where("id = ?", id).Find(&usage).Limit(1)
 //	if res.RowsAffected != 1 {
 //		return model.Usage{}, false, "UsageNotFound"
 //	}
@@ -81,11 +81,22 @@ func GetUsageBy2ID(tx *gorm.DB, contestID uint, challengeID string) (model.Usage
 
 // UpdateUsage 更新引用
 func UpdateUsage(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool, string) {
-	res := tx.Model(model.Usage{}).Where("id = ?", id).
-		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to update Usage: %s", res.Error)
-		return false, "UpdateUsageError"
+	for {
+		var usage model.Usage
+		res := tx.Model(&model.Usage{}).Where("id = ?", id).Find(&usage).Limit(1)
+		if res.RowsAffected != 1 {
+			return false, "UsageNotFound"
+		}
+		res = tx.Model(&usage).Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
+		if res.Error != nil {
+			log.Logger.Warningf("Failed to update Usage: %s", res.Error)
+			return false, "UpdateUsageError"
+		}
+		if res.RowsAffected == 0 {
+			log.Logger.Debug("Failed to update usage due to optimistic lock")
+			continue
+		}
+		break
 	}
 	return true, "Success"
 }
@@ -93,13 +104,13 @@ func UpdateUsage(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool,
 func Solve(tx *gorm.DB, id, teamID uint, blood bool) (bool, string) {
 	var usage model.Usage
 	var team model.Team
-	err := tx.Model(model.Usage{}).Clauses(clause.Locking{Strength: "UPDATE"}).
+	err := tx.Model(&model.Usage{}).Clauses(clause.Locking{Strength: "UPDATE"}).
 		Where("id = ?", id).Find(&usage).Limit(1).Error
 	if err != nil {
 		log.Logger.Warningf("Failed to get Usage: %s", err)
 		return false, "GetUsageError"
 	}
-	err = tx.Model(model.Team{}).Clauses(clause.Locking{Strength: "UPDATE"}).
+	err = tx.Model(&model.Team{}).Clauses(clause.Locking{Strength: "UPDATE"}).
 		Where("id = ?", teamID).Find(&team).Limit(1).Error
 	if err != nil {
 		log.Logger.Warningf("Failed to get Team: %s", err)
@@ -149,7 +160,7 @@ func Solve(tx *gorm.DB, id, teamID uint, blood bool) (bool, string) {
 
 // DeleteUsage 删除引用
 func DeleteUsage(tx *gorm.DB, id uint) (bool, string) {
-	res := tx.Model(model.Usage{}).Where("id = ?", id).Delete(&model.Usage{})
+	res := tx.Model(&model.Usage{}).Where("id = ?", id).Delete(&model.Usage{})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete Usage: %s", res.Error)
 		return false, "DeleteUsageError"
