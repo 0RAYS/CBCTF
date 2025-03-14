@@ -11,7 +11,7 @@ import (
 
 func CheckCheat(c *cron.Cron) {
 	function := func() {
-		log.Logger.Info("Check cheats")
+		log.Logger.Debug("Check cheats")
 		contests, _, ok, _ := db.GetContests(db.DB, -1, -1, false, true, true)
 		if !ok {
 			return
