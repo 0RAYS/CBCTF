@@ -9,7 +9,8 @@ import (
 	"time"
 )
 
-func UpdateGlobalRanking(c *cron.Cron) {
+// UpdateTeamRanking 依据数据库, 更新 model.Team 的分数和排名
+func UpdateTeamRanking(c *cron.Cron) {
 	function := func() {
 		log.Logger.Debug("Update global ranking")
 		contests, _, ok, _ := db.GetContests(db.DB, -1, -1, false, false)
@@ -20,46 +21,30 @@ func UpdateGlobalRanking(c *cron.Cron) {
 			if !contest.IsRunning() {
 				continue
 			}
-			go db.UpdateTeamRanking(db.DB, contest.ID)
+			go func() {
+				log.Logger.Debugf("Start contest %d team ranking", contest.ID)
+				db.UpdateTeamRanking(db.DB, contest.ID)
+				teams, _ := redis.GetTeamRanking(contest.ID, 0, -1)
+				for rank, team := range teams {
+					if team.Rank == rank+1 {
+						continue
+					}
+					tx := db.DB.Begin()
+					if ok, _ := db.UpdateTeam(tx, team.ID, map[string]interface{}{"rank": rank + 1}); !ok {
+						tx.Rollback()
+						continue
+					}
+					tx.Commit()
+				}
+			}()
 		}
 	}
 	function()
 	c.Schedule(cron.Every(5*time.Minute), cron.FuncJob(function))
 }
 
-func UpdateTeamRank(c *cron.Cron) {
-	function := func() {
-		log.Logger.Debug("Update team ranking")
-		contests, _, ok, _ := db.GetContests(db.DB, -1, -1, false, false)
-		if !ok {
-			return
-		}
-		for _, contest := range contests {
-			if !contest.IsRunning() {
-				continue
-			}
-			teams, err := redis.GetTeamRanking(contest.ID, 0, -1)
-			if err != nil {
-				continue
-			}
-			for rank, team := range teams {
-				if team.Rank == rank+1 {
-					continue
-				}
-				tx := db.DB.Begin()
-				if ok, _ := db.UpdateTeam(tx, team.ID, map[string]interface{}{"rank": rank + 1}); !ok {
-					tx.Rollback()
-					continue
-				}
-				tx.Commit()
-			}
-		}
-	}
-	function()
-	c.Schedule(cron.Every(5*time.Minute), cron.FuncJob(function))
-}
-
-func UpdateUserScore(c *cron.Cron) {
+// UpdateUserRanking 依据数据库, 更新 model.User 的分数和排名
+func UpdateUserRanking(c *cron.Cron) {
 	function := func() {
 		var (
 			contests    []model.Contest
@@ -67,7 +52,7 @@ func UpdateUserScore(c *cron.Cron) {
 			submissions []model.Submission
 			ok          bool
 		)
-		log.Logger.Debug("Update user score")
+		log.Logger.Debug("Update user ranking")
 		contests, _, ok, _ = db.GetContests(db.DB, -1, -1, false, true, true)
 		if !ok {
 			return
