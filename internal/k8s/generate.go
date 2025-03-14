@@ -15,6 +15,7 @@ import (
 	"time"
 )
 
+// StartGenerator 启动动态附件生成器, 等待附加命令, 生成附件
 func StartGenerator(challenge model.Challenge) (*corev1.Pod, bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
@@ -28,6 +29,7 @@ func StartGenerator(challenge model.Challenge) (*corev1.Pod, bool, string) {
 	}
 	log.Logger.Debugf("Creating pod for challenge %s:%s", challenge.Name, challenge.ID)
 	podName := fmt.Sprintf("generator-%s-pod", challenge.ID)
+	// 如果已启动并健康运行, 直接返回
 	pod, ok, _ := GetPod(podName)
 	if ok && pod.Status.Phase == corev1.PodRunning {
 		log.Logger.Infof("Pod %s is already running", pod.Name)
@@ -93,17 +95,19 @@ func StartGenerator(challenge model.Challenge) (*corev1.Pod, bool, string) {
 	return pod, true, "Success"
 }
 
+// StopGenerator 停止动态附件生成器
 func StopGenerator(challenge model.Challenge) (bool, string) {
 	log.Logger.Infof("Stopping generator for challenge %s-%s", challenge.ID, challenge.Name)
 	podName := fmt.Sprintf("generator-%s-pod", challenge.ID)
 	return DeletePod(podName)
 }
 
-// GenerateAttachment 启动容器, 生成附件
+// GenerateAttachment 附加容器命令, 生成附件
 func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, string) {
 	var err error
 	log.Logger.Debugf("Generating attachment for team %d challenge %s", flag.TeamID, flag.ChallengeID)
 	pod, ok, msg := StartGenerator(challenge)
+	// 附加失败则直接返回, 并尝试关闭生成器
 	if !ok {
 		_, _ = StopGenerator(challenge)
 		return false, msg
