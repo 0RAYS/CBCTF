@@ -81,7 +81,13 @@ func GetUsageBy2ID(tx *gorm.DB, contestID uint, challengeID string) (model.Usage
 
 // UpdateUsage 更新引用
 func UpdateUsage(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool, string) {
+	var count int
 	for {
+		count++
+		if count > 10 {
+			log.Logger.Warningf("Failed too many times to update user due to optimistic lock")
+			return false, "FailedTooManyTimes"
+		}
 		var usage model.Usage
 		res := tx.Model(&model.Usage{}).Where("id = ?", id).Find(&usage).Limit(1)
 		if res.RowsAffected != 1 {

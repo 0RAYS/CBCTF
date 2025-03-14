@@ -3,14 +3,15 @@ package i18n
 import "fmt"
 
 var resp = map[string]map[string]interface{}{
-	"Success":         {"zh-CN": "操作成功", "en-US": "Success", "code": 200},
-	"ConfigNotChange": {"zh-CN": "配置未改变", "en-US": "Configuration unchanged", "code": 200},
-	"BadRequest":      {"zh-CN": "参数错误", "en-US": "Bad request", "code": 400},
-	"Unauthorized":    {"zh-CN": "未登录", "en-US": "Unauthorized", "code": 401},
-	"Forbidden":       {"zh-CN": "禁止访问", "en-US": "Forbidden", "code": 403},
-	"TooManyRequests": {"zh-CN": "请求过于频繁", "en-US": "Too many requests", "code": 429},
-	"TooQuick":        {"zh-CN": "操作过于频繁", "en-US": "Operation too frequent", "code": 429},
-	"UnknownError":    {"zh-CN": "未知错误，请联系管理员", "en-US": "UnknownError, please contact the administrator", "code": 500},
+	"Success":            {"zh-CN": "操作成功", "en-US": "Success", "code": 200},
+	"ConfigNotChange":    {"zh-CN": "配置未改变", "en-US": "Configuration unchanged", "code": 200},
+	"BadRequest":         {"zh-CN": "参数错误", "en-US": "Bad request", "code": 400},
+	"Unauthorized":       {"zh-CN": "未登录", "en-US": "Unauthorized", "code": 401},
+	"Forbidden":          {"zh-CN": "禁止访问", "en-US": "Forbidden", "code": 403},
+	"TooManyRequests":    {"zh-CN": "请求过于频繁", "en-US": "Too many requests", "code": 429},
+	"TooQuick":           {"zh-CN": "操作过于频繁", "en-US": "Operation too frequent", "code": 429},
+	"UnknownError":       {"zh-CN": "未知错误，请联系管理员", "en-US": "UnknownError, please contact the administrator", "code": 500},
+	"FailedTooManyTimes": {"zh-CN": "失败次数过多", "en-US": "Failed too many times", "code": 500},
 
 	"EmailExists":         {"zh-CN": "该邮箱已注册", "en-US": "Email already registered", "code": 400},
 	"NameOrPasswordError": {"zh-CN": "用户名或密码错误，请重试", "en-US": "Username or password error, please try again", "code": 401},
