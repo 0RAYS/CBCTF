@@ -7,6 +7,7 @@ import (
 	"regexp"
 )
 
+// SetMagic 保存设备 ID 至上下文
 func SetMagic(ctx *gin.Context) {
 	magic := ctx.GetHeader("X-M")
 	path := ctx.Request.URL.Path
@@ -27,6 +28,7 @@ func SetMagic(ctx *gin.Context) {
 	ctx.Next()
 }
 
+// GetMagic 获取设备 ID
 func GetMagic(ctx *gin.Context) string {
 	return ctx.GetString("Magic")
 }

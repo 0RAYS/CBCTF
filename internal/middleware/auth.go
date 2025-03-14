@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// CheckLogin 是否登录
+// CheckLogin 是否登录, 用户是否被 ban, 记录设备
 func CheckLogin(ctx *gin.Context) {
 	auth := strings.Fields(ctx.GetHeader("Authorization"))
 	if len(auth) != 2 || auth[0] != "Bearer" {
