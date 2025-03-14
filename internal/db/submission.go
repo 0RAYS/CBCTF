@@ -10,8 +10,8 @@ import (
 	"sync"
 )
 
-// UsagesMutex 使用定时任务 cron.ClearUsageMutex 清理锁
-var UsagesMutex sync.Map
+// SubmissionMutex 使用定时任务 cron.ClearUsageMutex 清理锁
+var SubmissionMutex sync.Map
 
 // CreateSubmission is a function to create a new submission
 func CreateSubmission(tx *gorm.DB, contest model.Contest, team model.Team, user model.User, usage model.Usage, value string) (model.Submission, bool, string) {
@@ -23,7 +23,7 @@ func CreateSubmission(tx *gorm.DB, contest model.Contest, team model.Team, user 
 	}
 	solved := VerifyFlag(tx, contest.ID, team.ID, usage.ChallengeID, value)
 	if solved {
-		mu, _ := UsagesMutex.LoadOrStore(usage.ID, &sync.Mutex{})
+		mu, _ := SubmissionMutex.LoadOrStore(usage.ID, &sync.Mutex{})
 		mu.(*sync.Mutex).Lock()
 		if ok, msg := Solve(tx, usage.ID, team.ID, contest.Blood); !ok {
 			mu.(*sync.Mutex).Unlock()
