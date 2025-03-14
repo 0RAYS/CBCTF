@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// CheckSolved model.Team 是否解决过 model.Usage
 func CheckSolved(ctx *gin.Context) {
 	usage := GetUsage(ctx)
 	team := GetTeam(ctx)

@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+// SetUser 保存 model.User 至上下文
 func SetUser(ctx *gin.Context) {
 	type userIDUri struct {
 		UserID uint `uri:"userID" binding:"required"`
@@ -27,6 +28,7 @@ func SetUser(ctx *gin.Context) {
 	ctx.Next()
 }
 
+// GetUser 从上下文中获取 model.User
 func GetUser(ctx *gin.Context) model.User {
 	if user, ok := ctx.Get("User"); !ok {
 		return model.User{}
@@ -35,6 +37,7 @@ func GetUser(ctx *gin.Context) model.User {
 	}
 }
 
+// SetContest 保存 model.Contest 至上下文
 func SetContest(ctx *gin.Context) {
 	type contestIDUri struct {
 		ContestID uint `uri:"contestID" binding:"required"`
@@ -55,6 +58,7 @@ func SetContest(ctx *gin.Context) {
 	ctx.Next()
 }
 
+// GetContest 从上下文中获取 model.Contest
 func GetContest(ctx *gin.Context) model.Contest {
 	if contest, ok := ctx.Get("Contest"); !ok {
 		return model.Contest{}
@@ -63,6 +67,7 @@ func GetContest(ctx *gin.Context) model.Contest {
 	}
 }
 
+// SetTeamByUser 依照 model.User model.Contest 保存 model.Team 至上下文, 调用前前文须设置 model.Contest
 func SetTeamByUser(ctx *gin.Context) {
 	var (
 		self model.User
@@ -86,6 +91,7 @@ func SetTeamByUser(ctx *gin.Context) {
 	ctx.Next()
 }
 
+// SetTeamByURI 保存 model.Team 至上下文
 func SetTeamByURI(ctx *gin.Context) {
 	var (
 		team model.Team
@@ -111,6 +117,7 @@ func SetTeamByURI(ctx *gin.Context) {
 	ctx.Next()
 }
 
+// GetTeam 从上下文中获取 model.Team
 func GetTeam(ctx *gin.Context) model.Team {
 	if team, ok := ctx.Get("Team"); !ok {
 		return model.Team{}
@@ -119,6 +126,7 @@ func GetTeam(ctx *gin.Context) model.Team {
 	}
 }
 
+// SetFile 保存 model.File 至上下文
 func SetFile(t string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		type fileIDUri struct {
@@ -146,6 +154,7 @@ func SetFile(t string) gin.HandlerFunc {
 	}
 }
 
+// GetFile 从上下文中获取 model.File
 func GetFile(ctx *gin.Context) model.File {
 	if file, ok := ctx.Get("File"); !ok {
 		return model.File{}
@@ -154,6 +163,7 @@ func GetFile(ctx *gin.Context) model.File {
 	}
 }
 
+// SetChallenge 保存 model.Challenge model.Usage 至上下文
 func SetChallenge(ctx *gin.Context) {
 	type challengeIDUri struct {
 		ChallengeID string `uri:"challengeID" binding:"required"`
@@ -181,6 +191,7 @@ func SetChallenge(ctx *gin.Context) {
 	ctx.Next()
 }
 
+// GetChallenge 从上下文中获取 model.Challenge
 func GetChallenge(ctx *gin.Context) model.Challenge {
 	if challenge, ok := ctx.Get("Challenge"); !ok {
 		return model.Challenge{}
@@ -189,6 +200,7 @@ func GetChallenge(ctx *gin.Context) model.Challenge {
 	}
 }
 
+// GetUsage 从上下文中获取 model.Usage
 func GetUsage(ctx *gin.Context) model.Usage {
 	if usage, ok := ctx.Get("Usage"); !ok {
 		return model.Usage{}
@@ -197,6 +209,7 @@ func GetUsage(ctx *gin.Context) model.Usage {
 	}
 }
 
+// SetContainer 保存 model.Docker 至上下文
 func SetContainer(ctx *gin.Context) {
 	type containerIDUri struct {
 		ContainerID uint `uri:"containerID" binding:"required"`
@@ -217,6 +230,7 @@ func SetContainer(ctx *gin.Context) {
 	ctx.Next()
 }
 
+// GetContainer 从上下文中获取 model.Docker
 func GetContainer(ctx *gin.Context) model.Docker {
 	if container, ok := ctx.Get("Container"); !ok {
 		return model.Docker{}
@@ -225,6 +239,7 @@ func GetContainer(ctx *gin.Context) model.Docker {
 	}
 }
 
+// SetNotice 保存 model.Notice 至上下文
 func SetNotice(ctx *gin.Context) {
 	type noticeIDUri struct {
 		NoticeID uint `uri:"noticeID" binding:"required"`
@@ -245,6 +260,7 @@ func SetNotice(ctx *gin.Context) {
 	ctx.Next()
 }
 
+// GetNotice 从上下文中获取 model.Notice
 func GetNotice(ctx *gin.Context) model.Notice {
 	if notice, ok := ctx.Get("Notice"); !ok {
 		return model.Notice{}
