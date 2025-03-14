@@ -123,7 +123,7 @@ func upper(s string, max int) string {
 }
 
 func RandFlag(flag string) string {
-	flag = repeat(flag, len(flag)*7/10)
+	flag = repeat(flag, len(flag)*2/10)
 	flag = replace(flag, len(flag)*7/10)
 	flag = upper(flag, len(flag)*7/10)
 	return flag
