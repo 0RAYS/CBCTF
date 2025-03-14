@@ -5,6 +5,7 @@ import (
 	"math/rand"
 )
 
+// copied from https://github.com/ret2shell/ret2script/blob/main/src/modules/audit.rs
 var replaceMap = map[string][]string{
 	"0": {"0", "O"},
 	"1": {"1", "l", "I"},
