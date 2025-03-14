@@ -27,7 +27,13 @@ func GetNoticeByID(tx *gorm.DB, id uint) (model.Notice, bool, string) {
 }
 
 func UpdateNotice(tx *gorm.DB, id uint, updateDate map[string]interface{}) (bool, string) {
+	var count int
 	for {
+		count++
+		if count > 10 {
+			log.Logger.Warningf("Failed too many times to update user due to optimistic lock")
+			return false, "FailedTooManyTimes"
+		}
 		var notice model.Notice
 		res := tx.Model(&model.Notice{}).Where("id = ?", id).Find(&notice).Limit(1)
 		if res.RowsAffected != 1 {

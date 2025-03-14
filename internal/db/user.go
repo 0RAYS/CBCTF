@@ -80,7 +80,13 @@ func DeleteUser(tx *gorm.DB, id uint) (bool, string) {
 
 // UpdateUser 更新用户, 使用 map 更新属性, 结构体会导致零值未更新, 对字段值的具体要求应当交给上层实现
 func UpdateUser(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool, string) {
+	var count int
 	for {
+		count++
+		if count > 10 {
+			log.Logger.Warningf("Failed too many times to update user due to optimistic lock")
+			return false, "FailedTooManyTimes"
+		}
 		var user model.User
 		res := tx.Model(&model.User{}).Where("id = ?", id).Find(&user).Limit(1)
 		if res.RowsAffected != 1 {

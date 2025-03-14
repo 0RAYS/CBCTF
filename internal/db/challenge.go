@@ -63,7 +63,13 @@ func CountChallenges(tx *gorm.DB) int64 {
 
 // UpdateChallenge 更新题目, 使用 map 更新属性, 结构体会导致零值未更新, 对字段值的具体要求应当交给上层实现
 func UpdateChallenge(tx *gorm.DB, id string, updateData map[string]interface{}) (bool, string) {
+	var count int
 	for {
+		count++
+		if count > 10 {
+			log.Logger.Warningf("Failed too many times to update user due to optimistic lock")
+			return false, "FailedTooManyTimes"
+		}
 		var challenge model.Challenge
 		res := tx.Model(&model.Challenge{}).Where("id = ?", id).Find(&challenge).Limit(1)
 		if res.RowsAffected != 1 {

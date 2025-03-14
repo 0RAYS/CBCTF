@@ -77,7 +77,13 @@ func GetFlagBy3ID(tx *gorm.DB, contestID, teamID uint, challengeID string) (mode
 
 // UpdateFlag is a function to update flag
 func UpdateFlag(tx *gorm.DB, contestID, teamID uint, challengeID, value string) (bool, string) {
+	var count int
 	for {
+		count++
+		if count > 10 {
+			log.Logger.Warningf("Failed too many times to update user due to optimistic lock")
+			return false, "FailedTooManyTimes"
+		}
 		var flag model.Flag
 		res := tx.Model(&model.Flag{}).Where("contest_id = ? AND team_id = ? AND challenge_id = ?", contestID, teamID, challengeID).Find(&flag).Limit(1)
 		if res.RowsAffected != 1 {
