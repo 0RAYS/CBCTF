@@ -32,7 +32,7 @@ type Challenge struct {
 	CreatedAt      time.Time              `json:"-"`
 	UpdatedAt      time.Time              `json:"-"`
 	DeletedAt      gorm.DeletedAt         `json:"-" gorm:"index"`
-	Version        optimisticlock.Version `json:"-"`
+	Version        optimisticlock.Version `json:"-" gorm:"default:1"`
 }
 
 func (c *Challenge) BasicDir() string {
