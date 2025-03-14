@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// SetEmailVerifyToken 设置邮箱验证 token, 时效一天
 func SetEmailVerifyToken(userID uint, token string) (bool, string) {
 	ctx := context.Background()
 	err := RDB.Set(ctx, fmt.Sprintf("email:verify:%d", userID), token, time.Hour*24).Err()
@@ -17,6 +18,7 @@ func SetEmailVerifyToken(userID uint, token string) (bool, string) {
 	return true, "Success"
 }
 
+// GetEmailVerifyToken 获取邮箱验证 token
 func GetEmailVerifyToken(userID uint) (string, bool) {
 	ctx := context.Background()
 	data, err := RDB.Get(ctx, fmt.Sprintf("email:verify:%d", userID)).Result()
@@ -26,6 +28,7 @@ func GetEmailVerifyToken(userID uint) (string, bool) {
 	return data, true
 }
 
+// DelEmailVerifyToken 删除邮箱验证 token
 func DelEmailVerifyToken(userID uint) (bool, string) {
 	ctx := context.Background()
 	err := RDB.Del(ctx, fmt.Sprintf("email:verify:%d", userID)).Err()
