@@ -28,7 +28,7 @@ func CreateSubmission(tx *gorm.DB, contest model.Contest, team model.Team, user 
 		return model.Submission{}, false, msg
 	}
 	submission := model.InitSubmission(usage.ID, contest.ID, usage.ChallengeID, team.ID, user.ID, value, solved, team.Score)
-	if err := tx.Model(model.Submission{}).Create(&submission).Error; err != nil {
+	if err := tx.Model(&model.Submission{}).Create(&submission).Error; err != nil {
 		return model.Submission{}, false, "CreateSubmissionError"
 	}
 	return submission, true, "Success"
@@ -36,7 +36,7 @@ func CreateSubmission(tx *gorm.DB, contest model.Contest, team model.Team, user 
 
 func IsSolved(tx *gorm.DB, contestID, teamID uint, challengeID string) bool {
 	var submission model.Submission
-	res := tx.Model(model.Submission{}).
+	res := tx.Model(&model.Submission{}).
 		Where("contest_id = ? AND team_id = ? AND challenge_id = ? AND solved = ?", contestID, teamID, challengeID, true).Find(&submission).Limit(1)
 	if res.RowsAffected < 1 {
 		return false
@@ -46,7 +46,7 @@ func IsSolved(tx *gorm.DB, contestID, teamID uint, challengeID string) bool {
 
 func CountAttempts(tx *gorm.DB, contestID, teamID uint, challengeID string) int64 {
 	var count int64
-	res := tx.Model(model.Submission{}).
+	res := tx.Model(&model.Submission{}).
 		Where("contest_id = ? AND team_id = ? AND challenge_id = ?", contestID, teamID, challengeID).Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count attempts: %v", res.Error)
@@ -65,7 +65,7 @@ func GetSubmissions(tx *gorm.DB, limit, offset int, column string, modelIDL ...u
 	}
 	var submissions []model.Submission
 	var count int64
-	res := tx.Model(model.Submission{})
+	res := tx.Model(&model.Submission{})
 	if len(modelIDL) > 0 {
 		res = res.Where(fmt.Sprintf("%s IN ?", column), modelIDL)
 	}
@@ -83,7 +83,7 @@ func GetSubmissions(tx *gorm.DB, limit, offset int, column string, modelIDL ...u
 
 func GetTeamSolved(tx *gorm.DB, teamID uint) ([]model.Submission, bool, string) {
 	var submissions []model.Submission
-	res := tx.Model(model.Submission{}).Order("created_at asc").
+	res := tx.Model(&model.Submission{}).Order("created_at asc").
 		Where("team_id = ? AND solved = ?", teamID, true).Find(&submissions)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get submissions: %v", res.Error)
@@ -165,7 +165,7 @@ func GetTeamSolvedState(tx *gorm.DB, team model.Team) ([]gin.H, bool, string) {
 
 func GetContestSolved(tx *gorm.DB, contestID uint) ([]model.Submission, bool, string) {
 	var submissions []model.Submission
-	res := tx.Model(model.Submission{}).
+	res := tx.Model(&model.Submission{}).
 		Where("contest_id = ? AND solved = ?", contestID, true).Find(&submissions)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get submissions: %v", res.Error)

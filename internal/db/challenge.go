@@ -14,7 +14,7 @@ func CreateChallenge(tx *gorm.DB, form form.CreateChallengeForm) (model.Challeng
 		return model.Challenge{}, false, "InvalidChallengeType"
 	}
 	challenge := model.InitChallenge(form)
-	res := tx.Model(model.Challenge{}).Create(&challenge)
+	res := tx.Model(&model.Challenge{}).Create(&challenge)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to create Challenge: %s", res.Error)
 		return model.Challenge{}, false, "CreateChallengeError"
@@ -25,7 +25,7 @@ func CreateChallenge(tx *gorm.DB, form form.CreateChallengeForm) (model.Challeng
 // GetChallengeByID 根据 id 获取题目
 func GetChallengeByID(tx *gorm.DB, id string) (model.Challenge, bool, string) {
 	var challenge model.Challenge
-	res := tx.Model(model.Challenge{}).Where("id = ?", id).Find(&challenge).Limit(1)
+	res := tx.Model(&model.Challenge{}).Where("id = ?", id).Find(&challenge).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.Challenge{}, false, "ChallengeNotFound"
 	}
@@ -36,7 +36,7 @@ func GetChallengeByID(tx *gorm.DB, id string) (model.Challenge, bool, string) {
 func GetChallenges(tx *gorm.DB, limit, offset int, t string, category string) ([]model.Challenge, int64, bool, string) {
 	var challenges []model.Challenge
 	var count int64
-	res := tx.Model(model.Challenge{})
+	res := tx.Model(&model.Challenge{})
 	if t != "" && category != "" {
 		res = res.Where("type = ? AND category = ?", t, category)
 	} else if !(t == "" && category == "") {
@@ -63,18 +63,29 @@ func CountChallenges(tx *gorm.DB) int64 {
 
 // UpdateChallenge 更新题目, 使用 map 更新属性, 结构体会导致零值未更新, 对字段值的具体要求应当交给上层实现
 func UpdateChallenge(tx *gorm.DB, id string, updateData map[string]interface{}) (bool, string) {
-	res := tx.Model(model.Challenge{}).Where("id = ?", id).
-		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to update Challenge: %v", res.Error)
-		return false, "UpdateChallengeError"
+	for {
+		var challenge model.Challenge
+		res := tx.Model(&model.Challenge{}).Where("id = ?", id).Find(&challenge).Limit(1)
+		if res.RowsAffected != 1 {
+			return false, "ChallengeNotFound"
+		}
+		res = tx.Model(&challenge).Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
+		if res.Error != nil {
+			log.Logger.Warningf("Failed to update Challenge: %v", res.Error)
+			return false, "UpdateChallengeError"
+		}
+		if res.RowsAffected == 0 {
+			log.Logger.Debug("Failed to update challenge due to optimistic lock")
+			continue
+		}
+		break
 	}
 	return true, "Success"
 }
 
 // DeleteChallenge 删除题目
 func DeleteChallenge(tx *gorm.DB, id string) (bool, string) {
-	res := tx.Model(model.Challenge{}).Where("id = ?", id).Delete(&model.Challenge{})
+	res := tx.Model(&model.Challenge{}).Where("id = ?", id).Delete(&model.Challenge{})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete Challenge: %v", res.Error)
 		return false, "DeleteChallengeError"

@@ -34,7 +34,7 @@ func CreateDocker(tx *gorm.DB, flag model.Flag, challenge model.Challenge, creat
 	}
 	docker.IP = ip
 	docker.Port = port
-	res := tx.Model(model.Docker{}).Create(&docker)
+	res := tx.Model(&model.Docker{}).Create(&docker)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to create Docker: %s", res.Error)
 		return model.Docker{}, false, "CreateDockerError"
@@ -45,7 +45,7 @@ func CreateDocker(tx *gorm.DB, flag model.Flag, challenge model.Challenge, creat
 // GetDockers 获取所有 Docker
 func GetDockers(tx *gorm.DB, deleted bool) ([]model.Docker, bool, string) {
 	var dockers []model.Docker
-	res := tx.Model(model.Docker{})
+	res := tx.Model(&model.Docker{})
 	if deleted {
 		res = res.Unscoped()
 	}
@@ -60,7 +60,7 @@ func GetDockers(tx *gorm.DB, deleted bool) ([]model.Docker, bool, string) {
 // GetDockerByID 根据 ID 获取 Docker
 func GetDockerByID(tx *gorm.DB, id uint, deleted bool) (model.Docker, bool, string) {
 	var docker model.Docker
-	res := tx.Model(model.Docker{}).Where("id = ?", id)
+	res := tx.Model(&model.Docker{}).Where("id = ?", id)
 	if deleted {
 		res = res.Unscoped()
 	}
@@ -73,7 +73,7 @@ func GetDockerByID(tx *gorm.DB, id uint, deleted bool) (model.Docker, bool, stri
 
 func GetDockerByPodName(tx *gorm.DB, podName string) (model.Docker, bool, string) {
 	var docker model.Docker
-	res := tx.Model(model.Docker{}).Where("pod = ?", podName).Find(&docker).Limit(1)
+	res := tx.Model(&model.Docker{}).Where("pod = ?", podName).Find(&docker).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.Docker{}, false, "DockerNotFound"
 	}
@@ -87,7 +87,7 @@ func GetDockerByTeamID(tx *gorm.DB, teamID uint, limit, offset int, deleted bool
 	if offset <= 0 {
 		offset = -1
 	}
-	res := tx.Model(model.Docker{}).Where("team_id = ?", teamID)
+	res := tx.Model(&model.Docker{}).Where("team_id = ?", teamID)
 	if deleted {
 		res = res.Unscoped()
 	}
@@ -109,7 +109,7 @@ func GetDockerByTeamID(tx *gorm.DB, teamID uint, limit, offset int, deleted bool
 // GetDockerBy3ID 根据 contestID, teamID, challengeID 获取 Docker
 func GetDockerBy3ID(tx *gorm.DB, contestID, teamID uint, challengeID string) (model.Docker, bool, string) {
 	var docker model.Docker
-	res := tx.Model(model.Docker{}).
+	res := tx.Model(&model.Docker{}).
 		Where("contest_id = ? AND team_id = ? AND challenge_id = ?", contestID, teamID, challengeID).Find(&docker).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.Docker{}, false, "DockerNotFound"
@@ -128,7 +128,7 @@ func DeleteDocker(tx *gorm.DB, docker model.Docker) (bool, string) {
 	if ok, msg = UpdateDocker(tx, docker.ID, map[string]interface{}{"duration": time.Now().Sub(docker.Start)}); !ok {
 		return false, msg
 	}
-	res := tx.Model(model.Docker{}).
+	res := tx.Model(&model.Docker{}).
 		Where("id = ?", docker.ID).Delete(&model.Docker{})
 	if res.Error != nil {
 		return false, "DeleteDockerError"
@@ -138,11 +138,22 @@ func DeleteDocker(tx *gorm.DB, docker model.Docker) (bool, string) {
 
 // UpdateDocker 更新 Docker, 使用 map 更新属性, 结构体会导致零值未更新, 对字段值的具体要求应当交给上层实现
 func UpdateDocker(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool, string) {
-	res := tx.Model(model.Docker{}).Where("id = ?", id).
-		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to update Docker: %v", res.Error)
-		return false, "UpdateDockerError"
+	for {
+		var docker model.Docker
+		res := tx.Model(&model.Docker{}).Where("id = ?", id).Find(&docker).Limit(1)
+		if res.RowsAffected != 1 {
+			return false, "DockerNotFound"
+		}
+		res = tx.Model(&docker).Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
+		if res.Error != nil {
+			log.Logger.Warningf("Failed to update Docker: %v", res.Error)
+			return false, "UpdateDockerError"
+		}
+		if res.RowsAffected == 0 {
+			log.Logger.Debug("Failed to update docker due to optimistic lock")
+			continue
+		}
+		break
 	}
 	return true, "Success"
 }

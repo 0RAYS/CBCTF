@@ -67,11 +67,22 @@ func DeleteContest(tx *gorm.DB, contest model.Contest) (bool, string) {
 
 // UpdateContest 使用 map 更新属性, 结构体会导致零值未更新, 对字段值的具体要求应当交给上层实现
 func UpdateContest(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool, string) {
-	res := tx.Model(&model.Contest{}).Where("id = ?", id).
-		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to update contest: %v", res.Error)
-		return false, "UpdateContestError"
+	for {
+		var contest model.Contest
+		res := tx.Model(&model.Contest{}).Where("id = ?", id).Find(&contest).Limit(1)
+		if res.RowsAffected != 1 {
+			return false, "ContestNotFound"
+		}
+		res = tx.Model(&contest).Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
+		if res.Error != nil {
+			log.Logger.Warningf("Failed to update contest: %v", res.Error)
+			return false, "UpdateContestError"
+		}
+		if res.RowsAffected == 0 {
+			log.Logger.Debug("Failed to update contest due to optimistic lock")
+			continue
+		}
+		break
 	}
 	return true, "Success"
 }

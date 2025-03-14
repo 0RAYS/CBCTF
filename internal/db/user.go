@@ -80,11 +80,22 @@ func DeleteUser(tx *gorm.DB, id uint) (bool, string) {
 
 // UpdateUser 更新用户, 使用 map 更新属性, 结构体会导致零值未更新, 对字段值的具体要求应当交给上层实现
 func UpdateUser(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool, string) {
-	res := tx.Model(&model.User{}).Where("id = ?", id).
-		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to update user: %s", res.Error)
-		return false, "UpdateUserError"
+	for {
+		var user model.User
+		res := tx.Model(&model.User{}).Where("id = ?", id).Find(&user).Limit(1)
+		if res.RowsAffected != 1 {
+			return false, "UserNotFound"
+		}
+		res = tx.Model(&user).Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
+		if res.Error != nil {
+			log.Logger.Warningf("Failed to update user: %v", res.Error)
+			return false, "UpdateUserError"
+		}
+		if res.RowsAffected == 0 {
+			log.Logger.Debug("Failed to update user due to optimistic lock")
+			continue
+		}
+		break
 	}
 	return true, "Success"
 }

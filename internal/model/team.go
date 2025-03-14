@@ -7,27 +7,29 @@ import (
 	"encoding/json"
 	"fmt"
 	"gorm.io/gorm"
+	"gorm.io/plugin/optimisticlock"
 	"strings"
 	"time"
 )
 
 type Team struct {
-	ID        uint           `gorm:"primarykey" json:"id"`
-	Name      string         `gorm:"index:idx_name_contest_id_deleted,unique;not null" json:"name"`
-	ContestID uint           `gorm:"index:idx_name_contest_id_deleted,unique;not null" json:"contest_id"`
-	Desc      string         `json:"desc"`
-	Captcha   string         `json:"-"`
-	Avatar    string         `json:"avatar"`
-	Score     float64        `json:"score" gorm:"default:0"`
-	Last      time.Time      `json:"last"`
-	Banned    bool           `gorm:"default:false" json:"banned"`
-	Hidden    bool           `gorm:"default:false" json:"hidden"`
-	CaptainID uint           `json:"captain_id"`
-	Rank      int            `json:"rank" gorm:"default:-1"`
-	Users     []*User        `gorm:"many2many:user_teams;" json:"-"`
-	CreatedAt time.Time      `json:"-"`
-	UpdatedAt time.Time      `json:"-"`
-	DeletedAt gorm.DeletedAt `gorm:"index;index:idx_name_contest_id_deleted,unique" json:"-"`
+	ID        uint                   `gorm:"primarykey" json:"id"`
+	Name      string                 `gorm:"index:idx_name_contest_id_deleted,unique;not null" json:"name"`
+	ContestID uint                   `gorm:"index:idx_name_contest_id_deleted,unique;not null" json:"contest_id"`
+	Desc      string                 `json:"desc"`
+	Captcha   string                 `json:"-"`
+	Avatar    string                 `json:"avatar"`
+	Score     float64                `json:"score" gorm:"default:0"`
+	Last      time.Time              `json:"last"`
+	Banned    bool                   `gorm:"default:false" json:"banned"`
+	Hidden    bool                   `gorm:"default:false" json:"hidden"`
+	CaptainID uint                   `json:"captain_id"`
+	Rank      int                    `json:"rank" gorm:"default:-1"`
+	Users     []*User                `gorm:"many2many:user_teams;" json:"-"`
+	CreatedAt time.Time              `json:"-"`
+	UpdatedAt time.Time              `json:"-"`
+	DeletedAt gorm.DeletedAt         `gorm:"index;index:idx_name_contest_id_deleted,unique" json:"-"`
+	Version   optimisticlock.Version `json:"-"`
 }
 
 func (t *Team) MarshalJSON() ([]byte, error) {
