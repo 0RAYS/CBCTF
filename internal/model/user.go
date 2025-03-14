@@ -16,7 +16,7 @@ type User struct {
 	Name      string         `gorm:"index:idx_name_deleted,unique;not null" json:"name"`
 	Password  string         `gorm:"not null" json:"-"`
 	Email     string         `gorm:"index:idx_email_deleted,unique;not null" json:"email"`
-	Country   string         `gorm:"default:'cn'" json:"country"`
+	Country   string         `gorm:"default:'CN'" json:"country"`
 	Avatar    string         `json:"avatar"`
 	Desc      string         `json:"desc"`
 	Verified  bool           `gorm:"default:false" json:"verified"`
