@@ -30,7 +30,7 @@ func GetTraffics(ctx *gin.Context) {
 		return
 	}
 	docker := middleware.GetContainer(ctx)
-	traffics, count, ok, msg := db.GetTrafficByDocker(db.DB.WithContext(ctx), docker.ID, form.Limit, form.Offset)
+	traffics, count, ok, msg := db.GetTrafficByColumn(db.DB.WithContext(ctx), "docker_id", docker.ID, form.Limit, form.Offset)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

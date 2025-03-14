@@ -59,7 +59,7 @@ func GetTeamByID(tx *gorm.DB, id uint, preloadL ...bool) (model.Team, bool, stri
 	return team, true, "Success"
 }
 
-// GetTeamByName 根据名称获取 model.Team, name 用户可控, 不进行缓存
+// GetTeamByName 根据名称获取 model.Team
 func GetTeamByName(tx *gorm.DB, name string, contestID uint, preloadL ...bool) (model.Team, bool, string) {
 	preload := true
 	nest := false
@@ -84,7 +84,7 @@ func GetTeamByName(tx *gorm.DB, name string, contestID uint, preloadL ...bool) (
 	return team, true, "Success"
 }
 
-// GetTeamByUserID 根据 UserID 获取 model.Team, 结果等同于 GetTeam preload = true, nest = false
+// GetTeamByUserID 根据 userID 获取 model.Team, 结果等同于 GetTeamByID GetTeamByName preload = true, nest = false
 func GetTeamByUserID(tx *gorm.DB, userID uint, contestID uint) (model.Team, bool, string) {
 	user, ok, msg := GetUserByID(tx, userID, true, true)
 	if !ok {
@@ -98,7 +98,7 @@ func GetTeamByUserID(tx *gorm.DB, userID uint, contestID uint) (model.Team, bool
 	return model.Team{}, false, "UserNotInTeam"
 }
 
-// DeleteTeam 删除 model.Team, 同时删除与 model.User, model.Contest 的关联
+// DeleteTeam 删除 model.Team
 func DeleteTeam(tx *gorm.DB, team model.Team) (bool, string) {
 	contest, ok, msg := GetContestByID(tx, team.ContestID)
 	if !ok {
@@ -116,6 +116,7 @@ func DeleteTeam(tx *gorm.DB, team model.Team) (bool, string) {
 
 		return false, "DeleteTeamError"
 	}
+	// 清理其他
 	if !ClearByID(tx, "team_id", team.ID) {
 		return false, "DeleteAssociatedDataError"
 	}
@@ -182,10 +183,10 @@ func LeaveTeam(tx *gorm.DB, user model.User, team model.Team, contest model.Cont
 	if team.CaptainID == user.ID {
 		return false, "CaptainCannotLeave"
 	}
-	// 队伍人数为 1 时一定是队长, 无法到达这个代码, 暂且保留; 退出后队伍人数为0, 删除队伍;
-	if len(team.Users) == 1 {
-		DeleteTeam(tx, team)
-	}
+	// 队伍人数为 1 时一定是队长, 无法到达这个代码; 退出后队伍人数为0, 删除队伍;
+	//if len(team.Users) == 1 {
+	//	DeleteTeam(tx, team)
+	//}
 	if err := DeleteUserFromTeam(tx, user, team); err != nil {
 		log.Logger.Warningf("Failed to delete user_team: %s", err)
 		return false, "DeleteUserFromTeamError"

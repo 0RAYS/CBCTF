@@ -32,7 +32,7 @@ func CreateUsage(tx *gorm.DB, form form.CreateUsageForm, contestID uint) ([]mode
 	return usages, true, "Success"
 }
 
-// GetUsageByContestID 获取引用
+// GetUsageByContestID 获取比赛引用的所有题目 []model.Usage
 func GetUsageByContestID(tx *gorm.DB, contestID uint, all bool) ([]model.Usage, bool, string) {
 	var usages []model.Usage
 	res := tx.Model(&model.Usage{})
@@ -48,7 +48,7 @@ func GetUsageByContestID(tx *gorm.DB, contestID uint, all bool) ([]model.Usage, 
 	return usages, true, "Success"
 }
 
-// GetUsageByChallengeID 获取引用
+// GetUsageByChallengeID 获取题目所有的被引用
 func GetUsageByChallengeID(tx *gorm.DB, challengeID string) ([]model.Usage, bool, string) {
 	var usages []model.Usage
 	res := tx.Model(&model.Usage{}).Where("challenge_id = ?", challengeID).Find(&usages)
@@ -107,6 +107,7 @@ func UpdateUsage(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool,
 	return true, "Success"
 }
 
+// Solve flag 正确后调用, 计算 solvers last current_score 并更新, 同时更新 model.Team
 func Solve(tx *gorm.DB, id, teamID uint, blood bool) (bool, string) {
 	var usage model.Usage
 	var team model.Team

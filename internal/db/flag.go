@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// InitFlag is a function to generate team flag
+// InitFlag 生成对应 model.Team 的 model.Flag, 考虑题目类型
 func InitFlag(tx *gorm.DB, contest model.Contest, team model.Team, challenge model.Challenge) (model.Flag, bool, string) {
 	var (
 		flag model.Flag
@@ -40,7 +40,7 @@ func InitFlag(tx *gorm.DB, contest model.Contest, team model.Team, challenge mod
 	return flag, ok, msg
 }
 
-// RecordFlag is a function to create a new flag
+// RecordFlag 记录 model.Flag
 func RecordFlag(tx *gorm.DB, contestID, teamID uint, challengeID, value string) (model.Flag, bool, string) {
 	var (
 		flag model.Flag
@@ -64,7 +64,7 @@ func RecordFlag(tx *gorm.DB, contestID, teamID uint, challengeID, value string) 
 	return flag, true, "Success"
 }
 
-// GetFlagBy3ID is a function to get flag
+// GetFlagBy3ID 根据 contestID, teamID, challengeID 获取 model.Flag, 实际上依据 teamID 和 challengeID 即可获取唯一 model.Flag
 func GetFlagBy3ID(tx *gorm.DB, contestID, teamID uint, challengeID string) (model.Flag, bool, string) {
 	var flag model.Flag
 	res := tx.Model(&model.Flag{}).
@@ -75,7 +75,7 @@ func GetFlagBy3ID(tx *gorm.DB, contestID, teamID uint, challengeID string) (mode
 	return flag, true, "Success"
 }
 
-// UpdateFlag is a function to update flag
+// UpdateFlag 更新 model.Flag 值, 固定只更新 value 字段
 func UpdateFlag(tx *gorm.DB, contestID, teamID uint, challengeID, value string) (bool, string) {
 	var count int
 	for {
@@ -103,7 +103,7 @@ func UpdateFlag(tx *gorm.DB, contestID, teamID uint, challengeID, value string) 
 	return true, "Success"
 }
 
-// VerifyFlag is a function to verify flag
+// VerifyFlag 验证 flag 是否正确
 func VerifyFlag(tx *gorm.DB, contestID, teamID uint, challengeID, value string) bool {
 	flag, ok, _ := GetFlagBy3ID(tx, contestID, teamID, challengeID)
 	if !ok {
