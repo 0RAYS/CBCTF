@@ -22,7 +22,6 @@ func UpdateGlobalRanking(c *cron.Cron) {
 			}
 			go db.UpdateTeamRanking(db.DB, contest.ID)
 		}
-		log.Logger.Infof("Updated global ranking")
 		go db.UpdateUserRanking(db.DB)
 	}
 	function()
@@ -56,7 +55,6 @@ func UpdateTeamRank(c *cron.Cron) {
 				tx.Commit()
 			}
 		}
-		log.Logger.Infof("Updated team ranking")
 	}
 	function()
 	c.Schedule(cron.Every(5*time.Minute), cron.FuncJob(function))
