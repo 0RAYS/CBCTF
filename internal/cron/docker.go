@@ -12,6 +12,7 @@ import (
 // CloseDockers 关闭并删除超时 dockers
 func CloseDockers(c *cron.Cron) {
 	function := func() {
+		log.Logger.Info("Close timeout dockers")
 		dockers, ok, msg := db.GetDockers(db.DB, false)
 		if !ok {
 			log.Logger.Warningf("Failed to get dockers %s", msg)
@@ -37,6 +38,7 @@ func CloseDockers(c *cron.Cron) {
 // CloseUnCtrlDockers 移除意外超时的 pod
 func CloseUnCtrlDockers(c *cron.Cron) {
 	function := func() {
+		log.Logger.Info("Close timeout pods")
 		pods, ok, msg := k8s.GetPods()
 		if !ok {
 			log.Logger.Warningf("Failed to get pods %s", msg)
