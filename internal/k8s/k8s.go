@@ -133,6 +133,7 @@ func initResources() {
 
 // checkPermission checks if the user has permission to access the resources
 func checkPermission() bool {
+	log.Logger.Debugf("Checking permission in namespace %s", NamespaceName)
 	verbs := []string{"get", "list", "create", "update", "delete"}
 	resourceAttributes := &authorizationv1.ResourceAttributes{
 		Namespace: NamespaceName,
