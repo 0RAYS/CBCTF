@@ -52,7 +52,7 @@ func GetTeamRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Tea
 
 func UpdateUserRanking(tx *gorm.DB) (bool, string) {
 	var users []model.User
-	res := tx.Model(&model.User{}).Where("banned = ?", false).Find(&users).
+	res := tx.Model(&model.User{}).Where("banned = ?", false).
 		Order("score DESC, solved DESC").Find(&users)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get users: %v", res.Error)
