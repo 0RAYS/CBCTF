@@ -36,6 +36,7 @@ type Contest struct {
 	Version   optimisticlock.Version `json:"-" gorm:"default:1"`
 }
 
+// MarshalJSON 重写 MarshalJSON 方法, 使 Avatar 返回完整的 URL, 转换 Teams Users Notices 为数量, 以及将 Duration 转换为秒
 func (c *Contest) MarshalJSON() ([]byte, error) {
 	type Tmp Contest // 定义一个别名以避免递归调用
 	return json.Marshal(&struct {

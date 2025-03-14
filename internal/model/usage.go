@@ -45,6 +45,7 @@ type Usage struct {
 	Version        optimisticlock.Version `json:"-" gorm:"default:1"`
 }
 
+// CalcScore 依据 Solver ScoreType 计算当前分数
 func (u *Usage) CalcScore(solvers int64) float64 {
 	var calc float64 = 0
 	switch u.ScoreType {

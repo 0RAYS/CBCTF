@@ -24,6 +24,7 @@ type Admin struct {
 	Version   optimisticlock.Version `json:"-" gorm:"default:1"`
 }
 
+// MarshalJSON 重写 MarshalJSON 方法, 使其返回完整的 URL
 func (a *Admin) MarshalJSON() ([]byte, error) {
 	type Tmp Admin
 	return json.Marshal(&struct {
