@@ -16,7 +16,7 @@ type Notice struct {
 	CreatedAt time.Time              `json:"created"`
 	UpdatedAt time.Time              `json:"updated"`
 	DeletedAt gorm.DeletedAt         `json:"-" gorm:"index"`
-	Version   optimisticlock.Version `json:"-"`
+	Version   optimisticlock.Version `json:"-" gorm:"default:1"`
 }
 
 func InitNotice(contestID uint, form f.CreateNoticeForm, creatorID uint) Notice {

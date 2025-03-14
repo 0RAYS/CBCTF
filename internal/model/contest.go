@@ -33,7 +33,7 @@ type Contest struct {
 	CreatedAt time.Time              `json:"-"`
 	UpdatedAt time.Time              `json:"-"`
 	DeletedAt gorm.DeletedAt         `gorm:"index;index:idx_name_deleted,unique;" json:"-"`
-	Version   optimisticlock.Version `json:"-"`
+	Version   optimisticlock.Version `json:"-" gorm:"default:1"`
 }
 
 func (c *Contest) MarshalJSON() ([]byte, error) {
