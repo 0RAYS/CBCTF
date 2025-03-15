@@ -120,27 +120,8 @@ func CalcTeamScore(tx *gorm.DB, contestID, teamID uint) (float64, bool, string) 
 		if usage.Hidden {
 			continue
 		}
-		rate := 0.0
-		for {
-			if usage.First == teamID {
-				rate = 0.05
-				break
-			}
-			if usage.Second == teamID {
-				rate = 0.03
-				break
-			}
-			if usage.Third == teamID {
-				rate = 0.01
-				break
-			}
-			break
-		}
-		if rate > 0 {
-			score += usage.Score * (1 + rate)
-		} else {
-			score += usage.CurrentScore
-		}
+		rate, _ := usage.CalcBlood(teamID)
+		score += usage.CurrentScore + usage.Score*rate
 	}
 	return score, true, "Success"
 }

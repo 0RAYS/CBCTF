@@ -64,6 +64,24 @@ func (u *Usage) CalcScore(solvers int64) float64 {
 	return calc
 }
 
+func (u *Usage) CalcBlood(teamID uint) (float64, string) {
+	mapping := []struct {
+		value float64
+		name  string
+		id    uint
+	}{
+		{0.05, "first", u.First},
+		{0.03, "second", u.Second},
+		{0.01, "third", u.Third},
+	}
+	for _, m := range mapping {
+		if m.id == 0 || m.id == teamID {
+			return m.value, m.name
+		}
+	}
+	return 0, ""
+}
+
 func InitUsage(challenge Challenge, contestID uint) Usage {
 	return Usage{
 		ContestID:      contestID,
