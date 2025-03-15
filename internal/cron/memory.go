@@ -33,6 +33,5 @@ func ClearUsageMutex(c *cron.Cron) {
 			return true
 		})
 	}
-	function()
 	c.Schedule(cron.Every(10*time.Minute), cron.FuncJob(function))
 }
