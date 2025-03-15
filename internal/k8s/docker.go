@@ -29,46 +29,6 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 		return "", -1, false, "EmptyDockerImage"
 	}
 	log.Logger.Debugf("Creating pod for challenge %s:%s", challenge.Name, challenge.ID)
-	pod := &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      docker.PodName,
-			Namespace: NamespaceName,
-			Labels: map[string]string{
-				"app": docker.PodName,
-			},
-		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{
-				{
-					Name:  docker.ContainerName,
-					Image: challenge.DockerImage,
-					Env: []corev1.EnvVar{
-						{
-							Name:  "FLAG",
-							Value: flag.Value,
-						},
-					},
-					Ports: []corev1.ContainerPort{
-						{
-							ContainerPort: challenge.Port,
-						},
-					},
-				},
-				{
-					Name:    "tcpdump",
-					Image:   config.Env.K8S.TCPDumpImage,
-					Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/traffic.pcap"},
-				},
-			},
-			TerminationGracePeriodSeconds: ptr.To[int64](3),
-			RestartPolicy:                 corev1.RestartPolicyNever,
-		},
-	}
-	pod, err = Client.CoreV1().Pods(NamespaceName).Create(ctx, pod, metav1.CreateOptions{})
-	if err != nil {
-		log.Logger.Warningf("Failed to create pod: %v", err)
-		return "", -1, false, "CreatePodError"
-	}
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      docker.ServiceName,
@@ -94,6 +54,95 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 	if err != nil {
 		log.Logger.Warningf("Error creating service: %s", err)
 		return "", -1, false, "CreateServiceError"
+	}
+	port := service.Spec.Ports[0].NodePort
+	pod := &corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      docker.PodName,
+			Namespace: NamespaceName,
+			Labels: map[string]string{
+				"app": docker.PodName,
+			},
+		},
+		Spec: corev1.PodSpec{
+			Containers: func() []corev1.Container {
+				containers := []corev1.Container{
+					{
+						Name:  docker.ContainerName,
+						Image: challenge.DockerImage,
+						Env: []corev1.EnvVar{
+							{
+								Name:  "FLAG",
+								Value: flag.Value,
+							},
+						},
+						Ports: []corev1.ContainerPort{
+							{
+								ContainerPort: challenge.Port,
+							},
+						},
+					},
+					{
+						Name:    "tcpdump",
+						Image:   config.Env.K8S.TCPDumpImage,
+						Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/traffic.pcap"},
+					},
+				}
+
+				if config.Env.K8S.Frpc.On {
+					rand.New(rand.NewSource(time.Now().UnixNano()))
+					frps := config.Env.K8S.Frpc.Frps[rand.Intn(len(config.Env.K8S.Frpc.Frps))]
+					frpc := corev1.Container{
+						Name:  "frpc",
+						Image: config.Env.K8S.Frpc.Image,
+						Env: []corev1.EnvVar{
+							{
+								Name:  "serverAddr",
+								Value: frps.Host,
+							},
+							{
+								Name:  "serverPort",
+								Value: strconv.Itoa(frps.Port),
+							},
+							{
+								Name:  "token",
+								Value: frps.Token,
+							},
+							{
+								Name:  "name",
+								Value: docker.PodName,
+							},
+							{
+								Name:  "type",
+								Value: "tcp",
+							},
+							{
+								Name:  "localIP",
+								Value: "127.0.0.1",
+							},
+							{
+								Name:  "localPort",
+								Value: string(challenge.Port),
+							},
+							{
+								Name:  "remotePort",
+								Value: string(port),
+							},
+						},
+					}
+					containers = append(containers, frpc)
+					log.Logger.Infof("Frpc started: %s:%d -> %s:%d", frps.Host, port, docker.PodName, port)
+				}
+				return containers
+			}(),
+			TerminationGracePeriodSeconds: ptr.To[int64](3),
+			RestartPolicy:                 corev1.RestartPolicyNever,
+		},
+	}
+	pod, err = Client.CoreV1().Pods(NamespaceName).Create(ctx, pod, metav1.CreateOptions{})
+	if err != nil {
+		log.Logger.Warningf("Failed to create pod: %v", err)
+		return "", -1, false, "CreatePodError"
 	}
 	for {
 		pod, ok, _ = GetPod(pod.Name)
@@ -123,58 +172,6 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 			ip = address.Address
 			break
 		}
-	}
-	port := service.Spec.Ports[0].NodePort
-
-	if config.Env.K8S.Frpc.On {
-		rand.New(rand.NewSource(time.Now().UnixNano()))
-		frps := config.Env.K8S.Frpc.Frps[rand.Intn(len(config.Env.K8S.Frpc.Frps))]
-		frpc := corev1.Container{
-			Name:  "frpc",
-			Image: config.Env.K8S.Frpc.Image,
-			Env: []corev1.EnvVar{
-				{
-					Name:  "serverAddr",
-					Value: frps.Host,
-				},
-				{
-					Name:  "serverPort",
-					Value: strconv.Itoa(frps.Port),
-				},
-				{
-					Name:  "token",
-					Value: frps.Token,
-				},
-				{
-					Name:  "name",
-					Value: docker.PodName,
-				},
-				{
-					Name:  "type",
-					Value: "tcp",
-				},
-				{
-					Name:  "localIP",
-					Value: "127.0.0.1",
-				},
-				{
-					Name:  "localPort",
-					Value: string(challenge.Port),
-				},
-				{
-					Name:  "remotePort",
-					Value: string(port),
-				},
-			},
-		}
-		pod.Spec.Containers = append(pod.Spec.Containers, frpc)
-		pod, err = Client.CoreV1().Pods(NamespaceName).Update(ctx, pod, metav1.UpdateOptions{})
-		if err != nil {
-			log.Logger.Warningf("Failed to append frpc container: %v", err)
-			return "", -1, false, "UpdatePodError"
-		}
-		log.Logger.Infof("Frpc started: %s:%d -> %s:%d", frps.Host, port, ip, port)
-		ip = frps.Host
 	}
 	log.Logger.Infof("Pod %s:%s is running on %s:%d", challenge.Name, pod.Name, ip, port)
 	return ip, port, true, "Success"
