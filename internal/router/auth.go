@@ -30,17 +30,16 @@ func Register(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	if token, err := utils.Generate(user.ID, user.Name, "user", middleware.GetMagic(ctx)); err == nil {
-		log.Logger.Infof("%s | %s:%d register", trace, user.Name, user.ID)
-		ctx.Writer.Header().Set("Authorization", "Bearer "+token)
-		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": &user})
-		return
-	} else {
-		msg = "UnknownError"
+	token, err := utils.Generate(user.ID, user.Name, "user", middleware.GetMagic(ctx))
+	if err != nil {
 		log.Logger.Warningf("%s | Generate token error: %s", trace, err)
-		ctx.JSONP(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
+		ctx.JSONP(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
 		return
 	}
+	log.Logger.Infof("%s | %s:%d register", trace, user.Name, user.ID)
+	ctx.Writer.Header().Set("Authorization", "Bearer "+token)
+	ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": &user})
+	return
 }
 
 func Login(ctx *gin.Context) {
