@@ -130,6 +130,7 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 								Value: string(port),
 							},
 						},
+						Command: []string{"/bin/sh", "-c", "sleep infinity"},
 					}
 					containers = append(containers, frpc)
 					ip = frps.Host
