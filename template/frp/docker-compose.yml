@@ -1,0 +1,14 @@
+services:
+  frpc:
+    image: docker.0rays.club/test/frpc:0.61.2
+    container_name: frpc
+    restart: unless-stopped
+    environment:
+      - serverAddr=127.0.0.1
+      - serverPort=7000
+      - token=test_token
+      - name=my-tcp-proxy
+      - type=tcp
+      - localIP=127.0.0.1
+      - localPort=8080
+      - remotePort=30000
