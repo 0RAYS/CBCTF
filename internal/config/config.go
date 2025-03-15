@@ -20,6 +20,12 @@ type Sender struct {
 	Password string `json:"password" secret:"true"`
 }
 
+type Frps struct {
+	Host  string `json:"host"`
+	Port  int    `json:"port"`
+	Token string `json:"token"`
+}
+
 type Config struct {
 	Log struct {
 		Level string `mapstructure:"level" json:"level"` // 日志级别：DEBUG, INFO, WARNING, ERROR
@@ -36,7 +42,7 @@ type Config struct {
 		} `mapstructure:"upload" json:"upload"`
 		Proxies []string `mapstructure:"proxies" json:"proxies"` // 信任的代理服务器
 		Magic   struct {
-			Whitelist []string `mapstructure:"whitelist" json:"whitelist"`
+			Whitelist []string `mapstructure:"whitelist" json:"whitelist"` // 不获取浏览器指纹的路径白名单
 		} `mapstructure:"magic" json:"magic"`
 	} `mapstructure:"gin" json:"gin"`
 
@@ -44,7 +50,7 @@ type Config struct {
 		MySQL struct {
 			Host         string `mapstructure:"host" json:"host"`             // 数据库地址
 			Port         int    `mapstructure:"port" json:"port"`             // 数据库端口
-			User         string `mapstructure:"user" json:"user"`             //
+			User         string `mapstructure:"user" json:"user"`             // 数据库用户名
 			Pwd          string `mapstructure:"pwd" json:"pwd" secret:"true"` // 数据库密码
 			DB           string `mapstructure:"db" json:"db"`                 // 数据库名称
 			MaxOpenConns int    `mapstructure:"mxopen" json:"mxopen"`         // 最大连接数
@@ -62,11 +68,16 @@ type Config struct {
 	} `mapstructure:"redis" json:"redis"`
 
 	K8S struct {
-		Config       string   `mapstructure:"config" json:"config"`       // Kubernetes 配置文件路径
-		Master       string   `mapstructure:"master" json:"master"`       // Kubernetes Master 地址
-		Namespace    string   `mapstructure:"namespace" json:"namespace"` // Kubernetes 命名空间
-		TCPDumpImage string   `mapstructure:"tcpdump" json:"tcpdump"`     // TCPDump 镜像
-		Nodes        []string `mapstructure:"nodes" json:"nodes"`         // Kubernetes 节点列表
+		Config       string `mapstructure:"config" json:"config"`       // Kubernetes 配置文件路径
+		Master       string `mapstructure:"master" json:"master"`       // Kubernetes Master 地址
+		Namespace    string `mapstructure:"namespace" json:"namespace"` // Kubernetes 命名空间
+		TCPDumpImage string `mapstructure:"tcpdump" json:"tcpdump"`     // TCPDump 镜像
+		Frpc         struct {
+			On    bool   `mapstructure:"on" json:"on"`       // 是否启用 Frpc
+			Image string `mapstructure:"image" json:"image"` // Frpc 镜像
+			Frps  []Frps `mapstructure:"frps" json:"frps"`   // Frps 服务器列表
+		} `mapstructure:"frpc" json:"frpc"`
+		Nodes []string `mapstructure:"nodes" json:"nodes"` // Kubernetes 节点列表
 	} `mapstructure:"k8s" json:"k8s"`
 
 	Email struct {
