@@ -7,11 +7,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"sync"
 )
-
-// SubmissionMutex 使用定时任务 cron.ClearUsageMutex 清理锁
-var SubmissionMutex sync.Map
 
 // CreateSubmission 记录 flag 提交记录
 func CreateSubmission(tx *gorm.DB, contest model.Contest, team model.Team, user model.User, usage model.Usage, value string) (model.Submission, bool, string) {
@@ -23,14 +19,9 @@ func CreateSubmission(tx *gorm.DB, contest model.Contest, team model.Team, user 
 	}
 	solved := VerifyFlag(tx, contest.ID, team.ID, usage.ChallengeID, value)
 	if solved {
-		// 正确时需要更新分数等信息, 加锁
-		mu, _ := SubmissionMutex.LoadOrStore(usage.ID, &sync.Mutex{})
-		mu.(*sync.Mutex).Lock()
-		if ok, msg := Solve(tx, usage.ID, team.ID, contest.Blood); !ok {
-			mu.(*sync.Mutex).Unlock()
+		if ok, msg := Solve(tx, usage, team, contest.Blood); !ok {
 			return model.Submission{}, false, msg
 		}
-		mu.(*sync.Mutex).Unlock()
 	}
 	team, ok, msg := GetTeamByID(tx, team.ID)
 	if !ok {

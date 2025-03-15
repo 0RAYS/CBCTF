@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/model"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"sync"
 	"time"
 )
 
@@ -107,21 +108,22 @@ func UpdateUsage(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool,
 	return true, "Success"
 }
 
+// SolvedMutex 使用定时任务 cron.ClearUsageMutex 清理锁
+var SolvedMutex sync.Map
+
 // Solve flag 正确后调用, 计算 solvers last current_score 并更新, 同时更新 model.Team
-func Solve(tx *gorm.DB, id, teamID uint, blood bool) (bool, string) {
-	var usage model.Usage
-	var team model.Team
+func Solve(tx *gorm.DB, usage model.Usage, team model.Team, blood bool) (bool, string) {
+	// 正确时需要更新分数等信息, 加锁
+	mu, _ := SolvedMutex.LoadOrStore(usage.ID, &sync.Mutex{})
+	mu.(*sync.Mutex).Lock()
+	defer mu.(*sync.Mutex).Unlock()
+
+	// 需要依据 model.Usage 的多个字段进行计算分数, 所以在加锁后重新获取数据对象, 不使用上下文中的对象
 	err := tx.Model(&model.Usage{}).Clauses(clause.Locking{Strength: "UPDATE"}).
-		Where("id = ?", id).Find(&usage).Limit(1).Error
+		Where("id = ?", usage.ID).Find(&usage).Limit(1).Error
 	if err != nil {
 		log.Logger.Warningf("Failed to get Usage: %s", err)
 		return false, "GetUsageError"
-	}
-	err = tx.Model(&model.Team{}).Clauses(clause.Locking{Strength: "UPDATE"}).
-		Where("id = ?", teamID).Find(&team).Limit(1).Error
-	if err != nil {
-		log.Logger.Warningf("Failed to get Team: %s", err)
-		return false, "GetTeamError"
 	}
 	currentScore := usage.CalcScore(usage.Solvers)
 	last := time.Now()
@@ -130,12 +132,12 @@ func Solve(tx *gorm.DB, id, teamID uint, blood bool) (bool, string) {
 		"last":          last,
 		"current_score": currentScore,
 	}
-	rate, rank := usage.CalcBlood(teamID)
+	rate, rank := usage.CalcBlood(team.ID)
 	if !blood {
 		rate = 0
 	}
-	data[rank] = teamID
-	score, ok, msg := CalcTeamScore(tx, team.ContestID, teamID)
+	data[rank] = team.ID
+	score, ok, msg := CalcTeamScore(tx, team.ContestID, team.ID)
 	if !ok {
 		return false, msg
 	}
@@ -146,7 +148,7 @@ func Solve(tx *gorm.DB, id, teamID uint, blood bool) (bool, string) {
 	if !ok {
 		return false, msg
 	}
-	return UpdateUsage(tx, id, data)
+	return UpdateUsage(tx, usage.ID, data)
 }
 
 // DeleteUsage 删除引用

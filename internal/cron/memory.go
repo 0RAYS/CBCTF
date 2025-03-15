@@ -8,24 +8,26 @@ import (
 	"time"
 )
 
-// ClearUsageMutex 定时任务清理flag提交锁 db.SubmissionMutex
+// ClearUsageMutex 定时任务清理flag提交锁 db.SolvedMutex
 func ClearUsageMutex(c *cron.Cron) {
 	function := func() {
 		log.Logger.Debug("Clear submission mutex")
 		var contests map[uint]model.Contest
-		db.SubmissionMutex.Range(func(k, v interface{}) bool {
+		db.SolvedMutex.Range(func(k, v interface{}) bool {
 			usage, ok, _ := db.GetUsageByID(db.DB, k.(uint))
 			if !ok {
+				db.SolvedMutex.Delete(k)
 				return true
 			}
 			if contest, ok := contests[usage.ContestID]; !ok {
 				contest, ok, _ = db.GetContestByID(db.DB, usage.ContestID)
 				if !ok {
+					db.SolvedMutex.Delete(k)
 					return true
 				}
 				contests[usage.ContestID] = contest
 				if !contest.IsRunning() {
-					db.SubmissionMutex.Delete(k)
+					db.SolvedMutex.Delete(k)
 				}
 			}
 			return true
