@@ -12,7 +12,7 @@ import (
 func ClearUsageMutex(c *cron.Cron) {
 	function := func() {
 		log.Logger.Debug("Clear submission mutex")
-		var contests map[uint]model.Contest
+		contests := make(map[uint]model.Contest)
 		db.SolvedMutex.Range(func(k, v interface{}) bool {
 			usage, ok, _ := db.GetUsageByID(db.DB, k.(uint))
 			if !ok {
