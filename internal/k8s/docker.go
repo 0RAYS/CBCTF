@@ -21,6 +21,7 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 	var (
 		err error
 		ok  bool
+		ip  string
 	)
 	if challenge.Type != model.Container {
 		return "", -1, false, "InvalidChallengeType"
@@ -131,6 +132,7 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 						},
 					}
 					containers = append(containers, frpc)
+					ip = frps.Host
 					log.Logger.Infof("Frpc started: %s:%d -> %s:%d", frps.Host, port, docker.PodName, port)
 				}
 				return containers
@@ -158,19 +160,20 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 			return "", -1, false, "CreatePodError"
 		}
 	}
-	node, ok, msg := GetNode(pod.Spec.NodeName)
-	if !ok {
-		return "", -1, false, msg
-	}
-	ip := ""
-	for _, address := range node.Status.Addresses {
-		if address.Type == corev1.NodeInternalIP && address.Address != "" {
-			ip = address.Address
-			continue
+	if !config.Env.K8S.Frpc.On {
+		node, ok, msg := GetNode(pod.Spec.NodeName)
+		if !ok {
+			return "", -1, false, msg
 		}
-		if address.Type == corev1.NodeExternalIP && address.Address != "" {
-			ip = address.Address
-			break
+		for _, address := range node.Status.Addresses {
+			if address.Type == corev1.NodeInternalIP && address.Address != "" {
+				ip = address.Address
+				continue
+			}
+			if address.Type == corev1.NodeExternalIP && address.Address != "" {
+				ip = address.Address
+				break
+			}
 		}
 	}
 	log.Logger.Infof("Pod %s:%s is running on %s:%d", challenge.Name, pod.Name, ip, port)
