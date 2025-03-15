@@ -123,14 +123,13 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 							},
 							{
 								Name:  "localPort",
-								Value: string(challenge.Port),
+								Value: strconv.Itoa(int(challenge.Port)),
 							},
 							{
 								Name:  "remotePort",
-								Value: string(port),
+								Value: strconv.Itoa(int(port)),
 							},
 						},
-						Command: []string{"/bin/sh", "-c", "sleep infinity"},
 					}
 					containers = append(containers, frpc)
 					ip = frps.Host
