@@ -53,6 +53,7 @@ func UpdateUserRanking(c *cron.Cron) {
 			ok          bool
 		)
 		log.Logger.Debug("Update user ranking")
+		// 嵌套预加载, 需要使用 model.User.Teams 字段
 		contests, _, ok, _ = db.GetContests(db.DB, -1, -1, false, true, true)
 		if !ok {
 			return
@@ -72,8 +73,17 @@ func UpdateUserRanking(c *cron.Cron) {
 					if submission.Solved {
 						usage, ok, _ := db.GetUsageBy2ID(db.DB, submission.ContestID, submission.ChallengeID)
 						if ok && !usage.Hidden {
+							rate := func() float64 {
+								for _, team := range user.Teams {
+									if team.ContestID == contest.ID {
+										rate, _ := usage.CalcBlood(team.ID)
+										return rate
+									}
+								}
+								return 0
+							}()
 							data["solved"] = data["solved"].(int) + 1
-							data["score"] = data["score"].(float64) + usage.Score
+							data["score"] = data["score"].(float64) + usage.CurrentScore + usage.Score*rate
 						}
 					}
 				}
