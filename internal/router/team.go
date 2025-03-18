@@ -79,7 +79,7 @@ func CreateTeam(ctx *gin.Context) {
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	if form.Captcha != contest.Captcha {
+	if contest.Captcha != "" && form.Captcha != contest.Captcha {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "CaptchaError", "data": nil})
 		return
 	}
