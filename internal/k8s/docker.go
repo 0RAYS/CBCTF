@@ -33,6 +33,10 @@ func StartContainer(usage model.Usage, flag model.Flag, docker model.Docker) (st
 	if !ok {
 		return "", -1, false, msg
 	}
+	_, ok, msg = CreateNetworkPolicy(ctx, docker, usage)
+	if !ok {
+		return "", -1, false, msg
+	}
 	port := service.Spec.Ports[0].NodePort
 	containers := []corev1.Container{
 		{
