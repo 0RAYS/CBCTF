@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
+	"context"
 	"github.com/robfig/cron/v3"
 	"strings"
 	"time"
@@ -39,7 +40,9 @@ func CloseDockers(c *cron.Cron) {
 func CloseUnCtrlDockers(c *cron.Cron) {
 	function := func() {
 		log.Logger.Debug("Close timeout pods")
-		pods, ok, msg := k8s.GetPods()
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+		pods, ok, msg := k8s.GetPods(ctx)
+		cancel()
 		if !ok {
 			log.Logger.Warningf("Failed to get pods %s", msg)
 			return
@@ -47,7 +50,9 @@ func CloseUnCtrlDockers(c *cron.Cron) {
 		for _, pod := range pods.Items {
 			if strings.Contains(pod.Name, "victim") && time.Now().Sub(pod.CreationTimestamp.Time) > 4*time.Hour {
 				if _, ok, _ := db.GetDockerByPodName(db.DB, pod.Name); !ok {
-					_, _ = k8s.DeletePod(pod.Name)
+					ctx, cancel = context.WithTimeout(context.Background(), 1*time.Minute)
+					_, _ = k8s.DeletePod(ctx, pod.Name)
+					cancel()
 				}
 			}
 		}

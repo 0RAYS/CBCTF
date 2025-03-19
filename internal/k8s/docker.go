@@ -28,7 +28,7 @@ func StartContainer(usage model.Usage, flag model.Flag, docker model.Docker) (st
 	if usage.DockerImage == "" {
 		return "", -1, false, "EmptyDockerImage"
 	}
-	log.Logger.Debugf("Creating pod for challenge %s:%s", usage.Name, usage.ChallengeID)
+	log.Logger.Debugf("Creating Pod for challenge %s:%s", usage.Name, usage.ChallengeID)
 	service, ok, msg = CreateService(ctx, docker, usage)
 	if !ok {
 		return "", -1, false, msg
@@ -106,7 +106,7 @@ func StartContainer(usage model.Usage, flag model.Flag, docker model.Docker) (st
 		return "", -1, false, msg
 	}
 	if !config.Env.K8S.Frpc.On {
-		node, ok, msg := GetNode(pod.Spec.NodeName)
+		node, ok, msg := GetNode(ctx, pod.Spec.NodeName)
 		if !ok {
 			return "", -1, false, msg
 		}
@@ -127,6 +127,8 @@ func StartContainer(usage model.Usage, flag model.Flag, docker model.Docker) (st
 
 // StopContainer 停止容器
 func StopContainer(docker model.Docker) (bool, string) {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	defer cancel()
 	var err error
 	err = CopyFromPod(
 		docker.PodName, "tcpdump", "/root/traffic.pcap",
@@ -135,8 +137,11 @@ func StopContainer(docker model.Docker) (bool, string) {
 	if err != nil {
 		log.Logger.Warningf("Failed to copy %d traffic: %v", docker.TeamID, err)
 	}
-	if ok, msg := DeleteService(docker.ServiceName); !ok {
+	if ok, msg := DeleteNetworkPolicy(ctx, docker.NetworkPolicyName); !ok {
 		return false, msg
 	}
-	return DeletePod(docker.PodName)
+	if ok, msg := DeleteService(ctx, docker.ServiceName); !ok {
+		return false, msg
+	}
+	return DeletePod(ctx, docker.PodName)
 }

@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 )
 
-// CopyToPod copies a file to a pod
+// CopyToPod copies a file to a Pod
 func CopyToPod(podName, containerName, src, dst string) error {
 	var buf bytes.Buffer
 	file, err := os.Open(src)
@@ -51,7 +51,7 @@ func CopyToPod(podName, containerName, src, dst string) error {
 	return nil
 }
 
-// CopyFromPod copies a file from a pod
+// CopyFromPod copies a file from a Pod
 func CopyFromPod(podName, containerName, src, dst string) error {
 	command := fmt.Sprintf("cat %s", src)
 	var buf bytes.Buffer

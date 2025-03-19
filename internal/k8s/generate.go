@@ -27,10 +27,10 @@ func StartGenerator(usage model.Usage) (*corev1.Pod, bool, string) {
 	if usage.GeneratorImage == "" {
 		return &corev1.Pod{}, false, "EmptyGeneratorImage"
 	}
-	log.Logger.Debugf("Creating pod for challenge %s:%s", usage.Name, usage.ChallengeID)
+	log.Logger.Debugf("Creating Pod for challenge %s:%s", usage.Name, usage.ChallengeID)
 	podName := fmt.Sprintf("generator-%s-pod", usage.ChallengeID)
 	// 如果已启动并健康运行, 直接返回
-	pod, ok, _ := GetPod(podName)
+	pod, ok, _ := GetPod(ctx, podName)
 	if ok && pod.Status.Phase == corev1.PodRunning {
 		log.Logger.Infof("Pod %s is already running", pod.Name)
 		return pod, true, "Success"
@@ -55,13 +55,13 @@ func StartGenerator(usage model.Usage) (*corev1.Pod, bool, string) {
 	}
 	pod, err = Client.CoreV1().Pods(NamespaceName).Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create pod: %v", err)
+		log.Logger.Warningf("Failed to create Pod: %v", err)
 		return &corev1.Pod{}, false, "CreatePodError"
 	}
 	for {
-		pod, ok, _ = GetPod(podName)
+		pod, ok, _ = GetPod(ctx, podName)
 		if !ok {
-			log.Logger.Warningf("Failed to get pod: %v", err)
+			log.Logger.Warningf("Failed to get Pod: %v", err)
 			return &corev1.Pod{}, false, "GetPodError"
 		}
 		if pod.Status.Phase == corev1.PodRunning {
@@ -99,7 +99,9 @@ func StartGenerator(usage model.Usage) (*corev1.Pod, bool, string) {
 func StopGenerator(usage model.Usage) (bool, string) {
 	log.Logger.Infof("Stopping generator for challenge %s-%s", usage.ChallengeID, usage.Name)
 	podName := fmt.Sprintf("generator-%s-pod", usage.ChallengeID)
-	return DeletePod(podName)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	defer cancel()
+	return DeletePod(ctx, podName)
 }
 
 // GenerateAttachment 附加容器命令, 生成附件

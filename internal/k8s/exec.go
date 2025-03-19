@@ -9,13 +9,13 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 )
 
-// ExecInPod executes a command in a pod
+// ExecInPod executes a command in a Pod
 func ExecInPod(pod, container, command string, stdin io.Reader, stdout *bytes.Buffer, stderr *bytes.Buffer) error {
 	cmd := []string{"sh", "-c", command}
 	return ExecInPodWithStream(pod, container, cmd, stdin, stdout, stderr)
 }
 
-// ExecInPodWithStream executes a command in a pod with stream
+// ExecInPodWithStream executes a command in a Pod with stream
 func ExecInPodWithStream(pod, container string, command []string, stdin io.Reader, stdout, stderr *bytes.Buffer) error {
 	req := Client.CoreV1().RESTClient().Post().
 		Resource("pods").
