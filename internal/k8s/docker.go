@@ -34,76 +34,73 @@ func StartContainer(usage model.Usage, flag model.Flag, docker model.Docker) (st
 		return "", -1, false, msg
 	}
 	port := service.Spec.Ports[0].NodePort
-	containers := func() []corev1.Container {
-		containers := []corev1.Container{
-			{
-				Name:  docker.ContainerName,
-				Image: usage.DockerImage,
-				Env: []corev1.EnvVar{
-					{
-						Name:  "FLAG",
-						Value: flag.Value,
-					},
-				},
-				Ports: []corev1.ContainerPort{
-					{
-						ContainerPort: usage.Port,
-					},
+	containers := []corev1.Container{
+		{
+			Name:  docker.ContainerName,
+			Image: usage.DockerImage,
+			Env: []corev1.EnvVar{
+				{
+					Name:  "FLAG",
+					Value: flag.Value,
 				},
 			},
-			{
-				Name:    "tcpdump",
-				Image:   config.Env.K8S.TCPDumpImage,
-				Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/traffic.pcap"},
+			Ports: []corev1.ContainerPort{
+				{
+					ContainerPort: usage.Port,
+				},
+			},
+		},
+		{
+			Name:    "tcpdump",
+			Image:   config.Env.K8S.TCPDumpImage,
+			Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/traffic.pcap"},
+		},
+	}
+	if config.Env.K8S.Frpc.On {
+		rand.New(rand.NewSource(time.Now().UnixNano()))
+		frps := config.Env.K8S.Frpc.Frps[rand.Intn(len(config.Env.K8S.Frpc.Frps))]
+		frpc := corev1.Container{
+			Name:  "frpc",
+			Image: config.Env.K8S.Frpc.Image,
+			Env: []corev1.EnvVar{
+				{
+					Name:  "serverAddr",
+					Value: frps.Host,
+				},
+				{
+					Name:  "serverPort",
+					Value: strconv.Itoa(frps.Port),
+				},
+				{
+					Name:  "token",
+					Value: frps.Token,
+				},
+				{
+					Name:  "name",
+					Value: docker.PodName,
+				},
+				{
+					Name:  "type",
+					Value: "tcp",
+				},
+				{
+					Name:  "localIP",
+					Value: "127.0.0.1",
+				},
+				{
+					Name:  "localPort",
+					Value: strconv.Itoa(int(usage.Port)),
+				},
+				{
+					Name:  "remotePort",
+					Value: strconv.Itoa(int(port)),
+				},
 			},
 		}
-		if config.Env.K8S.Frpc.On {
-			rand.New(rand.NewSource(time.Now().UnixNano()))
-			frps := config.Env.K8S.Frpc.Frps[rand.Intn(len(config.Env.K8S.Frpc.Frps))]
-			frpc := corev1.Container{
-				Name:  "frpc",
-				Image: config.Env.K8S.Frpc.Image,
-				Env: []corev1.EnvVar{
-					{
-						Name:  "serverAddr",
-						Value: frps.Host,
-					},
-					{
-						Name:  "serverPort",
-						Value: strconv.Itoa(frps.Port),
-					},
-					{
-						Name:  "token",
-						Value: frps.Token,
-					},
-					{
-						Name:  "name",
-						Value: docker.PodName,
-					},
-					{
-						Name:  "type",
-						Value: "tcp",
-					},
-					{
-						Name:  "localIP",
-						Value: "127.0.0.1",
-					},
-					{
-						Name:  "localPort",
-						Value: strconv.Itoa(int(usage.Port)),
-					},
-					{
-						Name:  "remotePort",
-						Value: strconv.Itoa(int(port)),
-					},
-				},
-			}
-			containers = append(containers, frpc)
-			ip = frps.Host
-			log.Logger.Infof("Frpc started: %s:%d -> %s:%d", frps.Host, port, docker.PodName, port)
-		}
-		return containers
-	}()
+		containers = append(containers, frpc)
+		ip = frps.Host
+		log.Logger.Infof("Frpc started: %s:%d -> %s:%d", frps.Host, port, docker.PodName, port)
+	}
 	pod, ok, msg = CreatePod(ctx, docker, usage, containers)
 	if !ok {
 		return "", -1, false, msg
