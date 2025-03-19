@@ -80,3 +80,25 @@ func (s *Strings) Scan(value interface{}) error {
 	}
 	return json.Unmarshal(bytes, s)
 }
+
+type IPBlock struct {
+	CIDR   string   `json:"cidr"`
+	Except []string `json:"except"`
+}
+
+type NetworkPolicy struct {
+	From []IPBlock `json:"from"`
+	To   []IPBlock `json:"to"`
+}
+
+func (p NetworkPolicy) Value() (driver.Value, error) {
+	return json.Marshal(p)
+}
+
+func (p *NetworkPolicy) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan NetworkPolicy value")
+	}
+	return json.Unmarshal(bytes, p)
+}
