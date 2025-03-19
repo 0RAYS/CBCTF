@@ -41,6 +41,7 @@ type Usage struct {
 	Second         uint                   `json:"second" gorm:"default:0"`
 	Third          uint                   `json:"third" gorm:"default:0"`
 	Last           time.Time              `json:"last"`
+	NetworkPolicy  utils.NetworkPolicy    `json:"network_policy"`
 	CreatedAt      time.Time              `json:"-"`
 	UpdatedAt      time.Time              `json:"-"`
 	DeletedAt      gorm.DeletedAt         `json:"-" gorm:"index"`
@@ -110,6 +111,21 @@ func (u *Usage) CalcBlood(teamID uint) (float64, string) {
 }
 
 func InitUsage(challenge Challenge, contestID uint) Usage {
+	// defaultPolicy 允许外部访问, 不允许访问内网, 允许访问外网
+	defaultPolicy := utils.NetworkPolicy{
+		From: []utils.IPBlock{},
+		To: []utils.IPBlock{
+			{
+				CIDR: "0.0.0.0/0",
+				Except: []string{
+					"10.0.0.0/8",
+					"172.16.0.0/12",
+					"192.168.0.0/16",
+					"100.64.0.0/10",
+				},
+			},
+		},
+	}
 	return Usage{
 		ContestID:      contestID,
 		ChallengeID:    challenge.ID,
@@ -122,5 +138,6 @@ func InitUsage(challenge Challenge, contestID uint) Usage {
 		DockerImage:    challenge.DockerImage,
 		Port:           challenge.Port,
 		Last:           time.Now(),
+		NetworkPolicy:  defaultPolicy,
 	}
 }
