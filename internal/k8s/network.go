@@ -10,6 +10,9 @@ import (
 )
 
 func CreateNetworkPolicy(ctx context.Context, docker model.Docker, usage model.Usage) (*netv1.NetworkPolicy, bool, string) {
+	if len(usage.NetworkPolicy.From) < 1 && len(usage.NetworkPolicy.To) < 1 {
+		return nil, true, "Success"
+	}
 	networkPolicy := &netv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      docker.NetworkPolicyName,
