@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"context"
 	"github.com/robfig/cron/v3"
 	"strings"
 	"time"
@@ -51,14 +52,18 @@ func PrepareGenerator(c *cron.Cron) {
 func CloseGenerator(c *cron.Cron) {
 	function := func() {
 		log.Logger.Debug("Close timeout generator")
-		pods, ok, msg := k8s.GetPods()
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+		pods, ok, msg := k8s.GetPods(ctx)
+		cancel()
 		if !ok {
 			log.Logger.Warningf("Failed to get pods %s", msg)
 			return
 		}
 		for _, pod := range pods.Items {
 			if strings.Contains(pod.Name, "generator") && time.Now().Sub(pod.CreationTimestamp.Time) > 3*time.Hour {
-				ok, msg = k8s.DeletePod(pod.Name)
+				ctx, cancel = context.WithTimeout(context.Background(), 1*time.Minute)
+				ok, msg = k8s.DeletePod(ctx, pod.Name)
+				cancel()
 				if !ok {
 					log.Logger.Warningf("Failed to delete pod %s %s", pod.Name, msg)
 				}

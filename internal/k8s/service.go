@@ -6,9 +6,9 @@ import (
 	"CBCTF/internal/model"
 	"context"
 	corev1 "k8s.io/api/core/v1"
+	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"time"
 )
 
 func CreateService(ctx context.Context, docker model.Docker, usage model.Usage) (*corev1.Service, bool, string) {
@@ -39,19 +39,17 @@ func CreateService(ctx context.Context, docker model.Docker, usage model.Usage) 
 	}
 	service, err = Client.CoreV1().Services(NamespaceName).Create(ctx, service, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Error creating service: %s", err)
+		log.Logger.Warningf("Failed to create Service %s: %s", docker.ServiceName, err)
 		return nil, false, "CreateServiceError"
 	}
-	return service, true, "CreateService"
+	return service, true, "Success"
 }
 
 // DeleteService 删除 Service, 目前主要是靶机的端口映射
-func DeleteService(name string) (bool, string) {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
-	defer cancel()
+func DeleteService(ctx context.Context, name string) (bool, string) {
 	err := Client.CoreV1().Services(NamespaceName).Delete(ctx, name, metav1.DeleteOptions{})
-	if err != nil {
-		log.Logger.Warningf("Failed to delete service: %v", err)
+	if err != nil && !apierror.IsNotFound(err) {
+		log.Logger.Warningf("Failed to delete Service %s: %v", name, err)
 		return false, "DeleteServiceError"
 	}
 	return true, "Success"
