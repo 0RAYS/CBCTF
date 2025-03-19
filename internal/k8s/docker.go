@@ -6,9 +6,6 @@ import (
 	"CBCTF/internal/model"
 	"context"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/ptr"
 	"math/rand"
 	"strconv"
 	"time"
@@ -19,9 +16,11 @@ func StartContainer(usage model.Usage, flag model.Flag, docker model.Docker) (st
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 	var (
-		err error
-		ok  bool
-		ip  string
+		service *corev1.Service
+		pod     *corev1.Pod
+		ok      bool
+		ip      string
+		msg     string
 	)
 	if usage.Type != model.Container {
 		return "", -1, false, "InvalidChallengeType"
@@ -30,135 +29,84 @@ func StartContainer(usage model.Usage, flag model.Flag, docker model.Docker) (st
 		return "", -1, false, "EmptyDockerImage"
 	}
 	log.Logger.Debugf("Creating pod for challenge %s:%s", usage.Name, usage.ChallengeID)
-	service := &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      docker.ServiceName,
-			Namespace: NamespaceName,
-		},
-		Spec: corev1.ServiceSpec{
-			Selector: map[string]string{
-				"app": docker.PodName,
-			},
-			Ports: []corev1.ServicePort{
-				{
-					Protocol:   corev1.ProtocolTCP,
-					Port:       usage.Port,
-					TargetPort: intstr.FromInt32(usage.Port),
-				},
-			},
-			Type:                  corev1.ServiceTypeNodePort,
-			ExternalIPs:           config.Env.K8S.Nodes,
-			ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeLocal,
-		},
-	}
-	service, err = Client.CoreV1().Services(NamespaceName).Create(ctx, service, metav1.CreateOptions{})
-	if err != nil {
-		log.Logger.Warningf("Error creating service: %s", err)
-		return "", -1, false, "CreateServiceError"
+	service, ok, msg = CreateService(ctx, docker, usage)
+	if !ok {
+		return "", -1, false, msg
 	}
 	port := service.Spec.Ports[0].NodePort
-	pod := &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      docker.PodName,
-			Namespace: NamespaceName,
-			Labels: map[string]string{
-				"app": docker.PodName,
+	containers := func() []corev1.Container {
+		containers := []corev1.Container{
+			{
+				Name:  docker.ContainerName,
+				Image: usage.DockerImage,
+				Env: []corev1.EnvVar{
+					{
+						Name:  "FLAG",
+						Value: flag.Value,
+					},
+				},
+				Ports: []corev1.ContainerPort{
+					{
+						ContainerPort: usage.Port,
+					},
+				},
 			},
-		},
-		Spec: corev1.PodSpec{
-			Containers: func() []corev1.Container {
-				containers := []corev1.Container{
+			{
+				Name:    "tcpdump",
+				Image:   config.Env.K8S.TCPDumpImage,
+				Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/traffic.pcap"},
+			},
+		}
+		if config.Env.K8S.Frpc.On {
+			rand.New(rand.NewSource(time.Now().UnixNano()))
+			frps := config.Env.K8S.Frpc.Frps[rand.Intn(len(config.Env.K8S.Frpc.Frps))]
+			frpc := corev1.Container{
+				Name:  "frpc",
+				Image: config.Env.K8S.Frpc.Image,
+				Env: []corev1.EnvVar{
 					{
-						Name:  docker.ContainerName,
-						Image: usage.DockerImage,
-						Env: []corev1.EnvVar{
-							{
-								Name:  "FLAG",
-								Value: flag.Value,
-							},
-						},
-						Ports: []corev1.ContainerPort{
-							{
-								ContainerPort: usage.Port,
-							},
-						},
+						Name:  "serverAddr",
+						Value: frps.Host,
 					},
 					{
-						Name:    "tcpdump",
-						Image:   config.Env.K8S.TCPDumpImage,
-						Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/traffic.pcap"},
+						Name:  "serverPort",
+						Value: strconv.Itoa(frps.Port),
 					},
-				}
-
-				if config.Env.K8S.Frpc.On {
-					rand.New(rand.NewSource(time.Now().UnixNano()))
-					frps := config.Env.K8S.Frpc.Frps[rand.Intn(len(config.Env.K8S.Frpc.Frps))]
-					frpc := corev1.Container{
-						Name:  "frpc",
-						Image: config.Env.K8S.Frpc.Image,
-						Env: []corev1.EnvVar{
-							{
-								Name:  "serverAddr",
-								Value: frps.Host,
-							},
-							{
-								Name:  "serverPort",
-								Value: strconv.Itoa(frps.Port),
-							},
-							{
-								Name:  "token",
-								Value: frps.Token,
-							},
-							{
-								Name:  "name",
-								Value: docker.PodName,
-							},
-							{
-								Name:  "type",
-								Value: "tcp",
-							},
-							{
-								Name:  "localIP",
-								Value: "127.0.0.1",
-							},
-							{
-								Name:  "localPort",
-								Value: strconv.Itoa(int(usage.Port)),
-							},
-							{
-								Name:  "remotePort",
-								Value: strconv.Itoa(int(port)),
-							},
-						},
-					}
-					containers = append(containers, frpc)
-					ip = frps.Host
-					log.Logger.Infof("Frpc started: %s:%d -> %s:%d", frps.Host, port, docker.PodName, port)
-				}
-				return containers
-			}(),
-			TerminationGracePeriodSeconds: ptr.To[int64](3),
-			RestartPolicy:                 corev1.RestartPolicyNever,
-		},
-	}
-	pod, err = Client.CoreV1().Pods(NamespaceName).Create(ctx, pod, metav1.CreateOptions{})
-	if err != nil {
-		log.Logger.Warningf("Failed to create pod: %v", err)
-		return "", -1, false, "CreatePodError"
-	}
-	for {
-		pod, ok, _ = GetPod(pod.Name)
-		if !ok {
-			log.Logger.Warningf("Failed to get pod: %v", err)
-			return "", -1, false, "GetPodError"
+					{
+						Name:  "token",
+						Value: frps.Token,
+					},
+					{
+						Name:  "name",
+						Value: docker.PodName,
+					},
+					{
+						Name:  "type",
+						Value: "tcp",
+					},
+					{
+						Name:  "localIP",
+						Value: "127.0.0.1",
+					},
+					{
+						Name:  "localPort",
+						Value: strconv.Itoa(int(usage.Port)),
+					},
+					{
+						Name:  "remotePort",
+						Value: strconv.Itoa(int(port)),
+					},
+				},
+			}
+			containers = append(containers, frpc)
+			ip = frps.Host
+			log.Logger.Infof("Frpc started: %s:%d -> %s:%d", frps.Host, port, docker.PodName, port)
 		}
-		if pod.Status.Phase == corev1.PodRunning {
-			break
-		}
-		if pod.Status.Phase != corev1.PodPending {
-			log.Logger.Warningf("Pod %s:%s failed to run", usage.Name, pod.Name)
-			return "", -1, false, "CreatePodError"
-		}
+		return containers
+	}()
+	pod, ok, msg = CreatePod(ctx, docker, usage, containers)
+	if !ok {
+		return "", -1, false, msg
 	}
 	if !config.Env.K8S.Frpc.On {
 		node, ok, msg := GetNode(pod.Spec.NodeName)
