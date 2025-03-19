@@ -10,22 +10,23 @@ import (
 )
 
 type Docker struct {
-	ID            uint                   `json:"id" gorm:"primaryKey"`
-	Port          int32                  `json:"port"`
-	ContestID     uint                   `json:"contest_id"`
-	TeamID        uint                   `json:"team_id"`
-	ChallengeID   string                 `json:"challenge_id"`
-	Start         time.Time              `json:"start"`
-	PodName       string                 `json:"pod"`
-	ContainerName string                 `json:"container"`
-	ServiceName   string                 `json:"service"`
-	IP            string                 `json:"ip"`
-	Duration      time.Duration          `json:"-"`
-	CreatorID     uint                   `json:"creator_id"`
-	CreatedAt     time.Time              `json:"-"`
-	UpdatedAt     time.Time              `json:"-"`
-	DeletedAt     gorm.DeletedAt         `json:"-" gorm:"index"`
-	Version       optimisticlock.Version `json:"-" gorm:"default:1"`
+	ID                uint                   `json:"id" gorm:"primaryKey"`
+	Port              int32                  `json:"port"`
+	ContestID         uint                   `json:"contest_id"`
+	TeamID            uint                   `json:"team_id"`
+	ChallengeID       string                 `json:"challenge_id"`
+	Start             time.Time              `json:"start"`
+	PodName           string                 `json:"pod"`
+	ContainerName     string                 `json:"container"`
+	ServiceName       string                 `json:"service"`
+	NetworkPolicyName string                 `json:"network_policy"`
+	IP                string                 `json:"ip"`
+	Duration          time.Duration          `json:"-"`
+	CreatorID         uint                   `json:"creator_id"`
+	CreatedAt         time.Time              `json:"-"`
+	UpdatedAt         time.Time              `json:"-"`
+	DeletedAt         gorm.DeletedAt         `json:"-" gorm:"index"`
+	Version           optimisticlock.Version `json:"-" gorm:"default:1"`
 }
 
 // MarshalJSON Duration 转为秒
@@ -59,16 +60,18 @@ func InitDocker(flag Flag, usage Usage, creatorID uint) Docker {
 	podName := fmt.Sprintf("victim-%s-%d-pod", usage.ChallengeID, flag.TeamID)
 	serviceName := fmt.Sprintf("victim-%s-%d-svc", usage.ChallengeID, flag.TeamID)
 	containerName := fmt.Sprintf("victim-%s-%d", usage.ChallengeID, flag.TeamID)
+	networkPolicyName := fmt.Sprintf("victim-%s-%d-net", usage.ChallengeID, flag.TeamID)
 	return Docker{
-		ContestID:     flag.ContestID,
-		ChallengeID:   flag.ChallengeID,
-		TeamID:        flag.TeamID,
-		Port:          usage.Port,
-		CreatorID:     creatorID,
-		Start:         time.Now(),
-		Duration:      1 * time.Hour,
-		PodName:       podName,
-		ContainerName: containerName,
-		ServiceName:   serviceName,
+		ContestID:         flag.ContestID,
+		ChallengeID:       flag.ChallengeID,
+		TeamID:            flag.TeamID,
+		Port:              usage.Port,
+		CreatorID:         creatorID,
+		Start:             time.Now(),
+		Duration:          1 * time.Hour,
+		PodName:           podName,
+		ContainerName:     containerName,
+		ServiceName:       serviceName,
+		NetworkPolicyName: networkPolicyName,
 	}
 }
