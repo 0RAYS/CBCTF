@@ -163,7 +163,7 @@ func GetFile(ctx *gin.Context) model.File {
 	}
 }
 
-// SetChallenge 保存 model.Challenge model.Usage 至上下文
+// SetChallenge 保存 model.Challenge 至上下文
 func SetChallenge(ctx *gin.Context) {
 	type challengeIDUri struct {
 		ChallengeID string `uri:"challengeID" binding:"required"`
@@ -180,14 +180,7 @@ func SetChallenge(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	usage, ok, msg := db.GetUsageBy2ID(db.DB.WithContext(ctx), GetContest(ctx).ID, challenge.ID)
-	if !ok {
-		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		ctx.Abort()
-		return
-	}
 	ctx.Set("Challenge", challenge)
-	ctx.Set("Usage", usage)
 	ctx.Next()
 }
 
@@ -198,6 +191,27 @@ func GetChallenge(ctx *gin.Context) model.Challenge {
 	} else {
 		return challenge.(model.Challenge)
 	}
+}
+
+// SetUsage 保存 model.Usage 至上下文
+func SetUsage(ctx *gin.Context) {
+	type challengeIDUri struct {
+		ChallengeID string `uri:"challengeID" binding:"required"`
+	}
+	var challengeID challengeIDUri
+	if err := ctx.ShouldBindUri(&challengeID); err != nil {
+		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.Abort()
+		return
+	}
+	usage, ok, msg := db.GetUsageBy2ID(db.DB.WithContext(ctx), GetContest(ctx).ID, challengeID.ChallengeID)
+	if !ok {
+		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.Abort()
+		return
+	}
+	ctx.Set("Usage", usage)
+	ctx.Next()
 }
 
 // GetUsage 从上下文中获取 model.Usage

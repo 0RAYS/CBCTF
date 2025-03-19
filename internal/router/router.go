@@ -80,7 +80,7 @@ func Init() *gin.Engine {
 		contest.GET("/challenges", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, GetUsages)
 		contestChallenge := contest.Group(
 			"/challenges/:challengeID",
-			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.SetChallenge,
+			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.SetUsage,
 		)
 		{
 			contestChallenge.GET("", ChallengeStatus)
@@ -194,7 +194,7 @@ func Init() *gin.Engine {
 			// 比赛题目管理
 			adminContest.GET("/challenges", GetUsages)
 			adminContest.POST("/challenges", AddUsage)
-			adminContestChallenge := adminContest.Group("/challenges/:challengeID", middleware.SetChallenge)
+			adminContestChallenge := adminContest.Group("/challenges/:challengeID", middleware.SetUsage)
 			{
 				adminContestChallenge.PUT("", UpdateUsage)
 				adminContestChallenge.DELETE("", RemoveUsage)
