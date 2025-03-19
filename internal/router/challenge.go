@@ -60,9 +60,9 @@ func GetChallenges(ctx *gin.Context) {
 }
 
 func GetAttachment(ctx *gin.Context) {
-	challenge := middleware.GetChallenge(ctx)
+	usage := middleware.GetUsage(ctx)
 	team := middleware.GetTeam(ctx)
-	path := challenge.AttachmentPath(team.ID)
+	path := usage.AttachmentPath(team.ID)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		ctx.JSON(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": nil})
 		return
@@ -228,21 +228,21 @@ func ChallengeStatus(ctx *gin.Context) {
 		"solved": false,
 	}
 	team := middleware.GetTeam(ctx)
-	challenge := middleware.GetChallenge(ctx)
+	usage := middleware.GetUsage(ctx)
 	contest := middleware.GetContest(ctx)
-	if _, ok, msg := db.GetFlagBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, challenge.ID); !ok {
+	if _, ok, msg := db.GetFlagBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID); !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": data})
 		return
 	}
 	data["status"] = true
-	if db.IsSolved(db.DB.WithContext(ctx), contest.ID, team.ID, challenge.ID) {
+	if db.IsSolved(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID) {
 		data["solved"] = true
 	}
-	if _, err := os.Stat(challenge.AttachmentPath(team.ID)); err == nil {
+	if _, err := os.Stat(usage.AttachmentPath(team.ID)); err == nil {
 		data["files"] = model.StaticFile
 	}
-	if challenge.Type == model.Container {
-		if docker, ok, _ := db.GetDockerBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, challenge.ID); ok {
+	if usage.Type == model.Container {
+		if docker, ok, _ := db.GetDockerBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID); ok {
 			data["remote"] = gin.H{
 				"target":    docker.RemoteAddr(),
 				"remaining": docker.Remaining().Seconds(),
@@ -256,26 +256,26 @@ func ChallengeStatus(ctx *gin.Context) {
 func InitChallenge(reset bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var (
-			team      = middleware.GetTeam(ctx)
-			contest   = middleware.GetContest(ctx)
-			challenge = middleware.GetChallenge(ctx)
-			DB        = db.DB.WithContext(ctx)
-			ok        bool
-			msg       string
-			err       error
+			team    = middleware.GetTeam(ctx)
+			contest = middleware.GetContest(ctx)
+			usage   = middleware.GetUsage(ctx)
+			DB      = db.DB.WithContext(ctx)
+			ok      bool
+			msg     string
+			err     error
 		)
-		if ok, err = redis.CheckChallengeInit(team.ID, challenge.ID); ok || err != nil {
+		if ok, err = redis.CheckChallengeInit(team.ID, usage.ChallengeID); ok || err != nil {
 			ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooQuick", "data": nil})
 			return
 		}
-		_ = redis.RecordChallengeInit(team.ID, challenge.ID)
+		_ = redis.RecordChallengeInit(team.ID, usage.ChallengeID)
 		if !reset {
-			if _, ok, msg = db.GetFlagBy3ID(DB, contest.ID, team.ID, challenge.ID); ok {
+			if _, ok, msg = db.GetFlagBy3ID(DB, contest.ID, team.ID, usage.ChallengeID); ok {
 				ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 				return
 			}
 		}
-		docker, ok, _ := db.GetDockerBy3ID(DB, contest.ID, team.ID, challenge.ID)
+		docker, ok, _ := db.GetDockerBy3ID(DB, contest.ID, team.ID, usage.ChallengeID)
 		if ok {
 			tx := DB.Begin()
 			ok, msg = db.DeleteDocker(tx, docker)
@@ -287,7 +287,7 @@ func InitChallenge(reset bool) gin.HandlerFunc {
 			tx.Commit()
 		}
 		tx := DB.Begin()
-		_, ok, msg = db.InitFlag(tx, contest, team, challenge)
+		_, ok, msg = db.InitFlag(tx, contest, team, usage)
 		if !ok {
 			tx.Rollback()
 		} else {

@@ -10,7 +10,7 @@ import (
 )
 
 // CreateDocker 创建 Docker, 并注入 flag
-func CreateDocker(tx *gorm.DB, flag model.Flag, challenge model.Challenge, creatorID uint) (model.Docker, bool, string) {
+func CreateDocker(tx *gorm.DB, flag model.Flag, usage model.Usage, creatorID uint) (model.Docker, bool, string) {
 	var (
 		docker model.Docker
 		ok     bool
@@ -21,12 +21,12 @@ func CreateDocker(tx *gorm.DB, flag model.Flag, challenge model.Challenge, creat
 	if docker, ok, _ = GetDockerBy3ID(tx, flag.ContestID, flag.TeamID, flag.ChallengeID); ok {
 		return docker, ok, "Success"
 	}
-	if challenge.Type != model.Container {
+	if usage.Type != model.Container {
 		return model.Docker{}, false, "InvalidChallengeType"
 	}
-	docker = model.InitDocker(flag, challenge, creatorID)
+	docker = model.InitDocker(flag, usage, creatorID)
 	log.Logger.Debugf("Starting container for team %d challenge %s", flag.TeamID, flag.ChallengeID)
-	ip, port, ok, msg = k8s.StartContainer(challenge, flag, docker)
+	ip, port, ok, msg = k8s.StartContainer(usage, flag, docker)
 	if !ok {
 		go k8s.StopContainer(docker)
 		log.Logger.Warningf("Failed to start container for challenge %s: %s", flag.ChallengeID, msg)

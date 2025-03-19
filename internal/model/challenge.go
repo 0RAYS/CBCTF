@@ -40,26 +40,6 @@ func (c *Challenge) BasicDir() string {
 	return fmt.Sprintf("%s/challenges/%s", config.Env.Gin.Upload.Path, c.ID)
 }
 
-// StaticPath 获取静态题目文件的路径
-func (c *Challenge) StaticPath() string {
-	return fmt.Sprintf("%s/%s", c.BasicDir(), StaticFile)
-}
-
-// GeneratorPath 获取动态题目生成器的路径
-func (c *Challenge) GeneratorPath() string {
-	return fmt.Sprintf("/%s/%s", c.BasicDir(), DynamicFile)
-}
-
-// AttachmentPath 获取下载时, 题目附件的路径
-func (c *Challenge) AttachmentPath(teamID uint) string {
-	switch c.Type {
-	case Dynamic:
-		return fmt.Sprintf("%s/attachments/%s/%d.zip", config.Env.Gin.Upload.Path, c.ID, teamID)
-	default:
-		return c.StaticPath()
-	}
-}
-
 func InitChallenge(form form.CreateChallengeForm) Challenge {
 	return Challenge{
 		ID:             utils.UUID(),
