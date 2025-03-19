@@ -67,13 +67,9 @@ func GetUsages(ctx *gin.Context) {
 
 func RemoveUsage(ctx *gin.Context) {
 	var DB = db.DB.WithContext(ctx)
-	usage, ok, msg := db.GetUsageBy2ID(DB, middleware.GetContest(ctx).ID, middleware.GetChallenge(ctx).ID)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
+	usage := middleware.GetUsage(ctx)
 	tx := DB.Begin()
-	ok, msg = db.DeleteUsage(tx, usage.ID)
+	ok, msg := db.DeleteUsage(tx, usage.ID)
 	if !ok {
 		tx.Rollback()
 	} else {
@@ -84,11 +80,7 @@ func RemoveUsage(ctx *gin.Context) {
 
 func UpdateUsage(ctx *gin.Context) {
 	var DB = db.DB.WithContext(ctx)
-	usage, ok, msg := db.GetUsageBy2ID(DB, middleware.GetContest(ctx).ID, middleware.GetChallenge(ctx).ID)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
+	usage := middleware.GetUsage(ctx)
 	var form f.UpdateUsageForm
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
@@ -96,7 +88,7 @@ func UpdateUsage(ctx *gin.Context) {
 	}
 	data := utils.Form2Map(form)
 	tx := DB.Begin()
-	ok, msg = db.UpdateUsage(tx, usage.ID, data)
+	ok, msg := db.UpdateUsage(tx, usage.ID, data)
 	if !ok {
 		tx.Rollback()
 	} else {

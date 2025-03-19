@@ -55,15 +55,15 @@ func (d *Docker) Remaining() time.Duration {
 	return d.Start.Add(d.Duration).Sub(time.Now())
 }
 
-func InitDocker(flag Flag, challenge Challenge, creatorID uint) Docker {
-	podName := fmt.Sprintf("victim-%s-%d-pod", challenge.ID, flag.TeamID)
-	serviceName := fmt.Sprintf("victim-%s-%d-svc", challenge.ID, flag.TeamID)
-	containerName := fmt.Sprintf("victim-%s-%d", challenge.ID, flag.TeamID)
+func InitDocker(flag Flag, usage Usage, creatorID uint) Docker {
+	podName := fmt.Sprintf("victim-%s-%d-pod", usage.ChallengeID, flag.TeamID)
+	serviceName := fmt.Sprintf("victim-%s-%d-svc", usage.ChallengeID, flag.TeamID)
+	containerName := fmt.Sprintf("victim-%s-%d", usage.ChallengeID, flag.TeamID)
 	return Docker{
 		ContestID:     flag.ContestID,
 		ChallengeID:   flag.ChallengeID,
 		TeamID:        flag.TeamID,
-		Port:          challenge.Port,
+		Port:          usage.Port,
 		CreatorID:     creatorID,
 		Start:         time.Now(),
 		Duration:      1 * time.Hour,

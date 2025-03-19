@@ -15,7 +15,7 @@ import (
 )
 
 // StartContainer 启动容器, 并且注入 flag
-func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Docker) (string, int32, bool, string) {
+func StartContainer(usage model.Usage, flag model.Flag, docker model.Docker) (string, int32, bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 	var (
@@ -23,13 +23,13 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 		ok  bool
 		ip  string
 	)
-	if challenge.Type != model.Container {
+	if usage.Type != model.Container {
 		return "", -1, false, "InvalidChallengeType"
 	}
-	if challenge.DockerImage == "" {
+	if usage.DockerImage == "" {
 		return "", -1, false, "EmptyDockerImage"
 	}
-	log.Logger.Debugf("Creating pod for challenge %s:%s", challenge.Name, challenge.ID)
+	log.Logger.Debugf("Creating pod for challenge %s:%s", usage.Name, usage.ChallengeID)
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      docker.ServiceName,
@@ -42,8 +42,8 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 			Ports: []corev1.ServicePort{
 				{
 					Protocol:   corev1.ProtocolTCP,
-					Port:       challenge.Port,
-					TargetPort: intstr.FromInt32(challenge.Port),
+					Port:       usage.Port,
+					TargetPort: intstr.FromInt32(usage.Port),
 				},
 			},
 			Type:                  corev1.ServiceTypeNodePort,
@@ -70,7 +70,7 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 				containers := []corev1.Container{
 					{
 						Name:  docker.ContainerName,
-						Image: challenge.DockerImage,
+						Image: usage.DockerImage,
 						Env: []corev1.EnvVar{
 							{
 								Name:  "FLAG",
@@ -79,7 +79,7 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 						},
 						Ports: []corev1.ContainerPort{
 							{
-								ContainerPort: challenge.Port,
+								ContainerPort: usage.Port,
 							},
 						},
 					},
@@ -123,7 +123,7 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 							},
 							{
 								Name:  "localPort",
-								Value: strconv.Itoa(int(challenge.Port)),
+								Value: strconv.Itoa(int(usage.Port)),
 							},
 							{
 								Name:  "remotePort",
@@ -156,7 +156,7 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 			break
 		}
 		if pod.Status.Phase != corev1.PodPending {
-			log.Logger.Warningf("Pod %s:%s failed to run", challenge.Name, pod.Name)
+			log.Logger.Warningf("Pod %s:%s failed to run", usage.Name, pod.Name)
 			return "", -1, false, "CreatePodError"
 		}
 	}
@@ -176,7 +176,7 @@ func StartContainer(challenge model.Challenge, flag model.Flag, docker model.Doc
 			}
 		}
 	}
-	log.Logger.Infof("Pod %s:%s is running on %s:%d", challenge.Name, pod.Name, ip, port)
+	log.Logger.Infof("Pod %s:%s is running on %s:%d", usage.Name, pod.Name, ip, port)
 	return ip, port, true, "Success"
 }
 

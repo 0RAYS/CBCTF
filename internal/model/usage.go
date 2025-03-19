@@ -1,7 +1,9 @@
 package model
 
 import (
+	"CBCTF/internal/config"
 	"CBCTF/internal/utils"
+	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/plugin/optimisticlock"
 	"time"
@@ -43,6 +45,31 @@ type Usage struct {
 	UpdatedAt      time.Time              `json:"-"`
 	DeletedAt      gorm.DeletedAt         `json:"-" gorm:"index"`
 	Version        optimisticlock.Version `json:"-" gorm:"default:1"`
+}
+
+// BasicDir 获取题目相关文件的目录
+func (u *Usage) BasicDir() string {
+	return fmt.Sprintf("%s/challenges/%s", config.Env.Gin.Upload.Path, u.ChallengeID)
+}
+
+// StaticPath 获取静态题目文件的路径
+func (u *Usage) StaticPath() string {
+	return fmt.Sprintf("%s/%s", u.BasicDir(), StaticFile)
+}
+
+// GeneratorPath 获取动态题目生成器的路径
+func (u *Usage) GeneratorPath() string {
+	return fmt.Sprintf("%s/%s", u.BasicDir(), DynamicFile)
+}
+
+// AttachmentPath 获取下载时, 题目附件的路径
+func (u *Usage) AttachmentPath(teamID uint) string {
+	switch u.Type {
+	case Dynamic:
+		return fmt.Sprintf("%s/attachment/%s/%d.zip", config.Env.Gin.Upload.Path, u.ChallengeID, teamID)
+	default:
+		return u.StaticPath()
+	}
 }
 
 // CalcScore 依据 Solver ScoreType 计算当前分数

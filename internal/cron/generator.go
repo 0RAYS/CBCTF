@@ -15,11 +15,10 @@ func PrepareGenerator(c *cron.Cron) {
 	log.Logger.Debug("Prepare generator")
 	function := func() {
 		var (
-			ok        bool
-			msg       string
-			contests  []model.Contest
-			usages    []model.Usage
-			challenge model.Challenge
+			ok       bool
+			msg      string
+			contests []model.Contest
+			usages   []model.Usage
 		)
 		contests, _, ok, msg = db.GetContests(db.DB, 0, 0, false)
 		if !ok {
@@ -34,13 +33,8 @@ func PrepareGenerator(c *cron.Cron) {
 					continue
 				}
 				for _, usage := range usages {
-					challenge, ok, msg = db.GetChallengeByID(db.DB, usage.ChallengeID)
-					if !ok {
-						log.Logger.Warningf("Failed to get challenge %s", msg)
-						continue
-					}
-					if challenge.Type == model.Dynamic {
-						_, ok, msg = k8s.StartGenerator(challenge)
+					if usage.Type == model.Dynamic {
+						_, ok, msg = k8s.StartGenerator(usage)
 						if !ok {
 							log.Logger.Warningf("Failed to start generator %s", msg)
 						}
