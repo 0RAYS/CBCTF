@@ -3,6 +3,7 @@ package k8s
 import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
 	"context"
 	netv1 "k8s.io/api/networking/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
@@ -83,4 +84,8 @@ func DeleteNetworkPolicy(ctx context.Context, name string) (bool, string) {
 		return false, "DeleteNetworkPolicyError"
 	}
 	return true, "Success"
+}
+
+func checkBlock(block utils.IPBlock) bool {
+
 }

@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"net"
 	"strconv"
 	"time"
 )
@@ -86,12 +87,39 @@ type IPBlock struct {
 	Except []string `json:"except"`
 }
 
+func isValidIPBlock(ipBlock IPBlock) bool {
+	_, ipNet, err := net.ParseCIDR(ipBlock.CIDR)
+	if err != nil {
+		return false
+	}
+	for _, ex := range ipBlock.Except {
+		_, exNet, err := net.ParseCIDR(ex)
+		if err != nil {
+			return false
+		}
+		if !ipNet.Contains(exNet.IP) {
+			return false
+		}
+	}
+	return true
+}
+
 type NetworkPolicy struct {
 	From []IPBlock `json:"from"`
 	To   []IPBlock `json:"to"`
 }
 
 func (p NetworkPolicy) Value() (driver.Value, error) {
+	for i, ipBlock := range p.From {
+		if !isValidIPBlock(ipBlock) {
+			p.From = append(p.From[:i], p.From[i+1:]...)
+		}
+	}
+	for i, ipBlock := range p.To {
+		if !isValidIPBlock(ipBlock) {
+			p.To = append(p.To[:i], p.To[i+1:]...)
+		}
+	}
 	return json.Marshal(p)
 }
 
