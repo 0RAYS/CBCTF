@@ -3,10 +3,7 @@ package db
 import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/redis"
 	"CBCTF/internal/utils"
-	"context"
-	"errors"
 	"gorm.io/gorm"
 	"mime/multipart"
 )
@@ -20,11 +17,6 @@ func RecordFile(tx *gorm.DB, path string, uploader uint, file *multipart.FileHea
 
 		return model.File{}, false, "CreateFileRecordError"
 	}
-	go func() {
-		if err := redis.DelFilesCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-			log.Logger.Warningf("Failed to delete files cache: %v", err)
-		}
-	}()
 	return f, true, "Success"
 }
 
@@ -54,11 +46,6 @@ func DeleteFile(tx *gorm.DB, id string) (bool, string) {
 		log.Logger.Warningf("Failed to delete file: %v", id)
 		return false, "DeleteFileError"
 	}
-	go func() {
-		if err := redis.DelFilesCache(); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-			log.Logger.Warningf("Failed to delete files cache: %v", err)
-		}
-	}()
 	return true, "Success"
 }
 
@@ -71,19 +58,10 @@ func GetAvatars(tx *gorm.DB, limit int, offset int) ([]model.File, int64, bool, 
 		log.Logger.Warningf("Failed to get files: %s", res.Error)
 		return make([]model.File, 0), 0, false, "UnknownError"
 	}
-	if files, ok := redis.GetFilesCache(); ok {
-		limit, offset = utils.TidyPaginate(len(files), limit, offset)
-		return files[offset:limit], int64(len(files)), true, "Success"
-	}
-	if res = res.Find(&files); res.Error != nil {
+	limit, offset = utils.TidyPaginate(int(count), limit, offset)
+	if res = res.Limit(limit).Offset(offset).Find(&files); res.Error != nil {
 		log.Logger.Warningf("Failed to get files: %s", res.Error)
 		return make([]model.File, 0), 0, false, "FileNotFound"
 	}
-	go func() {
-		if err := redis.SetFilesCache(files); err != nil && !errors.Is(err, context.DeadlineExceeded) {
-			log.Logger.Errorf("Failed to delete file cache: %v", err)
-		}
-	}()
-	limit, offset = utils.TidyPaginate(int(count), limit, offset)
-	return files[offset:limit], count, true, "Success"
+	return files, count, true, "Success"
 }
