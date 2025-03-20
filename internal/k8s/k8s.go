@@ -210,10 +210,9 @@ func writeKubeConfig() error {
 	token := string(Secret.Data["token"])
 	ca := Secret.Data["ca.crt"]
 	host := Config.Host
-	name := fmt.Sprintf("%s@%s", SvcAccountName, NamespaceName)
 	kubeConfig := api.Config{
 		Clusters: map[string]*api.Cluster{
-			name: {
+			"kubernetes-admin@kubernetes": {
 				Server:                   host,
 				CertificateAuthorityData: ca,
 			},
@@ -224,13 +223,13 @@ func writeKubeConfig() error {
 			},
 		},
 		Contexts: map[string]*api.Context{
-			fmt.Sprintf("%s-%s", name, SvcAccountName): {
-				Cluster:   name,
+			fmt.Sprintf("kubernetes-admin@kubernetes-%s", SvcAccountName): {
+				Cluster:   "kubernetes-admin@kubernetes",
 				AuthInfo:  SvcAccountName,
 				Namespace: NamespaceName,
 			},
 		},
-		CurrentContext: name,
+		CurrentContext: "kubernetes-admin@kubernetes",
 	}
 	return clientcmd.WriteToFile(kubeConfig, fmt.Sprintf("%s.conf", NamespaceName))
 }
