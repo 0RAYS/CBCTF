@@ -118,17 +118,26 @@ func Solve(tx *gorm.DB, usage model.Usage, team model.Team, blood bool) (bool, s
 	mu.(*sync.Mutex).Lock()
 	defer mu.(*sync.Mutex).Unlock()
 
+	var solvers int64
+	err := tx.Model(&model.Submission{}).Distinct("team_id").
+		Where("solved = ? AND contest_id = ? AND challenge_id = ?", true, usage.ContestID, usage.ChallengeID).Count(&solvers).Error
+	if err != nil {
+		log.Logger.Warningf("Failed to count solvers: %s", err)
+		return false, "GetSubmissionError"
+	}
+
 	// 需要依据 model.Usage 的多个字段进行计算分数, 所以在加锁后重新获取数据对象, 不使用上下文中的对象
-	err := tx.Model(&model.Usage{}).Clauses(clause.Locking{Strength: "UPDATE"}).
+	err = tx.Model(&model.Usage{}).Clauses(clause.Locking{Strength: "UPDATE"}).
 		Where("id = ?", usage.ID).Find(&usage).Limit(1).Error
 	if err != nil {
 		log.Logger.Warningf("Failed to get Usage: %s", err)
 		return false, "GetUsageError"
 	}
-	currentScore := usage.CalcScore(usage.Solvers)
+	
+	currentScore := usage.CalcScore(solvers)
 	last := time.Now()
 	data := map[string]interface{}{
-		"solvers":       usage.Solvers + 1,
+		"solvers":       solvers + 1,
 		"last":          last,
 		"current_score": currentScore,
 	}
