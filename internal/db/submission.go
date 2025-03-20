@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"math"
 )
 
 // CreateSubmission 记录 flag 提交记录
@@ -114,6 +115,7 @@ func CalcTeamScore(tx *gorm.DB, contestID, teamID uint) (float64, bool, string) 
 		rate, _ := usage.CalcBlood(teamID)
 		score += usage.CurrentScore + usage.Score*rate
 	}
+	score = math.Trunc(score*100) / 100
 	return score, true, "Success"
 }
 
