@@ -3,7 +3,6 @@ package model
 import (
 	"encoding/json"
 	"gorm.io/gorm"
-	"math"
 	"time"
 )
 
@@ -26,10 +25,8 @@ func (s *Submission) MarshalJSON() ([]byte, error) {
 	type Tmp Submission
 	return json.Marshal(&struct {
 		*Tmp
-		Score float64 `json:"score"`
 	}{
-		Tmp:   (*Tmp)(s),
-		Score: math.Trunc(s.Score*100) / 100,
+		Tmp: (*Tmp)(s),
 	})
 }
 

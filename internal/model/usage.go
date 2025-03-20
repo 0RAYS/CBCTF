@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/plugin/optimisticlock"
-	"math"
 	"time"
 )
 
@@ -54,12 +53,8 @@ func (u *Usage) MarshalJSON() ([]byte, error) {
 	type Tmp Usage
 	return json.Marshal(&struct {
 		*Tmp
-		Score        float64 `json:"score"`
-		CurrentScore float64 `json:"current_score"`
 	}{
-		Tmp:          (*Tmp)(u),
-		Score:        math.Trunc(u.Score*100) / 100,
-		CurrentScore: math.Trunc(u.CurrentScore*100) / 100,
+		Tmp: (*Tmp)(u),
 	})
 }
 
