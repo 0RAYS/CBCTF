@@ -63,7 +63,7 @@ func Init() {
 		log.Logger.Fatal("Failed to check permission")
 	}
 	initResources()
-	if _, err = os.Stat(config.Env.K8S.Config.User); config.Env.K8S.Config.User != "" && err == nil {
+	if _, err = os.Stat(config.Env.K8S.Config.User); config.Env.K8S.Config.User == "" && err != nil {
 		if writeKubeConfig() != nil {
 			log.Logger.Fatalf("Failed to save kubeconfig to %s.conf: %s ", NamespaceName, err)
 		}
