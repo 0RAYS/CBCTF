@@ -88,6 +88,7 @@ func initResources() {
 		}
 	}
 	if Secret, err = Client.CoreV1().Secrets(NamespaceName).Get(ctx, SvcAccountName, metav1.GetOptions{}); err != nil {
+		log.Logger.Infof("Secret %s not found in %s namespace, creating...", RoleName, NamespaceName)
 		Secret = &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      SecretName,
