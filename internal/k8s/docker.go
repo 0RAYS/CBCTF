@@ -110,20 +110,7 @@ func StartContainer(usage model.Usage, flag model.Flag, docker model.Docker) (st
 		return "", -1, false, msg
 	}
 	if !config.Env.K8S.Frpc.On {
-		node, ok, msg := GetNode(ctx, pod.Spec.NodeName)
-		if !ok {
-			return "", -1, false, msg
-		}
-		for _, address := range node.Status.Addresses {
-			if address.Type == corev1.NodeInternalIP && address.Address != "" {
-				ip = address.Address
-				continue
-			}
-			if address.Type == corev1.NodeExternalIP && address.Address != "" {
-				ip = address.Address
-				break
-			}
-		}
+		ip = pod.Status.HostIP
 	}
 	log.Logger.Infof("Pod %s:%s is running on %s:%d", usage.Name, pod.Name, ip, port)
 	return ip, port, true, "Success"
