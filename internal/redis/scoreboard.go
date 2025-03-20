@@ -17,7 +17,7 @@ func UpdateTeamRanking(contestID uint, teams []model.Team) error {
 
 	for _, team := range teams {
 		timestamp := team.Last.UnixMilli()
-		compositeScore := team.Score*1e13 + float64(1e13-timestamp)
+		compositeScore := team.Score*1e16 + float64(1e13-timestamp)
 		pipe.ZAdd(ctx, key, &redis.Z{
 			Score:  compositeScore,
 			Member: team.ID,
@@ -64,7 +64,7 @@ func UpdateUserRanking(users []model.User) error {
 	pipe := RDB.Pipeline()
 	pipe.Del(ctx, key)
 	for _, user := range users {
-		compositeScore := user.Score*1e5 + float64(user.Solved)
+		compositeScore := user.Score*1e8 + float64(user.Solved)
 		pipe.ZAdd(ctx, key, &redis.Z{
 			Score:  compositeScore,
 			Member: user.ID,
