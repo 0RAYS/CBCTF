@@ -43,12 +43,12 @@ func Init() {
 	if _, err = os.Stat(config.Env.K8S.Config.User); config.Env.K8S.Config.User != "" && err == nil {
 		Config, err = clientcmd.BuildConfigFromFlags("", config.Env.K8S.Config.User)
 		if err != nil {
-			log.Logger.Fatal("Failed to load k8s user config")
+			log.Logger.Fatalf("Failed to load k8s user config: %s", err)
 		}
 	} else {
 		Config, err = clientcmd.BuildConfigFromFlags("", config.Env.K8S.Config.Admin)
 		if err != nil {
-			log.Logger.Fatal("Failed to load k8s admin config")
+			log.Logger.Fatalf("Failed to load k8s admin config: %s", err)
 		}
 	}
 	Config.QPS = 100
