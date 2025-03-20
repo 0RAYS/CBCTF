@@ -68,6 +68,7 @@ func Init() {
 			log.Logger.Fatalf("Failed to save kubeconfig to %s.conf: %s ", NamespaceName, err)
 		}
 		config.Env.K8S.Config.User = fmt.Sprintf("%s.conf", NamespaceName)
+		config.Env.K8S.Config.Admin = ""
 		if err := config.Save(config.Env); err != nil {
 			log.Logger.Fatalf("Failed to update config: %s", err)
 		}
@@ -229,5 +230,5 @@ func writeKubeConfig() error {
 		},
 		CurrentContext: "default",
 	}
-	return clientcmd.WriteToFile(kubeConfig, config.Env.K8S.Config.User)
+	return clientcmd.WriteToFile(kubeConfig, fmt.Sprintf("%s.conf", NamespaceName))
 }
