@@ -53,8 +53,8 @@ func Init() {
 		}
 	}
 	Config, err = clientcmd.NewNonInteractiveClientConfig(*APIConfig, APIConfig.CurrentContext, &clientcmd.ConfigOverrides{}, nil).ClientConfig()
-	Config.QPS = 100
-	Config.Burst = 200
+	Config.QPS = 20
+	Config.Burst = 40
 	log.Logger.Info("K8S config loaded, initiating client...")
 	Client, err = kubernetes.NewForConfig(Config)
 	if err != nil {
