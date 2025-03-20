@@ -108,6 +108,7 @@ func UpdateUsage(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool,
 	return true, "Success"
 }
 
+// CalcNewUsage 计算新分数, 解出队伍数
 func CalcNewUsage(tx *gorm.DB, usage model.Usage) (int64, float64, bool, string) {
 	var solvers int64
 	err := tx.Model(&model.Submission{}).Distinct("team_id").
