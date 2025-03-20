@@ -67,7 +67,7 @@ func (u *Usage) GeneratorPath() string {
 func (u *Usage) AttachmentPath(teamID uint) string {
 	switch u.Type {
 	case Dynamic:
-		return fmt.Sprintf("%s/attachment/%s/%d.zip", config.Env.Path, u.ChallengeID, teamID)
+		return fmt.Sprintf("%s/attachments/%s/%d.zip", config.Env.Path, u.ChallengeID, teamID)
 	default:
 		return u.StaticPath()
 	}
