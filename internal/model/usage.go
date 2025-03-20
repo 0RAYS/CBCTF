@@ -3,9 +3,11 @@ package model
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/utils"
+	"encoding/json"
 	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/plugin/optimisticlock"
+	"math"
 	"time"
 )
 
@@ -46,6 +48,19 @@ type Usage struct {
 	UpdatedAt      time.Time              `json:"-"`
 	DeletedAt      gorm.DeletedAt         `json:"-" gorm:"index"`
 	Version        optimisticlock.Version `json:"-" gorm:"default:1"`
+}
+
+func (u *Usage) MarshalJSON() ([]byte, error) {
+	type Tmp Usage
+	return json.Marshal(&struct {
+		*Tmp
+		Score        float64 `json:"score"`
+		CurrentScore float64 `json:"current_score"`
+	}{
+		Tmp:          (*Tmp)(u),
+		Score:        math.Trunc(u.Score),
+		CurrentScore: math.Trunc(u.CurrentScore),
+	})
 }
 
 // BasicDir 获取题目相关文件的目录
