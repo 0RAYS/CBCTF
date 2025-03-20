@@ -82,7 +82,7 @@ func (u *Usage) CalcScore(solvers int64) float64 {
 	case LinearScore:
 		calc = u.CurrentScore - float64(solvers)*u.Decay
 	case LogarithmicScore:
-		calc = (((u.MinScore - u.CurrentScore) / (u.Decay * u.Decay)) * float64(solvers*solvers)) + u.CurrentScore
+		calc = (u.MinScore-u.CurrentScore)/(u.Decay*u.Decay)*float64(solvers*solvers) + u.CurrentScore
 	default:
 		calc = u.CurrentScore
 	}
