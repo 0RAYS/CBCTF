@@ -89,13 +89,13 @@ func (u *Usage) CalcScore(solvers int64) float64 {
 	var calc float64 = 0
 	switch u.ScoreType {
 	case StaticScore:
-		calc = u.CurrentScore
+		calc = u.Score
 	case LinearScore:
-		calc = u.CurrentScore - float64(solvers)*u.Decay
+		calc = u.Score - float64(solvers)*u.Decay
 	case LogarithmicScore:
-		calc = (u.MinScore-u.CurrentScore)/(u.Decay*u.Decay)*float64(solvers*solvers) + u.CurrentScore
+		calc = (u.MinScore-u.Score)/(u.Decay*u.Decay)*float64(solvers*solvers) + u.Score
 	default:
-		calc = u.CurrentScore
+		calc = u.Score
 	}
 	if calc < u.MinScore {
 		calc = u.MinScore
