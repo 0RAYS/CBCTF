@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/net"
+	"math"
 	"net/http"
 )
 
@@ -52,7 +53,7 @@ func HomePage(ctx *gin.Context) {
 	for _, user := range users {
 		data["scoreboard"] = append(data["scoreboard"].([]gin.H), gin.H{
 			"name":    user.Name,
-			"score":   user.Score,
+			"score":   math.Trunc(user.Score*100) / 100,
 			"solved":  user.Solved,
 			"country": user.Country,
 		})

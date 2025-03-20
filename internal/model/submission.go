@@ -29,7 +29,7 @@ func (s *Submission) MarshalJSON() ([]byte, error) {
 		Score float64 `json:"score"`
 	}{
 		Tmp:   (*Tmp)(s),
-		Score: math.Trunc(s.Score),
+		Score: math.Trunc(s.Score*100) / 100,
 	})
 }
 
