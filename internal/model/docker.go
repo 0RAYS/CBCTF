@@ -43,7 +43,7 @@ func (d *Docker) MarshalJSON() ([]byte, error) {
 
 // TrafficPath 流量文件路径
 func (d *Docker) TrafficPath() string {
-	return fmt.Sprintf("%s/traffic/%s/%d/%d.pcap", config.Env.Gin.Upload.Path, d.ChallengeID, d.TeamID, d.ID)
+	return fmt.Sprintf("%s/traffic/%s/%d/%d.pcap", config.Env.Path, d.ChallengeID, d.TeamID, d.ID)
 }
 
 // RemoteAddr 返回远程地址

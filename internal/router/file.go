@@ -132,7 +132,7 @@ func UploadAvatar(v string) func(ctx *gin.Context) {
 		tx := db.DB.WithContext(ctx).Begin()
 		hash := hex.EncodeToString(sha256Sum.Sum(nil))
 		if record, ok, _ = db.GetFileByHash(tx, hash); !ok {
-			basePath := fmt.Sprintf("%s/avatar", config.Env.Gin.Upload.Path)
+			basePath := fmt.Sprintf("%s/avatar", config.Env.Path)
 			path = fmt.Sprintf("%s/%s%s", basePath, utils.UUID(), suffix)
 			if err = ctx.SaveUploadedFile(file, path); err != nil {
 				tx.Rollback()
@@ -205,7 +205,7 @@ func UploadWriteUp(ctx *gin.Context) {
 	hash := hex.EncodeToString(sha256Sum.Sum(nil))
 	tx := db.DB.WithContext(ctx).Begin()
 	if record, ok, _ = db.GetFileByHash(tx, hash); !ok {
-		basePath := fmt.Sprintf("%s/writeups/%d/%d", config.Env.Gin.Upload.Path, contest.ID, team.ID)
+		basePath := fmt.Sprintf("%s/writeups/%d/%d", config.Env.Path, contest.ID, team.ID)
 		allowed := []string{".pdf", ".docx", ".doc"}
 		suffix := strings.ToLower(p.Ext(file.Filename))
 		if !utils.In(suffix, allowed) {
@@ -234,7 +234,7 @@ func UploadWriteUp(ctx *gin.Context) {
 func GetWriteUPs(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
 	team := middleware.GetTeam(ctx)
-	path := fmt.Sprintf("%s/writeups/%d/%d", config.Env.Gin.Upload.Path, contest.ID, team.ID)
+	path := fmt.Sprintf("%s/writeups/%d/%d", config.Env.Path, contest.ID, team.ID)
 	dir, err := os.ReadDir(path)
 	if err != nil {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "FileNotFound", "data": nil})

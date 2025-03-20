@@ -50,7 +50,7 @@ type Usage struct {
 
 // BasicDir 获取题目相关文件的目录
 func (u *Usage) BasicDir() string {
-	return fmt.Sprintf("%s/challenges/%s", config.Env.Gin.Upload.Path, u.ChallengeID)
+	return fmt.Sprintf("%s/challenges/%s", config.Env.Path, u.ChallengeID)
 }
 
 // StaticPath 获取静态题目文件的路径
@@ -67,7 +67,7 @@ func (u *Usage) GeneratorPath() string {
 func (u *Usage) AttachmentPath(teamID uint) string {
 	switch u.Type {
 	case Dynamic:
-		return fmt.Sprintf("%s/attachment/%s/%d.zip", config.Env.Gin.Upload.Path, u.ChallengeID, teamID)
+		return fmt.Sprintf("%s/attachment/%s/%d.zip", config.Env.Path, u.ChallengeID, teamID)
 	default:
 		return u.StaticPath()
 	}
