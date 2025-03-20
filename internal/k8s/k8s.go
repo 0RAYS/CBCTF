@@ -20,17 +20,18 @@ import (
 
 var (
 	Client          *kubernetes.Clientset
-	NamespaceName   string
-	SvcAccountName  string
-	SecretName      string
-	RoleName        string
-	RoleBindingName string
 	Namespace       *corev1.Namespace
 	SvcAccount      *corev1.ServiceAccount
 	Secret          *corev1.Secret
 	Role            *rbacv1.Role
 	RoleBinding     *rbacv1.RoleBinding
 	Config          *rest.Config
+	APIConfig       *api.Config
+	NamespaceName   string
+	SvcAccountName  string
+	SecretName      string
+	RoleName        string
+	RoleBindingName string
 )
 
 func Init() {
@@ -41,16 +42,17 @@ func Init() {
 	RoleName = fmt.Sprintf("%s-admin-role", NamespaceName)
 	RoleBindingName = fmt.Sprintf("%s-admin-role-binding", NamespaceName)
 	if _, err = os.Stat(config.Env.K8S.Config.User); config.Env.K8S.Config.User != "" && err == nil {
-		Config, err = clientcmd.BuildConfigFromFlags("", config.Env.K8S.Config.User)
+		APIConfig, err = clientcmd.LoadFromFile(config.Env.K8S.Config.User)
 		if err != nil {
 			log.Logger.Fatalf("Failed to load k8s user config: %s", err)
 		}
 	} else {
-		Config, err = clientcmd.BuildConfigFromFlags("", config.Env.K8S.Config.Admin)
+		APIConfig, err = clientcmd.LoadFromFile(config.Env.K8S.Config.Admin)
 		if err != nil {
 			log.Logger.Fatalf("Failed to load k8s admin config: %s", err)
 		}
 	}
+	Config, err = clientcmd.NewNonInteractiveClientConfig(*APIConfig, APIConfig.CurrentContext, &clientcmd.ConfigOverrides{}, nil).ClientConfig()
 	Config.QPS = 100
 	Config.Burst = 200
 	log.Logger.Info("K8S config loaded, initiating client...")
@@ -210,9 +212,10 @@ func writeKubeConfig() error {
 	token := string(Secret.Data["token"])
 	ca := Secret.Data["ca.crt"]
 	host := Config.Host
+	ctx := APIConfig.Contexts[APIConfig.CurrentContext]
 	kubeConfig := api.Config{
 		Clusters: map[string]*api.Cluster{
-			"kubernetes-admin@kubernetes": {
+			ctx.Cluster: {
 				Server:                   host,
 				CertificateAuthorityData: ca,
 			},
@@ -224,12 +227,12 @@ func writeKubeConfig() error {
 		},
 		Contexts: map[string]*api.Context{
 			fmt.Sprintf("kubernetes-admin@kubernetes-%s", SvcAccountName): {
-				Cluster:   "kubernetes-admin@kubernetes",
+				Cluster:   ctx.Cluster,
 				AuthInfo:  SvcAccountName,
 				Namespace: NamespaceName,
 			},
 		},
-		CurrentContext: "kubernetes-admin@kubernetes",
+		CurrentContext: fmt.Sprintf("kubernetes-admin@kubernetes-%s", SvcAccountName),
 	}
 	return clientcmd.WriteToFile(kubeConfig, fmt.Sprintf("%s.conf", NamespaceName))
 }
