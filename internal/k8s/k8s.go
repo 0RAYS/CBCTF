@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"context"
-	"encoding/base64"
 	"fmt"
 	"os"
 	"time"
@@ -57,7 +56,7 @@ func Init() {
 	log.Logger.Info("K8S config loaded, initiating client...")
 	Client, err = kubernetes.NewForConfig(Config)
 	if err != nil {
-		log.Logger.Fatal("Failed to init k8s client: %s", err)
+		log.Logger.Fatalf("Failed to init k8s client: %s", err)
 	}
 	if !checkPermission() {
 		log.Logger.Fatal("Failed to check permission")
@@ -209,13 +208,14 @@ func checkPermission() bool {
 
 func writeKubeConfig() error {
 	token := string(Secret.Data["token"])
-	ca := base64.StdEncoding.EncodeToString(Secret.Data["ca.crt"])
+	ca := Secret.Data["ca.crt"]
 	host := Config.Host
+	name := fmt.Sprintf("%s@%s", SvcAccountName, NamespaceName)
 	kubeConfig := api.Config{
 		Clusters: map[string]*api.Cluster{
-			"cluster": {
+			name: {
 				Server:                   host,
-				CertificateAuthorityData: []byte(ca),
+				CertificateAuthorityData: ca,
 			},
 		},
 		AuthInfos: map[string]*api.AuthInfo{
@@ -224,12 +224,13 @@ func writeKubeConfig() error {
 			},
 		},
 		Contexts: map[string]*api.Context{
-			"default": {
-				Cluster:  "cluster",
-				AuthInfo: SvcAccountName,
+			fmt.Sprintf("%s-%s", name, SvcAccountName): {
+				Cluster:   name,
+				AuthInfo:  SvcAccountName,
+				Namespace: NamespaceName,
 			},
 		},
-		CurrentContext: "default",
+		CurrentContext: name,
 	}
 	return clientcmd.WriteToFile(kubeConfig, fmt.Sprintf("%s.conf", NamespaceName))
 }
