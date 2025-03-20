@@ -12,7 +12,7 @@ import (
 
 // UpdateTeamRanking 依据数据库, 更新 model.Team 的分数和排名
 func UpdateTeamRanking(c *cron.Cron) {
-	function := func() {
+	function := executionTime("UpdateTeamRanking", func() {
 		log.Logger.Debug("Update global ranking")
 		contests, _, ok, _ := db.GetContests(db.DB, -1, -1, false, false)
 		if !ok {
@@ -39,14 +39,14 @@ func UpdateTeamRanking(c *cron.Cron) {
 				}
 			}()
 		}
-	}
+	})
 	function()
 	c.Schedule(cron.Every(5*time.Minute), cron.FuncJob(function))
 }
 
 // UpdateUserRanking 依据数据库, 更新 model.User 的分数和排名
 func UpdateUserRanking(c *cron.Cron) {
-	function := func() {
+	function := executionTime("UpdateUserRanking", func() {
 		var (
 			contests    []model.Contest
 			users       []*model.User
@@ -98,7 +98,7 @@ func UpdateUserRanking(c *cron.Cron) {
 			}
 		}
 		db.UpdateUserRanking(db.DB)
-	}
+	})
 	function()
 	c.Schedule(cron.Every(12*time.Hour), cron.FuncJob(function))
 }

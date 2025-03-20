@@ -108,6 +108,27 @@ func UpdateUsage(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool,
 	return true, "Success"
 }
 
+func CalcNewUsage(tx *gorm.DB, usage model.Usage) (int64, float64, bool, string) {
+	var solvers int64
+	err := tx.Model(&model.Submission{}).Distinct("team_id").
+		Where("solved = ? AND contest_id = ? AND challenge_id = ?", true, usage.ContestID, usage.ChallengeID).Count(&solvers).Error
+	if err != nil {
+		log.Logger.Warningf("Failed to count solvers: %s", err)
+		return 0, 0, false, "GetSubmissionError"
+	}
+
+	// 需要依据 model.Usage 的多个字段进行计算分数, 所以在加锁后重新获取数据对象, 不使用上下文中的对象
+	err = tx.Model(&model.Usage{}).Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("id = ?", usage.ID).Find(&usage).Limit(1).Error
+	if err != nil {
+		log.Logger.Warningf("Failed to get Usage: %s", err)
+		return 0, 0, false, "GetUsageError"
+	}
+
+	currentScore := usage.CalcScore(solvers)
+	return solvers, currentScore, true, "Success"
+}
+
 // SolvedMutex 使用定时任务 cron.ClearUsageMutex 清理锁
 var SolvedMutex sync.Map
 
@@ -118,23 +139,10 @@ func Solve(tx *gorm.DB, usage model.Usage, team model.Team, blood bool) (bool, s
 	mu.(*sync.Mutex).Lock()
 	defer mu.(*sync.Mutex).Unlock()
 
-	var solvers int64
-	err := tx.Model(&model.Submission{}).Distinct("team_id").
-		Where("solved = ? AND contest_id = ? AND challenge_id = ?", true, usage.ContestID, usage.ChallengeID).Count(&solvers).Error
-	if err != nil {
-		log.Logger.Warningf("Failed to count solvers: %s", err)
-		return false, "GetSubmissionError"
+	solvers, currentScore, ok, msg := CalcNewUsage(tx, usage)
+	if !ok {
+		return false, msg
 	}
-
-	// 需要依据 model.Usage 的多个字段进行计算分数, 所以在加锁后重新获取数据对象, 不使用上下文中的对象
-	err = tx.Model(&model.Usage{}).Clauses(clause.Locking{Strength: "UPDATE"}).
-		Where("id = ?", usage.ID).Find(&usage).Limit(1).Error
-	if err != nil {
-		log.Logger.Warningf("Failed to get Usage: %s", err)
-		return false, "GetUsageError"
-	}
-	
-	currentScore := usage.CalcScore(solvers)
 	last := time.Now()
 	data := map[string]interface{}{
 		"solvers":       solvers + 1,

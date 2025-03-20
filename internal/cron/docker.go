@@ -12,7 +12,7 @@ import (
 
 // CloseDockers 关闭并删除数据库中存在记录的超时 dockers
 func CloseDockers(c *cron.Cron) {
-	function := func() {
+	function := executionTime("CloseDockers", func() {
 		log.Logger.Debug("Close timeout dockers")
 		dockers, ok, msg := db.GetDockers(db.DB, false)
 		if !ok {
@@ -31,14 +31,14 @@ func CloseDockers(c *cron.Cron) {
 				tx.Commit()
 			}
 		}
-	}
+	})
 	function()
 	c.Schedule(cron.Every(5*time.Minute), cron.FuncJob(function))
 }
 
 // CloseUnCtrlDockers 移除数据库中无记录的超时 docker
 func CloseUnCtrlDockers(c *cron.Cron) {
-	function := func() {
+	function := executionTime("CloseUnCtrlDockers", func() {
 		log.Logger.Debug("Close timeout pods")
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 		pods, ok, msg := k8s.GetPods(ctx)
@@ -56,7 +56,7 @@ func CloseUnCtrlDockers(c *cron.Cron) {
 				}
 			}
 		}
-	}
+	})
 	function()
 	c.Schedule(cron.Every(1*time.Hour), cron.FuncJob(function))
 }
