@@ -246,3 +246,57 @@ func GetWriteUPs(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &files})
 }
+
+func UploadChallenge(ctx *gin.Context) {
+	challenge := middleware.GetChallenge(ctx)
+	file, err := ctx.FormFile("file")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	var path string
+	switch challenge.Type {
+	case model.Static, model.Container:
+		if file.Filename != model.StaticFile {
+			ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
+			return
+		}
+		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), model.StaticFile)
+	case model.Dynamic:
+		if file.Filename != model.DynamicFile {
+			ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
+			return
+		}
+		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), model.DynamicFile)
+	default:
+		ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidChallengeType", "data": nil})
+		return
+	}
+	if err := ctx.SaveUploadedFile(file, path); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
+}
+
+func DownloadChallenge(ctx *gin.Context) {
+	var form f.DownloadChallengeForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	challenge := middleware.GetChallenge(ctx)
+	var path string
+	switch form.File {
+	case model.StaticFile, model.DynamicFile:
+		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), form.File)
+	default:
+		ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
+		return
+	}
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		ctx.JSON(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": nil})
+		return
+	}
+	ctx.File(path)
+}
