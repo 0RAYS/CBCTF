@@ -23,6 +23,12 @@ func UpdateTeamRanking(tx *gorm.DB, contestID uint) (bool, string) {
 		// 不考虑更新失败的情况
 		UpdateTeam(tx, team.ID, map[string]interface{}{"score": team.Score})
 	}
+	res = tx.Model(&model.Team{}).Where("contest_id = ? AND banned = ?", contestID, false).
+		Preload(clause.Associations).Order("score DESC, last ASC").Find(&teams)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get teams: %v", res.Error)
+		return false, "GetTeamError"
+	}
 	err := redis.UpdateTeamRanking(contestID, teams)
 	if err != nil {
 		log.Logger.Warningf("Failed to update ranking: %v", err)
