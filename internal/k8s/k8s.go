@@ -57,7 +57,7 @@ func Init() {
 	log.Logger.Info("K8S config loaded, initiating client...")
 	Client, err = kubernetes.NewForConfig(Config)
 	if err != nil {
-		log.Logger.Fatal("Failed to init k8s client")
+		log.Logger.Fatal("Failed to init k8s client: %s", err)
 	}
 	if !checkPermission() {
 		log.Logger.Fatal("Failed to check permission")
