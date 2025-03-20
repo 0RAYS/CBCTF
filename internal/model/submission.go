@@ -1,7 +1,9 @@
 package model
 
 import (
+	"encoding/json"
 	"gorm.io/gorm"
+	"math"
 	"time"
 )
 
@@ -18,6 +20,17 @@ type Submission struct {
 	CreatedAt   time.Time      `json:"-"`
 	UpdatedAt   time.Time      `json:"-"`
 	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index"`
+}
+
+func (s *Submission) MarshalJSON() ([]byte, error) {
+	type Tmp Submission
+	return json.Marshal(&struct {
+		*Tmp
+		Score float64 `json:"score"`
+	}{
+		Tmp:   (*Tmp)(s),
+		Score: math.Trunc(s.Score),
+	})
 }
 
 func InitSubmission(usage, contestID uint, challengeID string, teamID, userID uint, value string, solved bool, score float64) Submission {

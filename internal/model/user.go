@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/plugin/optimisticlock"
+	"math"
 	"strings"
 	"time"
 )
@@ -38,14 +39,16 @@ func (u *User) MarshalJSON() ([]byte, error) {
 	type Tmp User // 定义一个别名以避免递归调用
 	return json.Marshal(&struct {
 		*Tmp
-		Contests int    `json:"contests"`
-		Teams    int    `json:"teams"`
-		Avatar   string `json:"avatar"`
+		Contests int     `json:"contests"`
+		Teams    int     `json:"teams"`
+		Avatar   string  `json:"avatar"`
+		Score    float64 `json:"score"`
 	}{
 		Tmp:      (*Tmp)(u),
 		Contests: len(u.Contests),
 		Teams:    len(u.Teams),
 		Avatar:   fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(u.Avatar, "/")),
+		Score:    math.Trunc(u.Score),
 	})
 }
 
