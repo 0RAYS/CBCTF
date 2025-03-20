@@ -37,8 +37,7 @@ type Config struct {
 		Host   string `mapstructure:"host" json:"host"` // Gin 服务监听地址
 		Port   int    `mapstructure:"port" json:"port"` // Gin 服务监听端口
 		Upload struct {
-			Path string `mapstructure:"path" json:"path"` // 上传文件路径
-			Max  int    `mapstructure:"max" json:"max"`   // 上传文件最大大小（单位：MB）
+			Max int `mapstructure:"max" json:"max"` // 上传文件最大大小（单位：MB）
 		} `mapstructure:"upload" json:"upload"`
 		Proxies []string `mapstructure:"proxies" json:"proxies"` // 信任的代理服务器
 		Magic   struct {
@@ -89,6 +88,7 @@ type Config struct {
 
 	Frontend string `mapstructure:"frontend" json:"frontend"` // 前端地址
 	Backend  string `mapstructure:"backend" json:"backend"`   // 后端地址
+	Path     string `mapstructure:"path" json:"path"`         // 数据存储路径
 }
 
 // MaskSecrets 用于将结构体中的 secret 标签的字段值替换为 "******"

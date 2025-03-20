@@ -9,7 +9,6 @@ gin:
     proxies:
         - null
     upload:
-        path: ./uploads
         max: 8
     magic:
         whitelist:
@@ -60,3 +59,4 @@ email:
             port: 587
 frontend: http://127.0.0.1:3000
 backend: http://127.0.0.1:8000
+path: ./uploads
