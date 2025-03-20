@@ -111,22 +111,7 @@ func (u *Usage) CalcBlood(teamID uint) (float64, string) {
 }
 
 func InitUsage(challenge Challenge, contestID uint) Usage {
-	// defaultPolicy 允许外部访问, 不允许访问内网, 允许访问外网
-	defaultPolicy := utils.NetworkPolicy{
-		From: []utils.IPBlock{},
-		To: []utils.IPBlock{
-			{
-				CIDR: "0.0.0.0/0",
-				Except: []string{
-					"10.0.0.0/8",
-					"172.16.0.0/12",
-					"192.168.0.0/16",
-					"100.64.0.0/10",
-				},
-			},
-		},
-	}
-	return Usage{
+	usage := Usage{
 		ContestID:      contestID,
 		ChallengeID:    challenge.ID,
 		Name:           challenge.Name,
@@ -138,6 +123,24 @@ func InitUsage(challenge Challenge, contestID uint) Usage {
 		DockerImage:    challenge.DockerImage,
 		Port:           challenge.Port,
 		Last:           time.Now(),
-		NetworkPolicy:  defaultPolicy,
 	}
+	if challenge.Type == Container {
+		// defaultPolicy 允许外部访问, 不允许访问内网, 允许访问外网
+		defaultPolicy := utils.NetworkPolicy{
+			From: []utils.IPBlock{},
+			To: []utils.IPBlock{
+				{
+					CIDR: "0.0.0.0/0",
+					Except: []string{
+						"10.0.0.0/8",
+						"172.16.0.0/12",
+						"192.168.0.0/16",
+						"100.64.0.0/10",
+					},
+				},
+			},
+		}
+		usage.NetworkPolicy = defaultPolicy
+	}
+	return usage
 }
