@@ -132,7 +132,7 @@ func UploadAvatar(v string) func(ctx *gin.Context) {
 		tx := db.DB.WithContext(ctx).Begin()
 		hash := hex.EncodeToString(sha256Sum.Sum(nil))
 		if record, ok, _ = db.GetFileByHash(tx, hash); !ok {
-			basePath := fmt.Sprintf("%s/avatar", config.Env.Path)
+			basePath := fmt.Sprintf("%s/avatars", config.Env.Path)
 			path = fmt.Sprintf("%s/%s%s", basePath, utils.UUID(), suffix)
 			if err = ctx.SaveUploadedFile(file, path); err != nil {
 				tx.Rollback()
