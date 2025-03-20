@@ -34,7 +34,10 @@ redis:
     # millisecond
     timeout: 10
 k8s:
-    config: ./admin.conf
+    config:
+        # admin will be ignored if user is set
+        admin: ./admin.conf
+        user: ./user.conf
     master: 192.168.0.1
     # also as prefix of resources
     namespace: cbctf

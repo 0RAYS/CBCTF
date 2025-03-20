@@ -4,7 +4,9 @@ import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"context"
+	"encoding/base64"
 	"fmt"
+	"os"
 	"time"
 
 	authorizationv1 "k8s.io/api/authorization/v1"
@@ -14,6 +16,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/tools/clientcmd/api"
 )
 
 var (
@@ -38,9 +41,16 @@ func Init() {
 	SecretName = fmt.Sprintf("%s-admin-secret", NamespaceName)
 	RoleName = fmt.Sprintf("%s-admin-role", NamespaceName)
 	RoleBindingName = fmt.Sprintf("%s-admin-role-binding", NamespaceName)
-	Config, err = clientcmd.BuildConfigFromFlags("", config.Env.K8S.Config)
-	if err != nil {
-		log.Logger.Fatal("Failed to load k8s admin config")
+	if _, err = os.Stat(config.Env.K8S.Config.User); config.Env.K8S.Config.User != "" && err == nil {
+		Config, err = clientcmd.BuildConfigFromFlags("", config.Env.K8S.Config.User)
+		if err != nil {
+			log.Logger.Fatal("Failed to load k8s user config")
+		}
+	} else {
+		Config, err = clientcmd.BuildConfigFromFlags("", config.Env.K8S.Config.Admin)
+		if err != nil {
+			log.Logger.Fatal("Failed to load k8s admin config")
+		}
 	}
 	Config.QPS = 100
 	Config.Burst = 200
@@ -53,6 +63,17 @@ func Init() {
 		log.Logger.Fatal("Failed to check permission")
 	}
 	initResources()
+	if _, err = os.Stat(config.Env.K8S.Config.User); config.Env.K8S.Config.User != "" && err == nil {
+		if writeKubeConfig() != nil {
+			log.Logger.Fatalf("Failed to save kubeconfig to %s.conf: %s ", NamespaceName, err)
+		}
+		config.Env.K8S.Config.User = fmt.Sprintf("%s.conf", NamespaceName)
+		if err := config.Save(config.Env); err != nil {
+			log.Logger.Fatalf("Failed to update config: %s", err)
+		}
+		log.Logger.Infof("Kubeconfig saved to %s.conf, please restart and remove the %s", NamespaceName, config.Env.K8S.Config.Admin)
+		os.Exit(0)
+	}
 	log.Logger.Info("K8S client initialized")
 }
 
@@ -182,4 +203,31 @@ func checkPermission() bool {
 		}
 	}
 	return true
+}
+
+func writeKubeConfig() error {
+	token := string(Secret.Data["token"])
+	ca := base64.StdEncoding.EncodeToString(Secret.Data["ca.crt"])
+	host := Config.Host
+	kubeConfig := api.Config{
+		Clusters: map[string]*api.Cluster{
+			"cluster": {
+				Server:                   host,
+				CertificateAuthorityData: []byte(ca),
+			},
+		},
+		AuthInfos: map[string]*api.AuthInfo{
+			SvcAccountName: {
+				Token: token,
+			},
+		},
+		Contexts: map[string]*api.Context{
+			"default": {
+				Cluster:  "cluster",
+				AuthInfo: SvcAccountName,
+			},
+		},
+		CurrentContext: "default",
+	}
+	return clientcmd.WriteToFile(kubeConfig, config.Env.K8S.Config.User)
 }
