@@ -20,10 +20,12 @@ var (
 	Client          *kubernetes.Clientset
 	NamespaceName   string
 	SvcAccountName  string
+	SecretName      string
 	RoleName        string
 	RoleBindingName string
 	Namespace       *corev1.Namespace
 	SvcAccount      *corev1.ServiceAccount
+	Secret          *corev1.Secret
 	Role            *rbacv1.Role
 	RoleBinding     *rbacv1.RoleBinding
 	Config          *rest.Config
@@ -33,6 +35,7 @@ func Init() {
 	var err error
 	NamespaceName = config.Env.K8S.Namespace
 	SvcAccountName = fmt.Sprintf("%s-admin", NamespaceName)
+	SecretName = fmt.Sprintf("%s-admin-secret", NamespaceName)
 	RoleName = fmt.Sprintf("%s-admin-role", NamespaceName)
 	RoleBindingName = fmt.Sprintf("%s-admin-role-binding", NamespaceName)
 	Config, err = clientcmd.BuildConfigFromFlags("", config.Env.K8S.Config)
@@ -82,6 +85,22 @@ func initResources() {
 		SvcAccount, err = Client.CoreV1().ServiceAccounts(NamespaceName).Create(ctx, SvcAccount, metav1.CreateOptions{})
 		if err != nil {
 			log.Logger.Fatalf("Error creating ServiceAccount: %v", err)
+		}
+	}
+	if Secret, err = Client.CoreV1().Secrets(NamespaceName).Get(ctx, SvcAccountName, metav1.GetOptions{}); err != nil {
+		Secret = &corev1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      SecretName,
+				Namespace: NamespaceName,
+				Annotations: map[string]string{
+					"kubernetes.io/service-account.name": SvcAccountName,
+				},
+			},
+			Type: corev1.SecretTypeServiceAccountToken,
+		}
+		Secret, err = Client.CoreV1().Secrets(NamespaceName).Create(context.TODO(), Secret, metav1.CreateOptions{})
+		if err != nil {
+			log.Logger.Fatalf("Error creating Secret: %v", err)
 		}
 	}
 	if Role, err = Client.RbacV1().Roles(NamespaceName).Get(ctx, RoleName, metav1.GetOptions{}); err != nil {
