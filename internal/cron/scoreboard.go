@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
 	"github.com/robfig/cron/v3"
+	"math"
 	"time"
 )
 
@@ -87,6 +88,7 @@ func UpdateUserRanking(c *cron.Cron) {
 						}
 					}
 				}
+				data["score"] = math.Trunc(data["score"].(float64)*100) / 100
 				tx := db.DB.Begin()
 				if ok, _ = db.UpdateUser(tx, user.ID, data); !ok {
 					tx.Rollback()

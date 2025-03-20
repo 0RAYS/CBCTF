@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/plugin/optimisticlock"
+	"math"
 	"time"
 )
 
@@ -99,6 +100,7 @@ func (u *Usage) CalcScore(solvers int64) float64 {
 	if calc < u.MinScore {
 		calc = u.MinScore
 	}
+	calc = math.Trunc(calc*100) / 100
 	return calc
 }
 
