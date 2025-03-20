@@ -10,7 +10,7 @@ import (
 
 // ClearUsageMutex 定时任务清理flag提交锁 db.SolvedMutex
 func ClearUsageMutex(c *cron.Cron) {
-	function := func() {
+	function := executionTime("ClearSubmissionMutex", func() {
 		log.Logger.Debug("Clear submission mutex")
 		contests := make(map[uint]model.Contest)
 		db.SolvedMutex.Range(func(k, v interface{}) bool {
@@ -32,6 +32,6 @@ func ClearUsageMutex(c *cron.Cron) {
 			}
 			return true
 		})
-	}
+	})
 	c.Schedule(cron.Every(10*time.Minute), cron.FuncJob(function))
 }

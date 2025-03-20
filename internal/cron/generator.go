@@ -14,7 +14,7 @@ import (
 // PrepareGenerator 预开动态题目生成器, 后续生成附件时直接附加执行
 func PrepareGenerator(c *cron.Cron) {
 	log.Logger.Debug("Prepare generator")
-	function := func() {
+	function := executionTime("PrepareGenerator", func() {
 		var (
 			ok       bool
 			msg      string
@@ -43,14 +43,14 @@ func PrepareGenerator(c *cron.Cron) {
 				}
 			}
 		}
-	}
+	})
 	function()
 	c.Schedule(cron.Every(30*time.Minute), cron.FuncJob(function))
 }
 
 // CloseGenerator 关闭超时的动态题目生成器, 释放部分资源
 func CloseGenerator(c *cron.Cron) {
-	function := func() {
+	function := executionTime("CloseGenerator", func() {
 		log.Logger.Debug("Close timeout generator")
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 		pods, ok, msg := k8s.GetPods(ctx)
@@ -69,7 +69,7 @@ func CloseGenerator(c *cron.Cron) {
 				}
 			}
 		}
-	}
+	})
 	function()
 	c.Schedule(cron.Every(1*time.Hour), cron.FuncJob(function))
 }

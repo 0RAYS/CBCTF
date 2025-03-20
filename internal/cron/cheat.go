@@ -11,7 +11,7 @@ import (
 
 // CheckCheat 检查作弊事件
 func CheckCheat(c *cron.Cron) {
-	function := func() {
+	function := executionTime("CheckCheats", func() {
 		log.Logger.Debug("Check cheats")
 		contests, _, ok, _ := db.GetContests(db.DB, -1, -1, false, true, true)
 		if !ok {
@@ -23,7 +23,7 @@ func CheckCheat(c *cron.Cron) {
 			}
 			go checkFlag(contest)
 		}
-	}
+	})
 	function()
 	c.Schedule(cron.Every(30*time.Minute), cron.FuncJob(function))
 }
