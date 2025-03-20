@@ -58,8 +58,8 @@ func (u *Usage) MarshalJSON() ([]byte, error) {
 		CurrentScore float64 `json:"current_score"`
 	}{
 		Tmp:          (*Tmp)(u),
-		Score:        math.Trunc(u.Score),
-		CurrentScore: math.Trunc(u.CurrentScore),
+		Score:        math.Trunc(u.Score*100) / 100,
+		CurrentScore: math.Trunc(u.CurrentScore*100) / 100,
 	})
 }
 

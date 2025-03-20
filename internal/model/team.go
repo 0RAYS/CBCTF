@@ -45,7 +45,7 @@ func (t *Team) MarshalJSON() ([]byte, error) {
 		Tmp:    (*Tmp)(t),
 		Users:  len(t.Users),
 		Avatar: fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(t.Avatar, "/")),
-		Score:  math.Trunc(t.Score),
+		Score:  math.Trunc(t.Score*100) / 100,
 	})
 }
 

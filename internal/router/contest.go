@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/utils"
 	"github.com/gin-gonic/gin"
+	"math"
 	"net/http"
 )
 
@@ -15,7 +16,7 @@ func GetContest(ctx *gin.Context) {
 	champion, _, _, _ := db.GetTeamRanking(db.DB.WithContext(ctx), contest.ID, 1, 0)
 	var maxScore float64
 	if len(champion) > 0 {
-		maxScore = champion[0].Score
+		maxScore = math.Trunc(champion[0].Score*100) / 100
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"contest": &contest, "solved": len(totalSolved), "highest": maxScore}})
 }
