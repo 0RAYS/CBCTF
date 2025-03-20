@@ -3,6 +3,7 @@ package router
 import (
 	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
+	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
@@ -182,7 +183,11 @@ func ChallengeStatus(ctx *gin.Context) {
 	if db.IsSolved(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID) {
 		data["solved"] = true
 	}
-	if _, err := os.Stat(usage.AttachmentPath(team.ID)); err == nil {
+	if _, err := os.Stat(usage.AttachmentPath(team.ID)); err != nil {
+		if !os.IsNotExist(err) {
+			log.Logger.Warningf("Failed to check attachment: %s", err)
+		}
+	} else {
 		data["files"] = model.StaticFile
 	}
 	if usage.Type == model.Container {
