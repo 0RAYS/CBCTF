@@ -19,19 +19,23 @@ import (
 )
 
 var (
-	Client          *kubernetes.Clientset
-	Namespace       *corev1.Namespace
-	SvcAccount      *corev1.ServiceAccount
-	Secret          *corev1.Secret
-	Role            *rbacv1.Role
-	RoleBinding     *rbacv1.RoleBinding
-	Config          *rest.Config
-	APIConfig       *api.Config
-	NamespaceName   string
-	SvcAccountName  string
-	SecretName      string
-	RoleName        string
-	RoleBindingName string
+	Client                 *kubernetes.Clientset
+	Namespace              *corev1.Namespace
+	SvcAccount             *corev1.ServiceAccount
+	Secret                 *corev1.Secret
+	Role                   *rbacv1.Role
+	RoleBinding            *rbacv1.RoleBinding
+	ClusterRole            *rbacv1.ClusterRole
+	ClusterRoleBinding     *rbacv1.ClusterRoleBinding
+	Config                 *rest.Config
+	APIConfig              *api.Config
+	NamespaceName          string
+	SvcAccountName         string
+	SecretName             string
+	RoleName               string
+	RoleBindingName        string
+	ClusterRoleName        string
+	ClusterRoleBindingName string
 )
 
 func Init() {
@@ -41,6 +45,8 @@ func Init() {
 	SecretName = fmt.Sprintf("%s-admin-secret", NamespaceName)
 	RoleName = fmt.Sprintf("%s-admin-role", NamespaceName)
 	RoleBindingName = fmt.Sprintf("%s-admin-role-binding", NamespaceName)
+	ClusterRoleName = fmt.Sprintf("%s-admin-cluster-role", NamespaceName)
+	ClusterRoleBindingName = fmt.Sprintf("%s-admin-cluster-role-binding", NamespaceName)
 	if _, err = os.Stat(config.Env.K8S.Config.User); config.Env.K8S.Config.User != "" && err == nil {
 		APIConfig, err = clientcmd.LoadFromFile(config.Env.K8S.Config.User)
 		if err != nil {
@@ -61,7 +67,7 @@ func Init() {
 		log.Logger.Fatalf("Failed to init k8s client: %s", err)
 	}
 	if !checkPermission() {
-		log.Logger.Fatal("Failed to check permission")
+		os.Exit(-1)
 	}
 	initResources()
 	if _, err = os.Stat(config.Env.K8S.Config.User); config.Env.K8S.Config.User == "" && err != nil {
@@ -173,36 +179,87 @@ func initResources() {
 			log.Logger.Fatalf("Error creating RoleBinding: %v", err)
 		}
 	}
+	if ClusterRole, err = Client.RbacV1().ClusterRoles().Get(ctx, ClusterRoleName, metav1.GetOptions{}); err != nil {
+		log.Logger.Infof("ClusterRole %s not found, creating...", ClusterRoleName)
+		ClusterRole = &rbacv1.ClusterRole{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: ClusterRoleName,
+			},
+			Rules: []rbacv1.PolicyRule{
+				{
+					APIGroups: []string{"crd.projectcalico.org"},
+					Resources: []string{"ippools"},
+					Verbs:     []string{"*"},
+				},
+			},
+		}
+		ClusterRole, err = Client.RbacV1().ClusterRoles().Create(ctx, ClusterRole, metav1.CreateOptions{})
+		if err != nil {
+			log.Logger.Fatalf("Error creating ClusterRole: %v", err)
+		}
+	}
+	if ClusterRoleBinding, err = Client.RbacV1().ClusterRoleBindings().Get(ctx, ClusterRoleBindingName, metav1.GetOptions{}); err != nil {
+		log.Logger.Infof("ClusterRoleBinding %s not found, creating...", ClusterRoleBindingName)
+		ClusterRoleBinding = &rbacv1.ClusterRoleBinding{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: ClusterRoleBindingName,
+			},
+			Subjects: []rbacv1.Subject{
+				{
+					Kind:      "ServiceAccount",
+					Name:      SvcAccountName,
+					Namespace: NamespaceName,
+				},
+			},
+			RoleRef: rbacv1.RoleRef{
+				Kind:     "ClusterRole",
+				Name:     ClusterRoleName,
+				APIGroup: "rbac.authorization.k8s.io",
+			},
+		}
+		ClusterRoleBinding, err = Client.RbacV1().ClusterRoleBindings().Create(ctx, ClusterRoleBinding, metav1.CreateOptions{})
+		if err != nil {
+			log.Logger.Fatalf("Error creating ClusterRoleBinding: %v", err)
+		}
+	}
 }
 
 // checkPermission checks if the user has permission to access the resources
 func checkPermission() bool {
 	log.Logger.Debugf("Checking permission in namespace %s", NamespaceName)
-	verbs := []string{"get", "list", "create", "update", "delete"}
-	resourceAttributes := &authorizationv1.ResourceAttributes{
-		Namespace: NamespaceName,
-		Group:     "*",
-		Version:   "*",
-		Resource:  "*",
+	groups := map[string][]string{
+		"*":                     {"*"},
+		"crd.projectcalico.org": {"ippools"},
 	}
+	verbs := []string{"get", "list", "create", "update", "delete"}
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
-	for _, verb := range verbs {
-		resourceAttributes.Verb = verb
-		accessReview := &authorizationv1.SelfSubjectAccessReview{
-			Spec: authorizationv1.SelfSubjectAccessReviewSpec{
-				ResourceAttributes: resourceAttributes,
-			},
-		}
-		res, err := Client.AuthorizationV1().SelfSubjectAccessReviews().Create(ctx, accessReview, metav1.CreateOptions{})
-		if err != nil {
-			log.Logger.Warningf("Failed to check permissions for verb %s: %v", verb, err)
-		}
-		if !res.Status.Allowed {
-			log.Logger.Warningf("User does NOT have permission to %s all resources in namespace cbctf.", verb)
-			log.Logger.Warningf("Reason: %s", res.Status.Reason)
-			log.Logger.Warningf("EvaluationError: %s", res.Status.EvaluationError)
-			return false
+	for group, resources := range groups {
+		for _, resource := range resources {
+			for _, verb := range verbs {
+				accessReview := &authorizationv1.SelfSubjectAccessReview{
+					Spec: authorizationv1.SelfSubjectAccessReviewSpec{
+						ResourceAttributes: &authorizationv1.ResourceAttributes{
+							Namespace: NamespaceName,
+							Group:     group,
+							Version:   "*",
+							Resource:  resource,
+							Verb:      verb,
+						},
+					},
+				}
+				res, err := Client.AuthorizationV1().SelfSubjectAccessReviews().Create(ctx, accessReview, metav1.CreateOptions{})
+				if err != nil {
+					log.Logger.Warningf("Failed to check permissions for verb %s: %v", verb, err)
+					return false
+				}
+				if !res.Status.Allowed {
+					log.Logger.Warningf("User does NOT have permission to %s all resources in namespace cbctf.", verb)
+					log.Logger.Warningf("Reason: %s", res.Status.Reason)
+					log.Logger.Warningf("EvaluationError: %s", res.Status.EvaluationError)
+					return false
+				}
+			}
 		}
 	}
 	return true
