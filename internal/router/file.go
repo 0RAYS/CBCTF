@@ -10,6 +10,7 @@ import (
 	"CBCTF/internal/utils"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
@@ -294,8 +295,13 @@ func DownloadChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
 		return
 	}
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		ctx.JSON(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": nil})
+	if _, err := os.Stat(path); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			ctx.JSON(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": nil})
+			return
+		}
+		log.Logger.Warningf("Failed to get file: %s", err)
+		ctx.JSON(http.StatusOK, gin.H{"msg": "UnknownError", "data": nil})
 		return
 	}
 	ctx.File(path)

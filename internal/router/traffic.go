@@ -3,6 +3,7 @@ package router
 import (
 	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
+	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"errors"
 	"github.com/gin-gonic/gin"
@@ -40,8 +41,13 @@ func GetTraffics(ctx *gin.Context) {
 
 func DownloadTraffic(ctx *gin.Context) {
 	docker := middleware.GetContainer(ctx)
-	if _, err := os.Stat(docker.TrafficPath()); errors.Is(err, os.ErrNotExist) {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "FileNotFound", "data": nil})
+	if _, err := os.Stat(docker.TrafficPath()); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			ctx.JSON(http.StatusOK, gin.H{"msg": "FileNotFound", "data": nil})
+			return
+		}
+		log.Logger.Warningf("Failed to get file: %s", err)
+		ctx.JSON(http.StatusOK, gin.H{"msg": "UnknownError", "data": nil})
 		return
 	}
 	ctx.File(docker.TrafficPath())
