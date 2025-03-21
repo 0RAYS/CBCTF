@@ -217,7 +217,7 @@ func InitResources() {
 }
 
 // CheckPermission checks if the user has permission to access the resources
-func CheckPermission() bool {
+func CheckPermission() {
 	var err error
 	if _, err := os.Stat(config.Env.K8S.Config.User); err != nil {
 		log.Logger.Fatalf("Make sure the config.k8s.config.user configured correctly: %s", err)
@@ -230,7 +230,7 @@ func CheckPermission() bool {
 	if err != nil {
 		log.Logger.Fatalf("Failed to init k8s client: %s", err)
 	}
-	log.Logger.Debugf("Checking permission in namespace %s", NamespaceName)
+	log.Logger.Infof("Checking permission in namespace %s", NamespaceName)
 	groups := map[string][]string{
 		"*":                     {"*"},
 		"crd.projectcalico.org": {"ippools"},
@@ -255,18 +255,16 @@ func CheckPermission() bool {
 				res, err := client.AuthorizationV1().SelfSubjectAccessReviews().Create(ctx, accessReview, metav1.CreateOptions{})
 				if err != nil {
 					log.Logger.Warningf("Failed to check permissions for verb %s: %v", verb, err)
-					return false
 				}
 				if !res.Status.Allowed {
 					log.Logger.Warningf("User does NOT have permission to %s all resources in namespace cbctf.", verb)
 					log.Logger.Warningf("Reason: %s", res.Status.Reason)
 					log.Logger.Warningf("EvaluationError: %s", res.Status.EvaluationError)
-					return false
 				}
 			}
 		}
 	}
-	return true
+	log.Logger.Infof("User has permission to access all needed resources in namespace %s", NamespaceName)
 }
 
 func writeKubeConfig() error {
