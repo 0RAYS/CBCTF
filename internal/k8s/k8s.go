@@ -212,7 +212,7 @@ func InitResources() {
 	if err := config.Save(config.Env); err != nil {
 		log.Logger.Fatalf("Failed to update config: %s", err)
 	}
-	log.Logger.Infof("Kubeconfig saved to %s.conf, please restart and remove the %s", NamespaceName, tmp)
+	log.Logger.Infof("Kubeconfig saved to %s.conf, please remove the %s and restart", NamespaceName, tmp)
 	os.Exit(0)
 }
 
