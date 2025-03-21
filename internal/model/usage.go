@@ -37,13 +37,13 @@ type Usage struct {
 	Decay          float64                `json:"decay" gorm:"default:100"`
 	Attempt        int64                  `json:"attempt" gorm:"default:0"`
 	Solvers        int64                  `json:"solvers" gorm:"default:0"`
-	Hints          utils.Strings          `json:"hints"`
-	Tags           utils.Strings          `json:"tags"`
+	Hints          utils.Strings          `json:"hints" gorm:"type:json"`
+	Tags           utils.Strings          `json:"tags" gorm:"type:json"`
 	First          uint                   `json:"first" gorm:"default:0"`
 	Second         uint                   `json:"second" gorm:"default:0"`
 	Third          uint                   `json:"third" gorm:"default:0"`
 	Last           time.Time              `json:"last"`
-	NetworkPolicy  utils.NetworkPolicy    `json:"network_policy"`
+	NetworkPolicy  utils.NetworkPolicy    `json:"network_policy" gorm:"type:json"`
 	CreatedAt      time.Time              `json:"-"`
 	UpdatedAt      time.Time              `json:"-"`
 	DeletedAt      gorm.DeletedAt         `json:"-" gorm:"index"`
