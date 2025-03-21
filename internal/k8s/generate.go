@@ -53,7 +53,7 @@ func StartGenerator(usage model.Usage) (*corev1.Pod, bool, string) {
 			RestartPolicy:                 corev1.RestartPolicyNever,
 		},
 	}
-	pod, err = Client.CoreV1().Pods(NamespaceName).Create(ctx, pod, metav1.CreateOptions{})
+	pod, err = client.CoreV1().Pods(NamespaceName).Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create Pod: %v", err)
 		return &corev1.Pod{}, false, "CreatePodError"
