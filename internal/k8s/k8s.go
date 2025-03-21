@@ -133,7 +133,7 @@ func InitResources() {
 		Rules: []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{""},
-				Resources: []string{"pods", "services"},
+				Resources: []string{"pods", "services", "pods/exec"},
 				Verbs:     []string{"*"},
 			},
 			{
@@ -249,36 +249,33 @@ func CheckPermission() {
 	}
 	log.Logger.Infof("Checking permission in namespace %s", NamespaceName)
 	groups := map[string][]string{
-		"":                      {"pods", "services"},
+		"":                      {"pods", "services", "pods/exec"},
 		"networking.k8s.io":     {"networkpolicies"},
 		"crd.projectcalico.org": {"ippools"},
 	}
-	verbs := []string{"get", "list", "create", "update", "delete"}
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 	for group, resources := range groups {
 		for _, resource := range resources {
-			for _, verb := range verbs {
-				accessReview := &authorizationv1.SelfSubjectAccessReview{
-					Spec: authorizationv1.SelfSubjectAccessReviewSpec{
-						ResourceAttributes: &authorizationv1.ResourceAttributes{
-							Namespace: NamespaceName,
-							Group:     group,
-							Version:   "*",
-							Resource:  resource,
-							Verb:      verb,
-						},
+			accessReview := &authorizationv1.SelfSubjectAccessReview{
+				Spec: authorizationv1.SelfSubjectAccessReviewSpec{
+					ResourceAttributes: &authorizationv1.ResourceAttributes{
+						Namespace: NamespaceName,
+						Group:     group,
+						Version:   "*",
+						Resource:  resource,
+						Verb:      "*",
 					},
-				}
-				res, err := client.AuthorizationV1().SelfSubjectAccessReviews().Create(ctx, accessReview, metav1.CreateOptions{})
-				if err != nil {
-					log.Logger.Warningf("Failed to check permissions for verb %s: %v", verb, err)
-				}
-				if !res.Status.Allowed {
-					log.Logger.Warningf("User does NOT have permission to %s all resources in namespace cbctf.", verb)
-					log.Logger.Warningf("Reason: %s", res.Status.Reason)
-					log.Logger.Warningf("EvaluationError: %s", res.Status.EvaluationError)
-				}
+				},
+			}
+			res, err := client.AuthorizationV1().SelfSubjectAccessReviews().Create(ctx, accessReview, metav1.CreateOptions{})
+			if err != nil {
+				log.Logger.Warningf("Failed to check permissions for verb %s: %v", verb, err)
+			}
+			if !res.Status.Allowed {
+				log.Logger.Warningf("User does NOT have permission to %s all resources in namespace cbctf.", verb)
+				log.Logger.Warningf("Reason: %s", res.Status.Reason)
+				log.Logger.Warningf("EvaluationError: %s", res.Status.EvaluationError)
 			}
 		}
 	}
