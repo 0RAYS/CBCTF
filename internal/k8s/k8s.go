@@ -76,7 +76,6 @@ func Init() {
 		}
 		config.Env.K8S.Config.User = fmt.Sprintf("%s.conf", NamespaceName)
 		tmp := config.Env.K8S.Config.Admin
-		config.Env.K8S.Config.Admin = ""
 		if err := config.Save(config.Env); err != nil {
 			log.Logger.Fatalf("Failed to update config: %s", err)
 		}
