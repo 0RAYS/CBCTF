@@ -23,7 +23,7 @@ type Cheat struct {
 	ContestID    uint           `json:"contest_id"`
 	Reason       string         `json:"reason"`
 	Type         string         `json:"type"`
-	Associations utils.Strings  `json:"associations"`
+	Associations utils.Strings  `json:"associations" gorm:"type:json"`
 	CreatedAt    time.Time      `json:"-"`
 	UpdatedAt    time.Time      `json:"-"`
 	DeletedAt    gorm.DeletedAt `json:"-" gorm:"index"`
