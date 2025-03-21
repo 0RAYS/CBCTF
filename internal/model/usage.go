@@ -66,12 +66,12 @@ func (u *Usage) BasicDir() string {
 
 // StaticPath 获取静态题目文件的路径
 func (u *Usage) StaticPath() string {
-	return fmt.Sprintf("%s/%s", u.BasicDir(), StaticFile)
+	return fmt.Sprintf("%s/%s", u.BasicDir(), AttachmentFile)
 }
 
 // GeneratorPath 获取动态题目生成器的路径
 func (u *Usage) GeneratorPath() string {
-	return fmt.Sprintf("%s/%s", u.BasicDir(), DynamicFile)
+	return fmt.Sprintf("%s/%s", u.BasicDir(), GeneratorFile)
 }
 
 // AttachmentPath 获取下载时, 题目附件的路径

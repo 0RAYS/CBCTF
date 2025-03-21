@@ -15,8 +15,8 @@ const (
 	Dynamic   = "dynamic"
 	Container = "container"
 
-	StaticFile  = "attachment.zip"
-	DynamicFile = "generator.zip"
+	AttachmentFile = "attachment.zip"
+	GeneratorFile  = "generator.zip"
 )
 
 type Challenge struct {

@@ -188,7 +188,7 @@ func ChallengeStatus(ctx *gin.Context) {
 			log.Logger.Warningf("Failed to check attachment: %s", err)
 		}
 	} else {
-		data["files"] = model.StaticFile
+		data["files"] = model.AttachmentFile
 	}
 	if usage.Type == model.Container {
 		if docker, ok, _ := db.GetDockerBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID); ok {
