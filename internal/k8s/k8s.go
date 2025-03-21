@@ -120,88 +120,100 @@ func InitResources() {
 		}
 	}
 
-	if _, err = client.RbacV1().Roles(NamespaceName).Get(ctx, RoleName, metav1.GetOptions{}); err != nil {
-		_, err = client.RbacV1().Roles(NamespaceName).Create(ctx, &rbacv1.Role{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      RoleName,
+	if _, err = client.RbacV1().Roles(NamespaceName).Get(ctx, RoleName, metav1.GetOptions{}); err == nil {
+		if client.RbacV1().Roles(NamespaceName).Delete(ctx, RoleName, metav1.DeleteOptions{}) != nil {
+			log.Logger.Fatalf("Failed to delete Role: %v", err)
+		}
+	}
+	_, err = client.RbacV1().Roles(NamespaceName).Create(ctx, &rbacv1.Role{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      RoleName,
+			Namespace: NamespaceName,
+		},
+		Rules: []rbacv1.PolicyRule{
+			{
+				APIGroups: []string{"*"},
+				Resources: []string{"*"},
+				Verbs:     []string{"*"},
+			},
+		},
+	}, metav1.CreateOptions{})
+	if err != nil {
+		log.Logger.Fatalf("Error creating Role: %v", err)
+	}
+
+	if _, err = client.RbacV1().RoleBindings(NamespaceName).Get(ctx, RoleBindingName, metav1.GetOptions{}); err == nil {
+		if client.RbacV1().RoleBindings(NamespaceName).Delete(ctx, RoleBindingName, metav1.DeleteOptions{}) != nil {
+			log.Logger.Fatalf("Failed to delete RoleBinding: %v", err)
+		}
+	}
+	_, err = client.RbacV1().RoleBindings(NamespaceName).Create(ctx, &rbacv1.RoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      RoleBindingName,
+			Namespace: NamespaceName,
+		},
+		Subjects: []rbacv1.Subject{
+			{
+				Kind:      "ServiceAccount",
+				Name:      SvcAccountName,
 				Namespace: NamespaceName,
 			},
-			Rules: []rbacv1.PolicyRule{
-				{
-					APIGroups: []string{"*"},
-					Resources: []string{"*"},
-					Verbs:     []string{"*"},
-				},
-			},
-		}, metav1.CreateOptions{})
-		if err != nil {
-			log.Logger.Fatalf("Error creating Role: %v", err)
-		}
+		},
+		RoleRef: rbacv1.RoleRef{
+			Kind:     "Role",
+			Name:     RoleName,
+			APIGroup: "rbac.authorization.k8s.io",
+		},
+	}, metav1.CreateOptions{})
+	if err != nil {
+		log.Logger.Fatalf("Error creating RoleBinding: %v", err)
 	}
 
-	if _, err = client.RbacV1().RoleBindings(NamespaceName).Get(ctx, RoleBindingName, metav1.GetOptions{}); err != nil {
-		_, err = client.RbacV1().RoleBindings(NamespaceName).Create(ctx, &rbacv1.RoleBinding{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      RoleBindingName,
+	if _, err = client.RbacV1().ClusterRoles().Get(ctx, ClusterRoleName, metav1.GetOptions{}); err == nil {
+		if client.RbacV1().ClusterRoles().Delete(ctx, ClusterRoleName, metav1.DeleteOptions{}) != nil {
+			log.Logger.Fatalf("Failed to delete ClusterRole: %v", err)
+		}
+	}
+	_, err = client.RbacV1().ClusterRoles().Create(ctx, &rbacv1.ClusterRole{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: ClusterRoleName,
+		},
+		Rules: []rbacv1.PolicyRule{
+			{
+				APIGroups: []string{"crd.projectcalico.org"},
+				Resources: []string{"ippools"},
+				Verbs:     []string{"*"},
+			},
+		},
+	}, metav1.CreateOptions{})
+	if err != nil {
+		log.Logger.Fatalf("Error creating ClusterRole: %v", err)
+	}
+
+	if _, err = client.RbacV1().ClusterRoleBindings().Get(ctx, ClusterRoleBindingName, metav1.GetOptions{}); err == nil {
+		if client.RbacV1().ClusterRoleBindings().Delete(ctx, ClusterRoleBindingName, metav1.DeleteOptions{}) != nil {
+			log.Logger.Fatalf("Failed to delete ClusterRoleBinding: %v", err)
+		}
+	}
+	_, err = client.RbacV1().ClusterRoleBindings().Create(ctx, &rbacv1.ClusterRoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: ClusterRoleBindingName,
+		},
+		Subjects: []rbacv1.Subject{
+			{
+				Kind:      "ServiceAccount",
+				Name:      SvcAccountName,
 				Namespace: NamespaceName,
 			},
-			Subjects: []rbacv1.Subject{
-				{
-					Kind:      "ServiceAccount",
-					Name:      SvcAccountName,
-					Namespace: NamespaceName,
-				},
-			},
-			RoleRef: rbacv1.RoleRef{
-				Kind:     "Role",
-				Name:     RoleName,
-				APIGroup: "rbac.authorization.k8s.io",
-			},
-		}, metav1.CreateOptions{})
-		if err != nil {
-			log.Logger.Fatalf("Error creating RoleBinding: %v", err)
-		}
-	}
-
-	if _, err = client.RbacV1().ClusterRoles().Get(ctx, ClusterRoleName, metav1.GetOptions{}); err != nil {
-		_, err = client.RbacV1().ClusterRoles().Create(ctx, &rbacv1.ClusterRole{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: ClusterRoleName,
-			},
-			Rules: []rbacv1.PolicyRule{
-				{
-					APIGroups: []string{"crd.projectcalico.org"},
-					Resources: []string{"ippools"},
-					Verbs:     []string{"*"},
-				},
-			},
-		}, metav1.CreateOptions{})
-		if err != nil {
-			log.Logger.Fatalf("Error creating ClusterRole: %v", err)
-		}
-	}
-
-	if _, err = client.RbacV1().ClusterRoleBindings().Get(ctx, ClusterRoleBindingName, metav1.GetOptions{}); err != nil {
-		_, err = client.RbacV1().ClusterRoleBindings().Create(ctx, &rbacv1.ClusterRoleBinding{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: ClusterRoleBindingName,
-			},
-			Subjects: []rbacv1.Subject{
-				{
-					Kind:      "ServiceAccount",
-					Name:      SvcAccountName,
-					Namespace: NamespaceName,
-				},
-			},
-			RoleRef: rbacv1.RoleRef{
-				Kind:     "ClusterRole",
-				Name:     ClusterRoleName,
-				APIGroup: "rbac.authorization.k8s.io",
-			},
-		}, metav1.CreateOptions{})
-		if err != nil {
-			log.Logger.Fatalf("Error creating ClusterRoleBinding: %v", err)
-		}
+		},
+		RoleRef: rbacv1.RoleRef{
+			Kind:     "ClusterRole",
+			Name:     ClusterRoleName,
+			APIGroup: "rbac.authorization.k8s.io",
+		},
+	}, metav1.CreateOptions{})
+	if err != nil {
+		log.Logger.Fatalf("Error creating ClusterRoleBinding: %v", err)
 	}
 
 	if writeKubeConfig() != nil {
