@@ -296,11 +296,11 @@ func DownloadChallenge(ctx *gin.Context) {
 		return
 	}
 	if _, err := os.Stat(path); err != nil {
+		log.Logger.Warningf("Failed to get file: %s", err)
 		if errors.Is(err, os.ErrNotExist) {
 			ctx.JSON(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": nil})
 			return
 		}
-		log.Logger.Warningf("Failed to get file: %s", err)
 		ctx.JSON(http.StatusOK, gin.H{"msg": "UnknownError", "data": nil})
 		return
 	}

@@ -42,11 +42,11 @@ func GetTraffics(ctx *gin.Context) {
 func DownloadTraffic(ctx *gin.Context) {
 	docker := middleware.GetContainer(ctx)
 	if _, err := os.Stat(docker.TrafficPath()); err != nil {
+		log.Logger.Warningf("Failed to get file: %s", err)
 		if errors.Is(err, os.ErrNotExist) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": "FileNotFound", "data": nil})
 			return
 		}
-		log.Logger.Warningf("Failed to get file: %s", err)
 		ctx.JSON(http.StatusOK, gin.H{"msg": "UnknownError", "data": nil})
 		return
 	}
