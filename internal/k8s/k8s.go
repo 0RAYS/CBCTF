@@ -179,6 +179,7 @@ func initResources() {
 		}
 	}
 	if ClusterRole, err = Client.RbacV1().ClusterRoles().Get(ctx, ClusterRoleName, metav1.GetOptions{}); err != nil {
+		log.Logger.Warningf("Failed to get ClusterRole: %s", err)
 		log.Logger.Infof("ClusterRole %s not found, creating...", ClusterRoleName)
 		ClusterRole = &rbacv1.ClusterRole{
 			ObjectMeta: metav1.ObjectMeta{
@@ -198,7 +199,8 @@ func initResources() {
 		}
 	}
 	if ClusterRoleBinding, err = Client.RbacV1().ClusterRoleBindings().Get(ctx, ClusterRoleBindingName, metav1.GetOptions{}); err != nil {
-		log.Logger.Infof("ClusterRoleBinding %s not found, creating...", ClusterRoleBindingName)
+		log.Logger.Warningf("Failed to get ClusterRole: %s", err)
+		log.Logger.Infof("ClusterRoleBindings %s not found, creating...", ClusterRoleBindingName)
 		ClusterRoleBinding = &rbacv1.ClusterRoleBinding{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: ClusterRoleBindingName,
