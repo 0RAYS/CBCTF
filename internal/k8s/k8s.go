@@ -69,8 +69,6 @@ func InitResources() {
 		log.Logger.Fatalf("Failed to load k8s admin config: %s", err)
 	}
 	conf, err = clientcmd.NewNonInteractiveClientConfig(*apiConfig, apiConfig.CurrentContext, &clientcmd.ConfigOverrides{}, nil).ClientConfig()
-	conf.QPS = 20
-	conf.Burst = 40
 	log.Logger.Info("K8S config loaded, initiating client...")
 	client, err = kubernetes.NewForConfig(conf)
 	if err != nil {
@@ -122,80 +120,88 @@ func InitResources() {
 		}
 	}
 
-	_, err = client.RbacV1().Roles(NamespaceName).Create(ctx, &rbacv1.Role{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      RoleName,
-			Namespace: NamespaceName,
-		},
-		Rules: []rbacv1.PolicyRule{
-			{
-				APIGroups: []string{"*"},
-				Resources: []string{"*"},
-				Verbs:     []string{"*"},
-			},
-		},
-	}, metav1.CreateOptions{})
-	if err != nil {
-		log.Logger.Fatalf("Error creating Role: %v", err)
-	}
-
-	_, err = client.RbacV1().RoleBindings(NamespaceName).Create(ctx, &rbacv1.RoleBinding{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      RoleBindingName,
-			Namespace: NamespaceName,
-		},
-		Subjects: []rbacv1.Subject{
-			{
-				Kind:      "ServiceAccount",
-				Name:      SvcAccountName,
+	if _, err = client.RbacV1().Roles(NamespaceName).Get(ctx, RoleName, metav1.GetOptions{}); err != nil {
+		_, err = client.RbacV1().Roles(NamespaceName).Create(ctx, &rbacv1.Role{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      RoleName,
 				Namespace: NamespaceName,
 			},
-		},
-		RoleRef: rbacv1.RoleRef{
-			Kind:     "Role",
-			Name:     RoleName,
-			APIGroup: "rbac.authorization.k8s.io",
-		},
-	}, metav1.CreateOptions{})
-	if err != nil {
-		log.Logger.Fatalf("Error creating RoleBinding: %v", err)
-	}
-
-	_, err = client.RbacV1().ClusterRoles().Create(ctx, &rbacv1.ClusterRole{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: ClusterRoleName,
-		},
-		Rules: []rbacv1.PolicyRule{
-			{
-				APIGroups: []string{"crd.projectcalico.org"},
-				Resources: []string{"ippools"},
-				Verbs:     []string{"*"},
+			Rules: []rbacv1.PolicyRule{
+				{
+					APIGroups: []string{"*"},
+					Resources: []string{"*"},
+					Verbs:     []string{"*"},
+				},
 			},
-		},
-	}, metav1.CreateOptions{})
-	if err != nil {
-		log.Logger.Fatalf("Error creating ClusterRole: %v", err)
+		}, metav1.CreateOptions{})
+		if err != nil {
+			log.Logger.Fatalf("Error creating Role: %v", err)
+		}
 	}
 
-	_, err = client.RbacV1().ClusterRoleBindings().Create(ctx, &rbacv1.ClusterRoleBinding{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: ClusterRoleBindingName,
-		},
-		Subjects: []rbacv1.Subject{
-			{
-				Kind:      "ServiceAccount",
-				Name:      SvcAccountName,
+	if _, err = client.RbacV1().RoleBindings(NamespaceName).Get(ctx, RoleBindingName, metav1.GetOptions{}); err != nil {
+		_, err = client.RbacV1().RoleBindings(NamespaceName).Create(ctx, &rbacv1.RoleBinding{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      RoleBindingName,
 				Namespace: NamespaceName,
 			},
-		},
-		RoleRef: rbacv1.RoleRef{
-			Kind:     "ClusterRole",
-			Name:     ClusterRoleName,
-			APIGroup: "rbac.authorization.k8s.io",
-		},
-	}, metav1.CreateOptions{})
-	if err != nil {
-		log.Logger.Fatalf("Error creating ClusterRoleBinding: %v", err)
+			Subjects: []rbacv1.Subject{
+				{
+					Kind:      "ServiceAccount",
+					Name:      SvcAccountName,
+					Namespace: NamespaceName,
+				},
+			},
+			RoleRef: rbacv1.RoleRef{
+				Kind:     "Role",
+				Name:     RoleName,
+				APIGroup: "rbac.authorization.k8s.io",
+			},
+		}, metav1.CreateOptions{})
+		if err != nil {
+			log.Logger.Fatalf("Error creating RoleBinding: %v", err)
+		}
+	}
+
+	if _, err = client.RbacV1().ClusterRoles().Get(ctx, ClusterRoleName, metav1.GetOptions{}); err != nil {
+		_, err = client.RbacV1().ClusterRoles().Create(ctx, &rbacv1.ClusterRole{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: ClusterRoleName,
+			},
+			Rules: []rbacv1.PolicyRule{
+				{
+					APIGroups: []string{"crd.projectcalico.org"},
+					Resources: []string{"ippools"},
+					Verbs:     []string{"*"},
+				},
+			},
+		}, metav1.CreateOptions{})
+		if err != nil {
+			log.Logger.Fatalf("Error creating ClusterRole: %v", err)
+		}
+	}
+
+	if _, err = client.RbacV1().ClusterRoleBindings().Get(ctx, ClusterRoleBindingName, metav1.GetOptions{}); err != nil {
+		_, err = client.RbacV1().ClusterRoleBindings().Create(ctx, &rbacv1.ClusterRoleBinding{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: ClusterRoleBindingName,
+			},
+			Subjects: []rbacv1.Subject{
+				{
+					Kind:      "ServiceAccount",
+					Name:      SvcAccountName,
+					Namespace: NamespaceName,
+				},
+			},
+			RoleRef: rbacv1.RoleRef{
+				Kind:     "ClusterRole",
+				Name:     ClusterRoleName,
+				APIGroup: "rbac.authorization.k8s.io",
+			},
+		}, metav1.CreateOptions{})
+		if err != nil {
+			log.Logger.Fatalf("Error creating ClusterRoleBinding: %v", err)
+		}
 	}
 
 	if writeKubeConfig() != nil {
@@ -212,6 +218,18 @@ func InitResources() {
 
 // CheckPermission checks if the user has permission to access the resources
 func CheckPermission() bool {
+	var err error
+	if _, err := os.Stat(config.Env.K8S.Config.User); err != nil {
+		log.Logger.Fatalf("Make sure the config.k8s.config.user configured correctly: %s", err)
+	}
+	conf, err = clientcmd.BuildConfigFromFlags("", config.Env.K8S.Config.User)
+	if err != nil {
+		log.Logger.Fatalf("Failed to load k8s user config: %s", err)
+	}
+	client, err = kubernetes.NewForConfig(conf)
+	if err != nil {
+		log.Logger.Fatalf("Failed to init k8s client: %s", err)
+	}
 	log.Logger.Debugf("Checking permission in namespace %s", NamespaceName)
 	groups := map[string][]string{
 		"*":                     {"*"},
