@@ -30,7 +30,7 @@ func CreatePod(ctx context.Context, docker model.Docker, usage model.Usage, cont
 			RestartPolicy:                 corev1.RestartPolicyNever,
 		},
 	}
-	pod, err = Client.CoreV1().Pods(NamespaceName).Create(ctx, pod, metav1.CreateOptions{})
+	pod, err = client.CoreV1().Pods(NamespaceName).Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create Pod: %v", err)
 		return nil, false, "CreatePodError"
@@ -54,7 +54,7 @@ func CreatePod(ctx context.Context, docker model.Docker, usage model.Usage, cont
 
 // GetPods 获取所有 Pod
 func GetPods(ctx context.Context) (*corev1.PodList, bool, string) {
-	pods, err := Client.CoreV1().Pods(NamespaceName).List(ctx, metav1.ListOptions{})
+	pods, err := client.CoreV1().Pods(NamespaceName).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to get Pods: %v", err)
 		return &corev1.PodList{}, false, "GetPodError"
@@ -64,7 +64,7 @@ func GetPods(ctx context.Context) (*corev1.PodList, bool, string) {
 
 // GetPod 依据 name 获取 Pod
 func GetPod(ctx context.Context, name string) (*corev1.Pod, bool, string) {
-	pod, err := Client.CoreV1().Pods(NamespaceName).Get(ctx, name, metav1.GetOptions{})
+	pod, err := client.CoreV1().Pods(NamespaceName).Get(ctx, name, metav1.GetOptions{})
 	if apierror.IsNotFound(err) {
 		return &corev1.Pod{}, false, "PodNotFound"
 	}
@@ -77,7 +77,7 @@ func GetPod(ctx context.Context, name string) (*corev1.Pod, bool, string) {
 
 // DeletePod 依据 name 删除 Pod
 func DeletePod(ctx context.Context, name string) (bool, string) {
-	err := Client.CoreV1().Pods(NamespaceName).Delete(ctx, name, metav1.DeleteOptions{})
+	err := client.CoreV1().Pods(NamespaceName).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete Pod %s: %v", name, err)
 		return false, "DeletePodError"

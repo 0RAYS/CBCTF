@@ -68,7 +68,7 @@ func CreateNetworkPolicy(ctx context.Context, docker model.Docker, usage model.U
 		networkPolicy.Spec.Egress = egress
 	}
 	var err error
-	networkPolicy, err = Client.NetworkingV1().NetworkPolicies(NamespaceName).Create(ctx, networkPolicy, metav1.CreateOptions{})
+	networkPolicy, err = client.NetworkingV1().NetworkPolicies(NamespaceName).Create(ctx, networkPolicy, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create NetworkPolicy %s: %v", docker.NetworkPolicyName, err)
 		return nil, false, "CreateNetworkPolicyError"
@@ -77,7 +77,7 @@ func CreateNetworkPolicy(ctx context.Context, docker model.Docker, usage model.U
 }
 
 func DeleteNetworkPolicy(ctx context.Context, name string) (bool, string) {
-	err := Client.NetworkingV1().NetworkPolicies(NamespaceName).Delete(ctx, name, metav1.DeleteOptions{})
+	err := client.NetworkingV1().NetworkPolicies(NamespaceName).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete NetworkPolicy %s: %v", name, err)
 		return false, "DeleteNetworkPolicyError"

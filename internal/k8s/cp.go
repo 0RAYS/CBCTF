@@ -26,7 +26,7 @@ func CopyToPod(podName, containerName, src, dst string) error {
 		return err
 	}
 	command := []string{"tee", dst}
-	req := Client.CoreV1().RESTClient().Post().
+	req := client.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Name(podName).
 		Namespace(NamespaceName).
@@ -37,7 +37,7 @@ func CopyToPod(podName, containerName, src, dst string) error {
 			Stdin:     true,
 			TTY:       false,
 		}, scheme.ParameterCodec)
-	executor, err := remotecommand.NewSPDYExecutor(Config, "POST", req.URL())
+	executor, err := remotecommand.NewSPDYExecutor(conf, "POST", req.URL())
 	if err != nil {
 		return err
 	}

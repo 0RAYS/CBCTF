@@ -37,7 +37,7 @@ func CreateService(ctx context.Context, docker model.Docker, usage model.Usage) 
 			ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeLocal,
 		},
 	}
-	service, err = Client.CoreV1().Services(NamespaceName).Create(ctx, service, metav1.CreateOptions{})
+	service, err = client.CoreV1().Services(NamespaceName).Create(ctx, service, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create Service %s: %s", docker.ServiceName, err)
 		return nil, false, "CreateServiceError"
@@ -47,7 +47,7 @@ func CreateService(ctx context.Context, docker model.Docker, usage model.Usage) 
 
 // DeleteService 删除 Service, 目前主要是靶机的端口映射
 func DeleteService(ctx context.Context, name string) (bool, string) {
-	err := Client.CoreV1().Services(NamespaceName).Delete(ctx, name, metav1.DeleteOptions{})
+	err := client.CoreV1().Services(NamespaceName).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete Service %s: %v", name, err)
 		return false, "DeleteServiceError"
