@@ -270,10 +270,10 @@ func CheckPermission() {
 			}
 			res, err := client.AuthorizationV1().SelfSubjectAccessReviews().Create(ctx, accessReview, metav1.CreateOptions{})
 			if err != nil {
-				log.Logger.Warningf("Failed to check permissions for verb %s: %v", verb, err)
+				log.Logger.Warningf("Failed to check permissions: %v", err)
 			}
 			if !res.Status.Allowed {
-				log.Logger.Warningf("User does NOT have permission to %s all resources in namespace cbctf.", verb)
+				log.Logger.Warningf("User does NOT have permission to access %s-%s in namespace cbctf.", group, resource)
 				log.Logger.Warningf("Reason: %s", res.Status.Reason)
 				log.Logger.Warningf("EvaluationError: %s", res.Status.EvaluationError)
 			}
