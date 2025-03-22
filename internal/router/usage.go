@@ -3,11 +3,13 @@ package router
 import (
 	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
+	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"os"
 )
 
 func AddUsage(ctx *gin.Context) {
@@ -46,10 +48,12 @@ func GetUsages(ctx *gin.Context) {
 		tmp := map[string]interface{}{}
 		if !all {
 			usage.Flag = ""
+			usage.Flags = make([]string, 0)
 			usage.DockerImage = ""
 			usage.GeneratorImage = ""
 			usage.NetworkPolicy.From = make([]utils.IPBlock, 0)
 			usage.NetworkPolicy.To = make([]utils.IPBlock, 0)
+			usage.NetworkPolicies = make([]utils.NetworkPolicy, 0)
 		}
 		tmp["usage"] = usage
 		if !all {
@@ -59,6 +63,29 @@ func GetUsages(ctx *gin.Context) {
 				"init": func() bool {
 					_, ok, _ = db.GetFlagBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID)
 					return ok
+				}(),
+				"files": func() string {
+					if _, err := os.Stat(usage.AttachmentPath(team.ID)); err != nil {
+						if !os.IsNotExist(err) {
+							log.Logger.Warningf("Failed to check attachment: %s", err)
+						}
+						return ""
+					}
+					return model.AttachmentFile
+				}(),
+				"remote": func() gin.H {
+					if usage.Type == model.Docker {
+						if docker, ok, _ := db.GetDockerBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID); ok {
+							return gin.H{
+								"target":    docker.RemoteAddr(),
+								"remaining": docker.Remaining().Seconds(),
+							}
+						}
+					}
+					return gin.H{
+						"target":    "",
+						"remaining": "",
+					}
 				}(),
 			}
 		}
