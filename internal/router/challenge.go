@@ -164,8 +164,8 @@ func DeleteChallenge(ctx *gin.Context) {
 
 func ChallengeStatus(ctx *gin.Context) {
 	data := gin.H{
-		"status": false,
-		"files":  "",
+		"init":  false,
+		"files": "",
 		"remote": gin.H{
 			"target":    "",
 			"remaining": "",
@@ -179,7 +179,7 @@ func ChallengeStatus(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": data})
 		return
 	}
-	data["status"] = true
+	data["init"] = true
 	if db.IsSolved(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID) {
 		data["solved"] = true
 	}
