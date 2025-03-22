@@ -109,7 +109,10 @@ func VerifyFlag(tx *gorm.DB, contestID, teamID uint, challengeID, value string) 
 	if !ok {
 		return false
 	}
-	if flag.Value == value {
+	if value == flag.Value {
+		return true
+	}
+	if utils.In(value, flag.Values) {
 		return true
 	}
 	return false
