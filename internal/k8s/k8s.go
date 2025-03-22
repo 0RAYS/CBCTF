@@ -19,17 +19,15 @@ import (
 )
 
 var (
-	client                 *kubernetes.Clientset
-	secret                 *corev1.Secret
-	conf                   *rest.Config
-	apiConfig              *api.Config
-	NamespaceName          string
-	SvcAccountName         string
-	SecretName             string
-	RoleName               string
-	RoleBindingName        string
-	ClusterRoleName        string
-	ClusterRoleBindingName string
+	client          *kubernetes.Clientset
+	secret          *corev1.Secret
+	conf            *rest.Config
+	apiConfig       *api.Config
+	NamespaceName   string
+	SvcAccountName  string
+	SecretName      string
+	RoleName        string
+	RoleBindingName string
 )
 
 func Init(run bool) {
@@ -39,8 +37,6 @@ func Init(run bool) {
 	SecretName = fmt.Sprintf("%s-admin-secret", NamespaceName)
 	RoleName = fmt.Sprintf("%s-admin-role", NamespaceName)
 	RoleBindingName = fmt.Sprintf("%s-admin-role-binding", NamespaceName)
-	ClusterRoleName = fmt.Sprintf("%s-admin-cluster-role", NamespaceName)
-	ClusterRoleBindingName = fmt.Sprintf("%s-admin-cluster-role-binding", NamespaceName)
 	if run {
 		if _, err := os.Stat(config.Env.K8S.Config.User); err != nil {
 			log.Logger.Fatalf("Make sure the config.k8s.config.user configured correctly: %s", err)
@@ -174,53 +170,6 @@ func InitResources() {
 		log.Logger.Fatalf("Error creating RoleBinding: %v", err)
 	}
 
-	if _, err = client.RbacV1().ClusterRoles().Get(ctx, ClusterRoleName, metav1.GetOptions{}); err == nil {
-		if client.RbacV1().ClusterRoles().Delete(ctx, ClusterRoleName, metav1.DeleteOptions{}) != nil {
-			log.Logger.Fatalf("Failed to delete ClusterRole: %v", err)
-		}
-	}
-	_, err = client.RbacV1().ClusterRoles().Create(ctx, &rbacv1.ClusterRole{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: ClusterRoleName,
-		},
-		Rules: []rbacv1.PolicyRule{
-			{
-				APIGroups: []string{"crd.projectcalico.org"},
-				Resources: []string{"ippools"},
-				Verbs:     []string{"*"},
-			},
-		},
-	}, metav1.CreateOptions{})
-	if err != nil {
-		log.Logger.Fatalf("Error creating ClusterRole: %v", err)
-	}
-
-	if _, err = client.RbacV1().ClusterRoleBindings().Get(ctx, ClusterRoleBindingName, metav1.GetOptions{}); err == nil {
-		if client.RbacV1().ClusterRoleBindings().Delete(ctx, ClusterRoleBindingName, metav1.DeleteOptions{}) != nil {
-			log.Logger.Fatalf("Failed to delete ClusterRoleBinding: %v", err)
-		}
-	}
-	_, err = client.RbacV1().ClusterRoleBindings().Create(ctx, &rbacv1.ClusterRoleBinding{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: ClusterRoleBindingName,
-		},
-		Subjects: []rbacv1.Subject{
-			{
-				Kind:      "ServiceAccount",
-				Name:      SvcAccountName,
-				Namespace: NamespaceName,
-			},
-		},
-		RoleRef: rbacv1.RoleRef{
-			Kind:     "ClusterRole",
-			Name:     ClusterRoleName,
-			APIGroup: "rbac.authorization.k8s.io",
-		},
-	}, metav1.CreateOptions{})
-	if err != nil {
-		log.Logger.Fatalf("Error creating ClusterRoleBinding: %v", err)
-	}
-
 	if writeKubeConfig() != nil {
 		log.Logger.Fatalf("Failed to save kubeconfig to %s.conf: %s ", NamespaceName, err)
 	}
@@ -249,9 +198,8 @@ func CheckPermission() {
 	}
 	log.Logger.Infof("Checking permission in namespace %s", NamespaceName)
 	groups := map[string][]string{
-		"":                      {"pods", "services", "pods/exec"},
-		"networking.k8s.io":     {"networkpolicies"},
-		"crd.projectcalico.org": {"ippools"},
+		"":                  {"pods", "services", "pods/exec"},
+		"networking.k8s.io": {"networkpolicies"},
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
