@@ -48,6 +48,8 @@ func GetUsages(ctx *gin.Context) {
 			usage.Flag = ""
 			usage.DockerImage = ""
 			usage.GeneratorImage = ""
+			usage.NetworkPolicy.From = make([]utils.IPBlock, 0)
+			usage.NetworkPolicy.To = make([]utils.IPBlock, 0)
 		}
 		tmp["usage"] = usage
 		if !all {
