@@ -25,7 +25,7 @@ type Traffic struct {
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
-func InitTraffic(conn traffic.Connection, docker Docker) Traffic {
+func InitTraffic(conn traffic.Connection, docker Container) Traffic {
 	_, t := conn.ParsePayload()
 	return Traffic{
 		SrcIP:       conn.SrcIP,

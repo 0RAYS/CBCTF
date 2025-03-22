@@ -53,7 +53,7 @@ func Init() {
 		&model.Admin{}, &model.User{}, &model.Team{},
 		&model.Contest{}, &model.File{}, &model.IP{},
 		&model.Challenge{}, &model.Usage{}, &model.Flag{},
-		&model.Docker{}, &model.Submission{}, &model.Device{},
+		&model.Container{}, &model.Submission{}, &model.Device{},
 		&model.Traffic{}, &model.Notice{}, &model.Cheat{},
 	)
 	if err != nil {

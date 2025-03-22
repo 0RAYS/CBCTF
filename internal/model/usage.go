@@ -126,7 +126,7 @@ func InitUsage(challenge Challenge, contestID uint) Usage {
 		Port:           challenge.Port,
 		Last:           time.Now(),
 	}
-	if challenge.Type == Container {
+	if challenge.Type == Docker {
 		// defaultPolicy 允许外部访问, 不允许访问内网, 允许访问外网
 		defaultPolicy := utils.NetworkPolicy{
 			From: []utils.IPBlock{},

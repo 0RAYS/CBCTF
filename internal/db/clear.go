@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// associations 排除过使用了 Gorm 关联关系的其余关联关系, 不包含 model.Docker, 由定时任务删除
+// associations 排除过使用了 Gorm 关联关系的其余关联关系, 不包含 model.Container, 由定时任务删除
 var associations = map[string][]interface{}{
 	"user_id":      {model.Submission{}, model.Cheat{}},
 	"team_id":      {model.Submission{}, model.Flag{}, model.Cheat{}},

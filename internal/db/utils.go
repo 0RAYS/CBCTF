@@ -77,7 +77,7 @@ func IsMemberInTeam(tx *gorm.DB, teamID uint, userID uint) bool {
 
 // IsValidChallengeType 题目类型验证
 func IsValidChallengeType(t string) bool {
-	if t != model.Static && t != model.Dynamic && t != model.Container {
+	if t != model.Static && t != model.Dynamic && t != model.Docker {
 		return false
 	}
 	return true
