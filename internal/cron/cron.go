@@ -11,8 +11,8 @@ var c *cron.Cron
 func executionTime(name string, task func()) func() {
 	return func() {
 		start := time.Now()
-		log.Logger.Infof("%s processing time: %s", name, time.Since(start))
 		task()
+		log.Logger.Infof("%s processing time: %s", name, time.Since(start))
 	}
 }
 
