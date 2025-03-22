@@ -30,29 +30,29 @@ type Docker struct {
 }
 
 // MarshalJSON Duration 转为秒
-func (d *Docker) MarshalJSON() ([]byte, error) {
-	type Tmp Docker // 定义一个别名以避免递归调用
-	return json.Marshal(&struct {
-		*Tmp
+func (d Docker) MarshalJSON() ([]byte, error) {
+	type Tmp Docker
+	return json.Marshal(struct {
+		Tmp
 		Duration int64 `json:"duration"`
 	}{
-		Tmp:      (*Tmp)(d),
+		Tmp:      Tmp(d),
 		Duration: int64(d.Duration.Seconds()),
 	})
 }
 
 // TrafficPath 流量文件路径
-func (d *Docker) TrafficPath() string {
+func (d Docker) TrafficPath() string {
 	return fmt.Sprintf("%s/traffics/%s/%d/%d.pcap", config.Env.Path, d.ChallengeID, d.TeamID, d.ID)
 }
 
 // RemoteAddr 返回远程地址
-func (d *Docker) RemoteAddr() string {
+func (d Docker) RemoteAddr() string {
 	return fmt.Sprintf("%s:%d", d.IP, d.Port)
 }
 
 // Remaining 返回剩余时间
-func (d *Docker) Remaining() time.Duration {
+func (d Docker) Remaining() time.Duration {
 	return d.Start.Add(d.Duration).Sub(time.Now())
 }
 

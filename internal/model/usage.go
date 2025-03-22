@@ -3,7 +3,6 @@ package model
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/utils"
-	"encoding/json"
 	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/plugin/optimisticlock"
@@ -50,32 +49,23 @@ type Usage struct {
 	Version        optimisticlock.Version `json:"-" gorm:"default:1"`
 }
 
-func (u *Usage) MarshalJSON() ([]byte, error) {
-	type Tmp Usage
-	return json.Marshal(&struct {
-		*Tmp
-	}{
-		Tmp: (*Tmp)(u),
-	})
-}
-
 // BasicDir 获取题目相关文件的目录
-func (u *Usage) BasicDir() string {
+func (u Usage) BasicDir() string {
 	return fmt.Sprintf("%s/challenges/%s", config.Env.Path, u.ChallengeID)
 }
 
 // StaticPath 获取静态题目文件的路径
-func (u *Usage) StaticPath() string {
+func (u Usage) StaticPath() string {
 	return fmt.Sprintf("%s/%s", u.BasicDir(), AttachmentFile)
 }
 
 // GeneratorPath 获取动态题目生成器的路径
-func (u *Usage) GeneratorPath() string {
+func (u Usage) GeneratorPath() string {
 	return fmt.Sprintf("%s/%s", u.BasicDir(), GeneratorFile)
 }
 
 // AttachmentPath 获取下载时, 题目附件的路径
-func (u *Usage) AttachmentPath(teamID uint) string {
+func (u Usage) AttachmentPath(teamID uint) string {
 	switch u.Type {
 	case Dynamic:
 		return fmt.Sprintf("%s/attachments/%s/%d.zip", config.Env.Path, u.ChallengeID, teamID)
@@ -85,7 +75,7 @@ func (u *Usage) AttachmentPath(teamID uint) string {
 }
 
 // CalcScore 依据 Solver ScoreType 计算当前分数
-func (u *Usage) CalcScore(solvers int64) float64 {
+func (u Usage) CalcScore(solvers int64) float64 {
 	var calc float64 = 0
 	switch u.ScoreType {
 	case StaticScore:
@@ -104,7 +94,7 @@ func (u *Usage) CalcScore(solvers int64) float64 {
 	return calc
 }
 
-func (u *Usage) CalcBlood(teamID uint) (float64, string) {
+func (u Usage) CalcBlood(teamID uint) (float64, string) {
 	mapping := []struct {
 		value float64
 		name  string

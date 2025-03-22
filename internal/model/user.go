@@ -34,15 +34,15 @@ type User struct {
 }
 
 // MarshalJSON 重写 MarshalJSON 方法, 使 Avatar 返回完整的 URL, 转换 Teams Contests 为数量
-func (u *User) MarshalJSON() ([]byte, error) {
+func (u User) MarshalJSON() ([]byte, error) {
 	type Tmp User // 定义一个别名以避免递归调用
 	return json.Marshal(&struct {
-		*Tmp
+		Tmp
 		Contests int    `json:"contests"`
 		Teams    int    `json:"teams"`
 		Avatar   string `json:"avatar"`
 	}{
-		Tmp:      (*Tmp)(u),
+		Tmp:      Tmp(u),
 		Contests: len(u.Contests),
 		Teams:    len(u.Teams),
 		Avatar:   fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(u.Avatar, "/")),

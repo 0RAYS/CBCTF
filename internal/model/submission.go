@@ -21,12 +21,12 @@ type Submission struct {
 	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index"`
 }
 
-func (s *Submission) MarshalJSON() ([]byte, error) {
+func (s Submission) MarshalJSON() ([]byte, error) {
 	type Tmp Submission
 	return json.Marshal(&struct {
-		*Tmp
+		Tmp
 	}{
-		Tmp: (*Tmp)(s),
+		Tmp: Tmp(s),
 	})
 }
 
