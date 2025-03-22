@@ -26,13 +26,17 @@ type Admin struct {
 
 // MarshalJSON 重写 MarshalJSON 方法, 使其返回完整的 URL
 func (a Admin) MarshalJSON() ([]byte, error) {
+	avatar := ""
+	if strings.TrimPrefix(a.Avatar, "/") != "" {
+		avatar = fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(a.Avatar, "/"))
+	}
 	type Tmp Admin
 	return json.Marshal(&struct {
 		Tmp
 		Avatar string `json:"avatar"`
 	}{
 		Tmp:    Tmp(a),
-		Avatar: fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(a.Avatar, "/")),
+		Avatar: avatar,
 	})
 }
 

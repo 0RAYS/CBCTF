@@ -38,6 +38,10 @@ type Contest struct {
 
 // MarshalJSON 重写 MarshalJSON 方法, 使 Avatar 返回完整的 URL, 转换 Teams Users Notices 为数量, 以及将 Duration 转换为秒
 func (c Contest) MarshalJSON() ([]byte, error) {
+	avatar := ""
+	if strings.TrimPrefix(c.Avatar, "/") != "" {
+		avatar = fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(c.Avatar, "/"))
+	}
 	type Tmp Contest // 定义一个别名以避免递归调用
 	return json.Marshal(&struct {
 		Tmp
@@ -51,7 +55,7 @@ func (c Contest) MarshalJSON() ([]byte, error) {
 		Users:    len(c.Users),
 		Teams:    len(c.Teams),
 		Notices:  len(c.Notices),
-		Avatar:   fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(c.Avatar, "/")),
+		Avatar:   avatar,
 		Duration: int64(c.Duration.Seconds()),
 	})
 }
