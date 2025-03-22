@@ -10,7 +10,7 @@ import (
 	"k8s.io/utils/ptr"
 )
 
-func CreatePod(ctx context.Context, docker model.Docker, usage model.Usage, containers []corev1.Container) (*corev1.Pod, bool, string) {
+func CreatePod(ctx context.Context, docker model.Container, usage model.Usage, containers []corev1.Container) (*corev1.Pod, bool, string) {
 	var (
 		pod *corev1.Pod
 		err error

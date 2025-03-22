@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-type Docker struct {
+type Container struct {
 	ID                uint                   `json:"id" gorm:"primaryKey"`
 	Port              int32                  `json:"port"`
 	ContestID         uint                   `json:"contest_id"`
@@ -30,8 +30,8 @@ type Docker struct {
 }
 
 // MarshalJSON Duration 转为秒
-func (d Docker) MarshalJSON() ([]byte, error) {
-	type Tmp Docker
+func (d Container) MarshalJSON() ([]byte, error) {
+	type Tmp Container
 	return json.Marshal(struct {
 		Tmp
 		Duration int64 `json:"duration"`
@@ -42,26 +42,26 @@ func (d Docker) MarshalJSON() ([]byte, error) {
 }
 
 // TrafficPath 流量文件路径
-func (d Docker) TrafficPath() string {
+func (d Container) TrafficPath() string {
 	return fmt.Sprintf("%s/traffics/%s/%d/%d.pcap", config.Env.Path, d.ChallengeID, d.TeamID, d.ID)
 }
 
 // RemoteAddr 返回远程地址
-func (d Docker) RemoteAddr() string {
+func (d Container) RemoteAddr() string {
 	return fmt.Sprintf("%s:%d", d.IP, d.Port)
 }
 
 // Remaining 返回剩余时间
-func (d Docker) Remaining() time.Duration {
+func (d Container) Remaining() time.Duration {
 	return d.Start.Add(d.Duration).Sub(time.Now())
 }
 
-func InitDocker(flag Flag, usage Usage, creatorID uint) Docker {
+func InitDocker(flag Flag, usage Usage, creatorID uint) Container {
 	podName := fmt.Sprintf("victim-%s-%d-pod", usage.ChallengeID, flag.TeamID)
 	serviceName := fmt.Sprintf("victim-%s-%d-svc", usage.ChallengeID, flag.TeamID)
 	containerName := fmt.Sprintf("victim-%s-%d", usage.ChallengeID, flag.TeamID)
 	networkPolicyName := fmt.Sprintf("victim-%s-%d-net", usage.ChallengeID, flag.TeamID)
-	return Docker{
+	return Container{
 		ContestID:         flag.ContestID,
 		ChallengeID:       flag.ChallengeID,
 		TeamID:            flag.TeamID,

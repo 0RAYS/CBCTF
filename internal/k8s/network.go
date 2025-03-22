@@ -9,7 +9,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func CreateNetworkPolicy(ctx context.Context, docker model.Docker, usage model.Usage) (*netv1.NetworkPolicy, bool, string) {
+func CreateNetworkPolicy(ctx context.Context, docker model.Container, usage model.Usage) (*netv1.NetworkPolicy, bool, string) {
 	if len(usage.NetworkPolicy.From) < 1 && len(usage.NetworkPolicy.To) < 1 {
 		return nil, true, "Success"
 	}

@@ -223,7 +223,7 @@ func GetUsage(ctx *gin.Context) model.Usage {
 	}
 }
 
-// SetContainer 保存 model.Docker 至上下文
+// SetContainer 保存 model.Container 至上下文
 func SetContainer(ctx *gin.Context) {
 	type containerIDUri struct {
 		ContainerID uint `uri:"containerID" binding:"required"`
@@ -244,12 +244,12 @@ func SetContainer(ctx *gin.Context) {
 	ctx.Next()
 }
 
-// GetContainer 从上下文中获取 model.Docker
-func GetContainer(ctx *gin.Context) model.Docker {
+// GetContainer 从上下文中获取 model.Container
+func GetContainer(ctx *gin.Context) model.Container {
 	if container, ok := ctx.Get("Container"); !ok {
-		return model.Docker{}
+		return model.Container{}
 	} else {
-		return container.(model.Docker)
+		return container.(model.Container)
 	}
 }
 

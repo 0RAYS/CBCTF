@@ -190,7 +190,7 @@ func ChallengeStatus(ctx *gin.Context) {
 	} else {
 		data["files"] = model.AttachmentFile
 	}
-	if usage.Type == model.Container {
+	if usage.Type == model.Docker {
 		if docker, ok, _ := db.GetDockerBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID); ok {
 			data["remote"] = gin.H{
 				"target":    docker.RemoteAddr(),

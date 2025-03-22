@@ -10,7 +10,7 @@ import (
 )
 
 // SaveTraffic 从 .pcap 文件中保存流量至数据库
-func SaveTraffic(tx *gorm.DB, docker model.Docker) (bool, string) {
+func SaveTraffic(tx *gorm.DB, docker model.Container) (bool, string) {
 	res := tx.Model(&model.Traffic{}).Where("path = ?", docker.TrafficPath()).Find(&model.Traffic{}).Limit(1)
 	if res.RowsAffected > 0 || res.Error != nil {
 		return true, "Success"

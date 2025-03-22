@@ -11,7 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func CreateService(ctx context.Context, docker model.Docker, usage model.Usage) (*corev1.Service, bool, string) {
+func CreateService(ctx context.Context, docker model.Container, usage model.Usage) (*corev1.Service, bool, string) {
 	var (
 		service *corev1.Service
 		err     error

@@ -12,7 +12,7 @@ import (
 )
 
 // StartContainer 启动容器, 并且注入 flag
-func StartContainer(usage model.Usage, flag model.Flag, docker model.Docker) (string, int32, bool, string) {
+func StartContainer(usage model.Usage, flag model.Flag, docker model.Container) (string, int32, bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 	var (
@@ -22,7 +22,7 @@ func StartContainer(usage model.Usage, flag model.Flag, docker model.Docker) (st
 		ip      string
 		msg     string
 	)
-	if usage.Type != model.Container {
+	if usage.Type != model.Docker {
 		return "", -1, false, "InvalidChallengeType"
 	}
 	if usage.DockerImage == "" {
@@ -117,7 +117,7 @@ func StartContainer(usage model.Usage, flag model.Flag, docker model.Docker) (st
 }
 
 // StopContainer 停止容器
-func StopContainer(docker model.Docker) (bool, string) {
+func StopContainer(docker model.Container) (bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 	var err error
