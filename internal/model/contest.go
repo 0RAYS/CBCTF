@@ -37,17 +37,17 @@ type Contest struct {
 }
 
 // MarshalJSON 重写 MarshalJSON 方法, 使 Avatar 返回完整的 URL, 转换 Teams Users Notices 为数量, 以及将 Duration 转换为秒
-func (c *Contest) MarshalJSON() ([]byte, error) {
+func (c Contest) MarshalJSON() ([]byte, error) {
 	type Tmp Contest // 定义一个别名以避免递归调用
 	return json.Marshal(&struct {
-		*Tmp
+		Tmp
 		Users    int    `json:"users"`
 		Teams    int    `json:"teams"`
 		Notices  int    `json:"notices"`
 		Avatar   string `json:"avatar"`
 		Duration int64  `json:"duration"`
 	}{
-		Tmp:      (*Tmp)(c),
+		Tmp:      Tmp(c),
 		Users:    len(c.Users),
 		Teams:    len(c.Teams),
 		Notices:  len(c.Notices),
@@ -56,19 +56,19 @@ func (c *Contest) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (c *Contest) IsOver() bool {
+func (c Contest) IsOver() bool {
 	return time.Now().After(c.Start.Add(c.Duration))
 }
 
-func (c *Contest) IsNotStart() bool {
+func (c Contest) IsNotStart() bool {
 	return time.Now().Before(c.Start)
 }
 
-func (c *Contest) IsRunning() bool {
+func (c Contest) IsRunning() bool {
 	return (c.IsOver() || c.IsNotStart()) != true
 }
 
-func (c *Contest) Status() string {
+func (c Contest) Status() string {
 	if c.IsOver() {
 		return "ContestIsOver"
 	}

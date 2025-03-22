@@ -36,7 +36,7 @@ type Challenge struct {
 }
 
 // BasicDir 获取题目相关文件的目录
-func (c *Challenge) BasicDir() string {
+func (c Challenge) BasicDir() string {
 	return fmt.Sprintf("%s/challenges/%s", config.Env.Path, c.ID)
 }
 
