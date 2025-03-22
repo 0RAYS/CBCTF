@@ -23,6 +23,7 @@ type Usage struct {
 	Name           string                 `json:"name" gorm:"not null"`
 	Desc           string                 `json:"desc"`
 	Flag           string                 `json:"flag"`
+	Flags          utils.Strings          `json:"flags" gorm:"type:json"`
 	Category       string                 `json:"category"`
 	GeneratorImage string                 `json:"generator" gorm:"column:generator"`
 	DockerImage    string                 `json:"docker" gorm:"column:docker"`
@@ -119,13 +120,14 @@ func InitUsage(challenge Challenge, contestID uint) Usage {
 		ChallengeID: challenge.ID,
 		Name:        challenge.Name,
 		Desc:        challenge.Desc,
+		Flag:        challenge.Flag,
+		Flags:       challenge.Flags,
 		Category:    challenge.Category,
 		Type:        challenge.Type,
 		Last:        time.Now(),
 	}
 	switch challenge.Type {
 	case Static:
-		usage.Flag = challenge.Flag
 		return usage
 	case Dynamic:
 		usage.GeneratorImage = challenge.GeneratorImage
@@ -149,6 +151,8 @@ func InitUsage(challenge Challenge, contestID uint) Usage {
 		usage.DockerImage = challenge.DockerImage
 		usage.Port = challenge.Port
 		usage.Dockers = challenge.Dockers
+		return usage
+	default:
+		return usage
 	}
-	return usage
 }

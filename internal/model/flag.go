@@ -1,6 +1,7 @@
 package model
 
 import (
+	"CBCTF/internal/utils"
 	"gorm.io/gorm"
 	"gorm.io/plugin/optimisticlock"
 	"time"
@@ -12,6 +13,7 @@ type Flag struct {
 	TeamID      uint                   `json:"team_id"`
 	ChallengeID string                 `json:"challenge_id"`
 	Value       string                 `json:"value"`
+	Values      utils.Strings          `json:"values" gorm:"type:json"`
 	CreatedAt   time.Time              `json:"-"`
 	UpdatedAt   time.Time              `json:"-"`
 	DeletedAt   gorm.DeletedAt         `json:"-" gorm:"index"`
