@@ -27,6 +27,7 @@ type Usage struct {
 	GeneratorImage string                 `json:"generator" gorm:"column:generator"`
 	DockerImage    string                 `json:"docker" gorm:"column:docker"`
 	Port           int32                  `json:"port" gorm:"default:8080"`
+	Dockers        utils.Dockers          `json:"dockers" gorm:"type:json"`
 	Type           string                 `json:"type" gorm:"default:'static'"`
 	Hidden         bool                   `json:"hidden" default:"true"`
 	Score          float64                `json:"score" gorm:"default:1000"`
@@ -143,6 +144,9 @@ func InitUsage(challenge Challenge, contestID uint) Usage {
 			},
 		}
 		usage.NetworkPolicy = defaultPolicy
+	}
+	if challenge.Type == Dockers {
+		usage.Dockers = challenge.Dockers
 	}
 	return usage
 }
