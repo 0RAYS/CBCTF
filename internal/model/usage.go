@@ -115,20 +115,22 @@ func (u Usage) CalcBlood(teamID uint) (float64, string) {
 
 func InitUsage(challenge Challenge, contestID uint) Usage {
 	usage := Usage{
-		ContestID:      contestID,
-		ChallengeID:    challenge.ID,
-		Name:           challenge.Name,
-		Desc:           challenge.Desc,
-		Flag:           challenge.Flag,
-		Category:       challenge.Category,
-		Type:           challenge.Type,
-		GeneratorImage: challenge.GeneratorImage,
-		DockerImage:    challenge.DockerImage,
-		Port:           challenge.Port,
-		Last:           time.Now(),
+		ContestID:   contestID,
+		ChallengeID: challenge.ID,
+		Name:        challenge.Name,
+		Desc:        challenge.Desc,
+		Category:    challenge.Category,
+		Type:        challenge.Type,
+		Last:        time.Now(),
 	}
-	if challenge.Type == Docker {
-		// defaultPolicy 允许外部访问, 不允许访问内网, 允许访问外网
+	switch challenge.Type {
+	case Static:
+		usage.Flag = challenge.Flag
+		return usage
+	case Dynamic:
+		usage.GeneratorImage = challenge.GeneratorImage
+		return usage
+	case Docker, Dockers:
 		defaultPolicy := utils.NetworkPolicy{
 			From: []utils.IPBlock{},
 			To: []utils.IPBlock{
@@ -144,8 +146,8 @@ func InitUsage(challenge Challenge, contestID uint) Usage {
 			},
 		}
 		usage.NetworkPolicy = defaultPolicy
-	}
-	if challenge.Type == Dockers {
+		usage.DockerImage = challenge.DockerImage
+		usage.Port = challenge.Port
 		usage.Dockers = challenge.Dockers
 	}
 	return usage
