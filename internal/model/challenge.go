@@ -43,16 +43,26 @@ func (c Challenge) BasicDir() string {
 }
 
 func InitChallenge(form form.CreateChallengeForm) Challenge {
-	return Challenge{
-		ID:             utils.UUID(),
-		Name:           form.Name,
-		Desc:           form.Desc,
-		Flag:           form.Flag,
-		Category:       form.Category,
-		Type:           form.Type,
-		GeneratorImage: form.GeneratorImage,
-		DockerImage:    form.DockerImage,
-		Port:           form.Port,
-		Dockers:        utils.Dockers{{Image: form.DockerImage, Ports: []int32{form.Port}}},
+	c := Challenge{
+		ID:       utils.UUID(),
+		Name:     form.Name,
+		Desc:     form.Desc,
+		Flag:     form.Flag,
+		Category: form.Category,
+		Type:     form.Type,
+	}
+	switch form.Type {
+	case Static:
+		return c
+	case Dynamic:
+		c.GeneratorImage = form.GeneratorImage
+		return c
+	case Docker, Dockers:
+		c.DockerImage = form.DockerImage
+		c.Port = form.Port
+		c.Dockers = utils.Dockers{{Image: form.DockerImage, Ports: []int32{form.Port}}}
+		return c
+	default:
+		return c
 	}
 }
