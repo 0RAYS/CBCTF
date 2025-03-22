@@ -14,6 +14,7 @@ const (
 	Static  = "static"
 	Dynamic = "dynamic"
 	Docker  = "docker"
+	Dockers = "dockers"
 
 	AttachmentFile = "attachment.zip"
 	GeneratorFile  = "generator.zip"
@@ -29,6 +30,7 @@ type Challenge struct {
 	GeneratorImage string                 `json:"generator" gorm:"column:generator"`
 	DockerImage    string                 `json:"docker" gorm:"column:docker"`
 	Port           int32                  `json:"port" gorm:"default:8080"`
+	Dockers        utils.Dockers          `json:"dockers" gorm:"type:json"`
 	CreatedAt      time.Time              `json:"-"`
 	UpdatedAt      time.Time              `json:"-"`
 	DeletedAt      gorm.DeletedAt         `json:"-" gorm:"index"`
@@ -51,5 +53,6 @@ func InitChallenge(form form.CreateChallengeForm) Challenge {
 		GeneratorImage: form.GeneratorImage,
 		DockerImage:    form.DockerImage,
 		Port:           form.Port,
+		Dockers:        utils.Dockers{{Image: form.DockerImage, Ports: []int32{form.Port}}},
 	}
 }
