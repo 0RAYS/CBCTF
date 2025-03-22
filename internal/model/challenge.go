@@ -13,7 +13,7 @@ import (
 const (
 	Static  = "static"
 	Dynamic = "dynamic"
-	Docker  = "container"
+	Docker  = "docker"
 
 	AttachmentFile = "attachment.zip"
 	GeneratorFile  = "generator.zip"
