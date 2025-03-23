@@ -282,6 +282,7 @@ func CheckPermission() {
 	log.Logger.Infof("User has permission to access all needed resources in namespace %s", NamespaceName)
 }
 
+// writeKubeConfig 写入一个低权限的 kubeconfig 文件
 func writeKubeConfig() error {
 	token := string(secret.Data["token"])
 	ca := secret.Data["ca.crt"]
