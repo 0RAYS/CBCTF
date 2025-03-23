@@ -10,7 +10,7 @@ import (
 	"k8s.io/utils/ptr"
 )
 
-func CreatePod(ctx context.Context, docker model.Container, usage model.Usage, containers []corev1.Container) (*corev1.Pod, bool, string) {
+func CreatePod(ctx context.Context, usage model.Usage, podName string, containers []corev1.Container) (*corev1.Pod, bool, string) {
 	var (
 		pod *corev1.Pod
 		err error
@@ -18,10 +18,10 @@ func CreatePod(ctx context.Context, docker model.Container, usage model.Usage, c
 	)
 	pod = &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      docker.PodName,
+			Name:      podName,
 			Namespace: NamespaceName,
 			Labels: map[string]string{
-				"app": docker.PodName,
+				"app": podName,
 			},
 		},
 		Spec: corev1.PodSpec{

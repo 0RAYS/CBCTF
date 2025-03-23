@@ -9,8 +9,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/ptr"
 	"os"
 	"time"
 )
@@ -36,41 +34,16 @@ func StartGenerator(usage model.Usage) (*corev1.Pod, bool, string) {
 		return pod, true, "Success"
 	}
 	containerName := fmt.Sprintf("generator-%s", usage.ChallengeID)
-	pod = &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      podName,
-			Namespace: NamespaceName,
-		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{
-				{
-					Name:    containerName,
-					Image:   usage.GeneratorImage,
-					Command: []string{"sleep", "infinity"},
-				},
-			},
-			TerminationGracePeriodSeconds: ptr.To[int64](3),
-			RestartPolicy:                 corev1.RestartPolicyNever,
+	containers := []corev1.Container{
+		{
+			Name:    containerName,
+			Image:   usage.GeneratorImage,
+			Command: []string{"sleep", "infinity"},
 		},
 	}
-	pod, err = client.CoreV1().Pods(NamespaceName).Create(ctx, pod, metav1.CreateOptions{})
-	if err != nil {
-		log.Logger.Warningf("Failed to create Pod: %v", err)
-		return &corev1.Pod{}, false, "CreatePodError"
-	}
-	for {
-		pod, ok, _ = GetPod(ctx, podName)
-		if !ok {
-			log.Logger.Warningf("Failed to get Pod: %v", err)
-			return &corev1.Pod{}, false, "GetPodError"
-		}
-		if pod.Status.Phase == corev1.PodRunning {
-			break
-		}
-		if pod.Status.Phase != corev1.PodPending {
-			log.Logger.Warningf("Pod %s is not running", pod.Name)
-			return &corev1.Pod{}, false, "PodNotRunning"
-		}
+	pod, ok, msg := CreatePod(ctx, usage, podName, containers)
+	if !ok {
+		return &corev1.Pod{}, false, msg
 	}
 	var commands []string
 	generatorPath := usage.GeneratorPath()
