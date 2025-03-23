@@ -25,7 +25,7 @@ type Traffic struct {
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
-func InitTraffic(conn traffic.Connection, docker Container) Traffic {
+func InitTraffic(conn traffic.Connection, container Container) Traffic {
 	_, t := conn.ParsePayload()
 	return Traffic{
 		SrcIP:       conn.SrcIP,
@@ -34,10 +34,10 @@ func InitTraffic(conn traffic.Connection, docker Container) Traffic {
 		DstPort:     conn.DstPort,
 		Payload:     hex.EncodeToString(conn.Payload),
 		Type:        t,
-		TeamID:      docker.TeamID,
-		ContestID:   docker.ContestID,
-		ChallengeID: docker.ChallengeID,
-		DockerID:    docker.ID,
-		Path:        docker.TrafficPath(),
+		TeamID:      container.TeamID,
+		ContestID:   container.ContestID,
+		ChallengeID: container.ChallengeID,
+		DockerID:    container.ID,
+		Path:        container.TrafficPath(),
 	}
 }
