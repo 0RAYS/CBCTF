@@ -75,7 +75,7 @@ func GetUsages(ctx *gin.Context) {
 					if usage.Type == model.Docker {
 						if container, ok, _ := db.GetContainerBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID); ok {
 							return gin.H{
-								"target":    container.RemoteAddress(),
+								"target":    container.RemoteAddr(),
 								"remaining": container.Remaining().Seconds(),
 							}
 						}
