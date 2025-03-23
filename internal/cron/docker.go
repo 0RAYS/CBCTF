@@ -14,7 +14,7 @@ import (
 func CloseDockers(c *cron.Cron) {
 	function := executionTime("CloseDockers", func() {
 		log.Logger.Debug("Close timeout dockers")
-		dockers, ok, msg := db.GetDockers(db.DB, false)
+		dockers, ok, msg := db.GetContainers(db.DB, false)
 		if !ok {
 			log.Logger.Warningf("Failed to get dockers %s", msg)
 			return
@@ -23,7 +23,7 @@ func CloseDockers(c *cron.Cron) {
 			if docker.Start.Add(docker.Duration).Before(time.Now()) {
 				// 每次删除都作为一个单独的事务, 不回滚之前的删除
 				tx := db.DB.Begin()
-				if ok, msg = db.DeleteDocker(tx, docker); !ok {
+				if ok, msg = db.DeleteContainer(tx, docker); !ok {
 					tx.Rollback()
 					log.Logger.Warningf("Failed to delete docker %s", msg)
 					continue
@@ -49,7 +49,7 @@ func CloseUnCtrlDockers(c *cron.Cron) {
 		}
 		for _, pod := range pods.Items {
 			if strings.Contains(pod.Name, "victim") && time.Now().Sub(pod.CreationTimestamp.Time) > 4*time.Hour {
-				if _, ok, _ := db.GetDockerByPodName(db.DB, pod.Name); !ok {
+				if _, ok, _ := db.GetContainerByPodName(db.DB, pod.Name); !ok {
 					ctx, cancel = context.WithTimeout(context.Background(), 1*time.Minute)
 					_, _ = k8s.DeletePod(ctx, pod.Name)
 					cancel()

@@ -22,7 +22,7 @@ func GetContainers(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	dockers, count, ok, msg := db.GetDockerByTeamID(db.DB.WithContext(ctx), middleware.GetTeam(ctx).ID, form.Limit, form.Offset, true)
+	dockers, count, ok, msg := db.GetContainerByTeamID(db.DB.WithContext(ctx), middleware.GetTeam(ctx).ID, form.Limit, form.Offset, true)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -46,7 +46,7 @@ func StartContainer(ctx *gin.Context) {
 		return
 	}
 	tx := DB.Begin()
-	docker, ok, msg := db.CreateDocker(tx, flag, usage, middleware.GetSelfID(ctx))
+	docker, ok, msg := db.CreateContainer(tx, flag, usage, middleware.GetSelfID(ctx))
 	if !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -58,7 +58,7 @@ func StartContainer(ctx *gin.Context) {
 
 func IncreaseDuration(ctx *gin.Context) {
 	var DB = db.DB.WithContext(ctx)
-	docker, ok, msg := db.GetDockerBy3ID(DB, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetUsage(ctx).ChallengeID)
+	docker, ok, msg := db.GetContainerBy3ID(DB, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, middleware.GetUsage(ctx).ChallengeID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -68,7 +68,7 @@ func IncreaseDuration(ctx *gin.Context) {
 		return
 	}
 	tx := DB.Begin()
-	ok, msg = db.UpdateDocker(tx, docker.ID, map[string]interface{}{"duration": docker.Duration + 1*time.Hour})
+	ok, msg = db.UpdateContainer(tx, docker.ID, map[string]interface{}{"duration": docker.Duration + 1*time.Hour})
 	if !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -86,7 +86,7 @@ func StopContainer(ctx *gin.Context) {
 			return
 		}
 		tx := db.DB.WithContext(ctx).Begin()
-		ok, msg := db.DeleteDocker(tx, docker)
+		ok, msg := db.DeleteContainer(tx, docker)
 		if !ok {
 			tx.Rollback()
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -106,13 +106,13 @@ func StopContainer(ctx *gin.Context) {
 			ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooQuick", "data": nil})
 			return
 		}
-		docker, ok, msg := db.GetDockerBy3ID(DB, contest.ID, team.ID, usage.ChallengeID)
+		docker, ok, msg := db.GetContainerBy3ID(DB, contest.ID, team.ID, usage.ChallengeID)
 		if !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
 		tx := DB.Begin()
-		ok, msg = db.DeleteDocker(tx, docker)
+		ok, msg = db.DeleteContainer(tx, docker)
 		if !ok {
 			tx.Rollback()
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

@@ -234,7 +234,7 @@ func SetContainer(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	container, ok, msg := db.GetDockerByID(db.DB.WithContext(ctx), containerID.ContainerID, true)
+	container, ok, msg := db.GetContainerByID(db.DB.WithContext(ctx), containerID.ContainerID, true)
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()

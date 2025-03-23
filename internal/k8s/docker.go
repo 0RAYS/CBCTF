@@ -26,7 +26,7 @@ func StartContainer(usage model.Usage, flag model.Flag, container model.Containe
 		return "", -1, false, "InvalidChallengeType"
 	}
 	if usage.DockerImage == "" {
-		return "", -1, false, "EmptyDockerImage"
+		return "", -1, false, "EmptyContainerImage"
 	}
 	log.Logger.Debugf("Creating Pod for challenge %s:%s", usage.Name, usage.ChallengeID)
 	service, ok, msg = CreateService(ctx, container, usage)

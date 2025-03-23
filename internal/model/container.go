@@ -30,33 +30,33 @@ type Container struct {
 }
 
 // MarshalJSON Duration 转为秒
-func (d Container) MarshalJSON() ([]byte, error) {
+func (c Container) MarshalJSON() ([]byte, error) {
 	type Tmp Container
 	return json.Marshal(struct {
 		Tmp
 		Duration int64 `json:"duration"`
 	}{
-		Tmp:      Tmp(d),
-		Duration: int64(d.Duration.Seconds()),
+		Tmp:      Tmp(c),
+		Duration: int64(c.Duration.Seconds()),
 	})
 }
 
 // TrafficPath 流量文件路径
-func (d Container) TrafficPath() string {
-	return fmt.Sprintf("%s/traffics/%s/%d/%d.pcap", config.Env.Path, d.ChallengeID, d.TeamID, d.ID)
+func (c Container) TrafficPath() string {
+	return fmt.Sprintf("%s/traffics/%s/%d/%d.pcap", config.Env.Path, c.ChallengeID, c.TeamID, c.ID)
 }
 
 // RemoteAddr 返回远程地址
-func (d Container) RemoteAddr() string {
-	return fmt.Sprintf("%s:%d", d.IP, d.Port)
+func (c Container) RemoteAddr() string {
+	return fmt.Sprintf("%s:%d", c.IP, c.Port)
 }
 
 // Remaining 返回剩余时间
-func (d Container) Remaining() time.Duration {
-	return d.Start.Add(d.Duration).Sub(time.Now())
+func (c Container) Remaining() time.Duration {
+	return c.Start.Add(c.Duration).Sub(time.Now())
 }
 
-func InitDocker(flag Flag, usage Usage, creatorID uint) Container {
+func InitContainer(flag Flag, usage Usage, creatorID uint) Container {
 	podName := fmt.Sprintf("victim-%s-%d-pod", usage.ChallengeID, flag.TeamID)
 	serviceName := fmt.Sprintf("victim-%s-%d-svc", usage.ChallengeID, flag.TeamID)
 	containerName := fmt.Sprintf("victim-%s-%d", usage.ChallengeID, flag.TeamID)
