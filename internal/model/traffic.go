@@ -18,14 +18,14 @@ type Traffic struct {
 	TeamID      uint           `json:"team"`
 	ContestID   uint           `json:"contest"`
 	ChallengeID string         `json:"challenge"`
-	ContainerID uint           `json:"container"`
+	DockerID    uint           `json:"docker"`
 	Path        string         `json:"path"`
 	CreatedAt   time.Time      `json:"-"`
 	UpdatedAt   time.Time      `json:"-"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
-func InitTraffic(conn traffic.Connection, container Container) Traffic {
+func InitTraffic(conn traffic.Connection, docker Container) Traffic {
 	_, t := conn.ParsePayload()
 	return Traffic{
 		SrcIP:       conn.SrcIP,
@@ -34,10 +34,10 @@ func InitTraffic(conn traffic.Connection, container Container) Traffic {
 		DstPort:     conn.DstPort,
 		Payload:     hex.EncodeToString(conn.Payload),
 		Type:        t,
-		TeamID:      container.TeamID,
-		ContestID:   container.ContestID,
-		ChallengeID: container.ChallengeID,
-		ContainerID: container.ID,
-		Path:        container.TrafficPath(),
+		TeamID:      docker.TeamID,
+		ContestID:   docker.ContestID,
+		ChallengeID: docker.ChallengeID,
+		DockerID:    docker.ID,
+		Path:        docker.TrafficPath(),
 	}
 }

@@ -10,20 +10,20 @@ import (
 )
 
 // SaveTraffic 从 .pcap 文件中保存流量至数据库
-func SaveTraffic(tx *gorm.DB, container model.Container) (bool, string) {
-	res := tx.Model(&model.Traffic{}).Where("path = ?", container.TrafficPath()).Find(&model.Traffic{}).Limit(1)
+func SaveTraffic(tx *gorm.DB, docker model.Container) (bool, string) {
+	res := tx.Model(&model.Traffic{}).Where("path = ?", docker.TrafficPath()).Find(&model.Traffic{}).Limit(1)
 	if res.RowsAffected > 0 || res.Error != nil {
 		return true, "Success"
 	}
-	connections, ok, msg := traffic.ReadPcap(container.TrafficPath())
+	connections, ok, msg := traffic.ReadPcap(docker.TrafficPath())
 	if !ok {
-		if container.DeletedAt.Valid && msg == "PcapNotFound" {
+		if docker.DeletedAt.Valid && msg == "PcapNotFound" {
 			msg = "HasNoTraffic"
 		}
 		return ok, msg
 	}
 	for _, conn := range connections {
-		t := model.InitTraffic(conn, container)
+		t := model.InitTraffic(conn, docker)
 		res := tx.Model(&model.Traffic{}).Create(&t)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to save traffic: %s", res.Error)

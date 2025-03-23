@@ -26,9 +26,9 @@ type Usage struct {
 	Flags           utils.Strings          `json:"flags" gorm:"type:json"`
 	Category        string                 `json:"category"`
 	GeneratorImage  string                 `json:"generator" gorm:"column:generator"`
-	ContainerImage  string                 `json:"container" gorm:"column:container"`
+	DockerImage     string                 `json:"docker" gorm:"column:docker"`
 	Port            int32                  `json:"port" gorm:"default:8080"`
-	Containers      utils.Containers       `json:"containers" gorm:"type:json"`
+	Dockers         utils.Dockers          `json:"dockers" gorm:"type:json"`
 	Type            string                 `json:"type" gorm:"default:'static'"`
 	Hidden          bool                   `json:"hidden" default:"true"`
 	Score           float64                `json:"score" gorm:"default:1000"`
@@ -133,7 +133,7 @@ func InitUsage(challenge Challenge, contestID uint) Usage {
 	case Dynamic:
 		usage.GeneratorImage = challenge.GeneratorImage
 		return usage
-	case Container, Containers:
+	case Docker, Dockers:
 		defaultPolicy := utils.NetworkPolicy{
 			From: []utils.IPBlock{},
 			To: []utils.IPBlock{
@@ -149,9 +149,9 @@ func InitUsage(challenge Challenge, contestID uint) Usage {
 			},
 		}
 		usage.NetworkPolicy = defaultPolicy
-		usage.ContainerImage = challenge.ContainerImage
+		usage.DockerImage = challenge.DockerImage
 		usage.Port = challenge.Port
-		usage.Containers = challenge.Containers
+		usage.Dockers = challenge.Dockers
 		return usage
 	default:
 		return usage
