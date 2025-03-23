@@ -26,7 +26,7 @@ func InitFlag(tx *gorm.DB, contest model.Contest, team model.Team, usage model.U
 			log.Logger.Warningf("Failed to generate flag for challenge %s: %s", flag.ChallengeID, msg)
 			return model.Flag{}, false, msg
 		}
-	case model.Docker:
+	case model.Container:
 		flag, ok, msg = RecordFlag(tx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.UUID()))
 	default:
 		flag, ok, msg = model.Flag{}, false, "InvalidChallengeType"

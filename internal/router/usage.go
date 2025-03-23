@@ -49,7 +49,7 @@ func GetUsages(ctx *gin.Context) {
 		if !all {
 			usage.Flag = ""
 			usage.Flags = make([]string, 0)
-			usage.DockerImage = ""
+			usage.ContainerImage = ""
 			usage.GeneratorImage = ""
 			usage.NetworkPolicy.From = make([]utils.IPBlock, 0)
 			usage.NetworkPolicy.To = make([]utils.IPBlock, 0)
@@ -74,11 +74,11 @@ func GetUsages(ctx *gin.Context) {
 					return model.AttachmentFile
 				}(),
 				"remote": func() gin.H {
-					if usage.Type == model.Docker {
-						if docker, ok, _ := db.GetContainerBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID); ok {
+					if usage.Type == model.Container {
+						if container, ok, _ := db.GetContainerBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID); ok {
 							return gin.H{
-								"target":    docker.RemoteAddr(),
-								"remaining": docker.Remaining().Seconds(),
+								"target":    container.RemoteAddr(),
+								"remaining": container.Remaining().Seconds(),
 							}
 						}
 					}
