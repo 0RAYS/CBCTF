@@ -22,7 +22,7 @@ type UpdateChallengeForm struct {
 	Category       *string `form:"category" json:"category"`
 	Type           *string `form:"type" json:"type"`
 	GeneratorImage *string `form:"generator" json:"generator"`
-	ContainerImage *string `form:"container" json:"container"`
+	DockerImage    *string `form:"docker" json:"docker"`
 	Port           *int32  `form:"port" json:"port"`
 }
 
@@ -42,6 +42,6 @@ type CreateChallengeForm struct {
 	Category       string `form:"category" json:"category"`
 	Type           string `form:"type" json:"type"`
 	GeneratorImage string `form:"generator" json:"generator"`
-	ContainerImage string `form:"container" json:"container"`
+	DockerImage    string `form:"docker" json:"docker"`
 	Port           int32  `form:"port" json:"port"`
 }

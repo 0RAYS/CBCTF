@@ -55,7 +55,7 @@ func StartGenerator(usage model.Usage) (*corev1.Pod, bool, string) {
 		}
 		commands = append(commands, "unzip /root/generator.zip -d /root")
 	} else {
-		log.Logger.Warning("Generator file not found, make sure the generator container can work correctly")
+		log.Logger.Warning("Generator file not found, make sure the generator docker can work correctly")
 	}
 	for _, command := range commands {
 		log.Logger.Debugf("Executing command: %s", command)

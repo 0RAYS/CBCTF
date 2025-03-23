@@ -11,10 +11,10 @@ import (
 )
 
 const (
-	Static     = "static"
-	Dynamic    = "dynamic"
-	Container  = "container"
-	Containers = "containers"
+	Static  = "static"
+	Dynamic = "dynamic"
+	Docker  = "docker"
+	Dockers = "dockers"
 
 	AttachmentFile = "attachment.zip"
 	GeneratorFile  = "generator.zip"
@@ -29,9 +29,9 @@ type Challenge struct {
 	Category       string                 `json:"category"`
 	Type           string                 `json:"type" gorm:"default:'static'"`
 	GeneratorImage string                 `json:"generator" gorm:"column:generator"`
-	ContainerImage string                 `json:"container" gorm:"column:container"`
+	DockerImage    string                 `json:"docker" gorm:"column:docker"`
 	Port           int32                  `json:"port" gorm:"default:8080"`
-	Containers     utils.Containers       `json:"containers" gorm:"type:json"`
+	Dockers        utils.Dockers          `json:"dockers" gorm:"type:json"`
 	CreatedAt      time.Time              `json:"-"`
 	UpdatedAt      time.Time              `json:"-"`
 	DeletedAt      gorm.DeletedAt         `json:"-" gorm:"index"`
@@ -59,10 +59,10 @@ func InitChallenge(form form.CreateChallengeForm) Challenge {
 	case Dynamic:
 		c.GeneratorImage = form.GeneratorImage
 		return c
-	case Container, Containers:
-		c.ContainerImage = form.ContainerImage
+	case Docker, Dockers:
+		c.DockerImage = form.DockerImage
 		c.Port = form.Port
-		c.Containers = utils.Containers{{Image: form.ContainerImage, Ports: []int32{form.Port}}}
+		c.Dockers = utils.Dockers{{Image: form.DockerImage, Ports: []int32{form.Port}}}
 		return c
 	default:
 		return c

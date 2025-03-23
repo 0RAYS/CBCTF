@@ -21,7 +21,7 @@ func CreateContainer(tx *gorm.DB, flag model.Flag, usage model.Usage, creatorID 
 	if container, ok, _ = GetContainerBy3ID(tx, flag.ContestID, flag.TeamID, flag.ChallengeID); ok {
 		return container, ok, "Success"
 	}
-	if usage.Type != model.Container {
+	if usage.Type != model.Docker {
 		return model.Container{}, false, "InvalidChallengeType"
 	}
 	container = model.InitContainer(flag, usage, creatorID)

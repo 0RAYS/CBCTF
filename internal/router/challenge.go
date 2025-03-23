@@ -190,11 +190,11 @@ func ChallengeStatus(ctx *gin.Context) {
 	} else {
 		data["files"] = model.AttachmentFile
 	}
-	if usage.Type == model.Container {
-		if container, ok, _ := db.GetContainerBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID); ok {
+	if usage.Type == model.Docker {
+		if docker, ok, _ := db.GetContainerBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID); ok {
 			data["remote"] = gin.H{
-				"target":    container.RemoteAddr(),
-				"remaining": container.Remaining().Seconds(),
+				"target":    docker.RemoteAddr(),
+				"remaining": docker.Remaining().Seconds(),
 			}
 		}
 	}
@@ -224,10 +224,10 @@ func InitChallenge(reset bool) gin.HandlerFunc {
 				return
 			}
 		}
-		container, ok, _ := db.GetContainerBy3ID(DB, contest.ID, team.ID, usage.ChallengeID)
+		docker, ok, _ := db.GetContainerBy3ID(DB, contest.ID, team.ID, usage.ChallengeID)
 		if ok {
 			tx := DB.Begin()
-			ok, msg = db.DeleteContainer(tx, container)
+			ok, msg = db.DeleteContainer(tx, docker)
 			if !ok {
 				tx.Rollback()
 				ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
