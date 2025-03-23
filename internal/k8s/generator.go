@@ -87,7 +87,7 @@ func GenerateAttachment(usage model.Usage, flag model.Flag) (bool, string) {
 		_, _ = StopGenerator(usage)
 		return false, msg
 	}
-	command := fmt.Sprintf("./run.sh %d %s", flag.TeamID, base64.StdEncoding.EncodeToString([]byte(flag.Values[0])))
+	command := fmt.Sprintf("./run.sh %d %s", flag.TeamID, base64.StdEncoding.EncodeToString([]byte(flag.Value)))
 	log.Logger.Debugf("Executing command: %s", command)
 	var buf bytes.Buffer
 	if ExecInPod(pod.Name, pod.Spec.Containers[0].Name, command, nil, &buf, nil) != nil {

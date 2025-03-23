@@ -45,7 +45,7 @@ func StartContainer(usage model.Usage, flag model.Flag, container model.Containe
 			Env: []corev1.EnvVar{
 				{
 					Name:  "FLAG",
-					Value: flag.Values[0],
+					Value: flag.Value,
 				},
 			},
 			Ports: []corev1.ContainerPort{
