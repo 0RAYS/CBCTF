@@ -186,7 +186,7 @@ func InitResources() {
 		Rules: []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{"crd.projectcalico.org"},
-				Resources: []string{"ippools", "networkpolicies"},
+				Resources: []string{"ippools"},
 				Verbs:     []string{"*"},
 			},
 		},
@@ -251,7 +251,7 @@ func CheckPermission() {
 	groups := map[string][]string{
 		"":                      {"pods", "services", "pods/exec"},
 		"networking.k8s.io":     {"networkpolicies"},
-		"crd.projectcalico.org": {"ippools", "networkpolicies"},
+		"crd.projectcalico.org": {"ippools"},
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
