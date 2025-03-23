@@ -18,7 +18,7 @@ type Traffic struct {
 	TeamID      uint           `json:"team"`
 	ContestID   uint           `json:"contest"`
 	ChallengeID string         `json:"challenge"`
-	DockerID    uint           `json:"docker"`
+	ContainerID uint           `json:"container"`
 	Path        string         `json:"path"`
 	CreatedAt   time.Time      `json:"-"`
 	UpdatedAt   time.Time      `json:"-"`
@@ -37,7 +37,7 @@ func InitTraffic(conn traffic.Connection, container Container) Traffic {
 		TeamID:      container.TeamID,
 		ContestID:   container.ContestID,
 		ChallengeID: container.ChallengeID,
-		DockerID:    container.ID,
+		ContainerID: container.ID,
 		Path:        container.TrafficPath(),
 	}
 }
