@@ -37,7 +37,7 @@ func StartContainer(ctx *gin.Context) {
 		team    = middleware.GetTeam(ctx)
 		contest = middleware.GetContest(ctx)
 	)
-	if err := redis.RecordDockerCreate(team.ID, usage.ChallengeID); err != nil {
+	if err := redis.RecordContainersCreate(team.ID, usage.ChallengeID); err != nil {
 		log.Logger.Warningf("Failed to record docker create: %v", err)
 	}
 	flag, ok, msg := db.GetFlagBy3ID(DB, contest.ID, team.ID, usage.ChallengeID)
@@ -102,7 +102,7 @@ func StopContainer(ctx *gin.Context) {
 			contest = middleware.GetContest(ctx)
 			usage   = middleware.GetUsage(ctx)
 		)
-		if ok, err := redis.CheckDockerCreate(team.ID, usage.ChallengeID); ok || err != nil {
+		if ok, err := redis.CheckContainersCreate(team.ID, usage.ChallengeID); ok || err != nil {
 			ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooQuick", "data": nil})
 			return
 		}
