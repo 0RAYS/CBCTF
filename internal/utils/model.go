@@ -109,21 +109,6 @@ type NetworkPolicy struct {
 	To   []IPBlock `json:"to"`
 }
 
-var DefaultNetworkPolicy = NetworkPolicy{
-	From: []IPBlock{},
-	To: []IPBlock{
-		{
-			CIDR: "0.0.0.0/0",
-			Except: []string{
-				"10.0.0.0/8",
-				"172.16.0.0/12",
-				"192.168.0.0/16",
-				"100.64.0.0/10",
-			},
-		},
-	},
-}
-
 func (p NetworkPolicy) Value() (driver.Value, error) {
 	for i, ipBlock := range p.From {
 		if !isValidIPBlock(ipBlock) {
@@ -146,35 +131,37 @@ func (p *NetworkPolicy) Scan(value interface{}) error {
 	return json.Unmarshal(bytes, p)
 }
 
-type IPPort struct {
-	IP   string `json:"ip"`
-	Port int32  `json:"port"`
-}
+type NetworkPolicies []NetworkPolicy
 
-type IPPorts []IPPort
-
-func (i IPPorts) Value() (driver.Value, error) {
-	for _, ipPort := range i {
-		if ipPort.Port < 0 || ipPort.Port > 65535 {
-			return nil, fmt.Errorf("invalid port")
+func (p NetworkPolicies) Value() (driver.Value, error) {
+	for _, policy := range p {
+		for i, ipBlock := range policy.From {
+			if !isValidIPBlock(ipBlock) {
+				policy.From = append(policy.From[:i], policy.From[i+1:]...)
+			}
+		}
+		for i, ipBlock := range policy.To {
+			if !isValidIPBlock(ipBlock) {
+				policy.To = append(policy.To[:i], policy.To[i+1:]...)
+			}
 		}
 	}
-	return json.Marshal(i)
+	return json.Marshal(p)
 }
 
-func (i *IPPorts) Scan(value interface{}) error {
+func (p *NetworkPolicies) Scan(value interface{}) error {
 	bytes, ok := value.([]byte)
 	if !ok {
-		return fmt.Errorf("failed to scan IPPorts value")
+		return fmt.Errorf("failed to scan NetworkPolicies value")
 	}
-	return json.Unmarshal(bytes, i)
+	return json.Unmarshal(bytes, p)
 }
 
 type Docker struct {
-	Image         string        `json:"image"`
-	Flag          string        `json:"flag"`
-	Ports         []int32       `json:"ports"`
-	NetworkPolicy NetworkPolicy `json:"network_policy"`
+	Image           string          `json:"image"`
+	Flag            string          `json:"flag"`
+	Ports           []int32         `json:"ports"`
+	NetworkPolicies NetworkPolicies `json:"network_policies"`
 }
 
 type Dockers []Docker
