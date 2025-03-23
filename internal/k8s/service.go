@@ -11,19 +11,19 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func CreateService(ctx context.Context, docker model.Container, usage model.Usage) (*corev1.Service, bool, string) {
+func CreateService(ctx context.Context, container model.Container, usage model.Usage) (*corev1.Service, bool, string) {
 	var (
 		service *corev1.Service
 		err     error
 	)
 	service = &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      docker.ServiceName,
+			Name:      container.ServiceName,
 			Namespace: NamespaceName,
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
-				"app": docker.PodName,
+				"app": container.PodName,
 			},
 			Ports: []corev1.ServicePort{
 				{
@@ -39,7 +39,7 @@ func CreateService(ctx context.Context, docker model.Container, usage model.Usag
 	}
 	service, err = client.CoreV1().Services(NamespaceName).Create(ctx, service, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create Service %s: %s", docker.ServiceName, err)
+		log.Logger.Warningf("Failed to create Service %s: %s", container.ServiceName, err)
 		return nil, false, "CreateServiceError"
 	}
 	return service, true, "Success"

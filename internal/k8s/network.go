@@ -9,19 +9,19 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func CreateNetworkPolicy(ctx context.Context, docker model.Container, usage model.Usage) (*netv1.NetworkPolicy, bool, string) {
+func CreateNetworkPolicy(ctx context.Context, container model.Container, usage model.Usage) (*netv1.NetworkPolicy, bool, string) {
 	if len(usage.NetworkPolicy.From) < 1 && len(usage.NetworkPolicy.To) < 1 {
 		return nil, true, "Success"
 	}
 	networkPolicy := &netv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      docker.NetworkPolicyName,
+			Name:      container.NetworkPolicyName,
 			Namespace: NamespaceName,
 		},
 		Spec: netv1.NetworkPolicySpec{
 			PodSelector: metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"app": docker.PodName,
+					"app": container.PodName,
 				},
 			},
 		},
@@ -70,7 +70,7 @@ func CreateNetworkPolicy(ctx context.Context, docker model.Container, usage mode
 	var err error
 	networkPolicy, err = client.NetworkingV1().NetworkPolicies(NamespaceName).Create(ctx, networkPolicy, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create NetworkPolicy %s: %v", docker.NetworkPolicyName, err)
+		log.Logger.Warningf("Failed to create NetworkPolicy %s: %v", container.NetworkPolicyName, err)
 		return nil, false, "CreateNetworkPolicyError"
 	}
 	return networkPolicy, true, "Success"
