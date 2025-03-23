@@ -10,22 +10,22 @@ import (
 	"time"
 )
 
-// CloseDockers 关闭并删除数据库中存在记录的超时 dockers
-func CloseDockers(c *cron.Cron) {
-	function := executionTime("CloseDockers", func() {
-		log.Logger.Debug("Close timeout dockers")
-		dockers, ok, msg := db.GetContainers(db.DB, false)
+// CloseContainers 关闭并删除数据库中存在记录的超时 Containers
+func CloseContainers(c *cron.Cron) {
+	function := executionTime("CloseContainers", func() {
+		log.Logger.Debug("Close timeout Containers")
+		containers, ok, msg := db.GetContainers(db.DB, false)
 		if !ok {
-			log.Logger.Warningf("Failed to get dockers %s", msg)
+			log.Logger.Warningf("Failed to get Containers %s", msg)
 			return
 		}
-		for _, docker := range dockers {
-			if docker.Start.Add(docker.Duration).Before(time.Now()) {
+		for _, container := range containers {
+			if container.Start.Add(container.Duration).Before(time.Now()) {
 				// 每次删除都作为一个单独的事务, 不回滚之前的删除
 				tx := db.DB.Begin()
-				if ok, msg = db.DeleteContainer(tx, docker); !ok {
+				if ok, msg = db.DeleteContainer(tx, container); !ok {
 					tx.Rollback()
-					log.Logger.Warningf("Failed to delete docker %s", msg)
+					log.Logger.Warningf("Failed to delete Container %s", msg)
 					continue
 				}
 				tx.Commit()
@@ -36,9 +36,9 @@ func CloseDockers(c *cron.Cron) {
 	c.Schedule(cron.Every(5*time.Minute), cron.FuncJob(function))
 }
 
-// CloseUnCtrlDockers 移除数据库中无记录的超时 docker
-func CloseUnCtrlDockers(c *cron.Cron) {
-	function := executionTime("CloseUnCtrlDockers", func() {
+// CloseUnCtrlContainers 移除数据库中无记录的超时 Containers
+func CloseUnCtrlContainers(c *cron.Cron) {
+	function := executionTime("CloseUnCtrlContainers", func() {
 		log.Logger.Debug("Close timeout pods")
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 		pods, ok, msg := k8s.GetPods(ctx)
