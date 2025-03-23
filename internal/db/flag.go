@@ -10,26 +10,38 @@ import (
 )
 
 // InitFlag 生成对应 model.Team 的 model.Flag, 考虑题目类型
-func InitFlag(tx *gorm.DB, contest model.Contest, team model.Team, usage model.Usage) (model.Flag, bool, string) {
+func InitFlag(tx *gorm.DB, contest model.Contest, team model.Team, usage model.Usage) (bool, string) {
 	var (
-		flag model.Flag
-		ok   bool
-		msg  string
+		ok  bool
+		msg string
 	)
 	switch usage.Type {
 	case model.Static:
-		flag, ok, msg = RecordFlag(tx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, usage.Flag))
+		_, ok, msg = RecordFlag(tx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, usage.Flag))
 	case model.Dynamic:
-		flag, ok, msg = RecordFlag(tx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.RandFlag(usage.Flag)))
+		flag, ok, msg := RecordFlag(tx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.RandFlag(usage.Flag)))
+		if !ok {
+			return false, msg
+		}
 		ok, msg = k8s.GenerateAttachment(usage, flag)
 		if !ok {
 			log.Logger.Warningf("Failed to generate flag for challenge %s: %s", flag.ChallengeID, msg)
-			return model.Flag{}, false, msg
 		}
 	case model.Docker:
-		flag, ok, msg = RecordFlag(tx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.UUID()))
+		_, ok, msg = RecordFlag(tx, contest.ID, team.ID, usage.ChallengeID, fmt.Sprintf("%s{%s}", contest.Prefix, utils.UUID()))
+	case model.Dockers:
+		var flags []string
+		for _, docker := range usage.Dockers {
+			for _, flag := range docker.Flags {
+				if flag == "uuid" {
+					flag = utils.UUID()
+				}
+				flags = append(flags, fmt.Sprintf("%s{%s}", contest.Prefix, flag))
+			}
+		}
+		_, ok, msg = RecordFlag(tx, contest.ID, team.ID, usage.ChallengeID, flags...)
 	default:
-		flag, ok, msg = model.Flag{}, false, "InvalidChallengeType"
+		ok, msg = false, "InvalidChallengeType"
 	}
 	if !ok {
 		log.Logger.Warningf(
@@ -37,22 +49,22 @@ func InitFlag(tx *gorm.DB, contest model.Contest, team model.Team, usage model.U
 			contest.ID, team.ID, usage.ChallengeID, msg,
 		)
 	}
-	return flag, ok, msg
+	return ok, msg
 }
 
 // RecordFlag 记录 model.Flag
-func RecordFlag(tx *gorm.DB, contestID, teamID uint, challengeID, value string) (model.Flag, bool, string) {
+func RecordFlag(tx *gorm.DB, contestID, teamID uint, challengeID string, values ...string) (model.Flag, bool, string) {
 	var (
 		flag model.Flag
 		ok   bool
 	)
 	if flag, ok, _ = GetFlagBy3ID(tx, contestID, teamID, challengeID); ok {
-		ok, _ = UpdateFlag(tx, contestID, teamID, challengeID, value)
+		ok, _ = UpdateFlag(tx, contestID, teamID, challengeID, values...)
 		if !ok {
 			return model.Flag{}, false, "UpdateFlagError"
 		}
 	} else {
-		flag = model.InitFlag(contestID, teamID, challengeID, value)
+		flag = model.InitFlag(contestID, teamID, challengeID, values...)
 		res := tx.Model(&model.Flag{}).Create(&flag)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to create Flag: %s", res.Error)
@@ -60,7 +72,7 @@ func RecordFlag(tx *gorm.DB, contestID, teamID uint, challengeID, value string) 
 			return model.Flag{}, false, "CreateFlagError"
 		}
 	}
-	flag.Value = value
+	flag.Values = values
 	return flag, true, "Success"
 }
 
@@ -76,7 +88,7 @@ func GetFlagBy3ID(tx *gorm.DB, contestID, teamID uint, challengeID string) (mode
 }
 
 // UpdateFlag 更新 model.Flag 值, 固定只更新 value 字段
-func UpdateFlag(tx *gorm.DB, contestID, teamID uint, challengeID, value string) (bool, string) {
+func UpdateFlag(tx *gorm.DB, contestID, teamID uint, challengeID string, values ...string) (bool, string) {
 	var count int
 	for {
 		count++
@@ -89,7 +101,7 @@ func UpdateFlag(tx *gorm.DB, contestID, teamID uint, challengeID, value string) 
 		if res.RowsAffected != 1 {
 			return false, "FlagNotFound"
 		}
-		res = tx.Model(&flag).Update("value", value)
+		res = tx.Model(&flag).Update("value", values)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Flag: %s", res.Error)
 			return false, "UpdateFlagError"
@@ -108,9 +120,6 @@ func VerifyFlag(tx *gorm.DB, contestID, teamID uint, challengeID, value string) 
 	flag, ok, _ := GetFlagBy3ID(tx, contestID, teamID, challengeID)
 	if !ok {
 		return false
-	}
-	if value == flag.Value {
-		return true
 	}
 	if utils.In(value, flag.Values) {
 		return true

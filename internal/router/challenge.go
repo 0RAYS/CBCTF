@@ -236,7 +236,7 @@ func InitChallenge(reset bool) gin.HandlerFunc {
 			tx.Commit()
 		}
 		tx := DB.Begin()
-		_, ok, msg = db.InitFlag(tx, contest, team, usage)
+		ok, msg = db.InitFlag(tx, contest, team, usage)
 		if !ok {
 			tx.Rollback()
 		} else {
