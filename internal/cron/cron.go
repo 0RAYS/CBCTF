@@ -18,8 +18,8 @@ func executionTime(name string, task func()) func() {
 
 func Init() {
 	c = cron.New(cron.WithSeconds())
-	CloseDockers(c)
-	CloseUnCtrlDockers(c)
+	CloseContainers(c)
+	CloseUnCtrlContainers(c)
 	UpdateUsageScore(c)
 	UpdateUserRanking(c)
 	UpdateTeamRanking(c)
