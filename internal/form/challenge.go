@@ -1,5 +1,7 @@
 package form
 
+import "CBCTF/internal/utils"
+
 // DownloadChallengeForm for download challenge
 type DownloadChallengeForm struct {
 	File string `form:"file" json:"file" binding:"required"`
@@ -16,14 +18,15 @@ type DeleteChallengeForm struct {
 
 // UpdateChallengeForm for admin update challenge info
 type UpdateChallengeForm struct {
-	Name           *string `form:"name" json:"name"`
-	Desc           *string `form:"desc" json:"desc"`
-	Flag           *string `form:"flag" json:"flag"`
-	Category       *string `form:"category" json:"category"`
-	Type           *string `form:"type" json:"type"`
-	GeneratorImage *string `form:"generator" json:"generator"`
-	DockerImage    *string `form:"docker" json:"docker"`
-	Port           *int32  `form:"port" json:"port"`
+	Name           *string        `form:"name" json:"name"`
+	Desc           *string        `form:"desc" json:"desc"`
+	Flag           *string        `form:"flag" json:"flag"`
+	Category       *string        `form:"category" json:"category"`
+	Type           *string        `form:"type" json:"type"`
+	GeneratorImage *string        `form:"generator" json:"generator"`
+	DockerImage    *string        `form:"docker" json:"docker"`
+	Port           *int32         `form:"port" json:"port"`
+	Dockers        *utils.Dockers `form:"dockers" json:"dockers"`
 }
 
 // GetChallengesForm for get challenges list
@@ -36,12 +39,13 @@ type GetChallengesForm struct {
 
 // CreateChallengeForm for create challenge
 type CreateChallengeForm struct {
-	Name           string `form:"name" json:"name" binding:"required"`
-	Desc           string `form:"desc" json:"desc"`
-	Flag           string `form:"flag" json:"flag"`
-	Category       string `form:"category" json:"category"`
-	Type           string `form:"type" json:"type"`
-	GeneratorImage string `form:"generator" json:"generator"`
-	DockerImage    string `form:"docker" json:"docker"`
-	Port           int32  `form:"port" json:"port"`
+	Name           string        `form:"name" json:"name" binding:"required"`
+	Desc           string        `form:"desc" json:"desc"`
+	Flag           string        `form:"flag" json:"flag"`
+	Category       string        `form:"category" json:"category"`
+	Type           string        `form:"type" json:"type"`
+	GeneratorImage string        `form:"generator" json:"generator"`
+	DockerImage    string        `form:"docker" json:"docker"`
+	Port           int32         `form:"port" json:"port"`
+	Dockers        utils.Dockers `form:"dockers" json:"dockers"`
 }

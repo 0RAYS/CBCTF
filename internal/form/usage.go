@@ -20,4 +20,5 @@ type UpdateUsageForm struct {
 	Hints         *utils.Strings       `form:"hints" json:"hints"`
 	Tags          *utils.Strings       `form:"tags" json:"tags"`
 	NetworkPolicy *utils.NetworkPolicy `form:"network_policy" json:"network_policy"`
+	Dockers       *utils.Dockers       `form:"dockers" json:"dockers"`
 }
