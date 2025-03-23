@@ -12,6 +12,7 @@ type Flag struct {
 	ContestID   uint                   `json:"contest_id"`
 	TeamID      uint                   `json:"team_id"`
 	ChallengeID string                 `json:"challenge_id"`
+	Value       string                 `json:"value"`
 	Values      utils.Strings          `json:"values" gorm:"type:json"`
 	CreatedAt   time.Time              `json:"-"`
 	UpdatedAt   time.Time              `json:"-"`
@@ -19,11 +20,11 @@ type Flag struct {
 	Version     optimisticlock.Version `json:"-" gorm:"default:1"`
 }
 
-func InitFlag(contestID, teamID uint, challengeID string, values ...string) Flag {
+func InitFlag(contestID, teamID uint, challengeID, value string) Flag {
 	return Flag{
 		ContestID:   contestID,
 		TeamID:      teamID,
 		ChallengeID: challengeID,
-		Values:      values,
+		Value:       value,
 	}
 }

@@ -159,7 +159,7 @@ func (p *NetworkPolicies) Scan(value interface{}) error {
 
 type Docker struct {
 	Image           string          `json:"image"`
-	Flags           []string        `json:"flags"`
+	Flag            string          `json:"flag"`
 	Ports           []int32         `json:"ports"`
 	NetworkPolicies NetworkPolicies `json:"network_policies"`
 }
