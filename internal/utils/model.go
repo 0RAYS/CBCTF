@@ -131,37 +131,11 @@ func (p *NetworkPolicy) Scan(value interface{}) error {
 	return json.Unmarshal(bytes, p)
 }
 
-type NetworkPolicies []NetworkPolicy
-
-func (p NetworkPolicies) Value() (driver.Value, error) {
-	for _, policy := range p {
-		for i, ipBlock := range policy.From {
-			if !isValidIPBlock(ipBlock) {
-				policy.From = append(policy.From[:i], policy.From[i+1:]...)
-			}
-		}
-		for i, ipBlock := range policy.To {
-			if !isValidIPBlock(ipBlock) {
-				policy.To = append(policy.To[:i], policy.To[i+1:]...)
-			}
-		}
-	}
-	return json.Marshal(p)
-}
-
-func (p *NetworkPolicies) Scan(value interface{}) error {
-	bytes, ok := value.([]byte)
-	if !ok {
-		return fmt.Errorf("failed to scan NetworkPolicies value")
-	}
-	return json.Unmarshal(bytes, p)
-}
-
 type Docker struct {
-	Image           string          `json:"image"`
-	Flag            string          `json:"flag"`
-	Ports           []int32         `json:"ports"`
-	NetworkPolicies NetworkPolicies `json:"network_policies"`
+	Image         string        `json:"image"`
+	Flag          string        `json:"flag"`
+	Ports         []int32       `json:"ports"`
+	NetworkPolicy NetworkPolicy `json:"network_policy"`
 }
 
 type Dockers []Docker
