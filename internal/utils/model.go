@@ -157,28 +157,28 @@ func (p *NetworkPolicies) Scan(value interface{}) error {
 	return json.Unmarshal(bytes, p)
 }
 
-type Docker struct {
+type Container struct {
 	Image string  `json:"image"`
 	Ports []int32 `json:"ports"`
 }
 
-type Dockers []Docker
+type Containers []Container
 
-func (d Dockers) Value() (driver.Value, error) {
-	for _, docker := range d {
-		for i, port := range docker.Ports {
+func (d Containers) Value() (driver.Value, error) {
+	for _, container := range d {
+		for i, port := range container.Ports {
 			if port < 0 || port > 65535 {
-				docker.Ports = append(docker.Ports[:i], docker.Ports[i+1:]...)
+				container.Ports = append(container.Ports[:i], container.Ports[i+1:]...)
 			}
 		}
 	}
 	return json.Marshal(d)
 }
 
-func (d *Dockers) Scan(value interface{}) error {
+func (d *Containers) Scan(value interface{}) error {
 	bytes, ok := value.([]byte)
 	if !ok {
-		return fmt.Errorf("failed to scan Dockers value")
+		return fmt.Errorf("failed to scan Containers value")
 	}
 	return json.Unmarshal(bytes, d)
 }

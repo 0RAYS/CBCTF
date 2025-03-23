@@ -22,10 +22,10 @@ func StartContainer(usage model.Usage, flag model.Flag, container model.Containe
 		ip      string
 		msg     string
 	)
-	if usage.Type != model.Docker {
+	if usage.Type != model.Container {
 		return "", -1, false, "InvalidChallengeType"
 	}
-	if usage.DockerImage == "" {
+	if usage.ContainerImage == "" {
 		return "", -1, false, "EmptyContainerImage"
 	}
 	log.Logger.Debugf("Creating Pod for challenge %s:%s", usage.Name, usage.ChallengeID)
@@ -41,7 +41,7 @@ func StartContainer(usage model.Usage, flag model.Flag, container model.Containe
 	containers := []corev1.Container{
 		{
 			Name:  container.ContainerName,
-			Image: usage.DockerImage,
+			Image: usage.ContainerImage,
 			Env: []corev1.EnvVar{
 				{
 					Name:  "FLAG",
