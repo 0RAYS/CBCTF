@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+// CheckRunning 比赛是否正在进行
 func CheckRunning(ctx *gin.Context) {
 	contest := GetContest(ctx)
 	if !contest.IsRunning() {

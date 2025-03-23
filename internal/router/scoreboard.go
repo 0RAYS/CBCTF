@@ -15,12 +15,20 @@ func GetRank(ctx *gin.Context) {
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	teams, count, ok, msg := db.GetRanking(contest.ID, form.Limit, form.Offset)
+	teams, count, ok, msg := db.GetTeamRanking(db.DB.WithContext(ctx), contest.ID, form.Limit, form.Offset)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"count": count, "teams": &teams}})
+	tmp := make([]gin.H, 0)
+	for _, team := range teams {
+		state, _, _ := db.GetTeamSolvedState(db.DB.WithContext(ctx), team)
+		tmp = append(tmp, gin.H{
+			"team":   &team,
+			"solved": state,
+		})
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"count": count, "teams": tmp}})
 }
 
 func GetRankDetail(ctx *gin.Context) {
@@ -30,7 +38,7 @@ func GetRankDetail(ctx *gin.Context) {
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	data, ok, msg := db.GetRankDetail(contest.ID, form.Limit, form.Offset)
+	data, ok, msg := db.GetTeamRankDetail(db.DB.WithContext(ctx), contest.ID, form.Limit, form.Offset)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

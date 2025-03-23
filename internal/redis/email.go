@@ -1,17 +1,14 @@
 package redis
 
 import (
-	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"context"
 	"fmt"
 	"time"
 )
 
+// SetEmailVerifyToken 设置邮箱验证 token, 时效一天
 func SetEmailVerifyToken(userID uint, token string) (bool, string) {
-	if !config.Env.Redis.On {
-		return false, "RedisOff"
-	}
 	ctx := context.Background()
 	err := RDB.Set(ctx, fmt.Sprintf("email:verify:%d", userID), token, time.Hour*24).Err()
 	if err != nil {
@@ -21,10 +18,8 @@ func SetEmailVerifyToken(userID uint, token string) (bool, string) {
 	return true, "Success"
 }
 
+// GetEmailVerifyToken 获取邮箱验证 token
 func GetEmailVerifyToken(userID uint) (string, bool) {
-	if !config.Env.Redis.On {
-		return "RedisOff", false
-	}
 	ctx := context.Background()
 	data, err := RDB.Get(ctx, fmt.Sprintf("email:verify:%d", userID)).Result()
 	if err != nil {
@@ -33,10 +28,8 @@ func GetEmailVerifyToken(userID uint) (string, bool) {
 	return data, true
 }
 
+// DelEmailVerifyToken 删除邮箱验证 token
 func DelEmailVerifyToken(userID uint) (bool, string) {
-	if !config.Env.Redis.On {
-		return false, "RedisOff"
-	}
 	ctx := context.Background()
 	err := RDB.Del(ctx, fmt.Sprintf("email:verify:%d", userID)).Err()
 	if err != nil {

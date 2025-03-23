@@ -10,6 +10,7 @@ import (
 	"CBCTF/internal/utils"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
@@ -132,7 +133,7 @@ func UploadAvatar(v string) func(ctx *gin.Context) {
 		tx := db.DB.WithContext(ctx).Begin()
 		hash := hex.EncodeToString(sha256Sum.Sum(nil))
 		if record, ok, _ = db.GetFileByHash(tx, hash); !ok {
-			basePath := fmt.Sprintf("%s/avatar", config.Env.Gin.Upload.Path)
+			basePath := fmt.Sprintf("%s/avatars", config.Env.Path)
 			path = fmt.Sprintf("%s/%s%s", basePath, utils.UUID(), suffix)
 			if err = ctx.SaveUploadedFile(file, path); err != nil {
 				tx.Rollback()
@@ -148,7 +149,7 @@ func UploadAvatar(v string) func(ctx *gin.Context) {
 			ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
-		path = fmt.Sprintf("/avatar/%s", record.ID)
+		path = fmt.Sprintf("/avatars/%s", record.ID)
 		switch v {
 		case "self-admin":
 			ok, msg = db.UpdateAdmin(tx, middleware.GetSelfID(ctx), map[string]interface{}{"avatar": path})
@@ -205,7 +206,7 @@ func UploadWriteUp(ctx *gin.Context) {
 	hash := hex.EncodeToString(sha256Sum.Sum(nil))
 	tx := db.DB.WithContext(ctx).Begin()
 	if record, ok, _ = db.GetFileByHash(tx, hash); !ok {
-		basePath := fmt.Sprintf("%s/writeup/%d/%d", config.Env.Gin.Upload.Path, contest.ID, team.ID)
+		basePath := fmt.Sprintf("%s/writeups/%d/%d", config.Env.Path, contest.ID, team.ID)
 		allowed := []string{".pdf", ".docx", ".doc"}
 		suffix := strings.ToLower(p.Ext(file.Filename))
 		if !utils.In(suffix, allowed) {
@@ -227,14 +228,14 @@ func UploadWriteUp(ctx *gin.Context) {
 		}
 	}
 	tx.Commit()
-	path := fmt.Sprintf("/writeup/%s", record.ID)
+	path := fmt.Sprintf("/writeups/%s", record.ID)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": path})
 }
 
 func GetWriteUPs(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
 	team := middleware.GetTeam(ctx)
-	path := fmt.Sprintf("%s/writeup/%d/%d", config.Env.Gin.Upload.Path, contest.ID, team.ID)
+	path := fmt.Sprintf("%s/writeups/%d/%d", config.Env.Path, contest.ID, team.ID)
 	dir, err := os.ReadDir(path)
 	if err != nil {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "FileNotFound", "data": nil})
@@ -245,4 +246,63 @@ func GetWriteUPs(ctx *gin.Context) {
 		files = append(files, file.Name())
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &files})
+}
+
+func UploadChallenge(ctx *gin.Context) {
+	challenge := middleware.GetChallenge(ctx)
+	file, err := ctx.FormFile("file")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	var path string
+	switch challenge.Type {
+	case model.Static, model.Docker:
+		if file.Filename != model.AttachmentFile {
+			ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
+			return
+		}
+		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), model.AttachmentFile)
+	case model.Dynamic:
+		if file.Filename != model.GeneratorFile {
+			ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
+			return
+		}
+		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), model.GeneratorFile)
+	default:
+		ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidChallengeType", "data": nil})
+		return
+	}
+	if err := ctx.SaveUploadedFile(file, path); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
+}
+
+func DownloadChallenge(ctx *gin.Context) {
+	var form f.DownloadChallengeForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	challenge := middleware.GetChallenge(ctx)
+	var path string
+	switch form.File {
+	case model.AttachmentFile, model.GeneratorFile:
+		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), form.File)
+	default:
+		ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
+		return
+	}
+	if _, err := os.Stat(path); err != nil {
+		log.Logger.Warningf("Failed to get file: %s", err)
+		if errors.Is(err, os.ErrNotExist) {
+			ctx.JSON(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": nil})
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{"msg": "UnknownError", "data": nil})
+		return
+	}
+	ctx.File(path)
 }

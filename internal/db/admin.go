@@ -27,7 +27,7 @@ func CreateAdmin(tx *gorm.DB, name string, password string, email string) (model
 	return admin, true, "Success"
 }
 
-// GetAdminByID 根据 id 获取 model.Admin
+// GetAdminByID 根据 ID 获取 model.Admin
 func GetAdminByID(tx *gorm.DB, id uint) (model.Admin, bool, string) {
 	var admin model.Admin
 	res := tx.Model(&model.Admin{}).Where("id = ?", id).Find(&admin).Limit(1)
@@ -37,6 +37,7 @@ func GetAdminByID(tx *gorm.DB, id uint) (model.Admin, bool, string) {
 	return admin, true, "Success"
 }
 
+// GetAdminByName 根据 name 获取 model.Admin
 func GetAdminByName(tx *gorm.DB, name string) (model.Admin, bool, string) {
 	var admin model.Admin
 	res := tx.Model(&model.Admin{}).Where("name = ?", name).Find(&admin)
@@ -69,11 +70,28 @@ func DeleteAdmin(tx *gorm.DB, id uint) (bool, string) {
 
 // UpdateAdmin 更新管理员, 使用 map 更新属性, 结构体会导致零值未更新, 对字段值的具体要求应当交给上层实现
 func UpdateAdmin(tx *gorm.DB, id uint, updateData map[string]interface{}) (bool, string) {
-	res := tx.Model(&model.Admin{}).Where("id = ?", id).
-		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to update Admin: %v", res.Error)
-		return false, "UpdateAdminError"
+	var count int
+	for {
+		count++
+		if count > 10 {
+			log.Logger.Warningf("Failed too many times to update user due to optimistic lock")
+			return false, "FailedTooManyTimes"
+		}
+		var admin model.Admin
+		res := tx.Model(&model.Admin{}).Where("id = ?", id).Find(&admin).Limit(1)
+		if res.RowsAffected != 1 {
+			return false, "AdminNotFound"
+		}
+		res = tx.Model(&admin).Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
+		if res.Error != nil {
+			log.Logger.Warningf("Failed to update Admin: %v", res.Error)
+			return false, "UpdateAdminError"
+		}
+		if res.RowsAffected == 0 {
+			log.Logger.Debug("Failed to update admin due to optimistic lock")
+			continue
+		}
+		break
 	}
 	return true, "Success"
 }

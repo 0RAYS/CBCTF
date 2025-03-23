@@ -12,8 +12,6 @@ import (
 	"time"
 )
 
-const maxLength = 7
-
 var colors = map[string]func(a ...interface{}) string{
 	"Time":    color.New(color.FgGreen).Add(color.Bold).SprintFunc(),
 	"Warning": color.New(color.FgYellow).Add(color.Bold).SprintFunc(),
@@ -108,20 +106,19 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	}
 	t = strings.ToUpper(t)
 	LevelColor := levelColor(entry.Level)
-	LevelText := strings.ToUpper(entry.Level.String()) + strings.Repeat(" ", maxLength-len(entry.Level.String()))
+	LevelText := fmt.Sprintf("%-12s", t+"-"+entry.Level.String())
 	base, _ := os.Getwd()
 	base = strings.ReplaceAll(base, "\\", "/") + "/"
 	ret := new(bytes.Buffer)
 	switch t {
 	case "LOG":
-		_, _ = fmt.Fprintf(ret, "%s  %s | ",
-			LevelColor(t+"-"+LevelText),
+		_, _ = fmt.Fprintf(ret, "%s %s | ",
+			LevelColor(LevelText),
 			entry.Time.Format("2006-01-02 15:04:05"),
 		)
-		_, _ = fmt.Fprintf(ret, "%s:%d | %s",
-			strings.Replace(entry.Caller.File, base, "", 1),
-			entry.Caller.Line, LevelColor(entry.Message),
-		)
+		caller := fmt.Sprintf("%s:%d", strings.Replace(entry.Caller.File, base, "", 1), entry.Caller.Line)
+		caller = fmt.Sprintf("%-36s", caller)
+		_, _ = fmt.Fprintf(ret, "%s | %s", caller, LevelColor(entry.Message))
 	case "GIN":
 		StatusCodeColor := statusCodeColor(safeGetValue[int](entry, "StatusCode"))
 		MethodColor := methodColor(safeGetValue[string](entry, "Method"))
@@ -129,8 +126,8 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 		if Latency > time.Minute {
 			Latency = Latency.Truncate(time.Second)
 		}
-		_, _ = fmt.Fprintf(ret, "%s  %s | ",
-			LevelColor(t+"-"+LevelText),
+		_, _ = fmt.Fprintf(ret, "%s %s | ",
+			LevelColor(LevelText),
 			entry.Time.Format("2006-01-02 15:04:05"),
 		)
 		_, _ = fmt.Fprintf(ret, "%s | %s | %13v | ",
@@ -139,13 +136,13 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 			Latency,
 		)
 		_, _ = fmt.Fprintf(ret, "%s | %s | \"%s\"",
-			safeGetValue[string](entry, "ClientIP"),
-			MethodColor(safeGetValue[string](entry, "Method")),
+			fmt.Sprintf("%-15s", safeGetValue[string](entry, "ClientIP")),
+			MethodColor(fmt.Sprintf("%-7s", safeGetValue[string](entry, "Method"))),
 			safeGetValue[string](entry, "Path"),
 		)
 	case "GORM":
 		_, _ = fmt.Fprintf(ret, "%s %s | ",
-			LevelColor(t+"-"+LevelText),
+			LevelColor(LevelText),
 			entry.Time.Format("2006-01-02 15:04:05"),
 		)
 		_, _ = fmt.Fprintf(ret, "%s | %s rows %s %s | %s",
@@ -168,27 +165,26 @@ func (f TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		t = "LOG"
 	}
 	t = strings.ToUpper(t)
-	LevelText := strings.ToUpper(entry.Level.String()) + strings.Repeat(" ", maxLength-len(entry.Level.String()))
+	LevelText := fmt.Sprintf("%-12s", t+"-"+entry.Level.String())
 	base, _ := os.Getwd()
 	base = strings.ReplaceAll(base, "\\", "/") + "/"
 	ret := new(bytes.Buffer)
 	switch t {
 	case "LOG":
-		_, _ = fmt.Fprintf(ret, "%s  %s | ",
-			t+"-"+LevelText,
+		_, _ = fmt.Fprintf(ret, "%s %s | ",
+			LevelText,
 			entry.Time.Format("2006-01-02 15:04:05"),
 		)
-		_, _ = fmt.Fprintf(ret, "%s:%d | %s",
-			strings.Replace(entry.Caller.File, base, "", 1),
-			entry.Caller.Line, entry.Message,
-		)
+		caller := fmt.Sprintf("%s:%d", strings.Replace(entry.Caller.File, base, "", 1), entry.Caller.Line)
+		caller = fmt.Sprintf("%-36s", caller)
+		_, _ = fmt.Fprintf(ret, "%s | %s", caller, entry.Message)
 	case "GIN":
 		Latency := safeGetValue[time.Duration](entry, "Latency")
 		if Latency > time.Minute {
 			Latency = Latency.Truncate(time.Second)
 		}
-		_, _ = fmt.Fprintf(ret, "%s  %s | ",
-			t+"-"+LevelText,
+		_, _ = fmt.Fprintf(ret, "%s %s | ",
+			LevelText,
 			entry.Time.Format("2006-01-02 15:04:05"),
 		)
 		_, _ = fmt.Fprintf(ret, "%s | %d | %13v | ",
@@ -197,12 +193,12 @@ func (f TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 			Latency,
 		)
 		_, _ = fmt.Fprintf(ret, "%s | %s | \"%s\"",
-			safeGetValue[string](entry, "ClientIP"),
-			safeGetValue[string](entry, "Method"),
+			fmt.Sprintf("%-15s", safeGetValue[string](entry, "ClientIP")),
+			fmt.Sprintf("%-7s", safeGetValue[string](entry, "Method")),
 			safeGetValue[string](entry, "Path"),
 		)
 	case "GORM":
-		_, _ = fmt.Fprintf(ret, "%s %s | ", t+"-"+LevelText, entry.Time.Format("2006-01-02 15:04:05"))
+		_, _ = fmt.Fprintf(ret, "%s %s | ", LevelText, entry.Time.Format("2006-01-02 15:04:05"))
 		_, _ = fmt.Fprintf(ret, "%s | %s rows %s %s | %s",
 			safeGetValue[string](entry, "TraceID"),
 			safeGetValue[string](entry, "rows"),

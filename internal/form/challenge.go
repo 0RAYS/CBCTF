@@ -7,7 +7,7 @@ type DownloadChallengeForm struct {
 
 // GetCategoriesForm for get categories list
 type GetCategoriesForm struct {
-	Type int `form:"type" json:"type"`
+	Type string `form:"type" json:"type"`
 }
 
 type DeleteChallengeForm struct {
@@ -20,7 +20,7 @@ type UpdateChallengeForm struct {
 	Desc           *string `form:"desc" json:"desc"`
 	Flag           *string `form:"flag" json:"flag"`
 	Category       *string `form:"category" json:"category"`
-	Type           *int    `form:"type" json:"type"`
+	Type           *string `form:"type" json:"type"`
 	GeneratorImage *string `form:"generator" json:"generator"`
 	DockerImage    *string `form:"docker" json:"docker"`
 	Port           *int32  `form:"port" json:"port"`
@@ -30,7 +30,7 @@ type UpdateChallengeForm struct {
 type GetChallengesForm struct {
 	Offset   int    `form:"offset" json:"offset"`
 	Limit    int    `form:"limit" json:"limit"`
-	Type     int    `form:"type" json:"type"`
+	Type     string `form:"type" json:"type"`
 	Category string `form:"category" json:"category"`
 }
 
@@ -40,7 +40,7 @@ type CreateChallengeForm struct {
 	Desc           string `form:"desc" json:"desc"`
 	Flag           string `form:"flag" json:"flag"`
 	Category       string `form:"category" json:"category"`
-	Type           int    `form:"type" json:"type"`
+	Type           string `form:"type" json:"type"`
 	GeneratorImage string `form:"generator" json:"generator"`
 	DockerImage    string `form:"docker" json:"docker"`
 	Port           int32  `form:"port" json:"port"`

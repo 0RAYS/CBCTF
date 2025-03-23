@@ -17,7 +17,7 @@ func CreateNotice(ctx *gin.Context) {
 	}
 	contest := middleware.GetContest(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
-	notice, ok, msg := db.CreateNotice(tx, contest, form)
+	notice, ok, msg := db.CreateNotice(tx, contest, form, middleware.GetSelfID(ctx))
 	if !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

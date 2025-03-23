@@ -7,65 +7,54 @@ import (
 	"encoding/json"
 	"fmt"
 	"gorm.io/gorm"
+	"gorm.io/plugin/optimisticlock"
 	"strings"
 	"time"
 )
 
 type Team struct {
-	ID        uint           `gorm:"primarykey" json:"id"`
-	Name      string         `gorm:"index:idx_name_contest_id_deleted,unique;not null" json:"name"`
-	ContestID uint           `gorm:"index:idx_name_contest_id_deleted,unique;not null" json:"contest_id"`
-	Desc      string         `json:"desc"`
-	Captcha   string         `json:"-"`
-	Avatar    string         `json:"avatar"`
-	Score     float64        `json:"score" gorm:"default:0"`
-	Last      time.Time      `json:"last"`
-	Banned    bool           `gorm:"default:false" json:"banned"`
-	Hidden    bool           `gorm:"default:false" json:"hidden"`
-	CaptainID uint           `json:"captain_id"`
-	Users     []*User        `gorm:"many2many:user_teams;" json:"-"`
-	CreatedAt time.Time      `json:"-"`
-	UpdatedAt time.Time      `json:"-"`
-	DeletedAt gorm.DeletedAt `gorm:"index;index:idx_name_contest_id_deleted,unique" json:"-"`
+	ID        uint                   `gorm:"primarykey" json:"id"`
+	Name      string                 `gorm:"index:idx_name_contest_id_deleted,unique;not null" json:"name"`
+	ContestID uint                   `gorm:"index:idx_name_contest_id_deleted,unique;not null" json:"contest_id"`
+	Desc      string                 `json:"desc"`
+	Captcha   string                 `json:"-"`
+	Avatar    string                 `json:"avatar"`
+	Score     float64                `json:"score" gorm:"default:0"`
+	Last      time.Time              `json:"last"`
+	Banned    bool                   `gorm:"default:false" json:"banned"`
+	Hidden    bool                   `gorm:"default:false" json:"hidden"`
+	CaptainID uint                   `json:"captain_id"`
+	Rank      int                    `json:"rank" gorm:"default:-1"`
+	Users     []*User                `gorm:"many2many:user_teams;" json:"-"`
+	CreatedAt time.Time              `json:"-"`
+	UpdatedAt time.Time              `json:"-"`
+	DeletedAt gorm.DeletedAt         `gorm:"index;index:idx_name_contest_id_deleted,unique" json:"-"`
+	Version   optimisticlock.Version `json:"-" gorm:"default:1"`
 }
 
-func (t *Team) MarshalJSON() ([]byte, error) {
+// MarshalJSON 重写 MarshalJSON 方法, 使 Avatar 返回完整的 URL, 转换 Users 为数量
+func (t Team) MarshalJSON() ([]byte, error) {
+	avatar := ""
+	if strings.TrimPrefix(t.Avatar, "/") != "" {
+		avatar = fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(t.Avatar, "/"))
+	}
 	type Tmp Team // 定义一个别名以避免递归调用
 	return json.Marshal(&struct {
-		*Tmp
+		Tmp
 		Users  int    `json:"users"`
 		Avatar string `json:"avatar"`
 	}{
-		Tmp:    (*Tmp)(t),
+		Tmp:    Tmp(t),
 		Users:  len(t.Users),
-		Avatar: fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(t.Avatar, "/")),
+		Avatar: avatar,
 	})
 }
 
-func (t *Team) UnmarshalJSON(data []byte) error {
-	type Tmp Team
-	aux := &struct {
-		*Tmp
-		Avatar string `json:"avatar"`
-	}{
-		Tmp: (*Tmp)(t),
-	}
-	if err := json.Unmarshal(data, &aux); err != nil {
-		return err
-	}
-	t.Avatar = strings.TrimPrefix(aux.Avatar, config.Env.Backend)
-	return nil
-}
-
 func InitTeam(form form.CreateTeamForm, captain User, contestID uint) Team {
-	captcha := utils.UUID()
-	if form.Captcha != "" {
-		captcha = form.Captcha
-	}
 	return Team{
 		Name:      form.Name,
 		Desc:      form.Desc,
-		Captcha:   captcha,
+		Captcha:   utils.UUID(),
 		Avatar:    "",
 		Banned:    false,
 		Hidden:    false,

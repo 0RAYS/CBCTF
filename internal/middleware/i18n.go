@@ -25,6 +25,7 @@ type Data struct {
 	Trace string `json:"trace"`
 }
 
+// I18n 重写响应
 func I18n() func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		w := &i18nResponseWriter{

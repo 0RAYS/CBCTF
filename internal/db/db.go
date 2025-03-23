@@ -36,8 +36,8 @@ func Init() {
 		config.Env.Gorm.MySQL.Port,
 		config.Env.Gorm.MySQL.DB,
 	)
-	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: log.NewGormLogger(level)})
 	log.Logger.Infof("Connecting to MySQL database: %s:%d", config.Env.Gorm.MySQL.Host, config.Env.Gorm.MySQL.Port)
+	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{Logger: log.NewGormLogger(level)})
 	if err != nil {
 		log.Logger.Fatalf("failed to connect database: %v", err)
 	}
@@ -53,8 +53,8 @@ func Init() {
 		&model.Admin{}, &model.User{}, &model.Team{},
 		&model.Contest{}, &model.File{}, &model.IP{},
 		&model.Challenge{}, &model.Usage{}, &model.Flag{},
-		&model.Docker{}, &model.Submission{}, &model.Device{},
-		&model.Traffic{}, &model.Notice{},
+		&model.Container{}, &model.Submission{}, &model.Device{},
+		&model.Traffic{}, &model.Notice{}, &model.Cheat{},
 	)
 	if err != nil {
 		log.Logger.Fatalf("failed to migrate database: %v", err)

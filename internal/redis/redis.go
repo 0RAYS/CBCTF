@@ -9,10 +9,10 @@ import (
 	"time"
 )
 
-// 目前整体来说，缓存只能说勉强能用，设计很有问题
-// 数据模型之间相互关联，User Team Contest 嵌套比较多
-// 遇到数据更新很多缓存没法及时同步，可能会导致一些功能问题
-// 目前是缩短缓存时间来缓解这个问题，后续再说吧，想想更好的解决思路
+// 目前整体来说, 缓存只能说勉强能用, 设计很有问题
+// 数据模型之间相互关联, User Team Contest 嵌套比较多
+// 遇到数据更新很多缓存没法及时同步, 可能会导致一些功能问题
+// 目前是缩短缓存时间来缓解这个问题, 后续再说吧, 想想更好的解决思路
 
 var (
 	RDB           *redis.Client
@@ -23,9 +23,7 @@ var (
 )
 
 func Init() {
-	if !config.Env.Redis.On {
-		return
-	}
+	log.Logger.Infof("Connecting to Redis: %s", config.Env.Redis.Addr)
 	RDB = redis.NewClient(&redis.Options{
 		Addr:         config.Env.Redis.Addr,
 		Password:     config.Env.Redis.Pwd,
@@ -58,9 +56,6 @@ func Close() {
 }
 
 func Status() (int64, int64, int64) {
-	if !config.Env.Redis.On {
-		return 0, 0, 0
-	}
 	hit := atomic.LoadInt64(&CacheHit)
 	miss := atomic.LoadInt64(&CacheMiss)
 	ctx := context.Background()

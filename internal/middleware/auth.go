@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// CheckLogin 是否登录
+// CheckLogin 是否登录, 用户是否被 ban, 记录设备
 func CheckLogin(ctx *gin.Context) {
 	auth := strings.Fields(ctx.GetHeader("Authorization"))
 	if len(auth) != 2 || auth[0] != "Bearer" {
@@ -45,6 +45,9 @@ func CheckLogin(ctx *gin.Context) {
 		if magic := ctx.GetHeader("X-M"); magic != "" {
 			tx := db.DB.WithContext(ctx).Begin()
 			db.RecordDevice(tx, model.Device{UserID: user.ID, Magic: magic})
+			if utils.EncryptMagic(magic) != claims.X {
+				db.CreateCheat(tx, user.ID, 0, 0, model.MagicNotMatch, model.Suspect)
+			}
 			tx.Commit()
 		}
 		if user.Banned {
@@ -61,7 +64,7 @@ func CheckLogin(ctx *gin.Context) {
 	}
 }
 
-// GetRole 获取角色， user 或 admin
+// GetRole 获取角色,  user 或 admin
 func GetRole(ctx *gin.Context) string {
 	if role, ok := ctx.Get("Role"); !ok {
 		return ""

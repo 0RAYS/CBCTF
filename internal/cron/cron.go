@@ -3,17 +3,30 @@ package cron
 import (
 	"CBCTF/internal/log"
 	"github.com/robfig/cron/v3"
+	"time"
 )
 
 var c *cron.Cron
 
+func executionTime(name string, task func()) func() {
+	return func() {
+		start := time.Now()
+		task()
+		log.Logger.Infof("%s processing time: %s", name, time.Since(start))
+	}
+}
+
 func Init() {
 	c = cron.New(cron.WithSeconds())
-	CloseDockers(c)
-	UpdateRanking(c)
-	PrepareGenerator(c)
+	CloseContainers(c)
+	CloseUnCtrlContainers(c)
+	UpdateUsageScore(c)
+	UpdateUserRanking(c)
+	UpdateTeamRanking(c)
+	CheckCheat(c)
 	CloseGenerator(c)
-	CloseUnCtrlDockers(c)
+	PrepareGenerator(c)
+	ClearUsageMutex(c)
 }
 
 func Start() {

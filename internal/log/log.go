@@ -45,5 +45,4 @@ func Init() {
 	default:
 		Logger.SetLevel(logrus.InfoLevel)
 	}
-	Logger.Debugf("Log level set to %s", level)
 }
