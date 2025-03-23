@@ -300,13 +300,13 @@ func writeKubeConfig() error {
 			},
 		},
 		Contexts: map[string]*api.Context{
-			fmt.Sprintf("kubernetes-admin@kubernetes-%s", SvcAccountName): {
+			fmt.Sprintf("%s-admin@kubernetes-%s", NamespaceName, SvcAccountName): {
 				Cluster:   ctx.Cluster,
 				AuthInfo:  SvcAccountName,
 				Namespace: NamespaceName,
 			},
 		},
-		CurrentContext: fmt.Sprintf("kubernetes-admin@kubernetes-%s", SvcAccountName),
+		CurrentContext: fmt.Sprintf("%s-admin@kubernetes-%s", NamespaceName, SvcAccountName),
 	}
 	return clientcmd.WriteToFile(kubeConfig, fmt.Sprintf("%s.conf", NamespaceName))
 }
