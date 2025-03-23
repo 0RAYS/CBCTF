@@ -25,7 +25,6 @@ type Challenge struct {
 	Name           string                 `json:"name" gorm:"not null"`
 	Desc           string                 `json:"desc"`
 	Flag           string                 `json:"flag"`
-	Flags          utils.Strings          `json:"flags" gorm:"type:json"`
 	Category       string                 `json:"category"`
 	Type           string                 `json:"type" gorm:"default:'static'"`
 	GeneratorImage string                 `json:"generator" gorm:"column:generator"`
@@ -49,7 +48,6 @@ func InitChallenge(form form.CreateChallengeForm) Challenge {
 		Name:     form.Name,
 		Desc:     form.Desc,
 		Flag:     form.Flag,
-		Flags:    utils.Strings{form.Flag},
 		Category: form.Category,
 		Type:     form.Type,
 	}
