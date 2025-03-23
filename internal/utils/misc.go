@@ -1,6 +1,9 @@
 package utils
 
 import (
+	"crypto/md5"
+	"crypto/sha256"
+	"fmt"
 	"github.com/google/uuid"
 	"math/rand"
 	"reflect"
@@ -26,6 +29,12 @@ func In(value interface{}, slice interface{}) bool {
 // UUID 生成随机uuid
 func UUID() string {
 	return uuid.New().String()
+}
+
+func EncryptMagic(magic string) string {
+	hash := fmt.Sprintf("%x", sha256.Sum256([]byte(magic)))[1:32]
+	hash = fmt.Sprintf("%x", md5.Sum([]byte(hash)))
+	return fmt.Sprintf("%x", sha256.Sum256([]byte(hash)))
 }
 
 const charset = "abcdefghijklmnopqrstuvwxyz0123456789"
@@ -64,7 +73,7 @@ func ToTitle(s string) string {
 	return strings.ToUpper(string(s[0])) + s[1:]
 }
 
-// TidyPaginate 实现内存分页逻辑，处理各类边界场景
+// TidyPaginate 实现内存分页逻辑, 处理各类边界场景
 func TidyPaginate(length, limit, offset int) (int, int) {
 	if length == 0 {
 		return 0, 0

@@ -9,69 +9,44 @@ import (
 	"encoding/base64"
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/ptr"
 	"os"
 	"time"
 )
 
-func StartGenerator(challenge model.Challenge) (*corev1.Pod, bool, string) {
+// StartGenerator 启动动态附件生成器, 等待附加命令, 生成附件
+func StartGenerator(usage model.Usage) (*corev1.Pod, bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
-	log.Logger.Infof("Starting generator for challenge %s-%s", challenge.ID, challenge.Name)
+	log.Logger.Infof("Starting generator for challenge %s-%s", usage.ChallengeID, usage.Name)
 	var err error
-	if challenge.Type != model.Dynamic {
+	if usage.Type != model.Dynamic {
 		return &corev1.Pod{}, false, "InvalidChallengeType"
 	}
-	if challenge.GeneratorImage == "" {
+	if usage.GeneratorImage == "" {
 		return &corev1.Pod{}, false, "EmptyGeneratorImage"
 	}
-	log.Logger.Debugf("Creating pod for challenge %s:%s", challenge.Name, challenge.ID)
-	podName := fmt.Sprintf("generator-%s-pod", challenge.ID)
-	pod, ok, _ := GetPod(podName)
+	log.Logger.Debugf("Creating Pod for challenge %s:%s", usage.Name, usage.ChallengeID)
+	podName := fmt.Sprintf("generator-%s-pod", usage.ChallengeID)
+	// 如果已启动并健康运行, 直接返回
+	pod, ok, _ := GetPod(ctx, podName)
 	if ok && pod.Status.Phase == corev1.PodRunning {
 		log.Logger.Infof("Pod %s is already running", pod.Name)
 		return pod, true, "Success"
 	}
-	containerName := fmt.Sprintf("generator-%s", challenge.ID)
-	pod = &corev1.Pod{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      podName,
-			Namespace: NamespaceName,
-		},
-		Spec: corev1.PodSpec{
-			Containers: []corev1.Container{
-				{
-					Name:    containerName,
-					Image:   challenge.GeneratorImage,
-					Command: []string{"sleep", "infinity"},
-				},
-			},
-			TerminationGracePeriodSeconds: ptr.To[int64](3),
-			RestartPolicy:                 corev1.RestartPolicyNever,
+	containerName := fmt.Sprintf("generator-%s", usage.ChallengeID)
+	containers := []corev1.Container{
+		{
+			Name:    containerName,
+			Image:   usage.GeneratorImage,
+			Command: []string{"sleep", "infinity"},
 		},
 	}
-	pod, err = Client.CoreV1().Pods(NamespaceName).Create(ctx, pod, metav1.CreateOptions{})
-	if err != nil {
-		log.Logger.Warningf("Failed to create pod: %v", err)
-		return &corev1.Pod{}, false, "CreatePodError"
-	}
-	for {
-		pod, ok, _ = GetPod(podName)
-		if !ok {
-			log.Logger.Warningf("Failed to get pod: %v", err)
-			return &corev1.Pod{}, false, "GetPodError"
-		}
-		if pod.Status.Phase == corev1.PodRunning {
-			break
-		}
-		if pod.Status.Phase != corev1.PodPending {
-			log.Logger.Warningf("Pod %s is not running", pod.Name)
-			return &corev1.Pod{}, false, "PodNotRunning"
-		}
+	pod, ok, msg := CreatePod(ctx, usage, podName, containers)
+	if !ok {
+		return &corev1.Pod{}, false, msg
 	}
 	var commands []string
-	generatorPath := challenge.GeneratorPath()
+	generatorPath := usage.GeneratorPath()
 	if _, err := os.Stat(generatorPath); err == nil {
 		err = CopyToPod(podName, containerName, generatorPath, "/root/generator.zip")
 		if err != nil {
@@ -93,19 +68,23 @@ func StartGenerator(challenge model.Challenge) (*corev1.Pod, bool, string) {
 	return pod, true, "Success"
 }
 
-func StopGenerator(challenge model.Challenge) (bool, string) {
-	log.Logger.Infof("Stopping generator for challenge %s-%s", challenge.ID, challenge.Name)
-	podName := fmt.Sprintf("generator-%s-pod", challenge.ID)
-	return DeletePod(podName)
+// StopGenerator 停止动态附件生成器
+func StopGenerator(usage model.Usage) (bool, string) {
+	log.Logger.Infof("Stopping generator for challenge %s-%s", usage.ChallengeID, usage.Name)
+	podName := fmt.Sprintf("generator-%s-pod", usage.ChallengeID)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	defer cancel()
+	return DeletePod(ctx, podName)
 }
 
-// GenerateAttachment 启动容器, 生成附件
-func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, string) {
+// GenerateAttachment 附加容器命令, 生成附件
+func GenerateAttachment(usage model.Usage, flag model.Flag) (bool, string) {
 	var err error
 	log.Logger.Debugf("Generating attachment for team %d challenge %s", flag.TeamID, flag.ChallengeID)
-	pod, ok, msg := StartGenerator(challenge)
+	pod, ok, msg := StartGenerator(usage)
+	// 附加失败则直接返回, 并尝试关闭生成器
 	if !ok {
-		_, _ = StopGenerator(challenge)
+		_, _ = StopGenerator(usage)
 		return false, msg
 	}
 	command := fmt.Sprintf("./run.sh %d %s", flag.TeamID, base64.StdEncoding.EncodeToString([]byte(flag.Value)))
@@ -118,7 +97,7 @@ func GenerateAttachment(challenge model.Challenge, flag model.Flag) (bool, strin
 	err = CopyFromPod(
 		pod.Name, pod.Spec.Containers[0].Name,
 		fmt.Sprintf("/root/attachments/%d.zip", flag.TeamID),
-		fmt.Sprintf("%s/attachments/%s/%d.zip", config.Env.Gin.Upload.Path, challenge.ID, flag.TeamID),
+		fmt.Sprintf("%s/attachments/%s/%d.zip", config.Env.Path, usage.ChallengeID, flag.TeamID),
 	)
 	if err != nil {
 		log.Logger.Warningf("Failed to copy output file: %v", err)

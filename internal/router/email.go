@@ -41,9 +41,15 @@ func Verify(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
 }
 
-func SendEmail(user model.User) (bool, string) {
+func Activate(ctx *gin.Context) {
+	user := middleware.GetSelf(ctx).(model.User)
+	_, msg := SendEmail(user, middleware.GetMagic(ctx))
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}
+
+func SendEmail(user model.User, magic string) (bool, string) {
 	id := utils.UUID()
-	token, err := utils.Generate(user.ID, user.Name, "email")
+	token, err := utils.Generate(user.ID, user.Name, "email", magic)
 	if err != nil {
 		return false, "UnknownError"
 	}
@@ -52,13 +58,7 @@ func SendEmail(user model.User) (bool, string) {
 		return false, msg
 	}
 	if err := utils.SendVerifyEmail(user.Email, token, id); err != nil {
-		return false, "SendEmailFailed"
+		return false, "SendEmailError"
 	}
 	return true, "Success"
-}
-
-func Activate(ctx *gin.Context) {
-	user := middleware.GetSelf(ctx).(model.User)
-	_, msg := SendEmail(user)
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

@@ -1,7 +1,6 @@
 package redis
 
 import (
-	"CBCTF/internal/config"
 	"context"
 	"errors"
 	"fmt"
@@ -9,19 +8,15 @@ import (
 	"time"
 )
 
-func RecordDockerCreate(teamID uint, challengeID string) error {
-	if !config.Env.Redis.On {
-		return errors.New("RedisOff")
-	}
+// RecordContainersCreate 记录 1*time.Minutes 内启动容器
+func RecordContainersCreate(teamID uint, challengeID string) error {
 	ctx := context.Background()
 	err := RDB.Set(ctx, fmt.Sprintf("d:c:%d:%s", teamID, challengeID), "1", 1*time.Minute).Err()
 	return err
 }
 
-func CheckDockerCreate(teamID uint, challengeID string) (bool, error) {
-	if !config.Env.Redis.On {
-		return false, errors.New("RedisOff")
-	}
+// CheckContainersCreate 是否 1*time.Minutes 内启动过容器
+func CheckContainersCreate(teamID uint, challengeID string) (bool, error) {
 	ctx := context.Background()
 	_, err := RDB.Get(ctx, fmt.Sprintf("d:c:%d:%s", teamID, challengeID)).Result()
 	if errors.Is(err, redis.Nil) {

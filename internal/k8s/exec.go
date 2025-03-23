@@ -9,15 +9,15 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 )
 
-// ExecInPod executes a command in a pod
+// ExecInPod executes a command in a Pod
 func ExecInPod(pod, container, command string, stdin io.Reader, stdout *bytes.Buffer, stderr *bytes.Buffer) error {
 	cmd := []string{"sh", "-c", command}
 	return ExecInPodWithStream(pod, container, cmd, stdin, stdout, stderr)
 }
 
-// ExecInPodWithStream executes a command in a pod with stream
+// ExecInPodWithStream executes a command in a Pod with stream
 func ExecInPodWithStream(pod, container string, command []string, stdin io.Reader, stdout, stderr *bytes.Buffer) error {
-	req := Client.CoreV1().RESTClient().Post().
+	req := client.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Name(pod).
 		Namespace(NamespaceName).
@@ -31,7 +31,7 @@ func ExecInPodWithStream(pod, container string, command []string, stdin io.Reade
 			TTY:       false,
 		}, scheme.ParameterCodec)
 
-	exec, err := remotecommand.NewSPDYExecutor(Config, "POST", req.URL())
+	exec, err := remotecommand.NewSPDYExecutor(conf, "POST", req.URL())
 	if err != nil {
 		log.Logger.Warningf("Failed to create SPDY executor: %v", err)
 		return err

@@ -3,11 +3,11 @@ package router
 import (
 	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
+	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/utils"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
@@ -48,7 +48,7 @@ func GetChallenges(ctx *gin.Context) {
 		return
 	}
 	if ctx.Query("type") == "" && ctx.Query("category") == "" {
-		form.Type = -1
+		form.Type = ""
 		form.Category = ""
 	}
 	challenges, count, ok, msg := db.GetChallenges(db.DB.WithContext(ctx), form.Limit, form.Offset, form.Type, form.Category)
@@ -60,9 +60,9 @@ func GetChallenges(ctx *gin.Context) {
 }
 
 func GetAttachment(ctx *gin.Context) {
-	challenge := middleware.GetChallenge(ctx)
+	usage := middleware.GetUsage(ctx)
 	team := middleware.GetTeam(ctx)
-	path := challenge.AttachmentPath(team.ID)
+	path := usage.AttachmentPath(team.ID)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		ctx.JSON(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": nil})
 		return
@@ -73,20 +73,13 @@ func GetAttachment(ctx *gin.Context) {
 func GetChallengeFiles(ctx *gin.Context) {
 	challenge := middleware.GetChallenge(ctx)
 	var files []string
-	if middleware.GetRole(ctx) == "admin" {
-		dir, err := os.ReadDir(challenge.BasicDir())
-		if err != nil {
-			ctx.JSON(http.StatusOK, gin.H{"msg": "ReadDirError", "data": nil})
-			return
-		}
-		for _, file := range dir {
-			files = append(files, file.Name())
-		}
-	} else {
-		team := middleware.GetTeam(ctx)
-		if _, err := os.Stat(challenge.AttachmentPath(team.ID)); err == nil {
-			files = append(files, model.DynamicFile)
-		}
+	dir, err := os.ReadDir(challenge.BasicDir())
+	if err != nil {
+		ctx.JSON(http.StatusOK, gin.H{"msg": "ReadDirError", "data": nil})
+		return
+	}
+	for _, file := range dir {
+		files = append(files, file.Name())
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &files})
 }
@@ -120,7 +113,7 @@ func UpdateChallenge(ctx *gin.Context) {
 	tmp := utils.ToTitle(strings.TrimSpace(*form.Category))
 	form.Category = &tmp
 	data = utils.Form2Map(form)
-	if t, ok := data["type"]; ok && !db.IsValidChallengeType(t.(int)) {
+	if t, ok := data["type"]; ok && !db.IsValidChallengeType(t.(string)) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidChallengeType", "data": nil})
 		return
 	}
@@ -169,110 +162,72 @@ func DeleteChallenge(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
-func UploadChallenge(ctx *gin.Context) {
-	challenge := middleware.GetChallenge(ctx)
-	file, err := ctx.FormFile("file")
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
-		return
-	}
-	var path string
-	switch challenge.Type {
-	case model.Static, model.Container:
-		if file.Filename != model.StaticFile {
-			ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
-			return
-		}
-		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), model.StaticFile)
-	case model.Dynamic:
-		if file.Filename != model.DynamicFile {
-			ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
-			return
-		}
-		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), model.DynamicFile)
-	default:
-		ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidChallengeType", "data": nil})
-		return
-	}
-	if err := ctx.SaveUploadedFile(file, path); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
-		return
-	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
-}
-
-func DownloadChallenge(ctx *gin.Context) {
-	var form f.DownloadChallengeForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
-		return
-	}
-	challenge := middleware.GetChallenge(ctx)
-	var path string
-	switch form.File {
-	case model.StaticFile, model.DynamicFile:
-		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), form.File)
-	default:
-		ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
-		return
-
-	}
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		ctx.JSON(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": nil})
-		return
-	}
-	ctx.File(path)
-}
-
 func ChallengeStatus(ctx *gin.Context) {
-	var (
-		team model.Team
-		ok   bool
-		msg  string
-	)
-	team = middleware.GetTeam(ctx)
-	_, ok, msg = db.GetFlagBy3ID(db.DB.WithContext(ctx), middleware.GetContest(ctx).ID, team.ID, middleware.GetChallenge(ctx).ID)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": false})
+	data := gin.H{
+		"init":  false,
+		"files": "",
+		"remote": gin.H{
+			"target":    "",
+			"remaining": "",
+		},
+		"solved": false,
+	}
+	team := middleware.GetTeam(ctx)
+	usage := middleware.GetUsage(ctx)
+	contest := middleware.GetContest(ctx)
+	if _, ok, msg := db.GetFlagBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": data})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": true})
+	data["init"] = true
+	if db.IsSolved(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID) {
+		data["solved"] = true
+	}
+	if _, err := os.Stat(usage.AttachmentPath(team.ID)); err != nil {
+		if !os.IsNotExist(err) {
+			log.Logger.Warningf("Failed to check attachment: %s", err)
+		}
+	} else {
+		data["files"] = model.AttachmentFile
+	}
+	if usage.Type == model.Docker {
+		if container, ok, _ := db.GetContainerBy3ID(db.DB.WithContext(ctx), contest.ID, team.ID, usage.ChallengeID); ok {
+			data["remote"] = gin.H{
+				"target":    container.RemoteAddr(),
+				"remaining": container.Remaining().Seconds(),
+			}
+		}
+	}
 
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
 }
 
 func InitChallenge(reset bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var (
-			team    model.Team
-			contest model.Contest
-			usage   model.Usage
+			team    = middleware.GetTeam(ctx)
+			contest = middleware.GetContest(ctx)
+			usage   = middleware.GetUsage(ctx)
+			DB      = db.DB.WithContext(ctx)
 			ok      bool
 			msg     string
 			err     error
-			DB      = db.DB.WithContext(ctx)
 		)
-		team = middleware.GetTeam(ctx)
-		if ok, err = redis.CheckChallengeInit(team.ID, middleware.GetChallenge(ctx).ID); ok || err != nil {
+		if ok, err = redis.CheckChallengeInit(team.ID, usage.ChallengeID); ok || err != nil {
 			ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooQuick", "data": nil})
 			return
 		}
-		_ = redis.RecordChallengeInit(team.ID, middleware.GetChallenge(ctx).ID)
-		contest = middleware.GetContest(ctx)
-		usage, ok, msg = db.GetUsageBy2ID(DB, contest.ID, middleware.GetChallenge(ctx).ID)
-		if !ok {
-			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-			return
-		}
+		_ = redis.RecordChallengeInit(team.ID, usage.ChallengeID)
 		if !reset {
 			if _, ok, msg = db.GetFlagBy3ID(DB, contest.ID, team.ID, usage.ChallengeID); ok {
 				ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 				return
 			}
 		}
-		docker, ok, _ := db.GetDockerBy3ID(DB, contest.ID, team.ID, usage.ChallengeID)
+		container, ok, _ := db.GetContainerBy3ID(DB, contest.ID, team.ID, usage.ChallengeID)
 		if ok {
 			tx := DB.Begin()
-			ok, msg = db.DeleteDocker(tx, docker)
+			ok, msg = db.DeleteContainer(tx, container)
 			if !ok {
 				tx.Rollback()
 				ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

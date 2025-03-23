@@ -5,6 +5,7 @@ import (
 	"math/rand"
 )
 
+// copied from https://github.com/ret2shell/ret2script/blob/main/src/modules/audit.rs
 var replaceMap = map[string][]string{
 	"0": {"0", "O"},
 	"1": {"1", "l", "I"},
@@ -123,7 +124,7 @@ func upper(s string, max int) string {
 }
 
 func RandFlag(flag string) string {
-	flag = repeat(flag, len(flag)*7/10)
+	flag = repeat(flag, len(flag)*2/10)
 	flag = replace(flag, len(flag)*7/10)
 	flag = upper(flag, len(flag)*7/10)
 	return flag

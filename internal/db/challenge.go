@@ -14,7 +14,7 @@ func CreateChallenge(tx *gorm.DB, form form.CreateChallengeForm) (model.Challeng
 		return model.Challenge{}, false, "InvalidChallengeType"
 	}
 	challenge := model.InitChallenge(form)
-	res := tx.Model(model.Challenge{}).Create(&challenge)
+	res := tx.Model(&model.Challenge{}).Create(&challenge)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to create Challenge: %s", res.Error)
 		return model.Challenge{}, false, "CreateChallengeError"
@@ -22,10 +22,10 @@ func CreateChallenge(tx *gorm.DB, form form.CreateChallengeForm) (model.Challeng
 	return challenge, true, "Success"
 }
 
-// GetChallengeByID 根据 id 获取题目
+// GetChallengeByID 根据 ID 获取题目
 func GetChallengeByID(tx *gorm.DB, id string) (model.Challenge, bool, string) {
 	var challenge model.Challenge
-	res := tx.Model(model.Challenge{}).Where("id = ?", id).Find(&challenge).Limit(1)
+	res := tx.Model(&model.Challenge{}).Where("id = ?", id).Find(&challenge).Limit(1)
 	if res.RowsAffected != 1 {
 		return model.Challenge{}, false, "ChallengeNotFound"
 	}
@@ -33,13 +33,13 @@ func GetChallengeByID(tx *gorm.DB, id string) (model.Challenge, bool, string) {
 }
 
 // GetChallenges 获取题目列表, 可接受 type 和 category 参数
-func GetChallenges(tx *gorm.DB, limit, offset, t int, category string) ([]model.Challenge, int64, bool, string) {
+func GetChallenges(tx *gorm.DB, limit, offset int, t string, category string) ([]model.Challenge, int64, bool, string) {
 	var challenges []model.Challenge
 	var count int64
-	res := tx.Model(model.Challenge{})
-	if t != -1 && category != "" {
+	res := tx.Model(&model.Challenge{})
+	if t != "" && category != "" {
 		res = res.Where("type = ? AND category = ?", t, category)
-	} else if !(t == -1 && category == "") {
+	} else if !(t == "" && category == "") {
 		res = res.Where("type = ? OR category = ?", t, category)
 	}
 	if res.Count(&count).Error != nil {
@@ -63,18 +63,35 @@ func CountChallenges(tx *gorm.DB) int64 {
 
 // UpdateChallenge 更新题目, 使用 map 更新属性, 结构体会导致零值未更新, 对字段值的具体要求应当交给上层实现
 func UpdateChallenge(tx *gorm.DB, id string, updateData map[string]interface{}) (bool, string) {
-	res := tx.Model(model.Challenge{}).Where("id = ?", id).
-		Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to update Challenge: %v", res.Error)
-		return false, "UpdateChallengeError"
+	var count int
+	for {
+		count++
+		if count > 10 {
+			log.Logger.Warningf("Failed too many times to update user due to optimistic lock")
+			return false, "FailedTooManyTimes"
+		}
+		var challenge model.Challenge
+		res := tx.Model(&model.Challenge{}).Where("id = ?", id).Find(&challenge).Limit(1)
+		if res.RowsAffected != 1 {
+			return false, "ChallengeNotFound"
+		}
+		res = tx.Model(&challenge).Omit("id", "created_at", "updated_at", "deleted_at").Updates(updateData)
+		if res.Error != nil {
+			log.Logger.Warningf("Failed to update Challenge: %v", res.Error)
+			return false, "UpdateChallengeError"
+		}
+		if res.RowsAffected == 0 {
+			log.Logger.Debug("Failed to update challenge due to optimistic lock")
+			continue
+		}
+		break
 	}
 	return true, "Success"
 }
 
 // DeleteChallenge 删除题目
 func DeleteChallenge(tx *gorm.DB, id string) (bool, string) {
-	res := tx.Model(model.Challenge{}).Where("id = ?", id).Delete(&model.Challenge{})
+	res := tx.Model(&model.Challenge{}).Where("id = ?", id).Delete(&model.Challenge{})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete Challenge: %v", res.Error)
 		return false, "DeleteChallengeError"
@@ -86,9 +103,13 @@ func DeleteChallenge(tx *gorm.DB, id string) (bool, string) {
 }
 
 // GetCategories 获取 type 下所有的题目分类
-func GetCategories(tx *gorm.DB, t int) ([]string, bool, string) {
+func GetCategories(tx *gorm.DB, t string) ([]string, bool, string) {
 	var categories []string
-	res := tx.Model(&model.Challenge{}).Where("type = ?", t).Select("distinct category").Find(&categories)
+	res := tx.Model(&model.Challenge{})
+	if t != "" {
+		res = res.Where("type = ?", t)
+	}
+	res = res.Select("distinct category").Find(&categories)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get categories: %s", res.Error)
 		return make([]string, 0), false, "UnknownError"

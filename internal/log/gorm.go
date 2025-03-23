@@ -37,7 +37,7 @@ type Config struct {
 
 // NewGormLogger initialize gormTraceLogger
 func NewGormLogger(level Level) gormLogger.Interface {
-	var (
+	const (
 		infoStr = "%s\n[info] "
 		warnStr = "%s\n[warn] "
 		errStr  = "%s\n[error] "

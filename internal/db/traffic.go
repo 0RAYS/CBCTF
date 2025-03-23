@@ -9,20 +9,21 @@ import (
 	"gorm.io/gorm"
 )
 
-func SaveTraffic(tx *gorm.DB, docker model.Docker) (bool, string) {
-	res := tx.Model(&model.Traffic{}).Where("path = ?", docker.TrafficPath()).Find(&model.Traffic{}).Limit(1)
+// SaveTraffic 从 .pcap 文件中保存流量至数据库
+func SaveTraffic(tx *gorm.DB, container model.Container) (bool, string) {
+	res := tx.Model(&model.Traffic{}).Where("path = ?", container.TrafficPath()).Find(&model.Traffic{}).Limit(1)
 	if res.RowsAffected > 0 || res.Error != nil {
 		return true, "Success"
 	}
-	connections, ok, msg := traffic.ReadPcap(docker.TrafficPath())
+	connections, ok, msg := traffic.ReadPcap(container.TrafficPath())
 	if !ok {
-		if docker.DeletedAt.Valid && msg == "PcapNotFound" {
+		if container.DeletedAt.Valid && msg == "PcapNotFound" {
 			msg = "HasNoTraffic"
 		}
 		return ok, msg
 	}
 	for _, conn := range connections {
-		t := model.InitTraffic(conn, docker)
+		t := model.InitTraffic(conn, container)
 		res := tx.Model(&model.Traffic{}).Create(&t)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to save traffic: %s", res.Error)
@@ -32,7 +33,8 @@ func SaveTraffic(tx *gorm.DB, docker model.Docker) (bool, string) {
 	return true, "Success"
 }
 
-func getTrafficByID(tx *gorm.DB, column string, id uint, limit, offset int) ([]model.Traffic, int64, bool, string) {
+// GetTrafficByColumn 根据列获取流量
+func GetTrafficByColumn(tx *gorm.DB, column string, id uint, limit, offset int) ([]model.Traffic, int64, bool, string) {
 	if limit <= 0 {
 		limit = -1
 	}
@@ -53,12 +55,4 @@ func getTrafficByID(tx *gorm.DB, column string, id uint, limit, offset int) ([]m
 		return make([]model.Traffic, 0), -1, false, "GetTrafficError"
 	}
 	return traffics, count, true, ""
-}
-
-func GetTrafficByDocker(tx *gorm.DB, dockerID uint, limit, offset int) ([]model.Traffic, int64, bool, string) {
-	return getTrafficByID(tx, "docker_id", dockerID, limit, offset)
-}
-
-func GetTrafficByTeam(tx *gorm.DB, teamID uint, limit, offset int) ([]model.Traffic, int64, bool, string) {
-	return getTrafficByID(tx, "team_id", teamID, limit, offset)
 }

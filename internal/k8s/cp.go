@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 )
 
-// CopyToPod copies a file to a pod
+// CopyToPod copies a file to a Pod
 func CopyToPod(podName, containerName, src, dst string) error {
 	var buf bytes.Buffer
 	file, err := os.Open(src)
@@ -26,7 +26,7 @@ func CopyToPod(podName, containerName, src, dst string) error {
 		return err
 	}
 	command := []string{"tee", dst}
-	req := Client.CoreV1().RESTClient().Post().
+	req := client.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Name(podName).
 		Namespace(NamespaceName).
@@ -37,7 +37,7 @@ func CopyToPod(podName, containerName, src, dst string) error {
 			Stdin:     true,
 			TTY:       false,
 		}, scheme.ParameterCodec)
-	executor, err := remotecommand.NewSPDYExecutor(Config, "POST", req.URL())
+	executor, err := remotecommand.NewSPDYExecutor(conf, "POST", req.URL())
 	if err != nil {
 		return err
 	}
@@ -51,7 +51,7 @@ func CopyToPod(podName, containerName, src, dst string) error {
 	return nil
 }
 
-// CopyFromPod copies a file from a pod
+// CopyFromPod copies a file from a Pod
 func CopyFromPod(podName, containerName, src, dst string) error {
 	command := fmt.Sprintf("cat %s", src)
 	var buf bytes.Buffer

@@ -7,19 +7,20 @@ import (
 	"gorm.io/gorm"
 )
 
-// associations 排除过使用了 Gorm 关联关系的其余关联关系, 不包含 model.Docker, 由定时任务删除
+// associations 排除过使用了 Gorm 关联关系的其余关联关系, 不包含 model.Container, 由定时任务删除
 var associations = map[string][]interface{}{
-	"user_id":      {model.Submission{}},
-	"team_id":      {model.Submission{}, model.Flag{}},
+	"user_id":      {model.Submission{}, model.Cheat{}},
+	"team_id":      {model.Submission{}, model.Flag{}, model.Cheat{}},
 	"challenge_id": {model.Flag{}, model.Submission{}, model.Usage{}},
-	"contest_id":   {model.Flag{}, model.Submission{}, model.Usage{}, model.Notice{}},
+	"contest_id":   {model.Flag{}, model.Submission{}, model.Usage{}, model.Notice{}, model.Cheat{}},
+	"usage_id":     {model.Submission{}},
 }
 
 // ClearByID 清除所有与指定 ID 相关的数据
 func ClearByID(tx *gorm.DB, column string, id interface{}) bool {
 	var ok bool
 	switch column {
-	case "user_id", "team_id", "contest_id", "docker_id":
+	case "user_id", "team_id", "contest_id", "usage_id":
 		id, ok = id.(uint)
 	case "challenge_id":
 		id, ok = id.(string)
