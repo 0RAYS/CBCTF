@@ -17,37 +17,37 @@ const (
 )
 
 type Usage struct {
-	ID             uint   `json:"id" gorm:"primaryKey"`
-	ContestID      uint   `json:"contest_id"`
-	ChallengeID    string `json:"challenge_id"`
-	Name           string `json:"name" gorm:"not null"`
-	Desc           string `json:"desc"`
-	Flag           string `json:"flag"`
-	Category       string `json:"category"`
-	GeneratorImage string `json:"generator" gorm:"column:generator"`
-	DockerImage    string `json:"docker" gorm:"column:docker"`
-	Port           int32  `json:"port" gorm:"default:8080"`
-	//Dockers        utils.Dockers          `json:"dockers" gorm:"type:json"`
-	Type          string                 `json:"type" gorm:"default:'static'"`
-	Hidden        bool                   `json:"hidden" default:"true"`
-	Score         float64                `json:"score" gorm:"default:1000"`
-	CurrentScore  float64                `json:"current_score" gorm:"default:1000"`
-	ScoreType     uint                   `json:"score_type" gorm:"default:0"`
-	MinScore      float64                `json:"min_score" gorm:"default:100"`
-	Decay         float64                `json:"decay" gorm:"default:100"`
-	Attempt       int64                  `json:"attempt" gorm:"default:0"`
-	Solvers       int64                  `json:"solvers" gorm:"default:0"`
-	Hints         utils.Strings          `json:"hints" gorm:"type:json"`
-	Tags          utils.Strings          `json:"tags" gorm:"type:json"`
-	First         uint                   `json:"first" gorm:"default:0"`
-	Second        uint                   `json:"second" gorm:"default:0"`
-	Third         uint                   `json:"third" gorm:"default:0"`
-	Last          time.Time              `json:"last"`
-	NetworkPolicy utils.NetworkPolicy    `json:"network_policy" gorm:"type:json"`
-	CreatedAt     time.Time              `json:"-"`
-	UpdatedAt     time.Time              `json:"-"`
-	DeletedAt     gorm.DeletedAt         `json:"-" gorm:"index"`
-	Version       optimisticlock.Version `json:"-" gorm:"default:1"`
+	ID             uint                   `json:"id" gorm:"primaryKey"`
+	ContestID      uint                   `json:"contest_id"`
+	ChallengeID    string                 `json:"challenge_id"`
+	Name           string                 `json:"name" gorm:"not null"`
+	Desc           string                 `json:"desc"`
+	Flag           string                 `json:"flag"`
+	Category       string                 `json:"category"`
+	GeneratorImage string                 `json:"generator" gorm:"column:generator"`
+	DockerImage    string                 `json:"docker" gorm:"column:docker"`
+	Port           int32                  `json:"port" gorm:"default:8080"`
+	Dockers        utils.Dockers          `json:"dockers" gorm:"type:json"`
+	Type           string                 `json:"type" gorm:"default:'static'"`
+	Hidden         bool                   `json:"hidden" default:"true"`
+	Score          float64                `json:"score" gorm:"default:1000"`
+	CurrentScore   float64                `json:"current_score" gorm:"default:1000"`
+	ScoreType      uint                   `json:"score_type" gorm:"default:0"`
+	MinScore       float64                `json:"min_score" gorm:"default:100"`
+	Decay          float64                `json:"decay" gorm:"default:100"`
+	Attempt        int64                  `json:"attempt" gorm:"default:0"`
+	Solvers        int64                  `json:"solvers" gorm:"default:0"`
+	Hints          utils.Strings          `json:"hints" gorm:"type:json"`
+	Tags           utils.Strings          `json:"tags" gorm:"type:json"`
+	First          uint                   `json:"first" gorm:"default:0"`
+	Second         uint                   `json:"second" gorm:"default:0"`
+	Third          uint                   `json:"third" gorm:"default:0"`
+	Last           time.Time              `json:"last"`
+	NetworkPolicy  utils.NetworkPolicy    `json:"network_policy" gorm:"type:json"`
+	CreatedAt      time.Time              `json:"-"`
+	UpdatedAt      time.Time              `json:"-"`
+	DeletedAt      gorm.DeletedAt         `json:"-" gorm:"index"`
+	Version        optimisticlock.Version `json:"-" gorm:"default:1"`
 }
 
 // BasicDir 获取题目相关文件的目录
@@ -131,24 +131,10 @@ func InitUsage(challenge Challenge, contestID uint) Usage {
 		usage.GeneratorImage = challenge.GeneratorImage
 		return usage
 	case Docker, Dockers:
-		defaultPolicy := utils.NetworkPolicy{
-			From: []utils.IPBlock{},
-			To: []utils.IPBlock{
-				{
-					CIDR: "0.0.0.0/0",
-					Except: []string{
-						"10.0.0.0/8",
-						"172.16.0.0/12",
-						"192.168.0.0/16",
-						"100.64.0.0/10",
-					},
-				},
-			},
-		}
-		usage.NetworkPolicy = defaultPolicy
+		usage.NetworkPolicy = utils.DefaultNetworkPolicy
 		usage.DockerImage = challenge.DockerImage
 		usage.Port = challenge.Port
-		//usage.Dockers = challenge.Dockers
+		usage.Dockers = challenge.Dockers
 		return usage
 	default:
 		return usage

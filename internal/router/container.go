@@ -53,7 +53,7 @@ func StartContainer(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"target": container.RemoteAddr(), "remaining": container.Remaining().Seconds()}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"target": container.RemoteAddress(), "remaining": container.Remaining().Seconds()}})
 }
 
 func IncreaseDuration(ctx *gin.Context) {
@@ -75,7 +75,7 @@ func IncreaseDuration(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"target": container.RemoteAddr(), "remaining": container.Remaining().Seconds()}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"target": container.RemoteAddress(), "remaining": container.Remaining().Seconds()}})
 }
 
 func StopContainer(ctx *gin.Context) {
