@@ -49,7 +49,8 @@ func Init() {
 		sql.SetConnMaxLifetime(30 * time.Second)
 	}
 
-	err = DB.AutoMigrate(
+	// 手动指定数据表的存储引擎, 需要支持回滚操作
+	err = DB.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(
 		&model.Admin{}, &model.User{}, &model.Team{},
 		&model.Contest{}, &model.File{}, &model.IP{},
 		&model.Challenge{}, &model.Usage{}, &model.Flag{},
