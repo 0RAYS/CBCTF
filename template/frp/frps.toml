@@ -1,5 +1,0 @@
-bindPort = 7000
-auth.token = "test_token"
-allowPorts = [
-    { start = 30000, end = 32767}
-]
