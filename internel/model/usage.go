@@ -8,6 +8,7 @@ type Usage struct {
 	Challenge   Challenge    `json:"-"`
 	Name        string       `gorm:"not null" json:"name"`
 	Desc        string       `json:"desc"`
+	Hidden      bool         `json:"hidden"`
 	Flags       []Flag       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Containers  []Container  `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Submissions []Submission `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
