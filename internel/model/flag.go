@@ -16,7 +16,7 @@ type Flag struct {
 	ID           uint           `gorm:"primaryKey" json:"id"`
 	ContestID    uint           `json:"contest_id"`
 	Contest      Contest        `json:"-"`
-	UsageID      string         `json:"usage_id"`
+	UsageID      uint           `json:"usage_id"`
 	Usage        Usage          `json:"-"`
 	Value        string         `json:"value"`
 	Score        float64        `gorm:"default:1000" json:"score"`

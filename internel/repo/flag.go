@@ -12,8 +12,8 @@ type FlagRepo struct {
 }
 
 type CreateFlagOptions struct {
-	ContestID    string
-	UsageID      string
+	ContestID    uint
+	UsageID      uint
 	Value        string
 	Score        float64
 	CurrentScore float64
