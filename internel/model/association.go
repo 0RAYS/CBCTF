@@ -24,7 +24,7 @@ var Associations = map[string][]string{
 		"Team", "Flag",
 	},
 	"Challenge": {
-		"Usages",
+		"Usages", "Submissions",
 	},
 	"Cheat": {
 		"User", "Team", "Contest",
@@ -56,7 +56,7 @@ var Associations = map[string][]string{
 		"Container",
 	},
 	"Usage": {
-		"Contest", "Challenge", "Flags", "Containers",
+		"Contest", "Challenge", "Flags", "Containers", "Submissions",
 	},
 	"User": {
 		"Teams", "Contests", "Submissions", "Containers", "Devices", "Cheats",
