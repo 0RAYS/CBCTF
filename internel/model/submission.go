@@ -17,6 +17,8 @@ type Submission struct {
 	Team        Team           `json:"-"`
 	UserID      uint           `json:"user_id"`
 	User        User           `json:"-"`
+	FlagID      uint           `json:"flag_id"`
+	Flag        Flag           `json:"-"`
 	Value       string         `json:"value"`
 	Solved      bool           `json:"solved"`
 	Score       float64        `gorm:"default:0" json:"score"`
