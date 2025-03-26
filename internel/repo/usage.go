@@ -76,9 +76,13 @@ func (u *UsageRepo) GetBy2ID(contestID uint, challengeID string, preload bool, d
 	return usage, true, "Success"
 }
 
-func (u *UsageRepo) Count(contestID uint) (int64, bool, string) {
+func (u *UsageRepo) Count(contestID uint, hidden bool) (int64, bool, string) {
 	var count int64
-	res := u.DB.Model(&model.Usage{}).Where("contest_id = ?", contestID).Count(&count)
+	res := u.DB.Model(&model.Usage{}).Where("contest_id = ?", contestID)
+	if !hidden {
+		res = res.Where("hidden = ?", false)
+	}
+	res = res.Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Usages: %s", res.Error)
 		return 0, false, "CountModelError"
@@ -86,15 +90,18 @@ func (u *UsageRepo) Count(contestID uint) (int64, bool, string) {
 	return count, true, "Success"
 }
 
-func (u *UsageRepo) GetAll(contestID uint, limit, offset int, preload bool, depth int) ([]model.Usage, int64, bool, string) {
+func (u *UsageRepo) GetAll(contestID uint, limit, offset int, preload bool, depth int, hidden bool) ([]model.Usage, int64, bool, string) {
 	var (
 		usages         = make([]model.Usage, 0)
-		count, ok, msg = u.Count(contestID)
+		count, ok, msg = u.Count(contestID, hidden)
 	)
 	if !ok {
 		return usages, count, false, msg
 	}
 	res := u.DB.Model(&model.Usage{}).Where("contest_id = ?", contestID)
+	if !hidden {
+		res = res.Where("hidden = ?", false)
+	}
 	res = model.GetPreload(res, u.Model, preload, depth).Find(&usages).Limit(limit).Offset(offset)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Usages: %s", res.Error)
