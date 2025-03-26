@@ -25,6 +25,7 @@ type Flag struct {
 	Attempt      int64          `json:"attempt"`
 	Blood        Uints          `gorm:"type:json" json:"blood"`
 	Answers      []Answer       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Submissions  []Submission   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Last         time.Time      `json:"last"`
 	CreatedAt    time.Time      `json:"-"`
 	UpdatedAt    time.Time      `json:"-"`
