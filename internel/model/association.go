@@ -40,7 +40,7 @@ var Associations = map[string][]string{
 	},
 	"File": {},
 	"Flag": {
-		"Answers", "Submissions",
+		"Contest", "Usage", "Answers", "Submissions",
 	},
 	"Notice": {
 		"Contest", "Admin",
