@@ -70,9 +70,9 @@ func InitFlagRepo(tx *gorm.DB) *FlagRepo {
 //	return f.getByUniqueKey("id", id, preload, depth)
 //}
 
-func (f *FlagRepo) Count(contestID uint) (int64, bool, string) {
+func (f *FlagRepo) Count(key string, id uint) (int64, bool, string) {
 	var count int64
-	res := f.DB.Model(&model.Flag{}).Where("contest_id = ?", contestID).Count(&count)
+	res := f.DB.Model(&model.Flag{}).Where(key+" = ?", key).Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Flags: %s", res.Error)
 		return 0, false, "CountModelError"
@@ -80,15 +80,15 @@ func (f *FlagRepo) Count(contestID uint) (int64, bool, string) {
 	return count, true, "Success"
 }
 
-func (f *FlagRepo) GetAll(contestID uint, limit, offset int, preload bool, depth int) ([]model.Flag, int64, bool, string) {
+func (f *FlagRepo) GetByKeyID(key string, id uint, limit, offset int, preload bool, depth int) ([]model.Flag, int64, bool, string) {
 	var (
 		flags          = make([]model.Flag, 0)
-		count, ok, msg = f.Count(contestID)
+		count, ok, msg = f.Count(key, id)
 	)
 	if !ok {
 		return flags, count, false, msg
 	}
-	res := f.DB.Model(&model.Flag{}).Where("contest_id = ?", contestID)
+	res := f.DB.Model(&model.Flag{}).Where(key+" = ?", id)
 	res = model.GetPreload(res, f.Model, preload, depth).Find(&flags).Limit(limit).Offset(offset)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Flags: %s", res.Error)
