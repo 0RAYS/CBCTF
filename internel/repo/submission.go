@@ -58,9 +58,12 @@ func InitSubmissionRepo(tx *gorm.DB) *SubmissionRepo {
 //	return s.getByUniqueKey("id", id, preload, depth)
 //}
 
-func (s *SubmissionRepo) CountByTeam(teamID uint) (int64, bool, string) {
+func (s *SubmissionRepo) CountByKeyID(key string, id uint, solved bool) (int64, bool, string) {
 	var count int64
-	res := s.DB.Model(&model.Submission{}).Where("team_id = ?", teamID).Count(&count)
+	res := s.DB.Model(&model.Submission{}).Where(key+" = ?", id)
+	if solved {
+		res = res.Where("solved = ?", true)
+	}
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Submissions: %s", res.Error)
 		return 0, false, "CountModelError"
@@ -68,15 +71,18 @@ func (s *SubmissionRepo) CountByTeam(teamID uint) (int64, bool, string) {
 	return count, true, "Success"
 }
 
-func (s *SubmissionRepo) GetAllByTeam(teamID uint, limit, offset int, preload bool, depth int) ([]model.Submission, int64, bool, string) {
+func (s *SubmissionRepo) GetAllByKeyID(key string, id uint, limit, offset int, preload bool, depth int, solved bool) ([]model.Submission, int64, bool, string) {
 	var (
 		submissions    = make([]model.Submission, 0)
-		count, ok, msg = s.CountByTeam(teamID)
+		count, ok, msg = s.CountByKeyID(key, id, solved)
 	)
 	if !ok {
 		return submissions, count, false, msg
 	}
-	res := s.DB.Model(&model.Submission{}).Where("team_id = ?", teamID)
+	res := s.DB.Model(&model.Submission{}).Where(key+" = ?", id)
+	if solved {
+		res = res.Where("solved = ?", true)
+	}
 	res = model.GetPreload(res, s.Model, preload, depth).Find(&submissions).Limit(limit).Offset(offset)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Submissions: %s", res.Error)
