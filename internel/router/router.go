@@ -42,6 +42,7 @@ func Init() *gin.Engine {
 	contest := auth.Group("contest/:contestID", middleware.CheckRole("user"), middleware.SetContest)
 	{
 		contest.GET("", GetContest)
+		contest.GET("/rank", GetTeamRanking)
 	}
 
 	return router
