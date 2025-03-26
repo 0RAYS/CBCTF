@@ -93,32 +93,39 @@ func (c *ContestRepo) GetByName(name string, preload bool, depth int) (model.Con
 	return c.getByUniqueKey("name", name, preload, depth)
 }
 
-//func (c *ContestRepo) Count() (int64, bool, string) {
-//	var count int64
-//	res := c.DB.Model(&model.Contest{}).Count(&count)
-//	if res.Error != nil {
-//		log.Logger.Errorf("Failed to count Contests: %s", res.Error)
-//		return 0, false, "CountModelError"
-//	}
-//	return count, true, "Success"
-//}
+func (c *ContestRepo) Count(hidden bool) (int64, bool, string) {
+	var count int64
+	res := c.DB.Model(&model.Contest{})
+	if !hidden {
+		res = res.Where("hidden = ?", false)
+	}
+	res = res.Count(&count)
+	if res.Error != nil {
+		log.Logger.Errorf("Failed to count Contests: %s", res.Error)
+		return 0, false, "CountModelError"
+	}
+	return count, true, "Success"
+}
 
-//func (c *ContestRepo) GetAll(limit, offset int, preload bool, depth int) ([]model.Contest, int64, bool, string) {
-//	var (
-//		contests       = make([]model.Contest, 0)
-//		count, ok, msg = c.Count()
-//	)
-//	if !ok {
-//		return contests, count, false, msg
-//	}
-//	res := c.DB.Model(&model.Contest{})
-//	res = model.GetPreload(res, model.Contest{}, preload, depth).Find(&contests).Limit(limit).Offset(offset)
-//	if res.Error != nil {
-//		log.Logger.Errorf("Failed to get Contests: %s", res.Error)
-//		return contests, count, false, "GetContestsError"
-//	}
-//	return contests, count, true, "Success"
-//}
+func (c *ContestRepo) GetAll(limit, offset int, preload bool, depth int, hidden bool) ([]model.Contest, int64, bool, string) {
+	var (
+		contests       = make([]model.Contest, 0)
+		count, ok, msg = c.Count(hidden)
+	)
+	if !ok {
+		return contests, count, false, msg
+	}
+	res := c.DB.Model(&model.Contest{})
+	if !hidden {
+		res = res.Where("hidden = ?", false)
+	}
+	res = model.GetPreload(res, c.Model, preload, depth).Find(&contests).Limit(limit).Offset(offset)
+	if res.Error != nil {
+		log.Logger.Errorf("Failed to get Contests: %s", res.Error)
+		return contests, count, false, "GetContestsError"
+	}
+	return contests, count, true, "Success"
+}
 
 func (c *ContestRepo) Update(id uint, options UpdateContestOptions) (bool, string) {
 	var count int
