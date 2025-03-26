@@ -44,6 +44,7 @@ func Init() *gin.Engine {
 		contest.GET("", GetContest)
 		contest.GET("/rank", GetTeamRanking)
 		contest.POST("/teams/join", middleware.CheckRunning, middleware.CheckVerified, JoinTeam)
+		contest.POST("/teams/create", middleware.CheckRunning, middleware.CheckVerified, CreateTeam)
 	}
 
 	return router

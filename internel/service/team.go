@@ -41,6 +41,39 @@ func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.JoinTe
 	return true, "Success"
 }
 
+func CreateTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.CreateTeamForm) (bool, string) {
+	if contest.Captcha != "" && form.Captcha != contest.Captcha {
+		return false, "CaptchaError"
+	}
+	repo := db.InitTeamRepo(tx)
+	if !repo.IsUniqueName(contest.ID, form.Name) {
+		return false, "DuplicateTeamName"
+	}
+	if !repo.IsUniqueMember(contest.ID, user.ID) {
+		return false, "DuplicateMember"
+	}
+	team, ok, msg := repo.Create(db.CreateTeamOptions{
+		Name:      form.Name,
+		ContestID: contest.ID,
+		Desc:      form.Desc,
+		Captcha:   utils.UUID(),
+		Avatar:    "",
+		Banned:    false,
+		Hidden:    false,
+		CaptainID: user.ID,
+	})
+	if !ok {
+		return false, msg
+	}
+	if err := db.AppendUserToTeam(tx, user, team); err != nil {
+		return false, "AppendUserToTeamError"
+	}
+	if err := db.AppendUserToContest(tx, user, contest); err != nil {
+		return false, "AppendUserToContestError"
+	}
+	return true, "Success"
+}
+
 func UpdateTeamRanking(tx *gorm.DB, contestID uint) (bool, string) {
 	var (
 		repo              = db.InitTeamRepo(tx)
