@@ -45,6 +45,16 @@ func Init() *gin.Engine {
 		contest.GET("/rank", GetTeamRanking)
 		contest.POST("/teams/join", middleware.CheckRunning, middleware.CheckVerified, JoinTeam)
 		contest.POST("/teams/create", middleware.CheckRunning, middleware.CheckVerified, CreateTeam)
+
+		contestTeam := contest.Group("/teams", middleware.SetTeamByUser)
+		{
+			contestTeam.GET("/me", GetTeam)
+			contestTeam.GET("/me/captcha", GetTeamCaptcha)
+			contestTeam.GET("/me/users", GetTeammates)
+			contestTeam.PUT("/me/captcha", UpdateCaptcha)
+			contestTeam.PUT("/me", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, UpdateTeam)
+
+		}
 	}
 
 	return router
