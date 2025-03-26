@@ -98,9 +98,16 @@ func (t *TeamRepo) GetBy2ID(userID uint, contestID uint) (model.Team, bool, stri
 	return model.Team{}, false, "UserNotInTeam"
 }
 
-func (t *TeamRepo) Count(contestID uint) (int64, bool, string) {
+func (t *TeamRepo) Count(contestID uint, hidden, banned bool) (int64, bool, string) {
 	var count int64
-	res := t.DB.Model(&model.Team{}).Where("contest_id = ?", contestID).Count(&count)
+	res := t.DB.Model(&model.Team{}).Where("contest_id = ?", contestID)
+	if !hidden {
+		res = res.Where("hidden = ?", false)
+	}
+	if !banned {
+		res = res.Where("banned = ?", false)
+	}
+	res = res.Count(&count)
 	if res.Error != nil {
 		log.Logger.Errorf("Failed to count Teams: %s", res.Error)
 		return 0, false, "CountModelError"
@@ -108,15 +115,21 @@ func (t *TeamRepo) Count(contestID uint) (int64, bool, string) {
 	return count, true, "Success"
 }
 
-func (t *TeamRepo) GetAll(contestID uint, limit, offset int, preload bool, depth int) ([]model.Team, int64, bool, string) {
+func (t *TeamRepo) GetAll(contestID uint, limit, offset int, preload bool, depth int, hidden, banned bool) ([]model.Team, int64, bool, string) {
 	var (
 		teams          = make([]model.Team, 0)
-		count, ok, msg = t.Count(contestID)
+		count, ok, msg = t.Count(contestID, hidden, banned)
 	)
 	if !ok {
 		return teams, count, false, msg
 	}
 	res := t.DB.Model(&model.Team{}).Where("contest_id = ?", contestID)
+	if !hidden {
+		res = res.Where("hidden = ?", false)
+	}
+	if !banned {
+		res = res.Where("banned = ?", false)
+	}
 	res = model.GetPreload(res, t.Model, preload, depth).Find(&teams).Limit(limit).Offset(offset)
 	if res.Error != nil {
 		log.Logger.Errorf("Failed to get Teams: %s", res.Error)

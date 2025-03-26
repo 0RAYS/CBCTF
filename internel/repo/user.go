@@ -93,32 +93,39 @@ func (u *UserRepo) GetByEmail(email string, preload bool, depth int) (model.User
 	return u.getByUniqueKey("email", email, preload, depth)
 }
 
-//func (u *UserRepo) Count() (int64, bool, string) {
-//	var count int64
-//	res := u.DB.Model(&model.User{}).Count(&count)
-//	if res.Error != nil {
-//		log.Logger.Warningf("Failed to count Users: %s", res.Error)
-//		return 0, false, "CountModelError"
-//	}
-//	return count, true, "Success"
-//}
+func (u *UserRepo) Count(all bool) (int64, bool, string) {
+	var count int64
+	res := u.DB.Model(&model.User{})
+	if !all {
+		res = res.Where("banned = ?", false)
+	}
+	res = res.Count(&count)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to count Users: %s", res.Error)
+		return 0, false, "CountModelError"
+	}
+	return count, true, "Success"
+}
 
-//func (u *UserRepo) GetAll(limit, offset int, preload bool, depth int) ([]model.User, int64, bool, string) {
-//	var (
-//		users          = make([]model.User, 0)
-//		count, ok, msg = u.Count()
-//	)
-//	if !ok {
-//		return users, count, false, msg
-//	}
-//	res := u.DB.Model(&model.User{})
-//	res = model.GetPreload(res, "User", preload, depth).Find(&users).Limit(limit).Offset(offset)
-//	if res.Error != nil {
-//		log.Logger.Warningf("Failed to get Users: %s", res.Error)
-//		return users, count, false, "GetUserError"
-//	}
-//	return users, count, true, "Success"
-//}
+func (u *UserRepo) GetAll(limit, offset int, preload bool, depth int, all bool) ([]model.User, int64, bool, string) {
+	var (
+		users          = make([]model.User, 0)
+		count, ok, msg = u.Count(all)
+	)
+	if !ok {
+		return users, count, false, msg
+	}
+	res := u.DB.Model(&model.User{})
+	if !all {
+		res = res.Where("banned = ?", false)
+	}
+	res = model.GetPreload(res, u.Model, preload, depth).Find(&users).Limit(limit).Offset(offset)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Users: %s", res.Error)
+		return users, count, false, "GetUserError"
+	}
+	return users, count, true, "Success"
+}
 
 func (u *UserRepo) Update(id uint, options UpdateUserOptions) (bool, string) {
 	var count int
