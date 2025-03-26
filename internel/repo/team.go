@@ -5,6 +5,7 @@ import (
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
 	"gorm.io/gorm"
+	"time"
 )
 
 type TeamRepo struct {
@@ -23,12 +24,16 @@ type CreateTeamOptions struct {
 }
 
 type UpdateTeamOptions struct {
-	Name    *string
-	Desc    *string
-	Captcha *string
-	Avatar  *string
-	Banned  *bool
-	Hidden  *bool
+	Name      *string
+	Desc      *string
+	Captcha   *string
+	Avatar    *string
+	Banned    *bool
+	Hidden    *bool
+	CaptainID *uint
+	Score     *float64
+	Rank      *int
+	Last      *time.Time
 }
 
 func InitTeamRepo(tx *gorm.DB) *TeamRepo {
