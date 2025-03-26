@@ -118,10 +118,10 @@ var resp = map[string]map[string]interface{}{
 
 	"UserNotInTeam": {"zh-CN": "用户不在队伍中", "en-US": "User is not in the team", "code": 400},
 
-	"JoinTeamError":   {"zh-CN": "加入队伍失败", "en-US": "Failed to join team", "code": 500},
-	"LeaveTeamError":  {"zh-CN": "退出队伍失败", "en-US": "Failed to leave team", "code": 500},
-	"TeamNameExists":  {"zh-CN": "队伍名已被占用", "en-US": "Team name already taken", "code": 400},
-	"DuplicateMember": {"zh-CN": "用户已加入此队伍或其他队伍", "en-US": "User has joined this team or other team", "code": 400},
+	"JoinTeamError":     {"zh-CN": "加入队伍失败", "en-US": "Failed to join team", "code": 500},
+	"LeaveTeamError":    {"zh-CN": "退出队伍失败", "en-US": "Failed to leave team", "code": 500},
+	"DuplicateTeamName": {"zh-CN": "队伍名已被占用", "en-US": "Team name already taken", "code": 400},
+	"DuplicateMember":   {"zh-CN": "用户已加入此队伍或其他队伍", "en-US": "User has joined this team or other team", "code": 400},
 
 	"InvalidChallengeType": {"zh-CN": "无效的题目类型", "en-US": "Invalid challenge type", "code": 400},
 	"CreateDirError":       {"zh-CN": "创建目录失败", "en-US": "Failed to create directory", "code": 500},
@@ -163,7 +163,7 @@ var resp = map[string]map[string]interface{}{
 
 	"AppendUserToTeamError":      {"zh-CN": "添加用户到队伍失败", "en-US": "Failed to add user to team", "code": 500},
 	"AppendTeamToContestError":   {"zh-CN": "添加队伍到赛事失败", "en-US": "Failed to add team to contest", "code": 500},
-	"AppendContestToUserError":   {"zh-CN": "添加用户到赛事失败", "en-US": "Failed to add user to contest", "code": 500},
+	"AppendUserToContestError":   {"zh-CN": "添加用户到赛事失败", "en-US": "Failed to add user to contest", "code": 500},
 	"DeleteUserFromTeamError":    {"zh-CN": "删除用户从队伍失败", "en-US": "Failed to delete user from team", "code": 500},
 	"DeleteUserFromContestError": {"zh-CN": "删除用户从赛事失败", "en-US": "Failed to delete user from contest", "code": 500},
 	"DeleteAssociatedDataError":  {"zh-CN": "删除关联数据失败", "en-US": "Failed to delete associated data", "code": 500},

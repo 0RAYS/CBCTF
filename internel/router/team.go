@@ -17,12 +17,31 @@ func JoinTeam(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	tx := db.DB.WithContext(ctx).Begin()
 	contest := middleware.GetContest(ctx)
 	user := middleware.GetSelf(ctx).(model.User)
+	tx := db.DB.WithContext(ctx).Begin()
 	ok, msg := service.JoinTeam(tx, contest, user, form)
 	if !ok {
 		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}
+
+func CreateTeam(ctx *gin.Context) {
+	var form f.CreateTeamForm
+	if err := ctx.ShouldBindJSON(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	contest := middleware.GetContest(ctx)
+	user := middleware.GetSelf(ctx).(model.User)
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := service.CreateTeam(tx, contest, user, form)
+	if !ok {
+		tx.Rollback()
+		return
 	} else {
 		tx.Commit()
 	}
