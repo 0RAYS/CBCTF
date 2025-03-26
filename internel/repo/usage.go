@@ -66,9 +66,12 @@ func (u *UsageRepo) IsUniqueChallenge(contestID uint, challengeID string) bool {
 //	return u.getByUniqueKey("id", id, preload, depth)
 //}
 
-func (u *UsageRepo) GetBy2ID(contestID uint, challengeID string, preload bool, depth int) (model.Usage, bool, string) {
+func (u *UsageRepo) GetBy2ID(contestID uint, challengeID string, preload bool, depth int, hidden bool) (model.Usage, bool, string) {
 	var usage model.Usage
 	res := u.DB.Model(&model.Usage{}).Where("contest_id = ? AND challenge_id = ?", contestID, challengeID)
+	if !hidden {
+		res = res.Where("hidden = ?", false)
+	}
 	res = model.GetPreload(res, u.Model, preload, depth).Find(&usage).Limit(1)
 	if res.RowsAffected == 0 {
 		return model.Usage{}, false, "UsageNotFound"
