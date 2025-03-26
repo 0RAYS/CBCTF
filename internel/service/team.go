@@ -24,6 +24,7 @@ func UpdateTeamRanking(tx *gorm.DB, contestID uint) (bool, string) {
 		if !ok {
 			continue
 		}
+		// 不考虑更新失败的情况, 不回滚
 		repo.Update(team.ID, db.UpdateTeamOptions{Score: &score})
 	}
 	teams, _, ok, msg = repo.GetAll(contestID, -1, -1, true, 0, true, false)
