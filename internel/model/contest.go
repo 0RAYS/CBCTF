@@ -32,3 +32,25 @@ type Contest struct {
 	DeletedAt   gorm.DeletedAt `gorm:"index;index:idx_name_deleted,unique;" json:"-"`
 	Version     uint           `gorm:"default:1" json:"-"`
 }
+
+func (c *Contest) IsOver() bool {
+	return time.Now().After(c.Start.Add(c.Duration))
+}
+
+func (c *Contest) IsNotStart() bool {
+	return time.Now().Before(c.Start)
+}
+
+func (c *Contest) IsRunning() bool {
+	return (c.IsOver() || c.IsNotStart()) != true
+}
+
+func (c *Contest) Status() string {
+	if c.IsOver() {
+		return "ContestIsOver"
+	}
+	if c.IsNotStart() {
+		return "ContestNotRunning"
+	}
+	return "ContestIsRunning"
+}

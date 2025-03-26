@@ -118,10 +118,10 @@ var resp = map[string]map[string]interface{}{
 
 	"UserNotInTeam": {"zh-CN": "用户不在队伍中", "en-US": "User is not in the team", "code": 400},
 
-	"JoinTeamError":    {"zh-CN": "加入队伍失败", "en-US": "Failed to join team", "code": 500},
-	"LeaveTeamError":   {"zh-CN": "退出队伍失败", "en-US": "Failed to leave team", "code": 500},
-	"TeamNameExists":   {"zh-CN": "队伍名已被占用", "en-US": "Team name already taken", "code": 400},
-	"TeamMemberExists": {"zh-CN": "用户已加入此队伍或其他队伍", "en-US": "User has joined this team or other team", "code": 400},
+	"JoinTeamError":   {"zh-CN": "加入队伍失败", "en-US": "Failed to join team", "code": 500},
+	"LeaveTeamError":  {"zh-CN": "退出队伍失败", "en-US": "Failed to leave team", "code": 500},
+	"TeamNameExists":  {"zh-CN": "队伍名已被占用", "en-US": "Team name already taken", "code": 400},
+	"DuplicateMember": {"zh-CN": "用户已加入此队伍或其他队伍", "en-US": "User has joined this team or other team", "code": 400},
 
 	"InvalidChallengeType": {"zh-CN": "无效的题目类型", "en-US": "Invalid challenge type", "code": 400},
 	"CreateDirError":       {"zh-CN": "创建目录失败", "en-US": "Failed to create directory", "code": 500},

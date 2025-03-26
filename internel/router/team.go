@@ -11,6 +11,24 @@ import (
 	"net/http"
 )
 
+func JoinTeam(ctx *gin.Context) {
+	var form f.JoinTeamForm
+	if err := ctx.ShouldBindJSON(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	tx := db.DB.WithContext(ctx).Begin()
+	contest := middleware.GetContest(ctx)
+	user := middleware.GetSelf(ctx).(model.User)
+	ok, msg := service.JoinTeam(tx, contest, user, form)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}
+
 func GetTeamRanking(ctx *gin.Context) {
 	var form f.GetModelsForm
 	if err := ctx.ShouldBindQuery(&form); err != nil {

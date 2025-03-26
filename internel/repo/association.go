@@ -1,34 +1,45 @@
 package repo
 
 import (
+	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"gorm.io/gorm"
 )
 
-type AssociationRepo struct {
-	DB *gorm.DB
+// AppendUserToTeam Many2Many
+func AppendUserToTeam(tx *gorm.DB, user model.User, team model.Team) error {
+	res := tx.Model(&model.UserTeam{}).Create(&model.UserTeam{UserID: user.ID, TeamID: team.ID})
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to append user to team: %v", res.Error)
+	}
+	return res.Error
 }
 
-func (a *AssociationRepo) IsUniqueMember(contestID, userID uint) bool {
-	res := a.DB.Model(&model.UserContest{}).
-		Where("contest_id = ? AND user_id = ?", contestID, userID).Find(&model.UserContest{}).Limit(1)
-	return res.RowsAffected == 0
+// AppendUserToContest Many2Many
+func AppendUserToContest(tx *gorm.DB, user model.User, contest model.Contest) error {
+	res := tx.Model(&model.UserContest{}).Create(&model.UserContest{UserID: user.ID, ContestID: contest.ID})
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to append user to contest: %v", res.Error)
+	}
+	return res.Error
 }
 
-func (a *AssociationRepo) AppendUserToTeam(userID, teamID uint) bool {
-	return a.DB.Model(&model.UserTeam{}).Create(&model.UserTeam{UserID: userID, TeamID: teamID}).Error == nil
+// DeleteUserFromTeam Many2Many
+func DeleteUserFromTeam(tx *gorm.DB, user model.User, team model.Team) error {
+	res := tx.Model(&model.UserTeam{}).Where("user_id = ? AND team_id = ?", user.ID, team.ID).
+		Delete(&model.UserTeam{})
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to delete user from team: %v", res.Error)
+	}
+	return res.Error
 }
 
-func (a *AssociationRepo) AppendUserToContest(userID, contestID uint) bool {
-	return a.DB.Model(&model.UserContest{}).Create(&model.UserContest{UserID: userID, ContestID: contestID}).Error == nil
-}
-
-func (a *AssociationRepo) DeleteUserFromTeam(userID, teamID uint) bool {
-	return a.DB.Model(&model.UserTeam{}).Where("user_id = ? AND team_id = ?", userID, teamID).
-		Delete(&model.UserTeam{}).Error == nil
-}
-
-func (a *AssociationRepo) DeleteUserFromContest(userID, contestID uint) bool {
-	return a.DB.Model(&model.UserContest{}).Where("user_id = ? AND contest_id = ?", userID, contestID).
-		Delete(&model.UserContest{}).Error == nil
+// DeleteUserFromContest Many2Many
+func DeleteUserFromContest(tx *gorm.DB, user model.User, contest model.Contest) error {
+	res := tx.Model(&model.UserContest{}).Where("user_id = ? AND contest_id = ?", user.ID, contest.ID).
+		Delete(&model.UserContest{})
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to delete user from contest: %v", res.Error)
+	}
+	return res.Error
 }
