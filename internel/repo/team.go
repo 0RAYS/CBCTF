@@ -89,6 +89,16 @@ func (t *TeamRepo) GetByCaptainID(captainID uint, preload bool, depth int) (mode
 	return t.getByUniqueKey("captain_id", captainID, preload, depth)
 }
 
+func (t *TeamRepo) GetByName(contestID uint, name string, preload bool, depth int) (model.Team, bool, string) {
+	var team model.Team
+	res := t.DB.Model(&model.Team{}).Where("contest_id = ? AND name = ?", contestID, name)
+	res = model.GetPreload(res, t.Model, preload, depth).Find(&team).Limit(1)
+	if res.RowsAffected == 0 {
+		return model.Team{}, false, "TeamNotFound"
+	}
+	return team, true, "Success"
+}
+
 // GetBy2ID 根据用户 ID 和比赛 ID 获取 model.Team, 等同于 GetByID(teamID, true, 0)
 func (t *TeamRepo) GetBy2ID(userID uint, contestID uint) (model.Team, bool, string) {
 	user, ok, msg := InitUserRepo(t.DB).GetByID(userID, true, 2)

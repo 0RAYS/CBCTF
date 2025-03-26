@@ -1,6 +1,7 @@
 package service
 
 import (
+	f "CBCTF/internel/form"
 	"CBCTF/internel/model"
 	"CBCTF/internel/redis"
 	db "CBCTF/internel/repo"
@@ -8,6 +9,37 @@ import (
 	"gorm.io/gorm"
 	"math"
 )
+
+func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.JoinTeamForm) (bool, string) {
+	var (
+		repo          = db.InitTeamRepo(tx)
+		team, ok, msg = repo.GetByName(contest.ID, form.Name, true, 0)
+		err           error
+	)
+	if !ok {
+		return false, msg
+	}
+	if team.Banned {
+		return false, "TeamBanned"
+	}
+	if form.Captcha != team.Captcha {
+		return false, "CaptchaError"
+	}
+	if len(team.Users)+1 > contest.Size {
+		return false, "TeamIsFull"
+	}
+	if !repo.IsUniqueMember(contest.ID, user.ID) {
+		return false, "DuplicateMember"
+	}
+	if err = db.AppendUserToTeam(tx, user, team); err != nil {
+		return false, "AppendUserToTeamError"
+	}
+	// 关联 User Contest Many2Many
+	if err = db.AppendUserToContest(tx, user, contest); err != nil {
+		return false, "AppendContestToUserError"
+	}
+	return true, "Success"
+}
 
 func UpdateTeamRanking(tx *gorm.DB, contestID uint) (bool, string) {
 	var (
