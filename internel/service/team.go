@@ -10,6 +10,11 @@ import (
 	"math"
 )
 
+func UpdateTeamCaptcha(tx *gorm.DB, team model.Team, captcha string) (bool, string) {
+	repo := db.InitTeamRepo(tx)
+	return repo.Update(team.ID, db.UpdateTeamOptions{Captcha: &captcha})
+}
+
 func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.JoinTeamForm) (bool, string) {
 	var (
 		repo          = db.InitTeamRepo(tx)

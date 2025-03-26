@@ -7,9 +7,42 @@ import (
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/resp"
 	"CBCTF/internel/service"
+	"CBCTF/internel/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
+
+func GetTeam(ctx *gin.Context) {
+	team := middleware.GetTeam(ctx)
+	flags, ok, msg := service.GetContestFlag(db.DB.WithContext(ctx), team.ID)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	solved, _, _ := service.GetTeamSolved(db.DB.WithContext(ctx), team.ID)
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": resp.GetTeamResp(team, solved, flags)})
+}
+
+func GetTeamCaptcha(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": middleware.GetTeam(ctx).Captcha})
+}
+
+func GetTeammates(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": middleware.GetTeam(ctx).Users})
+}
+
+func UpdateCaptcha(ctx *gin.Context) {
+	captcha := utils.UUID()
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := service.UpdateTeamCaptcha(tx, middleware.GetTeam(ctx), captcha)
+	if !ok {
+		tx.Rollback()
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	tx.Commit()
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": captcha})
+}
 
 func JoinTeam(ctx *gin.Context) {
 	var form f.JoinTeamForm
