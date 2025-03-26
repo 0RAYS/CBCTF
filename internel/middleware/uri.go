@@ -204,7 +204,7 @@ func SetUsage(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	usage, ok, msg := db.InitUsageRepo(db.DB.WithContext(ctx)).GetBy2ID(GetContest(ctx).ID, challengeID.ChallengeID, true, 0)
+	usage, ok, msg := db.InitUsageRepo(db.DB.WithContext(ctx)).GetBy2ID(GetContest(ctx).ID, challengeID.ChallengeID, true, 0, true)
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
