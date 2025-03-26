@@ -89,3 +89,18 @@ func CalcTeamScore(tx *gorm.DB, teamID uint) (float64, bool, string) {
 	score = math.Trunc(score*100) / 100
 	return total, true, "Success"
 }
+
+func GetTeamSolved(tx *gorm.DB, teamID uint) ([]model.Flag, bool, string) {
+	var (
+		flags                   = make([]model.Flag, 0)
+		repo                    = db.InitSubmissionRepo(tx)
+		submissions, _, ok, msg = repo.GetAllByKeyID("team_id", teamID, -1, -1, true, 0, true)
+	)
+	if !ok {
+		return flags, false, msg
+	}
+	for _, submission := range submissions {
+		flags = append(flags, submission.Flag)
+	}
+	return flags, true, "Success"
+}
