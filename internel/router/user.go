@@ -95,7 +95,7 @@ func DeleteUser(ctx *gin.Context) {
 		}
 		ok, msg = service.DeleteSelf(tx, middleware.GetSelf(ctx).(model.User), form)
 	} else {
-		ok, msg = service.DeleteUser(tx, middleware.GetUser(ctx))
+		ok, msg = db.InitUserRepo(tx).Delete(middleware.GetUser(ctx).ID)
 	}
 	if !ok {
 		tx.Rollback()
