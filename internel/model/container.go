@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"gorm.io/gorm"
 	"time"
 )
@@ -26,4 +27,18 @@ type Container struct {
 	UpdatedAt         time.Time      `json:"-"`
 	DeletedAt         gorm.DeletedAt `gorm:"index" json:"-"`
 	Version           uint           `gorm:"default:1" json:"-"`
+}
+
+// RemoteAddr 返回远程地址
+func (c Container) RemoteAddr() []string {
+	data := make([]string, 0)
+	for _, expose := range c.Exposes {
+		data = append(data, fmt.Sprintf("%s:%d", expose.IP, expose.Port))
+	}
+	return data
+}
+
+// Remaining 返回剩余时间
+func (c Container) Remaining() time.Duration {
+	return c.Start.Add(c.Duration).Sub(time.Now())
 }

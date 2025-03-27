@@ -6,6 +6,44 @@ import (
 	"gorm.io/gorm"
 )
 
+// IsSolved model.Usage 需要预加载
+func IsSolved(tx *gorm.DB, team model.Team, usage model.Usage) (bool, bool, string) {
+	var (
+		count                   int
+		submissionRepo          = db.InitSubmissionRepo(tx)
+		submissions, _, ok, msg = submissionRepo.GetAllByKeyID("team_id", team.ID, -1, -1, false, 0, true)
+	)
+	if !ok {
+		return false, false, msg
+	}
+	for _, submission := range submissions {
+		if submission.UsageID == usage.ID {
+			count++
+		}
+	}
+	if count != len(usage.Flags) {
+		return false, true, "Success"
+	}
+	return true, true, "Success"
+}
+
+// CountAttempts 统计题目的尝试次数
+func CountAttempts(tx *gorm.DB, team model.Team, usage model.Usage) (int64, bool, string) {
+	var count int64
+	submissionRepo := db.InitSubmissionRepo(tx)
+	submissions, _, ok, msg := submissionRepo.GetAllByKeyID("team_id", team.ID, -1, -1, false, 0, false)
+	if !ok {
+		return count, false, msg
+	}
+	for _, submission := range submissions {
+		if submission.UsageID == usage.ID {
+			count++
+		}
+	}
+	return count, true, "Success"
+}
+
+// CountFlagSolved 统计指定 model.Flag 的解题次数
 func CountFlagSolved(tx *gorm.DB, flag model.Flag) (int64, bool, string) {
 	var (
 		count                   int64
