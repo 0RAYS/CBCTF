@@ -85,7 +85,7 @@ func Init() *gin.Engine {
 	admin := auth.Group("/admin", middleware.CheckRole("admin"))
 	{
 		admin.GET("/me", GetAdmin)
-		
+		admin.PUT("/me/password", AdminChangePassword)
 	}
 
 	return router

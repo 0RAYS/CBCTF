@@ -57,3 +57,15 @@ func DeleteUser(tx *gorm.DB, user model.User) (bool, string) {
 	repo := db.InitUserRepo(tx)
 	return repo.Delete(user.ID)
 }
+
+func ChangeAdminPassword(tx *gorm.DB, admin model.Admin, form f.ChangePasswordForm) (bool, string) {
+	if !utils.CompareHashAndPassword(admin.Password, form.OldPassword) {
+		return false, "PasswordError"
+	}
+	if utils.CompareHashAndPassword(admin.Password, form.NewPassword) {
+		return false, "PasswordSame"
+	}
+	hash := utils.HashPassword(form.NewPassword)
+	repo := db.InitAdminRepo(tx)
+	return repo.Update(admin.ID, db.UpdateAdminOptions{Password: &hash})
+}
