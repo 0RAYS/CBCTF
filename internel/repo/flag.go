@@ -24,12 +24,14 @@ type CreateFlagOptions struct {
 }
 
 type UpdateFlagOptions struct {
-	Value     *string
-	Score     *float64
-	Decay     *float64
-	MinScore  *float64
-	ScoreType *uint
-	Attempt   *int64
+	Value        *string
+	Score        *float64
+	CurrentScore *float64
+	Decay        *float64
+	MinScore     *float64
+	ScoreType    *uint
+	Attempt      *int64
+	Solvers      *int64
 }
 
 func InitFlagRepo(tx *gorm.DB) *FlagRepo {
