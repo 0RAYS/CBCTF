@@ -39,33 +39,29 @@ func InitAnswerRepo(tx *gorm.DB) *AnswerRepo {
 //	return answer, true, "Success"
 //}
 
-func (a *AnswerRepo) getByUniqueKey(key string, value interface{}, preload bool, depth int) (model.Answer, bool, string) {
-	switch key {
-	case "id", "flag_id":
-		value = value.(uint)
-	default:
-		return model.Answer{}, false, "UnsupportedKey"
-	}
-	var answer model.Answer
-	res := a.DB.Model(&model.Answer{}).Where(key+" = ?", value)
-	res = model.GetPreload(res, a.Model, preload, depth).Find(&answer).Limit(1)
-	if res.RowsAffected == 0 {
-		return model.Answer{}, false, "AnswerNotFound"
-	}
-	return answer, true, "Success"
-}
+//func (a *AnswerRepo) getByUniqueKey(key string, value interface{}, preload bool, depth int) (model.Answer, bool, string) {
+//	switch key {
+//	case "id":
+//		value = value.(uint)
+//	default:
+//		return model.Answer{}, false, "UnsupportedKey"
+//	}
+//	var answer model.Answer
+//	res := a.DB.Model(&model.Answer{}).Where(key+" = ?", value)
+//	res = model.GetPreload(res, a.Model, preload, depth).Find(&answer).Limit(1)
+//	if res.RowsAffected == 0 {
+//		return model.Answer{}, false, "AnswerNotFound"
+//	}
+//	return answer, true, "Success"
+//}
 
 //func (a *AnswerRepo) GetByID(id uint, preload bool, depth int) (model.Answer, bool, string) {
 //	return a.getByUniqueKey("id", id, preload, depth)
 //}
 
-func (a *AnswerRepo) GetByFlagID(flagID uint, preload bool, depth int) (model.Answer, bool, string) {
-	return a.getByUniqueKey("flag_id", flagID, preload, depth)
-}
-
-func (a *AnswerRepo) Count(teamID uint) (int64, bool, string) {
+func (a *AnswerRepo) Count(flagID uint) (int64, bool, string) {
 	var count int64
-	res := a.DB.Model(&model.Answer{}).Where("team_id = ?", teamID).Count(&count)
+	res := a.DB.Model(&model.Answer{}).Where("flag_id = ?", flagID).Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Answers: %s", res.Error)
 		return 0, false, "CountModelError"
@@ -73,15 +69,15 @@ func (a *AnswerRepo) Count(teamID uint) (int64, bool, string) {
 	return count, true, "Success"
 }
 
-func (a *AnswerRepo) GetAll(teamID uint, limit, offset int, preload bool, depth int) ([]model.Answer, int64, bool, string) {
+func (a *AnswerRepo) GetAll(flagID uint, limit, offset int, preload bool, depth int) ([]model.Answer, int64, bool, string) {
 	var (
 		answers        = make([]model.Answer, 0)
-		count, ok, msg = a.Count(teamID)
+		count, ok, msg = a.Count(flagID)
 	)
 	if !ok {
 		return answers, count, false, msg
 	}
-	res := a.DB.Model(&model.Answer{}).Where("team_id = ?", teamID)
+	res := a.DB.Model(&model.Answer{}).Where("flag_id = ?", flagID)
 	res = model.GetPreload(res, a.Model, preload, depth).Find(&answers).Limit(limit).Offset(offset)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Answers: %s", res.Error)
