@@ -73,8 +73,9 @@ func Init() *gin.Engine {
 		)
 		{
 			contestChallenge.GET("", GetUsageStatus)
-			contestChallenge.POST("/init", middleware.CheckRunning, middleware.CheckGenerated, InitUsage)
+			contestChallenge.POST("/init", middleware.CheckRunning, middleware.CheckGenerated, InitUsage(false))
 			contestChallenge.GET("/attachment", GetAttachment)
+			contestChallenge.POST("/reset", middleware.CheckRunning, middleware.CheckGenerated, InitUsage(true))
 
 		}
 	}

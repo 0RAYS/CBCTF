@@ -60,28 +60,30 @@ func GetUsages(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
 }
 
-func InitUsage(ctx *gin.Context) {
-	var (
-		team  = middleware.GetTeam(ctx)
-		usage = middleware.GetUsage(ctx)
-		tx    = db.DB.WithContext(ctx).Begin()
-	)
-	if ok, err := redis.CheckChallengeInit(team.ID, usage.ChallengeID); ok || err != nil {
-		ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooQuick", "data": nil})
-		return
+func InitUsage(reset bool) func(ctx *gin.Context) {
+	return func(ctx *gin.Context) {
+		var (
+			team  = middleware.GetTeam(ctx)
+			usage = middleware.GetUsage(ctx)
+			tx    = db.DB.WithContext(ctx).Begin()
+		)
+		if ok, err := redis.CheckChallengeInit(team.ID, usage.ChallengeID); ok || err != nil {
+			ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooQuick", "data": nil})
+			return
+		}
+		_ = redis.RecordChallengeInit(team.ID, usage.ChallengeID)
+		answers, ok, msg := service.GenerateAnswer(tx, usage, team, reset)
+		if !ok {
+			tx.Rollback()
+		}
+		if usage.Challenge.Type == model.DynamicChallenge {
+			ok, msg = service.GeneratorAttachment(usage, answers[0])
+		}
+		if !ok {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 	}
-	_ = redis.RecordChallengeInit(team.ID, usage.ChallengeID)
-	answers, ok, msg := service.InitAnswer(tx, usage, team)
-	if !ok {
-		tx.Rollback()
-	}
-	if usage.Challenge.Type == model.DynamicChallenge {
-		ok, msg = service.GeneratorAttachment(usage, answers[0])
-	}
-	if !ok {
-		tx.Rollback()
-	} else {
-		tx.Commit()
-	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
