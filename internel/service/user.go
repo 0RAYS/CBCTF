@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateUser(tx *gorm.DB, form f.CreateUserForm) (model.User, bool, string) {
+func CreateUser(tx *gorm.DB, form f.RegisterForm) (model.User, bool, string) {
 	if !utils.IsValidEmail(form.Email) {
 		return model.User{}, false, "InvalidEmail"
 	}
