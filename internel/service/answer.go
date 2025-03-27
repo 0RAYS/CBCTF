@@ -38,8 +38,8 @@ func IsGenerated(tx *gorm.DB, usage model.Usage, team model.Team) bool {
 	return true
 }
 
-// InitAnswer model.Usage 需要预加载
-func InitAnswer(tx *gorm.DB, usage model.Usage, team model.Team) ([]model.Answer, bool, string) {
+// GenerateAnswer model.Usage 需要预加载
+func GenerateAnswer(tx *gorm.DB, usage model.Usage, team model.Team, reset bool) ([]model.Answer, bool, string) {
 	repo := db.InitAnswerRepo(tx)
 	answers := make([]model.Answer, 0)
 	if len(usage.Flags) < 1 {
@@ -85,7 +85,7 @@ func InitAnswer(tx *gorm.DB, usage model.Usage, team model.Team) ([]model.Answer
 		return answers, false, "InvalidChallengeType"
 	}
 	for _, option := range options {
-		if _, ok, _ := repo.GetBy2ID(team.ID, option.FlagID, false, 0); ok {
+		if _, ok, _ := repo.GetBy2ID(team.ID, option.FlagID, false, 0); !reset && ok {
 			continue
 		}
 		option.Value = fmt.Sprintf("%s{%s}", usage.Contest.Prefix, option.Value)
