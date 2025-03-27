@@ -67,6 +67,13 @@ func Init() *gin.Engine {
 
 		// 比赛题目
 		contest.GET("/challenges", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, GetUsages)
+		contestChallenge := contest.Group(
+			"/challenges/:challengeID",
+			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.SetUsage,
+		)
+		{
+			contestChallenge.GET("", GetUsageStatus)
+		}
 	}
 
 	return router
