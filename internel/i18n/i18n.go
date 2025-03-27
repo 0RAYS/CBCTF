@@ -134,9 +134,10 @@ var resp = map[string]map[string]interface{}{
 	"StopContainerError":   {"zh-CN": "停止容器失败", "en-US": "Failed to stop Container", "code": 500},
 	"HasMuchTime":          {"zh-CN": "距容器关闭20分钟内才可延长时间", "en-US": "Can only extend time within 20 minutes before the container closes", "code": 400},
 
-	"ContestNotRunning": {"zh-CN": "赛事未开始", "en-US": "Contest not running", "code": 400},
-	"ContestIsOver":     {"zh-CN": "赛事已结束", "en-US": "Contest is over", "code": 400},
-	"ContestIsRunning":  {"zh-CN": "赛事进行中", "en-US": "Contest is running", "code": 400},
+	"DuplicateContestName": {"zh-CN": "赛事名已被占用", "en-US": "Contest name already taken", "code": 400},
+	"ContestNotRunning":    {"zh-CN": "赛事未开始", "en-US": "Contest not running", "code": 400},
+	"ContestIsOver":        {"zh-CN": "赛事已结束", "en-US": "Contest is over", "code": 400},
+	"ContestIsRunning":     {"zh-CN": "赛事进行中", "en-US": "Contest is running", "code": 400},
 
 	"CreateFileRecordError": {"zh-CN": "保存文件失败", "en-US": "Failed to save file", "code": 500},
 	"DeleteFileError":       {"zh-CN": "删除文件失败", "en-US": "Failed to delete file", "code": 500},

@@ -110,6 +110,15 @@ func Init() *gin.Engine {
 
 		admin.GET("/contests", GetContests)
 		admin.POST("/contests", CreateContest)
+		adminContest := admin.Group("/contests/:contestID", middleware.SetContest)
+		{
+			adminContest.GET("", GetContest)
+			adminContest.PUT("", UpdateContest)
+			adminContest.DELETE("", DeleteContest)
+			adminContest.PUT("/avatar", UploadFile("contest", "avatar"))
+			adminContest.GET("/submissions", GetSubmissions)
+			adminContest.GET("/rank", GetRank)
+		}
 
 	}
 

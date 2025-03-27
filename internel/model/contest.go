@@ -9,7 +9,7 @@ type Contest struct {
 	ID          uint           `gorm:"primarykey" json:"id"`
 	Name        string         `gorm:"index:idx_name_deleted,unique;not null" json:"name"`
 	Desc        string         `json:"desc"`
-	Captcha     string         `json:"-"`
+	Captcha     string         `json:"captcha"`
 	Avatar      string         `json:"avatar"`
 	Prefix      string         `gorm:"default:'flag'" json:"prefix"`
 	Size        int            `json:"size"`

@@ -14,7 +14,7 @@ func GetContestResp(contest model.Contest) gin.H {
 		"name":      contest.Name,
 		"desc":      contest.Desc,
 		"start":     contest.Start,
-		"duration":  contest.Duration,
+		"duration":  contest.Duration.Seconds(),
 		"rules":     contest.Rules,
 		"prizes":    contest.Prizes,
 		"timelines": contest.Timelines,

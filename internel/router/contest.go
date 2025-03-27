@@ -8,10 +8,17 @@ import (
 	"CBCTF/internel/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 )
 
 func GetContest(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
+	if middleware.GetRole(ctx) == "admin" {
+		// 转为秒
+		contest.Duration = time.Duration(contest.Duration.Seconds())
+		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &contest})
+		return
+	}
 	champion, _, _, _ := service.GetTeamRanking(db.DB.WithContext(ctx), contest.ID, 1, 0)
 	data := resp.GetContestResp(contest)
 	data["highest"] = 0
@@ -39,9 +46,13 @@ func GetContests(ctx *gin.Context) {
 			data = append(data, resp.GetContestResp(contest))
 		}
 		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"contests": contests, "count": count}})
+		return
+	}
+	for _, contest := range contests {
+		// 转为秒
+		contest.Duration = time.Duration(contest.Duration.Seconds())
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"contests": contests, "count": count}})
-	return
 }
 
 func CreateContest(ctx *gin.Context) {
@@ -58,5 +69,35 @@ func CreateContest(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
+	contest.Duration = time.Duration(contest.Duration.Seconds())
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": &contest})
+}
+
+func UpdateContest(ctx *gin.Context) {
+	var form f.UpdateContestForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	tx := db.DB.WithContext(ctx).Begin()
+	contest := middleware.GetContest(ctx)
+	ok, msg := service.UpdateContest(tx, contest, form)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}
+
+func DeleteContest(ctx *gin.Context) {
+	tx := db.DB.WithContext(ctx).Begin()
+	contest := middleware.GetContest(ctx)
+	ok, msg := db.InitContestRepo(tx).Delete(contest.ID)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
