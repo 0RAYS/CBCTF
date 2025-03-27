@@ -56,6 +56,11 @@ func UpdateTeamCaptcha(tx *gorm.DB, team model.Team, captcha string) (bool, stri
 	return repo.Update(team.ID, db.UpdateTeamOptions{Captcha: &captcha})
 }
 
+func DeleteTeam(tx *gorm.DB, team model.Team) (bool, string) {
+	repo := db.InitTeamRepo(tx)
+	return repo.Delete(team.ID)
+}
+
 func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.JoinTeamForm) (bool, string) {
 	var (
 		repo          = db.InitTeamRepo(tx)
