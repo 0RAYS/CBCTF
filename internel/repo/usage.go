@@ -16,11 +16,15 @@ type CreateUsageOptions struct {
 	ChallengeID string
 	Name        string
 	Desc        string
+	Hints       model.Strings
+	Tags        model.Strings
 }
 
 type UpdateUsageOptions struct {
-	Name *string
-	Desc *string
+	Name  *string
+	Desc  *string
+	Hints *model.Strings
+	Tags  *model.Strings
 }
 
 func InitUsageRepo(tx *gorm.DB) *UsageRepo {
