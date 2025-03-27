@@ -47,3 +47,20 @@ func UpdateAdmin(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
+
+func CreateAdmin(ctx *gin.Context) {
+	var form f.CreateAdminForm
+	if err := ctx.ShouldBindJSON(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	tx := db.DB.WithContext(ctx).Begin()
+	admin, ok, msg := service.CreateAdmin(tx, form)
+	if !ok {
+		tx.Rollback()
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	tx.Commit()
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetAdminResp(admin)})
+}
