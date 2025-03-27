@@ -62,6 +62,7 @@ func Init() *gin.Engine {
 		// 比赛公告
 		{
 			contest.GET("/notices", GetNotices)
+			contest.GET("/notices/:noticeID", middleware.SetNotice, GetNotice)
 		}
 	}
 
