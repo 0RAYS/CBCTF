@@ -29,7 +29,7 @@ func Init() *gin.Engine {
 
 	auth := router.Group("", middleware.CheckAuth)
 
-	user := auth.Group("user", middleware.CheckRole("user"))
+	user := auth.Group("/me", middleware.CheckRole("user"))
 	{
 		user.GET("", GetUser)
 		user.PUT("/password", ChangePwd)
@@ -39,7 +39,7 @@ func Init() *gin.Engine {
 		user.POST("/activate", ActivateEmail)
 	}
 
-	contest := auth.Group("contest/:contestID", middleware.CheckRole("user"), middleware.SetContest)
+	contest := auth.Group("/contests/:contestID", middleware.CheckRole("user"), middleware.SetContest)
 	{
 		contest.GET("", GetContest)
 		contest.GET("/rank", GetTeamRanking)
