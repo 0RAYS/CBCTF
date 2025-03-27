@@ -14,7 +14,7 @@ type Contest struct {
 	Prefix      string         `gorm:"default:'flag'" json:"prefix"`
 	Size        int            `json:"size"`
 	Start       time.Time      `json:"start"`
-	Duration    time.Duration  `json:"-"`
+	Duration    time.Duration  `json:"duration"`
 	Blood       bool           `gorm:"default:true" json:"blood"`
 	Hidden      bool           `gorm:"default:true" json:"hidden"`
 	Rules       Strings        `gorm:"type:json" json:"rules"`

@@ -109,6 +109,7 @@ func Init() *gin.Engine {
 		}
 
 		admin.GET("/contests", GetContests)
+		admin.POST("/contests", CreateContest)
 
 	}
 

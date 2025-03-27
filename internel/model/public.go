@@ -14,12 +14,12 @@ func (s Strings) Value() (driver.Value, error) {
 	return json.Marshal(s)
 }
 
-func (s *Strings) Scan(value interface{}) error {
+func (s Strings) Scan(value interface{}) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("failed to scan Strings value")
 	}
-	return json.Unmarshal(bytes, s)
+	return json.Unmarshal(bytes, &s)
 }
 
 type Uints []uint
@@ -28,12 +28,12 @@ func (u Uints) Value() (driver.Value, error) {
 	return json.Marshal(u)
 }
 
-func (u *Uints) Scan(value interface{}) error {
+func (u Uints) Scan(value interface{}) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("failed to scan Uints value")
 	}
-	return json.Unmarshal(bytes, u)
+	return json.Unmarshal(bytes, &u)
 }
 
 type Prize struct {
@@ -47,12 +47,12 @@ func (p Prizes) Value() (driver.Value, error) {
 	return json.Marshal(p)
 }
 
-func (p *Prizes) Scan(value interface{}) error {
+func (p Prizes) Scan(value interface{}) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("failed to scan Prizes value")
 	}
-	return json.Unmarshal(bytes, p)
+	return json.Unmarshal(bytes, &p)
 }
 
 type Timeline struct {
@@ -67,12 +67,12 @@ func (t Timelines) Value() (driver.Value, error) {
 	return json.Marshal(t)
 }
 
-func (t *Timelines) Scan(value interface{}) error {
+func (t Timelines) Scan(value interface{}) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("failed to scan Timelines value")
 	}
-	return json.Unmarshal(bytes, t)
+	return json.Unmarshal(bytes, &t)
 }
 
 type Docker struct {
@@ -85,12 +85,12 @@ func (d Docker) Value() (driver.Value, error) {
 	return json.Marshal(d)
 }
 
-func (d *Docker) Scan(value interface{}) error {
+func (d Docker) Scan(value interface{}) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("failed to scan Docker value")
 	}
-	return json.Unmarshal(bytes, d)
+	return json.Unmarshal(bytes, &d)
 }
 
 type Dockers []Docker
@@ -99,12 +99,12 @@ func (d Dockers) Value() (driver.Value, error) {
 	return json.Marshal(d)
 }
 
-func (d *Dockers) Scan(value interface{}) error {
+func (d Dockers) Scan(value interface{}) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("failed to scan Dockers value")
 	}
-	return json.Unmarshal(bytes, d)
+	return json.Unmarshal(bytes, &d)
 }
 
 type Expose struct {
@@ -118,12 +118,12 @@ func (e Exposes) Value() (driver.Value, error) {
 	return json.Marshal(e)
 }
 
-func (e *Exposes) Scan(value interface{}) error {
+func (e Exposes) Scan(value interface{}) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("failed to scan Exposes value")
 	}
-	return json.Unmarshal(bytes, e)
+	return json.Unmarshal(bytes, &e)
 }
 
 type IPBlock struct {
@@ -171,10 +171,10 @@ func (n NetworkPolicies) Value() (driver.Value, error) {
 	return json.Marshal(n)
 }
 
-func (n *NetworkPolicies) Scan(value interface{}) error {
+func (n NetworkPolicies) Scan(value interface{}) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("failed to scan NetworkPolicy value")
 	}
-	return json.Unmarshal(bytes, n)
+	return json.Unmarshal(bytes, &n)
 }
