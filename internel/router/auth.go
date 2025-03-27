@@ -18,7 +18,7 @@ func Register(ctx *gin.Context) {
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
-	user, ok, msg := service.CreateUser(tx, f.CreateUserForm{
+	user, ok, msg := service.CreateUser(tx, f.RegisterForm{
 		Name:     form.Name,
 		Password: form.Password,
 		Email:    form.Email,
