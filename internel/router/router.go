@@ -116,10 +116,23 @@ func Init() *gin.Engine {
 			adminContest.PUT("", UpdateContest)
 			adminContest.DELETE("", DeleteContest)
 			adminContest.PUT("/avatar", UploadFile("contest", "avatar"))
-			adminContest.GET("/submissions", GetSubmissions)
+			adminContest.GET("/submissions", GetSubmissions(false))
 			adminContest.GET("/rank", GetRank)
 		}
 
+		adminContest.GET("/teams", GetTeams)
+		adminContestTeam := adminContest.Group("/teams/:teamID", middleware.SetTeamByURI)
+		{
+			adminContestTeam.GET("", GetTeam)
+			adminContestTeam.GET("/captcha", GetTeamCaptcha)
+			adminContestTeam.GET("/users", GetTeammates)
+			adminContestTeam.PUT("", UpdateTeam)
+			adminContestTeam.DELETE("", DeleteTeam)
+			adminContestTeam.POST("/kick", KickMember)
+			adminContestTeam.POST("/avatar", UploadFile("team", "avatar"))
+
+			adminContestTeam.GET("/submissions", GetSubmissions(true))
+		}
 	}
 
 	return router
