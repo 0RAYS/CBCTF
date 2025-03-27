@@ -73,6 +73,7 @@ func Init() *gin.Engine {
 		)
 		{
 			contestChallenge.GET("", GetUsageStatus)
+			contestChallenge.POST("/init", middleware.CheckRunning, middleware.CheckGenerated, InitUsage)
 		}
 	}
 
