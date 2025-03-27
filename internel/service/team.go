@@ -10,6 +10,47 @@ import (
 	"math"
 )
 
+func UpdateTeam(tx *gorm.DB, team model.Team, form f.UpdateTeamForm) (bool, string) {
+	repo := db.InitTeamRepo(tx)
+	if form.Name != nil && *form.Name != team.Name {
+		if !repo.IsUniqueName(team.ContestID, *form.Name) {
+			return false, "DuplicateTeamName"
+		}
+	}
+	if form.CaptainID != nil && *form.CaptainID != team.CaptainID {
+		if !repo.IsTeamMember(team.ID, *form.CaptainID) {
+			return false, "UserNotInTeam"
+		}
+	}
+	return repo.Update(team.ID, db.UpdateTeamOptions{
+		Desc:      form.Desc,
+		Name:      form.Name,
+		CaptainID: form.CaptainID,
+	})
+}
+
+func AdminUpdateTeam(tx *gorm.DB, team model.Team, form f.AdminUpdateTeamForm) (bool, string) {
+	repo := db.InitTeamRepo(tx)
+	if form.Name != nil && *form.Name != team.Name {
+		if !repo.IsUniqueName(team.ContestID, *form.Name) {
+			return false, "DuplicateTeamName"
+		}
+	}
+	if form.CaptainID != nil && *form.CaptainID != team.CaptainID {
+		if !repo.IsTeamMember(team.ID, *form.CaptainID) {
+			return false, "UserNotInTeam"
+		}
+	}
+	return repo.Update(team.ID, db.UpdateTeamOptions{
+		Name:      form.Name,
+		Desc:      form.Desc,
+		Hidden:    form.Hidden,
+		Banned:    form.Banned,
+		Captcha:   form.Captcha,
+		CaptainID: form.CaptainID,
+	})
+}
+
 func UpdateTeamCaptcha(tx *gorm.DB, team model.Team, captcha string) (bool, string) {
 	repo := db.InitTeamRepo(tx)
 	return repo.Update(team.ID, db.UpdateTeamOptions{Captcha: &captcha})

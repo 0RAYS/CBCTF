@@ -31,6 +31,36 @@ func GetTeammates(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": middleware.GetTeam(ctx).Users})
 }
 
+func UpdateTeam(ctx *gin.Context) {
+	var (
+		team = middleware.GetTeam(ctx)
+		tx   = db.DB.WithContext(ctx).Begin()
+		ok   bool
+		msg  string
+	)
+	if middleware.GetRole(ctx) == "admin" {
+		var form f.AdminUpdateTeamForm
+		if err := ctx.ShouldBindJSON(&form); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+			return
+		}
+		ok, msg = service.AdminUpdateTeam(tx, team, form)
+	} else {
+		var form f.UpdateTeamForm
+		if err := ctx.ShouldBindJSON(&form); err != nil {
+			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+			return
+		}
+		ok, msg = service.UpdateTeam(tx, team, form)
+	}
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}
+
 func UpdateCaptcha(ctx *gin.Context) {
 	captcha := utils.UUID()
 	tx := db.DB.WithContext(ctx).Begin()
