@@ -87,6 +87,7 @@ func Init() *gin.Engine {
 		admin.GET("/me", GetAdmin)
 		admin.PUT("/me/password", AdminChangePassword)
 		admin.PUT("/me/update", UpdateAdmin)
+		admin.PUT("/me/avatar", UploadFile("admin", "avatar"))
 	}
 
 	return router
