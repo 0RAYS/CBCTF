@@ -27,6 +27,7 @@ func Init() *gin.Engine {
 		router.POST("/verify", VerifyEmail)
 
 		router.GET("/stats", HomePage)
+		router.GET("/contests", GetContests)
 	}
 
 	auth := router.Group("", middleware.CheckAuth)
@@ -106,6 +107,9 @@ func Init() *gin.Engine {
 			adminUser.DELETE("", DeleteUser)
 			adminUser.PUT("/avatar", UploadFile("user", "avatar"))
 		}
+
+		admin.GET("/contests", GetContests)
+
 	}
 
 	return router
