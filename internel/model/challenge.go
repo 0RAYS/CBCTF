@@ -1,6 +1,8 @@
 package model
 
 import (
+	"CBCTF/internel/config"
+	"fmt"
 	"gorm.io/gorm"
 	"time"
 )
@@ -10,6 +12,9 @@ const (
 	DynamicChallenge = "dynamic"
 	DockerChallenge  = "docker"
 	DockersChallenge = "dockers"
+
+	AttachmentFile = "attachment.zip"
+	GeneratorFile  = "generator.zip"
 )
 
 type Challenge struct {
@@ -28,4 +33,29 @@ type Challenge struct {
 	UpdatedAt   time.Time      `json:"-"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 	Version     uint           `gorm:"default:1" json:"-"`
+}
+
+// BasicDir 获取题目相关文件的目录
+func (c *Challenge) BasicDir() string {
+	return fmt.Sprintf("%s/challenges/%s", config.Env.Path, c.ID)
+}
+
+// StaticPath 获取静态题目文件的路径
+func (c *Challenge) StaticPath() string {
+	return fmt.Sprintf("%s/%s", c.BasicDir(), AttachmentFile)
+}
+
+// GeneratorPath 获取动态题目生成器的路径
+func (c *Challenge) GeneratorPath() string {
+	return fmt.Sprintf("%s/%s", c.BasicDir(), GeneratorFile)
+}
+
+// AttachmentPath 获取下载时, 题目附件的路径
+func (c *Challenge) AttachmentPath(teamID uint) string {
+	switch c.Type {
+	case DynamicChallenge:
+		return fmt.Sprintf("%s/attachments/%s/%d.zip", config.Env.Path, c.ID, teamID)
+	default:
+		return c.StaticPath()
+	}
 }
