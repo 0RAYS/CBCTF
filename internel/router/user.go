@@ -13,19 +13,13 @@ import (
 )
 
 func GetUser(ctx *gin.Context) {
-	var (
-		user model.User
-		all  bool
-	)
-
 	if middleware.GetRole(ctx) != "admin" {
-		user = middleware.GetSelf(ctx).(model.User)
-		all = false
+		user := middleware.GetSelf(ctx).(model.User)
+		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": resp.GetUserResp(user)})
 	} else {
-		user = middleware.GetUser(ctx)
-		all = true
+		user := middleware.GetUser(ctx)
+		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &user})
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": resp.GetUserResp(user, all)})
 }
 
 func GetUsers(ctx *gin.Context) {
@@ -39,11 +33,7 @@ func GetUsers(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	data := make([]gin.H, 0)
-	for _, user := range users {
-		data = append(data, resp.GetUserResp(user, true))
-	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "users": data}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "users": &users}})
 }
 
 func CreateUser(ctx *gin.Context) {
