@@ -89,6 +89,13 @@ func Init() *gin.Engine {
 		admin.PUT("/me/update", UpdateAdmin)
 		admin.PUT("/me/avatar", UploadFile("admin", "avatar"))
 		admin.POST("/admins", CreateAdmin)
+
+		// 系统管理
+		adminSystem := admin.Group("/system")
+		{
+			adminSystem.GET("/status", SystemStatus)
+			adminSystem.GET("/config", SystemConfig)
+		}
 	}
 
 	return router
