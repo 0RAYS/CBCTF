@@ -20,5 +20,10 @@ func CountFlagSolved(tx *gorm.DB, flag model.Flag) (int64, bool, string) {
 			count++
 		}
 	}
+	if count < flag.Solvers {
+		// 不考虑更新失败的情况, 不回滚
+		flagRepo := db.InitFlagRepo(tx)
+		flagRepo.Update(flag.ID, db.UpdateFlagOptions{Solvers: &count})
+	}
 	return count, true, "Success"
 }
