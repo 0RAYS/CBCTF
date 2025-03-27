@@ -98,6 +98,7 @@ func Init() *gin.Engine {
 		}
 
 		admin.GET("/users", GetUsers)
+		admin.POST("/users", CreateUser)
 		adminUser := admin.Group("/users/:userID", middleware.SetUser)
 		{
 			adminUser.GET("", GetUser)
