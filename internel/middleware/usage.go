@@ -11,8 +11,8 @@ import (
 func CheckGenerated(ctx *gin.Context) {
 	usage := GetUsage(ctx)
 	team := GetTeam(ctx)
-	if generated, _, msg := service.IsGenerated(db.DB.WithContext(ctx), usage, team); !generated {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if !service.IsGenerated(db.DB.WithContext(ctx), usage, team) {
+		ctx.JSON(http.StatusOK, gin.H{"msg": "AnswerNotFound", "data": nil})
 		ctx.Abort()
 		return
 	}
