@@ -47,11 +47,47 @@ func GetTeamRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Tea
 		return teams, count, false, msg
 	}
 	start, end := utils.TidyPaginate(int(count), limit, offset)
-	if teams, err = redis.GetTeamRanking(contestID, int64(start), int64(end-1)); err == nil && teams != nil {
+	if teams, err = redis.GetTeamRanking(contestID, int64(start), int64(end-1)); err == nil {
 		return teams, count, true, "Success"
 	}
-	if ok, msg = UpdateTeamRanking(tx, contestID); err != nil {
+	if ok, msg = UpdateTeamRanking(tx, contestID); !ok {
 		return teams, count, false, msg
 	}
 	return GetTeamRanking(tx, contestID, limit, offset)
+}
+
+func UpdateUserRanking(tx *gorm.DB) (bool, string) {
+	var (
+		repo              = db.InitUserRepo(tx)
+		users, _, ok, msg = repo.GetAll(-1, -1, true, 0, true, false)
+		err               error
+	)
+	if !ok {
+		return false, msg
+	}
+	err = redis.UpdateUserRanking(users)
+	if err != nil {
+		return false, "UpdateRankingError"
+	}
+	return true, "Success"
+}
+
+func GetUserRanking(tx *gorm.DB, limit, offset int) ([]model.User, int64, bool, string) {
+	var (
+		users          = make([]model.User, 0)
+		repo           = db.InitUserRepo(tx)
+		count, ok, msg = repo.Count(true, false)
+		err            error
+	)
+	if !ok {
+		return users, count, false, msg
+	}
+	start, end := utils.TidyPaginate(int(count), limit, offset)
+	if users, err = redis.GetUserRanking(int64(start), int64(end-1)); err == nil && users != nil {
+		return users, count, true, "Success"
+	}
+	if ok, msg = UpdateUserRanking(tx); !ok {
+		return users, count, false, msg
+	}
+	return GetUserRanking(tx, limit, offset)
 }

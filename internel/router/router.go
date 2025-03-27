@@ -25,6 +25,8 @@ func Init() *gin.Engine {
 		router.POST("/login", Login)
 		router.POST("/admin/login", AdminLogin)
 		router.POST("/verify", VerifyEmail)
+		
+		router.GET("/stats", HomePage)
 	}
 
 	auth := router.Group("", middleware.CheckAuth)
