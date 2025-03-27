@@ -46,6 +46,12 @@ func (t *TeamRepo) IsUniqueName(contestID uint, name string) bool {
 	return res.RowsAffected == 0
 }
 
+func (t *TeamRepo) IsTeamMember(teamID uint, userID uint) bool {
+	res := t.DB.Model(&model.UserTeam{}).
+		Where("team_id = ? AND user_id = ?", teamID, userID).Find(&model.UserTeam{}).Limit(1)
+	return res.RowsAffected == 1
+}
+
 func (t *TeamRepo) IsUniqueMember(contestID uint, userID uint) bool {
 	res := t.DB.Model(&model.UserContest{}).
 		Where("contest_id = ? AND user_id = ?", contestID, userID).Find(&model.UserContest{}).Limit(1)
