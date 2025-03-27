@@ -8,6 +8,26 @@ import (
 	"gorm.io/gorm"
 )
 
+func CreateAdmin(tx *gorm.DB, form f.CreateAdminForm) (model.Admin, bool, string) {
+	repo := db.InitAdminRepo(tx)
+	if !utils.IsValidEmail(form.Email) {
+		return model.Admin{}, false, "InvalidEmail"
+	}
+	if !repo.IsUniqueEmail(form.Email) {
+		return model.Admin{}, false, "DuplicateEmail"
+	}
+	if !repo.IsUniqueName(form.Name) {
+		return model.Admin{}, false, "DuplicateUsername"
+	}
+	return repo.Create(db.CreateAdminOptions{
+		Name:     form.Name,
+		Password: form.Email,
+		Email:    form.Email,
+		Avatar:   "",
+		Verified: false,
+	})
+}
+
 func VerifyAdmin(tx *gorm.DB, form f.LoginForm) (model.Admin, bool, string) {
 	repo := db.InitAdminRepo(tx)
 	admin, ok, msg := repo.GetByName(form.Name, true, 0)
