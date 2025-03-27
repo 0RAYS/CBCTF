@@ -15,13 +15,34 @@ import (
 func GetTeam(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	DB := db.DB.WithContext(ctx)
-	flags, _, ok, msg := db.InitFlagRepo(DB).GetByKeyID("contest_id", team.ContestID, -1, -1, true, 3)
+	all := middleware.GetRole(ctx) == "admin"
+	if !all {
+		flags, _, ok, msg := db.InitFlagRepo(DB).GetByKeyID("contest_id", team.ContestID, -1, -1, true, 3)
+		if !ok {
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
+		}
+		solved, _, _ := service.GetTeamSolved(db.DB.WithContext(ctx), team.ID)
+		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": resp.GetTeamResp(team, solved, flags)})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &team})
+}
+
+func GetTeams(ctx *gin.Context) {
+	var form f.GetModelsForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	DB := db.DB.WithContext(ctx)
+	contest := middleware.GetContest(ctx)
+	teams, count, ok, msg := db.InitTeamRepo(DB).GetAll(contest.ID, form.Limit, form.Offset, false, 0, true, true)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	solved, _, _ := service.GetTeamSolved(db.DB.WithContext(ctx), team.ID)
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": resp.GetTeamResp(team, solved, flags)})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "teams": &teams}})
 }
 
 func GetTeamCaptcha(ctx *gin.Context) {
@@ -29,6 +50,14 @@ func GetTeamCaptcha(ctx *gin.Context) {
 }
 
 func GetTeammates(ctx *gin.Context) {
+	if middleware.GetRole(ctx) != "admin" {
+		data := make([]gin.H, 0)
+		for _, user := range middleware.GetTeam(ctx).Users {
+			data = append(data, resp.GetUserResp(*user))
+		}
+		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
+		return
+	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": middleware.GetTeam(ctx).Users})
 }
 
