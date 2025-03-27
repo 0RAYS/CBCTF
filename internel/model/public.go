@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"net"
 	"time"
 )
 
@@ -123,4 +124,57 @@ func (e *Exposes) Scan(value interface{}) error {
 		return fmt.Errorf("failed to scan Exposes value")
 	}
 	return json.Unmarshal(bytes, e)
+}
+
+type IPBlock struct {
+	CIDR   string   `json:"cidr"`
+	Except []string `json:"except"`
+}
+
+func isValidIPBlock(ipBlock IPBlock) bool {
+	_, ipNet, err := net.ParseCIDR(ipBlock.CIDR)
+	if err != nil {
+		return false
+	}
+	for _, ex := range ipBlock.Except {
+		_, exNet, err := net.ParseCIDR(ex)
+		if err != nil {
+			return false
+		}
+		if !ipNet.Contains(exNet.IP) {
+			return false
+		}
+	}
+	return true
+}
+
+type NetworkPolicy struct {
+	From []IPBlock `json:"from"`
+	To   []IPBlock `json:"to"`
+}
+
+type NetworkPolicies []NetworkPolicy
+
+func (n NetworkPolicies) Value() (driver.Value, error) {
+	for _, p := range n {
+		for i, ipBlock := range p.From {
+			if !isValidIPBlock(ipBlock) {
+				p.From = append(p.From[:i], p.From[i+1:]...)
+			}
+		}
+		for i, ipBlock := range p.To {
+			if !isValidIPBlock(ipBlock) {
+				p.To = append(p.To[:i], p.To[i+1:]...)
+			}
+		}
+	}
+	return json.Marshal(n)
+}
+
+func (n *NetworkPolicies) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan NetworkPolicy value")
+	}
+	return json.Unmarshal(bytes, n)
 }
