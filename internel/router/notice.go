@@ -3,6 +3,7 @@ package router
 import (
 	f "CBCTF/internel/form"
 	"CBCTF/internel/middleware"
+	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/resp"
 	"CBCTF/internel/service"
@@ -25,4 +26,9 @@ func GetNotices(ctx *gin.Context) {
 	data := gin.H{"notices": resp.GetNoticesResp(notices)}
 	data["count"] = count
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": data})
+}
+
+func GetNotice(ctx *gin.Context) {
+	notice := middleware.GetNotice(ctx)
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": resp.GetNoticesResp([]model.Notice{notice})[0]})
 }
