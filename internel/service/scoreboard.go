@@ -83,7 +83,7 @@ func GetUserRanking(tx *gorm.DB, limit, offset int) ([]model.User, int64, bool, 
 		return users, count, false, msg
 	}
 	start, end := utils.TidyPaginate(int(count), limit, offset)
-	if users, err = redis.GetUserRanking(int64(start), int64(end-1)); err == nil && users != nil {
+	if users, err = redis.GetUserRanking(int64(start), int64(end-1)); err == nil {
 		return users, count, true, "Success"
 	}
 	if ok, msg = UpdateUserRanking(tx); !ok {
