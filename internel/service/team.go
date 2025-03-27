@@ -125,6 +125,23 @@ func CreateTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.Crea
 	return true, "Success"
 }
 
+func KickMember(tx *gorm.DB, contest model.Contest, team model.Team, form f.KickMemberForm) (bool, string) {
+	repo := db.InitTeamRepo(tx)
+	if !repo.IsTeamMember(team.ID, form.UserID) {
+		return false, "UserNotInTeam"
+	}
+	if team.CaptainID == form.UserID {
+		return false, "CaptainCannotLeave"
+	}
+	if err := db.DeleteUserFromTeam(tx, form.UserID, team.ID); err != nil {
+		return false, "DeleteUserFromTeamError"
+	}
+	if err := db.DeleteUserFromContest(tx, form.UserID, contest.ID); err != nil {
+		return false, "DeleteUserFromContestError"
+	}
+	return true, "Success"
+}
+
 func UpdateTeamRanking(tx *gorm.DB, contestID uint) (bool, string) {
 	var (
 		repo              = db.InitTeamRepo(tx)

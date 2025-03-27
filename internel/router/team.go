@@ -85,6 +85,24 @@ func DeleteTeam(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
+func KickMember(ctx *gin.Context) {
+	var form f.KickMemberForm
+	if err := ctx.ShouldBindJSON(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	team := middleware.GetTeam(ctx)
+	contest := middleware.GetContest(ctx)
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := service.KickMember(tx, contest, team, form)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}
+
 func JoinTeam(ctx *gin.Context) {
 	var form f.JoinTeamForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
