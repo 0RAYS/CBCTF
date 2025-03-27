@@ -8,7 +8,9 @@ import (
 	"strings"
 )
 
-func AdminLoginResp(admin model.Admin) gin.H {
+var AdminLoginResp = GetAdminResp
+
+func GetAdminResp(admin model.Admin) gin.H {
 	return gin.H{
 		"name":   admin.Name,
 		"email":  admin.Email,
