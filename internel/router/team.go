@@ -121,6 +121,20 @@ func JoinTeam(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
+func LeaveTeam(ctx *gin.Context) {
+	user := middleware.GetSelf(ctx).(model.User)
+	contest := middleware.GetContest(ctx)
+	team := middleware.GetTeam(ctx)
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := service.LeaveTeam(tx, contest, team, user.ID)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}
+
 func CreateTeam(ctx *gin.Context) {
 	var form f.CreateTeamForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
