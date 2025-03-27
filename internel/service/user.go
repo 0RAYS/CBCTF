@@ -29,6 +29,25 @@ func CreateUser(tx *gorm.DB, form f.CreateUserForm) (model.User, bool, string) {
 	})
 }
 
+func AdminCreateUser(tx *gorm.DB, form f.CreateUserForm) (model.User, bool, string) {
+	if !utils.IsValidEmail(form.Email) {
+		return model.User{}, false, "InvalidEmail"
+	}
+	repo := db.InitUserRepo(tx)
+	if !repo.IsUniqueName(form.Name) {
+		return model.User{}, false, "DuplicateUsername"
+	}
+	if !repo.IsUniqueEmail(form.Email) {
+		return model.User{}, false, "DuplicateEmail"
+	}
+	return repo.Create(db.CreateUserOptions{
+		Name:     form.Name,
+		Password: utils.HashPassword(form.Password),
+		Email:    form.Email,
+	})
+
+}
+
 func VerifyUser(tx *gorm.DB, form f.LoginForm) (model.User, bool, string) {
 	repo := db.InitUserRepo(tx)
 	user, ok, msg := repo.GetByName(form.Name, true, 0)

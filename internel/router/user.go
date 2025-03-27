@@ -44,7 +44,23 @@ func GetUsers(ctx *gin.Context) {
 		data = append(data, resp.GetUserResp(user, true))
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "users": data}})
+}
 
+func CreateUser(ctx *gin.Context) {
+	var form f.CreateUserForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	tx := db.DB.WithContext(ctx).Begin()
+	user, ok, msg := service.AdminCreateUser(tx, form)
+	if !ok {
+		tx.Rollback()
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	tx.Commit()
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": &user})
 }
 
 func ChangePwd(ctx *gin.Context) {
