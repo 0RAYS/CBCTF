@@ -94,7 +94,7 @@ func KickMember(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	contest := middleware.GetContest(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
-	ok, msg := service.KickMember(tx, contest, team, form)
+	ok, msg := service.LeaveTeam(tx, contest, team, form.UserID)
 	if !ok {
 		tx.Rollback()
 	} else {
