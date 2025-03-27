@@ -56,7 +56,7 @@ func Init() *gin.Engine {
 			contestTeam.PUT("/me/avatar", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, UploadFile("team", "avatar"))
 			contestTeam.DELETE("/me", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, DeleteTeam)
 			contestTeam.POST("/me/kick", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, KickMember)
-
+			contestTeam.POST("/me/leave", middleware.CheckRunning, LeaveTeam)
 		}
 	}
 
