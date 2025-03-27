@@ -17,9 +17,9 @@ func GetUsageStatus(ctx *gin.Context) {
 	usage := middleware.GetUsage(ctx)
 	DB := db.DB.WithContext(ctx)
 	var data gin.H
-	data["attempts"], _, _ = service.CountAttempts(DB, team, usage)
-	data["init"], _, _ = service.IsGenerated(DB, usage, team)
-	data["solved"], _, _ = service.IsSolved(DB, team, usage)
+	data["attempts"] = service.CountAttempts(DB, team, usage)
+	data["init"] = service.IsGenerated(DB, usage, team)
+	data["solved"] = service.IsSolved(DB, team, usage)
 	data["remote"] = service.GetRemoteStatus(DB, usage)
 	data["file"] = func() string {
 		if _, err := os.Stat(usage.Challenge.AttachmentPath(team.ID)); err != nil {
@@ -45,9 +45,9 @@ func GetUsages(ctx *gin.Context) {
 	var data []gin.H
 	for _, usage := range usages {
 		tmp := resp.GetUsageResp(usage)
-		tmp["attempts"], _, _ = service.CountAttempts(DB, team, usage)
-		tmp["init"], _, _ = service.IsGenerated(DB, usage, team)
-		tmp["solved"], _, _ = service.IsSolved(DB, team, usage)
+		tmp["attempts"] = service.CountAttempts(DB, team, usage)
+		tmp["init"] = service.IsGenerated(DB, usage, team)
+		tmp["solved"] = service.IsSolved(DB, team, usage)
 		tmp["remote"] = service.GetRemoteStatus(DB, usage)
 		tmp["file"] = func() string {
 			if _, err := os.Stat(usage.Challenge.AttachmentPath(team.ID)); err != nil {
