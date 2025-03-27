@@ -5,7 +5,6 @@ import (
 	"CBCTF/internel/middleware"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
-	"CBCTF/internel/resp"
 	"CBCTF/internel/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -13,7 +12,7 @@ import (
 
 func GetAdmin(ctx *gin.Context) {
 	admin := middleware.GetSelf(ctx).(model.Admin)
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": resp.GetAdminResp(admin)})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &admin})
 }
 
 func AdminChangePassword(ctx *gin.Context) {
@@ -62,5 +61,5 @@ func CreateAdmin(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetAdminResp(admin)})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": admin})
 }
