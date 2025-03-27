@@ -6,6 +6,7 @@ import (
 	"CBCTF/internel/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"os"
 )
 
 func UploadFile(v, t string) func(ctx *gin.Context) {
@@ -52,4 +53,15 @@ func UploadFile(v, t string) func(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		}
 	}
+}
+
+func GetAttachment(ctx *gin.Context) {
+	usage := middleware.GetUsage(ctx)
+	team := middleware.GetTeam(ctx)
+	path := usage.Challenge.AttachmentPath(team.ID)
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		ctx.JSON(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": nil})
+		return
+	}
+	ctx.File(path)
 }
