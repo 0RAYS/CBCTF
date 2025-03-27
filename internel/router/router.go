@@ -64,6 +64,9 @@ func Init() *gin.Engine {
 			contest.GET("/notices", GetNotices)
 			contest.GET("/notices/:noticeID", middleware.SetNotice, GetNotice)
 		}
+
+		// 比赛题目
+		contest.GET("/challenges", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, GetUsages)
 	}
 
 	return router
