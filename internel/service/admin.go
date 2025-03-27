@@ -73,11 +73,6 @@ func UpdateUser(tx *gorm.DB, user model.User, form f.UpdateUserForm) (bool, stri
 	return repo.Update(user.ID, options)
 }
 
-func DeleteUser(tx *gorm.DB, user model.User) (bool, string) {
-	repo := db.InitUserRepo(tx)
-	return repo.Delete(user.ID)
-}
-
 func UpdateAdmin(tx *gorm.DB, admin model.Admin, form f.UpdateAdminForm) (bool, string) {
 	repo := db.InitAdminRepo(tx)
 	options := db.UpdateAdminOptions{}

@@ -1,6 +1,7 @@
 package router
 
 import (
+	"CBCTF/internel/k8s"
 	"CBCTF/internel/middleware"
 	"CBCTF/internel/model"
 	"CBCTF/internel/redis"
@@ -37,7 +38,7 @@ func GetUsages(ctx *gin.Context) {
 		contest = middleware.GetContest(ctx)
 		team    = middleware.GetTeam(ctx)
 	)
-	usages, ok, msg := service.GetUsages(DB, contest, all)
+	usages, _, ok, msg := db.InitUsageRepo(DB).GetAll(contest.ID, -1, -1, true, 3, all)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -77,7 +78,7 @@ func InitUsage(reset bool) func(ctx *gin.Context) {
 			tx.Rollback()
 		}
 		if usage.Challenge.Type == model.DynamicChallenge {
-			ok, msg = service.GeneratorAttachment(usage, answers[0])
+			ok, msg = k8s.GenerateAttachment(usage, answers[0])
 		}
 		if !ok {
 			tx.Rollback()

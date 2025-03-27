@@ -6,7 +6,6 @@ import (
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/resp"
-	"CBCTF/internel/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -18,7 +17,8 @@ func GetNotices(ctx *gin.Context) {
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	notices, count, ok, msg := service.GetNotices(db.DB.WithContext(ctx), contest, form)
+	DB := db.DB.WithContext(ctx)
+	notices, count, ok, msg := db.InitNoticeRepo(DB).GetAll(contest.ID, form.Limit, form.Offset, false, 0)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
