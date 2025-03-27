@@ -74,6 +74,17 @@ func UpdateCaptcha(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": captcha})
 }
 
+func DeleteTeam(ctx *gin.Context) {
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := service.DeleteTeam(tx, middleware.GetTeam(ctx))
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}
+
 func JoinTeam(ctx *gin.Context) {
 	var form f.JoinTeamForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
