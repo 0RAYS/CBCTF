@@ -1,9 +1,12 @@
 package router
 
 import (
+	f "CBCTF/internel/form"
 	"CBCTF/internel/middleware"
 	"CBCTF/internel/model"
+	db "CBCTF/internel/repo"
 	"CBCTF/internel/resp"
+	"CBCTF/internel/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -29,3 +32,18 @@ func AdminChangePassword(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
+func UpdateAdmin(ctx *gin.Context) {
+	var form f.UpdateAdminForm
+	if err := ctx.ShouldBindJSON(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := service.UpdateAdmin(tx, middleware.GetSelf(ctx).(model.Admin), form)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}

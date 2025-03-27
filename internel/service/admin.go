@@ -58,6 +58,26 @@ func DeleteUser(tx *gorm.DB, user model.User) (bool, string) {
 	return repo.Delete(user.ID)
 }
 
+func UpdateAdmin(tx *gorm.DB, admin model.Admin, form f.UpdateAdminForm) (bool, string) {
+	repo := db.InitAdminRepo(tx)
+	options := db.UpdateAdminOptions{}
+	if form.Email != nil && *form.Email != admin.Email {
+		if repo.IsUniqueEmail(*form.Email) {
+			return false, "DuplicateEmail"
+		}
+		options.Email = form.Email
+		verified := false
+		options.Verified = &verified
+	}
+	if form.Name != nil && *form.Name != admin.Name {
+		if !repo.IsUniqueName(*form.Name) {
+			return false, "DuplicateUsername"
+		}
+		options.Name = form.Name
+	}
+	return repo.Update(admin.ID, options)
+}
+
 func ChangeAdminPassword(tx *gorm.DB, admin model.Admin, form f.ChangePasswordForm) (bool, string) {
 	if !utils.CompareHashAndPassword(admin.Password, form.OldPassword) {
 		return false, "PasswordError"
