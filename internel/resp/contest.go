@@ -8,7 +8,6 @@ import (
 	"strings"
 )
 
-// GetContestResp TODO highest
 func GetContestResp(contest model.Contest) gin.H {
 	return gin.H{
 		"id":        contest.ID,
