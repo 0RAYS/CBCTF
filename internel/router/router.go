@@ -96,6 +96,15 @@ func Init() *gin.Engine {
 			adminSystem.GET("/status", SystemStatus)
 			adminSystem.GET("/config", SystemConfig)
 		}
+
+		admin.GET("/users", GetUsers)
+		adminUser := admin.Group("/users/:userID", middleware.SetUser)
+		{
+			adminUser.GET("", GetUser)
+			adminUser.PUT("", UpdateUser)
+			adminUser.DELETE("", DeleteUser)
+			adminUser.PUT("/avatar", UploadFile("user", "avatar"))
+		}
 	}
 
 	return router
