@@ -9,6 +9,8 @@ type Usage struct {
 	Name        string       `gorm:"not null" json:"name"`
 	Desc        string       `json:"desc"`
 	Hidden      bool         `json:"hidden"`
+	Hints       Strings      `gorm:"type:json" json:"hints"`
+	Tags        Strings      `gorm:"type:json" json:"tags"`
 	Flags       []Flag       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Containers  []Container  `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Submissions []Submission `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
