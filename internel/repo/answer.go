@@ -59,6 +59,16 @@ func InitAnswerRepo(tx *gorm.DB) *AnswerRepo {
 //	return a.getByUniqueKey("id", id, preload, depth)
 //}
 
+func (a *AnswerRepo) GetBy2ID(teamID, flagID uint, preload bool, depth int) (model.Answer, bool, string) {
+	var answer model.Answer
+	res := a.DB.Model(&model.Answer{}).Where("team_id = ? AND flag_id = ?", teamID, flagID)
+	res = model.GetPreload(res, a.Model, preload, depth).Find(&answer).Limit(1)
+	if res.RowsAffected == 0 {
+		return model.Answer{}, false, "AnswerNotFound"
+	}
+	return answer, true, "Success"
+}
+
 func (a *AnswerRepo) Count(flagID uint) (int64, bool, string) {
 	var count int64
 	res := a.DB.Model(&model.Answer{}).Where("flag_id = ?", flagID).Count(&count)

@@ -2,6 +2,7 @@ package service
 
 import (
 	"CBCTF/internel/config"
+	"CBCTF/internel/k8s"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
@@ -94,4 +95,9 @@ func UpdateAvatar(tx *gorm.DB, v string, id uint, record model.File) (string, bo
 		ok, msg = false, "UnsupportedKey"
 	}
 	return path, ok, msg
+}
+
+// GeneratorAttachment model.Usage 需要预加载
+func GeneratorAttachment(usage model.Usage, answer model.Answer) (bool, string) {
+	return k8s.GenerateAttachment(usage, answer)
 }

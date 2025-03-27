@@ -77,7 +77,7 @@ func StopGenerator(usage model.Usage) (bool, string) {
 	return DeletePod(ctx, podName)
 }
 
-// GenerateAttachment 附加容器命令, 生成附件
+// GenerateAttachment 附加容器命令, 生成附件, model.Usage 需要预加载
 func GenerateAttachment(usage model.Usage, answer model.Answer) (bool, string) {
 	var err error
 	log.Logger.Debugf("Generating attachment for team %d challenge %s", answer.TeamID, usage.ChallengeID)
