@@ -25,7 +25,7 @@ func Init() *gin.Engine {
 		router.POST("/login", Login)
 		router.POST("/admin/login", AdminLogin)
 		router.POST("/verify", VerifyEmail)
-		
+
 		router.GET("/stats", HomePage)
 	}
 
@@ -80,6 +80,12 @@ func Init() *gin.Engine {
 			contestChallenge.POST("/reset", middleware.CheckRunning, middleware.CheckGenerated, InitUsage(true))
 
 		}
+	}
+
+	admin := auth.Group("/admin", middleware.CheckRole("admin"))
+	{
+		admin.GET("/me", GetAdmin)
+		
 	}
 
 	return router
