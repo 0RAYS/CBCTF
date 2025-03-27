@@ -1,0 +1,28 @@
+package router
+
+import (
+	f "CBCTF/internel/form"
+	"CBCTF/internel/middleware"
+	db "CBCTF/internel/repo"
+	"CBCTF/internel/resp"
+	"CBCTF/internel/service"
+	"github.com/gin-gonic/gin"
+	"net/http"
+)
+
+func GetNotices(ctx *gin.Context) {
+	var form f.GetModelsForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	contest := middleware.GetContest(ctx)
+	notices, count, ok, msg := service.GetNotices(db.DB.WithContext(ctx), contest, form)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	data := gin.H{"notices": resp.GetNoticesResp(notices)}
+	data["count"] = count
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": data})
+}
