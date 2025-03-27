@@ -82,11 +82,11 @@ func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.JoinTe
 	if !repo.IsUniqueMember(contest.ID, user.ID) {
 		return false, "DuplicateMember"
 	}
-	if err = db.AppendUserToTeam(tx, user, team); err != nil {
+	if err = db.AppendUserToTeam(tx, user.ID, team.ID); err != nil {
 		return false, "AppendUserToTeamError"
 	}
 	// 关联 User Contest Many2Many
-	if err = db.AppendUserToContest(tx, user, contest); err != nil {
+	if err = db.AppendUserToContest(tx, user.ID, contest.ID); err != nil {
 		return false, "AppendContestToUserError"
 	}
 	return true, "Success"
@@ -116,10 +116,10 @@ func CreateTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.Crea
 	if !ok {
 		return false, msg
 	}
-	if err := db.AppendUserToTeam(tx, user, team); err != nil {
+	if err := db.AppendUserToTeam(tx, user.ID, team.ID); err != nil {
 		return false, "AppendUserToTeamError"
 	}
-	if err := db.AppendUserToContest(tx, user, contest); err != nil {
+	if err := db.AppendUserToContest(tx, user.ID, contest.ID); err != nil {
 		return false, "AppendUserToContestError"
 	}
 	return true, "Success"
