@@ -1,6 +1,7 @@
 package model
 
 import (
+	"CBCTF/internel/config"
 	"fmt"
 	"gorm.io/gorm"
 	"time"
@@ -27,6 +28,10 @@ type Container struct {
 	UpdatedAt         time.Time      `json:"-"`
 	DeletedAt         gorm.DeletedAt `gorm:"index" json:"-"`
 	Version           uint           `gorm:"default:1" json:"-"`
+}
+
+func (c Container) TrafficPath() string {
+	return fmt.Sprintf("%s/traffics/%s/%d/%d.pcap", config.Env.Path, c.PodName, c.TeamID, c.ID)
 }
 
 // RemoteAddr 返回远程地址
