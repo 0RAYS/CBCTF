@@ -58,9 +58,9 @@ func InitTrafficRepo(tx *gorm.DB) *TrafficRepo {
 //	return t.getByUniqueKey("id", id, preload, depth)
 //}
 
-func (t *TrafficRepo) Count(teamID uint) (int64, bool, string) {
+func (t *TrafficRepo) Count(containerID uint) (int64, bool, string) {
 	var count int64
-	res := t.DB.Model(&model.Traffic{}).Where("team_id = ?", teamID).Count(&count)
+	res := t.DB.Model(&model.Traffic{}).Where("container_id = ?", containerID).Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Traffic: %v", res.Error)
 		return 0, false, "CountModelError"
@@ -68,15 +68,15 @@ func (t *TrafficRepo) Count(teamID uint) (int64, bool, string) {
 	return count, true, "Success"
 }
 
-func (t *TrafficRepo) GetAll(teamID uint, limit, offset int, preload bool, depth int) ([]model.Traffic, int64, bool, string) {
+func (t *TrafficRepo) GetAll(containerID uint, limit, offset int, preload bool, depth int) ([]model.Traffic, int64, bool, string) {
 	var (
 		traffics       = make([]model.Traffic, 0)
-		count, ok, msg = t.Count(teamID)
+		count, ok, msg = t.Count(containerID)
 	)
 	if !ok {
 		return traffics, count, false, msg
 	}
-	res := t.DB.Model(&model.Traffic{}).Where("team_id = ?", teamID)
+	res := t.DB.Model(&model.Traffic{}).Where("container_id = ?", containerID)
 	res = model.GetPreload(res, t.Model, preload, depth).Find(&traffics).Limit(limit).Offset(offset)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Traffics: %v", res.Error)
