@@ -75,6 +75,7 @@ func (t Timelines) Scan(value interface{}) error {
 	return json.Unmarshal(bytes, &t)
 }
 
+// Docker 题目的 Docker 配置, 一个容器可以有多个 flag 和多个映射端口
 type Docker struct {
 	Flags Strings `json:"flags"`
 	Image string  `json:"image"`
