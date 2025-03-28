@@ -80,8 +80,10 @@ func Init() *gin.Engine {
 			contestChallenge.POST("/init", middleware.CheckRunning, middleware.CheckGenerated, InitUsage(false))
 			contestChallenge.GET("/attachment", GetAttachment)
 			contestChallenge.POST("/reset", middleware.CheckRunning, middleware.CheckGenerated, InitUsage(true))
-
+			//TODO container op
 		}
+
+		//TODO writeup CURD
 	}
 
 	admin := auth.Group("/admin", middleware.CheckRole("admin"))
@@ -157,6 +159,16 @@ func Init() *gin.Engine {
 			adminContestNotice.GET("", GetNotice)
 			adminContestNotice.PUT("", UpdateNotice)
 			adminContestNotice.DELETE("", DeleteNotice)
+		}
+
+		adminContest.GET("/challenges", GetUsages)
+		adminContest.POST("/challenges", AddUsage)
+		adminContestChallenge := adminContest.Group("/challenges/:challengeID", middleware.SetUsage)
+		{
+			adminContestChallenge.PUT("", UpdateUsage)
+			adminContestChallenge.DELETE("", RemoveUsage)
+
+			//TODO flag CURD
 		}
 
 	}
