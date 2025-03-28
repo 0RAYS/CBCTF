@@ -5,6 +5,7 @@ import (
 	"CBCTF/internel/middleware"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/resp"
+	"CBCTF/internel/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -22,16 +23,71 @@ func GetNotices(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	var data gin.H
-	data["notices"] = make([]gin.H, 0)
-	for _, notice := range notices {
-		data["notices"] = append(data["notices"].([]gin.H), resp.GetNoticeResp(notice))
+	if middleware.GetRole(ctx) != "admin" {
+		var data gin.H
+		data["notices"] = make([]gin.H, 0)
+		for _, notice := range notices {
+			data["notices"] = append(data["notices"].([]gin.H), resp.GetNoticeResp(notice))
+		}
+		data["count"] = count
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": data})
+		return
 	}
-	data["count"] = count
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": data})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "notices": &notices}})
 }
 
 func GetNotice(ctx *gin.Context) {
 	notice := middleware.GetNotice(ctx)
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": resp.GetNoticeResp(notice)})
+	if middleware.GetRole(ctx) != "admin" {
+		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": resp.GetNoticeResp(notice)})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &notice})
+}
+
+func CreateNotice(ctx *gin.Context) {
+	var form f.CreateNoticeForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	contest := middleware.GetContest(ctx)
+	tx := db.DB.WithContext(ctx).Begin()
+	notice, ok, msg := service.CreateNotice(tx, contest, form, middleware.GetSelfID(ctx))
+	if !ok {
+		tx.Rollback()
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	tx.Commit()
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &notice})
+}
+
+func UpdateNotice(ctx *gin.Context) {
+	var form f.UpdateNoticeForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	notice := middleware.GetNotice(ctx)
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := service.UpdateNotice(tx, notice, form)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}
+
+func DeleteNotice(ctx *gin.Context) {
+	notice := middleware.GetNotice(ctx)
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := service.DeleteNotice(tx, notice)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
