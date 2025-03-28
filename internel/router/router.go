@@ -132,6 +132,18 @@ func Init() *gin.Engine {
 			adminContestTeam.POST("/avatar", UploadFile("team", "avatar"))
 
 			adminContestTeam.GET("/submissions", GetSubmissions(true))
+
+			adminContestTeam.GET("/containers", GetContainers)
+			adminContainer := adminContestTeam.Group("/containers/:containerID", middleware.SetContainer)
+			{
+				adminContainer.GET("", GetContainer)
+				//adminContainer.POST("/stop", StopContainer)
+
+				adminTraffic := adminContainer.Group("/traffic")
+				adminTraffic.GET("/download", DownloadTraffic)
+				adminTraffic.POST("/load", LoadTraffic)
+				adminTraffic.GET("", GetTraffics)
+			}
 		}
 	}
 
