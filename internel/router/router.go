@@ -149,6 +149,16 @@ func Init() *gin.Engine {
 			adminContestTeam.GET("/writeups", GetWriteUPs)
 			adminContestTeam.GET("/writeups/:fileID", middleware.SetFile(model.WriteUP), DownloadFile)
 		}
+
+		adminContest.GET("/notices", GetNotices)
+		adminContest.POST("/notices", CreateNotice)
+		adminContestNotice := adminContest.Group("/notices/:noticeID", middleware.SetNotice)
+		{
+			adminContestNotice.GET("", GetNotice)
+			adminContestNotice.PUT("", UpdateNotice)
+			adminContestNotice.DELETE("", DeleteNotice)
+		}
+
 	}
 
 	return router
