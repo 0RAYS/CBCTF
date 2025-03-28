@@ -4,6 +4,7 @@ import (
 	"CBCTF/internel/config"
 	"CBCTF/internel/log"
 	"CBCTF/internel/middleware"
+	"CBCTF/internel/model"
 	"github.com/gin-gonic/gin"
 )
 
@@ -144,6 +145,9 @@ func Init() *gin.Engine {
 				adminTraffic.POST("/load", LoadTraffic)
 				adminTraffic.GET("", GetTraffics)
 			}
+
+			adminContestTeam.GET("/writeups", GetWriteUPs)
+			adminContestTeam.GET("/writeups/:fileID", middleware.SetFile(model.WriteUP), DownloadFile)
 		}
 	}
 

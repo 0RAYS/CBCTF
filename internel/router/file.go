@@ -1,13 +1,31 @@
 package router
 
 import (
+	"CBCTF/internel/config"
 	"CBCTF/internel/middleware"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/service"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
 )
+
+func DownloadFile(ctx *gin.Context) {
+	file := middleware.GetFile(ctx)
+	if _, err := os.Stat(file.Path); os.IsNotExist(err) {
+		tx := db.DB.WithContext(ctx).Begin()
+		if ok, _ := db.InitFileRepo(tx).Delete(file.ID); !ok {
+			tx.Rollback()
+			ctx.JSONP(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": file.ID})
+			return
+		}
+		tx.Commit()
+	}
+	ctx.Writer.Header().Add("Content-Disposition", "attachment; filename="+file.Filename)
+	ctx.Writer.Header().Add("Content-Type", "application/octet-stream")
+	ctx.File(file.Path)
+}
 
 func UploadFile(v, t string) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
@@ -64,4 +82,20 @@ func GetAttachment(ctx *gin.Context) {
 		return
 	}
 	ctx.File(path)
+}
+
+func GetWriteUPs(ctx *gin.Context) {
+	contest := middleware.GetContest(ctx)
+	team := middleware.GetTeam(ctx)
+	path := fmt.Sprintf("%s/writeups/%d/%d", config.Env.Path, contest.ID, team.ID)
+	dir, err := os.ReadDir(path)
+	if err != nil {
+		ctx.JSON(http.StatusOK, gin.H{"msg": "FileNotFound", "data": nil})
+		return
+	}
+	var files []string
+	for _, file := range dir {
+		files = append(files, file.Name())
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &files})
 }
