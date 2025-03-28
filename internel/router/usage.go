@@ -1,6 +1,7 @@
 package router
 
 import (
+	f "CBCTF/internel/form"
 	"CBCTF/internel/k8s"
 	"CBCTF/internel/middleware"
 	"CBCTF/internel/model"
@@ -43,22 +44,26 @@ func GetUsages(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	var data []gin.H
-	for _, usage := range usages {
-		tmp := resp.GetUsageResp(usage)
-		tmp["attempts"] = service.CountAttempts(DB, team, usage)
-		tmp["init"] = service.IsGenerated(DB, usage, team)
-		tmp["solved"] = service.IsSolved(DB, team, usage)
-		tmp["remote"] = service.GetRemoteStatus(DB, usage)
-		tmp["file"] = func() string {
-			if _, err := os.Stat(usage.Challenge.AttachmentPath(team.ID)); err != nil {
-				return ""
+	if all {
+		var data []gin.H
+		for _, usage := range usages {
+			tmp := resp.GetUsageResp(usage)
+			tmp["attempts"] = service.CountAttempts(DB, team, usage)
+			tmp["init"] = service.IsGenerated(DB, usage, team)
+			tmp["solved"] = service.IsSolved(DB, team, usage)
+			tmp["remote"] = service.GetRemoteStatus(DB, usage)
+			tmp["file"] = func() string {
+				if _, err := os.Stat(usage.Challenge.AttachmentPath(team.ID)); err != nil {
+					return ""
+				}
+				return usage.Challenge.AttachmentPath(team.ID)
 			}
-			return usage.Challenge.AttachmentPath(team.ID)
+			data = append(data, tmp)
 		}
-		data = append(data, tmp)
+		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
+		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &usages})
 }
 
 func InitUsage(reset bool) func(ctx *gin.Context) {
@@ -87,4 +92,44 @@ func InitUsage(reset bool) func(ctx *gin.Context) {
 		}
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 	}
+}
+
+func AddUsage(ctx *gin.Context) {
+	var form f.CreateUsageForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	DB := db.DB.WithContext(ctx)
+	usages, failed, _, _ := service.CreateUsage(DB, middleware.GetContest(ctx), form)
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"usages": &usages, "failed": failed}})
+}
+
+func UpdateUsage(ctx *gin.Context) {
+	var form f.UpdateUsageForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	usage := middleware.GetUsage(ctx)
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := service.UpdateUsage(tx, usage, form)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}
+
+func RemoveUsage(ctx *gin.Context) {
+	usage := middleware.GetUsage(ctx)
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := service.DeleteUsage(tx, usage)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
