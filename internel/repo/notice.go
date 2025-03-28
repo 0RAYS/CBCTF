@@ -15,12 +15,12 @@ type CreateNoticeOptions struct {
 	ContestID uint
 	AdminID   uint
 	Title     string
-	Contest   string
+	Content   string
 }
 
 type UpdateNoticeOptions struct {
 	Title   *string
-	Contest *string
+	Content *string
 }
 
 func InitNoticeRepo(tx *gorm.DB) *NoticeRepo {
