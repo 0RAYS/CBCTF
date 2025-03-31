@@ -72,32 +72,44 @@ func (c *ChallengeRepo) GetByID(id string, preload bool, depth int) (model.Chall
 	return c.getByUniqueKey("id", id, preload, depth)
 }
 
-//func (c *ChallengeRepo) Count() (int64, bool, string) {
-//	var count int64
-//	res := c.DB.Model(&model.Challenge{}).Count(&count)
-//	if res.Error != nil {
-//		log.Logger.Warningf("Failed to count Challenges: %s", res.Error)
-//		return 0, false, "CountModelError"
-//	}
-//	return count, true, "Success"
-//}
+func (c *ChallengeRepo) Count(t, category string) (int64, bool, string) {
+	var count int64
+	res := c.DB.Model(&model.Challenge{})
+	if t != "" && category != "" {
+		res = res.Where("type = ? AND category = ?", t, category)
+	} else if !(t == "" && category == "") {
+		res = res.Where("type = ? OR category = ?", t, category)
+	}
+	res = res.Count(&count)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to count Challenges: %s", res.Error)
+		return 0, false, "CountModelError"
+	}
+	return count, true, "Success"
+}
 
-//func (c *ChallengeRepo) GetAll(limit, offset int, preload bool, depth int) ([]model.Challenge, int64, bool, string) {
-//	var (
-//		challenges     = make([]model.Challenge, 0)
-//		count, ok, msg = c.Count()
-//	)
-//	if !ok {
-//		return challenges, count, false, msg
-//	}
-//	res := c.DB.Model(&model.Challenge{})
-//	res = model.GetPreload(res, model.Challenge{}, preload, depth).Find(&challenges).Limit(limit).Offset(offset)
-//	if res.Error != nil {
-//		log.Logger.Warningf("Failed to get Challenges: %s", res.Error)
-//		return challenges, count, false, "GetChallengeError"
-//	}
-//	return challenges, count, true, "Success"
-//}
+func (c *ChallengeRepo) GetAll(limit, offset int, t, category string, preload bool, depth int) ([]model.Challenge, int64, bool, string) {
+	var (
+		challenges     = make([]model.Challenge, 0)
+		count, ok, msg = c.Count(t, category)
+	)
+	if !ok {
+		return challenges, count, false, msg
+	}
+	res := c.DB.Model(&model.Challenge{})
+	if t != "" && category != "" {
+		res = res.Where("type = ? AND category = ?", t, category)
+	} else if !(t == "" && category == "") {
+		res = res.Where("type = ? OR category = ?", t, category)
+	}
+	res = model.GetPreload(res, c.Model, preload, depth)
+	res = res.Find(&challenges).Limit(limit).Offset(offset)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Challenges: %s", res.Error)
+		return challenges, count, false, "GetChallengeError"
+	}
+	return challenges, count, true, "Success"
+}
 
 func (c *ChallengeRepo) Update(id string, options UpdateChallengeOptions) (bool, string) {
 	var count int
