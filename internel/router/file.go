@@ -2,9 +2,13 @@ package router
 
 import (
 	"CBCTF/internel/config"
+	f "CBCTF/internel/form"
+	"CBCTF/internel/log"
 	"CBCTF/internel/middleware"
+	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/service"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -27,15 +31,42 @@ func DownloadFile(ctx *gin.Context) {
 	ctx.File(file.Path)
 }
 
-func UploadFile(v, t string) func(ctx *gin.Context) {
+func DownloadChallenge(ctx *gin.Context) {
+	var form f.DownloadChallengeForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	challenge := middleware.GetChallenge(ctx)
+	var path string
+	switch form.File {
+	case model.AttachmentFile, model.GeneratorFile:
+		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), form.File)
+	default:
+		ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
+		return
+	}
+	if _, err := os.Stat(path); err != nil {
+		log.Logger.Warningf("Failed to get file: %s", err)
+		if errors.Is(err, os.ErrNotExist) {
+			ctx.JSON(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": nil})
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{"msg": "UnknownError", "data": nil})
+		return
+	}
+	ctx.File(path)
+}
+
+func UploadAvatar(v string) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
-		file, err := ctx.FormFile(t)
+		file, err := ctx.FormFile("avatar")
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 			return
 		}
 		tx := db.DB.WithContext(ctx).Begin()
-		record, ok, msg := service.SaveFile(tx, middleware.GetSelfID(ctx), file, t)
+		record, ok, msg := service.SaveFile(tx, middleware.GetSelfID(ctx), file, "avatar")
 		if !ok {
 			tx.Rollback()
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -47,30 +78,25 @@ func UploadFile(v, t string) func(ctx *gin.Context) {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
 			return
 		}
-		switch t {
-		case "avatar":
-			var id uint
-			switch v {
-			case "self-admin", "self-user":
-				id = middleware.GetSelfID(ctx)
-			case "user":
-				id = middleware.GetUser(ctx).ID
-			case "contest":
-				id = middleware.GetContest(ctx).ID
-			case "team":
-				id = middleware.GetTeam(ctx).ID
-			}
-			path, ok, msg := service.UpdateAvatar(tx, v, id, record)
-			if !ok {
-				tx.Rollback()
-				ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-				return
-			}
-			tx.Commit()
-			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": path})
-		default:
-			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		var id uint
+		switch v {
+		case "self-admin", "self-user":
+			id = middleware.GetSelfID(ctx)
+		case "user":
+			id = middleware.GetUser(ctx).ID
+		case "contest":
+			id = middleware.GetContest(ctx).ID
+		case "team":
+			id = middleware.GetTeam(ctx).ID
 		}
+		path, ok, msg := service.UpdateAvatar(tx, v, id, record)
+		if !ok {
+			tx.Rollback()
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
+		}
+		tx.Commit()
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": path})
 	}
 }
 
@@ -83,6 +109,39 @@ func GetAttachment(ctx *gin.Context) {
 		return
 	}
 	ctx.File(path)
+}
+
+func UploadChallenge(ctx *gin.Context) {
+	challenge := middleware.GetChallenge(ctx)
+	file, err := ctx.FormFile("file")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	var path string
+	switch challenge.Type {
+	case model.StaticChallenge, model.DockerChallenge, model.DockersChallenge:
+		if file.Filename != model.AttachmentFile {
+			ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
+			return
+		}
+		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), model.AttachmentFile)
+	case model.DynamicChallenge:
+		if file.Filename != model.GeneratorFile {
+			ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
+			return
+		}
+		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), model.GeneratorFile)
+	default:
+		ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidChallengeType", "data": nil})
+		return
+	}
+	if err := ctx.SaveUploadedFile(file, path); err != nil {
+		log.Logger.Warningf("Failed to save file: %s", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
 }
 
 func GetWriteUPs(ctx *gin.Context) {

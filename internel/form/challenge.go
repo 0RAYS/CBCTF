@@ -1,0 +1,49 @@
+package form
+
+import "CBCTF/internel/model"
+
+// DownloadChallengeForm for download challenge
+type DownloadChallengeForm struct {
+	File string `form:"file" json:"file" binding:"required"`
+}
+
+// GetCategoriesForm for get categories list
+type GetCategoriesForm struct {
+	Type string `form:"type" json:"type"`
+}
+
+type DeleteChallengeForm struct {
+	Force bool `form:"force" json:"force"`
+}
+
+// UpdateChallengeForm for admin update challenge info
+type UpdateChallengeForm struct {
+	Name      *string        `form:"name" json:"name"`
+	Desc      *string        `form:"desc" json:"desc"`
+	Category  *string        `form:"category" json:"category"`
+	Type      *string        `form:"type" json:"type"`
+	Generator *string        `form:"generator" json:"generator"`
+	Flags     *model.Strings `form:"flags" json:"flags"`
+	Docker    *model.Docker  `form:"docker" json:"docker"`
+	Dockers   *model.Dockers `form:"dockers" json:"dockers"`
+}
+
+// GetChallengesForm for get challenges list
+type GetChallengesForm struct {
+	Offset   int    `form:"offset" json:"offset"`
+	Limit    int    `form:"limit" json:"limit"`
+	Type     string `form:"type" json:"type"`
+	Category string `form:"category" json:"category"`
+}
+
+// CreateChallengeForm for create challenge
+type CreateChallengeForm struct {
+	Name      string        `form:"name" json:"name" binding:"required"`
+	Desc      string        `form:"desc" json:"desc"`
+	Category  string        `form:"category" json:"category"`
+	Type      string        `form:"type" json:"type"`
+	Generator string        `form:"generator" json:"generator"`
+	Flags     model.Strings `form:"flags" json:"flags"`
+	Docker    model.Docker  `form:"docker" json:"docker"`
+	Dockers   model.Dockers `form:"dockers" json:"dockers"`
+}
