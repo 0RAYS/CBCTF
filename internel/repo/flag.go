@@ -74,7 +74,7 @@ func InitFlagRepo(tx *gorm.DB) *FlagRepo {
 
 func (f *FlagRepo) Count(key string, id uint) (int64, bool, string) {
 	var count int64
-	res := f.DB.Model(&model.Flag{}).Where(key+" = ?", key).Count(&count)
+	res := f.DB.Model(&model.Flag{}).Where(key+" = ?", id).Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Flags: %s", res.Error)
 		return 0, false, "CountModelError"
