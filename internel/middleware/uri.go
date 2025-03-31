@@ -223,6 +223,34 @@ func GetUsage(ctx *gin.Context) model.Usage {
 	}
 }
 
+func SetFlag(ctx *gin.Context) {
+	type flagIDUri struct {
+		FlagID uint `uri:"flagID" binding:"required"`
+	}
+	var flagID flagIDUri
+	if err := ctx.ShouldBindUri(&flagID); err != nil {
+		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.Abort()
+		return
+	}
+	flag, ok, msg := db.InitFlagRepo(db.DB.WithContext(ctx)).GetByID(flagID.FlagID, true, 0)
+	if !ok {
+		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.Abort()
+		return
+	}
+	ctx.Set("Flag", flag)
+	ctx.Next()
+}
+
+func GetFlag(ctx *gin.Context) model.Flag {
+	if flag, ok := ctx.Get("Flag"); !ok {
+		return model.Flag{}
+	} else {
+		return flag.(model.Flag)
+	}
+}
+
 // SetContainer 保存 model.Container 至上下文
 func SetContainer(ctx *gin.Context) {
 	type containerIDUri struct {

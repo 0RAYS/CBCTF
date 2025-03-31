@@ -168,7 +168,12 @@ func Init() *gin.Engine {
 			adminContestUsage.PUT("", UpdateUsage)
 			adminContestUsage.DELETE("", RemoveUsage)
 
-			//TODO flag CURD
+			//不允许后期创建和删除
+			adminContestUsage.GET("/flags", GetFlags)
+			adminContestUsageFlag := adminContestUsage.Group("/flags/:flagID", middleware.SetFlag)
+			{
+				adminContestUsageFlag.PUT("", UpdateFlag)
+			}
 		}
 
 		admin.GET("/challenges", GetChallenges)
