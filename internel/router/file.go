@@ -60,13 +60,13 @@ func DownloadChallenge(ctx *gin.Context) {
 
 func UploadAvatar(v string) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
-		file, err := ctx.FormFile("avatar")
+		file, err := ctx.FormFile(model.Avatar)
 		if err != nil {
 			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 			return
 		}
 		tx := db.DB.WithContext(ctx).Begin()
-		record, ok, msg := service.SaveFile(tx, middleware.GetSelfID(ctx), file, "avatar")
+		record, ok, msg := service.SaveAvatar(tx, middleware.GetSelfID(ctx), file)
 		if !ok {
 			tx.Rollback()
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -98,6 +98,29 @@ func UploadAvatar(v string) func(ctx *gin.Context) {
 		tx.Commit()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": path})
 	}
+}
+
+func UploadWriteUp(ctx *gin.Context) {
+	file, err := ctx.FormFile(model.WriteUP)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	tx := db.DB.WithContext(ctx).Begin()
+	record, ok, msg := service.SaveWriteUp(tx, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, file)
+	if !ok {
+		tx.Rollback()
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	if err = ctx.SaveUploadedFile(file, record.Path); err != nil {
+		tx.Rollback()
+		log.Logger.Warningf("Failed to save file: %s", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
+		return
+	}
+	tx.Commit()
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
 func GetAttachment(ctx *gin.Context) {
