@@ -6,11 +6,8 @@ import (
 )
 
 const (
-	Avatar     = "avatar"
-	WriteUP    = "writeup"
-	Pcap       = "pcap"
-	Attachment = "attachment"
-	Generator  = "generator"
+	Avatar  = "avatar"
+	WriteUP = "writeup"
 )
 
 type File struct {

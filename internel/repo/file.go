@@ -38,7 +38,7 @@ func InitFileRepo(tx *gorm.DB) *FileRepo {
 //	return file, true, "Success"
 //}
 
-func (f *FileRepo) getByUniqueKey(key string, value interface{}, preload bool, depth int) (model.File, bool, string) {
+func (f *FileRepo) getByUniqueKey(key string, value interface{}) (model.File, bool, string) {
 	switch key {
 	// 虽然 hash 并不是唯一的，但是并不影响功能
 	case "id", "hash":
@@ -47,48 +47,46 @@ func (f *FileRepo) getByUniqueKey(key string, value interface{}, preload bool, d
 		return model.File{}, false, "UnsupportedKey"
 	}
 	var file model.File
-	res := f.DB.Model(&model.File{}).Where(key+" = ?", value)
-	res = model.GetPreload(res, f.Model, preload, depth).Find(&file).Limit(1)
+	res := f.DB.Model(&model.File{}).Where(key+" = ?", value).Find(&file).Limit(1)
 	if res.RowsAffected == 0 {
 		return model.File{}, false, "FileNotFound"
 	}
 	return file, true, "Success"
 }
 
-func (f *FileRepo) GetByID(id string, preload bool, depth int) (model.File, bool, string) {
-	return f.getByUniqueKey("id", id, preload, depth)
+func (f *FileRepo) GetByID(id string) (model.File, bool, string) {
+	return f.getByUniqueKey("id", id)
 }
 
-func (f *FileRepo) GetByHash(hash string, preload bool, depth int) (model.File, bool, string) {
-	return f.getByUniqueKey("hash", hash, preload, depth)
+func (f *FileRepo) GetByHash(hash string) (model.File, bool, string) {
+	return f.getByUniqueKey("hash", hash)
 }
 
-//func (f *FileRepo) Count() (int64, bool, string) {
-//	var count int64
-//	res := f.DB.Model(&model.File{}).Count(&count)
-//	if res.Error != nil {
-//		log.Logger.Warningf("Failed to count File: %s", res.Error)
-//		return 0, false, "CountModelError"
-//	}
-//	return count, true, "Success"
-//}
+func (f *FileRepo) Count(t string) (int64, bool, string) {
+	var count int64
+	res := f.DB.Model(&model.File{}).Where("type = ?", t).Count(&count)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to count File: %s", res.Error)
+		return 0, false, "CountModelError"
+	}
+	return count, true, "Success"
+}
 
-//func (f *FileRepo) GetAll(offset, limit int, preload bool, depth int) ([]model.File, int64, bool, string) {
-//	var (
-//		files          = make([]model.File, 0)
-//		count, ok, msg = f.Count()
-//	)
-//	if !ok {
-//		return files, count, false, msg
-//	}
-//	res := f.DB.Model(&model.File{})
-//	res = model.GetPreload(res, model.File{}, preload, depth).Find(&files).Limit(limit).Offset(offset)
-//	if res.Error != nil {
-//		log.Logger.Warningf("Failed to get File: %s", res.Error)
-//		return files, 0, false, "GetFileError"
-//	}
-//	return files, count, true, "Success"
-//}
+func (f *FileRepo) GetAll(t string, offset, limit int) ([]model.File, int64, bool, string) {
+	var (
+		files          = make([]model.File, 0)
+		count, ok, msg = f.Count(t)
+	)
+	if !ok {
+		return files, count, false, msg
+	}
+	res := f.DB.Model(&model.File{}).Where("type = ?", t).Find(&files).Limit(limit).Offset(offset)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get File: %s", res.Error)
+		return files, 0, false, "GetFileError"
+	}
+	return files, count, true, "Success"
+}
 
 func (f *FileRepo) Delete(idL ...string) (bool, string) {
 	res := f.DB.Model(&model.File{}).Where("id IN ?", idL).Delete(&model.File{})
