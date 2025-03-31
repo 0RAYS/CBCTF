@@ -16,7 +16,7 @@ import (
 	"strings"
 )
 
-func SaveFile(tx *gorm.DB, uploaderID uint, file *multipart.FileHeader, t string) (model.File, bool, string) {
+func SaveAvatar(tx *gorm.DB, uploaderID uint, file *multipart.FileHeader) (model.File, bool, string) {
 	src, err := file.Open()
 	if err != nil {
 		log.Logger.Warningf("Failed to open file: %v", err)
@@ -38,17 +38,8 @@ func SaveFile(tx *gorm.DB, uploaderID uint, file *multipart.FileHeader, t string
 		hash          = hex.EncodeToString(sha256Sum.Sum(nil))
 		record, ok, _ = fileRepo.GetByHash(hash)
 		path          string
-		allowed       = func() []string {
-			switch t {
-			case model.Avatar:
-				return []string{".png", ".jpg", ".jpeg"}
-			case model.WriteUP:
-				return []string{".pdf", ".docx", ".doc"}
-			default:
-				return []string{}
-			}
-		}()
-		suffix = strings.ToLower(filepath.Ext(file.Filename))
+		allowed       = []string{".png", ".jpg", ".jpeg"}
+		suffix        = strings.ToLower(filepath.Ext(file.Filename))
 	)
 	if !utils.In(suffix, allowed) {
 		return model.File{}, false, "FileNotAllowed"
@@ -67,7 +58,7 @@ func SaveFile(tx *gorm.DB, uploaderID uint, file *multipart.FileHeader, t string
 		Uploader: uploaderID,
 		Suffix:   suffix,
 		Hash:     hash,
-		Type:     t,
+		Type:     model.Avatar,
 	})
 }
 
@@ -92,4 +83,50 @@ func UpdateAvatar(tx *gorm.DB, v string, id uint, record model.File) (string, bo
 		ok, msg = false, "UnsupportedKey"
 	}
 	return path, ok, msg
+}
+
+func SaveWriteUp(tx *gorm.DB, contestID, teamID uint, file *multipart.FileHeader) (model.File, bool, string) {
+	src, err := file.Open()
+	if err != nil {
+		log.Logger.Warningf("Failed to open file: %v", err)
+		return model.File{}, false, "BadRequest"
+	}
+	defer func(src multipart.File) {
+		err := src.Close()
+		if err != nil {
+			log.Logger.Warningf("Failed to close file: %v", err)
+		}
+	}(src)
+	sha256Sum := sha256.New()
+	if _, err := io.Copy(sha256Sum, src); err != nil {
+		log.Logger.Warningf("Failed to hash file: %v", err)
+		return model.File{}, false, "UnknownError"
+	}
+	var (
+		fileRepo      = db.InitFileRepo(tx)
+		hash          = hex.EncodeToString(sha256Sum.Sum(nil))
+		record, ok, _ = fileRepo.GetByHash(hash)
+		path          string
+		allowed       = []string{".pdf", ".docx", ".doc"}
+		suffix        = strings.ToLower(filepath.Ext(file.Filename))
+	)
+	if !utils.In(suffix, allowed) {
+		return model.File{}, false, "FileNotAllowed"
+	}
+	if !ok {
+		basePath := fmt.Sprintf("%s/writeups/%d/%d", config.Env.Path, contestID, teamID)
+		path = fmt.Sprintf("%s/%s%s", basePath, utils.UUID(), suffix)
+	} else {
+		path = record.Path
+	}
+	return fileRepo.Create(db.CreateFileOptions{
+		ID:       utils.UUID(),
+		Filename: file.Filename,
+		Size:     file.Size,
+		Path:     path,
+		Uploader: teamID,
+		Suffix:   suffix,
+		Hash:     hash,
+		Type:     model.WriteUP,
+	})
 }

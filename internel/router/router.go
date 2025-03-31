@@ -83,7 +83,15 @@ func Init() *gin.Engine {
 			//TODO container op
 		}
 
-		//TODO writeup CURD
+		// WriteUp
+		contestWriteUp := contest.Group(
+			"/writeups",
+			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned,
+		)
+		{
+			contestWriteUp.POST("", UploadWriteUp)
+			contestWriteUp.GET("", GetWriteUPs)
+		}
 	}
 
 	admin := auth.Group("/admin", middleware.CheckRole("admin"))
