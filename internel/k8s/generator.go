@@ -10,6 +10,7 @@ import (
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -78,16 +79,21 @@ func StopGenerator(usage model.Usage) (bool, string) {
 }
 
 // GenerateAttachment 附加容器命令, 生成附件, model.Usage 需要预加载
-func GenerateAttachment(usage model.Usage, answer model.Answer) (bool, string) {
+func GenerateAttachment(usage model.Usage, team model.Team, answer []model.Answer) (bool, string) {
 	var err error
-	log.Logger.Debugf("Generating attachment for team %d challenge %s", answer.TeamID, usage.ChallengeID)
+	log.Logger.Debugf("Generating attachment for team %d challenge %s", team.ID, usage.ChallengeID)
 	pod, ok, msg := StartGenerator(usage)
 	// 附加失败则直接返回, 并尝试关闭生成器
 	if !ok {
 		_, _ = StopGenerator(usage)
 		return false, msg
 	}
-	command := fmt.Sprintf("./run.sh %d %s", answer.TeamID, base64.StdEncoding.EncodeToString([]byte(answer.Value)))
+	var flags string
+	for _, a := range answer {
+		flags += fmt.Sprintf("%s,", base64.StdEncoding.EncodeToString([]byte(a.Value)))
+	}
+	flags = strings.TrimSuffix(flags, ",")
+	command := fmt.Sprintf("./run.sh %d %s", team.ID, base64.StdEncoding.EncodeToString([]byte(flags)))
 	log.Logger.Debugf("Executing command: %s", command)
 	var buf bytes.Buffer
 	if ExecInPod(pod.Name, pod.Spec.Containers[0].Name, command, nil, &buf, nil) != nil {
@@ -96,8 +102,8 @@ func GenerateAttachment(usage model.Usage, answer model.Answer) (bool, string) {
 	}
 	err = CopyFromPod(
 		pod.Name, pod.Spec.Containers[0].Name,
-		fmt.Sprintf("/root/attachments/%d.zip", answer.TeamID),
-		fmt.Sprintf("%s/attachments/%s/%d.zip", config.Env.Path, usage.ChallengeID, answer.TeamID),
+		fmt.Sprintf("/root/attachments/%d.zip", team.ID),
+		fmt.Sprintf("%s/attachments/%s/%d.zip", config.Env.Path, usage.ChallengeID, team.ID),
 	)
 	if err != nil {
 		log.Logger.Warningf("Failed to copy output file: %v", err)
