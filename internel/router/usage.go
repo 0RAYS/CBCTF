@@ -83,7 +83,7 @@ func InitUsage(reset bool) func(ctx *gin.Context) {
 			tx.Rollback()
 		}
 		if usage.Challenge.Type == model.DynamicChallenge {
-			ok, msg = k8s.GenerateAttachment(usage, answers[0])
+			ok, msg = k8s.GenerateAttachment(usage, team, answers)
 		}
 		if !ok {
 			tx.Rollback()
