@@ -2,6 +2,7 @@ package router
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/log"
 	"CBCTF/internel/middleware"
 	"CBCTF/internel/model"
 	"CBCTF/internel/redis"
@@ -39,6 +40,7 @@ func SendEmail(user model.User) (bool, string) {
 	id := utils.UUID()
 	token, err := utils.Generate(user.ID, user.Name, "email")
 	if err != nil {
+		log.Logger.Warningf("Failed to generate token: %s", err)
 		return false, "UnknownError"
 	}
 	ok, msg := redis.SetEmailVerifyToken(user.ID, id)

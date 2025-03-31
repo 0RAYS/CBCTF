@@ -43,6 +43,7 @@ func UploadFile(v, t string) func(ctx *gin.Context) {
 		}
 		if err = ctx.SaveUploadedFile(file, record.Path); err != nil {
 			tx.Rollback()
+			log.Logger.Warningf("Failed to save file: %s", err)
 			ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
 			return
 		}
