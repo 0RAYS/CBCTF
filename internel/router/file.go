@@ -144,6 +144,36 @@ func UploadChallenge(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
 }
 
+func GetAvatars(ctx *gin.Context) {
+	var form f.GetModelsForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	avatars, count, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).GetAll("avatar", form.Limit, form.Offset)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "avatars": &avatars}})
+}
+
+func DeleteAvatars(ctx *gin.Context) {
+	var form f.DeleteFileForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	repo := db.InitFileRepo(db.DB.WithContext(ctx))
+	_, _ = repo.Delete(form.FilesID...)
+	for _, id := range form.FilesID {
+		if file, ok, _ := repo.GetByID(id); ok {
+			_ = os.Remove(file.Path)
+		}
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
+}
+
 func GetWriteUPs(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
 	team := middleware.GetTeam(ctx)

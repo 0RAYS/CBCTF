@@ -183,6 +183,9 @@ func Init() *gin.Engine {
 			adminChallenge.DELETE("", DeleteChallenge)
 			adminChallenge.POST("/upload", UploadChallenge)
 		}
+
+		admin.GET("/avatars", GetAvatars)
+		admin.DELETE("/avatars", DeleteAvatars)
 	}
 
 	return router
