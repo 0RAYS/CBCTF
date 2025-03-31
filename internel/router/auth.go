@@ -65,7 +65,7 @@ func Login(ctx *gin.Context) {
 		return
 	} else {
 		msg = "UnknownError"
-		log.Logger.Warningf("Generate token error: %s", err)
+		log.Logger.Warningf("Failed to generate token: %s", err)
 		ctx.JSONP(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
 		return
 	}
@@ -89,7 +89,7 @@ func AdminLogin(ctx *gin.Context) {
 		return
 	} else {
 		msg = "UnknownError"
-		log.Logger.Warningf("Generate token error: %s", err)
+		log.Logger.Warningf("Failed to generate token: %s", err)
 		ctx.JSONP(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
 		return
 	}
