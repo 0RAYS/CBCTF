@@ -163,10 +163,10 @@ func Init() *gin.Engine {
 
 		adminContest.GET("/challenges", GetUsages)
 		adminContest.POST("/challenges", AddUsage)
-		adminContestChallenge := adminContest.Group("/challenges/:challengeID", middleware.SetUsage)
+		adminContestUsage := adminContest.Group("/challenges/:challengeID", middleware.SetUsage)
 		{
-			adminContestChallenge.PUT("", UpdateUsage)
-			adminContestChallenge.DELETE("", RemoveUsage)
+			adminContestUsage.PUT("", UpdateUsage)
+			adminContestUsage.DELETE("", RemoveUsage)
 
 			//TODO flag CURD
 		}
