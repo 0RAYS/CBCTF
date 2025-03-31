@@ -43,7 +43,7 @@ func HomePage(ctx *gin.Context) {
 	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "CTF Events", "value": count})
 	count, _, _ = db.InitUserRepo(DB).Count(true, true)
 	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "Activate CTFers", "value": count})
-	count, _, _ = db.InitChallengeRepo(DB).Count()
+	count, _, _ = db.InitChallengeRepo(DB).Count("", "")
 	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "Challenges", "value": count})
 	count, _, _ = db.InitSubmissionRepo(DB).Count()
 	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "Submissions", "value": count})
@@ -83,7 +83,7 @@ func SystemStatus(ctx *gin.Context) {
 	ret["users"], _, _ = db.InitUserRepo(DB).Count(true, true)
 	ret["contests"], _, _ = db.InitContestRepo(DB).Count(true)
 	ret["ip"], _, _ = db.InitRequestRepo(DB).Count()
-	ret["challenges"], _, _ = db.InitChallengeRepo(DB).Count()
+	ret["challenges"], _, _ = db.InitChallengeRepo(DB).Count("", "")
 	middleware.MU.Lock()
 	if middleware.TotalRequests == 0 {
 		ret["requests"] = 0

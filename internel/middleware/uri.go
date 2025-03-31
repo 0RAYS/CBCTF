@@ -138,7 +138,7 @@ func SetFile(t string) gin.HandlerFunc {
 			ctx.Abort()
 			return
 		}
-		file, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).GetByID(fileID.FileID, true, 0)
+		file, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).GetByID(fileID.FileID)
 		if !ok {
 			ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			ctx.Abort()

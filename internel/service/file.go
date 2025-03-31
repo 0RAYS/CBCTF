@@ -36,14 +36,12 @@ func SaveFile(tx *gorm.DB, uploaderID uint, file *multipart.FileHeader, t string
 	var (
 		fileRepo      = db.InitFileRepo(tx)
 		hash          = hex.EncodeToString(sha256Sum.Sum(nil))
-		record, ok, _ = fileRepo.GetByHash(hash, false, 0)
+		record, ok, _ = fileRepo.GetByHash(hash)
 		path          string
 		allowed       = func() []string {
 			switch t {
 			case model.Avatar:
 				return []string{".png", ".jpg", ".jpeg"}
-			case model.Attachment, model.Generator:
-				return []string{".zip"}
 			case model.WriteUP:
 				return []string{".pdf", ".docx", ".doc"}
 			default:
