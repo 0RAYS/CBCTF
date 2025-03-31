@@ -46,43 +46,17 @@ func GenerateAnswer(tx *gorm.DB, usage model.Usage, team model.Team, reset bool)
 		return answers, false, "FlagNotFound"
 	}
 	options := make([]db.CreateAnswerOptions, 0)
-	switch usage.Challenge.Type {
-	case model.StaticChallenge:
+	for _, flag := range usage.Flags {
 		option := db.CreateAnswerOptions{
 			TeamID: team.ID,
-			FlagID: usage.Flags[0].ID,
-			Value:  usage.Flags[0].Value,
+			FlagID: flag.ID,
 		}
-		options = append(options, option)
-	case model.DynamicChallenge:
-		option := db.CreateAnswerOptions{
-			TeamID: team.ID,
-			FlagID: usage.Flags[0].ID,
-		}
-		if usage.Flags[0].Value == "uuid" {
+		if flag.Value == "uuid" {
 			option.Value = utils.UUID()
 		} else {
-			option.Value = utils.RandFlag(usage.Flags[0].Value)
+			option.Value = utils.RandFlag(flag.Value)
 		}
 		options = append(options, option)
-	case model.DockerChallenge:
-		option := db.CreateAnswerOptions{
-			TeamID: team.ID,
-			FlagID: usage.Flags[0].ID,
-			Value:  utils.UUID(),
-		}
-		options = append(options, option)
-	case model.DockersChallenge:
-		for _, flag := range usage.Flags {
-			option := db.CreateAnswerOptions{
-				TeamID: team.ID,
-				FlagID: flag.ID,
-				Value:  utils.UUID(),
-			}
-			options = append(options, option)
-		}
-	default:
-		return answers, false, "InvalidChallengeType"
 	}
 	for _, option := range options {
 		if _, ok, _ := repo.GetBy2ID(team.ID, option.FlagID, false, 0); !reset && ok {
