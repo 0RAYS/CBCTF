@@ -3,6 +3,7 @@ package model
 import (
 	"gorm.io/gorm"
 	"math"
+	"regexp"
 	"time"
 )
 
@@ -10,6 +11,12 @@ const (
 	StaticScore      uint = 0
 	LinearScore      uint = 1
 	LogarithmicScore uint = 2
+)
+
+var (
+	StaticFlag  = regexp.MustCompile(`static\{(.*?)\}`)
+	UUIDFlag    = regexp.MustCompile(`uuid\{(.*?)\}`)
+	DynamicFlag = regexp.MustCompile(`dynamic\{(.*?)\}`)
 )
 
 type Flag struct {

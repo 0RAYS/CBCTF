@@ -51,10 +51,14 @@ func GenerateAnswer(tx *gorm.DB, usage model.Usage, team model.Team, reset bool)
 			TeamID: team.ID,
 			FlagID: flag.ID,
 		}
-		if flag.Value == "uuid" {
+		if result := model.StaticFlag.FindAllStringSubmatch(flag.Value, 1); len(result) > 0 {
+			option.Value = flag.Value
+		} else if result := model.DynamicFlag.FindAllStringSubmatch(flag.Value, 1); len(result) > 0 {
+			option.Value = utils.RandFlag(result[0][1])
+		} else if result := model.UUIDFlag.FindAllStringSubmatch(flag.Value, 1); len(result) > 0 {
 			option.Value = utils.UUID()
 		} else {
-			option.Value = utils.RandFlag(flag.Value)
+			option.Value = flag.Value
 		}
 		options = append(options, option)
 	}
