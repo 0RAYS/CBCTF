@@ -117,3 +117,23 @@ func StartContainer(container model.Container) (string, bool, string) {
 	log.Logger.Infof("Pod %s:%s is running on %s", container.PodName, pod.Name, ip)
 	return ip, true, "Success"
 }
+
+func StopContainer(container model.Container) (bool, string) {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	defer cancel()
+	var err error
+	err = CopyFromPod(
+		container.PodName, "tcpdump", "/root/traffic.pcap",
+		container.TrafficPath(),
+	)
+	if err != nil {
+		log.Logger.Warningf("Failed to copy %d traffic: %v", container.TeamID, err)
+	}
+	if ok, msg := DeleteNetworkPolicy(ctx, container.NetworkPolicyName); !ok {
+		return false, msg
+	}
+	if ok, msg := DeleteService(ctx, container.ServiceName); !ok {
+		return false, msg
+	}
+	return DeletePod(ctx, container.PodName)
+}

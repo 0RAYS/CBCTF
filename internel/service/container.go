@@ -41,7 +41,7 @@ func GetRemoteStatus(tx *gorm.DB, usage model.Usage) gin.H {
 	return data
 }
 
-func CreateContainer(tx *gorm.DB, user model.User, team model.Team, usage model.Usage) (bool, string) {
+func StartContainer(tx *gorm.DB, user model.User, team model.Team, usage model.Usage) (bool, string) {
 	answerRepo := db.InitAnswerRepo(tx)
 	containerRepo := db.InitContainerRepo(tx)
 	containers, ok, _ := containerRepo.GetBy2ID(team.ID, usage.ID, false, 0)
@@ -119,6 +119,26 @@ func CreateContainer(tx *gorm.DB, user model.User, team model.Team, usage model.
 		if !ok {
 			return false, msg
 		}
+	}
+	return true, "Success"
+}
+
+func StopContainer(tx *gorm.DB, container model.Container) (bool, string) {
+	ok, msg := k8s.StopContainer(container)
+	if !ok {
+		return false, "DeleteContainerError"
+	}
+	repo := db.InitContainerRepo(tx)
+	duration := time.Now().Sub(container.Start)
+	ok, msg = repo.Update(container.ID, db.UpdateContainerOptions{
+		Duration: &duration,
+	})
+	if !ok {
+		return false, msg
+	}
+	ok, msg = repo.Delete(container.ID)
+	if !ok {
+		return false, msg
 	}
 	return true, "Success"
 }

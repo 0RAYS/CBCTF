@@ -4,12 +4,15 @@ import (
 	f "CBCTF/internel/form"
 	"CBCTF/internel/log"
 	"CBCTF/internel/middleware"
+	"CBCTF/internel/model"
+	"CBCTF/internel/redis"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/service"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
+	"time"
 )
 
 func StartContainer(ctx *gin.Context) {
@@ -24,7 +27,7 @@ func StartContainer(ctx *gin.Context) {
 		log.Logger.Warningf("Failed to record container create: %v", err)
 	}
 	tx := db.DB.WithContext(ctx).Begin()
-	ok, msg := service.CreateContainer(tx, user, team, usage)
+	ok, msg := service.StartContainer(tx, user, team, usage)
 	if !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -32,6 +35,69 @@ func StartContainer(ctx *gin.Context) {
 	}
 
 }
+
+func IncreaseDuration(ctx *gin.Context) {
+	team := middleware.GetTeam(ctx)
+	usage := middleware.GetUsage(ctx)
+	DB := db.DB.WithContext(ctx)
+	repo := db.InitContainerRepo(DB)
+	containers, ok, msg := repo.GetBy2ID(team.ID, usage.ID, false, 0)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	for _, container := range containers {
+		if !container.Start.Add(container.Duration).Before(time.Now().Add(20 * time.Minute)) {
+			ctx.JSON(http.StatusOK, gin.H{"msg": "HasMuchTime", "data": nil})
+			return
+		}
+	}
+	tx := DB.Begin()
+	repo = db.InitContainerRepo(tx)
+	data := make([]gin.H, 0)
+	for _, container := range containers {
+		duration := container.Duration + 1*time.Hour
+		ok, msg := repo.Update(container.ID, db.UpdateContainerOptions{
+			Duration: &duration,
+		})
+		if !ok {
+			tx.Rollback()
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
+		}
+		data = append(data, gin.H{
+			"target":    container.RemoteAddr(),
+			"remaining": container.Remaining().Seconds(),
+			"status":    "Running",
+		})
+	}
+	tx.Commit()
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
+}
+
+func StopContainer(ctx *gin.Context) {
+	DB := db.DB.WithContext(ctx)
+	team := middleware.GetTeam(ctx)
+	usage := middleware.GetUsage(ctx)
+	repo := db.InitContainerRepo(DB)
+	containers, ok, msg := repo.GetBy2ID(team.ID, usage.ID, false, 0)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	for _, container := range containers {
+		tx := DB.Begin()
+		ok, msg = service.StopContainer(tx, container)
+		if !ok {
+			tx.Rollback()
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
+		}
+		tx.Commit()
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
+}
+
 func GetContainer(ctx *gin.Context) {
 	container := middleware.GetContainer(ctx)
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &container})
