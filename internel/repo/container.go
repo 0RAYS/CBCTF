@@ -3,6 +3,7 @@ package repo
 import (
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
+	"CBCTF/internel/utils"
 	"gorm.io/gorm"
 	"time"
 )
@@ -18,11 +19,17 @@ type CreateContainerOptions struct {
 	Exposes           model.Exposes
 	Start             time.Time
 	Duration          time.Duration
+	Image             string
 	PodName           string
 	ContainerName     string
 	ServiceName       string
 	NetworkPolicyName string
+	NetworkPolicies   model.NetworkPolicies
 	Flags             model.Strings
+}
+
+type UpdateContainerOptions struct {
+	IP *string
 }
 
 func InitContainerRepo(tx *gorm.DB) *ContainerRepo {
@@ -93,6 +100,44 @@ func (c *ContainerRepo) GetAll(teamID uint, limit, offset int, preload bool, dep
 		return containers, count, false, "GetContainerError"
 	}
 	return containers, count, true, "Success"
+}
+
+func (c *ContainerRepo) GetBy2ID(teamID uint, usageID uint, preload bool, depth int) ([]model.Container, bool, string) {
+	containers := make([]model.Container, 0)
+	res := c.DB.Model(&model.Container{}).Where("team_id = ? AND usage_id = ?", teamID, usageID)
+	res = model.GetPreload(res, c.Model, preload, depth).Find(&containers).Limit(1)
+	if res.RowsAffected == 0 {
+		return containers, false, "ContainerNotFound"
+	}
+	return containers, true, "Success"
+}
+
+func (c *ContainerRepo) Update(id uint, options UpdateContainerOptions) (bool, string) {
+	var count int
+	data := utils.UpdateOptions2Map(options)
+	for {
+		count++
+		if count > 10 {
+			log.Logger.Warningf("Failed to update Container: too many times failed due to optimistic lock")
+			return false, "DeadLock"
+		}
+		container, ok, msg := c.GetByID(id, false, 0)
+		if !ok {
+			return ok, msg
+		}
+		data["version"] = container.Version + 1
+		res := c.DB.Model(&model.Container{}).Omit("id", "created_at", "updated_at", "deleted_at").
+			Where("id = ? AND version = ?", id, container.Version).Updates(data)
+		if res.Error != nil {
+			log.Logger.Warningf("Failed to update Container: %s", res.Error)
+			return false, "UpdateContainerError"
+		}
+		if res.RowsAffected == 0 {
+			continue
+		}
+		break
+	}
+	return true, "Success"
 }
 
 //func (c *ContainerRepo) Delete(idL ...uint) (bool, string) {

@@ -75,12 +75,44 @@ func (t Timelines) Scan(value interface{}) error {
 	return json.Unmarshal(bytes, &t)
 }
 
+type NetworkPolicy struct {
+	From []IPBlock `json:"from"`
+	To   []IPBlock `json:"to"`
+}
+
+type NetworkPolicies []NetworkPolicy
+
+func (n NetworkPolicies) Value() (driver.Value, error) {
+	for _, p := range n {
+		for i, ipBlock := range p.From {
+			if !isValidIPBlock(ipBlock) {
+				p.From = append(p.From[:i], p.From[i+1:]...)
+			}
+		}
+		for i, ipBlock := range p.To {
+			if !isValidIPBlock(ipBlock) {
+				p.To = append(p.To[:i], p.To[i+1:]...)
+			}
+		}
+	}
+	return json.Marshal(n)
+}
+
+func (n NetworkPolicies) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan NetworkPolicy value")
+	}
+	return json.Unmarshal(bytes, &n)
+}
+
 // Docker 题目的 Docker 配置, 一个容器可以有多个 flag 和多个映射端口
 type Docker struct {
-	FlagsID []uint  `json:"ids"`
-	Flags   Strings `json:"flags"`
-	Image   string  `json:"image"`
-	Ports   Uints   `json:"ports"`
+	FlagsID         []uint          `json:"ids"`
+	Flags           Strings         `json:"flags"`
+	Image           string          `json:"image"`
+	Ports           Exposes         `json:"ports"`
+	NetworkPolicies NetworkPolicies `json:"network_policies"`
 }
 
 func (d Docker) Value() (driver.Value, error) {
@@ -109,12 +141,7 @@ func (d Dockers) Scan(value interface{}) error {
 	return json.Unmarshal(bytes, &d)
 }
 
-type Expose struct {
-	IP   string `json:"ip"`
-	Port int32  `json:"port"`
-}
-
-type Exposes []Expose
+type Exposes []int32
 
 func (e Exposes) Value() (driver.Value, error) {
 	return json.Marshal(e)
@@ -148,35 +175,4 @@ func isValidIPBlock(ipBlock IPBlock) bool {
 		}
 	}
 	return true
-}
-
-type NetworkPolicy struct {
-	From []IPBlock `json:"from"`
-	To   []IPBlock `json:"to"`
-}
-
-type NetworkPolicies []NetworkPolicy
-
-func (n NetworkPolicies) Value() (driver.Value, error) {
-	for _, p := range n {
-		for i, ipBlock := range p.From {
-			if !isValidIPBlock(ipBlock) {
-				p.From = append(p.From[:i], p.From[i+1:]...)
-			}
-		}
-		for i, ipBlock := range p.To {
-			if !isValidIPBlock(ipBlock) {
-				p.To = append(p.To[:i], p.To[i+1:]...)
-			}
-		}
-	}
-	return json.Marshal(n)
-}
-
-func (n NetworkPolicies) Scan(value interface{}) error {
-	bytes, ok := value.([]byte)
-	if !ok {
-		return fmt.Errorf("failed to scan NetworkPolicy value")
-	}
-	return json.Unmarshal(bytes, &n)
 }

@@ -11,7 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func CreateService(ctx context.Context, container model.Container, port int32) (*corev1.Service, bool, string) {
+func CreateService(ctx context.Context, container model.Container) (*corev1.Service, bool, string) {
 	var (
 		service *corev1.Service
 		err     error
@@ -25,13 +25,17 @@ func CreateService(ctx context.Context, container model.Container, port int32) (
 			Selector: map[string]string{
 				"app": container.PodName,
 			},
-			Ports: []corev1.ServicePort{
-				{
-					Protocol:   corev1.ProtocolTCP,
-					Port:       port,
-					TargetPort: intstr.FromInt32(port),
-				},
-			},
+			Ports: func() []corev1.ServicePort {
+				tmp := make([]corev1.ServicePort, 0)
+				for _, p := range container.Exposes {
+					tmp = append(tmp, corev1.ServicePort{
+						Protocol:   corev1.ProtocolTCP,
+						Port:       p,
+						TargetPort: intstr.FromInt32(p),
+					})
+				}
+				return tmp
+			}(),
 			Type:                  corev1.ServiceTypeNodePort,
 			ExternalIPs:           config.Env.K8S.Nodes,
 			ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeLocal,

@@ -12,6 +12,26 @@ import (
 	"os"
 )
 
+func StartContainer(ctx *gin.Context) {
+	team := middleware.GetTeam(ctx)
+	usage := middleware.GetUsage(ctx)
+	user := middleware.GetSelf(ctx).(model.User)
+	if ok, err := redis.CheckContainersCreate(team.ID, usage.ChallengeID); ok || err != nil {
+		ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooQuick", "data": nil})
+		return
+	}
+	if err := redis.RecordContainersCreate(team.ID, usage.ChallengeID); err != nil {
+		log.Logger.Warningf("Failed to record container create: %v", err)
+	}
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := service.CreateContainer(tx, user, team, usage)
+	if !ok {
+		tx.Rollback()
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+
+}
 func GetContainer(ctx *gin.Context) {
 	container := middleware.GetContainer(ctx)
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &container})
