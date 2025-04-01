@@ -82,6 +82,8 @@ func Init() *gin.Engine {
 			contestChallenge.POST("/reset", middleware.CheckRunning, middleware.CheckGenerated, middleware.CheckSolved, InitUsage(true))
 			//TODO container op
 			contestChallenge.POST("/start", middleware.CheckGenerated, StartContainer)
+			contestChallenge.POST("/increase", middleware.CheckGenerated, middleware.CheckRunning, IncreaseDuration)
+			contestChallenge.POST("/stop", middleware.CheckGenerated, StopContainer)
 		}
 
 		// WriteUp
@@ -149,7 +151,6 @@ func Init() *gin.Engine {
 			adminContainer := adminContestTeam.Group("/containers/:containerID", middleware.SetContainer)
 			{
 				adminContainer.GET("", GetContainer)
-				//adminContainer.POST("/stop", StopContainer)
 
 				adminTraffic := adminContainer.Group("/traffic")
 				adminTraffic.GET("/download", DownloadTraffic)

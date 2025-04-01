@@ -29,7 +29,8 @@ type CreateContainerOptions struct {
 }
 
 type UpdateContainerOptions struct {
-	IP *string
+	IP       *string
+	Duration *time.Duration
 }
 
 func InitContainerRepo(tx *gorm.DB) *ContainerRepo {
