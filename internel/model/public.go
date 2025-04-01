@@ -77,9 +77,10 @@ func (t Timelines) Scan(value interface{}) error {
 
 // Docker 题目的 Docker 配置, 一个容器可以有多个 flag 和多个映射端口
 type Docker struct {
-	Flags Strings `json:"flags"`
-	Image string  `json:"image"`
-	Ports Uints   `json:"ports"`
+	FlagsID []uint  `json:"ids"`
+	Flags   Strings `json:"flags"`
+	Image   string  `json:"image"`
+	Ports   Uints   `json:"ports"`
 }
 
 func (d Docker) Value() (driver.Value, error) {
