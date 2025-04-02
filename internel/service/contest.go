@@ -10,6 +10,12 @@ import (
 
 func CreateContest(tx *gorm.DB, form f.CreateContestForm) (model.Contest, bool, string) {
 	repo := db.InitContestRepo(tx)
+	if form.Start == (time.Time{}) {
+		form.Start = time.Now()
+	}
+	if form.Duration == 0 {
+		form.Duration = 3600 * 24 * 7
+	}
 	if len(form.Rules) == 0 {
 		form.Rules = model.Strings{
 			"参赛者必须遵守比赛规则和道德准则",
@@ -42,12 +48,6 @@ func CreateContest(tx *gorm.DB, form f.CreateContestForm) (model.Contest, bool, 
 				Desc:   "",
 			},
 		}
-	}
-	if form.Start == (time.Time{}) {
-		form.Start = time.Now()
-	}
-	if form.Duration == 0 {
-		form.Duration = 3600 * 24 * 7
 	}
 	return repo.Create(db.CreateContestOptions{
 		Name:      form.Name,
