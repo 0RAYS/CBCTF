@@ -7,6 +7,7 @@ import (
 	"CBCTF/internel/model"
 	"CBCTF/internel/redis"
 	db "CBCTF/internel/repo"
+	"CBCTF/internel/resp"
 	"CBCTF/internel/service"
 	"errors"
 	"github.com/gin-gonic/gin"
@@ -116,7 +117,11 @@ func GetContainers(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"containers": &containers, "count": count}})
+	data := make([]gin.H, 0)
+	for _, container := range containers {
+		data = append(data, resp.GetContainerResp(container))
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"containers": data, "count": count}})
 }
 
 func DownloadTraffic(ctx *gin.Context) {
