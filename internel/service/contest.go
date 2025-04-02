@@ -29,7 +29,7 @@ func CreateContest(tx *gorm.DB, form f.CreateContestForm) (model.Contest, bool, 
 
 func UpdateContest(tx *gorm.DB, contest model.Contest, form f.UpdateContestForm) (bool, string) {
 	repo := db.InitContestRepo(tx)
-	if form.Name != nil && form.Name != &contest.Name {
+	if form.Name != nil && *form.Name != contest.Name {
 		if !repo.IsUniqueName(*form.Name) {
 			return false, "DuplicateContestName"
 		}
