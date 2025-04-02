@@ -4,6 +4,7 @@ import (
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
+	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -16,11 +17,11 @@ func (r *Repo[T]) Create(options interface{}) (T, bool, string) {
 	m, err := utils.S2S[T](options)
 	if err != nil {
 		log.Logger.Warningf("Failed to convert options to %T: %s", new(T), err)
-		return *new(T), false, "Options2ModelError"
+		return *new(T), false, fmt.Sprintf("Options2%sError", r.Model)
 	}
 	if res := r.DB.Model(new(T)).Create(&m); res.Error != nil {
 		log.Logger.Warningf("Failed to create %T: %s", new(T), res.Error)
-		return *new(T), false, "CreateModelError"
+		return *new(T), false, fmt.Sprintf("Create%sError", r.Model)
 	}
 	return m, true, "Success"
 }
@@ -36,7 +37,7 @@ func (r *Repo[T]) getByUniqueKey(key string, value interface{}, preload bool, de
 	res := r.DB.Model(new(T)).Where(key+" = ?", value)
 	res = model.GetPreload(res, r.Model, preload, depth).Find(&m).Limit(1)
 	if res.RowsAffected == 0 {
-		return m, false, "ModelNotFound"
+		return m, false, fmt.Sprintf("%sNotFound", r.Model)
 	}
 	return m, true, "Success"
 }
@@ -66,7 +67,7 @@ func (r *Repo[T]) GetAll(limit, offset int, preload bool, depth int) ([]T, int64
 	res = model.GetPreload(res, r.Model, preload, depth).Find(&ms).Limit(limit).Offset(offset)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get all %T: %s", new(T), res.Error)
-		return ms, count, false, "GetModelError"
+		return ms, count, false, fmt.Sprintf("Get%sError", r.Model)
 	}
 	return ms, count, true, "Success"
 }
@@ -74,7 +75,7 @@ func (r *Repo[T]) GetAll(limit, offset int, preload bool, depth int) ([]T, int64
 func (r *Repo[T]) Delete(idL ...uint) (bool, string) {
 	if res := r.DB.Model(new(T)).Where("id IN ?", idL).Delete(new(T)); res.Error != nil {
 		log.Logger.Warningf("Failed to delete %T: %s", new(T), res.Error)
-		return false, "DeleteModelError"
+		return false, fmt.Sprintf("Delete%sError", r.Model)
 	}
 	return true, "Success"
 }
