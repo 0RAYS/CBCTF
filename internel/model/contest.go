@@ -12,7 +12,7 @@ type Contest struct {
 	Captcha     string         `json:"captcha"`
 	Avatar      string         `json:"avatar"`
 	Prefix      string         `gorm:"default:'flag'" json:"prefix"`
-	Size        int            `gorm:"default:'4'" json:"size"`
+	Size        int            `gorm:"default:4" json:"size"`
 	Start       time.Time      `json:"start"`
 	Duration    time.Duration  `json:"duration"`
 	Blood       bool           `gorm:"default:true" json:"blood"`
