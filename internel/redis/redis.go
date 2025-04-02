@@ -4,6 +4,7 @@ import (
 	"CBCTF/internel/config"
 	"CBCTF/internel/log"
 	"context"
+	"fmt"
 	"github.com/go-redis/redis/v8"
 	"sync/atomic"
 	"time"
@@ -18,9 +19,10 @@ var (
 )
 
 func Init() {
-	log.Logger.Infof("Connecting to Redis: %s", config.Env.Redis.Addr)
+	addr := fmt.Sprintf("%s:%d", config.Env.Redis.Host, config.Env.Redis.Port)
+	log.Logger.Infof("Connecting to Redis: %s", addr)
 	RDB = redis.NewClient(&redis.Options{
-		Addr:         config.Env.Redis.Addr,
+		Addr:         addr,
 		Password:     config.Env.Redis.Pwd,
 		DB:           0,
 		DialTimeout:  3 * time.Second,
