@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func GetSolvedStateResp(solved []model.Flag, flags []model.Flag) gin.H {
+func GetSolvedStateResp(solved []model.Flag, flags []model.Flag) []gin.H {
 	categories := make(map[uint]string)
 	for _, v := range flags {
 		categories[v.UsageID] = v.Usage.Challenge.Category
@@ -28,7 +28,7 @@ func GetSolvedStateResp(solved []model.Flag, flags []model.Flag) gin.H {
 		}
 		data = append(data, gin.H{"category": k, "solved": solvedCount[k], "all": v})
 	}
-	return gin.H{"solved": data}
+	return data
 }
 
 func GetTeamRankingResp(teamsData []struct {
@@ -37,12 +37,14 @@ func GetTeamRankingResp(teamsData []struct {
 }, flags []model.Flag) gin.H {
 	data := make([]gin.H, 0)
 	for _, team := range teamsData {
-		tmp := GetSolvedStateResp(team.Solved, flags)
-		tmp["name"] = team.Team.Name
-		tmp["score"] = team.Team.Score
-		tmp["avatar"] = fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(team.Team.Avatar, "/"))
-		tmp["last"] = team.Team.Last
-		tmp["users"] = len(team.Team.Users)
+		tmp := gin.H{
+			"name":   team.Team.Name,
+			"score":  team.Team.Score,
+			"avatar": fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(team.Team.Avatar, "/")),
+			"last":   team.Team.Last,
+			"users":  len(team.Team.Users),
+			"solved": GetSolvedStateResp(team.Solved, flags),
+		}
 		data = append(data, tmp)
 	}
 	return gin.H{"teams": data}
