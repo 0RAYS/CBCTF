@@ -24,15 +24,15 @@ type CreateUserOptions struct {
 }
 
 type UpdateUserOptions struct {
-	Name     *string
-	Password *string
-	Email    *string
-	Country  *string
-	Desc     *string
-	Avatar   *string
-	Verified *bool
-	Hidden   *bool
-	Banned   *bool
+	Name     *string `json:"name"`
+	Password *string `json:"password"`
+	Email    *string `json:"email"`
+	Country  *string `json:"country"`
+	Desc     *string `json:"desc"`
+	Avatar   *string `json:"avatar"`
+	Verified *bool   `json:"verified"`
+	Hidden   *bool   `json:"hidden"`
+	Banned   *bool   `json:"banned"`
 }
 
 func InitUserRepo(tx *gorm.DB) *UserRepo {

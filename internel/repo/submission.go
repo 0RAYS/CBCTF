@@ -23,7 +23,7 @@ type CreateSubmissionOptions struct {
 }
 
 type UpdateSubmissionOptions struct {
-	Solved *bool
+	Solved *bool `json:"solved"`
 }
 
 func InitSubmissionRepo(tx *gorm.DB) *SubmissionRepo {

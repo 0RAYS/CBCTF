@@ -19,8 +19,8 @@ type CreateNoticeOptions struct {
 }
 
 type UpdateNoticeOptions struct {
-	Title   *string
-	Content *string
+	Title   *string `json:"title"`
+	Content *string `json:"content"`
 }
 
 func InitNoticeRepo(tx *gorm.DB) *NoticeRepo {

@@ -18,7 +18,7 @@ type CreateDeviceOptions struct {
 }
 
 type UpdateDeviceOptions struct {
-	Count *int
+	Count *int `json:"count"`
 }
 
 func InitDeviceRepo(tx *gorm.DB) *DeviceRepo {

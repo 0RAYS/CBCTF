@@ -24,13 +24,13 @@ type CreateUsageOptions struct {
 }
 
 type UpdateUsageOptions struct {
-	Name    *string
-	Desc    *string
-	Attempt *int64
-	Hints   *model.Strings
-	Tags    *model.Strings
-	Docker  *model.Docker
-	Dockers *model.Dockers
+	Name    *string        `json:"name"`
+	Desc    *string        `json:"desc"`
+	Attempt *int64         `json:"attempt"`
+	Hints   *model.Strings `json:"hints"`
+	Tags    *model.Strings `json:"tags"`
+	Docker  *model.Docker  `json:"docker"`
+	Dockers *model.Dockers `json:"dockers"`
 }
 
 func InitUsageRepo(tx *gorm.DB) *UsageRepo {

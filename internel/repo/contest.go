@@ -29,19 +29,19 @@ type CreateContestOptions struct {
 }
 
 type UpdateContestOptions struct {
-	Name      *string
-	Desc      *string
-	Captcha   *string
-	Avatar    *string
-	Prefix    *string
-	Size      *int
-	Start     *time.Time
-	Duration  *time.Duration
-	Blood     *bool
-	Hidden    *bool
-	Rules     *model.Strings
-	Prizes    *model.Prizes
-	Timelines *model.Timelines
+	Name      *string          `json:"name"`
+	Desc      *string          `json:"desc"`
+	Captcha   *string          `json:"captcha"`
+	Avatar    *string          `json:"avatar"`
+	Prefix    *string          `json:"prefix"`
+	Size      *int             `json:"size"`
+	Start     *time.Time       `json:"start"`
+	Duration  *time.Duration   `json:"duration"`
+	Blood     *bool            `json:"blood"`
+	Hidden    *bool            `json:"hidden"`
+	Rules     *model.Strings   `json:"rules"`
+	Prizes    *model.Prizes    `json:"prizes"`
+	Timelines *model.Timelines `json:"timelines"`
 }
 
 func InitContestRepo(tx *gorm.DB) *ContestRepo {
