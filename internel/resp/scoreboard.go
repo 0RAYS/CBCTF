@@ -42,7 +42,7 @@ func GetTeamRankingResp(teamsData []struct {
 		tmp["score"] = team.Team.Score
 		tmp["avatar"] = fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(team.Team.Avatar, "/"))
 		tmp["last"] = team.Team.Last
-		tmp["users"] = team.Team.Users
+		tmp["users"] = len(team.Team.Users)
 		data = append(data, tmp)
 	}
 	return gin.H{"teams": data}
