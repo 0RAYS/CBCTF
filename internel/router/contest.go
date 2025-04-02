@@ -14,7 +14,7 @@ import (
 func GetContest(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
 	champion, _, _, _ := service.GetTeamRanking(db.DB.WithContext(ctx), contest.ID, 1, 0)
-	data := resp.GetContestResp(contest)
+	data := resp.GetContestResp(contest, middleware.GetRole(ctx) == "admin")
 	data["highest"] = 0
 	if len(champion) > 0 {
 		data["highest"] = champion[0].Score
@@ -36,7 +36,7 @@ func GetContests(ctx *gin.Context) {
 	}
 	data := make([]gin.H, 0)
 	for _, contest := range contests {
-		data = append(data, resp.GetContestResp(contest))
+		data = append(data, resp.GetContestResp(contest, all))
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"contests": data, "count": count}})
 }
