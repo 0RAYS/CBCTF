@@ -7,6 +7,25 @@ import (
 	"gorm.io/gorm"
 )
 
+func VerifyFlag(tx *gorm.DB, team model.Team, usage model.Usage, value string) (bool, model.Flag, bool, string) {
+	flagRepo := db.InitFlagRepo(tx)
+	flags, _, ok, msg := flagRepo.GetByKeyID("usage_id", usage.ID, -1, -1, true, 0)
+	if !ok {
+		return false, model.Flag{}, false, msg
+	}
+	for _, flag := range flags {
+		for _, answer := range flag.Answers {
+			if answer.TeamID == team.ID && answer.Value == value {
+				if answer.Solved {
+					return true, flag, false, "AlreadySolved"
+				}
+				return true, flag, true, "Success"
+			}
+		}
+	}
+	return false, model.Flag{}, false, "Success"
+}
+
 func UpdateFlag(tx *gorm.DB, flag model.Flag, form f.UpdateFlagForm) (bool, string) {
 	flagRepo := db.InitFlagRepo(tx)
 	challengeRepo := db.InitChallengeRepo(tx)
@@ -19,7 +38,6 @@ func UpdateFlag(tx *gorm.DB, flag model.Flag, form f.UpdateFlagForm) (bool, stri
 		Decay:     form.Decay,
 		MinScore:  form.MinScore,
 		ScoreType: form.ScoreType,
-		Attempt:   form.Attempt,
 	}
 	switch challenge.Type {
 	case model.StaticChallenge:

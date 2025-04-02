@@ -1,10 +1,80 @@
 package service
 
 import (
+	f "CBCTF/internel/form"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"gorm.io/gorm"
+	"sync"
 )
+
+// SolvedMutex 使用定时任务 cron.ClearUsageMutex 清理锁
+var SolvedMutex sync.Map
+
+// Submit model.Usage 需要预加载
+func Submit(tx *gorm.DB, contest model.Contest, user model.User, team model.Team, usage model.Usage, form f.SubmitFlagForm) (model.Submission, bool, string) {
+	if usage.Attempt != 0 && usage.Attempt <= CountAttempts(tx, team, usage) {
+		return model.Submission{}, false, "NotAllowSubmit"
+	}
+	submissionRepo := db.InitSubmissionRepo(tx)
+	submission, ok, msg := submissionRepo.Create(db.CreateSubmissionOptions{
+		UsageID:     usage.ID,
+		ContestID:   team.ContestID,
+		ChallengeID: usage.ChallengeID,
+		TeamID:      team.ID,
+		UserID:      user.ID,
+		Value:       form.Flag,
+		Solved:      false,
+		Score:       team.Score,
+	})
+	solved, flag, ok, msg := VerifyFlag(tx, team, usage, form.Flag)
+	if !ok {
+		return model.Submission{}, false, msg
+	}
+	if solved {
+		submission.Solved = true
+		submissionRepo.Update(submission.ID, db.UpdateSubmissionOptions{Solved: &solved})
+		// 正确时需要更新分数等信息, 加锁
+		mu, _ := SolvedMutex.LoadOrStore(usage.ID, &sync.Mutex{})
+		mu.(*sync.Mutex).Lock()
+		defer mu.(*sync.Mutex).Unlock()
+
+		solvers, currentScore, ok, msg := CalcSolversAndScore(tx, flag)
+		if !ok {
+			return model.Submission{}, false, msg
+		}
+		rate, blood := flag.CalcBlood(team.ID)
+		if !contest.Blood {
+			rate = 0
+		}
+		if blood >= 0 && blood <= 2 {
+			flag.Blood[blood] = team.ID
+		}
+		score, ok, msg := CalcTeamScore(tx, team.ID)
+		if !ok {
+			return model.Submission{}, false, msg
+		}
+		score += currentScore + flag.Score*rate
+		teamRepo := db.InitTeamRepo(tx)
+		ok, msg = teamRepo.Update(team.ID, db.UpdateTeamOptions{
+			Score: &score,
+			Last:  &submission.CreatedAt,
+		})
+		if !ok {
+			return model.Submission{}, false, msg
+		}
+		flagRepo := db.InitFlagRepo(tx)
+		ok, msg = flagRepo.Update(flag.ID, db.UpdateFlagOptions{
+			CurrentScore: &currentScore,
+			Solvers:      &solvers,
+			Blood:        &flag.Blood,
+		})
+		if !ok {
+			return model.Submission{}, false, msg
+		}
+	}
+	return submission, true, "Success"
+}
 
 // IsSolved model.Usage 需要预加载
 func IsSolved(tx *gorm.DB, team model.Team, usage model.Usage) bool {
@@ -21,16 +91,7 @@ func IsSolved(tx *gorm.DB, team model.Team, usage model.Usage) bool {
 			count++
 		}
 	}
-	switch usage.Challenge.Type {
-	case model.StaticChallenge, model.DynamicChallenge, model.DockerChallenge:
-		if count < 1 {
-			return false
-		}
-	case model.DockersChallenge:
-		if count != len(usage.Flags) {
-			return false
-		}
-	default:
+	if count != len(usage.Flags) {
 		return false
 	}
 	return true

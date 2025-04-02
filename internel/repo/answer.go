@@ -15,10 +15,12 @@ type CreateAnswerOptions struct {
 	TeamID uint
 	FlagID uint
 	Value  string
+	Solved bool
 }
 
 type UpdateAnswerOptions struct {
-	Value *string
+	Value  *string
+	Solved *bool
 }
 
 func InitAnswerRepo(tx *gorm.DB) *AnswerRepo {

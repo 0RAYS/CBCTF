@@ -32,7 +32,6 @@ type Flag struct {
 	MinScore     float64        `gorm:"default:100" json:"min_score"`
 	ScoreType    uint           `gorm:"default:0" json:"score_type"`
 	Solvers      int64          `json:"solvers"`
-	Attempt      int64          `json:"attempt"`
 	Blood        Uints          `gorm:"type:json" json:"blood"`
 	Answers      []Answer       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Submissions  []Submission   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
@@ -62,19 +61,19 @@ func (f *Flag) CalcNewScore(solvers int64) float64 {
 	return calc
 }
 
-func (f *Flag) CalcBlood(teamID uint) (float64, string) {
+func (f *Flag) CalcBlood(teamID uint) (float64, int) {
 	mapping := []struct {
 		value float64
-		name  string
+		name  int
 	}{
-		{0.05, "first"},
-		{0.03, "second"},
-		{0.01, "third"},
+		{0.05, 0},
+		{0.03, 1},
+		{0.01, 2},
 	}
 	for i := 0; i < len(f.Blood) && i < 3; i++ {
 		if f.Blood[i] == 0 || f.Blood[i] == teamID {
 			return mapping[i].value, mapping[i].name
 		}
 	}
-	return 0, ""
+	return 0, -1
 }

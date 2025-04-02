@@ -3,6 +3,7 @@ package repo
 import (
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
+	"CBCTF/internel/utils"
 	"gorm.io/gorm"
 )
 
@@ -19,6 +20,10 @@ type CreateSubmissionOptions struct {
 	Value       string
 	Solved      bool
 	Score       float64
+}
+
+type UpdateSubmissionOptions struct {
+	Solved *bool
 }
 
 func InitSubmissionRepo(tx *gorm.DB) *SubmissionRepo {
@@ -89,6 +94,34 @@ func (s *SubmissionRepo) GetAllByKeyID(key string, id uint, limit, offset int, p
 		return submissions, count, false, "GetSubmissionError"
 	}
 	return submissions, count, true, "Success"
+}
+
+func (s *SubmissionRepo) Update(id uint, options UpdateSubmissionOptions) (bool, string) {
+	var count uint
+	data := utils.UpdateOptions2Map(options)
+	for {
+		count++
+		if count > 10 {
+			log.Logger.Warningf("Failed to update Submission: too many times failed due to optimistic lock")
+			return false, "DeadLock"
+		}
+		submission, ok, msg := s.GetByID(id, false, 0)
+		if !ok {
+			return ok, msg
+		}
+		data["version"] = submission.Version + 1
+		res := s.DB.Model(&model.Submission{}).Omit("id", "created_at", "updated_at", "deleted_at").
+			Where("id = ? AND version = ?", id, submission.Version).Updates(data)
+		if res.Error != nil {
+			log.Logger.Warningf("Failed to update Submission: %s", res.Error)
+			return false, "UpdateSubmissionError"
+		}
+		if res.RowsAffected == 0 {
+			continue
+		}
+		break
+	}
+	return true, "Success"
 }
 
 //func (s *SubmissionRepo) Delete(idL ...uint) (bool, string) {

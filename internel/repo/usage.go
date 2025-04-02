@@ -16,6 +16,7 @@ type CreateUsageOptions struct {
 	ChallengeID string
 	Name        string
 	Desc        string
+	Attempt     int64
 	Hints       model.Strings
 	Tags        model.Strings
 	Docker      model.Docker
@@ -25,6 +26,7 @@ type CreateUsageOptions struct {
 type UpdateUsageOptions struct {
 	Name    *string
 	Desc    *string
+	Attempt *int64
 	Hints   *model.Strings
 	Tags    *model.Strings
 	Docker  *model.Docker
