@@ -23,7 +23,9 @@ func GetTeam(ctx *gin.Context) {
 			return
 		}
 		solved, _, _ := service.GetTeamSolved(db.DB.WithContext(ctx), team.ID)
-		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": resp.GetTeamResp(team, solved, flags)})
+		data := resp.GetTeamResp(team)
+		data["solved"] = resp.GetSolvedStateResp(solved, flags)
+		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &team})
@@ -42,7 +44,11 @@ func GetTeams(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "teams": &teams}})
+	data := make([]gin.H, 0)
+	for _, team := range teams {
+		data = append(data, resp.GetTeamResp(team))
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "teams": data}})
 }
 
 func GetTeamCaptcha(ctx *gin.Context) {

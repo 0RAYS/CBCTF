@@ -5,15 +5,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetTeamResp(team model.Team, solved []model.Flag, flags []model.Flag) gin.H {
-	data := GetSolvedStateResp(solved, flags)
-	data["name"] = team.Name
-	data["score"] = team.Score
-	data["avatar"] = team.Avatar
-	data["last"] = team.Last
-	data["users"] = len(team.Users)
-	data["desc"] = team.Desc
-	data["contest_id"] = team.ContestID
-	data["captain_id"] = team.CaptainID
-	return data
+func GetTeamResp(team model.Team) gin.H {
+	return gin.H{
+		"name":       team.Name,
+		"score":      team.Score,
+		"avatar":     team.Avatar,
+		"last":       team.Last,
+		"users":      len(team.Users),
+		"desc":       team.Desc,
+		"contest_id": team.ContestID,
+		"captain_id": team.CaptainID,
+	}
 }
