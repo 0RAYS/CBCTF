@@ -13,7 +13,6 @@ func GetTeamResp(team model.Team) gin.H {
 		"last":       team.Last,
 		"users":      len(team.Users),
 		"desc":       team.Desc,
-		"contest_id": team.ContestID,
 		"captain_id": team.CaptainID,
 	}
 }
