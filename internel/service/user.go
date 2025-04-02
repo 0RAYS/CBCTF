@@ -6,6 +6,7 @@ import (
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
 	"gorm.io/gorm"
+	"strings"
 )
 
 func CreateUser(tx *gorm.DB, form f.RegisterForm) (model.User, bool, string) {
@@ -45,7 +46,7 @@ func AdminCreateUser(tx *gorm.DB, form f.CreateUserForm) (model.User, bool, stri
 		Password: utils.HashPassword(form.Password),
 		Email:    form.Email,
 		Desc:     form.Desc,
-		Country:  utils.ToTitle(form.Country),
+		Country:  strings.ToUpper(form.Country),
 		Verified: form.Verified,
 		Banned:   form.Banned,
 		Hidden:   form.Hidden,
