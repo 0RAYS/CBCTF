@@ -77,7 +77,7 @@ func UpdateAdmin(tx *gorm.DB, admin model.Admin, form f.UpdateAdminForm) (bool, 
 	repo := db.InitAdminRepo(tx)
 	options := db.UpdateAdminOptions{}
 	if form.Email != nil && *form.Email != admin.Email {
-		if repo.IsUniqueEmail(*form.Email) {
+		if !repo.IsUniqueEmail(*form.Email) {
 			return false, "DuplicateEmail"
 		}
 		options.Email = form.Email
