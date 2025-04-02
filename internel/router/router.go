@@ -132,57 +132,57 @@ func Init() *gin.Engine {
 			adminContest.DELETE("", DeleteContest)
 			adminContest.PUT("/avatar", UploadAvatar("contest"))
 			adminContest.GET("/rank", GetTeamRanking)
-		}
 
-		adminContest.GET("/teams", GetTeams)
-		adminContestTeam := adminContest.Group("/teams/:teamID", middleware.SetTeamByURI)
-		{
-			adminContestTeam.GET("", GetTeam)
-			adminContestTeam.GET("/captcha", GetTeamCaptcha)
-			adminContestTeam.GET("/users", GetTeammates)
-			adminContestTeam.PUT("", UpdateTeam)
-			adminContestTeam.DELETE("", DeleteTeam)
-			adminContestTeam.POST("/kick", KickMember)
-			adminContestTeam.POST("/avatar", UploadAvatar("team"))
-
-			adminContestTeam.GET("/submissions", GetSubmissions)
-
-			adminContestTeam.GET("/containers", GetContainers)
-			adminContainer := adminContestTeam.Group("/containers/:containerID", middleware.SetContainer)
+			adminContest.GET("/teams", GetTeams)
+			adminContestTeam := adminContest.Group("/teams/:teamID", middleware.SetTeamByURI)
 			{
-				adminContainer.GET("", GetContainer)
+				adminContestTeam.GET("", GetTeam)
+				adminContestTeam.GET("/captcha", GetTeamCaptcha)
+				adminContestTeam.GET("/users", GetTeammates)
+				adminContestTeam.PUT("", UpdateTeam)
+				adminContestTeam.DELETE("", DeleteTeam)
+				adminContestTeam.POST("/kick", KickMember)
+				adminContestTeam.POST("/avatar", UploadAvatar("team"))
 
-				adminTraffic := adminContainer.Group("/traffic")
-				adminTraffic.GET("/download", DownloadTraffic)
-				adminTraffic.POST("/load", LoadTraffic)
-				adminTraffic.GET("", GetTraffics)
+				adminContestTeam.GET("/submissions", GetSubmissions)
+
+				adminContestTeam.GET("/containers", GetContainers)
+				adminContainer := adminContestTeam.Group("/containers/:containerID", middleware.SetContainer)
+				{
+					adminContainer.GET("", GetContainer)
+
+					adminTraffic := adminContainer.Group("/traffic")
+					adminTraffic.GET("/download", DownloadTraffic)
+					adminTraffic.POST("/load", LoadTraffic)
+					adminTraffic.GET("", GetTraffics)
+				}
+
+				adminContestTeam.GET("/writeups", GetWriteUPs)
+				adminContestTeam.GET("/writeups/:fileID", middleware.SetFile(model.WriteUP), DownloadFile)
 			}
 
-			adminContestTeam.GET("/writeups", GetWriteUPs)
-			adminContestTeam.GET("/writeups/:fileID", middleware.SetFile(model.WriteUP), DownloadFile)
-		}
-
-		adminContest.GET("/notices", GetNotices)
-		adminContest.POST("/notices", CreateNotice)
-		adminContestNotice := adminContest.Group("/notices/:noticeID", middleware.SetNotice)
-		{
-			adminContestNotice.GET("", GetNotice)
-			adminContestNotice.PUT("", UpdateNotice)
-			adminContestNotice.DELETE("", DeleteNotice)
-		}
-
-		adminContest.GET("/challenges", GetUsages)
-		adminContest.POST("/challenges", AddUsage)
-		adminContestUsage := adminContest.Group("/challenges/:challengeID", middleware.SetUsage)
-		{
-			adminContestUsage.PUT("", UpdateUsage)
-			adminContestUsage.DELETE("", RemoveUsage)
-
-			//不允许后期创建和删除
-			adminContestUsage.GET("/flags", GetFlags)
-			adminContestUsageFlag := adminContestUsage.Group("/flags/:flagID", middleware.SetFlag)
+			adminContest.GET("/notices", GetNotices)
+			adminContest.POST("/notices", CreateNotice)
+			adminContestNotice := adminContest.Group("/notices/:noticeID", middleware.SetNotice)
 			{
-				adminContestUsageFlag.PUT("", UpdateFlag)
+				adminContestNotice.GET("", GetNotice)
+				adminContestNotice.PUT("", UpdateNotice)
+				adminContestNotice.DELETE("", DeleteNotice)
+			}
+
+			adminContest.GET("/challenges", GetUsages)
+			adminContest.POST("/challenges", AddUsage)
+			adminContestUsage := adminContest.Group("/challenges/:challengeID", middleware.SetUsage)
+			{
+				adminContestUsage.PUT("", UpdateUsage)
+				adminContestUsage.DELETE("", RemoveUsage)
+
+				//不允许后期创建和删除
+				adminContestUsage.GET("/flags", GetFlags)
+				adminContestUsageFlag := adminContestUsage.Group("/flags/:flagID", middleware.SetFlag)
+				{
+					adminContestUsageFlag.PUT("", UpdateFlag)
+				}
 			}
 		}
 
