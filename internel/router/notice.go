@@ -23,17 +23,11 @@ func GetNotices(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	if middleware.GetRole(ctx) != "admin" {
-		var data gin.H
-		data["notices"] = make([]gin.H, 0)
-		for _, notice := range notices {
-			data["notices"] = append(data["notices"].([]gin.H), resp.GetNoticeResp(notice))
-		}
-		data["count"] = count
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": data})
-		return
+	data := make([]gin.H, 0)
+	for _, notice := range notices {
+		data = append(data, resp.GetNoticeResp(notice))
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "notices": &notices}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "notices": data}})
 }
 
 func GetNotice(ctx *gin.Context) {
