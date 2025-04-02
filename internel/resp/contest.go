@@ -8,8 +8,8 @@ import (
 	"strings"
 )
 
-func GetContestResp(contest model.Contest) gin.H {
-	return gin.H{
+func GetContestResp(contest model.Contest, admin bool) gin.H {
+	data := gin.H{
 		"id":        contest.ID,
 		"name":      contest.Name,
 		"desc":      contest.Desc,
@@ -17,6 +17,7 @@ func GetContestResp(contest model.Contest) gin.H {
 		"duration":  contest.Duration.Seconds(),
 		"rules":     contest.Rules,
 		"prizes":    contest.Prizes,
+		"size":      contest.Size,
 		"timelines": contest.Timelines,
 		"teams":     len(contest.Teams),
 		"users":     len(contest.Users),
@@ -33,4 +34,8 @@ func GetContestResp(contest model.Contest) gin.H {
 			return count
 		}(),
 	}
+	if admin {
+		data["hidden"] = contest.Hidden
+	}
+	return data
 }
