@@ -80,7 +80,7 @@ func UploadAvatar(v string) func(ctx *gin.Context) {
 		}
 		var id uint
 		switch v {
-		case "self-admin", "self-user":
+		case "admin", "self-user":
 			id = middleware.GetSelfID(ctx)
 		case "user":
 			id = middleware.GetUser(ctx).ID
