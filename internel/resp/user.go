@@ -20,7 +20,6 @@ func GetUserResp(user model.User, admin bool) gin.H {
 		"avatar":   fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(user.Avatar, "/")),
 		"desc":     user.Desc,
 		"verified": user.Verified,
-		"hidden":   user.Hidden,
 	}
 	if admin {
 		data["hidden"] = user.Hidden
