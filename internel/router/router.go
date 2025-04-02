@@ -124,7 +124,8 @@ func Init() *gin.Engine {
 		}
 
 		admin.GET("/contests", GetContests)
-		admin.POST("/contests", CreateContest)zeware.SetContest)
+		admin.POST("/contests", CreateContest)
+		adminContest := admin.Group("/contests/:contestID", middleware.SetContest)
 		{
 			adminContest.GET("", GetContest)
 			adminContest.PUT("", UpdateContest)
