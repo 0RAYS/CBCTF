@@ -44,6 +44,11 @@ func AdminCreateUser(tx *gorm.DB, form f.CreateUserForm) (model.User, bool, stri
 		Name:     form.Name,
 		Password: utils.HashPassword(form.Password),
 		Email:    form.Email,
+		Desc:     form.Desc,
+		Country:  utils.ToTitle(form.Country),
+		Verified: form.Verified,
+		Banned:   form.Banned,
+		Hidden:   form.Hidden,
 	})
 
 }
