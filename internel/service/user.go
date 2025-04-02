@@ -84,8 +84,11 @@ func ChangeUserPwd(tx *gorm.DB, user model.User, form f.ChangePasswordForm) (boo
 func UpdateSelf(tx *gorm.DB, user model.User, form f.UpdateSelfForm) (bool, string) {
 	repo := db.InitUserRepo(tx)
 	options := db.UpdateUserOptions{
-		Desc:    form.Desc,
-		Country: form.Country,
+		Desc: form.Desc,
+	}
+	if form.Country != nil && *form.Country != user.Country {
+		country := strings.ToUpper(*form.Country)
+		options.Country = &country
 	}
 	if form.Email != nil && *form.Email != user.Email {
 		if !utils.IsValidEmail(*form.Email) {

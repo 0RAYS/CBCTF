@@ -6,6 +6,7 @@ import (
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
 	"gorm.io/gorm"
+	"strings"
 )
 
 func CreateAdmin(tx *gorm.DB, form f.CreateAdminForm) (model.Admin, bool, string) {
@@ -44,10 +45,13 @@ func UpdateUser(tx *gorm.DB, user model.User, form f.UpdateUserForm) (bool, stri
 	repo := db.InitUserRepo(tx)
 	options := db.UpdateUserOptions{
 		Desc:     form.Desc,
-		Country:  form.Country,
 		Hidden:   form.Hidden,
 		Banned:   form.Banned,
 		Verified: form.Verified,
+	}
+	if form.Country != nil && *form.Country != user.Country {
+		country := strings.ToUpper(*form.Country)
+		options.Country = &country
 	}
 	if form.Email != nil && *form.Email != user.Email {
 		if !utils.IsValidEmail(*form.Email) {
