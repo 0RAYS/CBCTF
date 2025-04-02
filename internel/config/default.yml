@@ -52,8 +52,8 @@ k8s:
         - "192.168.0.1"
 email:
     senders:
-        -   address: "noreply@example.com"
-            password: "password"
+        -   addr: "noreply@example.com"
+            pwd: "password"
             host: "smtp.example.com"
             port: 25
 frontend: "http://127.0.0.1:3000"
