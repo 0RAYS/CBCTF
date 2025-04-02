@@ -22,7 +22,6 @@ func GetContestResp(contest model.Contest, admin bool) gin.H {
 		"teams":     len(contest.Teams),
 		"users":     len(contest.Users),
 		"prefix":    contest.Prefix,
-		"notices":   len(contest.Notices),
 		"avatar":    fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(contest.Avatar, "/")),
 		"solved": func() int {
 			count := 0
