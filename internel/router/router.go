@@ -131,7 +131,6 @@ func Init() *gin.Engine {
 			adminContest.PUT("", UpdateContest)
 			adminContest.DELETE("", DeleteContest)
 			adminContest.PUT("/avatar", UploadAvatar("contest"))
-			adminContest.GET("/submissions", GetSubmissions(true))
 			adminContest.GET("/rank", GetRank)
 		}
 
@@ -146,7 +145,7 @@ func Init() *gin.Engine {
 			adminContestTeam.POST("/kick", KickMember)
 			adminContestTeam.POST("/avatar", UploadAvatar("team"))
 
-			adminContestTeam.GET("/submissions", GetSubmissions(false))
+			adminContestTeam.GET("/submissions", GetSubmissions)
 
 			adminContestTeam.GET("/containers", GetContainers)
 			adminContainer := adminContestTeam.Group("/containers/:containerID", middleware.SetContainer)
