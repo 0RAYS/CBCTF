@@ -20,11 +20,11 @@ type CreateAdminOptions struct {
 }
 
 type UpdateAdminOptions struct {
-	Name     *string
-	Password *string
-	Email    *string
-	Avatar   *string
-	Verified *bool
+	Name     *string `json:"name"`
+	Password *string `json:"password"`
+	Email    *string `json:"email"`
+	Avatar   *string `json:"avatar"`
+	Verified *bool   `json:"verified"`
 }
 
 func InitAdminRepo(tx *gorm.DB) *AdminRepo {

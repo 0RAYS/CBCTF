@@ -21,9 +21,9 @@ type CreateCheatOptions struct {
 }
 
 type UpdateCheatOptions struct {
-	Reason  *string
-	Type    *string
-	Checked *bool
+	Reason  *string `json:"reason"`
+	Type    *string `json:"type"`
+	Checked *bool   `json:"checked"`
 }
 
 func InitCheatRepo(tx *gorm.DB) *CheatRepo {

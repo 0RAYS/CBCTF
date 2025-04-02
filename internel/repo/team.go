@@ -24,16 +24,16 @@ type CreateTeamOptions struct {
 }
 
 type UpdateTeamOptions struct {
-	Name      *string
-	Desc      *string
-	Captcha   *string
-	Avatar    *string
-	Banned    *bool
-	Hidden    *bool
-	CaptainID *uint
-	Score     *float64
-	Rank      *int
-	Last      *time.Time
+	Name      *string    `json:"name"`
+	Desc      *string    `json:"desc"`
+	Captcha   *string    `json:"captcha"`
+	Avatar    *string    `json:"avatar"`
+	Banned    *bool      `json:"banned"`
+	Hidden    *bool      `json:"hidden"`
+	CaptainID *uint      `json:"captain_id"`
+	Score     *float64   `json:"score"`
+	Rank      *int       `json:"rank"`
+	Last      *time.Time `json:"last"`
 }
 
 func InitTeamRepo(tx *gorm.DB) *TeamRepo {

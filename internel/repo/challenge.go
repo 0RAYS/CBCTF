@@ -24,14 +24,14 @@ type CreateChallengeOptions struct {
 }
 
 type UpdateChallengeOptions struct {
-	Name      *string
-	Desc      *string
-	Category  *string
-	Type      *string
-	Generator *string
-	Flags     *model.Strings
-	Docker    *model.Docker
-	Dockers   *model.Dockers
+	Name      *string        `json:"name"`
+	Desc      *string        `json:"desc"`
+	Category  *string        `json:"category"`
+	Type      *string        `json:"type"`
+	Generator *string        `json:"generator"`
+	Flags     *model.Strings `json:"flags"`
+	Docker    *model.Docker  `json:"docker"`
+	Dockers   *model.Dockers `json:"dockers"`
 }
 
 func InitChallengeRepo(tx *gorm.DB) *ChallengeRepo {

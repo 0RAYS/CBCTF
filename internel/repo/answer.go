@@ -19,8 +19,8 @@ type CreateAnswerOptions struct {
 }
 
 type UpdateAnswerOptions struct {
-	Value  *string
-	Solved *bool
+	Value  *string `json:"value"`
+	Solved *bool   `json:"solved"`
 }
 
 func InitAnswerRepo(tx *gorm.DB) *AnswerRepo {
