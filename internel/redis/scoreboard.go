@@ -33,9 +33,10 @@ func UpdateTeamRanking(contestID uint, teams []model.Team) error {
 func GetTeamRanking(contestID uint, start int64, end int64) ([]model.Team, error) {
 	key := fmt.Sprintf("%d:rank", contestID)
 	ctx := context.Background()
+	teams := make([]model.Team, 0)
 	results, err := RDB.ZRevRangeWithScores(ctx, key, start, end).Result()
 	if err != nil {
-		return make([]model.Team, 0), err
+		return teams, err
 	}
 
 	pipe := RDB.Pipeline()
@@ -45,13 +46,12 @@ func GetTeamRanking(contestID uint, start int64, end int64) ([]model.Team, error
 	}
 	cmds, _ := pipe.Exec(ctx)
 
-	var teams []model.Team
 	for _, cmd := range cmds {
 		str, _ := cmd.(*redis.StringCmd).Bytes()
 		var t model.Team
 		err := msgpack.Unmarshal(str, &t)
 		if err != nil {
-			return make([]model.Team, 0), err
+			return teams, err
 		}
 		teams = append(teams, t)
 	}
