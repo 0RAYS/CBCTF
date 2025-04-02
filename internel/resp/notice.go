@@ -7,8 +7,8 @@ import (
 
 func GetNoticeResp(notice model.Notice) gin.H {
 	return gin.H{
-		"title":   notice.Title,
-		"content": notice.Content,
-		"created": notice.CreatedAt,
+		"title":      notice.Title,
+		"content":    notice.Content,
+		"created_at": notice.CreatedAt,
 	}
 }
