@@ -61,12 +61,7 @@ func HomePage(ctx *gin.Context) {
 
 func SystemStatus(ctx *gin.Context) {
 	ret := make(map[string]interface{})
-	metrics, err := redis.GetMetrics()
-	if err != nil {
-		ret["metrics"] = nil
-	} else {
-		ret["metrics"] = metrics
-	}
+	ret["metrics"] = redis.GetMetrics()
 
 	ioStats, err := net.IOCounters(false)
 	if err != nil || len(ioStats) == 0 {
