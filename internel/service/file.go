@@ -69,7 +69,7 @@ func UpdateAvatar(tx *gorm.DB, v string, id uint, record model.File) (string, bo
 	)
 	path := fmt.Sprintf("/avatars/%s", record.ID)
 	switch v {
-	case "self-admin":
+	case "admin":
 		ok, msg = db.InitAdminRepo(tx).Update(id, db.UpdateAdminOptions{Avatar: &path})
 	case "self-user":
 		ok, msg = db.InitUserRepo(tx).Update(id, db.UpdateUserOptions{Avatar: &path})
