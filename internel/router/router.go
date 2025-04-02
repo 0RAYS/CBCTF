@@ -141,7 +141,7 @@ func Init() *gin.Engine {
 				adminContestTeam.PUT("", UpdateTeam)
 				adminContestTeam.DELETE("", DeleteTeam)
 				adminContestTeam.POST("/kick", KickMember)
-				adminContestTeam.POST("/avatar", UploadAvatar("team"))
+				adminContestTeam.PUT("/avatar", UploadAvatar("team"))
 
 				adminContestTeam.GET("/submissions", GetSubmissions)
 
