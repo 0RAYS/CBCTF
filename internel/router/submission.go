@@ -17,7 +17,7 @@ func GetSubmissions(all bool) func(ctx *gin.Context) {
 			return
 		}
 		var (
-			submissions []model.Submission
+			submissions = make([]model.Submission, 0)
 			count       int64
 			ok          bool
 			msg         string
