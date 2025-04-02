@@ -50,15 +50,13 @@ func GetTeamCaptcha(ctx *gin.Context) {
 }
 
 func GetTeammates(ctx *gin.Context) {
-	if middleware.GetRole(ctx) != "admin" {
-		data := make([]gin.H, 0)
-		for _, user := range middleware.GetTeam(ctx).Users {
-			data = append(data, resp.GetUserResp(*user))
-		}
-		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
-		return
+	all := middleware.GetRole(ctx) == "admin"
+	data := make([]gin.H, 0)
+	for _, user := range middleware.GetTeam(ctx).Users {
+		data = append(data, resp.GetUserResp(*user, all))
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": middleware.GetTeam(ctx).Users})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
+	return
 }
 
 func UpdateTeam(ctx *gin.Context) {

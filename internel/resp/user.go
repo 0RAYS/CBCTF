@@ -11,8 +11,9 @@ import (
 var LoginResp = GetUserResp
 var RegisterResp = GetUserResp
 
-func GetUserResp(user model.User) gin.H {
+func GetUserResp(user model.User, admin bool) gin.H {
 	data := gin.H{
+		"id":       user.ID,
 		"name":     user.Name,
 		"email":    user.Email,
 		"country":  user.Country,
@@ -20,6 +21,12 @@ func GetUserResp(user model.User) gin.H {
 		"desc":     user.Desc,
 		"verified": user.Verified,
 		"hidden":   user.Hidden,
+	}
+	if admin {
+		data["hidden"] = user.Hidden
+		data["verified"] = user.Verified
+		data["teams"] = len(user.Teams)
+		data["contests"] = len(user.Contests)
 	}
 	return data
 }
