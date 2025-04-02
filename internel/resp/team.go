@@ -5,8 +5,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetTeamResp(team model.Team) gin.H {
-	return gin.H{
+func GetTeamResp(team model.Team, admin bool) gin.H {
+	data := gin.H{
+		"id":         team.ID,
 		"name":       team.Name,
 		"score":      team.Score,
 		"avatar":     team.Avatar,
@@ -15,4 +16,8 @@ func GetTeamResp(team model.Team) gin.H {
 		"desc":       team.Desc,
 		"captain_id": team.CaptainID,
 	}
+	if admin {
+		data["captcha"] = team.Captcha
+	}
+	return data
 }

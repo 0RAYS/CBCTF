@@ -16,19 +16,15 @@ func GetTeam(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	DB := db.DB.WithContext(ctx)
 	all := middleware.GetRole(ctx) == "admin"
-	if !all {
-		flags, _, ok, msg := db.InitFlagRepo(DB).GetByKeyID("contest_id", team.ContestID, -1, -1, true, 3)
-		if !ok {
-			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-			return
-		}
-		solved, _, _ := service.GetTeamSolved(db.DB.WithContext(ctx), team.ID)
-		data := resp.GetTeamResp(team)
-		data["solved"] = resp.GetSolvedStateResp(solved, flags)
-		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
+	flags, _, ok, msg := db.InitFlagRepo(DB).GetByKeyID("contest_id", team.ContestID, -1, -1, true, 3)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &team})
+	solved, _, _ := service.GetTeamSolved(db.DB.WithContext(ctx), team.ID)
+	data := resp.GetTeamResp(team, all)
+	data["solved"] = resp.GetSolvedStateResp(solved, flags)
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
 }
 
 func GetTeams(ctx *gin.Context) {
@@ -46,7 +42,7 @@ func GetTeams(ctx *gin.Context) {
 	}
 	data := make([]gin.H, 0)
 	for _, team := range teams {
-		data = append(data, resp.GetTeamResp(team))
+		data = append(data, resp.GetTeamResp(team, true))
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "teams": data}})
 }
