@@ -28,12 +28,11 @@ func Register(ctx *gin.Context) {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	if ok, msg = SendEmail(user); !ok {
-		tmp := tx.Rollback()
-		log.Logger.Warning(tmp)
-		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
+	//if ok, msg = SendEmail(user); !ok {
+	//	tx.Rollback()
+	//	ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	//	return
+	//}
 	tx.Commit()
 	token, err := utils.Generate(user.ID, user.Name, "user")
 	if err != nil {
