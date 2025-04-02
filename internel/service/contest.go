@@ -10,6 +10,39 @@ import (
 
 func CreateContest(tx *gorm.DB, form f.CreateContestForm) (model.Contest, bool, string) {
 	repo := db.InitContestRepo(tx)
+	if len(form.Rules) == 0 {
+		form.Rules = model.Strings{
+			"参赛者必须遵守比赛规则和道德准则",
+			"禁止攻击比赛平台和其他参赛者",
+			"禁止分享题目答案和解题思路",
+			"每支队伍人数不得超过4人",
+			"比赛采用动态积分机制",
+			"设有First Blood奖励",
+			"违规行为将导致成绩作废",
+		}
+	}
+	if len(form.Timelines) == 0 {
+		form.Timelines = model.Timelines{
+			model.Timeline{
+				Date:  form.Start,
+				Title: "比赛开始",
+				Desc:  "题目公布, 正式开始解题",
+			},
+			model.Timeline{
+				Date:  form.Start.Add(time.Duration(form.Duration)),
+				Title: "比赛结束",
+				Desc:  "停止计分, 公布最终排名",
+			},
+		}
+	}
+	if len(form.Prizes) == 0 {
+		form.Prizes = model.Prizes{
+			model.Prize{
+				Amount: "$0",
+				Desc:   "",
+			},
+		}
+	}
 	return repo.Create(db.CreateContestOptions{
 		Name:      form.Name,
 		Desc:      form.Desc,
