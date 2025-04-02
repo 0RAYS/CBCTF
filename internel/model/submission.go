@@ -25,4 +25,5 @@ type Submission struct {
 	CreatedAt   time.Time      `json:"-"`
 	UpdatedAt   time.Time      `json:"-"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
+	Version     uint           `gorm:"default:1" json:"-"`
 }

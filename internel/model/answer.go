@@ -12,6 +12,7 @@ type Answer struct {
 	FlagID    uint           `json:"flag_id"`
 	Flag      Flag           `json:"-"`
 	Value     string         `gorm:"not null" json:"value"`
+	Solved    bool           `json:"solved"`
 	CreatedAt time.Time      `json:"-"`
 	UpdatedAt time.Time      `json:"-"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`

@@ -50,6 +50,7 @@ func GenerateAnswer(tx *gorm.DB, usage model.Usage, team model.Team, reset bool)
 		option := db.CreateAnswerOptions{
 			TeamID: team.ID,
 			FlagID: flag.ID,
+			Solved: false,
 		}
 		if result := model.StaticFlag.FindAllStringSubmatch(flag.Value, 1); len(result) > 0 {
 			option.Value = flag.Value

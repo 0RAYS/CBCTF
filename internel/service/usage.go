@@ -31,6 +31,7 @@ func CreateUsage(tx *gorm.DB, contest model.Contest, form f.CreateUsageForm) ([]
 				Desc:        challenge.Desc,
 				Docker:      challenge.Docker,
 				Dockers:     challenge.Dockers,
+				Attempt:     0,
 			})
 			if !ok {
 				failed = append(failed, challengeID)
@@ -44,7 +45,7 @@ func CreateUsage(tx *gorm.DB, contest model.Contest, form f.CreateUsageForm) ([]
 				Decay:        100,
 				MinScore:     100,
 				ScoreType:    0,
-				Attempt:      0,
+				Blood:        make(model.Uints, 3),
 			}
 			switch challenge.Type {
 			case model.StaticChallenge, model.DynamicChallenge:
@@ -105,10 +106,11 @@ func CreateUsage(tx *gorm.DB, contest model.Contest, form f.CreateUsageForm) ([]
 func UpdateUsage(tx *gorm.DB, usage model.Usage, form f.UpdateUsageForm) (bool, string) {
 	repo := db.InitUsageRepo(tx)
 	return repo.Update(usage.ID, db.UpdateUsageOptions{
-		Name:  form.Name,
-		Desc:  form.Desc,
-		Hints: form.Hints,
-		Tags:  form.Tags,
+		Name:    form.Name,
+		Desc:    form.Desc,
+		Attempt: form.Attempt,
+		Hints:   form.Hints,
+		Tags:    form.Tags,
 	})
 }
 

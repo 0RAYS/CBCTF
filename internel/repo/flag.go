@@ -20,7 +20,7 @@ type CreateFlagOptions struct {
 	Decay        float64
 	MinScore     float64
 	ScoreType    uint
-	Attempt      int64
+	Blood        model.Uints
 }
 
 type UpdateFlagOptions struct {
@@ -30,8 +30,8 @@ type UpdateFlagOptions struct {
 	Decay        *float64
 	MinScore     *float64
 	ScoreType    *uint
-	Attempt      *int64
 	Solvers      *int64
+	Blood        *model.Uints
 }
 
 func InitFlagRepo(tx *gorm.DB) *FlagRepo {
