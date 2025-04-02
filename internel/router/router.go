@@ -104,7 +104,7 @@ func Init() *gin.Engine {
 		admin.PUT("/me/password", AdminChangePassword)
 		admin.PUT("/me", UpdateAdmin)
 		admin.PUT("/me/avatar", UploadAvatar("admin"))
-		admin.POST("/admins", CreateAdmin)
+		admin.POST("", CreateAdmin)
 
 		// 系统管理
 		adminSystem := admin.Group("/system")
