@@ -49,7 +49,7 @@ func UpdateUser(tx *gorm.DB, user model.User, form f.UpdateUserForm) (bool, stri
 		Banned:   form.Banned,
 		Verified: form.Verified,
 	}
-	if *form.Email != "" && *form.Email != user.Email {
+	if form.Email != nil && *form.Email != user.Email {
 		if !utils.IsValidEmail(*form.Email) {
 			return false, "InvalidEmail"
 		}
@@ -60,13 +60,13 @@ func UpdateUser(tx *gorm.DB, user model.User, form f.UpdateUserForm) (bool, stri
 		options.Email = form.Email
 		options.Verified = &verified
 	}
-	if *form.Name != "" && *form.Name != user.Name {
+	if form.Name != nil && *form.Name != user.Name {
 		if !repo.IsUniqueName(*form.Name) {
 			return false, "DuplicateUsername"
 		}
 		options.Name = form.Name
 	}
-	if *form.Password != "" {
+	if form.Password != nil {
 		password := utils.HashPassword(*form.Password)
 		options.Password = &password
 	}
