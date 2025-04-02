@@ -210,5 +210,5 @@ func GetWriteUPs(ctx *gin.Context) {
 	for _, file := range dir {
 		files = append(files, file.Name())
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &files})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": files})
 }

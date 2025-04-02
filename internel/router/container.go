@@ -101,7 +101,7 @@ func StopContainer(ctx *gin.Context) {
 
 func GetContainer(ctx *gin.Context) {
 	container := middleware.GetContainer(ctx)
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &container})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": resp.GetContainerResp(container)})
 }
 
 func GetContainers(ctx *gin.Context) {
