@@ -131,7 +131,7 @@ func Init() *gin.Engine {
 			adminContest.PUT("", UpdateContest)
 			adminContest.DELETE("", DeleteContest)
 			adminContest.PUT("/avatar", UploadAvatar("contest"))
-			adminContest.GET("/rank", GetRank)
+			adminContest.GET("/rank", GetTeamRanking)
 		}
 
 		adminContest.GET("/teams", GetTeams)
