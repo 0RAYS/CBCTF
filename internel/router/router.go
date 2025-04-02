@@ -40,7 +40,7 @@ func Init() *gin.Engine {
 		user.PUT("/password", ChangePwd)
 		user.PUT("", UpdateUser)
 		user.DELETE("", DeleteUser)
-		user.POST("/avatar", UploadAvatar("self-user"))
+		user.PUT("/avatar", UploadAvatar("self-user"))
 		user.POST("/activate", ActivateEmail)
 	}
 
@@ -58,7 +58,7 @@ func Init() *gin.Engine {
 			contestTeam.GET("/me/users", GetTeammates)
 			contestTeam.PUT("/me/captcha", UpdateCaptcha)
 			contestTeam.PUT("/me", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, UpdateTeam)
-			contestTeam.POST("/me/avatar", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, UploadAvatar("team"))
+			contestTeam.PUT("/me/avatar", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, UploadAvatar("team"))
 			contestTeam.DELETE("/me", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, DeleteTeam)
 			contestTeam.POST("/me/kick", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, KickMember)
 			contestTeam.POST("/me/leave", middleware.CheckRunning, LeaveTeam)
@@ -103,7 +103,7 @@ func Init() *gin.Engine {
 		admin.GET("/me", GetAdmin)
 		admin.PUT("/me/password", AdminChangePassword)
 		admin.PUT("/me", UpdateAdmin)
-		admin.POST("/me/avatar", UploadAvatar("admin"))
+		admin.PUT("/me/avatar", UploadAvatar("admin"))
 		admin.POST("", CreateAdmin)
 
 		// 系统管理
@@ -120,17 +120,16 @@ func Init() *gin.Engine {
 			adminUser.GET("", GetUser)
 			adminUser.PUT("", UpdateUser)
 			adminUser.DELETE("", DeleteUser)
-			adminUser.POST("/avatar", UploadAvatar("user"))
+			adminUser.PUT("/avatar", UploadAvatar("user"))
 		}
 
 		admin.GET("/contests", GetContests)
-		admin.POST("/contests", CreateContest)
-		adminContest := admin.Group("/contests/:contestID", middleware.SetContest)
+		admin.POST("/contests", CreateContest)zeware.SetContest)
 		{
 			adminContest.GET("", GetContest)
 			adminContest.PUT("", UpdateContest)
 			adminContest.DELETE("", DeleteContest)
-			adminContest.POST("/avatar", UploadAvatar("contest"))
+			adminContest.PUT("/avatar", UploadAvatar("contest"))
 			adminContest.GET("/rank", GetTeamRanking)
 
 			adminContest.GET("/teams", GetTeams)
@@ -141,7 +140,7 @@ func Init() *gin.Engine {
 				adminContestTeam.PUT("", UpdateTeam)
 				adminContestTeam.DELETE("", DeleteTeam)
 				adminContestTeam.POST("/kick", KickMember)
-				adminContestTeam.POST("/avatar", UploadAvatar("team"))
+				adminContestTeam.PUT("/avatar", UploadAvatar("team"))
 
 				adminContestTeam.GET("/submissions", GetSubmissions)
 
