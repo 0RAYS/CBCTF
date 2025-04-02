@@ -8,6 +8,6 @@ type GetModelsForm struct {
 
 // ChangePasswordForm for user or admin change password
 type ChangePasswordForm struct {
-	OldPassword string `form:"oldPassword" json:"oldPassword" binding:"required"`
-	NewPassword string `form:"newPassword" json:"newPassword" binding:"required"`
+	OldPassword string `form:"old" json:"old" binding:"required"`
+	NewPassword string `form:"new" json:"new" binding:"required"`
 }
