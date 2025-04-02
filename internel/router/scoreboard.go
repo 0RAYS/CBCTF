@@ -22,5 +22,5 @@ func GetRank(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"teams": teams, "count": count}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"teams": &teams, "count": count}})
 }

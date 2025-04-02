@@ -47,7 +47,8 @@ func GetTeamRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Tea
 		return teams, count, false, msg
 	}
 	start, end := utils.TidyPaginate(int(count), limit, offset)
-	if teams, err = redis.GetTeamRanking(contestID, int64(start), int64(end-1)); err == nil {
+	teams, err = redis.GetTeamRanking(contestID, int64(start), int64(end-1))
+	if err == nil {
 		return teams, count, true, "Success"
 	}
 	if ok, msg = UpdateTeamRanking(tx, contestID); !ok {
