@@ -73,7 +73,10 @@ func UpdateContest(tx *gorm.DB, contest model.Contest, form f.UpdateContestForm)
 			return false, "DuplicateContestName"
 		}
 	}
-	duration := time.Duration(*form.Duration) * time.Second
+	if form.Duration != nil {
+		duration := *form.Duration * 1e9
+		form.Duration = &duration
+	}
 	return repo.Update(contest.ID, db.UpdateContestOptions{
 		Name:      form.Name,
 		Desc:      form.Desc,
@@ -81,7 +84,7 @@ func UpdateContest(tx *gorm.DB, contest model.Contest, form f.UpdateContestForm)
 		Prefix:    form.Prefix,
 		Size:      form.Size,
 		Start:     form.Start,
-		Duration:  &duration,
+		Duration:  (*time.Duration)(form.Duration),
 		Blood:     form.Blood,
 		Hidden:    form.Hidden,
 		Rules:     form.Rules,
