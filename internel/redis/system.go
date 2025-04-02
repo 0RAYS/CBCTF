@@ -76,22 +76,23 @@ func saveMetrics(metrics *SystemMetrics) error {
 	return nil
 }
 
-func GetMetrics() ([]SystemMetrics, error) {
+func GetMetrics() []SystemMetrics {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
+	defer cancel()
+	metrics := make([]SystemMetrics, 0)
 	data, err := RDB.LRange(ctx, "system_metrics", 0, -1).Result()
 	if err != nil {
-		cancel()
-		return make([]SystemMetrics, 0), err
+		log.Logger.Warningf("Failed to get system metrics: %s", err)
+		return metrics
 	}
-	cancel()
-	var metrics []SystemMetrics
 	for _, d := range data {
 		var m SystemMetrics
 		err = json.Unmarshal([]byte(d), &m)
 		if err != nil {
-			return make([]SystemMetrics, 0), err
+			log.Logger.Warningf("Failed to parse system metrics: %s", err)
+			return metrics
 		}
 		metrics = append(metrics, m)
 	}
-	return metrics, nil
+	return metrics
 }
