@@ -13,13 +13,14 @@ import (
 )
 
 func GetUser(ctx *gin.Context) {
-	if middleware.GetRole(ctx) != "admin" {
-		user := middleware.GetSelf(ctx).(model.User)
-		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": resp.GetUserResp(user)})
+	all := middleware.GetRole(ctx) == "admin"
+	var user model.User
+	if !all {
+		user = middleware.GetSelf(ctx).(model.User)
 	} else {
-		user := middleware.GetUser(ctx)
-		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &user})
+		user = middleware.GetUser(ctx)
 	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": resp.GetUserResp(user, all)})
 }
 
 func GetUsers(ctx *gin.Context) {
@@ -33,7 +34,11 @@ func GetUsers(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "users": &users}})
+	data := make([]gin.H, 0)
+	for _, user := range users {
+		data = append(data, resp.GetUserResp(user, true))
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "users": data}})
 }
 
 func CreateUser(ctx *gin.Context) {
@@ -50,7 +55,7 @@ func CreateUser(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": &user})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetUserResp(user, true)})
 }
 
 func ChangePwd(ctx *gin.Context) {
