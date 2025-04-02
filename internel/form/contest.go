@@ -12,9 +12,9 @@ type CreateContestForm struct {
 	Captcha   string          `form:"captcha" json:"captcha"`
 	Prefix    string          `form:"prefix" json:"prefix"`
 	Blood     bool            `form:"blood" json:"blood"`
-	Size      int             `form:"size" json:"size" binding:"required"`
-	Start     time.Time       `form:"start" json:"start" binding:"required"`
-	Duration  int64           `form:"duration" json:"duration" binding:"required"`
+	Size      int             `form:"size" json:"size"`
+	Start     time.Time       `form:"start" json:"start"`
+	Duration  int64           `form:"duration" json:"duration"`
 	Rules     model.Strings   `form:"rules" json:"rules"`
 	Prizes    model.Prizes    `form:"prizes" json:"prizes"`
 	Timelines model.Timelines `form:"timelines" json:"timelines"`
