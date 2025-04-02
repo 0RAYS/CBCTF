@@ -137,7 +137,6 @@ func Init() *gin.Engine {
 			adminContestTeam := adminContest.Group("/teams/:teamID", middleware.SetTeamByURI)
 			{
 				adminContestTeam.GET("", GetTeam)
-				adminContestTeam.GET("/captcha", GetTeamCaptcha)
 				adminContestTeam.GET("/users", GetTeammates)
 				adminContestTeam.PUT("", UpdateTeam)
 				adminContestTeam.DELETE("", DeleteTeam)
