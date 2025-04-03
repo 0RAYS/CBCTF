@@ -5,6 +5,7 @@ import (
 	"CBCTF/internel/log"
 	"CBCTF/internel/middleware"
 	db "CBCTF/internel/repo"
+	"CBCTF/internel/resp"
 	"CBCTF/internel/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -32,7 +33,11 @@ func GetChallenges(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "challenges": &challenges}})
+	data := make([]gin.H, 0)
+	for _, challenge := range challenges {
+		data = append(data, resp.GetChallengeResp(challenge))
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "challenges": data}})
 }
 
 func GetCategories(ctx *gin.Context) {
