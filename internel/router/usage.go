@@ -37,17 +37,17 @@ func GetUsages(ctx *gin.Context) {
 		all     = middleware.GetRole(ctx) == "admin"
 		DB      = db.DB.WithContext(ctx)
 		contest = middleware.GetContest(ctx)
-		team    = middleware.GetTeam(ctx)
 	)
 	usages, _, ok, msg := db.InitUsageRepo(DB).GetAll(contest.ID, -1, -1, true, 3, all)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	if all {
-		var data []gin.H
-		for _, usage := range usages {
-			tmp := resp.GetUsageResp(usage)
+	data := make([]gin.H, 0)
+	for _, usage := range usages {
+		tmp := resp.GetUsageResp(usage, all)
+		if !all {
+			team := middleware.GetTeam(ctx)
 			tmp["attempts"] = service.CountAttempts(DB, team, usage)
 			tmp["init"] = service.IsGenerated(DB, usage, team)
 			tmp["solved"] = service.IsSolved(DB, team, usage)
@@ -58,12 +58,10 @@ func GetUsages(ctx *gin.Context) {
 				}
 				return usage.Challenge.AttachmentPath(team.ID)
 			}
-			data = append(data, tmp)
 		}
-		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
-		return
+		data = append(data, tmp)
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &usages})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
 }
 
 func InitUsage(reset bool) func(ctx *gin.Context) {
