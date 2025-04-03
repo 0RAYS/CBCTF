@@ -40,7 +40,7 @@ func Init() *gin.Engine {
 		user.PUT("/password", ChangePwd)
 		user.PUT("", UpdateUser)
 		user.DELETE("", DeleteUser)
-		user.PUT("/avatar", UploadAvatar("self-user"))
+		user.POST("/avatar", UploadAvatar("self-user"))
 		user.POST("/activate", ActivateEmail)
 	}
 
@@ -58,7 +58,7 @@ func Init() *gin.Engine {
 			contestTeam.GET("/me/users", GetTeammates)
 			contestTeam.PUT("/me/captcha", UpdateCaptcha)
 			contestTeam.PUT("/me", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, UpdateTeam)
-			contestTeam.PUT("/me/avatar", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, UploadAvatar("team"))
+			contestTeam.POST("/me/avatar", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, UploadAvatar("team"))
 			contestTeam.DELETE("/me", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, DeleteTeam)
 			contestTeam.POST("/me/kick", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, KickMember)
 			contestTeam.POST("/me/leave", middleware.CheckRunning, LeaveTeam)
@@ -120,7 +120,7 @@ func Init() *gin.Engine {
 			adminUser.GET("", GetUser)
 			adminUser.PUT("", UpdateUser)
 			adminUser.DELETE("", DeleteUser)
-			adminUser.PUT("/avatar", UploadAvatar("user"))
+			adminUser.POST("/avatar", UploadAvatar("user"))
 		}
 
 		admin.GET("/contests", GetContests)
@@ -130,7 +130,7 @@ func Init() *gin.Engine {
 			adminContest.GET("", GetContest)
 			adminContest.PUT("", UpdateContest)
 			adminContest.DELETE("", DeleteContest)
-			adminContest.PUT("/avatar", UploadAvatar("contest"))
+			adminContest.POST("/avatar", UploadAvatar("contest"))
 			adminContest.GET("/rank", GetTeamRanking)
 
 			adminContest.GET("/teams", GetTeams)
@@ -141,7 +141,7 @@ func Init() *gin.Engine {
 				adminContestTeam.PUT("", UpdateTeam)
 				adminContestTeam.DELETE("", DeleteTeam)
 				adminContestTeam.POST("/kick", KickMember)
-				adminContestTeam.PUT("/avatar", UploadAvatar("team"))
+				adminContestTeam.POST("/avatar", UploadAvatar("team"))
 
 				adminContestTeam.GET("/submissions", GetSubmissions)
 
