@@ -84,7 +84,7 @@ func AdminLogin(ctx *gin.Context) {
 	if Token, err := utils.Generate(admin.ID, admin.Name, "admin"); err == nil {
 		log.Logger.Infof("%s:%d login", admin.Name, admin.ID)
 		ctx.Writer.Header().Set("Authorization", "Bearer "+Token)
-		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": &admin})
+		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": resp.GetAdminResp(admin)})
 		return
 	} else {
 		msg = "UnknownError"
