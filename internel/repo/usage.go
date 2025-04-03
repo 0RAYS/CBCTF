@@ -27,6 +27,7 @@ type UpdateUsageOptions struct {
 	Name    *string        `json:"name"`
 	Desc    *string        `json:"desc"`
 	Attempt *int64         `json:"attempt"`
+	Hidden  *bool          `json:"hidden"`
 	Hints   *model.Strings `json:"hints"`
 	Tags    *model.Strings `json:"tags"`
 	Docker  *model.Docker  `json:"docker"`
