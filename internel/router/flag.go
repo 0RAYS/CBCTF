@@ -4,6 +4,7 @@ import (
 	f "CBCTF/internel/form"
 	"CBCTF/internel/middleware"
 	db "CBCTF/internel/repo"
+	"CBCTF/internel/resp"
 	"CBCTF/internel/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -43,7 +44,11 @@ func GetFlags(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &flags})
+	data := make([]gin.H, 0)
+	for _, flag := range flags {
+		data = append(data, resp.GetFlagResp(flag))
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
 }
 
 func UpdateFlag(ctx *gin.Context) {

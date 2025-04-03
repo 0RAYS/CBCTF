@@ -1,0 +1,20 @@
+package resp
+
+import (
+	"CBCTF/internel/model"
+	"github.com/gin-gonic/gin"
+)
+
+func GetFlagResp(flag model.Flag) gin.H {
+	return gin.H{
+		"value":         flag.Value,
+		"score":         flag.Score,
+		"current_score": flag.CurrentScore,
+		"decay":         flag.Decay,
+		"min_score":     flag.MinScore,
+		"score_type":    flag.ScoreType,
+		"solvers":       flag.Solvers,
+		"blood":         flag.Blood,
+		"last":          flag.Last,
+	}
+}
