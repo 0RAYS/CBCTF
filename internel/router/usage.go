@@ -100,7 +100,11 @@ func AddUsage(ctx *gin.Context) {
 	}
 	DB := db.DB.WithContext(ctx)
 	usages, failed, _, _ := service.CreateUsage(DB, middleware.GetContest(ctx), form)
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"usages": &usages, "failed": failed}})
+	data := make([]gin.H, 0)
+	for _, usage := range usages {
+		data = append(data, resp.GetUsageResp(usage, true))
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"usages": data, "failed": failed}})
 }
 
 func UpdateUsage(ctx *gin.Context) {
