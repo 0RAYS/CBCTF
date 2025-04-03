@@ -109,8 +109,11 @@ func UpdateUsage(tx *gorm.DB, usage model.Usage, form f.UpdateUsageForm) (bool, 
 		Name:    form.Name,
 		Desc:    form.Desc,
 		Attempt: form.Attempt,
+		Hidden:  form.Hidden,
 		Hints:   form.Hints,
 		Tags:    form.Tags,
+		Docker:  form.Docker,
+		Dockers: form.Dockers,
 	})
 }
 
