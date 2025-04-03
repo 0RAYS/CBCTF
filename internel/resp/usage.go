@@ -27,7 +27,7 @@ func GetUsageResp(usage model.Usage, admin bool) gin.H {
 				solvers += flag.Solvers
 			}
 			return solvers
-		},
+		}(),
 		"hints": usage.Hints,
 		"tags":  usage.Tags,
 	}
