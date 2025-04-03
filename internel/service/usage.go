@@ -16,6 +16,9 @@ func CreateUsage(tx *gorm.DB, contest model.Contest, form f.CreateUsageForm) ([]
 	usages := make([]model.Usage, 0)
 	failed := make([]string, 0)
 	for _, challengeID := range form.ChallengeID {
+		if _, ok, _ := usageRepo.GetBy2ID(contest.ID, challengeID, false, 0, true); ok {
+			continue
+		}
 		// 局部回滚
 		_ = tx.Transaction(func(tx *gorm.DB) error {
 			tx2 := tx.Begin()
