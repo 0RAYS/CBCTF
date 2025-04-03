@@ -14,7 +14,7 @@ import (
 
 func GetChallenge(ctx *gin.Context) {
 	challenge := middleware.GetChallenge(ctx)
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &challenge})
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": resp.GetChallengeResp(challenge)})
 }
 
 func GetChallenges(ctx *gin.Context) {
