@@ -7,6 +7,7 @@ import (
 
 func GetFlagResp(flag model.Flag) gin.H {
 	return gin.H{
+		"id":            flag.ID,
 		"value":         flag.Value,
 		"score":         flag.Score,
 		"current_score": flag.CurrentScore,
