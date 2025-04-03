@@ -6,10 +6,12 @@ import (
 )
 
 // GetUsageResp model.Usage 需要预加载
-func GetUsageResp(usage model.Usage) gin.H {
-	return gin.H{
+func GetUsageResp(usage model.Usage, admin bool) gin.H {
+	data := gin.H{
 		"id":       usage.Challenge.ID,
-		"name":     usage.Challenge.Name,
+		"name":     usage.Name,
+		"desc":     usage.Desc,
+		"attempt":  usage.Attempt,
 		"category": usage.Challenge.Category,
 		"type":     usage.Challenge.Type,
 		"score": func() float64 {
@@ -29,4 +31,10 @@ func GetUsageResp(usage model.Usage) gin.H {
 		"hints": usage.Hints,
 		"tags":  usage.Tags,
 	}
+	if admin {
+		data["docker"] = usage.Docker
+		data["dockers"] = usage.Dockers
+		data["hidden"] = usage.Hidden
+	}
+	return data
 }
