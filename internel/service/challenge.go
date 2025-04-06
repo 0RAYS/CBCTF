@@ -29,12 +29,19 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChalle
 		Name: form.Name,
 		Desc: form.Desc,
 		Category: func() *string {
-			tmp := utils.ToTitle(*form.Category)
-			return &tmp
+			if form.Category != nil {
+				tmp := utils.ToTitle(*form.Category)
+				return &tmp
+			}
+			return nil
 		}(),
 		Type: form.Type,
 	}
-	switch *form.Type {
+	targetType := challenge.Type
+	if form.Type != nil {
+		targetType = *form.Type
+	}
+	switch targetType {
 	case model.StaticChallenge:
 		options.Flags = form.Flags
 	case model.DynamicChallenge:
