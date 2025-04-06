@@ -50,7 +50,7 @@ func InitAnswerRepo(tx *gorm.DB) *AnswerRepo {
 //	}
 //	var answer model.Answer
 //	res := a.DB.Model(&model.Answer{}).Where(key+" = ?", value)
-//	res = model.GetPreload(res, a.Model, preload, depth).Find(&answer).Limit(1)
+//	res = model.GetPreload(res, a.Model, preload, depth).Limit(1).Find(&answer)
 //	if res.RowsAffected == 0 {
 //		return model.Answer{}, false, "AnswerNotFound"
 //	}
@@ -64,7 +64,7 @@ func InitAnswerRepo(tx *gorm.DB) *AnswerRepo {
 func (a *AnswerRepo) GetBy2ID(teamID, flagID uint, preload bool, depth int) (model.Answer, bool, string) {
 	var answer model.Answer
 	res := a.DB.Model(&model.Answer{}).Where("team_id = ? AND flag_id = ?", teamID, flagID)
-	res = model.GetPreload(res, a.Model, preload, depth).Find(&answer).Limit(1)
+	res = model.GetPreload(res, a.Model, preload, depth).Limit(1).Find(&answer)
 	if res.RowsAffected == 0 {
 		return model.Answer{}, false, "AnswerNotFound"
 	}
@@ -90,7 +90,7 @@ func (a *AnswerRepo) GetAll(flagID uint, limit, offset int, preload bool, depth 
 		return answers, count, false, msg
 	}
 	res := a.DB.Model(&model.Answer{}).Where("flag_id = ?", flagID)
-	res = model.GetPreload(res, a.Model, preload, depth).Find(&answers).Limit(limit).Offset(offset)
+	res = model.GetPreload(res, a.Model, preload, depth).Limit(limit).Offset(offset).Find(&answers)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Answers: %s", res.Error)
 		return answers, count, false, "GetAnswerError"

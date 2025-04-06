@@ -47,7 +47,7 @@ func (f *FileRepo) getByUniqueKey(key string, value interface{}) (model.File, bo
 		return model.File{}, false, "UnsupportedKey"
 	}
 	var file model.File
-	res := f.DB.Model(&model.File{}).Where(key+" = ?", value).Find(&file).Limit(1)
+	res := f.DB.Model(&model.File{}).Where(key+" = ?", value).Limit(1).Find(&file)
 	if res.RowsAffected == 0 {
 		return model.File{}, false, "FileNotFound"
 	}
@@ -80,7 +80,7 @@ func (f *FileRepo) GetAll(t string, limit, offset int) ([]model.File, int64, boo
 	if !ok {
 		return files, count, false, msg
 	}
-	res := f.DB.Model(&model.File{}).Where("type = ?", t).Find(&files).Limit(limit).Offset(offset)
+	res := f.DB.Model(&model.File{}).Where("type = ?", t).Limit(limit).Offset(offset).Find(&files)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get File: %s", res.Error)
 		return files, 0, false, "GetFileError"

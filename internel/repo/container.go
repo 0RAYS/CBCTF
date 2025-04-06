@@ -38,7 +38,7 @@ func InitContainerRepo(tx *gorm.DB) *ContainerRepo {
 }
 
 func (c *ContainerRepo) IsUniqueContainer(usageID, teamID uint) bool {
-	res := c.DB.Model(&model.Container{}).Where("usage_id = ? AND team_id = ?", usageID, teamID).Limit(1)
+	res := c.DB.Model(&model.Container{}).Where("usage_id = ? AND team_id = ?", usageID, teamID).Limit(1).Find(&model.Container{})
 	return res.RowsAffected == 0
 }
 
@@ -65,7 +65,7 @@ func (c *ContainerRepo) IsUniqueContainer(usageID, teamID uint) bool {
 //	}
 //	var container model.Container
 //	res := c.DB.Model(&model.Container{}).Where(key+" = ?", key)
-//	res = model.GetPreload(res, model.Container{}, preload, depth).Find(&container).Limit(1)
+//	res = model.GetPreload(res, model.Container{}, preload, depth).Limit(1).Find(&container)
 //	if res.RowsAffected == 0 {
 //		return model.Container{}, false, "ContainerNotFound"
 //	}
@@ -95,7 +95,7 @@ func (c *ContainerRepo) GetAll(teamID uint, limit, offset int, preload bool, dep
 		return containers, count, false, msg
 	}
 	res := c.DB.Model(&model.Container{}).Where("team_id = ?", teamID)
-	res = model.GetPreload(res, c.Model, preload, depth).Find(&containers).Limit(limit).Offset(offset)
+	res = model.GetPreload(res, c.Model, preload, depth).Limit(limit).Offset(offset).Find(&containers)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Containers: %s", res.Error)
 		return containers, count, false, "GetContainerError"
@@ -106,7 +106,7 @@ func (c *ContainerRepo) GetAll(teamID uint, limit, offset int, preload bool, dep
 func (c *ContainerRepo) GetBy2ID(teamID uint, usageID uint, preload bool, depth int) ([]model.Container, bool, string) {
 	containers := make([]model.Container, 0)
 	res := c.DB.Model(&model.Container{}).Where("team_id = ? AND usage_id = ?", teamID, usageID)
-	res = model.GetPreload(res, c.Model, preload, depth).Find(&containers).Limit(1)
+	res = model.GetPreload(res, c.Model, preload, depth).Limit(1).Find(&containers)
 	if res.RowsAffected == 0 {
 		return containers, false, "ContainerNotFound"
 	}

@@ -40,7 +40,7 @@ func InitUsageRepo(tx *gorm.DB) *UsageRepo {
 
 func (u *UsageRepo) IsUniqueChallenge(contestID uint, challengeID string) bool {
 	res := u.DB.Model(&model.Usage{}).Where("contest_id = ? AND challenge_id = ?", contestID, challengeID).
-		Find(&model.Usage{}).Limit(1)
+		Find(&model.Usage{}).Limit(1).Find(&model.Usage{})
 	return res.RowsAffected == 0
 }
 
@@ -66,7 +66,7 @@ func (u *UsageRepo) IsUniqueChallenge(contestID uint, challengeID string) bool {
 //	}
 //	var usage model.Usage
 //	res := u.DB.Model(&model.Usage{}).Where(key+" = ?", value)
-//	res = model.GetPreload(res, model.Submission{}, preload, depth).Find(&usage).Limit(1)
+//	res = model.GetPreload(res, model.Submission{}, preload, depth).Limit(1).Find(&usage)
 //	if res.RowsAffected == 0 {
 //		return model.Usage{}, false, "UsageNotFound"
 //	}
@@ -83,7 +83,7 @@ func (u *UsageRepo) GetBy2ID(contestID uint, challengeID string, preload bool, d
 	if !hidden {
 		res = res.Where("hidden = ?", false)
 	}
-	res = model.GetPreload(res, u.Model, preload, depth).Find(&usage).Limit(1)
+	res = model.GetPreload(res, u.Model, preload, depth).Limit(1).Find(&usage)
 	if res.RowsAffected == 0 {
 		return model.Usage{}, false, "UsageNotFound"
 	}
@@ -116,7 +116,7 @@ func (u *UsageRepo) GetAll(contestID uint, limit, offset int, preload bool, dept
 	if !hidden {
 		res = res.Where("hidden = ?", false)
 	}
-	res = model.GetPreload(res, u.Model, preload, depth).Find(&usages).Limit(limit).Offset(offset)
+	res = model.GetPreload(res, u.Model, preload, depth).Limit(limit).Offset(offset).Find(&usages)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Usages: %s", res.Error)
 		return usages, count, false, "GetUsageError"

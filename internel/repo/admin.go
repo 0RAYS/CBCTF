@@ -65,7 +65,7 @@ func (a *AdminRepo) getByUniqueKey(key string, value interface{}, preload bool, 
 	}
 	var admin model.Admin
 	res := a.DB.Model(&model.Admin{}).Where(key+" = ?", value)
-	res = model.GetPreload(res, a.Model, preload, depth).Find(&admin).Limit(1)
+	res = model.GetPreload(res, a.Model, preload, depth).Limit(1).Find(&admin)
 	if res.RowsAffected == 0 {
 		return model.Admin{}, false, "AdminNotFound"
 	}
@@ -103,7 +103,7 @@ func (a *AdminRepo) GetByEmail(email string, preload bool, depth int) (model.Adm
 //		return admins, count, false, msg
 //	}
 //	res := a.DB.Model(&model.Admin{})
-//	res = model.GetPreload(res, a.Model, preload, depth).Find(&admins).Limit(limit).Offset(offset)
+//	res = model.GetPreload(res, a.Model, preload, depth).Limit(limit).Offset(offset).Find(&admins)
 //	if res.Error != nil {
 //		log.Logger.Warningf("Failed to get Admins: %s", res.Error)
 //		return admins, count, false, "GetAdminError"

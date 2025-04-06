@@ -61,7 +61,7 @@ func InitFlagRepo(tx *gorm.DB) *FlagRepo {
 //	}
 //	var flag model.Flag
 //	res := f.DB.Model(&model.Flag{}).Where(key+" = ?", value).First(&flag)
-//	res = model.GetPreload(res, model.Flag{}, preload, depth).Find(&flag).Limit(1)
+//	res = model.GetPreload(res, model.Flag{}, preload, depth).Limit(1).Find(&flag)
 //	if res.RowsAffected == 0 {
 //		return model.Flag{}, false, "FlagNotFound"
 //	}
@@ -91,7 +91,7 @@ func (f *FlagRepo) GetByKeyID(key string, id uint, limit, offset int, preload bo
 		return flags, count, false, msg
 	}
 	res := f.DB.Model(&model.Flag{}).Where(key+" = ?", id)
-	res = model.GetPreload(res, f.Model, preload, depth).Find(&flags).Limit(limit).Offset(offset)
+	res = model.GetPreload(res, f.Model, preload, depth).Limit(limit).Offset(offset).Find(&flags)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Flags: %s", res.Error)
 		return flags, count, false, "GetFlagError"

@@ -78,7 +78,7 @@ func (c *ContestRepo) getByUniqueKey(key string, value interface{}, preload bool
 	}
 	var contest model.Contest
 	res := c.DB.Model(&model.Contest{}).Where(key+" = ?", value)
-	res = model.GetPreload(res, c.Model, preload, depth).Find(&contest).Limit(1)
+	res = model.GetPreload(res, c.Model, preload, depth).Limit(1).Find(&contest)
 	if res.RowsAffected == 0 {
 		return model.Contest{}, false, "ContestNotFound"
 	}
@@ -119,7 +119,7 @@ func (c *ContestRepo) GetAll(limit, offset int, preload bool, depth int, hidden 
 	if !hidden {
 		res = res.Where("hidden = ?", false)
 	}
-	res = model.GetPreload(res, c.Model, preload, depth).Find(&contests).Limit(limit).Offset(offset)
+	res = model.GetPreload(res, c.Model, preload, depth).Limit(limit).Offset(offset).Find(&contests)
 	if res.Error != nil {
 		log.Logger.Errorf("Failed to get Contests: %s", res.Error)
 		return contests, count, false, "GetContestsError"

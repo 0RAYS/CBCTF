@@ -47,7 +47,7 @@ func InitDeviceRepo(tx *gorm.DB) *DeviceRepo {
 //	}
 //	var device model.Device
 //	res := d.DB.Model(&model.Device{}).Where(key+" = ?", value)
-//	res = model.GetPreload(res, model.Device{}, preload, depth).Find(&device).Limit(1)
+//	res = model.GetPreload(res, model.Device{}, preload, depth).Limit(1).Find(&device)
 //	if res.RowsAffected == 0 {
 //		return model.Device{}, false, "DeviceNotFound"
 //	}
@@ -60,7 +60,7 @@ func InitDeviceRepo(tx *gorm.DB) *DeviceRepo {
 
 func (d *DeviceRepo) GetBy2ID(userID uint, magic string) (model.Device, bool, string) {
 	var device model.Device
-	res := d.DB.Model(&model.Device{}).Where("user_id = ? AND magic = ?", userID, magic).Find(&device).Limit(1)
+	res := d.DB.Model(&model.Device{}).Where("user_id = ? AND magic = ?", userID, magic).Limit(1).Find(&device)
 	if res.RowsAffected == 0 {
 		return model.Device{}, false, "DeviceNotFound"
 	}
@@ -86,7 +86,7 @@ func (d *DeviceRepo) GetBy2ID(userID uint, magic string) (model.Device, bool, st
 //		return devices, count, false, msg
 //	}
 //	res := d.DB.Model(&model.Device{})
-//	res = model.GetPreload(res, model.Device{}, preload, depth).Find(&devices).Limit(limit).Offset(offset)
+//	res = model.GetPreload(res, model.Device{}, preload, depth).Limit(limit).Offset(offset).Find(&devices)
 //	if res.Error != nil {
 //		log.Logger.Warningf("Failed to get all Devices: %s", res.Error)
 //		return devices, count, false, "GetDeviceError"

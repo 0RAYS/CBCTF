@@ -50,7 +50,7 @@ func InitNoticeRepo(tx *gorm.DB) *NoticeRepo {
 //	}
 //	var notice model.Notice
 //	res := n.DB.Model(&model.Notice{}).Where(key+" = ?", value)
-//	res = model.GetPreload(res, model.Notice{}, preload, depth).Find(&notice).Limit(1)
+//	res = model.GetPreload(res, model.Notice{}, preload, depth).Limit(1).Find(&notice)
 //	if res.RowsAffected == 0 {
 //		return model.Notice{}, false, "NoticeNotFound"
 //	}
@@ -80,7 +80,7 @@ func (n *NoticeRepo) GetAll(contestID uint, limit, offset int, preload bool, dep
 		return notices, count, false, msg
 	}
 	res := n.DB.Model(&model.Notice{}).Where("contest_id = ?", contestID)
-	res = model.GetPreload(res, n.Model, preload, depth).Find(&notices).Limit(limit).Offset(offset)
+	res = model.GetPreload(res, n.Model, preload, depth).Limit(limit).Offset(offset).Find(&notices)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Notices: %s", res.Error)
 		return notices, 0, false, "GetNoticeError"
