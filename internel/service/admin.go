@@ -22,7 +22,7 @@ func CreateAdmin(tx *gorm.DB, form f.CreateAdminForm) (model.Admin, bool, string
 	}
 	return repo.Create(db.CreateAdminOptions{
 		Name:     form.Name,
-		Password: form.Email,
+		Password: utils.HashPassword(form.Password),
 		Email:    form.Email,
 		Avatar:   "",
 		Verified: false,
