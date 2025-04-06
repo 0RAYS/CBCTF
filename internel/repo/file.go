@@ -72,7 +72,7 @@ func (f *FileRepo) Count(t string) (int64, bool, string) {
 	return count, true, "Success"
 }
 
-func (f *FileRepo) GetAll(t string, offset, limit int) ([]model.File, int64, bool, string) {
+func (f *FileRepo) GetAll(t string, limit, offset int) ([]model.File, int64, bool, string) {
 	var (
 		files          = make([]model.File, 0)
 		count, ok, msg = f.Count(t)
