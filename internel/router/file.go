@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
+	"strings"
 )
 
 func DownloadFile(ctx *gin.Context) {
@@ -96,6 +97,7 @@ func UploadAvatar(v string) func(ctx *gin.Context) {
 			return
 		}
 		tx.Commit()
+		path = fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(path, "/"))
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": path})
 	}
 }
