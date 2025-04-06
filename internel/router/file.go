@@ -190,12 +190,12 @@ func DeleteAvatars(ctx *gin.Context) {
 		return
 	}
 	repo := db.InitFileRepo(db.DB.WithContext(ctx))
-	_, _ = repo.Delete(form.FilesID...)
 	for _, id := range form.FilesID {
 		if file, ok, _ := repo.GetByID(id); ok {
 			_ = os.Remove(file.Path)
 		}
 	}
+	_, _ = repo.Delete(form.FilesID...)
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
 }
 
