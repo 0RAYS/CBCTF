@@ -47,7 +47,7 @@ func InitTrafficRepo(tx *gorm.DB) *TrafficRepo {
 //	}
 //	var traffic model.Traffic
 //	res := t.DB.Model(&model.Traffic{}).Where(key+" = ?", value)
-//	res = model.GetPreload(res, model.Traffic{}, preload, depth).Find(&traffic).Limit(1)
+//	res = model.GetPreload(res, model.Traffic{}, preload, depth).Limit(1).Find(&traffic)
 //	if res.RowsAffected == 0 {
 //		return model.Traffic{}, false, "TrafficNotFound"
 //	}
@@ -77,7 +77,7 @@ func (t *TrafficRepo) GetAll(containerID uint, limit, offset int, preload bool, 
 		return traffics, count, false, msg
 	}
 	res := t.DB.Model(&model.Traffic{}).Where("container_id = ?", containerID)
-	res = model.GetPreload(res, t.Model, preload, depth).Find(&traffics).Limit(limit).Offset(offset)
+	res = model.GetPreload(res, t.Model, preload, depth).Limit(limit).Offset(offset).Find(&traffics)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Traffics: %v", res.Error)
 		return traffics, count, false, "GetTrafficError"

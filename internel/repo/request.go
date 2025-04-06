@@ -52,7 +52,7 @@ func InitRequestRepo(tx *gorm.DB) *RequestRepo {
 //	}
 //	var request model.Request
 //	res := r.DB.Model(&model.Request{}).Where(key+" = ?", value)
-//	res = model.GetPreload(res, model.Request{}, preload, depth).Find(&request).Limit(1)
+//	res = model.GetPreload(res, model.Request{}, preload, depth).Limit(1).Find(&request)
 //	if res.RowsAffected == 0 {
 //		return model.Request{}, false, "RequestNotFound"
 //	}
@@ -82,7 +82,7 @@ func InitRequestRepo(tx *gorm.DB) *RequestRepo {
 //		return requests, count, false, msg
 //	}
 //	res := r.DB.Model(&model.Request{})
-//	res =  model.GetPreload(res, model.Request{}, preload, depth).Find(&requests).Limit(limit).Offset(offset)
+//	res =  model.GetPreload(res, model.Request{}, preload, depth).Limit(limit).Offset(offset).Find(&requests)
 //	if res.Error != nil {
 //		log.Logger.Warningf("Failed to get all Requests: %s", res.Error)
 //		return requests, count, false, "GetRequestError"

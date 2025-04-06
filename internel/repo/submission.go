@@ -52,7 +52,7 @@ func InitSubmissionRepo(tx *gorm.DB) *SubmissionRepo {
 //	}
 //	var submission model.Submission
 //	res := s.DB.Model(&model.Submission{}).Where(key+" = ?", value)
-//	res = model.GetPreload(res, model.Notice{}, preload, depth).Find(&submission).Limit(1)
+//	res = model.GetPreload(res, model.Notice{}, preload, depth).Limit(1).Find(&submission)
 //	if res.RowsAffected == 0 {
 //		return model.Submission{}, false, "SubmissionNotFound"
 //	}
@@ -88,7 +88,7 @@ func (s *SubmissionRepo) GetAllByKeyID(key string, id uint, limit, offset int, p
 	if solved {
 		res = res.Where("solved = ?", true)
 	}
-	res = model.GetPreload(res, s.Model, preload, depth).Find(&submissions).Limit(limit).Offset(offset)
+	res = model.GetPreload(res, s.Model, preload, depth).Limit(limit).Offset(offset).Find(&submissions)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Submissions: %s", res.Error)
 		return submissions, count, false, "GetSubmissionError"

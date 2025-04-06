@@ -74,7 +74,7 @@ func (u *UserRepo) getByUniqueKey(key string, value interface{}, preload bool, d
 	}
 	var user model.User
 	res := u.DB.Model(&model.User{}).Where(key+" = ?", value)
-	res = model.GetPreload(res, "User", preload, depth).Find(&user).Limit(1)
+	res = model.GetPreload(res, "User", preload, depth).Limit(1).Find(&user)
 	if res.RowsAffected == 0 {
 		return model.User{}, false, "UserNotFound"
 	}
@@ -125,7 +125,7 @@ func (u *UserRepo) GetAll(limit, offset int, preload bool, depth int, hidden, ba
 	if !banned {
 		res = res.Where("hidden = ?", false)
 	}
-	res = model.GetPreload(res, u.Model, preload, depth).Find(&users).Limit(limit).Offset(offset)
+	res = model.GetPreload(res, u.Model, preload, depth).Limit(limit).Offset(offset).Find(&users)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Users: %s", res.Error)
 		return users, count, false, "GetUserError"

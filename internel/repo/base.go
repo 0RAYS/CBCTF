@@ -35,7 +35,7 @@ func (r *Repo[T]) getByUniqueKey(key string, value interface{}, preload bool, de
 	}
 	var m T
 	res := r.DB.Model(new(T)).Where(key+" = ?", value)
-	res = model.GetPreload(res, r.Model, preload, depth).Find(&m).Limit(1)
+	res = model.GetPreload(res, r.Model, preload, depth).Limit(1).Find(&m)
 	if res.RowsAffected == 0 {
 		return m, false, fmt.Sprintf("%sNotFound", r.Model)
 	}
@@ -64,7 +64,7 @@ func (r *Repo[T]) GetAll(limit, offset int, preload bool, depth int) ([]T, int64
 		return ms, count, false, msg
 	}
 	res := r.DB.Model(new(T))
-	res = model.GetPreload(res, r.Model, preload, depth).Find(&ms).Limit(limit).Offset(offset)
+	res = model.GetPreload(res, r.Model, preload, depth).Limit(limit).Offset(offset).Find(&ms)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get all %T: %s", new(T), res.Error)
 		return ms, count, false, fmt.Sprintf("Get%sError", r.Model)

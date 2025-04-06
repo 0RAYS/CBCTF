@@ -41,20 +41,20 @@ func InitTeamRepo(tx *gorm.DB) *TeamRepo {
 }
 
 func (t *TeamRepo) IsUniqueName(contestID uint, name string) bool {
-	res := t.DB.Model(&model.Team{}).Where("contest_id = ? AND name = ?", contestID, name).
-		Find(&model.Team{}).Limit(1)
+	res := t.DB.Model(&model.Team{}).Where("contest_id = ? AND name = ?", contestID, name).Limit(1).
+		Find(&model.Team{})
 	return res.RowsAffected == 0
 }
 
 func (t *TeamRepo) IsTeamMember(teamID uint, userID uint) bool {
 	res := t.DB.Model(&model.UserTeam{}).
-		Where("team_id = ? AND user_id = ?", teamID, userID).Find(&model.UserTeam{}).Limit(1)
+		Where("team_id = ? AND user_id = ?", teamID, userID).Limit(1).Find(&model.UserTeam{})
 	return res.RowsAffected == 1
 }
 
 func (t *TeamRepo) IsUniqueMember(contestID uint, userID uint) bool {
 	res := t.DB.Model(&model.UserContest{}).
-		Where("contest_id = ? AND user_id = ?", contestID, userID).Find(&model.UserContest{}).Limit(1)
+		Where("contest_id = ? AND user_id = ?", contestID, userID).Limit(1).Find(&model.UserContest{})
 	return res.RowsAffected == 0
 }
 
@@ -80,7 +80,7 @@ func (t *TeamRepo) getByUniqueKey(key string, value interface{}, preload bool, d
 	}
 	var team model.Team
 	res := t.DB.Model(&model.Team{}).Where(key+" = ?", value)
-	res = model.GetPreload(res, t.Model, preload, depth).Find(&team).Limit(1)
+	res = model.GetPreload(res, t.Model, preload, depth).Limit(1).Find(&team)
 	if res.RowsAffected == 0 {
 		return model.Team{}, false, "TeamNotFound"
 	}
@@ -98,7 +98,7 @@ func (t *TeamRepo) GetByCaptainID(captainID uint, preload bool, depth int) (mode
 func (t *TeamRepo) GetByName(contestID uint, name string, preload bool, depth int) (model.Team, bool, string) {
 	var team model.Team
 	res := t.DB.Model(&model.Team{}).Where("contest_id = ? AND name = ?", contestID, name)
-	res = model.GetPreload(res, t.Model, preload, depth).Find(&team).Limit(1)
+	res = model.GetPreload(res, t.Model, preload, depth).Limit(1).Find(&team)
 	if res.RowsAffected == 0 {
 		return model.Team{}, false, "TeamNotFound"
 	}
@@ -151,7 +151,7 @@ func (t *TeamRepo) GetAll(contestID uint, limit, offset int, preload bool, depth
 	if !banned {
 		res = res.Where("banned = ?", false)
 	}
-	res = model.GetPreload(res, t.Model, preload, depth).Find(&teams).Limit(limit).Offset(offset)
+	res = model.GetPreload(res, t.Model, preload, depth).Limit(limit).Offset(offset).Find(&teams)
 	if res.Error != nil {
 		log.Logger.Errorf("Failed to get Teams: %s", res.Error)
 		return teams, count, false, msg

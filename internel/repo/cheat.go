@@ -52,7 +52,7 @@ func InitCheatRepo(tx *gorm.DB) *CheatRepo {
 //	}
 //	var cheat model.Cheat
 //	res := c.DB.Model(&model.Cheat{}).Where(key+" = ?", value)
-//	res = model.GetPreload(res, model.Cheat{}, preload, depth).Find(&cheat).Limit(1)
+//	res = model.GetPreload(res, model.Cheat{}, preload, depth).Limit(1).Find(&cheat)
 //	if res.RowsAffected == 0 {
 //		return model.Cheat{}, false, "CheatNotFound"
 //	}
@@ -82,7 +82,7 @@ func InitCheatRepo(tx *gorm.DB) *CheatRepo {
 //		return cheats, count, false, msg
 //	}
 //	res := c.DB.Model(&model.Cheat{})
-//	res = model.GetPreload(res, model.Cheat{}, preload, depth).Find(&cheats).Limit(limit).Offset(offset)
+//	res = model.GetPreload(res, model.Cheat{}, preload, depth).Limit(limit).Offset(offset).Find(&cheats)
 //	if res.Error != nil {
 //		log.Logger.Warningf("Failed to get Cheats: %s", res.Error)
 //		return cheats, count, false, "GetCheatError"
