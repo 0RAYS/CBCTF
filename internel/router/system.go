@@ -77,7 +77,7 @@ func SystemStatus(ctx *gin.Context) {
 	var DB = db.DB.WithContext(ctx)
 	ret["users"], _, _ = db.InitUserRepo(DB).Count(true, true)
 	ret["contests"], _, _ = db.InitContestRepo(DB).Count(true)
-	ret["ip"], _, _ = db.InitRequestRepo(DB).Count()
+	ret["ip"], _, _ = db.InitRequestRepo(DB).CountIP()
 	ret["challenges"], _, _ = db.InitChallengeRepo(DB).Count("", "")
 	middleware.MU.Lock()
 	if middleware.TotalRequests == 0 {

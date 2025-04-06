@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"gorm.io/gorm"
 	"time"
@@ -72,6 +73,16 @@ func InitRequestRepo(tx *gorm.DB) *RequestRepo {
 //	}
 //	return count, true, "Success"
 //}
+
+func (r *RequestRepo) CountIP() (int64, bool, string) {
+	var count int64
+	res := r.DB.Model(&model.Request{}).Distinct("ip").Count(&count)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to count Requests: %s", res.Error)
+		return 0, false, "CountModelError"
+	}
+	return count, true, "Success"
+}
 
 //func (r *RequestRepo) GetAll(limit, offset int, preload bool, depth int) ([]model.Request, int64, bool, string) {
 //	var (
