@@ -57,12 +57,12 @@ func GetCategories(ctx *gin.Context) {
 
 func GetChallengeFiles(ctx *gin.Context) {
 	challenge := middleware.GetChallenge(ctx)
-	var files []string
 	dir, err := os.ReadDir(challenge.BasicDir())
 	if err != nil {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "ReadDirError", "data": nil})
 		return
 	}
+	files := make([]string, 0)
 	for _, file := range dir {
 		files = append(files, file.Name())
 	}
