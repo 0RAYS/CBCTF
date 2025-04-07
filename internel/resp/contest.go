@@ -34,6 +34,7 @@ func GetContestResp(contest model.Contest, admin bool) gin.H {
 		}(),
 	}
 	if admin {
+		data["blood"] = contest.Blood
 		data["hidden"] = contest.Hidden
 		data["captcha"] = contest.Captcha
 	}
