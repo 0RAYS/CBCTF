@@ -176,7 +176,6 @@ func CreateTeam(ctx *gin.Context) {
 	ok, msg := service.CreateTeam(tx, contest, user, form)
 	if !ok {
 		tx.Rollback()
-		return
 	} else {
 		tx.Commit()
 	}
