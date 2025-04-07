@@ -17,7 +17,7 @@ func Submit(tx *gorm.DB, contest model.Contest, user model.User, team model.Team
 		return model.Submission{}, false, "NotAllowSubmit"
 	}
 	submissionRepo := db.InitSubmissionRepo(tx)
-	submission, ok, msg := submissionRepo.Create(db.CreateSubmissionOptions{
+	options := db.CreateSubmissionOptions{
 		UsageID:     usage.ID,
 		ContestID:   team.ContestID,
 		ChallengeID: usage.ChallengeID,
@@ -26,11 +26,16 @@ func Submit(tx *gorm.DB, contest model.Contest, user model.User, team model.Team
 		Value:       form.Flag,
 		Solved:      false,
 		Score:       team.Score,
-	})
+	}
 	solved, flag, ok, msg := VerifyFlag(tx, team, usage, form.Flag)
+	options.FlagID = flag.ID
 	if !ok {
+		if options.FlagID > 0 {
+			submissionRepo.Create(options)
+		}
 		return model.Submission{}, false, msg
 	}
+	submission, ok, msg := submissionRepo.Create(options)
 	if solved {
 		submission.Solved = true
 		submissionRepo.Update(submission.ID, db.UpdateSubmissionOptions{Solved: &solved})
