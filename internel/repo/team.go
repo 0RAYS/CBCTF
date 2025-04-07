@@ -93,8 +93,8 @@ func (t *TeamRepo) GetBy2ID(userID uint, contestID uint) (model.Team, bool, stri
 	user, ok, msg := InitUserRepo(t.DB).
 		GetByID(
 			userID, true,
-			"User.Teams.Contest", "User.Teams.Users", "Users.Teams.Answers", "Users.Teams.Submissions",
-			"Users.Teams.Containers", "Users.Teams.Cheats",
+			"Teams.Contest", "Teams.Users", "Teams.Answers", "Teams.Submissions",
+			"Teams.Containers", "Teams.Cheats",
 		)
 	if !ok {
 		return model.Team{}, false, msg
