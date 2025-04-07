@@ -28,7 +28,7 @@ func GetUsageStatus(ctx *gin.Context) {
 			return ""
 		}
 		return usage.Challenge.AttachmentPath(team.ID)
-	}
+	}()
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
 }
 
@@ -63,7 +63,7 @@ func GetUsages(ctx *gin.Context) {
 					return ""
 				}
 				return usage.Challenge.AttachmentPath(team.ID)
-			}
+			}()
 		}
 		data = append(data, tmp)
 	}
