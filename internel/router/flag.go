@@ -3,6 +3,7 @@ package router
 import (
 	f "CBCTF/internel/form"
 	"CBCTF/internel/middleware"
+	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/resp"
 	"CBCTF/internel/service"
@@ -17,7 +18,7 @@ func SubmitFlag(ctx *gin.Context) {
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	user := middleware.GetUser(ctx)
+	user := middleware.GetSelf(ctx).(model.User)
 	team := middleware.GetTeam(ctx)
 	usage := middleware.GetUsage(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
