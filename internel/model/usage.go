@@ -23,7 +23,7 @@ type Usage struct {
 	Containers  []Container    `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Submissions []Submission   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	CreatedAt   time.Time      `json:"-"`
-	UpdateAt    time.Time      `json:"-"`
+	UpdatedAt   time.Time      `json:"-"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 	Version     uint           `gorm:"default:1" json:"-"`
 }
