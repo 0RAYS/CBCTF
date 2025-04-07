@@ -32,6 +32,12 @@ func GetUsageStatus(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
 }
 
+func GetUsage(ctx *gin.Context) {
+	usage := middleware.GetUsage(ctx)
+	data := resp.GetUsageResp(usage, true)
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
+}
+
 func GetUsages(ctx *gin.Context) {
 	var (
 		all     = middleware.GetRole(ctx) == "admin"

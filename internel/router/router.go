@@ -173,6 +173,7 @@ func Init() *gin.Engine {
 			adminContest.POST("/challenges", AddUsage)
 			adminContestUsage := adminContest.Group("/challenges/:challengeID", middleware.SetUsage)
 			{
+				adminContestUsage.GET("", GetUsage)
 				adminContestUsage.PUT("", UpdateUsage)
 				adminContestUsage.DELETE("", RemoveUsage)
 
