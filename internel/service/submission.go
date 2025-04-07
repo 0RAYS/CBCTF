@@ -39,6 +39,8 @@ func Submit(tx *gorm.DB, contest model.Contest, user model.User, team model.Team
 	if solved {
 		submission.Solved = true
 		submissionRepo.Update(submission.ID, db.UpdateSubmissionOptions{Solved: &solved})
+		answerRepo := db.InitAnswerRepo(tx)
+		answerRepo.Update(flag.ID, db.UpdateAnswerOptions{Solved: &solved})
 		// 正确时需要更新分数等信息, 加锁
 		mu, _ := SolvedMutex.LoadOrStore(usage.ID, &sync.Mutex{})
 		mu.(*sync.Mutex).Lock()
