@@ -162,12 +162,14 @@ func CalcTeamScore(tx *gorm.DB, teamID uint) (float64, bool, string) {
 			continue
 		}
 		for _, flag := range usage.Flags {
-			_, score, ok, msg = CalcSolversAndScore(tx, flag)
-			if !ok {
-				continue
+			if flag.ID == submission.FlagID {
+				_, score, ok, msg = CalcSolversAndScore(tx, flag)
+				if !ok {
+					continue
+				}
+				rate, _ := flag.CalcBlood(team.ID)
+				total += score + flag.Score*rate
 			}
-			rate, _ := flag.CalcBlood(team.ID)
-			total += score + flag.Score*rate
 		}
 	}
 	score = math.Trunc(score*100) / 100

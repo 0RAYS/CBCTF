@@ -52,15 +52,21 @@ func UpdateFlag(tx *gorm.DB, flag model.Flag, form f.UpdateFlagForm) (bool, stri
 }
 
 func CalcSolversAndScore(tx *gorm.DB, flag model.Flag) (int64, float64, bool, string) {
-	solvedCount, ok, msg := CountFlagSolved(tx, flag)
+	count, ok, msg := db.InitSubmissionRepo(tx).CountByKeyID("flag_id", flag.ID, true)
 	if !ok {
 		return 0, 0, false, msg
 	}
-	score := flag.CalcNewScore(solvedCount)
+	//TODO 使用定时任务代替, 提升性能
+	//if count < flag.Solvers {
+	//	// 不考虑更新失败的情况, 不回滚
+	//	flagRepo := db.InitFlagRepo(tx)
+	//	flagRepo.Update(flag.ID, db.UpdateFlagOptions{Solvers: &count})
+	//}
+	score := flag.CalcNewScore(count - 1)
 	if score != flag.CurrentScore {
 		// 不考虑更新失败的情况, 不回滚
 		repo := db.InitFlagRepo(tx)
 		repo.Update(flag.ID, db.UpdateFlagOptions{CurrentScore: &score})
 	}
-	return solvedCount, score, true, "Success"
+	return count, score, true, "Success"
 }
