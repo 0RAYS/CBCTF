@@ -10,7 +10,7 @@ type Admin struct {
 	ID        uint           `gorm:"primarykey" json:"id"`
 	Name      string         `gorm:"not null" json:"name"`
 	Password  string         `gorm:"not null" json:"-"`
-	Email     string         `gorm:"index:idx_email_deleted,unique;not null" json:"email"`
+	Email     string         `gorm:"not null" json:"email"`
 	Avatar    string         `json:"avatar"`
 	Verified  bool           `gorm:"default:false" json:"verified"`
 	Notices   []Notice       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
