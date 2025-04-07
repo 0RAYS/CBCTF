@@ -18,7 +18,7 @@ type Team struct {
 	Hidden      bool           `gorm:"default:false" json:"hidden"`
 	CaptainID   uint           `json:"captain_id"`
 	Rank        int            `gorm:"default:-1" json:"rank"`
-	Last        time.Time      `json:"last"`
+	Last        time.Time      `gorm:"default:null" json:"last"`
 	Users       []*User        `gorm:"many2many:user_teams;" json:"-"`
 	Answers     []Answer       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Submissions []Submission   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
