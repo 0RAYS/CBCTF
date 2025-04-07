@@ -2,8 +2,9 @@ package form
 
 // CreateTeamForm for create team
 type CreateTeamForm struct {
-	Name string `form:"name" json:"name" binding:"required"`
-	Desc string `form:"desc" json:"desc"`
+	Name    string `form:"name" json:"name" binding:"required"`
+	Desc    string `form:"desc" json:"desc"`
+	Captcha string `form:"captcha" json:"captcha"`
 }
 
 // UpdateTeamForm for user update team info
