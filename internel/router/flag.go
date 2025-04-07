@@ -17,12 +17,11 @@ func SubmitFlag(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	contest := middleware.GetContest(ctx)
 	user := middleware.GetSelf(ctx).(model.User)
 	team := middleware.GetTeam(ctx)
 	usage := middleware.GetUsage(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
-	submission, ok, msg := service.Submit(tx, contest, user, team, usage, form)
+	submission, ok, msg := service.Submit(tx, user, team, usage, form)
 	if !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -30,7 +29,8 @@ func SubmitFlag(ctx *gin.Context) {
 	}
 	tx.Commit()
 	if submission.Solved {
-		go service.UpdateTeamRanking(db.DB.WithContext(ctx), team.ContestID)
+		//TODO 使用定时任务代替, 提升性能
+		//go service.UpdateTeamRanking(db.DB.WithContext(ctx), team.ContestID)
 		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
 		return
 	}

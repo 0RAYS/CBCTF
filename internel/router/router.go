@@ -5,7 +5,9 @@ import (
 	"CBCTF/internel/log"
 	"CBCTF/internel/middleware"
 	"CBCTF/internel/model"
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
+	_ "net/http/pprof"
 )
 
 func Init() *gin.Engine {
@@ -15,6 +17,7 @@ func Init() *gin.Engine {
 	if err := router.SetTrustedProxies(config.Env.Gin.Proxies); err != nil {
 		log.Logger.Warningf("Set trusted proxies failed: %v", err)
 	}
+	pprof.Register(router)
 	router.MaxMultipartMemory = int64(config.Env.Gin.Upload.Max << 20)
 	router.Use(
 		middleware.Logger(), gin.Recovery(), middleware.SetTrace, middleware.Cors,

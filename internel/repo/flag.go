@@ -5,6 +5,7 @@ import (
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
 	"gorm.io/gorm"
+	"time"
 )
 
 type FlagRepo struct {
@@ -32,6 +33,7 @@ type UpdateFlagOptions struct {
 	ScoreType    *uint        `json:"score_type"`
 	Solvers      *int64       `json:"solvers"`
 	Blood        *model.Uints `json:"blood"`
+	Last         *time.Time   `json:"last"`
 }
 
 func InitFlagRepo(tx *gorm.DB) *FlagRepo {

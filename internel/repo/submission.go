@@ -24,7 +24,8 @@ type CreateSubmissionOptions struct {
 }
 
 type UpdateSubmissionOptions struct {
-	Solved *bool `json:"solved"`
+	Solved *bool    `json:"solved"`
+	Score  *float64 `json:"score"`
 }
 
 func InitSubmissionRepo(tx *gorm.DB) *SubmissionRepo {
@@ -37,6 +38,7 @@ func (s *SubmissionRepo) CountByKeyID(key string, id uint, solved bool) (int64, 
 	if solved {
 		res = res.Where("solved = ?", true)
 	}
+	res = res.Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Submissions: %s", res.Error)
 		return 0, false, "CountModelError"
