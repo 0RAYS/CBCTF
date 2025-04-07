@@ -10,6 +10,9 @@ import (
 
 func CreateContest(tx *gorm.DB, form f.CreateContestForm) (model.Contest, bool, string) {
 	repo := db.InitContestRepo(tx)
+	if !repo.IsUniqueName(form.Name) {
+		return model.Contest{}, false, "DuplicateContestName"
+	}
 	if form.Start == (time.Time{}) {
 		form.Start = time.Now()
 	}
