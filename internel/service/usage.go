@@ -10,18 +10,17 @@ import (
 
 // CreateUsage 批量将题目添加至比赛, 采用局部回滚, 返回值 bool string 永为 true "Success"
 func CreateUsage(tx *gorm.DB, contest model.Contest, form f.CreateUsageForm) ([]model.Usage, []string, bool, string) {
-	usageRepo := db.InitUsageRepo(tx)
-	challengeRepo := db.InitChallengeRepo(tx)
-	flagRepo := db.InitFlagRepo(tx)
 	usages := make([]model.Usage, 0)
 	failed := make([]string, 0)
 	for _, challengeID := range form.ChallengeID {
-		if _, ok, _ := usageRepo.GetBy2ID(contest.ID, challengeID, false, 0, true); ok {
+		if _, ok, _ := db.InitUsageRepo(tx).GetBy2ID(contest.ID, challengeID, false, 0, true); ok {
 			continue
 		}
 		// 局部回滚
-		_ = tx.Transaction(func(tx *gorm.DB) error {
-			tx2 := tx.Begin()
+		_ = tx.Transaction(func(tx2 *gorm.DB) error {
+			usageRepo := db.InitUsageRepo(tx2)
+			challengeRepo := db.InitChallengeRepo(tx2)
+			flagRepo := db.InitFlagRepo(tx2)
 			challenge, ok, msg := challengeRepo.GetByID(challengeID, false, 0)
 			if !ok {
 				failed = append(failed, challengeID)
@@ -80,11 +79,10 @@ func CreateUsage(tx *gorm.DB, contest model.Contest, form f.CreateUsageForm) ([]
 				for i, docker := range challenge.Dockers {
 					for _, s := range docker.Flags {
 						options.Value = s
-						flag, ok, _ := flagRepo.Create(options)
+						flag, ok, msg := flagRepo.Create(options)
 						if !ok {
 							failed = append(failed, challengeID)
-							tx2.Rollback()
-							break
+							return errors.New(msg)
 						}
 						usage.Dockers[i].FlagsID = append(usage.Dockers[i].FlagsID, flag.ID)
 					}
