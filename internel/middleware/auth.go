@@ -26,7 +26,7 @@ func CheckAuth(ctx *gin.Context) {
 		return
 	}
 	if claims.Type == "admin" {
-		admin, ok, msg := db.InitAdminRepo(DB).GetByID(claims.UserID, true, 0)
+		admin, ok, msg := db.InitAdminRepo(DB).GetByID(claims.UserID, true)
 		if !ok {
 			ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			ctx.Abort()
@@ -36,7 +36,7 @@ func CheckAuth(ctx *gin.Context) {
 		ctx.Set("Self", admin)
 		ctx.Next()
 	} else if claims.Type == "user" {
-		user, ok, msg := db.InitUserRepo(DB).GetByID(claims.UserID, true, 0)
+		user, ok, msg := db.InitUserRepo(DB).GetByID(claims.UserID, true)
 		if !ok {
 			ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			ctx.Abort()

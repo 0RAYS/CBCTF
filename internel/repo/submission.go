@@ -31,39 +31,6 @@ func InitSubmissionRepo(tx *gorm.DB) *SubmissionRepo {
 	return &SubmissionRepo{Repo: Repo[model.Submission]{DB: tx, Model: "Submission"}}
 }
 
-//func (s *SubmissionRepo) Create(options CreateSubmissionOptions) (model.Submission, bool, string) {
-//	submission, err := utils.S2S[model.Submission](options)
-//	if err != nil {
-//		log.Logger.Warningf("Failed to conver options to model.Submission: %s", err)
-//		return model.Submission{}, false, "Options2ModelError"
-//	}
-//	if res := s.DB.Model(&model.Submission{}).Create(&submission); res.Error != nil {
-//		log.Logger.Warningf("Failed to create Submission: %s", res.Error)
-//		return model.Submission{}, false, "CreateSubmissionError"
-//	}
-//	return submission, true, "Success"
-//}
-
-//func (s *SubmissionRepo) getByUniqueKey(key string, value interface{}, preload bool, depth int) (model.Submission, bool, string) {
-//	switch key {
-//	case "id":
-//		value = value.(uint)
-//	default:
-//		return model.Submission{}, false, "UnsupportedKey"
-//	}
-//	var submission model.Submission
-//	res := s.DB.Model(&model.Submission{}).Where(key+" = ?", value)
-//	res = model.GetPreload(res, model.Notice{}, preload, depth).Limit(1).Find(&submission)
-//	if res.RowsAffected == 0 {
-//		return model.Submission{}, false, "SubmissionNotFound"
-//	}
-//	return submission, true, "Success"
-//}
-
-//func (s *SubmissionRepo) GetByID(id uint, preload bool, depth int) (model.Submission, bool, string) {
-//	return s.getByUniqueKey("id", id, preload, depth)
-//}
-
 func (s *SubmissionRepo) CountByKeyID(key string, id uint, solved bool) (int64, bool, string) {
 	var count int64
 	res := s.DB.Model(&model.Submission{}).Where(key+" = ?", id)
@@ -77,7 +44,7 @@ func (s *SubmissionRepo) CountByKeyID(key string, id uint, solved bool) (int64, 
 	return count, true, "Success"
 }
 
-func (s *SubmissionRepo) GetAllByKeyID(key string, id uint, limit, offset int, preload bool, depth int, solved bool) ([]model.Submission, int64, bool, string) {
+func (s *SubmissionRepo) GetAllByKeyID(key string, id uint, limit, offset int, solved, preload bool, nestedL ...string) ([]model.Submission, int64, bool, string) {
 	var (
 		submissions    = make([]model.Submission, 0)
 		count, ok, msg = s.CountByKeyID(key, id, solved)
@@ -89,7 +56,7 @@ func (s *SubmissionRepo) GetAllByKeyID(key string, id uint, limit, offset int, p
 	if solved {
 		res = res.Where("solved = ?", true)
 	}
-	res = model.GetPreload(res, s.Model, preload, depth).Limit(limit).Offset(offset).Find(&submissions)
+	res = model.GetPreload(res, preload, nestedL...).Limit(limit).Offset(offset).Find(&submissions)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Submissions: %s", res.Error)
 		return submissions, count, false, "GetSubmissionError"
@@ -106,7 +73,7 @@ func (s *SubmissionRepo) Update(id uint, options UpdateSubmissionOptions) (bool,
 			log.Logger.Warningf("Failed to update Submission: too many times failed due to optimistic lock")
 			return false, "DeadLock"
 		}
-		submission, ok, msg := s.GetByID(id, false, 0)
+		submission, ok, msg := s.GetByID(id, false)
 		if !ok {
 			return ok, msg
 		}
@@ -124,12 +91,3 @@ func (s *SubmissionRepo) Update(id uint, options UpdateSubmissionOptions) (bool,
 	}
 	return true, "Success"
 }
-
-//func (s *SubmissionRepo) Delete(idL ...uint) (bool, string) {
-//	res := s.DB.Model(&model.Submission{}).Where("id IN ?", idL).Delete(&model.Submission{})
-//	if res.Error != nil {
-//		log.Logger.Warningf("Failed to delete Submission: %s", res.Error)
-//		return false, "DeleteSubmissionError"
-//	}
-//	return true, "Success"
-//}

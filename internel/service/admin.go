@@ -31,7 +31,7 @@ func CreateAdmin(tx *gorm.DB, form f.CreateAdminForm) (model.Admin, bool, string
 
 func VerifyAdmin(tx *gorm.DB, form f.LoginForm) (model.Admin, bool, string) {
 	repo := db.InitAdminRepo(tx)
-	admin, ok, msg := repo.GetByName(form.Name, true, 0)
+	admin, ok, msg := repo.GetByName(form.Name, true)
 	if !ok {
 		return model.Admin{}, false, msg
 	}

@@ -44,46 +44,13 @@ func (u *UsageRepo) IsUniqueChallenge(contestID uint, challengeID string) bool {
 	return res.RowsAffected == 0
 }
 
-//func (u *UsageRepo) Create(options CreateUsageOptions) (model.Usage, bool, string) {
-//	usage, err := utils.S2S[model.Usage](options)
-//	if err != nil {
-//		log.Logger.Warningf("Failed to convert options to model.Usage: %s", err)
-//		return model.Usage{}, false, "Options2ModelError"
-//	}
-//	if res := u.DB.Model(&model.Usage{}).Create(&usage); res.Error != nil {
-//		log.Logger.Warningf("Failed to create Usage: %s", res.Error)
-//		return model.Usage{}, false, "CreateUsageError"
-//	}
-//	return usage, true, "Success"
-//}
-
-//func (u *UsageRepo) getByUniqueKey(key string, value interface{}, preload bool, depth int) (model.Usage, bool, string) {
-//	switch key {
-//	case "id":
-//		value = value.(uint)
-//	default:
-//		return model.Usage{}, false, "UnsupportedKey"
-//	}
-//	var usage model.Usage
-//	res := u.DB.Model(&model.Usage{}).Where(key+" = ?", value)
-//	res = model.GetPreload(res, model.Submission{}, preload, depth).Limit(1).Find(&usage)
-//	if res.RowsAffected == 0 {
-//		return model.Usage{}, false, "UsageNotFound"
-//	}
-//	return usage, true, "Success"
-//}
-
-//func (u *UsageRepo) GetByID(id uint, preload bool, depth int) (model.Usage, bool, string) {
-//	return u.getByUniqueKey("id", id, preload, depth)
-//}
-
-func (u *UsageRepo) GetBy2ID(contestID uint, challengeID string, preload bool, depth int, hidden bool) (model.Usage, bool, string) {
+func (u *UsageRepo) GetBy2ID(contestID uint, challengeID string, hidden, preload bool, nestedL ...string) (model.Usage, bool, string) {
 	var usage model.Usage
 	res := u.DB.Model(&model.Usage{}).Where("contest_id = ? AND challenge_id = ?", contestID, challengeID)
 	if !hidden {
 		res = res.Where("hidden = ?", false)
 	}
-	res = model.GetPreload(res, u.Model, preload, depth).Limit(1).Find(&usage)
+	res = model.GetPreload(res, preload, nestedL...).Limit(1).Find(&usage)
 	if res.RowsAffected == 0 {
 		return model.Usage{}, false, "UsageNotFound"
 	}
@@ -104,7 +71,7 @@ func (u *UsageRepo) Count(contestID uint, hidden bool) (int64, bool, string) {
 	return count, true, "Success"
 }
 
-func (u *UsageRepo) GetAll(contestID uint, limit, offset int, preload bool, depth int, hidden bool) ([]model.Usage, int64, bool, string) {
+func (u *UsageRepo) GetAll(contestID uint, limit, offset int, hidden bool, preload bool, nestedL ...string) ([]model.Usage, int64, bool, string) {
 	var (
 		usages         = make([]model.Usage, 0)
 		count, ok, msg = u.Count(contestID, hidden)
@@ -116,7 +83,7 @@ func (u *UsageRepo) GetAll(contestID uint, limit, offset int, preload bool, dept
 	if !hidden {
 		res = res.Where("hidden = ?", false)
 	}
-	res = model.GetPreload(res, u.Model, preload, depth).Limit(limit).Offset(offset).Find(&usages)
+	res = model.GetPreload(res, preload, nestedL...).Limit(limit).Offset(offset).Find(&usages)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Usages: %s", res.Error)
 		return usages, count, false, "GetUsageError"
@@ -133,7 +100,7 @@ func (u *UsageRepo) Update(id uint, options UpdateUsageOptions) (bool, string) {
 			log.Logger.Warningf("Failed to update Usage: too many times failed due to optimistic lock")
 			return false, "DeadLock"
 		}
-		usage, ok, msg := u.GetByID(id, false, 0)
+		usage, ok, msg := u.GetByID(id, false)
 		if !ok {
 			return false, msg
 		}
@@ -151,12 +118,3 @@ func (u *UsageRepo) Update(id uint, options UpdateUsageOptions) (bool, string) {
 	}
 	return true, "Success"
 }
-
-//func (u *UsageRepo) Delete(idL ...uint) (bool, string) {
-//	res := u.DB.Model(&model.Usage{}).Where("id IN ?", idL).Delete(&model.Usage{})
-//	if res.Error != nil {
-//		log.Logger.Warningf("Failed to delete Usage: %s", res.Error)
-//		return false, "DeleteUsageError"
-//	}
-//	return true, "Success"
-//}

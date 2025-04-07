@@ -38,40 +38,6 @@ func InitFlagRepo(tx *gorm.DB) *FlagRepo {
 	return &FlagRepo{Repo: Repo[model.Flag]{DB: tx, Model: "Flag"}}
 }
 
-//func (f *FlagRepo) Create(options CreateFlagOptions) (model.Flag, bool, string) {
-//	flag, err := utils.S2S[model.Flag](options)
-//	if err != nil {
-//		log.Logger.Warningf("Failed to convert options to model.Flag: %s", err)
-//		return model.Flag{}, false, "Options2ModelError"
-//	}
-//	res := f.DB.Model(&model.Flag{}).Create(&flag)
-//	if res.Error != nil {
-//		log.Logger.Warningf("Failed to create Flag: %s", res.Error)
-//		return model.Flag{}, false, "CreateFlagError"
-//	}
-//	return flag, true, "Success"
-//}
-
-//func (f *FlagRepo) getByUniqueKey(key string, value interface{}, preload bool, depth int) (model.Flag, bool, string) {
-//	switch key {
-//	case "id":
-//		value = value.(uint)
-//	default:
-//		return model.Flag{}, false, "UnsupportedKey"
-//	}
-//	var flag model.Flag
-//	res := f.DB.Model(&model.Flag{}).Where(key+" = ?", value).First(&flag)
-//	res = model.GetPreload(res, model.Flag{}, preload, depth).Limit(1).Find(&flag)
-//	if res.RowsAffected == 0 {
-//		return model.Flag{}, false, "FlagNotFound"
-//	}
-//	return flag, true, "Success"
-//}
-
-//func (f *FlagRepo) GetByID(id uint, preload bool, depth int) (model.Flag, bool, string) {
-//	return f.getByUniqueKey("id", id, preload, depth)
-//}
-
 func (f *FlagRepo) Count(key string, id uint) (int64, bool, string) {
 	var count int64
 	res := f.DB.Model(&model.Flag{}).Where(key+" = ?", id).Count(&count)
@@ -82,7 +48,7 @@ func (f *FlagRepo) Count(key string, id uint) (int64, bool, string) {
 	return count, true, "Success"
 }
 
-func (f *FlagRepo) GetByKeyID(key string, id uint, limit, offset int, preload bool, depth int) ([]model.Flag, int64, bool, string) {
+func (f *FlagRepo) GetByKeyID(key string, id uint, limit, offset int, preload bool, nestedL ...string) ([]model.Flag, int64, bool, string) {
 	var (
 		flags          = make([]model.Flag, 0)
 		count, ok, msg = f.Count(key, id)
@@ -91,7 +57,7 @@ func (f *FlagRepo) GetByKeyID(key string, id uint, limit, offset int, preload bo
 		return flags, count, false, msg
 	}
 	res := f.DB.Model(&model.Flag{}).Where(key+" = ?", id)
-	res = model.GetPreload(res, f.Model, preload, depth).Limit(limit).Offset(offset).Find(&flags)
+	res = model.GetPreload(res, preload, nestedL...).Limit(limit).Offset(offset).Find(&flags)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Flags: %s", res.Error)
 		return flags, count, false, "GetFlagError"
@@ -108,7 +74,7 @@ func (f *FlagRepo) Update(id uint, options UpdateFlagOptions) (bool, string) {
 			log.Logger.Warningf("Failed to update Flag: too many times failed due to optimistic lock")
 			return false, "DeadLock"
 		}
-		flag, ok, msg := f.GetByID(id, false, 0)
+		flag, ok, msg := f.GetByID(id, false)
 		if !ok {
 			return false, msg
 		}
@@ -126,12 +92,3 @@ func (f *FlagRepo) Update(id uint, options UpdateFlagOptions) (bool, string) {
 	}
 	return true, "Success"
 }
-
-//func (f *FlagRepo) Delete(idL ...uint) (bool, string) {
-//	res := f.DB.Model(&model.Flag{}).Where("id IN ?", idL).Delete(&model.Flag{})
-//	if res.Error != nil {
-//		log.Logger.Warningf("Failed to delete Flag: %s", res.Error)
-//		return false, "DeleteFlagError"
-//	}
-//	return true, "Success"
-//}

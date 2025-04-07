@@ -27,40 +27,6 @@ func InitNoticeRepo(tx *gorm.DB) *NoticeRepo {
 	return &NoticeRepo{Repo: Repo[model.Notice]{DB: tx, Model: "Notice"}}
 }
 
-//func (n *NoticeRepo) Create(options CreateNoticeOptions) (model.Notice, bool, string) {
-//	notice, err := utils.S2S[model.Notice](options)
-//	if err != nil {
-//		log.Logger.Warningf("Failed to convert options to model.Notice: %s", err)
-//		return model.Notice{}, false, "Options2ModelError"
-//	}
-//	res := n.DB.Model(&model.Notice{}).Create(&notice)
-//	if res.Error != nil {
-//		log.Logger.Warningf("Failed to create Notice: %s", res.Error)
-//		return model.Notice{}, false, "CreateNoticeError"
-//	}
-//	return notice, true, "Success"
-//}
-
-//func (n *NoticeRepo) getByUniqueKey(key string, value interface{}, preload bool, depth int) (model.Notice, bool, string) {
-//	switch key {
-//	case "id":
-//		value = value.(uint)
-//	default:
-//		return model.Notice{}, false, "UnsupportedKey"
-//	}
-//	var notice model.Notice
-//	res := n.DB.Model(&model.Notice{}).Where(key+" = ?", value)
-//	res = model.GetPreload(res, model.Notice{}, preload, depth).Limit(1).Find(&notice)
-//	if res.RowsAffected == 0 {
-//		return model.Notice{}, false, "NoticeNotFound"
-//	}
-//	return notice, true, "Success"
-//}
-
-//func (n *NoticeRepo) GetByID(id uint, preload bool, depth int) (model.Notice, bool, string) {
-//	return n.getByUniqueKey("id", id, preload, depth)
-//}
-
 func (n *NoticeRepo) Count(contestID uint) (int64, bool, string) {
 	var count int64
 	res := n.DB.Model(&model.Notice{}).Where("contest_id = ?", contestID).Count(&count)
@@ -71,7 +37,7 @@ func (n *NoticeRepo) Count(contestID uint) (int64, bool, string) {
 	return count, true, "Success"
 }
 
-func (n *NoticeRepo) GetAll(contestID uint, limit, offset int, preload bool, depth int) ([]model.Notice, int64, bool, string) {
+func (n *NoticeRepo) GetAll(contestID uint, limit, offset int, preload bool, nestedL ...string) ([]model.Notice, int64, bool, string) {
 	var (
 		notices        = make([]model.Notice, 0)
 		count, ok, msg = n.Count(contestID)
@@ -80,7 +46,7 @@ func (n *NoticeRepo) GetAll(contestID uint, limit, offset int, preload bool, dep
 		return notices, count, false, msg
 	}
 	res := n.DB.Model(&model.Notice{}).Where("contest_id = ?", contestID)
-	res = model.GetPreload(res, n.Model, preload, depth).Limit(limit).Offset(offset).Find(&notices)
+	res = model.GetPreload(res, preload, nestedL...).Limit(limit).Offset(offset).Find(&notices)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Notices: %s", res.Error)
 		return notices, 0, false, "GetNoticeError"
@@ -97,7 +63,7 @@ func (n *NoticeRepo) Update(id uint, options UpdateNoticeOptions) (bool, string)
 			log.Logger.Warningf("Failed to update Notice: too many times failed due to optimistic lock")
 			return false, "DeadLock"
 		}
-		notice, ok, msg := n.GetByID(id, false, 0)
+		notice, ok, msg := n.GetByID(id, false)
 		if !ok {
 			return ok, msg
 		}
@@ -115,12 +81,3 @@ func (n *NoticeRepo) Update(id uint, options UpdateNoticeOptions) (bool, string)
 	}
 	return true, "Success"
 }
-
-//func (n *NoticeRepo) Delete(idL ...uint) (bool, string) {
-//	res := n.DB.Model(&model.Notice{}).Where("id IN ?", idL).Delete(&model.Notice{})
-//	if res.Error != nil {
-//		log.Logger.Warningf("Failed to delete Notice: %s", res.Error)
-//		return false, "DeleteNoticeError"
-//	}
-//	return true, "Success"
-//}

@@ -18,7 +18,7 @@ func CreateDevice(tx *gorm.DB, userID uint, magic string) (model.Device, bool, s
 		if !ok {
 			return model.Device{}, false, msg
 		}
-		return repo.GetByID(device.ID, false, 0)
+		return repo.GetByID(device.ID, false)
 	}
 	return repo.Create(db.CreateDeviceOptions{UserID: userID, Magic: magic, Count: 1})
 }
