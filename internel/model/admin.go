@@ -8,7 +8,7 @@ import (
 
 type Admin struct {
 	ID        uint           `gorm:"primarykey" json:"id"`
-	Name      string         `gorm:"index:idx_name_deleted,unique;not null" json:"name"`
+	Name      string         `gorm:"not null" json:"name"`
 	Password  string         `gorm:"not null" json:"-"`
 	Email     string         `gorm:"index:idx_email_deleted,unique;not null" json:"email"`
 	Avatar    string         `json:"avatar"`
@@ -16,6 +16,6 @@ type Admin struct {
 	Notices   []Notice       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	CreatedAt time.Time      `json:"-"`
 	UpdatedAt time.Time      `json:"-"`
-	DeletedAt gorm.DeletedAt `gorm:"index;index:idx_name_deleted,unique;index:idx_email_deleted,unique" json:"-"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 	Version   uint           `gorm:"default:1" json:"-"`
 }

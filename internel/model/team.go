@@ -7,8 +7,8 @@ import (
 
 type Team struct {
 	ID          uint           `gorm:"primaryKey" json:"id"`
-	Name        string         `gorm:"index:idx_name_contest_id_deleted,unique;not null" json:"name"`
-	ContestID   uint           `gorm:"index:idx_name_contest_id_deleted,unique;not null" json:"contest_id"`
+	Name        string         `gorm:"not null" json:"name"`
+	ContestID   uint           `gorm:"not null" json:"contest_id"`
 	Contest     Contest        `json:"-"`
 	Desc        string         `json:"desc"`
 	Captcha     string         `json:"-"`
@@ -26,6 +26,6 @@ type Team struct {
 	Cheats      []Cheat        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	CreatedAt   time.Time      `json:"-"`
 	UpdatedAt   time.Time      `json:"-"`
-	DeletedAt   gorm.DeletedAt `gorm:"index;index:idx_name_contest_id_deleted,unique" json:"-"`
+	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 	Version     uint           `gorm:"default:1" json:"-"`
 }

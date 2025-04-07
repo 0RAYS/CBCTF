@@ -7,7 +7,7 @@ import (
 
 type Contest struct {
 	ID          uint           `gorm:"primarykey" json:"id"`
-	Name        string         `gorm:"index:idx_name_deleted,unique;not null" json:"name"`
+	Name        string         `gorm:"not null" json:"name"`
 	Desc        string         `json:"desc"`
 	Captcha     string         `json:"captcha"`
 	Avatar      string         `json:"avatar"`
@@ -29,7 +29,7 @@ type Contest struct {
 	Submissions []Submission   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	CreatedAt   time.Time      `json:"-"`
 	UpdatedAt   time.Time      `json:"-"`
-	DeletedAt   gorm.DeletedAt `gorm:"index;index:idx_name_deleted,unique;" json:"-"`
+	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 	Version     uint           `gorm:"default:1" json:"-"`
 }
 

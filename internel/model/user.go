@@ -7,9 +7,9 @@ import (
 
 type User struct {
 	ID          uint           `gorm:"primaryKey" json:"id"`
-	Name        string         `gorm:"index:idx_name_deleted,unique;not null" json:"name"`
+	Name        string         `gorm:"not null" json:"name"`
 	Password    string         `gorm:"not null" json:"-"`
-	Email       string         `gorm:"index:idx_email_deleted,unique;not null" json:"email"`
+	Email       string         `gorm:"not null" json:"email"`
 	Country     string         `gorm:"default:'CN'" json:"country"`
 	Avatar      string         `json:"avatar"`
 	Desc        string         `json:"desc"`
@@ -26,6 +26,6 @@ type User struct {
 	Cheats      []Cheat        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	CreatedAt   time.Time      `json:"-"`
 	UpdatedAt   time.Time      `json:"-"`
-	DeletedAt   gorm.DeletedAt `gorm:"index;index:idx_name_deleted,unique;index:idx_email_deleted,unique" json:"-"`
+	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 	Version     uint           `gorm:"default:1" json:"-"`
 }
