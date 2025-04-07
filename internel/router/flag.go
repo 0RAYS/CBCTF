@@ -36,6 +36,12 @@ func SubmitFlag(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": "FlagNotMatch", "data": nil})
 }
 
+func GetFlag(ctx *gin.Context) {
+	flag := middleware.GetFlag(ctx)
+	data := resp.GetFlagResp(flag)
+	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
+}
+
 func GetFlags(ctx *gin.Context) {
 	usage := middleware.GetUsage(ctx)
 	repo := db.InitFlagRepo(db.DB.WithContext(ctx))
