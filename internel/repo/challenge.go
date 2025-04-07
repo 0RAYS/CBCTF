@@ -38,21 +38,7 @@ func InitChallengeRepo(tx *gorm.DB) *ChallengeRepo {
 	return &ChallengeRepo{Repo: Repo[model.Challenge]{DB: tx, Model: "Challenge"}}
 }
 
-//func (c *ChallengeRepo) Create(options CreateChallengeOptions) (model.Challenge, bool, string) {
-//	contest, err := utils.S2S[model.Challenge](options)
-//	if err != nil {
-//		log.Logger.Warningf("Failed to convert options to model.Contest: %s", err)
-//		return model.Challenge{}, false, "Options2ModelError"
-//	}
-//	res := c.DB.Model(&model.Challenge{}).Create(&contest)
-//	if res.Error != nil {
-//		log.Logger.Warningf("Failed to create challenge: %s", res.Error)
-//		return model.Challenge{}, false, "CreateChallengeError"
-//	}
-//	return contest, true, "Success"
-//}
-
-func (c *ChallengeRepo) getByUniqueKey(key string, value interface{}, preload bool, depth int) (model.Challenge, bool, string) {
+func (c *ChallengeRepo) getByUniqueKey(key string, value interface{}, preload bool, nestedL ...string) (model.Challenge, bool, string) {
 	switch key {
 	case "id":
 		value = value.(string)
@@ -61,15 +47,15 @@ func (c *ChallengeRepo) getByUniqueKey(key string, value interface{}, preload bo
 	}
 	var challenge model.Challenge
 	res := c.DB.Model(&model.Challenge{}).Where(key+" = ?", value)
-	res = model.GetPreload(res, c.Model, preload, depth).Limit(1).Find(&challenge)
+	res = model.GetPreload(res, preload, nestedL...).Limit(1).Find(&challenge)
 	if res.RowsAffected == 0 {
 		return model.Challenge{}, false, "ChallengeNotFound"
 	}
 	return challenge, true, "Success"
 }
 
-func (c *ChallengeRepo) GetByID(id string, preload bool, depth int) (model.Challenge, bool, string) {
-	return c.getByUniqueKey("id", id, preload, depth)
+func (c *ChallengeRepo) GetByID(id string, preload bool, nestedL ...string) (model.Challenge, bool, string) {
+	return c.getByUniqueKey("id", id, preload, nestedL...)
 }
 
 func (c *ChallengeRepo) Count(t, category string) (int64, bool, string) {
@@ -88,7 +74,7 @@ func (c *ChallengeRepo) Count(t, category string) (int64, bool, string) {
 	return count, true, "Success"
 }
 
-func (c *ChallengeRepo) GetAll(limit, offset int, t, category string, preload bool, depth int) ([]model.Challenge, int64, bool, string) {
+func (c *ChallengeRepo) GetAll(limit, offset int, t, category string, preload bool, nestedL ...string) ([]model.Challenge, int64, bool, string) {
 	var (
 		challenges     = make([]model.Challenge, 0)
 		count, ok, msg = c.Count(t, category)
@@ -102,7 +88,7 @@ func (c *ChallengeRepo) GetAll(limit, offset int, t, category string, preload bo
 	} else if !(t == "" && category == "") {
 		res = res.Where("type = ? OR category = ?", t, category)
 	}
-	res = model.GetPreload(res, c.Model, preload, depth)
+	res = model.GetPreload(res, preload, nestedL...)
 	res = res.Limit(limit).Offset(offset).Find(&challenges)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Challenges: %s", res.Error)
@@ -120,7 +106,7 @@ func (c *ChallengeRepo) Update(id string, options UpdateChallengeOptions) (bool,
 			log.Logger.Warningf("Failed to update Challenge: too many times failed due to optimistic lock")
 			return false, "DeadLock"
 		}
-		challenge, ok, msg := c.GetByID(id, false, 0)
+		challenge, ok, msg := c.GetByID(id, false)
 		if !ok {
 			return ok, msg
 		}

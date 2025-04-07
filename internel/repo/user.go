@@ -40,30 +40,16 @@ func InitUserRepo(tx *gorm.DB) *UserRepo {
 }
 
 func (u *UserRepo) IsUniqueName(name string) bool {
-	_, ok, _ := u.GetByName(name, false, 0)
+	_, ok, _ := u.GetByName(name, false)
 	return !ok
 }
 
 func (u *UserRepo) IsUniqueEmail(email string) bool {
-	_, ok, _ := u.GetByEmail(email, false, 0)
+	_, ok, _ := u.GetByEmail(email, false)
 	return !ok
 }
 
-//func (u *UserRepo) Create(options CreateUserOptions) (model.User, bool, string) {
-//	user, err := utils.S2S[model.User](options)
-//	if err != nil {
-//		log.Logger.Warningf("Failed to convert options to model.User: %s", err)
-//		return model.User{}, false, "Options2ModelError"
-//	}
-//	res := u.DB.Model(&model.User{}).Create(&user)
-//	if res.Error != nil {
-//		log.Logger.Warningf("Failed to create User: %s", res.Error)
-//		return model.User{}, false, "CreateUserError"
-//	}
-//	return user, true, "Success"
-//}
-
-func (u *UserRepo) getByUniqueKey(key string, value interface{}, preload bool, depth int) (model.User, bool, string) {
+func (u *UserRepo) getByUniqueKey(key string, value interface{}, preload bool, nestedL ...string) (model.User, bool, string) {
 	switch key {
 	case "name", "email":
 		value = value.(string)
@@ -74,23 +60,19 @@ func (u *UserRepo) getByUniqueKey(key string, value interface{}, preload bool, d
 	}
 	var user model.User
 	res := u.DB.Model(&model.User{}).Where(key+" = ?", value)
-	res = model.GetPreload(res, "User", preload, depth).Limit(1).Find(&user)
+	res = model.GetPreload(res, preload, nestedL...).Limit(1).Find(&user)
 	if res.RowsAffected == 0 {
 		return model.User{}, false, "UserNotFound"
 	}
 	return user, true, "Success"
 }
 
-//func (u *UserRepo) GetByID(id uint, preload bool, depth int) (model.User, bool, string) {
-//	return u.getByUniqueKey("id", id, preload, depth)
-//}
-
-func (u *UserRepo) GetByName(name string, preload bool, depth int) (model.User, bool, string) {
-	return u.getByUniqueKey("name", name, preload, depth)
+func (u *UserRepo) GetByName(name string, preload bool, nestedL ...string) (model.User, bool, string) {
+	return u.getByUniqueKey("name", name, preload, nestedL...)
 }
 
-func (u *UserRepo) GetByEmail(email string, preload bool, depth int) (model.User, bool, string) {
-	return u.getByUniqueKey("email", email, preload, depth)
+func (u *UserRepo) GetByEmail(email string, preload bool, nestedL ...string) (model.User, bool, string) {
+	return u.getByUniqueKey("email", email, preload, nestedL...)
 }
 
 func (u *UserRepo) Count(hidden, banned bool) (int64, bool, string) {
@@ -110,7 +92,7 @@ func (u *UserRepo) Count(hidden, banned bool) (int64, bool, string) {
 	return count, true, "Success"
 }
 
-func (u *UserRepo) GetAll(limit, offset int, preload bool, depth int, hidden, banned bool) ([]model.User, int64, bool, string) {
+func (u *UserRepo) GetAll(limit, offset int, hidden, banned, preload bool, nestedL ...string) ([]model.User, int64, bool, string) {
 	var (
 		users          = make([]model.User, 0)
 		count, ok, msg = u.Count(hidden, banned)
@@ -125,7 +107,7 @@ func (u *UserRepo) GetAll(limit, offset int, preload bool, depth int, hidden, ba
 	if !banned {
 		res = res.Where("hidden = ?", false)
 	}
-	res = model.GetPreload(res, u.Model, preload, depth).Limit(limit).Offset(offset).Find(&users)
+	res = model.GetPreload(res, preload, nestedL...).Limit(limit).Offset(offset).Find(&users)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Users: %s", res.Error)
 		return users, count, false, "GetUserError"
@@ -142,7 +124,7 @@ func (u *UserRepo) Update(id uint, options UpdateUserOptions) (bool, string) {
 			log.Logger.Warningf("Failed to update User: too many times failed due to optimistic lock")
 			return false, "DeadLock"
 		}
-		user, ok, msg := u.GetByID(id, false, 0)
+		user, ok, msg := u.GetByID(id, false)
 		if !ok {
 			return ok, msg
 		}
@@ -160,12 +142,3 @@ func (u *UserRepo) Update(id uint, options UpdateUserOptions) (bool, string) {
 	}
 	return true, "Success"
 }
-
-//func (u *UserRepo) Delete(idL ...uint) (bool, string) {
-//	res := u.DB.Model(&model.User{}).Where("id IN ?", idL).Delete(&model.User{})
-//	if res.Error != nil {
-//		log.Logger.Warningf("Failed to delete User: %s", res.Error)
-//		return false, "DeleteUserError"
-//	}
-//	return true, "Success"
-//}

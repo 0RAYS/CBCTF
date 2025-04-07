@@ -8,11 +8,11 @@ import (
 	"gorm.io/gorm"
 )
 
-// IsGenerated model.Usage 需要递归预加载, depth = 3
+// IsGenerated model.Usage 需要递归预加载, Usage.Flags.Answers
 func IsGenerated(tx *gorm.DB, usage model.Usage, team model.Team) bool {
 	repo := db.InitAnswerRepo(tx)
 	for _, flag := range usage.Flags {
-		answers, _, ok, _ := repo.GetAll(flag.ID, -1, -1, false, 0)
+		answers, _, ok, _ := repo.GetAll(flag.ID, -1, -1, false)
 		if !ok {
 			return false
 		}
@@ -64,7 +64,7 @@ func GenerateAnswer(tx *gorm.DB, usage model.Usage, team model.Team, reset bool)
 		options = append(options, option)
 	}
 	for _, option := range options {
-		if _, ok, _ := repo.GetBy2ID(team.ID, option.FlagID, false, 0); !reset && ok {
+		if _, ok, _ := repo.GetBy2ID(team.ID, option.FlagID, false); !reset && ok {
 			continue
 		}
 		option.Value = fmt.Sprintf("%s{%s}", usage.Contest.Prefix, option.Value)

@@ -9,7 +9,7 @@ import (
 
 func VerifyFlag(tx *gorm.DB, team model.Team, usage model.Usage, value string) (bool, model.Flag, bool, string) {
 	flagRepo := db.InitFlagRepo(tx)
-	flags, _, ok, msg := flagRepo.GetByKeyID("usage_id", usage.ID, -1, -1, true, 0)
+	flags, _, ok, msg := flagRepo.GetByKeyID("usage_id", usage.ID, -1, -1, true)
 	if !ok {
 		return false, model.Flag{}, false, msg
 	}
@@ -30,7 +30,7 @@ func VerifyFlag(tx *gorm.DB, team model.Team, usage model.Usage, value string) (
 func UpdateFlag(tx *gorm.DB, flag model.Flag, form f.UpdateFlagForm) (bool, string) {
 	flagRepo := db.InitFlagRepo(tx)
 	challengeRepo := db.InitChallengeRepo(tx)
-	challenge, ok, msg := challengeRepo.GetByID(flag.Usage.ChallengeID, true, 0)
+	challenge, ok, msg := challengeRepo.GetByID(flag.Usage.ChallengeID, true)
 	if !ok {
 		return ok, msg
 	}

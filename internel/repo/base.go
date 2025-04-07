@@ -26,7 +26,7 @@ func (r *Repo[T]) Create(options interface{}) (T, bool, string) {
 	return m, true, "Success"
 }
 
-func (r *Repo[T]) getByUniqueKey(key string, value interface{}, preload bool, depth int) (T, bool, string) {
+func (r *Repo[T]) getByUniqueKey(key string, value interface{}, preload bool, nestedL ...string) (T, bool, string) {
 	switch key {
 	case "id":
 		value = value.(uint)
@@ -35,15 +35,15 @@ func (r *Repo[T]) getByUniqueKey(key string, value interface{}, preload bool, de
 	}
 	var m T
 	res := r.DB.Model(new(T)).Where(key+" = ?", value)
-	res = model.GetPreload(res, r.Model, preload, depth).Limit(1).Find(&m)
+	res = model.GetPreload(res, preload, nestedL...).Limit(1).Find(&m)
 	if res.RowsAffected == 0 {
 		return m, false, fmt.Sprintf("%sNotFound", r.Model)
 	}
 	return m, true, "Success"
 }
 
-func (r *Repo[T]) GetByID(id uint, preload bool, depth int) (T, bool, string) {
-	return r.getByUniqueKey("id", id, preload, depth)
+func (r *Repo[T]) GetByID(id uint, preload bool, nestedL ...string) (T, bool, string) {
+	return r.getByUniqueKey("id", id, preload, nestedL...)
 }
 
 func (r *Repo[T]) Count() (int64, bool, string) {
@@ -55,7 +55,7 @@ func (r *Repo[T]) Count() (int64, bool, string) {
 	return count, true, "Success"
 }
 
-func (r *Repo[T]) GetAll(limit, offset int, preload bool, depth int) ([]T, int64, bool, string) {
+func (r *Repo[T]) GetAll(limit, offset int, preload bool, nestedL ...string) ([]T, int64, bool, string) {
 	var (
 		ms             = make([]T, 0)
 		count, ok, msg = r.Count()
@@ -64,7 +64,7 @@ func (r *Repo[T]) GetAll(limit, offset int, preload bool, depth int) ([]T, int64
 		return ms, count, false, msg
 	}
 	res := r.DB.Model(new(T))
-	res = model.GetPreload(res, r.Model, preload, depth).Limit(limit).Offset(offset).Find(&ms)
+	res = model.GetPreload(res, preload, nestedL...).Limit(limit).Offset(offset).Find(&ms)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get all %T: %s", new(T), res.Error)
 		return ms, count, false, fmt.Sprintf("Get%sError", r.Model)

@@ -3,7 +3,6 @@ package model
 import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"strings"
 )
 
 type UserTeam struct {
@@ -63,41 +62,11 @@ var Associations = map[string][]string{
 	},
 }
 
-func generateAssociations(key string, depth int) []string {
-	tmp := strings.TrimSuffix(key, "s")
-	if depth < 2 {
-		return []string{}
-	}
-	var result []string
-	if associations, exists := Associations[tmp]; exists {
-		for _, assoc := range associations {
-			fullAssoc := key + "." + assoc
-			result = append(result, fullAssoc)
-			if depth > 2 {
-				subAssociations := generateAssociations(assoc, depth-1)
-				for _, sub := range subAssociations {
-					result = append(result, fullAssoc+"."+sub[len(assoc)+1:])
-				}
-			}
-		}
-	}
-	return result
-}
-
-func GetPreload(tx *gorm.DB, model string, preload bool, depth int) *gorm.DB {
+func GetPreload(tx *gorm.DB, preload bool, nestedL ...string) *gorm.DB {
 	if preload {
 		tx = tx.Preload(clause.Associations)
-		if depth < 2 {
-			return tx
-		}
-		depth++
-		result := generateAssociations(model, depth)
-		for _, r := range result {
-			t := strings.Split(r, ".")[1:]
-			if len(t) < 2 {
-				continue
-			}
-			tx = tx.Preload(strings.Join(t, "."))
+		for _, nested := range nestedL {
+			tx = tx.Preload(nested)
 		}
 	}
 	return tx
