@@ -17,6 +17,7 @@ type CreateSubmissionOptions struct {
 	ChallengeID string
 	TeamID      uint
 	UserID      uint
+	FlagID      uint
 	Value       string
 	Solved      bool
 	Score       float64

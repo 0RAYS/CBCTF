@@ -23,7 +23,8 @@ func VerifyFlag(tx *gorm.DB, team model.Team, usage model.Usage, value string) (
 			}
 		}
 	}
-	return false, model.Flag{}, false, "Success"
+	// 没有找到答案, 则默认为第一个flag
+	return false, flags[0], false, "Success"
 }
 
 func UpdateFlag(tx *gorm.DB, flag model.Flag, form f.UpdateFlagForm) (bool, string) {
