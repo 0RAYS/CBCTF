@@ -15,7 +15,7 @@ import (
 func GetTeam(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	DB := db.DB.WithContext(ctx)
-	flags, _, ok, msg := db.InitFlagRepo(DB).GetByKeyID("contest_id", team.ContestID, -1, -1, true, "Flag.Usage.Challenge")
+	flags, _, ok, msg := db.InitFlagRepo(DB).GetByKeyID("contest_id", team.ContestID, -1, -1, true, "Usage.Challenge")
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -194,7 +194,7 @@ func GetTeamRanking(ctx *gin.Context) {
 		Team   model.Team
 		Solved []model.Flag
 	}
-	flags, _, ok, msg := db.InitFlagRepo(DB).GetByKeyID("contest_id", contest.ID, -1, -1, true, "Flag.Usage.Challenge")
+	flags, _, ok, msg := db.InitFlagRepo(DB).GetByKeyID("contest_id", contest.ID, -1, -1, true, "Usage.Challenge")
 	teams, count, ok, msg := service.GetTeamRanking(DB, contest.ID, form.Limit, form.Offset)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
