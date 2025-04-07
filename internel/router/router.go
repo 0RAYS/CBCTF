@@ -181,6 +181,7 @@ func Init() *gin.Engine {
 				adminContestUsage.GET("/flags", GetFlags)
 				adminContestUsageFlag := adminContestUsage.Group("/flags/:flagID", middleware.SetFlag)
 				{
+					adminContestUsageFlag.GET("", GetFlag)
 					adminContestUsageFlag.PUT("", UpdateFlag)
 				}
 			}
