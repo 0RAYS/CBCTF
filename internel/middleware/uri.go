@@ -49,7 +49,7 @@ func SetContest(ctx *gin.Context) {
 		return
 	}
 	contest, ok, msg := db.InitContestRepo(db.DB.WithContext(ctx)).GetByID(contestID.ContestID, true)
-	if !ok || contest.Hidden {
+	if !ok || (GetRole(ctx) != "admin" && contest.Hidden) {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
 		return
