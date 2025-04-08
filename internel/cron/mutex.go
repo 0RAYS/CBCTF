@@ -15,20 +15,20 @@ func ClearUsageMutex(c *cron.Cron) {
 		log.Logger.Debug("Clear submission mutex")
 		contests := make(map[uint]model.Contest)
 		contestRepo := db.InitContestRepo(db.DB)
-		usageRepo := db.InitUsageRepo(db.DB)
+		flagRepo := db.InitFlagRepo(db.DB)
 		service.SolvedMutex.Range(func(k, v interface{}) bool {
-			usage, ok, _ := usageRepo.GetByID(k.(uint), false)
+			flag, ok, _ := flagRepo.GetByID(k.(uint), false)
 			if !ok {
 				service.SolvedMutex.Delete(k)
 				return true
 			}
-			if contest, ok := contests[usage.ContestID]; !ok {
-				contest, ok, _ = contestRepo.GetByID(usage.ContestID, false)
+			if contest, ok := contests[flag.ContestID]; !ok {
+				contest, ok, _ = contestRepo.GetByID(flag.ContestID, false)
 				if !ok {
 					service.SolvedMutex.Delete(k)
 					return true
 				}
-				contests[usage.ContestID] = contest
+				contests[flag.ContestID] = contest
 				if !contest.IsRunning() {
 					service.SolvedMutex.Delete(k)
 				}

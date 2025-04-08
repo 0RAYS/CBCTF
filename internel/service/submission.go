@@ -42,7 +42,7 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, usage model.Usage, fo
 			return model.Submission{}, false, msg
 		}
 		// 正确时需要更新分数等信息, 加锁
-		mu, _ := SolvedMutex.LoadOrStore(usage.ID, &sync.Mutex{})
+		mu, _ := SolvedMutex.LoadOrStore(flag.ID, &sync.Mutex{})
 		mu.(*sync.Mutex).Lock()
 		defer mu.(*sync.Mutex).Unlock()
 

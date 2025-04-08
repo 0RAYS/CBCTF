@@ -20,6 +20,11 @@ func Init() {
 	c = cron.New(cron.WithSeconds())
 	CloseContainers(c)
 	CloseUnCtrlContainers(c)
+	UpdateUsageScore(c)
+	UpdateUserRanking(c)
+	UpdateTeamRanking(c)
+	CloseGenerator(c)
+	PrepareGenerator(c)
 	ClearUsageMutex(c)
 }
 
