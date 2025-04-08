@@ -29,6 +29,12 @@ func GetUsers(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
+	if _, exists := ctx.GetQuery("limit"); !exists {
+		form.Limit = 5
+	}
+	if _, exists := ctx.GetQuery("offset"); !exists {
+		form.Offset = 0
+	}
 	users, count, ok, msg := db.InitUserRepo(db.DB.WithContext(ctx)).GetAll(form.Limit, form.Offset, true, true, "Teams", "Contests")
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

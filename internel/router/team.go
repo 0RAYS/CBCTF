@@ -32,6 +32,12 @@ func GetTeams(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
+	if _, exists := ctx.GetQuery("limit"); !exists {
+		form.Limit = 5
+	}
+	if _, exists := ctx.GetQuery("offset"); !exists {
+		form.Offset = 0
+	}
 	DB := db.DB.WithContext(ctx)
 	contest := middleware.GetContest(ctx)
 	teams, count, ok, msg := db.InitTeamRepo(DB).GetAll(contest.ID, form.Limit, form.Offset, true, true)
@@ -187,6 +193,12 @@ func GetTeamRanking(ctx *gin.Context) {
 	if err := ctx.ShouldBindQuery(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
+	}
+	if _, exists := ctx.GetQuery("limit"); !exists {
+		form.Limit = 5
+	}
+	if _, exists := ctx.GetQuery("offset"); !exists {
+		form.Offset = 0
 	}
 	contest := middleware.GetContest(ctx)
 	DB := db.DB.WithContext(ctx)

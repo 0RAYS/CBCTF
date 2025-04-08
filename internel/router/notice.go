@@ -16,6 +16,12 @@ func GetNotices(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
+	if _, exists := ctx.GetQuery("limit"); !exists {
+		form.Limit = 5
+	}
+	if _, exists := ctx.GetQuery("offset"); !exists {
+		form.Offset = 0
+	}
 	contest := middleware.GetContest(ctx)
 	DB := db.DB.WithContext(ctx)
 	notices, count, ok, msg := db.InitNoticeRepo(DB).GetAll(contest.ID, form.Limit, form.Offset)
