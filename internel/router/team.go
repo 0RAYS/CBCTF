@@ -190,6 +190,7 @@ func GetTeamRanking(ctx *gin.Context) {
 	}
 	contest := middleware.GetContest(ctx)
 	DB := db.DB.WithContext(ctx)
+	all := middleware.GetRole(ctx) == "admin"
 	var teamsData []struct {
 		Team   model.Team
 		Solved []model.Flag
@@ -201,16 +202,21 @@ func GetTeamRanking(ctx *gin.Context) {
 		return
 	}
 	for _, team := range teams {
+		if !all && team.Hidden {
+			count--
+			continue
+		}
 		solved, ok, _ := service.GetTeamSolved(DB, team.ID)
 		if !ok {
 			count--
+			continue
 		}
 		teamsData = append(teamsData, struct {
 			Team   model.Team
 			Solved []model.Flag
 		}{Team: team, Solved: solved})
 	}
-	data := resp.GetTeamRankingResp(teamsData, flags, middleware.GetRole(ctx) == "admin")
+	data := resp.GetTeamRankingResp(teamsData, flags, all)
 	data["count"] = count
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
 }
