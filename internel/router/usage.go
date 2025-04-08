@@ -40,12 +40,23 @@ func GetUsage(ctx *gin.Context) {
 }
 
 func GetUsages(ctx *gin.Context) {
+	var form f.GetModelsForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	if _, exists := ctx.GetQuery("limit"); !exists {
+		form.Limit = 10
+	}
+	if _, exists := ctx.GetQuery("offset"); !exists {
+		form.Offset = 0
+	}
 	var (
 		all     = middleware.GetRole(ctx) == "admin"
 		DB      = db.DB.WithContext(ctx)
 		contest = middleware.GetContest(ctx)
 	)
-	usages, _, ok, msg := db.InitUsageRepo(DB).GetAll(contest.ID, -1, -1, all, "Challenge", "Containers", "Flags", "Flags.Answers")
+	usages, _, ok, msg := db.InitUsageRepo(DB).GetAll(contest.ID, form.Limit, form.Limit, all, "Challenge", "Containers", "Flags", "Flags.Answers")
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
