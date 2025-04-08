@@ -18,17 +18,16 @@ func UpdateTeamRanking(tx *gorm.DB, contestID uint) (bool, string) {
 	if !ok {
 		return false, msg
 	}
-	for _, team := range teams {
+	for i, team := range teams {
 		score, ok, msg = CalcTeamScore(tx, team)
 		if !ok {
 			continue
 		}
 		// 不考虑更新失败的情况, 不回滚
-		repo.Update(team.ID, db.UpdateTeamOptions{Score: &score})
-	}
-	teams, _, ok, msg = repo.GetAll(contestID, -1, -1, true, false)
-	if !ok {
-		return false, msg
+		ok, _ = repo.Update(team.ID, db.UpdateTeamOptions{Score: &score})
+		if ok {
+			teams[i].Score = score
+		}
 	}
 	if err = redis.UpdateTeamRanking(contestID, teams); err != nil {
 		return false, "UpdateRankingError"
@@ -48,13 +47,13 @@ func GetTeamRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Tea
 	}
 	start, end := utils.TidyPaginate(int(count), limit, offset)
 	teams, err = redis.GetTeamRanking(contestID, int64(start), int64(end-1))
-	if err == nil {
-		return teams, count, true, "Success"
+	if err != nil || (end-start > 0 && len(teams) == 0) {
+		if ok, msg = UpdateTeamRanking(tx, contestID); !ok {
+			return teams, count, false, msg
+		}
+		return GetTeamRanking(tx, contestID, limit, offset)
 	}
-	if ok, msg = UpdateTeamRanking(tx, contestID); !ok {
-		return teams, count, false, msg
-	}
-	return GetTeamRanking(tx, contestID, limit, offset)
+	return teams, count, true, "Success"
 }
 
 func UpdateUserRanking(tx *gorm.DB) (bool, string) {
@@ -84,11 +83,12 @@ func GetUserRanking(tx *gorm.DB, limit, offset int) ([]model.User, int64, bool, 
 		return users, count, false, msg
 	}
 	start, end := utils.TidyPaginate(int(count), limit, offset)
-	if users, err = redis.GetUserRanking(int64(start), int64(end-1)); err == nil {
-		return users, count, true, "Success"
+	users, err = redis.GetUserRanking(int64(start), int64(end-1))
+	if err != nil || (end-start > 0 && len(users) == 0) {
+		if ok, msg = UpdateUserRanking(tx); !ok {
+			return users, count, false, msg
+		}
+		return GetUserRanking(tx, limit, offset)
 	}
-	if ok, msg = UpdateUserRanking(tx); !ok {
-		return users, count, false, msg
-	}
-	return GetUserRanking(tx, limit, offset)
+	return users, count, true, "Success"
 }
