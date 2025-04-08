@@ -14,7 +14,7 @@ import (
 func Register(ctx *gin.Context) {
 	var form f.RegisterForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
@@ -25,47 +25,47 @@ func Register(ctx *gin.Context) {
 	})
 	if !ok {
 		tx.Rollback()
-		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	//if ok, msg = SendEmail(user); !ok {
 	//	tx.Rollback()
-	//	ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	//	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 	//	return
 	//}
 	tx.Commit()
 	token, err := utils.Generate(user.ID, user.Name, "user")
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
-		ctx.JSONP(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
 		return
 	}
 	log.Logger.Infof("%s:%d register", user.Name, user.ID)
 	ctx.Writer.Header().Set("Authorization", "Bearer "+token)
-	ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": resp.RegisterResp(user, false)})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.RegisterResp(user, false)})
 	return
 }
 
 func Login(ctx *gin.Context) {
 	var form f.LoginForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
 	user, ok, msg := service.VerifyUser(db.DB.WithContext(ctx), form)
 	if !ok {
-		ctx.JSONP(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	if Token, err := utils.Generate(user.ID, user.Name, "user"); err == nil {
 		log.Logger.Infof("%s:%d login", user.Name, user.ID)
 		ctx.Writer.Header().Set("Authorization", "Bearer "+Token)
-		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": resp.LoginResp(user, false)})
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.LoginResp(user, false)})
 		return
 	} else {
 		msg = "UnknownError"
 		log.Logger.Warningf("Failed to generate token: %s", err)
-		ctx.JSONP(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
 		return
 	}
 }
@@ -73,23 +73,23 @@ func Login(ctx *gin.Context) {
 func AdminLogin(ctx *gin.Context) {
 	var form f.LoginForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
 	admin, ok, msg := service.VerifyAdmin(db.DB.WithContext(ctx), form)
 	if !ok {
-		ctx.JSONP(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	if Token, err := utils.Generate(admin.ID, admin.Name, "admin"); err == nil {
 		log.Logger.Infof("%s:%d login", admin.Name, admin.ID)
 		ctx.Writer.Header().Set("Authorization", "Bearer "+Token)
-		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": resp.GetAdminResp(admin)})
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetAdminResp(admin)})
 		return
 	} else {
 		msg = "UnknownError"
 		log.Logger.Warningf("Failed to generate token: %s", err)
-		ctx.JSONP(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
 		return
 	}
 }

@@ -22,7 +22,7 @@ func DownloadFile(ctx *gin.Context) {
 		tx := db.DB.WithContext(ctx).Begin()
 		if ok, _ := db.InitFileRepo(tx).Delete(file.ID); !ok {
 			tx.Rollback()
-			ctx.JSONP(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": file.ID})
+			ctx.JSON(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": file.ID})
 			return
 		}
 		tx.Commit()
