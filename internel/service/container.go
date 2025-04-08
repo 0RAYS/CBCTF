@@ -24,7 +24,7 @@ func GetRemoteStatus(tx *gorm.DB, usage model.Usage) gin.H {
 	repo := db.InitContainerRepo(tx)
 	var minTime float64
 	for _, container := range usage.Containers {
-		_, ok, _ := repo.GetByID(container.ID, false)
+		_, ok, _ := repo.GetByID(container.ID)
 		if !ok {
 			data["status"] = "Down"
 			continue
@@ -44,7 +44,7 @@ func GetRemoteStatus(tx *gorm.DB, usage model.Usage) gin.H {
 func StartContainer(tx *gorm.DB, user model.User, team model.Team, usage model.Usage) (bool, string) {
 	answerRepo := db.InitAnswerRepo(tx)
 	containerRepo := db.InitContainerRepo(tx)
-	containers, ok, _ := containerRepo.GetBy2ID(team.ID, usage.ID, false, false)
+	containers, ok, _ := containerRepo.GetBy2ID(team.ID, usage.ID, false)
 	if ok {
 		return true, "Success"
 	}
@@ -65,7 +65,7 @@ func StartContainer(tx *gorm.DB, user model.User, team model.Team, usage model.U
 			NetworkPolicies:   usage.Docker.NetworkPolicies,
 		}
 		for _, flagID := range usage.Docker.FlagsID {
-			answer, ok, msg := answerRepo.GetBy2ID(team.ID, flagID, false)
+			answer, ok, msg := answerRepo.GetBy2ID(team.ID, flagID)
 			if !ok {
 				return false, msg
 			}
@@ -93,7 +93,7 @@ func StartContainer(tx *gorm.DB, user model.User, team model.Team, usage model.U
 				NetworkPolicies:   docker.NetworkPolicies,
 			}
 			for _, flagID := range docker.FlagsID {
-				answer, ok, msg := answerRepo.GetBy2ID(team.ID, flagID, false)
+				answer, ok, msg := answerRepo.GetBy2ID(team.ID, flagID)
 				if !ok {
 					return false, msg
 				}

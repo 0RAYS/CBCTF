@@ -28,7 +28,7 @@ func GetChallenges(ctx *gin.Context) {
 		form.Category = ""
 	}
 	repo := db.InitChallengeRepo(db.DB.WithContext(ctx))
-	challenges, count, ok, msg := repo.GetAll(form.Limit, form.Offset, form.Type, form.Category, false)
+	challenges, count, ok, msg := repo.GetAll(form.Limit, form.Offset, form.Type, form.Category)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

@@ -49,11 +49,11 @@ func InitContestRepo(tx *gorm.DB) *ContestRepo {
 }
 
 func (c *ContestRepo) IsUniqueName(name string) bool {
-	_, ok, _ := c.GetByName(name, false)
+	_, ok, _ := c.GetByName(name)
 	return !ok
 }
 
-func (c *ContestRepo) getByUniqueKey(key string, value interface{}, preload bool, nestedL ...string) (model.Contest, bool, string) {
+func (c *ContestRepo) getByUniqueKey(key string, value interface{}, preloadL ...string) (model.Contest, bool, string) {
 	switch key {
 	case "name":
 		value = value.(string)
@@ -64,14 +64,14 @@ func (c *ContestRepo) getByUniqueKey(key string, value interface{}, preload bool
 	}
 	var contest model.Contest
 	res := c.DB.Model(&model.Contest{}).Where(key+" = ?", value)
-	res = model.GetPreload(res, preload, nestedL...).Limit(1).Find(&contest)
+	res = GetPreload(res, preloadL...).Limit(1).Find(&contest)
 	if res.RowsAffected == 0 {
 		return model.Contest{}, false, "ContestNotFound"
 	}
 	return contest, true, "Success"
 }
-func (c *ContestRepo) GetByName(name string, preload bool, nestedL ...string) (model.Contest, bool, string) {
-	return c.getByUniqueKey("name", name, preload, nestedL...)
+func (c *ContestRepo) GetByName(name string, preloadL ...string) (model.Contest, bool, string) {
+	return c.getByUniqueKey("name", name, preloadL...)
 }
 
 func (c *ContestRepo) Count(hidden bool) (int64, bool, string) {
@@ -88,7 +88,7 @@ func (c *ContestRepo) Count(hidden bool) (int64, bool, string) {
 	return count, true, "Success"
 }
 
-func (c *ContestRepo) GetAll(limit, offset int, hidden bool, preload bool, nestedL ...string) ([]model.Contest, int64, bool, string) {
+func (c *ContestRepo) GetAll(limit, offset int, hidden bool, preloadL ...string) ([]model.Contest, int64, bool, string) {
 	var (
 		contests       = make([]model.Contest, 0)
 		count, ok, msg = c.Count(hidden)
@@ -100,7 +100,7 @@ func (c *ContestRepo) GetAll(limit, offset int, hidden bool, preload bool, neste
 	if !hidden {
 		res = res.Where("hidden = ?", false)
 	}
-	res = model.GetPreload(res, preload, nestedL...).Limit(limit).Offset(offset).Find(&contests)
+	res = GetPreload(res, preloadL...).Limit(limit).Offset(offset).Find(&contests)
 	if res.Error != nil {
 		log.Logger.Errorf("Failed to get Contests: %s", res.Error)
 		return contests, count, false, "GetContestsError"
@@ -117,7 +117,7 @@ func (c *ContestRepo) Update(id uint, options UpdateContestOptions) (bool, strin
 			log.Logger.Warningf("Failed to update Contest: too many times failed due to optimistic lock")
 			return false, "DeadLock"
 		}
-		contest, ok, msg := c.GetByID(id, false)
+		contest, ok, msg := c.GetByID(id)
 		if !ok {
 			return ok, msg
 		}

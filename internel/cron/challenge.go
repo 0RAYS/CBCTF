@@ -13,7 +13,7 @@ func UpdateFlagScore(c *cron.Cron) {
 	function := executionTime("UpdateFlagScore", func() {
 		log.Logger.Debug("Update flag score")
 		contestRepo := db.InitContestRepo(db.DB)
-		contests, _, ok, _ := contestRepo.GetAll(-1, -1, false, true)
+		contests, _, ok, _ := contestRepo.GetAll(-1, -1, false)
 		if !ok {
 			return
 		}
@@ -22,7 +22,7 @@ func UpdateFlagScore(c *cron.Cron) {
 				continue
 			}
 			usageRepo := db.InitUsageRepo(db.DB)
-			usages, _, ok, _ := usageRepo.GetAll(contest.ID, -1, -1, false, true)
+			usages, _, ok, _ := usageRepo.GetAll(contest.ID, -1, -1, false, "Flags")
 			if !ok {
 				return
 			}

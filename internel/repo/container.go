@@ -56,7 +56,7 @@ func (c *ContainerRepo) Count(teamID uint, deleted bool) (int64, bool, string) {
 	return count, true, "Success"
 }
 
-func (c *ContainerRepo) GetByTeam(teamID uint, limit, offset int, deleted, preload bool, nestedL ...string) ([]model.Container, int64, bool, string) {
+func (c *ContainerRepo) GetByTeam(teamID uint, limit, offset int, deleted bool, preloadL ...string) ([]model.Container, int64, bool, string) {
 	var (
 		containers     = make([]model.Container, 0)
 		count, ok, msg = c.Count(teamID, deleted)
@@ -69,7 +69,7 @@ func (c *ContainerRepo) GetByTeam(teamID uint, limit, offset int, deleted, prelo
 		res = res.Unscoped()
 	}
 	res = res.Where("team_id = ?", teamID)
-	res = model.GetPreload(res, preload, nestedL...).Limit(limit).Offset(offset).Find(&containers)
+	res = GetPreload(res, preloadL...).Limit(limit).Offset(offset).Find(&containers)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Containers: %s", res.Error)
 		return containers, count, false, "GetContainerError"
@@ -77,28 +77,28 @@ func (c *ContainerRepo) GetByTeam(teamID uint, limit, offset int, deleted, prelo
 	return containers, count, true, "Success"
 }
 
-func (c *ContainerRepo) GetBy2ID(teamID uint, usageID uint, deleted, preload bool, nestedL ...string) ([]model.Container, bool, string) {
+func (c *ContainerRepo) GetBy2ID(teamID uint, usageID uint, deleted bool, preloadL ...string) ([]model.Container, bool, string) {
 	containers := make([]model.Container, 0)
 	res := c.DB.Model(&model.Container{})
 	if deleted {
 		res = res.Unscoped()
 	}
 	res = res.Where("team_id = ? AND usage_id = ?", teamID, usageID)
-	res = model.GetPreload(res, preload, nestedL...).Limit(1).Find(&containers)
+	res = GetPreload(res, preloadL...).Limit(1).Find(&containers)
 	if res.RowsAffected == 0 {
 		return containers, false, "ContainerNotFound"
 	}
 	return containers, true, "Success"
 }
 
-func (c *ContainerRepo) GetByName(key, value string, deleted, preload bool, nestedL ...string) ([]model.Container, bool, string) {
+func (c *ContainerRepo) GetByName(key, value string, deleted bool, preloadL ...string) ([]model.Container, bool, string) {
 	containers := make([]model.Container, 0)
 	res := c.DB.Model(&model.Container{})
 	if deleted {
 		res = res.Unscoped()
 	}
 	res = res.Where(key+" = ?", value)
-	res = model.GetPreload(res, preload, nestedL...).Find(&containers)
+	res = GetPreload(res, preloadL...).Find(&containers)
 	if res.RowsAffected == 0 {
 		return containers, false, "ContainerNotFound"
 	}
@@ -114,7 +114,7 @@ func (c *ContainerRepo) Update(id uint, options UpdateContainerOptions) (bool, s
 			log.Logger.Warningf("Failed to update Container: too many times failed due to optimistic lock")
 			return false, "DeadLock"
 		}
-		container, ok, msg := c.GetByID(id, false)
+		container, ok, msg := c.GetByID(id)
 		if !ok {
 			return ok, msg
 		}

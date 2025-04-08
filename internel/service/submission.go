@@ -86,7 +86,7 @@ func IsSolved(tx *gorm.DB, team model.Team, usage model.Usage) bool {
 	var (
 		count                 int
 		submissionRepo        = db.InitSubmissionRepo(tx)
-		submissions, _, ok, _ = submissionRepo.GetAllByKeyID("team_id", team.ID, -1, -1, true, false)
+		submissions, _, ok, _ = submissionRepo.GetAllByKeyID("team_id", team.ID, -1, -1, true)
 	)
 	if !ok {
 		return false
@@ -106,7 +106,7 @@ func IsSolved(tx *gorm.DB, team model.Team, usage model.Usage) bool {
 func CountAttempts(tx *gorm.DB, team model.Team, usage model.Usage) int64 {
 	var count int64
 	submissionRepo := db.InitSubmissionRepo(tx)
-	submissions, _, ok, _ := submissionRepo.GetAllByKeyID("team_id", team.ID, -1, -1, false, false)
+	submissions, _, ok, _ := submissionRepo.GetAllByKeyID("team_id", team.ID, -1, -1, false)
 	if !ok {
 		return count
 	}

@@ -11,7 +11,7 @@ import (
 // SaveTraffic 从 .pcap 文件中保存流量至数据库
 func SaveTraffic(tx *gorm.DB, container model.Container) (bool, string) {
 	repo := db.InitTrafficRepo(tx)
-	_, ok, _ := repo.GetByID(container.ID, false)
+	_, ok, _ := repo.GetByID(container.ID)
 	if ok {
 		return true, "Success"
 	}

@@ -13,7 +13,7 @@ func CreateUsage(tx *gorm.DB, contest model.Contest, form f.CreateUsageForm) ([]
 	usages := make([]model.Usage, 0)
 	failed := make([]string, 0)
 	for _, challengeID := range form.ChallengeID {
-		if _, ok, _ := db.InitUsageRepo(tx).GetBy2ID(contest.ID, challengeID, true, false); ok {
+		if _, ok, _ := db.InitUsageRepo(tx).GetBy2ID(contest.ID, challengeID, true); ok {
 			continue
 		}
 		// 局部回滚
@@ -21,7 +21,7 @@ func CreateUsage(tx *gorm.DB, contest model.Contest, form f.CreateUsageForm) ([]
 			usageRepo := db.InitUsageRepo(tx2)
 			challengeRepo := db.InitChallengeRepo(tx2)
 			flagRepo := db.InitFlagRepo(tx2)
-			challenge, ok, msg := challengeRepo.GetByID(challengeID, false)
+			challenge, ok, msg := challengeRepo.GetByID(challengeID)
 			if !ok {
 				failed = append(failed, challengeID)
 				return errors.New(msg)

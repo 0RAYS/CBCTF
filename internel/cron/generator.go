@@ -16,7 +16,7 @@ func PrepareGenerator(c *cron.Cron) {
 	function := executionTime("PrepareGenerator", func() {
 		log.Logger.Debug("Prepare generator")
 		contestRepo := db.InitContestRepo(db.DB)
-		contests, _, ok, _ := contestRepo.GetAll(-1, -1, false, false)
+		contests, _, ok, _ := contestRepo.GetAll(-1, -1, false)
 		if !ok {
 			return
 		}
@@ -25,7 +25,7 @@ func PrepareGenerator(c *cron.Cron) {
 				continue
 			}
 			repo := db.InitUsageRepo(db.DB)
-			usages, _, ok, _ := repo.GetAll(contest.ID, -1, -1, false, true)
+			usages, _, ok, _ := repo.GetAll(contest.ID, -1, -1, false, "Challenge")
 			if !ok {
 				continue
 			}

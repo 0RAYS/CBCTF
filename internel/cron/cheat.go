@@ -14,7 +14,7 @@ func CheckCheat(c *cron.Cron) {
 	function := executionTime("CheckCheats", func() {
 		log.Logger.Debug("Check cheats")
 		repo := db.InitContestRepo(db.DB)
-		contests, _, ok, _ := repo.GetAll(-1, -1, false, true)
+		contests, _, ok, _ := repo.GetAll(-1, -1, false)
 		if !ok {
 			return
 		}
@@ -33,7 +33,7 @@ func CheckCheat(c *cron.Cron) {
 func checkFlag(contest model.Contest) (bool, string) {
 	submissionRepo := db.InitSubmissionRepo(db.DB)
 	cheatRepo := db.InitCheatRepo(db.DB)
-	submissions, _, ok, msg := submissionRepo.GetAllByKeyID("contest_id", contest.ID, -1, -1, false, false)
+	submissions, _, ok, msg := submissionRepo.GetAllByKeyID("contest_id", contest.ID, -1, -1, false)
 	if !ok {
 		return false, msg
 	}

@@ -27,10 +27,10 @@ func InitAnswerRepo(tx *gorm.DB) *AnswerRepo {
 	return &AnswerRepo{Repo: Repo[model.Answer]{DB: tx, Model: "Answer"}}
 }
 
-func (a *AnswerRepo) GetBy2ID(teamID, flagID uint, preload bool, nestedL ...string) (model.Answer, bool, string) {
+func (a *AnswerRepo) GetBy2ID(teamID, flagID uint, preloadL ...string) (model.Answer, bool, string) {
 	var answer model.Answer
 	res := a.DB.Model(&model.Answer{}).Where("team_id = ? AND flag_id = ?", teamID, flagID)
-	res = model.GetPreload(res, preload, nestedL...).Limit(1).Find(&answer)
+	res = GetPreload(res, preloadL...).Limit(1).Find(&answer)
 	if res.RowsAffected == 0 {
 		return model.Answer{}, false, "AnswerNotFound"
 	}
@@ -47,7 +47,7 @@ func (a *AnswerRepo) Count(flagID uint) (int64, bool, string) {
 	return count, true, "Success"
 }
 
-func (a *AnswerRepo) GetAll(flagID uint, limit, offset int, preload bool, nestedL ...string) ([]model.Answer, int64, bool, string) {
+func (a *AnswerRepo) GetAll(flagID uint, limit, offset int, preloadL ...string) ([]model.Answer, int64, bool, string) {
 	var (
 		answers        = make([]model.Answer, 0)
 		count, ok, msg = a.Count(flagID)
@@ -56,7 +56,7 @@ func (a *AnswerRepo) GetAll(flagID uint, limit, offset int, preload bool, nested
 		return answers, count, false, msg
 	}
 	res := a.DB.Model(&model.Answer{}).Where("flag_id = ?", flagID)
-	res = model.GetPreload(res, preload, nestedL...).Limit(limit).Offset(offset).Find(&answers)
+	res = GetPreload(res, preloadL...).Limit(limit).Offset(offset).Find(&answers)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Answers: %s", res.Error)
 		return answers, count, false, "GetAnswerError"
@@ -73,7 +73,7 @@ func (a *AnswerRepo) Update(id uint, options UpdateAnswerOptions) (bool, string)
 			log.Logger.Warningf("Failed to update Answer: too many times failed due to optimistic lock")
 			return false, "DeadLock"
 		}
-		answer, ok, msg := a.GetByID(id, false)
+		answer, ok, msg := a.GetByID(id)
 		if !ok {
 			return ok, msg
 		}

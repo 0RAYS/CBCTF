@@ -41,7 +41,7 @@ func (c *CheatRepo) Update(id uint, options UpdateCheatOptions) (bool, string) {
 			log.Logger.Warningf("Failed to update Cheat: too many times failed due to optimistic lock")
 			return false, "DeadLock"
 		}
-		cheat, ok, msg := c.GetByID(id, false)
+		cheat, ok, msg := c.GetByID(id)
 		if !ok {
 			return ok, msg
 		}

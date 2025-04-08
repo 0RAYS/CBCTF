@@ -58,7 +58,7 @@ func (t *TeamRepo) IsUniqueMember(contestID uint, userID uint) bool {
 	return res.RowsAffected == 0
 }
 
-func (t *TeamRepo) getByUniqueKey(key string, value interface{}, preload bool, nestedL ...string) (model.Team, bool, string) {
+func (t *TeamRepo) getByUniqueKey(key string, value interface{}, preloadL ...string) (model.Team, bool, string) {
 	switch key {
 	case "id", "captain_id":
 		value = value.(uint)
@@ -67,21 +67,21 @@ func (t *TeamRepo) getByUniqueKey(key string, value interface{}, preload bool, n
 	}
 	var team model.Team
 	res := t.DB.Model(&model.Team{}).Where(key+" = ?", value)
-	res = model.GetPreload(res, preload, nestedL...).Limit(1).Find(&team)
+	res = GetPreload(res, preloadL...).Limit(1).Find(&team)
 	if res.RowsAffected == 0 {
 		return model.Team{}, false, "TeamNotFound"
 	}
 	return team, true, "Success"
 }
 
-func (t *TeamRepo) GetByCaptainID(captainID uint, preload bool, nestedL ...string) (model.Team, bool, string) {
-	return t.getByUniqueKey("captain_id", captainID, preload, nestedL...)
+func (t *TeamRepo) GetByCaptainID(captainID uint, preloadL ...string) (model.Team, bool, string) {
+	return t.getByUniqueKey("captain_id", captainID, preloadL...)
 }
 
-func (t *TeamRepo) GetByName(contestID uint, name string, preload bool, nestedL ...string) (model.Team, bool, string) {
+func (t *TeamRepo) GetByName(contestID uint, name string, preloadL ...string) (model.Team, bool, string) {
 	var team model.Team
 	res := t.DB.Model(&model.Team{}).Where("contest_id = ? AND name = ?", contestID, name)
-	res = model.GetPreload(res, preload, nestedL...).Limit(1).Find(&team)
+	res = GetPreload(res, preloadL...).Limit(1).Find(&team)
 	if res.RowsAffected == 0 {
 		return model.Team{}, false, "TeamNotFound"
 	}
@@ -92,7 +92,8 @@ func (t *TeamRepo) GetByName(contestID uint, name string, preload bool, nestedL 
 func (t *TeamRepo) GetBy2ID(userID uint, contestID uint) (model.Team, bool, string) {
 	user, ok, msg := InitUserRepo(t.DB).
 		GetByID(
-			userID, true,
+			userID,
+			"all",
 			"Teams.Contest", "Teams.Users", "Teams.Answers", "Teams.Submissions",
 			"Teams.Containers", "Teams.Cheats",
 		)
@@ -124,7 +125,7 @@ func (t *TeamRepo) Count(contestID uint, hidden, banned bool) (int64, bool, stri
 	return count, true, "Success"
 }
 
-func (t *TeamRepo) GetAll(contestID uint, limit, offset int, hidden, banned, preload bool, nestedL ...string) ([]model.Team, int64, bool, string) {
+func (t *TeamRepo) GetAll(contestID uint, limit, offset int, hidden, banned bool, preloadL ...string) ([]model.Team, int64, bool, string) {
 	var (
 		teams          = make([]model.Team, 0)
 		count, ok, msg = t.Count(contestID, hidden, banned)
@@ -139,7 +140,7 @@ func (t *TeamRepo) GetAll(contestID uint, limit, offset int, hidden, banned, pre
 	if !banned {
 		res = res.Where("banned = ?", false)
 	}
-	res = model.GetPreload(res, preload, nestedL...).Limit(limit).Offset(offset).Find(&teams)
+	res = GetPreload(res, preloadL...).Limit(limit).Offset(offset).Find(&teams)
 	if res.Error != nil {
 		log.Logger.Errorf("Failed to get Teams: %s", res.Error)
 		return teams, count, false, msg
@@ -156,7 +157,7 @@ func (t *TeamRepo) Update(id uint, options UpdateTeamOptions) (bool, string) {
 			log.Logger.Warningf("Failed too many times to update team due to optimistic lock")
 			return false, "DeadLock"
 		}
-		team, ok, msg := t.GetByID(id, false)
+		team, ok, msg := t.GetByID(id)
 		if !ok {
 			return ok, msg
 		}

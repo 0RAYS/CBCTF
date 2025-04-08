@@ -1,10 +1,5 @@
 package model
 
-import (
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
-)
-
 type UserTeam struct {
 	UserID uint `gorm:"index:idx_user_team,unique"`
 	TeamID uint `gorm:"index:idx_user_team,unique"`
@@ -60,14 +55,4 @@ var Associations = map[string][]string{
 	"User": {
 		"Teams", "Contests", "Submissions", "Containers", "Devices", "Cheats",
 	},
-}
-
-func GetPreload(tx *gorm.DB, preload bool, nestedL ...string) *gorm.DB {
-	if preload {
-		tx = tx.Preload(clause.Associations)
-		for _, nested := range nestedL {
-			tx = tx.Preload(nested)
-		}
-	}
-	return tx
 }

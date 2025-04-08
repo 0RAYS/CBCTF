@@ -46,7 +46,7 @@ func (s *SubmissionRepo) CountByKeyID(key string, id uint, solved bool) (int64, 
 	return count, true, "Success"
 }
 
-func (s *SubmissionRepo) GetAllByKeyID(key string, id uint, limit, offset int, solved, preload bool, nestedL ...string) ([]model.Submission, int64, bool, string) {
+func (s *SubmissionRepo) GetAllByKeyID(key string, id uint, limit, offset int, solved bool, preloadL ...string) ([]model.Submission, int64, bool, string) {
 	var (
 		submissions    = make([]model.Submission, 0)
 		count, ok, msg = s.CountByKeyID(key, id, solved)
@@ -58,7 +58,7 @@ func (s *SubmissionRepo) GetAllByKeyID(key string, id uint, limit, offset int, s
 	if solved {
 		res = res.Where("solved = ?", true)
 	}
-	res = model.GetPreload(res, preload, nestedL...).Limit(limit).Offset(offset).Find(&submissions)
+	res = GetPreload(res, preloadL...).Limit(limit).Offset(offset).Find(&submissions)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Submissions: %s", res.Error)
 		return submissions, count, false, "GetSubmissionError"
@@ -75,7 +75,7 @@ func (s *SubmissionRepo) Update(id uint, options UpdateSubmissionOptions) (bool,
 			log.Logger.Warningf("Failed to update Submission: too many times failed due to optimistic lock")
 			return false, "DeadLock"
 		}
-		submission, ok, msg := s.GetByID(id, false)
+		submission, ok, msg := s.GetByID(id)
 		if !ok {
 			return ok, msg
 		}

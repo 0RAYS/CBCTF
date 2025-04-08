@@ -46,7 +46,7 @@ func GetFlag(ctx *gin.Context) {
 func GetFlags(ctx *gin.Context) {
 	usage := middleware.GetUsage(ctx)
 	repo := db.InitFlagRepo(db.DB.WithContext(ctx))
-	flags, _, ok, msg := repo.GetByKeyID("usage_id", usage.ID, -1, -1, false)
+	flags, _, ok, msg := repo.GetByKeyID("usage_id", usage.ID, -1, -1)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

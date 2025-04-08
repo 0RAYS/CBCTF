@@ -56,7 +56,7 @@ func AdminCreateUser(tx *gorm.DB, form f.CreateUserForm) (model.User, bool, stri
 
 func VerifyUser(tx *gorm.DB, form f.LoginForm) (model.User, bool, string) {
 	repo := db.InitUserRepo(tx)
-	user, ok, msg := repo.GetByName(form.Name, true)
+	user, ok, msg := repo.GetByName(form.Name)
 	if !ok {
 		return model.User{}, false, msg
 	}

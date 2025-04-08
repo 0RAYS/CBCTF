@@ -20,7 +20,7 @@ func HomePage(ctx *gin.Context) {
 		"stats":      []gin.H{},
 		"scoreboard": []gin.H{},
 	}
-	contests, count, ok, _ := db.InitContestRepo(DB).GetAll(-1, -1, false, true)
+	contests, count, ok, _ := db.InitContestRepo(DB).GetAll(-1, -1, false, "Users", "Teams")
 	if ok {
 		for i := 0; i < func() int {
 			if len(contests) > 3 {
