@@ -19,7 +19,7 @@ func UpdateTeamRanking(tx *gorm.DB, contestID uint) (bool, string) {
 		return false, msg
 	}
 	for _, team := range teams {
-		score, ok, msg = CalcTeamScore(tx, team.ID)
+		score, ok, msg = CalcTeamScore(tx, team)
 		if !ok {
 			continue
 		}

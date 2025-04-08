@@ -37,11 +37,9 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, usage model.Usage, fo
 	}
 	submission, ok, msg := submissionRepo.Create(options)
 	if solved {
-		if !answer.Solved {
-			answerRepo := db.InitAnswerRepo(tx)
-			if ok, msg := answerRepo.Update(answer.ID, db.UpdateAnswerOptions{Solved: &solved}); !ok {
-				return model.Submission{}, false, msg
-			}
+		answerRepo := db.InitAnswerRepo(tx)
+		if ok, msg := answerRepo.Update(answer.ID, db.UpdateAnswerOptions{Solved: &solved}); !ok {
+			return model.Submission{}, false, msg
 		}
 		// 正确时需要更新分数等信息, 加锁
 		mu, _ := SolvedMutex.LoadOrStore(usage.ID, &sync.Mutex{})
@@ -65,7 +63,7 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, usage model.Usage, fo
 		}); !ok {
 			return model.Submission{}, false, msg
 		}
-		score, ok, msg := CalcTeamScore(tx, team.ID)
+		score, ok, msg := CalcTeamScore(tx, team)
 		if !ok {
 			return model.Submission{}, false, msg
 		}
