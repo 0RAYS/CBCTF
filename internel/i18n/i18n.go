@@ -161,6 +161,7 @@ var resp = map[string]map[string]interface{}{
 	"UpdatePodError":           {"zh-CN": "更新Pod失败", "en-US": "Failed to update Pod", "code": 500},
 	"CreateNetworkPolicyError": {"zh-CN": "创建NetworkPolicy失败", "en-US": "Failed to create NetworkPolicy", "code": 500},
 	"DeleteNetworkPolicyError": {"zh-CN": "删除NetworkPolicy失败", "en-US": "Failed to delete NetworkPolicy", "code": 500},
+	"ExecCommandError":         {"zh-CN": "执行POD命令失败", "en-US": "Failed to execute command", "code": 500},
 
 	"AppendUserToTeamError":      {"zh-CN": "添加用户到队伍失败", "en-US": "Failed to add user to team", "code": 500},
 	"AppendTeamToContestError":   {"zh-CN": "添加队伍到赛事失败", "en-US": "Failed to add team to contest", "code": 500},
