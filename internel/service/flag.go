@@ -56,11 +56,6 @@ func CalcSolversAndScore(tx *gorm.DB, flag model.Flag) (int64, float64, bool, st
 	if !ok {
 		return 0, 0, false, msg
 	}
-	score := flag.CalcNewScore(count - 1)
-	if score != flag.CurrentScore {
-		// 不考虑更新失败的情况, 不回滚
-		repo := db.InitFlagRepo(tx)
-		repo.Update(flag.ID, db.UpdateFlagOptions{CurrentScore: &score})
-	}
+	score := flag.CalcCurrentScore(count - 1)
 	return count, score, true, "Success"
 }

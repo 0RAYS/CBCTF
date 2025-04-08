@@ -42,7 +42,7 @@ type Flag struct {
 	Version      uint           `gorm:"default:1" json:"-"`
 }
 
-func (f *Flag) CalcNewScore(solvers int64) float64 {
+func (f *Flag) CalcCurrentScore(solvers int64) float64 {
 	var calc float64 = 0
 	switch f.ScoreType {
 	case StaticScore:

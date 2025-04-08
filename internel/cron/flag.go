@@ -52,5 +52,5 @@ func UpdateFlagScore(c *cron.Cron) {
 		}
 	})
 	function()
-	c.Schedule(cron.Every(5*time.Minute), cron.FuncJob(function))
+	c.Schedule(cron.Every(time.Hour), cron.FuncJob(function))
 }
