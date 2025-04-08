@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func GetPreload(tx *gorm.DB, preloadL ...string) *gorm.DB {
+func preload(tx *gorm.DB, preloadL ...string) *gorm.DB {
 	for _, nested := range preloadL {
 		if nested == "all" {
 			tx = tx.Preload(clause.Associations)
@@ -46,7 +46,7 @@ func (r *Repo[T]) getByUniqueKey(key string, value interface{}, preloadL ...stri
 	}
 	var m T
 	res := r.DB.Model(new(T)).Where(key+" = ?", value)
-	res = GetPreload(res, preloadL...).Limit(1).Find(&m)
+	res = preload(res, preloadL...).Limit(1).Find(&m)
 	if res.RowsAffected == 0 {
 		return m, false, fmt.Sprintf("%sNotFound", r.Model)
 	}
@@ -75,7 +75,7 @@ func (r *Repo[T]) GetAll(limit, offset int, preloadL ...string) ([]T, int64, boo
 		return ms, count, false, msg
 	}
 	res := r.DB.Model(new(T))
-	res = GetPreload(res, preloadL...).Limit(limit).Offset(offset).Find(&ms)
+	res = preload(res, preloadL...).Limit(limit).Offset(offset).Find(&ms)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get all %T: %s", new(T), res.Error)
 		return ms, count, false, fmt.Sprintf("Get%sError", r.Model)

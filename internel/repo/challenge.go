@@ -47,7 +47,7 @@ func (c *ChallengeRepo) getByUniqueKey(key string, value interface{}, preloadL .
 	}
 	var challenge model.Challenge
 	res := c.DB.Model(&model.Challenge{}).Where(key+" = ?", value)
-	res = GetPreload(res, preloadL...).Limit(1).Find(&challenge)
+	res = preload(res, preloadL...).Limit(1).Find(&challenge)
 	if res.RowsAffected == 0 {
 		return model.Challenge{}, false, "ChallengeNotFound"
 	}
@@ -88,7 +88,7 @@ func (c *ChallengeRepo) GetAll(limit, offset int, t, category string, preloadL .
 	} else if !(t == "" && category == "") {
 		res = res.Where("type = ? OR category = ?", t, category)
 	}
-	res = GetPreload(res, preloadL...)
+	res = preload(res, preloadL...)
 	res = res.Limit(limit).Offset(offset).Find(&challenges)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Challenges: %s", res.Error)

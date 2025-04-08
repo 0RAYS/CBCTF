@@ -46,7 +46,7 @@ func (n *NoticeRepo) GetAll(contestID uint, limit, offset int, preloadL ...strin
 		return notices, count, false, msg
 	}
 	res := n.DB.Model(&model.Notice{}).Where("contest_id = ?", contestID)
-	res = GetPreload(res, preloadL...).Limit(limit).Offset(offset).Find(&notices)
+	res = preload(res, preloadL...).Limit(limit).Offset(offset).Find(&notices)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Notices: %s", res.Error)
 		return notices, 0, false, "GetNoticeError"

@@ -69,7 +69,7 @@ func (c *ContainerRepo) GetByTeam(teamID uint, limit, offset int, deleted bool, 
 		res = res.Unscoped()
 	}
 	res = res.Where("team_id = ?", teamID)
-	res = GetPreload(res, preloadL...).Limit(limit).Offset(offset).Find(&containers)
+	res = preload(res, preloadL...).Limit(limit).Offset(offset).Find(&containers)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Containers: %s", res.Error)
 		return containers, count, false, "GetContainerError"
@@ -84,7 +84,7 @@ func (c *ContainerRepo) GetBy2ID(teamID uint, usageID uint, deleted bool, preloa
 		res = res.Unscoped()
 	}
 	res = res.Where("team_id = ? AND usage_id = ?", teamID, usageID)
-	res = GetPreload(res, preloadL...).Limit(1).Find(&containers)
+	res = preload(res, preloadL...).Limit(1).Find(&containers)
 	if res.RowsAffected == 0 {
 		return containers, false, "ContainerNotFound"
 	}
@@ -98,7 +98,7 @@ func (c *ContainerRepo) GetByName(key, value string, deleted bool, preloadL ...s
 		res = res.Unscoped()
 	}
 	res = res.Where(key+" = ?", value)
-	res = GetPreload(res, preloadL...).Find(&containers)
+	res = preload(res, preloadL...).Find(&containers)
 	if res.RowsAffected == 0 {
 		return containers, false, "ContainerNotFound"
 	}
