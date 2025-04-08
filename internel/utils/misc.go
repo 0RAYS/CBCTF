@@ -79,7 +79,7 @@ func TidyPaginate(length, limit, offset int) (int, int) {
 	if end > length {
 		end = length
 	}
-	return end, offset
+	return offset, end
 }
 
 // S2S 结构体转结构体, 有些低效, 但符合我预期, 先保留
