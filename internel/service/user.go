@@ -72,7 +72,7 @@ func ChangeUserPwd(tx *gorm.DB, user model.User, form f.ChangePasswordForm) (boo
 		return false, "PasswordError"
 	}
 	if utils.CompareHashAndPassword(user.Password, form.NewPassword) {
-		return false, "SamePassword"
+		return false, "PasswordSame"
 	}
 	if utils.CheckPassword(form.NewPassword) <= 1 {
 		return false, "WeakPassword"
