@@ -42,9 +42,13 @@ func (c *ContainerRepo) IsUniqueContainer(usageID, teamID uint) bool {
 	return res.RowsAffected == 0
 }
 
-func (c *ContainerRepo) Count(teamID uint) (int64, bool, string) {
+func (c *ContainerRepo) Count(teamID uint, deleted bool) (int64, bool, string) {
 	var count int64
-	res := c.DB.Model(&model.Container{}).Where("team_id = ?", teamID).Count(&count)
+	res := c.DB.Model(&model.Container{})
+	if deleted {
+		res = res.Unscoped()
+	}
+	res = res.Where("team_id = ?", teamID).Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Containers: %s", res.Error)
 		return 0, false, "CountModelError"
@@ -52,15 +56,19 @@ func (c *ContainerRepo) Count(teamID uint) (int64, bool, string) {
 	return count, true, "Success"
 }
 
-func (c *ContainerRepo) GetAll(teamID uint, limit, offset int, preload bool, nestedL ...string) ([]model.Container, int64, bool, string) {
+func (c *ContainerRepo) GetByTeam(teamID uint, limit, offset int, deleted, preload bool, nestedL ...string) ([]model.Container, int64, bool, string) {
 	var (
 		containers     = make([]model.Container, 0)
-		count, ok, msg = c.Count(teamID)
+		count, ok, msg = c.Count(teamID, deleted)
 	)
 	if !ok {
 		return containers, count, false, msg
 	}
-	res := c.DB.Model(&model.Container{}).Where("team_id = ?", teamID)
+	res := c.DB.Model(&model.Container{})
+	if deleted {
+		res = res.Unscoped()
+	}
+	res = res.Where("team_id = ?", teamID)
 	res = model.GetPreload(res, preload, nestedL...).Limit(limit).Offset(offset).Find(&containers)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Containers: %s", res.Error)
@@ -69,9 +77,13 @@ func (c *ContainerRepo) GetAll(teamID uint, limit, offset int, preload bool, nes
 	return containers, count, true, "Success"
 }
 
-func (c *ContainerRepo) GetBy2ID(teamID uint, usageID uint, preload bool, nestedL ...string) ([]model.Container, bool, string) {
+func (c *ContainerRepo) GetBy2ID(teamID uint, usageID uint, deleted, preload bool, nestedL ...string) ([]model.Container, bool, string) {
 	containers := make([]model.Container, 0)
-	res := c.DB.Model(&model.Container{}).Where("team_id = ? AND usage_id = ?", teamID, usageID)
+	res := c.DB.Model(&model.Container{})
+	if deleted {
+		res = res.Unscoped()
+	}
+	res = res.Where("team_id = ? AND usage_id = ?", teamID, usageID)
 	res = model.GetPreload(res, preload, nestedL...).Limit(1).Find(&containers)
 	if res.RowsAffected == 0 {
 		return containers, false, "ContainerNotFound"
