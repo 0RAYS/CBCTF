@@ -91,6 +91,20 @@ func (c *ContainerRepo) GetBy2ID(teamID uint, usageID uint, deleted, preload boo
 	return containers, true, "Success"
 }
 
+func (c *ContainerRepo) GetByName(key, value string, deleted, preload bool, nestedL ...string) ([]model.Container, bool, string) {
+	containers := make([]model.Container, 0)
+	res := c.DB.Model(&model.Container{})
+	if deleted {
+		res = res.Unscoped()
+	}
+	res = res.Where(key+" = ?", value)
+	res = model.GetPreload(res, preload, nestedL...).Find(&containers)
+	if res.RowsAffected == 0 {
+		return containers, false, "ContainerNotFound"
+	}
+	return containers, true, "Success"
+}
+
 func (c *ContainerRepo) Update(id uint, options UpdateContainerOptions) (bool, string) {
 	var count int
 	data := utils.UpdateOptions2Map(options)
