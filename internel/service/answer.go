@@ -64,7 +64,8 @@ func GenerateAnswer(tx *gorm.DB, usage model.Usage, team model.Team, reset bool)
 		options = append(options, option)
 	}
 	for _, option := range options {
-		if _, ok, _ := repo.GetBy2ID(team.ID, option.FlagID, false); !reset && ok {
+		if answer, ok, _ := repo.GetBy2ID(team.ID, option.FlagID, false); !reset && ok {
+			answers = append(answers, answer)
 			continue
 		}
 		option.Value = fmt.Sprintf("%s{%s}", usage.Contest.Prefix, option.Value)

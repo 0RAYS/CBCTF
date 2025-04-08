@@ -26,7 +26,7 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, usage model.Usage, fo
 		Value:       form.Flag,
 		Score:       team.Score,
 	}
-	solved, flag, ok, msg := VerifyFlag(tx, team, usage, form.Flag)
+	solved, flag, answer, ok, msg := VerifyFlag(tx, team, usage, form.Flag)
 	options.FlagID = flag.ID
 	options.Solved = solved
 	if !ok {
@@ -37,9 +37,11 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, usage model.Usage, fo
 	}
 	submission, ok, msg := submissionRepo.Create(options)
 	if solved {
-		answerRepo := db.InitAnswerRepo(tx)
-		if ok, msg := answerRepo.Update(flag.ID, db.UpdateAnswerOptions{Solved: &solved}); !ok {
-			return model.Submission{}, false, msg
+		if !answer.Solved {
+			answerRepo := db.InitAnswerRepo(tx)
+			if ok, msg := answerRepo.Update(answer.ID, db.UpdateAnswerOptions{Solved: &solved}); !ok {
+				return model.Submission{}, false, msg
+			}
 		}
 		// 正确时需要更新分数等信息, 加锁
 		mu, _ := SolvedMutex.LoadOrStore(usage.ID, &sync.Mutex{})
