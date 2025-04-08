@@ -28,7 +28,8 @@ func UpdateTeamRanking(c *cron.Cron) {
 			}
 			teamRepo := db.InitTeamRepo(db.DB)
 			for i, team := range teams {
-				teamRepo.Update(team.ID, db.UpdateTeamOptions{Rank: &i})
+				rank := i + 1
+				teamRepo.Update(team.ID, db.UpdateTeamOptions{Rank: &rank})
 			}
 		}
 	})
