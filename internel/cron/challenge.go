@@ -18,7 +18,7 @@ func UpdateFlagScore(c *cron.Cron) {
 			return
 		}
 		for _, contest := range contests {
-			if !contest.IsRunning() || contest.Hidden {
+			if !contest.IsRunning() {
 				continue
 			}
 			usageRepo := db.InitUsageRepo(db.DB)

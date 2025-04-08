@@ -42,7 +42,7 @@ func (c *Contest) IsNotStart() bool {
 }
 
 func (c *Contest) IsRunning() bool {
-	return (c.IsOver() || c.IsNotStart()) != true
+	return (c.IsOver() || c.IsNotStart() || c.Hidden) != true
 }
 
 func (c *Contest) Status() string {
