@@ -1,8 +1,11 @@
 package resp
 
 import (
+	"CBCTF/internel/config"
 	"CBCTF/internel/model"
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"strings"
 )
 
 func GetTeamResp(team model.Team) gin.H {
@@ -10,7 +13,7 @@ func GetTeamResp(team model.Team) gin.H {
 		"id":         team.ID,
 		"name":       team.Name,
 		"score":      team.Score,
-		"avatar":     team.Avatar,
+		"avatar":     fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(team.Avatar, "/")),
 		"last":       team.Last,
 		"users":      len(team.Users),
 		"desc":       team.Desc,
