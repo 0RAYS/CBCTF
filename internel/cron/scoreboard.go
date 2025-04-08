@@ -13,7 +13,7 @@ func UpdateTeamRanking(c *cron.Cron) {
 	function := executionTime("UpdateTeamRanking", func() {
 		log.Logger.Debug("Update global ranking")
 		repo := db.InitContestRepo(db.DB)
-		contests, _, ok, _ := repo.GetAll(-1, -1, false, false)
+		contests, _, ok, _ := repo.GetAll(-1, -1, false)
 		if !ok {
 			return
 		}

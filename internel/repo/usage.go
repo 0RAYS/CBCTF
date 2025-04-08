@@ -44,13 +44,13 @@ func (u *UsageRepo) IsUniqueChallenge(contestID uint, challengeID string) bool {
 	return res.RowsAffected == 0
 }
 
-func (u *UsageRepo) GetBy2ID(contestID uint, challengeID string, hidden, preload bool, nestedL ...string) (model.Usage, bool, string) {
+func (u *UsageRepo) GetBy2ID(contestID uint, challengeID string, hidden bool, preloadL ...string) (model.Usage, bool, string) {
 	var usage model.Usage
 	res := u.DB.Model(&model.Usage{}).Where("contest_id = ? AND challenge_id = ?", contestID, challengeID)
 	if !hidden {
 		res = res.Where("hidden = ?", false)
 	}
-	res = model.GetPreload(res, preload, nestedL...).Limit(1).Find(&usage)
+	res = GetPreload(res, preloadL...).Limit(1).Find(&usage)
 	if res.RowsAffected == 0 {
 		return model.Usage{}, false, "UsageNotFound"
 	}
@@ -71,7 +71,7 @@ func (u *UsageRepo) Count(contestID uint, hidden bool) (int64, bool, string) {
 	return count, true, "Success"
 }
 
-func (u *UsageRepo) GetAll(contestID uint, limit, offset int, hidden bool, preload bool, nestedL ...string) ([]model.Usage, int64, bool, string) {
+func (u *UsageRepo) GetAll(contestID uint, limit, offset int, hidden bool, preloadL ...string) ([]model.Usage, int64, bool, string) {
 	var (
 		usages         = make([]model.Usage, 0)
 		count, ok, msg = u.Count(contestID, hidden)
@@ -83,7 +83,7 @@ func (u *UsageRepo) GetAll(contestID uint, limit, offset int, hidden bool, prelo
 	if !hidden {
 		res = res.Where("hidden = ?", false)
 	}
-	res = model.GetPreload(res, preload, nestedL...).Limit(limit).Offset(offset).Find(&usages)
+	res = GetPreload(res, preloadL...).Limit(limit).Offset(offset).Find(&usages)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Usages: %s", res.Error)
 		return usages, count, false, "GetUsageError"
@@ -100,7 +100,7 @@ func (u *UsageRepo) Update(id uint, options UpdateUsageOptions) (bool, string) {
 			log.Logger.Warningf("Failed to update Usage: too many times failed due to optimistic lock")
 			return false, "DeadLock"
 		}
-		usage, ok, msg := u.GetByID(id, false)
+		usage, ok, msg := u.GetByID(id)
 		if !ok {
 			return false, msg
 		}

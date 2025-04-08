@@ -17,13 +17,13 @@ func ClearUsageMutex(c *cron.Cron) {
 		contestRepo := db.InitContestRepo(db.DB)
 		flagRepo := db.InitFlagRepo(db.DB)
 		service.SolvedMutex.Range(func(k, v interface{}) bool {
-			flag, ok, _ := flagRepo.GetByID(k.(uint), false)
+			flag, ok, _ := flagRepo.GetByID(k.(uint))
 			if !ok {
 				service.SolvedMutex.Delete(k)
 				return true
 			}
 			if contest, ok := contests[flag.ContestID]; !ok {
-				contest, ok, _ = contestRepo.GetByID(flag.ContestID, false)
+				contest, ok, _ = contestRepo.GetByID(flag.ContestID)
 				if !ok {
 					service.SolvedMutex.Delete(k)
 					return true

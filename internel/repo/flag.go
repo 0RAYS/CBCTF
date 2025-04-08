@@ -50,7 +50,7 @@ func (f *FlagRepo) Count(key string, id uint) (int64, bool, string) {
 	return count, true, "Success"
 }
 
-func (f *FlagRepo) GetByKeyID(key string, id uint, limit, offset int, preload bool, nestedL ...string) ([]model.Flag, int64, bool, string) {
+func (f *FlagRepo) GetByKeyID(key string, id uint, limit, offset int, preloadL ...string) ([]model.Flag, int64, bool, string) {
 	var (
 		flags          = make([]model.Flag, 0)
 		count, ok, msg = f.Count(key, id)
@@ -59,7 +59,7 @@ func (f *FlagRepo) GetByKeyID(key string, id uint, limit, offset int, preload bo
 		return flags, count, false, msg
 	}
 	res := f.DB.Model(&model.Flag{}).Where(key+" = ?", id)
-	res = model.GetPreload(res, preload, nestedL...).Limit(limit).Offset(offset).Find(&flags)
+	res = GetPreload(res, preloadL...).Limit(limit).Offset(offset).Find(&flags)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Flags: %s", res.Error)
 		return flags, count, false, "GetFlagError"
@@ -76,7 +76,7 @@ func (f *FlagRepo) Update(id uint, options UpdateFlagOptions) (bool, string) {
 			log.Logger.Warningf("Failed to update Flag: too many times failed due to optimistic lock")
 			return false, "DeadLock"
 		}
-		flag, ok, msg := f.GetByID(id, false)
+		flag, ok, msg := f.GetByID(id)
 		if !ok {
 			return false, msg
 		}

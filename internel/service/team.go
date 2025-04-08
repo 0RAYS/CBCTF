@@ -63,7 +63,7 @@ func DeleteTeam(tx *gorm.DB, team model.Team) (bool, string) {
 func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.JoinTeamForm) (bool, string) {
 	var (
 		repo          = db.InitTeamRepo(tx)
-		team, ok, msg = repo.GetByName(contest.ID, form.Name, true)
+		team, ok, msg = repo.GetByName(contest.ID, form.Name, "Users")
 		err           error
 	)
 	if !ok {
@@ -144,7 +144,7 @@ func LeaveTeam(tx *gorm.DB, contest model.Contest, team model.Team, userID uint)
 func CalcTeamScore(tx *gorm.DB, team model.Team) (float64, bool, string) {
 	var (
 		submissionRepo          = db.InitSubmissionRepo(tx)
-		submissions, _, ok, msg = submissionRepo.GetAllByKeyID("team_id", team.ID, -1, -1, true, true)
+		submissions, _, ok, msg = submissionRepo.GetAllByKeyID("team_id", team.ID, -1, -1, true, "Flag")
 		total                   float64
 		score                   float64
 	)
@@ -168,7 +168,7 @@ func GetTeamSolved(tx *gorm.DB, teamID uint) ([]model.Flag, bool, string) {
 	var (
 		flags                   = make([]model.Flag, 0)
 		repo                    = db.InitSubmissionRepo(tx)
-		submissions, _, ok, msg = repo.GetAllByKeyID("team_id", teamID, -1, -1, true, true)
+		submissions, _, ok, msg = repo.GetAllByKeyID("team_id", teamID, -1, -1, true, "Flag")
 	)
 	if !ok {
 		return flags, false, msg

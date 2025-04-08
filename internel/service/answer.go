@@ -12,7 +12,7 @@ import (
 func IsGenerated(tx *gorm.DB, usage model.Usage, team model.Team) bool {
 	repo := db.InitAnswerRepo(tx)
 	for _, flag := range usage.Flags {
-		answers, _, ok, _ := repo.GetAll(flag.ID, -1, -1, false)
+		answers, _, ok, _ := repo.GetAll(flag.ID, -1, -1)
 		if !ok {
 			return false
 		}
@@ -64,7 +64,7 @@ func GenerateAnswer(tx *gorm.DB, usage model.Usage, team model.Team, reset bool)
 		options = append(options, option)
 	}
 	for _, option := range options {
-		if answer, ok, _ := repo.GetBy2ID(team.ID, option.FlagID, false); !reset && ok {
+		if answer, ok, _ := repo.GetBy2ID(team.ID, option.FlagID); !reset && ok {
 			answers = append(answers, answer)
 			continue
 		}

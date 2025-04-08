@@ -34,7 +34,7 @@ func (t *TrafficRepo) Count(containerID uint) (int64, bool, string) {
 	return count, true, "Success"
 }
 
-func (t *TrafficRepo) GetAll(containerID uint, limit, offset int, preload bool, nestedL ...string) ([]model.Traffic, int64, bool, string) {
+func (t *TrafficRepo) GetAll(containerID uint, limit, offset int, preloadL ...string) ([]model.Traffic, int64, bool, string) {
 	var (
 		traffics       = make([]model.Traffic, 0)
 		count, ok, msg = t.Count(containerID)
@@ -43,7 +43,7 @@ func (t *TrafficRepo) GetAll(containerID uint, limit, offset int, preload bool, 
 		return traffics, count, false, msg
 	}
 	res := t.DB.Model(&model.Traffic{}).Where("container_id = ?", containerID)
-	res = model.GetPreload(res, preload, nestedL...).Limit(limit).Offset(offset).Find(&traffics)
+	res = GetPreload(res, preloadL...).Limit(limit).Offset(offset).Find(&traffics)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Traffics: %v", res.Error)
 		return traffics, count, false, "GetTrafficError"

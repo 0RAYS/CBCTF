@@ -11,7 +11,7 @@ import (
 func UpdateTeamRanking(tx *gorm.DB, contestID uint) (bool, string) {
 	var (
 		repo              = db.InitTeamRepo(tx)
-		teams, _, ok, msg = repo.GetAll(contestID, -1, -1, true, false, true)
+		teams, _, ok, msg = repo.GetAll(contestID, -1, -1, true, false, "Users")
 		score             float64
 		err               error
 	)
@@ -26,7 +26,7 @@ func UpdateTeamRanking(tx *gorm.DB, contestID uint) (bool, string) {
 		// 不考虑更新失败的情况, 不回滚
 		repo.Update(team.ID, db.UpdateTeamOptions{Score: &score})
 	}
-	teams, _, ok, msg = repo.GetAll(contestID, -1, -1, true, false, false)
+	teams, _, ok, msg = repo.GetAll(contestID, -1, -1, true, false)
 	if !ok {
 		return false, msg
 	}
@@ -60,7 +60,7 @@ func GetTeamRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Tea
 func UpdateUserRanking(tx *gorm.DB) (bool, string) {
 	var (
 		repo              = db.InitUserRepo(tx)
-		users, _, ok, msg = repo.GetAll(-1, -1, true, false, false)
+		users, _, ok, msg = repo.GetAll(-1, -1, true, false)
 		err               error
 	)
 	if !ok {

@@ -18,7 +18,7 @@ func SetUser(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	user, ok, msg := db.InitUserRepo(db.DB.WithContext(ctx)).GetByID(userID.UserID, true)
+	user, ok, msg := db.InitUserRepo(db.DB.WithContext(ctx)).GetByID(userID.UserID, "all")
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
@@ -48,7 +48,7 @@ func SetContest(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	contest, ok, msg := db.InitContestRepo(db.DB.WithContext(ctx)).GetByID(contestID.ContestID, true)
+	contest, ok, msg := db.InitContestRepo(db.DB.WithContext(ctx)).GetByID(contestID.ContestID, "all")
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
@@ -112,7 +112,7 @@ func SetTeamByURI(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	team, ok, msg = db.InitTeamRepo(db.DB.WithContext(ctx)).GetByID(teamID.TeamID, true)
+	team, ok, msg = db.InitTeamRepo(db.DB.WithContext(ctx)).GetByID(teamID.TeamID, "all")
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
@@ -179,7 +179,7 @@ func SetChallenge(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	challenge, ok, msg := db.InitChallengeRepo(db.DB.WithContext(ctx)).GetByID(challengeID.ChallengeID, true)
+	challenge, ok, msg := db.InitChallengeRepo(db.DB.WithContext(ctx)).GetByID(challengeID.ChallengeID, "all")
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
@@ -209,7 +209,7 @@ func SetUsage(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	usage, ok, msg := db.InitUsageRepo(db.DB.WithContext(ctx)).GetBy2ID(GetContest(ctx).ID, challengeID.ChallengeID, true, true)
+	usage, ok, msg := db.InitUsageRepo(db.DB.WithContext(ctx)).GetBy2ID(GetContest(ctx).ID, challengeID.ChallengeID, true, "all")
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
@@ -238,7 +238,7 @@ func SetFlag(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	flag, ok, msg := db.InitFlagRepo(db.DB.WithContext(ctx)).GetByID(flagID.FlagID, true)
+	flag, ok, msg := db.InitFlagRepo(db.DB.WithContext(ctx)).GetByID(flagID.FlagID, "all")
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
@@ -267,7 +267,7 @@ func SetContainer(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	container, ok, msg := db.InitContainerRepo(db.DB.WithContext(ctx)).GetByID(containerID.ContainerID, true)
+	container, ok, msg := db.InitContainerRepo(db.DB.WithContext(ctx)).GetByID(containerID.ContainerID, "all")
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
@@ -297,7 +297,7 @@ func SetNotice(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	notice, ok, msg := db.InitNoticeRepo(db.DB.WithContext(ctx)).GetByID(noticeID.NoticeID, true)
+	notice, ok, msg := db.InitNoticeRepo(db.DB.WithContext(ctx)).GetByID(noticeID.NoticeID, "all")
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()

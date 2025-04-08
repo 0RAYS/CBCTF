@@ -43,7 +43,7 @@ func (d *DeviceRepo) Update(id uint, options UpdateDeviceOptions) (bool, string)
 			log.Logger.Warningf("Failed to update Device: too many times failed due to optimistic lock")
 			return false, "DeadLock"
 		}
-		device, ok, msg := d.GetByID(id, false)
+		device, ok, msg := d.GetByID(id)
 		if !ok {
 			return false, msg
 		}

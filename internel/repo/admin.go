@@ -32,16 +32,16 @@ func InitAdminRepo(tx *gorm.DB) *AdminRepo {
 }
 
 func (a *AdminRepo) IsUniqueName(name string) bool {
-	_, ok, _ := a.GetByName(name, false)
+	_, ok, _ := a.GetByName(name)
 	return !ok
 }
 
 func (a *AdminRepo) IsUniqueEmail(email string) bool {
-	_, ok, _ := a.GetByEmail(email, false)
+	_, ok, _ := a.GetByEmail(email)
 	return !ok
 }
 
-func (a *AdminRepo) getByUniqueKey(key string, value interface{}, preload bool, nestedL ...string) (model.Admin, bool, string) {
+func (a *AdminRepo) getByUniqueKey(key string, value interface{}, preloadL ...string) (model.Admin, bool, string) {
 	switch key {
 	case "name", "email":
 		value = value.(string)
@@ -52,23 +52,23 @@ func (a *AdminRepo) getByUniqueKey(key string, value interface{}, preload bool, 
 	}
 	var admin model.Admin
 	res := a.DB.Model(&model.Admin{}).Where(key+" = ?", value)
-	res = model.GetPreload(res, preload, nestedL...).Limit(1).Find(&admin)
+	res = GetPreload(res, preloadL...).Limit(1).Find(&admin)
 	if res.RowsAffected == 0 {
 		return model.Admin{}, false, "AdminNotFound"
 	}
 	return admin, true, "Success"
 }
 
-func (a *AdminRepo) GetByID(id uint, preload bool, nestedL ...string) (model.Admin, bool, string) {
-	return a.getByUniqueKey("id", id, preload, nestedL...)
+func (a *AdminRepo) GetByID(id uint, preloadL ...string) (model.Admin, bool, string) {
+	return a.getByUniqueKey("id", id, preloadL...)
 }
 
-func (a *AdminRepo) GetByName(name string, preload bool, nestedL ...string) (model.Admin, bool, string) {
-	return a.getByUniqueKey("name", name, preload, nestedL...)
+func (a *AdminRepo) GetByName(name string, preloadL ...string) (model.Admin, bool, string) {
+	return a.getByUniqueKey("name", name, preloadL...)
 }
 
-func (a *AdminRepo) GetByEmail(email string, preload bool, nestedL ...string) (model.Admin, bool, string) {
-	return a.getByUniqueKey("email", email, preload, nestedL...)
+func (a *AdminRepo) GetByEmail(email string, preloadL ...string) (model.Admin, bool, string) {
+	return a.getByUniqueKey("email", email, preloadL...)
 }
 
 func (a *AdminRepo) Update(id uint, options UpdateAdminOptions) (bool, string) {
@@ -80,7 +80,7 @@ func (a *AdminRepo) Update(id uint, options UpdateAdminOptions) (bool, string) {
 			log.Logger.Warningf("Failed to update Admin: too many times failed due to optimistic lock")
 			return false, "DeadLock"
 		}
-		admin, ok, msg := a.GetByID(id, false)
+		admin, ok, msg := a.GetByID(id)
 		if !ok {
 			return ok, msg
 		}

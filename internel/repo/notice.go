@@ -37,7 +37,7 @@ func (n *NoticeRepo) Count(contestID uint) (int64, bool, string) {
 	return count, true, "Success"
 }
 
-func (n *NoticeRepo) GetAll(contestID uint, limit, offset int, preload bool, nestedL ...string) ([]model.Notice, int64, bool, string) {
+func (n *NoticeRepo) GetAll(contestID uint, limit, offset int, preloadL ...string) ([]model.Notice, int64, bool, string) {
 	var (
 		notices        = make([]model.Notice, 0)
 		count, ok, msg = n.Count(contestID)
@@ -46,7 +46,7 @@ func (n *NoticeRepo) GetAll(contestID uint, limit, offset int, preload bool, nes
 		return notices, count, false, msg
 	}
 	res := n.DB.Model(&model.Notice{}).Where("contest_id = ?", contestID)
-	res = model.GetPreload(res, preload, nestedL...).Limit(limit).Offset(offset).Find(&notices)
+	res = GetPreload(res, preloadL...).Limit(limit).Offset(offset).Find(&notices)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Notices: %s", res.Error)
 		return notices, 0, false, "GetNoticeError"
@@ -63,7 +63,7 @@ func (n *NoticeRepo) Update(id uint, options UpdateNoticeOptions) (bool, string)
 			log.Logger.Warningf("Failed to update Notice: too many times failed due to optimistic lock")
 			return false, "DeadLock"
 		}
-		notice, ok, msg := n.GetByID(id, false)
+		notice, ok, msg := n.GetByID(id)
 		if !ok {
 			return ok, msg
 		}

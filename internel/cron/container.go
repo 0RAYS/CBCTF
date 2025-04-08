@@ -15,7 +15,7 @@ func CloseContainers(c *cron.Cron) {
 	function := executionTime("CloseContainers", func() {
 		log.Logger.Debug("Close timeout Containers")
 		repo := db.InitContainerRepo(db.DB)
-		containers, _, ok, msg := repo.GetAll(-1, -1, false)
+		containers, _, ok, msg := repo.GetAll(-1, -1)
 		if !ok {
 			log.Logger.Warningf("Failed to get Containers %s", msg)
 			return
@@ -47,7 +47,7 @@ func CloseUnCtrlContainers(c *cron.Cron) {
 		for _, pod := range pods.Items {
 			if strings.Contains(pod.Name, "victim") && time.Now().Sub(pod.CreationTimestamp.Time) > 4*time.Hour {
 				repo := db.InitContainerRepo(db.DB)
-				if _, ok, _ := repo.GetByName("pod", pod.Name, false, false); !ok {
+				if _, ok, _ := repo.GetByName("pod", pod.Name, false); !ok {
 					ctx, cancel = context.WithTimeout(context.Background(), 1*time.Minute)
 					_, _ = k8s.DeletePod(ctx, pod.Name)
 					cancel()

@@ -29,7 +29,8 @@ func GetContests(ctx *gin.Context) {
 		return
 	}
 	all := middleware.GetRole(ctx) == "admin"
-	contests, count, ok, msg := db.InitContestRepo(db.DB.WithContext(ctx)).GetAll(form.Limit, form.Offset, all, true)
+	contests, count, ok, msg := db.InitContestRepo(db.DB.WithContext(ctx)).
+		GetAll(form.Limit, form.Offset, all, "Users", "Teams", "Submissions")
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
