@@ -96,7 +96,7 @@ func GenerateAttachment(usage model.Usage, team model.Team, answer []model.Answe
 	command := fmt.Sprintf("./run.sh %d %s", team.ID, base64.StdEncoding.EncodeToString([]byte(flags)))
 	log.Logger.Debugf("Executing command: %s", command)
 	var buf bytes.Buffer
-	if ExecInPod(pod.Name, pod.Spec.Containers[0].Name, command, nil, &buf, nil) != nil {
+	if err = ExecInPod(pod.Name, pod.Spec.Containers[0].Name, command, nil, &buf, nil); err != nil {
 		log.Logger.Warningf("Failed to execute command %s: %v", command, err)
 		return false, "ExecCommandError"
 	}
