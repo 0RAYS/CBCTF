@@ -49,8 +49,13 @@ func SetContest(ctx *gin.Context) {
 		return
 	}
 	contest, ok, msg := db.InitContestRepo(db.DB.WithContext(ctx)).GetByID(contestID.ContestID, true)
-	if !ok || (GetRole(ctx) != "admin" && contest.Hidden) {
+	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.Abort()
+		return
+	}
+	if GetRole(ctx) != "admin" && contest.Hidden {
+		ctx.JSONP(http.StatusNotFound, gin.H{"msg": "ContestNotFound", "data": nil})
 		ctx.Abort()
 		return
 	}
