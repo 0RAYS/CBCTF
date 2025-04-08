@@ -210,7 +210,7 @@ func GetTeamRanking(ctx *gin.Context) {
 			Solved []model.Flag
 		}{Team: team, Solved: solved})
 	}
-	data := resp.GetTeamRankingResp(teamsData, flags)
+	data := resp.GetTeamRankingResp(teamsData, flags, middleware.GetRole(ctx) == "admin")
 	data["count"] = count
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
 }
