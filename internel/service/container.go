@@ -44,7 +44,7 @@ func GetRemoteStatus(tx *gorm.DB, usage model.Usage) gin.H {
 func StartContainer(tx *gorm.DB, user model.User, team model.Team, usage model.Usage) (bool, string) {
 	answerRepo := db.InitAnswerRepo(tx)
 	containerRepo := db.InitContainerRepo(tx)
-	containers, ok, _ := containerRepo.GetBy2ID(team.ID, usage.ID, false)
+	containers, ok, _ := containerRepo.GetBy2ID(team.ID, usage.ID, false, false)
 	if ok {
 		return true, "Success"
 	}
