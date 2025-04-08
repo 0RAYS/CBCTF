@@ -8,8 +8,8 @@ def generate_given(flag: str):
     from Crypto.Util.number import bytes_to_long, getPrime
 
     m = bytes_to_long(flag.encode())
-    p = getPrime(64)
-    q = getPrime(64)
+    p = getPrime(128)
+    q = getPrime(128)
     n = p * q
     e = 65537
     c = pow(m, e, n)
@@ -27,6 +27,6 @@ def generate_attachment(uuid: str, **kwargs):
 
 
 if __name__ == "__main__":
-    uuid, flag = sys.argv[1], base64.b64decode(sys.argv[2]).split(",")[0]
+    uuid, flag = sys.argv[1], base64.b64decode(base64.b64decode(sys.argv[2]).decode().split(",")[0]).decode()
     n, c = generate_given(flag)
     generate_attachment(uuid, given_n=n, given_c=c)
