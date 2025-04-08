@@ -110,6 +110,12 @@ func GetContainers(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
+	if _, exists := ctx.GetQuery("limit"); !exists {
+		form.Limit = 5
+	}
+	if _, exists := ctx.GetQuery("offset"); !exists {
+		form.Offset = 0
+	}
 	team := middleware.GetTeam(ctx)
 	repo := db.InitContainerRepo(db.DB.WithContext(ctx))
 	containers, count, ok, msg := repo.GetByTeam(team.ID, form.Limit, form.Offset, true)
@@ -156,6 +162,12 @@ func GetTraffics(ctx *gin.Context) {
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusOK, gin.H{"msg": "BadRequest", "data": nil})
 		return
+	}
+	if _, exists := ctx.GetQuery("limit"); !exists {
+		form.Limit = 5
+	}
+	if _, exists := ctx.GetQuery("offset"); !exists {
+		form.Offset = 0
 	}
 	container := middleware.GetContainer(ctx)
 	repo := db.InitTrafficRepo(db.DB.WithContext(ctx))

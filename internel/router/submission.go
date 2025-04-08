@@ -16,6 +16,12 @@ func GetSubmissions(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
+	if _, exists := ctx.GetQuery("limit"); !exists {
+		form.Limit = 10
+	}
+	if _, exists := ctx.GetQuery("offset"); !exists {
+		form.Offset = 0
+	}
 	var (
 		submissions = make([]model.Submission, 0)
 		count       int64

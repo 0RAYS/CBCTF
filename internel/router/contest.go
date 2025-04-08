@@ -28,6 +28,12 @@ func GetContests(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
+	if _, exists := ctx.GetQuery("limit"); !exists {
+		form.Limit = 5
+	}
+	if _, exists := ctx.GetQuery("offset"); !exists {
+		form.Offset = 0
+	}
 	all := middleware.GetRole(ctx) == "admin"
 	contests, count, ok, msg := db.InitContestRepo(db.DB.WithContext(ctx)).
 		GetAll(form.Limit, form.Offset, all, "Users", "Teams", "Submissions")

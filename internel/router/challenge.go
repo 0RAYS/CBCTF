@@ -23,9 +23,11 @@ func GetChallenges(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	if ctx.Query("type") == "" && ctx.Query("category") == "" {
-		form.Type = ""
-		form.Category = ""
+	if _, exists := ctx.GetQuery("limit"); !exists {
+		form.Limit = 5
+	}
+	if _, exists := ctx.GetQuery("offset"); !exists {
+		form.Offset = 0
 	}
 	repo := db.InitChallengeRepo(db.DB.WithContext(ctx))
 	challenges, count, ok, msg := repo.GetAll(form.Limit, form.Offset, form.Type, form.Category)

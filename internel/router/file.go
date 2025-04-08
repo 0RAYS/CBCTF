@@ -171,6 +171,12 @@ func UploadChallenge(ctx *gin.Context) {
 
 func GetAvatars(ctx *gin.Context) {
 	var form f.GetModelsForm
+	if _, exists := ctx.GetQuery("limit"); !exists {
+		form.Limit = 10
+	}
+	if _, exists := ctx.GetQuery("offset"); !exists {
+		form.Offset = 0
+	}
 	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
