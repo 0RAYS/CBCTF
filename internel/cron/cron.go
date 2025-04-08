@@ -20,7 +20,7 @@ func Init() {
 	c = cron.New(cron.WithSeconds())
 	CloseContainers(c)
 	CloseUnCtrlContainers(c)
-	UpdateUsageScore(c)
+	UpdateFlagScore(c)
 	UpdateUserRanking(c)
 	UpdateTeamRanking(c)
 	CloseGenerator(c)

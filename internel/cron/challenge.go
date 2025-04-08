@@ -9,9 +9,9 @@ import (
 	"time"
 )
 
-func UpdateUsageScore(c *cron.Cron) {
-	function := executionTime("UpdateUsageScore", func() {
-		log.Logger.Debug("Update usage score")
+func UpdateFlagScore(c *cron.Cron) {
+	function := executionTime("UpdateFlagScore", func() {
+		log.Logger.Debug("Update flag score")
 		contestRepo := db.InitContestRepo(db.DB)
 		contests, _, ok, _ := contestRepo.GetAll(-1, -1, false, true)
 		if !ok {
