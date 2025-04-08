@@ -141,36 +141,24 @@ func LeaveTeam(tx *gorm.DB, contest model.Contest, team model.Team, userID uint)
 	return true, "Success"
 }
 
-func CalcTeamScore(tx *gorm.DB, teamID uint) (float64, bool, string) {
+func CalcTeamScore(tx *gorm.DB, team model.Team) (float64, bool, string) {
 	var (
-		teamRepo      = db.InitTeamRepo(tx)
-		usageRepo     = db.InitUsageRepo(tx)
-		team, ok, msg = teamRepo.GetByID(teamID, true)
-		usage         model.Usage
-		total         float64
-		score         float64
+		submissionRepo          = db.InitSubmissionRepo(tx)
+		submissions, _, ok, msg = submissionRepo.GetAllByKeyID("team_id", team.ID, -1, -1, true, true)
+		total                   float64
+		score                   float64
 	)
 	if !ok {
 		return team.Score, false, msg
 	}
-	for _, submission := range team.Submissions {
-		if !submission.Solved {
-			continue
-		}
-		usage, ok, msg = usageRepo.GetBy2ID(submission.ContestID, submission.ChallengeID, false, true)
+	for _, submission := range submissions {
+		_, score, ok, msg = CalcSolversAndScore(tx, submission.Flag)
 		if !ok {
 			continue
 		}
-		for _, flag := range usage.Flags {
-			if flag.ID == submission.FlagID {
-				_, score, ok, msg = CalcSolversAndScore(tx, flag)
-				if !ok {
-					continue
-				}
-				rate, _ := flag.CalcBlood(team.ID)
-				total += score + flag.Score*rate
-			}
-		}
+		rate, _ := submission.Flag.CalcBlood(team.ID)
+		total += score + submission.Flag.Score*rate
+
 	}
 	score = math.Trunc(score*100) / 100
 	return total, true, "Success"
