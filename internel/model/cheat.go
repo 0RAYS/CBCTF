@@ -6,6 +6,9 @@ const (
 	Suspect string = "suspect"
 	Cheater string = "cheater"
 	None    string = "none"
+
+	MagicNotMatch string = "Magic in token and request headers are not matched"
+	SameFlag      string = "Flag is same"
 )
 
 type Cheat struct {

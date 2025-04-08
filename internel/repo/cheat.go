@@ -12,12 +12,14 @@ type CheatRepo struct {
 }
 
 type CreateCheatOptions struct {
+	ID        string
 	UserID    uint
 	TeamID    uint
 	ContestID uint
 	Reason    string
 	Type      string
 	Checked   bool
+	Cheats    model.Strings
 }
 
 type UpdateCheatOptions struct {
