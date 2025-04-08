@@ -21,6 +21,7 @@ func GetContestResp(contest model.Contest, admin bool) gin.H {
 		"timelines": contest.Timelines,
 		"teams":     len(contest.Teams),
 		"users":     len(contest.Users),
+		"notices":   len(contest.Notices),
 		"prefix":    contest.Prefix,
 		"avatar":    fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(contest.Avatar, "/")),
 		"solved": func() int {
