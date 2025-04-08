@@ -26,6 +26,7 @@ func Init() {
 	CloseGenerator(c)
 	PrepareGenerator(c)
 	ClearUsageMutex(c)
+	CheckCheat(c)
 }
 
 func Start() {
