@@ -29,8 +29,6 @@ func SubmitFlag(ctx *gin.Context) {
 	}
 	tx.Commit()
 	if submission.Solved {
-		//TODO 使用定时任务代替, 提升性能
-		//go service.UpdateTeamRanking(db.DB.WithContext(ctx), team.ContestID)
 		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
 		return
 	}

@@ -56,12 +56,6 @@ func CalcSolversAndScore(tx *gorm.DB, flag model.Flag) (int64, float64, bool, st
 	if !ok {
 		return 0, 0, false, msg
 	}
-	//TODO 使用定时任务代替, 提升性能
-	//if count < flag.Solvers {
-	//	// 不考虑更新失败的情况, 不回滚
-	//	flagRepo := db.InitFlagRepo(tx)
-	//	flagRepo.Update(flag.ID, db.UpdateFlagOptions{Solvers: &count})
-	//}
 	score := flag.CalcNewScore(count - 1)
 	if score != flag.CurrentScore {
 		// 不考虑更新失败的情况, 不回滚
