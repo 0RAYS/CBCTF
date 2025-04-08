@@ -52,7 +52,7 @@ func (a *AdminRepo) getByUniqueKey(key string, value interface{}, preloadL ...st
 	}
 	var admin model.Admin
 	res := a.DB.Model(&model.Admin{}).Where(key+" = ?", value)
-	res = GetPreload(res, preloadL...).Limit(1).Find(&admin)
+	res = preload(res, preloadL...).Limit(1).Find(&admin)
 	if res.RowsAffected == 0 {
 		return model.Admin{}, false, "AdminNotFound"
 	}

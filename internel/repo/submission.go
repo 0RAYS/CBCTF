@@ -58,7 +58,7 @@ func (s *SubmissionRepo) GetAllByKeyID(key string, id uint, limit, offset int, s
 	if solved {
 		res = res.Where("solved = ?", true)
 	}
-	res = GetPreload(res, preloadL...).Limit(limit).Offset(offset).Find(&submissions)
+	res = preload(res, preloadL...).Limit(limit).Offset(offset).Find(&submissions)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Submissions: %s", res.Error)
 		return submissions, count, false, "GetSubmissionError"

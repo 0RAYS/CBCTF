@@ -67,7 +67,7 @@ func (t *TeamRepo) getByUniqueKey(key string, value interface{}, preloadL ...str
 	}
 	var team model.Team
 	res := t.DB.Model(&model.Team{}).Where(key+" = ?", value)
-	res = GetPreload(res, preloadL...).Limit(1).Find(&team)
+	res = preload(res, preloadL...).Limit(1).Find(&team)
 	if res.RowsAffected == 0 {
 		return model.Team{}, false, "TeamNotFound"
 	}
@@ -81,7 +81,7 @@ func (t *TeamRepo) GetByCaptainID(captainID uint, preloadL ...string) (model.Tea
 func (t *TeamRepo) GetByName(contestID uint, name string, preloadL ...string) (model.Team, bool, string) {
 	var team model.Team
 	res := t.DB.Model(&model.Team{}).Where("contest_id = ? AND name = ?", contestID, name)
-	res = GetPreload(res, preloadL...).Limit(1).Find(&team)
+	res = preload(res, preloadL...).Limit(1).Find(&team)
 	if res.RowsAffected == 0 {
 		return model.Team{}, false, "TeamNotFound"
 	}
@@ -140,7 +140,7 @@ func (t *TeamRepo) GetAll(contestID uint, limit, offset int, hidden, banned bool
 	if !banned {
 		res = res.Where("banned = ?", false)
 	}
-	res = GetPreload(res, preloadL...).Limit(limit).Offset(offset).Find(&teams)
+	res = preload(res, preloadL...).Limit(limit).Offset(offset).Find(&teams)
 	if res.Error != nil {
 		log.Logger.Errorf("Failed to get Teams: %s", res.Error)
 		return teams, count, false, msg

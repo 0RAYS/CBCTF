@@ -59,7 +59,7 @@ func (f *FlagRepo) GetByKeyID(key string, id uint, limit, offset int, preloadL .
 		return flags, count, false, msg
 	}
 	res := f.DB.Model(&model.Flag{}).Where(key+" = ?", id)
-	res = GetPreload(res, preloadL...).Limit(limit).Offset(offset).Find(&flags)
+	res = preload(res, preloadL...).Limit(limit).Offset(offset).Find(&flags)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Flags: %s", res.Error)
 		return flags, count, false, "GetFlagError"

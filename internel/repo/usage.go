@@ -50,7 +50,7 @@ func (u *UsageRepo) GetBy2ID(contestID uint, challengeID string, hidden bool, pr
 	if !hidden {
 		res = res.Where("hidden = ?", false)
 	}
-	res = GetPreload(res, preloadL...).Limit(1).Find(&usage)
+	res = preload(res, preloadL...).Limit(1).Find(&usage)
 	if res.RowsAffected == 0 {
 		return model.Usage{}, false, "UsageNotFound"
 	}
@@ -83,7 +83,7 @@ func (u *UsageRepo) GetAll(contestID uint, limit, offset int, hidden bool, prelo
 	if !hidden {
 		res = res.Where("hidden = ?", false)
 	}
-	res = GetPreload(res, preloadL...).Limit(limit).Offset(offset).Find(&usages)
+	res = preload(res, preloadL...).Limit(limit).Offset(offset).Find(&usages)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Usages: %s", res.Error)
 		return usages, count, false, "GetUsageError"

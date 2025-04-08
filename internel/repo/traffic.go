@@ -43,7 +43,7 @@ func (t *TrafficRepo) GetAll(containerID uint, limit, offset int, preloadL ...st
 		return traffics, count, false, msg
 	}
 	res := t.DB.Model(&model.Traffic{}).Where("container_id = ?", containerID)
-	res = GetPreload(res, preloadL...).Limit(limit).Offset(offset).Find(&traffics)
+	res = preload(res, preloadL...).Limit(limit).Offset(offset).Find(&traffics)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Traffics: %v", res.Error)
 		return traffics, count, false, "GetTrafficError"
