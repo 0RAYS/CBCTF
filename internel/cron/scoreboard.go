@@ -18,8 +18,17 @@ func UpdateTeamRanking(c *cron.Cron) {
 			return
 		}
 		for _, contest := range contests {
-			if contest.IsRunning() {
-				service.UpdateTeamRanking(db.DB, contest.ID)
+			if !contest.IsRunning() {
+				continue
+			}
+			service.UpdateTeamRanking(db.DB, contest.ID)
+			teams, _, ok, _ := service.GetTeamRanking(db.DB, contest.ID, -1, -1)
+			if !ok {
+				continue
+			}
+			teamRepo := db.InitTeamRepo(db.DB)
+			for i, team := range teams {
+				teamRepo.Update(team.ID, db.UpdateTeamOptions{Rank: &i})
 			}
 		}
 	})
