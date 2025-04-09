@@ -60,6 +60,7 @@ func CreateUsage(tx *gorm.DB, contest model.Contest, form f.CreateUsageForm) ([]
 					}
 				}
 			case model.DockerChallenge:
+				usage.Docker.FlagsID = make([]uint, 0)
 				for _, s := range challenge.Docker.Flags {
 					options.Value = s
 					flag, ok, msg := flagRepo.Create(options)
@@ -77,6 +78,7 @@ func CreateUsage(tx *gorm.DB, contest model.Contest, form f.CreateUsageForm) ([]
 				}
 			case model.DockersChallenge:
 				for i, docker := range challenge.Dockers {
+					usage.Dockers[i].FlagsID = make([]uint, 0)
 					for _, s := range docker.Flags {
 						options.Value = s
 						flag, ok, msg := flagRepo.Create(options)
