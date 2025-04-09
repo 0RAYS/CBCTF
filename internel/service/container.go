@@ -64,7 +64,7 @@ func StartContainer(tx *gorm.DB, user model.User, team model.Team, usage model.U
 			NetworkPolicyName: fmt.Sprintf("victim-%s-%d-net", usage.ChallengeID, team.ID),
 			NetworkPolicies:   usage.Docker.NetworkPolicies,
 		}
-		for _, flagID := range usage.Docker.FlagsID {
+		for _, flagID := range usage.Docker.FlagIDL {
 			answer, ok, msg := answerRepo.GetBy2ID(team.ID, flagID)
 			if !ok {
 				return containers, false, msg
@@ -92,7 +92,7 @@ func StartContainer(tx *gorm.DB, user model.User, team model.Team, usage model.U
 				NetworkPolicyName: fmt.Sprintf("victim-%s-%d-net-%d", usage.ChallengeID, team.ID, i),
 				NetworkPolicies:   docker.NetworkPolicies,
 			}
-			for _, flagID := range docker.FlagsID {
+			for _, flagID := range docker.FlagIDL {
 				answer, ok, msg := answerRepo.GetBy2ID(team.ID, flagID)
 				if !ok {
 					return containers, false, msg
