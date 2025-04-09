@@ -12,9 +12,9 @@ import (
 var SolvedMutex sync.Map
 
 // Submit model.Usage 需要预加载
-func Submit(tx *gorm.DB, user model.User, team model.Team, usage model.Usage, form f.SubmitFlagForm) (model.Submission, bool, string) {
+func Submit(tx *gorm.DB, user model.User, team model.Team, usage model.Usage, form f.SubmitFlagForm) (string, model.Submission, bool, string) {
 	if usage.Attempt != 0 && usage.Attempt <= CountAttempts(tx, team, usage) {
-		return model.Submission{}, false, "NotAllowSubmit"
+		return "", model.Submission{}, false, "NotAllowSubmit"
 	}
 	submissionRepo := db.InitSubmissionRepo(tx)
 	options := db.CreateSubmissionOptions{
@@ -26,20 +26,20 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, usage model.Usage, fo
 		Value:       form.Flag,
 		Score:       team.Score,
 	}
-	solved, flag, answer, ok, msg := VerifyFlag(tx, team, usage, form.Flag)
+	solved, flag, answer, ok, result := VerifyFlag(tx, team, usage, form.Flag)
 	options.FlagID = flag.ID
 	options.Solved = solved
 	if !ok {
-		if options.FlagID > 0 {
-			submissionRepo.Create(options)
-		}
-		return model.Submission{}, false, msg
+		return "", model.Submission{}, false, result
 	}
 	submission, ok, msg := submissionRepo.Create(options)
+	if !ok {
+		return "", model.Submission{}, false, msg
+	}
 	if solved {
 		answerRepo := db.InitAnswerRepo(tx)
 		if ok, msg := answerRepo.Update(answer.ID, db.UpdateAnswerOptions{Solved: &solved}); !ok {
-			return model.Submission{}, false, msg
+			return "", model.Submission{}, false, msg
 		}
 		// 正确时需要更新分数等信息, 加锁
 		mu, _ := SolvedMutex.LoadOrStore(flag.ID, &sync.Mutex{})
@@ -48,7 +48,7 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, usage model.Usage, fo
 
 		solvers, currentScore, ok, msg := CalcSolversAndScore(tx, flag)
 		if !ok {
-			return model.Submission{}, false, msg
+			return "", model.Submission{}, false, msg
 		}
 		_, blood := flag.CalcBlood(team.ID)
 		if blood >= 0 && blood <= 2 {
@@ -61,24 +61,24 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, usage model.Usage, fo
 			Blood:        &flag.Blood,
 			Last:         &submission.CreatedAt,
 		}); !ok {
-			return model.Submission{}, false, msg
+			return "", model.Submission{}, false, msg
 		}
 		score, ok, msg := CalcTeamScore(tx, team)
 		if !ok {
-			return model.Submission{}, false, msg
+			return "", model.Submission{}, false, msg
 		}
 		teamRepo := db.InitTeamRepo(tx)
 		if ok, msg = teamRepo.Update(team.ID, db.UpdateTeamOptions{
 			Score: &score,
 			Last:  &submission.CreatedAt,
 		}); !ok {
-			return model.Submission{}, false, msg
+			return "", model.Submission{}, false, msg
 		}
 		if ok, msg := submissionRepo.Update(submission.ID, db.UpdateSubmissionOptions{Score: &score}); !ok {
-			return model.Submission{}, false, msg
+			return "", model.Submission{}, false, msg
 		}
 	}
-	return submission, true, "Success"
+	return result, submission, true, "Success"
 }
 
 // IsSolved model.Usage 需要预加载
