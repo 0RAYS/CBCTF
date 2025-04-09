@@ -7,6 +7,7 @@ import (
 	"CBCTF/internel/middleware"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
+	"CBCTF/internel/resp"
 	"CBCTF/internel/service"
 	"errors"
 	"fmt"
@@ -186,7 +187,11 @@ func GetAvatars(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "avatars": &avatars}})
+	data := make([]gin.H, 0)
+	for _, avatar := range avatars {
+		data = append(data, resp.GetFileResp(avatar))
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "avatars": data}})
 }
 
 func DeleteAvatars(ctx *gin.Context) {
