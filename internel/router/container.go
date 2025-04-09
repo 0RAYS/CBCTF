@@ -28,13 +28,16 @@ func StartContainer(ctx *gin.Context) {
 		log.Logger.Warningf("Failed to record container create: %v", err)
 	}
 	tx := db.DB.WithContext(ctx).Begin()
-	ok, msg := service.StartContainer(tx, user, team, usage)
+	containers, ok, msg := service.StartContainer(tx, user, team, usage)
 	if !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-
+	usage.Containers = containers
+	status := service.GetRemoteStatus(tx, usage)
+	tx.Commit()
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": status})
 }
 
 func IncreaseDuration(ctx *gin.Context) {
