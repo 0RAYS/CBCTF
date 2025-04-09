@@ -1,7 +1,6 @@
 package cron
 
 import (
-	"CBCTF/internel/log"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/service"
 	"github.com/robfig/cron/v3"
@@ -12,7 +11,6 @@ import (
 // UpdateTeamRanking 依据数据库, 更新 model.Team 的分数和排名
 func UpdateTeamRanking(c *cron.Cron) {
 	function := executionTime("UpdateTeamRanking", func() {
-		log.Logger.Debug("Update global ranking")
 		repo := db.InitContestRepo(db.DB)
 		contests, _, ok, _ := repo.GetAll(-1, -1, false)
 		if !ok {

@@ -1,7 +1,6 @@
 package cron
 
 import (
-	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
@@ -12,7 +11,6 @@ import (
 // CheckCheat 检查作弊事件
 func CheckCheat(c *cron.Cron) {
 	function := executionTime("CheckCheats", func() {
-		log.Logger.Debug("Check cheats")
 		repo := db.InitContestRepo(db.DB)
 		contests, _, ok, _ := repo.GetAll(-1, -1, false)
 		if !ok {
