@@ -35,11 +35,18 @@ func StartContainer(container model.Container) (string, bool, string) {
 			Image: container.Image,
 			Env: func() []corev1.EnvVar {
 				tmp := make([]corev1.EnvVar, 0)
-				for i, f := range container.Flags {
+				if len(container.Flags) == 1 {
 					tmp = append(tmp, corev1.EnvVar{
-						Name:  fmt.Sprintf("FLAG%d", i+1),
-						Value: f,
+						Name:  "FLAG",
+						Value: container.Flags[0],
 					})
+				} else {
+					for i, f := range container.Flags {
+						tmp = append(tmp, corev1.EnvVar{
+							Name:  fmt.Sprintf("FLAG%d", i+1),
+							Value: f,
+						})
+					}
 				}
 				return tmp
 			}(),
