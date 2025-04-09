@@ -1,7 +1,6 @@
 package cron
 
 import (
-	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/service"
@@ -12,7 +11,6 @@ import (
 // ClearUsageMutex 定时任务清理flag提交锁 service.SolvedMutex
 func ClearUsageMutex(c *cron.Cron) {
 	function := executionTime("ClearSubmissionMutex", func() {
-		log.Logger.Debug("Clear submission mutex")
 		contests := make(map[uint]model.Contest)
 		contestRepo := db.InitContestRepo(db.DB)
 		flagRepo := db.InitFlagRepo(db.DB)

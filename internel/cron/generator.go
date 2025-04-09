@@ -14,7 +14,6 @@ import (
 // PrepareGenerator 预开动态题目生成器, 后续生成附件时直接附加执行
 func PrepareGenerator(c *cron.Cron) {
 	function := executionTime("PrepareGenerator", func() {
-		log.Logger.Debug("Prepare generator")
 		contestRepo := db.InitContestRepo(db.DB)
 		contests, _, ok, _ := contestRepo.GetAll(-1, -1, false)
 		if !ok {
@@ -44,7 +43,6 @@ func PrepareGenerator(c *cron.Cron) {
 // CloseGenerator 关闭超时的动态题目生成器, 释放部分资源
 func CloseGenerator(c *cron.Cron) {
 	function := executionTime("CloseGenerator", func() {
-		log.Logger.Debug("Close timeout generator")
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 		pods, ok, msg := k8s.GetPods(ctx)
 		cancel()
