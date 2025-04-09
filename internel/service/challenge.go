@@ -16,9 +16,9 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 			form.Docker.NetworkPolicies = append(form.Docker.NetworkPolicies, model.DefaultNetworkPolicy)
 		}
 	case model.DockersChallenge:
-		for _, docker := range form.Dockers {
+		for i, docker := range form.Dockers {
 			if len(docker.NetworkPolicies) == 0 {
-				docker.NetworkPolicies = append(docker.NetworkPolicies, model.DefaultNetworkPolicy)
+				form.Dockers[i].NetworkPolicies = append(form.Dockers[i].NetworkPolicies, model.DefaultNetworkPolicy)
 			}
 		}
 	}
