@@ -41,12 +41,12 @@ func GetRemoteStatus(tx *gorm.DB, usage model.Usage) gin.H {
 	return data
 }
 
-func StartContainer(tx *gorm.DB, user model.User, team model.Team, usage model.Usage) (bool, string) {
+func StartContainer(tx *gorm.DB, user model.User, team model.Team, usage model.Usage) ([]model.Container, bool, string) {
 	answerRepo := db.InitAnswerRepo(tx)
 	containerRepo := db.InitContainerRepo(tx)
 	containers, ok, _ := containerRepo.GetBy2ID(team.ID, usage.ID, false)
 	if ok {
-		return true, "Success"
+		return containers, true, "Success"
 	}
 	switch usage.Challenge.Type {
 	case model.DockerChallenge:
@@ -67,13 +67,13 @@ func StartContainer(tx *gorm.DB, user model.User, team model.Team, usage model.U
 		for _, flagID := range usage.Docker.FlagsID {
 			answer, ok, msg := answerRepo.GetBy2ID(team.ID, flagID)
 			if !ok {
-				return false, msg
+				return containers, false, msg
 			}
 			options.Flags = append(options.Flags, answer.Value)
 		}
 		container, ok, msg := containerRepo.Create(options)
 		if !ok {
-			return false, msg
+			return containers, false, msg
 		}
 		containers = append(containers, container)
 	case model.DockersChallenge:
@@ -95,32 +95,32 @@ func StartContainer(tx *gorm.DB, user model.User, team model.Team, usage model.U
 			for _, flagID := range docker.FlagsID {
 				answer, ok, msg := answerRepo.GetBy2ID(team.ID, flagID)
 				if !ok {
-					return false, msg
+					return containers, false, msg
 				}
 				options.Flags = append(options.Flags, answer.Value)
 			}
 			container, ok, msg := containerRepo.Create(options)
 			if !ok {
-				return false, msg
+				return containers, false, msg
 			}
 			containers = append(containers, container)
 		}
 	default:
-		return false, "InvalidChallengeType"
+		return containers, false, "InvalidChallengeType"
 	}
 	for _, container := range containers {
 		ip, ok, msg := k8s.StartContainer(container)
 		if !ok {
-			return false, msg
+			return containers, false, msg
 		}
 		ok, msg = containerRepo.Update(container.ID, db.UpdateContainerOptions{
 			IP: &ip,
 		})
 		if !ok {
-			return false, msg
+			return containers, false, msg
 		}
 	}
-	return true, "Success"
+	return containers, true, "Success"
 }
 
 func StopContainer(tx *gorm.DB, container model.Container) (bool, string) {
