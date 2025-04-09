@@ -21,18 +21,14 @@ func SubmitFlag(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	usage := middleware.GetUsage(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
-	submission, ok, msg := service.Submit(tx, user, team, usage, form)
+	result, _, ok, msg := service.Submit(tx, user, team, usage, form)
 	if !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	tx.Commit()
-	if submission.Solved {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
-		return
-	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "FlagNotMatch", "data": nil})
+	ctx.JSON(http.StatusOK, gin.H{"msg": result, "data": nil})
 }
 
 func GetFlag(ctx *gin.Context) {

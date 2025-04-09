@@ -17,14 +17,14 @@ func VerifyFlag(tx *gorm.DB, team model.Team, usage model.Usage, value string) (
 		for _, answer := range flag.Answers {
 			if answer.TeamID == team.ID && answer.Value == value {
 				if answer.Solved {
-					return true, flag, answer, false, "AlreadySolved"
+					return false, flag, answer, true, "AlreadySolved"
 				}
 				return true, flag, answer, true, "Success"
 			}
 		}
 	}
 	// 没有找到答案, 则默认为第一个flag
-	return false, flags[0], model.Answer{}, false, "Success"
+	return false, flags[0], model.Answer{}, true, "FlagNotMatch"
 }
 
 func UpdateFlag(tx *gorm.DB, flag model.Flag, form f.UpdateFlagForm) (bool, string) {
