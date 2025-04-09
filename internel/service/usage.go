@@ -71,7 +71,7 @@ func CreateUsage(tx *gorm.DB, contest model.Contest, form f.CreateUsageForm) ([]
 					usage.Docker.FlagsID = append(usage.Docker.FlagsID, flag.ID)
 				}
 				if ok, msg := usageRepo.Update(usage.ID, db.UpdateUsageOptions{
-					Docker: &challenge.Docker,
+					Docker: &usage.Docker,
 				}); !ok {
 					failed = append(failed, challengeID)
 					return errors.New(msg)
@@ -90,7 +90,7 @@ func CreateUsage(tx *gorm.DB, contest model.Contest, form f.CreateUsageForm) ([]
 					}
 				}
 				if ok, msg := usageRepo.Update(usage.ID, db.UpdateUsageOptions{
-					Dockers: &challenge.Dockers,
+					Dockers: &usage.Dockers,
 				}); !ok {
 					failed = append(failed, challengeID)
 					return errors.New(msg)
