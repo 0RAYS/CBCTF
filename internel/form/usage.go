@@ -6,7 +6,7 @@ import (
 
 // CreateUsageForm add challenge to contest
 type CreateUsageForm struct {
-	ChallengeID []string `form:"challenge_id" json:"challenge_id" binding:"required"`
+	ChallengeIDL []string `form:"challenge_id" json:"challenge_id" binding:"required"`
 }
 
 // UpdateUsageForm for admin update usage info

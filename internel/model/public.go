@@ -145,7 +145,7 @@ func (n *NetworkPolicies) Scan(value interface{}) error {
 
 // Docker 题目的 Docker 配置, 一个容器可以有多个 flag 和多个映射端口
 type Docker struct {
-	FlagsID         []uint          `json:"ids"`
+	FlagIDL         []uint          `json:"ids"`
 	Flags           Strings         `json:"flags"`
 	Image           string          `json:"image"`
 	Ports           Exposes         `json:"ports"`

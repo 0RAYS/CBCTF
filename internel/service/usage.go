@@ -12,7 +12,7 @@ import (
 func CreateUsage(tx *gorm.DB, contest model.Contest, form f.CreateUsageForm) ([]model.Usage, []string, bool, string) {
 	usages := make([]model.Usage, 0)
 	failed := make([]string, 0)
-	for _, challengeID := range form.ChallengeID {
+	for _, challengeID := range form.ChallengeIDL {
 		if _, ok, _ := db.InitUsageRepo(tx).GetBy2ID(contest.ID, challengeID, true); ok {
 			continue
 		}
@@ -60,7 +60,7 @@ func CreateUsage(tx *gorm.DB, contest model.Contest, form f.CreateUsageForm) ([]
 					}
 				}
 			case model.DockerChallenge:
-				usage.Docker.FlagsID = make([]uint, 0)
+				usage.Docker.FlagIDL = make([]uint, 0)
 				for _, s := range challenge.Docker.Flags {
 					options.Value = s
 					flag, ok, msg := flagRepo.Create(options)
@@ -68,7 +68,7 @@ func CreateUsage(tx *gorm.DB, contest model.Contest, form f.CreateUsageForm) ([]
 						failed = append(failed, challengeID)
 						return errors.New(msg)
 					}
-					usage.Docker.FlagsID = append(usage.Docker.FlagsID, flag.ID)
+					usage.Docker.FlagIDL = append(usage.Docker.FlagIDL, flag.ID)
 				}
 				if ok, msg := usageRepo.Update(usage.ID, db.UpdateUsageOptions{
 					Docker: &usage.Docker,
@@ -78,7 +78,7 @@ func CreateUsage(tx *gorm.DB, contest model.Contest, form f.CreateUsageForm) ([]
 				}
 			case model.DockersChallenge:
 				for i, docker := range challenge.Dockers {
-					usage.Dockers[i].FlagsID = make([]uint, 0)
+					usage.Dockers[i].FlagIDL = make([]uint, 0)
 					for _, s := range docker.Flags {
 						options.Value = s
 						flag, ok, msg := flagRepo.Create(options)
@@ -86,7 +86,7 @@ func CreateUsage(tx *gorm.DB, contest model.Contest, form f.CreateUsageForm) ([]
 							failed = append(failed, challengeID)
 							return errors.New(msg)
 						}
-						usage.Dockers[i].FlagsID = append(usage.Dockers[i].FlagsID, flag.ID)
+						usage.Dockers[i].FlagIDL = append(usage.Dockers[i].FlagIDL, flag.ID)
 					}
 				}
 				if ok, msg := usageRepo.Update(usage.ID, db.UpdateUsageOptions{
