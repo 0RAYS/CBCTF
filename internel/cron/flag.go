@@ -12,7 +12,7 @@ import (
 // 正常情况下该定时任务无意义, 每次有新解出时即更新 current_score 和 solvers
 // 当 submissions 且 model.Submission.Solved == true 时的数据减少 (例如: 用户注销 / 队伍解散 引发的数据删除), 该函数才有意义
 func UpdateFlagScore(c *cron.Cron) {
-	function := executionTime("UpdateFlagScore", func() {
+	function := exec("UpdateFlagScore", func() {
 		contestRepo := db.InitContestRepo(db.DB)
 		contests, _, ok, _ := contestRepo.GetAll(-1, -1, false)
 		if !ok {

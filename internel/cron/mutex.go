@@ -10,7 +10,7 @@ import (
 
 // ClearUsageMutex 定时任务清理flag提交锁 service.SolvedMutex
 func ClearUsageMutex(c *cron.Cron) {
-	function := executionTime("ClearSubmissionMutex", func() {
+	function := exec("ClearSubmissionMutex", func() {
 		contests := make(map[uint]model.Contest)
 		contestRepo := db.InitContestRepo(db.DB)
 		flagRepo := db.InitFlagRepo(db.DB)
