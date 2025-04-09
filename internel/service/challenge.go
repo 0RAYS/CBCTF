@@ -10,6 +10,18 @@ import (
 
 func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, bool, string) {
 	repo := db.InitChallengeRepo(tx)
+	switch form.Type {
+	case model.DockerChallenge:
+		if len(form.Docker.NetworkPolicies) == 0 {
+			form.Docker.NetworkPolicies = append(form.Docker.NetworkPolicies, model.DefaultNetworkPolicy)
+		}
+	case model.DockersChallenge:
+		for _, docker := range form.Dockers {
+			if len(docker.NetworkPolicies) == 0 {
+				docker.NetworkPolicies = append(docker.NetworkPolicies, model.DefaultNetworkPolicy)
+			}
+		}
+	}
 	return repo.Create(db.CreateChallengeOptions{
 		ID:        utils.UUID(),
 		Name:      form.Name,
