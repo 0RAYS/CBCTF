@@ -37,7 +37,7 @@ func StartContainer(container model.Container) (string, bool, string) {
 				tmp := make([]corev1.EnvVar, 0)
 				for i, f := range container.Flags {
 					tmp = append(tmp, corev1.EnvVar{
-						Name:  fmt.Sprintf("FLAG%d", i),
+						Name:  fmt.Sprintf("FLAG%d", i+1),
 						Value: f,
 					})
 				}
