@@ -108,7 +108,7 @@ func StartContainer(tx *gorm.DB, user model.User, team model.Team, usage model.U
 	default:
 		return containers, false, "InvalidChallengeType"
 	}
-	for _, container := range containers {
+	for i, container := range containers {
 		ip, ok, msg := k8s.StartContainer(container)
 		if !ok {
 			return containers, false, msg
@@ -119,6 +119,7 @@ func StartContainer(tx *gorm.DB, user model.User, team model.Team, usage model.U
 		if !ok {
 			return containers, false, msg
 		}
+		containers[i].IP = ip
 	}
 	return containers, true, "Success"
 }
