@@ -12,7 +12,7 @@ import (
 
 // CloseContainers 关闭并删除数据库中存在记录的超时 Containers
 func CloseContainers(c *cron.Cron) {
-	function := executionTime("CloseContainers", func() {
+	function := exec("CloseContainers", func() {
 		repo := db.InitContainerRepo(db.DB)
 		containers, _, ok, msg := repo.GetAll(-1, -1)
 		if !ok {
@@ -34,7 +34,7 @@ func CloseContainers(c *cron.Cron) {
 
 // CloseUnCtrlContainers 移除数据库中无记录的超时 Containers
 func CloseUnCtrlContainers(c *cron.Cron) {
-	function := executionTime("CloseUnCtrlContainers", func() {
+	function := exec("CloseUnCtrlContainers", func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 		pods, ok, msg := k8s.GetPods(ctx)
 		cancel()

@@ -10,7 +10,7 @@ import (
 
 // UpdateTeamRanking 依据数据库, 更新 model.Team 的分数和排名
 func UpdateTeamRanking(c *cron.Cron) {
-	function := executionTime("UpdateTeamRanking", func() {
+	function := exec("UpdateTeamRanking", func() {
 		repo := db.InitContestRepo(db.DB)
 		contests, _, ok, _ := repo.GetAll(-1, -1, false)
 		if !ok {
@@ -38,7 +38,7 @@ func UpdateTeamRanking(c *cron.Cron) {
 
 // UpdateUserRanking 依据数据库, 更新 model.User 的分数和排名
 func UpdateUserRanking(c *cron.Cron) {
-	function := executionTime("UpdateUserRanking", func() {
+	function := exec("UpdateUserRanking", func() {
 		contestRepo := db.InitContestRepo(db.DB)
 		contests, _, ok, _ := contestRepo.GetAll(-1, -1, false, "Users")
 		if !ok {

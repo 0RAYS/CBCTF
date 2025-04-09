@@ -8,7 +8,7 @@ import (
 
 var c *cron.Cron
 
-func executionTime(name string, task func()) func() {
+func exec(name string, task func()) func() {
 	return func() {
 		start := time.Now()
 		task()

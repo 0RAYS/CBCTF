@@ -10,7 +10,7 @@ import (
 
 // CheckCheat 检查作弊事件
 func CheckCheat(c *cron.Cron) {
-	function := executionTime("CheckCheats", func() {
+	function := exec("CheckCheats", func() {
 		repo := db.InitContestRepo(db.DB)
 		contests, _, ok, _ := repo.GetAll(-1, -1, false)
 		if !ok {
