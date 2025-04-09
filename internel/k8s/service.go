@@ -11,11 +11,26 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
+func GetService(ctx context.Context, name string) (*corev1.Service, bool, string) {
+	service, err := client.CoreV1().Services(NamespaceName).Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		if apierror.IsNotFound(err) {
+			return nil, false, "ServiceNotFound"
+		}
+		log.Logger.Warningf("Failed to get Service %s: %v", name, err)
+		return nil, false, "GetServiceError"
+	}
+	return service, true, "Success"
+}
+
 func CreateService(ctx context.Context, container model.Container) (*corev1.Service, bool, string) {
 	var (
 		service *corev1.Service
 		err     error
 	)
+	if _, ok, _ := GetService(ctx, container.ServiceName); ok {
+		DeleteService(ctx, container.ServiceName)
+	}
 	service = &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      container.ServiceName,

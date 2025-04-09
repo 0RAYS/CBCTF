@@ -9,7 +9,22 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+func GetNetworkPolicy(ctx context.Context, name string) (*netv1.NetworkPolicy, bool, string) {
+	networkPolicy, err := client.NetworkingV1().NetworkPolicies(NamespaceName).Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		if apierror.IsNotFound(err) {
+			return nil, false, "NetworkPolicyNotFound"
+		}
+		log.Logger.Warningf("Failed to get NetworkPolicy %s: %v", name, err)
+		return nil, false, "GetNetworkPolicyError"
+	}
+	return networkPolicy, true, "Success"
+}
+
 func CreateNetworkPolicy(ctx context.Context, container model.Container, policy model.NetworkPolicy) (*netv1.NetworkPolicy, bool, string) {
+	if _, ok, _ := GetNetworkPolicy(ctx, container.NetworkPolicyName); ok {
+		DeleteNetworkPolicy(ctx, container.NetworkPolicyName)
+	}
 	if len(policy.From) < 1 && len(policy.To) < 1 {
 		return nil, true, "Success"
 	}
