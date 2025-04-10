@@ -30,6 +30,7 @@ type CreateContainerOptions struct {
 
 type UpdateContainerOptions struct {
 	IP       *string        `json:"ip"`
+	PodIP    *string        `json:"pod_ip"`
 	Duration *time.Duration `json:"duration"`
 }
 

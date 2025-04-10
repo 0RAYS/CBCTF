@@ -109,12 +109,13 @@ func StartContainer(tx *gorm.DB, user model.User, team model.Team, usage model.U
 		return containers, false, "InvalidChallengeType"
 	}
 	for i, container := range containers {
-		ip, ok, msg := k8s.StartContainer(container)
+		pod, ip, ok, msg := k8s.StartContainer(container)
 		if !ok {
 			return containers, false, msg
 		}
 		ok, msg = containerRepo.Update(container.ID, db.UpdateContainerOptions{
-			IP: &ip,
+			IP:    &ip,
+			PodIP: &pod.Status.PodIP,
 		})
 		if !ok {
 			return containers, false, msg
