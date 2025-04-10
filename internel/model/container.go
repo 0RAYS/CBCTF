@@ -16,6 +16,7 @@ type Container struct {
 	UserID            uint            `json:"user_id"`
 	User              User            `json:"-"`
 	IP                string          `json:"ip"`
+	PodIP             string          `json:"pod_ip"`
 	Exposes           Exposes         `gorm:"type:json" json:"exposes"`
 	Start             time.Time       `json:"start"`
 	Duration          time.Duration   `json:"duration"`

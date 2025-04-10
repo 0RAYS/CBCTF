@@ -12,21 +12,21 @@ import (
 	"time"
 )
 
-func StartContainer(container model.Container) (string, bool, string) {
+func StartContainer(container model.Container) (*corev1.Pod, string, bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 	if container.Image == "" {
-		return "", false, "EmptyContainerImage"
+		return nil, "", false, "EmptyContainerImage"
 	}
 	log.Logger.Debugf("Creating Pod for usage %d:%s", container.ID, container.Image)
 	service, ok, msg := CreateService(ctx, container)
 	if !ok {
-		return "", false, msg
+		return nil, "", false, msg
 	}
 	for _, policy := range container.NetworkPolicies {
 		_, ok, msg := CreateNetworkPolicy(ctx, container, policy)
 		if !ok {
-			return "", false, msg
+			return nil, "", false, msg
 		}
 	}
 	containers := []corev1.Container{
@@ -116,13 +116,13 @@ func StartContainer(container model.Container) (string, bool, string) {
 	}
 	pod, ok, msg := CreatePod(ctx, container.PodName, containers)
 	if !ok {
-		return "", false, msg
+		return nil, "", false, msg
 	}
 	if !config.Env.K8S.Frpc.On {
 		ip = pod.Status.HostIP
 	}
 	log.Logger.Infof("Pod %s:%s is running on %s", container.PodName, pod.Name, ip)
-	return ip, true, "Success"
+	return pod, ip, true, "Success"
 }
 
 func StopContainer(container model.Container) (bool, string) {
