@@ -38,7 +38,7 @@ func CreateService(ctx context.Context, container model.Container) (*corev1.Serv
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: map[string]string{
-				"app": container.PodName,
+				"victim": container.PodName,
 			},
 			Ports: func() []corev1.ServicePort {
 				tmp := make([]corev1.ServicePort, 0)

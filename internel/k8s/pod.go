@@ -20,7 +20,7 @@ func CreatePod(ctx context.Context, podName string, containers []corev1.Containe
 			Name:      podName,
 			Namespace: NamespaceName,
 			Labels: map[string]string{
-				"app": podName,
+				"victim": podName,
 			},
 		},
 		Spec: corev1.PodSpec{

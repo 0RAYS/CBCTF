@@ -36,7 +36,7 @@ func CreateNetworkPolicy(ctx context.Context, container model.Container, policy 
 		Spec: netv1.NetworkPolicySpec{
 			PodSelector: metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"app": container.PodName,
+					"victim": container.PodName,
 				},
 			},
 		},
