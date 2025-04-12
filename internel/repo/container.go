@@ -16,10 +16,13 @@ type CreateContainerOptions struct {
 	UsageID           uint
 	TeamID            uint
 	UserID            uint
+	PodIP             string
+	IPBlock           string
 	Exposes           model.Exposes
 	Start             time.Time
 	Duration          time.Duration
 	Image             string
+	Hostname          string
 	PodName           string
 	ContainerName     string
 	ServiceName       string

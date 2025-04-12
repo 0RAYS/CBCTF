@@ -17,10 +17,12 @@ type Container struct {
 	User              User            `json:"-"`
 	IP                string          `json:"ip"`
 	PodIP             string          `json:"pod_ip"`
+	IPBlock           string          `json:"ip_block"`
 	Exposes           Exposes         `gorm:"type:json" json:"exposes"`
 	Start             time.Time       `json:"start"`
 	Duration          time.Duration   `json:"duration"`
 	Image             string          `json:"image"`
+	Hostname          string          `json:"hostname"`
 	PodName           string          `json:"pod"`
 	ContainerName     string          `json:"container"`
 	ServiceName       string          `json:"service"`

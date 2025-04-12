@@ -75,12 +75,13 @@ func (t *Timelines) Scan(value interface{}) error {
 	return json.Unmarshal(bytes, t)
 }
 
-type IPBlock struct {
-	CIDR   string   `json:"cidr"`
-	Except []string `json:"except"`
+type Target struct {
+	Hostname string   `json:"hostname"`
+	CIDR     string   `json:"cidr"`
+	Except   []string `json:"except"`
 }
 
-func isValidIPBlock(ipBlock IPBlock) bool {
+func isValidIPBlock(ipBlock Target) bool {
 	_, ipNet, err := net.ParseCIDR(ipBlock.CIDR)
 	if err != nil {
 		return false
@@ -98,13 +99,13 @@ func isValidIPBlock(ipBlock IPBlock) bool {
 }
 
 type NetworkPolicy struct {
-	From []IPBlock `json:"from"`
-	To   []IPBlock `json:"to"`
+	From []Target `json:"from"`
+	To   []Target `json:"to"`
 }
 
 var DefaultNetworkPolicy = NetworkPolicy{
-	From: []IPBlock{},
-	To: []IPBlock{
+	From: []Target{},
+	To: []Target{
 		{
 			CIDR: "0.0.0.0/0",
 			Except: []string{
@@ -145,6 +146,7 @@ func (n *NetworkPolicies) Scan(value interface{}) error {
 
 // Docker 题目的 Docker 配置, 一个容器可以有多个 flag 和多个映射端口
 type Docker struct {
+	Hostname        string          `json:"hostname"`
 	FlagIDL         []uint          `json:"ids"`
 	Flags           Strings         `json:"flags"`
 	Image           string          `json:"image"`

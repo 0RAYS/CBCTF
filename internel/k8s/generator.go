@@ -4,6 +4,7 @@ import (
 	"CBCTF/internel/config"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
+	"CBCTF/internel/utils"
 	"bytes"
 	"context"
 	"encoding/base64"
@@ -12,6 +13,12 @@ import (
 	"os"
 	"strings"
 	"time"
+)
+
+var (
+	ipL         = make([]string, 0)
+	ipGenerator = make(map[string]string)
+	generatorIP = make(map[string]string)
 )
 
 // StartGenerator 启动动态附件生成器, 等待附加命令, 生成附件, model.Usage 需要预加载
@@ -31,6 +38,8 @@ func StartGenerator(usage model.Usage) (*corev1.Pod, bool, string) {
 	// 如果已启动并健康运行, 直接返回
 	pod, ok, _ := GetPod(ctx, podName)
 	if ok && pod.Status.Phase == corev1.PodRunning {
+		ipGenerator[pod.Status.PodIP] = usage.ChallengeID
+		generatorIP[usage.ChallengeID] = pod.Status.PodIP
 		log.Logger.Infof("Pod %s is already running", pod.Name)
 		return pod, true, "Success"
 	}
@@ -42,7 +51,28 @@ func StartGenerator(usage model.Usage) (*corev1.Pod, bool, string) {
 			Command: []string{"sleep", "infinity"},
 		},
 	}
-	pod, ok, msg := CreatePod(ctx, podName, containers)
+	if len(ipL) == 0 {
+		ipL, err = utils.GetIPBlock(0, config.Env.K8S.IPPool.CIDR, config.Env.K8S.IPPool.BlockSize)
+		if err != nil || len(ipL) == 0 {
+			return &corev1.Pod{}, false, "EmptyIPBlock"
+		}
+	}
+	retry := 0
+	ip := ipL[retry]
+	for {
+		retry++
+		if retry > len(ipL)-1 {
+			return &corev1.Pod{}, false, "NoAvailableIP"
+		}
+		if _, ok := ipGenerator[ip]; ok {
+			ip = ipL[retry]
+			continue
+		}
+		ipGenerator[ip] = usage.ChallengeID
+		generatorIP[usage.ChallengeID] = ip
+		break
+	}
+	pod, ok, msg := CreatePod(ctx, podName, containers, ip, nil)
 	if !ok {
 		return &corev1.Pod{}, false, msg
 	}
@@ -72,6 +102,10 @@ func StartGenerator(usage model.Usage) (*corev1.Pod, bool, string) {
 // StopGenerator 停止动态附件生成器
 func StopGenerator(usage model.Usage) (bool, string) {
 	log.Logger.Infof("Stopping generator for challenge %s-%s", usage.ChallengeID, usage.Name)
+	if ip, ok := generatorIP[usage.ChallengeID]; ok {
+		delete(generatorIP, usage.ChallengeID)
+		delete(ipGenerator, ip)
+	}
 	podName := fmt.Sprintf("generator-%s-pod", usage.ChallengeID)
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
