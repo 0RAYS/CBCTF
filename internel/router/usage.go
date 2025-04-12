@@ -20,9 +20,9 @@ func GetUsageStatus(ctx *gin.Context) {
 	DB := db.DB.WithContext(ctx)
 	data := gin.H{
 		"attempts": service.CountAttempts(DB, team, usage),
-		"init":     service.IsGenerated(DB, usage, team),
+		"init":     service.IsGenerated(DB, team, usage),
 		"solved":   service.IsSolved(DB, team, usage),
-		"remote":   service.GetRemoteStatus(DB, usage),
+		"remote":   service.GetRemoteStatus(DB, team, usage),
 		"file": func() string {
 			if _, err := os.Stat(usage.Challenge.AttachmentPath(team.ID)); err != nil {
 				return ""
@@ -67,9 +67,9 @@ func GetUsages(ctx *gin.Context) {
 		if !all {
 			team := middleware.GetTeam(ctx)
 			tmp["attempts"] = service.CountAttempts(DB, team, usage)
-			tmp["init"] = service.IsGenerated(DB, usage, team)
+			tmp["init"] = service.IsGenerated(DB, team, usage)
 			tmp["solved"] = service.IsSolved(DB, team, usage)
-			tmp["remote"] = service.GetRemoteStatus(DB, usage)
+			tmp["remote"] = service.GetRemoteStatus(DB, team, usage)
 			tmp["file"] = func() string {
 				if _, err := os.Stat(usage.Challenge.AttachmentPath(team.ID)); err != nil {
 					return ""
