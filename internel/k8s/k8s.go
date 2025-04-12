@@ -140,8 +140,12 @@ func InitResources() {
 			log.Logger.Fatalf("Error creating secret: %v", err)
 		}
 	}
-
-	if _, err := cClient.ProjectcalicoV3().IPPools().Create(ctx, &projectcalicov3.IPPool{
+	if _, err = cClient.ProjectcalicoV3().IPPools().Get(ctx, IPPoolName, metav1.GetOptions{}); err == nil {
+		if err = cClient.ProjectcalicoV3().IPPools().Delete(ctx, IPPoolName, metav1.DeleteOptions{}); err != nil {
+			log.Logger.Fatalf("Failed to delete IPPool: %v", err)
+		}
+	}
+	if _, err = cClient.ProjectcalicoV3().IPPools().Create(ctx, &projectcalicov3.IPPool{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: IPPoolName,
 		},
@@ -157,7 +161,7 @@ func InitResources() {
 	}
 
 	if _, err = client.RbacV1().Roles(NamespaceName).Get(ctx, RoleName, metav1.GetOptions{}); err == nil {
-		if client.RbacV1().Roles(NamespaceName).Delete(ctx, RoleName, metav1.DeleteOptions{}) != nil {
+		if err = client.RbacV1().Roles(NamespaceName).Delete(ctx, RoleName, metav1.DeleteOptions{}); err != nil {
 			log.Logger.Fatalf("Failed to delete Role: %v", err)
 		}
 	}
@@ -184,7 +188,7 @@ func InitResources() {
 	}
 
 	if _, err = client.RbacV1().RoleBindings(NamespaceName).Get(ctx, RoleBindingName, metav1.GetOptions{}); err == nil {
-		if client.RbacV1().RoleBindings(NamespaceName).Delete(ctx, RoleBindingName, metav1.DeleteOptions{}) != nil {
+		if err = client.RbacV1().RoleBindings(NamespaceName).Delete(ctx, RoleBindingName, metav1.DeleteOptions{}); err != nil {
 			log.Logger.Fatalf("Failed to delete RoleBinding: %v", err)
 		}
 	}
@@ -211,7 +215,7 @@ func InitResources() {
 	}
 
 	if _, err = client.RbacV1().ClusterRoles().Get(ctx, ClusterRoleName, metav1.GetOptions{}); err == nil {
-		if client.RbacV1().ClusterRoles().Delete(ctx, ClusterRoleName, metav1.DeleteOptions{}) != nil {
+		if err = client.RbacV1().ClusterRoles().Delete(ctx, ClusterRoleName, metav1.DeleteOptions{}); err != nil {
 			log.Logger.Fatalf("Failed to delete ClusterRole: %v", err)
 		}
 	}
@@ -232,7 +236,7 @@ func InitResources() {
 	}
 
 	if _, err = client.RbacV1().ClusterRoleBindings().Get(ctx, ClusterRoleBindingName, metav1.GetOptions{}); err == nil {
-		if client.RbacV1().ClusterRoleBindings().Delete(ctx, ClusterRoleBindingName, metav1.DeleteOptions{}) != nil {
+		if err = client.RbacV1().ClusterRoleBindings().Delete(ctx, ClusterRoleBindingName, metav1.DeleteOptions{}); err != nil {
 			log.Logger.Fatalf("Failed to delete ClusterRoleBinding: %v", err)
 		}
 	}
