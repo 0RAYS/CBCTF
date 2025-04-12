@@ -95,7 +95,9 @@ func InitResources() {
 		nodeIPL := make([]string, 0)
 		for _, node := range nodes.Items {
 			for _, addr := range node.Status.Addresses {
-				nodeIPL = append(nodeIPL, addr.Address)
+				if addr.Type == corev1.NodeInternalIP || addr.Type == corev1.NodeExternalIP {
+					nodeIPL = append(nodeIPL, addr.Address)
+				}
 			}
 		}
 		config.Env.K8S.Nodes = nodeIPL
