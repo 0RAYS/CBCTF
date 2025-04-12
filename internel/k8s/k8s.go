@@ -8,6 +8,8 @@ import (
 	"os"
 	"time"
 
+	projectcalicov3 "github.com/projectcalico/api/pkg/apis/projectcalico/v3"
+	"github.com/projectcalico/api/pkg/client/clientset_generated/clientset"
 	authorizationv1 "k8s.io/api/authorization/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -20,12 +22,14 @@ import (
 
 var (
 	client                 *kubernetes.Clientset
+	cClient                *clientset.Clientset
 	secret                 *corev1.Secret
 	conf                   *rest.Config
 	apiConfig              *api.Config
 	NamespaceName          string
 	SvcAccountName         string
 	SecretName             string
+	IPPoolName             string
 	RoleName               string
 	RoleBindingName        string
 	ClusterRoleName        string
@@ -37,6 +41,7 @@ func Init(run bool) {
 	NamespaceName = config.Env.K8S.Namespace
 	SvcAccountName = fmt.Sprintf("%s-admin", NamespaceName)
 	SecretName = fmt.Sprintf("%s-admin-secret", NamespaceName)
+	IPPoolName = fmt.Sprintf("%s-ip-pool", NamespaceName)
 	RoleName = fmt.Sprintf("%s-admin-role", NamespaceName)
 	RoleBindingName = fmt.Sprintf("%s-admin-role-binding", NamespaceName)
 	ClusterRoleName = fmt.Sprintf("%s-admin-cluster-role", NamespaceName)
@@ -78,6 +83,18 @@ func InitResources() {
 	defer cancel()
 	log.Logger.Debugf("Checking resources in namespace %s", NamespaceName)
 
+	if nodes, err := client.CoreV1().Nodes().List(ctx, metav1.ListOptions{}); err != nil {
+		if nodes != nil {
+			nodeIPL := make([]string, 0)
+			for _, node := range nodes.Items {
+				for _, addr := range node.Status.Addresses {
+					nodeIPL = append(nodeIPL, addr.Address)
+				}
+			}
+			config.Env.K8S.Nodes = nodeIPL
+		}
+	}
+
 	if _, err = client.CoreV1().Namespaces().Get(ctx, NamespaceName, metav1.GetOptions{}); err != nil {
 		log.Logger.Infof("Namespace %s not found, creating...", NamespaceName)
 		_, err = client.CoreV1().Namespaces().Create(ctx, &corev1.Namespace{
@@ -118,6 +135,21 @@ func InitResources() {
 		if err != nil {
 			log.Logger.Fatalf("Error creating secret: %v", err)
 		}
+	}
+
+	if _, err := cClient.ProjectcalicoV3().IPPools().Create(ctx, &projectcalicov3.IPPool{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: IPPoolName,
+		},
+		Spec: projectcalicov3.IPPoolSpec{
+			CIDR:        config.Env.K8S.IPPool.CIDR,
+			IPIPMode:    projectcalicov3.IPIPModeNever,
+			NATOutgoing: false,
+			BlockSize:   config.Env.K8S.IPPool.BlockSize,
+			Disabled:    false,
+		},
+	}, metav1.CreateOptions{}); err != nil {
+		log.Logger.Fatalf("Error creating IPPool: %v", err)
 	}
 
 	if _, err = client.RbacV1().Roles(NamespaceName).Get(ctx, RoleName, metav1.GetOptions{}); err == nil {
