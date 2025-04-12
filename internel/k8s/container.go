@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func StartContainer(container model.Container) (*corev1.Pod, string, bool, string) {
+func StartContainer(container model.Container, dns map[string]string) (*corev1.Pod, string, bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 	if container.Image == "" {
@@ -114,7 +114,7 @@ func StartContainer(container model.Container) (*corev1.Pod, string, bool, strin
 		}
 		ip = frps.Host
 	}
-	pod, ok, msg := CreatePod(ctx, container.PodName, containers)
+	pod, ok, msg := CreatePod(ctx, container.PodName, containers, container.PodIP, dns)
 	if !ok {
 		return nil, "", false, msg
 	}

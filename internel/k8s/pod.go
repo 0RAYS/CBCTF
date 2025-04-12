@@ -3,13 +3,14 @@ package k8s
 import (
 	"CBCTF/internel/log"
 	"context"
+	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
 )
 
-func CreatePod(ctx context.Context, podName string, containers []corev1.Container) (*corev1.Pod, bool, string) {
+func CreatePod(ctx context.Context, podName string, containers []corev1.Container, podIP string, dns map[string]string) (*corev1.Pod, bool, string) {
 	var (
 		pod *corev1.Pod
 		err error
@@ -22,11 +23,29 @@ func CreatePod(ctx context.Context, podName string, containers []corev1.Containe
 			Labels: map[string]string{
 				"victim": podName,
 			},
+			Annotations: map[string]string{
+				"cni.projectcalico.org/ipAddrs": fmt.Sprintf("[\"%s\"]", podIP),
+				"cni.projectcalico.org/podIP":   podIP,
+				"cni.projectcalico.org/podIPs":  podIP,
+			},
 		},
 		Spec: corev1.PodSpec{
 			Containers:                    containers,
 			TerminationGracePeriodSeconds: ptr.To[int64](3),
 			RestartPolicy:                 corev1.RestartPolicyNever,
+			HostAliases: func() []corev1.HostAlias {
+				tmp := make([]corev1.HostAlias, 0)
+				for k, v := range dns {
+					if v == podIP {
+						v = "127.0.0.1"
+					}
+					tmp = append(tmp, corev1.HostAlias{
+						Hostnames: []string{k},
+						IP:        v,
+					})
+				}
+				return tmp
+			}(),
 		},
 	}
 	pod, err = client.CoreV1().Pods(NamespaceName).Create(ctx, pod, metav1.CreateOptions{})
@@ -37,7 +56,6 @@ func CreatePod(ctx context.Context, podName string, containers []corev1.Containe
 	for {
 		pod, ok, _ = GetPod(ctx, pod.Name)
 		if !ok {
-			log.Logger.Warningf("Failed to get Pod: %v", err)
 			return nil, false, "GetPodError"
 		}
 		if pod.Status.Phase == corev1.PodRunning {

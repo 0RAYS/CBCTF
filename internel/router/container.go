@@ -80,26 +80,10 @@ func IncreaseDuration(ctx *gin.Context) {
 }
 
 func StopContainer(ctx *gin.Context) {
-	DB := db.DB.WithContext(ctx)
 	team := middleware.GetTeam(ctx)
 	usage := middleware.GetUsage(ctx)
-	repo := db.InitContainerRepo(DB)
-	containers, ok, msg := repo.GetBy2ID(team.ID, usage.ID, false)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	for _, container := range containers {
-		tx := DB.Begin()
-		ok, msg = service.StopContainer(tx, container)
-		if !ok {
-			tx.Rollback()
-			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-			return
-		}
-		tx.Commit()
-	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
+	_, msg := service.StopContainer(db.DB.WithContext(ctx), team, usage)
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
 func GetContainer(ctx *gin.Context) {
