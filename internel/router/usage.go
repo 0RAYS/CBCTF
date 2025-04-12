@@ -56,7 +56,7 @@ func GetUsages(ctx *gin.Context) {
 		DB      = db.DB.WithContext(ctx)
 		contest = middleware.GetContest(ctx)
 	)
-	usages, _, ok, msg := db.InitUsageRepo(DB).GetAll(contest.ID, form.Limit, form.Limit, all, "Challenge", "Containers", "Flags", "Flags.Answers")
+	usages, _, ok, msg := db.InitUsageRepo(DB).GetAll(contest.ID, form.Limit, form.Offset, all, "Challenge", "Containers", "Flags", "Flags.Answers")
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
