@@ -9,7 +9,7 @@ import (
 )
 
 // IsGenerated model.Usage 需要递归预加载, Usage.Flags.Answers
-func IsGenerated(tx *gorm.DB, usage model.Usage, team model.Team) bool {
+func IsGenerated(tx *gorm.DB, team model.Team, usage model.Usage) bool {
 	repo := db.InitAnswerRepo(tx)
 	for _, flag := range usage.Flags {
 		answers, _, ok, _ := repo.GetAll(flag.ID, -1, -1)

@@ -35,7 +35,7 @@ func StartContainer(ctx *gin.Context) {
 		return
 	}
 	usage.Containers = containers
-	status := service.GetRemoteStatus(tx, usage)
+	status := service.GetRemoteStatus(tx, team, usage)
 	tx.Commit()
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": status})
 }
