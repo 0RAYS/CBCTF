@@ -17,6 +17,4 @@ type UpdateUsageForm struct {
 	Hidden  *bool          `form:"hidden" json:"hidden"`
 	Hints   *model.Strings `form:"hints" json:"hints"`
 	Tags    *model.Strings `form:"tags" json:"tags"`
-	Docker  *model.Docker  `form:"docker" json:"docker"`
-	Dockers *model.Dockers `form:"dockers" json:"dockers"`
 }
