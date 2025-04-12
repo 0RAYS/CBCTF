@@ -85,7 +85,7 @@ func (c *ContainerRepo) GetBy2ID(teamID uint, usageID uint, deleted bool, preloa
 		res = res.Unscoped()
 	}
 	res = res.Where("team_id = ? AND usage_id = ?", teamID, usageID)
-	res = preload(res, preloadL...).Limit(1).Find(&containers)
+	res = preload(res, preloadL...).Find(&containers)
 	if res.RowsAffected == 0 {
 		return containers, false, "ContainerNotFound"
 	}
