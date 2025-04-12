@@ -79,6 +79,10 @@ func InitResources() {
 	if err != nil {
 		log.Logger.Fatalf("Failed to init k8s client: %s", err)
 	}
+	cClient, err = clientset.NewForConfig(conf)
+	if err != nil {
+		log.Logger.Fatalf("Failed to init calico client: %s", err)
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 	log.Logger.Debugf("Checking resources in namespace %s", NamespaceName)
@@ -122,7 +126,7 @@ func InitResources() {
 
 	if secret, err = client.CoreV1().Secrets(NamespaceName).Get(ctx, SecretName, metav1.GetOptions{}); err != nil {
 		log.Logger.Infof("secret %s not found in %s namespace, creating...", RoleName, NamespaceName)
-		secret, err = client.CoreV1().Secrets(NamespaceName).Create(context.TODO(), &corev1.Secret{
+		secret, err = client.CoreV1().Secrets(NamespaceName).Create(ctx, &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      SecretName,
 				Namespace: NamespaceName,
