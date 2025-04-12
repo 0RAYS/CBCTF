@@ -87,16 +87,18 @@ func InitResources() {
 	defer cancel()
 	log.Logger.Debugf("Checking resources in namespace %s", NamespaceName)
 
-	if nodes, err := client.CoreV1().Nodes().List(ctx, metav1.ListOptions{}); err != nil {
-		if nodes != nil {
-			nodeIPL := make([]string, 0)
-			for _, node := range nodes.Items {
-				for _, addr := range node.Status.Addresses {
-					nodeIPL = append(nodeIPL, addr.Address)
-				}
+	nodes, err := client.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+	if err != nil {
+		log.Logger.Fatalf("Failed to list nodes: %v", err)
+	}
+	if nodes != nil {
+		nodeIPL := make([]string, 0)
+		for _, node := range nodes.Items {
+			for _, addr := range node.Status.Addresses {
+				nodeIPL = append(nodeIPL, addr.Address)
 			}
-			config.Env.K8S.Nodes = nodeIPL
 		}
+		config.Env.K8S.Nodes = nodeIPL
 	}
 
 	if _, err = client.CoreV1().Namespaces().Get(ctx, NamespaceName, metav1.GetOptions{}); err != nil {
