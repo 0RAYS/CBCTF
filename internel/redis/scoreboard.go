@@ -10,7 +10,7 @@ import (
 )
 
 func UpdateTeamRanking(contestID uint, teams []model.Team) error {
-	key := fmt.Sprintf("%d:rank", contestID)
+	key := fmt.Sprintf("contests:%d:rank", contestID)
 	ctx := context.Background()
 	pipe := RDB.Pipeline()
 	pipe.Del(ctx, key)
@@ -31,7 +31,7 @@ func UpdateTeamRanking(contestID uint, teams []model.Team) error {
 }
 
 func GetTeamRanking(contestID uint, start int64, end int64) ([]model.Team, error) {
-	key := fmt.Sprintf("%d:rank", contestID)
+	key := fmt.Sprintf("contests:%d:rank", contestID)
 	ctx := context.Background()
 	teams := make([]model.Team, 0)
 	results, err := RDB.ZRevRangeWithScores(ctx, key, start, end).Result()
