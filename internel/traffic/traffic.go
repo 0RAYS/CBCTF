@@ -11,6 +11,7 @@ import (
 	"github.com/gopacket/gopacket/pcap"
 	"net/http"
 	"os"
+	"time"
 )
 
 const (
@@ -25,6 +26,7 @@ type Connection struct {
 	SrcPort uint16
 	DstPort uint16
 	Payload []byte
+	Time    time.Time
 }
 
 func (conn Connection) ParsePayload() (interface{}, string) {
@@ -82,6 +84,7 @@ func ReadPcap(path string) ([]Connection, bool, string) {
 					DstIP:   ipv4.DstIP.String(),
 					SrcPort: uint16(tcp.SrcPort),
 					DstPort: uint16(tcp.DstPort),
+					Time:    packet.Metadata().Timestamp,
 				}
 			}
 			tmp[connID].Payload = append(tmp[connID].Payload, tcp.Payload...)

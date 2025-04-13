@@ -176,7 +176,7 @@ func GetVictimStatus(tx *gorm.DB, usage model.Usage, victim model.Victim) gin.H 
 
 func StopVictim(tx *gorm.DB, team model.Team, usage model.Usage) (bool, string) {
 	victimRepo := db.InitVictimRepo(tx)
-	victims, ok, msg := victimRepo.GetBy2ID(team.ID, usage.ID, false)
+	victims, ok, msg := victimRepo.GetBy2ID(team.ID, usage.ID, false, "Pods")
 	if !ok {
 		return false, msg
 	}
@@ -196,6 +196,7 @@ func StopVictim(tx *gorm.DB, team model.Team, usage model.Usage) (bool, string) 
 		if ok, msg = victimRepo.Delete(victim.ID); !ok {
 			return false, msg
 		}
+		go LoadTraffic(tx, victim)
 	}
 	return true, "Success"
 }
