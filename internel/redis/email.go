@@ -10,7 +10,7 @@ import (
 // SetEmailVerifyToken 设置邮箱验证 token, 时效一天
 func SetEmailVerifyToken(userID uint, token string) (bool, string) {
 	ctx := context.Background()
-	err := RDB.Set(ctx, fmt.Sprintf("email:verify:%d", userID), token, time.Hour*24).Err()
+	err := RDB.Set(ctx, fmt.Sprintf("email:%d", userID), token, time.Hour*24).Err()
 	if err != nil {
 		log.Logger.Warningf("Failed to set email verify token: %s", err)
 		return false, "SetEmailVerifyTokenError"
@@ -21,7 +21,7 @@ func SetEmailVerifyToken(userID uint, token string) (bool, string) {
 // GetEmailVerifyToken 获取邮箱验证 token
 func GetEmailVerifyToken(userID uint) (string, bool) {
 	ctx := context.Background()
-	data, err := RDB.Get(ctx, fmt.Sprintf("email:verify:%d", userID)).Result()
+	data, err := RDB.Get(ctx, fmt.Sprintf("email:%d", userID)).Result()
 	if err != nil {
 		return "GetEmailVerifyTokenError", false
 	}
@@ -31,7 +31,7 @@ func GetEmailVerifyToken(userID uint) (string, bool) {
 // DelEmailVerifyToken 删除邮箱验证 token
 func DelEmailVerifyToken(userID uint) (bool, string) {
 	ctx := context.Background()
-	err := RDB.Del(ctx, fmt.Sprintf("email:verify:%d", userID)).Err()
+	err := RDB.Del(ctx, fmt.Sprintf("email:%d", userID)).Err()
 	if err != nil {
 		log.Logger.Warningf("Failed to delete email verify token: %s", err)
 		return false, "DelEmailVerifyTokenError"
