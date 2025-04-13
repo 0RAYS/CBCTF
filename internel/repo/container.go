@@ -1,6 +1,9 @@
 package repo
 
-import "CBCTF/internel/model"
+import (
+	"CBCTF/internel/model"
+	"gorm.io/gorm"
+)
 
 type ContainerRepo struct {
 	Repo[model.Container]
@@ -14,6 +17,6 @@ type CreateContainerOptions struct {
 	Flags    model.Strings
 }
 
-func InitContainerRepo() *ContainerRepo {
-	return &ContainerRepo{Repo: Repo[model.Container]{DB: DB, Model: "Container"}}
+func InitContainerRepo(tx *gorm.DB) *ContainerRepo {
+	return &ContainerRepo{Repo: Repo[model.Container]{DB: tx, Model: "Container"}}
 }
