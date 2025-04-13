@@ -54,7 +54,8 @@ func Init() {
 	err = DB.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(
 		&model.Admin{}, &model.Answer{}, &model.Challenge{}, &model.Cheat{}, &model.Contest{},
 		&model.Device{}, &model.File{}, &model.Flag{}, &model.Notice{}, &model.Request{}, &model.Submission{},
-		&model.Team{}, &model.Usage{}, &model.User{},
+		&model.Team{}, &model.Usage{}, &model.User{}, &model.Victim{}, &model.Pod{}, &model.Container{},
+		&model.Traffic{},
 	)
 	if err != nil {
 		log.Logger.Fatalf("failed to migrate database: %v", err)
