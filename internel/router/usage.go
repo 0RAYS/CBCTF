@@ -97,9 +97,16 @@ func InitUsage(reset bool) func(ctx *gin.Context) {
 		answers, ok, msg := service.GenerateAnswer(tx, usage, team, reset)
 		if !ok {
 			tx.Rollback()
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
 		}
-		if usage.Challenge.Type == model.DynamicChallenge {
+		switch usage.Challenge.Type {
+		case model.DynamicChallenge:
 			ok, msg = k8s.GenerateAttachment(usage, team, answers)
+		case model.DockerChallenge, model.DockersChallenge:
+			ok, msg = service.StopContainer(tx, team, usage)
+		default:
+			ok, msg = true, "Success"
 		}
 		if !ok {
 			tx.Rollback()
