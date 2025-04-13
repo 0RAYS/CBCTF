@@ -5,6 +5,7 @@ import (
 	"CBCTF/internel/repo"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 )
@@ -49,7 +50,7 @@ func RateLimit() gin.HandlerFunc {
 
 	return func(ctx *gin.Context) {
 		ip := ctx.ClientIP()
-		if ip == "::1" || ip == "127.0.0.1" {
+		if strings.ToLower(config.Env.Gin.Mode) == "debug" && (ip == "::1" || ip == "127.0.0.1") {
 			ctx.Next()
 			return
 		}

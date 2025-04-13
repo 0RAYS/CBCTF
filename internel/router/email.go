@@ -1,6 +1,7 @@
 package router
 
 import (
+	"CBCTF/internel/config"
 	f "CBCTF/internel/form"
 	"CBCTF/internel/log"
 	"CBCTF/internel/middleware"
@@ -11,6 +12,7 @@ import (
 	"CBCTF/internel/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strings"
 )
 
 func VerifyEmail(ctx *gin.Context) {
@@ -37,6 +39,9 @@ func ActivateEmail(ctx *gin.Context) {
 }
 
 func SendEmail(user model.User) (bool, string) {
+	if strings.ToLower(config.Env.Gin.Mode) == "debug" {
+		return true, "DebugMode"
+	}
 	id := utils.UUID()
 	token, err := utils.Generate(user.ID, user.Name, "email")
 	if err != nil {
