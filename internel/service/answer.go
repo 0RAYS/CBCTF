@@ -8,30 +8,12 @@ import (
 	"gorm.io/gorm"
 )
 
-// IsGenerated model.Usage 需要递归预加载, Usage.Flags.Answers
+// IsGenerated model.Usage 需要递归预加载, Usage.Flags
 func IsGenerated(tx *gorm.DB, team model.Team, usage model.Usage) bool {
 	repo := db.InitAnswerRepo(tx)
 	for _, flag := range usage.Flags {
-		answers, _, ok, _ := repo.GetAll(flag.ID, -1, -1)
+		_, ok, _ := repo.GetBy2ID(team.ID, flag.ID)
 		if !ok {
-			return false
-		}
-		var count int
-		for _, answer := range answers {
-			if answer.TeamID == team.ID {
-				count++
-			}
-		}
-		switch usage.Challenge.Type {
-		case model.StaticChallenge, model.DynamicChallenge, model.PodChallenge:
-			if count < 1 {
-				return false
-			}
-		case model.PodsChallenge:
-			if count < len(flag.Answers) {
-				return false
-			}
-		default:
 			return false
 		}
 	}

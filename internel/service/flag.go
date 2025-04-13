@@ -43,7 +43,7 @@ func UpdateFlag(tx *gorm.DB, flag model.Flag, form f.UpdateFlagForm) (bool, stri
 	switch challenge.Type {
 	case model.StaticChallenge:
 		options.Value = &flag.Value
-	case model.DynamicChallenge, model.PodChallenge, model.PodsChallenge:
+	case model.DynamicChallenge, model.PodsChallenge:
 		options.Value = form.Value
 	default:
 		return false, "InvalidChallengeType"

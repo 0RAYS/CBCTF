@@ -58,7 +58,7 @@ func CreateUsage(tx *gorm.DB, contest model.Contest, form f.CreateUsageForm) ([]
 						return errors.New(msg)
 					}
 				}
-			case model.PodChallenge, model.PodsChallenge:
+			case model.PodsChallenge:
 				for i, docker := range challenge.Dockers {
 					usage.Dockers[i].FlagIDL = make([]uint, 0)
 					for _, s := range docker.Flags {

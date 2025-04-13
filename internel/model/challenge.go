@@ -10,7 +10,6 @@ import (
 const (
 	StaticChallenge  = "static"
 	DynamicChallenge = "dynamic"
-	PodChallenge     = "pod"
 	PodsChallenge    = "pods"
 
 	AttachmentFile = "attachment.zip"
@@ -18,11 +17,10 @@ const (
 )
 
 // Challenge 题目模型
-// 题目的类型有四种: 静态题目, 动态题目, 单Pod题目, 多Pod题目
+// 题目的类型有四种: 静态题目, 动态题目, 容器题目
 // 静态题目: flag 为 Flags 字段
 // 动态题目: flag 为 Flags 字段
 // 容器题目: flag 为 Dockers[].Flags 字段
-// 多容器题目: flag 为 Dockers[].Flags 字段
 type Challenge struct {
 	ID          string         `gorm:"type:varchar(36);primaryKey" json:"id"`
 	Usages      []Usage        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
