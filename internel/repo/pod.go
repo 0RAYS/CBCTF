@@ -44,20 +44,6 @@ func (p *PodRepo) GetByVictimID(victimID uint, deleted bool, preloadL ...string)
 	return pods, true, "Success"
 }
 
-func (p *PodRepo) GetByName(name string, deleted bool, preloadL ...string) ([]model.Pod, bool, string) {
-	pods := make([]model.Pod, 0)
-	res := p.DB.Model(&model.Pod{})
-	if deleted {
-		res = res.Unscoped()
-	}
-	res = res.Where("name = ?", name)
-	res = preload(res, preloadL...).Find(&pods)
-	if res.RowsAffected == 0 {
-		return pods, false, "GetPodError"
-	}
-	return pods, true, "Success"
-}
-
 func (p *PodRepo) Update(id uint, options UpdatePodOptions) (bool, string) {
 	var count int
 	data := utils.UpdateOptions2Map(options)

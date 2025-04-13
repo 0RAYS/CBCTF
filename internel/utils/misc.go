@@ -1,9 +1,6 @@
 package utils
 
 import (
-	"crypto/md5"
-	"crypto/sha256"
-	"fmt"
 	"github.com/google/uuid"
 	"github.com/vmihailenco/msgpack/v5"
 	"reflect"
@@ -28,12 +25,6 @@ func In(value interface{}, slice interface{}) bool {
 // UUID 生成随机uuid
 func UUID() string {
 	return uuid.New().String()
-}
-
-func EncryptMagic(magic string) string {
-	hash := fmt.Sprintf("%x", sha256.Sum256([]byte(magic)))[1:32]
-	hash = fmt.Sprintf("%x", md5.Sum([]byte(hash)))
-	return fmt.Sprintf("%x", sha256.Sum256([]byte(hash)))
 }
 
 // UpdateOptions2Map 将Update请求的数据提取出被赋值的结果, 为区分默认的0值和赋值的0值, 表单中的字段都为指针类型
