@@ -24,7 +24,6 @@ type UpdateChallengeForm struct {
 	Type      *string        `form:"type" json:"type"`
 	Generator *string        `form:"generator" json:"generator"`
 	Flags     *model.Strings `form:"flags" json:"flags"`
-	Docker    *model.Docker  `form:"docker" json:"docker"`
 	Dockers   *model.Dockers `form:"dockers" json:"dockers"`
 }
 
@@ -44,6 +43,5 @@ type CreateChallengeForm struct {
 	Type      string        `form:"type" json:"type"`
 	Generator string        `form:"generator" json:"generator"`
 	Flags     model.Strings `form:"flags" json:"flags"`
-	Docker    model.Docker  `form:"docker" json:"docker"`
 	Dockers   model.Dockers `form:"dockers" json:"dockers"`
 }

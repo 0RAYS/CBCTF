@@ -19,7 +19,6 @@ type CreateUsageOptions struct {
 	Attempt     int64
 	Hints       model.Strings
 	Tags        model.Strings
-	Docker      model.Docker
 	Dockers     model.Dockers
 }
 
@@ -30,7 +29,6 @@ type UpdateUsageOptions struct {
 	Hidden  *bool          `json:"hidden"`
 	Hints   *model.Strings `json:"hints"`
 	Tags    *model.Strings `json:"tags"`
-	Docker  *model.Docker  `json:"docker"`
 	Dockers *model.Dockers `json:"dockers"`
 }
 

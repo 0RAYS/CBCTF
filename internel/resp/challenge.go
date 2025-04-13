@@ -14,7 +14,6 @@ func GetChallengeResp(challenge model.Challenge) gin.H {
 		"type":      challenge.Type,
 		"generator": challenge.Generator,
 		"flags":     challenge.Flags,
-		"docker":    challenge.Docker,
 		"dockers":   challenge.Dockers,
 	}
 }

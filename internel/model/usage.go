@@ -18,7 +18,6 @@ type Usage struct {
 	Desc        string         `json:"desc"`
 	Hidden      bool           `json:"hidden"`
 	Attempt     int64          `json:"attempt"`
-	Docker      Docker         `gorm:"type:json" json:"docker"`
 	Dockers     Dockers        `gorm:"type:json" json:"dockers"`
 	Hints       Strings        `gorm:"type:json" json:"hints"`
 	Tags        Strings        `gorm:"type:json" json:"tags"`

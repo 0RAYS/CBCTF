@@ -32,7 +32,6 @@ func GetUsageResp(usage model.Usage, admin bool) gin.H {
 		"tags":  usage.Tags,
 	}
 	if admin {
-		data["docker"] = usage.Docker
 		data["dockers"] = usage.Dockers
 		data["hidden"] = usage.Hidden
 	}
