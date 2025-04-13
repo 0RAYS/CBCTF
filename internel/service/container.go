@@ -28,12 +28,12 @@ func GetRemoteStatus(tx *gorm.DB, team model.Team, usage model.Usage) gin.H {
 	repo := db.InitContainerRepo(tx)
 	containers, ok, _ := repo.GetBy2ID(team.ID, usage.ID, false)
 	if !ok {
-		data["status"] = "Down"
 		return data
 	}
 	for _, container := range containers {
 		data["target"] = append(data["target"].([]string), container.RemoteAddr()...)
 	}
+	data["status"] = "Running"
 	data["remaining"] = containers[0].Remaining().Seconds()
 	return data
 
