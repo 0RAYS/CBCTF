@@ -56,7 +56,7 @@ func GetUsages(ctx *gin.Context) {
 		DB      = db.DB.WithContext(ctx)
 		contest = middleware.GetContest(ctx)
 	)
-	usages, count, ok, msg := db.InitUsageRepo(DB).GetAll(contest.ID, form.Limit, form.Offset, all, "Challenge", "Containers", "Flags", "Flags.Answers")
+	usages, count, ok, msg := db.InitUsageRepo(DB).GetAll(contest.ID, form.Limit, form.Offset, all, "Challenge", "Flags", "Flags.Answers") //TODO "Containers"
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -103,6 +103,7 @@ func InitUsage(reset bool) func(ctx *gin.Context) {
 		switch usage.Challenge.Type {
 		case model.DynamicChallenge:
 			ok, msg = k8s.GenerateAttachment(usage, team, answers)
+		//TODO
 		//case model.DockerChallenge, model.DockersChallenge:
 		//	ok, msg = service.StopContainer(tx, team, usage)
 		default:

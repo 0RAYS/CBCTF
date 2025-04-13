@@ -95,7 +95,7 @@ func (t *TeamRepo) GetBy2ID(userID uint, contestID uint) (model.Team, bool, stri
 			userID,
 			"all",
 			"Teams.Contest", "Teams.Users", "Teams.Answers", "Teams.Submissions",
-			"Teams.Containers", "Teams.Cheats",
+			"Teams.Cheats", //TODO "Teams.Containers",
 		)
 	if !ok {
 		return model.Team{}, false, msg
