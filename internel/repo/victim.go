@@ -16,6 +16,7 @@ type CreateVictimOptions struct {
 	UsageID  uint
 	TeamID   uint
 	UserID   uint
+	IPBlock  string
 	Start    time.Time
 	Duration time.Duration
 }

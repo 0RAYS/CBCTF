@@ -14,7 +14,6 @@ type Pod struct {
 	Name              string          `json:"name"`
 	ExposeIP          string          `json:"ip"`
 	PodIP             string          `json:"pod_ip"`
-	IPBlock           string          `json:"ip_block"`
 	ServiceName       string          `json:"service"`
 	NetworkPolicyName string          `json:"network_policy"`
 	Exposes           Exposes         `gorm:"type:json" json:"exposes"`
