@@ -148,7 +148,7 @@ func (n *NetworkPolicies) Scan(value interface{}) error {
 type Docker struct {
 	PodGroup        uint            `json:"pod_group"`
 	Hostname        string          `json:"hostname"`
-	FlagIDL         []uint          `json:"ids"`
+	FlagIDL         []uint          `json:"flag_id"`
 	Flags           Strings         `json:"flags"`
 	Image           string          `json:"image"`
 	Ports           Ports           `json:"ports"`
