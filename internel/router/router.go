@@ -84,9 +84,9 @@ func Init() *gin.Engine {
 			contestChallenge.POST("/init", middleware.CheckRunning, middleware.CheckSolved, InitUsage(false))
 			contestChallenge.GET("/attachment", GetAttachment)
 			contestChallenge.POST("/reset", middleware.CheckRunning, middleware.CheckGenerated, middleware.CheckSolved, InitUsage(true))
-			//contestChallenge.POST("/start", middleware.CheckGenerated, StartContainer)
-			//contestChallenge.POST("/increase", middleware.CheckRunning, middleware.CheckGenerated, IncreaseDuration)
-			//contestChallenge.POST("/stop", middleware.CheckGenerated, StopContainer)
+			contestChallenge.POST("/start", middleware.CheckGenerated, StartVictim)
+			contestChallenge.POST("/increase", middleware.CheckRunning, middleware.CheckGenerated, IncreaseVictimDuration)
+			contestChallenge.POST("/stop", middleware.CheckGenerated, StopVictim)
 			contestChallenge.POST("/submit", middleware.CheckRunning, middleware.CheckGenerated, middleware.CheckSolved, SubmitFlag)
 		}
 
@@ -148,16 +148,16 @@ func Init() *gin.Engine {
 
 				adminContestTeam.GET("/submissions", GetSubmissions)
 
-				//adminContestTeam.GET("/containers", GetContainers)
-				//adminContainer := adminContestTeam.Group("/containers/:containerID", middleware.SetContainer)
-				//{
-				//	adminContainer.GET("", GetContainer)
-				//
-				//	adminTraffic := adminContainer.Group("/traffic")
-				//	adminTraffic.GET("/download", DownloadTraffic)
-				//	adminTraffic.POST("/load", LoadTraffic)
-				//	adminTraffic.GET("", GetTraffics)
-				//}
+				adminContestTeam.GET("/victim", GetVictims)
+				adminContainer := adminContestTeam.Group("/victim/:victimID", middleware.SetVictim)
+				{
+					adminContainer.GET("", GetVictim)
+
+					//adminTraffic := adminContainer.Group("/traffic")
+					//adminTraffic.GET("/download", DownloadTraffic)
+					//adminTraffic.POST("/load", LoadTraffic)
+					//adminTraffic.GET("", GetTraffics)
+				}
 
 				adminContestTeam.GET("/writeups", GetWriteUPs)
 				adminContestTeam.GET("/writeups/:fileID", middleware.SetFile(model.WriteUP), DownloadFile)

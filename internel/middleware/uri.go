@@ -256,6 +256,34 @@ func GetFlag(ctx *gin.Context) model.Flag {
 	}
 }
 
+func SetVictim(ctx *gin.Context) {
+	type victimIDUri struct {
+		VictimID uint `uri:"victimID" binding:"required"`
+	}
+	var victimID victimIDUri
+	if err := ctx.ShouldBindUri(&victimID); err != nil {
+		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.Abort()
+		return
+	}
+	victim, ok, msg := db.InitVictimRepo(db.DB.WithContext(ctx)).GetByID(victimID.VictimID, "all")
+	if !ok {
+		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.Abort()
+		return
+	}
+	ctx.Set("Victim", victim)
+	ctx.Next()
+}
+
+func GetVictim(ctx *gin.Context) model.Victim {
+	if victim, ok := ctx.Get("Victim"); !ok {
+		return model.Victim{}
+	} else {
+		return victim.(model.Victim)
+	}
+}
+
 // SetNotice 保存 model.Notice 至上下文
 func SetNotice(ctx *gin.Context) {
 	type noticeIDUri struct {

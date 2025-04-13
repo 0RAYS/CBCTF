@@ -64,6 +64,7 @@ func (v *VictimRepo) GetByTeam(teamID uint, limit, offset int, deleted bool, pre
 	return victims, count, true, "Success"
 }
 
+// GetBy2ID ok == true, 必存在一个 victim
 func (v *VictimRepo) GetBy2ID(teamID, usageID uint, deleted bool, preloadL ...string) ([]model.Victim, bool, string) {
 	victims := make([]model.Victim, 0)
 	res := v.DB.Model(&model.Victim{})

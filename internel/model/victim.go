@@ -22,3 +22,16 @@ type Victim struct {
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 	Version   uint           `gorm:"default:1" json:"-"`
 }
+
+// RemoteAddr Victim 需要预加载 Pod
+func (v Victim) RemoteAddr() []string {
+	data := make([]string, 0)
+	for _, pod := range v.Pods {
+		data = append(data, pod.RemoteAddr()...)
+	}
+	return data
+}
+
+func (v Victim) Remaining() time.Duration {
+	return v.Start.Add(v.Duration).Sub(time.Now())
+}

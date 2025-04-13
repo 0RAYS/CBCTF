@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	ipL         = make([]string, 0)
+	gIPL        = make([]string, 0)
 	ipGenerator = make(map[string]string)
 	generatorIP = make(map[string]string)
 )
@@ -51,21 +51,21 @@ func StartGenerator(usage model.Usage) (*corev1.Pod, bool, string) {
 			Command: []string{"sleep", "infinity"},
 		},
 	}
-	if len(ipL) == 0 {
-		ipL, err = utils.GetIPBlock(0, config.Env.K8S.IPPool.CIDR, config.Env.K8S.IPPool.BlockSize)
-		if err != nil || len(ipL) == 0 {
+	if len(gIPL) == 0 {
+		gIPL, err = utils.GetIPBlock(0, config.Env.K8S.IPPool.CIDR, config.Env.K8S.IPPool.BlockSize)
+		if err != nil || len(gIPL) == 0 {
 			return &corev1.Pod{}, false, "EmptyIPBlock"
 		}
 	}
 	retry := 0
-	ip := ipL[retry]
+	ip := gIPL[retry]
 	for {
 		retry++
-		if retry > len(ipL)-1 {
+		if retry > len(gIPL)-1 {
 			return &corev1.Pod{}, false, "NoAvailableIP"
 		}
 		if _, ok := ipGenerator[ip]; ok {
-			ip = ipL[retry]
+			ip = gIPL[retry]
 			continue
 		}
 		ipGenerator[ip] = usage.ChallengeID
