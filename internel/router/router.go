@@ -148,8 +148,8 @@ func Init() *gin.Engine {
 
 				adminContestTeam.GET("/submissions", GetSubmissions)
 
-				adminContestTeam.GET("/victim", GetVictims)
-				adminContainer := adminContestTeam.Group("/victim/:victimID", middleware.SetVictim)
+				adminContestTeam.GET("/victims", GetVictims)
+				adminContainer := adminContestTeam.Group("/victims/:victimID", middleware.SetVictim)
 				{
 					adminContainer.GET("", GetVictim)
 
