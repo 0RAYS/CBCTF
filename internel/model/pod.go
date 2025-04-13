@@ -9,6 +9,7 @@ type Pod struct {
 	ID                uint            `gorm:"primaryKey" json:"id"`
 	VictimID          uint            `json:"victim_id"`
 	Victim            Victim          `json:"-"`
+	Containers        []Container     `json:"-"`
 	Traffics          []Traffic       `json:"-"`
 	Name              string          `json:"name"`
 	ExposeIP          string          `json:"ip"`
