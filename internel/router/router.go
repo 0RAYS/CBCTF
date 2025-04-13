@@ -82,7 +82,7 @@ func Init() *gin.Engine {
 		{
 			contestChallenge.GET("", GetUsageStatus)
 			contestChallenge.POST("/init", middleware.CheckRunning, middleware.CheckSolved, InitUsage(false))
-			contestChallenge.GET("/attachment", GetAttachment)
+			contestChallenge.GET("/attachment", DownloadAttachment)
 			contestChallenge.POST("/reset", middleware.CheckRunning, middleware.CheckGenerated, middleware.CheckSolved, InitUsage(true))
 			contestChallenge.POST("/start", middleware.CheckGenerated, StartVictim)
 			contestChallenge.POST("/increase", middleware.CheckRunning, middleware.CheckGenerated, IncreaseVictimDuration)
@@ -153,10 +153,9 @@ func Init() *gin.Engine {
 				{
 					adminContainer.GET("", GetVictim)
 
-					//adminTraffic := adminContainer.Group("/traffic")
-					//adminTraffic.GET("/download", DownloadTraffic)
-					//adminTraffic.POST("/load", LoadTraffic)
-					//adminTraffic.GET("", GetTraffics)
+					adminTraffic := adminContainer.Group("/traffic")
+					adminTraffic.GET("/download", DownloadTraffic)
+					adminTraffic.GET("", GetTraffics)
 				}
 
 				adminContestTeam.GET("/writeups", GetWriteUPs)

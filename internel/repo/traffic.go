@@ -4,6 +4,7 @@ import (
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"gorm.io/gorm"
+	"time"
 )
 
 type TrafficRepo struct {
@@ -11,22 +12,25 @@ type TrafficRepo struct {
 }
 
 type CreateTrafficOptions struct {
-	PodID   uint
-	SrcIP   string
-	DstIP   string
-	SrcPort uint16
-	DstPort uint16
-	Payload string
-	Type    string
+	VictimID uint
+	PodID    uint
+	SrcIP    string
+	DstIP    string
+	SrcPort  uint16
+	DstPort  uint16
+	Payload  string
+	Time     time.Time
+	Type     string
+	Path     string
 }
 
 func InitTrafficRepo(tx *gorm.DB) *TrafficRepo {
 	return &TrafficRepo{Repo: Repo[model.Traffic]{DB: tx, Model: "Traffic"}}
 }
 
-func (t *TrafficRepo) Count(podID uint) (int64, bool, string) {
+func (t *TrafficRepo) CountByKey(key string, id uint) (int64, bool, string) {
 	var count int64
-	res := t.DB.Model(&model.Traffic{}).Where("pod_id = ?", podID).Count(&count)
+	res := t.DB.Model(&model.Traffic{}).Where(key+" = ?", id).Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Traffic: %v", res.Error)
 		return 0, false, "CountModelError"
@@ -34,15 +38,15 @@ func (t *TrafficRepo) Count(podID uint) (int64, bool, string) {
 	return count, true, "Success"
 }
 
-func (t *TrafficRepo) GetAll(podID uint, limit, offset int, preloadL ...string) ([]model.Traffic, int64, bool, string) {
+func (t *TrafficRepo) GetByKey(key string, id uint, limit, offset int, preloadL ...string) ([]model.Traffic, int64, bool, string) {
 	var (
 		traffics       = make([]model.Traffic, 0)
-		count, ok, msg = t.Count(podID)
+		count, ok, msg = t.CountByKey(key, id)
 	)
 	if !ok {
 		return traffics, count, false, msg
 	}
-	res := t.DB.Model(&model.Traffic{}).Where("pod_id = ?", podID)
+	res := t.DB.Model(&model.Traffic{}).Where(key+" = ?", id)
 	res = preload(res, preloadL...).Limit(limit).Offset(offset).Find(&traffics)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Traffics: %v", res.Error)

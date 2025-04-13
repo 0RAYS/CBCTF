@@ -1,6 +1,8 @@
 package model
 
 import (
+	"CBCTF/internel/config"
+	"fmt"
 	"gorm.io/gorm"
 	"time"
 )
@@ -14,6 +16,7 @@ type Victim struct {
 	UserID    uint           `json:"user_id"`
 	User      User           `json:"-"`
 	Pods      []Pod          `json:"-"`
+	Traffics  []Traffic      `json:"-"`
 	IPBlock   string         `json:"ip_block"`
 	Start     time.Time      `json:"start"`
 	Duration  time.Duration  `json:"duration"`
@@ -21,6 +24,19 @@ type Victim struct {
 	UpdatedAt time.Time      `json:"-"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 	Version   uint           `gorm:"default:1" json:"-"`
+}
+
+func (v Victim) TrafficZipPath() string {
+	return fmt.Sprintf("%s/traffics/%d/traffics.zip", config.Env.Path, v.ID)
+}
+
+// TrafficPaths Victim 需要预加载 Pod
+func (v Victim) TrafficPaths() []string {
+	data := make([]string, 0)
+	for _, pod := range v.Pods {
+		data = append(data, pod.TrafficPath())
+	}
+	return data
 }
 
 // RemoteAddr Victim 需要预加载 Pod

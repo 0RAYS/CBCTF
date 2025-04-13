@@ -126,7 +126,7 @@ func UploadWriteUp(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
-func GetAttachment(ctx *gin.Context) {
+func DownloadAttachment(ctx *gin.Context) {
 	usage := middleware.GetUsage(ctx)
 	team := middleware.GetTeam(ctx)
 	path := usage.Challenge.AttachmentPath(team.ID)
@@ -224,4 +224,18 @@ func GetWriteUPs(ctx *gin.Context) {
 		files = append(files, file.Name())
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": files})
+}
+
+func DownloadTraffic(ctx *gin.Context) {
+	victim := middleware.GetVictim(ctx)
+	if _, err := os.Stat(victim.TrafficZipPath()); err != nil {
+		log.Logger.Warningf("Failed to get file: %s", err)
+		if errors.Is(err, os.ErrNotExist) {
+			ctx.JSON(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": nil})
+			return
+		}
+		ctx.JSON(http.StatusOK, gin.H{"msg": "UnknownError", "data": nil})
+		return
+	}
+	ctx.File(victim.TrafficZipPath())
 }
