@@ -146,24 +146,13 @@ func (n *NetworkPolicies) Scan(value interface{}) error {
 
 // Docker 题目的 Docker 配置, 一个容器可以有多个 flag 和多个映射端口
 type Docker struct {
+	PodGroup        uint            `json:"pod_group"`
 	Hostname        string          `json:"hostname"`
 	FlagIDL         []uint          `json:"ids"`
 	Flags           Strings         `json:"flags"`
 	Image           string          `json:"image"`
 	Ports           Exposes         `json:"ports"`
 	NetworkPolicies NetworkPolicies `json:"network_policies"`
-}
-
-func (d Docker) Value() (driver.Value, error) {
-	return json.Marshal(d)
-}
-
-func (d *Docker) Scan(value interface{}) error {
-	bytes, ok := value.([]byte)
-	if !ok {
-		return fmt.Errorf("failed to scan Docker value")
-	}
-	return json.Unmarshal(bytes, d)
 }
 
 type Dockers []Docker

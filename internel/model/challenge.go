@@ -10,18 +10,18 @@ import (
 const (
 	StaticChallenge  = "static"
 	DynamicChallenge = "dynamic"
-	DockerChallenge  = "docker"
-	DockersChallenge = "dockers"
+	PodChallenge     = "pod"
+	PodsChallenge    = "pods"
 
 	AttachmentFile = "attachment.zip"
 	GeneratorFile  = "generator.zip"
 )
 
 // Challenge 题目模型
-// 题目的类型有四种: 静态题目, 动态题目, 容器题目, 多容器题目
+// 题目的类型有四种: 静态题目, 动态题目, 单Pod题目, 多Pod题目
 // 静态题目: flag 为 Flags 字段
 // 动态题目: flag 为 Flags 字段
-// 容器题目: flag 为 Docker.Flags 字段
+// 容器题目: flag 为 Dockers[].Flags 字段
 // 多容器题目: flag 为 Dockers[].Flags 字段
 type Challenge struct {
 	ID          string         `gorm:"type:varchar(36);primaryKey" json:"id"`
@@ -33,7 +33,6 @@ type Challenge struct {
 	Type        string         `json:"type"`
 	Generator   string         `json:"generator"`
 	Flags       Strings        `gorm:"type:json" json:"flags"`
-	Docker      Docker         `gorm:"type:json" json:"docker"`
 	Dockers     Dockers        `gorm:"type:json" json:"dockers"`
 	CreatedAt   time.Time      `json:"-"`
 	UpdatedAt   time.Time      `json:"-"`

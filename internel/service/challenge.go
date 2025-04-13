@@ -11,11 +11,7 @@ import (
 func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, bool, string) {
 	repo := db.InitChallengeRepo(tx)
 	switch form.Type {
-	case model.DockerChallenge:
-		if len(form.Docker.NetworkPolicies) == 0 {
-			form.Docker.NetworkPolicies = append(form.Docker.NetworkPolicies, model.DefaultNetworkPolicy)
-		}
-	case model.DockersChallenge:
+	case model.PodChallenge, model.PodsChallenge:
 		for i, docker := range form.Dockers {
 			if len(docker.NetworkPolicies) == 0 {
 				form.Dockers[i].NetworkPolicies = append(form.Dockers[i].NetworkPolicies, model.DefaultNetworkPolicy)
@@ -30,7 +26,6 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 		Type:      form.Type,
 		Generator: form.Generator,
 		Flags:     form.Flags,
-		Docker:    form.Docker,
 		Dockers:   form.Dockers,
 	})
 }
@@ -59,9 +54,7 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChalle
 	case model.DynamicChallenge:
 		options.Flags = form.Flags
 		options.Generator = form.Generator
-	case model.DockerChallenge:
-		options.Docker = form.Docker
-	case model.DockersChallenge:
+	case model.PodChallenge, model.PodsChallenge:
 		options.Dockers = form.Dockers
 	default:
 		return false, "InvalidChallengeType"

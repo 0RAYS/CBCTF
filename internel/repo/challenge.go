@@ -19,7 +19,6 @@ type CreateChallengeOptions struct {
 	Type      string
 	Generator string
 	Flags     model.Strings
-	Docker    model.Docker
 	Dockers   model.Dockers
 }
 
@@ -30,7 +29,6 @@ type UpdateChallengeOptions struct {
 	Type      *string        `json:"type"`
 	Generator *string        `json:"generator"`
 	Flags     *model.Strings `json:"flags"`
-	Docker    *model.Docker  `json:"docker"`
 	Dockers   *model.Dockers `json:"dockers"`
 }
 

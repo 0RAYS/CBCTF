@@ -23,11 +23,11 @@ func IsGenerated(tx *gorm.DB, team model.Team, usage model.Usage) bool {
 			}
 		}
 		switch usage.Challenge.Type {
-		case model.StaticChallenge, model.DynamicChallenge, model.DockerChallenge:
+		case model.StaticChallenge, model.DynamicChallenge, model.PodChallenge:
 			if count < 1 {
 				return false
 			}
-		case model.DockersChallenge:
+		case model.PodsChallenge:
 			if count < len(flag.Answers) {
 				return false
 			}

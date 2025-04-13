@@ -104,7 +104,7 @@ func InitUsage(reset bool) func(ctx *gin.Context) {
 		case model.DynamicChallenge:
 			ok, msg = k8s.GenerateAttachment(usage, team, answers)
 		//TODO
-		//case model.DockerChallenge, model.DockersChallenge:
+		//case model.PodChallenge, model.PodsChallenge:
 		//	ok, msg = service.StopContainer(tx, team, usage)
 		default:
 			ok, msg = true, "Success"
