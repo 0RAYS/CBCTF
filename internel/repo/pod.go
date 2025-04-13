@@ -18,13 +18,12 @@ type CreatePodOptions struct {
 	PodIP             string
 	ServiceName       string
 	NetworkPolicyName string
-	Exposes           model.Exposes
+	ExposePorts       model.Ports
 	NetworkPolicies   model.NetworkPolicies
 }
 
 type UpdatePodOptions struct {
 	ExposeIP *string `json:"ip"`
-	PodIP    *string `json:"pod_ip"`
 }
 
 func InitPodRepo(tx *gorm.DB) *PodRepo {
@@ -59,7 +58,7 @@ func (p *PodRepo) GetByName(name string, deleted bool, preloadL ...string) ([]mo
 	return pods, true, "Success"
 }
 
-func (p *PodRepo) Update(id uint, options UpdateUserOptions) (bool, string) {
+func (p *PodRepo) Update(id uint, options UpdatePodOptions) (bool, string) {
 	var count int
 	data := utils.UpdateOptions2Map(options)
 	for {

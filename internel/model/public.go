@@ -151,7 +151,7 @@ type Docker struct {
 	FlagIDL         []uint          `json:"ids"`
 	Flags           Strings         `json:"flags"`
 	Image           string          `json:"image"`
-	Ports           Exposes         `json:"ports"`
+	Ports           Ports           `json:"ports"`
 	NetworkPolicies NetworkPolicies `json:"network_policies"`
 }
 
@@ -169,16 +169,16 @@ func (d *Dockers) Scan(value interface{}) error {
 	return json.Unmarshal(bytes, d)
 }
 
-type Exposes []int32
+type Ports []int32
 
-func (e Exposes) Value() (driver.Value, error) {
+func (e Ports) Value() (driver.Value, error) {
 	return json.Marshal(e)
 }
 
-func (e *Exposes) Scan(value interface{}) error {
+func (e *Ports) Scan(value interface{}) error {
 	bytes, ok := value.([]byte)
 	if !ok {
-		return fmt.Errorf("failed to scan Exposes value")
+		return fmt.Errorf("failed to scan Ports value")
 	}
 	return json.Unmarshal(bytes, e)
 }
