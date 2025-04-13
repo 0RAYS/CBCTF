@@ -22,7 +22,7 @@ func GetUsageStatus(ctx *gin.Context) {
 		"attempts": service.CountAttempts(DB, team, usage),
 		"init":     service.IsGenerated(DB, team, usage),
 		"solved":   service.IsSolved(DB, team, usage),
-		"remote":   service.GetRemoteStatus(DB, team, usage),
+		"remote":   "TODO", //TODO service.GetRemoteStatus(DB, team, usage),
 		"file": func() string {
 			if _, err := os.Stat(usage.Challenge.AttachmentPath(team.ID)); err != nil {
 				return ""
@@ -69,7 +69,7 @@ func GetUsages(ctx *gin.Context) {
 			tmp["attempts"] = service.CountAttempts(DB, team, usage)
 			tmp["init"] = service.IsGenerated(DB, team, usage)
 			tmp["solved"] = service.IsSolved(DB, team, usage)
-			tmp["remote"] = service.GetRemoteStatus(DB, team, usage)
+			tmp["remote"] = "TODO" //TODO service.GetRemoteStatus(DB, team, usage)
 			tmp["file"] = func() string {
 				if _, err := os.Stat(usage.Challenge.AttachmentPath(team.ID)); err != nil {
 					return ""
@@ -103,8 +103,8 @@ func InitUsage(reset bool) func(ctx *gin.Context) {
 		switch usage.Challenge.Type {
 		case model.DynamicChallenge:
 			ok, msg = k8s.GenerateAttachment(usage, team, answers)
-		case model.DockerChallenge, model.DockersChallenge:
-			ok, msg = service.StopContainer(tx, team, usage)
+		//case model.DockerChallenge, model.DockersChallenge:
+		//	ok, msg = service.StopContainer(tx, team, usage)
 		default:
 			ok, msg = true, "Success"
 		}

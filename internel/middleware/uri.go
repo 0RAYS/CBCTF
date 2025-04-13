@@ -256,36 +256,6 @@ func GetFlag(ctx *gin.Context) model.Flag {
 	}
 }
 
-// SetContainer 保存 model.Container 至上下文
-func SetContainer(ctx *gin.Context) {
-	type containerIDUri struct {
-		ContainerID uint `uri:"containerID" binding:"required"`
-	}
-	var containerID containerIDUri
-	if err := ctx.ShouldBindUri(&containerID); err != nil {
-		ctx.JSONP(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
-		ctx.Abort()
-		return
-	}
-	container, ok, msg := db.InitContainerRepo(db.DB.WithContext(ctx)).GetByID(containerID.ContainerID, "all")
-	if !ok {
-		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		ctx.Abort()
-		return
-	}
-	ctx.Set("Container", container)
-	ctx.Next()
-}
-
-// GetContainer 从上下文中获取 model.Container
-func GetContainer(ctx *gin.Context) model.Container {
-	if container, ok := ctx.Get("Container"); !ok {
-		return model.Container{}
-	} else {
-		return container.(model.Container)
-	}
-}
-
 // SetNotice 保存 model.Notice 至上下文
 func SetNotice(ctx *gin.Context) {
 	type noticeIDUri struct {
