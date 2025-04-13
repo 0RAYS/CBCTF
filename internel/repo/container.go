@@ -41,11 +41,6 @@ func InitContainerRepo(tx *gorm.DB) *ContainerRepo {
 	return &ContainerRepo{Repo: Repo[model.Container]{DB: tx, Model: "Container"}}
 }
 
-func (c *ContainerRepo) IsUniqueContainer(usageID, teamID uint) bool {
-	res := c.DB.Model(&model.Container{}).Where("usage_id = ? AND team_id = ?", usageID, teamID).Limit(1).Find(&model.Container{})
-	return res.RowsAffected == 0
-}
-
 func (c *ContainerRepo) Count(teamID uint, deleted bool) (int64, bool, string) {
 	var count int64
 	res := c.DB.Model(&model.Container{})
