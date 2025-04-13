@@ -4,6 +4,7 @@ import (
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
+	"gorm.io/gorm"
 )
 
 type PodRepo struct {
@@ -27,8 +28,8 @@ type UpdatePodOptions struct {
 	PodIP    *string `json:"pod_ip"`
 }
 
-func InitPodRepo() *PodRepo {
-	return &PodRepo{Repo: Repo[model.Pod]{DB: DB, Model: "Pod"}}
+func InitPodRepo(tx *gorm.DB) *PodRepo {
+	return &PodRepo{Repo: Repo[model.Pod]{DB: tx, Model: "Pod"}}
 }
 
 func (p *PodRepo) GetByVictimID(victimID uint, deleted bool, preloadL ...string) ([]model.Pod, bool, string) {
