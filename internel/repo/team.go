@@ -58,26 +58,6 @@ func (t *TeamRepo) IsUniqueMember(contestID uint, userID uint) bool {
 	return res.RowsAffected == 0
 }
 
-func (t *TeamRepo) getByUniqueKey(key string, value interface{}, preloadL ...string) (model.Team, bool, string) {
-	switch key {
-	case "id", "captain_id":
-		value = value.(uint)
-	default:
-		return model.Team{}, false, "UnsupportedKey"
-	}
-	var team model.Team
-	res := t.DB.Model(&model.Team{}).Where(key+" = ?", value)
-	res = preload(res, preloadL...).Limit(1).Find(&team)
-	if res.RowsAffected == 0 {
-		return model.Team{}, false, "TeamNotFound"
-	}
-	return team, true, "Success"
-}
-
-func (t *TeamRepo) GetByCaptainID(captainID uint, preloadL ...string) (model.Team, bool, string) {
-	return t.getByUniqueKey("captain_id", captainID, preloadL...)
-}
-
 func (t *TeamRepo) GetByName(contestID uint, name string, preloadL ...string) (model.Team, bool, string) {
 	var team model.Team
 	res := t.DB.Model(&model.Team{}).Where("contest_id = ? AND name = ?", contestID, name)
