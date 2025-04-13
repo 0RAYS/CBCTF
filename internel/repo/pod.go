@@ -16,7 +16,6 @@ type CreatePodOptions struct {
 	Name              string
 	ExposeIP          string
 	PodIP             string
-	IPBlock           string
 	ServiceName       string
 	NetworkPolicyName string
 	Exposes           model.Exposes
