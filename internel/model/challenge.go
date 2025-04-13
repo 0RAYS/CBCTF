@@ -25,6 +25,8 @@ const (
 // 多容器题目: flag 为 Dockers[].Flags 字段
 type Challenge struct {
 	ID          string         `gorm:"type:varchar(36);primaryKey" json:"id"`
+	Usages      []Usage        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Submissions []Submission   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Name        string         `gorm:"not null" json:"name"`
 	Desc        string         `json:"desc"`
 	Category    string         `json:"category"`
@@ -33,8 +35,6 @@ type Challenge struct {
 	Flags       Strings        `gorm:"type:json" json:"flags"`
 	Docker      Docker         `gorm:"type:json" json:"docker"`
 	Dockers     Dockers        `gorm:"type:json" json:"dockers"`
-	Usages      []Usage        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Submissions []Submission   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	CreatedAt   time.Time      `json:"-"`
 	UpdatedAt   time.Time      `json:"-"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
