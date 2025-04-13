@@ -25,6 +25,8 @@ type Flag struct {
 	Contest      Contest        `json:"-"`
 	UsageID      uint           `json:"usage_id"`
 	Usage        Usage          `json:"-"`
+	Answers      []Answer       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Submissions  []Submission   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Value        string         `json:"value"`
 	Score        float64        `gorm:"default:1000" json:"score"`
 	CurrentScore float64        `gorm:"default:1000" json:"current_score"`
@@ -32,10 +34,8 @@ type Flag struct {
 	MinScore     float64        `gorm:"default:100" json:"min_score"`
 	ScoreType    uint           `gorm:"default:0" json:"score_type"`
 	Solvers      int64          `json:"solvers"`
-	Blood        Uints          `gorm:"type:json" json:"blood"`
-	Answers      []Answer       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Submissions  []Submission   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Last         time.Time      `gorm:"default:null" json:"last"`
+	Blood        Uints          `gorm:"type:json" json:"blood"`
 	CreatedAt    time.Time      `json:"-"`
 	UpdatedAt    time.Time      `json:"-"`
 	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`

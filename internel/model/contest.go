@@ -7,6 +7,13 @@ import (
 
 type Contest struct {
 	ID          uint           `gorm:"primarykey" json:"id"`
+	Teams       []Team         `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Users       []*User        `gorm:"many2many:user_contests;" json:"-"`
+	Notices     []Notice       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Usages      []Usage        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Flags       []Flag         `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Cheats      []Cheat        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Submissions []Submission   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Name        string         `gorm:"not null" json:"name"`
 	Desc        string         `json:"desc"`
 	Captcha     string         `json:"captcha"`
@@ -20,13 +27,6 @@ type Contest struct {
 	Rules       Strings        `gorm:"type:json" json:"rules"`
 	Prizes      Prizes         `gorm:"type:json" json:"prizes"`
 	Timelines   Timelines      `gorm:"type:json" json:"timelines"`
-	Teams       []Team         `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Users       []*User        `gorm:"many2many:user_contests;" json:"-"`
-	Notices     []Notice       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Usages      []Usage        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Flags       []Flag         `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Cheats      []Cheat        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Submissions []Submission   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	CreatedAt   time.Time      `json:"-"`
 	UpdatedAt   time.Time      `json:"-"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
