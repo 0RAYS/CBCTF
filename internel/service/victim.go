@@ -38,8 +38,7 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, usage model.Usag
 	podRepo := db.InitPodRepo(tx)
 	containerRepo := db.InitContainerRepo(tx)
 	answerRepo := db.InitAnswerRepo(tx)
-	switch usage.Challenge.Type {
-	case model.PodChallenge, model.PodsChallenge:
+	if usage.Challenge.Type == model.PodsChallenge {
 		if len(block) < len(usage.Dockers) {
 			return model.Victim{}, false, "EmptyIPBlock"
 		}
@@ -130,7 +129,7 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, usage model.Usag
 			}
 			victim.Pods = append(victim.Pods, pod)
 		}
-	default:
+	} else {
 		return model.Victim{}, false, "InvalidChallengeType"
 	}
 	ipL, ok, msg := k8s.StartVictim(victim, dns)
@@ -157,7 +156,7 @@ func GetVictimStatus(tx *gorm.DB, usage model.Usage, victim model.Victim) gin.H 
 		"remaining": 0,
 		"status":    "Down",
 	}
-	if usage.Challenge.Type != model.PodChallenge && usage.Challenge.Type != model.PodsChallenge {
+	if usage.Challenge.Type != model.PodsChallenge {
 		data["status"] = "NotDocker"
 		return data
 	}
