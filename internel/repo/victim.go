@@ -29,7 +29,21 @@ func InitVictimRepo(tx *gorm.DB) *VictimRepo {
 	return &VictimRepo{Repo: Repo[model.Victim]{DB: tx, Model: "Victim"}}
 }
 
-func (v *VictimRepo) Count(teamID uint, deleted bool) (int64, bool, string) {
+func (v *VictimRepo) Count(deleted bool) (int64, bool, string) {
+	var count int64
+	res := v.DB.Model(&model.Victim{})
+	if deleted {
+		res = res.Unscoped()
+	}
+	res = res.Count(&count)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to count Victims: %s", res.Error)
+		return 0, false, "CountModelError"
+	}
+	return count, true, "Success"
+}
+
+func (v *VictimRepo) CountByTeam(teamID uint, deleted bool) (int64, bool, string) {
 	var count int64
 	res := v.DB.Model(&model.Victim{})
 	if deleted {
@@ -46,7 +60,7 @@ func (v *VictimRepo) Count(teamID uint, deleted bool) (int64, bool, string) {
 func (v *VictimRepo) GetByTeam(teamID uint, limit, offset int, deleted bool, preloadL ...string) ([]model.Victim, int64, bool, string) {
 	var (
 		victims        = make([]model.Victim, 0)
-		count, ok, msg = v.Count(teamID, deleted)
+		count, ok, msg = v.CountByTeam(teamID, deleted)
 	)
 	if !ok {
 		return victims, count, false, msg
@@ -81,6 +95,26 @@ func (v *VictimRepo) GetBy2ID(teamID, usageID uint, deleted bool, preloadL ...st
 		return victims, false, "VictimNotFound"
 	}
 	return victims, true, "Success"
+}
+
+func (v *VictimRepo) GetAll(limit, offset int, deleted bool, preloadL ...string) ([]model.Victim, int64, bool, string) {
+	var (
+		victims        = make([]model.Victim, 0)
+		count, ok, msg = v.Count(deleted)
+	)
+	if !ok {
+		return victims, count, false, msg
+	}
+	res := v.DB.Model(&model.Victim{})
+	if deleted {
+		res = res.Unscoped()
+	}
+	res = preload(res, preloadL...).Limit(limit).Offset(offset).Find(&victims)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Victims: %s", res.Error)
+		return victims, count, false, "GetVictimError"
+	}
+	return victims, count, true, "Success"
 }
 
 func (v *VictimRepo) Update(id uint, options UpdateVictimOptions) (bool, string) {
