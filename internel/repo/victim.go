@@ -73,6 +73,10 @@ func (v *VictimRepo) GetBy2ID(teamID, usageID uint, deleted bool, preloadL ...st
 	}
 	res = res.Where("team_id = ? AND usage_id = ?", teamID, usageID)
 	res = preload(res, preloadL...).Find(&victims)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Victims: %s", res.Error)
+		return victims, false, "GetVictimError"
+	}
 	if res.RowsAffected == 0 {
 		return victims, false, "VictimNotFound"
 	}

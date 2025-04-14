@@ -46,6 +46,10 @@ func (c *ChallengeRepo) getByUniqueKey(key string, value interface{}, preloadL .
 	var challenge model.Challenge
 	res := c.DB.Model(&model.Challenge{}).Where(key+" = ?", value)
 	res = preload(res, preloadL...).Limit(1).Find(&challenge)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Challenge: %s", res.Error)
+		return model.Challenge{}, false, "GetChallengeError"
+	}
 	if res.RowsAffected == 0 {
 		return model.Challenge{}, false, "ChallengeNotFound"
 	}

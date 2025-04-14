@@ -31,6 +31,10 @@ func (a *AnswerRepo) GetBy2ID(teamID, flagID uint, preloadL ...string) (model.An
 	var answer model.Answer
 	res := a.DB.Model(&model.Answer{}).Where("team_id = ? AND flag_id = ?", teamID, flagID)
 	res = preload(res, preloadL...).Limit(1).Find(&answer)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Answer: %s", res.Error)
+		return model.Answer{}, false, "GetAnswerError"
+	}
 	if res.RowsAffected == 0 {
 		return model.Answer{}, false, "AnswerNotFound"
 	}

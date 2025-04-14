@@ -23,7 +23,7 @@ type CreatePodOptions struct {
 }
 
 type UpdatePodOptions struct {
-	ExposeIP *string `json:"ip"`
+	ExposeIP *string `json:"expose_ip"`
 }
 
 func InitPodRepo(tx *gorm.DB) *PodRepo {
@@ -38,8 +38,12 @@ func (p *PodRepo) GetByVictimID(victimID uint, deleted bool, preloadL ...string)
 	}
 	res = res.Where("victim_id = ?", victimID)
 	res = preload(res, preloadL...).Find(&pods)
-	if res.RowsAffected == 0 {
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Pod: %s", res.Error)
 		return pods, false, "GetPodError"
+	}
+	if res.RowsAffected == 0 {
+		return pods, false, "PodNotFound"
 	}
 	return pods, true, "Success"
 }

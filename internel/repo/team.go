@@ -62,20 +62,24 @@ func (t *TeamRepo) GetByName(contestID uint, name string, preloadL ...string) (m
 	var team model.Team
 	res := t.DB.Model(&model.Team{}).Where("contest_id = ? AND name = ?", contestID, name)
 	res = preload(res, preloadL...).Limit(1).Find(&team)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Team")
+		return model.Team{}, false, "GetTeamError"
+	}
 	if res.RowsAffected == 0 {
 		return model.Team{}, false, "TeamNotFound"
 	}
 	return team, true, "Success"
 }
 
-// GetBy2ID 根据用户 ID 和比赛 ID 获取 model.Team, 等同于 GetByID(teamID, true, 0)
+// GetBy2ID 根据用户 ID 和比赛 ID 获取 model.Team, 等同于 GetByID(teamID, "all")
 func (t *TeamRepo) GetBy2ID(userID uint, contestID uint) (model.Team, bool, string) {
 	user, ok, msg := InitUserRepo(t.DB).
 		GetByID(
 			userID,
 			"all",
 			"Teams.Contest", "Teams.Users", "Teams.Answers", "Teams.Submissions",
-			"Teams.Cheats", //TODO "Teams.Containers",
+			"Teams.Victims", "Teams.Cheats",
 		)
 	if !ok {
 		return model.Team{}, false, msg

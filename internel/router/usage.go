@@ -22,7 +22,7 @@ func GetUsageStatus(ctx *gin.Context) {
 		"attempts": service.CountAttempts(DB, team, usage),
 		"init":     service.IsGenerated(DB, team, usage),
 		"solved":   service.IsSolved(DB, team, usage),
-		"remote":   "TODO", //TODO service.GetVictimStatus(DB, team, usage),
+		"remote":   service.GetVictimStatus(DB, team, usage),
 		"file": func() string {
 			if _, err := os.Stat(usage.Challenge.AttachmentPath(team.ID)); err != nil {
 				return ""
@@ -56,7 +56,8 @@ func GetUsages(ctx *gin.Context) {
 		DB      = db.DB.WithContext(ctx)
 		contest = middleware.GetContest(ctx)
 	)
-	usages, count, ok, msg := db.InitUsageRepo(DB).GetAll(contest.ID, form.Limit, form.Offset, all, "Challenge", "Flags", "Flags.Answers") //TODO "Containers"
+	usages, count, ok, msg := db.InitUsageRepo(DB).
+		GetAll(contest.ID, form.Limit, form.Offset, all, "Challenge", "Flags")
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -69,7 +70,7 @@ func GetUsages(ctx *gin.Context) {
 			tmp["attempts"] = service.CountAttempts(DB, team, usage)
 			tmp["init"] = service.IsGenerated(DB, team, usage)
 			tmp["solved"] = service.IsSolved(DB, team, usage)
-			tmp["remote"] = "TODO" //TODO service.GetVictimStatus(DB, team, usage)
+			tmp["remote"] = service.GetVictimStatus(DB, team, usage)
 			tmp["file"] = func() string {
 				if _, err := os.Stat(usage.Challenge.AttachmentPath(team.ID)); err != nil {
 					return ""
@@ -104,7 +105,9 @@ func InitUsage(reset bool) func(ctx *gin.Context) {
 		case model.DynamicChallenge:
 			ok, msg = k8s.GenerateAttachment(usage, team, answers)
 		case model.PodsChallenge:
-			ok, msg = service.StopVictim(tx, team, usage)
+			// 不考虑失败
+			go service.StopVictim(tx, team, usage)
+			ok, msg = true, "Success"
 		default:
 			ok, msg = true, "Success"
 		}

@@ -150,7 +150,7 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, usage model.Usag
 }
 
 // GetVictimStatus model.Usage 需要预加载 model.Challenge
-func GetVictimStatus(tx *gorm.DB, usage model.Usage, victim model.Victim) gin.H {
+func GetVictimStatus(tx *gorm.DB, team model.Team, usage model.Usage) gin.H {
 	data := gin.H{
 		"target":    make([]string, 0),
 		"remaining": 0,
@@ -160,16 +160,23 @@ func GetVictimStatus(tx *gorm.DB, usage model.Usage, victim model.Victim) gin.H 
 		data["status"] = "NotDocker"
 		return data
 	}
-	repo := db.InitPodRepo(tx)
-	pods, ok, _ := repo.GetByVictimID(victim.ID, false)
+	repo := db.InitVictimRepo(tx)
+	victims, ok, _ := repo.GetBy2ID(team.ID, usage.ID, false, "Pods")
 	if !ok {
 		return data
 	}
-	for _, pod := range pods {
+	if len(victims) == 0 {
+		return data
+	}
+	if len(victims) > 1 {
+		data["status"] = "Error"
+		return data
+	}
+	for _, pod := range victims[0].Pods {
 		data["target"] = append(data["target"].([]string), pod.RemoteAddr()...)
 	}
 	data["status"] = "Running"
-	data["remaining"] = 0
+	data["remaining"] = victims[0].Remaining().Seconds()
 	return data
 }
 

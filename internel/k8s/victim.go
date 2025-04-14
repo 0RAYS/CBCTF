@@ -27,6 +27,7 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]string,
 	for _, pod := range victim.Pods {
 		wg.Add(1)
 		go func(pod model.Pod) {
+			defer wg.Done()
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 			defer cancel()
 			service, ok, msg := CreateService(ctx, pod)
@@ -141,6 +142,7 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]string,
 				ip = p.Status.HostIP
 			}
 			log.Logger.Infof("Pod %s is running on %s", pod.Name, ip)
+			resultCh <- result{PodName: pod.Name, IP: ip, OK: true, Msg: msg}
 		}(pod)
 	}
 	wg.Wait()
@@ -166,6 +168,7 @@ func StopVictim(victim model.Victim) (bool, string) {
 	for _, pod := range victim.Pods {
 		wg.Add(1)
 		go func(pod model.Pod) {
+			defer wg.Done()
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 			defer cancel()
 			var err error

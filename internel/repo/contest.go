@@ -65,6 +65,10 @@ func (c *ContestRepo) getByUniqueKey(key string, value interface{}, preloadL ...
 	var contest model.Contest
 	res := c.DB.Model(&model.Contest{}).Where(key+" = ?", value)
 	res = preload(res, preloadL...).Limit(1).Find(&contest)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Contest: %s", res.Error)
+		return model.Contest{}, false, "GetContestError"
+	}
 	if res.RowsAffected == 0 {
 		return model.Contest{}, false, "ContestNotFound"
 	}

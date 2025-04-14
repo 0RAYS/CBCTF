@@ -14,7 +14,7 @@ type Pod struct {
 	Containers        []Container     `json:"-"`
 	Traffics          []Traffic       `json:"-"`
 	Name              string          `json:"name"`
-	ExposeIP          string          `json:"ip"`
+	ExposeIP          string          `json:"expose_ip"`
 	PodIP             string          `json:"pod_ip"`
 	ServiceName       string          `json:"service"`
 	NetworkPolicyName string          `json:"network_policy"`

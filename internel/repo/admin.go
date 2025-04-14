@@ -53,6 +53,10 @@ func (a *AdminRepo) getByUniqueKey(key string, value interface{}, preloadL ...st
 	var admin model.Admin
 	res := a.DB.Model(&model.Admin{}).Where(key+" = ?", value)
 	res = preload(res, preloadL...).Limit(1).Find(&admin)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Admin: %s", res.Error)
+		return model.Admin{}, false, "GetAdminError"
+	}
 	if res.RowsAffected == 0 {
 		return model.Admin{}, false, "AdminNotFound"
 	}

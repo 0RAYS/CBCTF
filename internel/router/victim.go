@@ -26,14 +26,14 @@ func StartVictim(ctx *gin.Context) {
 		log.Logger.Warningf("Failed to record container create: %v", err)
 	}
 	tx := db.DB.WithContext(ctx).Begin()
-	victim, ok, msg := service.StartVictim(tx, user, team, usage)
+	_, ok, msg := service.StartVictim(tx, user, team, usage)
 	if !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	tx.Commit()
-	status := service.GetVictimStatus(tx, usage, victim)
+	status := service.GetVictimStatus(db.DB.WithContext(ctx), team, usage)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": status})
 }
 

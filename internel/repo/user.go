@@ -63,6 +63,10 @@ func (u *UserRepo) getByUniqueKey(key string, value interface{}, preloadL ...str
 	var user model.User
 	res := u.DB.Model(&model.User{}).Where(key+" = ?", value)
 	res = preload(res, preloadL...).Limit(1).Find(&user)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get User")
+		return model.User{}, false, "GetUserError"
+	}
 	if res.RowsAffected == 0 {
 		return model.User{}, false, "UserNotFound"
 	}

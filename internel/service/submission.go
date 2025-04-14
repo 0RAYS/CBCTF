@@ -81,7 +81,7 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, usage model.Usage, fo
 	return result, submission, true, "Success"
 }
 
-// IsSolved model.Usage 需要预加载
+// IsSolved model.Usage 需要预加载 model.Flag
 func IsSolved(tx *gorm.DB, team model.Team, usage model.Usage) bool {
 	var (
 		count                 int
