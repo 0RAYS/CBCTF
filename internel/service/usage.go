@@ -13,7 +13,7 @@ func CreateUsage(tx *gorm.DB, contest model.Contest, form f.CreateUsageForm) ([]
 	usages := make([]model.Usage, 0)
 	failed := make([]string, 0)
 	for _, challengeID := range form.ChallengeIDL {
-		if db.InitUsageRepo(tx).IsUniqueChallenge(contest.ID, challengeID) {
+		if !db.InitUsageRepo(tx).IsUniqueChallenge(contest.ID, challengeID) {
 			continue
 		}
 		// 局部回滚
