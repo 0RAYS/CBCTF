@@ -49,6 +49,10 @@ func (u *UsageRepo) GetBy2ID(contestID uint, challengeID string, hidden bool, pr
 		res = res.Where("hidden = ?", false)
 	}
 	res = preload(res, preloadL...).Limit(1).Find(&usage)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Usage: %s", res.Error)
+		return model.Usage{}, false, "GetUsageError"
+	}
 	if res.RowsAffected == 0 {
 		return model.Usage{}, false, "UsageNotFound"
 	}

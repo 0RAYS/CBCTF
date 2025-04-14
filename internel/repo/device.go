@@ -28,6 +28,10 @@ func InitDeviceRepo(tx *gorm.DB) *DeviceRepo {
 func (d *DeviceRepo) GetBy2ID(userID uint, magic string) (model.Device, bool, string) {
 	var device model.Device
 	res := d.DB.Model(&model.Device{}).Where("user_id = ? AND magic = ?", userID, magic).Limit(1).Find(&device)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Device: %s", res.Error)
+		return model.Device{}, false, "GetDeviceError"
+	}
 	if res.RowsAffected == 0 {
 		return model.Device{}, false, "DeviceNotFound"
 	}

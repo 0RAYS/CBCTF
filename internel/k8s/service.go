@@ -4,6 +4,7 @@ import (
 	"CBCTF/internel/config"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
+	"CBCTF/internel/utils"
 	"context"
 	corev1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
@@ -44,11 +45,13 @@ func CreateService(ctx context.Context, pod model.Pod) (*corev1.Service, bool, s
 				tmp := make([]corev1.ServicePort, 0)
 				for _, p := range pod.ExposePorts {
 					tmp = append(tmp, corev1.ServicePort{
+						Name:       utils.UUID(),
 						Protocol:   corev1.ProtocolTCP,
 						Port:       p,
 						TargetPort: intstr.FromInt32(p),
 					})
 					tmp = append(tmp, corev1.ServicePort{
+						Name:       utils.UUID(),
 						Protocol:   corev1.ProtocolUDP,
 						Port:       p,
 						TargetPort: intstr.FromInt32(p),

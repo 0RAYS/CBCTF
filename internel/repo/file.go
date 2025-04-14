@@ -35,6 +35,10 @@ func (f *FileRepo) getByUniqueKey(key string, value interface{}) (model.File, bo
 	}
 	var file model.File
 	res := f.DB.Model(&model.File{}).Where(key+" = ?", value).Limit(1).Find(&file)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get File: %s", res.Error)
+		return model.File{}, false, "GetFileError"
+	}
 	if res.RowsAffected == 0 {
 		return model.File{}, false, "FileNotFound"
 	}

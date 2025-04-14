@@ -47,6 +47,10 @@ func (r *Repo[T]) getByUniqueKey(key string, value interface{}, preloadL ...stri
 	var m T
 	res := r.DB.Model(new(T)).Where(key+" = ?", value)
 	res = preload(res, preloadL...).Limit(1).Find(&m)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get %s: %s", r.Model, res.Error)
+		return m, false, fmt.Sprintf("Get%sError", r.Model)
+	}
 	if res.RowsAffected == 0 {
 		return m, false, fmt.Sprintf("%sNotFound", r.Model)
 	}

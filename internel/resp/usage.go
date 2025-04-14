@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GetUsageResp model.Usage 需要预加载
+// GetUsageResp model.Usage 需要预加载 model.Challenge, model.Flag
 func GetUsageResp(usage model.Usage, admin bool) gin.H {
 	data := gin.H{
 		"id":       usage.Challenge.ID,
