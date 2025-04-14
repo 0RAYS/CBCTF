@@ -30,6 +30,24 @@ func InitPodRepo(tx *gorm.DB) *PodRepo {
 	return &PodRepo{Repo: Repo[model.Pod]{DB: tx, Model: "Pod"}}
 }
 
+func (p *PodRepo) GetByPodName(name string, deleted bool, preloadL ...string) ([]model.Pod, bool, string) {
+	pods := make([]model.Pod, 0)
+	res := p.DB.Model(&model.Pod{})
+	if deleted {
+		res = res.Unscoped()
+	}
+	res = res.Where("name = ?", name)
+	res = preload(res, preloadL...).Find(&pods)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Pod: %s", res.Error)
+		return pods, false, "GetPodError"
+	}
+	if res.RowsAffected == 0 {
+		return pods, false, "PodNotFound"
+	}
+	return pods, true, "Success"
+}
+
 func (p *PodRepo) GetByVictimID(victimID uint, deleted bool, preloadL ...string) ([]model.Pod, bool, string) {
 	pods := make([]model.Pod, 0)
 	res := p.DB.Model(&model.Pod{})

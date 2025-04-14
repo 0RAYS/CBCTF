@@ -18,8 +18,8 @@ func exec(name string, task func()) func() {
 
 func Init() {
 	c = cron.New(cron.WithSeconds())
-	//TODO CloseContainers(c)
-	//TODO CloseUnCtrlContainers(c)
+	StopTimeoutVictims(c)
+	StopUnCtrlPods(c)
 	UpdateFlagScore(c)
 	UpdateUserRanking(c)
 	UpdateTeamRanking(c)

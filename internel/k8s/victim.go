@@ -157,6 +157,7 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]string,
 	return ipL, true, "Success"
 }
 
+// StopVictim 需要预加载 model.Pod
 func StopVictim(victim model.Victim) (bool, string) {
 	log.Logger.Debugf("Stopping Victim for team %d usage %d", victim.TeamID, victim.UsageID)
 	type result struct {
