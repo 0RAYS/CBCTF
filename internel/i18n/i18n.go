@@ -166,6 +166,15 @@ var resp = map[string]map[string]interface{}{
 	"DeleteNetworkPolicyError": {"zh-CN": "删除NetworkPolicy失败", "en-US": "Failed to delete NetworkPolicy", "code": 500},
 	"ExecCommandError":         {"zh-CN": "执行POD命令失败", "en-US": "Failed to execute command", "code": 500},
 
+	"CreateVictimError": {"zh-CN": "创建靶机失败", "en-US": "Failed to create victim", "code": 500},
+	"DeleteVictimError": {"zh-CN": "删除靶机失败", "en-US": "Failed to delete victim", "code": 500},
+	"GetVictimError":    {"zh-CN": "获取靶机失败", "en-US": "Failed to get victim", "code": 500},
+	"UpdateVictimError": {"zh-CN": "更新靶机失败", "en-US": "Failed to update victim", "code": 500},
+	"VictimNotFound":    {"zh-CN": "靶机不存在", "en-US": "Victim not found", "code": 404},
+
+	"EmptyIPBlock":  {"zh-CN": "IP池为空", "en-US": "IP pool is empty", "code": 400},
+	"NoAvailableIP": {"zh-CN": "没有可用的IP", "en-US": "No available IP", "code": 400},
+
 	"AppendUserToTeamError":      {"zh-CN": "添加用户到队伍失败", "en-US": "Failed to add user to team", "code": 500},
 	"AppendTeamToContestError":   {"zh-CN": "添加队伍到赛事失败", "en-US": "Failed to add team to contest", "code": 500},
 	"AppendUserToContestError":   {"zh-CN": "添加用户到赛事失败", "en-US": "Failed to add user to contest", "code": 500},
