@@ -119,7 +119,7 @@ func GenerateAttachment(usage model.Usage, team model.Team, answer []model.Answe
 	pod, ok, msg := StartGenerator(usage)
 	// 附加失败则直接返回, 并尝试关闭生成器
 	if !ok {
-		_, _ = StopGenerator(usage)
+		go StopGenerator(usage)
 		return false, msg
 	}
 	var flags string
