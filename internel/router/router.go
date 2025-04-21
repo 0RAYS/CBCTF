@@ -109,9 +109,9 @@ func Init() *gin.Engine {
 		)
 		{
 			contestChallenge.GET("", GetUsageStatus)
-			contestChallenge.POST("/init", middleware.CheckRunning, middleware.CheckSolved, InitUsage(false))
+			contestChallenge.POST("/init", middleware.CheckRunning, middleware.CheckSolved, GenerateTeamUsage(false))
 			contestChallenge.GET("/attachment", DownloadAttachment)
-			contestChallenge.POST("/reset", middleware.CheckRunning, middleware.CheckGenerated, middleware.CheckSolved, InitUsage(true))
+			contestChallenge.POST("/reset", middleware.CheckRunning, middleware.CheckGenerated, middleware.CheckSolved, GenerateTeamUsage(true))
 			contestChallenge.POST("/start", middleware.CheckGenerated, StartVictim)
 			contestChallenge.POST("/increase", middleware.CheckRunning, middleware.CheckGenerated, IncreaseVictimDuration)
 			contestChallenge.POST("/stop", middleware.CheckGenerated, StopVictim)

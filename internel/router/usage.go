@@ -83,39 +83,6 @@ func GetUsages(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"challenges": data, "count": count}})
 }
 
-func InitUsage(reset bool) func(ctx *gin.Context) {
-	return func(ctx *gin.Context) {
-		var (
-			team  = middleware.GetTeam(ctx)
-			usage = middleware.GetUsage(ctx)
-			tx    = db.DB.WithContext(ctx).Begin()
-		)
-		if ok, err := redis.CheckChallengeInit(team.ID, usage.ChallengeID); ok || err != nil {
-			ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooQuick", "data": nil})
-			return
-		}
-		_ = redis.RecordChallengeInit(team.ID, usage.ChallengeID)
-		answers, ok, msg := service.GenerateAnswer(tx, usage, team, reset)
-		if !ok {
-			tx.Rollback()
-			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-			return
-		}
-		tx.Commit()
-		switch usage.Challenge.Type {
-		case model.DynamicChallenge:
-			ok, msg = k8s.GenerateAttachment(usage, team, answers)
-		case model.PodsChallenge:
-			// 不考虑失败
-			go service.StopVictim(db.DB.WithContext(ctx), team, usage)
-			ok, msg = true, "Success"
-		default:
-			ok, msg = true, "Success"
-		}
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-	}
-}
-
 func AddUsage(ctx *gin.Context) {
 	var form f.CreateUsageForm
 	if err := ctx.ShouldBind(&form); err != nil {
@@ -146,6 +113,46 @@ func UpdateUsage(ctx *gin.Context) {
 		tx.Commit()
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}
+
+func GenerateTeamUsage(reset bool) func(ctx *gin.Context) {
+	return func(ctx *gin.Context) {
+		var (
+			team    = middleware.GetTeam(ctx)
+			usage   = middleware.GetUsage(ctx)
+			answers = make([]model.Answer, 0)
+			ok      bool
+			msg     string
+		)
+		if ok, err := redis.CheckChallengeInit(team.ID, usage.ChallengeID); ok || err != nil {
+			ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooQuick", "data": nil})
+			return
+		}
+		_ = redis.RecordChallengeInit(team.ID, usage.ChallengeID)
+		tx := db.DB.WithContext(ctx).Begin()
+		if reset {
+			answers, ok, msg = service.ResetAnswer(tx, team, usage)
+		} else {
+			answers, ok, msg = service.GenerateAnswer(tx, team, usage)
+		}
+		if !ok {
+			tx.Rollback()
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
+		}
+		tx.Commit()
+		switch usage.Challenge.Type {
+		case model.DynamicChallenge:
+			ok, msg = k8s.GenerateAttachment(usage, team, answers)
+		case model.PodsChallenge:
+			// 不考虑失败
+			go service.StopVictim(db.DB.WithContext(ctx), team, usage)
+			ok, msg = true, "Success"
+		default:
+			ok, msg = true, "Success"
+		}
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	}
 }
 
 func RemoveUsage(ctx *gin.Context) {
