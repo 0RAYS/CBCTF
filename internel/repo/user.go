@@ -148,3 +148,24 @@ func (u *UserRepo) Update(id uint, options UpdateUserOptions) (bool, string) {
 	}
 	return true, "Success"
 }
+
+func (u *UserRepo) Delete(idL ...uint) (bool, string) {
+	submissionIDL := make([]uint, 0)
+	for _, id := range idL {
+		user, ok, msg := u.GetByID(id, "Submissions")
+		if !ok {
+			return false, msg
+		}
+		for _, submission := range user.Submissions {
+			submissionIDL = append(submissionIDL, submission.ID)
+		}
+	}
+	if ok, msg := InitSubmissionRepo(u.DB).Delete(submissionIDL...); !ok {
+		return false, msg
+	}
+	if res := u.DB.Model(&model.User{}).Where("id IN ?", idL).Delete(&model.Submission{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete User: %s", res.Error)
+		return false, "DeleteUserError"
+	}
+	return true, "Success"
+}

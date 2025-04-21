@@ -43,3 +43,25 @@ func DeleteUserFromContest(tx *gorm.DB, userID, contestID uint) error {
 	}
 	return res.Error
 }
+
+// DeleteAssociations 需要联级删除的关系表, 排除作弊相关的模型: cheat
+//var deleteAssociations = map[string][]interface{}{
+//	"admin_id":      {model.Notice{}},
+//	"answer_id":     {},
+//	"challenge_id":  {model.Usage{}, model.Submission{}},
+//	"container_id":  {},
+//	"cheat_id":      {},
+//	"contest_id":    {model.Team{}, model.Notice{}, model.Usage{}, model.Flag{}, model.Submission{}},
+//	"device_id":     {},
+//	"file_id":       {},
+//	"flag_id":       {model.Answer{}, model.Submission{}},
+//	"notice_id":     {},
+//	"pod_id":        {model.Container{}},
+//	"request_id":    {},
+//	"submission_id": {},
+//	"team_id":       {model.Answer{}, model.Submission{}},
+//	"traffic_id":    {},
+//	"usage_id":      {model.Flag{}, model.Submission{}},
+//	"user_id":       {model.Submission{}},
+//	"victim_id":     {model.Pod{}},
+//}

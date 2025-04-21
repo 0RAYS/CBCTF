@@ -120,3 +120,30 @@ func (u *UsageRepo) Update(id uint, options UpdateUsageOptions) (bool, string) {
 	}
 	return true, "Success"
 }
+
+func (u *UsageRepo) Delete(idL ...uint) (bool, string) {
+	flagIDL, submissionIDL := make([]uint, 0), make([]uint, 0)
+	for _, id := range idL {
+		usage, ok, msg := u.GetByID(id, "Flags", "Submissions")
+		if !ok {
+			return false, msg
+		}
+		for _, flag := range usage.Flags {
+			flagIDL = append(flagIDL, flag.ID)
+		}
+		for _, submission := range usage.Submissions {
+			submissionIDL = append(submissionIDL, submission.ID)
+		}
+	}
+	if ok, msg := InitFlagRepo(u.DB).Delete(flagIDL...); !ok {
+		return false, msg
+	}
+	if ok, msg := InitSubmissionRepo(u.DB).Delete(submissionIDL...); !ok {
+		return false, msg
+	}
+	if res := u.DB.Model(&model.Usage{}).Where("id IN ?", idL).Delete(&model.Usage{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete Usage: %s", res.Error)
+		return false, "DeleteUsageError"
+	}
+	return true, "Success"
+}

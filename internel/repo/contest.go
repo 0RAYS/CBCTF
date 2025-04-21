@@ -139,3 +139,48 @@ func (c *ContestRepo) Update(id uint, options UpdateContestOptions) (bool, strin
 	}
 	return true, "Success"
 }
+
+func (c *ContestRepo) Delete(idL ...uint) (bool, string) {
+	teamIDL, noticeIDL, usageIDL, flagIDL, submissionIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0)
+	for _, id := range idL {
+		contest, ok, msg := c.GetByID(id, "Teams", "Notices", "Usages", "Flags", "Submissions")
+		if !ok {
+			return ok, msg
+		}
+		for _, team := range contest.Teams {
+			teamIDL = append(teamIDL, team.ID)
+		}
+		for _, notice := range contest.Notices {
+			noticeIDL = append(noticeIDL, notice.ID)
+		}
+		for _, usage := range contest.Usages {
+			usageIDL = append(usageIDL, usage.ID)
+		}
+		for _, flag := range contest.Flags {
+			flagIDL = append(flagIDL, flag.ID)
+		}
+		for _, submission := range contest.Submissions {
+			submissionIDL = append(submissionIDL, submission.ID)
+		}
+	}
+	if ok, msg := InitTeamRepo(c.DB).Delete(teamIDL...); !ok {
+		return false, msg
+	}
+	if ok, msg := InitNoticeRepo(c.DB).Delete(noticeIDL...); !ok {
+		return false, msg
+	}
+	if ok, msg := InitUsageRepo(c.DB).Delete(usageIDL...); !ok {
+		return false, msg
+	}
+	if ok, msg := InitFlagRepo(c.DB).Delete(flagIDL...); !ok {
+		return false, msg
+	}
+	if ok, msg := InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ok {
+		return false, msg
+	}
+	if res := c.DB.Model(&model.Contest{}).Where("id IN ?", idL).Delete(&model.Challenge{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete Contest: %v", res.Error)
+		return false, "DeleteContestError"
+	}
+	return true, "Success"
+}

@@ -144,3 +144,24 @@ func (v *VictimRepo) Update(id uint, options UpdateVictimOptions) (bool, string)
 	}
 	return true, "Success"
 }
+
+func (v *VictimRepo) Delete(idL ...uint) (bool, string) {
+	podIDL := make([]uint, 0)
+	for _, id := range idL {
+		victim, ok, msg := v.GetByID(id, "Pods")
+		if !ok {
+			return false, msg
+		}
+		for _, pod := range victim.Pods {
+			podIDL = append(podIDL, pod.ID)
+		}
+	}
+	if ok, msg := InitPodRepo(v.DB).Delete(podIDL...); !ok {
+		return false, msg
+	}
+	if res := v.DB.Model(&model.Victim{}).Where("id IN ?", idL).Delete(&model.Victim{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete Victim: %s", res.Error)
+		return false, "DeleteVictimError"
+	}
+	return true, "Success"
+}
