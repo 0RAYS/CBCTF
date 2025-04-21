@@ -38,14 +38,13 @@ func Init() *gin.Engine {
 		prometheus.MustRegister(middleware.HttpRequestSize)
 		prometheus.MustRegister(middleware.HttpResponseSize)
 		prometheus.MustRegister(middleware.InFlightRequests)
+		var alreadyRegisteredError prometheus.AlreadyRegisteredError
 		if err := prometheus.Register(collectors.NewGoCollector()); err != nil {
-			var alreadyRegisteredError prometheus.AlreadyRegisteredError
 			if !errors.As(err, &alreadyRegisteredError) {
 				log.Logger.Warningf("failed to register GoCollector: %v", err)
 			}
 		}
 		if err := prometheus.Register(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{})); err != nil {
-			var alreadyRegisteredError prometheus.AlreadyRegisteredError
 			if !errors.As(err, &alreadyRegisteredError) {
 				log.Logger.Warningf("failed to register ProcessCollector: %v", err)
 			}
