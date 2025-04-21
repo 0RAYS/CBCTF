@@ -29,10 +29,9 @@ func PrepareGenerator(c *cron.Cron) {
 				continue
 			}
 			for _, usage := range usages {
-				if usage.Challenge.Type != model.DynamicChallenge {
-					continue
+				if usage.Challenge.Type == model.DynamicChallenge {
+					go k8s.StartGenerator(usage)
 				}
-				k8s.StartGenerator(usage)
 			}
 		}
 	})
