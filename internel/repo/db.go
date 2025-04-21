@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/plugin/prometheus"
 	"strings"
 	"time"
 )
@@ -43,14 +44,22 @@ func Init() {
 		DisableForeignKeyConstraintWhenMigrating: false,
 	})
 	if err != nil {
-		log.Logger.Fatalf("failed to connect database: %v", err)
+		log.Logger.Fatalf("Failed to connect database: %v", err)
 	}
 	if sql, err := DB.DB(); err != nil {
-		log.Logger.Fatalf("failed to get database: %v", err)
+		log.Logger.Fatalf("Failed to get database: %v", err)
 	} else {
 		sql.SetMaxIdleConns(config.Env.Gorm.MySQL.MaxIdleConns)
 		sql.SetMaxOpenConns(config.Env.Gorm.MySQL.MaxOpenConns)
 		sql.SetConnMaxLifetime(30 * time.Second)
+	}
+
+	if DB.Use(prometheus.New(prometheus.Config{
+		DBName:          config.Env.Gorm.MySQL.DB,
+		RefreshInterval: 15,
+		StartServer:     false,
+	})) != nil {
+		log.Logger.Warningf("Failed to register prometheus: %v", err)
 	}
 
 	// 指定数据表的存储引擎, 需要支持回滚操作
@@ -61,15 +70,15 @@ func Init() {
 		&model.Traffic{},
 	)
 	if err != nil {
-		log.Logger.Fatalf("failed to migrate database: %v", err)
+		log.Logger.Fatalf("Failed to migrate database: %v", err)
 	}
 	err = DB.SetupJoinTable(&model.User{}, "Teams", &model.UserTeam{})
 	if err != nil {
-		log.Logger.Fatalf("failed to setup join table: %v", err)
+		log.Logger.Fatalf("Failed to setup join table: %v", err)
 	}
 	err = DB.SetupJoinTable(&model.User{}, "Contests", &model.UserContest{})
 	if err != nil {
-		log.Logger.Fatalf("failed to setup join table: %v", err)
+		log.Logger.Fatalf("Failed to setup join table: %v", err)
 	}
 
 	log.Logger.Info("Connected to database")
@@ -102,7 +111,7 @@ func Close() {
 	if DB != nil {
 		db, err := DB.DB()
 		if err != nil {
-			log.Logger.Errorf("failed to get database: %v", err)
+			log.Logger.Errorf("Failed to get database: %v", err)
 		} else {
 			_ = db.Close()
 		}
