@@ -40,7 +40,7 @@ func ActivateEmail(ctx *gin.Context) {
 
 func SendEmail(user model.User) (bool, string) {
 	if strings.ToLower(config.Env.Gin.Mode) == "debug" {
-		return true, "DebugMode"
+		return true, "Success"
 	}
 	id := utils.UUID()
 	token, err := utils.Generate(user.ID, user.Name, "email")
