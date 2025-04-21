@@ -29,6 +29,25 @@ func InitVictimRepo(tx *gorm.DB) *VictimRepo {
 	return &VictimRepo{Repo: Repo[model.Victim]{DB: tx, Model: "Victim"}}
 }
 
+func (v *VictimRepo) GetByID(id uint, deleted bool, preloadL ...string) (model.Victim, bool, string) {
+	victim := model.Victim{}
+	res := v.DB.Model(&model.Victim{})
+	if deleted {
+		res = res.Unscoped()
+	}
+	res = res.Where("id = ?", id)
+	res = preload(res, preloadL...).Limit(1).Find(&victim)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Victim: %s", res.Error)
+		return victim, false, "GetVictimError"
+	}
+	if res.RowsAffected == 0 {
+		return victim, false, "VictimNotFound"
+	}
+	return victim, true, "Success"
+
+}
+
 func (v *VictimRepo) Count(deleted bool) (int64, bool, string) {
 	var count int64
 	res := v.DB.Model(&model.Victim{})
@@ -126,7 +145,7 @@ func (v *VictimRepo) Update(id uint, options UpdateVictimOptions) (bool, string)
 			log.Logger.Warningf("Failed to update Victim: too many times failed due to optimistic lock")
 			return false, "DeadLock"
 		}
-		victim, ok, msg := v.GetByID(id)
+		victim, ok, msg := v.GetByID(id, false)
 		if !ok {
 			return false, msg
 		}
@@ -148,7 +167,7 @@ func (v *VictimRepo) Update(id uint, options UpdateVictimOptions) (bool, string)
 func (v *VictimRepo) Delete(idL ...uint) (bool, string) {
 	podIDL := make([]uint, 0)
 	for _, id := range idL {
-		victim, ok, msg := v.GetByID(id, "Pods")
+		victim, ok, msg := v.GetByID(id, false, "Pods")
 		if !ok {
 			return false, msg
 		}

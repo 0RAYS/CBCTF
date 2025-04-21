@@ -266,7 +266,7 @@ func SetVictim(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	victim, ok, msg := db.InitVictimRepo(db.DB.WithContext(ctx)).GetByID(victimID.VictimID, "all")
+	victim, ok, msg := db.InitVictimRepo(db.DB.WithContext(ctx)).GetByID(victimID.VictimID, true, "all")
 	if !ok {
 		ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
