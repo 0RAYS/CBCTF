@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/collectors"
 	"io"
 	"net/http"
 	"time"
@@ -69,16 +68,6 @@ func getRequestBodySize(ctx *gin.Context) int {
 	ctx.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 
 	return size
-}
-
-func init() {
-	prometheus.MustRegister(HttpRequestsTotal)
-	prometheus.MustRegister(HttpRequestDuration)
-	prometheus.MustRegister(HttpRequestSize)
-	prometheus.MustRegister(HttpResponseSize)
-	prometheus.MustRegister(InFlightRequests)
-	prometheus.MustRegister(collectors.NewGoCollector())
-	prometheus.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 }
 
 func Prometheus(ctx *gin.Context) {
