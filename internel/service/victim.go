@@ -134,6 +134,7 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, usage model.Usag
 	}
 	ipL, ok, msg := k8s.StartVictim(victim, dns)
 	if !ok {
+		go k8s.StopVictim(victim)
 		return model.Victim{}, false, msg
 	}
 	for i, pod := range victim.Pods {
