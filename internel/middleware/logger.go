@@ -12,41 +12,38 @@ var TotalDuration time.Duration
 var TotalRequests int
 var MU sync.Mutex
 
-func Logger() func(ctx *gin.Context) {
+func Logger(ctx *gin.Context) {
 	l := log.Logger.WithField("type", "GIN")
-	return func(r *gin.Context) {
-		// Start timer
-		start := time.Now()
-		path := r.Request.URL.Path
-		raw := r.Request.URL.RawQuery
+	start := time.Now()
+	path := ctx.Request.URL.Path
+	raw := ctx.Request.URL.RawQuery
 
-		// Process request
-		r.Next()
-		// Stop timer
-		n := time.Now()
-		latency := n.Sub(start)
-		if r.Request.Method != "OPTIONS" {
-			MU.Lock()
-			TotalDuration += latency
-			TotalRequests++
-			MU.Unlock()
-		}
-		if raw != "" {
-			path = path + "?" + raw
-		}
-		e := l.WithFields(logrus.Fields{
-			"Latency":    latency,
-			"StatusCode": r.Writer.Status(),
-			"Method":     r.Request.Method,
-			"ClientIP":   r.ClientIP(),
-			"Path":       path,
-			"TraceID":    r.Value("TraceID"),
-		})
+	// Process request
+	ctx.Next()
+	// Stop timer
+	n := time.Now()
+	latency := n.Sub(start)
+	if ctx.Request.Method != "OPTIONS" {
+		MU.Lock()
+		TotalDuration += latency
+		TotalRequests++
+		MU.Unlock()
+	}
+	if raw != "" {
+		path = path + "?" + raw
+	}
+	e := l.WithFields(logrus.Fields{
+		"Latency":    latency,
+		"StatusCode": ctx.Writer.Status(),
+		"Method":     ctx.Request.Method,
+		"ClientIP":   ctx.ClientIP(),
+		"Path":       path,
+		"TraceID":    ctx.Value("TraceID"),
+	})
 
-		if r.Errors != nil {
-			e.Error(r.Errors.String())
-		} else {
-			e.Info()
-		}
+	if ctx.Errors != nil {
+		e.Error(ctx.Errors.String())
+	} else {
+		e.Info()
 	}
 }

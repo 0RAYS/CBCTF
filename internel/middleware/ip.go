@@ -43,36 +43,34 @@ func AccessLog(ctx *gin.Context) {
 	tx.Commit()
 }
 
+var requestCounts = make(map[string][]time.Time)
+var mu sync.Mutex
+
 // RateLimit 实现频率限制
-func RateLimit() gin.HandlerFunc {
-	var requestCounts = make(map[string][]time.Time)
-	var mu sync.Mutex
-
-	return func(ctx *gin.Context) {
-		ip := ctx.ClientIP()
-		if strings.ToLower(config.Env.Gin.Mode) == "debug" && (ip == "::1" || ip == "127.0.0.1") {
-			ctx.Next()
-			return
-		}
-		now := time.Now()
-
-		mu.Lock()
-		defer mu.Unlock()
-
-		times := requestCounts[ip]
-		var validTimes []time.Time
-		for _, t := range times {
-			if now.Sub(t) <= time.Duration(config.Env.Gin.RateLimit.Window)*time.Second {
-				validTimes = append(validTimes, t)
-			}
-		}
-		requestCounts[ip] = validTimes
-		if len(requestCounts[ip]) >= config.Env.Gin.RateLimit.MaxRequests {
-			ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooManyRequests", "data": nil})
-			ctx.Abort()
-			return
-		}
-		requestCounts[ip] = append(requestCounts[ip], now)
+func RateLimit(ctx *gin.Context) {
+	ip := ctx.ClientIP()
+	if strings.ToLower(config.Env.Gin.Mode) == "debug" && (ip == "::1" || ip == "127.0.0.1") {
 		ctx.Next()
+		return
 	}
+	now := time.Now()
+
+	mu.Lock()
+	defer mu.Unlock()
+
+	times := requestCounts[ip]
+	var validTimes []time.Time
+	for _, t := range times {
+		if now.Sub(t) <= time.Duration(config.Env.Gin.RateLimit.Window)*time.Second {
+			validTimes = append(validTimes, t)
+		}
+	}
+	requestCounts[ip] = validTimes
+	if len(requestCounts[ip]) >= config.Env.Gin.RateLimit.MaxRequests {
+		ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooManyRequests", "data": nil})
+		ctx.Abort()
+		return
+	}
+	requestCounts[ip] = append(requestCounts[ip], now)
+	ctx.Next()
 }
