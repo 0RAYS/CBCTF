@@ -101,20 +101,16 @@ func InitUsage(reset bool) func(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
+		tx.Commit()
 		switch usage.Challenge.Type {
 		case model.DynamicChallenge:
 			ok, msg = k8s.GenerateAttachment(usage, team, answers)
 		case model.PodsChallenge:
 			// 不考虑失败
-			go service.StopVictim(tx, team, usage)
+			go service.StopVictim(db.DB.WithContext(ctx), team, usage)
 			ok, msg = true, "Success"
 		default:
 			ok, msg = true, "Success"
-		}
-		if !ok {
-			tx.Rollback()
-		} else {
-			tx.Commit()
 		}
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 	}

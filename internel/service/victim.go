@@ -203,7 +203,7 @@ func StopVictim(tx *gorm.DB, team model.Team, usage model.Usage) (bool, string) 
 		if ok, msg = victimRepo.Delete(victim.ID); !ok {
 			return false, msg
 		}
-		go LoadTraffic(tx, victim)
+		LoadTraffic(tx, victim)
 	}
 	return true, "Success"
 }
