@@ -93,3 +93,24 @@ func (p *PodRepo) Update(id uint, options UpdatePodOptions) (bool, string) {
 	}
 	return true, "Success"
 }
+
+func (p *PodRepo) Delete(idL ...uint) (bool, string) {
+	containerIDL := make([]uint, 0)
+	for _, id := range idL {
+		pod, ok, msg := p.GetByID(id, "Containers")
+		if !ok {
+			return false, msg
+		}
+		for _, container := range pod.Containers {
+			containerIDL = append(containerIDL, container.ID)
+		}
+	}
+	if ok, msg := InitContainerRepo(p.DB).Delete(containerIDL...); !ok {
+		return false, msg
+	}
+	if res := p.DB.Model(&model.Pod{}).Where("id IN ?", idL).Delete(&model.Pod{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete Pod: %s", res.Error)
+		return false, "DeletePodError"
+	}
+	return true, "Success"
+}

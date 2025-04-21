@@ -94,3 +94,30 @@ func (f *FlagRepo) Update(id uint, options UpdateFlagOptions) (bool, string) {
 	}
 	return true, "Success"
 }
+
+func (f *FlagRepo) Delete(idL ...uint) (bool, string) {
+	answerIDL, submissionIDL := make([]uint, 0), make([]uint, 0)
+	for _, id := range idL {
+		flag, ok, msg := f.GetByID(id, "Answers", "Submissions")
+		if !ok {
+			return false, msg
+		}
+		for _, answer := range flag.Answers {
+			answerIDL = append(answerIDL, answer.ID)
+		}
+		for _, submission := range flag.Submissions {
+			submissionIDL = append(submissionIDL, submission.ID)
+		}
+	}
+	if ok, msg := InitAnswerRepo(f.DB).Delete(answerIDL...); !ok {
+		return false, msg
+	}
+	if ok, msg := InitSubmissionRepo(f.DB).Delete(submissionIDL...); !ok {
+		return false, msg
+	}
+	if res := f.DB.Model(&model.Flag{}).Where("id IN ?", idL).Delete(&model.Flag{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete Flags: %s", res.Error)
+		return false, "DeleteFlagError"
+	}
+	return true, "Success"
+}

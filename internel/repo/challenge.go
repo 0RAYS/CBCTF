@@ -127,15 +127,6 @@ func (c *ChallengeRepo) Update(id string, options UpdateChallengeOptions) (bool,
 	return true, "Success"
 }
 
-func (c *ChallengeRepo) Delete(idL ...string) (bool, string) {
-	res := c.DB.Model(&model.Challenge{}).Where("id IN ?", idL).Delete(&model.Challenge{})
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to delete Challenge: %s", res.Error)
-		return false, "DeleteChallengeError"
-	}
-	return true, "Success"
-}
-
 func (c *ChallengeRepo) GetCategories(t string) ([]string, bool, string) {
 	var categories = make([]string, 0)
 	res := c.DB.Model(&model.Challenge{})
@@ -148,4 +139,32 @@ func (c *ChallengeRepo) GetCategories(t string) ([]string, bool, string) {
 		return categories, false, "GetChallengeError"
 	}
 	return categories, true, "Success"
+}
+
+func (c *ChallengeRepo) Delete(idL ...string) (bool, string) {
+	usageIDL, submissionIDL := make([]uint, 0), make([]uint, 0)
+	for _, id := range idL {
+		challenge, ok, msg := c.GetByID(id, "Usages", "Submissions")
+		if !ok {
+			return false, msg
+		}
+		for _, usage := range challenge.Usages {
+			usageIDL = append(usageIDL, usage.ID)
+		}
+		for _, submission := range challenge.Submissions {
+			submissionIDL = append(submissionIDL, submission.ID)
+		}
+	}
+	if ok, msg := InitUsageRepo(c.DB).Delete(usageIDL...); !ok {
+		return false, msg
+	}
+	if ok, msg := InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ok {
+		return false, msg
+	}
+	res := c.DB.Model(&model.Challenge{}).Where("id IN ?", idL).Delete(&model.Challenge{})
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to delete Challenge: %s", res.Error)
+		return false, "DeleteChallengeError"
+	}
+	return true, "Success"
 }

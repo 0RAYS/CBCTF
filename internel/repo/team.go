@@ -159,3 +159,30 @@ func (t *TeamRepo) Update(id uint, options UpdateTeamOptions) (bool, string) {
 	}
 	return true, "Success"
 }
+
+func (t *TeamRepo) Delete(idL ...uint) (bool, string) {
+	answerIDL, submissionIDL := make([]uint, 0), make([]uint, 0)
+	for _, id := range idL {
+		team, ok, msg := t.GetByID(id, "Answers", "Submissions")
+		if !ok {
+			return false, msg
+		}
+		for _, answer := range team.Answers {
+			answerIDL = append(answerIDL, answer.ID)
+		}
+		for _, submission := range team.Submissions {
+			submissionIDL = append(submissionIDL, submission.ID)
+		}
+	}
+	if ok, msg := InitAnswerRepo(t.DB).Delete(answerIDL...); !ok {
+		return false, msg
+	}
+	if ok, msg := InitSubmissionRepo(t.DB).Delete(submissionIDL...); !ok {
+		return false, msg
+	}
+	if res := t.DB.Model(&model.Team{}).Where("id IN ?", idL).Delete(&model.Team{}); res.Error != nil {
+		log.Logger.Errorf("Failed to delete Team: %s", res.Error)
+		return false, "DeleteTeamError"
+	}
+	return true, "Success"
+}

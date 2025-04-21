@@ -102,3 +102,24 @@ func (a *AdminRepo) Update(id uint, options UpdateAdminOptions) (bool, string) {
 	}
 	return true, "Success"
 }
+
+func (a *AdminRepo) Delete(idL ...uint) (bool, string) {
+	noticeIDL := make([]uint, 0)
+	for _, id := range idL {
+		admin, ok, msg := a.GetByID(id, "Notices")
+		if !ok {
+			return false, msg
+		}
+		for _, notice := range admin.Notices {
+			noticeIDL = append(noticeIDL, notice.ID)
+		}
+	}
+	if ok, msg := InitNoticeRepo(a.DB).Delete(noticeIDL...); !ok {
+		return false, msg
+	}
+	if res := a.DB.Model(&model.Admin{}).Where("id IN ?", idL).Delete(&model.Admin{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete Admin: %s", res.Error)
+		return false, "DeleteAdminError"
+	}
+	return true, "Success"
+}
