@@ -15,7 +15,6 @@ func GetFlagResp(flag model.Flag) gin.H {
 		"min_score":     flag.MinScore,
 		"score_type":    flag.ScoreType,
 		"solvers":       flag.Solvers,
-		"blood":         flag.Blood,
 		"last":          flag.Last,
 	}
 }
