@@ -7,22 +7,40 @@ import (
 	"CBCTF/internel/model"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	_ "net/http/pprof"
 )
 
 func Init() *gin.Engine {
 	gin.SetMode(config.Env.Gin.Mode)
 	router := gin.New()
+
 	log.Logger.Infof("Trust proxies: %v", config.Env.Gin.Proxies)
 	if err := router.SetTrustedProxies(config.Env.Gin.Proxies); err != nil {
 		log.Logger.Warningf("Set trusted proxies failed: %v", err)
 	}
-	pprof.Register(router)
+
 	router.MaxMultipartMemory = int64(config.Env.Gin.Upload.Max << 20)
+
 	router.Use(
-		middleware.Logger(), gin.Recovery(), middleware.SetTrace, middleware.Cors,
-		middleware.I18n(), middleware.AccessLog, middleware.RateLimit(), middleware.SetMagic,
+		gin.Recovery(), middleware.Logger, middleware.Prometheus, middleware.SetTrace, middleware.Cors,
+		middleware.I18n, middleware.AccessLog, middleware.RateLimit, middleware.SetMagic,
 	)
+
+	{
+		pprof.Register(router)
+
+		prometheus.MustRegister(middleware.HttpRequestsTotal)
+		prometheus.MustRegister(middleware.HttpRequestDuration)
+		prometheus.MustRegister(middleware.HttpRequestSize)
+		prometheus.MustRegister(middleware.HttpResponseSize)
+		prometheus.MustRegister(middleware.InFlightRequests)
+		prometheus.MustRegister(collectors.NewGoCollector())
+		prometheus.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+		router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+	}
 
 	{
 		router.POST("/register", Register)
