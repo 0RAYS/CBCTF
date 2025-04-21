@@ -21,7 +21,7 @@ func IsGenerated(tx *gorm.DB, team model.Team, usage model.Usage) bool {
 }
 
 // GenerateAnswer model.Usage 需要预加载
-func GenerateAnswer(tx *gorm.DB, usage model.Usage, team model.Team, reset bool) ([]model.Answer, bool, string) {
+func GenerateAnswer(tx *gorm.DB, team model.Team, usage model.Usage) ([]model.Answer, bool, string) {
 	repo := db.InitAnswerRepo(tx)
 	answers := make([]model.Answer, 0)
 	if len(usage.Flags) < 1 {
@@ -46,7 +46,7 @@ func GenerateAnswer(tx *gorm.DB, usage model.Usage, team model.Team, reset bool)
 		options = append(options, option)
 	}
 	for _, option := range options {
-		if answer, ok, _ := repo.GetBy2ID(team.ID, option.FlagID); !reset && ok {
+		if answer, ok, _ := repo.GetBy2ID(team.ID, option.FlagID); ok {
 			answers = append(answers, answer)
 			continue
 		}
@@ -58,4 +58,32 @@ func GenerateAnswer(tx *gorm.DB, usage model.Usage, team model.Team, reset bool)
 		answers = append(answers, answer)
 	}
 	return answers, true, "Success"
+}
+
+// ResetAnswer model.Usage 需要预加载
+func ResetAnswer(tx *gorm.DB, team model.Team, usage model.Usage) ([]model.Answer, bool, string) {
+	answers := make([]model.Answer, 0)
+	submissionRepo, answerRepo := db.InitSubmissionRepo(tx), db.InitAnswerRepo(tx)
+	submissionIDL, answerIDL := make([]uint, 0), make([]uint, 0)
+	submissions, _, ok, msg := submissionRepo.GetAllByKeyID("team_id", team.ID, -1, -1, false)
+	if !ok {
+		return answers, false, msg
+	}
+	for _, submission := range submissions {
+		submissionIDL = append(submissionIDL, submission.ID)
+	}
+	for _, flag := range usage.Flags {
+		answer, ok, msg := answerRepo.GetBy2ID(team.ID, flag.ID)
+		if !ok {
+			return answers, false, msg
+		}
+		answerIDL = append(answerIDL, answer.ID)
+	}
+	if ok, msg = submissionRepo.Delete(submissionIDL...); !ok {
+		return answers, false, msg
+	}
+	if ok, msg = answerRepo.Delete(answerIDL...); !ok {
+		return answers, false, msg
+	}
+	return GenerateAnswer(tx, team, usage)
 }
