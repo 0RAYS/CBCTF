@@ -48,7 +48,7 @@ func (conn Connection) ParsePayload() (interface{}, string) {
 func ReadPcap(path string) ([]Connection, bool, string) {
 	if _, err := os.Stat(path); err != nil {
 		log.Logger.Warningf("Failed to get file: %s", err)
-		if errors.Is(err, os.ErrNotExist) {
+		if os.IsNotExist(err) {
 			return []Connection{}, false, "PcapNotFound"
 		}
 		return []Connection{}, false, "UnknownError"
