@@ -19,14 +19,20 @@ import (
 
 func DownloadFile(ctx *gin.Context) {
 	file := middleware.GetFile(ctx)
-	if _, err := os.Stat(file.Path); os.IsNotExist(err) {
-		tx := db.DB.WithContext(ctx).Begin()
-		if ok, _ := db.InitFileRepo(tx).Delete(file.ID); !ok {
-			tx.Rollback()
+	if _, err := os.Stat(file.Path); err != nil {
+		if os.IsNotExist(err) {
+			tx := db.DB.WithContext(ctx).Begin()
+			if ok, _ := db.InitFileRepo(tx).Delete(file.ID); !ok {
+				tx.Rollback()
+			} else {
+				tx.Commit()
+			}
 			ctx.JSON(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": file.ID})
 			return
 		}
-		tx.Commit()
+		log.Logger.Warningf("Failed to get file: %s", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
+		return
 	}
 	ctx.Writer.Header().Add("Content-Disposition", "attachment; filename="+file.Filename)
 	ctx.Writer.Header().Add("Content-Type", "application/octet-stream")
@@ -49,12 +55,12 @@ func DownloadChallenge(ctx *gin.Context) {
 		return
 	}
 	if _, err := os.Stat(path); err != nil {
-		log.Logger.Warningf("Failed to get file: %s", err)
-		if errors.Is(err, os.ErrNotExist) {
+		if os.IsNotExist(err) {
 			ctx.JSON(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": nil})
 			return
 		}
-		ctx.JSON(http.StatusOK, gin.H{"msg": "UnknownError", "data": nil})
+		log.Logger.Warningf("Failed to get file: %s", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
 		return
 	}
 	ctx.File(path)
@@ -130,8 +136,13 @@ func DownloadAttachment(ctx *gin.Context) {
 	usage := middleware.GetUsage(ctx)
 	team := middleware.GetTeam(ctx)
 	path := usage.Challenge.AttachmentPath(team.ID)
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		ctx.JSON(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": nil})
+	if _, err := os.Stat(path); err != nil {
+		if os.IsNotExist(err) {
+			ctx.JSON(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": nil})
+			return
+		}
+		log.Logger.Warningf("Failed to get attachment: %s", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
 		return
 	}
 	ctx.File(path)
@@ -182,7 +193,7 @@ func GetAvatars(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	avatars, count, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).GetAll("avatar", form.Limit, form.Offset)
+	avatars, count, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).GetAll(model.Avatar, form.Limit, form.Offset)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -211,30 +222,38 @@ func DeleteAvatars(ctx *gin.Context) {
 }
 
 func GetWriteUPs(ctx *gin.Context) {
-	contest := middleware.GetContest(ctx)
-	team := middleware.GetTeam(ctx)
-	path := fmt.Sprintf("%s/writeups/%d/%d", config.Env.Path, contest.ID, team.ID)
-	dir, err := os.ReadDir(path)
-	if err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "FileNotFound", "data": nil})
+	var form f.GetModelsForm
+	if _, exists := ctx.GetQuery("limit"); !exists {
+		form.Limit = 10
+	}
+	if _, exists := ctx.GetQuery("offset"); !exists {
+		form.Offset = 0
+	}
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	var files []string
-	for _, file := range dir {
-		files = append(files, file.Name())
+	writeups, count, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).GetAll(model.WriteUP, form.Limit, form.Offset)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": files})
+	data := make([]gin.H, 0)
+	for _, writeup := range writeups {
+		data = append(data, resp.GetFileResp(writeup))
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "avatars": data}})
 }
 
 func DownloadTraffic(ctx *gin.Context) {
 	victim := middleware.GetVictim(ctx)
 	if _, err := os.Stat(victim.TrafficZipPath()); err != nil {
-		log.Logger.Warningf("Failed to get file: %s", err)
 		if errors.Is(err, os.ErrNotExist) {
 			ctx.JSON(http.StatusNotFound, gin.H{"msg": "FileNotFound", "data": nil})
 			return
 		}
-		ctx.JSON(http.StatusOK, gin.H{"msg": "UnknownError", "data": nil})
+		log.Logger.Warningf("Failed to get file: %s", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
 		return
 	}
 	ctx.File(victim.TrafficZipPath())
