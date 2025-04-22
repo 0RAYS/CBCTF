@@ -164,9 +164,17 @@ func (t *TeamRepo) Update(id uint, options UpdateTeamOptions) (bool, string) {
 func (t *TeamRepo) Delete(idL ...uint) (bool, string) {
 	answerIDL, submissionIDL := make([]uint, 0), make([]uint, 0)
 	for _, id := range idL {
-		team, ok, msg := t.GetByID(id, "Answers", "Submissions")
+		team, ok, msg := t.GetByID(id, "Users", "Answers", "Submissions")
 		if !ok {
 			return false, msg
+		}
+		for _, user := range team.Users {
+			if err := DeleteUserFromContest(t.DB, user.ID, team.ContestID); err != nil {
+				return false, "DeleteUserFromContestError"
+			}
+			if err := DeleteUserFromTeam(t.DB, user.ID, team.ID); err != nil {
+				return false, "DeleteUserFromTeamError"
+			}
 		}
 		for _, answer := range team.Answers {
 			answerIDL = append(answerIDL, answer.ID)

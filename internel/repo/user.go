@@ -152,9 +152,17 @@ func (u *UserRepo) Update(id uint, options UpdateUserOptions) (bool, string) {
 func (u *UserRepo) Delete(idL ...uint) (bool, string) {
 	submissionIDL := make([]uint, 0)
 	for _, id := range idL {
-		user, ok, msg := u.GetByID(id, "Submissions")
+		user, ok, msg := u.GetByID(id, "Teams", "Submissions")
 		if !ok {
 			return false, msg
+		}
+		for _, team := range user.Teams {
+			if err := DeleteUserFromContest(u.DB, user.ID, team.ContestID); err != nil {
+				return false, "DeleteUserFromContestError"
+			}
+			if err := DeleteUserFromTeam(u.DB, user.ID, team.ID); err != nil {
+				return false, "DeleteUserFromTeamError"
+			}
 		}
 		for _, submission := range user.Submissions {
 			submissionIDL = append(submissionIDL, submission.ID)
