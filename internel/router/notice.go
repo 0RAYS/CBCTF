@@ -24,7 +24,7 @@ func GetNotices(ctx *gin.Context) {
 	}
 	contest := middleware.GetContest(ctx)
 	DB := db.DB.WithContext(ctx)
-	notices, count, ok, msg := db.InitNoticeRepo(DB).GetAll(contest.ID, form.Limit, form.Offset)
+	notices, count, ok, msg := db.InitNoticeRepo(DB).GetAll(contest.ID, form.Limit, form.Offset, "Admin")
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
