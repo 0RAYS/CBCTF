@@ -13,6 +13,7 @@ type Notice struct {
 	Admin     Admin          `json:"-"`
 	Title     string         `json:"title"`
 	Content   string         `json:"content"`
+	Type      string         `json:"type"`
 	CreatedAt time.Time      `json:"created"`
 	UpdatedAt time.Time      `json:"updated"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`

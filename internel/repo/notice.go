@@ -16,11 +16,13 @@ type CreateNoticeOptions struct {
 	AdminID   uint
 	Title     string
 	Content   string
+	Type      string
 }
 
 type UpdateNoticeOptions struct {
 	Title   *string `json:"title"`
 	Content *string `json:"content"`
+	Type    *string `json:"type"`
 }
 
 func InitNoticeRepo(tx *gorm.DB) *NoticeRepo {
