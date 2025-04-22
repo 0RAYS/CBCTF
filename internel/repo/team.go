@@ -21,6 +21,7 @@ type CreateTeamOptions struct {
 	Banned    bool
 	Hidden    bool
 	CaptainID uint
+	Last      time.Time
 }
 
 type UpdateTeamOptions struct {

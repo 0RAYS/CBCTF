@@ -7,6 +7,7 @@ import (
 	"CBCTF/internel/utils"
 	"gorm.io/gorm"
 	"math"
+	"time"
 )
 
 func UpdateTeam(tx *gorm.DB, team model.Team, form f.UpdateTeamForm) (bool, string) {
@@ -111,6 +112,7 @@ func CreateTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.Crea
 		Banned:    false,
 		Hidden:    false,
 		CaptainID: user.ID,
+		Last:      time.Now(),
 	})
 	if !ok {
 		return false, msg
