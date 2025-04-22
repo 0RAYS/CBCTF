@@ -4,7 +4,6 @@ import (
 	"CBCTF/internel/log"
 	"bufio"
 	"bytes"
-	"errors"
 	"fmt"
 	"github.com/gopacket/gopacket"
 	"github.com/gopacket/gopacket/layers"
