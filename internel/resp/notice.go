@@ -14,6 +14,7 @@ func GetNoticeResp(notice model.Notice) gin.H {
 		"id":         notice.ID,
 		"title":      notice.Title,
 		"content":    notice.Content,
+		"type":       notice.Type,
 		"created_at": notice.UpdatedAt,
 		"author": gin.H{
 			"name":   notice.Admin.Name,

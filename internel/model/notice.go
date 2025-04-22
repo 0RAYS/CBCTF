@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+const (
+	NoticeTypeNormal    = "normal"
+	NoticeTypeImportant = "important"
+	NoticeTypeUpdate    = "update"
+)
+
 type Notice struct {
 	ID        uint           `gorm:"primaryKey" json:"id"`
 	ContestID uint           `json:"contest_id"`
@@ -13,7 +19,7 @@ type Notice struct {
 	Admin     Admin          `json:"-"`
 	Title     string         `json:"title"`
 	Content   string         `json:"content"`
-	Type      string         `json:"type"`
+	Type      string         `gorm:"default:'normal'" json:"type"`
 	CreatedAt time.Time      `json:"created"`
 	UpdatedAt time.Time      `json:"updated"`
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
