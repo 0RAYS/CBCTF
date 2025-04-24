@@ -28,6 +28,11 @@ func SubmitFlag(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
+	go func(ctx *gin.Context) {
+		if usage.Challenge.Type == model.PodsChallenge && service.IsSolved(db.DB.WithContext(ctx), team, usage) {
+			service.StopVictim(db.DB.WithContext(ctx), team, usage)
+		}
+	}(ctx.Copy())
 	ctx.JSON(http.StatusOK, gin.H{"msg": result, "data": nil})
 }
 
