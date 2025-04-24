@@ -35,7 +35,7 @@ func GenerateAnswer(tx *gorm.DB, team model.Team, usage model.Usage) ([]model.An
 			Solved: false,
 		}
 		if result := model.StaticFlag.FindAllStringSubmatch(flag.Value, 1); len(result) > 0 {
-			option.Value = flag.Value
+			option.Value = result[0][1]
 		} else if result := model.DynamicFlag.FindAllStringSubmatch(flag.Value, 1); len(result) > 0 {
 			option.Value = utils.RandFlag(result[0][1])
 		} else if result := model.UUIDFlag.FindAllStringSubmatch(flag.Value, 1); len(result) > 0 {
