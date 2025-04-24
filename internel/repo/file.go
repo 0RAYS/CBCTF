@@ -11,14 +11,17 @@ type FileRepo struct {
 }
 
 type CreateFileOptions struct {
-	ID       string
-	Filename string
-	Size     int64
-	Path     string
-	Uploader uint
-	Suffix   string
-	Hash     string
-	Type     string
+	ID        string
+	Filename  string
+	Size      int64
+	Path      string
+	AdminID   uint
+	UserID    uint
+	TeamID    uint
+	ContestID uint
+	Suffix    string
+	Hash      string
+	Type      string
 }
 
 func InitFileRepo(tx *gorm.DB) *FileRepo {
@@ -51,6 +54,32 @@ func (f *FileRepo) GetByID(id string) (model.File, bool, string) {
 
 func (f *FileRepo) GetByHash(hash string) (model.File, bool, string) {
 	return f.getByUniqueKey("hash", hash)
+}
+
+func (f *FileRepo) CountByKeyID(t string, key string, id uint) (int64, bool, string) {
+	var count int64
+	res := f.DB.Model(&model.File{}).Where("type = ? AND "+key+" = ?", t, id).Count(&count)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to count File: %s", res.Error)
+		return 0, false, "CountModelError"
+	}
+	return count, true, "Success"
+}
+
+func (f *FileRepo) GetByKeyID(t string, key string, id uint, limit, offset int) ([]model.File, int64, bool, string) {
+	var (
+		files          = make([]model.File, 0)
+		count, ok, msg = f.CountByKeyID(t, key, id)
+	)
+	if !ok {
+		return files, count, false, msg
+	}
+	res := f.DB.Model(&model.File{}).Where("type = ? AND "+key+" = ?", t, id).Limit(limit).Offset(offset).Find(&files)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get File: %s", res.Error)
+		return files, 0, false, "GetFileError"
+	}
+	return files, count, true, "Success"
 }
 
 func (f *FileRepo) Count(t string) (int64, bool, string) {
