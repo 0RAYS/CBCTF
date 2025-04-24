@@ -259,7 +259,7 @@ func GetWriteUPs(ctx *gin.Context) {
 	for _, writeup := range writeups {
 		data = append(data, resp.GetFileResp(writeup))
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "avatars": data}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "writeups": data}})
 }
 
 func DownloadTraffic(ctx *gin.Context) {
