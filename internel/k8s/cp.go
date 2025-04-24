@@ -54,8 +54,7 @@ func CopyToPod(podName, containerName, src, dst string) error {
 // CopyFromPod copies a file from a Pod
 func CopyFromPod(podName, containerName, src, dst string) error {
 	command := fmt.Sprintf("cat %s", src)
-	var buf bytes.Buffer
-	err := ExecInPod(podName, containerName, command, nil, &buf, nil)
+	stdout, _, err := Exec(podName, containerName, command, nil)
 	if err != nil {
 		return err
 	}
@@ -70,7 +69,7 @@ func CopyFromPod(podName, containerName, src, dst string) error {
 	defer func(file *os.File) {
 		_ = file.Close()
 	}(file)
-	_, err = io.Copy(file, &buf)
+	_, err = io.Copy(file, &stdout)
 	if err != nil {
 		return err
 	}
