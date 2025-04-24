@@ -5,7 +5,6 @@ import (
 	"CBCTF/internel/repo"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
 )
