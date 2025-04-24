@@ -118,14 +118,15 @@ func SaveWriteUp(tx *gorm.DB, userID, contestID, teamID uint, file *multipart.Fi
 		path = record.Path
 	}
 	return fileRepo.Create(db.CreateFileOptions{
-		ID:       utils.UUID(),
-		Filename: file.Filename,
-		Size:     file.Size,
-		Path:     path,
-		UserID:   userID,
-		TeamID:   teamID,
-		Suffix:   suffix,
-		Hash:     hash,
-		Type:     model.WriteUP,
+		ID:        utils.UUID(),
+		Filename:  file.Filename,
+		Size:      file.Size,
+		Path:      path,
+		UserID:    userID,
+		TeamID:    teamID,
+		ContestID: contestID,
+		Suffix:    suffix,
+		Hash:      hash,
+		Type:      model.WriteUP,
 	})
 }
