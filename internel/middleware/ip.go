@@ -49,7 +49,7 @@ var mu sync.Mutex
 // RateLimit 实现频率限制
 func RateLimit(ctx *gin.Context) {
 	ip := ctx.ClientIP()
-	if strings.ToLower(config.Env.Gin.Mode) == "debug" && (ip == "::1" || ip == "127.0.0.1") {
+	if ip == "::1" || ip == "127.0.0.1" {
 		ctx.Next()
 		return
 	}
