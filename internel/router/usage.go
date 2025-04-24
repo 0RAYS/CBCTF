@@ -146,7 +146,7 @@ func GenerateTeamUsage(reset bool) func(ctx *gin.Context) {
 			ok, msg = k8s.GenerateAttachment(usage, team, answers)
 		case model.PodsChallenge:
 			// 不考虑失败
-			go service.StopVictim(db.DB.WithContext(ctx), team, usage)
+			go service.StopVictim(db.DB.WithContext(ctx.Copy()), team, usage)
 			ok, msg = true, "Success"
 		default:
 			ok, msg = true, "Success"
