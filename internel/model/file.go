@@ -15,7 +15,10 @@ type File struct {
 	Filename  string         `json:"filename"`
 	Size      int64          `json:"size"`
 	Path      string         `json:"-"`
-	Uploader  uint           `json:"uploader"`
+	AdminID   uint           `json:"admin_id"`
+	UserID    uint           `json:"user_id"`
+	TeamID    uint           `json:"team_id"`
+	ContestID uint           `json:"contest_id"`
 	Suffix    string         `json:"suffix"`
 	Hash      string         `json:"hash"`
 	Type      string         `json:"type"`

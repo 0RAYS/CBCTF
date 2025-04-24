@@ -73,8 +73,34 @@ func UploadAvatar(v string) func(ctx *gin.Context) {
 			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 			return
 		}
+		options := db.CreateFileOptions{}
+		var id uint
+		switch v {
+		case "admin":
+			id = middleware.GetSelfID(ctx)
+			options.AdminID = id
+		case "self-user":
+			id = middleware.GetSelfID(ctx)
+			options.UserID = id
+		case "user":
+			id = middleware.GetUser(ctx).ID
+			options.AdminID = middleware.GetSelfID(ctx)
+			options.UserID = id
+		case "contest":
+			id = middleware.GetContest(ctx).ID
+			options.AdminID = middleware.GetSelfID(ctx)
+			options.ContestID = id
+		case "team":
+			id = middleware.GetTeam(ctx).ID
+			options.TeamID = id
+			if middleware.GetRole(ctx) == "admin" {
+				options.AdminID = middleware.GetSelfID(ctx)
+			} else {
+				options.UserID = middleware.GetSelfID(ctx)
+			}
+		}
 		tx := db.DB.WithContext(ctx).Begin()
-		record, ok, msg := service.SaveAvatar(tx, middleware.GetSelfID(ctx), file)
+		record, ok, msg := service.SaveAvatar(tx, options, file)
 		if !ok {
 			tx.Rollback()
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -85,17 +111,6 @@ func UploadAvatar(v string) func(ctx *gin.Context) {
 			log.Logger.Warningf("Failed to save file: %s", err)
 			ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
 			return
-		}
-		var id uint
-		switch v {
-		case "admin", "self-user":
-			id = middleware.GetSelfID(ctx)
-		case "user":
-			id = middleware.GetUser(ctx).ID
-		case "contest":
-			id = middleware.GetContest(ctx).ID
-		case "team":
-			id = middleware.GetTeam(ctx).ID
 		}
 		path, ok, msg := service.UpdateAvatar(tx, v, id, record)
 		if !ok {
@@ -116,7 +131,7 @@ func UploadWriteUp(ctx *gin.Context) {
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
-	record, ok, msg := service.SaveWriteUp(tx, middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, file)
+	record, ok, msg := service.SaveWriteUp(tx, middleware.GetSelfID(ctx), middleware.GetContest(ctx).ID, middleware.GetTeam(ctx).ID, file)
 	if !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -234,7 +249,8 @@ func GetWriteUPs(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
-	writeups, count, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).GetAll(model.WriteUP, form.Limit, form.Offset)
+	team := middleware.GetTeam(ctx)
+	writeups, count, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).GetByKeyID(model.WriteUP, "team_id", team.ID, form.Limit, form.Offset)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

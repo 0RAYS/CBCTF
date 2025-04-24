@@ -16,7 +16,7 @@ import (
 	"strings"
 )
 
-func SaveAvatar(tx *gorm.DB, uploaderID uint, file *multipart.FileHeader) (model.File, bool, string) {
+func SaveAvatar(tx *gorm.DB, options db.CreateFileOptions, file *multipart.FileHeader) (model.File, bool, string) {
 	src, err := file.Open()
 	if err != nil {
 		log.Logger.Warningf("Failed to open file: %v", err)
@@ -50,16 +50,14 @@ func SaveAvatar(tx *gorm.DB, uploaderID uint, file *multipart.FileHeader) (model
 	} else {
 		path = record.Path
 	}
-	return fileRepo.Create(db.CreateFileOptions{
-		ID:       utils.UUID(),
-		Filename: file.Filename,
-		Size:     file.Size,
-		Path:     path,
-		Uploader: uploaderID,
-		Suffix:   suffix,
-		Hash:     hash,
-		Type:     model.Avatar,
-	})
+	options.ID = utils.UUID()
+	options.Filename = file.Filename
+	options.Size = file.Size
+	options.Path = path
+	options.Suffix = suffix
+	options.Hash = hash
+	options.Type = model.Avatar
+	return fileRepo.Create(options)
 }
 
 func UpdateAvatar(tx *gorm.DB, v string, id uint, record model.File) (string, bool, string) {
@@ -85,7 +83,7 @@ func UpdateAvatar(tx *gorm.DB, v string, id uint, record model.File) (string, bo
 	return path, ok, msg
 }
 
-func SaveWriteUp(tx *gorm.DB, contestID, teamID uint, file *multipart.FileHeader) (model.File, bool, string) {
+func SaveWriteUp(tx *gorm.DB, userID, contestID, teamID uint, file *multipart.FileHeader) (model.File, bool, string) {
 	src, err := file.Open()
 	if err != nil {
 		log.Logger.Warningf("Failed to open file: %v", err)
@@ -124,7 +122,8 @@ func SaveWriteUp(tx *gorm.DB, contestID, teamID uint, file *multipart.FileHeader
 		Filename: file.Filename,
 		Size:     file.Size,
 		Path:     path,
-		Uploader: teamID,
+		UserID:   userID,
+		TeamID:   teamID,
 		Suffix:   suffix,
 		Hash:     hash,
 		Type:     model.WriteUP,
