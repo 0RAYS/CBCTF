@@ -14,7 +14,7 @@ type Team struct {
 	Answers     []Answer       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Submissions []Submission   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Victims     []Victim       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Cheats      []Cheat        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Cheats      []Cheat        `json:"-"`
 	Desc        string         `json:"desc"`
 	Captcha     string         `json:"-"`
 	Avatar      string         `json:"avatar"`

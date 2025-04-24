@@ -12,8 +12,8 @@ type Contest struct {
 	Notices     []Notice       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Usages      []Usage        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Flags       []Flag         `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Cheats      []Cheat        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Submissions []Submission   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Cheats      []Cheat        `json:"-"`
 	Name        string         `gorm:"not null" json:"name"`
 	Desc        string         `json:"desc"`
 	Captcha     string         `json:"captcha"`
