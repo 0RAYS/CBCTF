@@ -15,6 +15,7 @@ func GetTeamResp(team model.Team) gin.H {
 		"score":      team.Score,
 		"avatar":     fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(team.Avatar, "/")),
 		"last":       team.Last,
+		"rank":       team.Rank,
 		"users":      len(team.Users),
 		"desc":       team.Desc,
 		"captain_id": team.CaptainID,
