@@ -18,7 +18,7 @@ type CreateEventOptions struct {
 	Desc      string
 	Type      string
 	IP        string
-	Device    string
+	Magic     string
 }
 
 func InitEventRepo(tx *gorm.DB) *EventRepo {
