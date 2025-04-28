@@ -39,7 +39,6 @@ func Register(ctx *gin.Context) {
 	log.Logger.Infof("%s:%d register", user.Name, user.ID)
 	ctx.Writer.Header().Set("Authorization", "Bearer "+token)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.RegisterResp(user, false)})
-	return
 }
 
 func Login(ctx *gin.Context) {
@@ -53,17 +52,16 @@ func Login(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	if Token, err := utils.Generate(user.ID, user.Name, "user"); err == nil {
-		log.Logger.Infof("%s:%d login", user.Name, user.ID)
-		ctx.Writer.Header().Set("Authorization", "Bearer "+Token)
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.LoginResp(user, false)})
-		return
-	} else {
+	Token, err := utils.Generate(user.ID, user.Name, "user")
+	if err != nil {
 		msg = "UnknownError"
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	log.Logger.Infof("%s:%d login", user.Name, user.ID)
+	ctx.Writer.Header().Set("Authorization", "Bearer "+Token)
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.LoginResp(user, false)})
 }
 
 func AdminLogin(ctx *gin.Context) {
@@ -77,15 +75,14 @@ func AdminLogin(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	if Token, err := utils.Generate(admin.ID, admin.Name, "admin"); err == nil {
-		log.Logger.Infof("%s:%d login", admin.Name, admin.ID)
-		ctx.Writer.Header().Set("Authorization", "Bearer "+Token)
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetAdminResp(admin)})
-		return
-	} else {
+	Token, err := utils.Generate(admin.ID, admin.Name, "admin")
+	if err != nil {
 		msg = "UnknownError"
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	log.Logger.Infof("%s:%d login", admin.Name, admin.ID)
+	ctx.Writer.Header().Set("Authorization", "Bearer "+Token)
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetAdminResp(admin)})
 }
