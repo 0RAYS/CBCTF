@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"CBCTF/internel/config"
-	"CBCTF/internel/repo"
+	db "CBCTF/internel/repo"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"sync"
@@ -23,7 +23,7 @@ func AccessLog(ctx *gin.Context) {
 
 	statusCode := ctx.Writer.Status()
 
-	request := repo.CreateRequestOptions{
+	request := db.CreateRequestOptions{
 		IP:        ip,
 		Time:      accessTime,
 		Method:    method,
@@ -33,8 +33,8 @@ func AccessLog(ctx *gin.Context) {
 		Referer:   referer,
 		Magic:     magic,
 	}
-	tx := repo.DB.WithContext(ctx).Begin()
-	_, ok, _ := repo.InitRequestRepo(tx).Create(request)
+	tx := db.DB.WithContext(ctx).Begin()
+	_, ok, _ := db.InitRequestRepo(tx).Create(request)
 	if !ok {
 		tx.Rollback()
 		return
