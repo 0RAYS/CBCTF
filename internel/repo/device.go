@@ -52,8 +52,7 @@ func (d *DeviceRepo) Update(id uint, options UpdateDeviceOptions) (bool, string)
 			return false, msg
 		}
 		data["version"] = device.Version + 1
-		res := d.DB.Model(&model.Device{}).Omit("id", "created_at", "updated_at", "deleted_at").
-			Where("id = ? AND version = ?", id, device.Version).Updates(data)
+		res := d.DB.Model(&model.Device{}).Where("id = ? AND version = ?", id, device.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Device: %s", res.Error)
 			return false, "UpdateDeviceError"

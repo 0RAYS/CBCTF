@@ -126,8 +126,7 @@ func (c *ContestRepo) Update(id uint, options UpdateContestOptions) (bool, strin
 			return ok, msg
 		}
 		data["version"] = contest.Version + 1
-		res := c.DB.Model(&model.Contest{}).Omit("id", "created_at", "updated_at", "deleted_at").
-			Where("id = ? AND version = ?", id, contest.Version).Updates(data)
+		res := c.DB.Model(&model.Contest{}).Where("id = ? AND version = ?", id, contest.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Contest: %v", res.Error)
 			return false, "UpdateContestError"

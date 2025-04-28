@@ -135,8 +135,7 @@ func (u *UserRepo) Update(id uint, options UpdateUserOptions) (bool, string) {
 			return ok, msg
 		}
 		data["version"] = user.Version + 1
-		res := u.DB.Model(&model.User{}).Omit("id", "created_at", "updated_at", "deleted_at").
-			Where("id = ? AND version = ?", id, user.Version).Updates(data)
+		res := u.DB.Model(&model.User{}).Where("id = ? AND version = ?", id, user.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update User: %s", res.Error)
 			return false, "UpdateUserError"

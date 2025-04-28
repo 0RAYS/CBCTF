@@ -80,8 +80,7 @@ func (s *SubmissionRepo) Update(id uint, options UpdateSubmissionOptions) (bool,
 			return ok, msg
 		}
 		data["version"] = submission.Version + 1
-		res := s.DB.Model(&model.Submission{}).Omit("id", "created_at", "updated_at", "deleted_at").
-			Where("id = ? AND version = ?", id, submission.Version).Updates(data)
+		res := s.DB.Model(&model.Submission{}).Where("id = ? AND version = ?", id, submission.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Submission: %s", res.Error)
 			return false, "UpdateSubmissionError"

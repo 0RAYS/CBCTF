@@ -89,8 +89,7 @@ func (a *AdminRepo) Update(id uint, options UpdateAdminOptions) (bool, string) {
 			return ok, msg
 		}
 		data["version"] = admin.Version + 1
-		res := a.DB.Model(&model.Admin{}).Omit("id", "created_at", "updated_at", "deleted_at").
-			Where("id = ? AND version = ?", id, admin.Version).Updates(data)
+		res := a.DB.Model(&model.Admin{}).Where("id = ? AND version = ?", id, admin.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Admin: %s", res.Error)
 			return false, "UpdateAdminError"

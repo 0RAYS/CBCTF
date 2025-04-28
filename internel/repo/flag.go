@@ -81,8 +81,7 @@ func (f *FlagRepo) Update(id uint, options UpdateFlagOptions) (bool, string) {
 			return false, msg
 		}
 		data["version"] = flag.Version + 1
-		res := f.DB.Model(&model.Flag{}).Omit("id", "created_at", "updated_at", "deleted_at").
-			Where("id = ? AND version = ?", id, flag.Version).Updates(data)
+		res := f.DB.Model(&model.Flag{}).Where("id = ? AND version = ?", id, flag.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Flag: %s", res.Error)
 			return false, "UpdateFlagError"

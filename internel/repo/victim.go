@@ -150,8 +150,7 @@ func (v *VictimRepo) Update(id uint, options UpdateVictimOptions) (bool, string)
 			return false, msg
 		}
 		data["version"] = victim.Version + 1
-		res := v.DB.Model(&model.Victim{}).Omit("id", "created_at", "updated_at", "deleted_at").
-			Where("id = ? AND version = ?", id, victim.Version).Updates(data)
+		res := v.DB.Model(&model.Victim{}).Where("id = ? AND version = ?", id, victim.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Victim: %s", res.Error)
 			return false, "UpdateVictimError"

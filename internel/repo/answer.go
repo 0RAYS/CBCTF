@@ -82,8 +82,7 @@ func (a *AnswerRepo) Update(id uint, options UpdateAnswerOptions) (bool, string)
 			return ok, msg
 		}
 		data["version"] = answer.Version + 1
-		res := a.DB.Model(&model.Answer{}).Omit("id", "created_at", "updated_at", "deleted_at").
-			Where("id = ? AND version = ?", id, answer.Version).Updates(data)
+		res := a.DB.Model(&model.Answer{}).Where("id = ? AND version = ?", id, answer.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Answer: %s", res.Error)
 			return false, "UpdateAnswerError"

@@ -147,8 +147,7 @@ func (t *TeamRepo) Update(id uint, options UpdateTeamOptions) (bool, string) {
 			return ok, msg
 		}
 		data["version"] = team.Version + 1
-		res := t.DB.Model(&model.Team{}).Omit("id", "created_at", "updated_at", "deleted_at").
-			Where("id = ? AND version = ?", id, team.Version).Updates(data)
+		res := t.DB.Model(&model.Team{}).Where("id = ? AND version = ?", id, team.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Errorf("Failed to update Team: %s", res.Error)
 			return false, "UpdateTeamError"

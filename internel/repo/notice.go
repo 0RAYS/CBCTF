@@ -70,8 +70,7 @@ func (n *NoticeRepo) Update(id uint, options UpdateNoticeOptions) (bool, string)
 			return ok, msg
 		}
 		data["version"] = notice.Version + 1
-		res := n.DB.Model(&model.Notice{}).Omit("id", "created_at", "updated_at", "deleted_at").
-			Where("id = ? AND version = ?", id, notice.Version).Updates(data)
+		res := n.DB.Model(&model.Notice{}).Where("id = ? AND version = ?", id, notice.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Notice: %s", res.Error)
 			return false, "UpdateNoticeError"
