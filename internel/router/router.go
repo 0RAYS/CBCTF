@@ -102,19 +102,19 @@ func Init() *gin.Engine {
 		}
 
 		// 比赛题目
-		contest.GET("/challenges", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, GetUsages)
+		contest.GET("/challenges", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.ContestIsNotComing, GetUsages)
 		contestChallenge := contest.Group(
 			"/challenges/:challengeID",
-			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.SetUsage,
+			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.ContestIsNotComing, middleware.SetUsage,
 		)
 		{
 			contestChallenge.GET("", GetUsageStatus)
 			contestChallenge.POST("/init", middleware.ContestStatus(model.ContestIsRunning), middleware.CheckVerified, middleware.CheckCaptain, middleware.CheckSolved, GenerateTeamUsage(false))
-			contestChallenge.GET("/attachment", middleware.ContestIsNotComing, DownloadAttachment)
+			contestChallenge.GET("/attachment", DownloadAttachment)
 			contestChallenge.POST("/reset", middleware.ContestStatus(model.ContestIsRunning), middleware.CheckGenerated, middleware.CheckSolved, GenerateTeamUsage(true))
-			contestChallenge.POST("/start", middleware.ContestIsNotComing, middleware.CheckGenerated, StartVictim)
+			contestChallenge.POST("/start", middleware.CheckGenerated, StartVictim)
 			contestChallenge.POST("/increase", middleware.ContestStatus(model.ContestIsRunning), middleware.CheckGenerated, IncreaseVictimDuration)
-			contestChallenge.POST("/stop", middleware.ContestIsNotComing, middleware.CheckGenerated, StopVictim)
+			contestChallenge.POST("/stop", middleware.CheckGenerated, StopVictim)
 			contestChallenge.POST("/submit", middleware.ContestStatus(model.ContestIsRunning), middleware.CheckGenerated, middleware.CheckSolved, SubmitFlag)
 		}
 
