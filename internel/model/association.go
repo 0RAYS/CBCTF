@@ -27,10 +27,13 @@ type UserContest struct {
 //		"User", "Team", "Contest",
 //	},
 //	"Contest": {
-//		"Teams", "Users", "Notices", "Usages", "Flags", "Cheats", "Submissions",
+//		"Teams", "Users", "Notices", "Usages", "Flags", "Cheats", "Submissions", "Events",
 //	},
 //	"Device": {
 //		"User",
+//	},
+//	"Event": {
+//		"User", "Team", "Contest", "Usage",
 //	},
 //	"File": {},
 //	"Flag": {
@@ -47,16 +50,16 @@ type UserContest struct {
 //		"Usage", "Contest", "Challenge", "Team", "User", "Flag",
 //	},
 //	"Team": {
-//		"Contest", "Users", "Answers", "Submissions", "Victims", "Cheats",
+//		"Contest", "Users", "Answers", "Submissions", "Victims", "Cheats", "Events",
 //	},
 //	"Traffic": {
 //		"Victim", "Pod",
 //	},
 //	"Usage": {
-//		"Contest", "Challenge", "Flags", "Victims", "Submissions",
+//		"Contest", "Challenge", "Flags", "Victims", "Submissions", "Events",
 //	},
 //	"User": {
-//		"Teams", "Contests", "Submissions", "Victims", "Devices", "Cheats",
+//		"Teams", "Contests", "Submissions", "Victims", "Devices", "Cheats", "Events",
 //	},
 //	"Victim": {
 //		"Usage", "Team", "User", "Pods", "Traffics",
