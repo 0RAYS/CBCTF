@@ -5,6 +5,28 @@ import (
 	"time"
 )
 
+const (
+	UserLoginEventType          = "user_login"
+	UserRegisterEventType       = "user_register"
+	UserUpdateEventType         = "user_update"
+	UserUpdatePasswordEventType = "user_update_password"
+	UserVerifyEmailEventType    = "user_verify"
+	UserDeleteEventType         = "user_delete"
+	JoinTeamEventType           = "join_team"
+	CreateTeamEventType         = "create_team"
+	UpdateTeamEventType         = "update_team"
+	LeaveTeamEventType          = "leave_team"
+	KickMemberEventType         = "kick_member"
+	InitChallengeEventType      = "init_challenge"
+	ResetChallengeEventType     = "reset_challenge"
+	DownloadAttachmentEventType = "download_attachment"
+	StartVictimEventType        = "start_victim"
+	IncreaseVictimEventType     = "increase_victim"
+	StopVictimEventType         = "stop_victim"
+	SubmitFlagEventType         = "submit_flag"
+	UploadWriteUpEventType      = "upload_writeup"
+)
+
 type Event struct {
 	ID        string         `gorm:"primarykey" json:"id"`
 	User      User           `json:"-"`
