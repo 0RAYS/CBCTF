@@ -44,7 +44,7 @@ func DeleteUserFromContest(tx *gorm.DB, userID, contestID uint) error {
 	return res.Error
 }
 
-// DeleteAssociations 需要联级删除的关系表, 排除作弊相关的模型: cheat
+// DeleteAssociations 需要联级删除的关系表, 排除模型: model.Cheat model.Event model.Device
 //var deleteAssociations = map[string][]interface{}{
 //	"admin_id":      {model.Notice{}},
 //	"answer_id":     {},

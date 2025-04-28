@@ -13,6 +13,7 @@ type User struct {
 	Victims     []Victim       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Devices     []Device       `json:"-"`
 	Cheats      []Cheat        `json:"-"`
+	Events      []Event        `json:"-"`
 	Name        string         `gorm:"not null" json:"name"`
 	Password    string         `gorm:"not null" json:"-"`
 	Email       string         `gorm:"not null" json:"email"`
