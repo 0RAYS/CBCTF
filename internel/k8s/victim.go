@@ -90,6 +90,7 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]string,
 			frps := config.Env.K8S.Frpc.Frps[rand.Intn(len(config.Env.K8S.Frpc.Frps))]
 			var ip string
 			if config.Env.K8S.Frpc.On {
+				// TODO 优化端口映射方案, 多个端口使用单个 frpc 容器
 				for _, port := range service.Spec.Ports {
 					frpc := corev1.Container{
 						Name:  "frpc",
