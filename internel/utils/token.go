@@ -12,6 +12,7 @@ type Claims struct {
 	Name   string `json:"name"`
 	UserID uint   `json:"id"`
 	Type   string `json:"type"`
+	X      string `json:"x"`
 	jwt.RegisteredClaims
 }
 
@@ -19,11 +20,12 @@ type Claims struct {
 var secret = "0RAYS-JBNRZ"
 
 // Generate 生成token
-func Generate(id uint, name string, t string) (tokenString string, err error) {
+func Generate(id uint, name string, t string, magic string) (tokenString string, err error) {
 	claim := Claims{
 		UserID: id,
 		Name:   name,
 		Type:   t,
+		X:      HashMagic(magic),
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

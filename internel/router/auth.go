@@ -3,6 +3,7 @@ package router
 import (
 	f "CBCTF/internel/form"
 	"CBCTF/internel/log"
+	"CBCTF/internel/middleware"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/resp"
 	"CBCTF/internel/service"
@@ -30,7 +31,7 @@ func Register(ctx *gin.Context) {
 	//	return
 	//}
 	tx.Commit()
-	token, err := utils.Generate(user.ID, user.Name, "user")
+	token, err := utils.Generate(user.ID, user.Name, "user", middleware.GetMagic(ctx))
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
@@ -53,7 +54,7 @@ func Login(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	Token, err := utils.Generate(user.ID, user.Name, "user")
+	Token, err := utils.Generate(user.ID, user.Name, "user", middleware.GetMagic(ctx))
 	if err != nil {
 		msg = "UnknownError"
 		log.Logger.Warningf("Failed to generate token: %s", err)
@@ -77,7 +78,7 @@ func AdminLogin(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	Token, err := utils.Generate(admin.ID, admin.Name, "admin")
+	Token, err := utils.Generate(admin.ID, admin.Name, "admin", "")
 	if err != nil {
 		msg = "UnknownError"
 		log.Logger.Warningf("Failed to generate token: %s", err)

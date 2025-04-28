@@ -28,7 +28,7 @@ func CheckAuth(ctx *gin.Context) {
 	if claims.Type == "admin" {
 		admin, ok, msg := db.InitAdminRepo(DB).GetByID(claims.UserID, "all")
 		if !ok {
-			ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			ctx.Abort()
 			return
 		}
@@ -38,16 +38,18 @@ func CheckAuth(ctx *gin.Context) {
 	} else if claims.Type == "user" {
 		user, ok, msg := db.InitUserRepo(DB).GetByID(claims.UserID, "all")
 		if !ok {
-			ctx.JSONP(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			ctx.Abort()
 			return
 		}
-		if magic := ctx.GetHeader("X-M"); magic != "" {
-			// 不使用事务, 成功与否不重要
-			service.CreateDevice(DB, user.ID, magic)
+		if !utils.CompareMagic(GetMagic(ctx), claims.X) {
+			ctx.JSON(http.StatusUnauthorized, gin.H{"msg": "Unauthorized", "data": nil})
+			ctx.Abort()
+			return
 		}
+		service.CreateDevice(DB, user.ID, GetMagic(ctx))
 		if user.Banned {
-			ctx.JSONP(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
+			ctx.JSON(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
 			ctx.Abort()
 			return
 		}
