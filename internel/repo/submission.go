@@ -46,7 +46,7 @@ func (s *SubmissionRepo) CountByKeyID(key string, id uint, solved bool) (int64, 
 	return count, true, "Success"
 }
 
-func (s *SubmissionRepo) GetAllByKeyID(key string, id uint, limit, offset int, solved bool, preloadL ...string) ([]model.Submission, int64, bool, string) {
+func (s *SubmissionRepo) GetByKeyID(key string, id uint, limit, offset int, solved bool, preloadL ...string) ([]model.Submission, int64, bool, string) {
 	var (
 		submissions    = make([]model.Submission, 0)
 		count, ok, msg = s.CountByKeyID(key, id, solved)

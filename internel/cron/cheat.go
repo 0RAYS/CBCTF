@@ -31,7 +31,7 @@ func CheckCheat(c *cron.Cron) {
 func checkFlag(contest model.Contest) (bool, string) {
 	submissionRepo := db.InitSubmissionRepo(db.DB)
 	cheatRepo := db.InitCheatRepo(db.DB)
-	submissions, _, ok, msg := submissionRepo.GetAllByKeyID("contest_id", contest.ID, -1, -1, false)
+	submissions, _, ok, msg := submissionRepo.GetByKeyID("contest_id", contest.ID, -1, -1, false)
 	if !ok {
 		return false, msg
 	}

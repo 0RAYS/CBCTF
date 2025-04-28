@@ -65,7 +65,7 @@ func ResetAnswer(tx *gorm.DB, team model.Team, usage model.Usage) ([]model.Answe
 	answers := make([]model.Answer, 0)
 	submissionRepo, answerRepo := db.InitSubmissionRepo(tx), db.InitAnswerRepo(tx)
 	submissionIDL, answerIDL := make([]uint, 0), make([]uint, 0)
-	submissions, _, ok, msg := submissionRepo.GetAllByKeyID("team_id", team.ID, -1, -1, false)
+	submissions, _, ok, msg := submissionRepo.GetByKeyID("team_id", team.ID, -1, -1, false)
 	if !ok {
 		return answers, false, msg
 	}
