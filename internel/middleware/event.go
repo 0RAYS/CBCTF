@@ -9,7 +9,8 @@ import (
 )
 
 func Events(ctx *gin.Context) {
-	method, path := ctx.Request.Method, ctx.FullPath()
+	method, path, ip := ctx.Request.Method, ctx.FullPath(), ctx.ClientIP()
+
 	ctx.Next()
 
 	options := db.CreateEventOptions{
@@ -17,7 +18,7 @@ func Events(ctx *gin.Context) {
 		TeamID:    GetTeam(ctx).ID,
 		ContestID: GetContest(ctx).ID,
 		UsageID:   GetUsage(ctx).ID,
-		IP:        ctx.ClientIP(),
+		IP:        ip,
 		Magic:     GetMagic(ctx),
 	}
 
