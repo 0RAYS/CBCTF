@@ -26,8 +26,8 @@ func Init() *gin.Engine {
 	router.MaxMultipartMemory = int64(config.Env.Gin.Upload.Max << 20)
 
 	router.Use(
-		gin.Recovery(), middleware.Logger, middleware.Prometheus, middleware.SetTrace, middleware.Cors,
-		middleware.I18n, middleware.AccessLog, middleware.RateLimit, middleware.SetMagic,
+		gin.Recovery(), middleware.Cors, middleware.Logger, middleware.Prometheus, middleware.SetTrace,
+		middleware.I18n, middleware.AccessLog, middleware.RateLimit, middleware.Events, middleware.SetMagic,
 	)
 
 	{
@@ -82,17 +82,17 @@ func Init() *gin.Engine {
 		contest.POST("/teams/join", middleware.CheckRunning, middleware.CheckVerified, JoinTeam)
 		contest.POST("/teams/create", middleware.CheckRunning, middleware.CheckVerified, CreateTeam)
 
-		contestTeam := contest.Group("/teams", middleware.SetTeamByUser)
+		contestTeam := contest.Group("/teams/me", middleware.SetTeamByUser)
 		{
-			contestTeam.GET("/me", GetTeam)
-			contestTeam.GET("/me/captcha", GetTeamCaptcha)
-			contestTeam.GET("/me/users", GetTeammates)
-			contestTeam.PUT("/me/captcha", UpdateCaptcha)
-			contestTeam.PUT("/me", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, UpdateTeam)
-			contestTeam.POST("/me/avatar", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, UploadAvatar("team"))
-			contestTeam.DELETE("/me", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, DeleteTeam)
-			contestTeam.POST("/me/kick", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, KickMember)
-			contestTeam.POST("/me/leave", middleware.CheckRunning, LeaveTeam)
+			contestTeam.GET("", GetTeam)
+			contestTeam.GET("/captcha", GetTeamCaptcha)
+			contestTeam.GET("/users", GetTeammates)
+			contestTeam.PUT("/captcha", UpdateCaptcha)
+			contestTeam.PUT("", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, UpdateTeam)
+			contestTeam.POST("/avatar", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, UploadAvatar("team"))
+			contestTeam.DELETE("", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, DeleteTeam)
+			contestTeam.POST("/kick", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, KickMember)
+			contestTeam.POST("/leave", middleware.CheckRunning, LeaveTeam)
 		}
 
 		// 比赛公告
