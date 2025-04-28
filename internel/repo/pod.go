@@ -80,8 +80,7 @@ func (p *PodRepo) Update(id uint, options UpdatePodOptions) (bool, string) {
 			return false, msg
 		}
 		data["version"] = pod.Version + 1
-		res := p.DB.Model(&model.Pod{}).Omit("id", "created_at", "updated_at", "deleted_at").
-			Where("id = ? AND version = ?", id, pod.Version).Updates(data)
+		res := p.DB.Model(&model.Pod{}).Where("id = ? AND version = ?", id, pod.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Pod: %s", res.Error)
 			return false, "UpdatePodError"

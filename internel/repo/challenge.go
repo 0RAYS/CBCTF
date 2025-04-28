@@ -113,8 +113,7 @@ func (c *ChallengeRepo) Update(id string, options UpdateChallengeOptions) (bool,
 			return ok, msg
 		}
 		data["version"] = challenge.Version + 1
-		res := c.DB.Model(&model.Challenge{}).Omit("id", "created_at", "updated_at", "deleted_at").
-			Where("id = ? AND version = ?", id, challenge.Version).Updates(data)
+		res := c.DB.Model(&model.Challenge{}).Where("id = ? AND version = ?", id, challenge.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Challenge: %s", res.Error)
 			return false, "UpdateChallengeError"

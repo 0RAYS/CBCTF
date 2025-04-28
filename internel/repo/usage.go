@@ -107,8 +107,7 @@ func (u *UsageRepo) Update(id uint, options UpdateUsageOptions) (bool, string) {
 			return false, msg
 		}
 		data["version"] = usage.Version + 1
-		res := u.DB.Model(&model.Usage{}).Omit("id", "created_at", "updated_at", "deleted_at").
-			Where("id = ? AND version = ?", id, usage.Version).Updates(data)
+		res := u.DB.Model(&model.Usage{}).Where("id = ? AND version = ?", id, usage.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Usage: %s", res.Error)
 			return false, "UpdateUsageError"

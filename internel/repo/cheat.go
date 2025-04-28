@@ -46,8 +46,7 @@ func (c *CheatRepo) Update(id uint, options UpdateCheatOptions) (bool, string) {
 			return ok, msg
 		}
 		data["version"] = cheat.Version + 1
-		res := c.DB.Model(&model.Cheat{}).Omit("id", "created_at", "updated_at", "deleted_at").
-			Where("id = ? AND version = ?", id, cheat.Version).Updates(data)
+		res := c.DB.Model(&model.Cheat{}).Where("id = ? AND version = ?", id, cheat.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Cheat: %s", res.Error)
 			return false, "UpdateCheatError"
