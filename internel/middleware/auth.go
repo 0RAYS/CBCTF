@@ -62,7 +62,7 @@ func CheckAuth(ctx *gin.Context) {
 
 // GetRole 获取角色,  user 或 admin
 func GetRole(ctx *gin.Context) string {
-	if role, ok := ctx.Get("Role"); !ok {
+	if role, ok := ctx.Get("Role"); !ok || role == nil {
 		return ""
 	} else {
 		return role.(string)
@@ -71,7 +71,7 @@ func GetRole(ctx *gin.Context) string {
 
 // GetSelf 获取当前登录 admin 或 user
 func GetSelf(ctx *gin.Context) interface{} {
-	if self, ok := ctx.Get("Self"); !ok {
+	if self, ok := ctx.Get("Self"); !ok || self == nil {
 		return nil
 	} else {
 		return self
