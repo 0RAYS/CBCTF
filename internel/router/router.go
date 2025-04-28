@@ -79,20 +79,20 @@ func Init() *gin.Engine {
 	{
 		contest.GET("", GetContest)
 		contest.GET("/rank", GetTeamRanking)
-		contest.POST("/teams/join", middleware.CheckRunning, middleware.CheckVerified, JoinTeam)
-		contest.POST("/teams/create", middleware.CheckRunning, middleware.CheckVerified, CreateTeam)
+		contest.POST("/teams/join", middleware.ContestIsNotOver, middleware.CheckVerified, JoinTeam)
+		contest.POST("/teams/create", middleware.ContestIsNotOver, middleware.CheckVerified, CreateTeam)
 
 		contestTeam := contest.Group("/teams/me", middleware.SetTeamByUser)
 		{
 			contestTeam.GET("", GetTeam)
 			contestTeam.GET("/captcha", GetTeamCaptcha)
 			contestTeam.GET("/users", GetTeammates)
-			contestTeam.PUT("/captcha", UpdateCaptcha)
-			contestTeam.PUT("", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, UpdateTeam)
-			contestTeam.POST("/avatar", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, UploadAvatar("team"))
-			contestTeam.DELETE("", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, DeleteTeam)
-			contestTeam.POST("/kick", middleware.CheckRunning, middleware.CheckVerified, middleware.CheckCaptain, KickMember)
-			contestTeam.POST("/leave", middleware.CheckRunning, LeaveTeam)
+			contestTeam.PUT("/captcha", middleware.ContestIsNotOver, middleware.CheckVerified, middleware.CheckCaptain, UpdateCaptcha)
+			contestTeam.PUT("", middleware.ContestIsNotOver, middleware.CheckVerified, middleware.CheckCaptain, UpdateTeam)
+			contestTeam.POST("/avatar", middleware.ContestIsNotOver, middleware.CheckVerified, middleware.CheckCaptain, UploadAvatar("team"))
+			contestTeam.DELETE("", middleware.ContestStatus(model.ContestIsComing), middleware.CheckVerified, middleware.CheckCaptain, DeleteTeam)
+			contestTeam.POST("/kick", middleware.ContestStatus(model.ContestIsComing), middleware.CheckVerified, middleware.CheckCaptain, KickMember)
+			contestTeam.POST("/leave", middleware.ContestStatus(model.ContestIsComing), LeaveTeam)
 		}
 
 		// 比赛公告
@@ -109,13 +109,13 @@ func Init() *gin.Engine {
 		)
 		{
 			contestChallenge.GET("", GetUsageStatus)
-			contestChallenge.POST("/init", middleware.CheckRunning, middleware.CheckSolved, GenerateTeamUsage(false))
-			contestChallenge.GET("/attachment", DownloadAttachment)
-			contestChallenge.POST("/reset", middleware.CheckRunning, middleware.CheckGenerated, middleware.CheckSolved, GenerateTeamUsage(true))
-			contestChallenge.POST("/start", middleware.CheckGenerated, StartVictim)
-			contestChallenge.POST("/increase", middleware.CheckRunning, middleware.CheckGenerated, IncreaseVictimDuration)
-			contestChallenge.POST("/stop", middleware.CheckGenerated, StopVictim)
-			contestChallenge.POST("/submit", middleware.CheckRunning, middleware.CheckGenerated, middleware.CheckSolved, SubmitFlag)
+			contestChallenge.POST("/init", middleware.ContestStatus(model.ContestIsRunning), middleware.CheckVerified, middleware.CheckCaptain, middleware.CheckSolved, GenerateTeamUsage(false))
+			contestChallenge.GET("/attachment", middleware.ContestIsNotComing, DownloadAttachment)
+			contestChallenge.POST("/reset", middleware.ContestStatus(model.ContestIsRunning), middleware.CheckGenerated, middleware.CheckSolved, GenerateTeamUsage(true))
+			contestChallenge.POST("/start", middleware.ContestIsNotComing, middleware.CheckGenerated, StartVictim)
+			contestChallenge.POST("/increase", middleware.ContestStatus(model.ContestIsRunning), middleware.CheckGenerated, IncreaseVictimDuration)
+			contestChallenge.POST("/stop", middleware.ContestIsNotComing, middleware.CheckGenerated, StopVictim)
+			contestChallenge.POST("/submit", middleware.ContestStatus(model.ContestIsRunning), middleware.CheckGenerated, middleware.CheckSolved, SubmitFlag)
 		}
 
 		// WriteUp

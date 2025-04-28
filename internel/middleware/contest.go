@@ -1,17 +1,27 @@
 package middleware
 
 import (
+	"CBCTF/internel/model"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-// CheckRunning 比赛是否正在进行
-func CheckRunning(ctx *gin.Context) {
-	contest := GetContest(ctx)
-	if !contest.IsRunning() {
+var (
+	ContestIsNotOver   = ContestStatus(model.ContestIsComing, model.ContestIsRunning)
+	ContestIsNotComing = ContestStatus(model.ContestIsRunning, model.ContestIsOver)
+)
+
+func ContestStatus(statusL ...string) func(ctx *gin.Context) {
+	return func(ctx *gin.Context) {
+		contest := GetContest(ctx)
+		for _, status := range statusL {
+			if contest.Status() == status {
+				ctx.Next()
+				return
+			}
+		}
 		ctx.JSON(http.StatusOK, gin.H{"msg": contest.Status(), "data": nil})
 		ctx.Abort()
 		return
 	}
-	ctx.Next()
 }
