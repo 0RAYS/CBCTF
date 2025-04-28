@@ -30,7 +30,7 @@ func GetSubmissions(ctx *gin.Context) {
 	)
 	DB := db.DB.WithContext(ctx)
 	team := middleware.GetTeam(ctx)
-	submissions, count, ok, msg = db.InitSubmissionRepo(DB).GetAllByKeyID("team_id", team.ID, form.Limit, form.Offset, false)
+	submissions, count, ok, msg = db.InitSubmissionRepo(DB).GetByKeyID("team_id", team.ID, form.Limit, form.Offset, false)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

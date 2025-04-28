@@ -51,7 +51,7 @@ func UpdateUserRanking(c *cron.Cron) {
 			submissionRepo := db.InitSubmissionRepo(db.DB)
 			userRepo := db.InitUserRepo(db.DB)
 			for _, user := range contest.Users {
-				submissions, _, ok, _ := submissionRepo.GetAllByKeyID("user_id", user.ID, -1, -1, true)
+				submissions, _, ok, _ := submissionRepo.GetByKeyID("user_id", user.ID, -1, -1, true)
 				if !ok {
 					continue
 				}
