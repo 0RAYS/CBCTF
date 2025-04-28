@@ -21,6 +21,7 @@ func GetNetworkPolicy(ctx context.Context, name string) (*netv1.NetworkPolicy, b
 	return networkPolicy, true, "Success"
 }
 
+//CreateNetworkPolicy TODO: 强制添加禁止访问内网的网络策略
 func CreateNetworkPolicy(ctx context.Context, pod model.Pod, policy model.NetworkPolicy) (*netv1.NetworkPolicy, bool, string) {
 	if _, ok, _ := GetNetworkPolicy(ctx, pod.NetworkPolicyName); ok {
 		DeleteNetworkPolicy(ctx, pod.NetworkPolicyName)
