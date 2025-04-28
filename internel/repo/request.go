@@ -15,6 +15,7 @@ type CreateRequestOptions struct {
 	IP        string
 	Time      time.Time
 	Method    string
+	Path      string
 	URL       string
 	UserAgent string
 	Status    int

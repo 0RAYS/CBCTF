@@ -17,7 +17,8 @@ func AccessLog(ctx *gin.Context) {
 	url := ctx.Request.URL.Path
 	userAgent := ctx.Request.UserAgent()
 	referer := ctx.Request.Referer()
-	magic := ctx.GetHeader("X-M")
+	magic := GetMagic(ctx)
+	path := ctx.FullPath()
 
 	ctx.Next()
 
@@ -27,6 +28,7 @@ func AccessLog(ctx *gin.Context) {
 		IP:        ip,
 		Time:      accessTime,
 		Method:    method,
+		Path:      path,
 		URL:       url,
 		UserAgent: userAgent,
 		Status:    statusCode,

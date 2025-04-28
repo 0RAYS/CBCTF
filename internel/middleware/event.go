@@ -9,6 +9,7 @@ import (
 )
 
 func Events(ctx *gin.Context) {
+	method, path := ctx.Request.Method, ctx.FullPath()
 	ctx.Next()
 
 	options := db.CreateEventOptions{
@@ -20,9 +21,9 @@ func Events(ctx *gin.Context) {
 		Magic:     GetMagic(ctx),
 	}
 
-	switch ctx.Request.Method {
+	switch method {
 	case "GET":
-		switch ctx.FullPath() {
+		switch path {
 		case "/contests/:contestID/challenges/:challengeID/attachment":
 			options.Type = model.DownloadAttachmentEventType
 			options.Desc = fmt.Sprintf("User %d download attachment for challenge %d", options.UserID, options.UsageID)
@@ -30,7 +31,7 @@ func Events(ctx *gin.Context) {
 			return
 		}
 	case "POST":
-		switch ctx.FullPath() {
+		switch path {
 		case "/register":
 			if options.UserID == 0 {
 				return
@@ -92,7 +93,7 @@ func Events(ctx *gin.Context) {
 			return
 		}
 	case "PUT":
-		switch ctx.FullPath() {
+		switch path {
 		case "/me":
 			if options.UserID == 0 {
 				return
@@ -112,7 +113,7 @@ func Events(ctx *gin.Context) {
 			return
 		}
 	case "DELETE":
-		switch ctx.FullPath() {
+		switch path {
 		case "/me":
 			if options.UserID == 0 {
 				return
