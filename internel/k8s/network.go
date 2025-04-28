@@ -21,6 +21,7 @@ func GetNetworkPolicy(ctx context.Context, name string) (*netv1.NetworkPolicy, b
 	return networkPolicy, true, "Success"
 }
 
+// CreateNetworkPolicy TODO: 强制添加禁止访问内网的网络策略
 func CreateNetworkPolicy(ctx context.Context, pod model.Pod, policy model.NetworkPolicy) (*netv1.NetworkPolicy, bool, string) {
 	if _, ok, _ := GetNetworkPolicy(ctx, pod.NetworkPolicyName); ok {
 		DeleteNetworkPolicy(ctx, pod.NetworkPolicyName)
@@ -45,29 +46,6 @@ func CreateNetworkPolicy(ctx context.Context, pod model.Pod, policy model.Networ
 		var t []netv1.PolicyType
 		var ingress []netv1.NetworkPolicyIngressRule
 		var egress []netv1.NetworkPolicyEgressRule
-		t = append(t, netv1.PolicyTypeEgress)
-		egress = append(egress, netv1.NetworkPolicyEgressRule{
-			To: []netv1.NetworkPolicyPeer{
-				{
-					IPBlock: &netv1.IPBlock{
-						CIDR:   model.DefaultNetworkPolicy.To[0].CIDR,
-						Except: model.DefaultNetworkPolicy.To[0].Except,
-					},
-				},
-			},
-		})
-		if len(policy.To) > 0 {
-			var peers []netv1.NetworkPolicyPeer
-			for _, to := range policy.To {
-				peers = append(peers, netv1.NetworkPolicyPeer{
-					IPBlock: &netv1.IPBlock{
-						CIDR:   to.CIDR,
-						Except: to.Except,
-					},
-				})
-			}
-			egress = append(egress, netv1.NetworkPolicyEgressRule{To: peers})
-		}
 		if len(policy.From) > 0 {
 			var peers []netv1.NetworkPolicyPeer
 			for _, from := range policy.From {
@@ -80,6 +58,19 @@ func CreateNetworkPolicy(ctx context.Context, pod model.Pod, policy model.Networ
 			}
 			ingress = append(ingress, netv1.NetworkPolicyIngressRule{From: peers})
 			t = append(t, netv1.PolicyTypeIngress)
+		}
+		if len(policy.To) > 0 {
+			var peers []netv1.NetworkPolicyPeer
+			for _, to := range policy.To {
+				peers = append(peers, netv1.NetworkPolicyPeer{
+					IPBlock: &netv1.IPBlock{
+						CIDR:   to.CIDR,
+						Except: to.Except,
+					},
+				})
+			}
+			egress = append(egress, netv1.NetworkPolicyEgressRule{To: peers})
+			t = append(t, netv1.PolicyTypeEgress)
 		}
 		return t, ingress, egress
 	}()
