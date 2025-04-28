@@ -5,6 +5,12 @@ import (
 	"time"
 )
 
+var (
+	ContestIsComing  = "ContestIsComing"
+	ContestIsRunning = "ContestIsRunning"
+	ContestIsOver    = "ContestIsOver"
+)
+
 type Contest struct {
 	ID          uint           `gorm:"primarykey" json:"id"`
 	Teams       []Team         `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
@@ -38,20 +44,20 @@ func (c *Contest) IsOver() bool {
 	return time.Now().After(c.Start.Add(c.Duration))
 }
 
-func (c *Contest) IsNotStart() bool {
+func (c *Contest) IsComing() bool {
 	return time.Now().Before(c.Start)
 }
 
 func (c *Contest) IsRunning() bool {
-	return (c.IsOver() || c.IsNotStart() || c.Hidden) != true
+	return (c.IsOver() || c.IsComing() || c.Hidden) != true
 }
 
 func (c *Contest) Status() string {
 	if c.IsOver() {
-		return "ContestIsOver"
+		return ContestIsOver
 	}
-	if c.IsNotStart() {
-		return "ContestNotRunning"
+	if c.IsComing() {
+		return ContestIsComing
 	}
-	return "ContestIsRunning"
+	return ContestIsRunning
 }
