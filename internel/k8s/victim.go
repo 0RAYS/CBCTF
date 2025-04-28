@@ -35,6 +35,7 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]string,
 				resultCh <- result{PodName: pod.Name, IP: "", OK: false, Msg: msg}
 				return
 			}
+			pod.NetworkPolicies = append(pod.NetworkPolicies, model.DefaultNetworkPolicy)
 			for _, policy := range pod.NetworkPolicies {
 				_, ok, msg := CreateNetworkPolicy(ctx, pod, policy)
 				if !ok {
