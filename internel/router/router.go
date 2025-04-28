@@ -121,7 +121,7 @@ func Init() *gin.Engine {
 		// WriteUp
 		contestWriteUp := contest.Group(
 			"/writeups",
-			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned,
+			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.ContestIsNotComing,
 		)
 		{
 			contestWriteUp.POST("", UploadWriteUp)
