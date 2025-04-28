@@ -30,7 +30,7 @@ func SetUser(ctx *gin.Context) {
 
 // GetUser 从上下文中获取 model.User
 func GetUser(ctx *gin.Context) model.User {
-	if user, ok := ctx.Get("User"); !ok {
+	if user, ok := ctx.Get("User"); !ok || user == nil {
 		return model.User{}
 	} else {
 		return user.(model.User)
@@ -65,7 +65,7 @@ func SetContest(ctx *gin.Context) {
 
 // GetContest 从上下文中获取 model.Contest
 func GetContest(ctx *gin.Context) model.Contest {
-	if contest, ok := ctx.Get("Contest"); !ok {
+	if contest, ok := ctx.Get("Contest"); !ok || contest == nil {
 		return model.Contest{}
 	} else {
 		return contest.(model.Contest)
@@ -124,7 +124,7 @@ func SetTeamByURI(ctx *gin.Context) {
 
 // GetTeam 从上下文中获取 model.Team
 func GetTeam(ctx *gin.Context) model.Team {
-	if team, ok := ctx.Get("Team"); !ok {
+	if team, ok := ctx.Get("Team"); !ok || team == nil {
 		return model.Team{}
 	} else {
 		return team.(model.Team)
@@ -161,7 +161,7 @@ func SetFile(t string) gin.HandlerFunc {
 
 // GetFile 从上下文中获取 model.File
 func GetFile(ctx *gin.Context) model.File {
-	if file, ok := ctx.Get("File"); !ok {
+	if file, ok := ctx.Get("File"); !ok || file == nil {
 		return model.File{}
 	} else {
 		return file.(model.File)
@@ -191,7 +191,7 @@ func SetChallenge(ctx *gin.Context) {
 
 // GetChallenge 从上下文中获取 model.Challenge
 func GetChallenge(ctx *gin.Context) model.Challenge {
-	if challenge, ok := ctx.Get("Challenge"); !ok {
+	if challenge, ok := ctx.Get("Challenge"); !ok || challenge == nil {
 		return model.Challenge{}
 	} else {
 		return challenge.(model.Challenge)
@@ -221,7 +221,7 @@ func SetUsage(ctx *gin.Context) {
 
 // GetUsage 从上下文中获取 model.Usage
 func GetUsage(ctx *gin.Context) model.Usage {
-	if usage, ok := ctx.Get("Usage"); !ok {
+	if usage, ok := ctx.Get("Usage"); !ok || usage == nil {
 		return model.Usage{}
 	} else {
 		return usage.(model.Usage)
@@ -249,7 +249,7 @@ func SetFlag(ctx *gin.Context) {
 }
 
 func GetFlag(ctx *gin.Context) model.Flag {
-	if flag, ok := ctx.Get("Flag"); !ok {
+	if flag, ok := ctx.Get("Flag"); !ok || flag == nil {
 		return model.Flag{}
 	} else {
 		return flag.(model.Flag)
@@ -277,7 +277,7 @@ func SetVictim(ctx *gin.Context) {
 }
 
 func GetVictim(ctx *gin.Context) model.Victim {
-	if victim, ok := ctx.Get("Victim"); !ok {
+	if victim, ok := ctx.Get("Victim"); !ok || victim == nil {
 		return model.Victim{}
 	} else {
 		return victim.(model.Victim)
@@ -307,7 +307,7 @@ func SetNotice(ctx *gin.Context) {
 
 // GetNotice 从上下文中获取 model.Notice
 func GetNotice(ctx *gin.Context) model.Notice {
-	if notice, ok := ctx.Get("Notice"); !ok {
+	if notice, ok := ctx.Get("Notice"); !ok || notice == nil {
 		return model.Notice{}
 	} else {
 		return notice.(model.Notice)
