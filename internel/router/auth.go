@@ -18,6 +18,10 @@ func Register(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
+	if middleware.GetMagic(ctx) == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
 	tx := db.DB.WithContext(ctx).Begin()
 	user, ok, msg := service.CreateUser(tx, form)
 	if !ok {
@@ -46,6 +50,10 @@ func Register(ctx *gin.Context) {
 func Login(ctx *gin.Context) {
 	var form f.LoginForm
 	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		return
+	}
+	if middleware.GetMagic(ctx) == "" {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
 		return
 	}
