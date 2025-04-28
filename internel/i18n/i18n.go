@@ -102,6 +102,12 @@ var resp = map[string]map[string]interface{}{
 	"GetDeviceError":    {"zh-CN": "获取设备失败", "en-US": "Failed to get device", "code": 500},
 	"DeviceNotFound":    {"zh-CN": "设备不存在", "en-US": "Device not found", "code": 404},
 
+	"CreateEventError": {"zh-CN": "记录事件失败", "en-US": "Failed to record event", "code": 500},
+	"DeleteEventError": {"zh-CN": "删除事件失败", "en-US": "Failed to delete event", "code": 500},
+	"UpdateEventError": {"zh-CN": "更新事件失败", "en-US": "Failed to update event", "code": 500},
+	"GetEventError":    {"zh-CN": "获取事件失败", "en-US": "Failed to get event", "code": 500},
+	"EventNotFound":    {"zh-CN": "事件不存在", "en-US": "Event not found", "code": 404},
+
 	"DuplicateUsername":   {"zh-CN": "该用户名已注册", "en-US": "Username already registered", "code": 400},
 	"DuplicateEmail":      {"zh-CN": "该邮箱已注册", "en-US": "Email already registered", "code": 400},
 	"WeakPassword":        {"zh-CN": "密码过于简单", "en-US": "Password too simple", "code": 400},
