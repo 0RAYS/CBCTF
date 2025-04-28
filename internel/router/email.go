@@ -38,7 +38,7 @@ func ActivateEmail(ctx *gin.Context) {
 
 func SendEmail(user model.User) (bool, string) {
 	id := utils.UUID()
-	token, err := utils.Generate(user.ID, user.Name, "email", "")
+	token, err := utils.Generate(user.ID, user.Name, "email", "email")
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		return false, "UnknownError"

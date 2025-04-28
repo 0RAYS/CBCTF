@@ -86,7 +86,7 @@ func AdminLogin(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	Token, err := utils.Generate(admin.ID, admin.Name, "admin", "")
+	Token, err := utils.Generate(admin.ID, admin.Name, "admin", "admin")
 	if err != nil {
 		msg = "UnknownError"
 		log.Logger.Warningf("Failed to generate token: %s", err)
