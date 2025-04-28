@@ -28,7 +28,7 @@ const (
 )
 
 type Event struct {
-	ID        string         `gorm:"primarykey" json:"id"`
+	ID        uint           `gorm:"primarykey" json:"id"`
 	User      User           `json:"-"`
 	UserID    uint           `json:"user_id"`
 	Team      Team           `json:"-"`
