@@ -27,7 +27,7 @@ func Events(ctx *gin.Context) {
 		switch path {
 		case "/contests/:contestID/challenges/:challengeID/attachment":
 			options.Type = model.DownloadAttachmentEventType
-			options.Desc = fmt.Sprintf("User %d download attachment for challenge %d", options.UserID, options.UsageID)
+			options.Desc = fmt.Sprintf("User %d download attachment for usage %d in contest %d as team %d", options.UserID, options.UsageID, options.ContestID, options.TeamID)
 		default:
 			return
 		}
@@ -71,25 +71,25 @@ func Events(ctx *gin.Context) {
 			options.Desc = fmt.Sprintf("User %d kick member from team %d", options.UserID, options.TeamID)
 		case "/contests/:contestID/challenges/:challengeID/init":
 			options.Type = model.InitChallengeEventType
-			options.Desc = fmt.Sprintf("User %d init challenge %d", options.UserID, options.UsageID)
+			options.Desc = fmt.Sprintf("User %d init usage %d in contest %d as team %d", options.UserID, options.UsageID, options.ContestID, options.TeamID)
 		case "/contests/:contestID/challenges/:challengeID/reset":
 			options.Type = model.ResetChallengeEventType
-			options.Desc = fmt.Sprintf("User %d reset challenge %d", options.UserID, options.UsageID)
+			options.Desc = fmt.Sprintf("User %d reset usage %d in contest %d as team %d", options.UserID, options.UsageID, options.ContestID, options.TeamID)
 		case "/contests/:contestID/challenges/:challengeID/submit":
 			options.Type = model.SubmitFlagEventType
-			options.Desc = fmt.Sprintf("User %d submit flag for challenge %d", options.UserID, options.UsageID)
+			options.Desc = fmt.Sprintf("User %d submit flag for usage %d in contest %d as team %d", options.UserID, options.UsageID, options.ContestID, options.TeamID)
 		case "/contests/:contestID/challenges/:challengeID/start":
 			options.Type = model.StartVictimEventType
-			options.Desc = fmt.Sprintf("User %d start victim for challenge %d", options.UserID, options.UsageID)
+			options.Desc = fmt.Sprintf("User %d start victim for usage %d in contest %d as team %d", options.UserID, options.UsageID, options.ContestID, options.TeamID)
 		case "/contests/:contestID/challenges/:challengeID/increase":
 			options.Type = model.IncreaseVictimEventType
-			options.Desc = fmt.Sprintf("User %d increase victim for challenge %d", options.UserID, options.UsageID)
+			options.Desc = fmt.Sprintf("User %d increase victim for usage %d in contest %d as team %d", options.UserID, options.UsageID, options.ContestID, options.TeamID)
 		case "/contests/:contestID/challenges/:challengeID/stop":
 			options.Type = model.StopVictimEventType
-			options.Desc = fmt.Sprintf("User %d stop victim for challenge %d", options.UserID, options.UsageID)
+			options.Desc = fmt.Sprintf("User %d stop victim for usage %d in contest %d as team %d", options.UserID, options.UsageID, options.ContestID, options.TeamID)
 		case "/contests/:contestID/writeups":
 			options.Type = model.UploadWriteUpEventType
-			options.Desc = fmt.Sprintf("User %d upload writeup for contest %d", options.UserID, options.ContestID)
+			options.Desc = fmt.Sprintf("User %d upload writeup for contest %d as team %d", options.UserID, options.ContestID, options.TeamID)
 		default:
 			return
 		}
