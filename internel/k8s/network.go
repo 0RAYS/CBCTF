@@ -41,8 +41,7 @@ func CreateNetworkPolicy(ctx context.Context, pod model.Pod, policy model.Networ
 			},
 		},
 	}
-	policyTypes, ingress, egress := func() ([]netv1.PolicyType, []netv1.NetworkPolicyIngressRule, []netv1.NetworkPolicyEgressRule) {
-		var t []netv1.PolicyType
+	ingress, egress := func() ([]netv1.NetworkPolicyIngressRule, []netv1.NetworkPolicyEgressRule) {
 		var ingress []netv1.NetworkPolicyIngressRule
 		var egress []netv1.NetworkPolicyEgressRule
 		if len(policy.From) > 0 {
@@ -56,7 +55,6 @@ func CreateNetworkPolicy(ctx context.Context, pod model.Pod, policy model.Networ
 				})
 			}
 			ingress = append(ingress, netv1.NetworkPolicyIngressRule{From: peers})
-			t = append(t, netv1.PolicyTypeIngress)
 		}
 		if len(policy.To) > 0 {
 			var peers []netv1.NetworkPolicyPeer
@@ -69,12 +67,12 @@ func CreateNetworkPolicy(ctx context.Context, pod model.Pod, policy model.Networ
 				})
 			}
 			egress = append(egress, netv1.NetworkPolicyEgressRule{To: peers})
-			t = append(t, netv1.PolicyTypeEgress)
 		}
-		return t, ingress, egress
+		return ingress, egress
 	}()
-	if len(policyTypes) > 0 {
-		networkPolicy.Spec.PolicyTypes = policyTypes
+	networkPolicy.Spec.PolicyTypes = []netv1.PolicyType{
+		netv1.PolicyTypeIngress,
+		netv1.PolicyTypeEgress,
 	}
 	if len(ingress) > 0 {
 		networkPolicy.Spec.Ingress = ingress
