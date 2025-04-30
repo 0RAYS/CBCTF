@@ -41,6 +41,7 @@ func CreateNetworkPolicy(ctx context.Context, pod model.Pod, policy model.Networ
 			},
 		},
 	}
+	// k8s 策略为空时 deny all
 	ingress, egress := func() ([]netv1.NetworkPolicyIngressRule, []netv1.NetworkPolicyEgressRule) {
 		var ingress []netv1.NetworkPolicyIngressRule
 		var egress []netv1.NetworkPolicyEgressRule
