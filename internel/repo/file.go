@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"gorm.io/gorm"
@@ -34,18 +35,18 @@ func (f *FileRepo) getByUniqueKey(key string, value interface{}) (model.File, bo
 	case "id", "hash":
 		value = value.(string)
 	default:
-		return model.File{}, false, "UnsupportedKey"
+		return model.File{}, false, i18n.UnsupportedKey
 	}
 	var file model.File
 	res := f.DB.Model(&model.File{}).Where(key+" = ?", value).Limit(1).Find(&file)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get File: %s", res.Error)
-		return model.File{}, false, "GetFileError"
+		return model.File{}, false, i18n.GetFileRecordError
 	}
 	if res.RowsAffected == 0 {
-		return model.File{}, false, "FileNotFound"
+		return model.File{}, false, i18n.FileNotFound
 	}
-	return file, true, "Success"
+	return file, true, i18n.Success
 }
 
 func (f *FileRepo) GetByID(id string) (model.File, bool, string) {
@@ -61,9 +62,9 @@ func (f *FileRepo) CountByKeyID(t string, key string, id uint) (int64, bool, str
 	res := f.DB.Model(&model.File{}).Where("type = ? AND "+key+" = ?", t, id).Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count File: %s", res.Error)
-		return 0, false, "CountModelError"
+		return 0, false, i18n.CountModelError
 	}
-	return count, true, "Success"
+	return count, true, i18n.Success
 }
 
 func (f *FileRepo) GetByKeyID(t string, key string, id uint, limit, offset int) ([]model.File, int64, bool, string) {
@@ -77,9 +78,9 @@ func (f *FileRepo) GetByKeyID(t string, key string, id uint, limit, offset int) 
 	res := f.DB.Model(&model.File{}).Where("type = ? AND "+key+" = ?", t, id).Limit(limit).Offset(offset).Find(&files)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get File: %s", res.Error)
-		return files, 0, false, "GetFileError"
+		return files, 0, false, i18n.GetFileRecordError
 	}
-	return files, count, true, "Success"
+	return files, count, true, i18n.Success
 }
 
 func (f *FileRepo) Count(t string) (int64, bool, string) {
@@ -87,9 +88,9 @@ func (f *FileRepo) Count(t string) (int64, bool, string) {
 	res := f.DB.Model(&model.File{}).Where("type = ?", t).Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count File: %s", res.Error)
-		return 0, false, "CountModelError"
+		return 0, false, i18n.CountModelError
 	}
-	return count, true, "Success"
+	return count, true, i18n.Success
 }
 
 func (f *FileRepo) GetAll(t string, limit, offset int) ([]model.File, int64, bool, string) {
@@ -103,16 +104,16 @@ func (f *FileRepo) GetAll(t string, limit, offset int) ([]model.File, int64, boo
 	res := f.DB.Model(&model.File{}).Where("type = ?", t).Limit(limit).Offset(offset).Find(&files)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get File: %s", res.Error)
-		return files, 0, false, "GetFileError"
+		return files, 0, false, i18n.GetFileRecordError
 	}
-	return files, count, true, "Success"
+	return files, count, true, i18n.Success
 }
 
 func (f *FileRepo) Delete(idL ...string) (bool, string) {
 	res := f.DB.Model(&model.File{}).Where("id IN ?", idL).Delete(&model.File{})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete File: %s", res.Error)
-		return false, "DeleteFileError"
+		return false, i18n.DeleteFileRecordError
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

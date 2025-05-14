@@ -2,6 +2,7 @@ package service
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
@@ -56,7 +57,7 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChalle
 	case model.PodsChallenge:
 		options.Dockers = form.Dockers
 	default:
-		return false, "InvalidChallengeType"
+		return false, i18n.InvalidChallengeType
 	}
 	return repo.Update(challenge.ID, options)
 }

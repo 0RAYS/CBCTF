@@ -1,6 +1,7 @@
 package service
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/traffic"
@@ -15,7 +16,7 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 	for _, pod := range victim.Pods {
 		_, _, ok, _ := repo.GetByKey("pod_id", pod.ID, 1, 0)
 		if ok {
-			return true, "Success"
+			return true, i18n.Success
 		}
 		packet, ok, msg := traffic.ReadPcap(pod.TrafficPath())
 		if !ok {
@@ -45,7 +46,7 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 	}
 	err := utils.Zip(victim.TrafficPaths(), victim.TrafficZipPath())
 	if err != nil {
-		return false, "ZipError"
+		return false, i18n.ZipError
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"context"
@@ -16,9 +17,9 @@ func GetNetworkPolicy(ctx context.Context, name string) (*netv1.NetworkPolicy, b
 			return nil, false, "NetworkPolicyNotFound"
 		}
 		log.Logger.Warningf("Failed to get NetworkPolicy %s: %v", name, err)
-		return nil, false, "GetNetworkPolicyError"
+		return nil, false, i18n.GetNetworkPolicyError
 	}
-	return networkPolicy, true, "Success"
+	return networkPolicy, true, i18n.Success
 }
 
 func CreateNetworkPolicy(ctx context.Context, pod model.Pod, policy model.NetworkPolicy) (*netv1.NetworkPolicy, bool, string) {
@@ -26,7 +27,7 @@ func CreateNetworkPolicy(ctx context.Context, pod model.Pod, policy model.Networ
 		DeleteNetworkPolicy(ctx, pod.NetworkPolicyName)
 	}
 	if len(policy.From) < 1 && len(policy.To) < 1 {
-		return nil, true, "Success"
+		return nil, true, i18n.Success
 	}
 	networkPolicy := &netv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
@@ -85,16 +86,16 @@ func CreateNetworkPolicy(ctx context.Context, pod model.Pod, policy model.Networ
 	networkPolicy, err = client.NetworkingV1().NetworkPolicies(NamespaceName).Create(ctx, networkPolicy, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create NetworkPolicy %s: %v", pod.NetworkPolicyName, err)
-		return nil, false, "CreateNetworkPolicyError"
+		return nil, false, i18n.CreateNetworkPolicyError
 	}
-	return networkPolicy, true, "Success"
+	return networkPolicy, true, i18n.Success
 }
 
 func DeleteNetworkPolicy(ctx context.Context, name string) (bool, string) {
 	err := client.NetworkingV1().NetworkPolicies(NamespaceName).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete NetworkPolicy %s: %v", name, err)
-		return false, "DeleteNetworkPolicyError"
+		return false, i18n.DeleteNetworkPolicyError
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
@@ -65,12 +66,12 @@ func (t *TeamRepo) GetByName(contestID uint, name string, preloadL ...string) (m
 	res = preload(res, preloadL...).Limit(1).Find(&team)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Team")
-		return model.Team{}, false, "GetTeamError"
+		return model.Team{}, false, i18n.GetTeamError
 	}
 	if res.RowsAffected == 0 {
-		return model.Team{}, false, "TeamNotFound"
+		return model.Team{}, false, i18n.TeamNotFound
 	}
-	return team, true, "Success"
+	return team, true, i18n.Success
 }
 
 // GetBy2ID 根据用户 ID 和比赛 ID 获取 model.Team, 等同于 GetByID(teamID, "all")
@@ -87,10 +88,10 @@ func (t *TeamRepo) GetBy2ID(userID uint, contestID uint) (model.Team, bool, stri
 	}
 	for _, team := range user.Teams {
 		if team.ContestID == contestID {
-			return *team, true, "Success"
+			return *team, true, i18n.Success
 		}
 	}
-	return model.Team{}, false, "UserNotInTeam"
+	return model.Team{}, false, i18n.UserNotInTeam
 }
 
 func (t *TeamRepo) Count(contestID uint, hidden, banned bool) (int64, bool, string) {
@@ -105,9 +106,9 @@ func (t *TeamRepo) Count(contestID uint, hidden, banned bool) (int64, bool, stri
 	res = res.Count(&count)
 	if res.Error != nil {
 		log.Logger.Errorf("Failed to count Teams: %s", res.Error)
-		return 0, false, "CountModelError"
+		return 0, false, i18n.CountModelError
 	}
-	return count, true, "Success"
+	return count, true, i18n.Success
 }
 
 func (t *TeamRepo) GetAll(contestID uint, limit, offset int, hidden, banned bool, preloadL ...string) ([]model.Team, int64, bool, string) {
@@ -140,7 +141,7 @@ func (t *TeamRepo) Update(id uint, options UpdateTeamOptions) (bool, string) {
 		count++
 		if count > 10 {
 			log.Logger.Warningf("Failed too many times to update team due to optimistic lock")
-			return false, "DeadLock"
+			return false, i18n.DeadLock
 		}
 		team, ok, msg := t.GetByID(id)
 		if !ok {
@@ -150,14 +151,14 @@ func (t *TeamRepo) Update(id uint, options UpdateTeamOptions) (bool, string) {
 		res := t.DB.Model(&model.Team{}).Where("id = ? AND version = ?", id, team.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Errorf("Failed to update Team: %s", res.Error)
-			return false, "UpdateTeamError"
+			return false, i18n.UpdateTeamError
 		}
 		if res.RowsAffected == 0 {
 			continue
 		}
 		break
 	}
-	return true, "Success"
+	return true, i18n.Success
 }
 
 func (t *TeamRepo) Delete(idL ...uint) (bool, string) {
@@ -169,10 +170,10 @@ func (t *TeamRepo) Delete(idL ...uint) (bool, string) {
 		}
 		for _, user := range team.Users {
 			if err := DeleteUserFromContest(t.DB, user.ID, team.ContestID); err != nil {
-				return false, "DeleteUserFromContestError"
+				return false, i18n.DeleteUserFromContestError
 			}
 			if err := DeleteUserFromTeam(t.DB, user.ID, team.ID); err != nil {
-				return false, "DeleteUserFromTeamError"
+				return false, i18n.DeleteUserFromTeamError
 			}
 		}
 		for _, answer := range team.Answers {
@@ -190,7 +191,7 @@ func (t *TeamRepo) Delete(idL ...uint) (bool, string) {
 	}
 	if res := t.DB.Model(&model.Team{}).Where("id IN ?", idL).Delete(&model.Team{}); res.Error != nil {
 		log.Logger.Errorf("Failed to delete Team: %s", res.Error)
-		return false, "DeleteTeamError"
+		return false, i18n.DeleteTeamError
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

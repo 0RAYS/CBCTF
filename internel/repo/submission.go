@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
@@ -41,9 +42,9 @@ func (s *SubmissionRepo) CountByKeyID(key string, id uint, solved bool) (int64, 
 	res = res.Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Submissions: %s", res.Error)
-		return 0, false, "CountModelError"
+		return 0, false, i18n.CountModelError
 	}
-	return count, true, "Success"
+	return count, true, i18n.Success
 }
 
 func (s *SubmissionRepo) GetByKeyID(key string, id uint, limit, offset int, solved bool, preloadL ...string) ([]model.Submission, int64, bool, string) {
@@ -61,9 +62,9 @@ func (s *SubmissionRepo) GetByKeyID(key string, id uint, limit, offset int, solv
 	res = preload(res, preloadL...).Limit(limit).Offset(offset).Find(&submissions)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Submissions: %s", res.Error)
-		return submissions, count, false, "GetSubmissionError"
+		return submissions, count, false, i18n.GetSubmissionError
 	}
-	return submissions, count, true, "Success"
+	return submissions, count, true, i18n.Success
 }
 
 func (s *SubmissionRepo) Update(id uint, options UpdateSubmissionOptions) (bool, string) {
@@ -73,7 +74,7 @@ func (s *SubmissionRepo) Update(id uint, options UpdateSubmissionOptions) (bool,
 		count++
 		if count > 10 {
 			log.Logger.Warningf("Failed to update Submission: too many times failed due to optimistic lock")
-			return false, "DeadLock"
+			return false, i18n.DeadLock
 		}
 		submission, ok, msg := s.GetByID(id)
 		if !ok {
@@ -83,12 +84,12 @@ func (s *SubmissionRepo) Update(id uint, options UpdateSubmissionOptions) (bool,
 		res := s.DB.Model(&model.Submission{}).Where("id = ? AND version = ?", id, submission.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Submission: %s", res.Error)
-			return false, "UpdateSubmissionError"
+			return false, i18n.UpdateSubmissionError
 		}
 		if res.RowsAffected == 0 {
 			continue
 		}
 		break
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

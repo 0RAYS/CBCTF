@@ -2,6 +2,7 @@ package router
 
 import (
 	"CBCTF/internel/config"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/middleware"
 	"CBCTF/internel/redis"
 	db "CBCTF/internel/repo"
@@ -56,7 +57,7 @@ func HomePage(ctx *gin.Context) {
 			"country": user.Country,
 		})
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
 }
 
 func SystemStatus(ctx *gin.Context) {
@@ -97,9 +98,9 @@ func SystemStatus(ctx *gin.Context) {
 	} else {
 		ret["rate"] = fmt.Sprintf("%.2f", float64(hit)/float64(hit+miss)*100)
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": ret})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": ret})
 }
 
 func SystemConfig(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": config.Env})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": config.Env})
 }

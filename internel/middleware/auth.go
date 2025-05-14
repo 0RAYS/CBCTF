@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/service"
@@ -15,13 +16,13 @@ func CheckAuth(ctx *gin.Context) {
 	auth := strings.Fields(ctx.GetHeader("Authorization"))
 	DB := db.DB.WithContext(ctx)
 	if len(auth) != 2 || auth[0] != "Bearer" {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"msg": "Unauthorized", "data": nil})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"msg": i18n.Unauthorized, "data": nil})
 		ctx.Abort()
 		return
 	}
 	claims, err := utils.Parse(auth[1])
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"msg": "Unauthorized", "data": nil})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"msg": i18n.Unauthorized, "data": nil})
 		ctx.Abort()
 		return
 	}
@@ -43,13 +44,13 @@ func CheckAuth(ctx *gin.Context) {
 			return
 		}
 		if !utils.CompareMagic(GetMagic(ctx), claims.X) {
-			ctx.JSON(http.StatusUnauthorized, gin.H{"msg": "Unauthorized", "data": nil})
+			ctx.JSON(http.StatusUnauthorized, gin.H{"msg": i18n.Unauthorized, "data": nil})
 			ctx.Abort()
 			return
 		}
 		service.CreateDevice(DB, user.ID, GetMagic(ctx))
 		if user.Banned {
-			ctx.JSON(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
+			ctx.JSON(http.StatusForbidden, gin.H{"msg": i18n.Forbidden, "data": nil})
 			ctx.Abort()
 			return
 		}
@@ -57,7 +58,7 @@ func CheckAuth(ctx *gin.Context) {
 		ctx.Set("Self", user)
 		ctx.Next()
 	} else {
-		ctx.JSON(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
+		ctx.JSON(http.StatusForbidden, gin.H{"msg": i18n.Forbidden, "data": nil})
 		ctx.Abort()
 	}
 }
@@ -102,7 +103,7 @@ func GetSelfID(ctx *gin.Context) uint {
 func CheckRole(t string) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		if GetRole(ctx) != t {
-			ctx.JSON(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
+			ctx.JSON(http.StatusForbidden, gin.H{"msg": i18n.Forbidden, "data": nil})
 			ctx.Abort()
 			return
 		}
@@ -114,7 +115,7 @@ func CheckRole(t string) func(ctx *gin.Context) {
 func CheckCaptain(ctx *gin.Context) {
 	team := GetTeam(ctx)
 	if team.CaptainID != GetSelfID(ctx) {
-		ctx.JSON(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
+		ctx.JSON(http.StatusForbidden, gin.H{"msg": i18n.Forbidden, "data": nil})
 		ctx.Abort()
 		return
 	}
@@ -124,7 +125,7 @@ func CheckCaptain(ctx *gin.Context) {
 // CheckVerified 检查邮箱是否已验证
 func CheckVerified(ctx *gin.Context) {
 	if self, ok := GetSelf(ctx).(model.User); GetRole(ctx) == "user" && ok && !self.Verified {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "UnverifiedEmail", "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnverifiedEmail, "data": nil})
 		ctx.Abort()
 		return
 	}
@@ -135,7 +136,7 @@ func CheckVerified(ctx *gin.Context) {
 func CheckBanned(ctx *gin.Context) {
 	team := GetTeam(ctx)
 	if team.Banned {
-		ctx.JSON(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
+		ctx.JSON(http.StatusForbidden, gin.H{"msg": i18n.Forbidden, "data": nil})
 		ctx.Abort()
 		return
 	}

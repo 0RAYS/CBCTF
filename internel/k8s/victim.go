@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"CBCTF/internel/config"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"context"
@@ -52,7 +53,7 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]string,
 			}
 			for _, container := range pod.Containers {
 				if container.Image == "" {
-					resultCh <- result{PodName: pod.Name, IP: "", OK: false, Msg: "EmptyContainerImage"}
+					resultCh <- result{PodName: pod.Name, IP: "", OK: false, Msg: i18n.EmptyContainerImage}
 					return
 				}
 				containers = append(containers, corev1.Container{
@@ -156,7 +157,7 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]string,
 		}
 		ipL[res.PodName] = res.IP
 	}
-	return ipL, true, "Success"
+	return ipL, true, i18n.Success
 }
 
 // StopVictim 需要预加载 model.Pod
@@ -201,5 +202,5 @@ func StopVictim(victim model.Victim) (bool, string) {
 			return false, res.Msg
 		}
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

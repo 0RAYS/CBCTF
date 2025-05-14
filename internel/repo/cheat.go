@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
@@ -39,7 +40,7 @@ func (c *CheatRepo) Update(id uint, options UpdateCheatOptions) (bool, string) {
 		count++
 		if count > 10 {
 			log.Logger.Warningf("Failed to update Cheat: too many times failed due to optimistic lock")
-			return false, "DeadLock"
+			return false, i18n.DeadLock
 		}
 		cheat, ok, msg := c.GetByID(id)
 		if !ok {
@@ -49,12 +50,12 @@ func (c *CheatRepo) Update(id uint, options UpdateCheatOptions) (bool, string) {
 		res := c.DB.Model(&model.Cheat{}).Where("id = ? AND version = ?", id, cheat.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Cheat: %s", res.Error)
-			return false, "UpdateCheatError"
+			return false, i18n.UpdateCheatError
 		}
 		if res.RowsAffected == 0 {
 			continue
 		}
 		break
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

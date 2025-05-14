@@ -2,6 +2,7 @@ package router
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/middleware"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
@@ -13,13 +14,13 @@ import (
 
 func GetAdmin(ctx *gin.Context) {
 	admin := middleware.GetSelf(ctx).(model.Admin)
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": resp.GetAdminResp(admin)})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": resp.GetAdminResp(admin)})
 }
 
 func AdminChangePassword(ctx *gin.Context) {
 	var form f.ChangePasswordForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
@@ -35,7 +36,7 @@ func AdminChangePassword(ctx *gin.Context) {
 func UpdateAdmin(ctx *gin.Context) {
 	var form f.UpdateAdminForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
@@ -51,7 +52,7 @@ func UpdateAdmin(ctx *gin.Context) {
 func CreateAdmin(ctx *gin.Context) {
 	var form f.CreateAdminForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()

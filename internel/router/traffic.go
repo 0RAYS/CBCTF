@@ -2,6 +2,7 @@ package router
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/middleware"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/resp"
@@ -12,7 +13,7 @@ import (
 func GetTraffics(ctx *gin.Context) {
 	var form f.GetModelsForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	if _, exists := ctx.GetQuery("limit"); !exists {
@@ -32,5 +33,5 @@ func GetTraffics(ctx *gin.Context) {
 	for _, traffic := range traffics {
 		data = append(data, resp.GetTrafficResp(traffic))
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"traffics": data, "count": count}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"traffics": data, "count": count}})
 }

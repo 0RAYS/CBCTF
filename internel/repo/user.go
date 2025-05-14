@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
@@ -58,19 +59,19 @@ func (u *UserRepo) getByUniqueKey(key string, value interface{}, preloadL ...str
 	case "id":
 		value = value.(uint)
 	default:
-		return model.User{}, false, "UnsupportedKey"
+		return model.User{}, false, i18n.UnsupportedKey
 	}
 	var user model.User
 	res := u.DB.Model(&model.User{}).Where(key+" = ?", value)
 	res = preload(res, preloadL...).Limit(1).Find(&user)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get User")
-		return model.User{}, false, "GetUserError"
+		return model.User{}, false, i18n.GetUserError
 	}
 	if res.RowsAffected == 0 {
-		return model.User{}, false, "UserNotFound"
+		return model.User{}, false, i18n.UserNotFound
 	}
-	return user, true, "Success"
+	return user, true, i18n.Success
 }
 
 func (u *UserRepo) GetByName(name string, preloadL ...string) (model.User, bool, string) {
@@ -93,9 +94,9 @@ func (u *UserRepo) Count(hidden, banned bool) (int64, bool, string) {
 	res = res.Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Users: %s", res.Error)
-		return 0, false, "CountModelError"
+		return 0, false, i18n.CountModelError
 	}
-	return count, true, "Success"
+	return count, true, i18n.Success
 }
 
 func (u *UserRepo) GetAll(limit, offset int, hidden, banned bool, preloadL ...string) ([]model.User, int64, bool, string) {
@@ -116,9 +117,9 @@ func (u *UserRepo) GetAll(limit, offset int, hidden, banned bool, preloadL ...st
 	res = preload(res, preloadL...).Limit(limit).Offset(offset).Find(&users)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Users: %s", res.Error)
-		return users, count, false, "GetUserError"
+		return users, count, false, i18n.GetUserError
 	}
-	return users, count, true, "Success"
+	return users, count, true, i18n.Success
 }
 
 func (u *UserRepo) Update(id uint, options UpdateUserOptions) (bool, string) {
@@ -128,7 +129,7 @@ func (u *UserRepo) Update(id uint, options UpdateUserOptions) (bool, string) {
 		count++
 		if count > 10 {
 			log.Logger.Warningf("Failed to update User: too many times failed due to optimistic lock")
-			return false, "DeadLock"
+			return false, i18n.DeadLock
 		}
 		user, ok, msg := u.GetByID(id)
 		if !ok {
@@ -138,14 +139,14 @@ func (u *UserRepo) Update(id uint, options UpdateUserOptions) (bool, string) {
 		res := u.DB.Model(&model.User{}).Where("id = ? AND version = ?", id, user.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update User: %s", res.Error)
-			return false, "UpdateUserError"
+			return false, i18n.UpdateUserError
 		}
 		if res.RowsAffected == 0 {
 			continue
 		}
 		break
 	}
-	return true, "Success"
+	return true, i18n.Success
 }
 
 func (u *UserRepo) Delete(idL ...uint) (bool, string) {
@@ -157,10 +158,10 @@ func (u *UserRepo) Delete(idL ...uint) (bool, string) {
 		}
 		for _, team := range user.Teams {
 			if err := DeleteUserFromContest(u.DB, user.ID, team.ContestID); err != nil {
-				return false, "DeleteUserFromContestError"
+				return false, i18n.DeleteUserFromContestError
 			}
 			if err := DeleteUserFromTeam(u.DB, user.ID, team.ID); err != nil {
-				return false, "DeleteUserFromTeamError"
+				return false, i18n.DeleteUserFromTeamError
 			}
 		}
 		for _, submission := range user.Submissions {
@@ -172,7 +173,7 @@ func (u *UserRepo) Delete(idL ...uint) (bool, string) {
 	}
 	if res := u.DB.Model(&model.User{}).Where("id IN ?", idL).Delete(&model.Submission{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete User: %s", res.Error)
-		return false, "DeleteUserError"
+		return false, i18n.DeleteUserError
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

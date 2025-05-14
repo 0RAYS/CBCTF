@@ -1,6 +1,7 @@
 package service
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
@@ -25,7 +26,7 @@ func GenerateAnswer(tx *gorm.DB, team model.Team, usage model.Usage) ([]model.An
 	repo := db.InitAnswerRepo(tx)
 	answers := make([]model.Answer, 0)
 	if len(usage.Flags) < 1 {
-		return answers, false, "FlagNotFound"
+		return answers, false, i18n.FlagNotFound
 	}
 	options := make([]db.CreateAnswerOptions, 0)
 	for _, flag := range usage.Flags {
@@ -57,7 +58,7 @@ func GenerateAnswer(tx *gorm.DB, team model.Team, usage model.Usage) ([]model.An
 		}
 		answers = append(answers, answer)
 	}
-	return answers, true, "Success"
+	return answers, true, i18n.Success
 }
 
 // ResetAnswer model.Usage 需要预加载

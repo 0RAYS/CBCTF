@@ -2,13 +2,14 @@ package service
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"errors"
 	"gorm.io/gorm"
 )
 
-// CreateUsage 批量将题目添加至比赛, 采用局部回滚, 返回值 bool string 永为 true "Success"
+// CreateUsage 批量将题目添加至比赛, 采用局部回滚, 返回值 bool string 永为 true i18n.Success
 func CreateUsage(tx *gorm.DB, contest model.Contest, form f.CreateUsageForm) ([]model.Usage, []string, bool, string) {
 	usages := make([]model.Usage, 0)
 	failed := make([]string, 0)
@@ -79,13 +80,13 @@ func CreateUsage(tx *gorm.DB, contest model.Contest, form f.CreateUsageForm) ([]
 				}
 			default:
 				failed = append(failed, challengeID)
-				return errors.New("InvalidChallengeType")
+				return errors.New(i18n.InvalidChallengeType)
 			}
 			usages = append(usages, usage)
 			return nil
 		})
 	}
-	return usages, failed, true, "Success"
+	return usages, failed, true, i18n.Success
 }
 
 func UpdateUsage(tx *gorm.DB, usage model.Usage, form f.UpdateUsageForm) (bool, string) {

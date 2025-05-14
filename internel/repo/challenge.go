@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
@@ -41,19 +42,19 @@ func (c *ChallengeRepo) getByUniqueKey(key string, value interface{}, preloadL .
 	case "id":
 		value = value.(string)
 	default:
-		return model.Challenge{}, false, "UnsupportedKey"
+		return model.Challenge{}, false, i18n.UnsupportedKey
 	}
 	var challenge model.Challenge
 	res := c.DB.Model(&model.Challenge{}).Where(key+" = ?", value)
 	res = preload(res, preloadL...).Limit(1).Find(&challenge)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Challenge: %s", res.Error)
-		return model.Challenge{}, false, "GetChallengeError"
+		return model.Challenge{}, false, i18n.GetChallengeError
 	}
 	if res.RowsAffected == 0 {
-		return model.Challenge{}, false, "ChallengeNotFound"
+		return model.Challenge{}, false, i18n.ChallengeNotFound
 	}
-	return challenge, true, "Success"
+	return challenge, true, i18n.Success
 }
 
 func (c *ChallengeRepo) GetByID(id string, preloadL ...string) (model.Challenge, bool, string) {
@@ -71,9 +72,9 @@ func (c *ChallengeRepo) Count(t, category string) (int64, bool, string) {
 	res = res.Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Challenges: %s", res.Error)
-		return 0, false, "CountModelError"
+		return 0, false, i18n.CountModelError
 	}
-	return count, true, "Success"
+	return count, true, i18n.Success
 }
 
 func (c *ChallengeRepo) GetAll(limit, offset int, t, category string, preloadL ...string) ([]model.Challenge, int64, bool, string) {
@@ -94,9 +95,9 @@ func (c *ChallengeRepo) GetAll(limit, offset int, t, category string, preloadL .
 	res = res.Limit(limit).Offset(offset).Find(&challenges)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Challenges: %s", res.Error)
-		return challenges, count, false, "GetChallengeError"
+		return challenges, count, false, i18n.GetChallengeError
 	}
-	return challenges, count, true, "Success"
+	return challenges, count, true, i18n.Success
 }
 
 func (c *ChallengeRepo) Update(id string, options UpdateChallengeOptions) (bool, string) {
@@ -106,7 +107,7 @@ func (c *ChallengeRepo) Update(id string, options UpdateChallengeOptions) (bool,
 		count++
 		if count > 10 {
 			log.Logger.Warningf("Failed to update Challenge: too many times failed due to optimistic lock")
-			return false, "DeadLock"
+			return false, i18n.DeadLock
 		}
 		challenge, ok, msg := c.GetByID(id)
 		if !ok {
@@ -116,14 +117,14 @@ func (c *ChallengeRepo) Update(id string, options UpdateChallengeOptions) (bool,
 		res := c.DB.Model(&model.Challenge{}).Where("id = ? AND version = ?", id, challenge.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Challenge: %s", res.Error)
-			return false, "UpdateChallengeError"
+			return false, i18n.UpdateChallengeError
 		}
 		if res.RowsAffected == 0 {
 			continue
 		}
 		break
 	}
-	return true, "Success"
+	return true, i18n.Success
 }
 
 func (c *ChallengeRepo) GetCategories(t string) ([]string, bool, string) {
@@ -135,9 +136,9 @@ func (c *ChallengeRepo) GetCategories(t string) ([]string, bool, string) {
 	res = res.Select("distinct category").Find(&categories)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Categories: %s", res.Error)
-		return categories, false, "GetChallengeError"
+		return categories, false, i18n.GetChallengeError
 	}
-	return categories, true, "Success"
+	return categories, true, i18n.Success
 }
 
 func (c *ChallengeRepo) Delete(idL ...string) (bool, string) {
@@ -163,7 +164,7 @@ func (c *ChallengeRepo) Delete(idL ...string) (bool, string) {
 	res := c.DB.Model(&model.Challenge{}).Where("id IN ?", idL).Delete(&model.Challenge{})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete Challenge: %s", res.Error)
-		return false, "DeleteChallengeError"
+		return false, i18n.DeleteChallengeError
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

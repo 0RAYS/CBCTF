@@ -2,6 +2,7 @@ package service
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
@@ -12,13 +13,13 @@ import (
 func CreateAdmin(tx *gorm.DB, form f.CreateAdminForm) (model.Admin, bool, string) {
 	repo := db.InitAdminRepo(tx)
 	if !utils.IsValidEmail(form.Email) {
-		return model.Admin{}, false, "InvalidEmail"
+		return model.Admin{}, false, i18n.InvalidEmail
 	}
 	if !repo.IsUniqueEmail(form.Email) {
-		return model.Admin{}, false, "DuplicateEmail"
+		return model.Admin{}, false, i18n.DuplicateEmail
 	}
 	if !repo.IsUniqueName(form.Name) {
-		return model.Admin{}, false, "DuplicateUsername"
+		return model.Admin{}, false, i18n.DuplicateUsername
 	}
 	return repo.Create(db.CreateAdminOptions{
 		Name:     form.Name,
@@ -36,9 +37,9 @@ func VerifyAdmin(tx *gorm.DB, form f.LoginForm) (model.Admin, bool, string) {
 		return model.Admin{}, false, msg
 	}
 	if !utils.CompareHashAndPassword(admin.Password, form.Password) {
-		return model.Admin{}, false, "NameOrPasswordError"
+		return model.Admin{}, false, i18n.NameOrPasswordError
 	}
-	return admin, true, "Success"
+	return admin, true, i18n.Success
 }
 
 func UpdateUser(tx *gorm.DB, user model.User, form f.UpdateUserForm) (bool, string) {
@@ -55,10 +56,10 @@ func UpdateUser(tx *gorm.DB, user model.User, form f.UpdateUserForm) (bool, stri
 	}
 	if form.Email != nil && *form.Email != user.Email {
 		if !utils.IsValidEmail(*form.Email) {
-			return false, "InvalidEmail"
+			return false, i18n.InvalidEmail
 		}
 		if !repo.IsUniqueEmail(*form.Email) {
-			return false, "DuplicateEmail"
+			return false, i18n.DuplicateEmail
 		}
 		verified := false
 		options.Email = form.Email
@@ -66,7 +67,7 @@ func UpdateUser(tx *gorm.DB, user model.User, form f.UpdateUserForm) (bool, stri
 	}
 	if form.Name != nil && *form.Name != user.Name {
 		if !repo.IsUniqueName(*form.Name) {
-			return false, "DuplicateUsername"
+			return false, i18n.DuplicateUsername
 		}
 		options.Name = form.Name
 	}
@@ -82,7 +83,7 @@ func UpdateAdmin(tx *gorm.DB, admin model.Admin, form f.UpdateAdminForm) (bool, 
 	options := db.UpdateAdminOptions{}
 	if form.Email != nil && *form.Email != admin.Email {
 		if !repo.IsUniqueEmail(*form.Email) {
-			return false, "DuplicateEmail"
+			return false, i18n.DuplicateEmail
 		}
 		options.Email = form.Email
 		verified := false
@@ -90,7 +91,7 @@ func UpdateAdmin(tx *gorm.DB, admin model.Admin, form f.UpdateAdminForm) (bool, 
 	}
 	if form.Name != nil && *form.Name != admin.Name {
 		if !repo.IsUniqueName(*form.Name) {
-			return false, "DuplicateUsername"
+			return false, i18n.DuplicateUsername
 		}
 		options.Name = form.Name
 	}
@@ -99,10 +100,10 @@ func UpdateAdmin(tx *gorm.DB, admin model.Admin, form f.UpdateAdminForm) (bool, 
 
 func ChangeAdminPassword(tx *gorm.DB, admin model.Admin, form f.ChangePasswordForm) (bool, string) {
 	if !utils.CompareHashAndPassword(admin.Password, form.OldPassword) {
-		return false, "PasswordError"
+		return false, i18n.PasswordError
 	}
 	if utils.CompareHashAndPassword(admin.Password, form.NewPassword) {
-		return false, "PasswordSame"
+		return false, i18n.PasswordSame
 	}
 	hash := utils.HashPassword(form.NewPassword)
 	repo := db.InitAdminRepo(tx)

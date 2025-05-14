@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
@@ -45,9 +46,9 @@ func (f *FlagRepo) Count(key string, id uint) (int64, bool, string) {
 	res := f.DB.Model(&model.Flag{}).Where(key+" = ?", id).Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Flags: %s", res.Error)
-		return 0, false, "CountModelError"
+		return 0, false, i18n.CountModelError
 	}
-	return count, true, "Success"
+	return count, true, i18n.Success
 }
 
 func (f *FlagRepo) GetByKeyID(key string, id uint, limit, offset int, preloadL ...string) ([]model.Flag, int64, bool, string) {
@@ -62,9 +63,9 @@ func (f *FlagRepo) GetByKeyID(key string, id uint, limit, offset int, preloadL .
 	res = preload(res, preloadL...).Limit(limit).Offset(offset).Find(&flags)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Flags: %s", res.Error)
-		return flags, count, false, "GetFlagError"
+		return flags, count, false, i18n.GetFlagError
 	}
-	return flags, count, true, "Success"
+	return flags, count, true, i18n.Success
 }
 
 func (f *FlagRepo) Update(id uint, options UpdateFlagOptions) (bool, string) {
@@ -74,7 +75,7 @@ func (f *FlagRepo) Update(id uint, options UpdateFlagOptions) (bool, string) {
 		count++
 		if count > 10 {
 			log.Logger.Warningf("Failed to update Flag: too many times failed due to optimistic lock")
-			return false, "DeadLock"
+			return false, i18n.DeadLock
 		}
 		flag, ok, msg := f.GetByID(id)
 		if !ok {
@@ -84,14 +85,14 @@ func (f *FlagRepo) Update(id uint, options UpdateFlagOptions) (bool, string) {
 		res := f.DB.Model(&model.Flag{}).Where("id = ? AND version = ?", id, flag.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Flag: %s", res.Error)
-			return false, "UpdateFlagError"
+			return false, i18n.UpdateFlagError
 		}
 		if res.RowsAffected == 0 {
 			continue
 		}
 		break
 	}
-	return true, "Success"
+	return true, i18n.Success
 }
 
 func (f *FlagRepo) Delete(idL ...uint) (bool, string) {
@@ -116,7 +117,7 @@ func (f *FlagRepo) Delete(idL ...uint) (bool, string) {
 	}
 	if res := f.DB.Model(&model.Flag{}).Where("id IN ?", idL).Delete(&model.Flag{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Flags: %s", res.Error)
-		return false, "DeleteFlagError"
+		return false, i18n.DeleteFlagError
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

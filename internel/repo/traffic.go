@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"gorm.io/gorm"
@@ -33,9 +34,9 @@ func (t *TrafficRepo) CountByKey(key string, id uint) (int64, bool, string) {
 	res := t.DB.Model(&model.Traffic{}).Where(key+" = ?", id).Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Traffic: %v", res.Error)
-		return 0, false, "CountModelError"
+		return 0, false, i18n.CountModelError
 	}
-	return count, true, "Success"
+	return count, true, i18n.Success
 }
 
 func (t *TrafficRepo) GetByKey(key string, id uint, limit, offset int, preloadL ...string) ([]model.Traffic, int64, bool, string) {
@@ -50,7 +51,7 @@ func (t *TrafficRepo) GetByKey(key string, id uint, limit, offset int, preloadL 
 	res = preload(res, preloadL...).Limit(limit).Offset(offset).Find(&traffics)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Traffics: %v", res.Error)
-		return traffics, count, false, "GetTrafficError"
+		return traffics, count, false, i18n.GetTrafficError
 	}
-	return traffics, count, true, "Success"
+	return traffics, count, true, i18n.Success
 }

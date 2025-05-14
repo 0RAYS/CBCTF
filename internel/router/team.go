@@ -2,6 +2,7 @@ package router
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/middleware"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
@@ -23,13 +24,13 @@ func GetTeam(ctx *gin.Context) {
 	solved, _, _ := service.GetTeamSolved(db.DB.WithContext(ctx), team.ID)
 	data := resp.GetTeamResp(team)
 	data["solved"] = resp.GetSolvedStateResp(solved, flags)
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
 }
 
 func GetTeams(ctx *gin.Context) {
 	var form f.GetModelsForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	if _, exists := ctx.GetQuery("limit"); !exists {
@@ -53,7 +54,7 @@ func GetTeams(ctx *gin.Context) {
 }
 
 func GetTeamCaptcha(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": middleware.GetTeam(ctx).Captcha})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": middleware.GetTeam(ctx).Captcha})
 }
 
 func GetTeammates(ctx *gin.Context) {
@@ -62,7 +63,7 @@ func GetTeammates(ctx *gin.Context) {
 	for _, user := range middleware.GetTeam(ctx).Users {
 		data = append(data, resp.GetUserResp(*user, all))
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
 	return
 }
 
@@ -76,14 +77,14 @@ func UpdateTeam(ctx *gin.Context) {
 	if middleware.GetRole(ctx) == "admin" {
 		var form f.AdminUpdateTeamForm
 		if err := ctx.ShouldBindJSON(&form); err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+			ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 			return
 		}
 		ok, msg = service.AdminUpdateTeam(tx, team, form)
 	} else {
 		var form f.UpdateTeamForm
 		if err := ctx.ShouldBindJSON(&form); err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+			ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 			return
 		}
 		ok, msg = service.UpdateTeam(tx, team, form)
@@ -123,7 +124,7 @@ func DeleteTeam(ctx *gin.Context) {
 func KickMember(ctx *gin.Context) {
 	var form f.KickMemberForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	team := middleware.GetTeam(ctx)
@@ -141,7 +142,7 @@ func KickMember(ctx *gin.Context) {
 func JoinTeam(ctx *gin.Context) {
 	var form f.JoinTeamForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	contest := middleware.GetContest(ctx)
@@ -160,7 +161,7 @@ func JoinTeam(ctx *gin.Context) {
 func CreateTeam(ctx *gin.Context) {
 	var form f.CreateTeamForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	contest := middleware.GetContest(ctx)
@@ -193,7 +194,7 @@ func LeaveTeam(ctx *gin.Context) {
 func GetTeamRanking(ctx *gin.Context) {
 	var form f.GetModelsForm
 	if err := ctx.ShouldBindQuery(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	if _, exists := ctx.GetQuery("limit"); !exists {
@@ -232,5 +233,5 @@ func GetTeamRanking(ctx *gin.Context) {
 	}
 	data := resp.GetTeamRankingResp(teamsData, flags, all)
 	data["count"] = count
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
 }

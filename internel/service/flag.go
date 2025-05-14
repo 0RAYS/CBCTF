@@ -2,6 +2,7 @@ package service
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"gorm.io/gorm"
@@ -17,14 +18,14 @@ func VerifyFlag(tx *gorm.DB, team model.Team, usage model.Usage, value string) (
 		for _, answer := range flag.Answers {
 			if answer.TeamID == team.ID && answer.Value == value {
 				if answer.Solved {
-					return false, flag, answer, true, "AlreadySolved"
+					return false, flag, answer, true, i18n.AlreadySolved
 				}
-				return true, flag, answer, true, "Success"
+				return true, flag, answer, true, i18n.Success
 			}
 		}
 	}
 	// 没有找到答案, 则默认为第一个flag
-	return false, flags[0], model.Answer{}, true, "FlagNotMatch"
+	return false, flags[0], model.Answer{}, true, i18n.FlagNotMatch
 }
 
 func UpdateFlag(tx *gorm.DB, flag model.Flag, form f.UpdateFlagForm) (bool, string) {
@@ -46,7 +47,7 @@ func UpdateFlag(tx *gorm.DB, flag model.Flag, form f.UpdateFlagForm) (bool, stri
 	case model.DynamicChallenge, model.PodsChallenge:
 		options.Value = form.Value
 	default:
-		return false, "InvalidChallengeType"
+		return false, i18n.InvalidChallengeType
 	}
 	return flagRepo.Update(flag.ID, options)
 }
@@ -57,5 +58,5 @@ func CalcSolversAndScore(tx *gorm.DB, flag model.Flag) (int64, float64, bool, st
 		return 0, 0, false, msg
 	}
 	score := flag.CalcCurrentScore(count - 1)
-	return count, score, true, "Success"
+	return count, score, true, i18n.Success
 }
