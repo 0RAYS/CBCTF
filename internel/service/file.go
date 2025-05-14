@@ -2,6 +2,7 @@ package service
 
 import (
 	"CBCTF/internel/config"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
@@ -20,7 +21,7 @@ func SaveAvatar(tx *gorm.DB, options db.CreateFileOptions, file *multipart.FileH
 	src, err := file.Open()
 	if err != nil {
 		log.Logger.Warningf("Failed to open file: %v", err)
-		return model.File{}, false, "BadRequest"
+		return model.File{}, false, i18n.BadRequest
 	}
 	defer func(src multipart.File) {
 		err := src.Close()
@@ -31,7 +32,7 @@ func SaveAvatar(tx *gorm.DB, options db.CreateFileOptions, file *multipart.FileH
 	sha256Sum := sha256.New()
 	if _, err := io.Copy(sha256Sum, src); err != nil {
 		log.Logger.Warningf("Failed to hash file: %v", err)
-		return model.File{}, false, "UnknownError"
+		return model.File{}, false, i18n.UnknownError
 	}
 	var (
 		fileRepo      = db.InitFileRepo(tx)
@@ -42,7 +43,7 @@ func SaveAvatar(tx *gorm.DB, options db.CreateFileOptions, file *multipart.FileH
 		suffix        = strings.ToLower(filepath.Ext(file.Filename))
 	)
 	if !utils.In(suffix, allowed) {
-		return model.File{}, false, "FileNotAllowed"
+		return model.File{}, false, i18n.FileNotAllowed
 	}
 	if !ok {
 		basePath := fmt.Sprintf("%s/avatars", config.Env.Path)
@@ -78,7 +79,7 @@ func UpdateAvatar(tx *gorm.DB, v string, id uint, record model.File) (string, bo
 	case "team":
 		ok, msg = db.InitTeamRepo(tx).Update(id, db.UpdateTeamOptions{Avatar: &path})
 	default:
-		ok, msg = false, "UnsupportedKey"
+		ok, msg = false, i18n.UnsupportedKey
 	}
 	return path, ok, msg
 }
@@ -87,7 +88,7 @@ func SaveWriteUp(tx *gorm.DB, userID, contestID, teamID uint, file *multipart.Fi
 	src, err := file.Open()
 	if err != nil {
 		log.Logger.Warningf("Failed to open file: %v", err)
-		return model.File{}, false, "BadRequest"
+		return model.File{}, false, i18n.BadRequest
 	}
 	defer func(src multipart.File) {
 		err := src.Close()
@@ -98,7 +99,7 @@ func SaveWriteUp(tx *gorm.DB, userID, contestID, teamID uint, file *multipart.Fi
 	sha256Sum := sha256.New()
 	if _, err := io.Copy(sha256Sum, src); err != nil {
 		log.Logger.Warningf("Failed to hash file: %v", err)
-		return model.File{}, false, "UnknownError"
+		return model.File{}, false, i18n.UnknownError
 	}
 	var (
 		fileRepo      = db.InitFileRepo(tx)
@@ -109,7 +110,7 @@ func SaveWriteUp(tx *gorm.DB, userID, contestID, teamID uint, file *multipart.Fi
 		suffix        = strings.ToLower(filepath.Ext(file.Filename))
 	)
 	if !utils.In(suffix, allowed) {
-		return model.File{}, false, "FileNotAllowed"
+		return model.File{}, false, i18n.FileNotAllowed
 	}
 	if !ok {
 		basePath := fmt.Sprintf("%s/writeups/%d/%d", config.Env.Path, contestID, teamID)

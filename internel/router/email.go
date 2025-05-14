@@ -2,6 +2,7 @@ package router
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/middleware"
 	"CBCTF/internel/model"
@@ -16,7 +17,7 @@ import (
 func VerifyEmail(ctx *gin.Context) {
 	var form f.VerifyEmail
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
@@ -27,7 +28,7 @@ func VerifyEmail(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }
 
 func ActivateEmail(ctx *gin.Context) {
@@ -41,14 +42,14 @@ func SendEmail(user model.User) (bool, string) {
 	token, err := utils.Generate(user.ID, user.Name, "email", "email")
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
-		return false, "UnknownError"
+		return false, i18n.UnknownError
 	}
 	ok, msg := redis.SetEmailVerifyToken(user.ID, id)
 	if !ok {
 		return false, msg
 	}
 	if err := utils.SendVerifyEmail(user.Email, token, id); err != nil {
-		return false, "SendEmailError"
+		return false, i18n.SendEmailError
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

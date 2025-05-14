@@ -2,6 +2,7 @@ package service
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
@@ -11,17 +12,17 @@ import (
 
 func CreateUser(tx *gorm.DB, form f.RegisterForm) (model.User, bool, string) {
 	if !utils.IsValidEmail(form.Email) {
-		return model.User{}, false, "InvalidEmail"
+		return model.User{}, false, i18n.InvalidEmail
 	}
 	repo := db.InitUserRepo(tx)
 	if !repo.IsUniqueName(form.Name) {
-		return model.User{}, false, "DuplicateUsername"
+		return model.User{}, false, i18n.DuplicateUsername
 	}
 	if !repo.IsUniqueEmail(form.Email) {
-		return model.User{}, false, "DuplicateEmail"
+		return model.User{}, false, i18n.DuplicateEmail
 	}
 	if utils.CheckPassword(form.Password) <= 1 {
-		return model.User{}, false, "WeakPassword"
+		return model.User{}, false, i18n.WeakPassword
 	}
 	return repo.Create(db.CreateUserOptions{
 		Name:     form.Name,
@@ -32,14 +33,14 @@ func CreateUser(tx *gorm.DB, form f.RegisterForm) (model.User, bool, string) {
 
 func AdminCreateUser(tx *gorm.DB, form f.CreateUserForm) (model.User, bool, string) {
 	if !utils.IsValidEmail(form.Email) {
-		return model.User{}, false, "InvalidEmail"
+		return model.User{}, false, i18n.InvalidEmail
 	}
 	repo := db.InitUserRepo(tx)
 	if !repo.IsUniqueName(form.Name) {
-		return model.User{}, false, "DuplicateUsername"
+		return model.User{}, false, i18n.DuplicateUsername
 	}
 	if !repo.IsUniqueEmail(form.Email) {
-		return model.User{}, false, "DuplicateEmail"
+		return model.User{}, false, i18n.DuplicateEmail
 	}
 	return repo.Create(db.CreateUserOptions{
 		Name:     form.Name,
@@ -61,21 +62,21 @@ func VerifyUser(tx *gorm.DB, form f.LoginForm) (model.User, bool, string) {
 		return model.User{}, false, msg
 	}
 	if !utils.CompareHashAndPassword(user.Password, form.Password) {
-		return model.User{}, false, "NameOrPasswordError"
+		return model.User{}, false, i18n.NameOrPasswordError
 	}
-	return user, true, "Success"
+	return user, true, i18n.Success
 }
 
 func ChangeUserPwd(tx *gorm.DB, user model.User, form f.ChangePasswordForm) (bool, string) {
 	repo := db.InitUserRepo(tx)
 	if !utils.CompareHashAndPassword(user.Password, form.OldPassword) {
-		return false, "PasswordError"
+		return false, i18n.PasswordError
 	}
 	if utils.CompareHashAndPassword(user.Password, form.NewPassword) {
-		return false, "PasswordSame"
+		return false, i18n.PasswordSame
 	}
 	if utils.CheckPassword(form.NewPassword) <= 1 {
-		return false, "WeakPassword"
+		return false, i18n.WeakPassword
 	}
 	password := utils.HashPassword(form.NewPassword)
 	return repo.Update(user.ID, db.UpdateUserOptions{Password: &password})
@@ -92,10 +93,10 @@ func UpdateSelf(tx *gorm.DB, user model.User, form f.UpdateSelfForm) (bool, stri
 	}
 	if form.Email != nil && *form.Email != user.Email {
 		if !utils.IsValidEmail(*form.Email) {
-			return false, "InvalidEmail"
+			return false, i18n.InvalidEmail
 		}
 		if !repo.IsUniqueEmail(*form.Email) {
-			return false, "DuplicateEmail"
+			return false, i18n.DuplicateEmail
 		}
 		verified := false
 		options.Email = form.Email
@@ -103,7 +104,7 @@ func UpdateSelf(tx *gorm.DB, user model.User, form f.UpdateSelfForm) (bool, stri
 	}
 	if form.Name != nil && *form.Name != user.Name {
 		if !repo.IsUniqueName(*form.Name) {
-			return false, "DuplicateUsername"
+			return false, i18n.DuplicateUsername
 		}
 		options.Name = form.Name
 	}
@@ -113,7 +114,7 @@ func UpdateSelf(tx *gorm.DB, user model.User, form f.UpdateSelfForm) (bool, stri
 func DeleteSelf(tx *gorm.DB, user model.User, form f.DeleteSelfForm) (bool, string) {
 	repo := db.InitUserRepo(tx)
 	if !utils.CompareHashAndPassword(user.Password, form.Password) {
-		return false, "PasswordError"
+		return false, i18n.PasswordError
 	}
 	return repo.Delete(user.ID)
 }

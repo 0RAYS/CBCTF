@@ -2,6 +2,7 @@ package service
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"gorm.io/gorm"
@@ -14,7 +15,7 @@ var SolvedMutex sync.Map
 // Submit model.Usage 需要预加载
 func Submit(tx *gorm.DB, user model.User, team model.Team, usage model.Usage, form f.SubmitFlagForm) (string, model.Submission, bool, string) {
 	if usage.Attempt != 0 && usage.Attempt <= CountAttempts(tx, team, usage) {
-		return "", model.Submission{}, false, "NotAllowSubmit"
+		return "", model.Submission{}, false, i18n.NotAllowSubmit
 	}
 	submissionRepo := db.InitSubmissionRepo(tx)
 	options := db.CreateSubmissionOptions{
@@ -78,7 +79,7 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, usage model.Usage, fo
 			return "", model.Submission{}, false, msg
 		}
 	}
-	return result, submission, true, "Success"
+	return result, submission, true, i18n.Success
 }
 
 // IsSolved model.Usage 需要预加载 model.Flag

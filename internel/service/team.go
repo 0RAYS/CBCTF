@@ -2,6 +2,7 @@ package service
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
@@ -14,12 +15,12 @@ func UpdateTeam(tx *gorm.DB, team model.Team, form f.UpdateTeamForm) (bool, stri
 	repo := db.InitTeamRepo(tx)
 	if form.Name != nil && *form.Name != team.Name {
 		if !repo.IsUniqueName(team.ContestID, *form.Name) {
-			return false, "DuplicateTeamName"
+			return false, i18n.DuplicateTeamName
 		}
 	}
 	if form.CaptainID != nil && *form.CaptainID != team.CaptainID {
 		if !repo.IsTeamMember(team.ID, *form.CaptainID) {
-			return false, "UserNotInTeam"
+			return false, i18n.UserNotInTeam
 		}
 	}
 	return repo.Update(team.ID, db.UpdateTeamOptions{
@@ -33,12 +34,12 @@ func AdminUpdateTeam(tx *gorm.DB, team model.Team, form f.AdminUpdateTeamForm) (
 	repo := db.InitTeamRepo(tx)
 	if form.Name != nil && *form.Name != team.Name {
 		if !repo.IsUniqueName(team.ContestID, *form.Name) {
-			return false, "DuplicateTeamName"
+			return false, i18n.DuplicateTeamName
 		}
 	}
 	if form.CaptainID != nil && *form.CaptainID != team.CaptainID {
 		if !repo.IsTeamMember(team.ID, *form.CaptainID) {
-			return false, "UserNotInTeam"
+			return false, i18n.UserNotInTeam
 		}
 	}
 	return repo.Update(team.ID, db.UpdateTeamOptions{
@@ -71,38 +72,38 @@ func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.JoinTe
 		return model.Team{}, false, msg
 	}
 	if team.Banned {
-		return model.Team{}, false, "TeamBanned"
+		return model.Team{}, false, i18n.TeamIsBanned
 	}
 	if form.Captcha != team.Captcha {
-		return model.Team{}, false, "CaptchaError"
+		return model.Team{}, false, i18n.CaptchaError
 	}
 	if len(team.Users)+1 > contest.Size {
-		return model.Team{}, false, "TeamIsFull"
+		return model.Team{}, false, i18n.TeamIsFull
 	}
 	if !repo.IsUniqueMember(contest.ID, user.ID) {
-		return model.Team{}, false, "DuplicateMember"
+		return model.Team{}, false, i18n.DuplicateMember
 	}
 	if err = db.AppendUserToTeam(tx, user.ID, team.ID); err != nil {
-		return model.Team{}, false, "AppendUserToTeamError"
+		return model.Team{}, false, i18n.AppendUserToTeamError
 	}
 	// 关联 User Contest Many2Many
 	if err = db.AppendUserToContest(tx, user.ID, contest.ID); err != nil {
-		return model.Team{}, false, "AppendContestToUserError"
+		return model.Team{}, false, i18n.AppendUserToContestError
 	}
 	team.Users = append(team.Users, &user)
-	return team, true, "Success"
+	return team, true, i18n.Success
 }
 
 func CreateTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.CreateTeamForm) (model.Team, bool, string) {
 	if contest.Captcha != "" && form.Captcha != contest.Captcha {
-		return model.Team{}, false, "CaptchaError"
+		return model.Team{}, false, i18n.CaptchaError
 	}
 	repo := db.InitTeamRepo(tx)
 	if !repo.IsUniqueName(contest.ID, form.Name) {
-		return model.Team{}, false, "DuplicateTeamName"
+		return model.Team{}, false, i18n.DuplicateTeamName
 	}
 	if !repo.IsUniqueMember(contest.ID, user.ID) {
-		return model.Team{}, false, "DuplicateMember"
+		return model.Team{}, false, i18n.DuplicateMember
 	}
 	team, ok, msg := repo.Create(db.CreateTeamOptions{
 		Name:      form.Name,
@@ -119,30 +120,30 @@ func CreateTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.Crea
 		return model.Team{}, false, msg
 	}
 	if err := db.AppendUserToTeam(tx, user.ID, team.ID); err != nil {
-		return model.Team{}, false, "AppendUserToTeamError"
+		return model.Team{}, false, i18n.AppendUserToTeamError
 	}
 	if err := db.AppendUserToContest(tx, user.ID, contest.ID); err != nil {
-		return model.Team{}, false, "AppendUserToContestError"
+		return model.Team{}, false, i18n.AppendUserToContestError
 	}
 	team.Users = append(team.Users, &user)
-	return team, true, "Success"
+	return team, true, i18n.Success
 }
 
 func LeaveTeam(tx *gorm.DB, contest model.Contest, team model.Team, userID uint) (bool, string) {
 	repo := db.InitTeamRepo(tx)
 	if !repo.IsTeamMember(team.ID, userID) {
-		return false, "UserNotInTeam"
+		return false, i18n.UserNotInTeam
 	}
 	if team.CaptainID == userID {
-		return false, "CaptainCannotLeave"
+		return false, i18n.CaptainCannotLeave
 	}
 	if err := db.DeleteUserFromTeam(tx, userID, team.ID); err != nil {
-		return false, "DeleteUserFromTeamError"
+		return false, i18n.DeleteUserFromTeamError
 	}
 	if err := db.DeleteUserFromContest(tx, userID, contest.ID); err != nil {
-		return false, "DeleteUserFromContestError"
+		return false, i18n.DeleteUserFromContestError
 	}
-	return true, "Success"
+	return true, i18n.Success
 }
 
 func CalcTeamScore(tx *gorm.DB, team model.Team) (float64, bool, string) {
@@ -165,7 +166,7 @@ func CalcTeamScore(tx *gorm.DB, team model.Team) (float64, bool, string) {
 
 	}
 	score = math.Trunc(score*100) / 100
-	return total, true, "Success"
+	return total, true, i18n.Success
 }
 
 func GetTeamSolved(tx *gorm.DB, teamID uint) ([]model.Flag, bool, string) {
@@ -180,5 +181,5 @@ func GetTeamSolved(tx *gorm.DB, teamID uint) ([]model.Flag, bool, string) {
 	for _, submission := range submissions {
 		flags = append(flags, submission.Flag)
 	}
-	return flags, true, "Success"
+	return flags, true, i18n.Success
 }

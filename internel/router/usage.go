@@ -2,6 +2,7 @@ package router
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/k8s"
 	"CBCTF/internel/middleware"
 	"CBCTF/internel/model"
@@ -30,19 +31,19 @@ func GetUsageStatus(ctx *gin.Context) {
 			return usage.Challenge.AttachmentPath(team.ID)
 		}(),
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
 }
 
 func GetUsage(ctx *gin.Context) {
 	usage := middleware.GetUsage(ctx)
 	data := resp.GetUsageResp(usage, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
 }
 
 func GetUsages(ctx *gin.Context) {
 	var form f.GetModelsForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	if _, exists := ctx.GetQuery("limit"); !exists {
@@ -80,13 +81,13 @@ func GetUsages(ctx *gin.Context) {
 		}
 		data = append(data, tmp)
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"challenges": data, "count": count}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"challenges": data, "count": count}})
 }
 
 func AddUsage(ctx *gin.Context) {
 	var form f.CreateUsageForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	DB := db.DB.WithContext(ctx)
@@ -95,13 +96,13 @@ func AddUsage(ctx *gin.Context) {
 	for _, usage := range usages {
 		data = append(data, resp.GetUsageResp(usage, true))
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"usages": data, "failed": failed}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"usages": data, "failed": failed}})
 }
 
 func UpdateUsage(ctx *gin.Context) {
 	var form f.UpdateUsageForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	usage := middleware.GetUsage(ctx)
@@ -125,7 +126,7 @@ func GenerateTeamUsage(reset bool) func(ctx *gin.Context) {
 			msg     string
 		)
 		if ok, err := redis.CheckChallengeInit(team.ID, usage.ChallengeID); ok || err != nil {
-			ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooQuick", "data": nil})
+			ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": i18n.TooQuick, "data": nil})
 			return
 		}
 		_ = redis.RecordChallengeInit(team.ID, usage.ChallengeID)
@@ -147,9 +148,9 @@ func GenerateTeamUsage(reset bool) func(ctx *gin.Context) {
 		case model.PodsChallenge:
 			// 不考虑失败
 			go service.StopVictim(db.DB.WithContext(ctx.Copy()), team, usage)
-			ok, msg = true, "Success"
+			ok, msg = true, i18n.Success
 		default:
-			ok, msg = true, "Success"
+			ok, msg = true, i18n.Success
 		}
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 	}

@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"CBCTF/internel/config"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
@@ -40,7 +41,7 @@ func StartGenerator(usage model.Usage) (*corev1.Pod, bool, string) {
 		ipGenerator[pod.Status.PodIP] = usage.ChallengeID
 		generatorIP[usage.ChallengeID] = pod.Status.PodIP
 		log.Logger.Infof("Pod %s is already running", pod.Name)
-		return pod, true, "Success"
+		return pod, true, i18n.Success
 	}
 	containerName := fmt.Sprintf("generator-%s", usage.ChallengeID)
 	containers := []corev1.Container{
@@ -53,7 +54,7 @@ func StartGenerator(usage model.Usage) (*corev1.Pod, bool, string) {
 	if len(gIPL) == 0 {
 		gIPL, err = utils.GetIPBlock(0, config.Env.K8S.IPPool.CIDR, config.Env.K8S.IPPool.BlockSize)
 		if err != nil || len(gIPL) == 0 {
-			return &corev1.Pod{}, false, "EmptyIPBlock"
+			return &corev1.Pod{}, false, i18n.EmptyIPBlock
 		}
 	}
 	retry := 0
@@ -61,7 +62,7 @@ func StartGenerator(usage model.Usage) (*corev1.Pod, bool, string) {
 	for {
 		retry++
 		if retry > len(gIPL)-1 {
-			return &corev1.Pod{}, false, "NoAvailableIP"
+			return &corev1.Pod{}, false, i18n.NoAvailableIP
 		}
 		if _, ok := ipGenerator[ip]; ok {
 			ip = gIPL[retry]
@@ -81,7 +82,7 @@ func StartGenerator(usage model.Usage) (*corev1.Pod, bool, string) {
 		err = CopyToPod(podName, containerName, generatorPath, "/root/generator.zip")
 		if err != nil {
 			log.Logger.Warningf("Failed to copy file: %v", err)
-			return &corev1.Pod{}, false, "CopyFileError"
+			return &corev1.Pod{}, false, i18n.CopyFileError
 		}
 		commands = append(commands, "unzip /root/generator.zip -d /root")
 	} else {
@@ -91,10 +92,10 @@ func StartGenerator(usage model.Usage) (*corev1.Pod, bool, string) {
 		log.Logger.Debugf("Executing command: %s", command)
 		if _, _, err = Exec(podName, containerName, command, nil); err != nil {
 			log.Logger.Warningf("Failed to execute command %s: %v", command, err)
-			return &corev1.Pod{}, false, "ExecCommandError"
+			return &corev1.Pod{}, false, i18n.ExecCommandError
 		}
 	}
-	return pod, true, "Success"
+	return pod, true, i18n.Success
 }
 
 // StopGenerator 停止动态附件生成器
@@ -129,7 +130,7 @@ func GenerateAttachment(usage model.Usage, team model.Team, answer []model.Answe
 	log.Logger.Debugf("Executing command: %s", command)
 	if _, _, err = Exec(pod.Name, pod.Spec.Containers[0].Name, command, nil); err != nil {
 		log.Logger.Warningf("Failed to execute command %s: %v", command, err)
-		return false, "ExecCommandError"
+		return false, i18n.ExecCommandError
 	}
 	err = CopyFromPod(
 		pod.Name, pod.Spec.Containers[0].Name,
@@ -138,7 +139,7 @@ func GenerateAttachment(usage model.Usage, team model.Team, answer []model.Answe
 	)
 	if err != nil {
 		log.Logger.Warningf("Failed to copy output file: %v", err)
-		return false, "CopyFileError"
+		return false, i18n.CopyFileError
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

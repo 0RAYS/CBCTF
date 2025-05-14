@@ -1,6 +1,7 @@
 package service
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/model"
 	"CBCTF/internel/redis"
 	db "CBCTF/internel/repo"
@@ -30,9 +31,9 @@ func UpdateTeamRanking(tx *gorm.DB, contestID uint) (bool, string) {
 		}
 	}
 	if err = redis.UpdateTeamRanking(contestID, teams); err != nil {
-		return false, "UpdateRankingError"
+		return false, i18n.UpdateRankingError
 	}
-	return true, "Success"
+	return true, i18n.Success
 }
 
 func GetTeamRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Team, int64, bool, string) {
@@ -47,7 +48,7 @@ func GetTeamRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Tea
 	}
 	start, end := utils.TidyPaginate(int(count), limit, offset)
 	if end-start <= 0 {
-		return teams, count, true, "Success"
+		return teams, count, true, i18n.Success
 	}
 	teams, err = redis.GetTeamRanking(contestID, int64(start), int64(end-1))
 	if err != nil || (end-start > 0 && len(teams) == 0) {
@@ -56,7 +57,7 @@ func GetTeamRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Tea
 		}
 		return GetTeamRanking(tx, contestID, limit, offset)
 	}
-	return teams, count, true, "Success"
+	return teams, count, true, i18n.Success
 }
 
 func UpdateUserRanking(tx *gorm.DB) (bool, string) {
@@ -70,9 +71,9 @@ func UpdateUserRanking(tx *gorm.DB) (bool, string) {
 	}
 	err = redis.UpdateUserRanking(users)
 	if err != nil {
-		return false, "UpdateRankingError"
+		return false, i18n.UpdateRankingError
 	}
-	return true, "Success"
+	return true, i18n.Success
 }
 
 func GetUserRanking(tx *gorm.DB, limit, offset int) ([]model.User, int64, bool, string) {
@@ -87,7 +88,7 @@ func GetUserRanking(tx *gorm.DB, limit, offset int) ([]model.User, int64, bool, 
 	}
 	start, end := utils.TidyPaginate(int(count), limit, offset)
 	if end-start <= 0 {
-		return users, count, true, "Success"
+		return users, count, true, i18n.Success
 	}
 	users, err = redis.GetUserRanking(int64(start), int64(end-1))
 	if err != nil || (end-start > 0 && len(users) == 0) {
@@ -96,5 +97,5 @@ func GetUserRanking(tx *gorm.DB, limit, offset int) ([]model.User, int64, bool, 
 		}
 		return GetUserRanking(tx, limit, offset)
 	}
-	return users, count, true, "Success"
+	return users, count, true, i18n.Success
 }

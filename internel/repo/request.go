@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"gorm.io/gorm"
@@ -32,7 +33,7 @@ func (r *RequestRepo) CountIP() (int64, bool, string) {
 	res := r.DB.Model(&model.Request{}).Distinct("ip").Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Requests: %s", res.Error)
-		return 0, false, "CountModelError"
+		return 0, false, i18n.CountModelError
 	}
-	return count, true, "Success"
+	return count, true, i18n.Success
 }

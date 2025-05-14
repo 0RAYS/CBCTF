@@ -2,6 +2,7 @@ package router
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/middleware"
 	"CBCTF/internel/model"
@@ -19,7 +20,7 @@ func StartVictim(ctx *gin.Context) {
 	usage := middleware.GetUsage(ctx)
 	user := middleware.GetSelf(ctx).(model.User)
 	if ok, err := redis.CheckVictimCreate(team.ID, usage.ChallengeID); ok || err != nil {
-		ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooQuick", "data": nil})
+		ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": i18n.TooQuick, "data": nil})
 		return
 	}
 	if err := redis.RecordVictimCreate(team.ID, usage.ChallengeID); err != nil {
@@ -50,7 +51,7 @@ func IncreaseVictimDuration(ctx *gin.Context) {
 	data := make([]gin.H, 0)
 	for _, victim := range victims {
 		if !victim.Start.Add(victim.Duration).Before(time.Now().Add(20 * time.Minute)) {
-			ctx.JSON(http.StatusOK, gin.H{"msg": "HasMuchTime", "data": nil})
+			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.HasMuchTime, "data": nil})
 			return
 		}
 		tx := DB.Begin()
@@ -72,9 +73,9 @@ func IncreaseVictimDuration(ctx *gin.Context) {
 		})
 	}
 	if len(data) > 0 {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data[0]})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data[0]})
 	} else {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "VictimNotFound", "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.VictimNotFound, "data": nil})
 	}
 }
 
@@ -87,13 +88,13 @@ func StopVictim(ctx *gin.Context) {
 
 func GetVictim(ctx *gin.Context) {
 	victim := middleware.GetVictim(ctx)
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": resp.GetVictimResp(victim)})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": resp.GetVictimResp(victim)})
 }
 
 func GetVictims(ctx *gin.Context) {
 	var form f.GetModelsForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	if _, exists := ctx.GetQuery("limit"); !exists {
@@ -113,5 +114,5 @@ func GetVictims(ctx *gin.Context) {
 	for _, victim := range victims {
 		data = append(data, resp.GetVictimResp(victim))
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"victims": data, "count": count}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"victims": data, "count": count}})
 }

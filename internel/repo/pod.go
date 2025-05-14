@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
@@ -40,12 +41,12 @@ func (p *PodRepo) GetByPodName(name string, deleted bool, preloadL ...string) ([
 	res = preload(res, preloadL...).Find(&pods)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Pod: %s", res.Error)
-		return pods, false, "GetPodError"
+		return pods, false, i18n.GetPodError
 	}
 	if res.RowsAffected == 0 {
-		return pods, false, "PodNotFound"
+		return pods, false, i18n.PodNotFound
 	}
-	return pods, true, "Success"
+	return pods, true, i18n.Success
 }
 
 func (p *PodRepo) GetByVictimID(victimID uint, deleted bool, preloadL ...string) ([]model.Pod, bool, string) {
@@ -58,12 +59,12 @@ func (p *PodRepo) GetByVictimID(victimID uint, deleted bool, preloadL ...string)
 	res = preload(res, preloadL...).Find(&pods)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Pod: %s", res.Error)
-		return pods, false, "GetPodError"
+		return pods, false, i18n.GetPodError
 	}
 	if res.RowsAffected == 0 {
-		return pods, false, "PodNotFound"
+		return pods, false, i18n.PodNotFound
 	}
-	return pods, true, "Success"
+	return pods, true, i18n.Success
 }
 
 func (p *PodRepo) Update(id uint, options UpdatePodOptions) (bool, string) {
@@ -73,7 +74,7 @@ func (p *PodRepo) Update(id uint, options UpdatePodOptions) (bool, string) {
 		count++
 		if count > 10 {
 			log.Logger.Warningf("Failed to update Pod: too many times failed due to optimistic lock")
-			return false, "DeadLock"
+			return false, i18n.DeadLock
 		}
 		pod, ok, msg := p.GetByID(id)
 		if !ok {
@@ -83,14 +84,14 @@ func (p *PodRepo) Update(id uint, options UpdatePodOptions) (bool, string) {
 		res := p.DB.Model(&model.Pod{}).Where("id = ? AND version = ?", id, pod.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Pod: %s", res.Error)
-			return false, "UpdatePodError"
+			return false, i18n.UpdatePodError
 		}
 		if res.RowsAffected == 0 {
 			continue
 		}
 		break
 	}
-	return true, "Success"
+	return true, i18n.Success
 }
 
 func (p *PodRepo) Delete(idL ...uint) (bool, string) {
@@ -109,7 +110,7 @@ func (p *PodRepo) Delete(idL ...uint) (bool, string) {
 	}
 	if res := p.DB.Model(&model.Pod{}).Where("id IN ?", idL).Delete(&model.Pod{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Pod: %s", res.Error)
-		return false, "DeletePodError"
+		return false, i18n.DeletePodError
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

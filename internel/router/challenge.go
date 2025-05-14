@@ -2,6 +2,7 @@ package router
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/middleware"
 	db "CBCTF/internel/repo"
@@ -14,13 +15,13 @@ import (
 
 func GetChallenge(ctx *gin.Context) {
 	challenge := middleware.GetChallenge(ctx)
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": resp.GetChallengeResp(challenge)})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": resp.GetChallengeResp(challenge)})
 }
 
 func GetChallenges(ctx *gin.Context) {
 	var form f.GetChallengesForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	if _, exists := ctx.GetQuery("limit"); !exists {
@@ -45,7 +46,7 @@ func GetChallenges(ctx *gin.Context) {
 func GetCategories(ctx *gin.Context) {
 	var form f.GetCategoriesForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	repo := db.InitChallengeRepo(db.DB.WithContext(ctx))
@@ -61,20 +62,20 @@ func GetChallengeFiles(ctx *gin.Context) {
 	challenge := middleware.GetChallenge(ctx)
 	dir, err := os.ReadDir(challenge.BasicDir())
 	if err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "ReadDirError", "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.ReadDirError, "data": nil})
 		return
 	}
 	files := make([]string, 0)
 	for _, file := range dir {
 		files = append(files, file.Name())
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": files})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": files})
 }
 
 func CreateChallenge(ctx *gin.Context) {
 	var form f.CreateChallengeForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
@@ -86,16 +87,16 @@ func CreateChallenge(ctx *gin.Context) {
 	}
 	tx.Commit()
 	if err := os.MkdirAll(challenge.BasicDir(), 0755); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "CreateDirError", "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.CreateDirError, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &challenge})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": &challenge})
 }
 
 func UpdateChallenge(ctx *gin.Context) {
 	var form f.UpdateChallengeForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
@@ -120,8 +121,8 @@ func DeleteChallenge(ctx *gin.Context) {
 	tx.Commit()
 	if err := os.RemoveAll(challenge.BasicDir()); err != nil {
 		log.Logger.Warningf("Failed to remove challenge basic dir: %s", err)
-		ctx.JSON(http.StatusOK, gin.H{"msg": "UnknownError", "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": nil})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }

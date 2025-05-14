@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
@@ -51,12 +52,12 @@ func (u *UsageRepo) GetBy2ID(contestID uint, challengeID string, hidden bool, pr
 	res = preload(res, preloadL...).Limit(1).Find(&usage)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Usage: %s", res.Error)
-		return model.Usage{}, false, "GetUsageError"
+		return model.Usage{}, false, i18n.GetUsageError
 	}
 	if res.RowsAffected == 0 {
-		return model.Usage{}, false, "UsageNotFound"
+		return model.Usage{}, false, i18n.UsageNotFound
 	}
-	return usage, true, "Success"
+	return usage, true, i18n.Success
 }
 
 func (u *UsageRepo) Count(contestID uint, hidden bool) (int64, bool, string) {
@@ -68,9 +69,9 @@ func (u *UsageRepo) Count(contestID uint, hidden bool) (int64, bool, string) {
 	res = res.Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Usages: %s", res.Error)
-		return 0, false, "CountModelError"
+		return 0, false, i18n.CountModelError
 	}
-	return count, true, "Success"
+	return count, true, i18n.Success
 }
 
 func (u *UsageRepo) GetAll(contestID uint, limit, offset int, hidden bool, preloadL ...string) ([]model.Usage, int64, bool, string) {
@@ -88,9 +89,9 @@ func (u *UsageRepo) GetAll(contestID uint, limit, offset int, hidden bool, prelo
 	res = preload(res, preloadL...).Limit(limit).Offset(offset).Find(&usages)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Usages: %s", res.Error)
-		return usages, count, false, "GetUsageError"
+		return usages, count, false, i18n.GetUsageError
 	}
-	return usages, count, true, "Success"
+	return usages, count, true, i18n.Success
 }
 
 func (u *UsageRepo) Update(id uint, options UpdateUsageOptions) (bool, string) {
@@ -100,7 +101,7 @@ func (u *UsageRepo) Update(id uint, options UpdateUsageOptions) (bool, string) {
 		count++
 		if count > 10 {
 			log.Logger.Warningf("Failed to update Usage: too many times failed due to optimistic lock")
-			return false, "DeadLock"
+			return false, i18n.DeadLock
 		}
 		usage, ok, msg := u.GetByID(id)
 		if !ok {
@@ -110,14 +111,14 @@ func (u *UsageRepo) Update(id uint, options UpdateUsageOptions) (bool, string) {
 		res := u.DB.Model(&model.Usage{}).Where("id = ? AND version = ?", id, usage.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Usage: %s", res.Error)
-			return false, "UpdateUsageError"
+			return false, i18n.UpdateUsageError
 		}
 		if res.RowsAffected == 0 {
 			continue
 		}
 		break
 	}
-	return true, "Success"
+	return true, i18n.Success
 }
 
 func (u *UsageRepo) Delete(idL ...uint) (bool, string) {
@@ -142,7 +143,7 @@ func (u *UsageRepo) Delete(idL ...uint) (bool, string) {
 	}
 	if res := u.DB.Model(&model.Usage{}).Where("id IN ?", idL).Delete(&model.Usage{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Usage: %s", res.Error)
-		return false, "DeleteUsageError"
+		return false, i18n.DeleteUsageError
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

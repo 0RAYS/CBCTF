@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"CBCTF/internel/i18n"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/service"
 	"CBCTF/internel/utils"
@@ -13,7 +14,7 @@ func CheckGenerated(ctx *gin.Context) {
 	usage := GetUsage(ctx)
 	team := GetTeam(ctx)
 	if !service.IsGenerated(db.DB.WithContext(ctx), team, usage) {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "AnswerNotFound", "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.AnswerNotFound, "data": nil})
 		ctx.Abort()
 		return
 	}
@@ -40,6 +41,6 @@ func CheckSolved(ctx *gin.Context) {
 			return
 		}
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "AlreadySolved", "data": nil})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.AlreadySolved, "data": nil})
 	ctx.Abort()
 }

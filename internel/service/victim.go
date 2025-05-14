@@ -2,6 +2,7 @@ package service
 
 import (
 	"CBCTF/internel/config"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/k8s"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
@@ -23,15 +24,15 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, usage model.Usag
 	victimRepo := db.InitVictimRepo(tx)
 	victims, ok, _ := victimRepo.GetBy2ID(team.ID, usage.ID, false)
 	if ok {
-		return victims[0], true, "Success"
+		return victims[0], true, i18n.Success
 	}
 	n := team.ID
 	block, err := utils.GetIPBlock(n, config.Env.K8S.IPPool.CIDR, config.Env.K8S.IPPool.BlockSize)
 	if err != nil {
-		return model.Victim{}, false, "GetIPBlockError"
+		return model.Victim{}, false, i18n.GetIPBlockError
 	}
 	if len(block) == 0 {
-		return model.Victim{}, false, "EmptyIPBlock"
+		return model.Victim{}, false, i18n.EmptyIPBlock
 	}
 	ipBlock := fmt.Sprintf("%s-%d", block[0], len(block))
 	dns := make(map[string]string)
@@ -40,7 +41,7 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, usage model.Usag
 	answerRepo := db.InitAnswerRepo(tx)
 	if usage.Challenge.Type == model.PodsChallenge {
 		if len(block) < len(usage.Dockers) {
-			return model.Victim{}, false, "EmptyIPBlock"
+			return model.Victim{}, false, i18n.EmptyIPBlock
 		}
 		vOptions := db.CreateVictimOptions{
 			UsageID:  usage.ID,
@@ -73,7 +74,7 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, usage model.Usag
 						if target.Hostname != "" {
 							ip, ok := dns[target.Hostname]
 							if !ok {
-								return model.Victim{}, false, "InvalidNetworkPolicy"
+								return model.Victim{}, false, i18n.InvalidNetworkPolicy
 							}
 							dockers[i].NetworkPolicies[x].To[y].CIDR = fmt.Sprintf("%s/32", ip)
 							dockers[i].NetworkPolicies[x].To[y].Except = nil
@@ -83,7 +84,7 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, usage model.Usag
 						if target.Hostname != "" {
 							ip, ok := dns[target.Hostname]
 							if !ok {
-								return model.Victim{}, false, "InvalidNetworkPolicy"
+								return model.Victim{}, false, i18n.InvalidNetworkPolicy
 							}
 							dockers[i].NetworkPolicies[x].From[y].CIDR = fmt.Sprintf("%s/32", ip)
 							dockers[i].NetworkPolicies[x].From[y].Except = nil
@@ -130,7 +131,7 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, usage model.Usag
 			victim.Pods = append(victim.Pods, pod)
 		}
 	} else {
-		return model.Victim{}, false, "InvalidChallengeType"
+		return model.Victim{}, false, i18n.InvalidChallengeType
 	}
 	ipL, ok, msg := k8s.StartVictim(victim, dns)
 	if !ok {
@@ -147,7 +148,7 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, usage model.Usag
 		}
 		victim.Pods[i].ExposeIP = ip
 	}
-	return victim, true, "Success"
+	return victim, true, i18n.Success
 }
 
 // GetVictimStatus model.Usage 需要预加载 model.Challenge
@@ -205,5 +206,5 @@ func StopVictim(tx *gorm.DB, team model.Team, usage model.Usage) (bool, string) 
 		}
 		LoadTraffic(tx, victim)
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

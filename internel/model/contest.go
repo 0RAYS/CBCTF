@@ -1,14 +1,15 @@
 package model
 
 import (
+	"CBCTF/internel/i18n"
 	"gorm.io/gorm"
 	"time"
 )
 
 var (
-	ContestIsComing  = "ContestIsComing"
-	ContestIsRunning = "ContestIsRunning"
-	ContestIsOver    = "ContestIsOver"
+	ContestIsComing  = i18n.ContestIsComing
+	ContestIsRunning = i18n.ContestIsRunning
+	ContestIsOver    = i18n.ContestIsOver
 )
 
 type Contest struct {

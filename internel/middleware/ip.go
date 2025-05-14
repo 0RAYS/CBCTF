@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"CBCTF/internel/config"
+	"CBCTF/internel/i18n"
 	db "CBCTF/internel/repo"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -68,7 +69,7 @@ func RateLimit(ctx *gin.Context) {
 	}
 	requestCounts[ip] = validTimes
 	if len(requestCounts[ip]) >= config.Env.Gin.RateLimit.MaxRequests {
-		ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": "TooManyRequests", "data": nil})
+		ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": i18n.TooManyRequests, "data": nil})
 		ctx.Abort()
 		return
 	}

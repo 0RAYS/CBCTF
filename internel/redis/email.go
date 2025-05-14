@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"context"
 	"fmt"
@@ -13,9 +14,9 @@ func SetEmailVerifyToken(userID uint, token string) (bool, string) {
 	err := RDB.Set(ctx, fmt.Sprintf("email:%d", userID), token, time.Hour*24).Err()
 	if err != nil {
 		log.Logger.Warningf("Failed to set email verify token: %s", err)
-		return false, "SetEmailVerifyTokenError"
+		return false, i18n.SetEmailVerifyTokenError
 	}
-	return true, "Success"
+	return true, i18n.Success
 }
 
 // GetEmailVerifyToken 获取邮箱验证 token
@@ -23,7 +24,7 @@ func GetEmailVerifyToken(userID uint) (string, bool) {
 	ctx := context.Background()
 	data, err := RDB.Get(ctx, fmt.Sprintf("email:%d", userID)).Result()
 	if err != nil {
-		return "GetEmailVerifyTokenError", false
+		return i18n.GetEmailVerifyTokenError, false
 	}
 	return data, true
 }
@@ -34,7 +35,7 @@ func DelEmailVerifyToken(userID uint) (bool, string) {
 	err := RDB.Del(ctx, fmt.Sprintf("email:%d", userID)).Err()
 	if err != nil {
 		log.Logger.Warningf("Failed to delete email verify token: %s", err)
-		return false, "DelEmailVerifyTokenError"
+		return false, i18n.DelEmailVerifyTokenError
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

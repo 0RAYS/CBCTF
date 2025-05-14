@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
@@ -48,19 +49,19 @@ func (a *AdminRepo) getByUniqueKey(key string, value interface{}, preloadL ...st
 	case "id":
 		value = value.(uint)
 	default:
-		return model.Admin{}, false, "UnsupportedKey"
+		return model.Admin{}, false, i18n.UnsupportedKey
 	}
 	var admin model.Admin
 	res := a.DB.Model(&model.Admin{}).Where(key+" = ?", value)
 	res = preload(res, preloadL...).Limit(1).Find(&admin)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Admin: %s", res.Error)
-		return model.Admin{}, false, "GetAdminError"
+		return model.Admin{}, false, i18n.GetAdminError
 	}
 	if res.RowsAffected == 0 {
-		return model.Admin{}, false, "AdminNotFound"
+		return model.Admin{}, false, i18n.AdminNotFound
 	}
-	return admin, true, "Success"
+	return admin, true, i18n.Success
 }
 
 func (a *AdminRepo) GetByID(id uint, preloadL ...string) (model.Admin, bool, string) {
@@ -82,7 +83,7 @@ func (a *AdminRepo) Update(id uint, options UpdateAdminOptions) (bool, string) {
 		count++
 		if count > 10 {
 			log.Logger.Warningf("Failed to update Admin: too many times failed due to optimistic lock")
-			return false, "DeadLock"
+			return false, i18n.DeadLock
 		}
 		admin, ok, msg := a.GetByID(id)
 		if !ok {
@@ -92,14 +93,14 @@ func (a *AdminRepo) Update(id uint, options UpdateAdminOptions) (bool, string) {
 		res := a.DB.Model(&model.Admin{}).Where("id = ? AND version = ?", id, admin.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Admin: %s", res.Error)
-			return false, "UpdateAdminError"
+			return false, i18n.UpdateAdminError
 		}
 		if res.RowsAffected == 0 {
 			continue
 		}
 		break
 	}
-	return true, "Success"
+	return true, i18n.Success
 }
 
 func (a *AdminRepo) Delete(idL ...uint) (bool, string) {
@@ -118,7 +119,7 @@ func (a *AdminRepo) Delete(idL ...uint) (bool, string) {
 	}
 	if res := a.DB.Model(&model.Admin{}).Where("id IN ?", idL).Delete(&model.Admin{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Admin: %s", res.Error)
-		return false, "DeleteAdminError"
+		return false, i18n.DeleteAdminError
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

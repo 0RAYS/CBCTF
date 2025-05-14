@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
@@ -39,12 +40,12 @@ func (v *VictimRepo) GetByID(id uint, deleted bool, preloadL ...string) (model.V
 	res = preload(res, preloadL...).Limit(1).Find(&victim)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Victim: %s", res.Error)
-		return victim, false, "GetVictimError"
+		return victim, false, i18n.GetVictimError
 	}
 	if res.RowsAffected == 0 {
-		return victim, false, "VictimNotFound"
+		return victim, false, i18n.VictimNotFound
 	}
-	return victim, true, "Success"
+	return victim, true, i18n.Success
 
 }
 
@@ -57,9 +58,9 @@ func (v *VictimRepo) Count(deleted bool) (int64, bool, string) {
 	res = res.Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Victims: %s", res.Error)
-		return 0, false, "CountModelError"
+		return 0, false, i18n.CountModelError
 	}
-	return count, true, "Success"
+	return count, true, i18n.Success
 }
 
 func (v *VictimRepo) CountByTeam(teamID uint, deleted bool) (int64, bool, string) {
@@ -71,9 +72,9 @@ func (v *VictimRepo) CountByTeam(teamID uint, deleted bool) (int64, bool, string
 	res = res.Where("team_id = ?", teamID).Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Victims: %s", res.Error)
-		return 0, false, "CountModelError"
+		return 0, false, i18n.CountModelError
 	}
-	return count, true, "Success"
+	return count, true, i18n.Success
 }
 
 func (v *VictimRepo) GetByTeam(teamID uint, limit, offset int, deleted bool, preloadL ...string) ([]model.Victim, int64, bool, string) {
@@ -92,9 +93,9 @@ func (v *VictimRepo) GetByTeam(teamID uint, limit, offset int, deleted bool, pre
 	res = preload(res, preloadL...).Limit(limit).Offset(offset).Find(&victims)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Victims: %s", res.Error)
-		return victims, count, false, "GetVictimError"
+		return victims, count, false, i18n.GetVictimError
 	}
-	return victims, count, true, "Success"
+	return victims, count, true, i18n.Success
 }
 
 // GetBy2ID ok == true, 必存在一个 victim
@@ -108,12 +109,12 @@ func (v *VictimRepo) GetBy2ID(teamID, usageID uint, deleted bool, preloadL ...st
 	res = preload(res, preloadL...).Find(&victims)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Victims: %s", res.Error)
-		return victims, false, "GetVictimError"
+		return victims, false, i18n.GetVictimError
 	}
 	if res.RowsAffected == 0 {
-		return victims, false, "VictimNotFound"
+		return victims, false, i18n.VictimNotFound
 	}
-	return victims, true, "Success"
+	return victims, true, i18n.Success
 }
 
 func (v *VictimRepo) GetAll(limit, offset int, deleted bool, preloadL ...string) ([]model.Victim, int64, bool, string) {
@@ -131,9 +132,9 @@ func (v *VictimRepo) GetAll(limit, offset int, deleted bool, preloadL ...string)
 	res = preload(res, preloadL...).Limit(limit).Offset(offset).Find(&victims)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Victims: %s", res.Error)
-		return victims, count, false, "GetVictimError"
+		return victims, count, false, i18n.GetVictimError
 	}
-	return victims, count, true, "Success"
+	return victims, count, true, i18n.Success
 }
 
 func (v *VictimRepo) Update(id uint, options UpdateVictimOptions) (bool, string) {
@@ -143,7 +144,7 @@ func (v *VictimRepo) Update(id uint, options UpdateVictimOptions) (bool, string)
 		count++
 		if count > 10 {
 			log.Logger.Warningf("Failed to update Victim: too many times failed due to optimistic lock")
-			return false, "DeadLock"
+			return false, i18n.DeadLock
 		}
 		victim, ok, msg := v.GetByID(id, false)
 		if !ok {
@@ -153,14 +154,14 @@ func (v *VictimRepo) Update(id uint, options UpdateVictimOptions) (bool, string)
 		res := v.DB.Model(&model.Victim{}).Where("id = ? AND version = ?", id, victim.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Victim: %s", res.Error)
-			return false, "UpdateVictimError"
+			return false, i18n.UpdateVictimError
 		}
 		if res.RowsAffected == 0 {
 			continue
 		}
 		break
 	}
-	return true, "Success"
+	return true, i18n.Success
 }
 
 func (v *VictimRepo) Delete(idL ...uint) (bool, string) {
@@ -179,7 +180,7 @@ func (v *VictimRepo) Delete(idL ...uint) (bool, string) {
 	}
 	if res := v.DB.Model(&model.Victim{}).Where("id IN ?", idL).Delete(&model.Victim{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Victim: %s", res.Error)
-		return false, "DeleteVictimError"
+		return false, i18n.DeleteVictimError
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

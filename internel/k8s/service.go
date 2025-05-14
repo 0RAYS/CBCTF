@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"CBCTF/internel/config"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
@@ -19,9 +20,9 @@ func GetService(ctx context.Context, name string) (*corev1.Service, bool, string
 			return nil, false, "ServiceNotFound"
 		}
 		log.Logger.Warningf("Failed to get Service %s: %v", name, err)
-		return nil, false, "GetServiceError"
+		return nil, false, i18n.GetServiceError
 	}
-	return service, true, "Success"
+	return service, true, i18n.Success
 }
 
 func CreateService(ctx context.Context, pod model.Pod) (*corev1.Service, bool, string) {
@@ -67,9 +68,9 @@ func CreateService(ctx context.Context, pod model.Pod) (*corev1.Service, bool, s
 	service, err = client.CoreV1().Services(NamespaceName).Create(ctx, service, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create Service %s: %s", pod.ServiceName, err)
-		return nil, false, "CreateServiceError"
+		return nil, false, i18n.CreateServiceError
 	}
-	return service, true, "Success"
+	return service, true, i18n.Success
 }
 
 // DeleteService 删除 Service, 目前主要是靶机的端口映射
@@ -77,7 +78,7 @@ func DeleteService(ctx context.Context, name string) (bool, string) {
 	err := client.CoreV1().Services(NamespaceName).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete Service %s: %v", name, err)
-		return false, "DeleteServiceError"
+		return false, i18n.DeleteServiceError
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

@@ -2,6 +2,7 @@ package router
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/middleware"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
@@ -14,7 +15,7 @@ import (
 func SubmitFlag(ctx *gin.Context) {
 	var form f.SubmitFlagForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	user := middleware.GetSelf(ctx).(model.User)
@@ -39,7 +40,7 @@ func SubmitFlag(ctx *gin.Context) {
 func GetFlag(ctx *gin.Context) {
 	flag := middleware.GetFlag(ctx)
 	data := resp.GetFlagResp(flag)
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
 }
 
 func GetFlags(ctx *gin.Context) {
@@ -54,13 +55,13 @@ func GetFlags(ctx *gin.Context) {
 	for _, flag := range flags {
 		data = append(data, resp.GetFlagResp(flag))
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
 }
 
 func UpdateFlag(ctx *gin.Context) {
 	var form f.UpdateFlagForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	flag := middleware.GetFlag(ctx)

@@ -2,6 +2,7 @@ package router
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/middleware"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/resp"
@@ -19,13 +20,13 @@ func GetContest(ctx *gin.Context) {
 	if len(champion) > 0 {
 		data["highest"] = champion[0].Score
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": data})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
 }
 
 func GetContests(ctx *gin.Context) {
 	var form f.GetModelsForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	if _, exists := ctx.GetQuery("limit"); !exists {
@@ -51,7 +52,7 @@ func GetContests(ctx *gin.Context) {
 func CreateContest(ctx *gin.Context) {
 	var form f.CreateContestForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
@@ -69,7 +70,7 @@ func CreateContest(ctx *gin.Context) {
 func UpdateContest(ctx *gin.Context) {
 	var form f.UpdateContestForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"github.com/gin-gonic/gin"
@@ -14,7 +15,7 @@ func SetUser(ctx *gin.Context) {
 	}
 	var userID userIDUri
 	if err := ctx.ShouldBindUri(&userID); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		ctx.Abort()
 		return
 	}
@@ -44,7 +45,7 @@ func SetContest(ctx *gin.Context) {
 	}
 	var contestID contestIDUri
 	if err := ctx.ShouldBindUri(&contestID); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		ctx.Abort()
 		return
 	}
@@ -55,7 +56,7 @@ func SetContest(ctx *gin.Context) {
 		return
 	}
 	if GetRole(ctx) != "admin" && contest.Hidden {
-		ctx.JSON(http.StatusNotFound, gin.H{"msg": "ContestNotFound", "data": nil})
+		ctx.JSON(http.StatusNotFound, gin.H{"msg": i18n.ContestNotFound, "data": nil})
 		ctx.Abort()
 		return
 	}
@@ -82,7 +83,7 @@ func SetTeamByUser(ctx *gin.Context) {
 	)
 	self, ok = GetSelf(ctx).(model.User)
 	if !ok {
-		ctx.JSON(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
+		ctx.JSON(http.StatusForbidden, gin.H{"msg": i18n.Forbidden, "data": nil})
 		ctx.Abort()
 		return
 	}
@@ -108,7 +109,7 @@ func SetTeamByURI(ctx *gin.Context) {
 	}
 	var teamID teamIDUri
 	if err := ctx.ShouldBindUri(&teamID); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		ctx.Abort()
 		return
 	}
@@ -139,7 +140,7 @@ func SetFile(t string) gin.HandlerFunc {
 		}
 		var fileID fileIDUri
 		if err := ctx.ShouldBindUri(&fileID); err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+			ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 			ctx.Abort()
 			return
 		}
@@ -150,7 +151,7 @@ func SetFile(t string) gin.HandlerFunc {
 			return
 		}
 		if file.Type != t {
-			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+			ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 			ctx.Abort()
 			return
 		}
@@ -175,7 +176,7 @@ func SetChallenge(ctx *gin.Context) {
 	}
 	var challengeID challengeIDUri
 	if err := ctx.ShouldBindUri(&challengeID); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		ctx.Abort()
 		return
 	}
@@ -205,7 +206,7 @@ func SetUsage(ctx *gin.Context) {
 	}
 	var challengeID challengeIDUri
 	if err := ctx.ShouldBindUri(&challengeID); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		ctx.Abort()
 		return
 	}
@@ -234,7 +235,7 @@ func SetFlag(ctx *gin.Context) {
 	}
 	var flagID flagIDUri
 	if err := ctx.ShouldBindUri(&flagID); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		ctx.Abort()
 		return
 	}
@@ -262,7 +263,7 @@ func SetVictim(ctx *gin.Context) {
 	}
 	var victimID victimIDUri
 	if err := ctx.ShouldBindUri(&victimID); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		ctx.Abort()
 		return
 	}
@@ -291,7 +292,7 @@ func SetNotice(ctx *gin.Context) {
 	}
 	var noticeID noticeIDUri
 	if err := ctx.ShouldBindUri(&noticeID); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		ctx.Abort()
 		return
 	}

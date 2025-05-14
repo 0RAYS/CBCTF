@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"context"
 	"fmt"
@@ -51,22 +52,22 @@ func CreatePod(ctx context.Context, podName string, containers []corev1.Containe
 	pod, err = client.CoreV1().Pods(NamespaceName).Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil && !apierror.IsAlreadyExists(err) {
 		log.Logger.Warningf("Failed to create Pod: %v", err)
-		return nil, false, "CreatePodError"
+		return nil, false, i18n.CreatePodError
 	}
 	for {
 		pod, ok, _ = GetPod(ctx, podName)
 		if !ok {
-			return nil, false, "GetPodError"
+			return nil, false, i18n.GetPodError
 		}
 		if pod.Status.Phase == corev1.PodRunning {
 			break
 		}
 		if pod.Status.Phase != corev1.PodPending {
 			log.Logger.Warningf("Pod %s failed to run", pod.Name)
-			return nil, false, "CreatePodError"
+			return nil, false, i18n.CreatePodError
 		}
 	}
-	return pod, true, "Success"
+	return pod, true, i18n.Success
 }
 
 // GetPods 获取所有 Pod
@@ -74,22 +75,22 @@ func GetPods(ctx context.Context) (*corev1.PodList, bool, string) {
 	pods, err := client.CoreV1().Pods(NamespaceName).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to get Pods: %v", err)
-		return &corev1.PodList{}, false, "GetPodError"
+		return &corev1.PodList{}, false, i18n.GetPodError
 	}
-	return pods, true, "Success"
+	return pods, true, i18n.Success
 }
 
 // GetPod 依据 name 获取 Pod
 func GetPod(ctx context.Context, name string) (*corev1.Pod, bool, string) {
 	pod, err := client.CoreV1().Pods(NamespaceName).Get(ctx, name, metav1.GetOptions{})
 	if apierror.IsNotFound(err) {
-		return &corev1.Pod{}, false, "PodNotFound"
+		return &corev1.Pod{}, false, i18n.PodNotFound
 	}
 	if err != nil {
 		log.Logger.Warningf("Failed to get Pod %s: %v", name, err)
-		return &corev1.Pod{}, false, "GetPodError"
+		return &corev1.Pod{}, false, i18n.GetPodError
 	}
-	return pod, true, "Success"
+	return pod, true, i18n.Success
 }
 
 // DeletePod 依据 name 删除 Pod
@@ -97,7 +98,7 @@ func DeletePod(ctx context.Context, name string) (bool, string) {
 	err := client.CoreV1().Pods(NamespaceName).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete Pod %s: %v", name, err)
-		return false, "DeletePodError"
+		return false, i18n.DeletePodError
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

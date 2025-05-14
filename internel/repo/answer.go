@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
@@ -33,12 +34,12 @@ func (a *AnswerRepo) GetBy2ID(teamID, flagID uint, preloadL ...string) (model.An
 	res = preload(res, preloadL...).Limit(1).Find(&answer)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Answer: %s", res.Error)
-		return model.Answer{}, false, "GetAnswerError"
+		return model.Answer{}, false, i18n.GetAnswerError
 	}
 	if res.RowsAffected == 0 {
-		return model.Answer{}, false, "AnswerNotFound"
+		return model.Answer{}, false, i18n.AnswerNotFound
 	}
-	return answer, true, "Success"
+	return answer, true, i18n.Success
 }
 
 func (a *AnswerRepo) Count(flagID uint) (int64, bool, string) {
@@ -46,9 +47,9 @@ func (a *AnswerRepo) Count(flagID uint) (int64, bool, string) {
 	res := a.DB.Model(&model.Answer{}).Where("flag_id = ?", flagID).Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Answers: %s", res.Error)
-		return 0, false, "CountModelError"
+		return 0, false, i18n.CountModelError
 	}
-	return count, true, "Success"
+	return count, true, i18n.Success
 }
 
 func (a *AnswerRepo) GetAll(flagID uint, limit, offset int, preloadL ...string) ([]model.Answer, int64, bool, string) {
@@ -63,9 +64,9 @@ func (a *AnswerRepo) GetAll(flagID uint, limit, offset int, preloadL ...string) 
 	res = preload(res, preloadL...).Limit(limit).Offset(offset).Find(&answers)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Answers: %s", res.Error)
-		return answers, count, false, "GetAnswerError"
+		return answers, count, false, i18n.GetAnswerError
 	}
-	return answers, count, true, "Success"
+	return answers, count, true, i18n.Success
 }
 
 func (a *AnswerRepo) Update(id uint, options UpdateAnswerOptions) (bool, string) {
@@ -75,7 +76,7 @@ func (a *AnswerRepo) Update(id uint, options UpdateAnswerOptions) (bool, string)
 		count++
 		if count > 10 {
 			log.Logger.Warningf("Failed to update Answer: too many times failed due to optimistic lock")
-			return false, "DeadLock"
+			return false, i18n.DeadLock
 		}
 		answer, ok, msg := a.GetByID(id)
 		if !ok {
@@ -85,12 +86,12 @@ func (a *AnswerRepo) Update(id uint, options UpdateAnswerOptions) (bool, string)
 		res := a.DB.Model(&model.Answer{}).Where("id = ? AND version = ?", id, answer.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Answer: %s", res.Error)
-			return false, "UpdateAnswerError"
+			return false, i18n.UpdateAnswerError
 		}
 		if res.RowsAffected == 0 {
 			continue
 		}
 		break
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

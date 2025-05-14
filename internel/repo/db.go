@@ -2,6 +2,7 @@ package repo
 
 import (
 	"CBCTF/internel/config"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
@@ -104,7 +105,7 @@ func initAdmin(tx *gorm.DB) (bool, string) {
 		}
 		log.Logger.Infof("Init Admin: Admin{ name: admin, password: %s, email: admin@0rays.club}", pwd)
 	}
-	return true, "Success"
+	return true, i18n.Success
 }
 
 func Close() {

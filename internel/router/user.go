@@ -2,6 +2,7 @@ package router
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/middleware"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
@@ -20,13 +21,13 @@ func GetUser(ctx *gin.Context) {
 	} else {
 		user = middleware.GetUser(ctx)
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": resp.GetUserResp(user, all)})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": resp.GetUserResp(user, all)})
 }
 
 func GetUsers(ctx *gin.Context) {
 	var form f.GetModelsForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	if _, exists := ctx.GetQuery("limit"); !exists {
@@ -50,7 +51,7 @@ func GetUsers(ctx *gin.Context) {
 func CreateUser(ctx *gin.Context) {
 	var form f.CreateUserForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
@@ -67,7 +68,7 @@ func CreateUser(ctx *gin.Context) {
 func ChangePwd(ctx *gin.Context) {
 	var form f.ChangePasswordForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
@@ -90,7 +91,7 @@ func UpdateUser(ctx *gin.Context) {
 	if middleware.GetRole(ctx) == "admin" {
 		var form f.UpdateUserForm
 		if err := ctx.ShouldBindJSON(&form); err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+			ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 			return
 		}
 		user = middleware.GetUser(ctx)
@@ -99,14 +100,14 @@ func UpdateUser(ctx *gin.Context) {
 	} else if middleware.GetRole(ctx) == "user" {
 		var form f.UpdateSelfForm
 		if err := ctx.ShouldBindJSON(&form); err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+			ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 			return
 		}
 		user = middleware.GetSelf(ctx).(model.User)
 		tx = db.DB.WithContext(ctx).Begin()
 		ok, msg = service.UpdateSelf(tx, user, form)
 	} else {
-		ctx.JSON(http.StatusForbidden, gin.H{"msg": "Forbidden", "data": nil})
+		ctx.JSON(http.StatusForbidden, gin.H{"msg": i18n.Forbidden, "data": nil})
 		return
 	}
 	if !ok {
@@ -126,7 +127,7 @@ func DeleteUser(ctx *gin.Context) {
 	if middleware.GetRole(ctx) != "admin" {
 		var form f.DeleteSelfForm
 		if err := ctx.ShouldBindJSON(&form); err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest"})
+			ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest})
 			return
 		}
 		ok, msg = service.DeleteSelf(tx, middleware.GetSelf(ctx).(model.User), form)

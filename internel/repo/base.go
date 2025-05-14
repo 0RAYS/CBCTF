@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/utils"
 	"fmt"
@@ -34,7 +35,7 @@ func (r *Repo[T]) Create(options interface{}) (T, bool, string) {
 		log.Logger.Warningf("Failed to create %T: %s", new(T), res.Error)
 		return *new(T), false, fmt.Sprintf("Create%sError", r.Model)
 	}
-	return m, true, "Success"
+	return m, true, i18n.Success
 }
 
 func (r *Repo[T]) getByUniqueKey(key string, value interface{}, preloadL ...string) (T, bool, string) {
@@ -42,7 +43,7 @@ func (r *Repo[T]) getByUniqueKey(key string, value interface{}, preloadL ...stri
 	case "id":
 		value = value.(uint)
 	default:
-		return *new(T), false, "UnsupportedKey"
+		return *new(T), false, i18n.UnsupportedKey
 	}
 	var m T
 	res := r.DB.Model(new(T)).Where(key+" = ?", value)
@@ -54,7 +55,7 @@ func (r *Repo[T]) getByUniqueKey(key string, value interface{}, preloadL ...stri
 	if res.RowsAffected == 0 {
 		return m, false, fmt.Sprintf("%sNotFound", r.Model)
 	}
-	return m, true, "Success"
+	return m, true, i18n.Success
 }
 
 func (r *Repo[T]) GetByID(id uint, preloadL ...string) (T, bool, string) {
@@ -65,9 +66,9 @@ func (r *Repo[T]) Count() (int64, bool, string) {
 	var count int64
 	if res := r.DB.Model(new(T)).Count(&count); res.Error != nil {
 		log.Logger.Warningf("Failed to count %T: %s", new(T), res.Error)
-		return 0, false, "CountModelError"
+		return 0, false, i18n.CountModelError
 	}
-	return count, true, "Success"
+	return count, true, i18n.Success
 }
 
 func (r *Repo[T]) GetAll(limit, offset int, preloadL ...string) ([]T, int64, bool, string) {
@@ -84,7 +85,7 @@ func (r *Repo[T]) GetAll(limit, offset int, preloadL ...string) ([]T, int64, boo
 		log.Logger.Warningf("Failed to get all %T: %s", new(T), res.Error)
 		return ms, count, false, fmt.Sprintf("Get%sError", r.Model)
 	}
-	return ms, count, true, "Success"
+	return ms, count, true, i18n.Success
 }
 
 func (r *Repo[T]) Delete(idL ...uint) (bool, string) {
@@ -92,5 +93,5 @@ func (r *Repo[T]) Delete(idL ...uint) (bool, string) {
 		log.Logger.Warningf("Failed to delete %T: %s", new(T), res.Error)
 		return false, fmt.Sprintf("Delete%sError", r.Model)
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

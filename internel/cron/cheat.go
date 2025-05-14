@@ -1,6 +1,7 @@
 package cron
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
@@ -70,5 +71,5 @@ func checkFlag(contest model.Contest) (bool, string) {
 			cheatRepo.Create(cheat)
 		}
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

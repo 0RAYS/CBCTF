@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
@@ -34,9 +35,9 @@ func (n *NoticeRepo) Count(contestID uint) (int64, bool, string) {
 	res := n.DB.Model(&model.Notice{}).Where("contest_id = ?", contestID).Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Notices: %s", res.Error)
-		return 0, false, "CountModelError"
+		return 0, false, i18n.CountModelError
 	}
-	return count, true, "Success"
+	return count, true, i18n.Success
 }
 
 func (n *NoticeRepo) GetAll(contestID uint, limit, offset int, preloadL ...string) ([]model.Notice, int64, bool, string) {
@@ -51,9 +52,9 @@ func (n *NoticeRepo) GetAll(contestID uint, limit, offset int, preloadL ...strin
 	res = preload(res, preloadL...).Limit(limit).Offset(offset).Find(&notices)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Notices: %s", res.Error)
-		return notices, 0, false, "GetNoticeError"
+		return notices, 0, false, i18n.GetNoticeError
 	}
-	return notices, count, true, "Success"
+	return notices, count, true, i18n.Success
 }
 
 func (n *NoticeRepo) Update(id uint, options UpdateNoticeOptions) (bool, string) {
@@ -63,7 +64,7 @@ func (n *NoticeRepo) Update(id uint, options UpdateNoticeOptions) (bool, string)
 		count++
 		if count > 10 {
 			log.Logger.Warningf("Failed to update Notice: too many times failed due to optimistic lock")
-			return false, "DeadLock"
+			return false, i18n.DeadLock
 		}
 		notice, ok, msg := n.GetByID(id)
 		if !ok {
@@ -73,12 +74,12 @@ func (n *NoticeRepo) Update(id uint, options UpdateNoticeOptions) (bool, string)
 		res := n.DB.Model(&model.Notice{}).Where("id = ? AND version = ?", id, notice.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Notice: %s", res.Error)
-			return false, "UpdateNoticeError"
+			return false, i18n.UpdateNoticeError
 		}
 		if res.RowsAffected == 0 {
 			continue
 		}
 		break
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

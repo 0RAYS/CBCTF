@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
@@ -60,19 +61,19 @@ func (c *ContestRepo) getByUniqueKey(key string, value interface{}, preloadL ...
 	case "id":
 		value = value.(uint)
 	default:
-		return model.Contest{}, false, "UnsupportedKey"
+		return model.Contest{}, false, i18n.UnsupportedKey
 	}
 	var contest model.Contest
 	res := c.DB.Model(&model.Contest{}).Where(key+" = ?", value)
 	res = preload(res, preloadL...).Limit(1).Find(&contest)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Contest: %s", res.Error)
-		return model.Contest{}, false, "GetContestError"
+		return model.Contest{}, false, i18n.GetContestError
 	}
 	if res.RowsAffected == 0 {
-		return model.Contest{}, false, "ContestNotFound"
+		return model.Contest{}, false, i18n.ContestNotFound
 	}
-	return contest, true, "Success"
+	return contest, true, i18n.Success
 }
 func (c *ContestRepo) GetByName(name string, preloadL ...string) (model.Contest, bool, string) {
 	return c.getByUniqueKey("name", name, preloadL...)
@@ -87,9 +88,9 @@ func (c *ContestRepo) Count(hidden bool) (int64, bool, string) {
 	res = res.Count(&count)
 	if res.Error != nil {
 		log.Logger.Errorf("Failed to count Contests: %s", res.Error)
-		return 0, false, "CountModelError"
+		return 0, false, i18n.CountModelError
 	}
-	return count, true, "Success"
+	return count, true, i18n.Success
 }
 
 func (c *ContestRepo) GetAll(limit, offset int, hidden bool, preloadL ...string) ([]model.Contest, int64, bool, string) {
@@ -107,9 +108,9 @@ func (c *ContestRepo) GetAll(limit, offset int, hidden bool, preloadL ...string)
 	res = preload(res, preloadL...).Limit(limit).Offset(offset).Find(&contests)
 	if res.Error != nil {
 		log.Logger.Errorf("Failed to get Contests: %s", res.Error)
-		return contests, count, false, "GetContestsError"
+		return contests, count, false, i18n.GetContestError
 	}
-	return contests, count, true, "Success"
+	return contests, count, true, i18n.Success
 }
 
 func (c *ContestRepo) Update(id uint, options UpdateContestOptions) (bool, string) {
@@ -119,7 +120,7 @@ func (c *ContestRepo) Update(id uint, options UpdateContestOptions) (bool, strin
 		count++
 		if count > 10 {
 			log.Logger.Warningf("Failed to update Contest: too many times failed due to optimistic lock")
-			return false, "DeadLock"
+			return false, i18n.DeadLock
 		}
 		contest, ok, msg := c.GetByID(id)
 		if !ok {
@@ -129,14 +130,14 @@ func (c *ContestRepo) Update(id uint, options UpdateContestOptions) (bool, strin
 		res := c.DB.Model(&model.Contest{}).Where("id = ? AND version = ?", id, contest.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Contest: %v", res.Error)
-			return false, "UpdateContestError"
+			return false, i18n.UpdateContestError
 		}
 		if res.RowsAffected == 0 {
 			continue
 		}
 		break
 	}
-	return true, "Success"
+	return true, i18n.Success
 }
 
 func (c *ContestRepo) Delete(idL ...uint) (bool, string) {
@@ -179,7 +180,7 @@ func (c *ContestRepo) Delete(idL ...uint) (bool, string) {
 	}
 	if res := c.DB.Model(&model.Contest{}).Where("id IN ?", idL).Delete(&model.Challenge{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Contest: %v", res.Error)
-		return false, "DeleteContestError"
+		return false, i18n.DeleteContestError
 	}
-	return true, "Success"
+	return true, i18n.Success
 }

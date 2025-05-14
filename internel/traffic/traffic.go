@@ -1,6 +1,7 @@
 package traffic
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"bufio"
 	"bytes"
@@ -48,14 +49,14 @@ func ReadPcap(path string) ([]Connection, bool, string) {
 	if _, err := os.Stat(path); err != nil {
 		log.Logger.Warningf("Failed to get file: %s", err)
 		if os.IsNotExist(err) {
-			return []Connection{}, false, "PcapNotFound"
+			return []Connection{}, false, i18n.PcapNotFound
 		}
-		return []Connection{}, false, "UnknownError"
+		return []Connection{}, false, i18n.UnknownError
 	}
 	handle, err := pcap.OpenOffline(path)
 	if err != nil {
 		log.Logger.Warningf("Failed to read .pcap: %s", err)
-		return []Connection{}, false, "ReadPcapError"
+		return []Connection{}, false, i18n.ReadPcapError
 	}
 	defer handle.Close()
 	packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
@@ -93,5 +94,5 @@ func ReadPcap(path string) ([]Connection, bool, string) {
 			}
 		}
 	}
-	return connections, true, "Success"
+	return connections, true, i18n.Success
 }

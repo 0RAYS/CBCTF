@@ -2,6 +2,7 @@ package service
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/redis"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
@@ -11,7 +12,7 @@ import (
 func VerifyEmail(tx *gorm.DB, form f.VerifyEmail) (bool, string) {
 	claims, err := utils.Parse(form.Token)
 	if err != nil {
-		return false, "InvalidEmailVerifyToken"
+		return false, i18n.InvalidEmailVerifyToken
 	}
 	id, ok := redis.GetEmailVerifyToken(claims.UserID)
 	if !ok {
@@ -25,7 +26,7 @@ func VerifyEmail(tx *gorm.DB, form f.VerifyEmail) (bool, string) {
 			return false, msg
 		}
 		redis.DelEmailVerifyToken(claims.UserID)
-		return true, "Success"
+		return true, i18n.Success
 	}
-	return false, "InvalidEmailVerifyToken"
+	return false, i18n.InvalidEmailVerifyToken
 }

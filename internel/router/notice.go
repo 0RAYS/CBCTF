@@ -2,6 +2,7 @@ package router
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/middleware"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/resp"
@@ -13,7 +14,7 @@ import (
 func GetNotices(ctx *gin.Context) {
 	var form f.GetModelsForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	if _, exists := ctx.GetQuery("limit"); !exists {
@@ -39,16 +40,16 @@ func GetNotices(ctx *gin.Context) {
 func GetNotice(ctx *gin.Context) {
 	notice := middleware.GetNotice(ctx)
 	if middleware.GetRole(ctx) != "admin" {
-		ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": resp.GetNoticeResp(notice)})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": resp.GetNoticeResp(notice)})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &notice})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": &notice})
 }
 
 func CreateNotice(ctx *gin.Context) {
 	var form f.CreateNoticeForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	contest := middleware.GetContest(ctx)
@@ -60,13 +61,13 @@ func CreateNotice(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": &notice})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": &notice})
 }
 
 func UpdateNotice(ctx *gin.Context) {
 	var form f.UpdateNoticeForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	notice := middleware.GetNotice(ctx)

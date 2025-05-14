@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"gorm.io/gorm"
@@ -32,7 +33,7 @@ func (e *EventRepo) CountByKeyID(key string, id uint) (int64, bool, string) {
 		log.Logger.Warningf("Failed to count Events: %s", res.Error)
 		return 0, false, ""
 	}
-	return count, true, "Success"
+	return count, true, i18n.Success
 }
 
 func (e *EventRepo) GetByKeyID(key string, id uint, limit, offset int, preloadL ...string) ([]model.Event, int64, bool, string) {
@@ -47,7 +48,7 @@ func (e *EventRepo) GetByKeyID(key string, id uint, limit, offset int, preloadL 
 	res = preload(res, preloadL...).Limit(limit).Offset(offset).Find(&events)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Events: %s", res.Error)
-		return events, count, false, "GetEventError"
+		return events, count, false, i18n.GetEventError
 	}
-	return events, count, true, "Success"
+	return events, count, true, i18n.Success
 }

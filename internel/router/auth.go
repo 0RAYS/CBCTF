@@ -2,6 +2,7 @@ package router
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/middleware"
 	db "CBCTF/internel/repo"
@@ -15,11 +16,11 @@ import (
 func Register(ctx *gin.Context) {
 	var form f.RegisterForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	if middleware.GetMagic(ctx) == "" {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
@@ -38,7 +39,7 @@ func Register(ctx *gin.Context) {
 	token, err := utils.Generate(user.ID, user.Name, "user", middleware.GetMagic(ctx))
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": "UnknownError", "data": nil})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": i18n.UnknownError, "data": nil})
 		return
 	}
 	ctx.Set("Self", user)
@@ -50,11 +51,11 @@ func Register(ctx *gin.Context) {
 func Login(ctx *gin.Context) {
 	var form f.LoginForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	if middleware.GetMagic(ctx) == "" {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	user, ok, msg := service.VerifyUser(db.DB.WithContext(ctx), form)
@@ -64,9 +65,8 @@ func Login(ctx *gin.Context) {
 	}
 	Token, err := utils.Generate(user.ID, user.Name, "user", middleware.GetMagic(ctx))
 	if err != nil {
-		msg = "UnknownError"
 		log.Logger.Warningf("Failed to generate token: %s", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": i18n.UnknownError, "data": nil})
 		return
 	}
 	ctx.Set("Self", user)
@@ -78,7 +78,7 @@ func Login(ctx *gin.Context) {
 func AdminLogin(ctx *gin.Context) {
 	var form f.LoginForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	admin, ok, msg := service.VerifyAdmin(db.DB.WithContext(ctx), form)
@@ -88,9 +88,8 @@ func AdminLogin(ctx *gin.Context) {
 	}
 	Token, err := utils.Generate(admin.ID, admin.Name, "admin", "admin")
 	if err != nil {
-		msg = "UnknownError"
 		log.Logger.Warningf("Failed to generate token: %s", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": msg, "data": nil})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": i18n.UnknownError, "data": nil})
 		return
 	}
 	log.Logger.Infof("%s:%d login", admin.Name, admin.ID)

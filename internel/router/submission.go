@@ -2,6 +2,7 @@ package router
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/middleware"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
@@ -13,7 +14,7 @@ import (
 func GetSubmissions(ctx *gin.Context) {
 	var form f.GetModelsForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": "BadRequest", "data": nil})
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	if _, exists := ctx.GetQuery("limit"); !exists {
@@ -39,5 +40,5 @@ func GetSubmissions(ctx *gin.Context) {
 	for _, submission := range submissions {
 		data = append(data, resp.GetSubmissionResp(submission))
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "Success", "data": gin.H{"submissions": data, "count": count}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"submissions": data, "count": count}})
 }

@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
@@ -30,12 +31,12 @@ func (d *DeviceRepo) GetBy2ID(userID uint, magic string) (model.Device, bool, st
 	res := d.DB.Model(&model.Device{}).Where("user_id = ? AND magic = ?", userID, magic).Limit(1).Find(&device)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Device: %s", res.Error)
-		return model.Device{}, false, "GetDeviceError"
+		return model.Device{}, false, i18n.GetDeviceError
 	}
 	if res.RowsAffected == 0 {
-		return model.Device{}, false, "DeviceNotFound"
+		return model.Device{}, false, i18n.DeviceNotFound
 	}
-	return device, true, "Success"
+	return device, true, i18n.Success
 }
 
 func (d *DeviceRepo) Update(id uint, options UpdateDeviceOptions) (bool, string) {
@@ -45,7 +46,7 @@ func (d *DeviceRepo) Update(id uint, options UpdateDeviceOptions) (bool, string)
 		count++
 		if count > 10 {
 			log.Logger.Warningf("Failed to update Device: too many times failed due to optimistic lock")
-			return false, "DeadLock"
+			return false, i18n.DeadLock
 		}
 		device, ok, msg := d.GetByID(id)
 		if !ok {
@@ -55,12 +56,12 @@ func (d *DeviceRepo) Update(id uint, options UpdateDeviceOptions) (bool, string)
 		res := d.DB.Model(&model.Device{}).Where("id = ? AND version = ?", id, device.Version).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update Device: %s", res.Error)
-			return false, "UpdateDeviceError"
+			return false, i18n.UpdateDeviceError
 		}
 		if res.RowsAffected == 0 {
 			continue
 		}
 		break
 	}
-	return true, "Success"
+	return true, i18n.Success
 }
