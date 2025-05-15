@@ -5,6 +5,7 @@ import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
+	"CBCTF/internel/utils"
 	"context"
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
@@ -161,7 +162,9 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]map[str
 			"ports": func(service *corev1.Service) []int32 {
 				ports := make([]int32, 0)
 				for _, port := range service.Spec.Ports {
-					ports = append(ports, port.NodePort)
+					if !utils.In(port.NodePort, ports) {
+						ports = append(ports, port.NodePort)
+					}
 				}
 				return ports
 			}(res.Service),
