@@ -15,10 +15,11 @@ import (
 )
 
 // StartVictim model.Victim 需要预加载 model.Pod, 嵌套预加载 model.Container
-func StartVictim(victim model.Victim, dns map[string]string) (map[string]string, bool, string) {
+func StartVictim(victim model.Victim, dns map[string]string) (map[string]map[string]any, bool, string) {
 	log.Logger.Debugf("Creating Victim for team %d usage %d", victim.TeamID, victim.UsageID)
 	type result struct {
 		PodName string
+		Service *corev1.Service
 		IP      string
 		OK      bool
 		Msg     string
@@ -33,14 +34,14 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]string,
 			defer cancel()
 			service, ok, msg := CreateService(ctx, pod)
 			if !ok {
-				resultCh <- result{PodName: pod.Name, IP: "", OK: false, Msg: msg}
+				resultCh <- result{PodName: pod.Name, OK: false, Msg: msg}
 				return
 			}
 			pod.NetworkPolicies = append(pod.NetworkPolicies, model.DefaultNetworkPolicy)
 			for _, policy := range pod.NetworkPolicies {
 				_, ok, msg := CreateNetworkPolicy(ctx, pod, policy)
 				if !ok {
-					resultCh <- result{PodName: pod.Name, IP: "", OK: false, Msg: msg}
+					resultCh <- result{PodName: pod.Name, OK: false, Msg: msg}
 					return
 				}
 			}
@@ -53,7 +54,7 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]string,
 			}
 			for _, container := range pod.Containers {
 				if container.Image == "" {
-					resultCh <- result{PodName: pod.Name, IP: "", OK: false, Msg: i18n.EmptyContainerImage}
+					resultCh <- result{PodName: pod.Name, OK: false, Msg: i18n.EmptyContainerImage}
 					return
 				}
 				containers = append(containers, corev1.Container{
@@ -138,26 +139,35 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]string,
 			}
 			p, ok, msg := CreatePod(ctx, pod.Name, containers, pod.PodIP, dns)
 			if !ok {
-				resultCh <- result{PodName: pod.Name, IP: "", OK: false, Msg: msg}
+				resultCh <- result{PodName: pod.Name, OK: false, Msg: msg}
 				return
 			}
 			if !config.Env.K8S.Frpc.On {
 				ip = p.Status.HostIP
 			}
 			log.Logger.Infof("Pod %s is running on %s", pod.Name, ip)
-			resultCh <- result{PodName: pod.Name, IP: ip, OK: true, Msg: msg}
+			resultCh <- result{PodName: pod.Name, Service: service, IP: ip, OK: true, Msg: msg}
 		}(pod)
 	}
 	wg.Wait()
 	close(resultCh)
-	ipL := make(map[string]string)
+	targets := make(map[string]map[string]any)
 	for res := range resultCh {
 		if !res.OK {
 			return nil, false, res.Msg
 		}
-		ipL[res.PodName] = res.IP
+		targets[res.PodName] = map[string]any{
+			"ip": res.IP,
+			"ports": func(service *corev1.Service) []int32 {
+				ports := make([]int32, 0)
+				for _, port := range service.Spec.Ports {
+					ports = append(ports, port.NodePort)
+				}
+				return ports
+			}(res.Service),
+		}
 	}
-	return ipL, true, i18n.Success
+	return targets, true, i18n.Success
 }
 
 // StopVictim 需要预加载 model.Pod

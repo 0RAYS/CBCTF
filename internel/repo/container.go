@@ -10,12 +10,12 @@ type ContainerRepo struct {
 }
 
 type CreateContainerOptions struct {
-	PodID    uint
-	Name     string
-	Image    string
-	Hostname string
-	Flags    model.Strings
-	Exposes  model.Ports
+	PodID       uint
+	Name        string
+	Image       string
+	Hostname    string
+	Flags       model.Strings
+	ExposePorts model.Ports
 }
 
 func InitContainerRepo(tx *gorm.DB) *ContainerRepo {

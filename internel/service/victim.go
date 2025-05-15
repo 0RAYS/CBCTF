@@ -65,10 +65,10 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, usage model.Usag
 			}
 		}
 		for i, dockers := range podGroup {
-			exposes := make([]int32, 0)
+			ports := make([]int32, 0)
 			policies := make([]model.NetworkPolicy, 0)
 			for _, docker := range dockers {
-				exposes = append(exposes, docker.Ports...)
+				ports = append(ports, docker.Ports...)
 				for x, policy := range docker.NetworkPolicies {
 					for y, target := range policy.To {
 						if target.Hostname != "" {
@@ -100,7 +100,7 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, usage model.Usag
 				PodIP:             block[i],
 				ServiceName:       fmt.Sprintf("victim-%s-%d-svc-%d", usage.ChallengeID, team.ID, i),
 				NetworkPolicyName: fmt.Sprintf("victim-%s-%d-net-%d", usage.ChallengeID, team.ID, i),
-				ExposePorts:       exposes,
+				PodPorts:          ports,
 				NetworkPolicies:   policies,
 			}
 			pod, ok, msg := podRepo.Create(pOptions)
@@ -109,11 +109,11 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, usage model.Usag
 			}
 			for _, docker := range dockers {
 				cOptions := db.CreateContainerOptions{
-					PodID:    pod.ID,
-					Name:     fmt.Sprintf("victim-%s-%d-%d", usage.ChallengeID, team.ID, i),
-					Image:    docker.Image,
-					Hostname: docker.Hostname,
-					Exposes:  docker.Ports,
+					PodID:       pod.ID,
+					Name:        fmt.Sprintf("victim-%s-%d-%d", usage.ChallengeID, team.ID, i),
+					Image:       docker.Image,
+					Hostname:    docker.Hostname,
+					ExposePorts: docker.Ports,
 				}
 				for _, flagID := range docker.FlagIDL {
 					answer, ok, msg := answerRepo.GetBy2ID(team.ID, flagID)
@@ -133,20 +133,24 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, usage model.Usag
 	} else {
 		return model.Victim{}, false, i18n.InvalidChallengeType
 	}
-	ipL, ok, msg := k8s.StartVictim(victim, dns)
+	targets, ok, msg := k8s.StartVictim(victim, dns)
 	if !ok {
 		go k8s.StopVictim(victim)
 		return model.Victim{}, false, msg
 	}
 	for i, pod := range victim.Pods {
-		ip := ipL[pod.Name]
+		target := targets[pod.Name]
+		ip := target["ip"].(string)
+		ports := target["ports"].(model.Ports)
 		ok, msg := podRepo.Update(pod.ID, db.UpdatePodOptions{
-			ExposeIP: &ip,
+			ExposedIP:    &ip,
+			ExposedPorts: &ports,
 		})
 		if !ok {
 			return model.Victim{}, false, msg
 		}
-		victim.Pods[i].ExposeIP = ip
+		victim.Pods[i].ExposedIP = ip
+		victim.Pods[i].ExposedPorts = ports
 	}
 	return victim, true, i18n.Success
 }
