@@ -80,7 +80,7 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]map[str
 					}(),
 					Ports: func() []corev1.ContainerPort {
 						tmp := make([]corev1.ContainerPort, 0)
-						for _, p := range container.ExposePorts {
+						for _, p := range container.PodPorts {
 							tmp = append(tmp, corev1.ContainerPort{
 								ContainerPort: p,
 							})

@@ -107,10 +107,10 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, usage model.Usag
 			if !ok {
 				return model.Victim{}, false, msg
 			}
-			for _, docker := range dockers {
+			for j, docker := range dockers {
 				cOptions := db.CreateContainerOptions{
 					PodID:       pod.ID,
-					Name:        fmt.Sprintf("victim-%s-%d-%d", usage.ChallengeID, team.ID, i),
+					Name:        fmt.Sprintf("victim-%s-%d-%d-%d", usage.ChallengeID, team.ID, i, j),
 					Image:       docker.Image,
 					Hostname:    docker.Hostname,
 					ExposePorts: docker.Ports,
