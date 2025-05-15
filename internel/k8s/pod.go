@@ -35,17 +35,21 @@ func CreatePod(ctx context.Context, podName string, containers []corev1.Containe
 			TerminationGracePeriodSeconds: ptr.To[int64](3),
 			RestartPolicy:                 corev1.RestartPolicyNever,
 			HostAliases: func() []corev1.HostAlias {
-				tmp := make([]corev1.HostAlias, 0)
+				aliases := make([]corev1.HostAlias, 0)
+				tmp := make(map[string][]string)
 				for k, v := range dns {
 					if v == podIP {
 						v = "127.0.0.1"
 					}
-					tmp = append(tmp, corev1.HostAlias{
-						Hostnames: []string{k},
-						IP:        v,
+					tmp[v] = append(tmp[v], k)
+				}
+				for ip, hostname := range tmp {
+					aliases = append(aliases, corev1.HostAlias{
+						IP:        ip,
+						Hostnames: hostname,
 					})
 				}
-				return tmp
+				return aliases
 			}(),
 		},
 	}
