@@ -19,7 +19,7 @@ type Pod struct {
 	ServiceName       string          `json:"service"`
 	NetworkPolicyName string          `json:"network_policy"`
 	ExposePorts       Ports           `gorm:"type:json" json:"exposes"`
-	NetworkPolicies   NetworkPolicies `json:"network_policies"`
+	NetworkPolicies   NetworkPolicies `gorm:"type:json" json:"network_policies"`
 	CreatedAt         time.Time       `json:"-"`
 	UpdatedAt         time.Time       `json:"-"`
 	DeletedAt         gorm.DeletedAt  `gorm:"index" json:"-"`
