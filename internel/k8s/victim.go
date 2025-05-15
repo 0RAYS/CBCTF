@@ -5,7 +5,6 @@ import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
-	"CBCTF/internel/utils"
 	"context"
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
@@ -20,8 +19,8 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]map[str
 	log.Logger.Debugf("Creating Victim for team %d usage %d", victim.TeamID, victim.UsageID)
 	type result struct {
 		PodName string
-		Service *corev1.Service
 		IP      string
+		Ports   []int32
 		OK      bool
 		Msg     string
 	}
@@ -92,9 +91,12 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]map[str
 			rand.New(rand.NewSource(time.Now().UnixNano()))
 			frps := config.Env.K8S.Frpc.Frps[rand.Intn(len(config.Env.K8S.Frpc.Frps))]
 			var ip string
-			if config.Env.K8S.Frpc.On {
-				// TODO 优化端口映射方案, 多个端口使用单个 frpc 容器
-				for _, port := range service.Spec.Ports {
+			ports := make([]int32, 0)
+			// TODO 优化端口映射方案, 多个端口使用单个 frpc 容器
+			for _, port := range service.Spec.Ports {
+				ports = append(ports, port.NodePort)
+				if config.Env.K8S.Frpc.On {
+					ip = frps.Host
 					frpc := corev1.Container{
 						Name:  "frpc",
 						Image: config.Env.K8S.Frpc.Image,
@@ -136,7 +138,6 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]map[str
 					containers = append(containers, frpc)
 					log.Logger.Infof("Frpc started: %s:%d -> %s:%s", frps.Host, port.NodePort, pod.Name, port.TargetPort.StrVal)
 				}
-				ip = frps.Host
 			}
 			p, ok, msg := CreatePod(ctx, pod.Name, containers, pod.PodIP, dns)
 			if !ok {
@@ -147,7 +148,7 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]map[str
 				ip = p.Status.HostIP
 			}
 			log.Logger.Infof("Pod %s is running on %s", pod.Name, ip)
-			resultCh <- result{PodName: pod.Name, Service: service, IP: ip, OK: true, Msg: msg}
+			resultCh <- result{PodName: pod.Name, Ports: ports, IP: ip, OK: true, Msg: msg}
 		}(pod)
 	}
 	wg.Wait()
@@ -158,16 +159,8 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]map[str
 			return nil, false, res.Msg
 		}
 		targets[res.PodName] = map[string]any{
-			"ip": res.IP,
-			"ports": func(service *corev1.Service) []int32 {
-				ports := make([]int32, 0)
-				for _, port := range service.Spec.Ports {
-					if !utils.In(port.NodePort, ports) {
-						ports = append(ports, port.NodePort)
-					}
-				}
-				return ports
-			}(res.Service),
+			"ip":    res.IP,
+			"ports": res.Ports,
 		}
 	}
 	return targets, true, i18n.Success
