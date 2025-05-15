@@ -29,7 +29,7 @@ func (r *Repo[T]) Create(options any) (T, bool, string) {
 	m, err := utils.S2S[T](options)
 	if err != nil {
 		log.Logger.Warningf("Failed to convert options to %T: %s", new(T), err)
-		return *new(T), false, fmt.Sprintf("Options2%sError", r.Model)
+		return *new(T), false, i18n.UnknownError
 	}
 	if res := r.DB.Model(new(T)).Create(&m); res.Error != nil {
 		log.Logger.Warningf("Failed to create %T: %s", new(T), res.Error)
