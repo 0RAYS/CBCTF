@@ -5,6 +5,7 @@ import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
+	"CBCTF/internel/utils"
 	"context"
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
@@ -94,7 +95,9 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]map[str
 			ports := make([]int32, 0)
 			// TODO 优化端口映射方案, 多个端口使用单个 frpc 容器
 			for _, port := range service.Spec.Ports {
-				ports = append(ports, port.NodePort)
+				if !utils.In(port.NodePort, ports) {
+					ports = append(ports, port.NodePort)
+				}
 				if config.Env.K8S.Frpc.On {
 					ip = frps.Host
 					frpc := corev1.Container{
