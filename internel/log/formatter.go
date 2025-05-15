@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-var colors = map[string]func(a ...interface{}) string{
+var colors = map[string]func(a ...any) string{
 	"Time":    color.New(color.FgGreen).Add(color.Bold).SprintFunc(),
 	"Warning": color.New(color.FgYellow).Add(color.Bold).SprintFunc(),
 	"Panic":   color.New(color.FgRed, color.BgWhite).SprintFunc(),
@@ -29,7 +29,7 @@ var colors = map[string]func(a ...interface{}) string{
 	"Default": color.New().SprintFunc(),
 }
 
-func methodColor(method string) func(a ...interface{}) string {
+func methodColor(method string) func(a ...any) string {
 	switch method {
 	case http.MethodGet:
 		return colors["GET"]
@@ -50,7 +50,7 @@ func methodColor(method string) func(a ...interface{}) string {
 	}
 }
 
-func levelColor(level logrus.Level) func(a ...interface{}) string {
+func levelColor(level logrus.Level) func(a ...any) string {
 	switch level {
 	case logrus.DebugLevel, logrus.TraceLevel:
 		return colors["Debug"]
@@ -69,7 +69,7 @@ func levelColor(level logrus.Level) func(a ...interface{}) string {
 	}
 }
 
-func statusCodeColor(code int) func(a ...interface{}) string {
+func statusCodeColor(code int) func(a ...any) string {
 	switch {
 	case code >= http.StatusOK && code < http.StatusMultipleChoices:
 		return colors["Info"]

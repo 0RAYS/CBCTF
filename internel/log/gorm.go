@@ -71,18 +71,18 @@ func (l *gormTraceLogger) LogMode(level gormLogger.LogLevel) gormLogger.Interfac
 }
 
 // Info print info
-func (l *gormTraceLogger) Info(ctx context.Context, msg string, data ...interface{}) {
-	l.WithField("TraceID", ctx.Value("TraceID")).Infof(l.infoStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...)
+func (l *gormTraceLogger) Info(ctx context.Context, msg string, data ...any) {
+	l.WithField("TraceID", ctx.Value("TraceID")).Infof(l.infoStr+msg, append([]any{utils.FileWithLineNum()}, data...)...)
 }
 
 // Warn print warn messages
-func (l *gormTraceLogger) Warn(ctx context.Context, msg string, data ...interface{}) {
-	l.WithField("TraceID", ctx.Value("TraceID")).Warnf(l.warnStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...)
+func (l *gormTraceLogger) Warn(ctx context.Context, msg string, data ...any) {
+	l.WithField("TraceID", ctx.Value("TraceID")).Warnf(l.warnStr+msg, append([]any{utils.FileWithLineNum()}, data...)...)
 }
 
 // Error print error messages
-func (l *gormTraceLogger) Error(ctx context.Context, msg string, data ...interface{}) {
-	l.WithField("TraceID", ctx.Value("TraceID")).Errorf(l.errStr+msg, append([]interface{}{utils.FileWithLineNum()}, data...)...)
+func (l *gormTraceLogger) Error(ctx context.Context, msg string, data ...any) {
+	l.WithField("TraceID", ctx.Value("TraceID")).Errorf(l.errStr+msg, append([]any{utils.FileWithLineNum()}, data...)...)
 }
 
 // Trace print sql message

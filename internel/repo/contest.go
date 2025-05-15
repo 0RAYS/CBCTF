@@ -54,7 +54,7 @@ func (c *ContestRepo) IsUniqueName(name string) bool {
 	return !ok
 }
 
-func (c *ContestRepo) getByUniqueKey(key string, value interface{}, preloadL ...string) (model.Contest, bool, string) {
+func (c *ContestRepo) getByUniqueKey(key string, value any, preloadL ...string) (model.Contest, bool, string) {
 	switch key {
 	case "name":
 		value = value.(string)

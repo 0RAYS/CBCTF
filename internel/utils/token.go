@@ -39,7 +39,7 @@ func Generate(id uint, name string, t string, magic string) (tokenString string,
 
 // Parse 解析token
 func Parse(t string) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(t, &Claims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(t, &Claims{}, func(token *jwt.Token) (any, error) {
 		return []byte(secret), nil
 	})
 	switch {

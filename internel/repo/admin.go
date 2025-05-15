@@ -42,7 +42,7 @@ func (a *AdminRepo) IsUniqueEmail(email string) bool {
 	return !ok
 }
 
-func (a *AdminRepo) getByUniqueKey(key string, value interface{}, preloadL ...string) (model.Admin, bool, string) {
+func (a *AdminRepo) getByUniqueKey(key string, value any, preloadL ...string) (model.Admin, bool, string) {
 	switch key {
 	case "name", "email":
 		value = value.(string)

@@ -73,7 +73,7 @@ func GetRole(ctx *gin.Context) string {
 }
 
 // GetSelf 获取当前登录 admin 或 user
-func GetSelf(ctx *gin.Context) interface{} {
+func GetSelf(ctx *gin.Context) any {
 	if self, ok := ctx.Get("Self"); !ok || self == nil {
 		return nil
 	} else {

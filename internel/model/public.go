@@ -14,7 +14,7 @@ func (s Strings) Value() (driver.Value, error) {
 	return json.Marshal(s)
 }
 
-func (s *Strings) Scan(value interface{}) error {
+func (s *Strings) Scan(value any) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("failed to scan Strings value")
@@ -28,7 +28,7 @@ func (u Uints) Value() (driver.Value, error) {
 	return json.Marshal(u)
 }
 
-func (u *Uints) Scan(value interface{}) error {
+func (u *Uints) Scan(value any) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("failed to scan Uints value")
@@ -47,7 +47,7 @@ func (p Prizes) Value() (driver.Value, error) {
 	return json.Marshal(p)
 }
 
-func (p *Prizes) Scan(value interface{}) error {
+func (p *Prizes) Scan(value any) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("failed to scan Prizes value")
@@ -67,7 +67,7 @@ func (t Timelines) Value() (driver.Value, error) {
 	return json.Marshal(t)
 }
 
-func (t *Timelines) Scan(value interface{}) error {
+func (t *Timelines) Scan(value any) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("failed to scan Timelines value")
@@ -136,7 +136,7 @@ func (n NetworkPolicies) Value() (driver.Value, error) {
 	return json.Marshal(n)
 }
 
-func (n *NetworkPolicies) Scan(value interface{}) error {
+func (n *NetworkPolicies) Scan(value any) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("failed to scan NetworkPolicy value")
@@ -161,7 +161,7 @@ func (d Dockers) Value() (driver.Value, error) {
 	return json.Marshal(d)
 }
 
-func (d *Dockers) Scan(value interface{}) error {
+func (d *Dockers) Scan(value any) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("failed to scan Dockers value")
@@ -175,7 +175,7 @@ func (e Ports) Value() (driver.Value, error) {
 	return json.Marshal(e)
 }
 
-func (e *Ports) Scan(value interface{}) error {
+func (e *Ports) Scan(value any) error {
 	bytes, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("failed to scan Ports value")

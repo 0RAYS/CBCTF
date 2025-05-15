@@ -195,7 +195,7 @@ const (
 	ZipError                   = "ZipError"
 )
 
-var resp = map[string]map[string]interface{}{
+var resp = map[string]map[string]any{
 	Success:         {"zh-CN": "操作成功", "en-US": "Success", "code": 200},
 	BadRequest:      {"zh-CN": "参数错误", "en-US": "Bad request", "code": 400},
 	Unauthorized:    {"zh-CN": "未登录", "en-US": "Unauthorized", "code": 401},

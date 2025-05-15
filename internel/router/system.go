@@ -61,7 +61,7 @@ func HomePage(ctx *gin.Context) {
 }
 
 func SystemStatus(ctx *gin.Context) {
-	ret := make(map[string]interface{})
+	ret := make(map[string]any)
 	ret["metrics"] = redis.GetMetrics()
 
 	ioStats, err := net.IOCounters(false)
