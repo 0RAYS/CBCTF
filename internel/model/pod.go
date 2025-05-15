@@ -14,11 +14,12 @@ type Pod struct {
 	Containers        []Container     `json:"-"`
 	Traffics          []Traffic       `json:"-"`
 	Name              string          `json:"name"`
-	ExposeIP          string          `json:"expose_ip"`
 	PodIP             string          `json:"pod_ip"`
+	ExposedIP         string          `json:"exposed_ip"`
 	ServiceName       string          `json:"service"`
 	NetworkPolicyName string          `json:"network_policy"`
-	ExposePorts       Ports           `gorm:"type:json" json:"exposes"`
+	PodPorts          Ports           `json:"pod_ports"`
+	ExposedPorts      Ports           `gorm:"type:json" json:"exposed_ports"`
 	NetworkPolicies   NetworkPolicies `gorm:"type:json" json:"network_policies"`
 	CreatedAt         time.Time       `json:"-"`
 	UpdatedAt         time.Time       `json:"-"`
@@ -32,8 +33,8 @@ func (p Pod) TrafficPath() string {
 
 func (p Pod) RemoteAddr() []string {
 	data := make([]string, 0)
-	for _, port := range p.ExposePorts {
-		data = append(data, fmt.Sprintf("%s:%d", p.ExposeIP, port))
+	for _, port := range p.ExposedPorts {
+		data = append(data, fmt.Sprintf("%s:%d", p.ExposedIP, port))
 	}
 	return data
 }

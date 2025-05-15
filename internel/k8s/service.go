@@ -44,7 +44,7 @@ func CreateService(ctx context.Context, pod model.Pod) (*corev1.Service, bool, s
 			},
 			Ports: func() []corev1.ServicePort {
 				tmp := make([]corev1.ServicePort, 0)
-				for _, p := range pod.ExposePorts {
+				for _, p := range pod.PodPorts {
 					tmp = append(tmp, corev1.ServicePort{
 						Name:       utils.UUID(),
 						Protocol:   corev1.ProtocolTCP,

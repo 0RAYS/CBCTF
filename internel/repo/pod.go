@@ -15,16 +15,18 @@ type PodRepo struct {
 type CreatePodOptions struct {
 	VictimID          uint
 	Name              string
-	ExposeIP          string
 	PodIP             string
+	ExposedIP         string
 	ServiceName       string
 	NetworkPolicyName string
-	ExposePorts       model.Ports
+	PodPorts          model.Ports
+	ExposedPorts      model.Ports
 	NetworkPolicies   model.NetworkPolicies
 }
 
 type UpdatePodOptions struct {
-	ExposeIP *string `json:"expose_ip"`
+	ExposedIP    *string      `json:"exposed_ip"`
+	ExposedPorts *model.Ports `json:"exposed_ports"`
 }
 
 func InitPodRepo(tx *gorm.DB) *PodRepo {
