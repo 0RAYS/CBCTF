@@ -42,7 +42,6 @@ func CreateNetworkPolicy(ctx context.Context, pod model.Pod, policy model.Networ
 			},
 		},
 	}
-	// k8s 策略为空时 deny all
 	ingress, egress := func() ([]netv1.NetworkPolicyIngressRule, []netv1.NetworkPolicyEgressRule) {
 		var ingress []netv1.NetworkPolicyIngressRule
 		var egress []netv1.NetworkPolicyEgressRule
@@ -72,11 +71,10 @@ func CreateNetworkPolicy(ctx context.Context, pod model.Pod, policy model.Networ
 		}
 		return ingress, egress
 	}()
-	networkPolicy.Spec.PolicyTypes = []netv1.PolicyType{
-		netv1.PolicyTypeIngress,
-		netv1.PolicyTypeEgress,
-	}
+	// 默认不允许出网
+	networkPolicy.Spec.PolicyTypes = []netv1.PolicyType{netv1.PolicyTypeEgress}
 	if len(ingress) > 0 {
+		networkPolicy.Spec.PolicyTypes = append(networkPolicy.Spec.PolicyTypes, netv1.PolicyTypeIngress)
 		networkPolicy.Spec.Ingress = ingress
 	}
 	if len(egress) > 0 {
