@@ -82,6 +82,12 @@ type Target struct {
 }
 
 func isValidIPBlock(ipBlock Target) bool {
+	if ipBlock.Hostname != "" {
+		return true
+	}
+	if ipBlock.Hostname == "" && ipBlock.CIDR == "" {
+		return false
+	}
 	_, ipNet, err := net.ParseCIDR(ipBlock.CIDR)
 	if err != nil {
 		return false
@@ -158,6 +164,25 @@ type Docker struct {
 type Dockers []Docker
 
 func (d Dockers) Value() (driver.Value, error) {
+	for i, docker := range d {
+		for j, port := range docker.Ports {
+			if port < 1 || port > 65535 {
+				d[i].Ports = append(d[i].Ports[:j], d[i].Ports[j+1:]...)
+			}
+		}
+		for j, ipBlock := range docker.NetworkPolicies {
+			for k, from := range ipBlock.From {
+				if !isValidIPBlock(from) {
+					d[i].NetworkPolicies[j].From = append(d[i].NetworkPolicies[j].From[:k], d[i].NetworkPolicies[j].From[k+1:]...)
+				}
+			}
+			for k, to := range ipBlock.To {
+				if !isValidIPBlock(to) {
+					d[i].NetworkPolicies[j].To = append(d[i].NetworkPolicies[j].To[:k], d[i].NetworkPolicies[j].To[k+1:]...)
+				}
+			}
+		}
+	}
 	return json.Marshal(d)
 }
 
@@ -172,6 +197,12 @@ func (d *Dockers) Scan(value any) error {
 type Ports []int32
 
 func (e Ports) Value() (driver.Value, error) {
+	tmp := make([]int32, 0)
+	for _, port := range e {
+		if port > 1 && port < 65535 {
+			tmp = append(tmp, port)
+		}
+	}
 	return json.Marshal(e)
 }
 
