@@ -29,7 +29,7 @@ type Connection struct {
 	Time    time.Time
 }
 
-func (conn Connection) ParsePayload() (interface{}, string) {
+func (conn Connection) ParsePayload() (any, string) {
 	reader := bytes.NewReader(conn.Payload)
 
 	req, err := http.ReadRequest(bufio.NewReader(reader))

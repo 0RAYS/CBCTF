@@ -14,7 +14,7 @@ func ClearUsageMutex(c *cron.Cron) {
 		contests := make(map[uint]model.Contest)
 		contestRepo := db.InitContestRepo(db.DB)
 		flagRepo := db.InitFlagRepo(db.DB)
-		service.SolvedMutex.Range(func(k, v interface{}) bool {
+		service.SolvedMutex.Range(func(k, v any) bool {
 			flag, ok, _ := flagRepo.GetByID(k.(uint))
 			if !ok {
 				service.SolvedMutex.Delete(k)

@@ -29,7 +29,7 @@ func InitFileRepo(tx *gorm.DB) *FileRepo {
 	return &FileRepo{Repo: Repo[model.File]{DB: tx, Model: "File"}}
 }
 
-func (f *FileRepo) getByUniqueKey(key string, value interface{}) (model.File, bool, string) {
+func (f *FileRepo) getByUniqueKey(key string, value any) (model.File, bool, string) {
 	switch key {
 	// 虽然 hash 并不是唯一的，但是并不影响功能
 	case "id", "hash":

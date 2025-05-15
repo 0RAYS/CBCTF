@@ -25,7 +25,7 @@ type Repo[T any] struct {
 	Model string
 }
 
-func (r *Repo[T]) Create(options interface{}) (T, bool, string) {
+func (r *Repo[T]) Create(options any) (T, bool, string) {
 	m, err := utils.S2S[T](options)
 	if err != nil {
 		log.Logger.Warningf("Failed to convert options to %T: %s", new(T), err)
@@ -38,7 +38,7 @@ func (r *Repo[T]) Create(options interface{}) (T, bool, string) {
 	return m, true, i18n.Success
 }
 
-func (r *Repo[T]) getByUniqueKey(key string, value interface{}, preloadL ...string) (T, bool, string) {
+func (r *Repo[T]) getByUniqueKey(key string, value any, preloadL ...string) (T, bool, string) {
 	switch key {
 	case "id":
 		value = value.(uint)

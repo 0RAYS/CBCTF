@@ -37,7 +37,7 @@ func InitChallengeRepo(tx *gorm.DB) *ChallengeRepo {
 	return &ChallengeRepo{Repo: Repo[model.Challenge]{DB: tx, Model: "Challenge"}}
 }
 
-func (c *ChallengeRepo) getByUniqueKey(key string, value interface{}, preloadL ...string) (model.Challenge, bool, string) {
+func (c *ChallengeRepo) getByUniqueKey(key string, value any, preloadL ...string) (model.Challenge, bool, string) {
 	switch key {
 	case "id":
 		value = value.(string)

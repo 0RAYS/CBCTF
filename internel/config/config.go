@@ -121,7 +121,7 @@ func Init() {
 func Save(env *Config) error {
 	env.Backend = strings.TrimSuffix(env.Backend, "/")
 	env.Frontend = strings.TrimSuffix(env.Frontend, "/")
-	config := make(map[string]interface{})
+	config := make(map[string]any)
 	data, err := json.Marshal(env)
 	if err != nil {
 		log.Panicf("Failed to marshal Env to JSON: %s", err)

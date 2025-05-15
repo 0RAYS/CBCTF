@@ -52,7 +52,7 @@ func (u *UserRepo) IsUniqueEmail(email string) bool {
 	return !ok
 }
 
-func (u *UserRepo) getByUniqueKey(key string, value interface{}, preloadL ...string) (model.User, bool, string) {
+func (u *UserRepo) getByUniqueKey(key string, value any, preloadL ...string) (model.User, bool, string) {
 	switch key {
 	case "name", "email":
 		value = value.(string)
