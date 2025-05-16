@@ -41,7 +41,7 @@ k8s:
     tcpdump: "nicolaka/netshoot:latest"
     frpc:
         on: false
-        image: "docker.0rays.club/test/frpc:0.61.2"
+        image: "snowdreamtech/frpc:latest"
         frps:
             -   host: "example.com"
                 port: "7000"
