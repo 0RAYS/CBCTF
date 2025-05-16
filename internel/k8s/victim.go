@@ -37,20 +37,73 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]map[str
 				resultCh <- result{PodName: pod.Name, OK: false, Msg: msg}
 				return
 			}
-			pod.NetworkPolicies = append(pod.NetworkPolicies, model.DefaultNetworkPolicy)
-			for _, policy := range pod.NetworkPolicies {
-				_, ok, msg := CreateNetworkPolicy(ctx, pod, policy)
-				if !ok {
-					resultCh <- result{PodName: pod.Name, OK: false, Msg: msg}
-					return
-				}
-			}
 			containers := []corev1.Container{
 				{
 					Name:    "tcpdump",
 					Image:   config.Env.K8S.TCPDumpImage,
 					Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/traffic.pcap"},
 				},
+			}
+			volumes := make([]corev1.Volume, 0)
+			var ip string
+			if len(pod.PodPorts) > 0 && config.Env.K8S.Frpc.On {
+				rand.New(rand.NewSource(time.Now().UnixNano()))
+				frps := config.Env.K8S.Frpc.Frps[rand.Intn(len(config.Env.K8S.Frpc.Frps))]
+				ip = frps.Host
+				policy := model.NetworkPolicy{
+					To: []model.Target{
+						{
+							CIDR: fmt.Sprintf("%s/32", frps.Host),
+						},
+					},
+				}
+				for _, p := range pod.NetworkPolicies {
+					if len(p.From) > 0 {
+						policy.From = []model.Target{
+							{
+								CIDR: fmt.Sprintf("%s/32", frps.Host),
+							},
+						}
+						break
+					}
+				}
+				pod.NetworkPolicies = append(pod.NetworkPolicies, policy)
+				frpcConfigMap, ok, msg := CreateFrpcConfig(ctx, frps.Host, frps.Port, frps.Token, pod, service)
+				if !ok {
+					resultCh <- result{PodName: pod.Name, OK: false, Msg: msg}
+					return
+				}
+				volumeName := fmt.Sprintf("%s-vol", pod.Name)
+				frpc := corev1.Container{
+					Name:  "frpc",
+					Image: config.Env.K8S.Frpc.Image,
+					Args:  []string{"-c", "/etc/frp/frpc.toml"},
+					VolumeMounts: []corev1.VolumeMount{
+						{
+							Name:      volumeName,
+							MountPath: "/etc/frp/frpc.toml",
+							SubPath:   "frpc.toml",
+						},
+					},
+				}
+				volumes = append(volumes, corev1.Volume{
+					Name: volumeName,
+					VolumeSource: corev1.VolumeSource{
+						ConfigMap: &corev1.ConfigMapVolumeSource{
+							LocalObjectReference: corev1.LocalObjectReference{
+								Name: frpcConfigMap.Name,
+							},
+						},
+					},
+				})
+				containers = append(containers, frpc)
+			}
+			for _, policy := range pod.NetworkPolicies {
+				_, ok, msg := CreateNetworkPolicy(ctx, pod, policy)
+				if !ok {
+					resultCh <- result{PodName: pod.Name, OK: false, Msg: msg}
+					return
+				}
 			}
 			for _, container := range pod.Containers {
 				if container.Image == "" {
@@ -88,46 +141,11 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]map[str
 					}(),
 				})
 			}
-			rand.New(rand.NewSource(time.Now().UnixNano()))
-			frps := config.Env.K8S.Frpc.Frps[rand.Intn(len(config.Env.K8S.Frpc.Frps))]
-			ip := frps.Host
 			ports := make([]int32, 0)
 			for _, port := range service.Spec.Ports {
 				if !utils.In(port.NodePort, ports) {
 					ports = append(ports, port.NodePort)
 				}
-			}
-			volumes := make([]corev1.Volume, 0)
-			if config.Env.K8S.Frpc.On {
-				frpcConfigMap, ok, msg := CreateFrpcConfig(ctx, frps.Host, frps.Port, frps.Token, pod, service)
-				if !ok {
-					resultCh <- result{PodName: pod.Name, OK: false, Msg: msg}
-					return
-				}
-				volumeName := fmt.Sprintf("%s-vol", pod.Name)
-				frpc := corev1.Container{
-					Name:  "frpc",
-					Image: config.Env.K8S.Frpc.Image,
-					Args:  []string{"-c", "/etc/frp/frpc.toml"},
-					VolumeMounts: []corev1.VolumeMount{
-						{
-							Name:      volumeName,
-							MountPath: "/etc/frp/frpc.toml",
-							SubPath:   "frpc.toml",
-						},
-					},
-				}
-				volumes = append(volumes, corev1.Volume{
-					Name: volumeName,
-					VolumeSource: corev1.VolumeSource{
-						ConfigMap: &corev1.ConfigMapVolumeSource{
-							LocalObjectReference: corev1.LocalObjectReference{
-								Name: frpcConfigMap.Name,
-							},
-						},
-					},
-				})
-				containers = append(containers, frpc)
 			}
 			p, ok, msg := CreatePod(ctx, pod.Name, containers, volumes, pod.PodIP, dns)
 			if !ok {
