@@ -72,7 +72,7 @@ func StartGenerator(usage model.Usage) (*corev1.Pod, bool, string) {
 		generatorIP[usage.ChallengeID] = ip
 		break
 	}
-	pod, ok, msg := CreatePod(ctx, podName, containers, ip, nil)
+	pod, ok, msg := CreatePod(ctx, podName, containers, nil, ip, nil)
 	if !ok {
 		return &corev1.Pod{}, false, msg
 	}

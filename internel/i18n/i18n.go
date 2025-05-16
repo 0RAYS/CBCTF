@@ -195,6 +195,11 @@ const (
 	EmptyIPBlock              = "EmptyIPBlock"
 	NoAvailableIP             = "NoAvailableIP"
 	GetIPBlockError           = "GetIPBlockError"
+
+	CreateConfigMapError = "CreateConfigMapError"
+	GetConfigMapError    = "GetConfigMapError"
+	ConfigMapNotFound    = "ConfigMapNotFound"
+	DeleteConfigMapError = "DeleteConfigMapError"
 )
 
 var resp = map[string]map[string]any{
@@ -387,6 +392,11 @@ var resp = map[string]map[string]any{
 	GetIPBlockError: {"zh-CN": "获取IP池失败", "en-US": "Failed to get IP pool", "code": 500},
 
 	DeleteAssociatedDataError: {"zh-CN": "删除关联数据失败", "en-US": "Failed to delete associated data", "code": 500},
+
+	CreateConfigMapError: {"zh-CN": "创建ConfigMap失败", "en-US": "Failed to create ConfigMap", "code": 500},
+	GetConfigMapError:    {"zh-CN": "获取ConfigMap失败", "en-US": "Failed to get ConfigMap", "code": 500},
+	ConfigMapNotFound:    {"zh-CN": "ConfigMap不存在", "en-US": "ConfigMap not found", "code": 404},
+	DeleteConfigMapError: {"zh-CN": "删除ConfigMap失败", "en-US": "Failed to delete ConfigMap", "code": 500},
 }
 
 // I18N 获取翻译与状态码, 非http响应状态码

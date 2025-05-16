@@ -10,7 +10,6 @@ import (
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	"math/rand"
-	"strconv"
 	"sync"
 	"time"
 )
@@ -91,58 +90,46 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]map[str
 			}
 			rand.New(rand.NewSource(time.Now().UnixNano()))
 			frps := config.Env.K8S.Frpc.Frps[rand.Intn(len(config.Env.K8S.Frpc.Frps))]
-			var ip string
+			ip := frps.Host
 			ports := make([]int32, 0)
-			// TODO 优化端口映射方案, 多个端口使用单个 frpc 容器
 			for _, port := range service.Spec.Ports {
 				if !utils.In(port.NodePort, ports) {
 					ports = append(ports, port.NodePort)
 				}
-				if config.Env.K8S.Frpc.On {
-					ip = frps.Host
-					frpc := corev1.Container{
-						Name:  "frpc",
-						Image: config.Env.K8S.Frpc.Image,
-						Env: []corev1.EnvVar{
-							{
-								Name:  "serverAddr",
-								Value: frps.Host,
-							},
-							{
-								Name:  "serverPort",
-								Value: strconv.Itoa(frps.Port),
-							},
-							{
-								Name:  "token",
-								Value: frps.Token,
-							},
-							{
-								Name:  "name",
-								Value: fmt.Sprintf("%s-%d", pod.Name, port.Port),
-							},
-							{
-								Name:  "type",
-								Value: "tcp",
-							},
-							{
-								Name:  "localIP",
-								Value: "127.0.0.1",
-							},
-							{
-								Name:  "localPort",
-								Value: port.TargetPort.StrVal,
-							},
-							{
-								Name:  "remotePort",
-								Value: strconv.Itoa(int(port.NodePort)),
+			}
+			volumes := make([]corev1.Volume, 0)
+			if config.Env.K8S.Frpc.On {
+				frpcConfigMap, ok, msg := CreateFrpcConfig(ctx, frps.Host, frps.Port, frps.Token, pod, service)
+				if !ok {
+					resultCh <- result{PodName: pod.Name, OK: false, Msg: msg}
+					return
+				}
+				volumeName := fmt.Sprintf("%s-vol", pod.Name)
+				frpc := corev1.Container{
+					Name:  "frpc",
+					Image: config.Env.K8S.Frpc.Image,
+					Args:  []string{"-c", "/etc/frp/frpc.toml"},
+					VolumeMounts: []corev1.VolumeMount{
+						{
+							Name:      volumeName,
+							MountPath: "/etc/frp/frpc.toml",
+							SubPath:   "frpc.toml",
+						},
+					},
+				}
+				volumes = append(volumes, corev1.Volume{
+					Name: volumeName,
+					VolumeSource: corev1.VolumeSource{
+						ConfigMap: &corev1.ConfigMapVolumeSource{
+							LocalObjectReference: corev1.LocalObjectReference{
+								Name: frpcConfigMap.Name,
 							},
 						},
-					}
-					containers = append(containers, frpc)
-					log.Logger.Infof("Frpc started: %s:%d -> %s:%s", frps.Host, port.NodePort, pod.Name, port.TargetPort.StrVal)
-				}
+					},
+				})
+				containers = append(containers, frpc)
 			}
-			p, ok, msg := CreatePod(ctx, pod.Name, containers, pod.PodIP, dns)
+			p, ok, msg := CreatePod(ctx, pod.Name, containers, volumes, pod.PodIP, dns)
 			if !ok {
 				resultCh <- result{PodName: pod.Name, OK: false, Msg: msg}
 				return
@@ -197,6 +184,10 @@ func StopVictim(victim model.Victim) (bool, string) {
 				return
 			}
 			if ok, msg := DeleteService(ctx, pod.ServiceName); !ok {
+				resultCh <- result{OK: false, Msg: msg}
+				return
+			}
+			if ok, msg := DeleteConfigMap(ctx, fmt.Sprintf("%s-cm", pod.Name)); !ok {
 				resultCh <- result{OK: false, Msg: msg}
 				return
 			}

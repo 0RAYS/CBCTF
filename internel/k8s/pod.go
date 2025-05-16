@@ -11,7 +11,7 @@ import (
 	"k8s.io/utils/ptr"
 )
 
-func CreatePod(ctx context.Context, podName string, containers []corev1.Container, podIP string, dns map[string]string) (*corev1.Pod, bool, string) {
+func CreatePod(ctx context.Context, podName string, containers []corev1.Container, volumes []corev1.Volume, podIP string, dns map[string]string) (*corev1.Pod, bool, string) {
 	var (
 		pod *corev1.Pod
 		err error
@@ -32,6 +32,7 @@ func CreatePod(ctx context.Context, podName string, containers []corev1.Containe
 		},
 		Spec: corev1.PodSpec{
 			Containers:                    containers,
+			Volumes:                       volumes,
 			TerminationGracePeriodSeconds: ptr.To[int64](3),
 			RestartPolicy:                 corev1.RestartPolicyNever,
 			HostAliases: func() []corev1.HostAlias {
