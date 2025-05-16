@@ -98,8 +98,8 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]map[str
 				})
 				containers = append(containers, frpc)
 			}
-			for _, policy := range pod.NetworkPolicies {
-				_, ok, msg := CreateNetworkPolicy(ctx, pod, policy)
+			for i, policy := range pod.NetworkPolicies {
+				_, ok, msg := CreateNetworkPolicy(ctx, fmt.Sprintf("%s-%d", pod.NetworkPolicyName, i), pod, policy)
 				if !ok {
 					resultCh <- result{PodName: pod.Name, OK: false, Msg: msg}
 					return

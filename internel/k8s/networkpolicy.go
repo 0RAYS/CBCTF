@@ -22,16 +22,16 @@ func GetNetworkPolicy(ctx context.Context, name string) (*netv1.NetworkPolicy, b
 	return networkPolicy, true, i18n.Success
 }
 
-func CreateNetworkPolicy(ctx context.Context, pod model.Pod, policy model.NetworkPolicy) (*netv1.NetworkPolicy, bool, string) {
-	if _, ok, _ := GetNetworkPolicy(ctx, pod.NetworkPolicyName); ok {
-		DeleteNetworkPolicy(ctx, pod.NetworkPolicyName)
+func CreateNetworkPolicy(ctx context.Context, name string, pod model.Pod, policy model.NetworkPolicy) (*netv1.NetworkPolicy, bool, string) {
+	if _, ok, _ := GetNetworkPolicy(ctx, name); ok {
+		DeleteNetworkPolicy(ctx, name)
 	}
 	if len(policy.From) < 1 && len(policy.To) < 1 {
 		return nil, true, i18n.Success
 	}
 	networkPolicy := &netv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      pod.NetworkPolicyName,
+			Name:      name,
 			Namespace: NamespaceName,
 		},
 		Spec: netv1.NetworkPolicySpec{
