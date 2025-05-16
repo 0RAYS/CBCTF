@@ -177,7 +177,7 @@ func InitResources() {
 		Rules: []rbacv1.PolicyRule{
 			{
 				APIGroups: []string{""},
-				Resources: []string{"pods", "services", "pods/exec"},
+				Resources: []string{"pods", "services", "configmaps", "pods/exec"},
 				Verbs:     []string{"*"},
 			},
 			{
@@ -293,7 +293,7 @@ func CheckPermission() {
 	}
 	log.Logger.Infof("Checking permission in namespace %s", NamespaceName)
 	groups := map[string][]string{
-		"":                      {"pods", "services", "pods/exec"},
+		"":                      {"pods", "services", "configmaps", "pods/exec"},
 		"networking.k8s.io":     {"networkpolicies"},
 		"crd.projectcalico.org": {"ippools"},
 	}
