@@ -46,8 +46,7 @@ func SaveAvatar(tx *gorm.DB, options db.CreateFileOptions, file *multipart.FileH
 		return model.File{}, false, i18n.FileNotAllowed
 	}
 	if !ok {
-		basePath := fmt.Sprintf("%s/avatars", config.Env.Path)
-		path = fmt.Sprintf("%s/%s%s", basePath, utils.UUID(), suffix)
+		path = fmt.Sprintf("%s/avatars/%s%s", config.Env.Path, utils.UUID(), suffix)
 	} else {
 		path = record.Path
 	}
@@ -113,8 +112,8 @@ func SaveWriteUp(tx *gorm.DB, userID, contestID, teamID uint, file *multipart.Fi
 		return model.File{}, false, i18n.FileNotAllowed
 	}
 	if !ok {
-		basePath := fmt.Sprintf("%s/writeups/%d/%d", config.Env.Path, contestID, teamID)
-		path = fmt.Sprintf("%s/%s%s", basePath, utils.UUID(), suffix)
+		path = fmt.Sprintf("%s/writeups/contest-%d/team-%d", config.Env.Path, contestID, teamID)
+		path += fmt.Sprintf("/%s%s", utils.UUID(), suffix)
 	} else {
 		path = record.Path
 	}

@@ -28,7 +28,7 @@ type Pod struct {
 }
 
 func (p Pod) TrafficPath() string {
-	return fmt.Sprintf("%s/traffics/%d/%s/%d.pcap", config.Env.Path, p.VictimID, p.Name, p.ID)
+	return fmt.Sprintf("%s/traffics/victim-%d/%s/pod-%d.pcap", config.Env.Path, p.VictimID, p.Name, p.ID)
 }
 
 func (p Pod) RemoteAddr() []string {
