@@ -156,7 +156,7 @@ func InitResources() {
 		Spec: projectcalicov3.IPPoolSpec{
 			CIDR:        config.Env.K8S.IPPool.CIDR,
 			IPIPMode:    projectcalicov3.IPIPModeNever,
-			NATOutgoing: false,
+			NATOutgoing: true,
 			BlockSize:   config.Env.K8S.IPPool.BlockSize,
 			Disabled:    false,
 		},
