@@ -28,7 +28,7 @@ func GetUsageStatus(ctx *gin.Context) {
 			if _, err := os.Stat(usage.Challenge.AttachmentPath(team.ID)); err != nil {
 				return ""
 			}
-			return usage.Challenge.AttachmentPath(team.ID)
+			return "attachment.zip"
 		}(),
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
