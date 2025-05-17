@@ -1,7 +1,6 @@
 package router
 
 import (
-	"CBCTF/internel/config"
 	f "CBCTF/internel/form"
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/k8s"
@@ -11,7 +10,6 @@ import (
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/resp"
 	"CBCTF/internel/service"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
@@ -30,7 +28,7 @@ func GetUsageStatus(ctx *gin.Context) {
 			if _, err := os.Stat(usage.Challenge.AttachmentPath(team.ID)); err != nil {
 				return ""
 			}
-			return fmt.Sprintf("%s/%s", config.Env.Backend, usage.Challenge.AttachmentPath(team.ID))
+			return usage.Challenge.AttachmentPath(team.ID)
 		}(),
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
