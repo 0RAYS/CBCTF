@@ -3,8 +3,10 @@ package utils
 import (
 	"github.com/google/uuid"
 	"github.com/vmihailenco/msgpack/v5"
+	"math/rand"
 	"reflect"
 	"strings"
+	"time"
 )
 
 // In 实现 in 判断
@@ -25,6 +27,19 @@ func In(value any, slice any) bool {
 // UUID 生成随机uuid
 func UUID() string {
 	return uuid.New().String()
+}
+
+// RandStr 生成随机字符串
+func RandStr(n int) string {
+	const charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	seed := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(seed)
+
+	result := make([]byte, n)
+	for i := range result {
+		result[i] = charset[r.Intn(len(charset))]
+	}
+	return string(result)
 }
 
 // UpdateOptions2Map 将Update请求的数据提取出被赋值的结果, 为区分默认的0值和赋值的0值, 表单中的字段都为指针类型
