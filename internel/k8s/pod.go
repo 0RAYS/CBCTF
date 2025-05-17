@@ -17,6 +17,9 @@ func CreatePod(ctx context.Context, podName string, containers []corev1.Containe
 		err error
 		ok  bool
 	)
+	if _, ok, _ := GetPod(ctx, podName); ok {
+		DeletePod(ctx, podName)
+	}
 	pod = &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      podName,
@@ -55,7 +58,7 @@ func CreatePod(ctx context.Context, podName string, containers []corev1.Containe
 		},
 	}
 	pod, err = client.CoreV1().Pods(NamespaceName).Create(ctx, pod, metav1.CreateOptions{})
-	if err != nil && !apierror.IsAlreadyExists(err) {
+	if err != nil {
 		log.Logger.Warningf("Failed to create Pod: %v", err)
 		return nil, false, i18n.CreatePodError
 	}
