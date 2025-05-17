@@ -135,7 +135,7 @@ func GenerateAttachment(usage model.Usage, team model.Team, answer []model.Answe
 	err = CopyFromPod(
 		pod.Name, pod.Spec.Containers[0].Name,
 		fmt.Sprintf("/root/attachments/%d.zip", team.ID),
-		fmt.Sprintf("%s/attachments/%s/%d.zip", config.Env.Path, usage.ChallengeID, team.ID),
+		usage.Challenge.AttachmentPath(team.ID),
 	)
 	if err != nil {
 		log.Logger.Warningf("Failed to copy output file: %v", err)
