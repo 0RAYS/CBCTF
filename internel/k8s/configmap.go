@@ -10,6 +10,9 @@ import (
 )
 
 func CreateConfigMap(ctx context.Context, configMapName string, data map[string]string) (*corev1.ConfigMap, bool, string) {
+	if _, ok, _ := GetConfigMap(ctx, configMapName); ok {
+		DeleteConfigMap(ctx, configMapName)
+	}
 	var err error
 	configMap := &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
