@@ -23,8 +23,7 @@ func Init() {
 	UpdateFlagScore(c)
 	UpdateUserRanking(c)
 	UpdateTeamRanking(c)
-	CloseGenerator(c)
-	PrepareGenerator(c)
+	ResetGenerator(c)
 	ClearUsageMutex(c)
 	//CheckCheat(c)
 }
