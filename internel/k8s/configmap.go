@@ -9,6 +9,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
 )
 
 type CreateConfigMapOptions struct {
@@ -24,7 +25,7 @@ func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*core
 	DeleteConfigMapListByPodName(ctx, options.PodName)
 	configMap = &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      utils.RandStr(10),
+			Name:      strings.ToLower(utils.RandStr(10)),
 			Namespace: NamespaceName,
 			Labels: map[string]string{
 				"victim": options.PodName,

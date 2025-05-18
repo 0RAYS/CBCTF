@@ -12,6 +12,7 @@ import (
 	netv1 "k8s.io/api/networking/v1"
 	"math/rand"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -78,7 +79,7 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]map[str
 					resultCh <- result{PodName: pod.Name, OK: false, Msg: msg}
 					return
 				}
-				volumeName := utils.RandStr(5)
+				volumeName := strings.ToLower(utils.RandStr(5))
 				frpc := corev1.Container{
 					Name:  "frpc",
 					Image: config.Env.K8S.Frpc.Image,

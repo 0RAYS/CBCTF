@@ -9,6 +9,7 @@ import (
 	netv1 "k8s.io/api/networking/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
 )
 
 type CreateNetworkPolicyOptions struct {
@@ -44,7 +45,7 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 	}(options.From, options.To)
 	networkPolicy = &netv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      utils.RandStr(10),
+			Name:      strings.ToLower(utils.RandStr(10)),
 			Namespace: NamespaceName,
 			Labels: map[string]string{
 				"victim": options.PodName,

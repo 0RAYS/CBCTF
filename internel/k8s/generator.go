@@ -33,7 +33,7 @@ func StartGenerator(usage model.Usage) (*corev1.Pod, bool, string) {
 		msg           string
 		err           error
 		generatorName = GenGeneratorName(usage.ChallengeID)
-		containerName = fmt.Sprintf("%s-%s", generatorName, utils.RandStr(5))
+		containerName = fmt.Sprintf("%s-%s", generatorName, strings.ToLower(utils.RandStr(5)))
 	)
 	if usage.Challenge.Generator == "" {
 		return &corev1.Pod{}, false, "EmptyGeneratorImage"
