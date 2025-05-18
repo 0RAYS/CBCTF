@@ -25,7 +25,7 @@ func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*core
 	DeleteConfigMapListByPodName(ctx, options.PodName)
 	configMap = &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      strings.ToLower(utils.RandStr(10)),
+			Name:      fmt.Sprintf("cm-%s", strings.ToLower(utils.RandStr(10))),
 			Namespace: NamespaceName,
 			Labels: map[string]string{
 				"victim": options.PodName,

@@ -27,7 +27,7 @@ func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.S
 	DeleteServiceListByPodName(ctx, options.PodName)
 	service = &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      strings.ToLower(utils.RandStr(10)),
+			Name:      fmt.Sprintf("svc-%s", strings.ToLower(utils.RandStr(10))),
 			Namespace: NamespaceName,
 			Labels: map[string]string{
 				"victim": options.PodName,
