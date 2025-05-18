@@ -8,23 +8,21 @@ import (
 )
 
 type Pod struct {
-	ID                uint            `gorm:"primaryKey" json:"id"`
-	VictimID          uint            `json:"victim_id"`
-	Victim            Victim          `json:"-"`
-	Containers        []Container     `json:"-"`
-	Traffics          []Traffic       `json:"-"`
-	Name              string          `json:"name"`
-	PodIP             string          `json:"pod_ip"`
-	ExposedIP         string          `json:"exposed_ip"`
-	ServiceName       string          `json:"service"`
-	NetworkPolicyName string          `json:"network_policy"`
-	PodPorts          Ports           `gorm:"type:json" json:"pod_ports"`
-	ExposedPorts      Ports           `gorm:"type:json" json:"exposed_ports"`
-	NetworkPolicies   NetworkPolicies `gorm:"type:json" json:"network_policies"`
-	CreatedAt         time.Time       `json:"-"`
-	UpdatedAt         time.Time       `json:"-"`
-	DeletedAt         gorm.DeletedAt  `gorm:"index" json:"-"`
-	Version           uint            `gorm:"default:1" json:"-"`
+	ID              uint            `gorm:"primaryKey" json:"id"`
+	VictimID        uint            `json:"victim_id"`
+	Victim          Victim          `json:"-"`
+	Containers      []Container     `json:"-"`
+	Traffics        []Traffic       `json:"-"`
+	Name            string          `json:"name"`
+	PodIP           string          `json:"pod_ip"`
+	ExposedIP       string          `json:"exposed_ip"`
+	PodPorts        Ports           `gorm:"type:json" json:"pod_ports"`
+	ExposedPorts    Ports           `gorm:"type:json" json:"exposed_ports"`
+	NetworkPolicies NetworkPolicies `gorm:"type:json" json:"network_policies"`
+	CreatedAt       time.Time       `json:"-"`
+	UpdatedAt       time.Time       `json:"-"`
+	DeletedAt       gorm.DeletedAt  `gorm:"index" json:"-"`
+	Version         uint            `gorm:"default:1" json:"-"`
 }
 
 func (p Pod) TrafficPath() string {

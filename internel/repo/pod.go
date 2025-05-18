@@ -13,15 +13,13 @@ type PodRepo struct {
 }
 
 type CreatePodOptions struct {
-	VictimID          uint
-	Name              string
-	PodIP             string
-	ExposedIP         string
-	ServiceName       string
-	NetworkPolicyName string
-	PodPorts          model.Ports
-	ExposedPorts      model.Ports
-	NetworkPolicies   model.NetworkPolicies
+	VictimID        uint
+	Name            string
+	PodIP           string
+	ExposedIP       string
+	PodPorts        model.Ports
+	ExposedPorts    model.Ports
+	NetworkPolicies model.NetworkPolicies
 }
 
 type UpdatePodOptions struct {

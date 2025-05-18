@@ -9,52 +9,44 @@ import (
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/utils/ptr"
+	"time"
 )
 
-func CreatePod(ctx context.Context, podName string, containers []corev1.Container, volumes []corev1.Volume, podIP string, dns map[string]string) (*corev1.Pod, bool, string) {
+type CreatePodOptions struct {
+	Name        string
+	PodIP       string
+	Labels      map[string]string
+	Containers  []corev1.Container
+	Volumes     []corev1.Volume
+	HostAliases []corev1.HostAlias
+}
+
+func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool, string) {
 	var (
 		pod *corev1.Pod
-		err error
 		ok  bool
+		err error
 	)
-	if _, ok, _ := GetPod(ctx, podName); ok {
-		DeletePod(ctx, podName)
+	if _, ok, _ = GetPod(ctx, options.Name); ok {
+		DeletePod(ctx, options.Name)
 	}
 	pod = &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      podName,
+			Name:      options.Name,
 			Namespace: NamespaceName,
-			Labels: map[string]string{
-				"victim": podName,
-			},
+			Labels:    options.Labels,
 			Annotations: map[string]string{
-				"cni.projectcalico.org/ipAddrs": fmt.Sprintf("[\"%s\"]", podIP),
-				"cni.projectcalico.org/podIP":   podIP,
-				"cni.projectcalico.org/podIPs":  podIP,
+				"cni.projectcalico.org/ipAddrs": fmt.Sprintf("[\"%s\"]", options.PodIP),
+				"cni.projectcalico.org/podIP":   options.PodIP,
+				"cni.projectcalico.org/podIPs":  options.PodIP,
 			},
 		},
 		Spec: corev1.PodSpec{
-			Containers:                    containers,
-			Volumes:                       volumes,
+			Containers:                    options.Containers,
+			Volumes:                       options.Volumes,
 			TerminationGracePeriodSeconds: ptr.To[int64](3),
 			RestartPolicy:                 corev1.RestartPolicyNever,
-			HostAliases: func() []corev1.HostAlias {
-				aliases := make([]corev1.HostAlias, 0)
-				tmp := make(map[string][]string)
-				for k, v := range dns {
-					if v == podIP {
-						v = "127.0.0.1"
-					}
-					tmp[v] = append(tmp[v], k)
-				}
-				for ip, hostname := range tmp {
-					aliases = append(aliases, corev1.HostAlias{
-						IP:        ip,
-						Hostnames: hostname,
-					})
-				}
-				return aliases
-			}(),
+			HostAliases:                   options.HostAliases,
 		},
 	}
 	pod, err = client.CoreV1().Pods(NamespaceName).Create(ctx, pod, metav1.CreateOptions{})
@@ -63,7 +55,7 @@ func CreatePod(ctx context.Context, podName string, containers []corev1.Containe
 		return nil, false, i18n.CreatePodError
 	}
 	for {
-		pod, ok, _ = GetPod(ctx, podName)
+		pod, ok, _ := GetPod(ctx, options.Name)
 		if !ok {
 			return nil, false, i18n.GetPodError
 		}
@@ -74,6 +66,7 @@ func CreatePod(ctx context.Context, podName string, containers []corev1.Containe
 			log.Logger.Warningf("Pod %s failed to run", pod.Name)
 			return nil, false, i18n.CreatePodError
 		}
+		time.Sleep(500 * time.Millisecond)
 	}
 	return pod, true, i18n.Success
 }

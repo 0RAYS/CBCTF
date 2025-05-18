@@ -3,42 +3,55 @@ package k8s
 import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
+	"CBCTF/internel/utils"
 	"context"
+	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func CreateConfigMap(ctx context.Context, configMapName string, data map[string]string) (*corev1.ConfigMap, bool, string) {
-	if _, ok, _ := GetConfigMap(ctx, configMapName); ok {
-		DeleteConfigMap(ctx, configMapName)
-	}
-	var err error
-	configMap := &corev1.ConfigMap{
+type CreateConfigMapOptions struct {
+	PodName string
+	Data    map[string]string
+}
+
+func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*corev1.ConfigMap, bool, string) {
+	var (
+		configMap *corev1.ConfigMap
+		err       error
+	)
+	DeleteConfigMapListByPodName(ctx, options.PodName)
+	configMap = &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      configMapName,
+			Name:      utils.RandStr(10),
 			Namespace: NamespaceName,
+			Labels: map[string]string{
+				"victim": options.PodName,
+			},
 		},
-		Data: data,
+		Data: options.Data,
 	}
 	configMap, err = client.CoreV1().ConfigMaps(NamespaceName).Create(ctx, configMap, metav1.CreateOptions{})
-	if err != nil && !apierror.IsAlreadyExists(err) {
+	if err != nil {
 		log.Logger.Warningf("Failed to create ConfigMap: %v", err)
 		return nil, false, i18n.CreateConfigMapError
 	}
 	return configMap, true, i18n.Success
 }
 
-func GetConfigMap(ctx context.Context, configMapName string) (*corev1.ConfigMap, bool, string) {
-	configMap, err := client.CoreV1().ConfigMaps(NamespaceName).Get(ctx, configMapName, metav1.GetOptions{})
+func GetConfigMapListByPodName(ctx context.Context, podName string) (*corev1.ConfigMapList, bool, string) {
+	configMapList, err := client.CoreV1().ConfigMaps(NamespaceName).List(ctx, metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("victim=%s", podName),
+	})
 	if err != nil {
 		if apierror.IsNotFound(err) {
 			return nil, false, i18n.ConfigMapNotFound
 		}
-		log.Logger.Warningf("Failed to get ConfigMap: %v", err)
+		log.Logger.Warningf("Failed to list Pod %s ConfigMap: %v", podName, err)
 		return nil, false, i18n.GetConfigMapError
 	}
-	return configMap, true, i18n.Success
+	return configMapList, true, i18n.Success
 }
 
 func DeleteConfigMap(ctx context.Context, configMapName string) (bool, string) {
@@ -46,6 +59,23 @@ func DeleteConfigMap(ctx context.Context, configMapName string) (bool, string) {
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete ConfigMap: %v", err)
 		return false, i18n.DeleteConfigMapError
+	}
+	return true, i18n.Success
+}
+
+// DeleteConfigMapListByPodName TODO: 有可能删不干净
+func DeleteConfigMapListByPodName(ctx context.Context, podName string) (bool, string) {
+	configMapList, ok, msg := GetConfigMapListByPodName(ctx, podName)
+	if !ok {
+		if msg != i18n.ConfigMapNotFound {
+			return false, msg
+		}
+		return true, i18n.Success
+	}
+	for _, cm := range configMapList.Items {
+		if ok, msg = DeleteConfigMap(ctx, cm.Name); !ok {
+			return false, msg
+		}
 	}
 	return true, i18n.Success
 }

@@ -25,5 +25,8 @@ func CreateFrpcConfig(ctx context.Context, frpsIP string, frpsPort int, token st
 		tmp = append(tmp, port.NodePort)
 		log.Logger.Infof("Frpc started: %s:%d -> %s:%d", frpsIP, port.NodePort, pod.Name, port.Port)
 	}
-	return CreateConfigMap(ctx, fmt.Sprintf("%s-cm", pod.Name), map[string]string{"frpc.toml": data})
+	return CreateConfigMap(ctx, CreateConfigMapOptions{
+		PodName: pod.Name,
+		Data:    map[string]string{"frpc.toml": data},
+	})
 }

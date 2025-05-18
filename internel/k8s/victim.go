@@ -9,7 +9,9 @@ import (
 	"context"
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
+	netv1 "k8s.io/api/networking/v1"
 	"math/rand"
+	"strconv"
 	"sync"
 	"time"
 )
@@ -32,7 +34,10 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]map[str
 			defer wg.Done()
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 			defer cancel()
-			service, ok, msg := CreateService(ctx, pod)
+			service, ok, msg := CreateService(ctx, CreateServiceOptions{
+				PodName: pod.Name,
+				Ports:   pod.PodPorts,
+			})
 			if !ok {
 				resultCh <- result{PodName: pod.Name, OK: false, Msg: msg}
 				return
@@ -98,8 +103,30 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]map[str
 				})
 				containers = append(containers, frpc)
 			}
-			for i, policy := range pod.NetworkPolicies {
-				_, ok, msg := CreateNetworkPolicy(ctx, fmt.Sprintf("%s-%d", pod.NetworkPolicyName, i), pod, policy)
+			for _, policy := range pod.NetworkPolicies {
+				_, ok, msg := CreateNetworkPolicy(ctx, CreateNetworkPolicyOptions{
+					PodName: pod.Name,
+					From: func() []*netv1.IPBlock {
+						from := make([]*netv1.IPBlock, 0)
+						for _, v := range policy.From {
+							from = append(from, &netv1.IPBlock{
+								CIDR:   v.CIDR,
+								Except: v.Except,
+							})
+						}
+						return from
+					}(),
+					To: func() []*netv1.IPBlock {
+						to := make([]*netv1.IPBlock, 0)
+						for _, v := range policy.To {
+							to = append(to, &netv1.IPBlock{
+								CIDR:   v.CIDR,
+								Except: v.Except,
+							})
+						}
+						return to
+					}(),
+				})
 				if !ok {
 					resultCh <- result{PodName: pod.Name, OK: false, Msg: msg}
 					return
@@ -147,7 +174,35 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]map[str
 					ports = append(ports, port.NodePort)
 				}
 			}
-			p, ok, msg := CreatePod(ctx, pod.Name, containers, volumes, pod.PodIP, dns)
+			p, ok, msg := CreatePod(ctx, CreatePodOptions{
+				Name:  pod.Name,
+				PodIP: pod.PodIP,
+				Labels: map[string]string{
+					"victim":   pod.Name,
+					"team_id":  strconv.Itoa(int(victim.TeamID)),
+					"usage_id": strconv.Itoa(int(victim.UsageID)),
+					"user_id":  strconv.Itoa(int(victim.UserID)),
+				},
+				Containers: containers,
+				Volumes:    volumes,
+				HostAliases: func(dns map[string]string) []corev1.HostAlias {
+					aliases := make([]corev1.HostAlias, 0)
+					tmp := make(map[string][]string)
+					for k, v := range dns {
+						if v == pod.PodIP {
+							v = "127.0.0.1"
+						}
+						tmp[v] = append(tmp[v], k)
+					}
+					for ip, hostname := range tmp {
+						aliases = append(aliases, corev1.HostAlias{
+							IP:        ip,
+							Hostnames: hostname,
+						})
+					}
+					return aliases
+				}(dns),
+			})
 			if !ok {
 				resultCh <- result{PodName: pod.Name, OK: false, Msg: msg}
 				return
@@ -197,15 +252,15 @@ func StopVictim(victim model.Victim) (bool, string) {
 			if err != nil {
 				log.Logger.Warningf("Failed to copy %d traffic: %v", victim.TeamID, err)
 			}
-			if ok, msg := DeleteNetworkPolicy(ctx, pod.NetworkPolicyName); !ok {
+			if ok, msg := DeleteNetworkPolicyListByPodName(ctx, pod.Name); !ok {
 				resultCh <- result{OK: false, Msg: msg}
 				return
 			}
-			if ok, msg := DeleteService(ctx, pod.ServiceName); !ok {
+			if ok, msg := DeleteServiceListByPodName(ctx, pod.Name); !ok {
 				resultCh <- result{OK: false, Msg: msg}
 				return
 			}
-			if ok, msg := DeleteConfigMap(ctx, fmt.Sprintf("%s-cm", pod.Name)); !ok {
+			if ok, msg := DeleteConfigMapListByPodName(ctx, pod.Name); !ok {
 				resultCh <- result{OK: false, Msg: msg}
 				return
 			}

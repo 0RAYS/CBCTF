@@ -3,76 +3,63 @@ package k8s
 import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
-	"CBCTF/internel/model"
+	"CBCTF/internel/utils"
 	"context"
+	"fmt"
 	netv1 "k8s.io/api/networking/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func GetNetworkPolicy(ctx context.Context, name string) (*netv1.NetworkPolicy, bool, string) {
-	networkPolicy, err := client.NetworkingV1().NetworkPolicies(NamespaceName).Get(ctx, name, metav1.GetOptions{})
-	if err != nil {
-		if apierror.IsNotFound(err) {
-			return nil, false, "NetworkPolicyNotFound"
-		}
-		log.Logger.Warningf("Failed to get NetworkPolicy %s: %v", name, err)
-		return nil, false, i18n.GetNetworkPolicyError
-	}
-	return networkPolicy, true, i18n.Success
+type CreateNetworkPolicyOptions struct {
+	PodName string
+	From    []*netv1.IPBlock
+	To      []*netv1.IPBlock
 }
 
-func CreateNetworkPolicy(ctx context.Context, name string, pod model.Pod, policy model.NetworkPolicy) (*netv1.NetworkPolicy, bool, string) {
-	if _, ok, _ := GetNetworkPolicy(ctx, name); ok {
-		DeleteNetworkPolicy(ctx, name)
-	}
-	if len(policy.From) < 1 && len(policy.To) < 1 {
-		return nil, true, i18n.Success
-	}
-	networkPolicy := &netv1.NetworkPolicy{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: NamespaceName,
-		},
-		Spec: netv1.NetworkPolicySpec{
-			PodSelector: metav1.LabelSelector{
-				MatchLabels: map[string]string{
-					"victim": pod.Name,
-				},
-			},
-		},
-	}
-	ingress, egress := func() ([]netv1.NetworkPolicyIngressRule, []netv1.NetworkPolicyEgressRule) {
+func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions) (*netv1.NetworkPolicy, bool, string) {
+	var (
+		networkPolicy *netv1.NetworkPolicy
+		err           error
+	)
+	DeleteNetworkPolicyListByPodName(ctx, options.PodName)
+	ingress, egress := func(from []*netv1.IPBlock, to []*netv1.IPBlock) ([]netv1.NetworkPolicyIngressRule, []netv1.NetworkPolicyEgressRule) {
 		var ingress []netv1.NetworkPolicyIngressRule
 		var egress []netv1.NetworkPolicyEgressRule
-		if len(policy.From) > 0 {
+		if len(from) > 0 {
 			var peers []netv1.NetworkPolicyPeer
-			for _, from := range policy.From {
-				peers = append(peers, netv1.NetworkPolicyPeer{
-					IPBlock: &netv1.IPBlock{
-						CIDR:   from.CIDR,
-						Except: from.Except,
-					},
-				})
+			for _, f := range from {
+				peers = append(peers, netv1.NetworkPolicyPeer{IPBlock: f})
 			}
 			ingress = append(ingress, netv1.NetworkPolicyIngressRule{From: peers})
 		}
-		if len(policy.To) > 0 {
+		if len(to) > 0 {
 			var peers []netv1.NetworkPolicyPeer
-			for _, to := range policy.To {
-				peers = append(peers, netv1.NetworkPolicyPeer{
-					IPBlock: &netv1.IPBlock{
-						CIDR:   to.CIDR,
-						Except: to.Except,
-					},
-				})
+			for _, t := range to {
+				peers = append(peers, netv1.NetworkPolicyPeer{IPBlock: t})
 			}
 			egress = append(egress, netv1.NetworkPolicyEgressRule{To: peers})
 		}
 		return ingress, egress
-	}()
-	// 默认不允许出网
-	networkPolicy.Spec.PolicyTypes = []netv1.PolicyType{netv1.PolicyTypeEgress}
+	}(options.From, options.To)
+	networkPolicy = &netv1.NetworkPolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      utils.RandStr(10),
+			Namespace: NamespaceName,
+			Labels: map[string]string{
+				"victim": options.PodName,
+			},
+		},
+		Spec: netv1.NetworkPolicySpec{
+			PodSelector: metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"victim": options.PodName,
+				},
+			},
+			// 默认不允许出网
+			PolicyTypes: []netv1.PolicyType{netv1.PolicyTypeEgress},
+		},
+	}
 	if len(ingress) > 0 {
 		networkPolicy.Spec.PolicyTypes = append(networkPolicy.Spec.PolicyTypes, netv1.PolicyTypeIngress)
 		networkPolicy.Spec.Ingress = ingress
@@ -80,13 +67,26 @@ func CreateNetworkPolicy(ctx context.Context, name string, pod model.Pod, policy
 	if len(egress) > 0 {
 		networkPolicy.Spec.Egress = egress
 	}
-	var err error
 	networkPolicy, err = client.NetworkingV1().NetworkPolicies(NamespaceName).Create(ctx, networkPolicy, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create NetworkPolicy %s: %v", pod.NetworkPolicyName, err)
+		log.Logger.Warningf("Failed to create pod %s NetworkPolicy: %v", options.PodName, err)
 		return nil, false, i18n.CreateNetworkPolicyError
 	}
 	return networkPolicy, true, i18n.Success
+}
+
+func GetNetworkPolicyListByPodName(ctx context.Context, podName string) (*netv1.NetworkPolicyList, bool, string) {
+	networkPolicyList, err := client.NetworkingV1().NetworkPolicies(NamespaceName).List(ctx, metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("victim=%s", podName),
+	})
+	if err != nil {
+		if apierror.IsNotFound(err) {
+			return nil, false, i18n.NetworkPolicyNotFound
+		}
+		log.Logger.Warningf("Failed to list Pod %s NetworkPolicy: %v", podName, err)
+		return nil, false, i18n.GetNetworkPolicyError
+	}
+	return networkPolicyList, true, i18n.Success
 }
 
 func DeleteNetworkPolicy(ctx context.Context, name string) (bool, string) {
@@ -94,6 +94,23 @@ func DeleteNetworkPolicy(ctx context.Context, name string) (bool, string) {
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete NetworkPolicy %s: %v", name, err)
 		return false, i18n.DeleteNetworkPolicyError
+	}
+	return true, i18n.Success
+}
+
+// DeleteNetworkPolicyListByPodName TODO: 有可能删不干净
+func DeleteNetworkPolicyListByPodName(ctx context.Context, podName string) (bool, string) {
+	networkPolicyList, ok, msg := GetNetworkPolicyListByPodName(ctx, podName)
+	if !ok {
+		if msg != i18n.NetworkPolicyNotFound {
+			return false, i18n.GetNetworkPolicyError
+		}
+		return true, i18n.Success
+	}
+	for _, np := range networkPolicyList.Items {
+		if ok, msg = DeleteNetworkPolicy(ctx, np.Name); !ok {
+			return false, msg
+		}
 	}
 	return true, i18n.Success
 }
