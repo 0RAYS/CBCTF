@@ -64,6 +64,7 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]map[str
 					},
 				}
 				for _, p := range pod.NetworkPolicies {
+					// 当已经存在来源策略时, 需要设frps的ip为白名单; 不存在时, 默认允许
 					if len(p.From) > 0 {
 						policy.From = []model.Target{
 							{
@@ -105,7 +106,7 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]map[str
 				containers = append(containers, frpc)
 			}
 			for _, policy := range pod.NetworkPolicies {
-				_, ok, msg := CreateNetworkPolicy(ctx, CreateNetworkPolicyOptions{
+				_, ok, msg = CreateNetworkPolicy(ctx, CreateNetworkPolicyOptions{
 					PodName: pod.Name,
 					From: func() []*netv1.IPBlock {
 						from := make([]*netv1.IPBlock, 0)

@@ -23,7 +23,8 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 		networkPolicy *netv1.NetworkPolicy
 		err           error
 	)
-	DeleteNetworkPolicyListByPodName(ctx, options.PodName)
+	// 可能会连续创建多个, 不删除之前的, 交由定时任务处理
+	//DeleteNetworkPolicyListByPodName(ctx, options.PodName)
 	ingress, egress := func(from []*netv1.IPBlock, to []*netv1.IPBlock) ([]netv1.NetworkPolicyIngressRule, []netv1.NetworkPolicyEgressRule) {
 		var ingress []netv1.NetworkPolicyIngressRule
 		var egress []netv1.NetworkPolicyEgressRule
