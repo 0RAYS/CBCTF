@@ -21,6 +21,10 @@ var (
 	generatorIP = make(map[string]string)
 )
 
+func GenGeneratorName(challengeID string) string {
+	return fmt.Sprintf("gen-%s-pod", challengeID)
+}
+
 // StartGenerator 启动动态附件生成器, 等待附加命令, 生成附件, model.Usage 需要预加载
 func StartGenerator(usage model.Usage) (*corev1.Pod, bool, string) {
 	var (
@@ -28,7 +32,7 @@ func StartGenerator(usage model.Usage) (*corev1.Pod, bool, string) {
 		ok            bool
 		msg           string
 		err           error
-		generatorName = fmt.Sprintf("gen-%s-pod", usage.ChallengeID)
+		generatorName = GenGeneratorName(usage.ChallengeID)
 		containerName = fmt.Sprintf("%s-%s", generatorName, utils.RandStr(5))
 	)
 	if usage.Challenge.Generator == "" {
@@ -106,10 +110,9 @@ func StopGenerator(usage model.Usage) (bool, string) {
 		delete(generatorIP, usage.ChallengeID)
 		delete(ipGenerator, ip)
 	}
-	generatorName := fmt.Sprintf("gen-%s-pod", usage.ChallengeID)
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
-	return DeletePod(ctx, generatorName)
+	return DeletePod(ctx, GenGeneratorName(usage.ChallengeID))
 }
 
 // GenerateAttachment 附加容器命令, 生成附件, model.Usage 需要预加载
