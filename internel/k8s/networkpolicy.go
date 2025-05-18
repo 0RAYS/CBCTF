@@ -45,7 +45,7 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 	}(options.From, options.To)
 	networkPolicy = &netv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      strings.ToLower(utils.RandStr(10)),
+			Name:      fmt.Sprintf("np-%s", strings.ToLower(utils.RandStr(10))),
 			Namespace: NamespaceName,
 			Labels: map[string]string{
 				"victim": options.PodName,
