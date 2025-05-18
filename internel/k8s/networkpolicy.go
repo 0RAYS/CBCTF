@@ -77,6 +77,18 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 	return networkPolicy, true, i18n.Success
 }
 
+func GetNetworkPolicyList(ctx context.Context) (*netv1.NetworkPolicyList, bool, string) {
+	networkPolicyList, err := client.NetworkingV1().NetworkPolicies(NamespaceName).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		if apierror.IsNotFound(err) {
+			return nil, false, i18n.NetworkPolicyNotFound
+		}
+		log.Logger.Warningf("Failed to list NetworkPolicy: %v", err)
+		return nil, false, i18n.GetNetworkPolicyError
+	}
+	return networkPolicyList, true, i18n.Success
+}
+
 func GetNetworkPolicyListByPodName(ctx context.Context, podName string) (*netv1.NetworkPolicyList, bool, string) {
 	networkPolicyList, err := client.NetworkingV1().NetworkPolicies(NamespaceName).List(ctx, metav1.ListOptions{
 		LabelSelector: fmt.Sprintf("victim=%s", podName),

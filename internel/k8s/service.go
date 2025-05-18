@@ -68,6 +68,18 @@ func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.S
 	return service, true, i18n.Success
 }
 
+func GetServiceList(ctx context.Context) (*corev1.ServiceList, bool, string) {
+	serviceList, err := client.CoreV1().Services(NamespaceName).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		if apierror.IsNotFound(err) {
+			return nil, false, i18n.ServiceNotFound
+		}
+		log.Logger.Warningf("Failed to list Service: %v", err)
+		return nil, false, i18n.GetServiceError
+	}
+	return serviceList, true, i18n.Success
+}
+
 func GetServiceListByPodName(ctx context.Context, podName string) (*corev1.ServiceList, bool, string) {
 	serviceList, err := client.CoreV1().Services(NamespaceName).List(ctx, metav1.ListOptions{
 		LabelSelector: fmt.Sprintf("victim=%s", podName),

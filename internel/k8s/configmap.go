@@ -41,6 +41,18 @@ func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*core
 	return configMap, true, i18n.Success
 }
 
+func GetConfigMapList(ctx context.Context) (*corev1.ConfigMapList, bool, string) {
+	configMapList, err := client.CoreV1().ConfigMaps(NamespaceName).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		if apierror.IsNotFound(err) {
+			return nil, false, i18n.ConfigMapNotFound
+		}
+		log.Logger.Warningf("Failed to list ConfigMap: %v", err)
+		return nil, false, i18n.GetConfigMapError
+	}
+	return configMapList, true, i18n.Success
+}
+
 func GetConfigMapListByPodName(ctx context.Context, podName string) (*corev1.ConfigMapList, bool, string) {
 	configMapList, err := client.CoreV1().ConfigMaps(NamespaceName).List(ctx, metav1.ListOptions{
 		LabelSelector: fmt.Sprintf("victim=%s", podName),
