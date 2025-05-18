@@ -13,6 +13,10 @@ import (
 	"time"
 )
 
+func GenVictimPodName() string {
+	return fmt.Sprintf("victim-%s-pod", utils.RandStr(10))
+}
+
 // StartVictim model.Usage 需要预加载 model.Challenge
 func StartVictim(tx *gorm.DB, user model.User, team model.Team, usage model.Usage) (model.Victim, bool, string) {
 	var (
@@ -95,7 +99,7 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, usage model.Usag
 			}
 			pOptions := db.CreatePodOptions{
 				VictimID:        victim.ID,
-				Name:            fmt.Sprintf("victim-%s-pod", utils.RandStr(10)),
+				Name:            GenVictimPodName(),
 				PodIP:           block[i],
 				PodPorts:        ports,
 				NetworkPolicies: policies,

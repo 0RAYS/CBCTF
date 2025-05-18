@@ -78,7 +78,7 @@ func StartVictim(victim model.Victim, dns map[string]string) (map[string]map[str
 					resultCh <- result{PodName: pod.Name, OK: false, Msg: msg}
 					return
 				}
-				volumeName := fmt.Sprintf("%s-vol", pod.Name)
+				volumeName := utils.RandStr(5)
 				frpc := corev1.Container{
 					Name:  "frpc",
 					Image: config.Env.K8S.Frpc.Image,
