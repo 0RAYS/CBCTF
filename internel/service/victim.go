@@ -10,11 +10,12 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"strings"
 	"time"
 )
 
 func GenVictimPodName(challengeID string) string {
-	return fmt.Sprintf("victim-%s-%s-pod", challengeID, utils.RandStr(5))
+	return fmt.Sprintf("victim-%s-%s-pod", challengeID, strings.ToLower(utils.RandStr(5)))
 }
 
 // StartVictim model.Usage 需要预加载 model.Challenge
@@ -111,7 +112,7 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, usage model.Usag
 			for _, docker := range dockers {
 				cOptions := db.CreateContainerOptions{
 					PodID:       pod.ID,
-					Name:        fmt.Sprintf("%s-%s", pod.Name, utils.RandStr(5)),
+					Name:        fmt.Sprintf("%s-%s", pod.Name, strings.ToLower(utils.RandStr(5))),
 					Image:       docker.Image,
 					Hostname:    docker.Hostname,
 					ExposePorts: docker.Ports,
