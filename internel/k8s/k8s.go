@@ -54,8 +54,8 @@ func Init(run bool) {
 		if err != nil {
 			log.Logger.Fatalf("Failed to load k8s user config: %s", err)
 		}
-		conf.QPS = 20
-		conf.Burst = 40
+		conf.QPS = 100
+		conf.Burst = 200
 		client, err = kubernetes.NewForConfig(conf)
 		if err != nil {
 			log.Logger.Fatalf("Failed to init k8s client: %s", err)
