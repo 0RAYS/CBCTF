@@ -93,24 +93,21 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, usage model.Usag
 				}
 				policies = append(policies, docker.NetworkPolicies...)
 			}
-
 			pOptions := db.CreatePodOptions{
-				VictimID:          victim.ID,
-				Name:              fmt.Sprintf("victim-%s-%d-pod-%d", usage.ChallengeID, team.ID, i),
-				PodIP:             block[i],
-				ServiceName:       fmt.Sprintf("victim-%s-%d-svc-%d", usage.ChallengeID, team.ID, i),
-				NetworkPolicyName: fmt.Sprintf("victim-%s-%d-net-%d", usage.ChallengeID, team.ID, i),
-				PodPorts:          ports,
-				NetworkPolicies:   policies,
+				VictimID:        victim.ID,
+				Name:            fmt.Sprintf("victim-%s-pod", utils.RandStr(10)),
+				PodIP:           block[i],
+				PodPorts:        ports,
+				NetworkPolicies: policies,
 			}
 			pod, ok, msg := podRepo.Create(pOptions)
 			if !ok {
 				return model.Victim{}, false, msg
 			}
-			for j, docker := range dockers {
+			for _, docker := range dockers {
 				cOptions := db.CreateContainerOptions{
 					PodID:       pod.ID,
-					Name:        fmt.Sprintf("victim-%s-%d-%d-%d", usage.ChallengeID, team.ID, i, j),
+					Name:        fmt.Sprintf("%s-%s", pod.Name, utils.RandStr(5)),
 					Image:       docker.Image,
 					Hostname:    docker.Hostname,
 					ExposePorts: docker.Ports,
