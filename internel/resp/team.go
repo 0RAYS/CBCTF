@@ -19,7 +19,6 @@ func GetTeamResp(team model.Team) gin.H {
 		"users":      len(team.Users),
 		"desc":       team.Desc,
 		"captain_id": team.CaptainID,
-		"captcha":    team.Captcha,
 	}
 	return data
 }
