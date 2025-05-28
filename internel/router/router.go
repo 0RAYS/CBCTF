@@ -56,7 +56,7 @@ func Init() *gin.Engine {
 		router.POST("/register", Register)
 		router.POST("/login", Login)
 		router.POST("/admin/login", AdminLogin)
-		router.POST("/verify", VerifyEmail)
+		router.GET("/verify", VerifyEmail)
 		router.GET("/avatars/:fileID", middleware.SetFile(model.Avatar), DownloadFile)
 
 		router.GET("/stats", HomePage)
