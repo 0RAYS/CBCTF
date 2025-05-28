@@ -28,17 +28,14 @@ const (
 )
 
 type Event struct {
-	ID        uint           `gorm:"primarykey" json:"id"`
-	UserID    uint           `json:"user_id"`
-	TeamID    uint           `json:"team_id"`
-	ContestID uint           `json:"contest_id"`
-	UsageID   uint           `json:"usage_id"`
-	Desc      string         `json:"desc"`
-	Type      string         `json:"type"`
-	IP        string         `json:"ip"`
-	Magic     string         `json:"magic"`
-	CreatedAt time.Time      `json:"-"`
-	UpdatedAt time.Time      `json:"-"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
-	Version   uint           `gorm:"default:1" json:"-"`
+	ID         uint           `gorm:"primarykey" json:"id"`
+	References References     `gorm:"type:json" json:"references"`
+	Desc       string         `json:"desc"`
+	Type       string         `json:"type"`
+	IP         string         `json:"ip"`
+	Magic      string         `json:"magic"`
+	CreatedAt  time.Time      `json:"-"`
+	UpdatedAt  time.Time      `json:"-"`
+	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"`
+	Version    uint           `gorm:"default:1" json:"-"`
 }
