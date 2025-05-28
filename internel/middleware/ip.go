@@ -25,24 +25,26 @@ func AccessLog(ctx *gin.Context) {
 
 	statusCode := ctx.Writer.Status()
 
-	request := db.CreateRequestOptions{
-		IP:        ip,
-		Time:      accessTime,
-		Method:    method,
-		Path:      path,
-		URL:       url,
-		UserAgent: userAgent,
-		Status:    statusCode,
-		Referer:   referer,
-		Magic:     magic,
+	if path != "/metrics" {
+		request := db.CreateRequestOptions{
+			IP:        ip,
+			Time:      accessTime,
+			Method:    method,
+			Path:      path,
+			URL:       url,
+			UserAgent: userAgent,
+			Status:    statusCode,
+			Referer:   referer,
+			Magic:     magic,
+		}
+		tx := db.DB.WithContext(ctx).Begin()
+		_, ok, _ := db.InitRequestRepo(tx).Create(request)
+		if !ok {
+			tx.Rollback()
+			return
+		}
+		tx.Commit()
 	}
-	tx := db.DB.WithContext(ctx).Begin()
-	_, ok, _ := db.InitRequestRepo(tx).Create(request)
-	if !ok {
-		tx.Rollback()
-		return
-	}
-	tx.Commit()
 }
 
 var requestCounts = make(map[string][]time.Time)
