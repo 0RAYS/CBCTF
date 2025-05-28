@@ -29,6 +29,12 @@ func CompareHashAndPassword(hash string, password string) bool {
 // CheckPassword 检查密码强度
 func CheckPassword(password string) uint {
 	var length, t, upper, lower, digit, special int
+
+	length = len(password)
+	if length < 8 {
+		return VeryWeak
+	}
+
 	for _, char := range password {
 		switch {
 		case unicode.IsUpper(char):
@@ -53,13 +59,12 @@ func CheckPassword(password string) uint {
 	if special > 0 {
 		t++
 	}
-	length = len(password)
 	switch {
-	case length >= 12 && t == 4:
+	case t == 4:
 		return Strong
-	case length >= 8 && t == 3:
+	case t == 3:
 		return Medium
-	case length >= 6 && t == 2:
+	case t == 2:
 		return Weak
 	default:
 		return VeryWeak
