@@ -213,3 +213,22 @@ func (e *Ports) Scan(value any) error {
 	}
 	return json.Unmarshal(bytes, e)
 }
+
+type References struct {
+	UserID    uint `json:"user_id"`
+	TeamID    uint `json:"team_id"`
+	ContestID uint `json:"contest_id"`
+	UsageID   uint `json:"usage_id"`
+}
+
+func (r References) Value() (driver.Value, error) {
+	return json.Marshal(r)
+}
+
+func (r *References) Scan(value any) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan References value")
+	}
+	return json.Unmarshal(bytes, r)
+}

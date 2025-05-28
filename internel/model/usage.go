@@ -14,7 +14,6 @@ type Usage struct {
 	Flags       []Flag         `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Victims     []Victim       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Submissions []Submission   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Events      []Event        `json:"-"`
 	Name        string         `gorm:"not null" json:"name"`
 	Desc        string         `json:"desc"`
 	Hidden      bool           `json:"hidden"`

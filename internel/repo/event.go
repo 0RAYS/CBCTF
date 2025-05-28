@@ -12,14 +12,11 @@ type EventRepo struct {
 }
 
 type CreateEventOptions struct {
-	UserID    uint
-	TeamID    uint
-	ContestID uint
-	UsageID   uint
-	Desc      string
-	Type      string
-	IP        string
-	Magic     string
+	References model.References
+	Desc       string
+	Type       string
+	IP         string
+	Magic      string
 }
 
 func InitEventRepo(tx *gorm.DB) *EventRepo {
