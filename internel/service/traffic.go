@@ -4,7 +4,6 @@ import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
-	"CBCTF/internel/traffic"
 	"CBCTF/internel/utils"
 	"encoding/hex"
 	"gorm.io/gorm"
@@ -18,7 +17,7 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 		if ok {
 			return true, i18n.Success
 		}
-		packet, ok, msg := traffic.ReadPcap(pod.TrafficPath())
+		packet, ok, msg := utils.ReadPcap(pod.TrafficPath())
 		if !ok {
 			if pod.DeletedAt.Valid && msg == "PcapNotFound" {
 				msg = "HasNoTraffic"

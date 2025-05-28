@@ -1,4 +1,4 @@
-package traffic
+package utils
 
 import (
 	"CBCTF/internel/i18n"
