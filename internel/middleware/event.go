@@ -127,7 +127,7 @@ func Events(ctx *gin.Context) {
 	default:
 		return
 	}
-	if event, ok, msg := db.InitEventRepo(db.DB.WithContext(ctx)).Create(options); !ok {
-		log.Logger.Warningf("Failed to record event: %v beacause of %s", event, msg)
+	if _, ok, msg := db.InitEventRepo(db.DB.WithContext(ctx)).Create(options); !ok {
+		log.Logger.Warningf("Failed to record event: %v beacause of %s", options, msg)
 	}
 }
