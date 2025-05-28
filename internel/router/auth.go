@@ -9,6 +9,7 @@ import (
 	"CBCTF/internel/resp"
 	"CBCTF/internel/service"
 	"CBCTF/internel/utils"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -44,7 +45,7 @@ func Register(ctx *gin.Context) {
 	}
 	ctx.Set("Self", user)
 	log.Logger.Infof("%s:%d register", user.Name, user.ID)
-	ctx.Writer.Header().Set("Authorization", "Bearer "+token)
+	ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.RegisterResp(user, false)})
 }
 
@@ -63,7 +64,7 @@ func Login(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	Token, err := utils.Generate(user.ID, user.Name, "user", middleware.GetMagic(ctx))
+	token, err := utils.Generate(user.ID, user.Name, "user", middleware.GetMagic(ctx))
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": i18n.UnknownError, "data": nil})
@@ -71,7 +72,7 @@ func Login(ctx *gin.Context) {
 	}
 	ctx.Set("Self", user)
 	log.Logger.Infof("%s:%d login", user.Name, user.ID)
-	ctx.Writer.Header().Set("Authorization", "Bearer "+Token)
+	ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.LoginResp(user, false)})
 }
 
@@ -86,13 +87,13 @@ func AdminLogin(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	Token, err := utils.Generate(admin.ID, admin.Name, "admin", "admin")
+	token, err := utils.Generate(admin.ID, admin.Name, "admin", "admin")
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": i18n.UnknownError, "data": nil})
 		return
 	}
 	log.Logger.Infof("%s:%d login", admin.Name, admin.ID)
-	ctx.Writer.Header().Set("Authorization", "Bearer "+Token)
+	ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetAdminResp(admin)})
 }

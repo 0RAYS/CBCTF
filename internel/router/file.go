@@ -35,7 +35,7 @@ func DownloadFile(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": i18n.UnknownError, "data": nil})
 		return
 	}
-	ctx.Writer.Header().Add("Content-Disposition", "attachment; filename="+file.Filename)
+	ctx.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", file.Filename))
 	ctx.Writer.Header().Add("Content-Type", "application/octet-stream")
 	ctx.File(file.Path)
 }
