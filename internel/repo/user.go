@@ -171,7 +171,7 @@ func (u *UserRepo) Delete(idL ...uint) (bool, string) {
 	if ok, msg := InitSubmissionRepo(u.DB).Delete(submissionIDL...); !ok {
 		return false, msg
 	}
-	if res := u.DB.Model(&model.User{}).Where("id IN ?", idL).Delete(&model.Submission{}); res.Error != nil {
+	if res := u.DB.Model(&model.User{}).Where("id IN ?", idL).Delete(&model.User{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete User: %s", res.Error)
 		return false, i18n.DeleteUserError
 	}
