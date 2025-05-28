@@ -76,9 +76,9 @@ func (t *Timelines) Scan(value any) error {
 }
 
 type Target struct {
-	Hostname string   `json:"hostname"`
-	CIDR     string   `json:"cidr"`
-	Except   []string `json:"except"`
+	Hostname string  `json:"hostname"`
+	CIDR     string  `json:"cidr"`
+	Except   Strings `json:"except"`
 }
 
 func isValidIPBlock(ipBlock Target) bool {
