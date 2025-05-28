@@ -46,7 +46,7 @@ type UpdateContestOptions struct {
 }
 
 func InitContestRepo(tx *gorm.DB) *ContestRepo {
-	return &ContestRepo{Repo: Repo[model.Contest]{DB: tx}}
+	return &ContestRepo{Repo: Repo[model.Contest]{DB: tx, Model: "Cotest"}}
 }
 
 func (c *ContestRepo) IsUniqueName(name string) bool {
