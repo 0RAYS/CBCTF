@@ -39,6 +39,7 @@ func Register(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": i18n.UnknownError, "data": nil})
 		return
 	}
+	ctx.Set("Role", "user")
 	ctx.Set("Self", user)
 	log.Logger.Infof("%s:%d register", user.Name, user.ID)
 	ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
@@ -62,6 +63,7 @@ func Login(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": i18n.UnknownError, "data": nil})
 		return
 	}
+	ctx.Set("Role", "user")
 	ctx.Set("Self", user)
 	log.Logger.Infof("%s:%d login", user.Name, user.ID)
 	ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
