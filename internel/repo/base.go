@@ -86,7 +86,7 @@ func (r *Repo[T]) GetAll(limit, offset int, preloadL ...string) ([]T, int64, boo
 		return ms, count, false, msg
 	}
 	res := r.DB.Model(new(T))
-	res = preload(res, preloadL...).Limit(limit).Offset(offset).Order("created_at ASC").Find(&ms)
+	res = preload(res, preloadL...).Order("created_at ASC").Limit(limit).Offset(offset).Find(&ms)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get all %T: %s", new(T), res.Error)
 		return ms, count, false, r.GetError
