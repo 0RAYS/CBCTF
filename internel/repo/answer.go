@@ -25,7 +25,15 @@ type UpdateAnswerOptions struct {
 }
 
 func InitAnswerRepo(tx *gorm.DB) *AnswerRepo {
-	return &AnswerRepo{Repo: Repo[model.Answer]{DB: tx, Model: "Answer"}}
+	return &AnswerRepo{
+		Repo: Repo[model.Answer]{
+			DB: tx, Model: "Answer",
+			CreateError:   i18n.CreateAnswerError,
+			DeleteError:   i18n.DeleteAnswerError,
+			GetError:      i18n.GetAnswerError,
+			NotFoundError: i18n.AnswerNotFound,
+		},
+	}
 }
 
 func (a *AnswerRepo) GetBy2ID(teamID, flagID uint, preloadL ...string) (model.Answer, bool, string) {

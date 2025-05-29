@@ -28,7 +28,15 @@ type UpdatePodOptions struct {
 }
 
 func InitPodRepo(tx *gorm.DB) *PodRepo {
-	return &PodRepo{Repo: Repo[model.Pod]{DB: tx, Model: "Pod"}}
+	return &PodRepo{
+		Repo: Repo[model.Pod]{
+			DB: tx, Model: "Pod",
+			CreateError:   i18n.CreatePodError,
+			DeleteError:   i18n.DeletePodError,
+			GetError:      i18n.GetPodError,
+			NotFoundError: i18n.PodNotFound,
+		},
+	}
 }
 
 func (p *PodRepo) GetByPodName(name string, deleted bool, preloadL ...string) ([]model.Pod, bool, string) {

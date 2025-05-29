@@ -38,7 +38,15 @@ type UpdateFlagOptions struct {
 }
 
 func InitFlagRepo(tx *gorm.DB) *FlagRepo {
-	return &FlagRepo{Repo: Repo[model.Flag]{DB: tx, Model: "Flag"}}
+	return &FlagRepo{
+		Repo: Repo[model.Flag]{
+			DB: tx, Model: "Flag",
+			CreateError:   i18n.CreateFlagError,
+			DeleteError:   i18n.DeleteFlagError,
+			GetError:      i18n.GetFlagError,
+			NotFoundError: i18n.FlagNotFound,
+		},
+	}
 }
 
 func (f *FlagRepo) Count(key string, id uint) (int64, bool, string) {

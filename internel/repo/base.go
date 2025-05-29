@@ -4,7 +4,6 @@ import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/utils"
-	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -21,8 +20,15 @@ func preload(tx *gorm.DB, preloadL ...string) *gorm.DB {
 }
 
 type Repo[T any] struct {
-	DB    *gorm.DB
-	Model string
+	DB            *gorm.DB
+	Model         string
+	CreateError   string
+	GetError      string
+	NotFoundError string
+	DeleteError   string
+}
+
+type UpdateOptions struct {
 }
 
 func (r *Repo[T]) Create(options any) (T, bool, string) {
@@ -33,7 +39,7 @@ func (r *Repo[T]) Create(options any) (T, bool, string) {
 	}
 	if res := r.DB.Model(new(T)).Create(&m); res.Error != nil {
 		log.Logger.Warningf("Failed to create %T: %s", new(T), res.Error)
-		return *new(T), false, fmt.Sprintf("Create%sError", r.Model)
+		return *new(T), false, r.CreateError
 	}
 	return m, true, i18n.Success
 }
@@ -50,10 +56,10 @@ func (r *Repo[T]) getByUniqueKey(key string, value any, preloadL ...string) (T, 
 	res = preload(res, preloadL...).Limit(1).Find(&m)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get %s: %s", r.Model, res.Error)
-		return m, false, fmt.Sprintf("Get%sError", r.Model)
+		return m, false, r.GetError
 	}
 	if res.RowsAffected == 0 {
-		return m, false, fmt.Sprintf("%sNotFound", r.Model)
+		return m, false, r.NotFoundError
 	}
 	return m, true, i18n.Success
 }
@@ -83,7 +89,7 @@ func (r *Repo[T]) GetAll(limit, offset int, preloadL ...string) ([]T, int64, boo
 	res = preload(res, preloadL...).Limit(limit).Offset(offset).Find(&ms)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get all %T: %s", new(T), res.Error)
-		return ms, count, false, fmt.Sprintf("Get%sError", r.Model)
+		return ms, count, false, r.GetError
 	}
 	return ms, count, true, i18n.Success
 }
@@ -91,7 +97,7 @@ func (r *Repo[T]) GetAll(limit, offset int, preloadL ...string) ([]T, int64, boo
 func (r *Repo[T]) Delete(idL ...uint) (bool, string) {
 	if res := r.DB.Model(new(T)).Where("id IN ?", idL).Delete(new(T)); res.Error != nil {
 		log.Logger.Warningf("Failed to delete %T: %s", new(T), res.Error)
-		return false, fmt.Sprintf("Delete%sError", r.Model)
+		return false, r.DeleteError
 	}
 	return true, i18n.Success
 }

@@ -30,7 +30,15 @@ type UpdateAdminOptions struct {
 }
 
 func InitAdminRepo(tx *gorm.DB) *AdminRepo {
-	return &AdminRepo{Repo: Repo[model.Admin]{DB: tx, Model: "Admin"}}
+	return &AdminRepo{
+		Repo: Repo[model.Admin]{
+			DB: tx, Model: "Admin",
+			CreateError:   i18n.CreateAdminError,
+			DeleteError:   i18n.DeleteAdminError,
+			GetError:      i18n.GetAdminError,
+			NotFoundError: i18n.AdminNotFound,
+		},
+	}
 }
 
 func (a *AdminRepo) IsUniqueName(name string) bool {

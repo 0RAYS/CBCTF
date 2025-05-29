@@ -30,7 +30,15 @@ type UpdateCheatOptions struct {
 }
 
 func InitCheatRepo(tx *gorm.DB) *CheatRepo {
-	return &CheatRepo{Repo: Repo[model.Cheat]{DB: tx, Model: "Cheat"}}
+	return &CheatRepo{
+		Repo: Repo[model.Cheat]{
+			DB: tx, Model: "Cheat",
+			CreateError:   i18n.CreateCheatError,
+			DeleteError:   i18n.DeleteCheatError,
+			GetError:      i18n.GetCheatError,
+			NotFoundError: i18n.CheatNotFound,
+		},
+	}
 }
 
 func (c *CheatRepo) Update(id uint, options UpdateCheatOptions) (bool, string) {

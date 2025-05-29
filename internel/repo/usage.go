@@ -36,7 +36,15 @@ type UpdateUsageOptions struct {
 }
 
 func InitUsageRepo(tx *gorm.DB) *UsageRepo {
-	return &UsageRepo{Repo: Repo[model.Usage]{DB: tx, Model: "Usage"}}
+	return &UsageRepo{
+		Repo: Repo[model.Usage]{
+			DB: tx, Model: "Usage",
+			CreateError:   i18n.CreateUsageError,
+			DeleteError:   i18n.DeleteUsageError,
+			GetError:      i18n.GetUsageError,
+			NotFoundError: i18n.UsageNotFound,
+		},
+	}
 }
 
 func (u *UsageRepo) IsUniqueChallenge(contestID uint, challengeID string) bool {

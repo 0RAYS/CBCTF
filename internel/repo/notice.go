@@ -27,7 +27,15 @@ type UpdateNoticeOptions struct {
 }
 
 func InitNoticeRepo(tx *gorm.DB) *NoticeRepo {
-	return &NoticeRepo{Repo: Repo[model.Notice]{DB: tx, Model: "Notice"}}
+	return &NoticeRepo{
+		Repo: Repo[model.Notice]{
+			DB: tx, Model: "Notice",
+			CreateError:   i18n.CreateNoticeError,
+			DeleteError:   i18n.DeleteNoticeError,
+			GetError:      i18n.GetNoticeError,
+			NotFoundError: i18n.NoticeNotFound,
+		},
+	}
 }
 
 func (n *NoticeRepo) Count(contestID uint) (int64, bool, string) {

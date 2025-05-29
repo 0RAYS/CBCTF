@@ -23,7 +23,15 @@ type UpdateDeviceOptions struct {
 }
 
 func InitDeviceRepo(tx *gorm.DB) *DeviceRepo {
-	return &DeviceRepo{Repo: Repo[model.Device]{DB: tx, Model: "Device"}}
+	return &DeviceRepo{
+		Repo: Repo[model.Device]{
+			DB: tx, Model: "Device",
+			CreateError:   i18n.CreateDeviceError,
+			DeleteError:   i18n.DeleteDeviceError,
+			GetError:      i18n.GetDeviceError,
+			NotFoundError: i18n.DeviceNotFound,
+		},
+	}
 }
 
 func (d *DeviceRepo) GetBy2ID(userID uint, magic string) (model.Device, bool, string) {

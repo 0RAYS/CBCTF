@@ -27,7 +27,15 @@ type UpdateVictimOptions struct {
 }
 
 func InitVictimRepo(tx *gorm.DB) *VictimRepo {
-	return &VictimRepo{Repo: Repo[model.Victim]{DB: tx, Model: "Victim"}}
+	return &VictimRepo{
+		Repo: Repo[model.Victim]{
+			DB: tx, Model: "Victim",
+			CreateError:   i18n.CreateVictimError,
+			DeleteError:   i18n.DeleteVictimError,
+			GetError:      i18n.GetVictimError,
+			NotFoundError: i18n.VictimNotFound,
+		},
+	}
 }
 
 func (v *VictimRepo) GetByID(id uint, deleted bool, preloadL ...string) (model.Victim, bool, string) {

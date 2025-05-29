@@ -40,7 +40,15 @@ type UpdateUserOptions struct {
 }
 
 func InitUserRepo(tx *gorm.DB) *UserRepo {
-	return &UserRepo{Repo: Repo[model.User]{DB: tx, Model: "User"}}
+	return &UserRepo{
+		Repo: Repo[model.User]{
+			DB: tx, Model: "User",
+			CreateError:   i18n.CreateUserError,
+			DeleteError:   i18n.DeleteUserError,
+			GetError:      i18n.GetUserError,
+			NotFoundError: i18n.UserNotFound,
+		},
+	}
 }
 
 func (u *UserRepo) IsUniqueName(name string) bool {

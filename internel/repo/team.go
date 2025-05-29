@@ -40,7 +40,15 @@ type UpdateTeamOptions struct {
 }
 
 func InitTeamRepo(tx *gorm.DB) *TeamRepo {
-	return &TeamRepo{Repo: Repo[model.Team]{DB: tx, Model: "Team"}}
+	return &TeamRepo{
+		Repo: Repo[model.Team]{
+			DB: tx, Model: "Team",
+			CreateError:   i18n.CreateTeamError,
+			DeleteError:   i18n.DeleteTeamError,
+			GetError:      i18n.GetTeamError,
+			NotFoundError: i18n.TeamNotFound,
+		},
+	}
 }
 
 func (t *TeamRepo) IsUniqueName(contestID uint, name string) bool {
