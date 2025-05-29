@@ -46,9 +46,8 @@ func StartGenerator(usage model.Usage) (*corev1.Pod, bool, string) {
 		generatorIP[usage.ChallengeID] = pod.Status.PodIP
 		log.Logger.Infof("Pod %s is already running", pod.Name)
 		return pod, true, i18n.Success
-	} else {
-		StopGenerator(usage)
 	}
+	StopGenerator(usage)
 	if len(gIPL) == 0 {
 		gIPL, err = utils.GetIPBlock(0, config.Env.K8S.IPPool.CIDR, config.Env.K8S.IPPool.BlockSize)
 		if err != nil || len(gIPL) == 0 {
