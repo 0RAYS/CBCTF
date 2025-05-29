@@ -22,7 +22,7 @@ func ResetGenerator(c *cron.Cron) {
 			return
 		}
 		for _, pod := range pods.Items {
-			if strings.Contains(pod.Name, "generator") && time.Now().Sub(pod.CreationTimestamp.Time) > 3*time.Hour {
+			if strings.HasPrefix(pod.Name, "gen-") && time.Now().Sub(pod.CreationTimestamp.Time) > 3*time.Hour {
 				ctx, cancel = context.WithTimeout(context.Background(), 1*time.Minute)
 				ok, msg = k8s.DeletePod(ctx, pod.Name)
 				cancel()
