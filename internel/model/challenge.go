@@ -3,8 +3,6 @@ package model
 import (
 	"CBCTF/internel/config"
 	"fmt"
-	"gorm.io/gorm"
-	"time"
 )
 
 const (
@@ -22,20 +20,17 @@ const (
 // 动态题目: flag 为 Flags 字段
 // 容器题目: flag 为 Dockers[].Flags 字段
 type Challenge struct {
-	ID          string         `gorm:"type:varchar(36);primaryKey" json:"id"`
-	Usages      []Usage        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Submissions []Submission   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Name        string         `gorm:"not null" json:"name"`
-	Desc        string         `json:"desc"`
-	Category    string         `json:"category"`
-	Type        string         `json:"type"`
-	Generator   string         `json:"generator"`
-	Flags       Strings        `gorm:"type:json" json:"flags"`
-	Dockers     Dockers        `gorm:"type:json" json:"dockers"`
-	CreatedAt   time.Time      `json:"-"`
-	UpdatedAt   time.Time      `json:"-"`
-	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
-	Version     uint           `gorm:"default:1" json:"-"`
+	ID          string       `gorm:"type:varchar(36);primaryKey" json:"id"`
+	Usages      []Usage      `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Submissions []Submission `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Name        string       `gorm:"not null" json:"name"`
+	Desc        string       `json:"desc"`
+	Category    string       `json:"category"`
+	Type        string       `json:"type"`
+	Generator   string       `json:"generator"`
+	Flags       Strings      `gorm:"type:json" json:"flags"`
+	Dockers     Dockers      `gorm:"type:json" json:"dockers"`
+	BaseModel
 }
 
 // BasicDir 获取题目相关文件的目录
