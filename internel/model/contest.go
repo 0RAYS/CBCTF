@@ -2,7 +2,6 @@ package model
 
 import (
 	"CBCTF/internel/i18n"
-	"gorm.io/gorm"
 	"time"
 )
 
@@ -13,31 +12,27 @@ var (
 )
 
 type Contest struct {
-	ID          uint           `gorm:"primarykey" json:"id"`
-	Teams       []Team         `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Users       []*User        `gorm:"many2many:user_contests;" json:"-"`
-	Notices     []Notice       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Usages      []Usage        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Flags       []Flag         `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Submissions []Submission   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Cheats      []Cheat        `json:"-"`
-	Name        string         `gorm:"type:varchar(255);uniqueIndex;not null" json:"name"`
-	Desc        string         `json:"desc"`
-	Captcha     string         `json:"captcha"`
-	Avatar      string         `json:"avatar"`
-	Prefix      string         `gorm:"default:'flag'" json:"prefix"`
-	Size        int            `gorm:"default:4" json:"size"`
-	Start       time.Time      `gorm:"not null" json:"start"`
-	Duration    time.Duration  `json:"duration"`
-	Blood       bool           `gorm:"default:true" json:"blood"`
-	Hidden      bool           `gorm:"default:true" json:"hidden"`
-	Rules       Strings        `gorm:"type:json" json:"rules"`
-	Prizes      Prizes         `gorm:"type:json" json:"prizes"`
-	Timelines   Timelines      `gorm:"type:json" json:"timelines"`
-	CreatedAt   time.Time      `json:"-"`
-	UpdatedAt   time.Time      `json:"-"`
-	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
-	Version     uint           `gorm:"default:1" json:"-"`
+	Teams       []Team        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Users       []*User       `gorm:"many2many:user_contests;" json:"-"`
+	Notices     []Notice      `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Usages      []Usage       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Flags       []Flag        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Submissions []Submission  `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Cheats      []Cheat       `json:"-"`
+	Name        string        `gorm:"type:varchar(255);uniqueIndex;not null" json:"name"`
+	Desc        string        `json:"desc"`
+	Captcha     string        `json:"captcha"`
+	Avatar      string        `json:"avatar"`
+	Prefix      string        `gorm:"default:'flag'" json:"prefix"`
+	Size        int           `gorm:"default:4" json:"size"`
+	Start       time.Time     `gorm:"not null" json:"start"`
+	Duration    time.Duration `json:"duration"`
+	Blood       bool          `gorm:"default:true" json:"blood"`
+	Hidden      bool          `gorm:"default:true" json:"hidden"`
+	Rules       Strings       `gorm:"type:json" json:"rules"`
+	Prizes      Prizes        `gorm:"type:json" json:"prizes"`
+	Timelines   Timelines     `gorm:"type:json" json:"timelines"`
+	BaseModel
 }
 
 func (c *Contest) IsOver() bool {

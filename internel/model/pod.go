@@ -3,12 +3,9 @@ package model
 import (
 	"CBCTF/internel/config"
 	"fmt"
-	"gorm.io/gorm"
-	"time"
 )
 
 type Pod struct {
-	ID              uint            `gorm:"primaryKey" json:"id"`
 	VictimID        uint            `json:"victim_id"`
 	Victim          Victim          `json:"-"`
 	Containers      []Container     `json:"-"`
@@ -19,10 +16,7 @@ type Pod struct {
 	PodPorts        Ports           `gorm:"type:json" json:"pod_ports"`
 	ExposedPorts    Ports           `gorm:"type:json" json:"exposed_ports"`
 	NetworkPolicies NetworkPolicies `gorm:"type:json" json:"network_policies"`
-	CreatedAt       time.Time       `json:"-"`
-	UpdatedAt       time.Time       `json:"-"`
-	DeletedAt       gorm.DeletedAt  `gorm:"index" json:"-"`
-	Version         uint            `gorm:"default:1" json:"-"`
+	BaseModel
 }
 
 func (p Pod) TrafficPath() string {

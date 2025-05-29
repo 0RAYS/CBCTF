@@ -1,7 +1,6 @@
 package model
 
 import (
-	"gorm.io/gorm"
 	"math"
 	"regexp"
 	"time"
@@ -20,26 +19,22 @@ var (
 )
 
 type Flag struct {
-	ID           uint           `gorm:"primaryKey" json:"id"`
-	ContestID    uint           `json:"contest_id"`
-	Contest      Contest        `json:"-"`
-	UsageID      uint           `json:"usage_id"`
-	Usage        Usage          `json:"-"`
-	Answers      []Answer       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Submissions  []Submission   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Value        string         `json:"value"`
-	Score        float64        `gorm:"default:1000" json:"score"`
-	CurrentScore float64        `gorm:"default:1000" json:"current_score"`
-	Decay        float64        `gorm:"default:50" json:"decay"`
-	MinScore     float64        `gorm:"default:100" json:"min_score"`
-	ScoreType    uint           `gorm:"default:0" json:"score_type"`
-	Solvers      int64          `json:"solvers"`
-	Last         time.Time      `gorm:"default:null" json:"last"`
-	Blood        Uints          `gorm:"type:json" json:"blood"`
-	CreatedAt    time.Time      `json:"-"`
-	UpdatedAt    time.Time      `json:"-"`
-	DeletedAt    gorm.DeletedAt `gorm:"index" json:"-"`
-	Version      uint           `gorm:"default:1" json:"-"`
+	ContestID    uint         `json:"contest_id"`
+	Contest      Contest      `json:"-"`
+	UsageID      uint         `json:"usage_id"`
+	Usage        Usage        `json:"-"`
+	Answers      []Answer     `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Submissions  []Submission `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Value        string       `json:"value"`
+	Score        float64      `gorm:"default:1000" json:"score"`
+	CurrentScore float64      `gorm:"default:1000" json:"current_score"`
+	Decay        float64      `gorm:"default:50" json:"decay"`
+	MinScore     float64      `gorm:"default:100" json:"min_score"`
+	ScoreType    uint         `gorm:"default:0" json:"score_type"`
+	Solvers      int64        `json:"solvers"`
+	Last         time.Time    `gorm:"default:null" json:"last"`
+	Blood        Uints        `gorm:"type:json" json:"blood"`
+	BaseModel
 }
 
 func (f *Flag) CalcCurrentScore(solvers int64) float64 {

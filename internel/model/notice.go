@@ -1,10 +1,5 @@
 package model
 
-import (
-	"gorm.io/gorm"
-	"time"
-)
-
 const (
 	NoticeTypeNormal    = "normal"
 	NoticeTypeImportant = "important"
@@ -12,16 +7,12 @@ const (
 )
 
 type Notice struct {
-	ID        uint           `gorm:"primaryKey" json:"id"`
-	ContestID uint           `json:"contest_id"`
-	Contest   Contest        `json:"-"`
-	AdminID   uint           `json:"creator_id"`
-	Admin     Admin          `json:"-"`
-	Title     string         `json:"title"`
-	Content   string         `json:"content"`
-	Type      string         `gorm:"default:'normal'" json:"type"`
-	CreatedAt time.Time      `json:"created"`
-	UpdatedAt time.Time      `json:"updated"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
-	Version   uint           `gorm:"default:1" json:"-"`
+	ContestID uint    `json:"contest_id"`
+	Contest   Contest `json:"-"`
+	AdminID   uint    `json:"creator_id"`
+	Admin     Admin   `json:"-"`
+	Title     string  `json:"title"`
+	Content   string  `json:"content"`
+	Type      string  `gorm:"default:'normal'" json:"type"`
+	BaseModel
 }

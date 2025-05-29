@@ -1,10 +1,5 @@
 package model
 
-import (
-	"gorm.io/gorm"
-	"time"
-)
-
 const (
 	UserLoginEventType          = "user_login"
 	UserRegisterEventType       = "user_register"
@@ -28,14 +23,10 @@ const (
 )
 
 type Event struct {
-	ID         uint           `gorm:"primarykey" json:"id"`
-	Desc       string         `json:"desc"`
-	Type       string         `json:"type"`
-	IP         string         `json:"ip"`
-	Magic      string         `json:"magic"`
-	References References     `gorm:"type:json" json:"references"`
-	CreatedAt  time.Time      `json:"-"`
-	UpdatedAt  time.Time      `json:"-"`
-	DeletedAt  gorm.DeletedAt `gorm:"index" json:"-"`
-	Version    uint           `gorm:"default:1" json:"-"`
+	Desc       string     `json:"desc"`
+	Type       string     `json:"type"`
+	IP         string     `json:"ip"`
+	Magic      string     `json:"magic"`
+	References References `gorm:"type:json" json:"references"`
+	BaseModel
 }
