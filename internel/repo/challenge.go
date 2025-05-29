@@ -100,7 +100,7 @@ func (c *ChallengeRepo) GetAll(limit, offset int, t, category string, preloadL .
 		res = res.Where("type = ? OR category = ?", t, category)
 	}
 	res = preload(res, preloadL...)
-	res = res.Order("created_at ASC").Limit(limit).Offset(offset).Find(&challenges)
+	res = res.Order("created_at DESC").Limit(limit).Offset(offset).Find(&challenges)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Challenges: %s", res.Error)
 		return challenges, count, false, i18n.GetChallengeError
