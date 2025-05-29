@@ -7,9 +7,9 @@ import (
 
 type Usage struct {
 	ID          uint           `gorm:"primaryKey" json:"id"`
-	ContestID   uint           `gorm:"index:idx_contest_challenge_deleted,unique;" json:"contest_id"`
+	ContestID   uint           `gorm:"index:idx_contest_challenge,unique;" json:"contest_id"`
 	Contest     Contest        `json:"-"`
-	ChallengeID string         `gorm:"index:idx_contest_challenge_deleted,unique;" json:"challenge_id"`
+	ChallengeID string         `gorm:"index:idx_contest_challenge,unique;" json:"challenge_id"`
 	Challenge   Challenge      `json:"-"`
 	Flags       []Flag         `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Victims     []Victim       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
@@ -23,6 +23,6 @@ type Usage struct {
 	Tags        Strings        `gorm:"type:json" json:"tags"`
 	CreatedAt   time.Time      `json:"-"`
 	UpdatedAt   time.Time      `json:"-"`
-	DeletedAt   gorm.DeletedAt `gorm:"index;index:idx_contest_challenge_deleted,unique;" json:"-"`
+	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 	Version     uint           `gorm:"default:1" json:"-"`
 }

@@ -5,6 +5,7 @@ import (
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
+	"fmt"
 	"gorm.io/gorm"
 	"time"
 )
@@ -146,6 +147,12 @@ func (c *ContestRepo) Delete(idL ...uint) (bool, string) {
 		contest, ok, msg := c.GetByID(id, "Teams", "Notices", "Usages", "Flags", "Submissions")
 		if !ok {
 			return ok, msg
+		}
+		deletedName := fmt.Sprintf("%s_deleted_%s", contest.Name, utils.RandStr(6))
+		if ok, msg = c.Update(id, UpdateContestOptions{
+			Name: &deletedName,
+		}); !ok {
+			return false, msg
 		}
 		for _, team := range contest.Teams {
 			teamIDL = append(teamIDL, team.ID)

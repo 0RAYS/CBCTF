@@ -5,6 +5,7 @@ import (
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
+	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -24,13 +25,14 @@ type CreateUsageOptions struct {
 }
 
 type UpdateUsageOptions struct {
-	Name    *string        `json:"name"`
-	Desc    *string        `json:"desc"`
-	Attempt *int64         `json:"attempt"`
-	Hidden  *bool          `json:"hidden"`
-	Hints   *model.Strings `json:"hints"`
-	Tags    *model.Strings `json:"tags"`
-	Dockers *model.Dockers `json:"dockers"`
+	ChallengeID *string        `json:"challenge_id"`
+	Name        *string        `json:"name"`
+	Desc        *string        `json:"desc"`
+	Attempt     *int64         `json:"attempt"`
+	Hidden      *bool          `json:"hidden"`
+	Hints       *model.Strings `json:"hints"`
+	Tags        *model.Strings `json:"tags"`
+	Dockers     *model.Dockers `json:"dockers"`
 }
 
 func InitUsageRepo(tx *gorm.DB) *UsageRepo {
@@ -126,6 +128,12 @@ func (u *UsageRepo) Delete(idL ...uint) (bool, string) {
 	for _, id := range idL {
 		usage, ok, msg := u.GetByID(id, "Flags", "Submissions")
 		if !ok {
+			return false, msg
+		}
+		deletedChallengeID := fmt.Sprintf("%s_deleted_%s", usage.ChallengeID, utils.RandStr(6))
+		if ok, msg = u.Update(id, UpdateUsageOptions{
+			ChallengeID: &deletedChallengeID,
+		}); !ok {
 			return false, msg
 		}
 		for _, flag := range usage.Flags {
