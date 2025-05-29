@@ -109,7 +109,7 @@ func (f *FileRepo) GetAll(t string, limit, offset int) ([]model.File, int64, boo
 	if !ok {
 		return files, count, false, msg
 	}
-	res := f.DB.Model(&model.File{}).Where("type = ?", t).Limit(limit).Offset(offset).Find(&files)
+	res := f.DB.Model(&model.File{}).Where("type = ?", t).Limit(limit).Offset(offset).Order("created_at ASC").Find(&files)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get File: %s", res.Error)
 		return files, 0, false, i18n.GetFileRecordError
