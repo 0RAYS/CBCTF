@@ -5,6 +5,7 @@ import (
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
+	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -154,6 +155,14 @@ func (u *UserRepo) Delete(idL ...uint) (bool, string) {
 	for _, id := range idL {
 		user, ok, msg := u.GetByID(id, "Teams", "Submissions")
 		if !ok {
+			return false, msg
+		}
+		deletedName := fmt.Sprintf("%s_deleted_%s", user.Name, utils.RandStr(6))
+		deletedEmail := fmt.Sprintf("%s_deleted_%s", user.Email, utils.RandStr(6))
+		if ok, msg = u.Update(id, UpdateUserOptions{
+			Name:  &deletedName,
+			Email: &deletedEmail,
+		}); !ok {
 			return false, msg
 		}
 		for _, team := range user.Teams {

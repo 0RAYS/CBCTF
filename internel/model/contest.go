@@ -21,7 +21,7 @@ type Contest struct {
 	Flags       []Flag         `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Submissions []Submission   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Cheats      []Cheat        `json:"-"`
-	Name        string         `gorm:"index:idx_name_deleted,unique;not null" json:"name"`
+	Name        string         `gorm:"uniqueIndex;not null" json:"name"`
 	Desc        string         `json:"desc"`
 	Captcha     string         `json:"captcha"`
 	Avatar      string         `json:"avatar"`
@@ -36,7 +36,7 @@ type Contest struct {
 	Timelines   Timelines      `gorm:"type:json" json:"timelines"`
 	CreatedAt   time.Time      `json:"-"`
 	UpdatedAt   time.Time      `json:"-"`
-	DeletedAt   gorm.DeletedAt `gorm:"index;index:idx_name_deleted,unique;" json:"-"`
+	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
 	Version     uint           `gorm:"default:1" json:"-"`
 }
 
