@@ -151,6 +151,6 @@ func Watch(onChange func()) {
 		}
 		last = time.Now()
 		log.Printf("Config file changed: %s", e.Name)
-		onChange()
+		//onChange()
 	})
 }
