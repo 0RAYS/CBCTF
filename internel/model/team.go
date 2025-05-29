@@ -7,14 +7,14 @@ import (
 
 type Team struct {
 	ID          uint           `gorm:"primaryKey" json:"id"`
-	Name        string         `gorm:"not null" json:"name"`
-	ContestID   uint           `gorm:"not null" json:"contest_id"`
+	ContestID   uint           `gorm:"index:idx_name_contest_deleted,unique;not null" json:"contest_id"`
 	Contest     Contest        `json:"-"`
 	Users       []*User        `gorm:"many2many:user_teams;" json:"-"`
 	Answers     []Answer       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Submissions []Submission   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Victims     []Victim       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Cheats      []Cheat        `json:"-"`
+	Name        string         `gorm:"index:idx_name_contest_deleted,unique;not null" json:"name"`
 	Desc        string         `json:"desc"`
 	Captcha     string         `json:"-"`
 	Avatar      string         `json:"avatar"`
@@ -26,6 +26,6 @@ type Team struct {
 	Last        time.Time      `gorm:"default:null" json:"last"`
 	CreatedAt   time.Time      `json:"-"`
 	UpdatedAt   time.Time      `json:"-"`
-	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
+	DeletedAt   gorm.DeletedAt `gorm:"index;index:idx_name_contest_deleted,unique;" json:"-"`
 	Version     uint           `gorm:"default:1" json:"-"`
 }
