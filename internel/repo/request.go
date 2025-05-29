@@ -25,7 +25,15 @@ type CreateRequestOptions struct {
 }
 
 func InitRequestRepo(tx *gorm.DB) *RequestRepo {
-	return &RequestRepo{Repo: Repo[model.Request]{DB: tx, Model: "Request"}}
+	return &RequestRepo{
+		Repo: Repo[model.Request]{
+			DB: tx, Model: "Request",
+			CreateError:   i18n.CreateRequestError,
+			DeleteError:   i18n.DeleteRequestError,
+			GetError:      i18n.GetRequestError,
+			NotFoundError: i18n.RequestNotFound,
+		},
+	}
 }
 
 func (r *RequestRepo) CountIP() (int64, bool, string) {

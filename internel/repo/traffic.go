@@ -26,7 +26,15 @@ type CreateTrafficOptions struct {
 }
 
 func InitTrafficRepo(tx *gorm.DB) *TrafficRepo {
-	return &TrafficRepo{Repo: Repo[model.Traffic]{DB: tx, Model: "Traffic"}}
+	return &TrafficRepo{
+		Repo: Repo[model.Traffic]{
+			DB: tx, Model: "Traffic",
+			CreateError:   i18n.CreateTrafficError,
+			DeleteError:   i18n.DeleteTrafficError,
+			GetError:      i18n.GetTrafficError,
+			NotFoundError: i18n.TrafficNotFound,
+		},
+	}
 }
 
 func (t *TrafficRepo) CountByKey(key string, id uint) (int64, bool, string) {

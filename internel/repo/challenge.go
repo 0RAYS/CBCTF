@@ -34,7 +34,15 @@ type UpdateChallengeOptions struct {
 }
 
 func InitChallengeRepo(tx *gorm.DB) *ChallengeRepo {
-	return &ChallengeRepo{Repo: Repo[model.Challenge]{DB: tx, Model: "Challenge"}}
+	return &ChallengeRepo{
+		Repo: Repo[model.Challenge]{
+			DB: tx, Model: "Challenge",
+			CreateError:   i18n.CreateChallengeError,
+			DeleteError:   i18n.DeleteChallengeError,
+			GetError:      i18n.GetChallengeError,
+			NotFoundError: i18n.ChallengeNotFound,
+		},
+	}
 }
 
 func (c *ChallengeRepo) getByUniqueKey(key string, value any, preloadL ...string) (model.Challenge, bool, string) {

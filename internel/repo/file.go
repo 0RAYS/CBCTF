@@ -26,7 +26,15 @@ type CreateFileOptions struct {
 }
 
 func InitFileRepo(tx *gorm.DB) *FileRepo {
-	return &FileRepo{Repo: Repo[model.File]{DB: tx, Model: "File"}}
+	return &FileRepo{
+		Repo: Repo[model.File]{
+			DB: tx, Model: "File",
+			CreateError:   i18n.CreateFileRecordError,
+			DeleteError:   i18n.DeleteFileRecordError,
+			GetError:      i18n.GetFileRecordError,
+			NotFoundError: i18n.FileNotFound,
+		},
+	}
 }
 
 func (f *FileRepo) getByUniqueKey(key string, value any) (model.File, bool, string) {

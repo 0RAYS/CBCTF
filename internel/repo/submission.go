@@ -30,7 +30,15 @@ type UpdateSubmissionOptions struct {
 }
 
 func InitSubmissionRepo(tx *gorm.DB) *SubmissionRepo {
-	return &SubmissionRepo{Repo: Repo[model.Submission]{DB: tx, Model: "Submission"}}
+	return &SubmissionRepo{
+		Repo: Repo[model.Submission]{
+			DB: tx, Model: "Submission",
+			CreateError:   i18n.CreateSubmissionError,
+			DeleteError:   i18n.DeleteSubmissionError,
+			GetError:      i18n.GetSubmissionError,
+			NotFoundError: i18n.SubmissionNotFound,
+		},
+	}
 }
 
 func (s *SubmissionRepo) CountByKeyID(key string, id uint, solved bool) (int64, bool, string) {

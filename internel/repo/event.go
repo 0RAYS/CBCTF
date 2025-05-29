@@ -20,7 +20,15 @@ type CreateEventOptions struct {
 }
 
 func InitEventRepo(tx *gorm.DB) *EventRepo {
-	return &EventRepo{Repo: Repo[model.Event]{DB: tx, Model: "Event"}}
+	return &EventRepo{
+		Repo: Repo[model.Event]{
+			DB: tx, Model: "Event",
+			CreateError:   i18n.CreateEventError,
+			DeleteError:   i18n.DeleteEventError,
+			GetError:      i18n.GetEventError,
+			NotFoundError: i18n.EventNotFound,
+		},
+	}
 }
 
 func (e *EventRepo) CountByKeyID(key string, id uint) (int64, bool, string) {
