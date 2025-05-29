@@ -5,6 +5,7 @@ import (
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
+	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -108,6 +109,14 @@ func (a *AdminRepo) Delete(idL ...uint) (bool, string) {
 	for _, id := range idL {
 		admin, ok, msg := a.GetByID(id, "Notices")
 		if !ok {
+			return false, msg
+		}
+		deletedName := fmt.Sprintf("%s_deleted_%s", admin.Name, utils.RandStr(6))
+		deletedEmail := fmt.Sprintf("%s_deleted_%s", admin.Email, utils.RandStr(6))
+		if ok, msg = a.Update(id, UpdateAdminOptions{
+			Name:  &deletedName,
+			Email: &deletedEmail,
+		}); !ok {
 			return false, msg
 		}
 		for _, notice := range admin.Notices {
