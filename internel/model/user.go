@@ -13,9 +13,9 @@ type User struct {
 	Victims     []Victim       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Devices     []Device       `json:"-"`
 	Cheats      []Cheat        `json:"-"`
-	Name        string         `gorm:"uniqueIndex;not null" json:"name"`
+	Name        string         `gorm:"type:varchar(255);uniqueIndex;not null" json:"name"`
 	Password    string         `gorm:"not null" json:"-"`
-	Email       string         `gorm:"uniqueIndex;not null" json:"email"`
+	Email       string         `gorm:"type:varchar(255);uniqueIndex;not null" json:"email"`
 	Country     string         `gorm:"default:'CN'" json:"country"`
 	Avatar      string         `json:"avatar"`
 	Desc        string         `json:"desc"`
