@@ -60,7 +60,7 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, usage model.Usag
 		if !ok {
 			return model.Victim{}, false, msg
 		}
-		podGroup := make(map[uint][]model.Docker)
+		podGroup := make(map[uint]model.Dockers)
 		for _, docker := range usage.Dockers {
 			podGroup[docker.PodGroup] = append(podGroup[docker.PodGroup], docker)
 		}

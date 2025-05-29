@@ -36,12 +36,10 @@ func (u *Uints) Scan(value any) error {
 	return json.Unmarshal(bytes, u)
 }
 
-type Prize struct {
+type Prizes []struct {
 	Amount string `json:"amount"`
 	Desc   string `json:"desc"`
 }
-
-type Prizes []Prize
 
 func (p Prizes) Value() (driver.Value, error) {
 	return json.Marshal(p)
@@ -55,13 +53,11 @@ func (p *Prizes) Scan(value any) error {
 	return json.Unmarshal(bytes, p)
 }
 
-type Timeline struct {
+type Timelines []struct {
 	Date  time.Time `json:"date"`
 	Title string    `json:"title"`
 	Desc  string    `json:"desc"`
 }
-
-type Timelines []Timeline
 
 func (t Timelines) Value() (driver.Value, error) {
 	return json.Marshal(t)
@@ -76,23 +72,23 @@ func (t *Timelines) Scan(value any) error {
 }
 
 type Target struct {
-	Hostname string  `json:"hostname"`
-	CIDR     string  `json:"cidr"`
-	Except   Strings `json:"except"`
+	Hostname string   `json:"hostname"`
+	CIDR     string   `json:"cidr"`
+	Except   []string `json:"except"`
 }
 
-func isValidIPBlock(ipBlock Target) bool {
-	if ipBlock.Hostname != "" {
+func (t Target) isValidIPBlock() bool {
+	if t.Hostname != "" {
 		return true
 	}
-	if ipBlock.Hostname == "" && ipBlock.CIDR == "" {
+	if t.Hostname == "" && t.CIDR == "" {
 		return false
 	}
-	_, ipNet, err := net.ParseCIDR(ipBlock.CIDR)
+	_, ipNet, err := net.ParseCIDR(t.CIDR)
 	if err != nil {
 		return false
 	}
-	for _, ex := range ipBlock.Except {
+	for _, ex := range t.Except {
 		_, exNet, err := net.ParseCIDR(ex)
 		if err != nil {
 			return false
@@ -129,12 +125,12 @@ type NetworkPolicies []NetworkPolicy
 func (n NetworkPolicies) Value() (driver.Value, error) {
 	for _, p := range n {
 		for i, ipBlock := range p.From {
-			if !isValidIPBlock(ipBlock) {
+			if !ipBlock.isValidIPBlock() {
 				p.From = append(p.From[:i], p.From[i+1:]...)
 			}
 		}
 		for i, ipBlock := range p.To {
-			if !isValidIPBlock(ipBlock) {
+			if !ipBlock.isValidIPBlock() {
 				p.To = append(p.To[:i], p.To[i+1:]...)
 			}
 		}
@@ -150,18 +146,16 @@ func (n *NetworkPolicies) Scan(value any) error {
 	return json.Unmarshal(bytes, n)
 }
 
-// Docker 题目的 Docker 配置, 一个容器可以有多个 flag 和多个映射端口
-type Docker struct {
+// Dockers 题目的 Docker 配置, 一个容器可以有多个 flag 和多个映射端口
+type Dockers []struct {
 	PodGroup        uint            `json:"pod_group"`
 	Hostname        string          `json:"hostname"`
 	FlagIDL         []uint          `json:"flag_id"`
-	Flags           Strings         `json:"flags"`
+	Flags           []string        `json:"flags"`
 	Image           string          `json:"image"`
-	Ports           Ports           `json:"ports"`
+	Ports           []int32         `json:"ports"`
 	NetworkPolicies NetworkPolicies `json:"network_policies"`
 }
-
-type Dockers []Docker
 
 func (d Dockers) Value() (driver.Value, error) {
 	for i, docker := range d {
@@ -172,12 +166,12 @@ func (d Dockers) Value() (driver.Value, error) {
 		}
 		for j, ipBlock := range docker.NetworkPolicies {
 			for k, from := range ipBlock.From {
-				if !isValidIPBlock(from) {
+				if !from.isValidIPBlock() {
 					d[i].NetworkPolicies[j].From = append(d[i].NetworkPolicies[j].From[:k], d[i].NetworkPolicies[j].From[k+1:]...)
 				}
 			}
 			for k, to := range ipBlock.To {
-				if !isValidIPBlock(to) {
+				if !to.isValidIPBlock() {
 					d[i].NetworkPolicies[j].To = append(d[i].NetworkPolicies[j].To[:k], d[i].NetworkPolicies[j].To[k+1:]...)
 				}
 			}
