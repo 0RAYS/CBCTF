@@ -41,11 +41,13 @@ func StartGenerator(usage model.Usage) (*corev1.Pod, bool, string) {
 	log.Logger.Infof("Starting Generator for Challenge %s-%s", usage.ChallengeID, usage.Name)
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
-	if pod, ok, _ = GetPod(ctx, generatorName); ok && pod.Status.Phase == corev1.PodRunning {
+	if pod, ok, _ = GetPod(ctx, generatorName); pod.Status.Phase == corev1.PodRunning && time.Now().Sub(pod.CreationTimestamp.Time) < 3*time.Hour {
 		ipGenerator[pod.Status.PodIP] = usage.ChallengeID
 		generatorIP[usage.ChallengeID] = pod.Status.PodIP
 		log.Logger.Infof("Pod %s is already running", pod.Name)
 		return pod, true, i18n.Success
+	} else {
+		StopGenerator(usage)
 	}
 	if len(gIPL) == 0 {
 		gIPL, err = utils.GetIPBlock(0, config.Env.K8S.IPPool.CIDR, config.Env.K8S.IPPool.BlockSize)

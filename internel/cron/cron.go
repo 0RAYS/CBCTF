@@ -24,7 +24,7 @@ func Init() {
 	UpdateFlagScore(c)
 	UpdateUserRanking(c)
 	UpdateTeamRanking(c)
-	ResetGenerator(c)
+	PrepareGenerator(c)
 	ClearUsageMutex(c)
 	//CheckCheat(c)
 }
