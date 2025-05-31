@@ -28,9 +28,6 @@ type Repo[T any] struct {
 	DeleteError   string
 }
 
-type UpdateOptions struct {
-}
-
 func (r *Repo[T]) Create(options any) (T, bool, string) {
 	m, err := utils.S2S[T](options)
 	if err != nil {
