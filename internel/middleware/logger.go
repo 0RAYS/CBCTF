@@ -38,7 +38,7 @@ func Logger(ctx *gin.Context) {
 		"Method":     ctx.Request.Method,
 		"ClientIP":   ctx.ClientIP(),
 		"Path":       path,
-		"TraceID":    ctx.Value("TraceID"),
+		"TraceID":    GetTraceID(ctx),
 	})
 
 	if ctx.Errors != nil {
