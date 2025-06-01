@@ -215,7 +215,7 @@ func ensureServiceAccount(ctx context.Context) {
 
 func ensureSecret(ctx context.Context) {
 	var err error
-	if _, err = kubeClient.CoreV1().Secrets(namespaceName).Get(ctx, svcAccountSecretName, metav1.GetOptions{}); err != nil {
+	if svcAccountToken, err = kubeClient.CoreV1().Secrets(namespaceName).Get(ctx, svcAccountSecretName, metav1.GetOptions{}); err != nil {
 		log.Logger.Infof("Creating secret %s...", svcAccountSecretName)
 		svcAccountToken, err = kubeClient.CoreV1().Secrets(namespaceName).Create(ctx, &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
@@ -332,7 +332,7 @@ func writeKubeConfig() error {
 	ca := svcAccountToken.Data["ca.crt"]
 	host := kubeConfig.Host
 	ctx := adminAPIConfig.Contexts[adminAPIConfig.CurrentContext]
-	kubeConfig := api.Config{
+	return clientcmd.WriteToFile(api.Config{
 		Clusters: map[string]*api.Cluster{
 			ctx.Cluster: {
 				Server:                   host,
@@ -352,6 +352,5 @@ func writeKubeConfig() error {
 			},
 		},
 		CurrentContext: fmt.Sprintf("%s-admin@kubernetes-%s", namespaceName, svcAccountName),
-	}
-	return clientcmd.WriteToFile(kubeConfig, fmt.Sprintf("%s.conf", namespaceName))
+	}, fmt.Sprintf("%s.conf", namespaceName))
 }
