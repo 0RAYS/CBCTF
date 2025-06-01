@@ -5,14 +5,14 @@ import (
 	"CBCTF/internel/log"
 	"context"
 	"fmt"
+	projectcalicov3 "github.com/projectcalico/api/pkg/apis/projectcalico/v3"
+	rbacv1 "k8s.io/api/rbac/v1"
 	"os"
 	"time"
 
-	projectcalicov3 "github.com/projectcalico/api/pkg/apis/projectcalico/v3"
 	"github.com/projectcalico/api/pkg/client/clientset_generated/clientset"
 	authorizationv1 "k8s.io/api/authorization/v1"
 	corev1 "k8s.io/api/core/v1"
-	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -21,259 +21,75 @@ import (
 )
 
 var (
-	client                 *kubernetes.Clientset
-	cClient                *clientset.Clientset
-	secret                 *corev1.Secret
-	conf                   *rest.Config
-	apiConfig              *api.Config
-	NamespaceName          string
-	SvcAccountName         string
-	SecretName             string
-	IPPoolName             string
-	RoleName               string
-	RoleBindingName        string
-	ClusterRoleName        string
-	ClusterRoleBindingName string
+	kubeClient                  *kubernetes.Clientset
+	calicoClient                *clientset.Clientset
+	svcAccountToken             *corev1.Secret
+	kubeConfig                  *rest.Config
+	adminAPIConfig              *api.Config
+	namespaceName               string
+	svcAccountName              string
+	svcAccountSecretName        string
+	ipPoolName                  string
+	adminRoleName               string
+	adminRoleBindingName        string
+	adminClusterRoleName        string
+	adminClusterRoleBindingName string
 )
 
 func Init(run bool) {
 	var err error
-	NamespaceName = config.Env.K8S.Namespace
-	SvcAccountName = fmt.Sprintf("%s-admin", NamespaceName)
-	SecretName = fmt.Sprintf("%s-admin-secret", NamespaceName)
-	IPPoolName = fmt.Sprintf("%s-ip-pool", NamespaceName)
-	RoleName = fmt.Sprintf("%s-admin-role", NamespaceName)
-	RoleBindingName = fmt.Sprintf("%s-admin-role-binding", NamespaceName)
-	ClusterRoleName = fmt.Sprintf("%s-admin-cluster-role", NamespaceName)
-	ClusterRoleBindingName = fmt.Sprintf("%s-admin-cluster-role-binding", NamespaceName)
+	namespaceName = config.Env.K8S.Namespace
+	svcAccountName = fmt.Sprintf("%s-admin", namespaceName)
+	svcAccountSecretName = fmt.Sprintf("%s-admin-secret", namespaceName)
+	ipPoolName = fmt.Sprintf("%s-ip-pool", namespaceName)
+	adminRoleName = fmt.Sprintf("%s-admin-role", namespaceName)
+	adminRoleBindingName = fmt.Sprintf("%s-admin-role-binding", namespaceName)
+	adminClusterRoleName = fmt.Sprintf("%s-admin-cluster-role", namespaceName)
+	adminClusterRoleBindingName = fmt.Sprintf("%s-admin-cluster-role-binding", namespaceName)
 	if run {
 		if _, err := os.Stat(config.Env.K8S.Config.User); err != nil {
 			log.Logger.Fatalf("Make sure the config.k8s.config.user configured correctly: %s", err)
 		}
-		conf, err = clientcmd.BuildConfigFromFlags("", config.Env.K8S.Config.User)
+		kubeConfig, err = clientcmd.BuildConfigFromFlags("", config.Env.K8S.Config.User)
 		if err != nil {
 			log.Logger.Fatalf("Failed to load k8s user config: %s", err)
 		}
-		conf.QPS = 100
-		conf.Burst = 200
-		client, err = kubernetes.NewForConfig(conf)
+		kubeConfig.QPS = 100
+		kubeConfig.Burst = 200
+		kubeClient, err = kubernetes.NewForConfig(kubeConfig)
 		if err != nil {
 			log.Logger.Fatalf("Failed to init k8s client: %s", err)
 		}
 	}
 }
 
-// InitResources initializes resources in the namespace
 func InitResources() {
-	var err error
-	if _, err = os.Stat(config.Env.K8S.Config.Admin); err != nil {
-		log.Logger.Fatalf("Make sure the config.k8s.config.admin configured correctly: %s", err)
-	}
-	apiConfig, err = clientcmd.LoadFromFile(config.Env.K8S.Config.Admin)
-	if err != nil {
-		log.Logger.Fatalf("Failed to load k8s admin config: %s", err)
-	}
-	conf, err = clientcmd.NewNonInteractiveClientConfig(*apiConfig, apiConfig.CurrentContext, &clientcmd.ConfigOverrides{}, nil).ClientConfig()
-	log.Logger.Info("K8S config loaded, initiating client...")
-	client, err = kubernetes.NewForConfig(conf)
-	if err != nil {
-		log.Logger.Fatalf("Failed to init k8s client: %s", err)
-	}
-	cClient, err = clientset.NewForConfig(conf)
-	if err != nil {
-		log.Logger.Fatalf("Failed to init calico client: %s", err)
-	}
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
-	log.Logger.Debugf("Checking resources in namespace %s", NamespaceName)
 
-	nodes, err := client.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
-	if err != nil {
-		log.Logger.Fatalf("Failed to list nodes: %v", err)
-	}
-	if nodes != nil {
-		nodeIPL := make([]string, 0)
-		for _, node := range nodes.Items {
-			for _, addr := range node.Status.Addresses {
-				if addr.Type == corev1.NodeInternalIP || addr.Type == corev1.NodeExternalIP {
-					nodeIPL = append(nodeIPL, addr.Address)
-				}
-			}
-		}
-		config.Env.K8S.Nodes = nodeIPL
-	}
+	loadKubeConfig()
+	initClients()
 
-	if _, err = client.CoreV1().Namespaces().Get(ctx, NamespaceName, metav1.GetOptions{}); err != nil {
-		log.Logger.Infof("Namespace %s not found, creating...", NamespaceName)
-		_, err = client.CoreV1().Namespaces().Create(ctx, &corev1.Namespace{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: NamespaceName,
-			},
-		}, metav1.CreateOptions{})
-		if err != nil {
-			log.Logger.Fatalf("Error creating namespace: %v", err)
-		}
-	}
+	log.Logger.Debugf("Checking resources in namespace %s", namespaceName)
+	updateNodeIPs(ctx)
+	ensureNamespace(ctx)
+	ensureServiceAccount(ctx)
+	ensureSecret(ctx)
+	ensureIPPool(ctx)
+	ensureRole(ctx)
+	ensureRoleBinding(ctx)
+	ensureClusterRole(ctx)
+	ensureClusterRoleBinding(ctx)
 
-	if _, err = client.CoreV1().ServiceAccounts(NamespaceName).Get(ctx, SvcAccountName, metav1.GetOptions{}); err != nil {
-		log.Logger.Infof("ServiceAccount %s not found in %s namespace, creating...", SvcAccountName, NamespaceName)
-		_, err = client.CoreV1().ServiceAccounts(NamespaceName).Create(ctx, &corev1.ServiceAccount{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      SvcAccountName,
-				Namespace: NamespaceName,
-			},
-		}, metav1.CreateOptions{})
-		if err != nil {
-			log.Logger.Fatalf("Error creating ServiceAccount: %v", err)
-		}
+	if err := writeKubeConfig(); err != nil {
+		log.Logger.Fatalf("Failed to save kubeconfig to %s.conf: %s ", namespaceName, err)
 	}
-
-	if secret, err = client.CoreV1().Secrets(NamespaceName).Get(ctx, SecretName, metav1.GetOptions{}); err != nil {
-		log.Logger.Infof("secret %s not found in %s namespace, creating...", RoleName, NamespaceName)
-		secret, err = client.CoreV1().Secrets(NamespaceName).Create(ctx, &corev1.Secret{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      SecretName,
-				Namespace: NamespaceName,
-				Annotations: map[string]string{
-					"kubernetes.io/service-account.name": SvcAccountName,
-				},
-			},
-			Type: corev1.SecretTypeServiceAccountToken,
-		}, metav1.CreateOptions{})
-		if err != nil {
-			log.Logger.Fatalf("Error creating secret: %v", err)
-		}
-	}
-	if _, err = cClient.ProjectcalicoV3().IPPools().Get(ctx, IPPoolName, metav1.GetOptions{}); err == nil {
-		if err = cClient.ProjectcalicoV3().IPPools().Delete(ctx, IPPoolName, metav1.DeleteOptions{}); err != nil {
-			log.Logger.Fatalf("Failed to delete IPPool: %v", err)
-		}
-	}
-	if _, err = cClient.ProjectcalicoV3().IPPools().Create(ctx, &projectcalicov3.IPPool{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: IPPoolName,
-		},
-		Spec: projectcalicov3.IPPoolSpec{
-			CIDR:        config.Env.K8S.IPPool.CIDR,
-			IPIPMode:    projectcalicov3.IPIPModeNever,
-			NATOutgoing: true,
-			BlockSize:   config.Env.K8S.IPPool.BlockSize,
-			Disabled:    false,
-		},
-	}, metav1.CreateOptions{}); err != nil {
-		log.Logger.Fatalf("Error creating IPPool: %v", err)
-	}
-
-	if _, err = client.RbacV1().Roles(NamespaceName).Get(ctx, RoleName, metav1.GetOptions{}); err == nil {
-		if err = client.RbacV1().Roles(NamespaceName).Delete(ctx, RoleName, metav1.DeleteOptions{}); err != nil {
-			log.Logger.Fatalf("Failed to delete Role: %v", err)
-		}
-	}
-	_, err = client.RbacV1().Roles(NamespaceName).Create(ctx, &rbacv1.Role{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      RoleName,
-			Namespace: NamespaceName,
-		},
-		Rules: []rbacv1.PolicyRule{
-			{
-				APIGroups: []string{""},
-				Resources: []string{"pods", "services", "configmaps", "pods/exec"},
-				Verbs:     []string{"*"},
-			},
-			{
-				APIGroups: []string{"networking.k8s.io"},
-				Resources: []string{"networkpolicies"},
-				Verbs:     []string{"*"},
-			},
-		},
-	}, metav1.CreateOptions{})
-	if err != nil {
-		log.Logger.Fatalf("Error creating Role: %v", err)
-	}
-
-	if _, err = client.RbacV1().RoleBindings(NamespaceName).Get(ctx, RoleBindingName, metav1.GetOptions{}); err == nil {
-		if err = client.RbacV1().RoleBindings(NamespaceName).Delete(ctx, RoleBindingName, metav1.DeleteOptions{}); err != nil {
-			log.Logger.Fatalf("Failed to delete RoleBinding: %v", err)
-		}
-	}
-	_, err = client.RbacV1().RoleBindings(NamespaceName).Create(ctx, &rbacv1.RoleBinding{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      RoleBindingName,
-			Namespace: NamespaceName,
-		},
-		Subjects: []rbacv1.Subject{
-			{
-				Kind:      "ServiceAccount",
-				Name:      SvcAccountName,
-				Namespace: NamespaceName,
-			},
-		},
-		RoleRef: rbacv1.RoleRef{
-			Kind:     "Role",
-			Name:     RoleName,
-			APIGroup: "rbac.authorization.k8s.io",
-		},
-	}, metav1.CreateOptions{})
-	if err != nil {
-		log.Logger.Fatalf("Error creating RoleBinding: %v", err)
-	}
-
-	if _, err = client.RbacV1().ClusterRoles().Get(ctx, ClusterRoleName, metav1.GetOptions{}); err == nil {
-		if err = client.RbacV1().ClusterRoles().Delete(ctx, ClusterRoleName, metav1.DeleteOptions{}); err != nil {
-			log.Logger.Fatalf("Failed to delete ClusterRole: %v", err)
-		}
-	}
-	_, err = client.RbacV1().ClusterRoles().Create(ctx, &rbacv1.ClusterRole{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: ClusterRoleName,
-		},
-		Rules: []rbacv1.PolicyRule{
-			{
-				APIGroups: []string{"crd.projectcalico.org"},
-				Resources: []string{"ippools"},
-				Verbs:     []string{"*"},
-			},
-		},
-	}, metav1.CreateOptions{})
-	if err != nil {
-		log.Logger.Fatalf("Error creating ClusterRole: %v", err)
-	}
-
-	if _, err = client.RbacV1().ClusterRoleBindings().Get(ctx, ClusterRoleBindingName, metav1.GetOptions{}); err == nil {
-		if err = client.RbacV1().ClusterRoleBindings().Delete(ctx, ClusterRoleBindingName, metav1.DeleteOptions{}); err != nil {
-			log.Logger.Fatalf("Failed to delete ClusterRoleBinding: %v", err)
-		}
-	}
-	_, err = client.RbacV1().ClusterRoleBindings().Create(ctx, &rbacv1.ClusterRoleBinding{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: ClusterRoleBindingName,
-		},
-		Subjects: []rbacv1.Subject{
-			{
-				Kind:      "ServiceAccount",
-				Name:      SvcAccountName,
-				Namespace: NamespaceName,
-			},
-		},
-		RoleRef: rbacv1.RoleRef{
-			Kind:     "ClusterRole",
-			Name:     ClusterRoleName,
-			APIGroup: "rbac.authorization.k8s.io",
-		},
-	}, metav1.CreateOptions{})
-	if err != nil {
-		log.Logger.Fatalf("Error creating ClusterRoleBinding: %v", err)
-	}
-
-	if writeKubeConfig() != nil {
-		log.Logger.Fatalf("Failed to save kubeconfig to %s.conf: %s ", NamespaceName, err)
-	}
-	config.Env.K8S.Config.User = fmt.Sprintf("%s.conf", NamespaceName)
+	config.Env.K8S.Config.User = fmt.Sprintf("%s.conf", namespaceName)
 	tmp := config.Env.K8S.Config.Admin
 	if err := config.Save(config.Env); err != nil {
 		log.Logger.Fatalf("Failed to update config: %s", err)
 	}
-	log.Logger.Infof("Kubeconfig saved to %s.conf, please remove the %s and restart", NamespaceName, tmp)
+	log.Logger.Infof("Kubeconfig saved to %s.conf, please remove the %s and restart", namespaceName, tmp)
 	os.Exit(0)
 }
 
@@ -283,15 +99,15 @@ func CheckPermission() {
 	if _, err := os.Stat(config.Env.K8S.Config.User); err != nil {
 		log.Logger.Fatalf("Make sure the config.k8s.config.user configured correctly: %s", err)
 	}
-	conf, err = clientcmd.BuildConfigFromFlags("", config.Env.K8S.Config.User)
+	kubeConfig, err = clientcmd.BuildConfigFromFlags("", config.Env.K8S.Config.User)
 	if err != nil {
 		log.Logger.Fatalf("Failed to load k8s user config: %s", err)
 	}
-	client, err = kubernetes.NewForConfig(conf)
+	kubeClient, err = kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
 		log.Logger.Fatalf("Failed to init k8s client: %s", err)
 	}
-	log.Logger.Infof("Checking permission in namespace %s", NamespaceName)
+	log.Logger.Infof("Checking permission in namespace %s", namespaceName)
 	groups := map[string][]string{
 		"":                      {"pods", "services", "configmaps", "pods/exec"},
 		"networking.k8s.io":     {"networkpolicies"},
@@ -304,7 +120,7 @@ func CheckPermission() {
 			accessReview := &authorizationv1.SelfSubjectAccessReview{
 				Spec: authorizationv1.SelfSubjectAccessReviewSpec{
 					ResourceAttributes: &authorizationv1.ResourceAttributes{
-						Namespace: NamespaceName,
+						Namespace: namespaceName,
 						Group:     group,
 						Version:   "*",
 						Resource:  resource,
@@ -312,7 +128,7 @@ func CheckPermission() {
 					},
 				},
 			}
-			res, err := client.AuthorizationV1().SelfSubjectAccessReviews().Create(ctx, accessReview, metav1.CreateOptions{})
+			res, err := kubeClient.AuthorizationV1().SelfSubjectAccessReviews().Create(ctx, accessReview, metav1.CreateOptions{})
 			if err != nil {
 				log.Logger.Warningf("Failed to check permissions: %v", err)
 			}
@@ -323,15 +139,199 @@ func CheckPermission() {
 			}
 		}
 	}
-	log.Logger.Infof("User has permission to access all needed resources in namespace %s", NamespaceName)
+	log.Logger.Infof("User has permission to access all needed resources in namespace %s", namespaceName)
+}
+
+func loadKubeConfig() {
+	if _, err := os.Stat(config.Env.K8S.Config.Admin); err != nil {
+		log.Logger.Fatalf("Invalid config.k8s.config.admin: %s", err)
+	}
+	var err error
+	adminAPIConfig, err = clientcmd.LoadFromFile(config.Env.K8S.Config.Admin)
+	if err != nil {
+		log.Logger.Fatalf("Failed to load admin config: %s", err)
+	}
+	kubeConfig, err = clientcmd.NewNonInteractiveClientConfig(*adminAPIConfig, adminAPIConfig.CurrentContext, &clientcmd.ConfigOverrides{}, nil).ClientConfig()
+	if err != nil {
+		log.Logger.Fatalf("Failed to create client config: %s", err)
+	}
+	log.Logger.Info("Admin config loaded")
+}
+
+func initClients() {
+	var err error
+	kubeClient, err = kubernetes.NewForConfig(kubeConfig)
+	if err != nil {
+		log.Logger.Fatalf("Failed to init k8s client: %s", err)
+	}
+	calicoClient, err = clientset.NewForConfig(kubeConfig)
+	if err != nil {
+		log.Logger.Fatalf("Failed to init Calico client: %s", err)
+	}
+}
+
+func updateNodeIPs(ctx context.Context) {
+	nodes, err := kubeClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+	if err != nil {
+		log.Logger.Fatalf("Failed to list nodes: %v", err)
+	}
+	var ips []string
+	for _, node := range nodes.Items {
+		for _, addr := range node.Status.Addresses {
+			if addr.Type == corev1.NodeInternalIP || addr.Type == corev1.NodeExternalIP {
+				ips = append(ips, addr.Address)
+			}
+		}
+	}
+	config.Env.K8S.Nodes = ips
+}
+
+func ensureNamespace(ctx context.Context) {
+	if _, err := kubeClient.CoreV1().Namespaces().Get(ctx, namespaceName, metav1.GetOptions{}); err != nil {
+		log.Logger.Infof("Creating namespace %s...", namespaceName)
+		_, err = kubeClient.CoreV1().Namespaces().Create(ctx, &corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{Name: namespaceName},
+		}, metav1.CreateOptions{})
+		if err != nil {
+			log.Logger.Fatalf("Failed to create namespace: %v", err)
+		}
+	}
+}
+
+func ensureServiceAccount(ctx context.Context) {
+	if _, err := kubeClient.CoreV1().ServiceAccounts(namespaceName).Get(ctx, svcAccountName, metav1.GetOptions{}); err != nil {
+		log.Logger.Infof("Creating ServiceAccount %s...", svcAccountName)
+		_, err = kubeClient.CoreV1().ServiceAccounts(namespaceName).Create(ctx, &corev1.ServiceAccount{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      svcAccountName,
+				Namespace: namespaceName,
+			},
+		}, metav1.CreateOptions{})
+		if err != nil {
+			log.Logger.Fatalf("Failed to create ServiceAccount: %v", err)
+		}
+	}
+}
+
+func ensureSecret(ctx context.Context) {
+	var err error
+	if _, err = kubeClient.CoreV1().Secrets(namespaceName).Get(ctx, svcAccountSecretName, metav1.GetOptions{}); err != nil {
+		log.Logger.Infof("Creating secret %s...", svcAccountSecretName)
+		svcAccountToken, err = kubeClient.CoreV1().Secrets(namespaceName).Create(ctx, &corev1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      svcAccountSecretName,
+				Namespace: namespaceName,
+				Annotations: map[string]string{
+					"kubernetes.io/service-account.name": svcAccountName,
+				},
+			},
+			Type: corev1.SecretTypeServiceAccountToken,
+		}, metav1.CreateOptions{})
+		if err != nil {
+			log.Logger.Fatalf("Failed to create secret: %v", err)
+		}
+	}
+}
+
+func ensureIPPool(ctx context.Context) {
+	if _, err := calicoClient.ProjectcalicoV3().IPPools().Get(ctx, ipPoolName, metav1.GetOptions{}); err == nil {
+		_ = calicoClient.ProjectcalicoV3().IPPools().Delete(ctx, ipPoolName, metav1.DeleteOptions{})
+	}
+	_, err := calicoClient.ProjectcalicoV3().IPPools().Create(ctx, &projectcalicov3.IPPool{
+		ObjectMeta: metav1.ObjectMeta{Name: ipPoolName},
+		Spec: projectcalicov3.IPPoolSpec{
+			CIDR:        config.Env.K8S.IPPool.CIDR,
+			IPIPMode:    projectcalicov3.IPIPModeNever,
+			NATOutgoing: true,
+			BlockSize:   config.Env.K8S.IPPool.BlockSize,
+		},
+	}, metav1.CreateOptions{})
+	if err != nil {
+		log.Logger.Fatalf("Failed to create IPPool: %v", err)
+	}
+}
+
+func ensureRole(ctx context.Context) {
+	if _, err := kubeClient.RbacV1().Roles(namespaceName).Get(ctx, adminRoleName, metav1.GetOptions{}); err == nil {
+		_ = kubeClient.RbacV1().Roles(namespaceName).Delete(ctx, adminRoleName, metav1.DeleteOptions{})
+	}
+	_, err := kubeClient.RbacV1().Roles(namespaceName).Create(ctx, &rbacv1.Role{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      adminRoleName,
+			Namespace: namespaceName,
+		},
+		Rules: []rbacv1.PolicyRule{
+			{APIGroups: []string{""}, Resources: []string{"pods", "services", "configmaps", "pods/exec"}, Verbs: []string{"*"}},
+			{APIGroups: []string{"networking.k8s.io"}, Resources: []string{"networkpolicies"}, Verbs: []string{"*"}},
+		},
+	}, metav1.CreateOptions{})
+	if err != nil {
+		log.Logger.Fatalf("Failed to create Role: %v", err)
+	}
+}
+
+func ensureRoleBinding(ctx context.Context) {
+	if _, err := kubeClient.RbacV1().RoleBindings(namespaceName).Get(ctx, adminRoleBindingName, metav1.GetOptions{}); err == nil {
+		_ = kubeClient.RbacV1().RoleBindings(namespaceName).Delete(ctx, adminRoleBindingName, metav1.DeleteOptions{})
+	}
+	_, err := kubeClient.RbacV1().RoleBindings(namespaceName).Create(ctx, &rbacv1.RoleBinding{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      adminRoleBindingName,
+			Namespace: namespaceName,
+		},
+		Subjects: []rbacv1.Subject{{
+			Kind: "ServiceAccount", Name: svcAccountName, Namespace: namespaceName,
+		}},
+		RoleRef: rbacv1.RoleRef{
+			Kind: "Role", Name: adminRoleName, APIGroup: "rbac.authorization.k8s.io",
+		},
+	}, metav1.CreateOptions{})
+	if err != nil {
+		log.Logger.Fatalf("Failed to create RoleBinding: %v", err)
+	}
+}
+
+func ensureClusterRole(ctx context.Context) {
+	if _, err := kubeClient.RbacV1().ClusterRoles().Get(ctx, adminClusterRoleName, metav1.GetOptions{}); err == nil {
+		_ = kubeClient.RbacV1().ClusterRoles().Delete(ctx, adminClusterRoleName, metav1.DeleteOptions{})
+	}
+	_, err := kubeClient.RbacV1().ClusterRoles().Create(ctx, &rbacv1.ClusterRole{
+		ObjectMeta: metav1.ObjectMeta{Name: adminClusterRoleName},
+		Rules: []rbacv1.PolicyRule{{
+			APIGroups: []string{"crd.projectcalico.org"},
+			Resources: []string{"ippools"},
+			Verbs:     []string{"*"},
+		}},
+	}, metav1.CreateOptions{})
+	if err != nil {
+		log.Logger.Fatalf("Failed to create ClusterRole: %v", err)
+	}
+}
+
+func ensureClusterRoleBinding(ctx context.Context) {
+	if _, err := kubeClient.RbacV1().ClusterRoleBindings().Get(ctx, adminClusterRoleBindingName, metav1.GetOptions{}); err == nil {
+		_ = kubeClient.RbacV1().ClusterRoleBindings().Delete(ctx, adminClusterRoleBindingName, metav1.DeleteOptions{})
+	}
+	_, err := kubeClient.RbacV1().ClusterRoleBindings().Create(ctx, &rbacv1.ClusterRoleBinding{
+		ObjectMeta: metav1.ObjectMeta{Name: adminClusterRoleBindingName},
+		Subjects: []rbacv1.Subject{{
+			Kind: "ServiceAccount", Name: svcAccountName, Namespace: namespaceName,
+		}},
+		RoleRef: rbacv1.RoleRef{
+			Kind: "ClusterRole", Name: adminClusterRoleName, APIGroup: "rbac.authorization.k8s.io",
+		},
+	}, metav1.CreateOptions{})
+	if err != nil {
+		log.Logger.Fatalf("Failed to create ClusterRoleBinding: %v", err)
+	}
 }
 
 // writeKubeConfig 写入一个低权限的 kubeconfig 文件
 func writeKubeConfig() error {
-	token := string(secret.Data["token"])
-	ca := secret.Data["ca.crt"]
-	host := conf.Host
-	ctx := apiConfig.Contexts[apiConfig.CurrentContext]
+	token := string(svcAccountToken.Data["token"])
+	ca := svcAccountToken.Data["ca.crt"]
+	host := kubeConfig.Host
+	ctx := adminAPIConfig.Contexts[adminAPIConfig.CurrentContext]
 	kubeConfig := api.Config{
 		Clusters: map[string]*api.Cluster{
 			ctx.Cluster: {
@@ -340,18 +340,18 @@ func writeKubeConfig() error {
 			},
 		},
 		AuthInfos: map[string]*api.AuthInfo{
-			SvcAccountName: {
+			svcAccountName: {
 				Token: token,
 			},
 		},
 		Contexts: map[string]*api.Context{
-			fmt.Sprintf("%s-admin@kubernetes-%s", NamespaceName, SvcAccountName): {
+			fmt.Sprintf("%s-admin@kubernetes-%s", namespaceName, svcAccountName): {
 				Cluster:   ctx.Cluster,
-				AuthInfo:  SvcAccountName,
-				Namespace: NamespaceName,
+				AuthInfo:  svcAccountName,
+				Namespace: namespaceName,
 			},
 		},
-		CurrentContext: fmt.Sprintf("%s-admin@kubernetes-%s", NamespaceName, SvcAccountName),
+		CurrentContext: fmt.Sprintf("%s-admin@kubernetes-%s", namespaceName, svcAccountName),
 	}
-	return clientcmd.WriteToFile(kubeConfig, fmt.Sprintf("%s.conf", NamespaceName))
+	return clientcmd.WriteToFile(kubeConfig, fmt.Sprintf("%s.conf", namespaceName))
 }

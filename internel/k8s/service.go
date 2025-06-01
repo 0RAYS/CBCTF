@@ -28,7 +28,7 @@ func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.S
 	service = &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("svc-%s", strings.ToLower(utils.RandStr(10))),
-			Namespace: NamespaceName,
+			Namespace: namespaceName,
 			Labels: map[string]string{
 				"victim": options.PodName,
 			},
@@ -60,7 +60,7 @@ func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.S
 			ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeLocal,
 		},
 	}
-	service, err = client.CoreV1().Services(NamespaceName).Create(ctx, service, metav1.CreateOptions{})
+	service, err = kubeClient.CoreV1().Services(namespaceName).Create(ctx, service, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create Pod %s Service: %s", options.PodName, err)
 		return nil, false, i18n.CreateServiceError
@@ -69,7 +69,7 @@ func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.S
 }
 
 func GetServiceList(ctx context.Context) (*corev1.ServiceList, bool, string) {
-	serviceList, err := client.CoreV1().Services(NamespaceName).List(ctx, metav1.ListOptions{})
+	serviceList, err := kubeClient.CoreV1().Services(namespaceName).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		if apierror.IsNotFound(err) {
 			return nil, false, i18n.ServiceNotFound
@@ -81,7 +81,7 @@ func GetServiceList(ctx context.Context) (*corev1.ServiceList, bool, string) {
 }
 
 func GetServiceListByPodName(ctx context.Context, podName string) (*corev1.ServiceList, bool, string) {
-	serviceList, err := client.CoreV1().Services(NamespaceName).List(ctx, metav1.ListOptions{
+	serviceList, err := kubeClient.CoreV1().Services(namespaceName).List(ctx, metav1.ListOptions{
 		LabelSelector: fmt.Sprintf("victim=%s", podName),
 	})
 	if err != nil {
@@ -96,7 +96,7 @@ func GetServiceListByPodName(ctx context.Context, podName string) (*corev1.Servi
 
 // DeleteService 删除 Service, 目前主要是靶机的端口映射
 func DeleteService(ctx context.Context, name string) (bool, string) {
-	err := client.CoreV1().Services(NamespaceName).Delete(ctx, name, metav1.DeleteOptions{})
+	err := kubeClient.CoreV1().Services(namespaceName).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete Service %s: %v", name, err)
 		return false, i18n.DeleteServiceError

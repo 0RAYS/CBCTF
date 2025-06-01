@@ -26,10 +26,10 @@ func CopyToPod(podName, containerName, src, dst string) error {
 		return err
 	}
 	command := []string{"tee", dst}
-	req := client.CoreV1().RESTClient().Post().
+	req := kubeClient.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Name(podName).
-		Namespace(NamespaceName).
+		Namespace(namespaceName).
 		SubResource("exec").
 		VersionedParams(&corev1.PodExecOptions{
 			Container: containerName,
@@ -37,7 +37,7 @@ func CopyToPod(podName, containerName, src, dst string) error {
 			Stdin:     true,
 			TTY:       false,
 		}, scheme.ParameterCodec)
-	executor, err := remotecommand.NewSPDYExecutor(conf, "POST", req.URL())
+	executor, err := remotecommand.NewSPDYExecutor(kubeConfig, "POST", req.URL())
 	if err != nil {
 		return err
 	}
