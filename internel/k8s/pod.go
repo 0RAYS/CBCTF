@@ -33,7 +33,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool
 	pod = &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      options.Name,
-			Namespace: NamespaceName,
+			Namespace: namespaceName,
 			Labels:    options.Labels,
 			Annotations: map[string]string{
 				"cni.projectcalico.org/ipAddrs": fmt.Sprintf("[\"%s\"]", options.PodIP),
@@ -49,7 +49,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool
 			HostAliases:                   options.HostAliases,
 		},
 	}
-	pod, err = client.CoreV1().Pods(NamespaceName).Create(ctx, pod, metav1.CreateOptions{})
+	pod, err = kubeClient.CoreV1().Pods(namespaceName).Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create Pod: %v", err)
 		return nil, false, i18n.CreatePodError
@@ -73,7 +73,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool
 
 // GetPods 获取所有 Pod
 func GetPods(ctx context.Context) (*corev1.PodList, bool, string) {
-	pods, err := client.CoreV1().Pods(NamespaceName).List(ctx, metav1.ListOptions{})
+	pods, err := kubeClient.CoreV1().Pods(namespaceName).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to get Pods: %v", err)
 		return &corev1.PodList{}, false, i18n.GetPodError
@@ -83,7 +83,7 @@ func GetPods(ctx context.Context) (*corev1.PodList, bool, string) {
 
 // GetPod 依据 name 获取 Pod
 func GetPod(ctx context.Context, name string) (*corev1.Pod, bool, string) {
-	pod, err := client.CoreV1().Pods(NamespaceName).Get(ctx, name, metav1.GetOptions{})
+	pod, err := kubeClient.CoreV1().Pods(namespaceName).Get(ctx, name, metav1.GetOptions{})
 	if apierror.IsNotFound(err) {
 		return &corev1.Pod{}, false, i18n.PodNotFound
 	}
@@ -96,7 +96,7 @@ func GetPod(ctx context.Context, name string) (*corev1.Pod, bool, string) {
 
 // DeletePod 依据 name 删除 Pod
 func DeletePod(ctx context.Context, name string) (bool, string) {
-	err := client.CoreV1().Pods(NamespaceName).Delete(ctx, name, metav1.DeleteOptions{})
+	err := kubeClient.CoreV1().Pods(namespaceName).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete Pod %s: %v", name, err)
 		return false, i18n.DeletePodError

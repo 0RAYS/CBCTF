@@ -15,10 +15,10 @@ func Exec(pod, container, command string, stdin io.Reader) (bytes.Buffer, bytes.
 	var stdout bytes.Buffer
 	var stderr bytes.Buffer
 	err := func(pod, container string, command []string, stdin io.Reader, stdout, stderr *bytes.Buffer) error {
-		req := client.CoreV1().RESTClient().Post().
+		req := kubeClient.CoreV1().RESTClient().Post().
 			Resource("pods").
 			Name(pod).
-			Namespace(NamespaceName).
+			Namespace(namespaceName).
 			SubResource("exec").
 			VersionedParams(&corev1.PodExecOptions{
 				Container: container,
@@ -29,7 +29,7 @@ func Exec(pod, container, command string, stdin io.Reader) (bytes.Buffer, bytes.
 				TTY:       false,
 			}, scheme.ParameterCodec)
 
-		exec, err := remotecommand.NewSPDYExecutor(conf, "POST", req.URL())
+		exec, err := remotecommand.NewSPDYExecutor(kubeConfig, "POST", req.URL())
 		if err != nil {
 			log.Logger.Warningf("Failed to create SPDY executor: %v", err)
 			return err

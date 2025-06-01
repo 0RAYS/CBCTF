@@ -26,14 +26,14 @@ func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*core
 	configMap = &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("cm-%s", strings.ToLower(utils.RandStr(10))),
-			Namespace: NamespaceName,
+			Namespace: namespaceName,
 			Labels: map[string]string{
 				"victim": options.PodName,
 			},
 		},
 		Data: options.Data,
 	}
-	configMap, err = client.CoreV1().ConfigMaps(NamespaceName).Create(ctx, configMap, metav1.CreateOptions{})
+	configMap, err = kubeClient.CoreV1().ConfigMaps(namespaceName).Create(ctx, configMap, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create ConfigMap: %v", err)
 		return nil, false, i18n.CreateConfigMapError
@@ -42,7 +42,7 @@ func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*core
 }
 
 func GetConfigMapList(ctx context.Context) (*corev1.ConfigMapList, bool, string) {
-	configMapList, err := client.CoreV1().ConfigMaps(NamespaceName).List(ctx, metav1.ListOptions{})
+	configMapList, err := kubeClient.CoreV1().ConfigMaps(namespaceName).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		if apierror.IsNotFound(err) {
 			return nil, false, i18n.ConfigMapNotFound
@@ -54,7 +54,7 @@ func GetConfigMapList(ctx context.Context) (*corev1.ConfigMapList, bool, string)
 }
 
 func GetConfigMapListByPodName(ctx context.Context, podName string) (*corev1.ConfigMapList, bool, string) {
-	configMapList, err := client.CoreV1().ConfigMaps(NamespaceName).List(ctx, metav1.ListOptions{
+	configMapList, err := kubeClient.CoreV1().ConfigMaps(namespaceName).List(ctx, metav1.ListOptions{
 		LabelSelector: fmt.Sprintf("victim=%s", podName),
 	})
 	if err != nil {
@@ -68,7 +68,7 @@ func GetConfigMapListByPodName(ctx context.Context, podName string) (*corev1.Con
 }
 
 func DeleteConfigMap(ctx context.Context, configMapName string) (bool, string) {
-	err := client.CoreV1().ConfigMaps(NamespaceName).Delete(ctx, configMapName, metav1.DeleteOptions{})
+	err := kubeClient.CoreV1().ConfigMaps(namespaceName).Delete(ctx, configMapName, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete ConfigMap: %v", err)
 		return false, i18n.DeleteConfigMapError
