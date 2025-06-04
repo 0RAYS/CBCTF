@@ -28,7 +28,7 @@ type Challenge struct {
 	Category    string       `json:"category"`
 	Type        string       `json:"type"`
 	Generator   string       `json:"generator"`
-	Flags       Strings      `gorm:"type:json" json:"flags"`
+	Flags       StringList   `gorm:"type:json" json:"flags"`
 	Dockers     Dockers      `gorm:"type:json" json:"dockers"`
 	BaseModel
 }

@@ -143,7 +143,7 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, usage model.Usag
 	for i, pod := range victim.Pods {
 		target := targets[pod.Name]
 		ip := target["ip"].(string)
-		ports := model.Ports(target["ports"].([]int32))
+		ports := model.PortList(target["ports"].([]int32))
 		ok, msg := podRepo.Update(pod.ID, db.UpdatePodOptions{
 			ExposedIP:    &ip,
 			ExposedPorts: &ports,

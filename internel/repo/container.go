@@ -15,8 +15,8 @@ type CreateContainerOptions struct {
 	Name        string
 	Image       string
 	Hostname    string
-	Flags       model.Strings
-	ExposePorts model.Ports
+	Flags       model.StringList
+	ExposePorts model.PortList
 }
 
 func InitContainerRepo(tx *gorm.DB) *ContainerRepo {

@@ -19,20 +19,20 @@ type CreateUsageOptions struct {
 	Name        string
 	Desc        string
 	Attempt     int64
-	Hints       model.Strings
-	Tags        model.Strings
+	Hints       model.StringList
+	Tags        model.StringList
 	Dockers     model.Dockers
 }
 
 type UpdateUsageOptions struct {
-	ChallengeID *string        `json:"challenge_id"`
-	Name        *string        `json:"name"`
-	Desc        *string        `json:"desc"`
-	Attempt     *int64         `json:"attempt"`
-	Hidden      *bool          `json:"hidden"`
-	Hints       *model.Strings `json:"hints"`
-	Tags        *model.Strings `json:"tags"`
-	Dockers     *model.Dockers `json:"dockers"`
+	ChallengeID *string           `json:"challenge_id"`
+	Name        *string           `json:"name"`
+	Desc        *string           `json:"desc"`
+	Attempt     *int64            `json:"attempt"`
+	Hidden      *bool             `json:"hidden"`
+	Hints       *model.StringList `json:"hints"`
+	Tags        *model.StringList `json:"tags"`
+	Dockers     *model.Dockers    `json:"dockers"`
 }
 
 func InitUsageRepo(tx *gorm.DB) *UsageRepo {

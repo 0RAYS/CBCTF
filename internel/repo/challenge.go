@@ -19,18 +19,18 @@ type CreateChallengeOptions struct {
 	Category  string
 	Type      string
 	Generator string
-	Flags     model.Strings
+	Flags     model.StringList
 	Dockers   model.Dockers
 }
 
 type UpdateChallengeOptions struct {
-	Name      *string        `json:"name"`
-	Desc      *string        `json:"desc"`
-	Category  *string        `json:"category"`
-	Type      *string        `json:"type"`
-	Generator *string        `json:"generator"`
-	Flags     *model.Strings `json:"flags"`
-	Dockers   *model.Dockers `json:"dockers"`
+	Name      *string           `json:"name"`
+	Desc      *string           `json:"desc"`
+	Category  *string           `json:"category"`
+	Type      *string           `json:"type"`
+	Generator *string           `json:"generator"`
+	Flags     *model.StringList `json:"flags"`
+	Dockers   *model.Dockers    `json:"dockers"`
 }
 
 func InitChallengeRepo(tx *gorm.DB) *ChallengeRepo {

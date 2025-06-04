@@ -47,7 +47,7 @@ func CreateUsage(tx *gorm.DB, contest model.Contest, form f.CreateUsageForm) ([]
 				Decay:        100,
 				MinScore:     100,
 				ScoreType:    0,
-				Blood:        make(model.Uints, 3),
+				Blood:        make(model.UintList, 3),
 			}
 			switch challenge.Type {
 			case model.StaticChallenge, model.DynamicChallenge:

@@ -20,7 +20,7 @@ type CreateCheatOptions struct {
 	Reason    string
 	Type      string
 	Checked   bool
-	Cheats    model.Strings
+	Cheats    model.StringList
 }
 
 type UpdateCheatOptions struct {

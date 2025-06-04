@@ -22,19 +22,19 @@ type CreateFlagOptions struct {
 	Decay        float64
 	MinScore     float64
 	ScoreType    uint
-	Blood        model.Uints
+	Blood        model.UintList
 }
 
 type UpdateFlagOptions struct {
-	Value        *string      `json:"value"`
-	Score        *float64     `json:"score"`
-	CurrentScore *float64     `json:"current_score"`
-	Decay        *float64     `json:"decay"`
-	MinScore     *float64     `json:"min_score"`
-	ScoreType    *uint        `json:"score_type"`
-	Solvers      *int64       `json:"solvers"`
-	Blood        *model.Uints `json:"blood"`
-	Last         *time.Time   `json:"last"`
+	Value        *string         `json:"value"`
+	Score        *float64        `json:"score"`
+	CurrentScore *float64        `json:"current_score"`
+	Decay        *float64        `json:"decay"`
+	MinScore     *float64        `json:"min_score"`
+	ScoreType    *uint           `json:"score_type"`
+	Solvers      *int64          `json:"solvers"`
+	Blood        *model.UintList `json:"blood"`
+	Last         *time.Time      `json:"last"`
 }
 
 func InitFlagRepo(tx *gorm.DB) *FlagRepo {

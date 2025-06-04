@@ -8,30 +8,30 @@ import (
 	"time"
 )
 
-type Strings []string
+type StringList []string
 
-func (s Strings) Value() (driver.Value, error) {
+func (s StringList) Value() (driver.Value, error) {
 	return json.Marshal(s)
 }
 
-func (s *Strings) Scan(value any) error {
+func (s *StringList) Scan(value any) error {
 	bytes, ok := value.([]byte)
 	if !ok {
-		return fmt.Errorf("failed to scan Strings value")
+		return fmt.Errorf("failed to scan StringList value")
 	}
 	return json.Unmarshal(bytes, s)
 }
 
-type Uints []uint
+type UintList []uint
 
-func (u Uints) Value() (driver.Value, error) {
+func (u UintList) Value() (driver.Value, error) {
 	return json.Marshal(u)
 }
 
-func (u *Uints) Scan(value any) error {
+func (u *UintList) Scan(value any) error {
 	bytes, ok := value.([]byte)
 	if !ok {
-		return fmt.Errorf("failed to scan Uints value")
+		return fmt.Errorf("failed to scan UintList value")
 	}
 	return json.Unmarshal(bytes, u)
 }
@@ -146,6 +146,24 @@ func (n *NetworkPolicies) Scan(value any) error {
 	return json.Unmarshal(bytes, n)
 }
 
+type FlagList []struct {
+	Value      string `json:"value"`
+	InjectType string `json:"inject_type"`
+	Path       string `json:"path"`
+}
+
+func (f FlagList) Value() (driver.Value, error) {
+	return json.Marshal(f)
+}
+
+func (f *FlagList) Scan(value any) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan FlagList value")
+	}
+	return json.Unmarshal(bytes, f)
+}
+
 // Dockers 题目的 Docker 配置, 一个容器可以有多个 flag 和多个映射端口
 type Dockers []struct {
 	PodGroup        uint            `json:"pod_group"`
@@ -188,9 +206,9 @@ func (d *Dockers) Scan(value any) error {
 	return json.Unmarshal(bytes, d)
 }
 
-type Ports []int32
+type PortList []int32
 
-func (e Ports) Value() (driver.Value, error) {
+func (e PortList) Value() (driver.Value, error) {
 	tmp := make([]int32, 0)
 	for _, port := range e {
 		if port > 1 && port < 65535 {
@@ -200,29 +218,29 @@ func (e Ports) Value() (driver.Value, error) {
 	return json.Marshal(e)
 }
 
-func (e *Ports) Scan(value any) error {
+func (e *PortList) Scan(value any) error {
 	bytes, ok := value.([]byte)
 	if !ok {
-		return fmt.Errorf("failed to scan Ports value")
+		return fmt.Errorf("failed to scan PortList value")
 	}
 	return json.Unmarshal(bytes, e)
 }
 
-type References struct {
+type ReferenceList struct {
 	UserID    uint `json:"user_id"`
 	TeamID    uint `json:"team_id"`
 	ContestID uint `json:"contest_id"`
 	UsageID   uint `json:"usage_id"`
 }
 
-func (r References) Value() (driver.Value, error) {
+func (r ReferenceList) Value() (driver.Value, error) {
 	return json.Marshal(r)
 }
 
-func (r *References) Scan(value any) error {
+func (r *ReferenceList) Scan(value any) error {
 	bytes, ok := value.([]byte)
 	if !ok {
-		return fmt.Errorf("failed to scan References value")
+		return fmt.Errorf("failed to scan ReferenceList value")
 	}
 	return json.Unmarshal(bytes, r)
 }

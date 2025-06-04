@@ -33,7 +33,7 @@ type Flag struct {
 	ScoreType    uint         `gorm:"default:0" json:"score_type"`
 	Solvers      int64        `json:"solvers"`
 	Last         time.Time    `gorm:"default:null" json:"last"`
-	Blood        Uints        `gorm:"type:json" json:"blood"`
+	Blood        UintList     `gorm:"type:json" json:"blood"`
 	BaseModel
 }
 
