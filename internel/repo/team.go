@@ -1,0 +1,168 @@
+package repo
+
+import (
+	"CBCTF/internel/i18n"
+	"CBCTF/internel/log"
+	"CBCTF/internel/model"
+	"CBCTF/internel/utils"
+	"fmt"
+	"gorm.io/gorm"
+	"time"
+)
+
+type TeamRepo struct {
+	Basic[model.Team]
+}
+
+type CreateTeamOptions struct {
+	Name      string
+	ContestID uint
+	Desc      string
+	Captcha   string
+	Avatar    model.AvatarURL
+	Banned    bool
+	Hidden    bool
+	CaptainID uint
+	Last      time.Time
+}
+
+func (c CreateTeamOptions) Convert2Model() model.Model {
+	return model.Team{
+		Name:      c.Name,
+		ContestID: c.ContestID,
+		Desc:      c.Desc,
+		Captcha:   c.Captcha,
+		Avatar:    c.Avatar,
+		Banned:    c.Banned,
+		Hidden:    c.Hidden,
+		CaptainID: c.CaptainID,
+		Last:      c.Last,
+	}
+}
+
+type UpdateTeamOptions struct {
+	Name      *string
+	Desc      *string
+	Captcha   *string
+	Avatar    *model.AvatarURL
+	Banned    *bool
+	Hidden    *bool
+	CaptainID *uint
+	Score     *float64
+	Rank      *int
+	Last      *time.Time
+}
+
+func (u UpdateTeamOptions) Convert2Map() map[string]any {
+	data := make(map[string]any)
+	if u.Name != nil {
+		data["name"] = *u.Name
+	}
+	if u.Desc != nil {
+		data["desc"] = *u.Desc
+	}
+	if u.Captcha != nil {
+		data["captcha"] = *u.Captcha
+	}
+	if u.Avatar != nil {
+		data["avatar"] = *u.Avatar
+	}
+	if u.Banned != nil {
+		data["banned"] = *u.Banned
+	}
+	if u.Hidden != nil {
+		data["hidden"] = *u.Hidden
+	}
+	if u.CaptainID != nil {
+		data["captain_id"] = *u.CaptainID
+	}
+	if u.Score != nil {
+		data["score"] = *u.Score
+	}
+	if u.Rank != nil {
+		data["rank"] = *u.Rank
+	}
+	if u.Last != nil {
+		data["last"] = *u.Last
+	}
+	return data
+}
+
+func InitTeamRepo(tx *gorm.DB) *TeamRepo {
+	return &TeamRepo{
+		Basic: Basic[model.Team]{
+			DB: tx,
+		},
+	}
+}
+
+func (t *TeamRepo) IsUniqueName(contestID uint, name string) bool {
+	count, ok, _ := t.CountWithConditions(map[string]any{
+		"contest_id": contestID,
+		"name":       name,
+	})
+	if !ok {
+		return false
+	}
+	return count == 0
+}
+
+func (t *TeamRepo) IsInTeam(teamID uint, userID uint) bool {
+	res := t.DB.Model(&model.UserTeam{}).
+		Where("team_id = ? AND user_id = ?", teamID, userID).Limit(1).Find(&model.UserTeam{})
+	return res.RowsAffected == 1
+}
+
+func (t *TeamRepo) IsInContest(contestID uint, userID uint) bool {
+	res := t.DB.Model(&model.UserContest{}).
+		Where("contest_id = ? AND user_id = ?", contestID, userID).Limit(1).Find(&model.UserContest{})
+	return res.RowsAffected == 1
+}
+
+func (t *TeamRepo) GetByName(contestID uint, name string, preloadL ...string) (model.Team, bool, string) {
+	return t.GetWithConditions(map[string]any{
+		"contest_id": contestID,
+		"name":       name,
+	}, preloadL...)
+}
+
+func (t *TeamRepo) GetBy2ID(userID, contestID uint, preloadL ...string) (model.Team, bool, string) {
+	user, ok, msg := InitUserRepo(t.DB).GetByID(userID, "Teams")
+	if !ok {
+		return model.Team{}, false, msg
+	}
+	for _, team := range user.Teams {
+		if team.ContestID == contestID {
+			return t.GetByID(team.ID, preloadL...)
+		}
+	}
+	return model.Team{}, false, model.Team{}.NotFoundErrorString()
+}
+
+func (t *TeamRepo) Delete(idL ...uint) (bool, string) {
+	for _, id := range idL {
+		team, ok, msg := t.GetByID(id, "Users")
+		if !ok {
+			return false, msg
+		}
+		deletedName := fmt.Sprintf("%s_deleted_%s", team.Name, utils.RandStr(6))
+		if ok, msg = t.Update(id, UpdateTeamOptions{
+			Name: &deletedName,
+		}); !ok {
+			return false, msg
+		}
+		for _, user := range team.Users {
+			if ok, msg = DeleteUserFromContest(t.DB, user.ID, team.ContestID); !ok {
+				return false, msg
+			}
+			if ok, msg = DeleteUserFromTeam(t.DB, user.ID, team.ID); !ok {
+				return false, msg
+			}
+		}
+	}
+	if res := t.DB.Model(&model.Team{}).Where("id IN ?", idL).Delete(&model.Team{}); res.Error != nil {
+		log.Logger.Errorf("Failed to delete Team: %s", res.Error)
+		return false, model.Team{}.DeleteErrorString()
+	}
+	return true, i18n.Success
+}

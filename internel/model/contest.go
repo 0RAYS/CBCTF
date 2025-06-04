@@ -1,0 +1,94 @@
+package model
+
+import (
+	"CBCTF/internel/i18n"
+	"time"
+)
+
+var (
+	ContestIsComing  = i18n.ContestIsComing
+	ContestIsRunning = i18n.ContestIsRunning
+	ContestIsOver    = i18n.ContestIsOver
+)
+
+// Contest
+// HasMany Team
+// ManyToMany User
+// HasMany Notice
+type Contest struct {
+	Teams     []Team        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Users     []*User       `gorm:"many2many:user_contests;" json:"-"`
+	Notices   []Notice      `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Name      string        `gorm:"type:varchar(255);uniqueIndex;not null" json:"name"`
+	Desc      string        `json:"desc"`
+	Captcha   string        `json:"captcha"`
+	Avatar    AvatarURL     `json:"avatar"`
+	Prefix    string        `gorm:"default:'flag'" json:"prefix"`
+	Size      int           `gorm:"default:4" json:"size"`
+	Start     time.Time     `gorm:"not null" json:"start"`
+	Duration  time.Duration `json:"duration"`
+	Blood     bool          `gorm:"default:true" json:"blood"`
+	Hidden    bool          `gorm:"default:true" json:"hidden"`
+	Rules     StringList    `gorm:"type:json" json:"rules"`
+	Prizes    Prizes        `gorm:"type:json" json:"prizes"`
+	Timelines Timelines     `gorm:"type:json" json:"timelines"`
+	Basic
+}
+
+func (c Contest) GetModelName() string {
+	return "Contest"
+}
+
+func (c Contest) GetID() uint {
+	return c.ID
+}
+
+func (c Contest) GetVersion() uint {
+	return c.Version
+}
+
+func (c Contest) CreateErrorString() string {
+	return i18n.CreateContestError
+}
+
+func (c Contest) DeleteErrorString() string {
+	return i18n.DeleteContestError
+}
+
+func (c Contest) GetErrorString() string {
+	return i18n.GetContestError
+}
+
+func (c Contest) NotFoundErrorString() string {
+	return i18n.ContestNotFound
+}
+
+func (c Contest) UpdateErrorString() string {
+	return i18n.UpdateContestError
+}
+
+func (c Contest) GetUniqueKey() []string {
+	return []string{"id", "name"}
+}
+
+func (c Contest) IsOver() bool {
+	return time.Now().After(c.Start.Add(c.Duration))
+}
+
+func (c Contest) IsComing() bool {
+	return time.Now().Before(c.Start)
+}
+
+func (c Contest) IsRunning() bool {
+	return (c.IsOver() || c.IsComing() || c.Hidden) != true
+}
+
+func (c Contest) Status() string {
+	if c.IsOver() {
+		return ContestIsOver
+	}
+	if c.IsComing() {
+		return ContestIsComing
+	}
+	return ContestIsRunning
+}
