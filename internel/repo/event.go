@@ -12,7 +12,7 @@ type EventRepo struct {
 }
 
 type CreateEventOptions struct {
-	References model.References
+	References model.ReferenceList
 	Desc       string
 	Type       string
 	IP         string

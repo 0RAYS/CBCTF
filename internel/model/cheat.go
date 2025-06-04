@@ -10,17 +10,17 @@ const (
 )
 
 type Cheat struct {
-	ID        string  `gorm:"type:varchar(36);primaryKey" json:"id"`
-	UserID    uint    `json:"user_id"`
-	User      User    `json:"-"`
-	TeamID    uint    `json:"team_id"`
-	Team      Team    `json:"-"`
-	ContestID uint    `json:"contest_id"`
-	Contest   Contest `json:"-"`
-	Reason    string  `json:"reason"`
-	Type      string  `json:"type"`
-	Checked   bool    `json:"checked"`
-	Cheated   bool    `json:"cheated"`
-	Cheats    Strings `gorm:"type:json" json:"cheats"`
+	ID        string     `gorm:"type:varchar(36);primaryKey" json:"id"`
+	UserID    uint       `json:"user_id"`
+	User      User       `json:"-"`
+	TeamID    uint       `json:"team_id"`
+	Team      Team       `json:"-"`
+	ContestID uint       `json:"contest_id"`
+	Contest   Contest    `json:"-"`
+	Reason    string     `json:"reason"`
+	Type      string     `json:"type"`
+	Checked   bool       `json:"checked"`
+	Cheated   bool       `json:"cheated"`
+	Cheats    StringList `gorm:"type:json" json:"cheats"`
 	BaseModel
 }

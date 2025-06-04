@@ -11,10 +11,10 @@ type CreateUsageForm struct {
 
 // UpdateUsageForm for admin update usage info
 type UpdateUsageForm struct {
-	Name    *string        `form:"name" json:"name"`
-	Desc    *string        `form:"desc" json:"desc"`
-	Attempt *int64         `form:"desc" json:"attempt"`
-	Hidden  *bool          `form:"hidden" json:"hidden"`
-	Hints   *model.Strings `form:"hints" json:"hints"`
-	Tags    *model.Strings `form:"tags" json:"tags"`
+	Name    *string           `form:"name" json:"name"`
+	Desc    *string           `form:"desc" json:"desc"`
+	Attempt *int64            `form:"desc" json:"attempt"`
+	Hidden  *bool             `form:"hidden" json:"hidden"`
+	Hints   *model.StringList `form:"hints" json:"hints"`
+	Tags    *model.StringList `form:"tags" json:"tags"`
 }

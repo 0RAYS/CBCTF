@@ -23,10 +23,10 @@ const (
 )
 
 type Event struct {
-	Desc       string     `json:"desc"`
-	Type       string     `json:"type"`
-	IP         string     `json:"ip"`
-	Magic      string     `json:"magic"`
-	References References `gorm:"type:json" json:"references"`
+	Desc       string        `json:"desc"`
+	Type       string        `json:"type"`
+	IP         string        `json:"ip"`
+	Magic      string        `json:"magic"`
+	References ReferenceList `gorm:"type:json" json:"references"`
 	BaseModel
 }

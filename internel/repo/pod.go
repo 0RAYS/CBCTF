@@ -17,14 +17,14 @@ type CreatePodOptions struct {
 	Name            string
 	PodIP           string
 	ExposedIP       string
-	PodPorts        model.Ports
-	ExposedPorts    model.Ports
+	PodPorts        model.PortList
+	ExposedPorts    model.PortList
 	NetworkPolicies model.NetworkPolicies
 }
 
 type UpdatePodOptions struct {
-	ExposedIP    *string      `json:"exposed_ip"`
-	ExposedPorts *model.Ports `json:"exposed_ports"`
+	ExposedIP    *string         `json:"exposed_ip"`
+	ExposedPorts *model.PortList `json:"exposed_ports"`
 }
 
 func InitPodRepo(tx *gorm.DB) *PodRepo {

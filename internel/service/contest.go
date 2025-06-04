@@ -21,7 +21,7 @@ func CreateContest(tx *gorm.DB, form f.CreateContestForm) (model.Contest, bool, 
 		form.Duration = 3600 * 24 * 7
 	}
 	if len(form.Rules) == 0 {
-		form.Rules = model.Strings{
+		form.Rules = model.StringList{
 			"参赛者必须遵守比赛规则和道德准则",
 			"禁止攻击比赛平台和其他参赛者",
 			"禁止分享题目答案和解题思路",

@@ -18,13 +18,13 @@ type DeleteChallengeForm struct {
 
 // UpdateChallengeForm for admin update challenge info
 type UpdateChallengeForm struct {
-	Name      *string        `form:"name" json:"name"`
-	Desc      *string        `form:"desc" json:"desc"`
-	Category  *string        `form:"category" json:"category"`
-	Type      *string        `form:"type" json:"type"`
-	Generator *string        `form:"generator" json:"generator"`
-	Flags     *model.Strings `form:"flags" json:"flags"`
-	Dockers   *model.Dockers `form:"dockers" json:"dockers"`
+	Name      *string           `form:"name" json:"name"`
+	Desc      *string           `form:"desc" json:"desc"`
+	Category  *string           `form:"category" json:"category"`
+	Type      *string           `form:"type" json:"type"`
+	Generator *string           `form:"generator" json:"generator"`
+	Flags     *model.StringList `form:"flags" json:"flags"`
+	Dockers   *model.Dockers    `form:"dockers" json:"dockers"`
 }
 
 // GetChallengesForm for get challenges list
@@ -37,11 +37,11 @@ type GetChallengesForm struct {
 
 // CreateChallengeForm for create challenge
 type CreateChallengeForm struct {
-	Name      string        `form:"name" json:"name" binding:"required"`
-	Desc      string        `form:"desc" json:"desc"`
-	Category  string        `form:"category" json:"category"`
-	Type      string        `form:"type" json:"type"`
-	Generator string        `form:"generator" json:"generator"`
-	Flags     model.Strings `form:"flags" json:"flags"`
-	Dockers   model.Dockers `form:"dockers" json:"dockers"`
+	Name      string           `form:"name" json:"name" binding:"required"`
+	Desc      string           `form:"desc" json:"desc"`
+	Category  string           `form:"category" json:"category"`
+	Type      string           `form:"type" json:"type"`
+	Generator string           `form:"generator" json:"generator"`
+	Flags     model.StringList `form:"flags" json:"flags"`
+	Dockers   model.Dockers    `form:"dockers" json:"dockers"`
 }

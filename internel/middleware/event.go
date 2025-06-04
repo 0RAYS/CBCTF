@@ -13,7 +13,7 @@ func Events(ctx *gin.Context) {
 
 	ctx.Next()
 
-	references := model.References{
+	references := model.ReferenceList{
 		UserID:    GetSelfID(ctx),
 		TeamID:    GetTeam(ctx).ID,
 		ContestID: GetContest(ctx).ID,

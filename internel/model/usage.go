@@ -13,7 +13,7 @@ type Usage struct {
 	Hidden      bool         `json:"hidden"`
 	Attempt     int64        `json:"attempt"`
 	Dockers     Dockers      `gorm:"type:json" json:"dockers"`
-	Hints       Strings      `gorm:"type:json" json:"hints"`
-	Tags        Strings      `gorm:"type:json" json:"tags"`
+	Hints       StringList   `gorm:"type:json" json:"hints"`
+	Tags        StringList   `gorm:"type:json" json:"tags"`
 	BaseModel
 }
