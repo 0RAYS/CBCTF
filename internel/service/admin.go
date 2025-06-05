@@ -51,8 +51,7 @@ func UpdateUser(tx *gorm.DB, user model.User, form f.UpdateUserForm) (bool, stri
 		Verified: form.Verified,
 	}
 	if form.Country != nil && *form.Country != user.Country {
-		country := strings.ToUpper(*form.Country)
-		options.Country = &country
+		*options.Country = strings.ToUpper(*form.Country)
 	}
 	if form.Email != nil && *form.Email != user.Email {
 		if !utils.IsValidEmail(*form.Email) {
@@ -61,9 +60,8 @@ func UpdateUser(tx *gorm.DB, user model.User, form f.UpdateUserForm) (bool, stri
 		if !repo.IsUniqueEmail(*form.Email) {
 			return false, i18n.DuplicateEmail
 		}
-		verified := false
 		options.Email = form.Email
-		options.Verified = &verified
+		*options.Verified = false
 	}
 	if form.Name != nil && *form.Name != user.Name {
 		if !repo.IsUniqueName(*form.Name) {
@@ -72,8 +70,7 @@ func UpdateUser(tx *gorm.DB, user model.User, form f.UpdateUserForm) (bool, stri
 		options.Name = form.Name
 	}
 	if form.Password != nil {
-		password := utils.HashPassword(*form.Password)
-		options.Password = &password
+		*options.Password = utils.HashPassword(*form.Password)
 	}
 	return repo.Update(user.ID, options)
 }
@@ -86,8 +83,7 @@ func UpdateAdmin(tx *gorm.DB, admin model.Admin, form f.UpdateAdminForm) (bool, 
 			return false, i18n.DuplicateEmail
 		}
 		options.Email = form.Email
-		verified := false
-		options.Verified = &verified
+		*options.Verified = false
 	}
 	if form.Name != nil && *form.Name != admin.Name {
 		if !repo.IsUniqueName(*form.Name) {

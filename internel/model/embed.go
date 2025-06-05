@@ -12,10 +12,17 @@ import (
 type AvatarURL string
 
 func (a AvatarURL) Value() (driver.Value, error) {
+	if a == "" {
+		return nil, nil
+	}
 	return strings.TrimPrefix(string(a), strings.Trim(config.Env.Backend, "/")), nil
 }
 
 func (a *AvatarURL) Scan(value any) error {
+	if value == nil || value.(string) == "" {
+		*a = ""
+		return nil
+	}
 	path, ok := value.(string)
 	if !ok {
 		return fmt.Errorf("failed to scan AvatarURL: %v", value)
