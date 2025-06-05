@@ -2,6 +2,7 @@ package repo
 
 import (
 	"CBCTF/internel/i18n"
+	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"gorm.io/gorm"
 )
@@ -64,16 +65,9 @@ func (f *FileRepo) GetByHash(hash string) (model.File, bool, string) {
 }
 
 func (f *FileRepo) DeleteByRandID(randIDL ...string) (bool, string) {
-	idL := make([]uint, 0)
-	for _, randID := range randIDL {
-		file, ok, _ := f.GetByRandID(randID)
-		if !ok {
-			continue
-		}
-		idL = append(idL, file.ID)
-	}
-	if ok, msg := f.Delete(idL...); !ok {
-		return false, msg
+	if res := f.DB.Model(&model.File{}).Where("rand_id IN ?", randIDL).Delete(&model.File{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete File: %s", res.Error)
+		return false, i18n.DeleteFileError
 	}
 	return true, i18n.Success
 }
