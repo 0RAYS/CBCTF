@@ -4,8 +4,7 @@ import (
 	"CBCTF/internel/i18n"
 )
 
-// Admin
-// HasMany Contest
+// Admin 系统管理员
 type Admin struct {
 	Name     string    `gorm:"type:varchar(255);uniqueIndex;not null" json:"name"`
 	Password string    `gorm:"not null" json:"-"`

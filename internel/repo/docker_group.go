@@ -1,0 +1,65 @@
+package repo
+
+import (
+	"CBCTF/internel/i18n"
+	"CBCTF/internel/log"
+	"CBCTF/internel/model"
+	"gorm.io/gorm"
+)
+
+type DockerGroupRepo struct {
+	Basic[model.DockerGroup]
+}
+
+type CreateDockerGroupOptions struct {
+	ChallengeID     uint
+	NetworkPolicies model.NetworkPolicies
+}
+
+func (c CreateDockerGroupOptions) Convert2Model() model.Model {
+	return model.DockerGroup{
+		ChallengeID:     c.ChallengeID,
+		NetworkPolicies: c.NetworkPolicies,
+	}
+}
+
+type UpdateDockerGroupOptions struct {
+	NetworkPolicies *model.NetworkPolicies
+}
+
+func (c UpdateDockerGroupOptions) Convert2Map() map[string]any {
+	m := make(map[string]interface{})
+	if c.NetworkPolicies != nil {
+		m["network_policies"] = c.NetworkPolicies
+	}
+	return m
+}
+
+func InitDockerGroupRepo(tx *gorm.DB) *DockerGroupRepo {
+	return &DockerGroupRepo{
+		Basic: Basic[model.DockerGroup]{
+			DB: tx,
+		},
+	}
+}
+
+func (d *DockerGroupRepo) Delete(idL ...uint) (bool, string) {
+	dockerIDL := make([]uint, 0)
+	for _, id := range idL {
+		dockerGroup, ok, msg := d.GetByID(id, "Dockers")
+		if !ok {
+			return false, msg
+		}
+		for _, docker := range dockerGroup.Dockers {
+			dockerIDL = append(dockerIDL, docker.ID)
+		}
+	}
+	if ok, msg := InitDockerRepo(d.DB).Delete(dockerIDL...); !ok {
+		return false, msg
+	}
+	if res := d.DB.Model(&model.DockerGroup{}).Where("id IN ?", idL).Delete(&model.DockerGroup{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete DockerGroup: %v", res.Error)
+		return false, model.DockerGroup{}.DeleteErrorString()
+	}
+	return true, i18n.Success
+}

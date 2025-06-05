@@ -16,6 +16,18 @@ const (
 	AdminNotFound    = "AdminNotFound"
 	UpdateAdminError = "UpdateAdminError"
 
+	CreateChallengeError = "CreateChallengeError"
+	DeleteChallengeError = "DeleteChallengeError"
+	GetChallengeError    = "GetChallengeError"
+	ChallengeNotFound    = "ChallengeNotFound"
+	UpdateChallengeError = "UpdateChallengeError"
+
+	CreateChallengeFlagError = "CreateChallengeFlagError"
+	DeleteChallengeFlagError = "DeleteChallengeFlagError"
+	GetChallengeFlagError    = "GetChallengeFlagError"
+	ChallengeFlagNotFound    = "ChallengeFlagNotFound"
+	UpdateChallengeFlagError = "UpdateChallengeFlagError"
+
 	CreateContestError   = "CreateContestError"
 	DeleteContestError   = "DeleteContestError"
 	GetContestError      = "GetContestError"
@@ -27,11 +39,35 @@ const (
 	ContestIsRunning     = "ContestIsRunning"
 	ContestIsOver        = "ContestIsOver"
 
+	CreateContestChallengeError = "CreateContestChallengeError"
+	DeleteContestChallengeError = "DeleteContestChallengeError"
+	GetContestChallengeError    = "GetContestChallengeError"
+	ContestChallengeNotFound    = "ContestChallengeNotFound"
+	UpdateContestChallengeError = "UpdateContestChallengeError"
+
+	CreateContestFlagError = "CreateContestFlagError"
+	DeleteContestFlagError = "DeleteContestFlagError"
+	GetContestFlagError    = "GetContestFlagError"
+	ContestFlagNotFound    = "ContestFlagNotFound"
+	UpdateContestFlagError = "UpdateContestFlagError"
+
 	CreateDeviceError = "CreateDeviceError"
 	DeleteDeviceError = "DeleteDeviceError"
 	GetDeviceError    = "GetDeviceError"
 	DeviceNotFound    = "DeviceNotFound"
 	UpdateDeviceError = "UpdateDeviceError"
+
+	CreateDockerError = "CreateDockerError"
+	DeleteDockerError = "DeleteDockerError"
+	GetDockerError    = "GetDockerError"
+	DockerNotFound    = "DockerNotFound"
+	UpdateDockerError = "UpdateDockerError"
+
+	CreateDockerGroupError = "CreateDockerGroupError"
+	DeleteDockerGroupError = "DeleteDockerGroupError"
+	GetDockerGroupError    = "GetDockerGroupError"
+	DockerGroupNotFound    = "DockerGroupNotFound"
+	UpdateDockerGroupError = "UpdateDockerGroupError"
 
 	CreateEventError = "CreateEventError"
 	DeleteEventError = "DeleteEventError"
