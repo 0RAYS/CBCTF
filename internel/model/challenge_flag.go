@@ -1,0 +1,53 @@
+package model
+
+import "CBCTF/internel/i18n"
+
+// ChallengeFlag 题库中挑战的 flag 定义
+// BelongsTo Challenge
+// BelongsTo Docker
+type ChallengeFlag struct {
+	ChallengeID uint      `json:"challenge_id"`
+	Challenge   Challenge `json:"-"`
+	DockerID    uint      `json:"docker_id"`
+	Docker      Docker    `json:"-"`
+	Value       string    `json:"value"`
+	InjectType  string    `json:"inject_type"`
+	Path        string    `json:"path"`
+	Basic
+}
+
+func (c ChallengeFlag) GetModelName() string {
+	return "ChallengeFlag"
+}
+
+func (c ChallengeFlag) GetID() uint {
+	return c.ID
+}
+
+func (c ChallengeFlag) GetVersion() uint {
+	return c.Version
+}
+
+func (c ChallengeFlag) CreateErrorString() string {
+	return i18n.CreateChallengeFlagError
+}
+
+func (c ChallengeFlag) DeleteErrorString() string {
+	return i18n.DeleteChallengeFlagError
+}
+
+func (c ChallengeFlag) GetErrorString() string {
+	return i18n.GetChallengeFlagError
+}
+
+func (c ChallengeFlag) NotFoundErrorString() string {
+	return i18n.ChallengeFlagNotFound
+}
+
+func (c ChallengeFlag) UpdateErrorString() string {
+	return i18n.UpdateChallengeFlagError
+}
+
+func (c ChallengeFlag) GetUniqueKey() []string {
+	return []string{"id"}
+}

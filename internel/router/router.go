@@ -157,6 +157,19 @@ func Init() *gin.Engine {
 			adminContestNotice.DELETE("", DeleteNotice)
 		}
 
+		admin.GET("/challenges")
+		admin.GET("/challenges/categories")
+		admin.POST("/challenges")
+		adminChallenge := admin.Group("/challenges/:challengeID")
+		{
+			adminChallenge.GET("")
+			adminChallenge.GET("/files")
+			adminChallenge.GET("/download")
+			adminChallenge.PUT("")
+			adminChallenge.DELETE("")
+			adminChallenge.POST("/upload")
+		}
+
 		admin.GET("/avatars", GetAvatars)
 		admin.DELETE("/avatars", DeleteAvatars)
 	}

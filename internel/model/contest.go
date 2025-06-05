@@ -14,27 +14,31 @@ var (
 	ContestIsOver    = i18n.ContestIsOver
 )
 
-// Contest
+// Contest 赛事
 // HasMany Team
 // ManyToMany User
 // HasMany Notice
+// HasMany ContestChallenge
+// HasMany ContestFlag
 type Contest struct {
-	Teams     []Team        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Users     []*User       `gorm:"many2many:user_contests;" json:"-"`
-	Notices   []Notice      `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Name      string        `gorm:"type:varchar(255);uniqueIndex;not null" json:"name"`
-	Desc      string        `json:"desc"`
-	Captcha   string        `json:"captcha"`
-	Avatar    AvatarURL     `json:"avatar"`
-	Prefix    string        `gorm:"default:'flag'" json:"prefix"`
-	Size      int           `gorm:"default:4" json:"size"`
-	Start     time.Time     `gorm:"not null" json:"start"`
-	Duration  time.Duration `json:"duration"`
-	Blood     bool          `gorm:"default:true" json:"blood"`
-	Hidden    bool          `gorm:"default:true" json:"hidden"`
-	Rules     StringList    `gorm:"type:json" json:"rules"`
-	Prizes    Prizes        `gorm:"type:json" json:"prizes"`
-	Timelines Timelines     `gorm:"type:json" json:"timelines"`
+	Teams             []Team             `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Users             []*User            `gorm:"many2many:user_contests;" json:"-"`
+	Notices           []Notice           `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	ContestChallenges []ContestChallenge `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	ContestFlags      []ContestFlag      `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Name              string             `gorm:"type:varchar(255);uniqueIndex;not null" json:"name"`
+	Desc              string             `json:"desc"`
+	Captcha           string             `json:"captcha"`
+	Avatar            AvatarURL          `json:"avatar"`
+	Prefix            string             `gorm:"default:'flag'" json:"prefix"`
+	Size              int                `gorm:"default:4" json:"size"`
+	Start             time.Time          `gorm:"not null" json:"start"`
+	Duration          time.Duration      `json:"duration"`
+	Blood             bool               `gorm:"default:true" json:"blood"`
+	Hidden            bool               `gorm:"default:true" json:"hidden"`
+	Rules             StringList         `gorm:"type:json" json:"rules"`
+	Prizes            Prizes             `gorm:"type:json" json:"prizes"`
+	Timelines         Timelines          `gorm:"type:json" json:"timelines"`
 	Basic
 }
 

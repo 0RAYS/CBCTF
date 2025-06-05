@@ -18,6 +18,18 @@ var resp = map[string]map[string]any{
 	AdminNotFound:    {"zh-CN": "管理员不存在", "en-US": "Admin not found", "code": 404},
 	UpdateAdminError: {"zh-CN": "更新管理员失败", "en-US": "Update admin failed", "code": 500},
 
+	CreateChallengeError: {"zh-CN": "创建题目失败", "en-US": "Create challenge failed", "code": 500},
+	DeleteChallengeError: {"zh-CN": "删除题目失败", "en-US": "Delete challenge failed", "code": 500},
+	GetChallengeError:    {"zh-CN": "获取题目失败", "en-US": "Get challenge failed", "code": 500},
+	ChallengeNotFound:    {"zh-CN": "题目不存在", "en-US": "Challenge not found", "code": 404},
+	UpdateChallengeError: {"zh-CN": "更新题目失败", "en-US": "Update challenge failed", "code": 500},
+
+	CreateChallengeFlagError: {"zh-CN": "创建题目flag失败", "en-US": "Create challenge flag failed", "code": 500},
+	DeleteChallengeFlagError: {"zh-CN": "删除题目flag失败", "en-US": "Delete challenge flag failed", "code": 500},
+	GetChallengeFlagError:    {"zh-CN": "获取题目flag失败", "en-US": "Get challenge flag failed", "code": 500},
+	ChallengeFlagNotFound:    {"zh-CN": "题目flag不存在", "en-US": "Challenge flag not found", "code": 404},
+	UpdateChallengeFlagError: {"zh-CN": "更新题目flag失败", "en-US": "Update challenge flag failed", "code": 500},
+
 	CreateContestError:   {"zh-CN": "创建比赛失败", "en-US": "Create contest failed", "code": 500},
 	DeleteContestError:   {"zh-CN": "删除比赛失败", "en-US": "Delete contest failed", "code": 500},
 	GetContestError:      {"zh-CN": "获取比赛失败", "en-US": "Get contest failed", "code": 500},
@@ -29,11 +41,35 @@ var resp = map[string]map[string]any{
 	ContestIsRunning:     {"zh-CN": "比赛正在进行中", "en-US": "Contest is running", "code": 400},
 	ContestIsOver:        {"zh-CN": "比赛已结束", "en-US": "Contest is over", "code": 400},
 
+	CreateContestChallengeError: {"zh-CN": "添加比赛题目失败", "en-US": "Add contest challenge failed", "code": 500},
+	DeleteContestChallengeError: {"zh-CN": "删除比赛题目失败", "en-US": "Delete contest challenge failed", "code": 500},
+	GetContestChallengeError:    {"zh-CN": "获取比赛题目失败", "en-US": "Get contest challenge failed", "code": 500},
+	ContestChallengeNotFound:    {"zh-CN": "比赛题目不存在", "en-US": "Contest challenge not found", "code": 404},
+	UpdateContestChallengeError: {"zh-CN": "更新比赛题目失败", "en-US": "Update contest challenge failed", "code": 500},
+
+	CreateContestFlagError: {"zh-CN": "创建比赛flag失败", "en-US": "Create contest flag failed", "code": 500},
+	DeleteContestFlagError: {"zh-CN": "删除比赛flag失败", "en-US": "Delete contest flag failed", "code": 500},
+	GetContestFlagError:    {"zh-CN": "获取比赛flag失败", "en-US": "Get contest flag failed", "code": 500},
+	ContestFlagNotFound:    {"zh-CN": "比赛flag不存在", "en-US": "Contest flag not found", "code": 404},
+	UpdateContestFlagError: {"zh-CN": "更新比赛flag失败", "en-US": "Update contest flag failed", "code": 500},
+
 	CreateDeviceError: {"zh-CN": "创建设备失败", "en-US": "Create device failed", "code": 500},
 	DeleteDeviceError: {"zh-CN": "删除设备失败", "en-US": "Delete device failed", "code": 500},
 	GetDeviceError:    {"zh-CN": "获取设备失败", "en-US": "Get device failed", "code": 500},
 	DeviceNotFound:    {"zh-CN": "设备不存在", "en-US": "Device not found", "code": 404},
 	UpdateDeviceError: {"zh-CN": "更新设备失败", "en-US": "Update device failed", "code": 500},
+
+	CreateDockerError: {"zh-CN": "创建Docker失败", "en-US": "Create Docker failed", "code": 500},
+	DeleteDockerError: {"zh-CN": "删除Docker失败", "en-US": "Delete Docker failed", "code": 500},
+	GetDockerError:    {"zh-CN": "获取Docker失败", "en-US": "Get Docker failed", "code": 500},
+	DockerNotFound:    {"zh-CN": "Docker不存在", "en-US": "Docker not found", "code": 404},
+	UpdateDockerError: {"zh-CN": "更新Docker失败", "en-US": "Update Docker failed", "code": 500},
+
+	CreateDockerGroupError: {"zh-CN": "创建Docker组失败", "en-US": "Create Docker group failed", "code": 500},
+	DeleteDockerGroupError: {"zh-CN": "删除Docker组失败", "en-US": "Delete Docker group failed", "code": 500},
+	GetDockerGroupError:    {"zh-CN": "获取Docker组失败", "en-US": "Get Docker group failed", "code": 500},
+	DockerGroupNotFound:    {"zh-CN": "Docker组不存在", "en-US": "Docker group not found", "code": 404},
+	UpdateDockerGroupError: {"zh-CN": "更新Docker组失败", "en-US": "Update Docker group failed", "code": 500},
 
 	CreateEventError: {"zh-CN": "创建事件失败", "en-US": "Create event failed", "code": 500},
 	DeleteEventError: {"zh-CN": "删除事件失败", "en-US": "Delete event failed", "code": 500},
