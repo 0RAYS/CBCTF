@@ -78,8 +78,7 @@ func UpdateContest(tx *gorm.DB, contest model.Contest, form f.UpdateContestForm)
 		}
 	}
 	if form.Duration != nil {
-		duration := *form.Duration * 1e9
-		form.Duration = &duration
+		*form.Duration = *form.Duration * 1e9
 	}
 	return repo.Update(contest.ID, db.UpdateContestOptions{
 		Name:      form.Name,
