@@ -1,6 +1,11 @@
 package model
 
-import "CBCTF/internel/i18n"
+import (
+	"CBCTF/internel/i18n"
+	"database/sql/driver"
+	"encoding/json"
+	"fmt"
+)
 
 const (
 	UserLoginEventType          = "user_login"
@@ -31,6 +36,25 @@ type Event struct {
 	Magic     string    `json:"magic"`
 	Reference Reference `gorm:"type:json" json:"reference"`
 	Basic
+}
+
+type Reference struct {
+	UserID    uint `json:"user_id"`
+	TeamID    uint `json:"team_id"`
+	ContestID uint `json:"contest_id"`
+	UsageID   uint `json:"usage_id"`
+}
+
+func (r Reference) Value() (driver.Value, error) {
+	return json.Marshal(r)
+}
+
+func (r *Reference) Scan(value any) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan Reference value")
+	}
+	return json.Unmarshal(bytes, r)
 }
 
 func (e Event) GetModelName() string {
