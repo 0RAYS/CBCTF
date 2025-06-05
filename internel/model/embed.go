@@ -59,6 +59,20 @@ func (u *UintList) Scan(value any) error {
 	return json.Unmarshal(bytes, u)
 }
 
+type StringMap map[string]string
+
+func (s StringMap) Value() (driver.Value, error) {
+	return json.Marshal(s)
+}
+
+func (s *StringMap) Scan(value any) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan StringMap value")
+	}
+	return json.Unmarshal(bytes, s)
+}
+
 type Target struct {
 	Hostname string   `json:"hostname"`
 	CIDR     string   `json:"cidr"`
