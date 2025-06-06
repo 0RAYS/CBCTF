@@ -29,7 +29,7 @@ func GetNotices(ctx *gin.Context) {
 		{
 			Key:   "contest_id",
 			Value: contest.ID,
-			And:   true,
+			Op:    "and",
 		},
 	})
 	if !ok {

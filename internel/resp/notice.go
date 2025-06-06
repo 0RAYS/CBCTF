@@ -5,7 +5,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GetNoticeResp model.Notice 需要预加载 model.Admin
 func GetNoticeResp(notice model.Notice) gin.H {
 	return gin.H{
 		"id":         notice.ID,

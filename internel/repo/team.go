@@ -101,12 +101,12 @@ func (t *TeamRepo) IsUniqueName(contestID uint, name string) bool {
 		{
 			Key:   "contest_id",
 			Value: contestID,
-			And:   true,
+			Op:    "and",
 		},
 		{
 			Key:   "name",
 			Value: name,
-			And:   true,
+			Op:    "and",
 		},
 	})
 	if !ok {
@@ -132,12 +132,12 @@ func (t *TeamRepo) GetByName(contestID uint, name string, preloadL ...string) (m
 		{
 			Key:   "contest_id",
 			Value: contestID,
-			And:   true,
+			Op:    "and",
 		},
 		{
 			Key:   "name",
 			Value: name,
-			And:   true,
+			Op:    "and",
 		},
 	}, preloadL...)
 }

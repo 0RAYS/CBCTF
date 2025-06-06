@@ -228,3 +228,69 @@ func GetChallenge(ctx *gin.Context) model.Challenge {
 		return challenge.(model.Challenge)
 	}
 }
+
+func SetContestChallenge(ctx *gin.Context) {
+	type challengeIDUri struct {
+		ChallengeID string `uri:"challengeID" binding:"required"`
+	}
+	var challengeID challengeIDUri
+	if err := ctx.ShouldBindUri(&challengeID); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.Abort()
+		return
+	}
+	challenge, ok, msg := db.InitChallengeRepo(db.DB.WithContext(ctx)).GetByRandID(challengeID.ChallengeID, "all")
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.Abort()
+		return
+	}
+	contestChallenge, ok, msg := db.InitContestChallengeRepo(db.DB.WithContext(ctx)).GetWithConditions(db.GetOptions{
+		{Key: "contest_id", Value: GetContest(ctx).ID, Op: "and"},
+		{Key: "challenge_id", Value: challenge.ID, Op: "and"},
+	})
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.Abort()
+		return
+	}
+	ctx.Set("ContestChallenge", contestChallenge)
+	ctx.Next()
+}
+
+// GetContestChallenge 从上下文中获取 model.ContestChallenge
+func GetContestChallenge(ctx *gin.Context) model.ContestChallenge {
+	if contestChallenge, ok := ctx.Get("ContestChallenge"); !ok || contestChallenge == nil {
+		return model.ContestChallenge{}
+	} else {
+		return contestChallenge.(model.ContestChallenge)
+	}
+}
+
+func SetContestFlag(ctx *gin.Context) {
+	type flagIDUri struct {
+		FlagID uint `uri:"flagID" binding:"required"`
+	}
+	var flagID flagIDUri
+	if err := ctx.ShouldBindUri(&flagID); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.Abort()
+		return
+	}
+	contestFlag, ok, msg := db.InitContestFlagRepo(db.DB.WithContext(ctx)).GetByID(flagID.FlagID, "all")
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.Abort()
+		return
+	}
+	ctx.Set("ContestFlag", contestFlag)
+	ctx.Next()
+}
+
+func GetContestFlag(ctx *gin.Context) model.ContestFlag {
+	if contestFlag, ok := ctx.Get("ContestFlag"); !ok || contestFlag == nil {
+		return model.ContestFlag{}
+	} else {
+		return contestFlag.(model.ContestFlag)
+	}
+}

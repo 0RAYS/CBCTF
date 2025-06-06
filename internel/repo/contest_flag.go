@@ -15,6 +15,7 @@ type ContestFlagRepo struct {
 type CreateContestFlagOptions struct {
 	ContestID          uint
 	ContestChallengeID uint
+	ChallengeFlagID    uint
 	Value              string
 	Score              float64
 	CurrentScore       float64
@@ -29,6 +30,7 @@ func (c CreateContestFlagOptions) Convert2Model() model.Model {
 	return model.ContestFlag{
 		ContestID:          c.ContestID,
 		ContestChallengeID: c.ContestChallengeID,
+		ChallengeFlagID:    c.ChallengeFlagID,
 		Value:              c.Value,
 		Score:              c.Score,
 		CurrentScore:       c.CurrentScore,

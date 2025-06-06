@@ -19,6 +19,8 @@ type ContestChallenge struct {
 	Desc         string        `json:"desc"`
 	Hidden       bool          `json:"hidden"`
 	Attempt      int64         `json:"attempt"`
+	Hints        StringList    `gorm:"default:null;type:json" json:"hints"`
+	Tags         StringList    `gorm:"default:null;type:json" json:"tags"`
 	Basic
 }
 
