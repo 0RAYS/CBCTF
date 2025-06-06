@@ -12,32 +12,11 @@ import (
 
 func GetChallenges(tx *gorm.DB, form f.GetChallengesForm) ([]model.Challenge, int64, bool, string) {
 	var conditions db.GetOptions
-	if form.Type != "" && form.Category != "" {
-		conditions = db.GetOptions{
-			{
-				Key:   "type",
-				Value: form.Type,
-				Op:    "and",
-			},
-			{
-				Key:   "category",
-				Value: form.Category,
-				Op:    "and",
-			},
-		}
-	} else if !(form.Type == "" || form.Category == "") {
-		conditions = db.GetOptions{
-			{
-				Key:   "type",
-				Value: form.Type,
-				Op:    "or",
-			},
-			{
-				Key:   "category",
-				Value: form.Category,
-				Op:    "or",
-			},
-		}
+	if form.Type != "" {
+		conditions = append(conditions, db.GetOption{Key: "type", Value: form.Type, Op: "and"})
+	}
+	if form.Category != "" {
+		conditions = append(conditions, db.GetOption{Key: "category", Value: utils.ToTitle(form.Category), Op: "and"})
 	}
 	return db.InitChallengeRepo(tx).ListWithConditions(
 		form.Limit, form.Offset, conditions,
