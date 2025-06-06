@@ -7,10 +7,11 @@ var resp = map[string]map[string]any{
 	UnsupportedKey: {"zh-CN": "不支持的键", "en-US": "Unsupported key", "code": 400},
 	DeadLock:       {"zh-CN": "数据写入失败过多", "en-US": "Database deadlock", "code": 500},
 
-	BadRequest:   {"zh-CN": "请求错误", "en-US": "Bad request", "code": 400},
-	Unauthorized: {"zh-CN": "未登录", "en-US": "Unauthorized", "code": 401},
-	Forbidden:    {"zh-CN": "禁止访问", "en-US": "Forbidden", "code": 403},
-	UnknownError: {"zh-CN": "未知错误", "en-US": "Unknown error", "code": 500},
+	BadRequest:      {"zh-CN": "请求错误", "en-US": "Bad request", "code": 400},
+	Unauthorized:    {"zh-CN": "未登录", "en-US": "Unauthorized", "code": 401},
+	Forbidden:       {"zh-CN": "禁止访问", "en-US": "Forbidden", "code": 403},
+	TooManyRequests: {"zh-CN": "请求过多", "en-US": "Too many requests", "code": 429},
+	UnknownError:    {"zh-CN": "未知错误", "en-US": "Unknown error", "code": 500},
 
 	CreateAdminError: {"zh-CN": "创建管理员失败", "en-US": "Create admin failed", "code": 500},
 	DeleteAdminError: {"zh-CN": "删除管理员失败", "en-US": "Delete admin failed", "code": 500},
@@ -144,6 +145,7 @@ var resp = map[string]map[string]any{
 	SetEmailVerifyTokenError: {"zh-CN": "设置邮箱验证令牌失败", "en-US": "Set email verify token failed", "code": 500},
 	GetEmailVerifyTokenError: {"zh-CN": "获取邮箱验证令牌失败", "en-US": "Get email verify token failed", "code": 500},
 	DelEmailVerifyTokenError: {"zh-CN": "删除邮箱验证令牌失败", "en-US": "Delete email verify token failed", "code": 500},
+	InvalidEmailVerifyToken:  {"zh-CN": "无效的邮箱验证令牌", "en-US": "Invalid email verify token", "code": 400},
 	SendEmailError:           {"zh-CN": "发送邮件失败", "en-US": "Send email failed", "code": 500},
 
 	CreateDirError:           {"zh-CN": "创建题目根目录失败", "en-US": "Create directory failed", "code": 500},
