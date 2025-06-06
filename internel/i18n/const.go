@@ -46,6 +46,7 @@ const (
 	GetContestChallengeError    = "GetContestChallengeError"
 	ContestChallengeNotFound    = "ContestChallengeNotFound"
 	UpdateContestChallengeError = "UpdateContestChallengeError"
+	AlreadySolved               = "AlreadySolved"
 
 	CreateContestFlagError = "CreateContestFlagError"
 	DeleteContestFlagError = "DeleteContestFlagError"

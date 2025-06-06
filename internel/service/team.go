@@ -143,19 +143,3 @@ func LeaveTeam(tx *gorm.DB, contest model.Contest, team model.Team, userID uint)
 	}
 	return true, i18n.Success
 }
-
-// GetTeamSolved TODO
-//func GetTeamSolved(tx *gorm.DB, teamID uint) ([]model.Flag, bool, string) {
-//var (
-//	flags                   = make([]model.Flag, 0)
-//	repo                    = db.InitSubmissionRepo(tx)
-//	submissions, _, ok, msg = repo.GetByKeyID("team_id", teamID, -1, -1, true, "Flag")
-//)
-//if !ok {
-//	return flags, false, msg
-//}
-//for _, submission := range submissions {
-//	flags = append(flags, submission.Flag)
-//}
-//return flags, true, i18n.Success
-//}

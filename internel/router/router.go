@@ -99,6 +99,22 @@ func Init() *gin.Engine {
 			contest.GET("/notices", GetNotices)
 			contest.GET("/notices/:noticeID", middleware.SetNotice, GetNotice)
 		}
+
+		contest.GET("/challenges", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.ContestIsNotComing, GetContestChallenges)
+		contestChallenge := contest.Group(
+			"/challenges/:challengeID",
+			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.ContestIsNotComing, middleware.SetContestChallenge,
+		)
+		{
+			contestChallenge.GET("", GetContestChallengeStatus)
+			//contestChallenge.POST("/init", middleware.ContestStatus(model.ContestIsRunning), middleware.CheckVerified, middleware.CheckCaptain)
+			//contestChallenge.GET("/attachment")
+			//contestChallenge.POST("/reset", middleware.ContestStatus(model.ContestIsRunning))
+			//contestChallenge.POST("/start")
+			//contestChallenge.POST("/increase", middleware.ContestStatus(model.ContestIsRunning))
+			//contestChallenge.POST("/stop")
+			//contestChallenge.POST("/submit", middleware.ContestStatus(model.ContestIsRunning))
+		}
 	}
 
 	admin := auth.Group("/admin", middleware.CheckRole("admin"))

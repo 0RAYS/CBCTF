@@ -48,6 +48,7 @@ var resp = map[string]map[string]any{
 	GetContestChallengeError:    {"zh-CN": "获取比赛题目失败", "en-US": "Get contest challenge failed", "code": 500},
 	ContestChallengeNotFound:    {"zh-CN": "比赛题目不存在", "en-US": "Contest challenge not found", "code": 404},
 	UpdateContestChallengeError: {"zh-CN": "更新比赛题目失败", "en-US": "Update contest challenge failed", "code": 500},
+	AlreadySolved:               {"zh-CN": "题目已被解决", "en-US": "Challenge already solved", "code": 400},
 
 	CreateContestFlagError: {"zh-CN": "创建比赛flag失败", "en-US": "Create contest flag failed", "code": 500},
 	DeleteContestFlagError: {"zh-CN": "删除比赛flag失败", "en-US": "Delete contest flag failed", "code": 500},
