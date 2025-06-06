@@ -134,9 +134,9 @@ volumes:
 				}
 			}
 		}
-		if volumeFlags, ok := volumeFlags[docker.ID]; ok {
+		if flags, ok := volumeFlags[docker.ID]; ok {
 			serviceStr += "\t\tvolumes:\n"
-			for key, path := range volumeFlags {
+			for key, path := range flags {
 				serviceStr += fmt.Sprintf("\t\t\t- %s:%s\n", key, path)
 			}
 		}
