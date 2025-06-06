@@ -21,8 +21,8 @@ type Docker struct {
 	Hostname       *string         `gorm:"default:null" json:"hostname"`
 	WorkingDir     *string         `gorm:"default:null" json:"working_dir"`
 	User           *string         `gorm:"default:null" json:"user"`
-	Command        *StringList     `gorm:"default:null" gorm:"type:json" json:"command"`
-	Entrypoint     *StringList     `gorm:"default:null" gorm:"type:json" json:"entrypoint"`
+	Command        *StringList     `gorm:"default:null;type:json" json:"command"`
+	Entrypoint     *StringList     `gorm:"default:null;type:json" json:"entrypoint"`
 	CPUCount       *int64          `gorm:"default:null" json:"cpu_count"`
 	CPUPercent     *float32        `gorm:"default:null" json:"cpu_percent"`
 	CPUPeriod      *int64          `gorm:"default:null" json:"cpu_period"`
@@ -36,8 +36,8 @@ type Docker struct {
 	MemReservation *int64          `gorm:"default:null" json:"mem_reservation"`
 	MemSwapLimit   *int64          `gorm:"default:null" json:"mem_swap_limit"`
 	MemSwappiness  *int64          `gorm:"default:null" json:"mem_swappiness"`
-	Expose         *StringList     `gorm:"default:null" gorm:"type:json" json:"expose"`
-	Environment    *StringMap      `gorm:"default:null" gorm:"type:json" json:"environment"`
+	Expose         *StringList     `gorm:"default:null;type:json" json:"expose"`
+	Environment    *StringMap      `gorm:"default:null;type:json" json:"environment"`
 	Basic
 }
 
