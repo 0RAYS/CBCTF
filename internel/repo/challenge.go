@@ -71,6 +71,20 @@ func (c *ChallengeRepo) GetByRandID(randID string, preloadL ...string) (model.Ch
 	return c.getUniqueByKey("rand_id", randID, preloadL...)
 }
 
+func (c *ChallengeRepo) ListCategories(t string) ([]string, bool, string) {
+	var categories = make([]string, 0)
+	res := c.DB.Model(&model.Challenge{})
+	if t != "" {
+		res = res.Where("type = ?", t)
+	}
+	res = res.Select("distinct category").Find(&categories)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Categories: %s", res.Error)
+		return categories, false, model.Challenge{}.GetErrorString()
+	}
+	return categories, true, i18n.Success
+}
+
 func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
 	dockerGroupIDL, challengeFlagIDL, contestChallengeIDL, submissionIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0)
 	for _, randID := range randIDL {

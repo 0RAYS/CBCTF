@@ -39,6 +39,33 @@ func DownloadFile(ctx *gin.Context) {
 	ctx.File(file.Path)
 }
 
+func DownloadChallengeFile(ctx *gin.Context) {
+	var form f.DownloadChallengeForm
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
+		return
+	}
+	challenge := middleware.GetChallenge(ctx)
+	var path string
+	switch form.File {
+	case model.AttachmentFile, model.GeneratorFile:
+		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), form.File)
+	default:
+		ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
+		return
+	}
+	if _, err := os.Stat(path); err != nil {
+		if os.IsNotExist(err) {
+			ctx.JSON(http.StatusNotFound, gin.H{"msg": i18n.FileNotFound, "data": nil})
+			return
+		}
+		log.Logger.Warningf("Failed to get file: %s", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": i18n.UnknownError, "data": nil})
+		return
+	}
+	ctx.File(path)
+}
+
 func UploadAvatar(v string) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		file, err := ctx.FormFile(model.AvatarFile)
@@ -97,6 +124,39 @@ func UploadAvatar(v string) func(ctx *gin.Context) {
 	}
 }
 
+func UploadChallengeFile(ctx *gin.Context) {
+	challenge := middleware.GetChallenge(ctx)
+	file, err := ctx.FormFile(model.ChallengeFile)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
+		return
+	}
+	var path string
+	switch challenge.Type {
+	case model.StaticChallengeType, model.PodsChallengeType:
+		if file.Filename != model.AttachmentFile {
+			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.InvalidFileName, "data": nil})
+			return
+		}
+		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), model.AttachmentFile)
+	case model.DynamicChallengeType:
+		if file.Filename != model.GeneratorFile {
+			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.InvalidFileName, "data": nil})
+			return
+		}
+		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), model.GeneratorFile)
+	default:
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.InvalidChallengeType, "data": nil})
+		return
+	}
+	if err = ctx.SaveUploadedFile(file, path); err != nil {
+		log.Logger.Warningf("Failed to save file: %s", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": i18n.UnknownError, "data": nil})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
+}
+
 func GetAvatars(ctx *gin.Context) {
 	var form f.GetModelsForm
 	if _, exists := ctx.GetQuery("limit"); !exists {
@@ -109,8 +169,12 @@ func GetAvatars(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
-	avatars, count, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).ListWithConditions(form.Limit, form.Offset, map[string]any{
-		"type": model.AvatarFile,
+	avatars, count, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).ListWithConditions(form.Limit, form.Offset, db.GetOptions{
+		{
+			Key:   "type",
+			Value: model.AvatarFile,
+			And:   true,
+		},
 	})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

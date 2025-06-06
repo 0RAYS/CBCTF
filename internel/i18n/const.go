@@ -21,6 +21,7 @@ const (
 	GetChallengeError    = "GetChallengeError"
 	ChallengeNotFound    = "ChallengeNotFound"
 	UpdateChallengeError = "UpdateChallengeError"
+	InvalidChallengeType = "InvalidChallengeType"
 
 	CreateChallengeFlagError = "CreateChallengeFlagError"
 	DeleteChallengeFlagError = "DeleteChallengeFlagError"
@@ -142,4 +143,9 @@ const (
 	GetEmailVerifyTokenError = "GetEmailVerifyTokenError"
 	DelEmailVerifyTokenError = "DelEmailVerifyTokenError"
 	SendEmailError           = "SendEmailError"
+
+	CreateDirError           = "CreateDirError"
+	ReadDirError             = "ReadDirError"
+	InvalidFileName          = "InvalidFileName"
+	InvalidDockerComposeYaml = "InvalidDockerComposeYaml"
 )

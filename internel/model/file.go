@@ -3,8 +3,9 @@ package model
 import "CBCTF/internel/i18n"
 
 const (
-	AvatarFile  = "avatar"
-	WriteUPFile = "writeup"
+	ChallengeFile = "file"
+	AvatarFile    = "avatar"
+	WriteUPFile   = "writeup"
 )
 
 type File struct {

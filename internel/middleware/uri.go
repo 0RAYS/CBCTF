@@ -198,3 +198,33 @@ func GetNotice(ctx *gin.Context) model.Notice {
 		return notice.(model.Notice)
 	}
 }
+
+// SetChallenge 保存 model.Challenge 至上下文
+func SetChallenge(ctx *gin.Context) {
+	type challengeIDUri struct {
+		ChallengeID string `uri:"challengeID" binding:"required"`
+	}
+	var challengeID challengeIDUri
+	if err := ctx.ShouldBindUri(&challengeID); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.Abort()
+		return
+	}
+	challenge, ok, msg := db.InitChallengeRepo(db.DB.WithContext(ctx)).GetByRandID(challengeID.ChallengeID, "all")
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.Abort()
+		return
+	}
+	ctx.Set("Challenge", challenge)
+	ctx.Next()
+}
+
+// GetChallenge 从上下文中获取 model.Challenge
+func GetChallenge(ctx *gin.Context) model.Challenge {
+	if challenge, ok := ctx.Get("Challenge"); !ok || challenge == nil {
+		return model.Challenge{}
+	} else {
+		return challenge.(model.Challenge)
+	}
+}

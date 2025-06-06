@@ -22,6 +22,12 @@ type UpdateOptions interface {
 	Convert2Map() map[string]any
 }
 
+type GetOptions []struct {
+	Key   string
+	Value any
+	And   bool
+}
+
 func (r *Basic[M]) Create(options CreateOptions) (M, bool, string) {
 	m := options.Convert2Model()
 	if res := r.DB.Model(new(M)).Create(&m); res.Error != nil {
@@ -31,11 +37,20 @@ func (r *Basic[M]) Create(options CreateOptions) (M, bool, string) {
 	return m.(M), true, i18n.Success
 }
 
-func (r *Basic[M]) GetWithConditions(conditions map[string]any, preloadL ...string) (M, bool, string) {
+func (r *Basic[M]) GetWithConditions(conditions GetOptions, preloadL ...string) (M, bool, string) {
 	var m M
 	res := r.DB.Model(new(M))
-	for key, value := range conditions {
-		res = res.Where(fmt.Sprintf("%s = ?", key), value)
+	if len(conditions) == 1 {
+		condition := conditions[0]
+		res = res.Where(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
+		conditions = conditions[1:]
+	}
+	for _, condition := range conditions {
+		if condition.And {
+			res = res.Where(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
+		} else {
+			res = res.Or(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
+		}
 	}
 	res = preload(res, preloadL...).Limit(1).Find(&m)
 	if res.Error != nil {
@@ -52,18 +67,33 @@ func (r *Basic[M]) getUniqueByKey(key string, value any, preloadL ...string) (M,
 	if !utils.In(key, M.GetUniqueKey(new(M))) {
 		return *new(M), false, i18n.UnsupportedKey
 	}
-	return r.GetWithConditions(map[string]any{key: value}, preloadL...)
+	return r.GetWithConditions(GetOptions{
+		{
+			Key:   key,
+			Value: value,
+			And:   true,
+		},
+	}, preloadL...)
 }
 
 func (r *Basic[M]) GetByID(id uint, preloadL ...string) (M, bool, string) {
 	return r.getUniqueByKey("id", id, preloadL...)
 }
 
-func (r *Basic[M]) CountWithConditions(conditions map[string]any) (int64, bool, string) {
+func (r *Basic[M]) CountWithConditions(conditions GetOptions) (int64, bool, string) {
 	var count int64
 	res := r.DB.Model(new(M))
-	for key, value := range conditions {
-		res = res.Where(fmt.Sprintf("%s = ?", key), value)
+	if len(conditions) == 1 {
+		condition := conditions[0]
+		res = res.Where(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
+		conditions = conditions[1:]
+	}
+	for _, condition := range conditions {
+		if condition.And {
+			res = res.Where(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
+		} else {
+			res = res.Or(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
+		}
 	}
 	if res = res.Count(&count); res.Error != nil {
 		log.Logger.Warningf("Failed to count %T: %s", new(M), res.Error)
@@ -76,7 +106,7 @@ func (r *Basic[M]) Count() (int64, bool, string) {
 	return r.CountWithConditions(nil)
 }
 
-func (r *Basic[M]) ListWithConditions(limit, offset int, conditions map[string]any, preloadL ...string) ([]M, int64, bool, string) {
+func (r *Basic[M]) ListWithConditions(limit, offset int, conditions GetOptions, preloadL ...string) ([]M, int64, bool, string) {
 	var (
 		models         = make([]M, 0)
 		count, ok, msg = r.CountWithConditions(conditions)
@@ -85,8 +115,17 @@ func (r *Basic[M]) ListWithConditions(limit, offset int, conditions map[string]a
 		return models, count, false, msg
 	}
 	res := r.DB.Model(new(M))
-	for key, value := range conditions {
-		res = res.Where(fmt.Sprintf("%s = ?", key), value)
+	if len(conditions) == 1 {
+		condition := conditions[0]
+		res = res.Where(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
+		conditions = conditions[1:]
+	}
+	for _, condition := range conditions {
+		if condition.And {
+			res = res.Where(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
+		} else {
+			res = res.Or(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
+		}
 	}
 	res = preload(res, preloadL...).Order("created_at ASC").Limit(limit).Offset(offset).Find(&models)
 	if res.Error != nil {

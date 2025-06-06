@@ -23,6 +23,7 @@ var resp = map[string]map[string]any{
 	GetChallengeError:    {"zh-CN": "获取题目失败", "en-US": "Get challenge failed", "code": 500},
 	ChallengeNotFound:    {"zh-CN": "题目不存在", "en-US": "Challenge not found", "code": 404},
 	UpdateChallengeError: {"zh-CN": "更新题目失败", "en-US": "Update challenge failed", "code": 500},
+	InvalidChallengeType: {"zh-CN": "无效的题目类型", "en-US": "Invalid challenge type", "code": 400},
 
 	CreateChallengeFlagError: {"zh-CN": "创建题目flag失败", "en-US": "Create challenge flag failed", "code": 500},
 	DeleteChallengeFlagError: {"zh-CN": "删除题目flag失败", "en-US": "Delete challenge flag failed", "code": 500},
@@ -144,6 +145,11 @@ var resp = map[string]map[string]any{
 	GetEmailVerifyTokenError: {"zh-CN": "获取邮箱验证令牌失败", "en-US": "Get email verify token failed", "code": 500},
 	DelEmailVerifyTokenError: {"zh-CN": "删除邮箱验证令牌失败", "en-US": "Delete email verify token failed", "code": 500},
 	SendEmailError:           {"zh-CN": "发送邮件失败", "en-US": "Send email failed", "code": 500},
+
+	CreateDirError:           {"zh-CN": "创建题目根目录失败", "en-US": "Create directory failed", "code": 500},
+	ReadDirError:             {"zh-CN": "读取题目根目录失败", "en-US": "Read directory failed", "code": 500},
+	InvalidFileName:          {"zh-CN": "无效的文件名", "en-US": "Invalid file name", "code": 400},
+	InvalidDockerComposeYaml: {"zh-CN": "无效的Docker Compose YAML文件", "en-US": "Invalid Docker Compose YAML file", "code": 400},
 }
 
 // I18N 获取翻译与状态码, 非http响应状态码
