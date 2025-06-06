@@ -24,12 +24,11 @@ func GetContestChallenges(ctx *gin.Context) {
 	if _, exists := ctx.GetQuery("offset"); !exists {
 		form.Offset = 0
 	}
-	var conditions db.GetOptions
+	conditions := db.GetOptions{
+		{Key: "contest_id", Value: middleware.GetContest(ctx).ID, Op: "and"},
+	}
 	if middleware.GetRole(ctx) != "admin" {
-		conditions = db.GetOptions{
-			{Key: "contest_id", Value: middleware.GetContest(ctx).ID, Op: "and"},
-			{Key: "hidden", Value: false, Op: "and"},
-		}
+		conditions = append(conditions, db.GetOption{Key: "hidden", Value: false, Op: "and"})
 	}
 	contestChallengeL, count, ok, msg := db.InitContestChallengeRepo(db.DB.WithContext(ctx)).
 		ListWithConditions(form.Limit, form.Offset, conditions, "Challenge", "ContestFlags")

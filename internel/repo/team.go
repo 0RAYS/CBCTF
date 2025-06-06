@@ -98,16 +98,8 @@ func InitTeamRepo(tx *gorm.DB) *TeamRepo {
 
 func (t *TeamRepo) IsUniqueName(contestID uint, name string) bool {
 	count, ok, _ := t.CountWithConditions(GetOptions{
-		{
-			Key:   "contest_id",
-			Value: contestID,
-			Op:    "and",
-		},
-		{
-			Key:   "name",
-			Value: name,
-			Op:    "and",
-		},
+		{Key: "contest_id", Value: contestID, Op: "and"},
+		{Key: "name", Value: name, Op: "and"},
 	})
 	if !ok {
 		return false
@@ -129,16 +121,8 @@ func (t *TeamRepo) IsInContest(contestID uint, userID uint) bool {
 
 func (t *TeamRepo) GetByName(contestID uint, name string, preloadL ...string) (model.Team, bool, string) {
 	return t.GetWithConditions(GetOptions{
-		{
-			Key:   "contest_id",
-			Value: contestID,
-			Op:    "and",
-		},
-		{
-			Key:   "name",
-			Value: name,
-			Op:    "and",
-		},
+		{Key: "contest_id", Value: contestID, Op: "and"},
+		{Key: "name", Value: name, Op: "and"},
 	}, preloadL...)
 }
 
