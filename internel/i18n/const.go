@@ -59,11 +59,12 @@ const (
 	DeviceNotFound    = "DeviceNotFound"
 	UpdateDeviceError = "UpdateDeviceError"
 
-	CreateDockerError = "CreateDockerError"
-	DeleteDockerError = "DeleteDockerError"
-	GetDockerError    = "GetDockerError"
-	DockerNotFound    = "DockerNotFound"
-	UpdateDockerError = "UpdateDockerError"
+	CreateDockerError  = "CreateDockerError"
+	DeleteDockerError  = "DeleteDockerError"
+	GetDockerError     = "GetDockerError"
+	DockerNotFound     = "DockerNotFound"
+	UpdateDockerError  = "UpdateDockerError"
+	InvalidDockerImage = "InvalidDockerImage"
 
 	CreateDockerGroupError = "CreateDockerGroupError"
 	DeleteDockerGroupError = "DeleteDockerGroupError"

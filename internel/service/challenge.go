@@ -115,6 +115,9 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 				if service.ContainerName != "" {
 					name = service.ContainerName
 				}
+				if service.Image == "" {
+					return model.Challenge{}, false, i18n.InvalidDockerImage
+				}
 				environment := make(model.StringMap)
 				for k, v := range service.Environment {
 					if !strings.HasPrefix(k, model.EnvFlagPrefix) {

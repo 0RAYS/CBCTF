@@ -61,11 +61,12 @@ var resp = map[string]map[string]any{
 	DeviceNotFound:    {"zh-CN": "设备不存在", "en-US": "Device not found", "code": 404},
 	UpdateDeviceError: {"zh-CN": "更新设备失败", "en-US": "Update device failed", "code": 500},
 
-	CreateDockerError: {"zh-CN": "创建Docker失败", "en-US": "Create Docker failed", "code": 500},
-	DeleteDockerError: {"zh-CN": "删除Docker失败", "en-US": "Delete Docker failed", "code": 500},
-	GetDockerError:    {"zh-CN": "获取Docker失败", "en-US": "Get Docker failed", "code": 500},
-	DockerNotFound:    {"zh-CN": "Docker不存在", "en-US": "Docker not found", "code": 404},
-	UpdateDockerError: {"zh-CN": "更新Docker失败", "en-US": "Update Docker failed", "code": 500},
+	CreateDockerError:  {"zh-CN": "创建Docker失败", "en-US": "Create Docker failed", "code": 500},
+	DeleteDockerError:  {"zh-CN": "删除Docker失败", "en-US": "Delete Docker failed", "code": 500},
+	GetDockerError:     {"zh-CN": "获取Docker失败", "en-US": "Get Docker failed", "code": 500},
+	DockerNotFound:     {"zh-CN": "Docker不存在", "en-US": "Docker not found", "code": 404},
+	UpdateDockerError:  {"zh-CN": "更新Docker失败", "en-US": "Update Docker failed", "code": 500},
+	InvalidDockerImage: {"zh-CN": "无效的Docker镜像", "en-US": "Invalid Docker image", "code": 400},
 
 	CreateDockerGroupError: {"zh-CN": "创建Docker组失败", "en-US": "Create Docker group failed", "code": 500},
 	DeleteDockerGroupError: {"zh-CN": "删除Docker组失败", "en-US": "Delete Docker group failed", "code": 500},
