@@ -1,6 +1,8 @@
 package repo
 
 import (
+	"CBCTF/internel/i18n"
+	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"gorm.io/gorm"
 	"time"
@@ -84,4 +86,31 @@ func InitContestFlagRepo(tx *gorm.DB) *ContestFlagRepo {
 			DB: tx,
 		},
 	}
+}
+
+func (c *ContestFlagRepo) Delete(idL ...uint) (bool, string) {
+	submissionIDL, teamFlagIDL := make([]uint, 0), make([]uint, 0)
+	for _, id := range idL {
+		contestFlag, ok, msg := c.GetByID(id, "Submissions", "TeamFlags")
+		if !ok {
+			return false, msg
+		}
+		for _, submission := range contestFlag.Submissions {
+			submissionIDL = append(submissionIDL, submission.ID)
+		}
+		for _, teamFlag := range contestFlag.TeamFlags {
+			teamFlagIDL = append(teamFlagIDL, teamFlag.ID)
+		}
+	}
+	if ok, msg := InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ok {
+		return false, msg
+	}
+	if ok, msg := InitTeamFlagRepo(c.DB).Delete(teamFlagIDL...); !ok {
+		return false, msg
+	}
+	if res := c.DB.Model(&model.ContestFlag{}).Where("id IN ?", idL).Delete(&model.ContestFlag{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete ContestFlags: %s", res.Error)
+		return false, model.ContestFlag{}.DeleteErrorString()
+	}
+	return true, i18n.Success
 }

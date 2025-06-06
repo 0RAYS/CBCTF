@@ -140,8 +140,9 @@ func (t *TeamRepo) GetBy2ID(userID, contestID uint, preloadL ...string) (model.T
 }
 
 func (t *TeamRepo) Delete(idL ...uint) (bool, string) {
+	submissionIDL, teamFlagIDL := make([]uint, 0), make([]uint, 0)
 	for _, id := range idL {
-		team, ok, msg := t.GetByID(id, "Users")
+		team, ok, msg := t.GetByID(id, "Users", "Submissions", "TeamFlags")
 		if !ok {
 			return false, msg
 		}
@@ -159,6 +160,18 @@ func (t *TeamRepo) Delete(idL ...uint) (bool, string) {
 				return false, msg
 			}
 		}
+		for _, submission := range team.Submissions {
+			submissionIDL = append(submissionIDL, submission.ID)
+		}
+		for _, teamFlag := range team.TeamFlags {
+			teamFlagIDL = append(teamFlagIDL, teamFlag.ID)
+		}
+	}
+	if ok, msg := InitSubmissionRepo(t.DB).Delete(submissionIDL...); !ok {
+		return false, msg
+	}
+	if ok, msg := InitTeamFlagRepo(t.DB).Delete(teamFlagIDL...); !ok {
+		return false, msg
 	}
 	if res := t.DB.Model(&model.Team{}).Where("id IN ?", idL).Delete(&model.Team{}); res.Error != nil {
 		log.Logger.Errorf("Failed to delete Team: %s", res.Error)

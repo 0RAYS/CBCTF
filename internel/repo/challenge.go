@@ -72,9 +72,9 @@ func (c *ChallengeRepo) GetByRandID(randID string, preloadL ...string) (model.Ch
 }
 
 func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
-	dockerGroupIDL, challengeFlagIDL, contestChallengeIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0)
+	dockerGroupIDL, challengeFlagIDL, contestChallengeIDL, submissionIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0)
 	for _, randID := range randIDL {
-		challenge, ok, msg := c.GetByRandID(randID, "DockerGroups", "ChallengeFlags", "ContestChallenges")
+		challenge, ok, msg := c.GetByRandID(randID, "DockerGroups", "ChallengeFlags", "ContestChallenges", "Submissions")
 		if !ok {
 			return false, msg
 		}
@@ -87,6 +87,9 @@ func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
 		for _, contestChallenge := range challenge.ContestChallenges {
 			contestChallengeIDL = append(contestChallengeIDL, contestChallenge.ID)
 		}
+		for _, submission := range challenge.Submissions {
+			submissionIDL = append(submissionIDL, submission.ID)
+		}
 	}
 	if ok, msg := InitDockerGroupRepo(c.DB).Delete(dockerGroupIDL...); !ok {
 		return false, msg
@@ -95,6 +98,9 @@ func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
 		return false, msg
 	}
 	if ok, msg := InitContestChallengeRepo(c.DB).Delete(contestChallengeIDL...); !ok {
+		return false, msg
+	}
+	if ok, msg := InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ok {
 		return false, msg
 	}
 	if res := c.DB.Model(&model.Challenge{}).Where("rand_id IN ?", randIDL).Delete(&model.Challenge{}); res.Error != nil {

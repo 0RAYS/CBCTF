@@ -20,12 +20,14 @@ var (
 // HasMany Notice
 // HasMany ContestChallenge
 // HasMany ContestFlag
+// HasMany Submission
 type Contest struct {
 	Teams             []Team             `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Users             []*User            `gorm:"many2many:user_contests;" json:"-"`
 	Notices           []Notice           `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	ContestChallenges []ContestChallenge `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	ContestFlags      []ContestFlag      `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Submissions       []Submission       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Name              string             `gorm:"type:varchar(255);uniqueIndex;not null" json:"name"`
 	Desc              string             `json:"desc"`
 	Captcha           string             `json:"captcha"`

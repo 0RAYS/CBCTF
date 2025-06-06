@@ -6,21 +6,23 @@ import "CBCTF/internel/i18n"
 // ManyToMany Teams
 // ManyToMany Contests
 // HasMany Devices
+// HasMany Submissions
 type User struct {
-	Teams    []*Team    `gorm:"many2many:user_teams;" json:"-"`
-	Contests []*Contest `gorm:"many2many:user_contests;" json:"-"`
-	Devices  []Device   `json:"-"`
-	Name     string     `gorm:"type:varchar(255);uniqueIndex;not null" json:"name"`
-	Password string     `gorm:"not null" json:"-"`
-	Email    string     `gorm:"type:varchar(255);uniqueIndex;not null" json:"email"`
-	Country  string     `gorm:"default:'CN'" json:"country"`
-	Avatar   AvatarURL  `json:"avatar"`
-	Desc     string     `json:"desc"`
-	Verified bool       `gorm:"default:false" json:"verified"`
-	Hidden   bool       `gorm:"default:false" json:"hidden"`
-	Banned   bool       `gorm:"default:false" json:"banned"`
-	Score    float64    `gorm:"default:0" json:"score"`
-	Solved   int64      `gorm:"default:0" json:"solved"`
+	Teams       []*Team      `gorm:"many2many:user_teams;" json:"-"`
+	Contests    []*Contest   `gorm:"many2many:user_contests;" json:"-"`
+	Devices     []Device     `json:"-"`
+	Submissions []Submission `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Name        string       `gorm:"type:varchar(255);uniqueIndex;not null" json:"name"`
+	Password    string       `gorm:"not null" json:"-"`
+	Email       string       `gorm:"type:varchar(255);uniqueIndex;not null" json:"email"`
+	Country     string       `gorm:"default:'CN'" json:"country"`
+	Avatar      AvatarURL    `json:"avatar"`
+	Desc        string       `json:"desc"`
+	Verified    bool         `gorm:"default:false" json:"verified"`
+	Hidden      bool         `gorm:"default:false" json:"hidden"`
+	Banned      bool         `gorm:"default:false" json:"banned"`
+	Score       float64      `gorm:"default:0" json:"score"`
+	Solved      int64        `gorm:"default:0" json:"solved"`
 	Basic
 }
 

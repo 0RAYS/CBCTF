@@ -66,17 +66,23 @@ func InitContestChallengeRepo(tx *gorm.DB) *ContestChallengeRepo {
 }
 
 func (c *ContestChallengeRepo) Delete(idL ...uint) (bool, string) {
-	contestFlagIDL := make([]uint, 0)
+	contestFlagIDL, submissionIDL := make([]uint, 0), make([]uint, 0)
 	for _, id := range idL {
-		contestChallenge, ok, msg := c.GetByID(id, "ContestFlags")
+		contestChallenge, ok, msg := c.GetByID(id, "ContestFlags", "Submissions")
 		if !ok {
 			return false, msg
 		}
 		for _, contestFlag := range contestChallenge.ContestFlags {
 			contestFlagIDL = append(contestFlagIDL, contestFlag.ID)
 		}
+		for _, submission := range contestChallenge.Submissions {
+			submissionIDL = append(submissionIDL, submission.ID)
+		}
 	}
 	if ok, msg := InitContestFlagRepo(c.DB).Delete(contestFlagIDL...); !ok {
+		return false, msg
+	}
+	if ok, msg := InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ok {
 		return false, msg
 	}
 	if res := c.DB.Model(&model.ContestChallenge{}).Where("id IN ?", idL).Delete(&model.ContestChallenge{}); res.Error != nil {

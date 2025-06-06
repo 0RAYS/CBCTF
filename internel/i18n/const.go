@@ -94,6 +94,12 @@ const (
 	RequestNotFound    = "RequestNotFound"
 	UpdateRequestError = "UpdateRequestError"
 
+	CreateSubmissionError = "CreateSubmissionError"
+	DeleteSubmissionError = "DeleteSubmissionError"
+	GetSubmissionError    = "GetSubmissionError"
+	SubmissionNotFound    = "SubmissionNotFound"
+	UpdateSubmissionError = "UpdateSubmissionError"
+
 	CreateTeamError    = "CreateTeamError"
 	DeleteTeamError    = "DeleteTeamError"
 	GetTeamError       = "GetTeamError"
@@ -106,6 +112,12 @@ const (
 	DuplicateMember    = "DuplicateMember"
 	CaptainCannotLeave = "CaptainCannotLeave"
 	TeamCaptchaError   = "TeamCaptchaError"
+
+	CreateTeamFlagError = "CreateTeamFlagError"
+	DeleteTeamFlagError = "DeleteTeamFlagError"
+	GetTeamFlagError    = "GetTeamFlagError"
+	TeamFlagNotFound    = "TeamFlagNotFound"
+	UpdateTeamFlagError = "UpdateTeamFlagError"
 
 	CreateUserError     = "CreateUserError"
 	DeleteUserError     = "DeleteUserError"

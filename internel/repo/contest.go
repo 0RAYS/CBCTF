@@ -122,9 +122,9 @@ func (c *ContestRepo) IsUniqueName(name string) bool {
 }
 
 func (c *ContestRepo) Delete(idL ...uint) (bool, string) {
-	teamIDL, noticeIDL, contestChallengeIDL, contestFlagIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0)
+	teamIDL, noticeIDL, contestChallengeIDL, contestFlagIDL, submissionIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0)
 	for _, id := range idL {
-		contest, ok, msg := c.GetByID(id, "Teams", "Notices", "ContestChallenges", "ContestFlags")
+		contest, ok, msg := c.GetByID(id, "Teams", "Notices", "ContestChallenges", "ContestFlags", "Submissions")
 		if !ok {
 			return ok, msg
 		}
@@ -146,6 +146,9 @@ func (c *ContestRepo) Delete(idL ...uint) (bool, string) {
 		for _, contestFlag := range contest.ContestFlags {
 			contestFlagIDL = append(contestFlagIDL, contestFlag.ID)
 		}
+		for _, submission := range contest.Submissions {
+			submissionIDL = append(submissionIDL, submission.ID)
+		}
 	}
 	if ok, msg := InitTeamRepo(c.DB).Delete(teamIDL...); !ok {
 		return false, msg
@@ -157,6 +160,9 @@ func (c *ContestRepo) Delete(idL ...uint) (bool, string) {
 		return false, msg
 	}
 	if ok, msg := InitContestFlagRepo(c.DB).Delete(contestFlagIDL...); !ok {
+		return false, msg
+	}
+	if ok, msg := InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ok {
 		return false, msg
 	}
 	if res := c.DB.Model(&model.Contest{}).Where("id IN ?", idL).Delete(&model.Contest{}); res.Error != nil {
