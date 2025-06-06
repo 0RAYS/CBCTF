@@ -8,18 +8,27 @@ const (
 	WriteUPFile   = "writeup"
 )
 
+// File
+// BelongsTo Admin
+// BelongsTo User
+// BelongsTo Team
+// BelongsTo Contest
 type File struct {
-	RandID    string `gorm:"type:varchar(255);uniqueIndex;not null" json:"rand_id"`
-	Filename  string `json:"filename"`
-	Size      int64  `json:"size"`
-	Path      string `json:"-"`
-	AdminID   uint   `json:"admin_id"`
-	UserID    uint   `json:"user_id"`
-	TeamID    uint   `json:"team_id"`
-	ContestID uint   `json:"contest_id"`
-	Suffix    string `json:"suffix"`
-	Hash      string `json:"hash"`
-	Type      string `json:"type"`
+	AdminID   *uint    `json:"admin_id"`
+	Admin     *Admin   `json:"-"`
+	UserID    *uint    `json:"user_id"`
+	User      *User    `json:"-"`
+	TeamID    *uint    `json:"team_id"`
+	Team      *Team    `json:"-"`
+	ContestID *uint    `json:"contest_id"`
+	Contest   *Contest `json:"-"`
+	RandID    string   `gorm:"type:varchar(255);uniqueIndex;not null" json:"rand_id"`
+	Filename  string   `json:"filename"`
+	Size      int64    `json:"size"`
+	Path      string   `json:"-"`
+	Suffix    string   `json:"suffix"`
+	Hash      string   `json:"hash"`
+	Type      string   `json:"type"`
 	Basic
 }
 

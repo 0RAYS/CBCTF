@@ -11,7 +11,7 @@ type ChallengeFlagRepo struct {
 
 type CreateChallengeFlagOptions struct {
 	ChallengeID uint
-	DockerID    uint
+	DockerID    *uint
 	Value       string
 	InjectType  string
 	Path        string
@@ -20,7 +20,7 @@ type CreateChallengeFlagOptions struct {
 func (c CreateChallengeFlagOptions) Convert2Model() model.Model {
 	return model.ChallengeFlag{
 		ChallengeID: c.ChallengeID,
-		DockerID:    &c.DockerID,
+		DockerID:    c.DockerID,
 		Value:       c.Value,
 		InjectType:  c.InjectType,
 		Path:        c.Path,

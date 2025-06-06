@@ -78,25 +78,25 @@ func UploadAvatar(v string) func(ctx *gin.Context) {
 		switch v {
 		case "admin":
 			id = middleware.GetSelfID(ctx)
-			options.AdminID = id
+			options.AdminID = &id
 		case "self-user":
 			id = middleware.GetSelfID(ctx)
-			options.UserID = id
+			options.UserID = &id
 		case "user":
 			id = middleware.GetUser(ctx).ID
-			options.AdminID = middleware.GetSelfID(ctx)
-			options.UserID = id
+			*options.AdminID = middleware.GetSelfID(ctx)
+			options.UserID = &id
 		case "contest":
 			id = middleware.GetContest(ctx).ID
-			options.AdminID = middleware.GetSelfID(ctx)
-			options.ContestID = id
+			*options.AdminID = middleware.GetSelfID(ctx)
+			options.ContestID = &id
 		case "team":
 			id = middleware.GetTeam(ctx).ID
-			options.TeamID = id
+			options.TeamID = &id
 			if middleware.GetRole(ctx) == "admin" {
-				options.AdminID = middleware.GetSelfID(ctx)
+				*options.AdminID = middleware.GetSelfID(ctx)
 			} else {
-				options.UserID = middleware.GetSelfID(ctx)
+				*options.UserID = middleware.GetSelfID(ctx)
 			}
 		}
 		tx := db.DB.WithContext(ctx).Begin()
