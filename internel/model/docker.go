@@ -17,27 +17,27 @@ type Docker struct {
 	ChallengeFlags []ChallengeFlag `json:"-"`
 	Name           string          `json:"name"`
 	Image          string          `json:"image"`
-	PullPolicy     *string         `json:"pull_policy"`
-	Hostname       *string         `json:"hostname"`
-	WorkingDir     *string         `json:"working_dir"`
-	User           *string         `json:"user"`
-	Command        *StringList     `gorm:"type:json" json:"command"`
-	Entrypoint     *StringList     `gorm:"type:json" json:"entrypoint"`
-	CPUCount       *int64          `json:"cpu_count"`
-	CPUPercent     *float32        `json:"cpu_percent"`
-	CPUPeriod      *int64          `json:"cpu_period"`
-	CPUQuota       *int64          `json:"cpu_quota"`
-	CPURTPeriod    *int64          `json:"cpu_rt_period"`
-	CPURTRuntime   *int64          `json:"cpu_rt_runtime"`
-	CPUS           *float32        `json:"cpus"`
-	CPUSet         *string         `json:"cpu_set"`
-	CPUShares      *int64          `json:"cpu_shares"`
-	MemLimit       *int64          `json:"mem_limit"`
-	MemReservation *int64          `json:"mem_reservation"`
-	MemSwapLimit   *int64          `json:"mem_swap_limit"`
-	MemSwappiness  *int64          `json:"mem_swappiness"`
-	Expose         *StringList     `gorm:"type:json" json:"expose"`
-	Environment    *StringMap      `gorm:"type:json" json:"environment"`
+	PullPolicy     *string         `gorm:"default:null" json:"pull_policy"`
+	Hostname       *string         `gorm:"default:null" json:"hostname"`
+	WorkingDir     *string         `gorm:"default:null" json:"working_dir"`
+	User           *string         `gorm:"default:null" json:"user"`
+	Command        *StringList     `gorm:"default:null" gorm:"type:json" json:"command"`
+	Entrypoint     *StringList     `gorm:"default:null" gorm:"type:json" json:"entrypoint"`
+	CPUCount       *int64          `gorm:"default:null" json:"cpu_count"`
+	CPUPercent     *float32        `gorm:"default:null" json:"cpu_percent"`
+	CPUPeriod      *int64          `gorm:"default:null" json:"cpu_period"`
+	CPUQuota       *int64          `gorm:"default:null" json:"cpu_quota"`
+	CPURTPeriod    *int64          `gorm:"default:null" json:"cpu_rt_period"`
+	CPURTRuntime   *int64          `gorm:"default:null" json:"cpu_rt_runtime"`
+	CPUS           *float32        `gorm:"default:null" json:"cpus"`
+	CPUSet         *string         `gorm:"default:null" json:"cpu_set"`
+	CPUShares      *int64          `gorm:"default:null" json:"cpu_shares"`
+	MemLimit       *int64          `gorm:"default:null" json:"mem_limit"`
+	MemReservation *int64          `gorm:"default:null" json:"mem_reservation"`
+	MemSwapLimit   *int64          `gorm:"default:null" json:"mem_swap_limit"`
+	MemSwappiness  *int64          `gorm:"default:null" json:"mem_swappiness"`
+	Expose         *StringList     `gorm:"default:null" gorm:"type:json" json:"expose"`
+	Environment    *StringMap      `gorm:"default:null" gorm:"type:json" json:"environment"`
 	Basic
 }
 

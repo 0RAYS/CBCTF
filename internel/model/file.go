@@ -14,13 +14,13 @@ const (
 // BelongsTo Team
 // BelongsTo Contest
 type File struct {
-	AdminID   *uint    `json:"admin_id"`
+	AdminID   *uint    `gorm:"default:null" json:"admin_id"`
 	Admin     *Admin   `json:"-"`
-	UserID    *uint    `json:"user_id"`
+	UserID    *uint    `gorm:"default:null" json:"user_id"`
 	User      *User    `json:"-"`
-	TeamID    *uint    `json:"team_id"`
+	TeamID    *uint    `gorm:"default:null" json:"team_id"`
 	Team      *Team    `json:"-"`
-	ContestID *uint    `json:"contest_id"`
+	ContestID *uint    `gorm:"default:null" json:"contest_id"`
 	Contest   *Contest `json:"-"`
 	RandID    string   `gorm:"type:varchar(255);uniqueIndex;not null" json:"rand_id"`
 	Filename  string   `json:"filename"`
