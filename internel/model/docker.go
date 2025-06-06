@@ -21,8 +21,8 @@ type Docker struct {
 	Hostname       *string         `json:"hostname"`
 	WorkingDir     *string         `json:"working_dir"`
 	User           *string         `json:"user"`
-	Command        *StringList     `json:"command"`
-	Entrypoint     *StringList     `json:"entrypoint"`
+	Command        *StringList     `gorm:"type:json" json:"command"`
+	Entrypoint     *StringList     `gorm:"type:json" json:"entrypoint"`
 	CPUCount       *int64          `json:"cpu_count"`
 	CPUPercent     *float32        `json:"cpu_percent"`
 	CPUPeriod      *int64          `json:"cpu_period"`
@@ -36,8 +36,8 @@ type Docker struct {
 	MemReservation *int64          `json:"mem_reservation"`
 	MemSwapLimit   *int64          `json:"mem_swap_limit"`
 	MemSwappiness  *int64          `json:"mem_swappiness"`
-	Expose         *StringList     `json:"expose"`
-	Environment    *StringMap      `json:"environment"`
+	Expose         *StringList     `gorm:"type:json" json:"expose"`
+	Environment    *StringMap      `gorm:"type:json" json:"environment"`
 	Basic
 }
 
