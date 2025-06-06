@@ -96,6 +96,12 @@ var resp = map[string]map[string]any{
 	RequestNotFound:    {"zh-CN": "请求不存在", "en-US": "Request not found", "code": 404},
 	UpdateRequestError: {"zh-CN": "更新请求失败", "en-US": "Update request failed", "code": 500},
 
+	CreateSubmissionError: {"zh-CN": "创建提交记录失败", "en-US": "Record submission failed", "code": 500},
+	DeleteSubmissionError: {"zh-CN": "删除提交记录失败", "en-US": "Delete submission failed", "code": 500},
+	GetSubmissionError:    {"zh-CN": "获取提交记录失败", "en-US": "Get submission failed", "code": 500},
+	SubmissionNotFound:    {"zh-CN": "提交记录不存在", "en-US": "Submission not found", "code": 404},
+	UpdateSubmissionError: {"zh-CN": "更新提交记录失败", "en-US": "Update submission failed", "code": 500},
+
 	CreateTeamError:    {"zh-CN": "创建战队失败", "en-US": "Create team failed", "code": 500},
 	DeleteTeamError:    {"zh-CN": "删除战队失败", "en-US": "Delete team failed", "code": 500},
 	GetTeamError:       {"zh-CN": "获取战队失败", "en-US": "Get team failed", "code": 500},
@@ -108,6 +114,12 @@ var resp = map[string]map[string]any{
 	UserNotInTeam:      {"zh-CN": "用户不在战队中", "en-US": "User not in team", "code": 400},
 	CaptainCannotLeave: {"zh-CN": "队长不能离开战队", "en-US": "Captain cannot leave team", "code": 400},
 	TeamCaptchaError:   {"zh-CN": "战队邀请码错误", "en-US": "Team captcha error", "code": 400},
+
+	CreateTeamFlagError: {"zh-CN": "创建战队flag失败", "en-US": "Create team flag failed", "code": 500},
+	DeleteTeamFlagError: {"zh-CN": "删除战队flag失败", "en-US": "Delete team flag failed", "code": 500},
+	GetTeamFlagError:    {"zh-CN": "获取战队flag失败", "en-US": "Get team flag failed", "code": 500},
+	TeamFlagNotFound:    {"zh-CN": "战队flag不存在", "en-US": "Team flag not found", "code": 404},
+	UpdateTeamFlagError: {"zh-CN": "更新战队flag失败", "en-US": "Update team flag failed", "code": 500},
 
 	CreateUserError:     {"zh-CN": "创建用户失败", "en-US": "Create user failed", "code": 500},
 	DeleteUserError:     {"zh-CN": "删除用户失败", "en-US": "Delete user failed", "code": 500},

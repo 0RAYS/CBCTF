@@ -67,7 +67,7 @@ func (f *FileRepo) GetByHash(hash string) (model.File, bool, string) {
 func (f *FileRepo) DeleteByRandID(randIDL ...string) (bool, string) {
 	if res := f.DB.Model(&model.File{}).Where("rand_id IN ?", randIDL).Delete(&model.File{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete File: %s", res.Error)
-		return false, i18n.DeleteFileError
+		return false, model.File{}.DeleteErrorString()
 	}
 	return true, i18n.Success
 }

@@ -8,11 +8,15 @@ import (
 // ContestFlag
 // BelongsTo Contest
 // BelongsTo ContestChallenge
+// HasMany Submission
+// HasMany TeamFlag
 type ContestFlag struct {
 	ContestID          uint             `json:"contest_id"`
 	Contest            Contest          `json:"-"`
 	ContestChallengeID uint             `json:"contest_challenge_id"`
 	ContestChallenge   ContestChallenge `json:"-"`
+	Submissions        []Submission     `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	TeamFlags          []TeamFlag       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Value              string           `json:"value"`
 	Score              float64          `gorm:"default:1000" json:"score"`
 	CurrentScore       float64          `gorm:"default:1000" json:"current_score"`

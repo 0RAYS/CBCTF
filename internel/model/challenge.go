@@ -15,10 +15,12 @@ const (
 // HasMany DockerGroup
 // HasMany ChallengeFlag
 // HasMany ContestChallenge
+// HasMany Submission
 type Challenge struct {
 	DockerGroups      []DockerGroup      `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	ChallengeFlags    []ChallengeFlag    `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	ContestChallenges []ContestChallenge `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Submissions       []Submission       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	RandID            string             `gorm:"uniqueIndex;not null" json:"rand_id"`
 	Name              string             `json:"name"`
 	Desc              string             `json:"desc"`
