@@ -48,55 +48,55 @@ volumes:
 		)
 		serviceStr += fmt.Sprintf("\t%s:\n", docker.Name)
 		serviceStr += fmt.Sprintf("\t\timage: %s\n", docker.Image)
-		if docker.PullPolicy != nil {
+		if docker.PullPolicy != nil && *docker.PullPolicy != "" {
 			serviceStr += fmt.Sprintf("\t\tpull_policy: %s\n", *docker.PullPolicy)
 		}
-		if docker.Hostname != nil {
+		if docker.Hostname != nil && *docker.Hostname != "" {
 			serviceStr += fmt.Sprintf("\t\thostname: %s\n", *docker.Hostname)
 		}
-		if docker.WorkingDir != nil {
+		if docker.WorkingDir != nil && *docker.WorkingDir != "" {
 			serviceStr += fmt.Sprintf("\t\tworking_dir: %s\n", *docker.WorkingDir)
 		}
-		if docker.User != nil {
+		if docker.User != nil && *docker.User != "" {
 			serviceStr += fmt.Sprintf("\t\tuser: %s\n", *docker.User)
 		}
-		if docker.CPUCount != nil {
+		if docker.CPUCount != nil && *docker.CPUCount > 0 {
 			serviceStr += fmt.Sprintf("\t\tcpu_count: %d\n", *docker.CPUCount)
 		}
-		if docker.CPUPercent != nil {
+		if docker.CPUPercent != nil && *docker.CPUPercent > 0 {
 			serviceStr += fmt.Sprintf("\t\tcpu_percent: %.2f\n", *docker.CPUPercent)
 		}
-		if docker.CPUPeriod != nil {
+		if docker.CPUPeriod != nil && *docker.CPUPeriod > 0 {
 			serviceStr += fmt.Sprintf("\t\tcpu_period: %d\n", *docker.CPUPeriod)
 		}
-		if docker.CPUQuota != nil {
+		if docker.CPUQuota != nil && *docker.CPUQuota > 0 {
 			serviceStr += fmt.Sprintf("\t\tcpu_quota: %d\n", *docker.CPUQuota)
 		}
-		if docker.CPURTPeriod != nil {
+		if docker.CPURTPeriod != nil && *docker.CPURTPeriod > 0 {
 			serviceStr += fmt.Sprintf("\t\tcpu_rt_period: %d\n", *docker.CPURTPeriod)
 		}
-		if docker.CPURTRuntime != nil {
+		if docker.CPURTRuntime != nil && *docker.CPURTRuntime > 0 {
 			serviceStr += fmt.Sprintf("\t\tcpu_rt_runtime: %d\n", *docker.CPURTRuntime)
 		}
-		if docker.CPUS != nil {
+		if docker.CPUS != nil && *docker.CPUS > 0 {
 			serviceStr += fmt.Sprintf("\t\tcpus: %.2f\n", *docker.CPUS)
 		}
-		if docker.CPUSet != nil {
+		if docker.CPUSet != nil && *docker.CPUSet != "" {
 			serviceStr += fmt.Sprintf("\t\tcpu_set: %s\n", *docker.CPUSet)
 		}
-		if docker.CPUShares != nil {
+		if docker.CPUShares != nil && *docker.CPUShares > 0 {
 			serviceStr += fmt.Sprintf("\t\tcpu_shares: %d\n", *docker.CPUShares)
 		}
-		if docker.MemLimit != nil {
+		if docker.MemLimit != nil && *docker.MemLimit > 0 {
 			serviceStr += fmt.Sprintf("\t\tmem_limit: %d\n", *docker.MemLimit)
 		}
-		if docker.MemReservation != nil {
+		if docker.MemReservation != nil && *docker.MemReservation > 0 {
 			serviceStr += fmt.Sprintf("\t\tmem_reservation: %d\n", *docker.MemReservation)
 		}
-		if docker.MemSwapLimit != nil {
+		if docker.MemSwapLimit != nil && *docker.MemSwapLimit > 0 {
 			serviceStr += fmt.Sprintf("\t\tmem_swap_limit: %d\n", *docker.MemSwapLimit)
 		}
-		if docker.MemSwappiness != nil {
+		if docker.MemSwappiness != nil && *docker.MemSwappiness > 0 {
 			serviceStr += fmt.Sprintf("\t\tmem_swappiness: %d\n", *docker.MemSwappiness)
 		}
 		if docker.Command != nil {
@@ -142,7 +142,6 @@ volumes:
 		}
 	}
 	serviceStr = strings.Trim(serviceStr, "\n")
-
 	return fmt.Sprintf(baseYaml, serviceStr, volumeStr)
 }
 
