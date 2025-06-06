@@ -1,6 +1,10 @@
 package model
 
-import "CBCTF/internel/i18n"
+import (
+	"CBCTF/internel/config"
+	"CBCTF/internel/i18n"
+	"fmt"
+)
 
 const (
 	StaticChallengeType  = "static"
@@ -64,4 +68,8 @@ func (c Challenge) UpdateErrorString() string {
 
 func (c Challenge) GetUniqueKey() []string {
 	return []string{"id", "rand_id"}
+}
+
+func (c Challenge) BasicDir() string {
+	return fmt.Sprintf("%s/challenges/%d", config.Env.Path, c.ID)
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/google/uuid"
 	"math/rand"
 	"reflect"
+	"strings"
 	"time"
 )
 
@@ -38,4 +39,11 @@ func RandStr(n int) string {
 		result[i] = charset[r.Intn(len(charset))]
 	}
 	return string(result)
+}
+
+func ToTitle(s string) string {
+	if len(s) == 0 {
+		return strings.ToUpper(s)
+	}
+	return strings.ToUpper(string(s[0])) + s[1:]
 }

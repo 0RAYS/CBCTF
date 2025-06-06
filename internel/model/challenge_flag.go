@@ -1,6 +1,18 @@
 package model
 
-import "CBCTF/internel/i18n"
+import (
+	"CBCTF/internel/i18n"
+	"regexp"
+)
+
+var (
+	StaticFlag  = regexp.MustCompile(`static\{(.*?)\}`)
+	UUIDFlag    = regexp.MustCompile(`uuid\{(.*?)\}`)
+	DynamicFlag = regexp.MustCompile(`dynamic\{(.*?)\}`)
+
+	EnvInjectType    = "env"
+	VolumeInjectType = "volume"
+)
 
 // ChallengeFlag 题库中挑战的 flag 定义
 // BelongsTo Challenge
