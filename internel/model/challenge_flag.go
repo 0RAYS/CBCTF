@@ -20,7 +20,7 @@ var (
 type ChallengeFlag struct {
 	ChallengeID uint      `json:"challenge_id"`
 	Challenge   Challenge `json:"-"`
-	DockerID    *uint     `json:"docker_id"`
+	DockerID    *uint     `gorm:"default:null" json:"docker_id"`
 	Docker      *Docker   `json:"-"`
 	Value       string    `json:"value"`
 	InjectType  string    `json:"inject_type"`
