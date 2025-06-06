@@ -73,3 +73,23 @@ func (c Challenge) GetUniqueKey() []string {
 func (c Challenge) BasicDir() string {
 	return fmt.Sprintf("%s/challenges/%d", config.Env.Path, c.ID)
 }
+
+// StaticPath 获取静态题目文件的路径
+func (c Challenge) StaticPath() string {
+	return fmt.Sprintf("%s/%s", c.BasicDir(), AttachmentFile)
+}
+
+// GeneratorPath 获取动态题目生成器的路径
+func (c Challenge) GeneratorPath() string {
+	return fmt.Sprintf("%s/%s", c.BasicDir(), GeneratorFile)
+}
+
+// AttachmentPath 获取下载时, 题目附件的路径
+func (c Challenge) AttachmentPath(teamID uint) string {
+	switch c.Type {
+	case DynamicChallengeType:
+		return fmt.Sprintf("%s/attachments/team-%d/%d.zip", config.Env.Path, teamID, c.ID)
+	default:
+		return c.StaticPath()
+	}
+}
