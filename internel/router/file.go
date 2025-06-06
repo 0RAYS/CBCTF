@@ -170,11 +170,7 @@ func GetAvatars(ctx *gin.Context) {
 		return
 	}
 	avatars, count, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).ListWithConditions(form.Limit, form.Offset, db.GetOptions{
-		{
-			Key:   "type",
-			Value: model.AvatarFile,
-			Op:    "and",
-		},
+		{Key: "type", Value: model.AvatarFile, Op: "and"},
 	})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

@@ -22,11 +22,13 @@ type UpdateOptions interface {
 	Convert2Map() map[string]any
 }
 
-type GetOptions []struct {
+type GetOption struct {
 	Key   string
 	Value any
 	Op    string
 }
+
+type GetOptions []GetOption
 
 func (r *Basic[M]) Create(options CreateOptions) (M, bool, string) {
 	m := options.Convert2Model().(M)
@@ -68,11 +70,7 @@ func (r *Basic[M]) getUniqueByKey(key string, value any, preloadL ...string) (M,
 		return *new(M), false, i18n.UnsupportedKey
 	}
 	return r.GetWithConditions(GetOptions{
-		{
-			Key:   key,
-			Value: value,
-			Op:    "and",
-		},
+		{Key: key, Value: value, Op: "and"},
 	}, preloadL...)
 }
 
