@@ -9,7 +9,7 @@ const (
 )
 
 type File struct {
-	RandID    string `gorm:"uniqueIndex;not null" json:"rand_id"`
+	RandID    string `gorm:"type:varchar(255);uniqueIndex;not null" json:"rand_id"`
 	Filename  string `json:"filename"`
 	Size      int64  `json:"size"`
 	Path      string `json:"-"`
