@@ -17,12 +17,12 @@ func GetChallenges(tx *gorm.DB, form f.GetChallengesForm) ([]model.Challenge, in
 			{
 				Key:   "type",
 				Value: form.Type,
-				And:   true,
+				Op:    "and",
 			},
 			{
 				Key:   "category",
 				Value: form.Category,
-				And:   true,
+				Op:    "and",
 			},
 		}
 	} else if !(form.Type == "" || form.Category == "") {
@@ -30,12 +30,12 @@ func GetChallenges(tx *gorm.DB, form f.GetChallengesForm) ([]model.Challenge, in
 			{
 				Key:   "type",
 				Value: form.Type,
-				And:   false,
+				Op:    "or",
 			},
 			{
 				Key:   "category",
 				Value: form.Category,
-				And:   false,
+				Op:    "or",
 			},
 		}
 	}

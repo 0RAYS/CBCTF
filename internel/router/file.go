@@ -173,7 +173,7 @@ func GetAvatars(ctx *gin.Context) {
 		{
 			Key:   "type",
 			Value: model.AvatarFile,
-			And:   true,
+			Op:    "and",
 		},
 	})
 	if !ok {

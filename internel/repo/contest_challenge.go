@@ -19,6 +19,8 @@ type CreateContestChallengeOptions struct {
 	Desc        string
 	Hidden      bool
 	Attempt     int64
+	Hints       model.StringList
+	Tags        model.StringList
 }
 
 func (c CreateContestChallengeOptions) Convert2Model() model.Model {
@@ -30,6 +32,8 @@ func (c CreateContestChallengeOptions) Convert2Model() model.Model {
 		Desc:        c.Desc,
 		Hidden:      c.Hidden,
 		Attempt:     c.Attempt,
+		Hints:       c.Hints,
+		Tags:        c.Tags,
 	}
 }
 
@@ -38,6 +42,8 @@ type UpdateContestChallengeOptions struct {
 	Desc    *string
 	Hidden  *bool
 	Attempt *int64
+	Hints   *model.StringList
+	Tags    *model.StringList
 }
 
 func (u UpdateContestChallengeOptions) Convert2Map() map[string]any {
@@ -54,6 +60,12 @@ func (u UpdateContestChallengeOptions) Convert2Map() map[string]any {
 	if u.Attempt != nil {
 		options["attempt"] = *u.Attempt
 	}
+	if u.Hints != nil {
+		options["hints"] = *u.Hints
+	}
+	if u.Tags != nil {
+		options["tags"] = *u.Tags
+	}
 	return options
 }
 
@@ -63,6 +75,14 @@ func InitContestChallengeRepo(tx *gorm.DB) *ContestChallengeRepo {
 			DB: tx,
 		},
 	}
+}
+
+func (c *ContestChallengeRepo) IsUniqueContestChallenge(contestID uint, challengeID uint) bool {
+	_, ok, _ := c.GetWithConditions(GetOptions{
+		{Key: "contest_id", Value: contestID, Op: "and"},
+		{Key: "challenge_id", Value: challengeID, Op: "and"},
+	})
+	return !ok
 }
 
 func (c *ContestChallengeRepo) Delete(idL ...uint) (bool, string) {

@@ -17,14 +17,16 @@ var (
 // ChallengeFlag 题库中挑战的 flag 定义
 // BelongsTo Challenge
 // BelongsTo Docker
+// HasMany ContestFlag
 type ChallengeFlag struct {
-	ChallengeID uint      `json:"challenge_id"`
-	Challenge   Challenge `json:"-"`
-	DockerID    *uint     `gorm:"default:null" json:"docker_id"`
-	Docker      *Docker   `json:"-"`
-	Value       string    `json:"value"`
-	InjectType  string    `json:"inject_type"`
-	Path        string    `json:"path"`
+	ChallengeID  uint          `json:"challenge_id"`
+	Challenge    Challenge     `json:"-"`
+	DockerID     *uint         `gorm:"default:null" json:"docker_id"`
+	Docker       *Docker       `json:"-"`
+	ContestFlags []ContestFlag `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Value        string        `json:"value"`
+	InjectType   string        `json:"inject_type"`
+	Path         string        `json:"path"`
 	Basic
 }
 

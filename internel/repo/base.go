@@ -25,7 +25,7 @@ type UpdateOptions interface {
 type GetOptions []struct {
 	Key   string
 	Value any
-	And   bool
+	Op    string
 }
 
 func (r *Basic[M]) Create(options CreateOptions) (M, bool, string) {
@@ -46,7 +46,7 @@ func (r *Basic[M]) GetWithConditions(conditions GetOptions, preloadL ...string) 
 		conditions = conditions[1:]
 	}
 	for _, condition := range conditions {
-		if condition.And {
+		if condition.Op == "and" {
 			res = res.Where(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
 		} else {
 			res = res.Or(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
@@ -71,7 +71,7 @@ func (r *Basic[M]) getUniqueByKey(key string, value any, preloadL ...string) (M,
 		{
 			Key:   key,
 			Value: value,
-			And:   true,
+			Op:    "and",
 		},
 	}, preloadL...)
 }
@@ -89,7 +89,7 @@ func (r *Basic[M]) CountWithConditions(conditions GetOptions) (int64, bool, stri
 		conditions = conditions[1:]
 	}
 	for _, condition := range conditions {
-		if condition.And {
+		if condition.Op == "and" {
 			res = res.Where(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
 		} else {
 			res = res.Or(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
@@ -121,7 +121,7 @@ func (r *Basic[M]) ListWithConditions(limit, offset int, conditions GetOptions, 
 		conditions = conditions[1:]
 	}
 	for _, condition := range conditions {
-		if condition.And {
+		if condition.Op == "and" {
 			res = res.Where(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
 		} else {
 			res = res.Or(fmt.Sprintf("%s = ?", condition.Key), condition.Value)

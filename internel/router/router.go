@@ -145,16 +145,35 @@ func Init() *gin.Engine {
 				adminContestTeam.DELETE("", DeleteTeam)
 				adminContestTeam.POST("/kick", KickMember)
 				adminContestTeam.POST("/avatar", UploadAvatar("team"))
-			}
-		}
 
-		adminContest.GET("/notices", GetNotices)
-		adminContest.POST("/notices", CreateNotice)
-		adminContestNotice := adminContest.Group("/notices/:noticeID", middleware.SetNotice)
-		{
-			adminContestNotice.GET("", GetNotice)
-			adminContestNotice.PUT("", UpdateNotice)
-			adminContestNotice.DELETE("", DeleteNotice)
+				adminContestTeam.GET("/submissions", GetSubmissions)
+			}
+
+			adminContest.GET("/notices", GetNotices)
+			adminContest.POST("/notices", CreateNotice)
+			adminContestNotice := adminContest.Group("/notices/:noticeID", middleware.SetNotice)
+			{
+				adminContestNotice.GET("", GetNotice)
+				adminContestNotice.PUT("", UpdateNotice)
+				adminContestNotice.DELETE("", DeleteNotice)
+			}
+
+			adminContest.GET("/challenges", GetContestChallenges)
+			adminContest.POST("/challenges", AddContestChallenge)
+			adminContestChallenge := adminContest.Group("/challenges/:challengeID", middleware.SetContestChallenge)
+			{
+				adminContestChallenge.GET("", GetContestChallenge)
+				adminContestChallenge.PUT("", UpdateContestChallenge)
+				adminContestChallenge.DELETE("", DeleteContestChallenge)
+
+				//不允许后期创建和删除
+				adminContestChallenge.GET("/flags", GetContestFlags)
+				adminContestFlag := adminContestChallenge.Group("/flags/:flagID", middleware.SetContestFlag)
+				{
+					adminContestFlag.GET("", GetContestFlag)
+					adminContestFlag.PUT("", UpdateContestFlag)
+				}
+			}
 		}
 
 		admin.GET("/challenges", GetChallenges)

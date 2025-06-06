@@ -42,7 +42,7 @@ func GetContests(ctx *gin.Context) {
 			{
 				Key:   "hidden",
 				Value: all,
-				And:   true,
+				Op:    "and",
 			},
 		}, "Users", "Teams", "Submissions", "Notices")
 	if !ok {
