@@ -19,18 +19,21 @@ volumes:
 	volumeFlags := make(map[uint]map[string]string)
 	envFlags := make(map[uint]map[string]string)
 	for i, flag := range challengeFlags {
+		if flag.DockerID == nil {
+			continue
+		}
 		switch flag.InjectType {
 		case model.VolumeInjectType:
-			volumeFlags[flag.DockerID] = make(map[string]string)
+			volumeFlags[*flag.DockerID] = make(map[string]string)
 			name := fmt.Sprintf("%s_%d", model.VolumeFlagPrefix, i)
-			volumeFlags[flag.DockerID][name] = flag.Path
+			volumeFlags[*flag.DockerID][name] = flag.Path
 			volumeStr += fmt.Sprintf("\t%s:\n", name)
 			volumeStr += fmt.Sprintf("\t\tlabels:\n")
 			volumeStr += fmt.Sprintf("\t\t\t- %s=%s\n", model.VolumeFlagLabelKey, flag.Value)
 		case model.EnvInjectType:
-			envFlags[flag.DockerID] = make(map[string]string)
+			envFlags[*flag.DockerID] = make(map[string]string)
 			name := fmt.Sprintf("%s_%d", model.EnvFlagPrefix, i)
-			envFlags[flag.DockerID][name] = flag.Value
+			envFlags[*flag.DockerID][name] = flag.Value
 		default:
 			continue
 		}
