@@ -6,11 +6,10 @@ import "CBCTF/internel/i18n"
 // BelongsTo User
 // HasMany Request
 type Device struct {
-	UserID   uint      `json:"user_id"`
-	User     User      `json:"-"`
-	Requests []Request `json:"-"`
-	Magic    string    `json:"magic"`
-	Count    int       `json:"count"`
+	UserID uint   `json:"user_id"`
+	User   User   `json:"-"`
+	Magic  string `json:"magic"`
+	Count  int    `json:"count"`
 	Basic
 }
 

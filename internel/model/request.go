@@ -8,8 +8,6 @@ import (
 // Request
 // BelongsTo Device
 type Request struct {
-	DeviceID  *uint     `json:"device_id"`
-	Device    *Device   `json:"-"`
 	IP        string    `gorm:"size:45;not null" json:"ip"`
 	Time      time.Time `gorm:"not null" json:"time"`
 	Method    string    `gorm:"size:10;not null" json:"method"`

@@ -16,10 +16,10 @@ type CreateFileOptions struct {
 	Filename  string
 	Size      int64
 	Path      string
-	AdminID   uint
-	UserID    uint
-	TeamID    uint
-	ContestID uint
+	AdminID   *uint
+	UserID    *uint
+	TeamID    *uint
+	ContestID *uint
 	Suffix    string
 	Hash      string
 	Type      string

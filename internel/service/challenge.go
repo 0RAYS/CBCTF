@@ -154,7 +154,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 					if strings.HasPrefix(k, model.EnvFlagPrefix) {
 						flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
 							ChallengeID: challenge.ID,
-							DockerID:    docker.ID,
+							DockerID:    &docker.ID,
 							Value:       *v,
 							InjectType:  model.EnvInjectType,
 						})
@@ -164,7 +164,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 					if value, ok := volumeFlag[volume.Source]; ok {
 						flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
 							ChallengeID: challenge.ID,
-							DockerID:    docker.ID,
+							DockerID:    &docker.ID,
 							Value:       value,
 							InjectType:  model.VolumeInjectType,
 							Path:        volume.Target,
