@@ -29,12 +29,12 @@ type GetOptions []struct {
 }
 
 func (r *Basic[M]) Create(options CreateOptions) (M, bool, string) {
-	m := options.Convert2Model()
+	m := options.Convert2Model().(M)
 	if res := r.DB.Model(new(M)).Create(&m); res.Error != nil {
 		log.Logger.Warningf("Failed to create %T: %s", new(M), res.Error)
 		return *new(M), false, m.CreateErrorString()
 	}
-	return m.(M), true, i18n.Success
+	return m, true, i18n.Success
 }
 
 func (r *Basic[M]) GetWithConditions(conditions GetOptions, preloadL ...string) (M, bool, string) {
