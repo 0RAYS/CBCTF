@@ -15,27 +15,27 @@ type CreateDockerOptions struct {
 	DockerGroupID  uint
 	Name           string
 	Image          string
-	PullPolicy     string
-	Hostname       string
-	WorkingDir     string
-	User           string
-	Command        model.StringList
-	Entrypoint     model.StringList
-	CPUCount       int64
-	CPUPercent     float32
-	CPUPeriod      int64
-	CPUQuota       int64
-	CPURTPeriod    int64
-	CPURTRuntime   int64
-	CPUS           float32
-	CPUSet         string
-	CPUShares      int64
-	MemLimit       int64
-	MemReservation int64
-	MemSwapLimit   int64
-	MemSwappiness  int64
-	Expose         model.StringList
-	Environment    model.StringMap
+	PullPolicy     *string
+	Hostname       *string
+	WorkingDir     *string
+	User           *string
+	Command        *model.StringList
+	Entrypoint     *model.StringList
+	CPUCount       *int64
+	CPUPercent     *float32
+	CPUPeriod      *int64
+	CPUQuota       *int64
+	CPURTPeriod    *int64
+	CPURTRuntime   *int64
+	CPUS           *float32
+	CPUSet         *string
+	CPUShares      *int64
+	MemLimit       *int64
+	MemReservation *int64
+	MemSwapLimit   *int64
+	MemSwappiness  *int64
+	Expose         *model.StringList
+	Environment    *model.StringMap
 }
 
 func (c CreateDockerOptions) Convert2Model() model.Model {

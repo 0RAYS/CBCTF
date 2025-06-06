@@ -5,10 +5,11 @@ const (
 	UnsupportedKey = "UnsupportedKey"
 	DeadLock       = "DeadLock"
 
-	BadRequest   = "BadRequest"
-	Unauthorized = "Unauthorized"
-	Forbidden    = "Forbidden"
-	UnknownError = "UnknownError"
+	BadRequest      = "BadRequest"
+	Unauthorized    = "Unauthorized"
+	Forbidden       = "Forbidden"
+	TooManyRequests = "TooManyRequests"
+	UnknownError    = "UnknownError"
 
 	CreateAdminError = "CreateAdminError"
 	DeleteAdminError = "DeleteAdminError"
@@ -142,6 +143,7 @@ const (
 	SetEmailVerifyTokenError = "SetEmailVerifyTokenError"
 	GetEmailVerifyTokenError = "GetEmailVerifyTokenError"
 	DelEmailVerifyTokenError = "DelEmailVerifyTokenError"
+	InvalidEmailVerifyToken  = "InvalidEmailVerifyToken"
 	SendEmailError           = "SendEmailError"
 
 	CreateDirError           = "CreateDirError"

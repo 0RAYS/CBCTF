@@ -32,7 +32,7 @@ func (r *Basic[M]) Create(options CreateOptions) (M, bool, string) {
 	m := options.Convert2Model()
 	if res := r.DB.Model(new(M)).Create(&m); res.Error != nil {
 		log.Logger.Warningf("Failed to create %T: %s", new(M), res.Error)
-		return *new(M), false, M.CreateErrorString(new(M))
+		return *new(M), false, m.CreateErrorString()
 	}
 	return m.(M), true, i18n.Success
 }
@@ -64,7 +64,7 @@ func (r *Basic[M]) GetWithConditions(conditions GetOptions, preloadL ...string) 
 }
 
 func (r *Basic[M]) getUniqueByKey(key string, value any, preloadL ...string) (M, bool, string) {
-	if !utils.In(key, M.GetUniqueKey(new(M))) {
+	if !utils.In(key, M.GetUniqueKey(*new(M))) {
 		return *new(M), false, i18n.UnsupportedKey
 	}
 	return r.GetWithConditions(GetOptions{
@@ -97,7 +97,7 @@ func (r *Basic[M]) CountWithConditions(conditions GetOptions) (int64, bool, stri
 	}
 	if res = res.Count(&count); res.Error != nil {
 		log.Logger.Warningf("Failed to count %T: %s", new(M), res.Error)
-		return 0, false, M.GetErrorString(new(M))
+		return 0, false, M.GetErrorString(*new(M))
 	}
 	return count, true, i18n.Success
 }
@@ -129,8 +129,8 @@ func (r *Basic[M]) ListWithConditions(limit, offset int, conditions GetOptions, 
 	}
 	res = preload(res, preloadL...).Order("created_at ASC").Limit(limit).Offset(offset).Find(&models)
 	if res.Error != nil {
-		log.Logger.Errorf("Failed to get %s: %s", M.GetModelName(new(M)), res.Error)
-		return models, count, false, M.GetErrorString(new(M))
+		log.Logger.Errorf("Failed to get %s: %s", M.GetModelName(*new(M)), res.Error)
+		return models, count, false, M.GetErrorString(*new(M))
 	}
 	return models, count, true, i18n.Success
 }
@@ -145,7 +145,7 @@ func (r *Basic[M]) Update(id uint, options UpdateOptions) (bool, string) {
 	for {
 		count++
 		if count > 10 {
-			log.Logger.Warningf("Failed to update %s: too many times failed due to optimistic lock", M.GetModelName(new(M)))
+			log.Logger.Warningf("Failed to update %s: too many times failed due to optimistic lock", M.GetModelName(*new(M)))
 			return false, i18n.DeadLock
 		}
 		m, ok, msg := r.GetByID(id)
@@ -155,8 +155,8 @@ func (r *Basic[M]) Update(id uint, options UpdateOptions) (bool, string) {
 		data["version"] = m.GetVersion() + 1
 		res := r.DB.Model(new(M)).Where("id = ? AND version = ?", id, m.GetVersion()).Updates(data)
 		if res.Error != nil {
-			log.Logger.Warningf("Failed to update %s: %s", M.GetModelName(new(M)), res.Error)
-			return false, M.UpdateErrorString(new(M))
+			log.Logger.Warningf("Failed to update %s: %s", M.GetModelName(*new(M)), res.Error)
+			return false, M.UpdateErrorString(*new(M))
 		}
 		if res.RowsAffected == 0 {
 			continue
@@ -168,8 +168,8 @@ func (r *Basic[M]) Update(id uint, options UpdateOptions) (bool, string) {
 
 func (r *Basic[M]) Delete(idL ...uint) (bool, string) {
 	if res := r.DB.Model(new(M)).Where("id IN ?", idL).Delete(new(M)); res.Error != nil {
-		log.Logger.Warningf("Failed to delete %s: %s", M.GetModelName(new(M)), res.Error)
-		return false, M.DeleteErrorString(new(M))
+		log.Logger.Warningf("Failed to delete %s: %s", M.GetModelName(*new(M)), res.Error)
+		return false, M.DeleteErrorString(*new(M))
 	}
 	return true, i18n.Success
 }
