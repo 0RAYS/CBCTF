@@ -9,7 +9,7 @@ type DockerGroup struct {
 	ChallengeID     uint            `json:"challenge_id"`
 	Challenge       Challenge       `json:"-"`
 	Dockers         []Docker        `json:"-"`
-	NetworkPolicies NetworkPolicies `json:"network_policies"`
+	NetworkPolicies NetworkPolicies `gorm:"type:json" json:"network_policies"`
 	Basic
 }
 
