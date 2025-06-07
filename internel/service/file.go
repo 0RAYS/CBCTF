@@ -82,3 +82,51 @@ func UpdateAvatar(tx *gorm.DB, v string, id uint, record model.File) (string, bo
 	}
 	return string(path), ok, msg
 }
+
+func SaveWriteUp(tx *gorm.DB, user model.User, contest model.Contest, team model.Team, file *multipart.FileHeader) (model.File, bool, string) {
+	src, err := file.Open()
+	if err != nil {
+		log.Logger.Warningf("Failed to open file: %v", err)
+		return model.File{}, false, i18n.BadRequest
+	}
+	defer func(src multipart.File) {
+		err := src.Close()
+		if err != nil {
+			log.Logger.Warningf("Failed to close file: %v", err)
+		}
+	}(src)
+	sha256Sum := sha256.New()
+	if _, err := io.Copy(sha256Sum, src); err != nil {
+		log.Logger.Warningf("Failed to hash file: %v", err)
+		return model.File{}, false, i18n.UnknownError
+	}
+	var (
+		fileRepo      = db.InitFileRepo(tx)
+		hash          = hex.EncodeToString(sha256Sum.Sum(nil))
+		record, ok, _ = fileRepo.GetByHash(hash)
+		path          string
+		allowed       = []string{".pdf", ".docx", ".doc"}
+		suffix        = strings.ToLower(filepath.Ext(file.Filename))
+	)
+	if !utils.In(suffix, allowed) {
+		return model.File{}, false, i18n.FileNotAllowed
+	}
+	if !ok {
+		path = fmt.Sprintf("%s/writeups/contest-%d/team-%d", config.Env.Path, contest.ID, team.ID)
+		path += fmt.Sprintf("/%s%s", utils.UUID(), suffix)
+	} else {
+		path = record.Path
+	}
+	return fileRepo.Create(db.CreateFileOptions{
+		RandID:    utils.UUID(),
+		Filename:  file.Filename,
+		Size:      file.Size,
+		Path:      path,
+		UserID:    &user.ID,
+		TeamID:    &team.ID,
+		ContestID: &contest.ID,
+		Suffix:    suffix,
+		Hash:      hash,
+		Type:      model.WriteUPFile,
+	})
+}

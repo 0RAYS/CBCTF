@@ -10,7 +10,7 @@ var resp = map[string]map[string]any{
 	BadRequest:      {"zh-CN": "请求错误", "en-US": "Bad request", "code": 400},
 	Unauthorized:    {"zh-CN": "未登录", "en-US": "Unauthorized", "code": 401},
 	Forbidden:       {"zh-CN": "禁止访问", "en-US": "Forbidden", "code": 403},
-	TooManyRequests: {"zh-CN": "请求过多", "en-US": "Too many requests", "code": 429},
+	TooManyRequests: {"zh-CN": "请求过快", "en-US": "Too many requests", "code": 429},
 	UnknownError:    {"zh-CN": "未知错误", "en-US": "Unknown error", "code": 500},
 
 	CreateAdminError: {"zh-CN": "创建管理员失败", "en-US": "Create admin failed", "code": 500},
@@ -143,6 +143,8 @@ var resp = map[string]map[string]any{
 	AppendUserToContestError:   {"zh-CN": "添加用户到比赛失败", "en-US": "Append user to contest failed", "code": 500},
 	DeleteUserFromTeamError:    {"zh-CN": "从战队中删除用户失败", "en-US": "Delete user from team failed", "code": 500},
 	DeleteUserFromContestError: {"zh-CN": "从比赛中删除用户失败", "en-US": "Delete user from contest failed", "code": 500},
+
+	UpdateRankingError: {"zh-CN": "更新排名失败", "en-US": "Update ranking failed", "code": 500},
 
 	SetEmailVerifyTokenError: {"zh-CN": "设置邮箱验证令牌失败", "en-US": "Set email verify token failed", "code": 500},
 	GetEmailVerifyTokenError: {"zh-CN": "获取邮箱验证令牌失败", "en-US": "Get email verify token failed", "code": 500},

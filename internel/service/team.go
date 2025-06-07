@@ -7,6 +7,7 @@ import (
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
 	"gorm.io/gorm"
+	"math"
 	"time"
 )
 
@@ -142,4 +143,57 @@ func LeaveTeam(tx *gorm.DB, contest model.Contest, team model.Team, userID uint)
 		return false, msg
 	}
 	return true, i18n.Success
+}
+
+func GetTeamSolvedFlags(tx *gorm.DB, team model.Team) ([]model.ContestFlag, bool, string) {
+	solvedContestFlags := make([]model.ContestFlag, 0)
+	solvedSubmissions, _, ok, msg := db.InitSubmissionRepo(tx).ListWithConditions(-1, -1, db.GetOptions{
+		{Key: "team_id", Value: team.ID, Op: "and"},
+		{Key: "solved", Value: true, Op: "and"},
+	}, "ContestFlag")
+	if !ok {
+		return solvedContestFlags, false, msg
+	}
+	for _, submission := range solvedSubmissions {
+		solvedContestFlags = append(solvedContestFlags, submission.ContestFlag)
+	}
+	return solvedContestFlags, true, i18n.Success
+}
+
+func CalcTeamScore(tx *gorm.DB, team model.Team) (float64, bool, string) {
+	submissionRepo := db.InitSubmissionRepo(tx)
+	submissions, _, ok, msg := submissionRepo.ListWithConditions(-1, -1, db.GetOptions{
+		{Key: "team_id", Value: team.ID, Op: "and"},
+		{Key: "solved", Value: true, Op: "and"},
+	}, "ContestFlag")
+	if !ok {
+		return team.Score, false, msg
+	}
+	totalScore := 0.0
+	for _, submission := range submissions {
+		_, score, ok, _ := CalcContestFlagState(tx, submission.ContestFlag)
+		if !ok {
+			continue
+		}
+		var rate float64
+		bloodTeam, _, _ := submissionRepo.GetBloodTeam(submission.ContestFlagID)
+		for i, teamID := range bloodTeam {
+			if teamID == team.ID {
+				switch i {
+				case 0:
+					rate = model.FirstBloodRate
+				case 1:
+					rate = model.SecondBloodRate
+				case 2:
+					rate = model.ThirdBloodRate
+				}
+			}
+			if rate > 0 {
+				break
+			}
+		}
+		totalScore += score + submission.ContestFlag.Score*rate
+	}
+	totalScore = math.Trunc(totalScore*100) / 100
+	return totalScore, true, i18n.Success
 }

@@ -1,6 +1,8 @@
 package repo
 
 import (
+	"CBCTF/internel/i18n"
+	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"gorm.io/gorm"
 )
@@ -57,4 +59,20 @@ func InitSubmissionRepo(tx *gorm.DB) *SubmissionRepo {
 			DB: tx,
 		},
 	}
+}
+
+func (s *SubmissionRepo) GetBloodTeam(contestFlagID uint) ([]uint, bool, string) {
+	var submissions []model.Submission
+	teamIDL := make([]uint, 0)
+	res := s.DB.Model(&model.Submission{}).Where("contest_flag_id = ?", contestFlagID).Find(&submissions).Limit(3)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Submission: %s", res.Error)
+		return teamIDL, false, model.Submission{}.DeleteErrorString()
+	}
+	for _, submission := range submissions {
+		if submission.TeamID != 0 {
+			teamIDL = append(teamIDL, submission.TeamID)
+		}
+	}
+	return teamIDL, true, i18n.Success
 }

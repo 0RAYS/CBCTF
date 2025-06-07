@@ -9,14 +9,14 @@ type TeamFlagRepo struct {
 	Basic[model.TeamFlag]
 }
 
-type CreateTeamFlagRepo struct {
+type CreateTeamFlagOptions struct {
 	TeamID        uint
 	ContestFlagID uint
 	Value         string
 	Solved        bool
 }
 
-func (c CreateTeamFlagRepo) Convert2Model() model.Model {
+func (c CreateTeamFlagOptions) Convert2Model() model.Model {
 	return model.TeamFlag{
 		TeamID:        c.TeamID,
 		ContestFlagID: c.ContestFlagID,

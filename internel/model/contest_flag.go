@@ -2,7 +2,18 @@ package model
 
 import (
 	"CBCTF/internel/i18n"
+	"math"
 	"time"
+)
+
+const (
+	StaticScore      uint = 0
+	LinearScore      uint = 1
+	LogarithmicScore uint = 2
+
+	FirstBloodRate  float64 = 0.05
+	SecondBloodRate float64 = 0.03
+	ThirdBloodRate  float64 = 0.01
 )
 
 // ContestFlag
@@ -65,4 +76,22 @@ func (c ContestFlag) UpdateErrorString() string {
 
 func (c ContestFlag) GetUniqueKey() []string {
 	return []string{"id"}
+}
+
+func (c ContestFlag) CalcScore(solvers int64) float64 {
+	var calc float64 = 0
+	switch c.ScoreType {
+	case StaticScore:
+		calc = c.Score
+	case LinearScore:
+		calc = c.Score - float64(solvers)*c.Decay
+	case LogarithmicScore:
+		calc = (c.MinScore-c.Score)/(c.Decay*c.Decay)*float64(solvers*solvers) + c.Score
+	default:
+		calc = c.Score
+	}
+	if calc < c.MinScore {
+		calc = c.MinScore
+	}
+	return math.Trunc(calc*100) / 100
 }
