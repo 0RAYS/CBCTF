@@ -26,7 +26,7 @@ func Init() *gin.Engine {
 
 	router.Use(
 		gin.Recovery(), middleware.Cors, middleware.Logger, middleware.Prometheus, middleware.SetTrace,
-		middleware.SetMagic, middleware.I18n, middleware.AccessLog, middleware.RateLimit,
+		middleware.SetMagic, middleware.I18n, middleware.AccessLog, middleware.RateLimit, middleware.Events,
 	)
 
 	{

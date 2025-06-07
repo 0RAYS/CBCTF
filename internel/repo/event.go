@@ -10,20 +10,26 @@ type EventRepo struct {
 }
 
 type CreateEventOptions struct {
-	Desc      string
-	Type      string
-	IP        string
-	Magic     string
-	Reference model.Reference
+	UserID             *uint
+	TeamID             *uint
+	ContestID          *uint
+	ContestChallengeID *uint
+	Desc               string
+	Type               string
+	IP                 string
+	Magic              string
 }
 
 func (c CreateEventOptions) Convert2Model() model.Model {
 	return model.Event{
-		Desc:      c.Desc,
-		Type:      c.Type,
-		IP:        c.IP,
-		Magic:     c.Magic,
-		Reference: c.Reference,
+		UserID:             c.UserID,
+		TeamID:             c.TeamID,
+		ContestID:          c.ContestID,
+		ContestChallengeID: c.ContestChallengeID,
+		Desc:               c.Desc,
+		Type:               c.Type,
+		IP:                 c.IP,
+		Magic:              c.Magic,
 	}
 }
 
