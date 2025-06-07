@@ -15,16 +15,17 @@ import (
 
 func GetTeam(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
-	//DB := db.DB.WithContext(ctx)
-	// TODO
-	//flags, _, ok, msg := db.InitFlagRepo(DB).GetByKeyID("contest_id", team.ContestID, -1, -1, "Usage", "Usage.Challenge")
-	//if !ok {
-	//	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-	//	return
-	//}
-	//solved, _, _ := service.GetTeamSolved(db.DB.WithContext(ctx), team.ID)
+	contestFlagRepo := db.InitContestFlagRepo(db.DB.WithContext(ctx))
+	contestFlagL, _, ok, msg := contestFlagRepo.ListWithConditions(-1, -1, db.GetOptions{
+		{Key: "contest_id", Value: team.ContestID, Op: "and"},
+	}, "ContestChallenge", "ContestChallenge.Challenge")
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	solvedFlagL, _, _ := service.GetTeamSolvedFlags(db.DB.WithContext(ctx), team)
 	data := resp.GetTeamResp(team)
-	//data["solved"] = resp.GetSolvedStateResp(solved, flags)
+	data["solved"] = resp.GetSolvedStateResp(solvedFlagL, contestFlagL)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
 }
 
@@ -68,6 +69,56 @@ func GetTeammates(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
 	return
+}
+
+func GetTeamRanking(ctx *gin.Context) {
+	var form f.GetModelsForm
+	if err := ctx.ShouldBindQuery(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
+		return
+	}
+	if _, exists := ctx.GetQuery("limit"); !exists {
+		form.Limit = 5
+	}
+	if _, exists := ctx.GetQuery("offset"); !exists {
+		form.Offset = 0
+	}
+	var teamsData []struct {
+		Team   model.Team
+		Solved []model.ContestFlag
+	}
+	contest := middleware.GetContest(ctx)
+	showAll := middleware.GetRole(ctx) == "admin"
+	teams, count, ok, msg := service.GetTeamRanking(db.DB.WithContext(ctx), contest.ID, form.Limit, form.Offset)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	for _, team := range teams {
+		if !showAll && team.Hidden {
+			count--
+			continue
+		}
+		solved, ok, _ := service.GetTeamSolvedFlags(db.DB.WithContext(ctx), team)
+		if !ok {
+			count--
+			continue
+		}
+		teamsData = append(teamsData, struct {
+			Team   model.Team
+			Solved []model.ContestFlag
+		}{Team: team, Solved: solved})
+	}
+	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB.WithContext(ctx)).ListWithConditions(-1, -1, db.GetOptions{
+		{Key: "contest_id", Value: contest.ID, Op: "and"},
+	}, "ContestChallenge", "ContestChallenge.Challenge")
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	data := resp.GetTeamRankingResp(teamsData, contestFlags, showAll)
+	data["count"] = count
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
 }
 
 func UpdateTeam(ctx *gin.Context) {

@@ -142,6 +142,8 @@ const (
 	DeleteUserFromTeamError    = "DeleteUserFromTeamError"
 	DeleteUserFromContestError = "DeleteUserFromContestError"
 
+	UpdateRankingError = "UpdateRankingError"
+
 	SetEmailVerifyTokenError = "SetEmailVerifyTokenError"
 	GetEmailVerifyTokenError = "GetEmailVerifyTokenError"
 	DelEmailVerifyTokenError = "DelEmailVerifyTokenError"

@@ -66,6 +66,23 @@ func DownloadChallengeFile(ctx *gin.Context) {
 	ctx.File(path)
 }
 
+// DownloadAttachment 需要预加载 Challenge
+func DownloadAttachment(ctx *gin.Context) {
+	contestChallenge := middleware.GetContestChallenge(ctx)
+	team := middleware.GetTeam(ctx)
+	path := contestChallenge.Challenge.AttachmentPath(team.ID)
+	if _, err := os.Stat(path); err != nil {
+		if os.IsNotExist(err) {
+			ctx.JSON(http.StatusNotFound, gin.H{"msg": i18n.FileNotFound, "data": nil})
+			return
+		}
+		log.Logger.Warningf("Failed to get attachment: %s", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": i18n.UnknownError, "data": nil})
+		return
+	}
+	ctx.File(path)
+}
+
 func UploadAvatar(v string) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		file, err := ctx.FormFile(model.AvatarFile)
@@ -157,6 +174,32 @@ func UploadChallengeFile(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }
 
+func UploadWriteUp(ctx *gin.Context) {
+	file, err := ctx.FormFile(model.WriteUPFile)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
+		return
+	}
+	user := middleware.GetSelf(ctx).(model.User)
+	contest := middleware.GetContest(ctx)
+	team := middleware.GetTeam(ctx)
+	tx := db.DB.WithContext(ctx).Begin()
+	record, ok, msg := service.SaveWriteUp(tx, user, contest, team, file)
+	if !ok {
+		tx.Rollback()
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	if err = ctx.SaveUploadedFile(file, record.Path); err != nil {
+		tx.Rollback()
+		log.Logger.Warningf("Failed to save file: %s", err)
+		ctx.JSON(http.StatusInternalServerError, gin.H{"msg": i18n.UnknownError, "data": nil})
+		return
+	}
+	tx.Commit()
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}
+
 func GetAvatars(ctx *gin.Context) {
 	var form f.GetModelsForm
 	if _, exists := ctx.GetQuery("limit"); !exists {
@@ -181,6 +224,35 @@ func GetAvatars(ctx *gin.Context) {
 		data = append(data, resp.GetFileResp(avatar))
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "avatars": data}})
+}
+
+func GetWriteUPs(ctx *gin.Context) {
+	var form f.GetModelsForm
+	if _, exists := ctx.GetQuery("limit"); !exists {
+		form.Limit = 10
+	}
+	if _, exists := ctx.GetQuery("offset"); !exists {
+		form.Offset = 0
+	}
+	if err := ctx.ShouldBind(&form); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
+		return
+	}
+	team := middleware.GetTeam(ctx)
+	writeups, count, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).
+		ListWithConditions(form.Limit, form.Offset, db.GetOptions{
+			{Key: "type", Value: model.WriteUPFile, Op: "and"},
+			{Key: "team_id", Value: team.ID, Op: "or"},
+		})
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	data := make([]gin.H, 0)
+	for _, writeup := range writeups {
+		data = append(data, resp.GetFileResp(writeup))
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "writeups": data}})
 }
 
 func DeleteAvatars(ctx *gin.Context) {

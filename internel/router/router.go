@@ -58,8 +58,8 @@ func Init() *gin.Engine {
 		router.GET("/verify", VerifyEmail)
 		router.GET("/avatars/:fileID", middleware.SetFile(model.AvatarFile), DownloadFile)
 
-		//router.GET("/stats", HomePage)
-		//router.GET("/contests", GetContests)
+		router.GET("/stats", HomePage)
+		router.GET("/contests", GetContests)
 	}
 
 	auth := router.Group("", middleware.CheckAuth)
@@ -77,13 +77,13 @@ func Init() *gin.Engine {
 	contest := auth.Group("/contests/:contestID", middleware.CheckRole("user"), middleware.SetContest)
 	{
 		contest.GET("", GetContest)
-		//contest.GET("/rank", GetTeamRanking)
+		contest.GET("/rank", GetTeamRanking)
 		contest.POST("/teams/join", middleware.ContestIsNotOver, middleware.CheckVerified, JoinTeam)
 		contest.POST("/teams/create", middleware.ContestIsNotOver, middleware.CheckVerified, CreateTeam)
 
 		contestTeam := contest.Group("/teams/me", middleware.SetTeamByUser)
 		{
-			//contestTeam.GET("", GetTeam)
+			contestTeam.GET("", GetTeam)
 			contestTeam.GET("/captcha", GetTeamCaptcha)
 			contestTeam.GET("/users", GetTeammates)
 			contestTeam.PUT("/captcha", middleware.ContestIsNotOver, middleware.CheckVerified, middleware.CheckCaptain, UpdateCaptcha)
@@ -107,13 +107,23 @@ func Init() *gin.Engine {
 		)
 		{
 			contestChallenge.GET("", GetContestChallengeStatus)
-			//contestChallenge.POST("/init", middleware.ContestStatus(model.ContestIsRunning), middleware.CheckVerified, middleware.CheckCaptain)
-			//contestChallenge.GET("/attachment")
-			//contestChallenge.POST("/reset", middleware.ContestStatus(model.ContestIsRunning))
+			contestChallenge.POST("/init", middleware.ContestStatus(model.ContestIsRunning), middleware.CheckSolved, InitTeamFlag)
+			contestChallenge.GET("/attachment", DownloadAttachment)
+			contestChallenge.POST("/reset", middleware.ContestStatus(model.ContestIsRunning), middleware.CheckIfGenerated, middleware.CheckSolved, ResetTeamFlag)
 			//contestChallenge.POST("/start")
 			//contestChallenge.POST("/increase", middleware.ContestStatus(model.ContestIsRunning))
 			//contestChallenge.POST("/stop")
 			//contestChallenge.POST("/submit", middleware.ContestStatus(model.ContestIsRunning))
+		}
+
+		// WriteUp
+		contestWriteUp := contest.Group(
+			"/writeups",
+			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.ContestIsNotComing,
+		)
+		{
+			contestWriteUp.POST("", UploadWriteUp)
+			contestWriteUp.GET("", GetWriteUPs)
 		}
 	}
 
@@ -126,10 +136,10 @@ func Init() *gin.Engine {
 		admin.POST("", CreateAdmin)
 
 		// 系统管理
-		//adminSystem := admin.Group("/system")
+		adminSystem := admin.Group("/system")
 		{
-			//adminSystem.GET("/status", SystemStatus)
-			//adminSystem.GET("/config", SystemConfig)
+			adminSystem.GET("/status", SystemStatus)
+			adminSystem.GET("/config", SystemConfig)
 		}
 
 		admin.GET("/users", GetUsers)
@@ -150,12 +160,12 @@ func Init() *gin.Engine {
 			adminContest.PUT("", UpdateContest)
 			adminContest.DELETE("", DeleteContest)
 			adminContest.POST("/avatar", UploadAvatar("contest"))
-			//adminContest.GET("/rank", GetTeamRanking)
+			adminContest.GET("/rank", GetTeamRanking)
 
 			adminContest.GET("/teams", GetTeams)
 			adminContestTeam := adminContest.Group("/teams/:teamID", middleware.SetTeamByURI)
 			{
-				//adminContestTeam.GET("", GetTeam)
+				adminContestTeam.GET("", GetTeam)
 				adminContestTeam.GET("/users", GetTeammates)
 				adminContestTeam.PUT("", UpdateTeam)
 				adminContestTeam.DELETE("", DeleteTeam)
@@ -163,6 +173,19 @@ func Init() *gin.Engine {
 				adminContestTeam.POST("/avatar", UploadAvatar("team"))
 
 				adminContestTeam.GET("/submissions", GetSubmissions)
+
+				//adminContestTeam.GET("/victims", GetVictims)
+				//adminContainer := adminContestTeam.Group("/victims/:victimID", middleware.SetVictim)
+				//{
+				//	adminContainer.GET("", GetVictim)
+				//
+				//	adminTraffic := adminContainer.Group("/traffic")
+				//	adminTraffic.GET("/download", DownloadTraffic)
+				//	adminTraffic.GET("", GetTraffics)
+				//}
+
+				adminContestTeam.GET("/writeups", GetWriteUPs)
+				adminContestTeam.GET("/writeups/:fileID", middleware.SetFile(model.WriteUPFile), DownloadFile)
 			}
 
 			adminContest.GET("/notices", GetNotices)
