@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 	"strings"
+	"time"
 )
 
 type AvatarURL string
@@ -94,6 +95,41 @@ func (s *StringMap) Scan(value any) error {
 	return json.Unmarshal(bytes, s)
 }
 
+type Prizes []struct {
+	Amount string `json:"amount"`
+	Desc   string `json:"desc"`
+}
+
+func (p Prizes) Value() (driver.Value, error) {
+	return json.Marshal(p)
+}
+
+func (p *Prizes) Scan(value any) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan Prizes value")
+	}
+	return json.Unmarshal(bytes, p)
+}
+
+type Timelines []struct {
+	Date  time.Time `json:"date"`
+	Title string    `json:"title"`
+	Desc  string    `json:"desc"`
+}
+
+func (t Timelines) Value() (driver.Value, error) {
+	return json.Marshal(t)
+}
+
+func (t *Timelines) Scan(value any) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan Timelines value")
+	}
+	return json.Unmarshal(bytes, t)
+}
+
 type Target struct {
 	Hostname string   `json:"hostname"`
 	CIDR     string   `json:"cidr"`
@@ -173,4 +209,24 @@ func (n *NetworkPolicies) Scan(value any) error {
 		return nil
 	}
 	return json.Unmarshal(bytes, n)
+}
+
+type Ports []int32
+
+func (e Ports) Value() (driver.Value, error) {
+	tmp := make([]int32, 0)
+	for _, port := range e {
+		if port > 1 && port < 65535 {
+			tmp = append(tmp, port)
+		}
+	}
+	return json.Marshal(e)
+}
+
+func (e *Ports) Scan(value any) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan Ports value")
+	}
+	return json.Unmarshal(bytes, e)
 }
