@@ -1,11 +1,8 @@
 package resp
 
 import (
-	"CBCTF/internel/config"
 	"CBCTF/internel/model"
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"strings"
 )
 
 func GetTeamRankingResp(teamsData []struct {
@@ -19,7 +16,7 @@ func GetTeamRankingResp(teamsData []struct {
 			"name":   team.Team.Name,
 			"desc":   team.Team.Desc,
 			"score":  team.Team.Score,
-			"avatar": fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(string(team.Team.Avatar), "/")),
+			"avatar": team.Team.Avatar,
 			"last":   team.Team.Last,
 			"users":  len(team.Team.Users),
 			"solved": GetSolvedStateResp(team.Solved, flags),
