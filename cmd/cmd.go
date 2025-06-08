@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"CBCTF/internel/config"
-	//"CBCTF/internel/k8s"
+	"CBCTF/internel/k8s"
 	"CBCTF/internel/log"
 	"flag"
 	"os"
@@ -23,12 +23,12 @@ func Cmd() {
 		log.Logger.Fatalf("Failed to parse command: %v", err)
 	}
 
-	//k8s.Init(false)
+	k8s.Init(false)
 	switch os.Args[2] {
-	//case "init":
-	//	k8s.InitResources()
-	//case "check":
-	//	k8s.CheckPermission()
+	case "init":
+		k8s.InitResources()
+	case "check":
+		k8s.CheckPermission()
 	default:
 		run()
 	}
