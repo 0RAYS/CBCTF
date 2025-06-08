@@ -41,7 +41,7 @@ spec:
     cidr: {{ .ipPoolCIDR }}
     ipipMode: Never
     natOutgoing: true
-    blockSize: {{ ipPoolBlockSize }}
+    blockSize: {{ .ipPoolBlockSize }}
 ---
 # Role
 apiVersion: rbac.authorization.k8s.io/v1
