@@ -3,6 +3,8 @@ package cmd
 import (
 	"CBCTF/internel/config"
 	"CBCTF/internel/cron"
+	"CBCTF/internel/k8s"
+
 	//"CBCTF/internel/k8s"
 	"CBCTF/internel/log"
 	"CBCTF/internel/redis"
@@ -20,7 +22,7 @@ func initialize() {
 	log.Init()
 	redis.Init()
 	db.Init()
-	//k8s.Init(true)
+	k8s.Run()
 	cron.Init()
 }
 
