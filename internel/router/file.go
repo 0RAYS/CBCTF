@@ -214,7 +214,7 @@ func GetAvatars(ctx *gin.Context) {
 	}
 	avatars, count, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).ListWithConditions(form.Limit, form.Offset, db.GetOptions{
 		{Key: "type", Value: model.AvatarFile, Op: "and"},
-	})
+	}, false)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -243,7 +243,7 @@ func GetWriteUPs(ctx *gin.Context) {
 		ListWithConditions(form.Limit, form.Offset, db.GetOptions{
 			{Key: "type", Value: model.WriteUPFile, Op: "and"},
 			{Key: "team_id", Value: team.ID, Op: "or"},
-		})
+		}, false)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

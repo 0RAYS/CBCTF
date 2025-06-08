@@ -40,7 +40,7 @@ func GetContests(ctx *gin.Context) {
 	contests, count, ok, msg := db.InitContestRepo(db.DB.WithContext(ctx)).
 		ListWithConditions(form.Limit, form.Offset, db.GetOptions{
 			{Key: "hidden", Value: all, Op: "and"},
-		}, "Users", "Teams", "Submissions", "Notices")
+		}, false, "Users", "Teams", "Submissions", "Notices")
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

@@ -39,7 +39,7 @@ func (r *Basic[M]) Create(options CreateOptions) (M, bool, string) {
 	return m, true, i18n.Success
 }
 
-func (r *Basic[M]) GetWithConditions(conditions GetOptions, preloadL ...string) (M, bool, string) {
+func (r *Basic[M]) GetWithConditions(conditions GetOptions, deleted bool, preloadL ...string) (M, bool, string) {
 	var m M
 	res := r.DB.Model(new(M))
 	if len(conditions) == 1 {
@@ -53,6 +53,9 @@ func (r *Basic[M]) GetWithConditions(conditions GetOptions, preloadL ...string) 
 		} else {
 			res = res.Or(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
 		}
+	}
+	if deleted {
+		res = res.Unscoped()
 	}
 	res = preload(res, preloadL...).Limit(1).Find(&m)
 	if res.Error != nil {
@@ -71,14 +74,14 @@ func (r *Basic[M]) getUniqueByKey(key string, value any, preloadL ...string) (M,
 	}
 	return r.GetWithConditions(GetOptions{
 		{Key: key, Value: value, Op: "and"},
-	}, preloadL...)
+	}, false, preloadL...)
 }
 
 func (r *Basic[M]) GetByID(id uint, preloadL ...string) (M, bool, string) {
 	return r.getUniqueByKey("id", id, preloadL...)
 }
 
-func (r *Basic[M]) CountWithConditions(conditions GetOptions) (int64, bool, string) {
+func (r *Basic[M]) CountWithConditions(conditions GetOptions, deleted bool) (int64, bool, string) {
 	var count int64
 	res := r.DB.Model(new(M))
 	if len(conditions) == 1 {
@@ -93,6 +96,9 @@ func (r *Basic[M]) CountWithConditions(conditions GetOptions) (int64, bool, stri
 			res = res.Or(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
 		}
 	}
+	if deleted {
+		res = res.Unscoped()
+	}
 	if res = res.Count(&count); res.Error != nil {
 		log.Logger.Warningf("Failed to count %T: %s", new(M), res.Error)
 		return 0, false, M.GetErrorString(*new(M))
@@ -101,13 +107,13 @@ func (r *Basic[M]) CountWithConditions(conditions GetOptions) (int64, bool, stri
 }
 
 func (r *Basic[M]) Count() (int64, bool, string) {
-	return r.CountWithConditions(nil)
+	return r.CountWithConditions(nil, false)
 }
 
-func (r *Basic[M]) ListWithConditions(limit, offset int, conditions GetOptions, preloadL ...string) ([]M, int64, bool, string) {
+func (r *Basic[M]) ListWithConditions(limit, offset int, conditions GetOptions, deleted bool, preloadL ...string) ([]M, int64, bool, string) {
 	var (
 		models         = make([]M, 0)
-		count, ok, msg = r.CountWithConditions(conditions)
+		count, ok, msg = r.CountWithConditions(conditions, deleted)
 	)
 	if !ok {
 		return models, count, false, msg
@@ -125,6 +131,9 @@ func (r *Basic[M]) ListWithConditions(limit, offset int, conditions GetOptions, 
 			res = res.Or(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
 		}
 	}
+	if deleted {
+		res = res.Unscoped()
+	}
 	res = preload(res, preloadL...).Order("created_at ASC").Limit(limit).Offset(offset).Find(&models)
 	if res.Error != nil {
 		log.Logger.Errorf("Failed to get %s: %s", M.GetModelName(*new(M)), res.Error)
@@ -134,7 +143,7 @@ func (r *Basic[M]) ListWithConditions(limit, offset int, conditions GetOptions, 
 }
 
 func (r *Basic[M]) List(limit, offset int, preloadL ...string) ([]M, int64, bool, string) {
-	return r.ListWithConditions(limit, offset, nil, preloadL...)
+	return r.ListWithConditions(limit, offset, nil, false, preloadL...)
 }
 
 func (r *Basic[M]) Update(id uint, options UpdateOptions) (bool, string) {

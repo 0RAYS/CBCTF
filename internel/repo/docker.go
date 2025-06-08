@@ -36,42 +36,10 @@ func (c CreateDockerOptions) Convert2Model() model.Model {
 }
 
 type UpdateDockerOptions struct {
-	DockerGroupID *uint
-	Name          *string
-	Image         *string
-	PullPolicy    *string
-	WorkingDir    *string
-	Command       *model.StringList
-	Expose        *model.StringList
-	Environment   *model.StringMap
 }
 
 func (u UpdateDockerOptions) Convert2Map() map[string]any {
 	options := make(map[string]any)
-	if u.DockerGroupID != nil {
-		options["docker_group_id"] = *u.DockerGroupID
-	}
-	if u.Name != nil {
-		options["name"] = *u.Name
-	}
-	if u.Image != nil {
-		options["image"] = *u.Image
-	}
-	if u.PullPolicy != nil {
-		options["pull_policy"] = *u.PullPolicy
-	}
-	if u.WorkingDir != nil {
-		options["working_dir"] = *u.WorkingDir
-	}
-	if u.Command != nil {
-		options["command"] = *u.Command
-	}
-	if u.Expose != nil {
-		options["expose"] = *u.Expose
-	}
-	if u.Environment != nil {
-		options["environment"] = *u.Environment
-	}
 	return options
 }
 

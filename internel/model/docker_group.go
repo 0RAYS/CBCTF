@@ -8,7 +8,7 @@ import "CBCTF/internel/i18n"
 type DockerGroup struct {
 	ChallengeID     uint            `json:"challenge_id"`
 	Challenge       Challenge       `json:"-"`
-	Dockers         []Docker        `json:"-"`
+	Dockers         []Docker        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	NetworkPolicies NetworkPolicies `gorm:"type:json" json:"network_policies"`
 	Basic
 }

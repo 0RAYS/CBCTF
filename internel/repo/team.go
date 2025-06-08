@@ -100,7 +100,7 @@ func (t *TeamRepo) IsUniqueName(contestID uint, name string) bool {
 	count, ok, _ := t.CountWithConditions(GetOptions{
 		{Key: "contest_id", Value: contestID, Op: "and"},
 		{Key: "name", Value: name, Op: "and"},
-	})
+	}, false)
 	if !ok {
 		return false
 	}
@@ -123,7 +123,7 @@ func (t *TeamRepo) GetByName(contestID uint, name string, preloadL ...string) (m
 	return t.GetWithConditions(GetOptions{
 		{Key: "contest_id", Value: contestID, Op: "and"},
 		{Key: "name", Value: name, Op: "and"},
-	}, preloadL...)
+	}, false, preloadL...)
 }
 
 func (t *TeamRepo) GetBy2ID(userID, contestID uint, preloadL ...string) (model.Team, bool, string) {

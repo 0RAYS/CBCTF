@@ -1,10 +1,81 @@
 package service
 
 import (
+	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"gorm.io/gorm"
+	"sync"
 )
+
+// SolvedMutex 使用定时任务 cron.ClearUsageMutex 清理锁
+var SolvedMutex sync.Map
+
+// Submit model.Usage 需要预加载
+func Submit(tx *gorm.DB, user model.User, team model.Team, contestChallenge model.ContestChallenge, form f.SubmitFlagForm) (string, model.Submission, bool, string) {
+	if contestChallenge.Attempt != 0 && contestChallenge.Attempt <= CountAttempts(tx, team, contestChallenge) {
+		return "", model.Submission{}, false, i18n.NotAllowSubmit
+	}
+	submissionRepo := db.InitSubmissionRepo(tx)
+	options := db.CreateSubmissionOptions{
+		ContestChallengeID: contestChallenge.ID,
+		ContestID:          team.ContestID,
+		ChallengeID:        contestChallenge.ChallengeID,
+		TeamID:             team.ID,
+		UserID:             user.ID,
+		Value:              form.Flag,
+		Score:              team.Score,
+	}
+	solved, contestFlag, teamFlag, ok, result := VerifyFlag(tx, team, contestChallenge, form.Flag)
+	options.ContestFlagID = contestFlag.ID
+	options.Solved = solved
+	if !ok {
+		return "", model.Submission{}, false, result
+	}
+	submission, ok, msg := submissionRepo.Create(options)
+	if !ok {
+		return "", model.Submission{}, false, msg
+	}
+	if solved {
+		teamFlagRepo := db.InitTeamFlagRepo(tx)
+		if ok, msg = teamFlagRepo.Update(teamFlag.ID, db.UpdateTeamFlagRepo{Solved: &solved}); !ok {
+			return "", model.Submission{}, false, msg
+		}
+		// 正确时需要更新分数等信息, 加锁
+		mu, _ := SolvedMutex.LoadOrStore(contestFlag.ID, &sync.Mutex{})
+		mu.(*sync.Mutex).Lock()
+		defer mu.(*sync.Mutex).Unlock()
+
+		solvers, currentScore, ok, msg := CalcContestFlagState(tx, contestFlag)
+		if !ok {
+			return "", model.Submission{}, false, msg
+		}
+		contestFlagRepo := db.InitContestFlagRepo(tx)
+		if ok, msg = contestFlagRepo.Update(contestFlag.ID, db.UpdateContestFlagOptions{
+			CurrentScore: &currentScore,
+			Solvers:      &solvers,
+			Last:         &submission.CreatedAt,
+		}); !ok {
+			return "", model.Submission{}, false, msg
+		}
+		score, ok, msg := CalcTeamScore(tx, team)
+		if !ok {
+			return "", model.Submission{}, false, msg
+		}
+		teamRepo := db.InitTeamRepo(tx)
+		if ok, msg = teamRepo.Update(team.ID, db.UpdateTeamOptions{
+			Score: &score,
+			Last:  &submission.CreatedAt,
+		}); !ok {
+			return "", model.Submission{}, false, msg
+		}
+		if ok, msg := submissionRepo.Update(submission.ID, db.UpdateSubmissionOptions{Score: &score}); !ok {
+			return "", model.Submission{}, false, msg
+		}
+	}
+	return result, submission, true, i18n.Success
+}
 
 func CountAttempts(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) int64 {
 	submissionRepo := db.InitSubmissionRepo(tx)
@@ -12,7 +83,7 @@ func CountAttempts(tx *gorm.DB, team model.Team, contestChallenge model.ContestC
 		{Key: "team_id", Value: team.ID, Op: "and"},
 		{Key: "contest_challenge_id", Value: contestChallenge.ID, Op: "and"},
 		{Key: "solved", Value: false, Op: "and"},
-	})
+	}, false)
 	return count
 }
 
@@ -23,6 +94,6 @@ func CheckIfSolved(tx *gorm.DB, team model.Team, contestChallenge model.ContestC
 		{Key: "team_id", Value: team.ID, Op: "and"},
 		{Key: "contest_challenge_id", Value: contestChallenge.ID, Op: "and"},
 		{Key: "solved", Value: true, Op: "and"},
-	})
+	}, false)
 	return count == int64(len(contestChallenge.ContestFlags))
 }
