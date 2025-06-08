@@ -19,9 +19,9 @@ type Docker struct {
 	Image          string          `json:"image"`
 	PullPolicy     *string         `gorm:"default:null" json:"pull_policy"`
 	WorkingDir     *string         `gorm:"default:null" json:"working_dir"`
-	Command        *StringList     `gorm:"default:null;type:json" json:"command"`
-	Expose         *StringList     `gorm:"default:null;type:json" json:"expose"`
-	Environment    *StringMap      `gorm:"default:null;type:json" json:"environment"`
+	Command        StringList      `gorm:"default:null;type:json" json:"command"`
+	Expose         StringList      `gorm:"default:null;type:json" json:"expose"`
+	Environment    StringMap       `gorm:"default:null;type:json" json:"environment"`
 	Basic
 }
 

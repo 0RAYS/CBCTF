@@ -50,24 +50,24 @@ volumes:
 		if docker.WorkingDir != nil && *docker.WorkingDir != "" {
 			serviceStr += fmt.Sprintf("\t\tworking_dir: %s\n", *docker.WorkingDir)
 		}
-		if docker.Command != nil {
+		if docker.Command != nil && len(docker.Command) > 0 {
 			commandStr := "["
-			for _, cmd := range *docker.Command {
+			for _, cmd := range docker.Command {
 				commandStr += fmt.Sprintf("\"%s\", ", cmd)
 			}
 			commandStr = commandStr[:len(commandStr)-2] + "]"
 			serviceStr += fmt.Sprintf("\t\tcommand: %s\n", commandStr)
 		}
-		if docker.Expose != nil {
+		if docker.Expose != nil && len(docker.Expose) > 0 {
 			serviceStr += "\t\texpose:\n"
-			for _, port := range *docker.Expose {
+			for _, port := range docker.Expose {
 				serviceStr += fmt.Sprintf("\t\t\t- \"%s\"\n", port)
 			}
 		}
 		if docker.Environment != nil || len(envFlags[docker.ID]) > 0 {
 			serviceStr += "\t\tenvironment:\n"
-			if docker.Environment != nil {
-				for key, value := range *docker.Environment {
+			if docker.Environment != nil && len(docker.Environment) > 0 {
+				for key, value := range docker.Environment {
 					serviceStr += fmt.Sprintf("\t\t\t- %s=%s\n", key, value)
 				}
 			}

@@ -17,9 +17,9 @@ type CreateDockerOptions struct {
 	Image         string
 	PullPolicy    *string
 	WorkingDir    *string
-	Command       *model.StringList
-	Expose        *model.StringList
-	Environment   *model.StringMap
+	Command       model.StringList
+	Expose        model.StringList
+	Environment   model.StringMap
 }
 
 func (c CreateDockerOptions) Convert2Model() model.Model {

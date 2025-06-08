@@ -165,7 +165,7 @@ func StartVictim(victim model.Victim) (map[string]map[string]any, bool, string) 
 					})
 				}
 				envs := make([]corev1.EnvVar, 0)
-				for key, value := range *container.Environment {
+				for key, value := range container.Environment {
 					envs = append(envs, corev1.EnvVar{
 						Name:  key,
 						Value: value,

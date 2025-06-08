@@ -43,7 +43,7 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, contestChallenge
 				return model.Victim{}, false, i18n.DuplicateHostname
 			}
 			dns[docker.Name] = ipBlock[i]
-			for _, port := range *docker.Expose {
+			for _, port := range docker.Expose {
 				p, _ := strconv.ParseInt(port, 10, 32)
 				if !utils.In(int32(p), podPorts) {
 					podPorts[dockerGroup.ID] = append(podPorts[dockerGroup.ID], int32(p))
@@ -107,7 +107,7 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, contestChallenge
 				Environment: docker.Environment,
 				EnvFlags:    envFlagL,
 				VolumeFlags: volumeFlagL,
-				Exposes:     *docker.Expose,
+				Exposes:     docker.Expose,
 			}
 			container, ok, msg := containerRepo.Create(cOptions)
 			if !ok {

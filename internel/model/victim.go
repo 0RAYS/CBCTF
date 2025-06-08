@@ -17,9 +17,9 @@ type Victim struct {
 	User               User             `json:"-"`
 	Pods               []Pod            `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	IPBlock            string           `json:"ip_block"`
-	HostAlias          StringMap        `json:"host_alias"`
 	Start              time.Time        `json:"start"`
 	Duration           time.Duration    `json:"duration"`
+	HostAlias          StringMap        `gorm:"default:null;type:json" json:"host_alias"`
 	Basic
 }
 
