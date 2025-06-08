@@ -225,6 +225,7 @@ func CheckPermission() {
 				log.Logger.Warningf("User does NOT have permission to access %s-%s in namespace cbctf.", group, resource)
 				log.Logger.Warningf("Reason: %s", res.Status.Reason)
 				log.Logger.Warningf("EvaluationError: %s", res.Status.EvaluationError)
+				os.Exit(-1)
 			}
 		}
 	}
