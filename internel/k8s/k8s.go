@@ -111,6 +111,7 @@ func Init() {
 		}
 		if _, err = dri.Create(ctx, unstructuredObj, metav1.CreateOptions{}); err != nil {
 			log.Logger.Warningf("Failed to create resource: %s", err)
+			continue
 		}
 		log.Logger.Infof("Resource %s/%s created successfully", mapping.Resource.Resource, unstructuredObj.GetName())
 	}
