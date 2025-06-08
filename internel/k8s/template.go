@@ -103,7 +103,7 @@ func gen(namespaceName string) []byte {
 		"namespaceName":               namespaceName,
 		"svcAccountName":              fmt.Sprintf("%s-admin", namespaceName),
 		"svcAccountSecretName":        fmt.Sprintf("%s-admin-token", namespaceName),
-		"ipPoolName":                  fmt.Sprintf("%s-ippool", namespaceName),
+		"ipPoolName":                  fmt.Sprintf("%s-ipv4-ippool", namespaceName),
 		"adminRoleName":               fmt.Sprintf("%s-admin-role", namespaceName),
 		"adminRoleBindingName":        fmt.Sprintf("%s-admin-rolebinding", namespaceName),
 		"adminClusterRoleName":        fmt.Sprintf("%s-admin-clusterrole", namespaceName),
