@@ -22,7 +22,7 @@ func initialize() {
 	log.Init()
 	redis.Init()
 	db.Init()
-	k8s.Run()
+	k8s.Init(true)
 	cron.Init()
 }
 
