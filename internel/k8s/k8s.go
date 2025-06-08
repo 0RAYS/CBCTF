@@ -78,7 +78,8 @@ func Init() {
 	}
 
 	namespaceName = config.Env.K8S.Namespace
-	decoder := yamlutil.NewYAMLOrJSONDecoder(bytes.NewReader(gen(namespaceName)), 100)
+	resourcesYAML := gen(namespaceName)
+	decoder := yamlutil.NewYAMLOrJSONDecoder(bytes.NewReader(resourcesYAML), 100)
 	for {
 		var rawObj runtime.RawExtension
 		if err = decoder.Decode(&rawObj); err != nil {
@@ -120,15 +121,18 @@ func Init() {
 	}
 
 	updateNodeIPs(ctx)
-	if err := writeKubeConfig(ctx); err != nil {
+	if err = writeKubeConfig(ctx); err != nil {
 		log.Logger.Fatalf("Failed to save kubeconfig to %s.conf: %s ", namespaceName, err)
 	}
 	config.Env.K8S.Config.User = fmt.Sprintf("%s.conf", namespaceName)
 	tmp := config.Env.K8S.Config.Admin
-	if err := config.Save(config.Env); err != nil {
+	if err = config.Save(config.Env); err != nil {
 		log.Logger.Fatalf("Failed to update config: %s", err)
 	}
 	log.Logger.Infof("Kubeconfig saved to %s.conf, please remove the %s and restart", namespaceName, tmp)
+	if err = os.WriteFile("resources.yaml", resourcesYAML, 0644); err != nil {
+		log.Logger.Fatalf("Failed to save resources.yaml: %s", err)
+	}
 	os.Exit(0)
 }
 
