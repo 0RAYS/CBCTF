@@ -38,8 +38,21 @@ func GetContestChallenges(ctx *gin.Context) {
 	}
 	data := make([]gin.H, 0)
 	for _, contestChallenge := range contestChallengeL {
-		//TODO
-		data = append(data, resp.GetContestChallengeResp(contestChallenge))
+		tmp := resp.GetContestChallengeResp(contestChallenge)
+		if middleware.GetRole(ctx) != "admin" {
+			team := middleware.GetTeam(ctx)
+			tmp["attempts"] = service.CountAttempts(db.DB.WithContext(ctx), team, contestChallenge)
+			tmp["init"] = service.CheckIfGenerated(db.DB.WithContext(ctx), team, contestChallenge)
+			tmp["solved"] = service.CheckIfSolved(db.DB.WithContext(ctx), team, contestChallenge)
+			tmp["remote"] = service.GetVictimStatus(db.DB.WithContext(ctx), team, contestChallenge)
+			tmp["file"] = func() string {
+				if _, err := os.Stat(contestChallenge.Challenge.AttachmentPath(team.ID)); err != nil {
+					return ""
+				}
+				return contestChallenge.Challenge.AttachmentPath(team.ID)
+			}()
+		}
+		data = append(data)
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"challenges": data, "count": count}})
 }
@@ -57,8 +70,7 @@ func GetContestChallengeStatus(ctx *gin.Context) {
 		"attempts": service.CountAttempts(db.DB.WithContext(ctx), team, contestChallenge),
 		"init":     service.CheckIfGenerated(db.DB.WithContext(ctx), team, contestChallenge),
 		"solved":   service.CheckIfSolved(db.DB.WithContext(ctx), team, contestChallenge),
-		//TODO
-		//"remote":   service.GetVictimStatus(db.DB.WithContext(ctx), team, contestChallenge),
+		"remote":   service.GetVictimStatus(db.DB.WithContext(ctx), team, contestChallenge),
 		"file": func() string {
 			if _, err := os.Stat(contestChallenge.Challenge.AttachmentPath(team.ID)); err != nil {
 				return ""

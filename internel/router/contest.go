@@ -14,13 +14,12 @@ import (
 
 func GetContest(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
-	// TODO
-	//champion, _, _, _ := service.GetTeamRanking(db.DB.WithContext(ctx), contest.ID, 1, 0)
+	champion, _, _, _ := service.GetTeamRanking(db.DB.WithContext(ctx), contest.ID, 1, 0)
 	data := resp.GetContestResp(contest, middleware.GetRole(ctx) == "admin")
 	data["highest"] = 0
-	//if len(champion) > 0 {
-	//	data["highest"] = champion[0].Score
-	//}
+	if len(champion) > 0 {
+		data["highest"] = champion[0].Score
+	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
 }
 
