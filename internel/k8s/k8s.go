@@ -110,7 +110,7 @@ func Init() {
 			dri = dynamicClient.Resource(mapping.Resource)
 		}
 		if _, err = dri.Create(ctx, unstructuredObj, metav1.CreateOptions{}); err != nil {
-			log.Logger.Fatalf("Failed to create resource: %s", err)
+			log.Logger.Warningf("Failed to create resource: %s", err)
 		}
 		log.Logger.Infof("Resource %s/%s created successfully", mapping.Resource.Resource, unstructuredObj.GetName())
 	}
