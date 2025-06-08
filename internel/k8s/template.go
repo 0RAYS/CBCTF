@@ -102,7 +102,7 @@ func gen(namespaceName string) []byte {
 	data := map[string]string{
 		"namespaceName":               namespaceName,
 		"svcAccountName":              fmt.Sprintf("%s-admin", namespaceName),
-		"svcAccountSecretName":        fmt.Sprintf("%s-admin-token", namespaceName),
+		"svcAccountSecretName":        fmt.Sprintf("%s-admin-secret", namespaceName),
 		"ipPoolName":                  fmt.Sprintf("%s-ipv4-ippool", namespaceName),
 		"adminRoleName":               fmt.Sprintf("%s-admin-role", namespaceName),
 		"adminRoleBindingName":        fmt.Sprintf("%s-admin-rolebinding", namespaceName),
