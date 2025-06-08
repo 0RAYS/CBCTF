@@ -6,6 +6,7 @@ import (
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
+	"fmt"
 	"gorm.io/gorm"
 	"strings"
 )
@@ -19,7 +20,7 @@ func GetChallenges(tx *gorm.DB, form f.GetChallengesForm) ([]model.Challenge, in
 		conditions = append(conditions, db.GetOption{Key: "category", Value: utils.ToTitle(form.Category), Op: "and"})
 	}
 	return db.InitChallengeRepo(tx).ListWithConditions(
-		form.Limit, form.Offset, conditions,
+		form.Limit, form.Offset, conditions, false,
 		"DockerGroups", "ChallengeFlags", "DockerGroups.Dockers",
 	)
 }
@@ -103,6 +104,13 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 						environment[k] = *v
 					}
 				}
+				ports := service.Expose
+				for _, port := range service.Ports {
+					target := fmt.Sprintf("%d", port.Target)
+					if !utils.In(target, ports) {
+						ports = append(ports, target)
+					}
+				}
 				docker, ok, msg := dockerRepo.Create(db.CreateDockerOptions{
 					DockerGroupID: dockerGroup.ID,
 					Name:          name,
@@ -110,7 +118,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 					PullPolicy:    &service.PullPolicy,
 					WorkingDir:    &service.WorkingDir,
 					Command:       (*model.StringList)(&service.Command),
-					Expose:        (*model.StringList)(&service.Expose),
+					Expose:        (*model.StringList)(&ports),
 					Environment:   &environment,
 				})
 				if !ok {

@@ -18,7 +18,7 @@ func GetTeam(ctx *gin.Context) {
 	contestFlagRepo := db.InitContestFlagRepo(db.DB.WithContext(ctx))
 	contestFlagL, _, ok, msg := contestFlagRepo.ListWithConditions(-1, -1, db.GetOptions{
 		{Key: "contest_id", Value: team.ContestID, Op: "and"},
-	}, "ContestChallenge", "ContestChallenge.Challenge")
+	}, false, "ContestChallenge", "ContestChallenge.Challenge")
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -45,7 +45,7 @@ func GetTeams(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
 	teams, count, ok, msg := db.InitTeamRepo(DB).ListWithConditions(form.Limit, form.Offset, db.GetOptions{
 		{Key: "contest_id", Value: contest.ID, Op: "and"},
-	})
+	}, false)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -111,7 +111,7 @@ func GetTeamRanking(ctx *gin.Context) {
 	}
 	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB.WithContext(ctx)).ListWithConditions(-1, -1, db.GetOptions{
 		{Key: "contest_id", Value: contest.ID, Op: "and"},
-	}, "ContestChallenge", "ContestChallenge.Challenge")
+	}, false, "ContestChallenge", "ContestChallenge.Challenge")
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

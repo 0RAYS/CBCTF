@@ -31,7 +31,7 @@ func GetContestChallenges(ctx *gin.Context) {
 		conditions = append(conditions, db.GetOption{Key: "hidden", Value: false, Op: "and"})
 	}
 	contestChallengeL, count, ok, msg := db.InitContestChallengeRepo(db.DB.WithContext(ctx)).
-		ListWithConditions(form.Limit, form.Offset, conditions, "Challenge", "ContestFlags")
+		ListWithConditions(form.Limit, form.Offset, conditions, false, "Challenge", "ContestFlags")
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

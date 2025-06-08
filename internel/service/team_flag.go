@@ -16,7 +16,7 @@ func CreateTeamFlag(tx *gorm.DB, team model.Team, contestChallenge model.Contest
 		teamFlag, ok, msg := teamFlagRepo.GetWithConditions(db.GetOptions{
 			{Key: "team_id", Value: team.ID, Op: "and"},
 			{Key: "contest_flag_id", Value: contestFlag.ID, Op: "and"},
-		})
+		}, false)
 		if ok {
 			teamFlagL = append(teamFlagL, teamFlag)
 			continue
@@ -50,7 +50,7 @@ func UpdateTeamFlag(tx *gorm.DB, team model.Team, contestChallenge model.Contest
 	submissions, _, ok, msg := submissionRepo.ListWithConditions(-1, -1, db.GetOptions{
 		{Key: "team_id", Value: team.ID, Op: "and"},
 		{Key: "contest_challenge_id", Value: contestChallenge.ID, Op: "and"},
-	})
+	}, false)
 	if !ok {
 		return make([]model.TeamFlag, 0), false, msg
 	}
@@ -64,7 +64,7 @@ func UpdateTeamFlag(tx *gorm.DB, team model.Team, contestChallenge model.Contest
 		teamFlag, ok, msg := teamFlagRepo.GetWithConditions(db.GetOptions{
 			{Key: "team_id", Value: team.ID, Op: "and"},
 			{Key: "contest_flag_id", Value: contestFlag.ID, Op: "and"},
-		})
+		}, false)
 		if !ok {
 			return make([]model.TeamFlag, 0), false, msg
 		}
@@ -86,7 +86,7 @@ func CheckIfGenerated(tx *gorm.DB, team model.Team, contestChallenge model.Conte
 		if _, ok, _ := teamFlagRepo.GetWithConditions(db.GetOptions{
 			{Key: "team_id", Value: team.ID, Op: "and"},
 			{Key: "contest_flag_id", Value: contestFlag.ID, Op: "and"},
-		}); !ok {
+		}, false); !ok {
 			return false
 		}
 	}

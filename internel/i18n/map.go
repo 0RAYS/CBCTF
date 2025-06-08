@@ -32,6 +32,12 @@ var resp = map[string]map[string]any{
 	ChallengeFlagNotFound:    {"zh-CN": "题目flag不存在", "en-US": "Challenge flag not found", "code": 404},
 	UpdateChallengeFlagError: {"zh-CN": "更新题目flag失败", "en-US": "Update challenge flag failed", "code": 500},
 
+	CreateContainerError: {"zh-CN": "创建容器失败", "en-US": "Create container failed", "code": 500},
+	DeleteContainerError: {"zh-CN": "删除容器失败", "en-US": "Delete container failed", "code": 500},
+	GetContainerError:    {"zh-CN": "获取容器失败", "en-US": "Get container failed", "code": 500},
+	ContainerNotFound:    {"zh-CN": "容器不存在", "en-US": "Container not found", "code": 404},
+	UpdateContainerError: {"zh-CN": "更新容器失败", "en-US": "Update container failed", "code": 500},
+
 	CreateContestError:   {"zh-CN": "创建比赛失败", "en-US": "Create contest failed", "code": 500},
 	DeleteContestError:   {"zh-CN": "删除比赛失败", "en-US": "Delete contest failed", "code": 500},
 	GetContestError:      {"zh-CN": "获取比赛失败", "en-US": "Get contest failed", "code": 500},
@@ -49,6 +55,8 @@ var resp = map[string]map[string]any{
 	ContestChallengeNotFound:    {"zh-CN": "比赛题目不存在", "en-US": "Contest challenge not found", "code": 404},
 	UpdateContestChallengeError: {"zh-CN": "更新比赛题目失败", "en-US": "Update contest challenge failed", "code": 500},
 	AlreadySolved:               {"zh-CN": "题目已被解决", "en-US": "Challenge already solved", "code": 400},
+	FlagNotMatch:                {"zh-CN": "flag错误", "en-US": "Flag does not match", "code": 400},
+	NotAllowSubmit:              {"zh-CN": "不允许提交", "en-US": "Not allowed to submit", "code": 403},
 
 	CreateContestFlagError: {"zh-CN": "创建比赛flag失败", "en-US": "Create contest flag failed", "code": 500},
 	DeleteContestFlagError: {"zh-CN": "删除比赛flag失败", "en-US": "Delete contest flag failed", "code": 500},
@@ -93,6 +101,12 @@ var resp = map[string]map[string]any{
 	GetNoticeError:    {"zh-CN": "获取通知失败", "en-US": "Get notice failed", "code": 500},
 	NoticeNotFound:    {"zh-CN": "通知不存在", "en-US": "Notice not found", "code": 404},
 	UpdateNoticeError: {"zh-CN": "更新通知失败", "en-US": "Update notice failed", "code": 500},
+
+	CreatePodError: {"zh-CN": "创建Pod失败", "en-US": "Create pod failed", "code": 500},
+	DeletePodError: {"zh-CN": "删除Pod失败", "en-US": "Delete pod failed", "code": 500},
+	GetPodError:    {"zh-CN": "获取Pod失败", "en-US": "Get pod failed", "code": 500},
+	PodNotFound:    {"zh-CN": "Pod不存在", "en-US": "Pod not found", "code": 404},
+	UpdatePodError: {"zh-CN": "更新Pod失败", "en-US": "Update pod failed", "code": 500},
 
 	CreateRequestError: {"zh-CN": "创建请求失败", "en-US": "Create request failed", "code": 500},
 	DeleteRequestError: {"zh-CN": "删除请求失败", "en-US": "Delete request failed", "code": 500},
@@ -139,6 +153,13 @@ var resp = map[string]map[string]any{
 	PasswordError:       {"zh-CN": "密码错误", "en-US": "Password error", "code": 401},
 	PasswordSame:        {"zh-CN": "新密码与旧密码相同", "en-US": "New password is the same as old password", "code": 400},
 
+	CreateVictimError: {"zh-CN": "创建靶机失败", "en-US": "Create victim failed", "code": 500},
+	DeleteVictimError: {"zh-CN": "关闭靶机失败", "en-US": "Delete victim failed", "code": 500},
+	GetVictimError:    {"zh-CN": "获取靶机失败", "en-US": "Get victim failed", "code": 500},
+	VictimNotFound:    {"zh-CN": "靶机不存在", "en-US": "Victim not found", "code": 404},
+	UpdateVictimError: {"zh-CN": "更新靶机失败", "en-US": "Update victim failed", "code": 500},
+	HasMuchTime:       {"zh-CN": "距容器关闭20分钟内才可延长时间", "en-US": "Can only extend time within 20 minutes before the container closes", "code": 400},
+
 	AppendUserToTeamError:      {"zh-CN": "添加用户到战队失败", "en-US": "Append user to team failed", "code": 500},
 	AppendUserToContestError:   {"zh-CN": "添加用户到比赛失败", "en-US": "Append user to contest failed", "code": 500},
 	DeleteUserFromTeamError:    {"zh-CN": "从战队中删除用户失败", "en-US": "Delete user from team failed", "code": 500},
@@ -152,10 +173,35 @@ var resp = map[string]map[string]any{
 	InvalidEmailVerifyToken:  {"zh-CN": "无效的邮箱验证令牌", "en-US": "Invalid email verify token", "code": 400},
 	SendEmailError:           {"zh-CN": "发送邮件失败", "en-US": "Send email failed", "code": 500},
 
-	CreateDirError:           {"zh-CN": "创建题目根目录失败", "en-US": "Create directory failed", "code": 500},
-	ReadDirError:             {"zh-CN": "读取题目根目录失败", "en-US": "Read directory failed", "code": 500},
-	InvalidFileName:          {"zh-CN": "无效的文件名", "en-US": "Invalid file name", "code": 400},
-	InvalidDockerComposeYaml: {"zh-CN": "无效的Docker Compose YAML文件", "en-US": "Invalid Docker Compose YAML file", "code": 400},
+	CreateDirError:                 {"zh-CN": "创建题目根目录失败", "en-US": "Create directory failed", "code": 500},
+	ReadDirError:                   {"zh-CN": "读取题目根目录失败", "en-US": "Read directory failed", "code": 500},
+	InvalidFileName:                {"zh-CN": "无效的文件名", "en-US": "Invalid file name", "code": 400},
+	InvalidDockerComposeYaml:       {"zh-CN": "无效的Docker Compose YAML文件", "en-US": "Invalid Docker Compose YAML file", "code": 400},
+	InvalidChallengeFlagInjectType: {"zh-CN": "不支持的flag注入方式", "en-US": "Invalid challenge flag inject type", "code": 400},
+
+	CreateConfigMapError: {"zh-CN": "创建ConfigMap失败", "en-US": "Create config map failed", "code": 500},
+	DeleteConfigMapError: {"zh-CN": "删除ConfigMap失败", "en-US": "Delete config map failed", "code": 500},
+	GetConfigMapError:    {"zh-CN": "获取ConfigMap失败", "en-US": "Get config map failed", "code": 500},
+	ConfigMapNotFound:    {"zh-CN": "ConfigMap不存在", "en-US": "Config map not found", "code": 404},
+
+	CreateNetworkPolicyError: {"zh-CN": "创建NetworkPolicy失败", "en-US": "Create network policy failed", "code": 500},
+	DeleteNetworkPolicyError: {"zh-CN": "删除NetworkPolicy失败", "en-US": "Delete network policy failed", "code": 500},
+	GetNetworkPolicyError:    {"zh-CN": "获取NetworkPolicy失败", "en-US": "Get network policy failed", "code": 500},
+	NetworkPolicyNotFound:    {"zh-CN": "NetworkPolicy不存在", "en-US": "Network policy not found", "code": 404},
+
+	CreateServiceError: {"zh-CN": "创建Service失败", "en-US": "Create service failed", "code": 500},
+	DeleteServiceError: {"zh-CN": "删除Service失败", "en-US": "Delete service failed", "code": 500},
+	GetServiceError:    {"zh-CN": "获取Service失败", "en-US": "Get service failed", "code": 500},
+	ServiceNotFound:    {"zh-CN": "Service不存在", "en-US": "Service not found", "code": 404},
+
+	CreateSecretError: {"zh-CN": "创建Secret失败", "en-US": "Create secret failed", "code": 500},
+	DeleteSecretError: {"zh-CN": "删除Secret失败", "en-US": "Delete secret failed", "code": 500},
+	GetSecretError:    {"zh-CN": "获取Secret失败", "en-US": "Get secret failed", "code": 500},
+	SecretNotFound:    {"zh-CN": "Secret不存在", "en-US": "Secret not found", "code": 404},
+
+	GetIPBlockError:   {"zh-CN": "获取IP池失败", "en-US": "Get IP block failed", "code": 500},
+	EmptyIPBlock:      {"zh-CN": "IP池为空", "en-US": "IP block is empty", "code": 400},
+	DuplicateHostname: {"zh-CN": "主机名重复", "en-US": "Duplicate hostname", "code": 400},
 }
 
 // I18N 获取翻译与状态码, 非http响应状态码

@@ -248,7 +248,7 @@ func SetContestChallenge(ctx *gin.Context) {
 	contestChallenge, ok, msg := db.InitContestChallengeRepo(db.DB.WithContext(ctx)).GetWithConditions(db.GetOptions{
 		{Key: "contest_id", Value: GetContest(ctx).ID, Op: "and"},
 		{Key: "challenge_id", Value: challenge.ID, Op: "and"},
-	})
+	}, false)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
@@ -292,5 +292,35 @@ func GetContestFlag(ctx *gin.Context) model.ContestFlag {
 		return model.ContestFlag{}
 	} else {
 		return contestFlag.(model.ContestFlag)
+	}
+}
+
+func SetVictim(ctx *gin.Context) {
+	type victimIDUri struct {
+		VictimID uint `uri:"victimID" binding:"required"`
+	}
+	var victimID victimIDUri
+	if err := ctx.ShouldBindUri(&victimID); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.Abort()
+		return
+	}
+	victim, ok, msg := db.InitVictimRepo(db.DB.WithContext(ctx)).GetWithConditions(db.GetOptions{
+		{Key: "victim_id", Value: victimID.VictimID, Op: "and"},
+	}, true, "all")
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.Abort()
+		return
+	}
+	ctx.Set("Victim", victim)
+	ctx.Next()
+}
+
+func GetVictim(ctx *gin.Context) model.Victim {
+	if victim, ok := ctx.Get("Victim"); !ok || victim == nil {
+		return model.Victim{}
+	} else {
+		return victim.(model.Victim)
 	}
 }

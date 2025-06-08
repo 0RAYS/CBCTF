@@ -81,7 +81,7 @@ func (c *ContestChallengeRepo) IsUniqueContestChallenge(contestID uint, challeng
 	_, ok, _ := c.GetWithConditions(GetOptions{
 		{Key: "contest_id", Value: contestID, Op: "and"},
 		{Key: "challenge_id", Value: challengeID, Op: "and"},
-	})
+	}, false)
 	return !ok
 }
 

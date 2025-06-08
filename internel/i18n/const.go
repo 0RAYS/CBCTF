@@ -30,6 +30,12 @@ const (
 	ChallengeFlagNotFound    = "ChallengeFlagNotFound"
 	UpdateChallengeFlagError = "UpdateChallengeFlagError"
 
+	CreateContainerError = "CreateContainerError"
+	DeleteContainerError = "DeleteContainerError"
+	GetContainerError    = "GetContainerError"
+	ContainerNotFound    = "ContainerNotFound"
+	UpdateContainerError = "UpdateContainerError"
+
 	CreateContestError   = "CreateContestError"
 	DeleteContestError   = "DeleteContestError"
 	GetContestError      = "GetContestError"
@@ -47,6 +53,8 @@ const (
 	ContestChallengeNotFound    = "ContestChallengeNotFound"
 	UpdateContestChallengeError = "UpdateContestChallengeError"
 	AlreadySolved               = "AlreadySolved"
+	FlagNotMatch                = "FlagNotMatch"
+	NotAllowSubmit              = "NotAllowSubmit"
 
 	CreateContestFlagError = "CreateContestFlagError"
 	DeleteContestFlagError = "DeleteContestFlagError"
@@ -91,6 +99,12 @@ const (
 	GetNoticeError    = "GetNoticeError"
 	NoticeNotFound    = "NoticeNotFound"
 	UpdateNoticeError = "UpdateNoticeError"
+
+	CreatePodError = "CreatePodError"
+	DeletePodError = "DeletePodError"
+	GetPodError    = "GetPodError"
+	PodNotFound    = "PodNotFound"
+	UpdatePodError = "UpdatePodError"
 
 	CreateRequestError = "CreateRequestError"
 	DeleteRequestError = "DeleteRequestError"
@@ -137,6 +151,13 @@ const (
 	PasswordSame        = "PasswordSame"
 	PasswordError       = "PasswordError"
 
+	CreateVictimError = "CreateVictimError"
+	DeleteVictimError = "DeleteVictimError"
+	GetVictimError    = "GetVictimError"
+	VictimNotFound    = "VictimNotFound"
+	UpdateVictimError = "UpdateVictimError"
+	HasMuchTime       = "HasMuchTime"
+
 	AppendUserToTeamError      = "AppendUserToTeamError"
 	AppendUserToContestError   = "AppendUserToContestError"
 	DeleteUserFromTeamError    = "DeleteUserFromTeamError"
@@ -150,8 +171,33 @@ const (
 	InvalidEmailVerifyToken  = "InvalidEmailVerifyToken"
 	SendEmailError           = "SendEmailError"
 
-	CreateDirError           = "CreateDirError"
-	ReadDirError             = "ReadDirError"
-	InvalidFileName          = "InvalidFileName"
-	InvalidDockerComposeYaml = "InvalidDockerComposeYaml"
+	CreateDirError                 = "CreateDirError"
+	ReadDirError                   = "ReadDirError"
+	InvalidFileName                = "InvalidFileName"
+	InvalidDockerComposeYaml       = "InvalidDockerComposeYaml"
+	InvalidChallengeFlagInjectType = "InvalidChallengeFlagInjectType"
+
+	CreateConfigMapError = "CreateConfigMapError"
+	DeleteConfigMapError = "DeleteConfigMapError"
+	GetConfigMapError    = "GetConfigMapError"
+	ConfigMapNotFound    = "ConfigMapNotFound"
+
+	CreateNetworkPolicyError = "CreateNetworkPolicyError"
+	DeleteNetworkPolicyError = "DeleteNetworkPolicyError"
+	GetNetworkPolicyError    = "GetNetworkPolicyError"
+	NetworkPolicyNotFound    = "NetworkPolicyNotFound"
+
+	CreateServiceError = "CreateServiceError"
+	DeleteServiceError = "DeleteServiceError"
+	GetServiceError    = "GetServiceError"
+	ServiceNotFound    = "ServiceNotFound"
+
+	CreateSecretError = "CreateSecretError"
+	DeleteSecretError = "DeleteSecretError"
+	GetSecretError    = "GetSecretError"
+	SecretNotFound    = "SecretNotFound"
+
+	GetIPBlockError   = "GetIPBlockError"
+	EmptyIPBlock      = "EmptyIPBlock"
+	DuplicateHostname = "DuplicateHostname"
 )

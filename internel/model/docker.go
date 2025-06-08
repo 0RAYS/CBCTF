@@ -14,7 +14,7 @@ const (
 type Docker struct {
 	DockerGroupID  uint            `json:"docker_group_id"`
 	DockerGroup    DockerGroup     `json:"-"`
-	ChallengeFlags []ChallengeFlag `json:"-"`
+	ChallengeFlags []ChallengeFlag `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Name           string          `json:"name"`
 	Image          string          `json:"image"`
 	PullPolicy     *string         `gorm:"default:null" json:"pull_policy"`

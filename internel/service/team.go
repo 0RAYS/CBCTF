@@ -150,7 +150,7 @@ func GetTeamSolvedFlags(tx *gorm.DB, team model.Team) ([]model.ContestFlag, bool
 	solvedSubmissions, _, ok, msg := db.InitSubmissionRepo(tx).ListWithConditions(-1, -1, db.GetOptions{
 		{Key: "team_id", Value: team.ID, Op: "and"},
 		{Key: "solved", Value: true, Op: "and"},
-	}, "ContestFlag")
+	}, false, "ContestFlag")
 	if !ok {
 		return solvedContestFlags, false, msg
 	}
@@ -165,7 +165,7 @@ func CalcTeamScore(tx *gorm.DB, team model.Team) (float64, bool, string) {
 	submissions, _, ok, msg := submissionRepo.ListWithConditions(-1, -1, db.GetOptions{
 		{Key: "team_id", Value: team.ID, Op: "and"},
 		{Key: "solved", Value: true, Op: "and"},
-	}, "ContestFlag")
+	}, false, "ContestFlag")
 	if !ok {
 		return team.Score, false, msg
 	}
