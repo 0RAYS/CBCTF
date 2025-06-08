@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"CBCTF/internel/config"
 	"CBCTF/internel/log"
 	"bytes"
 	"fmt"
@@ -37,10 +38,10 @@ kind: IPPool
 metadata:
     name: {{ .ipPoolName }}
 spec:
-    cidr: {{ .config.Env.K8S.IPPool.CIDR }}
+    cidr: {{ .ipPoolCIDR }}
     ipipMode: Never
     natOutgoing: true
-    blockSize: {{ .config.Env.K8S.IPPool.BlockSize }}
+    blockSize: {{ ipPoolBlockSize }}
 ---
 # Role
 apiVersion: rbac.authorization.k8s.io/v1
@@ -107,6 +108,8 @@ func gen(namespaceName string) []byte {
 		"adminRoleBindingName":        fmt.Sprintf("%s-admin-rolebinding", namespaceName),
 		"adminClusterRoleName":        fmt.Sprintf("%s-admin-clusterrole", namespaceName),
 		"adminClusterRoleBindingName": fmt.Sprintf("%s-admin-clusterrolebinding", namespaceName),
+		"ipPoolCIDR":                  config.Env.K8S.IPPool.CIDR,
+		"ipPoolBlockSize":             fmt.Sprintf("%d", config.Env.K8S.IPPool.BlockSize),
 	}
 	var buf bytes.Buffer
 	err := tmpl.Execute(&buf, data)
