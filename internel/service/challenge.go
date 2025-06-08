@@ -117,9 +117,9 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 					Image:         service.Image,
 					PullPolicy:    &service.PullPolicy,
 					WorkingDir:    &service.WorkingDir,
-					Command:       (*model.StringList)(&service.Command),
-					Expose:        (*model.StringList)(&ports),
-					Environment:   &environment,
+					Command:       model.StringList(service.Command),
+					Expose:        model.StringList(ports),
+					Environment:   environment,
 				})
 				if !ok {
 					return model.Challenge{}, false, msg

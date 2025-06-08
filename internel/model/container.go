@@ -3,18 +3,18 @@ package model
 import "CBCTF/internel/i18n"
 
 type Container struct {
-	PodID       uint        `json:"pod_id"`
-	Pod         Pod         `json:"-"`
-	Name        string      `json:"name"`
-	Image       string      `json:"image"`
-	Hostname    string      `json:"hostname"`
-	PullPolicy  *string     `gorm:"default:null" json:"pull_policy"`
-	WorkingDir  *string     `gorm:"default:null" json:"working_dir"`
-	Command     *StringList `gorm:"default:null;type:json" json:"command"`
-	Environment *StringMap  `gorm:"default:null;type:json" json:"environment"`
-	EnvFlags    StringList  `gorm:"type:json" json:"env_flags"`
-	VolumeFlags StringMap   `gorm:"type:json" json:"volume_flags"`
-	Exposes     StringList  `gorm:"type:json" json:"exposes"`
+	PodID       uint       `json:"pod_id"`
+	Pod         Pod        `json:"-"`
+	Name        string     `json:"name"`
+	Image       string     `json:"image"`
+	Hostname    string     `json:"hostname"`
+	PullPolicy  *string    `gorm:"default:null" json:"pull_policy"`
+	WorkingDir  *string    `gorm:"default:null" json:"working_dir"`
+	Command     StringList `gorm:"default:null;type:json" json:"command"`
+	Environment StringMap  `gorm:"default:null;type:json" json:"environment"`
+	EnvFlags    StringList `gorm:"type:json" json:"env_flags"`
+	VolumeFlags StringMap  `gorm:"type:json" json:"volume_flags"`
+	Exposes     StringList `gorm:"type:json" json:"exposes"`
 	Basic
 }
 

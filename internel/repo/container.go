@@ -16,8 +16,8 @@ type CreateContainerOptions struct {
 	Hostname    string
 	PullPolicy  *string
 	WorkingDir  *string
-	Command     *model.StringList
-	Environment *model.StringMap
+	Command     model.StringList
+	Environment model.StringMap
 	EnvFlags    model.StringList
 	VolumeFlags model.StringMap
 	Exposes     model.StringList
