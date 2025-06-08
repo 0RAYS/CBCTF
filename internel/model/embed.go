@@ -20,15 +20,15 @@ func (a AvatarURL) Value() (driver.Value, error) {
 }
 
 func (a *AvatarURL) Scan(value any) error {
-	if value == nil || value.(string) == "" {
-		*a = ""
-		return nil
-	}
-	path, ok := value.(string)
+	bytes, ok := value.([]byte)
 	if !ok {
 		return fmt.Errorf("failed to scan AvatarURL: %v", value)
 	}
-	*a = AvatarURL(strings.Trim(config.Env.Backend, "/") + path)
+	if len(bytes) == 0 {
+		*a = ""
+		return nil
+	}
+	*a = AvatarURL(strings.Trim(config.Env.Backend, "/") + string(bytes))
 	return nil
 }
 
