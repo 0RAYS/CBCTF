@@ -18,6 +18,14 @@ func exec(name string, task func()) func() {
 
 func Init() {
 	c = cron.New(cron.WithSeconds())
+	StopTimeoutVictims(c)
+	StopUnCtrlPods(c)
+	ClearUnCtrlResource(c)
+	UpdateFlagScore(c)
+	UpdateUserRanking(c)
+	UpdateTeamRanking(c)
+	PrepareGenerator(c)
+	ClearContestChallengeMutex(c)
 }
 
 func Start() {

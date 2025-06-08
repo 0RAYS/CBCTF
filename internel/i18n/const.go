@@ -176,6 +176,8 @@ const (
 	InvalidFileName                = "InvalidFileName"
 	InvalidDockerComposeYaml       = "InvalidDockerComposeYaml"
 	InvalidChallengeFlagInjectType = "InvalidChallengeFlagInjectType"
+	CopyFileError                  = "CopyFileError"
+	ExecCommandError               = "ExecCommandError"
 
 	CreateConfigMapError = "CreateConfigMapError"
 	DeleteConfigMapError = "DeleteConfigMapError"

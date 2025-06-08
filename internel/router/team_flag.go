@@ -2,7 +2,9 @@ package router
 
 import (
 	"CBCTF/internel/i18n"
+	"CBCTF/internel/k8s"
 	"CBCTF/internel/middleware"
+	"CBCTF/internel/model"
 	"CBCTF/internel/redis"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/service"
@@ -19,11 +21,17 @@ func InitTeamFlag(ctx *gin.Context) {
 	}
 	_ = redis.RecordChallengeInit(team.ID, contestChallenge.ID)
 	tx := db.DB.WithContext(ctx).Begin()
-	_, ok, msg := service.CreateTeamFlag(tx, team, contestChallenge)
+	teamFlags, ok, msg := service.CreateTeamFlag(tx, team, contestChallenge)
 	if !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
+	}
+	switch contestChallenge.Challenge.Type {
+	case model.DynamicChallengeType:
+		ok, msg = k8s.GenerateAttachment(contestChallenge, team, teamFlags)
+	default:
+		ok, msg = true, i18n.Success
 	}
 	tx.Commit()
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -38,23 +46,22 @@ func ResetTeamFlag(ctx *gin.Context) {
 	}
 	_ = redis.RecordChallengeInit(team.ID, contestChallenge.ID)
 	tx := db.DB.WithContext(ctx).Begin()
-	_, ok, msg := service.UpdateTeamFlag(tx, team, contestChallenge)
+	teamFlags, ok, msg := service.UpdateTeamFlag(tx, team, contestChallenge)
 	if !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	tx.Commit()
-	// TODO
-	//switch usage.Challenge.Type {
-	//case model.DynamicChallenge:
-	//	ok, msg = k8s.GenerateAttachment(usage, team, answers)
-	//case model.PodsChallenge:
-	//	// 不考虑失败
-	//	go service.StopVictim(db.DB.WithContext(ctx.Copy()), team, usage)
-	//	ok, msg = true, i18n.Success
-	//default:
-	//	ok, msg = true, i18n.Success
-	//}
+	switch contestChallenge.Challenge.Type {
+	case model.DynamicChallengeType:
+		ok, msg = k8s.GenerateAttachment(contestChallenge, team, teamFlags)
+	case model.PodsChallengeType:
+		// 不考虑失败
+		go service.StopVictim(db.DB.WithContext(ctx.Copy()), team, contestChallenge)
+		ok, msg = true, i18n.Success
+	default:
+		ok, msg = true, i18n.Success
+	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

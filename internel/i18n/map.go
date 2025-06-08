@@ -178,6 +178,8 @@ var resp = map[string]map[string]any{
 	InvalidFileName:                {"zh-CN": "无效的文件名", "en-US": "Invalid file name", "code": 400},
 	InvalidDockerComposeYaml:       {"zh-CN": "无效的Docker Compose YAML文件", "en-US": "Invalid Docker Compose YAML file", "code": 400},
 	InvalidChallengeFlagInjectType: {"zh-CN": "不支持的flag注入方式", "en-US": "Invalid challenge flag inject type", "code": 400},
+	CopyFileError:                  {"zh-CN": "复制文件失败", "en-US": "Copy file failed", "code": 500},
+	ExecCommandError:               {"zh-CN": "执行命令失败", "en-US": "Execute command failed", "code": 500},
 
 	CreateConfigMapError: {"zh-CN": "创建ConfigMap失败", "en-US": "Create config map failed", "code": 500},
 	DeleteConfigMapError: {"zh-CN": "删除ConfigMap失败", "en-US": "Delete config map failed", "code": 500},

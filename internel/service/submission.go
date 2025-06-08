@@ -9,7 +9,7 @@ import (
 	"sync"
 )
 
-// SolvedMutex 使用定时任务 cron.ClearUsageMutex 清理锁
+// SolvedMutex 使用定时任务 cron.ClearContestChallengeMutex 清理锁
 var SolvedMutex sync.Map
 
 // Submit model.Usage 需要预加载
