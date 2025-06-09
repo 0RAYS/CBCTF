@@ -42,5 +42,5 @@ type UpdateChallengeForm struct {
 	DockerGroups   []struct {
 		ID              uint                  `form:"id" json:"id" binding:"required"`
 		NetworkPolicies model.NetworkPolicies `json:"network_policies"`
-	}
+	} `form:"docker_groups" json:"docker_groups"`
 }
