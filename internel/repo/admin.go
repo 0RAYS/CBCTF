@@ -84,7 +84,7 @@ func (a *AdminRepo) GetByName(name string, preloadL ...string) (model.Admin, boo
 func (a *AdminRepo) Delete(idL ...uint) (bool, string) {
 	for _, id := range idL {
 		admin, ok, msg := a.GetByID(id)
-		if !ok {
+		if !ok && msg != i18n.AdminNotFound {
 			return false, msg
 		}
 		deletedName := fmt.Sprintf("%s_deleted_%s", admin.Name, utils.RandStr(6))

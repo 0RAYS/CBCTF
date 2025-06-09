@@ -143,7 +143,7 @@ func (t *TeamRepo) Delete(idL ...uint) (bool, string) {
 	submissionIDL, teamFlagIDL := make([]uint, 0), make([]uint, 0)
 	for _, id := range idL {
 		team, ok, msg := t.GetByID(id, "Users", "Submissions", "TeamFlags")
-		if !ok {
+		if !ok && msg != i18n.TeamNotFound {
 			return false, msg
 		}
 		deletedName := fmt.Sprintf("%s_deleted_%s", team.Name, utils.RandStr(6))

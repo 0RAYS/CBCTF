@@ -125,7 +125,7 @@ func (c *ContestRepo) Delete(idL ...uint) (bool, string) {
 	teamIDL, noticeIDL, contestChallengeIDL, contestFlagIDL, submissionIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0)
 	for _, id := range idL {
 		contest, ok, msg := c.GetByID(id, "Teams", "Notices", "ContestChallenges", "ContestFlags", "Submissions")
-		if !ok {
+		if !ok && msg != i18n.ContestNotFound {
 			return ok, msg
 		}
 		deletedName := fmt.Sprintf("%s_deleted_%s", contest.Name, utils.RandStr(6))

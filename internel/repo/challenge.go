@@ -89,7 +89,7 @@ func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
 	dockerGroupIDL, challengeFlagIDL, contestChallengeIDL, submissionIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0)
 	for _, randID := range randIDL {
 		challenge, ok, msg := c.GetByRandID(randID, "DockerGroups", "ChallengeFlags", "ContestChallenges", "Submissions")
-		if !ok {
+		if !ok && msg != i18n.ChallengeNotFound {
 			return false, msg
 		}
 		for _, dockerGroup := range challenge.DockerGroups {

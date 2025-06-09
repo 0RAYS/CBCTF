@@ -89,7 +89,7 @@ func (c *ContestChallengeRepo) Delete(idL ...uint) (bool, string) {
 	contestFlagIDL, submissionIDL := make([]uint, 0), make([]uint, 0)
 	for _, id := range idL {
 		contestChallenge, ok, msg := c.GetByID(id, "ContestFlags", "Submissions")
-		if !ok {
+		if !ok && msg != i18n.ContestChallengeNotFound {
 			return false, msg
 		}
 		for _, contestFlag := range contestChallenge.ContestFlags {

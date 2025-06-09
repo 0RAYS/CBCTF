@@ -47,7 +47,7 @@ func (d *DockerGroupRepo) Delete(idL ...uint) (bool, string) {
 	dockerIDL := make([]uint, 0)
 	for _, id := range idL {
 		dockerGroup, ok, msg := d.GetByID(id, "Dockers")
-		if !ok {
+		if !ok && msg != i18n.DockerGroupNotFound {
 			return false, msg
 		}
 		for _, docker := range dockerGroup.Dockers {
