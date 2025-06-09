@@ -44,9 +44,6 @@ volumes:
 	for _, docker := range dockers {
 		serviceStr += fmt.Sprintf("\t%s:\n", docker.Name)
 		serviceStr += fmt.Sprintf("\t\timage: %s\n", docker.Image)
-		if docker.PullPolicy != nil && *docker.PullPolicy != "" {
-			serviceStr += fmt.Sprintf("\t\tpull_policy: %s\n", *docker.PullPolicy)
-		}
 		if docker.WorkingDir != nil && *docker.WorkingDir != "" {
 			serviceStr += fmt.Sprintf("\t\tworking_dir: %s\n", *docker.WorkingDir)
 		}

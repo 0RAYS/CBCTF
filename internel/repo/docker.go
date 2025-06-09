@@ -15,7 +15,6 @@ type CreateDockerOptions struct {
 	DockerGroupID uint
 	Name          string
 	Image         string
-	PullPolicy    *string
 	WorkingDir    *string
 	Command       model.StringList
 	Expose        model.StringList
@@ -27,7 +26,6 @@ func (c CreateDockerOptions) Convert2Model() model.Model {
 		DockerGroupID: c.DockerGroupID,
 		Name:          c.Name,
 		Image:         c.Image,
-		PullPolicy:    c.PullPolicy,
 		WorkingDir:    c.WorkingDir,
 		Command:       c.Command,
 		Expose:        c.Expose,

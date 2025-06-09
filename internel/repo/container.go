@@ -14,7 +14,6 @@ type CreateContainerOptions struct {
 	Name        string
 	Image       string
 	Hostname    string
-	PullPolicy  *string
 	WorkingDir  *string
 	Command     model.StringList
 	Environment model.StringMap
@@ -29,7 +28,6 @@ func (c CreateContainerOptions) Convert2Model() model.Model {
 		Name:        c.Name,
 		Image:       c.Image,
 		Hostname:    c.Hostname,
-		PullPolicy:  c.PullPolicy,
 		WorkingDir:  c.WorkingDir,
 		Command:     c.Command,
 		Environment: c.Environment,

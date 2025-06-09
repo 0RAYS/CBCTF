@@ -101,7 +101,6 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, contestChallenge
 				Name:        fmt.Sprintf("%s-%s", pod.Name, strings.ToLower(utils.RandStr(5))),
 				Image:       docker.Image,
 				Hostname:    docker.Name,
-				PullPolicy:  docker.PullPolicy,
 				WorkingDir:  docker.WorkingDir,
 				Command:     docker.Command,
 				Environment: docker.Environment,
