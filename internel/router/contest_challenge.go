@@ -41,6 +41,7 @@ func GetContestChallenges(ctx *gin.Context) {
 		tmp := resp.GetContestChallengeResp(contestChallenge)
 		if middleware.GetRole(ctx) != "admin" {
 			team := middleware.GetTeam(ctx)
+			tmp["hidden"] = false
 			tmp["attempts"] = service.CountAttempts(db.DB.WithContext(ctx), team, contestChallenge)
 			tmp["init"] = service.CheckIfGenerated(db.DB.WithContext(ctx), team, contestChallenge)
 			tmp["solved"] = service.CheckIfSolved(db.DB.WithContext(ctx), team, contestChallenge)
@@ -52,7 +53,7 @@ func GetContestChallenges(ctx *gin.Context) {
 				return contestChallenge.Challenge.AttachmentPath(team.ID)
 			}()
 		}
-		data = append(data)
+		data = append(data, tmp)
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"challenges": data, "count": count}})
 }

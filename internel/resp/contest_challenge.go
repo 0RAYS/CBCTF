@@ -12,7 +12,9 @@ func GetContestChallengeResp(contestChallenge model.ContestChallenge) gin.H {
 		"name":     contestChallenge.Name,
 		"desc":     contestChallenge.Desc,
 		"attempt":  contestChallenge.Attempt,
+		"type":     contestChallenge.Challenge.Type,
 		"category": contestChallenge.Challenge.Category,
+		"hidden":   contestChallenge.Hidden,
 		"score": func() float64 {
 			var score float64
 			for _, flag := range contestChallenge.ContestFlags {

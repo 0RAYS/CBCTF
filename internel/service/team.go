@@ -101,7 +101,7 @@ func CreateTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.Crea
 	if !repo.IsUniqueName(contest.ID, form.Name) {
 		return model.Team{}, false, i18n.DuplicateTeamName
 	}
-	if repo.IsInTeam(contest.ID, user.ID) {
+	if repo.IsInContest(contest.ID, user.ID) {
 		return model.Team{}, false, i18n.DuplicateMember
 	}
 	team, ok, msg := repo.Create(db.CreateTeamOptions{

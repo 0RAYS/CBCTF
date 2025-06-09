@@ -24,6 +24,7 @@ type ChallengeFlag struct {
 	DockerID     *uint         `gorm:"default:null" json:"docker_id"`
 	Docker       *Docker       `json:"-"`
 	ContestFlags []ContestFlag `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	TeamFlags    []TeamFlag    `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Value        string        `json:"value"`
 	InjectType   string        `json:"inject_type"`
 	Path         string        `json:"path"`

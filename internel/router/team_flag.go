@@ -15,7 +15,7 @@ import (
 func InitTeamFlag(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	if ok, err := redis.CheckChallengeInit(team.ID, contestChallenge.ID); !ok || err != nil {
+	if ok, err := redis.CheckChallengeInit(team.ID, contestChallenge.ID); ok || err != nil {
 		ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": i18n.TooManyRequests, "data": nil})
 		return
 	}
@@ -40,7 +40,7 @@ func InitTeamFlag(ctx *gin.Context) {
 func ResetTeamFlag(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	if ok, err := redis.CheckChallengeInit(team.ID, contestChallenge.ID); !ok || err != nil {
+	if ok, err := redis.CheckChallengeInit(team.ID, contestChallenge.ID); ok || err != nil {
 		ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": i18n.TooManyRequests, "data": nil})
 		return
 	}
