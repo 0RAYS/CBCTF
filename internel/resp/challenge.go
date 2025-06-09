@@ -87,7 +87,7 @@ volumes:
 		}
 	}
 	serviceStr = strings.Trim(serviceStr, "\n")
-	return fmt.Sprintf(baseYaml, serviceStr, volumeStr)
+	return strings.Trim(fmt.Sprintf(baseYaml, serviceStr, volumeStr), "\n")
 }
 
 // GetChallengeResp 需要预加载 DockerGroups, ChallengeFlags, DockerGroups.Dockers
