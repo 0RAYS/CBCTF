@@ -87,7 +87,7 @@ func SetTeamByUser(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	team, ok, msg = db.InitTeamRepo(db.DB.WithContext(ctx)).GetBy2ID(self.ID, GetContest(ctx).ID)
+	team, ok, msg = db.InitTeamRepo(db.DB.WithContext(ctx)).GetBy2ID(self.ID, GetContest(ctx).ID, "all")
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
@@ -239,7 +239,7 @@ func SetContestChallenge(ctx *gin.Context) {
 		ctx.Abort()
 		return
 	}
-	challenge, ok, msg := db.InitChallengeRepo(db.DB.WithContext(ctx)).GetByRandID(challengeID.ChallengeID, "all")
+	challenge, ok, msg := db.InitChallengeRepo(db.DB.WithContext(ctx)).GetByRandID(challengeID.ChallengeID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()
@@ -248,7 +248,7 @@ func SetContestChallenge(ctx *gin.Context) {
 	contestChallenge, ok, msg := db.InitContestChallengeRepo(db.DB.WithContext(ctx)).GetWithConditions(db.GetOptions{
 		{Key: "contest_id", Value: GetContest(ctx).ID, Op: "and"},
 		{Key: "challenge_id", Value: challenge.ID, Op: "and"},
-	}, false)
+	}, false, "all")
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		ctx.Abort()

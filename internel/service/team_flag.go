@@ -5,6 +5,7 @@ import (
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
+	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -22,9 +23,10 @@ func CreateTeamFlag(tx *gorm.DB, team model.Team, contestChallenge model.Contest
 			continue
 		}
 		options := db.CreateTeamFlagOptions{
-			TeamID:        team.ID,
-			ContestFlagID: contestFlag.ID,
-			Solved:        false,
+			TeamID:          team.ID,
+			ContestFlagID:   contestFlag.ID,
+			ChallengeFlagID: contestFlag.ChallengeFlagID,
+			Solved:          false,
 		}
 		if result := model.StaticFlag.FindAllStringSubmatch(contestFlag.Value, 1); len(result) > 0 {
 			options.Value = result[0][1]
@@ -35,6 +37,7 @@ func CreateTeamFlag(tx *gorm.DB, team model.Team, contestChallenge model.Contest
 		} else {
 			options.Value = contestFlag.Value
 		}
+		options.Value = fmt.Sprintf("%s{%s}", contestChallenge.Contest.Prefix, options.Value)
 		teamFlag, ok, msg = teamFlagRepo.Create(options)
 		if !ok {
 			return teamFlagL, false, msg

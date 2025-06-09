@@ -10,18 +10,20 @@ type TeamFlagRepo struct {
 }
 
 type CreateTeamFlagOptions struct {
-	TeamID        uint
-	ContestFlagID uint
-	Value         string
-	Solved        bool
+	TeamID          uint
+	ContestFlagID   uint
+	ChallengeFlagID uint
+	Value           string
+	Solved          bool
 }
 
 func (c CreateTeamFlagOptions) Convert2Model() model.Model {
 	return model.TeamFlag{
-		TeamID:        c.TeamID,
-		ContestFlagID: c.ContestFlagID,
-		Value:         c.Value,
-		Solved:        c.Solved,
+		TeamID:          c.TeamID,
+		ContestFlagID:   c.ContestFlagID,
+		ChallengeFlagID: c.ChallengeFlagID,
+		Value:           c.Value,
+		Solved:          c.Solved,
 	}
 }
 
