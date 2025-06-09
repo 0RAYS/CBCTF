@@ -24,6 +24,9 @@ volumes:
 		}
 		switch flag.InjectType {
 		case model.VolumeInjectType:
+			if volumeFlags[*flag.DockerID] == nil {
+				volumeFlags[*flag.DockerID] = make(map[string]string)
+			}
 			volumeFlags[*flag.DockerID] = make(map[string]string)
 			name := fmt.Sprintf("%s_%d", model.VolumeFlagPrefix, i)
 			volumeFlags[*flag.DockerID][name] = flag.Path
@@ -31,7 +34,9 @@ volumes:
 			volumeStr += fmt.Sprintf("\t\tlabels:\n")
 			volumeStr += fmt.Sprintf("\t\t\t- %s=%s\n", model.VolumeFlagLabelKey, flag.Value)
 		case model.EnvInjectType:
-			envFlags[*flag.DockerID] = make(map[string]string)
+			if envFlags[*flag.DockerID] == nil {
+				envFlags[*flag.DockerID] = make(map[string]string)
+			}
 			name := fmt.Sprintf("%s_%d", model.EnvFlagPrefix, i)
 			envFlags[*flag.DockerID][name] = flag.Value
 		default:
