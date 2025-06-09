@@ -39,4 +39,8 @@ type UpdateChallengeForm struct {
 	Category       *string           `form:"category" json:"category"`
 	Flags          *model.StringList `form:"flags" json:"flags"`
 	GeneratorImage *string           `form:"generator_image" json:"generator_image"`
+	DockerGroups   []struct {
+		ID              uint                  `form:"id" json:"id" binding:"required"`
+		NetworkPolicies model.NetworkPolicies `json:"network_policies"`
+	}
 }
