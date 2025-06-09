@@ -101,19 +101,22 @@ func UploadAvatar(v string) func(ctx *gin.Context) {
 			options.UserID = &id
 		case "user":
 			id = middleware.GetUser(ctx).ID
-			*options.AdminID = middleware.GetSelfID(ctx)
+			selfID := middleware.GetSelfID(ctx)
+			options.AdminID = &selfID
 			options.UserID = &id
 		case "contest":
 			id = middleware.GetContest(ctx).ID
-			*options.AdminID = middleware.GetSelfID(ctx)
+			selfID := middleware.GetSelfID(ctx)
+			options.AdminID = &selfID
 			options.ContestID = &id
 		case "team":
 			id = middleware.GetTeam(ctx).ID
 			options.TeamID = &id
+			selfID := middleware.GetSelfID(ctx)
 			if middleware.GetRole(ctx) == "admin" {
-				*options.AdminID = middleware.GetSelfID(ctx)
+				options.AdminID = &selfID
 			} else {
-				*options.UserID = middleware.GetSelfID(ctx)
+				options.UserID = &selfID
 			}
 		}
 		tx := db.DB.WithContext(ctx).Begin()

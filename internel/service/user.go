@@ -87,7 +87,8 @@ func UpdateSelf(tx *gorm.DB, user model.User, form f.UpdateSelfForm) (bool, stri
 		Desc: form.Desc,
 	}
 	if form.Country != nil && *form.Country != user.Country {
-		*options.Country = strings.ToUpper(*form.Country)
+		tmp := strings.ToUpper(*form.Country)
+		options.Country = &tmp
 	}
 	if form.Email != nil && *form.Email != user.Email {
 		if !utils.IsValidEmail(*form.Email) {
@@ -97,7 +98,8 @@ func UpdateSelf(tx *gorm.DB, user model.User, form f.UpdateSelfForm) (bool, stri
 			return false, i18n.DuplicateEmail
 		}
 		options.Email = form.Email
-		*options.Verified = false
+		tmp := false
+		options.Verified = &tmp
 	}
 	if form.Name != nil && *form.Name != user.Name {
 		if !repo.IsUniqueName(*form.Name) {
