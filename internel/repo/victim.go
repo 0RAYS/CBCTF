@@ -73,7 +73,7 @@ func (v *VictimRepo) Delete(idL ...uint) (bool, string) {
 	podIDL := make([]uint, 0)
 	for _, id := range idL {
 		victim, ok, msg := v.GetByID(id)
-		if !ok {
+		if !ok && msg != i18n.VictimNotFound {
 			return false, msg
 		}
 		for _, pod := range victim.Pods {

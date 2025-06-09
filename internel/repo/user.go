@@ -117,7 +117,7 @@ func (u *UserRepo) Delete(idL ...uint) (bool, string) {
 	submissionIDL := make([]uint, 0)
 	for _, id := range idL {
 		user, ok, msg := u.GetByID(id, "Teams", "Submissions")
-		if !ok {
+		if !ok && msg != i18n.UserNotFound {
 			return false, msg
 		}
 		deletedName := fmt.Sprintf("%s_deleted_%s", user.Name, utils.RandStr(6))
