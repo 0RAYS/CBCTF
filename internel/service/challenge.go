@@ -177,6 +177,14 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChalle
 			GeneratorImage: form.GeneratorImage,
 		})
 	case model.PodsChallengeType:
+		dockerGroupRepo := db.InitDockerGroupRepo(tx)
+		for _, group := range form.DockerGroups {
+			if ok, msg := dockerGroupRepo.Update(group.ID, db.UpdateDockerGroupOptions{
+				NetworkPolicies: &group.NetworkPolicies,
+			}); !ok {
+				return false, msg
+			}
+		}
 		return db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
 			Name:     form.Name,
 			Desc:     form.Desc,
