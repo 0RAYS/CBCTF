@@ -191,13 +191,20 @@ func StartVictim(victim model.Victim) (map[string]map[string]any, bool, string) 
 						ContainerPort: int32(port),
 					})
 				}
-				containers = append(containers, corev1.Container{
+				tmp := corev1.Container{
 					Name:         container.Name,
 					Image:        container.Image,
 					Env:          envs,
 					Ports:        ports,
 					VolumeMounts: volumeMounts,
-				})
+				}
+				if len(container.Command) > 0 {
+					tmp.Command = container.Command
+				}
+				if container.WorkingDir != nil && *container.WorkingDir != "" {
+					tmp.WorkingDir = *container.WorkingDir
+				}
+				containers = append(containers, tmp)
 			}
 			p, ok, msg := CreatePod(ctx, CreatePodOptions{
 				Name:  pod.Name,
