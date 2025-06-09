@@ -99,6 +99,7 @@ func GetChallengeResp(challenge model.Challenge) gin.H {
 	dockerGroups := make([]gin.H, 0)
 	for _, group := range challenge.DockerGroups {
 		dockerGroups = append(dockerGroups, gin.H{
+			"id":               group.ID,
 			"yaml":             Docker2Yaml(group.Dockers, challenge.ChallengeFlags),
 			"network_policies": group.NetworkPolicies,
 		})
