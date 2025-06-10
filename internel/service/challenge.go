@@ -160,14 +160,34 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChallengeForm) (bool, string) {
 	switch challenge.Type {
 	case model.StaticChallengeType, model.DynamicChallengeType:
-		if form.Flags != nil {
-			challengeFlagIDL := make([]uint, 0)
-			for _, flag := range challenge.ChallengeFlags {
-				challengeFlagIDL = append(challengeFlagIDL, flag.ID)
+		oldChallengeFlagID := make([]uint, 0)
+		for _, flag := range challenge.ChallengeFlags {
+			oldChallengeFlagID = append(oldChallengeFlagID, flag.ID)
+		}
+		challengeFlagRepo := db.InitChallengeFlagRepo(tx)
+		for _, flag := range form.Flags {
+			if utils.In(flag.ID, oldChallengeFlagID) {
+				if ok, msg := challengeFlagRepo.Update(flag.ID, db.UpdateChallengeFlagOptions{
+					Value: &flag.Value,
+				}); !ok {
+					return false, msg
+				}
+				for i, id := range oldChallengeFlagID {
+					if id == flag.ID {
+						oldChallengeFlagID = append(oldChallengeFlagID[:i], oldChallengeFlagID[i+1:]...)
+					}
+				}
+			} else {
+				if _, ok, msg := challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
+					ChallengeID: challenge.ID,
+					Value:       flag.Value,
+				}); !ok {
+					return false, msg
+				}
 			}
-			if ok, msg := db.InitChallengeFlagRepo(tx).Delete(challengeFlagIDL...); !ok {
-				return false, msg
-			}
+		}
+		if ok, msg := challengeFlagRepo.Delete(oldChallengeFlagID...); !ok {
+			return false, msg
 		}
 		return db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
 			Name:           form.Name,
