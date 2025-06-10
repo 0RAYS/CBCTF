@@ -127,8 +127,8 @@ func UploadAvatar(v string) func(ctx *gin.Context) {
 			return
 		}
 		if err = ctx.SaveUploadedFile(file, record.Path); err != nil {
-			tx.Rollback()
 			log.Logger.Warningf("Failed to save file: %s", err)
+			tx.Rollback()
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 			return
 		}

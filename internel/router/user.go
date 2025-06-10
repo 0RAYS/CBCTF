@@ -67,7 +67,7 @@ func CreateUser(ctx *gin.Context) {
 
 func ChangePwd(ctx *gin.Context) {
 	var form f.ChangePasswordForm
-	if err := ctx.ShouldBindJSON(&form); err != nil {
+	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest})
 		return
 	}
@@ -90,7 +90,7 @@ func UpdateUser(ctx *gin.Context) {
 	)
 	if middleware.GetRole(ctx) == "admin" {
 		var form f.UpdateUserForm
-		if err := ctx.ShouldBindJSON(&form); err != nil {
+		if err := ctx.ShouldBind(&form); err != nil {
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 			return
 		}
@@ -99,7 +99,7 @@ func UpdateUser(ctx *gin.Context) {
 		ok, msg = service.UpdateUser(tx, user, form)
 	} else if middleware.GetRole(ctx) == "user" {
 		var form f.UpdateSelfForm
-		if err := ctx.ShouldBindJSON(&form); err != nil {
+		if err := ctx.ShouldBind(&form); err != nil {
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 			return
 		}
@@ -126,7 +126,7 @@ func DeleteUser(ctx *gin.Context) {
 	)
 	if middleware.GetRole(ctx) != "admin" {
 		var form f.DeleteSelfForm
-		if err := ctx.ShouldBindJSON(&form); err != nil {
+		if err := ctx.ShouldBind(&form); err != nil {
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest})
 			return
 		}

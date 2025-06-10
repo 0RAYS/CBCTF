@@ -27,11 +27,11 @@ func StartCollect(ctx context.Context) {
 		default:
 			metrics, err := collectMetrics()
 			if err != nil {
-				log.Logger.Error("Failed to collect Redis metrics: ", err)
+				log.Logger.Warningf("Failed to collect Redis metrics: %s", err)
 				continue
 			}
-			if err := saveMetrics(metrics); err != nil {
-				log.Logger.Error("Failed to save Redis metrics: ", err)
+			if err = saveMetrics(metrics); err != nil {
+				log.Logger.Warningf("Failed to save Redis metrics: %s", err)
 			}
 			time.Sleep(1 * time.Second)
 		}

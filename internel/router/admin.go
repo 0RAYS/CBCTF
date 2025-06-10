@@ -19,7 +19,7 @@ func GetAdmin(ctx *gin.Context) {
 
 func AdminChangePassword(ctx *gin.Context) {
 	var form f.ChangePasswordForm
-	if err := ctx.ShouldBindJSON(&form); err != nil {
+	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
@@ -35,7 +35,7 @@ func AdminChangePassword(ctx *gin.Context) {
 
 func UpdateAdmin(ctx *gin.Context) {
 	var form f.UpdateAdminForm
-	if err := ctx.ShouldBindJSON(&form); err != nil {
+	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
@@ -51,7 +51,7 @@ func UpdateAdmin(ctx *gin.Context) {
 
 func CreateAdmin(ctx *gin.Context) {
 	var form f.CreateAdminForm
-	if err := ctx.ShouldBindJSON(&form); err != nil {
+	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}

@@ -4,6 +4,7 @@ import (
 	"CBCTF/internel/config"
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/k8s"
+	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
@@ -30,6 +31,7 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, contestChallenge
 	}
 	ipBlock, err := utils.GetIPBlock(team.ID, config.Env.K8S.IPPool.CIDR, config.Env.K8S.IPPool.BlockSize)
 	if err != nil {
+		log.Logger.Warningf("Failed to get ip block: %s", err)
 		return model.Victim{}, false, i18n.GetIPBlockError
 	}
 	if len(ipBlock) == 0 || len(challenge.DockerGroups) > len(ipBlock) {
