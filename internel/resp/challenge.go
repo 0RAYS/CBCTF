@@ -92,10 +92,10 @@ volumes:
 
 // GetChallengeResp 需要预加载 DockerGroups, ChallengeFlags, DockerGroups.Dockers
 func GetChallengeResp(challenge model.Challenge) gin.H {
-	flags := make([]string, 0)
+	flags := make([]gin.H, 0)
 	if challenge.Type != model.PodsChallengeType {
 		for _, flag := range challenge.ChallengeFlags {
-			flags = append(flags, flag.Value)
+			flags = append(flags, gin.H{"id": flag.ID, "value": flag.Value})
 		}
 	}
 	dockerGroups := make([]gin.H, 0)

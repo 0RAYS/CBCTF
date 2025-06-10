@@ -34,13 +34,16 @@ type CreateChallengeForm struct {
 }
 
 type UpdateChallengeForm struct {
-	Name           *string           `form:"name" json:"name"`
-	Desc           *string           `form:"desc" json:"desc"`
-	Category       *string           `form:"category" json:"category"`
-	Flags          *model.StringList `form:"flags" json:"flags"`
-	GeneratorImage *string           `form:"generator_image" json:"generator_image"`
-	DockerGroups   []struct {
-		ID              uint                  `form:"id" json:"id" binding:"required"`
+	Name           *string `form:"name" json:"name"`
+	Desc           *string `form:"desc" json:"desc"`
+	Category       *string `form:"category" json:"category"`
+	GeneratorImage *string `form:"generator_image" json:"generator_image"`
+	Flags          []struct {
+		ID    uint   `form:"id" json:"id"`
+		Value string `form:"value" json:"value"`
+	} `form:"flags" json:"flags"`
+	DockerGroups []struct {
+		ID              uint                  `form:"id" json:"id"`
 		NetworkPolicies model.NetworkPolicies `json:"network_policies"`
 	} `form:"docker_groups" json:"docker_groups"`
 }

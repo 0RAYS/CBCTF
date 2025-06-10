@@ -1,5 +1,22 @@
 package utils
 
+import "reflect"
+
+// In 实现 in 判断
+func In(value any, slice any) bool {
+	v := reflect.ValueOf(slice)
+	if v.Kind() != reflect.Slice && v.Kind() != reflect.Array {
+		return false
+	}
+	valueReflect := reflect.ValueOf(value)
+	for i := 0; i < v.Len(); i++ {
+		if reflect.DeepEqual(v.Index(i).Interface(), valueReflect.Interface()) {
+			return true
+		}
+	}
+	return false
+}
+
 // TidyPaginate 实现内存分页逻辑, 处理各类边界场景
 func TidyPaginate(length, limit, offset int) (int, int) {
 	if length == 0 {
