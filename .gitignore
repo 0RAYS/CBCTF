@@ -9,6 +9,9 @@ dist
 config.yml
 resources.yaml
 build.bat
+CBCTF
+volumes
+docker-compose.yml
 *.conf
 *.db
 
