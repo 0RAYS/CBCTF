@@ -16,7 +16,7 @@ import (
 func GetChallenges(ctx *gin.Context) {
 	var form f.GetChallengesForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	if _, exists := ctx.GetQuery("limit"); !exists {
@@ -53,7 +53,7 @@ func GetChallenge(ctx *gin.Context) {
 func GetCategories(ctx *gin.Context) {
 	var form f.GetCategoriesForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	repo := db.InitChallengeRepo(db.DB.WithContext(ctx))
@@ -83,7 +83,7 @@ func GetChallengeFiles(ctx *gin.Context) {
 func CreateChallenge(ctx *gin.Context) {
 	var form f.CreateChallengeForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
@@ -105,7 +105,7 @@ func CreateChallenge(ctx *gin.Context) {
 func UpdateChallenge(ctx *gin.Context) {
 	var form f.UpdateChallengeForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
