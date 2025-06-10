@@ -18,12 +18,28 @@ func Events(ctx *gin.Context) {
 	contestID := GetContest(ctx).ID
 	contestChallengeID := GetContestChallenge(ctx).ID
 	options := db.CreateEventOptions{
-		UserID:             &userID,
-		TeamID:             &teamID,
-		ContestID:          &contestID,
-		ContestChallengeID: &contestChallengeID,
-		IP:                 ip,
-		Magic:              GetMagic(ctx),
+		IP:    ip,
+		Magic: GetMagic(ctx),
+	}
+	if userID == 0 {
+		options.UserID = nil
+	} else {
+		options.UserID = &userID
+	}
+	if teamID == 0 {
+		options.TeamID = nil
+	} else {
+		options.TeamID = &teamID
+	}
+	if contestID == 0 {
+		options.ContestID = nil
+	} else {
+		options.ContestID = &contestID
+	}
+	if contestChallengeID == 0 {
+		options.ContestChallengeID = nil
+	} else {
+		options.ContestChallengeID = &contestChallengeID
 	}
 
 	switch method {
