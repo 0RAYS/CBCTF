@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"fmt"
 	"gorm.io/gorm"
+	"time"
 )
 
 type CheatRepo struct {
@@ -42,7 +43,7 @@ func (c CreateCheatRepo) Convert2Model() model.Model {
 	if c.ContestFlagID != nil {
 		tmp[4] = *c.ContestFlagID
 	}
-	hash := fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%d-%d-%d-%d-%d-%s-%s", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], c.Magic, c.IP))))
+	hash := fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%s-%d-%d-%d-%d-%d-%s-%s", time.Now().Format("2006-01-02 15"), tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], c.Magic, c.IP))))
 	return model.Cheat{
 		UserID:             c.UserID,
 		TeamID:             c.TeamID,
