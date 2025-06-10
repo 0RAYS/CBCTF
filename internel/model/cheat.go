@@ -19,6 +19,8 @@ type Cheat struct {
 	ContestChallenge   *ContestChallenge `json:"-"`
 	ContestFlagID      *uint             `gorm:"default:null" json:"contest_flag_id"`
 	ContestFlag        *ContestFlag      `json:"-"`
+	Magic              string            `json:"magic"`
+	IP                 string            `json:"ip"`
 	Reason             string            `json:"reason"`
 	Type               string            `json:"type"`
 	Checked            bool              `json:"checked"`
