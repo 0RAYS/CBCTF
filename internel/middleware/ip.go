@@ -71,7 +71,7 @@ func RateLimit(ctx *gin.Context) {
 	}
 	requestCounts[ip] = validTimes
 	if len(requestCounts[ip]) >= config.Env.Gin.RateLimit.MaxRequests {
-		ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": i18n.TooManyRequests, "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.TooManyRequests, "data": nil})
 		ctx.Abort()
 		return
 	}
