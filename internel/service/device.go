@@ -9,7 +9,7 @@ import (
 
 var UserDeviceMutex sync.Map
 
-func CreateDevice(tx *gorm.DB, userID uint, magic string) (model.Device, bool, string) {
+func RecordDevice(tx *gorm.DB, userID uint, magic string) (model.Device, bool, string) {
 	var (
 		repo            = db.InitDeviceRepo(tx)
 		device, ok, msg = repo.GetBy2ID(userID, magic)

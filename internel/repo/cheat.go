@@ -1,6 +1,8 @@
 package repo
 
 import (
+	"CBCTF/internel/i18n"
+	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"crypto/md5"
 	"fmt"
@@ -12,7 +14,7 @@ type CheatRepo struct {
 	Basic[model.Cheat]
 }
 
-type CreateCheatRepo struct {
+type CreateCheatOptions struct {
 	UserID             *uint
 	TeamID             *uint
 	ContestID          *uint
@@ -26,7 +28,7 @@ type CreateCheatRepo struct {
 	References         model.UintList
 }
 
-func (c CreateCheatRepo) Convert2Model() model.Model {
+func (c CreateCheatOptions) Convert2Model() model.Model {
 	tmp := make([]uint, 5)
 	if c.UserID != nil {
 		tmp[0] = *c.UserID
@@ -94,4 +96,22 @@ func InitCheatRepo(tx *gorm.DB) *CheatRepo {
 			DB: tx,
 		},
 	}
+}
+
+func (c *CheatRepo) Create(options CreateCheatOptions) (model.Cheat, bool, string) {
+	m := options.Convert2Model().(model.Cheat)
+	if cheat, ok, _ := c.GetByHash(m.Hash); ok {
+		return cheat, true, i18n.Success
+	}
+	if res := c.DB.Model(&model.Cheat{}).Create(&m); res.Error != nil {
+		log.Logger.Warningf("Failed to create Cheat: %s", res.Error)
+		return model.Cheat{}, false, m.CreateErrorString()
+	}
+	return m, true, i18n.Success
+}
+
+func (c *CheatRepo) GetByHash(hash string) (model.Cheat, bool, string) {
+	return c.GetWithConditions(GetOptions{
+		{Key: "hash", Value: hash, Op: "="},
+	}, false)
 }

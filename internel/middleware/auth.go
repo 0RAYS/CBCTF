@@ -6,6 +6,7 @@ import (
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/service"
 	"CBCTF/internel/utils"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
@@ -48,7 +49,18 @@ func CheckAuth(ctx *gin.Context) {
 			ctx.Abort()
 			return
 		}
-		service.CreateDevice(DB, user.ID, GetMagic(ctx))
+		service.RecordDevice(DB, user.ID, GetMagic(ctx))
+		if utils.HashMagic(GetMagic(ctx)) != claims.X {
+			db.InitCheatRepo(db.DB.WithContext(ctx)).Create(db.CreateCheatOptions{
+				UserID:     &user.ID,
+				Magic:      GetMagic(ctx),
+				IP:         ctx.ClientIP(),
+				Reason:     fmt.Sprintf("Device magic %s is different from token magic %s", GetMagic(ctx), claims.X),
+				Type:       model.Suspicious,
+				Checked:    false,
+				References: nil,
+			})
+		}
 		if user.Banned {
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
 			ctx.Abort()
