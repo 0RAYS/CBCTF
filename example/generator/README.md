@@ -64,7 +64,7 @@ FROM docker.0rays.club/test/python:3.10-slim
 
 # 拷贝文件至镜像中
 COPY ./files/* /root/
-COPY ./requirements.txt /root/requirements.txt
+COPY files/requirements.txt /root/requirements.txt
 
 # 安装必要工具和依赖
 RUN apt-get update && apt-get install -y unzip zip \
@@ -147,7 +147,3 @@ python3 generator.py $1 $2
    ./run.sh id base64(base64(flag1),base64(flag2),...)
    cp /root/attachments/{id}.zip /host/path/{id}.zip
    ```
-
----
-
-如需扩展其他类型的动态附件，也可以基于该模板进行修改或适配。欢迎以此作为 CTF 平台自动化生成附件的基础模板。

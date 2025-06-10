@@ -1,7 +1,6 @@
-FROM docker.0rays.club/test/python:3.10-slim
+FROM python:3.10-slim
 
 COPY ./files/* /root/
-COPY ./requirements.txt /root/requirements.txt
 
 RUN apt-get update &&  \
     apt-get install -y unzip zip &&  \
