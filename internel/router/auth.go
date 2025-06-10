@@ -54,7 +54,7 @@ func Login(ctx *gin.Context) {
 	}
 	user, ok, msg := service.VerifyUser(db.DB.WithContext(ctx), form)
 	if !ok {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	token, err := utils.Generate(user.ID, user.Name, "user", middleware.GetMagic(ctx))
@@ -78,7 +78,7 @@ func AdminLogin(ctx *gin.Context) {
 	}
 	admin, ok, msg := service.VerifyAdmin(db.DB.WithContext(ctx), form)
 	if !ok {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"msg": msg, "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	token, err := utils.Generate(admin.ID, admin.Name, "admin", "admin")
