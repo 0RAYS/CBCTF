@@ -21,6 +21,8 @@ func GetContestResp(contest model.Contest, admin bool) gin.H {
 		"notices":   len(contest.Notices),
 		"prefix":    contest.Prefix,
 		"avatar":    contest.Avatar,
+		"hidden":    contest.Hidden,
+		"blood":     contest.Blood,
 		"solved": func() int {
 			count := 0
 			for _, submission := range contest.Submissions {
@@ -32,8 +34,6 @@ func GetContestResp(contest model.Contest, admin bool) gin.H {
 		}(),
 	}
 	if admin {
-		data["blood"] = contest.Blood
-		data["hidden"] = contest.Hidden
 		data["captcha"] = contest.Captcha
 	}
 	return data

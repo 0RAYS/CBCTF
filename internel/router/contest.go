@@ -35,18 +35,19 @@ func GetContests(ctx *gin.Context) {
 	if _, exists := ctx.GetQuery("offset"); !exists {
 		form.Offset = 0
 	}
-	all := middleware.GetRole(ctx) == "admin"
+	conditions := make(db.GetOptions, 0)
+	if middleware.GetRole(ctx) != "admin" {
+		conditions = append(conditions, db.GetOption{Key: "hidden", Value: false, Op: "and"})
+	}
 	contests, count, ok, msg := db.InitContestRepo(db.DB.WithContext(ctx)).
-		ListWithConditions(form.Limit, form.Offset, db.GetOptions{
-			{Key: "hidden", Value: all, Op: "and"},
-		}, false, "Users", "Teams", "Submissions", "Notices")
+		ListWithConditions(form.Limit, form.Offset, conditions, false, "Users", "Teams", "Submissions", "Notices")
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	data := make([]gin.H, 0)
 	for _, contest := range contests {
-		data = append(data, resp.GetContestResp(contest, all))
+		data = append(data, resp.GetContestResp(contest, middleware.GetRole(ctx) == "admin"))
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"contests": data, "count": count}})
 }
