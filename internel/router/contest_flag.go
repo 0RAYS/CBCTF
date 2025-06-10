@@ -15,7 +15,7 @@ import (
 func SubmitFlag(ctx *gin.Context) {
 	var form f.SubmitFlagForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	user := middleware.GetSelf(ctx).(model.User)
@@ -55,7 +55,7 @@ func GetContestFlag(ctx *gin.Context) {
 func UpdateContestFlag(ctx *gin.Context) {
 	var form f.UpdateContestFlagForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	contestFlag := middleware.GetContestFlag(ctx)

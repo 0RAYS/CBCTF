@@ -20,7 +20,7 @@ func StartVictim(ctx *gin.Context) {
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	user := middleware.GetSelf(ctx).(model.User)
 	if ok, err := redis.CheckVictimCreate(team.ID, contestChallenge.ChallengeID); ok || err != nil {
-		ctx.JSON(http.StatusTooManyRequests, gin.H{"msg": i18n.TooManyRequests, "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.TooManyRequests, "data": nil})
 		return
 	}
 	if err := redis.RecordVictimCreate(team.ID, contestChallenge.ChallengeID); err != nil {

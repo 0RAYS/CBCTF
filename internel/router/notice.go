@@ -14,7 +14,7 @@ import (
 func GetNotices(ctx *gin.Context) {
 	var form f.GetModelsForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	if _, exists := ctx.GetQuery("limit"); !exists {
@@ -47,7 +47,7 @@ func GetNotice(ctx *gin.Context) {
 func CreateNotice(ctx *gin.Context) {
 	var form f.CreateNoticeForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	contest := middleware.GetContest(ctx)
@@ -65,7 +65,7 @@ func CreateNotice(ctx *gin.Context) {
 func UpdateNotice(ctx *gin.Context) {
 	var form f.UpdateNoticeForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	notice := middleware.GetNotice(ctx)

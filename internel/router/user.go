@@ -27,7 +27,7 @@ func GetUser(ctx *gin.Context) {
 func GetUsers(ctx *gin.Context) {
 	var form f.GetModelsForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	if _, exists := ctx.GetQuery("limit"); !exists {
@@ -51,7 +51,7 @@ func GetUsers(ctx *gin.Context) {
 func CreateUser(ctx *gin.Context) {
 	var form f.CreateUserForm
 	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
@@ -68,7 +68,7 @@ func CreateUser(ctx *gin.Context) {
 func ChangePwd(ctx *gin.Context) {
 	var form f.ChangePasswordForm
 	if err := ctx.ShouldBindJSON(&form); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
@@ -91,7 +91,7 @@ func UpdateUser(ctx *gin.Context) {
 	if middleware.GetRole(ctx) == "admin" {
 		var form f.UpdateUserForm
 		if err := ctx.ShouldBindJSON(&form); err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
+			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 			return
 		}
 		user = middleware.GetUser(ctx)
@@ -100,7 +100,7 @@ func UpdateUser(ctx *gin.Context) {
 	} else if middleware.GetRole(ctx) == "user" {
 		var form f.UpdateSelfForm
 		if err := ctx.ShouldBindJSON(&form); err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest, "data": nil})
+			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 			return
 		}
 		user = middleware.GetSelf(ctx).(model.User)
@@ -127,7 +127,7 @@ func DeleteUser(ctx *gin.Context) {
 	if middleware.GetRole(ctx) != "admin" {
 		var form f.DeleteSelfForm
 		if err := ctx.ShouldBindJSON(&form); err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"msg": i18n.BadRequest})
+			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest})
 			return
 		}
 		ok, msg = service.DeleteSelf(tx, middleware.GetSelf(ctx).(model.User), form)
