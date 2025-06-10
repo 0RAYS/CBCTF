@@ -44,14 +44,18 @@ func CheckAuth(ctx *gin.Context) {
 			ctx.Abort()
 			return
 		}
-		magic := GetMagic(ctx)
+		if !utils.CompareMagic(GetMagic(ctx), claims.X) {
+			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
+			ctx.Abort()
+			return
+		}
 		service.RecordDevice(DB, user.ID, GetMagic(ctx))
-		if !utils.CompareMagic(magic, claims.X) {
+		if utils.HashMagic(GetMagic(ctx)) != claims.X {
 			db.InitCheatRepo(db.DB.WithContext(ctx)).Create(db.CreateCheatOptions{
 				UserID:     &user.ID,
-				Magic:      magic,
+				Magic:      GetMagic(ctx),
 				IP:         ctx.ClientIP(),
-				Reason:     fmt.Sprintf("Device magic %s is different from token magic %s", utils.HashMagic(magic), claims.X),
+				Reason:     fmt.Sprintf("Device magic %s is different from token magic %s", GetMagic(ctx), claims.X),
 				Type:       model.Suspicious,
 				Checked:    false,
 				References: nil,
