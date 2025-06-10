@@ -44,13 +44,8 @@ func CheckAuth(ctx *gin.Context) {
 			ctx.Abort()
 			return
 		}
-		if !utils.CompareMagic(GetMagic(ctx), claims.X) {
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
-			ctx.Abort()
-			return
-		}
 		service.RecordDevice(DB, user.ID, GetMagic(ctx))
-		if utils.HashMagic(GetMagic(ctx)) != claims.X {
+		if !utils.CompareMagic(GetMagic(ctx), claims.X) {
 			db.InitCheatRepo(db.DB.WithContext(ctx)).Create(db.CreateCheatOptions{
 				UserID:     &user.ID,
 				Magic:      GetMagic(ctx),
