@@ -32,6 +32,12 @@ var resp = map[string]map[string]any{
 	ChallengeFlagNotFound:    {"zh-CN": "题目flag不存在", "en-US": "Challenge flag not found", "code": 404},
 	UpdateChallengeFlagError: {"zh-CN": "更新题目flag失败", "en-US": "Update challenge flag failed", "code": 500},
 
+	CreateCheatError: {"zh-CN": "创建作弊记录失败", "en-US": "Create cheat failed", "code": 500},
+	DeleteCheatError: {"zh-CN": "删除作弊记录失败", "en-US": "Delete cheat failed", "code": 500},
+	GetCheatError:    {"zh-CN": "获取作弊记录失败", "en-US": "Get cheat failed", "code": 500},
+	CheatNotFound:    {"zh-CN": "作弊记录不存在", "en-US": "Cheat not found", "code": 404},
+	UpdateCheatError: {"zh-CN": "更新作弊记录失败", "en-US": "Update cheat failed", "code": 500},
+
 	CreateContainerError: {"zh-CN": "创建容器失败", "en-US": "Create container failed", "code": 500},
 	DeleteContainerError: {"zh-CN": "删除容器失败", "en-US": "Delete container failed", "code": 500},
 	GetContainerError:    {"zh-CN": "获取容器失败", "en-US": "Get container failed", "code": 500},
