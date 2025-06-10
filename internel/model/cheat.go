@@ -8,7 +8,6 @@ const (
 )
 
 type Cheat struct {
-	ID                 uint              `gorm:"type:varchar(36);primaryKey" json:"id"`
 	UserID             *uint             `gorm:"default:null" json:"user_id"`
 	User               *User             `json:"-"`
 	TeamID             *uint             `gorm:"default:null" json:"team_id"`
