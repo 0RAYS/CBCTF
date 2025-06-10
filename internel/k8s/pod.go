@@ -55,7 +55,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool
 		return nil, false, i18n.CreatePodError
 	}
 	for {
-		pod, ok, _ := GetPod(ctx, options.Name)
+		pod, ok, _ = GetPod(ctx, options.Name)
 		if !ok {
 			return nil, false, i18n.GetPodError
 		}
