@@ -2,6 +2,8 @@ package repo
 
 import (
 	"CBCTF/internel/model"
+	"crypto/md5"
+	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -18,11 +20,27 @@ type CreateCheatRepo struct {
 	Reason             string
 	Type               string
 	Checked            bool
-	Hash               string
 	References         model.UintList
 }
 
 func (c CreateCheatRepo) Convert2Model() model.Model {
+	tmp := make([]uint, 5)
+	if c.UserID != nil {
+		tmp[0] = *c.UserID
+	}
+	if c.TeamID != nil {
+		tmp[1] = *c.TeamID
+	}
+	if c.ContestID != nil {
+		tmp[2] = *c.ContestID
+	}
+	if c.ContestChallengeID != nil {
+		tmp[3] = *c.ContestChallengeID
+	}
+	if c.ContestFlagID != nil {
+		tmp[4] = *c.ContestFlagID
+	}
+	hash := fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%d%d%d%d%d%s%s%t", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], c.Reason, c.Type, c.Checked))))
 	return model.Cheat{
 		UserID:             c.UserID,
 		TeamID:             c.TeamID,
@@ -32,8 +50,8 @@ func (c CreateCheatRepo) Convert2Model() model.Model {
 		Reason:             c.Reason,
 		Type:               c.Type,
 		Checked:            c.Checked,
-		Hash:               c.Hash,
 		References:         c.References,
+		Hash:               hash,
 	}
 }
 
