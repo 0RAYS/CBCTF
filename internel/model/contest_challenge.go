@@ -10,7 +10,7 @@ import "CBCTF/internel/i18n"
 type ContestChallenge struct {
 	ContestID    uint          `gorm:"index:idx_contest_challenge,unique;" json:"contest_id"`
 	Contest      Contest       `json:"-"`
-	ChallengeID  uint          `json:"index:idx_contest_challenge,unique;challenge_id"`
+	ChallengeID  uint          `gorm:"index:idx_contest_challenge,unique;" json:"challenge_id"`
 	Challenge    Challenge     `json:"-"`
 	ContestFlags []ContestFlag `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Submissions  []Submission  `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
