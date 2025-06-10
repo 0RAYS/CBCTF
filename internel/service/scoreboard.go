@@ -2,6 +2,7 @@ package service
 
 import (
 	"CBCTF/internel/i18n"
+	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/redis"
 	db "CBCTF/internel/repo"
@@ -34,6 +35,7 @@ func UpdateTeamRanking(tx *gorm.DB, contestID uint) (bool, string) {
 		}
 	}
 	if err = redis.UpdateTeamRanking(contestID, teams); err != nil {
+		log.Logger.Warningf("Failed to update TeamRanking: %s", err)
 		return false, i18n.UpdateRankingError
 	}
 	return true, i18n.Success
@@ -77,8 +79,8 @@ func UpdateUserRanking(tx *gorm.DB) (bool, string) {
 	if !ok {
 		return false, msg
 	}
-	err = redis.UpdateUserRanking(users)
-	if err != nil {
+	if err = redis.UpdateUserRanking(users); err != nil {
+		log.Logger.Warningf("Failed to update UserRanking: %s", err)
 		return false, i18n.UpdateRankingError
 	}
 	return true, i18n.Success

@@ -54,7 +54,7 @@ func GetContestFlag(ctx *gin.Context) {
 
 func UpdateContestFlag(ctx *gin.Context) {
 	var form f.UpdateContestFlagForm
-	if err := ctx.ShouldBindJSON(&form); err != nil {
+	if err := ctx.ShouldBind(&form); err != nil {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}

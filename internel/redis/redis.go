@@ -32,7 +32,7 @@ func Init() {
 	ctx := context.Background()
 	_, err := RDB.Ping(ctx).Result()
 	if err != nil {
-		log.Logger.Errorf("Failed to connect to Redis: %s", err)
+		log.Logger.Warningf("Failed to connect to Redis: %s", err)
 		return
 	}
 	log.Logger.Infof("Connected to Redis: %s", addr)
@@ -58,7 +58,7 @@ func Status() (int64, int64, int64) {
 	ctx := context.Background()
 	count, err := RDB.DBSize(ctx).Result()
 	if err != nil {
-		log.Logger.Error("Failed to get cache total: ", err)
+		log.Logger.Warningf("Failed to get cache total: %s", err)
 		return 0, hit, miss
 	}
 	return count, hit, miss

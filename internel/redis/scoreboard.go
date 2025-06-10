@@ -49,7 +49,7 @@ func GetTeamRanking(contestID uint, start int64, end int64) ([]model.Team, error
 	for _, cmd := range cmds {
 		str, _ := cmd.(*redis.StringCmd).Bytes()
 		var t model.Team
-		err := msgpack.Unmarshal(str, &t)
+		err = msgpack.Unmarshal(str, &t)
 		if err != nil {
 			return teams, err
 		}
@@ -94,7 +94,7 @@ func GetUserRanking(start int64, end int64) ([]model.User, error) {
 	for _, cmd := range cmds {
 		str, _ := cmd.(*redis.StringCmd).Bytes()
 		var u model.User
-		err := msgpack.Unmarshal(str, &u)
+		err = msgpack.Unmarshal(str, &u)
 		if err != nil {
 			return make([]model.User, 0), err
 		}
