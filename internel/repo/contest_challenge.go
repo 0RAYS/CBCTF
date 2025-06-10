@@ -4,6 +4,7 @@ import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
+	"CBCTF/internel/utils"
 	"gorm.io/gorm"
 )
 
@@ -38,12 +39,13 @@ func (c CreateContestChallengeOptions) Convert2Model() model.Model {
 }
 
 type UpdateContestChallengeOptions struct {
-	Name    *string
-	Desc    *string
-	Hidden  *bool
-	Attempt *int64
-	Hints   *model.StringList
-	Tags    *model.StringList
+	Name        *string
+	Desc        *string
+	Hidden      *bool
+	Attempt     *int64
+	Hints       *model.StringList
+	Tags        *model.StringList
+	DeletedSalt *string
 }
 
 func (u UpdateContestChallengeOptions) Convert2Map() map[string]any {
@@ -65,6 +67,9 @@ func (u UpdateContestChallengeOptions) Convert2Map() map[string]any {
 	}
 	if u.Tags != nil {
 		options["tags"] = *u.Tags
+	}
+	if u.DeletedSalt != nil {
+		options["deleted_salt"] = *u.DeletedSalt
 	}
 	return options
 }
@@ -90,6 +95,10 @@ func (c *ContestChallengeRepo) Delete(idL ...uint) (bool, string) {
 	for _, id := range idL {
 		contestChallenge, ok, msg := c.GetByID(id, "ContestFlags", "Submissions")
 		if !ok && msg != i18n.ContestChallengeNotFound {
+			return false, msg
+		}
+		deletedSalt := utils.UUID()
+		if ok, msg = c.Update(id, UpdateContestChallengeOptions{DeletedSalt: &deletedSalt}); !ok {
 			return false, msg
 		}
 		for _, contestFlag := range contestChallenge.ContestFlags {

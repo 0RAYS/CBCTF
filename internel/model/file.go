@@ -22,7 +22,7 @@ type File struct {
 	Team      *Team    `json:"-"`
 	ContestID *uint    `gorm:"default:null" json:"contest_id"`
 	Contest   *Contest `json:"-"`
-	RandID    string   `gorm:"type:varchar(255);uniqueIndex;not null" json:"rand_id"`
+	RandID    string   `gorm:"type:varchar(36);uniqueIndex;not null" json:"rand_id"`
 	Filename  string   `json:"filename"`
 	Size      int64    `json:"size"`
 	Path      string   `json:"-"`
