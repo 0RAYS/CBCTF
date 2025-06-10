@@ -44,13 +44,14 @@ func CheckAuth(ctx *gin.Context) {
 			ctx.Abort()
 			return
 		}
+		magic := GetMagic(ctx)
 		service.RecordDevice(DB, user.ID, GetMagic(ctx))
-		if !utils.CompareMagic(GetMagic(ctx), claims.X) {
+		if !utils.CompareMagic(magic, claims.X) {
 			db.InitCheatRepo(db.DB.WithContext(ctx)).Create(db.CreateCheatOptions{
 				UserID:     &user.ID,
-				Magic:      GetMagic(ctx),
+				Magic:      magic,
 				IP:         ctx.ClientIP(),
-				Reason:     fmt.Sprintf("Device magic %s is different from token magic %s", GetMagic(ctx), claims.X),
+				Reason:     fmt.Sprintf("Device magic %s is different from token magic %s", utils.HashMagic(magic), claims.X),
 				Type:       model.Suspicious,
 				Checked:    false,
 				References: nil,
