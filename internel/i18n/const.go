@@ -30,6 +30,12 @@ const (
 	ChallengeFlagNotFound    = "ChallengeFlagNotFound"
 	UpdateChallengeFlagError = "UpdateChallengeFlagError"
 
+	CreateCheatError = "CreateCheatError"
+	DeleteCheatError = "DeleteCheatError"
+	GetCheatError    = "GetCheatError"
+	CheatNotFound    = "CheatNotFound"
+	UpdateCheatError = "UpdateCheatError"
+
 	CreateContainerError = "CreateContainerError"
 	DeleteContainerError = "DeleteContainerError"
 	GetContainerError    = "GetContainerError"
