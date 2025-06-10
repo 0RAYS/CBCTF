@@ -5,8 +5,9 @@ import (
 	"CBCTF/internel/log"
 	"bytes"
 	"encoding/json"
-	"github.com/gin-gonic/gin"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 type i18nResponseWriter struct {
@@ -54,6 +55,7 @@ func I18n(ctx *gin.Context) {
 	}
 	res.Msg, res.Code = i18n.I18N(res.Msg, language)
 	res.Trace = GetTraceID(ctx)
+	ctx.Set("StatusCode", res.Code)
 	ret, err := json.Marshal(res)
 	if err != nil {
 		log.Logger.Errorf("Rewrite response error: %v", err)

@@ -2,10 +2,11 @@ package middleware
 
 import (
 	"CBCTF/internel/log"
-	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
 	"sync"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 )
 
 var TotalDuration time.Duration
@@ -32,9 +33,13 @@ func Logger(ctx *gin.Context) {
 	if raw != "" {
 		path = path + "?" + raw
 	}
+	statusCode, ok := ctx.Get("StatusCode")
+	if !ok {
+		statusCode = ctx.Writer.Status()
+	}
 	e := l.WithFields(logrus.Fields{
 		"Latency":    latency,
-		"StatusCode": ctx.Writer.Status(),
+		"StatusCode": statusCode,
 		"Method":     ctx.Request.Method,
 		"ClientIP":   ctx.ClientIP(),
 		"Path":       path,
