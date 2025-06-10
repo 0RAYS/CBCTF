@@ -107,7 +107,7 @@ func UpdateUser(ctx *gin.Context) {
 		tx = db.DB.WithContext(ctx).Begin()
 		ok, msg = service.UpdateSelf(tx, user, form)
 	} else {
-		ctx.JSON(http.StatusForbidden, gin.H{"msg": i18n.Forbidden, "data": nil})
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
 		return
 	}
 	if !ok {
