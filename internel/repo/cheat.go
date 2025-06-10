@@ -17,6 +17,8 @@ type CreateCheatRepo struct {
 	ContestID          *uint
 	ContestChallengeID *uint
 	ContestFlagID      *uint
+	Magic              string
+	IP                 string
 	Reason             string
 	Type               string
 	Checked            bool
@@ -40,13 +42,15 @@ func (c CreateCheatRepo) Convert2Model() model.Model {
 	if c.ContestFlagID != nil {
 		tmp[4] = *c.ContestFlagID
 	}
-	hash := fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%d%d%d%d%d%s%s%t", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], c.Reason, c.Type, c.Checked))))
+	hash := fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%d-%d-%d-%d-%d-%s-%s", tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], c.Magic, c.IP))))
 	return model.Cheat{
 		UserID:             c.UserID,
 		TeamID:             c.TeamID,
 		ContestID:          c.ContestID,
 		ContestChallengeID: c.ContestChallengeID,
 		ContestFlagID:      c.ContestFlagID,
+		Magic:              c.Magic,
+		IP:                 c.IP,
 		Reason:             c.Reason,
 		Type:               c.Type,
 		Checked:            c.Checked,
