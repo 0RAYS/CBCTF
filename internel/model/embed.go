@@ -216,7 +216,7 @@ type Ports []int32
 func (e Ports) Value() (driver.Value, error) {
 	tmp := make([]int32, 0)
 	for _, port := range e {
-		if port > 1 && port < 65535 {
+		if port > 0 && port < 65535 {
 			tmp = append(tmp, port)
 		}
 	}
