@@ -40,6 +40,9 @@ func GetScoreboard(ctx *gin.Context) {
 	}
 	globalMap := make(map[uint]int)
 	for _, contestFlag := range contestFlags {
+		if contestFlag.ContestChallenge.Hidden {
+			continue
+		}
 		globalMap[contestFlag.ContestChallenge.ChallengeID] += 1
 	}
 	teamMap := make(map[uint]map[uint]int)
@@ -61,6 +64,9 @@ func GetScoreboard(ctx *gin.Context) {
 			return
 		}
 		for _, teamFlag := range teamFlags {
+			if teamFlag.ContestFlag.ContestChallenge.Hidden {
+				continue
+			}
 			teamMap[team.ID][teamFlag.ContestFlag.ContestChallenge.ChallengeID] += 1
 		}
 	}
