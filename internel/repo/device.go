@@ -45,6 +45,19 @@ func InitDeviceRepo(tx *gorm.DB) *DeviceRepo {
 	}
 }
 
+func (d *DeviceRepo) GetByMagic(magic string) ([]model.Device, bool, string) {
+	var devices []model.Device
+	res := d.DB.Model(&model.Device{}).Where("magic = ?", magic).Find(&devices)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Devices: %s", res.Error)
+		return make([]model.Device, 0), false, model.Device{}.GetErrorString()
+	}
+	if res.RowsAffected == 0 {
+		return make([]model.Device, 0), false, model.Device{}.NotFoundErrorString()
+	}
+	return devices, true, i18n.Success
+}
+
 func (d *DeviceRepo) GetBy2ID(userID uint, magic string) (model.Device, bool, string) {
 	var device model.Device
 	res := d.DB.Model(&model.Device{}).Where("user_id = ? AND magic = ?", userID, magic).Limit(1).Find(&device)
