@@ -49,7 +49,7 @@ func CheckAuth(ctx *gin.Context) {
 			ctx.Abort()
 			return
 		}
-		service.RecordDevice(DB, user.ID, GetMagic(ctx))
+		go service.RecordDevice(DB, user.ID, GetMagic(ctx.Copy()), ctx.ClientIP())
 		if utils.HashMagic(GetMagic(ctx)) != claims.X {
 			db.InitCheatRepo(db.DB.WithContext(ctx)).Create(db.CreateCheatOptions{
 				UserID:     &user.ID,
