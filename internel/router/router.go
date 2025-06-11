@@ -78,6 +78,7 @@ func Init() *gin.Engine {
 	{
 		contest.GET("", GetContest)
 		contest.GET("/rank", GetTeamRanking)
+		contest.GET("/scoreboard", GetScoreboard)
 		contest.POST("/teams/join", middleware.ContestIsNotOver, middleware.CheckVerified, JoinTeam)
 		contest.POST("/teams/create", middleware.ContestIsNotOver, middleware.CheckVerified, CreateTeam)
 

@@ -28,3 +28,32 @@ func GetTeamRankingResp(teamsData []struct {
 	}
 	return gin.H{"teams": data}
 }
+
+func GetScoreboardResp(globalMap map[uint]int, teamMap map[uint]map[uint]int, teams []model.Team) gin.H {
+	data := make([]gin.H, 0)
+	for _, team := range teams {
+		solved := make([]gin.H, 0)
+		for challengeID, count := range teamMap[team.ID] {
+			status := 0
+			if count == 0 {
+				status = 0 // 未解
+			} else if count > 0 && count < globalMap[challengeID] {
+				status = 1 // 部分解
+			} else {
+				status = 2 // 完全解
+			}
+			solved = append(solved, gin.H{
+				"id":     challengeID,
+				"status": status,
+			})
+		}
+		data = append(data, gin.H{
+			"id":     team.ID,
+			"name":   team.Name,
+			"score":  team.Score,
+			"avatar": team.Avatar,
+			"solved": solved,
+		})
+	}
+	return gin.H{"flags": data}
+}
