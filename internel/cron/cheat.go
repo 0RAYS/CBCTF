@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func CheckRequestIP(contest model.Contest) {
+func checkRequestIP(contest model.Contest) {
 	_, podCIDR, err := net.ParseCIDR(config.Env.K8S.IPPool.CIDR)
 	if err != nil {
 		log.Logger.Warningf("Failed to parse Pod IPPool CIDR: %v", err)
@@ -97,7 +97,7 @@ func CheckRequestIP(contest model.Contest) {
 	}
 }
 
-func CheckCheat() {
+func CheckCheat(c *cron.Cron) {
 	function := exec("CheckCheat", func() {
 		contests, _, ok, _ := db.InitContestRepo(db.DB).List(-1, -1)
 		if !ok {
@@ -107,7 +107,7 @@ func CheckCheat() {
 			if !contest.IsRunning() {
 				continue
 			}
-			go CheckRequestIP(contest)
+			go checkRequestIP(contest)
 		}
 	})
 	function()
