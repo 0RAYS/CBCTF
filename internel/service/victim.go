@@ -198,6 +198,7 @@ func StopVictim(tx *gorm.DB, team model.Team, contestChallenge model.ContestChal
 		if ok, msg = victimRepo.Delete(victim.ID); !ok {
 			return false, msg
 		}
+		LoadTraffic(tx, victim)
 	}
 	return true, i18n.Success
 }

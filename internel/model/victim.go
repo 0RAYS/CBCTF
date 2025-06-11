@@ -1,6 +1,7 @@
 package model
 
 import (
+	"CBCTF/internel/config"
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/utils"
 	"fmt"
@@ -61,6 +62,19 @@ func (v Victim) GetUniqueKey() []string {
 
 func (v Victim) GenPodName(challengeRandID string) string {
 	return fmt.Sprintf("victim-%s-%s-pod", challengeRandID, strings.ToLower(utils.RandStr(5)))
+}
+
+func (v Victim) TrafficZipPath() string {
+	return fmt.Sprintf("%s/traffics/victim-%d/traffics.zip", config.Env.Path, v.ID)
+}
+
+// TrafficPaths Victim 需要预加载 Pod
+func (v Victim) TrafficPaths() []string {
+	data := make([]string, 0)
+	for _, pod := range v.Pods {
+		data = append(data, pod.TrafficPath())
+	}
+	return data
 }
 
 // RemoteAddr Victim 需要预加载 Pod

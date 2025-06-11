@@ -10,6 +10,7 @@ import (
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/resp"
 	"CBCTF/internel/service"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -81,6 +82,20 @@ func DownloadAttachment(ctx *gin.Context) {
 		return
 	}
 	ctx.File(path)
+}
+
+func DownloadTraffic(ctx *gin.Context) {
+	victim := middleware.GetVictim(ctx)
+	if _, err := os.Stat(victim.TrafficZipPath()); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.FileNotFound, "data": nil})
+			return
+		}
+		log.Logger.Warningf("Failed to get file: %s", err)
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
+		return
+	}
+	ctx.File(victim.TrafficZipPath())
 }
 
 func UploadAvatar(v string) func(ctx *gin.Context) {

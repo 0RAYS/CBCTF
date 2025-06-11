@@ -143,6 +143,15 @@ const (
 	TeamFlagNotFound    = "TeamFlagNotFound"
 	UpdateTeamFlagError = "UpdateTeamFlagError"
 
+	CreateTrafficError = "CreateTrafficError"
+	DeleteTrafficError = "DeleteTrafficError"
+	GetTrafficError    = "GetTrafficError"
+	TrafficNotFound    = "TrafficNotFound"
+	UpdateTrafficError = "UpdateTrafficError"
+	ReadPcapError      = "ReadPcapError"
+	PcapNotFound       = "PcapNotFound"
+	HasNoTraffic       = "HasNoTraffic"
+
 	CreateUserError     = "CreateUserError"
 	DeleteUserError     = "DeleteUserError"
 	GetUserError        = "GetUserError"
@@ -184,6 +193,7 @@ const (
 	InvalidChallengeFlagInjectType = "InvalidChallengeFlagInjectType"
 	CopyFileError                  = "CopyFileError"
 	ExecCommandError               = "ExecCommandError"
+	ZipError                       = "ZipError"
 
 	CreateConfigMapError = "CreateConfigMapError"
 	DeleteConfigMapError = "DeleteConfigMapError"

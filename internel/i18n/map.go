@@ -145,6 +145,15 @@ var resp = map[string]map[string]any{
 	TeamFlagNotFound:    {"zh-CN": "战队flag不存在", "en-US": "Team flag not found", "code": 404},
 	UpdateTeamFlagError: {"zh-CN": "更新战队flag失败", "en-US": "Update team flag failed", "code": 500},
 
+	CreateTrafficError: {"zh-CN": "创建流量记录失败", "en-US": "Create traffic failed", "code": 500},
+	DeleteTrafficError: {"zh-CN": "删除流量记录失败", "en-US": "Delete traffic failed", "code": 500},
+	GetTrafficError:    {"zh-CN": "获取流量记录失败", "en-US": "Get traffic failed", "code": 500},
+	TrafficNotFound:    {"zh-CN": "流量记录不存在", "en-US": "Traffic not found", "code": 404},
+	UpdateTrafficError: {"zh-CN": "更新流量记录失败", "en-US": "Update traffic failed", "code": 500},
+	ReadPcapError:      {"zh-CN": "读取PCAP文件失败", "en-US": "Read PCAP file failed", "code": 500},
+	PcapNotFound:       {"zh-CN": "PCAP文件不存在", "en-US": "PCAP file not found", "code": 404},
+	HasNoTraffic:       {"zh-CN": "没有流量记录", "en-US": "No traffic records found", "code": 404},
+
 	CreateUserError:     {"zh-CN": "创建用户失败", "en-US": "Create user failed", "code": 500},
 	DeleteUserError:     {"zh-CN": "删除用户失败", "en-US": "Delete user failed", "code": 500},
 	GetUserError:        {"zh-CN": "获取用户失败", "en-US": "Get user failed", "code": 500},
@@ -186,6 +195,7 @@ var resp = map[string]map[string]any{
 	InvalidChallengeFlagInjectType: {"zh-CN": "不支持的flag注入方式", "en-US": "Invalid challenge flag inject type", "code": 400},
 	CopyFileError:                  {"zh-CN": "复制文件失败", "en-US": "Copy file failed", "code": 500},
 	ExecCommandError:               {"zh-CN": "执行命令失败", "en-US": "Execute command failed", "code": 500},
+	ZipError:                       {"zh-CN": "压缩文件失败", "en-US": "Zip file failed", "code": 500},
 
 	CreateConfigMapError: {"zh-CN": "创建ConfigMap失败", "en-US": "Create config map failed", "code": 500},
 	DeleteConfigMapError: {"zh-CN": "删除ConfigMap失败", "en-US": "Delete config map failed", "code": 500},
