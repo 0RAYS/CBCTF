@@ -29,6 +29,7 @@ func (c CreateTrafficOptions) Convert2Model() model.Model {
 		SrcPort:  c.SrcPort,
 		DstPort:  c.DstPort,
 		Type:     c.Type,
+		Count:    c.Count,
 	}
 }
 
