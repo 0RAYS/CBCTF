@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-var c *cron.Cron
+var Cron *cron.Cron
 
 func exec(name string, task func()) func() {
 	return func() {
@@ -17,25 +17,26 @@ func exec(name string, task func()) func() {
 }
 
 func Init() {
-	c = cron.New(cron.WithSeconds())
-	StopTimeoutVictims(c)
-	StopUnCtrlPods(c)
-	ClearUnCtrlResource(c)
-	UpdateFlagScore(c)
-	UpdateUserRanking(c)
-	UpdateTeamRanking(c)
-	PrepareGenerator(c)
-	ClearContestChallengeMutex(c)
+	Cron = cron.New(cron.WithSeconds())
+	StopTimeoutVictims(Cron)
+	StopUnCtrlPods(Cron)
+	ClearUnCtrlResource(Cron)
+	UpdateFlagScore(Cron)
+	UpdateUserRanking(Cron)
+	UpdateTeamRanking(Cron)
+	PrepareGenerator(Cron)
+	ClearContestChallengeMutex(Cron)
+	CheckCheat(Cron)
 }
 
 func Start() {
 	log.Logger.Info("Cron started")
-	c.Start()
+	Cron.Start()
 }
 
 func Stop() {
-	if c != nil {
-		c.Stop()
+	if Cron != nil {
+		Cron.Stop()
 		log.Logger.Info("Cron stopped")
 	}
 }
