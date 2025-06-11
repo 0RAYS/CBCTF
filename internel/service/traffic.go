@@ -15,6 +15,12 @@ import (
 func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 	trafficRepo := db.InitTrafficRepo(tx)
 	optionsL := make(map[string]db.CreateTrafficOptions)
+	go func(victim model.Victim) {
+		err := utils.Zip(victim.TrafficPaths(), victim.TrafficZipPath())
+		if err != nil {
+			log.Logger.Warningf("Failed to zip .pcap files: %v", err)
+		}
+	}(victim)
 	for _, pod := range victim.Pods {
 		_, count, _, _ := trafficRepo.ListWithConditions(1, 0, db.GetOptions{
 			{Key: "pod_id", Value: pod.ID, Op: "and"},
@@ -53,11 +59,6 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 		if !ok {
 			return false, msg
 		}
-	}
-	err := utils.Zip(victim.TrafficPaths(), victim.TrafficZipPath())
-	if err != nil {
-		log.Logger.Warningf("Failed to zip .pcap files: %v", err)
-		return false, i18n.ZipError
 	}
 	return true, i18n.Success
 }
