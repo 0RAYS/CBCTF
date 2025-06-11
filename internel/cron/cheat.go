@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func checkRequestIP(contest model.Contest) {
+func checkRemoteIP(contest model.Contest) {
 	_, podCIDR, err := net.ParseCIDR(config.Env.K8S.IPPool.CIDR)
 	if err != nil {
 		log.Logger.Warningf("Failed to parse Pod IPPool CIDR: %v", err)
@@ -107,7 +107,7 @@ func CheckCheat(c *cron.Cron) {
 			if !contest.IsRunning() {
 				continue
 			}
-			go checkRequestIP(contest)
+			go exec("CheckRemoteIP", func() { checkRemoteIP(contest) })()
 		}
 	})
 	function()
