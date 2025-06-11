@@ -56,7 +56,7 @@ func (p Pod) GetUniqueKey() []string {
 }
 
 func (p Pod) TrafficPath() string {
-	return fmt.Sprintf("%s/traffics/victim-%d/%s/pod-%d.pcap", config.Env.Path, p.VictimID, p.Name, p.ID)
+	return fmt.Sprintf("%s/traffics/victim-%d/pod-%d-%s.pcap", config.Env.Path, p.VictimID, p.ID, p.Name)
 }
 
 func (p Pod) RemoteAddr() []string {

@@ -179,8 +179,8 @@ func Init() *gin.Engine {
 				{
 					adminContainer.GET("", GetVictim)
 
-					//adminTraffic := adminContainer.Group("/traffic")
-					//adminTraffic.GET("/download", DownloadTraffic)
+					adminTraffic := adminContainer.Group("/traffic")
+					adminTraffic.GET("/download", DownloadTraffic)
 					//adminTraffic.GET("", GetTraffics)
 				}
 
