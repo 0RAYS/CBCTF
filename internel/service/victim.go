@@ -183,6 +183,7 @@ func StopVictim(tx *gorm.DB, team model.Team, contestChallenge model.ContestChal
 		return false, msg
 	}
 	// 预期中, len(victims) == 1, 考虑意外情况
+	victimIDL := make([]uint, 0)
 	for _, victim := range victims {
 		ok, msg = k8s.StopVictim(victim)
 		if !ok {
@@ -195,10 +196,8 @@ func StopVictim(tx *gorm.DB, team model.Team, contestChallenge model.ContestChal
 		}); !ok {
 			return false, msg
 		}
-		if ok, msg = victimRepo.Delete(victim.ID); !ok {
-			return false, msg
-		}
+		victimIDL = append(victimIDL, victim.ID)
 		LoadTraffic(tx, victim)
 	}
-	return true, i18n.Success
+	return victimRepo.Delete(victimIDL...)
 }
