@@ -306,7 +306,7 @@ func SetVictim(ctx *gin.Context) {
 		return
 	}
 	victim, ok, msg := db.InitVictimRepo(db.DB.WithContext(ctx)).GetWithConditions(db.GetOptions{
-		{Key: "victim_id", Value: victimID.VictimID, Op: "and"},
+		{Key: "id", Value: victimID.VictimID, Op: "and"},
 	}, true, "all")
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
