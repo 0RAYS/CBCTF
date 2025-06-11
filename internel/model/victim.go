@@ -17,6 +17,7 @@ type Victim struct {
 	UserID             uint             `json:"user_id"`
 	User               User             `json:"-"`
 	Pods               []Pod            `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Traffics           []Traffic        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	IPBlock            string           `json:"ip_block"`
 	Start              time.Time        `json:"start"`
 	Duration           time.Duration    `json:"duration"`
