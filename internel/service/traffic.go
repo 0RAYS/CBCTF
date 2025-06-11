@@ -2,6 +2,7 @@ package service
 
 import (
 	"CBCTF/internel/i18n"
+	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/traffic"
@@ -56,6 +57,7 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 	}
 	err := utils.Zip(victim.TrafficPaths(), victim.TrafficZipPath())
 	if err != nil {
+		log.Logger.Warningf("Failed to zip .pcap files: %v", err)
 		return false, i18n.ZipError
 	}
 	return true, i18n.Success
