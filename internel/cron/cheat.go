@@ -1,25 +1,33 @@
 package cron
 
 import (
+	"CBCTF/internel/config"
+	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
 	"fmt"
 	"github.com/robfig/cron/v3"
+	"net"
 	"strings"
 	"time"
 )
 
 func CheckRequestIP(contest model.Contest) {
+	_, podCIDR, err := net.ParseCIDR(config.Env.K8S.IPPool.CIDR)
+	if err != nil {
+		log.Logger.Warningf("Failed to parse Pod IPPool CIDR: %v", err)
+		return
+	}
 	teams, _, ok, _ := db.InitTeamRepo(db.DB).ListWithConditions(-1, -1, db.GetOptions{
 		{Key: "contest_id", Value: contest.ID, Op: "and"},
 	}, false, "Users", "Users.Devices")
 	if !ok {
 		return
 	}
-	ipTeamUserIDMap := make(map[string][][2]uint)
+	ipTeamIDMap := make(map[string][]uint)
 	requestRepo := db.InitRequestRepo(db.DB)
-	trafficRepo := db.InitTrafficRepo(db.DB)
+	victimRepo := db.InitVictimRepo(db.DB)
 	for _, team := range teams {
 		for _, user := range team.Users {
 			for _, device := range user.Devices {
@@ -28,38 +36,56 @@ func CheckRequestIP(contest model.Contest) {
 					continue
 				}
 				for _, ip := range ipL {
-					if !utils.In([2]uint{team.ID, user.ID}, ipTeamUserIDMap[ip]) {
-						ipTeamUserIDMap[ip] = append(ipTeamUserIDMap[ip], [2]uint{team.ID, user.ID})
+					netIP := net.ParseIP(ip)
+					if netIP == nil {
+						continue
+					}
+					if netIP.IsLoopback() {
+						continue
+					}
+					if podCIDR.Contains(netIP) {
+						continue
+					}
+					if !utils.In(team.ID, ipTeamIDMap[ip]) {
+						ipTeamIDMap[ip] = append(ipTeamIDMap[ip], team.ID)
 					}
 				}
 			}
-			traffics, _, ok, _ := trafficRepo.ListWithConditions(-1, -1, db.GetOptions{
-				{Key: "contest_id", Value: contest.ID, Op: "and"},
-				{Key: "team_id", Value: team.ID, Op: "and"},
-				{Key: "user_id", Value: user.ID, Op: "and"},
-			}, false)
-			if !ok {
-				continue
-			}
-			for _, traffic := range traffics {
-				if !utils.In([2]uint{team.ID, user.ID}, ipTeamUserIDMap[traffic.SrcIP]) {
-					ipTeamUserIDMap[traffic.SrcIP] = append(ipTeamUserIDMap[traffic.SrcIP], [2]uint{team.ID, user.ID})
+		}
+		victims, _, ok, _ := victimRepo.ListWithConditions(-1, -1, db.GetOptions{
+			{Key: "team_id", Value: team.ID, Op: "and"},
+		}, true, "Traffics")
+		if !ok {
+			continue
+		}
+		for _, victim := range victims {
+			for _, traffics := range victim.Traffics {
+				netIP := net.ParseIP(traffics.SrcIP)
+				if netIP == nil {
+					continue
+				}
+				if netIP.IsLoopback() {
+					continue
+				}
+				if podCIDR.Contains(netIP) {
+					continue
+				}
+				if !utils.In(victim.TeamID, ipTeamIDMap[traffics.SrcIP]) {
+					ipTeamIDMap[traffics.SrcIP] = append(ipTeamIDMap[traffics.SrcIP], victim.TeamID)
 				}
 			}
 		}
 	}
 	cheatRepo := db.InitCheatRepo(db.DB)
-	for ip, teamUserIDL := range ipTeamUserIDMap {
-		if len(teamUserIDL) > 1 {
+	for ip, teamIDL := range ipTeamIDMap {
+		if len(teamIDL) > 1 {
 			var tmp strings.Builder
-			for _, teamUserID := range teamUserIDL {
-				tmp.WriteString(fmt.Sprintf("Team%d-User%d, ", teamUserID[0], teamUserID[1]))
+			for _, teamID := range teamIDL {
+				tmp.WriteString(fmt.Sprintf("Team-%d, ", teamID))
 			}
-			for _, teamUserID := range teamUserIDL {
-				teamID, userID := teamUserID[0], teamUserID[1]
+			for _, teamID := range teamIDL {
 				cheatRepo.Create(db.CreateCheatOptions{
-					UserID:    &teamID,
-					TeamID:    &userID,
+					TeamID:    &teamID,
 					ContestID: &contest.ID,
 					IP:        ip,
 					Reason:    fmt.Sprintf(model.SameRequestIP, strings.Trim(tmp.String(), ", "), ip),
