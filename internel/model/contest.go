@@ -86,7 +86,7 @@ func (c Contest) IsComing() bool {
 }
 
 func (c Contest) IsRunning() bool {
-	return (c.IsOver() || c.IsComing() || c.Hidden) != true
+	return !(c.IsOver() || c.IsComing() || c.Hidden)
 }
 
 func (c Contest) Status() string {
