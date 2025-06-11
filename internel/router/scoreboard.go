@@ -33,32 +33,32 @@ func GetScoreboard(ctx *gin.Context) {
 	contestFlagRepo := db.InitContestFlagRepo(db.DB.WithContext(ctx))
 	contestFlags, _, ok, msg := contestFlagRepo.ListWithConditions(-1, -1, db.GetOptions{
 		{Key: "contest_id", Value: contest.ID, Op: "and"},
-	}, false, "ContestChallenge")
+	}, false, "ContestChallenge", "ContestChallenge.Challenge")
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	globalMap := make(map[uint]int)
+	globalMap := make(map[string]int)
 	for _, contestFlag := range contestFlags {
 		if contestFlag.ContestChallenge.Hidden {
 			continue
 		}
-		globalMap[contestFlag.ContestChallenge.ChallengeID] += 1
+		globalMap[contestFlag.ContestChallenge.Challenge.RandID] += 1
 	}
-	teamMap := make(map[uint]map[uint]int)
+	teamMap := make(map[uint]map[string]int)
 	teamFlagRepo := db.InitTeamFlagRepo(db.DB.WithContext(ctx))
 	for _, team := range teams {
 		if !showAll && team.Hidden {
 			count--
 			continue
 		}
-		teamMap[team.ID] = make(map[uint]int)
+		teamMap[team.ID] = make(map[string]int)
 		for challengeID, _ := range globalMap {
 			teamMap[team.ID][challengeID] = 0
 		}
 		teamFlags, _, ok, msg := teamFlagRepo.ListWithConditions(-1, -1, db.GetOptions{
 			{Key: "team_id", Value: team.ID, Op: "and"},
-		}, false, "ContestFlag", "ContestFlag.ContestChallenge")
+		}, false, "ContestFlag", "ContestFlag.ContestChallenge", "ContestFlag.ContestChallenge.Challenge")
 		if !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
@@ -68,7 +68,7 @@ func GetScoreboard(ctx *gin.Context) {
 				continue
 			}
 			if teamFlag.Solved {
-				teamMap[team.ID][teamFlag.ContestFlag.ContestChallenge.ChallengeID] += 1
+				teamMap[team.ID][teamFlag.ContestFlag.ContestChallenge.Challenge.RandID] += 1
 			}
 		}
 	}

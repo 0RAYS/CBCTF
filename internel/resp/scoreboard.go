@@ -29,7 +29,7 @@ func GetTeamRankingResp(teamsData []struct {
 	return gin.H{"teams": data}
 }
 
-func GetScoreboardResp(globalMap map[uint]int, teamMap map[uint]map[uint]int, teams []model.Team) []gin.H {
+func GetScoreboardResp(globalMap map[string]int, teamMap map[uint]map[string]int, teams []model.Team) []gin.H {
 	data := make([]gin.H, 0)
 	for _, team := range teams {
 		solved := make([]gin.H, 0)
