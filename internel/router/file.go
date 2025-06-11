@@ -245,7 +245,7 @@ func GetWriteUPs(ctx *gin.Context) {
 	writeups, count, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).
 		ListWithConditions(form.Limit, form.Offset, db.GetOptions{
 			{Key: "type", Value: model.WriteUPFile, Op: "and"},
-			{Key: "team_id", Value: team.ID, Op: "or"},
+			{Key: "team_id", Value: team.ID, Op: "and"},
 		}, false)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
