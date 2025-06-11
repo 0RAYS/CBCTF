@@ -33,7 +33,6 @@ func ReadPcap(path string) ([]Connection, bool, string) {
 			dstIP   string
 			srcPort uint16
 			dstPort uint16
-			t       string
 		)
 		network := packet.NetworkLayer()
 		if network == nil {
@@ -71,7 +70,7 @@ func ReadPcap(path string) ([]Connection, bool, string) {
 					DstIP:   dstIP,
 					SrcPort: srcPort,
 					DstPort: dstPort,
-					Type:    t,
+					Type:    layers.LayerTypeTCP.String(),
 				})
 			} else {
 				continue
@@ -80,13 +79,12 @@ func ReadPcap(path string) ([]Connection, bool, string) {
 			if udp, ok := transport.(*layers.UDP); ok {
 				srcPort = uint16(udp.SrcPort)
 				dstPort = uint16(udp.DstPort)
-				t = layers.LayerTypeUDP.String()
 				connections = append(connections, Connection{
 					SrcIP:   srcIP,
 					DstIP:   dstIP,
 					SrcPort: srcPort,
 					DstPort: dstPort,
-					Type:    t,
+					Type:    layers.LayerTypeUDP.String(),
 				})
 			} else {
 				continue
