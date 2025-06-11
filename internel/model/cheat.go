@@ -8,6 +8,7 @@ const (
 
 	DifferentTokenMagic = "Device magic %s is different from token magic %s"
 	SameDeviceMagic     = "User %d has the same device magic as user %d"
+	SameRequestIP       = "%s has the same request IP %s"
 )
 
 type Cheat struct {
