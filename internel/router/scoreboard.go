@@ -64,10 +64,12 @@ func GetScoreboard(ctx *gin.Context) {
 			return
 		}
 		for _, teamFlag := range teamFlags {
-			if teamFlag.ContestFlag.ContestChallenge.Hidden {
+			if teamFlag.ContestFlag.ContestChallenge.Hidden || teamFlag.Solved {
 				continue
 			}
-			teamMap[team.ID][teamFlag.ContestFlag.ContestChallenge.ChallengeID] += 1
+			if teamFlag.Solved {
+				teamMap[team.ID][teamFlag.ContestFlag.ContestChallenge.ChallengeID] += 1
+			}
 		}
 	}
 	data := resp.GetScoreboardResp(globalMap, teamMap, teams)
