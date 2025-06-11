@@ -52,8 +52,11 @@ func GetScoreboardResp(challengeMap map[string]model.Challenge, globalMap map[st
 		data = append(data, gin.H{
 			"id":     team.ID,
 			"name":   team.Name,
+			"desc":   team.Desc,
 			"score":  team.Score,
 			"avatar": team.Avatar,
+			"last":   team.Last,
+			"users":  len(team.Users),
 			"solved": solved,
 		})
 	}
