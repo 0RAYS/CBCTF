@@ -34,30 +34,23 @@ func GetScoreboardResp(challengeMap map[string]model.Challenge, globalMap map[st
 	for _, team := range teams {
 		solved := make([]gin.H, 0)
 		for challengeRandID, count := range teamMap[team.ID] {
-			status := 0
-			if count == 0 {
-				status = 0 // 未解
-			} else if count > 0 && count < globalMap[challengeRandID] {
-				status = 1 // 部分解
-			} else {
-				status = 2 // 完全解
-			}
 			solved = append(solved, gin.H{
 				"id":       challengeRandID,
-				"status":   status,
+				"total":    globalMap[challengeRandID],
+				"solved":   count,
 				"name":     challengeMap[challengeRandID].Name,
 				"category": challengeMap[challengeRandID].Category,
 			})
 		}
 		data = append(data, gin.H{
-			"id":     team.ID,
-			"name":   team.Name,
-			"desc":   team.Desc,
-			"score":  team.Score,
-			"avatar": team.Avatar,
-			"last":   team.Last,
-			"users":  len(team.Users),
-			"solved": solved,
+			"id":         team.ID,
+			"name":       team.Name,
+			"desc":       team.Desc,
+			"score":      team.Score,
+			"avatar":     team.Avatar,
+			"last":       team.Last,
+			"users":      len(team.Users),
+			"challenges": solved,
 		})
 	}
 	return data
