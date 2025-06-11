@@ -44,23 +44,23 @@ func CheckAuth(ctx *gin.Context) {
 			ctx.Abort()
 			return
 		}
-		if !utils.CompareMagic(GetMagic(ctx), claims.X) {
+		magic := GetMagic(ctx)
+		if !utils.CompareMagic(magic, claims.X) {
+			go func(ctx *gin.Context) {
+				db.InitCheatRepo(db.DB.WithContext(ctx)).Create(db.CreateCheatOptions{
+					UserID:  &user.ID,
+					Magic:   magic,
+					IP:      ctx.ClientIP(),
+					Reason:  fmt.Sprintf(model.DifferentTokenMagic, magic, claims.X),
+					Type:    model.Suspicious,
+					Checked: false,
+				})
+			}(ctx.Copy())
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
 			ctx.Abort()
 			return
 		}
-		go service.RecordDevice(DB, user.ID, GetMagic(ctx.Copy()), ctx.ClientIP())
-		if utils.HashMagic(GetMagic(ctx)) != claims.X {
-			db.InitCheatRepo(db.DB.WithContext(ctx)).Create(db.CreateCheatOptions{
-				UserID:     &user.ID,
-				Magic:      GetMagic(ctx),
-				IP:         ctx.ClientIP(),
-				Reason:     fmt.Sprintf("Device magic %s is different from token magic %s", GetMagic(ctx), claims.X),
-				Type:       model.Suspicious,
-				Checked:    false,
-				References: nil,
-			})
-		}
+		go service.RecordDevice(DB, user.ID, magic, ctx.ClientIP())
 		if user.Banned {
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
 			ctx.Abort()

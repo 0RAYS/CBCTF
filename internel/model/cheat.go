@@ -5,6 +5,9 @@ import "CBCTF/internel/i18n"
 const (
 	Cheater    = "cheater"
 	Suspicious = "suspicious"
+
+	DifferentTokenMagic = "Device magic %s is different from token magic %s"
+	SameDeviceMagic     = "User %d has the same device magic as user %d"
 )
 
 type Cheat struct {
