@@ -20,7 +20,7 @@ func RecordDevice(tx *gorm.DB, userID uint, magic string, ip string) (model.Devi
 					UserID:  &userID,
 					Magic:   magic,
 					IP:      ip,
-					Reason:  fmt.Sprintf("User %d has the same device magic as user %d", userID, device.UserID),
+					Reason:  fmt.Sprintf(model.SameDeviceMagic, userID, device.UserID),
 					Type:    model.Suspicious,
 					Checked: false,
 				})
