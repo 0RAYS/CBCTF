@@ -162,6 +162,7 @@ func Init() *gin.Engine {
 			adminContest.DELETE("", DeleteContest)
 			adminContest.POST("/avatar", UploadAvatar("contest"))
 			adminContest.GET("/rank", GetTeamRanking)
+			adminContest.GET("/scoreboard", GetScoreboard)
 
 			adminContest.GET("/teams", GetTeams)
 			adminContestTeam := adminContest.Group("/teams/:teamID", middleware.SetTeamByURI)
