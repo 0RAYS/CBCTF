@@ -4,6 +4,7 @@ import (
 	f "CBCTF/internel/form"
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/middleware"
+	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/resp"
 	"CBCTF/internel/service"
@@ -38,6 +39,22 @@ func GetScoreboard(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	contestChallengeRepo := db.InitContestChallengeRepo(db.DB.WithContext(ctx))
+	contestChallenges, _, ok, msg := contestChallengeRepo.ListWithConditions(-1, -1, db.GetOptions{
+		{Key: "contest_id", Value: contest.ID, Op: "and"},
+		{Key: "hidden", Value: false, Op: "and"},
+	}, false, "Challenge")
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	challengeMap := make(map[string]model.Challenge)
+	for _, contestChallenge := range contestChallenges {
+		if contestChallenge.Hidden {
+			continue
+		}
+		challengeMap[contestChallenge.Challenge.RandID] = contestChallenge.Challenge
+	}
 	globalMap := make(map[string]int)
 	for _, contestFlag := range contestFlags {
 		if contestFlag.ContestChallenge.Hidden {
@@ -64,7 +81,7 @@ func GetScoreboard(ctx *gin.Context) {
 			return
 		}
 		for _, teamFlag := range teamFlags {
-			if teamFlag.ContestFlag.ContestChallenge.Hidden || teamFlag.Solved {
+			if teamFlag.ContestFlag.ContestChallenge.Hidden {
 				continue
 			}
 			if teamFlag.Solved {
@@ -72,6 +89,6 @@ func GetScoreboard(ctx *gin.Context) {
 			}
 		}
 	}
-	data := resp.GetScoreboardResp(globalMap, teamMap, teams)
+	data := resp.GetScoreboardResp(challengeMap, globalMap, teamMap, teams)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"teams": data, "count": count}})
 }
