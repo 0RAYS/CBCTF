@@ -58,7 +58,7 @@ func GetScoreboard(ctx *gin.Context) {
 		}
 		teamFlags, _, ok, msg := teamFlagRepo.ListWithConditions(-1, -1, db.GetOptions{
 			{Key: "team_id", Value: team.ID, Op: "and"},
-		}, false, "ContestFlag", "ContestChallenge")
+		}, false, "ContestFlag", "ContestFlag.ContestChallenge")
 		if !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
