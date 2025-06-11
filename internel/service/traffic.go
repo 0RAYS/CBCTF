@@ -48,10 +48,11 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 		}
 	}
 	for _, options := range optionsL {
-		_, ok, msg := trafficRepo.Create(options)
+		t, ok, msg := trafficRepo.Create(options)
 		if !ok {
 			return false, msg
 		}
+		victim.Traffics = append(victim.Traffics, t)
 	}
 	err := utils.Zip(victim.TrafficPaths(), victim.TrafficZipPath())
 	if err != nil {
