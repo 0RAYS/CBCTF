@@ -16,10 +16,10 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 	trafficRepo := db.InitTrafficRepo(tx)
 	optionsL := make(map[string]db.CreateTrafficOptions)
 	for _, pod := range victim.Pods {
-		_, _, ok, _ := trafficRepo.ListWithConditions(1, 0, db.GetOptions{
+		_, count, _, _ := trafficRepo.ListWithConditions(1, 0, db.GetOptions{
 			{Key: "pod_id", Value: pod.ID, Op: "and"},
 		}, false)
-		if ok {
+		if count > 0 {
 			return true, i18n.Success
 		}
 		packet, ok, msg := traffic.ReadPcap(pod.TrafficPath())
@@ -49,11 +49,10 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 		}
 	}
 	for _, options := range optionsL {
-		t, ok, msg := trafficRepo.Create(options)
+		_, ok, msg := trafficRepo.Create(options)
 		if !ok {
 			return false, msg
 		}
-		victim.Traffics = append(victim.Traffics, t)
 	}
 	err := utils.Zip(victim.TrafficPaths(), victim.TrafficZipPath())
 	if err != nil {
