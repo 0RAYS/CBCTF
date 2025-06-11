@@ -10,6 +10,7 @@ type Pod struct {
 	VictimID        uint            `json:"victim_id"`
 	Victim          Victim          `json:"-"`
 	Containers      []Container     `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Traffics        []Traffic       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Name            string          `json:"name"`
 	PodIP           string          `json:"pod_ip"`
 	ExposedIP       string          `json:"exposed_ip"`
