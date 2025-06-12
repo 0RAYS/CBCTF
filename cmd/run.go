@@ -4,6 +4,7 @@ import (
 	"CBCTF/internel/config"
 	"CBCTF/internel/cron"
 	"CBCTF/internel/k8s"
+	"CBCTF/internel/pool"
 
 	//"CBCTF/internel/k8s"
 	"CBCTF/internel/log"
@@ -23,7 +24,8 @@ func initialize() {
 	redis.Init()
 	db.Init()
 	k8s.Init(true)
-	cron.Init()
+	go cron.Init()
+	go pool.Init()
 }
 
 func start() {

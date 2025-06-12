@@ -1,6 +1,7 @@
 package service
 
 import (
+	"CBCTF/internel/cron"
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
@@ -12,7 +13,7 @@ import (
 func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) ([]model.TeamFlag, bool, string) {
 	contestChallenges, _, ok, msg := db.InitContestChallengeRepo(tx).ListWithConditions(-1, -1, db.GetOptions{
 		{Key: "contest_id", Value: contest.ID, Op: "and"},
-	}, false, "ContestFlags")
+	}, false, "ContestFlags", "Challenge")
 	if !ok {
 		return make([]model.TeamFlag, 0), false, msg
 	}
@@ -21,6 +22,13 @@ func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) ([]mod
 		teamFlags, ok, msg := CreateTeamFlag(tx, team, contestChallenge)
 		if !ok {
 			return teamFlagL, false, msg
+		}
+		if contestChallenge.Challenge.Type == model.DynamicChallengeType {
+			cron.GenAttachmentPool <- cron.GenTask{
+				Team:             team,
+				ContestChallenge: contestChallenge,
+				TeamFlagL:        teamFlags,
+			}
 		}
 		teamFlagL = append(teamFlagL, teamFlags...)
 	}
