@@ -199,6 +199,14 @@ func Init() *gin.Engine {
 				adminContestNotice.DELETE("", DeleteNotice)
 			}
 
+			adminContest.GET("/cheats", GetCheats)
+			adminContestCheat := adminContest.Group("/cheats/:cheatID", middleware.SetCheat)
+			{
+				adminContestCheat.GET("", GetCheat)
+				//adminContestCheat.PUT("")
+				//adminContestCheat.DELETE("")
+			}
+
 			adminContest.GET("/challenges", GetContestChallenges)
 			adminContest.POST("/challenges", AddContestChallenge)
 			adminContestChallenge := adminContest.Group("/challenges/:challengeID", middleware.SetContestChallenge)

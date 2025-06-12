@@ -324,3 +324,31 @@ func GetVictim(ctx *gin.Context) model.Victim {
 		return victim.(model.Victim)
 	}
 }
+
+func SetCheat(ctx *gin.Context) {
+	type cheatIDUri struct {
+		CheatID uint `uri:"cheatID" binding:"required"`
+	}
+	var cheatID cheatIDUri
+	if err := ctx.ShouldBindUri(&cheatID); err != nil {
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.Abort()
+		return
+	}
+	cheat, ok, msg := db.InitCheatRepo(db.DB.WithContext(ctx)).GetByID(cheatID.CheatID, "all")
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.Abort()
+		return
+	}
+	ctx.Set("Cheat", cheat)
+	ctx.Next()
+}
+
+func GetCheat(ctx *gin.Context) model.Cheat {
+	if cheat, ok := ctx.Get("Cheat"); !ok || cheat == nil {
+		return model.Cheat{}
+	} else {
+		return cheat.(model.Cheat)
+	}
+}
