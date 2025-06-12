@@ -9,6 +9,24 @@ import (
 	"gorm.io/gorm"
 )
 
+func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) ([]model.TeamFlag, bool, string) {
+	contestChallenges, _, ok, msg := db.InitContestChallengeRepo(tx).ListWithConditions(-1, -1, db.GetOptions{
+		{Key: "contest_id", Value: contest.ID, Op: "and"},
+	}, false, "ContestFlags")
+	if !ok {
+		return make([]model.TeamFlag, 0), false, msg
+	}
+	teamFlagL := make([]model.TeamFlag, 0)
+	for _, contestChallenge := range contestChallenges {
+		teamFlags, ok, msg := CreateTeamFlag(tx, team, contestChallenge)
+		if !ok {
+			return teamFlagL, false, msg
+		}
+		teamFlagL = append(teamFlagL, teamFlags...)
+	}
+	return teamFlagL, true, i18n.Success
+}
+
 // CreateTeamFlag 需要预加载 ContestFlags
 func CreateTeamFlag(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) ([]model.TeamFlag, bool, string) {
 	teamFlagRepo := db.InitTeamFlagRepo(tx)
