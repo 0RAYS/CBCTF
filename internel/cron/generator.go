@@ -17,7 +17,7 @@ func PrepareGenerator(c *cron.Cron) {
 			return
 		}
 		for _, contest := range contests {
-			if !contest.IsRunning() {
+			if contest.IsOver() {
 				continue
 			}
 			repo := db.InitContestChallengeRepo(db.DB)

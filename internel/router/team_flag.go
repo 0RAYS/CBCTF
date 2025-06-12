@@ -2,9 +2,9 @@ package router
 
 import (
 	"CBCTF/internel/i18n"
-	"CBCTF/internel/k8s"
 	"CBCTF/internel/middleware"
 	"CBCTF/internel/model"
+	"CBCTF/internel/pool"
 	"CBCTF/internel/redis"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/service"
@@ -29,7 +29,11 @@ func InitTeamFlag(ctx *gin.Context) {
 	}
 	switch contestChallenge.Challenge.Type {
 	case model.DynamicChallengeType:
-		ok, msg = k8s.GenerateAttachment(contestChallenge, team, teamFlags)
+		pool.GenAttachmentPool <- pool.GenTask{
+			Team:             team,
+			ContestChallenge: contestChallenge,
+			TeamFlagL:        teamFlags,
+		}
 	default:
 		ok, msg = true, i18n.Success
 	}
@@ -55,7 +59,11 @@ func ResetTeamFlag(ctx *gin.Context) {
 	tx.Commit()
 	switch contestChallenge.Challenge.Type {
 	case model.DynamicChallengeType:
-		ok, msg = k8s.GenerateAttachment(contestChallenge, team, teamFlags)
+		pool.GenAttachmentPool <- pool.GenTask{
+			Team:             team,
+			ContestChallenge: contestChallenge,
+			TeamFlagL:        teamFlags,
+		}
 	case model.PodsChallengeType:
 		// 不考虑失败
 		go service.StopVictim(db.DB.WithContext(ctx.Copy()), team, contestChallenge)
