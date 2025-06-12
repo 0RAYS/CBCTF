@@ -13,6 +13,24 @@ import (
 	"time"
 )
 
+func CheckCheat(c *cron.Cron) {
+	function := exec("CheckCheat", func() {
+		contests, _, ok, _ := db.InitContestRepo(db.DB).List(-1, -1)
+		if !ok {
+			return
+		}
+		for _, contest := range contests {
+			if !contest.IsRunning() {
+				continue
+			}
+			go exec("CheckRemoteIP", func() { checkRemoteIP(contest) })()
+			go exec("CheckWrongFlag", func() { CheckWrongFlag(contest) })()
+		}
+	})
+	function()
+	c.Schedule(cron.Every(10*time.Minute), cron.FuncJob(function))
+}
+
 func checkRemoteIP(contest model.Contest) {
 	_, podCIDR, err := net.ParseCIDR(config.Env.K8S.IPPool.CIDR)
 	if err != nil {
@@ -97,19 +115,46 @@ func checkRemoteIP(contest model.Contest) {
 	}
 }
 
-func CheckCheat(c *cron.Cron) {
-	function := exec("CheckCheat", func() {
-		contests, _, ok, _ := db.InitContestRepo(db.DB).List(-1, -1)
-		if !ok {
-			return
+func CheckWrongFlag(contest model.Contest) {
+	teams, _, ok, _ := db.InitTeamRepo(db.DB).ListWithConditions(-1, -1, db.GetOptions{
+		{Key: "contest_id", Value: contest.ID, Op: "and"},
+	}, false, "TeamFlags", "Submissions")
+	if !ok {
+		return
+	}
+	flagTeamIDMap := make(map[string][]uint)
+	for _, team := range teams {
+		for _, teamFlag := range team.TeamFlags {
+			if _, ok = flagTeamIDMap[teamFlag.Value]; ok {
+				if !utils.In(teamFlag.TeamID, flagTeamIDMap[teamFlag.Value]) {
+					flagTeamIDMap[teamFlag.Value] = append(flagTeamIDMap[teamFlag.Value], team.ID)
+				}
+			} else {
+				flagTeamIDMap[teamFlag.Value] = []uint{team.ID}
+			}
 		}
-		for _, contest := range contests {
-			if !contest.IsRunning() {
+	}
+	for _, team := range teams {
+		for _, submission := range team.Submissions {
+			if submission.Solved {
 				continue
 			}
-			go exec("CheckRemoteIP", func() { checkRemoteIP(contest) })()
+			if teamIDL, ok := flagTeamIDMap[submission.Value]; ok {
+				if !utils.In(team.ID, flagTeamIDMap[submission.Value]) {
+					var tmp strings.Builder
+					for _, teamID := range teamIDL {
+						tmp.WriteString(fmt.Sprintf("Team-%d, ", teamID))
+					}
+					cheatRepo := db.InitCheatRepo(db.DB)
+					cheatRepo.Create(db.CreateCheatOptions{
+						TeamID:    &team.ID,
+						ContestID: &contest.ID,
+						Reason:    fmt.Sprintf(model.SubmitOtherTeamFlag, team.ID, strings.Trim(tmp.String(), ", "), contest.ID),
+						Type:      model.Suspicious,
+						Checked:   false,
+					})
+				}
+			}
 		}
-	})
-	function()
-	c.Schedule(cron.Every(10*time.Minute), cron.FuncJob(function))
+	}
 }
