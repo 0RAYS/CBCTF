@@ -25,6 +25,7 @@ type Submission struct {
 	Value              string           `json:"value"`
 	Solved             bool             `json:"solved"`
 	Score              float64          `gorm:"default:0" json:"score"`
+	IP                 string           `json:"ip"`
 	Basic
 }
 

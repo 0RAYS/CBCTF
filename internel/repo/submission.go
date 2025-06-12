@@ -21,6 +21,7 @@ type CreateSubmissionOptions struct {
 	Value              string
 	Solved             bool
 	Score              float64
+	IP                 string
 }
 
 func (c CreateSubmissionOptions) Convert2Model() model.Model {

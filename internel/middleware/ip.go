@@ -20,7 +20,6 @@ func AccessLog(ctx *gin.Context) {
 	referer := ctx.Request.Referer()
 	magic := GetMagic(ctx)
 	path := ctx.FullPath()
-
 	ctx.Next()
 
 	statusCode := ctx.Writer.Status()
