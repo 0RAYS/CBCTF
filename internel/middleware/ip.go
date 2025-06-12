@@ -4,6 +4,7 @@ import (
 	"CBCTF/internel/config"
 	"CBCTF/internel/i18n"
 	db "CBCTF/internel/repo"
+	"CBCTF/internel/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"sync"
@@ -24,7 +25,7 @@ func AccessLog(ctx *gin.Context) {
 
 	statusCode := ctx.Writer.Status()
 
-	if path != "/metrics" {
+	if !utils.In(path, config.Env.Gin.Log.Whitelist) {
 		request := db.CreateRequestOptions{
 			IP:        ip,
 			Time:      accessTime,
@@ -52,7 +53,7 @@ var mu sync.Mutex
 // RateLimit 实现频率限制
 func RateLimit(ctx *gin.Context) {
 	ip := ctx.ClientIP()
-	if ip == "::1" || ip == "127.0.0.1" {
+	if utils.In(ip, config.Env.Gin.RateLimit.IP.Whitelist) {
 		ctx.Next()
 		return
 	}
