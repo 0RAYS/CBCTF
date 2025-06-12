@@ -25,6 +25,7 @@ type CreateCheatOptions struct {
 	Reason             string
 	Type               string
 	Checked            bool
+	Comment            string
 	References         model.UintList
 }
 
@@ -57,6 +58,7 @@ func (c CreateCheatOptions) Convert2Model() model.Model {
 		Reason:             c.Reason,
 		Type:               c.Type,
 		Checked:            c.Checked,
+		Comment:            c.Comment,
 		References:         c.References,
 		Hash:               hash,
 	}
@@ -67,6 +69,7 @@ type UpdateCheatRepo struct {
 	Type       *string
 	Checked    *bool
 	Hash       *string
+	Comment    *string
 	References *model.UintList
 }
 
@@ -83,6 +86,9 @@ func (u UpdateCheatRepo) Convert2Map() map[string]any {
 	}
 	if u.Hash != nil {
 		options["hash"] = *u.Hash
+	}
+	if u.Comment != nil {
+		options["comment"] = *u.Comment
 	}
 	if u.References != nil {
 		options["references"] = u.References
