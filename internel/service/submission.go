@@ -13,7 +13,7 @@ import (
 var SolvedMutex sync.Map
 
 // Submit model.Usage 需要预加载
-func Submit(tx *gorm.DB, user model.User, team model.Team, contestChallenge model.ContestChallenge, form f.SubmitFlagForm) (string, model.Submission, bool, string) {
+func Submit(tx *gorm.DB, user model.User, team model.Team, contestChallenge model.ContestChallenge, form f.SubmitFlagForm, ip string) (string, model.Submission, bool, string) {
 	if contestChallenge.Attempt != 0 && contestChallenge.Attempt <= CountAttempts(tx, team, contestChallenge) {
 		return "", model.Submission{}, false, i18n.NotAllowSubmit
 	}
@@ -26,6 +26,7 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, contestChallenge mode
 		UserID:             user.ID,
 		Value:              form.Flag,
 		Score:              team.Score,
+		IP:                 ip,
 	}
 	solved, contestFlag, teamFlag, ok, result := VerifyFlag(tx, team, contestChallenge, form.Flag)
 	options.ContestFlagID = contestFlag.ID
