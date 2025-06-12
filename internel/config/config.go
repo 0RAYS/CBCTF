@@ -29,7 +29,13 @@ type Config struct {
 		RateLimit struct {
 			Window      int `mapstructure:"window" json:"window"` // 限制时间窗口（单位：秒）
 			MaxRequests int `mapstructure:"max" json:"max"`       // 最大请求数
+			IP          struct {
+				Whitelist []string `mapstructure:"whitelist" json:"whitelist"` // IP 白名单，不限制频率
+			}
 		} `mapstructure:"rate" json:"rate"`
+		Log struct {
+			Whitelist []string `mapstructure:"whitelist" json:"whitelist"` // 日志白名单路径
+		} `mapstructure:"log" json:"log"`
 	} `mapstructure:"gin" json:"gin"`
 
 	Gorm struct {
