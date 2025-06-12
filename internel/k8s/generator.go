@@ -16,9 +16,10 @@ import (
 )
 
 var (
-	gIPL        = make([]string, 0)
-	ipGenerator = make(map[string]uint)
-	generatorIP = make(map[uint]string)
+	gIPL         = make([]string, 0)
+	ipGenerator  = make(map[string]uint)
+	generatorIP  = make(map[uint]string)
+	generatorMap = make(map[string]*corev1.Pod)
 )
 
 func GenGeneratorName(challengeRandID string) string {
@@ -41,12 +42,17 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 	log.Logger.Infof("Starting Generator for Challenge %d-%s", contestChallenge.ChallengeID, contestChallenge.Name)
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
+	if pod, ok = generatorMap[generatorName]; ok && pod != nil && pod.Status.Phase == corev1.PodRunning && time.Now().Sub(pod.CreationTimestamp.Time) < 3*time.Hour {
+		return pod, true, i18n.Success
+	}
 	if pod, ok, _ = GetPod(ctx, generatorName); pod.Status.Phase == corev1.PodRunning && time.Now().Sub(pod.CreationTimestamp.Time) < 3*time.Hour {
 		ipGenerator[pod.Status.PodIP] = contestChallenge.ChallengeID
 		generatorIP[contestChallenge.ChallengeID] = pod.Status.PodIP
 		log.Logger.Infof("Pod %s is already running", pod.Name)
+		generatorMap[generatorName] = pod
 		return pod, true, i18n.Success
 	}
+	generatorMap[generatorName] = nil
 	if ok {
 		StopGenerator(contestChallenge)
 	}
