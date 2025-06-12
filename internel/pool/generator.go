@@ -2,7 +2,6 @@ package pool
 
 import (
 	"CBCTF/internel/k8s"
-	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"os"
 	"os/signal"
@@ -30,7 +29,7 @@ func PrepareAttachment() {
 		case task := <-GenAttachmentPool:
 			k8s.GenerateAttachment(task.ContestChallenge, task.Team, task.TeamFlagL)
 		case <-time.After(1 * time.Second):
-			log.Logger.Debugf("Waiting for attachment generation tasks...")
+
 		}
 	}
 }
