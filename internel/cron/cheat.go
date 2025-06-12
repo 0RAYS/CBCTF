@@ -150,6 +150,7 @@ func CheckWrongFlag(contest model.Contest) {
 						TeamID:    &team.ID,
 						ContestID: &contest.ID,
 						IP:        submission.IP,
+						Comment:   fmt.Sprintf("submission-%d", submission.ID),
 						Reason:    fmt.Sprintf(model.SubmitOtherTeamFlag, team.ID, strings.Trim(tmp.String(), ", "), contest.ID),
 						Type:      model.Cheater,
 						Checked:   false,
