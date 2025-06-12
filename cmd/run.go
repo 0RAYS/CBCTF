@@ -24,8 +24,8 @@ func initialize() {
 	redis.Init()
 	db.Init()
 	k8s.Init(true)
-	go cron.Init()
-	go pool.Init()
+	cron.Init()
+	pool.Init()
 }
 
 func start() {
