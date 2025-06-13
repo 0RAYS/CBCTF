@@ -102,6 +102,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 	}
 	generatorEndpoint[contestChallenge.ID] = fmt.Sprintf("%s:%d", pod.Status.HostIP, service.Spec.Ports[0].NodePort)
 	generatorPwd[contestChallenge.ID] = pwd
+	generatorMap[generatorName] = pod
 	return pod, true, i18n.Success
 }
 
