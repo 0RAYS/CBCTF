@@ -66,6 +66,9 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 	pwd := utils.UUID()
 	pod, ok, msg = CreatePod(ctx, CreatePodOptions{
 		Name: generatorName,
+		Labels: map[string]string{
+			"victim": generatorName,
+		},
 		Containers: []corev1.Container{
 			{
 				Name:  containerName,
