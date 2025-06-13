@@ -35,11 +35,6 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool
 			Name:      options.Name,
 			Namespace: namespaceName,
 			Labels:    options.Labels,
-			Annotations: map[string]string{
-				"cni.projectcalico.org/ipAddrs": fmt.Sprintf("[\"%s\"]", options.PodIP),
-				"cni.projectcalico.org/podIP":   options.PodIP,
-				"cni.projectcalico.org/podIPs":  options.PodIP,
-			},
 		},
 		Spec: corev1.PodSpec{
 			Containers:                    options.Containers,
@@ -48,6 +43,13 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool
 			RestartPolicy:                 corev1.RestartPolicyNever,
 			HostAliases:                   options.HostAliases,
 		},
+	}
+	if options.PodIP != "" {
+		pod.ObjectMeta.Annotations = map[string]string{
+			"cni.projectcalico.org/ipAddrs": fmt.Sprintf("[\"%s\"]", options.PodIP),
+			"cni.projectcalico.org/podIP":   options.PodIP,
+			"cni.projectcalico.org/podIPs":  options.PodIP,
+		}
 	}
 	pod, err = kubeClient.CoreV1().Pods(namespaceName).Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil {
