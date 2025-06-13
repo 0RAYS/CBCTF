@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -155,7 +156,12 @@ func GenerateAttachment(contestChallenge model.ContestChallenge, team model.Team
 		log.Logger.Warningf("Failed to generate attachment for team %d challenge %d: %s", team.ID, contestChallenge.ChallengeID, resp.Status)
 		return false, i18n.ExecCommandError
 	}
-	file, err := os.Create(contestChallenge.Challenge.AttachmentPath(team.ID))
+	path := contestChallenge.Challenge.AttachmentPath(team.ID)
+	if err = os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		log.Logger.Warningf("Failed to create directory for team %d challenge %d: %v", team.ID, contestChallenge.ChallengeID, err)
+		return false, i18n.UnknownError
+	}
+	file, err := os.Create(path)
 	if err != nil {
 		log.Logger.Warningf("Failed to save attachment for team %d challenge %d: %v", team.ID, contestChallenge.ChallengeID, err)
 		return false, i18n.UnknownError
