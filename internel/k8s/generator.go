@@ -1,7 +1,6 @@
 package k8s
 
 import (
-	"CBCTF/internel/config"
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
@@ -19,9 +18,6 @@ import (
 )
 
 var (
-	gIPL              = make([]string, 0)
-	ipGenerator       = make(map[string]uint)
-	generatorIP       = make(map[uint]string)
 	generatorEndpoint = make(map[uint]string)
 	generatorPwd      = make(map[uint]string)
 	generatorMap      = make(map[string]*corev1.Pod)
@@ -51,8 +47,6 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 		return pod, true, i18n.Success
 	}
 	if pod, ok, _ = GetPod(ctx, generatorName); pod.Status.Phase == corev1.PodRunning && time.Now().Sub(pod.CreationTimestamp.Time) < 3*time.Hour {
-		ipGenerator[pod.Status.PodIP] = contestChallenge.ChallengeID
-		generatorIP[contestChallenge.ChallengeID] = pod.Status.PodIP
 		log.Logger.Infof("Pod %s is already running", pod.Name)
 		generatorMap[generatorName] = pod
 		return pod, true, i18n.Success
@@ -60,27 +54,6 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 	generatorMap[generatorName] = nil
 	if ok {
 		StopGenerator(contestChallenge)
-	}
-	if len(gIPL) == 0 {
-		gIPL, err = utils.GetIPBlock(0, config.Env.K8S.IPPool.CIDR, config.Env.K8S.IPPool.BlockSize)
-		if err != nil || len(gIPL) == 0 {
-			return &corev1.Pod{}, false, i18n.EmptyIPBlock
-		}
-	}
-	retry := 0
-	ip := gIPL[retry]
-	for {
-		retry++
-		if retry > len(gIPL)-1 {
-			return &corev1.Pod{}, false, i18n.EmptyIPBlock
-		}
-		if _, ok := ipGenerator[ip]; ok {
-			ip = gIPL[retry]
-			continue
-		}
-		ipGenerator[ip] = contestChallenge.ChallengeID
-		generatorIP[contestChallenge.ChallengeID] = ip
-		break
 	}
 	service, ok, msg := CreateService(ctx, CreateServiceOptions{
 		PodName: generatorName,
@@ -92,8 +65,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 	}
 	pwd := utils.UUID()
 	pod, ok, msg = CreatePod(ctx, CreatePodOptions{
-		Name:  generatorName,
-		PodIP: ip,
+		Name: generatorName,
 		Containers: []corev1.Container{
 			{
 				Name:  containerName,
@@ -137,10 +109,6 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 // StopGenerator 停止动态附件生成器, contestChallenge 需要预加载 Challenge
 func StopGenerator(contestChallenge model.ContestChallenge) (bool, string) {
 	log.Logger.Infof("Stopping generator for challenge %d-%s", contestChallenge.ChallengeID, contestChallenge.Name)
-	if ip, ok := generatorIP[contestChallenge.ChallengeID]; ok {
-		delete(generatorIP, contestChallenge.ChallengeID)
-		delete(ipGenerator, ip)
-	}
 	delete(generatorEndpoint, contestChallenge.ID)
 	delete(generatorPwd, contestChallenge.ID)
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
