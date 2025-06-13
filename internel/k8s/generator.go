@@ -1,7 +1,6 @@
 package k8s
 
 import (
-	"CBCTF/internel/config"
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
@@ -9,17 +8,19 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"io"
 	corev1 "k8s.io/api/core/v1"
+	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
 )
 
 var (
-	gIPL         = make([]string, 0)
-	ipGenerator  = make(map[string]uint)
-	generatorIP  = make(map[uint]string)
-	generatorMap = make(map[string]*corev1.Pod)
+	generatorEndpoint = make(map[uint]string)
+	generatorPwd      = make(map[uint]string)
+	generatorMap      = make(map[string]*corev1.Pod)
 )
 
 func GenGeneratorName(challengeRandID string) string {
@@ -46,8 +47,6 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 		return pod, true, i18n.Success
 	}
 	if pod, ok, _ = GetPod(ctx, generatorName); pod.Status.Phase == corev1.PodRunning && time.Now().Sub(pod.CreationTimestamp.Time) < 3*time.Hour {
-		ipGenerator[pod.Status.PodIP] = contestChallenge.ChallengeID
-		generatorIP[contestChallenge.ChallengeID] = pod.Status.PodIP
 		log.Logger.Infof("Pod %s is already running", pod.Name)
 		generatorMap[generatorName] = pod
 		return pod, true, i18n.Success
@@ -56,35 +55,27 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 	if ok {
 		StopGenerator(contestChallenge)
 	}
-	if len(gIPL) == 0 {
-		gIPL, err = utils.GetIPBlock(0, config.Env.K8S.IPPool.CIDR, config.Env.K8S.IPPool.BlockSize)
-		if err != nil || len(gIPL) == 0 {
-			return &corev1.Pod{}, false, i18n.EmptyIPBlock
-		}
+	service, ok, msg := CreateService(ctx, CreateServiceOptions{
+		PodName: generatorName,
+		Ports:   []int32{8000},
+	})
+	if !ok {
+		log.Logger.Warningf("Failed to create service for generator: %s", msg)
+		return &corev1.Pod{}, false, msg
 	}
-	retry := 0
-	ip := gIPL[retry]
-	for {
-		retry++
-		if retry > len(gIPL)-1 {
-			return &corev1.Pod{}, false, i18n.EmptyIPBlock
-		}
-		if _, ok := ipGenerator[ip]; ok {
-			ip = gIPL[retry]
-			continue
-		}
-		ipGenerator[ip] = contestChallenge.ChallengeID
-		generatorIP[contestChallenge.ChallengeID] = ip
-		break
-	}
+	pwd := utils.UUID()
 	pod, ok, msg = CreatePod(ctx, CreatePodOptions{
-		Name:  generatorName,
-		PodIP: ip,
+		Name: generatorName,
 		Containers: []corev1.Container{
 			{
-				Name:    containerName,
-				Image:   contestChallenge.Challenge.GeneratorImage,
-				Command: []string{"sleep", "infinity"},
+				Name:  containerName,
+				Image: contestChallenge.Challenge.GeneratorImage,
+				Env: []corev1.EnvVar{
+					{
+						Name:  "generator_pwd",
+						Value: pwd,
+					},
+				},
 			},
 		},
 	})
@@ -109,16 +100,16 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 			return &corev1.Pod{}, false, i18n.ExecCommandError
 		}
 	}
+	generatorEndpoint[contestChallenge.ID] = fmt.Sprintf("%s:%d", pod.Status.HostIP, service.Spec.Ports[0].NodePort)
+	generatorPwd[contestChallenge.ID] = pwd
 	return pod, true, i18n.Success
 }
 
 // StopGenerator 停止动态附件生成器, contestChallenge 需要预加载 Challenge
 func StopGenerator(contestChallenge model.ContestChallenge) (bool, string) {
 	log.Logger.Infof("Stopping generator for challenge %d-%s", contestChallenge.ChallengeID, contestChallenge.Name)
-	if ip, ok := generatorIP[contestChallenge.ChallengeID]; ok {
-		delete(generatorIP, contestChallenge.ChallengeID)
-		delete(ipGenerator, ip)
-	}
+	delete(generatorEndpoint, contestChallenge.ID)
+	delete(generatorPwd, contestChallenge.ID)
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 	return DeletePod(ctx, GenGeneratorName(contestChallenge.Challenge.RandID))
@@ -128,7 +119,7 @@ func StopGenerator(contestChallenge model.ContestChallenge) (bool, string) {
 func GenerateAttachment(contestChallenge model.ContestChallenge, team model.Team, teamFlagL []model.TeamFlag) (bool, string) {
 	var err error
 	log.Logger.Debugf("Generating attachment for team %d challenge %d", team.ID, contestChallenge.ChallengeID)
-	pod, ok, msg := StartGenerator(contestChallenge)
+	_, ok, msg := StartGenerator(contestChallenge)
 	// 附加失败则直接返回, 并尝试关闭生成器
 	if !ok {
 		go StopGenerator(contestChallenge)
@@ -138,21 +129,42 @@ func GenerateAttachment(contestChallenge model.ContestChallenge, team model.Team
 	for _, teamFlag := range teamFlagL {
 		flags += fmt.Sprintf("%s,", base64.StdEncoding.EncodeToString([]byte(teamFlag.Value)))
 	}
-	flags = strings.TrimSuffix(flags, ",")
-	command := fmt.Sprintf("./run.sh %d %s", team.ID, base64.StdEncoding.EncodeToString([]byte(flags)))
-	log.Logger.Debugf("Executing command: %s", command)
-	if _, _, err = Exec(pod.Name, pod.Spec.Containers[0].Name, command, nil); err != nil {
-		log.Logger.Warningf("Failed to execute command %s: %v", command, err)
+	flags = base64.StdEncoding.EncodeToString([]byte(strings.TrimSuffix(flags, ",")))
+
+	params := url.Values{}
+	params.Add("id", fmt.Sprintf("%d", team.ID))
+	params.Add("flags", flags)
+	params.Add("pwd", generatorPwd[contestChallenge.ID])
+	base := fmt.Sprintf("http://%s/gen?%s", generatorEndpoint[contestChallenge.ID], params.Encode())
+	resp, err := http.Get(base)
+	if err != nil {
+		log.Logger.Warningf("Failed to generate attachment for team %d challenge %d: %v", team.ID, contestChallenge.ChallengeID, err)
 		return false, i18n.ExecCommandError
 	}
-	err = CopyFromPod(
-		pod.Name, pod.Spec.Containers[0].Name,
-		fmt.Sprintf("/root/attachments/%d.zip", team.ID),
-		contestChallenge.Challenge.AttachmentPath(team.ID),
-	)
+	defer func(Body io.ReadCloser) {
+		err = Body.Close()
+		if err != nil {
+			log.Logger.Warningf("Failed to close response body: %v", err)
+		}
+	}(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		log.Logger.Warningf("Failed to generate attachment for team %d challenge %d: %s", team.ID, contestChallenge.ChallengeID, resp.Status)
+		return false, i18n.ExecCommandError
+	}
+	file, err := os.Create(contestChallenge.Challenge.AttachmentPath(team.ID))
 	if err != nil {
-		log.Logger.Warningf("Failed to copy output file: %v", err)
-		return false, i18n.CopyFileError
+		log.Logger.Warningf("Failed to save attachment for team %d challenge %d: %v", team.ID, contestChallenge.ChallengeID, err)
+		return false, i18n.UnknownError
+	}
+	defer func(file *os.File) {
+		err = file.Close()
+		if err != nil {
+			log.Logger.Warningf("Failed to close file %s: %v", file.Name(), err)
+		}
+	}(file)
+	if _, err = file.ReadFrom(resp.Body); err != nil {
+		log.Logger.Warningf("Failed to save attachment for team %d challenge %d: %v", team.ID, contestChallenge.ChallengeID, err)
+		return false, i18n.UnknownError
 	}
 	return true, i18n.Success
 }
