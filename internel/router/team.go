@@ -227,7 +227,7 @@ func CreateTeam(ctx *gin.Context) {
 	} else {
 		tx.Commit()
 	}
-	go service.CreateTeamFlags(db.DB, team, contest)
+	//go service.CreateTeamFlags(db.DB, team, contest)
 	ctx.Set("Team", team)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
