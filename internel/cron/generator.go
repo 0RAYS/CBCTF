@@ -35,12 +35,21 @@ func PrepareGenerator(c *cron.Cron) {
 				continue
 			}
 			for _, contestChallenge := range contestChallengeL {
+				timeoutL := make([]int, 0)
+				k8s.GeneratorMapMutex.Lock()
 				for index, generator := range k8s.GeneratorMap[contestChallenge.ID] {
 					if generator.Pod.Status.Phase != corev1.PodRunning || time.Now().Sub(generator.Pod.CreationTimestamp.Time) > time.Hour {
-						k8s.StopGenerator(contestChallenge, index)
+						timeoutL = append(timeoutL, index)
 					}
 				}
-				for i := 0; i < len(config.Env.K8S.Nodes)*2-len(k8s.GeneratorMap[contestChallenge.ID]); i++ {
+				k8s.GeneratorMapMutex.Unlock()
+				for _, index := range timeoutL {
+					k8s.StopGenerator(contestChallenge, index)
+				}
+				k8s.GeneratorMapMutex.Lock()
+				length := len(k8s.GeneratorMap[contestChallenge.ID])
+				k8s.GeneratorMapMutex.Unlock()
+				for i := 0; i < len(config.Env.K8S.Nodes)*2-length; i++ {
 					go k8s.StartGenerator(contestChallenge)
 				}
 			}
