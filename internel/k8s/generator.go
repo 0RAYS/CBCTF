@@ -146,7 +146,7 @@ func GenerateAttachment(contestChallenge model.ContestChallenge, team model.Team
 	log.Logger.Debugf("Generating attachment for team %d challenge %d", team.ID, contestChallenge.ChallengeID)
 	generator, index, ok, msg := GetGenerator(contestChallenge)
 	// 附加失败则直接返回, 并尝试关闭生成器
-	if !ok || generator.Pod.Status.Phase != corev1.PodRunning || time.Now().Sub(generator.Pod.CreationTimestamp.Time) > 1*time.Hour {
+	if !ok || generator.Pod.Status.Phase != corev1.PodRunning {
 		go StopGenerator(contestChallenge, index)
 		return false, msg
 	}
