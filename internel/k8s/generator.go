@@ -96,7 +96,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 		}
 		commands = append(commands, "unzip /root/generator.zip -d /root")
 	} else {
-		log.Logger.Warning("Generator file not found, make sure the generator docker can work correctly")
+		log.Logger.Info("Generator file not found, make sure the generator docker can work correctly")
 	}
 	for _, command := range commands {
 		log.Logger.Debugf("Executing command: %s", command)
