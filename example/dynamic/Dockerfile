@@ -10,4 +10,4 @@ EXPOSE 8000
 
 WORKDIR /root
 
-CMD ["python", "app.py"]
+CMD ["bash", "-c", "python3 -m gunicorn app:app -w 4 -k uvicorn.workers.UvicornWorker --threads 1 -b 0.0.0.0:8000"]
