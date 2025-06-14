@@ -9,6 +9,7 @@ import (
 	"CBCTF/internel/utils"
 	"context"
 	"github.com/robfig/cron/v3"
+	corev1 "k8s.io/api/core/v1"
 	"strings"
 	"time"
 )
@@ -34,6 +35,11 @@ func PrepareGenerator(c *cron.Cron) {
 				continue
 			}
 			for _, contestChallenge := range contestChallengeL {
+				for index, generator := range k8s.GeneratorMap[contestChallenge.ID] {
+					if generator.Pod.Status.Phase != corev1.PodRunning || time.Now().Sub(generator.Pod.CreationTimestamp.Time) > time.Hour {
+						k8s.StopGenerator(contestChallenge, index)
+					}
+				}
 				for i := 0; i < len(config.Env.K8S.Nodes)*2-len(k8s.GeneratorMap[contestChallenge.ID]); i++ {
 					go k8s.StartGenerator(contestChallenge)
 				}
