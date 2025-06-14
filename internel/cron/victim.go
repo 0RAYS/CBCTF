@@ -26,8 +26,8 @@ func ClearUnCtrlResource(c *cron.Cron) {
 		}
 		cancel()
 		ctx, cancel = context.WithTimeout(context.Background(), 5*time.Minute)
-		if configmaps, ok, _ := k8s.GetServiceList(ctx); ok {
-			for _, cm := range configmaps.Items {
+		if services, ok, _ := k8s.GetServiceList(ctx); ok {
+			for _, cm := range services.Items {
 				for k, v := range cm.Labels {
 					if k == "victim" {
 						if _, ok, _ = k8s.GetPod(ctx, v); !ok {
@@ -39,8 +39,8 @@ func ClearUnCtrlResource(c *cron.Cron) {
 		}
 		cancel()
 		ctx, cancel = context.WithTimeout(context.Background(), 5*time.Minute)
-		if configmaps, ok, _ := k8s.GetNetworkPolicyList(ctx); ok {
-			for _, cm := range configmaps.Items {
+		if policies, ok, _ := k8s.GetNetworkPolicyList(ctx); ok {
+			for _, cm := range policies.Items {
 				for k, v := range cm.Labels {
 					if k == "victim" {
 						if _, ok, _ = k8s.GetPod(ctx, v); !ok {
@@ -87,7 +87,7 @@ func StopUnCtrlPods(c *cron.Cron) {
 		}
 		podRepo := db.InitPodRepo(db.DB)
 		for _, pod := range pods.Items {
-			if strings.Contains(pod.Name, "victim") && time.Now().Sub(pod.CreationTimestamp.Time) > 4*time.Hour {
+			if strings.HasPrefix(pod.Name, "victim") && time.Now().Sub(pod.CreationTimestamp.Time) > 4*time.Hour {
 				_, ok, _ = podRepo.GetWithConditions(db.GetOptions{
 					{Key: "name", Value: pod.Name, Op: "and"},
 				}, false)
