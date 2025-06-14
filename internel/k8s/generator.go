@@ -16,6 +16,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -26,7 +27,8 @@ type Generator struct {
 }
 
 var (
-	GeneratorMap = make(map[uint][]*Generator)
+	GeneratorMap      = make(map[uint][]*Generator)
+	GeneratorMapMutex sync.RWMutex
 )
 
 func GenGeneratorName(challengeRandID string) string {
@@ -103,6 +105,8 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 			return &corev1.Pod{}, false, i18n.ExecCommandError
 		}
 	}
+	GeneratorMapMutex.Lock()
+	defer GeneratorMapMutex.Unlock()
 	GeneratorMap[contestChallenge.ID] = append(GeneratorMap[contestChallenge.ID], &Generator{
 		Pod:      pod,
 		Pwd:      pwd,
@@ -113,7 +117,10 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 
 func GetGenerator(contestChallenge model.ContestChallenge) (*Generator, int, bool, string) {
 	rand.New(rand.NewSource(time.Now().UnixNano()))
-	if generators, ok := GeneratorMap[contestChallenge.ID]; ok {
+	GeneratorMapMutex.Lock()
+	defer GeneratorMapMutex.Unlock()
+	generators, ok := GeneratorMap[contestChallenge.ID]
+	if ok {
 		if len(generators) > 0 {
 			index := rand.Intn(len(generators))
 			return generators[index], index, true, i18n.Success
@@ -125,17 +132,21 @@ func GetGenerator(contestChallenge model.ContestChallenge) (*Generator, int, boo
 // StopGenerator 停止动态附件生成器, contestChallenge 需要预加载 Challenge
 func StopGenerator(contestChallenge model.ContestChallenge, index int) (bool, string) {
 	log.Logger.Infof("Stopping generator for challenge %d-%s", contestChallenge.ChallengeID, contestChallenge.Name)
-	if generators, ok := GeneratorMap[contestChallenge.ID]; ok {
+
+	GeneratorMapMutex.Lock()
+	defer GeneratorMapMutex.Unlock()
+	generators, ok := GeneratorMap[contestChallenge.ID]
+	if ok {
 		if len(generators) <= index {
 			return false, i18n.UnknownError
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 		defer cancel()
-		ok, msg := DeletePod(ctx, GeneratorMap[contestChallenge.ID][index].Pod.Name)
+		ok, msg := DeletePod(ctx, generators[index].Pod.Name)
 		if !ok {
 			return false, msg
 		}
-		GeneratorMap[contestChallenge.ID] = append(GeneratorMap[contestChallenge.ID][:index], GeneratorMap[contestChallenge.ID][index+1:]...)
+		GeneratorMap[contestChallenge.ID] = append(generators[:index], generators[index+1:]...)
 	}
 	return true, i18n.Success
 }
