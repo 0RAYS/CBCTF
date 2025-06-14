@@ -2,8 +2,8 @@ package service
 
 import (
 	"CBCTF/internel/i18n"
+	"CBCTF/internel/k8s"
 	"CBCTF/internel/model"
-	"CBCTF/internel/pool"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
 	"fmt"
@@ -24,11 +24,7 @@ func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) ([]mod
 			return teamFlagL, false, msg
 		}
 		if contestChallenge.Challenge.Type == model.DynamicChallengeType {
-			pool.GenAttachmentPool <- pool.GenTask{
-				Team:             team,
-				ContestChallenge: contestChallenge,
-				TeamFlagL:        teamFlags,
-			}
+			go k8s.GenerateAttachment(contestChallenge, team, teamFlags)
 		}
 		teamFlagL = append(teamFlagL, teamFlags...)
 	}
