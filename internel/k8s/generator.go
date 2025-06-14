@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	corev1 "k8s.io/api/core/v1"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
@@ -18,14 +19,18 @@ import (
 	"time"
 )
 
+type Generator struct {
+	Pod      *corev1.Pod
+	Pwd      string
+	Endpoint string
+}
+
 var (
-	generatorEndpoint = make(map[uint]string)
-	generatorPwd      = make(map[uint]string)
-	generatorMap      = make(map[string]*corev1.Pod)
+	GeneratorMap = make(map[uint][]*Generator)
 )
 
 func GenGeneratorName(challengeRandID string) string {
-	return fmt.Sprintf("gen-%s-pod", challengeRandID)
+	return fmt.Sprintf("gen-%s-%s-pod", challengeRandID, strings.ToLower(utils.RandStr(5)))
 }
 
 // StartGenerator 启动动态附件生成器, 等待附加命令, 生成附件, contestChallenge 需要预加载 Challenge
@@ -44,21 +49,15 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 	log.Logger.Infof("Starting Generator for Challenge %d-%s", contestChallenge.ChallengeID, contestChallenge.Name)
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
-	if pod, ok = generatorMap[generatorName]; ok && pod != nil && pod.Status.Phase == corev1.PodRunning && time.Now().Sub(pod.CreationTimestamp.Time) < 3*time.Hour {
-		return pod, true, i18n.Success
-	}
-	if pod, ok, _ = GetPod(ctx, generatorName); pod.Status.Phase == corev1.PodRunning && time.Now().Sub(pod.CreationTimestamp.Time) < 3*time.Hour {
-		log.Logger.Infof("Pod %s is already running", pod.Name)
-		generatorMap[generatorName] = pod
-		return pod, true, i18n.Success
-	}
-	generatorMap[generatorName] = nil
-	if ok {
-		StopGenerator(contestChallenge)
-	}
 	service, ok, msg := CreateService(ctx, CreateServiceOptions{
 		PodName: generatorName,
 		Ports:   []int32{8000},
+		Labels: map[string]string{
+			"generator": generatorName,
+		},
+		Selector: map[string]string{
+			"generator": generatorName,
+		},
 	})
 	if !ok {
 		log.Logger.Warningf("Failed to create service for generator: %s", msg)
@@ -68,7 +67,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 	pod, ok, msg = CreatePod(ctx, CreatePodOptions{
 		Name: generatorName,
 		Labels: map[string]string{
-			"victim": generatorName,
+			"generator": generatorName,
 		},
 		Containers: []corev1.Container{
 			{
@@ -104,30 +103,51 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 			return &corev1.Pod{}, false, i18n.ExecCommandError
 		}
 	}
-	generatorEndpoint[contestChallenge.ID] = fmt.Sprintf("%s:%d", pod.Status.HostIP, service.Spec.Ports[0].NodePort)
-	generatorPwd[contestChallenge.ID] = pwd
-	generatorMap[generatorName] = pod
+	GeneratorMap[contestChallenge.ID] = append(GeneratorMap[contestChallenge.ID], &Generator{
+		Pod:      pod,
+		Pwd:      pwd,
+		Endpoint: fmt.Sprintf("%s:%d", pod.Status.HostIP, service.Spec.Ports[0].NodePort),
+	})
 	return pod, true, i18n.Success
 }
 
+func GetGenerator(contestChallenge model.ContestChallenge) (*Generator, int, bool, string) {
+	rand.New(rand.NewSource(time.Now().UnixNano()))
+	if generators, ok := GeneratorMap[contestChallenge.ID]; ok {
+		if len(generators) > 0 {
+			index := rand.Intn(len(generators))
+			return generators[index], index, true, i18n.Success
+		}
+	}
+	return nil, 0, false, i18n.UnknownError
+}
+
 // StopGenerator 停止动态附件生成器, contestChallenge 需要预加载 Challenge
-func StopGenerator(contestChallenge model.ContestChallenge) (bool, string) {
+func StopGenerator(contestChallenge model.ContestChallenge, index int) (bool, string) {
 	log.Logger.Infof("Stopping generator for challenge %d-%s", contestChallenge.ChallengeID, contestChallenge.Name)
-	delete(generatorEndpoint, contestChallenge.ID)
-	delete(generatorPwd, contestChallenge.ID)
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
-	defer cancel()
-	return DeletePod(ctx, GenGeneratorName(contestChallenge.Challenge.RandID))
+	if generators, ok := GeneratorMap[contestChallenge.ID]; ok {
+		if len(generators) <= index {
+			return false, i18n.UnknownError
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+		defer cancel()
+		ok, msg := DeletePod(ctx, GeneratorMap[contestChallenge.ID][index].Pod.Name)
+		if !ok {
+			return false, msg
+		}
+		GeneratorMap[contestChallenge.ID] = append(GeneratorMap[contestChallenge.ID][:index], GeneratorMap[contestChallenge.ID][index+1:]...)
+	}
+	return true, i18n.Success
 }
 
 // GenerateAttachment 附加容器命令, 生成附件, model.Usage 需要预加载
 func GenerateAttachment(contestChallenge model.ContestChallenge, team model.Team, teamFlagL []model.TeamFlag) (bool, string) {
 	var err error
 	log.Logger.Debugf("Generating attachment for team %d challenge %d", team.ID, contestChallenge.ChallengeID)
-	_, ok, msg := StartGenerator(contestChallenge)
+	generator, index, ok, msg := GetGenerator(contestChallenge)
 	// 附加失败则直接返回, 并尝试关闭生成器
-	if !ok {
-		go StopGenerator(contestChallenge)
+	if !ok || generator.Pod.Status.Phase != corev1.PodRunning || time.Now().Sub(generator.Pod.CreationTimestamp.Time) < 1*time.Hour {
+		go StopGenerator(contestChallenge, index)
 		return false, msg
 	}
 	var flags string
@@ -139,8 +159,8 @@ func GenerateAttachment(contestChallenge model.ContestChallenge, team model.Team
 	params := url.Values{}
 	params.Add("id", fmt.Sprintf("%d", team.ID))
 	params.Add("flags", flags)
-	params.Add("pwd", generatorPwd[contestChallenge.ID])
-	base := fmt.Sprintf("http://%s/gen?%s", generatorEndpoint[contestChallenge.ID], params.Encode())
+	params.Add("pwd", generator.Pwd)
+	base := fmt.Sprintf("http://%s/gen?%s", generator.Endpoint, params.Encode())
 	resp, err := http.Get(base)
 	if err != nil {
 		log.Logger.Warningf("Failed to generate attachment for team %d challenge %d: %v", team.ID, contestChallenge.ChallengeID, err)

@@ -37,6 +37,12 @@ func StartVictim(victim model.Victim) (map[string]map[string]any, bool, string) 
 			service, ok, msg := CreateService(ctx, CreateServiceOptions{
 				PodName: pod.Name,
 				Ports:   pod.PodPorts,
+				Labels: map[string]string{
+					"victim": pod.Name,
+				},
+				Selector: map[string]string{
+					"victim": pod.Name,
+				},
 			})
 			if !ok {
 				resultCh <- result{PodName: pod.Name, OK: false, Msg: msg}

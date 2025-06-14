@@ -23,7 +23,6 @@ func initialize() {
 	db.Init()
 	k8s.Init(true)
 	cron.Init()
-	//pool.Init()
 }
 
 func start() {

@@ -10,53 +10,7 @@ import (
 	"time"
 )
 
-func ClearUnCtrlResource(c *cron.Cron) {
-	function := exec("ClearUnCtrlResource", func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-		if configmaps, ok, _ := k8s.GetConfigMapList(ctx); ok {
-			for _, cm := range configmaps.Items {
-				for k, v := range cm.Labels {
-					if k == "victim" {
-						if _, ok, _ = k8s.GetPod(ctx, v); !ok {
-							k8s.DeleteConfigMapListByPodName(ctx, v)
-						}
-					}
-				}
-			}
-		}
-		cancel()
-		ctx, cancel = context.WithTimeout(context.Background(), 5*time.Minute)
-		if services, ok, _ := k8s.GetServiceList(ctx); ok {
-			for _, cm := range services.Items {
-				for k, v := range cm.Labels {
-					if k == "victim" {
-						if _, ok, _ = k8s.GetPod(ctx, v); !ok {
-							k8s.DeleteServiceListByPodName(ctx, v)
-						}
-					}
-				}
-			}
-		}
-		cancel()
-		ctx, cancel = context.WithTimeout(context.Background(), 5*time.Minute)
-		if policies, ok, _ := k8s.GetNetworkPolicyList(ctx); ok {
-			for _, cm := range policies.Items {
-				for k, v := range cm.Labels {
-					if k == "victim" {
-						if _, ok, _ = k8s.GetPod(ctx, v); !ok {
-							k8s.DeleteNetworkPolicyListByPodName(ctx, v)
-						}
-					}
-				}
-			}
-		}
-		cancel()
-	})
-	function()
-	c.Schedule(cron.Every(time.Hour), cron.FuncJob(function))
-}
-
-func StopTimeoutVictims(c *cron.Cron) {
+func CloseTimeoutVictims(c *cron.Cron) {
 	function := exec("CloseTimeoutVictims", func() {
 		repo := db.InitVictimRepo(db.DB)
 		victims, _, ok, _ := repo.List(-1, -1, "Pods")
@@ -76,13 +30,13 @@ func StopTimeoutVictims(c *cron.Cron) {
 	c.Schedule(cron.Every(5*time.Minute), cron.FuncJob(function))
 }
 
-func StopUnCtrlPods(c *cron.Cron) {
-	function := exec("CloseUnCtrlPods", func() {
+func CloseUnCtrlVictims(c *cron.Cron) {
+	function := exec("CloseUnCtrlVictims", func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 		pods, ok, msg := k8s.GetPods(ctx)
 		cancel()
 		if !ok {
-			log.Logger.Warningf("Failed to get pods %s", msg)
+			log.Logger.Warningf("Failed to get victims %s", msg)
 			return
 		}
 		podRepo := db.InitPodRepo(db.DB)
