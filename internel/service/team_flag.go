@@ -6,29 +6,33 @@ import (
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
+	"errors"
 	"fmt"
 	"gorm.io/gorm"
 )
 
-func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) ([]model.TeamFlag, bool, string) {
+func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) (bool, string) {
 	contestChallenges, _, ok, msg := db.InitContestChallengeRepo(tx).ListWithConditions(-1, -1, db.GetOptions{
 		{Key: "contest_id", Value: contest.ID, Op: "and"},
 	}, false, "ContestFlags", "Challenge")
 	if !ok {
-		return make([]model.TeamFlag, 0), false, msg
+		return false, msg
 	}
-	teamFlagL := make([]model.TeamFlag, 0)
 	for _, contestChallenge := range contestChallenges {
-		teamFlags, ok, msg := CreateTeamFlag(tx, team, contestChallenge)
-		if !ok {
-			return teamFlagL, false, msg
-		}
-		if contestChallenge.Challenge.Type == model.DynamicChallengeType {
-			go k8s.GenerateAttachment(contestChallenge, team, teamFlags)
-		}
-		teamFlagL = append(teamFlagL, teamFlags...)
+		_ = tx.Transaction(func(tx2 *gorm.DB) error {
+			teamFlags, ok, msg := CreateTeamFlag(tx2, team, contestChallenge)
+			if !ok {
+				return errors.New(msg)
+			}
+			if contestChallenge.Challenge.Type == model.DynamicChallengeType {
+				if ok, msg = k8s.GenerateAttachment(contestChallenge, team, teamFlags); !ok {
+					return errors.New(msg)
+				}
+			}
+			return nil
+		})
 	}
-	return teamFlagL, true, i18n.Success
+	return true, i18n.Success
 }
 
 // CreateTeamFlag 需要预加载 ContestFlags
