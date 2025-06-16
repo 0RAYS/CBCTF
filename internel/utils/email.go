@@ -22,10 +22,11 @@ func SendVerifyEmail(to, token, id string) error {
 	auth := smtp.PlainAuth("", sender.Addr, sender.Pwd, sender.Host)
 
 	toList := []string{to}
-	msg := []byte(fmt.Sprintf("To: %s\r\n"+
+	msg := []byte(fmt.Sprintf("From: %s\r\n"+
+		"To: %s\r\n"+
 		"Subject: Verify Email\r\n\r\n"+
-		"Please click the following link to verify your email: "+
-		fmt.Sprintf("%s/verify?token=%s&id=%s\r\n", config.Env.Backend, token, id), to))
+		"Please click the following link to verify your email:\r\n"+
+		fmt.Sprintf("%s/verify?token=%s&id=%s\r\n", config.Env.Backend, token, id), sender.Addr, to))
 
 	return smtp.SendMail(
 		fmt.Sprintf("%s:%d", sender.Host, sender.Port),
