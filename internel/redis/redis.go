@@ -29,7 +29,8 @@ func Init() {
 		ReadTimeout:  1 * time.Second,
 		WriteTimeout: 1 * time.Second,
 	})
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	defer cancel()
 	_, err := RDB.Ping(ctx).Result()
 	if err != nil {
 		log.Logger.Warningf("Failed to connect to Redis: %s", err)
@@ -55,7 +56,8 @@ func Close() {
 func Status() (int64, int64, int64) {
 	hit := atomic.LoadInt64(&CacheHit)
 	miss := atomic.LoadInt64(&CacheMiss)
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	defer cancel()
 	count, err := RDB.DBSize(ctx).Result()
 	if err != nil {
 		log.Logger.Warningf("Failed to get cache total: %s", err)
