@@ -15,14 +15,12 @@ func SetUser(ctx *gin.Context) {
 	}
 	var userID userIDUri
 	if err := ctx.ShouldBindUri(&userID); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	user, ok, msg := db.InitUserRepo(db.DB.WithContext(ctx)).GetByID(userID.UserID, "all")
 	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	ctx.Set("User", user)
@@ -45,19 +43,16 @@ func SetContest(ctx *gin.Context) {
 	}
 	var contestID contestIDUri
 	if err := ctx.ShouldBindUri(&contestID); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	contest, ok, msg := db.InitContestRepo(db.DB.WithContext(ctx)).GetByID(contestID.ContestID, "all")
 	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	if GetRole(ctx) != "admin" && contest.Hidden {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.ContestNotFound, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.ContestNotFound, "data": nil})
 		return
 	}
 	ctx.Set("Contest", contest)
@@ -83,14 +78,12 @@ func SetTeamByUser(ctx *gin.Context) {
 	)
 	self, ok = GetSelf(ctx).(model.User)
 	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
 		return
 	}
 	team, ok, msg = db.InitTeamRepo(db.DB.WithContext(ctx)).GetBy2ID(self.ID, GetContest(ctx).ID, "all")
 	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	ctx.Set("Team", team)
@@ -109,14 +102,12 @@ func SetTeamByURI(ctx *gin.Context) {
 	}
 	var teamID teamIDUri
 	if err := ctx.ShouldBindUri(&teamID); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	team, ok, msg = db.InitTeamRepo(db.DB.WithContext(ctx)).GetByID(teamID.TeamID, "all")
 	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	ctx.Set("Team", team)
@@ -140,19 +131,16 @@ func SetFile(t string) gin.HandlerFunc {
 		}
 		var fileID fileIDUri
 		if err := ctx.ShouldBindUri(&fileID); err != nil {
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
-			ctx.Abort()
+			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 			return
 		}
 		file, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).GetByRandID(fileID.FileID)
 		if !ok {
-			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-			ctx.Abort()
+			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
 		if file.Type != t {
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
-			ctx.Abort()
+			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 			return
 		}
 		ctx.Set("File", file)
@@ -176,14 +164,12 @@ func SetNotice(ctx *gin.Context) {
 	}
 	var noticeID noticeIDUri
 	if err := ctx.ShouldBindUri(&noticeID); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	notice, ok, msg := db.InitNoticeRepo(db.DB.WithContext(ctx)).GetByID(noticeID.NoticeID, "all")
 	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	ctx.Set("Notice", notice)
@@ -206,14 +192,12 @@ func SetChallenge(ctx *gin.Context) {
 	}
 	var challengeID challengeIDUri
 	if err := ctx.ShouldBindUri(&challengeID); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	challenge, ok, msg := db.InitChallengeRepo(db.DB.WithContext(ctx)).GetByRandID(challengeID.ChallengeID, "all")
 	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	ctx.Set("Challenge", challenge)
@@ -235,14 +219,12 @@ func SetContestChallenge(ctx *gin.Context) {
 	}
 	var challengeID challengeIDUri
 	if err := ctx.ShouldBindUri(&challengeID); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	challenge, ok, msg := db.InitChallengeRepo(db.DB.WithContext(ctx)).GetByRandID(challengeID.ChallengeID)
 	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	contestChallenge, ok, msg := db.InitContestChallengeRepo(db.DB.WithContext(ctx)).GetWithConditions(db.GetOptions{
@@ -250,8 +232,7 @@ func SetContestChallenge(ctx *gin.Context) {
 		{Key: "challenge_id", Value: challenge.ID, Op: "and"},
 	}, false, "all")
 	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	ctx.Set("ContestChallenge", contestChallenge)
@@ -273,14 +254,12 @@ func SetContestFlag(ctx *gin.Context) {
 	}
 	var flagID flagIDUri
 	if err := ctx.ShouldBindUri(&flagID); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	contestFlag, ok, msg := db.InitContestFlagRepo(db.DB.WithContext(ctx)).GetByID(flagID.FlagID, "all")
 	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	ctx.Set("ContestFlag", contestFlag)
@@ -301,16 +280,14 @@ func SetVictim(ctx *gin.Context) {
 	}
 	var victimID victimIDUri
 	if err := ctx.ShouldBindUri(&victimID); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	victim, ok, msg := db.InitVictimRepo(db.DB.WithContext(ctx)).GetWithConditions(db.GetOptions{
 		{Key: "id", Value: victimID.VictimID, Op: "and"},
 	}, true, "all")
 	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	ctx.Set("Victim", victim)
@@ -331,14 +308,12 @@ func SetCheat(ctx *gin.Context) {
 	}
 	var cheatID cheatIDUri
 	if err := ctx.ShouldBindUri(&cheatID); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
 	cheat, ok, msg := db.InitCheatRepo(db.DB.WithContext(ctx)).GetByID(cheatID.CheatID, "all")
 	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	ctx.Set("Cheat", cheat)

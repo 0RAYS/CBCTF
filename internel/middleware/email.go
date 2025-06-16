@@ -10,8 +10,7 @@ import (
 func CheckUnVerified(ctx *gin.Context) {
 	user := GetSelf(ctx).(model.User)
 	if user.Verified {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 		return
 	}
 	ctx.Next()

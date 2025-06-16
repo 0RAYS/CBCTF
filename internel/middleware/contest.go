@@ -20,8 +20,7 @@ func ContestStatus(statusL ...string) func(ctx *gin.Context) {
 				return
 			}
 		}
-		ctx.JSON(http.StatusOK, gin.H{"msg": contest.Status(), "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": contest.Status(), "data": nil})
 		return
 	}
 }

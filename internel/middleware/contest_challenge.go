@@ -13,8 +13,7 @@ func CheckSolved(ctx *gin.Context) {
 	team := GetTeam(ctx)
 	contestChallenge := GetContestChallenge(ctx)
 	if service.CheckIfSolved(db.DB.WithContext(ctx), team, contestChallenge) {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.AlreadySolved, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.AlreadySolved, "data": nil})
 		return
 	}
 	ctx.Next()
