@@ -10,8 +10,9 @@ import (
 )
 
 func UpdateTeamRanking(contestID uint, teams []model.Team) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	defer cancel()
 	key := fmt.Sprintf("contests:%d:rank", contestID)
-	ctx := context.Background()
 	pipe := RDB.Pipeline()
 	pipe.Del(ctx, key)
 
@@ -31,8 +32,9 @@ func UpdateTeamRanking(contestID uint, teams []model.Team) error {
 }
 
 func GetTeamRanking(contestID uint, start int64, end int64) ([]model.Team, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	defer cancel()
 	key := fmt.Sprintf("contests:%d:rank", contestID)
-	ctx := context.Background()
 	teams := make([]model.Team, 0)
 	results, err := RDB.ZRevRangeWithScores(ctx, key, start, end).Result()
 	if err != nil {
@@ -59,8 +61,9 @@ func GetTeamRanking(contestID uint, start int64, end int64) ([]model.Team, error
 }
 
 func UpdateUserRanking(users []model.User) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	key := "users:rank"
-	ctx := context.Background()
+	defer cancel()
 	pipe := RDB.Pipeline()
 	pipe.Del(ctx, key)
 	for _, user := range users {
@@ -78,8 +81,9 @@ func UpdateUserRanking(users []model.User) error {
 }
 
 func GetUserRanking(start int64, end int64) ([]model.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	defer cancel()
 	key := "users:rank"
-	ctx := context.Background()
 	results, err := RDB.ZRevRangeWithScores(ctx, key, start, end).Result()
 	if err != nil {
 		return make([]model.User, 0), err

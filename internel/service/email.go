@@ -18,9 +18,9 @@ func SendEmail(user model.User) (bool, string) {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		return false, i18n.UnknownError
 	}
-	ok, msg := redis.SetEmailVerifyToken(user.ID, id)
-	if !ok {
-		return false, msg
+	if err = redis.SetEmailVerifyToken(user.ID, id); err != nil {
+		log.Logger.Warningf("Failed to set email verify token: %s", err)
+		return false, i18n.SetEmailVerifyTokenError
 	}
 	go func() {
 		if err = utils.SendVerifyEmail(user.Email, token, id); err != nil {
@@ -35,8 +35,8 @@ func VerifyEmail(tx *gorm.DB, form f.VerifyEmail) (bool, string) {
 	if err != nil {
 		return false, i18n.InvalidEmailVerifyToken
 	}
-	id, ok := redis.GetEmailVerifyToken(claims.UserID)
-	if !ok {
+	id, err := redis.GetEmailVerifyToken(claims.UserID)
+	if err != nil {
 		return false, id
 	}
 	if form.ID == id {
@@ -46,7 +46,10 @@ func VerifyEmail(tx *gorm.DB, form f.VerifyEmail) (bool, string) {
 		if !ok {
 			return false, msg
 		}
-		redis.DelEmailVerifyToken(claims.UserID)
+		if err = redis.DelEmailVerifyToken(claims.UserID); err != nil {
+			log.Logger.Warningf("Failed to delete email verify token: %s", err)
+			return false, i18n.DelEmailVerifyTokenError
+		}
 		return true, i18n.Success
 	}
 	return false, i18n.InvalidEmailVerifyToken

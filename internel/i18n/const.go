@@ -185,6 +185,7 @@ const (
 	DelEmailVerifyTokenError = "DelEmailVerifyTokenError"
 	InvalidEmailVerifyToken  = "InvalidEmailVerifyToken"
 	SendEmailError           = "SendEmailError"
+	RedisError               = "RedisError"
 
 	CreateDirError                 = "CreateDirError"
 	ReadDirError                   = "ReadDirError"
