@@ -1,9 +1,7 @@
 package utils
 
 import (
-	"CBCTF/internel/log"
 	"errors"
-	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"time"
 )
@@ -33,7 +31,6 @@ func Generate(id uint, name string, t string, magic string) (tokenString string,
 		}}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 	tokenString, err = token.SignedString([]byte(secret))
-	log.Logger.Debug(fmt.Sprintf("Token Secret: %s", secret))
 	return tokenString, err
 }
 

@@ -8,10 +8,10 @@ import (
 var (
 	ipBlockL = make([][]string, 0)
 	ipBlockN = make(map[string]uint)
-	err      error
 )
 
 func GetIPBlock(n uint, cidr string, blockSize int) ([]string, error) {
+	var err error
 	if len(ipBlockL) == 0 {
 		ipBlockL, err = splitCIDR(cidr, blockSize)
 		if err != nil {
