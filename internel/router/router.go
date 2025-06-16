@@ -71,7 +71,7 @@ func Init() *gin.Engine {
 		user.PUT("", UpdateUser)
 		user.DELETE("", DeleteUser)
 		user.POST("/avatar", UploadAvatar("self-user"))
-		user.POST("/activate", ActivateEmail)
+		user.POST("/activate", middleware.CheckUnVerified, ActivateEmail)
 	}
 
 	contest := auth.Group("/contests/:contestID", middleware.CheckRole("user"), middleware.SetContest)
