@@ -22,10 +22,11 @@ func SendEmail(user model.User) (bool, string) {
 	if !ok {
 		return false, msg
 	}
-	if err = utils.SendVerifyEmail(user.Email, token, id); err != nil {
-		log.Logger.Warningf("Failed to send mail: %s", err)
-		return false, i18n.SendEmailError
-	}
+	go func() {
+		if err = utils.SendVerifyEmail(user.Email, token, id); err != nil {
+			log.Logger.Warningf("Failed to send mail: %s", err)
+		}
+	}()
 	return true, i18n.Success
 }
 
