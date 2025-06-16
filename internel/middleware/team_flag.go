@@ -13,8 +13,7 @@ func CheckIfGenerated(ctx *gin.Context) {
 	contestChallenge := GetContestChallenge(ctx)
 	team := GetTeam(ctx)
 	if !service.CheckIfGenerated(db.DB.WithContext(ctx), team, contestChallenge) {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.TeamFlagNotFound, "data": nil})
-		ctx.Abort()
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.TeamFlagNotFound, "data": nil})
 		return
 	}
 	ctx.Next()

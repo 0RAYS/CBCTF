@@ -19,8 +19,7 @@ func RateLimit(name string, maxRequests int, window time.Duration) gin.HandlerFu
 		count, err := redis.RateLimit(name, target, window)
 		if err != nil {
 			log.Logger.Warningf("Failed to rate limit: %s", err)
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.RedisError, "data": nil})
-			ctx.Abort()
+			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.RedisError, "data": nil})
 			return
 		}
 		if int(count) > maxRequests {
