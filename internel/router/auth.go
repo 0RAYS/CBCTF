@@ -27,19 +27,19 @@ func Register(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	//if ok, msg = SendEmail(user); !ok {
-	//	tx.Rollback()
-	//	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-	//	return
-	//}
+	if ok, msg = service.SendEmail(user); !ok {
+		tx.Rollback()
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
 	tx.Commit()
-	token, err := utils.Generate(user.ID, user.Name, "user", middleware.GetMagic(ctx))
+	token, err := utils.Generate(user.ID, user.Name, false, middleware.GetMagic(ctx))
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 		return
 	}
-	ctx.Set("Role", "user")
+	ctx.Set("IsAdmin", false)
 	ctx.Set("Self", user)
 	log.Logger.Infof("%s:%d register", user.Name, user.ID)
 	ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
@@ -57,13 +57,13 @@ func Login(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	token, err := utils.Generate(user.ID, user.Name, "user", middleware.GetMagic(ctx))
+	token, err := utils.Generate(user.ID, user.Name, false, middleware.GetMagic(ctx))
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 		return
 	}
-	ctx.Set("Role", "user")
+	ctx.Set("IsAdmin", false)
 	ctx.Set("Self", user)
 	log.Logger.Infof("%s:%d login", user.Name, user.ID)
 	ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
@@ -81,7 +81,7 @@ func AdminLogin(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	token, err := utils.Generate(admin.ID, admin.Name, "admin", "admin")
+	token, err := utils.Generate(admin.ID, admin.Name, true, "admin")
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})

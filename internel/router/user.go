@@ -14,14 +14,13 @@ import (
 )
 
 func GetUser(ctx *gin.Context) {
-	all := middleware.GetRole(ctx) == "admin"
 	var user model.User
-	if !all {
-		user = middleware.GetSelf(ctx).(model.User)
-	} else {
+	if middleware.IsAdmin(ctx) {
 		user = middleware.GetUser(ctx)
+	} else {
+		user = middleware.GetSelf(ctx).(model.User)
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": resp.GetUserResp(user, all)})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": resp.GetUserResp(user, middleware.IsAdmin(ctx))})
 }
 
 func GetUsers(ctx *gin.Context) {
@@ -88,7 +87,7 @@ func UpdateUser(ctx *gin.Context) {
 		msg  string
 		tx   *gorm.DB
 	)
-	if middleware.GetRole(ctx) == "admin" {
+	if middleware.IsAdmin(ctx) {
 		var form f.UpdateUserForm
 		if err := ctx.ShouldBind(&form); err != nil {
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
@@ -97,7 +96,7 @@ func UpdateUser(ctx *gin.Context) {
 		user = middleware.GetUser(ctx)
 		tx = db.DB.WithContext(ctx).Begin()
 		ok, msg = service.UpdateUser(tx, user, form)
-	} else if middleware.GetRole(ctx) == "user" {
+	} else {
 		var form f.UpdateSelfForm
 		if err := ctx.ShouldBind(&form); err != nil {
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
@@ -106,9 +105,6 @@ func UpdateUser(ctx *gin.Context) {
 		user = middleware.GetSelf(ctx).(model.User)
 		tx = db.DB.WithContext(ctx).Begin()
 		ok, msg = service.UpdateSelf(tx, user, form)
-	} else {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
-		return
 	}
 	if !ok {
 		tx.Rollback()
@@ -124,7 +120,7 @@ func DeleteUser(ctx *gin.Context) {
 		ok  bool
 		msg string
 	)
-	if middleware.GetRole(ctx) != "admin" {
+	if !middleware.IsAdmin(ctx) {
 		var form f.DeleteSelfForm
 		if err := ctx.ShouldBind(&form); err != nil {
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest})

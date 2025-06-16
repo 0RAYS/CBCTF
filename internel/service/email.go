@@ -13,7 +13,7 @@ import (
 
 func SendEmail(user model.User) (bool, string) {
 	id := utils.UUID()
-	token, err := utils.Generate(user.ID, user.Name, "email", "email")
+	token, err := utils.Generate(user.ID, user.Name, false, "email")
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		return false, i18n.UnknownError

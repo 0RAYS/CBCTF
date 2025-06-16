@@ -128,7 +128,7 @@ func UploadAvatar(v string) func(ctx *gin.Context) {
 			id = middleware.GetTeam(ctx).ID
 			options.TeamID = &id
 			selfID := middleware.GetSelfID(ctx)
-			if middleware.GetRole(ctx) == "admin" {
+			if middleware.IsAdmin(ctx) {
 				options.AdminID = &selfID
 			} else {
 				options.UserID = &selfID

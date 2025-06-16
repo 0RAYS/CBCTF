@@ -51,7 +51,7 @@ func SetContest(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	if GetRole(ctx) != "admin" && contest.Hidden {
+	if !IsAdmin(ctx) && contest.Hidden {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.ContestNotFound, "data": nil})
 		return
 	}

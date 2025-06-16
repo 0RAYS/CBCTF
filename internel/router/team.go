@@ -62,10 +62,9 @@ func GetTeamCaptcha(ctx *gin.Context) {
 }
 
 func GetTeammates(ctx *gin.Context) {
-	all := middleware.GetRole(ctx) == "admin"
 	data := make([]gin.H, 0)
 	for _, user := range middleware.GetTeam(ctx).Users {
-		data = append(data, resp.GetUserResp(*user, all))
+		data = append(data, resp.GetUserResp(*user, middleware.IsAdmin(ctx)))
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
 	return
@@ -88,14 +87,13 @@ func GetTeamRanking(ctx *gin.Context) {
 		Solved []model.ContestFlag
 	}
 	contest := middleware.GetContest(ctx)
-	showAll := middleware.GetRole(ctx) == "admin"
 	teams, count, ok, msg := service.GetTeamRanking(db.DB.WithContext(ctx), contest.ID, form.Limit, form.Offset)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	for _, team := range teams {
-		if !showAll && team.Hidden {
+		if !middleware.IsAdmin(ctx) && team.Hidden {
 			count--
 			continue
 		}
@@ -116,7 +114,7 @@ func GetTeamRanking(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	data := resp.GetTeamRankingResp(teamsData, contestFlags, showAll)
+	data := resp.GetTeamRankingResp(teamsData, contestFlags, middleware.IsAdmin(ctx))
 	data["count"] = count
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
 }
@@ -128,7 +126,7 @@ func UpdateTeam(ctx *gin.Context) {
 		ok   bool
 		msg  string
 	)
-	if middleware.GetRole(ctx) == "admin" {
+	if middleware.IsAdmin(ctx) {
 		var form f.AdminUpdateTeamForm
 		if err := ctx.ShouldBind(&form); err != nil {
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
