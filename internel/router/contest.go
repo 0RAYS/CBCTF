@@ -15,7 +15,7 @@ import (
 func GetContest(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
 	champion, _, _, _ := service.GetTeamRanking(db.DB.WithContext(ctx), contest.ID, 1, 0)
-	data := resp.GetContestResp(contest, middleware.GetRole(ctx) == "admin")
+	data := resp.GetContestResp(contest, middleware.IsAdmin(ctx))
 	data["highest"] = 0
 	if len(champion) > 0 {
 		data["highest"] = champion[0].Score
@@ -36,7 +36,7 @@ func GetContests(ctx *gin.Context) {
 		form.Offset = 0
 	}
 	conditions := make(db.GetOptions, 0)
-	if middleware.GetRole(ctx) != "admin" {
+	if !middleware.IsAdmin(ctx) {
 		conditions = append(conditions, db.GetOption{Key: "hidden", Value: false, Op: "and"})
 	}
 	contests, count, ok, msg := db.InitContestRepo(db.DB.WithContext(ctx)).
@@ -47,7 +47,7 @@ func GetContests(ctx *gin.Context) {
 	}
 	data := make([]gin.H, 0)
 	for _, contest := range contests {
-		data = append(data, resp.GetContestResp(contest, middleware.GetRole(ctx) == "admin"))
+		data = append(data, resp.GetContestResp(contest, middleware.IsAdmin(ctx)))
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"contests": data, "count": count}})
 }

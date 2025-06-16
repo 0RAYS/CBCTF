@@ -27,7 +27,7 @@ func GetContestChallenges(ctx *gin.Context) {
 	conditions := db.GetOptions{
 		{Key: "contest_id", Value: middleware.GetContest(ctx).ID, Op: "and"},
 	}
-	if middleware.GetRole(ctx) != "admin" {
+	if !middleware.IsAdmin(ctx) {
 		conditions = append(conditions, db.GetOption{Key: "hidden", Value: false, Op: "and"})
 	}
 	contestChallengeL, count, ok, msg := db.InitContestChallengeRepo(db.DB.WithContext(ctx)).
@@ -39,7 +39,7 @@ func GetContestChallenges(ctx *gin.Context) {
 	data := make([]gin.H, 0)
 	for _, contestChallenge := range contestChallengeL {
 		tmp := resp.GetContestChallengeResp(contestChallenge)
-		if middleware.GetRole(ctx) != "admin" {
+		if !middleware.IsAdmin(ctx) {
 			team := middleware.GetTeam(ctx)
 			tmp["hidden"] = false
 			tmp["attempts"] = service.CountAttempts(db.DB.WithContext(ctx), team, contestChallenge)

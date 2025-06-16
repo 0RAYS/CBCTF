@@ -25,16 +25,16 @@ func CheckAuth(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
 		return
 	}
-	if claims.Type == "admin" {
+	if claims.IsAdmin {
 		admin, ok, msg := db.InitAdminRepo(DB).GetByID(claims.UserID, "all")
 		if !ok {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
-		ctx.Set("Role", "admin")
+		ctx.Set("IsAdmin", true)
 		ctx.Set("Self", admin)
 		ctx.Next()
-	} else if claims.Type == "user" {
+	} else {
 		user, ok, msg := db.InitUserRepo(DB).GetByID(claims.UserID, "all")
 		if !ok {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -60,20 +60,9 @@ func CheckAuth(ctx *gin.Context) {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
 			return
 		}
-		ctx.Set("Role", "user")
+		ctx.Set("IsAdmin", false)
 		ctx.Set("Self", user)
 		ctx.Next()
-	} else {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
-	}
-}
-
-// GetRole 获取角色,  user 或 admin
-func GetRole(ctx *gin.Context) string {
-	if role, ok := ctx.Get("Role"); !ok || role == nil {
-		return ""
-	} else {
-		return role.(string)
 	}
 }
 
@@ -89,25 +78,26 @@ func GetSelf(ctx *gin.Context) any {
 // GetSelfID 获取当前登录 admin 或 user 的ID
 func GetSelfID(ctx *gin.Context) uint {
 	var id uint
-	switch GetRole(ctx) {
-	case "admin":
+	if IsAdmin(ctx) {
 		if self, ok := GetSelf(ctx).(model.Admin); ok {
 			id = self.ID
 		}
-	case "user":
+	} else {
 		if self, ok := GetSelf(ctx).(model.User); ok {
 			id = self.ID
 		}
-	default:
-		id = 0
 	}
 	return id
 }
 
+func IsAdmin(ctx *gin.Context) bool {
+	return ctx.GetBool("IsAdmin")
+}
+
 // CheckRole 检查角色
-func CheckRole(t string) func(ctx *gin.Context) {
+func CheckRole(isAdmin bool) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
-		if GetRole(ctx) != t {
+		if IsAdmin(ctx) == isAdmin {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
 			return
 		}
@@ -127,7 +117,7 @@ func CheckCaptain(ctx *gin.Context) {
 
 // CheckVerified 检查邮箱是否已验证
 func CheckVerified(ctx *gin.Context) {
-	if self, ok := GetSelf(ctx).(model.User); GetRole(ctx) == "user" && ok && !self.Verified {
+	if self, ok := GetSelf(ctx).(model.User); !IsAdmin(ctx) && ok && !self.Verified {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.UnverifiedEmail, "data": nil})
 		return
 	}

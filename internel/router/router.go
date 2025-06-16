@@ -65,7 +65,7 @@ func Init() *gin.Engine {
 
 	auth := router.Group("", middleware.CheckAuth)
 
-	user := auth.Group("/me", middleware.CheckRole("user"))
+	user := auth.Group("/me", middleware.CheckRole(false))
 	{
 		user.GET("", GetUser)
 		user.PUT("/password", ChangePwd)
@@ -75,7 +75,7 @@ func Init() *gin.Engine {
 		user.POST("/activate", middleware.RateLimit("activate", 1, time.Minute), middleware.CheckUnVerified, ActivateEmail)
 	}
 
-	contest := auth.Group("/contests/:contestID", middleware.CheckRole("user"), middleware.SetContest)
+	contest := auth.Group("/contests/:contestID", middleware.CheckRole(false), middleware.SetContest)
 	{
 		contest.GET("", GetContest)
 		contest.GET("/rank", GetTeamRanking)
@@ -138,7 +138,7 @@ func Init() *gin.Engine {
 		}
 	}
 
-	admin := auth.Group("/admin", middleware.CheckRole("admin"))
+	admin := auth.Group("/admin", middleware.CheckRole(true))
 	{
 		admin.GET("/me", GetAdmin)
 		admin.PUT("/me/password", AdminChangePassword)
