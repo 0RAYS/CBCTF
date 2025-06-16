@@ -122,7 +122,7 @@ func Init() *gin.Engine {
 			contestChallenge.POST("/increase", middleware.ContestStatus(model.ContestIsRunning), middleware.CheckIfGenerated, IncreaseVictimDuration)
 			contestChallenge.POST("/stop", middleware.CheckIfGenerated, StopVictim)
 			contestChallenge.POST("/submit",
-				middleware.RateLimit("start_victim", 1, time.Second),
+				middleware.RateLimit("submit_flag", 1, time.Second),
 				middleware.ContestStatus(model.ContestIsRunning), middleware.CheckIfGenerated, middleware.CheckSolved, SubmitFlag,
 			)
 		}
