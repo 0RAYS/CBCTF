@@ -1,18 +1,16 @@
 package utils
 
 import (
-	"CBCTF/internel/log"
 	"errors"
-	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"time"
 )
 
 type Claims struct {
-	Name   string `json:"name"`
-	UserID uint   `json:"id"`
-	Type   string `json:"type"`
-	X      string `json:"x"`
+	Name    string `json:"name"`
+	UserID  uint   `json:"id"`
+	IsAdmin bool   `json:"admin"`
+	X       string `json:"x"`
 	jwt.RegisteredClaims
 }
 
@@ -20,12 +18,12 @@ type Claims struct {
 var secret = "0RAYS-JBNRZ"
 
 // Generate 生成token
-func Generate(id uint, name string, t string, magic string) (tokenString string, err error) {
+func Generate(id uint, name string, isAdmin bool, magic string) (tokenString string, err error) {
 	claim := Claims{
-		UserID: id,
-		Name:   name,
-		Type:   t,
-		X:      HashMagic(magic),
+		UserID:  id,
+		Name:    name,
+		IsAdmin: isAdmin,
+		X:       HashMagic(magic),
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -33,7 +31,6 @@ func Generate(id uint, name string, t string, magic string) (tokenString string,
 		}}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
 	tokenString, err = token.SignedString([]byte(secret))
-	log.Logger.Debug(fmt.Sprintf("Token Secret: %s", secret))
 	return tokenString, err
 }
 

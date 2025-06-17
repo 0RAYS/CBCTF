@@ -11,6 +11,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"time"
 )
 
 func Init() *gin.Engine {
@@ -26,7 +27,7 @@ func Init() *gin.Engine {
 
 	router.Use(
 		gin.Recovery(), middleware.Cors, middleware.Logger, middleware.Prometheus, middleware.SetTrace,
-		middleware.SetMagic, middleware.I18n, middleware.AccessLog, middleware.RateLimit, middleware.Events,
+		middleware.SetMagic, middleware.I18n, middleware.AccessLog, middleware.RateLimit("globals", 100, time.Minute), middleware.Events,
 	)
 
 	{
@@ -52,7 +53,7 @@ func Init() *gin.Engine {
 	}
 
 	{
-		router.POST("/register", Register)
+		router.POST("/register", middleware.RateLimit("register", 1, time.Minute), Register)
 		router.POST("/login", Login)
 		router.POST("/admin/login", AdminLogin)
 		router.GET("/verify", VerifyEmail)
@@ -64,17 +65,17 @@ func Init() *gin.Engine {
 
 	auth := router.Group("", middleware.CheckAuth)
 
-	user := auth.Group("/me", middleware.CheckRole("user"))
+	user := auth.Group("/me", middleware.CheckRole(false))
 	{
 		user.GET("", GetUser)
 		user.PUT("/password", ChangePwd)
 		user.PUT("", UpdateUser)
 		user.DELETE("", DeleteUser)
 		user.POST("/avatar", UploadAvatar("self-user"))
-		user.POST("/activate", ActivateEmail)
+		user.POST("/activate", middleware.RateLimit("activate", 1, time.Minute), middleware.CheckUnVerified, ActivateEmail)
 	}
 
-	contest := auth.Group("/contests/:contestID", middleware.CheckRole("user"), middleware.SetContest)
+	contest := auth.Group("/contests/:contestID", middleware.CheckRole(false), middleware.SetContest)
 	{
 		contest.GET("", GetContest)
 		contest.GET("/rank", GetTeamRanking)
@@ -108,13 +109,22 @@ func Init() *gin.Engine {
 		)
 		{
 			contestChallenge.GET("", GetContestChallengeStatus)
-			contestChallenge.POST("/init", middleware.ContestStatus(model.ContestIsRunning), middleware.CheckSolved, InitTeamFlag)
+			contestChallenge.POST("/init",
+				middleware.RateLimit("init_flag", 1, time.Minute),
+				middleware.ContestStatus(model.ContestIsRunning), middleware.CheckSolved, InitTeamFlag,
+			)
 			contestChallenge.GET("/attachment", DownloadAttachment)
-			contestChallenge.POST("/reset", middleware.ContestStatus(model.ContestIsRunning), middleware.CheckIfGenerated, middleware.CheckSolved, ResetTeamFlag)
-			contestChallenge.POST("/start", middleware.CheckIfGenerated, StartVictim)
+			contestChallenge.POST("/reset",
+				middleware.RateLimit("init_flag", 1, time.Minute),
+				middleware.ContestStatus(model.ContestIsRunning), middleware.CheckIfGenerated, middleware.CheckSolved, ResetTeamFlag,
+			)
+			contestChallenge.POST("/start", middleware.RateLimit("start_victim", 1, time.Minute), middleware.CheckIfGenerated, StartVictim)
 			contestChallenge.POST("/increase", middleware.ContestStatus(model.ContestIsRunning), middleware.CheckIfGenerated, IncreaseVictimDuration)
 			contestChallenge.POST("/stop", middleware.CheckIfGenerated, StopVictim)
-			contestChallenge.POST("/submit", middleware.ContestStatus(model.ContestIsRunning), middleware.CheckIfGenerated, middleware.CheckSolved, SubmitFlag)
+			contestChallenge.POST("/submit",
+				middleware.RateLimit("submit_flag", 1, time.Second),
+				middleware.ContestStatus(model.ContestIsRunning), middleware.CheckIfGenerated, middleware.CheckSolved, SubmitFlag,
+			)
 		}
 
 		// WriteUp
@@ -128,7 +138,7 @@ func Init() *gin.Engine {
 		}
 	}
 
-	admin := auth.Group("/admin", middleware.CheckRole("admin"))
+	admin := auth.Group("/admin", middleware.CheckRole(true))
 	{
 		admin.GET("/me", GetAdmin)
 		admin.PUT("/me/password", AdminChangePassword)

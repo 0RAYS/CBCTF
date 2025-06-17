@@ -187,6 +187,7 @@ var resp = map[string]map[string]any{
 	DelEmailVerifyTokenError: {"zh-CN": "删除邮箱验证令牌失败", "en-US": "Delete email verify token failed", "code": 500},
 	InvalidEmailVerifyToken:  {"zh-CN": "无效的邮箱验证令牌", "en-US": "Invalid email verify token", "code": 400},
 	SendEmailError:           {"zh-CN": "发送邮件失败", "en-US": "Send email failed", "code": 500},
+	RedisError:               {"zh-CN": "缓存失败", "en-US": "Redis operation failed", "code": 500},
 
 	CreateDirError:                 {"zh-CN": "创建题目根目录失败", "en-US": "Create directory failed", "code": 500},
 	ReadDirError:                   {"zh-CN": "读取题目根目录失败", "en-US": "Read directory failed", "code": 500},

@@ -24,7 +24,6 @@ func GetScoreboard(ctx *gin.Context) {
 	if _, exists := ctx.GetQuery("offset"); !exists {
 		form.Offset = 0
 	}
-	showAll := middleware.GetRole(ctx) == "admin"
 	contest := middleware.GetContest(ctx)
 	teams, count, ok, msg := service.GetTeamRanking(db.DB.WithContext(ctx), contest.ID, form.Limit, form.Offset)
 	if !ok {
@@ -65,7 +64,7 @@ func GetScoreboard(ctx *gin.Context) {
 	teamMap := make(map[uint]map[string]int)
 	teamFlagRepo := db.InitTeamFlagRepo(db.DB.WithContext(ctx))
 	for _, team := range teams {
-		if !showAll && team.Hidden {
+		if !middleware.IsAdmin(ctx) && team.Hidden {
 			count--
 			continue
 		}

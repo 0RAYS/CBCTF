@@ -1,7 +1,17 @@
-import sys
-import os
+import io
 import zipfile
-import base64
+
+
+def generate_attachment(flags: bytes) -> bytes:
+    n1, c1 = generate_given(flags)
+    with open("template.py", "r") as f:
+        template = f.read()
+    attachment = template.format(given_n1=n1, given_c1=c1)
+    byte = io.BytesIO()
+    with zipfile.ZipFile(byte, "w", compression=zipfile.ZIP_DEFLATED) as f:
+        f.writestr("attachment.py", attachment)
+    byte.seek(0)
+    return byte.read()
 
 
 def generate_given(flag: bytes):
@@ -14,19 +24,3 @@ def generate_given(flag: bytes):
     e1 = 0x3
     c1 = pow(m,e1,n1)
     return n1, c1
-
-
-def generate_attachment(team_id: str, **kwargs):
-    with open("template.py", "r") as f:
-        template = f.read()
-    attachment = template.format(**kwargs)
-    if not os.path.exists("attachments"):
-        os.mkdir("attachments")
-    with zipfile.ZipFile(f"attachments/{team_id}.zip", "w", compression=zipfile.ZIP_DEFLATED) as f:
-        f.writestr("attachment.py", attachment)
-
-
-if __name__ == "__main__":
-    team_id, flag = sys.argv[1], base64.b64decode(sys.argv[2])
-    n1, c1 = generate_given(flag)
-    generate_attachment(team_id, given_n1=n1, given_c1=c1)

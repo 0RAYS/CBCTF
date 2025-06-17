@@ -2,6 +2,7 @@ package utils
 
 import (
 	"CBCTF/internel/i18n"
+	"CBCTF/internel/log"
 	"context"
 	"github.com/compose-spec/compose-go/loader"
 	"github.com/compose-spec/compose-go/types"
@@ -11,6 +12,7 @@ import (
 func LoadDockerComposeYaml(data string) (*types.Project, bool, string) {
 	var raw map[string]any
 	if err := yaml.Unmarshal([]byte(data), &raw); err != nil {
+		log.Logger.Warningf("Failed to load docker-compose.yml: %v", err)
 		return nil, false, i18n.InvalidDockerComposeYaml
 	}
 	cfg, err := loader.LoadWithContext(context.Background(), types.ConfigDetails{
@@ -22,6 +24,7 @@ func LoadDockerComposeYaml(data string) (*types.Project, bool, string) {
 		},
 	})
 	if err != nil {
+		log.Logger.Warningf("Failed to load docker-compose.yml: %v", err)
 		return nil, false, i18n.UnknownError
 	}
 	return cfg, true, i18n.Success

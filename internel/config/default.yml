@@ -11,12 +11,9 @@ gin:
     upload:
         max: 8
     rate:
-        window: 60
-        max: 100
-        ip:
-            whitelist:
-                - "::1"
-                - "127.0.0.1"
+        whitelist:
+            - "::1"
+            - "127.0.0.1"
     log:
         whitelist:
             - "/metrics"
@@ -36,8 +33,6 @@ redis:
     host: "127.0.0.1"
     port: 6379
     pwd: "password"
-    # millisecond
-    timeout: 10
 k8s:
     config:
         # admin will be ignored if user is set

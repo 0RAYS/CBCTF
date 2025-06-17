@@ -2,12 +2,38 @@ package service
 
 import (
 	"CBCTF/internel/i18n"
+	"CBCTF/internel/k8s"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
+	"errors"
 	"fmt"
 	"gorm.io/gorm"
 )
+
+func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) (bool, string) {
+	contestChallenges, _, ok, msg := db.InitContestChallengeRepo(tx).ListWithConditions(-1, -1, db.GetOptions{
+		{Key: "contest_id", Value: contest.ID, Op: "and"},
+	}, false, "ContestFlags", "Challenge")
+	if !ok {
+		return false, msg
+	}
+	for _, contestChallenge := range contestChallenges {
+		_ = tx.Transaction(func(tx2 *gorm.DB) error {
+			teamFlags, ok, msg := CreateTeamFlag(tx2, team, contestChallenge)
+			if !ok {
+				return errors.New(msg)
+			}
+			if contestChallenge.Challenge.Type == model.DynamicChallengeType {
+				if ok, msg = k8s.GenerateAttachment(contestChallenge, team, teamFlags); !ok {
+					return errors.New(msg)
+				}
+			}
+			return nil
+		})
+	}
+	return true, i18n.Success
+}
 
 // CreateTeamFlag 需要预加载 ContestFlags
 func CreateTeamFlag(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) ([]model.TeamFlag, bool, string) {

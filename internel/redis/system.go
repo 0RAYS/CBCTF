@@ -1,7 +1,6 @@
 package redis
 
 import (
-	"CBCTF/internel/config"
 	"CBCTF/internel/log"
 	"context"
 	"encoding/json"
@@ -60,7 +59,8 @@ func collectMetrics() (*SystemMetrics, error) {
 }
 
 func saveMetrics(metrics *SystemMetrics) error {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	defer cancel()
 	data, err := json.Marshal(metrics)
 	if err != nil {
 		return err
@@ -77,7 +77,7 @@ func saveMetrics(metrics *SystemMetrics) error {
 }
 
 func GetMetrics() []SystemMetrics {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*time.Duration(config.Env.Redis.Timeout))
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 	metrics := make([]SystemMetrics, 0)
 	data, err := RDB.LRange(ctx, "system_metrics", 0, -1).Result()

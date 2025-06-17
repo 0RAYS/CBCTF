@@ -3,10 +3,11 @@ FROM python:3.10-slim
 COPY ./files/* /root/
 
 RUN apt-get update &&  \
-    apt-get install -y unzip zip &&  \
-    pip install -r /root/requirements.txt &&  \
-    chmod +x /root/run.sh
+    apt-get install -y unzip &&  \
+    pip install -r /root/requirements.txt
+
+EXPOSE 8000
 
 WORKDIR /root
 
-CMD ["ls -al /root"]
+CMD ["bash", "-c", "python3 -m gunicorn app:app -w 4 -k uvicorn.workers.UvicornWorker --threads 1 -b 0.0.0.0:8000"]

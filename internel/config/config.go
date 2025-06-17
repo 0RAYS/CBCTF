@@ -27,11 +27,7 @@ type Config struct {
 		} `mapstructure:"upload" json:"upload"`
 		Proxies   []string `mapstructure:"proxies" json:"proxies"` // 信任的代理服务器
 		RateLimit struct {
-			Window      int `mapstructure:"window" json:"window"` // 限制时间窗口（单位：秒）
-			MaxRequests int `mapstructure:"max" json:"max"`       // 最大请求数
-			IP          struct {
-				Whitelist []string `mapstructure:"whitelist" json:"whitelist"` // IP 白名单，不限制频率
-			}
+			Whitelist []string `mapstructure:"whitelist" json:"whitelist"` // IP 白名单，不限制频率
 		} `mapstructure:"rate" json:"rate"`
 		Log struct {
 			Whitelist []string `mapstructure:"whitelist" json:"whitelist"` // 日志白名单路径
@@ -54,10 +50,9 @@ type Config struct {
 	} `mapstructure:"gorm" json:"gorm"`
 
 	Redis struct {
-		Host    string `mapstructure:"host" json:"host"`       // Redis 地址
-		Port    int    `mapstructure:"port" json:"port"`       // Redis 端口
-		Pwd     string `mapstructure:"pwd" json:"-"`           // Redis 密码
-		Timeout uint   `mapstructure:"timeout" json:"timeout"` // Redis 连接超时时间（单位：毫秒）
+		Host string `mapstructure:"host" json:"host"` // Redis 地址
+		Port int    `mapstructure:"port" json:"port"` // Redis 端口
+		Pwd  string `mapstructure:"pwd" json:"-"`     // Redis 密码
 	} `mapstructure:"redis" json:"redis"`
 
 	K8S struct {
