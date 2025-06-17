@@ -17,7 +17,9 @@ import (
 // PrepareGenerator 关闭超时的动态题目生成器, 释放部分资源
 func PrepareGenerator(c *cron.Cron) {
 	function := exec("ResetGenerator", func() {
-		contests, _, ok, _ := db.InitContestRepo(db.DB).List(-1, -1)
+		contests, _, ok, _ := db.InitContestRepo(db.DB).ListWithConditions(-1, -1, db.GetOptions{
+			{Key: "hidden", Value: false, Op: "and"},
+		}, false)
 		if !ok {
 			return
 		}
