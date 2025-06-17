@@ -41,8 +41,7 @@ func Init() {
 	)
 	log.Logger.Infof("Connecting to MySQL database: %s:%d", config.Env.Gorm.MySQL.Host, config.Env.Gorm.MySQL.Port)
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
-		Logger:      log.NewGormLogger(level),
-		PrepareStmt: true,
+		Logger: log.NewGormLogger(level),
 	})
 	if err != nil {
 		log.Logger.Fatalf("Failed to connect database: %v", err)
