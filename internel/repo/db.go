@@ -41,8 +41,8 @@ func Init() {
 	)
 	log.Logger.Infof("Connecting to MySQL database: %s:%d", config.Env.Gorm.MySQL.Host, config.Env.Gorm.MySQL.Port)
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
-		Logger:                                   log.NewGormLogger(level),
-		DisableForeignKeyConstraintWhenMigrating: false,
+		Logger:      log.NewGormLogger(level),
+		PrepareStmt: true,
 	})
 	if err != nil {
 		log.Logger.Fatalf("Failed to connect database: %v", err)
@@ -52,7 +52,8 @@ func Init() {
 	} else {
 		sql.SetMaxIdleConns(config.Env.Gorm.MySQL.MaxIdleConns)
 		sql.SetMaxOpenConns(config.Env.Gorm.MySQL.MaxOpenConns)
-		sql.SetConnMaxLifetime(30 * time.Second)
+		sql.SetConnMaxIdleTime(time.Hour)
+		sql.SetConnMaxLifetime(24 * time.Hour)
 	}
 
 	if DB.Use(prometheus.New(prometheus.Config{
