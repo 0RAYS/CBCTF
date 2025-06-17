@@ -90,22 +90,22 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 				}
 			}
 			flagOptions := make([]db.CreateChallengeFlagOptions, 0)
-			for _, service := range config.Services {
-				name := service.Name
-				if service.ContainerName != "" {
-					name = service.ContainerName
+			for _, app := range config.Services {
+				name := app.Name
+				if app.ContainerName != "" {
+					name = app.ContainerName
 				}
-				if service.Image == "" {
+				if app.Image == "" {
 					return model.Challenge{}, false, i18n.InvalidDockerImage
 				}
 				environment := make(model.StringMap)
-				for k, v := range service.Environment {
+				for k, v := range app.Environment {
 					if !strings.HasPrefix(k, model.EnvFlagPrefix) {
 						environment[k] = *v
 					}
 				}
-				ports := service.Expose
-				for _, port := range service.Ports {
+				ports := app.Expose
+				for _, port := range app.Ports {
 					target := fmt.Sprintf("%d", port.Target)
 					if !utils.In(target, ports) {
 						ports = append(ports, target)
@@ -114,16 +114,16 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 				docker, ok, msg := dockerRepo.Create(db.CreateDockerOptions{
 					DockerGroupID: dockerGroup.ID,
 					Name:          name,
-					Image:         service.Image,
-					WorkingDir:    &service.WorkingDir,
-					Command:       model.StringList(service.Command),
+					Image:         app.Image,
+					WorkingDir:    &app.WorkingDir,
+					Command:       model.StringList(app.Command),
 					Expose:        model.StringList(ports),
 					Environment:   environment,
 				})
 				if !ok {
 					return model.Challenge{}, false, msg
 				}
-				for k, v := range service.Environment {
+				for k, v := range app.Environment {
 					if strings.HasPrefix(k, model.EnvFlagPrefix) {
 						flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
 							ChallengeID: challenge.ID,
@@ -133,7 +133,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 						})
 					}
 				}
-				for _, volume := range service.Volumes {
+				for _, volume := range app.Volumes {
 					if value, ok := volumeFlag[volume.Source]; ok {
 						flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
 							ChallengeID: challenge.ID,
