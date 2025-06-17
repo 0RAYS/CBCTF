@@ -3,10 +3,8 @@ package router
 import (
 	f "CBCTF/internel/form"
 	"CBCTF/internel/i18n"
-	"CBCTF/internel/log"
 	"CBCTF/internel/middleware"
 	"CBCTF/internel/model"
-	"CBCTF/internel/redis"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/resp"
 	"CBCTF/internel/service"
@@ -19,13 +17,6 @@ func StartVictim(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	user := middleware.GetSelf(ctx).(model.User)
-	if ok, err := redis.CheckVictimCreate(team.ID, contestChallenge.ChallengeID); ok || err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.TooManyRequests, "data": nil})
-		return
-	}
-	if err := redis.RecordVictimCreate(team.ID, contestChallenge.ChallengeID); err != nil {
-		log.Logger.Warningf("Failed to record container create: %v", err)
-	}
 	tx := db.DB.WithContext(ctx).Begin()
 	_, ok, msg := service.StartVictim(tx, user, team, contestChallenge)
 	if !ok {

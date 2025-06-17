@@ -1,1 +1,4 @@
+fastapi
 pycryptodome
+gunicorn
+uvicorn

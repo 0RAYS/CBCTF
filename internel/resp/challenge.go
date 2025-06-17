@@ -30,9 +30,9 @@ volumes:
 			volumeFlags[*flag.DockerID] = make(map[string]string)
 			name := fmt.Sprintf("%s_%d", model.VolumeFlagPrefix, i)
 			volumeFlags[*flag.DockerID][name] = flag.Path
-			volumeStr += fmt.Sprintf("\t%s:\n", name)
-			volumeStr += fmt.Sprintf("\t\tlabels:\n")
-			volumeStr += fmt.Sprintf("\t\t\t- %s=%s\n", model.VolumeFlagLabelKey, flag.Value)
+			volumeStr += fmt.Sprintf("  %s:\n", name)
+			volumeStr += fmt.Sprintf("    labels:\n")
+			volumeStr += fmt.Sprintf("      - %s=%s\n", model.VolumeFlagLabelKey, flag.Value)
 		case model.EnvInjectType:
 			if envFlags[*flag.DockerID] == nil {
 				envFlags[*flag.DockerID] = make(map[string]string)
@@ -47,10 +47,10 @@ volumes:
 
 	var serviceStr string
 	for _, docker := range dockers {
-		serviceStr += fmt.Sprintf("\t%s:\n", docker.Name)
-		serviceStr += fmt.Sprintf("\t\timage: %s\n", docker.Image)
+		serviceStr += fmt.Sprintf("  %s:\n", docker.Name)
+		serviceStr += fmt.Sprintf("    image: %s\n", docker.Image)
 		if docker.WorkingDir != nil && *docker.WorkingDir != "" {
-			serviceStr += fmt.Sprintf("\t\tworking_dir: %s\n", *docker.WorkingDir)
+			serviceStr += fmt.Sprintf("    working_dir: %s\n", *docker.WorkingDir)
 		}
 		if docker.Command != nil && len(docker.Command) > 0 {
 			commandStr := "["
@@ -58,31 +58,31 @@ volumes:
 				commandStr += fmt.Sprintf("\"%s\", ", cmd)
 			}
 			commandStr = commandStr[:len(commandStr)-2] + "]"
-			serviceStr += fmt.Sprintf("\t\tcommand: %s\n", commandStr)
+			serviceStr += fmt.Sprintf("    command: %s\n", commandStr)
 		}
 		if docker.Expose != nil && len(docker.Expose) > 0 {
-			serviceStr += "\t\texpose:\n"
+			serviceStr += "    expose:\n"
 			for _, port := range docker.Expose {
-				serviceStr += fmt.Sprintf("\t\t\t- \"%s\"\n", port)
+				serviceStr += fmt.Sprintf("      - \"%s\"\n", port)
 			}
 		}
 		if docker.Environment != nil || len(envFlags[docker.ID]) > 0 {
-			serviceStr += "\t\tenvironment:\n"
+			serviceStr += "    environment:\n"
 			if docker.Environment != nil && len(docker.Environment) > 0 {
 				for key, value := range docker.Environment {
-					serviceStr += fmt.Sprintf("\t\t\t- %s=%s\n", key, value)
+					serviceStr += fmt.Sprintf("      - %s=%s\n", key, value)
 				}
 			}
 			if flags, ok := envFlags[docker.ID]; ok {
 				for key, value := range flags {
-					serviceStr += fmt.Sprintf("\t\t\t- %s=%s\n", key, value)
+					serviceStr += fmt.Sprintf("      - %s=%s\n", key, value)
 				}
 			}
 		}
 		if flags, ok := volumeFlags[docker.ID]; ok {
-			serviceStr += "\t\tvolumes:\n"
+			serviceStr += "    volumes:\n"
 			for key, path := range flags {
-				serviceStr += fmt.Sprintf("\t\t\t- %s:%s\n", key, path)
+				serviceStr += fmt.Sprintf("      - %s:%s\n", key, path)
 			}
 		}
 	}

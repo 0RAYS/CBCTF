@@ -5,7 +5,6 @@ import (
 	"CBCTF/internel/k8s"
 	"CBCTF/internel/middleware"
 	"CBCTF/internel/model"
-	"CBCTF/internel/redis"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/service"
 	"github.com/gin-gonic/gin"
@@ -15,11 +14,6 @@ import (
 func InitTeamFlag(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	if ok, err := redis.CheckChallengeInit(team.ID, contestChallenge.ID); ok || err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.TooManyRequests, "data": nil})
-		return
-	}
-	_ = redis.RecordChallengeInit(team.ID, contestChallenge.ID)
 	tx := db.DB.WithContext(ctx).Begin()
 	teamFlags, ok, msg := service.CreateTeamFlag(tx, team, contestChallenge)
 	if !ok {
@@ -40,11 +34,6 @@ func InitTeamFlag(ctx *gin.Context) {
 func ResetTeamFlag(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	if ok, err := redis.CheckChallengeInit(team.ID, contestChallenge.ID); ok || err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.TooManyRequests, "data": nil})
-		return
-	}
-	_ = redis.RecordChallengeInit(team.ID, contestChallenge.ID)
 	tx := db.DB.WithContext(ctx).Begin()
 	teamFlags, ok, msg := service.UpdateTeamFlag(tx, team, contestChallenge)
 	if !ok {

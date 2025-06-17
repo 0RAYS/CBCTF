@@ -15,8 +15,10 @@ import (
 )
 
 type CreateServiceOptions struct {
-	PodName string
-	Ports   []int32
+	PodName  string
+	Ports    []int32
+	Labels   map[string]string
+	Selector map[string]string
 }
 
 func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.Service, bool, string) {
@@ -28,14 +30,10 @@ func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.S
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("svc-%s", strings.ToLower(utils.RandStr(10))),
 			Namespace: namespaceName,
-			Labels: map[string]string{
-				"victim": options.PodName,
-			},
+			Labels:    options.Labels,
 		},
 		Spec: corev1.ServiceSpec{
-			Selector: map[string]string{
-				"victim": options.PodName,
-			},
+			Selector: options.Selector,
 			Ports: func() []corev1.ServicePort {
 				tmp := make([]corev1.ServicePort, 0)
 				for _, p := range options.Ports {
