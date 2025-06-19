@@ -1,6 +1,7 @@
 package service
 
 import (
+	"CBCTF/internel/email"
 	f "CBCTF/internel/form"
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
@@ -23,7 +24,7 @@ func SendEmail(user model.User) (bool, string) {
 		return false, i18n.SetEmailVerifyTokenError
 	}
 	go func() {
-		if err = utils.SendVerifyEmail(user.Email, token, id); err != nil {
+		if err = email.SendVerifyEmail(user.Email, token, id); err != nil {
 			log.Logger.Warningf("Failed to send mail: %s", err)
 		}
 	}()

@@ -3,6 +3,7 @@ package cmd
 import (
 	"CBCTF/internel/config"
 	"CBCTF/internel/cron"
+	"CBCTF/internel/email"
 	"CBCTF/internel/k8s"
 	//"CBCTF/internel/k8s"
 	"CBCTF/internel/log"
@@ -19,6 +20,7 @@ var server *http.Server
 func initialize() {
 	config.Init()
 	log.Init()
+	email.Init()
 	redis.Init()
 	db.Init()
 	k8s.Init(true)
