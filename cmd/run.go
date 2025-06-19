@@ -43,27 +43,8 @@ func start() {
 	cron.Start()
 }
 
-func stop() {
-	cron.Stop()
-	if err := server.Close(); err != nil {
-		log.Logger.Errorf("Failed to stop: %s", err)
-		return
-	}
-	log.Logger.Info("Server stopped")
-	db.Close()
-	redis.Close()
-}
-
-func restart() {
-	log.Logger.Info("Restarting server")
-	stop()
-	initialize()
-	start()
-}
-
 func run() {
 	initialize()
-	config.Watch(restart)
 	start()
 	select {}
 }
