@@ -4,7 +4,6 @@ import (
 	_ "embed"
 	"encoding/json"
 	"errors"
-	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 	"log"
 	"os"
@@ -141,17 +140,4 @@ func Save(env *Config) error {
 		return err
 	}
 	return nil
-}
-
-// Watch 监听配置文件变化
-func Watch(onChange func()) {
-	viper.WatchConfig()
-	viper.OnConfigChange(func(e fsnotify.Event) {
-		if time.Since(last) < time.Second {
-			return
-		}
-		last = time.Now()
-		log.Printf("Config file changed: %s", e.Name)
-		//onChange()
-	})
 }
