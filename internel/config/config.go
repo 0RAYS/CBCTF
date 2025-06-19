@@ -132,11 +132,11 @@ func Save(env *Config) error {
 		log.Panicf("Failed to unmarshal JSON to map: %s", err)
 		return err
 	}
-	if err := viper.MergeConfigMap(config); err != nil {
+	if err = viper.MergeConfigMap(config); err != nil {
 		log.Panicf("Failed to merge Env to viper: %s", err)
 		return err
 	}
-	if err := viper.WriteConfig(); err != nil {
+	if err = viper.WriteConfig(); err != nil {
 		log.Panicf("Failed to save config: %s", err)
 		return err
 	}
