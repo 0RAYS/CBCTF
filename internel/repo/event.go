@@ -6,7 +6,7 @@ import (
 )
 
 type EventRepo struct {
-	Basic[model.Event]
+	BasicRepo[model.Event]
 }
 
 type CreateEventOptions struct {
@@ -42,7 +42,7 @@ func (u UpdateEventOptions) Convert2Map() map[string]any {
 
 func InitEventRepo(tx *gorm.DB) *EventRepo {
 	return &EventRepo{
-		Basic: Basic[model.Event]{
+		BasicRepo: BasicRepo[model.Event]{
 			DB: tx,
 		},
 	}

@@ -6,7 +6,7 @@ import (
 )
 
 type ContainerRepo struct {
-	Basic[model.Container]
+	BasicRepo[model.Container]
 }
 
 type CreateContainerOptions struct {
@@ -47,7 +47,7 @@ func (u UpdateContainerOptions) Convert2Map() map[string]any {
 
 func InitContainerRepo(tx *gorm.DB) *ContainerRepo {
 	return &ContainerRepo{
-		Basic: Basic[model.Container]{
+		BasicRepo: BasicRepo[model.Container]{
 			DB: tx,
 		},
 	}

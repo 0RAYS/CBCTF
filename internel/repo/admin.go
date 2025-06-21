@@ -10,7 +10,7 @@ import (
 )
 
 type AdminRepo struct {
-	Basic[model.Admin]
+	BasicRepo[model.Admin]
 }
 
 type CreateAdminOptions struct {
@@ -61,7 +61,7 @@ func (u UpdateAdminOptions) Convert2Map() map[string]any {
 
 func InitAdminRepo(tx *gorm.DB) *AdminRepo {
 	return &AdminRepo{
-		Basic: Basic[model.Admin]{
+		BasicRepo: BasicRepo[model.Admin]{
 			DB: tx,
 		},
 	}

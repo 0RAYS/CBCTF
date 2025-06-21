@@ -9,7 +9,7 @@ import (
 )
 
 type ContestFlagRepo struct {
-	Basic[model.ContestFlag]
+	BasicRepo[model.ContestFlag]
 }
 
 type CreateContestFlagOptions struct {
@@ -84,7 +84,7 @@ func (c UpdateContestFlagOptions) Convert2Map() map[string]any {
 
 func InitContestFlagRepo(tx *gorm.DB) *ContestFlagRepo {
 	return &ContestFlagRepo{
-		Basic: Basic[model.ContestFlag]{
+		BasicRepo: BasicRepo[model.ContestFlag]{
 			DB: tx,
 		},
 	}

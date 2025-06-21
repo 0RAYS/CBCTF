@@ -8,7 +8,7 @@ import (
 )
 
 type SubmissionRepo struct {
-	Basic[model.Submission]
+	BasicRepo[model.Submission]
 }
 
 type CreateSubmissionOptions struct {
@@ -56,7 +56,7 @@ func (u UpdateSubmissionOptions) Convert2Map() map[string]any {
 
 func InitSubmissionRepo(tx *gorm.DB) *SubmissionRepo {
 	return &SubmissionRepo{
-		Basic: Basic[model.Submission]{
+		BasicRepo: BasicRepo[model.Submission]{
 			DB: tx,
 		},
 	}

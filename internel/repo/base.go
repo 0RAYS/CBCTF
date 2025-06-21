@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type Basic[M model.Model] struct {
+type BasicRepo[M model.Model] struct {
 	DB *gorm.DB
 }
 
@@ -30,7 +30,7 @@ type GetOption struct {
 
 type GetOptions []GetOption
 
-func (r *Basic[M]) Create(options CreateOptions) (M, bool, string) {
+func (r *BasicRepo[M]) Create(options CreateOptions) (M, bool, string) {
 	m := options.Convert2Model().(M)
 	if res := r.DB.Model(new(M)).Create(&m); res.Error != nil {
 		log.Logger.Warningf("Failed to create %T: %s", new(M), res.Error)
@@ -39,7 +39,7 @@ func (r *Basic[M]) Create(options CreateOptions) (M, bool, string) {
 	return m, true, i18n.Success
 }
 
-func (r *Basic[M]) GetWithConditions(conditions GetOptions, deleted bool, preloadL ...string) (M, bool, string) {
+func (r *BasicRepo[M]) GetWithConditions(conditions GetOptions, deleted bool, preloadL ...string) (M, bool, string) {
 	var m M
 	res := r.DB.Model(new(M))
 	if len(conditions) == 1 {
@@ -68,7 +68,7 @@ func (r *Basic[M]) GetWithConditions(conditions GetOptions, deleted bool, preloa
 	return m, true, i18n.Success
 }
 
-func (r *Basic[M]) getUniqueByKey(key string, value any, preloadL ...string) (M, bool, string) {
+func (r *BasicRepo[M]) getUniqueByKey(key string, value any, preloadL ...string) (M, bool, string) {
 	if !utils.In(key, M.GetUniqueKey(*new(M))) {
 		return *new(M), false, i18n.UnsupportedKey
 	}
@@ -77,11 +77,11 @@ func (r *Basic[M]) getUniqueByKey(key string, value any, preloadL ...string) (M,
 	}, false, preloadL...)
 }
 
-func (r *Basic[M]) GetByID(id uint, preloadL ...string) (M, bool, string) {
+func (r *BasicRepo[M]) GetByID(id uint, preloadL ...string) (M, bool, string) {
 	return r.getUniqueByKey("id", id, preloadL...)
 }
 
-func (r *Basic[M]) CountWithConditions(conditions GetOptions, deleted bool) (int64, bool, string) {
+func (r *BasicRepo[M]) CountWithConditions(conditions GetOptions, deleted bool) (int64, bool, string) {
 	var count int64
 	res := r.DB.Model(new(M))
 	if len(conditions) == 1 {
@@ -106,11 +106,11 @@ func (r *Basic[M]) CountWithConditions(conditions GetOptions, deleted bool) (int
 	return count, true, i18n.Success
 }
 
-func (r *Basic[M]) Count() (int64, bool, string) {
+func (r *BasicRepo[M]) Count() (int64, bool, string) {
 	return r.CountWithConditions(nil, false)
 }
 
-func (r *Basic[M]) ListWithConditions(limit, offset int, conditions GetOptions, deleted bool, preloadL ...string) ([]M, int64, bool, string) {
+func (r *BasicRepo[M]) ListWithConditions(limit, offset int, conditions GetOptions, deleted bool, preloadL ...string) ([]M, int64, bool, string) {
 	var (
 		models         = make([]M, 0)
 		count, ok, msg = r.CountWithConditions(conditions, deleted)
@@ -142,11 +142,11 @@ func (r *Basic[M]) ListWithConditions(limit, offset int, conditions GetOptions, 
 	return models, count, true, i18n.Success
 }
 
-func (r *Basic[M]) List(limit, offset int, preloadL ...string) ([]M, int64, bool, string) {
+func (r *BasicRepo[M]) List(limit, offset int, preloadL ...string) ([]M, int64, bool, string) {
 	return r.ListWithConditions(limit, offset, nil, false, preloadL...)
 }
 
-func (r *Basic[M]) Update(id uint, options UpdateOptions) (bool, string) {
+func (r *BasicRepo[M]) Update(id uint, options UpdateOptions) (bool, string) {
 	var count uint
 	data := options.Convert2Map()
 	for {
@@ -173,7 +173,7 @@ func (r *Basic[M]) Update(id uint, options UpdateOptions) (bool, string) {
 	return true, i18n.Success
 }
 
-func (r *Basic[M]) Delete(idL ...uint) (bool, string) {
+func (r *BasicRepo[M]) Delete(idL ...uint) (bool, string) {
 	if res := r.DB.Model(new(M)).Where("id IN ?", idL).Delete(new(M)); res.Error != nil {
 		log.Logger.Warningf("Failed to delete %s: %s", M.GetModelName(*new(M)), res.Error)
 		return false, M.DeleteErrorString(*new(M))

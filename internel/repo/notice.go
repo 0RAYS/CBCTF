@@ -6,7 +6,7 @@ import (
 )
 
 type NoticeRepo struct {
-	Basic[model.Notice]
+	BasicRepo[model.Notice]
 }
 
 type CreateNoticeOptions struct {
@@ -47,7 +47,7 @@ func (u UpdateNoticeOptions) Convert2Map() map[string]any {
 
 func InitNoticeRepo(tx *gorm.DB) *NoticeRepo {
 	return &NoticeRepo{
-		Basic: Basic[model.Notice]{
+		BasicRepo: BasicRepo[model.Notice]{
 			DB: tx,
 		},
 	}
