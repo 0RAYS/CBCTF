@@ -8,7 +8,7 @@ import (
 )
 
 type PodRepo struct {
-	Basic[model.Pod]
+	BasicRepo[model.Pod]
 }
 
 type CreatePodOptions struct {
@@ -67,7 +67,7 @@ func (u UpdatePodOptions) Convert2Map() map[string]any {
 
 func InitPodRepo(tx *gorm.DB) *PodRepo {
 	return &PodRepo{
-		Basic: Basic[model.Pod]{
+		BasicRepo: BasicRepo[model.Pod]{
 			DB: tx,
 		},
 	}

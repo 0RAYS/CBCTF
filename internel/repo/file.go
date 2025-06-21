@@ -8,7 +8,7 @@ import (
 )
 
 type FileRepo struct {
-	Basic[model.File]
+	BasicRepo[model.File]
 }
 
 type CreateFileOptions struct {
@@ -50,7 +50,7 @@ func (u UpdateFileOptions) Convert2Map() map[string]any {
 
 func InitFileRepo(tx *gorm.DB) *FileRepo {
 	return &FileRepo{
-		Basic: Basic[model.File]{
+		BasicRepo: BasicRepo[model.File]{
 			DB: tx,
 		},
 	}

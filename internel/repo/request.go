@@ -9,7 +9,7 @@ import (
 )
 
 type RequestRepo struct {
-	Basic[model.Request]
+	BasicRepo[model.Request]
 }
 
 type CreateRequestOptions struct {
@@ -47,7 +47,7 @@ func (u UpdateRequestOptions) Convert2Map() map[string]any {
 
 func InitRequestRepo(tx *gorm.DB) *RequestRepo {
 	return &RequestRepo{
-		Basic: Basic[model.Request]{
+		BasicRepo: BasicRepo[model.Request]{
 			DB: tx,
 		},
 	}

@@ -6,7 +6,7 @@ import (
 )
 
 type TrafficRepo struct {
-	Basic[model.Traffic]
+	BasicRepo[model.Traffic]
 }
 
 type CreateTrafficOptions struct {
@@ -43,7 +43,7 @@ func (u UpdateTrafficOptions) Convert2Map() map[string]any {
 
 func InitTrafficRepo(tx *gorm.DB) *TrafficRepo {
 	return &TrafficRepo{
-		Basic: Basic[model.Traffic]{
+		BasicRepo: BasicRepo[model.Traffic]{
 			DB: tx,
 		},
 	}

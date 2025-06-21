@@ -10,7 +10,7 @@ import (
 )
 
 type UserRepo struct {
-	Basic[model.User]
+	BasicRepo[model.User]
 }
 
 type CreateUserOptions struct {
@@ -93,7 +93,7 @@ func (u UpdateUserOptions) Convert2Map() map[string]any {
 
 func InitUserRepo(tx *gorm.DB) *UserRepo {
 	return &UserRepo{
-		Basic: Basic[model.User]{
+		BasicRepo: BasicRepo[model.User]{
 			DB: tx,
 		},
 	}

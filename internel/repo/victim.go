@@ -9,7 +9,7 @@ import (
 )
 
 type VictimRepo struct {
-	Basic[model.Victim]
+	BasicRepo[model.Victim]
 }
 
 type CreateVictimOptions struct {
@@ -56,7 +56,7 @@ func (u UpdateVictimOptions) Convert2Map() map[string]any {
 
 func InitVictimRepo(tx *gorm.DB) *VictimRepo {
 	return &VictimRepo{
-		Basic: Basic[model.Victim]{
+		BasicRepo: BasicRepo[model.Victim]{
 			DB: tx,
 		},
 	}

@@ -8,7 +8,7 @@ import (
 )
 
 type DockerGroupRepo struct {
-	Basic[model.DockerGroup]
+	BasicRepo[model.DockerGroup]
 }
 
 type CreateDockerGroupOptions struct {
@@ -37,7 +37,7 @@ func (c UpdateDockerGroupOptions) Convert2Map() map[string]any {
 
 func InitDockerGroupRepo(tx *gorm.DB) *DockerGroupRepo {
 	return &DockerGroupRepo{
-		Basic: Basic[model.DockerGroup]{
+		BasicRepo: BasicRepo[model.DockerGroup]{
 			DB: tx,
 		},
 	}
