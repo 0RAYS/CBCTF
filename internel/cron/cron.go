@@ -18,15 +18,15 @@ func exec(name string, task func()) func() {
 
 func Init() {
 	Cron = cron.New(cron.WithSeconds())
-	//CloseTimeoutVictims(Cron)
-	//CloseUnCtrlVictims(Cron)
-	//ClearUnCtrlResource(Cron)
-	//UpdateFlagScore(Cron)
-	//UpdateUserRanking(Cron)
-	//UpdateTeamRanking(Cron)
-	//StopUnCtrlGenerator(Cron)
-	//PrepareGenerator(Cron)
-	//ClearContestChallengeMutex(Cron)
+	CloseTimeoutVictims(Cron)
+	CloseUnCtrlVictims(Cron)
+	ClearUnCtrlResource(Cron)
+	UpdateFlagScore(Cron)
+	UpdateUserRanking(Cron)
+	UpdateTeamRanking(Cron)
+	StopUnCtrlGenerator(Cron)
+	PrepareGenerator(Cron)
+	ClearContestChallengeMutex(Cron)
 	CheckCheat(Cron)
 }
 
