@@ -41,7 +41,14 @@ func UpdateTeamRanking(c *cron.Cron) {
 func UpdateUserRanking(c *cron.Cron) {
 	function := exec("UpdateUserRanking", func() {
 		contestRepo := db.InitContestRepo(db.DB)
-		contests, _, ok, _ := contestRepo.List(-1, -1, "Users")
+		contests, _, ok, _ := contestRepo.List(-1, -1, db.GetOptions{
+			Selects: []string{"id", "start", "duration"},
+			Preloads: map[string]db.GetOptions{
+				"Users": {
+					Selects: []string{"id"},
+				},
+			},
+		})
 		if !ok {
 			return
 		}
@@ -52,10 +59,13 @@ func UpdateUserRanking(c *cron.Cron) {
 			submissionRepo := db.InitSubmissionRepo(db.DB)
 			userRepo := db.InitUserRepo(db.DB)
 			for _, user := range contest.Users {
-				submissions, _, ok, _ := submissionRepo.ListWithConditions(-1, -1, db.GetOptions{
-					{Key: "user_id", Value: user.ID, Op: "and"},
-					{Key: "solved", Value: true, Op: "and"},
-				}, false)
+				submissions, _, ok, _ := submissionRepo.List(-1, -1, db.GetOptions{
+					Conditions: map[string]any{
+						"user_id": user.ID,
+						"solved":  true,
+					},
+					Selects: []string{"contest_flag_id", "team_id"},
+				})
 				if !ok {
 					continue
 				}

@@ -18,7 +18,19 @@ import (
 
 func StartVictim(tx *gorm.DB, user model.User, team model.Team, contestChallenge model.ContestChallenge) (model.Victim, bool, string) {
 	challenge, ok, msg := db.InitChallengeRepo(tx).
-		GetByID(contestChallenge.ChallengeID, "DockerGroups", "DockerGroups.Dockers", "DockerGroups.Dockers.ChallengeFlags")
+		GetByID(contestChallenge.ChallengeID, db.GetOptions{
+			Preloads: map[string]db.GetOptions{
+				"DockerGroups": {
+					Preloads: map[string]db.GetOptions{
+						"Dockers": {
+							Preloads: map[string]db.GetOptions{
+								"ChallengeFlags": {},
+							},
+						},
+					},
+				},
+			},
+		})
 	if !ok {
 		return model.Victim{}, false, msg
 	}
@@ -82,10 +94,12 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, contestChallenge
 			envFlagL := make(model.StringList, 0)
 			volumeFlagL := make(model.StringMap)
 			for _, challengeFlag := range docker.ChallengeFlags {
-				teamFlag, ok, msg := teamFlagRepo.GetWithConditions(db.GetOptions{
-					{Key: "team_id", Value: team.ID, Op: "and"},
-					{Key: "challenge_flag_id", Value: challengeFlag.ID, Op: "and"},
-				}, false)
+				teamFlag, ok, msg := teamFlagRepo.Get(db.GetOptions{
+					Conditions: map[string]any{
+						"team_id":           team.ID,
+						"challenge_flag_id": challengeFlag.ID,
+					},
+				})
 				if !ok {
 					return model.Victim{}, false, msg
 				}
@@ -151,10 +165,15 @@ func GetVictimStatus(tx *gorm.DB, team model.Team, contestChallenge model.Contes
 		data["status"] = "NotDocker"
 		return data
 	}
-	victims, _, ok, _ := db.InitVictimRepo(tx).ListWithConditions(-1, -1, db.GetOptions{
-		{Key: "team_id", Value: team.ID, Op: "and"},
-		{Key: "contest_challenge_id", Value: contestChallenge.ID, Op: "and"},
-	}, false, "Pods")
+	victims, _, ok, _ := db.InitVictimRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{
+			"contest_challenge_id": contestChallenge.ID,
+			"team_id":              team.ID,
+		},
+		Preloads: map[string]db.GetOptions{
+			"Pods": {},
+		},
+	})
 	if !ok {
 		return data
 	}
@@ -175,10 +194,15 @@ func GetVictimStatus(tx *gorm.DB, team model.Team, contestChallenge model.Contes
 
 func StopVictim(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) (bool, string) {
 	victimRepo := db.InitVictimRepo(tx)
-	victims, _, ok, msg := victimRepo.ListWithConditions(-1, -1, db.GetOptions{
-		{Key: "team_id", Value: team.ID, Op: "and"},
-		{Key: "contest_challenge_id", Value: contestChallenge.ID, Op: "and"},
-	}, false, "Pods")
+	victims, _, ok, msg := victimRepo.List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{
+			"team_id":              team.ID,
+			"contest_challenge_id": contestChallenge.ID,
+		},
+		Preloads: map[string]db.GetOptions{
+			"Pods": {},
+		},
+	})
 	if !ok {
 		return false, msg
 	}

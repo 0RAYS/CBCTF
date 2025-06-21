@@ -12,9 +12,15 @@ import (
 )
 
 func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) (bool, string) {
-	contestChallenges, _, ok, msg := db.InitContestChallengeRepo(tx).ListWithConditions(-1, -1, db.GetOptions{
-		{Key: "contest_id", Value: contest.ID, Op: "and"},
-	}, false, "ContestFlags", "Challenge")
+	contestChallenges, _, ok, msg := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{
+			"contest_id": contest.ID,
+		},
+		Preloads: map[string]db.GetOptions{
+			"ContestFlags": {},
+			"Challenge":    {},
+		},
+	})
 	if !ok {
 		return false, msg
 	}
@@ -40,10 +46,12 @@ func CreateTeamFlag(tx *gorm.DB, team model.Team, contestChallenge model.Contest
 	teamFlagRepo := db.InitTeamFlagRepo(tx)
 	teamFlagL := make([]model.TeamFlag, 0)
 	for _, contestFlag := range contestChallenge.ContestFlags {
-		teamFlag, ok, msg := teamFlagRepo.GetWithConditions(db.GetOptions{
-			{Key: "team_id", Value: team.ID, Op: "and"},
-			{Key: "contest_flag_id", Value: contestFlag.ID, Op: "and"},
-		}, false)
+		teamFlag, ok, msg := teamFlagRepo.Get(db.GetOptions{
+			Conditions: map[string]any{
+				"team_id":         team.ID,
+				"contest_flag_id": contestFlag.ID,
+			},
+		})
 		if ok {
 			teamFlagL = append(teamFlagL, teamFlag)
 			continue
@@ -76,10 +84,12 @@ func CreateTeamFlag(tx *gorm.DB, team model.Team, contestChallenge model.Contest
 // UpdateTeamFlag 需要预加载 ContestFlags
 func UpdateTeamFlag(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) ([]model.TeamFlag, bool, string) {
 	submissionRepo := db.InitSubmissionRepo(tx)
-	submissions, _, ok, msg := submissionRepo.ListWithConditions(-1, -1, db.GetOptions{
-		{Key: "team_id", Value: team.ID, Op: "and"},
-		{Key: "contest_challenge_id", Value: contestChallenge.ID, Op: "and"},
-	}, false)
+	submissions, _, ok, msg := submissionRepo.List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{
+			"team_id":              team.ID,
+			"contest_challenge_id": contestChallenge.ID,
+		},
+	})
 	if !ok {
 		return make([]model.TeamFlag, 0), false, msg
 	}
@@ -90,10 +100,12 @@ func UpdateTeamFlag(tx *gorm.DB, team model.Team, contestChallenge model.Contest
 	teamFlagIDL := make([]uint, 0)
 	teamFlagRepo := db.InitTeamFlagRepo(tx)
 	for _, contestFlag := range contestChallenge.ContestFlags {
-		teamFlag, ok, msg := teamFlagRepo.GetWithConditions(db.GetOptions{
-			{Key: "team_id", Value: team.ID, Op: "and"},
-			{Key: "contest_flag_id", Value: contestFlag.ID, Op: "and"},
-		}, false)
+		teamFlag, ok, msg := teamFlagRepo.Get(db.GetOptions{
+			Conditions: map[string]any{
+				"team_id":         team.ID,
+				"contest_flag_id": contestFlag.ID,
+			},
+		})
 		if !ok {
 			return make([]model.TeamFlag, 0), false, msg
 		}
@@ -112,10 +124,12 @@ func UpdateTeamFlag(tx *gorm.DB, team model.Team, contestChallenge model.Contest
 func CheckIfGenerated(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) bool {
 	teamFlagRepo := db.InitTeamFlagRepo(tx)
 	for _, contestFlag := range contestChallenge.ContestFlags {
-		if _, ok, _ := teamFlagRepo.GetWithConditions(db.GetOptions{
-			{Key: "team_id", Value: team.ID, Op: "and"},
-			{Key: "contest_flag_id", Value: contestFlag.ID, Op: "and"},
-		}, false); !ok {
+		if _, ok, _ := teamFlagRepo.Get(db.GetOptions{
+			Conditions: map[string]any{
+				"team_id":         team.ID,
+				"contest_flag_id": contestFlag.ID,
+			},
+		}); !ok {
 			return false
 		}
 	}

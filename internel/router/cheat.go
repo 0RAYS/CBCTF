@@ -26,11 +26,11 @@ func GetCheats(ctx *gin.Context) {
 	if form.Type != model.Suspicious && form.Type != model.Cheater {
 		form.Type = ""
 	}
-	conditions := make(db.GetOptions, 0)
+	options := db.GetOptions{}
 	if form.Type != "" {
-		conditions = append(conditions, db.GetOption{Key: "type", Value: form.Type, Op: "and"})
+		options.Conditions["type"] = form.Type
 	}
-	cheats, count, ok, msg := db.InitCheatRepo(db.DB.WithContext(ctx)).ListWithConditions(form.Limit, form.Offset, conditions, false)
+	cheats, count, ok, msg := db.InitCheatRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, options)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

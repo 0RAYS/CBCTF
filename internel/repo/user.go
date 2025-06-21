@@ -100,23 +100,29 @@ func InitUserRepo(tx *gorm.DB) *UserRepo {
 }
 
 func (u *UserRepo) IsUniqueName(name string) bool {
-	_, ok, _ := u.getUniqueByKey("name", name)
+	_, ok, _ := u.GetByUniqueKey("name", name, GetOptions{Selects: []string{"id"}})
 	return !ok
 }
 
 func (u *UserRepo) IsUniqueEmail(email string) bool {
-	_, ok, _ := u.getUniqueByKey("email", email)
+	_, ok, _ := u.GetByUniqueKey("email", email, GetOptions{Selects: []string{"id"}})
 	return !ok
 }
 
-func (u *UserRepo) GetByName(name string, preloadL ...string) (model.User, bool, string) {
-	return u.getUniqueByKey("name", name, preloadL...)
+func (u *UserRepo) GetByName(name string, optionsL ...GetOptions) (model.User, bool, string) {
+	return u.GetByUniqueKey("name", name, optionsL...)
 }
 
 func (u *UserRepo) Delete(idL ...uint) (bool, string) {
 	submissionIDL := make([]uint, 0)
 	for _, id := range idL {
-		user, ok, msg := u.GetByID(id, "Teams", "Submissions")
+		user, ok, msg := u.GetByID(id, GetOptions{
+			Selects: []string{"id", "name", "email"},
+			Preloads: map[string]GetOptions{
+				"Teams":       {Selects: []string{"id", "contest_id"}},
+				"Submissions": {Selects: []string{"id"}},
+			},
+		})
 		if !ok && msg != i18n.UserNotFound {
 			return false, msg
 		}

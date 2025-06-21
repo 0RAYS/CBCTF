@@ -46,7 +46,12 @@ func InitDockerGroupRepo(tx *gorm.DB) *DockerGroupRepo {
 func (d *DockerGroupRepo) Delete(idL ...uint) (bool, string) {
 	dockerIDL := make([]uint, 0)
 	for _, id := range idL {
-		dockerGroup, ok, msg := d.GetByID(id, "Dockers")
+		dockerGroup, ok, msg := d.GetByID(id, GetOptions{
+			Selects: []string{"id"},
+			Preloads: map[string]GetOptions{
+				"Dockers": {Selects: []string{"id"}},
+			},
+		})
 		if !ok && msg != i18n.DockerGroupNotFound {
 			return false, msg
 		}

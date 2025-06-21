@@ -67,8 +67,8 @@ func InitChallengeRepo(tx *gorm.DB) *ChallengeRepo {
 	}
 }
 
-func (c *ChallengeRepo) GetByRandID(randID string, preloadL ...string) (model.Challenge, bool, string) {
-	return c.getUniqueByKey("rand_id", randID, preloadL...)
+func (c *ChallengeRepo) GetByRandID(randID string, optionsL ...GetOptions) (model.Challenge, bool, string) {
+	return c.GetByUniqueKey("rand_id", randID, optionsL...)
 }
 
 func (c *ChallengeRepo) ListCategories(t string) ([]string, bool, string) {
@@ -88,7 +88,15 @@ func (c *ChallengeRepo) ListCategories(t string) ([]string, bool, string) {
 func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
 	dockerGroupIDL, challengeFlagIDL, contestChallengeIDL, submissionIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0)
 	for _, randID := range randIDL {
-		challenge, ok, msg := c.GetByRandID(randID, "DockerGroups", "ChallengeFlags", "ContestChallenges", "Submissions")
+		challenge, ok, msg := c.GetByRandID(randID, GetOptions{
+			Selects: []string{"id"},
+			Preloads: map[string]GetOptions{
+				"DockerGroups":      {Selects: []string{"id"}},
+				"ChallengeFlags":    {Selects: []string{"id"}},
+				"ContestChallenges": {Selects: []string{"id"}},
+				"Submissions":       {Selects: []string{"id"}},
+			},
+		})
 		if !ok && msg != i18n.ChallengeNotFound {
 			return false, msg
 		}

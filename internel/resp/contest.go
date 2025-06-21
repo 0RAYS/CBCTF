@@ -23,15 +23,6 @@ func GetContestResp(contest model.Contest, admin bool) gin.H {
 		"avatar":    contest.Avatar,
 		"hidden":    contest.Hidden,
 		"blood":     contest.Blood,
-		"solved": func() int {
-			count := 0
-			for _, submission := range contest.Submissions {
-				if submission.Solved {
-					count++
-				}
-			}
-			return count
-		}(),
 	}
 	if admin {
 		data["captcha"] = contest.Captcha

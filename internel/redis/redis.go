@@ -11,11 +11,9 @@ import (
 )
 
 var (
-	RDB           *redis.Client
-	CacheHit      int64
-	CacheMiss     int64
-	collectCTX    context.Context
-	collectCancel context.CancelFunc
+	RDB       *redis.Client
+	CacheHit  int64
+	CacheMiss int64
 )
 
 func Init() {
@@ -38,19 +36,7 @@ func Init() {
 	}
 	log.Logger.Infof("Connected to Redis: %s", addr)
 
-	collectCTX, collectCancel = context.WithCancel(context.Background())
-	go StartCollect(collectCTX)
-}
-
-func Close() {
-	if RDB != nil {
-		_ = RDB.Close()
-	}
-	if collectCancel != nil {
-		log.Logger.Info("Stop collecting Redis metrics")
-		collectCancel()
-	}
-	log.Logger.Info("Redis connection closed")
+	go StartCollect()
 }
 
 func Status() (int64, int64, int64) {

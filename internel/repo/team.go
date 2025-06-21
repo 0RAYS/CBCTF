@@ -97,14 +97,14 @@ func InitTeamRepo(tx *gorm.DB) *TeamRepo {
 }
 
 func (t *TeamRepo) IsUniqueName(contestID uint, name string) bool {
-	count, ok, _ := t.CountWithConditions(GetOptions{
-		{Key: "contest_id", Value: contestID, Op: "and"},
-		{Key: "name", Value: name, Op: "and"},
-	}, false)
-	if !ok {
-		return false
-	}
-	return count == 0
+	_, ok, _ := t.Get(GetOptions{
+		Conditions: map[string]any{
+			"contest_id": contestID,
+			"name":       name,
+		},
+		Selects: []string{"id"},
+	})
+	return !ok
 }
 
 func (t *TeamRepo) IsInTeam(teamID uint, userID uint) bool {
@@ -119,30 +119,45 @@ func (t *TeamRepo) IsInContest(contestID uint, userID uint) bool {
 	return res.RowsAffected == 1
 }
 
-func (t *TeamRepo) GetByName(contestID uint, name string, preloadL ...string) (model.Team, bool, string) {
-	return t.GetWithConditions(GetOptions{
-		{Key: "contest_id", Value: contestID, Op: "and"},
-		{Key: "name", Value: name, Op: "and"},
-	}, false, preloadL...)
+func (t *TeamRepo) GetByName(contestID uint, name string, optionsL ...GetOptions) (model.Team, bool, string) {
+	var options GetOptions
+	if len(optionsL) > 0 {
+		options = optionsL[0]
+	}
+	options.Conditions["contest_id"] = contestID
+	options.Conditions["name"] = name
+	return t.Get(options)
 }
 
-func (t *TeamRepo) GetBy2ID(userID, contestID uint, preloadL ...string) (model.Team, bool, string) {
-	user, ok, msg := InitUserRepo(t.DB).GetByID(userID, "Teams")
+func (t *TeamRepo) GetBy2ID(userID, contestID uint, optionsL ...GetOptions) (model.Team, bool, string) {
+	options := GetOptions{}
+	if len(optionsL) > 0 {
+		options = optionsL[0]
+	}
+	options.Conditions["contest_id"] = contestID
+	user, ok, msg := InitUserRepo(t.DB).GetByID(userID, GetOptions{
+		Selects: []string{"id"},
+		Preloads: map[string]GetOptions{
+			"Teams": options,
+		},
+	})
 	if !ok {
 		return model.Team{}, false, msg
 	}
-	for _, team := range user.Teams {
-		if team.ContestID == contestID {
-			return t.GetByID(team.ID, preloadL...)
-		}
-	}
-	return model.Team{}, false, model.Team{}.NotFoundErrorString()
+	return *user.Teams[0], true, i18n.Success
 }
 
 func (t *TeamRepo) Delete(idL ...uint) (bool, string) {
 	submissionIDL, teamFlagIDL := make([]uint, 0), make([]uint, 0)
 	for _, id := range idL {
-		team, ok, msg := t.GetByID(id, "Users", "Submissions", "TeamFlags")
+		team, ok, msg := t.GetByID(id, GetOptions{
+			Selects: []string{"id", "name", "contest_id"},
+			Preloads: map[string]GetOptions{
+				"Users":       {Selects: []string{"id"}},
+				"Submissions": {Selects: []string{"id"}},
+				"TeamFlags":   {Selects: []string{"id"}},
+			},
+		})
 		if !ok && msg != i18n.TeamNotFound {
 			return false, msg
 		}

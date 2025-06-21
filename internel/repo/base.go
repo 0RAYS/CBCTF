@@ -5,7 +5,7 @@ import (
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
-	"fmt"
+	"errors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -18,135 +18,135 @@ type CreateOptions interface {
 	Convert2Model() model.Model
 }
 
+type GetOptions struct {
+	Conditions map[string]any
+	Selects    []string
+	Preloads   map[string]GetOptions
+	Deleted    bool
+}
+
+type CountOptions struct {
+	Conditions map[string]any
+	Deleted    bool
+}
+
 type UpdateOptions interface {
 	Convert2Map() map[string]any
 }
 
-type GetOption struct {
-	Key   string
-	Value any
-	Op    string
-}
-
-type GetOptions []GetOption
-
-func (r *BasicRepo[M]) Create(options CreateOptions) (M, bool, string) {
+func (b *BasicRepo[M]) Create(options CreateOptions) (M, bool, string) {
 	m := options.Convert2Model().(M)
-	if res := r.DB.Model(new(M)).Create(&m); res.Error != nil {
+	if res := b.DB.Model(new(M)).Create(&m); res.Error != nil {
 		log.Logger.Warningf("Failed to create %T: %s", new(M), res.Error)
-		return *new(M), false, m.CreateErrorString()
+		return *new(M), false, M.CreateErrorString(*new(M))
 	}
-	return m, true, i18n.Success
+	return options.(M), true, i18n.Success
 }
 
-func (r *BasicRepo[M]) GetWithConditions(conditions GetOptions, deleted bool, preloadL ...string) (M, bool, string) {
-	var m M
-	res := r.DB.Model(new(M))
-	if len(conditions) == 1 {
-		condition := conditions[0]
-		res = res.Where(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
-		conditions = conditions[1:]
+func ApplyGetOptions(tx *gorm.DB, options GetOptions) *gorm.DB {
+	if columns := options.Selects; len(columns) > 0 {
+		tx = tx.Select(columns)
 	}
-	for _, condition := range conditions {
-		if condition.Op == "and" {
-			res = res.Where(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
-		} else {
-			res = res.Or(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
+	if conditions := options.Conditions; len(conditions) > 0 {
+		tx = tx.Where(conditions)
+	}
+	if options.Deleted {
+		tx = tx.Unscoped()
+	}
+	if preloads := options.Preloads; preloads != nil {
+		for rel, subOptions := range preloads {
+			if rel == "all" {
+				tx = tx.Preload(clause.Associations)
+				continue
+			}
+			tx = tx.Preload(rel, func(tx *gorm.DB) *gorm.DB {
+				return ApplyGetOptions(tx, subOptions)
+			})
 		}
 	}
-	if deleted {
-		res = res.Unscoped()
-	}
-	res = preload(res, preloadL...).Limit(1).Find(&m)
-	if res.Error != nil {
+	return tx
+}
+
+func (b *BasicRepo[M]) Get(options GetOptions) (M, bool, string) {
+	var m M
+	if res := ApplyGetOptions(b.DB.Model(new(M)), options).First(&m); res.Error != nil {
+		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+			return *new(M), false, m.NotFoundErrorString()
+		}
 		log.Logger.Warningf("Failed to get %s: %s", m.GetModelName(), res.Error)
-		return m, false, m.GetErrorString()
-	}
-	if res.RowsAffected == 0 {
-		return m, false, m.NotFoundErrorString()
+		return *new(M), false, m.GetErrorString()
 	}
 	return m, true, i18n.Success
 }
 
-func (r *BasicRepo[M]) getUniqueByKey(key string, value any, preloadL ...string) (M, bool, string) {
+func (b *BasicRepo[M]) GetByID(id uint, optionsL ...GetOptions) (M, bool, string) {
+	options := GetOptions{}
+	if len(optionsL) > 0 {
+		options = optionsL[0]
+	}
+	return b.GetByUniqueKey("id", id, options)
+}
+
+func (b *BasicRepo[M]) GetByUniqueKey(key string, value any, optionsL ...GetOptions) (M, bool, string) {
 	if !utils.In(key, M.GetUniqueKey(*new(M))) {
 		return *new(M), false, i18n.UnsupportedKey
 	}
-	return r.GetWithConditions(GetOptions{
-		{Key: key, Value: value, Op: "and"},
-	}, false, preloadL...)
-}
-
-func (r *BasicRepo[M]) GetByID(id uint, preloadL ...string) (M, bool, string) {
-	return r.getUniqueByKey("id", id, preloadL...)
-}
-
-func (r *BasicRepo[M]) CountWithConditions(conditions GetOptions, deleted bool) (int64, bool, string) {
-	var count int64
-	res := r.DB.Model(new(M))
-	if len(conditions) == 1 {
-		condition := conditions[0]
-		res = res.Where(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
-		conditions = conditions[1:]
+	options := GetOptions{}
+	if len(optionsL) > 0 {
+		options = optionsL[0]
 	}
-	for _, condition := range conditions {
-		if condition.Op == "and" {
-			res = res.Where(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
-		} else {
-			res = res.Or(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
+	if options.Conditions == nil {
+		options.Conditions = make(map[string]any)
+	}
+	options.Conditions[key] = value
+	return b.Get(options)
+}
+
+func (b *BasicRepo[M]) Count(optionsL ...CountOptions) (int64, bool, string) {
+	var count int64
+	res := b.DB.Model(new(M))
+	if len(optionsL) > 0 {
+		options := optionsL[0]
+		if conditions := options.Conditions; len(conditions) > 0 {
+			res = res.Where(conditions)
+		}
+		if options.Deleted {
+			res = res.Unscoped()
 		}
 	}
-	if deleted {
-		res = res.Unscoped()
-	}
-	if res = res.Count(&count); res.Error != nil {
-		log.Logger.Warningf("Failed to count %T: %s", new(M), res.Error)
+	if res = res.Select("id").Count(&count); res.Error != nil {
+		log.Logger.Warningf("Failed to count %s: %s", M.GetModelName(*new(M)), res.Error)
 		return 0, false, M.GetErrorString(*new(M))
 	}
 	return count, true, i18n.Success
 }
 
-func (r *BasicRepo[M]) Count() (int64, bool, string) {
-	return r.CountWithConditions(nil, false)
-}
-
-func (r *BasicRepo[M]) ListWithConditions(limit, offset int, conditions GetOptions, deleted bool, preloadL ...string) ([]M, int64, bool, string) {
+func (b *BasicRepo[M]) List(limit, offset int, optionsL ...GetOptions) ([]M, int64, bool, string) {
+	options := GetOptions{}
+	if len(optionsL) > 0 {
+		options = optionsL[0]
+	}
 	var (
-		models         = make([]M, 0)
-		count, ok, msg = r.CountWithConditions(conditions, deleted)
+		ms             = make([]M, 0)
+		count, ok, msg = b.Count(CountOptions{
+			Conditions: options.Conditions,
+			Deleted:    options.Deleted,
+		})
 	)
 	if !ok {
-		return models, count, false, msg
+		return ms, count, false, msg
 	}
-	res := r.DB.Model(new(M))
-	if len(conditions) == 1 {
-		condition := conditions[0]
-		res = res.Where(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
-		conditions = conditions[1:]
-	}
-	for _, condition := range conditions {
-		if condition.Op == "and" {
-			res = res.Where(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
-		} else {
-			res = res.Or(fmt.Sprintf("%s = ?", condition.Key), condition.Value)
+	if res := ApplyGetOptions(b.DB.Model(new(M)), options).Limit(limit).Offset(offset).Find(&ms); res.Error != nil {
+		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
+			return ms, count, false, M.NotFoundErrorString(*new(M))
 		}
+		log.Logger.Warningf("Failed to get %s: %s", M.GetModelName(*new(M)), res.Error)
+		return ms, count, false, M.GetErrorString(*new(M))
 	}
-	if deleted {
-		res = res.Unscoped()
-	}
-	res = preload(res, preloadL...).Order("created_at ASC").Limit(limit).Offset(offset).Find(&models)
-	if res.Error != nil {
-		log.Logger.Errorf("Failed to get %s: %s", M.GetModelName(*new(M)), res.Error)
-		return models, count, false, M.GetErrorString(*new(M))
-	}
-	return models, count, true, i18n.Success
+	return ms, count, true, i18n.Success
 }
 
-func (r *BasicRepo[M]) List(limit, offset int, preloadL ...string) ([]M, int64, bool, string) {
-	return r.ListWithConditions(limit, offset, nil, false, preloadL...)
-}
-
-func (r *BasicRepo[M]) Update(id uint, options UpdateOptions) (bool, string) {
+func (b *BasicRepo[M]) Update(id uint, options UpdateOptions) (bool, string) {
 	var count uint
 	data := options.Convert2Map()
 	for {
@@ -155,12 +155,15 @@ func (r *BasicRepo[M]) Update(id uint, options UpdateOptions) (bool, string) {
 			log.Logger.Warningf("Failed to update %s: too many times failed due to optimistic lock", M.GetModelName(*new(M)))
 			return false, i18n.DeadLock
 		}
-		m, ok, msg := r.GetByID(id)
+		m, ok, msg := b.Get(GetOptions{
+			Conditions: map[string]any{"id": id},
+			Selects:    []string{"id", "version"},
+		})
 		if !ok {
 			return ok, msg
 		}
 		data["version"] = m.GetVersion() + 1
-		res := r.DB.Model(new(M)).Where("id = ? AND version = ?", id, m.GetVersion()).Updates(data)
+		res := b.DB.Where("id = ? AND version = ?", id, m.GetVersion()).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update %s: %s", M.GetModelName(*new(M)), res.Error)
 			return false, M.UpdateErrorString(*new(M))
@@ -173,21 +176,11 @@ func (r *BasicRepo[M]) Update(id uint, options UpdateOptions) (bool, string) {
 	return true, i18n.Success
 }
 
-func (r *BasicRepo[M]) Delete(idL ...uint) (bool, string) {
-	if res := r.DB.Model(new(M)).Where("id IN ?", idL).Delete(new(M)); res.Error != nil {
+func (b *BasicRepo[M]) Delete(idL ...uint) (bool, string) {
+	res := b.DB.Model(new(M)).Where("id IN ?", idL).Delete(new(M))
+	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete %s: %s", M.GetModelName(*new(M)), res.Error)
 		return false, M.DeleteErrorString(*new(M))
 	}
 	return true, i18n.Success
-}
-
-func preload(tx *gorm.DB, preloadL ...string) *gorm.DB {
-	for _, nested := range preloadL {
-		if nested == "all" {
-			tx = tx.Preload(clause.Associations)
-		} else {
-			tx = tx.Preload(nested)
-		}
-	}
-	return tx
 }

@@ -65,7 +65,11 @@ func DeleteTeam(tx *gorm.DB, team model.Team) (bool, string) {
 func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.JoinTeamForm) (model.Team, bool, string) {
 	var (
 		repo          = db.InitTeamRepo(tx)
-		team, ok, msg = repo.GetByName(contest.ID, form.Name, "Users")
+		team, ok, msg = repo.GetByName(contest.ID, form.Name, db.GetOptions{
+			Preloads: map[string]db.GetOptions{
+				"Users": {},
+			},
+		})
 	)
 	if !ok {
 		return model.Team{}, false, msg
@@ -147,10 +151,15 @@ func LeaveTeam(tx *gorm.DB, contest model.Contest, team model.Team, userID uint)
 
 func GetTeamSolvedFlags(tx *gorm.DB, team model.Team) ([]model.ContestFlag, bool, string) {
 	solvedContestFlags := make([]model.ContestFlag, 0)
-	solvedSubmissions, _, ok, msg := db.InitSubmissionRepo(tx).ListWithConditions(-1, -1, db.GetOptions{
-		{Key: "team_id", Value: team.ID, Op: "and"},
-		{Key: "solved", Value: true, Op: "and"},
-	}, false, "ContestFlag")
+	solvedSubmissions, _, ok, msg := db.InitSubmissionRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{
+			"team_id": team.ID,
+			"solved":  true,
+		},
+		Preloads: map[string]db.GetOptions{
+			"ContestFlag": {},
+		},
+	})
 	if !ok {
 		return solvedContestFlags, false, msg
 	}
@@ -162,10 +171,15 @@ func GetTeamSolvedFlags(tx *gorm.DB, team model.Team) ([]model.ContestFlag, bool
 
 func CalcTeamScore(tx *gorm.DB, team model.Team) (float64, bool, string) {
 	submissionRepo := db.InitSubmissionRepo(tx)
-	submissions, _, ok, msg := submissionRepo.ListWithConditions(-1, -1, db.GetOptions{
-		{Key: "team_id", Value: team.ID, Op: "and"},
-		{Key: "solved", Value: true, Op: "and"},
-	}, false, "ContestFlag")
+	submissions, _, ok, msg := submissionRepo.List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{
+			"team_id": team.ID,
+			"solved":  true,
+		},
+		Preloads: map[string]db.GetOptions{
+			"ContestFlag": {},
+		},
+	})
 	if !ok {
 		return team.Score, false, msg
 	}

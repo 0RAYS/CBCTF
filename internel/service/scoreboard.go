@@ -13,10 +13,15 @@ import (
 func UpdateTeamRanking(tx *gorm.DB, contestID uint) (bool, string) {
 	var (
 		repo              = db.InitTeamRepo(tx)
-		teams, _, ok, msg = repo.ListWithConditions(-1, -1, db.GetOptions{
-			{Key: "contest_id", Value: contestID, Op: "and"},
-			{Key: "banned", Value: false, Op: "and"},
-		}, false, "Users")
+		teams, _, ok, msg = repo.List(-1, -1, db.GetOptions{
+			Conditions: map[string]any{
+				"contest_id": contestID,
+				"banned":     false,
+			},
+			Preloads: map[string]db.GetOptions{
+				"Users": {},
+			},
+		})
 		score float64
 		err   error
 	)
@@ -45,10 +50,12 @@ func GetTeamRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Tea
 	var (
 		teams          = make([]model.Team, 0)
 		repo           = db.InitTeamRepo(tx)
-		count, ok, msg = repo.CountWithConditions(db.GetOptions{
-			{Key: "contest_id", Value: contestID, Op: "and"},
-			{Key: "banned", Value: false, Op: "and"},
-		}, false)
+		count, ok, msg = repo.Count(db.CountOptions{
+			Conditions: map[string]any{
+				"contest_id": contestID,
+				"banned":     false,
+			},
+		})
 		err error
 	)
 	if !ok {
@@ -71,9 +78,9 @@ func GetTeamRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Tea
 func UpdateUserRanking(tx *gorm.DB) (bool, string) {
 	var (
 		repo              = db.InitUserRepo(tx)
-		users, _, ok, msg = repo.ListWithConditions(-1, -1, db.GetOptions{
-			{Key: "banned", Value: false, Op: "and"},
-		}, false)
+		users, _, ok, msg = repo.List(-1, -1, db.GetOptions{
+			Conditions: map[string]any{"banned": false},
+		})
 		err error
 	)
 	if !ok {
@@ -90,9 +97,9 @@ func GetUserRanking(tx *gorm.DB, limit, offset int) ([]model.User, int64, bool, 
 	var (
 		users          = make([]model.User, 0)
 		repo           = db.InitUserRepo(tx)
-		count, ok, msg = repo.CountWithConditions(db.GetOptions{
-			{Key: "banned", Value: false, Op: "and"},
-		}, false)
+		count, ok, msg = repo.Count(db.CountOptions{
+			Conditions: map[string]any{"banned": false},
+		})
 		err error
 	)
 	if !ok {

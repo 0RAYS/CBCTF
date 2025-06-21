@@ -17,23 +17,19 @@ type SystemMetrics struct {
 	Disk      float64 `json:"disk"`
 }
 
-func StartCollect(ctx context.Context) {
+func StartCollect() {
 	log.Logger.Info("Start collecting Redis metrics")
 	for {
-		select {
-		case <-ctx.Done():
-			return
-		default:
-			metrics, err := collectMetrics()
-			if err != nil {
-				log.Logger.Warningf("Failed to collect Redis metrics: %s", err)
-				continue
-			}
-			if err = saveMetrics(metrics); err != nil {
-				log.Logger.Warningf("Failed to save Redis metrics: %s", err)
-			}
-			time.Sleep(1 * time.Second)
+		metrics, err := collectMetrics()
+		if err != nil {
+			log.Logger.Warningf("Failed to collect Redis metrics: %s", err)
+			continue
 		}
+		if err = saveMetrics(metrics); err != nil {
+			log.Logger.Warningf("Failed to save Redis metrics: %s", err)
+		}
+		time.Sleep(1 * time.Second)
+		
 	}
 }
 

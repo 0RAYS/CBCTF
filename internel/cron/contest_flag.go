@@ -23,9 +23,15 @@ func UpdateFlagScore(c *cron.Cron) {
 				continue
 			}
 			contestChallengeRepo := db.InitContestChallengeRepo(db.DB)
-			contestChallengeL, _, ok, _ := contestChallengeRepo.ListWithConditions(-1, -1, db.GetOptions{
-				{Key: "contest_id", Value: contest.ID, Op: "and"},
-			}, false, "ContestFlags")
+			contestChallengeL, _, ok, _ := contestChallengeRepo.List(-1, -1, db.GetOptions{
+				Conditions: map[string]any{"contest_id": contest.ID},
+				Selects:    []string{"id"},
+				Preloads: map[string]db.GetOptions{
+					"ContestFlags": {
+						Selects: []string{"id", "solvers", "score", "current_score", "decay", "min_score", "score_type"},
+					},
+				},
+			})
 			if !ok {
 				return
 			}

@@ -15,7 +15,9 @@ import (
 
 func CheckCheat(c *cron.Cron) {
 	function := exec("CheckCheat", func() {
-		contests, _, ok, _ := db.InitContestRepo(db.DB).List(-1, -1)
+		contests, _, ok, _ := db.InitContestRepo(db.DB).List(-1, -1, db.GetOptions{
+			Selects: []string{"id", "start", "duration"},
+		})
 		if !ok {
 			return
 		}
@@ -37,9 +39,20 @@ func checkRemoteIP(contest model.Contest) {
 		log.Logger.Warningf("Failed to parse Pod IPPool CIDR: %v", err)
 		return
 	}
-	teams, _, ok, _ := db.InitTeamRepo(db.DB).ListWithConditions(-1, -1, db.GetOptions{
-		{Key: "contest_id", Value: contest.ID, Op: "and"},
-	}, false, "Users", "Users.Devices")
+	teams, _, ok, _ := db.InitTeamRepo(db.DB).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_id": contest.ID},
+		Selects:    []string{"id"},
+		Preloads: map[string]db.GetOptions{
+			"Users": {
+				Selects: []string{"id"},
+				Preloads: map[string]db.GetOptions{
+					"Devices": {
+						Selects: []string{"magic"},
+					},
+				},
+			},
+		},
+	})
 	if !ok {
 		return
 	}
@@ -70,9 +83,16 @@ func checkRemoteIP(contest model.Contest) {
 				}
 			}
 		}
-		victims, _, ok, _ := victimRepo.ListWithConditions(-1, -1, db.GetOptions{
-			{Key: "team_id", Value: team.ID, Op: "and"},
-		}, true, "Traffics")
+		victims, _, ok, _ := victimRepo.List(-1, -1, db.GetOptions{
+			Selects:    []string{"team_id"},
+			Conditions: map[string]any{"team_id": team.ID},
+			Deleted:    true,
+			Preloads: map[string]db.GetOptions{
+				"Traffics": {
+					Selects: []string{"src_ip"},
+				},
+			},
+		})
 		if !ok {
 			continue
 		}
@@ -116,9 +136,18 @@ func checkRemoteIP(contest model.Contest) {
 }
 
 func CheckWrongFlag(contest model.Contest) {
-	teams, _, ok, _ := db.InitTeamRepo(db.DB).ListWithConditions(-1, -1, db.GetOptions{
-		{Key: "contest_id", Value: contest.ID, Op: "and"},
-	}, false, "TeamFlags", "Submissions")
+	teams, _, ok, _ := db.InitTeamRepo(db.DB).List(-1, -1, db.GetOptions{
+		Selects:    []string{"id"},
+		Conditions: map[string]any{"contest_id": contest.ID},
+		Preloads: map[string]db.GetOptions{
+			"TeamFlags": {
+				Selects: []string{"value", "team_id"},
+			},
+			"Submissions": {
+				Selects: []string{"id", "solved", "ip", "value"},
+			},
+		},
+	})
 	if !ok {
 		return
 	}
