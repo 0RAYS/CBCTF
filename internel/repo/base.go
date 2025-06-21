@@ -163,7 +163,7 @@ func (b *BasicRepo[M]) Update(id uint, options UpdateOptions) (bool, string) {
 			return ok, msg
 		}
 		data["version"] = m.GetVersion() + 1
-		res := b.DB.Where("id = ? AND version = ?", id, m.GetVersion()).Updates(data)
+		res := b.DB.Model(new(M)).Where("id = ? AND version = ?", id, m.GetVersion()).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update %s: %s", M.GetModelName(*new(M)), res.Error)
 			return false, M.UpdateErrorString(*new(M))
