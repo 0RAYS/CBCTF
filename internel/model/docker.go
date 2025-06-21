@@ -21,7 +21,7 @@ type Docker struct {
 	Command        StringList      `gorm:"default:null;type:json" json:"command"`
 	Expose         StringList      `gorm:"default:null;type:json" json:"expose"`
 	Environment    StringMap       `gorm:"default:null;type:json" json:"environment"`
-	Basic
+	BasicModel
 }
 
 func (d Docker) GetModelName() string {

@@ -5,6 +5,14 @@ import (
 	"time"
 )
 
+type BasicModel struct {
+	ID        uint           `gorm:"primaryKey" json:"id"`
+	CreatedAt time.Time      `json:"-"`
+	UpdatedAt time.Time      `json:"-"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
+	Version   uint           `gorm:"default:1" json:"-"`
+}
+
 type Model interface {
 	GetID() uint
 	GetVersion() uint
@@ -15,12 +23,4 @@ type Model interface {
 	NotFoundErrorString() string
 	UpdateErrorString() string
 	GetUniqueKey() []string
-}
-
-type Basic struct {
-	ID        uint           `gorm:"primaryKey" json:"id"`
-	CreatedAt time.Time      `json:"-"`
-	UpdatedAt time.Time      `json:"-"`
-	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
-	Version   uint           `gorm:"default:1" json:"-"`
 }

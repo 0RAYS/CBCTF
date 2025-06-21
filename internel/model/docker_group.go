@@ -10,7 +10,7 @@ type DockerGroup struct {
 	Challenge       Challenge       `json:"-"`
 	Dockers         []Docker        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	NetworkPolicies NetworkPolicies `gorm:"type:json" json:"network_policies"`
-	Basic
+	BasicModel
 }
 
 func (c DockerGroup) GetModelName() string {

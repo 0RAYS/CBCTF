@@ -14,7 +14,7 @@ type TeamFlag struct {
 	ChallengeFlag   ChallengeFlag `json:"-"`
 	Value           string        `json:"value"`
 	Solved          bool          `json:"solved"`
-	Basic
+	BasicModel
 }
 
 func (r TeamFlag) GetModelName() string {

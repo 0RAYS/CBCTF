@@ -39,7 +39,7 @@ type ContestFlag struct {
 	ScoreType          uint             `gorm:"default:0" json:"score_type"`
 	Solvers            int64            `json:"solvers"`
 	Last               time.Time        `gorm:"default:null" json:"last"`
-	Basic
+	BasicModel
 }
 
 func (c ContestFlag) GetModelName() string {

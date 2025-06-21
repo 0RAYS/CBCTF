@@ -31,7 +31,7 @@ type Challenge struct {
 	Category          string             `json:"category"`
 	Type              string             `json:"type"`
 	GeneratorImage    string             `json:"generator_image"`
-	Basic
+	BasicModel
 }
 
 func (c Challenge) GetModelName() string {

@@ -17,7 +17,7 @@ type Request struct {
 	Status    int       `gorm:"not null" json:"status"`
 	Referer   string    `gorm:"size:255" json:"referer"`
 	Magic     string    `json:"magic"`
-	Basic
+	BasicModel
 }
 
 func (r Request) GetModelName() string {

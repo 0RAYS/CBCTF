@@ -29,7 +29,7 @@ type File struct {
 	Suffix    string   `json:"suffix"`
 	Hash      string   `json:"hash"`
 	Type      string   `json:"type"`
-	Basic
+	BasicModel
 }
 
 func (f File) GetModelName() string {

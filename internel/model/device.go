@@ -10,7 +10,7 @@ type Device struct {
 	User   User   `json:"-"`
 	Magic  string `json:"magic"`
 	Count  int    `json:"count"`
-	Basic
+	BasicModel
 }
 
 func (d Device) GetModelName() string {

@@ -17,7 +17,7 @@ type Pod struct {
 	PodPorts        Ports           `gorm:"type:json" json:"pod_ports"`
 	ExposedPorts    Ports           `gorm:"type:json" json:"exposed_ports"`
 	NetworkPolicies NetworkPolicies `gorm:"type:json" json:"network_policies"`
-	Basic
+	BasicModel
 }
 
 func (p Pod) GetModelName() string {
