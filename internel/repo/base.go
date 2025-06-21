@@ -45,6 +45,9 @@ func (b *BasicRepo[M]) Create(options CreateOptions) (M, bool, string) {
 
 func ApplyGetOptions(tx *gorm.DB, options GetOptions) *gorm.DB {
 	if columns := options.Selects; len(columns) > 0 {
+		if !utils.In("id", columns) {
+			columns = append([]string{"id"}, columns...)
+		}
 		tx = tx.Select(columns)
 	}
 	if conditions := options.Conditions; len(conditions) > 0 {
