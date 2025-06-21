@@ -12,17 +12,23 @@ import (
 )
 
 func GetChallenges(tx *gorm.DB, form f.GetChallengesForm) ([]model.Challenge, int64, bool, string) {
-	var conditions db.GetOptions
+	options := db.GetOptions{
+		Preloads: map[string]db.GetOptions{
+			"DockerGroups": {
+				Preloads: map[string]db.GetOptions{
+					"Dockers": {},
+				},
+			},
+			"ChallengeFlags": {},
+		},
+	}
 	if form.Type != "" {
-		conditions = append(conditions, db.GetOption{Key: "type", Value: form.Type, Op: "and"})
+		options.Conditions["type"] = form.Type
 	}
 	if form.Category != "" {
-		conditions = append(conditions, db.GetOption{Key: "category", Value: utils.ToTitle(form.Category), Op: "and"})
+		options.Conditions["category"] = utils.ToTitle(form.Category)
 	}
-	return db.InitChallengeRepo(tx).ListWithConditions(
-		form.Limit, form.Offset, conditions, false,
-		"DockerGroups", "ChallengeFlags", "DockerGroups.Dockers",
-	)
+	return db.InitChallengeRepo(tx).List(form.Limit, form.Offset, options)
 }
 
 func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, bool, string) {
@@ -154,7 +160,16 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 	default:
 		return model.Challenge{}, false, i18n.InvalidChallengeType
 	}
-	return challengeRepo.GetByID(challenge.ID, "DockerGroups", "ChallengeFlags", "DockerGroups.Dockers")
+	return challengeRepo.GetByID(challenge.ID, db.GetOptions{
+		Preloads: map[string]db.GetOptions{
+			"DockerGroups": {
+				Preloads: map[string]db.GetOptions{
+					"Dockers": {},
+				},
+			},
+			"ChallengeFlags": {},
+		},
+	})
 }
 
 func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChallengeForm) (bool, string) {

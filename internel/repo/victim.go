@@ -63,16 +63,18 @@ func InitVictimRepo(tx *gorm.DB) *VictimRepo {
 }
 
 func (v *VictimRepo) HasAliveVictim(teamID uint, contestChallengeID uint) (model.Victim, bool, string) {
-	return v.GetWithConditions(GetOptions{
-		{Key: "team_id", Value: teamID, Op: "and"},
-		{Key: "contest_challenge_id", Value: contestChallengeID, Op: "and"},
-	}, false)
+	return v.Get(GetOptions{Conditions: map[string]interface{}{"team_id": teamID, "contest_challenge_id": contestChallengeID}})
 }
 
 func (v *VictimRepo) Delete(idL ...uint) (bool, string) {
 	podIDL := make([]uint, 0)
 	for _, id := range idL {
-		victim, ok, msg := v.GetByID(id)
+		victim, ok, msg := v.GetByID(id, GetOptions{
+			Selects: []string{"id"},
+			Preloads: map[string]GetOptions{
+				"Pods": {Selects: []string{"id"}},
+			},
+		})
 		if !ok && msg != i18n.VictimNotFound {
 			return false, msg
 		}

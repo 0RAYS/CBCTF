@@ -230,9 +230,9 @@ func GetAvatars(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
-	avatars, count, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).ListWithConditions(form.Limit, form.Offset, db.GetOptions{
-		{Key: "type", Value: model.AvatarFile, Op: "and"},
-	}, false)
+	avatars, count, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, db.GetOptions{
+		Conditions: map[string]any{"type": model.AvatarFile},
+	})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -258,10 +258,12 @@ func GetWriteUPs(ctx *gin.Context) {
 	}
 	team := middleware.GetTeam(ctx)
 	writeups, count, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).
-		ListWithConditions(form.Limit, form.Offset, db.GetOptions{
-			{Key: "type", Value: model.WriteUPFile, Op: "and"},
-			{Key: "team_id", Value: team.ID, Op: "and"},
-		}, false)
+		List(form.Limit, form.Offset, db.GetOptions{
+			Conditions: map[string]any{
+				"type":    model.WriteUPFile,
+				"team_id": team.ID,
+			},
+		})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

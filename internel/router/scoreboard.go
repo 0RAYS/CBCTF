@@ -31,18 +31,25 @@ func GetScoreboard(ctx *gin.Context) {
 		return
 	}
 	contestFlagRepo := db.InitContestFlagRepo(db.DB.WithContext(ctx))
-	contestFlags, _, ok, msg := contestFlagRepo.ListWithConditions(-1, -1, db.GetOptions{
-		{Key: "contest_id", Value: contest.ID, Op: "and"},
-	}, false, "ContestChallenge", "ContestChallenge.Challenge")
+	contestFlags, _, ok, msg := contestFlagRepo.List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_id": contest.ID},
+		Preloads: map[string]db.GetOptions{
+			"ContestChallenge": {
+				Preloads: map[string]db.GetOptions{
+					"Challenge": {},
+				},
+			},
+		},
+	})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	contestChallengeRepo := db.InitContestChallengeRepo(db.DB.WithContext(ctx))
-	contestChallenges, _, ok, msg := contestChallengeRepo.ListWithConditions(-1, -1, db.GetOptions{
-		{Key: "contest_id", Value: contest.ID, Op: "and"},
-		{Key: "hidden", Value: false, Op: "and"},
-	}, false, "Challenge")
+	contestChallenges, _, ok, msg := contestChallengeRepo.List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_id": contest.ID, "hidden": false},
+		Preloads:   map[string]db.GetOptions{"Challenge": {}},
+	})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -72,9 +79,20 @@ func GetScoreboard(ctx *gin.Context) {
 		for challengeID, _ := range globalMap {
 			teamMap[team.ID][challengeID] = 0
 		}
-		teamFlags, _, ok, msg := teamFlagRepo.ListWithConditions(-1, -1, db.GetOptions{
-			{Key: "team_id", Value: team.ID, Op: "and"},
-		}, false, "ContestFlag", "ContestFlag.ContestChallenge", "ContestFlag.ContestChallenge.Challenge")
+		teamFlags, _, ok, msg := teamFlagRepo.List(-1, -1, db.GetOptions{
+			Conditions: map[string]any{"team_id": team.ID},
+			Preloads: map[string]db.GetOptions{
+				"ContestFlag": {
+					Preloads: map[string]db.GetOptions{
+						"ContestChallenge": {
+							Preloads: map[string]db.GetOptions{
+								"Challenge": {},
+							},
+						},
+					},
+				},
+			},
+		})
 		if !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return

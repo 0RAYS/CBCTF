@@ -17,7 +17,11 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form f.CreateCon
 	challengeRepo := db.InitChallengeRepo(tx)
 	contestFlagRepo := db.InitContestFlagRepo(tx)
 	for _, challengeRandID := range form.ChallengeRandIDL {
-		challenge, ok, _ := challengeRepo.GetByRandID(challengeRandID, "ChallengeFlags")
+		challenge, ok, _ := challengeRepo.GetByRandID(challengeRandID, db.GetOptions{
+			Preloads: map[string]db.GetOptions{
+				"ChallengeFlags": {},
+			},
+		})
 		if !ok {
 			failedL = append(failedL, challengeRandID)
 			continue
@@ -58,7 +62,12 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form f.CreateCon
 					return errors.New(msg)
 				}
 			}
-			contestChallenge, ok, msg = contestChallengeRepo.GetByID(contestChallenge.ID, "Challenge", "ContestFlags")
+			contestChallenge, ok, msg = contestChallengeRepo.GetByID(contestChallenge.ID, db.GetOptions{
+				Preloads: map[string]db.GetOptions{
+					"Challenge":    {},
+					"ContestFlags": {},
+				},
+			})
 			if !ok {
 				failedL = append(failedL, challengeRandID)
 				return errors.New(msg)

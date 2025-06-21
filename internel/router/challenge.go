@@ -40,7 +40,11 @@ func GetChallenges(ctx *gin.Context) {
 func GetChallenge(ctx *gin.Context) {
 	challenge := middleware.GetChallenge(ctx)
 	for i, dockerGroup := range challenge.DockerGroups {
-		tmp, ok, msg := db.InitDockerGroupRepo(db.DB.WithContext(ctx)).GetByID(dockerGroup.ID, "Dockers")
+		tmp, ok, msg := db.InitDockerGroupRepo(db.DB.WithContext(ctx)).GetByID(dockerGroup.ID, db.GetOptions{
+			Preloads: map[string]db.GetOptions{
+				"DockerGroups": {},
+			},
+		})
 		if !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return

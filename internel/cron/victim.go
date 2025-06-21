@@ -13,7 +13,14 @@ import (
 func CloseTimeoutVictims(c *cron.Cron) {
 	function := exec("CloseTimeoutVictims", func() {
 		repo := db.InitVictimRepo(db.DB)
-		victims, _, ok, _ := repo.List(-1, -1, "Pods")
+		victims, _, ok, _ := repo.List(-1, -1, db.GetOptions{
+			Selects: []string{"id", "start", "duration", "team_id", "contest_challenge_id"},
+			Preloads: map[string]db.GetOptions{
+				"Pods": {
+					Selects: []string{"id", "name", "victim_id"},
+				},
+			},
+		})
 		if !ok {
 			return
 		}
@@ -42,9 +49,10 @@ func CloseUnCtrlVictims(c *cron.Cron) {
 		podRepo := db.InitPodRepo(db.DB)
 		for _, pod := range pods.Items {
 			if strings.HasPrefix(pod.Name, "victim") && time.Now().Sub(pod.CreationTimestamp.Time) > 4*time.Hour {
-				_, ok, _ = podRepo.GetWithConditions(db.GetOptions{
-					{Key: "name", Value: pod.Name, Op: "and"},
-				}, false)
+				_, ok, _ = podRepo.Get(db.GetOptions{
+					Conditions: map[string]any{"name": pod.Name},
+					Selects:    []string{"id"},
+				})
 				if !ok {
 					ctx, cancel = context.WithTimeout(context.Background(), 1*time.Minute)
 					_, _ = k8s.DeletePod(ctx, pod.Name)

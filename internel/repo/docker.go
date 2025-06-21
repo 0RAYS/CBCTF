@@ -52,7 +52,12 @@ func InitDockerRepo(tx *gorm.DB) *DockerRepo {
 func (d *DockerRepo) Delete(idL ...uint) (bool, string) {
 	challengeFlagIDL := make([]uint, 0)
 	for _, id := range idL {
-		docker, ok, msg := d.GetByID(id, "ChallengeFlags")
+		docker, ok, msg := d.GetByID(id, GetOptions{
+			Selects: []string{"id"},
+			Preloads: map[string]GetOptions{
+				"ChallengeFlags": {Selects: []string{"id"}},
+			},
+		})
 		if !ok && msg != i18n.DockerNotFound {
 			return ok, msg
 		}

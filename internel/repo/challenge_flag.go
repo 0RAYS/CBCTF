@@ -60,7 +60,13 @@ func InitChallengeFlagRepo(tx *gorm.DB) *ChallengeFlagRepo {
 func (c *ChallengeFlagRepo) Delete(idL ...uint) (bool, string) {
 	contestFlagIDL, teamFlagIDL := make([]uint, 0), make([]uint, 0)
 	for _, id := range idL {
-		challengeFlag, ok, msg := c.GetByID(id, "ContestFlags")
+		challengeFlag, ok, msg := c.GetByID(id, GetOptions{
+			Selects: []string{"id"},
+			Preloads: map[string]GetOptions{
+				"ContestFlags": {Selects: []string{"id"}},
+				"TeamFlags":    {Selects: []string{"id"}},
+			},
+		})
 		if !ok && msg != i18n.ChallengeFlagNotFound {
 			return false, msg
 		}

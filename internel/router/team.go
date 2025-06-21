@@ -16,9 +16,16 @@ import (
 func GetTeam(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	contestFlagRepo := db.InitContestFlagRepo(db.DB.WithContext(ctx))
-	contestFlagL, _, ok, msg := contestFlagRepo.ListWithConditions(-1, -1, db.GetOptions{
-		{Key: "contest_id", Value: team.ContestID, Op: "and"},
-	}, false, "ContestChallenge", "ContestChallenge.Challenge")
+	contestFlagL, _, ok, msg := contestFlagRepo.List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_id": middleware.GetContest(ctx).ID},
+		Preloads: map[string]db.GetOptions{
+			"ContestChallenge": {
+				Preloads: map[string]db.GetOptions{
+					"Challenge": {},
+				},
+			},
+		},
+	})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -43,9 +50,9 @@ func GetTeams(ctx *gin.Context) {
 	}
 	DB := db.DB.WithContext(ctx)
 	contest := middleware.GetContest(ctx)
-	teams, count, ok, msg := db.InitTeamRepo(DB).ListWithConditions(form.Limit, form.Offset, db.GetOptions{
-		{Key: "contest_id", Value: contest.ID, Op: "and"},
-	}, false)
+	teams, count, ok, msg := db.InitTeamRepo(DB).List(form.Limit, form.Offset, db.GetOptions{
+		Conditions: map[string]any{"contest_id": contest.ID},
+	})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -107,9 +114,16 @@ func GetTeamRanking(ctx *gin.Context) {
 			Solved []model.ContestFlag
 		}{Team: team, Solved: solved})
 	}
-	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB.WithContext(ctx)).ListWithConditions(-1, -1, db.GetOptions{
-		{Key: "contest_id", Value: contest.ID, Op: "and"},
-	}, false, "ContestChallenge", "ContestChallenge.Challenge")
+	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB.WithContext(ctx)).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_id": contest.ID},
+		Preloads: map[string]db.GetOptions{
+			"ContestChallenge": {
+				Preloads: map[string]db.GetOptions{
+					"Challenge": {},
+				},
+			},
+		},
+	})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

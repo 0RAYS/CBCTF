@@ -68,22 +68,26 @@ func InitAdminRepo(tx *gorm.DB) *AdminRepo {
 }
 
 func (a *AdminRepo) IsUniqueName(name string) bool {
-	_, ok, _ := a.getUniqueByKey("name", name)
+	_, ok, _ := a.GetByUniqueKey("name", name, GetOptions{Selects: []string{"id"}})
 	return !ok
 }
 
 func (a *AdminRepo) IsUniqueEmail(email string) bool {
-	_, ok, _ := a.getUniqueByKey("email", email)
+	_, ok, _ := a.GetByUniqueKey("email", email, GetOptions{Selects: []string{"id"}})
 	return !ok
 }
 
-func (a *AdminRepo) GetByName(name string, preloadL ...string) (model.Admin, bool, string) {
-	return a.getUniqueByKey("name", name, preloadL...)
+func (a *AdminRepo) GetByName(name string, optionsL ...GetOptions) (model.Admin, bool, string) {
+	options := GetOptions{}
+	if len(optionsL) > 0 {
+		options = optionsL[0]
+	}
+	return a.GetByUniqueKey("name", name, options)
 }
 
 func (a *AdminRepo) Delete(idL ...uint) (bool, string) {
 	for _, id := range idL {
-		admin, ok, msg := a.GetByID(id)
+		admin, ok, msg := a.GetByID(id, GetOptions{Selects: []string{"name", "email"}})
 		if !ok && msg != i18n.AdminNotFound {
 			return false, msg
 		}

@@ -34,10 +34,15 @@ func IncreaseVictimDuration(ctx *gin.Context) {
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	DB := db.DB.WithContext(ctx)
 	repo := db.InitVictimRepo(DB)
-	victims, _, ok, msg := repo.ListWithConditions(-1, -1, db.GetOptions{
-		{Key: "team_id", Value: team.ID, Op: "and"},
-		{Key: "contest_challenge_id", Value: contestChallenge.ID, Op: "and"},
-	}, false, "Pods")
+	victims, _, ok, msg := repo.List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{
+			"team_id":              team.ID,
+			"contest_challenge_id": contestChallenge.ID,
+		},
+		Preloads: map[string]db.GetOptions{
+			"Pods": {},
+		},
+	})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -99,9 +104,10 @@ func GetVictims(ctx *gin.Context) {
 	}
 	team := middleware.GetTeam(ctx)
 	repo := db.InitVictimRepo(db.DB.WithContext(ctx))
-	victims, count, ok, msg := repo.ListWithConditions(form.Limit, form.Offset, db.GetOptions{
-		{Key: "team_id", Value: team.ID, Op: "and"},
-	}, true)
+	victims, count, ok, msg := repo.List(form.Limit, form.Offset, db.GetOptions{
+		Conditions: map[string]any{"team_id": team.ID},
+		Deleted:    true,
+	})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

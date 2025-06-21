@@ -83,17 +83,26 @@ func InitContestChallengeRepo(tx *gorm.DB) *ContestChallengeRepo {
 }
 
 func (c *ContestChallengeRepo) IsUniqueContestChallenge(contestID uint, challengeID uint) bool {
-	_, ok, _ := c.GetWithConditions(GetOptions{
-		{Key: "contest_id", Value: contestID, Op: "and"},
-		{Key: "challenge_id", Value: challengeID, Op: "and"},
-	}, false)
+	_, ok, _ := c.Get(GetOptions{
+		Conditions: map[string]any{
+			"contest_id":   contestID,
+			"challenge_id": challengeID,
+		},
+		Selects: []string{"id"},
+	})
 	return !ok
 }
 
 func (c *ContestChallengeRepo) Delete(idL ...uint) (bool, string) {
 	contestFlagIDL, submissionIDL := make([]uint, 0), make([]uint, 0)
 	for _, id := range idL {
-		contestChallenge, ok, msg := c.GetByID(id, "ContestFlags", "Submissions")
+		contestChallenge, ok, msg := c.GetByID(id, GetOptions{
+			Selects: []string{"id"},
+			Preloads: map[string]GetOptions{
+				"ContestFlags": {Selects: []string{"id"}},
+				"Submissions":  {Selects: []string{"id"}},
+			},
+		})
 		if !ok && msg != i18n.ContestChallengeNotFound {
 			return false, msg
 		}

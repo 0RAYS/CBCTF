@@ -56,12 +56,12 @@ func InitFileRepo(tx *gorm.DB) *FileRepo {
 	}
 }
 
-func (f *FileRepo) GetByRandID(randID string) (model.File, bool, string) {
-	return f.getUniqueByKey("rand_id", randID)
+func (f *FileRepo) GetByRandID(randID string, optionsL ...GetOptions) (model.File, bool, string) {
+	return f.GetByUniqueKey("rand_id", randID, optionsL...)
 }
 
-func (f *FileRepo) GetByHash(hash string) (model.File, bool, string) {
-	return f.getUniqueByKey("hash", hash)
+func (f *FileRepo) GetByHash(hash string, optionsL ...GetOptions) (model.File, bool, string) {
+	return f.GetByUniqueKey("hash", hash, optionsL...)
 }
 
 func (f *FileRepo) DeleteByRandID(randIDL ...string) (bool, string) {
