@@ -13,7 +13,7 @@ type Traffic struct {
 	DstPort  uint16 `json:"dst_port"`
 	Type     string `json:"type"`
 	Count    uint   `json:"count"`
-	Basic
+	BasicModel
 }
 
 func (t Traffic) GetModelName() string {

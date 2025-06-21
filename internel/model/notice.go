@@ -16,7 +16,7 @@ type Notice struct {
 	Title     string  `json:"title"`
 	Content   string  `json:"content"`
 	Type      string  `gorm:"default:'normal'" json:"type"`
-	Basic
+	BasicModel
 }
 
 func (n Notice) GetModelName() string {

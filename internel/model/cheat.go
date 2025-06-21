@@ -31,7 +31,7 @@ type Cheat struct {
 	Hash               string            `gorm:"type:varchar(32);uniqueIndex;not null" json:"hash"`
 	Comment            string            `json:"comment"`
 	References         UintList          `gorm:"type:json" json:"references"`
-	Basic
+	BasicModel
 }
 
 func (c Cheat) GetModelName() string {

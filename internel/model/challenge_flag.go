@@ -28,7 +28,7 @@ type ChallengeFlag struct {
 	Value        string        `json:"value"`
 	InjectType   string        `json:"inject_type"`
 	Path         string        `json:"path"`
-	Basic
+	BasicModel
 }
 
 func (c ChallengeFlag) GetModelName() string {

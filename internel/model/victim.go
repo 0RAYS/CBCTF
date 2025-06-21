@@ -22,7 +22,7 @@ type Victim struct {
 	Start              time.Time        `json:"start"`
 	Duration           time.Duration    `json:"duration"`
 	HostAlias          StringMap        `gorm:"default:null;type:json" json:"host_alias"`
-	Basic
+	BasicModel
 }
 
 func (v Victim) GetModelName() string {

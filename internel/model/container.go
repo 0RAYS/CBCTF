@@ -14,7 +14,7 @@ type Container struct {
 	EnvFlags    StringList `gorm:"type:json" json:"env_flags"`
 	VolumeFlags StringMap  `gorm:"type:json" json:"volume_flags"`
 	Exposes     StringList `gorm:"type:json" json:"exposes"`
-	Basic
+	BasicModel
 }
 
 func (c Container) GetModelName() string {

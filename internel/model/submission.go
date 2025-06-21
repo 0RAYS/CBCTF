@@ -26,7 +26,7 @@ type Submission struct {
 	Solved             bool             `json:"solved"`
 	Score              float64          `gorm:"default:0" json:"score"`
 	IP                 string           `json:"ip"`
-	Basic
+	BasicModel
 }
 
 func (r Submission) GetModelName() string {

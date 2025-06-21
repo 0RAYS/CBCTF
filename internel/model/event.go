@@ -39,7 +39,7 @@ type Event struct {
 	Type               string            `json:"type"`
 	IP                 string            `json:"ip"`
 	Magic              string            `json:"magic"`
-	Basic
+	BasicModel
 }
 
 func (e Event) GetModelName() string {
