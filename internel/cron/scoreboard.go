@@ -64,7 +64,7 @@ func UpdateUserRanking(c *cron.Cron) {
 						"user_id": user.ID,
 						"solved":  true,
 					},
-					Selects: []string{"contest_flag_id", "team_id"},
+					Selects: []string{"id", "contest_flag_id", "team_id"},
 				})
 				if !ok {
 					continue
