@@ -24,10 +24,6 @@ func (p Pod) GetModelName() string {
 	return "Pod"
 }
 
-func (p Pod) GetID() uint {
-	return p.ID
-}
-
 func (p Pod) GetVersion() uint {
 	return p.Version
 }

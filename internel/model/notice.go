@@ -23,10 +23,6 @@ func (n Notice) GetModelName() string {
 	return "Notice"
 }
 
-func (n Notice) GetID() uint {
-	return n.ID
-}
-
 func (n Notice) GetVersion() uint {
 	return n.Version
 }

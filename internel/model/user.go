@@ -30,10 +30,6 @@ func (u User) GetModelName() string {
 	return "User"
 }
 
-func (u User) GetID() uint {
-	return u.ID
-}
-
 func (u User) GetVersion() uint {
 	return u.Version
 }
