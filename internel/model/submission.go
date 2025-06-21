@@ -33,10 +33,6 @@ func (r Submission) GetModelName() string {
 	return "Submission"
 }
 
-func (r Submission) GetID() uint {
-	return r.ID
-}
-
 func (r Submission) GetVersion() uint {
 	return r.Version
 }

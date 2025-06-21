@@ -21,10 +21,6 @@ func (c Container) GetModelName() string {
 	return "Container"
 }
 
-func (c Container) GetID() uint {
-	return c.ID
-}
-
 func (c Container) GetVersion() uint {
 	return c.Version
 }

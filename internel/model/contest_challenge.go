@@ -29,10 +29,6 @@ func (c ContestChallenge) GetModelName() string {
 	return "ContestChallenge"
 }
 
-func (c ContestChallenge) GetID() uint {
-	return c.ID
-}
-
 func (c ContestChallenge) GetVersion() uint {
 	return c.Version
 }

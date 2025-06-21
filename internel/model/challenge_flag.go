@@ -35,10 +35,6 @@ func (c ChallengeFlag) GetModelName() string {
 	return "ChallengeFlag"
 }
 
-func (c ChallengeFlag) GetID() uint {
-	return c.ID
-}
-
 func (c ChallengeFlag) GetVersion() uint {
 	return c.Version
 }

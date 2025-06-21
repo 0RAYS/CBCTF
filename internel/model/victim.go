@@ -29,10 +29,6 @@ func (v Victim) GetModelName() string {
 	return "Victim"
 }
 
-func (v Victim) GetID() uint {
-	return v.ID
-}
-
 func (v Victim) GetVersion() uint {
 	return v.Version
 }

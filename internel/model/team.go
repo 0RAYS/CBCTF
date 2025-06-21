@@ -33,10 +33,6 @@ func (t Team) GetModelName() string {
 	return "Team"
 }
 
-func (t Team) GetID() uint {
-	return t.ID
-}
-
 func (t Team) GetVersion() uint {
 	return t.Version
 }

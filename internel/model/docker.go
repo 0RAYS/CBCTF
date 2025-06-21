@@ -28,10 +28,6 @@ func (d Docker) GetModelName() string {
 	return "Docker"
 }
 
-func (d Docker) GetID() uint {
-	return d.ID
-}
-
 func (d Docker) GetVersion() uint {
 	return d.Version
 }

@@ -38,10 +38,6 @@ func (c Challenge) GetModelName() string {
 	return "Challenge"
 }
 
-func (c Challenge) GetID() uint {
-	return c.ID
-}
-
 func (c Challenge) GetVersion() uint {
 	return c.Version
 }

@@ -17,10 +17,6 @@ func (d Device) GetModelName() string {
 	return "Device"
 }
 
-func (d Device) GetID() uint {
-	return d.ID
-}
-
 func (d Device) GetVersion() uint {
 	return d.Version
 }

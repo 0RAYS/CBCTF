@@ -24,10 +24,6 @@ func (r Request) GetModelName() string {
 	return "Request"
 }
 
-func (r Request) GetID() uint {
-	return r.ID
-}
-
 func (r Request) GetVersion() uint {
 	return r.Version
 }

@@ -14,7 +14,6 @@ type BasicModel struct {
 }
 
 type Model interface {
-	GetID() uint
 	GetVersion() uint
 	GetModelName() string
 	CreateErrorString() string

@@ -36,10 +36,6 @@ func (f File) GetModelName() string {
 	return "File"
 }
 
-func (f File) GetID() uint {
-	return f.ID
-}
-
 func (f File) GetVersion() uint {
 	return f.Version
 }

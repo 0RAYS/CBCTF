@@ -38,10 +38,6 @@ func (c Cheat) GetModelName() string {
 	return "Cheat"
 }
 
-func (c Cheat) GetID() uint {
-	return c.ID
-}
-
 func (c Cheat) GetVersion() uint {
 	return c.Version
 }

@@ -17,10 +17,6 @@ func (c DockerGroup) GetModelName() string {
 	return "DockerGroup"
 }
 
-func (c DockerGroup) GetID() uint {
-	return c.ID
-}
-
 func (c DockerGroup) GetVersion() uint {
 	return c.Version
 }
