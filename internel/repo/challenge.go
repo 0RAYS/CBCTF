@@ -86,20 +86,21 @@ func (c *ChallengeRepo) ListCategories(t string) ([]string, bool, string) {
 }
 
 func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
+	challengeL, _, ok, msg := c.List(-1, -1, GetOptions{
+		Conditions: map[string]any{"rand_id": randIDL},
+		Selects:    []string{"id"},
+		Preloads: map[string]GetOptions{
+			"DockerGroups":      {Selects: []string{"id"}},
+			"ChallengeFlags":    {Selects: []string{"id"}},
+			"ContestChallenges": {Selects: []string{"id"}},
+			"Submissions":       {Selects: []string{"id"}},
+		},
+	})
+	if !ok && msg != i18n.ChallengeNotFound {
+		return false, msg
+	}
 	dockerGroupIDL, challengeFlagIDL, contestChallengeIDL, submissionIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0)
-	for _, randID := range randIDL {
-		challenge, ok, msg := c.GetByRandID(randID, GetOptions{
-			Selects: []string{"id"},
-			Preloads: map[string]GetOptions{
-				"DockerGroups":      {Selects: []string{"id"}},
-				"ChallengeFlags":    {Selects: []string{"id"}},
-				"ContestChallenges": {Selects: []string{"id"}},
-				"Submissions":       {Selects: []string{"id"}},
-			},
-		})
-		if !ok && msg != i18n.ChallengeNotFound {
-			return false, msg
-		}
+	for _, challenge := range challengeL {
 		for _, dockerGroup := range challenge.DockerGroups {
 			dockerGroupIDL = append(dockerGroupIDL, dockerGroup.ID)
 		}
@@ -113,16 +114,16 @@ func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
 			submissionIDL = append(submissionIDL, submission.ID)
 		}
 	}
-	if ok, msg := InitDockerGroupRepo(c.DB).Delete(dockerGroupIDL...); !ok {
+	if ok, msg = InitDockerGroupRepo(c.DB).Delete(dockerGroupIDL...); !ok {
 		return false, msg
 	}
-	if ok, msg := InitChallengeFlagRepo(c.DB).Delete(challengeFlagIDL...); !ok {
+	if ok, msg = InitChallengeFlagRepo(c.DB).Delete(challengeFlagIDL...); !ok {
 		return false, msg
 	}
-	if ok, msg := InitContestChallengeRepo(c.DB).Delete(contestChallengeIDL...); !ok {
+	if ok, msg = InitContestChallengeRepo(c.DB).Delete(contestChallengeIDL...); !ok {
 		return false, msg
 	}
-	if ok, msg := InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ok {
+	if ok, msg = InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ok {
 		return false, msg
 	}
 	if res := c.DB.Model(&model.Challenge{}).Where("rand_id IN ?", randIDL).Delete(&model.Challenge{}); res.Error != nil {

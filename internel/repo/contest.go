@@ -122,23 +122,24 @@ func (c *ContestRepo) IsUniqueName(name string) bool {
 }
 
 func (c *ContestRepo) Delete(idL ...uint) (bool, string) {
+	contestL, _, ok, msg := c.List(-1, -1, GetOptions{
+		Conditions: map[string]any{"id": idL},
+		Selects:    []string{"id", "name"},
+		Preloads: map[string]GetOptions{
+			"Teams":             {Selects: []string{"id"}},
+			"Notices":           {Selects: []string{"id"}},
+			"ContestChallenges": {Selects: []string{"id"}},
+			"ContestFlags":      {Selects: []string{"id"}},
+			"Submissions":       {Selects: []string{"id"}},
+		},
+	})
+	if !ok && msg != i18n.ContestNotFound {
+		return ok, msg
+	}
 	teamIDL, noticeIDL, contestChallengeIDL, contestFlagIDL, submissionIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0)
-	for _, id := range idL {
-		contest, ok, msg := c.GetByID(id, GetOptions{
-			Selects: []string{"name"},
-			Preloads: map[string]GetOptions{
-				"Teams":             {Selects: []string{"id"}},
-				"Notices":           {Selects: []string{"id"}},
-				"ContestChallenges": {Selects: []string{"id"}},
-				"ContestFlags":      {Selects: []string{"id"}},
-				"Submissions":       {Selects: []string{"id"}},
-			},
-		})
-		if !ok && msg != i18n.ContestNotFound {
-			return ok, msg
-		}
+	for _, contest := range contestL {
 		deletedName := fmt.Sprintf("%s_deleted_%s", contest.Name, utils.RandStr(6))
-		if ok, msg = c.Update(id, UpdateContestOptions{
+		if ok, msg = c.Update(contest.ID, UpdateContestOptions{
 			Name: &deletedName,
 		}); !ok {
 			return false, msg
@@ -159,19 +160,19 @@ func (c *ContestRepo) Delete(idL ...uint) (bool, string) {
 			submissionIDL = append(submissionIDL, submission.ID)
 		}
 	}
-	if ok, msg := InitTeamRepo(c.DB).Delete(teamIDL...); !ok {
+	if ok, msg = InitTeamRepo(c.DB).Delete(teamIDL...); !ok {
 		return false, msg
 	}
-	if ok, msg := InitNoticeRepo(c.DB).Delete(noticeIDL...); !ok {
+	if ok, msg = InitNoticeRepo(c.DB).Delete(noticeIDL...); !ok {
 		return false, msg
 	}
-	if ok, msg := InitContestChallengeRepo(c.DB).Delete(contestChallengeIDL...); !ok {
+	if ok, msg = InitContestChallengeRepo(c.DB).Delete(contestChallengeIDL...); !ok {
 		return false, msg
 	}
-	if ok, msg := InitContestFlagRepo(c.DB).Delete(contestFlagIDL...); !ok {
+	if ok, msg = InitContestFlagRepo(c.DB).Delete(contestFlagIDL...); !ok {
 		return false, msg
 	}
-	if ok, msg := InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ok {
+	if ok, msg = InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ok {
 		return false, msg
 	}
 	if res := c.DB.Model(&model.Contest{}).Where("id IN ?", idL).Delete(&model.Contest{}); res.Error != nil {

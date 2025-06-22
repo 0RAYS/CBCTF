@@ -94,20 +94,21 @@ func (c *ContestChallengeRepo) IsUniqueContestChallenge(contestID uint, challeng
 }
 
 func (c *ContestChallengeRepo) Delete(idL ...uint) (bool, string) {
+	contestChallengeL, _, ok, msg := c.List(-1, -1, GetOptions{
+		Conditions: map[string]any{"id": idL},
+		Selects:    []string{"id"},
+		Preloads: map[string]GetOptions{
+			"ContestFlags": {Selects: []string{"id"}},
+			"Submissions":  {Selects: []string{"id"}},
+		},
+	})
+	if !ok && msg != i18n.ContestChallengeNotFound {
+		return false, msg
+	}
 	contestFlagIDL, submissionIDL := make([]uint, 0), make([]uint, 0)
-	for _, id := range idL {
-		contestChallenge, ok, msg := c.GetByID(id, GetOptions{
-			Selects: []string{"id"},
-			Preloads: map[string]GetOptions{
-				"ContestFlags": {Selects: []string{"id"}},
-				"Submissions":  {Selects: []string{"id"}},
-			},
-		})
-		if !ok && msg != i18n.ContestChallengeNotFound {
-			return false, msg
-		}
+	for _, contestChallenge := range contestChallengeL {
 		deletedSalt := utils.UUID()
-		if ok, msg = c.Update(id, UpdateContestChallengeOptions{DeletedSalt: &deletedSalt}); !ok {
+		if ok, msg = c.Update(contestChallenge.ID, UpdateContestChallengeOptions{DeletedSalt: &deletedSalt}); !ok {
 			return false, msg
 		}
 		for _, contestFlag := range contestChallenge.ContestFlags {
@@ -117,10 +118,10 @@ func (c *ContestChallengeRepo) Delete(idL ...uint) (bool, string) {
 			submissionIDL = append(submissionIDL, submission.ID)
 		}
 	}
-	if ok, msg := InitContestFlagRepo(c.DB).Delete(contestFlagIDL...); !ok {
+	if ok, msg = InitContestFlagRepo(c.DB).Delete(contestFlagIDL...); !ok {
 		return false, msg
 	}
-	if ok, msg := InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ok {
+	if ok, msg = InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ok {
 		return false, msg
 	}
 	if res := c.DB.Model(&model.ContestChallenge{}).Where("id IN ?", idL).Delete(&model.ContestChallenge{}); res.Error != nil {

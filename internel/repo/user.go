@@ -114,21 +114,22 @@ func (u *UserRepo) GetByName(name string, optionsL ...GetOptions) (model.User, b
 }
 
 func (u *UserRepo) Delete(idL ...uint) (bool, string) {
+	userL, _, ok, msg := u.List(-1, -1, GetOptions{
+		Conditions: map[string]any{"id": idL},
+		Selects:    []string{"id", "name", "email"},
+		Preloads: map[string]GetOptions{
+			"Teams":       {Selects: []string{"id", "contest_id"}},
+			"Submissions": {Selects: []string{"id"}},
+		},
+	})
+	if !ok && msg != i18n.UserNotFound {
+		return false, msg
+	}
 	submissionIDL := make([]uint, 0)
-	for _, id := range idL {
-		user, ok, msg := u.GetByID(id, GetOptions{
-			Selects: []string{"id", "name", "email"},
-			Preloads: map[string]GetOptions{
-				"Teams":       {Selects: []string{"id", "contest_id"}},
-				"Submissions": {Selects: []string{"id"}},
-			},
-		})
-		if !ok && msg != i18n.UserNotFound {
-			return false, msg
-		}
+	for _, user := range userL {
 		deletedName := fmt.Sprintf("%s_deleted_%s", user.Name, utils.RandStr(6))
 		deletedEmail := fmt.Sprintf("%s_deleted_%s", user.Email, utils.RandStr(6))
-		if ok, msg = u.Update(id, UpdateUserOptions{
+		if ok, msg = u.Update(user.ID, UpdateUserOptions{
 			Name:  &deletedName,
 			Email: &deletedEmail,
 		}); !ok {
@@ -146,7 +147,7 @@ func (u *UserRepo) Delete(idL ...uint) (bool, string) {
 			submissionIDL = append(submissionIDL, submission.ID)
 		}
 	}
-	if ok, msg := InitSubmissionRepo(u.DB).Delete(submissionIDL...); !ok {
+	if ok, msg = InitSubmissionRepo(u.DB).Delete(submissionIDL...); !ok {
 		return false, msg
 	}
 	if res := u.DB.Model(&model.User{}).Where("id IN ?", idL).Delete(&model.User{}); res.Error != nil {
