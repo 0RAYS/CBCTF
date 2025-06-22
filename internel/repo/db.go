@@ -111,15 +111,3 @@ func initAdmin(tx *gorm.DB) (bool, string) {
 	}
 	return true, i18n.Success
 }
-
-func Close() {
-	if DB != nil {
-		db, err := DB.DB()
-		if err != nil {
-			log.Logger.Errorf("Failed to get database: %v", err)
-		} else {
-			_ = db.Close()
-		}
-	}
-	log.Logger.Info("Database connection closed")
-}

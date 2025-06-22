@@ -87,7 +87,7 @@ func (v *VictimRepo) Delete(idL ...uint) (bool, string) {
 	}
 	if res := v.DB.Model(&model.Victim{}).Where("id IN ?", idL).Delete(&model.Victim{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Victim: %s", res.Error)
-		return false, model.Victim{}.DeleteErrorString()
+		return false, i18n.DeleteVictimError
 	}
 	return true, i18n.Success
 }

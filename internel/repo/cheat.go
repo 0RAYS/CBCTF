@@ -111,7 +111,7 @@ func (c *CheatRepo) Create(options CreateCheatOptions) (model.Cheat, bool, strin
 	}
 	if res := c.DB.Model(&model.Cheat{}).Create(&m); res.Error != nil {
 		log.Logger.Warningf("Failed to create Cheat: %s", res.Error)
-		return model.Cheat{}, false, m.CreateErrorString()
+		return model.Cheat{}, false, i18n.CreateCheatError
 	}
 	return m, true, i18n.Success
 }

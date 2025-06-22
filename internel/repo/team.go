@@ -150,6 +150,9 @@ func (t *TeamRepo) GetBy2ID(userID, contestID uint, optionsL ...GetOptions) (mod
 	if !ok {
 		return model.Team{}, false, msg
 	}
+	if len(user.Teams) == 0 {
+		return model.Team{}, false, i18n.TeamNotFound
+	}
 	return *user.Teams[0], true, i18n.Success
 }
 
@@ -196,7 +199,7 @@ func (t *TeamRepo) Delete(idL ...uint) (bool, string) {
 	}
 	if res := t.DB.Model(&model.Team{}).Where("id IN ?", idL).Delete(&model.Team{}); res.Error != nil {
 		log.Logger.Errorf("Failed to delete Team: %s", res.Error)
-		return false, model.Team{}.DeleteErrorString()
+		return false, i18n.DeleteTeamError
 	}
 	return true, i18n.Success
 }

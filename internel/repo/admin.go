@@ -102,7 +102,7 @@ func (a *AdminRepo) Delete(idL ...uint) (bool, string) {
 	}
 	if res := a.DB.Model(&model.Admin{}).Where("id IN ?", idL).Delete(&model.Admin{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Admin: %s", res.Error)
-		return false, model.Admin{}.DeleteErrorString()
+		return false, i18n.DeleteAdminError
 	}
 	return true, i18n.Success
 }

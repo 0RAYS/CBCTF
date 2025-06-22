@@ -50,10 +50,10 @@ func (d *DeviceRepo) GetByMagic(magic string) ([]model.Device, bool, string) {
 	res := d.DB.Model(&model.Device{}).Where("magic = ?", magic).Find(&devices)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Devices: %s", res.Error)
-		return make([]model.Device, 0), false, model.Device{}.GetErrorString()
+		return make([]model.Device, 0), false, i18n.GetDeviceError
 	}
 	if res.RowsAffected == 0 {
-		return make([]model.Device, 0), false, model.Device{}.NotFoundErrorString()
+		return make([]model.Device, 0), false, i18n.DeviceNotFound
 	}
 	return devices, true, i18n.Success
 }
@@ -63,10 +63,10 @@ func (d *DeviceRepo) GetBy2ID(userID uint, magic string) (model.Device, bool, st
 	res := d.DB.Model(&model.Device{}).Where("user_id = ? AND magic = ?", userID, magic).Limit(1).Find(&device)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Device: %s", res.Error)
-		return model.Device{}, false, model.Device{}.GetErrorString()
+		return model.Device{}, false, i18n.GetDeviceError
 	}
 	if res.RowsAffected == 0 {
-		return model.Device{}, false, model.Device{}.NotFoundErrorString()
+		return model.Device{}, false, i18n.DeviceNotFound
 	}
 	return device, true, i18n.Success
 }

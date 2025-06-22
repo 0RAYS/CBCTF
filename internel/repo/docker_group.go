@@ -64,7 +64,7 @@ func (d *DockerGroupRepo) Delete(idL ...uint) (bool, string) {
 	}
 	if res := d.DB.Model(&model.DockerGroup{}).Where("id IN ?", idL).Delete(&model.DockerGroup{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete DockerGroup: %v", res.Error)
-		return false, model.DockerGroup{}.DeleteErrorString()
+		return false, i18n.DeleteDockerGroupError
 	}
 	return true, i18n.Success
 }

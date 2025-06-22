@@ -89,7 +89,7 @@ func (p *PodRepo) Delete(idL ...uint) (bool, string) {
 	}
 	if res := p.DB.Model(&model.Pod{}).Where("id IN ?", idL).Delete(&model.Pod{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Pod: %s", res.Error)
-		return false, model.Pod{}.DeleteErrorString()
+		return false, i18n.DeletePodError
 	}
 	return true, i18n.Success
 }

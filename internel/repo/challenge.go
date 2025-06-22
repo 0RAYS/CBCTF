@@ -80,7 +80,7 @@ func (c *ChallengeRepo) ListCategories(t string) ([]string, bool, string) {
 	res = res.Select("distinct category").Find(&categories)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Categories: %s", res.Error)
-		return categories, false, model.Challenge{}.GetErrorString()
+		return categories, false, i18n.GetChallengeError
 	}
 	return categories, true, i18n.Success
 }
@@ -127,7 +127,7 @@ func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
 	}
 	if res := c.DB.Model(&model.Challenge{}).Where("rand_id IN ?", randIDL).Delete(&model.Challenge{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Challenge: %v", res.Error)
-		return false, model.Challenge{}.DeleteErrorString()
+		return false, i18n.DeleteChallengeError
 	}
 	return true, i18n.Success
 }

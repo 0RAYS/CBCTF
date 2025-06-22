@@ -176,7 +176,7 @@ func (c *ContestRepo) Delete(idL ...uint) (bool, string) {
 	}
 	if res := c.DB.Model(&model.Contest{}).Where("id IN ?", idL).Delete(&model.Contest{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Contest: %v", res.Error)
-		return false, model.Contest{}.DeleteErrorString()
+		return false, i18n.DeleteContestError
 	}
 	return true, i18n.Success
 }

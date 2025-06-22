@@ -118,7 +118,7 @@ func (c *ContestFlagRepo) Delete(idL ...uint) (bool, string) {
 	}
 	if res := c.DB.Model(&model.ContestFlag{}).Where("id IN ?", idL).Delete(&model.ContestFlag{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete ContestFlags: %s", res.Error)
-		return false, model.ContestFlag{}.DeleteErrorString()
+		return false, i18n.DeleteContestFlagError
 	}
 	return true, i18n.Success
 }
