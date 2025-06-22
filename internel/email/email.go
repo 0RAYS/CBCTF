@@ -4,13 +4,13 @@ import (
 	"CBCTF/internel/config"
 	"CBCTF/internel/log"
 	"fmt"
+	"gopkg.in/gomail.v2"
 	"math/rand"
-	"net/smtp"
 	"regexp"
 )
 
 type Sender struct {
-	Auth smtp.Auth
+	Auth *gomail.SendCloser
 	Addr string
 	Host string
 	Port int
@@ -22,9 +22,14 @@ var (
 
 func Init() {
 	for _, sender := range config.Env.Email.Senders {
-		auth := smtp.PlainAuth("", sender.Addr, sender.Pwd, sender.Host)
+		dialer := gomail.NewDialer(sender.Host, sender.Port, sender.Addr, sender.Pwd)
+		auth, err := dialer.Dial()
+		if err != nil {
+			log.Logger.Warningf("Failed to connect to email server %s:%d: %v", sender.Host, sender.Port, err)
+			continue
+		}
 		Senders = append(Senders, Sender{
-			Auth: auth,
+			Auth: &auth,
 			Addr: sender.Addr,
 			Host: sender.Host,
 			Port: sender.Port,
@@ -49,18 +54,15 @@ func SendVerifyEmail(to, token, id string) error {
 		return fmt.Errorf("no email sender configured")
 	}
 	sender := Senders[rand.Intn(len(Senders))]
-	toList := []string{to}
-	msg := []byte(fmt.Sprintf("From: %s\r\n"+
-		"To: %s\r\n"+
-		"Subject: Verify Email\r\n\r\n"+
-		"Please click the following link to verify your email:\r\n"+
-		fmt.Sprintf("%s/verify?token=%s&id=%s\r\n", config.Env.Backend, token, id), sender.Addr, to))
-
-	return smtp.SendMail(
-		fmt.Sprintf("%s:%d", sender.Host, sender.Port),
-		sender.Auth,
-		sender.Addr,
-		toList,
-		msg,
+	m := gomail.NewMessage()
+	m.SetHeader("From", sender.Addr)
+	m.SetHeader("To", to)
+	m.SetHeader("Subject", "Verify Email")
+	m.SetBody("text/plain",
+		fmt.Sprintf(
+			"Please click the following link to verify your email:\n%s/verify?token=%s&id=%s",
+			config.Env.Backend, token, id,
+		),
 	)
+	return gomail.Send(*sender.Auth, m)
 }
