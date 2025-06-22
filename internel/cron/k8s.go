@@ -13,7 +13,7 @@ func ClearUnCtrlResource(c *cron.Cron) {
 		if configmaps, ok, _ := k8s.GetConfigMapList(ctx); ok {
 			for _, cm := range configmaps.Items {
 				for k, v := range cm.Labels {
-					if k == "victim" || k == "generator" {
+					if k == k8s.VictimPodTag || k == k8s.GeneratorPodTag {
 						if _, ok, _ = k8s.GetPod(ctx, v); !ok {
 							k8s.DeleteConfigMapListByPodName(ctx, k, v)
 						}
@@ -26,7 +26,7 @@ func ClearUnCtrlResource(c *cron.Cron) {
 		if services, ok, _ := k8s.GetServiceList(ctx); ok {
 			for _, cm := range services.Items {
 				for k, v := range cm.Labels {
-					if k == "victim" || k == "generator" {
+					if k == k8s.VictimPodTag || k == k8s.GeneratorPodTag {
 						if _, ok, _ = k8s.GetPod(ctx, v); !ok {
 							k8s.DeleteServiceListByPodName(ctx, k, v)
 						}
@@ -39,7 +39,7 @@ func ClearUnCtrlResource(c *cron.Cron) {
 		if policies, ok, _ := k8s.GetNetworkPolicyList(ctx); ok {
 			for _, cm := range policies.Items {
 				for k, v := range cm.Labels {
-					if k == "victim" || k == "generator" {
+					if k == k8s.VictimPodTag || k == k8s.GeneratorPodTag {
 						if _, ok, _ = k8s.GetPod(ctx, v); !ok {
 							k8s.DeleteNetworkPolicyListByPodName(ctx, k, v)
 						}

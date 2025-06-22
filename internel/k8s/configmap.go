@@ -27,7 +27,7 @@ func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*core
 			Name:      fmt.Sprintf("cm-%s", strings.ToLower(utils.RandStr(10))),
 			Namespace: namespaceName,
 			Labels: map[string]string{
-				"victim": options.PodName,
+				VictimPodTag: options.PodName,
 			},
 		},
 		Data: options.Data,

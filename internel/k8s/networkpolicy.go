@@ -47,13 +47,13 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 			Name:      fmt.Sprintf("np-%s", strings.ToLower(utils.RandStr(10))),
 			Namespace: namespaceName,
 			Labels: map[string]string{
-				"victim": options.PodName,
+				VictimPodTag: options.PodName,
 			},
 		},
 		Spec: netv1.NetworkPolicySpec{
 			PodSelector: metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"victim": options.PodName,
+					VictimPodTag: options.PodName,
 				},
 			},
 			// 默认不允许出网
