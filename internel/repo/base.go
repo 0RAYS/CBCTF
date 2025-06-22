@@ -117,7 +117,7 @@ func (b *BasicRepo[M]) Count(optionsL ...CountOptions) (int64, bool, string) {
 			res = res.Unscoped()
 		}
 	}
-	if res = res.Select("id").Count(&count); res.Error != nil {
+	if res = res.Count(&count); res.Error != nil {
 		log.Logger.Warningf("Failed to count %s: %s", M.GetModelName(*new(M)), res.Error)
 		return 0, false, M.GetErrorString(*new(M))
 	}
