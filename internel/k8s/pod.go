@@ -3,6 +3,7 @@ package k8s
 import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
+	"CBCTF/internel/utils"
 	"context"
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
@@ -37,6 +38,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool
 			Labels:    options.Labels,
 		},
 		Spec: corev1.PodSpec{
+			EnableServiceLinks:            utils.Ptr(false),
 			Containers:                    options.Containers,
 			Volumes:                       options.Volumes,
 			TerminationGracePeriodSeconds: ptr.To[int64](3),

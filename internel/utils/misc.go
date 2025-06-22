@@ -39,3 +39,7 @@ func TidyPaginate(length, limit, offset int) (int, int) {
 	}
 	return offset, end
 }
+
+func Ptr[T any](v T) *T {
+	return &v
+}
