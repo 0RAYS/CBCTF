@@ -9,7 +9,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/ptr"
 	"time"
 )
 
@@ -41,7 +40,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool
 			EnableServiceLinks:            utils.Ptr(false),
 			Containers:                    options.Containers,
 			Volumes:                       options.Volumes,
-			TerminationGracePeriodSeconds: ptr.To[int64](3),
+			TerminationGracePeriodSeconds: utils.Ptr(int64(3)),
 			RestartPolicy:                 corev1.RestartPolicyNever,
 			HostAliases:                   options.HostAliases,
 		},
