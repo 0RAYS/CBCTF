@@ -55,10 +55,10 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 		PodName: generatorName,
 		Ports:   []int32{8000},
 		Labels: map[string]string{
-			"generator": generatorName,
+			GeneratorPodTag: generatorName,
 		},
 		Selector: map[string]string{
-			"generator": generatorName,
+			GeneratorPodTag: generatorName,
 		},
 	})
 	if !ok {
@@ -69,7 +69,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 	pod, ok, msg = CreatePod(ctx, CreatePodOptions{
 		Name: generatorName,
 		Labels: map[string]string{
-			"generator": generatorName,
+			GeneratorPodTag: generatorName,
 		},
 		Containers: []corev1.Container{
 			{

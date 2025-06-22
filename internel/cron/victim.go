@@ -48,7 +48,7 @@ func CloseUnCtrlVictims(c *cron.Cron) {
 		}
 		podRepo := db.InitPodRepo(db.DB)
 		for _, pod := range pods.Items {
-			if strings.HasPrefix(pod.Name, "victim") && time.Now().Sub(pod.CreationTimestamp.Time) > 4*time.Hour {
+			if strings.HasPrefix(pod.Name, k8s.VictimPodTag) && time.Now().Sub(pod.CreationTimestamp.Time) > 4*time.Hour {
 				_, ok, _ = podRepo.Get(db.GetOptions{
 					Conditions: map[string]any{"name": pod.Name},
 					Selects:    []string{"id"},

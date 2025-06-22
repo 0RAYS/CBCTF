@@ -38,10 +38,10 @@ func StartVictim(victim model.Victim) (map[string]map[string]any, bool, string) 
 				PodName: pod.Name,
 				Ports:   pod.PodPorts,
 				Labels: map[string]string{
-					"victim": pod.Name,
+					VictimPodTag: pod.Name,
 				},
 				Selector: map[string]string{
-					"victim": pod.Name,
+					VictimPodTag: pod.Name,
 				},
 			})
 			if !ok {
@@ -216,7 +216,7 @@ func StartVictim(victim model.Victim) (map[string]map[string]any, bool, string) 
 				Name:  pod.Name,
 				PodIP: pod.PodIP,
 				Labels: map[string]string{
-					"victim":               pod.Name,
+					VictimPodTag:           pod.Name,
 					"team_id":              strconv.Itoa(int(victim.TeamID)),
 					"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID)),
 					"user_id":              strconv.Itoa(int(victim.UserID)),
@@ -298,15 +298,15 @@ func StopVictim(victim model.Victim) (bool, string) {
 			if err != nil {
 				log.Logger.Warningf("Failed to copy %d traffic: %v", victim.TeamID, err)
 			}
-			if ok, msg := DeleteNetworkPolicyListByPodName(ctx, "victim", pod.Name); !ok {
+			if ok, msg := DeleteNetworkPolicyListByPodName(ctx, VictimPodTag, pod.Name); !ok {
 				resultCh <- result{OK: false, Msg: msg}
 				return
 			}
-			if ok, msg := DeleteServiceListByPodName(ctx, "victim", pod.Name); !ok {
+			if ok, msg := DeleteServiceListByPodName(ctx, VictimPodTag, pod.Name); !ok {
 				resultCh <- result{OK: false, Msg: msg}
 				return
 			}
-			if ok, msg := DeleteConfigMapListByPodName(ctx, "victim", pod.Name); !ok {
+			if ok, msg := DeleteConfigMapListByPodName(ctx, VictimPodTag, pod.Name); !ok {
 				resultCh <- result{OK: false, Msg: msg}
 				return
 			}

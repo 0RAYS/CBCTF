@@ -20,6 +20,11 @@ import (
 	"k8s.io/client-go/tools/clientcmd/api"
 )
 
+const (
+	VictimPodTag    = "victim"
+	GeneratorPodTag = "generator"
+)
+
 var (
 	kubeClient                  *kubernetes.Clientset
 	calicoClient                *clientset.Clientset
