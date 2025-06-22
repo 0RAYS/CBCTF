@@ -157,21 +157,22 @@ func (t *TeamRepo) GetBy2ID(userID, contestID uint, optionsL ...GetOptions) (mod
 }
 
 func (t *TeamRepo) Delete(idL ...uint) (bool, string) {
+	teamL, _, ok, msg := t.List(-1, -1, GetOptions{
+		Conditions: map[string]any{"id": idL},
+		Selects:    []string{"id", "name", "contest_id"},
+		Preloads: map[string]GetOptions{
+			"Users":       {Selects: []string{"id"}},
+			"Submissions": {Selects: []string{"id"}},
+			"TeamFlags":   {Selects: []string{"id"}},
+		},
+	})
+	if !ok && msg != i18n.TeamNotFound {
+		return false, msg
+	}
 	submissionIDL, teamFlagIDL := make([]uint, 0), make([]uint, 0)
-	for _, id := range idL {
-		team, ok, msg := t.GetByID(id, GetOptions{
-			Selects: []string{"id", "name", "contest_id"},
-			Preloads: map[string]GetOptions{
-				"Users":       {Selects: []string{"id"}},
-				"Submissions": {Selects: []string{"id"}},
-				"TeamFlags":   {Selects: []string{"id"}},
-			},
-		})
-		if !ok && msg != i18n.TeamNotFound {
-			return false, msg
-		}
+	for _, team := range teamL {
 		deletedName := fmt.Sprintf("%s_deleted_%s", team.Name, utils.RandStr(6))
-		if ok, msg = t.Update(id, UpdateTeamOptions{
+		if ok, msg = t.Update(team.ID, UpdateTeamOptions{
 			Name: &deletedName,
 		}); !ok {
 			return false, msg
@@ -191,10 +192,10 @@ func (t *TeamRepo) Delete(idL ...uint) (bool, string) {
 			teamFlagIDL = append(teamFlagIDL, teamFlag.ID)
 		}
 	}
-	if ok, msg := InitSubmissionRepo(t.DB).Delete(submissionIDL...); !ok {
+	if ok, msg = InitSubmissionRepo(t.DB).Delete(submissionIDL...); !ok {
 		return false, msg
 	}
-	if ok, msg := InitTeamFlagRepo(t.DB).Delete(teamFlagIDL...); !ok {
+	if ok, msg = InitTeamFlagRepo(t.DB).Delete(teamFlagIDL...); !ok {
 		return false, msg
 	}
 	if res := t.DB.Model(&model.Team{}).Where("id IN ?", idL).Delete(&model.Team{}); res.Error != nil {

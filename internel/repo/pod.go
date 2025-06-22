@@ -74,17 +74,19 @@ func InitPodRepo(tx *gorm.DB) *PodRepo {
 }
 
 func (p *PodRepo) Delete(idL ...uint) (bool, string) {
+	podL, _, ok, msg := p.List(-1, -1, GetOptions{
+		Conditions: map[string]any{"id": idL},
+	})
+	if !ok && msg != i18n.PodNotFound {
+		return false, msg
+	}
 	containerIDL := make([]uint, 0)
-	for _, id := range idL {
-		pod, ok, msg := p.GetByID(id)
-		if !ok && msg != i18n.PodNotFound {
-			return false, msg
-		}
+	for _, pod := range podL {
 		for _, container := range pod.Containers {
 			containerIDL = append(containerIDL, container.ID)
 		}
 	}
-	if ok, msg := InitContainerRepo(p.DB).Delete(containerIDL...); !ok {
+	if ok, msg = InitContainerRepo(p.DB).Delete(containerIDL...); !ok {
 		return false, msg
 	}
 	if res := p.DB.Model(&model.Pod{}).Where("id IN ?", idL).Delete(&model.Pod{}); res.Error != nil {

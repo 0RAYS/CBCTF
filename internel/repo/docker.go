@@ -50,22 +50,23 @@ func InitDockerRepo(tx *gorm.DB) *DockerRepo {
 }
 
 func (d *DockerRepo) Delete(idL ...uint) (bool, string) {
+	dockerL, _, ok, msg := d.List(-1, -1, GetOptions{
+		Conditions: map[string]any{"id": idL},
+		Selects:    []string{"id"},
+		Preloads: map[string]GetOptions{
+			"ChallengeFlags": {Selects: []string{"id"}},
+		},
+	})
+	if !ok && msg != i18n.DockerNotFound {
+		return ok, msg
+	}
 	challengeFlagIDL := make([]uint, 0)
-	for _, id := range idL {
-		docker, ok, msg := d.GetByID(id, GetOptions{
-			Selects: []string{"id"},
-			Preloads: map[string]GetOptions{
-				"ChallengeFlags": {Selects: []string{"id"}},
-			},
-		})
-		if !ok && msg != i18n.DockerNotFound {
-			return ok, msg
-		}
+	for _, docker := range dockerL {
 		for _, challengeFlag := range docker.ChallengeFlags {
 			challengeFlagIDL = append(challengeFlagIDL, challengeFlag.ID)
 		}
 	}
-	if ok, msg := InitChallengeFlagRepo(d.DB).Delete(challengeFlagIDL...); !ok {
+	if ok, msg = InitChallengeFlagRepo(d.DB).Delete(challengeFlagIDL...); !ok {
 		return false, msg
 	}
 	if res := d.DB.Model(&model.Docker{}).Where("id IN ?", idL).Delete(&model.Docker{}); res.Error != nil {

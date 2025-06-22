@@ -86,14 +86,17 @@ func (a *AdminRepo) GetByName(name string, optionsL ...GetOptions) (model.Admin,
 }
 
 func (a *AdminRepo) Delete(idL ...uint) (bool, string) {
-	for _, id := range idL {
-		admin, ok, msg := a.GetByID(id, GetOptions{Selects: []string{"name", "email"}})
-		if !ok && msg != i18n.AdminNotFound {
-			return false, msg
-		}
+	adminL, _, ok, msg := a.List(-1, -1, GetOptions{
+		Conditions: map[string]any{"id": idL},
+		Selects:    []string{"id", "name", "email"},
+	})
+	if !ok && msg != i18n.AdminNotFound {
+		return false, msg
+	}
+	for _, admin := range adminL {
 		deletedName := fmt.Sprintf("%s_deleted_%s", admin.Name, utils.RandStr(6))
 		deletedEmail := fmt.Sprintf("%s_deleted_%s", admin.Email, utils.RandStr(6))
-		if ok, msg = a.Update(id, UpdateAdminOptions{
+		if ok, msg = a.Update(admin.ID, UpdateAdminOptions{
 			Name:  &deletedName,
 			Email: &deletedEmail,
 		}); !ok {

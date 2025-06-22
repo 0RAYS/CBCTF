@@ -67,22 +67,23 @@ func (v *VictimRepo) HasAliveVictim(teamID uint, contestChallengeID uint) (model
 }
 
 func (v *VictimRepo) Delete(idL ...uint) (bool, string) {
+	victimL, _, ok, msg := v.List(-1, -1, GetOptions{
+		Conditions: map[string]any{"id": idL},
+		Selects:    []string{"id"},
+		Preloads: map[string]GetOptions{
+			"Pods": {Selects: []string{"id"}},
+		},
+	})
+	if !ok && msg != i18n.VictimNotFound {
+		return false, msg
+	}
 	podIDL := make([]uint, 0)
-	for _, id := range idL {
-		victim, ok, msg := v.GetByID(id, GetOptions{
-			Selects: []string{"id"},
-			Preloads: map[string]GetOptions{
-				"Pods": {Selects: []string{"id"}},
-			},
-		})
-		if !ok && msg != i18n.VictimNotFound {
-			return false, msg
-		}
+	for _, victim := range victimL {
 		for _, pod := range victim.Pods {
 			podIDL = append(podIDL, pod.ID)
 		}
 	}
-	if ok, msg := InitPodRepo(v.DB).Delete(idL...); !ok {
+	if ok, msg = InitPodRepo(v.DB).Delete(idL...); !ok {
 		return false, msg
 	}
 	if res := v.DB.Model(&model.Victim{}).Where("id IN ?", idL).Delete(&model.Victim{}); res.Error != nil {
