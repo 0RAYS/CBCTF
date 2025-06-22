@@ -34,10 +34,3 @@ func Start() {
 	log.Logger.Info("Cron started")
 	Cron.Start()
 }
-
-func Stop() {
-	if Cron != nil {
-		Cron.Stop()
-		log.Logger.Info("Cron stopped")
-	}
-}

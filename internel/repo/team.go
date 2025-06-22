@@ -124,6 +124,9 @@ func (t *TeamRepo) GetByName(contestID uint, name string, optionsL ...GetOptions
 	if len(optionsL) > 0 {
 		options = optionsL[0]
 	}
+	if options.Conditions == nil {
+		options.Conditions = make(map[string]any)
+	}
 	options.Conditions["contest_id"] = contestID
 	options.Conditions["name"] = name
 	return t.Get(options)
@@ -133,6 +136,9 @@ func (t *TeamRepo) GetBy2ID(userID, contestID uint, optionsL ...GetOptions) (mod
 	options := GetOptions{}
 	if len(optionsL) > 0 {
 		options = optionsL[0]
+	}
+	if options.Conditions == nil {
+		options.Conditions = make(map[string]any)
 	}
 	options.Conditions["contest_id"] = contestID
 	user, ok, msg := InitUserRepo(t.DB).GetByID(userID, GetOptions{

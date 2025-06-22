@@ -28,7 +28,7 @@ func GetCheats(ctx *gin.Context) {
 	}
 	options := db.GetOptions{}
 	if form.Type != "" {
-		options.Conditions["type"] = form.Type
+		options.Conditions = map[string]any{"type": form.Type}
 	}
 	cheats, count, ok, msg := db.InitCheatRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, options)
 	if !ok {

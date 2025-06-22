@@ -13,6 +13,7 @@ import (
 
 func GetChallenges(tx *gorm.DB, form f.GetChallengesForm) ([]model.Challenge, int64, bool, string) {
 	options := db.GetOptions{
+		Conditions: make(map[string]any),
 		Preloads: map[string]db.GetOptions{
 			"DockerGroups": {
 				Preloads: map[string]db.GetOptions{
