@@ -43,7 +43,7 @@ func GetContests(ctx *gin.Context) {
 		},
 	}
 	if !middleware.IsAdmin(ctx) {
-		options.Conditions["hidden"] = false
+		options.Conditions = map[string]any{"hidden": false}
 	}
 	contests, count, ok, msg := db.InitContestRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, options)
 	if !ok {
