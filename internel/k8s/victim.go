@@ -298,15 +298,15 @@ func StopVictim(victim model.Victim) (bool, string) {
 			if err != nil {
 				log.Logger.Warningf("Failed to copy %d traffic: %v", victim.TeamID, err)
 			}
-			if ok, msg := DeleteNetworkPolicyListByPodName(ctx, pod.Name); !ok {
+			if ok, msg := DeleteNetworkPolicyListByPodName(ctx, "victim", pod.Name); !ok {
 				resultCh <- result{OK: false, Msg: msg}
 				return
 			}
-			if ok, msg := DeleteServiceListByPodName(ctx, pod.Name); !ok {
+			if ok, msg := DeleteServiceListByPodName(ctx, "victim", pod.Name); !ok {
 				resultCh <- result{OK: false, Msg: msg}
 				return
 			}
-			if ok, msg := DeleteConfigMapListByPodName(ctx, pod.Name); !ok {
+			if ok, msg := DeleteConfigMapListByPodName(ctx, "victim", pod.Name); !ok {
 				resultCh <- result{OK: false, Msg: msg}
 				return
 			}

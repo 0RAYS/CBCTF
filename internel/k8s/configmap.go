@@ -52,9 +52,9 @@ func GetConfigMapList(ctx context.Context) (*corev1.ConfigMapList, bool, string)
 	return configMapList, true, i18n.Success
 }
 
-func GetConfigMapListByPodName(ctx context.Context, podName string) (*corev1.ConfigMapList, bool, string) {
+func GetConfigMapListByPodName(ctx context.Context, key, podName string) (*corev1.ConfigMapList, bool, string) {
 	configMapList, err := kubeClient.CoreV1().ConfigMaps(namespaceName).List(ctx, metav1.ListOptions{
-		LabelSelector: fmt.Sprintf("victim=%s", podName),
+		LabelSelector: fmt.Sprintf("%s=%s", key, podName),
 	})
 	if err != nil {
 		if apierror.IsNotFound(err) {
@@ -76,8 +76,8 @@ func DeleteConfigMap(ctx context.Context, configMapName string) (bool, string) {
 }
 
 // DeleteConfigMapListByPodName TODO: 有可能删不干净
-func DeleteConfigMapListByPodName(ctx context.Context, podName string) (bool, string) {
-	configMapList, ok, msg := GetConfigMapListByPodName(ctx, podName)
+func DeleteConfigMapListByPodName(ctx context.Context, key, podName string) (bool, string) {
+	configMapList, ok, msg := GetConfigMapListByPodName(ctx, key, podName)
 	if !ok {
 		if msg != i18n.ConfigMapNotFound {
 			return false, msg

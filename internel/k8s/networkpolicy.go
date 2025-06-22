@@ -87,9 +87,9 @@ func GetNetworkPolicyList(ctx context.Context) (*netv1.NetworkPolicyList, bool, 
 	return networkPolicyList, true, i18n.Success
 }
 
-func GetNetworkPolicyListByPodName(ctx context.Context, podName string) (*netv1.NetworkPolicyList, bool, string) {
+func GetNetworkPolicyListByPodName(ctx context.Context, key, podName string) (*netv1.NetworkPolicyList, bool, string) {
 	networkPolicyList, err := kubeClient.NetworkingV1().NetworkPolicies(namespaceName).List(ctx, metav1.ListOptions{
-		LabelSelector: fmt.Sprintf("victim=%s", podName),
+		LabelSelector: fmt.Sprintf("%s=%s", key, podName),
 	})
 	if err != nil {
 		if apierror.IsNotFound(err) {
@@ -111,8 +111,8 @@ func DeleteNetworkPolicy(ctx context.Context, name string) (bool, string) {
 }
 
 // DeleteNetworkPolicyListByPodName TODO: 有可能删不干净
-func DeleteNetworkPolicyListByPodName(ctx context.Context, podName string) (bool, string) {
-	networkPolicyList, ok, msg := GetNetworkPolicyListByPodName(ctx, podName)
+func DeleteNetworkPolicyListByPodName(ctx context.Context, key, podName string) (bool, string) {
+	networkPolicyList, ok, msg := GetNetworkPolicyListByPodName(ctx, key, podName)
 	if !ok {
 		if msg != i18n.NetworkPolicyNotFound {
 			return false, i18n.GetNetworkPolicyError

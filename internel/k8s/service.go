@@ -77,9 +77,9 @@ func GetServiceList(ctx context.Context) (*corev1.ServiceList, bool, string) {
 	return serviceList, true, i18n.Success
 }
 
-func GetServiceListByPodName(ctx context.Context, podName string) (*corev1.ServiceList, bool, string) {
+func GetServiceListByPodName(ctx context.Context, key, podName string) (*corev1.ServiceList, bool, string) {
 	serviceList, err := kubeClient.CoreV1().Services(namespaceName).List(ctx, metav1.ListOptions{
-		LabelSelector: fmt.Sprintf("victim=%s", podName),
+		LabelSelector: fmt.Sprintf("%s=%s", key, podName),
 	})
 	if err != nil {
 		if apierror.IsNotFound(err) {
@@ -102,8 +102,8 @@ func DeleteService(ctx context.Context, name string) (bool, string) {
 }
 
 // DeleteServiceListByPodName TODO: 有可能删不干净
-func DeleteServiceListByPodName(ctx context.Context, podName string) (bool, string) {
-	serviceList, ok, msg := GetServiceListByPodName(ctx, podName)
+func DeleteServiceListByPodName(ctx context.Context, key, podName string) (bool, string) {
+	serviceList, ok, msg := GetServiceListByPodName(ctx, key, podName)
 	if !ok {
 		if msg != i18n.ServiceNotFound {
 			return false, msg
