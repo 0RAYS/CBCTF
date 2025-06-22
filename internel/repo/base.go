@@ -40,7 +40,7 @@ func (b *BasicRepo[M]) Create(options CreateOptions) (M, bool, string) {
 		log.Logger.Warningf("Failed to create %T: %s", new(M), res.Error)
 		return *new(M), false, M.CreateErrorString(*new(M))
 	}
-	return options.(M), true, i18n.Success
+	return m, true, i18n.Success
 }
 
 func ApplyGetOptions(tx *gorm.DB, options GetOptions) *gorm.DB {
