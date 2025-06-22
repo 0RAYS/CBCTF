@@ -41,9 +41,8 @@ func VerifyEmail(tx *gorm.DB, form f.VerifyEmail) (bool, string) {
 		return false, id
 	}
 	if form.ID == id {
-		verified := true
 		repo := db.InitUserRepo(tx)
-		ok, msg := repo.Update(claims.UserID, db.UpdateUserOptions{Verified: &verified})
+		ok, msg := repo.Update(claims.UserID, db.UpdateUserOptions{Verified: utils.Ptr(true)})
 		if !ok {
 			return false, msg
 		}
