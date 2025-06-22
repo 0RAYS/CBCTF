@@ -70,7 +70,7 @@ func (d *DockerRepo) Delete(idL ...uint) (bool, string) {
 	}
 	if res := d.DB.Model(&model.Docker{}).Where("id IN ?", idL).Delete(&model.Docker{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Docker: %v", res.Error)
-		return false, model.Docker{}.DeleteErrorString()
+		return false, i18n.DeleteDockerError
 	}
 	return true, i18n.Success
 }
