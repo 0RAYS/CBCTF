@@ -12,7 +12,12 @@ func exec(name string, task func()) func() {
 	return func() {
 		start := time.Now()
 		task()
-		log.Logger.Infof("%s processing time: %s", name, time.Since(start))
+		duration := time.Since(start)
+		if duration > time.Second {
+			log.Logger.Warningf("%s processing time: %s", name, duration)
+		} else {
+			log.Logger.Debugf("%s processing time: %s", name, duration)
+		}
 	}
 }
 
