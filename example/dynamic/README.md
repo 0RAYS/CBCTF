@@ -21,7 +21,7 @@
    - 解压至 `/root`
 
 4. 生成附件:
-   - 由服务器向 `http://pod:8000/gen` 发起 `GET` 请求, 携带参数 `id` 和 `flags`, pwd参数由服务器自动生成, 无需关注
+   - 由服务器向 `http://pod:8000/gen` 发起 `GET` 请求, 携带参数 `id` 和 `flags`, `pwd`参数由服务器自动生成, 无需关注
      ```bash
      /gen?id=123&flags=`base64(base64(flag1),base64(flag2),...)`&pwd=pwd
      ```
@@ -65,7 +65,6 @@ EXPOSE 8000
 WORKDIR /root
 
 CMD ["python", "app.py"]
-
 ```
 
 ---
