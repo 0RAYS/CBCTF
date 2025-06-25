@@ -90,10 +90,10 @@ func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
 		Conditions: map[string]any{"rand_id": randIDL},
 		Selects:    []string{"id"},
 		Preloads: map[string]GetOptions{
-			"DockerGroups":      {Selects: []string{"id"}},
-			"ChallengeFlags":    {Selects: []string{"id"}},
-			"ContestChallenges": {Selects: []string{"id"}},
-			"Submissions":       {Selects: []string{"id"}},
+			"DockerGroups":      {Selects: []string{"id", "challenge_id"}},
+			"ChallengeFlags":    {Selects: []string{"id", "challenge_id"}},
+			"ContestChallenges": {Selects: []string{"id", "challenge_id"}},
+			"Submissions":       {Selects: []string{"id", "challenge_id"}},
 		},
 	})
 	if !ok && msg != i18n.ChallengeNotFound {
