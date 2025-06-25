@@ -89,7 +89,7 @@ func checkRemoteIP(contest model.Contest) {
 			Deleted:    true,
 			Preloads: map[string]db.GetOptions{
 				"Traffics": {
-					Selects: []string{"id", "src_ip"},
+					Selects: []string{"id", "victim_id", "src_ip"},
 				},
 			},
 		})
@@ -141,10 +141,10 @@ func CheckWrongFlag(contest model.Contest) {
 		Conditions: map[string]any{"contest_id": contest.ID},
 		Preloads: map[string]db.GetOptions{
 			"TeamFlags": {
-				Selects: []string{"id", "value", "team_id"},
+				Selects: []string{"id", "team_id", "value"},
 			},
 			"Submissions": {
-				Selects: []string{"id", "solved", "ip", "value"},
+				Selects: []string{"id", "team_id", "solved", "ip", "value"},
 			},
 		},
 	})

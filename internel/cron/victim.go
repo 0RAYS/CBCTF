@@ -17,7 +17,7 @@ func CloseTimeoutVictims(c *cron.Cron) {
 			Selects: []string{"id", "start", "duration", "team_id", "contest_challenge_id"},
 			Preloads: map[string]db.GetOptions{
 				"Pods": {
-					Selects: []string{"id", "name", "victim_id"},
+					Selects: []string{"id", "victim_id", "name"},
 				},
 			},
 		})

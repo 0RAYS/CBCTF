@@ -127,10 +127,10 @@ func (c *ContestRepo) Delete(idL ...uint) (bool, string) {
 		Selects:    []string{"id", "name"},
 		Preloads: map[string]GetOptions{
 			"Teams":             {Selects: []string{"id"}},
-			"Notices":           {Selects: []string{"id"}},
-			"ContestChallenges": {Selects: []string{"id"}},
-			"ContestFlags":      {Selects: []string{"id"}},
-			"Submissions":       {Selects: []string{"id"}},
+			"Notices":           {Selects: []string{"id", "contest_id"}},
+			"ContestChallenges": {Selects: []string{"id", "contest_id"}},
+			"ContestFlags":      {Selects: []string{"id", "contest_id"}},
+			"Submissions":       {Selects: []string{"id", "contest_id"}},
 		},
 	})
 	if !ok && msg != i18n.ContestNotFound {

@@ -28,7 +28,7 @@ func UpdateFlagScore(c *cron.Cron) {
 				Selects:    []string{"id"},
 				Preloads: map[string]db.GetOptions{
 					"ContestFlags": {
-						Selects: []string{"id", "solvers", "score", "current_score", "decay", "min_score", "score_type"},
+						Selects: []string{"id", "contest_challenge_id", "solvers", "score", "current_score", "decay", "min_score", "score_type"},
 					},
 				},
 			})

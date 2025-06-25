@@ -162,8 +162,8 @@ func (t *TeamRepo) Delete(idL ...uint) (bool, string) {
 		Selects:    []string{"id", "name", "contest_id"},
 		Preloads: map[string]GetOptions{
 			"Users":       {Selects: []string{"id"}},
-			"Submissions": {Selects: []string{"id"}},
-			"TeamFlags":   {Selects: []string{"id"}},
+			"Submissions": {Selects: []string{"id", "team_id"}},
+			"TeamFlags":   {Selects: []string{"id", "team_id"}},
 		},
 	})
 	if !ok && msg != i18n.TeamNotFound {

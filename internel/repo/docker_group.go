@@ -48,7 +48,7 @@ func (d *DockerGroupRepo) Delete(idL ...uint) (bool, string) {
 		Conditions: map[string]any{"id": idL},
 		Selects:    []string{"id"},
 		Preloads: map[string]GetOptions{
-			"Dockers": {Selects: []string{"id"}},
+			"Dockers": {Selects: []string{"id", "docker_group_id"}},
 		},
 	})
 	if !ok && msg != i18n.DockerGroupNotFound {
