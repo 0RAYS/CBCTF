@@ -29,7 +29,7 @@ type CreateChallengeForm struct {
 	GeneratorImage string           `form:"generator_image" json:"generator_image"`
 	DockerGroups   []struct {
 		Yaml            string                `form:"yaml" json:"yaml"`
-		NetworkPolicies model.NetworkPolicies `json:"network_policies"`
+		NetworkPolicies model.NetworkPolicies `form:"yaml" json:"network_policies"`
 	} `form:"docker_groups" json:"docker_groups"`
 }
 
