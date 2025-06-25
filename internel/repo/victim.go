@@ -71,7 +71,7 @@ func (v *VictimRepo) Delete(idL ...uint) (bool, string) {
 		Conditions: map[string]any{"id": idL},
 		Selects:    []string{"id"},
 		Preloads: map[string]GetOptions{
-			"Pods": {Selects: []string{"id"}},
+			"Pods": {Selects: []string{"id", "victim_id"}},
 		},
 	})
 	if !ok && msg != i18n.VictimNotFound {

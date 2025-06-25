@@ -98,8 +98,8 @@ func (c *ContestChallengeRepo) Delete(idL ...uint) (bool, string) {
 		Conditions: map[string]any{"id": idL},
 		Selects:    []string{"id"},
 		Preloads: map[string]GetOptions{
-			"ContestFlags": {Selects: []string{"id"}},
-			"Submissions":  {Selects: []string{"id"}},
+			"ContestFlags": {Selects: []string{"id", "contest_challenge_id"}},
+			"Submissions":  {Selects: []string{"id", "contest_challenge_id"}},
 		},
 	})
 	if !ok && msg != i18n.ContestChallengeNotFound {

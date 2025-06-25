@@ -95,8 +95,8 @@ func (c *ContestFlagRepo) Delete(idL ...uint) (bool, string) {
 		Conditions: map[string]any{"id": idL},
 		Selects:    []string{"id"},
 		Preloads: map[string]GetOptions{
-			"Submissions": {Selects: []string{"id"}},
-			"TeamFlags":   {Selects: []string{"id"}},
+			"Submissions": {Selects: []string{"id", "contest_flag_id"}},
+			"TeamFlags":   {Selects: []string{"id", "contest_flag_id"}},
 		},
 	})
 	if !ok && msg != i18n.ContestFlagNotFound {

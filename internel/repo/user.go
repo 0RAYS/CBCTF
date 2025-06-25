@@ -119,7 +119,7 @@ func (u *UserRepo) Delete(idL ...uint) (bool, string) {
 		Selects:    []string{"id", "name", "email"},
 		Preloads: map[string]GetOptions{
 			"Teams":       {Selects: []string{"id", "contest_id"}},
-			"Submissions": {Selects: []string{"id"}},
+			"Submissions": {Selects: []string{"id", "user_id"}},
 		},
 	})
 	if !ok && msg != i18n.UserNotFound {

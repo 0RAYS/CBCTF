@@ -54,7 +54,7 @@ func (d *DockerRepo) Delete(idL ...uint) (bool, string) {
 		Conditions: map[string]any{"id": idL},
 		Selects:    []string{"id"},
 		Preloads: map[string]GetOptions{
-			"ChallengeFlags": {Selects: []string{"id"}},
+			"ChallengeFlags": {Selects: []string{"id", "docker_id"}},
 		},
 	})
 	if !ok && msg != i18n.DockerNotFound {
