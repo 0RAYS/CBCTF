@@ -7,17 +7,22 @@ import (
 	"gopkg.in/gomail.v2"
 	"math/rand"
 	"regexp"
+	"sync"
+	"time"
 )
 
 type Sender struct {
-	Auth *gomail.SendCloser
-	Addr string
-	Host string
-	Port int
+	Auth       *gomail.SendCloser
+	Addr       string
+	Host       string
+	Pwd        string
+	Port       int
+	CreatedAt  time.Time
+	UpdateLock sync.Mutex
 }
 
 var (
-	Senders = make([]Sender, 0)
+	Senders = make([]*Sender, 0)
 )
 
 func Init() {
@@ -28,16 +33,30 @@ func Init() {
 			log.Logger.Warningf("Failed to connect to email server %s:%d: %v", sender.Host, sender.Port, err)
 			continue
 		}
-		Senders = append(Senders, Sender{
-			Auth: &auth,
-			Addr: sender.Addr,
-			Host: sender.Host,
-			Port: sender.Port,
+		Senders = append(Senders, &Sender{
+			Auth:      &auth,
+			Addr:      sender.Addr,
+			Host:      sender.Host,
+			Port:      sender.Port,
+			Pwd:       sender.Pwd,
+			CreatedAt: time.Now(),
 		})
 	}
 	if len(Senders) == 0 {
 		log.Logger.Warningf("No sender configured, email sending will be failed")
 	}
+}
+
+func Redial(old *Sender) error {
+	dialer := gomail.NewDialer(old.Host, old.Port, old.Addr, old.Pwd)
+	auth, err := dialer.Dial()
+	if err != nil {
+		log.Logger.Warningf("Failed to connect to email server %s:%d: %v", old.Host, old.Port, err)
+		return err
+	}
+	old.Auth = &auth
+	old.CreatedAt = time.Now()
+	return nil
 }
 
 // IsValidEmail 邮箱格式验证
@@ -53,7 +72,20 @@ func SendVerifyEmail(to, token, id string) error {
 	if len(Senders) == 0 {
 		return fmt.Errorf("no email sender configured")
 	}
-	sender := Senders[rand.Intn(len(Senders))]
+	var sender *Sender
+	for {
+		sender = Senders[rand.Intn(len(Senders))]
+		sender.UpdateLock.Lock()
+		if sender.CreatedAt.Sub(time.Now()) < time.Minute {
+			sender.UpdateLock.Unlock()
+			break
+		}
+		if Redial(sender) == nil {
+			sender.UpdateLock.Unlock()
+			break
+		}
+		sender.UpdateLock.Unlock()
+	}
 	m := gomail.NewMessage()
 	m.SetHeader("From", sender.Addr)
 	m.SetHeader("To", to)
