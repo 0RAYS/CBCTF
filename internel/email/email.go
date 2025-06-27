@@ -56,6 +56,7 @@ func Redial(old *Sender) error {
 	}
 	old.Auth = &auth
 	old.CreatedAt = time.Now()
+	log.Logger.Debugf("Redialed email server %s:%d successfully", old.Host, old.Port)
 	return nil
 }
 
@@ -73,7 +74,9 @@ func SendVerifyEmail(to, token, id string) error {
 		return fmt.Errorf("no email sender configured")
 	}
 	var sender *Sender
+	var count = 0
 	for {
+		count++
 		sender = Senders[rand.Intn(len(Senders))]
 		sender.UpdateLock.Lock()
 		if sender.CreatedAt.Sub(time.Now()) < time.Minute {
@@ -85,6 +88,9 @@ func SendVerifyEmail(to, token, id string) error {
 			break
 		}
 		sender.UpdateLock.Unlock()
+		if count > 5 {
+			return fmt.Errorf("failed too many times to connect smtp servers")
+		}
 	}
 	m := gomail.NewMessage()
 	m.SetHeader("From", sender.Addr)
