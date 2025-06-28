@@ -38,7 +38,7 @@ func VerifyEmail(tx *gorm.DB, form f.VerifyEmail) (bool, string) {
 	}
 	id, err := redis.GetEmailVerifyToken(claims.UserID)
 	if err != nil {
-		return false, id
+		return false, i18n.GetEmailVerifyTokenError
 	}
 	if form.ID == id {
 		repo := db.InitUserRepo(tx)
