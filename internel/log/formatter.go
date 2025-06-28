@@ -145,11 +145,10 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 			LevelColor(LevelText),
 			entry.Time.Format("2006-01-02 15:04:05"),
 		)
-		_, _ = fmt.Fprintf(ret, "%s | %s rows %s %s | %s",
-			safeGetValue[string](entry, "TraceID"),
+		_, _ = fmt.Fprintf(ret, "%s | %s rows %s | %s",
+			fmt.Sprintf("%-36s", strings.Replace(safeGetValue[string](entry, "fileWithLineNum"), base, "", 1)),
 			colors["Debug"](safeGetValue[string](entry, "rows")),
 			colors["Debug"](safeGetValue[string](entry, "duration")),
-			strings.Replace(safeGetValue[string](entry, "fileWithLineNum"), base, "", 1),
 			safeGetValue[string](entry, "sql"),
 		)
 	}
@@ -199,11 +198,10 @@ func (f TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		)
 	case "GORM":
 		_, _ = fmt.Fprintf(ret, "%s %s | ", LevelText, entry.Time.Format("2006-01-02 15:04:05"))
-		_, _ = fmt.Fprintf(ret, "%s | %s rows %s %s | %s",
-			safeGetValue[string](entry, "TraceID"),
+		_, _ = fmt.Fprintf(ret, "%s | %s rows %s | %s",
+			fmt.Sprintf("%-36s", strings.Replace(safeGetValue[string](entry, "fileWithLineNum"), base, "", 1)),
 			safeGetValue[string](entry, "rows"),
 			safeGetValue[string](entry, "duration"),
-			strings.Replace(safeGetValue[string](entry, "fileWithLineNum"), base, "", 1),
 			safeGetValue[string](entry, "sql"),
 		)
 	}
