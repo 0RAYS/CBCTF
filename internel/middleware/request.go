@@ -29,9 +29,9 @@ func AccessLog(ctx *gin.Context) {
 			Method:    method,
 			Path:      path,
 			URL:       url,
-			UserAgent: userAgent,
+			UserAgent: userAgent[:len(userAgent)%255],
 			Status:    statusCode,
-			Referer:   referer,
+			Referer:   referer[:len(referer)%255],
 			Magic:     magic,
 		}
 		tx := db.DB.WithContext(ctx).Begin()
