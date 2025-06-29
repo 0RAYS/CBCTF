@@ -74,6 +74,10 @@ func (c ContestFlag) GetUniqueKey() []string {
 	return []string{"id"}
 }
 
+func (c ContestFlag) GetForeignKeys() []string {
+	return []string{"id", "contest_id", "contest_challenge_id", "challenge_flag_id"}
+}
+
 func (c ContestFlag) CalcScore(solvers int64) float64 {
 	var calc float64 = 0
 	switch c.ScoreType {

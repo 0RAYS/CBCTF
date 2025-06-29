@@ -51,3 +51,7 @@ func (r Request) UpdateErrorString() string {
 func (r Request) GetUniqueKey() []string {
 	return []string{"id"}
 }
+
+func (r Request) GetForeignKeys() []string {
+	return []string{"id"}
+}

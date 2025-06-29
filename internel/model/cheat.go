@@ -65,3 +65,7 @@ func (c Cheat) UpdateErrorString() string {
 func (c Cheat) GetUniqueKey() []string {
 	return []string{"id"}
 }
+
+func (c Cheat) GetForeignKeys() []string {
+	return []string{"id", "user_id", "team_id", "contest_id", "contest_challenge_id", "contest_flag_id"}
+}

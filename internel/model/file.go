@@ -64,3 +64,7 @@ func (f File) GetUniqueKey() []string {
 	// 虽然hash并不唯一, 但不影响功能
 	return []string{"id", "rand_id", "hash"}
 }
+
+func (f File) GetForeignKeys() []string {
+	return []string{"id", "admin_id", "user_id", "team_id", "contest_id"}
+}

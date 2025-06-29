@@ -18,6 +18,7 @@ type CreateOptions interface {
 	Convert2Model() model.Model
 }
 
+// GetOptions 设置 Preload 时, 须确保对应关系的外键被 Select
 type GetOptions struct {
 	Conditions map[string]any
 	Selects    []string

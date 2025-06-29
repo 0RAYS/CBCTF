@@ -17,34 +17,38 @@ type TeamFlag struct {
 	BasicModel
 }
 
-func (r TeamFlag) GetModelName() string {
+func (t TeamFlag) GetModelName() string {
 	return "TeamFlag"
 }
 
-func (r TeamFlag) GetVersion() uint {
-	return r.Version
+func (t TeamFlag) GetVersion() uint {
+	return t.Version
 }
 
-func (r TeamFlag) CreateErrorString() string {
+func (t TeamFlag) CreateErrorString() string {
 	return i18n.CreateTeamFlagError
 }
 
-func (r TeamFlag) DeleteErrorString() string {
+func (t TeamFlag) DeleteErrorString() string {
 	return i18n.DeleteTeamFlagError
 }
 
-func (r TeamFlag) GetErrorString() string {
+func (t TeamFlag) GetErrorString() string {
 	return i18n.GetTeamFlagError
 }
 
-func (r TeamFlag) NotFoundErrorString() string {
+func (t TeamFlag) NotFoundErrorString() string {
 	return i18n.TeamFlagNotFound
 }
 
-func (r TeamFlag) UpdateErrorString() string {
+func (t TeamFlag) UpdateErrorString() string {
 	return i18n.UpdateTeamFlagError
 }
 
-func (r TeamFlag) GetUniqueKey() []string {
+func (t TeamFlag) GetUniqueKey() []string {
 	return []string{"id"}
+}
+
+func (t TeamFlag) GetForeignKeys() []string {
+	return []string{"id", "team_id", "contest_flag_id", "challenge_flag_id"}
 }

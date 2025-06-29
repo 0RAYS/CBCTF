@@ -29,34 +29,38 @@ type Submission struct {
 	BasicModel
 }
 
-func (r Submission) GetModelName() string {
+func (s Submission) GetModelName() string {
 	return "Submission"
 }
 
-func (r Submission) GetVersion() uint {
-	return r.Version
+func (s Submission) GetVersion() uint {
+	return s.Version
 }
 
-func (r Submission) CreateErrorString() string {
+func (s Submission) CreateErrorString() string {
 	return i18n.CreateSubmissionError
 }
 
-func (r Submission) DeleteErrorString() string {
+func (s Submission) DeleteErrorString() string {
 	return i18n.DeleteSubmissionError
 }
 
-func (r Submission) GetErrorString() string {
+func (s Submission) GetErrorString() string {
 	return i18n.GetSubmissionError
 }
 
-func (r Submission) NotFoundErrorString() string {
+func (s Submission) NotFoundErrorString() string {
 	return i18n.SubmissionNotFound
 }
 
-func (r Submission) UpdateErrorString() string {
+func (s Submission) UpdateErrorString() string {
 	return i18n.UpdateSubmissionError
 }
 
-func (r Submission) GetUniqueKey() []string {
+func (s Submission) GetUniqueKey() []string {
 	return []string{"id"}
+}
+
+func (s Submission) GetForeignKeys() []string {
+	return []string{"id", "contest_challenge_id", "contest_id", "challenge_id", "team_id", "user_id", "contest_flag_id"}
 }

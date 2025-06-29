@@ -60,3 +60,7 @@ func (t Team) UpdateErrorString() string {
 func (t Team) GetUniqueKey() []string {
 	return []string{"id"}
 }
+
+func (t Team) GetForeignKeys() []string {
+	return []string{"id", "contest_id"}
+}

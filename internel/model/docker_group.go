@@ -44,3 +44,7 @@ func (c DockerGroup) UpdateErrorString() string {
 func (c DockerGroup) GetUniqueKey() []string {
 	return []string{"id"}
 }
+
+func (c DockerGroup) GetForeignKeys() []string {
+	return []string{"id", "challenge_id"}
+}
