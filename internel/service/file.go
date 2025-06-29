@@ -14,6 +14,7 @@ import (
 	"io"
 	"mime/multipart"
 	"path/filepath"
+	"slices"
 	"strings"
 )
 
@@ -42,7 +43,7 @@ func SaveAvatar(tx *gorm.DB, options db.CreateFileOptions, file *multipart.FileH
 		allowed       = []string{".png", ".jpg", ".jpeg"}
 		suffix        = strings.ToLower(filepath.Ext(file.Filename))
 	)
-	if !utils.In(suffix, allowed) {
+	if !slices.Contains(allowed, suffix) {
 		return model.File{}, false, i18n.FileNotAllowed
 	}
 	if !ok {
@@ -108,7 +109,7 @@ func SaveWriteUp(tx *gorm.DB, user model.User, contest model.Contest, team model
 		allowed       = []string{".pdf", ".docx", ".doc"}
 		suffix        = strings.ToLower(filepath.Ext(file.Filename))
 	)
-	if !utils.In(suffix, allowed) {
+	if !slices.Contains(allowed, suffix) {
 		return model.File{}, false, i18n.FileNotAllowed
 	}
 	if !ok {

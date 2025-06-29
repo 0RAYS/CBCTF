@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -59,7 +60,7 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, contestChallenge
 			dns[docker.Name] = ipBlock[i]
 			for _, port := range docker.Expose {
 				p, _ := strconv.ParseInt(port, 10, 32)
-				if !utils.In(int32(p), podPorts[dockerGroup.ID]) {
+				if !slices.Contains(podPorts[dockerGroup.ID], int32(p)) {
 					podPorts[dockerGroup.ID] = append(podPorts[dockerGroup.ID], int32(p))
 				}
 			}

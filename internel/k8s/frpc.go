@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
+	"slices"
 	"strings"
 )
 
@@ -15,7 +16,7 @@ func CreateFrpcConfig(ctx context.Context, frpsIP string, frpsPort int, token st
 	tmp := make([]int32, 0)
 	for _, port := range service.Spec.Ports {
 		name := fmt.Sprintf("%s-%s-%d-%s", port.Protocol, pod.Name, port.Port, utils.RandStr(6))
-		if utils.In(port.NodePort, tmp) {
+		if slices.Contains(tmp, port.NodePort) {
 			continue
 		}
 		data += fmt.Sprintf(

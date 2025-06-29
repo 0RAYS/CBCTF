@@ -11,6 +11,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	netv1 "k8s.io/api/networking/v1"
 	"math/rand"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -254,7 +255,7 @@ func StartVictim(victim model.Victim) (map[string]map[string]any, bool, string) 
 			log.Logger.Infof("Pod %s is running on %s", pod.Name, ip)
 			ports := make([]int32, 0)
 			for _, port := range service.Spec.Ports {
-				if !utils.In(port.NodePort, ports) {
+				if !slices.Contains(ports, port.NodePort) {
 					ports = append(ports, port.NodePort)
 				}
 			}

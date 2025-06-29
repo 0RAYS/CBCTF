@@ -3,8 +3,8 @@ package middleware
 import (
 	"CBCTF/internel/config"
 	db "CBCTF/internel/repo"
-	"CBCTF/internel/utils"
 	"github.com/gin-gonic/gin"
+	"slices"
 	"time"
 )
 
@@ -22,7 +22,7 @@ func AccessLog(ctx *gin.Context) {
 
 	statusCode := ctx.Writer.Status()
 
-	if !utils.In(path, config.Env.Gin.Log.Whitelist) {
+	if !slices.Contains(config.Env.Gin.Log.Whitelist, path) {
 		request := db.CreateRequestOptions{
 			IP:        ip,
 			Time:      accessTime,
