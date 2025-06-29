@@ -82,7 +82,7 @@ type Config struct {
 			Addr string `mapstructure:"addr" json:"addr"` // 发件人地址
 			Host string `mapstructure:"host" json:"host"` // SMTP 服务器地址
 			Port int    `mapstructure:"port" json:"port"` // SMTP 服务器端口
-			Pwd  string `mapstructure:"pwd" json:"-"`     // SMTP 服务器密码
+			Pwd  string `mapstructure:"pwd" json:"pwd"`   // SMTP 服务器密码
 		} `mapstructure:"senders" json:"senders"` // 发件人列表
 	} `mapstructure:"email" json:"email"`
 
