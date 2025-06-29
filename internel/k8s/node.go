@@ -7,7 +7,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"slices"
-	"strings"
 )
 
 func ListNodes(ctx context.Context) (*corev1.NodeList, bool, string) {
@@ -36,12 +35,12 @@ func GetNodeIPList(ctx context.Context) ([]string, bool, string) {
 }
 
 func GetNodeImageList(ctx context.Context) (map[string][]string, bool, string) {
-	nodeList, ok, msg := ListNodes(ctx)
+	tmp, ok, msg := ListNodes(ctx)
 	if !ok {
 		return make(map[string][]string), false, msg
 	}
 	nodes := make([]*corev1.Node, 0)
-	for _, node := range nodeList.Items {
+	for _, node := range tmp.Items {
 		schedulable := true
 		for _, taint := range node.Spec.Taints {
 			if taint.Effect == corev1.TaintEffectNoSchedule {
@@ -58,10 +57,8 @@ func GetNodeImageList(ctx context.Context) (map[string][]string, bool, string) {
 		images[node.Name] = make([]string, 0)
 		for _, containerImage := range node.Status.Images {
 			for _, name := range containerImage.Names {
-				if strings.Contains(name, "@sha256:") {
-					if !slices.Contains(images[node.Name], name) {
-						images[node.Name] = append(images[node.Name], name)
-					}
+				if !slices.Contains(images[node.Name], name) {
+					images[node.Name] = append(images[node.Name], name)
 				}
 			}
 		}
