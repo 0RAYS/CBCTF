@@ -87,7 +87,7 @@ func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string,
 			"type":       model.DynamicChallengeType,
 			"contest_id": contest.ID,
 		},
-		Selects: []string{"id"},
+		Selects: []string{"id", "challenge_id"},
 		Preloads: map[string]db.GetOptions{
 			"Challenge": {
 				Selects: []string{"id", "generator_image"},
