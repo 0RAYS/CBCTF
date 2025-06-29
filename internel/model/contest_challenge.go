@@ -56,3 +56,7 @@ func (c ContestChallenge) UpdateErrorString() string {
 func (c ContestChallenge) GetUniqueKey() []string {
 	return []string{"id"}
 }
+
+func (c ContestChallenge) GetForeignKeys() []string {
+	return []string{"id", "contest_id", "challenge_id"}
+}

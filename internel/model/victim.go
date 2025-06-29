@@ -57,6 +57,10 @@ func (v Victim) GetUniqueKey() []string {
 	return []string{"id"}
 }
 
+func (v Victim) GetForeignKeys() []string {
+	return []string{"id", "contest_challenge_id", "team_id", "user_id"}
+}
+
 func (v Victim) GenPodName(challengeRandID string) string {
 	return fmt.Sprintf("victim-%s-%s-pod", challengeRandID, strings.ToLower(utils.RandStr(5)))
 }

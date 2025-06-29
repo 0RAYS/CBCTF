@@ -48,3 +48,7 @@ func (c Container) UpdateErrorString() string {
 func (c Container) GetUniqueKey() []string {
 	return []string{"id"}
 }
+
+func (c Container) GetForeignKeys() []string {
+	return []string{"id", "pod_id"}
+}

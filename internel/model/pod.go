@@ -52,6 +52,10 @@ func (p Pod) GetUniqueKey() []string {
 	return []string{"id"}
 }
 
+func (p Pod) GetForeignKeys() []string {
+	return []string{"id", "victim_id"}
+}
+
 func (p Pod) TrafficPath() string {
 	return fmt.Sprintf("%s/traffics/victim-%d/pod-%d-%s.pcap", config.Env.Path, p.VictimID, p.ID, p.Name)
 }

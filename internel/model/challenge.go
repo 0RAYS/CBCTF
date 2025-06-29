@@ -66,6 +66,10 @@ func (c Challenge) GetUniqueKey() []string {
 	return []string{"id", "rand_id"}
 }
 
+func (c Challenge) GetForeignKeys() []string {
+	return []string{"id"}
+}
+
 func (c Challenge) BasicDir() string {
 	return fmt.Sprintf("%s/challenges/%d", config.Env.Path, c.ID)
 }
