@@ -41,10 +41,14 @@ func GetNodeImageList(ctx context.Context) (map[string][]string, bool, string) {
 	}
 	nodes := make([]*corev1.Node, 0)
 	for _, node := range tmp.Items {
+		schedulable := true
 		for _, taint := range node.Spec.Taints {
 			if taint.Effect == corev1.TaintEffectNoSchedule {
-				continue
+				schedulable = false
+				break
 			}
+		}
+		if schedulable {
 			nodes = append(nodes, &node)
 		}
 	}
