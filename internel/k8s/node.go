@@ -45,6 +45,7 @@ func GetNodeImageList(ctx context.Context) (map[string][]string, bool, string) {
 			if taint.Effect == corev1.TaintEffectNoSchedule {
 				continue
 			}
+			nodes = append(nodes, &node)
 		}
 	}
 	images := make(map[string][]string)
