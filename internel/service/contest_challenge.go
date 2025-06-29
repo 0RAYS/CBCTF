@@ -5,6 +5,7 @@ import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
+	"CBCTF/internel/utils"
 	"errors"
 	"gorm.io/gorm"
 	"time"
@@ -77,4 +78,63 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form f.CreateCon
 		})
 	}
 	return contestChallengeL, failedL, true, i18n.Success
+}
+
+func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string, bool, string) {
+	images := make([]string, 0)
+	dynamicContestChallenges, _, ok, msg := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{
+			"type":       model.DynamicChallengeType,
+			"contest_id": contest.ID,
+		},
+		Selects: []string{"id"},
+		Preloads: map[string]db.GetOptions{
+			"Challenge": {
+				Selects: []string{"id", "generator_image"},
+			},
+		},
+	})
+	if !ok {
+		return images, false, msg
+	}
+	for _, contestChallenge := range dynamicContestChallenges {
+		if !utils.In(contestChallenge.Challenge.GeneratorImage, images) {
+			images = append(images, contestChallenge.Challenge.GeneratorImage)
+		}
+	}
+	podsContestChallenge, _, ok, msg := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{
+			"type":       model.PodsChallengeType,
+			"contest_id": contest.ID,
+		},
+		Selects: []string{"id", "challenge_id"},
+		Preloads: map[string]db.GetOptions{
+			"Challenge": {
+				Selects: []string{"id"},
+				Preloads: map[string]db.GetOptions{
+					"DockerGroups": {
+						Selects: []string{"id", "challenge_id"},
+						Preloads: map[string]db.GetOptions{
+							"Dockers": {
+								Selects: []string{"id", "docker_group_id", "image"},
+							},
+						},
+					},
+				},
+			},
+		},
+	})
+	if !ok {
+		return images, false, msg
+	}
+	for _, contestChallenge := range podsContestChallenge {
+		for _, dockerGroup := range contestChallenge.Challenge.DockerGroups {
+			for _, docker := range dockerGroup.Dockers {
+				if !utils.In(images, docker.Image) {
+					images = append(images, docker.Image)
+				}
+			}
+		}
+	}
+	return images, true, msg
 }

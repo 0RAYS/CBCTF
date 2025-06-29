@@ -216,6 +216,8 @@ const (
 	GetSecretError    = "GetSecretError"
 	SecretNotFound    = "SecretNotFound"
 
+	GetNodeListError = "GetNodeListError"
+
 	GetIPBlockError   = "GetIPBlockError"
 	EmptyIPBlock      = "EmptyIPBlock"
 	DuplicateHostname = "DuplicateHostname"

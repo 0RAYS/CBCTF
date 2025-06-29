@@ -233,6 +233,11 @@ func Init() *gin.Engine {
 					adminContestFlag.PUT("", UpdateContestFlag)
 				}
 			}
+
+			adminContestWarmup := adminContest.Group("/warmup")
+			{
+				adminContestWarmup.GET("/images", GetContestChallengeImage)
+			}
 		}
 
 		admin.GET("/challenges", GetChallenges)

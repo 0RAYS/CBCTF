@@ -3,10 +3,12 @@ package router
 import (
 	f "CBCTF/internel/form"
 	"CBCTF/internel/i18n"
+	"CBCTF/internel/k8s"
 	"CBCTF/internel/middleware"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/resp"
 	"CBCTF/internel/service"
+	"CBCTF/internel/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
@@ -134,4 +136,32 @@ func DeleteContestChallenge(ctx *gin.Context) {
 		tx.Commit()
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}
+
+func GetContestChallengeImage(ctx *gin.Context) {
+	contest := middleware.GetContest(ctx)
+	contestChallengeImageList, ok, msg := service.GetContestChallengeImageList(db.DB.WithContext(ctx), contest)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	nodeImageMap, ok, msg := k8s.GetNodeImageList(ctx)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	data := make([]gin.H, 0)
+	for _, contestChallengeImage := range contestChallengeImageList {
+		status := make(map[string]bool)
+		for node, nodeImage := range nodeImageMap {
+			status[node] = false
+			if utils.In(contestChallengeImage, nodeImage) {
+				status[node] = true
+			}
+		}
+		data = append(data, gin.H{
+			contestChallengeImage: status,
+		})
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": data})
 }

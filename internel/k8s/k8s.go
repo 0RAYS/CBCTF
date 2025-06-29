@@ -177,17 +177,9 @@ func initClients() {
 }
 
 func updateNodeIPs(ctx context.Context) {
-	nodes, err := kubeClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
-	if err != nil {
-		log.Logger.Fatalf("Failed to list nodes: %v", err)
-	}
-	var ips []string
-	for _, node := range nodes.Items {
-		for _, addr := range node.Status.Addresses {
-			if addr.Type == corev1.NodeInternalIP || addr.Type == corev1.NodeExternalIP {
-				ips = append(ips, addr.Address)
-			}
-		}
+	ips, ok, _ := GetNodeIPList(ctx)
+	if !ok {
+		os.Exit(-1)
 	}
 	config.Env.K8S.Nodes = ips
 }
