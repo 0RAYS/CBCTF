@@ -130,7 +130,7 @@ func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string,
 	for _, contestChallenge := range podsContestChallenge {
 		for _, dockerGroup := range contestChallenge.Challenge.DockerGroups {
 			for _, docker := range dockerGroup.Dockers {
-				if !utils.In(images, docker.Image) {
+				if !utils.In(docker.Image, images) {
 					images = append(images, docker.Image)
 				}
 			}
