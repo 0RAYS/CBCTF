@@ -8,10 +8,12 @@ import (
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/resp"
 	"CBCTF/internel/service"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
 	"slices"
+	"strings"
 )
 
 func GetContestChallenges(ctx *gin.Context) {
@@ -152,11 +154,15 @@ func GetContestChallengeImage(ctx *gin.Context) {
 	}
 	data := make([]gin.H, 0)
 	for _, contestChallengeImage := range contestChallengeImageList {
-		status := make(map[string]bool)
+		status := make(map[string]string)
 		for node, nodeImage := range nodeImageMap {
-			status[node] = false
-			if slices.Contains(nodeImage, contestChallengeImage) {
-				status[node] = true
+			status[node] = "NotFound"
+			if slices.ContainsFunc(nodeImage, func(i string) bool {
+				return strings.HasPrefix(i, fmt.Sprintf("%s@sha256:", contestChallengeImage))
+			}) {
+				status[node] = nodeImage[slices.IndexFunc(nodeImage, func(i string) bool {
+					return strings.HasPrefix(i, fmt.Sprintf("%s@sha256:", contestChallengeImage))
+				})]
 			}
 		}
 		data = append(data, gin.H{
