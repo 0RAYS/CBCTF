@@ -113,35 +113,37 @@ func CheckPermission() {
 		log.Logger.Fatalf("Failed to init k8s client: %s", err)
 	}
 	log.Logger.Infof("Checking permission in namespace %s", namespaceName)
-	groups := map[string][]string{
-		"":                      {"pods", "services", "configmaps", "pods/exec"},
-		"networking.k8s.io":     {"networkpolicies"},
-		"crd.projectcalico.org": {"ippools"},
+	groups := map[string]map[string][]string{
+		"":                      {"pods": {"*"}, "services": {"*"}, "configmaps": {"*"}, "pods/exec": {"*"}, "nodes": {"get", "list", "watch"}},
+		"networking.k8s.io":     {"networkpolicies": {"*"}},
+		"crd.projectcalico.org": {"ippools": {"*"}},
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 	for group, resources := range groups {
-		for _, resource := range resources {
-			accessReview := &authorizationv1.SelfSubjectAccessReview{
-				Spec: authorizationv1.SelfSubjectAccessReviewSpec{
-					ResourceAttributes: &authorizationv1.ResourceAttributes{
-						Namespace: namespaceName,
-						Group:     group,
-						Version:   "*",
-						Resource:  resource,
-						Verb:      "*",
+		for resource, verbL := range resources {
+			for _, verb := range verbL {
+				accessReview := &authorizationv1.SelfSubjectAccessReview{
+					Spec: authorizationv1.SelfSubjectAccessReviewSpec{
+						ResourceAttributes: &authorizationv1.ResourceAttributes{
+							Namespace: namespaceName,
+							Group:     group,
+							Version:   "*",
+							Resource:  resource,
+							Verb:      verb,
+						},
 					},
-				},
-			}
-			res, err := kubeClient.AuthorizationV1().SelfSubjectAccessReviews().Create(ctx, accessReview, metav1.CreateOptions{})
-			if err != nil {
-				log.Logger.Warningf("Failed to check permissions: %v", err)
-			}
-			if !res.Status.Allowed {
-				log.Logger.Warningf("User does NOT have permission to access %s-%s in namespace cbctf.", group, resource)
-				log.Logger.Warningf("Reason: %s", res.Status.Reason)
-				log.Logger.Warningf("EvaluationError: %s", res.Status.EvaluationError)
-				os.Exit(-1)
+				}
+				res, err := kubeClient.AuthorizationV1().SelfSubjectAccessReviews().Create(ctx, accessReview, metav1.CreateOptions{})
+				if err != nil {
+					log.Logger.Warningf("Failed to check permissions: %v", err)
+				}
+				if !res.Status.Allowed {
+					log.Logger.Warningf("User does NOT have permission to access %s-%s in namespace cbctf.", group, resource)
+					log.Logger.Warningf("Reason: %s", res.Status.Reason)
+					log.Logger.Warningf("EvaluationError: %s", res.Status.EvaluationError)
+					os.Exit(-1)
+				}
 			}
 		}
 	}
@@ -295,11 +297,10 @@ func ensureClusterRole(ctx context.Context) {
 	}
 	_, err := kubeClient.RbacV1().ClusterRoles().Create(ctx, &rbacv1.ClusterRole{
 		ObjectMeta: metav1.ObjectMeta{Name: adminClusterRoleName},
-		Rules: []rbacv1.PolicyRule{{
-			APIGroups: []string{"crd.projectcalico.org"},
-			Resources: []string{"ippools"},
-			Verbs:     []string{"*"},
-		}},
+		Rules: []rbacv1.PolicyRule{
+			{APIGroups: []string{""}, Resources: []string{"nodes"}, Verbs: []string{"get", "list", "watch"}},
+			{APIGroups: []string{"crd.projectcalico.org"}, Resources: []string{"ippools"}, Verbs: []string{"*"}},
+		},
 	}, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Fatalf("Failed to create ClusterRole: %v", err)
