@@ -218,6 +218,8 @@ var resp = map[string]map[string]any{
 	GetSecretError:    {"zh-CN": "获取Secret失败", "en-US": "Get secret failed", "code": 500},
 	SecretNotFound:    {"zh-CN": "Secret不存在", "en-US": "Secret not found", "code": 404},
 
+	GetNodeListError: {"zh-CN": "获取K8S节点失败", "en-US": "Get node list failed", "code": 500},
+
 	GetIPBlockError:   {"zh-CN": "获取IP池失败", "en-US": "Get IP block failed", "code": 500},
 	EmptyIPBlock:      {"zh-CN": "IP池为空", "en-US": "IP block is empty", "code": 400},
 	DuplicateHostname: {"zh-CN": "主机名重复", "en-US": "Duplicate hostname", "code": 400},
