@@ -8,10 +8,10 @@ import (
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/resp"
 	"CBCTF/internel/service"
-	"CBCTF/internel/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
+	"slices"
 )
 
 func GetContestChallenges(ctx *gin.Context) {
@@ -155,7 +155,7 @@ func GetContestChallengeImage(ctx *gin.Context) {
 		status := make(map[string]bool)
 		for node, nodeImage := range nodeImageMap {
 			status[node] = false
-			if utils.In(contestChallengeImage, nodeImage) {
+			if slices.Contains(nodeImage, contestChallengeImage) {
 				status[node] = true
 			}
 		}

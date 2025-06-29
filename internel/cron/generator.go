@@ -6,10 +6,10 @@ import (
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
-	"CBCTF/internel/utils"
 	"context"
 	"github.com/robfig/cron/v3"
 	corev1 "k8s.io/api/core/v1"
+	"slices"
 	"strings"
 	"time"
 )
@@ -88,7 +88,7 @@ func StopUnCtrlGenerator(c *cron.Cron) {
 			}
 		}
 		for _, pod := range pods.Items {
-			if strings.HasPrefix(pod.Name, "gen") && !utils.In(pod.Name, names) {
+			if strings.HasPrefix(pod.Name, "gen") && !slices.Contains(names, pod.Name) {
 				ctx, cancel = context.WithTimeout(context.Background(), 1*time.Minute)
 				_, _ = k8s.DeletePod(ctx, pod.Name)
 				cancel()

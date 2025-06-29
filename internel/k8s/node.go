@@ -3,10 +3,10 @@ package k8s
 import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
-	"CBCTF/internel/utils"
 	"context"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"slices"
 )
 
 func ListNodes(ctx context.Context) (*corev1.NodeList, bool, string) {
@@ -52,7 +52,7 @@ func GetNodeImageList(ctx context.Context) (map[string][]string, bool, string) {
 		images[node.Name] = make([]string, 0)
 		for _, containerImage := range node.Status.Images {
 			for _, name := range containerImage.Names {
-				if !utils.In(name, images[node.Name]) {
+				if !slices.Contains(images[node.Name], name) {
 					images[node.Name] = append(images[node.Name], name)
 				}
 			}

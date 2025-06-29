@@ -5,9 +5,9 @@ import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
-	"CBCTF/internel/utils"
 	"errors"
 	"gorm.io/gorm"
+	"slices"
 	"time"
 )
 
@@ -98,7 +98,7 @@ func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string,
 		return images, false, msg
 	}
 	for _, contestChallenge := range dynamicContestChallenges {
-		if !utils.In(contestChallenge.Challenge.GeneratorImage, images) {
+		if !slices.Contains(images, contestChallenge.Challenge.GeneratorImage) {
 			images = append(images, contestChallenge.Challenge.GeneratorImage)
 		}
 	}
@@ -130,7 +130,7 @@ func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string,
 	for _, contestChallenge := range podsContestChallenge {
 		for _, dockerGroup := range contestChallenge.Challenge.DockerGroups {
 			for _, docker := range dockerGroup.Dockers {
-				if !utils.In(docker.Image, images) {
+				if !slices.Contains(images, docker.Image) {
 					images = append(images, docker.Image)
 				}
 			}

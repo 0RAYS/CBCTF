@@ -5,10 +5,10 @@ import (
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
-	"CBCTF/internel/utils"
 	"fmt"
 	"github.com/robfig/cron/v3"
 	"net"
+	"slices"
 	"strings"
 	"time"
 )
@@ -77,7 +77,7 @@ func checkRemoteIP(contest model.Contest) {
 					if podCIDR.Contains(netIP) {
 						continue
 					}
-					if !utils.In(team.ID, ipTeamIDMap[ip]) {
+					if !slices.Contains(ipTeamIDMap[ip], team.ID) {
 						ipTeamIDMap[ip] = append(ipTeamIDMap[ip], team.ID)
 					}
 				}
@@ -108,7 +108,7 @@ func checkRemoteIP(contest model.Contest) {
 				if podCIDR.Contains(netIP) {
 					continue
 				}
-				if !utils.In(victim.TeamID, ipTeamIDMap[traffics.SrcIP]) {
+				if !slices.Contains(ipTeamIDMap[traffics.SrcIP], victim.TeamID) {
 					ipTeamIDMap[traffics.SrcIP] = append(ipTeamIDMap[traffics.SrcIP], victim.TeamID)
 				}
 			}
@@ -155,7 +155,7 @@ func CheckWrongFlag(contest model.Contest) {
 	for _, team := range teams {
 		for _, teamFlag := range team.TeamFlags {
 			if _, ok = flagTeamIDMap[teamFlag.Value]; ok {
-				if !utils.In(teamFlag.TeamID, flagTeamIDMap[teamFlag.Value]) {
+				if !slices.Contains(flagTeamIDMap[teamFlag.Value], teamFlag.TeamID) {
 					flagTeamIDMap[teamFlag.Value] = append(flagTeamIDMap[teamFlag.Value], team.ID)
 				}
 			} else {
@@ -169,7 +169,7 @@ func CheckWrongFlag(contest model.Contest) {
 				continue
 			}
 			if teamIDL, ok := flagTeamIDMap[submission.Value]; ok {
-				if !utils.In(team.ID, flagTeamIDMap[submission.Value]) {
+				if !slices.Contains(flagTeamIDMap[submission.Value], team.ID) {
 					var tmp strings.Builder
 					for _, teamID := range teamIDL {
 						tmp.WriteString(fmt.Sprintf("Team-%d, ", teamID))

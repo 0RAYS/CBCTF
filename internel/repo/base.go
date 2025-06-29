@@ -4,10 +4,10 @@ import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
-	"CBCTF/internel/utils"
 	"errors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+	"slices"
 )
 
 type BasicRepo[M model.Model] struct {
@@ -45,7 +45,7 @@ func (b *BasicRepo[M]) Create(options CreateOptions) (M, bool, string) {
 
 func ApplyGetOptions(tx *gorm.DB, options GetOptions) *gorm.DB {
 	if columns := options.Selects; len(columns) > 0 {
-		if !utils.In("id", columns) {
+		if !slices.Contains(columns, "id") {
 			columns = append([]string{"id"}, columns...)
 		}
 		tx = tx.Select(columns)
@@ -91,7 +91,7 @@ func (b *BasicRepo[M]) GetByID(id uint, optionsL ...GetOptions) (M, bool, string
 }
 
 func (b *BasicRepo[M]) GetByUniqueKey(key string, value any, optionsL ...GetOptions) (M, bool, string) {
-	if !utils.In(key, M.GetUniqueKey(*new(M))) {
+	if !slices.Contains(M.GetUniqueKey(*new(M)), key) {
 		return *new(M), false, i18n.UnsupportedKey
 	}
 	options := GetOptions{}

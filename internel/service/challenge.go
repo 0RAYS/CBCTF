@@ -115,7 +115,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 				ports := app.Expose
 				for _, port := range app.Ports {
 					target := fmt.Sprintf("%d", port.Target)
-					if !utils.In(target, ports) {
+					if !slices.Contains(ports, target) {
 						ports = append(ports, target)
 					}
 				}
@@ -183,7 +183,7 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChalle
 		}
 		challengeFlagRepo := db.InitChallengeFlagRepo(tx)
 		for _, flag := range form.Flags {
-			if utils.In(flag.ID, oldChallengeFlagID) {
+			if slices.Contains(oldChallengeFlagID, flag.ID) {
 				if ok, msg := challengeFlagRepo.Update(flag.ID, db.UpdateChallengeFlagOptions{
 					Value: &flag.Value,
 				}); !ok {
