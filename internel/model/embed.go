@@ -17,7 +17,7 @@ func (a AvatarURL) Value() (driver.Value, error) {
 	if a == "" {
 		return nil, nil
 	}
-	return strings.TrimPrefix(string(a), strings.Trim(config.Env.Backend, "/")), nil
+	return strings.TrimPrefix(string(a), config.Env.Backend), nil
 }
 
 func (a *AvatarURL) Scan(value any) error {
@@ -29,7 +29,7 @@ func (a *AvatarURL) Scan(value any) error {
 		*a = ""
 		return nil
 	}
-	*a = AvatarURL(strings.Trim(config.Env.Backend, "/") + string(bytes))
+	*a = AvatarURL(config.Env.Backend + string(bytes))
 	return nil
 }
 
