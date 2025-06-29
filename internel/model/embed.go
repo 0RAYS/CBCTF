@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"slices"
 	"strings"
 	"time"
 )
@@ -182,16 +183,12 @@ type NetworkPolicies []NetworkPolicy
 
 func (n NetworkPolicies) Value() (driver.Value, error) {
 	for _, p := range n {
-		for i, ipBlock := range p.From {
-			if !ipBlock.isValidIPBlock() {
-				p.From = append(p.From[:i], p.From[i+1:]...)
-			}
-		}
-		for i, ipBlock := range p.To {
-			if !ipBlock.isValidIPBlock() {
-				p.To = append(p.To[:i], p.To[i+1:]...)
-			}
-		}
+		p.From = slices.DeleteFunc(p.From, func(t Target) bool {
+			return !t.isValidIPBlock()
+		})
+		p.To = slices.DeleteFunc(p.From, func(t Target) bool {
+			return !t.isValidIPBlock()
+		})
 	}
 	if len(n) == 0 {
 		return nil, nil

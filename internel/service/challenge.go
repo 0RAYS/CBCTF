@@ -8,6 +8,7 @@ import (
 	"CBCTF/internel/utils"
 	"fmt"
 	"gorm.io/gorm"
+	"slices"
 	"strings"
 )
 
@@ -188,11 +189,9 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChalle
 				}); !ok {
 					return false, msg
 				}
-				for i, id := range oldChallengeFlagID {
-					if id == flag.ID {
-						oldChallengeFlagID = append(oldChallengeFlagID[:i], oldChallengeFlagID[i+1:]...)
-					}
-				}
+				oldChallengeFlagID = slices.DeleteFunc(oldChallengeFlagID, func(id uint) bool {
+					return id == flag.ID
+				})
 			} else {
 				if _, ok, msg := challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
 					ChallengeID: challenge.ID,

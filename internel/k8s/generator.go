@@ -15,6 +15,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -115,7 +116,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 	return pod, true, i18n.Success
 }
 
-func GetGenerator(contestChallenge model.ContestChallenge) (*Generator, int, bool, string) {
+func GetGenerator(contestChallenge model.ContestChallenge) (*Generator, bool, string) {
 	rand.New(rand.NewSource(time.Now().UnixNano()))
 	GeneratorMapMutex.Lock()
 	defer GeneratorMapMutex.Unlock()
@@ -123,30 +124,29 @@ func GetGenerator(contestChallenge model.ContestChallenge) (*Generator, int, boo
 	if ok {
 		if len(generators) > 0 {
 			index := rand.Intn(len(generators))
-			return generators[index], index, true, i18n.Success
+			return generators[index], true, i18n.Success
 		}
 	}
-	return nil, 0, false, i18n.UnknownError
+	return nil, false, i18n.UnknownError
 }
 
 // StopGenerator 停止动态附件生成器, contestChallenge 需要预加载 Challenge
-func StopGenerator(contestChallenge model.ContestChallenge, index int) (bool, string) {
+func StopGenerator(contestChallenge model.ContestChallenge, generator *Generator) (bool, string) {
 	log.Logger.Infof("Stopping generator for challenge %d-%s", contestChallenge.ChallengeID, contestChallenge.Name)
 
 	GeneratorMapMutex.Lock()
 	defer GeneratorMapMutex.Unlock()
-	generators, ok := GeneratorMap[contestChallenge.ID]
+	_, ok := GeneratorMap[contestChallenge.ID]
 	if ok {
-		if len(generators) <= index {
-			return false, i18n.UnknownError
-		}
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 		defer cancel()
-		ok, msg := DeletePod(ctx, generators[index].Pod.Name)
+		ok, msg := DeletePod(ctx, generator.Pod.Name)
 		if !ok {
 			return false, msg
 		}
-		GeneratorMap[contestChallenge.ID] = append(generators[:index], generators[index+1:]...)
+		GeneratorMap[contestChallenge.ID] = slices.DeleteFunc(GeneratorMap[contestChallenge.ID], func(g *Generator) bool {
+			return g.Pod.Name == generator.Pod.Name
+		})
 	}
 	return true, i18n.Success
 }
@@ -155,10 +155,10 @@ func StopGenerator(contestChallenge model.ContestChallenge, index int) (bool, st
 func GenerateAttachment(contestChallenge model.ContestChallenge, team model.Team, teamFlagL []model.TeamFlag) (bool, string) {
 	var err error
 	log.Logger.Debugf("Generating attachment for team %d challenge %d", team.ID, contestChallenge.ChallengeID)
-	generator, index, ok, msg := GetGenerator(contestChallenge)
+	generator, ok, msg := GetGenerator(contestChallenge)
 	// 附加失败则直接返回, 并尝试关闭生成器
 	if !ok || generator.Pod.Status.Phase != corev1.PodRunning {
-		go StopGenerator(contestChallenge, index)
+		go StopGenerator(contestChallenge, generator)
 		return false, msg
 	}
 	var flags string
