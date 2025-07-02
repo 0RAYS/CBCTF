@@ -168,7 +168,7 @@ func UploadChallengeFile(ctx *gin.Context) {
 	}
 	var path string
 	switch challenge.Type {
-	case model.StaticChallengeType, model.PodsChallengeType:
+	case model.StaticChallengeType, model.QuestionChallengeType, model.PodsChallengeType:
 		if file.Filename != model.AttachmentFile {
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.InvalidFileName, "data": nil})
 			return

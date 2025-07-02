@@ -163,6 +163,19 @@ func Init() *gin.Engine {
 			adminUser.POST("/avatar", UploadAvatar("user"))
 		}
 
+		admin.GET("/challenges", GetChallenges)
+		admin.GET("/challenges/categories", GetCategories)
+		admin.POST("/challenges", CreateChallenge)
+		adminChallenge := admin.Group("/challenges/:challengeID", middleware.SetChallenge)
+		{
+			adminChallenge.GET("", GetChallenge)
+			adminChallenge.GET("/files", GetChallengeFiles)
+			adminChallenge.GET("/download", DownloadChallengeFile)
+			adminChallenge.PUT("", UpdateChallenge)
+			adminChallenge.DELETE("", DeleteChallenge)
+			adminChallenge.POST("/upload", UploadChallengeFile)
+		}
+
 		admin.GET("/contests", GetContests)
 		admin.POST("/contests", CreateContest)
 		adminContest := admin.Group("/contests/:contestID", middleware.SetContest)
@@ -238,19 +251,12 @@ func Init() *gin.Engine {
 			{
 				adminContestWarmup.GET("/images", GetContestChallengeImage)
 			}
-		}
 
-		admin.GET("/challenges", GetChallenges)
-		admin.GET("/challenges/categories", GetCategories)
-		admin.POST("/challenges", CreateChallenge)
-		adminChallenge := admin.Group("/challenges/:challengeID", middleware.SetChallenge)
-		{
-			adminChallenge.GET("", GetChallenge)
-			adminChallenge.GET("/files", GetChallengeFiles)
-			adminChallenge.GET("/download", DownloadChallengeFile)
-			adminChallenge.PUT("", UpdateChallenge)
-			adminChallenge.DELETE("", DeleteChallenge)
-			adminChallenge.POST("/upload", UploadChallengeFile)
+			adminContestVictim := adminContest.Group("/victims")
+			{
+				adminContestVictim.GET("")
+				adminContestVictim.DELETE("")
+			}
 		}
 
 		admin.GET("/avatars", GetAvatars)
