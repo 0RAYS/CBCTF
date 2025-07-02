@@ -8,6 +8,7 @@ import (
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/resp"
 	"CBCTF/internel/service"
+	"CBCTF/internel/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -21,6 +22,9 @@ func SubmitFlag(ctx *gin.Context) {
 	user := middleware.GetSelf(ctx).(model.User)
 	team := middleware.GetTeam(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
+	if contestChallenge.Challenge.Type == model.QuestionChallengeType {
+		form.Flag = utils.ToABCD(form.Flag)
+	}
 	tx := db.DB.WithContext(ctx).Begin()
 	result, _, ok, msg := service.Submit(tx, user, team, contestChallenge, form, ctx.ClientIP())
 	if !ok {

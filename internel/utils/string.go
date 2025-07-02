@@ -3,6 +3,7 @@ package utils
 import (
 	"github.com/google/uuid"
 	"math/rand"
+	"sort"
 	"strings"
 	"time"
 )
@@ -30,4 +31,19 @@ func ToTitle(s string) string {
 		return strings.ToUpper(s)
 	}
 	return strings.ToUpper(string(s[0])) + s[1:]
+}
+
+func ToABCD(s string) string {
+	tmp := make(map[rune]struct{})
+	for _, r := range []rune(strings.ToLower(s)) {
+		tmp[r] = struct{}{}
+	}
+	res := make([]rune, 0, len(tmp))
+	for k := range tmp {
+		if k >= 'a' && k <= 'z' {
+			res = append(res, k)
+		}
+	}
+	sort.Slice(res, func(i, j int) bool { return res[i] < res[j] })
+	return string(res)
 }

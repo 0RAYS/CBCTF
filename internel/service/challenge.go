@@ -55,6 +55,15 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 				return model.Challenge{}, false, msg
 			}
 		}
+	case model.QuestionChallengeType:
+		if len(form.Flags) > 0 {
+			if _, ok, msg = challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
+				ChallengeID: challenge.ID,
+				Value:       utils.ToABCD(form.Flags[0]),
+			}); !ok {
+				return model.Challenge{}, false, msg
+			}
+		}
 	case model.DynamicChallengeType:
 		if ok, msg = challengeRepo.Update(challenge.ID, db.UpdateChallengeOptions{
 			GeneratorImage: &form.GeneratorImage,
@@ -183,6 +192,41 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChalle
 		}
 		challengeFlagRepo := db.InitChallengeFlagRepo(tx)
 		for _, flag := range form.Flags {
+			if slices.Contains(oldChallengeFlagID, flag.ID) {
+				if ok, msg := challengeFlagRepo.Update(flag.ID, db.UpdateChallengeFlagOptions{
+					Value: &flag.Value,
+				}); !ok {
+					return false, msg
+				}
+				oldChallengeFlagID = slices.DeleteFunc(oldChallengeFlagID, func(id uint) bool {
+					return id == flag.ID
+				})
+			} else {
+				if _, ok, msg := challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
+					ChallengeID: challenge.ID,
+					Value:       flag.Value,
+				}); !ok {
+					return false, msg
+				}
+			}
+		}
+		if ok, msg := challengeFlagRepo.Delete(oldChallengeFlagID...); !ok {
+			return false, msg
+		}
+		return db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
+			Name:           form.Name,
+			Desc:           form.Desc,
+			Category:       form.Category,
+			GeneratorImage: form.GeneratorImage,
+		})
+	case model.QuestionChallengeType:
+		oldChallengeFlagID := make([]uint, 0)
+		for _, flag := range challenge.ChallengeFlags {
+			oldChallengeFlagID = append(oldChallengeFlagID, flag.ID)
+		}
+		challengeFlagRepo := db.InitChallengeFlagRepo(tx)
+		if len(form.Flags) > 0 {
+			flag := form.Flags[0]
 			if slices.Contains(oldChallengeFlagID, flag.ID) {
 				if ok, msg := challengeFlagRepo.Update(flag.ID, db.UpdateChallengeFlagOptions{
 					Value: &flag.Value,
