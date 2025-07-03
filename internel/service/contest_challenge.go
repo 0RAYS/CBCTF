@@ -1,6 +1,7 @@
 package service
 
 import (
+	"CBCTF/internel/config"
 	f "CBCTF/internel/form"
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/model"
@@ -136,5 +137,9 @@ func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string,
 			}
 		}
 	}
+	if config.Env.K8S.Frpc.On {
+		images = append(images, config.Env.K8S.Frpc.Image)
+	}
+	images = append(images, config.Env.K8S.TCPDumpImage)
 	return images, true, msg
 }
