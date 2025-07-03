@@ -9,6 +9,7 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
 )
 
 type CreateJobOptions struct {
@@ -30,23 +31,16 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, boo
 			Command:         []string{"echo", "Success"},
 		})
 	}
-	name := utils.RandStr(10)
 	job = &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("image-puller-%s", utils.RandStr(5)),
+			Name:      fmt.Sprintf("image-puller-%s", strings.ToLower(utils.RandStr(5))),
 			Namespace: namespaceName,
 		},
 		Spec: batchv1.JobSpec{
-			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{
-					"image-puller": name,
-				},
-			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{
-						"image-puller": name,
-					},
+					Name:      fmt.Sprintf("image-puller-%s", strings.ToLower(utils.RandStr(5))),
+					Namespace: namespaceName,
 				},
 				Spec: corev1.PodSpec{
 					Containers:    containers,
