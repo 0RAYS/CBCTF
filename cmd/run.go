@@ -5,7 +5,6 @@ import (
 	"CBCTF/internel/cron"
 	"CBCTF/internel/email"
 	"CBCTF/internel/k8s"
-	//"CBCTF/internel/k8s"
 	"CBCTF/internel/log"
 	"CBCTF/internel/redis"
 	db "CBCTF/internel/repo"
