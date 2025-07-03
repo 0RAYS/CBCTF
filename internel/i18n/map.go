@@ -218,10 +218,10 @@ var resp = map[string]map[string]any{
 	GetSecretError:    {"zh-CN": "获取Secret失败", "en-US": "Get secret failed", "code": 500},
 	SecretNotFound:    {"zh-CN": "Secret不存在", "en-US": "Secret not found", "code": 404},
 
-	CreateDaemonSetError: {"zh-CN": "创建DaemonSet失败", "en-US": "Create DaemonSet failed", "code": 500},
-	DeleteDaemonSetError: {"zh-CN": "删除DaemonSet失败", "en-US": "Delete DaemonSet failed", "code": 500},
-	GetDaemonSetError:    {"zh-CN": "获取DaemonSet失败", "en-US": "Get DaemonSet failed", "code": 500},
-	DaemonSetNotFound:    {"zh-CN": "DaemonSet不存在", "en-US": "DaemonSet not found", "code": 404},
+	CreateJobError: {"zh-CN": "创建Job失败", "en-US": "Create Job failed", "code": 500},
+	DeleteJobError: {"zh-CN": "删除Job失败", "en-US": "Delete Job failed", "code": 500},
+	GetJobError:    {"zh-CN": "获取Job失败", "en-US": "Get Job failed", "code": 500},
+	JobNotFound:    {"zh-CN": "Job不存在", "en-US": "Job not found", "code": 404},
 
 	GetNodeListError: {"zh-CN": "获取K8S节点失败", "en-US": "Get node list failed", "code": 500},
 
