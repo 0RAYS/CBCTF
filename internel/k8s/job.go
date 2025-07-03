@@ -26,7 +26,7 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, boo
 	containers := make([]corev1.Container, 0)
 	for _, image := range options.Images {
 		containers = append(containers, corev1.Container{
-			Name:            fmt.Sprintf("%s-puller", image),
+			Name:            strings.ToLower(utils.RandStr(10)),
 			ImagePullPolicy: corev1.PullPolicy(options.PullPolicy),
 			Image:           image,
 			Command:         []string{"echo", "Success"},
