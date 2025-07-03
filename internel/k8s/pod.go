@@ -38,6 +38,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool
 		},
 		Spec: corev1.PodSpec{
 			EnableServiceLinks:            utils.Ptr(false),
+			AutomountServiceAccountToken:  utils.Ptr(false),
 			Containers:                    options.Containers,
 			Volumes:                       options.Volumes,
 			TerminationGracePeriodSeconds: utils.Ptr(int64(3)),
