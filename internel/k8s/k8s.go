@@ -115,6 +115,7 @@ func CheckPermission() {
 	log.Logger.Infof("Checking permission in namespace %s", namespaceName)
 	groups := map[string]map[string][]string{
 		"":                      {"pods": {"*"}, "services": {"*"}, "configmaps": {"*"}, "pods/exec": {"*"}, "nodes": {"get", "list", "watch"}},
+		"batch":                 {"jobs": {"*"}},
 		"networking.k8s.io":     {"networkpolicies": {"*"}},
 		"crd.projectcalico.org": {"ippools": {"*"}},
 	}
@@ -262,6 +263,7 @@ func ensureRole(ctx context.Context) {
 		},
 		Rules: []rbacv1.PolicyRule{
 			{APIGroups: []string{""}, Resources: []string{"pods", "services", "configmaps", "pods/exec"}, Verbs: []string{"*"}},
+			{APIGroups: []string{"batch"}, Resources: []string{"jobs"}, Verbs: []string{"*"}},
 			{APIGroups: []string{"networking.k8s.io"}, Resources: []string{"networkpolicies"}, Verbs: []string{"*"}},
 		},
 	}, metav1.CreateOptions{})
