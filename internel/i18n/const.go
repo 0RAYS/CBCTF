@@ -216,6 +216,11 @@ const (
 	GetSecretError    = "GetSecretError"
 	SecretNotFound    = "SecretNotFound"
 
+	CreateDaemonSetError = "CreateDaemonSetError"
+	DeleteDaemonSetError = "DeleteDaemonSetError"
+	GetDaemonSetError    = "GetDaemonSetError"
+	DaemonSetNotFound    = "DaemonSetNotFound"
+
 	GetNodeListError = "GetNodeListError"
 
 	GetIPBlockError   = "GetIPBlockError"
