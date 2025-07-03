@@ -18,6 +18,27 @@ func ListNodes(ctx context.Context) (*corev1.NodeList, bool, string) {
 	return nodes, true, i18n.Success
 }
 
+func ListSchedulableNodes(ctx context.Context) ([]*corev1.Node, bool, string) {
+	allNodes, ok, msg := ListNodes(ctx)
+	if !ok {
+		return nil, ok, msg
+	}
+	nodes := make([]*corev1.Node, 0)
+	for _, node := range allNodes.Items {
+		schedulable := true
+		for _, taint := range node.Spec.Taints {
+			if taint.Effect == corev1.TaintEffectNoSchedule {
+				schedulable = false
+				break
+			}
+		}
+		if schedulable {
+			nodes = append(nodes, &node)
+		}
+	}
+	return nodes, true, i18n.Success
+}
+
 func GetNodeIPList(ctx context.Context) ([]string, bool, string) {
 	nodes, ok, msg := ListNodes(ctx)
 	if !ok {
@@ -35,22 +56,9 @@ func GetNodeIPList(ctx context.Context) ([]string, bool, string) {
 }
 
 func GetNodeImageList(ctx context.Context) (map[string][]string, bool, string) {
-	tmp, ok, msg := ListNodes(ctx)
+	nodes, ok, msg := ListSchedulableNodes(ctx)
 	if !ok {
 		return make(map[string][]string), false, msg
-	}
-	nodes := make([]*corev1.Node, 0)
-	for _, node := range tmp.Items {
-		schedulable := true
-		for _, taint := range node.Spec.Taints {
-			if taint.Effect == corev1.TaintEffectNoSchedule {
-				schedulable = false
-				break
-			}
-		}
-		if schedulable {
-			nodes = append(nodes, &node)
-		}
 	}
 	images := make(map[string][]string)
 	for _, node := range nodes {

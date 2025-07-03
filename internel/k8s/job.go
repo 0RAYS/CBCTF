@@ -13,8 +13,9 @@ import (
 )
 
 type CreateJobOptions struct {
-	Images     []string
-	PullPolicy string
+	Images       []string
+	PullPolicy   string
+	NodeSelector map[string]string
 }
 
 func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, bool, string) {
@@ -37,12 +38,14 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, boo
 			Namespace: namespaceName,
 		},
 		Spec: batchv1.JobSpec{
+			TTLSecondsAfterFinished: utils.Ptr[int32](0),
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      fmt.Sprintf("image-puller-%s", strings.ToLower(utils.RandStr(5))),
 					Namespace: namespaceName,
 				},
 				Spec: corev1.PodSpec{
+					NodeSelector:  options.NodeSelector,
 					Containers:    containers,
 					RestartPolicy: corev1.RestartPolicyNever,
 				},
