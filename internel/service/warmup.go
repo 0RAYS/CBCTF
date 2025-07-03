@@ -16,7 +16,7 @@ func GetNodeImageList() (map[string][]string, bool, string) {
 func WarmUpContestChallengeImage(form f.WarmUpImageForm) (bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
-	_, ok, msg := k8s.CreateDaemonSet(ctx, k8s.CreateDaemonSetOptions{
+	_, ok, msg := k8s.CreateJob(ctx, k8s.CreateJobOptions{
 		Images:     form.Images,
 		PullPolicy: form.PullPolicy,
 	})

@@ -216,10 +216,10 @@ const (
 	GetSecretError    = "GetSecretError"
 	SecretNotFound    = "SecretNotFound"
 
-	CreateDaemonSetError = "CreateDaemonSetError"
-	DeleteDaemonSetError = "DeleteDaemonSetError"
-	GetDaemonSetError    = "GetDaemonSetError"
-	DaemonSetNotFound    = "DaemonSetNotFound"
+	CreateJobError = "CreateJobError"
+	DeleteJobError = "DeleteJobError"
+	GetJobError    = "GetJobError"
+	JobNotFound    = "JobNotFound"
 
 	GetNodeListError = "GetNodeListError"
 
