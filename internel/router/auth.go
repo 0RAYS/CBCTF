@@ -16,8 +16,8 @@ import (
 
 func Register(ctx *gin.Context) {
 	var form f.RegisterForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
@@ -48,8 +48,8 @@ func Register(ctx *gin.Context) {
 
 func Login(ctx *gin.Context) {
 	var form f.LoginForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	user, ok, msg := service.VerifyUser(db.DB.WithContext(ctx), form)
@@ -72,8 +72,8 @@ func Login(ctx *gin.Context) {
 
 func AdminLogin(ctx *gin.Context) {
 	var form f.LoginForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	admin, ok, msg := service.VerifyAdmin(db.DB.WithContext(ctx), form)

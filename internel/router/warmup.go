@@ -2,7 +2,6 @@ package router
 
 import (
 	f "CBCTF/internel/form"
-	"CBCTF/internel/i18n"
 	"CBCTF/internel/middleware"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/service"
@@ -49,8 +48,8 @@ func GetContestChallengeImage(ctx *gin.Context) {
 
 func WarmUpContestChallengeImage(ctx *gin.Context) {
 	var form f.WarmUpImageForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	_, msg := service.WarmUpContestChallengeImage(form)

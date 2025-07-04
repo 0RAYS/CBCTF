@@ -1,7 +1,11 @@
 package form
 
 import (
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/model"
+	"CBCTF/internel/utils"
+	"github.com/gin-gonic/gin"
+	"strings"
 	"time"
 )
 
@@ -21,6 +25,18 @@ type CreateContestForm struct {
 	Hidden    bool             `form:"hidden" json:"hidden"`
 }
 
+func (f *CreateContestForm) Bind(ctx *gin.Context) (bool, string) {
+	if err := ctx.ShouldBind(f); err != nil {
+		return false, i18n.BadRequest
+	}
+	f.Name = strings.TrimSpace(f.Name)
+	if f.Name == "" {
+		return false, i18n.BadRequest
+	}
+	f.Prefix = strings.TrimSpace(f.Prefix)
+	return true, i18n.Success
+}
+
 // UpdateContestForm for admin update contest info
 type UpdateContestForm struct {
 	Name      *string           `form:"name" json:"name"`
@@ -35,4 +51,20 @@ type UpdateContestForm struct {
 	Prizes    *model.Prizes     `form:"prizes" json:"prizes"`
 	Timelines *model.Timelines  `form:"timelines" json:"timelines"`
 	Hidden    *bool             `form:"hidden" json:"hidden"`
+}
+
+func (f *UpdateContestForm) Bind(ctx *gin.Context) (bool, string) {
+	if err := ctx.ShouldBind(f); err != nil {
+		return false, i18n.BadRequest
+	}
+	if f.Name != nil {
+		f.Name = utils.Ptr(strings.TrimSpace(*f.Name))
+		if *f.Name == "" {
+			return false, i18n.BadRequest
+		}
+	}
+	if f.Prefix != nil {
+		f.Prefix = utils.Ptr(strings.TrimSpace(*f.Prefix))
+	}
+	return true, i18n.Success
 }

@@ -5,6 +5,7 @@ import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/k8s"
 	"context"
+	corev1 "k8s.io/api/core/v1"
 	"time"
 )
 
@@ -17,6 +18,9 @@ func GetNodeImageList() (map[string][]string, bool, string) {
 func WarmUpContestChallengeImage(form f.WarmUpImageForm) (bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
+	if form.PullPolicy == string(corev1.PullNever) {
+		return true, i18n.Success
+	}
 	nodes, ok, msg := k8s.ListSchedulableNodes(ctx)
 	if !ok {
 		return false, msg

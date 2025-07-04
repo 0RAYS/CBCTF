@@ -42,19 +42,12 @@ func DownloadFile(ctx *gin.Context) {
 
 func DownloadChallengeFile(ctx *gin.Context) {
 	var form f.DownloadChallengeForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	challenge := middleware.GetChallenge(ctx)
-	var path string
-	switch form.File {
-	case model.AttachmentFile, model.GeneratorFile:
-		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), form.File)
-	default:
-		ctx.JSON(http.StatusOK, gin.H{"msg": "InvalidFileName", "data": nil})
-		return
-	}
+	path := fmt.Sprintf("%s/%s", challenge.BasicDir(), form.File)
 	if _, err := os.Stat(path); err != nil {
 		if os.IsNotExist(err) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.FileNotFound, "data": nil})
@@ -220,14 +213,8 @@ func UploadWriteUp(ctx *gin.Context) {
 
 func GetAvatars(ctx *gin.Context) {
 	var form f.GetModelsForm
-	if _, exists := ctx.GetQuery("limit"); !exists {
-		form.Limit = 10
-	}
-	if _, exists := ctx.GetQuery("offset"); !exists {
-		form.Offset = 0
-	}
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	avatars, count, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, db.GetOptions{
@@ -246,14 +233,8 @@ func GetAvatars(ctx *gin.Context) {
 
 func GetWriteUPs(ctx *gin.Context) {
 	var form f.GetModelsForm
-	if _, exists := ctx.GetQuery("limit"); !exists {
-		form.Limit = 10
-	}
-	if _, exists := ctx.GetQuery("offset"); !exists {
-		form.Offset = 0
-	}
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	team := middleware.GetTeam(ctx)
@@ -277,8 +258,8 @@ func GetWriteUPs(ctx *gin.Context) {
 
 func DeleteAvatars(ctx *gin.Context) {
 	var form f.DeleteFileForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	repo := db.InitFileRepo(db.DB.WithContext(ctx))

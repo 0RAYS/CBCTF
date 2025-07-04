@@ -13,9 +13,6 @@ import (
 
 func CreateAdmin(tx *gorm.DB, form f.CreateAdminForm) (model.Admin, bool, string) {
 	repo := db.InitAdminRepo(tx)
-	if !email.IsValidEmail(form.Email) {
-		return model.Admin{}, false, i18n.InvalidEmail
-	}
 	if !repo.IsUniqueEmail(form.Email) {
 		return model.Admin{}, false, i18n.DuplicateEmail
 	}
@@ -98,9 +95,6 @@ func UpdateAdmin(tx *gorm.DB, admin model.Admin, form f.UpdateAdminForm) (bool, 
 func ChangeAdminPassword(tx *gorm.DB, admin model.Admin, form f.ChangePasswordForm) (bool, string) {
 	if !utils.CompareHashAndPassword(admin.Password, form.OldPassword) {
 		return false, i18n.PasswordError
-	}
-	if utils.CompareHashAndPassword(admin.Password, form.NewPassword) {
-		return false, i18n.PasswordSame
 	}
 	hash := utils.HashPassword(form.NewPassword)
 	repo := db.InitAdminRepo(tx)

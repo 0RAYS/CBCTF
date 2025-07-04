@@ -1,6 +1,18 @@
 package form
 
-import "CBCTF/internel/model"
+import (
+	"CBCTF/internel/i18n"
+	"CBCTF/internel/model"
+	"CBCTF/internel/utils"
+	"github.com/gin-gonic/gin"
+	"slices"
+	"strings"
+)
+
+var (
+	allowedChallengeType = []string{model.StaticChallengeType, model.QuestionChallengeType, model.DynamicChallengeType, model.PodsChallengeType}
+	allowedFileName      = []string{model.AttachmentFile, model.GeneratorFile}
+)
 
 // GetChallengesForm for get challenges list
 type GetChallengesForm struct {
@@ -10,14 +22,54 @@ type GetChallengesForm struct {
 	Category string `form:"category" json:"category"`
 }
 
+func (f *GetChallengesForm) Bind(ctx *gin.Context) (bool, string) {
+	if err := ctx.ShouldBind(f); err != nil {
+		return false, i18n.BadRequest
+	}
+	if f.Limit > 100 {
+		f.Limit = 100
+	}
+	if _, exists := ctx.GetQuery("limit"); !exists {
+		f.Limit = 10
+	}
+	if _, exists := ctx.GetQuery("offset"); !exists {
+		f.Offset = 0
+	}
+	if !slices.Contains(allowedChallengeType, f.Type) {
+		f.Type = ""
+	}
+	f.Category = utils.ToTitle(f.Category)
+	return true, i18n.Success
+}
+
 // GetCategoriesForm for get categories list
 type GetCategoriesForm struct {
 	Type string `form:"type" json:"type"`
 }
 
+func (f *GetCategoriesForm) Bind(ctx *gin.Context) (bool, string) {
+	if err := ctx.ShouldBind(f); err != nil {
+		return false, i18n.BadRequest
+	}
+	if !slices.Contains(allowedChallengeType, f.Type) {
+		return false, i18n.InvalidChallengeType
+	}
+	return true, i18n.Success
+}
+
 // DownloadChallengeForm for download challenge
 type DownloadChallengeForm struct {
 	File string `form:"file" json:"file" binding:"required"`
+}
+
+func (f *DownloadChallengeForm) Bind(ctx *gin.Context) (bool, string) {
+	if err := ctx.ShouldBind(f); err != nil {
+		return false, i18n.BadRequest
+	}
+	if !slices.Contains(allowedFileName, f.File) {
+		return false, i18n.InvalidFileName
+	}
+	return true, i18n.Success
 }
 
 type CreateChallengeForm struct {
@@ -33,6 +85,21 @@ type CreateChallengeForm struct {
 	} `form:"docker_groups" json:"docker_groups"`
 }
 
+func (f *CreateChallengeForm) Bind(ctx *gin.Context) (bool, string) {
+	if err := ctx.ShouldBind(f); err != nil {
+		return false, i18n.BadRequest
+	}
+	f.Name = strings.TrimSpace(f.Name)
+	if f.Name == "" {
+		return false, i18n.BadRequest
+	}
+	if !slices.Contains(allowedChallengeType, f.Type) {
+		return false, i18n.InvalidChallengeType
+	}
+	f.Category = utils.ToTitle(f.Category)
+	return true, i18n.Success
+}
+
 type UpdateChallengeForm struct {
 	Name           *string `form:"name" json:"name"`
 	Desc           *string `form:"desc" json:"desc"`
@@ -46,4 +113,20 @@ type UpdateChallengeForm struct {
 		ID              uint                  `form:"id" json:"id"`
 		NetworkPolicies model.NetworkPolicies `json:"network_policies"`
 	} `form:"docker_groups" json:"docker_groups"`
+}
+
+func (f *UpdateChallengeForm) Bind(ctx *gin.Context) (bool, string) {
+	if err := ctx.ShouldBind(f); err != nil {
+		return false, i18n.BadRequest
+	}
+	if f.Name != nil {
+		f.Name = utils.Ptr(strings.TrimSpace(*f.Name))
+		if *f.Name == "" {
+			return false, i18n.BadRequest
+		}
+	}
+	if f.Category != nil {
+		f.Category = utils.Ptr(utils.ToTitle(*f.Category))
+	}
+	return true, i18n.Success
 }
