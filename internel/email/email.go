@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"gopkg.in/gomail.v2"
 	"math/rand"
-	"regexp"
 	"sync"
 	"time"
 )
@@ -58,15 +57,6 @@ func Redial(old *Sender) error {
 	old.CreatedAt = time.Now()
 	log.Logger.Debugf("Redialed email server %s:%d successfully", old.Host, old.Port)
 	return nil
-}
-
-// IsValidEmail 邮箱格式验证
-func IsValidEmail(email string) bool {
-	pattern := `\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*`
-	if regexp.MustCompile(pattern).MatchString(email) {
-		return true
-	}
-	return false
 }
 
 func SendVerifyEmail(to, token, id string) error {
