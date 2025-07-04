@@ -1,7 +1,6 @@
 package service
 
 import (
-	"CBCTF/internel/email"
 	f "CBCTF/internel/form"
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/model"
@@ -12,9 +11,6 @@ import (
 )
 
 func CreateUser(tx *gorm.DB, form f.RegisterForm) (model.User, bool, string) {
-	if !email.IsValidEmail(form.Email) {
-		return model.User{}, false, i18n.InvalidEmail
-	}
 	repo := db.InitUserRepo(tx)
 	if !repo.IsUniqueName(form.Name) {
 		return model.User{}, false, i18n.DuplicateUserName
@@ -30,9 +26,6 @@ func CreateUser(tx *gorm.DB, form f.RegisterForm) (model.User, bool, string) {
 }
 
 func AdminCreateUser(tx *gorm.DB, form f.CreateUserForm) (model.User, bool, string) {
-	if !email.IsValidEmail(form.Email) {
-		return model.User{}, false, i18n.InvalidEmail
-	}
 	repo := db.InitUserRepo(tx)
 	if !repo.IsUniqueName(form.Name) {
 		return model.User{}, false, i18n.DuplicateUserName
@@ -85,9 +78,6 @@ func UpdateSelf(tx *gorm.DB, user model.User, form f.UpdateSelfForm) (bool, stri
 		options.Country = utils.Ptr(strings.ToUpper(*form.Country))
 	}
 	if form.Email != nil && *form.Email != user.Email {
-		if !email.IsValidEmail(*form.Email) {
-			return false, i18n.InvalidEmail
-		}
 		if !repo.IsUniqueEmail(*form.Email) {
 			return false, i18n.DuplicateEmail
 		}
