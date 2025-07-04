@@ -69,6 +69,7 @@ var resp = map[string]map[string]any{
 	GetContestFlagError:    {"zh-CN": "获取比赛flag失败", "en-US": "Get contest flag failed", "code": 500},
 	ContestFlagNotFound:    {"zh-CN": "比赛flag不存在", "en-US": "Contest flag not found", "code": 404},
 	UpdateContestFlagError: {"zh-CN": "更新比赛flag失败", "en-US": "Update contest flag failed", "code": 500},
+	InvalidScoreType:       {"zh-CN": "无效的分数类型", "en-US": "Invalid score type", "code": 500},
 
 	CreateDeviceError: {"zh-CN": "创建设备失败", "en-US": "Create device failed", "code": 500},
 	DeleteDeviceError: {"zh-CN": "删除设备失败", "en-US": "Delete device failed", "code": 500},
@@ -107,6 +108,7 @@ var resp = map[string]map[string]any{
 	GetNoticeError:    {"zh-CN": "获取通知失败", "en-US": "Get notice failed", "code": 500},
 	NoticeNotFound:    {"zh-CN": "通知不存在", "en-US": "Notice not found", "code": 404},
 	UpdateNoticeError: {"zh-CN": "更新通知失败", "en-US": "Update notice failed", "code": 500},
+	InvalidNoticeType: {"zh-CN": "无效的通知类型", "en-US": "Invalid notice type", "code": 400},
 
 	CreatePodError: {"zh-CN": "创建Pod失败", "en-US": "Create pod failed", "code": 500},
 	DeletePodError: {"zh-CN": "删除Pod失败", "en-US": "Delete pod failed", "code": 500},

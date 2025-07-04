@@ -28,7 +28,7 @@ func GetChallenges(tx *gorm.DB, form f.GetChallengesForm) ([]model.Challenge, in
 		options.Conditions["type"] = form.Type
 	}
 	if form.Category != "" {
-		options.Conditions["category"] = utils.ToTitle(form.Category)
+		options.Conditions["category"] = form.Category
 	}
 	return db.InitChallengeRepo(tx).List(form.Limit, form.Offset, options)
 }
@@ -40,7 +40,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 		Name:     form.Name,
 		Desc:     form.Desc,
 		Type:     form.Type,
-		Category: utils.ToTitle(form.Category),
+		Category: form.Category,
 	})
 	if !ok {
 		return model.Challenge{}, false, msg

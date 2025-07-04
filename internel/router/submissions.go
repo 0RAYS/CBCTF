@@ -12,15 +12,9 @@ import (
 
 func GetSubmissions(ctx *gin.Context) {
 	var form f.GetModelsForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
-	}
-	if _, exists := ctx.GetQuery("limit"); !exists {
-		form.Limit = 10
-	}
-	if _, exists := ctx.GetQuery("offset"); !exists {
-		form.Offset = 0
 	}
 	team := middleware.GetTeam(ctx)
 	submissions, count, ok, msg := db.InitSubmissionRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, db.GetOptions{

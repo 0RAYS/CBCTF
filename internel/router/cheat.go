@@ -4,7 +4,6 @@ import (
 	f "CBCTF/internel/form"
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/middleware"
-	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/resp"
 	"github.com/gin-gonic/gin"
@@ -13,18 +12,9 @@ import (
 
 func GetCheats(ctx *gin.Context) {
 	var form f.GetCheatsForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
-	}
-	if _, exists := ctx.GetQuery("limit"); !exists {
-		form.Limit = 5
-	}
-	if _, exists := ctx.GetQuery("offset"); !exists {
-		form.Offset = 0
-	}
-	if form.Type != model.Suspicious && form.Type != model.Cheater {
-		form.Type = ""
 	}
 	options := db.GetOptions{}
 	if form.Type != "" {

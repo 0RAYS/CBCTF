@@ -38,15 +38,9 @@ func GetTeam(ctx *gin.Context) {
 
 func GetTeams(ctx *gin.Context) {
 	var form f.GetModelsForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
-	}
-	if _, exists := ctx.GetQuery("limit"); !exists {
-		form.Limit = 5
-	}
-	if _, exists := ctx.GetQuery("offset"); !exists {
-		form.Offset = 0
 	}
 	DB := db.DB.WithContext(ctx)
 	contest := middleware.GetContest(ctx)
@@ -79,15 +73,9 @@ func GetTeammates(ctx *gin.Context) {
 
 func GetTeamRanking(ctx *gin.Context) {
 	var form f.GetModelsForm
-	if err := ctx.ShouldBindQuery(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
-	}
-	if _, exists := ctx.GetQuery("limit"); !exists {
-		form.Limit = 5
-	}
-	if _, exists := ctx.GetQuery("offset"); !exists {
-		form.Offset = 0
 	}
 	var teamsData []struct {
 		Team   model.Team
@@ -142,15 +130,15 @@ func UpdateTeam(ctx *gin.Context) {
 	)
 	if middleware.IsAdmin(ctx) {
 		var form f.AdminUpdateTeamForm
-		if err := ctx.ShouldBind(&form); err != nil {
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		if ok, msg = form.Bind(ctx); !ok {
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
 		ok, msg = service.AdminUpdateTeam(tx, team, form)
 	} else {
 		var form f.UpdateTeamForm
-		if err := ctx.ShouldBind(&form); err != nil {
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		if ok, msg = form.Bind(ctx); !ok {
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
 		ok, msg = service.UpdateTeam(tx, team, form)
@@ -189,8 +177,8 @@ func DeleteTeam(ctx *gin.Context) {
 
 func KickMember(ctx *gin.Context) {
 	var form f.KickMemberForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	team := middleware.GetTeam(ctx)
@@ -207,8 +195,8 @@ func KickMember(ctx *gin.Context) {
 
 func JoinTeam(ctx *gin.Context) {
 	var form f.JoinTeamForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	contest := middleware.GetContest(ctx)
@@ -226,8 +214,8 @@ func JoinTeam(ctx *gin.Context) {
 
 func CreateTeam(ctx *gin.Context) {
 	var form f.CreateTeamForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	contest := middleware.GetContest(ctx)

@@ -25,15 +25,9 @@ func GetUser(ctx *gin.Context) {
 
 func GetUsers(ctx *gin.Context) {
 	var form f.GetModelsForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
-	}
-	if _, exists := ctx.GetQuery("limit"); !exists {
-		form.Limit = 5
-	}
-	if _, exists := ctx.GetQuery("offset"); !exists {
-		form.Offset = 0
 	}
 	users, count, ok, msg := db.InitUserRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, db.GetOptions{
 		Preloads: map[string]db.GetOptions{
@@ -54,8 +48,8 @@ func GetUsers(ctx *gin.Context) {
 
 func CreateUser(ctx *gin.Context) {
 	var form f.CreateUserForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
@@ -71,8 +65,8 @@ func CreateUser(ctx *gin.Context) {
 
 func ChangePwd(ctx *gin.Context) {
 	var form f.ChangePasswordForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest})
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	tx := db.DB.WithContext(ctx).Begin()
@@ -94,8 +88,8 @@ func UpdateUser(ctx *gin.Context) {
 	)
 	if middleware.IsAdmin(ctx) {
 		var form f.UpdateUserForm
-		if err := ctx.ShouldBind(&form); err != nil {
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		if ok, msg := form.Bind(ctx); !ok {
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
 		user = middleware.GetUser(ctx)
@@ -103,8 +97,8 @@ func UpdateUser(ctx *gin.Context) {
 		ok, msg = service.UpdateUser(tx, user, form)
 	} else {
 		var form f.UpdateSelfForm
-		if err := ctx.ShouldBind(&form); err != nil {
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		if ok, msg = form.Bind(ctx); !ok {
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
 		user = middleware.GetSelf(ctx).(model.User)
@@ -127,8 +121,8 @@ func DeleteUser(ctx *gin.Context) {
 	)
 	if !middleware.IsAdmin(ctx) {
 		var form f.DeleteSelfForm
-		if err := ctx.ShouldBind(&form); err != nil {
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest})
+		if ok, msg = form.Bind(ctx); !ok {
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
 		ok, msg = service.DeleteSelf(tx, middleware.GetSelf(ctx).(model.User), form)

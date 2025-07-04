@@ -67,6 +67,7 @@ const (
 	GetContestFlagError    = "GetContestFlagError"
 	ContestFlagNotFound    = "ContestFlagNotFound"
 	UpdateContestFlagError = "UpdateContestFlagError"
+	InvalidScoreType       = "InvalidScoreType"
 
 	CreateDeviceError = "CreateDeviceError"
 	DeleteDeviceError = "DeleteDeviceError"
@@ -105,6 +106,7 @@ const (
 	GetNoticeError    = "GetNoticeError"
 	NoticeNotFound    = "NoticeNotFound"
 	UpdateNoticeError = "UpdateNoticeError"
+	InvalidNoticeType = "InvalidNoticeType"
 
 	CreatePodError = "CreatePodError"
 	DeletePodError = "DeletePodError"

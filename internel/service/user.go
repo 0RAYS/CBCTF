@@ -22,9 +22,6 @@ func CreateUser(tx *gorm.DB, form f.RegisterForm) (model.User, bool, string) {
 	if !repo.IsUniqueEmail(form.Email) {
 		return model.User{}, false, i18n.DuplicateEmail
 	}
-	if utils.CheckPassword(form.Password) < 2 {
-		return model.User{}, false, i18n.WeakPassword
-	}
 	return repo.Create(db.CreateUserOptions{
 		Name:     form.Name,
 		Password: utils.HashPassword(form.Password),
@@ -71,9 +68,6 @@ func ChangeUserPwd(tx *gorm.DB, user model.User, form f.ChangePasswordForm) (boo
 	repo := db.InitUserRepo(tx)
 	if !utils.CompareHashAndPassword(user.Password, form.OldPassword) {
 		return false, i18n.PasswordError
-	}
-	if utils.CompareHashAndPassword(user.Password, form.NewPassword) {
-		return false, i18n.PasswordSame
 	}
 	if utils.CheckPassword(form.NewPassword) < 2 {
 		return false, i18n.WeakPassword

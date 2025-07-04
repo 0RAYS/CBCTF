@@ -14,8 +14,8 @@ import (
 
 func GetContestChallenges(ctx *gin.Context) {
 	var form f.GetModelsForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	if _, exists := ctx.GetQuery("limit"); !exists {
@@ -88,8 +88,8 @@ func GetContestChallengeStatus(ctx *gin.Context) {
 
 func AddContestChallenge(ctx *gin.Context) {
 	var form f.CreateContestChallengeForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	contestChallengeL, failedL, _, _ := service.CreateContestChallenge(db.DB.WithContext(ctx), middleware.GetContest(ctx), form)
@@ -102,8 +102,8 @@ func AddContestChallenge(ctx *gin.Context) {
 
 func UpdateContestChallenge(ctx *gin.Context) {
 	var form f.UpdateContestChallengeForm
-	if err := ctx.ShouldBind(&form); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	contestChallenge := middleware.GetContestChallenge(ctx)
