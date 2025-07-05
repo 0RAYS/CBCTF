@@ -82,3 +82,13 @@ func GetContestVictims(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"victims": data, "count": count}})
 }
+
+func StopContestsVictims(ctx *gin.Context) {
+	var form f.StopContestVictimsForm
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	_, msg := service.StopContestVictims(db.DB.WithContext(ctx), form)
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}

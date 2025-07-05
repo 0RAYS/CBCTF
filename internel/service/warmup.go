@@ -86,3 +86,37 @@ func GetContestVictims(tx *gorm.DB, contest model.Contest, form f.GetContestVict
 	}
 	return db.InitVictimRepo(tx).List(form.Limit, form.Offset, options)
 }
+
+func StopContestVictims(tx *gorm.DB, form f.StopContestVictimsForm) (bool, string) {
+	if len(form.Victims) == 0 {
+		return true, i18n.Success
+	}
+	victimRepo := db.InitVictimRepo(tx)
+	victims, _, ok, msg := victimRepo.List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{
+			"id": form.Victims,
+		},
+		Preloads: map[string]db.GetOptions{
+			"Pods": {},
+		},
+	})
+	if !ok {
+		return false, msg
+	}
+	victimIDL := make([]uint, 0)
+	for _, victim := range victims {
+		ok, msg = k8s.StopVictim(victim)
+		if !ok {
+			return false, msg
+		}
+		duration := time.Now().Sub(victim.Start)
+		if ok, msg = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
+			Duration: &duration,
+		}); !ok {
+			return false, msg
+		}
+		victimIDL = append(victimIDL, victim.ID)
+		LoadTraffic(tx, victim)
+	}
+	return victimRepo.Delete(victimIDL...)
+}

@@ -247,18 +247,17 @@ func Init() *gin.Engine {
 				}
 			}
 
-			adminContestWarmUp := adminContest.Group("/warmup")
+			adminContestImages := adminContest.Group("/images")
 			{
-				adminContestWarmUp.GET("/images", GetContestChallengeImage)
-				adminContestWarmUp.POST("/images", WarmUpContestChallengeImage)
+				adminContestImages.GET("", GetContestChallengeImage)
+				adminContestImages.POST("", WarmUpContestChallengeImage)
 
-				adminContestWarmUp.GET("/victims", GetContestVictims)
 			}
 
 			adminContestVictim := adminContest.Group("/victims")
 			{
-				adminContestVictim.GET("")
-				adminContestVictim.DELETE("")
+				adminContestVictim.GET("", GetContestVictims)
+				adminContestVictim.DELETE("", StopContestsVictims)
 			}
 		}
 
