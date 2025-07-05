@@ -87,6 +87,67 @@ func GetContestVictims(tx *gorm.DB, contest model.Contest, form f.GetContestVict
 	return db.InitVictimRepo(tx).List(form.Limit, form.Offset, options)
 }
 
+func StartContestVictims(tx *gorm.DB, contest model.Contest, form f.StartContestVictimsForm) (bool, string) {
+	if len(form.Challenges) == 0 || len(form.Teams) == 0 {
+		return true, i18n.Success
+	}
+	challengeIDL := make([]uint, 0)
+	for _, randID := range form.Challenges {
+		challenge, ok, _ := db.InitChallengeRepo(tx).GetByRandID(randID)
+		if !ok {
+			continue
+		}
+		challengeIDL = append(challengeIDL, challenge.ID)
+	}
+	teams := make([]model.Team, 0)
+	teamIDL := make([]uint, 0)
+	for _, id := range form.Teams {
+		team, ok, _ := db.InitTeamRepo(tx).GetByID(id)
+		if !ok {
+			continue
+		}
+		teams = append(teams, team)
+		teamIDL = append(teamIDL, team.ID)
+	}
+	if len(challengeIDL) == 0 || len(teamIDL) == 0 {
+		return true, i18n.Success
+	}
+	contestChallenges, _, ok, msg := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_id": contest.ID, "challenge_id": challengeIDL},
+		Preloads: map[string]db.GetOptions{
+			"ContestFlags": {},
+		},
+	})
+	if !ok {
+		return false, msg
+	}
+	if len(contestChallenges) == 0 {
+		return true, i18n.Success
+	}
+	go func(teams []model.Team, contestChallenges []model.ContestChallenge) {
+		for _, contestChallenge := range contestChallenges {
+			for _, team := range teams {
+				if !CheckIfGenerated(db.DB, team, contestChallenge) {
+					tx2 := db.DB.Begin()
+					if _, ok, msg = CreateTeamFlag(tx2, team, contestChallenge); !ok {
+						tx2.Rollback()
+						continue
+					}
+					tx2.Commit()
+				}
+				tx2 := db.DB.Begin()
+				_, ok, msg = StartTeamVictim(tx, model.User{BasicModel: model.BasicModel{ID: team.CaptainID}}, team, contestChallenge)
+				if !ok {
+					tx2.Rollback()
+					continue
+				}
+				tx2.Commit()
+			}
+		}
+	}(teams, contestChallenges)
+	return true, i18n.Success
+}
+
 func StopContestVictims(tx *gorm.DB, form f.StopContestVictimsForm) (bool, string) {
 	if len(form.Victims) == 0 {
 		return true, i18n.Success
