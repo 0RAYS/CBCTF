@@ -4,6 +4,7 @@ import (
 	f "CBCTF/internel/form"
 	"CBCTF/internel/middleware"
 	db "CBCTF/internel/repo"
+	"CBCTF/internel/resp"
 	"CBCTF/internel/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -54,4 +55,29 @@ func WarmUpContestChallengeImage(ctx *gin.Context) {
 	}
 	_, msg := service.WarmUpContestChallengeImage(form)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}
+
+func GetContestVictims(ctx *gin.Context) {
+	var form f.GetContestVictimsForm
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	contest := middleware.GetContest(ctx)
+	victims, count, _, _ := service.GetContestVictims(db.DB.WithContext(ctx), contest, form)
+	data := make([]gin.H, 0)
+	for _, victim := range victims {
+		info := resp.GetVictimResp(victim)
+		remoteAddrL := make([]string, 0)
+		for _, pod := range victim.Pods {
+			remoteAddrL = append(remoteAddrL, pod.RemoteAddr()...)
+		}
+		info["remote"] = remoteAddrL
+		info["remaining"] = victim.Remaining().Seconds()
+		info["team"] = victim.Team.Name
+		info["user"] = victim.User.Name
+		info["challenge"] = victim.ContestChallenge.Name
+		data = append(data, info)
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": "success", "data": gin.H{"victims": data, "count": count}})
 }

@@ -4,7 +4,10 @@ import (
 	f "CBCTF/internel/form"
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/k8s"
+	"CBCTF/internel/model"
+	db "CBCTF/internel/repo"
 	"context"
+	"gorm.io/gorm"
 	corev1 "k8s.io/api/core/v1"
 	"time"
 )
@@ -37,4 +40,49 @@ func WarmUpContestChallengeImage(form f.WarmUpImageForm) (bool, string) {
 		}
 	}
 	return true, i18n.Success
+}
+
+func GetContestVictims(tx *gorm.DB, contest model.Contest, form f.GetContestVictimsForm) ([]model.Victim, int64, bool, string) {
+	var (
+		victims            = make([]model.Victim, 0)
+		contestChallengeID uint
+	)
+	if form.ChallengeID != "" {
+		challenge, ok, msg := db.InitChallengeRepo(tx).GetByRandID(form.ChallengeID, db.GetOptions{
+			Selects: []string{"id"},
+		})
+		if !ok || challenge.Type != model.PodsChallengeType {
+			return victims, 0, false, msg
+		}
+		contestChallenge, ok, msg := db.InitContestChallengeRepo(tx).Get(db.GetOptions{
+			Conditions: map[string]any{
+				"contest_id":   contest.ID,
+				"challenge_id": challenge.ID,
+			},
+			Selects: []string{"id"},
+		})
+		if !ok {
+			return victims, 0, false, msg
+		}
+		contestChallengeID = contestChallenge.ID
+	}
+	options := db.GetOptions{
+		Conditions: make(map[string]any),
+		Preloads: map[string]db.GetOptions{
+			"Pods":             {},
+			"User":             {Selects: []string{"id", "name"}},
+			"Team":             {Selects: []string{"id", "name"}},
+			"ContestChallenge": {Selects: []string{"id", "name"}},
+		},
+	}
+	if contestChallengeID != 0 {
+		options.Conditions["contest_challenge_id"] = contestChallengeID
+	}
+	if form.TeamID != 0 {
+		options.Conditions["team_id"] = form.TeamID
+	}
+	if form.UserID != 0 {
+		options.Conditions["user_id"] = form.UserID
+	}
+	return db.InitVictimRepo(tx).List(form.Limit, form.Offset, options)
 }
