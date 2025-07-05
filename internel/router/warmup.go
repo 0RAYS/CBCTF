@@ -27,17 +27,17 @@ func GetContestChallengeImage(ctx *gin.Context) {
 	}
 	data := make([]gin.H, 0)
 	for _, contestChallengeImage := range contestChallengeImageList {
-		status := make([]map[string]string, 0)
+		status := make([]map[string]any, 0)
 		for node, nodeImage := range nodeImageMap {
 			if slices.Contains(nodeImage, contestChallengeImage) {
-				status = append(status, map[string]string{
+				status = append(status, map[string]any{
 					"node":   node,
-					"status": "exists",
+					"status": true,
 				})
 			} else {
-				status = append(status, map[string]string{
+				status = append(status, map[string]any{
 					"node":   node,
-					"status": "not exists",
+					"status": false,
 				})
 			}
 		}
