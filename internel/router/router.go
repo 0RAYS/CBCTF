@@ -251,6 +251,8 @@ func Init() *gin.Engine {
 			{
 				adminContestWarmUp.GET("/images", GetContestChallengeImage)
 				adminContestWarmUp.POST("/images", WarmUpContestChallengeImage)
+
+				adminContestWarmUp.GET("/victims", GetContestVictims)
 			}
 
 			adminContestVictim := adminContest.Group("/victims")

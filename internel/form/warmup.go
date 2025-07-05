@@ -25,3 +25,27 @@ func (f *WarmUpImageForm) Bind(ctx *gin.Context) (bool, string) {
 	}
 	return true, i18n.Success
 }
+
+type GetContestVictimsForm struct {
+	Limit       int    `form:"limit" json:"limit"`
+	Offset      int    `form:"offset" json:"offset"`
+	ChallengeID string `form:"challenge_id" json:"challenge_id" binding:"uuid"`
+	TeamID      uint   `form:"team_id" json:"team_id"`
+	UserID      uint   `form:"user_id" json:"user_id"`
+}
+
+func (f *GetContestVictimsForm) Bind(ctx *gin.Context) (bool, string) {
+	if err := ctx.ShouldBind(f); err != nil {
+		return false, i18n.BadRequest
+	}
+	if f.Limit > 100 {
+		f.Limit = 100
+	}
+	if _, exists := ctx.GetQuery("limit"); !exists {
+		f.Limit = 10
+	}
+	if _, exists := ctx.GetQuery("offset"); !exists {
+		f.Offset = 0
+	}
+	return true, i18n.Success
+}
