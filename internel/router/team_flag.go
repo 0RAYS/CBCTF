@@ -47,7 +47,7 @@ func ResetTeamFlag(ctx *gin.Context) {
 		ok, msg = k8s.GenerateAttachment(contestChallenge, team, teamFlags)
 	case model.PodsChallengeType:
 		// 不考虑失败
-		go service.StopVictim(db.DB.WithContext(ctx.Copy()), team, contestChallenge)
+		go service.StopTeamVictim(db.DB.WithContext(ctx.Copy()), team, contestChallenge)
 		ok, msg = true, i18n.Success
 	default:
 		ok, msg = true, i18n.Success

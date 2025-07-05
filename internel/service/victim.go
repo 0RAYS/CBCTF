@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-func StartVictim(tx *gorm.DB, user model.User, team model.Team, contestChallenge model.ContestChallenge) (model.Victim, bool, string) {
+func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChallenge model.ContestChallenge) (model.Victim, bool, string) {
 	challenge, ok, msg := db.InitChallengeRepo(tx).
 		GetByID(contestChallenge.ChallengeID, db.GetOptions{
 			Preloads: map[string]db.GetOptions{
@@ -155,8 +155,8 @@ func StartVictim(tx *gorm.DB, user model.User, team model.Team, contestChallenge
 	return victim, true, i18n.Success
 }
 
-// GetVictimStatus usage 需要预加载 model.ContestChallenge
-func GetVictimStatus(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) gin.H {
+// GetTeamVictimStatus contestChallenge 需要预加载 model.ContestChallenge
+func GetTeamVictimStatus(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) gin.H {
 	data := gin.H{
 		"target":    make([]string, 0),
 		"remaining": 0,
@@ -193,7 +193,7 @@ func GetVictimStatus(tx *gorm.DB, team model.Team, contestChallenge model.Contes
 	return data
 }
 
-func StopVictim(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) (bool, string) {
+func StopTeamVictim(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) (bool, string) {
 	victimRepo := db.InitVictimRepo(tx)
 	victims, _, ok, msg := victimRepo.List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{

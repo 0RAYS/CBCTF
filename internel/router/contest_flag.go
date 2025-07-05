@@ -35,7 +35,7 @@ func SubmitFlag(ctx *gin.Context) {
 	tx.Commit()
 	go func(ctx *gin.Context) {
 		if contestChallenge.Challenge.Type == model.PodsChallengeType && service.CheckIfSolved(db.DB.WithContext(ctx), team, contestChallenge) {
-			service.StopVictim(db.DB.WithContext(ctx), team, contestChallenge)
+			service.StopTeamVictim(db.DB.WithContext(ctx), team, contestChallenge)
 		}
 	}(ctx.Copy())
 	ctx.JSON(http.StatusOK, gin.H{"msg": result, "data": nil})
