@@ -5,6 +5,7 @@ import (
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"errors"
+	"fmt"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"slices"
@@ -190,9 +191,10 @@ func (b *BasicRepo[M]) Delete(idL ...uint) (bool, string) {
 	return true, i18n.Success
 }
 
+// FuzzCount key 由上层进行检查
 func (b *BasicRepo[M]) FuzzCount(key string, value string) (int64, bool, string) {
 	var count int64
-	res := b.DB.Model(new(M)).Where("? LIKE ?", key, "%"+value+"%").Count(&count)
+	res := b.DB.Model(new(M)).Where(fmt.Sprintf("%s LIKE ?", key), "%"+value+"%").Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count %s: %s", M.GetModelName(*new(M)), res.Error)
 		return 0, false, M.GetErrorString(*new(M))
@@ -200,6 +202,7 @@ func (b *BasicRepo[M]) FuzzCount(key string, value string) (int64, bool, string)
 	return count, true, i18n.Success
 }
 
+// FuzzSearch key 由上层进行检查
 func (b *BasicRepo[M]) FuzzSearch(limit, offset int, key, value string) ([]M, int64, bool, string) {
 	var (
 		ms             = make([]M, 0)
@@ -208,7 +211,7 @@ func (b *BasicRepo[M]) FuzzSearch(limit, offset int, key, value string) ([]M, in
 	if !ok {
 		return ms, count, false, msg
 	}
-	res := b.DB.Model(new(M)).Where("? LIKE ?", key, "%"+value+"%").Limit(limit).Offset(offset).Find(&ms)
+	res := b.DB.Model(new(M)).Where(fmt.Sprintf("%s LIKE ?", key), "%"+value+"%").Limit(limit).Offset(offset).Find(&ms)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to search %s: %s", M.GetModelName(*new(M)), res.Error)
 		return ms, count, false, M.GetErrorString(*new(M))

@@ -32,6 +32,7 @@ func GetSolvedStateResp(solved []model.ContestFlag, all []model.ContestFlag) []g
 func GetTeamResp(team model.Team) gin.H {
 	data := gin.H{
 		"id":         team.ID,
+		"contest_id": team.ContestID,
 		"name":       team.Name,
 		"score":      team.Score,
 		"avatar":     team.Avatar,
