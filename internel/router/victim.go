@@ -18,14 +18,14 @@ func StartVictim(ctx *gin.Context) {
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	user := middleware.GetSelf(ctx).(model.User)
 	tx := db.DB.WithContext(ctx).Begin()
-	_, ok, msg := service.StartVictim(tx, user, team, contestChallenge)
+	_, ok, msg := service.StartTeamVictim(tx, user, team, contestChallenge)
 	if !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	tx.Commit()
-	status := service.GetVictimStatus(db.DB.WithContext(ctx), team, contestChallenge)
+	status := service.GetTeamVictimStatus(db.DB.WithContext(ctx), team, contestChallenge)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": status})
 }
 
@@ -81,7 +81,7 @@ func IncreaseVictimDuration(ctx *gin.Context) {
 func StopVictim(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	_, msg := service.StopVictim(db.DB.WithContext(ctx), team, contestChallenge)
+	_, msg := service.StopTeamVictim(db.DB.WithContext(ctx), team, contestChallenge)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
