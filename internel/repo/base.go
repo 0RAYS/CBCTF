@@ -189,3 +189,29 @@ func (b *BasicRepo[M]) Delete(idL ...uint) (bool, string) {
 	}
 	return true, i18n.Success
 }
+
+func (b *BasicRepo[M]) FuzzCount(key string, value string) (int64, bool, string) {
+	var count int64
+	res := b.DB.Model(new(M)).Where("? LIKE ?", key, "%"+value+"%").Count(&count)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to count %s: %s", M.GetModelName(*new(M)), res.Error)
+		return 0, false, M.GetErrorString(*new(M))
+	}
+	return count, true, i18n.Success
+}
+
+func (b *BasicRepo[M]) FuzzSearch(limit, offset int, key, value string) ([]M, int64, bool, string) {
+	var (
+		ms             = make([]M, 0)
+		count, ok, msg = b.FuzzCount(key, value)
+	)
+	if !ok {
+		return ms, count, false, msg
+	}
+	res := b.DB.Model(new(M)).Where("? LIKE ?", key, "%"+value+"%").Limit(limit).Offset(offset).Find(&ms)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to search %s: %s", M.GetModelName(*new(M)), res.Error)
+		return ms, count, false, M.GetErrorString(*new(M))
+	}
+	return ms, count, true, i18n.Success
+}

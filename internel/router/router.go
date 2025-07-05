@@ -146,6 +146,8 @@ func Init() *gin.Engine {
 		admin.POST("/me/avatar", UploadAvatar("admin"))
 		admin.POST("", CreateAdmin)
 
+		admin.GET("/search", Search)
+
 		// 系统管理
 		adminSystem := admin.Group("/system")
 		{
