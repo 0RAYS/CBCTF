@@ -2,6 +2,7 @@ package router
 
 import (
 	f "CBCTF/internel/form"
+	"CBCTF/internel/i18n"
 	"CBCTF/internel/middleware"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/resp"
@@ -79,5 +80,5 @@ func GetContestVictims(ctx *gin.Context) {
 		info["challenge"] = victim.ContestChallenge.Name
 		data = append(data, info)
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": "success", "data": gin.H{"victims": data, "count": count}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"victims": data, "count": count}})
 }
