@@ -4,6 +4,7 @@ import (
 	"CBCTF/internel/i18n"
 	"github.com/gin-gonic/gin"
 	"slices"
+	"strings"
 )
 
 var allowedModel = []string{"user", "team", "contest", "challenge"}
@@ -20,6 +21,8 @@ func (f *SearchForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
 		return false, i18n.BadRequest
 	}
+	f.Model = strings.TrimSpace(strings.ToLower(f.Model))
+	f.Key = strings.TrimSpace(strings.ToLower(f.Key))
 	if !slices.Contains(allowedModel, f.Model) {
 		return false, i18n.BadRequest
 	}
