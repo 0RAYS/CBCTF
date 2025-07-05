@@ -60,3 +60,15 @@ func (f *StopContestVictimsForm) Bind(ctx *gin.Context) (bool, string) {
 	}
 	return true, i18n.Success
 }
+
+type StartContestVictimsForm struct {
+	Challenges []string `form:"challenges" json:"challenges" binding:"required"`
+	Teams      []uint   `form:"teams" json:"teams" binding:"required"`
+}
+
+func (f *StartContestVictimsForm) Bind(ctx *gin.Context) (bool, string) {
+	if err := ctx.ShouldBind(f); err != nil {
+		return false, i18n.BadRequest
+	}
+	return true, i18n.Success
+}
