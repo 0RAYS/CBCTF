@@ -29,7 +29,7 @@ func (f *WarmUpImageForm) Bind(ctx *gin.Context) (bool, string) {
 type GetContestVictimsForm struct {
 	Limit       int    `form:"limit" json:"limit"`
 	Offset      int    `form:"offset" json:"offset"`
-	ChallengeID string `form:"challenge_id" json:"challenge_id" binding:"uuid"`
+	ChallengeID string `form:"challenge_id" json:"challenge_id" binding:"omitempty,uuid"`
 	TeamID      uint   `form:"team_id" json:"team_id"`
 	UserID      uint   `form:"user_id" json:"user_id"`
 }
