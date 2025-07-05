@@ -27,7 +27,7 @@ func (f *CreateAdminForm) Bind(ctx *gin.Context) (bool, string) {
 // UpdateAdminForm for admin update info
 type UpdateAdminForm struct {
 	Name  *string `form:"name" json:"name"`
-	Email *string `form:"email" json:"email" binding:"email"`
+	Email *string `form:"email" json:"email" binding:"omitempty,email"`
 }
 
 func (f *UpdateAdminForm) Bind(ctx *gin.Context) (bool, string) {

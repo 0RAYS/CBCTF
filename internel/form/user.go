@@ -74,7 +74,7 @@ func (f *CreateUserForm) Bind(ctx *gin.Context) (bool, string) {
 // UpdateSelfForm for user update info
 type UpdateSelfForm struct {
 	Name    *string `form:"name" json:"name"`
-	Email   *string `form:"email" json:"email" binding:"email"`
+	Email   *string `form:"email" json:"email" binding:"omitempty,email"`
 	Desc    *string `form:"desc" json:"desc"`
 	Country *string `form:"country" json:"country"`
 }
@@ -95,7 +95,7 @@ func (f *UpdateSelfForm) Bind(ctx *gin.Context) (bool, string) {
 // UpdateUserForm for admin update user info
 type UpdateUserForm struct {
 	Name     *string `form:"name" json:"name"`
-	Email    *string `form:"name" json:"email" binding:"email"`
+	Email    *string `form:"name" json:"email" binding:"omitempty,email"`
 	Desc     *string `form:"desc" json:"desc"`
 	Country  *string `form:"country" json:"country"`
 	Password *string `form:"password" json:"password"`
