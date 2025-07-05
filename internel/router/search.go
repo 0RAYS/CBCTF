@@ -32,7 +32,7 @@ func Search(ctx *gin.Context) {
 		for _, user := range users {
 			data = append(data, resp.GetUserResp(user, true))
 		}
-		ctx.JSON(http.StatusOK, gin.H{"results": data, "count": count})
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"results": data, "count": count}})
 		return
 	case "contest":
 		allowedKeys := []string{"name", "id"}
@@ -49,7 +49,7 @@ func Search(ctx *gin.Context) {
 		for _, contest := range contests {
 			data = append(data, resp.GetContestResp(contest, true))
 		}
-		ctx.JSON(http.StatusOK, gin.H{"results": data, "count": count})
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"results": data, "count": count}})
 		return
 	case "team":
 		allowedKeys := []string{"name", "id"}
@@ -66,7 +66,7 @@ func Search(ctx *gin.Context) {
 		for _, team := range teams {
 			data = append(data, resp.GetTeamResp(team))
 		}
-		ctx.JSON(http.StatusOK, gin.H{"results": data, "count": count})
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"results": data, "count": count}})
 		return
 	case "challenge":
 		allowedKeys := []string{"name", "id"}
@@ -83,7 +83,7 @@ func Search(ctx *gin.Context) {
 		for _, challenge := range challenges {
 			data = append(data, resp.GetChallengeResp(challenge))
 		}
-		ctx.JSON(http.StatusOK, gin.H{"results": data, "count": count})
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"results": data, "count": count}})
 		return
 	default:
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
