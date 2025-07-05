@@ -322,5 +322,6 @@ func StopVictim(victim model.Victim) (bool, string) {
 			return false, res.Msg
 		}
 	}
+	utils.RemoveIPBlock(victim.IPBlock)
 	return true, i18n.Success
 }

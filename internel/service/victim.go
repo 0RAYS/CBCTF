@@ -214,7 +214,6 @@ func StopVictim(tx *gorm.DB, team model.Team, contestChallenge model.ContestChal
 		if !ok {
 			return false, msg
 		}
-		utils.RemoveIPBlock(victim.IPBlock)
 		duration := time.Now().Sub(victim.Start)
 		if ok, msg = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
 			Duration: &duration,
