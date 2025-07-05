@@ -49,7 +49,7 @@ func GetContestVictims(tx *gorm.DB, contest model.Contest, form f.GetContestVict
 	)
 	if form.ChallengeID != "" {
 		challenge, ok, msg := db.InitChallengeRepo(tx).GetByRandID(form.ChallengeID, db.GetOptions{
-			Selects: []string{"id"},
+			Selects: []string{"id", "type"},
 		})
 		if !ok || challenge.Type != model.PodsChallengeType {
 			return victims, 0, false, msg
