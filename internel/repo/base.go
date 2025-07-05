@@ -32,6 +32,11 @@ type CountOptions struct {
 	Deleted    bool
 }
 
+type SearchOptions struct {
+	Conditions map[string]any
+	Selects    []string
+}
+
 type UpdateOptions interface {
 	Convert2Map() map[string]any
 }
@@ -192,9 +197,13 @@ func (b *BasicRepo[M]) Delete(idL ...uint) (bool, string) {
 }
 
 // FuzzCount key 由上层进行检查
-func (b *BasicRepo[M]) FuzzCount(key string, value string) (int64, bool, string) {
+func (b *BasicRepo[M]) FuzzCount(options SearchOptions) (int64, bool, string) {
 	var count int64
-	res := b.DB.Model(new(M)).Where(fmt.Sprintf("%s LIKE ?", key), "%"+value+"%").Count(&count)
+	res := b.DB.Model(new(M))
+	for key, value := range options.Conditions {
+		res = res.Where(fmt.Sprintf("%s LIKE ?", key), "%"+value.(string)+"%")
+	}
+	res = res.Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count %s: %s", M.GetModelName(*new(M)), res.Error)
 		return 0, false, M.GetErrorString(*new(M))
@@ -203,15 +212,19 @@ func (b *BasicRepo[M]) FuzzCount(key string, value string) (int64, bool, string)
 }
 
 // FuzzSearch key 由上层进行检查
-func (b *BasicRepo[M]) FuzzSearch(limit, offset int, key, value string) ([]M, int64, bool, string) {
+func (b *BasicRepo[M]) FuzzSearch(limit, offset int, options SearchOptions) ([]M, int64, bool, string) {
 	var (
 		ms             = make([]M, 0)
-		count, ok, msg = b.FuzzCount(key, value)
+		count, ok, msg = b.FuzzCount(options)
 	)
 	if !ok {
 		return ms, count, false, msg
 	}
-	res := b.DB.Model(new(M)).Where(fmt.Sprintf("%s LIKE ?", key), "%"+value+"%").Limit(limit).Offset(offset).Find(&ms)
+	res := b.DB.Model(new(M))
+	for key, value := range options.Conditions {
+		res = res.Where(fmt.Sprintf("%s LIKE ?", key), "%"+value.(string)+"%")
+	}
+	res = res.Limit(limit).Offset(offset).Find(&ms)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to search %s: %s", M.GetModelName(*new(M)), res.Error)
 		return ms, count, false, M.GetErrorString(*new(M))

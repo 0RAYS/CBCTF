@@ -13,8 +13,6 @@ type SearchForm struct {
 	Limit  int    `form:"limit" json:"limit"`
 	Offset int    `form:"offset" json:"offset"`
 	Model  string `form:"model" json:"model" binding:"required"`
-	Key    string `form:"key" json:"key" binding:"required"`
-	Value  string `form:"value" json:"value" binding:"required"`
 }
 
 func (f *SearchForm) Bind(ctx *gin.Context) (bool, string) {
@@ -22,7 +20,6 @@ func (f *SearchForm) Bind(ctx *gin.Context) (bool, string) {
 		return false, i18n.BadRequest
 	}
 	f.Model = strings.TrimSpace(strings.ToLower(f.Model))
-	f.Key = strings.TrimSpace(strings.ToLower(f.Key))
 	if !slices.Contains(allowedModel, f.Model) {
 		return false, i18n.BadRequest
 	}
