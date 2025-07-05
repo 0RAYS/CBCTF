@@ -16,14 +16,21 @@ func Search(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	query := ctx.Request.URL.Query()
+	options := db.SearchOptions{
+		Conditions: make(map[string]any),
+	}
 	switch form.Model {
 	case "user":
 		allowedKeys := []string{"name", "email", "id"}
-		if !slices.Contains(allowedKeys, form.Key) {
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
-			return
+		for key, value := range query {
+			if slices.Contains(allowedKeys, key) {
+				if len(value) > 0 {
+					options.Conditions[key] = value[0]
+				}
+			}
 		}
-		users, count, ok, msg := db.InitUserRepo(db.DB.WithContext(ctx)).FuzzSearch(form.Limit, form.Offset, form.Key, form.Value)
+		users, count, ok, msg := db.InitUserRepo(db.DB.WithContext(ctx)).FuzzSearch(form.Limit, form.Offset, options)
 		if !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
@@ -36,11 +43,14 @@ func Search(ctx *gin.Context) {
 		return
 	case "contest":
 		allowedKeys := []string{"name", "id"}
-		if !slices.Contains(allowedKeys, form.Key) {
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
-			return
+		for key, value := range query {
+			if slices.Contains(allowedKeys, key) {
+				if len(value) > 0 {
+					options.Conditions[key] = value[0]
+				}
+			}
 		}
-		contests, count, ok, msg := db.InitContestRepo(db.DB.WithContext(ctx)).FuzzSearch(form.Limit, form.Offset, form.Key, form.Value)
+		contests, count, ok, msg := db.InitContestRepo(db.DB.WithContext(ctx)).FuzzSearch(form.Limit, form.Offset, options)
 		if !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
@@ -53,11 +63,14 @@ func Search(ctx *gin.Context) {
 		return
 	case "team":
 		allowedKeys := []string{"name", "id"}
-		if !slices.Contains(allowedKeys, form.Key) {
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
-			return
+		for key, value := range query {
+			if slices.Contains(allowedKeys, key) {
+				if len(value) > 0 {
+					options.Conditions[key] = value[0]
+				}
+			}
 		}
-		teams, count, ok, msg := db.InitTeamRepo(db.DB.WithContext(ctx)).FuzzSearch(form.Limit, form.Offset, form.Key, form.Value)
+		teams, count, ok, msg := db.InitTeamRepo(db.DB.WithContext(ctx)).FuzzSearch(form.Limit, form.Offset, options)
 		if !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
@@ -70,14 +83,17 @@ func Search(ctx *gin.Context) {
 		return
 	case "challenge":
 		allowedKeys := []string{"name", "id"}
-		if !slices.Contains(allowedKeys, form.Key) {
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
-			return
+		for key, value := range query {
+			if slices.Contains(allowedKeys, key) {
+				if key == "id" {
+					key = "rand_id"
+				}
+				if len(value) > 0 {
+					options.Conditions[key] = value[0]
+				}
+			}
 		}
-		if form.Key == "id" {
-			form.Key = "rand_id"
-		}
-		challenges, count, ok, msg := db.InitChallengeRepo(db.DB.WithContext(ctx)).FuzzSearch(form.Limit, form.Offset, form.Key, form.Value)
+		challenges, count, ok, msg := db.InitChallengeRepo(db.DB.WithContext(ctx)).FuzzSearch(form.Limit, form.Offset, options)
 		if !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
