@@ -52,7 +52,7 @@ func (f *GetCategoriesForm) Bind(ctx *gin.Context) (bool, string) {
 		return false, i18n.BadRequest
 	}
 	if !slices.Contains(allowedChallengeType, f.Type) {
-		return false, i18n.InvalidChallengeType
+		f.Type = ""
 	}
 	return true, i18n.Success
 }
