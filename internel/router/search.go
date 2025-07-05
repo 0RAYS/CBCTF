@@ -74,6 +74,9 @@ func Search(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 			return
 		}
+		if form.Key == "id" {
+			form.Key = "rand_id"
+		}
 		challenges, count, ok, msg := db.InitChallengeRepo(db.DB.WithContext(ctx)).FuzzSearch(form.Limit, form.Offset, form.Key, form.Value)
 		if !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
