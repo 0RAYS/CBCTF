@@ -70,7 +70,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 		ContestChallengeID: contestChallenge.ID,
 		TeamID:             team.ID,
 		UserID:             user.ID,
-		IPBlock:            fmt.Sprintf("%s-%d", ipBlock[0], len(ipBlock)),
+		IPBlock:            fmt.Sprintf("%s/%d", ipBlock[0], config.Env.K8S.IPPool.BlockSize),
 		Start:              time.Now(),
 		Duration:           time.Hour,
 		HostAlias:          dns,
