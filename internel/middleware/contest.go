@@ -7,6 +7,8 @@ import (
 )
 
 var (
+	ContestIsComing    = ContestStatus(model.ContestIsComing)
+	ContestIsRunning   = ContestStatus(model.ContestIsRunning)
 	ContestIsNotOver   = ContestStatus(model.ContestIsComing, model.ContestIsRunning)
 	ContestIsNotComing = ContestStatus(model.ContestIsRunning, model.ContestIsOver)
 )
