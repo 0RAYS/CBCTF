@@ -93,16 +93,20 @@ func StartContestVictims(tx *gorm.DB, contest model.Contest, form f.StartContest
 	}
 	challengeIDL := make([]uint, 0)
 	for _, randID := range form.Challenges {
-		challenge, ok, _ := db.InitChallengeRepo(tx).GetByRandID(randID)
-		if !ok || challenge.Type != model.PodsChallengeType {
+		challenge, ok, _ := db.InitChallengeRepo(tx).GetByRandID(randID, db.GetOptions{
+			Conditions: map[string]any{"type": model.PodsChallengeType},
+		})
+		if !ok {
 			continue
 		}
 		challengeIDL = append(challengeIDL, challenge.ID)
 	}
 	teams := make([]model.Team, 0)
 	for _, id := range form.Teams {
-		team, ok, _ := db.InitTeamRepo(tx).GetByID(id)
-		if !ok || team.ContestID != contest.ID {
+		team, ok, _ := db.InitTeamRepo(tx).GetByID(id, db.GetOptions{
+			Conditions: map[string]any{"contest_id": contest.ID},
+		})
+		if !ok {
 			continue
 		}
 		teams = append(teams, team)
