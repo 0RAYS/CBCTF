@@ -91,9 +91,9 @@ func Init() *gin.Engine {
 			contestTeam.PUT("/captcha", middleware.ContestIsNotOver, middleware.CheckVerified, middleware.CheckCaptain, UpdateCaptcha)
 			contestTeam.PUT("", middleware.ContestIsNotOver, middleware.CheckVerified, middleware.CheckCaptain, UpdateTeam)
 			contestTeam.POST("/avatar", middleware.ContestIsNotOver, middleware.CheckVerified, middleware.CheckCaptain, UploadAvatar("team"))
-			contestTeam.DELETE("", middleware.ContestStatus(model.ContestIsComing), middleware.CheckVerified, middleware.CheckCaptain, DeleteTeam)
-			contestTeam.POST("/kick", middleware.ContestStatus(model.ContestIsComing), middleware.CheckVerified, middleware.CheckCaptain, KickMember)
-			contestTeam.POST("/leave", middleware.ContestStatus(model.ContestIsComing), LeaveTeam)
+			contestTeam.DELETE("", middleware.ContestIsComing, middleware.CheckVerified, middleware.CheckCaptain, DeleteTeam)
+			contestTeam.POST("/kick", middleware.ContestIsComing, middleware.CheckVerified, middleware.CheckCaptain, KickMember)
+			contestTeam.POST("/leave", middleware.ContestIsComing, LeaveTeam)
 		}
 
 		// 比赛公告
@@ -111,19 +111,19 @@ func Init() *gin.Engine {
 			contestChallenge.GET("", GetContestChallengeStatus)
 			contestChallenge.POST("/init",
 				middleware.RateLimit("init_flag", 1, time.Minute),
-				middleware.ContestStatus(model.ContestIsRunning), middleware.CheckSolved, InitTeamFlag,
+				middleware.ContestIsRunning, middleware.CheckSolved, InitTeamFlag,
 			)
 			contestChallenge.GET("/attachment", DownloadAttachment)
 			contestChallenge.POST("/reset",
 				middleware.RateLimit("init_flag", 1, time.Minute),
-				middleware.ContestStatus(model.ContestIsRunning), middleware.CheckIfGenerated, middleware.CheckSolved, ResetTeamFlag,
+				middleware.ContestIsRunning, middleware.CheckIfGenerated, middleware.CheckSolved, ResetTeamFlag,
 			)
 			contestChallenge.POST("/start", middleware.RateLimit("start_victim", 1, time.Minute), middleware.CheckIfGenerated, StartVictim)
-			contestChallenge.POST("/increase", middleware.ContestStatus(model.ContestIsRunning), middleware.CheckIfGenerated, IncreaseVictimDuration)
+			contestChallenge.POST("/increase", middleware.ContestIsRunning, middleware.CheckIfGenerated, IncreaseVictimDuration)
 			contestChallenge.POST("/stop", middleware.CheckIfGenerated, StopVictim)
 			contestChallenge.POST("/submit",
 				middleware.RateLimit("submit_flag", 1, time.Second),
-				middleware.ContestStatus(model.ContestIsRunning), middleware.CheckIfGenerated, middleware.CheckSolved, SubmitFlag,
+				middleware.ContestIsRunning, middleware.CheckIfGenerated, middleware.CheckSolved, SubmitFlag,
 			)
 		}
 
