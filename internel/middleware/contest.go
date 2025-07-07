@@ -4,6 +4,7 @@ import (
 	"CBCTF/internel/model"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"slices"
 )
 
 var (
@@ -16,11 +17,9 @@ var (
 func ContestStatus(statusL ...string) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		contest := GetContest(ctx)
-		for _, status := range statusL {
-			if contest.Status() == status {
-				ctx.Next()
-				return
-			}
+		if slices.Contains(statusL, contest.Status()) {
+			ctx.Next()
+			return
 		}
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": contest.Status(), "data": nil})
 		return
