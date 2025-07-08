@@ -2,7 +2,7 @@ module CBCTF
 
 go 1.24.0
 
-toolchain go1.24.3
+toolchain go1.24.4
 
 require (
 	github.com/compose-spec/compose-go v1.20.2
