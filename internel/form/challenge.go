@@ -27,7 +27,7 @@ func (f *GetChallengesForm) Bind(ctx *gin.Context) (bool, string) {
 		return false, i18n.BadRequest
 	}
 	if f.Limit > 100 {
-		f.Limit = 100
+		f.Limit = 15
 	}
 	if _, exists := ctx.GetQuery("limit"); !exists {
 		f.Limit = 10
