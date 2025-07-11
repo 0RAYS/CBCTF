@@ -132,15 +132,18 @@ func (t *Timelines) Scan(value any) error {
 }
 
 type Network struct {
-	CIDR string `json:"CIDR"`
-	IP   string `json:"ip"`
+	Subnet   string `json:"subnet"`
+	Gateway  string `json:"gateway"`
+	IP       string `json:"ip"`
+	External bool   `json:"external"`
+	Internal bool   `json:"internal"`
 }
 
 type Networks []Network
 
 func (n Networks) Value() (driver.Value, error) {
 	n = slices.DeleteFunc(n, func(n Network) bool {
-		_, cidr, err := net.ParseCIDR(n.CIDR)
+		_, cidr, err := net.ParseCIDR(n.Subnet)
 		if err != nil {
 			return false
 		}
