@@ -5,7 +5,6 @@ import (
 	"CBCTF/internel/log"
 	"CBCTF/internel/utils"
 	"context"
-	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -13,12 +12,10 @@ import (
 )
 
 type CreatePodOptions struct {
-	Name        string
-	PodIP       string
-	Labels      map[string]string
-	Containers  []corev1.Container
-	Volumes     []corev1.Volume
-	HostAliases []corev1.HostAlias
+	Name       string
+	Labels     map[string]string
+	Containers []corev1.Container
+	Volumes    []corev1.Volume
 }
 
 func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool, string) {
@@ -43,14 +40,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool
 			Volumes:                       options.Volumes,
 			TerminationGracePeriodSeconds: utils.Ptr(int64(3)),
 			RestartPolicy:                 corev1.RestartPolicyNever,
-			HostAliases:                   options.HostAliases,
 		},
-	}
-	if options.PodIP != "" {
-		pod.ObjectMeta.Annotations = map[string]string{
-			"cni.projectcalico.org/ipv4pools": fmt.Sprintf("[\"%s\"]", ipPoolName),
-			"cni.projectcalico.org/ipAddrs":   fmt.Sprintf("[\"%s\"]", options.PodIP),
-		}
 	}
 	pod, err = kubeClient.CoreV1().Pods(namespaceName).Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil {

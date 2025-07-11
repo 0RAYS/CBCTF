@@ -1,10 +1,8 @@
 package service
 
 import (
-	"CBCTF/internel/config"
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/k8s"
-	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
@@ -42,22 +40,9 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 	if victim, ok, _ := victimRepo.HasAliveVictim(team.ID, contestChallenge.ID); ok {
 		return victim, true, i18n.Success
 	}
-	ipBlock, err := utils.GetIPBlock(team.ID, config.Env.K8S.IPPool.CIDR, config.Env.K8S.IPPool.BlockSize)
-	if err != nil {
-		log.Logger.Warningf("Failed to get ip block: %s", err)
-		return model.Victim{}, false, i18n.GetIPBlockError
-	}
-	if len(ipBlock) == 0 || len(challenge.DockerGroups) > len(ipBlock) {
-		return model.Victim{}, false, i18n.EmptyIPBlock
-	}
-	dns := make(model.StringMap)
 	podPorts := make(map[uint]model.Ports)
-	for i, dockerGroup := range challenge.DockerGroups {
+	for _, dockerGroup := range challenge.DockerGroups {
 		for _, docker := range dockerGroup.Dockers {
-			if _, ok = dns[docker.Name]; ok {
-				return model.Victim{}, false, i18n.DuplicateHostname
-			}
-			dns[docker.Name] = ipBlock[i]
 			for _, port := range docker.Expose {
 				p, _ := strconv.ParseInt(port, 10, 32)
 				if !slices.Contains(podPorts[dockerGroup.ID], int32(p)) {
@@ -70,20 +55,17 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 		ContestChallengeID: contestChallenge.ID,
 		TeamID:             team.ID,
 		UserID:             user.ID,
-		IPBlock:            fmt.Sprintf("%s/%d", ipBlock[0], config.Env.K8S.IPPool.BlockSize),
 		Start:              time.Now(),
 		Duration:           time.Hour,
-		HostAlias:          dns,
 	}
 	victim, ok, msg := victimRepo.Create(vOptions)
 	if !ok {
 		return model.Victim{}, false, msg
 	}
-	for i, dockerGroup := range challenge.DockerGroups {
+	for _, dockerGroup := range challenge.DockerGroups {
 		pOptions := db.CreatePodOptions{
 			VictimID:        victim.ID,
 			Name:            victim.GenPodName(challenge.RandID),
-			PodIP:           ipBlock[i],
 			PodPorts:        podPorts[dockerGroup.ID],
 			NetworkPolicies: dockerGroup.NetworkPolicies,
 		}

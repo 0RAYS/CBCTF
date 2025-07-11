@@ -14,7 +14,6 @@ type PodRepo struct {
 type CreatePodOptions struct {
 	VictimID        uint
 	Name            string
-	PodIP           string
 	ExposedIP       string
 	PodPorts        model.Ports
 	ExposedPorts    model.Ports
@@ -25,7 +24,6 @@ func (c CreatePodOptions) Convert2Model() model.Model {
 	return model.Pod{
 		VictimID:        c.VictimID,
 		Name:            c.Name,
-		PodIP:           c.PodIP,
 		ExposedIP:       c.ExposedIP,
 		PodPorts:        c.PodPorts,
 		ExposedPorts:    c.ExposedPorts,
@@ -35,7 +33,6 @@ func (c CreatePodOptions) Convert2Model() model.Model {
 
 type UpdatePodOptions struct {
 	Name            *string
-	PodIP           *string
 	ExposedIP       *string
 	PodPorts        *model.Ports
 	ExposedPorts    *model.Ports
@@ -46,9 +43,6 @@ func (u UpdatePodOptions) Convert2Map() map[string]any {
 	options := make(map[string]any)
 	if u.Name != nil {
 		options["name"] = *u.Name
-	}
-	if u.PodIP != nil {
-		options["pod_ip"] = *u.PodIP
 	}
 	if u.ExposedIP != nil {
 		options["exposed_ip"] = *u.ExposedIP

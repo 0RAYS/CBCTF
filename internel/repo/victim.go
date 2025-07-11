@@ -16,10 +16,8 @@ type CreateVictimOptions struct {
 	ContestChallengeID uint
 	TeamID             uint
 	UserID             uint
-	IPBlock            string
 	Start              time.Time
 	Duration           time.Duration
-	HostAlias          model.StringMap
 }
 
 func (c CreateVictimOptions) Convert2Model() model.Model {
@@ -27,24 +25,18 @@ func (c CreateVictimOptions) Convert2Model() model.Model {
 		ContestChallengeID: c.ContestChallengeID,
 		TeamID:             c.TeamID,
 		UserID:             c.UserID,
-		IPBlock:            c.IPBlock,
 		Start:              c.Start,
 		Duration:           c.Duration,
-		HostAlias:          c.HostAlias,
 	}
 }
 
 type UpdateVictimOptions struct {
-	IPBlock  *string
 	Start    *time.Time
 	Duration *time.Duration
 }
 
 func (u UpdateVictimOptions) Convert2Map() map[string]any {
 	options := make(map[string]any)
-	if u.IPBlock != nil {
-		options["ip_block"] = *u.IPBlock
-	}
 	if u.Start != nil {
 		options["start"] = *u.Start
 	}
