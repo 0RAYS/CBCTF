@@ -12,7 +12,6 @@ type Pod struct {
 	Containers      []Container     `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Traffics        []Traffic       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Name            string          `json:"name"`
-	PodIP           string          `json:"pod_ip"`
 	ExposedIP       string          `json:"exposed_ip"`
 	PodPorts        Ports           `gorm:"type:json" json:"pod_ports"`
 	ExposedPorts    Ports           `gorm:"type:json" json:"exposed_ports"`

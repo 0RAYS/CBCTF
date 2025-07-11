@@ -214,8 +214,7 @@ func StartVictim(victim model.Victim) (map[string]map[string]any, bool, string) 
 				containers = append(containers, tmp)
 			}
 			p, ok, msg := CreatePod(ctx, CreatePodOptions{
-				Name:  pod.Name,
-				PodIP: pod.PodIP,
+				Name: pod.Name,
 				Labels: map[string]string{
 					VictimPodTag:           pod.Name,
 					"team_id":              strconv.Itoa(int(victim.TeamID)),
@@ -224,23 +223,6 @@ func StartVictim(victim model.Victim) (map[string]map[string]any, bool, string) 
 				},
 				Containers: containers,
 				Volumes:    volumes,
-				HostAliases: func(dns map[string]string) []corev1.HostAlias {
-					aliases := make([]corev1.HostAlias, 0)
-					tmp := make(map[string][]string)
-					for k, v := range dns {
-						if v == pod.PodIP {
-							v = "127.0.0.1"
-						}
-						tmp[v] = append(tmp[v], k)
-					}
-					for ip, hostname := range tmp {
-						aliases = append(aliases, corev1.HostAlias{
-							IP:        ip,
-							Hostnames: hostname,
-						})
-					}
-					return aliases
-				}(victim.HostAlias),
 			})
 			if !ok {
 				resultCh <- result{PodName: pod.Name, OK: false, Msg: msg}
@@ -322,6 +304,5 @@ func StopVictim(victim model.Victim) (bool, string) {
 			return false, res.Msg
 		}
 	}
-	utils.RemoveIPBlock(victim.IPBlock)
 	return true, i18n.Success
 }

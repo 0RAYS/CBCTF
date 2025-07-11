@@ -1,8 +1,6 @@
 package cron
 
 import (
-	"CBCTF/internel/config"
-	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"fmt"
@@ -34,11 +32,6 @@ func CheckCheat(c *cron.Cron) {
 }
 
 func checkRemoteIP(contest model.Contest) {
-	_, podCIDR, err := net.ParseCIDR(config.Env.K8S.IPPool.CIDR)
-	if err != nil {
-		log.Logger.Warningf("Failed to parse Pod IPPool CIDR: %v", err)
-		return
-	}
 	teams, _, ok, _ := db.InitTeamRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
 		Selects:    []string{"id"},
@@ -74,9 +67,6 @@ func checkRemoteIP(contest model.Contest) {
 					if netIP.IsLoopback() {
 						continue
 					}
-					if podCIDR.Contains(netIP) {
-						continue
-					}
 					if !slices.Contains(ipTeamIDMap[ip], team.ID) {
 						ipTeamIDMap[ip] = append(ipTeamIDMap[ip], team.ID)
 					}
@@ -103,9 +93,6 @@ func checkRemoteIP(contest model.Contest) {
 					continue
 				}
 				if netIP.IsLoopback() {
-					continue
-				}
-				if podCIDR.Contains(netIP) {
 					continue
 				}
 				if !slices.Contains(ipTeamIDMap[traffics.SrcIP], victim.TeamID) {
