@@ -12,24 +12,22 @@ type DockerRepo struct {
 }
 
 type CreateDockerOptions struct {
-	DockerGroupID uint
-	Name          string
-	Image         string
-	WorkingDir    *string
-	Command       model.StringList
-	Expose        model.StringList
-	Environment   model.StringMap
+	Name        string
+	Image       string
+	WorkingDir  *string
+	Command     model.StringList
+	Expose      model.StringList
+	Environment model.StringMap
 }
 
 func (c CreateDockerOptions) Convert2Model() model.Model {
 	return model.Docker{
-		DockerGroupID: c.DockerGroupID,
-		Name:          c.Name,
-		Image:         c.Image,
-		WorkingDir:    c.WorkingDir,
-		Command:       c.Command,
-		Expose:        c.Expose,
-		Environment:   c.Environment,
+		Name:        c.Name,
+		Image:       c.Image,
+		WorkingDir:  c.WorkingDir,
+		Command:     c.Command,
+		Expose:      c.Expose,
+		Environment: c.Environment,
 	}
 }
 

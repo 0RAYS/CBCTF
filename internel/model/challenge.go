@@ -17,21 +17,21 @@ const (
 )
 
 // Challenge 题库中的挑战
-// HasMany DockerGroup
 // HasMany ChallengeFlag
 // HasMany ContestChallenge
 // HasMany Submission
 type Challenge struct {
-	DockerGroups      []DockerGroup      `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	ChallengeFlags    []ChallengeFlag    `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	ContestChallenges []ContestChallenge `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Submissions       []Submission       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Dockers           []Docker           `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	RandID            string             `gorm:"type:varchar(36);uniqueIndex;not null" json:"rand_id"`
 	Name              string             `json:"name"`
 	Desc              string             `json:"desc"`
 	Category          string             `json:"category"`
 	Type              string             `json:"type"`
 	GeneratorImage    string             `json:"generator_image"`
+	NetworkPolicies   NetworkPolicies    `gorm:"type:json" json:"network_policies"`
 	BasicModel
 }
 

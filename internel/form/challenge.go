@@ -73,16 +73,14 @@ func (f *DownloadChallengeForm) Bind(ctx *gin.Context) (bool, string) {
 }
 
 type CreateChallengeForm struct {
-	Name           string           `form:"name" json:"name" binding:"required"`
-	Type           string           `form:"type" json:"type" binding:"required"`
-	Desc           string           `form:"desc" json:"desc"`
-	Category       string           `form:"category" json:"category"`
-	Flags          model.StringList `form:"flags" json:"flags"`
-	GeneratorImage string           `form:"generator_image" json:"generator_image"`
-	DockerCompose  struct {
-		Yaml            string                `form:"yaml" json:"yaml"`
-		NetworkPolicies model.NetworkPolicies `form:"yaml" json:"network_policies"`
-	} `form:"docker_compose" json:"docker_compose"`
+	Name            string                `form:"name" json:"name" binding:"required"`
+	Type            string                `form:"type" json:"type" binding:"required"`
+	Desc            string                `form:"desc" json:"desc"`
+	Category        string                `form:"category" json:"category"`
+	Flags           model.StringList      `form:"flags" json:"flags"`
+	GeneratorImage  string                `form:"generator_image" json:"generator_image"`
+	DockerCompose   string                `form:"docker_compose" json:"docker_compose"`
+	NetworkPolicies model.NetworkPolicies `form:"yaml" json:"network_policies"`
 }
 
 func (f *CreateChallengeForm) Bind(ctx *gin.Context) (bool, string) {
@@ -101,18 +99,15 @@ func (f *CreateChallengeForm) Bind(ctx *gin.Context) (bool, string) {
 }
 
 type UpdateChallengeForm struct {
-	Name           *string `form:"name" json:"name"`
-	Desc           *string `form:"desc" json:"desc"`
-	Category       *string `form:"category" json:"category"`
-	GeneratorImage *string `form:"generator_image" json:"generator_image"`
-	Flags          []struct {
+	Name            *string                `form:"name" json:"name"`
+	Desc            *string                `form:"desc" json:"desc"`
+	Category        *string                `form:"category" json:"category"`
+	GeneratorImage  *string                `form:"generator_image" json:"generator_image"`
+	NetworkPolicies *model.NetworkPolicies `json:"network_policies"`
+	Flags           []struct {
 		ID    uint   `form:"id" json:"id"`
 		Value string `form:"value" json:"value"`
 	} `form:"flags" json:"flags"`
-	DockerCompose struct {
-		ID              uint                  `form:"id" json:"id"`
-		NetworkPolicies model.NetworkPolicies `json:"network_policies"`
-	} `form:"docker_compose" json:"docker_compose"`
 }
 
 func (f *UpdateChallengeForm) Bind(ctx *gin.Context) (bool, string) {

@@ -9,11 +9,10 @@ const (
 )
 
 // Docker
-// BelongsTo DockerGroup
 // HasMany ChallengeFlag
 type Docker struct {
-	DockerGroupID  uint            `json:"docker_group_id"`
-	DockerGroup    DockerGroup     `json:"-"`
+	ChallengeID    uint            `json:"challenge_id"`
+	Challenge      Challenge       `json:"-"`
 	ChallengeFlags []ChallengeFlag `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Name           string          `json:"name"`
 	Image          string          `json:"image"`
@@ -57,5 +56,5 @@ func (d Docker) GetUniqueKey() []string {
 }
 
 func (d Docker) GetForeignKeys() []string {
-	return []string{"id", "docker_group_id"}
+	return []string{"id", "challenge_id"}
 }

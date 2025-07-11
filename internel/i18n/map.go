@@ -84,12 +84,6 @@ var resp = map[string]map[string]any{
 	UpdateDockerError:  {"zh-CN": "更新Docker失败", "en-US": "Update Docker failed", "code": 500},
 	InvalidDockerImage: {"zh-CN": "无效的Docker镜像", "en-US": "Invalid Docker image", "code": 400},
 
-	CreateDockerGroupError: {"zh-CN": "创建Docker组失败", "en-US": "Create Docker group failed", "code": 500},
-	DeleteDockerGroupError: {"zh-CN": "删除Docker组失败", "en-US": "Delete Docker group failed", "code": 500},
-	GetDockerGroupError:    {"zh-CN": "获取Docker组失败", "en-US": "Get Docker group failed", "code": 500},
-	DockerGroupNotFound:    {"zh-CN": "Docker组不存在", "en-US": "Docker group not found", "code": 404},
-	UpdateDockerGroupError: {"zh-CN": "更新Docker组失败", "en-US": "Update Docker group failed", "code": 500},
-
 	CreateEventError: {"zh-CN": "创建事件失败", "en-US": "Create event failed", "code": 500},
 	DeleteEventError: {"zh-CN": "删除事件失败", "en-US": "Delete event failed", "code": 500},
 	GetEventError:    {"zh-CN": "获取事件失败", "en-US": "Get event failed", "code": 500},
