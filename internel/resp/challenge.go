@@ -4,7 +4,6 @@ import (
 	"CBCTF/internel/model"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"slices"
 	"strings"
 )
 
@@ -94,7 +93,7 @@ volumes:
 // GetChallengeResp 需要预加载 DockerGroups, ChallengeFlags, DockerGroups.Dockers
 func GetChallengeResp(challenge model.Challenge) gin.H {
 	flags := make([]gin.H, 0)
-	if slices.Contains([]string{model.PodChallengeType, model.VpcChallengeType}, challenge.Type) {
+	if challenge.Type != model.PodChallengeType {
 		for _, flag := range challenge.ChallengeFlags {
 			flags = append(flags, gin.H{"id": flag.ID, "value": flag.Value})
 		}
