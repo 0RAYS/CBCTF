@@ -11,7 +11,6 @@ const (
 	QuestionChallengeType = "question"
 	DynamicChallengeType  = "dynamic"
 	PodChallengeType      = "pods"
-	VpcChallengeType      = "vpc"
 
 	AttachmentFile = "attachment.zip"
 	GeneratorFile  = "generator.zip"
