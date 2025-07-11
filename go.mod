@@ -1,10 +1,9 @@
 module CBCTF
 
-go 1.24.0
-
-toolchain go1.24.4
+go 1.24.4
 
 require (
+	github.com/JBNRZ/kubeovn-api v0.0.0-20250711043114-8de394fa7683
 	github.com/compose-spec/compose-go v1.20.2
 	github.com/fatih/color v1.18.0
 	github.com/gin-contrib/pprof v1.5.3
@@ -13,7 +12,6 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gopacket/gopacket v1.3.1
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
-	github.com/projectcalico/api v0.0.0-20250326193936-759a4c3213d1
 	github.com/prometheus/client_golang v1.22.0
 	github.com/redis/go-redis/v9 v9.11.0
 	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5
@@ -66,7 +64,6 @@ require (
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674 // indirect
 	github.com/imdario/mergo v0.3.16 // indirect
-	github.com/jinzhu/copier v0.4.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/jonboulle/clockwork v0.5.0 // indirect
@@ -86,6 +83,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
 	github.com/onsi/ginkgo/v2 v2.22.1 // indirect
+	github.com/onsi/gomega v1.36.2 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/pkg/errors v0.9.1 // indirect

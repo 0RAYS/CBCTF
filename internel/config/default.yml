@@ -34,10 +34,8 @@ redis:
     port: 6379
     pwd: "password"
 k8s:
-    config:
-        # admin will be ignored if user is set
-        admin: "./admin.conf"
-        user: "./user.conf"
+    # kubeconfig
+    config: "./admin.conf"
     # also as prefix of resources
     namespace: "cbctf"
     tcpdump: "nicolaka/netshoot:latest"
@@ -51,9 +49,6 @@ k8s:
     # nodes of k8s cluster, used for external service, will auto get from k8s
     nodes:
         - "192.168.0.1"
-    ippool:
-        cidr: 10.10.100.0/24
-        block: 28
 email:
     senders:
         -   addr: "noreply@example.com"

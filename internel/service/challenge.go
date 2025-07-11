@@ -46,20 +46,14 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 		return model.Challenge{}, false, msg
 	}
 	switch form.Type {
-	case model.StaticChallengeType:
+	case model.StaticChallengeType, model.QuestionChallengeType:
+		if form.Type == model.QuestionChallengeType && len(form.Flags) > 0 {
+			form.Flags = []string{utils.ToABCD(form.Flags[0])}
+		}
 		for _, flag := range form.Flags {
 			if _, ok, msg = challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
 				ChallengeID: challenge.ID,
 				Value:       flag,
-			}); !ok {
-				return model.Challenge{}, false, msg
-			}
-		}
-	case model.QuestionChallengeType:
-		if len(form.Flags) > 0 {
-			if _, ok, msg = challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
-				ChallengeID: challenge.ID,
-				Value:       utils.ToABCD(form.Flags[0]),
 			}); !ok {
 				return model.Challenge{}, false, msg
 			}
@@ -78,7 +72,10 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 				return model.Challenge{}, false, msg
 			}
 		}
-	case model.PodsChallengeType:
+	case model.PodChallengeType, model.VpcChallengeType:
+		if form.Type == model.PodChallengeType && len(form.DockerGroups) > 0 {
+			form.DockerGroups = form.DockerGroups[:1]
+		}
 		dockerGroupRepo, dockerRepo := db.InitDockerGroupRepo(tx), db.InitDockerRepo(tx)
 		for _, group := range form.DockerGroups {
 			if len(group.NetworkPolicies) == 0 {
@@ -185,10 +182,14 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 
 func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChallengeForm) (bool, string) {
 	switch challenge.Type {
-	case model.StaticChallengeType, model.DynamicChallengeType:
+	case model.StaticChallengeType, model.DynamicChallengeType, model.QuestionChallengeType:
 		oldChallengeFlagID := make([]uint, 0)
 		for _, flag := range challenge.ChallengeFlags {
 			oldChallengeFlagID = append(oldChallengeFlagID, flag.ID)
+		}
+		if challenge.Type == model.QuestionChallengeType && len(form.Flags) > 0 {
+			form.Flags = form.Flags[:1]
+			form.Flags[0].Value = utils.ToABCD(form.Flags[0].Value)
 		}
 		challengeFlagRepo := db.InitChallengeFlagRepo(tx)
 		for _, flag := range form.Flags {
@@ -219,42 +220,10 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChalle
 			Category:       form.Category,
 			GeneratorImage: form.GeneratorImage,
 		})
-	case model.QuestionChallengeType:
-		oldChallengeFlagID := make([]uint, 0)
-		for _, flag := range challenge.ChallengeFlags {
-			oldChallengeFlagID = append(oldChallengeFlagID, flag.ID)
+	case model.PodChallengeType, model.VpcChallengeType:
+		if challenge.Type == model.PodChallengeType && len(form.DockerGroups) > 0 {
+			form.DockerGroups = form.DockerGroups[:1]
 		}
-		challengeFlagRepo := db.InitChallengeFlagRepo(tx)
-		if len(form.Flags) > 0 {
-			flag := form.Flags[0]
-			if slices.Contains(oldChallengeFlagID, flag.ID) {
-				if ok, msg := challengeFlagRepo.Update(flag.ID, db.UpdateChallengeFlagOptions{
-					Value: &flag.Value,
-				}); !ok {
-					return false, msg
-				}
-				oldChallengeFlagID = slices.DeleteFunc(oldChallengeFlagID, func(id uint) bool {
-					return id == flag.ID
-				})
-			} else {
-				if _, ok, msg := challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
-					ChallengeID: challenge.ID,
-					Value:       flag.Value,
-				}); !ok {
-					return false, msg
-				}
-			}
-		}
-		if ok, msg := challengeFlagRepo.Delete(oldChallengeFlagID...); !ok {
-			return false, msg
-		}
-		return db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
-			Name:           form.Name,
-			Desc:           form.Desc,
-			Category:       form.Category,
-			GeneratorImage: form.GeneratorImage,
-		})
-	case model.PodsChallengeType:
 		dockerGroupRepo := db.InitDockerGroupRepo(tx)
 		for _, group := range form.DockerGroups {
 			if ok, msg := dockerGroupRepo.Update(group.ID, db.UpdateDockerGroupOptions{

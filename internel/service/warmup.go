@@ -9,6 +9,7 @@ import (
 	"context"
 	"gorm.io/gorm"
 	corev1 "k8s.io/api/core/v1"
+	"slices"
 	"time"
 )
 
@@ -51,7 +52,7 @@ func GetContestVictims(tx *gorm.DB, contest model.Contest, form f.GetContestVict
 		challenge, ok, msg := db.InitChallengeRepo(tx).GetByRandID(form.ChallengeID, db.GetOptions{
 			Selects: []string{"id", "type"},
 		})
-		if !ok || challenge.Type != model.PodsChallengeType {
+		if !ok || !slices.Contains([]string{model.PodChallengeType, model.VpcChallengeType}, challenge.Type) {
 			return victims, 0, false, msg
 		}
 		contestChallenge, ok, msg := db.InitContestChallengeRepo(tx).Get(db.GetOptions{
@@ -94,7 +95,7 @@ func StartContestVictims(tx *gorm.DB, contest model.Contest, form f.StartContest
 	challengeIDL := make([]uint, 0)
 	for _, randID := range form.Challenges {
 		challenge, ok, _ := db.InitChallengeRepo(tx).GetByRandID(randID, db.GetOptions{
-			Conditions: map[string]any{"type": model.PodsChallengeType},
+			Conditions: map[string]any{"type": []string{model.PodChallengeType, model.VpcChallengeType}},
 		})
 		if !ok {
 			continue
