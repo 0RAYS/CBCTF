@@ -21,7 +21,7 @@ func InitTeamFlag(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	switch contestChallenge.Challenge.Type {
+	switch contestChallenge.Type {
 	case model.DynamicChallengeType:
 		ok, msg = k8s.GenerateAttachment(contestChallenge, team, teamFlags)
 	default:
@@ -42,10 +42,10 @@ func ResetTeamFlag(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	switch contestChallenge.Challenge.Type {
+	switch contestChallenge.Type {
 	case model.DynamicChallengeType:
 		ok, msg = k8s.GenerateAttachment(contestChallenge, team, teamFlags)
-	case model.PodsChallengeType:
+	case model.PodChallengeType, model.VpcChallengeType:
 		// 不考虑失败
 		go service.StopTeamVictim(db.DB.WithContext(ctx.Copy()), team, contestChallenge)
 		ok, msg = true, i18n.Success

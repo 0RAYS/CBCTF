@@ -30,7 +30,7 @@ func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) (bool,
 			if !ok {
 				return errors.New(msg)
 			}
-			if contestChallenge.Challenge.Type == model.DynamicChallengeType {
+			if contestChallenge.Type == model.DynamicChallengeType {
 				if ok, msg = k8s.GenerateAttachment(contestChallenge, team, teamFlags); !ok {
 					return errors.New(msg)
 				}

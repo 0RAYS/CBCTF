@@ -11,6 +11,7 @@ import (
 	"CBCTF/internel/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"slices"
 )
 
 func SubmitFlag(ctx *gin.Context) {
@@ -22,7 +23,7 @@ func SubmitFlag(ctx *gin.Context) {
 	user := middleware.GetSelf(ctx).(model.User)
 	team := middleware.GetTeam(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	if contestChallenge.Challenge.Type == model.QuestionChallengeType {
+	if contestChallenge.Type == model.QuestionChallengeType {
 		form.Flag = utils.ToABCD(form.Flag)
 	}
 	tx := db.DB.WithContext(ctx).Begin()
@@ -34,7 +35,7 @@ func SubmitFlag(ctx *gin.Context) {
 	}
 	tx.Commit()
 	go func(ctx *gin.Context) {
-		if contestChallenge.Challenge.Type == model.PodsChallengeType && service.CheckIfSolved(db.DB.WithContext(ctx), team, contestChallenge) {
+		if slices.Contains([]string{model.PodChallengeType, model.VpcChallengeType}, contestChallenge.Type) && service.CheckIfSolved(db.DB.WithContext(ctx), team, contestChallenge) {
 			service.StopTeamVictim(db.DB.WithContext(ctx), team, contestChallenge)
 		}
 	}(ctx.Copy())
