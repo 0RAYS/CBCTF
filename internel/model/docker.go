@@ -16,10 +16,13 @@ type Docker struct {
 	ChallengeFlags []ChallengeFlag `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Name           string          `json:"name"`
 	Image          string          `json:"image"`
-	WorkingDir     *string         `gorm:"default:null" json:"working_dir"`
+	WorkingDir     string          `json:"working_dir"`
+	CPU            float32         `json:"cpu"`
+	Memory         int64           `json:"memory"`
 	Command        StringList      `gorm:"default:null;type:json" json:"command"`
 	Expose         StringList      `gorm:"default:null;type:json" json:"expose"`
 	Environment    StringMap       `gorm:"default:null;type:json" json:"environment"`
+	Networks       Networks        `gorm:"default:null;type:json" json:"networks"`
 	BasicModel
 }
 

@@ -131,6 +131,36 @@ func (t *Timelines) Scan(value any) error {
 	return json.Unmarshal(bytes, t)
 }
 
+type Network struct {
+	CIDR string `json:"CIDR"`
+	IP   string `json:"ip"`
+}
+
+type Networks []Network
+
+func (n Networks) Value() (driver.Value, error) {
+	n = slices.DeleteFunc(n, func(n Network) bool {
+		_, cidr, err := net.ParseCIDR(n.CIDR)
+		if err != nil {
+			return false
+		}
+		ip := net.ParseIP(n.IP)
+		if ip == nil {
+			return false
+		}
+		return cidr.Contains(ip)
+	})
+	return json.Marshal(n)
+}
+
+func (n *Networks) Scan(value any) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan Network value")
+	}
+	return json.Unmarshal(bytes, n)
+}
+
 type Target struct {
 	Hostname string   `json:"hostname"`
 	CIDR     string   `json:"cidr"`
