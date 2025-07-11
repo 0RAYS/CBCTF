@@ -2,6 +2,8 @@ package model
 
 import (
 	"CBCTF/internel/config"
+	"CBCTF/internel/log"
+	"CBCTF/internel/utils"
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
@@ -136,19 +138,32 @@ type Network struct {
 	Gateway  string `json:"gateway"`
 	IP       string `json:"ip"`
 	External bool   `json:"external"`
-	Internal bool   `json:"internal"`
 }
 
 type Networks []Network
 
 func (n Networks) Value() (driver.Value, error) {
 	n = slices.DeleteFunc(n, func(n Network) bool {
+		if n.Subnet == "" && n.Gateway == "" && n.IP == "" {
+			return true
+		}
 		_, cidr, err := net.ParseCIDR(n.Subnet)
 		if err != nil {
 			return false
 		}
 		ip := net.ParseIP(n.IP)
 		if ip == nil {
+			return false
+		}
+		if n.Gateway == "" {
+			n.Gateway, err = utils.GetFirstIP(n.Subnet)
+			if err != nil {
+				log.Logger.Warningf("Get first IP fail: %v", err)
+				return false
+			}
+		}
+		gateway := net.ParseIP(n.Gateway)
+		if gateway == nil || !cidr.Contains(gateway) {
 			return false
 		}
 		return cidr.Contains(ip)

@@ -20,6 +20,7 @@ type CreateDockerOptions struct {
 	Command     model.StringList
 	Expose      model.StringList
 	Environment model.StringMap
+	Networks    model.Networks
 }
 
 func (c CreateDockerOptions) Convert2Model() model.Model {
@@ -32,6 +33,7 @@ func (c CreateDockerOptions) Convert2Model() model.Model {
 		Command:     c.Command,
 		Expose:      c.Expose,
 		Environment: c.Environment,
+		Networks:    c.Networks,
 	}
 }
 

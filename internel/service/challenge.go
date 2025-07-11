@@ -6,8 +6,10 @@ import (
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
+	"fmt"
 	"gorm.io/gorm"
 	"slices"
+	"strings"
 )
 
 func GetChallenges(tx *gorm.DB, form f.GetChallengesForm) ([]model.Challenge, int64, bool, string) {
@@ -67,83 +69,109 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 			}
 		}
 	case model.PodChallengeType:
-		// TODO
-		//config, ok, msg := utils.LoadDockerComposeYaml(form.DockerCompose)
-		//if !ok {
-		//	return model.Challenge{}, false, msg
-		//}
-		//volumeFlag := make(map[string]string)
-		//for _, volume := range config.Volumes {
-		//	volumeName := strings.TrimPrefix(volume.Name, "_")
-		//	if strings.HasPrefix(volumeName, model.VolumeFlagPrefix) {
-		//		for k, v := range volume.Labels {
-		//			if k == model.VolumeFlagLabelKey {
-		//				volumeFlag[volumeName] = v
-		//			}
-		//		}
-		//	}
-		//}
-		//flagOptions := make([]db.CreateChallengeFlagOptions, 0)
-		//dockerRepo := db.InitDockerRepo(tx)
-		//for _, app := range config.Services {
-		//	name := app.Name
-		//	if app.ContainerName != "" {
-		//		name = app.ContainerName
-		//	}
-		//	if app.Image == "" {
-		//		return model.Challenge{}, false, i18n.InvalidDockerImage
-		//	}
-		//	environment := make(model.StringMap)
-		//	for k, v := range app.Environment {
-		//		if !strings.HasPrefix(k, model.EnvFlagPrefix) {
-		//			environment[k] = *v
-		//		}
-		//	}
-		//	ports := app.Expose
-		//	for _, port := range app.Ports {
-		//		target := fmt.Sprintf("%d", port.Target)
-		//		if !slices.Contains(ports, target) {
-		//			ports = append(ports, target)
-		//		}
-		//	}
-		//	docker, ok, msg := dockerRepo.Create(db.CreateDockerOptions{
-		//		Name:          name,
-		//		Image:         app.Image,
-		//		WorkingDir:    &app.WorkingDir,
-		//		Command:       model.StringList(app.Command),
-		//		Expose:        model.StringList(ports),
-		//		Environment:   environment,
-		//	})
-		//	if !ok {
-		//		return model.Challenge{}, false, msg
-		//	}
-		//	for k, v := range app.Environment {
-		//		if strings.HasPrefix(k, model.EnvFlagPrefix) {
-		//			flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
-		//				ChallengeID: challenge.ID,
-		//				DockerID:    &docker.ID,
-		//				Value:       *v,
-		//				InjectType:  model.EnvInjectType,
-		//			})
-		//		}
-		//	}
-		//	for _, volume := range app.Volumes {
-		//		if value, ok := volumeFlag[volume.Source]; ok {
-		//			flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
-		//				ChallengeID: challenge.ID,
-		//				DockerID:    &docker.ID,
-		//				Value:       value,
-		//				InjectType:  model.VolumeInjectType,
-		//				Path:        volume.Target,
-		//			})
-		//		}
-		//	}
-		//}
-		//for _, options := range flagOptions {
-		//	if _, ok, msg = challengeFlagRepo.Create(options); !ok {
-		//		return model.Challenge{}, false, msg
-		//	}
-		//}
+		config, ok, msg := utils.LoadDockerComposeYaml(form.DockerCompose)
+		if !ok {
+			return model.Challenge{}, false, msg
+		}
+		volumeFlag := make(map[string]string)
+		for _, volume := range config.Volumes {
+			volumeName := strings.TrimPrefix(volume.Name, "_")
+			if strings.HasPrefix(volumeName, model.VolumeFlagPrefix) {
+				for k, v := range volume.Labels {
+					if k == model.VolumeFlagLabelKey {
+						volumeFlag[volumeName] = v
+					}
+				}
+			}
+		}
+		networksMap := make(map[string]model.Network)
+		for _, network := range config.Networks {
+			if strings.HasPrefix(network.Name, "_") {
+				continue
+			}
+			tmp := model.Network{External: network.External.External}
+			if len(network.Ipam.Config) > 0 {
+				tmp.Subnet = network.Ipam.Config[0].Subnet
+				tmp.Gateway = network.Ipam.Config[0].Gateway
+			}
+			networksMap[network.Name] = tmp
+		}
+		flagOptions := make([]db.CreateChallengeFlagOptions, 0)
+		dockerRepo := db.InitDockerRepo(tx)
+		for _, app := range config.Services {
+			name := app.Name
+			if app.ContainerName != "" {
+				name = app.ContainerName
+			}
+			if app.Image == "" {
+				return model.Challenge{}, false, i18n.InvalidDockerImage
+			}
+			environment := make(model.StringMap)
+			for k, v := range app.Environment {
+				if !strings.HasPrefix(k, model.EnvFlagPrefix) {
+					environment[k] = *v
+				}
+			}
+			ports := app.Expose
+			for _, port := range app.Ports {
+				target := fmt.Sprintf("%d", port.Target)
+				if !slices.Contains(ports, target) {
+					ports = append(ports, target)
+				}
+			}
+			networks := make(model.Networks, 0)
+			for key, value := range app.Networks {
+				if key == "default" {
+					continue
+				}
+				network, ok := networksMap[key]
+				if !ok {
+					return model.Challenge{}, false, i18n.UnknownError
+				}
+				network.IP = value.Ipv4Address
+				networks = append(networks, network)
+			}
+			docker, ok, msg := dockerRepo.Create(db.CreateDockerOptions{
+				Name:        name,
+				Image:       app.Image,
+				CPU:         app.CPUS,
+				Memory:      int64(app.MemLimit),
+				WorkingDir:  app.WorkingDir,
+				Command:     model.StringList(app.Command),
+				Expose:      model.StringList(ports),
+				Environment: environment,
+				Networks:    networks,
+			})
+			if !ok {
+				return model.Challenge{}, false, msg
+			}
+			for k, v := range app.Environment {
+				if strings.HasPrefix(k, model.EnvFlagPrefix) {
+					flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
+						ChallengeID: challenge.ID,
+						DockerID:    &docker.ID,
+						Value:       *v,
+						InjectType:  model.EnvInjectType,
+					})
+				}
+			}
+			for _, volume := range app.Volumes {
+				if value, ok := volumeFlag[volume.Source]; ok {
+					flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
+						ChallengeID: challenge.ID,
+						DockerID:    &docker.ID,
+						Value:       value,
+						InjectType:  model.VolumeInjectType,
+						Path:        volume.Target,
+					})
+				}
+			}
+		}
+		for _, options := range flagOptions {
+			if _, ok, msg = challengeFlagRepo.Create(options); !ok {
+				return model.Challenge{}, false, msg
+			}
+		}
 	default:
 		return model.Challenge{}, false, i18n.InvalidChallengeType
 	}
