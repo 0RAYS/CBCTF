@@ -105,7 +105,7 @@ func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string,
 	}
 	podsContestChallenge, _, ok, msg := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{
-			"type":       []string{model.PodChallengeType, model.VpcChallengeType},
+			"type":       model.PodChallengeType,
 			"contest_id": contest.ID,
 		},
 		Selects: []string{"id", "challenge_id"},

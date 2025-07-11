@@ -10,7 +10,7 @@ const (
 	StaticChallengeType   = "static"
 	QuestionChallengeType = "question"
 	DynamicChallengeType  = "dynamic"
-	PodChallengeType      = "pod"
+	PodChallengeType      = "pods"
 	VpcChallengeType      = "vpc"
 
 	AttachmentFile = "attachment.zip"

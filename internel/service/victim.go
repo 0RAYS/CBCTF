@@ -144,7 +144,7 @@ func GetTeamVictimStatus(tx *gorm.DB, team model.Team, contestChallenge model.Co
 		"remaining": 0,
 		"status":    "Down",
 	}
-	if !slices.Contains([]string{model.PodChallengeType, model.VpcChallengeType}, contestChallenge.Type) {
+	if contestChallenge.Type != model.PodChallengeType {
 		data["status"] = "NotDocker"
 		return data
 	}
