@@ -212,7 +212,6 @@ func SetChallenge(ctx *gin.Context) {
 	}
 	challenge, ok, msg := db.InitChallengeRepo(db.DB.WithContext(ctx)).GetByRandID(challengeID.ChallengeID, db.GetOptions{
 		Preloads: map[string]db.GetOptions{
-			"DockerGroups":   {},
 			"ChallengeFlags": {},
 		},
 	})

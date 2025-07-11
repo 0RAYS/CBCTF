@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func Docker2Yaml(dockers []model.Docker, challengeFlags []model.ChallengeFlag) string {
+func Dockers2Yaml(dockers []model.Docker, challengeFlags []model.ChallengeFlag) string {
 	baseYaml := `
 services:
 %s
@@ -90,7 +90,7 @@ volumes:
 	return strings.Trim(fmt.Sprintf(baseYaml, serviceStr, volumeStr), "\n")
 }
 
-// GetChallengeResp 需要预加载 DockerGroups, ChallengeFlags, DockerGroups.Dockers
+// GetChallengeResp 需要预加载 ChallengeFlags, Dockers
 func GetChallengeResp(challenge model.Challenge) gin.H {
 	flags := make([]gin.H, 0)
 	if challenge.Type != model.PodChallengeType {
@@ -98,22 +98,15 @@ func GetChallengeResp(challenge model.Challenge) gin.H {
 			flags = append(flags, gin.H{"id": flag.ID, "value": flag.Value})
 		}
 	}
-	dockerGroups := make([]gin.H, 0)
-	for _, group := range challenge.DockerGroups {
-		dockerGroups = append(dockerGroups, gin.H{
-			"id":               group.ID,
-			"yaml":             Docker2Yaml(group.Dockers, challenge.ChallengeFlags),
-			"network_policies": group.NetworkPolicies,
-		})
-	}
 	return gin.H{
-		"id":              challenge.RandID,
-		"name":            challenge.Name,
-		"desc":            challenge.Desc,
-		"category":        challenge.Category,
-		"type":            challenge.Type,
-		"generator_image": challenge.GeneratorImage,
-		"flags":           flags,
-		"docker_groups":   dockerGroups,
+		"id":               challenge.RandID,
+		"name":             challenge.Name,
+		"desc":             challenge.Desc,
+		"category":         challenge.Category,
+		"type":             challenge.Type,
+		"generator_image":  challenge.GeneratorImage,
+		"flags":            flags,
+		"docker_compose":   Dockers2Yaml(challenge.Dockers, challenge.ChallengeFlags),
+		"network_policies": challenge.NetworkPolicies,
 	}
 }
