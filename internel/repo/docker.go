@@ -14,7 +14,9 @@ type DockerRepo struct {
 type CreateDockerOptions struct {
 	Name        string
 	Image       string
-	WorkingDir  *string
+	CPU         float32
+	Memory      int64
+	WorkingDir  string
 	Command     model.StringList
 	Expose      model.StringList
 	Environment model.StringMap
@@ -24,6 +26,8 @@ func (c CreateDockerOptions) Convert2Model() model.Model {
 	return model.Docker{
 		Name:        c.Name,
 		Image:       c.Image,
+		CPU:         c.CPU,
+		Memory:      c.Memory,
 		WorkingDir:  c.WorkingDir,
 		Command:     c.Command,
 		Expose:      c.Expose,

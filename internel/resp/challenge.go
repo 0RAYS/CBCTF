@@ -14,6 +14,9 @@ services:
 
 volumes:
 %s
+
+networks:
+%s
 `
 	var volumeStr string
 	volumeFlags := make(map[uint]map[string]string)
@@ -45,12 +48,21 @@ volumes:
 	}
 	volumeStr = strings.Trim(volumeStr, "\n")
 
-	var serviceStr string
+	var (
+		serviceStr string
+		networks   map[string]string
+	)
 	for _, docker := range dockers {
 		serviceStr += fmt.Sprintf("  %s:\n", docker.Name)
 		serviceStr += fmt.Sprintf("    image: %s\n", docker.Image)
-		if docker.WorkingDir != nil && *docker.WorkingDir != "" {
-			serviceStr += fmt.Sprintf("    working_dir: %s\n", *docker.WorkingDir)
+		if docker.CPU > 0 {
+			serviceStr += fmt.Sprintf("    cpus: %d\n", docker.CPU)
+		}
+		if docker.Memory > 0 {
+			serviceStr += fmt.Sprintf("    mem_limit: %d\n", docker.Memory)
+		}
+		if docker.WorkingDir != "" {
+			serviceStr += fmt.Sprintf("    working_dir: %s\n", docker.WorkingDir)
 		}
 		if docker.Command != nil && len(docker.Command) > 0 {
 			commandStr := "["
@@ -85,8 +97,24 @@ volumes:
 				serviceStr += fmt.Sprintf("      - %s:%s\n", key, path)
 			}
 		}
+		if docker.Networks != nil && len(docker.Networks) > 0 {
+			serviceStr += "    networks:\n"
+			for _, network := range docker.Networks {
+				networkName := strings.ReplaceAll(network.CIDR, ".", "_")
+				networkName = fmt.Sprintf("network_%s", strings.ReplaceAll(networkName, "/", "_"))
+				serviceStr += fmt.Sprintf("      %s:\n        ipv4_address: %s\n", networkName, network.IP)
+				networks[networkName] = network.CIDR
+			}
+		}
 	}
 	serviceStr = strings.Trim(serviceStr, "\n")
+
+	var networkStr string
+	for name, network := range networks {
+		networkStr += fmt.Sprintf("  %s:\n    ipam:\n      config:\n        - subnet: %s\n", name, network)
+	}
+	networkStr = strings.Trim(networkStr, "\n")
+
 	return strings.Trim(fmt.Sprintf(baseYaml, serviceStr, volumeStr), "\n")
 }
 
