@@ -18,8 +18,7 @@ func LoadDockerComposeYaml(data string) (*types.Project, bool, string) {
 	cfg, err := loader.LoadWithContext(context.Background(), types.ConfigDetails{
 		ConfigFiles: []types.ConfigFile{
 			{
-				Filename: "docker-compose.yml",
-				Config:   raw,
+				Config: raw,
 			},
 		},
 	})
