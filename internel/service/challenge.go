@@ -32,11 +32,13 @@ func GetChallenges(tx *gorm.DB, form f.GetChallengesForm) ([]model.Challenge, in
 func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, bool, string) {
 	challengeRepo, challengeFlagRepo := db.InitChallengeRepo(tx), db.InitChallengeFlagRepo(tx)
 	challenge, ok, msg := challengeRepo.Create(db.CreateChallengeOptions{
-		RandID:   utils.UUID(),
-		Name:     form.Name,
-		Desc:     form.Desc,
-		Type:     form.Type,
-		Category: form.Category,
+		RandID:          utils.UUID(),
+		Name:            form.Name,
+		Desc:            form.Desc,
+		Type:            form.Type,
+		Category:        form.Category,
+		GeneratorImage:  form.GeneratorImage,
+		NetworkPolicies: form.NetworkPolicies,
 	})
 	if !ok {
 		return model.Challenge{}, false, msg
@@ -55,11 +57,6 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 			}
 		}
 	case model.DynamicChallengeType:
-		if ok, msg = challengeRepo.Update(challenge.ID, db.UpdateChallengeOptions{
-			GeneratorImage: &form.GeneratorImage,
-		}); !ok {
-			return model.Challenge{}, false, msg
-		}
 		for _, flag := range form.Flags {
 			if _, ok, msg = challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
 				ChallengeID: challenge.ID,
