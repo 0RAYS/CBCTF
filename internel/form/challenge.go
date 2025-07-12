@@ -80,7 +80,7 @@ type CreateChallengeForm struct {
 	Flags           model.StringList      `form:"flags" json:"flags"`
 	GeneratorImage  string                `form:"generator_image" json:"generator_image"`
 	DockerCompose   string                `form:"docker_compose" json:"docker_compose"`
-	NetworkPolicies model.NetworkPolicies `form:"yaml" json:"network_policies"`
+	NetworkPolicies model.NetworkPolicies `form:"network_policies" json:"network_policies"`
 }
 
 func (f *CreateChallengeForm) Bind(ctx *gin.Context) (bool, string) {
