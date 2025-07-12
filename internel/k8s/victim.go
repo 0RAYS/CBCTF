@@ -207,8 +207,8 @@ func StartVictim(victim model.Victim) (map[string]map[string]any, bool, string) 
 				if len(container.Command) > 0 {
 					tmp.Command = container.Command
 				}
-				if container.WorkingDir != nil && *container.WorkingDir != "" {
-					tmp.WorkingDir = *container.WorkingDir
+				if container.WorkingDir != "" {
+					tmp.WorkingDir = container.WorkingDir
 				}
 				containers = append(containers, tmp)
 			}
