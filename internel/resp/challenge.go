@@ -100,10 +100,10 @@ networks:
 		if docker.Networks != nil && len(docker.Networks) > 0 {
 			serviceStr += "    networks:\n"
 			for _, network := range docker.Networks {
-				networkName := strings.ReplaceAll(network.CIDR, ".", "_")
+				networkName := strings.ReplaceAll(network.Subnet, ".", "_")
 				networkName = fmt.Sprintf("network_%s", strings.ReplaceAll(networkName, "/", "_"))
 				serviceStr += fmt.Sprintf("      %s:\n        ipv4_address: %s\n", networkName, network.IP)
-				networks[networkName] = network.CIDR
+				networks[networkName] = network.Subnet
 			}
 		}
 	}
