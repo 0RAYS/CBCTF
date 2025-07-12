@@ -180,16 +180,12 @@ func (n *Networks) Scan(value any) error {
 }
 
 type Target struct {
-	Hostname string   `json:"hostname"`
-	CIDR     string   `json:"cidr"`
-	Except   []string `json:"except"`
+	CIDR   string   `json:"cidr"`
+	Except []string `json:"except"`
 }
 
 func (t Target) isValidIPBlock() bool {
-	if t.Hostname != "" {
-		return true
-	}
-	if t.Hostname == "" && t.CIDR == "" {
+	if t.CIDR == "" {
 		return false
 	}
 	_, ipNet, err := net.ParseCIDR(t.CIDR)
