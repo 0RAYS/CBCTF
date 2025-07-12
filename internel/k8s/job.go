@@ -8,11 +8,14 @@ import (
 	"fmt"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
+	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strings"
 )
 
 type CreateJobOptions struct {
+	Name         string
+	Labels       map[string]string
 	Images       []string
 	PullPolicy   string
 	NodeSelector map[string]string
@@ -34,15 +37,15 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, boo
 	}
 	job = &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("image-puller-%s", strings.ToLower(utils.RandStr(5))),
-			Namespace: namespaceName,
+			Name:      options.Name,
+			Namespace: GlobalNamespace,
 		},
 		Spec: batchv1.JobSpec{
 			TTLSecondsAfterFinished: utils.Ptr[int32](0),
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      fmt.Sprintf("image-puller-%s", strings.ToLower(utils.RandStr(5))),
-					Namespace: namespaceName,
+					Namespace: GlobalNamespace,
 				},
 				Spec: corev1.PodSpec{
 					NodeSelector:  options.NodeSelector,
@@ -52,7 +55,7 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, boo
 			},
 		},
 	}
-	job, err = kubeClient.BatchV1().Jobs(namespaceName).Create(ctx, job, metav1.CreateOptions{})
+	job, err = kubeClient.BatchV1().Jobs(GlobalNamespace).Create(ctx, job, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create Job: %v", err)
 		return nil, false, i18n.CreateJobError
@@ -61,8 +64,11 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, boo
 }
 
 func GetJob(ctx context.Context, name string) (*batchv1.Job, bool, string) {
-	job, err := kubeClient.BatchV1().Jobs(namespaceName).Get(ctx, name, metav1.GetOptions{})
+	job, err := kubeClient.BatchV1().Jobs(GlobalNamespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
+		if apierror.IsNotFound(err) {
+			return nil, false, i18n.JobNotFound
+		}
 		log.Logger.Warningf("Failed to get Job: %v", err)
 		return nil, false, i18n.GetJobError
 	}
@@ -70,7 +76,7 @@ func GetJob(ctx context.Context, name string) (*batchv1.Job, bool, string) {
 }
 
 func ListJobs(ctx context.Context) (*batchv1.JobList, bool, string) {
-	jobList, err := kubeClient.BatchV1().Jobs(namespaceName).List(ctx, metav1.ListOptions{})
+	jobList, err := kubeClient.BatchV1().Jobs(GlobalNamespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to list Jobs: %v", err)
 		return nil, false, i18n.GetJobError
@@ -79,7 +85,8 @@ func ListJobs(ctx context.Context) (*batchv1.JobList, bool, string) {
 }
 
 func DeleteJob(ctx context.Context, name string) (bool, string) {
-	if err := kubeClient.BatchV1().Jobs(namespaceName).Delete(ctx, name, metav1.DeleteOptions{}); err != nil {
+	err := kubeClient.BatchV1().Jobs(GlobalNamespace).Delete(ctx, name, metav1.DeleteOptions{})
+	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete Job: %v", err)
 		return false, i18n.GetJobError
 	}

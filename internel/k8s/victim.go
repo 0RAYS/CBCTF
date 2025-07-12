@@ -36,14 +36,10 @@ func StartVictim(victim model.Victim) (map[string]map[string]any, bool, string) 
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 			defer cancel()
 			service, ok, msg := CreateService(ctx, CreateServiceOptions{
-				PodName: pod.Name,
-				Ports:   pod.PodPorts,
-				Labels: map[string]string{
-					VictimPodTag: pod.Name,
-				},
-				Selector: map[string]string{
-					VictimPodTag: pod.Name,
-				},
+				Name:     fmt.Sprintf("svc-%s", strings.ToLower(utils.RandStr(10))),
+				Ports:    pod.PodPorts,
+				Labels:   map[string]string{VictimPodTag: pod.Name},
+				Selector: map[string]string{VictimPodTag: pod.Name},
 			})
 			if !ok {
 				resultCh <- result{PodName: pod.Name, OK: false, Msg: msg}
@@ -111,7 +107,9 @@ func StartVictim(victim model.Victim) (map[string]map[string]any, bool, string) 
 			}
 			for _, policy := range pod.NetworkPolicies {
 				_, ok, msg = CreateNetworkPolicy(ctx, CreateNetworkPolicyOptions{
-					PodName: pod.Name,
+					Name:        fmt.Sprintf("np-%s", strings.ToLower(utils.RandStr(10))),
+					Labels:      map[string]string{VictimPodTag: pod.Name},
+					MatchLabels: map[string]string{VictimPodTag: pod.Name},
 					From: func() []*netv1.IPBlock {
 						from := make([]*netv1.IPBlock, 0)
 						for _, v := range policy.From {
@@ -147,8 +145,9 @@ func StartVictim(victim model.Victim) (map[string]map[string]any, bool, string) 
 				for path, volumeFlag := range container.VolumeFlags {
 					filename := strings.Split(path, "/")[len(strings.Split(path, "/"))-1]
 					flagConfigMap, ok, msg := CreateConfigMap(ctx, CreateConfigMapOptions{
-						PodName: pod.Name,
-						Data:    map[string]string{filename: volumeFlag},
+						Name:   fmt.Sprintf("cm-%s", strings.ToLower(utils.RandStr(10))),
+						Labels: map[string]string{VictimPodTag: pod.Name},
+						Data:   map[string]string{filename: volumeFlag},
 					})
 					if !ok {
 						resultCh <- result{PodName: pod.Name, OK: false, Msg: msg}
