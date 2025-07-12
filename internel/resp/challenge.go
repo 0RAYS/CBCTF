@@ -11,12 +11,6 @@ func Dockers2Yaml(dockers []model.Docker, challengeFlags []model.ChallengeFlag) 
 	baseYaml := `
 services:
 %s
-
-volumes:
-%s
-
-networks:
-%s
 `
 	var volumeStr string
 	volumeFlags := make(map[uint]map[string]string)
@@ -114,8 +108,14 @@ networks:
 		networkStr += fmt.Sprintf("  %s:\n    ipam:\n      config:\n        - subnet: %s\n", name, network)
 	}
 	networkStr = strings.Trim(networkStr, "\n")
-
-	return strings.Trim(fmt.Sprintf(baseYaml, serviceStr, volumeStr, networkStr), "\n")
+	baseYaml = strings.Trim(fmt.Sprintf(baseYaml, serviceStr), "\n")
+	if volumeStr != "" {
+		baseYaml += fmt.Sprintf("\nvolumes:\n%s", volumeStr)
+	}
+	if networkStr != "" {
+		baseYaml += fmt.Sprintf("\nnetworks:\n%s", networkStr)
+	}
+	return strings.Trim(baseYaml, "\n")
 }
 
 // GetChallengeResp 需要预加载 ChallengeFlags, Dockers
