@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	kubeovnclient "github.com/JBNRZ/kubeovn-api/pkg/client/clientset"
+	kubeovnclient "github.com/JBNRZ/kubeovn-api/pkg/client/clientset/versioned"
 	netattclient "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/client/clientset/versioned"
 	authorizationv1 "k8s.io/api/authorization/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
