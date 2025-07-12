@@ -12,6 +12,7 @@ type DockerRepo struct {
 }
 
 type CreateDockerOptions struct {
+	ChallengeID uint
 	Name        string
 	Image       string
 	CPU         float32
@@ -25,6 +26,7 @@ type CreateDockerOptions struct {
 
 func (c CreateDockerOptions) Convert2Model() model.Model {
 	return model.Docker{
+		ChallengeID: c.ChallengeID,
 		Name:        c.Name,
 		Image:       c.Image,
 		CPU:         c.CPU,

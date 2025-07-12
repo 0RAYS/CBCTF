@@ -132,6 +132,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 				networks = append(networks, network)
 			}
 			docker, ok, msg := dockerRepo.Create(db.CreateDockerOptions{
+				ChallengeID: challenge.ID,
 				Name:        name,
 				Image:       app.Image,
 				CPU:         app.CPUS,
