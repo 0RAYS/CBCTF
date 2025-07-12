@@ -110,10 +110,10 @@ services:
 	networkStr = strings.Trim(networkStr, "\n")
 	baseYaml = strings.Trim(fmt.Sprintf(baseYaml, serviceStr), "\n")
 	if volumeStr != "" {
-		baseYaml += fmt.Sprintf("\nvolumes:\n%s", volumeStr)
+		baseYaml += fmt.Sprintf("\n\nvolumes:\n\n%s", volumeStr)
 	}
 	if networkStr != "" {
-		baseYaml += fmt.Sprintf("\nnetworks:\n%s", networkStr)
+		baseYaml += fmt.Sprintf("\n\nnetworks:\n\n%s", networkStr)
 	}
 	return strings.Trim(baseYaml, "\n")
 }
