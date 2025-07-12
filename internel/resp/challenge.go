@@ -115,7 +115,7 @@ networks:
 	}
 	networkStr = strings.Trim(networkStr, "\n")
 
-	return strings.Trim(fmt.Sprintf(baseYaml, serviceStr, volumeStr), "\n")
+	return strings.Trim(fmt.Sprintf(baseYaml, serviceStr, volumeStr, networkStr), "\n")
 }
 
 // GetChallengeResp 需要预加载 ChallengeFlags, Dockers
