@@ -20,6 +20,16 @@ type Victim struct {
 	Traffics           []Traffic        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Start              time.Time        `json:"start"`
 	Duration           time.Duration    `json:"duration"`
+	VPCNames           StringList       `gorm:"default:null;type:json" json:"vpc"`
+	SubnetNames        StringList       `gorm:"default:null;type:json" json:"subnet"`
+	IPNames            StringList       `gorm:"default:null;type:json" json:"ip"`
+	NetAttachDefNames  StringList       `gorm:"default:null;type:json" json:"net_attach_def"`
+	GatewayNames       StringList       `gorm:"default:null;type:json" json:"gateway"`
+	EIPNames           StringList       `gorm:"default:null;type:json" json:"eip"`
+	SNatNames          StringList       `gorm:"default:null;type:json" json:"snat"`
+	DNatNames          StringList       `gorm:"default:null;type:json" json:"dnat"`
+	FIPNames           StringList       `gorm:"default:null;type:json" json:"fip"`
+	PodsNames          StringList       `gorm:"default:null;type:json" json:"pods"`
 	BasicModel
 }
 
