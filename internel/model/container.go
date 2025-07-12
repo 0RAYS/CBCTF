@@ -8,7 +8,7 @@ type Container struct {
 	Name        string     `json:"name"`
 	Image       string     `json:"image"`
 	Hostname    string     `json:"hostname"`
-	WorkingDir  *string    `gorm:"default:null" json:"working_dir"`
+	WorkingDir  string     `gorm:"default:null" json:"working_dir"`
 	Command     StringList `gorm:"default:null;type:json" json:"command"`
 	Environment StringMap  `gorm:"default:null;type:json" json:"environment"`
 	EnvFlags    StringList `gorm:"type:json" json:"env_flags"`

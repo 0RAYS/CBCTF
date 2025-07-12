@@ -14,7 +14,7 @@ type CreateContainerOptions struct {
 	Name        string
 	Image       string
 	Hostname    string
-	WorkingDir  *string
+	WorkingDir  string
 	Command     model.StringList
 	Environment model.StringMap
 	EnvFlags    model.StringList
