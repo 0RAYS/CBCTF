@@ -1,0 +1,69 @@
+package k8s
+
+import (
+	"CBCTF/internel/i18n"
+	"CBCTF/internel/log"
+	"context"
+	kubeovnv1 "github.com/JBNRZ/kubeovn-api/pkg/apis/kubeovn/v1"
+	apierror "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+type CreateVPCOptions struct {
+	Name         string
+	Labels       map[string]string
+	StaticRoutes []*kubeovnv1.StaticRoute
+}
+
+func CreateVPC(ctx context.Context, options CreateVPCOptions) (*kubeovnv1.Vpc, bool, string) {
+	var (
+		vpc *kubeovnv1.Vpc
+		err error
+	)
+	vpc = &kubeovnv1.Vpc{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      options.Name,
+			Namespace: GlobalNamespace,
+			Labels:    options.Labels,
+		},
+		Spec: kubeovnv1.VpcSpec{
+			StaticRoutes: options.StaticRoutes,
+		},
+	}
+	vpc, err = kubeOVNClient.KubeovnV1().Vpcs().Create(ctx, vpc, metav1.CreateOptions{})
+	if err != nil {
+		log.Logger.Warningf("Failed to create VPC: %v", err)
+		return nil, false, i18n.CreateVPCError
+	}
+	return vpc, true, i18n.Success
+}
+
+func GetVPC(ctx context.Context, name string) (*kubeovnv1.Vpc, bool, string) {
+	vpc, err := kubeOVNClient.KubeovnV1().Vpcs().Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		if apierror.IsNotFound(err) {
+			return nil, false, i18n.VPCNotFound
+		}
+		log.Logger.Warningf("Failed to get VPC: %v", err)
+		return nil, false, i18n.GetVPCError
+	}
+	return vpc, true, i18n.Success
+}
+
+func GetVPCList(ctx context.Context) (*kubeovnv1.VpcList, bool, string) {
+	vpcList, err := kubeOVNClient.KubeovnV1().Vpcs().List(ctx, metav1.ListOptions{})
+	if err != nil {
+		log.Logger.Warningf("Failed to list VPC: %v", err)
+		return nil, false, i18n.GetVPCError
+	}
+	return vpcList, true, i18n.Success
+}
+
+func DeleteVPC(ctx context.Context, name string) (bool, string) {
+	err := kubeOVNClient.KubeovnV1().Vpcs().Delete(ctx, name, metav1.DeleteOptions{})
+	if err != nil && !apierror.IsNotFound(err) {
+		log.Logger.Warningf("Failed to delete VPC: %v", err)
+		return false, i18n.DeleteVPCError
+	}
+	return true, i18n.Success
+}

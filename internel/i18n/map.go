@@ -194,6 +194,11 @@ var resp = map[string]map[string]any{
 	ExecCommandError:               {"zh-CN": "执行命令失败", "en-US": "Execute command failed", "code": 500},
 	ZipError:                       {"zh-CN": "压缩文件失败", "en-US": "Zip file failed", "code": 500},
 
+	CreateNamespaceError: {"zh-CN": "创建Namespace失败", "en-US": "Create namespace failed", "code": 500},
+	DeleteNamespaceError: {"zh-CN": "删除Namespace失败", "en-US": "Delete namespace failed", "code": 500},
+	GetNamespaceError:    {"zh-CN": "获取Namespace失败", "en-US": "Get namespace failed", "code": 500},
+	NamespaceNotFound:    {"zh-CN": "Namespace不存在", "en-US": "Namespace not found", "code": 404},
+
 	CreateConfigMapError: {"zh-CN": "创建ConfigMap失败", "en-US": "Create config map failed", "code": 500},
 	DeleteConfigMapError: {"zh-CN": "删除ConfigMap失败", "en-US": "Delete config map failed", "code": 500},
 	GetConfigMapError:    {"zh-CN": "获取ConfigMap失败", "en-US": "Get config map failed", "code": 500},
@@ -209,21 +214,42 @@ var resp = map[string]map[string]any{
 	GetServiceError:    {"zh-CN": "获取Service失败", "en-US": "Get service failed", "code": 500},
 	ServiceNotFound:    {"zh-CN": "Service不存在", "en-US": "Service not found", "code": 404},
 
-	CreateSecretError: {"zh-CN": "创建Secret失败", "en-US": "Create secret failed", "code": 500},
-	DeleteSecretError: {"zh-CN": "删除Secret失败", "en-US": "Delete secret failed", "code": 500},
-	GetSecretError:    {"zh-CN": "获取Secret失败", "en-US": "Get secret failed", "code": 500},
-	SecretNotFound:    {"zh-CN": "Secret不存在", "en-US": "Secret not found", "code": 404},
-
 	CreateJobError: {"zh-CN": "创建Job失败", "en-US": "Create Job failed", "code": 500},
 	DeleteJobError: {"zh-CN": "删除Job失败", "en-US": "Delete Job failed", "code": 500},
 	GetJobError:    {"zh-CN": "获取Job失败", "en-US": "Get Job failed", "code": 500},
 	JobNotFound:    {"zh-CN": "Job不存在", "en-US": "Job not found", "code": 404},
 
-	GetNodeListError: {"zh-CN": "获取K8S节点失败", "en-US": "Get node list failed", "code": 500},
+	CreateVPCError: {"zh-CN": "创建VPC失败", "en-US": "Create VPC failed", "code": 500},
+	DeleteVPCError: {"zh-CN": "删除VPC失败", "en-US": "Delete VPC failed", "code": 500},
+	VPCNotFound:    {"zh-CN": "VPC不存在", "en-US": "VPC not found", "code": 404},
+	GetVPCError:    {"zh-CN": "获取VPC失败", "en-US": "Get VPC failed", "code": 500},
 
-	GetIPBlockError:   {"zh-CN": "获取IP池失败", "en-US": "Get IP block failed", "code": 500},
-	EmptyIPBlock:      {"zh-CN": "IP池为空", "en-US": "IP block is empty", "code": 400},
-	DuplicateHostname: {"zh-CN": "主机名重复", "en-US": "Duplicate hostname", "code": 400},
+	CreateSubnetError: {"zh-CN": "创建子网失败", "en-US": "Create subnet failed", "code": 500},
+	DeleteSubnetError: {"zh-CN": "删除子网失败", "en-US": "Delete subnet failed", "code": 500},
+	SubnetNotFound:    {"zh-CN": "子网不存在", "en-US": "Subnet not found", "code": 404},
+	GetSubnetError:    {"zh-CN": "获取子网失败", "en-US": "Get subnet failed", "code": 500},
+
+	CreateVPCNatGatewayError: {"zh-CN": "创建VPC NAT网关失败", "en-US": "Create VPC NAT gateway failed", "code": 500},
+	DeleteVPCNatGatewayError: {"zh-CN": "删除VPC NAT网关失败", "en-US": "Delete VPC NAT gateway failed", "code": 500},
+	GetVPCNatGatewayError:    {"zh-CN": "获取VPC NAT网关失败", "en-US": "Get VPC NAT gateway failed", "code": 500},
+	VPCNatGatewayNotFound:    {"zh-CN": "VPC NAT网关不存在", "en-US": "VPC NAT gateway not found", "code": 404},
+
+	CreateEIPError: {"zh-CN": "创建弹性IP失败", "en-US": "Create EIP failed", "code": 500},
+	DeleteEIPError: {"zh-CN": "删除弹性IP失败", "en-US": "Delete EIP failed", "code": 500},
+	GetEIPError:    {"zh-CN": "获取弹性IP失败", "en-US": "Get EIP failed", "code": 500},
+	EIPNotFound:    {"zh-CN": "弹性IP不存在", "en-US": "EIP not found", "code": 404},
+
+	CreateNetAttError: {"zh-CN": "创建附属网卡失败", "en-US": "Create network attachment failed", "code": 500},
+	DeleteNetAttError: {"zh-CN": "删除附属网卡失败", "en-US": "Delete network attachment failed", "code": 500},
+	GetNetAttError:    {"zh-CN": "获取附属网卡失败", "en-US": "Get network attachment failed", "code": 500},
+	NetAttNotFound:    {"zh-CN": "附属网卡不存在", "en-US": "Network attachment not found", "code": 404},
+
+	CreateIPError: {"zh-CN": "创建IP失败", "en-US": "Create IP failed", "code": 500},
+	DeleteIPError: {"zh-CN": "删除IP失败", "en-US": "Delete IP failed", "code": 500},
+	GetIPError:    {"zh-CN": "获取IP失败", "en-US": "Get IP failed", "code": 500},
+	IPNotFound:    {"zh-CN": "IP不存在", "en-US": "IP not found", "code": 404},
+
+	GetNodeListError: {"zh-CN": "获取K8S节点失败", "en-US": "Get node list failed", "code": 500},
 }
 
 // I18N 获取翻译与状态码, 非http响应状态码

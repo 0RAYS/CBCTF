@@ -6,9 +6,12 @@ import (
 	"CBCTF/internel/k8s"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
+	"CBCTF/internel/utils"
 	"context"
+	"fmt"
 	"gorm.io/gorm"
 	corev1 "k8s.io/api/core/v1"
+	"strings"
 	"time"
 )
 
@@ -30,6 +33,7 @@ func WarmUpContestChallengeImage(form f.WarmUpImageForm) (bool, string) {
 	}
 	for _, node := range nodes {
 		if _, ok, msg = k8s.CreateJob(ctx, k8s.CreateJobOptions{
+			Name:       fmt.Sprintf("image-puller-%s", strings.ToLower(utils.RandStr(5))),
 			Images:     form.Images,
 			PullPolicy: form.PullPolicy,
 			NodeSelector: map[string]string{

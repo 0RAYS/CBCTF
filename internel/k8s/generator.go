@@ -53,14 +53,10 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 	service, ok, msg := CreateService(ctx, CreateServiceOptions{
-		PodName: generatorName,
-		Ports:   []int32{8000},
-		Labels: map[string]string{
-			GeneratorPodTag: generatorName,
-		},
-		Selector: map[string]string{
-			GeneratorPodTag: generatorName,
-		},
+		Name:     fmt.Sprintf("svc-%s", strings.ToLower(utils.RandStr(10))),
+		Ports:    []int32{8000},
+		Labels:   map[string]string{GeneratorPodTag: generatorName},
+		Selector: map[string]string{GeneratorPodTag: generatorName},
 	})
 	if !ok {
 		log.Logger.Warningf("Failed to create service for generator: %s", msg)

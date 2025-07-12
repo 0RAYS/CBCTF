@@ -3,18 +3,17 @@ package k8s
 import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
-	"CBCTF/internel/utils"
 	"context"
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strings"
 )
 
 type CreateConfigMapOptions struct {
-	PodName string
-	Data    map[string]string
+	Name   string
+	Labels map[string]string
+	Data   map[string]string
 }
 
 func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*corev1.ConfigMap, bool, string) {
@@ -24,15 +23,13 @@ func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*core
 	)
 	configMap = &corev1.ConfigMap{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("cm-%s", strings.ToLower(utils.RandStr(10))),
-			Namespace: namespaceName,
-			Labels: map[string]string{
-				VictimPodTag: options.PodName,
-			},
+			Name:      options.Name,
+			Namespace: GlobalNamespace,
+			Labels:    options.Labels,
 		},
 		Data: options.Data,
 	}
-	configMap, err = kubeClient.CoreV1().ConfigMaps(namespaceName).Create(ctx, configMap, metav1.CreateOptions{})
+	configMap, err = kubeClient.CoreV1().ConfigMaps(GlobalNamespace).Create(ctx, configMap, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create ConfigMap: %v", err)
 		return nil, false, i18n.CreateConfigMapError
@@ -41,7 +38,7 @@ func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*core
 }
 
 func GetConfigMapList(ctx context.Context) (*corev1.ConfigMapList, bool, string) {
-	configMapList, err := kubeClient.CoreV1().ConfigMaps(namespaceName).List(ctx, metav1.ListOptions{})
+	configMapList, err := kubeClient.CoreV1().ConfigMaps(GlobalNamespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		if apierror.IsNotFound(err) {
 			return nil, false, i18n.ConfigMapNotFound
@@ -53,7 +50,7 @@ func GetConfigMapList(ctx context.Context) (*corev1.ConfigMapList, bool, string)
 }
 
 func GetConfigMapListByPodName(ctx context.Context, key, podName string) (*corev1.ConfigMapList, bool, string) {
-	configMapList, err := kubeClient.CoreV1().ConfigMaps(namespaceName).List(ctx, metav1.ListOptions{
+	configMapList, err := kubeClient.CoreV1().ConfigMaps(GlobalNamespace).List(ctx, metav1.ListOptions{
 		LabelSelector: fmt.Sprintf("%s=%s", key, podName),
 	})
 	if err != nil {
@@ -67,7 +64,7 @@ func GetConfigMapListByPodName(ctx context.Context, key, podName string) (*corev
 }
 
 func DeleteConfigMap(ctx context.Context, configMapName string) (bool, string) {
-	err := kubeClient.CoreV1().ConfigMaps(namespaceName).Delete(ctx, configMapName, metav1.DeleteOptions{})
+	err := kubeClient.CoreV1().ConfigMaps(GlobalNamespace).Delete(ctx, configMapName, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete ConfigMap: %v", err)
 		return false, i18n.DeleteConfigMapError

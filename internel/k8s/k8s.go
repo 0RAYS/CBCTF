@@ -5,17 +5,16 @@ import (
 	"CBCTF/internel/log"
 	"context"
 	"fmt"
+	"k8s.io/client-go/rest"
 	"os"
 	"time"
 
 	kubeovnclient "github.com/JBNRZ/kubeovn-api/pkg/client/clientset"
+	netattclient "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/client/clientset/versioned"
 	authorizationv1 "k8s.io/api/authorization/v1"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/client-go/tools/clientcmd/api"
 )
 
 const (
@@ -24,18 +23,18 @@ const (
 )
 
 var (
-	kubeClient     *kubernetes.Clientset
-	kubeOVNClient  *kubeovnclient.Clientset
-	kubeConfig     *rest.Config
-	adminAPIConfig *api.Config
-	namespaceName  string
-	ipPoolName     string
+	kubeClient          *kubernetes.Clientset
+	natattClient        *netattclient.Clientset
+	kubeOVNClient       *kubeovnclient.Clientset
+	kubeConfig          *rest.Config
+	GlobalNamespace     string
+	ExternalNetworkName string
 )
 
 func Init(run bool) {
 	var err error
-	namespaceName = config.Env.K8S.Namespace
-	ipPoolName = fmt.Sprintf("%s-ip-pool", namespaceName)
+	GlobalNamespace = config.Env.K8S.Namespace
+	ExternalNetworkName = fmt.Sprintf("%s-external-network", GlobalNamespace)
 	if run {
 		if _, err = os.Stat(config.Env.K8S.Config); err != nil {
 			log.Logger.Fatalf("Make sure the config.k8s.config.user configured correctly: %s", err)
@@ -57,36 +56,33 @@ func InitResources() {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 
-	loadKubeConfig()
 	initClients()
-
-	log.Logger.Debugf("Checking resources in namespace %s", namespaceName)
 	updateNodeIPs(ctx)
-	ensureNamespace(ctx)
+	CreateNamespace(ctx, CreateNamespaceOptions{Name: GlobalNamespace})
+	initExternalNetwork(ctx)
 
-	tmp := config.Env.K8S.Config
 	if err := config.Save(config.Env); err != nil {
 		log.Logger.Fatalf("Failed to update config: %s", err)
 	}
-	log.Logger.Infof("Kubeconfig saved to %s.conf, please remove the %s and restart", namespaceName, tmp)
+	log.Logger.Infof("Kubeconfig saved to %s.conf, please restart", GlobalNamespace)
 	os.Exit(0)
 }
 
 // CheckPermission checks if the user has permission to access the resources
 func CheckPermission() {
 	var err error
-	if _, err := os.Stat(config.Env.K8S.Config); err != nil {
+	if _, err = os.Stat(config.Env.K8S.Config); err != nil {
 		log.Logger.Fatalf("Make sure the config.k8s.config.user configured correctly: %s", err)
 	}
 	kubeConfig, err = clientcmd.BuildConfigFromFlags("", config.Env.K8S.Config)
 	if err != nil {
 		log.Logger.Fatalf("Failed to load k8s user config: %s", err)
 	}
-	kubeClient, err = kubernetes.NewForConfig(kubeConfig)
+	kubeClient, err := kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
 		log.Logger.Fatalf("Failed to init k8s client: %s", err)
 	}
-	log.Logger.Infof("Checking permission in namespace %s", namespaceName)
+	log.Logger.Infof("Checking permission in namespace %s", GlobalNamespace)
 	groups := map[string]map[string][]string{
 		"":                  {"pods": {"*"}, "services": {"*"}, "configmaps": {"*"}, "pods/exec": {"*"}, "nodes": {"get", "list", "watch"}},
 		"batch":             {"jobs": {"*"}},
@@ -100,7 +96,7 @@ func CheckPermission() {
 				accessReview := &authorizationv1.SelfSubjectAccessReview{
 					Spec: authorizationv1.SelfSubjectAccessReviewSpec{
 						ResourceAttributes: &authorizationv1.ResourceAttributes{
-							Namespace: namespaceName,
+							Namespace: GlobalNamespace,
 							Group:     group,
 							Version:   "*",
 							Resource:  resource,
@@ -121,15 +117,14 @@ func CheckPermission() {
 			}
 		}
 	}
-	log.Logger.Infof("User has permission to access all needed resources in namespace %s", namespaceName)
+	log.Logger.Infof("User has permission to access all needed resources in namespace %s", GlobalNamespace)
 }
 
-func loadKubeConfig() {
+func initClients() {
 	if _, err := os.Stat(config.Env.K8S.Config); err != nil {
 		log.Logger.Fatalf("Invalid config.k8s.config.admin: %s", err)
 	}
-	var err error
-	adminAPIConfig, err = clientcmd.LoadFromFile(config.Env.K8S.Config)
+	adminAPIConfig, err := clientcmd.LoadFromFile(config.Env.K8S.Config)
 	if err != nil {
 		log.Logger.Fatalf("Failed to load admin config: %s", err)
 	}
@@ -138,13 +133,13 @@ func loadKubeConfig() {
 		log.Logger.Fatalf("Failed to create client config: %s", err)
 	}
 	log.Logger.Info("Admin config loaded")
-}
-
-func initClients() {
-	var err error
 	kubeClient, err = kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
 		log.Logger.Fatalf("Failed to init k8s client: %s", err)
+	}
+	natattClient, err = netattclient.NewForConfig(kubeConfig)
+	if err != nil {
+		log.Logger.Fatalf("Failed to init NetworkAttachmentDefinition client: %s", err)
 	}
 	kubeOVNClient, err = kubeovnclient.NewForConfig(kubeConfig)
 	if err != nil {
@@ -155,19 +150,41 @@ func initClients() {
 func updateNodeIPs(ctx context.Context) {
 	ips, ok, _ := GetNodeIPList(ctx)
 	if !ok {
-		os.Exit(-1)
+		log.Logger.Fatalf("Failed to get node IP list")
 	}
 	config.Env.K8S.Nodes = ips
 }
 
-func ensureNamespace(ctx context.Context) {
-	if _, err := kubeClient.CoreV1().Namespaces().Get(ctx, namespaceName, metav1.GetOptions{}); err != nil {
-		log.Logger.Infof("Creating namespace %s...", namespaceName)
-		_, err = kubeClient.CoreV1().Namespaces().Create(ctx, &corev1.Namespace{
-			ObjectMeta: metav1.ObjectMeta{Name: namespaceName},
-		}, metav1.CreateOptions{})
-		if err != nil {
-			log.Logger.Fatalf("Failed to create namespace: %v", err)
-		}
+func initExternalNetwork(ctx context.Context) {
+	if _, ok, _ := GetSubnet(ctx, ExternalNetworkName); ok {
+		DeleteSubnet(ctx, ExternalNetworkName)
+	}
+	if _, ok, _ := CreateSubnet(ctx, CreateSubnetOptions{
+		Name:       ExternalNetworkName,
+		CIDR:       config.Env.K8S.ExternalNetwork.CIDR,
+		Gateway:    config.Env.K8S.ExternalNetwork.Gateway,
+		ExcludeIPs: config.Env.K8S.ExternalNetwork.ExcludeIPs,
+	}); !ok {
+		log.Logger.Fatal("Failed to init external network")
+	}
+	if _, ok, _ := GetNetAttachDef(ctx, ExternalNetworkName); ok {
+		DeleteNetAttachDef(ctx, ExternalNetworkName, "kube-system")
+	}
+	if _, ok, _ := CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
+		Name:      ExternalNetworkName,
+		Namespace: "kube-system",
+		Config: fmt.Sprintf(`{
+			"cniVersion": "0.3.0",
+			"type": "macvlan",
+			"master": "%s",
+			"mode": "bridge",
+			"ipam": {
+				"type": "kube-ovn",
+				"server_socket": "/run/openvswitch/kube-ovn-daemon.sock",
+				"provider": "%s.kube-system"
+			}
+		}`, config.Env.K8S.ExternalNetwork.Interface, ExternalNetworkName),
+	}); !ok {
+		log.Logger.Fatal("Failed to init external network attachment definition")
 	}
 }

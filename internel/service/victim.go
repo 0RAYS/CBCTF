@@ -15,13 +15,9 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 	//challenge, ok, msg := db.InitChallengeRepo(tx).
 	//	GetByID(contestChallenge.ChallengeID, db.GetOptions{
 	//		Preloads: map[string]db.GetOptions{
-	//			"DockerGroups": {
+	//			"Dockers": {
 	//				Preloads: map[string]db.GetOptions{
-	//					"Dockers": {
-	//						Preloads: map[string]db.GetOptions{
-	//							"ChallengeFlags": {},
-	//						},
-	//					},
+	//					"ChallengeFlags": {},
 	//				},
 	//			},
 	//		},
