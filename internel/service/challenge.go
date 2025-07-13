@@ -3,6 +3,7 @@ package service
 import (
 	f "CBCTF/internel/form"
 	"CBCTF/internel/i18n"
+	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
@@ -83,7 +84,8 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 		}
 		networksMap := make(map[string]model.Network)
 		for _, network := range config.Networks {
-			if strings.HasPrefix(network.Name, "_") {
+			network.Name = strings.TrimPrefix(network.Name, "_")
+			if network.Name == "default" {
 				continue
 			}
 			tmp := model.Network{External: network.External.External}
@@ -123,6 +125,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 				}
 				network, ok := networksMap[key]
 				if !ok {
+					log.Logger.Warningf("Network %s not found in networks", key)
 					return model.Challenge{}, false, i18n.UnknownError
 				}
 				network.IP = value.Ipv4Address

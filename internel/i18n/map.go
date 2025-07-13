@@ -1,7 +1,5 @@
 package i18n
 
-import "fmt"
-
 var resp = map[string]map[string]any{
 	Success:        {"zh-CN": "操作成功", "en-US": "Success", "code": 200},
 	UnsupportedKey: {"zh-CN": "不支持的键", "en-US": "Unsupported key", "code": 400},
@@ -255,12 +253,7 @@ var resp = map[string]map[string]any{
 // I18N 获取翻译与状态码, 非http响应状态码
 func I18N(key string, language string) (string, int) {
 	if v, ok := resp[key]; !ok {
-		switch language {
-		case "en-US":
-			return fmt.Sprintf("I18N configuration is incomplete: %s", key), 400
-		default:
-			return fmt.Sprintf("I18N 配置不完全: %s", key), 400
-		}
+		return key, 500
 	} else {
 		if language == "origin" {
 			return key, v["code"].(int)

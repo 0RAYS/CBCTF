@@ -186,7 +186,7 @@ func GenerateAttachment(contestChallenge model.ContestChallenge, team model.Team
 	path := contestChallenge.Challenge.AttachmentPath(team.ID)
 	if err = os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		log.Logger.Warningf("Failed to create directory for team %d challenge %d: %v", team.ID, contestChallenge.ChallengeID, err)
-		return false, i18n.UnknownError
+		return false, i18n.CreateDirError
 	}
 	file, err := os.Create(path)
 	if err != nil {
