@@ -92,6 +92,7 @@ func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
 		Conditions: map[string]any{"rand_id": randIDL},
 		Selects:    []string{"id"},
 		Preloads: map[string]GetOptions{
+			"Dockers":           {Selects: []string{"id", "challenge_id"}},
 			"ChallengeFlags":    {Selects: []string{"id", "challenge_id"}},
 			"ContestChallenges": {Selects: []string{"id", "challenge_id"}},
 			"Submissions":       {Selects: []string{"id", "challenge_id"}},
@@ -100,8 +101,11 @@ func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
 	if !ok && msg != i18n.ChallengeNotFound {
 		return false, msg
 	}
-	challengeFlagIDL, contestChallengeIDL, submissionIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0)
+	dockerIDL, challengeFlagIDL, contestChallengeIDL, submissionIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0)
 	for _, challenge := range challengeL {
+		for _, docker := range challenge.Dockers {
+			dockerIDL = append(dockerIDL, docker.ID)
+		}
 		for _, challengeFlag := range challenge.ChallengeFlags {
 			challengeFlagIDL = append(challengeFlagIDL, challengeFlag.ID)
 		}
@@ -111,6 +115,9 @@ func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
 		for _, submission := range challenge.Submissions {
 			submissionIDL = append(submissionIDL, submission.ID)
 		}
+	}
+	if ok, msg := InitDockerRepo(c.DB).Delete(dockerIDL...); !ok {
+		return false, msg
 	}
 	if ok, msg = InitChallengeFlagRepo(c.DB).Delete(challengeFlagIDL...); !ok {
 		return false, msg
