@@ -145,28 +145,28 @@ type Networks []Network
 func (n Networks) Value() (driver.Value, error) {
 	n = slices.DeleteFunc(n, func(n Network) bool {
 		if n.Subnet == "" && n.Gateway == "" && n.IP == "" {
-			return true
+			return false
 		}
 		_, cidr, err := net.ParseCIDR(n.Subnet)
 		if err != nil {
-			return false
+			return true
 		}
 		ip := net.ParseIP(n.IP)
 		if ip == nil {
-			return false
+			return true
 		}
 		if n.Gateway == "" {
 			n.Gateway, err = utils.GetFirstIP(n.Subnet)
 			if err != nil {
 				log.Logger.Warningf("Get first IP fail: %v", err)
-				return false
+				return true
 			}
 		}
 		gateway := net.ParseIP(n.Gateway)
 		if gateway == nil || !cidr.Contains(gateway) {
-			return false
+			return true
 		}
-		return cidr.Contains(ip)
+		return !cidr.Contains(ip)
 	})
 	return json.Marshal(n)
 }
