@@ -151,10 +151,6 @@ func (n Networks) Value() (driver.Value, error) {
 		if err != nil {
 			return true
 		}
-		ip := net.ParseIP(n.IP)
-		if ip == nil {
-			return true
-		}
 		if n.Gateway == "" {
 			n.Gateway, err = utils.GetFirstIP(n.Subnet)
 			if err != nil {
@@ -164,6 +160,13 @@ func (n Networks) Value() (driver.Value, error) {
 		}
 		gateway := net.ParseIP(n.Gateway)
 		if gateway == nil || !cidr.Contains(gateway) {
+			return true
+		}
+		if n.IP == "" {
+			return false
+		}
+		ip := net.ParseIP(n.IP)
+		if ip == nil {
 			return true
 		}
 		return !cidr.Contains(ip)
