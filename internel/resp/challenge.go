@@ -44,7 +44,7 @@ services:
 
 	var (
 		serviceStr string
-		networks   = make(map[string]string)
+		networks   = make(map[string]model.Network)
 	)
 	for _, docker := range dockers {
 		serviceStr += fmt.Sprintf("  %s:\n", docker.Name)
@@ -97,15 +97,19 @@ services:
 				networkName := strings.ReplaceAll(network.Subnet, ".", "_")
 				networkName = fmt.Sprintf("network_%s", strings.ReplaceAll(networkName, "/", "_"))
 				serviceStr += fmt.Sprintf("      %s:\n        ipv4_address: %s\n", networkName, network.IP)
-				networks[networkName] = network.Subnet
+				networks[networkName] = network
 			}
 		}
+		serviceStr += "\n"
 	}
 	serviceStr = strings.Trim(serviceStr, "\n")
 
 	var networkStr string
 	for name, network := range networks {
-		networkStr += fmt.Sprintf("  %s:\n    ipam:\n      config:\n        - subnet: %s\n", name, network)
+		networkStr += fmt.Sprintf("  %s:\n", name)
+		networkStr += fmt.Sprintf("    external: %v\n", network.External)
+		networkStr += fmt.Sprintf("    ipam:\n      config:\n        - subnet: %s\n          gateway: %s\n", network.Subnet, network.Gateway)
+		networkStr += "\n"
 	}
 	networkStr = strings.Trim(networkStr, "\n")
 	baseYaml = strings.Trim(fmt.Sprintf(baseYaml, serviceStr), "\n")
