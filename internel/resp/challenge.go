@@ -44,7 +44,7 @@ services:
 
 	var (
 		serviceStr string
-		networks   map[string]string
+		networks   = make(map[string]string)
 	)
 	for _, docker := range dockers {
 		serviceStr += fmt.Sprintf("  %s:\n", docker.Name)
