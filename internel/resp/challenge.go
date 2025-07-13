@@ -50,7 +50,7 @@ services:
 		serviceStr += fmt.Sprintf("  %s:\n", docker.Name)
 		serviceStr += fmt.Sprintf("    image: %s\n", docker.Image)
 		if docker.CPU > 0 {
-			serviceStr += fmt.Sprintf("    cpus: %d\n", docker.CPU)
+			serviceStr += fmt.Sprintf("    cpus: %f\n", docker.CPU)
 		}
 		if docker.Memory > 0 {
 			serviceStr += fmt.Sprintf("    mem_limit: %d\n", docker.Memory)
