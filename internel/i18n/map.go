@@ -5,7 +5,7 @@ var resp = map[string]map[string]any{
 	UnsupportedKey: {"zh-CN": "不支持的键", "en-US": "Unsupported key", "code": 400},
 	DeadLock:       {"zh-CN": "数据写入失败过多", "en-US": "Database deadlock", "code": 500},
 
-	BadRequest:      {"zh-CN": "请求错误", "en-US": "Bad request", "code": 400},
+	BadRequest:      {"zh-CN": "参数缺失或错误", "en-US": "Bad request", "code": 400},
 	Unauthorized:    {"zh-CN": "未登录", "en-US": "Unauthorized", "code": 401},
 	Forbidden:       {"zh-CN": "禁止访问", "en-US": "Forbidden", "code": 403},
 	TooManyRequests: {"zh-CN": "请求过快", "en-US": "Too many requests", "code": 429},
