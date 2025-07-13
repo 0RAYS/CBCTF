@@ -45,7 +45,7 @@ func ResetTeamFlag(ctx *gin.Context) {
 	switch contestChallenge.Type {
 	case model.DynamicChallengeType:
 		ok, msg = k8s.GenerateAttachment(contestChallenge, team, teamFlags)
-	case model.PodChallengeType:
+	case model.PodsChallengeType:
 		// 不考虑失败
 		go service.StopTeamVictim(db.DB.WithContext(ctx.Copy()), team, contestChallenge)
 		ok, msg = true, i18n.Success
