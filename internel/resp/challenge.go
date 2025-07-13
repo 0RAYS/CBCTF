@@ -121,7 +121,7 @@ services:
 // GetChallengeResp 需要预加载 ChallengeFlags, Dockers
 func GetChallengeResp(challenge model.Challenge) gin.H {
 	flags := make([]gin.H, 0)
-	if challenge.Type != model.PodChallengeType {
+	if challenge.Type != model.PodsChallengeType {
 		for _, flag := range challenge.ChallengeFlags {
 			flags = append(flags, gin.H{"id": flag.ID, "value": flag.Value})
 		}

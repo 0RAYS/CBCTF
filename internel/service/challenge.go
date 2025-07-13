@@ -65,7 +65,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 				return model.Challenge{}, false, msg
 			}
 		}
-	case model.PodChallengeType:
+	case model.PodsChallengeType:
 		config, ok, msg := utils.LoadDockerComposeYaml(form.DockerCompose)
 		if !ok {
 			return model.Challenge{}, false, msg
@@ -221,7 +221,7 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChalle
 			Category:       form.Category,
 			GeneratorImage: form.GeneratorImage,
 		})
-	case model.PodChallengeType:
+	case model.PodsChallengeType:
 		return db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
 			Name:            form.Name,
 			Desc:            form.Desc,
