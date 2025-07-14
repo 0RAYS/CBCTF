@@ -3,8 +3,13 @@ package model
 import (
 	"CBCTF/internel/config"
 	"CBCTF/internel/i18n"
+	"CBCTF/internel/log"
 	"CBCTF/internel/utils"
+	"database/sql/driver"
+	"encoding/json"
 	"fmt"
+	"net"
+	"slices"
 	"strings"
 	"time"
 )
@@ -20,16 +25,14 @@ type Victim struct {
 	Traffics           []Traffic        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Start              time.Time        `json:"start"`
 	Duration           time.Duration    `json:"duration"`
-	VPCNames           StringList       `gorm:"default:null;type:json" json:"vpc"`
-	SubnetNames        StringList       `gorm:"default:null;type:json" json:"subnet"`
-	IPNames            StringList       `gorm:"default:null;type:json" json:"ip"`
-	NetAttachDefNames  StringList       `gorm:"default:null;type:json" json:"net_attach_def"`
-	GatewayNames       StringList       `gorm:"default:null;type:json" json:"gateway"`
-	EIPNames           StringList       `gorm:"default:null;type:json" json:"eip"`
-	SNatNames          StringList       `gorm:"default:null;type:json" json:"snat"`
-	DNatNames          StringList       `gorm:"default:null;type:json" json:"dnat"`
-	FIPNames           StringList       `gorm:"default:null;type:json" json:"fip"`
-	PodsNames          StringList       `gorm:"default:null;type:json" json:"pods"`
+	VPC                string           `json:"vpc"`
+	Subnets            Subnets          `gorm:"default:null;type:json" json:"subnets"`
+	NetAttachDefs      StringList       `gorm:"default:null;type:json" json:"net_attach_defs"`
+	Gateways           Gateways         `gorm:"default:null;type:json" json:"gateways"`
+	EIPs               EIPs             `gorm:"default:null;type:json" json:"eips"`
+	FIPs               FIPs             `gorm:"default:null;type:json" json:"fips"`
+	IPs                StringMap        `gorm:"default:null;type:json" json:"ips"`
+	NetworkPolicies    NetworkPolicies  `gorm:"default:null;type:json" json:"network_policies"`
 	BasicModel
 }
 
@@ -97,4 +100,125 @@ func (v Victim) RemoteAddr() []string {
 
 func (v Victim) Remaining() time.Duration {
 	return v.Start.Add(v.Duration).Sub(time.Now())
+}
+
+type Subnet struct {
+	Name     string `json:"name"`
+	CIDR     string `json:"cidr"`
+	Gateway  string `json:"gateway"`
+	External bool   `json:"external"`
+}
+
+type Subnets []Subnet
+
+func (s Subnets) Value() (driver.Value, error) {
+	s = slices.DeleteFunc(s, func(s Subnet) bool {
+		if s.CIDR == "" || s.Gateway == "" {
+			return true
+		}
+		_, cidr, err := net.ParseCIDR(s.CIDR)
+		if err != nil {
+			return true
+		}
+		if s.Gateway == "" {
+			s.Gateway, err = utils.GetFirstIP(s.CIDR)
+			if err != nil {
+				log.Logger.Warningf("Get first IP fail: %v", err)
+				return true
+			}
+		}
+		gateway := net.ParseIP(s.Gateway)
+		if gateway == nil || !cidr.Contains(gateway) {
+			return true
+		}
+		return false
+	})
+	return json.Marshal(s)
+}
+
+func (s *Subnets) Scan(value any) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan Subnets value")
+	}
+	return json.Unmarshal(bytes, s)
+}
+
+type Gateway struct {
+	Name   string `json:"name"`
+	VPC    string `json:"vpc"`
+	Subnet string `json:"subnet"`
+	IP     string `json:"ip"`
+}
+
+type Gateways []Gateway
+
+func (g Gateways) Value() (driver.Value, error) {
+	g = slices.DeleteFunc(g, func(g Gateway) bool {
+		if net.ParseIP(g.IP) == nil {
+			return true
+		}
+		return false
+	})
+	return json.Marshal(g)
+}
+
+func (g *Gateways) Scan(value any) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan Gateways value")
+	}
+	return json.Unmarshal(bytes, g)
+}
+
+type EIP struct {
+	Name    string `json:"name"`
+	Gateway string `json:"gateway"`
+	IP      string `json:"ip"`
+}
+
+type EIPs []EIP
+
+func (e EIPs) Value() (driver.Value, error) {
+	e = slices.DeleteFunc(e, func(e EIP) bool {
+		if net.ParseIP(e.IP) == nil {
+			return true
+		}
+		return false
+	})
+	return json.Marshal(e)
+}
+
+func (e *EIPs) Scan(value any) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan EIPs value")
+	}
+	return json.Unmarshal(bytes, e)
+}
+
+type FIP struct {
+	Name       string `json:"name"`
+	EIP        string `json:"eip"`
+	InternalIP string `json:"internal_ip"`
+}
+
+type FIPs []FIP
+
+func (f FIPs) Value() (driver.Value, error) {
+	f = slices.DeleteFunc(f, func(f FIP) bool {
+		if net.ParseIP(f.InternalIP) == nil {
+			return true
+		}
+		return false
+	})
+	return json.Marshal(f)
+}
+
+func (f *FIPs) Scan(value any) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan FIPs value")
+	}
+	return json.Unmarshal(bytes, f)
 }
