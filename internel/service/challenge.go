@@ -111,11 +111,13 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 					environment[k] = *v
 				}
 			}
-			ports := make(model.StringList, 0)
+			ports := make(model.Exposes, 0)
+			tmp := make([]string, 0)
 			for _, port := range app.Ports {
 				target := fmt.Sprintf("%d/%s", port.Target, port.Protocol)
-				if !slices.Contains(ports, target) {
-					ports = append(ports, target)
+				if !slices.Contains(tmp, target) {
+					ports = append(ports, model.Expose{Port: int32(port.Target), Protocol: port.Protocol})
+					tmp = append(tmp, target)
 				}
 			}
 			networks := make(model.Networks, 0)
@@ -139,7 +141,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 				Memory:      int64(app.MemLimit),
 				WorkingDir:  app.WorkingDir,
 				Command:     model.StringList(app.Command),
-				Expose:      ports,
+				Exposes:     ports,
 				Environment: environment,
 				Networks:    networks,
 			})

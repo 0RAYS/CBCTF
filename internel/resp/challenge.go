@@ -66,10 +66,10 @@ services:
 			commandStr = commandStr[:len(commandStr)-2] + "]"
 			serviceStr += fmt.Sprintf("    command: %s\n", commandStr)
 		}
-		if docker.Expose != nil && len(docker.Expose) > 0 {
+		if docker.Exposes != nil && len(docker.Exposes) > 0 {
 			serviceStr += "    expose:\n"
-			for _, port := range docker.Expose {
-				serviceStr += fmt.Sprintf("      - \"%s\"\n", port)
+			for _, port := range docker.Exposes {
+				serviceStr += fmt.Sprintf("      - \"%d/%s\"\n", port.Port, port.Protocol)
 			}
 		}
 		if docker.Environment != nil || len(envFlags[docker.ID]) > 0 {

@@ -12,7 +12,7 @@ func GetFirstIP(cidr string) (string, error) {
 	}
 	ip := ipNet.IP.To4()
 	if ip == nil {
-		return "", fmt.Errorf("only IPv4 is supported in this example")
+		return "", fmt.Errorf("only IPv4 is supported")
 	}
 	first := make(net.IP, len(ip))
 	copy(first, ip)
@@ -26,4 +26,29 @@ func GetFirstIP(cidr string) (string, error) {
 		return "", fmt.Errorf("no usable IPs in this CIDR")
 	}
 	return first.String(), nil
+}
+
+func GetLastIP(cidr string) (string, error) {
+	ip, ipNet, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return "", err
+	}
+	ip4 := ip.To4()
+	if ip4 == nil {
+		return "", fmt.Errorf("only IPv4 is supported")
+	}
+	start := ipToInt(ip.Mask(ipNet.Mask))
+	ones, bits := ipNet.Mask.Size()
+	num := uint32(1) << uint32(bits-ones)
+	lastIP := intToIP(start + num - 1)
+	return lastIP.String(), nil
+}
+
+func ipToInt(ip net.IP) uint32 {
+	ip4 := ip.To4()
+	return uint32(ip4[0])<<24 | uint32(ip4[1])<<16 | uint32(ip4[2])<<8 | uint32(ip4[3])
+}
+
+func intToIP(n uint32) net.IP {
+	return net.IPv4(byte(n>>24), byte(n>>16), byte(n>>8), byte(n))
 }

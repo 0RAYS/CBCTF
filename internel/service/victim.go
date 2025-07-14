@@ -3,32 +3,201 @@ package service
 import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/k8s"
+	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
+	"CBCTF/internel/utils"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"slices"
+	"strings"
 	"time"
 )
 
+func NeedVPC(dockers []model.Docker) bool {
+	for _, docker := range dockers {
+		for _, network := range docker.Networks {
+			if network.CIDR != "" {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // StartTeamVictim Todo
 func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChallenge model.ContestChallenge) (model.Victim, bool, string) {
-	//challenge, ok, msg := db.InitChallengeRepo(tx).
-	//	GetByID(contestChallenge.ChallengeID, db.GetOptions{
-	//		Preloads: map[string]db.GetOptions{
-	//			"Dockers": {
-	//				Preloads: map[string]db.GetOptions{
-	//					"ChallengeFlags": {},
-	//				},
-	//			},
-	//		},
-	//	})
-	//if !ok {
-	//	return model.Victim{}, false, msg
-	//}
-	//teamFlagRepo := db.InitTeamFlagRepo(tx)
-	//victimRepo := db.InitVictimRepo(tx)
-	//podRepo := db.InitPodRepo(tx)
-	//containerRepo := db.InitContainerRepo(tx)
+	challenge, ok, msg := db.InitChallengeRepo(tx).
+		GetByID(contestChallenge.ChallengeID, db.GetOptions{
+			Preloads: map[string]db.GetOptions{
+				"Dockers": {
+					Preloads: map[string]db.GetOptions{
+						"ChallengeFlags": {},
+					},
+				},
+			},
+		})
+	if !ok {
+		return model.Victim{}, false, msg
+	}
+	victimRepo := db.InitVictimRepo(tx)
+	podRepo := db.InitPodRepo(tx)
+	containerRepo := db.InitContainerRepo(tx)
+	teamFlagRepo := db.InitTeamFlagRepo(tx)
+	vOptions := db.CreateVictimOptions{
+		ContestChallengeID: contestChallenge.ID,
+		TeamID:             team.ID,
+		UserID:             user.ID,
+		Start:              time.Now(),
+		Duration:           time.Hour,
+		NetworkPolicies:    challenge.NetworkPolicies,
+	}
+	var victim model.Victim
+	if NeedVPC(challenge.Dockers) {
+		vOptions.VPC = fmt.Sprintf("vpc-%s", strings.ToLower(utils.RandStr(10)))
+
+		subnetsName := make([]string, 0)
+		gatewayName := make([]string, 0)
+		subnets := make(model.Subnets, 0)
+		netAttachDefs := make(model.StringList, 0)
+		gateways := make(model.Gateways, 0)
+		eips := make(model.EIPs, 0)
+		dnats := make(model.DNats, 0)
+		snats := make(model.SNats, 0)
+		pOptionsMap := make(map[uint]db.CreatePodOptions)
+		cOptionsMap := make(map[uint]db.CreateContainerOptions)
+		for _, docker := range challenge.Dockers {
+			pOptions := db.CreatePodOptions{
+				Name:     fmt.Sprintf("pod-%s", strings.ToLower(utils.RandStr(10))),
+				PodPorts: docker.Exposes,
+				IPs:      make(model.IPs, 0),
+			}
+			envFlagL := make(model.StringList, 0)
+			volumeFlagL := make(model.StringMap)
+			for _, challengeFlag := range docker.ChallengeFlags {
+				teamFlag, ok, msg := teamFlagRepo.Get(db.GetOptions{
+					Conditions: map[string]any{
+						"team_id":           team.ID,
+						"challenge_flag_id": challengeFlag.ID,
+					},
+				})
+				if !ok {
+					return model.Victim{}, false, msg
+				}
+				switch challengeFlag.InjectType {
+				case model.EnvInjectType:
+					envFlagL = append(envFlagL, teamFlag.Value)
+				case model.VolumeInjectType:
+					volumeFlagL[challengeFlag.Path] = teamFlag.Value
+				default:
+					return model.Victim{}, false, i18n.InvalidChallengeFlagInjectType
+				}
+			}
+			cOptions := db.CreateContainerOptions{
+				Name:        fmt.Sprintf("ctn-%s", strings.ToLower(utils.RandStr(10))),
+				Image:       docker.Image,
+				WorkingDir:  docker.WorkingDir,
+				Command:     docker.Command,
+				Environment: docker.Environment,
+				EnvFlags:    envFlagL,
+				VolumeFlags: volumeFlagL,
+				Exposes:     docker.Exposes,
+			}
+			cOptionsMap[docker.ID] = cOptions
+			for _, network := range docker.Networks {
+				name := strings.ReplaceAll(strings.ReplaceAll(network.CIDR, ".", "_"), "/", "_")
+				netAttachDefs = append(netAttachDefs, fmt.Sprintf("nad-%s", strings.ToLower(utils.RandStr(5))))
+
+				subnet := model.Subnet{
+					Name:     fmt.Sprintf("net-%s", strings.ToLower(utils.RandStr(10))),
+					CIDR:     network.CIDR,
+					Gateway:  network.Gateway,
+					External: network.External,
+				}
+				if !slices.Contains(subnetsName, name) {
+					subnets = append(subnets, subnet)
+				}
+
+				lanIP, err := utils.GetLastIP(subnet.CIDR)
+				if err != nil {
+					log.Logger.Warningf("Failed to get lan IP for subnet %s: %v", subnet.Name, err)
+					return model.Victim{}, false, msg
+				}
+				gateway := model.Gateway{
+					Name:   fmt.Sprintf("gw-%s", strings.ToLower(utils.RandStr(10))),
+					VPC:    vOptions.VPC,
+					Subnet: subnet.Name,
+					LanIP:  lanIP,
+				}
+				if !slices.Contains(gatewayName, name) {
+					gateways = append(gateways, gateway)
+				}
+
+				eip := model.EIP{
+					Name:    fmt.Sprintf("eip-%s", strings.ToLower(utils.RandStr(10))),
+					Gateway: gateway.Name,
+				}
+				eips = append(eips, eip)
+
+				snat := model.SNat{
+					Name:         fmt.Sprintf("snat-%s", strings.ToLower(utils.RandStr(10))),
+					EIP:          eip.Name,
+					InternalCIDR: subnet.CIDR,
+				}
+				snats = append(snats, snat)
+
+				for _, e := range docker.Exposes {
+					dnats = append(dnats, model.DNat{
+						Name:         fmt.Sprintf("dnat-%s", strings.ToLower(utils.RandStr(10))),
+						EIP:          eip.Name,
+						ExternalPort: e.Port,
+						InternalIP:   network.IP,
+						InternalPort: e.Port,
+						Protocol:     e.Protocol,
+					})
+				}
+				pOptions.IPs = append(pOptions.IPs, model.IP{
+					Name:    fmt.Sprintf("ip-%s", strings.ToLower(utils.RandStr(10))),
+					Subnet:  subnet.Name,
+					PodName: pOptions.Name,
+					IP:      network.IP,
+				})
+			}
+			pOptionsMap[docker.ID] = pOptions
+		}
+		vOptions.Subnets = subnets
+		vOptions.NetAttachDefs = netAttachDefs
+		vOptions.Gateways = gateways
+		vOptions.EIPs = eips
+		vOptions.SNats = snats
+
+		victim, ok, msg = victimRepo.Create(vOptions)
+		if !ok {
+			return model.Victim{}, false, msg
+		}
+		for id, pOptions := range pOptionsMap {
+			pOptions.VictimID = victim.ID
+			pod, ok, msg := podRepo.Create(pOptions)
+			if !ok {
+				return model.Victim{}, false, msg
+			}
+			cOptions, ok := cOptionsMap[id]
+			if !ok {
+				log.Logger.Warningf("Failed to create container options for pod %s.", pod.Name)
+				return model.Victim{}, false, i18n.UnknownError
+			}
+			cOptions.PodID = pod.ID
+			container, ok, msg := containerRepo.Create(cOptions)
+			if !ok {
+				return model.Victim{}, false, msg
+			}
+			pod.Containers = append(pod.Containers, container)
+			victim.Pods = append(victim.Pods, pod)
+		}
+	} else {
+		//TODO
+	}
 	//if victim, ok, _ := victimRepo.HasAliveVictim(team.ID, contestChallenge.ID); ok {
 	//	return victim, true, i18n.Success
 	//}

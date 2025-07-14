@@ -29,7 +29,7 @@ type Docker struct {
 	Memory         int64           `json:"memory"`
 	WorkingDir     string          `json:"working_dir"`
 	Command        StringList      `gorm:"default:null;type:json" json:"command"`
-	Expose         StringList      `gorm:"default:null;type:json" json:"expose"`
+	Exposes        Exposes         `gorm:"default:null;type:json" json:"exposes"`
 	Environment    StringMap       `gorm:"default:null;type:json" json:"environment"`
 	Networks       Networks        `gorm:"default:null;type:json" json:"networks"`
 	BasicModel
@@ -118,4 +118,29 @@ func (n *Networks) Scan(value any) error {
 		return fmt.Errorf("failed to scan Networks value")
 	}
 	return json.Unmarshal(bytes, n)
+}
+
+type Expose struct {
+	Port     int32  `json:"port"`
+	Protocol string `json:"protocol"`
+}
+
+type Exposes []Expose
+
+func (e Exposes) Value() (driver.Value, error) {
+	e = slices.DeleteFunc(e, func(n Expose) bool {
+		if n.Port < 0 || n.Port > 65535 {
+			return true
+		}
+		return false
+	})
+	return json.Marshal(e)
+}
+
+func (e *Exposes) Scan(value interface{}) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan Exposes value")
+	}
+	return json.Unmarshal(bytes, e)
 }
