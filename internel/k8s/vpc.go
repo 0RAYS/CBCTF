@@ -13,6 +13,7 @@ type CreateVPCOptions struct {
 	Name         string
 	Labels       map[string]string
 	StaticRoutes []*kubeovnv1.StaticRoute
+	PolicyRoutes []*kubeovnv1.PolicyRoute
 }
 
 func CreateVPC(ctx context.Context, options CreateVPCOptions) (*kubeovnv1.Vpc, bool, string) {
@@ -28,6 +29,7 @@ func CreateVPC(ctx context.Context, options CreateVPCOptions) (*kubeovnv1.Vpc, b
 		},
 		Spec: kubeovnv1.VpcSpec{
 			StaticRoutes: options.StaticRoutes,
+			PolicyRoutes: options.PolicyRoutes,
 		},
 	}
 	vpc, err = kubeOVNClient.KubeovnV1().Vpcs().Create(ctx, vpc, metav1.CreateOptions{})
