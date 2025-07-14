@@ -15,8 +15,9 @@ type CreatePodOptions struct {
 	VictimID     uint
 	Name         string
 	ExposedIP    string
-	PodPorts     model.Int32List
+	PodPorts     model.Exposes
 	ExposedPorts model.Int32List
+	IPs          model.IPs
 }
 
 func (c CreatePodOptions) Convert2Model() model.Model {
@@ -26,6 +27,7 @@ func (c CreatePodOptions) Convert2Model() model.Model {
 		ExposedIP:    c.ExposedIP,
 		PodPorts:     c.PodPorts,
 		ExposedPorts: c.ExposedPorts,
+		IPs:          c.IPs,
 	}
 }
 

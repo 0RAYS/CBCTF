@@ -13,13 +13,12 @@ type CreateContainerOptions struct {
 	PodID       uint
 	Name        string
 	Image       string
-	Hostname    string
 	WorkingDir  string
 	Command     model.StringList
 	Environment model.StringMap
 	EnvFlags    model.StringList
 	VolumeFlags model.StringMap
-	Exposes     model.StringList
+	Exposes     model.Exposes
 }
 
 func (c CreateContainerOptions) Convert2Model() model.Model {
@@ -27,7 +26,6 @@ func (c CreateContainerOptions) Convert2Model() model.Model {
 		PodID:       c.PodID,
 		Name:        c.Name,
 		Image:       c.Image,
-		Hostname:    c.Hostname,
 		WorkingDir:  c.WorkingDir,
 		Command:     c.Command,
 		Environment: c.Environment,

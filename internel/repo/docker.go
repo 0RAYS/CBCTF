@@ -19,7 +19,7 @@ type CreateDockerOptions struct {
 	Memory      int64
 	WorkingDir  string
 	Command     model.StringList
-	Expose      model.StringList
+	Exposes     model.Exposes
 	Environment model.StringMap
 	Networks    model.Networks
 }
@@ -33,7 +33,7 @@ func (c CreateDockerOptions) Convert2Model() model.Model {
 		Memory:      c.Memory,
 		WorkingDir:  c.WorkingDir,
 		Command:     c.Command,
-		Expose:      c.Expose,
+		Exposes:     c.Exposes,
 		Environment: c.Environment,
 		Networks:    c.Networks,
 	}

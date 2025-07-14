@@ -30,8 +30,8 @@ type Victim struct {
 	NetAttachDefs      StringList       `gorm:"default:null;type:json" json:"net_attach_defs"`
 	Gateways           Gateways         `gorm:"default:null;type:json" json:"gateways"`
 	EIPs               EIPs             `gorm:"default:null;type:json" json:"eips"`
-	FIPs               FIPs             `gorm:"default:null;type:json" json:"fips"`
-	IPs                StringMap        `gorm:"default:null;type:json" json:"ips"`
+	DNats              DNats            `gorm:"default:null;type:json" json:"dnats"`
+	SNats              SNats            `gorm:"default:null;type:json" json:"snats"`
 	NetworkPolicies    NetworkPolicies  `gorm:"default:null;type:json" json:"network_policies"`
 	BasicModel
 }
@@ -120,6 +120,7 @@ func (s Subnets) Value() (driver.Value, error) {
 		if err != nil {
 			return true
 		}
+		s.CIDR = cidr.String()
 		if s.Gateway == "" {
 			s.Gateway, err = utils.GetFirstIP(s.CIDR)
 			if err != nil {
@@ -148,14 +149,14 @@ type Gateway struct {
 	Name   string `json:"name"`
 	VPC    string `json:"vpc"`
 	Subnet string `json:"subnet"`
-	IP     string `json:"ip"`
+	LanIP  string `json:"lan_ip"`
 }
 
 type Gateways []Gateway
 
 func (g Gateways) Value() (driver.Value, error) {
 	g = slices.DeleteFunc(g, func(g Gateway) bool {
-		if net.ParseIP(g.IP) == nil {
+		if net.ParseIP(g.LanIP) == nil {
 			return true
 		}
 		return false
@@ -197,28 +198,60 @@ func (e *EIPs) Scan(value any) error {
 	return json.Unmarshal(bytes, e)
 }
 
-type FIP struct {
-	Name       string `json:"name"`
-	EIP        string `json:"eip"`
-	InternalIP string `json:"internal_ip"`
+type DNat struct {
+	Name         string `json:"name"`
+	EIP          string `json:"eip"`
+	ExternalPort int32  `json:"external_port"`
+	InternalIP   string `json:"internal_ip"`
+	InternalPort int32  `json:"internal_port"`
+	Protocol     string `json:"protocol"`
 }
 
-type FIPs []FIP
+type DNats []DNat
 
-func (f FIPs) Value() (driver.Value, error) {
-	f = slices.DeleteFunc(f, func(f FIP) bool {
-		if net.ParseIP(f.InternalIP) == nil {
+func (d DNats) Value() (driver.Value, error) {
+	d = slices.DeleteFunc(d, func(d DNat) bool {
+		if d.ExternalPort < 0 || d.ExternalPort > 65535 || d.InternalPort < 0 || d.InternalPort > 65535 {
+			return true
+		}
+		if net.ParseIP(d.InternalIP) == nil {
 			return true
 		}
 		return false
 	})
-	return json.Marshal(f)
+	return json.Marshal(d)
 }
 
-func (f *FIPs) Scan(value any) error {
+func (d *DNats) Scan(value any) error {
 	bytes, ok := value.([]byte)
 	if !ok {
-		return fmt.Errorf("failed to scan FIPs value")
+		return fmt.Errorf("failed to scan DNats value")
 	}
-	return json.Unmarshal(bytes, f)
+	return json.Unmarshal(bytes, d)
+}
+
+type SNat struct {
+	Name         string `json:"name"`
+	EIP          string `json:"eip"`
+	InternalCIDR string `json:"internal_cidr"`
+}
+
+type SNats []SNat
+
+func (s SNats) Value() (driver.Value, error) {
+	s = slices.DeleteFunc(s, func(s SNat) bool {
+		if net.ParseIP(s.InternalCIDR) == nil {
+			return true
+		}
+		return false
+	})
+	return json.Marshal(s)
+}
+
+func (s *SNats) Scan(value any) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan SNats value")
+	}
+	return json.Unmarshal(bytes, s)
 }
