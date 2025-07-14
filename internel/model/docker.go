@@ -83,7 +83,7 @@ type Networks []Network
 func (n Networks) Value() (driver.Value, error) {
 	n = slices.DeleteFunc(n, func(n Network) bool {
 		if n.CIDR == "" && n.Gateway == "" && n.IP == "" {
-			return false
+			return true
 		}
 		_, cidr, err := net.ParseCIDR(n.CIDR)
 		if err != nil {
