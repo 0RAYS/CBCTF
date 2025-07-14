@@ -72,7 +72,7 @@ func (d Docker) GetForeignKeys() []string {
 }
 
 type Network struct {
-	Subnet   string `json:"subnet"`
+	CIDR     string `json:"cidr"`
 	Gateway  string `json:"gateway"`
 	IP       string `json:"ip"`
 	External bool   `json:"external"`
@@ -82,15 +82,15 @@ type Networks []Network
 
 func (n Networks) Value() (driver.Value, error) {
 	n = slices.DeleteFunc(n, func(n Network) bool {
-		if n.Subnet == "" && n.Gateway == "" && n.IP == "" {
+		if n.CIDR == "" && n.Gateway == "" && n.IP == "" {
 			return false
 		}
-		_, cidr, err := net.ParseCIDR(n.Subnet)
+		_, cidr, err := net.ParseCIDR(n.CIDR)
 		if err != nil {
 			return true
 		}
 		if n.Gateway == "" {
-			n.Gateway, err = utils.GetFirstIP(n.Subnet)
+			n.Gateway, err = utils.GetFirstIP(n.CIDR)
 			if err != nil {
 				log.Logger.Warningf("Get first IP fail: %v", err)
 				return true
