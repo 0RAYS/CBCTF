@@ -191,8 +191,21 @@ func StartVictim(victim model.Victim) (bool, string) {
 			}
 			snats[snat.Name] = snat
 		}
-		//ips := make(map[string]*kubeovnv1.IP)
+		ips := make(map[string]*kubeovnv1.IP)
 		for _, pod := range victim.Pods {
+			for _, i := range pod.IPs {
+				ip, ok, msg := CreateIP(ctx, CreateIPOptions{
+					Name:    i.Name,
+					Labels:  labels,
+					Subnet:  i.Subnet,
+					PodName: pod.Name,
+					IP:      i.IP,
+				})
+				if !ok {
+					return false, msg
+				}
+				ips[ip.Name] = ip
+			}
 			containers := []corev1.Container{
 				{
 					Name:    "tcpdump",
