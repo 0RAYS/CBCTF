@@ -27,7 +27,7 @@ type Victim struct {
 	Duration           time.Duration    `json:"duration"`
 	VPC                string           `json:"vpc"`
 	Subnets            Subnets          `gorm:"default:null;type:json" json:"subnets"`
-	NetAttachDefs      StringList       `gorm:"default:null;type:json" json:"net_attach_defs"`
+	NetAttachDefs      StringMap        `gorm:"default:null;type:json" json:"net_attach_defs"`
 	Gateways           Gateways         `gorm:"default:null;type:json" json:"gateways"`
 	EIPs               EIPs             `gorm:"default:null;type:json" json:"eips"`
 	DNats              DNats            `gorm:"default:null;type:json" json:"dnats"`

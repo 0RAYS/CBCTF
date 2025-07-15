@@ -5,12 +5,136 @@ import (
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"context"
+	"fmt"
+	kubeovnv1 "github.com/JBNRZ/kubeovn-api/pkg/apis/kubeovn/v1"
+	netattv1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
 	"sync"
 	"time"
 )
 
-func StartVictim(victim model.Victim) (map[string]map[string]any, bool, string) {
-	//log.Logger.Infof("Creating Victim for team %d challenge %d", victim.TeamID, victim.ContestChallengeID)
+func StartVictim(victim model.Victim) (bool, string) {
+	log.Logger.Infof("Creating Victim for team %d challenge %d", victim.TeamID, victim.ContestChallengeID)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	defer cancel()
+	labels := map[string]string{
+		"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),
+		"team_id":              fmt.Sprintf("%d", victim.TeamID),
+		"user_id":              fmt.Sprintf("%d", victim.UserID),
+	}
+	if victim.VPC != "" {
+		subnetMap := make(map[string]model.Subnet)
+		for _, subnet := range victim.Subnets {
+			subnetMap[subnet.Name] = subnet
+		}
+		subnetGatewayMap := make(map[string]model.Gateway)
+		var policyRoutes []*kubeovnv1.PolicyRoute
+		for _, gateway := range victim.Gateways {
+			subnetGatewayMap[gateway.Subnet] = gateway
+			policyRoutes = append(policyRoutes, &kubeovnv1.PolicyRoute{
+				Action:    kubeovnv1.PolicyRouteActionReroute,
+				Match:     fmt.Sprintf("ip.src == %s", subnetMap[gateway.Subnet].CIDR),
+				NextHopIP: gateway.LanIP,
+				Priority:  1,
+			})
+		}
+		vpc, ok, msg := CreateVPC(ctx, CreateVPCOptions{
+			Name:         victim.VPC,
+			Labels:       labels,
+			PolicyRoutes: policyRoutes,
+		})
+		if !ok {
+			return false, msg
+		}
+		netAttachDefMap := make(map[string]*netattv1.NetworkAttachmentDefinition)
+		for subnetName, netAttachDefName := range victim.NetAttachDefs {
+			nad, ok, msg := CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
+				Name:      netAttachDefName,
+				Namespace: GlobalNamespace,
+				Labels:    labels,
+				Config: fmt.Sprintf(`{
+				  "cniVersion": "0.3.0",
+				  "type": "kube-ovn",
+				  "server_socket": "/run/openvswitch/kube-ovn-daemon.sock",
+				  "provider": "%s.%s.ovn"
+				}`, subnetName, GlobalNamespace),
+			})
+			if !ok {
+				return false, msg
+			}
+			netAttachDefMap[netAttachDefName] = nad
+		}
+		subnets := make(map[string]*kubeovnv1.Subnet)
+		for _, net := range subnetMap {
+			subnet, ok, msg := CreateSubnet(ctx, CreateSubnetOptions{
+				Name:       net.Name,
+				Labels:     labels,
+				VPC:        vpc.Name,
+				CIDR:       net.CIDR,
+				Gateway:    net.Gateway,
+				ExcludeIPs: []string{net.Gateway, subnetGatewayMap[net.Name].LanIP},
+			})
+			if !ok {
+				return false, msg
+			}
+			subnets[subnet.Name] = subnet
+		}
+		gateways := make(map[string]*kubeovnv1.VpcNatGateway)
+		for _, gateway := range victim.Gateways {
+			natGateway, ok, msg := CreateVPCNatGateway(ctx, CreateVPCNatGatewayOptions{
+				Name:           gateway.Name,
+				Labels:         labels,
+				VPC:            gateway.VPC,
+				Subnet:         gateway.Subnet,
+				LanIP:          gateway.LanIP,
+				ExternalSubnet: []string{ExternalSubnetName},
+			})
+			if !ok {
+				return false, msg
+			}
+			gateways[natGateway.Name] = natGateway
+		}
+		eips := make(map[string]*kubeovnv1.IptablesEIP)
+		for _, e := range victim.EIPs {
+			eip, ok, msg := CreateEIP(ctx, CreateEIPOptions{
+				Name:           e.Name,
+				Labels:         labels,
+				NatGw:          e.Gateway,
+				ExternalSubnet: ExternalSubnetName,
+			})
+			if !ok {
+				return false, msg
+			}
+			eips[eip.Name] = eip
+		}
+		dnats := make(map[string]*kubeovnv1.IptablesDnatRule)
+		for _, d := range victim.DNats {
+			dnat, ok, msg := CreateDNat(ctx, CreateDNatOptions{
+				Name:         d.Name,
+				Labels:       labels,
+				ExternalPort: fmt.Sprintf("%d", d.ExternalPort),
+				InternalPort: d.InternalIP,
+				InternalIP:   d.InternalIP,
+				Protocol:     d.Protocol,
+			})
+			if !ok {
+				return false, msg
+			}
+			dnats[dnat.Name] = dnat
+		}
+		snats := make(map[string]*kubeovnv1.IptablesSnatRule)
+		for _, s := range victim.SNats {
+			snat, ok, msg := CreateSNat(ctx, CreateSNatOptions{
+				Name:         s.Name,
+				Labels:       labels,
+				EIP:          s.EIP,
+				InternalCIDR: s.InternalCIDR,
+			})
+			if !ok {
+				return false, msg
+			}
+			snats[snat.Name] = snat
+		}
+	}
 	//type result struct {
 	//	PodName string
 	//	IP      string
@@ -247,7 +371,7 @@ func StartVictim(victim model.Victim) (map[string]map[string]any, bool, string) 
 	//	}
 	//}
 	//return targets, true, i18n.Success
-	return nil, true, i18n.Success
+	return true, i18n.Success
 }
 
 func StopVictim(victim model.Victim) (bool, string) {

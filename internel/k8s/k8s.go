@@ -27,14 +27,14 @@ var (
 	natattClient        *netattclient.Clientset
 	kubeOVNClient       *kubeovnclient.Clientset
 	kubeConfig          *rest.Config
-	GlobalNamespace     string
-	ExternalNetworkName string
+	GlobalNamespace    string
+	ExternalSubnetName string
 )
 
 func Init(run bool) {
 	var err error
 	GlobalNamespace = config.Env.K8S.Namespace
-	ExternalNetworkName = fmt.Sprintf("%s-external-network", GlobalNamespace)
+	ExternalSubnetName = fmt.Sprintf("%s-external-network", GlobalNamespace)
 	if run {
 		if _, err = os.Stat(config.Env.K8S.Config); err != nil {
 			log.Logger.Fatalf("Make sure the config.k8s.config.user configured correctly: %s", err)
@@ -156,22 +156,22 @@ func updateNodeIPs(ctx context.Context) {
 }
 
 func initExternalNetwork(ctx context.Context) {
-	if _, ok, _ := GetSubnet(ctx, ExternalNetworkName); ok {
-		DeleteSubnet(ctx, ExternalNetworkName)
+	if _, ok, _ := GetSubnet(ctx, ExternalSubnetName); ok {
+		DeleteSubnet(ctx, ExternalSubnetName)
 	}
 	if _, ok, _ := CreateSubnet(ctx, CreateSubnetOptions{
-		Name:       ExternalNetworkName,
+		Name:       ExternalSubnetName,
 		CIDR:       config.Env.K8S.ExternalNetwork.CIDR,
 		Gateway:    config.Env.K8S.ExternalNetwork.Gateway,
 		ExcludeIPs: config.Env.K8S.ExternalNetwork.ExcludeIPs,
 	}); !ok {
 		log.Logger.Fatal("Failed to init external network")
 	}
-	if _, ok, _ := GetNetAttachDef(ctx, ExternalNetworkName); ok {
-		DeleteNetAttachDef(ctx, ExternalNetworkName, "kube-system")
+	if _, ok, _ := GetNetAttachDef(ctx, ExternalSubnetName); ok {
+		DeleteNetAttachDef(ctx, ExternalSubnetName, "kube-system")
 	}
 	if _, ok, _ := CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
-		Name:      ExternalNetworkName,
+		Name:      ExternalSubnetName,
 		Namespace: "kube-system",
 		Config: fmt.Sprintf(`{
 			"cniVersion": "0.3.0",
@@ -183,7 +183,7 @@ func initExternalNetwork(ctx context.Context) {
 				"server_socket": "/run/openvswitch/kube-ovn-daemon.sock",
 				"provider": "%s.kube-system"
 			}
-		}`, config.Env.K8S.ExternalNetwork.Interface, ExternalNetworkName),
+		}`, config.Env.K8S.ExternalNetwork.Interface, ExternalSubnetName),
 	}); !ok {
 		log.Logger.Fatal("Failed to init external network attachment definition")
 	}

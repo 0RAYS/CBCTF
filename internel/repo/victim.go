@@ -20,7 +20,7 @@ type CreateVictimOptions struct {
 	Duration           time.Duration
 	VPC                string
 	Subnets            model.Subnets
-	NetAttachDefs      model.StringList
+	NetAttachDefs      model.StringMap
 	Gateways           model.Gateways
 	EIPs               model.EIPs
 	DNats              model.DNats
