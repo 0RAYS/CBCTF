@@ -237,6 +237,16 @@ var resp = map[string]map[string]any{
 	GetEIPError:    {"zh-CN": "获取弹性IP失败", "en-US": "Get EIP failed", "code": 500},
 	EIPNotFound:    {"zh-CN": "弹性IP不存在", "en-US": "EIP not found", "code": 404},
 
+	CreateDNatError: {"zh-CN": "创建DNat规则失败", "en-US": "Create DNat failed", "code": 500},
+	DeleteDNatError: {"zh-CN": "删除DNat规则失败", "en-US": "Delete DNat failed", "code": 500},
+	GetDNatError:    {"zh-CN": "获取DNat规则失败", "en-US": "Get DNat failed", "code": 500},
+	DNatNotFound:    {"zh-CN": "DNat规则不存在", "en-US": "DNat failed", "code": 404},
+
+	CreateSNatError: {"zh-CN": "创建SNat规则失败", "en-US": "Create SNat failed", "code": 500},
+	DeleteSNatError: {"zh-CN": "删除SNat规则失败", "en-US": "Delete SNat failed", "code": 500},
+	GetSNatError:    {"zh-CN": "获取SNat规则失败", "en-US": "Get SNat failed", "code": 500},
+	SNatNotFound:    {"zh-CN": "SNat规则不存在", "en-US": "SNat failed", "code": 404},
+
 	CreateNetAttError: {"zh-CN": "创建附属网卡失败", "en-US": "Create network attachment failed", "code": 500},
 	DeleteNetAttError: {"zh-CN": "删除附属网卡失败", "en-US": "Delete network attachment failed", "code": 500},
 	GetNetAttError:    {"zh-CN": "获取附属网卡失败", "en-US": "Get network attachment failed", "code": 500},

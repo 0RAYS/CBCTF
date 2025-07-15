@@ -63,7 +63,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 		subnetsName := make([]string, 0)
 		gatewayName := make([]string, 0)
 		subnets := make(model.Subnets, 0)
-		netAttachDefs := make(model.StringList, 0)
+		netAttachDefs := make(model.StringMap)
 		gateways := make(model.Gateways, 0)
 		eips := make(model.EIPs, 0)
 		dnats := make(model.DNats, 0)
@@ -110,7 +110,6 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 			cOptionsMap[docker.ID] = cOptions
 			for _, network := range docker.Networks {
 				name := strings.ReplaceAll(strings.ReplaceAll(network.CIDR, ".", "_"), "/", "_")
-				netAttachDefs = append(netAttachDefs, fmt.Sprintf("nad-%s", strings.ToLower(utils.RandStr(5))))
 
 				subnet := model.Subnet{
 					Name:     fmt.Sprintf("net-%s", strings.ToLower(utils.RandStr(10))),
@@ -118,6 +117,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 					Gateway:  network.Gateway,
 					External: network.External,
 				}
+				netAttachDefs[subnet.Name] = fmt.Sprintf("nad-%s", strings.ToLower(utils.RandStr(5)))
 				if !slices.Contains(subnetsName, name) {
 					subnets = append(subnets, subnet)
 				}

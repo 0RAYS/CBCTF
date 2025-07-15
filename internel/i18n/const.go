@@ -237,6 +237,16 @@ const (
 	GetEIPError    = "GetEIPError"
 	EIPNotFound    = "EIPNotFound"
 
+	CreateDNatError = "CreateDNatError"
+	DeleteDNatError = "DeleteDNatError"
+	GetDNatError    = "GetDNatError"
+	DNatNotFound    = "DNatNotFound"
+
+	CreateSNatError = "CreateSNatError"
+	DeleteSNatError = "DeleteSNatError"
+	GetSNatError    = "GetSNatError"
+	SNatNotFound    = "SNatNotFound"
+
 	CreateNetAttError = "CreateNetAttError"
 	DeleteNetAttError = "DeleteNetAttError"
 	GetNetAttError    = "GetNetAttError"
