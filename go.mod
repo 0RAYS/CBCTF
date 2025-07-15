@@ -3,7 +3,7 @@ module CBCTF
 go 1.24.5
 
 require (
-	github.com/JBNRZ/kubeovn-api v1.14.1
+	github.com/JBNRZ/kubeovn-api v1.14.2
 	github.com/compose-spec/compose-go v1.20.2
 	github.com/fatih/color v1.18.0
 	github.com/gin-contrib/pprof v1.5.3
