@@ -10,12 +10,11 @@ import (
 )
 
 type CreateIPOptions struct {
-	Name      string
-	Labels    map[string]string
-	Subnet    string
-	Namespace string
-	PodName   string
-	IP        string
+	Name    string
+	Labels  map[string]string
+	Subnet  string
+	PodName string
+	IP      string
 }
 
 func CreateIP(ctx context.Context, options CreateIPOptions) (*kubeovnv1.IP, bool, string) {
@@ -30,7 +29,7 @@ func CreateIP(ctx context.Context, options CreateIPOptions) (*kubeovnv1.IP, bool
 		Spec: kubeovnv1.IPSpec{
 			Subnet:      options.Subnet,
 			PodType:     "",
-			Namespace:   options.Namespace,
+			Namespace:   GlobalNamespace,
 			PodName:     options.PodName,
 			V4IPAddress: options.IP,
 		},
