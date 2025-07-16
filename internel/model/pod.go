@@ -3,12 +3,7 @@ package model
 import (
 	"CBCTF/internel/config"
 	"CBCTF/internel/i18n"
-	"database/sql/driver"
-	"encoding/json"
-	"errors"
 	"fmt"
-	"net"
-	"slices"
 )
 
 type Pod struct {
@@ -20,7 +15,7 @@ type Pod struct {
 	ExposedIP    string      `json:"exposed_ip"`
 	PodPorts     Exposes     `gorm:"type:json" json:"pod_ports"`
 	ExposedPorts Int32List   `gorm:"type:json" json:"exposed_ports"`
-	IPs          IPs         `gorm:"default:null;type:json" json:"ips"`
+	//IPs          IPs         `gorm:"default:null;type:json" json:"ips"`
 	BasicModel
 }
 
@@ -72,29 +67,29 @@ func (p Pod) RemoteAddr() []string {
 	return data
 }
 
-type IP struct {
-	Name    string
-	Subnet  string
-	PodName string
-	IP      string
-}
-
-type IPs []IP
-
-func (i IPs) Value() (driver.Value, error) {
-	i = slices.DeleteFunc(i, func(i IP) bool {
-		if net.ParseIP(i.IP) == nil {
-			return true
-		}
-		return false
-	})
-	return json.Marshal(i)
-}
-
-func (i *IPs) Scan(value any) error {
-	b, ok := value.([]byte)
-	if !ok {
-		return errors.New("failed to scan IPs value")
-	}
-	return json.Unmarshal(b, i)
-}
+//type IP struct {
+//	Name    string
+//	Subnet  string
+//	PodName string
+//	IP      string
+//}
+//
+//type IPs []IP
+//
+//func (i IPs) Value() (driver.Value, error) {
+//	i = slices.DeleteFunc(i, func(i IP) bool {
+//		if net.ParseIP(i.IP) == nil {
+//			return true
+//		}
+//		return false
+//	})
+//	return json.Marshal(i)
+//}
+//
+//func (i *IPs) Scan(value any) error {
+//	b, ok := value.([]byte)
+//	if !ok {
+//		return errors.New("failed to scan IPs value")
+//	}
+//	return json.Unmarshal(b, i)
+//}

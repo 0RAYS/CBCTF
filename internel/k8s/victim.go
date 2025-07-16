@@ -191,67 +191,67 @@ func StartVictim(victim model.Victim) (bool, string) {
 			}
 			snats[snat.Name] = snat
 		}
-		ips := make(map[string]*kubeovnv1.IP)
-		for _, pod := range victim.Pods {
-			for _, i := range pod.IPs {
-				ip, ok, msg := CreateIP(ctx, CreateIPOptions{
-					Name:    i.Name,
-					Labels:  labels,
-					Subnet:  i.Subnet,
-					PodName: pod.Name,
-					IP:      i.IP,
-				})
-				if !ok {
-					return false, msg
-				}
-				ips[ip.Name] = ip
-			}
-			containers := []corev1.Container{
+	}
+	//ips := make(map[string]*kubeovnv1.IP)
+	for _, pod := range victim.Pods {
+		//for _, i := range pod.IPs {
+		//	ip, ok, msg := CreateIP(ctx, CreateIPOptions{
+		//		Name:    i.Name,
+		//		Labels:  labels,
+		//		Subnet:  i.Subnet,
+		//		PodName: pod.Name,
+		//		IP:      i.IP,
+		//	})
+		//	if !ok {
+		//		return false, msg
+		//	}
+		//	ips[ip.Name] = ip
+		//}
+		containers := []corev1.Container{
+			{
+				Name:    "tcpdump",
+				Image:   config.Env.K8S.TCPDumpImage,
+				Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/traffic.pcap"},
+			},
+		}
+		volumes := make([]corev1.Volume, 0)
+		frpcConfigMap, ok, msg := CreateFrpcConfig(ctx, frps.Host, frps.Port, frps.Token, pod)
+		if !ok {
+			return false, msg
+		}
+		volumeName := fmt.Sprintf("vol-%s", strings.ToLower(utils.RandStr(5)))
+		frpc := corev1.Container{
+			Name:  "frpc",
+			Image: config.Env.K8S.Frpc.Image,
+			Args:  []string{"-c", "/etc/frp/frpc.toml"},
+			VolumeMounts: []corev1.VolumeMount{
 				{
-					Name:    "tcpdump",
-					Image:   config.Env.K8S.TCPDumpImage,
-					Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/traffic.pcap"},
+					Name:      volumeName,
+					MountPath: "/etc/frp/frpc.toml",
+					SubPath:   "frpc.toml",
 				},
-			}
-			volumes := make([]corev1.Volume, 0)
-			frpcConfigMap, ok, msg := CreateFrpcConfig(ctx, frps.Host, frps.Port, frps.Token, pod)
-			if !ok {
-				return false, msg
-			}
-			volumeName := fmt.Sprintf("vol-%s", strings.ToLower(utils.RandStr(5)))
-			frpc := corev1.Container{
-				Name:  "frpc",
-				Image: config.Env.K8S.Frpc.Image,
-				Args:  []string{"-c", "/etc/frp/frpc.toml"},
-				VolumeMounts: []corev1.VolumeMount{
-					{
-						Name:      volumeName,
-						MountPath: "/etc/frp/frpc.toml",
-						SubPath:   "frpc.toml",
+			},
+		}
+		volumes = append(volumes, corev1.Volume{
+			Name: volumeName,
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: frpcConfigMap.Name,
 					},
 				},
-			}
-			volumes = append(volumes, corev1.Volume{
-				Name: volumeName,
-				VolumeSource: corev1.VolumeSource{
-					ConfigMap: &corev1.ConfigMapVolumeSource{
-						LocalObjectReference: corev1.LocalObjectReference{
-							Name: frpcConfigMap.Name,
-						},
-					},
-				},
-			})
-			containers = append(containers, frpc)
-			_, ok, msg = CreatePod(ctx, CreatePodOptions{
-				Name:        pod.Name,
-				Labels:      labels,
-				Annotations: map[string]string{},
-				Containers:  containers,
-				Volumes:     volumes,
-			})
-			if !ok {
-				return false, msg
-			}
+			},
+		})
+		containers = append(containers, frpc)
+		_, ok, msg = CreatePod(ctx, CreatePodOptions{
+			Name:        pod.Name,
+			Labels:      labels,
+			Annotations: map[string]string{},
+			Containers:  containers,
+			Volumes:     volumes,
+		})
+		if !ok {
+			return false, msg
 		}
 	}
 	return true, i18n.Success
