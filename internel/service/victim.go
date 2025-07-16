@@ -161,7 +161,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 					})
 				}
 				pOptions.IPs = append(pOptions.IPs, model.IP{
-					Name:    fmt.Sprintf("ip-%s", strings.ToLower(utils.RandStr(10))),
+					Name:    fmt.Sprintf("%s.%s.%s.%s.ovn", pOptions.Name, k8s.GlobalNamespace, subnet.Name, k8s.GlobalNamespace),
 					Subnet:  subnet.Name,
 					PodName: pOptions.Name,
 					IP:      network.IP,
