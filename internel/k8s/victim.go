@@ -192,21 +192,7 @@ func StartVictim(victim model.Victim) (bool, string) {
 			snats[snat.Name] = snat
 		}
 	}
-	//ips := make(map[string]*kubeovnv1.IP)
 	for _, pod := range victim.Pods {
-		//for _, i := range pod.IPs {
-		//	ip, ok, msg := CreateIP(ctx, CreateIPOptions{
-		//		Name:    i.Name,
-		//		Labels:  labels,
-		//		Subnet:  i.Subnet,
-		//		PodName: pod.Name,
-		//		IP:      i.IP,
-		//	})
-		//	if !ok {
-		//		return false, msg
-		//	}
-		//	ips[ip.Name] = ip
-		//}
 		containers := []corev1.Container{
 			{
 				Name:    "tcpdump",
@@ -243,6 +229,76 @@ func StartVictim(victim model.Victim) (bool, string) {
 			},
 		})
 		containers = append(containers, frpc)
+		for _, container := range pod.Containers {
+			volumeMounts := make([]corev1.VolumeMount, 0)
+			for path, volumeFlag := range container.VolumeFlags {
+				filename := strings.Split(path, "/")[len(strings.Split(path, "/"))-1]
+				flagConfigMap, ok, msg := CreateConfigMap(ctx, CreateConfigMapOptions{
+					Name:   fmt.Sprintf("cm-%s", strings.ToLower(utils.RandStr(10))),
+					Labels: labels,
+					Data:   map[string]string{filename: volumeFlag},
+				})
+				if !ok {
+					return false, msg
+				}
+				volumeName = fmt.Sprintf("vol-%s", strings.ToLower(utils.RandStr(5)))
+				volumeMounts = append(volumeMounts, corev1.VolumeMount{
+					Name:      volumeName,
+					MountPath: path,
+					SubPath:   filename,
+				})
+				volumes = append(volumes, corev1.Volume{
+					Name: volumeName,
+					VolumeSource: corev1.VolumeSource{
+						ConfigMap: &corev1.ConfigMapVolumeSource{
+							LocalObjectReference: corev1.LocalObjectReference{
+								Name: flagConfigMap.Name,
+							},
+						},
+					},
+				})
+			}
+			envs := make([]corev1.EnvVar, 0)
+			for key, value := range container.Environment {
+				envs = append(envs, corev1.EnvVar{
+					Name:  key,
+					Value: value,
+				})
+			}
+			if len(container.EnvFlags) == 1 {
+				envs = append(envs, corev1.EnvVar{
+					Name:  "FLAG",
+					Value: container.EnvFlags[0],
+				})
+			} else {
+				for i, envFlag := range container.EnvFlags {
+					envs = append(envs, corev1.EnvVar{
+						Name:  fmt.Sprintf("FLAG%d", i+1),
+						Value: envFlag,
+					})
+				}
+			}
+			ports := make([]corev1.ContainerPort, 0)
+			for _, p := range container.Exposes {
+				ports = append(ports, corev1.ContainerPort{
+					ContainerPort: p.Port,
+				})
+			}
+			tmp := corev1.Container{
+				Name:         container.Name,
+				Image:        container.Image,
+				Env:          envs,
+				Ports:        ports,
+				VolumeMounts: volumeMounts,
+			}
+			if len(container.Command) > 0 {
+				tmp.Command = container.Command
+			}
+			if container.WorkingDir != "" {
+				tmp.WorkingDir = container.WorkingDir
+			}
+			containers = append(containers, tmp)
+		}
 		_, ok, msg = CreatePod(ctx, CreatePodOptions{
 			Name:        pod.Name,
 			Labels:      labels,
