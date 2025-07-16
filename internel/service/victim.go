@@ -74,7 +74,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 			pOptions := db.CreatePodOptions{
 				Name:     fmt.Sprintf("pod-%s", strings.ToLower(utils.RandStr(10))),
 				PodPorts: docker.Exposes,
-				IPs:      make(model.IPs, 0),
+				//IPs:      make(model.IPs, 0),
 			}
 			envFlagL := make(model.StringList, 0)
 			volumeFlagL := make(model.StringMap)
@@ -160,12 +160,12 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 						Protocol:     e.Protocol,
 					})
 				}
-				pOptions.IPs = append(pOptions.IPs, model.IP{
-					Name:    fmt.Sprintf("%s.%s.%s.%s.ovn", pOptions.Name, k8s.GlobalNamespace, subnet.Name, k8s.GlobalNamespace),
-					Subnet:  subnet.Name,
-					PodName: pOptions.Name,
-					IP:      network.IP,
-				})
+				//pOptions.IPs = append(pOptions.IPs, model.IP{
+				//	Name:    fmt.Sprintf("%s.%s.%s.%s.ovn", pOptions.Name, k8s.GlobalNamespace, subnet.Name, k8s.GlobalNamespace),
+				//	Subnet:  subnet.Name,
+				//	PodName: pOptions.Name,
+				//	IP:      network.IP,
+				//})
 			}
 			pOptionsMap[docker.ID] = pOptions
 		}
