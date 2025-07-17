@@ -181,6 +181,9 @@ type EIPs []EIP
 
 func (e EIPs) Value() (driver.Value, error) {
 	e = slices.DeleteFunc(e, func(e EIP) bool {
+		if e.IP == "" {
+			return false
+		}
 		if net.ParseIP(e.IP) == nil {
 			return true
 		}
@@ -239,7 +242,7 @@ type SNats []SNat
 
 func (s SNats) Value() (driver.Value, error) {
 	s = slices.DeleteFunc(s, func(s SNat) bool {
-		if net.ParseIP(s.InternalCIDR) == nil {
+		if _, _, err := net.ParseCIDR(s.InternalCIDR); err != nil {
 			return true
 		}
 		return false
