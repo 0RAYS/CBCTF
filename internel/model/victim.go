@@ -73,7 +73,7 @@ func (v Victim) GetForeignKeys() []string {
 }
 
 func (v Victim) GenPodName(challengeRandID string) string {
-	return fmt.Sprintf("victim-%s-%s-pod", challengeRandID, strings.ToLower(utils.RandStr(5)))
+	return fmt.Sprintf("victim-%s-%s-pod", challengeRandID, utils.RandStr(5))
 }
 
 func (v Victim) TrafficZipPath() string {

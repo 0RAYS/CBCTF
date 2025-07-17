@@ -58,7 +58,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 	}
 	var victim model.Victim
 	if NeedVPC(challenge.Dockers) {
-		vOptions.VPC = fmt.Sprintf("vpc-%s", strings.ToLower(utils.RandStr(10)))
+		vOptions.VPC = fmt.Sprintf("vpc-%s", utils.RandStr(10))
 
 		subnetsName := make([]string, 0)
 		gatewayName := make([]string, 0)
@@ -72,7 +72,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 		cOptionsMap := make(map[uint]db.CreateContainerOptions)
 		for _, docker := range challenge.Dockers {
 			pOptions := db.CreatePodOptions{
-				Name:     fmt.Sprintf("pod-%s", strings.ToLower(utils.RandStr(10))),
+				Name:     fmt.Sprintf("pod-%s", utils.RandStr(10)),
 				PodPorts: docker.Exposes,
 				//IPs:      make(model.IPs, 0),
 			}
@@ -98,7 +98,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 				}
 			}
 			cOptions := db.CreateContainerOptions{
-				Name:        fmt.Sprintf("ctn-%s", strings.ToLower(utils.RandStr(10))),
+				Name:        fmt.Sprintf("ctn-%s", utils.RandStr(10)),
 				Image:       docker.Image,
 				CPU:         docker.CPU,
 				Memory:      docker.Memory,
@@ -114,12 +114,12 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 				name := strings.ReplaceAll(strings.ReplaceAll(network.CIDR, ".", "_"), "/", "_")
 
 				subnet := model.Subnet{
-					Name:     fmt.Sprintf("net-%s", strings.ToLower(utils.RandStr(10))),
+					Name:     fmt.Sprintf("net-%s", utils.RandStr(10)),
 					CIDR:     network.CIDR,
 					Gateway:  network.Gateway,
 					External: network.External,
 				}
-				netAttachDefs[subnet.Name] = fmt.Sprintf("nad-%s", strings.ToLower(utils.RandStr(5)))
+				netAttachDefs[subnet.Name] = fmt.Sprintf("nad-%s", utils.RandStr(5))
 				if !slices.Contains(subnetsName, name) {
 					subnets = append(subnets, subnet)
 				}
@@ -130,7 +130,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 					return model.Victim{}, false, msg
 				}
 				gateway := model.Gateway{
-					Name:   fmt.Sprintf("gw-%s", strings.ToLower(utils.RandStr(10))),
+					Name:   fmt.Sprintf("gw-%s", utils.RandStr(10)),
 					VPC:    vOptions.VPC,
 					Subnet: subnet.Name,
 					LanIP:  lanIP,
@@ -140,13 +140,13 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 				}
 
 				eip := model.EIP{
-					Name:    fmt.Sprintf("eip-%s", strings.ToLower(utils.RandStr(10))),
+					Name:    fmt.Sprintf("eip-%s", utils.RandStr(10)),
 					Gateway: gateway.Name,
 				}
 				eips = append(eips, eip)
 
 				snat := model.SNat{
-					Name:         fmt.Sprintf("snat-%s", strings.ToLower(utils.RandStr(10))),
+					Name:         fmt.Sprintf("snat-%s", utils.RandStr(10)),
 					EIP:          eip.Name,
 					InternalCIDR: subnet.CIDR,
 				}
@@ -154,7 +154,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 
 				for _, e := range docker.Exposes {
 					dnats = append(dnats, model.DNat{
-						Name:         fmt.Sprintf("dnat-%s", strings.ToLower(utils.RandStr(10))),
+						Name:         fmt.Sprintf("dnat-%s", utils.RandStr(10)),
 						EIP:          eip.Name,
 						ExternalPort: e.Port,
 						InternalIP:   network.IP,
@@ -207,7 +207,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 		}
 		pOptions := db.CreatePodOptions{
 			VictimID: victim.ID,
-			Name:     fmt.Sprintf("pod-%s", strings.ToLower(utils.RandStr(10))),
+			Name:     fmt.Sprintf("pod-%s", utils.RandStr(10)),
 			PodPorts: make(model.Exposes, 0),
 		}
 		cOptionsL := make([]db.CreateContainerOptions, 0)
@@ -235,7 +235,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 				}
 			}
 			cOptionsL = append(cOptionsL, db.CreateContainerOptions{
-				Name:        fmt.Sprintf("ctn-%s", strings.ToLower(utils.RandStr(10))),
+				Name:        fmt.Sprintf("ctn-%s", utils.RandStr(10)),
 				Image:       docker.Image,
 				CPU:         docker.CPU,
 				Memory:      docker.Memory,
