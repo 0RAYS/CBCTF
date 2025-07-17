@@ -3,7 +3,11 @@ package model
 import (
 	"CBCTF/internel/config"
 	"CBCTF/internel/i18n"
+	"database/sql/driver"
+	"encoding/json"
 	"fmt"
+	"net"
+	"slices"
 )
 
 const (
@@ -17,21 +21,21 @@ const (
 )
 
 // Challenge 题库中的挑战
-// HasMany DockerGroup
 // HasMany ChallengeFlag
 // HasMany ContestChallenge
 // HasMany Submission
 type Challenge struct {
-	DockerGroups      []DockerGroup      `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	ChallengeFlags    []ChallengeFlag    `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	ContestChallenges []ContestChallenge `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Submissions       []Submission       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Dockers           []Docker           `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	RandID            string             `gorm:"type:varchar(36);uniqueIndex;not null" json:"rand_id"`
 	Name              string             `json:"name"`
 	Desc              string             `json:"desc"`
 	Category          string             `json:"category"`
 	Type              string             `json:"type"`
 	GeneratorImage    string             `json:"generator_image"`
+	NetworkPolicies   NetworkPolicies    `gorm:"type:json" json:"network_policies"`
 	BasicModel
 }
 
@@ -93,4 +97,77 @@ func (c Challenge) AttachmentPath(teamID uint) string {
 	default:
 		return c.StaticPath()
 	}
+}
+
+type Target struct {
+	CIDR   string   `json:"cidr"`
+	Except []string `json:"except"`
+}
+
+func (t Target) isValidIPBlock() bool {
+	if t.CIDR == "" {
+		return false
+	}
+	_, ipNet, err := net.ParseCIDR(t.CIDR)
+	if err != nil {
+		return false
+	}
+	for _, ex := range t.Except {
+		_, exNet, err := net.ParseCIDR(ex)
+		if err != nil {
+			return false
+		}
+		if !ipNet.Contains(exNet.IP) {
+			return false
+		}
+	}
+	return true
+}
+
+type NetworkPolicy struct {
+	From []Target `json:"from"`
+	To   []Target `json:"to"`
+}
+
+var DefaultNetworkPolicy = NetworkPolicy{
+	To: []Target{
+		{
+			CIDR: "0.0.0.0/0",
+			Except: []string{
+				"10.0.0.0/8",
+				"172.16.0.0/12",
+				"192.168.0.0/16",
+				"100.64.0.0/10",
+			},
+		},
+	},
+}
+
+type NetworkPolicies []NetworkPolicy
+
+func (n NetworkPolicies) Value() (driver.Value, error) {
+	for _, p := range n {
+		p.From = slices.DeleteFunc(p.From, func(t Target) bool {
+			return !t.isValidIPBlock()
+		})
+		p.To = slices.DeleteFunc(p.From, func(t Target) bool {
+			return !t.isValidIPBlock()
+		})
+	}
+	if len(n) == 0 {
+		return nil, nil
+	}
+	return json.Marshal(n)
+}
+
+func (n *NetworkPolicies) Scan(value any) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan NetworkPolicy value")
+	}
+	if len(bytes) == 0 {
+		*n = nil
+		return nil
+	}
+	return json.Unmarshal(bytes, n)
 }

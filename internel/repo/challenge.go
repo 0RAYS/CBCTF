@@ -12,31 +12,34 @@ type ChallengeRepo struct {
 }
 
 type CreateChallengeOptions struct {
-	RandID         string
-	Name           string
-	Desc           string
-	Category       string
-	Type           string
-	GeneratorImage string
+	RandID          string
+	Name            string
+	Desc            string
+	Category        string
+	Type            string
+	GeneratorImage  string
+	NetworkPolicies model.NetworkPolicies
 }
 
 func (c CreateChallengeOptions) Convert2Model() model.Model {
 	return model.Challenge{
-		RandID:         c.RandID,
-		Name:           c.Name,
-		Desc:           c.Desc,
-		Category:       c.Category,
-		Type:           c.Type,
-		GeneratorImage: c.GeneratorImage,
+		RandID:          c.RandID,
+		Name:            c.Name,
+		Desc:            c.Desc,
+		Category:        c.Category,
+		Type:            c.Type,
+		GeneratorImage:  c.GeneratorImage,
+		NetworkPolicies: c.NetworkPolicies,
 	}
 }
 
 type UpdateChallengeOptions struct {
-	Name           *string
-	Desc           *string
-	Category       *string
-	Type           *string
-	GeneratorImage *string
+	Name            *string
+	Desc            *string
+	Category        *string
+	Type            *string
+	GeneratorImage  *string
+	NetworkPolicies model.NetworkPolicies
 }
 
 func (u UpdateChallengeOptions) Convert2Map() map[string]any {
@@ -90,7 +93,7 @@ func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
 		Conditions: map[string]any{"rand_id": randIDL},
 		Selects:    []string{"id"},
 		Preloads: map[string]GetOptions{
-			"DockerGroups":      {Selects: []string{"id", "challenge_id"}},
+			"Dockers":           {Selects: []string{"id", "challenge_id"}},
 			"ChallengeFlags":    {Selects: []string{"id", "challenge_id"}},
 			"ContestChallenges": {Selects: []string{"id", "challenge_id"}},
 			"Submissions":       {Selects: []string{"id", "challenge_id"}},
@@ -99,10 +102,10 @@ func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
 	if !ok && msg != i18n.ChallengeNotFound {
 		return false, msg
 	}
-	dockerGroupIDL, challengeFlagIDL, contestChallengeIDL, submissionIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0)
+	dockerIDL, challengeFlagIDL, contestChallengeIDL, submissionIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0)
 	for _, challenge := range challengeL {
-		for _, dockerGroup := range challenge.DockerGroups {
-			dockerGroupIDL = append(dockerGroupIDL, dockerGroup.ID)
+		for _, docker := range challenge.Dockers {
+			dockerIDL = append(dockerIDL, docker.ID)
 		}
 		for _, challengeFlag := range challenge.ChallengeFlags {
 			challengeFlagIDL = append(challengeFlagIDL, challengeFlag.ID)
@@ -114,7 +117,7 @@ func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
 			submissionIDL = append(submissionIDL, submission.ID)
 		}
 	}
-	if ok, msg = InitDockerGroupRepo(c.DB).Delete(dockerGroupIDL...); !ok {
+	if ok, msg = InitDockerRepo(c.DB).Delete(dockerIDL...); !ok {
 		return false, msg
 	}
 	if ok, msg = InitChallengeFlagRepo(c.DB).Delete(challengeFlagIDL...); !ok {

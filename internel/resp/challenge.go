@@ -11,9 +11,6 @@ func Docker2Yaml(dockers []model.Docker, challengeFlags []model.ChallengeFlag) s
 	baseYaml := `
 services:
 %s
-
-volumes:
-%s
 `
 	var volumeStr string
 	volumeFlags := make(map[uint]map[string]string)
@@ -49,8 +46,14 @@ volumes:
 	for _, docker := range dockers {
 		serviceStr += fmt.Sprintf("  %s:\n", docker.Name)
 		serviceStr += fmt.Sprintf("    image: %s\n", docker.Image)
-		if docker.WorkingDir != nil && *docker.WorkingDir != "" {
-			serviceStr += fmt.Sprintf("    working_dir: %s\n", *docker.WorkingDir)
+		if docker.CPU > 0 {
+			serviceStr += fmt.Sprintf("    cpus: %f\n", docker.CPU)
+		}
+		if docker.Memory > 0 {
+			serviceStr += fmt.Sprintf("    mem_limit: %d\n", docker.Memory)
+		}
+		if docker.WorkingDir != "" {
+			serviceStr += fmt.Sprintf("    working_dir: %s\n", docker.WorkingDir)
 		}
 		if docker.Command != nil && len(docker.Command) > 0 {
 			commandStr := "["
@@ -60,10 +63,10 @@ volumes:
 			commandStr = commandStr[:len(commandStr)-2] + "]"
 			serviceStr += fmt.Sprintf("    command: %s\n", commandStr)
 		}
-		if docker.Expose != nil && len(docker.Expose) > 0 {
+		if docker.Exposes != nil && len(docker.Exposes) > 0 {
 			serviceStr += "    expose:\n"
-			for _, port := range docker.Expose {
-				serviceStr += fmt.Sprintf("      - \"%s\"\n", port)
+			for _, port := range docker.Exposes {
+				serviceStr += fmt.Sprintf("      - \"%d/%s\"\n", port.Port, port.Protocol)
 			}
 		}
 		if docker.Environment != nil || len(envFlags[docker.ID]) > 0 {
@@ -85,12 +88,17 @@ volumes:
 				serviceStr += fmt.Sprintf("      - %s:%s\n", key, path)
 			}
 		}
+		serviceStr += "\n"
 	}
 	serviceStr = strings.Trim(serviceStr, "\n")
-	return strings.Trim(fmt.Sprintf(baseYaml, serviceStr, volumeStr), "\n")
+	baseYaml = strings.Trim(fmt.Sprintf(baseYaml, serviceStr), "\n")
+	if volumeStr != "" {
+		baseYaml += fmt.Sprintf("\n\nvolumes:\n%s", volumeStr)
+	}
+	return strings.Trim(baseYaml, "\n")
 }
 
-// GetChallengeResp 需要预加载 DockerGroups, ChallengeFlags, DockerGroups.Dockers
+// GetChallengeResp 需要预加载 Dockers, ChallengeFlags, Dockers
 func GetChallengeResp(challenge model.Challenge) gin.H {
 	flags := make([]gin.H, 0)
 	if challenge.Type != model.PodsChallengeType {
@@ -98,22 +106,15 @@ func GetChallengeResp(challenge model.Challenge) gin.H {
 			flags = append(flags, gin.H{"id": flag.ID, "value": flag.Value})
 		}
 	}
-	dockerGroups := make([]gin.H, 0)
-	for _, group := range challenge.DockerGroups {
-		dockerGroups = append(dockerGroups, gin.H{
-			"id":               group.ID,
-			"yaml":             Docker2Yaml(group.Dockers, challenge.ChallengeFlags),
-			"network_policies": group.NetworkPolicies,
-		})
-	}
 	return gin.H{
-		"id":              challenge.RandID,
-		"name":            challenge.Name,
-		"desc":            challenge.Desc,
-		"category":        challenge.Category,
-		"type":            challenge.Type,
-		"generator_image": challenge.GeneratorImage,
-		"flags":           flags,
-		"docker_groups":   dockerGroups,
+		"id":               challenge.RandID,
+		"name":             challenge.Name,
+		"desc":             challenge.Desc,
+		"category":         challenge.Category,
+		"type":             challenge.Type,
+		"generator_image":  challenge.GeneratorImage,
+		"flags":            flags,
+		"docker_compose":   Docker2Yaml(challenge.Dockers, challenge.ChallengeFlags),
+		"network_policies": challenge.NetworkPolicies,
 	}
 }

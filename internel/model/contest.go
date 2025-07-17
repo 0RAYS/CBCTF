@@ -2,6 +2,9 @@ package model
 
 import (
 	"CBCTF/internel/i18n"
+	"database/sql/driver"
+	"encoding/json"
+	"fmt"
 	"time"
 )
 
@@ -97,4 +100,39 @@ func (c Contest) Status() string {
 		return ContestIsComing
 	}
 	return ContestIsRunning
+}
+
+type Prizes []struct {
+	Amount string `json:"amount"`
+	Desc   string `json:"desc"`
+}
+
+func (p Prizes) Value() (driver.Value, error) {
+	return json.Marshal(p)
+}
+
+func (p *Prizes) Scan(value any) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan Prizes value")
+	}
+	return json.Unmarshal(bytes, p)
+}
+
+type Timelines []struct {
+	Date  time.Time `json:"date"`
+	Title string    `json:"title"`
+	Desc  string    `json:"desc"`
+}
+
+func (t Timelines) Value() (driver.Value, error) {
+	return json.Marshal(t)
+}
+
+func (t *Timelines) Scan(value any) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan Timelines value")
+	}
+	return json.Unmarshal(bytes, t)
 }
