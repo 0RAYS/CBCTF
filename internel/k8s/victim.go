@@ -31,7 +31,7 @@ func StartVictim(victim model.Victim) (bool, string) {
 	rand.New(rand.NewSource(time.Now().UnixNano()))
 	frps := config.Env.K8S.Frpc.Frps[rand.Intn(len(config.Env.K8S.Frpc.Frps))]
 	policy := model.NetworkPolicy{
-		To: []model.Target{
+		To: []*netv1.IPBlock{
 			{
 				CIDR: fmt.Sprintf("%s/32", frps.Host),
 			},
@@ -40,7 +40,7 @@ func StartVictim(victim model.Victim) (bool, string) {
 	for _, p := range victim.NetworkPolicies {
 		// 当已经存在来源策略时, 需要设frps的ip为白名单; 不存在时, 默认允许
 		if len(p.From) > 0 {
-			policy.From = []model.Target{
+			policy.From = []*netv1.IPBlock{
 				{
 					CIDR: fmt.Sprintf("%s/32", frps.Host),
 				},
@@ -54,26 +54,8 @@ func StartVictim(victim model.Victim) (bool, string) {
 			Name:        fmt.Sprintf("np-%s", strings.ToLower(utils.RandStr(10))),
 			Labels:      labels,
 			MatchLabels: labels,
-			From: func() []*netv1.IPBlock {
-				from := make([]*netv1.IPBlock, 0)
-				for _, v := range policy.From {
-					from = append(from, &netv1.IPBlock{
-						CIDR:   v.CIDR,
-						Except: v.Except,
-					})
-				}
-				return from
-			}(),
-			To: func() []*netv1.IPBlock {
-				to := make([]*netv1.IPBlock, 0)
-				for _, v := range policy.To {
-					to = append(to, &netv1.IPBlock{
-						CIDR:   v.CIDR,
-						Except: v.Except,
-					})
-				}
-				return to
-			}(),
+			From:        policy.From,
+			To:          policy.To,
 		})
 		if !ok {
 			return false, msg
