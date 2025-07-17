@@ -9,7 +9,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/projectcalico/api/pkg/client/clientset_generated/clientset"
 	authorizationv1 "k8s.io/api/authorization/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,14 +25,12 @@ const (
 
 var (
 	kubeClient                  *kubernetes.Clientset
-	calicoClient                *clientset.Clientset
 	svcAccountToken             *corev1.Secret
 	kubeConfig                  *rest.Config
 	adminAPIConfig              *api.Config
 	namespaceName               string
 	svcAccountName              string
 	svcAccountSecretName        string
-	ipPoolName                  string
 	adminRoleName               string
 	adminRoleBindingName        string
 	adminClusterRoleName        string
@@ -45,7 +42,6 @@ func Init(run bool) {
 	namespaceName = config.Env.K8S.Namespace
 	svcAccountName = fmt.Sprintf("%s-admin", namespaceName)
 	svcAccountSecretName = fmt.Sprintf("%s-admin-secret", namespaceName)
-	ipPoolName = fmt.Sprintf("%s-ip-pool", namespaceName)
 	adminRoleName = fmt.Sprintf("%s-admin-role", namespaceName)
 	adminRoleBindingName = fmt.Sprintf("%s-admin-role-binding", namespaceName)
 	adminClusterRoleName = fmt.Sprintf("%s-admin-cluster-role", namespaceName)
@@ -112,10 +108,9 @@ func CheckPermission() {
 	}
 	log.Logger.Infof("Checking permission in namespace %s", namespaceName)
 	groups := map[string]map[string][]string{
-		"":                      {"pods": {"*"}, "services": {"*"}, "configmaps": {"*"}, "pods/exec": {"*"}, "nodes": {"get", "list", "watch"}},
-		"batch":                 {"jobs": {"*"}},
-		"networking.k8s.io":     {"networkpolicies": {"*"}},
-		"crd.projectcalico.org": {"ippools": {"*"}},
+		"":                  {"pods": {"*"}, "services": {"*"}, "configmaps": {"*"}, "pods/exec": {"*"}, "nodes": {"get", "list", "watch"}},
+		"batch":             {"jobs": {"*"}},
+		"networking.k8s.io": {"networkpolicies": {"*"}},
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
@@ -170,10 +165,6 @@ func initClients() {
 	kubeClient, err = kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
 		log.Logger.Fatalf("Failed to init k8s client: %s", err)
-	}
-	calicoClient, err = clientset.NewForConfig(kubeConfig)
-	if err != nil {
-		log.Logger.Fatalf("Failed to init Calico client: %s", err)
 	}
 }
 
@@ -281,7 +272,6 @@ func ensureClusterRole(ctx context.Context) {
 		ObjectMeta: metav1.ObjectMeta{Name: adminClusterRoleName},
 		Rules: []rbacv1.PolicyRule{
 			{APIGroups: []string{""}, Resources: []string{"nodes"}, Verbs: []string{"get", "list", "watch"}},
-			{APIGroups: []string{"crd.projectcalico.org"}, Resources: []string{"ippools"}, Verbs: []string{"*"}},
 		},
 	}, metav1.CreateOptions{})
 	if err != nil {
