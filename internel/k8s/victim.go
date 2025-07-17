@@ -267,11 +267,12 @@ func StartVictim(victim model.Victim) (bool, string) {
 					ContainerPort: p.Port,
 				})
 			}
-			if container.CPU == 0 {
-				container.CPU = 0.5
+			limit := make(corev1.ResourceList)
+			if container.CPU > 0 {
+				limit["cpu"] = resource.MustParse(fmt.Sprintf("%dm", int(container.CPU*1000)))
 			}
-			if container.Memory == 0 {
-				container.Memory = 100 * 1024 * 1024
+			if container.Memory > 0 {
+				limit["memory"] = resource.MustParse(fmt.Sprintf("%d", container.Memory))
 			}
 			tmp := corev1.Container{
 				Name:         container.Name,
@@ -280,10 +281,7 @@ func StartVictim(victim model.Victim) (bool, string) {
 				Ports:        ports,
 				VolumeMounts: volumeMounts,
 				Resources: corev1.ResourceRequirements{
-					Limits: corev1.ResourceList{
-						"cpu":    resource.MustParse(fmt.Sprintf("%dm", int(container.CPU*1000))),
-						"memory": resource.MustParse(fmt.Sprintf("%d", container.Memory)),
-					},
+					Limits: limit,
 				},
 			}
 			if len(container.Command) > 0 {
