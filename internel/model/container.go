@@ -7,6 +7,8 @@ type Container struct {
 	Pod         Pod        `json:"-"`
 	Name        string     `json:"name"`
 	Image       string     `json:"image"`
+	CPU         float32    `json:"cpu"`
+	Memory      int64      `json:"memory"`
 	WorkingDir  string     `gorm:"default:null" json:"working_dir"`
 	Command     StringList `gorm:"default:null;type:json" json:"command"`
 	Environment StringMap  `gorm:"default:null;type:json" json:"environment"`

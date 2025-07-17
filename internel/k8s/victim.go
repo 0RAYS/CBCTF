@@ -12,6 +12,7 @@ import (
 	netattv1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
 	corev1 "k8s.io/api/core/v1"
 	netv1 "k8s.io/api/networking/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 	"math/rand"
 	"strings"
 	"sync"
@@ -284,12 +285,24 @@ func StartVictim(victim model.Victim) (bool, string) {
 					ContainerPort: p.Port,
 				})
 			}
+			if container.CPU == 0 {
+				container.CPU = 0.5
+			}
+			if container.Memory == 0 {
+				container.Memory = 100 * 1024 * 1024
+			}
 			tmp := corev1.Container{
 				Name:         container.Name,
 				Image:        container.Image,
 				Env:          envs,
 				Ports:        ports,
 				VolumeMounts: volumeMounts,
+				Resources: corev1.ResourceRequirements{
+					Limits: corev1.ResourceList{
+						"cpu":    resource.MustParse(fmt.Sprintf("%dm", int(container.CPU*1000))),
+						"memory": resource.MustParse(fmt.Sprintf("%d", container.Memory)),
+					},
+				},
 			}
 			if len(container.Command) > 0 {
 				tmp.Command = container.Command

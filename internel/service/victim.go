@@ -100,6 +100,8 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 			cOptions := db.CreateContainerOptions{
 				Name:        fmt.Sprintf("ctn-%s", strings.ToLower(utils.RandStr(10))),
 				Image:       docker.Image,
+				CPU:         docker.CPU,
+				Memory:      docker.Memory,
 				WorkingDir:  docker.WorkingDir,
 				Command:     docker.Command,
 				Environment: docker.Environment,
@@ -235,6 +237,8 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 			cOptionsL = append(cOptionsL, db.CreateContainerOptions{
 				Name:        fmt.Sprintf("ctn-%s", strings.ToLower(utils.RandStr(10))),
 				Image:       docker.Image,
+				CPU:         docker.CPU,
+				Memory:      docker.Memory,
 				WorkingDir:  docker.WorkingDir,
 				Command:     docker.Command,
 				Environment: docker.Environment,
