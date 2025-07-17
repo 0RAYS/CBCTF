@@ -31,29 +31,16 @@ var (
 	ExternalSubnetName string
 )
 
-func Init(run bool) {
-	var err error
+func Init() {
 	GlobalNamespace = config.Env.K8S.Namespace
 	ExternalSubnetName = fmt.Sprintf("%s-external-network", GlobalNamespace)
-	if run {
-		if _, err = os.Stat(config.Env.K8S.Config); err != nil {
-			log.Logger.Fatalf("Make sure the config.k8s.config.user configured correctly: %s", err)
-		}
-		kubeConfig, err = clientcmd.BuildConfigFromFlags("", config.Env.K8S.Config)
-		if err != nil {
-			log.Logger.Fatalf("Failed to load k8s user config: %s", err)
-		}
-		kubeConfig.QPS = 100
-		kubeConfig.Burst = 200
-		initClients()
-	}
+	initClients()
 }
 
 func InitResources() {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 
-	initClients()
 	updateNodeIPs(ctx)
 	CreateNamespace(ctx, CreateNamespaceOptions{Name: GlobalNamespace})
 	initExternalNetwork(ctx)
