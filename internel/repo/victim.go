@@ -19,7 +19,6 @@ type CreateVictimOptions struct {
 	IPBlock            string
 	Start              time.Time
 	Duration           time.Duration
-	HostAlias          model.StringMap
 }
 
 func (c CreateVictimOptions) Convert2Model() model.Model {
@@ -27,10 +26,8 @@ func (c CreateVictimOptions) Convert2Model() model.Model {
 		ContestChallengeID: c.ContestChallengeID,
 		TeamID:             c.TeamID,
 		UserID:             c.UserID,
-		IPBlock:            c.IPBlock,
 		Start:              c.Start,
 		Duration:           c.Duration,
-		HostAlias:          c.HostAlias,
 	}
 }
 

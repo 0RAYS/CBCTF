@@ -113,13 +113,8 @@ func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string,
 			"Challenge": {
 				Selects: []string{"id"},
 				Preloads: map[string]db.GetOptions{
-					"DockerGroups": {
-						Selects: []string{"id", "challenge_id"},
-						Preloads: map[string]db.GetOptions{
-							"Dockers": {
-								Selects: []string{"id", "docker_group_id", "image"},
-							},
-						},
+					"Dockers": {
+						Selects: []string{"id", "challenge_id", "image"},
 					},
 				},
 			},
@@ -129,11 +124,9 @@ func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string,
 		return images, false, msg
 	}
 	for _, contestChallenge := range podsContestChallenge {
-		for _, dockerGroup := range contestChallenge.Challenge.DockerGroups {
-			for _, docker := range dockerGroup.Dockers {
-				if !slices.Contains(images, docker.Image) {
-					images = append(images, docker.Image)
-				}
+		for _, docker := range contestChallenge.Challenge.Dockers {
+			if !slices.Contains(images, docker.Image) {
+				images = append(images, docker.Image)
 			}
 		}
 	}

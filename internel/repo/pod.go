@@ -12,24 +12,20 @@ type PodRepo struct {
 }
 
 type CreatePodOptions struct {
-	VictimID        uint
-	Name            string
-	PodIP           string
-	ExposedIP       string
-	PodPorts        model.Ports
-	ExposedPorts    model.Ports
-	NetworkPolicies model.NetworkPolicies
+	VictimID     uint
+	Name         string
+	ExposedIP    string
+	PodPorts     model.Int32List
+	ExposedPorts model.Int32List
 }
 
 func (c CreatePodOptions) Convert2Model() model.Model {
 	return model.Pod{
-		VictimID:        c.VictimID,
-		Name:            c.Name,
-		PodIP:           c.PodIP,
-		ExposedIP:       c.ExposedIP,
-		PodPorts:        c.PodPorts,
-		ExposedPorts:    c.ExposedPorts,
-		NetworkPolicies: c.NetworkPolicies,
+		VictimID:     c.VictimID,
+		Name:         c.Name,
+		ExposedIP:    c.ExposedIP,
+		PodPorts:     c.PodPorts,
+		ExposedPorts: c.ExposedPorts,
 	}
 }
 
@@ -37,8 +33,8 @@ type UpdatePodOptions struct {
 	Name            *string
 	PodIP           *string
 	ExposedIP       *string
-	PodPorts        *model.Ports
-	ExposedPorts    *model.Ports
+	PodPorts        *model.Int32List
+	ExposedPorts    *model.Int32List
 	NetworkPolicies *model.NetworkPolicies
 }
 

@@ -82,12 +82,6 @@ const (
 	UpdateDockerError  = "UpdateDockerError"
 	InvalidDockerImage = "InvalidDockerImage"
 
-	CreateDockerGroupError = "CreateDockerGroupError"
-	DeleteDockerGroupError = "DeleteDockerGroupError"
-	GetDockerGroupError    = "GetDockerGroupError"
-	DockerGroupNotFound    = "DockerGroupNotFound"
-	UpdateDockerGroupError = "UpdateDockerGroupError"
-
 	CreateEventError = "CreateEventError"
 	DeleteEventError = "DeleteEventError"
 	GetEventError    = "GetEventError"

@@ -70,11 +70,7 @@ type Config struct {
 				Token string `mapstructure:"token" json:"token"` // Frps 服务器 Token
 			} `mapstructure:"frps" json:"frps"` // Frps 服务器列表
 		} `mapstructure:"frpc" json:"frpc"`
-		Nodes  []string `mapstructure:"nodes" json:"nodes"` // Kubernetes 节点列表
-		IPPool struct {
-			CIDR      string `mapstructure:"cidr" json:"cidr"`   // IP 地址池 CIDR
-			BlockSize int    `mapstructure:"block" json:"block"` // IP Block 地址池大小
-		} `mapstructure:"ippool" json:"ippool"` // IP 地址池
+		Nodes []string `mapstructure:"nodes" json:"nodes"` // Kubernetes 节点列表
 	} `mapstructure:"k8s" json:"k8s"`
 
 	Email struct {

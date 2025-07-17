@@ -16,11 +16,7 @@ func GetChallenges(tx *gorm.DB, form f.GetChallengesForm) ([]model.Challenge, in
 	options := db.GetOptions{
 		Conditions: make(map[string]any),
 		Preloads: map[string]db.GetOptions{
-			"DockerGroups": {
-				Preloads: map[string]db.GetOptions{
-					"Dockers": {},
-				},
-			},
+			"Dockers":        {},
 			"ChallengeFlags": {},
 		},
 	}
@@ -36,17 +32,22 @@ func GetChallenges(tx *gorm.DB, form f.GetChallengesForm) ([]model.Challenge, in
 func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, bool, string) {
 	challengeRepo, challengeFlagRepo := db.InitChallengeRepo(tx), db.InitChallengeFlagRepo(tx)
 	challenge, ok, msg := challengeRepo.Create(db.CreateChallengeOptions{
-		RandID:   utils.UUID(),
-		Name:     form.Name,
-		Desc:     form.Desc,
-		Type:     form.Type,
-		Category: form.Category,
+		RandID:          utils.UUID(),
+		Name:            form.Name,
+		Desc:            form.Desc,
+		Type:            form.Type,
+		Category:        form.Category,
+		GeneratorImage:  form.GeneratorImage,
+		NetworkPolicies: form.NetworkPolicies,
 	})
 	if !ok {
 		return model.Challenge{}, false, msg
 	}
 	switch form.Type {
-	case model.StaticChallengeType:
+	case model.StaticChallengeType, model.QuestionChallengeType:
+		if form.Type == model.QuestionChallengeType && len(form.Flags) > 0 {
+			form.Flags = []string{utils.ToABCD(form.Flags[0])}
+		}
 		for _, flag := range form.Flags {
 			if _, ok, msg = challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
 				ChallengeID: challenge.ID,
@@ -55,21 +56,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 				return model.Challenge{}, false, msg
 			}
 		}
-	case model.QuestionChallengeType:
-		if len(form.Flags) > 0 {
-			if _, ok, msg = challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
-				ChallengeID: challenge.ID,
-				Value:       utils.ToABCD(form.Flags[0]),
-			}); !ok {
-				return model.Challenge{}, false, msg
-			}
-		}
 	case model.DynamicChallengeType:
-		if ok, msg = challengeRepo.Update(challenge.ID, db.UpdateChallengeOptions{
-			GeneratorImage: &form.GeneratorImage,
-		}); !ok {
-			return model.Challenge{}, false, msg
-		}
 		for _, flag := range form.Flags {
 			if _, ok, msg = challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
 				ChallengeID: challenge.ID,
@@ -79,93 +66,85 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 			}
 		}
 	case model.PodsChallengeType:
-		dockerGroupRepo, dockerRepo := db.InitDockerGroupRepo(tx), db.InitDockerRepo(tx)
-		for _, group := range form.DockerGroups {
-			if len(group.NetworkPolicies) == 0 {
-				group.NetworkPolicies = append(group.NetworkPolicies, model.DefaultNetworkPolicy)
+		config, ok, msg := utils.LoadDockerComposeYaml(form.DockerCompose)
+		if !ok {
+			return model.Challenge{}, false, msg
+		}
+		volumeFlag := make(map[string]string)
+		for _, volume := range config.Volumes {
+			volumeName := strings.TrimPrefix(volume.Name, "_")
+			if strings.HasPrefix(volumeName, model.VolumeFlagPrefix) {
+				for k, v := range volume.Labels {
+					if k == model.VolumeFlagLabelKey {
+						volumeFlag[volumeName] = v
+					}
+				}
 			}
-			dockerGroup, ok, msg := dockerGroupRepo.Create(db.CreateDockerGroupOptions{
-				ChallengeID:     challenge.ID,
-				NetworkPolicies: group.NetworkPolicies,
+		}
+		flagOptions := make([]db.CreateChallengeFlagOptions, 0)
+		dockerRepo := db.InitDockerRepo(tx)
+		for _, app := range config.Services {
+			name := app.Name
+			if app.ContainerName != "" {
+				name = app.ContainerName
+			}
+			if app.Image == "" {
+				return model.Challenge{}, false, i18n.InvalidDockerImage
+			}
+			environment := make(model.StringMap)
+			for k, v := range app.Environment {
+				if !strings.HasPrefix(k, model.EnvFlagPrefix) {
+					environment[k] = *v
+				}
+			}
+			ports := make(model.Exposes, 0)
+			tmp := make([]string, 0)
+			for _, port := range app.Ports {
+				target := fmt.Sprintf("%d/%s", port.Target, port.Protocol)
+				if !slices.Contains(tmp, target) {
+					ports = append(ports, model.Expose{Port: int32(port.Target), Protocol: port.Protocol})
+					tmp = append(tmp, target)
+				}
+			}
+			docker, ok, msg := dockerRepo.Create(db.CreateDockerOptions{
+				ChallengeID: challenge.ID,
+				Name:        name,
+				Image:       app.Image,
+				CPU:         app.CPUS,
+				Memory:      int64(app.MemLimit),
+				WorkingDir:  app.WorkingDir,
+				Command:     model.StringList(app.Command),
+				Exposes:     ports,
+				Environment: environment,
 			})
 			if !ok {
 				return model.Challenge{}, false, msg
 			}
-			config, ok, msg := utils.LoadDockerComposeYaml(group.Yaml)
-			if !ok {
+			for k, v := range app.Environment {
+				if strings.HasPrefix(k, model.EnvFlagPrefix) {
+					flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
+						ChallengeID: challenge.ID,
+						DockerID:    &docker.ID,
+						Value:       *v,
+						InjectType:  model.EnvInjectType,
+					})
+				}
+			}
+			for _, volume := range app.Volumes {
+				if value, ok := volumeFlag[volume.Source]; ok {
+					flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
+						ChallengeID: challenge.ID,
+						DockerID:    &docker.ID,
+						Value:       value,
+						InjectType:  model.VolumeInjectType,
+						Path:        volume.Target,
+					})
+				}
+			}
+		}
+		for _, options := range flagOptions {
+			if _, ok, msg = challengeFlagRepo.Create(options); !ok {
 				return model.Challenge{}, false, msg
-			}
-			volumeFlag := make(map[string]string)
-			for _, volume := range config.Volumes {
-				volumeName := strings.TrimPrefix(volume.Name, "_")
-				if strings.HasPrefix(volumeName, model.VolumeFlagPrefix) {
-					for k, v := range volume.Labels {
-						if k == model.VolumeFlagLabelKey {
-							volumeFlag[volumeName] = v
-						}
-					}
-				}
-			}
-			flagOptions := make([]db.CreateChallengeFlagOptions, 0)
-			for _, app := range config.Services {
-				name := app.Name
-				if app.ContainerName != "" {
-					name = app.ContainerName
-				}
-				if app.Image == "" {
-					return model.Challenge{}, false, i18n.InvalidDockerImage
-				}
-				environment := make(model.StringMap)
-				for k, v := range app.Environment {
-					if !strings.HasPrefix(k, model.EnvFlagPrefix) {
-						environment[k] = *v
-					}
-				}
-				ports := app.Expose
-				for _, port := range app.Ports {
-					target := fmt.Sprintf("%d", port.Target)
-					if !slices.Contains(ports, target) {
-						ports = append(ports, target)
-					}
-				}
-				docker, ok, msg := dockerRepo.Create(db.CreateDockerOptions{
-					DockerGroupID: dockerGroup.ID,
-					Name:          name,
-					Image:         app.Image,
-					WorkingDir:    &app.WorkingDir,
-					Command:       model.StringList(app.Command),
-					Expose:        model.StringList(ports),
-					Environment:   environment,
-				})
-				if !ok {
-					return model.Challenge{}, false, msg
-				}
-				for k, v := range app.Environment {
-					if strings.HasPrefix(k, model.EnvFlagPrefix) {
-						flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
-							ChallengeID: challenge.ID,
-							DockerID:    &docker.ID,
-							Value:       *v,
-							InjectType:  model.EnvInjectType,
-						})
-					}
-				}
-				for _, volume := range app.Volumes {
-					if value, ok := volumeFlag[volume.Source]; ok {
-						flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
-							ChallengeID: challenge.ID,
-							DockerID:    &docker.ID,
-							Value:       value,
-							InjectType:  model.VolumeInjectType,
-							Path:        volume.Target,
-						})
-					}
-				}
-			}
-			for _, options := range flagOptions {
-				if _, ok, msg = challengeFlagRepo.Create(options); !ok {
-					return model.Challenge{}, false, msg
-				}
 			}
 		}
 	default:
@@ -173,11 +152,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 	}
 	return challengeRepo.GetByID(challenge.ID, db.GetOptions{
 		Preloads: map[string]db.GetOptions{
-			"DockerGroups": {
-				Preloads: map[string]db.GetOptions{
-					"Dockers": {},
-				},
-			},
+			"Dockers":        {},
 			"ChallengeFlags": {},
 		},
 	})
@@ -255,18 +230,11 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChalle
 			GeneratorImage: form.GeneratorImage,
 		})
 	case model.PodsChallengeType:
-		dockerGroupRepo := db.InitDockerGroupRepo(tx)
-		for _, group := range form.DockerGroups {
-			if ok, msg := dockerGroupRepo.Update(group.ID, db.UpdateDockerGroupOptions{
-				NetworkPolicies: &group.NetworkPolicies,
-			}); !ok {
-				return false, msg
-			}
-		}
 		return db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
-			Name:     form.Name,
-			Desc:     form.Desc,
-			Category: form.Category,
+			Name:            form.Name,
+			Desc:            form.Desc,
+			Category:        form.Category,
+			NetworkPolicies: form.NetworkPolicies,
 		})
 	default:
 		return false, i18n.InvalidChallengeType

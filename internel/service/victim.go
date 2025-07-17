@@ -1,10 +1,8 @@
 package service
 
 import (
-	"CBCTF/internel/config"
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/k8s"
-	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
@@ -12,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"slices"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -21,13 +18,9 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 	challenge, ok, msg := db.InitChallengeRepo(tx).
 		GetByID(contestChallenge.ChallengeID, db.GetOptions{
 			Preloads: map[string]db.GetOptions{
-				"DockerGroups": {
+				"Dockers": {
 					Preloads: map[string]db.GetOptions{
-						"Dockers": {
-							Preloads: map[string]db.GetOptions{
-								"ChallengeFlags": {},
-							},
-						},
+						"ChallengeFlags": {},
 					},
 				},
 			},
@@ -42,27 +35,11 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 	if victim, ok, _ := victimRepo.HasAliveVictim(team.ID, contestChallenge.ID); ok {
 		return victim, true, i18n.Success
 	}
-	ipBlock, err := utils.GetIPBlock(team.ID, config.Env.K8S.IPPool.CIDR, config.Env.K8S.IPPool.BlockSize)
-	if err != nil {
-		log.Logger.Warningf("Failed to get ip block: %s", err)
-		return model.Victim{}, false, i18n.GetIPBlockError
-	}
-	if len(ipBlock) == 0 || len(challenge.DockerGroups) > len(ipBlock) {
-		return model.Victim{}, false, i18n.EmptyIPBlock
-	}
-	dns := make(model.StringMap)
-	podPorts := make(map[uint]model.Ports)
-	for i, dockerGroup := range challenge.DockerGroups {
-		for _, docker := range dockerGroup.Dockers {
-			if _, ok = dns[docker.Name]; ok {
-				return model.Victim{}, false, i18n.DuplicateHostname
-			}
-			dns[docker.Name] = ipBlock[i]
-			for _, port := range docker.Expose {
-				p, _ := strconv.ParseInt(port, 10, 32)
-				if !slices.Contains(podPorts[dockerGroup.ID], int32(p)) {
-					podPorts[dockerGroup.ID] = append(podPorts[dockerGroup.ID], int32(p))
-				}
+	podPorts := make(model.Int32List, 0)
+	for _, docker := range challenge.Dockers {
+		for _, port := range docker.Exposes {
+			if !slices.Contains(podPorts, port.Port) {
+				podPorts = append(podPorts, port.Port)
 			}
 		}
 	}
@@ -70,88 +47,77 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 		ContestChallengeID: contestChallenge.ID,
 		TeamID:             team.ID,
 		UserID:             user.ID,
-		IPBlock:            fmt.Sprintf("%s/%d", ipBlock[0], config.Env.K8S.IPPool.BlockSize),
 		Start:              time.Now(),
 		Duration:           time.Hour,
-		HostAlias:          dns,
 	}
 	victim, ok, msg := victimRepo.Create(vOptions)
 	if !ok {
 		return model.Victim{}, false, msg
 	}
-	for i, dockerGroup := range challenge.DockerGroups {
-		pOptions := db.CreatePodOptions{
-			VictimID:        victim.ID,
-			Name:            victim.GenPodName(challenge.RandID),
-			PodIP:           ipBlock[i],
-			PodPorts:        podPorts[dockerGroup.ID],
-			NetworkPolicies: dockerGroup.NetworkPolicies,
-		}
-		pod, ok, msg := podRepo.Create(pOptions)
-		if !ok {
-			return model.Victim{}, false, msg
-		}
-		for _, docker := range dockerGroup.Dockers {
-			envFlagL := make(model.StringList, 0)
-			volumeFlagL := make(model.StringMap)
-			for _, challengeFlag := range docker.ChallengeFlags {
-				teamFlag, ok, msg := teamFlagRepo.Get(db.GetOptions{
-					Conditions: map[string]any{
-						"team_id":           team.ID,
-						"challenge_flag_id": challengeFlag.ID,
-					},
-				})
-				if !ok {
-					return model.Victim{}, false, msg
-				}
-				switch challengeFlag.InjectType {
-				case model.EnvInjectType:
-					envFlagL = append(envFlagL, teamFlag.Value)
-				case model.VolumeInjectType:
-					volumeFlagL[challengeFlag.Path] = teamFlag.Value
-				default:
-					return model.Victim{}, false, i18n.InvalidChallengeFlagInjectType
-				}
-			}
-			cOptions := db.CreateContainerOptions{
-				PodID:       pod.ID,
-				Name:        fmt.Sprintf("%s-%s", pod.Name, strings.ToLower(utils.RandStr(5))),
-				Image:       docker.Image,
-				Hostname:    docker.Name,
-				WorkingDir:  docker.WorkingDir,
-				Command:     docker.Command,
-				Environment: docker.Environment,
-				EnvFlags:    envFlagL,
-				VolumeFlags: volumeFlagL,
-				Exposes:     docker.Expose,
-			}
-			container, ok, msg := containerRepo.Create(cOptions)
+	pOptions := db.CreatePodOptions{
+		VictimID: victim.ID,
+		Name:     victim.GenPodName(challenge.RandID),
+		PodPorts: podPorts,
+	}
+	pod, ok, msg := podRepo.Create(pOptions)
+	if !ok {
+		return model.Victim{}, false, msg
+	}
+	for _, docker := range challenge.Dockers {
+		envFlagL := make(model.StringList, 0)
+		volumeFlagL := make(model.StringMap)
+		for _, challengeFlag := range docker.ChallengeFlags {
+			teamFlag, ok, msg := teamFlagRepo.Get(db.GetOptions{
+				Conditions: map[string]any{
+					"team_id":           team.ID,
+					"challenge_flag_id": challengeFlag.ID,
+				},
+			})
 			if !ok {
 				return model.Victim{}, false, msg
 			}
-			pod.Containers = append(pod.Containers, container)
+			switch challengeFlag.InjectType {
+			case model.EnvInjectType:
+				envFlagL = append(envFlagL, teamFlag.Value)
+			case model.VolumeInjectType:
+				volumeFlagL[challengeFlag.Path] = teamFlag.Value
+			default:
+				return model.Victim{}, false, i18n.InvalidChallengeFlagInjectType
+			}
 		}
-		victim.Pods = append(victim.Pods, pod)
+		cOptions := db.CreateContainerOptions{
+			PodID:       pod.ID,
+			Name:        fmt.Sprintf("%s-%s", pod.Name, strings.ToLower(utils.RandStr(5))),
+			Image:       docker.Image,
+			Hostname:    docker.Name,
+			WorkingDir:  docker.WorkingDir,
+			Command:     docker.Command,
+			Environment: docker.Environment,
+			EnvFlags:    envFlagL,
+			VolumeFlags: volumeFlagL,
+			Exposes:     docker.Exposes,
+		}
+		container, ok, msg := containerRepo.Create(cOptions)
+		if !ok {
+			return model.Victim{}, false, msg
+		}
+		pod.Containers = append(pod.Containers, container)
 	}
-	targets, ok, msg := k8s.StartVictim(victim)
+	victim.Pods = append(victim.Pods, pod)
+	ip, ports, ok, msg := k8s.StartVictim(victim)
 	if !ok {
 		go k8s.StopVictim(victim)
 		return model.Victim{}, false, msg
 	}
-	for i, pod := range victim.Pods {
-		target := targets[pod.Name]
-		ip := target["ip"].(string)
-		ports := model.Ports(target["ports"].([]int32))
-		ok, msg = podRepo.Update(pod.ID, db.UpdatePodOptions{
-			ExposedIP:    &ip,
-			ExposedPorts: &ports,
-		})
-		if !ok {
-			return model.Victim{}, false, msg
-		}
-		victim.Pods[i].ExposedIP = ip
-		victim.Pods[i].ExposedPorts = ports
+	ok, msg = podRepo.Update(pod.ID, db.UpdatePodOptions{
+		ExposedIP:    &ip,
+		ExposedPorts: (*model.Int32List)(&ports),
+	})
+	if !ok {
+		return model.Victim{}, false, msg
 	}
+	victim.Pods[0].ExposedIP = ip
+	victim.Pods[0].ExposedPorts = ports
 	return victim, true, i18n.Success
 }
 

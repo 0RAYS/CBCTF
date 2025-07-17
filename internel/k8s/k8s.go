@@ -5,7 +5,6 @@ import (
 	"CBCTF/internel/log"
 	"context"
 	"fmt"
-	projectcalicov3 "github.com/projectcalico/api/pkg/apis/projectcalico/v3"
 	rbacv1 "k8s.io/api/rbac/v1"
 	"os"
 	"time"
@@ -80,7 +79,6 @@ func InitResources() {
 	ensureNamespace(ctx)
 	ensureServiceAccount(ctx)
 	ensureSecret(ctx)
-	ensureIPPool(ctx)
 	ensureRole(ctx)
 	ensureRoleBinding(ctx)
 	ensureClusterRole(ctx)
@@ -231,24 +229,6 @@ func ensureSecret(ctx context.Context) {
 		if err != nil {
 			log.Logger.Fatalf("Failed to create secret: %v", err)
 		}
-	}
-}
-
-func ensureIPPool(ctx context.Context) {
-	if _, err := calicoClient.ProjectcalicoV3().IPPools().Get(ctx, ipPoolName, metav1.GetOptions{}); err == nil {
-		_ = calicoClient.ProjectcalicoV3().IPPools().Delete(ctx, ipPoolName, metav1.DeleteOptions{})
-	}
-	_, err := calicoClient.ProjectcalicoV3().IPPools().Create(ctx, &projectcalicov3.IPPool{
-		ObjectMeta: metav1.ObjectMeta{Name: ipPoolName},
-		Spec: projectcalicov3.IPPoolSpec{
-			CIDR:        config.Env.K8S.IPPool.CIDR,
-			IPIPMode:    projectcalicov3.IPIPModeNever,
-			NATOutgoing: true,
-			BlockSize:   config.Env.K8S.IPPool.BlockSize,
-		},
-	}, metav1.CreateOptions{})
-	if err != nil {
-		log.Logger.Fatalf("Failed to create IPPool: %v", err)
 	}
 }
 
