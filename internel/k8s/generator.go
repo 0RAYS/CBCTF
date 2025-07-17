@@ -33,7 +33,7 @@ var (
 )
 
 func GenGeneratorName(challengeRandID string) string {
-	return fmt.Sprintf("gen-%s-%s-pod", challengeRandID, strings.ToLower(utils.RandStr(5)))
+	return fmt.Sprintf("gen-%s-%s-pod", challengeRandID, utils.RandStr(5))
 }
 
 // StartGenerator 启动动态附件生成器, 等待附加命令, 生成附件, contestChallenge 需要预加载 Challenge
@@ -44,7 +44,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 		msg           string
 		err           error
 		generatorName = GenGeneratorName(contestChallenge.Challenge.RandID)
-		containerName = fmt.Sprintf("%s-%s", generatorName, strings.ToLower(utils.RandStr(5)))
+		containerName = fmt.Sprintf("%s-%s", generatorName, utils.RandStr(5))
 	)
 	if contestChallenge.Challenge.GeneratorImage == "" {
 		return &corev1.Pod{}, false, i18n.InvalidDockerImage
@@ -53,7 +53,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 	service, ok, msg := CreateService(ctx, CreateServiceOptions{
-		Name:     fmt.Sprintf("svc-%s", strings.ToLower(utils.RandStr(10))),
+		Name:     fmt.Sprintf("svc-%s", utils.RandStr(10)),
 		Ports:    []int32{8000},
 		Labels:   map[string]string{GeneratorPodTag: generatorName},
 		Selector: map[string]string{GeneratorPodTag: generatorName},

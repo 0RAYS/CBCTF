@@ -10,7 +10,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strings"
 )
 
 type CreateJobOptions struct {
@@ -29,7 +28,7 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, boo
 	containers := make([]corev1.Container, 0)
 	for _, image := range options.Images {
 		containers = append(containers, corev1.Container{
-			Name:            strings.ToLower(utils.RandStr(10)),
+			Name:            utils.RandStr(10),
 			ImagePullPolicy: corev1.PullPolicy(options.PullPolicy),
 			Image:           image,
 			Command:         []string{"echo", "Success"},
@@ -44,7 +43,7 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, boo
 			TTLSecondsAfterFinished: utils.Ptr[int32](0),
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      fmt.Sprintf("image-puller-%s", strings.ToLower(utils.RandStr(5))),
+					Name:      fmt.Sprintf("image-puller-%s", utils.RandStr(5)),
 					Namespace: GlobalNamespace,
 				},
 				Spec: corev1.PodSpec{

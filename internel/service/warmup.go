@@ -33,7 +33,7 @@ func WarmUpContestChallengeImage(form f.WarmUpImageForm) (bool, string) {
 	}
 	for _, node := range nodes {
 		if _, ok, msg = k8s.CreateJob(ctx, k8s.CreateJobOptions{
-			Name:       fmt.Sprintf("image-puller-%s", strings.ToLower(utils.RandStr(5))),
+			Name:       fmt.Sprintf("image-puller-%s", utils.RandStr(5)),
 			Images:     form.Images,
 			PullPolicy: form.PullPolicy,
 			NodeSelector: map[string]string{

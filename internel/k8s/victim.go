@@ -51,7 +51,7 @@ func StartVictim(victim model.Victim) (bool, string) {
 	victim.NetworkPolicies = append(victim.NetworkPolicies, policy)
 	for _, policy := range victim.NetworkPolicies {
 		_, ok, msg := CreateNetworkPolicy(ctx, CreateNetworkPolicyOptions{
-			Name:        fmt.Sprintf("np-%s", strings.ToLower(utils.RandStr(10))),
+			Name:        fmt.Sprintf("np-%s", utils.RandStr(10)),
 			Labels:      labels,
 			MatchLabels: labels,
 			From:        policy.From,
@@ -188,7 +188,7 @@ func StartVictim(victim model.Victim) (bool, string) {
 		if !ok {
 			return false, msg
 		}
-		volumeName := fmt.Sprintf("vol-%s", strings.ToLower(utils.RandStr(5)))
+		volumeName := fmt.Sprintf("vol-%s", utils.RandStr(5))
 		frpc := corev1.Container{
 			Name:  "frpc",
 			Image: config.Env.K8S.Frpc.Image,
@@ -217,14 +217,14 @@ func StartVictim(victim model.Victim) (bool, string) {
 			for path, volumeFlag := range container.VolumeFlags {
 				filename := strings.Split(path, "/")[len(strings.Split(path, "/"))-1]
 				flagConfigMap, ok, msg := CreateConfigMap(ctx, CreateConfigMapOptions{
-					Name:   fmt.Sprintf("cm-%s", strings.ToLower(utils.RandStr(10))),
+					Name:   fmt.Sprintf("cm-%s", utils.RandStr(10)),
 					Labels: labels,
 					Data:   map[string]string{filename: volumeFlag},
 				})
 				if !ok {
 					return false, msg
 				}
-				volumeName = fmt.Sprintf("vol-%s", strings.ToLower(utils.RandStr(5)))
+				volumeName = fmt.Sprintf("vol-%s", utils.RandStr(5))
 				volumeMounts = append(volumeMounts, corev1.VolumeMount{
 					Name:      volumeName,
 					MountPath: path,
