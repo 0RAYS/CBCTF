@@ -23,10 +23,10 @@ const (
 )
 
 var (
-	kubeClient          *kubernetes.Clientset
-	natattClient        *netattclient.Clientset
-	kubeOVNClient       *kubeovnclient.Clientset
-	kubeConfig          *rest.Config
+	kubeClient         *kubernetes.Clientset
+	natattClient       *netattclient.Clientset
+	kubeOVNClient      *kubeovnclient.Clientset
+	kubeConfig         *rest.Config
 	GlobalNamespace    string
 	ExternalSubnetName string
 )
@@ -45,10 +45,7 @@ func Init(run bool) {
 		}
 		kubeConfig.QPS = 100
 		kubeConfig.Burst = 200
-		kubeClient, err = kubernetes.NewForConfig(kubeConfig)
-		if err != nil {
-			log.Logger.Fatalf("Failed to init k8s client: %s", err)
-		}
+		initClients()
 	}
 }
 
