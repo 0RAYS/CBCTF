@@ -13,6 +13,8 @@ type CreateContainerOptions struct {
 	PodID       uint
 	Name        string
 	Image       string
+	CPU         float32
+	Memory      int64
 	WorkingDir  string
 	Command     model.StringList
 	Environment model.StringMap
@@ -26,6 +28,8 @@ func (c CreateContainerOptions) Convert2Model() model.Model {
 		PodID:       c.PodID,
 		Name:        c.Name,
 		Image:       c.Image,
+		CPU:         c.CPU,
+		Memory:      c.Memory,
 		WorkingDir:  c.WorkingDir,
 		Command:     c.Command,
 		Environment: c.Environment,
