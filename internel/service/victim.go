@@ -77,7 +77,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 						ExcludeIps:   []string{network.Gateway, network.IP},
 						NetAttachDef: &model.NetAttachDef{Name: fmt.Sprintf("nad-%s", utils.RandStr(20))},
 					}
-					if network.External {
+					if network.External || len(docker.Exposes) > 0 {
 						lanIP, err := utils.GetLastIP(subnet.CIDRBlock)
 						if err != nil {
 							return model.Victim{}, false, i18n.GetIPError
