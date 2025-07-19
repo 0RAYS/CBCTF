@@ -38,6 +38,18 @@ func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*core
 	return configMap, true, i18n.Success
 }
 
+func GetConfigMap(ctx context.Context, name string) (*corev1.ConfigMap, bool, string) {
+	configMap, err := kubeClient.CoreV1().ConfigMaps(GlobalNamespace).Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		if apierror.IsNotFound(err) {
+			return nil, false, i18n.ConfigMapNotFound
+		}
+		log.Logger.Warningf("Failed to get ConfigMap: %v", err)
+		return nil, false, i18n.GetConfigMapError
+	}
+	return configMap, true, i18n.Success
+}
+
 func GetConfigMapList(ctx context.Context, labels ...map[string]string) (*corev1.ConfigMapList, bool, string) {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
@@ -69,32 +81,21 @@ func DeleteConfigMap(ctx context.Context, configMapName string) (bool, string) {
 	return true, i18n.Success
 }
 
-// DeleteConfigMapListByPodName TODO: 有可能删不干净
-func DeleteConfigMapListByPodName(ctx context.Context, key, podName string) (bool, string) {
-	configMapList, ok, msg := GetConfigMapList(ctx, map[string]string{key: podName})
-	if !ok {
-		if msg != i18n.ConfigMapNotFound {
-			return false, msg
+func DeleteConfigMapList(ctx context.Context, labels ...map[string]string) (bool, string) {
+	var options metav1.ListOptions
+	if len(labels) > 0 {
+		var selector string
+		for k, v := range labels[0] {
+			selector += fmt.Sprintf("%s=%s,", k, v)
 		}
-		return true, i18n.Success
-	}
-	for _, cm := range configMapList.Items {
-		if ok, msg = DeleteConfigMap(ctx, cm.Name); !ok {
-			return false, msg
+		options = metav1.ListOptions{
+			LabelSelector: strings.TrimSuffix(selector, ","),
 		}
 	}
-	return true, i18n.Success
-}
-
-func DeleteConfigMapByLabels(ctx context.Context, labels map[string]string) (bool, string) {
-	configMapList, ok, msg := GetConfigMapList(ctx, labels)
-	if !ok {
-		return false, msg
-	}
-	for _, cm := range configMapList.Items {
-		if ok, msg = DeleteConfigMap(ctx, cm.Name); !ok {
-			return false, msg
-		}
+	err := kubeClient.CoreV1().ConfigMaps(GlobalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
+	if err != nil && !apierror.IsNotFound(err) {
+		log.Logger.Warningf("Failed to delete ConfigMap: %v", err)
+		return false, i18n.DeleteConfigMapError
 	}
 	return true, i18n.Success
 }

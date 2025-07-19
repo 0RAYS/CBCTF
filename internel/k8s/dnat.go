@@ -80,22 +80,28 @@ func GetDNatList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.I
 
 func DeleteDNat(ctx context.Context, name string) (bool, string) {
 	err := kubeOVNClient.KubeovnV1().IptablesDnatRules().Delete(ctx, name, metav1.DeleteOptions{})
-	if err != nil {
+	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete iptables DnatRule: %v", err)
 		return false, i18n.DeleteDNatError
 	}
 	return true, i18n.Success
 }
 
-func DeleteDNatByLabels(ctx context.Context, labels map[string]string) (bool, string) {
-	dnatList, ok, msg := GetDNatList(ctx, labels)
-	if !ok {
-		return false, msg
-	}
-	for _, dnat := range dnatList.Items {
-		if ok, msg = DeleteDNat(ctx, dnat.Name); !ok {
-			return false, msg
+func DeleteDNatList(ctx context.Context, labels ...map[string]string) (bool, string) {
+	var options metav1.ListOptions
+	if len(labels) > 0 {
+		var selector string
+		for k, v := range labels[0] {
+			selector += fmt.Sprintf("%s=%s,", k, v)
 		}
+		options = metav1.ListOptions{
+			LabelSelector: strings.TrimSuffix(selector, ","),
+		}
+	}
+	err := kubeOVNClient.KubeovnV1().IptablesDnatRules().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
+	if err != nil && !apierror.IsNotFound(err) {
+		log.Logger.Warningf("Failed to delete iptables DnatRule: %v", err)
+		return false, i18n.DeleteDNatError
 	}
 	return true, i18n.Success
 }

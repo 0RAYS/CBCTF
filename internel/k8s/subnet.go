@@ -88,15 +88,21 @@ func DeleteSubnet(ctx context.Context, name string) (bool, string) {
 	return true, i18n.Success
 }
 
-func DeleteSubnetByLabels(ctx context.Context, labels map[string]string) (bool, string) {
-	subnetList, ok, msg := GetSubnetList(ctx, labels)
-	if !ok {
-		return false, msg
-	}
-	for _, subnet := range subnetList.Items {
-		if ok, msg = DeleteSubnet(ctx, subnet.Name); !ok {
-			return false, msg
+func DeleteSubnetList(ctx context.Context, labels ...map[string]string) (bool, string) {
+	var options metav1.ListOptions
+	if len(labels) > 0 {
+		var selector string
+		for k, v := range labels[0] {
+			selector += fmt.Sprintf("%s=%s,", k, v)
 		}
+		options = metav1.ListOptions{
+			LabelSelector: strings.TrimSuffix(selector, ","),
+		}
+	}
+	err := kubeOVNClient.KubeovnV1().Subnets().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
+	if err != nil && !apierror.IsNotFound(err) {
+		log.Logger.Warningf("Failed to delete Subnet: %v", err)
+		return false, i18n.DeleteSubnetError
 	}
 	return true, i18n.Success
 }

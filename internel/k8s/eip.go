@@ -82,15 +82,21 @@ func DeleteEIP(ctx context.Context, name string) (bool, string) {
 	return true, i18n.Success
 }
 
-func DeleteEIPByLabels(ctx context.Context, labels map[string]string) (bool, string) {
-	eipList, ok, msg := GetEIPList(ctx, labels)
-	if !ok {
-		return false, msg
-	}
-	for _, eip := range eipList.Items {
-		if ok, msg = DeleteEIP(ctx, eip.Name); !ok {
-			return false, msg
+func DeleteEIPByLabels(ctx context.Context, labels ...map[string]string) (bool, string) {
+	var options metav1.ListOptions
+	if len(labels) > 0 {
+		var selector string
+		for k, v := range labels[0] {
+			selector += fmt.Sprintf("%s=%s,", k, v)
 		}
+		options = metav1.ListOptions{
+			LabelSelector: strings.TrimSuffix(selector, ","),
+		}
+	}
+	err := kubeOVNClient.KubeovnV1().IptablesEIPs().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
+	if err != nil && !apierror.IsNotFound(err) {
+		log.Logger.Warningf("Failed to delete EIP: %v", err)
+		return false, i18n.DeleteEIPError
 	}
 	return true, i18n.Success
 }
