@@ -35,9 +35,6 @@ func Init() {
 	GlobalNamespace = config.Env.K8S.Namespace
 	ExternalSubnetName = fmt.Sprintf("%s-external-network", GlobalNamespace)
 	initClients()
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
-	defer cancel()
-	initExternalNetwork(ctx)
 }
 
 func InitResources() {
@@ -46,6 +43,7 @@ func InitResources() {
 
 	updateNodeIPs(ctx)
 	CreateNamespace(ctx, CreateNamespaceOptions{Name: GlobalNamespace})
+	initExternalNetwork(ctx)
 
 	if err := config.Save(config.Env); err != nil {
 		log.Logger.Fatalf("Failed to update config: %s", err)
