@@ -72,6 +72,7 @@ func (d Docker) GetForeignKeys() []string {
 }
 
 type Network struct {
+	Name     string `json:"name"`
 	CIDR     string `json:"cidr"`
 	Gateway  string `json:"gateway"`
 	IP       string `json:"ip"`

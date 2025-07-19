@@ -88,7 +88,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 			if network.Name == "default" {
 				continue
 			}
-			tmp := model.Network{External: network.External.External}
+			tmp := model.Network{External: network.External.External, Name: network.Name}
 			if len(network.Ipam.Config) > 0 {
 				tmp.CIDR = network.Ipam.Config[0].Subnet
 				tmp.Gateway = network.Ipam.Config[0].Gateway

@@ -11,7 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"slices"
-	"strings"
 	"time"
 )
 
@@ -111,7 +110,6 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 			}
 			cOptionsMap[docker.ID] = cOptions
 			for _, network := range docker.Networks {
-				name := strings.ReplaceAll(strings.ReplaceAll(network.CIDR, ".", "_"), "/", "_")
 
 				subnet := model.Subnet{
 					Name:     fmt.Sprintf("net-%s", utils.RandStr(10)),
@@ -120,7 +118,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 					External: network.External,
 				}
 				netAttachDefs[subnet.Name] = fmt.Sprintf("nad-%s", utils.RandStr(5))
-				if !slices.Contains(subnetsName, name) {
+				if !slices.Contains(subnetsName, network.Name) {
 					subnets = append(subnets, subnet)
 				}
 
@@ -135,7 +133,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 					Subnet: subnet.Name,
 					LanIP:  lanIP,
 				}
-				if !slices.Contains(gatewayName, name) {
+				if !slices.Contains(gatewayName, network.Name) {
 					gateways = append(gateways, gateway)
 				}
 
