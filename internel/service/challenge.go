@@ -153,6 +153,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 					flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
 						ChallengeID: challenge.ID,
 						DockerID:    &docker.ID,
+						Name:        k,
 						Value:       *v,
 						InjectType:  model.EnvInjectType,
 					})
@@ -163,6 +164,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 					flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
 						ChallengeID: challenge.ID,
 						DockerID:    &docker.ID,
+						Name:        volume.Source,
 						Value:       value,
 						InjectType:  model.VolumeInjectType,
 						Path:        volume.Target,
