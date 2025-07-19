@@ -79,7 +79,7 @@ func (v *VictimRepo) Delete(idL ...uint) (bool, string) {
 			podIDL = append(podIDL, pod.ID)
 		}
 	}
-	if ok, msg = InitPodRepo(v.DB).Delete(idL...); !ok {
+	if ok, msg = InitPodRepo(v.DB).Delete(podIDL...); !ok {
 		return false, msg
 	}
 	if res := v.DB.Model(&model.Victim{}).Where("id IN ?", idL).Delete(&model.Victim{}); res.Error != nil {
