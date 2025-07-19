@@ -70,6 +70,9 @@ func InitPodRepo(tx *gorm.DB) *PodRepo {
 func (p *PodRepo) Delete(idL ...uint) (bool, string) {
 	podL, _, ok, msg := p.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},
+		Preloads: map[string]GetOptions{
+			"Containers": {Selects: []string{"id", "pod_id"}},
+		},
 	})
 	if !ok && msg != i18n.PodNotFound {
 		return false, msg
