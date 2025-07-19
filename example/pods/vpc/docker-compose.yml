@@ -1,66 +1,66 @@
 services:
-    test_service:
-        container_name: test_service
-        image: nicolaka/netshoot:latest
-        ports:
-            - "80:80/tcp"
-        cpus: 0.5
-        mem_limit: 500m
-        environment:
-            - FLAG=static{static_flag}
-            - FLAG_2=dynamic{dynamic_flag}
-            - FLAG_3=uuid{}
-        volumes:
-            - FLAG_0:/flag
-        working_dir: /root
-        command:
-            - "sleep"
-            - "infinity"
-        networks:
-            network1:
-                ipv4_address: 192.168.0.2
-            network2:
-                ipv4_address: 192.168.1.2
+  test_service:
+    container_name: test_service
+    image: nicolaka/netshoot:latest
+    ports:
+      - "80:80/tcp"
+    cpus: 0.5
+    mem_limit: 500m
+    environment:
+      - FLAG=static{static_flag}
+      - FLAG_2=dynamic{dynamic_flag}
+      - FLAG_3=uuid{}
+    volumes:
+      - FLAG_0:/flag
+    working_dir: /root
+    command:
+      - "sleep"
+      - "infinity"
+    networks:
+      network1:
+        ipv4_address: 192.168.0.2
+      network2:
+        ipv4_address: 192.168.1.2
 
-    another_service:
-        container_name: another_service
-        image: nicolaka/netshoot:latest
-        ports:
-            - "4000:4000/tcp"
-        cpus: 0.5
-        mem_limit: 500m
-        environment:
-            - FLAG_3=static{another_env_flag_value}
-        volumes:
-            - FLAG_1:/flag
-        working_dir: /root
-        command:
-            - "sleep"
-            - "infinity"
-        networks:
-            network1:
-                ipv4_address: 192.168.0.3
-            network2:
-                ipv4_address: 192.168.1.3
+  another_service:
+    container_name: another_service
+    image: nicolaka/netshoot:latest
+    ports:
+      - "4000:4000/tcp"
+    cpus: 0.5
+    mem_limit: 500m
+    environment:
+      - FLAG_3=static{another_env_flag_value}
+    volumes:
+      - FLAG_1:/flag
+    working_dir: /root
+    command:
+      - "sleep"
+      - "infinity"
+    networks:
+      network1:
+        ipv4_address: 192.168.0.3
+      network2:
+        ipv4_address: 192.168.1.3
 
 volumes:
-    FLAG_0:
-        labels:
-            - value=static{static_flag_value}
-    FLAG_1:
-        labels:
-            - value=dynamic{dynamic_flag_value}
+  FLAG_0:
+    labels:
+      - value=static{static_flag_value}
+  FLAG_1:
+    labels:
+      - value=dynamic{dynamic_flag_value}
 
 networks:
-    network1:
-        external: true
-        ipam:
-            config:
-                - subnet: 192.168.0.0/24
-                  gateway: 192.168.0.1
+  network1:
+    external: true
+    ipam:
+      config:
+        - subnet: 192.168.0.0/24
+          gateway: 192.168.0.1
 
-    network2:
-        ipam:
-            config:
-                - subnet: 192.168.1.0/24
-                  gateway: 192.168.1.1
+  network2:
+    ipam:
+      config:
+        - subnet: 192.168.1.0/24
+          gateway: 192.168.1.1
