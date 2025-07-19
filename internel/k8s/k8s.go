@@ -168,7 +168,7 @@ func initExternalNetwork(ctx context.Context) {
 			"ipam": {
 				"type": "kube-ovn",
 				"server_socket": "/run/openvswitch/kube-ovn-daemon.sock",
-				"provider": "%s.kube-system",
+				"provider": "%s.kube-system"
 			}
 		}`, config.Env.K8S.ExternalNetwork.Interface, ExternalSubnetName),
 	}); !ok {
