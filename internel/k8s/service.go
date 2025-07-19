@@ -97,6 +97,7 @@ func DeleteService(ctx context.Context, name string) (bool, string) {
 	return true, i18n.Success
 }
 
+// DeleteServiceList Service 不支持 DeleteCollection
 func DeleteServiceList(ctx context.Context, labels ...map[string]string) (bool, string) {
 	services, ok, msg := GetServiceList(ctx, labels...)
 	if !ok {
