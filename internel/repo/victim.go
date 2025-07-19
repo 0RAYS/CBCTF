@@ -18,13 +18,7 @@ type CreateVictimOptions struct {
 	UserID             uint
 	Start              time.Time
 	Duration           time.Duration
-	VPC                string
-	Subnets            model.Subnets
-	NetAttachDefs      model.StringMap
-	Gateways           model.Gateways
-	EIPs               model.EIPs
-	DNats              model.DNats
-	SNats              model.SNats
+	VPC                model.VPC
 	NetworkPolicies    model.NetworkPolicies
 }
 
@@ -36,12 +30,6 @@ func (c CreateVictimOptions) Convert2Model() model.Model {
 		Start:              c.Start,
 		Duration:           c.Duration,
 		VPC:                c.VPC,
-		Subnets:            c.Subnets,
-		NetAttachDefs:      c.NetAttachDefs,
-		Gateways:           c.Gateways,
-		EIPs:               c.EIPs,
-		DNats:              c.DNats,
-		SNats:              c.SNats,
 		NetworkPolicies:    c.NetworkPolicies,
 	}
 }

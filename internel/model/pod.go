@@ -12,10 +12,10 @@ type Pod struct {
 	Containers   []Container `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Traffics     []Traffic   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Name         string      `json:"name"`
-	ExposedIP    string      `json:"exposed_ip"`
 	PodPorts     Exposes     `gorm:"type:json" json:"pod_ports"`
+	ExposedIP    string      `json:"exposed_ip"`
 	ExposedPorts Int32List   `gorm:"type:json" json:"exposed_ports"`
-	//IPs          IPs         `gorm:"default:null;type:json" json:"ips"`
+	Networks     []Network   `gorm:"type:json" json:"-"`
 	BasicModel
 }
 
@@ -66,30 +66,3 @@ func (p Pod) RemoteAddr() []string {
 	}
 	return data
 }
-
-//type IP struct {
-//	Name    string
-//	Subnet  string
-//	PodName string
-//	IP      string
-//}
-//
-//type IPs []IP
-//
-//func (i IPs) Value() (driver.Value, error) {
-//	i = slices.DeleteFunc(i, func(i IP) bool {
-//		if net.ParseIP(i.IP) == nil {
-//			return true
-//		}
-//		return false
-//	})
-//	return json.Marshal(i)
-//}
-//
-//func (i *IPs) Scan(value any) error {
-//	b, ok := value.([]byte)
-//	if !ok {
-//		return errors.New("failed to scan IPs value")
-//	}
-//	return json.Unmarshal(b, i)
-//}
