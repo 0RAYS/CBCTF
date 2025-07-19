@@ -4,9 +4,11 @@ import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"context"
+	"fmt"
 	netattv1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
 )
 
 type CreateNetAttachDefOptions struct {
@@ -57,11 +59,18 @@ func GetNetAttachDef(ctx context.Context, name string, namespace ...string) (*ne
 	return netAttachDef, true, i18n.Success
 }
 
-func GetNetAttachDefList(ctx context.Context, namespace ...string) (*netattv1.NetworkAttachmentDefinitionList, bool, string) {
-	if len(namespace) == 0 {
-		namespace = append(namespace, GlobalNamespace)
+func GetNetAttachDefList(ctx context.Context, labels ...map[string]string) (*netattv1.NetworkAttachmentDefinitionList, bool, string) {
+	var options metav1.ListOptions
+	if len(labels) > 0 {
+		var selector string
+		for k, v := range labels[0] {
+			selector += fmt.Sprintf("%s=%s,", k, v)
+		}
+		options = metav1.ListOptions{
+			LabelSelector: strings.TrimSuffix(selector, ","),
+		}
 	}
-	netAttachDefList, err := natattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(namespace[0]).List(ctx, metav1.ListOptions{})
+	netAttachDefList, err := natattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(GlobalNamespace).List(ctx, options)
 	if err != nil {
 		log.Logger.Warningf("Failed to list NetworkAttachmentDefinitions: %v", err)
 		return nil, false, i18n.GetNetAttError
@@ -77,6 +86,19 @@ func DeleteNetAttachDef(ctx context.Context, name string, namespace ...string) (
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete NetworkAttachmentDefinition: %v", err)
 		return false, i18n.DeleteNetAttError
+	}
+	return true, i18n.Success
+}
+
+func DeleteNetAttachDefByLabels(ctx context.Context, labels map[string]string) (bool, string) {
+	netAttachDefList, ok, msg := GetNetAttachDefList(ctx, labels)
+	if !ok {
+		return false, msg
+	}
+	for _, netAttachDef := range netAttachDefList.Items {
+		if ok, msg = DeleteNetAttachDef(ctx, netAttachDef.Name, netAttachDef.Namespace); !ok {
+			return false, msg
+		}
 	}
 	return true, i18n.Success
 }

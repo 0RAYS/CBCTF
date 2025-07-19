@@ -4,9 +4,11 @@ import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"context"
+	"fmt"
 	kubeovnv1 "github.com/JBNRZ/kubeovn-api/pkg/apis/kubeovn/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
 )
 
 type CreateDNatOptions struct {
@@ -56,8 +58,18 @@ func GetDNat(ctx context.Context, name string) (*kubeovnv1.IptablesDnatRule, boo
 	return dnat, true, i18n.Success
 }
 
-func GetDNatList(ctx context.Context) (*kubeovnv1.IptablesDnatRuleList, bool, string) {
-	dnats, err := kubeOVNClient.KubeovnV1().IptablesDnatRules().List(ctx, metav1.ListOptions{})
+func GetDNatList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.IptablesDnatRuleList, bool, string) {
+	var options metav1.ListOptions
+	if len(labels) > 0 {
+		var selector string
+		for k, v := range labels[0] {
+			selector += fmt.Sprintf("%s=%s,", k, v)
+		}
+		options = metav1.ListOptions{
+			LabelSelector: strings.TrimSuffix(selector, ","),
+		}
+	}
+	dnats, err := kubeOVNClient.KubeovnV1().IptablesDnatRules().List(ctx, options)
 	if err != nil {
 		log.Logger.Warningf("Failed to list iptables DnatRules: %v", err)
 		return nil, false, i18n.GetDNatError
@@ -70,6 +82,19 @@ func DeleteDNat(ctx context.Context, name string) (bool, string) {
 	if err != nil {
 		log.Logger.Warningf("Failed to delete iptables DnatRule: %v", err)
 		return false, i18n.DeleteDNatError
+	}
+	return true, i18n.Success
+}
+
+func DeleteDNatByLabels(ctx context.Context, labels map[string]string) (bool, string) {
+	dnatList, ok, msg := GetDNatList(ctx, labels)
+	if !ok {
+		return false, msg
+	}
+	for _, dnat := range dnatList.Items {
+		if ok, msg = DeleteDNat(ctx, dnat.Name); !ok {
+			return false, msg
+		}
 	}
 	return true, i18n.Success
 }

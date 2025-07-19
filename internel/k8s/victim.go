@@ -307,7 +307,44 @@ func StartVictim(victim model.Victim) (bool, string) {
 }
 
 func StopVictim(victim model.Victim) (bool, string) {
-	//log.Logger.Infof("Stopping Victim for team %d challenge %d", victim.TeamID, victim.ContestChallengeID)
+	log.Logger.Infof("Stopping Victim for team %d challenge %d", victim.TeamID, victim.ContestChallengeID)
+	labels := map[string]string{
+		"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),
+		"team_id":              fmt.Sprintf("%d", victim.TeamID),
+		"user_id":              fmt.Sprintf("%d", victim.UserID),
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	defer cancel()
+	if ok, msg := DeleteDNatByLabels(ctx, labels); !ok {
+		return false, msg
+	}
+	if ok, msg := DeleteSNatByLabels(ctx, labels); !ok {
+		return false, msg
+	}
+	if ok, msg := DeleteEIPByLabels(ctx, labels); !ok {
+		return false, msg
+	}
+	if ok, msg := DeleteVPCNatGatewayByLabels(ctx, labels); !ok {
+		return false, msg
+	}
+	if ok, msg := DeletePodByLabels(ctx, labels); !ok {
+		return false, msg
+	}
+	if ok, msg := DeleteSubnetByLabels(ctx, labels); !ok {
+		return false, msg
+	}
+	if ok, msg := DeleteVPCByLabels(ctx, labels); !ok {
+		return false, msg
+	}
+	if ok, msg := DeleteNetAttachDefByLabels(ctx, labels); !ok {
+		return false, msg
+	}
+	if ok, msg := DeleteConfigMapByLabels(ctx, labels); !ok {
+		return false, msg
+	}
+	if ok, msg := DeleteNetworkPolicyByLabels(ctx, labels); !ok {
+		return false, msg
+	}
 	//type result struct {
 	//	OK  bool
 	//	Msg string

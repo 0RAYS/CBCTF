@@ -4,9 +4,11 @@ import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"context"
+	"fmt"
 	kubeovnv1 "github.com/JBNRZ/kubeovn-api/pkg/apis/kubeovn/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
 )
 
 type CreateVPCNatGatewayOptions struct {
@@ -56,8 +58,18 @@ func GetVPCNatGateway(ctx context.Context, name string) (*kubeovnv1.VpcNatGatewa
 	return gateway, true, i18n.Success
 }
 
-func GetVPCNatGatewayList(ctx context.Context) (*kubeovnv1.VpcNatGatewayList, bool, string) {
-	gatewayList, err := kubeOVNClient.KubeovnV1().VpcNatGateways().List(ctx, metav1.ListOptions{})
+func GetVPCNatGatewayList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.VpcNatGatewayList, bool, string) {
+	var options metav1.ListOptions
+	if len(labels) > 0 {
+		var selector string
+		for k, v := range labels[0] {
+			selector += fmt.Sprintf("%s=%s,", k, v)
+		}
+		options = metav1.ListOptions{
+			LabelSelector: strings.TrimSuffix(selector, ","),
+		}
+	}
+	gatewayList, err := kubeOVNClient.KubeovnV1().VpcNatGateways().List(ctx, options)
 	if err != nil {
 		log.Logger.Warningf("Failed to list VPCNatGateway: %v", err)
 		return nil, false, i18n.GetVPCNatGatewayError
@@ -70,6 +82,20 @@ func DeleteVPCNatGateway(ctx context.Context, name string) (bool, string) {
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete VPCNatGateway: %v", err)
 		return false, i18n.DeleteVPCNatGatewayError
+	}
+	return true, i18n.Success
+}
+
+func DeleteVPCNatGatewayByLabels(ctx context.Context, labels map[string]string) (bool, string) {
+	gatewayList, ok, msg := GetVPCNatGatewayList(ctx, labels)
+	if !ok {
+		return false, msg
+	}
+	for _, gateway := range gatewayList.Items {
+		ok, msg = DeleteVPCNatGateway(ctx, gateway.Name)
+		if !ok {
+			return false, msg
+		}
 	}
 	return true, i18n.Success
 }

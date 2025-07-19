@@ -4,8 +4,10 @@ import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"context"
+	"fmt"
 	kubeovnv1 "github.com/JBNRZ/kubeovn-api/pkg/apis/kubeovn/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
 )
 
 type CreateSNatOptions struct {
@@ -46,8 +48,18 @@ func GetSNat(ctx context.Context, name string) (*kubeovnv1.IptablesSnatRule, boo
 	return snat, true, i18n.Success
 }
 
-func GetSNatList(ctx context.Context) (*kubeovnv1.IptablesSnatRuleList, bool, string) {
-	snats, err := kubeOVNClient.KubeovnV1().IptablesSnatRules().List(ctx, metav1.ListOptions{})
+func GetSNatList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.IptablesSnatRuleList, bool, string) {
+	var options metav1.ListOptions
+	if len(labels) > 0 {
+		var selector string
+		for k, v := range labels[0] {
+			selector += fmt.Sprintf("%s=%s,", k, v)
+		}
+		options = metav1.ListOptions{
+			LabelSelector: strings.TrimSuffix(selector, ","),
+		}
+	}
+	snats, err := kubeOVNClient.KubeovnV1().IptablesSnatRules().List(ctx, options)
 	if err != nil {
 		log.Logger.Warnf("Failed to list iptables SnatRules: %v", err)
 		return snats, false, i18n.GetSNatError
@@ -60,6 +72,19 @@ func DeleteSNat(ctx context.Context, name string) (bool, string) {
 	if err != nil {
 		log.Logger.Warnf("Failed to delete iptables SnatRule: %v", err)
 		return false, i18n.DeleteSNatError
+	}
+	return true, i18n.Success
+}
+
+func DeleteSNatByLabels(ctx context.Context, labels map[string]string) (bool, string) {
+	snatList, ok, msg := GetSNatList(ctx, labels)
+	if !ok {
+		return false, msg
+	}
+	for _, snat := range snatList.Items {
+		if ok, msg = DeleteSNat(ctx, snat.Name); !ok {
+			return false, msg
+		}
 	}
 	return true, i18n.Success
 }
