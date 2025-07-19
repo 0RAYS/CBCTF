@@ -24,7 +24,8 @@ func CreateSNat(ctx context.Context, options CreateSNatOptions) (*kubeovnv1.Ipta
 	)
 	snat = &kubeovnv1.IptablesSnatRule{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: options.Name,
+			Name:   options.Name,
+			Labels: options.Labels,
 		},
 		Spec: kubeovnv1.IptablesSnatRuleSpec{
 			EIP:          options.EIP,
