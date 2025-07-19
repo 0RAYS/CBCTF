@@ -15,7 +15,7 @@ type Pod struct {
 	PodPorts     Exposes     `gorm:"type:json" json:"pod_ports"`
 	ExposedIP    string      `json:"exposed_ip"`
 	ExposedPorts Int32List   `gorm:"type:json" json:"exposed_ports"`
-	Networks     []Network   `gorm:"type:json" json:"-"`
+	Networks     Networks    `gorm:"type:json" json:"-"`
 	BasicModel
 }
 
