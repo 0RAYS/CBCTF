@@ -58,10 +58,10 @@ func StartVictim(victim model.Victim) (bool, string) {
 	//	}
 	//}
 	subnetMap := make(map[string]*model.Subnet)
+	netAttchDefMap := make(map[string]*model.NetAttachDef)
 	if victim.VPC.Name != "" {
 		var policyRoutes []*kubeovnv1.PolicyRoute
 		for _, subnet := range victim.VPC.Subnets {
-			subnetMap[subnet.DefName] = subnet
 			_, ok, msg := CreateSubnet(ctx, CreateSubnetOptions{
 				Name:       subnet.Name,
 				Labels:     labels,
@@ -74,6 +74,7 @@ func StartVictim(victim model.Victim) (bool, string) {
 			if !ok {
 				return false, msg
 			}
+			subnetMap[subnet.DefName] = subnet
 			_, ok, msg = CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
 				Name:      subnet.NetAttachDef.Name,
 				Namespace: GlobalNamespace,
@@ -88,6 +89,7 @@ func StartVictim(victim model.Victim) (bool, string) {
 			if !ok {
 				return false, msg
 			}
+			netAttchDefMap[subnet.DefName] = subnet.NetAttachDef
 			if subnet.NatGateway != nil {
 				_, ok, msg = CreateVPCNatGateway(ctx, CreateVPCNatGatewayOptions{
 					Name:           subnet.NatGateway.Name,
@@ -275,14 +277,18 @@ func StartVictim(victim model.Victim) (bool, string) {
 			if !ok {
 				return false, i18n.SubnetNotFound
 			}
+			netAttachDef, ok := netAttchDefMap[network.Name]
+			if !ok {
+				return false, i18n.NetAttNotFound
+			}
 			if i == 0 {
 				annotations["ovn.kubernetes.io/logical_switch"] = subnet.Name
 				annotations["ovn.kubernetes.io/ip_address"] = network.IP
 			} else {
-				annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", GlobalNamespace, subnet.Name)
+				annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", GlobalNamespace, netAttachDef.Name)
 				annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
-				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", subnet.Name, GlobalNamespace)] = subnet.Name
-				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", subnet.Name, GlobalNamespace)] = network.IP
+				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", netAttachDef.Name, GlobalNamespace)] = subnet.Name
+				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", netAttachDef.Name, GlobalNamespace)] = network.IP
 			}
 		}
 		_, ok, msg := CreatePod(ctx, CreatePodOptions{
