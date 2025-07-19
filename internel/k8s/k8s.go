@@ -154,7 +154,7 @@ func initExternalNetwork(ctx context.Context) {
 		log.Logger.Fatal("Failed to init external network")
 	}
 	if _, ok, _ := GetNetAttachDef(ctx, ExternalSubnetName); ok {
-		DeleteNetAttachDef(ctx, ExternalSubnetName, GlobalNamespace)
+		DeleteNetAttachDef(ctx, ExternalSubnetName, "kube-system")
 	}
 	if _, ok, _ := CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
 		Name:      ExternalSubnetName,
@@ -167,9 +167,9 @@ func initExternalNetwork(ctx context.Context) {
 			"ipam": {
 				"type": "kube-ovn",
 				"server_socket": "/run/openvswitch/kube-ovn-daemon.sock",
-				"provider": "%s.%s"
+				"provider": "%s.kube-system"
 			}
-		}`, config.Env.K8S.ExternalNetwork.Interface, ExternalSubnetName, GlobalNamespace),
+		}`, config.Env.K8S.ExternalNetwork.Interface, ExternalSubnetName),
 	}); !ok {
 		log.Logger.Fatal("Failed to init external network attachment definition")
 	}
