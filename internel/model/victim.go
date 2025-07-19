@@ -121,7 +121,7 @@ func (s Subnets) Value() (driver.Value, error) {
 		}
 		s.CIDR = cidr.String()
 		if s.Gateway == "" {
-			s.Gateway, err = utils.GetFirstIP(s.CIDR)
+			s.Gateway, err = utils.GetGatewayIP(s.CIDR)
 			if err != nil {
 				log.Logger.Warningf("Get first IP fail: %v", err)
 				return true

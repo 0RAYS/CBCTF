@@ -91,7 +91,7 @@ func (n Networks) Value() (driver.Value, error) {
 			return true
 		}
 		if n.Gateway == "" {
-			n.Gateway, err = utils.GetFirstIP(n.CIDR)
+			n.Gateway, err = utils.GetGatewayIP(n.CIDR)
 			if err != nil {
 				log.Logger.Warningf("Get first IP fail: %v", err)
 				return true

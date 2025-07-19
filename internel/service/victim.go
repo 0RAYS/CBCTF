@@ -73,7 +73,6 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 			pOptions := db.CreatePodOptions{
 				Name:     fmt.Sprintf("pod-%s", utils.RandStr(10)),
 				PodPorts: docker.Exposes,
-				//IPs:      make(model.IPs, 0),
 			}
 			envFlagL := make(model.StringList, 0)
 			volumeFlagL := make(model.StringMap)
