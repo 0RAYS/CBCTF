@@ -104,7 +104,7 @@ func StartVictim(victim model.Victim) (bool, string) {
 				}
 				policyRoutes = append(policyRoutes, &kubeovnv1.PolicyRoute{
 					Action:    kubeovnv1.PolicyRouteActionReroute,
-					Match:     fmt.Sprintf("ip.src == %s", subnet.CIDRBlock),
+					Match:     fmt.Sprintf("ip4.src == %s", subnet.CIDRBlock),
 					NextHopIP: subnet.NatGateway.LanIP,
 					Priority:  1,
 				})
