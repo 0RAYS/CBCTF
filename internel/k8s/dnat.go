@@ -28,7 +28,8 @@ func CreateDNat(ctx context.Context, options CreateDNatOptions) (*kubeovnv1.Ipta
 	)
 	dnat = &kubeovnv1.IptablesDnatRule{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: options.Name,
+			Name:   options.Name,
+			Labels: options.Labels,
 		},
 		Spec: kubeovnv1.IptablesDnatRuleSpec{
 			EIP:          options.EIP,
