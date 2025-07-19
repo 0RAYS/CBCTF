@@ -73,7 +73,7 @@ func PrepareGenerator(c *cron.Cron) {
 func StopUnCtrlGenerator(c *cron.Cron) {
 	function := exec("StopUnCtrlGenerator", func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
-		pods, ok, msg := k8s.GetPods(ctx)
+		pods, ok, msg := k8s.GetPodList(ctx)
 		cancel()
 		if !ok {
 			log.Logger.Warningf("Failed to get generators %s", msg)

@@ -11,6 +11,7 @@ import (
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"strings"
 )
 
 type CreateServiceOptions struct {
@@ -64,8 +65,18 @@ func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.S
 	return service, true, i18n.Success
 }
 
-func GetServiceList(ctx context.Context) (*corev1.ServiceList, bool, string) {
-	serviceList, err := kubeClient.CoreV1().Services(GlobalNamespace).List(ctx, metav1.ListOptions{})
+func GetServiceList(ctx context.Context, labels ...map[string]string) (*corev1.ServiceList, bool, string) {
+	var options metav1.ListOptions
+	if len(labels) > 0 {
+		var selector string
+		for k, v := range labels[0] {
+			selector += fmt.Sprintf("%s=%s,", k, v)
+		}
+		options = metav1.ListOptions{
+			LabelSelector: strings.TrimSuffix(selector, ","),
+		}
+	}
+	serviceList, err := kubeClient.CoreV1().Services(GlobalNamespace).List(ctx, options)
 	if err != nil {
 		if apierror.IsNotFound(err) {
 			return nil, false, i18n.ServiceNotFound
@@ -102,12 +113,25 @@ func DeleteService(ctx context.Context, name string) (bool, string) {
 
 // DeleteServiceListByPodName TODO: 有可能删不干净
 func DeleteServiceListByPodName(ctx context.Context, key, podName string) (bool, string) {
-	serviceList, ok, msg := GetServiceListByPodName(ctx, key, podName)
+	serviceList, ok, msg := GetServiceList(ctx, map[string]string{key: podName})
 	if !ok {
 		if msg != i18n.ServiceNotFound {
 			return false, msg
 		}
 		return true, i18n.Success
+	}
+	for _, svc := range serviceList.Items {
+		if ok, msg = DeleteService(ctx, svc.Name); !ok {
+			return false, msg
+		}
+	}
+	return true, i18n.Success
+}
+
+func DeleteServiceByLabels(ctx context.Context, labels map[string]string) (bool, string) {
+	serviceList, ok, msg := GetServiceList(ctx, labels)
+	if !ok {
+		return false, msg
 	}
 	for _, svc := range serviceList.Items {
 		if ok, msg = DeleteService(ctx, svc.Name); !ok {

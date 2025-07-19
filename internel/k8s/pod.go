@@ -5,9 +5,11 @@ import (
 	"CBCTF/internel/log"
 	"CBCTF/internel/utils"
 	"context"
+	"fmt"
 	corev1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
 	"time"
 )
 
@@ -66,9 +68,19 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool
 	return pod, true, i18n.Success
 }
 
-// GetPods 获取所有 Pod
-func GetPods(ctx context.Context) (*corev1.PodList, bool, string) {
-	pods, err := kubeClient.CoreV1().Pods(GlobalNamespace).List(ctx, metav1.ListOptions{})
+// GetPodList 获取所有 Pod
+func GetPodList(ctx context.Context, labels ...map[string]string) (*corev1.PodList, bool, string) {
+	var options metav1.ListOptions
+	if len(labels) > 0 {
+		var selector string
+		for k, v := range labels[0] {
+			selector += fmt.Sprintf("%s=%s,", k, v)
+		}
+		options = metav1.ListOptions{
+			LabelSelector: strings.TrimSuffix(selector, ","),
+		}
+	}
+	pods, err := kubeClient.CoreV1().Pods(GlobalNamespace).List(ctx, options)
 	if err != nil {
 		log.Logger.Warningf("Failed to get Pods: %v", err)
 		return nil, false, i18n.GetPodError
@@ -95,6 +107,19 @@ func DeletePod(ctx context.Context, name string) (bool, string) {
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete Pod %s: %v", name, err)
 		return false, i18n.DeletePodError
+	}
+	return true, i18n.Success
+}
+
+func DeletePodByLabels(ctx context.Context, labels map[string]string) (bool, string) {
+	podList, ok, msg := GetPodList(ctx, labels)
+	if !ok {
+		return false, msg
+	}
+	for _, pod := range podList.Items {
+		if ok, msg = DeletePod(ctx, pod.Name); !ok {
+			return false, msg
+		}
 	}
 	return true, i18n.Success
 }

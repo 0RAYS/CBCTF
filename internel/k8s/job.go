@@ -8,7 +8,6 @@ import (
 	"fmt"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
-	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -60,34 +59,4 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, boo
 		return nil, false, i18n.CreateJobError
 	}
 	return job, true, i18n.Success
-}
-
-func GetJob(ctx context.Context, name string) (*batchv1.Job, bool, string) {
-	job, err := kubeClient.BatchV1().Jobs(GlobalNamespace).Get(ctx, name, metav1.GetOptions{})
-	if err != nil {
-		if apierror.IsNotFound(err) {
-			return nil, false, i18n.JobNotFound
-		}
-		log.Logger.Warningf("Failed to get Job: %v", err)
-		return nil, false, i18n.GetJobError
-	}
-	return job, true, i18n.Success
-}
-
-func ListJobs(ctx context.Context) (*batchv1.JobList, bool, string) {
-	jobList, err := kubeClient.BatchV1().Jobs(GlobalNamespace).List(ctx, metav1.ListOptions{})
-	if err != nil {
-		log.Logger.Warningf("Failed to list Jobs: %v", err)
-		return nil, false, i18n.GetJobError
-	}
-	return jobList, true, i18n.Success
-}
-
-func DeleteJob(ctx context.Context, name string) (bool, string) {
-	err := kubeClient.BatchV1().Jobs(GlobalNamespace).Delete(ctx, name, metav1.DeleteOptions{})
-	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete Job: %v", err)
-		return false, i18n.GetJobError
-	}
-	return true, i18n.Success
 }

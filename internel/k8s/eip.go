@@ -4,9 +4,11 @@ import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"context"
+	"fmt"
 	kubeovnv1 "github.com/JBNRZ/kubeovn-api/pkg/apis/kubeovn/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strings"
 )
 
 type CreateEIPOptions struct {
@@ -52,8 +54,18 @@ func GetEIP(ctx context.Context, name string) (*kubeovnv1.IptablesEIP, bool, str
 	return eip, true, i18n.Success
 }
 
-func GetEIPList(ctx context.Context) (*kubeovnv1.IptablesEIPList, bool, string) {
-	eips, err := kubeOVNClient.KubeovnV1().IptablesEIPs().List(ctx, metav1.ListOptions{})
+func GetEIPList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.IptablesEIPList, bool, string) {
+	var options metav1.ListOptions
+	if len(labels) > 0 {
+		var selector string
+		for k, v := range labels[0] {
+			selector += fmt.Sprintf("%s=%s,", k, v)
+		}
+		options = metav1.ListOptions{
+			LabelSelector: strings.TrimSuffix(selector, ","),
+		}
+	}
+	eips, err := kubeOVNClient.KubeovnV1().IptablesEIPs().List(ctx, options)
 	if err != nil {
 		log.Logger.Warningf("Failed to get EIP list: %v", err)
 		return nil, false, i18n.GetEIPError
@@ -66,6 +78,19 @@ func DeleteEIP(ctx context.Context, name string) (bool, string) {
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete EIP: %v", err)
 		return false, i18n.DeleteEIPError
+	}
+	return true, i18n.Success
+}
+
+func DeleteEIPByLabels(ctx context.Context, labels map[string]string) (bool, string) {
+	eipList, ok, msg := GetEIPList(ctx, labels)
+	if !ok {
+		return false, msg
+	}
+	for _, eip := range eipList.Items {
+		if ok, msg = DeleteEIP(ctx, eip.Name); !ok {
+			return false, msg
+		}
 	}
 	return true, i18n.Success
 }
