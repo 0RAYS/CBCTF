@@ -122,6 +122,7 @@ func StartVictim(victim model.Victim) (bool, string) {
 						_, ok, msg = CreateDNat(ctx, CreateDNatOptions{
 							Name:         dnat.Name,
 							Labels:       labels,
+							EIP:          eip.Name,
 							ExternalPort: dnat.ExternalPort,
 							InternalPort: dnat.InternalPort,
 							InternalIP:   dnat.InternalIP,
