@@ -154,7 +154,7 @@ func initExternalNetwork(ctx context.Context) {
 	}); !ok {
 		log.Logger.Fatal("Failed to init external network")
 	}
-	if _, ok, _ := GetNetAttachDef(ctx, ExternalSubnetName, "kube-system"); !ok {
+	if _, ok, _ := GetNetAttachDef(ctx, ExternalSubnetName, "kube-system"); ok {
 		DeleteNetAttachDef(ctx, ExternalSubnetName, "kube-system")
 	}
 	if _, ok, _ := CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
