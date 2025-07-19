@@ -70,11 +70,11 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 				subnet, ok := subnets[network.Name]
 				if !ok {
 					subnet = &model.Subnet{
-						DefName:      network.Name,
-						Name:         fmt.Sprintf("net-%s", utils.RandStr(20)),
-						CIDRBlock:    network.CIDR,
-						Gateway:      network.Gateway,
-						ExcludeIps:   []string{network.Gateway, network.IP},
+						DefName:   network.Name,
+						Name:      fmt.Sprintf("net-%s", utils.RandStr(20)),
+						CIDRBlock: network.CIDR,
+						Gateway:   network.Gateway,
+						//ExcludeIps:   []string{network.Gateway, network.IP},
 						NetAttachDef: &model.NetAttachDef{Name: fmt.Sprintf("nad-%s", utils.RandStr(20))},
 					}
 					if network.External || len(docker.Exposes) > 0 {
@@ -86,7 +86,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 							Name:  fmt.Sprintf("nat-%s", utils.RandStr(20)),
 							LanIP: lanIP,
 						}
-						subnet.ExcludeIps = append(subnet.ExcludeIps, lanIP)
+						//subnet.ExcludeIps = append(subnet.ExcludeIps, lanIP)
 					}
 					vpc.Subnets = append(vpc.Subnets, subnet)
 				}
