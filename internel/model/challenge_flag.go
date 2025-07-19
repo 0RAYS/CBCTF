@@ -25,6 +25,7 @@ type ChallengeFlag struct {
 	Docker       *Docker       `json:"-"`
 	ContestFlags []ContestFlag `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	TeamFlags    []TeamFlag    `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Name         string        `json:"name"`
 	Value        string        `json:"value"`
 	InjectType   string        `json:"inject_type"`
 	Path         string        `json:"path"`
