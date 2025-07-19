@@ -37,6 +37,7 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, boo
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      options.Name,
 			Namespace: GlobalNamespace,
+			Labels:    options.Labels,
 		},
 		Spec: batchv1.JobSpec{
 			TTLSecondsAfterFinished: utils.Ptr[int32](0),
