@@ -158,7 +158,7 @@ func initExternalNetwork(ctx context.Context) {
 	}
 	if _, ok, _ := CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
 		Name:      ExternalSubnetName,
-		Namespace: GlobalNamespace,
+		Namespace: "kube-system",
 		Config: fmt.Sprintf(`{
 			"cniVersion": "0.3.0",
 			"type": "macvlan",
