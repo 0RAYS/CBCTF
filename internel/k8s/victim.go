@@ -69,6 +69,7 @@ func StartVictim(victim model.Victim) (bool, string) {
 				CIDR:       subnet.CIDRBlock,
 				Gateway:    subnet.Gateway,
 				ExcludeIPs: subnet.ExcludeIps,
+				Provider:   fmt.Sprintf("%s.%s.ovn", subnet.NetAttachDef.Name, GlobalNamespace),
 			})
 			if !ok {
 				return false, msg
@@ -82,7 +83,7 @@ func StartVictim(victim model.Victim) (bool, string) {
 					"type": "kube-ovn",
 					"server_socket": "/run/openvswitch/kube-ovn-daemon.sock",
 					"provider": "%s.%s.ovn"
-				}`, subnet.Name, GlobalNamespace),
+				}`, subnet.NetAttachDef.Name, GlobalNamespace),
 			})
 			if !ok {
 				return false, msg

@@ -4,7 +4,6 @@ import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"context"
-	"fmt"
 	kubeovnv1 "github.com/JBNRZ/kubeovn-api/pkg/apis/kubeovn/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -17,6 +16,7 @@ type CreateSubnetOptions struct {
 	CIDR       string
 	Gateway    string
 	ExcludeIPs []string
+	Provider   string
 }
 
 func CreateSubnet(ctx context.Context, options CreateSubnetOptions) (*kubeovnv1.Subnet, bool, string) {
@@ -35,7 +35,7 @@ func CreateSubnet(ctx context.Context, options CreateSubnetOptions) (*kubeovnv1.
 			CIDRBlock:  options.CIDR,
 			Gateway:    options.Gateway,
 			ExcludeIps: options.ExcludeIPs,
-			Provider:   fmt.Sprintf("%s.%s.ovn", options.Name, GlobalNamespace),
+			Provider:   options.Provider,
 		},
 	}
 	subnet, err = kubeOVNClient.KubeovnV1().Subnets().Create(ctx, subnet, metav1.CreateOptions{})
