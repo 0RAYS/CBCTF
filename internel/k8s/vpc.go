@@ -82,15 +82,21 @@ func DeleteVPC(ctx context.Context, name string) (bool, string) {
 	return true, i18n.Success
 }
 
-func DeleteVPCByLabels(ctx context.Context, labels map[string]string) (bool, string) {
-	vpcList, ok, msg := GetVPCList(ctx, labels)
-	if !ok {
-		return false, msg
-	}
-	for _, vpc := range vpcList.Items {
-		if ok, msg = DeleteVPC(ctx, vpc.Name); !ok {
-			return false, msg
+func DeleteVPCList(ctx context.Context, labels ...map[string]string) (bool, string) {
+	var options metav1.ListOptions
+	if len(labels) > 0 {
+		var selector string
+		for k, v := range labels[0] {
+			selector += fmt.Sprintf("%s=%s,", k, v)
 		}
+		options = metav1.ListOptions{
+			LabelSelector: strings.TrimSuffix(selector, ","),
+		}
+	}
+	err := kubeOVNClient.KubeovnV1().Vpcs().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
+	if err != nil && !apierror.IsNotFound(err) {
+		log.Logger.Warningf("Failed to delete VPC: %v", err)
+		return false, i18n.DeleteVPCError
 	}
 	return true, i18n.Success
 }

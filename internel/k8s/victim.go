@@ -12,6 +12,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -313,80 +314,59 @@ func StopVictim(victim model.Victim) (bool, string) {
 		"team_id":              fmt.Sprintf("%d", victim.TeamID),
 		"user_id":              fmt.Sprintf("%d", victim.UserID),
 	}
+	type result struct {
+		OK  bool
+		Msg string
+	}
+	var wg sync.WaitGroup
+	resultCh := make(chan result, len(victim.Pods))
+	for _, pod := range victim.Pods {
+		wg.Add(1)
+		go func(pod model.Pod) {
+			defer wg.Done()
+			if err := CopyFromPod(pod.Name, "tcpdump", "/root/traffic.pcap", pod.TrafficPath()); err != nil {
+				log.Logger.Warningf("Failed to copy %d traffic: %v", victim.TeamID, err)
+			}
+		}(pod)
+	}
+	wg.Wait()
+	close(resultCh)
+	for res := range resultCh {
+		if !res.OK {
+			return false, res.Msg
+		}
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
-	if ok, msg := DeleteDNatByLabels(ctx, labels); !ok {
+	if ok, msg := DeleteDNatList(ctx, labels); !ok {
 		return false, msg
 	}
-	if ok, msg := DeleteSNatByLabels(ctx, labels); !ok {
+	if ok, msg := DeleteSNatList(ctx, labels); !ok {
 		return false, msg
 	}
 	if ok, msg := DeleteEIPByLabels(ctx, labels); !ok {
 		return false, msg
 	}
-	if ok, msg := DeleteVPCNatGatewayByLabels(ctx, labels); !ok {
+	if ok, msg := DeleteVPCNatGatewayList(ctx, labels); !ok {
 		return false, msg
 	}
-	if ok, msg := DeletePodByLabels(ctx, labels); !ok {
+	if ok, msg := DeletePodList(ctx, labels); !ok {
 		return false, msg
 	}
-	if ok, msg := DeleteSubnetByLabels(ctx, labels); !ok {
+	if ok, msg := DeleteSubnetList(ctx, labels); !ok {
 		return false, msg
 	}
-	if ok, msg := DeleteVPCByLabels(ctx, labels); !ok {
+	if ok, msg := DeleteVPCList(ctx, labels); !ok {
 		return false, msg
 	}
-	if ok, msg := DeleteNetAttachDefByLabels(ctx, labels); !ok {
+	if ok, msg := DeleteNetAttachDefList(ctx, GlobalNamespace, labels); !ok {
 		return false, msg
 	}
-	if ok, msg := DeleteConfigMapByLabels(ctx, labels); !ok {
+	if ok, msg := DeleteConfigMapList(ctx, labels); !ok {
 		return false, msg
 	}
-	if ok, msg := DeleteNetworkPolicyByLabels(ctx, labels); !ok {
+	if ok, msg := DeleteNetworkPolicyList(ctx, labels); !ok {
 		return false, msg
 	}
-	//type result struct {
-	//	OK  bool
-	//	Msg string
-	//}
-	//var wg sync.WaitGroup
-	//resultCh := make(chan result, len(victim.Pods))
-	//for _, pod := range victim.Pods {
-	//	wg.Add(1)
-	//	go func(pod model.Pod) {
-	//		defer wg.Done()
-	//		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
-	//		defer cancel()
-	//		var err error
-	//		err = CopyFromPod(
-	//			pod.Name, "tcpdump", "/root/traffic.pcap",
-	//			pod.TrafficPath(),
-	//		)
-	//		if err != nil {
-	//			log.Logger.Warningf("Failed to copy %d traffic: %v", victim.TeamID, err)
-	//		}
-	//		if ok, msg := DeleteNetworkPolicyListByPodName(ctx, VictimPodTag, pod.Name); !ok {
-	//			resultCh <- result{OK: false, Msg: msg}
-	//			return
-	//		}
-	//		if ok, msg := DeleteServiceListByPodName(ctx, VictimPodTag, pod.Name); !ok {
-	//			resultCh <- result{OK: false, Msg: msg}
-	//			return
-	//		}
-	//		if ok, msg := DeleteConfigMapListByPodName(ctx, VictimPodTag, pod.Name); !ok {
-	//			resultCh <- result{OK: false, Msg: msg}
-	//			return
-	//		}
-	//		ok, msg := DeletePod(ctx, pod.Name)
-	//		resultCh <- result{OK: ok, Msg: msg}
-	//	}(pod)
-	//}
-	//wg.Wait()
-	//close(resultCh)
-	//for res := range resultCh {
-	//	if !res.OK {
-	//		return false, res.Msg
-	//	}
-	//}
 	return true, i18n.Success
 }

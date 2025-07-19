@@ -86,16 +86,21 @@ func DeleteVPCNatGateway(ctx context.Context, name string) (bool, string) {
 	return true, i18n.Success
 }
 
-func DeleteVPCNatGatewayByLabels(ctx context.Context, labels map[string]string) (bool, string) {
-	gatewayList, ok, msg := GetVPCNatGatewayList(ctx, labels)
-	if !ok {
-		return false, msg
-	}
-	for _, gateway := range gatewayList.Items {
-		ok, msg = DeleteVPCNatGateway(ctx, gateway.Name)
-		if !ok {
-			return false, msg
+func DeleteVPCNatGatewayList(ctx context.Context, labels ...map[string]string) (bool, string) {
+	var options metav1.ListOptions
+	if len(labels) > 0 {
+		var selector string
+		for k, v := range labels[0] {
+			selector += fmt.Sprintf("%s=%s,", k, v)
 		}
+		options = metav1.ListOptions{
+			LabelSelector: strings.TrimSuffix(selector, ","),
+		}
+	}
+	err := kubeOVNClient.KubeovnV1().VpcNatGateways().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
+	if err != nil && !apierror.IsNotFound(err) {
+		log.Logger.Warningf("Failed to delete VPCNatGateway: %v", err)
+		return false, i18n.DeleteVPCNatGatewayError
 	}
 	return true, i18n.Success
 }

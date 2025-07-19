@@ -68,26 +68,6 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool
 	return pod, true, i18n.Success
 }
 
-// GetPodList 获取所有 Pod
-func GetPodList(ctx context.Context, labels ...map[string]string) (*corev1.PodList, bool, string) {
-	var options metav1.ListOptions
-	if len(labels) > 0 {
-		var selector string
-		for k, v := range labels[0] {
-			selector += fmt.Sprintf("%s=%s,", k, v)
-		}
-		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector, ","),
-		}
-	}
-	pods, err := kubeClient.CoreV1().Pods(GlobalNamespace).List(ctx, options)
-	if err != nil {
-		log.Logger.Warningf("Failed to get Pods: %v", err)
-		return nil, false, i18n.GetPodError
-	}
-	return pods, true, i18n.Success
-}
-
 // GetPod 依据 name 获取 Pod
 func GetPod(ctx context.Context, name string) (*corev1.Pod, bool, string) {
 	pod, err := kubeClient.CoreV1().Pods(GlobalNamespace).Get(ctx, name, metav1.GetOptions{})
@@ -101,25 +81,50 @@ func GetPod(ctx context.Context, name string) (*corev1.Pod, bool, string) {
 	return pod, true, i18n.Success
 }
 
+func GetPodList(ctx context.Context, labels ...map[string]string) (*corev1.PodList, bool, string) {
+	var options metav1.ListOptions
+	if len(labels) > 0 {
+		var selector string
+		for k, v := range labels[0] {
+			selector += fmt.Sprintf("%s=%s,", k, v)
+		}
+		options = metav1.ListOptions{
+			LabelSelector: strings.TrimSuffix(selector, ","),
+		}
+	}
+	podList, err := kubeClient.CoreV1().Pods(GlobalNamespace).List(ctx, options)
+	if err != nil {
+		log.Logger.Warningf("Failed to list Pods: %v", err)
+		return nil, false, i18n.GetPodError
+	}
+	return podList, true, i18n.Success
+}
+
 // DeletePod 依据 name 删除 Pod
 func DeletePod(ctx context.Context, name string) (bool, string) {
 	err := kubeClient.CoreV1().Pods(GlobalNamespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete Pod %s: %v", name, err)
+		log.Logger.Warningf("Failed to delete Pod: %v", err)
 		return false, i18n.DeletePodError
 	}
 	return true, i18n.Success
 }
 
-func DeletePodByLabels(ctx context.Context, labels map[string]string) (bool, string) {
-	podList, ok, msg := GetPodList(ctx, labels)
-	if !ok {
-		return false, msg
-	}
-	for _, pod := range podList.Items {
-		if ok, msg = DeletePod(ctx, pod.Name); !ok {
-			return false, msg
+func DeletePodList(ctx context.Context, labels ...map[string]string) (bool, string) {
+	var options metav1.ListOptions
+	if len(labels) > 0 {
+		var selector string
+		for k, v := range labels[0] {
+			selector += fmt.Sprintf("%s=%s,", k, v)
 		}
+		options = metav1.ListOptions{
+			LabelSelector: strings.TrimSuffix(selector, ","),
+		}
+	}
+	err := kubeClient.CoreV1().Pods(GlobalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
+	if err != nil && !apierror.IsNotFound(err) {
+		log.Logger.Warningf("Failed to delete Pod: %v", err)
+		return false, i18n.DeletePodError
 	}
 	return true, i18n.Success
 }

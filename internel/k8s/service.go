@@ -87,20 +87,6 @@ func GetServiceList(ctx context.Context, labels ...map[string]string) (*corev1.S
 	return serviceList, true, i18n.Success
 }
 
-func GetServiceListByPodName(ctx context.Context, key, podName string) (*corev1.ServiceList, bool, string) {
-	serviceList, err := kubeClient.CoreV1().Services(GlobalNamespace).List(ctx, metav1.ListOptions{
-		LabelSelector: fmt.Sprintf("%s=%s", key, podName),
-	})
-	if err != nil {
-		if apierror.IsNotFound(err) {
-			return nil, false, i18n.ServiceNotFound
-		}
-		log.Logger.Warningf("Failed to list Pod %s Service: %v", podName, err)
-		return nil, false, i18n.GetServiceError
-	}
-	return serviceList, true, i18n.Success
-}
-
 // DeleteService 删除 Service, 目前主要是靶机的端口映射
 func DeleteService(ctx context.Context, name string) (bool, string) {
 	err := kubeClient.CoreV1().Services(GlobalNamespace).Delete(ctx, name, metav1.DeleteOptions{})
@@ -111,30 +97,13 @@ func DeleteService(ctx context.Context, name string) (bool, string) {
 	return true, i18n.Success
 }
 
-// DeleteServiceListByPodName TODO: 有可能删不干净
-func DeleteServiceListByPodName(ctx context.Context, key, podName string) (bool, string) {
-	serviceList, ok, msg := GetServiceList(ctx, map[string]string{key: podName})
-	if !ok {
-		if msg != i18n.ServiceNotFound {
-			return false, msg
-		}
-		return true, i18n.Success
-	}
-	for _, svc := range serviceList.Items {
-		if ok, msg = DeleteService(ctx, svc.Name); !ok {
-			return false, msg
-		}
-	}
-	return true, i18n.Success
-}
-
-func DeleteServiceByLabels(ctx context.Context, labels map[string]string) (bool, string) {
-	serviceList, ok, msg := GetServiceList(ctx, labels)
+func DeleteServiceList(ctx context.Context, labels ...map[string]string) (bool, string) {
+	services, ok, msg := GetServiceList(ctx, labels...)
 	if !ok {
 		return false, msg
 	}
-	for _, svc := range serviceList.Items {
-		if ok, msg = DeleteService(ctx, svc.Name); !ok {
+	for _, service := range services.Items {
+		if ok, msg = DeleteService(ctx, service.Name); !ok {
 			return false, msg
 		}
 	}

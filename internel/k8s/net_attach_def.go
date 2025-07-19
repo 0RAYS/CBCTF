@@ -78,11 +78,8 @@ func GetNetAttachDefList(ctx context.Context, labels ...map[string]string) (*net
 	return netAttachDefList, true, i18n.Success
 }
 
-func DeleteNetAttachDef(ctx context.Context, name string, namespace ...string) (bool, string) {
-	if len(namespace) == 0 {
-		namespace = append(namespace, GlobalNamespace)
-	}
-	err := natattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(namespace[0]).Delete(ctx, name, metav1.DeleteOptions{})
+func DeleteNetAttachDef(ctx context.Context, name string, namespace string) (bool, string) {
+	err := natattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(namespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete NetworkAttachmentDefinition: %v", err)
 		return false, i18n.DeleteNetAttError
@@ -90,15 +87,21 @@ func DeleteNetAttachDef(ctx context.Context, name string, namespace ...string) (
 	return true, i18n.Success
 }
 
-func DeleteNetAttachDefByLabels(ctx context.Context, labels map[string]string) (bool, string) {
-	netAttachDefList, ok, msg := GetNetAttachDefList(ctx, labels)
-	if !ok {
-		return false, msg
-	}
-	for _, netAttachDef := range netAttachDefList.Items {
-		if ok, msg = DeleteNetAttachDef(ctx, netAttachDef.Name, netAttachDef.Namespace); !ok {
-			return false, msg
+func DeleteNetAttachDefList(ctx context.Context, namespace string, labels ...map[string]string) (bool, string) {
+	var options metav1.ListOptions
+	if len(labels) > 0 {
+		var selector string
+		for k, v := range labels[0] {
+			selector += fmt.Sprintf("%s=%s,", k, v)
 		}
+		options = metav1.ListOptions{
+			LabelSelector: strings.TrimSuffix(selector, ","),
+		}
+	}
+	err := natattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(namespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
+	if err != nil && !apierror.IsNotFound(err) {
+		log.Logger.Warningf("Failed to delete NetworkAttachmentDefinition: %v", err)
+		return false, i18n.DeleteNetAttError
 	}
 	return true, i18n.Success
 }
