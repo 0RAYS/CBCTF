@@ -279,7 +279,8 @@ func StartVictim(victim model.Victim) (bool, string) {
 				annotations["ovn.kubernetes.io/logical_switch"] = subnet.Name
 				annotations["ovn.kubernetes.io/ip_address"] = network.IP
 			} else {
-				annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", subnet.Name, GlobalNamespace)
+				annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", GlobalNamespace, subnet.Name)
+				annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
 				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", subnet.Name, GlobalNamespace)] = subnet.Name
 				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", subnet.Name, GlobalNamespace)] = network.IP
 			}
