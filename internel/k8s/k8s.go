@@ -150,6 +150,7 @@ func initExternalNetwork(ctx context.Context) {
 		CIDR:       config.Env.K8S.ExternalNetwork.CIDR,
 		Gateway:    config.Env.K8S.ExternalNetwork.Gateway,
 		ExcludeIPs: config.Env.K8S.ExternalNetwork.ExcludeIPs,
+		Provider:   fmt.Sprintf("%s.kube-system", ExternalSubnetName),
 	}); !ok {
 		log.Logger.Fatal("Failed to init external network")
 	}
