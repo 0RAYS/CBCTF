@@ -1,19 +1,29 @@
 package k8s
 
 import (
+	"CBCTF/internel/config"
 	"CBCTF/internel/i18n"
+	"CBCTF/internel/log"
 	"CBCTF/internel/model"
+	"CBCTF/internel/utils"
+	"context"
+	"fmt"
+	kubeovnv1 "github.com/JBNRZ/kubeovn-api/pkg/apis/kubeovn/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	"strings"
+	"time"
 )
 
 func StartVictim(victim model.Victim) (bool, string) {
-	//log.Logger.Infof("Creating Victim for team %d challenge %d", victim.TeamID, victim.ContestChallengeID)
-	//ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
-	//defer cancel()
-	//labels := map[string]string{
-	//	"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),
-	//	"team_id":              fmt.Sprintf("%d", victim.TeamID),
-	//	"user_id":              fmt.Sprintf("%d", victim.UserID),
-	//}
+	log.Logger.Infof("Creating Victim for team %d challenge %d", victim.TeamID, victim.ContestChallengeID)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	defer cancel()
+	labels := map[string]string{
+		"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),
+		"team_id":              fmt.Sprintf("%d", victim.TeamID),
+		"user_id":              fmt.Sprintf("%d", victim.UserID),
+	}
 	//rand.New(rand.NewSource(time.Now().UnixNano()))
 	//frps := config.Env.K8S.Frpc.Frps[rand.Intn(len(config.Env.K8S.Frpc.Frps))]
 	//policy := model.NetworkPolicy{
@@ -47,248 +57,243 @@ func StartVictim(victim model.Victim) (bool, string) {
 	//		return false, msg
 	//	}
 	//}
-	//if victim.VPC != "" {
-	//	subnetMap := make(map[string]model.Subnet)
-	//	for _, subnet := range victim.Subnets {
-	//		subnetMap[subnet.Name] = subnet
-	//	}
-	//	subnetGatewayMap := make(map[string]model.Gateway)
-	//	var policyRoutes []*kubeovnv1.PolicyRoute
-	//	for _, gateway := range victim.Gateways {
-	//		subnetGatewayMap[gateway.Subnet] = gateway
-	//		policyRoutes = append(policyRoutes, &kubeovnv1.PolicyRoute{
-	//			Action:    kubeovnv1.PolicyRouteActionReroute,
-	//			Match:     fmt.Sprintf("ip.src == %s", subnetMap[gateway.Subnet].CIDR),
-	//			NextHopIP: gateway.LanIP,
-	//			Priority:  1,
-	//		})
-	//	}
-	//	vpc, ok, msg := CreateVPC(ctx, CreateVPCOptions{
-	//		Name:         victim.VPC,
-	//		Labels:       labels,
-	//		PolicyRoutes: policyRoutes,
-	//	})
-	//	if !ok {
-	//		return false, msg
-	//	}
-	//	netAttachDefMap := make(map[string]*netattv1.NetworkAttachmentDefinition)
-	//	for subnetName, netAttachDefName := range victim.NetAttachDefs {
-	//		nad, ok, msg := CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
-	//			Name:      netAttachDefName,
-	//			Namespace: GlobalNamespace,
-	//			Labels:    labels,
-	//			Config: fmt.Sprintf(`{
-	//			  "cniVersion": "0.3.0",
-	//			  "type": "kube-ovn",
-	//			  "server_socket": "/run/openvswitch/kube-ovn-daemon.sock",
-	//			  "provider": "%s.%s.ovn"
-	//			}`, subnetName, GlobalNamespace),
-	//		})
-	//		if !ok {
-	//			return false, msg
-	//		}
-	//		netAttachDefMap[netAttachDefName] = nad
-	//	}
-	//	subnets := make(map[string]*kubeovnv1.Subnet)
-	//	for _, net := range subnetMap {
-	//		subnet, ok, msg := CreateSubnet(ctx, CreateSubnetOptions{
-	//			Name:       net.Name,
-	//			Labels:     labels,
-	//			VPC:        vpc.Name,
-	//			CIDR:       net.CIDR,
-	//			Gateway:    net.Gateway,
-	//			ExcludeIPs: []string{net.Gateway, subnetGatewayMap[net.Name].LanIP},
-	//		})
-	//		if !ok {
-	//			return false, msg
-	//		}
-	//		subnets[subnet.Name] = subnet
-	//	}
-	//	gateways := make(map[string]*kubeovnv1.VpcNatGateway)
-	//	for _, gateway := range victim.Gateways {
-	//		natGateway, ok, msg := CreateVPCNatGateway(ctx, CreateVPCNatGatewayOptions{
-	//			Name:           gateway.Name,
-	//			Labels:         labels,
-	//			VPC:            gateway.VPC,
-	//			Subnet:         gateway.Subnet,
-	//			LanIP:          gateway.LanIP,
-	//			ExternalSubnet: []string{ExternalSubnetName},
-	//		})
-	//		if !ok {
-	//			return false, msg
-	//		}
-	//		gateways[natGateway.Name] = natGateway
-	//	}
-	//	eips := make(map[string]*kubeovnv1.IptablesEIP)
-	//	for _, e := range victim.EIPs {
-	//		eip, ok, msg := CreateEIP(ctx, CreateEIPOptions{
-	//			Name:           e.Name,
-	//			Labels:         labels,
-	//			NatGw:          e.Gateway,
-	//			ExternalSubnet: ExternalSubnetName,
-	//		})
-	//		if !ok {
-	//			return false, msg
-	//		}
-	//		eips[eip.Name] = eip
-	//	}
-	//	dnats := make(map[string]*kubeovnv1.IptablesDnatRule)
-	//	for _, d := range victim.DNats {
-	//		dnat, ok, msg := CreateDNat(ctx, CreateDNatOptions{
-	//			Name:         d.Name,
-	//			Labels:       labels,
-	//			ExternalPort: fmt.Sprintf("%d", d.ExternalPort),
-	//			InternalPort: d.InternalIP,
-	//			InternalIP:   d.InternalIP,
-	//			Protocol:     d.Protocol,
-	//		})
-	//		if !ok {
-	//			return false, msg
-	//		}
-	//		dnats[dnat.Name] = dnat
-	//	}
-	//	snats := make(map[string]*kubeovnv1.IptablesSnatRule)
-	//	for _, s := range victim.SNats {
-	//		snat, ok, msg := CreateSNat(ctx, CreateSNatOptions{
-	//			Name:         s.Name,
-	//			Labels:       labels,
-	//			EIP:          s.EIP,
-	//			InternalCIDR: s.InternalCIDR,
-	//		})
-	//		if !ok {
-	//			return false, msg
-	//		}
-	//		snats[snat.Name] = snat
-	//	}
-	//}
-	//for _, pod := range victim.Pods {
-	//	containers := []corev1.Container{
-	//		{
-	//			Name:    "tcpdump",
-	//			Image:   config.Env.K8S.TCPDumpImage,
-	//			Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/traffic.pcap"},
-	//		},
-	//	}
-	//	volumes := make([]corev1.Volume, 0)
-	//	frpcConfigMap, ok, msg := CreateFrpcConfig(ctx, frps.Host, frps.Port, frps.Token, pod)
-	//	if !ok {
-	//		return false, msg
-	//	}
-	//	volumeName := fmt.Sprintf("vol-%s", utils.RandStr(5))
-	//	frpc := corev1.Container{
-	//		Name:  "frpc",
-	//		Image: config.Env.K8S.Frpc.Image,
-	//		Args:  []string{"-c", "/etc/frp/frpc.toml"},
-	//		VolumeMounts: []corev1.VolumeMount{
-	//			{
-	//				Name:      volumeName,
-	//				MountPath: "/etc/frp/frpc.toml",
-	//				SubPath:   "frpc.toml",
-	//			},
-	//		},
-	//	}
-	//	volumes = append(volumes, corev1.Volume{
-	//		Name: volumeName,
-	//		VolumeSource: corev1.VolumeSource{
-	//			ConfigMap: &corev1.ConfigMapVolumeSource{
-	//				LocalObjectReference: corev1.LocalObjectReference{
-	//					Name: frpcConfigMap.Name,
-	//				},
-	//			},
-	//		},
-	//	})
-	//	containers = append(containers, frpc)
-	//	for _, container := range pod.Containers {
-	//		volumeMounts := make([]corev1.VolumeMount, 0)
-	//		for path, volumeFlag := range container.VolumeFlags {
-	//			filename := strings.Split(path, "/")[len(strings.Split(path, "/"))-1]
-	//			flagConfigMap, ok, msg := CreateConfigMap(ctx, CreateConfigMapOptions{
-	//				Name:   fmt.Sprintf("cm-%s", utils.RandStr(10)),
-	//				Labels: labels,
-	//				Data:   map[string]string{filename: volumeFlag},
-	//			})
-	//			if !ok {
-	//				return false, msg
-	//			}
-	//			volumeName = fmt.Sprintf("vol-%s", utils.RandStr(5))
-	//			volumeMounts = append(volumeMounts, corev1.VolumeMount{
-	//				Name:      volumeName,
-	//				MountPath: path,
-	//				SubPath:   filename,
-	//			})
-	//			volumes = append(volumes, corev1.Volume{
-	//				Name: volumeName,
-	//				VolumeSource: corev1.VolumeSource{
-	//					ConfigMap: &corev1.ConfigMapVolumeSource{
-	//						LocalObjectReference: corev1.LocalObjectReference{
-	//							Name: flagConfigMap.Name,
-	//						},
-	//					},
-	//				},
-	//			})
-	//		}
-	//		envs := make([]corev1.EnvVar, 0)
-	//		for key, value := range container.Environment {
-	//			envs = append(envs, corev1.EnvVar{
-	//				Name:  key,
-	//				Value: value,
-	//			})
-	//		}
-	//		if len(container.EnvFlags) == 1 {
-	//			envs = append(envs, corev1.EnvVar{
-	//				Name:  "FLAG",
-	//				Value: container.EnvFlags[0],
-	//			})
-	//		} else {
-	//			for i, envFlag := range container.EnvFlags {
-	//				envs = append(envs, corev1.EnvVar{
-	//					Name:  fmt.Sprintf("FLAG%d", i+1),
-	//					Value: envFlag,
-	//				})
-	//			}
-	//		}
-	//		ports := make([]corev1.ContainerPort, 0)
-	//		for _, p := range container.Exposes {
-	//			ports = append(ports, corev1.ContainerPort{
-	//				ContainerPort: p.Port,
-	//			})
-	//		}
-	//		limit := make(corev1.ResourceList)
-	//		if container.CPU > 0 {
-	//			limit["cpu"] = resource.MustParse(fmt.Sprintf("%dm", int(container.CPU*1000)))
-	//		}
-	//		if container.Memory > 0 {
-	//			limit["memory"] = resource.MustParse(fmt.Sprintf("%d", container.Memory))
-	//		}
-	//		tmp := corev1.Container{
-	//			Name:         container.Name,
-	//			Image:        container.Image,
-	//			Env:          envs,
-	//			Ports:        ports,
-	//			VolumeMounts: volumeMounts,
-	//			Resources: corev1.ResourceRequirements{
-	//				Limits: limit,
-	//			},
-	//		}
-	//		if len(container.Command) > 0 {
-	//			tmp.Command = container.Command
-	//		}
-	//		if container.WorkingDir != "" {
-	//			tmp.WorkingDir = container.WorkingDir
-	//		}
-	//		containers = append(containers, tmp)
-	//	}
-	//	_, ok, msg = CreatePod(ctx, CreatePodOptions{
-	//		Name:        pod.Name,
-	//		Labels:      labels,
-	//		Annotations: map[string]string{},
-	//		Containers:  containers,
-	//		Volumes:     volumes,
-	//	})
-	//	if !ok {
-	//		return false, msg
-	//	}
-	//}
+	subnetMap := make(map[string]*model.Subnet)
+	if victim.VPC.Name != "" {
+		var policyRoutes []*kubeovnv1.PolicyRoute
+		for _, subnet := range victim.VPC.Subnets {
+			subnetMap[subnet.DefName] = subnet
+			_, ok, msg := CreateSubnet(ctx, CreateSubnetOptions{
+				Name:       subnet.Name,
+				Labels:     labels,
+				VPC:        victim.VPC.Name,
+				CIDR:       subnet.CIDRBlock,
+				Gateway:    subnet.Gateway,
+				ExcludeIPs: subnet.ExcludeIps,
+			})
+			if !ok {
+				return false, msg
+			}
+			_, ok, msg = CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
+				Name:      subnet.NetAttachDef.Name,
+				Namespace: GlobalNamespace,
+				Labels:    labels,
+				Config: fmt.Sprintf(`{
+					"cniVersion": "0.3.0",
+					"type": "kube-ovn",
+					"server_socket": "/run/openvswitch/kube-ovn-daemon.sock",
+					"provider": "%s.%s.ovn"
+				}`, subnet.Name, GlobalNamespace),
+			})
+			if !ok {
+				return false, msg
+			}
+			if subnet.NatGateway != nil {
+				_, ok, msg = CreateVPCNatGateway(ctx, CreateVPCNatGatewayOptions{
+					Name:           subnet.NatGateway.Name,
+					Labels:         labels,
+					VPC:            victim.VPC.Name,
+					Subnet:         subnet.Name,
+					LanIP:          subnet.NatGateway.LanIP,
+					ExternalSubnet: []string{ExternalSubnetName},
+				})
+				if !ok {
+					return false, msg
+				}
+				policyRoutes = append(policyRoutes, &kubeovnv1.PolicyRoute{
+					Action:    kubeovnv1.PolicyRouteActionReroute,
+					Match:     fmt.Sprintf("ip.src == %s", subnet.CIDRBlock),
+					NextHopIP: subnet.NatGateway.LanIP,
+					Priority:  1,
+				})
+				for _, eip := range subnet.NatGateway.EIPs {
+					_, ok, msg = CreateEIP(ctx, CreateEIPOptions{
+						Name:           eip.Name,
+						Labels:         labels,
+						NatGw:          subnet.NatGateway.Name,
+						ExternalSubnet: ExternalSubnetName,
+					})
+					if !ok {
+						return false, msg
+					}
+					for _, dnat := range eip.DNats {
+						_, ok, msg = CreateDNat(ctx, CreateDNatOptions{
+							Name:         dnat.Name,
+							Labels:       labels,
+							ExternalPort: dnat.ExternalPort,
+							InternalPort: dnat.InternalPort,
+							InternalIP:   dnat.InternalIP,
+							Protocol:     dnat.Protocol,
+						})
+						if !ok {
+							return false, msg
+						}
+					}
+					for _, snat := range eip.SNats {
+						_, ok, msg = CreateSNat(ctx, CreateSNatOptions{
+							Name:         snat.Name,
+							Labels:       labels,
+							EIP:          eip.Name,
+							InternalCIDR: subnet.CIDRBlock,
+						})
+						if !ok {
+							return false, msg
+						}
+					}
+				}
+			}
+		}
+		_, ok, msg := CreateVPC(ctx, CreateVPCOptions{
+			Name:         victim.VPC.Name,
+			Labels:       labels,
+			PolicyRoutes: policyRoutes,
+		})
+		if !ok {
+			return false, msg
+		}
+	}
+	for _, pod := range victim.Pods {
+		containers := []corev1.Container{
+			{
+				Name:    "tcpdump",
+				Image:   config.Env.K8S.TCPDumpImage,
+				Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/traffic.pcap"},
+			},
+		}
+		volumes := make([]corev1.Volume, 0)
+		//frpcConfigMap, ok, msg := CreateFrpcConfig(ctx, frps.Host, frps.Port, frps.Token, pod)
+		//if !ok {
+		//	return false, msg
+		//}
+		//volumeName := fmt.Sprintf("vol-%s", utils.RandStr(5))
+		//frpc := corev1.Container{
+		//	Name:  "frpc",
+		//	Image: config.Env.K8S.Frpc.Image,
+		//	Args:  []string{"-c", "/etc/frp/frpc.toml"},
+		//	VolumeMounts: []corev1.VolumeMount{
+		//		{
+		//			Name:      volumeName,
+		//			MountPath: "/etc/frp/frpc.toml",
+		//			SubPath:   "frpc.toml",
+		//		},
+		//	},
+		//}
+		//volumes = append(volumes, corev1.Volume{
+		//	Name: volumeName,
+		//	VolumeSource: corev1.VolumeSource{
+		//		ConfigMap: &corev1.ConfigMapVolumeSource{
+		//			LocalObjectReference: corev1.LocalObjectReference{
+		//				Name: frpcConfigMap.Name,
+		//			},
+		//		},
+		//	},
+		//})
+		//containers = append(containers, frpc)
+		for _, container := range pod.Containers {
+			volumeMounts := make([]corev1.VolumeMount, 0)
+			for path, volumeFlag := range container.VolumeFlags {
+				filename := strings.Split(path, "/")[len(strings.Split(path, "/"))-1]
+				flagConfigMap, ok, msg := CreateConfigMap(ctx, CreateConfigMapOptions{
+					Name:   fmt.Sprintf("cm-%s", utils.RandStr(20)),
+					Labels: labels,
+					Data:   map[string]string{filename: volumeFlag},
+				})
+				if !ok {
+					return false, msg
+				}
+				volumeName := fmt.Sprintf("vol-%s", utils.RandStr(10))
+				volumeMounts = append(volumeMounts, corev1.VolumeMount{
+					Name:      volumeName,
+					MountPath: path,
+					SubPath:   filename,
+				})
+				volumes = append(volumes, corev1.Volume{
+					Name: volumeName,
+					VolumeSource: corev1.VolumeSource{
+						ConfigMap: &corev1.ConfigMapVolumeSource{
+							LocalObjectReference: corev1.LocalObjectReference{
+								Name: flagConfigMap.Name,
+							},
+						},
+					},
+				})
+			}
+			envs := make([]corev1.EnvVar, 0)
+			for key, value := range container.Environment {
+				envs = append(envs, corev1.EnvVar{
+					Name:  key,
+					Value: value,
+				})
+			}
+			if len(container.EnvFlags) == 1 {
+				envs = append(envs, corev1.EnvVar{
+					Name:  "FLAG",
+					Value: container.EnvFlags[0],
+				})
+			} else {
+				for i, envFlag := range container.EnvFlags {
+					envs = append(envs, corev1.EnvVar{
+						Name:  fmt.Sprintf("FLAG%d", i+1),
+						Value: envFlag,
+					})
+				}
+			}
+			ports := make([]corev1.ContainerPort, 0)
+			for _, p := range container.Exposes {
+				ports = append(ports, corev1.ContainerPort{
+					ContainerPort: p.Port,
+				})
+			}
+			limit := make(corev1.ResourceList)
+			if container.CPU > 0 {
+				limit["cpu"] = resource.MustParse(fmt.Sprintf("%dm", int(container.CPU*1000)))
+			}
+			if container.Memory > 0 {
+				limit["memory"] = resource.MustParse(fmt.Sprintf("%d", container.Memory))
+			}
+			tmp := corev1.Container{
+				Name:         container.Name,
+				Image:        container.Image,
+				Env:          envs,
+				Ports:        ports,
+				VolumeMounts: volumeMounts,
+				Resources: corev1.ResourceRequirements{
+					Limits: limit,
+				},
+			}
+			if len(container.Command) > 0 {
+				tmp.Command = container.Command
+			}
+			if container.WorkingDir != "" {
+				tmp.WorkingDir = container.WorkingDir
+			}
+			containers = append(containers, tmp)
+		}
+		annotations := make(map[string]string)
+		for i, network := range pod.Networks {
+			subnet, ok := subnetMap[network.Name]
+			if !ok {
+				return false, i18n.SubnetNotFound
+			}
+			if i == 0 {
+				annotations["ovn.kubernetes.io/logical_switch"] = subnet.Name
+				annotations["ovn.kubernetes.io/ip_address"] = network.IP
+			} else {
+				annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", subnet.Name, GlobalNamespace)
+				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", subnet.Name, GlobalNamespace)] = subnet.Name
+				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", subnet.Name, GlobalNamespace)] = network.IP
+			}
+		}
+		_, ok, msg := CreatePod(ctx, CreatePodOptions{
+			Name:        pod.Name,
+			Labels:      labels,
+			Annotations: annotations,
+			Containers:  containers,
+			Volumes:     volumes,
+		})
+		if !ok {
+			return false, msg
+		}
+	}
 	return true, i18n.Success
 }
 
