@@ -26,7 +26,7 @@ func CreateVPCNatGateway(ctx context.Context, options CreateVPCNatGatewayOptions
 	gateway = &kubeovnv1.VpcNatGateway{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      options.Name,
-			Namespace: "kube-system",
+			Namespace: GlobalNamespace,
 			Labels:    options.Labels,
 		},
 		Spec: kubeovnv1.VpcNatGatewaySpec{
