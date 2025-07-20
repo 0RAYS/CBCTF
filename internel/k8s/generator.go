@@ -37,7 +37,7 @@ func GenGeneratorName(challengeRandID string) string {
 }
 
 // StartGenerator 启动动态附件生成器, 等待附加命令, 生成附件, contestChallenge 需要预加载 Challenge
-func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool, string) {
+func StartGenerator(contestChallenge model.ContestChallenge) (*Generator, bool, string) {
 	var (
 		pod           *corev1.Pod
 		ok            bool
@@ -47,7 +47,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 		containerName = fmt.Sprintf("%s-%s", generatorName, utils.RandStr(5))
 	)
 	if contestChallenge.Challenge.GeneratorImage == "" {
-		return &corev1.Pod{}, false, i18n.InvalidDockerImage
+		return &Generator{}, false, i18n.InvalidDockerImage
 	}
 	log.Logger.Infof("Starting Generator for Challenge %d-%s", contestChallenge.ChallengeID, contestChallenge.Name)
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
@@ -60,7 +60,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 	})
 	if !ok {
 		log.Logger.Warningf("Failed to create service for generator: %s", msg)
-		return &corev1.Pod{}, false, msg
+		return &Generator{}, false, msg
 	}
 	pwd := utils.UUID()
 	pod, ok, msg = CreatePod(ctx, CreatePodOptions{
@@ -82,14 +82,14 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 		},
 	})
 	if !ok {
-		return &corev1.Pod{}, false, msg
+		return &Generator{}, false, msg
 	}
 	var commands []string
 	if _, err = os.Stat(contestChallenge.Challenge.GeneratorPath()); err == nil {
 		err = CopyToPod(generatorName, containerName, contestChallenge.Challenge.GeneratorPath(), "/root/generator.zip")
 		if err != nil {
 			log.Logger.Warningf("Failed to copy file: %v", err)
-			return &corev1.Pod{}, false, i18n.CopyFileError
+			return &Generator{}, false, i18n.CopyFileError
 		}
 		commands = append(commands, "unzip /root/generator.zip -d /root")
 	} else {
@@ -99,17 +99,18 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 		log.Logger.Debugf("Executing command: %s", command)
 		if _, _, err = Exec(generatorName, containerName, command, nil); err != nil {
 			log.Logger.Warningf("Failed to execute command %s: %v", command, err)
-			return &corev1.Pod{}, false, i18n.ExecCommandError
+			return &Generator{}, false, i18n.ExecCommandError
 		}
 	}
 	GeneratorMapMutex.Lock()
 	defer GeneratorMapMutex.Unlock()
-	GeneratorMap[contestChallenge.ID] = append(GeneratorMap[contestChallenge.ID], &Generator{
+	generator := &Generator{
 		Pod:      pod,
 		Pwd:      pwd,
 		Endpoint: fmt.Sprintf("%s:%d", pod.Status.HostIP, service.Spec.Ports[0].NodePort),
-	})
-	return pod, true, i18n.Success
+	}
+	GeneratorMap[contestChallenge.ID] = append(GeneratorMap[contestChallenge.ID], generator)
+	return generator, true, i18n.Success
 }
 
 func GetGenerator(contestChallenge model.ContestChallenge) (*Generator, bool, string) {
@@ -117,11 +118,12 @@ func GetGenerator(contestChallenge model.ContestChallenge) (*Generator, bool, st
 	GeneratorMapMutex.Lock()
 	defer GeneratorMapMutex.Unlock()
 	generators, ok := GeneratorMap[contestChallenge.ID]
-	if ok {
-		if len(generators) > 0 {
-			index := rand.Intn(len(generators))
-			return generators[index], true, i18n.Success
-		}
+	if !ok {
+		return StartGenerator(contestChallenge)
+	}
+	if len(generators) > 0 {
+		index := rand.Intn(len(generators))
+		return generators[index], true, i18n.Success
 	}
 	return nil, false, i18n.UnknownError
 }
