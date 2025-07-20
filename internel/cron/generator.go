@@ -32,7 +32,6 @@ func PrepareGenerator(c *cron.Cron) {
 			contestChallengeL, _, ok, _ := contestChallengeRepo.List(-1, -1, db.GetOptions{
 				Conditions: map[string]any{
 					"contest_id": contest.ID,
-					"hidden":     false,
 					"type":       model.DynamicChallengeType,
 				},
 				Selects: []string{"id", "name", "challenge_id"},
