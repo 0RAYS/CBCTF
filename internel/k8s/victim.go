@@ -63,7 +63,7 @@ func StartVictim(victim model.Victim) (bool, string) {
 	if victim.VPC.Name != "" {
 		var policyRoutes []*kubeovnv1.PolicyRoute
 		for _, subnet := range victim.VPC.Subnets {
-			_, ok, msg := CreateSubnet(ctx, CreateSubnetOptions{
+			if _, ok, msg := CreateSubnet(ctx, CreateSubnetOptions{
 				Name:       subnet.Name,
 				Labels:     labels,
 				VPC:        victim.VPC.Name,
@@ -71,12 +71,11 @@ func StartVictim(victim model.Victim) (bool, string) {
 				Gateway:    subnet.Gateway,
 				ExcludeIPs: subnet.ExcludeIps,
 				Provider:   fmt.Sprintf("%s.%s.ovn", subnet.NetAttachDef.Name, GlobalNamespace),
-			})
-			if !ok {
+			}); !ok {
 				return false, msg
 			}
 			subnetMap[subnet.DefName] = subnet
-			_, ok, msg = CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
+			if _, ok, msg := CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
 				Name:      subnet.NetAttachDef.Name,
 				Namespace: GlobalNamespace,
 				Labels:    labels,
@@ -86,21 +85,19 @@ func StartVictim(victim model.Victim) (bool, string) {
 					"server_socket": "/run/openvswitch/kube-ovn-daemon.sock",
 					"provider": "%s.%s.ovn"
 				}`, subnet.NetAttachDef.Name, GlobalNamespace),
-			})
-			if !ok {
+			}); !ok {
 				return false, msg
 			}
 			netAttchDefMap[subnet.DefName] = subnet.NetAttachDef
 			if subnet.NatGateway != nil {
-				_, ok, msg = CreateVPCNatGateway(ctx, CreateVPCNatGatewayOptions{
+				if _, ok, msg := CreateVPCNatGateway(ctx, CreateVPCNatGatewayOptions{
 					Name:           subnet.NatGateway.Name,
 					Labels:         labels,
 					VPC:            victim.VPC.Name,
 					Subnet:         subnet.Name,
 					LanIP:          subnet.NatGateway.LanIP,
 					ExternalSubnet: []string{ExternalSubnetName},
-				})
-				if !ok {
+				}); !ok {
 					return false, msg
 				}
 				policyRoutes = append(policyRoutes, &kubeovnv1.PolicyRoute{
@@ -110,17 +107,16 @@ func StartVictim(victim model.Victim) (bool, string) {
 					Priority:  1,
 				})
 				for _, eip := range subnet.NatGateway.EIPs {
-					_, ok, msg = CreateEIP(ctx, CreateEIPOptions{
+					if _, ok, msg := CreateEIP(ctx, CreateEIPOptions{
 						Name:           eip.Name,
 						Labels:         labels,
 						NatGw:          subnet.NatGateway.Name,
 						ExternalSubnet: ExternalSubnetName,
-					})
-					if !ok {
+					}); !ok {
 						return false, msg
 					}
 					for _, dnat := range eip.DNats {
-						_, ok, msg = CreateDNat(ctx, CreateDNatOptions{
+						if _, ok, msg := CreateDNat(ctx, CreateDNatOptions{
 							Name:         dnat.Name,
 							Labels:       labels,
 							EIP:          eip.Name,
@@ -128,19 +124,17 @@ func StartVictim(victim model.Victim) (bool, string) {
 							InternalPort: dnat.InternalPort,
 							InternalIP:   dnat.InternalIP,
 							Protocol:     dnat.Protocol,
-						})
-						if !ok {
+						}); !ok {
 							return false, msg
 						}
 					}
 					for _, snat := range eip.SNats {
-						_, ok, msg = CreateSNat(ctx, CreateSNatOptions{
+						if _, ok, msg := CreateSNat(ctx, CreateSNatOptions{
 							Name:         snat.Name,
 							Labels:       labels,
 							EIP:          eip.Name,
 							InternalCIDR: subnet.CIDRBlock,
-						})
-						if !ok {
+						}); !ok {
 							return false, msg
 						}
 					}
