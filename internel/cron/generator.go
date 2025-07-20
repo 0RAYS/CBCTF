@@ -66,7 +66,7 @@ func PrepareGenerator(c *cron.Cron) {
 		}
 	})
 	function()
-	c.Schedule(cron.Every(30*time.Minute), cron.FuncJob(function))
+	c.Schedule(cron.Every(2*time.Minute), cron.FuncJob(function))
 }
 
 func StopUnCtrlGenerator(c *cron.Cron) {
