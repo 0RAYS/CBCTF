@@ -130,9 +130,6 @@ func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string,
 			}
 		}
 	}
-	if config.Env.K8S.Frpc.On {
-		images = append(images, config.Env.K8S.Frpc.Image)
-	}
-	images = append(images, config.Env.K8S.TCPDumpImage)
+	images = append(images, config.Env.K8S.Frpc.Image, config.Env.K8S.TCPDumpImage)
 	return images, true, msg
 }
