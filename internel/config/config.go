@@ -67,10 +67,14 @@ type Config struct {
 		Frpc         struct {
 			Image string `mapstructure:"image" json:"image"` // Frpc 镜像
 			Frps  []struct {
-				Host      string  `mapstructure:"host" json:"host"`             // Frps 服务器地址
-				Port      int     `mapstructure:"port" json:"port"`             // Frps 服务器端口
-				Token     string  `mapstructure:"token" json:"token"`           // Frps 服务器 Token
-				PortRange []int32 `mapstructure:"port_range" json:"port_range"` // Frps 服务器允许的端口范围
+				Host         string `mapstructure:"host" json:"host"`   // Frps 服务器地址
+				Port         int    `mapstructure:"port" json:"port"`   // Frps 服务器端口
+				Token        string `mapstructure:"token" json:"token"` // Frps 服务器 Token
+				AllowedPorts struct {
+					From    int32   `mapstructure:"from" json:"from"`       // Frps 服务器允许的端口范围
+					To      int32   `mapstructure:"to" json:"to"`           // Frps 服务器允许的端口范围
+					Exclude []int32 `mapstructure:"exclude" json:"exclude"` // Frps 服务器排除的端口
+				} `mapstructure:"allowed_ports" json:"allowed_ports"` // Frps 服务器允许的端口范围
 			} `mapstructure:"frps" json:"frps"` // Frps 服务器列表
 		} `mapstructure:"frpc" json:"frpc"`
 		Nodes []string `mapstructure:"nodes" json:"nodes"` // Kubernetes 节点列表
