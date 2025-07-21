@@ -2,6 +2,7 @@ package form
 
 import (
 	"CBCTF/internel/i18n"
+	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"github.com/gin-gonic/gin"
 	"slices"
@@ -17,6 +18,7 @@ type GetCheatsForm struct {
 
 func (f *GetCheatsForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
+		log.Logger.Debugf("Failed to bind form: %v", err)
 		return false, i18n.BadRequest
 	}
 	if f.Limit > 100 {

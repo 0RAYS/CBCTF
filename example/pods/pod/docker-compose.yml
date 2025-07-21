@@ -1,6 +1,6 @@
 services:
   web:
-    image: docker.0rays.club/cbctf/test-web:20250609
+    image: docker.0rays.club/cbctf/test-web:20250717
     ports:
       - "5000:5000"
     environment:

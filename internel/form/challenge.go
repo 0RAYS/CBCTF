@@ -2,6 +2,7 @@ package form
 
 import (
 	"CBCTF/internel/i18n"
+	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
 	"github.com/gin-gonic/gin"
@@ -24,6 +25,7 @@ type GetChallengesForm struct {
 
 func (f *GetChallengesForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
+		log.Logger.Debugf("Failed to bind form: %v", err)
 		return false, i18n.BadRequest
 	}
 	if f.Limit > 100 {
@@ -49,6 +51,7 @@ type GetCategoriesForm struct {
 
 func (f *GetCategoriesForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
+		log.Logger.Debugf("Failed to bind form: %v", err)
 		return false, i18n.BadRequest
 	}
 	if !slices.Contains(allowedChallengeType, f.Type) {
@@ -64,6 +67,7 @@ type DownloadChallengeForm struct {
 
 func (f *DownloadChallengeForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
+		log.Logger.Debugf("Failed to bind form: %v", err)
 		return false, i18n.BadRequest
 	}
 	if !slices.Contains(allowedFileName, f.File) {
@@ -79,12 +83,13 @@ type CreateChallengeForm struct {
 	Category        string                `form:"category" json:"category"`
 	Flags           model.StringList      `form:"flags" json:"flags"`
 	GeneratorImage  string                `form:"generator_image" json:"generator_image"`
-	DockerCompose   string                `form:"yaml" json:"docker_compose"`
-	NetworkPolicies model.NetworkPolicies `form:"yaml" json:"network_policies"`
+	DockerCompose   string                `form:"docker_compose" json:"docker_compose"`
+	NetworkPolicies model.NetworkPolicies `form:"network_policies" json:"network_policies"`
 }
 
 func (f *CreateChallengeForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
+		log.Logger.Debugf("Failed to bind form: %v", err)
 		return false, i18n.BadRequest
 	}
 	f.Name = strings.TrimSpace(f.Name)
@@ -99,19 +104,20 @@ func (f *CreateChallengeForm) Bind(ctx *gin.Context) (bool, string) {
 }
 
 type UpdateChallengeForm struct {
-	Name           *string `form:"name" json:"name"`
-	Desc           *string `form:"desc" json:"desc"`
-	Category       *string `form:"category" json:"category"`
-	GeneratorImage *string `form:"generator_image" json:"generator_image"`
-	Flags          []struct {
+	Name            *string                `form:"name" json:"name"`
+	Desc            *string                `form:"desc" json:"desc"`
+	Category        *string                `form:"category" json:"category"`
+	GeneratorImage  *string                `form:"generator_image" json:"generator_image"`
+	NetworkPolicies *model.NetworkPolicies `json:"network_policies"`
+	Flags           []struct {
 		ID    uint   `form:"id" json:"id"`
 		Value string `form:"value" json:"value"`
 	} `form:"flags" json:"flags"`
-	NetworkPolicies model.NetworkPolicies `json:"network_policies"`
 }
 
 func (f *UpdateChallengeForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
+		log.Logger.Debugf("Failed to bind form: %v", err)
 		return false, i18n.BadRequest
 	}
 	if f.Name != nil {

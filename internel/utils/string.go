@@ -1,11 +1,11 @@
 package utils
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"github.com/google/uuid"
-	"math/rand"
 	"sort"
 	"strings"
-	"time"
 )
 
 // UUID 生成随机uuid
@@ -15,15 +15,12 @@ func UUID() string {
 
 // RandStr 生成随机字符串
 func RandStr(n int) string {
-	const charset = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	seed := rand.NewSource(time.Now().UnixNano())
-	r := rand.New(seed)
-
 	result := make([]byte, n)
-	for i := range result {
-		result[i] = charset[r.Intn(len(charset))]
+	_, err := rand.Read(result)
+	if err != nil {
+		return ""
 	}
-	return string(result)
+	return hex.EncodeToString(result)[:n]
 }
 
 func ToTitle(s string) string {

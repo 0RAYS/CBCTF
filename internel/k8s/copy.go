@@ -29,7 +29,7 @@ func CopyToPod(podName, containerName, src, dst string) error {
 	req := kubeClient.CoreV1().RESTClient().Post().
 		Resource("pods").
 		Name(podName).
-		Namespace(namespaceName).
+		Namespace(GlobalNamespace).
 		SubResource("exec").
 		VersionedParams(&corev1.PodExecOptions{
 			Container: containerName,

@@ -37,9 +37,8 @@ type UpdateChallengeOptions struct {
 	Name            *string
 	Desc            *string
 	Category        *string
-	Type            *string
 	GeneratorImage  *string
-	NetworkPolicies model.NetworkPolicies
+	NetworkPolicies *model.NetworkPolicies
 }
 
 func (u UpdateChallengeOptions) Convert2Map() map[string]any {
@@ -53,11 +52,11 @@ func (u UpdateChallengeOptions) Convert2Map() map[string]any {
 	if u.Category != nil {
 		options["category"] = *u.Category
 	}
-	if u.Type != nil {
-		options["type"] = *u.Type
-	}
 	if u.GeneratorImage != nil {
 		options["generator_image"] = *u.GeneratorImage
+	}
+	if u.NetworkPolicies != nil {
+		options["network_policies"] = *u.NetworkPolicies
 	}
 	return options
 }
@@ -117,7 +116,7 @@ func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
 			submissionIDL = append(submissionIDL, submission.ID)
 		}
 	}
-	if ok, msg = InitDockerRepo(c.DB).Delete(dockerIDL...); !ok {
+	if ok, msg := InitDockerRepo(c.DB).Delete(dockerIDL...); !ok {
 		return false, msg
 	}
 	if ok, msg = InitChallengeFlagRepo(c.DB).Delete(challengeFlagIDL...); !ok {

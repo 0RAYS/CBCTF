@@ -18,7 +18,7 @@ func Exec(pod, container, command string, stdin io.Reader) (bytes.Buffer, bytes.
 		req := kubeClient.CoreV1().RESTClient().Post().
 			Resource("pods").
 			Name(pod).
-			Namespace(namespaceName).
+			Namespace(GlobalNamespace).
 			SubResource("exec").
 			VersionedParams(&corev1.PodExecOptions{
 				Container: container,

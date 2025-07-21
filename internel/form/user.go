@@ -2,6 +2,7 @@ package form
 
 import (
 	"CBCTF/internel/i18n"
+	"CBCTF/internel/log"
 	"CBCTF/internel/utils"
 	"github.com/gin-gonic/gin"
 	"strings"
@@ -15,6 +16,7 @@ type LoginForm struct {
 
 func (f *LoginForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
+		log.Logger.Debugf("Failed to bind form: %v", err)
 		return false, i18n.BadRequest
 	}
 	f.Name = strings.TrimSpace(f.Name)
@@ -33,6 +35,7 @@ type RegisterForm struct {
 
 func (f *RegisterForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
+		log.Logger.Debugf("Failed to bind form: %v", err)
 		return false, i18n.BadRequest
 	}
 	f.Name = strings.TrimSpace(f.Name)
@@ -59,6 +62,7 @@ type CreateUserForm struct {
 
 func (f *CreateUserForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
+		log.Logger.Debugf("Failed to bind form: %v", err)
 		return false, i18n.BadRequest
 	}
 	f.Name = strings.TrimSpace(f.Name)
@@ -81,6 +85,7 @@ type UpdateSelfForm struct {
 
 func (f *UpdateSelfForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
+		log.Logger.Debugf("Failed to bind form: %v", err)
 		return false, i18n.BadRequest
 	}
 	if f.Name != nil {
@@ -106,6 +111,7 @@ type UpdateUserForm struct {
 
 func (f *UpdateUserForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
+		log.Logger.Debugf("Failed to bind form: %v", err)
 		return false, i18n.BadRequest
 	}
 	if f.Name != nil {
@@ -129,6 +135,7 @@ type DeleteSelfForm struct {
 
 func (f *DeleteSelfForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
+		log.Logger.Debugf("Failed to bind form: %v", err)
 		return false, i18n.BadRequest
 	}
 	return true, i18n.Success

@@ -22,7 +22,7 @@ func SubmitFlag(ctx *gin.Context) {
 	user := middleware.GetSelf(ctx).(model.User)
 	team := middleware.GetTeam(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	if contestChallenge.Challenge.Type == model.QuestionChallengeType {
+	if contestChallenge.Type == model.QuestionChallengeType {
 		form.Flag = utils.ToABCD(form.Flag)
 	}
 	tx := db.DB.WithContext(ctx).Begin()
@@ -34,7 +34,7 @@ func SubmitFlag(ctx *gin.Context) {
 	}
 	tx.Commit()
 	go func(ctx *gin.Context) {
-		if contestChallenge.Challenge.Type == model.PodsChallengeType && service.CheckIfSolved(db.DB.WithContext(ctx), team, contestChallenge) {
+		if contestChallenge.Type == model.PodsChallengeType && service.CheckIfSolved(db.DB.WithContext(ctx), team, contestChallenge) {
 			service.StopTeamVictim(db.DB.WithContext(ctx), team, contestChallenge)
 		}
 	}(ctx.Copy())

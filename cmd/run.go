@@ -22,7 +22,7 @@ func initialize() {
 	email.Init()
 	redis.Init()
 	db.Init()
-	k8s.Init(true)
+	k8s.Init()
 	go cron.Init()
 }
 

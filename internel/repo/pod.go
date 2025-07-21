@@ -15,8 +15,9 @@ type CreatePodOptions struct {
 	VictimID     uint
 	Name         string
 	ExposedIP    string
-	PodPorts     model.Int32List
+	PodPorts     model.Exposes
 	ExposedPorts model.Int32List
+	Networks     model.Networks
 }
 
 func (c CreatePodOptions) Convert2Model() model.Model {
@@ -26,12 +27,12 @@ func (c CreatePodOptions) Convert2Model() model.Model {
 		ExposedIP:    c.ExposedIP,
 		PodPorts:     c.PodPorts,
 		ExposedPorts: c.ExposedPorts,
+		Networks:     c.Networks,
 	}
 }
 
 type UpdatePodOptions struct {
 	Name            *string
-	PodIP           *string
 	ExposedIP       *string
 	PodPorts        *model.Int32List
 	ExposedPorts    *model.Int32List
@@ -42,9 +43,6 @@ func (u UpdatePodOptions) Convert2Map() map[string]any {
 	options := make(map[string]any)
 	if u.Name != nil {
 		options["name"] = *u.Name
-	}
-	if u.PodIP != nil {
-		options["pod_ip"] = *u.PodIP
 	}
 	if u.ExposedIP != nil {
 		options["exposed_ip"] = *u.ExposedIP
@@ -72,6 +70,9 @@ func InitPodRepo(tx *gorm.DB) *PodRepo {
 func (p *PodRepo) Delete(idL ...uint) (bool, string) {
 	podL, _, ok, msg := p.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},
+		Preloads: map[string]GetOptions{
+			"Containers": {Selects: []string{"id", "pod_id"}},
+		},
 	})
 	if !ok && msg != i18n.PodNotFound {
 		return false, msg

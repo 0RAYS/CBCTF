@@ -16,9 +16,10 @@ type CreateVictimOptions struct {
 	ContestChallengeID uint
 	TeamID             uint
 	UserID             uint
-	IPBlock            string
 	Start              time.Time
 	Duration           time.Duration
+	VPC                model.VPC
+	NetworkPolicies    model.NetworkPolicies
 }
 
 func (c CreateVictimOptions) Convert2Model() model.Model {
@@ -28,20 +29,18 @@ func (c CreateVictimOptions) Convert2Model() model.Model {
 		UserID:             c.UserID,
 		Start:              c.Start,
 		Duration:           c.Duration,
+		VPC:                c.VPC,
+		NetworkPolicies:    c.NetworkPolicies,
 	}
 }
 
 type UpdateVictimOptions struct {
-	IPBlock  *string
 	Start    *time.Time
 	Duration *time.Duration
 }
 
 func (u UpdateVictimOptions) Convert2Map() map[string]any {
 	options := make(map[string]any)
-	if u.IPBlock != nil {
-		options["ip_block"] = *u.IPBlock
-	}
 	if u.Start != nil {
 		options["start"] = *u.Start
 	}
@@ -80,7 +79,7 @@ func (v *VictimRepo) Delete(idL ...uint) (bool, string) {
 			podIDL = append(podIDL, pod.ID)
 		}
 	}
-	if ok, msg = InitPodRepo(v.DB).Delete(idL...); !ok {
+	if ok, msg = InitPodRepo(v.DB).Delete(podIDL...); !ok {
 		return false, msg
 	}
 	if res := v.DB.Model(&model.Victim{}).Where("id IN ?", idL).Delete(&model.Victim{}); res.Error != nil {

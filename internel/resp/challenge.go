@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func Docker2Yaml(dockers []model.Docker, challengeFlags []model.ChallengeFlag) string {
+func Dockers2Yaml(dockers []model.Docker, challengeFlags []model.ChallengeFlag) string {
 	baseYaml := `
 services:
 %s
@@ -15,7 +15,7 @@ services:
 	var volumeStr string
 	volumeFlags := make(map[uint]map[string]string)
 	envFlags := make(map[uint]map[string]string)
-	for i, flag := range challengeFlags {
+	for _, flag := range challengeFlags {
 		if flag.DockerID == nil {
 			continue
 		}
@@ -25,24 +25,25 @@ services:
 				volumeFlags[*flag.DockerID] = make(map[string]string)
 			}
 			volumeFlags[*flag.DockerID] = make(map[string]string)
-			name := fmt.Sprintf("%s_%d", model.VolumeFlagPrefix, i)
-			volumeFlags[*flag.DockerID][name] = flag.Path
-			volumeStr += fmt.Sprintf("  %s:\n", name)
+			volumeFlags[*flag.DockerID][flag.Name] = flag.Path
+			volumeStr += fmt.Sprintf("  %s:\n", flag.Name)
 			volumeStr += fmt.Sprintf("    labels:\n")
 			volumeStr += fmt.Sprintf("      - %s=%s\n", model.VolumeFlagLabelKey, flag.Value)
 		case model.EnvInjectType:
 			if envFlags[*flag.DockerID] == nil {
 				envFlags[*flag.DockerID] = make(map[string]string)
 			}
-			name := fmt.Sprintf("%s_%d", model.EnvFlagPrefix, i)
-			envFlags[*flag.DockerID][name] = flag.Value
+			envFlags[*flag.DockerID][flag.Name] = flag.Value
 		default:
 			continue
 		}
 	}
 	volumeStr = strings.Trim(volumeStr, "\n")
 
-	var serviceStr string
+	var (
+		serviceStr string
+		networks   = make(map[string]model.Network)
+	)
 	for _, docker := range dockers {
 		serviceStr += fmt.Sprintf("  %s:\n", docker.Name)
 		serviceStr += fmt.Sprintf("    image: %s\n", docker.Image)
@@ -88,17 +89,36 @@ services:
 				serviceStr += fmt.Sprintf("      - %s:%s\n", key, path)
 			}
 		}
+		if docker.Networks != nil && len(docker.Networks) > 0 {
+			serviceStr += "    networks:\n"
+			for _, network := range docker.Networks {
+				serviceStr += fmt.Sprintf("      %s:\n        ipv4_address: %s\n", network.Name, network.IP)
+				networks[network.Name] = network
+			}
+		}
 		serviceStr += "\n"
 	}
 	serviceStr = strings.Trim(serviceStr, "\n")
+
+	var networkStr string
+	for name, network := range networks {
+		networkStr += fmt.Sprintf("  %s:\n", name)
+		networkStr += fmt.Sprintf("    external: %v\n", network.External)
+		networkStr += fmt.Sprintf("    ipam:\n      config:\n        - subnet: %s\n          gateway: %s\n", network.CIDR, network.Gateway)
+		networkStr += "\n"
+	}
+	networkStr = strings.Trim(networkStr, "\n")
 	baseYaml = strings.Trim(fmt.Sprintf(baseYaml, serviceStr), "\n")
 	if volumeStr != "" {
 		baseYaml += fmt.Sprintf("\n\nvolumes:\n%s", volumeStr)
 	}
+	if networkStr != "" {
+		baseYaml += fmt.Sprintf("\n\nnetworks:\n%s", networkStr)
+	}
 	return strings.Trim(baseYaml, "\n")
 }
 
-// GetChallengeResp 需要预加载 Dockers, ChallengeFlags, Dockers
+// GetChallengeResp 需要预加载 ChallengeFlags, Dockers
 func GetChallengeResp(challenge model.Challenge) gin.H {
 	flags := make([]gin.H, 0)
 	if challenge.Type != model.PodsChallengeType {
@@ -114,7 +134,7 @@ func GetChallengeResp(challenge model.Challenge) gin.H {
 		"type":             challenge.Type,
 		"generator_image":  challenge.GeneratorImage,
 		"flags":            flags,
-		"docker_compose":   Docker2Yaml(challenge.Dockers, challenge.ChallengeFlags),
+		"docker_compose":   Dockers2Yaml(challenge.Dockers, challenge.ChallengeFlags),
 		"network_policies": challenge.NetworkPolicies,
 	}
 }

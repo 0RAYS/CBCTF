@@ -2,6 +2,7 @@ package form
 
 import (
 	"CBCTF/internel/i18n"
+	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"github.com/gin-gonic/gin"
 	"slices"
@@ -18,6 +19,7 @@ type CreateNoticeForm struct {
 
 func (f *CreateNoticeForm) Bind(c *gin.Context) (bool, string) {
 	if err := c.ShouldBind(f); err != nil {
+		log.Logger.Debugf("Failed to bind form: %v", err)
 		return false, i18n.BadRequest
 	}
 	if !slices.Contains(allowedNoticeType, f.Type) {
@@ -35,6 +37,7 @@ type UpdateNoticeForm struct {
 
 func (f *UpdateNoticeForm) Bind(c *gin.Context) (bool, string) {
 	if err := c.ShouldBind(f); err != nil {
+		log.Logger.Debugf("Failed to bind form: %v", err)
 		return false, i18n.BadRequest
 	}
 	if f.Type != nil {

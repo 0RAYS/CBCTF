@@ -2,6 +2,7 @@ package form
 
 import (
 	"CBCTF/internel/i18n"
+	"CBCTF/internel/log"
 	"CBCTF/internel/utils"
 	"github.com/gin-gonic/gin"
 	corev1 "k8s.io/api/core/v1"
@@ -17,6 +18,7 @@ type WarmUpImageForm struct {
 
 func (f *WarmUpImageForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
+		log.Logger.Debugf("Failed to bind form: %v", err)
 		return false, i18n.BadRequest
 	}
 	f.PullPolicy = utils.ToTitle(f.PullPolicy)
@@ -36,6 +38,7 @@ type GetContestVictimsForm struct {
 
 func (f *GetContestVictimsForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
+		log.Logger.Debugf("Failed to bind form: %v", err)
 		return false, i18n.BadRequest
 	}
 	if f.Limit > 100 {
@@ -56,6 +59,7 @@ type StopContestVictimsForm struct {
 
 func (f *StopContestVictimsForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
+		log.Logger.Debugf("Failed to bind form: %v", err)
 		return false, i18n.BadRequest
 	}
 	return true, i18n.Success
@@ -68,6 +72,7 @@ type StartContestVictimsForm struct {
 
 func (f *StartContestVictimsForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
+		log.Logger.Debugf("Failed to bind form: %v", err)
 		return false, i18n.BadRequest
 	}
 	return true, i18n.Success

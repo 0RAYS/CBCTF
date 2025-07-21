@@ -3,6 +3,7 @@ package service
 import (
 	f "CBCTF/internel/form"
 	"CBCTF/internel/i18n"
+	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	db "CBCTF/internel/repo"
 	"CBCTF/internel/utils"
@@ -81,6 +82,19 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 				}
 			}
 		}
+		networksMap := make(map[string]model.Network)
+		for _, network := range config.Networks {
+			network.Name = strings.TrimPrefix(network.Name, "_")
+			if network.Name == "default" {
+				continue
+			}
+			tmp := model.Network{External: network.External.External, Name: network.Name}
+			if len(network.Ipam.Config) > 0 {
+				tmp.CIDR = network.Ipam.Config[0].Subnet
+				tmp.Gateway = network.Ipam.Config[0].Gateway
+			}
+			networksMap[network.Name] = tmp
+		}
 		flagOptions := make([]db.CreateChallengeFlagOptions, 0)
 		dockerRepo := db.InitDockerRepo(tx)
 		for _, app := range config.Services {
@@ -106,6 +120,19 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 					tmp = append(tmp, target)
 				}
 			}
+			networks := make(model.Networks, 0)
+			for key, value := range app.Networks {
+				if key == "default" {
+					continue
+				}
+				network, ok := networksMap[key]
+				if !ok {
+					log.Logger.Warningf("Network %s not found in networks", key)
+					return model.Challenge{}, false, i18n.UnknownError
+				}
+				network.IP = value.Ipv4Address
+				networks = append(networks, network)
+			}
 			docker, ok, msg := dockerRepo.Create(db.CreateDockerOptions{
 				ChallengeID: challenge.ID,
 				Name:        name,
@@ -116,6 +143,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 				Command:     model.StringList(app.Command),
 				Exposes:     ports,
 				Environment: environment,
+				Networks:    networks,
 			})
 			if !ok {
 				return model.Challenge{}, false, msg
@@ -125,6 +153,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 					flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
 						ChallengeID: challenge.ID,
 						DockerID:    &docker.ID,
+						Name:        k,
 						Value:       *v,
 						InjectType:  model.EnvInjectType,
 					})
@@ -135,6 +164,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 					flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
 						ChallengeID: challenge.ID,
 						DockerID:    &docker.ID,
+						Name:        volume.Source,
 						Value:       value,
 						InjectType:  model.VolumeInjectType,
 						Path:        volume.Target,
@@ -160,48 +190,17 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 
 func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChallengeForm) (bool, string) {
 	switch challenge.Type {
-	case model.StaticChallengeType, model.DynamicChallengeType:
+	case model.StaticChallengeType, model.DynamicChallengeType, model.QuestionChallengeType:
 		oldChallengeFlagID := make([]uint, 0)
 		for _, flag := range challenge.ChallengeFlags {
 			oldChallengeFlagID = append(oldChallengeFlagID, flag.ID)
+		}
+		if challenge.Type == model.QuestionChallengeType && len(form.Flags) > 0 {
+			form.Flags = form.Flags[:1]
+			form.Flags[0].Value = utils.ToABCD(form.Flags[0].Value)
 		}
 		challengeFlagRepo := db.InitChallengeFlagRepo(tx)
 		for _, flag := range form.Flags {
-			if slices.Contains(oldChallengeFlagID, flag.ID) {
-				if ok, msg := challengeFlagRepo.Update(flag.ID, db.UpdateChallengeFlagOptions{
-					Value: &flag.Value,
-				}); !ok {
-					return false, msg
-				}
-				oldChallengeFlagID = slices.DeleteFunc(oldChallengeFlagID, func(id uint) bool {
-					return id == flag.ID
-				})
-			} else {
-				if _, ok, msg := challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
-					ChallengeID: challenge.ID,
-					Value:       flag.Value,
-				}); !ok {
-					return false, msg
-				}
-			}
-		}
-		if ok, msg := challengeFlagRepo.Delete(oldChallengeFlagID...); !ok {
-			return false, msg
-		}
-		return db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
-			Name:           form.Name,
-			Desc:           form.Desc,
-			Category:       form.Category,
-			GeneratorImage: form.GeneratorImage,
-		})
-	case model.QuestionChallengeType:
-		oldChallengeFlagID := make([]uint, 0)
-		for _, flag := range challenge.ChallengeFlags {
-			oldChallengeFlagID = append(oldChallengeFlagID, flag.ID)
-		}
-		challengeFlagRepo := db.InitChallengeFlagRepo(tx)
-		if len(form.Flags) > 0 {
-			flag := form.Flags[0]
 			if slices.Contains(oldChallengeFlagID, flag.ID) {
 				if ok, msg := challengeFlagRepo.Update(flag.ID, db.UpdateChallengeFlagOptions{
 					Value: &flag.Value,
