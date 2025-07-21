@@ -34,12 +34,17 @@ redis:
     port: 6379
     pwd: "password"
 k8s:
-    config:
-        # admin will be ignored if user is set
-        admin: "./admin.conf"
-        user: "./user.conf"
+    # kubeconfig
+    config: "./admin.conf"
     # also as prefix of resources
     namespace: "cbctf"
+    external_network:
+        cidr: 192.168.0.0/16
+        gateway: 192.168.0.1
+        interface: "eth0"
+        exclude_ips:
+            - "192.168.0.1"
+            - "192.168.0.254"
     tcpdump: "nicolaka/netshoot:latest"
     frpc:
         on: false

@@ -2,6 +2,7 @@ package form
 
 import (
 	"CBCTF/internel/i18n"
+	"CBCTF/internel/log"
 	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
 	"github.com/gin-gonic/gin"
@@ -27,6 +28,7 @@ type CreateContestForm struct {
 
 func (f *CreateContestForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
+		log.Logger.Debugf("Failed to bind form: %v", err)
 		return false, i18n.BadRequest
 	}
 	f.Name = strings.TrimSpace(f.Name)
@@ -55,6 +57,7 @@ type UpdateContestForm struct {
 
 func (f *UpdateContestForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
+		log.Logger.Debugf("Failed to bind form: %v", err)
 		return false, i18n.BadRequest
 	}
 	if f.Name != nil {

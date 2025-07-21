@@ -2,9 +2,12 @@ package model
 
 import (
 	"CBCTF/internel/i18n"
+	"CBCTF/internel/log"
+	"CBCTF/internel/utils"
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"net"
 	"slices"
 )
 
@@ -28,6 +31,7 @@ type Docker struct {
 	Command        StringList      `gorm:"default:null;type:json" json:"command"`
 	Exposes        Exposes         `gorm:"default:null;type:json" json:"exposes"`
 	Environment    StringMap       `gorm:"default:null;type:json" json:"environment"`
+	Networks       Networks        `gorm:"default:null;type:json" json:"networks"`
 	BasicModel
 }
 
@@ -65,6 +69,56 @@ func (d Docker) GetUniqueKey() []string {
 
 func (d Docker) GetForeignKeys() []string {
 	return []string{"id", "challenge_id"}
+}
+
+type Network struct {
+	Name     string `json:"name"`
+	CIDR     string `json:"cidr"`
+	Gateway  string `json:"gateway"`
+	IP       string `json:"ip"`
+	External bool   `json:"external"`
+}
+
+type Networks []Network
+
+func (n Networks) Value() (driver.Value, error) {
+	n = slices.DeleteFunc(n, func(n Network) bool {
+		if n.CIDR == "" && n.Gateway == "" && n.IP == "" {
+			return true
+		}
+		_, cidr, err := net.ParseCIDR(n.CIDR)
+		if err != nil {
+			return true
+		}
+		if n.Gateway == "" {
+			n.Gateway, err = utils.GetGatewayIP(n.CIDR)
+			if err != nil {
+				log.Logger.Warningf("Get first IP fail: %v", err)
+				return true
+			}
+		}
+		gateway := net.ParseIP(n.Gateway)
+		if gateway == nil || !cidr.Contains(gateway) {
+			return true
+		}
+		if n.IP == "" {
+			return false
+		}
+		ip := net.ParseIP(n.IP)
+		if ip == nil {
+			return true
+		}
+		return !cidr.Contains(ip)
+	})
+	return json.Marshal(n)
+}
+
+func (n *Networks) Scan(value any) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan Networks value")
+	}
+	return json.Unmarshal(bytes, n)
 }
 
 type Expose struct {

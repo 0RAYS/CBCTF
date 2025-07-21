@@ -2,6 +2,7 @@ package form
 
 import (
 	"CBCTF/internel/i18n"
+	"CBCTF/internel/log"
 	"CBCTF/internel/utils"
 	"github.com/gin-gonic/gin"
 	"strings"
@@ -12,6 +13,7 @@ type CreateAdminForm RegisterForm
 
 func (f *CreateAdminForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
+		log.Logger.Debugf("Failed to bind form: %v", err)
 		return false, i18n.BadRequest
 	}
 	if utils.CheckPassword(f.Password) < 2 {
@@ -32,6 +34,7 @@ type UpdateAdminForm struct {
 
 func (f *UpdateAdminForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
+		log.Logger.Debugf("Failed to bind form: %v", err)
 		return false, i18n.BadRequest
 	}
 	if f.Name != nil {

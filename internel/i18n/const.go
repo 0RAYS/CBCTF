@@ -192,6 +192,11 @@ const (
 	ExecCommandError               = "ExecCommandError"
 	ZipError                       = "ZipError"
 
+	CreateNamespaceError = "CreateNamespaceError"
+	DeleteNamespaceError = "DeleteNamespaceError"
+	GetNamespaceError    = "GetNamespaceError"
+	NamespaceNotFound    = "NamespaceNotFound"
+
 	CreateConfigMapError = "CreateConfigMapError"
 	DeleteConfigMapError = "DeleteConfigMapError"
 	GetConfigMapError    = "GetConfigMapError"
@@ -207,19 +212,50 @@ const (
 	GetServiceError    = "GetServiceError"
 	ServiceNotFound    = "ServiceNotFound"
 
-	CreateSecretError = "CreateSecretError"
-	DeleteSecretError = "DeleteSecretError"
-	GetSecretError    = "GetSecretError"
-	SecretNotFound    = "SecretNotFound"
-
 	CreateJobError = "CreateJobError"
 	DeleteJobError = "DeleteJobError"
 	GetJobError    = "GetJobError"
 	JobNotFound    = "JobNotFound"
 
-	GetNodeListError = "GetNodeListError"
+	CreateVPCError = "CreateVPCError"
+	DeleteVPCError = "DeleteVPCError"
+	GetVPCError    = "GetVPCError"
+	VPCNotFound    = "VPCNotFound"
 
-	GetIPBlockError   = "GetIPBlockError"
-	EmptyIPBlock      = "EmptyIPBlock"
-	DuplicateHostname = "DuplicateHostname"
+	CreateSubnetError = "CreateSubnetError"
+	DeleteSubnetError = "DeleteSubnetError"
+	GetSubnetError    = "GetSubnetError"
+	SubnetNotFound    = "SubnetNotFound"
+
+	CreateVPCNatGatewayError = "CreateVPCNatGatewayError"
+	DeleteVPCNatGatewayError = "DeleteVPCNatGatewayError"
+	GetVPCNatGatewayError    = "GetVPCNatGatewayError"
+	VPCNatGatewayNotFound    = "VPCNatGatewayNotFound"
+
+	CreateEIPError = "CreateEIPError"
+	DeleteEIPError = "DeleteEIPError"
+	GetEIPError    = "GetEIPError"
+	EIPNotFound    = "EIPNotFound"
+
+	CreateDNatError = "CreateDNatError"
+	DeleteDNatError = "DeleteDNatError"
+	GetDNatError    = "GetDNatError"
+	DNatNotFound    = "DNatNotFound"
+
+	CreateSNatError = "CreateSNatError"
+	DeleteSNatError = "DeleteSNatError"
+	GetSNatError    = "GetSNatError"
+	SNatNotFound    = "SNatNotFound"
+
+	CreateNetAttError = "CreateNetAttError"
+	DeleteNetAttError = "DeleteNetAttError"
+	GetNetAttError    = "GetNetAttError"
+	NetAttNotFound    = "NetAttNotFound"
+
+	CreateIPError = "CreateIPError"
+	DeleteIPError = "DeleteIPError"
+	GetIPError    = "GetIPError"
+	IPNotFound    = "IPNotFound"
+
+	GetNodeListError = "GetNodeListError"
 )

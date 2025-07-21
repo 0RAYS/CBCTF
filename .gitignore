@@ -11,7 +11,7 @@ resources.yaml
 build.bat
 CBCTF
 volumes
-docker-compose.yml
+./docker-compose.yml
 *.conf
 *.db
 

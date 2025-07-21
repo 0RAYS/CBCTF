@@ -23,7 +23,7 @@ func Cmd() {
 		log.Logger.Fatalf("Failed to parse command: %v", err)
 	}
 
-	k8s.Init(false)
+	k8s.Init()
 	switch os.Args[2] {
 	case "init":
 		k8s.InitResources()

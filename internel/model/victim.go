@@ -3,14 +3,12 @@ package model
 import (
 	"CBCTF/internel/config"
 	"CBCTF/internel/i18n"
-	"CBCTF/internel/log"
 	"CBCTF/internel/utils"
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
 	"net"
 	"slices"
-	"strings"
 	"time"
 )
 
@@ -25,6 +23,7 @@ type Victim struct {
 	Traffics           []Traffic        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Start              time.Time        `json:"start"`
 	Duration           time.Duration    `json:"duration"`
+	VPC                VPC              `gorm:"default:null;type:json" json:"-"`
 	NetworkPolicies    NetworkPolicies  `gorm:"default:null;type:json" json:"network_policies"`
 	BasicModel
 }
@@ -66,7 +65,7 @@ func (v Victim) GetForeignKeys() []string {
 }
 
 func (v Victim) GenPodName(challengeRandID string) string {
-	return fmt.Sprintf("victim-%s-%s-pod", challengeRandID, strings.ToLower(utils.RandStr(5)))
+	return fmt.Sprintf("victim-%s-%s-pod", challengeRandID, utils.RandStr(5))
 }
 
 func (v Victim) TrafficZipPath() string {
@@ -95,156 +94,84 @@ func (v Victim) Remaining() time.Duration {
 	return v.Start.Add(v.Duration).Sub(time.Now())
 }
 
+type VPC struct {
+	Name    string    `json:"name"`
+	Subnets []*Subnet `json:"subnets"`
+}
+
 type Subnet struct {
-	Name     string `json:"name"`
-	CIDR     string `json:"cidr"`
-	Gateway  string `json:"gateway"`
-	External bool   `json:"external"`
+	DefName      string        `json:"def_name"`
+	Name         string        `json:"name"`
+	CIDRBlock    string        `json:"cidr_block"`
+	Gateway      string        `json:"gateway"`
+	ExcludeIps   []string      `json:"exclude_ips"`
+	NatGateway   *NatGateway   `json:"nat_gateway"`
+	NetAttachDef *NetAttachDef `json:"net_attach_def"`
 }
 
-type Subnets []Subnet
-
-func (s Subnets) Value() (driver.Value, error) {
-	s = slices.DeleteFunc(s, func(s Subnet) bool {
-		if s.CIDR == "" || s.Gateway == "" {
-			return true
-		}
-		_, cidr, err := net.ParseCIDR(s.CIDR)
-		if err != nil {
-			return true
-		}
-		s.CIDR = cidr.String()
-		if s.Gateway == "" {
-			s.Gateway, err = utils.GetFirstIP(s.CIDR)
-			if err != nil {
-				log.Logger.Warningf("Get first IP fail: %v", err)
-				return true
-			}
-		}
-		gateway := net.ParseIP(s.Gateway)
-		if gateway == nil || !cidr.Contains(gateway) {
-			return true
-		}
-		return false
-	})
-	return json.Marshal(s)
-}
-
-func (s *Subnets) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
-		return fmt.Errorf("failed to scan Subnets value")
-	}
-	return json.Unmarshal(bytes, s)
-}
-
-type Gateway struct {
-	Name   string `json:"name"`
-	VPC    string `json:"vpc"`
-	Subnet string `json:"subnet"`
-	LanIP  string `json:"lan_ip"`
-}
-
-type Gateways []Gateway
-
-func (g Gateways) Value() (driver.Value, error) {
-	g = slices.DeleteFunc(g, func(g Gateway) bool {
-		if net.ParseIP(g.LanIP) == nil {
-			return true
-		}
-		return false
-	})
-	return json.Marshal(g)
-}
-
-func (g *Gateways) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
-		return fmt.Errorf("failed to scan Gateways value")
-	}
-	return json.Unmarshal(bytes, g)
+type NatGateway struct {
+	Name  string `json:"name"`
+	LanIP string `json:"lan_ip"`
+	EIPs  []*EIP `json:"eips"`
 }
 
 type EIP struct {
-	Name    string `json:"name"`
-	Gateway string `json:"gateway"`
-	IP      string `json:"ip"`
-}
-
-type EIPs []EIP
-
-func (e EIPs) Value() (driver.Value, error) {
-	e = slices.DeleteFunc(e, func(e EIP) bool {
-		if net.ParseIP(e.IP) == nil {
-			return true
-		}
-		return false
-	})
-	return json.Marshal(e)
-}
-
-func (e *EIPs) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
-		return fmt.Errorf("failed to scan EIPs value")
-	}
-	return json.Unmarshal(bytes, e)
+	Name  string  `json:"name"`
+	DNats []*DNat `json:"dnats"`
+	SNats []*SNat `json:"snats"`
 }
 
 type DNat struct {
 	Name         string `json:"name"`
-	EIP          string `json:"eip"`
-	ExternalPort int32  `json:"external_port"`
+	ExternalPort string `json:"external_port"`
 	InternalIP   string `json:"internal_ip"`
-	InternalPort int32  `json:"internal_port"`
+	InternalPort string `json:"internal_port"`
 	Protocol     string `json:"protocol"`
 }
 
-type DNats []DNat
-
-func (d DNats) Value() (driver.Value, error) {
-	d = slices.DeleteFunc(d, func(d DNat) bool {
-		if d.ExternalPort < 0 || d.ExternalPort > 65535 || d.InternalPort < 0 || d.InternalPort > 65535 {
-			return true
-		}
-		if net.ParseIP(d.InternalIP) == nil {
-			return true
-		}
-		return false
-	})
-	return json.Marshal(d)
-}
-
-func (d *DNats) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
-		return fmt.Errorf("failed to scan DNats value")
-	}
-	return json.Unmarshal(bytes, d)
-}
-
 type SNat struct {
-	Name         string `json:"name"`
-	EIP          string `json:"eip"`
-	InternalCIDR string `json:"internal_cidr"`
+	Name string `json:"name"`
 }
 
-type SNats []SNat
+type NetAttachDef struct {
+	Name string `json:"name"`
+}
 
-func (s SNats) Value() (driver.Value, error) {
-	s = slices.DeleteFunc(s, func(s SNat) bool {
-		if net.ParseIP(s.InternalCIDR) == nil {
+func (v VPC) Value() (driver.Value, error) {
+	v.Subnets = slices.DeleteFunc(v.Subnets, func(s *Subnet) bool {
+		_, cidr, err := net.ParseCIDR(s.CIDRBlock)
+		if err != nil {
 			return true
+		}
+		if gateway := net.ParseIP(s.Gateway); gateway == nil || !cidr.Contains(gateway) {
+			return true
+		}
+		s.ExcludeIps = slices.DeleteFunc(s.ExcludeIps, func(ip string) bool {
+			if i := net.ParseIP(ip); i == nil || !cidr.Contains(i) {
+				return true
+			}
+			return false
+		})
+		if lanIP := net.ParseIP(s.NatGateway.LanIP); lanIP == nil || !cidr.Contains(lanIP) {
+			return true
+		}
+		for _, eip := range s.NatGateway.EIPs {
+			eip.DNats = slices.DeleteFunc(eip.DNats, func(d *DNat) bool {
+				if i := net.ParseIP(d.InternalIP); i == nil || !cidr.Contains(i) {
+					return true
+				}
+				return false
+			})
 		}
 		return false
 	})
-	return json.Marshal(s)
+	return json.Marshal(v)
 }
 
-func (s *SNats) Scan(value any) error {
+func (v *VPC) Scan(value any) error {
 	bytes, ok := value.([]byte)
 	if !ok {
-		return fmt.Errorf("failed to scan SNats value")
+		return fmt.Errorf("failed to scan VPC value: %v", value)
 	}
-	return json.Unmarshal(bytes, s)
+	return json.Unmarshal(bytes, v)
 }

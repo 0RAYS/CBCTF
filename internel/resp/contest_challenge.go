@@ -12,7 +12,7 @@ func GetContestChallengeResp(contestChallenge model.ContestChallenge) gin.H {
 		"name":     contestChallenge.Name,
 		"desc":     contestChallenge.Desc,
 		"attempt":  contestChallenge.Attempt,
-		"type":     contestChallenge.Challenge.Type,
+		"type":     contestChallenge.Type,
 		"category": contestChallenge.Challenge.Category,
 		"hidden":   contestChallenge.Hidden,
 		"score": func() float64 {

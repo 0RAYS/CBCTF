@@ -3,7 +3,6 @@ package k8s
 import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
-	"CBCTF/internel/utils"
 	"context"
 	"fmt"
 	netv1 "k8s.io/api/networking/v1"
@@ -13,9 +12,11 @@ import (
 )
 
 type CreateNetworkPolicyOptions struct {
-	PodName string
-	From    []*netv1.IPBlock
-	To      []*netv1.IPBlock
+	Name        string
+	Labels      map[string]string
+	MatchLabels map[string]string
+	From        []*netv1.IPBlock
+	To          []*netv1.IPBlock
 }
 
 func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions) (*netv1.NetworkPolicy, bool, string) {
@@ -44,17 +45,13 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 	}(options.From, options.To)
 	networkPolicy = &netv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("np-%s", strings.ToLower(utils.RandStr(10))),
-			Namespace: namespaceName,
-			Labels: map[string]string{
-				VictimPodTag: options.PodName,
-			},
+			Name:      options.Name,
+			Namespace: GlobalNamespace,
+			Labels:    options.Labels,
 		},
 		Spec: netv1.NetworkPolicySpec{
 			PodSelector: metav1.LabelSelector{
-				MatchLabels: map[string]string{
-					VictimPodTag: options.PodName,
-				},
+				MatchLabels: options.MatchLabels,
 			},
 			// 默认不允许出网
 			PolicyTypes: []netv1.PolicyType{netv1.PolicyTypeEgress},
@@ -67,16 +64,38 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 	if len(egress) > 0 {
 		networkPolicy.Spec.Egress = egress
 	}
-	networkPolicy, err = kubeClient.NetworkingV1().NetworkPolicies(namespaceName).Create(ctx, networkPolicy, metav1.CreateOptions{})
+	networkPolicy, err = kubeClient.NetworkingV1().NetworkPolicies(GlobalNamespace).Create(ctx, networkPolicy, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create pod %s NetworkPolicy: %v", options.PodName, err)
+		log.Logger.Warningf("Failed to create NetworkPolicy: %v", err)
 		return nil, false, i18n.CreateNetworkPolicyError
 	}
 	return networkPolicy, true, i18n.Success
 }
 
-func GetNetworkPolicyList(ctx context.Context) (*netv1.NetworkPolicyList, bool, string) {
-	networkPolicyList, err := kubeClient.NetworkingV1().NetworkPolicies(namespaceName).List(ctx, metav1.ListOptions{})
+func GetNetworkPolicy(ctx context.Context, name string) (*netv1.NetworkPolicy, bool, string) {
+	networkPolicy, err := kubeClient.NetworkingV1().NetworkPolicies(GlobalNamespace).Get(ctx, name, metav1.GetOptions{})
+	if err != nil {
+		if apierror.IsNotFound(err) {
+			return nil, false, i18n.NetworkPolicyNotFound
+		}
+		log.Logger.Warningf("Failed to get NetworkPolicy: %v", err)
+		return nil, false, i18n.GetNetworkPolicyError
+	}
+	return networkPolicy, true, i18n.Success
+}
+
+func GetNetworkPolicyList(ctx context.Context, labels ...map[string]string) (*netv1.NetworkPolicyList, bool, string) {
+	var options metav1.ListOptions
+	if len(labels) > 0 {
+		var selector string
+		for k, v := range labels[0] {
+			selector += fmt.Sprintf("%s=%s,", k, v)
+		}
+		options = metav1.ListOptions{
+			LabelSelector: strings.TrimSuffix(selector, ","),
+		}
+	}
+	networkPolicyList, err := kubeClient.NetworkingV1().NetworkPolicies(GlobalNamespace).List(ctx, options)
 	if err != nil {
 		if apierror.IsNotFound(err) {
 			return nil, false, i18n.NetworkPolicyNotFound
@@ -87,22 +106,8 @@ func GetNetworkPolicyList(ctx context.Context) (*netv1.NetworkPolicyList, bool, 
 	return networkPolicyList, true, i18n.Success
 }
 
-func GetNetworkPolicyListByPodName(ctx context.Context, key, podName string) (*netv1.NetworkPolicyList, bool, string) {
-	networkPolicyList, err := kubeClient.NetworkingV1().NetworkPolicies(namespaceName).List(ctx, metav1.ListOptions{
-		LabelSelector: fmt.Sprintf("%s=%s", key, podName),
-	})
-	if err != nil {
-		if apierror.IsNotFound(err) {
-			return nil, false, i18n.NetworkPolicyNotFound
-		}
-		log.Logger.Warningf("Failed to list Pod %s NetworkPolicy: %v", podName, err)
-		return nil, false, i18n.GetNetworkPolicyError
-	}
-	return networkPolicyList, true, i18n.Success
-}
-
 func DeleteNetworkPolicy(ctx context.Context, name string) (bool, string) {
-	err := kubeClient.NetworkingV1().NetworkPolicies(namespaceName).Delete(ctx, name, metav1.DeleteOptions{})
+	err := kubeClient.NetworkingV1().NetworkPolicies(GlobalNamespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete NetworkPolicy %s: %v", name, err)
 		return false, i18n.DeleteNetworkPolicyError
@@ -110,19 +115,21 @@ func DeleteNetworkPolicy(ctx context.Context, name string) (bool, string) {
 	return true, i18n.Success
 }
 
-// DeleteNetworkPolicyListByPodName TODO: 有可能删不干净
-func DeleteNetworkPolicyListByPodName(ctx context.Context, key, podName string) (bool, string) {
-	networkPolicyList, ok, msg := GetNetworkPolicyListByPodName(ctx, key, podName)
-	if !ok {
-		if msg != i18n.NetworkPolicyNotFound {
-			return false, i18n.GetNetworkPolicyError
+func DeleteNetworkPolicyList(ctx context.Context, labels ...map[string]string) (bool, string) {
+	var options metav1.ListOptions
+	if len(labels) > 0 {
+		var selector string
+		for k, v := range labels[0] {
+			selector += fmt.Sprintf("%s=%s,", k, v)
 		}
-		return true, i18n.Success
+		options = metav1.ListOptions{
+			LabelSelector: strings.TrimSuffix(selector, ","),
+		}
 	}
-	for _, np := range networkPolicyList.Items {
-		if ok, msg = DeleteNetworkPolicy(ctx, np.Name); !ok {
-			return false, msg
-		}
+	err := kubeClient.NetworkingV1().NetworkPolicies(GlobalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
+	if err != nil && !apierror.IsNotFound(err) {
+		log.Logger.Warningf("Failed to delete NetworkPolicy: %v", err)
+		return false, i18n.DeleteNetworkPolicyError
 	}
 	return true, i18n.Success
 }

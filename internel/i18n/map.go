@@ -1,13 +1,11 @@
 package i18n
 
-import "fmt"
-
 var resp = map[string]map[string]any{
 	Success:        {"zh-CN": "操作成功", "en-US": "Success", "code": 200},
 	UnsupportedKey: {"zh-CN": "不支持的键", "en-US": "Unsupported key", "code": 400},
 	DeadLock:       {"zh-CN": "数据写入失败过多", "en-US": "Database deadlock", "code": 500},
 
-	BadRequest:      {"zh-CN": "请求错误", "en-US": "Bad request", "code": 400},
+	BadRequest:      {"zh-CN": "参数缺失或错误", "en-US": "Bad request", "code": 400},
 	Unauthorized:    {"zh-CN": "未登录", "en-US": "Unauthorized", "code": 401},
 	Forbidden:       {"zh-CN": "禁止访问", "en-US": "Forbidden", "code": 403},
 	TooManyRequests: {"zh-CN": "请求过快", "en-US": "Too many requests", "code": 429},
@@ -194,6 +192,11 @@ var resp = map[string]map[string]any{
 	ExecCommandError:               {"zh-CN": "执行命令失败", "en-US": "Execute command failed", "code": 500},
 	ZipError:                       {"zh-CN": "压缩文件失败", "en-US": "Zip file failed", "code": 500},
 
+	CreateNamespaceError: {"zh-CN": "创建Namespace失败", "en-US": "Create namespace failed", "code": 500},
+	DeleteNamespaceError: {"zh-CN": "删除Namespace失败", "en-US": "Delete namespace failed", "code": 500},
+	GetNamespaceError:    {"zh-CN": "获取Namespace失败", "en-US": "Get namespace failed", "code": 500},
+	NamespaceNotFound:    {"zh-CN": "Namespace不存在", "en-US": "Namespace not found", "code": 404},
+
 	CreateConfigMapError: {"zh-CN": "创建ConfigMap失败", "en-US": "Create config map failed", "code": 500},
 	DeleteConfigMapError: {"zh-CN": "删除ConfigMap失败", "en-US": "Delete config map failed", "code": 500},
 	GetConfigMapError:    {"zh-CN": "获取ConfigMap失败", "en-US": "Get config map failed", "code": 500},
@@ -209,32 +212,58 @@ var resp = map[string]map[string]any{
 	GetServiceError:    {"zh-CN": "获取Service失败", "en-US": "Get service failed", "code": 500},
 	ServiceNotFound:    {"zh-CN": "Service不存在", "en-US": "Service not found", "code": 404},
 
-	CreateSecretError: {"zh-CN": "创建Secret失败", "en-US": "Create secret failed", "code": 500},
-	DeleteSecretError: {"zh-CN": "删除Secret失败", "en-US": "Delete secret failed", "code": 500},
-	GetSecretError:    {"zh-CN": "获取Secret失败", "en-US": "Get secret failed", "code": 500},
-	SecretNotFound:    {"zh-CN": "Secret不存在", "en-US": "Secret not found", "code": 404},
-
 	CreateJobError: {"zh-CN": "创建Job失败", "en-US": "Create Job failed", "code": 500},
 	DeleteJobError: {"zh-CN": "删除Job失败", "en-US": "Delete Job failed", "code": 500},
 	GetJobError:    {"zh-CN": "获取Job失败", "en-US": "Get Job failed", "code": 500},
 	JobNotFound:    {"zh-CN": "Job不存在", "en-US": "Job not found", "code": 404},
 
-	GetNodeListError: {"zh-CN": "获取K8S节点失败", "en-US": "Get node list failed", "code": 500},
+	CreateVPCError: {"zh-CN": "创建VPC失败", "en-US": "Create VPC failed", "code": 500},
+	DeleteVPCError: {"zh-CN": "删除VPC失败", "en-US": "Delete VPC failed", "code": 500},
+	VPCNotFound:    {"zh-CN": "VPC不存在", "en-US": "VPC not found", "code": 404},
+	GetVPCError:    {"zh-CN": "获取VPC失败", "en-US": "Get VPC failed", "code": 500},
 
-	GetIPBlockError:   {"zh-CN": "获取IP池失败", "en-US": "Get IP block failed", "code": 500},
-	EmptyIPBlock:      {"zh-CN": "IP池为空", "en-US": "IP block is empty", "code": 400},
-	DuplicateHostname: {"zh-CN": "主机名重复", "en-US": "Duplicate hostname", "code": 400},
+	CreateSubnetError: {"zh-CN": "创建子网失败", "en-US": "Create subnet failed", "code": 500},
+	DeleteSubnetError: {"zh-CN": "删除子网失败", "en-US": "Delete subnet failed", "code": 500},
+	SubnetNotFound:    {"zh-CN": "子网不存在", "en-US": "Subnet not found", "code": 404},
+	GetSubnetError:    {"zh-CN": "获取子网失败", "en-US": "Get subnet failed", "code": 500},
+
+	CreateVPCNatGatewayError: {"zh-CN": "创建VPC NAT网关失败", "en-US": "Create VPC NAT gateway failed", "code": 500},
+	DeleteVPCNatGatewayError: {"zh-CN": "删除VPC NAT网关失败", "en-US": "Delete VPC NAT gateway failed", "code": 500},
+	GetVPCNatGatewayError:    {"zh-CN": "获取VPC NAT网关失败", "en-US": "Get VPC NAT gateway failed", "code": 500},
+	VPCNatGatewayNotFound:    {"zh-CN": "VPC NAT网关不存在", "en-US": "VPC NAT gateway not found", "code": 404},
+
+	CreateEIPError: {"zh-CN": "创建弹性IP失败", "en-US": "Create EIP failed", "code": 500},
+	DeleteEIPError: {"zh-CN": "删除弹性IP失败", "en-US": "Delete EIP failed", "code": 500},
+	GetEIPError:    {"zh-CN": "获取弹性IP失败", "en-US": "Get EIP failed", "code": 500},
+	EIPNotFound:    {"zh-CN": "弹性IP不存在", "en-US": "EIP not found", "code": 404},
+
+	CreateDNatError: {"zh-CN": "创建DNat规则失败", "en-US": "Create DNat failed", "code": 500},
+	DeleteDNatError: {"zh-CN": "删除DNat规则失败", "en-US": "Delete DNat failed", "code": 500},
+	GetDNatError:    {"zh-CN": "获取DNat规则失败", "en-US": "Get DNat failed", "code": 500},
+	DNatNotFound:    {"zh-CN": "DNat规则不存在", "en-US": "DNat failed", "code": 404},
+
+	CreateSNatError: {"zh-CN": "创建SNat规则失败", "en-US": "Create SNat failed", "code": 500},
+	DeleteSNatError: {"zh-CN": "删除SNat规则失败", "en-US": "Delete SNat failed", "code": 500},
+	GetSNatError:    {"zh-CN": "获取SNat规则失败", "en-US": "Get SNat failed", "code": 500},
+	SNatNotFound:    {"zh-CN": "SNat规则不存在", "en-US": "SNat failed", "code": 404},
+
+	CreateNetAttError: {"zh-CN": "创建附属网卡失败", "en-US": "Create network attachment failed", "code": 500},
+	DeleteNetAttError: {"zh-CN": "删除附属网卡失败", "en-US": "Delete network attachment failed", "code": 500},
+	GetNetAttError:    {"zh-CN": "获取附属网卡失败", "en-US": "Get network attachment failed", "code": 500},
+	NetAttNotFound:    {"zh-CN": "附属网卡不存在", "en-US": "Network attachment not found", "code": 404},
+
+	CreateIPError: {"zh-CN": "创建IP失败", "en-US": "Create IP failed", "code": 500},
+	DeleteIPError: {"zh-CN": "删除IP失败", "en-US": "Delete IP failed", "code": 500},
+	GetIPError:    {"zh-CN": "获取IP失败", "en-US": "Get IP failed", "code": 500},
+	IPNotFound:    {"zh-CN": "IP不存在", "en-US": "IP not found", "code": 404},
+
+	GetNodeListError: {"zh-CN": "获取K8S节点失败", "en-US": "Get node list failed", "code": 500},
 }
 
 // I18N 获取翻译与状态码, 非http响应状态码
 func I18N(key string, language string) (string, int) {
 	if v, ok := resp[key]; !ok {
-		switch language {
-		case "en-US":
-			return fmt.Sprintf("I18N configuration is incomplete: %s", key), 400
-		default:
-			return fmt.Sprintf("I18N 配置不完全: %s", key), 400
-		}
+		return key, 500
 	} else {
 		if language == "origin" {
 			return key, v["code"].(int)

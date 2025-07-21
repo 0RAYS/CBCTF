@@ -21,7 +21,7 @@ func InitTeamFlag(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	switch contestChallenge.Challenge.Type {
+	switch contestChallenge.Type {
 	case model.DynamicChallengeType:
 		ok, msg = k8s.GenerateAttachment(contestChallenge, team, teamFlags)
 	default:
@@ -42,7 +42,7 @@ func ResetTeamFlag(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	switch contestChallenge.Challenge.Type {
+	switch contestChallenge.Type {
 	case model.DynamicChallengeType:
 		ok, msg = k8s.GenerateAttachment(contestChallenge, team, teamFlags)
 	case model.PodsChallengeType:

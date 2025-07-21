@@ -6,8 +6,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
-	"net"
-	"slices"
+	netv1 "k8s.io/api/networking/v1"
 )
 
 const (
@@ -99,38 +98,13 @@ func (c Challenge) AttachmentPath(teamID uint) string {
 	}
 }
 
-type Target struct {
-	CIDR   string   `json:"cidr"`
-	Except []string `json:"except"`
-}
-
-func (t Target) isValidIPBlock() bool {
-	if t.CIDR == "" {
-		return false
-	}
-	_, ipNet, err := net.ParseCIDR(t.CIDR)
-	if err != nil {
-		return false
-	}
-	for _, ex := range t.Except {
-		_, exNet, err := net.ParseCIDR(ex)
-		if err != nil {
-			return false
-		}
-		if !ipNet.Contains(exNet.IP) {
-			return false
-		}
-	}
-	return true
-}
-
 type NetworkPolicy struct {
-	From []Target `json:"from"`
-	To   []Target `json:"to"`
+	From []*netv1.IPBlock `json:"from"`
+	To   []*netv1.IPBlock `json:"to"`
 }
 
 var DefaultNetworkPolicy = NetworkPolicy{
-	To: []Target{
+	To: []*netv1.IPBlock{
 		{
 			CIDR: "0.0.0.0/0",
 			Except: []string{
@@ -146,17 +120,6 @@ var DefaultNetworkPolicy = NetworkPolicy{
 type NetworkPolicies []NetworkPolicy
 
 func (n NetworkPolicies) Value() (driver.Value, error) {
-	for _, p := range n {
-		p.From = slices.DeleteFunc(p.From, func(t Target) bool {
-			return !t.isValidIPBlock()
-		})
-		p.To = slices.DeleteFunc(p.From, func(t Target) bool {
-			return !t.isValidIPBlock()
-		})
-	}
-	if len(n) == 0 {
-		return nil, nil
-	}
 	return json.Marshal(n)
 }
 

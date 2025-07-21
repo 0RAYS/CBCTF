@@ -32,7 +32,6 @@ func PrepareGenerator(c *cron.Cron) {
 			contestChallengeL, _, ok, _ := contestChallengeRepo.List(-1, -1, db.GetOptions{
 				Conditions: map[string]any{
 					"contest_id": contest.ID,
-					"hidden":     false,
 					"type":       model.DynamicChallengeType,
 				},
 				Selects: []string{"id", "name", "challenge_id"},
@@ -67,13 +66,13 @@ func PrepareGenerator(c *cron.Cron) {
 		}
 	})
 	function()
-	c.Schedule(cron.Every(30*time.Minute), cron.FuncJob(function))
+	c.Schedule(cron.Every(2*time.Minute), cron.FuncJob(function))
 }
 
 func StopUnCtrlGenerator(c *cron.Cron) {
 	function := exec("StopUnCtrlGenerator", func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
-		pods, ok, msg := k8s.GetPods(ctx)
+		pods, ok, msg := k8s.GetPodList(ctx)
 		cancel()
 		if !ok {
 			log.Logger.Warningf("Failed to get generators %s", msg)
