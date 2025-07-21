@@ -20,7 +20,7 @@ import (
 func CreateFrpc(victim model.Victim) (model.Endpoints, bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
-	podName := fmt.Sprintf("pod-%s", utils.RandStr(20))
+	podName := fmt.Sprintf("frpc-%s", utils.RandStr(20))
 	// 添加一个独立tag, 防止受 NetworkPolicy 影响
 	labels := map[string]string{
 		"user_id":              fmt.Sprintf("%d", victim.UserID),
