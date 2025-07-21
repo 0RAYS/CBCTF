@@ -87,7 +87,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 						NatGw:          subnet.NatGateway.Name,
 						ExternalSubnet: ExternalSubnetName,
 					})
-					if ok {
+					if !ok {
 						return ipExposesMap, false, msg
 					}
 					for _, dnat := range eip.DNats {
