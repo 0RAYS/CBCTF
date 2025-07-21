@@ -5,6 +5,7 @@ import (
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
+	"CBCTF/internel/redis"
 	"CBCTF/internel/utils"
 	"context"
 	"fmt"
@@ -329,6 +330,11 @@ func StopVictim(victim model.Victim) (bool, string) {
 	for res := range resultCh {
 		if !res.OK {
 			return false, res.Msg
+		}
+	}
+	for _, endpoint := range victim.Endpoints {
+		if err := redis.UnlockFrpsPort(endpoint.IP, endpoint.Port, endpoint.Protocol); err != nil {
+			log.Logger.Warningf("Failed to unlock frps port: %v", err)
 		}
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
