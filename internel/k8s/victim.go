@@ -256,7 +256,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", netAttachDef.Name, GlobalNamespace)] = network.IP
 				}
 			}
-			_, ok, msg := CreatePod(ctx, CreatePodOptions{
+			p, ok, msg := CreatePod(ctx, CreatePodOptions{
 				Name:        pod.Name,
 				Labels:      labels,
 				Annotations: annotations,
@@ -268,23 +268,23 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 				return
 			}
 			if len(annotations) == 0 {
-				service, ok, msg := CreateService(ctx, CreateServiceOptions{
-					Name:     fmt.Sprintf("svc-%s", utils.RandStr(10)),
-					Ports:    pod.PodPorts,
-					Labels:   labels,
-					Selector: labels,
-				})
-				if !ok {
-					log.Logger.Warningf("Failed to create service for generator: %s", msg)
-					resultCh <- result{OK: false, Msg: msg}
-					return
-				}
+				//service, ok, msg := CreateService(ctx, CreateServiceOptions{
+				//	Name:     fmt.Sprintf("svc-%s", utils.RandStr(10)),
+				//	Ports:    pod.PodPorts,
+				//	Labels:   labels,
+				//	Selector: labels,
+				//})
+				//if !ok {
+				//	log.Logger.Warningf("Failed to create service for generator: %s", msg)
+				//	resultCh <- result{OK: false, Msg: msg}
+				//	return
+				//}
 				ipExposesMapMutex.Lock()
 				for _, port := range pod.PodPorts {
-					if !slices.ContainsFunc(ipExposesMap[service.Spec.ClusterIP], func(e model.Expose) bool {
+					if !slices.ContainsFunc(ipExposesMap[p.Status.PodIP], func(e model.Expose) bool {
 						return port.Port == e.Port && e.Protocol == port.Protocol
 					}) {
-						ipExposesMap[service.Spec.ClusterIP] = append(ipExposesMap[service.Spec.ClusterIP], port)
+						ipExposesMap[p.Status.PodIP] = append(ipExposesMap[p.Status.PodIP], port)
 					}
 				}
 				ipExposesMapMutex.Unlock()
