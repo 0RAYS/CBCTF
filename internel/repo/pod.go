@@ -12,30 +12,24 @@ type PodRepo struct {
 }
 
 type CreatePodOptions struct {
-	VictimID     uint
-	Name         string
-	ExposedIP    string
-	PodPorts     model.Exposes
-	ExposedPorts model.Int32List
-	Networks     model.Networks
+	VictimID uint
+	Name     string
+	PodPorts model.Exposes
+	Networks model.Networks
 }
 
 func (c CreatePodOptions) Convert2Model() model.Model {
 	return model.Pod{
-		VictimID:     c.VictimID,
-		Name:         c.Name,
-		ExposedIP:    c.ExposedIP,
-		PodPorts:     c.PodPorts,
-		ExposedPorts: c.ExposedPorts,
-		Networks:     c.Networks,
+		VictimID: c.VictimID,
+		Name:     c.Name,
+		PodPorts: c.PodPorts,
+		Networks: c.Networks,
 	}
 }
 
 type UpdatePodOptions struct {
 	Name            *string
-	ExposedIP       *string
 	PodPorts        *model.Int32List
-	ExposedPorts    *model.Int32List
 	NetworkPolicies *model.NetworkPolicies
 }
 
@@ -44,14 +38,8 @@ func (u UpdatePodOptions) Convert2Map() map[string]any {
 	if u.Name != nil {
 		options["name"] = *u.Name
 	}
-	if u.ExposedIP != nil {
-		options["exposed_ip"] = *u.ExposedIP
-	}
 	if u.PodPorts != nil {
 		options["pod_ports"] = *u.PodPorts
-	}
-	if u.ExposedPorts != nil {
-		options["exposed_ports"] = *u.ExposedPorts
 	}
 	if u.NetworkPolicies != nil {
 		options["network_policies"] = *u.NetworkPolicies

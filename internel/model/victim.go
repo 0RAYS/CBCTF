@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net"
 	"slices"
+	"strings"
 	"time"
 )
 
@@ -24,6 +25,7 @@ type Victim struct {
 	Start              time.Time        `json:"start"`
 	Duration           time.Duration    `json:"duration"`
 	VPC                VPC              `gorm:"default:null;type:json" json:"-"`
+	Endpoints          Endpoints        `gorm:"default:null;type:json" json:"-"`
 	NetworkPolicies    NetworkPolicies  `gorm:"default:null;type:json" json:"network_policies"`
 	BasicModel
 }
@@ -84,9 +86,9 @@ func (v Victim) TrafficPaths() []string {
 // RemoteAddr Victim 需要预加载 Pod
 func (v Victim) RemoteAddr() []string {
 	data := make([]string, 0)
-	for _, pod := range v.Pods {
-		data = append(data, pod.RemoteAddr()...)
-	}
+	//for _, pod := range v.Pods {
+	//	data = append(data, pod.RemoteAddr()...)
+	//}
 	return data
 }
 
@@ -174,4 +176,36 @@ func (v *VPC) Scan(value any) error {
 		return fmt.Errorf("failed to scan VPC value: %v", value)
 	}
 	return json.Unmarshal(bytes, v)
+}
+
+type Endpoint struct {
+	IP       string `json:"ip"`
+	Port     int32  `json:"port"`
+	Protocol string `json:"protocol"`
+}
+
+type Endpoints []Endpoint
+
+func (e Endpoints) Value() (driver.Value, error) {
+	e = slices.DeleteFunc(e, func(e Endpoint) bool {
+		if net.ParseIP(e.IP) == nil {
+			return true
+		}
+		if e.Port < 0 || e.Port > 65535 {
+			return true
+		}
+		if strings.ToLower(e.Protocol) != "tcp" && strings.ToLower(e.Protocol) != "udp" {
+			return true
+		}
+		return false
+	})
+	return json.Marshal(e)
+}
+
+func (e *Endpoints) Scan(value any) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan Endpoints value: %v", value)
+	}
+	return json.Unmarshal(bytes, e)
 }

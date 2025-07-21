@@ -7,15 +7,13 @@ import (
 )
 
 type Pod struct {
-	VictimID     uint        `json:"victim_id"`
-	Victim       Victim      `json:"-"`
-	Containers   []Container `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Traffics     []Traffic   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Name         string      `json:"name"`
-	PodPorts     Exposes     `gorm:"type:json" json:"pod_ports"`
-	ExposedIP    string      `json:"exposed_ip"`
-	ExposedPorts Int32List   `gorm:"type:json" json:"exposed_ports"`
-	Networks     Networks    `gorm:"type:json" json:"-"`
+	VictimID   uint        `json:"victim_id"`
+	Victim     Victim      `json:"-"`
+	Containers []Container `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Traffics   []Traffic   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Name       string      `json:"name"`
+	PodPorts   Exposes     `gorm:"type:json" json:"pod_ports"`
+	Networks   Networks    `gorm:"type:json" json:"-"`
 	BasicModel
 }
 
@@ -57,12 +55,4 @@ func (p Pod) GetForeignKeys() []string {
 
 func (p Pod) TrafficPath() string {
 	return fmt.Sprintf("%s/traffics/victim-%d/pod-%d-%s.pcap", config.Env.Path, p.VictimID, p.ID, p.Name)
-}
-
-func (p Pod) RemoteAddr() []string {
-	data := make([]string, 0)
-	for _, port := range p.ExposedPorts {
-		data = append(data, fmt.Sprintf("%s:%d", p.ExposedIP, port))
-	}
-	return data
 }
