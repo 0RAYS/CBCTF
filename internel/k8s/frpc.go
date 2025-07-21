@@ -20,10 +20,12 @@ import (
 func CreateFrpc(victim model.Victim) (model.Endpoints, bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
+	// 添加一个独立tag, 防止受 NetworkPolicy 影响
 	labels := map[string]string{
 		"user_id":              fmt.Sprintf("%d", victim.UserID),
 		"team_id":              fmt.Sprintf("%d", victim.TeamID),
 		"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),
+		FrpcPodTag:             FrpcPodTag,
 	}
 	idxBig, _ := rand.Int(rand.Reader, big.NewInt(int64(len(config.Env.K8S.Frpc.Frps))))
 	frps := config.Env.K8S.Frpc.Frps[idxBig.Int64()]
