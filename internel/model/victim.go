@@ -79,10 +79,9 @@ func (v Victim) TrafficPaths() []string {
 	return data
 }
 
-// RemoteAddr
 func (v Victim) RemoteAddr() []string {
 	data := make([]string, 0)
-	for _, endpoint := range v.Endpoints {
+	for _, endpoint := range v.ExposedEndpoints {
 		data = append(data, fmt.Sprintf("%s://%s:%d", strings.ToLower(endpoint.Protocol), endpoint.IP, endpoint.Port))
 	}
 	return data
