@@ -23,10 +23,12 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 	log.Logger.Infof("Creating Victim for team %d challenge %d", victim.TeamID, victim.ContestChallengeID)
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
+	// 添加一个独立tag, 防止 NetworkPolicy 影响 frpc 通信
 	labels := map[string]string{
 		"user_id":              fmt.Sprintf("%d", victim.UserID),
 		"team_id":              fmt.Sprintf("%d", victim.TeamID),
 		"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),
+		VictimPodTag:           VictimPodTag,
 	}
 	subnetMap := make(map[string]*model.Subnet)
 	netAttchDefMap := make(map[string]*model.NetAttachDef)
@@ -268,17 +270,6 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 				return
 			}
 			if len(annotations) == 0 {
-				//service, ok, msg := CreateService(ctx, CreateServiceOptions{
-				//	Name:     fmt.Sprintf("svc-%s", utils.RandStr(10)),
-				//	Ports:    pod.PodPorts,
-				//	Labels:   labels,
-				//	Selector: labels,
-				//})
-				//if !ok {
-				//	log.Logger.Warningf("Failed to create service for generator: %s", msg)
-				//	resultCh <- result{OK: false, Msg: msg}
-				//	return
-				//}
 				ipExposesMapMutex.Lock()
 				for _, port := range pod.PodPorts {
 					if !slices.ContainsFunc(ipExposesMap[p.Status.PodIP], func(e model.Expose) bool {
@@ -304,6 +295,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 
 func StopVictim(victim model.Victim) (bool, string) {
 	log.Logger.Infof("Stopping Victim for team %d challenge %d", victim.TeamID, victim.ContestChallengeID)
+	// 不添加独立 tag, 删除时直接删除所有相关资源
 	labels := map[string]string{
 		"user_id":              fmt.Sprintf("%d", victim.UserID),
 		"team_id":              fmt.Sprintf("%d", victim.TeamID),

@@ -20,6 +20,7 @@ import (
 const (
 	VictimPodTag    = "victim"
 	GeneratorPodTag = "generator"
+	FrpcPodTag      = "frpc"
 )
 
 var (
