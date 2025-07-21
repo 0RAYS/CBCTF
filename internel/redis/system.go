@@ -29,7 +29,6 @@ func StartCollect() {
 			log.Logger.Warningf("Failed to save Redis metrics: %s", err)
 		}
 		time.Sleep(1 * time.Second)
-		
 	}
 }
 
@@ -42,7 +41,7 @@ func collectMetrics() (*SystemMetrics, error) {
 	if err != nil {
 		return nil, err
 	}
-	d, err := disk.Usage("/")
+	d, err := disk.Usage(".")
 	if err != nil {
 		return nil, err
 	}
