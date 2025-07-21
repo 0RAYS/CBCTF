@@ -4,6 +4,7 @@ import (
 	"CBCTF/internel/config"
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
+	"CBCTF/internel/model"
 	"CBCTF/internel/utils"
 	"context"
 	"fmt"
@@ -17,7 +18,7 @@ import (
 type CreateServiceOptions struct {
 	Name     string
 	Labels   map[string]string
-	Ports    []int32
+	Ports    model.Exposes
 	Selector map[string]string
 }
 
@@ -39,15 +40,9 @@ func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.S
 				for _, p := range options.Ports {
 					tmp = append(tmp, corev1.ServicePort{
 						Name:       utils.UUID(),
-						Protocol:   corev1.ProtocolTCP,
-						Port:       p,
-						TargetPort: intstr.FromInt32(p),
-					})
-					tmp = append(tmp, corev1.ServicePort{
-						Name:       utils.UUID(),
-						Protocol:   corev1.ProtocolUDP,
-						Port:       p,
-						TargetPort: intstr.FromInt32(p),
+						Protocol:   corev1.Protocol(strings.ToUpper(p.Protocol)),
+						Port:       p.Port,
+						TargetPort: intstr.FromInt32(p.Port),
 					})
 				}
 				return tmp

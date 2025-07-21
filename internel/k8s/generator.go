@@ -54,7 +54,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*Generator, bool, 
 	defer cancel()
 	service, ok, msg := CreateService(ctx, CreateServiceOptions{
 		Name:     fmt.Sprintf("svc-%s", utils.RandStr(10)),
-		Ports:    []int32{8000},
+		Ports:    model.Exposes{{Port: 8000, Protocol: "TCP"}},
 		Labels:   map[string]string{GeneratorPodTag: generatorName},
 		Selector: map[string]string{GeneratorPodTag: generatorName},
 	})

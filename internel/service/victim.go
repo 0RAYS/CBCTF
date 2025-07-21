@@ -244,7 +244,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 		}
 		victim.Pods = append(victim.Pods, pod)
 	}
-	ok, msg = k8s.StartVictim(victim)
+	_, ok, msg = k8s.StartVictim(victim)
 	if !ok {
 		//go k8s.StopVictim(victim)
 		return model.Victim{}, false, msg
