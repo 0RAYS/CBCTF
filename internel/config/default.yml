@@ -52,8 +52,11 @@ k8s:
             -   host: "example.com"
                 port: "7000"
                 token: "token"
-                port_range:
-                    - 10000..60000
+                allowed_ports:
+                    from: 10000
+                    to: 50000
+                    exclude:
+                        - 20000
     # nodes of k8s cluster, used for external service, will auto get from k8s
     nodes:
         - "192.168.0.1"
