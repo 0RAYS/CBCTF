@@ -257,12 +257,13 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 			})
 		}
 	}
-	victim.Endpoints, ok, msg = k8s.CreateFrpc(victim)
+	victim.ExposedEndpoints, ok, msg = k8s.CreateFrpc(victim)
 	if !ok {
 		return model.Victim{}, false, msg
 	}
 	ok, msg = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
-		Endpoints: &victim.Endpoints,
+		Endpoints:        &victim.Endpoints,
+		ExposedEndpoints: &victim.ExposedEndpoints,
 	})
 	if !ok {
 		return model.Victim{}, false, msg

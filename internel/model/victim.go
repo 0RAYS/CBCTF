@@ -25,6 +25,7 @@ type Victim struct {
 	Duration           time.Duration    `json:"duration"`
 	VPC                VPC              `gorm:"default:null;type:json" json:"-"`
 	Endpoints          Endpoints        `gorm:"default:null;type:json" json:"-"`
+	ExposedEndpoints   Endpoints        `gorm:"default:null;type:json" json:"-"`
 	NetworkPolicies    NetworkPolicies  `gorm:"default:null;type:json" json:"network_policies"`
 	BasicModel
 }

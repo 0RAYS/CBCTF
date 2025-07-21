@@ -27,39 +27,6 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 		"team_id":              fmt.Sprintf("%d", victim.TeamID),
 		"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),
 	}
-	//rand.New(rand.NewSource(time.Now().UnixNano()))
-	//frps := config.Env.K8S.Frpc.Frps[rand.Intn(len(config.Env.K8S.Frpc.Frps))]
-	//policy := model.NetworkPolicy{
-	//	To: []*netv1.IPBlock{
-	//		{
-	//			CIDR: fmt.Sprintf("%s/32", frps.Host),
-	//		},
-	//	},
-	//}
-	//for _, p := range victim.NetworkPolicies {
-	//	// 当已经存在来源策略时, 需要设frps的ip为白名单; 不存在时, 默认允许
-	//	if len(p.From) > 0 {
-	//		policy.From = []*netv1.IPBlock{
-	//			{
-	//				CIDR: fmt.Sprintf("%s/32", frps.Host),
-	//			},
-	//		}
-	//		break
-	//	}
-	//}
-	//victim.NetworkPolicies = append(victim.NetworkPolicies, policy)
-	//for _, policy := range victim.NetworkPolicies {
-	//	_, ok, msg := CreateNetworkPolicy(ctx, CreateNetworkPolicyOptions{
-	//		Name:        fmt.Sprintf("np-%s", utils.RandStr(10)),
-	//		Labels:      labels,
-	//		MatchLabels: labels,
-	//		From:        policy.From,
-	//		To:          policy.To,
-	//	})
-	//	if !ok {
-	//		return false, msg
-	//	}
-	//}
 	subnetMap := make(map[string]*model.Subnet)
 	netAttchDefMap := make(map[string]*model.NetAttachDef)
 	ipExposesMap := make(map[string]model.Exposes)
@@ -185,26 +152,6 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 				},
 			}
 			volumes := make([]corev1.Volume, 0)
-			//frpcConfigMap, ok, msg := CreateFrpcConfig(ctx, frps.Host, frps.Port, frps.Token, pod)
-			//if !ok {
-			//	return false, msg
-			//}
-			//volumeName := fmt.Sprintf("vol-%s", utils.RandStr(5))
-			//frpc := corev1.Container{
-			//	Name:  "frpc",
-			//	Image: config.Env.K8S.Frpc.Image,
-			//	Args:  []string{"-c", "/etc/frp/frpc.toml"},
-			//	VolumeMounts: []corev1.VolumeMount{
-			//		{
-			//			Name:      volumeName,
-			//			MountPath: "/etc/frp/frpc.toml",
-			//			SubPath:   "frpc.toml",
-			//		},
-			//	},
-			//}
-			//volumes = append(volumes,
-			//})
-			//containers = append(containers, frpc)
 			for _, container := range pod.Containers {
 				volumeMounts := make([]corev1.VolumeMount, 0)
 				for path, volumeFlag := range container.VolumeFlags {
