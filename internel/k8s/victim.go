@@ -28,7 +28,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 		"user_id":              fmt.Sprintf("%d", victim.UserID),
 		"team_id":              fmt.Sprintf("%d", victim.TeamID),
 		"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),
-		VictimPodTag:           VictimPodTag,
+		VictimPodTag:           fmt.Sprintf("victim-%s", utils.RandStr(20)),
 	}
 	subnetMap := make(map[string]*model.Subnet)
 	netAttchDefMap := make(map[string]*model.NetAttachDef)

@@ -133,8 +133,11 @@ func StopGenerator(contestChallenge model.ContestChallenge, generator *Generator
 	if ok {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 		defer cancel()
-		ok, msg := DeletePod(ctx, generator.Pod.Name)
-		if !ok {
+		if ok, msg := DeletePod(ctx, generator.Pod.Name); !ok {
+			return false, msg
+		}
+		labels := map[string]string{GeneratorPodTag: generator.Pod.Name, "contest_challenge_id": fmt.Sprintf("%d", contestChallenge.ID)}
+		if ok, msg := DeleteServiceList(ctx, labels); !ok {
 			return false, msg
 		}
 		GeneratorMap[contestChallenge.ID] = slices.DeleteFunc(GeneratorMap[contestChallenge.ID], func(g *Generator) bool {
