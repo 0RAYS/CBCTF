@@ -11,12 +11,14 @@ import (
 	kubeovnv1 "github.com/JBNRZ/kubeovn-api/pkg/apis/kubeovn/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
 )
 
-func StartVictim(victim model.Victim) (bool, string) {
+func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 	log.Logger.Infof("Creating Victim for team %d challenge %d", victim.TeamID, victim.ContestChallengeID)
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
@@ -60,6 +62,8 @@ func StartVictim(victim model.Victim) (bool, string) {
 	//}
 	subnetMap := make(map[string]*model.Subnet)
 	netAttchDefMap := make(map[string]*model.NetAttachDef)
+	ipExposesMap := make(map[string]model.Exposes)
+	ipExposesMapMutex := &sync.Mutex{}
 	if victim.VPC.Name != "" {
 		var policyRoutes []*kubeovnv1.PolicyRoute
 		for _, subnet := range victim.VPC.Subnets {
@@ -72,7 +76,7 @@ func StartVictim(victim model.Victim) (bool, string) {
 				ExcludeIPs: subnet.ExcludeIps,
 				Provider:   fmt.Sprintf("%s.%s.ovn", subnet.NetAttachDef.Name, GlobalNamespace),
 			}); !ok {
-				return false, msg
+				return ipExposesMap, false, msg
 			}
 			subnetMap[subnet.DefName] = subnet
 			if _, ok, msg := CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
@@ -86,7 +90,7 @@ func StartVictim(victim model.Victim) (bool, string) {
 					"provider": "%s.%s.ovn"
 				}`, subnet.NetAttachDef.Name, GlobalNamespace),
 			}); !ok {
-				return false, msg
+				return ipExposesMap, false, msg
 			}
 			netAttchDefMap[subnet.DefName] = subnet.NetAttachDef
 			if subnet.NatGateway != nil {
@@ -98,7 +102,7 @@ func StartVictim(victim model.Victim) (bool, string) {
 					LanIP:          subnet.NatGateway.LanIP,
 					ExternalSubnet: []string{ExternalSubnetName},
 				}); !ok {
-					return false, msg
+					return ipExposesMap, false, msg
 				}
 				policyRoutes = append(policyRoutes, &kubeovnv1.PolicyRoute{
 					Action:    kubeovnv1.PolicyRouteActionReroute,
@@ -107,16 +111,17 @@ func StartVictim(victim model.Victim) (bool, string) {
 					Priority:  1,
 				})
 				for _, eip := range subnet.NatGateway.EIPs {
-					if _, ok, msg := CreateEIP(ctx, CreateEIPOptions{
+					ip, ok, msg := CreateEIP(ctx, CreateEIPOptions{
 						Name:           eip.Name,
 						Labels:         labels,
 						NatGw:          subnet.NatGateway.Name,
 						ExternalSubnet: ExternalSubnetName,
-					}); !ok {
-						return false, msg
+					})
+					if ok {
+						return ipExposesMap, false, msg
 					}
 					for _, dnat := range eip.DNats {
-						if _, ok, msg := CreateDNat(ctx, CreateDNatOptions{
+						if _, ok, msg = CreateDNat(ctx, CreateDNatOptions{
 							Name:         dnat.Name,
 							Labels:       labels,
 							EIP:          eip.Name,
@@ -125,17 +130,29 @@ func StartVictim(victim model.Victim) (bool, string) {
 							InternalIP:   dnat.InternalIP,
 							Protocol:     dnat.Protocol,
 						}); !ok {
-							return false, msg
+							return ipExposesMap, false, msg
+						}
+						port, err := strconv.ParseInt(dnat.ExternalPort, 10, 64)
+						if err != nil {
+							return ipExposesMap, false, msg
+						}
+						if !slices.ContainsFunc(ipExposesMap[ip.Spec.V4ip], func(e model.Expose) bool {
+							return int32(port) == e.Port && dnat.Protocol == e.Protocol
+						}) {
+							ipExposesMap[ip.Spec.V4ip] = append(ipExposesMap[ip.Spec.V4ip], model.Expose{
+								Port:     int32(port),
+								Protocol: dnat.Protocol,
+							})
 						}
 					}
 					for _, snat := range eip.SNats {
-						if _, ok, msg := CreateSNat(ctx, CreateSNatOptions{
+						if _, ok, msg = CreateSNat(ctx, CreateSNatOptions{
 							Name:         snat.Name,
 							Labels:       labels,
 							EIP:          eip.Name,
 							InternalCIDR: subnet.CIDRBlock,
 						}); !ok {
-							return false, msg
+							return ipExposesMap, false, msg
 						}
 					}
 				}
@@ -147,158 +164,202 @@ func StartVictim(victim model.Victim) (bool, string) {
 			PolicyRoutes: policyRoutes,
 		})
 		if !ok {
-			return false, msg
+			return ipExposesMap, false, msg
 		}
 	}
+	type result struct {
+		OK  bool
+		Msg string
+	}
+	var wg sync.WaitGroup
+	resultCh := make(chan result, len(victim.Pods))
 	for _, pod := range victim.Pods {
-		containers := []corev1.Container{
-			{
-				Name:    "tcpdump",
-				Image:   config.Env.K8S.TCPDumpImage,
-				Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/traffic.pcap"},
-			},
-		}
-		volumes := make([]corev1.Volume, 0)
-		//frpcConfigMap, ok, msg := CreateFrpcConfig(ctx, frps.Host, frps.Port, frps.Token, pod)
-		//if !ok {
-		//	return false, msg
-		//}
-		//volumeName := fmt.Sprintf("vol-%s", utils.RandStr(5))
-		//frpc := corev1.Container{
-		//	Name:  "frpc",
-		//	Image: config.Env.K8S.Frpc.Image,
-		//	Args:  []string{"-c", "/etc/frp/frpc.toml"},
-		//	VolumeMounts: []corev1.VolumeMount{
-		//		{
-		//			Name:      volumeName,
-		//			MountPath: "/etc/frp/frpc.toml",
-		//			SubPath:   "frpc.toml",
-		//		},
-		//	},
-		//}
-		//volumes = append(volumes, corev1.Volume{
-		//	Name: volumeName,
-		//	VolumeSource: corev1.VolumeSource{
-		//		ConfigMap: &corev1.ConfigMapVolumeSource{
-		//			LocalObjectReference: corev1.LocalObjectReference{
-		//				Name: frpcConfigMap.Name,
-		//			},
-		//		},
-		//	},
-		//})
-		//containers = append(containers, frpc)
-		for _, container := range pod.Containers {
-			volumeMounts := make([]corev1.VolumeMount, 0)
-			for path, volumeFlag := range container.VolumeFlags {
-				filename := strings.Split(path, "/")[len(strings.Split(path, "/"))-1]
-				flagConfigMap, ok, msg := CreateConfigMap(ctx, CreateConfigMapOptions{
-					Name:   fmt.Sprintf("cm-%s", utils.RandStr(20)),
-					Labels: labels,
-					Data:   map[string]string{filename: volumeFlag},
-				})
-				if !ok {
-					return false, msg
-				}
-				volumeName := fmt.Sprintf("vol-%s", utils.RandStr(10))
-				volumeMounts = append(volumeMounts, corev1.VolumeMount{
-					Name:      volumeName,
-					MountPath: path,
-					SubPath:   filename,
-				})
-				volumes = append(volumes, corev1.Volume{
-					Name: volumeName,
-					VolumeSource: corev1.VolumeSource{
-						ConfigMap: &corev1.ConfigMapVolumeSource{
-							LocalObjectReference: corev1.LocalObjectReference{
-								Name: flagConfigMap.Name,
-							},
-						},
-					},
-				})
-			}
-			envs := make([]corev1.EnvVar, 0)
-			for key, value := range container.Environment {
-				envs = append(envs, corev1.EnvVar{
-					Name:  key,
-					Value: value,
-				})
-			}
-			if len(container.EnvFlags) == 1 {
-				envs = append(envs, corev1.EnvVar{
-					Name:  "FLAG",
-					Value: container.EnvFlags[0],
-				})
-			} else {
-				for i, envFlag := range container.EnvFlags {
-					envs = append(envs, corev1.EnvVar{
-						Name:  fmt.Sprintf("FLAG%d", i+1),
-						Value: envFlag,
-					})
-				}
-			}
-			ports := make([]corev1.ContainerPort, 0)
-			for _, p := range container.Exposes {
-				ports = append(ports, corev1.ContainerPort{
-					ContainerPort: p.Port,
-				})
-			}
-			limit := make(corev1.ResourceList)
-			if container.CPU > 0 {
-				limit["cpu"] = resource.MustParse(fmt.Sprintf("%dm", int(container.CPU*1000)))
-			}
-			if container.Memory > 0 {
-				limit["memory"] = resource.MustParse(fmt.Sprintf("%d", container.Memory))
-			}
-			tmp := corev1.Container{
-				Name:         container.Name,
-				Image:        container.Image,
-				Env:          envs,
-				Ports:        ports,
-				VolumeMounts: volumeMounts,
-				Resources: corev1.ResourceRequirements{
-					Limits: limit,
+		wg.Add(1)
+		go func(pod model.Pod) {
+			defer wg.Done()
+			containers := []corev1.Container{
+				{
+					Name:    "tcpdump",
+					Image:   config.Env.K8S.TCPDumpImage,
+					Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/traffic.pcap"},
 				},
 			}
-			if len(container.Command) > 0 {
-				tmp.Command = container.Command
+			volumes := make([]corev1.Volume, 0)
+			//frpcConfigMap, ok, msg := CreateFrpcConfig(ctx, frps.Host, frps.Port, frps.Token, pod)
+			//if !ok {
+			//	return false, msg
+			//}
+			//volumeName := fmt.Sprintf("vol-%s", utils.RandStr(5))
+			//frpc := corev1.Container{
+			//	Name:  "frpc",
+			//	Image: config.Env.K8S.Frpc.Image,
+			//	Args:  []string{"-c", "/etc/frp/frpc.toml"},
+			//	VolumeMounts: []corev1.VolumeMount{
+			//		{
+			//			Name:      volumeName,
+			//			MountPath: "/etc/frp/frpc.toml",
+			//			SubPath:   "frpc.toml",
+			//		},
+			//	},
+			//}
+			//volumes = append(volumes, corev1.Volume{
+			//	Name: volumeName,
+			//	VolumeSource: corev1.VolumeSource{
+			//		ConfigMap: &corev1.ConfigMapVolumeSource{
+			//			LocalObjectReference: corev1.LocalObjectReference{
+			//				Name: frpcConfigMap.Name,
+			//			},
+			//		},
+			//	},
+			//})
+			//containers = append(containers, frpc)
+			for _, container := range pod.Containers {
+				volumeMounts := make([]corev1.VolumeMount, 0)
+				for path, volumeFlag := range container.VolumeFlags {
+					filename := strings.Split(path, "/")[len(strings.Split(path, "/"))-1]
+					flagConfigMap, ok, msg := CreateConfigMap(ctx, CreateConfigMapOptions{
+						Name:   fmt.Sprintf("cm-%s", utils.RandStr(20)),
+						Labels: labels,
+						Data:   map[string]string{filename: volumeFlag},
+					})
+					if !ok {
+						resultCh <- result{OK: false, Msg: msg}
+						return
+					}
+					volumeName := fmt.Sprintf("vol-%s", utils.RandStr(10))
+					volumeMounts = append(volumeMounts, corev1.VolumeMount{
+						Name:      volumeName,
+						MountPath: path,
+						SubPath:   filename,
+					})
+					volumes = append(volumes, corev1.Volume{
+						Name: volumeName,
+						VolumeSource: corev1.VolumeSource{
+							ConfigMap: &corev1.ConfigMapVolumeSource{
+								LocalObjectReference: corev1.LocalObjectReference{
+									Name: flagConfigMap.Name,
+								},
+							},
+						},
+					})
+				}
+				envs := make([]corev1.EnvVar, 0)
+				for key, value := range container.Environment {
+					envs = append(envs, corev1.EnvVar{
+						Name:  key,
+						Value: value,
+					})
+				}
+				if len(container.EnvFlags) == 1 {
+					envs = append(envs, corev1.EnvVar{
+						Name:  "FLAG",
+						Value: container.EnvFlags[0],
+					})
+				} else {
+					for i, envFlag := range container.EnvFlags {
+						envs = append(envs, corev1.EnvVar{
+							Name:  fmt.Sprintf("FLAG%d", i+1),
+							Value: envFlag,
+						})
+					}
+				}
+				ports := make([]corev1.ContainerPort, 0)
+				for _, p := range container.Exposes {
+					ports = append(ports, corev1.ContainerPort{
+						ContainerPort: p.Port,
+					})
+				}
+				limit := make(corev1.ResourceList)
+				if container.CPU > 0 {
+					limit["cpu"] = resource.MustParse(fmt.Sprintf("%dm", int(container.CPU*1000)))
+				}
+				if container.Memory > 0 {
+					limit["memory"] = resource.MustParse(fmt.Sprintf("%d", container.Memory))
+				}
+				tmp := corev1.Container{
+					Name:         container.Name,
+					Image:        container.Image,
+					Env:          envs,
+					Ports:        ports,
+					VolumeMounts: volumeMounts,
+					Resources: corev1.ResourceRequirements{
+						Limits: limit,
+					},
+				}
+				if len(container.Command) > 0 {
+					tmp.Command = container.Command
+				}
+				if container.WorkingDir != "" {
+					tmp.WorkingDir = container.WorkingDir
+				}
+				containers = append(containers, tmp)
 			}
-			if container.WorkingDir != "" {
-				tmp.WorkingDir = container.WorkingDir
+			annotations := make(map[string]string)
+			for i, network := range pod.Networks {
+				subnet, ok := subnetMap[network.Name]
+				if !ok {
+					resultCh <- result{OK: false, Msg: i18n.SubnetNotFound}
+					return
+				}
+				netAttachDef, ok := netAttchDefMap[network.Name]
+				if !ok {
+					resultCh <- result{OK: false, Msg: i18n.NetAttNotFound}
+					return
+				}
+				if i == 0 {
+					annotations["ovn.kubernetes.io/logical_switch"] = subnet.Name
+					annotations["ovn.kubernetes.io/ip_address"] = network.IP
+				} else {
+					annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", GlobalNamespace, netAttachDef.Name)
+					annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
+					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", netAttachDef.Name, GlobalNamespace)] = subnet.Name
+					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", netAttachDef.Name, GlobalNamespace)] = network.IP
+				}
 			}
-			containers = append(containers, tmp)
-		}
-		annotations := make(map[string]string)
-		for i, network := range pod.Networks {
-			subnet, ok := subnetMap[network.Name]
+			_, ok, msg := CreatePod(ctx, CreatePodOptions{
+				Name:        pod.Name,
+				Labels:      labels,
+				Annotations: annotations,
+				Containers:  containers,
+				Volumes:     volumes,
+			})
 			if !ok {
-				return false, i18n.SubnetNotFound
+				resultCh <- result{OK: false, Msg: msg}
+				return
 			}
-			netAttachDef, ok := netAttchDefMap[network.Name]
-			if !ok {
-				return false, i18n.NetAttNotFound
+			if len(annotations) == 0 {
+				service, ok, msg := CreateService(ctx, CreateServiceOptions{
+					Name:     fmt.Sprintf("svc-%s", utils.RandStr(10)),
+					Ports:    pod.PodPorts,
+					Labels:   labels,
+					Selector: labels,
+				})
+				if !ok {
+					log.Logger.Warningf("Failed to create service for generator: %s", msg)
+					resultCh <- result{OK: false, Msg: msg}
+					return
+				}
+				ipExposesMapMutex.Lock()
+				for _, port := range pod.PodPorts {
+					if !slices.ContainsFunc(ipExposesMap[service.Spec.ClusterIP], func(e model.Expose) bool {
+						return port.Port == e.Port && e.Protocol == port.Protocol
+					}) {
+						ipExposesMap[service.Spec.ClusterIP] = append(ipExposesMap[service.Spec.ClusterIP], port)
+					}
+				}
+				ipExposesMapMutex.Unlock()
 			}
-			if i == 0 {
-				annotations["ovn.kubernetes.io/logical_switch"] = subnet.Name
-				annotations["ovn.kubernetes.io/ip_address"] = network.IP
-			} else {
-				annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", GlobalNamespace, netAttachDef.Name)
-				annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
-				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", netAttachDef.Name, GlobalNamespace)] = subnet.Name
-				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", netAttachDef.Name, GlobalNamespace)] = network.IP
-			}
-		}
-		_, ok, msg := CreatePod(ctx, CreatePodOptions{
-			Name:        pod.Name,
-			Labels:      labels,
-			Annotations: annotations,
-			Containers:  containers,
-			Volumes:     volumes,
-		})
-		if !ok {
-			return false, msg
+			resultCh <- result{OK: true, Msg: msg}
+		}(pod)
+	}
+	wg.Wait()
+	close(resultCh)
+	for res := range resultCh {
+		if !res.OK {
+			return ipExposesMap, false, res.Msg
 		}
 	}
-	return true, i18n.Success
+	return ipExposesMap, true, i18n.Success
 }
 
 func StopVictim(victim model.Victim) (bool, string) {
@@ -321,6 +382,7 @@ func StopVictim(victim model.Victim) (bool, string) {
 			if err := CopyFromPod(pod.Name, "tcpdump", "/root/traffic.pcap", pod.TrafficPath()); err != nil {
 				log.Logger.Warningf("Failed to copy %d traffic: %v", victim.TeamID, err)
 			}
+			resultCh <- result{OK: true, Msg: i18n.Success}
 		}(pod)
 	}
 	wg.Wait()
@@ -360,6 +422,9 @@ func StopVictim(victim model.Victim) (bool, string) {
 		return false, msg
 	}
 	if ok, msg := DeleteNetworkPolicyList(ctx, labels); !ok {
+		return false, msg
+	}
+	if ok, msg := DeleteServiceList(ctx, labels); !ok {
 		return false, msg
 	}
 	return true, i18n.Success
