@@ -28,11 +28,13 @@ func CreateFrpc(victim model.Victim) (model.Endpoints, bool, string) {
 	idxBig, _ := rand.Int(rand.Reader, big.NewInt(int64(len(config.Env.K8S.Frpc.Frps))))
 	frps := config.Env.K8S.Frpc.Frps[idxBig.Int64()]
 	portRange := make([]int32, 0)
-	for i := frps.AllowedPorts.From; i <= frps.AllowedPorts.To; i++ {
-		if slices.Contains(frps.AllowedPorts.Exclude, i) {
-			continue
+	for _, pr := range frps.AllowedPorts {
+		for i := pr.From; i <= pr.To; i++ {
+			if slices.Contains(pr.Exclude, i) {
+				continue
+			}
+			portRange = append(portRange, i)
 		}
-		portRange = append(portRange, i)
 	}
 	data := fmt.Sprintf("serverAddr = \"%s\"\nserverPort = %d\nauth.token = \"%s\"\n\n", frps.Host, frps.Port, frps.Token)
 	newEndpoints := make(model.Endpoints, 0)

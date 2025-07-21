@@ -70,7 +70,7 @@ type Config struct {
 				Host         string `mapstructure:"host" json:"host"`   // Frps 服务器地址
 				Port         int    `mapstructure:"port" json:"port"`   // Frps 服务器端口
 				Token        string `mapstructure:"token" json:"token"` // Frps 服务器 Token
-				AllowedPorts struct {
+				AllowedPorts []struct {
 					From    int32   `mapstructure:"from" json:"from"`       // Frps 服务器允许的端口范围
 					To      int32   `mapstructure:"to" json:"to"`           // Frps 服务器允许的端口范围
 					Exclude []int32 `mapstructure:"exclude" json:"exclude"` // Frps 服务器排除的端口

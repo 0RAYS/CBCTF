@@ -1,71 +1,75 @@
 log:
-    # DEBUG INFO WARNING ERROR
-    level: "info"
-    save: true
+  # DEBUG INFO WARNING ERROR
+  level: "info"
+  save: true
 gin:
-    mode: "release"
-    host: "127.0.0.1"
-    port: 8000
-    proxies:
-        - "10.0.0.1"
-    upload:
-        max: 8
-    rate:
-        whitelist:
-            - "::1"
-            - "127.0.0.1"
-    log:
-        whitelist:
-            - "/metrics"
+  mode: "release"
+  host: "127.0.0.1"
+  port: 8000
+  proxies:
+    - "10.0.0.1"
+  upload:
+    max: 8
+  rate:
+    whitelist:
+      - "::1"
+      - "127.0.0.1"
+  log:
+    whitelist:
+      - "/metrics"
 gorm:
-    mysql:
-        host: "127.0.0.1"
-        port: 3306
-        user: "cbctf"
-        pwd: "password"
-        db: "cbctf"
-        mxopen: 100
-        mxidle: 10
-    log:
-        # INFO WARNING ERROR SILENT
-        level: "silent"
-redis:
+  mysql:
     host: "127.0.0.1"
-    port: 6379
+    port: 3306
+    user: "cbctf"
     pwd: "password"
+    db: "cbctf"
+    mxopen: 100
+    mxidle: 10
+  log:
+    # INFO WARNING ERROR SILENT
+    level: "silent"
+redis:
+  host: "127.0.0.1"
+  port: 6379
+  pwd: "password"
 k8s:
-    # kubeconfig
-    config: "./admin.conf"
-    # also as prefix of resources
-    namespace: "cbctf"
-    external_network:
-        cidr: 192.168.0.0/16
-        gateway: 192.168.0.1
-        interface: "eth0"
-        exclude_ips:
-            - "192.168.0.1"
-            - "192.168.0.254"
-    tcpdump: "nicolaka/netshoot:latest"
-    frpc:
-        image: "snowdreamtech/frpc:latest"
-        frps:
-            -   host: "example.com"
-                port: "7000"
-                token: "token"
-                allowed_ports:
-                    from: 10000
-                    to: 50000
-                    exclude:
-                        - 20000
-    # nodes of k8s cluster, used for external service, will auto get from k8s
-    nodes:
-        - "192.168.0.1"
+  # kubeconfig
+  config: "./admin.conf"
+  # also as prefix of resources
+  namespace: "cbctf"
+  external_network:
+    cidr: 192.168.0.0/16
+    gateway: 192.168.0.1
+    interface: "eth0"
+    exclude_ips:
+      - "192.168.0.1"
+      - "192.168.0.254"
+  tcpdump: "nicolaka/netshoot:latest"
+  frpc:
+    image: "snowdreamtech/frpc:latest"
+    frps:
+      - host: "example.com"
+        port: "7000"
+        token: "token"
+        allowed_ports:
+          - from: 10000
+            to: 30000
+            exclude:
+              - 20000
+          - from: 40000
+            to: 60000
+            exclude:
+              - 50000
+  # nodes of k8s cluster, used for external service, will auto get from k8s
+  nodes:
+    - "192.168.0.1"
 email:
-    senders:
-        -   addr: "noreply@example.com"
-            pwd: "password"
-            host: "smtp.example.com"
-            port: 25
+  senders:
+    - addr: "noreply@example.com"
+      pwd: "password"
+      host: "smtp.example.com"
+      port: 25
 frontend: "http://127.0.0.1:3000"
 backend: "http://127.0.0.1:8000"
 path: "./uploads"
