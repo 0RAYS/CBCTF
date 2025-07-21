@@ -65,7 +65,6 @@ type Config struct {
 		} `mapstructure:"external_network" json:"external_network"`
 		TCPDumpImage string `mapstructure:"tcpdump" json:"tcpdump"` // TCPDump 镜像
 		Frpc         struct {
-			On    bool   `mapstructure:"on" json:"on"`       // 是否启用 Frpc
 			Image string `mapstructure:"image" json:"image"` // Frpc 镜像
 			Frps  []struct {
 				Host  string `mapstructure:"host" json:"host"`   // Frps 服务器地址

@@ -23,9 +23,9 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 	labels := map[string]string{
-		"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),
-		"team_id":              fmt.Sprintf("%d", victim.TeamID),
 		"user_id":              fmt.Sprintf("%d", victim.UserID),
+		"team_id":              fmt.Sprintf("%d", victim.TeamID),
+		"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),
 	}
 	//rand.New(rand.NewSource(time.Now().UnixNano()))
 	//frps := config.Env.K8S.Frpc.Frps[rand.Intn(len(config.Env.K8S.Frpc.Frps))]
@@ -202,15 +202,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 			//		},
 			//	},
 			//}
-			//volumes = append(volumes, corev1.Volume{
-			//	Name: volumeName,
-			//	VolumeSource: corev1.VolumeSource{
-			//		ConfigMap: &corev1.ConfigMapVolumeSource{
-			//			LocalObjectReference: corev1.LocalObjectReference{
-			//				Name: frpcConfigMap.Name,
-			//			},
-			//		},
-			//	},
+			//volumes = append(volumes,
 			//})
 			//containers = append(containers, frpc)
 			for _, container := range pod.Containers {
@@ -365,9 +357,9 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 func StopVictim(victim model.Victim) (bool, string) {
 	log.Logger.Infof("Stopping Victim for team %d challenge %d", victim.TeamID, victim.ContestChallengeID)
 	labels := map[string]string{
-		"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),
-		"team_id":              fmt.Sprintf("%d", victim.TeamID),
 		"user_id":              fmt.Sprintf("%d", victim.UserID),
+		"team_id":              fmt.Sprintf("%d", victim.TeamID),
+		"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),
 	}
 	type result struct {
 		OK  bool

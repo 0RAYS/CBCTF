@@ -248,23 +248,25 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 		//go k8s.StopVictim(victim)
 		return model.Victim{}, false, msg
 	}
-	endpoints := make(model.Endpoints, 0)
 	for ip, exposes := range ipExposesMap {
 		for _, expose := range exposes {
-			endpoints = append(endpoints, model.Endpoint{
+			victim.Endpoints = append(victim.Endpoints, model.Endpoint{
 				IP:       ip,
 				Port:     expose.Port,
 				Protocol: expose.Protocol,
 			})
 		}
 	}
+	victim.Endpoints, ok, msg = k8s.CreateFrpc(victim)
+	if !ok {
+		return model.Victim{}, false, msg
+	}
 	ok, msg = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
-		Endpoints: &endpoints,
+		Endpoints: &victim.Endpoints,
 	})
 	if !ok {
 		return model.Victim{}, false, msg
 	}
-	victim.Endpoints = endpoints
 	return victim, true, i18n.Success
 }
 

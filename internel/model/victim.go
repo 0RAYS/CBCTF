@@ -3,7 +3,6 @@ package model
 import (
 	"CBCTF/internel/config"
 	"CBCTF/internel/i18n"
-	"CBCTF/internel/utils"
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
@@ -66,10 +65,6 @@ func (v Victim) GetForeignKeys() []string {
 	return []string{"id", "contest_challenge_id", "team_id", "user_id"}
 }
 
-func (v Victim) GenPodName(challengeRandID string) string {
-	return fmt.Sprintf("victim-%s-%s-pod", challengeRandID, utils.RandStr(5))
-}
-
 func (v Victim) TrafficZipPath() string {
 	return fmt.Sprintf("%s/traffics/victim-%d/traffics.zip", config.Env.Path, v.ID)
 }
@@ -83,12 +78,12 @@ func (v Victim) TrafficPaths() []string {
 	return data
 }
 
-// RemoteAddr Victim 需要预加载 Pod
+// RemoteAddr
 func (v Victim) RemoteAddr() []string {
 	data := make([]string, 0)
-	//for _, pod := range v.Pods {
-	//	data = append(data, pod.RemoteAddr()...)
-	//}
+	for _, endpoint := range v.Endpoints {
+		data = append(data, fmt.Sprintf("%s://%s:%d", strings.ToLower(endpoint.Protocol), endpoint.IP, endpoint.Port))
+	}
 	return data
 }
 
