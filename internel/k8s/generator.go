@@ -32,10 +32,6 @@ var (
 	GeneratorMapMutex sync.RWMutex
 )
 
-func GenGeneratorName(challengeRandID string) string {
-	return fmt.Sprintf("gen-%s-%s-pod", challengeRandID, utils.RandStr(5))
-}
-
 // StartGenerator 启动动态附件生成器, 等待附加命令, 生成附件, contestChallenge 需要预加载 Challenge
 func StartGenerator(contestChallenge model.ContestChallenge) (*Generator, bool, string) {
 	var (
@@ -43,8 +39,9 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*Generator, bool, 
 		ok            bool
 		msg           string
 		err           error
-		generatorName = GenGeneratorName(contestChallenge.Challenge.RandID)
-		containerName = fmt.Sprintf("%s-%s", generatorName, utils.RandStr(5))
+		generatorName = fmt.Sprintf("gen-%s", utils.RandStr(20))
+		containerName = fmt.Sprintf("ctn-%s", utils.RandStr(20))
+		lables        = map[string]string{GeneratorPodTag: generatorName, "contest_challenge_id": fmt.Sprintf("%d", contestChallenge.ID)}
 	)
 	if contestChallenge.Challenge.GeneratorImage == "" {
 		return &Generator{}, false, i18n.InvalidDockerImage
@@ -55,8 +52,8 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*Generator, bool, 
 	service, ok, msg := CreateService(ctx, CreateServiceOptions{
 		Name:     fmt.Sprintf("svc-%s", utils.RandStr(10)),
 		Ports:    model.Exposes{{Port: 8000, Protocol: "TCP"}},
-		Labels:   map[string]string{GeneratorPodTag: generatorName},
-		Selector: map[string]string{GeneratorPodTag: generatorName},
+		Labels:   lables,
+		Selector: lables,
 	})
 	if !ok {
 		log.Logger.Warningf("Failed to create service for generator: %s", msg)
@@ -64,10 +61,8 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*Generator, bool, 
 	}
 	pwd := utils.UUID()
 	pod, ok, msg = CreatePod(ctx, CreatePodOptions{
-		Name: generatorName,
-		Labels: map[string]string{
-			GeneratorPodTag: generatorName,
-		},
+		Name:   generatorName,
+		Labels: lables,
 		Containers: []corev1.Container{
 			{
 				Name:  containerName,

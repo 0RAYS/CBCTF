@@ -24,7 +24,6 @@ func needVPC(dockers []model.Docker) bool {
 	return false
 }
 
-// StartTeamVictim Todo
 func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChallenge model.ContestChallenge) (model.Victim, bool, string) {
 	var (
 		challengeRepo = db.InitChallengeRepo(tx)
@@ -244,26 +243,29 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 		}
 		victim.Pods = append(victim.Pods, pod)
 	}
-	_, ok, msg = k8s.StartVictim(victim)
+	ipExposesMap, ok, msg := k8s.StartVictim(victim)
 	if !ok {
 		//go k8s.StopVictim(victim)
 		return model.Victim{}, false, msg
 	}
-	//for i, pod := range victim.Pods {
-	//	target := targets[pod.Name]
-	//	ip := target["ip"].(string)
-	//	ports := model.Ports(target["ports"].([]int32))
-	//	ok, msg = podRepo.Update(pod.ID, db.UpdatePodOptions{
-	//		ExposedIP:    &ip,
-	//		ExposedPorts: &ports,
-	//	})
-	//	if !ok {
-	//		return model.Victim{}, false, msg
-	//	}
-	//	victim.Pods[i].ExposedIP = ip
-	//	victim.Pods[i].ExposedPorts = ports
-	//}
-	return model.Victim{}, true, i18n.Success
+	endpoints := make(model.Endpoints, 0)
+	for ip, exposes := range ipExposesMap {
+		for _, expose := range exposes {
+			endpoints = append(endpoints, model.Endpoint{
+				IP:       ip,
+				Port:     expose.Port,
+				Protocol: expose.Protocol,
+			})
+		}
+	}
+	ok, msg = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
+		Endpoints: &endpoints,
+	})
+	if !ok {
+		return model.Victim{}, false, msg
+	}
+	victim.Endpoints = endpoints
+	return victim, true, i18n.Success
 }
 
 // GetTeamVictimStatus contestChallenge 需要预加载 model.ContestChallenge
@@ -296,9 +298,7 @@ func GetTeamVictimStatus(tx *gorm.DB, team model.Team, contestChallenge model.Co
 		data["status"] = "Error"
 		return data
 	}
-	for _, pod := range victims[0].Pods {
-		data["target"] = append(data["target"].([]string), pod.RemoteAddr()...)
-	}
+	data["target"] = victims[0].RemoteAddr()
 	data["status"] = "Running"
 	data["remaining"] = victims[0].Remaining().Seconds()
 	return data

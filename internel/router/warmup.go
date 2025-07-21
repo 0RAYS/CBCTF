@@ -69,11 +69,7 @@ func GetContestVictims(ctx *gin.Context) {
 	data := make([]gin.H, 0)
 	for _, victim := range victims {
 		info := resp.GetVictimResp(victim)
-		remoteAddrL := make([]string, 0)
-		for _, pod := range victim.Pods {
-			remoteAddrL = append(remoteAddrL, pod.RemoteAddr()...)
-		}
-		info["remote"] = remoteAddrL
+		info["remote"] = victim.RemoteAddr()
 		info["remaining"] = victim.Remaining().Seconds()
 		info["team"] = victim.Team.Name
 		info["user"] = victim.User.Name
