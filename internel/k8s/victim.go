@@ -106,6 +106,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 						if err != nil {
 							return ipExposesMap, false, msg
 						}
+						// TODO 无法立刻获取 IP
 						if !slices.ContainsFunc(ipExposesMap[ip.Spec.V4ip], func(e model.Expose) bool {
 							return int32(port) == e.Port && dnat.Protocol == e.Protocol
 						}) {
