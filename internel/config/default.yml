@@ -47,6 +47,7 @@ k8s:
       - "192.168.0.254"
   tcpdump: "nicolaka/netshoot:latest"
   frpc:
+    on: false
     image: "snowdreamtech/frpc:latest"
     frps:
       - host: "example.com"
