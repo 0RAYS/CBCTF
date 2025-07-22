@@ -126,8 +126,8 @@ func initClients() {
 	if err != nil {
 		log.Logger.Fatalf("Failed to create client config: %s", err)
 	}
-	kubeConfig.QPS = 100
-	kubeConfig.Burst = 200
+	kubeConfig.QPS = 700
+	kubeConfig.Burst = 1000
 	log.Logger.Info("Admin config loaded")
 	kubeClient, err = kubernetes.NewForConfig(kubeConfig)
 	if err != nil {
