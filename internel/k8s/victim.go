@@ -391,19 +391,16 @@ func StopVictim(victim model.Victim) (bool, string) {
 	if ok, msg := DeleteEIPByLabels(ctx, labels); !ok {
 		return false, msg
 	}
-	if ok, msg := DeleteVPCNatGatewayList(ctx, labels); !ok {
-		return false, msg
-	}
-	if ok, msg := DeletePodList(ctx, labels); !ok {
-		return false, msg
-	}
 	if ok, msg := DeleteSubnetList(ctx, labels); !ok {
 		return false, msg
 	}
-	if ok, msg := DeleteVPCList(ctx, labels); !ok {
+	if ok, msg := DeleteNetAttachDefList(ctx, GlobalNamespace, labels); !ok {
 		return false, msg
 	}
-	if ok, msg := DeleteNetAttachDefList(ctx, GlobalNamespace, labels); !ok {
+	if ok, msg := DeleteVPCNatGatewayList(ctx, labels); !ok {
+		return false, msg
+	}
+	if ok, msg := DeleteVPCList(ctx, labels); !ok {
 		return false, msg
 	}
 	if ok, msg := DeleteConfigMapList(ctx, labels); !ok {
@@ -413,6 +410,9 @@ func StopVictim(victim model.Victim) (bool, string) {
 		return false, msg
 	}
 	if ok, msg := DeleteServiceList(ctx, labels); !ok {
+		return false, msg
+	}
+	if ok, msg := DeletePodList(ctx, labels); !ok {
 		return false, msg
 	}
 	return true, i18n.Success
