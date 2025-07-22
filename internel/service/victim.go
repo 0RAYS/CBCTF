@@ -1,6 +1,7 @@
 package service
 
 import (
+	"CBCTF/internel/config"
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/k8s"
 	"CBCTF/internel/model"
@@ -257,15 +258,17 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 			})
 		}
 	}
-	victim.ExposedEndpoints, ok, msg = k8s.CreateFrpc(victim)
-	if !ok {
-		return model.Victim{}, false, msg
+	victim.ExposedEndpoints = victim.Endpoints
+	if config.Env.K8S.Frpc.On {
+		victim.ExposedEndpoints, ok, msg = k8s.CreateFrpc(victim)
+		if !ok {
+			return model.Victim{}, false, msg
+		}
 	}
-	ok, msg = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
+	if ok, msg = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
 		Endpoints:        &victim.Endpoints,
 		ExposedEndpoints: &victim.ExposedEndpoints,
-	})
-	if !ok {
+	}); !ok {
 		return model.Victim{}, false, msg
 	}
 	return victim, true, i18n.Success

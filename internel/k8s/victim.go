@@ -35,7 +35,24 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 	ipExposesMap := make(map[string]model.Exposes)
 	ipExposesMapMutex := &sync.Mutex{}
 	if victim.VPC.Name != "" {
+		// 首先创建 VPC 资源, 导致多跑一个循环
 		var policyRoutes []*kubeovnv1.PolicyRoute
+		for _, subnet := range victim.VPC.Subnets {
+			policyRoutes = append(policyRoutes, &kubeovnv1.PolicyRoute{
+				Action:    kubeovnv1.PolicyRouteActionReroute,
+				Match:     fmt.Sprintf("ip4.src == %s", subnet.CIDRBlock),
+				NextHopIP: subnet.NatGateway.LanIP,
+				Priority:  1,
+			})
+		}
+		_, ok, msg := CreateVPC(ctx, CreateVPCOptions{
+			Name:         victim.VPC.Name,
+			Labels:       labels,
+			PolicyRoutes: policyRoutes,
+		})
+		if !ok {
+			return ipExposesMap, false, msg
+		}
 		for _, subnet := range victim.VPC.Subnets {
 			if _, ok, msg := CreateSubnet(ctx, CreateSubnetOptions{
 				Name:       subnet.Name,
@@ -74,12 +91,6 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 				}); !ok {
 					return ipExposesMap, false, msg
 				}
-				policyRoutes = append(policyRoutes, &kubeovnv1.PolicyRoute{
-					Action:    kubeovnv1.PolicyRouteActionReroute,
-					Match:     fmt.Sprintf("ip4.src == %s", subnet.CIDRBlock),
-					NextHopIP: subnet.NatGateway.LanIP,
-					Priority:  1,
-				})
 				for _, eip := range subnet.NatGateway.EIPs {
 					ip, ok, msg := CreateEIP(ctx, CreateEIPOptions{
 						Name:           eip.Name,
@@ -128,14 +139,6 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 					}
 				}
 			}
-		}
-		_, ok, msg := CreateVPC(ctx, CreateVPCOptions{
-			Name:         victim.VPC.Name,
-			Labels:       labels,
-			PolicyRoutes: policyRoutes,
-		})
-		if !ok {
-			return ipExposesMap, false, msg
 		}
 	}
 	type result struct {
@@ -271,12 +274,23 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 				return
 			}
 			if len(annotations) == 0 {
+				_, ok, msg := CreateService(ctx, CreateServiceOptions{
+					Name:     fmt.Sprintf("svc-%s", utils.RandStr(20)),
+					Ports:    pod.PodPorts,
+					Labels:   labels,
+					Selector: labels,
+				})
+				if !ok {
+					log.Logger.Warningf("Failed to create service for generator: %s", msg)
+					resultCh <- result{OK: false, Msg: msg}
+					return
+				}
 				ipExposesMapMutex.Lock()
 				for _, port := range pod.PodPorts {
-					if !slices.ContainsFunc(ipExposesMap[p.Status.PodIP], func(e model.Expose) bool {
+					if !slices.ContainsFunc(ipExposesMap[p.Status.HostIP], func(e model.Expose) bool {
 						return port.Port == e.Port && e.Protocol == port.Protocol
 					}) {
-						ipExposesMap[p.Status.PodIP] = append(ipExposesMap[p.Status.PodIP], port)
+						ipExposesMap[p.Status.HostIP] = append(ipExposesMap[p.Status.HostIP], port)
 					}
 				}
 				ipExposesMapMutex.Unlock()
