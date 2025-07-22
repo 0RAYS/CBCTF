@@ -272,7 +272,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 				return
 			}
 			if len(annotations) == 0 {
-				_, ok, msg := CreateService(ctx, CreateServiceOptions{
+				service, ok, msg := CreateService(ctx, CreateServiceOptions{
 					Name:     fmt.Sprintf("svc-%s", utils.RandStr(20)),
 					Ports:    pod.PodPorts,
 					Labels:   labels,
@@ -284,11 +284,14 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 					return
 				}
 				ipExposesMapMutex.Lock()
-				for _, port := range pod.PodPorts {
+				for _, port := range service.Spec.Ports {
 					if !slices.ContainsFunc(ipExposesMap[p.Status.HostIP], func(e model.Expose) bool {
-						return port.Port == e.Port && e.Protocol == port.Protocol
+						return port.NodePort == e.Port && strings.ToLower(e.Protocol) == strings.ToLower(string(port.Protocol))
 					}) {
-						ipExposesMap[p.Status.HostIP] = append(ipExposesMap[p.Status.HostIP], port)
+						ipExposesMap[p.Status.HostIP] = append(ipExposesMap[p.Status.HostIP], model.Expose{
+							Port:     port.NodePort,
+							Protocol: string(port.Protocol),
+						})
 					}
 				}
 				ipExposesMapMutex.Unlock()
