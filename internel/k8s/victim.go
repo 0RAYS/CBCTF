@@ -26,6 +26,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 	defer cancel()
 	// 添加一个独立tag, 防止 NetworkPolicy 影响 frpc 通信
 	labels := map[string]string{
+		"victim_id":            fmt.Sprintf("%d", victim.ID),
 		"user_id":              fmt.Sprintf("%d", victim.UserID),
 		"team_id":              fmt.Sprintf("%d", victim.TeamID),
 		"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),
@@ -348,6 +349,7 @@ func StopVictim(victim model.Victim) (bool, string) {
 	log.Logger.Infof("Stopping Victim for team %d challenge %d", victim.TeamID, victim.ContestChallengeID)
 	// 不添加独立 tag, 删除时直接删除所有相关资源
 	labels := map[string]string{
+		"victim_id":            fmt.Sprintf("%d", victim.ID),
 		"user_id":              fmt.Sprintf("%d", victim.UserID),
 		"team_id":              fmt.Sprintf("%d", victim.TeamID),
 		"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),

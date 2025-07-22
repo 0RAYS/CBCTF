@@ -23,6 +23,7 @@ func CreateFrpc(victim model.Victim) (model.Endpoints, bool, string) {
 	podName := fmt.Sprintf("frpc-%s", utils.RandStr(20))
 	// 添加一个独立tag, 防止受 NetworkPolicy 影响
 	labels := map[string]string{
+		"victim_id":            fmt.Sprintf("%d", victim.ID),
 		"user_id":              fmt.Sprintf("%d", victim.UserID),
 		"team_id":              fmt.Sprintf("%d", victim.TeamID),
 		"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),
