@@ -11,6 +11,7 @@ import (
 	"fmt"
 	kubeovnv1 "github.com/JBNRZ/kubeovn-api/pkg/apis/kubeovn/v1"
 	corev1 "k8s.io/api/core/v1"
+	netv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	"slices"
 	"strconv"
@@ -34,6 +35,27 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 	netAttchDefMap := make(map[string]*model.NetAttachDef)
 	ipExposesMap := make(map[string]model.Exposes)
 	ipExposesMapMutex := &sync.Mutex{}
+	if _, ok, msg := CreateNetworkPolicy(ctx, CreateNetworkPolicyOptions{
+		Name:        fmt.Sprintf("np-%s", utils.RandStr(20)),
+		Labels:      labels,
+		MatchLabels: labels,
+		From: func() []*netv1.IPBlock {
+			tmp := make([]*netv1.IPBlock, 0)
+			for _, p := range victim.NetworkPolicies {
+				tmp = append(tmp, p.From...)
+			}
+			return tmp
+		}(),
+		To: func() []*netv1.IPBlock {
+			tmp := make([]*netv1.IPBlock, 0)
+			for _, p := range victim.NetworkPolicies {
+				tmp = append(tmp, p.To...)
+			}
+			return tmp
+		}(),
+	}); !ok {
+		return ipExposesMap, false, msg
+	}
 	if victim.VPC.Name != "" {
 		// 首先创建 VPC 资源, 导致多跑一个循环
 		var policyRoutes []*kubeovnv1.PolicyRoute
