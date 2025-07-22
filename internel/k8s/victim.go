@@ -417,5 +417,11 @@ func StopVictim(victim model.Victim) (bool, string) {
 	if ok, msg := DeletePodList(ctx, labels); !ok {
 		return false, msg
 	}
+	go func() {
+		DeleteSubnetListForce(ctx, labels)
+		for _, subnet := range victim.VPC.Subnets {
+			DeleteIPListForce(ctx, map[string]string{"ovn.kubernetes.io/subnet": subnet.Name})
+		}
+	}()
 	return true, i18n.Success
 }
