@@ -38,22 +38,6 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 		// 首先创建 VPC 资源, 导致多跑一个循环
 		var policyRoutes []*kubeovnv1.PolicyRoute
 		for _, subnet := range victim.VPC.Subnets {
-			policyRoutes = append(policyRoutes, &kubeovnv1.PolicyRoute{
-				Action:    kubeovnv1.PolicyRouteActionReroute,
-				Match:     fmt.Sprintf("ip4.src == %s", subnet.CIDRBlock),
-				NextHopIP: subnet.NatGateway.LanIP,
-				Priority:  1,
-			})
-		}
-		_, ok, msg := CreateVPC(ctx, CreateVPCOptions{
-			Name:         victim.VPC.Name,
-			Labels:       labels,
-			PolicyRoutes: policyRoutes,
-		})
-		if !ok {
-			return ipExposesMap, false, msg
-		}
-		for _, subnet := range victim.VPC.Subnets {
 			if _, ok, msg := CreateSubnet(ctx, CreateSubnetOptions{
 				Name:       subnet.Name,
 				Labels:     labels,
@@ -91,6 +75,12 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 				}); !ok {
 					return ipExposesMap, false, msg
 				}
+				policyRoutes = append(policyRoutes, &kubeovnv1.PolicyRoute{
+					Action:    kubeovnv1.PolicyRouteActionReroute,
+					Match:     fmt.Sprintf("ip4.src == %s", subnet.CIDRBlock),
+					NextHopIP: subnet.NatGateway.LanIP,
+					Priority:  1,
+				})
 				for _, eip := range subnet.NatGateway.EIPs {
 					ip, ok, msg := CreateEIP(ctx, CreateEIPOptions{
 						Name:           eip.Name,
@@ -115,7 +105,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 						}
 						port, err := strconv.ParseInt(dnat.ExternalPort, 10, 64)
 						if err != nil {
-							return ipExposesMap, false, msg
+							return ipExposesMap, false, i18n.UnknownError
 						}
 						// TODO 无法立刻获取 IP
 						if !slices.ContainsFunc(ipExposesMap[ip.Spec.V4ip], func(e model.Expose) bool {
@@ -139,6 +129,14 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 					}
 				}
 			}
+		}
+		_, ok, msg := CreateVPC(ctx, CreateVPCOptions{
+			Name:         victim.VPC.Name,
+			Labels:       labels,
+			PolicyRoutes: policyRoutes,
+		})
+		if !ok {
+			return ipExposesMap, false, msg
 		}
 	}
 	type result struct {
