@@ -4,6 +4,7 @@ import (
 	"CBCTF/internel/config"
 	"CBCTF/internel/log"
 	"context"
+	"encoding/json"
 	"fmt"
 	"k8s.io/client-go/rest"
 	"os"
@@ -21,6 +22,14 @@ const (
 	VictimPodTag    = "victim"
 	GeneratorPodTag = "generator"
 	FrpcPodTag      = "frpc"
+)
+
+var (
+	forceDelete, _ = json.Marshal(map[string]interface{}{
+		"metadata": map[string]interface{}{
+			"finalizers": []string{},
+		},
+	})
 )
 
 var (
