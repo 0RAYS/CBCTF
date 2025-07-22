@@ -43,11 +43,6 @@ func CreateEIP(ctx context.Context, options CreateEIPOptions) (*kubeovnv1.Iptabl
 	}
 	var count int
 	for {
-		// 10s 左右仍不成功直接跳出
-		if count > 20 {
-			log.Logger.Warningf("Failed to get eip.Spec.V4ip, skipping")
-			break
-		}
 		eip, ok, _ = GetEIP(ctx, options.Name)
 		if !ok {
 			return nil, false, i18n.GetPodError
@@ -56,7 +51,12 @@ func CreateEIP(ctx context.Context, options CreateEIPOptions) (*kubeovnv1.Iptabl
 			break
 		}
 		count++
-		time.Sleep(500 * time.Millisecond)
+		// 10s 左右仍不成功直接跳出
+		if count > 10 {
+			log.Logger.Warningf("Failed to get eip.Spec.V4ip: %s", eip.Spec.V4ip)
+			break
+		}
+		time.Sleep(time.Second)
 	}
 	return eip, true, i18n.Success
 }
