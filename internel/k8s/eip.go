@@ -9,7 +9,6 @@ import (
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strings"
-	"time"
 )
 
 type CreateEIPOptions struct {
@@ -22,7 +21,6 @@ type CreateEIPOptions struct {
 func CreateEIP(ctx context.Context, options CreateEIPOptions) (*kubeovnv1.IptablesEIP, bool, string) {
 	var (
 		eip *kubeovnv1.IptablesEIP
-		ok  bool
 		err error
 	)
 	eip = &kubeovnv1.IptablesEIP{
@@ -40,23 +38,6 @@ func CreateEIP(ctx context.Context, options CreateEIPOptions) (*kubeovnv1.Iptabl
 	if err != nil {
 		log.Logger.Warningf("Failed to create EIP: %v", err)
 		return nil, false, i18n.CreateEIPError
-	}
-	var count int
-	for {
-		eip, ok, _ = GetEIP(ctx, options.Name)
-		if !ok {
-			return nil, false, i18n.GetPodError
-		}
-		if eip.Spec.V4ip != "" {
-			break
-		}
-		count++
-		// 10s 左右仍不成功直接跳出
-		if count > 10 {
-			log.Logger.Warningf("Failed to get eip.Spec.V4ip: %s", eip.Spec.V4ip)
-			break
-		}
-		time.Sleep(time.Second)
 	}
 	return eip, true, i18n.Success
 }
