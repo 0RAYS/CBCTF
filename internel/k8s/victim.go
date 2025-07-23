@@ -61,12 +61,14 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 		// 首先创建 VPC 资源, 导致多跑一个循环
 		var policyRoutes []*kubeovnv1.PolicyRoute
 		for _, subnet := range victim.VPC.Subnets {
-			policyRoutes = append(policyRoutes, &kubeovnv1.PolicyRoute{
-				Action:    kubeovnv1.PolicyRouteActionReroute,
-				Match:     fmt.Sprintf("ip4.src == %s", subnet.CIDRBlock),
-				NextHopIP: subnet.NatGateway.LanIP,
-				Priority:  1,
-			})
+			if subnet.NatGateway != nil {
+				policyRoutes = append(policyRoutes, &kubeovnv1.PolicyRoute{
+					Action:    kubeovnv1.PolicyRouteActionReroute,
+					Match:     fmt.Sprintf("ip4.src == %s", subnet.CIDRBlock),
+					NextHopIP: subnet.NatGateway.LanIP,
+					Priority:  1,
+				})
+			}
 		}
 		if _, ok, msg := CreateVPC(ctx, CreateVPCOptions{
 			Name:         victim.VPC.Name,
