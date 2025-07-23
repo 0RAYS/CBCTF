@@ -116,12 +116,13 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 					return ipExposesMap, false, msg
 				}
 				for _, eip := range subnet.NatGateway.EIPs {
-					if _, ok, msg := CreateEIP(ctx, CreateEIPOptions{
+					e, ok, msg := CreateEIP(ctx, CreateEIPOptions{
 						Name:           eip.Name,
 						Labels:         labels,
 						NatGw:          subnet.NatGateway.Name,
 						ExternalSubnet: ExternalSubnetName,
-					}); !ok {
+					})
+					if !ok {
 						return ipExposesMap, false, msg
 					}
 					for _, dnat := range eip.DNats {
@@ -135,6 +136,18 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 							Protocol:     dnat.Protocol,
 						}); !ok {
 							return ipExposesMap, false, msg
+						}
+						port, err := strconv.ParseInt(dnat.ExternalPort, 10, 64)
+						if err != nil {
+							return ipExposesMap, false, i18n.UnknownError
+						}
+						if !slices.ContainsFunc(ipExposesMap[e.Spec.V4ip], func(e model.Expose) bool {
+							return int32(port) == e.Port && dnat.Protocol == e.Protocol
+						}) {
+							ipExposesMap[e.Spec.V4ip] = append(ipExposesMap[e.Spec.V4ip], model.Expose{
+								Port:     int32(port),
+								Protocol: dnat.Protocol,
+							})
 						}
 					}
 					for _, snat := range eip.SNats {
@@ -316,33 +329,6 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 	for res := range resultCh {
 		if !res.OK {
 			return ipExposesMap, false, res.Msg
-		}
-	}
-	// 将获取EIP的IPv4放置在创建所有资源后部, 尽可能晚的获取ip, 尝试修复 `无法立刻获取 IPv4` 的问题
-	if victim.VPC.Name != "" {
-		for _, subnet := range victim.VPC.Subnets {
-			if subnet.NatGateway != nil {
-				for _, e := range subnet.NatGateway.EIPs {
-					eip, ok, msg := GetEIP(ctx, e.Name)
-					if !ok {
-						return ipExposesMap, false, msg
-					}
-					for _, dnat := range e.DNats {
-						port, err := strconv.ParseInt(dnat.ExternalPort, 10, 64)
-						if err != nil {
-							return ipExposesMap, false, i18n.UnknownError
-						}
-						if !slices.ContainsFunc(ipExposesMap[eip.Spec.V4ip], func(e model.Expose) bool {
-							return int32(port) == e.Port && dnat.Protocol == e.Protocol
-						}) {
-							ipExposesMap[eip.Spec.V4ip] = append(ipExposesMap[eip.Spec.V4ip], model.Expose{
-								Port:     int32(port),
-								Protocol: dnat.Protocol,
-							})
-						}
-					}
-				}
-			}
 		}
 	}
 	return ipExposesMap, true, i18n.Success
