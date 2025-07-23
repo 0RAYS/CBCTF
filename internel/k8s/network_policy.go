@@ -53,8 +53,6 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 			PodSelector: metav1.LabelSelector{
 				MatchLabels: options.MatchLabels,
 			},
-			// 默认不允许出网
-			PolicyTypes: []netv1.PolicyType{netv1.PolicyTypeEgress},
 		},
 	}
 	if len(ingress) > 0 {
@@ -62,6 +60,7 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 		networkPolicy.Spec.Ingress = ingress
 	}
 	if len(egress) > 0 {
+		networkPolicy.Spec.PolicyTypes = append(networkPolicy.Spec.PolicyTypes, netv1.PolicyTypeEgress)
 		networkPolicy.Spec.Egress = egress
 	}
 	networkPolicy, err = kubeClient.NetworkingV1().NetworkPolicies(GlobalNamespace).Create(ctx, networkPolicy, metav1.CreateOptions{})
