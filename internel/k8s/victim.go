@@ -61,18 +61,21 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 		// 首先创建 VPC 资源, 导致多跑一个循环
 		var policyRoutes []*kubeovnv1.PolicyRoute
 		for _, subnet := range victim.VPC.Subnets {
-			if _, ok, msg := CreateSubnet(ctx, CreateSubnetOptions{
-				Name:       subnet.Name,
-				Labels:     labels,
-				VPC:        victim.VPC.Name,
-				CIDR:       subnet.CIDRBlock,
-				Gateway:    subnet.Gateway,
-				ExcludeIPs: subnet.ExcludeIps,
-				Provider:   fmt.Sprintf("%s.%s.ovn", subnet.NetAttachDef.Name, GlobalNamespace),
-			}); !ok {
-				return ipExposesMap, false, msg
-			}
-			subnetMap[subnet.DefName] = subnet
+			policyRoutes = append(policyRoutes, &kubeovnv1.PolicyRoute{
+				Action:    kubeovnv1.PolicyRouteActionReroute,
+				Match:     fmt.Sprintf("ip4.src == %s", subnet.CIDRBlock),
+				NextHopIP: subnet.NatGateway.LanIP,
+				Priority:  1,
+			})
+		}
+		if _, ok, msg := CreateVPC(ctx, CreateVPCOptions{
+			Name:         victim.VPC.Name,
+			Labels:       labels,
+			PolicyRoutes: policyRoutes,
+		}); !ok {
+			return ipExposesMap, false, msg
+		}
+		for _, subnet := range victim.VPC.Subnets {
 			if _, ok, msg := CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
 				Name:      subnet.NetAttachDef.Name,
 				Namespace: GlobalNamespace,
@@ -86,6 +89,18 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 			}); !ok {
 				return ipExposesMap, false, msg
 			}
+			if _, ok, msg := CreateSubnet(ctx, CreateSubnetOptions{
+				Name:       subnet.Name,
+				Labels:     labels,
+				VPC:        victim.VPC.Name,
+				CIDR:       subnet.CIDRBlock,
+				Gateway:    subnet.Gateway,
+				ExcludeIPs: subnet.ExcludeIps,
+				Provider:   fmt.Sprintf("%s.%s.ovn", subnet.NetAttachDef.Name, GlobalNamespace),
+			}); !ok {
+				return ipExposesMap, false, msg
+			}
+			subnetMap[subnet.DefName] = subnet
 			netAttchDefMap[subnet.DefName] = subnet.NetAttachDef
 			if subnet.NatGateway != nil {
 				if _, ok, msg := CreateVPCNatGateway(ctx, CreateVPCNatGatewayOptions{
@@ -98,12 +113,6 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 				}); !ok {
 					return ipExposesMap, false, msg
 				}
-				policyRoutes = append(policyRoutes, &kubeovnv1.PolicyRoute{
-					Action:    kubeovnv1.PolicyRouteActionReroute,
-					Match:     fmt.Sprintf("ip4.src == %s", subnet.CIDRBlock),
-					NextHopIP: subnet.NatGateway.LanIP,
-					Priority:  1,
-				})
 				for _, eip := range subnet.NatGateway.EIPs {
 					if _, ok, msg := CreateEIP(ctx, CreateEIPOptions{
 						Name:           eip.Name,
@@ -138,14 +147,6 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 					}
 				}
 			}
-		}
-		_, ok, msg := CreateVPC(ctx, CreateVPCOptions{
-			Name:         victim.VPC.Name,
-			Labels:       labels,
-			PolicyRoutes: policyRoutes,
-		})
-		if !ok {
-			return ipExposesMap, false, msg
 		}
 	}
 	type result struct {
