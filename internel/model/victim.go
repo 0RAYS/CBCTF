@@ -149,16 +149,18 @@ func (v VPC) Value() (driver.Value, error) {
 			}
 			return false
 		})
-		if lanIP := net.ParseIP(s.NatGateway.LanIP); lanIP == nil || !cidr.Contains(lanIP) {
-			return true
-		}
-		for _, eip := range s.NatGateway.EIPs {
-			eip.DNats = slices.DeleteFunc(eip.DNats, func(d *DNat) bool {
-				if i := net.ParseIP(d.InternalIP); i == nil || !cidr.Contains(i) {
-					return true
-				}
-				return false
-			})
+		if s.NatGateway != nil {
+			if lanIP := net.ParseIP(s.NatGateway.LanIP); lanIP == nil || !cidr.Contains(lanIP) {
+				return true
+			}
+			for _, eip := range s.NatGateway.EIPs {
+				eip.DNats = slices.DeleteFunc(eip.DNats, func(d *DNat) bool {
+					if i := net.ParseIP(d.InternalIP); i == nil || !cidr.Contains(i) {
+						return true
+					}
+					return false
+				})
+			}
 		}
 		return false
 	})
