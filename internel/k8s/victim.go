@@ -126,7 +126,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 						return ipExposesMap, false, msg
 					}
 					for _, dnat := range eip.DNats {
-						if _, ok, msg := CreateDNat(ctx, CreateDNatOptions{
+						if _, ok, msg = CreateDNat(ctx, CreateDNatOptions{
 							Name:         dnat.Name,
 							Labels:       labels,
 							EIP:          eip.Name,
@@ -151,7 +151,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 						}
 					}
 					for _, snat := range eip.SNats {
-						if _, ok, msg := CreateSNat(ctx, CreateSNatOptions{
+						if _, ok, msg = CreateSNat(ctx, CreateSNatOptions{
 							Name:         snat.Name,
 							Labels:       labels,
 							EIP:          eip.Name,
