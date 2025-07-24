@@ -219,18 +219,11 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 						Value: value,
 					})
 				}
-				if len(container.EnvFlags) == 1 {
+				for name, envFlag := range container.EnvFlags {
 					envs = append(envs, corev1.EnvVar{
-						Name:  "FLAG",
-						Value: container.EnvFlags[0],
+						Name:  name,
+						Value: envFlag,
 					})
-				} else {
-					for i, envFlag := range container.EnvFlags {
-						envs = append(envs, corev1.EnvVar{
-							Name:  fmt.Sprintf("FLAG%d", i+1),
-							Value: envFlag,
-						})
-					}
 				}
 				ports := make([]corev1.ContainerPort, 0)
 				for _, p := range container.Exposes {

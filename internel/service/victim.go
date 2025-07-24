@@ -115,13 +115,19 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 				PodPorts: docker.Exposes,
 				Networks: docker.Networks,
 			}
-			envFlagL := make(model.StringList, 0)
+			envFlagL := make(model.StringMap)
 			volumeFlagL := make(model.StringMap)
 			for _, challengeFlag := range docker.ChallengeFlags {
 				teamFlag, ok, msg := teamFlagRepo.Get(db.GetOptions{
+					Selects: []string{"id", "challenge_flag_id", "value"},
 					Conditions: map[string]any{
 						"team_id":           team.ID,
 						"challenge_flag_id": challengeFlag.ID,
+					},
+					Preloads: map[string]db.GetOptions{
+						"ChallengeFlag": {
+							Selects: []string{"id", "Name"},
+						},
 					},
 				})
 				if !ok {
@@ -129,7 +135,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 				}
 				switch challengeFlag.InjectType {
 				case model.EnvInjectType:
-					envFlagL = append(envFlagL, teamFlag.Value)
+					envFlagL[teamFlag.ChallengeFlag.Name] = teamFlag.Value
 				case model.VolumeInjectType:
 					volumeFlagL[challengeFlag.Path] = teamFlag.Value
 				default:
@@ -189,13 +195,19 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 		cOptionsL := make([]db.CreateContainerOptions, 0)
 		tmp := make([]string, 0)
 		for _, docker := range challenge.Dockers {
-			envFlagL := make(model.StringList, 0)
+			envFlagL := make(model.StringMap)
 			volumeFlagL := make(model.StringMap)
 			for _, challengeFlag := range docker.ChallengeFlags {
 				teamFlag, ok, msg := teamFlagRepo.Get(db.GetOptions{
+					Selects: []string{"id", "challenge_flag_id", "value"},
 					Conditions: map[string]any{
 						"team_id":           team.ID,
 						"challenge_flag_id": challengeFlag.ID,
+					},
+					Preloads: map[string]db.GetOptions{
+						"ChallengeFlag": {
+							Selects: []string{"id", "Name"},
+						},
 					},
 				})
 				if !ok {
@@ -203,7 +215,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 				}
 				switch challengeFlag.InjectType {
 				case model.EnvInjectType:
-					envFlagL = append(envFlagL, teamFlag.Value)
+					envFlagL[teamFlag.ChallengeFlag.Name] = teamFlag.Value
 				case model.VolumeInjectType:
 					volumeFlagL[challengeFlag.Path] = teamFlag.Value
 				default:
