@@ -18,7 +18,7 @@ type CreateContainerOptions struct {
 	WorkingDir  string
 	Command     model.StringList
 	Environment model.StringMap
-	EnvFlags    model.StringList
+	EnvFlags    model.StringMap
 	VolumeFlags model.StringMap
 	Exposes     model.Exposes
 }
