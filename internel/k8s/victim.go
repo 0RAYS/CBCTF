@@ -401,8 +401,17 @@ func StopVictim(victim model.Victim) (bool, string) {
 	}
 	go func() {
 		DeleteSubnetListForce(ctx, labels)
-		for _, subnet := range victim.VPC.Subnets {
-			DeleteIPListForce(ctx, map[string]string{"ovn.kubernetes.io/subnet": subnet.Name})
+		ipL, ok, _ := GetIPList(ctx)
+		if !ok {
+			return
+		}
+		// 不使用 DeleteIPListForce, 以减少请求 ListIP 的次数
+		for _, ip := range ipL.Items {
+			for k, v := range ip.Labels {
+				if strings.HasPrefix(k, "ovn.kubernetes.io/subnet") && v == victim.VPC.Name {
+					DeleteIPForce(ctx, ip.Name)
+				}
+			}
 		}
 	}()
 	return true, i18n.Success
