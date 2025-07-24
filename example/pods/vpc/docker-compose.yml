@@ -1,6 +1,6 @@
 services:
-  test_service:
-    container_name: test_service
+  service1:
+    container_name: service1
     image: nicolaka/netshoot:latest
     ports:
       - "80:80/tcp"
@@ -8,8 +8,6 @@ services:
     mem_limit: 500m
     environment:
       - FLAG=static{static_flag}
-      - FLAG_2=dynamic{dynamic_flag}
-      - FLAG_3=uuid{}
     volumes:
       - FLAG_0:/flag
     working_dir: /root
@@ -19,18 +17,14 @@ services:
     networks:
       network1:
         ipv4_address: 192.168.0.2
-      network2:
-        ipv4_address: 192.168.1.2
 
-  another_service:
-    container_name: another_service
+  service2:
+    container_name: service2
     image: nicolaka/netshoot:latest
-    ports:
-      - "4000:4000/tcp"
     cpus: 0.5
     mem_limit: 500m
     environment:
-      - FLAG_3=static{another_env_flag_value}
+      - FLAG=dynamic{dynamic_flag}
     volumes:
       - FLAG_1:/flag
     working_dir: /root
@@ -43,13 +37,34 @@ services:
       network2:
         ipv4_address: 192.168.1.3
 
+  service3:
+    container_name: service3
+    cpus: 0.5
+    mem_limit: 500m
+    environment:
+      - FLAG=uuid{}
+    volumes:
+      - FLAG_2:/flag
+    working_dir: /root
+    command:
+      - "sleep"
+      - "infinity"
+    networks:
+      network2:
+        ipv4_address: 192.168.1.4
+      network3:
+        ipv4_address: 192.168.2.4
+
 volumes:
   FLAG_0:
     labels:
-      - value=static{static_flag_value}
+      - value=static{static_flag}
   FLAG_1:
     labels:
-      - value=dynamic{dynamic_flag_value}
+      - value=dynamic{dynamic_flag}
+  FLAG_2:
+    labels:
+      - value=uuid{}
 
 networks:
   network1:
@@ -64,3 +79,9 @@ networks:
       config:
         - subnet: 192.168.1.0/24
           gateway: 192.168.1.1
+
+  network3:
+    ipam:
+      config:
+        - subnet: 192.168.2.0/24
+          gateway: 192.168.2.1
