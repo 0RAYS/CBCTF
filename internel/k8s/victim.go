@@ -403,17 +403,8 @@ func StopVictim(victim model.Victim) (bool, string) {
 		goCTX, goCancel := context.WithTimeout(context.Background(), 1*time.Minute)
 		defer goCancel()
 		DeleteSubnetListForce(goCTX, labels)
-		ipL, ok, _ := GetIPList(goCTX)
-		if !ok {
-			return
-		}
-		// 不使用 DeleteIPListForce, 以减少请求 ListIP 的次数
-		for _, ip := range ipL.Items {
-			for k, v := range ip.Labels {
-				if strings.HasPrefix(k, "ovn.kubernetes.io/subnet") && v == victim.VPC.Name {
-					DeleteIPForce(goCTX, ip.Name)
-				}
-			}
+		for _, subnet := range victim.VPC.Subnets {
+			DeleteIPListForce(ctx, map[string]string{"ovn.kubernetes.io/subnet": subnet.Name})
 		}
 	}()
 	return true, i18n.Success
