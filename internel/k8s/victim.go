@@ -400,8 +400,10 @@ func StopVictim(victim model.Victim) (bool, string) {
 		return false, msg
 	}
 	go func() {
-		DeleteSubnetListForce(ctx, labels)
-		ipL, ok, _ := GetIPList(ctx)
+		goCTX, goCancel := context.WithTimeout(context.Background(), 1*time.Minute)
+		defer goCancel()
+		DeleteSubnetListForce(goCTX, labels)
+		ipL, ok, _ := GetIPList(goCTX)
 		if !ok {
 			return
 		}
@@ -409,7 +411,7 @@ func StopVictim(victim model.Victim) (bool, string) {
 		for _, ip := range ipL.Items {
 			for k, v := range ip.Labels {
 				if strings.HasPrefix(k, "ovn.kubernetes.io/subnet") && v == victim.VPC.Name {
-					DeleteIPForce(ctx, ip.Name)
+					DeleteIPForce(goCTX, ip.Name)
 				}
 			}
 		}
