@@ -20,9 +20,15 @@ type CreatePVOptions struct {
 
 func CreatePV(ctx context.Context, options CreatePVOptions) (*corev1.PersistentVolume, bool, string) {
 	var (
-		pv  *corev1.PersistentVolume
-		err error
+		pv      *corev1.PersistentVolume
+		storage resource.Quantity
+		err     error
 	)
+	storage, err = resource.ParseQuantity(options.Storage)
+	if err != nil {
+		log.Logger.Warningf("Failed to parse storage resource: %s", err)
+		return nil, false, i18n.UnknownError
+	}
 	pv = &corev1.PersistentVolume{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:   options.Name,
@@ -31,15 +37,7 @@ func CreatePV(ctx context.Context, options CreatePVOptions) (*corev1.PersistentV
 		Spec: corev1.PersistentVolumeSpec{
 			AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteMany},
 			Capacity: map[corev1.ResourceName]resource.Quantity{
-				corev1.ResourceStorage: func() resource.Quantity {
-					q, e := resource.ParseQuantity(options.Storage)
-					if e != nil {
-						log.Logger.Warningf("Failed to parse storage resource: %s", e)
-						log.Logger.Warning("Using default storage size 10Gi")
-						return resource.MustParse("10Gi")
-					}
-					return q
-				}(),
+				corev1.ResourceStorage: storage,
 			},
 			PersistentVolumeReclaimPolicy: corev1.PersistentVolumeReclaimRetain,
 			PersistentVolumeSource: corev1.PersistentVolumeSource{
