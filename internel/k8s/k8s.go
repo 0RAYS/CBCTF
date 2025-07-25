@@ -45,6 +45,7 @@ var (
 func Init() {
 	GlobalNamespace = config.Env.K8S.Namespace
 	ExternalSubnetName = fmt.Sprintf("%s-external-network", GlobalNamespace)
+	NFSVolumeName = fmt.Sprintf("%s-nfs-volume", GlobalNamespace)
 	initClients()
 }
 
