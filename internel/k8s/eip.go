@@ -8,6 +8,7 @@ import (
 	kubeovnv1 "github.com/JBNRZ/kubeovn-api/pkg/apis/kubeovn/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"net"
 	"strings"
 	"time"
 )
@@ -44,9 +45,9 @@ func CreateEIP(ctx context.Context, options CreateEIPOptions) (*kubeovnv1.Iptabl
 	for {
 		eip, ok, _ = GetEIP(ctx, options.Name)
 		if !ok {
-			return nil, false, i18n.GetPodError
+			return nil, false, i18n.GetEIPError
 		}
-		if eip.Spec.V4ip != "" {
+		if net.ParseIP(eip.Spec.V4ip) != nil {
 			break
 		}
 		time.Sleep(500 * time.Millisecond)
