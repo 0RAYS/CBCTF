@@ -82,6 +82,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*Generator, bool, 
 					},
 				},
 				WorkingDir: "/root",
+				Command:    []string{"sleep", "infinity"},
 			},
 		},
 		Volumes: []corev1.Volume{
