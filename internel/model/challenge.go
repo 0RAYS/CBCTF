@@ -132,9 +132,5 @@ func (n *NetworkPolicies) Scan(value any) error {
 	if !ok {
 		return fmt.Errorf("failed to scan NetworkPolicy value")
 	}
-	if len(bytes) == 0 {
-		*n = nil
-		return nil
-	}
 	return json.Unmarshal(bytes, n)
 }
