@@ -112,7 +112,7 @@ func initExternalNetwork(ctx context.Context) {
 			log.Logger.Fatal("Failed to init external network")
 		}
 	} else {
-		log.Logger.Info("External network is already exists")
+		log.Logger.Info("ExternalNetworkSubnet is already exists")
 	}
 	if _, ok, _ := GetNetAttachDef(ctx, ExternalSubnetName, "kube-system"); !ok {
 		if _, ok, _ := CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
@@ -133,7 +133,7 @@ func initExternalNetwork(ctx context.Context) {
 			log.Logger.Fatal("Failed to init external network attachment definition")
 		}
 	} else {
-		log.Logger.Info("External network is already exists")
+		log.Logger.Info("ExternalNetworkAttachDef is already exists")
 	}
 }
 
