@@ -12,8 +12,6 @@ import (
 
 	kubeovnclient "github.com/JBNRZ/kubeovn-api/pkg/client/clientset/versioned"
 	netattclient "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/client/clientset/versioned"
-	authorizationv1 "k8s.io/api/authorization/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 )
@@ -63,58 +61,6 @@ func InitResources() {
 	}
 	log.Logger.Infof("Kubeconfig saved to %s.conf, please restart", GlobalNamespace)
 	os.Exit(0)
-}
-
-// CheckPermission checks if the user has permission to access the resources
-func CheckPermission() {
-	var err error
-	if _, err = os.Stat(config.Env.K8S.Config); err != nil {
-		log.Logger.Fatalf("Make sure the config.k8s.config.user configured correctly: %s", err)
-	}
-	kubeConfig, err = clientcmd.BuildConfigFromFlags("", config.Env.K8S.Config)
-	if err != nil {
-		log.Logger.Fatalf("Failed to load k8s user config: %s", err)
-	}
-	kubeClient, err = kubernetes.NewForConfig(kubeConfig)
-	if err != nil {
-		log.Logger.Fatalf("Failed to init k8s client: %s", err)
-	}
-	log.Logger.Infof("Checking permission in namespace %s", GlobalNamespace)
-	groups := map[string]map[string][]string{
-		"":                  {"pods": {"*"}, "services": {"*"}, "configmaps": {"*"}, "pods/exec": {"*"}, "nodes": {"get", "list", "watch"}},
-		"batch":             {"jobs": {"*"}},
-		"networking.k8s.io": {"networkpolicies": {"*"}},
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
-	defer cancel()
-	for group, resources := range groups {
-		for resource, verbL := range resources {
-			for _, verb := range verbL {
-				accessReview := &authorizationv1.SelfSubjectAccessReview{
-					Spec: authorizationv1.SelfSubjectAccessReviewSpec{
-						ResourceAttributes: &authorizationv1.ResourceAttributes{
-							Namespace: GlobalNamespace,
-							Group:     group,
-							Version:   "*",
-							Resource:  resource,
-							Verb:      verb,
-						},
-					},
-				}
-				res, err := kubeClient.AuthorizationV1().SelfSubjectAccessReviews().Create(ctx, accessReview, metav1.CreateOptions{})
-				if err != nil {
-					log.Logger.Warningf("Failed to check permissions: %v", err)
-				}
-				if !res.Status.Allowed {
-					log.Logger.Warningf("User does NOT have permission to access %s-%s in namespace cbctf.", group, resource)
-					log.Logger.Warningf("Reason: %s", res.Status.Reason)
-					log.Logger.Warningf("EvaluationError: %s", res.Status.EvaluationError)
-					os.Exit(-1)
-				}
-			}
-		}
-	}
-	log.Logger.Infof("User has permission to access all needed resources in namespace %s", GlobalNamespace)
 }
 
 func initClients() {
