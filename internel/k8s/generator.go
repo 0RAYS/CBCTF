@@ -1,6 +1,7 @@
 package k8s
 
 import (
+	"CBCTF/internel/config"
 	"CBCTF/internel/i18n"
 	"CBCTF/internel/log"
 	"CBCTF/internel/model"
@@ -41,6 +42,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*Generator, bool, 
 		err           error
 		generatorName = fmt.Sprintf("gen-%s", utils.RandStr(20))
 		containerName = fmt.Sprintf("ctn-%s", utils.RandStr(20))
+		volumeName    = fmt.Sprintf("vol-%s", utils.RandStr(20))
 		lables        = map[string]string{GeneratorPodTag: generatorName, "contest_challenge_id": fmt.Sprintf("%d", contestChallenge.ID)}
 	)
 	if contestChallenge.Challenge.GeneratorImage == "" {
@@ -73,6 +75,23 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*Generator, bool, 
 						Value: pwd,
 					},
 				},
+				VolumeMounts: []corev1.VolumeMount{
+					{
+						Name:      volumeName,
+						MountPath: "/root/mnt",
+					},
+				},
+			},
+		},
+		Volumes: []corev1.Volume{
+			{
+				Name: volumeName,
+				VolumeSource: corev1.VolumeSource{
+					NFS: &corev1.NFSVolumeSource{
+						Server: config.Env.NFS.Server,
+						Path:   contestChallenge.Challenge.NFSBasicDir(),
+					},
+				},
 			},
 		},
 	})
@@ -81,12 +100,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*Generator, bool, 
 	}
 	var commands []string
 	if _, err = os.Stat(contestChallenge.Challenge.GeneratorPath()); err == nil {
-		err = CopyToPod(generatorName, containerName, contestChallenge.Challenge.GeneratorPath(), "/root/generator.zip")
-		if err != nil {
-			log.Logger.Warningf("Failed to copy file: %v", err)
-			return &Generator{}, false, i18n.CopyFileError
-		}
-		commands = append(commands, "unzip /root/generator.zip -d /root")
+		commands = append(commands, fmt.Sprintf("unzip /root/mnt/generator.zip -d /root"))
 	} else {
 		log.Logger.Info("Generator file not found, make sure the generator docker can work correctly")
 	}

@@ -88,6 +88,10 @@ func (c Challenge) GeneratorPath() string {
 	return fmt.Sprintf("%s/%s", c.BasicDir(), GeneratorFile)
 }
 
+func (c Challenge) NFSBasicDir() string {
+	return fmt.Sprintf("%s/%d", config.Env.NFS.Path, c.ID)
+}
+
 // AttachmentPath 获取下载时, 题目附件的路径
 func (c Challenge) AttachmentPath(teamID uint) string {
 	switch c.Type {
