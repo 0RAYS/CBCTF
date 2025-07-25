@@ -30,7 +30,7 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 		if count > 0 {
 			return true, i18n.Success
 		}
-		packet, ok, msg := traffic.ReadPcap(pod.TrafficPath())
+		packet, ok, msg := traffic.ReadPcap(pod.TrafficPcapPath())
 		if !ok {
 			if pod.DeletedAt.Valid && msg == i18n.TrafficNotFound {
 				msg = i18n.HasNoTraffic
