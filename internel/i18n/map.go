@@ -257,16 +257,6 @@ var resp = map[string]map[string]any{
 	GetIPError:    {"zh-CN": "获取IP失败", "en-US": "Get IP failed", "code": 500},
 	IPNotFound:    {"zh-CN": "IP不存在", "en-US": "IP not found", "code": 404},
 
-	CreatePVError: {"zh-CN": "创建PV失败", "en-US": "Create PV failed", "code": 500},
-	DeletePVError: {"zh-CN": "删除PV失败", "en-US": "Delete PV failed", "code": 500},
-	GetPVError:    {"zh-CN": "获取PV失败", "en-US": "Get PV failed", "code": 500},
-	PVNotFound:    {"zh-CN": "PV不存在", "en-US": "PV not found", "code": 404},
-
-	CreatePVCError: {"zh-CN": "创建PVC失败", "en-US": "Create PVC failed", "code": 500},
-	DeletePVCError: {"zh-CN": "删除PVC失败", "en-US": "Delete PVC failed", "code": 500},
-	GetPVCError:    {"zh-CN": "获取PVC失败", "en-US": "Get PVC failed", "code": 500},
-	PVCNotFound:    {"zh-CN": "PVC不存在", "en-US": "PVC not found", "code": 404},
-
 	GetNodeListError: {"zh-CN": "获取K8S节点失败", "en-US": "Get node list failed", "code": 500},
 }
 
