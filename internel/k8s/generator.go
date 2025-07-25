@@ -157,7 +157,7 @@ func GenerateAttachment(contestChallenge model.ContestChallenge, team model.Team
 	flags = base64.StdEncoding.EncodeToString([]byte(strings.TrimSuffix(flags, ",")))
 	flags = strings.TrimSuffix(flags, ",")
 	command := fmt.Sprintf("./run.sh %d %s", team.ID, base64.StdEncoding.EncodeToString([]byte(flags)))
-	log.Logger.Debugf("Executing command in Generator %s: %s", generator.Name, command)
+	log.Logger.Debugf("Executing command in %s: %s", generator.Name, command)
 	if _, _, err = Exec(generator.Name, generator.Spec.Containers[0].Name, command, nil); err != nil {
 		log.Logger.Warningf("Failed to execute command %s: %v", command, err)
 		return false, i18n.ExecCommandError
