@@ -39,10 +39,10 @@ var (
 	kubeConfig         *rest.Config
 	GlobalNamespace    string
 	ExternalSubnetName string
+	NFSVolumeName      string
 )
 
 func Init() {
-	log.Logger.Infof("Please mount the nfs server %s:%s at path %s manually", config.Env.NFS.Server, config.Env.NFS.Path, config.Env.Path)
 	GlobalNamespace = config.Env.K8S.Namespace
 	ExternalSubnetName = fmt.Sprintf("%s-external-network", GlobalNamespace)
 	initClients()
@@ -54,6 +54,7 @@ func InitResources() {
 
 	updateNodeIPs(ctx)
 	CreateNamespace(ctx, CreateNamespaceOptions{Name: GlobalNamespace})
+	initNFSVolume(ctx)
 	initExternalNetwork(ctx)
 
 	if err := config.Save(config.Env); err != nil {
@@ -185,4 +186,28 @@ func initExternalNetwork(ctx context.Context) {
 	}); !ok {
 		log.Logger.Fatal("Failed to init external network attachment definition")
 	}
+}
+
+func initNFSVolume(ctx context.Context) {
+	if _, ok, _ := GetPVC(ctx, NFSVolumeName); ok {
+		DeletePVC(ctx, NFSVolumeName)
+	}
+	if _, ok, _ := GetPV(ctx, NFSVolumeName); ok {
+		DeletePV(ctx, NFSVolumeName)
+	}
+	if _, ok, _ := CreatePV(ctx, CreatePVOptions{
+		Name:    NFSVolumeName,
+		Server:  config.Env.NFS.Server,
+		Path:    config.Env.NFS.Path,
+		Storage: config.Env.NFS.Storage,
+	}); !ok {
+		log.Logger.Fatal("Failed to init pv")
+	}
+	if _, ok, _ := CreatePVC(ctx, CreatePVCOptions{
+		Name:    NFSVolumeName,
+		Storage: config.Env.NFS.Storage,
+	}); !ok {
+		log.Logger.Fatalf("Failed to init pvc")
+	}
+	log.Logger.Infof("Please mount the nfs server %s:%s at path %s manually", config.Env.NFS.Server, config.Env.NFS.Path, config.Env.Path)
 }

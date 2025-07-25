@@ -59,6 +59,9 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 					{
 						Name:      volumeName,
 						MountPath: "/root/mnt",
+						SubPath: strings.TrimPrefix(
+							strings.TrimPrefix(contestChallenge.Challenge.BasicDir(), config.Env.Path), "/",
+						),
 					},
 				},
 				WorkingDir: "/root",
@@ -69,9 +72,8 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 			{
 				Name: volumeName,
 				VolumeSource: corev1.VolumeSource{
-					NFS: &corev1.NFSVolumeSource{
-						Server: config.Env.NFS.Server,
-						Path:   contestChallenge.Challenge.NFSBasicDir(),
+					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+						ClaimName: NFSVolumeName,
 					},
 				},
 			},
