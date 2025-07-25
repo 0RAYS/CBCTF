@@ -160,5 +160,5 @@ func initNFSVolume(ctx context.Context) {
 	} else {
 		log.Logger.Info("NFS Volume VPC is already exists")
 	}
-	log.Logger.Infof("Please mount the nfs server %s:%s at path %s manually", config.Env.NFS.Server, config.Env.NFS.Path, config.Env.Path)
+	log.Logger.Infof("Please mount the nfs server %s:%s at %s manually", config.Env.NFS.Server, config.Env.NFS.Path, config.Env.Path)
 }
