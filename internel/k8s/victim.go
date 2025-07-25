@@ -259,14 +259,33 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 	for _, pod := range victim.Pods {
 		createPodFuncL = append(createPodFuncL, func() Result {
 			return func(pod model.Pod) Result {
+				nfsName := fmt.Sprintf("vol-%s", utils.RandStr(20))
 				containers := []corev1.Container{
 					{
 						Name:    "tcpdump",
 						Image:   config.Env.K8S.TCPDumpImage,
-						Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/traffic.pcap"},
+						Command: []string{"/bin/sh", "-c", fmt.Sprintf("tcpdump -i any -w /root/mnt/pod-%d.pcap", pod.ID)},
+						VolumeMounts: []corev1.VolumeMount{
+							{
+								Name:      nfsName,
+								MountPath: "/root/mnt",
+								SubPath: strings.TrimPrefix(
+									strings.TrimPrefix(pod.TrafficBasePath(), config.Env.Path), "/",
+								),
+							},
+						},
 					},
 				}
-				volumes := make([]corev1.Volume, 0)
+				volumes := []corev1.Volume{
+					{
+						Name: nfsName,
+						VolumeSource: corev1.VolumeSource{
+							PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+								ClaimName: NFSVolumeName,
+							},
+						},
+					},
+				}
 				for _, container := range pod.Containers {
 					volumeMounts := make([]corev1.VolumeMount, 0)
 					for path, volumeFlag := range container.VolumeFlags {
@@ -414,22 +433,6 @@ func StopVictim(victim model.Victim) (bool, string) {
 		"user_id":              fmt.Sprintf("%d", victim.UserID),
 		"team_id":              fmt.Sprintf("%d", victim.TeamID),
 		"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),
-	}
-	deletePodFuncL := make([]func() Result, 0)
-	for _, pod := range victim.Pods {
-		deletePodFuncL = append(deletePodFuncL, func() Result {
-			return func(pod model.Pod) Result {
-				if err := CopyFromPod(pod.Name, "tcpdump", "/root/traffic.pcap", pod.TrafficPath()); err != nil {
-					log.Logger.Warningf("Failed to copy %d traffic: %v", victim.TeamID, err)
-				}
-				return Result{OK: true, MSG: i18n.Success}
-			}(pod)
-		})
-	}
-	for _, res := range utils.RunFuncLConcurrently(deletePodFuncL) {
-		if !res.OK {
-			return false, res.MSG
-		}
 	}
 	for _, endpoint := range victim.Endpoints {
 		if err := redis.UnlockFrpsPort(endpoint.IP, endpoint.Port, endpoint.Protocol); err != nil {

@@ -53,6 +53,10 @@ func (p Pod) GetForeignKeys() []string {
 	return []string{"id", "victim_id"}
 }
 
-func (p Pod) TrafficPath() string {
-	return fmt.Sprintf("%s/traffics/victim-%d/pod-%d-%s.pcap", config.Env.Path, p.VictimID, p.ID, p.Name)
+func (p Pod) TrafficBasePath() string {
+	return fmt.Sprintf("%s/traffics/victim-%d", config.Env.Path, p.VictimID)
+}
+
+func (p Pod) TrafficPcapPath() string {
+	return fmt.Sprintf("%s/pod-%d.pcap", p.TrafficBasePath(), p.ID)
 }

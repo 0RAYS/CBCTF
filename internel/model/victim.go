@@ -74,7 +74,7 @@ func (v Victim) TrafficZipPath() string {
 func (v Victim) TrafficPaths() []string {
 	data := make([]string, 0)
 	for _, pod := range v.Pods {
-		data = append(data, pod.TrafficPath())
+		data = append(data, pod.TrafficPcapPath())
 	}
 	return data
 }
