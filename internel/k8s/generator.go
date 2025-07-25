@@ -81,6 +81,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*Generator, bool, 
 						MountPath: "/root/mnt",
 					},
 				},
+				WorkingDir: "/root",
 			},
 		},
 		Volumes: []corev1.Volume{
