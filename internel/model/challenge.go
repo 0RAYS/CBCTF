@@ -89,14 +89,14 @@ func (c Challenge) GeneratorPath() string {
 }
 
 func (c Challenge) NFSBasicDir() string {
-	return fmt.Sprintf("%s/%d", config.Env.NFS.Path, c.ID)
+	return fmt.Sprintf("%s/challenges/%d", config.Env.NFS.Path, c.ID)
 }
 
 // AttachmentPath 获取下载时, 题目附件的路径
 func (c Challenge) AttachmentPath(teamID uint) string {
 	switch c.Type {
 	case DynamicChallengeType:
-		return fmt.Sprintf("%s/attachments/team-%d/%d.zip", config.Env.Path, teamID, c.ID)
+		return fmt.Sprintf("%s/attachments/%d.zip", c.BasicDir(), teamID)
 	default:
 		return c.StaticPath()
 	}

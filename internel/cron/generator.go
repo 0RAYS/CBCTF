@@ -45,10 +45,10 @@ func PrepareGenerator(c *cron.Cron) {
 				continue
 			}
 			for _, contestChallenge := range contestChallengeL {
-				timeoutL := make([]*k8s.Generator, 0)
+				timeoutL := make([]*corev1.Pod, 0)
 				k8s.GeneratorMapMutex.Lock()
 				for _, generator := range k8s.GeneratorMap[contestChallenge.ID] {
-					if generator.Pod.Status.Phase != corev1.PodRunning || time.Now().Sub(generator.Pod.CreationTimestamp.Time) > time.Hour {
+					if generator.Status.Phase != corev1.PodRunning || time.Now().Sub(generator.CreationTimestamp.Time) > time.Hour {
 						timeoutL = append(timeoutL, generator)
 					}
 				}
@@ -78,12 +78,12 @@ func StopUnCtrlGenerator(c *cron.Cron) {
 			log.Logger.Warningf("Failed to get generators %s", msg)
 			return
 		}
-		generators := make(map[string]*k8s.Generator)
+		generators := make(map[string]*corev1.Pod)
 		names := make([]string, 0)
 		for _, v := range k8s.GeneratorMap {
 			for _, generator := range v {
-				generators[generator.Pod.Name] = generator
-				names = append(names, generator.Pod.Name)
+				generators[generator.Name] = generator
+				names = append(names, generator.Name)
 			}
 		}
 		for _, pod := range pods.Items {
