@@ -196,14 +196,14 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 									return CreateEIPResult{nil, false, res.MSG}
 								}
 								ipExposesMapMutex.Lock()
-								port, err := strconv.ParseInt(res.DNat.Status.ExternalPort, 10, 64)
+								port, err := strconv.ParseInt(res.DNat.Spec.ExternalPort, 10, 64)
 								if err != nil {
 									log.Logger.Warningf("Failed to parse external port: %v", err)
 									ipExposesMapMutex.Unlock()
 									return CreateEIPResult{nil, false, i18n.UnknownError}
 								}
 								if !slices.ContainsFunc(ipExposesMap[e.Spec.V4ip], func(e model.Expose) bool {
-									return int32(port) == e.Port && res.DNat.Status.Protocol == e.Protocol
+									return int32(port) == e.Port && res.DNat.Spec.Protocol == e.Protocol
 								}) {
 									ipExposesMap[e.Spec.V4ip] = append(ipExposesMap[e.Spec.V4ip], model.Expose{
 										Port:     int32(port),
