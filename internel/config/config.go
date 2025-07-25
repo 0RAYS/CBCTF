@@ -81,6 +81,12 @@ type Config struct {
 		Nodes []string `mapstructure:"nodes" json:"nodes"` // Kubernetes 节点列表
 	} `mapstructure:"k8s" json:"k8s"`
 
+	NFS struct {
+		Server  string `mapstructure:"server" json:"server"`
+		Path    string `mapstructure:"path" json:"path"`
+		Storage string `mapstructure:"storage" json:"storage"`
+	} `mapstructure:"nfs" json:"nfs"`
+
 	Email struct {
 		Senders []struct {
 			Addr string `mapstructure:"addr" json:"addr"` // 发件人地址
