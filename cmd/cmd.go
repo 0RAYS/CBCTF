@@ -27,8 +27,6 @@ func Cmd() {
 	switch os.Args[2] {
 	case "init":
 		k8s.InitResources()
-	case "check":
-		k8s.CheckPermission()
 	default:
 		run()
 	}
