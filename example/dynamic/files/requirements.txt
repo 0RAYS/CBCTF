@@ -1,4 +1,0 @@
-fastapi
-pycryptodome
-gunicorn
-uvicorn
