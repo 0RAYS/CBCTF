@@ -206,7 +206,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 								}) {
 									ipExposesMap[e.Spec.V4ip] = append(ipExposesMap[e.Spec.V4ip], model.Expose{
 										Port:     int32(port),
-										Protocol: res.DNat.Status.Protocol,
+										Protocol: res.DNat.Spec.Protocol,
 									})
 								}
 								ipExposesMapMutex.Unlock()
