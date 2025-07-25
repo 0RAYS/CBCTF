@@ -62,9 +62,14 @@ k8s:
             to: 60000
             exclude:
               - 50000
-  # nodes of k8s cluster, used for external service, will auto get from k8s
+  # nodes of k8s cluster, used for external service, will auto get from k8s when run `./CBCTF k8s init`
   nodes:
     - "192.168.0.1"
+nfs:
+  server: 127.0.0.1
+  path: /mnt/data
+  # Gi, Mi
+  storage: 10Gi
 email:
   senders:
     - addr: "noreply@example.com"

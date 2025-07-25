@@ -257,5 +257,15 @@ const (
 	GetIPError    = "GetIPError"
 	IPNotFound    = "IPNotFound"
 
+	CreatePVError = "CreatePVError"
+	DeletePVError = "DeletePVError"
+	GetPVError    = "GetPVError"
+	PVNotFound    = "PVNotFound"
+
+	CreatePVCError = "CreatePVCError"
+	DeletePVCError = "DeletePVCError"
+	GetPVCError    = "GetPVCError"
+	PVCNotFound    = "PVCNotFound"
+
 	GetNodeListError = "GetNodeListError"
 )
