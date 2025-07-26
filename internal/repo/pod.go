@@ -27,23 +27,10 @@ func (c CreatePodOptions) Convert2Model() model.Model {
 	}
 }
 
-type UpdatePodOptions struct {
-	Name            *string
-	PodPorts        *model.Int32List
-	NetworkPolicies *model.NetworkPolicies
-}
+type UpdatePodOptions struct{}
 
 func (u UpdatePodOptions) Convert2Map() map[string]any {
 	options := make(map[string]any)
-	if u.Name != nil {
-		options["name"] = *u.Name
-	}
-	if u.PodPorts != nil {
-		options["pod_ports"] = *u.PodPorts
-	}
-	if u.NetworkPolicies != nil {
-		options["network_policies"] = *u.NetworkPolicies
-	}
 	return options
 }
 
