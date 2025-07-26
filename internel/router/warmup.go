@@ -86,8 +86,8 @@ func StartContestVictims(ctx *gin.Context) {
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	_, msg := service.StartContestVictims(db.DB.WithContext(ctx), contest, form)
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	go service.StartContestVictims(db.DB.WithContext(ctx.Copy()), contest, form)
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }
 
 func StopContestVictims(ctx *gin.Context) {
@@ -96,6 +96,6 @@ func StopContestVictims(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	_, msg := service.StopContestVictims(db.DB.WithContext(ctx), form)
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	go service.StopContestVictims(db.DB.WithContext(ctx.Copy()), form)
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }

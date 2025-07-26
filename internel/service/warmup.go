@@ -129,27 +129,25 @@ func StartContestVictims(tx *gorm.DB, contest model.Contest, form f.StartContest
 	if len(contestChallenges) == 0 {
 		return true, i18n.Success
 	}
-	go func(teams []model.Team, contestChallenges []model.ContestChallenge) {
-		for _, contestChallenge := range contestChallenges {
-			for _, team := range teams {
-				if !CheckIfGenerated(db.DB, team, contestChallenge) {
-					tx2 := db.DB.Begin()
-					if _, ok, msg = CreateTeamFlag(tx2, team, contestChallenge); !ok {
-						tx2.Rollback()
-						continue
-					}
-					tx2.Commit()
-				}
+	for _, contestChallenge := range contestChallenges {
+		for _, team := range teams {
+			if !CheckIfGenerated(db.DB, team, contestChallenge) {
 				tx2 := db.DB.Begin()
-				_, ok, msg = StartTeamVictim(tx, model.User{BasicModel: model.BasicModel{ID: team.CaptainID}}, team, contestChallenge)
-				if !ok {
+				if _, ok, msg = CreateTeamFlag(tx2, team, contestChallenge); !ok {
 					tx2.Rollback()
 					continue
 				}
 				tx2.Commit()
 			}
+			tx2 := db.DB.Begin()
+			_, ok, msg = StartTeamVictim(tx, model.User{BasicModel: model.BasicModel{ID: team.CaptainID}}, team, contestChallenge)
+			if !ok {
+				tx2.Rollback()
+				continue
+			}
+			tx2.Commit()
 		}
-	}(teams, contestChallenges)
+	}
 	return true, i18n.Success
 }
 
