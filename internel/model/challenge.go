@@ -10,10 +10,9 @@ import (
 )
 
 const (
-	StaticChallengeType   = "static"
-	QuestionChallengeType = "question"
-	DynamicChallengeType  = "dynamic"
-	PodsChallengeType     = "pods"
+	StaticChallengeType  = "static"
+	DynamicChallengeType = "dynamic"
+	PodsChallengeType    = "pods"
 
 	AttachmentFile = "attachment.zip"
 	GeneratorFile  = "generator.zip"
