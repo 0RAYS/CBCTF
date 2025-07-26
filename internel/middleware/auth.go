@@ -60,7 +60,7 @@ func CheckAuth(ctx *gin.Context) {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
 			return
 		}
-		go service.RecordDevice(DB, user.ID, magic, ctx.ClientIP())
+		go service.RecordDevice(db.DB.WithContext(ctx.Copy()), user.ID, magic, ctx.ClientIP())
 		if user.Banned {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
 			return
