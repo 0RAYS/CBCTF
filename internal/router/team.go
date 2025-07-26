@@ -1,0 +1,247 @@
+package router
+
+import (
+	f "CBCTF/internal/form"
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/middleware"
+	"CBCTF/internal/model"
+	db "CBCTF/internal/repo"
+	"CBCTF/internal/resp"
+	"CBCTF/internal/service"
+	"CBCTF/internal/utils"
+	"github.com/gin-gonic/gin"
+	"net/http"
+)
+
+func GetTeam(ctx *gin.Context) {
+	team := middleware.GetTeam(ctx)
+	contestFlagRepo := db.InitContestFlagRepo(db.DB.WithContext(ctx))
+	contestFlagL, _, ok, msg := contestFlagRepo.List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_id": middleware.GetContest(ctx).ID},
+		Preloads: map[string]db.GetOptions{
+			"ContestChallenge": {
+				Preloads: map[string]db.GetOptions{
+					"Challenge": {},
+				},
+			},
+		},
+	})
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	solvedFlagL, _, _ := service.GetTeamSolvedFlags(db.DB.WithContext(ctx), team)
+	data := resp.GetTeamResp(team)
+	data["solved"] = resp.GetSolvedStateResp(solvedFlagL, contestFlagL)
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
+}
+
+func GetTeams(ctx *gin.Context) {
+	var form f.GetModelsForm
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	DB := db.DB.WithContext(ctx)
+	contest := middleware.GetContest(ctx)
+	teams, count, ok, msg := db.InitTeamRepo(DB).List(form.Limit, form.Offset, db.GetOptions{
+		Conditions: map[string]any{"contest_id": contest.ID},
+	})
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	data := make([]gin.H, 0)
+	for _, team := range teams {
+		data = append(data, resp.GetTeamResp(team))
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "teams": data}})
+}
+
+func GetTeamCaptcha(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": middleware.GetTeam(ctx).Captcha})
+}
+
+func GetTeammates(ctx *gin.Context) {
+	data := make([]gin.H, 0)
+	for _, user := range middleware.GetTeam(ctx).Users {
+		data = append(data, resp.GetUserResp(*user, middleware.IsAdmin(ctx)))
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
+	return
+}
+
+func GetTeamRanking(ctx *gin.Context) {
+	var form f.GetModelsForm
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	var teamsData []struct {
+		Team   model.Team
+		Solved []model.ContestFlag
+	}
+	contest := middleware.GetContest(ctx)
+	teams, count, ok, msg := service.GetTeamRanking(db.DB.WithContext(ctx), contest.ID, form.Limit, form.Offset)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	for _, team := range teams {
+		if !middleware.IsAdmin(ctx) && team.Hidden {
+			count--
+			continue
+		}
+		solved, ok, _ := service.GetTeamSolvedFlags(db.DB.WithContext(ctx), team)
+		if !ok {
+			count--
+			continue
+		}
+		teamsData = append(teamsData, struct {
+			Team   model.Team
+			Solved []model.ContestFlag
+		}{Team: team, Solved: solved})
+	}
+	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB.WithContext(ctx)).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_id": contest.ID},
+		Preloads: map[string]db.GetOptions{
+			"ContestChallenge": {
+				Preloads: map[string]db.GetOptions{
+					"Challenge": {},
+				},
+			},
+		},
+	})
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	data := resp.GetTeamRankingResp(teamsData, contestFlags, middleware.IsAdmin(ctx))
+	data["count"] = count
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
+}
+
+func UpdateTeam(ctx *gin.Context) {
+	var (
+		team = middleware.GetTeam(ctx)
+		tx   = db.DB.WithContext(ctx).Begin()
+		ok   bool
+		msg  string
+	)
+	if middleware.IsAdmin(ctx) {
+		var form f.AdminUpdateTeamForm
+		if ok, msg = form.Bind(ctx); !ok {
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
+		}
+		ok, msg = service.AdminUpdateTeam(tx, team, form)
+	} else {
+		var form f.UpdateTeamForm
+		if ok, msg = form.Bind(ctx); !ok {
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
+		}
+		ok, msg = service.UpdateTeam(tx, team, form)
+	}
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}
+
+func UpdateCaptcha(ctx *gin.Context) {
+	captcha := utils.UUID()
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := service.UpdateTeamCaptcha(tx, middleware.GetTeam(ctx), captcha)
+	if !ok {
+		tx.Rollback()
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	tx.Commit()
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": captcha})
+}
+
+func DeleteTeam(ctx *gin.Context) {
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := service.DeleteTeam(tx, middleware.GetTeam(ctx))
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}
+
+func KickMember(ctx *gin.Context) {
+	var form f.KickMemberForm
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	team := middleware.GetTeam(ctx)
+	contest := middleware.GetContest(ctx)
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := service.LeaveTeam(tx, contest, team, form.UserID)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}
+
+func JoinTeam(ctx *gin.Context) {
+	var form f.JoinTeamForm
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	contest := middleware.GetContest(ctx)
+	user := middleware.GetSelf(ctx).(model.User)
+	tx := db.DB.WithContext(ctx).Begin()
+	team, ok, msg := service.JoinTeam(tx, contest, user, form)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
+	ctx.Set("Team", team)
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}
+
+func CreateTeam(ctx *gin.Context) {
+	var form f.CreateTeamForm
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	contest := middleware.GetContest(ctx)
+	user := middleware.GetSelf(ctx).(model.User)
+	tx := db.DB.WithContext(ctx).Begin()
+	team, ok, msg := service.CreateTeam(tx, contest, user, form)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
+	go service.CreateTeamFlags(db.DB.WithContext(ctx.Copy()), team, contest)
+	ctx.Set("Team", team)
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}
+
+func LeaveTeam(ctx *gin.Context) {
+	user := middleware.GetSelf(ctx).(model.User)
+	contest := middleware.GetContest(ctx)
+	team := middleware.GetTeam(ctx)
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := service.LeaveTeam(tx, contest, team, user.ID)
+	if !ok {
+		tx.Rollback()
+	} else {
+		tx.Commit()
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}

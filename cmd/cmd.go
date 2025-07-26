@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"CBCTF/internel/config"
-	"CBCTF/internel/k8s"
-	"CBCTF/internel/log"
+	"CBCTF/internal/config"
+	"CBCTF/internal/k8s"
+	"CBCTF/internal/log"
 	"flag"
 	"os"
 )
