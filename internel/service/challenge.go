@@ -45,10 +45,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 		return model.Challenge{}, false, msg
 	}
 	switch form.Type {
-	case model.StaticChallengeType, model.QuestionChallengeType:
-		if form.Type == model.QuestionChallengeType && len(form.Flags) > 0 {
-			form.Flags = []string{utils.ToABCD(form.Flags[0])}
-		}
+	case model.StaticChallengeType:
 		for _, flag := range form.Flags {
 			if _, ok, msg = challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
 				ChallengeID: challenge.ID,
@@ -190,14 +187,10 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 
 func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChallengeForm) (bool, string) {
 	switch challenge.Type {
-	case model.StaticChallengeType, model.DynamicChallengeType, model.QuestionChallengeType:
+	case model.StaticChallengeType, model.DynamicChallengeType:
 		oldChallengeFlagID := make([]uint, 0)
 		for _, flag := range challenge.ChallengeFlags {
 			oldChallengeFlagID = append(oldChallengeFlagID, flag.ID)
-		}
-		if challenge.Type == model.QuestionChallengeType && len(form.Flags) > 0 {
-			form.Flags = form.Flags[:1]
-			form.Flags[0].Value = utils.ToABCD(form.Flags[0].Value)
 		}
 		challengeFlagRepo := db.InitChallengeFlagRepo(tx)
 		for _, flag := range form.Flags {

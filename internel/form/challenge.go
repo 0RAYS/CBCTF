@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	allowedChallengeType = []string{model.StaticChallengeType, model.QuestionChallengeType, model.DynamicChallengeType, model.PodsChallengeType}
+	allowedChallengeType = []string{model.StaticChallengeType, model.DynamicChallengeType, model.PodsChallengeType}
 	allowedFileName      = []string{model.AttachmentFile, model.GeneratorFile}
 )
 
