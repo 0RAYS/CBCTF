@@ -1,14 +1,14 @@
 package cmd
 
 import (
-	"CBCTF/internel/config"
-	"CBCTF/internel/cron"
-	"CBCTF/internel/email"
-	"CBCTF/internel/k8s"
-	"CBCTF/internel/log"
-	"CBCTF/internel/redis"
-	db "CBCTF/internel/repo"
-	"CBCTF/internel/router"
+	"CBCTF/internal/config"
+	"CBCTF/internal/cron"
+	"CBCTF/internal/email"
+	"CBCTF/internal/k8s"
+	"CBCTF/internal/log"
+	"CBCTF/internal/redis"
+	db "CBCTF/internal/repo"
+	"CBCTF/internal/router"
 	"errors"
 	"fmt"
 	"net/http"
