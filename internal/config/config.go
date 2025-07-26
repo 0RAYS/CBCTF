@@ -2,9 +2,9 @@ package config
 
 import (
 	_ "embed"
-	"encoding/json"
 	"errors"
 	"github.com/spf13/viper"
+	"github.com/vmihailenco/msgpack/v5"
 	"log"
 	"os"
 	"strings"
@@ -92,7 +92,7 @@ type Config struct {
 			Addr string `mapstructure:"addr" json:"addr"` // 发件人地址
 			Host string `mapstructure:"host" json:"host"` // SMTP 服务器地址
 			Port int    `mapstructure:"port" json:"port"` // SMTP 服务器端口
-			Pwd  string `mapstructure:"pwd" json:"pwd"`   // SMTP 服务器密码
+			Pwd  string `mapstructure:"pwd" json:"-"`     // SMTP 服务器密码
 		} `mapstructure:"senders" json:"senders"` // 发件人列表
 	} `mapstructure:"email" json:"email"`
 
@@ -132,13 +132,13 @@ func Save(env *Config) error {
 	env.Backend = strings.TrimSuffix(env.Backend, "/")
 	env.Frontend = strings.TrimSuffix(env.Frontend, "/")
 	config := make(map[string]any)
-	data, err := json.Marshal(env)
+	data, err := msgpack.Marshal(env)
 	if err != nil {
-		log.Panicf("Failed to marshal Env to JSON: %s", err)
+		log.Panicf("Failed to marshal Env to msgpack: %s", err)
 		return err
 	}
-	if err = json.Unmarshal(data, &config); err != nil {
-		log.Panicf("Failed to unmarshal JSON to map: %s", err)
+	if err = msgpack.Unmarshal(data, &config); err != nil {
+		log.Panicf("Failed to unmarshal msgpack to map: %s", err)
 		return err
 	}
 	if err = viper.MergeConfigMap(config); err != nil {
