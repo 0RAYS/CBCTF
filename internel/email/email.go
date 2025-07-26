@@ -60,6 +60,7 @@ func Redial(old *Sender) error {
 }
 
 func SendVerifyEmail(to, token, id string) error {
+	log.Logger.Debugf("Sending verify email to %s", to)
 	if len(Senders) == 0 {
 		return fmt.Errorf("no email sender configured")
 	}
