@@ -17,8 +17,8 @@ type Claims struct {
 // var secret = uuid.New().String()
 var secret = "0RAYS-JBNRZ"
 
-// Generate 生成token
-func Generate(id uint, name string, isAdmin bool, magic string) (tokenString string, err error) {
+// GenerateToken 生成token
+func GenerateToken(id uint, name string, isAdmin bool, magic string) (tokenString string, err error) {
 	claim := Claims{
 		UserID:  id,
 		Name:    name,
@@ -34,8 +34,8 @@ func Generate(id uint, name string, isAdmin bool, magic string) (tokenString str
 	return tokenString, err
 }
 
-// Parse 解析token
-func Parse(t string) (*Claims, error) {
+// ParseToken 解析token
+func ParseToken(t string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(t, &Claims{}, func(token *jwt.Token) (any, error) {
 		return []byte(secret), nil
 	})

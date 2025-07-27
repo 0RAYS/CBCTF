@@ -14,7 +14,7 @@ import (
 
 func SendEmail(user model.User) (bool, string) {
 	id := utils.UUID()
-	token, err := utils.Generate(user.ID, user.Name, false, "email")
+	token, err := utils.GenerateToken(user.ID, user.Name, false, "email")
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		return false, i18n.UnknownError
@@ -32,7 +32,7 @@ func SendEmail(user model.User) (bool, string) {
 }
 
 func VerifyEmail(tx *gorm.DB, form f.VerifyEmail) (bool, string) {
-	claims, err := utils.Parse(form.Token)
+	claims, err := utils.ParseToken(form.Token)
 	if err != nil {
 		return false, i18n.InvalidEmailVerifyToken
 	}
