@@ -9,7 +9,6 @@ import (
 	"CBCTF/internal/redis"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/router"
-	"CBCTF/internal/websocket"
 	"errors"
 	"fmt"
 	"net/http"
@@ -30,11 +29,9 @@ func initialize() {
 func start() {
 
 	ip, port := config.Env.Gin.Host, config.Env.Gin.Port
-	r := router.Init()
-	websocket.Init(r)
 	server = &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", ip, port),
-		Handler: r,
+		Handler: router.Init(),
 	}
 	go func() {
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {

@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
+	"CBCTF/internal/websocket"
 	"errors"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
@@ -27,6 +28,9 @@ func Init() *gin.Engine {
 
 	router.Use(
 		gin.Recovery(), middleware.Cors, middleware.Logger, middleware.Prometheus, middleware.SetTrace,
+	)
+	router.GET("/ws", middleware.WSAuth, websocket.WS)
+	router.Use(
 		middleware.SetMagic, middleware.I18n, middleware.AccessLog, middleware.RateLimit("globals", 100, time.Minute), middleware.Events,
 	)
 
