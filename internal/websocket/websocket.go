@@ -71,7 +71,7 @@ func WS(ctx *gin.Context) {
 			break
 		}
 		if err = handler.HandleReceive(connection, msg); err != nil {
-			log.Logger.Warningf("Failed to handle ws msg: %s", err)
+			log.Logger.Debugf("Failed to handle ws msg %s: %s", msg, err)
 		}
 	}
 	mu.Lock()
