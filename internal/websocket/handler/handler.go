@@ -8,29 +8,29 @@ import (
 )
 
 var (
-	handlerMap   = make(map[string]func(*model.Connection, []byte) error)
-	handlerMapMu sync.RWMutex
+	receiveHandlerMap   = make(map[string]func(*model.Connection, []byte) error)
+	receiveHandlerMapMu sync.RWMutex
 )
 
-func AddHandler(requestType string, handler func(*model.Connection, []byte) error) {
-	handlerMapMu.Lock()
-	handlerMap[requestType] = handler
-	handlerMapMu.Unlock()
+func AddReceiveHandler(requestType string, handler func(*model.Connection, []byte) error) {
+	receiveHandlerMapMu.Lock()
+	receiveHandlerMap[requestType] = handler
+	receiveHandlerMapMu.Unlock()
 }
 
-func DeleteHandler(requestType string) {
-	handlerMapMu.Lock()
-	delete(handlerMap, requestType)
-	handlerMapMu.Unlock()
+func DeleteReceiveHandler(requestType string) {
+	receiveHandlerMapMu.Lock()
+	delete(receiveHandlerMap, requestType)
+	receiveHandlerMapMu.Unlock()
 }
 
-func HandleMessage(conn *model.Connection, msg []byte) error {
+func HandleReceive(conn *model.Connection, msg []byte) error {
 	var req model.Receive
 	if err := json.Unmarshal(msg, &req); err != nil {
 		return fmt.Errorf("failed to unmarshal message: %w", err)
 	}
 
-	handler, exists := handlerMap[req.Type]
+	handler, exists := receiveHandlerMap[req.Type]
 	if !exists {
 		return fmt.Errorf("unknown request type: %s", req.Type)
 	}

@@ -31,7 +31,7 @@ var (
 )
 
 func Init() {
-	handler.AddHandler(model.HeartbeatType, handler.KeepAliveHandler)
+	handler.AddReceiveHandler(model.HeartbeatType, handler.KeepAliveHandler)
 }
 
 func WS(ctx *gin.Context) {
@@ -50,36 +50,62 @@ func WS(ctx *gin.Context) {
 		mu = &UserClientsMu
 		clients = &UserClients
 	}
-	mu.Lock()
-	connection, ok := (*clients)[id]
-	mu.Unlock()
-	if !ok {
-		conn, err = upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
-		if err != nil {
-			log.Logger.Warningf("Upgrade error: %s", err)
-			return
-		}
-		defer func(conn *websocket.Conn) {
-			if err = conn.Close(); err != nil {
-				log.Logger.Warningf("Upgrade error: %s", err)
-			}
-		}(conn)
-		mu.Lock()
-		(*clients)[id] = &model.Connection{Conn: conn, LastActive: time.Now()}
-		mu.Unlock()
-		connection = (*clients)[id]
+	conn, err = upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
+	if err != nil {
+		log.Logger.Warningf("Upgrade error: %s", err)
+		return
 	}
+	defer func(conn *websocket.Conn) {
+		if err = conn.Close(); err != nil {
+			log.Logger.Warningf("Upgrade error: %s", err)
+		}
+	}(conn)
+	mu.Lock()
+	(*clients)[id] = &model.Connection{Conn: conn, LastActive: time.Now()}
+	mu.Unlock()
+	connection := (*clients)[id]
 	for {
 		_, msg, err = connection.Conn.ReadMessage()
 		if err != nil && !websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
 			log.Logger.Warningf("Failed to read ws msg: %s", err)
 			break
 		}
-		if err = handler.HandleMessage(connection, msg); err != nil {
+		if err = handler.HandleReceive(connection, msg); err != nil {
 			log.Logger.Warningf("Failed to handle ws msg: %s", err)
 		}
 	}
 	mu.Lock()
 	delete(*clients, id)
 	mu.Unlock()
+}
+
+func Send(role string, id uint, level, t, title, msg string) {
+	var (
+		mu      *sync.RWMutex
+		clients *map[uint]*model.Connection
+	)
+	if role == "admin" {
+		mu = &AdminClientsMu
+		clients = &AdminClients
+	} else {
+		mu = &UserClientsMu
+		clients = &UserClients
+	}
+
+	mu.RLock()
+	connection, ok := (*clients)[id]
+	mu.RUnlock()
+	if !ok {
+		log.Logger.Warningf("No connection found for %s with ID %d", role, id)
+		return
+	}
+	sendMsg := model.Send{
+		Level: level,
+		Type:  t,
+		Msg:   msg,
+		Title: title,
+	}
+	if err := connection.Conn.WriteJSON(sendMsg); err != nil {
+		log.Logger.Warningf("Failed to send message to %s with ID %d: %s", role, id, err)
+	}
 }
