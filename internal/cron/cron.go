@@ -23,6 +23,7 @@ func exec(name string, task func()) func() {
 
 func Init() {
 	Cron = cron.New(cron.WithSeconds())
+	CheckWSConnection(Cron)
 	CloseTimeoutVictims(Cron)
 	CloseUnCtrlVictims(Cron)
 	ClearUnCtrlResource(Cron)
