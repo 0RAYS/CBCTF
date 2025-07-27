@@ -35,6 +35,10 @@ func Init() {
 }
 
 func WS(ctx *gin.Context) {
+	//TODO: handle panic
+	defer func() {
+		recover()
+	}()
 	var (
 		mu      *sync.RWMutex
 		clients *map[uint]*model.Connection
