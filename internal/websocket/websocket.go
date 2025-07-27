@@ -35,18 +35,12 @@ func Init() {
 }
 
 func WS(ctx *gin.Context) {
-	//TODO: handle panic
-	defer func() {
-		recover()
-	}()
 	var (
 		mu      *sync.RWMutex
 		clients *map[uint]*model.Connection
-		conn    *websocket.Conn
-		msg     []byte
-		err     error
 		id      = middleware.GetSelfID(ctx)
 	)
+
 	if middleware.IsAdmin(ctx) {
 		mu = &AdminClientsMu
 		clients = &AdminClients
@@ -54,28 +48,41 @@ func WS(ctx *gin.Context) {
 		mu = &UserClientsMu
 		clients = &UserClients
 	}
-	conn, err = upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
+
+	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
 		log.Logger.Warningf("Upgrade error: %s", err)
 		return
 	}
-	defer func(conn *websocket.Conn) {
-		if err = conn.Close(); err != nil {
-			log.Logger.Warningf("Upgrade error: %s", err)
+
+	defer func() {
+		if r := recover(); r != nil {
+			log.Logger.Errorf("Recovered in WS handler: %v", r)
 		}
-	}(conn)
+		mu.Lock()
+		if c, ok := (*clients)[id]; ok {
+			_ = c.Conn.Close()
+			delete(*clients, id)
+		}
+		mu.Unlock()
+	}()
+
 	mu.Lock()
 	(*clients)[id] = &model.Connection{Conn: conn, LastActive: time.Now()}
 	mu.Unlock()
-	connection := (*clients)[id]
+
 	for {
-		_, msg, err = connection.Conn.ReadMessage()
-		if err != nil && !websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
-			log.Logger.Warningf("Failed to read ws msg: %s", err)
+		mu.RLock()
+		c := (*clients)[id]
+		mu.RUnlock()
+
+		_, msg, err := c.Conn.ReadMessage()
+		if err != nil {
+			log.Logger.Warningf("WS read error (uid %d): %v", id, err)
 			break
 		}
 		if len(msg) > 0 {
-			if err = handler.HandleReceive(connection, msg); err != nil {
+			if err := handler.HandleReceive(c, msg); err != nil {
 				log.Logger.Debugf("Failed to handle ws msg %s: %s", msg, err)
 			}
 		}
