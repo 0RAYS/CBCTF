@@ -29,7 +29,7 @@ func Init() *gin.Engine {
 	router.Use(
 		gin.Recovery(), middleware.Cors, middleware.Logger, middleware.Prometheus, middleware.SetTrace,
 	)
-	router.GET("/ws", middleware.WSAuth, websocket.WS)
+	websocket.Init(router)
 	router.Use(
 		middleware.SetMagic, middleware.I18n, middleware.AccessLog, middleware.RateLimit("globals", 100, time.Minute), middleware.Events,
 	)
