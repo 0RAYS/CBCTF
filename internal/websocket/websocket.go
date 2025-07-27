@@ -77,8 +77,8 @@ func WS(ctx *gin.Context) {
 		mu.RUnlock()
 
 		_, msg, err := c.Conn.ReadMessage()
-		if err != nil {
-			log.Logger.Warningf("WS read error (uid %d): %v", id, err)
+		if err != nil && websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
+			log.Logger.Warningf("Failed to read ws msg: %v", err)
 			break
 		}
 		if len(msg) > 0 {
