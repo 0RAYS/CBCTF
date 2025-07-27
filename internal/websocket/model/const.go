@@ -3,7 +3,7 @@ package model
 const (
 	InfoLevel    = "info"
 	WarnLevel    = "warning"
-	ErrorLevel   = "danger"
+	ErrorLevel   = "error"
 	SuccessLevel = "success"
 )
 
