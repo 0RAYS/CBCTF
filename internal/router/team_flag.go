@@ -7,12 +7,15 @@ import (
 	"CBCTF/internal/model"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/service"
+	"CBCTF/internal/websocket"
+	wm "CBCTF/internal/websocket/model"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 func InitTeamFlag(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
+	user := middleware.GetSelf(ctx).(model.User)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
 	teamFlags, ok, msg := service.CreateTeamFlag(tx, team, contestChallenge)
@@ -23,7 +26,15 @@ func InitTeamFlag(ctx *gin.Context) {
 	}
 	switch contestChallenge.Type {
 	case model.DynamicChallengeType:
-		ok, msg = k8s.GenerateAttachment(contestChallenge, team, teamFlags)
+		go func() {
+			ok, msg = k8s.GenerateAttachment(contestChallenge, team, teamFlags)
+			if !ok {
+				websocket.Send(false, user.ID, wm.ErrorLevel, wm.GenerateAttachmentType, "Generate Attachment", "Failed, please try again later")
+				return
+			}
+			websocket.Send(false, user.ID, wm.SuccessLevel, wm.GenerateAttachmentType, "Generate Attachment", "Done")
+		}()
+		ok, msg = true, i18n.Success
 	default:
 		ok, msg = true, i18n.Success
 	}
@@ -33,6 +44,7 @@ func InitTeamFlag(ctx *gin.Context) {
 
 func ResetTeamFlag(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
+	user := middleware.GetSelf(ctx).(model.User)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
 	teamFlags, ok, msg := service.UpdateTeamFlag(tx, team, contestChallenge)
@@ -44,7 +56,15 @@ func ResetTeamFlag(ctx *gin.Context) {
 	tx.Commit()
 	switch contestChallenge.Type {
 	case model.DynamicChallengeType:
-		ok, msg = k8s.GenerateAttachment(contestChallenge, team, teamFlags)
+		go func() {
+			ok, msg = k8s.GenerateAttachment(contestChallenge, team, teamFlags)
+			if !ok {
+				websocket.Send(false, user.ID, wm.ErrorLevel, wm.GenerateAttachmentType, "Generate Attachment", "Failed, please try again later")
+				return
+			}
+			websocket.Send(false, user.ID, wm.SuccessLevel, wm.GenerateAttachmentType, "Generate Attachment", "Done")
+		}()
+		ok, msg = true, i18n.Success
 	case model.PodsChallengeType:
 		// 不考虑失败
 		go service.StopTeamVictim(db.DB.WithContext(ctx.Copy()), team, contestChallenge)

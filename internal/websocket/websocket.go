@@ -79,12 +79,12 @@ func WS(ctx *gin.Context) {
 	mu.Unlock()
 }
 
-func Send(role string, id uint, level, t, title, msg string) {
+func Send(admin bool, id uint, level, t, title, msg string) {
 	var (
 		mu      *sync.RWMutex
 		clients *map[uint]*model.Connection
 	)
-	if role == "admin" {
+	if admin {
 		mu = &AdminClientsMu
 		clients = &AdminClients
 	} else {
@@ -96,7 +96,7 @@ func Send(role string, id uint, level, t, title, msg string) {
 	connection, ok := (*clients)[id]
 	mu.RUnlock()
 	if !ok {
-		log.Logger.Warningf("No connection found for %s with ID %d", role, id)
+		log.Logger.Warningf("No connection found with ID %d", id)
 		return
 	}
 	sendMsg := model.Send{
@@ -106,6 +106,34 @@ func Send(role string, id uint, level, t, title, msg string) {
 		Title: title,
 	}
 	if err := connection.Conn.WriteJSON(sendMsg); err != nil {
-		log.Logger.Warningf("Failed to send message to %s with ID %d: %s", role, id, err)
+		log.Logger.Warningf("Failed to send message ID %d: %s", id, err)
+	}
+}
+
+func SendToAll(admin bool, level, t, title, msg string) {
+	var (
+		mu      *sync.RWMutex
+		clients *map[uint]*model.Connection
+	)
+	if admin {
+		mu = &AdminClientsMu
+		clients = &AdminClients
+	} else {
+		mu = &UserClientsMu
+		clients = &UserClients
+	}
+
+	mu.RLock()
+	defer mu.RUnlock()
+	for id, connection := range *clients {
+		sendMsg := model.Send{
+			Level: level,
+			Type:  t,
+			Msg:   msg,
+			Title: title,
+		}
+		if err := connection.Conn.WriteJSON(sendMsg); err != nil {
+			log.Logger.Warningf("Failed to send message to ID %d: %s", id, err)
+		}
 	}
 }

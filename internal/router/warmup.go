@@ -7,6 +7,8 @@ import (
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
+	"CBCTF/internal/websocket"
+	"CBCTF/internal/websocket/model"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"slices"
@@ -86,7 +88,10 @@ func StartContestVictims(ctx *gin.Context) {
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	go service.StartContestVictims(db.DB.WithContext(ctx.Copy()), contest, form)
+	go func(ctx *gin.Context) {
+		service.StartContestVictims(db.DB.WithContext(ctx), contest, form)
+		websocket.Send(true, middleware.GetSelfID(ctx), model.SuccessLevel, model.NoticeType, "Victims Warmup", "Done")
+	}(ctx.Copy())
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }
 
@@ -96,6 +101,9 @@ func StopContestVictims(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	go service.StopContestVictims(db.DB.WithContext(ctx.Copy()), form)
+	go func(ctx *gin.Context) {
+		service.StopContestVictims(db.DB.WithContext(ctx), form)
+		websocket.Send(true, middleware.GetSelfID(ctx), model.SuccessLevel, model.NoticeType, "Victims Stop", "Done")
+	}(ctx.Copy())
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }

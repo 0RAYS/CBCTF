@@ -8,6 +8,8 @@ import (
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
+	"CBCTF/internal/websocket"
+	wm "CBCTF/internal/websocket/model"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
@@ -17,16 +19,19 @@ func StartVictim(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	user := middleware.GetSelf(ctx).(model.User)
-	tx := db.DB.WithContext(ctx).Begin()
-	_, ok, msg := service.StartTeamVictim(tx, user, team, contestChallenge)
-	if !ok {
-		tx.Rollback()
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	go func(ctx *gin.Context) {
+		tx := db.DB.WithContext(ctx).Begin()
+		_, ok, _ := service.StartTeamVictim(tx, user, team, contestChallenge)
+		if !ok {
+			tx.Rollback()
+			websocket.Send(false, user.ID, wm.ErrorLevel, wm.StartVictimType, "Start Victim", "Failed, please try again later")
+			return
+		}
+		tx.Commit()
+		websocket.Send(false, user.ID, wm.SuccessLevel, wm.StartVictimType, "Start Victim", "Done")
 		return
-	}
-	tx.Commit()
-	status := service.GetTeamVictimStatus(db.DB.WithContext(ctx), team, contestChallenge)
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": status})
+	}(ctx.Copy())
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }
 
 func IncreaseVictimDuration(ctx *gin.Context) {
@@ -56,10 +61,9 @@ func IncreaseVictimDuration(ctx *gin.Context) {
 		tx := DB.Begin()
 		repo = db.InitVictimRepo(tx)
 		duration := victim.Duration + 1*time.Hour
-		ok, msg := repo.Update(victim.ID, db.UpdateVictimOptions{
+		if ok, msg = repo.Update(victim.ID, db.UpdateVictimOptions{
 			Duration: &duration,
-		})
-		if !ok {
+		}); !ok {
 			tx.Rollback()
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
