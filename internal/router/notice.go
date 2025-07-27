@@ -9,7 +9,6 @@ import (
 	"CBCTF/internal/service"
 	"CBCTF/internal/websocket"
 	"CBCTF/internal/websocket/model"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -56,7 +55,7 @@ func CreateNotice(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	go websocket.SendToAll(false, model.InfoLevel, model.NoticeType, notice.Title, fmt.Sprintf("%d", notice.ContestID))
+	go websocket.SendToAll(false, model.InfoLevel, model.NoticeType, notice.Title, notice.Content)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": &notice})
 }
 
