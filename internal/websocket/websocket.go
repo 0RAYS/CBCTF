@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/websocket/handler"
@@ -15,7 +16,8 @@ import (
 var (
 	upgrader = websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
-			return true
+			origin := r.Header.Get("Origin")
+			return origin == config.Env.Frontend
 		},
 	}
 
@@ -25,10 +27,8 @@ var (
 	UserClientsMu  sync.RWMutex
 )
 
-func Init(router *gin.Engine) {
+func Init() {
 	handler.AddHandler(model.HeartbeatType, handler.KeepAliveHandler)
-
-	router.GET("/ws", middleware.WSAuth, WS)
 }
 
 func WS(ctx *gin.Context) {

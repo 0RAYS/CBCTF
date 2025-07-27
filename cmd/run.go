@@ -9,6 +9,7 @@ import (
 	"CBCTF/internal/redis"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/router"
+	"CBCTF/internal/websocket"
 	"errors"
 	"fmt"
 	"net/http"
@@ -19,6 +20,7 @@ var server *http.Server
 func initialize() {
 	config.Init()
 	log.Init()
+	websocket.Init()
 	email.Init()
 	redis.Init()
 	db.Init()
