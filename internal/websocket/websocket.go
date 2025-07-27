@@ -37,7 +37,6 @@ func WS(ctx *gin.Context) {
 		clients *map[uint]*model.Connection
 		conn    *websocket.Conn
 		msg     []byte
-		ok      bool
 		err     error
 		id      = middleware.GetSelfID(ctx)
 	)
