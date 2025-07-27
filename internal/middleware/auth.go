@@ -20,7 +20,7 @@ func CheckAuth(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
 		return
 	}
-	claims, err := utils.Parse(auth[1])
+	claims, err := utils.ParseToken(auth[1])
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
 		return

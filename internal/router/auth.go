@@ -33,7 +33,7 @@ func Register(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	token, err := utils.Generate(user.ID, user.Name, false, middleware.GetMagic(ctx))
+	token, err := utils.GenerateToken(user.ID, user.Name, false, middleware.GetMagic(ctx))
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
@@ -57,7 +57,7 @@ func Login(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	token, err := utils.Generate(user.ID, user.Name, false, middleware.GetMagic(ctx))
+	token, err := utils.GenerateToken(user.ID, user.Name, false, middleware.GetMagic(ctx))
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
@@ -81,7 +81,7 @@ func AdminLogin(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	token, err := utils.Generate(admin.ID, admin.Name, true, "admin")
+	token, err := utils.GenerateToken(admin.ID, admin.Name, true, "admin")
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
