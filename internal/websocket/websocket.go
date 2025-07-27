@@ -69,7 +69,7 @@ func WS(ctx *gin.Context) {
 	}
 	for {
 		_, msg, err = connection.Conn.ReadMessage()
-		if err != nil {
+		if err != nil && !websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
 			log.Logger.Warningf("Failed to read ws msg: %s", err)
 			break
 		}
