@@ -118,29 +118,27 @@ func Send(admin bool, id uint, level, t, title, msg string) {
 }
 
 func SendToClients(admin bool, level, t, title, msg string, idL ...uint) {
-	{
-		var (
-			mu      *sync.RWMutex
-			clients *map[uint]*model.Connection
-		)
-		if admin {
-			mu = &AdminClientsMu
-			clients = &AdminClients
-		} else {
-			mu = &UserClientsMu
-			clients = &UserClients
-		}
+	var (
+		mu      *sync.RWMutex
+		clients *map[uint]*model.Connection
+	)
+	if admin {
+		mu = &AdminClientsMu
+		clients = &AdminClients
+	} else {
+		mu = &UserClientsMu
+		clients = &UserClients
+	}
 
-		mu.RLock()
-		defer mu.RUnlock()
-		for _, id := range idL {
-			connection, ok := (*clients)[id]
-			if !ok {
-				continue
-			}
-			if err := connection.Conn.WriteJSON(model.Send{Level: level, Type: t, Msg: msg, Title: title}); err != nil {
-				log.Logger.Warningf("Failed to send message ID %d: %s", id, err)
-			}
+	mu.RLock()
+	defer mu.RUnlock()
+	for _, id := range idL {
+		connection, ok := (*clients)[id]
+		if !ok {
+			continue
+		}
+		if err := connection.Conn.WriteJSON(model.Send{Level: level, Type: t, Msg: msg, Title: title}); err != nil {
+			log.Logger.Warningf("Failed to send message ID %d: %s", id, err)
 		}
 	}
 }
