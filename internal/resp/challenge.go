@@ -1,18 +1,20 @@
 package resp
 
 import (
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"fmt"
+	"github.com/compose-spec/compose-go/types"
 	"github.com/gin-gonic/gin"
-	"strings"
 )
 
 func Dockers2Yaml(dockers []model.Docker, challengeFlags []model.ChallengeFlag) string {
-	baseYaml := `
-services:
-%s
-`
-	var volumeStr string
+	cfg := types.Project{
+		Services: make(types.Services, 0),
+		Networks: make(types.Networks),
+		Volumes:  make(types.Volumes),
+	}
+
 	volumeFlags := make(map[uint]map[string]string)
 	envFlags := make(map[uint]map[string]string)
 	for _, flag := range challengeFlags {
@@ -26,9 +28,11 @@ services:
 			}
 			volumeFlags[*flag.DockerID] = make(map[string]string)
 			volumeFlags[*flag.DockerID][flag.Name] = flag.Path
-			volumeStr += fmt.Sprintf("  %s:\n", flag.Name)
-			volumeStr += fmt.Sprintf("    labels:\n")
-			volumeStr += fmt.Sprintf("      - %s=%s\n", model.VolumeFlagLabelKey, flag.Value)
+			cfg.Volumes[flag.Name] = types.VolumeConfig{
+				Labels: map[string]string{
+					model.VolumeFlagLabelKey: flag.Value,
+				},
+			}
 		case model.EnvInjectType:
 			if envFlags[*flag.DockerID] == nil {
 				envFlags[*flag.DockerID] = make(map[string]string)
@@ -38,84 +42,80 @@ services:
 			continue
 		}
 	}
-	volumeStr = strings.Trim(volumeStr, "\n")
 
-	var (
-		serviceStr string
-		networks   = make(map[string]model.Network)
-	)
+	var networks = make(map[string]model.Network)
 	for _, docker := range dockers {
-		serviceStr += fmt.Sprintf("  %s:\n", docker.Name)
-		serviceStr += fmt.Sprintf("    image: %s\n", docker.Image)
-		if docker.CPU > 0 {
-			serviceStr += fmt.Sprintf("    cpus: %f\n", docker.CPU)
-		}
-		if docker.Memory > 0 {
-			serviceStr += fmt.Sprintf("    mem_limit: %d\n", docker.Memory)
-		}
-		if docker.WorkingDir != "" {
-			serviceStr += fmt.Sprintf("    working_dir: %s\n", docker.WorkingDir)
+		service := types.ServiceConfig{
+			Name:       docker.Name,
+			Image:      docker.Image,
+			CPUS:       docker.CPU,
+			MemLimit:   types.UnitBytes(docker.Memory),
+			WorkingDir: docker.WorkingDir,
+			Command:    types.ShellCommand(docker.Command),
 		}
 		if docker.Command != nil && len(docker.Command) > 0 {
-			commandStr := "["
-			for _, cmd := range docker.Command {
-				commandStr += fmt.Sprintf("\"%s\", ", cmd)
-			}
-			commandStr = commandStr[:len(commandStr)-2] + "]"
-			serviceStr += fmt.Sprintf("    command: %s\n", commandStr)
+			service.Command = types.ShellCommand(docker.Command)
 		}
 		if docker.Exposes != nil && len(docker.Exposes) > 0 {
-			serviceStr += "    expose:\n"
-			for _, port := range docker.Exposes {
-				serviceStr += fmt.Sprintf("      - \"%d/%s\"\n", port.Port, port.Protocol)
+			service.Expose = make([]string, 0)
+			for _, expose := range docker.Exposes {
+				service.Expose = append(service.Expose, fmt.Sprintf("%d/%s", expose.Port, expose.Protocol))
 			}
 		}
 		if docker.Environment != nil || len(envFlags[docker.ID]) > 0 {
-			serviceStr += "    environment:\n"
+			service.Environment = make(map[string]*string)
 			if docker.Environment != nil && len(docker.Environment) > 0 {
 				for key, value := range docker.Environment {
-					serviceStr += fmt.Sprintf("      - %s=%s\n", key, value)
+					service.Environment[key] = &value
 				}
 			}
 			if flags, ok := envFlags[docker.ID]; ok {
 				for key, value := range flags {
-					serviceStr += fmt.Sprintf("      - %s=%s\n", key, value)
+					service.Environment[key] = &value
 				}
 			}
 		}
 		if flags, ok := volumeFlags[docker.ID]; ok {
-			serviceStr += "    volumes:\n"
+			service.Volumes = make([]types.ServiceVolumeConfig, 0)
 			for key, path := range flags {
-				serviceStr += fmt.Sprintf("      - %s:%s\n", key, path)
+				service.Volumes = append(service.Volumes, types.ServiceVolumeConfig{
+					Source: key,
+					Target: path,
+				})
 			}
 		}
 		if docker.Networks != nil && len(docker.Networks) > 0 {
-			serviceStr += "    networks:\n"
+			service.Networks = make(map[string]*types.ServiceNetworkConfig)
 			for _, network := range docker.Networks {
-				serviceStr += fmt.Sprintf("      %s:\n        ipv4_address: %s\n", network.Name, network.IP)
+				service.Networks[network.Name] = &types.ServiceNetworkConfig{
+					Ipv4Address: network.IP,
+				}
 				networks[network.Name] = network
 			}
 		}
-		serviceStr += "\n"
+		cfg.Services = append(cfg.Services, service)
 	}
-	serviceStr = strings.Trim(serviceStr, "\n")
-
-	var networkStr string
 	for name, network := range networks {
-		networkStr += fmt.Sprintf("  %s:\n", name)
-		networkStr += fmt.Sprintf("    external: %v\n", network.External)
-		networkStr += fmt.Sprintf("    ipam:\n      config:\n        - subnet: %s\n          gateway: %s\n", network.CIDR, network.Gateway)
-		networkStr += "\n"
+		cfg.Networks[name] = types.NetworkConfig{
+			External: types.External{
+				External: network.External,
+			},
+			Ipam: types.IPAMConfig{
+				Config: []*types.IPAMPool{
+					{
+						Subnet:  network.CIDR,
+						Gateway: network.Gateway,
+					},
+				},
+			},
+		}
 	}
-	networkStr = strings.Trim(networkStr, "\n")
-	baseYaml = strings.Trim(fmt.Sprintf(baseYaml, serviceStr), "\n")
-	if volumeStr != "" {
-		baseYaml += fmt.Sprintf("\n\nvolumes:\n%s", volumeStr)
+	res, err := cfg.MarshalYAML()
+	if err != nil {
+		log.Logger.Warningf("Failed to convert dockers to YAML: %v", err)
+		return ""
 	}
-	if networkStr != "" {
-		baseYaml += fmt.Sprintf("\n\nnetworks:\n%s", networkStr)
-	}
-	return strings.Trim(baseYaml, "\n")
+	return string(res)
 }
 
 // GetChallengeResp 需要预加载 ChallengeFlags, Dockers
