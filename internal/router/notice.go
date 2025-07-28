@@ -57,18 +57,18 @@ func CreateNotice(ctx *gin.Context) {
 	}
 	tx.Commit()
 	go func() {
-		websocket.UserClientsMu.Lock()
-		defer websocket.UserClientsMu.Unlock()
 		contestUserIDL := make([]uint, 0)
 		for _, user := range contest.Users {
 			contestUserIDL = append(contestUserIDL, user.ID)
 		}
 		idL := make([]uint, 0)
+		websocket.UserClientsMu.Lock()
 		for id, _ := range websocket.UserClients {
 			if slices.Contains(contestUserIDL, id) {
 				idL = append(idL, id)
 			}
 		}
+		defer websocket.UserClientsMu.Unlock()
 		websocket.SendToClients(false, model.InfoLevel, model.ContestNoticeType, notice.Title, notice.Content, idL...)
 	}()
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": &notice})
