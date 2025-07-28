@@ -10,6 +10,7 @@ import (
 	"CBCTF/internal/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"slices"
 )
 
 func GetTeamRanking(ctx *gin.Context) {
@@ -162,6 +163,12 @@ func GetRankTimeline(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	teams = slices.DeleteFunc(teams, func(team model.Team) bool {
+		if team.Score == 0 {
+			return true
+		}
+		return false
+	})
 	for i, team := range teams {
 		submissions, _, ok, msg := db.InitSubmissionRepo(DB).List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"solved": true, "team_id": team.ID},
