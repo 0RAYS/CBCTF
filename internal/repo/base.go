@@ -79,7 +79,7 @@ func ApplyGetOptions(tx *gorm.DB, options GetOptions) *gorm.DB {
 
 func (b *BasicRepo[M]) Get(options GetOptions) (M, bool, string) {
 	var m M
-	res := ApplyGetOptions(b.DB.Model(new(M)), options).Limit(1).Find(&m)
+	res := ApplyGetOptions(b.DB.Model(new(M)), options).Order("id").Limit(1).Find(&m)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get %s: %s", m.GetModelName(), res.Error)
 		return *new(M), false, m.GetErrorString()
@@ -147,7 +147,7 @@ func (b *BasicRepo[M]) List(limit, offset int, optionsL ...GetOptions) ([]M, int
 	if !ok {
 		return ms, count, false, msg
 	}
-	if res := ApplyGetOptions(b.DB.Model(new(M)), options).Limit(limit).Offset(offset).Find(&ms); res.Error != nil {
+	if res := ApplyGetOptions(b.DB.Model(new(M)), options).Order("id").Limit(limit).Offset(offset).Find(&ms); res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			return ms, count, false, M.NotFoundErrorString(*new(M))
 		}
@@ -224,7 +224,7 @@ func (b *BasicRepo[M]) FuzzSearch(limit, offset int, options SearchOptions) ([]M
 	for key, value := range options.Conditions {
 		res = res.Where(fmt.Sprintf("%s LIKE ?", key), "%"+value.(string)+"%")
 	}
-	res = res.Limit(limit).Offset(offset).Find(&ms)
+	res = res.Order("id").Limit(limit).Offset(offset).Find(&ms)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to search %s: %s", M.GetModelName(*new(M)), res.Error)
 		return ms, count, false, M.GetErrorString(*new(M))

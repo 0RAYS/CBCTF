@@ -47,7 +47,7 @@ func InitDeviceRepo(tx *gorm.DB) *DeviceRepo {
 
 func (d *DeviceRepo) GetByMagic(magic string) ([]model.Device, bool, string) {
 	var devices []model.Device
-	res := d.DB.Model(&model.Device{}).Where("magic = ?", magic).Find(&devices)
+	res := d.DB.Model(&model.Device{}).Where("magic = ?", magic).Order("id").Find(&devices)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Devices: %s", res.Error)
 		return make([]model.Device, 0), false, i18n.GetDeviceError
