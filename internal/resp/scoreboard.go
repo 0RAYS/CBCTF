@@ -55,3 +55,26 @@ func GetScoreboardResp(challengeMap map[string]model.Challenge, globalMap map[st
 	}
 	return data
 }
+
+// GetRankTimelineResp 需要预加载 model.Submission
+func GetRankTimelineResp(teams []model.Team) []gin.H {
+	data := make([]gin.H, 0)
+	for _, team := range teams {
+		timeline := make([]gin.H, 0)
+		for _, submission := range team.Submissions {
+			timeline = append(timeline, gin.H{
+				"time":  submission.CreatedAt,
+				"score": submission.Score,
+			})
+		}
+		data = append(data, gin.H{
+			"id":       team.ID,
+			"name":     team.Name,
+			"avatar":   team.Avatar,
+			"rank":     team.Rank,
+			"score":    team.Score,
+			"timeline": timeline,
+		})
+	}
+	return data
+}

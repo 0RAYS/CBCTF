@@ -2,6 +2,7 @@ package router
 
 import (
 	f "CBCTF/internal/form"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	db "CBCTF/internal/repo"
@@ -10,6 +11,56 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
+
+func GetTeamRanking(ctx *gin.Context) {
+	var form f.GetModelsForm
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	var teamsData []struct {
+		Team   model.Team
+		Solved []model.ContestFlag
+	}
+	contest := middleware.GetContest(ctx)
+	teams, count, ok, msg := service.GetTeamRanking(db.DB.WithContext(ctx), contest.ID, form.Limit, form.Offset)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	for _, team := range teams {
+		if !middleware.IsAdmin(ctx) && team.Hidden {
+			count--
+			continue
+		}
+		solved, ok, _ := service.GetTeamSolvedFlags(db.DB.WithContext(ctx), team)
+		if !ok {
+			count--
+			continue
+		}
+		teamsData = append(teamsData, struct {
+			Team   model.Team
+			Solved []model.ContestFlag
+		}{Team: team, Solved: solved})
+	}
+	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB.WithContext(ctx)).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_id": contest.ID},
+		Preloads: map[string]db.GetOptions{
+			"ContestChallenge": {
+				Preloads: map[string]db.GetOptions{
+					"Challenge": {},
+				},
+			},
+		},
+	})
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	data := resp.GetTeamRankingResp(teamsData, contestFlags, middleware.IsAdmin(ctx))
+	data["count"] = count
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
+}
 
 func GetScoreboard(ctx *gin.Context) {
 	var form f.GetModelsForm
@@ -101,4 +152,26 @@ func GetScoreboard(ctx *gin.Context) {
 	}
 	data := resp.GetScoreboardResp(challengeMap, globalMap, teamMap, teams)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"teams": data, "count": count}})
+}
+
+func GetRankTimeline(ctx *gin.Context) {
+	contest := middleware.GetContest(ctx)
+	DB := db.DB.WithContext(ctx)
+	teams, count, ok, msg := service.GetTeamRanking(DB, contest.ID, 10, 0)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	for _, team := range teams {
+		submission, _, ok, msg := db.InitSubmissionRepo(DB).List(-1, -1, db.GetOptions{
+			Conditions: map[string]any{"solved": true, "team_id": team.ID},
+		})
+		if !ok {
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
+		}
+		team.Submissions = submission
+	}
+	data := resp.GetRankTimelineResp(teams)
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"count": count, "teams": data}})
 }
