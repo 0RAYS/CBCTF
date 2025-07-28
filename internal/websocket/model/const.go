@@ -9,7 +9,7 @@ const (
 
 const (
 	HeartbeatType          = "heartbeat"
-	NoticeType             = "notice"
+	ContestNoticeType      = "contest_notice"
 	StartVictimType        = "start_victim"
 	StopVictimType         = "stop_victim"
 	GenerateAttachmentType = "generate_attachment"
