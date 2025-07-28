@@ -87,6 +87,7 @@ func Init() *gin.Engine {
 		contest.GET("", GetContest)
 		contest.GET("/rank", GetTeamRanking)
 		contest.GET("/scoreboard", GetScoreboard)
+		contest.GET("/timeline", GetRankTimeline)
 		contest.POST("/teams/join", middleware.ContestIsNotOver, middleware.CheckVerified, JoinTeam)
 		contest.POST("/teams/create", middleware.ContestIsNotOver, middleware.CheckVerified, CreateTeam)
 
@@ -195,6 +196,7 @@ func Init() *gin.Engine {
 			adminContest.POST("/avatar", UploadAvatar("contest"))
 			adminContest.GET("/rank", GetTeamRanking)
 			adminContest.GET("/scoreboard", GetScoreboard)
+			adminContest.GET("/timeline", GetRankTimeline)
 
 			adminContest.GET("/teams", GetTeams)
 			adminContestTeam := adminContest.Group("/teams/:teamID", middleware.SetTeamByURI)
