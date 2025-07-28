@@ -11,6 +11,7 @@ import (
 	"CBCTF/internal/websocket/model"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"slices"
 )
 
 func GetNotices(ctx *gin.Context) {
@@ -55,7 +56,21 @@ func CreateNotice(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	go websocket.SendToAll(false, model.InfoLevel, model.NoticeType, notice.Title, notice.Content)
+	go func() {
+		websocket.UserClientsMu.Lock()
+		defer websocket.UserClientsMu.Unlock()
+		contestUserIDL := make([]uint, 0)
+		for _, user := range contest.Users {
+			contestUserIDL = append(contestUserIDL, user.ID)
+		}
+		idL := make([]uint, 0)
+		for id, _ := range websocket.UserClients {
+			if slices.Contains(contestUserIDL, id) {
+				idL = append(idL, id)
+			}
+		}
+		websocket.SendToClients(false, model.InfoLevel, model.ContestNoticeType, notice.Title, notice.Content, idL...)
+	}()
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": &notice})
 }
 
