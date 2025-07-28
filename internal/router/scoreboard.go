@@ -162,15 +162,16 @@ func GetRankTimeline(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	for _, team := range teams {
-		submission, _, ok, msg := db.InitSubmissionRepo(DB).List(-1, -1, db.GetOptions{
+	for i, team := range teams {
+		submissions, _, ok, msg := db.InitSubmissionRepo(DB).List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"solved": true, "team_id": team.ID},
+			Selects:    []string{"id", "score", "created_at"},
 		})
 		if !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
-		team.Submissions = submission
+		teams[i].Submissions = submissions
 	}
 	data := resp.GetRankTimelineResp(teams)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"count": count, "teams": data}})
