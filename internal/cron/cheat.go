@@ -23,8 +23,8 @@ func CheckCheat(c *cron.Cron) {
 			if !contest.IsRunning() {
 				continue
 			}
-			go exec("CheckRemoteIP", func() { checkRemoteIP(contest) })()
-			go exec("CheckWrongFlag", func() { CheckWrongFlag(contest) })()
+			checkRemoteIP(contest)
+			CheckWrongFlag(contest)
 		}
 	})
 	function()
