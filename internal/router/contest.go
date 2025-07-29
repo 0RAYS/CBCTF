@@ -20,10 +20,9 @@ func GetContest(ctx *gin.Context) {
 	if len(champion) > 0 {
 		data["highest"] = champion[0].Score
 	}
-	count, _, _ := db.InitSubmissionRepo(db.DB.WithContext(ctx)).Count(db.CountOptions{
+	data["solved"], _, _ = db.InitSubmissionRepo(db.DB.WithContext(ctx)).Count(db.CountOptions{
 		Conditions: map[string]any{"solved": true, "contest_id": contest.ID},
 	})
-	data["solved"] = count
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
 }
 
