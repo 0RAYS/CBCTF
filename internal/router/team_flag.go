@@ -27,9 +27,8 @@ func InitTeamFlag(ctx *gin.Context) {
 	switch contestChallenge.Type {
 	case model.DynamicChallengeType:
 		go func() {
-			ok, msg = k8s.GenerateAttachment(contestChallenge, team, teamFlags)
-			if !ok {
-				websocket.Send(false, user.ID, wm.ErrorLevel, wm.GenerateAttachmentType, "Generate Attachment", "Failed, please try again later")
+			if ok, _ = k8s.GenerateAttachment(contestChallenge, team, teamFlags); !ok {
+				websocket.Send(false, user.ID, wm.ErrorLevel, wm.GenerateAttachmentType, "Generate Attachment", "Failed")
 				return
 			}
 			websocket.Send(false, user.ID, wm.SuccessLevel, wm.GenerateAttachmentType, "Generate Attachment", "Done")
@@ -57,9 +56,8 @@ func ResetTeamFlag(ctx *gin.Context) {
 	switch contestChallenge.Type {
 	case model.DynamicChallengeType:
 		go func() {
-			ok, msg = k8s.GenerateAttachment(contestChallenge, team, teamFlags)
-			if !ok {
-				websocket.Send(false, user.ID, wm.ErrorLevel, wm.GenerateAttachmentType, "Generate Attachment", "Failed, please try again later")
+			if ok, _ = k8s.GenerateAttachment(contestChallenge, team, teamFlags); !ok {
+				websocket.Send(false, user.ID, wm.ErrorLevel, wm.GenerateAttachmentType, "Generate Attachment", "Failed")
 				return
 			}
 			websocket.Send(false, user.ID, wm.SuccessLevel, wm.GenerateAttachmentType, "Generate Attachment", "Done")
