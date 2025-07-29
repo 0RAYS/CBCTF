@@ -126,6 +126,10 @@ func GetChallengeResp(challenge model.Challenge) gin.H {
 			flags = append(flags, gin.H{"id": flag.ID, "value": flag.Value})
 		}
 	}
+	dockerCompose := ""
+	if challenge.Type == model.PodsChallengeType {
+		dockerCompose = Dockers2Yaml(challenge.Dockers, challenge.ChallengeFlags)
+	}
 	return gin.H{
 		"id":               challenge.RandID,
 		"name":             challenge.Name,
@@ -134,7 +138,7 @@ func GetChallengeResp(challenge model.Challenge) gin.H {
 		"type":             challenge.Type,
 		"generator_image":  challenge.GeneratorImage,
 		"flags":            flags,
-		"docker_compose":   Dockers2Yaml(challenge.Dockers, challenge.ChallengeFlags),
+		"docker_compose":   dockerCompose,
 		"network_policies": challenge.NetworkPolicies,
 	}
 }
