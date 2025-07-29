@@ -82,7 +82,7 @@ func Search(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"results": data, "count": count}})
 		return
 	case "challenge":
-		allowedKeys := []string{"name", "id"}
+		allowedKeys := []string{"name", "id", "category", "type"}
 		for key, value := range query {
 			if slices.Contains(allowedKeys, key) {
 				if key == "id" {
