@@ -49,7 +49,7 @@ func UpdateUserRanking(c *cron.Cron) {
 			Conditions: map[string]any{"banned": false},
 			Selects:    []string{"id"},
 			Preloads: map[string]db.GetOptions{
-				"submissions": {
+				"Submissions": {
 					Conditions: map[string]any{"solved": true},
 					Selects:    []string{"id", "user_id", "team_id", "contest_flag_id"},
 					Preloads: map[string]db.GetOptions{
