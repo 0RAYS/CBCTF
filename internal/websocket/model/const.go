@@ -5,6 +5,7 @@ const (
 	WarnLevel    = "warning"
 	ErrorLevel   = "error"
 	SuccessLevel = "success"
+	NoticeLevel  = "notice"
 )
 
 const (
