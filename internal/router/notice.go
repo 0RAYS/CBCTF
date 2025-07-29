@@ -69,7 +69,7 @@ func CreateNotice(ctx *gin.Context) {
 			}
 		}
 		websocket.UserClientsMu.Unlock()
-		websocket.SendToClients(false, model.InfoLevel, model.ContestNoticeType, notice.Title, notice.Content, idL...)
+		websocket.SendToClients(false, model.NoticeLevel, model.ContestNoticeType, notice.Title, notice.Content, idL...)
 	}()
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": &notice})
 }
