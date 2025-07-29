@@ -30,10 +30,7 @@ func GetUsers(ctx *gin.Context) {
 		return
 	}
 	users, count, ok, msg := db.InitUserRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, db.GetOptions{
-		Preloads: map[string]db.GetOptions{
-			"Teams":    {},
-			"Contests": {},
-		},
+		Preloads: map[string]db.GetOptions{"Teams": {}, "Contests": {}},
 	})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

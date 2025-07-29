@@ -26,10 +26,7 @@ func GetContestChallenges(ctx *gin.Context) {
 	}
 	options := db.GetOptions{
 		Conditions: map[string]any{"contest_id": middleware.GetContest(ctx).ID},
-		Preloads: map[string]db.GetOptions{
-			"Challenge":    {},
-			"ContestFlags": {},
-		},
+		Preloads:   map[string]db.GetOptions{"Challenge": {}, "ContestFlags": {}},
 	}
 	if !middleware.IsAdmin(ctx) {
 		options.Conditions["hidden"] = false

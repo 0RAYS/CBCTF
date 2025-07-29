@@ -46,13 +46,7 @@ func GetTeamRanking(ctx *gin.Context) {
 	}
 	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB.WithContext(ctx)).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
-		Preloads: map[string]db.GetOptions{
-			"ContestChallenge": {
-				Preloads: map[string]db.GetOptions{
-					"Challenge": {},
-				},
-			},
-		},
+		Preloads:   map[string]db.GetOptions{"ContestChallenge": {Preloads: map[string]db.GetOptions{"Challenge": {}}}},
 	})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -78,13 +72,7 @@ func GetScoreboard(ctx *gin.Context) {
 	contestFlagRepo := db.InitContestFlagRepo(db.DB.WithContext(ctx))
 	contestFlags, _, ok, msg := contestFlagRepo.List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
-		Preloads: map[string]db.GetOptions{
-			"ContestChallenge": {
-				Preloads: map[string]db.GetOptions{
-					"Challenge": {},
-				},
-			},
-		},
+		Preloads:   map[string]db.GetOptions{"ContestChallenge": {Preloads: map[string]db.GetOptions{"Challenge": {}}}},
 	})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -129,11 +117,7 @@ func GetScoreboard(ctx *gin.Context) {
 			Preloads: map[string]db.GetOptions{
 				"ContestFlag": {
 					Preloads: map[string]db.GetOptions{
-						"ContestChallenge": {
-							Preloads: map[string]db.GetOptions{
-								"Challenge": {},
-							},
-						},
+						"ContestChallenge": {Preloads: map[string]db.GetOptions{"Challenge": {}}},
 					},
 				},
 			},

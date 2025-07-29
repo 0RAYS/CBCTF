@@ -81,11 +81,7 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, contestChallenge mode
 func CountAttempts(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) int64 {
 	submissionRepo := db.InitSubmissionRepo(tx)
 	count, _, _ := submissionRepo.Count(db.CountOptions{
-		Conditions: map[string]any{
-			"team_id":              team.ID,
-			"contest_challenge_id": contestChallenge.ID,
-			"solved":               false,
-		},
+		Conditions: map[string]any{"team_id": team.ID, "contest_challenge_id": contestChallenge.ID, "solved": false},
 	})
 	return count
 }
@@ -94,11 +90,7 @@ func CountAttempts(tx *gorm.DB, team model.Team, contestChallenge model.ContestC
 func CheckIfSolved(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) bool {
 	submissionRepo := db.InitSubmissionRepo(tx)
 	count, _, _ := submissionRepo.Count(db.CountOptions{
-		Conditions: map[string]any{
-			"team_id":              team.ID,
-			"contest_challenge_id": contestChallenge.ID,
-			"solved":               true,
-		},
+		Conditions: map[string]any{"team_id": team.ID, "contest_challenge_id": contestChallenge.ID, "solved": true},
 	})
 	return count == int64(len(contestChallenge.ContestFlags))
 }

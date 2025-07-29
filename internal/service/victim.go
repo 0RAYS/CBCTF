@@ -34,13 +34,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 		containerRepo = db.InitContainerRepo(tx)
 	)
 	challenge, ok, msg := challengeRepo.GetByID(contestChallenge.ChallengeID, db.GetOptions{
-		Preloads: map[string]db.GetOptions{
-			"Dockers": {
-				Preloads: map[string]db.GetOptions{
-					"ChallengeFlags": {},
-				},
-			},
-		},
+		Preloads: map[string]db.GetOptions{"Dockers": {Preloads: map[string]db.GetOptions{"ChallengeFlags": {}}}},
 	})
 	if !ok {
 		return model.Victim{}, false, msg
@@ -119,16 +113,9 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 			volumeFlagL := make(model.StringMap)
 			for _, challengeFlag := range docker.ChallengeFlags {
 				teamFlag, ok, msg := teamFlagRepo.Get(db.GetOptions{
-					Selects: []string{"id", "challenge_flag_id", "value"},
-					Conditions: map[string]any{
-						"team_id":           team.ID,
-						"challenge_flag_id": challengeFlag.ID,
-					},
-					Preloads: map[string]db.GetOptions{
-						"ChallengeFlag": {
-							Selects: []string{"id", "Name"},
-						},
-					},
+					Selects:    []string{"id", "challenge_flag_id", "value"},
+					Conditions: map[string]any{"team_id": team.ID, "challenge_flag_id": challengeFlag.ID},
+					Preloads:   map[string]db.GetOptions{"ChallengeFlag": {Selects: []string{"id", "Name"}}},
 				})
 				if !ok {
 					return model.Victim{}, false, msg
@@ -199,16 +186,9 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 			volumeFlagL := make(model.StringMap)
 			for _, challengeFlag := range docker.ChallengeFlags {
 				teamFlag, ok, msg := teamFlagRepo.Get(db.GetOptions{
-					Selects: []string{"id", "challenge_flag_id", "value"},
-					Conditions: map[string]any{
-						"team_id":           team.ID,
-						"challenge_flag_id": challengeFlag.ID,
-					},
-					Preloads: map[string]db.GetOptions{
-						"ChallengeFlag": {
-							Selects: []string{"id", "Name"},
-						},
-					},
+					Selects:    []string{"id", "challenge_flag_id", "value"},
+					Conditions: map[string]any{"team_id": team.ID, "challenge_flag_id": challengeFlag.ID},
+					Preloads:   map[string]db.GetOptions{"ChallengeFlag": {Selects: []string{"id", "Name"}}},
 				})
 				if !ok {
 					return model.Victim{}, false, msg
@@ -298,10 +278,7 @@ func GetTeamVictimStatus(tx *gorm.DB, team model.Team, contestChallenge model.Co
 		return data
 	}
 	victims, _, ok, _ := db.InitVictimRepo(tx).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{
-			"contest_challenge_id": contestChallenge.ID,
-			"team_id":              team.ID,
-		},
+		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID, "team_id": team.ID},
 		Preloads: map[string]db.GetOptions{
 			"Pods": {},
 		},
@@ -325,10 +302,7 @@ func GetTeamVictimStatus(tx *gorm.DB, team model.Team, contestChallenge model.Co
 func StopTeamVictim(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) (bool, string) {
 	victimRepo := db.InitVictimRepo(tx)
 	victims, _, ok, msg := victimRepo.List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{
-			"team_id":              team.ID,
-			"contest_challenge_id": contestChallenge.ID,
-		},
+		Conditions: map[string]any{"team_id": team.ID, "contest_challenge_id": contestChallenge.ID},
 		Preloads: map[string]db.GetOptions{
 			"Pods": {},
 		},

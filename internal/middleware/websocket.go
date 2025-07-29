@@ -29,10 +29,7 @@ func WSAuth(ctx *gin.Context) {
 		ctx.Next()
 	} else {
 		user, ok, msg := db.InitUserRepo(DB).GetByID(claims.UserID, db.GetOptions{
-			Preloads: map[string]db.GetOptions{
-				"Teams":    {},
-				"Contests": {},
-			},
+			Preloads: map[string]db.GetOptions{"Teams": {}, "Contests": {}},
 		})
 		if !ok {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

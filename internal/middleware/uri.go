@@ -19,10 +19,8 @@ func SetUser(ctx *gin.Context) {
 		return
 	}
 	user, ok, msg := db.InitUserRepo(db.DB.WithContext(ctx)).GetByID(userID.UserID, db.GetOptions{
-		Preloads: map[string]db.GetOptions{
-			"Teams":    {},
-			"Contests": {},
-		}},
+		Preloads: map[string]db.GetOptions{"Teams": {}, "Contests": {}},
+	},
 	)
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -52,11 +50,7 @@ func SetContest(ctx *gin.Context) {
 		return
 	}
 	contest, ok, msg := db.InitContestRepo(db.DB.WithContext(ctx)).GetByID(contestID.ContestID, db.GetOptions{
-		Preloads: map[string]db.GetOptions{
-			"Teams":   {},
-			"Users":   {},
-			"Notices": {},
-		},
+		Preloads: map[string]db.GetOptions{"Teams": {}, "Users": {}, "Notices": {}},
 	})
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -250,10 +244,7 @@ func SetContestChallenge(ctx *gin.Context) {
 		return
 	}
 	contestChallenge, ok, msg := db.InitContestChallengeRepo(db.DB.WithContext(ctx)).Get(db.GetOptions{
-		Conditions: map[string]any{
-			"challenge_id": challenge.ID,
-			"contest_id":   GetContest(ctx).ID,
-		},
+		Conditions: map[string]any{"challenge_id": challenge.ID, "contest_id": GetContest(ctx).ID},
 		Preloads: map[string]db.GetOptions{
 			"Contest":      {},
 			"Challenge":    {},

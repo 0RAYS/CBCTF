@@ -23,9 +23,7 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 	}(victim)
 	for _, pod := range victim.Pods {
 		_, count, _, _ := trafficRepo.List(1, 0, db.GetOptions{
-			Conditions: map[string]any{
-				"pod_id": pod.ID,
-			},
+			Conditions: map[string]any{"pod_id": pod.ID},
 		})
 		if count > 0 {
 			return true, i18n.Success

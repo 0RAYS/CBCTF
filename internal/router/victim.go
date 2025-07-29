@@ -41,13 +41,8 @@ func IncreaseVictimDuration(ctx *gin.Context) {
 	DB := db.DB.WithContext(ctx)
 	repo := db.InitVictimRepo(DB)
 	victims, _, ok, msg := repo.List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{
-			"team_id":              team.ID,
-			"contest_challenge_id": contestChallenge.ID,
-		},
-		Preloads: map[string]db.GetOptions{
-			"Pods": {},
-		},
+		Conditions: map[string]any{"team_id": team.ID, "contest_challenge_id": contestChallenge.ID},
+		Preloads:   map[string]db.GetOptions{"Pods": {}},
 	})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

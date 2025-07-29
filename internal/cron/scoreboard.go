@@ -53,9 +53,7 @@ func UpdateUserRanking(c *cron.Cron) {
 					Conditions: map[string]any{"solved": true},
 					Selects:    []string{"id", "user_id", "team_id", "contest_flag_id"},
 					Preloads: map[string]db.GetOptions{
-						"ContestFlag": {
-							Selects: []string{"id", "current_score", "score"},
-						},
+						"ContestFlag": {Selects: []string{"id", "current_score", "score"}},
 					},
 				},
 			},

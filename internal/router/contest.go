@@ -38,13 +38,7 @@ func GetContests(ctx *gin.Context) {
 	if _, exists := ctx.GetQuery("offset"); !exists {
 		form.Offset = 0
 	}
-	options := db.GetOptions{
-		Preloads: map[string]db.GetOptions{
-			"Teams":   {},
-			"Users":   {},
-			"Notices": {},
-		},
-	}
+	options := db.GetOptions{Preloads: map[string]db.GetOptions{"Teams": {}, "Users": {}, "Notices": {}}}
 	if !middleware.IsAdmin(ctx) {
 		options.Conditions = map[string]any{"hidden": false}
 	}
