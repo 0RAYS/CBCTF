@@ -98,11 +98,8 @@ func InitTeamRepo(tx *gorm.DB) *TeamRepo {
 
 func (t *TeamRepo) IsUniqueName(contestID uint, name string) bool {
 	_, ok, _ := t.Get(GetOptions{
-		Conditions: map[string]any{
-			"contest_id": contestID,
-			"name":       name,
-		},
-		Selects: []string{"id"},
+		Conditions: map[string]any{"contest_id": contestID, "name": name},
+		Selects:    []string{"id"},
 	})
 	return !ok
 }

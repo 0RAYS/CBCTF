@@ -84,11 +84,8 @@ func InitContestChallengeRepo(tx *gorm.DB) *ContestChallengeRepo {
 
 func (c *ContestChallengeRepo) IsUniqueContestChallenge(contestID uint, challengeID uint) bool {
 	_, ok, _ := c.Get(GetOptions{
-		Conditions: map[string]any{
-			"contest_id":   contestID,
-			"challenge_id": challengeID,
-		},
-		Selects: []string{"id"},
+		Conditions: map[string]any{"contest_id": contestID, "challenge_id": challengeID},
+		Selects:    []string{"id"},
 	})
 	return !ok
 }

@@ -22,10 +22,7 @@ func HomePage(ctx *gin.Context) {
 		"scoreboard": []gin.H{},
 	}
 	contests, count, ok, _ := db.InitContestRepo(DB).List(-1, -1, db.GetOptions{
-		Preloads: map[string]db.GetOptions{
-			"Teams": {},
-			"Users": {},
-		},
+		Preloads: map[string]db.GetOptions{"Teams": {}, "Users": {}},
 	})
 	if ok {
 		for i := 0; i < func() int {

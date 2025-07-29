@@ -14,13 +14,8 @@ func UpdateTeamRanking(tx *gorm.DB, contestID uint) (bool, string) {
 	var (
 		repo              = db.InitTeamRepo(tx)
 		teams, _, ok, msg = repo.List(-1, -1, db.GetOptions{
-			Conditions: map[string]any{
-				"contest_id": contestID,
-				"banned":     false,
-			},
-			Preloads: map[string]db.GetOptions{
-				"Users": {},
-			},
+			Conditions: map[string]any{"contest_id": contestID, "banned": false},
+			Preloads:   map[string]db.GetOptions{"Users": {}},
 		})
 		score float64
 		err   error
@@ -50,10 +45,7 @@ func GetTeamRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Tea
 	var (
 		teams          = make([]model.Team, 0)
 		count, ok, msg = db.InitTeamRepo(tx).Count(db.CountOptions{
-			Conditions: map[string]any{
-				"contest_id": contestID,
-				"banned":     false,
-			},
+			Conditions: map[string]any{"contest_id": contestID, "banned": false},
 		})
 		err error
 	)

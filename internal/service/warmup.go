@@ -58,11 +58,8 @@ func GetContestVictims(tx *gorm.DB, contest model.Contest, form f.GetContestVict
 			return victims, 0, false, msg
 		}
 		contestChallenge, ok, msg := db.InitContestChallengeRepo(tx).Get(db.GetOptions{
-			Conditions: map[string]any{
-				"contest_id":   contest.ID,
-				"challenge_id": challenge.ID,
-			},
-			Selects: []string{"id"},
+			Conditions: map[string]any{"contest_id": contest.ID, "challenge_id": challenge.ID},
+			Selects:    []string{"id"},
 		})
 		if !ok {
 			return victims, 0, false, msg
@@ -119,9 +116,7 @@ func StartContestVictims(tx *gorm.DB, contest model.Contest, form f.StartContest
 	}
 	contestChallenges, _, ok, msg := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID, "challenge_id": challengeIDL},
-		Preloads: map[string]db.GetOptions{
-			"ContestFlags": {},
-		},
+		Preloads:   map[string]db.GetOptions{"ContestFlags": {}},
 	})
 	if !ok {
 		return false, msg
@@ -157,12 +152,8 @@ func StopContestVictims(tx *gorm.DB, form f.StopContestVictimsForm) (bool, strin
 	}
 	victimRepo := db.InitVictimRepo(tx)
 	victims, _, ok, msg := victimRepo.List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{
-			"id": form.Victims,
-		},
-		Preloads: map[string]db.GetOptions{
-			"Pods": {},
-		},
+		Conditions: map[string]any{"id": form.Victims},
+		Preloads:   map[string]db.GetOptions{"Pods": {}},
 	})
 	if !ok {
 		return false, msg

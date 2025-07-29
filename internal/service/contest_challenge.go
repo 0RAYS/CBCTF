@@ -20,9 +20,7 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form f.CreateCon
 	contestFlagRepo := db.InitContestFlagRepo(tx)
 	for _, challengeRandID := range form.ChallengeRandIDL {
 		challenge, ok, _ := challengeRepo.GetByRandID(challengeRandID, db.GetOptions{
-			Preloads: map[string]db.GetOptions{
-				"ChallengeFlags": {},
-			},
+			Preloads: map[string]db.GetOptions{"ChallengeFlags": {}},
 		})
 		if !ok {
 			failedL = append(failedL, challengeRandID)
@@ -65,10 +63,7 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form f.CreateCon
 				}
 			}
 			contestChallenge, ok, msg = contestChallengeRepo.GetByID(contestChallenge.ID, db.GetOptions{
-				Preloads: map[string]db.GetOptions{
-					"Challenge":    {},
-					"ContestFlags": {},
-				},
+				Preloads: map[string]db.GetOptions{"Challenge": {}, "ContestFlags": {}},
 			})
 			if !ok {
 				failedL = append(failedL, challengeRandID)
@@ -84,16 +79,9 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form f.CreateCon
 func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string, bool, string) {
 	images := make([]string, 0)
 	dynamicContestChallenges, _, ok, msg := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{
-			"type":       model.DynamicChallengeType,
-			"contest_id": contest.ID,
-		},
-		Selects: []string{"id", "challenge_id"},
-		Preloads: map[string]db.GetOptions{
-			"Challenge": {
-				Selects: []string{"id", "generator_image"},
-			},
-		},
+		Conditions: map[string]any{"type": model.DynamicChallengeType, "contest_id": contest.ID},
+		Selects:    []string{"id", "challenge_id"},
+		Preloads:   map[string]db.GetOptions{"Challenge": {Selects: []string{"id", "generator_image"}}},
 	})
 	if !ok {
 		return images, false, msg
@@ -104,19 +92,12 @@ func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string,
 		}
 	}
 	podsContestChallenge, _, ok, msg := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{
-			"type":       model.PodsChallengeType,
-			"contest_id": contest.ID,
-		},
-		Selects: []string{"id", "challenge_id"},
+		Conditions: map[string]any{"type": model.PodsChallengeType, "contest_id": contest.ID},
+		Selects:    []string{"id", "challenge_id"},
 		Preloads: map[string]db.GetOptions{
 			"Challenge": {
-				Selects: []string{"id"},
-				Preloads: map[string]db.GetOptions{
-					"Dockers": {
-						Selects: []string{"id", "challenge_id", "image"},
-					},
-				},
+				Selects:  []string{"id"},
+				Preloads: map[string]db.GetOptions{"Dockers": {Selects: []string{"id", "challenge_id", "image"}}},
 			},
 		},
 	})
