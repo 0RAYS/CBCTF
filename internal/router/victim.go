@@ -24,7 +24,7 @@ func StartVictim(ctx *gin.Context) {
 		_, ok, _ := service.StartTeamVictim(tx, user, team, contestChallenge)
 		if !ok {
 			tx.Rollback()
-			websocket.Send(false, user.ID, wm.ErrorLevel, wm.StartVictimType, "Start Victim", "Failed, please try again later")
+			websocket.Send(false, user.ID, wm.ErrorLevel, wm.StartVictimType, "Start Victim", "Failed")
 			return
 		}
 		tx.Commit()

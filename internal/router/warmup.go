@@ -89,7 +89,10 @@ func StartContestVictims(ctx *gin.Context) {
 	}
 	contest := middleware.GetContest(ctx)
 	go func(ctx *gin.Context) {
-		service.StartContestVictims(db.DB.WithContext(ctx), contest, form)
+		if ok, _ := service.StartContestVictims(db.DB.WithContext(ctx), contest, form); !ok {
+			websocket.Send(true, middleware.GetSelfID(ctx), model.ErrorLevel, model.StartVictimType, "Victims Warmup", "Failed")
+			return
+		}
 		websocket.Send(true, middleware.GetSelfID(ctx), model.SuccessLevel, model.StartVictimType, "Victims Warmup", "Done")
 	}(ctx.Copy())
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
@@ -102,7 +105,10 @@ func StopContestVictims(ctx *gin.Context) {
 		return
 	}
 	go func(ctx *gin.Context) {
-		service.StopContestVictims(db.DB.WithContext(ctx), form)
+		if ok, _ := service.StopContestVictims(db.DB.WithContext(ctx), form); !ok {
+			websocket.Send(true, middleware.GetSelfID(ctx), model.ErrorLevel, model.StopVictimType, "Victims Stop", "Failed")
+			return
+		}
 		websocket.Send(true, middleware.GetSelfID(ctx), model.SuccessLevel, model.StopVictimType, "Victims Stop", "Done")
 	}(ctx.Copy())
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
