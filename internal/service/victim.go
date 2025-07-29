@@ -238,7 +238,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 	}
 	ipExposesMap, ok, msg := k8s.StartVictim(victim)
 	if !ok {
-		//go k8s.StopVictim(victim)
+		go k8s.StopVictim(victim)
 		return model.Victim{}, false, msg
 	}
 	for ip, exposes := range ipExposesMap {
@@ -252,10 +252,19 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 	}
 	victim.ExposedEndpoints = victim.Endpoints
 	if config.Env.K8S.Frpc.On {
-		victim.ExposedEndpoints, ok, msg = k8s.CreateFrpc(victim)
+		var frpc string
+		victim.ExposedEndpoints, frpc, ok, msg = k8s.CreateFrpc(victim)
 		if !ok {
 			return model.Victim{}, false, msg
 		}
+		p, ok, msg := podRepo.Create(db.CreatePodOptions{
+			VictimID: victim.ID,
+			Name:     frpc,
+		})
+		if !ok {
+			return model.Victim{}, false, msg
+		}
+		victim.Pods = append(victim.Pods, p)
 	}
 	if ok, msg = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
 		Endpoints:        &victim.Endpoints,

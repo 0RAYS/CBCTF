@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-func CreateFrpc(victim model.Victim) (model.Endpoints, bool, string) {
+func CreateFrpc(victim model.Victim) (model.Endpoints, string, bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 	podName := fmt.Sprintf("frpc-%s", utils.RandStr(20))
@@ -45,7 +45,7 @@ func CreateFrpc(victim model.Victim) (model.Endpoints, bool, string) {
 	for _, endpoint := range victim.Endpoints {
 		exposedPort, ok, msg := GetAvailableFrpsPort(frps.Host, portRange, endpoint.Protocol)
 		if !ok {
-			return model.Endpoints{}, false, msg
+			return model.Endpoints{}, "", false, msg
 		}
 		data += fmt.Sprintf(
 			"[[proxies]]\nname = \"%s\"\ntype = \"%s\"\nlocalIP = \"%s\"\nlocalPort = %d\nremotePort = %d\n\n",
@@ -64,7 +64,7 @@ func CreateFrpc(victim model.Victim) (model.Endpoints, bool, string) {
 		Data:   map[string]string{"frpc.toml": data},
 	})
 	if !ok {
-		return model.Endpoints{}, false, msg
+		return model.Endpoints{}, "", false, msg
 	}
 	cmVolume := corev1.Volume{
 		Name: fmt.Sprintf("vol-%s", utils.RandStr(20)),
@@ -112,16 +112,16 @@ func CreateFrpc(victim model.Victim) (model.Endpoints, bool, string) {
 			},
 		},
 	}
-	_, ok, msg = CreatePod(ctx, CreatePodOptions{
+	p, ok, msg := CreatePod(ctx, CreatePodOptions{
 		Name:       podName,
 		Labels:     labels,
 		Containers: containers,
 		Volumes:    []corev1.Volume{cmVolume, nfsVolume},
 	})
 	if !ok {
-		return model.Endpoints{}, false, msg
+		return model.Endpoints{}, "", false, msg
 	}
-	return newEndpoints, true, i18n.Success
+	return newEndpoints, p.Name, true, i18n.Success
 }
 
 func GetAvailableFrpsPort(host string, portRange []int32, protocol string) (int32, bool, string) {
