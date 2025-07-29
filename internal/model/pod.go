@@ -1,7 +1,6 @@
 package model
 
 import (
-	"CBCTF/internal/config"
 	"CBCTF/internal/i18n"
 	"fmt"
 )
@@ -53,10 +52,6 @@ func (p Pod) GetForeignKeys() []string {
 	return []string{"id", "victim_id"}
 }
 
-func (p Pod) TrafficBasePath() string {
-	return fmt.Sprintf("%s/traffics/victim-%d", config.Env.Path, p.VictimID)
-}
-
 func (p Pod) TrafficPcapPath() string {
-	return fmt.Sprintf("%s/pod-%d.pcap", p.TrafficBasePath(), p.ID)
+	return fmt.Sprintf("%s/pod-%d.pcap", Victim{BasicModel: BasicModel{ID: p.VictimID}}.TrafficBasePath(), p.ID)
 }

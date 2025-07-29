@@ -106,7 +106,7 @@ func CreateFrpc(victim model.Victim) (model.Endpoints, bool, string) {
 					Name:      nfsVolume.Name,
 					MountPath: "/root/mnt",
 					SubPath: strings.TrimPrefix(
-						strings.TrimPrefix(model.Pod{VictimID: victim.ID}.TrafficBasePath(), config.Env.Path), "/",
+						strings.TrimPrefix(victim.TrafficBasePath(), config.Env.Path), "/",
 					),
 				},
 			},
