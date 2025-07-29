@@ -66,7 +66,7 @@ func CreateFrpc(victim model.Victim) (model.Endpoints, bool, string) {
 	if !ok {
 		return model.Endpoints{}, false, msg
 	}
-	volume := corev1.Volume{
+	cmVolume := corev1.Volume{
 		Name: fmt.Sprintf("vol-%s", utils.RandStr(20)),
 		VolumeSource: corev1.VolumeSource{
 			ConfigMap: &corev1.ConfigMapVolumeSource{
@@ -76,23 +76,47 @@ func CreateFrpc(victim model.Victim) (model.Endpoints, bool, string) {
 			},
 		},
 	}
-	frpc := corev1.Container{
-		Name:  fmt.Sprintf("frpc-%s", utils.RandStr(20)),
-		Image: config.Env.K8S.Frpc.Image,
-		Args:  []string{"-c", "/etc/frp/frpc.toml"},
-		VolumeMounts: []corev1.VolumeMount{
-			{
-				Name:      volume.Name,
-				MountPath: "/etc/frp/frpc.toml",
-				SubPath:   "frpc.toml",
+	nfsVolume := corev1.Volume{
+		Name: fmt.Sprintf("vol-%s", utils.RandStr(20)),
+		VolumeSource: corev1.VolumeSource{
+			PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+				ClaimName: NFSVolumeName,
+			},
+		},
+	}
+	containers := []corev1.Container{
+		{
+			Name:  fmt.Sprintf("frpc-%s", utils.RandStr(20)),
+			Image: config.Env.K8S.Frpc.Image,
+			Args:  []string{"-c", "/etc/frp/frpc.toml"},
+			VolumeMounts: []corev1.VolumeMount{
+				{
+					Name:      cmVolume.Name,
+					MountPath: "/etc/frp/frpc.toml",
+					SubPath:   "frpc.toml",
+				},
+			},
+		},
+		{
+			Name:    "tcpdump",
+			Image:   config.Env.K8S.TCPDumpImage,
+			Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/mnt/frpc.pcap"},
+			VolumeMounts: []corev1.VolumeMount{
+				{
+					Name:      nfsVolume.Name,
+					MountPath: "/root/mnt",
+					SubPath: strings.TrimPrefix(
+						strings.TrimPrefix(model.Pod{VictimID: victim.ID}.TrafficBasePath(), config.Env.Path), "/",
+					),
+				},
 			},
 		},
 	}
 	_, ok, msg = CreatePod(ctx, CreatePodOptions{
 		Name:       podName,
 		Labels:     labels,
-		Containers: []corev1.Container{frpc},
-		Volumes:    []corev1.Volume{volume},
+		Containers: containers,
+		Volumes:    []corev1.Volume{cmVolume, nfsVolume},
 	})
 	if !ok {
 		return model.Endpoints{}, false, msg
