@@ -79,7 +79,7 @@ func ApplyGetOptions(tx *gorm.DB, options GetOptions) *gorm.DB {
 
 func (b *BasicRepo[M]) Get(options GetOptions) (M, bool, string) {
 	var m M
-	res := ApplyGetOptions(b.DB.Model(new(M)), options).Order("id").Limit(1).Find(&m)
+	res := ApplyGetOptions(b.DB.Model(new(M)), options).Limit(1).Find(&m)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get %s: %s", m.GetModelName(), res.Error)
 		return *new(M), false, m.GetErrorString()
