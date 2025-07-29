@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/service"
 	"github.com/robfig/cron/v3"
 	"math"
+	"slices"
 	"time"
 )
 
@@ -70,20 +71,18 @@ func UpdateUserRanking(c *cron.Cron) {
 				solved++
 				var rate float64
 				bloodTeam, _, _ := submissionRepo.GetBloodTeam(submission.ContestFlagID)
-				for i, teamID := range bloodTeam {
-					if teamID == submission.TeamID {
-						switch i {
-						case 0:
-							rate = model.FirstBloodRate
-						case 1:
-							rate = model.SecondBloodRate
-						case 2:
-							rate = model.ThirdBloodRate
-						}
+				switch slices.IndexFunc(bloodTeam, func(i uint) bool {
+					if i == submission.TeamID {
+						return true
 					}
-					if rate > 0 {
-						break
-					}
+					return false
+				}) {
+				case 0:
+					rate = model.FirstBloodRate
+				case 1:
+					rate = model.SecondBloodRate
+				case 2:
+					rate = model.ThirdBloodRate
 				}
 				score += submission.ContestFlag.CurrentScore + submission.ContestFlag.Score*rate
 			}
