@@ -49,8 +49,7 @@ func UpdateTeamRanking(tx *gorm.DB, contestID uint) (bool, string) {
 func GetTeamRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Team, int64, bool, string) {
 	var (
 		teams          = make([]model.Team, 0)
-		repo           = db.InitTeamRepo(tx)
-		count, ok, msg = repo.Count(db.CountOptions{
+		count, ok, msg = db.InitTeamRepo(tx).Count(db.CountOptions{
 			Conditions: map[string]any{
 				"contest_id": contestID,
 				"banned":     false,
@@ -77,8 +76,7 @@ func GetTeamRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Tea
 
 func UpdateUserRanking(tx *gorm.DB) (bool, string) {
 	var (
-		repo              = db.InitUserRepo(tx)
-		users, _, ok, msg = repo.List(-1, -1, db.GetOptions{
+		users, _, ok, msg = db.InitUserRepo(tx).List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"banned": false},
 		})
 		err error
@@ -96,8 +94,7 @@ func UpdateUserRanking(tx *gorm.DB) (bool, string) {
 func GetUserRanking(tx *gorm.DB, limit, offset int) ([]model.User, int64, bool, string) {
 	var (
 		users          = make([]model.User, 0)
-		repo           = db.InitUserRepo(tx)
-		count, ok, msg = repo.Count(db.CountOptions{
+		count, ok, msg = db.InitUserRepo(tx).Count(db.CountOptions{
 			Conditions: map[string]any{"banned": false},
 		})
 		err error

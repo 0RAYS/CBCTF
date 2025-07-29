@@ -13,7 +13,10 @@ import (
 func UpdateTeamRanking(c *cron.Cron) {
 	function := exec("UpdateTeamRanking", func() {
 		repo := db.InitContestRepo(db.DB)
-		contests, _, ok, _ := repo.List(-1, -1)
+		contests, _, ok, _ := repo.List(-1, -1, db.GetOptions{
+			Selects:    []string{"id", "start", "duration"},
+			Conditions: map[string]any{"hidden": false},
+		})
 		if !ok {
 			return
 		}
@@ -40,69 +43,55 @@ func UpdateTeamRanking(c *cron.Cron) {
 // UpdateUserRanking 依据数据库, 更新 model.User 的分数和排名
 func UpdateUserRanking(c *cron.Cron) {
 	function := exec("UpdateUserRanking", func() {
-		contestRepo := db.InitContestRepo(db.DB)
-		contests, _, ok, _ := contestRepo.List(-1, -1, db.GetOptions{
-			Selects: []string{"id", "start", "duration"},
+		userRepo := db.InitUserRepo(db.DB)
+		users, _, ok, _ := userRepo.List(-1, -1, db.GetOptions{
+			Conditions: map[string]any{"banned": false},
+			Selects:    []string{"id"},
 			Preloads: map[string]db.GetOptions{
-				"Users": {
-					Selects: []string{"id"},
+				"submissions": {
+					Conditions: map[string]any{"solved": true},
+					Selects:    []string{"id", "user_id", "team_id", "contest_flag_id"},
+					Preloads: map[string]db.GetOptions{
+						"ContestFlag": {
+							Selects: []string{"id", "current_score", "score"},
+						},
+					},
 				},
 			},
 		})
 		if !ok {
 			return
 		}
-		for _, contest := range contests {
-			if !contest.IsRunning() {
-				continue
-			}
-			submissionRepo := db.InitSubmissionRepo(db.DB)
-			userRepo := db.InitUserRepo(db.DB)
-			for _, user := range contest.Users {
-				submissions, _, ok, _ := submissionRepo.List(-1, -1, db.GetOptions{
-					Conditions: map[string]any{
-						"user_id": user.ID,
-						"solved":  true,
-					},
-					Selects: []string{"id", "contest_flag_id", "team_id"},
-				})
-				if !ok {
-					continue
-				}
-				var solved int64 = 0
-				var score float64 = 0
-				contestFlagRepo := db.InitContestFlagRepo(db.DB)
-				for _, submission := range submissions {
-					contestFlag, ok, _ := contestFlagRepo.GetByID(submission.ContestFlagID)
-					if !ok {
-						continue
-					}
-					solved++
-					var rate float64
-					bloodTeam, _, _ := submissionRepo.GetBloodTeam(submission.ContestFlagID)
-					for i, teamID := range bloodTeam {
-						if teamID == submission.TeamID {
-							switch i {
-							case 0:
-								rate = model.FirstBloodRate
-							case 1:
-								rate = model.SecondBloodRate
-							case 2:
-								rate = model.ThirdBloodRate
-							}
-						}
-						if rate > 0 {
-							break
+		submissionRepo := db.InitSubmissionRepo(db.DB)
+		for _, user := range users {
+			var solved int64 = 0
+			var score float64 = 0
+			for _, submission := range user.Submissions {
+				solved++
+				var rate float64
+				bloodTeam, _, _ := submissionRepo.GetBloodTeam(submission.ContestFlagID)
+				for i, teamID := range bloodTeam {
+					if teamID == submission.TeamID {
+						switch i {
+						case 0:
+							rate = model.FirstBloodRate
+						case 1:
+							rate = model.SecondBloodRate
+						case 2:
+							rate = model.ThirdBloodRate
 						}
 					}
-					score += contestFlag.CurrentScore + contestFlag.Score*rate
+					if rate > 0 {
+						break
+					}
 				}
-				score = math.Trunc(score*100) / 100
-				userRepo.Update(user.ID, db.UpdateUserOptions{
-					Score:  &score,
-					Solved: &solved,
-				})
+				score += submission.ContestFlag.CurrentScore + submission.ContestFlag.Score*rate
 			}
+			score = math.Trunc(score*100) / 100
+			userRepo.Update(user.ID, db.UpdateUserOptions{
+				Score:  &score,
+				Solved: &solved,
+			})
 		}
 		service.UpdateUserRanking(db.DB)
 	})
