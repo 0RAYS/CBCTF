@@ -270,7 +270,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 								Name:      nfsName,
 								MountPath: "/root/mnt",
 								SubPath: strings.TrimPrefix(
-									strings.TrimPrefix(pod.TrafficBasePath(), config.Env.Path), "/",
+									strings.TrimPrefix(victim.TrafficBasePath(), config.Env.Path), "/",
 								),
 							},
 						},
