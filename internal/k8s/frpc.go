@@ -43,7 +43,7 @@ func CreateFrpc(victim model.Victim) (model.Endpoints, bool, string) {
 	data := fmt.Sprintf("serverAddr = \"%s\"\nserverPort = %d\nauth.token = \"%s\"\n\n", frps.Host, frps.Port, frps.Token)
 	newEndpoints := make(model.Endpoints, 0)
 	for _, endpoint := range victim.Endpoints {
-		exposedPort, ok, msg := GetAvailablePort(frps.Host, portRange, endpoint.Protocol)
+		exposedPort, ok, msg := GetAvailableFrpsPort(frps.Host, portRange, endpoint.Protocol)
 		if !ok {
 			return model.Endpoints{}, false, msg
 		}
@@ -100,7 +100,7 @@ func CreateFrpc(victim model.Victim) (model.Endpoints, bool, string) {
 	return newEndpoints, true, i18n.Success
 }
 
-func GetAvailablePort(host string, portRange []int32, protocol string) (int32, bool, string) {
+func GetAvailableFrpsPort(host string, portRange []int32, protocol string) (int32, bool, string) {
 	idxBig, _ := rand.Int(rand.Reader, big.NewInt(int64(len(portRange))))
 	port := portRange[idxBig.Int64()]
 	locked, err := redis.IsFrpsPortLocked(host, port, protocol)
@@ -112,7 +112,7 @@ func GetAvailablePort(host string, portRange []int32, protocol string) (int32, b
 		portRange = slices.DeleteFunc(portRange, func(i int32) bool {
 			return i == port
 		})
-		return GetAvailablePort(host, portRange, protocol)
+		return GetAvailableFrpsPort(host, portRange, protocol)
 	}
 	if err = redis.LockFrpsPort(host, port, protocol); err != nil {
 		return 0, false, i18n.RedisError
