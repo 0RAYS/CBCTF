@@ -26,7 +26,6 @@ func Init() {
 	CheckWSConnection(Cron)
 	CloseTimeoutVictims(Cron)
 	CloseUnCtrlVictims(Cron)
-	ClearUnCtrlResource(Cron)
 	UpdateFlagScore(Cron)
 	UpdateUserRanking(Cron)
 	UpdateTeamRanking(Cron)
