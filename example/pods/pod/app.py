@@ -7,6 +7,7 @@ app = Flask(__name__)
 @app.route('/')
 def hello():
     try:
+        # 使用 127.0.0.1 与 db 容器进行通信
         conn = mysql.connector.connect(
             host='127.0.0.1',
             user='root',
