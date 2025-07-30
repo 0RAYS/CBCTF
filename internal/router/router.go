@@ -34,10 +34,10 @@ func Init() *gin.Engine {
 			if strings.HasPrefix(config.Env.Frontend, "http://") || strings.HasPrefix(config.Env.Frontend, "https://") {
 				ctx.Redirect(http.StatusFound, config.Env.Frontend)
 			} else {
-				ctx.Redirect(http.StatusFound, "/platform")
+				ctx.Redirect(http.StatusFound, config.Env.StaticURI)
 			}
 		})
-		router.StaticFS("/platform", http.FS(frontend.SubFS))
+		router.StaticFS(config.Env.StaticURI, http.FS(frontend.SubFS))
 	}
 
 	{
