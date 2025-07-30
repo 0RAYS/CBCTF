@@ -53,7 +53,7 @@ func I18n(ctx *gin.Context) {
 		language = "zh-CN"
 
 	}
-	res.Msg, res.Code = i18n.I18N(res.Msg, language)
+	res.Msg, res.Code = i18n.GetResponse(res.Msg, language)
 	res.Trace = GetTraceID(ctx)
 	ctx.Set("StatusCode", res.Code)
 	ret, err := json.Marshal(res)
