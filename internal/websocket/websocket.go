@@ -72,15 +72,13 @@ func WS(ctx *gin.Context) {
 		mu.Unlock()
 	}()
 
+	c := &model.Connection{Conn: conn, LastActive: time.Now()}
+
 	mu.Lock()
-	(*clients)[id] = &model.Connection{Conn: conn, LastActive: time.Now()}
+	(*clients)[id] = c
 	mu.Unlock()
 
 	for {
-		mu.RLock()
-		c := (*clients)[id]
-		mu.RUnlock()
-
 		_, msg, err := c.Conn.ReadMessage()
 		if err != nil && !websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
 			log.Logger.Warningf("Failed to read ws msg: %v", err)
