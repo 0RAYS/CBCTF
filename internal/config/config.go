@@ -90,7 +90,8 @@ type Config struct {
 				} `mapstructure:"allowed_ports" json:"allowed_ports"` // Frps 服务器允许的端口范围
 			} `mapstructure:"frps" json:"frps"` // Frps 服务器列表
 		} `mapstructure:"frpc" json:"frpc"`
-		Nodes []string `mapstructure:"nodes" json:"nodes"` // Kubernetes 节点列表
+		Nodes           []string `mapstructure:"nodes" json:"nodes"` // Kubernetes 节点列表
+		GeneratorWorker int      `mapstructure:"generator_worker" json:"generator_worker"`
 	} `mapstructure:"k8s" json:"k8s"`
 
 	NFS struct {

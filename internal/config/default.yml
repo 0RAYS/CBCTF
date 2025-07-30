@@ -80,6 +80,8 @@ k8s:
   # Nodes of k8s cluster, used for external service, will auto get from k8s when run `./CBCTF k8s init`
   nodes:
     - "192.168.0.1"
+  # (len(nodes) * generator_worker) pods for each dynamic challenge
+  generator_worker: 2
 nfs:
   server: 127.0.0.1
   # Accessible path (RW) in NFS server
