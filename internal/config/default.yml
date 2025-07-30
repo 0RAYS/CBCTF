@@ -1,3 +1,10 @@
+backend: "http://127.0.0.1:8000"
+# CORS
+frontend: "http://127.0.0.1:3000"
+# Static Resources URI
+static_uri: "/platform"
+# Data path and NFS mount path if needed
+path: "./uploads"
 log:
   # DEBUG INFO WARNING ERROR
   level: "info"
@@ -6,15 +13,19 @@ gin:
   mode: "release"
   host: "127.0.0.1"
   port: 8000
+  # Trusted proxy servers
   proxies:
     - "10.0.0.1"
   upload:
+    # Size limited
     max: 8
   rate:
+    # Request without rate limited
     whitelist:
       - "::1"
       - "127.0.0.1"
   log:
+    # Request without logging
     whitelist:
       - "/metrics"
 gorm:
@@ -34,10 +45,12 @@ redis:
   port: 6379
   pwd: "password"
 k8s:
-  # kubeconfig
+  # Kubeconfig path
   config: "./admin.conf"
-  # also as prefix of resources
+  # Also as prefix of resources
   namespace: "cbctf"
+  # Maybe your k8s nodes cidr
+  # https://kubeovn.github.io/docs/stable/vpc/vpc/#_2
   external_network:
     cidr: 192.168.0.0/16
     gateway: 192.168.0.1
@@ -45,9 +58,11 @@ k8s:
     exclude_ips:
       - "192.168.0.1"
       - "192.168.0.254"
+  # Docker image
   tcpdump: "nicolaka/netshoot:latest"
   frpc:
     on: false
+    # Docker image
     image: "snowdreamtech/frpc:latest"
     frps:
       - host: "example.com"
@@ -62,11 +77,12 @@ k8s:
             to: 60000
             exclude:
               - 50000
-  # nodes of k8s cluster, used for external service, will auto get from k8s when run `./CBCTF k8s init`
+  # Nodes of k8s cluster, used for external service, will auto get from k8s when run `./CBCTF k8s init`
   nodes:
     - "192.168.0.1"
 nfs:
   server: 127.0.0.1
+  # Accessible path (RW) in NFS server
   path: /mnt/data
   # Gi, Mi
   storage: 10Gi
@@ -76,6 +92,3 @@ email:
       pwd: "password"
       host: "smtp.example.com"
       port: 25
-frontend: "http://127.0.0.1:3000"
-backend: "http://127.0.0.1:8000"
-path: "./uploads"
