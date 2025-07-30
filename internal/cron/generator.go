@@ -54,7 +54,7 @@ func PrepareGenerator(c *cron.Cron) {
 				k8s.GeneratorMapMutex.Lock()
 				length := len(k8s.GeneratorMap[contestChallenge.ID])
 				k8s.GeneratorMapMutex.Unlock()
-				for i := 0; i < len(config.Env.K8S.Nodes)*2-length; i++ {
+				for i := 0; i < len(config.Env.K8S.Nodes)*config.Env.K8S.GeneratorWorker-length; i++ {
 					go k8s.StartGenerator(contestChallenge)
 				}
 			}
