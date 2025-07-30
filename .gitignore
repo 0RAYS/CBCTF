@@ -4,8 +4,8 @@
 .idea
 logs
 uploads
-docs
-dist
+frontend/dist/*
+!frontend/dist/.gitkeep
 config.yml
 resources.yaml
 build.bat
