@@ -1,8 +1,5 @@
 package i18n
 
-// 保持与旧API的兼容性
-// 这些常量定义保持不变，以便现有代码继续工作
-
 const (
 	Success        = "Success"
 	UnsupportedKey = "UnsupportedKey"
@@ -272,9 +269,3 @@ const (
 
 	GetNodeListError = "GetNodeListError"
 )
-
-// I18N 保持与旧API的兼容性
-// 这个函数现在使用新的go-i18n实现
-func I18N(key string, language string) (string, int) {
-	return GetResponse(key, language)
-} 
