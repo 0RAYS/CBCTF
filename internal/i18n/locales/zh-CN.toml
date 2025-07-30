@@ -1,0 +1,702 @@
+# 通用消息
+[Success]
+other = "操作成功"
+
+[UnsupportedKey]
+other = "不支持的键"
+
+[DeadLock]
+other = "数据写入失败过多"
+
+# HTTP状态码相关
+[BadRequest]
+other = "参数缺失或错误"
+
+[Unauthorized]
+other = "未登录"
+
+[Forbidden]
+other = "禁止访问"
+
+[TooManyRequests]
+other = "请求过快"
+
+[UnknownError]
+other = "未知错误"
+
+# 管理员相关
+[CreateAdminError]
+other = "创建管理员失败"
+
+[DeleteAdminError]
+other = "删除管理员失败"
+
+[GetAdminError]
+other = "获取管理员失败"
+
+[AdminNotFound]
+other = "管理员不存在"
+
+[UpdateAdminError]
+other = "更新管理员失败"
+
+# 题目相关
+[CreateChallengeError]
+other = "创建题目失败"
+
+[DeleteChallengeError]
+other = "删除题目失败"
+
+[GetChallengeError]
+other = "获取题目失败"
+
+[ChallengeNotFound]
+other = "题目不存在"
+
+[UpdateChallengeError]
+other = "更新题目失败"
+
+[InvalidChallengeType]
+other = "无效的题目类型"
+
+# 题目Flag相关
+[CreateChallengeFlagError]
+other = "创建题目flag失败"
+
+[DeleteChallengeFlagError]
+other = "删除题目flag失败"
+
+[GetChallengeFlagError]
+other = "获取题目flag失败"
+
+[ChallengeFlagNotFound]
+other = "题目flag不存在"
+
+[UpdateChallengeFlagError]
+other = "更新题目flag失败"
+
+# 作弊记录相关
+[CreateCheatError]
+other = "创建作弊记录失败"
+
+[DeleteCheatError]
+other = "删除作弊记录失败"
+
+[GetCheatError]
+other = "获取作弊记录失败"
+
+[CheatNotFound]
+other = "作弊记录不存在"
+
+[UpdateCheatError]
+other = "更新作弊记录失败"
+
+# 容器相关
+[CreateContainerError]
+other = "创建容器失败"
+
+[DeleteContainerError]
+other = "删除容器失败"
+
+[GetContainerError]
+other = "获取容器失败"
+
+[ContainerNotFound]
+other = "容器不存在"
+
+[UpdateContainerError]
+other = "更新容器失败"
+
+# 比赛相关
+[CreateContestError]
+other = "创建比赛失败"
+
+[DeleteContestError]
+other = "删除比赛失败"
+
+[GetContestError]
+other = "获取比赛失败"
+
+[ContestNotFound]
+other = "比赛不存在"
+
+[UpdateContestError]
+other = "更新比赛失败"
+
+[DuplicateContestName]
+other = "比赛名称已被使用"
+
+[ContestCaptchaError]
+other = "比赛邀请码错误"
+
+[ContestIsComing]
+other = "比赛未开始"
+
+[ContestIsRunning]
+other = "比赛正在进行中"
+
+[ContestIsOver]
+other = "比赛已结束"
+
+# 比赛题目相关
+[CreateContestChallengeError]
+other = "添加比赛题目失败"
+
+[DeleteContestChallengeError]
+other = "删除比赛题目失败"
+
+[GetContestChallengeError]
+other = "获取比赛题目失败"
+
+[ContestChallengeNotFound]
+other = "比赛题目不存在"
+
+[UpdateContestChallengeError]
+other = "更新比赛题目失败"
+
+[AlreadySolved]
+other = "题目已被解决"
+
+[FlagNotMatch]
+other = "flag错误"
+
+[NotAllowSubmit]
+other = "不允许提交"
+
+# 比赛Flag相关
+[CreateContestFlagError]
+other = "创建比赛flag失败"
+
+[DeleteContestFlagError]
+other = "删除比赛flag失败"
+
+[GetContestFlagError]
+other = "获取比赛flag失败"
+
+[ContestFlagNotFound]
+other = "比赛flag不存在"
+
+[UpdateContestFlagError]
+other = "更新比赛flag失败"
+
+[InvalidScoreType]
+other = "无效的分数类型"
+
+# 设备相关
+[CreateDeviceError]
+other = "创建设备失败"
+
+[DeleteDeviceError]
+other = "删除设备失败"
+
+[GetDeviceError]
+other = "获取设备失败"
+
+[DeviceNotFound]
+other = "设备不存在"
+
+[UpdateDeviceError]
+other = "更新设备失败"
+
+# Docker相关
+[CreateDockerError]
+other = "创建Docker失败"
+
+[DeleteDockerError]
+other = "删除Docker失败"
+
+[GetDockerError]
+other = "获取Docker失败"
+
+[DockerNotFound]
+other = "Docker不存在"
+
+[UpdateDockerError]
+other = "更新Docker失败"
+
+[InvalidDockerImage]
+other = "无效的Docker镜像"
+
+# 事件相关
+[CreateEventError]
+other = "创建事件失败"
+
+[DeleteEventError]
+other = "删除事件失败"
+
+[GetEventError]
+other = "获取事件失败"
+
+[EventNotFound]
+other = "事件不存在"
+
+[UpdateEventError]
+other = "更新事件失败"
+
+# 文件相关
+[CreateFileError]
+other = "创建文件失败"
+
+[DeleteFileError]
+other = "删除文件失败"
+
+[GetFileError]
+other = "获取文件失败"
+
+[FileNotFound]
+other = "文件不存在"
+
+[UpdateFileError]
+other = "更新文件失败"
+
+[FileNotAllowed]
+other = "不允许的文件类型"
+
+# 通知相关
+[CreateNoticeError]
+other = "创建通知失败"
+
+[DeleteNoticeError]
+other = "删除通知失败"
+
+[GetNoticeError]
+other = "获取通知失败"
+
+[NoticeNotFound]
+other = "通知不存在"
+
+[UpdateNoticeError]
+other = "更新通知失败"
+
+[InvalidNoticeType]
+other = "无效的通知类型"
+
+# Pod相关
+[CreatePodError]
+other = "创建Pod失败"
+
+[DeletePodError]
+other = "删除Pod失败"
+
+[GetPodError]
+other = "获取Pod失败"
+
+[PodNotFound]
+other = "Pod不存在"
+
+[UpdatePodError]
+other = "更新Pod失败"
+
+# 请求相关
+[CreateRequestError]
+other = "创建请求失败"
+
+[DeleteRequestError]
+other = "删除请求失败"
+
+[GetRequestError]
+other = "获取请求失败"
+
+[RequestNotFound]
+other = "请求不存在"
+
+[UpdateRequestError]
+other = "更新请求失败"
+
+# 提交相关
+[CreateSubmissionError]
+other = "创建提交记录失败"
+
+[DeleteSubmissionError]
+other = "删除提交记录失败"
+
+[GetSubmissionError]
+other = "获取提交记录失败"
+
+[SubmissionNotFound]
+other = "提交记录不存在"
+
+[UpdateSubmissionError]
+other = "更新提交记录失败"
+
+# 战队相关
+[CreateTeamError]
+other = "创建战队失败"
+
+[DeleteTeamError]
+other = "删除战队失败"
+
+[GetTeamError]
+other = "获取战队失败"
+
+[TeamNotFound]
+other = "战队不存在"
+
+[UpdateTeamError]
+other = "更新战队失败"
+
+[TeamIsBanned]
+other = "战队已被封禁"
+
+[TeamIsFull]
+other = "战队已满员"
+
+[DuplicateTeamName]
+other = "战队名称已被使用"
+
+[DuplicateMember]
+other = "用户已在战队中"
+
+[UserNotInTeam]
+other = "用户不在战队中"
+
+[CaptainCannotLeave]
+other = "队长不能离开战队"
+
+[TeamCaptchaError]
+other = "战队邀请码错误"
+
+# 战队Flag相关
+[CreateTeamFlagError]
+other = "创建战队flag失败"
+
+[DeleteTeamFlagError]
+other = "删除战队flag失败"
+
+[GetTeamFlagError]
+other = "获取战队flag失败"
+
+[TeamFlagNotFound]
+other = "战队flag不存在"
+
+[UpdateTeamFlagError]
+other = "更新战队flag失败"
+
+# 流量相关
+[CreateTrafficError]
+other = "创建流量记录失败"
+
+[DeleteTrafficError]
+other = "删除流量记录失败"
+
+[GetTrafficError]
+other = "获取流量记录失败"
+
+[TrafficNotFound]
+other = "流量记录不存在"
+
+[UpdateTrafficError]
+other = "更新流量记录失败"
+
+[ReadPcapError]
+other = "读取PCAP文件失败"
+
+[PcapNotFound]
+other = "PCAP文件不存在"
+
+[HasNoTraffic]
+other = "没有流量记录"
+
+# 用户相关
+[CreateUserError]
+other = "创建用户失败"
+
+[DeleteUserError]
+other = "删除用户失败"
+
+[GetUserError]
+other = "获取用户失败"
+
+[UserNotFound]
+other = "用户不存在"
+
+[UpdateUserError]
+other = "更新用户失败"
+
+[InvalidEmail]
+other = "无效的邮箱"
+
+[UnverifiedEmail]
+other = "邮箱未验证"
+
+[DuplicateEmail]
+other = "邮箱已被使用"
+
+[DuplicateUserName]
+other = "用户名已被使用"
+
+[WeakPassword]
+other = "密码过于简单"
+
+[NameOrPasswordError]
+other = "用户名或密码错误"
+
+[PasswordError]
+other = "密码错误"
+
+[PasswordSame]
+other = "新密码与旧密码相同"
+
+# 靶机相关
+[CreateVictimError]
+other = "创建靶机失败"
+
+[DeleteVictimError]
+other = "关闭靶机失败"
+
+[GetVictimError]
+other = "获取靶机失败"
+
+[VictimNotFound]
+other = "靶机不存在"
+
+[UpdateVictimError]
+other = "更新靶机失败"
+
+[HasMuchTime]
+other = "距容器关闭20分钟内才可延长时间"
+
+# 用户关联操作
+[AppendUserToTeamError]
+other = "添加用户到战队失败"
+
+[AppendUserToContestError]
+other = "添加用户到比赛失败"
+
+[DeleteUserFromTeamError]
+other = "从战队中删除用户失败"
+
+[DeleteUserFromContestError]
+other = "从比赛中删除用户失败"
+
+# 排名相关
+[UpdateRankingError]
+other = "更新排名失败"
+
+# 邮箱验证相关
+[SetEmailVerifyTokenError]
+other = "设置邮箱验证令牌失败"
+
+[GetEmailVerifyTokenError]
+other = "获取邮箱验证令牌失败"
+
+[DelEmailVerifyTokenError]
+other = "删除邮箱验证令牌失败"
+
+[InvalidEmailVerifyToken]
+other = "无效的邮箱验证令牌"
+
+[SendEmailError]
+other = "发送邮件失败"
+
+[RedisError]
+other = "缓存失败"
+
+# 文件操作相关
+[CreateDirError]
+other = "创建题目根目录失败"
+
+[ReadDirError]
+other = "读取题目根目录失败"
+
+[InvalidFileName]
+other = "无效的文件名"
+
+[InvalidDockerComposeYaml]
+other = "无效的Docker Compose YAML文件"
+
+[InvalidChallengeFlagInjectType]
+other = "不支持的flag注入方式"
+
+[CopyFileError]
+other = "复制文件失败"
+
+[ExecCommandError]
+other = "执行命令失败"
+
+[ZipError]
+other = "压缩文件失败"
+
+# Kubernetes相关
+[CreateNamespaceError]
+other = "创建Namespace失败"
+
+[DeleteNamespaceError]
+other = "删除Namespace失败"
+
+[GetNamespaceError]
+other = "获取Namespace失败"
+
+[NamespaceNotFound]
+other = "Namespace不存在"
+
+[CreateConfigMapError]
+other = "创建ConfigMap失败"
+
+[DeleteConfigMapError]
+other = "删除ConfigMap失败"
+
+[GetConfigMapError]
+other = "获取ConfigMap失败"
+
+[ConfigMapNotFound]
+other = "ConfigMap不存在"
+
+[CreateNetworkPolicyError]
+other = "创建NetworkPolicy失败"
+
+[DeleteNetworkPolicyError]
+other = "删除NetworkPolicy失败"
+
+[GetNetworkPolicyError]
+other = "获取NetworkPolicy失败"
+
+[NetworkPolicyNotFound]
+other = "NetworkPolicy不存在"
+
+[CreateServiceError]
+other = "创建Service失败"
+
+[DeleteServiceError]
+other = "删除Service失败"
+
+[GetServiceError]
+other = "获取Service失败"
+
+[ServiceNotFound]
+other = "Service不存在"
+
+[CreateJobError]
+other = "创建Job失败"
+
+[DeleteJobError]
+other = "删除Job失败"
+
+[GetJobError]
+other = "获取Job失败"
+
+[JobNotFound]
+other = "Job不存在"
+
+[CreateVPCError]
+other = "创建VPC失败"
+
+[DeleteVPCError]
+other = "删除VPC失败"
+
+[GetVPCError]
+other = "获取VPC失败"
+
+[VPCNotFound]
+other = "VPC不存在"
+
+[CreateSubnetError]
+other = "创建子网失败"
+
+[DeleteSubnetError]
+other = "删除子网失败"
+
+[GetSubnetError]
+other = "获取子网失败"
+
+[SubnetNotFound]
+other = "子网不存在"
+
+[CreateVPCNatGatewayError]
+other = "创建VPC NAT网关失败"
+
+[DeleteVPCNatGatewayError]
+other = "删除VPC NAT网关失败"
+
+[GetVPCNatGatewayError]
+other = "获取VPC NAT网关失败"
+
+[VPCNatGatewayNotFound]
+other = "VPC NAT网关不存在"
+
+[CreateEIPError]
+other = "创建弹性IP失败"
+
+[DeleteEIPError]
+other = "删除弹性IP失败"
+
+[GetEIPError]
+other = "获取弹性IP失败"
+
+[EIPNotFound]
+other = "弹性IP不存在"
+
+[CreateDNatError]
+other = "创建DNat规则失败"
+
+[DeleteDNatError]
+other = "删除DNat规则失败"
+
+[GetDNatError]
+other = "获取DNat规则失败"
+
+[DNatNotFound]
+other = "DNat规则不存在"
+
+[CreateSNatError]
+other = "创建SNat规则失败"
+
+[DeleteSNatError]
+other = "删除SNat规则失败"
+
+[GetSNatError]
+other = "获取SNat规则失败"
+
+[SNatNotFound]
+other = "SNat规则不存在"
+
+[CreateNetAttError]
+other = "创建附属网卡失败"
+
+[DeleteNetAttError]
+other = "删除附属网卡失败"
+
+[GetNetAttError]
+other = "获取附属网卡失败"
+
+[NetAttNotFound]
+other = "附属网卡不存在"
+
+[CreateIPError]
+other = "创建IP失败"
+
+[DeleteIPError]
+other = "删除IP失败"
+
+[GetIPError]
+other = "获取IP失败"
+
+[IPNotFound]
+other = "IP不存在"
+
+[CreatePVError]
+other = "创建PV失败"
+
+[DeletePVError]
+other = "删除PV失败"
+
+[GetPVError]
+other = "获取PV失败"
+
+[PVNotFound]
+other = "PV不存在"
+
+[CreatePVCError]
+other = "创建PVC失败"
+
+[DeletePVCError]
+other = "删除PVC失败"
+
+[GetPVCError]
+other = "获取PVC失败"
+
+[PVCNotFound]
+other = "PVC不存在"
+
+[GetNodeListError]
+other = "获取K8S节点失败" 

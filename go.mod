@@ -3,6 +3,7 @@ module CBCTF
 go 1.24.5
 
 require (
+	github.com/BurntSushi/toml v1.5.0
 	github.com/JBNRZ/kubeovn-api v1.14.4
 	github.com/compose-spec/compose-go v1.20.2
 	github.com/fatih/color v1.18.0
@@ -14,6 +15,7 @@ require (
 	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674
 	github.com/k8snetworkplumbingwg/network-attachment-definition-client v1.7.7
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
+	github.com/nicksnyder/go-i18n/v2 v2.6.0
 	github.com/prometheus/client_golang v1.22.0
 	github.com/redis/go-redis/v9 v9.11.0
 	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5
@@ -23,6 +25,7 @@ require (
 	github.com/spf13/viper v1.20.1
 	github.com/vmihailenco/msgpack/v5 v5.4.1
 	golang.org/x/crypto v0.40.0
+	golang.org/x/text v0.27.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.6.0
@@ -114,7 +117,6 @@ require (
 	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/term v0.33.0 // indirect
-	golang.org/x/text v0.27.0 // indirect
 	golang.org/x/time v0.9.0 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
