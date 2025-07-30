@@ -29,26 +29,6 @@ func (u *UintList) Scan(value any) error {
 	return json.Unmarshal(bytes, u)
 }
 
-type Int32List []int32
-
-func (e Int32List) Value() (driver.Value, error) {
-	tmp := make([]int32, 0)
-	for _, port := range e {
-		if port > 0 && port < 65535 {
-			tmp = append(tmp, port)
-		}
-	}
-	return json.Marshal(e)
-}
-
-func (e *Int32List) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
-		return fmt.Errorf("failed to scan Int32List value")
-	}
-	return json.Unmarshal(bytes, e)
-}
-
 type AvatarURL string
 
 func (a AvatarURL) Value() (driver.Value, error) {
