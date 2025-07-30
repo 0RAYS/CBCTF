@@ -7,8 +7,15 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 	"log"
 	"os"
+	"slices"
 	"strings"
 	"time"
+)
+
+var (
+	allowedLogLevel     = []string{"DEBUG", "ERROR", "WARNING", "INFO"}
+	allowedGinMode      = []string{"debug", "release", "test"}
+	allowedGormLogLevel = []string{"INFO", "WARNING", "ERROR", "SILENT"}
 )
 
 type Config struct {
@@ -122,6 +129,19 @@ func Init() {
 	}
 	if err := viper.Unmarshal(&Env); err != nil {
 		log.Panicf("error unmarshalling config: %s", err)
+	}
+	tidy()
+}
+
+func tidy() {
+	if !slices.Contains(allowedLogLevel, strings.ToUpper(Env.Log.Level)) {
+		Env.Log.Level = "INFO"
+	}
+	if !slices.Contains(allowedGinMode, strings.ToLower(Env.Gin.Mode)) {
+		Env.Gin.Mode = "release"
+	}
+	if !slices.Contains(allowedGormLogLevel, strings.ToUpper(Env.Gin.Mode)) {
+		Env.Gin.Mode = "SILENT"
 	}
 	Env.Backend = strings.TrimSuffix(Env.Backend, "/")
 	Env.Frontend = strings.TrimSuffix(Env.Frontend, "/")
