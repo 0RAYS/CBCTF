@@ -1,6 +1,7 @@
 package router
 
 import (
+	"CBCTF/frontend"
 	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
@@ -12,6 +13,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"net/http"
 	"time"
 )
 
@@ -25,6 +27,9 @@ func Init() *gin.Engine {
 	}
 
 	router.MaxMultipartMemory = int64(config.Env.Gin.Upload.Max << 20)
+
+	router.GET("/", func(ctx *gin.Context) { ctx.Redirect(http.StatusFound, "/platform") })
+	router.StaticFS("/platform", http.FS(frontend.SubFS))
 
 	{
 		router.GET("/ws", middleware.WSAuth, websocket.WS)
