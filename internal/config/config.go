@@ -19,6 +19,11 @@ var (
 )
 
 type Config struct {
+	Frontend  string `mapstructure:"frontend" json:"frontend"`     // 前端地址
+	Backend   string `mapstructure:"backend" json:"backend"`       // 后端地址
+	StaticURI string `mapstructure:"static_uri" json:"static_uri"` // 前端静态资源路径
+	Path      string `mapstructure:"path" json:"path"`             // 数据存储路径
+
 	Log struct {
 		Level string `mapstructure:"level" json:"level"` // 日志级别：DEBUG, INFO, WARNING, ERROR
 		Save  bool   `mapstructure:"save" json:"save"`   // 是否保存日志到文件
@@ -102,10 +107,6 @@ type Config struct {
 			Pwd  string `mapstructure:"pwd" json:"-"`     // SMTP 服务器密码
 		} `mapstructure:"senders" json:"senders"` // 发件人列表
 	} `mapstructure:"email" json:"email"`
-
-	Frontend string `mapstructure:"frontend" json:"frontend"` // 前端地址
-	Backend  string `mapstructure:"backend" json:"backend"`   // 后端地址
-	Path     string `mapstructure:"path" json:"path"`         // 数据存储路径
 }
 
 var Env *Config
