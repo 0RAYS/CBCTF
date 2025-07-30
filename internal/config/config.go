@@ -142,8 +142,8 @@ func tidy() {
 	if !slices.Contains(allowedGinMode, strings.ToLower(Env.Gin.Mode)) {
 		Env.Gin.Mode = "release"
 	}
-	if !slices.Contains(allowedGormLogLevel, strings.ToUpper(Env.Gin.Mode)) {
-		Env.Gin.Mode = "SILENT"
+	if !slices.Contains(allowedGormLogLevel, strings.ToUpper(Env.Gorm.Log.Level)) {
+		Env.Gorm.Log.Level = "SILENT"
 	}
 	Env.Backend = strings.TrimSuffix(Env.Backend, "/")
 	Env.Frontend = strings.TrimSuffix(Env.Frontend, "/")
