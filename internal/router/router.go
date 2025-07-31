@@ -18,11 +18,9 @@ import (
 	"time"
 )
 
-var router *gin.Engine
-
 func Init() *gin.Engine {
 	gin.SetMode(config.Env.Gin.Mode)
-	router = gin.New()
+	router := gin.New()
 
 	log.Logger.Infof("Trust proxies: %v", config.Env.Gin.Proxies)
 	if err := router.SetTrustedProxies(config.Env.Gin.Proxies); err != nil {
