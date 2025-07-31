@@ -88,19 +88,19 @@ func (u UpdateOauthOptions) Convert2Map() map[string]any {
 		options["redirect_uri"] = *u.URI
 	}
 	if u.RespIDField != nil {
-		options["id_field"] = *u.RespIDField
+		options["resp_id_field"] = *u.RespIDField
 	}
 	if u.RespNameField != nil {
-		options["name_field"] = *u.RespNameField
+		options["resp_name_field"] = *u.RespNameField
 	}
 	if u.RespEmailField != nil {
-		options["email_field"] = *u.RespEmailField
+		options["resp_email_field"] = *u.RespEmailField
 	}
 	if u.RespAvatarField != nil {
-		options["avatar_field"] = *u.RespAvatarField
+		options["resp_avatar_field"] = *u.RespAvatarField
 	}
 	if u.RespDescField != nil {
-		options["desc_field"] = *u.RespDescField
+		options["resp_desc_field"] = *u.RespDescField
 	}
 	if u.On != nil {
 		options["on"] = *u.On
