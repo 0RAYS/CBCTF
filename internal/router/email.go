@@ -1,8 +1,8 @@
 package router
 
 import (
+	"CBCTF/internal/config"
 	f "CBCTF/internal/form"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	db "CBCTF/internal/repo"
@@ -25,7 +25,7 @@ func VerifyEmail(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
+	ctx.Redirect(http.StatusPermanentRedirect, config.Env.Backend)
 }
 
 func ActivateEmail(ctx *gin.Context) {
