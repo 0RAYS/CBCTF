@@ -73,7 +73,6 @@ func Init() *gin.Engine {
 
 	{
 		router.POST("/register", middleware.RateLimit("register", 1, time.Minute), Register)
-		router.GET("/login/oa", OauthRedirectLogin)
 		router.POST("/login", Login)
 		router.POST("/admin/login", AdminLogin)
 		router.GET("/verify", VerifyEmail)
