@@ -11,10 +11,10 @@ func GetDefaultHDUHelpOauth() model.Oauth {
 		ClientSecret:    "",
 		Provider:        "HDUHelp",
 		RedirectURI:     "/oauth/callback/hduhelp",
-		RespNameField:   "staff_name",
-		RespEmailField:  "",
+		RespNameField:   "{staff_name} {staff_id}",
+		RespEmailField:  "{staff_id}@hdu.edu.cn",
 		RespAvatarField: "",
-		RespDescField:   "",
+		RespDescField:   "{unit_name} {major_name}",
 		Avatar:          "",
 	}
 }

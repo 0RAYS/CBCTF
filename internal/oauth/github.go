@@ -27,10 +27,10 @@ func GetDefaultGithubOauth() model.Oauth {
 		ClientSecret:    "",
 		Provider:        "Github",
 		RedirectURI:     "/oauth/callback/github",
-		RespNameField:   "name",
-		RespEmailField:  "email",
-		RespAvatarField: "avatar_url",
-		RespDescField:   "blog",
+		RespNameField:   "{name}",
+		RespEmailField:  "{email}",
+		RespAvatarField: "{avatar_url}",
+		RespDescField:   "{blog}",
 		Avatar:          model.AvatarURL(fmt.Sprintf("%s/assets?filename=github", config.Env.Backend)),
 	}
 }
