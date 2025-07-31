@@ -65,7 +65,7 @@ func Init() {
 	err = DB.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(
 		&model.Admin{}, &model.Challenge{}, &model.ChallengeFlag{}, &model.Contest{}, &model.ContestChallenge{},
 		&model.ContestFlag{}, &model.Device{}, &model.Docker{}, &model.Event{}, &model.File{},
-		&model.Notice{}, &model.Notice{}, &model.Request{}, &model.Submission{}, &model.Team{}, &model.TeamFlag{},
+		&model.Notice{}, &model.Oauth{}, &model.Request{}, &model.Submission{}, &model.Team{}, &model.TeamFlag{},
 		&model.User{}, &model.Victim{}, &model.Pod{}, &model.Container{}, &model.Cheat{}, &model.Traffic{},
 	)
 	if err != nil {
