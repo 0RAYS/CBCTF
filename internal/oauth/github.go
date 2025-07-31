@@ -12,10 +12,10 @@ import (
 var (
 	//go:embed avatar/github-mark-white.png
 	GithubMarkWhiteFile embed.FS
-	GithubMarkWhite, _  = GithubMarkWhiteFile.ReadFile("avatar/github-mark-white.svg")
+	GithubMarkWhite, _  = GithubMarkWhiteFile.ReadFile("avatar/github-mark-white.png")
 	//go:embed avatar/github-mark.png
 	GithubMarkFile embed.FS
-	GithubMark, _  = GithubMarkFile.ReadFile("avatar/github-mark.svg")
+	GithubMark, _  = GithubMarkFile.ReadFile("avatar/github-mark.png")
 )
 
 func GetDefaultGithubOauth() model.Oauth {
