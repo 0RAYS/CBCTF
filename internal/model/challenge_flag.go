@@ -63,7 +63,3 @@ func (c ChallengeFlag) UpdateErrorString() string {
 func (c ChallengeFlag) GetUniqueKey() []string {
 	return []string{"id"}
 }
-
-func (c ChallengeFlag) GetForeignKeys() []string {
-	return []string{"id", "challenge_id", "docker_id"}
-}

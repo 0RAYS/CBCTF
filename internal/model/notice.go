@@ -50,7 +50,3 @@ func (n Notice) UpdateErrorString() string {
 func (n Notice) GetUniqueKey() []string {
 	return []string{"id"}
 }
-
-func (n Notice) GetForeignKeys() []string {
-	return []string{"id", "contest_id"}
-}

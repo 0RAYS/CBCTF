@@ -76,10 +76,6 @@ func (c Contest) GetUniqueKey() []string {
 	return []string{"id", "name"}
 }
 
-func (c Contest) GetForeignKeys() []string {
-	return []string{"id"}
-}
-
 func (c Contest) IsOver() bool {
 	return time.Now().After(c.Start.Add(c.Duration))
 }

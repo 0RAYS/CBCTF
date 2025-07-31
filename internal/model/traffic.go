@@ -47,7 +47,3 @@ func (t Traffic) UpdateErrorString() string {
 func (t Traffic) GetUniqueKey() []string {
 	return []string{"id"}
 }
-
-func (t Traffic) GetForeignKeys() []string {
-	return []string{"id", "victim_id", "pod_id"}
-}

@@ -48,10 +48,6 @@ func (p Pod) GetUniqueKey() []string {
 	return []string{"id"}
 }
 
-func (p Pod) GetForeignKeys() []string {
-	return []string{"id", "victim_id"}
-}
-
 func (p Pod) TrafficPcapPath() string {
 	return fmt.Sprintf("%s/pod-%d.pcap", Victim{BasicModel: BasicModel{ID: p.VictimID}}.TrafficBasePath(), p.ID)
 }

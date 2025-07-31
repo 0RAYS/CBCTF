@@ -44,7 +44,3 @@ func (d Device) UpdateErrorString() string {
 func (d Device) GetUniqueKey() []string {
 	return []string{"id"}
 }
-
-func (d Device) GetForeignKeys() []string {
-	return []string{"id", "user_id"}
-}
