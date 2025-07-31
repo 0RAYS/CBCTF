@@ -22,6 +22,7 @@ func GetDefaultHDUHelpOauth() model.Oauth {
 		ClientSecret:    "",
 		Provider:        "HDUHelp",
 		URI:             "hduhelp",
+		RespIDField:     "{data.staffId}",
 		RespNameField:   "{data.staffName} {data.staffId}",
 		RespEmailField:  "{data.staffId}@hdu.edu.cn",
 		RespAvatarField: "",
