@@ -2,6 +2,8 @@ package model
 
 import "CBCTF/internal/i18n"
 
+const OauthLoginType = "oauth_login"
+
 // Device
 // BelongsTo User
 // HasMany Request
