@@ -15,6 +15,7 @@ func GetDefaultHDUHelpOauth() model.Oauth {
 		RespEmailField:  "{staff_id}@hdu.edu.cn",
 		RespAvatarField: "",
 		RespDescField:   "{unit_name} {major_name}",
+		On:              false,
 		Avatar:          "",
 	}
 }
