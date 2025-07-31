@@ -32,7 +32,11 @@ func GetOauthProviders(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"providers": oauthProviders, "count": count}})
+	data := make([]gin.H, 0)
+	for _, provider := range oauthProviders {
+		data = append(data, resp.GetOauthResp(provider))
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"providers": data, "count": count}})
 }
 
 func CreateOauthProvider(ctx *gin.Context) {
