@@ -8,7 +8,7 @@ type Oauth struct {
 	UserInfoURL     string    `json:"userinfo_url"`
 	ClientID        string    `json:"client_id"`
 	ClientSecret    string    `json:"client_secret"`
-	Provider        string    `json:"provider"`
+	Provider        string    `gorm:"type:varchar(255);uniqueIndex;not null" json:"provider"`
 	URI             string    `json:"uri"`
 	RespIDField     string    `json:"id_field"`
 	RespNameField   string    `json:"name_field"`
@@ -49,5 +49,5 @@ func (o Oauth) UpdateErrorString() string {
 }
 
 func (o Oauth) GetUniqueKey() []string {
-	return []string{"id"}
+	return []string{"id", "provider"}
 }
