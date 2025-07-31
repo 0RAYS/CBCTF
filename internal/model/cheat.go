@@ -28,7 +28,7 @@ type Cheat struct {
 	Reason             string            `json:"reason"`
 	Type               string            `json:"type"`
 	Checked            bool              `json:"checked"`
-	Hash               string            `gorm:"type:varchar(32);uniqueIndex;not null" json:"hash"`
+	Hash               string            `json:"hash"`
 	Comment            string            `json:"comment"`
 	References         UintList          `gorm:"type:json" json:"references"`
 	BasicModel
