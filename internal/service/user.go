@@ -19,9 +19,12 @@ func CreateUser(tx *gorm.DB, form f.RegisterForm) (model.User, bool, string) {
 		return model.User{}, false, i18n.DuplicateEmail
 	}
 	return repo.Create(db.CreateUserOptions{
-		Name:     form.Name,
-		Password: utils.HashPassword(form.Password),
-		Email:    form.Email,
+		Name:           form.Name,
+		Password:       utils.HashPassword(form.Password),
+		Email:          form.Email,
+		Provider:       "local",
+		ProviderUserID: "-1",
+		OauthRaw:       "{}",
 	})
 }
 
@@ -34,14 +37,17 @@ func AdminCreateUser(tx *gorm.DB, form f.CreateUserForm) (model.User, bool, stri
 		return model.User{}, false, i18n.DuplicateEmail
 	}
 	return repo.Create(db.CreateUserOptions{
-		Name:     form.Name,
-		Password: utils.HashPassword(form.Password),
-		Email:    form.Email,
-		Desc:     form.Desc,
-		Country:  strings.ToUpper(form.Country),
-		Verified: form.Verified,
-		Banned:   form.Banned,
-		Hidden:   form.Hidden,
+		Name:           form.Name,
+		Password:       utils.HashPassword(form.Password),
+		Email:          form.Email,
+		Desc:           form.Desc,
+		Country:        strings.ToUpper(form.Country),
+		Verified:       form.Verified,
+		Banned:         form.Banned,
+		Hidden:         form.Hidden,
+		Provider:       "local",
+		ProviderUserID: "-1",
+		OauthRaw:       "{}",
 	})
 }
 
