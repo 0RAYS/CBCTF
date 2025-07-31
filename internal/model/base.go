@@ -22,5 +22,4 @@ type Model interface {
 	NotFoundErrorString() string
 	UpdateErrorString() string
 	GetUniqueKey() []string
-	GetForeignKeys() []string
 }

@@ -60,7 +60,3 @@ func (s Submission) UpdateErrorString() string {
 func (s Submission) GetUniqueKey() []string {
 	return []string{"id"}
 }
-
-func (s Submission) GetForeignKeys() []string {
-	return []string{"id", "contest_challenge_id", "contest_id", "challenge_id", "team_id", "user_id", "contest_flag_id"}
-}

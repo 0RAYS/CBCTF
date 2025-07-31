@@ -57,7 +57,3 @@ func (u User) UpdateErrorString() string {
 func (u User) GetUniqueKey() []string {
 	return []string{"id", "name", "email"}
 }
-
-func (u User) GetForeignKeys() []string {
-	return []string{"id"}
-}

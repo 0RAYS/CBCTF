@@ -67,10 +67,6 @@ func (d Docker) GetUniqueKey() []string {
 	return []string{"id"}
 }
 
-func (d Docker) GetForeignKeys() []string {
-	return []string{"id", "challenge_id"}
-}
-
 type Network struct {
 	Name     string `json:"name"`
 	CIDR     string `json:"cidr"`

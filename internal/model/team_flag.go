@@ -48,7 +48,3 @@ func (t TeamFlag) UpdateErrorString() string {
 func (t TeamFlag) GetUniqueKey() []string {
 	return []string{"id"}
 }
-
-func (t TeamFlag) GetForeignKeys() []string {
-	return []string{"id", "team_id", "contest_flag_id", "challenge_flag_id"}
-}

@@ -73,7 +73,3 @@ func (e Event) UpdateErrorString() string {
 func (e Event) GetUniqueKey() []string {
 	return []string{"id"}
 }
-
-func (e Event) GetForeignKeys() []string {
-	return []string{"id", "user_id", "team_id", "contest_id", "contest_challenge_id"}
-}
