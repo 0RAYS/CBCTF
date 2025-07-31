@@ -85,7 +85,7 @@ func (u UpdateOauthOptions) Convert2Map() map[string]any {
 		options["provider"] = *u.Provider
 	}
 	if u.URI != nil {
-		options["redirect_uri"] = *u.URI
+		options["uri"] = *u.URI
 	}
 	if u.RespIDField != nil {
 		options["resp_id_field"] = *u.RespIDField
