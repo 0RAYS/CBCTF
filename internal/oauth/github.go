@@ -10,10 +10,10 @@ import (
 
 // Download from: https://github.com/logos
 var (
-	//go:embed avatar/github-mark-white.svg
+	//go:embed avatar/github-mark-white.png
 	GithubMarkWhiteFile embed.FS
 	GithubMarkWhite, _  = GithubMarkWhiteFile.ReadFile("avatar/github-mark-white.svg")
-	//go:embed avatar/github-mark.svg
+	//go:embed avatar/github-mark.png
 	GithubMarkFile embed.FS
 	GithubMark, _  = GithubMarkFile.ReadFile("avatar/github-mark.svg")
 )
