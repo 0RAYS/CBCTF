@@ -104,7 +104,7 @@ func RegisterOauthRouter(router *gin.Engine) {
 			RedirectURL: fmt.Sprintf("%s/oauth/%s/callback", config.Env.Backend, provider.URI),
 		}
 
-		router.POST(fmt.Sprintf("/oauth/%s", provider.URI), func(ctx *gin.Context) {
+		router.GET(fmt.Sprintf("/oauth/%s", provider.URI), func(ctx *gin.Context) {
 			state := utils.UUID()
 			verifier := oauth2.GenerateVerifier()
 			if err := redis.SetOauthState(provider.Provider, state, verifier); err != nil {
