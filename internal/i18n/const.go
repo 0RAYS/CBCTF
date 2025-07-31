@@ -102,6 +102,12 @@ const (
 	UpdateNoticeError = "UpdateNoticeError"
 	InvalidNoticeType = "InvalidNoticeType"
 
+	CreateOauthError = "CreateOauthError"
+	DeleteOauthError = "DeleteOauthError"
+	GetOauthError    = "GetOauthError"
+	OauthNotFound    = "OauthNotFound"
+	UpdateOauthError = "UpdateOauthError"
+
 	CreatePodError = "CreatePodError"
 	DeletePodError = "DeletePodError"
 	GetPodError    = "GetPodError"

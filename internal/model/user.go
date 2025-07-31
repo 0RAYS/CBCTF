@@ -23,6 +23,7 @@ type User struct {
 	Banned      bool         `gorm:"default:false" json:"banned"`
 	Score       float64      `gorm:"default:0" json:"score"`
 	Solved      int64        `gorm:"default:0" json:"solved"`
+	OauthRaw    string       `json:"oauth_raw"`
 	BasicModel
 }
 

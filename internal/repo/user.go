@@ -23,6 +23,7 @@ type CreateUserOptions struct {
 	Verified bool
 	Hidden   bool
 	Banned   bool
+	OauthRaw string
 }
 
 func (c CreateUserOptions) Convert2Model() model.Model {
@@ -36,6 +37,7 @@ func (c CreateUserOptions) Convert2Model() model.Model {
 		Verified: c.Verified,
 		Hidden:   c.Hidden,
 		Banned:   c.Banned,
+		OauthRaw: c.OauthRaw,
 	}
 }
 

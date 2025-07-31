@@ -2,10 +2,8 @@ package repo
 
 import (
 	"CBCTF/internal/config"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/utils"
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -67,8 +65,8 @@ func Init() {
 	err = DB.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(
 		&model.Admin{}, &model.Challenge{}, &model.ChallengeFlag{}, &model.Contest{}, &model.ContestChallenge{},
 		&model.ContestFlag{}, &model.Device{}, &model.Docker{}, &model.Event{}, &model.File{},
-		&model.Notice{}, &model.Request{}, &model.Submission{}, &model.Team{}, &model.TeamFlag{}, &model.User{},
-		&model.Victim{}, &model.Pod{}, &model.Container{}, &model.Cheat{}, &model.Traffic{},
+		&model.Notice{}, &model.Notice{}, &model.Request{}, &model.Submission{}, &model.Team{}, &model.TeamFlag{},
+		&model.User{}, &model.Victim{}, &model.Pod{}, &model.Container{}, &model.Cheat{}, &model.Traffic{},
 	)
 	if err != nil {
 		log.Logger.Fatalf("Failed to migrate database: %v", err)
@@ -81,33 +79,10 @@ func Init() {
 	if err != nil {
 		log.Logger.Fatalf("Failed to setup join table: %v", err)
 	}
-
 	log.Logger.Info("Connected to database")
-	tx := DB.Begin()
-	if ok, msg := initAdmin(tx); !ok {
-		tx.Rollback()
+
+	if ok, msg := InitAdminRepo(DB).InitAdmin(); !ok {
 		log.Logger.Fatalf("Failed to init Admin: %s", msg)
 	}
-	tx.Commit()
-}
-
-func initAdmin(tx *gorm.DB) (bool, string) {
-	repo := InitAdminRepo(tx)
-	count, ok, msg := repo.Count()
-	if !ok {
-		return false, msg
-	}
-	if count == 0 {
-		pwd := utils.UUID()
-		_, ok, msg = repo.Create(CreateAdminOptions{
-			Name:     "admin",
-			Password: utils.HashPassword(pwd),
-			Email:    "admin@0rays.club",
-		})
-		if !ok {
-			return ok, msg
-		}
-		log.Logger.Infof("Init Admin: Admin{ name: admin, password: %s, email: admin@0rays.club}", pwd)
-	}
-	return true, i18n.Success
+	InitOauthRepo(DB).RegisterDefault()
 }
