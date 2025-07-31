@@ -43,15 +43,15 @@ func (f *CreateOauthProviderForm) Bind(ctx *gin.Context) (bool, string) {
 		return false, i18n.BadRequest
 	}
 	f.AuthURL = strings.TrimSpace(f.AuthURL)
-	if strings.HasPrefix(f.AuthURL, "http://") || strings.HasPrefix(f.AuthURL, "https://") {
+	if !strings.HasPrefix(f.AuthURL, "http://") && !strings.HasPrefix(f.AuthURL, "https://") {
 		return false, i18n.BadRequest
 	}
 	f.TokenURL = strings.TrimSpace(f.TokenURL)
-	if strings.HasPrefix(f.TokenURL, "http://") || strings.HasPrefix(f.TokenURL, "https://") {
+	if !strings.HasPrefix(f.TokenURL, "http://") && !strings.HasPrefix(f.TokenURL, "https://") {
 		return false, i18n.BadRequest
 	}
 	f.UserInfoURL = strings.TrimSpace(f.UserInfoURL)
-	if strings.HasPrefix(f.UserInfoURL, "http://") || strings.HasPrefix(f.UserInfoURL, "https://") {
+	if !strings.HasPrefix(f.UserInfoURL, "http://") && !strings.HasPrefix(f.UserInfoURL, "https://") {
 		return false, i18n.BadRequest
 	}
 	f.ClientID = strings.TrimSpace(f.ClientID)
@@ -111,19 +111,19 @@ func (f *UpdateOauthProviderForm) Bind(ctx *gin.Context) (bool, string) {
 	}
 	if f.AuthURL != nil {
 		*f.AuthURL = strings.TrimSpace(*f.AuthURL)
-		if strings.HasPrefix(*f.AuthURL, "http://") || strings.HasPrefix(*f.AuthURL, "https://") {
+		if !strings.HasPrefix(*f.AuthURL, "http://") && !strings.HasPrefix(*f.AuthURL, "https://") {
 			return false, i18n.BadRequest
 		}
 	}
 	if f.TokenURL != nil {
 		*f.TokenURL = strings.TrimSpace(*f.TokenURL)
-		if strings.HasPrefix(*f.TokenURL, "http://") || strings.HasPrefix(*f.TokenURL, "https://") {
+		if !strings.HasPrefix(*f.TokenURL, "http://") && !strings.HasPrefix(*f.TokenURL, "https://") {
 			return false, i18n.BadRequest
 		}
 	}
 	if f.UserInfoURL != nil {
 		*f.UserInfoURL = strings.TrimSpace(*f.UserInfoURL)
-		if strings.HasPrefix(*f.UserInfoURL, "http://") || strings.HasPrefix(*f.UserInfoURL, "https://") {
+		if !strings.HasPrefix(*f.UserInfoURL, "http://") && !strings.HasPrefix(*f.UserInfoURL, "https://") {
 			return false, i18n.BadRequest
 		}
 	}
