@@ -28,7 +28,7 @@ type CreateOauthOptions struct {
 	Avatar          model.AvatarURL
 }
 
-func (c CreateOauthOptions) Convert2Model() model.Oauth {
+func (c CreateOauthOptions) Convert2Model() model.Model {
 	return model.Oauth{
 		AuthURL:         c.AuthURL,
 		TokenURL:        c.TokenURL,

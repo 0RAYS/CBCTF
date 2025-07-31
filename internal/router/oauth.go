@@ -10,6 +10,7 @@ import (
 	"CBCTF/internal/redis"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/resp"
+	"CBCTF/internal/service"
 	"CBCTF/internal/utils"
 	"encoding/json"
 	"fmt"
@@ -19,6 +20,67 @@ import (
 	"net/http"
 	"strings"
 )
+
+func GetOauthProviders(ctx *gin.Context) {
+	var form f.GetModelsForm
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	oauthProviders, count, ok, msg := db.InitOauthRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"providers": oauthProviders, "count": count}})
+}
+
+func CreateOauthProvider(ctx *gin.Context) {
+	var form f.CreateOauthProviderForm
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	tx := db.DB.WithContext(ctx).Begin()
+	provider, ok, msg := service.CreateOauthProvider(tx, form)
+	if !ok {
+		tx.Rollback()
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	tx.Commit()
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetOauthResp(provider)})
+}
+
+func UpdateOauthProvider(ctx *gin.Context) {
+	var form f.UpdateOauthProviderForm
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	oauth := middleware.GetOauth(ctx)
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := service.UpdateOauthProvider(tx, oauth, form)
+	if !ok {
+		tx.Rollback()
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	tx.Commit()
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+}
+
+func DeleteOauthProvider(ctx *gin.Context) {
+	oauth := middleware.GetOauth(ctx)
+	tx := db.DB.WithContext(ctx).Begin()
+	if ok, msg := db.InitOauthRepo(tx).Delete(oauth.ID); !ok {
+		tx.Rollback()
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	tx.Commit()
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
+}
 
 func RegisterOauthRouter(router *gin.Engine) {
 	oauthProviders, _, ok, _ := db.InitOauthRepo(db.DB).List(-1, -1, db.GetOptions{

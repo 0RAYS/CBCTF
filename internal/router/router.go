@@ -186,6 +186,15 @@ func Init() *gin.Engine {
 			adminUser.POST("/avatar", UploadAvatar("user"))
 		}
 
+		admin.GET("/oauth", GetOauthProviders)
+		admin.POST("/oauth", CreateOauthProvider)
+		adminOauth := admin.Group("/oauth/:oauthID", middleware.SetOauth)
+		{
+			adminOauth.PUT("", UpdateOauthProvider)
+			adminOauth.POST("/avatar", UploadAvatar("oauth"))
+			adminOauth.DELETE("", DeleteOauthProvider)
+		}
+
 		admin.GET("/challenges", GetChallenges)
 		admin.GET("/challenges/categories", GetCategories)
 		admin.POST("/challenges", CreateChallenge)
@@ -288,7 +297,7 @@ func Init() *gin.Engine {
 		admin.GET("/avatars", GetAvatars)
 		admin.DELETE("/avatars", DeleteAvatars)
 	}
-	
+
 	RegisterOauthRouter(router)
 	return router
 }

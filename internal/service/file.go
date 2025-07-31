@@ -78,6 +78,8 @@ func UpdateAvatar(tx *gorm.DB, v string, id uint, record model.File) (string, bo
 		ok, msg = db.InitContestRepo(tx).Update(id, db.UpdateContestOptions{Avatar: &path})
 	case "team":
 		ok, msg = db.InitTeamRepo(tx).Update(id, db.UpdateTeamOptions{Avatar: &path})
+	case "oath":
+		ok, msg = db.InitOauthRepo(tx).Update(id, db.UpdateOauthOptions{Avatar: &path})
 	default:
 		ok, msg = false, i18n.UnsupportedKey
 	}

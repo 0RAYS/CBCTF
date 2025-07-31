@@ -126,6 +126,11 @@ func UploadAvatar(v string) func(ctx *gin.Context) {
 			} else {
 				options.UserID = &selfID
 			}
+		case "oauth":
+			id = middleware.GetOauth(ctx).ID
+			options.OauthID = &id
+			selfID := middleware.GetSelfID(ctx)
+			options.AdminID = &selfID
 		}
 		tx := db.DB.WithContext(ctx).Begin()
 		record, ok, msg := service.SaveAvatar(tx, options, file)
