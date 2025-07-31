@@ -1,6 +1,17 @@
 package oauth
 
-import "CBCTF/internal/model"
+import (
+	"CBCTF/internal/config"
+	"CBCTF/internal/model"
+	"embed"
+	"fmt"
+)
+
+var (
+	//go:embed avatar/hduhelp.png
+	HDUHelpFile      embed.FS
+	HDUHelpAvatar, _ = HDUHelpFile.ReadFile("avatar/hduhelp.png")
+)
 
 func GetDefaultHDUHelpOauth() model.Oauth {
 	return model.Oauth{
@@ -11,11 +22,11 @@ func GetDefaultHDUHelpOauth() model.Oauth {
 		ClientSecret:    "",
 		Provider:        "HDUHelp",
 		RedirectURI:     "/oauth/callback/hduhelp",
-		RespNameField:   "{staff_name} {staff_id}",
-		RespEmailField:  "{staff_id}@hdu.edu.cn",
+		RespNameField:   "{data.staffName} {data.staffId}",
+		RespEmailField:  "{data.staffId}@hdu.edu.cn",
 		RespAvatarField: "",
-		RespDescField:   "{unit_name} {major_name}",
+		RespDescField:   "{data.unitName} {data.majorName}",
 		On:              false,
-		Avatar:          "",
+		Avatar:          model.AvatarURL(fmt.Sprintf("%s/assets?filename=hduhelp", config.Env.Backend)),
 	}
 }

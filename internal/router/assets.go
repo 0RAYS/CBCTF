@@ -11,6 +11,7 @@ import (
 var DefaultAvatar = map[string][]byte{
 	"github":       oauth.GithubMark,
 	"github-white": oauth.GithubMarkWhite,
+	"hduhelp":      oauth.HDUHelpAvatar,
 }
 
 func DefaultAssets(ctx *gin.Context) {
