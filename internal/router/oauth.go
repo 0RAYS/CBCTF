@@ -204,7 +204,7 @@ func RegisterOauthRouter(router *gin.Engine) {
 					return
 				}
 			}
-			token, err := utils.GenerateToken(user.ID, user.Name, false, middleware.GetMagic(ctx))
+			token, err := utils.GenerateToken(user.ID, user.Name, false, model.OauthLoginType)
 			if err != nil {
 				log.Logger.Warningf("Failed to generate token: %s", err)
 				ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})

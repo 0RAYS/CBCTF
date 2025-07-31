@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/service"
@@ -44,18 +45,27 @@ func CheckAuth(ctx *gin.Context) {
 		}
 		magic := GetMagic(ctx)
 		if !utils.CompareMagic(magic, claims.X) {
-			go func(ctx *gin.Context) {
-				db.InitCheatRepo(db.DB.WithContext(ctx)).Create(db.CreateCheatOptions{
-					UserID:  &user.ID,
-					Magic:   magic,
-					IP:      ctx.ClientIP(),
-					Reason:  fmt.Sprintf(model.DifferentTokenMagic, magic, claims.X),
-					Type:    model.Suspicious,
-					Checked: false,
-				})
-			}(ctx.Copy())
-			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
-			return
+			if claims.X == model.OauthLoginType {
+				token, err := utils.GenerateToken(user.ID, user.Name, false, magic)
+				if err != nil {
+					log.Logger.Warningf("Failed to generate token: %s", err)
+					ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
+				}
+				ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
+			} else {
+				go func(ctx *gin.Context) {
+					db.InitCheatRepo(db.DB.WithContext(ctx)).Create(db.CreateCheatOptions{
+						UserID:  &user.ID,
+						Magic:   magic,
+						IP:      ctx.ClientIP(),
+						Reason:  fmt.Sprintf(model.DifferentTokenMagic, magic, claims.X),
+						Type:    model.Suspicious,
+						Checked: false,
+					})
+				}(ctx.Copy())
+				ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
+				return
+			}
 		}
 		go service.RecordDevice(db.DB.WithContext(ctx.Copy()), user.ID, magic, ctx.ClientIP())
 		if user.Banned {
