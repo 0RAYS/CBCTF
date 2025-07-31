@@ -73,7 +73,7 @@ func (u UpdateOauthOptions) Convert2Map() map[string]any {
 		options["token_url"] = *u.TokenURL
 	}
 	if u.UserInfoURL != nil {
-		options["userinfo_url"] = *u.UserInfoURL
+		options["user_info_url"] = *u.UserInfoURL
 	}
 	if u.ClientID != nil {
 		options["client_id"] = *u.ClientID

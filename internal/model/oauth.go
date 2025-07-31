@@ -5,7 +5,7 @@ import "CBCTF/internal/i18n"
 type Oauth struct {
 	AuthURL         string    `json:"auth_url"`
 	TokenURL        string    `json:"token_url"`
-	UserInfoURL     string    `json:"userinfo_url"`
+	UserInfoURL     string    `json:"user_info_url"`
 	ClientID        string    `json:"client_id"`
 	ClientSecret    string    `json:"client_secret"`
 	Provider        string    `gorm:"type:varchar(255);uniqueIndex;not null" json:"provider"`
