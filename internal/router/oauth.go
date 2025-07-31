@@ -210,7 +210,7 @@ func RegisterOauthRouter(router *gin.Engine) {
 				ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 				return
 			}
-			ctx.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("%s/login/oa?token=%s", config.Env.Backend, token))
+			ctx.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("%s?token=%s", config.Env.Frontend, token))
 		})
 
 		availableOauth[provider.Provider] = gin.H{
@@ -218,18 +218,6 @@ func RegisterOauthRouter(router *gin.Engine) {
 			"name":   provider.Provider,
 			"avatar": provider.Avatar,
 		}
-	}
-
-	if len(oauthProviders) > 0 {
-		router.GET("/login/oa", func(ctx *gin.Context) {
-			var form f.OauthRedirectLoginForm
-			if ok, msg := form.Bind(ctx); !ok {
-				ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-				return
-			}
-			ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", form.Token))
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
-		})
 	}
 
 	router.GET("/oauth", func(ctx *gin.Context) {

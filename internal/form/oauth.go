@@ -9,18 +9,6 @@ import (
 	"strings"
 )
 
-type OauthRedirectLoginForm struct {
-	Token string `form:"token" json:"token" binding:"required"`
-}
-
-func (f *OauthRedirectLoginForm) Bind(ctx *gin.Context) (bool, string) {
-	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %v", err)
-		return false, i18n.BadRequest
-	}
-	return true, i18n.Success
-}
-
 type OauthCallbackForm struct {
 	Code  string `form:"code" json:"code" binding:"required"`
 	State string `form:"state" json:"state" binding:"required"`
