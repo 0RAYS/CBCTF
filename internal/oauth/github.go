@@ -26,7 +26,7 @@ func GetDefaultGithubOauth() model.Oauth {
 		ClientID:        "",
 		ClientSecret:    "",
 		Provider:        "Github",
-		RedirectURI:     "/oauth/callback/github",
+		URI:             "github",
 		RespNameField:   "{name}",
 		RespEmailField:  "{email}",
 		RespAvatarField: "{avatar_url}",

@@ -14,30 +14,34 @@ type UserRepo struct {
 }
 
 type CreateUserOptions struct {
-	Name     string
-	Password string
-	Email    string
-	Country  string
-	Avatar   model.AvatarURL
-	Desc     string
-	Verified bool
-	Hidden   bool
-	Banned   bool
-	OauthRaw string
+	Name           string
+	Password       string
+	Email          string
+	Country        string
+	Avatar         model.AvatarURL
+	Desc           string
+	Verified       bool
+	Hidden         bool
+	Banned         bool
+	Provider       string
+	ProviderUserID string
+	OauthRaw       string
 }
 
 func (c CreateUserOptions) Convert2Model() model.Model {
 	return model.User{
-		Name:     c.Name,
-		Password: c.Password,
-		Email:    c.Email,
-		Country:  c.Country,
-		Avatar:   c.Avatar,
-		Desc:     c.Desc,
-		Verified: c.Verified,
-		Hidden:   c.Hidden,
-		Banned:   c.Banned,
-		OauthRaw: c.OauthRaw,
+		Name:           c.Name,
+		Password:       c.Password,
+		Email:          c.Email,
+		Country:        c.Country,
+		Avatar:         c.Avatar,
+		Desc:           c.Desc,
+		Verified:       c.Verified,
+		Hidden:         c.Hidden,
+		Banned:         c.Banned,
+		Provider:       c.Provider,
+		ProviderUserID: c.ProviderUserID,
+		OauthRaw:       c.OauthRaw,
 	}
 }
 

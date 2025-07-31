@@ -288,5 +288,7 @@ func Init() *gin.Engine {
 		admin.GET("/avatars", GetAvatars)
 		admin.DELETE("/avatars", DeleteAvatars)
 	}
+	
+	RegisterOauthRouter(router)
 	return router
 }

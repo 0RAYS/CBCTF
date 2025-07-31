@@ -9,7 +9,8 @@ type Oauth struct {
 	ClientID        string    `json:"client_id"`
 	ClientSecret    string    `json:"client_secret"`
 	Provider        string    `json:"provider"`
-	RedirectURI     string    `json:"redirect_uri"`
+	URI             string    `json:"uri"`
+	RespIDField     string    `json:"id_field"`
 	RespNameField   string    `json:"name_field"`
 	RespEmailField  string    `json:"email_field"`
 	RespAvatarField string    `json:"avatar_field"`

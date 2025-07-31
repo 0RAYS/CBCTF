@@ -18,7 +18,8 @@ type CreateOauthOptions struct {
 	ClientID        string
 	ClientSecret    string
 	Provider        string
-	RedirectURI     string
+	URI             string
+	RespIDField     string
 	RespNameField   string
 	RespEmailField  string
 	RespAvatarField string
@@ -35,7 +36,8 @@ func (c CreateOauthOptions) Convert2Model() model.Oauth {
 		ClientID:        c.ClientID,
 		ClientSecret:    c.ClientSecret,
 		Provider:        c.Provider,
-		RedirectURI:     c.RedirectURI,
+		URI:             c.URI,
+		RespIDField:     c.RespIDField,
 		RespNameField:   c.RespNameField,
 		RespEmailField:  c.RespEmailField,
 		RespAvatarField: c.RespAvatarField,
@@ -52,7 +54,8 @@ type UpdateOauthOptions struct {
 	ClientID        *string
 	ClientSecret    *string
 	Provider        *string
-	RedirectURI     *string
+	URI             *string
+	RespIDField     *string
 	RespNameField   *string
 	RespEmailField  *string
 	RespAvatarField *string
@@ -81,8 +84,11 @@ func (u UpdateOauthOptions) Convert2Map() map[string]any {
 	if u.Provider != nil {
 		options["provider"] = *u.Provider
 	}
-	if u.RedirectURI != nil {
-		options["redirect_uri"] = *u.RedirectURI
+	if u.URI != nil {
+		options["redirect_uri"] = *u.URI
+	}
+	if u.RespIDField != nil {
+		options["id_field"] = *u.RespIDField
 	}
 	if u.RespNameField != nil {
 		options["name_field"] = *u.RespNameField
