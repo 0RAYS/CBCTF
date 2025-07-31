@@ -167,7 +167,7 @@ func RegisterOauthRouter(router *gin.Engine) {
 			}
 			userRepo := db.InitUserRepo(db.DB.WithContext(ctx))
 			user, ok, msg := userRepo.Get(db.GetOptions{Conditions: map[string]any{"provider": provider.Provider, "provider_user_id": id}})
-			if ok {
+			if !ok {
 				if msg != i18n.UserNotFound {
 					ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 					return
