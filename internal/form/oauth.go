@@ -25,7 +25,7 @@ func (f *OauthCallbackForm) Bind(ctx *gin.Context) (bool, string) {
 type CreateOauthProviderForm struct {
 	AuthURL         string `form:"auth_url" json:"auth_url" binding:"required"`
 	TokenURL        string `form:"token_url" json:"token_url" binding:"required"`
-	UserInfoURL     string `form:"userinfo_url" json:"userinfo_url" binding:"required"`
+	UserInfoURL     string `form:"user_info_url" json:"user_info_url" binding:"required"`
 	ClientID        string `form:"client_id" json:"client_id" binding:"required"`
 	ClientSecret    string `form:"client_secret" json:"client_secret" binding:"required"`
 	Provider        string `form:"provider" json:"provider" binding:"required"`
@@ -90,7 +90,7 @@ func (f *CreateOauthProviderForm) Bind(ctx *gin.Context) (bool, string) {
 type UpdateOauthProviderForm struct {
 	AuthURL         *string          `form:"auth_url" json:"auth_url"`
 	TokenURL        *string          `form:"token_url" json:"token_url"`
-	UserInfoURL     *string          `form:"userinfo_url" json:"userinfo_url"`
+	UserInfoURL     *string          `form:"user_info_url" json:"user_info_url"`
 	ClientID        *string          `form:"client_id" json:"client_id"`
 	ClientSecret    *string          `form:"client_secret" json:"client_secret"`
 	Provider        *string          `form:"provider" json:"provider"`
