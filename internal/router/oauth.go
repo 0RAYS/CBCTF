@@ -218,7 +218,7 @@ func RegisterOauthRouter(router *gin.Engine) {
 			//ctx.Request.URL.Path = "/login"
 			//router.HandleContext(ctx)
 			//ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.LoginResp(user, false)})
-			ctx.Redirect(http.StatusPermanentRedirect, "/")
+			ctx.Redirect(http.StatusPermanentRedirect, config.Env.Backend)
 		})
 
 		availableOauth[provider.Provider] = gin.H{
