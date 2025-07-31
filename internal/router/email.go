@@ -26,7 +26,7 @@ func VerifyEmail(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	ctx.Redirect(http.StatusPermanentRedirect, config.Env.Backend)
+	ctx.Redirect(http.StatusTemporaryRedirect, config.Env.Backend)
 }
 
 func ActivateEmail(ctx *gin.Context) {

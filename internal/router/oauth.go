@@ -210,7 +210,7 @@ func RegisterOauthRouter(router *gin.Engine) {
 				ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 				return
 			}
-			ctx.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("%s?token=%s", config.Env.OauthCallback, token))
+			ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s?token=%s", config.Env.OauthCallback, token))
 		})
 
 		availableOauth[provider.Provider] = gin.H{
