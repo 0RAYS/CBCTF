@@ -6,6 +6,7 @@ type Oauth struct {
 	AuthURL         string    `json:"auth_url"`
 	TokenURL        string    `json:"token_url"`
 	UserInfoURL     string    `json:"user_info_url"`
+	CallbackURL     string    `json:"callback_url"`
 	ClientID        string    `json:"client_id"`
 	ClientSecret    string    `json:"client_secret"`
 	Provider        string    `gorm:"type:varchar(255);uniqueIndex;not null" json:"provider"`

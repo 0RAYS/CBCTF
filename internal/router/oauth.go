@@ -101,7 +101,7 @@ func RegisterOauthRouter(router *gin.Engine) {
 				AuthURL:  provider.AuthURL,
 				TokenURL: provider.TokenURL,
 			},
-			RedirectURL: fmt.Sprintf("%s/oauth/%s/callback", config.Env.Backend, provider.URI),
+			RedirectURL: provider.CallbackURL,
 		}
 
 		router.GET(fmt.Sprintf("/oauth/%s", provider.URI), func(ctx *gin.Context) {

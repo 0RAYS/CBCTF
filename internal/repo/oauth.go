@@ -15,6 +15,7 @@ type CreateOauthOptions struct {
 	AuthURL         string
 	TokenURL        string
 	UserInfoURL     string
+	CallbackURL     string
 	ClientID        string
 	ClientSecret    string
 	Provider        string
@@ -33,6 +34,7 @@ func (c CreateOauthOptions) Convert2Model() model.Model {
 		AuthURL:         c.AuthURL,
 		TokenURL:        c.TokenURL,
 		UserInfoURL:     c.UserInfoURL,
+		CallbackURL:     c.CallbackURL,
 		ClientID:        c.ClientID,
 		ClientSecret:    c.ClientSecret,
 		Provider:        c.Provider,
@@ -51,6 +53,7 @@ type UpdateOauthOptions struct {
 	AuthURL         *string
 	TokenURL        *string
 	UserInfoURL     *string
+	CallbackURL     *string
 	ClientID        *string
 	ClientSecret    *string
 	Provider        *string
@@ -74,6 +77,9 @@ func (u UpdateOauthOptions) Convert2Map() map[string]any {
 	}
 	if u.UserInfoURL != nil {
 		options["user_info_url"] = *u.UserInfoURL
+	}
+	if u.CallbackURL != nil {
+		options["callback_url"] = *u.CallbackURL
 	}
 	if u.ClientID != nil {
 		options["client_id"] = *u.ClientID
