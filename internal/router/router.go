@@ -8,6 +8,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/websocket"
 	"errors"
+	"fmt"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
@@ -32,7 +33,7 @@ func Init() *gin.Engine {
 	{
 		router.GET("/", func(ctx *gin.Context) {
 			if strings.HasPrefix(config.Env.Frontend, "http://") || strings.HasPrefix(config.Env.Frontend, "https://") {
-				ctx.Redirect(http.StatusFound, config.Env.Frontend)
+				ctx.Redirect(http.StatusFound, fmt.Sprintf("%s/%s", config.Env.Frontend, config.Env.Gin.StaticURI))
 			} else {
 				ctx.Redirect(http.StatusFound, config.Env.Gin.StaticURI)
 			}
