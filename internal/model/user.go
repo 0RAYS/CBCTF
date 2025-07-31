@@ -2,6 +2,8 @@ package model
 
 import "CBCTF/internal/i18n"
 
+const NeverLoginPWD = "never_login_pwd"
+
 // User
 // ManyToMany Teams
 // ManyToMany Contests

@@ -65,7 +65,7 @@ func VerifyUser(tx *gorm.DB, form f.LoginForm) (model.User, bool, string) {
 
 func ChangeUserPwd(tx *gorm.DB, user model.User, form f.ChangePasswordForm) (bool, string) {
 	repo := db.InitUserRepo(tx)
-	if !utils.CompareHashAndPassword(user.Password, form.OldPassword) {
+	if user.Password != model.NeverLoginPWD && !utils.CompareHashAndPassword(user.Password, form.OldPassword) {
 		return false, i18n.PasswordError
 	}
 	if utils.CheckPassword(form.NewPassword) < 2 {

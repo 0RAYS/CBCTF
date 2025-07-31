@@ -189,7 +189,7 @@ func RegisterOauthRouter(router *gin.Engine) {
 				raw, _ := json.Marshal(result)
 				user, ok, msg = userRepo.Create(db.CreateUserOptions{
 					Name:           name,
-					Password:       "never_login_pwd",
+					Password:       model.NeverLoginPWD,
 					Email:          email,
 					Avatar:         model.AvatarURL(avatar),
 					Desc:           desc,
