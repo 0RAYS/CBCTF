@@ -15,7 +15,7 @@ type Oauth struct {
 	RespAvatarField string    `json:"avatar_field"`
 	RespDescField   string    `json:"desc_field"`
 	On              bool      `json:"on"`
-	Avatar          AvatarURL `gorm:"type:json" json:"avatar"`
+	Avatar          AvatarURL `json:"avatar"`
 	BasicModel
 }
 
