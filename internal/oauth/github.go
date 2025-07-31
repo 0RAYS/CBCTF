@@ -23,6 +23,7 @@ func GetDefaultGithubOauth() model.Oauth {
 		AuthURL:         github.Endpoint.AuthURL,
 		TokenURL:        github.Endpoint.TokenURL,
 		UserInfoURL:     "https://api.github.com/user",
+		CallbackURL:     fmt.Sprintf("%s/oauth/github/callback", config.Env.Backend),
 		ClientID:        "",
 		ClientSecret:    "",
 		Provider:        "Github",

@@ -18,6 +18,7 @@ func GetDefaultHDUHelpOauth() model.Oauth {
 		AuthURL:         "https://api.hduhelp.com/oauth/authorize",
 		TokenURL:        "https://api.hduhelp.com/oauth/token",
 		UserInfoURL:     "https://api.hduhelp.com/salmon_base/student/info",
+		CallbackURL:     fmt.Sprintf("%s/oauth/hduhelp/callback", config.Env.Backend),
 		ClientID:        "",
 		ClientSecret:    "",
 		Provider:        "HDUHelp",

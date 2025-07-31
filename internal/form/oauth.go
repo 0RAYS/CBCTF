@@ -26,6 +26,7 @@ type CreateOauthProviderForm struct {
 	AuthURL         string `form:"auth_url" json:"auth_url" binding:"required"`
 	TokenURL        string `form:"token_url" json:"token_url" binding:"required"`
 	UserInfoURL     string `form:"user_info_url" json:"user_info_url" binding:"required"`
+	CallbackURL     string `form:"callback_url" json:"callback_url" binding:"required"`
 	ClientID        string `form:"client_id" json:"client_id" binding:"required"`
 	ClientSecret    string `form:"client_secret" json:"client_secret" binding:"required"`
 	Provider        string `form:"provider" json:"provider" binding:"required"`
@@ -52,6 +53,10 @@ func (f *CreateOauthProviderForm) Bind(ctx *gin.Context) (bool, string) {
 	}
 	f.UserInfoURL = strings.TrimSpace(f.UserInfoURL)
 	if !strings.HasPrefix(f.UserInfoURL, "http://") && !strings.HasPrefix(f.UserInfoURL, "https://") {
+		return false, i18n.BadRequest
+	}
+	f.CallbackURL = strings.TrimSpace(f.CallbackURL)
+	if !strings.HasPrefix(f.CallbackURL, "http://") && !strings.HasPrefix(f.CallbackURL, "https://") {
 		return false, i18n.BadRequest
 	}
 	f.ClientID = strings.TrimSpace(f.ClientID)
@@ -91,6 +96,7 @@ type UpdateOauthProviderForm struct {
 	AuthURL         *string          `form:"auth_url" json:"auth_url"`
 	TokenURL        *string          `form:"token_url" json:"token_url"`
 	UserInfoURL     *string          `form:"user_info_url" json:"user_info_url"`
+	CallbackURL     *string          `form:"callback_url" json:"callback_url"`
 	ClientID        *string          `form:"client_id" json:"client_id"`
 	ClientSecret    *string          `form:"client_secret" json:"client_secret"`
 	Provider        *string          `form:"provider" json:"provider"`
@@ -124,6 +130,12 @@ func (f *UpdateOauthProviderForm) Bind(ctx *gin.Context) (bool, string) {
 	if f.UserInfoURL != nil {
 		*f.UserInfoURL = strings.TrimSpace(*f.UserInfoURL)
 		if !strings.HasPrefix(*f.UserInfoURL, "http://") && !strings.HasPrefix(*f.UserInfoURL, "https://") {
+			return false, i18n.BadRequest
+		}
+	}
+	if f.CallbackURL != nil {
+		*f.CallbackURL = strings.TrimSpace(*f.CallbackURL)
+		if !strings.HasPrefix(*f.CallbackURL, "http://") && !strings.HasPrefix(*f.CallbackURL, "https://") {
 			return false, i18n.BadRequest
 		}
 	}
