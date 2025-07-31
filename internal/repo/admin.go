@@ -67,6 +67,26 @@ func InitAdminRepo(tx *gorm.DB) *AdminRepo {
 	}
 }
 
+func (a *AdminRepo) InitAdmin() (bool, string) {
+	count, ok, msg := a.Count()
+	if !ok {
+		return false, msg
+	}
+	if count == 0 {
+		pwd := utils.UUID()
+		_, ok, msg = a.Create(CreateAdminOptions{
+			Name:     "admin",
+			Password: utils.HashPassword(pwd),
+			Email:    "admin@0rays.club",
+		})
+		if !ok {
+			return ok, msg
+		}
+		log.Logger.Infof("Init Admin: Admin{ name: admin, password: %s, email: admin@0rays.club}", pwd)
+	}
+	return true, i18n.Success
+}
+
 func (a *AdminRepo) IsUniqueName(name string) bool {
 	_, ok, _ := a.GetByUniqueKey("name", name, GetOptions{Selects: []string{"id"}})
 	return !ok

@@ -76,6 +76,7 @@ func Init() *gin.Engine {
 		router.POST("/login", Login)
 		router.POST("/admin/login", AdminLogin)
 		router.GET("/verify", VerifyEmail)
+		router.GET("/assets", DefaultAssets)
 		router.GET("/avatars/:fileID", middleware.SetFile(model.AvatarFile), DownloadFile)
 
 		router.GET("/stats", HomePage)
@@ -274,7 +275,6 @@ func Init() *gin.Engine {
 			{
 				adminContestImages.GET("", GetContestChallengeImage)
 				adminContestImages.POST("", WarmUpContestChallengeImage)
-
 			}
 
 			adminContestVictim := adminContest.Group("/victims")

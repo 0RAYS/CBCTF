@@ -102,6 +102,12 @@ var resp = map[string]map[string]any{
 	UpdateNoticeError: {"zh-CN": "更新通知失败", "en-US": "Update notice failed", "code": 500},
 	InvalidNoticeType: {"zh-CN": "无效的通知类型", "en-US": "Invalid notice type", "code": 400},
 
+	CreateOauthError: {"zh-CN": "创建第三方OA失败", "en-US": "Create oauth failed", "code": 500},
+	DeleteOauthError: {"zh-CN": "删除第三方OA失败", "en-US": "Delete oauth failed", "code": 500},
+	GetOauthError:    {"zh-CN": "获取第三方OA失败", "en-US": "Get oauth failed", "code": 500},
+	OauthNotFound:    {"zh-CN": "第三方OA不存在", "en-US": "Oauth not found", "code": 404},
+	UpdateOauthError: {"zh-CN": "更新第三方OA失败", "en-US": "Update oauth failed", "code": 500},
+
 	CreatePodError: {"zh-CN": "创建Pod失败", "en-US": "Create pod failed", "code": 500},
 	DeletePodError: {"zh-CN": "删除Pod失败", "en-US": "Delete pod failed", "code": 500},
 	GetPodError:    {"zh-CN": "获取Pod失败", "en-US": "Get pod failed", "code": 500},

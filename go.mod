@@ -23,6 +23,7 @@ require (
 	github.com/spf13/viper v1.20.1
 	github.com/vmihailenco/msgpack/v5 v5.4.1
 	golang.org/x/crypto v0.40.0
+	golang.org/x/oauth2 v0.30.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.6.0
@@ -110,7 +111,6 @@ require (
 	golang.org/x/arch v0.16.0 // indirect
 	golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1 // indirect
 	golang.org/x/net v0.42.0 // indirect
-	golang.org/x/oauth2 v0.27.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.34.0 // indirect
 	golang.org/x/term v0.33.0 // indirect
