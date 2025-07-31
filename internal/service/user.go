@@ -23,7 +23,7 @@ func CreateUser(tx *gorm.DB, form f.RegisterForm) (model.User, bool, string) {
 		Password:       utils.HashPassword(form.Password),
 		Email:          form.Email,
 		Provider:       "local",
-		ProviderUserID: "-1",
+		ProviderUserID: utils.UUID(),
 		OauthRaw:       "{}",
 	})
 }
@@ -46,7 +46,7 @@ func AdminCreateUser(tx *gorm.DB, form f.CreateUserForm) (model.User, bool, stri
 		Banned:         form.Banned,
 		Hidden:         form.Hidden,
 		Provider:       "local",
-		ProviderUserID: "-1",
+		ProviderUserID: utils.UUID(),
 		OauthRaw:       "{}",
 	})
 }
