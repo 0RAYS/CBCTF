@@ -355,3 +355,29 @@ func GetCheat(ctx *gin.Context) model.Cheat {
 		return cheat.(model.Cheat)
 	}
 }
+
+func SetOauth(ctx *gin.Context) {
+	type oauthIDUri struct {
+		OauthID uint `uri:"oauthID" binding:"required"`
+	}
+	var oauthID oauthIDUri
+	if err := ctx.ShouldBindUri(&oauthID); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		return
+	}
+	oauth, ok, msg := db.InitOauthRepo(db.DB.WithContext(ctx)).GetByID(oauthID.OauthID)
+	if !ok {
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	ctx.Set("Oauth", oauth)
+	ctx.Next()
+}
+
+func GetOauth(ctx *gin.Context) model.Oauth {
+	if oauth, ok := ctx.Get("Oauth"); !ok || oauth == nil {
+		return model.Oauth{}
+	} else {
+		return oauth.(model.Oauth)
+	}
+}

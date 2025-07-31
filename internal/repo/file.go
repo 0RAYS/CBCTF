@@ -20,6 +20,7 @@ type CreateFileOptions struct {
 	UserID    *uint
 	TeamID    *uint
 	ContestID *uint
+	OauthID   *uint
 	Suffix    string
 	Hash      string
 	Type      string
@@ -35,6 +36,7 @@ func (c CreateFileOptions) Convert2Model() model.Model {
 		UserID:    c.UserID,
 		TeamID:    c.TeamID,
 		ContestID: c.ContestID,
+		OauthID:   c.OauthID,
 		Suffix:    c.Suffix,
 		Hash:      c.Hash,
 		Type:      c.Type,
