@@ -47,7 +47,11 @@ func (a *AvatarURL) Scan(value any) error {
 		*a = ""
 		return nil
 	}
-	*a = AvatarURL(config.Env.Backend + string(bytes))
+	if strings.HasPrefix(string(bytes), "https://") || strings.HasPrefix(string(bytes), "http://") {
+		*a = AvatarURL(bytes)
+	} else {
+		*a = AvatarURL(config.Env.Backend + string(bytes))
+	}
 	return nil
 }
 
