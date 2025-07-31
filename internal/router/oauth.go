@@ -126,6 +126,11 @@ func RegisterOauthRouter(router *gin.Engine) {
 				ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 				return
 			}
+			defer func(provider string, state string) {
+				if err := redis.DelOauthState(provider, state); err != nil {
+					log.Logger.Warningf("Failed to delete oauth state for provider %s: %v", provider, err)
+				}
+			}(provider.Provider, form.State)
 			verifier, err := redis.GetOauthVerifier(provider.Provider, form.State)
 			if err != nil {
 				log.Logger.Warningf("Failed to get oauth verifier for provider %s: %v", provider.Provider, err)
@@ -154,7 +159,7 @@ func RegisterOauthRouter(router *gin.Engine) {
 				log.Logger.Warningf("Failed to decode response body for provider %s: %v", provider.Provider, err)
 				ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 			}
-			id, ok := result[provider.RespIDField].(string)
+			id, ok := utils.GetFiledValue(result, provider.RespIDField)
 			if !ok {
 				log.Logger.Warningf("Failed to provider user_id for provider %s: %v", provider.Provider, result)
 				ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
