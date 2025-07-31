@@ -72,15 +72,15 @@ func (f *CreateOauthProviderForm) Bind(ctx *gin.Context) (bool, string) {
 	}
 	f.RespIDField = strings.TrimSpace(f.RespIDField)
 	if f.RespIDField == "" {
-		f.RespIDField = "id"
+		f.RespIDField = "{id}"
 	}
 	f.RespNameField = strings.TrimSpace(f.RespNameField)
 	if f.RespNameField == "" {
-		f.RespNameField = "name"
+		f.RespNameField = "{name}"
 	}
 	f.RespEmailField = strings.TrimSpace(f.RespEmailField)
 	if f.RespEmailField == "" {
-		f.RespEmailField = "email"
+		f.RespEmailField = "{email}"
 	}
 	f.RespAvatarField = strings.TrimSpace(f.RespAvatarField)
 	f.RespDescField = strings.TrimSpace(f.RespDescField)
