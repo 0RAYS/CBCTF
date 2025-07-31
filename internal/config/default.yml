@@ -1,8 +1,6 @@
 backend: "http://127.0.0.1:8000"
 # CORS
 frontend: "http://127.0.0.1:3000"
-# Static Resources URI
-static_uri: "/platform"
 # Data path and NFS mount path if needed
 path: "./uploads"
 log:
@@ -13,6 +11,9 @@ gin:
   mode: "release"
   host: "127.0.0.1"
   port: 8000
+  # Static Resources URI
+  static_uri: "/platform"
+  api_prefix: ""
   # Trusted proxy servers
   proxies:
     - "10.0.0.1"

@@ -19,10 +19,9 @@ var (
 )
 
 type Config struct {
-	Frontend  string `mapstructure:"frontend" json:"frontend" msgpack:"frontend"`       // 前端地址
-	Backend   string `mapstructure:"backend" json:"backend" msgpack:"backend"`          // 后端地址
-	StaticURI string `mapstructure:"static_uri" json:"static_uri" msgpack:"static_uri"` // 前端静态资源路径
-	Path      string `mapstructure:"path" json:"path" msgpack:"path"`                   // 数据存储路径
+	Frontend string `mapstructure:"frontend" json:"frontend" msgpack:"frontend"` // 前端地址
+	Backend  string `mapstructure:"backend" json:"backend" msgpack:"backend"`    // 后端地址
+	Path     string `mapstructure:"path" json:"path" msgpack:"path"`             // 数据存储路径
 
 	Log struct {
 		Level string `mapstructure:"level" json:"level" msgpack:"level"` // 日志级别：DEBUG, INFO, WARNING, ERROR
@@ -30,10 +29,11 @@ type Config struct {
 	} `mapstructure:"log" json:"log" msgpack:"log"`
 
 	Gin struct {
-		Mode   string `mapstructure:"mode" json:"mode" msgpack:"mode"` // Gin 模式：debug, release, test
-		Host   string `mapstructure:"host" json:"host" msgpack:"host"` // Gin 服务监听地址
-		Port   int    `mapstructure:"port" json:"port" msgpack:"port"` // Gin 服务监听端口
-		Upload struct {
+		Mode      string `mapstructure:"mode" json:"mode" msgpack:"mode"`                   // Gin 模式：debug, release, test
+		Host      string `mapstructure:"host" json:"host" msgpack:"host"`                   // Gin 服务监听地址
+		Port      int    `mapstructure:"port" json:"port" msgpack:"port"`                   // Gin 服务监听端口
+		StaticURI string `mapstructure:"static_uri" json:"static_uri" msgpack:"static_uri"` // 前端静态资源路径
+		Upload    struct {
 			Max int `mapstructure:"max" json:"max" msgpack:"max"` // 上传文件最大大小（单位：MB）
 		} `mapstructure:"upload" json:"upload" msgpack:"upload"`
 		Proxies   []string `mapstructure:"proxies" json:"proxies" msgpack:"proxies"` // 信任的代理服务器
