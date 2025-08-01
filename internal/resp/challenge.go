@@ -139,6 +139,7 @@ func GetChallengeResp(challenge model.Challenge) gin.H {
 		"generator_image":  challenge.GeneratorImage,
 		"flags":            flags,
 		"docker_compose":   dockerCompose,
+		"options":          challenge.Options,
 		"network_policies": challenge.NetworkPolicies,
 	}
 }
