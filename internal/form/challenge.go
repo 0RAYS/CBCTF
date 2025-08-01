@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	allowedChallengeType = []string{model.StaticChallengeType, model.DynamicChallengeType, model.PodsChallengeType}
+	allowedChallengeType = []string{model.StaticChallengeType, model.QuestionChallengeType, model.DynamicChallengeType, model.PodsChallengeType}
 	allowedFileName      = []string{model.AttachmentFile, model.GeneratorFile}
 )
 
@@ -84,6 +84,7 @@ type CreateChallengeForm struct {
 	Flags           model.StringList      `form:"flags" json:"flags"`
 	GeneratorImage  string                `form:"generator_image" json:"generator_image"`
 	DockerCompose   string                `form:"docker_compose" json:"docker_compose"`
+	Options         model.Options         `form:"options" json:"options"`
 	NetworkPolicies model.NetworkPolicies `form:"network_policies" json:"network_policies"`
 }
 
@@ -109,6 +110,7 @@ type UpdateChallengeForm struct {
 	Category        *string                `form:"category" json:"category"`
 	GeneratorImage  *string                `form:"generator_image" json:"generator_image"`
 	NetworkPolicies *model.NetworkPolicies `json:"network_policies"`
+	Options         *model.Options         `form:"options" json:"options"`
 	Flags           []struct {
 		ID    uint   `form:"id" json:"id"`
 		Value string `form:"value" json:"value"`

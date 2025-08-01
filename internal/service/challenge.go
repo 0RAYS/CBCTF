@@ -36,6 +36,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 		Type:            form.Type,
 		Category:        form.Category,
 		GeneratorImage:  form.GeneratorImage,
+		Options:         form.Options,
 		NetworkPolicies: form.NetworkPolicies,
 	})
 	if !ok {
@@ -50,6 +51,20 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 			}); !ok {
 				return model.Challenge{}, false, msg
 			}
+		}
+	case model.QuestionChallengeType:
+		answer := ""
+		for _, option := range form.Options {
+			if option.Correct {
+				answer += fmt.Sprintf("%s,", option.Content)
+			}
+		}
+		answer = strings.TrimSuffix(answer, ",")
+		if _, ok, msg = challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
+			ChallengeID: challenge.ID,
+			Value:       answer,
+		}); !ok {
+			return model.Challenge{}, false, msg
 		}
 	case model.DynamicChallengeType:
 		for _, flag := range form.Flags {
@@ -213,7 +228,39 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChalle
 			Name:           form.Name,
 			Desc:           form.Desc,
 			Category:       form.Category,
+			Options:        form.Options,
 			GeneratorImage: form.GeneratorImage,
+		})
+	case model.QuestionChallengeType:
+		if form.Options != nil {
+			answer := ""
+			for _, option := range *form.Options {
+				if option.Correct {
+					answer += fmt.Sprintf("%s,", option.Content)
+				}
+			}
+			answer = strings.TrimSuffix(answer, ",")
+			repo := db.InitChallengeFlagRepo(tx)
+			if len(challenge.ContestChallenges) > 0 {
+				if ok, msg := repo.Update(challenge.ContestChallenges[0].ID, db.UpdateChallengeFlagOptions{
+					Value: &answer,
+				}); !ok {
+					return false, msg
+				}
+			} else {
+				if _, ok, msg := repo.Create(db.CreateChallengeFlagOptions{
+					ChallengeID: challenge.ID,
+					Value:       answer,
+				}); !ok {
+					return false, msg
+				}
+			}
+		}
+		return db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
+			Name:     form.Name,
+			Desc:     form.Desc,
+			Category: form.Category,
+			Options:  form.Options,
 		})
 	case model.PodsChallengeType:
 		return db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
