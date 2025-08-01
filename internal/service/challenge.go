@@ -56,7 +56,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 		answer := ""
 		for _, option := range form.Options {
 			if option.Correct {
-				answer += fmt.Sprintf("%s,", option.Content)
+				answer += fmt.Sprintf("%s,", option.RandID)
 			}
 		}
 		answer = strings.TrimSuffix(answer, ",")
@@ -236,7 +236,7 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChalle
 			answer := ""
 			for _, option := range *form.Options {
 				if option.Correct {
-					answer += fmt.Sprintf("%s,", option.Content)
+					answer += fmt.Sprintf("%s,", option.RandID)
 				}
 			}
 			answer = strings.TrimSuffix(answer, ",")
