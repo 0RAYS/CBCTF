@@ -90,7 +90,7 @@ func RegisterOauthRouter(router *gin.Engine) {
 	oauthProviders, _, ok, _ := db.InitOauthRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"on": true},
 	})
-	if !ok || len(oauthProviders) == 0 {
+	if !ok {
 		return
 	}
 	availableOauth := make(gin.H)
