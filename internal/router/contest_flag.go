@@ -58,8 +58,12 @@ func UpdateContestFlag(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	contestChallenge := middleware.GetContestChallenge(ctx)
 	contestFlag := middleware.GetContestFlag(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
+	if contestChallenge.Type == model.QuestionChallengeType && form.Value != nil {
+		form.Value = &contestFlag.Value
+	}
 	ok, msg := db.InitContestFlagRepo(tx).Update(contestFlag.ID, db.UpdateContestFlagOptions{
 		Value:     form.Value,
 		Score:     form.Score,

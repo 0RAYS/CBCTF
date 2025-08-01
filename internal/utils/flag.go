@@ -2,7 +2,7 @@ package utils
 
 import (
 	"bytes"
-	"math/rand"
+	"math/rand/v2"
 )
 
 // copied from https://github.com/ret2shell/ret2script/blob/main/src/modules/audit.rs

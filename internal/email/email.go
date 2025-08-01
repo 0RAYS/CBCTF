@@ -5,7 +5,7 @@ import (
 	"CBCTF/internal/log"
 	"fmt"
 	"gopkg.in/gomail.v2"
-	"math/rand"
+	"math/rand/v2"
 	"sync"
 	"time"
 )

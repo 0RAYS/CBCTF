@@ -3,10 +3,21 @@ package resp
 import (
 	"CBCTF/internal/model"
 	"github.com/gin-gonic/gin"
+	"math/rand/v2"
 )
 
 // GetContestChallengeResp 需要预加载 Challenge ContestFlags
 func GetContestChallengeResp(contestChallenge model.ContestChallenge) gin.H {
+	options := make([]gin.H, 0)
+	for _, option := range contestChallenge.Challenge.Options {
+		options = append(options, gin.H{
+			"rand_id": option.RandID,
+			"content": option.Content,
+		})
+	}
+	rand.Shuffle(len(options), func(i, j int) {
+		options[i], options[j] = options[j], options[i]
+	})
 	data := gin.H{
 		"id":       contestChallenge.Challenge.RandID,
 		"name":     contestChallenge.Name,
@@ -15,6 +26,7 @@ func GetContestChallengeResp(contestChallenge model.ContestChallenge) gin.H {
 		"type":     contestChallenge.Type,
 		"category": contestChallenge.Challenge.Category,
 		"hidden":   contestChallenge.Hidden,
+		"options":  options,
 		"score": func() float64 {
 			var score float64
 			for _, flag := range contestChallenge.ContestFlags {
