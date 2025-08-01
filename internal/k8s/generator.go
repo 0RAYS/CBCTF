@@ -10,7 +10,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	corev1 "k8s.io/api/core/v1"
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"slices"
 	"strings"
