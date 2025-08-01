@@ -63,7 +63,7 @@ func CreateTeamFlag(tx *gorm.DB, team model.Team, contestChallenge model.Contest
 		} else {
 			options.Value = contestFlag.Value
 		}
-		if prefix := contestChallenge.Contest.Prefix; prefix != "" {
+		if prefix := contestChallenge.Contest.Prefix; prefix != "" && contestChallenge.Type != model.QuestionChallengeType {
 			options.Value = fmt.Sprintf("%s{%s}", contestChallenge.Contest.Prefix, options.Value)
 		}
 		teamFlag, ok, msg = teamFlagRepo.Create(options)
