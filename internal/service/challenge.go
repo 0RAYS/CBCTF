@@ -241,7 +241,7 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChalle
 			}
 			answer = strings.TrimSuffix(answer, ",")
 			repo := db.InitChallengeFlagRepo(tx)
-			if len(challenge.ContestChallenges) > 0 {
+			if len(challenge.ChallengeFlags) > 0 {
 				if ok, msg := repo.Update(challenge.ContestChallenges[0].ID, db.UpdateChallengeFlagOptions{
 					Value: &answer,
 				}); !ok {
