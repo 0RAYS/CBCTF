@@ -4,6 +4,7 @@ import (
 	f "CBCTF/internal/form"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
+	"CBCTF/internal/oauth"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/utils"
 	"gorm.io/gorm"
@@ -22,7 +23,7 @@ func CreateUser(tx *gorm.DB, form f.RegisterForm) (model.User, bool, string) {
 		Name:           form.Name,
 		Password:       utils.HashPassword(form.Password),
 		Email:          form.Email,
-		Provider:       "local",
+		Provider:       oauth.LocalProvider,
 		ProviderUserID: utils.UUID(),
 		OauthRaw:       "{}",
 	})
@@ -45,7 +46,7 @@ func AdminCreateUser(tx *gorm.DB, form f.CreateUserForm) (model.User, bool, stri
 		Verified:       form.Verified,
 		Banned:         form.Banned,
 		Hidden:         form.Hidden,
-		Provider:       "local",
+		Provider:       oauth.LocalProvider,
 		ProviderUserID: utils.UUID(),
 		OauthRaw:       "{}",
 	})

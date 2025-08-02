@@ -56,14 +56,6 @@ var (
 		[]string{"contest_name", "challenge_name", "team_name", "status", "challenge_type"},
 	)
 
-	ChallengeSolvedTotal = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "ctf_challenge_solved_total",
-			Help: "Total number of challenges solved",
-		},
-		[]string{"contest_id", "challenge_id", "challenge_type", "team_id"},
-	)
-
 	ContestActiveTeams = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Name: "ctf_contest_active_teams",
@@ -96,14 +88,6 @@ var (
 		[]string{"oauth_provider"},
 	)
 
-	TeamCreationTotal = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "ctf_team_creations_total",
-			Help: "Total number of team creations",
-		},
-		[]string{"contest_id"},
-	)
-
 	FileUploadTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "ctf_file_uploads_total",
@@ -126,6 +110,14 @@ var (
 			Name: "ctf_websocket_connections",
 			Help: "Current number of WebSocket connections",
 		},
+	)
+
+	EmailSentTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "ctf_email_sent_total",
+			Help: "Total number of email sent",
+		},
+		[]string{"status"},
 	)
 
 	CacheHitRate = prometheus.NewGaugeVec(
@@ -152,55 +144,3 @@ var (
 		[]string{"error_type", "component"},
 	)
 )
-
-func UpdateFlagSubmissionMetrics(contest model.Contest, contestChallenge model.ContestChallenge, team model.Team, solved bool) {
-	status := "failed"
-	if solved {
-		status = "success"
-	}
-	FlagSubmissionTotal.WithLabelValues(contest.Name, contestChallenge.Name, team.Name, status, contestChallenge.Type).Inc()
-}
-
-func AddContestActiveTeamsMetrics(contest model.Contest, count int) {
-	ContestActiveTeams.WithLabelValues(contest.Name).Add(float64(count))
-}
-
-func SubContestActiveTeamsMetrics(contest model.Contest, count int) {
-	ContestActiveTeams.WithLabelValues(contest.Name).Sub(float64(count))
-
-}
-
-func AddContestActiveUsersMetrics(contest model.Contest, count int) {
-	ContestActiveUsers.WithLabelValues(contest.Name).Add(float64(count))
-
-}
-
-func SubContestActiveUsersMetrics(contest model.Contest, count int) {
-	ContestActiveUsers.WithLabelValues(contest.Name).Sub(float64(count))
-}
-
-func AddVictimContainerMetrics(contest model.Contest, contestChallenge model.ContestChallenge, count int) {
-	VictimContainerTotal.WithLabelValues(contest.Name, contestChallenge.Name).Add(float64(count))
-}
-
-func SubVictimContainerMetrics(contest model.Contest, contestChallenge model.ContestChallenge, count int) {
-	VictimContainerTotal.WithLabelValues(contest.Name, contestChallenge.Name).Sub(float64(count))
-}
-
-func UpdateFileUploadMetrics(fileType string, size int64) {
-	FileUploadTotal.WithLabelValues(fileType).Inc()
-	FileUploadSize.WithLabelValues(fileType).Observe(float64(size))
-}
-
-func UpdateWebSocketMetrics(connections int) {
-	WebSocketConnections.Set(float64(connections))
-}
-
-func UpdateCacheMetrics(cacheType string, hits, misses int64) {
-	hitRate := float64(hits) / float64(hits+misses)
-	CacheHitRate.WithLabelValues(cacheType).Set(hitRate)
-}
-
-func UpdateRateLimitMetrics(endpoint, ip string) {
-	RateLimitHits.WithLabelValues(endpoint, ip).Inc()
-}

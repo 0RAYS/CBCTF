@@ -23,15 +23,14 @@ func RegisterMetricsRouter(router *gin.Engine) {
 
 	// 注册CTF业务指标
 	prometheus.MustRegister(p.FlagSubmissionTotal)
-	prometheus.MustRegister(p.ChallengeSolvedTotal)
 	prometheus.MustRegister(p.ContestActiveTeams)
 	prometheus.MustRegister(p.ContestActiveUsers)
 	prometheus.MustRegister(p.VictimContainerTotal)
 	prometheus.MustRegister(p.UserRegistrationTotal)
-	prometheus.MustRegister(p.TeamCreationTotal)
 	prometheus.MustRegister(p.FileUploadTotal)
 	prometheus.MustRegister(p.FileUploadSize)
 	prometheus.MustRegister(p.WebSocketConnections)
+	prometheus.MustRegister(p.EmailSentTotal)
 	prometheus.MustRegister(p.CacheHitRate)
 	prometheus.MustRegister(p.RateLimitHits)
 	prometheus.MustRegister(p.ErrorTotal)
