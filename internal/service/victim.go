@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/model"
+	"CBCTF/internal/prometheus"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/utils"
 	"fmt"
@@ -305,6 +306,7 @@ func GetTeamVictimStatus(tx *gorm.DB, team model.Team, contestChallenge model.Co
 	data["target"] = victims[0].RemoteAddr()
 	data["status"] = "Running"
 	data["remaining"] = victims[0].Remaining().Seconds()
+	go prometheus.AddVictimContainerMetrics(team.Contest, contestChallenge, 1)
 	return data
 }
 
@@ -335,5 +337,9 @@ func StopTeamVictim(tx *gorm.DB, team model.Team, contestChallenge model.Contest
 		victimIDL = append(victimIDL, victim.ID)
 		LoadTraffic(tx, victim)
 	}
-	return victimRepo.Delete(victimIDL...)
+	ok, msg = victimRepo.Delete(victimIDL...)
+	if ok {
+		go prometheus.SubVictimContainerMetrics(team.Contest, contestChallenge, 1)
+	}
+	return ok, msg
 }

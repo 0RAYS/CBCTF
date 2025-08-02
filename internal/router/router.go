@@ -7,13 +7,8 @@ import (
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/websocket"
-	"errors"
 	"fmt"
-	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/collectors"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
 	"strings"
 	"time"
@@ -31,17 +26,7 @@ func Init() *gin.Engine {
 	router.MaxMultipartMemory = int64(config.Env.Gin.Upload.Max << 20)
 
 	{
-		router.GET("/", func(ctx *gin.Context) {
-			if strings.HasPrefix(config.Env.Frontend, "http://") || strings.HasPrefix(config.Env.Frontend, "https://") {
-				ctx.Redirect(http.StatusFound, fmt.Sprintf("%s/%s", config.Env.Frontend, config.Env.Gin.StaticURI))
-			} else {
-				ctx.Redirect(http.StatusFound, config.Env.Gin.StaticURI)
-			}
-		})
-		router.StaticFS(config.Env.Gin.StaticURI, http.FS(frontend.SubFS))
-	}
-
-	{
+		// 不可接入其他中间件
 		router.GET("/ws", middleware.WSAuth, websocket.WS)
 	}
 
@@ -51,25 +36,18 @@ func Init() *gin.Engine {
 	)
 
 	{
-		pprof.Register(router)
+		RegisterMetricsRouter(router)
+	}
 
-		prometheus.MustRegister(middleware.HttpRequestsTotal)
-		prometheus.MustRegister(middleware.HttpRequestDuration)
-		prometheus.MustRegister(middleware.HttpRequestSize)
-		prometheus.MustRegister(middleware.HttpResponseSize)
-		prometheus.MustRegister(middleware.InFlightRequests)
-		var alreadyRegisteredError prometheus.AlreadyRegisteredError
-		if err := prometheus.Register(collectors.NewGoCollector()); err != nil {
-			if !errors.As(err, &alreadyRegisteredError) {
-				log.Logger.Warningf("failed to register GoCollector: %v", err)
+	{
+		router.GET("/", func(ctx *gin.Context) {
+			if strings.HasPrefix(config.Env.Frontend, "http://") || strings.HasPrefix(config.Env.Frontend, "https://") {
+				ctx.Redirect(http.StatusFound, fmt.Sprintf("%s/%s", config.Env.Frontend, config.Env.Gin.StaticURI))
+			} else {
+				ctx.Redirect(http.StatusFound, config.Env.Gin.StaticURI)
 			}
-		}
-		if err := prometheus.Register(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{})); err != nil {
-			if !errors.As(err, &alreadyRegisteredError) {
-				log.Logger.Warningf("failed to register ProcessCollector: %v", err)
-			}
-		}
-		router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+		})
+		router.StaticFS(config.Env.Gin.StaticURI, http.FS(frontend.SubFS))
 	}
 
 	{

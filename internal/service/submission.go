@@ -4,6 +4,7 @@ import (
 	f "CBCTF/internal/form"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
+	"CBCTF/internal/prometheus"
 	db "CBCTF/internal/repo"
 	"gorm.io/gorm"
 	"sync"
@@ -75,6 +76,7 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, contestChallenge mode
 			return "", model.Submission{}, false, msg
 		}
 	}
+	go prometheus.UpdateFlagSubmissionMetrics(contestChallenge.Contest, contestChallenge, team, solved)
 	return result, submission, true, i18n.Success
 }
 

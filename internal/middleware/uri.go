@@ -113,7 +113,7 @@ func SetTeamByURI(ctx *gin.Context) {
 		return
 	}
 	team, ok, msg = db.InitTeamRepo(db.DB.WithContext(ctx)).GetByID(teamID.TeamID, db.GetOptions{
-		Preloads: map[string]db.GetOptions{"Users": {}},
+		Preloads: map[string]db.GetOptions{"Users": {}, "Contest": {}},
 	})
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
