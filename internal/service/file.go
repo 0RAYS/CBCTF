@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/prometheus"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/utils"
 	"crypto/sha256"
@@ -58,7 +59,11 @@ func SaveAvatar(tx *gorm.DB, options db.CreateFileOptions, file *multipart.FileH
 	options.Suffix = suffix
 	options.Hash = hash
 	options.Type = model.AvatarFile
-	return fileRepo.Create(options)
+	f, ok, msg := fileRepo.Create(options)
+	if ok {
+		go prometheus.UpdateFileUploadMetrics(record.Suffix, record.Size)
+	}
+	return f, ok, msg
 }
 
 func UpdateAvatar(tx *gorm.DB, v string, id uint, record model.File) (string, bool, string) {
@@ -120,7 +125,7 @@ func SaveWriteUp(tx *gorm.DB, user model.User, contest model.Contest, team model
 	} else {
 		path = record.Path
 	}
-	return fileRepo.Create(db.CreateFileOptions{
+	f, ok, msg := fileRepo.Create(db.CreateFileOptions{
 		RandID:    utils.UUID(),
 		Filename:  file.Filename,
 		Size:      file.Size,
@@ -132,4 +137,8 @@ func SaveWriteUp(tx *gorm.DB, user model.User, contest model.Contest, team model
 		Hash:      hash,
 		Type:      model.WriteUPFile,
 	})
+	if ok {
+		go prometheus.UpdateFileUploadMetrics(record.Suffix, file.Size)
+	}
+	return f, ok, msg
 }

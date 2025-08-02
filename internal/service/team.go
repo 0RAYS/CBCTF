@@ -4,6 +4,7 @@ import (
 	f "CBCTF/internal/form"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
+	"CBCTF/internal/prometheus"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/utils"
 	"gorm.io/gorm"
@@ -59,6 +60,8 @@ func UpdateTeamCaptcha(tx *gorm.DB, team model.Team, captcha string) (bool, stri
 
 func DeleteTeam(tx *gorm.DB, team model.Team) (bool, string) {
 	repo := db.InitTeamRepo(tx)
+	go prometheus.SubContestActiveTeamsMetrics(team.Contest, 1)
+	go prometheus.SubContestActiveUsersMetrics(team.Contest, len(team.Users))
 	return repo.Delete(team.ID)
 }
 
@@ -92,6 +95,7 @@ func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.JoinTe
 		return model.Team{}, false, msg
 	}
 	team.Users = append(team.Users, &user)
+	go prometheus.AddContestActiveUsersMetrics(contest, 1)
 	return team, true, i18n.Success
 }
 
@@ -127,6 +131,8 @@ func CreateTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.Crea
 		return model.Team{}, false, msg
 	}
 	team.Users = append(team.Users, &user)
+	go prometheus.AddContestActiveTeamsMetrics(contest, 1)
+	go prometheus.AddContestActiveUsersMetrics(contest, 1)
 	return team, true, i18n.Success
 }
 
@@ -144,6 +150,7 @@ func LeaveTeam(tx *gorm.DB, contest model.Contest, team model.Team, userID uint)
 	if ok, msg := db.DeleteUserFromContest(tx, userID, contest.ID); !ok {
 		return false, msg
 	}
+	go prometheus.SubContestActiveUsersMetrics(contest, 1)
 	return true, i18n.Success
 }
 

@@ -1,56 +1,12 @@
 package middleware
 
 import (
+	"CBCTF/internal/prometheus"
 	"bytes"
 	"github.com/gin-gonic/gin"
-	"github.com/prometheus/client_golang/prometheus"
 	"io"
 	"net/http"
 	"time"
-)
-
-var (
-	HttpRequestsTotal = prometheus.NewCounterVec(
-		prometheus.CounterOpts{
-			Name: "http_requests_total",
-			Help: "Total number of HTTP requests",
-		},
-		[]string{"path", "method", "status"},
-	)
-
-	HttpRequestDuration = prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Name:    "http_request_duration_seconds",
-			Help:    "Histogram of response time for handler.",
-			Buckets: prometheus.DefBuckets,
-		},
-		[]string{"path", "method"},
-	)
-
-	HttpRequestSize = prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Name:    "http_request_size_bytes",
-			Help:    "Histogram of HTTP request body sizes.",
-			Buckets: prometheus.ExponentialBuckets(100, 2, 10), // 100B ~ 51KB
-		},
-		[]string{"path", "method"},
-	)
-
-	HttpResponseSize = prometheus.NewHistogramVec(
-		prometheus.HistogramOpts{
-			Name:    "http_response_size_bytes",
-			Help:    "Histogram of HTTP response body sizes.",
-			Buckets: prometheus.ExponentialBuckets(100, 2, 10),
-		},
-		[]string{"path", "method"},
-	)
-
-	InFlightRequests = prometheus.NewGauge(
-		prometheus.GaugeOpts{
-			Name: "in_flight_requests",
-			Help: "Current number of in-flight requests being handled.",
-		},
-	)
 )
 
 func getRequestBodySize(ctx *gin.Context) int {
@@ -72,7 +28,7 @@ func getRequestBodySize(ctx *gin.Context) int {
 
 func Prometheus(ctx *gin.Context) {
 	start := time.Now()
-	InFlightRequests.Inc()
+	prometheus.InFlightRequests.Inc()
 	reqSize := getRequestBodySize(ctx)
 
 	ctx.Next()
@@ -84,9 +40,14 @@ func Prometheus(ctx *gin.Context) {
 		path = ctx.Request.URL.Path
 	}
 
-	InFlightRequests.Dec()
-	HttpRequestsTotal.WithLabelValues(path, ctx.Request.Method, http.StatusText(status)).Inc()
-	HttpRequestDuration.WithLabelValues(path, ctx.Request.Method).Observe(duration)
-	HttpRequestSize.WithLabelValues(path, ctx.Request.Method).Observe(float64(reqSize))
-	HttpResponseSize.WithLabelValues(path, ctx.Request.Method).Observe(float64(ctx.Writer.Size()))
+	prometheus.InFlightRequests.Dec()
+	prometheus.HttpRequestsTotal.WithLabelValues(path, ctx.Request.Method, http.StatusText(status)).Inc()
+	prometheus.HttpRequestDuration.WithLabelValues(path, ctx.Request.Method).Observe(duration)
+	prometheus.HttpRequestSize.WithLabelValues(path, ctx.Request.Method).Observe(float64(reqSize))
+	prometheus.HttpResponseSize.WithLabelValues(path, ctx.Request.Method).Observe(float64(ctx.Writer.Size()))
+
+	// 记录错误
+	if status >= 400 {
+		prometheus.ErrorTotal.WithLabelValues(http.StatusText(status), "http").Inc()
+	}
 }

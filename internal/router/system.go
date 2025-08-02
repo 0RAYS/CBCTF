@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
+	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/service"
@@ -100,6 +101,7 @@ func SystemStatus(ctx *gin.Context) {
 	} else {
 		ret["rate"] = fmt.Sprintf("%.2f", float64(hit)/float64(hit+miss)*100)
 	}
+	go prometheus.UpdateCacheMetrics("redis", hit, miss)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": ret})
 }
 

@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
+	"CBCTF/internal/prometheus"
 	"CBCTF/internal/websocket/handler"
 	"CBCTF/internal/websocket/model"
 	"github.com/gin-gonic/gin"
@@ -77,6 +78,7 @@ func WS(ctx *gin.Context) {
 	mu.Lock()
 	(*clients)[id] = c
 	mu.Unlock()
+	go prometheus.UpdateWebSocketMetrics(len(*clients))
 
 	for {
 		_, msg, err := c.Conn.ReadMessage()
@@ -93,6 +95,7 @@ func WS(ctx *gin.Context) {
 	mu.Lock()
 	delete(*clients, id)
 	mu.Unlock()
+	go prometheus.UpdateWebSocketMetrics(len(*clients))
 }
 
 func Send(admin bool, id uint, level, t, title, msg string) {
