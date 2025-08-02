@@ -126,7 +126,7 @@ func (c *ContestRepo) Delete(idL ...uint) (bool, string) {
 		Conditions: map[string]any{"id": idL},
 		Selects:    []string{"id", "name"},
 		Preloads: map[string]GetOptions{
-			"Teams":             {Selects: []string{"id"}},
+			"Teams":             {Selects: []string{"id", "contest_id"}},
 			"Notices":           {Selects: []string{"id", "contest_id"}},
 			"ContestChallenges": {Selects: []string{"id", "contest_id"}},
 			"ContestFlags":      {Selects: []string{"id", "contest_id"}},
