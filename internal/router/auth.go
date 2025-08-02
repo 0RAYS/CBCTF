@@ -70,6 +70,7 @@ func Login(ctx *gin.Context) {
 	ctx.Set("Self", user)
 	log.Logger.Infof("%s:%d login", user.Name, user.ID)
 	ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	go prometheus.UpdateUserLoginMetrics(oauth.LocalProvider)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.LoginResp(user, false)})
 }
 

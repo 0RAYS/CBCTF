@@ -39,6 +39,10 @@ func UpdateUserRegisterMetrics(provider string) {
 	UserRegistrationTotal.WithLabelValues(provider).Inc()
 }
 
+func UpdateUserLoginMetrics(provider string) {
+	UserLoginTotal.WithLabelValues(provider).Inc()
+}
+
 func UpdateFileUploadMetrics(fileType string, size int64) {
 	FileUploadTotal.WithLabelValues(fileType).Inc()
 	FileUploadSize.WithLabelValues(fileType).Observe(float64(size))

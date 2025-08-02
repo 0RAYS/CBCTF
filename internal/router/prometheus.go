@@ -27,6 +27,7 @@ func RegisterMetricsRouter(router *gin.Engine) {
 	prometheus.MustRegister(p.ContestActiveUsers)
 	prometheus.MustRegister(p.VictimContainerTotal)
 	prometheus.MustRegister(p.UserRegistrationTotal)
+	prometheus.MustRegister(p.UserLoginTotal)
 	prometheus.MustRegister(p.FileUploadTotal)
 	prometheus.MustRegister(p.FileUploadSize)
 	prometheus.MustRegister(p.WebSocketConnections)

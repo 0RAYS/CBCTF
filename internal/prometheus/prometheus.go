@@ -87,6 +87,14 @@ var (
 		[]string{"oauth_provider"},
 	)
 
+	UserLoginTotal = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "ctf_user_logins_total",
+			Help: "Total number of user login",
+		},
+		[]string{"oauth_provider"},
+	)
+
 	FileUploadTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "ctf_file_uploads_total",
