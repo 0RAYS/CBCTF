@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/utils"
@@ -25,7 +26,10 @@ func SendEmail(user model.User) (bool, string) {
 	}
 	go func() {
 		if err = email.SendVerifyEmail(user.Email, token, id); err != nil {
+			go prometheus.IncEmailSentMetrics(false)
 			log.Logger.Warningf("Failed to send mail: %s", err)
+		} else {
+			go prometheus.IncEmailSentMetrics(true)
 		}
 	}()
 	return true, i18n.Success

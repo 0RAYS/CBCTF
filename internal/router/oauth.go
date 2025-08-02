@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
+	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/resp"
@@ -145,7 +146,7 @@ func RegisterOauthRouter(router *gin.Engine) {
 			client := oauthConfig.Client(ctx, tok)
 			response, err := client.Get(provider.UserInfoURL)
 			if err != nil {
-				log.Logger.Warningf("Failed to get user info for provider %s: %v", provider.Provider, err)
+				log.Logger.Warningf("Failed to get user info by provider %s: %v", provider.Provider, err)
 				ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 				return
 			}
@@ -161,7 +162,7 @@ func RegisterOauthRouter(router *gin.Engine) {
 			}
 			id, ok := utils.GetFiledValue(result, provider.RespIDField)
 			if !ok {
-				log.Logger.Warningf("Failed to provider user_id for provider %s: %v", provider.Provider, result)
+				log.Logger.Warningf("Failed to get user_id by provider %s: %v", provider.Provider, result)
 				ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 				return
 			}
@@ -199,10 +200,11 @@ func RegisterOauthRouter(router *gin.Engine) {
 					OauthRaw:       string(raw),
 				})
 				if !ok {
-					log.Logger.Warningf("Failed to create user for provider %s: %s", provider.Provider, msg)
+					log.Logger.Warningf("Failed to create user by provider %s: %s", provider.Provider, msg)
 					ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 					return
 				}
+				go prometheus.UpdateUserRegisterMetrics(provider.Provider)
 			}
 			token, err := utils.GenerateToken(user.ID, user.Name, false, model.OauthLoginType)
 			if err != nil {
