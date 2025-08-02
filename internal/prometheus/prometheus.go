@@ -1,7 +1,6 @@
 package prometheus
 
 import (
-	"CBCTF/internal/model"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
