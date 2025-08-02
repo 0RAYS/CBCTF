@@ -273,6 +273,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 	}); !ok {
 		return model.Victim{}, false, msg
 	}
+	go prometheus.AddVictimContainerMetrics(team.Contest, contestChallenge, 1)
 	return victim, true, i18n.Success
 }
 
@@ -306,7 +307,6 @@ func GetTeamVictimStatus(tx *gorm.DB, team model.Team, contestChallenge model.Co
 	data["target"] = victims[0].RemoteAddr()
 	data["status"] = "Running"
 	data["remaining"] = victims[0].Remaining().Seconds()
-	go prometheus.AddVictimContainerMetrics(team.Contest, contestChallenge, 1)
 	return data
 }
 
