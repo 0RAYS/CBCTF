@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"reflect"
 	"regexp"
 	"strings"
 )
@@ -30,7 +31,11 @@ func GetFiledValue(resp map[string]any, field string) (string, bool) {
 				return "", false
 			}
 			if i == len(ks)-1 {
-				v = fmt.Sprintf("%v", v)
+				if reflect.TypeOf(v).Kind() == reflect.Float64 {
+					v = fmt.Sprintf("%f", v)
+				} else {
+					v = fmt.Sprintf("%v", v)
+				}
 				field = strings.ReplaceAll(field, fmt.Sprintf("{%s}", key), v.(string))
 			} else {
 				if subData, ok := v.(map[string]any); ok {
