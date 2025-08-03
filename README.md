@@ -1,7 +1,7 @@
 # 🏆 CBCTF
 
 [![Go Version](https://img.shields.io/badge/Go-1.21+-blue.svg)](https://golang.org)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Apache-green.svg)](LICENSE)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-1.20+-blue.svg)](https://kubernetes.io)
 [![Redis](https://img.shields.io/badge/Redis-6.0+-red.svg)](https://redis.io)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0+-orange.svg)](https://mysql.com)
@@ -120,7 +120,7 @@ networks:
 
 ## 📄 许可证
 
-本项目采用 [MIT 许可证](LICENSE)。
+本项目采用 [Apache 许可证](LICENSE)。
 
 ---
 
