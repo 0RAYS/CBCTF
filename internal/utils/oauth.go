@@ -31,10 +31,14 @@ func GetFiledValue(resp map[string]any, field string) (string, bool) {
 				return "", false
 			}
 			if i == len(ks)-1 {
-				if reflect.TypeOf(v).Kind() == reflect.Float64 {
-					v = fmt.Sprintf("%f", v)
+				if v != nil {
+					if reflect.TypeOf(v).Kind() == reflect.Float64 {
+						v = fmt.Sprintf("%f", v)
+					} else {
+						v = fmt.Sprintf("%v", v)
+					}
 				} else {
-					v = fmt.Sprintf("%v", v)
+					v = "<nil>"
 				}
 				field = strings.ReplaceAll(field, fmt.Sprintf("{%s}", key), v.(string))
 			} else {
