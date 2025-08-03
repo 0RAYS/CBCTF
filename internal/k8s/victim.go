@@ -64,7 +64,7 @@ type CreateSNatResult struct {
 
 func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 	log.Logger.Infof("Creating Victim for team %d challenge %d", victim.TeamID, victim.ContestChallengeID)
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	// 添加一个独立tag, 防止 NetworkPolicy 影响 frpc 通信
 	labels := map[string]string{
