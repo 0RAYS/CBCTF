@@ -8,7 +8,7 @@ import (
 
 // DeleteFileForm for delete files
 type DeleteFileForm struct {
-	FileIDL []string `form:"file_id" json:"file_id" binding:"required"`
+	FileIDL []string `form:"file_ids" json:"file_ids" binding:"required"`
 }
 
 func (f *DeleteFileForm) Bind(ctx *gin.Context) (bool, string) {
