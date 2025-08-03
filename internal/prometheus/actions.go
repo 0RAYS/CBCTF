@@ -16,7 +16,6 @@ func AddContestActiveTeamsMetrics(contest model.Contest, count int) {
 
 func SubContestActiveTeamsMetrics(contest model.Contest, count int) {
 	ContestActiveTeams.WithLabelValues(contest.Name).Sub(float64(count))
-
 }
 
 func AddContestActiveUsersMetrics(contest model.Contest, count int) {
