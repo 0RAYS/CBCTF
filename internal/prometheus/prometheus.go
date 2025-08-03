@@ -68,7 +68,7 @@ var (
 			Name: "ctf_contest_active_users",
 			Help: "Number of active users in contest",
 		},
-		[]string{"contest_id", "contest_name"},
+		[]string{"contest_name"},
 	)
 
 	VictimContainerTotal = prometheus.NewGaugeVec(
@@ -109,7 +109,7 @@ var (
 			Help:    "Size of uploaded files",
 			Buckets: prometheus.ExponentialBuckets(1024, 2, 15), // 1KB ~ 32MB
 		},
-		[]string{"file_type", "contest_id"},
+		[]string{"file_type"},
 	)
 
 	WebSocketConnections = prometheus.NewGauge(
