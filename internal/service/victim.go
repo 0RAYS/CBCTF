@@ -60,6 +60,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 			Subnets: make([]*model.Subnet, 0),
 		}
 		subnets := make(map[string]*model.Subnet)
+		// TODO 逻辑存在错误，导致创建重复 eip dnat snat
 		for _, docker := range challenge.Dockers {
 			for _, network := range docker.Networks {
 				subnet, ok := subnets[network.Name]
