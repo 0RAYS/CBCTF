@@ -20,10 +20,9 @@ var (
 )
 
 type Config struct {
-	Backend       string `mapstructure:"backend" json:"backend" msgpack:"backend"`                      // 后端地址
-	Frontend      string `mapstructure:"frontend" json:"frontend" msgpack:"frontend"`                   // 前端地址
-	OauthCallback string `mapstructure:"oauth_callback" json:"oauth_callback" msgpack:"oauth_callback"` // 前端 OAuth 回调地址
-	Path          string `mapstructure:"path" json:"path" msgpack:"path"`                               // 数据存储路径
+	Backend  string `mapstructure:"backend" json:"backend" msgpack:"backend"`    // 后端地址
+	Frontend string `mapstructure:"frontend" json:"frontend" msgpack:"frontend"` // 前端地址
+	Path     string `mapstructure:"path" json:"path" msgpack:"path"`             // 数据存储路径
 
 	Log struct {
 		Level string `mapstructure:"level" json:"level" msgpack:"level"` // 日志级别：DEBUG, INFO, WARNING, ERROR
@@ -149,14 +148,11 @@ func tidy() {
 	}
 	Env.Backend = strings.TrimSuffix(Env.Backend, "/")
 	Env.Frontend = strings.TrimSuffix(Env.Frontend, "/")
-	Env.OauthCallback = strings.TrimSuffix(Env.OauthCallback, "/")
 	Env.Gin.StaticURI = fmt.Sprintf("/%s", strings.Trim(Env.Gin.StaticURI, "/"))
 }
 
 // Save 保存配置, 用于动态刷新配置
 func Save(env *Config) error {
-	env.Backend = strings.TrimSuffix(env.Backend, "/")
-	env.Frontend = strings.TrimSuffix(env.Frontend, "/")
 	config := make(map[string]any)
 	data, err := msgpack.Marshal(env)
 	if err != nil {

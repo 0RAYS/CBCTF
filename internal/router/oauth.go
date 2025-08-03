@@ -213,7 +213,7 @@ func RegisterOauthRouter(router *gin.Engine) {
 				return
 			}
 			go prometheus.UpdateUserLoginMetrics(provider.Provider)
-			ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s?token=%s", config.Env.OauthCallback, token))
+			ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s/oauth/callback?token=%s", config.Env.Frontend, token))
 		})
 
 		availableOauth[provider.Provider] = gin.H{
