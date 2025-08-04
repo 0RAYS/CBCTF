@@ -98,7 +98,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 						}
 					}
 					for _, expose := range docker.Exposes {
-						key := fmt.Sprintf("%s-%s-%d-%s", network.Name, docker.Name, expose.Port, expose.Protocol)
+						key := fmt.Sprintf("%s-%d-%s", docker.Name, expose.Port, expose.Protocol)
 						if !slices.Contains(networkDockerExposeDNat, key) {
 							eip.DNats = append(eip.DNats, &model.DNat{
 								Name:         fmt.Sprintf("dnat-%s", utils.RandStr(20)),
