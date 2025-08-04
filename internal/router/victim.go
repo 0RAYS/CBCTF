@@ -23,6 +23,7 @@ func StartVictim(ctx *gin.Context) {
 		tx := db.DB.WithContext(ctx).Begin()
 		_, ok, _ := service.StartTeamVictim(tx, user, team, contestChallenge)
 		if !ok {
+			go service.StopTeamVictim(db.DB.WithContext(ctx.Copy()), team, contestChallenge)
 			tx.Rollback()
 			websocket.Send(false, user.ID, wm.ErrorLevel, wm.StartVictimType, "Start Victim", "Failed")
 			return
