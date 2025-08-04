@@ -76,18 +76,6 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 						//ExcludeIps:   []string{network.Gateway, network.IP},
 						NetAttachDef: &model.NetAttachDef{Name: fmt.Sprintf("nad-%s", utils.RandStr(20))},
 					}
-					if network.External || len(docker.Exposes) > 0 {
-						lanIP, err := utils.GetLastIP(subnet.CIDRBlock)
-						if err != nil {
-							return model.Victim{}, false, i18n.GetIPError
-						}
-						subnet.NatGateway = &model.NatGateway{
-							Name:  fmt.Sprintf("nat-%s", utils.RandStr(20)),
-							LanIP: lanIP,
-						}
-						//subnet.ExcludeIps = append(subnet.ExcludeIps, lanIP)
-					}
-					vpc.Subnets = append(vpc.Subnets, subnet)
 				}
 				if network.External || len(docker.Exposes) > 0 {
 					eip := &model.EIP{
@@ -113,9 +101,18 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 						}
 					}
 					if len(eip.SNats) > 0 || len(eip.DNats) > 0 {
+						lanIP, err := utils.GetLastIP(subnet.CIDRBlock)
+						if err != nil {
+							return model.Victim{}, false, i18n.GetIPError
+						}
+						subnet.NatGateway = &model.NatGateway{
+							Name:  fmt.Sprintf("nat-%s", utils.RandStr(20)),
+							LanIP: lanIP,
+						}
 						subnet.NatGateway.EIPs = append(subnet.NatGateway.EIPs, eip)
 					}
 				}
+				vpc.Subnets = append(vpc.Subnets, subnet)
 				subnets[network.Name] = subnet
 			}
 			pOptionsL[docker.ID] = db.CreatePodOptions{
