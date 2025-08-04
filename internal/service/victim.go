@@ -281,6 +281,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 		victim.Pods = append(victim.Pods, p)
 	}
 	if ok, msg = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
+		VPC:              &victim.VPC,
 		Endpoints:        &victim.Endpoints,
 		ExposedEndpoints: &victim.ExposedEndpoints,
 	}); !ok {

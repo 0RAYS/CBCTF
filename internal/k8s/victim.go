@@ -179,6 +179,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 							if !ok {
 								return CreateEIPResult{e, false, msg}
 							}
+							eip.IP = e.Spec.V4ip
 							createDNatFuncL := make([]func() CreateDNatResult, 0)
 							for _, dnat := range eip.DNats {
 								createDNatFuncL = append(createDNatFuncL, func() CreateDNatResult {

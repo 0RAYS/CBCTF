@@ -37,6 +37,7 @@ func (c CreateVictimOptions) Convert2Model() model.Model {
 type UpdateVictimOptions struct {
 	Start            *time.Time
 	Duration         *time.Duration
+	VPC              *model.VPC
 	Endpoints        *model.Endpoints
 	ExposedEndpoints *model.Endpoints
 }
@@ -48,6 +49,9 @@ func (u UpdateVictimOptions) Convert2Map() map[string]any {
 	}
 	if u.Duration != nil {
 		options["duration"] = *u.Duration
+	}
+	if u.VPC != nil {
+		options["vpc"] = *u.VPC
 	}
 	if u.Endpoints != nil {
 		options["endpoints"] = *u.Endpoints
