@@ -60,7 +60,8 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 			Subnets: make([]*model.Subnet, 0),
 		}
 		subnets := make(map[string]*model.Subnet)
-		// TODO 逻辑存在错误，导致创建重复 eip dnat snat
+		networkDockerExposeDNat := make([]string, 0)
+		networkExternalSNat := make([]string, 0)
 		for _, docker := range challenge.Dockers {
 			for _, network := range docker.Networks {
 				subnet, ok := subnets[network.Name]
@@ -91,18 +92,27 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 						Name: fmt.Sprintf("eip-%s", utils.RandStr(20)),
 					}
 					if network.External {
-						eip.SNats = []*model.SNat{{Name: fmt.Sprintf("snat-%s", utils.RandStr(20))}}
+						if !slices.Contains(networkExternalSNat, network.Name) {
+							eip.SNats = []*model.SNat{{Name: fmt.Sprintf("snat-%s", utils.RandStr(20))}}
+							networkExternalSNat = append(networkExternalSNat, network.Name)
+						}
 					}
 					for _, expose := range docker.Exposes {
-						eip.DNats = append(eip.DNats, &model.DNat{
-							Name:         fmt.Sprintf("dnat-%s", utils.RandStr(20)),
-							ExternalPort: fmt.Sprintf("%d", expose.Port),
-							InternalIP:   network.IP,
-							InternalPort: fmt.Sprintf("%d", expose.Port),
-							Protocol:     expose.Protocol,
-						})
+						key := fmt.Sprintf("%s-%s-%d-%s", network.Name, docker.Name, expose.Port, expose.Protocol)
+						if !slices.Contains(networkDockerExposeDNat, key) {
+							eip.DNats = append(eip.DNats, &model.DNat{
+								Name:         fmt.Sprintf("dnat-%s", utils.RandStr(20)),
+								ExternalPort: fmt.Sprintf("%d", expose.Port),
+								InternalIP:   network.IP,
+								InternalPort: fmt.Sprintf("%d", expose.Port),
+								Protocol:     expose.Protocol,
+							})
+							networkDockerExposeDNat = append(networkDockerExposeDNat, key)
+						}
 					}
-					subnet.NatGateway.EIPs = append(subnet.NatGateway.EIPs, eip)
+					if len(eip.SNats) > 0 || len(eip.DNats) > 0 {
+						subnet.NatGateway.EIPs = append(subnet.NatGateway.EIPs, eip)
+					}
 				}
 				subnets[network.Name] = subnet
 			}
