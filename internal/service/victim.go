@@ -252,7 +252,6 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 	}
 	ipExposesMap, ok, msg := k8s.StartVictim(victim)
 	if !ok {
-		go k8s.StopVictim(victim)
 		return model.Victim{}, false, msg
 	}
 	for ip, exposes := range ipExposesMap {
