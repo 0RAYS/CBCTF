@@ -76,6 +76,8 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 						//ExcludeIps:   []string{network.Gateway, network.IP},
 						NetAttachDef: &model.NetAttachDef{Name: fmt.Sprintf("nad-%s", utils.RandStr(20))},
 					}
+					vpc.Subnets = append(vpc.Subnets, subnet)
+					subnets[network.Name] = subnet
 				}
 				if network.External || len(docker.Exposes) > 0 {
 					eip := &model.EIP{
@@ -112,8 +114,6 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 						subnet.NatGateway.EIPs = append(subnet.NatGateway.EIPs, eip)
 					}
 				}
-				vpc.Subnets = append(vpc.Subnets, subnet)
-				subnets[network.Name] = subnet
 			}
 			pOptionsL[docker.ID] = db.CreatePodOptions{
 				Name:     fmt.Sprintf("pod-%s", utils.RandStr(20)),
