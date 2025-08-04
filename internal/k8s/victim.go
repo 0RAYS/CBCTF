@@ -148,6 +148,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 					ExcludeIPs: subnet.ExcludeIps,
 					Provider:   fmt.Sprintf("%s.%s.ovn", subnet.NetAttachDef.Name, GlobalNamespace),
 				})
+				log.Logger.Debugf("CreateSubnet %s: %s", subnet.Name, msg)
 				return CreateSubnetResult{object, ok, msg}
 			})
 			subnetMap[subnet.DefName] = subnet
@@ -162,6 +163,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 						LanIP:          subnet.NatGateway.LanIP,
 						ExternalSubnet: []string{ExternalSubnetName},
 					})
+					log.Logger.Debugf("CreateVPCNatGateway %s: %s", subnet.NatGateway.Name, msg)
 					return CreateVPCNatGWResult{object, ok, msg}
 				})
 				for _, eip := range subnet.NatGateway.EIPs {
@@ -173,6 +175,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 								NatGw:          subnet.NatGateway.Name,
 								ExternalSubnet: ExternalSubnetName,
 							})
+							log.Logger.Debugf("CreateEIP %s: %s", eip.Name, msg)
 							if !ok {
 								return CreateEIPResult{e, false, msg}
 							}
@@ -188,6 +191,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 										InternalIP:   dnat.InternalIP,
 										Protocol:     dnat.Protocol,
 									})
+									log.Logger.Debugf("CreateDNat %s: %s", dnat.Name, msg)
 									return CreateDNatResult{object, ok, msg}
 								})
 							}
@@ -220,6 +224,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 										EIP:          eip.Name,
 										InternalCIDR: subnet.CIDRBlock,
 									})
+									log.Logger.Debugf("CreateSNat %s: %s", snat.Name, msg)
 									return CreateSNatResult{object, ok, msg}
 								})
 							}
@@ -413,6 +418,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 					}
 					ipExposesMapMutex.Unlock()
 				}
+				log.Logger.Debugf("Create Pod %s: %s", pod.Name, msg)
 				return Result{OK: true, MSG: msg}
 			}(pod)
 		})
@@ -477,10 +483,12 @@ func StopVictim(victim model.Victim) (bool, string) {
 	go func() {
 		goCTX, goCancel := context.WithTimeout(context.Background(), 1*time.Minute)
 		defer goCancel()
-		DeleteSubnetListForce(goCTX, labels)
 		for _, subnet := range victim.VPC.Subnets {
 			DeleteIPListForce(goCTX, map[string]string{"ovn.kubernetes.io/subnet": subnet.Name})
+			log.Logger.Debugf("Deleted IPs for subnet %s", subnet.Name)
 		}
+		DeleteSubnetListForce(goCTX, labels)
+		log.Logger.Debugf("Deleted subnets for VPC %s", victim.VPC.Name)
 	}()
 	return true, i18n.Success
 }
