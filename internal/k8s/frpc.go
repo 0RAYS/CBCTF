@@ -38,40 +38,46 @@ func CreateFrpc(victim model.Victim) (model.Endpoints, []string, bool, string) {
 		}
 	}
 	newEndpoints := make(model.Endpoints, 0)
+	frpcPodNameL := make([]string, 0)
 	createFrpcPodFuncL := make([]func() CreateFrpcPodResult, 0)
 	for _, subnet := range victim.VPC.Subnets {
 		if subnet.NatGateway == nil {
 			continue
 		}
-		createFrpcPodFuncL = append(createFrpcPodFuncL, func() CreateFrpcPodResult {
-			podName := fmt.Sprintf("frpc-%s", utils.RandStr(20))
-			// 添加一个独立tag, 防止受 NetworkPolicy 影响
-			labels := map[string]string{
-				"victim_id":            fmt.Sprintf("%d", victim.ID),
-				"user_id":              fmt.Sprintf("%d", victim.UserID),
-				"team_id":              fmt.Sprintf("%d", victim.TeamID),
-				"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),
-				FrpcPodTag:             podName,
-			}
-			data := fmt.Sprintf("serverAddr = \"%s\"\nserverPort = %d\nauth.token = \"%s\"\n\n", frps.Host, frps.Port, frps.Token)
-			for _, eip := range subnet.NatGateway.EIPs {
-				for _, dnat := range eip.DNats {
-					exposedPort, ok, msg := GetAvailableFrpsPort(frps.Host, portRange, dnat.Protocol)
-					if !ok {
-						return CreateFrpcPodResult{"", false, msg}
-					}
-					data += fmt.Sprintf(
-						"[[proxies]]\nname = \"%s\"\ntype = \"%s\"\nlocalIP = \"%s\"\nlocalPort = %s\nremotePort = %d\n\n",
-						utils.RandStr(10), strings.ToLower(dnat.Protocol), eip.IP, dnat.ExternalPort, exposedPort,
-					)
-					newEndpoints = append(newEndpoints, model.Endpoint{
-						IP:       frps.Host,
-						Port:     exposedPort,
-						Protocol: dnat.Protocol,
-					})
-					log.Logger.Infof("Frpc started: %s:%d -> %s:%s", frps.Host, exposedPort, eip.IP, dnat.ExternalPort)
+		needFrpc := false
+		podName := fmt.Sprintf("frpc-%s", utils.RandStr(20))
+		// 添加一个独立tag, 防止受 NetworkPolicy 影响
+		labels := map[string]string{
+			"victim_id":            fmt.Sprintf("%d", victim.ID),
+			"user_id":              fmt.Sprintf("%d", victim.UserID),
+			"team_id":              fmt.Sprintf("%d", victim.TeamID),
+			"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),
+			FrpcPodTag:             podName,
+		}
+		data := fmt.Sprintf("serverAddr = \"%s\"\nserverPort = %d\nauth.token = \"%s\"\n\n", frps.Host, frps.Port, frps.Token)
+		for _, eip := range subnet.NatGateway.EIPs {
+			for _, dnat := range eip.DNats {
+				exposedPort, ok, msg := GetAvailableFrpsPort(frps.Host, portRange, dnat.Protocol)
+				if !ok {
+					return newEndpoints, frpcPodNameL, false, msg
 				}
+				data += fmt.Sprintf(
+					"[[proxies]]\nname = \"%s\"\ntype = \"%s\"\nlocalIP = \"%s\"\nlocalPort = %s\nremotePort = %d\n\n",
+					utils.RandStr(10), strings.ToLower(dnat.Protocol), eip.IP, dnat.ExternalPort, exposedPort,
+				)
+				newEndpoints = append(newEndpoints, model.Endpoint{
+					IP:       frps.Host,
+					Port:     exposedPort,
+					Protocol: dnat.Protocol,
+				})
+				log.Logger.Infof("Frpc started: %s:%d -> %s:%s", frps.Host, exposedPort, eip.IP, dnat.ExternalPort)
+				needFrpc = true
 			}
+		}
+		if !needFrpc {
+			continue
+		}
+		createFrpcPodFuncL = append(createFrpcPodFuncL, func() CreateFrpcPodResult {
 			cm, ok, msg := CreateConfigMap(ctx, CreateConfigMapOptions{
 				Name:   fmt.Sprintf("cm-%s", utils.RandStr(20)),
 				Labels: labels,
@@ -138,7 +144,6 @@ func CreateFrpc(victim model.Victim) (model.Endpoints, []string, bool, string) {
 			return CreateFrpcPodResult{podName, ok, msg}
 		})
 	}
-	frpcPodNameL := make([]string, 0)
 	for _, res := range utils.RunFuncLConcurrently(createFrpcPodFuncL) {
 		if !res.OK {
 			log.Logger.Warningf("Failed to create frpc pod: %s", res.MSG)
