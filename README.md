@@ -6,7 +6,7 @@
 [![Redis](https://img.shields.io/badge/Redis-6.0+-red.svg)](https://redis.io)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0+-orange.svg)](https://mysql.com)
 
-> **CBCTF** 是一个基于 Go 语言开发的高性能 CTF 竞赛平台，专为满足现代 CTF 竞赛需求而设计。
+> **CBCTF** 是一个基于 Go 语言开发的高性能 CTF 竞赛平台
 
 ## ✨ 核心特性
 
