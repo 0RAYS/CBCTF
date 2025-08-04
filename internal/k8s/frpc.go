@@ -17,20 +17,17 @@ import (
 	"time"
 )
 
+type CreateFrpcPodResult struct {
+	Name string
+	OK   bool
+	MSG  string
+}
+
 // CreateFrpc
 // TODO 当 frpc pod 所在节点与 nat gateway pod 所在节点相同时，将无法访问 eip 地址
-func CreateFrpc(victim model.Victim) (model.Endpoints, string, bool, string) {
+func CreateFrpc(victim model.Victim) (model.Endpoints, []string, bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
-	podName := fmt.Sprintf("frpc-%s", utils.RandStr(20))
-	// 添加一个独立tag, 防止受 NetworkPolicy 影响
-	labels := map[string]string{
-		"victim_id":            fmt.Sprintf("%d", victim.ID),
-		"user_id":              fmt.Sprintf("%d", victim.UserID),
-		"team_id":              fmt.Sprintf("%d", victim.TeamID),
-		"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),
-		FrpcPodTag:             podName,
-	}
 	idxBig, _ := rand.Int(rand.Reader, big.NewInt(int64(len(config.Env.K8S.Frpc.Frps))))
 	frps := config.Env.K8S.Frpc.Frps[idxBig.Int64()]
 	portRange := make([]int32, 0)
@@ -42,95 +39,116 @@ func CreateFrpc(victim model.Victim) (model.Endpoints, string, bool, string) {
 			portRange = append(portRange, i)
 		}
 	}
-	data := fmt.Sprintf("serverAddr = \"%s\"\nserverPort = %d\nauth.token = \"%s\"\n\n", frps.Host, frps.Port, frps.Token)
 	newEndpoints := make(model.Endpoints, 0)
+	createFrpcPodFuncL := make([]func() CreateFrpcPodResult, 0)
 	for _, subnet := range victim.VPC.Subnets {
 		if subnet.NatGateway == nil {
 			continue
 		}
-		for _, eip := range subnet.NatGateway.EIPs {
-			for _, dnat := range eip.DNats {
-				exposedPort, ok, msg := GetAvailableFrpsPort(frps.Host, portRange, dnat.Protocol)
-				if !ok {
-					return model.Endpoints{}, "", false, msg
-				}
-				data += fmt.Sprintf(
-					"[[proxies]]\nname = \"%s\"\ntype = \"%s\"\nlocalIP = \"%s\"\nlocalPort = %s\nremotePort = %d\n\n",
-					utils.RandStr(10), strings.ToLower(dnat.Protocol), eip.IP, dnat.ExternalPort, exposedPort,
-				)
-				newEndpoints = append(newEndpoints, model.Endpoint{
-					IP:       frps.Host,
-					Port:     exposedPort,
-					Protocol: dnat.Protocol,
-				})
-				log.Logger.Infof("Frpc started: %s:%d -> %s:%s", frps.Host, exposedPort, eip.IP, dnat.ExternalPort)
+		createFrpcPodFuncL = append(createFrpcPodFuncL, func() CreateFrpcPodResult {
+			podName := fmt.Sprintf("frpc-%s", utils.RandStr(20))
+			// 添加一个独立tag, 防止受 NetworkPolicy 影响
+			labels := map[string]string{
+				"victim_id":            fmt.Sprintf("%d", victim.ID),
+				"user_id":              fmt.Sprintf("%d", victim.UserID),
+				"team_id":              fmt.Sprintf("%d", victim.TeamID),
+				"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),
+				FrpcPodTag:             podName,
 			}
+			data := fmt.Sprintf("serverAddr = \"%s\"\nserverPort = %d\nauth.token = \"%s\"\n\n", frps.Host, frps.Port, frps.Token)
+			for _, eip := range subnet.NatGateway.EIPs {
+				for _, dnat := range eip.DNats {
+					exposedPort, ok, msg := GetAvailableFrpsPort(frps.Host, portRange, dnat.Protocol)
+					if !ok {
+						return CreateFrpcPodResult{"", false, msg}
+					}
+					data += fmt.Sprintf(
+						"[[proxies]]\nname = \"%s\"\ntype = \"%s\"\nlocalIP = \"%s\"\nlocalPort = %s\nremotePort = %d\n\n",
+						utils.RandStr(10), strings.ToLower(dnat.Protocol), eip.IP, dnat.ExternalPort, exposedPort,
+					)
+					newEndpoints = append(newEndpoints, model.Endpoint{
+						IP:       frps.Host,
+						Port:     exposedPort,
+						Protocol: dnat.Protocol,
+					})
+					log.Logger.Infof("Frpc started: %s:%d -> %s:%s", frps.Host, exposedPort, eip.IP, dnat.ExternalPort)
+				}
+			}
+			cm, ok, msg := CreateConfigMap(ctx, CreateConfigMapOptions{
+				Name:   fmt.Sprintf("cm-%s", utils.RandStr(20)),
+				Labels: labels,
+				Data:   map[string]string{"frpc.toml": data},
+			})
+			if !ok {
+
+				return CreateFrpcPodResult{"", false, msg}
+			}
+			cmVolume := corev1.Volume{
+				Name: fmt.Sprintf("vol-%s", utils.RandStr(20)),
+				VolumeSource: corev1.VolumeSource{
+					ConfigMap: &corev1.ConfigMapVolumeSource{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: cm.Name,
+						},
+					},
+				},
+			}
+			nfsVolume := corev1.Volume{
+				Name: fmt.Sprintf("vol-%s", utils.RandStr(20)),
+				VolumeSource: corev1.VolumeSource{
+					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+						ClaimName: NFSVolumeName,
+					},
+				},
+			}
+			containers := []corev1.Container{
+				{
+					Name:  fmt.Sprintf("frpc-%s", utils.RandStr(20)),
+					Image: config.Env.K8S.Frpc.Image,
+					Args:  []string{"-c", "/etc/frp/frpc.toml"},
+					VolumeMounts: []corev1.VolumeMount{
+						{
+							Name:      cmVolume.Name,
+							MountPath: "/etc/frp/frpc.toml",
+							SubPath:   "frpc.toml",
+						},
+					},
+				},
+				{
+					Name:    "tcpdump",
+					Image:   config.Env.K8S.TCPDumpImage,
+					Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/mnt/frpc.pcap"},
+					VolumeMounts: []corev1.VolumeMount{
+						{
+							Name:      nfsVolume.Name,
+							MountPath: "/root/mnt",
+							SubPath: strings.TrimPrefix(
+								strings.TrimPrefix(victim.TrafficBasePath(), config.Env.Path), "/",
+							),
+						},
+					},
+				},
+			}
+			_, ok, msg = CreatePod(ctx, CreatePodOptions{
+				Name:            podName,
+				Labels:          labels,
+				Containers:      containers,
+				Volumes:         []corev1.Volume{cmVolume, nfsVolume},
+				PodAntiAffinity: map[string]string{"app": fmt.Sprintf("vpc-nat-gw-%s", subnet.NatGateway.Name)},
+			})
+			log.Logger.Debugf("Create Pod %s: %s", podName, msg)
+			return CreateFrpcPodResult{podName, ok, msg}
+		})
+	}
+	frpcPodNameL := make([]string, 0)
+	for _, res := range utils.RunFuncLConcurrently(createFrpcPodFuncL) {
+		if !res.OK {
+			log.Logger.Warningf("Failed to create frpc pod: %s", res.MSG)
+			return newEndpoints, frpcPodNameL, false, res.MSG
 		}
+		frpcPodNameL = append(frpcPodNameL, res.Name)
 	}
-	cm, ok, msg := CreateConfigMap(ctx, CreateConfigMapOptions{
-		Name:   fmt.Sprintf("cm-%s", utils.RandStr(20)),
-		Labels: labels,
-		Data:   map[string]string{"frpc.toml": data},
-	})
-	if !ok {
-		return model.Endpoints{}, "", false, msg
-	}
-	cmVolume := corev1.Volume{
-		Name: fmt.Sprintf("vol-%s", utils.RandStr(20)),
-		VolumeSource: corev1.VolumeSource{
-			ConfigMap: &corev1.ConfigMapVolumeSource{
-				LocalObjectReference: corev1.LocalObjectReference{
-					Name: cm.Name,
-				},
-			},
-		},
-	}
-	nfsVolume := corev1.Volume{
-		Name: fmt.Sprintf("vol-%s", utils.RandStr(20)),
-		VolumeSource: corev1.VolumeSource{
-			PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-				ClaimName: NFSVolumeName,
-			},
-		},
-	}
-	containers := []corev1.Container{
-		{
-			Name:  fmt.Sprintf("frpc-%s", utils.RandStr(20)),
-			Image: config.Env.K8S.Frpc.Image,
-			Args:  []string{"-c", "/etc/frp/frpc.toml"},
-			VolumeMounts: []corev1.VolumeMount{
-				{
-					Name:      cmVolume.Name,
-					MountPath: "/etc/frp/frpc.toml",
-					SubPath:   "frpc.toml",
-				},
-			},
-		},
-		{
-			Name:    "tcpdump",
-			Image:   config.Env.K8S.TCPDumpImage,
-			Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/mnt/frpc.pcap"},
-			VolumeMounts: []corev1.VolumeMount{
-				{
-					Name:      nfsVolume.Name,
-					MountPath: "/root/mnt",
-					SubPath: strings.TrimPrefix(
-						strings.TrimPrefix(victim.TrafficBasePath(), config.Env.Path), "/",
-					),
-				},
-			},
-		},
-	}
-	p, ok, msg := CreatePod(ctx, CreatePodOptions{
-		Name:       podName,
-		Labels:     labels,
-		Containers: containers,
-		Volumes:    []corev1.Volume{cmVolume, nfsVolume},
-	})
-	if !ok {
-		return model.Endpoints{}, "", false, msg
-	}
-	return newEndpoints, p.Name, true, i18n.Success
+	return newEndpoints, frpcPodNameL, true, i18n.Success
 }
 
 func GetAvailableFrpsPort(host string, portRange []int32, protocol string) (int32, bool, string) {

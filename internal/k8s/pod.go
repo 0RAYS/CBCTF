@@ -14,11 +14,12 @@ import (
 )
 
 type CreatePodOptions struct {
-	Name        string
-	Labels      map[string]string
-	Annotations map[string]string
-	Containers  []corev1.Container
-	Volumes     []corev1.Volume
+	Name            string
+	Labels          map[string]string
+	Annotations     map[string]string
+	Containers      []corev1.Container
+	Volumes         []corev1.Volume
+	PodAntiAffinity map[string]string
 }
 
 func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool, string) {
@@ -45,6 +46,19 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool
 			TerminationGracePeriodSeconds: utils.Ptr(int64(3)),
 			RestartPolicy:                 corev1.RestartPolicyNever,
 		},
+	}
+	if len(options.PodAntiAffinity) > 0 {
+		pod.Spec.Affinity = &corev1.Affinity{
+			PodAntiAffinity: &corev1.PodAntiAffinity{
+				RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
+					{
+						LabelSelector: &metav1.LabelSelector{
+							MatchLabels: options.PodAntiAffinity,
+						},
+					},
+				},
+			},
+		}
 	}
 	pod, err = kubeClient.CoreV1().Pods(GlobalNamespace).Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil {
