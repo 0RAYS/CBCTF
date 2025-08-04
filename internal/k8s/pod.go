@@ -55,6 +55,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool
 						LabelSelector: &metav1.LabelSelector{
 							MatchLabels: options.PodAntiAffinity,
 						},
+						TopologyKey: "kubernetes.io/hostname",
 					},
 				},
 			},
