@@ -23,8 +23,6 @@ type CreateFrpcPodResult struct {
 	MSG  string
 }
 
-// CreateFrpc
-// TODO 当 frpc pod 所在节点与 nat gateway pod 所在节点相同时，将无法访问 eip 地址
 func CreateFrpc(victim model.Victim) (model.Endpoints, []string, bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
