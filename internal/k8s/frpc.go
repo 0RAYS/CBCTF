@@ -44,21 +44,28 @@ func CreateFrpc(victim model.Victim) (model.Endpoints, string, bool, string) {
 	}
 	data := fmt.Sprintf("serverAddr = \"%s\"\nserverPort = %d\nauth.token = \"%s\"\n\n", frps.Host, frps.Port, frps.Token)
 	newEndpoints := make(model.Endpoints, 0)
-	for _, endpoint := range victim.Endpoints {
-		exposedPort, ok, msg := GetAvailableFrpsPort(frps.Host, portRange, endpoint.Protocol)
-		if !ok {
-			return model.Endpoints{}, "", false, msg
+	for _, subnet := range victim.VPC.Subnets {
+		if subnet.NatGateway == nil {
+			continue
 		}
-		data += fmt.Sprintf(
-			"[[proxies]]\nname = \"%s\"\ntype = \"%s\"\nlocalIP = \"%s\"\nlocalPort = %d\nremotePort = %d\n\n",
-			utils.RandStr(10), strings.ToLower(endpoint.Protocol), endpoint.IP, endpoint.Port, exposedPort,
-		)
-		newEndpoints = append(newEndpoints, model.Endpoint{
-			IP:       frps.Host,
-			Port:     exposedPort,
-			Protocol: endpoint.Protocol,
-		})
-		log.Logger.Infof("Frpc started: %s:%d -> %s:%d", frps.Host, exposedPort, endpoint.IP, endpoint.Port)
+		for _, eip := range subnet.NatGateway.EIPs {
+			for _, dnat := range eip.DNats {
+				exposedPort, ok, msg := GetAvailableFrpsPort(frps.Host, portRange, dnat.Protocol)
+				if !ok {
+					return model.Endpoints{}, "", false, msg
+				}
+				data += fmt.Sprintf(
+					"[[proxies]]\nname = \"%s\"\ntype = \"%s\"\nlocalIP = \"%s\"\nlocalPort = %s\nremotePort = %d\n\n",
+					utils.RandStr(10), strings.ToLower(dnat.Protocol), eip.IP, dnat.ExternalPort, exposedPort,
+				)
+				newEndpoints = append(newEndpoints, model.Endpoint{
+					IP:       frps.Host,
+					Port:     exposedPort,
+					Protocol: dnat.Protocol,
+				})
+				log.Logger.Infof("Frpc started: %s:%d -> %s:%s", frps.Host, exposedPort, eip.IP, dnat.ExternalPort)
+			}
+		}
 	}
 	cm, ok, msg := CreateConfigMap(ctx, CreateConfigMapOptions{
 		Name:   fmt.Sprintf("cm-%s", utils.RandStr(20)),

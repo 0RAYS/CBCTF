@@ -114,6 +114,7 @@ type NatGateway struct {
 
 type EIP struct {
 	Name  string  `json:"name"`
+	IP    string  `json:"ip"`
 	DNats []*DNat `json:"dnats"`
 	SNats []*SNat `json:"snats"`
 }
