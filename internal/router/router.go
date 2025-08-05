@@ -42,12 +42,12 @@ func Init() *gin.Engine {
 	{
 		router.GET("/", func(ctx *gin.Context) {
 			if strings.HasPrefix(config.Env.Frontend, "http://") || strings.HasPrefix(config.Env.Frontend, "https://") {
-				ctx.Redirect(http.StatusFound, fmt.Sprintf("%s%s", config.Env.Frontend, config.Env.Gin.StaticURI))
+				ctx.Redirect(http.StatusFound, fmt.Sprintf("%s/%s", config.Env.Frontend, config.Env.Gin.StaticURI))
 			} else {
-				ctx.Redirect(http.StatusFound, config.Env.Gin.StaticURI)
+				ctx.Redirect(http.StatusFound, fmt.Sprintf("/%s", config.Env.Gin.StaticURI))
 			}
 		})
-		router.StaticFS(config.Env.Gin.StaticURI, http.FS(frontend.SubFS))
+		router.StaticFS(fmt.Sprintf("/%s", config.Env.Gin.StaticURI), http.FS(frontend.SubFS))
 	}
 
 	{
