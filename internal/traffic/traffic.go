@@ -2,13 +2,16 @@ package traffic
 
 import (
 	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
 	"github.com/gopacket/gopacket"
 	"github.com/gopacket/gopacket/layers"
 	"github.com/gopacket/gopacket/pcap"
 	"os"
+	"time"
 )
 
 type Connection struct {
+	Time    time.Time
 	SrcIP   string
 	DstIP   string
 	SrcPort uint16
@@ -18,10 +21,15 @@ type Connection struct {
 
 func ReadPcap(path string) ([]Connection, bool, string) {
 	if _, err := os.Stat(path); err != nil {
-		return make([]Connection, 0), false, i18n.TrafficNotFound
+		if os.IsNotExist(err) {
+			return make([]Connection, 0), false, i18n.TrafficNotFound
+		}
+		log.Logger.Warningf("Failed to read pcap file: %s", err)
+		return make([]Connection, 0), false, i18n.UnknownError
 	}
 	handle, err := pcap.OpenOffline(path)
 	if err != nil {
+		log.Logger.Warningf("Failed to open pcap file: %s", err)
 		return make([]Connection, 0), false, i18n.ReadPcapError
 	}
 	defer handle.Close()
@@ -66,6 +74,7 @@ func ReadPcap(path string) ([]Connection, bool, string) {
 				srcPort = uint16(tcp.SrcPort)
 				dstPort = uint16(tcp.DstPort)
 				connections = append(connections, Connection{
+					Time:    packet.Metadata().Timestamp,
 					SrcIP:   srcIP,
 					DstIP:   dstIP,
 					SrcPort: srcPort,
@@ -80,6 +89,7 @@ func ReadPcap(path string) ([]Connection, bool, string) {
 				srcPort = uint16(udp.SrcPort)
 				dstPort = uint16(udp.DstPort)
 				connections = append(connections, Connection{
+					Time:    packet.Metadata().Timestamp,
 					SrcIP:   srcIP,
 					DstIP:   dstIP,
 					SrcPort: srcPort,

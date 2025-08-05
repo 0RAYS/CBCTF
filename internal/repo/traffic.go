@@ -11,7 +11,6 @@ type TrafficRepo struct {
 
 type CreateTrafficOptions struct {
 	VictimID uint
-	PodID    uint
 	SrcIP    string
 	DstIP    string
 	SrcPort  uint16
@@ -23,7 +22,6 @@ type CreateTrafficOptions struct {
 func (c CreateTrafficOptions) Convert2Model() model.Model {
 	return model.Traffic{
 		VictimID: c.VictimID,
-		PodID:    c.PodID,
 		SrcIP:    c.SrcIP,
 		DstIP:    c.DstIP,
 		SrcPort:  c.SrcPort,

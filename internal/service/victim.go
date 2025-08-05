@@ -347,7 +347,7 @@ func StopTeamVictim(tx *gorm.DB, team model.Team, contestChallenge model.Contest
 			return false, msg
 		}
 		victimIDL = append(victimIDL, victim.ID)
-		LoadTraffic(tx, victim)
+		go LoadTraffic(db.DB, victim)
 	}
 	ok, msg = victimRepo.Delete(victimIDL...)
 	if ok {

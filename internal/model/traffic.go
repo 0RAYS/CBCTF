@@ -5,8 +5,6 @@ import "CBCTF/internal/i18n"
 type Traffic struct {
 	VictimID uint   `json:"victim_id"`
 	Victim   Victim `json:"-"`
-	PodID    uint   `json:"pod_id"`
-	Pod      Pod    `json:"-"`
 	SrcIP    string `json:"src_ip"`
 	DstIP    string `json:"dst_ip"`
 	SrcPort  uint16 `json:"src_port"`

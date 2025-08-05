@@ -77,6 +77,7 @@ func CreateFrpc(victim model.Victim) (model.Endpoints, []string, bool, string) {
 		if !needFrpc {
 			continue
 		}
+		// 针对每个Subnet的EIP创建一个独立的frpc, 由反亲和性控制调度到与VPCNatGateway不同的节点
 		createFrpcPodFuncL = append(createFrpcPodFuncL, func() CreateFrpcPodResult {
 			cm, ok, msg := CreateConfigMap(ctx, CreateConfigMapOptions{
 				Name:   fmt.Sprintf("cm-%s", utils.RandStr(20)),
@@ -121,7 +122,7 @@ func CreateFrpc(victim model.Victim) (model.Endpoints, []string, bool, string) {
 				{
 					Name:    "tcpdump",
 					Image:   config.Env.K8S.TCPDumpImage,
-					Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/mnt/frpc.pcap"},
+					Command: []string{"/bin/sh", "-c", fmt.Sprintf("tcpdump -i any -w /root/mnt/%s-frpc.pcap", subnet.DefName)},
 					VolumeMounts: []corev1.VolumeMount{
 						{
 							Name:      nfsVolume.Name,
