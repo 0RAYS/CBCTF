@@ -24,14 +24,6 @@ func GetTraffics(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.RedisError, "data": nil})
 		return
 	}
-	if len(connections) == 0 {
-		connections, err = redis.LoadTraffics(victim)
-		if err != nil {
-			log.Logger.Warningf("Failed to load traffics: %s", err)
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
-			return
-		}
-	}
 	data := make([]utils.Connection, 0)
 	for _, conn := range connections {
 		if conn.Time.Unix() >= form.Start.Unix() && conn.Time.Unix() <= form.End.Unix() {

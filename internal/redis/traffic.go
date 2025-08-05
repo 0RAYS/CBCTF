@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 	"context"
+	"errors"
 	"fmt"
 	"github.com/redis/go-redis/v9"
 	"github.com/vmihailenco/msgpack/v5"
@@ -19,6 +20,9 @@ func GetTraffics(victim model.Victim) ([]utils.Connection, error) {
 	traffics := make([]utils.Connection, 0)
 	results, err := RDB.ZRevRangeWithScores(ctx, key, 0, -1).Result()
 	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return LoadTraffics(victim)
+		}
 		return traffics, err
 	}
 
