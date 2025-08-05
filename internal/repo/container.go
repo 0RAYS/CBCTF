@@ -43,8 +43,7 @@ type UpdateContainerOptions struct {
 }
 
 func (u UpdateContainerOptions) Convert2Map() map[string]any {
-	options := make(map[string]any)
-	return options
+	return make(map[string]any)
 }
 
 func InitContainerRepo(tx *gorm.DB) *ContainerRepo {

@@ -43,8 +43,7 @@ type UpdateDockerOptions struct {
 }
 
 func (u UpdateDockerOptions) Convert2Map() map[string]any {
-	options := make(map[string]any)
-	return options
+	return make(map[string]any)
 }
 
 func InitDockerRepo(tx *gorm.DB) *DockerRepo {

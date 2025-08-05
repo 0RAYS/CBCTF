@@ -37,8 +37,7 @@ type UpdateTrafficOptions struct {
 }
 
 func (u UpdateTrafficOptions) Convert2Map() map[string]any {
-	options := make(map[string]any)
-	return options
+	return make(map[string]any)
 }
 
 func InitTrafficRepo(tx *gorm.DB) *TrafficRepo {

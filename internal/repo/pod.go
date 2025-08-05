@@ -30,8 +30,7 @@ func (c CreatePodOptions) Convert2Model() model.Model {
 type UpdatePodOptions struct{}
 
 func (u UpdatePodOptions) Convert2Map() map[string]any {
-	options := make(map[string]any)
-	return options
+	return make(map[string]any)
 }
 
 func InitPodRepo(tx *gorm.DB) *PodRepo {
