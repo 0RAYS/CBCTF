@@ -481,6 +481,11 @@ func StopVictim(victim model.Victim) (bool, string) {
 	if ok, msg := DeletePodList(ctx, labels); !ok {
 		return false, msg
 	}
+	for _, subnet := range victim.VPC.Subnets {
+		if ok, msg := DeleteIPList(ctx, map[string]string{"ovn.kubernetes.io/subnet": subnet.Name}); !ok {
+			return false, msg
+		}
+	}
 	go func() {
 		goCTX, goCancel := context.WithTimeout(context.Background(), 1*time.Minute)
 		defer goCancel()
