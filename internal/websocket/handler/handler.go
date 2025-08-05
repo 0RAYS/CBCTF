@@ -4,12 +4,10 @@ import (
 	"CBCTF/internal/websocket/model"
 	"encoding/json"
 	"fmt"
-	"sync"
 )
 
 var (
-	receiveHandlerMap   = make(map[string]func(*model.Connection, []byte) error)
-	receiveHandlerMapMu sync.RWMutex
+	receiveHandlerMap = make(map[string]func(*model.Connection, []byte) error)
 )
 
 func AddReceiveHandler(requestType string, handler func(*model.Connection, []byte) error) {
@@ -22,13 +20,10 @@ func HandleReceive(conn *model.Connection, msg []byte) error {
 		return fmt.Errorf("failed to unmarshal message: %w", err)
 	}
 
-	receiveHandlerMapMu.RLock()
 	handler, exists := receiveHandlerMap[req.Type]
-	receiveHandlerMapMu.RUnlock()
 	if !exists {
 		return fmt.Errorf("unknown request type: %s", req.Type)
 	}
-
 	if err := handler(conn, msg); err != nil {
 		return fmt.Errorf("handler error: %w", err)
 	}
