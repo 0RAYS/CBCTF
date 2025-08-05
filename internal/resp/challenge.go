@@ -57,9 +57,14 @@ func Dockers2Yaml(dockers []model.Docker, challengeFlags []model.ChallengeFlag) 
 			service.Command = types.ShellCommand(docker.Command)
 		}
 		if docker.Exposes != nil && len(docker.Exposes) > 0 {
-			service.Expose = make([]string, 0)
+			service.Ports = make([]types.ServicePortConfig, 0)
 			for _, expose := range docker.Exposes {
-				service.Expose = append(service.Expose, fmt.Sprintf("%d/%s", expose.Port, expose.Protocol))
+				service.Ports = append(service.Ports, types.ServicePortConfig{
+					Protocol:  expose.Protocol,
+					Published: fmt.Sprintf("%d", expose.Port),
+					Mode:      "ingress",
+					Target:    uint32(expose.Port),
+				})
 			}
 		}
 		if docker.Environment != nil || len(envFlags[docker.ID]) > 0 {
