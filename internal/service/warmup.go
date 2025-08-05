@@ -173,7 +173,7 @@ func StopContestVictims(tx *gorm.DB, form f.StopContestVictimsForm) (bool, strin
 			return false, msg
 		}
 		victimIDL = append(victimIDL, victim.ID)
-		go LoadTraffic(db.DB, victim)
+		LoadTraffic(tx, victim)
 	}
 	return victimRepo.Delete(victimIDL...)
 }
