@@ -13,15 +13,7 @@ var (
 )
 
 func AddReceiveHandler(requestType string, handler func(*model.Connection, []byte) error) {
-	receiveHandlerMapMu.Lock()
 	receiveHandlerMap[requestType] = handler
-	receiveHandlerMapMu.Unlock()
-}
-
-func DeleteReceiveHandler(requestType string) {
-	receiveHandlerMapMu.Lock()
-	delete(receiveHandlerMap, requestType)
-	receiveHandlerMapMu.Unlock()
 }
 
 func HandleReceive(conn *model.Connection, msg []byte) error {
@@ -30,7 +22,9 @@ func HandleReceive(conn *model.Connection, msg []byte) error {
 		return fmt.Errorf("failed to unmarshal message: %w", err)
 	}
 
+	receiveHandlerMapMu.RLock()
 	handler, exists := receiveHandlerMap[req.Type]
+	receiveHandlerMapMu.RUnlock()
 	if !exists {
 		return fmt.Errorf("unknown request type: %s", req.Type)
 	}
