@@ -20,7 +20,7 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 		return true, i18n.Success
 	}
 	go func(victim model.Victim) {
-		err := utils.Zip(victim.TrafficPaths(), victim.TrafficZipPath())
+		err := utils.Zip(victim.TrafficBasePath(), victim.TrafficZipPath())
 		if err != nil {
 			log.Logger.Warningf("Failed to zip .pcap files: %v", err)
 		}
@@ -36,7 +36,7 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 			if os.IsNotExist(err) {
 				return false, i18n.PcapNotFound
 			}
-			log.Logger.Warningf("Failed to read pcap file: %v", err)
+			log.Logger.Warningf("Failed to read pcap file %s: %s", file.Name(), err)
 			return false, i18n.UnknownError
 		}
 		for _, conn := range packet {
