@@ -40,7 +40,6 @@ func ReadPcap(path string) ([]Connection, error) {
 		if network == nil {
 			continue
 		}
-		packet.Metadata().CaptureInfo
 		switch network.LayerType() {
 		case layers.LayerTypeIPv4:
 			if ipv4, ok := network.(*layers.IPv4); ok {
