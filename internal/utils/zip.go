@@ -31,6 +31,9 @@ func Zip(path, zipPath string) error {
 		return err
 	}
 	for _, file := range dir {
+		if file.IsDir() {
+			continue
+		}
 		err = func(path string) error {
 			file, err := os.Open(path)
 			if err != nil {
