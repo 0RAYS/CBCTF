@@ -33,14 +33,14 @@ type UpdateTeamFlagRepo struct {
 }
 
 func (u UpdateTeamFlagRepo) Convert2Map() map[string]any {
-	m := make(map[string]any)
+	options := make(map[string]any)
 	if u.Value != nil {
-		m["value"] = *u.Value
+		options["value"] = *u.Value
 	}
 	if u.Solved != nil {
-		m["solved"] = *u.Solved
+		options["solved"] = *u.Solved
 	}
-	return m
+	return options
 }
 
 func InitTeamFlagRepo(tx *gorm.DB) *TeamFlagRepo {
