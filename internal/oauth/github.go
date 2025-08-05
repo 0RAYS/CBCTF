@@ -11,11 +11,11 @@ import (
 // Download from: https://github.com/logos
 var (
 	//go:embed avatar/github-mark-white.png
-	GithubMarkWhiteFile embed.FS
-	GithubMarkWhite, _  = GithubMarkWhiteFile.ReadFile("avatar/github-mark-white.png")
+	githubMarkWhiteFile embed.FS
+	GithubMarkWhite, _  = githubMarkWhiteFile.ReadFile("avatar/github-mark-white.png")
 	//go:embed avatar/github-mark.png
-	GithubMarkFile embed.FS
-	GithubMark, _  = GithubMarkFile.ReadFile("avatar/github-mark.png")
+	githubMarkFile embed.FS
+	GithubMark, _  = githubMarkFile.ReadFile("avatar/github-mark.png")
 )
 
 func GetDefaultGithubOauth() model.Oauth {
