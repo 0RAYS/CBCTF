@@ -32,7 +32,7 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 		return false, ""
 	}
 	for _, file := range dir {
-		if file.IsDir() || !strings.HasSuffix(file.Name(), ".pcap") || !strings.HasSuffix(file.Name(), ".pcapng") {
+		if file.IsDir() || (!strings.HasSuffix(file.Name(), ".pcap") && !strings.HasSuffix(file.Name(), ".pcapng")) {
 			continue
 		}
 		packet, err := utils.ReadPcap(fmt.Sprintf("%s/%s", victim.TrafficBasePath(), file.Name()))
