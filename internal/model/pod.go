@@ -9,7 +9,6 @@ type Pod struct {
 	VictimID   uint        `json:"victim_id"`
 	Victim     Victim      `json:"-"`
 	Containers []Container `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Traffics   []Traffic   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Name       string      `json:"name"`
 	PodPorts   Exposes     `gorm:"type:json" json:"pod_ports"`
 	Networks   Networks    `gorm:"type:json" json:"-"`
