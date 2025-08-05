@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"gorm.io/gorm"
 	"os"
+	"strings"
 )
 
 // LoadTraffic 简单记录涉及到的 IP 地址
@@ -31,6 +32,9 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 		return false, ""
 	}
 	for _, file := range dir {
+		if file.IsDir() || !strings.HasSuffix(file.Name(), ".pcap") || !strings.HasSuffix(file.Name(), ".pcapng") {
+			continue
+		}
 		packet, err := utils.ReadPcap(fmt.Sprintf("%s/%s", victim.TrafficBasePath(), file.Name()))
 		if err != nil {
 			if os.IsNotExist(err) {
