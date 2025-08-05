@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	kubeovnv1 "github.com/JBNRZ/kubeovn-api/pkg/apis/kubeovn/v1"
+	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"strings"
 )
@@ -70,7 +71,7 @@ func GetSNatList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.I
 
 func DeleteSNat(ctx context.Context, name string) (bool, string) {
 	err := kubeOVNClient.KubeovnV1().IptablesSnatRules().Delete(ctx, name, metav1.DeleteOptions{})
-	if err != nil {
+	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warnf("Failed to delete iptables SnatRule: %v", err)
 		return false, i18n.DeleteSNatError
 	}
@@ -89,7 +90,7 @@ func DeleteSNatList(ctx context.Context, labels ...map[string]string) (bool, str
 		}
 	}
 	err := kubeOVNClient.KubeovnV1().IptablesSnatRules().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
-	if err != nil {
+	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warnf("Failed to delete iptables SnatRule: %v", err)
 		return false, i18n.DeleteSNatError
 	}
