@@ -1,8 +1,6 @@
-package traffic
+package utils
 
 import (
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
 	"github.com/gopacket/gopacket"
 	"github.com/gopacket/gopacket/layers"
 	"github.com/gopacket/gopacket/pcap"
@@ -19,18 +17,13 @@ type Connection struct {
 	Type    string
 }
 
-func ReadPcap(path string) ([]Connection, bool, string) {
+func ReadPcap(path string) ([]Connection, error) {
 	if _, err := os.Stat(path); err != nil {
-		if os.IsNotExist(err) {
-			return make([]Connection, 0), false, i18n.TrafficNotFound
-		}
-		log.Logger.Warningf("Failed to read pcap file: %s", err)
-		return make([]Connection, 0), false, i18n.UnknownError
+		return nil, err
 	}
 	handle, err := pcap.OpenOffline(path)
 	if err != nil {
-		log.Logger.Warningf("Failed to open pcap file: %s", err)
-		return make([]Connection, 0), false, i18n.ReadPcapError
+		return nil, err
 	}
 	defer handle.Close()
 	traffic := gopacket.NewPacketSource(handle, handle.LinkType())
@@ -103,5 +96,5 @@ func ReadPcap(path string) ([]Connection, bool, string) {
 			continue
 		}
 	}
-	return connections, true, i18n.Success
+	return connections, nil
 }
