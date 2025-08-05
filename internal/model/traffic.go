@@ -11,6 +11,7 @@ type Traffic struct {
 	DstPort  uint16 `json:"dst_port"`
 	Type     string `json:"type"`
 	Count    uint   `json:"count"`
+	Size     int    `json:"size"`
 	BasicModel
 }
 
