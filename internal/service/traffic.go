@@ -5,7 +5,6 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	db "CBCTF/internal/repo"
-	"CBCTF/internal/traffic"
 	"CBCTF/internal/utils"
 	"fmt"
 	"gorm.io/gorm"
@@ -32,9 +31,13 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 		return false, ""
 	}
 	for _, file := range dir {
-		packet, ok, msg := traffic.ReadPcap(fmt.Sprintf("%s/%s", victim.TrafficBasePath(), file.Name()))
-		if !ok {
-			return false, msg
+		packet, err := utils.ReadPcap(fmt.Sprintf("%s/%s", victim.TrafficBasePath(), file.Name()))
+		if err != nil {
+			if os.IsNotExist(err) {
+				return false, i18n.PcapNotFound
+			}
+			log.Logger.Warningf("Failed to read pcap file: %v", err)
+			return false, i18n.UnknownError
 		}
 		for _, conn := range packet {
 			connID := fmt.Sprintf("%s:%d-%s:%d-%s", conn.SrcIP, conn.SrcPort, conn.DstIP, conn.DstPort, conn.Type)
