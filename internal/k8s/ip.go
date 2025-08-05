@@ -8,7 +8,6 @@ import (
 	kubeovnv1 "github.com/JBNRZ/kubeovn-api/pkg/apis/kubeovn/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"strings"
 )
 
@@ -54,28 +53,6 @@ func DeleteIPList(ctx context.Context, labels ...map[string]string) (bool, strin
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete IP list: %v", err)
 		return false, i18n.DeleteIPError
-	}
-	return true, i18n.Success
-}
-
-func DeleteIPForce(ctx context.Context, name string) (bool, string) {
-	_, err := kubeOVNClient.KubeovnV1().IPs().Patch(ctx, name, types.MergePatchType, forceDelete, metav1.PatchOptions{})
-	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete IP: %v", err)
-		return false, i18n.DeleteIPError
-	}
-	return true, i18n.Success
-}
-
-func DeleteIPListForce(ctx context.Context, labels ...map[string]string) (bool, string) {
-	ipL, ok, msg := GetIPList(ctx, labels...)
-	if !ok {
-		return false, msg
-	}
-	for _, ip := range ipL.Items {
-		if ok, msg = DeleteIPForce(ctx, ip.Name); !ok {
-			return false, msg
-		}
 	}
 	return true, i18n.Success
 }
