@@ -47,6 +47,7 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 			connID := fmt.Sprintf("%s:%d-%s:%d-%s", conn.SrcIP, conn.SrcPort, conn.DstIP, conn.DstPort, conn.Type)
 			if options, exists := optionsL[connID]; exists {
 				options.Count += 1
+				options.Size += conn.Size
 				optionsL[connID] = options
 			} else {
 				optionsL[connID] = db.CreateTrafficOptions{
@@ -56,6 +57,7 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 					SrcPort:  conn.SrcPort,
 					DstPort:  conn.DstPort,
 					Type:     conn.Type,
+					Size:     conn.Size,
 					Count:    1,
 				}
 			}

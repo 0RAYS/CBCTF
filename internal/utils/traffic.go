@@ -15,6 +15,7 @@ type Connection struct {
 	SrcPort uint16
 	DstPort uint16
 	Type    string
+	Size    int
 }
 
 func ReadPcap(path string) ([]Connection, error) {
@@ -39,6 +40,7 @@ func ReadPcap(path string) ([]Connection, error) {
 		if network == nil {
 			continue
 		}
+		packet.Metadata().CaptureInfo
 		switch network.LayerType() {
 		case layers.LayerTypeIPv4:
 			if ipv4, ok := network.(*layers.IPv4); ok {
@@ -73,6 +75,7 @@ func ReadPcap(path string) ([]Connection, error) {
 					SrcPort: srcPort,
 					DstPort: dstPort,
 					Type:    layers.LayerTypeTCP.String(),
+					Size:    packet.Metadata().CaptureLength,
 				})
 			} else {
 				continue
@@ -88,6 +91,7 @@ func ReadPcap(path string) ([]Connection, error) {
 					SrcPort: srcPort,
 					DstPort: dstPort,
 					Type:    layers.LayerTypeUDP.String(),
+					Size:    packet.Metadata().CaptureLength,
 				})
 			} else {
 				continue
