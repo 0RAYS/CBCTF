@@ -9,8 +9,8 @@ import (
 
 var (
 	//go:embed avatar/hduhelp.png
-	HDUHelpFile      embed.FS
-	HDUHelpAvatar, _ = HDUHelpFile.ReadFile("avatar/hduhelp.png")
+	hduhelpFile      embed.FS
+	HDUHelpAvatar, _ = hduhelpFile.ReadFile("avatar/hduhelp.png")
 )
 
 func GetDefaultHDUHelpOauth() model.Oauth {
