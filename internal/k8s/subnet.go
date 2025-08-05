@@ -8,7 +8,6 @@ import (
 	kubeovnv1 "github.com/JBNRZ/kubeovn-api/pkg/apis/kubeovn/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"strings"
 )
 
@@ -104,28 +103,6 @@ func DeleteSubnetList(ctx context.Context, labels ...map[string]string) (bool, s
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete Subnet: %v", err)
 		return false, i18n.DeleteSubnetError
-	}
-	return true, i18n.Success
-}
-
-func DeleteSubnetForce(ctx context.Context, name string) (bool, string) {
-	_, err := kubeOVNClient.KubeovnV1().Subnets().Patch(ctx, name, types.MergePatchType, forceDelete, metav1.PatchOptions{})
-	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete Subnet: %v", err)
-		return false, i18n.DeleteSubnetError
-	}
-	return true, i18n.Success
-}
-
-func DeleteSubnetListForce(ctx context.Context, labels ...map[string]string) (bool, string) {
-	subnets, ok, msg := GetSubnetList(ctx, labels...)
-	if !ok {
-		return false, msg
-	}
-	for _, subnet := range subnets.Items {
-		if ok, msg = DeleteSubnetForce(ctx, subnet.Name); !ok {
-			return false, msg
-		}
 	}
 	return true, i18n.Success
 }
