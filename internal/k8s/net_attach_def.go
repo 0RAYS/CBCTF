@@ -24,7 +24,7 @@ func CreateNetAttachDef(ctx context.Context, options CreateNetAttachDefOptions) 
 		err          error
 	)
 	if options.Namespace == "" {
-		options.Namespace = GlobalNamespace
+		options.Namespace = globalNamespace
 	}
 	netAttachDef = &netattv1.NetworkAttachmentDefinition{
 		ObjectMeta: metav1.ObjectMeta{
@@ -46,7 +46,7 @@ func CreateNetAttachDef(ctx context.Context, options CreateNetAttachDefOptions) 
 
 func GetNetAttachDef(ctx context.Context, name string, namespace ...string) (*netattv1.NetworkAttachmentDefinition, bool, string) {
 	if len(namespace) == 0 {
-		namespace = append(namespace, GlobalNamespace)
+		namespace = append(namespace, globalNamespace)
 	}
 	netAttachDef, err := natattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(namespace[0]).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
@@ -70,7 +70,7 @@ func GetNetAttachDefList(ctx context.Context, labels ...map[string]string) (*net
 			LabelSelector: strings.TrimSuffix(selector, ","),
 		}
 	}
-	netAttachDefList, err := natattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(GlobalNamespace).List(ctx, options)
+	netAttachDefList, err := natattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(globalNamespace).List(ctx, options)
 	if err != nil {
 		log.Logger.Warningf("Failed to list NetworkAttachmentDefinitions: %v", err)
 		return nil, false, i18n.GetNetAttError

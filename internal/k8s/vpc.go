@@ -26,7 +26,7 @@ func CreateVPC(ctx context.Context, options CreateVPCOptions) (*kubeovnv1.Vpc, b
 	vpc = &kubeovnv1.Vpc{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      options.Name,
-			Namespace: GlobalNamespace,
+			Namespace: globalNamespace,
 			Labels:    options.Labels,
 		},
 		Spec: kubeovnv1.VpcSpec{

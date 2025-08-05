@@ -102,7 +102,7 @@ func CreateFrpc(victim model.Victim) (model.Endpoints, []string, bool, string) {
 				Name: fmt.Sprintf("vol-%s", utils.RandStr(20)),
 				VolumeSource: corev1.VolumeSource{
 					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-						ClaimName: NFSVolumeName,
+						ClaimName: nfsVolumeName,
 					},
 				},
 			}

@@ -29,7 +29,7 @@ func CreateEIP(ctx context.Context, options CreateEIPOptions) (*kubeovnv1.Iptabl
 	eip = &kubeovnv1.IptablesEIP{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      options.Name,
-			Namespace: GlobalNamespace,
+			Namespace: globalNamespace,
 			Labels:    options.Labels,
 		},
 		Spec: kubeovnv1.IptablesEIPSpec{

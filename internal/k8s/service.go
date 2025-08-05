@@ -30,7 +30,7 @@ func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.S
 	service = &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      options.Name,
-			Namespace: GlobalNamespace,
+			Namespace: globalNamespace,
 			Labels:    options.Labels,
 		},
 		Spec: corev1.ServiceSpec{
@@ -52,7 +52,7 @@ func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.S
 			ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeLocal,
 		},
 	}
-	service, err = kubeClient.CoreV1().Services(GlobalNamespace).Create(ctx, service, metav1.CreateOptions{})
+	service, err = kubeClient.CoreV1().Services(globalNamespace).Create(ctx, service, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create Service: %v", err)
 		return nil, false, i18n.CreateServiceError
@@ -71,7 +71,7 @@ func GetServiceList(ctx context.Context, labels ...map[string]string) (*corev1.S
 			LabelSelector: strings.TrimSuffix(selector, ","),
 		}
 	}
-	serviceList, err := kubeClient.CoreV1().Services(GlobalNamespace).List(ctx, options)
+	serviceList, err := kubeClient.CoreV1().Services(globalNamespace).List(ctx, options)
 	if err != nil {
 		if apierror.IsNotFound(err) {
 			return nil, false, i18n.ServiceNotFound
@@ -84,7 +84,7 @@ func GetServiceList(ctx context.Context, labels ...map[string]string) (*corev1.S
 
 // DeleteService 删除 Service, 目前主要是靶机的端口映射
 func DeleteService(ctx context.Context, name string) (bool, string) {
-	err := kubeClient.CoreV1().Services(GlobalNamespace).Delete(ctx, name, metav1.DeleteOptions{})
+	err := kubeClient.CoreV1().Services(globalNamespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete Service %s: %v", name, err)
 		return false, i18n.DeleteServiceError

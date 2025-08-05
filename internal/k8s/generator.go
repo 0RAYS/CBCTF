@@ -73,7 +73,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 				Name: volumeName,
 				VolumeSource: corev1.VolumeSource{
 					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-						ClaimName: NFSVolumeName,
+						ClaimName: nfsVolumeName,
 					},
 				},
 			},

@@ -36,7 +36,7 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, boo
 	job = &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      options.Name,
-			Namespace: GlobalNamespace,
+			Namespace: globalNamespace,
 			Labels:    options.Labels,
 		},
 		Spec: batchv1.JobSpec{
@@ -44,7 +44,7 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, boo
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      fmt.Sprintf("image-puller-%s", utils.RandStr(5)),
-					Namespace: GlobalNamespace,
+					Namespace: globalNamespace,
 				},
 				Spec: corev1.PodSpec{
 					NodeSelector:  options.NodeSelector,
@@ -54,7 +54,7 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, boo
 			},
 		},
 	}
-	job, err = kubeClient.BatchV1().Jobs(GlobalNamespace).Create(ctx, job, metav1.CreateOptions{})
+	job, err = kubeClient.BatchV1().Jobs(globalNamespace).Create(ctx, job, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create Job: %v", err)
 		return nil, false, i18n.CreateJobError

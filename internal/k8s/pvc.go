@@ -41,7 +41,7 @@ func CreatePVC(ctx context.Context, options CreatePVCOptions) (*corev1.Persisten
 			},
 		},
 	}
-	pvc, err = kubeClient.CoreV1().PersistentVolumeClaims(GlobalNamespace).Create(ctx, pvc, metav1.CreateOptions{})
+	pvc, err = kubeClient.CoreV1().PersistentVolumeClaims(globalNamespace).Create(ctx, pvc, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create pvc: %s", err)
 		return nil, false, i18n.CreatePVCError
@@ -50,7 +50,7 @@ func CreatePVC(ctx context.Context, options CreatePVCOptions) (*corev1.Persisten
 }
 
 func GetPVC(ctx context.Context, name string) (*corev1.PersistentVolumeClaim, bool, string) {
-	pvc, err := kubeClient.CoreV1().PersistentVolumeClaims(GlobalNamespace).Get(ctx, name, metav1.GetOptions{})
+	pvc, err := kubeClient.CoreV1().PersistentVolumeClaims(globalNamespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if apierror.IsNotFound(err) {
 			return nil, false, i18n.PVCNotFound
@@ -62,7 +62,7 @@ func GetPVC(ctx context.Context, name string) (*corev1.PersistentVolumeClaim, bo
 }
 
 func DeletePVC(ctx context.Context, name string) (bool, string) {
-	err := kubeClient.CoreV1().PersistentVolumeClaims(GlobalNamespace).Delete(ctx, name, metav1.DeleteOptions{})
+	err := kubeClient.CoreV1().PersistentVolumeClaims(globalNamespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete pvc: %s", err)
 		return false, i18n.DeletePVCError

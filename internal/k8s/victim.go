@@ -127,14 +127,14 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 			createNADFuncL = append(createNADFuncL, func() CreateNADResult {
 				object, ok, msg := CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
 					Name:      subnet.NetAttachDef.Name,
-					Namespace: GlobalNamespace,
+					Namespace: globalNamespace,
 					Labels:    labels,
 					Config: fmt.Sprintf(`{
 						"cniVersion": "0.3.0",
 						"type": "kube-ovn",
 						"server_socket": "/run/openvswitch/kube-ovn-daemon.sock",
 						"provider": "%s.%s.ovn"
-					}`, subnet.NetAttachDef.Name, GlobalNamespace),
+					}`, subnet.NetAttachDef.Name, globalNamespace),
 				})
 				return CreateNADResult{object, ok, msg}
 			})
@@ -146,7 +146,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 					CIDR:       subnet.CIDRBlock,
 					Gateway:    subnet.Gateway,
 					ExcludeIPs: subnet.ExcludeIps,
-					Provider:   fmt.Sprintf("%s.%s.ovn", subnet.NetAttachDef.Name, GlobalNamespace),
+					Provider:   fmt.Sprintf("%s.%s.ovn", subnet.NetAttachDef.Name, globalNamespace),
 				})
 				log.Logger.Debugf("CreateSubnet %s: %s", subnet.Name, msg)
 				return CreateSubnetResult{object, ok, msg}
@@ -161,7 +161,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 						VPC:            victim.VPC.Name,
 						Subnet:         subnet.Name,
 						LanIP:          subnet.NatGateway.LanIP,
-						ExternalSubnet: []string{ExternalSubnetName},
+						ExternalSubnet: []string{externalSubnetName},
 					})
 					log.Logger.Debugf("CreateVPCNatGateway %s: %s", subnet.NatGateway.Name, msg)
 					return CreateVPCNatGWResult{object, ok, msg}
@@ -173,7 +173,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 								Name:           eip.Name,
 								Labels:         labels,
 								NatGw:          subnet.NatGateway.Name,
-								ExternalSubnet: ExternalSubnetName,
+								ExternalSubnet: externalSubnetName,
 							})
 							log.Logger.Debugf("CreateEIP %s: %s", eip.Name, msg)
 							if !ok {
@@ -287,7 +287,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 						Name: nfsName,
 						VolumeSource: corev1.VolumeSource{
 							PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-								ClaimName: NFSVolumeName,
+								ClaimName: nfsVolumeName,
 							},
 						},
 					},
@@ -379,10 +379,10 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 						annotations["ovn.kubernetes.io/logical_switch"] = subnet.Name
 						annotations["ovn.kubernetes.io/ip_address"] = network.IP
 					} else {
-						annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", GlobalNamespace, netAttachDef.Name)
+						annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", globalNamespace, netAttachDef.Name)
 						annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
-						annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", netAttachDef.Name, GlobalNamespace)] = subnet.Name
-						annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", netAttachDef.Name, GlobalNamespace)] = network.IP
+						annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", netAttachDef.Name, globalNamespace)] = subnet.Name
+						annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", netAttachDef.Name, globalNamespace)] = network.IP
 					}
 				}
 				p, ok, msg := CreatePod(ctx, CreatePodOptions{
@@ -460,7 +460,7 @@ func StopVictim(victim model.Victim) (bool, string) {
 	if ok, msg := DeleteSubnetList(ctx, labels); !ok {
 		return false, msg
 	}
-	if ok, msg := DeleteNetAttachDefList(ctx, GlobalNamespace, labels); !ok {
+	if ok, msg := DeleteNetAttachDefList(ctx, globalNamespace, labels); !ok {
 		return false, msg
 	}
 	if ok, msg := DeleteVPCNatGatewayList(ctx, labels); !ok {
