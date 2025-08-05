@@ -32,17 +32,17 @@ type UpdateNoticeOptions struct {
 }
 
 func (u UpdateNoticeOptions) Convert2Map() map[string]any {
-	data := make(map[string]any)
+	options := make(map[string]any)
 	if u.Title != nil {
-		data["title"] = *u.Title
+		options["title"] = *u.Title
 	}
 	if u.Content != nil {
-		data["content"] = *u.Content
+		options["content"] = *u.Content
 	}
 	if u.Type != nil {
-		data["type"] = *u.Type
+		options["type"] = *u.Type
 	}
-	return data
+	return options
 }
 
 func InitNoticeRepo(tx *gorm.DB) *NoticeRepo {

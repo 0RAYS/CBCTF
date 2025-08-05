@@ -60,41 +60,41 @@ type UpdateUserOptions struct {
 }
 
 func (u UpdateUserOptions) Convert2Map() map[string]any {
-	data := make(map[string]any)
+	options := make(map[string]any)
 	if u.Name != nil {
-		data["name"] = *u.Name
+		options["name"] = *u.Name
 	}
 	if u.Password != nil {
-		data["password"] = *u.Password
+		options["password"] = *u.Password
 	}
 	if u.Email != nil {
-		data["email"] = *u.Email
+		options["email"] = *u.Email
 	}
 	if u.Country != nil {
-		data["country"] = *u.Country
+		options["country"] = *u.Country
 	}
 	if u.Desc != nil {
-		data["desc"] = *u.Desc
+		options["desc"] = *u.Desc
 	}
 	if u.Avatar != nil {
-		data["avatar"] = *u.Avatar
+		options["avatar"] = *u.Avatar
 	}
 	if u.Verified != nil {
-		data["verified"] = *u.Verified
+		options["verified"] = *u.Verified
 	}
 	if u.Hidden != nil {
-		data["hidden"] = *u.Hidden
+		options["hidden"] = *u.Hidden
 	}
 	if u.Banned != nil {
-		data["banned"] = *u.Banned
+		options["banned"] = *u.Banned
 	}
 	if u.Score != nil {
-		data["score"] = *u.Score
+		options["score"] = *u.Score
 	}
 	if u.Solved != nil {
-		data["solved"] = *u.Solved
+		options["solved"] = *u.Solved
 	}
-	return data
+	return options
 }
 
 func InitUserRepo(tx *gorm.DB) *UserRepo {

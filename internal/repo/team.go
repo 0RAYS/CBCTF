@@ -54,38 +54,38 @@ type UpdateTeamOptions struct {
 }
 
 func (u UpdateTeamOptions) Convert2Map() map[string]any {
-	data := make(map[string]any)
+	options := make(map[string]any)
 	if u.Name != nil {
-		data["name"] = *u.Name
+		options["name"] = *u.Name
 	}
 	if u.Desc != nil {
-		data["desc"] = *u.Desc
+		options["desc"] = *u.Desc
 	}
 	if u.Captcha != nil {
-		data["captcha"] = *u.Captcha
+		options["captcha"] = *u.Captcha
 	}
 	if u.Avatar != nil {
-		data["avatar"] = *u.Avatar
+		options["avatar"] = *u.Avatar
 	}
 	if u.Banned != nil {
-		data["banned"] = *u.Banned
+		options["banned"] = *u.Banned
 	}
 	if u.Hidden != nil {
-		data["hidden"] = *u.Hidden
+		options["hidden"] = *u.Hidden
 	}
 	if u.CaptainID != nil {
-		data["captain_id"] = *u.CaptainID
+		options["captain_id"] = *u.CaptainID
 	}
 	if u.Score != nil {
-		data["score"] = *u.Score
+		options["score"] = *u.Score
 	}
 	if u.Rank != nil {
-		data["rank"] = *u.Rank
+		options["rank"] = *u.Rank
 	}
 	if u.Last != nil {
-		data["last"] = *u.Last
+		options["last"] = *u.Last
 	}
-	return data
+	return options
 }
 
 func InitTeamRepo(tx *gorm.DB) *TeamRepo {

@@ -30,11 +30,11 @@ type UpdateDeviceOptions struct {
 }
 
 func (u UpdateDeviceOptions) Convert2Map() map[string]any {
-	data := make(map[string]any)
+	options := make(map[string]any)
 	if u.Count != nil {
-		data["count"] = *u.Count
+		options["count"] = *u.Count
 	}
-	return data
+	return options
 }
 
 func InitDeviceRepo(tx *gorm.DB) *DeviceRepo {
