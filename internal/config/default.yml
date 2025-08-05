@@ -2,7 +2,7 @@ backend: "http://127.0.0.1:8000"
 # CORS
 frontend: "http://127.0.0.1:3000"
 # Data path and NFS mount path if needed
-path: "./uploads"
+path: "./data"
 log:
   # DEBUG INFO WARNING ERROR
   level: "info"
@@ -12,7 +12,7 @@ gin:
   host: "127.0.0.1"
   port: 8000
   # Static Resources URI
-  static_uri: "/platform"
+  static_uri: "platform"
   # Trusted proxy servers
   proxies:
     - "10.0.0.1"

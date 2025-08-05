@@ -3,7 +3,6 @@ package config
 import (
 	_ "embed"
 	"errors"
-	"fmt"
 	"github.com/spf13/viper"
 	"github.com/vmihailenco/msgpack/v5"
 	"log"
@@ -148,7 +147,7 @@ func tidy() {
 	}
 	Env.Backend = strings.TrimSuffix(Env.Backend, "/")
 	Env.Frontend = strings.TrimSuffix(Env.Frontend, "/")
-	Env.Gin.StaticURI = fmt.Sprintf("/%s", strings.Trim(Env.Gin.StaticURI, "/"))
+	Env.Gin.StaticURI = strings.Trim(Env.Gin.StaticURI, "/")
 }
 
 // Save 保存配置, 用于动态刷新配置
