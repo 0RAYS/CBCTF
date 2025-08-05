@@ -12,7 +12,6 @@ import (
 func Zip(path, zipPath string) error {
 	zipFile, err := os.Create(zipPath)
 	if err != nil {
-		log.Logger.Warningf("Failed to zip files: %s", err)
 		return err
 	}
 	defer func(zipFile *os.File) {
@@ -35,7 +34,6 @@ func Zip(path, zipPath string) error {
 		err = func(path string) error {
 			file, err := os.Open(path)
 			if err != nil {
-				log.Logger.Warningf("Failed to zip files: %s", err)
 				return err
 			}
 			defer func(file *os.File) {
@@ -46,7 +44,6 @@ func Zip(path, zipPath string) error {
 
 			w, err := zipWriter.Create(filepath.Base(path))
 			if err != nil {
-				log.Logger.Warningf("Failed to zip files: %s", err)
 				return err
 			}
 
@@ -55,7 +52,6 @@ func Zip(path, zipPath string) error {
 		}(fmt.Sprintf("%s/%s", path, file.Name()))
 
 		if err != nil {
-			log.Logger.Warningf("Failed to zip files: %s", err)
 			return err
 		}
 	}
