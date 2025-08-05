@@ -12,7 +12,7 @@ import (
 	"os"
 )
 
-// LoadTraffic victim 需要预加载 Pods
+// LoadTraffic 简单记录涉及到的 IP 地址
 func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 	trafficRepo := db.InitTrafficRepo(tx)
 	optionsL := make(map[string]db.CreateTrafficOptions)
