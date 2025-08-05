@@ -96,16 +96,16 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 		}
 	}
 	GeneratorMapMutex.Lock()
-	defer GeneratorMapMutex.Unlock()
 	GeneratorMap[contestChallenge.ID] = append(GeneratorMap[contestChallenge.ID], pod)
+	GeneratorMapMutex.Unlock()
 	return pod, true, i18n.Success
 }
 
 func GetGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool, string) {
 	rand.New(rand.NewSource(time.Now().UnixNano()))
-	GeneratorMapMutex.Lock()
-	defer GeneratorMapMutex.Unlock()
+	GeneratorMapMutex.RLock()
 	generators, ok := GeneratorMap[contestChallenge.ID]
+	GeneratorMapMutex.RUnlock()
 	if !ok {
 		return StartGenerator(contestChallenge)
 	}
@@ -120,9 +120,9 @@ func GetGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool, s
 func StopGenerator(contestChallenge model.ContestChallenge, generator *corev1.Pod) (bool, string) {
 	log.Logger.Infof("Stopping generator for challenge %d-%s", contestChallenge.ChallengeID, contestChallenge.Name)
 
-	GeneratorMapMutex.Lock()
-	defer GeneratorMapMutex.Unlock()
+	GeneratorMapMutex.RLock()
 	_, ok := GeneratorMap[contestChallenge.ID]
+	GeneratorMapMutex.RUnlock()
 	if ok {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 		defer cancel()
@@ -133,9 +133,11 @@ func StopGenerator(contestChallenge model.ContestChallenge, generator *corev1.Po
 		if ok, msg := DeleteServiceList(ctx, labels); !ok {
 			return false, msg
 		}
+		GeneratorMapMutex.Lock()
 		GeneratorMap[contestChallenge.ID] = slices.DeleteFunc(GeneratorMap[contestChallenge.ID], func(pod *corev1.Pod) bool {
 			return pod.Name == generator.Name
 		})
+		GeneratorMapMutex.Unlock()
 	}
 	return true, i18n.Success
 }

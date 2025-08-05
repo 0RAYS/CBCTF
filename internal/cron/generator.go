@@ -41,19 +41,19 @@ func PrepareGenerator(c *cron.Cron) {
 			}
 			for _, contestChallenge := range contestChallengeL {
 				timeoutL := make([]*corev1.Pod, 0)
-				k8s.GeneratorMapMutex.Lock()
+				k8s.GeneratorMapMutex.RLock()
 				for _, generator := range k8s.GeneratorMap[contestChallenge.ID] {
 					if generator.Status.Phase != corev1.PodRunning || time.Now().Sub(generator.CreationTimestamp.Time) > time.Hour {
 						timeoutL = append(timeoutL, generator)
 					}
 				}
-				k8s.GeneratorMapMutex.Unlock()
+				k8s.GeneratorMapMutex.RUnlock()
 				for _, generator := range timeoutL {
 					k8s.StopGenerator(contestChallenge, generator)
 				}
-				k8s.GeneratorMapMutex.Lock()
+				k8s.GeneratorMapMutex.RLock()
 				length := len(k8s.GeneratorMap[contestChallenge.ID])
-				k8s.GeneratorMapMutex.Unlock()
+				k8s.GeneratorMapMutex.RUnlock()
 				for i := 0; i < len(config.Env.K8S.Nodes)*config.Env.K8S.GeneratorWorker-length; i++ {
 					go k8s.StartGenerator(contestChallenge)
 				}
@@ -75,12 +75,14 @@ func StopUnCtrlGenerator(c *cron.Cron) {
 		}
 		generators := make(map[string]*corev1.Pod)
 		names := make([]string, 0)
+		k8s.GeneratorMapMutex.RLock()
 		for _, v := range k8s.GeneratorMap {
 			for _, generator := range v {
 				generators[generator.Name] = generator
 				names = append(names, generator.Name)
 			}
 		}
+		k8s.GeneratorMapMutex.RUnlock()
 		for _, pod := range pods.Items {
 			if strings.HasPrefix(pod.Name, "gen") && !slices.Contains(names, pod.Name) {
 				ctx, cancel = context.WithTimeout(context.Background(), 1*time.Minute)
