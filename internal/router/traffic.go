@@ -5,12 +5,10 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
+	"CBCTF/internal/redis"
 	"CBCTF/internal/utils"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"os"
-	"strings"
 )
 
 func GetTraffics(ctx *gin.Context) {
@@ -20,23 +18,19 @@ func GetTraffics(ctx *gin.Context) {
 		return
 	}
 	victim := middleware.GetVictim(ctx)
-	dir, err := os.ReadDir(victim.TrafficBasePath())
+	connections, err := redis.GetTraffics(victim)
 	if err != nil {
-		log.Logger.Warningf("Failed to read dir: %v", err)
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
+		log.Logger.Warningf("Failed to get traffics: %s", err)
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.RedisError, "data": nil})
 		return
 	}
-	connections := make([]utils.Connection, 0)
-	for _, file := range dir {
-		if file.IsDir() || (!strings.HasSuffix(file.Name(), ".pcap") && !strings.HasSuffix(file.Name(), ".pcapng")) {
-			continue
-		}
-		packet, err := utils.ReadPcap(fmt.Sprintf("%s/%s", victim.TrafficBasePath(), file.Name()))
+	if len(connections) == 0 {
+		connections, err = redis.LoadTraffics(victim)
 		if err != nil {
+			log.Logger.Warningf("Failed to load traffics: %s", err)
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 			return
 		}
-		connections = append(connections, packet...)
 	}
 	data := make([]utils.Connection, 0)
 	for _, conn := range connections {
