@@ -8,9 +8,10 @@ import (
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/utils"
 	"fmt"
-	"gorm.io/gorm"
 	"slices"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 func GetChallenges(tx *gorm.DB, form f.GetChallengesForm) ([]model.Challenge, int64, bool, string) {

@@ -12,8 +12,9 @@ import (
 	"CBCTF/internal/service"
 	"CBCTF/internal/utils"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func Register(ctx *gin.Context) {

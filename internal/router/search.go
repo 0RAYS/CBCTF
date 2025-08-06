@@ -5,9 +5,10 @@ import (
 	"CBCTF/internal/i18n"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/resp"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"slices"
+
+	"github.com/gin-gonic/gin"
 )
 
 func Search(ctx *gin.Context) {

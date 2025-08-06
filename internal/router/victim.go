@@ -10,9 +10,10 @@ import (
 	"CBCTF/internal/service"
 	"CBCTF/internal/websocket"
 	wm "CBCTF/internal/websocket/model"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func StartVictim(ctx *gin.Context) {

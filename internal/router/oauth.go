@@ -15,11 +15,12 @@ import (
 	"CBCTF/internal/utils"
 	"encoding/json"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"golang.org/x/oauth2"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/gin-gonic/gin"
+	"golang.org/x/oauth2"
 )
 
 func GetOauthProviders(ctx *gin.Context) {

@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/model"
 	"embed"
 	"fmt"
+
 	"golang.org/x/oauth2/github"
 )
 

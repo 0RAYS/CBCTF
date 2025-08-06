@@ -4,8 +4,9 @@ import (
 	"CBCTF/internal/i18n"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/service"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 // CheckSolved model.Team 是否完全解决 model.Usage

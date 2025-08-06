@@ -13,10 +13,11 @@ import (
 	"CBCTF/internal/service"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 func DownloadFile(ctx *gin.Context) {

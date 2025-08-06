@@ -4,10 +4,11 @@ import (
 	"CBCTF/internal/log"
 	"context"
 	"encoding/json"
+	"time"
+
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
 	"github.com/shirou/gopsutil/mem"
-	"time"
 )
 
 type SystemMetrics struct {

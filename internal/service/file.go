@@ -11,12 +11,13 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"gorm.io/gorm"
 	"io"
 	"mime/multipart"
 	"path/filepath"
 	"slices"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 func SaveAvatar(tx *gorm.DB, options db.CreateFileOptions, file *multipart.FileHeader) (model.File, bool, string) {

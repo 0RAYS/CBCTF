@@ -4,8 +4,9 @@ import (
 	"CBCTF/internal/i18n"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/service"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 // CheckIfGenerated model.Team 是否初始化 model.TeamFlag

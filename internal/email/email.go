@@ -4,10 +4,11 @@ import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"fmt"
-	"gopkg.in/gomail.v2"
 	"math/rand"
 	"sync"
 	"time"
+
+	"gopkg.in/gomail.v2"
 )
 
 type Sender struct {

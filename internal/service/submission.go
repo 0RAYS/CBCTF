@@ -6,8 +6,9 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
 	db "CBCTF/internal/repo"
-	"gorm.io/gorm"
 	"sync"
+
+	"gorm.io/gorm"
 )
 
 // SolvedMutex 使用定时任务 cron.ClearContestChallengeMutex 清理锁

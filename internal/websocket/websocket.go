@@ -7,11 +7,12 @@ import (
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/websocket/handler"
 	"CBCTF/internal/websocket/model"
-	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 )
 
 var (

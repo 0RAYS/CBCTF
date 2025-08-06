@@ -10,9 +10,10 @@ import (
 	"CBCTF/internal/websocket"
 	"CBCTF/internal/websocket/model"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"slices"
+
+	"github.com/gin-gonic/gin"
 )
 
 func GetNotices(ctx *gin.Context) {

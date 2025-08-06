@@ -1,8 +1,9 @@
 package utils
 
 import (
-	"golang.org/x/crypto/bcrypt"
 	"unicode"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 // HashPassword 生成密码hash

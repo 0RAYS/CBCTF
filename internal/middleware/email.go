@@ -3,8 +3,9 @@ package middleware
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func CheckUnVerified(ctx *gin.Context) {

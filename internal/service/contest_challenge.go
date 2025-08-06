@@ -7,9 +7,10 @@ import (
 	"CBCTF/internal/model"
 	db "CBCTF/internal/repo"
 	"errors"
-	"gorm.io/gorm"
 	"slices"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form f.CreateContestChallengeForm) ([]model.ContestChallenge, []string, bool, string) {

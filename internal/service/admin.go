@@ -6,8 +6,9 @@ import (
 	"CBCTF/internal/model"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/utils"
-	"gorm.io/gorm"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 func CreateAdmin(tx *gorm.DB, form f.CreateAdminForm) (model.Admin, bool, string) {

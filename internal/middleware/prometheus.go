@@ -3,10 +3,11 @@ package middleware
 import (
 	"CBCTF/internal/prometheus"
 	"bytes"
-	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func getRequestBodySize(ctx *gin.Context) int {
