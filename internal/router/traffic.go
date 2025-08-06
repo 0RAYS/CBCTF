@@ -26,8 +26,16 @@ func GetTraffics(ctx *gin.Context) {
 		return
 	}
 	if len(connections) < 1 {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": []gin.H{}})
-		return
+		ok, msg = r.UpdateTraffics(victim)
+		if !ok {
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
+		}
+		connections, ok, msg = r.GetTraffic(victim)
+		if !ok {
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
+		}
 	}
 	totalDuation := connections[len(connections)-1].Time.Sub(connections[0].Time).Seconds()
 	firstPacket := connections[0]
