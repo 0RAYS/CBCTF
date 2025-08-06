@@ -18,7 +18,7 @@ import (
 func GetTraffic(victim model.Victim) ([]utils.Connection, bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
-	key := fmt.Sprintf("traffic:%d", victim.ID)
+	key := fmt.Sprintf("traffics:%d", victim.ID)
 	connections := make([]utils.Connection, 0)
 	results, err := RDB.ZRangeWithScores(ctx, key, 0, -1).Result()
 	if err != nil {
@@ -65,17 +65,17 @@ func UpdateTraffics(victim model.Victim) (bool, string) {
 		connections = append(connections, packet...)
 	}
 
-	key := fmt.Sprintf("traffic:%d", victim.ID)
+	key := fmt.Sprintf("traffics:%d", victim.ID)
 	pipe := RDB.Pipeline()
 	pipe.Del(ctx, key)
 
 	for i, conn := range connections {
 		pipe.ZAdd(ctx, key, redis.Z{
 			Score:  float64(conn.Time.UnixNano()),
-			Member: fmt.Sprintf("%d", i),
+			Member: fmt.Sprintf("traffic:%d::%d", victim.ID, i),
 		})
 		data, _ := msgpack.Marshal(&conn)
-		pipe.Set(ctx, fmt.Sprintf("%d", i), data, 30*time.Minute)
+		pipe.Set(ctx, fmt.Sprintf("traffic:%d::%d", victim.ID, i), data, 30*time.Minute)
 	}
 	pipe.Expire(ctx, key, 30*time.Minute)
 	if _, err = pipe.Exec(ctx); err != nil {

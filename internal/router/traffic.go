@@ -36,6 +36,10 @@ func GetTraffics(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
+		if len(connections) < 1 {
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": []gin.H{}})
+			return
+		}
 	}
 	totalDuration := connections[len(connections)-1].Time.Sub(connections[0].Time)/1e9 + 1
 	firstPacket := connections[0]
