@@ -57,13 +57,11 @@ func GetTraffics(ctx *gin.Context) {
 		}
 	}
 	type Statistics struct {
-		SrcIP   string
-		DstIP   string
-		SrcPort uint16
-		DstPort uint16
-		Type    string
-		Count   int64
-		Size    int64
+		SrcIP string
+		DstIP string
+		Type  string
+		Count int64
+		Size  int64
 	}
 	data := make(map[string]Statistics)
 	ipL := make([]string, 0)
@@ -75,13 +73,11 @@ func GetTraffics(ctx *gin.Context) {
 			data[key] = stats
 		} else {
 			data[key] = Statistics{
-				SrcIP:   connection.SrcIP,
-				DstIP:   connection.DstIP,
-				SrcPort: connection.SrcPort,
-				DstPort: connection.DstPort,
-				Type:    connection.Type,
-				Count:   1,
-				Size:    int64(connection.Size),
+				SrcIP: connection.SrcIP,
+				DstIP: connection.DstIP,
+				Type:  connection.Type,
+				Count: 1,
+				Size:  int64(connection.Size),
 			}
 		}
 		if !slices.Contains(ipL, connection.SrcIP) {
