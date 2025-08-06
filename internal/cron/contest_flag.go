@@ -3,9 +3,10 @@ package cron
 import (
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/service"
-	"github.com/robfig/cron/v3"
 	"sync"
 	"time"
+
+	"github.com/robfig/cron/v3"
 )
 
 // UpdateFlagScore 依据数据库, 更新 model.Flag 的分数和解题人数

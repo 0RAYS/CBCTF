@@ -4,11 +4,12 @@ import (
 	"CBCTF/internal/model"
 	db "CBCTF/internal/repo"
 	"fmt"
-	"github.com/robfig/cron/v3"
 	"net"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/robfig/cron/v3"
 )
 
 func CheckCheat(c *cron.Cron) {

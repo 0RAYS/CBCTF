@@ -4,8 +4,9 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"github.com/gin-gonic/gin"
 	"slices"
+
+	"github.com/gin-gonic/gin"
 )
 
 var allowedScoreType = []uint{model.StaticScore, model.LinearScore, model.LogarithmicScore}

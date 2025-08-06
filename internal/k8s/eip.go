@@ -5,12 +5,13 @@ import (
 	"CBCTF/internal/log"
 	"context"
 	"fmt"
-	kubeovnv1 "github.com/JBNRZ/kubeovn-api/pkg/apis/kubeovn/v1"
-	apierror "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net"
 	"strings"
 	"time"
+
+	kubeovnv1 "github.com/JBNRZ/kubeovn-api/pkg/apis/kubeovn/v1"
+	apierror "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type CreateEIPOptions struct {

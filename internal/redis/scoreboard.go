@@ -4,9 +4,10 @@ import (
 	"CBCTF/internal/model"
 	"context"
 	"fmt"
+	"time"
+
 	"github.com/redis/go-redis/v9"
 	"github.com/vmihailenco/msgpack/v5"
-	"time"
 )
 
 func UpdateTeamRanking(contestID uint, teams []model.Team) error {

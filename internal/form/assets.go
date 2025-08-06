@@ -3,6 +3,7 @@ package form
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
+
 	"github.com/gin-gonic/gin"
 )
 

@@ -2,8 +2,9 @@ package resp
 
 import (
 	"CBCTF/internal/model"
-	"github.com/gin-gonic/gin"
 	"math/rand"
+
+	"github.com/gin-gonic/gin"
 )
 
 // GetContestChallengeResp 需要预加载 Challenge ContestFlags

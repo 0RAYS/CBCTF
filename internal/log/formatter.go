@@ -3,13 +3,14 @@ package log
 import (
 	"bytes"
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/fatih/color"
+	"github.com/sirupsen/logrus"
 )
 
 var colors = map[string]func(a ...any) string{

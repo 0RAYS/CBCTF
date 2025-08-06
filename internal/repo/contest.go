@@ -6,8 +6,9 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 	"fmt"
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type ContestRepo struct {

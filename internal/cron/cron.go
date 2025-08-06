@@ -2,8 +2,9 @@ package cron
 
 import (
 	"CBCTF/internal/log"
-	"github.com/robfig/cron/v3"
 	"time"
+
+	"github.com/robfig/cron/v3"
 )
 
 var Cron *cron.Cron

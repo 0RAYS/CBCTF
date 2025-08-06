@@ -5,9 +5,10 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
-	"github.com/gin-gonic/gin"
 	"slices"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 var (

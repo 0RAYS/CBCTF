@@ -5,8 +5,9 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
-	"github.com/gin-gonic/gin"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 // CreateContestChallengeForm add challenge to contest

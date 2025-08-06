@@ -4,8 +4,9 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/utils"
-	"github.com/gin-gonic/gin"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 // CreateAdminForm for create admin

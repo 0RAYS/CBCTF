@@ -6,9 +6,10 @@ import (
 	"CBCTF/internal/model"
 	"errors"
 	"fmt"
+	"slices"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"slices"
 )
 
 type BasicRepo[M model.Model] struct {

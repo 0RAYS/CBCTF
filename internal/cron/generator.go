@@ -7,11 +7,12 @@ import (
 	"CBCTF/internal/model"
 	db "CBCTF/internal/repo"
 	"context"
-	"github.com/robfig/cron/v3"
-	corev1 "k8s.io/api/core/v1"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/robfig/cron/v3"
+	corev1 "k8s.io/api/core/v1"
 )
 
 // PrepareGenerator 关闭超时的动态题目生成器, 释放部分资源

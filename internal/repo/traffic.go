@@ -2,6 +2,7 @@ package repo
 
 import (
 	"CBCTF/internal/model"
+
 	"gorm.io/gorm"
 )
 
