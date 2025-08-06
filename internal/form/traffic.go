@@ -8,14 +8,17 @@ import (
 )
 
 type GetTrafficForm struct {
-	TimeShift int64 `form:"time_shift" json:"time_shift" binding:"required"`
-	Duration  int64 `form:"duration" json:"duration" binding:"required"`
+	TimeShift int64 `form:"time_shift" json:"time_shift"`
+	Duration  int64 `form:"duration" json:"duration"`
 }
 
 func (f *GetTrafficForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
 		return false, i18n.BadRequest
+	}
+	if f.Duration < 1 {
+		f.Duration = 60
 	}
 	return true, i18n.Success
 }
