@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -23,12 +22,7 @@ func GetTraffic(victim model.Victim) ([]utils.Connection, bool, string) {
 	connections := make([]utils.Connection, 0)
 	results, err := RDB.ZRangeWithScores(ctx, key, 0, -1).Result()
 	if err != nil {
-		if errors.Is(err, redis.Nil) {
-			if ok, msg := UpdateTraffics(victim); !ok {
-				return connections, false, msg
-			}
-			return GetTraffic(victim)
-		}
+		log.Logger.Warningf("Failed to get traffic: %s", err)
 		return connections, false, i18n.RedisError
 	}
 	pipe := RDB.Pipeline()
