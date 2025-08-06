@@ -78,6 +78,7 @@ func GetTraffics(ctx *gin.Context) {
 				DstIP:   connection.DstIP,
 				SrcPort: connection.SrcPort,
 				DstPort: connection.DstPort,
+				Type:    connection.Type,
 				Count:   1,
 				Size:    int64(connection.Size),
 			}
