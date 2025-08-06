@@ -72,10 +72,10 @@ func UpdateTraffics(victim model.Victim) (bool, string) {
 	for i, conn := range connections {
 		pipe.ZAdd(ctx, key, redis.Z{
 			Score:  float64(conn.Time.UnixNano()),
-			Member: fmt.Sprintf("traffic:%d::%d", victim.ID, i),
+			Member: fmt.Sprintf("traffic:%d:%d", victim.ID, i),
 		})
 		data, _ := msgpack.Marshal(&conn)
-		pipe.Set(ctx, fmt.Sprintf("traffic:%d::%d", victim.ID, i), data, 30*time.Minute)
+		pipe.Set(ctx, fmt.Sprintf("traffic:%d:%d", victim.ID, i), data, 30*time.Minute)
 	}
 	pipe.Expire(ctx, key, 30*time.Minute)
 	if _, err = pipe.Exec(ctx); err != nil {
