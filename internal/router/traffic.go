@@ -68,7 +68,7 @@ func GetTraffics(ctx *gin.Context) {
 	data := make(map[string]Statistics)
 	ipL := make([]string, 0)
 	for _, connection := range connections[startIndex:endIndex] {
-		key := fmt.Sprintf("%s:%d-%s:%d-%s", connection.SrcIP, connection.SrcPort, connection.DstIP, connection.DstPort, connection.Type)
+		key := fmt.Sprintf("%s-%s-%s", connection.SrcIP, connection.DstIP, connection.Type)
 		if stats, exists := data[key]; exists {
 			stats.Count += 1
 			stats.Size += int64(connection.Size)
