@@ -48,11 +48,8 @@ func GetTraffics(ctx *gin.Context) {
 	endIndex := len(connections) - 1
 	for i, connection := range connections {
 		connections[i].TimeShift = connection.Time.Sub(firstPacket.Time)
-		if connections[i].TimeShift > time.Duration(form.TimeShift*1e9) {
-			startIndex = i - 1
-			if startIndex < 0 {
-				startIndex = 0
-			}
+		if connections[i].TimeShift < time.Duration(form.TimeShift*1e9) {
+			startIndex = i
 		}
 		if connections[i].TimeShift > time.Duration((form.TimeShift+form.Duration)*1e9) {
 			endIndex = i
