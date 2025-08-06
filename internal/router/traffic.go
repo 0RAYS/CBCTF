@@ -37,7 +37,7 @@ func GetTraffics(ctx *gin.Context) {
 			return
 		}
 	}
-	totalDuation := connections[len(connections)-1].Time.Sub(connections[0].Time).Seconds()
+	totalDuration := connections[len(connections)-1].Time.Sub(connections[0].Time)/1e9 + 1
 	firstPacket := connections[0]
 	firstPacket.TimeShift = 0
 	startIndex := 0
@@ -102,5 +102,5 @@ func GetTraffics(ctx *gin.Context) {
 			"size":     stats.Size,
 		})
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"connections": conn, "ip": ipL, "duration": int64(totalDuation)/1e9 + 1}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"connections": conn, "ip": ipL, "duration": totalDuration}})
 }
