@@ -15,11 +15,11 @@ func LockFrpsPort(host string, port int32, protocol string) error {
 func IsFrpsPortLocked(host string, port int32, protocol string) (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
-	return RDB.SIsMember(ctx, fmt.Sprintf("frps:%s,%s", host, protocol), port).Result()
+	return RDB.SIsMember(ctx, fmt.Sprintf("frps:%s:%s", host, protocol), port).Result()
 }
 
 func UnlockFrpsPort(host string, port int32, protocol string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
-	return RDB.SRem(ctx, fmt.Sprintf("frps:%s,%s", host, protocol), port).Err()
+	return RDB.SRem(ctx, fmt.Sprintf("frps:%s:%s", host, protocol), port).Err()
 }
