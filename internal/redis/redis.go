@@ -5,9 +5,10 @@ import (
 	"CBCTF/internal/log"
 	"context"
 	"fmt"
-	"github.com/redis/go-redis/v9"
 	"sync/atomic"
 	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
 var (

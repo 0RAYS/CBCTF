@@ -5,8 +5,9 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	db "CBCTF/internal/repo"
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 func CreateContest(tx *gorm.DB, form f.CreateContestForm) (model.Contest, bool, string) {

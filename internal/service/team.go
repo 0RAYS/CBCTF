@@ -7,9 +7,10 @@ import (
 	"CBCTF/internal/prometheus"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/utils"
-	"gorm.io/gorm"
 	"math"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 func UpdateTeam(tx *gorm.DB, team model.Team, form f.UpdateTeamForm) (bool, string) {

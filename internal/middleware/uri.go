@@ -4,8 +4,9 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	db "CBCTF/internal/repo"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 // SetUser 保存 model.User 至上下文

@@ -3,13 +3,14 @@ package config
 import (
 	_ "embed"
 	"errors"
-	"github.com/spf13/viper"
-	"github.com/vmihailenco/msgpack/v5"
 	"log"
 	"os"
 	"slices"
 	"strings"
 	"time"
+
+	"github.com/spf13/viper"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 var (

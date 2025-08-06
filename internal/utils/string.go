@@ -3,8 +3,9 @@ package utils
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"github.com/google/uuid"
 	"strings"
+
+	"github.com/google/uuid"
 )
 
 // UUID 生成随机uuid

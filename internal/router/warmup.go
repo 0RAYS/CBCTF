@@ -9,9 +9,10 @@ import (
 	"CBCTF/internal/service"
 	"CBCTF/internal/websocket"
 	"CBCTF/internal/websocket/model"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"slices"
+
+	"github.com/gin-gonic/gin"
 )
 
 func GetContestChallengeImage(ctx *gin.Context) {

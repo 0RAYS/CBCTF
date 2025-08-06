@@ -7,10 +7,11 @@ import (
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"slices"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func RateLimit(name string, maxRequests int, window time.Duration) gin.HandlerFunc {

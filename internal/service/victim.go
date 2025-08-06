@@ -9,10 +9,11 @@ import (
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/utils"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"slices"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func needVPC(dockers []model.Docker) bool {

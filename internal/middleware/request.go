@@ -3,9 +3,10 @@ package middleware
 import (
 	"CBCTF/internal/config"
 	db "CBCTF/internal/repo"
-	"github.com/gin-gonic/gin"
 	"slices"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 // AccessLog 记录访问日志

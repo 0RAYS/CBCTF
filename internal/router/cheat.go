@@ -6,8 +6,9 @@ import (
 	"CBCTF/internal/middleware"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/resp"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func GetCheats(ctx *gin.Context) {

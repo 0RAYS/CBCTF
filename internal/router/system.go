@@ -9,9 +9,10 @@ import (
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/service"
 	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/net"
-	"net/http"
 )
 
 func HomePage(ctx *gin.Context) {

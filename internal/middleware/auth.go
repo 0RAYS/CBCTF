@@ -8,9 +8,10 @@ import (
 	"CBCTF/internal/service"
 	"CBCTF/internal/utils"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 // CheckAuth 是否登录, 用户是否被 ban, 记录设备

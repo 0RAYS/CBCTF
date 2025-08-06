@@ -4,9 +4,10 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	db "CBCTF/internal/repo"
-	"gorm.io/gorm"
 	"slices"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 func VerifyFlag(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge, value string) (bool, model.ContestFlag, model.TeamFlag, bool, string) {

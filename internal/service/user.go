@@ -7,8 +7,9 @@ import (
 	"CBCTF/internal/oauth"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/utils"
-	"gorm.io/gorm"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 func CreateUser(tx *gorm.DB, form f.RegisterForm) (model.User, bool, string) {

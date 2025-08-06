@@ -9,9 +9,10 @@ import (
 	"CBCTF/internal/utils"
 	"context"
 	"fmt"
+	"time"
+
 	"gorm.io/gorm"
 	corev1 "k8s.io/api/core/v1"
-	"time"
 )
 
 func GetNodeImageList() (map[string][]string, bool, string) {

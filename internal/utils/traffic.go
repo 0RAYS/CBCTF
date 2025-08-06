@@ -1,11 +1,12 @@
 package utils
 
 import (
+	"os"
+	"time"
+
 	"github.com/gopacket/gopacket"
 	"github.com/gopacket/gopacket/layers"
 	"github.com/gopacket/gopacket/pcap"
-	"os"
-	"time"
 )
 
 type Connection struct {

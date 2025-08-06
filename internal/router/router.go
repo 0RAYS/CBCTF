@@ -219,7 +219,7 @@ func Init() *gin.Engine {
 
 					adminTraffic := adminContainer.Group("/traffic")
 					adminTraffic.GET("/download", DownloadTraffic)
-					//adminTraffic.GET("", GetTraffics)
+					adminTraffic.GET("", GetTraffics)
 				}
 
 				adminContestTeam.GET("/writeups", GetWriteUPs)

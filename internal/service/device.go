@@ -4,8 +4,9 @@ import (
 	"CBCTF/internal/model"
 	db "CBCTF/internal/repo"
 	"fmt"
-	"gorm.io/gorm"
 	"sync"
+
+	"gorm.io/gorm"
 )
 
 var UserDeviceMutex sync.Map

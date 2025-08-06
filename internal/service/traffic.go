@@ -7,9 +7,10 @@ import (
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/utils"
 	"fmt"
-	"gorm.io/gorm"
 	"os"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 // LoadTraffic 简单记录涉及到的 IP 地址

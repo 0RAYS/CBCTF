@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"CBCTF/internal/utils"
+
 	"github.com/gin-gonic/gin"
 )
 

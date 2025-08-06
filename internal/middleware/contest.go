@@ -2,9 +2,10 @@ package middleware
 
 import (
 	"CBCTF/internal/model"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"slices"
+
+	"github.com/gin-gonic/gin"
 )
 
 var (
