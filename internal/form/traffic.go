@@ -8,8 +8,8 @@ import (
 )
 
 type GetTrafficForm struct {
-	TimeShift uint64 `form:"time_shift" json:"time_shift"`
-	Duration  uint64 `form:"duration" json:"duration"`
+	TimeShift int64 `form:"time_shift" json:"time_shift"`
+	Duration  int64 `form:"duration" json:"duration"`
 }
 
 func (f *GetTrafficForm) Bind(ctx *gin.Context) (bool, string) {
