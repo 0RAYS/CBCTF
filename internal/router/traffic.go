@@ -90,13 +90,11 @@ func GetTraffics(ctx *gin.Context) {
 	conn := make([]gin.H, 0)
 	for _, stats := range data {
 		conn = append(conn, gin.H{
-			"src_ip":   stats.SrcIP,
-			"dst_ip":   stats.DstIP,
-			"src_port": stats.SrcPort,
-			"dst_port": stats.DstPort,
-			"type":     stats.Type,
-			"count":    stats.Count,
-			"size":     stats.Size,
+			"src_ip": stats.SrcIP,
+			"dst_ip": stats.DstIP,
+			"type":   stats.Type,
+			"count":  stats.Count,
+			"size":   stats.Size,
 		})
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"connections": conn, "ip": ipL, "duration": totalDuration}})
