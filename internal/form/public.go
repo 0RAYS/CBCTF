@@ -3,9 +3,10 @@ package form
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
-	"github.com/gin-gonic/gin"
 	"slices"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 var allowedModel = []string{"user", "team", "contest", "challenge"}

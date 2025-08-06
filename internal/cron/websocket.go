@@ -2,8 +2,9 @@ package cron
 
 import (
 	"CBCTF/internal/websocket"
-	"github.com/robfig/cron/v3"
 	"time"
+
+	"github.com/robfig/cron/v3"
 )
 
 func CheckWSConnection(c *cron.Cron) {

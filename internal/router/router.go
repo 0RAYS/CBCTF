@@ -8,10 +8,11 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/websocket"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func Init() *gin.Engine {

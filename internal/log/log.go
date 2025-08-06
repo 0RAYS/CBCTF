@@ -2,10 +2,11 @@ package log
 
 import (
 	"CBCTF/internal/config"
+	"strings"
+
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
-	"strings"
 )
 
 var Logger = logrus.New()

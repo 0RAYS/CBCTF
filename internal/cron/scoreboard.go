@@ -4,10 +4,11 @@ import (
 	"CBCTF/internal/model"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/service"
-	"github.com/robfig/cron/v3"
 	"math"
 	"slices"
 	"time"
+
+	"github.com/robfig/cron/v3"
 )
 
 // UpdateTeamRanking 依据数据库, 更新 model.Team 的分数和排名

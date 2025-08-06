@@ -4,9 +4,10 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/utils"
+	"slices"
+
 	"github.com/gin-gonic/gin"
 	corev1 "k8s.io/api/core/v1"
-	"slices"
 )
 
 var allowedPullPolicy = []corev1.PullPolicy{corev1.PullAlways, corev1.PullNever, corev1.PullIfNotPresent}

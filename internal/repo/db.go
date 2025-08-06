@@ -5,11 +5,12 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"fmt"
+	"strings"
+	"time"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/plugin/prometheus"
-	"strings"
-	"time"
 )
 
 var DB *gorm.DB

@@ -4,9 +4,10 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"context"
+	"slices"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"slices"
 )
 
 func ListNodes(ctx context.Context) (*corev1.NodeList, bool, string) {

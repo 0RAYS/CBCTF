@@ -5,9 +5,10 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
-	"github.com/gin-gonic/gin"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 // CreateContestForm for create contest

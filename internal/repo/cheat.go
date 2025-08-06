@@ -6,8 +6,9 @@ import (
 	"CBCTF/internal/model"
 	"crypto/md5"
 	"fmt"
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type CheatRepo struct {

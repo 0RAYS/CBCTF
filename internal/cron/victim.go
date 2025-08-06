@@ -5,9 +5,10 @@ import (
 	"CBCTF/internal/log"
 	db "CBCTF/internal/repo"
 	"context"
-	"github.com/robfig/cron/v3"
 	"strings"
 	"time"
+
+	"github.com/robfig/cron/v3"
 )
 
 func CloseTimeoutVictims(c *cron.Cron) {

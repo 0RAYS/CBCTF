@@ -4,8 +4,9 @@ import (
 	"CBCTF/internal/model"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/service"
-	"github.com/robfig/cron/v3"
 	"time"
+
+	"github.com/robfig/cron/v3"
 )
 
 // ClearContestChallengeMutex 定时任务清理flag提交锁 service.SolvedMutex
