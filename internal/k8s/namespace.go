@@ -27,7 +27,7 @@ func CreateNamespace(ctx context.Context, options CreateNamespaceOptions) (*core
 	}
 	namespace, err = kubeClient.CoreV1().Namespaces().Create(ctx, namespace, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create Namespace: %v", err)
+		log.Logger.Warningf("Failed to create Namespace: %s", err)
 		return nil, false, i18n.CreateNamespaceError
 	}
 	return namespace, true, i18n.Success

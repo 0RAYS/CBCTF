@@ -17,7 +17,7 @@ type OauthCallbackForm struct {
 
 func (f *OauthCallbackForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %v", err)
+		log.Logger.Debugf("Failed to bind form: %s", err)
 		return false, i18n.BadRequest
 	}
 	return true, i18n.Success
@@ -41,7 +41,7 @@ type CreateOauthProviderForm struct {
 
 func (f *CreateOauthProviderForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %v", err)
+		log.Logger.Debugf("Failed to bind form: %s", err)
 		return false, i18n.BadRequest
 	}
 	f.AuthURL = strings.TrimSpace(f.AuthURL)
@@ -113,7 +113,7 @@ type UpdateOauthProviderForm struct {
 
 func (f *UpdateOauthProviderForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %v", err)
+		log.Logger.Debugf("Failed to bind form: %s", err)
 		return false, i18n.BadRequest
 	}
 	if f.AuthURL != nil {

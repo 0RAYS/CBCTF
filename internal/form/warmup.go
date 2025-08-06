@@ -19,7 +19,7 @@ type WarmUpImageForm struct {
 
 func (f *WarmUpImageForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %v", err)
+		log.Logger.Debugf("Failed to bind form: %s", err)
 		return false, i18n.BadRequest
 	}
 	f.PullPolicy = utils.ToTitle(f.PullPolicy)
@@ -39,7 +39,7 @@ type GetContestVictimsForm struct {
 
 func (f *GetContestVictimsForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %v", err)
+		log.Logger.Debugf("Failed to bind form: %s", err)
 		return false, i18n.BadRequest
 	}
 	if f.Limit > 100 {
@@ -60,7 +60,7 @@ type StopContestVictimsForm struct {
 
 func (f *StopContestVictimsForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %v", err)
+		log.Logger.Debugf("Failed to bind form: %s", err)
 		return false, i18n.BadRequest
 	}
 	return true, i18n.Success
@@ -73,7 +73,7 @@ type StartContestVictimsForm struct {
 
 func (f *StartContestVictimsForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %v", err)
+		log.Logger.Debugf("Failed to bind form: %s", err)
 		return false, i18n.BadRequest
 	}
 	return true, i18n.Success

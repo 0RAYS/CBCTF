@@ -33,7 +33,7 @@ func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*core
 	}
 	configMap, err = kubeClient.CoreV1().ConfigMaps(globalNamespace).Create(ctx, configMap, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create ConfigMap: %v", err)
+		log.Logger.Warningf("Failed to create ConfigMap: %s", err)
 		return nil, false, i18n.CreateConfigMapError
 	}
 	return configMap, true, i18n.Success
@@ -45,7 +45,7 @@ func GetConfigMap(ctx context.Context, name string) (*corev1.ConfigMap, bool, st
 		if apierror.IsNotFound(err) {
 			return nil, false, i18n.ConfigMapNotFound
 		}
-		log.Logger.Warningf("Failed to get ConfigMap: %v", err)
+		log.Logger.Warningf("Failed to get ConfigMap: %s", err)
 		return nil, false, i18n.GetConfigMapError
 	}
 	return configMap, true, i18n.Success
@@ -67,7 +67,7 @@ func GetConfigMapList(ctx context.Context, labels ...map[string]string) (*corev1
 		if apierror.IsNotFound(err) {
 			return nil, false, i18n.ConfigMapNotFound
 		}
-		log.Logger.Warningf("Failed to list ConfigMap: %v", err)
+		log.Logger.Warningf("Failed to list ConfigMap: %s", err)
 		return nil, false, i18n.GetConfigMapError
 	}
 	return configMapList, true, i18n.Success
@@ -76,7 +76,7 @@ func GetConfigMapList(ctx context.Context, labels ...map[string]string) (*corev1
 func DeleteConfigMap(ctx context.Context, configMapName string) (bool, string) {
 	err := kubeClient.CoreV1().ConfigMaps(globalNamespace).Delete(ctx, configMapName, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete ConfigMap: %v", err)
+		log.Logger.Warningf("Failed to delete ConfigMap: %s", err)
 		return false, i18n.DeleteConfigMapError
 	}
 	return true, i18n.Success
@@ -95,7 +95,7 @@ func DeleteConfigMapList(ctx context.Context, labels ...map[string]string) (bool
 	}
 	err := kubeClient.CoreV1().ConfigMaps(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete ConfigMap: %v", err)
+		log.Logger.Warningf("Failed to delete ConfigMap: %s", err)
 		return false, i18n.DeleteConfigMapError
 	}
 	return true, i18n.Success

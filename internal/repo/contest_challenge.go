@@ -123,7 +123,7 @@ func (c *ContestChallengeRepo) Delete(idL ...uint) (bool, string) {
 		return false, msg
 	}
 	if res := c.DB.Model(&model.ContestChallenge{}).Where("id IN ?", idL).Delete(&model.ContestChallenge{}); res.Error != nil {
-		log.Logger.Warningf("Failed to delete ContestChallenge: %v", res.Error)
+		log.Logger.Warningf("Failed to delete ContestChallenge: %s", res.Error)
 		return false, i18n.DeleteContestChallengeError
 	}
 	return true, i18n.Success

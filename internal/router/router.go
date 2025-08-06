@@ -19,9 +19,9 @@ func Init() *gin.Engine {
 	gin.SetMode(config.Env.Gin.Mode)
 	router := gin.New()
 
-	log.Logger.Infof("Trust proxies: %v", config.Env.Gin.Proxies)
+	log.Logger.Infof("Trust proxies: %s", config.Env.Gin.Proxies)
 	if err := router.SetTrustedProxies(config.Env.Gin.Proxies); err != nil {
-		log.Logger.Warningf("Set trusted proxies failed: %v", err)
+		log.Logger.Warningf("Set trusted proxies failed: %s", err)
 	}
 
 	router.MaxMultipartMemory = int64(config.Env.Gin.Upload.Max << 20)

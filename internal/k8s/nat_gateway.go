@@ -41,7 +41,7 @@ func CreateVPCNatGateway(ctx context.Context, options CreateVPCNatGatewayOptions
 	}
 	gateway, err = kubeOVNClient.KubeovnV1().VpcNatGateways().Create(ctx, gateway, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create VPCNatGateway: %v", err)
+		log.Logger.Warningf("Failed to create VPCNatGateway: %s", err)
 		return nil, false, i18n.CreateVPCNatGatewayError
 	}
 	return gateway, true, i18n.Success
@@ -53,7 +53,7 @@ func GetVPCNatGateway(ctx context.Context, name string) (*kubeovnv1.VpcNatGatewa
 		if apierror.IsNotFound(err) {
 			return nil, false, i18n.VPCNatGatewayNotFound
 		}
-		log.Logger.Warningf("Failed to get VPCNatGateway: %v", err)
+		log.Logger.Warningf("Failed to get VPCNatGateway: %s", err)
 		return nil, false, i18n.GetVPCNatGatewayError
 	}
 	return gateway, true, i18n.Success
@@ -72,7 +72,7 @@ func GetVPCNatGatewayList(ctx context.Context, labels ...map[string]string) (*ku
 	}
 	gatewayList, err := kubeOVNClient.KubeovnV1().VpcNatGateways().List(ctx, options)
 	if err != nil {
-		log.Logger.Warningf("Failed to list VPCNatGateway: %v", err)
+		log.Logger.Warningf("Failed to list VPCNatGateway: %s", err)
 		return nil, false, i18n.GetVPCNatGatewayError
 	}
 	return gatewayList, true, i18n.Success
@@ -81,7 +81,7 @@ func GetVPCNatGatewayList(ctx context.Context, labels ...map[string]string) (*ku
 func DeleteVPCNatGateway(ctx context.Context, name string) (bool, string) {
 	err := kubeOVNClient.KubeovnV1().VpcNatGateways().Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete VPCNatGateway: %v", err)
+		log.Logger.Warningf("Failed to delete VPCNatGateway: %s", err)
 		return false, i18n.DeleteVPCNatGatewayError
 	}
 	return true, i18n.Success
@@ -100,7 +100,7 @@ func DeleteVPCNatGatewayList(ctx context.Context, labels ...map[string]string) (
 	}
 	err := kubeOVNClient.KubeovnV1().VpcNatGateways().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete VPCNatGateway: %v", err)
+		log.Logger.Warningf("Failed to delete VPCNatGateway: %s", err)
 		return false, i18n.DeleteVPCNatGatewayError
 	}
 	return true, i18n.Success

@@ -24,12 +24,12 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 	go func(victim model.Victim) {
 		err := utils.Zip(victim.TrafficBasePath(), victim.TrafficZipPath())
 		if err != nil {
-			log.Logger.Warningf("Failed to zip .pcap files: %v", err)
+			log.Logger.Warningf("Failed to zip .pcap files: %s", err)
 		}
 	}(victim)
 	dir, err := os.ReadDir(victim.TrafficBasePath())
 	if err != nil {
-		log.Logger.Warningf("Failed to read dir: %v", err)
+		log.Logger.Warningf("Failed to read dir: %s", err)
 		return false, ""
 	}
 	for _, file := range dir {

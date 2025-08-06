@@ -30,7 +30,7 @@ func Init() {
 		dialer := gomail.NewDialer(sender.Host, sender.Port, sender.Addr, sender.Pwd)
 		auth, err := dialer.Dial()
 		if err != nil {
-			log.Logger.Warningf("Failed to connect to email server %s:%d: %v", sender.Host, sender.Port, err)
+			log.Logger.Warningf("Failed to connect to email server %s:%d: %s", sender.Host, sender.Port, err)
 			continue
 		}
 		Senders = append(Senders, &Sender{
@@ -51,7 +51,7 @@ func Redial(old *Sender) error {
 	dialer := gomail.NewDialer(old.Host, old.Port, old.Addr, old.Pwd)
 	auth, err := dialer.Dial()
 	if err != nil {
-		log.Logger.Warningf("Failed to connect to email server %s:%d: %v", old.Host, old.Port, err)
+		log.Logger.Warningf("Failed to connect to email server %s:%d: %s", old.Host, old.Port, err)
 		return err
 	}
 	old.Auth = &auth

@@ -20,7 +20,7 @@ func Cmd() {
 	cmd := flag.NewFlagSet("k8s", flag.ExitOnError)
 	err := cmd.Parse(os.Args[2:])
 	if err != nil {
-		log.Logger.Fatalf("Failed to parse command: %v", err)
+		log.Logger.Fatalf("Failed to parse command: %s", err)
 	}
 
 	k8s.Init()

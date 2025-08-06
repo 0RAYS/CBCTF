@@ -26,7 +26,7 @@ type GetChallengesForm struct {
 
 func (f *GetChallengesForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %v", err)
+		log.Logger.Debugf("Failed to bind form: %s", err)
 		return false, i18n.BadRequest
 	}
 	if f.Limit > 100 {
@@ -52,7 +52,7 @@ type GetCategoriesForm struct {
 
 func (f *GetCategoriesForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %v", err)
+		log.Logger.Debugf("Failed to bind form: %s", err)
 		return false, i18n.BadRequest
 	}
 	if !slices.Contains(allowedChallengeType, f.Type) {
@@ -68,7 +68,7 @@ type DownloadChallengeForm struct {
 
 func (f *DownloadChallengeForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %v", err)
+		log.Logger.Debugf("Failed to bind form: %s", err)
 		return false, i18n.BadRequest
 	}
 	if !slices.Contains(allowedFileName, f.File) {
@@ -91,7 +91,7 @@ type CreateChallengeForm struct {
 
 func (f *CreateChallengeForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %v", err)
+		log.Logger.Debugf("Failed to bind form: %s", err)
 		return false, i18n.BadRequest
 	}
 	f.Name = strings.TrimSpace(f.Name)
@@ -120,7 +120,7 @@ type UpdateChallengeForm struct {
 
 func (f *UpdateChallengeForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %v", err)
+		log.Logger.Debugf("Failed to bind form: %s", err)
 		return false, i18n.BadRequest
 	}
 	if f.Name != nil {

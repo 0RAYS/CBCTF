@@ -43,7 +43,7 @@ func CreateSubnet(ctx context.Context, options CreateSubnetOptions) (*kubeovnv1.
 	}
 	subnet, err = kubeOVNClient.KubeovnV1().Subnets().Create(ctx, subnet, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create Subnet: %v", err)
+		log.Logger.Warningf("Failed to create Subnet: %s", err)
 		return nil, false, i18n.CreateSubnetError
 	}
 	return subnet, true, i18n.Success
@@ -55,7 +55,7 @@ func GetSubnet(ctx context.Context, name string) (*kubeovnv1.Subnet, bool, strin
 		if apierror.IsNotFound(err) {
 			return nil, false, i18n.SubnetNotFound
 		}
-		log.Logger.Warningf("Failed to get Subnet: %v", err)
+		log.Logger.Warningf("Failed to get Subnet: %s", err)
 		return nil, false, i18n.GetSubnetError
 	}
 	return subnet, true, i18n.Success
@@ -74,7 +74,7 @@ func GetSubnetList(ctx context.Context, labels ...map[string]string) (*kubeovnv1
 	}
 	subnetList, err := kubeOVNClient.KubeovnV1().Subnets().List(ctx, options)
 	if err != nil {
-		log.Logger.Warningf("Failed to list Subnet: %v", err)
+		log.Logger.Warningf("Failed to list Subnet: %s", err)
 		return nil, false, i18n.GetSubnetError
 	}
 	return subnetList, true, i18n.Success
@@ -83,7 +83,7 @@ func GetSubnetList(ctx context.Context, labels ...map[string]string) (*kubeovnv1
 func DeleteSubnet(ctx context.Context, name string) (bool, string) {
 	err := kubeOVNClient.KubeovnV1().Subnets().Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete Subnet: %v", err)
+		log.Logger.Warningf("Failed to delete Subnet: %s", err)
 		return false, i18n.DeleteSubnetError
 	}
 	return true, i18n.Success
@@ -102,7 +102,7 @@ func DeleteSubnetList(ctx context.Context, labels ...map[string]string) (bool, s
 	}
 	err := kubeOVNClient.KubeovnV1().Subnets().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete Subnet: %v", err)
+		log.Logger.Warningf("Failed to delete Subnet: %s", err)
 		return false, i18n.DeleteSubnetError
 	}
 	return true, i18n.Success

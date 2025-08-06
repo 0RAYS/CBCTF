@@ -19,7 +19,7 @@ type SearchForm struct {
 
 func (f *SearchForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %v", err)
+		log.Logger.Debugf("Failed to bind form: %s", err)
 		return false, i18n.BadRequest
 	}
 	f.Model = strings.TrimSpace(strings.ToLower(f.Model))
@@ -46,7 +46,7 @@ type GetModelsForm struct {
 
 func (f *GetModelsForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %v", err)
+		log.Logger.Debugf("Failed to bind form: %s", err)
 		return false, i18n.BadRequest
 	}
 	if f.Limit > 100 {
@@ -69,7 +69,7 @@ type ChangePasswordForm struct {
 
 func (f *ChangePasswordForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %v", err)
+		log.Logger.Debugf("Failed to bind form: %s", err)
 		return false, i18n.BadRequest
 	}
 	if f.OldPassword == f.NewPassword {

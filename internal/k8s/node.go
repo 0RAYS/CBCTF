@@ -13,7 +13,7 @@ import (
 func ListNodes(ctx context.Context) (*corev1.NodeList, bool, string) {
 	nodes, err := kubeClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to list nodes: %v", err)
+		log.Logger.Warningf("Failed to list nodes: %s", err)
 		return nodes, false, i18n.GetNodeListError
 	}
 	return nodes, true, i18n.Success

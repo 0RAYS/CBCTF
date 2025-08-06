@@ -57,7 +57,7 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, boo
 	}
 	job, err = kubeClient.BatchV1().Jobs(globalNamespace).Create(ctx, job, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create Job: %v", err)
+		log.Logger.Warningf("Failed to create Job: %s", err)
 		return nil, false, i18n.CreateJobError
 	}
 	return job, true, i18n.Success

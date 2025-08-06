@@ -37,7 +37,7 @@ func CreateVPC(ctx context.Context, options CreateVPCOptions) (*kubeovnv1.Vpc, b
 	}
 	vpc, err = kubeOVNClient.KubeovnV1().Vpcs().Create(ctx, vpc, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create VPC: %v", err)
+		log.Logger.Warningf("Failed to create VPC: %s", err)
 		return nil, false, i18n.CreateVPCError
 	}
 	return vpc, true, i18n.Success
@@ -49,7 +49,7 @@ func GetVPC(ctx context.Context, name string) (*kubeovnv1.Vpc, bool, string) {
 		if apierror.IsNotFound(err) {
 			return nil, false, i18n.VPCNotFound
 		}
-		log.Logger.Warningf("Failed to get VPC: %v", err)
+		log.Logger.Warningf("Failed to get VPC: %s", err)
 		return nil, false, i18n.GetVPCError
 	}
 	return vpc, true, i18n.Success
@@ -68,7 +68,7 @@ func GetVPCList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.Vp
 	}
 	vpcList, err := kubeOVNClient.KubeovnV1().Vpcs().List(ctx, options)
 	if err != nil {
-		log.Logger.Warningf("Failed to list VPC: %v", err)
+		log.Logger.Warningf("Failed to list VPC: %s", err)
 		return nil, false, i18n.GetVPCError
 	}
 	return vpcList, true, i18n.Success
@@ -77,7 +77,7 @@ func GetVPCList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.Vp
 func DeleteVPC(ctx context.Context, name string) (bool, string) {
 	err := kubeOVNClient.KubeovnV1().Vpcs().Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete VPC: %v", err)
+		log.Logger.Warningf("Failed to delete VPC: %s", err)
 		return false, i18n.DeleteVPCError
 	}
 	return true, i18n.Success
@@ -96,7 +96,7 @@ func DeleteVPCList(ctx context.Context, labels ...map[string]string) (bool, stri
 	}
 	err := kubeOVNClient.KubeovnV1().Vpcs().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete VPC: %v", err)
+		log.Logger.Warningf("Failed to delete VPC: %s", err)
 		return false, i18n.DeleteVPCError
 	}
 	return true, i18n.Success

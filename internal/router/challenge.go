@@ -82,7 +82,7 @@ func CreateChallenge(ctx *gin.Context) {
 	}
 	tx.Commit()
 	if err := os.MkdirAll(challenge.BasicDir(), 0755); err != nil {
-		log.Logger.Warningf("create challenge dir err: %v", err)
+		log.Logger.Warningf("create challenge dir err: %s", err)
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.CreateDirError, "data": nil})
 		return
 	}
