@@ -10,13 +10,14 @@ import (
 )
 
 type Connection struct {
-	Time    time.Time
-	SrcIP   string
-	DstIP   string
-	SrcPort uint16
-	DstPort uint16
-	Type    string
-	Size    int
+	TimeShift time.Duration
+	Time      time.Time
+	SrcIP     string
+	DstIP     string
+	SrcPort   uint16
+	DstPort   uint16
+	Type      string
+	Size      int
 }
 
 func ReadPcap(path string) ([]Connection, error) {
