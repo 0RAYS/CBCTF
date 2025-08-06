@@ -40,7 +40,7 @@ func CreateEIP(ctx context.Context, options CreateEIPOptions) (*kubeovnv1.Iptabl
 	}
 	eip, err = kubeOVNClient.KubeovnV1().IptablesEIPs().Create(ctx, eip, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create EIP: %v", err)
+		log.Logger.Warningf("Failed to create EIP: %s", err)
 		return nil, false, i18n.CreateEIPError
 	}
 	for {
@@ -62,7 +62,7 @@ func GetEIP(ctx context.Context, name string) (*kubeovnv1.IptablesEIP, bool, str
 		if apierror.IsNotFound(err) {
 			return nil, false, i18n.EIPNotFound
 		}
-		log.Logger.Warningf("Failed to get EIP: %v", err)
+		log.Logger.Warningf("Failed to get EIP: %s", err)
 		return nil, false, i18n.GetEIPError
 	}
 	return eip, true, i18n.Success
@@ -81,7 +81,7 @@ func GetEIPList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.Ip
 	}
 	eips, err := kubeOVNClient.KubeovnV1().IptablesEIPs().List(ctx, options)
 	if err != nil {
-		log.Logger.Warningf("Failed to get EIP list: %v", err)
+		log.Logger.Warningf("Failed to get EIP list: %s", err)
 		return nil, false, i18n.GetEIPError
 	}
 	return eips, true, i18n.Success
@@ -90,7 +90,7 @@ func GetEIPList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.Ip
 func DeleteEIP(ctx context.Context, name string) (bool, string) {
 	err := kubeOVNClient.KubeovnV1().IptablesEIPs().Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete EIP: %v", err)
+		log.Logger.Warningf("Failed to delete EIP: %s", err)
 		return false, i18n.DeleteEIPError
 	}
 	return true, i18n.Success
@@ -109,7 +109,7 @@ func DeleteEIPByLabels(ctx context.Context, labels ...map[string]string) (bool, 
 	}
 	err := kubeOVNClient.KubeovnV1().IptablesEIPs().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete EIP: %v", err)
+		log.Logger.Warningf("Failed to delete EIP: %s", err)
 		return false, i18n.DeleteEIPError
 	}
 	return true, i18n.Success

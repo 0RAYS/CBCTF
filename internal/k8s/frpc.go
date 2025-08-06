@@ -161,7 +161,7 @@ func GetAvailableFrpsPort(host string, portRange []int32, protocol string) (int3
 	port := portRange[idxBig.Int64()]
 	locked, err := redis.IsFrpsPortLocked(host, port, protocol)
 	if err != nil {
-		log.Logger.Warningf("Failed to check if port %d is locked: %v", port, err)
+		log.Logger.Warningf("Failed to check if port %d is locked: %s", port, err)
 		return 0, false, i18n.RedisError
 	}
 	if locked {

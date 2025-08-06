@@ -64,7 +64,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool
 	}
 	pod, err = kubeClient.CoreV1().Pods(globalNamespace).Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create Pod: %v", err)
+		log.Logger.Warningf("Failed to create Pod: %s", err)
 		return nil, false, i18n.CreatePodError
 	}
 	for {
@@ -91,7 +91,7 @@ func GetPod(ctx context.Context, name string) (*corev1.Pod, bool, string) {
 		if apierror.IsNotFound(err) {
 			return nil, false, i18n.PodNotFound
 		}
-		log.Logger.Warningf("Failed to get Pod %s: %v", name, err)
+		log.Logger.Warningf("Failed to get Pod %s: %s", name, err)
 		return nil, false, i18n.GetPodError
 	}
 	return pod, true, i18n.Success
@@ -110,7 +110,7 @@ func GetPodList(ctx context.Context, labels ...map[string]string) (*corev1.PodLi
 	}
 	podList, err := kubeClient.CoreV1().Pods(globalNamespace).List(ctx, options)
 	if err != nil {
-		log.Logger.Warningf("Failed to list Pods: %v", err)
+		log.Logger.Warningf("Failed to list Pods: %s", err)
 		return nil, false, i18n.GetPodError
 	}
 	return podList, true, i18n.Success
@@ -120,7 +120,7 @@ func GetPodList(ctx context.Context, labels ...map[string]string) (*corev1.PodLi
 func DeletePod(ctx context.Context, name string) (bool, string) {
 	err := kubeClient.CoreV1().Pods(globalNamespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete Pod: %v", err)
+		log.Logger.Warningf("Failed to delete Pod: %s", err)
 		return false, i18n.DeletePodError
 	}
 	return true, i18n.Success
@@ -139,7 +139,7 @@ func DeletePodList(ctx context.Context, labels ...map[string]string) (bool, stri
 	}
 	err := kubeClient.CoreV1().Pods(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete Pod: %v", err)
+		log.Logger.Warningf("Failed to delete Pod: %s", err)
 		return false, i18n.DeletePodError
 	}
 	return true, i18n.Success

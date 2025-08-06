@@ -136,7 +136,7 @@ func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
 		return false, msg
 	}
 	if res := c.DB.Model(&model.Challenge{}).Where("rand_id IN ?", randIDL).Delete(&model.Challenge{}); res.Error != nil {
-		log.Logger.Warningf("Failed to delete Challenge: %v", res.Error)
+		log.Logger.Warningf("Failed to delete Challenge: %s", res.Error)
 		return false, i18n.DeleteChallengeError
 	}
 	return true, i18n.Success

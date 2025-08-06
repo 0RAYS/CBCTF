@@ -29,7 +29,7 @@ type CreateContestForm struct {
 
 func (f *CreateContestForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %v", err)
+		log.Logger.Debugf("Failed to bind form: %s", err)
 		return false, i18n.BadRequest
 	}
 	f.Name = strings.TrimSpace(f.Name)
@@ -58,7 +58,7 @@ type UpdateContestForm struct {
 
 func (f *UpdateContestForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %v", err)
+		log.Logger.Debugf("Failed to bind form: %s", err)
 		return false, i18n.BadRequest
 	}
 	if f.Name != nil {

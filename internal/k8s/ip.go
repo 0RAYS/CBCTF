@@ -33,7 +33,7 @@ func GetIPList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.IPL
 	}
 	ipList, err := kubeOVNClient.KubeovnV1().IPs().List(ctx, options)
 	if err != nil {
-		log.Logger.Warningf("Failed to get IP list: %v", err)
+		log.Logger.Warningf("Failed to get IP list: %s", err)
 		return nil, false, i18n.GetIPError
 	}
 	return ipList, true, i18n.Success
@@ -52,7 +52,7 @@ func DeleteIPList(ctx context.Context, labels ...map[string]string) (bool, strin
 	}
 	err := kubeOVNClient.KubeovnV1().IPs().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete IP list: %v", err)
+		log.Logger.Warningf("Failed to delete IP list: %s", err)
 		return false, i18n.DeleteIPError
 	}
 	return true, i18n.Success

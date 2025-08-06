@@ -114,7 +114,7 @@ func RegisterOauthRouter(router *gin.Engine) {
 			state := utils.UUID()
 			verifier := oauth2.GenerateVerifier()
 			if err := redis.SetOauthState(provider.Provider, state, verifier); err != nil {
-				log.Logger.Warningf("Failed to set oauth state for provider %s: %v", provider.Provider, err)
+				log.Logger.Warningf("Failed to set oauth state for provider %s: %s", provider.Provider, err)
 				ctx.JSON(http.StatusOK, gin.H{"msg": i18n.RedisError, "data": nil})
 				return
 			}
@@ -130,40 +130,40 @@ func RegisterOauthRouter(router *gin.Engine) {
 			}
 			defer func(provider string, state string) {
 				if err := redis.DelOauthState(provider, state); err != nil {
-					log.Logger.Warningf("Failed to delete oauth state for provider %s: %v", provider, err)
+					log.Logger.Warningf("Failed to delete oauth state for provider %s: %s", provider, err)
 				}
 			}(provider.Provider, form.State)
 			verifier, err := redis.GetOauthVerifier(provider.Provider, form.State)
 			if err != nil {
-				log.Logger.Warningf("Failed to get oauth verifier for provider %s: %v", provider.Provider, err)
+				log.Logger.Warningf("Failed to get oauth verifier for provider %s: %s", provider.Provider, err)
 				ctx.JSON(http.StatusOK, gin.H{"msg": i18n.RedisError, "data": nil})
 				return
 			}
 			tok, err := oauthConfig.Exchange(ctx, form.Code, oauth2.VerifierOption(verifier))
 			if err != nil {
-				log.Logger.Warningf("Failed to get token for provider %s: %v", provider.Provider, err)
+				log.Logger.Warningf("Failed to get token for provider %s: %s", provider.Provider, err)
 				ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 			}
 			client := oauthConfig.Client(ctx, tok)
 			response, err := client.Get(provider.UserInfoURL)
 			if err != nil {
-				log.Logger.Warningf("Failed to get user info by provider %s: %v", provider.Provider, err)
+				log.Logger.Warningf("Failed to get user info by provider %s: %s", provider.Provider, err)
 				ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 				return
 			}
 			defer func(Body io.ReadCloser) {
 				if err = Body.Close(); err != nil {
-					log.Logger.Warningf("Failed to close response body for provider %s: %v", provider.Provider, err)
+					log.Logger.Warningf("Failed to close response body for provider %s: %s", provider.Provider, err)
 				}
 			}(response.Body)
 			var result map[string]any
 			if err = json.NewDecoder(response.Body).Decode(&result); err != nil {
-				log.Logger.Warningf("Failed to decode response body for provider %s: %v", provider.Provider, err)
+				log.Logger.Warningf("Failed to decode response body for provider %s: %s", provider.Provider, err)
 				ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 			}
 			id, ok := utils.GetFiledValue(result, provider.RespIDField)
 			if !ok {
-				log.Logger.Warningf("Failed to get user_id by provider %s: %v", provider.Provider, result)
+				log.Logger.Warningf("Failed to get user_id by provider %s: %s", provider.Provider, result)
 				ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 				return
 			}

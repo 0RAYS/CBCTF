@@ -23,18 +23,18 @@ import (
 func SaveAvatar(tx *gorm.DB, options db.CreateFileOptions, file *multipart.FileHeader) (model.File, bool, string) {
 	src, err := file.Open()
 	if err != nil {
-		log.Logger.Warningf("Failed to open file: %v", err)
+		log.Logger.Warningf("Failed to open file: %s", err)
 		return model.File{}, false, i18n.BadRequest
 	}
 	defer func(src multipart.File) {
 		err := src.Close()
 		if err != nil {
-			log.Logger.Warningf("Failed to close file: %v", err)
+			log.Logger.Warningf("Failed to close file: %s", err)
 		}
 	}(src)
 	sha256Sum := sha256.New()
 	if _, err := io.Copy(sha256Sum, src); err != nil {
-		log.Logger.Warningf("Failed to hash file: %v", err)
+		log.Logger.Warningf("Failed to hash file: %s", err)
 		return model.File{}, false, i18n.UnknownError
 	}
 	var (
@@ -95,18 +95,18 @@ func UpdateAvatar(tx *gorm.DB, v string, id uint, record model.File) (string, bo
 func SaveWriteUp(tx *gorm.DB, user model.User, contest model.Contest, team model.Team, file *multipart.FileHeader) (model.File, bool, string) {
 	src, err := file.Open()
 	if err != nil {
-		log.Logger.Warningf("Failed to open file: %v", err)
+		log.Logger.Warningf("Failed to open file: %s", err)
 		return model.File{}, false, i18n.BadRequest
 	}
 	defer func(src multipart.File) {
 		err := src.Close()
 		if err != nil {
-			log.Logger.Warningf("Failed to close file: %v", err)
+			log.Logger.Warningf("Failed to close file: %s", err)
 		}
 	}(src)
 	sha256Sum := sha256.New()
 	if _, err := io.Copy(sha256Sum, src); err != nil {
-		log.Logger.Warningf("Failed to hash file: %v", err)
+		log.Logger.Warningf("Failed to hash file: %s", err)
 		return model.File{}, false, i18n.UnknownError
 	}
 	var (

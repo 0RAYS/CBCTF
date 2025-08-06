@@ -39,12 +39,12 @@ func RegisterMetricsRouter(router *gin.Engine) {
 	var alreadyRegisteredError prometheus.AlreadyRegisteredError
 	if err := prometheus.Register(collectors.NewGoCollector()); err != nil {
 		if !errors.As(err, &alreadyRegisteredError) {
-			log.Logger.Warningf("failed to register GoCollector: %v", err)
+			log.Logger.Warningf("failed to register GoCollector: %s", err)
 		}
 	}
 	if err := prometheus.Register(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{})); err != nil {
 		if !errors.As(err, &alreadyRegisteredError) {
-			log.Logger.Warningf("failed to register ProcessCollector: %v", err)
+			log.Logger.Warningf("failed to register ProcessCollector: %s", err)
 		}
 	}
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))

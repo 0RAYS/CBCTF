@@ -70,7 +70,7 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 	}
 	networkPolicy, err = kubeClient.NetworkingV1().NetworkPolicies(globalNamespace).Create(ctx, networkPolicy, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create NetworkPolicy: %v", err)
+		log.Logger.Warningf("Failed to create NetworkPolicy: %s", err)
 		return nil, false, i18n.CreateNetworkPolicyError
 	}
 	return networkPolicy, true, i18n.Success
@@ -82,7 +82,7 @@ func GetNetworkPolicy(ctx context.Context, name string) (*netv1.NetworkPolicy, b
 		if apierror.IsNotFound(err) {
 			return nil, false, i18n.NetworkPolicyNotFound
 		}
-		log.Logger.Warningf("Failed to get NetworkPolicy: %v", err)
+		log.Logger.Warningf("Failed to get NetworkPolicy: %s", err)
 		return nil, false, i18n.GetNetworkPolicyError
 	}
 	return networkPolicy, true, i18n.Success
@@ -104,7 +104,7 @@ func GetNetworkPolicyList(ctx context.Context, labels ...map[string]string) (*ne
 		if apierror.IsNotFound(err) {
 			return nil, false, i18n.NetworkPolicyNotFound
 		}
-		log.Logger.Warningf("Failed to list NetworkPolicy: %v", err)
+		log.Logger.Warningf("Failed to list NetworkPolicy: %s", err)
 		return nil, false, i18n.GetNetworkPolicyError
 	}
 	return networkPolicyList, true, i18n.Success
@@ -113,7 +113,7 @@ func GetNetworkPolicyList(ctx context.Context, labels ...map[string]string) (*ne
 func DeleteNetworkPolicy(ctx context.Context, name string) (bool, string) {
 	err := kubeClient.NetworkingV1().NetworkPolicies(globalNamespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete NetworkPolicy %s: %v", name, err)
+		log.Logger.Warningf("Failed to delete NetworkPolicy %s: %s", name, err)
 		return false, i18n.DeleteNetworkPolicyError
 	}
 	return true, i18n.Success
@@ -132,7 +132,7 @@ func DeleteNetworkPolicyList(ctx context.Context, labels ...map[string]string) (
 	}
 	err := kubeClient.NetworkingV1().NetworkPolicies(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete NetworkPolicy: %v", err)
+		log.Logger.Warningf("Failed to delete NetworkPolicy: %s", err)
 		return false, i18n.DeleteNetworkPolicyError
 	}
 	return true, i18n.Success

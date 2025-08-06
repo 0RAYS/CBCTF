@@ -39,7 +39,7 @@ func CreateNetAttachDef(ctx context.Context, options CreateNetAttachDefOptions) 
 	}
 	netAttachDef, err = natattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(options.Namespace).Create(ctx, netAttachDef, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create NetworkAttachmentDefinition: %v", err)
+		log.Logger.Warningf("Failed to create NetworkAttachmentDefinition: %s", err)
 		return nil, false, i18n.CreateNetAttError
 	}
 	return netAttachDef, true, i18n.Success
@@ -54,7 +54,7 @@ func GetNetAttachDef(ctx context.Context, name string, namespace ...string) (*ne
 		if apierror.IsNotFound(err) {
 			return nil, false, i18n.NetAttNotFound
 		}
-		log.Logger.Warningf("Failed to get NetworkAttachmentDefinition: %v", err)
+		log.Logger.Warningf("Failed to get NetworkAttachmentDefinition: %s", err)
 		return nil, false, i18n.GetNetAttError
 	}
 	return netAttachDef, true, i18n.Success
@@ -73,7 +73,7 @@ func GetNetAttachDefList(ctx context.Context, labels ...map[string]string) (*net
 	}
 	netAttachDefList, err := natattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(globalNamespace).List(ctx, options)
 	if err != nil {
-		log.Logger.Warningf("Failed to list NetworkAttachmentDefinitions: %v", err)
+		log.Logger.Warningf("Failed to list NetworkAttachmentDefinitions: %s", err)
 		return nil, false, i18n.GetNetAttError
 	}
 	return netAttachDefList, true, i18n.Success
@@ -82,7 +82,7 @@ func GetNetAttachDefList(ctx context.Context, labels ...map[string]string) (*net
 func DeleteNetAttachDef(ctx context.Context, name string, namespace string) (bool, string) {
 	err := natattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(namespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete NetworkAttachmentDefinition: %v", err)
+		log.Logger.Warningf("Failed to delete NetworkAttachmentDefinition: %s", err)
 		return false, i18n.DeleteNetAttError
 	}
 	return true, i18n.Success
@@ -101,7 +101,7 @@ func DeleteNetAttachDefList(ctx context.Context, namespace string, labels ...map
 	}
 	err := natattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(namespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete NetworkAttachmentDefinition: %v", err)
+		log.Logger.Warningf("Failed to delete NetworkAttachmentDefinition: %s", err)
 		return false, i18n.DeleteNetAttError
 	}
 	return true, i18n.Success

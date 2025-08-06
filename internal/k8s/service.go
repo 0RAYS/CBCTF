@@ -55,7 +55,7 @@ func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.S
 	}
 	service, err = kubeClient.CoreV1().Services(globalNamespace).Create(ctx, service, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create Service: %v", err)
+		log.Logger.Warningf("Failed to create Service: %s", err)
 		return nil, false, i18n.CreateServiceError
 	}
 	return service, true, i18n.Success
@@ -77,7 +77,7 @@ func GetServiceList(ctx context.Context, labels ...map[string]string) (*corev1.S
 		if apierror.IsNotFound(err) {
 			return nil, false, i18n.ServiceNotFound
 		}
-		log.Logger.Warningf("Failed to list Service: %v", err)
+		log.Logger.Warningf("Failed to list Service: %s", err)
 		return nil, false, i18n.GetServiceError
 	}
 	return serviceList, true, i18n.Success
@@ -87,7 +87,7 @@ func GetServiceList(ctx context.Context, labels ...map[string]string) (*corev1.S
 func DeleteService(ctx context.Context, name string) (bool, string) {
 	err := kubeClient.CoreV1().Services(globalNamespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete Service %s: %v", name, err)
+		log.Logger.Warningf("Failed to delete Service %s: %s", name, err)
 		return false, i18n.DeleteServiceError
 	}
 	return true, i18n.Success

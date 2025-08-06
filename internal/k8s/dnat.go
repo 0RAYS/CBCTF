@@ -42,7 +42,7 @@ func CreateDNat(ctx context.Context, options CreateDNatOptions) (*kubeovnv1.Ipta
 	}
 	dnat, err = kubeOVNClient.KubeovnV1().IptablesDnatRules().Create(ctx, dnat, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create iptables DnatRule: %v", err)
+		log.Logger.Warningf("Failed to create iptables DnatRule: %s", err)
 		return dnat, false, i18n.CreateDNatError
 	}
 	return dnat, true, i18n.Success
@@ -54,7 +54,7 @@ func GetDNat(ctx context.Context, name string) (*kubeovnv1.IptablesDnatRule, boo
 		if apierror.IsNotFound(err) {
 			return nil, false, i18n.DNatNotFound
 		}
-		log.Logger.Warningf("Failed to get iptables DnatRule: %v", err)
+		log.Logger.Warningf("Failed to get iptables DnatRule: %s", err)
 		return nil, false, i18n.GetDNatError
 	}
 	return dnat, true, i18n.Success
@@ -73,7 +73,7 @@ func GetDNatList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.I
 	}
 	dnats, err := kubeOVNClient.KubeovnV1().IptablesDnatRules().List(ctx, options)
 	if err != nil {
-		log.Logger.Warningf("Failed to list iptables DnatRules: %v", err)
+		log.Logger.Warningf("Failed to list iptables DnatRules: %s", err)
 		return nil, false, i18n.GetDNatError
 	}
 	return dnats, true, i18n.Success
@@ -82,7 +82,7 @@ func GetDNatList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.I
 func DeleteDNat(ctx context.Context, name string) (bool, string) {
 	err := kubeOVNClient.KubeovnV1().IptablesDnatRules().Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete iptables DnatRule: %v", err)
+		log.Logger.Warningf("Failed to delete iptables DnatRule: %s", err)
 		return false, i18n.DeleteDNatError
 	}
 	return true, i18n.Success
@@ -101,7 +101,7 @@ func DeleteDNatList(ctx context.Context, labels ...map[string]string) (bool, str
 	}
 	err := kubeOVNClient.KubeovnV1().IptablesDnatRules().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete iptables DnatRule: %v", err)
+		log.Logger.Warningf("Failed to delete iptables DnatRule: %s", err)
 		return false, i18n.DeleteDNatError
 	}
 	return true, i18n.Success

@@ -92,7 +92,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 	for _, command := range commands {
 		log.Logger.Debugf("Executing command: %s", command)
 		if _, _, err = Exec(generatorName, containerName, command, nil); err != nil {
-			log.Logger.Warningf("Failed to execute command %s: %v", command, err)
+			log.Logger.Warningf("Failed to execute command %s: %s", command, err)
 			return nil, false, i18n.ExecCommandError
 		}
 	}
@@ -162,7 +162,7 @@ func GenerateAttachment(contestChallenge model.ContestChallenge, team model.Team
 	command := fmt.Sprintf("./run.sh %d %s", team.ID, base64.StdEncoding.EncodeToString([]byte(flags)))
 	log.Logger.Debugf("Executing command in %s: %s", generator.Name, command)
 	if _, _, err = Exec(generator.Name, generator.Spec.Containers[0].Name, command, nil); err != nil {
-		log.Logger.Warningf("Failed to execute command %s: %v", command, err)
+		log.Logger.Warningf("Failed to execute command %s: %s", command, err)
 		return false, i18n.ExecCommandError
 	}
 	return true, i18n.Success

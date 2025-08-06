@@ -58,7 +58,7 @@ func I18n(ctx *gin.Context) {
 	ctx.Set("StatusCode", res.Code)
 	ret, err := json.Marshal(res)
 	if err != nil {
-		log.Logger.Errorf("Rewrite response error: %v", err)
+		log.Logger.Errorf("Rewrite response error: %s", err)
 		return
 	}
 	defer w.body.Reset()

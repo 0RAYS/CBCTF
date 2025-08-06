@@ -203,7 +203,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 								}
 								port, err := strconv.ParseInt(res.DNat.Spec.ExternalPort, 10, 64)
 								if err != nil {
-									log.Logger.Warningf("Failed to parse external port: %v", err)
+									log.Logger.Warningf("Failed to parse external port: %s", err)
 									return CreateEIPResult{nil, false, i18n.UnknownError}
 								}
 								ipExposesMapMutex.Lock()
@@ -444,7 +444,7 @@ func StopVictim(victim model.Victim) (bool, string) {
 	}
 	for _, endpoint := range victim.Endpoints {
 		if err := redis.UnlockFrpsPort(endpoint.IP, endpoint.Port, endpoint.Protocol); err != nil {
-			log.Logger.Warningf("Failed to unlock frps port: %v", err)
+			log.Logger.Warningf("Failed to unlock frps port: %s", err)
 		}
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)

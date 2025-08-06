@@ -118,7 +118,7 @@ func Dockers2Yaml(dockers []model.Docker, challengeFlags []model.ChallengeFlag) 
 	}
 	res, err := cfg.MarshalYAML()
 	if err != nil {
-		log.Logger.Warningf("Failed to convert dockers to YAML: %v", err)
+		log.Logger.Warningf("Failed to convert dockers to YAML: %s", err)
 		return ""
 	}
 	return string(res)

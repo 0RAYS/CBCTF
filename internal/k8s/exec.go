@@ -32,7 +32,7 @@ func Exec(pod, container, command string, stdin io.Reader) (bytes.Buffer, bytes.
 
 		exec, err := remotecommand.NewSPDYExecutor(kubeConfig, "POST", req.URL())
 		if err != nil {
-			log.Logger.Warningf("Failed to create SPDY executor: %v", err)
+			log.Logger.Warningf("Failed to create SPDY executor: %s", err)
 			return err
 		}
 		if stderr == nil {
