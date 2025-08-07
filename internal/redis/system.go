@@ -29,7 +29,7 @@ func StartCollect() {
 		if err = saveMetrics(metrics); err != nil {
 			log.Logger.Warningf("Failed to save Redis metrics: %s", err)
 		}
-		time.Sleep(1 * time.Second)
+		time.Sleep(time.Second)
 	}
 }
 
@@ -55,7 +55,7 @@ func collectMetrics() (*SystemMetrics, error) {
 }
 
 func saveMetrics(metrics *SystemMetrics) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	data, err := json.Marshal(metrics)
 	if err != nil {
@@ -73,7 +73,7 @@ func saveMetrics(metrics *SystemMetrics) error {
 }
 
 func GetMetrics() []SystemMetrics {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	metrics := make([]SystemMetrics, 0)
 	data, err := RDB.LRange(ctx, "system_metrics", 0, -1).Result()

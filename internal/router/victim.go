@@ -58,7 +58,7 @@ func IncreaseVictimDuration(ctx *gin.Context) {
 		}
 		tx := DB.Begin()
 		repo = db.InitVictimRepo(tx)
-		duration := victim.Duration + 1*time.Hour
+		duration := victim.Duration + time.Hour
 		if ok, msg = repo.Update(victim.ID, db.UpdateVictimOptions{
 			Duration: &duration,
 		}); !ok {

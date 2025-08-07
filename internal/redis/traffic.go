@@ -14,7 +14,7 @@ import (
 )
 
 func GetTraffic(victim model.Victim) ([]utils.Connection, bool, string) {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	key := fmt.Sprintf("traffics:%d", victim.ID)
 	connections := make([]utils.Connection, 0)
@@ -42,7 +42,7 @@ func GetTraffic(victim model.Victim) ([]utils.Connection, bool, string) {
 }
 
 func UpdateTraffics(victim model.Victim) (bool, string) {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
 	connections, err := utils.ReadPcapDir(victim.TrafficBasePath())

@@ -40,7 +40,7 @@ func Init() {
 }
 
 func InitResources() {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
 	updateNodeIPs(ctx)

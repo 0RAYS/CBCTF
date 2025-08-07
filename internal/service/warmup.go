@@ -16,13 +16,13 @@ import (
 )
 
 func GetNodeImageList() (map[string][]string, bool, string) {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	return k8s.GetNodeImageList(ctx)
 }
 
 func WarmUpContestChallengeImage(form f.WarmUpImageForm) (bool, string) {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	if form.PullPolicy == string(corev1.PullNever) {
 		return true, i18n.Success

@@ -447,7 +447,7 @@ func StopVictim(victim model.Victim) (bool, string) {
 			log.Logger.Warningf("Failed to unlock frps port: %s", err)
 		}
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	if ok, msg := DeleteDNatList(ctx, labels); !ok {
 		return false, msg

@@ -7,7 +7,7 @@ import (
 )
 
 func RateLimit(path, ip string, window time.Duration) (int64, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	key := fmt.Sprintf("rl:%s:%s", ip, path)
 	count, err := RDB.Incr(ctx, key).Result()
