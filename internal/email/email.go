@@ -71,7 +71,7 @@ func SendVerifyEmail(to, token, id string) error {
 		count++
 		sender = Senders[rand.Intn(len(Senders))]
 		sender.UpdateLock.Lock()
-		if time.Now().Sub(sender.CreatedAt) < time.Minute {
+		if sender.CreatedAt.Add(time.Minute).After(time.Now()) {
 			sender.UpdateLock.Unlock()
 			break
 		}

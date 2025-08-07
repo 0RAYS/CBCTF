@@ -40,7 +40,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 		return nil, false, i18n.InvalidDockerImage
 	}
 	log.Logger.Infof("Starting Generator for Challenge %d-%s", contestChallenge.ChallengeID, contestChallenge.Name)
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	pwd := utils.UUID()
 	pod, ok, msg = CreatePod(ctx, CreatePodOptions{
@@ -125,7 +125,7 @@ func StopGenerator(contestChallenge model.ContestChallenge, generator *corev1.Po
 	_, ok := GeneratorMap[contestChallenge.ID]
 	GeneratorMapMutex.RUnlock()
 	if ok {
-		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		defer cancel()
 		if ok, msg := DeletePod(ctx, generator.Name); !ok {
 			return false, msg

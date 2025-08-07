@@ -44,7 +44,7 @@ func PrepareGenerator(c *cron.Cron) {
 				timeoutL := make([]*corev1.Pod, 0)
 				k8s.GeneratorMapMutex.RLock()
 				for _, generator := range k8s.GeneratorMap[contestChallenge.ID] {
-					if generator.Status.Phase != corev1.PodRunning || time.Now().Sub(generator.CreationTimestamp.Time) > time.Hour {
+					if generator.Status.Phase != corev1.PodRunning || generator.CreationTimestamp.Time.Add(time.Hour).Before(time.Now()) {
 						timeoutL = append(timeoutL, generator)
 					}
 				}
@@ -67,7 +67,7 @@ func PrepareGenerator(c *cron.Cron) {
 
 func StopUnCtrlGenerator(c *cron.Cron) {
 	function := exec("StopUnCtrlGenerator", func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		pods, ok, msg := k8s.GetPodList(ctx)
 		cancel()
 		if !ok {
@@ -86,12 +86,12 @@ func StopUnCtrlGenerator(c *cron.Cron) {
 		k8s.GeneratorMapMutex.RUnlock()
 		for _, pod := range pods.Items {
 			if strings.HasPrefix(pod.Name, "gen") && !slices.Contains(names, pod.Name) {
-				ctx, cancel = context.WithTimeout(context.Background(), 1*time.Minute)
+				ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
 				_, _ = k8s.DeletePod(ctx, pod.Name)
 				cancel()
 			}
 		}
 	})
 	function()
-	c.Schedule(cron.Every(1*time.Hour), cron.FuncJob(function))
+	c.Schedule(cron.Every(time.Hour), cron.FuncJob(function))
 }

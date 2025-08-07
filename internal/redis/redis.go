@@ -25,10 +25,10 @@ func Init() {
 		Password:     config.Env.Redis.Pwd,
 		DB:           0,
 		DialTimeout:  3 * time.Second,
-		ReadTimeout:  1 * time.Second,
-		WriteTimeout: 1 * time.Second,
+		ReadTimeout:  time.Second,
+		WriteTimeout: time.Second,
 	})
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	_, err := RDB.Ping(ctx).Result()
 	if err != nil {
@@ -43,7 +43,7 @@ func Init() {
 func Status() (int64, int64, int64) {
 	hit := atomic.LoadInt64(&CacheHit)
 	miss := atomic.LoadInt64(&CacheMiss)
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	count, err := RDB.DBSize(ctx).Result()
 	if err != nil {

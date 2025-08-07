@@ -7,7 +7,6 @@ import (
 	"os"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/spf13/viper"
 	"github.com/vmihailenco/msgpack/v5"
@@ -112,7 +111,6 @@ type Config struct {
 }
 
 var Env *Config
-var last time.Time
 
 //go:embed default.yml
 var defaultConf []byte

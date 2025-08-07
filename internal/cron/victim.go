@@ -35,7 +35,7 @@ func CloseTimeoutVictims(c *cron.Cron) {
 
 func CloseUnCtrlVictims(c *cron.Cron) {
 	function := exec("CloseUnCtrlVictims", func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		pods, ok, msg := k8s.GetPodList(ctx)
 		cancel()
 		if !ok {
@@ -50,7 +50,7 @@ func CloseUnCtrlVictims(c *cron.Cron) {
 					Selects:    []string{"id"},
 				})
 				if !ok {
-					ctx, cancel = context.WithTimeout(context.Background(), 1*time.Minute)
+					ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
 					_, _ = k8s.DeletePod(ctx, pod.Name)
 					cancel()
 				}
@@ -58,5 +58,5 @@ func CloseUnCtrlVictims(c *cron.Cron) {
 		}
 	})
 	function()
-	c.Schedule(cron.Every(1*time.Hour), cron.FuncJob(function))
+	c.Schedule(cron.Every(time.Hour), cron.FuncJob(function))
 }

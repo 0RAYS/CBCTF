@@ -15,7 +15,7 @@ func CreateContest(tx *gorm.DB, form f.CreateContestForm) (model.Contest, bool, 
 	if !repo.IsUniqueName(form.Name) {
 		return model.Contest{}, false, i18n.DuplicateContestName
 	}
-	if form.Start == (time.Time{}) {
+	if form.Start.IsZero() {
 		form.Start = time.Now()
 	}
 	if form.Duration == 0 {

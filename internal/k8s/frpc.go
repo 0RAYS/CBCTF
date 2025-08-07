@@ -25,7 +25,7 @@ type CreateFrpcPodResult struct {
 }
 
 func CreateFrpc(victim model.Victim) (model.Endpoints, []string, bool, string) {
-	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	idxBig, _ := rand.Int(rand.Reader, big.NewInt(int64(len(config.Env.K8S.Frpc.Frps))))
 	frps := config.Env.K8S.Frpc.Frps[idxBig.Int64()]
