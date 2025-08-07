@@ -1,17 +1,51 @@
 package service
 
 import (
+	f "CBCTF/internal/form"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	r "CBCTF/internal/redis"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/utils"
 	"fmt"
-	"os"
-	"strings"
+	"time"
 
 	"gorm.io/gorm"
 )
+
+func GetTraffic(victim model.Victim, form f.GetTrafficForm) ([]utils.Connection, int64, bool, string) {
+	connections, ok, msg := r.GetTraffic(victim)
+	if !ok {
+		return nil, 0, false, msg
+	}
+	if len(connections) < 1 {
+		ok, msg = r.UpdateTraffics(victim)
+		if !ok {
+			return nil, 0, false, msg
+		}
+		connections, ok, msg = r.GetTraffic(victim)
+		if !ok {
+			return nil, 0, false, msg
+		}
+		if len(connections) < 1 {
+			return make([]utils.Connection, 0), 0, true, i18n.Success
+		}
+	}
+	totalDuration := int64(connections[len(connections)-1].Time.Sub(connections[0].Time))/1e9 + 1
+	startIndex := 0
+	endIndex := len(connections) - 1
+	for i, connection := range connections {
+		if connection.TimeShift < time.Duration(form.TimeShift*1e9) {
+			startIndex = i
+		}
+		if connection.TimeShift > time.Duration((form.TimeShift+form.Duration)*1e9) {
+			endIndex = i
+			break
+		}
+	}
+	return connections[startIndex:endIndex], totalDuration, true, i18n.Success
+}
 
 // LoadTraffic 简单记录涉及到的 IP 地址
 func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
@@ -27,40 +61,28 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 			log.Logger.Warningf("Failed to zip .pcap files: %s", err)
 		}
 	}(victim)
-	dir, err := os.ReadDir(victim.TrafficBasePath())
+	connections, err := utils.ReadPcapDir(victim.TrafficBasePath())
 	if err != nil {
-		log.Logger.Warningf("Failed to read dir: %s", err)
-		return false, ""
+		log.Logger.Warningf("Failed to read pcap: %s", err)
+		return false, i18n.ReadPcapError
 	}
-	for _, file := range dir {
-		if file.IsDir() || (!strings.HasSuffix(file.Name(), ".pcap") && !strings.HasSuffix(file.Name(), ".pcapng")) {
-			continue
-		}
-		packet, err := utils.ReadPcap(fmt.Sprintf("%s/%s", victim.TrafficBasePath(), file.Name()))
-		if err != nil {
-			if os.IsNotExist(err) {
-				return false, i18n.PcapNotFound
-			}
-			log.Logger.Warningf("Failed to read pcap file %s: %s", file.Name(), err)
-			return false, i18n.UnknownError
-		}
-		for _, conn := range packet {
-			connID := fmt.Sprintf("%s:%d-%s:%d-%s", conn.SrcIP, conn.SrcPort, conn.DstIP, conn.DstPort, conn.Type)
-			if options, exists := optionsL[connID]; exists {
-				options.Count += 1
-				options.Size += conn.Size
-				optionsL[connID] = options
-			} else {
-				optionsL[connID] = db.CreateTrafficOptions{
-					VictimID: victim.ID,
-					SrcIP:    conn.SrcIP,
-					DstIP:    conn.DstIP,
-					SrcPort:  conn.SrcPort,
-					DstPort:  conn.DstPort,
-					Type:     conn.Type,
-					Size:     conn.Size,
-					Count:    1,
-				}
+	for _, conn := range connections {
+		connID := fmt.Sprintf("%s:%d-%s:%d-%s-%s", conn.SrcIP, conn.SrcPort, conn.DstIP, conn.DstPort, conn.Type, conn.Subtype)
+		if options, exists := optionsL[connID]; exists {
+			options.Count += 1
+			options.Size += conn.Size
+			optionsL[connID] = options
+		} else {
+			optionsL[connID] = db.CreateTrafficOptions{
+				VictimID: victim.ID,
+				SrcIP:    conn.SrcIP,
+				DstIP:    conn.DstIP,
+				SrcPort:  conn.SrcPort,
+				DstPort:  conn.DstPort,
+				Type:     conn.Type,
+				Subtype:  conn.Subtype,
+				Size:     conn.Size,
+				Count:    1,
 			}
 		}
 	}

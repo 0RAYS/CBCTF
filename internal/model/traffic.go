@@ -10,6 +10,7 @@ type Traffic struct {
 	SrcPort  uint16 `json:"src_port"`
 	DstPort  uint16 `json:"dst_port"`
 	Type     string `json:"type"`
+	Subtype  string `json:"subtype"`
 	Count    uint   `json:"count"`
 	Size     int    `json:"size"`
 	BasicModel
