@@ -6,9 +6,9 @@ import (
 )
 
 var (
-	StaticFlag  = regexp.MustCompile(`static\{(.*?)\}`)
-	UUIDFlag    = regexp.MustCompile(`uuid\{(.*?)\}`)
-	DynamicFlag = regexp.MustCompile(`dynamic\{(.*?)\}`)
+	StaticFlag  = regexp.MustCompile(`static\{(.*?)}`)
+	UUIDFlag    = regexp.MustCompile(`uuid\{(.*?)}`)
+	DynamicFlag = regexp.MustCompile(`dynamic\{(.*?)}`)
 
 	EnvInjectType    = "env"
 	VolumeInjectType = "volume"
