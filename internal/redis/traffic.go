@@ -13,8 +13,10 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-const trafficsKey = "traffics:%d"
-const trafficKey = "traffic:%d:%d"
+const (
+	trafficsKey = "traffics:%d"
+	trafficKey  = "traffic:%d:%d"
+)
 
 func GetTraffic(victim model.Victim) ([]utils.Connection, bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
