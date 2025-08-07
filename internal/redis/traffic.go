@@ -18,38 +18,6 @@ const (
 	trafficKey  = "traffic:%d:%d"
 )
 
-func GetTraffic(victim model.Victim) ([]utils.Connection, bool, string) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
-	connections := make([]utils.Connection, 0)
-	results, err := RDB.ZRangeWithScores(ctx, fmt.Sprintf(trafficsKey, victim.ID), 0, -1).Result()
-	if err != nil {
-		log.Logger.Warningf("Failed to get traffic: %s", err)
-		return connections, false, i18n.RedisError
-	}
-	pipe := RDB.Pipeline()
-	for _, res := range results {
-		memberKey, ok := res.Member.(string)
-		if !ok {
-			log.Logger.Warningf("Failed to cast traffic key to string: %v", res.Member)
-			continue
-		}
-		pipe.Get(ctx, memberKey)
-	}
-	cmds, _ := pipe.Exec(ctx)
-
-	for _, cmd := range cmds {
-		str, _ := cmd.(*redis.StringCmd).Bytes()
-		var conn utils.Connection
-		if err = msgpack.Unmarshal(str, &conn); err != nil {
-			log.Logger.Warningf("Failed to unmarshal: %s", err)
-			return connections, false, i18n.UnknownError
-		}
-		connections = append(connections, conn)
-	}
-	return connections, true, i18n.Success
-}
-
 func UpdateTraffics(victim model.Victim) (bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
@@ -78,4 +46,32 @@ func UpdateTraffics(victim model.Victim) (bool, string) {
 		return false, i18n.RedisError
 	}
 	return true, i18n.Success
+}
+
+func GetTraffic(victim model.Victim) ([]utils.Connection, bool, string) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	connections := make([]utils.Connection, 0)
+	results, err := RDB.ZRangeWithScores(ctx, fmt.Sprintf(trafficsKey, victim.ID), 0, -1).Result()
+	if err != nil {
+		log.Logger.Warningf("Failed to get traffic: %s", err)
+		return connections, false, i18n.RedisError
+	}
+	pipe := RDB.Pipeline()
+	for _, res := range results {
+		memberKey, _ := res.Member.(string)
+		pipe.Get(ctx, memberKey)
+	}
+	cmds, _ := pipe.Exec(ctx)
+
+	for _, cmd := range cmds {
+		str, _ := cmd.(*redis.StringCmd).Bytes()
+		var conn utils.Connection
+		if err = msgpack.Unmarshal(str, &conn); err != nil {
+			log.Logger.Warningf("Failed to unmarshal: %s", err)
+			return connections, false, i18n.UnknownError
+		}
+		connections = append(connections, conn)
+	}
+	return connections, true, i18n.Success
 }
