@@ -13,12 +13,14 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
+const trafficsKey = "traffics:%d"
+const trafficKey = "traffic:%d:%d"
+
 func GetTraffic(victim model.Victim) ([]utils.Connection, bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	key := fmt.Sprintf("traffics:%d", victim.ID)
 	connections := make([]utils.Connection, 0)
-	results, err := RDB.ZRangeWithScores(ctx, key, 0, -1).Result()
+	results, err := RDB.ZRangeWithScores(ctx, fmt.Sprintf(trafficsKey, victim.ID), 0, -1).Result()
 	if err != nil {
 		log.Logger.Warningf("Failed to get traffic: %s", err)
 		return connections, false, i18n.RedisError
@@ -51,17 +53,17 @@ func UpdateTraffics(victim model.Victim) (bool, string) {
 		return false, i18n.ReadPcapError
 	}
 
-	key := fmt.Sprintf("traffics:%d", victim.ID)
+	key := fmt.Sprintf(trafficsKey, victim.ID)
 	pipe := RDB.Pipeline()
 	pipe.Del(ctx, key)
 
 	for i, conn := range connections {
 		pipe.ZAdd(ctx, key, redis.Z{
 			Score:  float64(conn.Time.UnixNano()),
-			Member: fmt.Sprintf("traffic:%d:%d", victim.ID, i),
+			Member: fmt.Sprintf(trafficKey, victim.ID, i),
 		})
 		data, _ := msgpack.Marshal(&conn)
-		pipe.Set(ctx, fmt.Sprintf("traffic:%d:%d", victim.ID, i), data, 30*time.Minute)
+		pipe.Set(ctx, fmt.Sprintf(trafficKey, victim.ID, i), data, 30*time.Minute)
 	}
 	pipe.Expire(ctx, key, 30*time.Minute)
 	if _, err = pipe.Exec(ctx); err != nil {
