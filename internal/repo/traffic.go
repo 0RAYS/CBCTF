@@ -17,6 +17,7 @@ type CreateTrafficOptions struct {
 	SrcPort  uint16
 	DstPort  uint16
 	Type     string
+	Subtype  string
 	Size     int
 	Count    uint
 }
@@ -29,6 +30,7 @@ func (c CreateTrafficOptions) Convert2Model() model.Model {
 		SrcPort:  c.SrcPort,
 		DstPort:  c.DstPort,
 		Type:     c.Type,
+		Subtype:  c.Subtype,
 		Count:    c.Count,
 		Size:     c.Size,
 	}

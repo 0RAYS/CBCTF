@@ -7,8 +7,6 @@ import (
 	"CBCTF/internal/utils"
 	"context"
 	"fmt"
-	"os"
-	"strings"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -47,22 +45,10 @@ func UpdateTraffics(victim model.Victim) (bool, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 
-	connections := make([]utils.Connection, 0)
-	dir, err := os.ReadDir(victim.TrafficBasePath())
+	connections, err := utils.ReadPcapDir(victim.TrafficBasePath())
 	if err != nil {
-		log.Logger.Warningf("Failed to read dir: %s", err)
-		return false, i18n.ReadDirError
-	}
-	for _, file := range dir {
-		if file.IsDir() || (!strings.HasSuffix(file.Name(), ".pcap") && !strings.HasSuffix(file.Name(), ".pcapng")) {
-			continue
-		}
-		packet, err := utils.ReadPcap(fmt.Sprintf("%s/%s", victim.TrafficBasePath(), file.Name()))
-		if err != nil {
-			log.Logger.Warningf("Failed to read packet: %s", err)
-			continue
-		}
-		connections = append(connections, packet...)
+		log.Logger.Warningf("Failed to read pcap: %s", err)
+		return false, i18n.ReadPcapError
 	}
 
 	key := fmt.Sprintf("traffics:%d", victim.ID)

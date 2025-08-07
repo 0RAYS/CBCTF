@@ -4,11 +4,9 @@ import (
 	f "CBCTF/internal/form"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
-	r "CBCTF/internal/redis"
-	"fmt"
+	"CBCTF/internal/resp"
+	"CBCTF/internal/service"
 	"net/http"
-	"slices"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,82 +18,12 @@ func GetTraffics(ctx *gin.Context) {
 		return
 	}
 	victim := middleware.GetVictim(ctx)
-	connections, ok, msg := r.GetTraffic(victim)
+	connections, totalDuration, ok, msg := service.GetTraffic(victim, form)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	if len(connections) < 1 {
-		ok, msg = r.UpdateTraffics(victim)
-		if !ok {
-			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-			return
-		}
-		connections, ok, msg = r.GetTraffic(victim)
-		if !ok {
-			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-			return
-		}
-		if len(connections) < 1 {
-			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": []gin.H{}})
-			return
-		}
-	}
-	totalDuration := connections[len(connections)-1].Time.Sub(connections[0].Time)/1e9 + 1
-	firstPacket := connections[0]
-	firstPacket.TimeShift = 0
-	startIndex := 0
-	endIndex := len(connections) - 1
-	for i, connection := range connections {
-		connections[i].TimeShift = connection.Time.Sub(firstPacket.Time)
-		if connections[i].TimeShift < time.Duration(form.TimeShift*1e9) {
-			startIndex = i
-		}
-		if connections[i].TimeShift > time.Duration((form.TimeShift+form.Duration)*1e9) {
-			endIndex = i
-			break
-		}
-	}
-	type Statistics struct {
-		SrcIP string
-		DstIP string
-		Type  string
-		Count int64
-		Size  int64
-	}
-	data := make(map[string]Statistics)
-	ipL := make([]string, 0)
-	for _, connection := range connections[startIndex:endIndex] {
-		key := fmt.Sprintf("%s-%s-%s", connection.SrcIP, connection.DstIP, connection.Type)
-		if stats, exists := data[key]; exists {
-			stats.Count += 1
-			stats.Size += int64(connection.Size)
-			data[key] = stats
-		} else {
-			data[key] = Statistics{
-				SrcIP: connection.SrcIP,
-				DstIP: connection.DstIP,
-				Type:  connection.Type,
-				Count: 1,
-				Size:  int64(connection.Size),
-			}
-		}
-		if !slices.Contains(ipL, connection.SrcIP) {
-			ipL = append(ipL, connection.SrcIP)
-		}
-		if !slices.Contains(ipL, connection.DstIP) {
-			ipL = append(ipL, connection.DstIP)
-		}
-	}
-	conn := make([]gin.H, 0)
-	for _, stats := range data {
-		conn = append(conn, gin.H{
-			"src_ip": stats.SrcIP,
-			"dst_ip": stats.DstIP,
-			"type":   stats.Type,
-			"count":  stats.Count,
-			"size":   stats.Size,
-		})
-	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"connections": conn, "ip": ipL, "duration": totalDuration}})
+	data := resp.GetTrafficResp(connections)
+	data["duration"] = totalDuration
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
 }
