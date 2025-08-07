@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
 	"fmt"
@@ -12,10 +13,10 @@ import (
 
 const (
 	teamRankingKey = "contests:%d:rank"
-	teamKey        = "team:%s"
+	teamKey        = "contest:%d:team:%d"
 
 	userRankingKey = "users:rank"
-	userKey        = "user:%s"
+	userKey        = "user:%d"
 )
 
 func UpdateTeamRanking(contestID uint, teams []model.Team) error {
@@ -33,7 +34,7 @@ func UpdateTeamRanking(contestID uint, teams []model.Team) error {
 			Member: team.ID,
 		})
 		data, _ := msgpack.Marshal(&team)
-		pipe.Set(ctx, fmt.Sprintf(teamKey, fmt.Sprintf("%d", team.ID)), data, 5*time.Minute)
+		pipe.Set(ctx, fmt.Sprintf(teamKey, contestID, team.ID), data, 5*time.Minute)
 	}
 	pipe.Expire(ctx, key, 5*time.Minute)
 	_, err := pipe.Exec(ctx)
@@ -52,8 +53,12 @@ func GetTeamRanking(contestID uint, start int64, end int64) ([]model.Team, error
 
 	pipe := RDB.Pipeline()
 	for _, res := range results {
-		teamID := res.Member.(string)
-		pipe.Get(ctx, fmt.Sprintf(teamKey, teamID))
+		teamID, ok := res.Member.(uint)
+		if !ok {
+			log.Logger.Warningf("Failed to cast team id to uint: %v", res.Member)
+			continue
+		}
+		pipe.Get(ctx, fmt.Sprintf(teamKey, contestID, teamID))
 	}
 	cmds, _ := pipe.Exec(ctx)
 
@@ -81,7 +86,7 @@ func UpdateUserRanking(users []model.User) error {
 			Member: user.ID,
 		})
 		data, _ := msgpack.Marshal(&user)
-		pipe.Set(ctx, fmt.Sprintf(userKey, fmt.Sprintf("%d", user.ID)), data, 12*time.Hour)
+		pipe.Set(ctx, fmt.Sprintf(userKey, user.ID), data, 12*time.Hour)
 	}
 	pipe.Expire(ctx, userRankingKey, 12*time.Hour)
 	_, err := pipe.Exec(ctx)
@@ -97,7 +102,11 @@ func GetUserRanking(start int64, end int64) ([]model.User, error) {
 	}
 	pipe := RDB.Pipeline()
 	for _, res := range results {
-		userID := res.Member.(string)
+		userID, ok := res.Member.(uint)
+		if !ok {
+			log.Logger.Warningf("Failed to cast user id to uint: %v", res.Member)
+			continue
+		}
 		pipe.Get(ctx, fmt.Sprintf(userKey, userID))
 	}
 	cmds, _ := pipe.Exec(ctx)

@@ -29,7 +29,12 @@ func GetTraffic(victim model.Victim) ([]utils.Connection, bool, string) {
 	}
 	pipe := RDB.Pipeline()
 	for _, res := range results {
-		pipe.Get(ctx, res.Member.(string))
+		memberKey, ok := res.Member.(string)
+		if !ok {
+			log.Logger.Warningf("Failed to cast traffic key to string: %v", res.Member)
+			continue
+		}
+		pipe.Get(ctx, memberKey)
 	}
 	cmds, _ := pipe.Exec(ctx)
 
