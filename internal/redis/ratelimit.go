@@ -6,10 +6,12 @@ import (
 	"time"
 )
 
+const rateLimitKey = "rl:%s:%s"
+
 func RateLimit(path, ip string, window time.Duration) (int64, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	key := fmt.Sprintf("rl:%s:%s", ip, path)
+	key := fmt.Sprintf(rateLimitKey, ip, path)
 	count, err := RDB.Incr(ctx, key).Result()
 	if err != nil {
 		return 0, err

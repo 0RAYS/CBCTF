@@ -10,10 +10,18 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
+const (
+	teamRankingKey = "contests:%d:rank"
+	teamKey        = "team:%s"
+
+	userRankingKey = "users:rank"
+	userKey        = "user:%s"
+)
+
 func UpdateTeamRanking(contestID uint, teams []model.Team) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	key := fmt.Sprintf("contests:%d:rank", contestID)
+	key := fmt.Sprintf(teamRankingKey, contestID)
 	pipe := RDB.Pipeline()
 	pipe.Del(ctx, key)
 
@@ -25,7 +33,7 @@ func UpdateTeamRanking(contestID uint, teams []model.Team) error {
 			Member: team.ID,
 		})
 		data, _ := msgpack.Marshal(&team)
-		pipe.Set(ctx, fmt.Sprintf("team:%d", team.ID), data, 5*time.Minute)
+		pipe.Set(ctx, fmt.Sprintf(teamKey, fmt.Sprintf("%d", team.ID)), data, 5*time.Minute)
 	}
 	pipe.Expire(ctx, key, 5*time.Minute)
 	_, err := pipe.Exec(ctx)
@@ -35,7 +43,7 @@ func UpdateTeamRanking(contestID uint, teams []model.Team) error {
 func GetTeamRanking(contestID uint, start int64, end int64) ([]model.Team, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	key := fmt.Sprintf("contests:%d:rank", contestID)
+	key := fmt.Sprintf(teamRankingKey, contestID)
 	teams := make([]model.Team, 0)
 	results, err := RDB.ZRevRangeWithScores(ctx, key, start, end).Result()
 	if err != nil {
@@ -45,7 +53,7 @@ func GetTeamRanking(contestID uint, start int64, end int64) ([]model.Team, error
 	pipe := RDB.Pipeline()
 	for _, res := range results {
 		teamID := res.Member.(string)
-		pipe.Get(ctx, fmt.Sprintf("team:%s", teamID))
+		pipe.Get(ctx, fmt.Sprintf(teamKey, teamID))
 	}
 	cmds, _ := pipe.Exec(ctx)
 
@@ -63,20 +71,19 @@ func GetTeamRanking(contestID uint, start int64, end int64) ([]model.Team, error
 
 func UpdateUserRanking(users []model.User) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	key := "users:rank"
 	defer cancel()
 	pipe := RDB.Pipeline()
-	pipe.Del(ctx, key)
+	pipe.Del(ctx, userRankingKey)
 	for _, user := range users {
 		compositeScore := user.Score*1e8 + float64(user.Solved)
-		pipe.ZAdd(ctx, key, redis.Z{
+		pipe.ZAdd(ctx, userRankingKey, redis.Z{
 			Score:  compositeScore,
 			Member: user.ID,
 		})
 		data, _ := msgpack.Marshal(&user)
-		pipe.Set(ctx, fmt.Sprintf("user:%d", user.ID), data, 12*time.Hour)
+		pipe.Set(ctx, fmt.Sprintf(userKey, fmt.Sprintf("%d", user.ID)), data, 12*time.Hour)
 	}
-	pipe.Expire(ctx, key, 12*time.Hour)
+	pipe.Expire(ctx, userRankingKey, 12*time.Hour)
 	_, err := pipe.Exec(ctx)
 	return err
 }
@@ -84,15 +91,14 @@ func UpdateUserRanking(users []model.User) error {
 func GetUserRanking(start int64, end int64) ([]model.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	key := "users:rank"
-	results, err := RDB.ZRevRangeWithScores(ctx, key, start, end).Result()
+	results, err := RDB.ZRevRangeWithScores(ctx, userRankingKey, start, end).Result()
 	if err != nil {
 		return make([]model.User, 0), err
 	}
 	pipe := RDB.Pipeline()
 	for _, res := range results {
 		userID := res.Member.(string)
-		pipe.Get(ctx, fmt.Sprintf("user:%s", userID))
+		pipe.Get(ctx, fmt.Sprintf(userKey, userID))
 	}
 	cmds, _ := pipe.Exec(ctx)
 	var users []model.User

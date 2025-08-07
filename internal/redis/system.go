@@ -11,6 +11,8 @@ import (
 	"github.com/shirou/gopsutil/mem"
 )
 
+const systemMetricsKey = "system_metrics"
+
 type SystemMetrics struct {
 	Timestamp string  `json:"timestamp"`
 	CPU       float64 `json:"cpu"`
@@ -61,11 +63,11 @@ func saveMetrics(metrics *SystemMetrics) error {
 	if err != nil {
 		return err
 	}
-	err = RDB.RPush(ctx, "system_metrics", data).Err()
+	err = RDB.RPush(ctx, systemMetricsKey, data).Err()
 	if err != nil {
 		return err
 	}
-	err = RDB.LTrim(ctx, "system_metrics", -900, -1).Err()
+	err = RDB.LTrim(ctx, systemMetricsKey, -900, -1).Err()
 	if err != nil {
 		return err
 	}
@@ -76,7 +78,7 @@ func GetMetrics() []SystemMetrics {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	metrics := make([]SystemMetrics, 0)
-	data, err := RDB.LRange(ctx, "system_metrics", 0, -1).Result()
+	data, err := RDB.LRange(ctx, systemMetricsKey, 0, -1).Result()
 	if err != nil {
 		log.Logger.Warningf("Failed to get system metrics: %s", err)
 		return metrics
