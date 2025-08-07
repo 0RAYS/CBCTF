@@ -12,11 +12,8 @@ import (
 )
 
 const (
-	teamRankingKey = "contests:%d:rank"
-	teamKey        = "contest:%d:team:%d"
-
+	teamRankingKey = "contests:%d:teams:rank"
 	userRankingKey = "users:rank"
-	userKey        = "user:%d"
 )
 
 func UpdateTeamRanking(contestID uint, teams []model.Team) error {
