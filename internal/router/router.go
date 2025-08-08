@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 )
 
@@ -37,6 +38,7 @@ func Init() *gin.Engine {
 	)
 
 	{
+		pprof.Register(router)
 		RegisterMetricsRouter(router)
 	}
 
