@@ -3,6 +3,7 @@ package router
 import (
 	"CBCTF/internal/config"
 	f "CBCTF/internal/form"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	db "CBCTF/internal/repo"
@@ -31,6 +32,10 @@ func VerifyEmail(ctx *gin.Context) {
 
 func ActivateEmail(ctx *gin.Context) {
 	user := middleware.GetSelf(ctx).(model.User)
+	if user.Verified {
+		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.AlreadyVerifiedEmail, "data": nil})
+		return
+	}
 	_, msg := service.SendEmail(user)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

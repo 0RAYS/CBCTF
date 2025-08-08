@@ -44,6 +44,7 @@ func I18n(ctx *gin.Context) {
 		_, _ = w.ResponseWriter.Write([]byte(old))
 		return
 	}
+	ctx.Set("StatusCode", res.Code)
 	language := ctx.GetHeader("Accept-Language")
 	if strings.HasPrefix(language, "en-US") {
 		language = "en-US"
@@ -55,7 +56,6 @@ func I18n(ctx *gin.Context) {
 	}
 	res.Msg, res.Code = i18n.I18N(res.Msg, language)
 	res.Trace = GetTraceID(ctx)
-	ctx.Set("StatusCode", res.Code)
 	ret, err := json.Marshal(res)
 	if err != nil {
 		log.Logger.Errorf("Rewrite response error: %s", err)
