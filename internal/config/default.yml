@@ -1,73 +1,73 @@
-backend: "http://127.0.0.1:8000"
+backend: http://127.0.0.1:8000
 # CORS
-frontend: "http://127.0.0.1:3000"
+frontend: http://127.0.0.1:3000
 # Data path and NFS mount path if needed
-path: "./data"
+path: ./data
 log:
   # DEBUG INFO WARNING ERROR
-  level: "info"
+  level: info
   save: true
 gin:
-  mode: "release"
-  host: "127.0.0.1"
+  mode: release
+  host: 127.0.0.1
   port: 8000
   # Static Resources URI
-  static_uri: "platform"
+  static_uri: platform
   # Trusted proxy servers
   proxies:
-    - "10.0.0.1"
+    - 10.0.0.1
   upload:
     # Size limited
     max: 8
   rate:
     # Request without rate limited
     whitelist:
-      - "::1"
-      - "127.0.0.1"
+      - ::1
+      - 127.0.0.1
   log:
     # Request without logging
     whitelist:
-      - "/metrics"
+      - /metrics
 gorm:
   mysql:
-    host: "127.0.0.1"
+    host: 127.0.0.1
     port: 3306
-    user: "cbctf"
-    pwd: "password"
-    db: "cbctf"
+    user: cbctf
+    pwd: password
+    db: cbctf
     mxopen: 100
     mxidle: 10
   log:
     # INFO WARNING ERROR SILENT
-    level: "silent"
+    level: silent
 redis:
-  host: "127.0.0.1"
+  host: 127.0.0.1
   port: 6379
-  pwd: "password"
+  pwd: password
 k8s:
   # Kubeconfig path
-  config: "./admin.conf"
+  config: ./admin.conf
   # Also as prefix of resources
-  namespace: "cbctf"
+  namespace: cbctf
   # Maybe your k8s nodes cidr
   # https://kubeovn.github.io/docs/stable/vpc/vpc/#_2
   external_network:
     cidr: 192.168.0.0/16
     gateway: 192.168.0.1
-    interface: "eth0"
+    interface: eth0
     exclude_ips:
-      - "192.168.0.1"
-      - "192.168.0.254"
+      - 192.168.0.1
+      - 192.168.0.254
   # Docker image
-  tcpdump: "nicolaka/netshoot:latest"
+  tcpdump: nicolaka/netshoot:latest
   frpc:
     on: false
     # Docker image
-    image: "snowdreamtech/frpc:latest"
+    image: snowdreamtech/frpc:latest
     frps:
-      - host: "example.com"
-        port: "7000"
-        token: "token"
+      - host: example.com
+        port: 7000
+        token: token
         allowed_ports:
           - from: 10000
             to: 30000
@@ -79,7 +79,7 @@ k8s:
               - 50000
   # Nodes of k8s cluster, used for external service, will auto get from k8s when run `./CBCTF k8s init`
   nodes:
-    - "192.168.0.1"
+    - 192.168.0.1
   # (len(nodes) * generator_worker) pods for each dynamic challenge
   generator_worker: 2
 nfs:
