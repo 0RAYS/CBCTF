@@ -5,7 +5,6 @@ import (
 	p "CBCTF/internal/prometheus"
 	"errors"
 
-	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
@@ -13,8 +12,6 @@ import (
 )
 
 func RegisterMetricsRouter(router *gin.Engine) {
-	pprof.Register(router)
-
 	// 注册HTTP基础指标
 	prometheus.MustRegister(p.HttpRequestsTotal)
 	prometheus.MustRegister(p.HttpRequestDuration)
