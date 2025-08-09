@@ -54,5 +54,5 @@ func GetTrafficResp(connections []utils.Connection) gin.H {
 			"size":    stats.Size,
 		})
 	}
-	return gin.H{"connections": conn, "ip": ipL}
+	return gin.H{"connections": conn}
 }
