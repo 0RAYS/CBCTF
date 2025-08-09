@@ -1,15 +1,15 @@
 package middleware
 
 import (
-	"CBCTF/internal/model"
-	db "CBCTF/internal/repo"
-	"fmt"
+    "CBCTF/internal/model"
+    db "CBCTF/internal/repo"
+    "fmt"
 
-	"github.com/gin-gonic/gin"
+    "github.com/gin-gonic/gin"
 )
 
 func Events(ctx *gin.Context) {
-	method, path, ip := ctx.Request.Method, ctx.FullPath(), ctx.ClientIP()
+    method, path, ip := ctx.Request.Method, ctx.FullPath(), ctx.ClientIP()
 
 	ctx.Next()
 
@@ -18,8 +18,18 @@ func Events(ctx *gin.Context) {
 	contestID := GetContest(ctx).ID
 	contestChallengeID := GetContestChallenge(ctx).ID
 	options := db.CreateEventOptions{
-		IP:    ip,
-		Magic: GetMagic(ctx),
+        IP:       ip,
+        Magic:    GetMagic(ctx),
+        Status:   ctx.Writer.Status(),
+        Success:  ctx.Writer.Status() >= 200 && ctx.Writer.Status() < 400,
+        UserAgent: func() string {
+            ua := ctx.Request.UserAgent()
+            if len(ua) > 255 {
+                return ua[:255]
+            }
+            return ua
+        }(),
+        TraceID: GetTraceID(ctx),
 	}
 	if userID == 0 {
 		options.UserID = nil
