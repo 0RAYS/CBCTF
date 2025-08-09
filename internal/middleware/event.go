@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	db "CBCTF/internal/repo"
 	"fmt"
@@ -148,7 +147,5 @@ func Events(ctx *gin.Context) {
 	default:
 		return
 	}
-	if _, ok, msg := db.InitEventRepo(db.DB.WithContext(ctx)).Create(options); !ok {
-		log.Logger.Warningf("Failed to record event: %v beacause of %s", options, msg)
-	}
+	db.InitEventRepo(db.DB.WithContext(ctx)).Create(options)
 }
