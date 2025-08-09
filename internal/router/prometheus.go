@@ -1,11 +1,8 @@
 package router
 
 import (
-	"CBCTF/internal/log"
 	p "CBCTF/internal/prometheus"
-	"errors"
 
-	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
@@ -13,8 +10,6 @@ import (
 )
 
 func RegisterMetricsRouter(router *gin.Engine) {
-	pprof.Register(router)
-
 	// 注册HTTP基础指标
 	prometheus.MustRegister(p.HttpRequestsTotal)
 	prometheus.MustRegister(p.HttpRequestDuration)
@@ -36,16 +31,10 @@ func RegisterMetricsRouter(router *gin.Engine) {
 	prometheus.MustRegister(p.CacheHitRate)
 	prometheus.MustRegister(p.RateLimitHits)
 	prometheus.MustRegister(p.ErrorTotal)
-	var alreadyRegisteredError prometheus.AlreadyRegisteredError
-	if err := prometheus.Register(collectors.NewGoCollector()); err != nil {
-		if !errors.As(err, &alreadyRegisteredError) {
-			log.Logger.Warningf("failed to register GoCollector: %s", err)
-		}
-	}
-	if err := prometheus.Register(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{})); err != nil {
-		if !errors.As(err, &alreadyRegisteredError) {
-			log.Logger.Warningf("failed to register ProcessCollector: %s", err)
-		}
-	}
+
+	// 注册GO进程指标
+	prometheus.MustRegister(collectors.NewGoCollector())
+	prometheus.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+
 	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
 }

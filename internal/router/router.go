@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 )
 
@@ -32,11 +33,12 @@ func Init() *gin.Engine {
 	}
 
 	router.Use(
-		gin.Recovery(), middleware.Cors, middleware.Logger, middleware.Prometheus, middleware.SetTrace, middleware.SetMagic,
-		middleware.I18n, middleware.AccessLog, middleware.RateLimit("globals", 100, time.Minute), middleware.Events,
+		gin.Recovery(), middleware.Cors, middleware.SetTrace, middleware.SetMagic, middleware.Logger, middleware.Prometheus,
+		middleware.AccessLog, middleware.I18n, middleware.RateLimit("globals", 100, time.Minute), middleware.Events,
 	)
 
 	{
+		pprof.Register(router)
 		RegisterMetricsRouter(router)
 	}
 
@@ -72,7 +74,7 @@ func Init() *gin.Engine {
 		user.PUT("", UpdateUser)
 		user.DELETE("", DeleteUser)
 		user.POST("/avatar", UploadAvatar("self-user"))
-		user.POST("/activate", middleware.RateLimit("activate", 1, time.Minute), middleware.CheckUnVerified, ActivateEmail)
+		user.POST("/activate", middleware.RateLimit("activate", 1, time.Minute), ActivateEmail)
 	}
 
 	contest := auth.Group("/contests/:contestID", middleware.CheckRole(false), middleware.SetContest)
@@ -94,7 +96,7 @@ func Init() *gin.Engine {
 			contestTeam.POST("/avatar", middleware.ContestIsNotOver, middleware.CheckVerified, middleware.CheckCaptain, UploadAvatar("team"))
 			contestTeam.DELETE("", middleware.ContestIsComing, middleware.CheckVerified, middleware.CheckCaptain, DeleteTeam)
 			contestTeam.POST("/kick", middleware.ContestIsComing, middleware.CheckVerified, middleware.CheckCaptain, KickMember)
-			contestTeam.POST("/leave", middleware.ContestIsComing, LeaveTeam)
+			contestTeam.POST("/leave", middleware.ContestIsComing, middleware.CheckVerified, LeaveTeam)
 		}
 
 		// 比赛公告
