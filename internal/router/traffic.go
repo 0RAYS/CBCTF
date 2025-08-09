@@ -18,12 +18,13 @@ func GetTraffics(ctx *gin.Context) {
 		return
 	}
 	victim := middleware.GetVictim(ctx)
-	connections, totalDuration, ok, msg := service.GetTraffic(victim, form)
+	connections, ipL, totalDuration, ok, msg := service.GetTraffic(victim, form)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	data := resp.GetTrafficResp(connections)
+	data["ip"] = ipL
 	data["duration"] = totalDuration
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
 }
