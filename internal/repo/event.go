@@ -19,6 +19,11 @@ type CreateEventOptions struct {
 	Type               string
 	IP                 string
 	Magic              string
+    Status             int
+    Success            bool
+    UserAgent          string
+    TraceID            string
+    Extra              string
 }
 
 func (c CreateEventOptions) Convert2Model() model.Model {
@@ -31,6 +36,11 @@ func (c CreateEventOptions) Convert2Model() model.Model {
 		Type:               c.Type,
 		IP:                 c.IP,
 		Magic:              c.Magic,
+        Status:             c.Status,
+        Success:            c.Success,
+        UserAgent:          c.UserAgent,
+        TraceID:            c.TraceID,
+        Extra:              c.Extra,
 	}
 }
 
