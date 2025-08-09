@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"net/http"
+	"sort"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,6 +24,7 @@ func GetTraffics(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	sort.Strings(ipL)
 	data := resp.GetTrafficResp(connections)
 	data["ip"] = ipL
 	data["duration"] = totalDuration
