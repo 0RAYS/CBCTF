@@ -13,8 +13,8 @@ import (
 
 var (
 	RDB       *redis.Client
-	CacheHit  int64
-	CacheMiss int64
+	CacheHit  atomic.Int64
+	CacheMiss atomic.Int64
 )
 
 func Init() {
@@ -41,14 +41,12 @@ func Init() {
 }
 
 func Status() (int64, int64, int64) {
-	hit := atomic.LoadInt64(&CacheHit)
-	miss := atomic.LoadInt64(&CacheMiss)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	count, err := RDB.DBSize(ctx).Result()
 	if err != nil {
 		log.Logger.Warningf("Failed to get cache total: %s", err)
-		return 0, hit, miss
+		return 0, CacheHit.Load(), CacheMiss.Load()
 	}
-	return count, hit, miss
+	return count, CacheHit.Load(), CacheMiss.Load()
 }
