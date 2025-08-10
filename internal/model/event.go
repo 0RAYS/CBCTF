@@ -39,11 +39,6 @@ type Event struct {
 	Type               string            `json:"type"`
 	IP                 string            `json:"ip"`
 	Magic              string            `json:"magic"`
-	Status             int               `json:"status"`
-	Success            bool              `json:"success"`
-	UserAgent          string            `gorm:"size:255" json:"user_agent"`
-	TraceID            string            `gorm:"size:64" json:"trace_id"`
-	Extra              string            `gorm:"type:text" json:"extra"`
 	BasicModel
 }
 
