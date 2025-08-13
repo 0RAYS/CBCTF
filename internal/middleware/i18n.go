@@ -26,6 +26,8 @@ type Data struct {
 	Trace string `json:"trace"`
 }
 
+const CTXStatusCodeKey = "StatusCode"
+
 // I18n 重写响应
 func I18n(ctx *gin.Context) {
 	w := &i18nResponseWriter{
@@ -44,7 +46,7 @@ func I18n(ctx *gin.Context) {
 		_, _ = w.ResponseWriter.Write([]byte(old))
 		return
 	}
-	ctx.Set("StatusCode", res.Code)
+	ctx.Set(CTXStatusCodeKey, res.Code)
 	language := ctx.GetHeader("Accept-Language")
 	if strings.HasPrefix(language, "en-US") {
 		language = "en-US"

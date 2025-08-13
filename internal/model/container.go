@@ -26,6 +26,10 @@ func (c Container) GetVersion() uint {
 	return c.Version
 }
 
+func (c Container) GetBasicModel() BasicModel {
+	return c.BasicModel
+}
+
 func (c Container) CreateErrorString() string {
 	return i18n.CreateContainerError
 }

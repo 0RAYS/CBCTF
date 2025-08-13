@@ -39,6 +39,10 @@ func (u User) GetVersion() uint {
 	return u.Version
 }
 
+func (u User) GetBasicModel() BasicModel {
+	return u.BasicModel
+}
+
 func (u User) CreateErrorString() string {
 	return i18n.CreateUserError
 }

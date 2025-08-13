@@ -64,6 +64,7 @@ func DownloadChallengeFile(ctx *gin.Context) {
 
 // DownloadAttachment 需要预加载 Challenge
 func DownloadAttachment(ctx *gin.Context) {
+	ctx.Set(middleware.CTXEventTypeKey, model.DownloadAttachmentEventType)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	team := middleware.GetTeam(ctx)
 	path := contestChallenge.Challenge.AttachmentPath(team.ID)
@@ -76,6 +77,7 @@ func DownloadAttachment(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.File(path)
 }
 
@@ -100,6 +102,7 @@ func UploadAvatar(v string) func(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 			return
 		}
+		ctx.Set(middleware.CTXEventTypeKey, model.UploadAvatarEventType)
 		options := db.CreateFileOptions{}
 		var id uint
 		switch v {
@@ -155,6 +158,7 @@ func UploadAvatar(v string) func(ctx *gin.Context) {
 		}
 		tx.Commit()
 		path = fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(path, "/"))
+		ctx.Set(middleware.CTXEventSuccessKey, true)
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": path})
 	}
 }
@@ -199,6 +203,7 @@ func UploadWriteUp(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.UploadWriteUpEventType)
 	user := middleware.GetSelf(ctx).(model.User)
 	contest := middleware.GetContest(ctx)
 	team := middleware.GetTeam(ctx)
@@ -216,6 +221,7 @@ func UploadWriteUp(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 

@@ -24,12 +24,14 @@ func AdminChangePassword(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.UpdateAdminEventType)
 	tx := db.DB.WithContext(ctx).Begin()
 	ok, msg := service.ChangeAdminPassword(tx, middleware.GetSelf(ctx).(model.Admin), form)
 	if !ok {
 		tx.Rollback()
 	} else {
 		tx.Commit()
+		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
@@ -40,12 +42,14 @@ func UpdateAdmin(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.UpdateAdminEventType)
 	tx := db.DB.WithContext(ctx).Begin()
 	ok, msg := service.UpdateAdmin(tx, middleware.GetSelf(ctx).(model.Admin), form)
 	if !ok {
 		tx.Rollback()
 	} else {
 		tx.Commit()
+		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
@@ -56,6 +60,7 @@ func CreateAdmin(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.CreateAdminEventType)
 	tx := db.DB.WithContext(ctx).Begin()
 	admin, ok, msg := service.CreateAdmin(tx, form)
 	if !ok {
@@ -64,5 +69,6 @@ func CreateAdmin(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetAdminResp(admin)})
 }

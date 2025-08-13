@@ -27,6 +27,10 @@ func (n Notice) GetVersion() uint {
 	return n.Version
 }
 
+func (n Notice) GetBasicModel() BasicModel {
+	return n.BasicModel
+}
+
 func (n Notice) CreateErrorString() string {
 	return i18n.CreateNoticeError
 }

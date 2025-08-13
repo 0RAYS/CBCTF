@@ -17,6 +17,7 @@ import (
 )
 
 func StartVictim(ctx *gin.Context) {
+	ctx.Set(middleware.CTXEventTypeKey, model.StartVictimEventType)
 	team := middleware.GetTeam(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	user := middleware.GetSelf(ctx).(model.User)
@@ -34,10 +35,12 @@ func StartVictim(ctx *gin.Context) {
 		return
 	}(ctx.Copy())
 	status := service.GetTeamVictimStatus(db.DB.WithContext(ctx), team, contestChallenge)
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": status})
 }
 
 func IncreaseVictimDuration(ctx *gin.Context) {
+	ctx.Set(middleware.CTXEventTypeKey, model.IncreaseVictimEventType)
 	team := middleware.GetTeam(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	DB := db.DB.WithContext(ctx)
@@ -74,6 +77,7 @@ func IncreaseVictimDuration(ctx *gin.Context) {
 		})
 	}
 	if len(data) > 0 {
+		ctx.Set(middleware.CTXEventSuccessKey, true)
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data[0]})
 	} else {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.VictimNotFound, "data": nil})
@@ -81,9 +85,11 @@ func IncreaseVictimDuration(ctx *gin.Context) {
 }
 
 func StopVictim(ctx *gin.Context) {
+	ctx.Set(middleware.CTXEventTypeKey, model.StopVictimEventType)
 	team := middleware.GetTeam(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	_, msg := service.StopTeamVictim(db.DB.WithContext(ctx), team, contestChallenge)
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 

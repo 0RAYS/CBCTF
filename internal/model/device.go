@@ -23,6 +23,10 @@ func (d Device) GetVersion() uint {
 	return d.Version
 }
 
+func (d Device) GetBasicModel() BasicModel {
+	return d.BasicModel
+}
+
 func (d Device) CreateErrorString() string {
 	return i18n.CreateDeviceError
 }

@@ -24,6 +24,10 @@ func (t Traffic) GetVersion() uint {
 	return t.Version
 }
 
+func (t Traffic) GetBasicModel() BasicModel {
+	return t.BasicModel
+}
+
 func (t Traffic) CreateErrorString() string {
 	return i18n.CreateTrafficError
 }

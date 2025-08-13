@@ -42,6 +42,10 @@ func (f File) GetVersion() uint {
 	return f.Version
 }
 
+func (f File) GetBasicModel() BasicModel {
+	return f.BasicModel
+}
+
 func (f File) CreateErrorString() string {
 	return i18n.CreateFileError
 }

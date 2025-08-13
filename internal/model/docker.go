@@ -43,6 +43,10 @@ func (d Docker) GetVersion() uint {
 	return d.Version
 }
 
+func (d Docker) GetBasicModel() BasicModel {
+	return d.BasicModel
+}
+
 func (d Docker) CreateErrorString() string {
 	return i18n.CreateDockerError
 }

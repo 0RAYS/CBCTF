@@ -5,15 +5,21 @@ import (
 )
 
 const (
-	UserLoginEventType          = "user_login"
-	UserRegisterEventType       = "user_register"
-	UserUpdateEventType         = "user_update"
-	UserUpdatePasswordEventType = "user_update_password"
-	UserVerifyEmailEventType    = "user_verify"
-	UserDeleteEventType         = "user_delete"
+	LoginEventType              = "login"
+	RegisterEventType           = "register"
+	OauthLoginEventType         = "oauth_login"
+	CreateAdminEventType        = "create_admin"
+	UpdateAdminEventType        = "update_admin"
+	CreateUserEventType         = "create_user"
+	UpdateUserEventType         = "update_user"
+	DeleteUserEventType         = "delete_user"
+	ActivateEmailEventType      = "activate_email"
+	VerifyEmailEventType        = "verify_email"
+	UploadAvatarEventType       = "upload_avatar"
 	JoinTeamEventType           = "join_team"
 	CreateTeamEventType         = "create_team"
 	UpdateTeamEventType         = "update_team"
+	DeleteTeamEventType         = "delete_team"
 	LeaveTeamEventType          = "leave_team"
 	KickMemberEventType         = "kick_member"
 	InitChallengeEventType      = "init_usage"
@@ -27,18 +33,12 @@ const (
 )
 
 type Event struct {
-	UserID             *uint             `gorm:"default:null" json:"user_id"`
-	User               *User             `json:"-"`
-	TeamID             *uint             `gorm:"default:null" json:"team_id"`
-	Team               *Team             `json:"-"`
-	ContestID          *uint             `gorm:"default:null" json:"contest_id"`
-	Contest            *Contest          `json:"-"`
-	ContestChallengeID *uint             `gorm:"default:null" json:"contest_challenge_id"`
-	ContestChallenge   *ContestChallenge `json:"-"`
-	Desc               string            `json:"desc"`
-	Type               string            `json:"type"`
-	IP                 string            `json:"ip"`
-	Magic              string            `json:"magic"`
+	IsAdmin bool    `json:"is_admin"`
+	Type    string  `json:"type"`
+	Success bool    `json:"success"`
+	IP      string  `json:"ip"`
+	Magic   string  `json:"magic"`
+	Models  UintMap `gorm:"type:json" json:"models"`
 	BasicModel
 }
 
@@ -48,6 +48,10 @@ func (e Event) GetModelName() string {
 
 func (e Event) GetVersion() uint {
 	return e.Version
+}
+
+func (e Event) GetBasicModel() BasicModel {
+	return e.BasicModel
 }
 
 func (e Event) CreateErrorString() string {

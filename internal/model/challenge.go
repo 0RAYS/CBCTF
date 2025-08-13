@@ -48,6 +48,10 @@ func (c Challenge) GetVersion() uint {
 	return c.Version
 }
 
+func (c Challenge) GetBasicModel() BasicModel {
+	return c.BasicModel
+}
+
 func (c Challenge) CreateErrorString() string {
 	return i18n.CreateChallengeError
 }

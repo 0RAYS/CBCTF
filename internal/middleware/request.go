@@ -21,7 +21,7 @@ func AccessLog(ctx *gin.Context) {
 	path := ctx.FullPath()
 	ctx.Next()
 
-	statusCode := ctx.GetInt("StatusCode")
+	statusCode := ctx.GetInt(CTXStatusCodeKey)
 
 	if !slices.Contains(config.Env.Gin.Log.Whitelist, path) {
 		request := db.CreateRequestOptions{

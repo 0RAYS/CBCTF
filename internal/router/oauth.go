@@ -128,6 +128,7 @@ func RegisterOauthRouter(router *gin.Engine) {
 				ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 				return
 			}
+			ctx.Set(middleware.CTXEventTypeKey, model.OauthLoginEventType)
 			defer func(provider string, state string) {
 				if err := redis.DelOauthState(provider, state); err != nil {
 					log.Logger.Warningf("Failed to delete oauth state for provider %s: %s", provider, err)
@@ -214,6 +215,7 @@ func RegisterOauthRouter(router *gin.Engine) {
 				return
 			}
 			go prometheus.UpdateUserLoginMetrics(provider.Provider)
+			ctx.Set(middleware.CTXEventSuccessKey, true)
 			ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s/%s/#/oauth/callback?token=%s", config.Env.Frontend, config.Env.Gin.StaticURI, token))
 		})
 
