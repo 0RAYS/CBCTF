@@ -24,6 +24,9 @@ func RandStr(n int) string {
 }
 
 func ToTitle(s string) string {
+	if len(s) != len([]rune(s)) {
+		return s
+	}
 	if len(s) == 0 {
 		return strings.ToUpper(s)
 	}
