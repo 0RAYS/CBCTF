@@ -38,6 +38,10 @@ func (v Victim) GetVersion() uint {
 	return v.Version
 }
 
+func (v Victim) GetBasicModel() BasicModel {
+	return v.BasicModel
+}
+
 func (v Victim) CreateErrorString() string {
 	return i18n.CreateVictimError
 }

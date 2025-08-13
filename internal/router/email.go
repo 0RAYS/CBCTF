@@ -19,6 +19,7 @@ func VerifyEmail(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.VerifyEmailEventType)
 	tx := db.DB.WithContext(ctx).Begin()
 	ok, msg := service.VerifyEmail(tx, form)
 	if !ok {
@@ -27,15 +28,18 @@ func VerifyEmail(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.Redirect(http.StatusTemporaryRedirect, config.Env.Backend)
 }
 
 func ActivateEmail(ctx *gin.Context) {
+	ctx.Set(middleware.CTXEventTypeKey, model.ActivateEmailEventType)
 	user := middleware.GetSelf(ctx).(model.User)
 	if user.Verified {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.AlreadyVerifiedEmail, "data": nil})
 		return
 	}
 	_, msg := service.SendEmail(user)
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

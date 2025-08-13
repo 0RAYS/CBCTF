@@ -50,6 +50,10 @@ func (c ContestFlag) GetVersion() uint {
 	return c.Version
 }
 
+func (c ContestFlag) GetBasicModel() BasicModel {
+	return c.BasicModel
+}
+
 func (c ContestFlag) CreateErrorString() string {
 	return i18n.CreateContestFlagError
 }

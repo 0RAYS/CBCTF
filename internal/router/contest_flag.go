@@ -19,6 +19,7 @@ func SubmitFlag(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.SubmitFlagEventType)
 	user := middleware.GetSelf(ctx).(model.User)
 	team := middleware.GetTeam(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
@@ -35,6 +36,7 @@ func SubmitFlag(ctx *gin.Context) {
 			service.StopTeamVictim(db.DB.WithContext(ctx), team, contestChallenge)
 		}
 	}(ctx.Copy())
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": result, "data": nil})
 }
 

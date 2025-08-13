@@ -33,13 +33,9 @@ func Logger(ctx *gin.Context) {
 	if raw != "" {
 		path = path + "?" + raw
 	}
-	statusCode, ok := ctx.Get("StatusCode")
-	if !ok {
-		statusCode = ctx.Writer.Status()
-	}
 	e := l.WithFields(logrus.Fields{
 		"Latency":    latency,
-		"StatusCode": statusCode,
+		"StatusCode": ctx.GetInt(CTXStatusCodeKey),
 		"Method":     ctx.Request.Method,
 		"ClientIP":   ctx.ClientIP(),
 		"Path":       path,

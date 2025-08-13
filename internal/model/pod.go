@@ -23,6 +23,10 @@ func (p Pod) GetVersion() uint {
 	return p.Version
 }
 
+func (p Pod) GetBasicModel() BasicModel {
+	return p.BasicModel
+}
+
 func (p Pod) CreateErrorString() string {
 	return i18n.CreatePodError
 }

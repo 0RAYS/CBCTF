@@ -22,6 +22,10 @@ func (a Admin) GetVersion() uint {
 	return a.Version
 }
 
+func (a Admin) GetBasicModel() BasicModel {
+	return a.BasicModel
+}
+
 func (a Admin) CreateErrorString() string {
 	return i18n.CreateAdminError
 }

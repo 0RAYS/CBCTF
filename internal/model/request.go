@@ -28,6 +28,10 @@ func (r Request) GetVersion() uint {
 	return r.Version
 }
 
+func (r Request) GetBasicModel() BasicModel {
+	return r.BasicModel
+}
+
 func (r Request) CreateErrorString() string {
 	return i18n.CreateRequestError
 }

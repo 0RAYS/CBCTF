@@ -37,6 +37,10 @@ func (s Submission) GetVersion() uint {
 	return s.Version
 }
 
+func (s Submission) GetBasicModel() BasicModel {
+	return s.BasicModel
+}
+
 func (s Submission) CreateErrorString() string {
 	return i18n.CreateSubmissionError
 }

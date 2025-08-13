@@ -40,6 +40,10 @@ func (c ChallengeFlag) GetVersion() uint {
 	return c.Version
 }
 
+func (c ChallengeFlag) GetBasicModel() BasicModel {
+	return c.BasicModel
+}
+
 func (c ChallengeFlag) CreateErrorString() string {
 	return i18n.CreateChallengeFlagError
 }

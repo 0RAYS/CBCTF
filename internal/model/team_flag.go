@@ -25,6 +25,10 @@ func (t TeamFlag) GetVersion() uint {
 	return t.Version
 }
 
+func (t TeamFlag) GetBasicModel() BasicModel {
+	return t.BasicModel
+}
+
 func (t TeamFlag) CreateErrorString() string {
 	return i18n.CreateTeamFlagError
 }

@@ -52,6 +52,10 @@ func (c Contest) GetVersion() uint {
 	return c.Version
 }
 
+func (c Contest) GetBasicModel() BasicModel {
+	return c.BasicModel
+}
+
 func (c Contest) CreateErrorString() string {
 	return i18n.CreateContestError
 }

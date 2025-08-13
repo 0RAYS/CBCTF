@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
+	"CBCTF/internal/model"
 	"CBCTF/internal/oauth"
 	"CBCTF/internal/prometheus"
 	db "CBCTF/internal/repo"
@@ -23,6 +24,7 @@ func Register(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.RegisterEventType)
 	tx := db.DB.WithContext(ctx).Begin()
 	user, ok, msg := service.CreateUser(tx, form)
 	if !ok {
@@ -47,6 +49,7 @@ func Register(ctx *gin.Context) {
 	log.Logger.Infof("%s:%d register", user.Name, user.ID)
 	ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	go prometheus.UpdateUserRegisterMetrics(oauth.LocalProvider)
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.RegisterResp(user, false)})
 }
 
@@ -56,6 +59,7 @@ func Login(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.LoginEventType)
 	user, ok, msg := service.VerifyUser(db.DB.WithContext(ctx), form)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -72,6 +76,7 @@ func Login(ctx *gin.Context) {
 	log.Logger.Infof("%s:%d login", user.Name, user.ID)
 	ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	go prometheus.UpdateUserLoginMetrics(oauth.LocalProvider)
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.LoginResp(user, false)})
 }
 
@@ -81,6 +86,7 @@ func AdminLogin(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.LoginEventType)
 	admin, ok, msg := service.VerifyAdmin(db.DB.WithContext(ctx), form)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -94,5 +100,6 @@ func AdminLogin(ctx *gin.Context) {
 	}
 	log.Logger.Infof("%s:%d login", admin.Name, admin.ID)
 	ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetAdminResp(admin)})
 }

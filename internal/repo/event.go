@@ -11,26 +11,22 @@ type EventRepo struct {
 }
 
 type CreateEventOptions struct {
-	UserID             *uint
-	TeamID             *uint
-	ContestID          *uint
-	ContestChallengeID *uint
-	Desc               string
-	Type               string
-	IP                 string
-	Magic              string
+	IsAdmin bool
+	Type    string
+	Success bool
+	IP      string
+	Magic   string
+	Models  model.UintMap
 }
 
 func (c CreateEventOptions) Convert2Model() model.Model {
 	return model.Event{
-		UserID:             c.UserID,
-		TeamID:             c.TeamID,
-		ContestID:          c.ContestID,
-		ContestChallengeID: c.ContestChallengeID,
-		Desc:               c.Desc,
-		Type:               c.Type,
-		IP:                 c.IP,
-		Magic:              c.Magic,
+		IsAdmin: c.IsAdmin,
+		Type:    c.Type,
+		Success: c.Success,
+		IP:      c.IP,
+		Magic:   c.Magic,
+		Models:  c.Models,
 	}
 }
 

@@ -42,6 +42,10 @@ func (c Cheat) GetVersion() uint {
 	return c.Version
 }
 
+func (c Cheat) GetBasicModel() BasicModel {
+	return c.BasicModel
+}
+
 func (c Cheat) CreateErrorString() string {
 	return i18n.CreateCheatError
 }

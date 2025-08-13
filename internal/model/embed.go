@@ -76,6 +76,27 @@ func (s *StringList) Scan(value any) error {
 	return json.Unmarshal(bytes, s)
 }
 
+type UintMap map[string]uint
+
+func (u UintMap) Value() (driver.Value, error) {
+	if len(u) == 0 {
+		return nil, nil
+	}
+	return json.Marshal(u)
+}
+
+func (u *UintMap) Scan(value any) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan UintMap value")
+	}
+	if len(bytes) == 0 {
+		*u = nil
+		return nil
+	}
+	return json.Unmarshal(bytes, u)
+}
+
 type StringMap map[string]string
 
 func (s StringMap) Value() (driver.Value, error) {

@@ -50,6 +50,7 @@ func CreateUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.CreateUserEventType)
 	tx := db.DB.WithContext(ctx).Begin()
 	user, ok, msg := service.AdminCreateUser(tx, form)
 	if !ok {
@@ -58,6 +59,7 @@ func CreateUser(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetUserResp(user, true)})
 }
 
@@ -67,12 +69,14 @@ func ChangePwd(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.UpdateUserEventType)
 	tx := db.DB.WithContext(ctx).Begin()
 	ok, msg := service.ChangeUserPwd(tx, middleware.GetSelf(ctx).(model.User), form)
 	if !ok {
 		tx.Rollback()
 	} else {
 		tx.Commit()
+		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
@@ -90,6 +94,7 @@ func UpdateUser(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
+		ctx.Set(middleware.CTXEventTypeKey, model.UpdateUserEventType)
 		user = middleware.GetUser(ctx)
 		tx = db.DB.WithContext(ctx).Begin()
 		ok, msg = service.UpdateUser(tx, user, form)
@@ -99,6 +104,7 @@ func UpdateUser(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
+		ctx.Set(middleware.CTXEventTypeKey, model.UpdateUserEventType)
 		user = middleware.GetSelf(ctx).(model.User)
 		tx = db.DB.WithContext(ctx).Begin()
 		ok, msg = service.UpdateSelf(tx, user, form)
@@ -107,6 +113,7 @@ func UpdateUser(ctx *gin.Context) {
 		tx.Rollback()
 	} else {
 		tx.Commit()
+		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
@@ -123,14 +130,17 @@ func DeleteUser(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
+		ctx.Set(middleware.CTXEventTypeKey, model.DeleteUserEventType)
 		ok, msg = service.DeleteSelf(tx, middleware.GetSelf(ctx).(model.User), form)
 	} else {
+		ctx.Set(middleware.CTXEventTypeKey, model.DeleteUserEventType)
 		ok, msg = db.InitUserRepo(tx).Delete(middleware.GetUser(ctx).ID)
 	}
 	if !ok {
 		tx.Rollback()
 	} else {
 		tx.Commit()
+		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

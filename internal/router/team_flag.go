@@ -15,6 +15,7 @@ import (
 )
 
 func InitTeamFlag(ctx *gin.Context) {
+	ctx.Set(middleware.CTXEventTypeKey, model.InitChallengeEventType)
 	team := middleware.GetTeam(ctx)
 	user := middleware.GetSelf(ctx).(model.User)
 	contestChallenge := middleware.GetContestChallenge(ctx)
@@ -39,10 +40,12 @@ func InitTeamFlag(ctx *gin.Context) {
 		ok, msg = true, i18n.Success
 	}
 	tx.Commit()
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
 func ResetTeamFlag(ctx *gin.Context) {
+	ctx.Set(middleware.CTXEventTypeKey, model.ResetChallengeEventType)
 	team := middleware.GetTeam(ctx)
 	user := middleware.GetSelf(ctx).(model.User)
 	contestChallenge := middleware.GetContestChallenge(ctx)
@@ -71,5 +74,6 @@ func ResetTeamFlag(ctx *gin.Context) {
 	default:
 		ok, msg = true, i18n.Success
 	}
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

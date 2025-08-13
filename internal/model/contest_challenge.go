@@ -33,6 +33,10 @@ func (c ContestChallenge) GetVersion() uint {
 	return c.Version
 }
 
+func (c ContestChallenge) GetBasicModel() BasicModel {
+	return c.BasicModel
+}
+
 func (c ContestChallenge) CreateErrorString() string {
 	return i18n.CreateContestChallengeError
 }

@@ -29,6 +29,10 @@ func (o Oauth) GetVersion() uint {
 	return o.Version
 }
 
+func (o Oauth) GetBasicModel() BasicModel {
+	return o.BasicModel
+}
+
 func (o Oauth) CreateErrorString() string {
 	return i18n.CreateOauthError
 }

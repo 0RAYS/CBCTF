@@ -37,6 +37,10 @@ func (t Team) GetVersion() uint {
 	return t.Version
 }
 
+func (t Team) GetBasicModel() BasicModel {
+	return t.BasicModel
+}
+
 func (t Team) CreateErrorString() string {
 	return i18n.CreateTeamError
 }
