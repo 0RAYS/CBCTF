@@ -382,3 +382,25 @@ func GetOauth(ctx *gin.Context) model.Oauth {
 		return oauth.(model.Oauth)
 	}
 }
+
+// SetOauthURI 不使用数据库查询, 只传递名称, 后续使用内存中的 map 进行获取
+func SetOauthURI(ctx *gin.Context) {
+	type oauthURI struct {
+		OauthURI string `uri:"oauth" binding:"required"`
+	}
+	var oauth oauthURI
+	if err := ctx.ShouldBindUri(&oauth); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		return
+	}
+	ctx.Set("OauthURI", oauth.OauthURI)
+	ctx.Next()
+}
+
+func GetOauthURI(ctx *gin.Context) string {
+	if oauth, ok := ctx.Get("OauthURI"); !ok || oauth == nil {
+		return ""
+	} else {
+		return oauth.(string)
+	}
+}
