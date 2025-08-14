@@ -24,10 +24,10 @@ func GetDefaultHDUHelpOauth() model.Oauth {
 		Provider:        "HDUHelp",
 		URI:             "hduhelp",
 		RespIDField:     "{data.staffId}",
-		RespNameField:   "{data.staffName} {data.staffId}",
+		RespNameField:   "HDU_{data.staffId}",
 		RespEmailField:  "{data.staffId}@hdu.edu.cn",
 		RespAvatarField: "",
-		RespDescField:   "{data.unitName} {data.majorName}",
+		RespDescField:   "{data.unitName} {data.majorName} {data.staffName}",
 		On:              false,
 		Avatar:          model.AvatarURL(fmt.Sprintf("%s/assets?filename=hduhelp", config.Env.Backend)),
 	}
