@@ -1,7 +1,7 @@
 package cron
 
 import (
-	db "CBCTF/internal/repo"
+	"CBCTF/internal/db"
 	"CBCTF/internal/service"
 	"sync"
 	"time"

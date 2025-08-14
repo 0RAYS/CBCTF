@@ -1,9 +1,9 @@
 package cron
 
 import (
+	"CBCTF/internal/db"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
-	db "CBCTF/internal/repo"
 	"context"
 	"strings"
 	"time"

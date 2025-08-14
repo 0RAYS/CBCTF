@@ -2,11 +2,11 @@ package service
 
 import (
 	"CBCTF/internal/config"
+	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
-	db "CBCTF/internal/repo"
 	"CBCTF/internal/utils"
 	"crypto/sha256"
 	"encoding/hex"

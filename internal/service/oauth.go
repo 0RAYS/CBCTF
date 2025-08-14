@@ -1,9 +1,9 @@
 package service
 
 import (
+	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
 	"CBCTF/internal/model"
-	db "CBCTF/internal/repo"
 
 	"gorm.io/gorm"
 )

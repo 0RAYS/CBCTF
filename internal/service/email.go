@@ -1,6 +1,7 @@
 package service
 
 import (
+	"CBCTF/internal/db"
 	"CBCTF/internal/email"
 	f "CBCTF/internal/form"
 	"CBCTF/internal/i18n"
@@ -8,7 +9,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
-	db "CBCTF/internal/repo"
 	"CBCTF/internal/utils"
 
 	"gorm.io/gorm"

@@ -1,11 +1,11 @@
 package service
 
 import (
+	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/oauth"
-	db "CBCTF/internal/repo"
 	"CBCTF/internal/utils"
 	"strings"
 

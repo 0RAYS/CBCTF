@@ -1,12 +1,12 @@
 package service
 
 import (
+	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	r "CBCTF/internal/redis"
-	db "CBCTF/internal/repo"
 	"CBCTF/internal/utils"
 	"fmt"
 	"time"

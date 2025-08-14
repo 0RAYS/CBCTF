@@ -1,8 +1,8 @@
 package cron
 
 import (
+	"CBCTF/internal/db"
 	"CBCTF/internal/model"
-	db "CBCTF/internal/repo"
 	"CBCTF/internal/service"
 	"math"
 	"slices"

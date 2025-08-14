@@ -1,10 +1,10 @@
 package router
 
 import (
+	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
-	db "CBCTF/internal/repo"
 	"CBCTF/internal/resp"
 	"net/http"
 

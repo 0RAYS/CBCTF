@@ -2,10 +2,10 @@ package cron
 
 import (
 	"CBCTF/internal/config"
+	"CBCTF/internal/db"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	db "CBCTF/internal/repo"
 	"context"
 	"slices"
 	"strings"

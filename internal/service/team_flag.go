@@ -1,10 +1,10 @@
 package service
 
 import (
+	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/model"
-	db "CBCTF/internal/repo"
 	"CBCTF/internal/utils"
 	"errors"
 	"fmt"

@@ -1,8 +1,8 @@
 package middleware
 
 import (
+	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
-	db "CBCTF/internal/repo"
 	"CBCTF/internal/service"
 	"net/http"
 
