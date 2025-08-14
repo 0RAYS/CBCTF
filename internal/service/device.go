@@ -1,8 +1,8 @@
 package service
 
 import (
+	"CBCTF/internal/db"
 	"CBCTF/internal/model"
-	db "CBCTF/internal/repo"
 	"fmt"
 	"sync"
 

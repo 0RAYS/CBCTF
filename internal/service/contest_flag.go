@@ -1,9 +1,9 @@
 package service
 
 import (
+	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
-	db "CBCTF/internal/repo"
 	"slices"
 	"strings"
 

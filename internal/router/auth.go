@@ -1,6 +1,7 @@
 package router
 
 import (
+	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
@@ -8,7 +9,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/oauth"
 	"CBCTF/internal/prometheus"
-	db "CBCTF/internal/repo"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"CBCTF/internal/utils"

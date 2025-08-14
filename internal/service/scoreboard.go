@@ -1,11 +1,11 @@
 package service
 
 import (
+	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
-	db "CBCTF/internal/repo"
 	"CBCTF/internal/utils"
 
 	"gorm.io/gorm"

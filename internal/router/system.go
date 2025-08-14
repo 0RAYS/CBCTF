@@ -2,11 +2,11 @@ package router
 
 import (
 	"CBCTF/internal/config"
+	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
-	db "CBCTF/internal/repo"
 	"CBCTF/internal/service"
 	"fmt"
 	"net/http"

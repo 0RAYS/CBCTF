@@ -3,11 +3,11 @@ package cmd
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/cron"
+	"CBCTF/internal/db"
 	"CBCTF/internal/email"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/redis"
-	db "CBCTF/internal/repo"
 	"CBCTF/internal/router"
 	"CBCTF/internal/websocket"
 	"errors"

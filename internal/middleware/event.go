@@ -1,8 +1,8 @@
 package middleware
 
 import (
+	"CBCTF/internal/db"
 	"CBCTF/internal/model"
-	db "CBCTF/internal/repo"
 
 	"github.com/gin-gonic/gin"
 )

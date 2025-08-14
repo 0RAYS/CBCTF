@@ -1,11 +1,11 @@
 package router
 
 import (
+	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
-	db "CBCTF/internal/repo"
 	"CBCTF/internal/service"
 	"CBCTF/internal/websocket"
 	wm "CBCTF/internal/websocket/model"

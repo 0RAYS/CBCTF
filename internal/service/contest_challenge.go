@@ -2,10 +2,10 @@ package service
 
 import (
 	"CBCTF/internal/config"
+	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
-	db "CBCTF/internal/repo"
 	"errors"
 	"slices"
 	"time"

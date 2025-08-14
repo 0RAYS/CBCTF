@@ -2,13 +2,13 @@ package router
 
 import (
 	"CBCTF/internal/config"
+	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
-	db "CBCTF/internal/repo"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"errors"
@@ -285,7 +285,7 @@ func DeleteAvatars(ctx *gin.Context) {
 	repo := db.InitFileRepo(db.DB.WithContext(ctx))
 	// 保留文件
 	//for _, id := range form.FileIDL {
-	//	if file, ok, _ := repo.GetByID(id); ok {
+	//	if file, ok, _ := db.GetByID(id); ok {
 	//		_ = os.Remove(file.Path)
 	//	}
 	//}
