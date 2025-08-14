@@ -29,6 +29,20 @@ var (
 	oauthProviderMapLock sync.RWMutex
 )
 
+func RegisterOauthRouter() {
+	oauthProviders, _, ok, _ := db.InitOauthRepo(db.DB).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"on": true},
+	})
+	if !ok {
+		return
+	}
+	oauthProviderMapLock.Lock()
+	for _, provider := range oauthProviders {
+		oauthProviderMap[provider.URI] = provider
+	}
+	oauthProviderMapLock.Unlock()
+}
+
 func ListOauth(ctx *gin.Context) {
 	data := make([]gin.H, 0)
 	oauthProviderMapLock.RLock()
@@ -278,18 +292,4 @@ func DeleteOauthProvider(ctx *gin.Context) {
 	oauthProviderMapLock.Unlock()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
-}
-
-func RegisterOauthRouter() {
-	oauthProviders, _, ok, _ := db.InitOauthRepo(db.DB).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"on": true},
-	})
-	if !ok {
-		return
-	}
-	oauthProviderMapLock.Lock()
-	for _, provider := range oauthProviders {
-		oauthProviderMap[provider.URI] = provider
-	}
-	oauthProviderMapLock.Unlock()
 }
