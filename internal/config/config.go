@@ -29,11 +29,10 @@ type Config struct {
 	} `mapstructure:"log" json:"log" msgpack:"log"`
 
 	Gin struct {
-		Mode      string `mapstructure:"mode" json:"mode" msgpack:"mode"`                   // Gin 模式：debug, release, test
-		Host      string `mapstructure:"host" json:"host" msgpack:"host"`                   // Gin 服务监听地址
-		Port      int    `mapstructure:"port" json:"port" msgpack:"port"`                   // Gin 服务监听端口
-		StaticURI string `mapstructure:"static_uri" json:"static_uri" msgpack:"static_uri"` // 前端静态资源路径
-		Upload    struct {
+		Mode   string `mapstructure:"mode" json:"mode" msgpack:"mode"` // Gin 模式：debug, release, test
+		Host   string `mapstructure:"host" json:"host" msgpack:"host"` // Gin 服务监听地址
+		Port   int    `mapstructure:"port" json:"port" msgpack:"port"` // Gin 服务监听端口
+		Upload struct {
 			Max int `mapstructure:"max" json:"max" msgpack:"max"` // 上传文件最大大小（单位：MB）
 		} `mapstructure:"upload" json:"upload" msgpack:"upload"`
 		Proxies   []string `mapstructure:"proxies" json:"proxies" msgpack:"proxies"` // 信任的代理服务器
@@ -146,7 +145,6 @@ func tidy() {
 	}
 	Env.Backend = strings.TrimSuffix(Env.Backend, "/")
 	Env.Frontend = strings.TrimSuffix(Env.Frontend, "/")
-	Env.Gin.StaticURI = strings.Trim(Env.Gin.StaticURI, "/")
 }
 
 // Save 保存配置, 用于动态刷新配置

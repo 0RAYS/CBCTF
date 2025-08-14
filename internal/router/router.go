@@ -45,18 +45,27 @@ func Init() *gin.Engine {
 	{
 		router.GET("/", func(ctx *gin.Context) {
 			if strings.HasPrefix(config.Env.Frontend, "http://") || strings.HasPrefix(config.Env.Frontend, "https://") {
-				ctx.Redirect(http.StatusFound, fmt.Sprintf("%s/%s", config.Env.Frontend, config.Env.Gin.StaticURI))
+				ctx.Redirect(http.StatusFound, fmt.Sprintf("%s/platform", config.Env.Frontend))
 			} else {
-				ctx.Redirect(http.StatusFound, fmt.Sprintf("/%s", config.Env.Gin.StaticURI))
+				ctx.Redirect(http.StatusFound, "/platform")
 			}
 		})
-		router.StaticFS(fmt.Sprintf("/%s", config.Env.Gin.StaticURI), http.FS(frontend.SubFS))
+		router.StaticFS("/platform", http.FS(frontend.SubFS))
 	}
 
 	{
 		router.POST("/register", middleware.RateLimit("register", 1, time.Minute), Register)
 		router.POST("/login", Login)
 		router.POST("/admin/login", AdminLogin)
+
+		RegisterOauthRouter()
+		router.GET("/oauth", ListOauth)
+		oauth := router.Group("/oauth/:oauth", middleware.SetOauthURI)
+		{
+			oauth.GET("", Oauth)
+			oauth.GET("/callback", OauthCallback)
+		}
+
 		router.GET("/verify", VerifyEmail)
 		router.GET("/assets", DefaultAssets)
 		router.GET("/avatars/:fileID", middleware.SetFile(model.AvatarFile), DownloadFile)
@@ -279,7 +288,5 @@ func Init() *gin.Engine {
 		admin.GET("/avatars", GetAvatars)
 		admin.DELETE("/avatars", DeleteAvatars)
 	}
-
-	RegisterOauthRouter(router)
 	return router
 }
