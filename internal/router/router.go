@@ -60,7 +60,7 @@ func Init() *gin.Engine {
 
 		RegisterOauthRouter()
 		router.GET("/oauth", ListOauth)
-		oauth := router.Group("/oauth/:oauth", middleware.SetOauthURI)
+		oauth := router.Group("/oauth/:oauth", middleware.SetOauthUri)
 		{
 			oauth.GET("", Oauth)
 			oauth.GET("/callback", OauthCallback)
@@ -212,7 +212,7 @@ func Init() *gin.Engine {
 			adminContest.GET("/timeline", GetRankTimeline)
 
 			adminContest.GET("/teams", GetTeams)
-			adminContestTeam := adminContest.Group("/teams/:teamID", middleware.SetTeamByURI)
+			adminContestTeam := adminContest.Group("/teams/:teamID", middleware.SetTeamByUri)
 			{
 				adminContestTeam.GET("", GetTeam)
 				adminContestTeam.GET("/users", GetTeammates)

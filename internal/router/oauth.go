@@ -24,7 +24,7 @@ import (
 )
 
 var (
-	// oauthProviderMap[model.Oauth.URI] = model.Oauth
+	// oauthProviderMap[model.Oauth.Uri] = model.Oauth
 	oauthProviderMap     = make(map[string]model.Oauth)
 	oauthProviderMapLock sync.RWMutex
 )
@@ -38,7 +38,7 @@ func RegisterOauthRouter() {
 	}
 	oauthProviderMapLock.Lock()
 	for _, provider := range oauthProviders {
-		oauthProviderMap[provider.URI] = provider
+		oauthProviderMap[provider.Uri] = provider
 	}
 	oauthProviderMapLock.Unlock()
 }
@@ -48,7 +48,7 @@ func ListOauth(ctx *gin.Context) {
 	oauthProviderMapLock.RLock()
 	for _, provider := range oauthProviderMap {
 		data = append(data, gin.H{
-			"url":    fmt.Sprintf("%s/oauth/%s", config.Env.Backend, provider.URI),
+			"url":    fmt.Sprintf("%s/oauth/%s", config.Env.Backend, provider.Uri),
 			"name":   provider.Provider,
 			"avatar": provider.Avatar,
 		})
@@ -58,7 +58,7 @@ func ListOauth(ctx *gin.Context) {
 }
 
 func Oauth(ctx *gin.Context) {
-	uri := middleware.GetOauthURI(ctx)
+	uri := middleware.GetOauthUri(ctx)
 	oauthProviderMapLock.RLock()
 	provider, ok := oauthProviderMap[uri]
 	oauthProviderMapLock.RUnlock()
@@ -87,7 +87,7 @@ func Oauth(ctx *gin.Context) {
 }
 
 func OauthCallback(ctx *gin.Context) {
-	uri := middleware.GetOauthURI(ctx)
+	uri := middleware.GetOauthUri(ctx)
 	oauthProviderMapLock.RLock()
 	provider, ok := oauthProviderMap[uri]
 	oauthProviderMapLock.RUnlock()
@@ -235,7 +235,7 @@ func CreateOauthProvider(ctx *gin.Context) {
 	tx.Commit()
 	if provider.On {
 		oauthProviderMapLock.Lock()
-		oauthProviderMap[provider.URI] = provider
+		oauthProviderMap[provider.Uri] = provider
 		oauthProviderMapLock.Unlock()
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
@@ -264,11 +264,11 @@ func UpdateOauthProvider(ctx *gin.Context) {
 		return
 	}
 	oauthProviderMapLock.Lock()
-	if _, ok = oauthProviderMap[newOauth.URI]; ok {
-		delete(oauthProviderMap, newOauth.URI)
+	if _, ok = oauthProviderMap[newOauth.Uri]; ok {
+		delete(oauthProviderMap, newOauth.Uri)
 	}
 	if newOauth.On {
-		oauthProviderMap[newOauth.URI] = newOauth
+		oauthProviderMap[newOauth.Uri] = newOauth
 	}
 	oauthProviderMapLock.Unlock()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
@@ -286,8 +286,8 @@ func DeleteOauthProvider(ctx *gin.Context) {
 	}
 	tx.Commit()
 	oauthProviderMapLock.Lock()
-	if _, ok := oauthProviderMap[oauth.URI]; ok {
-		delete(oauthProviderMap, oauth.URI)
+	if _, ok := oauthProviderMap[oauth.Uri]; ok {
+		delete(oauthProviderMap, oauth.Uri)
 	}
 	oauthProviderMapLock.Unlock()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
