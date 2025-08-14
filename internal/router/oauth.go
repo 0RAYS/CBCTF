@@ -210,6 +210,7 @@ func CreateOauthProvider(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.CreateOauthEventType)
 	tx := db.DB.WithContext(ctx).Begin()
 	provider, ok, msg := service.CreateOauthProvider(tx, form)
 	if !ok {
@@ -223,6 +224,7 @@ func CreateOauthProvider(ctx *gin.Context) {
 		oauthProviderMap[provider.URI] = provider
 		oauthProviderMapLock.Unlock()
 	}
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetOauthResp(provider)})
 }
 
@@ -232,6 +234,7 @@ func UpdateOauthProvider(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.UpdateOauthEventType)
 	oauth := middleware.GetOauth(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
 	ok, msg := service.UpdateOauthProvider(tx, oauth, form)
@@ -254,10 +257,12 @@ func UpdateOauthProvider(ctx *gin.Context) {
 		oauthProviderMap[newOauth.URI] = newOauth
 	}
 	oauthProviderMapLock.Unlock()
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
 func DeleteOauthProvider(ctx *gin.Context) {
+	ctx.Set(middleware.CTXEventTypeKey, model.DeleteOauthEventType)
 	oauth := middleware.GetOauth(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
 	if ok, msg := db.InitOauthRepo(tx).Delete(oauth.ID); !ok {
@@ -271,6 +276,7 @@ func DeleteOauthProvider(ctx *gin.Context) {
 		delete(oauthProviderMap, oauth.URI)
 	}
 	oauthProviderMapLock.Unlock()
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }
 

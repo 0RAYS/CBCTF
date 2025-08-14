@@ -21,6 +21,7 @@ import (
 )
 
 func DownloadFile(ctx *gin.Context) {
+	ctx.Set(middleware.CTXEventTypeKey, model.DownloadWriteUpEventType)
 	file := middleware.GetFile(ctx)
 	if _, err := os.Stat(file.Path); err != nil {
 		if os.IsNotExist(err) {
@@ -37,6 +38,7 @@ func DownloadFile(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", file.Filename))
 	ctx.Writer.Header().Add("Content-Type", "application/octet-stream")
 	ctx.File(file.Path)
@@ -48,6 +50,7 @@ func DownloadChallengeFile(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.DownloadAttachmentEventType)
 	challenge := middleware.GetChallenge(ctx)
 	path := fmt.Sprintf("%s/%s", challenge.BasicDir(), form.File)
 	if _, err := os.Stat(path); err != nil {
@@ -59,6 +62,7 @@ func DownloadChallengeFile(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.File(path)
 }
 
@@ -82,6 +86,7 @@ func DownloadAttachment(ctx *gin.Context) {
 }
 
 func DownloadTraffic(ctx *gin.Context) {
+	ctx.Set(middleware.CTXEventTypeKey, model.DownloadTrafficEventType)
 	victim := middleware.GetVictim(ctx)
 	if _, err := os.Stat(victim.TrafficZipPath()); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -92,6 +97,7 @@ func DownloadTraffic(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.File(victim.TrafficZipPath())
 }
 
@@ -164,13 +170,14 @@ func UploadAvatar(v string) func(ctx *gin.Context) {
 }
 
 func UploadChallengeFile(ctx *gin.Context) {
-	challenge := middleware.GetChallenge(ctx)
 	file, err := ctx.FormFile(model.ChallengeFile)
 	if err != nil {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.UploadChallengeFileEventType)
 	var path string
+	challenge := middleware.GetChallenge(ctx)
 	switch challenge.Type {
 	case model.StaticChallengeType, model.QuestionChallengeType, model.PodsChallengeType:
 		if file.Filename != model.AttachmentFile {
@@ -194,6 +201,7 @@ func UploadChallengeFile(ctx *gin.Context) {
 		return
 	}
 	go prometheus.UpdateFileUploadMetrics(".zip", file.Size)
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }
 
@@ -273,6 +281,7 @@ func DeleteAvatars(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.DeleteAvatarEventType)
 	repo := db.InitFileRepo(db.DB.WithContext(ctx))
 	// 保留文件
 	//for _, id := range form.FileIDL {
@@ -281,5 +290,6 @@ func DeleteAvatars(ctx *gin.Context) {
 	//	}
 	//}
 	repo.DeleteByRandID(form.FileIDL...)
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }
