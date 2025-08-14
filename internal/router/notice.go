@@ -73,7 +73,7 @@ func CreateNotice(ctx *gin.Context) {
 			}
 		}
 		websocket.UserClientsMu.Unlock()
-		websocket.SendToClients(false, wsm.NoticeLevel, wsm.ContestNoticeType, fmt.Sprintf("Notice: %s", notice.Title), notice.Content, idL...)
+		websocket.SendToClients(false, wsm.NoticeLevel, wsm.ContestNoticeWSType, fmt.Sprintf("Notice: %s", notice.Title), notice.Content, idL...)
 	}()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": &notice})

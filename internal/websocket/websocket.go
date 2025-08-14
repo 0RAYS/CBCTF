@@ -30,7 +30,7 @@ var (
 )
 
 func Init() {
-	handler.AddReceiveHandler(model.HeartbeatType, handler.KeepAliveHandler)
+	handler.AddReceiveHandler(model.HeartbeatWSType, handler.KeepAliveHandler)
 }
 
 func WS(ctx *gin.Context) {

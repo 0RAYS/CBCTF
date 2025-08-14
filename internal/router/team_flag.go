@@ -30,10 +30,10 @@ func InitTeamFlag(ctx *gin.Context) {
 	case model.DynamicChallengeType:
 		go func() {
 			if ok, _ = k8s.GenerateAttachment(contestChallenge, team, teamFlags); !ok {
-				websocket.Send(false, user.ID, wm.ErrorLevel, wm.GenerateAttachmentType, "Generate Attachment", "Failed")
+				websocket.Send(false, user.ID, wm.ErrorLevel, wm.GenerateAttachmentWSType, "Generate Attachment", "Failed")
 				return
 			}
-			websocket.Send(false, user.ID, wm.SuccessLevel, wm.GenerateAttachmentType, "Generate Attachment", "Done")
+			websocket.Send(false, user.ID, wm.SuccessLevel, wm.GenerateAttachmentWSType, "Generate Attachment", "Done")
 		}()
 		ok, msg = true, i18n.Success
 	default:
@@ -61,10 +61,10 @@ func ResetTeamFlag(ctx *gin.Context) {
 	case model.DynamicChallengeType:
 		go func() {
 			if ok, _ = k8s.GenerateAttachment(contestChallenge, team, teamFlags); !ok {
-				websocket.Send(false, user.ID, wm.ErrorLevel, wm.GenerateAttachmentType, "Generate Attachment", "Failed")
+				websocket.Send(false, user.ID, wm.ErrorLevel, wm.GenerateAttachmentWSType, "Generate Attachment", "Failed")
 				return
 			}
-			websocket.Send(false, user.ID, wm.SuccessLevel, wm.GenerateAttachmentType, "Generate Attachment", "Done")
+			websocket.Send(false, user.ID, wm.SuccessLevel, wm.GenerateAttachmentWSType, "Generate Attachment", "Done")
 		}()
 		ok, msg = true, i18n.Success
 	case model.PodsChallengeType:

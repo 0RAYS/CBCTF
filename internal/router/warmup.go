@@ -95,10 +95,10 @@ func StartContestVictims(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
 	go func(ctx *gin.Context) {
 		if ok, _ := service.StartContestVictims(db.DB.WithContext(ctx), contest, form); !ok {
-			websocket.Send(true, middleware.GetSelfID(ctx), wsm.ErrorLevel, wsm.StartVictimType, "Victims Warmup", "Failed")
+			websocket.Send(true, middleware.GetSelfID(ctx), wsm.ErrorLevel, wsm.StartVictimWSType, "Victims Warmup", "Failed")
 			return
 		}
-		websocket.Send(true, middleware.GetSelfID(ctx), wsm.SuccessLevel, wsm.StartVictimType, "Victims Warmup", "Done")
+		websocket.Send(true, middleware.GetSelfID(ctx), wsm.SuccessLevel, wsm.StartVictimWSType, "Victims Warmup", "Done")
 	}(ctx.Copy())
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
@@ -113,10 +113,10 @@ func StopContestVictims(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.StopVictimEventType)
 	go func(ctx *gin.Context) {
 		if ok, _ := service.StopContestVictims(db.DB.WithContext(ctx), form); !ok {
-			websocket.Send(true, middleware.GetSelfID(ctx), wsm.ErrorLevel, wsm.StopVictimType, "Victims Stop", "Failed")
+			websocket.Send(true, middleware.GetSelfID(ctx), wsm.ErrorLevel, wsm.StopVictimWSType, "Victims Stop", "Failed")
 			return
 		}
-		websocket.Send(true, middleware.GetSelfID(ctx), wsm.SuccessLevel, wsm.StopVictimType, "Victims Stop", "Done")
+		websocket.Send(true, middleware.GetSelfID(ctx), wsm.SuccessLevel, wsm.StopVictimWSType, "Victims Stop", "Done")
 	}(ctx.Copy())
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
