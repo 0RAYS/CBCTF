@@ -10,7 +10,7 @@ type Oauth struct {
 	ClientID        string    `json:"client_id"`
 	ClientSecret    string    `json:"client_secret"`
 	Provider        string    `gorm:"type:varchar(255);uniqueIndex;not null" json:"provider"`
-	URI             string    `json:"uri"`
+	Uri             string    `json:"uri"`
 	RespIDField     string    `json:"id_field"`
 	RespNameField   string    `json:"name_field"`
 	RespEmailField  string    `json:"email_field"`

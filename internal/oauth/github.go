@@ -28,7 +28,7 @@ func GetDefaultGithubOauth() model.Oauth {
 		ClientID:        "",
 		ClientSecret:    "",
 		Provider:        "Github",
-		URI:             "github",
+		Uri:             "github",
 		RespIDField:     "{id}",
 		RespNameField:   "{name}",
 		RespEmailField:  "{email}",

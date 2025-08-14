@@ -31,7 +31,7 @@ type CreateOauthProviderForm struct {
 	ClientID        string `form:"client_id" json:"client_id" binding:"required"`
 	ClientSecret    string `form:"client_secret" json:"client_secret" binding:"required"`
 	Provider        string `form:"provider" json:"provider" binding:"required"`
-	URI             string `form:"uri" json:"uri" binding:"required"`
+	Uri             string `form:"uri" json:"uri" binding:"required"`
 	RespIDField     string `form:"id_field" json:"id_field" binding:"required"`
 	RespNameField   string `form:"name_field" json:"name_field" binding:"required"`
 	RespEmailField  string `form:"email_field" json:"email_field" binding:"required"`
@@ -72,9 +72,9 @@ func (f *CreateOauthProviderForm) Bind(ctx *gin.Context) (bool, string) {
 	if f.Provider == "" {
 		f.Provider = utils.UUID()
 	}
-	f.URI = strings.TrimSpace(f.URI)
-	if f.URI == "" {
-		f.URI = utils.RandStr(10)
+	f.Uri = strings.TrimSpace(f.Uri)
+	if f.Uri == "" {
+		f.Uri = utils.RandStr(10)
 	}
 	f.RespIDField = strings.TrimSpace(f.RespIDField)
 	if f.RespIDField == "" {
@@ -101,7 +101,7 @@ type UpdateOauthProviderForm struct {
 	ClientID        *string          `form:"client_id" json:"client_id"`
 	ClientSecret    *string          `form:"client_secret" json:"client_secret"`
 	Provider        *string          `form:"provider" json:"provider"`
-	URI             *string          `form:"uri" json:"uri"`
+	Uri             *string          `form:"uri" json:"uri"`
 	RespIDField     *string          `form:"id_field" json:"id_field"`
 	RespNameField   *string          `form:"name_field" json:"name_field"`
 	RespEmailField  *string          `form:"email_field" json:"email_field"`
@@ -158,10 +158,10 @@ func (f *UpdateOauthProviderForm) Bind(ctx *gin.Context) (bool, string) {
 			*f.Provider = utils.UUID()
 		}
 	}
-	if f.URI != nil {
-		*f.URI = strings.TrimSpace(*f.URI)
-		if *f.URI == "" {
-			*f.URI = utils.RandStr(10)
+	if f.Uri != nil {
+		*f.Uri = strings.TrimSpace(*f.Uri)
+		if *f.Uri == "" {
+			*f.Uri = utils.RandStr(10)
 		}
 	}
 	if f.RespIDField != nil {

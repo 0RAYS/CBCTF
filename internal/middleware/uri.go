@@ -98,8 +98,8 @@ func SetTeamByUser(ctx *gin.Context) {
 	ctx.Next()
 }
 
-// SetTeamByURI 保存 model.Team 至上下文
-func SetTeamByURI(ctx *gin.Context) {
+// SetTeamByUri 保存 model.Team 至上下文
+func SetTeamByUri(ctx *gin.Context) {
 	var (
 		team model.Team
 		ok   bool
@@ -383,22 +383,22 @@ func GetOauth(ctx *gin.Context) model.Oauth {
 	}
 }
 
-// SetOauthURI 不使用数据库查询, 只传递名称, 后续使用内存中的 map 进行获取
-func SetOauthURI(ctx *gin.Context) {
-	type oauthURI struct {
-		OauthURI string `uri:"oauth" binding:"required"`
+// SetOauthUri 不使用数据库查询, 只传递名称, 后续使用内存中的 map 进行获取
+func SetOauthUri(ctx *gin.Context) {
+	type oauthUri struct {
+		OauthUri string `uri:"oauth" binding:"required"`
 	}
-	var oauth oauthURI
+	var oauth oauthUri
 	if err := ctx.ShouldBindUri(&oauth); err != nil {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
-	ctx.Set("OauthURI", oauth.OauthURI)
+	ctx.Set("OauthUri", oauth.OauthUri)
 	ctx.Next()
 }
 
-func GetOauthURI(ctx *gin.Context) string {
-	if oauth, ok := ctx.Get("OauthURI"); !ok || oauth == nil {
+func GetOauthUri(ctx *gin.Context) string {
+	if oauth, ok := ctx.Get("OauthUri"); !ok || oauth == nil {
 		return ""
 	} else {
 		return oauth.(string)

@@ -20,7 +20,7 @@ type CreateOauthOptions struct {
 	ClientID        string
 	ClientSecret    string
 	Provider        string
-	URI             string
+	Uri             string
 	RespIDField     string
 	RespNameField   string
 	RespEmailField  string
@@ -39,7 +39,7 @@ func (c CreateOauthOptions) Convert2Model() model.Model {
 		ClientID:        c.ClientID,
 		ClientSecret:    c.ClientSecret,
 		Provider:        c.Provider,
-		URI:             c.URI,
+		Uri:             c.Uri,
 		RespIDField:     c.RespIDField,
 		RespNameField:   c.RespNameField,
 		RespEmailField:  c.RespEmailField,
@@ -58,7 +58,7 @@ type UpdateOauthOptions struct {
 	ClientID        *string
 	ClientSecret    *string
 	Provider        *string
-	URI             *string
+	Uri             *string
 	RespIDField     *string
 	RespNameField   *string
 	RespEmailField  *string
@@ -91,8 +91,8 @@ func (u UpdateOauthOptions) Convert2Map() map[string]any {
 	if u.Provider != nil {
 		options["provider"] = *u.Provider
 	}
-	if u.URI != nil {
-		options["uri"] = *u.URI
+	if u.Uri != nil {
+		options["uri"] = *u.Uri
 	}
 	if u.RespIDField != nil {
 		options["resp_id_field"] = *u.RespIDField
