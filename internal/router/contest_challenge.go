@@ -4,6 +4,7 @@ import (
 	f "CBCTF/internal/form"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
+	"CBCTF/internal/model"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
@@ -90,11 +91,13 @@ func AddContestChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.CreateContestChallengeEventType)
 	contestChallengeL, failedL, _, _ := service.CreateContestChallenge(db.DB.WithContext(ctx), middleware.GetContest(ctx), form)
 	data := make([]gin.H, 0)
 	for _, contestChallenge := range contestChallengeL {
 		data = append(data, resp.GetContestChallengeResp(contestChallenge))
 	}
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"contest_challenge": data, "failed": failedL}})
 }
 
@@ -104,6 +107,7 @@ func UpdateContestChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.UpdateContestChallengeEventType)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
 	ok, msg := db.InitContestChallengeRepo(tx).Update(contestChallenge.ID, db.UpdateContestChallengeOptions{
@@ -117,18 +121,21 @@ func UpdateContestChallenge(ctx *gin.Context) {
 	if !ok {
 		tx.Rollback()
 	} else {
+		ctx.Set(middleware.CTXEventSuccessKey, true)
 		tx.Commit()
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
 func DeleteContestChallenge(ctx *gin.Context) {
+	ctx.Set(middleware.CTXEventTypeKey, model.DeleteContestChallengeEventType)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
 	ok, msg := db.InitContestChallengeRepo(tx).Delete(contestChallenge.ID)
 	if !ok {
 		tx.Rollback()
 	} else {
+		ctx.Set(middleware.CTXEventSuccessKey, true)
 		tx.Commit()
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

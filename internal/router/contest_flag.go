@@ -61,6 +61,7 @@ func UpdateContestFlag(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.UpdateContestChallengeFlagEventType)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	contestFlag := middleware.GetContestFlag(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
@@ -77,6 +78,7 @@ func UpdateContestFlag(ctx *gin.Context) {
 	if !ok {
 		tx.Rollback()
 	} else {
+		ctx.Set(middleware.CTXEventSuccessKey, true)
 		tx.Commit()
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

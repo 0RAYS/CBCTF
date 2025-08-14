@@ -4,11 +4,12 @@ import (
 	f "CBCTF/internal/form"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
+	"CBCTF/internal/model"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"CBCTF/internal/websocket"
-	"CBCTF/internal/websocket/model"
+	wsm "CBCTF/internal/websocket/model"
 	"fmt"
 	"net/http"
 	"slices"
@@ -49,6 +50,7 @@ func CreateNotice(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.CreateNoticeEventType)
 	contest := middleware.GetContest(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
 	notice, ok, msg := service.CreateNotice(tx, contest, form)
@@ -71,8 +73,9 @@ func CreateNotice(ctx *gin.Context) {
 			}
 		}
 		websocket.UserClientsMu.Unlock()
-		websocket.SendToClients(false, model.NoticeLevel, model.ContestNoticeType, fmt.Sprintf("Notice: %s", notice.Title), notice.Content, idL...)
+		websocket.SendToClients(false, wsm.NoticeLevel, wsm.ContestNoticeType, fmt.Sprintf("Notice: %s", notice.Title), notice.Content, idL...)
 	}()
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": &notice})
 }
 
@@ -82,24 +85,28 @@ func UpdateNotice(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.UpdateNoticeEventType)
 	notice := middleware.GetNotice(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
 	ok, msg := service.UpdateNotice(tx, notice, form)
 	if !ok {
 		tx.Rollback()
 	} else {
+		ctx.Set(middleware.CTXEventSuccessKey, true)
 		tx.Commit()
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
 func DeleteNotice(ctx *gin.Context) {
+	ctx.Set(middleware.CTXEventTypeKey, model.DeleteNoticeEventType)
 	notice := middleware.GetNotice(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
 	ok, msg := service.DeleteNotice(tx, notice)
 	if !ok {
 		tx.Rollback()
 	} else {
+		ctx.Set(middleware.CTXEventSuccessKey, true)
 		tx.Commit()
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

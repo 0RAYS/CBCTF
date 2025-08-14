@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
+	"CBCTF/internal/model"
 	db "CBCTF/internal/repo"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
@@ -73,6 +74,7 @@ func CreateChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.CreateChallengeEventType)
 	tx := db.DB.WithContext(ctx).Begin()
 	challenge, ok, msg := service.CreateChallenge(tx, form)
 	if !ok {
@@ -86,6 +88,7 @@ func CreateChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.CreateDirError, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetChallengeResp(challenge)})
 }
 
@@ -95,6 +98,7 @@ func UpdateChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.UpdateChallengeEventType)
 	tx := db.DB.WithContext(ctx).Begin()
 	ok, msg := service.UpdateChallenge(tx, middleware.GetChallenge(ctx), form)
 	if !ok {
@@ -102,10 +106,12 @@ func UpdateChallenge(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
 func DeleteChallenge(ctx *gin.Context) {
+	ctx.Set(middleware.CTXEventTypeKey, model.DeleteChallengeEventType)
 	challenge := middleware.GetChallenge(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
 	ok, msg := db.InitChallengeRepo(tx).Delete(challenge.RandID)
@@ -120,5 +126,6 @@ func DeleteChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 		return
 	}
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }

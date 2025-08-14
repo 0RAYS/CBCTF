@@ -5,31 +5,65 @@ import (
 )
 
 const (
-	LoginEventType              = "login"
-	RegisterEventType           = "register"
-	OauthLoginEventType         = "oauth_login"
-	CreateAdminEventType        = "create_admin"
-	UpdateAdminEventType        = "update_admin"
-	CreateUserEventType         = "create_user"
-	UpdateUserEventType         = "update_user"
-	DeleteUserEventType         = "delete_user"
-	ActivateEmailEventType      = "activate_email"
-	VerifyEmailEventType        = "verify_email"
-	UploadAvatarEventType       = "upload_avatar"
-	JoinTeamEventType           = "join_team"
-	CreateTeamEventType         = "create_team"
-	UpdateTeamEventType         = "update_team"
-	DeleteTeamEventType         = "delete_team"
-	LeaveTeamEventType          = "leave_team"
-	KickMemberEventType         = "kick_member"
+	LoginEventType      = "login"
+	RegisterEventType   = "register"
+	OauthLoginEventType = "oauth_login"
+
+	CreateAdminEventType = "create_admin"
+	UpdateAdminEventType = "update_admin"
+
+	CreateUserEventType = "create_user"
+	UpdateUserEventType = "update_user"
+	DeleteUserEventType = "delete_user"
+
+	CreateContestEventType = "create_contest"
+	UpdateContestEventType = "update_contest"
+	DeleteContestEventType = "delete_contest"
+
+	CreateChallengeEventType     = "create_challenge"
+	UpdateChallengeEventType     = "update_challenge"
+	DeleteChallengeEventType     = "delete_challenge"
+	UploadChallengeFileEventType = "upload_challenge_file"
+
+	CreateContestChallengeEventType = "create_contest_challenge"
+	UpdateContestChallengeEventType = "update_contest_challenge"
+	DeleteContestChallengeEventType = "delete_contest_challenge"
+
+	UpdateContestChallengeFlagEventType = "update_contest_challenge_flag"
+
+	CreateNoticeEventType = "create_notice"
+	UpdateNoticeEventType = "update_notice"
+	DeleteNoticeEventType = "delete_notice"
+
+	CreateOauthEventType = "create_oauth"
+	UpdateOauthEventType = "update_oauth"
+	DeleteOauthEventType = "delete_oauth"
+
+	ActivateEmailEventType = "activate_email"
+	VerifyEmailEventType   = "verify_email"
+
+	UploadAvatarEventType = "upload_avatar"
+	DeleteAvatarEventType = "delete_avatar"
+
+	JoinTeamEventType   = "join_team"
+	CreateTeamEventType = "create_team"
+	UpdateTeamEventType = "update_team"
+	DeleteTeamEventType = "delete_team"
+	LeaveTeamEventType  = "leave_team"
+	KickMemberEventType = "kick_member"
+
 	InitChallengeEventType      = "init_usage"
 	ResetChallengeEventType     = "reset_usage"
 	DownloadAttachmentEventType = "download_attachment"
+	PullImageEventType          = "pull_image"
 	StartVictimEventType        = "start_victim"
 	IncreaseVictimEventType     = "increase_victim"
 	StopVictimEventType         = "stop_victim"
+	DownloadTrafficEventType    = "download_traffic"
 	SubmitFlagEventType         = "submit_flag"
-	UploadWriteUpEventType      = "upload_writeup"
+
+	UploadWriteUpEventType   = "upload_writeup"
+	DownloadWriteUpEventType = "download_writeup"
 )
 
 type Event struct {
