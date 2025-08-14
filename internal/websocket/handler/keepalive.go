@@ -13,7 +13,7 @@ func KeepAliveHandler(conn *model.Connection, msg []byte) error {
 	}
 	conn.LastActive = time.Now()
 	response := model.HeartbeatSend{
-		Type:  model.HeartbeatType,
+		Type:  model.HeartbeatWSType,
 		Msg:   "pong",
 		Title: "Heartbeat",
 	}

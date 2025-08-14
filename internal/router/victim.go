@@ -27,11 +27,11 @@ func StartVictim(ctx *gin.Context) {
 		if !ok {
 			go service.StopTeamVictim(db.DB.WithContext(ctx.Copy()), team, contestChallenge)
 			tx.Rollback()
-			websocket.Send(false, user.ID, wm.ErrorLevel, wm.StartVictimType, "Start Victim", "Failed")
+			websocket.Send(false, user.ID, wm.ErrorLevel, wm.StartVictimWSType, "Start Victim", "Failed")
 			return
 		}
 		tx.Commit()
-		websocket.Send(false, user.ID, wm.SuccessLevel, wm.StartVictimType, "Start Victim", "Done")
+		websocket.Send(false, user.ID, wm.SuccessLevel, wm.StartVictimWSType, "Start Victim", "Done")
 		return
 	}(ctx.Copy())
 	status := service.GetTeamVictimStatus(db.DB.WithContext(ctx), team, contestChallenge)
