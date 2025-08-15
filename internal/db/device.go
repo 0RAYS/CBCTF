@@ -4,6 +4,8 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"fmt"
+	"sync"
 
 	"gorm.io/gorm"
 )
@@ -44,6 +46,38 @@ func InitDeviceRepo(tx *gorm.DB) *DeviceRepo {
 			DB: tx,
 		},
 	}
+}
+
+var UserDeviceMutex sync.Map
+
+func (d *DeviceRepo) RecordDevice(userID uint, magic, ip string) (model.Device, bool, string) {
+	if devices, ok, _ := d.GetByMagic(magic); ok {
+		cheatRepo := InitCheatRepo(d.DB)
+		for _, device := range devices {
+			if userID != device.UserID {
+				cheatRepo.Create(CreateCheatOptions{
+					UserID:  &userID,
+					Magic:   magic,
+					IP:      ip,
+					Reason:  fmt.Sprintf(model.SameDeviceMagic, userID, device.UserID),
+					Type:    model.Suspicious,
+					Checked: false,
+				})
+			}
+		}
+	}
+	if device, ok, msg := d.GetBy2ID(userID, magic); ok {
+		mu, _ := UserDeviceMutex.LoadOrStore(userID, &sync.Mutex{})
+		mu.(*sync.Mutex).Lock()
+		defer mu.(*sync.Mutex).Unlock()
+		count := device.Count + 1
+		ok, msg = d.Update(device.ID, UpdateDeviceOptions{Count: &count})
+		if !ok {
+			return model.Device{}, false, msg
+		}
+		return d.GetByID(device.ID)
+	}
+	return d.Create(CreateDeviceOptions{UserID: userID, Magic: magic, Count: 1})
 }
 
 func (d *DeviceRepo) GetByMagic(magic string) ([]model.Device, bool, string) {
