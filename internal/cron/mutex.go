@@ -11,7 +11,7 @@ import (
 
 // ClearContestChallengeMutex 定时任务清理flag提交锁 service.SolvedMutex
 func ClearContestChallengeMutex(c *cron.Cron) {
-	function := exec("ClearSubmissionMutex", func() {
+	c.Schedule(cron.Every(10*time.Minute), cron.FuncJob(exec("ClearSubmissionMutex", func() {
 		contests := make(map[uint]model.Contest)
 		contestRepo := db.InitContestRepo(db.DB)
 		contestFlagRepo := db.InitContestFlagRepo(db.DB)
@@ -34,6 +34,5 @@ func ClearContestChallengeMutex(c *cron.Cron) {
 			}
 			return true
 		})
-	})
-	c.Schedule(cron.Every(10*time.Minute), cron.FuncJob(function))
+	})))
 }

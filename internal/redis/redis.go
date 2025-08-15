@@ -36,8 +36,6 @@ func Init() {
 		return
 	}
 	log.Logger.Infof("Connected to Redis: %s", addr)
-
-	go StartCollect()
 }
 
 func Status() (int64, int64, int64) {
