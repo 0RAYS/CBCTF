@@ -3,9 +3,9 @@ package websocket
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/log"
-	"CBCTF/internal/middleware"
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/websocket/handler"
+	"CBCTF/internal/websocket/middleware"
 	"CBCTF/internal/websocket/model"
 	"net/http"
 	"sync"

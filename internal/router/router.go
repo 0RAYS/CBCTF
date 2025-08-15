@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/websocket"
+	wsm "CBCTF/internal/websocket/middleware"
 	"fmt"
 	"net/http"
 	"strings"
@@ -29,7 +30,7 @@ func Init() *gin.Engine {
 
 	{
 		// 不可接入其他中间件
-		router.GET("/ws", middleware.WSAuth, websocket.WS)
+		router.GET("/ws", wsm.WSAuth, websocket.WS)
 	}
 
 	router.Use(
