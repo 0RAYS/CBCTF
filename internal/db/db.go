@@ -5,7 +5,6 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"fmt"
-	"strings"
 	"time"
 
 	"gorm.io/driver/mysql"
@@ -18,7 +17,7 @@ var DB *gorm.DB
 func Init() {
 	var err error
 	var level log.Level
-	switch strings.ToUpper(config.Env.Gorm.Log.Level) {
+	switch config.Env.Gorm.Log.Level {
 	case "INFO":
 		level = log.Info
 	case "WARNING":
