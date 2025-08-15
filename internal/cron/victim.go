@@ -39,7 +39,7 @@ func CloseUnCtrlVictims(c *cron.Cron) {
 		pods, ok, msg := k8s.GetPodList(ctx)
 		cancel()
 		if !ok {
-			log.Logger.Warningf("Failed to get victims %s", msg)
+			log.Logger.Warningf("Failed to get Victim %s", msg)
 			return
 		}
 		podRepo := db.InitPodRepo(db.DB)

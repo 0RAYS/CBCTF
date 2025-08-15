@@ -119,7 +119,7 @@ func GetGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool, s
 
 // StopGenerator 停止动态附件生成器, contestChallenge 需要预加载 Challenge
 func StopGenerator(contestChallenge model.ContestChallenge, generator *corev1.Pod) (bool, string) {
-	log.Logger.Infof("Stopping generator for challenge %d-%s", contestChallenge.ChallengeID, contestChallenge.Name)
+	log.Logger.Infof("Stopping generator for Challenge %d-%s", contestChallenge.ChallengeID, contestChallenge.Name)
 
 	GeneratorMapMutex.RLock()
 	_, ok := GeneratorMap[contestChallenge.ID]
@@ -146,7 +146,7 @@ func StopGenerator(contestChallenge model.ContestChallenge, generator *corev1.Po
 // GenerateAttachment 附加容器命令, 生成附件, model.Usage 需要预加载
 func GenerateAttachment(contestChallenge model.ContestChallenge, team model.Team, teamFlagL []model.TeamFlag) (bool, string) {
 	var err error
-	log.Logger.Debugf("Generating attachment for team %d challenge %d", team.ID, contestChallenge.ChallengeID)
+	log.Logger.Debugf("Generating attachment for Team %d Challenge %d", team.ID, contestChallenge.ChallengeID)
 	generator, ok, msg := GetGenerator(contestChallenge)
 	// 附加失败则直接返回, 并尝试关闭生成器
 	if !ok || generator.Status.Phase != corev1.PodRunning {

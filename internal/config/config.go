@@ -13,9 +13,10 @@ import (
 )
 
 var (
-	allowedLogLevel     = []string{"DEBUG", "ERROR", "WARNING", "INFO"}
-	allowedGinMode      = []string{"debug", "release", "test"}
-	allowedGormLogLevel = []string{"INFO", "WARNING", "ERROR", "SILENT"}
+	allowedLogLevel       = []string{"DEBUG", "ERROR", "WARNING", "INFO"}
+	allowedAsyncQLogLevel = []string{"DEBUG", "ERROR", "WARNING", "INFO"}
+	allowedGinMode        = []string{"debug", "release", "test"}
+	allowedGormLogLevel   = []string{"INFO", "WARNING", "ERROR", "SILENT"}
 )
 
 type Config struct {
@@ -27,6 +28,11 @@ type Config struct {
 		Level string `mapstructure:"level" json:"level" msgpack:"level"` // 日志级别：DEBUG, INFO, WARNING, ERROR
 		Save  bool   `mapstructure:"save" json:"save" msgpack:"save"`    // 是否保存日志到文件
 	} `mapstructure:"log" json:"log" msgpack:"log"`
+
+	AsyncQ struct {
+		Level       string `mapstructure:"level" json:"level" msgpack:"level"`
+		Concurrency int    `mapstructure:"concurrency" json:"concurrency" msgpack:"concurrency"`
+	} `mapstructure:"asynq" json:"asynq" msgpack:"asynq"`
 
 	Gin struct {
 		Mode   string `mapstructure:"mode" json:"mode" msgpack:"mode"` // Gin 模式：debug, release, test
@@ -134,13 +140,20 @@ func Init() {
 }
 
 func tidy() {
-	if !slices.Contains(allowedLogLevel, strings.ToUpper(Env.Log.Level)) {
+	Env.Log.Level = strings.ToUpper(Env.Log.Level)
+	if !slices.Contains(allowedLogLevel, Env.Log.Level) {
 		Env.Log.Level = "INFO"
 	}
-	if !slices.Contains(allowedGinMode, strings.ToLower(Env.Gin.Mode)) {
+	Env.AsyncQ.Level = strings.ToUpper(Env.AsyncQ.Level)
+	if !slices.Contains(allowedAsyncQLogLevel, Env.AsyncQ.Level) {
+		Env.AsyncQ.Level = "WARNING"
+	}
+	Env.Gin.Mode = strings.ToLower(Env.Gin.Mode)
+	if !slices.Contains(allowedGinMode, Env.Gin.Mode) {
 		Env.Gin.Mode = "release"
 	}
-	if !slices.Contains(allowedGormLogLevel, strings.ToUpper(Env.Gorm.Log.Level)) {
+	Env.Gorm.Log.Level = strings.ToUpper(Env.Gorm.Log.Level)
+	if !slices.Contains(allowedGormLogLevel, Env.Gorm.Log.Level) {
 		Env.Gorm.Log.Level = "SILENT"
 	}
 	Env.Backend = strings.TrimSuffix(Env.Backend, "/")

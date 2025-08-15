@@ -101,36 +101,30 @@ func safeGetValue[T any](entry *logrus.Entry, key string, defaultV ...any) T {
 type Formatter struct{}
 
 func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
-	t, ok := entry.Data["type"].(string)
+	t, ok := entry.Data["Type"].(string)
 	if !ok {
-		t = "LOG"
+		t = DefaultLogType
 	}
-	t = strings.ToUpper(t)
 	LevelColor := levelColor(entry.Level)
 	LevelText := fmt.Sprintf("%-12s", t+"-"+entry.Level.String())
 	base, _ := os.Getwd()
 	base = strings.ReplaceAll(base, "\\", "/") + "/"
 	ret := new(bytes.Buffer)
+	_, _ = fmt.Fprintf(ret, "%s %s | ", LevelColor(LevelText), entry.Time.Format("2006-01-02 15:04:05"))
 	switch t {
-	case "LOG":
-		_, _ = fmt.Fprintf(ret, "%s %s | ",
-			LevelColor(LevelText),
-			entry.Time.Format("2006-01-02 15:04:05"),
-		)
+	case DefaultLogType:
 		caller := fmt.Sprintf("%s:%d", strings.Replace(entry.Caller.File, base, "", 1), entry.Caller.Line)
 		caller = fmt.Sprintf("%-36s", caller)
 		_, _ = fmt.Fprintf(ret, "%s | %s", caller, LevelColor(entry.Message))
-	case "GIN":
+	case TaskLogType:
+		_, _ = fmt.Fprintf(ret, "%-36s | %s", "Async Queue Task", LevelColor(entry.Message))
+	case GinLogType:
 		StatusCodeColor := statusCodeColor(safeGetValue[int](entry, "StatusCode"))
 		MethodColor := methodColor(safeGetValue[string](entry, "Method"))
 		Latency := safeGetValue[time.Duration](entry, "Latency")
 		if Latency > time.Minute {
 			Latency = Latency.Truncate(time.Second)
 		}
-		_, _ = fmt.Fprintf(ret, "%s %s | ",
-			LevelColor(LevelText),
-			entry.Time.Format("2006-01-02 15:04:05"),
-		)
 		_, _ = fmt.Fprintf(ret, "%s | %s | %13v | ",
 			safeGetValue[string](entry, "TraceID"),
 			StatusCodeColor(safeGetValue[int](entry, "StatusCode")),
@@ -141,16 +135,12 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 			MethodColor(fmt.Sprintf("%-7s", safeGetValue[string](entry, "Method"))),
 			safeGetValue[string](entry, "Path"),
 		)
-	case "GORM":
-		_, _ = fmt.Fprintf(ret, "%s %s | ",
-			LevelColor(LevelText),
-			entry.Time.Format("2006-01-02 15:04:05"),
-		)
+	case GormLogType:
 		_, _ = fmt.Fprintf(ret, "%s | %s rows %s | %s",
-			fmt.Sprintf("%-36s", strings.Replace(safeGetValue[string](entry, "fileWithLineNum"), base, "", 1)),
-			colors["Debug"](safeGetValue[string](entry, "rows")),
-			colors["Debug"](safeGetValue[string](entry, "duration")),
-			safeGetValue[string](entry, "sql"),
+			fmt.Sprintf("%-36s", strings.Replace(safeGetValue[string](entry, "FileWithLineNum"), base, "", 1)),
+			colors["Debug"](safeGetValue[string](entry, "Rows")),
+			colors["Debug"](safeGetValue[string](entry, "Duration")),
+			safeGetValue[string](entry, "SQL"),
 		)
 	}
 	ret.WriteByte('\n')
@@ -160,33 +150,27 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 type TextFormatter struct{}
 
 func (f TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	t, ok := entry.Data["type"].(string)
+	t, ok := entry.Data["Type"].(string)
 	if !ok {
-		t = "LOG"
+		t = DefaultLogType
 	}
-	t = strings.ToUpper(t)
 	LevelText := fmt.Sprintf("%-12s", t+"-"+entry.Level.String())
 	base, _ := os.Getwd()
 	base = strings.ReplaceAll(base, "\\", "/") + "/"
 	ret := new(bytes.Buffer)
+	_, _ = fmt.Fprintf(ret, "%s %s | ", LevelText, entry.Time.Format("2006-01-02 15:04:05"))
 	switch t {
-	case "LOG":
-		_, _ = fmt.Fprintf(ret, "%s %s | ",
-			LevelText,
-			entry.Time.Format("2006-01-02 15:04:05"),
-		)
+	case DefaultLogType:
 		caller := fmt.Sprintf("%s:%d", strings.Replace(entry.Caller.File, base, "", 1), entry.Caller.Line)
 		caller = fmt.Sprintf("%-36s", caller)
 		_, _ = fmt.Fprintf(ret, "%s | %s", caller, entry.Message)
-	case "GIN":
+	case TaskLogType:
+		_, _ = fmt.Fprintf(ret, "%-36s | %s", "Async Queue Task", entry.Message)
+	case GinLogType:
 		Latency := safeGetValue[time.Duration](entry, "Latency")
 		if Latency > time.Minute {
 			Latency = Latency.Truncate(time.Second)
 		}
-		_, _ = fmt.Fprintf(ret, "%s %s | ",
-			LevelText,
-			entry.Time.Format("2006-01-02 15:04:05"),
-		)
 		_, _ = fmt.Fprintf(ret, "%s | %d | %13v | ",
 			safeGetValue[string](entry, "TraceID"),
 			safeGetValue[int](entry, "StatusCode"),
@@ -197,13 +181,12 @@ func (f TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 			fmt.Sprintf("%-7s", safeGetValue[string](entry, "Method")),
 			safeGetValue[string](entry, "Path"),
 		)
-	case "GORM":
-		_, _ = fmt.Fprintf(ret, "%s %s | ", LevelText, entry.Time.Format("2006-01-02 15:04:05"))
+	case GormLogType:
 		_, _ = fmt.Fprintf(ret, "%s | %s rows %s | %s",
-			fmt.Sprintf("%-36s", strings.Replace(safeGetValue[string](entry, "fileWithLineNum"), base, "", 1)),
-			safeGetValue[string](entry, "rows"),
-			safeGetValue[string](entry, "duration"),
-			safeGetValue[string](entry, "sql"),
+			fmt.Sprintf("%-36s", strings.Replace(safeGetValue[string](entry, "FileWithLineNum"), base, "", 1)),
+			safeGetValue[string](entry, "Rows"),
+			safeGetValue[string](entry, "Duration"),
+			safeGetValue[string](entry, "SQL"),
 		)
 	}
 	ret.WriteByte('\n')

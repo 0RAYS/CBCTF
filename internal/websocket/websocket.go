@@ -53,7 +53,7 @@ func WS(ctx *gin.Context) {
 
 	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
-		log.Logger.Warningf("Upgrade error: %s", err)
+		log.Logger.Warningf("Failed to upgrade connection: %s", err)
 		return
 	}
 
@@ -116,7 +116,7 @@ func Send(admin bool, id uint, level, t, title, msg string) {
 	connection, ok := (*clients)[id]
 	mu.RUnlock()
 	if !ok {
-		log.Logger.Warningf("No %s connection found with ID %d", role, id)
+		log.Logger.Warningf("Failed to found %s-%d connection", role, id)
 		return
 	}
 	if err := connection.Conn.WriteJSON(model.Send{Level: level, Type: t, Msg: msg, Title: title}); err != nil {
@@ -184,7 +184,7 @@ func SendToAll(admin bool, level, t, title, msg string) {
 	var count int
 	for id, connection := range *clients {
 		if err := connection.Conn.WriteJSON(model.Send{Level: level, Type: t, Msg: msg, Title: title}); err != nil {
-			log.Logger.Warningf("Failed to send message to ID %d: %s", id, err)
+			log.Logger.Warningf("Failed to send message to %s-%d: %s", role, id, err)
 			continue
 		}
 		count++

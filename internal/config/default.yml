@@ -7,6 +7,11 @@ log:
   # DEBUG INFO WARNING ERROR
   level: info
   save: true
+asynq:
+  # DEBUG INFO WARNING ERROR
+  level: warning
+  # Concurrent workers
+  concurrency: 50
 gin:
   mode: release
   host: 127.0.0.1
