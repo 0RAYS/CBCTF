@@ -2,7 +2,6 @@ package log
 
 import (
 	"CBCTF/internal/config"
-	"strings"
 
 	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 	"github.com/rifflock/lfshook"
@@ -33,8 +32,7 @@ func Init() {
 			}, TextFormatter{},
 		))
 	}
-	level := strings.ToUpper(config.Env.Log.Level)
-	switch level {
+	switch config.Env.Log.Level {
 	case "DEBUG":
 		Logger.SetLevel(logrus.DebugLevel)
 	case "ERROR":
