@@ -25,7 +25,7 @@ func initialize() {
 	db.Init()
 	k8s.Init()
 	task.Init()
-	go cron.Init()
+	cron.Init()
 }
 
 func start() {
@@ -41,7 +41,7 @@ func start() {
 		log.Logger.Infof("Server started at %s:%d", ip, port)
 	}()
 	go task.Start()
-	cron.Start()
+	go cron.Start()
 }
 
 func run() {

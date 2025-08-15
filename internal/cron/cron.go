@@ -23,6 +23,10 @@ func exec(name string, task func()) func() {
 
 func Init() {
 	c = cron.New(cron.WithSeconds())
+}
+
+func Start() {
+	log.Logger.Info("Cron started")
 	CollectSystemMetrics(c)
 	CheckWSConnection(c)
 	CloseTimeoutVictims(c)
@@ -34,9 +38,5 @@ func Init() {
 	PrepareGenerator(c)
 	ClearContestChallengeMutex(c)
 	CheckCheat(c)
-}
-
-func Start() {
-	log.Logger.Info("Cron started")
 	c.Start()
 }
