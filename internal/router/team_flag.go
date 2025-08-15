@@ -3,12 +3,11 @@ package router
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
-	"CBCTF/internal/k8s"
+	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/service"
-	"CBCTF/internal/websocket"
-	wm "CBCTF/internal/websocket/model"
+	"CBCTF/internal/task"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -26,22 +25,17 @@ func InitTeamFlag(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	switch contestChallenge.Type {
-	case model.DynamicChallengeType:
-		go func() {
-			if ok, _ = k8s.GenerateAttachment(contestChallenge, team, teamFlags); !ok {
-				websocket.Send(false, user.ID, wm.ErrorLevel, wm.GenerateAttachmentWSType, "Generate Attachment", "Failed")
-				return
-			}
-			websocket.Send(false, user.ID, wm.SuccessLevel, wm.GenerateAttachmentWSType, "Generate Attachment", "Done")
-		}()
-		ok, msg = true, i18n.Success
-	default:
-		ok, msg = true, i18n.Success
+	if contestChallenge.Type == model.DynamicChallengeType {
+		if _, err := task.EnqueueGenAttachmentTask(user.ID, contestChallenge, team, teamFlags); err != nil {
+			log.Logger.Warningf("Enqueue gen attachment task failed %v", err)
+			tx.Rollback()
+			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.EnqueueTaskError, "data": nil})
+			return
+		}
 	}
 	tx.Commit()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }
 
 func ResetTeamFlag(ctx *gin.Context) {
@@ -56,24 +50,19 @@ func ResetTeamFlag(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx.Commit()
 	switch contestChallenge.Type {
 	case model.DynamicChallengeType:
-		go func() {
-			if ok, _ = k8s.GenerateAttachment(contestChallenge, team, teamFlags); !ok {
-				websocket.Send(false, user.ID, wm.ErrorLevel, wm.GenerateAttachmentWSType, "Generate Attachment", "Failed")
-				return
-			}
-			websocket.Send(false, user.ID, wm.SuccessLevel, wm.GenerateAttachmentWSType, "Generate Attachment", "Done")
-		}()
-		ok, msg = true, i18n.Success
+		if _, err := task.EnqueueGenAttachmentTask(user.ID, contestChallenge, team, teamFlags); err != nil {
+			log.Logger.Warningf("Enqueue gen attachment task failed %v", err)
+			tx.Rollback()
+			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.EnqueueTaskError, "data": nil})
+			return
+		}
 	case model.PodsChallengeType:
 		// 不考虑失败
 		go service.StopTeamVictim(db.DB.WithContext(ctx.Copy()), team, contestChallenge)
-		ok, msg = true, i18n.Success
-	default:
-		ok, msg = true, i18n.Success
 	}
+	tx.Commit()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

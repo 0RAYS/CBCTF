@@ -143,8 +143,8 @@ func StopGenerator(contestChallenge model.ContestChallenge, generator *corev1.Po
 	return true, i18n.Success
 }
 
-// GenerateAttachment 附加容器命令, 生成附件, model.Usage 需要预加载
-func GenerateAttachment(contestChallenge model.ContestChallenge, team model.Team, teamFlagL []model.TeamFlag) (bool, string) {
+// GenAttachment 附加容器命令, 生成附件, model.Usage 需要预加载
+func GenAttachment(contestChallenge model.ContestChallenge, team model.Team, teamFlagL []model.TeamFlag) (bool, string) {
 	var err error
 	log.Logger.Debugf("Generating attachment for Team %d Challenge %d", team.ID, contestChallenge.ChallengeID)
 	generator, ok, msg := GetGenerator(contestChallenge)
