@@ -9,8 +9,9 @@ import (
 )
 
 var (
-	srv *asynq.Server
-	mux *asynq.ServeMux
+	srv    *asynq.Server
+	client *asynq.Client
+	mux    *asynq.ServeMux
 )
 
 func Init() {
@@ -31,6 +32,10 @@ func Init() {
 		cfg.LogLevel = asynq.WarnLevel
 	}
 	srv = asynq.NewServerFromRedisClient(redis.RDB, cfg)
+	client = asynq.NewClientFromRedisClient(redis.RDB)
+	mux = asynq.NewServeMux()
+
+	mux.HandleFunc(SendEmailTaskType, HandleSendEmailTask)
 }
 
 func Start() {
