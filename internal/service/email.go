@@ -16,7 +16,7 @@ import (
 
 func SendEmail(user model.User) (bool, string) {
 	id := utils.UUID()
-	token, err := utils.GenerateToken(user.ID, user.Name, false, "email")
+	token, err := utils.GenerateToken(user.ID, user.Name, false, id)
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		return false, i18n.UnknownError
@@ -38,24 +38,20 @@ func SendEmail(user model.User) (bool, string) {
 
 func VerifyEmail(tx *gorm.DB, form f.VerifyEmail) (bool, string) {
 	claims, err := utils.ParseToken(form.Token)
-	if err != nil {
+	if err != nil || !utils.CompareMagic(form.ID, claims.X) {
 		return false, i18n.InvalidEmailVerifyToken
 	}
-	id, err := redis.GetEmailVerifyToken(claims.UserID)
-	if err != nil {
+	if _, err = redis.GetEmailVerifyToken(claims.UserID); err != nil {
 		return false, i18n.GetEmailVerifyTokenError
 	}
-	if form.ID == id {
-		repo := db.InitUserRepo(tx)
-		ok, msg := repo.Update(claims.UserID, db.UpdateUserOptions{Verified: utils.Ptr(true)})
-		if !ok {
-			return false, msg
-		}
-		if err = redis.DelEmailVerifyToken(claims.UserID); err != nil {
-			log.Logger.Warningf("Failed to delete email verify token: %s", err)
-			return false, i18n.DelEmailVerifyTokenError
-		}
-		return true, i18n.Success
+	repo := db.InitUserRepo(tx)
+	ok, msg := repo.Update(claims.UserID, db.UpdateUserOptions{Verified: utils.Ptr(true)})
+	if !ok {
+		return false, msg
 	}
-	return false, i18n.InvalidEmailVerifyToken
+	if err = redis.DelEmailVerifyToken(claims.UserID); err != nil {
+		log.Logger.Warningf("Failed to delete email verify token: %s", err)
+		return false, i18n.DelEmailVerifyTokenError
+	}
+	return true, i18n.Success
 }
