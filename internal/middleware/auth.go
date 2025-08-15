@@ -5,7 +5,6 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/service"
 	"CBCTF/internal/utils"
 	"fmt"
 	"net/http"
@@ -55,21 +54,19 @@ func CheckAuth(ctx *gin.Context) {
 				}
 				ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
 			} else {
-				go func(ctx *gin.Context) {
-					db.InitCheatRepo(db.DB.WithContext(ctx)).Create(db.CreateCheatOptions{
-						UserID:  &user.ID,
-						Magic:   magic,
-						IP:      ctx.ClientIP(),
-						Reason:  fmt.Sprintf(model.DifferentTokenMagic, magic, claims.X),
-						Type:    model.Suspicious,
-						Checked: false,
-					})
-				}(ctx.Copy())
+				go db.InitCheatRepo(db.DB.WithContext(ctx.Copy())).Create(db.CreateCheatOptions{
+					UserID:  &user.ID,
+					Magic:   magic,
+					IP:      ctx.ClientIP(),
+					Reason:  fmt.Sprintf(model.DifferentTokenMagic, magic, claims.X),
+					Type:    model.Suspicious,
+					Checked: false,
+				})
 				ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
 				return
 			}
 		}
-		go service.RecordDevice(db.DB.WithContext(ctx.Copy()), user.ID, magic, ctx.ClientIP())
+		go db.InitDeviceRepo(db.DB.WithContext(ctx.Copy())).RecordDevice(user.ID, magic, ctx.ClientIP())
 		if user.Banned {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
 			return
