@@ -42,10 +42,10 @@ func Init() {
 		Logger: log.NewGormLogger(level),
 	})
 	if err != nil {
-		log.Logger.Fatalf("Failed to connect database: %s", err.Error())
+		log.Logger.Fatalf("Failed to connect database: %s", err)
 	}
 	if sql, err := DB.DB(); err != nil {
-		log.Logger.Fatalf("Failed to get database: %s", err.Error())
+		log.Logger.Fatalf("Failed to get database: %s", err)
 	} else {
 		sql.SetMaxIdleConns(config.Env.Gorm.MySQL.MaxIdleConns)
 		sql.SetMaxOpenConns(config.Env.Gorm.MySQL.MaxOpenConns)
@@ -58,7 +58,7 @@ func Init() {
 		RefreshInterval: 15,
 		StartServer:     false,
 	})); err != nil {
-		log.Logger.Warningf("Failed to register prometheus: %s", err.Error())
+		log.Logger.Warningf("Failed to register prometheus: %s", err)
 	}
 
 	// 指定数据表的存储引擎, 需要支持回滚操作
@@ -69,15 +69,15 @@ func Init() {
 		&model.User{}, &model.Victim{}, &model.Pod{}, &model.Container{}, &model.Cheat{}, &model.Traffic{},
 	)
 	if err != nil {
-		log.Logger.Fatalf("Failed to migrate database: %s", err.Error())
+		log.Logger.Fatalf("Failed to migrate database: %s", err)
 	}
 	err = DB.SetupJoinTable(&model.User{}, "Teams", &model.UserTeam{})
 	if err != nil {
-		log.Logger.Fatalf("Failed to setup join table: %s", err.Error())
+		log.Logger.Fatalf("Failed to setup join table: %s", err)
 	}
 	err = DB.SetupJoinTable(&model.User{}, "Contests", &model.UserContest{})
 	if err != nil {
-		log.Logger.Fatalf("Failed to setup join table: %s", err.Error())
+		log.Logger.Fatalf("Failed to setup join table: %s", err)
 	}
 	log.Logger.Info("Connected to database")
 
