@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
-	"CBCTF/internal/service"
 	"CBCTF/internal/utils"
 	"fmt"
 	"net/http"
@@ -51,7 +50,7 @@ func WSAuth(ctx *gin.Context) {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
 			return
 		}
-		go service.RecordDevice(db.DB.WithContext(ctx.Copy()), user.ID, magic, ctx.ClientIP())
+		go db.InitDeviceRepo(db.DB.WithContext(ctx.Copy())).RecordDevice(user.ID, magic, ctx.ClientIP())
 		if user.Banned {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
 			return
