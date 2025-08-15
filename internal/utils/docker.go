@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"context"
+	"time"
 
 	"github.com/compose-spec/compose-go/loader"
 	"github.com/compose-spec/compose-go/types"
@@ -16,7 +17,9 @@ func LoadDockerComposeYaml(data string) (*types.Project, bool, string) {
 		log.Logger.Warningf("Failed to load docker-compose: %s", err)
 		return nil, false, i18n.InvalidDockerComposeYaml
 	}
-	cfg, err := loader.LoadWithContext(context.Background(), types.ConfigDetails{
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	cfg, err := loader.LoadWithContext(ctx, types.ConfigDetails{
 		ConfigFiles: []types.ConfigFile{
 			{
 				Config: raw,
