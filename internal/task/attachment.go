@@ -3,6 +3,8 @@ package task
 import (
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/model"
+	"CBCTF/internal/websocket"
+	wm "CBCTF/internal/websocket/model"
 	"context"
 	"time"
 
@@ -34,9 +36,9 @@ func HandleGenAttachmentTask(_ context.Context, t *asynq.Task) error {
 		return err
 	}
 	if ok, _ := k8s.GenAttachment(payload.ContestChallenge, payload.Team, payload.TeamFlags); !ok {
-		//websocket.Send(false, payload.UserID, wm.ErrorLevel, wm.GenerateAttachmentWSType, "Generate Attachment", "Failed")
+		websocket.Send(false, payload.UserID, wm.ErrorLevel, wm.GenerateAttachmentWSType, "Generate Attachment", "Failed")
 	} else {
-		//websocket.Send(false, payload.UserID, wm.SuccessLevel, wm.GenerateAttachmentWSType, "Generate Attachment", "Done")
+		websocket.Send(false, payload.UserID, wm.SuccessLevel, wm.GenerateAttachmentWSType, "Generate Attachment", "Done")
 	}
 	return nil
 }
