@@ -7,7 +7,7 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-var Cron *cron.Cron
+var c *cron.Cron
 
 func exec(name string, task func()) func() {
 	return func() {
@@ -22,20 +22,21 @@ func exec(name string, task func()) func() {
 }
 
 func Init() {
-	Cron = cron.New(cron.WithSeconds())
-	CheckWSConnection(Cron)
-	CloseTimeoutVictims(Cron)
-	CloseUnCtrlVictims(Cron)
-	UpdateFlagScore(Cron)
-	UpdateUserRanking(Cron)
-	UpdateTeamRanking(Cron)
-	StopUnCtrlGenerator(Cron)
-	PrepareGenerator(Cron)
-	ClearContestChallengeMutex(Cron)
-	CheckCheat(Cron)
+	c = cron.New(cron.WithSeconds())
+	CollectSystemMetrics(c)
+	CheckWSConnection(c)
+	CloseTimeoutVictims(c)
+	CloseUnCtrlVictims(c)
+	UpdateFlagScore(c)
+	UpdateUserRanking(c)
+	UpdateTeamRanking(c)
+	StopUnCtrlGenerator(c)
+	PrepareGenerator(c)
+	ClearContestChallengeMutex(c)
+	CheckCheat(c)
 }
 
 func Start() {
 	log.Logger.Info("Cron started")
-	Cron.Start()
+	c.Start()
 }

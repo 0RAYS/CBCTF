@@ -20,22 +20,7 @@ type SystemMetrics struct {
 	Disk      float64 `json:"disk"`
 }
 
-func StartCollect() {
-	log.Logger.Info("Start collecting Redis metrics")
-	for {
-		metrics, err := collectMetrics()
-		if err != nil {
-			log.Logger.Warningf("Failed to collect Redis metrics: %s", err)
-			continue
-		}
-		if err = saveMetrics(metrics); err != nil {
-			log.Logger.Warningf("Failed to save Redis metrics: %s", err)
-		}
-		time.Sleep(time.Second)
-	}
-}
-
-func collectMetrics() (*SystemMetrics, error) {
+func CollectMetrics() (*SystemMetrics, error) {
 	c, err := cpu.Percent(0, false)
 	if err != nil {
 		return nil, err
@@ -56,7 +41,7 @@ func collectMetrics() (*SystemMetrics, error) {
 	}, nil
 }
 
-func saveMetrics(metrics *SystemMetrics) error {
+func SaveMetrics(metrics *SystemMetrics) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	data, err := json.Marshal(metrics)

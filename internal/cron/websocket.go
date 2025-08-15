@@ -8,7 +8,7 @@ import (
 )
 
 func CheckWSConnection(c *cron.Cron) {
-	function := exec("CheckWSConnection", func() {
+	c.Schedule(cron.Every(5*time.Second), cron.FuncJob(exec("CheckWSConnection", func() {
 		for id, conn := range websocket.AdminClients {
 			if conn.LastActive.Add(10 * time.Second).Before(time.Now()) {
 				websocket.AdminClientsMu.Lock()
@@ -23,6 +23,5 @@ func CheckWSConnection(c *cron.Cron) {
 				websocket.UserClientsMu.Unlock()
 			}
 		}
-	})
-	c.Schedule(cron.Every(5*time.Second), cron.FuncJob(function))
+	})))
 }
