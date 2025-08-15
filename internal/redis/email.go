@@ -12,7 +12,7 @@ const emailVerifyTokenKey = "email:%d"
 func SetEmailVerifyToken(userID uint, token string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	return RDB.Set(ctx, fmt.Sprintf(emailVerifyTokenKey, userID), token, time.Hour*24).Err()
+	return RDB.Set(ctx, fmt.Sprintf(emailVerifyTokenKey, userID), token, 30*time.Minute).Err()
 }
 
 // GetEmailVerifyToken 获取邮箱验证 token
