@@ -2,13 +2,12 @@ package service
 
 import (
 	"CBCTF/internal/db"
-	"CBCTF/internal/email"
 	f "CBCTF/internal/form"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
+	"CBCTF/internal/task"
 	"CBCTF/internal/utils"
 
 	"gorm.io/gorm"
@@ -25,14 +24,10 @@ func SendEmail(user model.User) (bool, string) {
 		log.Logger.Warningf("Failed to set email verify token: %s", err)
 		return false, i18n.SetEmailVerifyTokenError
 	}
-	go func() {
-		if err = email.SendVerifyEmail(user.Email, token, id); err != nil {
-			go prometheus.IncEmailSentMetrics(false)
-			log.Logger.Warningf("Failed to send mail: %s", err)
-		} else {
-			go prometheus.IncEmailSentMetrics(true)
-		}
-	}()
+	if _, err = task.EnqueueSendEmailTask(user.Email, token, id); err != nil {
+		log.Logger.Warningf("Failed to enqueue send email task: %s", err)
+		return false, i18n.SendEmailError
+	}
 	return true, i18n.Success
 }
 
