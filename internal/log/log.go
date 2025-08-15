@@ -10,10 +10,15 @@ import (
 
 var Logger = logrus.New()
 
+const (
+	DefaultLogType = "LOG"
+	GormLogType    = "GORM"
+	GinLogType     = "GIN"
+	TaskLogType    = "TASK"
+)
+
 func Init() {
-	Logger.WithFields(logrus.Fields{
-		"type": "LOG",
-	})
+	Logger.WithFields(logrus.Fields{"Type": DefaultLogType})
 	Logger.SetReportCaller(true)
 	Logger.SetFormatter(Formatter{})
 	if config.Env.Log.Save {

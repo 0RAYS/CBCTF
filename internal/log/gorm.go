@@ -51,7 +51,7 @@ func NewGormLogger(level Level) gormLogger.Interface {
 	}
 
 	return &gormTraceLogger{
-		Entry:   Logger.WithField("type", "GORM"),
+		Entry:   Logger.WithField("Type", GormLogType),
 		Config:  config,
 		infoStr: infoStr,
 		warnStr: warnStr,
@@ -91,66 +91,28 @@ func (l *gormTraceLogger) Trace(ctx context.Context, begin time.Time, fc func() 
 	if l.LogLevel <= Silent {
 		return
 	}
-	var e *logrus.Entry
 	traceID := ctx.Value("TraceID")
 	if traceID == nil {
 		traceID = "00000000-0000-0000-0000-000000000000"
 	}
-	e = l.WithField("TraceID", ctx.Value("TraceID"))
 	elapsed := time.Since(begin)
+	sql, rows := fc()
+	fields := logrus.Fields{
+		"TraceID":         traceID,
+		"FileWithLineNum": utils.FileWithLineNum(),
+		"Duration":        fmt.Sprintf("%.3fms", float64(elapsed.Nanoseconds())/1e6),
+		"Rows":            "-",
+		"SQL":             sql,
+	}
+	if rows != -1 {
+		fields["Rows"] = strconv.FormatInt(rows, 10)
+	}
 	switch {
 	case err != nil && l.LogLevel >= Error && (!errors.Is(err, ErrRecordNotFound) || !l.IgnoreRecordNotFoundError):
-		sql, rows := fc()
-		if rows == -1 {
-			e.WithFields(logrus.Fields{
-				"fileWithLineNum": utils.FileWithLineNum(),
-				"duration":        fmt.Sprintf("%.3fms", float64(elapsed.Nanoseconds())/1e6),
-				"rows":            "-",
-				"sql":             sql,
-			}).Error(err)
-		} else {
-			e.WithFields(logrus.Fields{
-				"fileWithLineNum": utils.FileWithLineNum(),
-				"duration":        fmt.Sprintf("%.3fms", float64(elapsed.Nanoseconds())/1e6),
-				"rows":            strconv.FormatInt(rows, 10),
-				"sql":             sql,
-			}).Error(err)
-		}
+		l.WithFields(fields).Error(err)
 	case elapsed > l.SlowThreshold && l.SlowThreshold != 0 && l.LogLevel >= Warn:
-		sql, rows := fc()
-		slowLog := fmt.Sprintf("SLOW SQL >= %v", l.SlowThreshold)
-		if rows == -1 {
-			e.WithFields(logrus.Fields{
-				"fileWithLineNum": utils.FileWithLineNum(),
-				"duration":        fmt.Sprintf("%.3fms", float64(elapsed.Nanoseconds())/1e6),
-				"rows":            "-",
-				"sql":             sql,
-			}).Warn(slowLog)
-		} else {
-			e.WithFields(logrus.Fields{
-				"fileWithLineNum": utils.FileWithLineNum(),
-				"duration":        fmt.Sprintf("%.3fms", float64(elapsed.Nanoseconds())/1e6),
-				"rows":            strconv.FormatInt(rows, 10),
-				"sql":             sql,
-			}).Warn(slowLog)
-		}
-
+		l.WithFields(fields).Warnf("SLOW SQL >= %v", l.SlowThreshold)
 	case l.LogLevel == Info:
-		sql, rows := fc()
-		if rows == -1 {
-			e.WithFields(logrus.Fields{
-				"fileWithLineNum": utils.FileWithLineNum(),
-				"duration":        fmt.Sprintf("%.3fms", float64(elapsed.Nanoseconds())/1e6),
-				"rows":            "-",
-				"sql":             sql,
-			}).Info()
-		} else {
-			e.WithFields(logrus.Fields{
-				"fileWithLineNum": utils.FileWithLineNum(),
-				"duration":        fmt.Sprintf("%.3fms", float64(elapsed.Nanoseconds())/1e6),
-				"rows":            strconv.FormatInt(rows, 10),
-				"sql":             sql,
-			}).Info()
-		}
+		l.WithFields(fields).Info()
 	}
 }

@@ -9,13 +9,12 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/router"
+	"CBCTF/internal/task"
 	"CBCTF/internal/websocket"
 	"errors"
 	"fmt"
 	"net/http"
 )
-
-var server *http.Server
 
 func initialize() {
 	config.Init()
@@ -25,22 +24,23 @@ func initialize() {
 	redis.Init()
 	db.Init()
 	k8s.Init()
+	task.Init()
 	go cron.Init()
 }
 
 func start() {
-
 	ip, port := config.Env.Gin.Host, config.Env.Gin.Port
-	server = &http.Server{
-		Addr:    fmt.Sprintf("%s:%d", ip, port),
-		Handler: router.Init(),
-	}
 	go func() {
+		server := &http.Server{
+			Addr:    fmt.Sprintf("%s:%d", ip, port),
+			Handler: router.Init(),
+		}
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Logger.Fatalf("Failed to start: %s", err)
 		}
+		log.Logger.Infof("Server started at %s:%d", ip, port)
 	}()
-	log.Logger.Infof("Server started at %s:%d", ip, port)
+	go task.Start()
 	cron.Start()
 }
 

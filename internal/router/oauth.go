@@ -129,7 +129,7 @@ func OauthCallback(ctx *gin.Context) {
 	client := oauthConfig.Client(ctx, tok)
 	response, err := client.Get(provider.UserInfoURL)
 	if err != nil {
-		log.Logger.Warningf("Failed to get user info by provider %s: %s", provider.Provider, err)
+		log.Logger.Warningf("Failed to get User info by provider %s: %s", provider.Provider, err)
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 		return
 	}
@@ -183,7 +183,7 @@ func OauthCallback(ctx *gin.Context) {
 			OauthRaw:       string(raw),
 		})
 		if !ok {
-			log.Logger.Warningf("Failed to create user by provider %s: %s", provider.Provider, msg)
+			log.Logger.Warningf("Failed to create User by provider %s: %s", provider.Provider, msg)
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}

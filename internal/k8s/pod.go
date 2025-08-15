@@ -76,7 +76,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool
 			break
 		}
 		if pod.Status.Phase != corev1.PodPending {
-			log.Logger.Warningf("Pod %s failed to run", pod.Name)
+			log.Logger.Warningf("Failed to run Pod: %s", pod.Name)
 			return nil, false, i18n.CreatePodError
 		}
 		time.Sleep(500 * time.Millisecond)

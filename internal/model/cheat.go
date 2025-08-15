@@ -7,9 +7,9 @@ const (
 	Suspicious = "suspicious"
 
 	DifferentTokenMagic = "Device magic %s is different from token magic %s"
-	SameDeviceMagic     = "User %d has the same device magic as user %d"
-	SameRequestIP       = "%s has the same request IP %s"
-	SubmitOtherTeamFlag = "Team %d submitted flag of %s in contest %d"
+	SameDeviceMagic     = "User %d has the same Device magic as User %d"
+	SameIP              = "%s has the same IP %s"
+	SubmitOtherTeamFlag = "Team %d submitted flag of %s in Contest %d"
 )
 
 type Cheat struct {
