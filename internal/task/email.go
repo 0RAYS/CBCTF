@@ -5,10 +5,10 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/prometheus"
 	"context"
-	"encoding/json"
 	"time"
 
 	"github.com/hibiken/asynq"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 const SendEmailTaskType = "tasks:email"
@@ -20,7 +20,7 @@ type SendEmailPayload struct {
 }
 
 func EnqueueSendEmailTask(to, token, id string) (*asynq.TaskInfo, error) {
-	payload, err := json.Marshal(SendEmailPayload{To: to, Token: token, ID: id})
+	payload, err := msgpack.Marshal(SendEmailPayload{To: to, Token: token, ID: id})
 	if err != nil {
 		return nil, err
 	}
@@ -30,12 +30,13 @@ func EnqueueSendEmailTask(to, token, id string) (*asynq.TaskInfo, error) {
 
 func HandleSendEmailTask(_ context.Context, t *asynq.Task) error {
 	var payload SendEmailPayload
-	if err := json.Unmarshal(t.Payload(), &payload); err != nil {
+	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
 	}
 	if err := email.SendVerifyEmail(payload.To, payload.Token, payload.ID); err != nil {
 		log.Logger.Warningf("Failed to send mail: %s", err)
 		prometheus.IncEmailSentMetrics(false)
+		return err
 	} else {
 		prometheus.IncEmailSentMetrics(true)
 	}
