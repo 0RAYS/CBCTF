@@ -26,7 +26,7 @@ func SendEmail(user model.User) (bool, string) {
 	}
 	if _, err = task.EnqueueSendEmailTask(user.Email, token, id); err != nil {
 		log.Logger.Warningf("Failed to enqueue send email task: %s", err)
-		return false, i18n.SendEmailError
+		return false, i18n.EnqueueTaskError
 	}
 	return true, i18n.Success
 }

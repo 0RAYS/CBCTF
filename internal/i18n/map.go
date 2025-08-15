@@ -275,6 +275,8 @@ var resp = map[string]map[string]any{
 	PVCNotFound:    {"zh-CN": "PVC不存在", "en-US": "PVC not found", "code": 404},
 
 	GetNodeListError: {"zh-CN": "获取K8S节点失败", "en-US": "Get node list failed", "code": 500},
+
+	EnqueueTaskError: {"zh-CN": "提交任务队列失败", "en-US": "Enqueue task failed", "code": 500},
 }
 
 // I18N 获取翻译与状态码, 非http响应状态码

@@ -275,4 +275,6 @@ const (
 	PVCNotFound    = "PVCNotFound"
 
 	GetNodeListError = "GetNodeListError"
+
+	EnqueueTaskError = "EnqueueTaskError"
 )
