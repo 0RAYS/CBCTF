@@ -62,7 +62,7 @@ func SaveAvatar(tx *gorm.DB, options db.CreateFileOptions, file *multipart.FileH
 	options.Type = model.AvatarFile
 	f, ok, msg := fileRepo.Create(options)
 	if ok {
-		go prometheus.UpdateFileUploadMetrics(record.Suffix, record.Size)
+		prometheus.UpdateFileUploadMetrics(record.Suffix, record.Size)
 	}
 	return f, ok, msg
 }
@@ -139,7 +139,7 @@ func SaveWriteUp(tx *gorm.DB, user model.User, contest model.Contest, team model
 		Type:      model.WriteUPFile,
 	})
 	if ok {
-		go prometheus.UpdateFileUploadMetrics(record.Suffix, file.Size)
+		prometheus.UpdateFileUploadMetrics(record.Suffix, file.Size)
 	}
 	return f, ok, msg
 }

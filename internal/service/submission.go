@@ -77,7 +77,7 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, contestChallenge mode
 			return "", model.Submission{}, false, msg
 		}
 	}
-	go prometheus.UpdateFlagSubmissionMetrics(contestChallenge.Contest, contestChallenge, team, solved)
+	prometheus.UpdateFlagSubmissionMetrics(contestChallenge.Contest, contestChallenge, team, solved)
 	return result, submission, true, i18n.Success
 }
 

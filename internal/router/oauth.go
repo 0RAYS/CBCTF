@@ -187,7 +187,7 @@ func OauthCallback(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
-		go prometheus.UpdateUserRegisterMetrics(provider.Provider)
+		prometheus.UpdateUserRegisterMetrics(provider.Provider)
 	}
 	token, err := utils.GenerateToken(user.ID, user.Name, false, model.OauthLoginType)
 	if err != nil {
@@ -195,7 +195,7 @@ func OauthCallback(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 		return
 	}
-	go prometheus.UpdateUserLoginMetrics(provider.Provider)
+	prometheus.UpdateUserLoginMetrics(provider.Provider)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s/platform/#/oauth/callback?token=%s", config.Env.Frontend, token))
 }
