@@ -53,11 +53,11 @@ func Init() {
 		sql.SetConnMaxLifetime(24 * time.Hour)
 	}
 
-	if DB.Use(prometheus.New(prometheus.Config{
+	if err = DB.Use(prometheus.New(prometheus.Config{
 		DBName:          config.Env.Gorm.MySQL.DB,
 		RefreshInterval: 15,
 		StartServer:     false,
-	})) != nil {
+	})); err != nil {
 		log.Logger.Warningf("Failed to register prometheus: %s", err.Error())
 	}
 
