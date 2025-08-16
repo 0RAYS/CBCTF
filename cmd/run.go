@@ -20,9 +20,7 @@ import (
 	"syscall"
 )
 
-func initialize() {
-	config.Init()
-	log.Init()
+func run() {
 	websocket.Init()
 	email.Init()
 	redis.Init()
@@ -30,10 +28,7 @@ func initialize() {
 	k8s.Init()
 	task.Init()
 	cron.Init()
-}
 
-func run() {
-	initialize()
 	ip, port := config.Env.Gin.Host, config.Env.Gin.Port
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
