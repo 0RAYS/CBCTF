@@ -19,7 +19,7 @@ func Init() {
 		Concurrency: config.Env.AsyncQ.Concurrency,
 		Logger:      log.Logger.WithField("Type", log.TaskLogType),
 	}
-	switch config.Env.Log.Level {
+	switch config.Env.AsyncQ.Level {
 	case "DEBUG":
 		cfg.LogLevel = asynq.DebugLevel
 	case "INFO":
