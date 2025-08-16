@@ -11,9 +11,13 @@ import (
 	"CBCTF/internal/router"
 	"CBCTF/internal/task"
 	"CBCTF/internal/websocket"
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func initialize() {
@@ -28,10 +32,14 @@ func initialize() {
 	cron.Init()
 }
 
-func start() {
+func run() {
+	initialize()
 	ip, port := config.Env.Gin.Host, config.Env.Gin.Port
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	var server *http.Server
 	go func() {
-		server := &http.Server{
+		server = &http.Server{
 			Addr:    fmt.Sprintf("%s:%d", ip, port),
 			Handler: router.Init(),
 		}
@@ -42,10 +50,11 @@ func start() {
 	}()
 	go task.Start()
 	go cron.Start()
-}
-
-func run() {
-	initialize()
-	start()
-	select {}
+	<-quit
+	log.Logger.Info("Shutting down server...")
+	if err := server.Shutdown(context.TODO()); err != nil {
+		log.Logger.Fatalf("Failed to shutdown server: %s", err)
+	}
+	task.Stop()
+	cron.Stop()
 }
