@@ -16,6 +16,7 @@ func init() {
 func Cmd() {
 	if len(os.Args) < 3 {
 		run()
+		return
 	}
 	cmd := flag.NewFlagSet("k8s", flag.ExitOnError)
 	err := cmd.Parse(os.Args[2:])
