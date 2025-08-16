@@ -45,3 +45,7 @@ func Start() {
 	}
 	log.Logger.Info("Task server started")
 }
+
+func Stop() {
+	srv.Shutdown()
+}

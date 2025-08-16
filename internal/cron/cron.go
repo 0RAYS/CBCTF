@@ -40,3 +40,7 @@ func Start() {
 	CheckCheat(c)
 	c.Start()
 }
+
+func Stop() {
+	c.Stop()
+}
