@@ -14,7 +14,7 @@ var TotalRequests int
 var MU sync.Mutex
 
 func Logger(ctx *gin.Context) {
-	l := log.Logger.WithField("type", "GIN")
+	l := log.Logger.WithField("Type", log.GinLogType)
 	start := time.Now()
 	path := ctx.Request.URL.Path
 	raw := ctx.Request.URL.RawQuery
