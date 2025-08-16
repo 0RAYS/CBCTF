@@ -46,7 +46,6 @@ func I18n(ctx *gin.Context) {
 		_, _ = w.ResponseWriter.Write([]byte(old))
 		return
 	}
-	ctx.Set(CTXStatusCodeKey, res.Code)
 	language := ctx.GetHeader("Accept-Language")
 	if strings.HasPrefix(language, "en-US") {
 		language = "en-US"
@@ -57,6 +56,7 @@ func I18n(ctx *gin.Context) {
 
 	}
 	res.Msg, res.Code = i18n.I18N(res.Msg, language)
+	ctx.Set(CTXStatusCodeKey, res.Code)
 	res.Trace = GetTraceID(ctx)
 	ret, err := json.Marshal(res)
 	if err != nil {
