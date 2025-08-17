@@ -22,15 +22,17 @@ type CreateOptions interface {
 
 // GetOptions 设置 Preload 时, 须确保对应关系的外键被 Select
 type GetOptions struct {
-	Conditions map[string]any
-	Selects    []string
-	Preloads   map[string]GetOptions
-	Deleted    bool
+	Conditions       map[string]any
+	SearchConditions map[string]any
+	Selects          []string
+	Preloads         map[string]GetOptions
+	Deleted          bool
 }
 
 type CountOptions struct {
-	Conditions map[string]any
-	Deleted    bool
+	Conditions       map[string]any
+	SearchConditions map[string]any
+	Deleted          bool
 }
 
 type UpdateOptions interface {
@@ -55,6 +57,11 @@ func ApplyGetOptions(tx *gorm.DB, options GetOptions) *gorm.DB {
 	}
 	if conditions := options.Conditions; len(conditions) > 0 {
 		tx = tx.Where(conditions)
+	}
+	if search := options.SearchConditions; len(search) > 0 {
+		for key, value := range search {
+			tx = tx.Where(fmt.Sprintf("%s LIKE ?", key), "%"+value.(string)+"%")
+		}
 	}
 	if options.Deleted {
 		tx = tx.Unscoped()
@@ -116,6 +123,11 @@ func (b *BasicRepo[M]) Count(optionsL ...CountOptions) (int64, bool, string) {
 		options := optionsL[0]
 		if conditions := options.Conditions; len(conditions) > 0 {
 			res = res.Where(conditions)
+		}
+		if search := options.SearchConditions; len(search) > 0 {
+			for key, value := range search {
+				res = res.Where(fmt.Sprintf("%s LIKE ?", key), "%"+value.(string)+"%")
+			}
 		}
 		if options.Deleted {
 			res = res.Unscoped()
@@ -190,68 +202,4 @@ func (b *BasicRepo[M]) Delete(idL ...uint) (bool, string) {
 		return false, M.DeleteErrorString(*new(M))
 	}
 	return true, i18n.Success
-}
-
-func ApplySearchOptions(tx *gorm.DB, options GetOptions) *gorm.DB {
-	if columns := options.Selects; len(columns) > 0 {
-		if !slices.Contains(columns, "id") {
-			columns = append([]string{"id"}, columns...)
-		}
-		tx = tx.Select(columns)
-	}
-	if conditions := options.Conditions; len(conditions) > 0 {
-		for key, value := range options.Conditions {
-			tx = tx.Where(fmt.Sprintf("%s LIKE ?", key), "%"+value.(string)+"%")
-		}
-	}
-	if options.Deleted {
-		tx = tx.Unscoped()
-	}
-	if preloads := options.Preloads; preloads != nil {
-		for rel, subOptions := range preloads {
-			if rel == "all" {
-				tx = tx.Preload(clause.Associations)
-				continue
-			}
-			tx = tx.Preload(rel, func(tx *gorm.DB) *gorm.DB {
-				return ApplySearchOptions(tx, subOptions)
-			})
-		}
-	}
-	return tx
-}
-
-// FuzzCount key 由上层进行检查
-func (b *BasicRepo[M]) FuzzCount(options GetOptions) (int64, bool, string) {
-	var count int64
-	res := b.DB.Model(new(M))
-	for key, value := range options.Conditions {
-		res = res.Where(fmt.Sprintf("%s LIKE ?", key), "%"+value.(string)+"%")
-	}
-	if options.Deleted {
-		res = res.Unscoped()
-	}
-	res = res.Count(&count)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to count %s: %s", M.GetModelName(*new(M)), res.Error)
-		return 0, false, M.GetErrorString(*new(M))
-	}
-	return count, true, i18n.Success
-}
-
-// FuzzSearch key 由上层进行检查
-func (b *BasicRepo[M]) FuzzSearch(limit, offset int, options GetOptions) ([]M, int64, bool, string) {
-	var (
-		ms             = make([]M, 0)
-		count, ok, msg = b.FuzzCount(options)
-	)
-	if !ok {
-		return ms, count, false, msg
-	}
-	res := ApplySearchOptions(b.DB.Model(new(M)), options).Order("id").Limit(limit).Offset(offset).Find(&ms)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to search %s: %s", M.GetModelName(*new(M)), res.Error)
-		return ms, count, false, M.GetErrorString(*new(M))
-	}
-	return ms, count, true, i18n.Success
 }

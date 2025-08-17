@@ -18,23 +18,21 @@ func Search(ctx *gin.Context) {
 		return
 	}
 	query := ctx.Request.URL.Query()
-	options := db.GetOptions{
-		Conditions: make(map[string]any),
-	}
+	options := db.GetOptions{SearchConditions: make(map[string]any)}
 	switch form.Model {
 	case "user":
 		allowedKeys := []string{"name", "email", "id"}
 		for key, value := range query {
 			if slices.Contains(allowedKeys, key) {
 				if len(value) > 0 {
-					options.Conditions[key] = value[0]
+					options.SearchConditions[key] = value[0]
 				}
 			}
 		}
 		options.Preloads = map[string]db.GetOptions{
 			"Teams": {Selects: []string{"id"}}, "Contests": {Selects: []string{"id"}},
 		}
-		users, count, ok, msg := db.InitUserRepo(db.DB.WithContext(ctx)).FuzzSearch(form.Limit, form.Offset, options)
+		users, count, ok, msg := db.InitUserRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, options)
 		if !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
@@ -50,14 +48,14 @@ func Search(ctx *gin.Context) {
 		for key, value := range query {
 			if slices.Contains(allowedKeys, key) {
 				if len(value) > 0 {
-					options.Conditions[key] = value[0]
+					options.SearchConditions[key] = value[0]
 				}
 			}
 		}
 		options.Preloads = map[string]db.GetOptions{
 			"Teams": {Selects: []string{"id"}}, "Users": {Selects: []string{"id"}}, "Notices": {Selects: []string{"id"}},
 		}
-		contests, count, ok, msg := db.InitContestRepo(db.DB.WithContext(ctx)).FuzzSearch(form.Limit, form.Offset, options)
+		contests, count, ok, msg := db.InitContestRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, options)
 		if !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
@@ -73,14 +71,14 @@ func Search(ctx *gin.Context) {
 		for key, value := range query {
 			if slices.Contains(allowedKeys, key) {
 				if len(value) > 0 {
-					options.Conditions[key] = value[0]
+					options.SearchConditions[key] = value[0]
 				}
 			}
 		}
 		options.Preloads = map[string]db.GetOptions{
 			"Users": {Selects: []string{"id"}},
 		}
-		teams, count, ok, msg := db.InitTeamRepo(db.DB.WithContext(ctx)).FuzzSearch(form.Limit, form.Offset, options)
+		teams, count, ok, msg := db.InitTeamRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, options)
 		if !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
@@ -99,11 +97,11 @@ func Search(ctx *gin.Context) {
 					key = "rand_id"
 				}
 				if len(value) > 0 {
-					options.Conditions[key] = value[0]
+					options.SearchConditions[key] = value[0]
 				}
 			}
 		}
-		challenges, count, ok, msg := db.InitChallengeRepo(db.DB.WithContext(ctx)).FuzzSearch(form.Limit, form.Offset, options)
+		challenges, count, ok, msg := db.InitChallengeRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, options)
 		if !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
