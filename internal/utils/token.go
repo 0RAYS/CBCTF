@@ -15,6 +15,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
+// TODO
 // var secret = uuid.New().String()
 var secret = "0RAYS-JBNRZ"
 
