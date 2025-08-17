@@ -45,5 +45,5 @@ func Events(ctx *gin.Context) {
 		}
 	}
 	options.Models["Self"] = GetSelfID(ctx)
-	db.InitEventRepo(db.DB.WithContext(ctx).Create(options))
+	db.InitEventRepo(db.DB.WithContext(ctx)).Create(options)
 }
