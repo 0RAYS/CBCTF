@@ -38,6 +38,7 @@ func I18n(ctx *gin.Context) {
 
 	ctx.Next()
 
+	ctx.Set(CTXStatusCodeKey, ctx.Writer.Status())
 	var res Data
 	old := w.body.String()
 
