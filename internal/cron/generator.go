@@ -44,7 +44,7 @@ func PrepareGenerator(c *cron.Cron) {
 				timeoutL := make([]*corev1.Pod, 0)
 				k8s.GeneratorMapMutex.RLock()
 				for _, generator := range k8s.GeneratorMap[contestChallenge.ID] {
-					if generator.CreationTimestamp.Add(time.Hour).Before(time.Now()) {
+					if generator.Status.Phase != corev1.PodRunning || generator.CreationTimestamp.Add(time.Hour).Before(time.Now()) {
 						timeoutL = append(timeoutL, generator)
 					}
 				}
