@@ -33,11 +33,6 @@ type CountOptions struct {
 	Deleted    bool
 }
 
-type SearchOptions struct {
-	Conditions map[string]any
-	Selects    []string
-}
-
 type UpdateOptions interface {
 	Convert2Map() map[string]any
 }
@@ -197,12 +192,44 @@ func (b *BasicRepo[M]) Delete(idL ...uint) (bool, string) {
 	return true, i18n.Success
 }
 
+func ApplySearchOptions(tx *gorm.DB, options GetOptions) *gorm.DB {
+	if columns := options.Selects; len(columns) > 0 {
+		if !slices.Contains(columns, "id") {
+			columns = append([]string{"id"}, columns...)
+		}
+		tx = tx.Select(columns)
+	}
+	if conditions := options.Conditions; len(conditions) > 0 {
+		for key, value := range options.Conditions {
+			tx = tx.Where(fmt.Sprintf("%s LIKE ?", key), "%"+value.(string)+"%")
+		}
+	}
+	if options.Deleted {
+		tx = tx.Unscoped()
+	}
+	if preloads := options.Preloads; preloads != nil {
+		for rel, subOptions := range preloads {
+			if rel == "all" {
+				tx = tx.Preload(clause.Associations)
+				continue
+			}
+			tx = tx.Preload(rel, func(tx *gorm.DB) *gorm.DB {
+				return ApplySearchOptions(tx, subOptions)
+			})
+		}
+	}
+	return tx
+}
+
 // FuzzCount key 由上层进行检查
-func (b *BasicRepo[M]) FuzzCount(options SearchOptions) (int64, bool, string) {
+func (b *BasicRepo[M]) FuzzCount(options GetOptions) (int64, bool, string) {
 	var count int64
 	res := b.DB.Model(new(M))
 	for key, value := range options.Conditions {
 		res = res.Where(fmt.Sprintf("%s LIKE ?", key), "%"+value.(string)+"%")
+	}
+	if options.Deleted {
+		res = res.Unscoped()
 	}
 	res = res.Count(&count)
 	if res.Error != nil {
@@ -213,7 +240,7 @@ func (b *BasicRepo[M]) FuzzCount(options SearchOptions) (int64, bool, string) {
 }
 
 // FuzzSearch key 由上层进行检查
-func (b *BasicRepo[M]) FuzzSearch(limit, offset int, options SearchOptions) ([]M, int64, bool, string) {
+func (b *BasicRepo[M]) FuzzSearch(limit, offset int, options GetOptions) ([]M, int64, bool, string) {
 	var (
 		ms             = make([]M, 0)
 		count, ok, msg = b.FuzzCount(options)
@@ -221,11 +248,7 @@ func (b *BasicRepo[M]) FuzzSearch(limit, offset int, options SearchOptions) ([]M
 	if !ok {
 		return ms, count, false, msg
 	}
-	res := b.DB.Model(new(M))
-	for key, value := range options.Conditions {
-		res = res.Where(fmt.Sprintf("%s LIKE ?", key), "%"+value.(string)+"%")
-	}
-	res = res.Order("id").Limit(limit).Offset(offset).Find(&ms)
+	res := ApplySearchOptions(b.DB.Model(new(M)), options).Order("id").Limit(limit).Offset(offset).Find(&ms)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to search %s: %s", M.GetModelName(*new(M)), res.Error)
 		return ms, count, false, M.GetErrorString(*new(M))

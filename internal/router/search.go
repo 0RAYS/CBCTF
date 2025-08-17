@@ -18,7 +18,7 @@ func Search(ctx *gin.Context) {
 		return
 	}
 	query := ctx.Request.URL.Query()
-	options := db.SearchOptions{
+	options := db.GetOptions{
 		Conditions: make(map[string]any),
 	}
 	switch form.Model {
@@ -30,6 +30,9 @@ func Search(ctx *gin.Context) {
 					options.Conditions[key] = value[0]
 				}
 			}
+		}
+		options.Preloads = map[string]db.GetOptions{
+			"Teams": {Selects: []string{"id"}}, "Contests": {Selects: []string{"id"}},
 		}
 		users, count, ok, msg := db.InitUserRepo(db.DB.WithContext(ctx)).FuzzSearch(form.Limit, form.Offset, options)
 		if !ok {
@@ -51,6 +54,9 @@ func Search(ctx *gin.Context) {
 				}
 			}
 		}
+		options.Preloads = map[string]db.GetOptions{
+			"Teams": {Selects: []string{"id"}}, "Users": {Selects: []string{"id"}}, "Notices": {Selects: []string{"id"}},
+		}
 		contests, count, ok, msg := db.InitContestRepo(db.DB.WithContext(ctx)).FuzzSearch(form.Limit, form.Offset, options)
 		if !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -70,6 +76,9 @@ func Search(ctx *gin.Context) {
 					options.Conditions[key] = value[0]
 				}
 			}
+		}
+		options.Preloads = map[string]db.GetOptions{
+			"Users": {Selects: []string{"id"}},
 		}
 		teams, count, ok, msg := db.InitTeamRepo(db.DB.WithContext(ctx)).FuzzSearch(form.Limit, form.Offset, options)
 		if !ok {
