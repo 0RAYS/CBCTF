@@ -4,6 +4,9 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"crypto/rand"
+	"fmt"
+	"math/big"
 	"slices"
 	"sync"
 	"time"
@@ -72,4 +75,53 @@ func Redial(old *Sender) error {
 	old.CreatedAt = time.Now()
 	log.Logger.Debugf("Redialed email server %s:%d successfully", old.Smtp.Host, old.Smtp.Port)
 	return nil
+}
+
+func SendEmail(to, subject, content string) error {
+	log.Logger.Debugf("Sending verify email to %s", to)
+	if len(Senders) == 0 {
+		return fmt.Errorf("no email sender configured")
+	}
+	var sender *Sender
+	var count = 0
+	for {
+		count++
+		lock.RLock()
+		index, _ := rand.Int(rand.Reader, big.NewInt(int64(len(Senders))))
+		sender = Senders[index.Int64()]
+		lock.RUnlock()
+		sender.UpdateLock.Lock()
+		if sender.CreatedAt.Add(time.Minute).After(time.Now()) {
+			sender.UpdateLock.Unlock()
+			break
+		}
+		if Redial(sender) == nil {
+			sender.UpdateLock.Unlock()
+			break
+		}
+		sender.UpdateLock.Unlock()
+		if count > 5 {
+			return fmt.Errorf("failed too many times to connect smtp servers")
+		}
+	}
+	m := gomail.NewMessage()
+	m.SetHeader("From", sender.Smtp.Address)
+	m.SetHeader("To", to)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/plain", content)
+	options := db.CreateEmailOptions{
+		SmtpID:  sender.Smtp.ID,
+		From:    sender.Smtp.Address,
+		To:      to,
+		Subject: subject,
+		Content: content,
+		Success: true,
+	}
+	err := gomail.Send(*sender.Auth, m)
+	if err != nil {
+		options.Success = false
+	}
+	options.Time = time.Now()
+	db.InitEmailRepo(db.DB).Create(options)
+	return err
 }
