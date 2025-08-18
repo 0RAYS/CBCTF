@@ -15,7 +15,7 @@ import (
 )
 
 func GetContestChallenges(ctx *gin.Context) {
-	var form f.GetModelsForm
+	var form f.GetChallengesForm
 	if ok, msg := form.Bind(ctx); !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -29,6 +29,12 @@ func GetContestChallenges(ctx *gin.Context) {
 	options := db.GetOptions{
 		Conditions: map[string]any{"contest_id": middleware.GetContest(ctx).ID},
 		Preloads:   map[string]db.GetOptions{"Challenge": {}, "ContestFlags": {}},
+	}
+	if form.Category != "" {
+		options.Conditions["category"] = form.Category
+	}
+	if middleware.IsAdmin(ctx) && form.Type != "" {
+		options.Conditions["type"] = form.Type
 	}
 	if !middleware.IsAdmin(ctx) {
 		options.Conditions["hidden"] = false
