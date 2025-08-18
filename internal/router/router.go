@@ -182,9 +182,19 @@ func Init() *gin.Engine {
 		admin.POST("/oauth", CreateOauthProvider)
 		adminOauth := admin.Group("/oauth/:oauthID", middleware.SetOauth)
 		{
+			adminOauth.GET("", GetOauthProvider)
 			adminOauth.PUT("", UpdateOauthProvider)
 			adminOauth.POST("/avatar", UploadAvatar("oauth"))
 			adminOauth.DELETE("", DeleteOauthProvider)
+		}
+
+		admin.GET("/smtp")
+		admin.POST("/smtp")
+		adminSmtp := admin.Group("/smtp/:smtpID")
+		{
+			adminSmtp.GET("")
+			adminSmtp.PUT("")
+			adminSmtp.DELETE("")
 		}
 
 		admin.GET("/challenges", GetChallenges)
