@@ -197,6 +197,8 @@ func Init() *gin.Engine {
 			adminSmtp.DELETE("", DeleteSmtp)
 		}
 
+		admin.GET("/email", GetEmails)
+
 		admin.GET("/webhook", GetWebhooks)
 		admin.POST("/webhook", CreateWebhook)
 		adminWebhook := admin.Group("/webhook/:webhookID", middleware.SetWebhook)
