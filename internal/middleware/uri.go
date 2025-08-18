@@ -429,3 +429,28 @@ func GetSmtp(ctx *gin.Context) model.Smtp {
 		return smtp.(model.Smtp)
 	}
 }
+
+func SetWebhook(ctx *gin.Context) {
+	type webhookIDUti struct {
+		WebhookID uint `uri:"webhookID" binding:"required"`
+	}
+	var webhookID webhookIDUti
+	if err := ctx.ShouldBindUri(&webhookID); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		return
+	}
+	webhook, ok, msg := db.InitWebhookRepo(db.DB.WithContext(ctx)).GetByID(webhookID.WebhookID)
+	if !ok {
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	ctx.Set("Webhook", webhook)
+}
+
+func GetWebhook(ctx *gin.Context) model.Webhook {
+	if webhook, ok := ctx.Get("Webhook"); !ok || webhook == nil {
+		return model.Webhook{}
+	} else {
+		return webhook.(model.Webhook)
+	}
+}

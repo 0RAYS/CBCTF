@@ -43,6 +43,10 @@ const (
 	UpdateSmtpEventType = "update_smtp"
 	DeleteSmtpEventType = "delete_smtp"
 
+	CreateWebhookEventType = "create_webhook"
+	UpdateWebhookEventType = "update_webhook"
+	DeleteWebhookEventType = "delete_webhook"
+
 	ActivateEmailEventType = "activate_email"
 	VerifyEmailEventType   = "verify_email"
 
