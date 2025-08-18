@@ -16,9 +16,10 @@ type ContestChallengeRepo struct {
 type CreateContestChallengeOptions struct {
 	ContestID   uint
 	ChallengeID uint
-	Type        string
 	Name        string
 	Desc        string
+	Type        string
+	Category    string
 	Hidden      bool
 	Attempt     int64
 	Hints       model.StringList
@@ -29,9 +30,10 @@ func (c CreateContestChallengeOptions) Convert2Model() model.Model {
 	return model.ContestChallenge{
 		ContestID:   c.ContestID,
 		ChallengeID: c.ChallengeID,
-		Type:        c.Type,
 		Name:        c.Name,
 		Desc:        c.Desc,
+		Type:        c.Type,
+		Category:    c.Category,
 		Hidden:      c.Hidden,
 		Attempt:     c.Attempt,
 		Hints:       c.Hints,

@@ -25,7 +25,7 @@ func GetContestChallengeResp(contestChallenge model.ContestChallenge) gin.H {
 		"desc":     contestChallenge.Desc,
 		"attempt":  contestChallenge.Attempt,
 		"type":     contestChallenge.Type,
-		"category": contestChallenge.Challenge.Category,
+		"category": contestChallenge.Category,
 		"hidden":   contestChallenge.Hidden,
 		"options":  options,
 		"score": func() float64 {
