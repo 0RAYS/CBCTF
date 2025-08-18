@@ -74,6 +74,21 @@ const (
 	DownloadWriteUpEventType = "download_writeup"
 )
 
+var EventTypes = []string{
+	LoginEventType, RegisterEventType, OauthLoginEventType, CreateAdminEventType, UpdateAdminEventType,
+	CreateUserEventType, UpdateUserEventType, DeleteUserEventType, CreateContestEventType, UpdateContestEventType,
+	DeleteContestEventType, CreateChallengeEventType, UpdateChallengeEventType, DeleteChallengeEventType,
+	UploadChallengeFileEventType, CreateContestChallengeEventType, UpdateContestChallengeEventType,
+	DeleteContestChallengeEventType, UpdateContestChallengeFlagEventType, CreateNoticeEventType, UpdateNoticeEventType,
+	DeleteNoticeEventType, CreateOauthEventType, UpdateOauthEventType, DeleteOauthEventType, CreateSmtpEventType,
+	UpdateSmtpEventType, DeleteSmtpEventType, CreateWebhookEventType, UpdateWebhookEventType, DeleteWebhookEventType,
+	ActivateEmailEventType, VerifyEmailEventType, UploadAvatarEventType, DeleteAvatarEventType, JoinTeamEventType,
+	CreateTeamEventType, UpdateTeamEventType, DeleteTeamEventType, LeaveTeamEventType, KickMemberEventType,
+	InitChallengeEventType, ResetChallengeEventType, DownloadAttachmentEventType, PullImageEventType,
+	StartVictimEventType, IncreaseVictimEventType, StopVictimEventType, DownloadTrafficEventType, SubmitFlagEventType,
+	UploadWriteUpEventType, DownloadWriteUpEventType,
+}
+
 type Event struct {
 	WebhookHistories []WebhookHistory `json:"-"`
 	IsAdmin          bool             `json:"is_admin"`

@@ -200,6 +200,7 @@ func Init() *gin.Engine {
 		admin.GET("/email", GetEmails)
 
 		admin.GET("/webhook", GetWebhooks)
+		admin.GET("/webhook/events", GetEvents)
 		admin.POST("/webhook", CreateWebhook)
 		adminWebhook := admin.Group("/webhook/:webhookID", middleware.SetWebhook)
 		{
