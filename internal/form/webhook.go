@@ -4,9 +4,14 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"net/http"
+	"slices"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
+
+var allowMethods = []string{http.MethodPost, http.MethodGet}
 
 type CreateWebhookForm struct {
 	Name       string           `form:"name" json:"name" binding:"required"`
@@ -22,6 +27,10 @@ type CreateWebhookForm struct {
 func (f *CreateWebhookForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
+		return false, i18n.BadRequest
+	}
+	f.Method = strings.ToUpper(f.Method)
+	if !slices.Contains(allowMethods, f.Method) {
 		return false, i18n.BadRequest
 	}
 	return true, i18n.Success
@@ -43,6 +52,12 @@ func (f *UpdateWebhookForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
 		return false, i18n.BadRequest
+	}
+	if f.Method != nil {
+		*f.Method = strings.ToUpper(*f.Method)
+		if !slices.Contains(allowMethods, *f.Method) {
+			return false, i18n.BadRequest
+		}
 	}
 	return true, i18n.Success
 }
