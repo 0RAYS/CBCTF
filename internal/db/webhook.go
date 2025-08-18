@@ -1,6 +1,8 @@
 package db
 
 import (
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"time"
 
@@ -103,4 +105,29 @@ func InitWebhookRepo(tx *gorm.DB) *WebhookRepo {
 			DB: tx,
 		},
 	}
+}
+
+func (w *WebhookRepo) Delete(idL ...uint) (bool, string) {
+	webhookL, _, ok, msg := w.List(-1, -1, GetOptions{
+		Conditions: map[string]any{"id": idL},
+		Selects:    []string{"id"},
+		Preloads:   map[string]GetOptions{"WebhookHistories": {Selects: []string{"id", "webhook_id"}}},
+	})
+	if !ok && msg != i18n.WebhookNotFound {
+		return false, msg
+	}
+	webhookHistoryIDL := make([]uint, 0)
+	for _, webhook := range webhookL {
+		for _, history := range webhook.WebhookHistories {
+			webhookHistoryIDL = append(webhookHistoryIDL, history.ID)
+		}
+	}
+	if ok, msg = InitWebhookHistoryRepo(w.DB).Delete(webhookHistoryIDL...); !ok {
+		return false, msg
+	}
+	if res := w.DB.Model(&model.Webhook{}).Where("id IN ?", idL).Delete(&model.Webhook{}); res.Error != nil {
+		log.Logger.Warningf("Failed to deleted Webhook: %s", res.Error)
+		return false, i18n.DeleteWebhookError
+	}
+	return true, i18n.Success
 }

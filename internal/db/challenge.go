@@ -123,7 +123,7 @@ func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
 			submissionIDL = append(submissionIDL, submission.ID)
 		}
 	}
-	if ok, msg := InitDockerRepo(c.DB).Delete(dockerIDL...); !ok {
+	if ok, msg = InitDockerRepo(c.DB).Delete(dockerIDL...); !ok {
 		return false, msg
 	}
 	if ok, msg = InitChallengeFlagRepo(c.DB).Delete(challengeFlagIDL...); !ok {
