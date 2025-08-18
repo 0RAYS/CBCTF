@@ -7,11 +7,30 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
+	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
+
+func GetEmails(ctx *gin.Context) {
+	var form f.GetModelsForm
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	emails, count, ok, msg := db.InitEmailRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	data := make([]gin.H, 0)
+	for _, email := range emails {
+		data = append(data, resp.GetEmailResp(email))
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"emails": data, "count": count}})
+}
 
 func VerifyEmail(ctx *gin.Context) {
 	var form f.VerifyEmail
