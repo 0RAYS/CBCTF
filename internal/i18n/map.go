@@ -82,6 +82,12 @@ var resp = map[string]map[string]any{
 	UpdateDockerError:  {"zh-CN": "更新Docker失败", "en-US": "Update Docker failed", "code": 500},
 	InvalidDockerImage: {"zh-CN": "无效的Docker镜像", "en-US": "Invalid Docker image", "code": 400},
 
+	CreateEmailError: {"zh-CN": "创建邮件发送记录失败", "en-US": "Create EmailRecord failed", "code": 500},
+	DeleteEmailError: {"zh-CN": "删除邮件发送记录失败", "en-US": "Delete EmailRecord failed", "code": 500},
+	GetEmailError:    {"zh-CN": "获取邮件发送记录失败", "en-US": "Get EmailRecord failed", "code": 500},
+	EmailNotFound:    {"zh-CN": "邮件发送记录不存在", "en-US": "EmailRecord not found", "code": 404},
+	UpdateEmailError: {"zh-CN": "更新邮件发送记录失败", "en-US": "Update EmailRecord failed", "code": 500},
+
 	CreateEventError: {"zh-CN": "创建事件失败", "en-US": "Create Event failed", "code": 500},
 	DeleteEventError: {"zh-CN": "删除事件失败", "en-US": "Delete Event failed", "code": 500},
 	GetEventError:    {"zh-CN": "获取事件失败", "en-US": "Get Event failed", "code": 500},
@@ -175,6 +181,18 @@ var resp = map[string]map[string]any{
 	VictimNotFound:    {"zh-CN": "靶机不存在", "en-US": "Victim not found", "code": 404},
 	UpdateVictimError: {"zh-CN": "更新靶机失败", "en-US": "Update Victim failed", "code": 500},
 	HasMuchTime:       {"zh-CN": "距容器关闭20分钟内才可延长时间", "en-US": "Can only extend time within 20 minutes before the container closes", "code": 400},
+
+	CreateWebhookError: {"zh-CN": "创建Webhook目标失败", "en-US": "Create Webhook failed", "code": 500},
+	DeleteWebhookError: {"zh-CN": "删除Webhook目标失败", "en-US": "Delete Webhook failed", "code": 500},
+	GetWebhookError:    {"zh-CN": "获取Webhook目标失败", "en-US": "Get Webhook failed", "code": 500},
+	WebhookNotFound:    {"zh-CN": "Webhook目标不存在", "en-US": "Webhook not found", "code": 404},
+	UpdateWebhookError: {"zh-CN": "更新Webhook目标失败", "en-US": "Update Webhook failed", "code": 500},
+
+	CreateWebhookHistoryError: {"zh-CN": "创建Webhook发送记录失败", "en-US": "Create WebhookHistory failed", "code": 500},
+	DeleteWebhookHistoryError: {"zh-CN": "删除Webhook发送记录失败", "en-US": "Delete WebhookHistory failed", "code": 500},
+	GetWebhookHistoryError:    {"zh-CN": "获取Webhook发送记录失败", "en-US": "Get WebhookHistory failed", "code": 500},
+	WebhookHistoryNotFound:    {"zh-CN": "Webhook发送记录不存在", "en-US": "WebhookHistory not found", "code": 404},
+	UpdateWebhookHistoryError: {"zh-CN": "更新Webhook发送记录失败", "en-US": "Update WebhookHistory failed", "code": 500},
 
 	AppendUserToTeamError:      {"zh-CN": "添加用户到战队失败", "en-US": "Append User to Team failed", "code": 500},
 	AppendUserToContestError:   {"zh-CN": "添加用户到比赛失败", "en-US": "Append User to Contest failed", "code": 500},

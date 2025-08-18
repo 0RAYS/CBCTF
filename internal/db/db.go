@@ -63,10 +63,10 @@ func Init() {
 
 	// 指定数据表的存储引擎, 需要支持回滚操作
 	err = DB.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(
-		&model.Admin{}, &model.Challenge{}, &model.ChallengeFlag{}, &model.Contest{}, &model.ContestChallenge{},
-		&model.ContestFlag{}, &model.Device{}, &model.Docker{}, &model.Event{}, &model.File{},
-		&model.Notice{}, &model.Oauth{}, &model.Request{}, &model.Submission{}, &model.Team{}, &model.TeamFlag{},
-		&model.User{}, &model.Victim{}, &model.Pod{}, &model.Container{}, &model.Cheat{}, &model.Traffic{},
+		&model.Admin{}, &model.Challenge{}, &model.ChallengeFlag{}, &model.Cheat{}, &model.Container{}, &model.Contest{},
+		&model.ContestChallenge{}, &model.ContestFlag{}, &model.Device{}, &model.Docker{}, &model.Email{}, &model.Event{},
+		&model.File{}, &model.Notice{}, &model.Oauth{}, &model.Pod{}, &model.Request{}, &model.Submission{}, &model.Team{},
+		&model.TeamFlag{}, model.Traffic{}, model.User{}, model.Victim{}, model.Webhook{}, model.WebhookHistory{},
 	)
 	if err != nil {
 		log.Logger.Fatalf("Failed to migrate database: %s", err)

@@ -82,6 +82,12 @@ const (
 	UpdateDockerError  = "UpdateDockerError"
 	InvalidDockerImage = "InvalidDockerImage"
 
+	CreateEmailError = "CreateEmailError"
+	DeleteEmailError = "DeleteEmailError"
+	GetEmailError    = "GetEmailError"
+	EmailNotFound    = "EmailNotFound"
+	UpdateEmailError = "UpdateEmailError"
+
 	CreateEventError = "CreateEventError"
 	DeleteEventError = "DeleteEventError"
 	GetEventError    = "GetEventError"
@@ -175,6 +181,18 @@ const (
 	VictimNotFound    = "VictimNotFound"
 	UpdateVictimError = "UpdateVictimError"
 	HasMuchTime       = "HasMuchTime"
+
+	CreateWebhookError = "CreateWebhookError"
+	DeleteWebhookError = "DeleteWebhookError"
+	GetWebhookError    = "GetWebhookError"
+	WebhookNotFound    = "WebhookNotFound"
+	UpdateWebhookError = "UpdateWebhookError"
+
+	CreateWebhookHistoryError = "CreateWebhookHistoryError"
+	DeleteWebhookHistoryError = "DeleteWebhookHistoryError"
+	GetWebhookHistoryError    = "GetWebhookHistoryError"
+	WebhookHistoryNotFound    = "WebhookHistoryNotFound"
+	UpdateWebhookHistoryError = "UpdateWebhookHistoryError"
 
 	AppendUserToTeamError      = "AppendUserToTeamError"
 	AppendUserToContestError   = "AppendUserToContestError"
