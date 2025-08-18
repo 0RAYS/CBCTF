@@ -37,7 +37,7 @@ func SendVerifyEmail(to, token, id string) error {
 		}
 	}
 	m := gomail.NewMessage()
-	m.SetHeader("From", sender.Addr)
+	m.SetHeader("From", sender.Smtp.Address)
 	m.SetHeader("To", to)
 	m.SetHeader("Subject", "Verify Email")
 	m.SetBody("text/plain",

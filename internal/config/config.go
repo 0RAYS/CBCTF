@@ -104,15 +104,6 @@ type Config struct {
 		Path    string `mapstructure:"path" json:"path" msgpack:"path"`
 		Storage string `mapstructure:"storage" json:"storage" msgpack:"storage"`
 	} `mapstructure:"nfs" json:"nfs" msgpack:"nfs"`
-
-	Email struct {
-		Senders []struct {
-			Addr string `mapstructure:"addr" json:"addr" msgpack:"addr"` // 发件人地址
-			Host string `mapstructure:"host" json:"host" msgpack:"host"` // SMTP 服务器地址
-			Port int    `mapstructure:"port" json:"port" msgpack:"port"` // SMTP 服务器端口
-			Pwd  string `mapstructure:"pwd" json:"-" msgpack:"pwd"`      // SMTP 服务器密码
-		} `mapstructure:"senders" json:"senders" msgpack:"senders"` // 发件人列表
-	} `mapstructure:"email" json:"email" msgpack:"email"`
 }
 
 var Env *Config

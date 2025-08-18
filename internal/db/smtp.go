@@ -14,7 +14,7 @@ type SmtpRepo struct {
 type CreateSmtpOptions struct {
 	Address string
 	Host    string
-	Port    string
+	Port    int
 	Pwd     string
 	On      bool
 }
@@ -32,7 +32,7 @@ func (c CreateSmtpOptions) Convert2Model() model.Model {
 type UpdateSmtpOptions struct {
 	Address *string
 	Host    *string
-	Port    *string
+	Port    *int
 	Pwd     *string
 	On      *bool
 	Last    *time.Time
