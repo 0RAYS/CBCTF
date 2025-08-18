@@ -13,7 +13,7 @@ func GetEmailResp(email model.Email) gin.H {
 		"to":      email.To,
 		"subject": email.Subject,
 		"content": email.Content,
-		"time":    email.Time,
+		"time":    email.CreatedAt,
 		"success": email.Success,
 	}
 }

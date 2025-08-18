@@ -21,11 +21,13 @@ type CreateSmtpOptions struct {
 
 func (c CreateSmtpOptions) Convert2Model() model.Model {
 	return model.Smtp{
-		Address: c.Address,
-		Host:    c.Host,
-		Port:    c.Port,
-		Pwd:     c.Pwd,
-		On:      c.On,
+		Address:     c.Address,
+		Host:        c.Host,
+		Port:        c.Port,
+		Pwd:         c.Pwd,
+		On:          c.On,
+		SuccessLast: time.Now(),
+		FailureLast: time.Now(),
 	}
 }
 

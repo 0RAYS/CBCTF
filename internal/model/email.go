@@ -2,18 +2,16 @@ package model
 
 import (
 	"CBCTF/internal/i18n"
-	"time"
 )
 
 type Email struct {
-	SmtpID  uint      `json:"smtp_id"`
-	Smtp    Smtp      `json:"-"`
-	From    string    `json:"from"`
-	To      string    `json:"to"`
-	Subject string    `json:"subject"`
-	Content string    `json:"content"`
-	Time    time.Time `json:"time"`
-	Success bool      `json:"success"`
+	SmtpID  uint   `json:"smtp_id"`
+	Smtp    Smtp   `json:"-"`
+	From    string `json:"from"`
+	To      string `json:"to"`
+	Subject string `json:"subject"`
+	Content string `json:"content"`
+	Success bool   `json:"success"`
 	BasicModel
 }
 
