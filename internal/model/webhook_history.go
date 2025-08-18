@@ -7,9 +7,9 @@ import (
 
 type WebhookHistory struct {
 	WebhookID  uint          `json:"webhook_id"`
-	Webhook    Webhook       `json:"webhook"`
+	Webhook    Webhook       `json:"-"`
 	EventID    uint          `json:"event_id"`
-	Event      Event         `json:"event"`
+	Event      Event         `json:"-"`
 	RespCode   int           `json:"resp_code"`
 	Duration   time.Duration `json:"duration"`
 	Success    bool          `json:"success"`

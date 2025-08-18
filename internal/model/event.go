@@ -67,12 +67,13 @@ const (
 )
 
 type Event struct {
-	IsAdmin bool    `json:"is_admin"`
-	Type    string  `json:"type"`
-	Success bool    `json:"success"`
-	IP      string  `json:"ip"`
-	Magic   string  `json:"magic"`
-	Models  UintMap `gorm:"type:json" json:"models"`
+	WebhookHistories []WebhookHistory `json:"-"`
+	IsAdmin          bool             `json:"is_admin"`
+	Type             string           `json:"type"`
+	Success          bool             `json:"success"`
+	IP               string           `json:"ip"`
+	Magic            string           `json:"magic"`
+	Models           UintMap          `gorm:"type:json" json:"models"`
 	BasicModel
 }
 

@@ -6,7 +6,7 @@ import (
 )
 
 type Webhook struct {
-	WebhookHistories []WebhookHistory `json:"webhook_histories"`
+	WebhookHistories []WebhookHistory `json:"-"`
 	Name             string           `json:"name"`
 	URL              string           `json:"url"`
 	Method           string           `json:"method"`

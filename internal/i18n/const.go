@@ -126,6 +126,12 @@ const (
 	RequestNotFound    = "RequestNotFound"
 	UpdateRequestError = "UpdateRequestError"
 
+	CreateSmtpError = "CreateSmtpError"
+	DeleteSmtpError = "DeleteSmtpError"
+	GetSmtpError    = "GetSmtpError"
+	SmtpNotFound    = "SmtpNotFound"
+	UpdateSmtpError = "UpdateSmtpError"
+
 	CreateSubmissionError = "CreateSubmissionError"
 	DeleteSubmissionError = "DeleteSubmissionError"
 	GetSubmissionError    = "GetSubmissionError"

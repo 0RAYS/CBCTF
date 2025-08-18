@@ -126,6 +126,12 @@ var resp = map[string]map[string]any{
 	RequestNotFound:    {"zh-CN": "请求不存在", "en-US": "Request not found", "code": 404},
 	UpdateRequestError: {"zh-CN": "更新请求失败", "en-US": "Update Request failed", "code": 500},
 
+	CreateSmtpError: {"zh-CN": "创建Smtp失败", "en-US": "Create Smtp failed", "code": 500},
+	DeleteSmtpError: {"zh-CN": "删除Smtp失败", "en-US": "Delete Smtp failed", "code": 500},
+	GetSmtpError:    {"zh-CN": "获取Smtp失败", "en-US": "Get Smtp failed", "code": 500},
+	SmtpNotFound:    {"zh-CN": "Smtp不存在", "en-US": "Smtp not found", "code": 404},
+	UpdateSmtpError: {"zh-CN": "更新Smtp失败", "en-US": "Update Smtp failed", "code": 500},
+
 	CreateSubmissionError: {"zh-CN": "创建提交记录失败", "en-US": "Record Submission failed", "code": 500},
 	DeleteSubmissionError: {"zh-CN": "删除提交记录失败", "en-US": "Delete Submission failed", "code": 500},
 	GetSubmissionError:    {"zh-CN": "获取提交记录失败", "en-US": "Get Submission failed", "code": 500},
