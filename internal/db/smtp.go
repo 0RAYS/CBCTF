@@ -16,6 +16,7 @@ type CreateSmtpOptions struct {
 	Host    string
 	Port    string
 	Pwd     string
+	On      bool
 }
 
 func (c CreateSmtpOptions) Convert2Model() model.Model {
@@ -24,6 +25,7 @@ func (c CreateSmtpOptions) Convert2Model() model.Model {
 		Host:    c.Host,
 		Port:    c.Port,
 		Pwd:     c.Pwd,
+		On:      c.On,
 	}
 }
 
@@ -32,6 +34,7 @@ type UpdateSmtpOptions struct {
 	Host    *string
 	Port    *string
 	Pwd     *string
+	On      *bool
 	Last    *time.Time
 	Count   *int64
 }
@@ -49,6 +52,9 @@ func (u UpdateSmtpOptions) Convert2Map() map[string]any {
 	}
 	if u.Pwd != nil {
 		options["pwd"] = *u.Pwd
+	}
+	if u.On != nil {
+		options["on"] = *u.On
 	}
 	if u.Last != nil {
 		options["last"] = *u.Last

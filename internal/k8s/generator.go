@@ -7,9 +7,10 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 	"context"
+	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"math/rand"
+	"math/big"
 	"os"
 	"slices"
 	"strings"
@@ -103,7 +104,6 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 }
 
 func GetGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool, string) {
-	rand.New(rand.NewSource(time.Now().UnixNano()))
 	GeneratorMapMutex.RLock()
 	generators, ok := GeneratorMap[contestChallenge.ID]
 	GeneratorMapMutex.RUnlock()
@@ -111,8 +111,8 @@ func GetGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool, s
 		return StartGenerator(contestChallenge)
 	}
 	if len(generators) > 0 {
-		index := rand.Intn(len(generators))
-		return generators[index], true, i18n.Success
+		index, _ := rand.Int(rand.Reader, big.NewInt(time.Now().UnixNano()))
+		return generators[index.Int64()], true, i18n.Success
 	}
 	return nil, false, i18n.UnknownError
 }
