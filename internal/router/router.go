@@ -188,6 +188,8 @@ func Init() *gin.Engine {
 			adminOauth.DELETE("", DeleteOauthProvider)
 		}
 
+		admin.GET("/email", GetEmails)
+
 		admin.GET("/smtp", GetSmtps)
 		admin.POST("/smtp", CreateSmtp)
 		adminSmtp := admin.Group("/smtp/:smtpID", middleware.SetSmtp)
@@ -197,17 +199,15 @@ func Init() *gin.Engine {
 			adminSmtp.DELETE("", DeleteSmtp)
 		}
 
-		admin.GET("/email", GetEmails)
-
 		admin.GET("/webhook", GetWebhooks)
 		admin.GET("/webhook/events", GetEvents)
+		admin.GET("/webhook/history", GetWebhookHistory)
 		admin.POST("/webhook", CreateWebhook)
 		adminWebhook := admin.Group("/webhook/:webhookID", middleware.SetWebhook)
 		{
 			adminWebhook.GET("", GetWebhook)
 			adminWebhook.PUT("", UpdateWebhook)
 			adminWebhook.DELETE("", DeleteWebhook)
-			adminWebhook.GET("/history")
 		}
 
 		admin.GET("/challenges", GetChallenges)
