@@ -10,6 +10,7 @@ import (
 	"CBCTF/internal/redis"
 	"CBCTF/internal/router"
 	"CBCTF/internal/task"
+	"CBCTF/internal/webhook"
 	"CBCTF/internal/websocket"
 	"context"
 	"errors"
@@ -25,6 +26,7 @@ func run() {
 	redis.Init()
 	k8s.Init()
 	email.Init()
+	webhook.Init()
 	websocket.Init()
 	task.Init()
 	cron.Init()
