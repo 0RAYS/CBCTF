@@ -251,8 +251,7 @@ func UpdateOauthProvider(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateOauthEventType)
 	oauth := middleware.GetOauth(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
-	ok, msg := service.UpdateOauthProvider(tx, oauth, form)
-	if !ok {
+	if ok, msg := service.UpdateOauthProvider(tx, oauth, form); !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

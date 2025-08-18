@@ -65,8 +65,7 @@ func UpdateSmtp(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateSmtpEventType)
 	smtp := middleware.GetSmtp(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
-	ok, msg := service.UpdateSmtp(tx, smtp, form)
-	if !ok {
+	if ok, msg := service.UpdateSmtp(tx, smtp, form); !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
