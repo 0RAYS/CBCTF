@@ -12,7 +12,6 @@ func GetSmtpResp(smtp model.Smtp) gin.H {
 		"address":      smtp.Address,
 		"host":         smtp.Host,
 		"port":         smtp.Port,
-		"pwd":          smtp.Pwd,
 		"on":           smtp.On,
 		"success":      smtp.Success,
 		"success_last": smtp.SuccessLast,
