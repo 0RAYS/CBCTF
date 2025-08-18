@@ -238,11 +238,6 @@ func CreateOauthProvider(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	if provider.On {
-		oauthProviderMapLock.Lock()
-		oauthProviderMap[provider.Uri] = provider
-		oauthProviderMapLock.Unlock()
-	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetOauthResp(provider)})
 }

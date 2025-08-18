@@ -20,8 +20,10 @@ func SendVerifyEmail(to, token, id string) error {
 	var count = 0
 	for {
 		count++
+		lock.RLock()
 		index, _ := rand.Int(rand.Reader, big.NewInt(int64(len(Senders))))
 		sender = Senders[index.Int64()]
+		lock.RUnlock()
 		sender.UpdateLock.Lock()
 		if sender.CreatedAt.Add(time.Minute).After(time.Now()) {
 			sender.UpdateLock.Unlock()
