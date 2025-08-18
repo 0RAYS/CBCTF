@@ -39,6 +39,10 @@ const (
 	UpdateOauthEventType = "update_oauth"
 	DeleteOauthEventType = "delete_oauth"
 
+	CreateSmtpEventType = "create_smtp"
+	UpdateSmtpEventType = "update_smtp"
+	DeleteSmtpEventType = "delete_smtp"
+
 	ActivateEmailEventType = "activate_email"
 	VerifyEmailEventType   = "verify_email"
 

@@ -404,3 +404,28 @@ func GetOauthUri(ctx *gin.Context) string {
 		return oauth.(string)
 	}
 }
+
+func SetSmtp(ctx *gin.Context) {
+	type smtpIDUri struct {
+		SmtpID uint `uri:"smtpID" binding:"required"`
+	}
+	var smtpID smtpIDUri
+	if err := ctx.ShouldBindUri(&smtpID); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		return
+	}
+	smtp, ok, msg := db.InitSmtpRepo(db.DB.WithContext(ctx)).GetByID(smtpID.SmtpID)
+	if !ok {
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	ctx.Set("Smtp", smtp)
+}
+
+func GetSmtp(ctx *gin.Context) model.Smtp {
+	if smtp, ok := ctx.Get("Smtp"); !ok || smtp == nil {
+		return model.Smtp{}
+	} else {
+		return smtp.(model.Smtp)
+	}
+}

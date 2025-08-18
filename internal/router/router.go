@@ -188,13 +188,13 @@ func Init() *gin.Engine {
 			adminOauth.DELETE("", DeleteOauthProvider)
 		}
 
-		admin.GET("/smtp")
-		admin.POST("/smtp")
-		adminSmtp := admin.Group("/smtp/:smtpID")
+		admin.GET("/smtp", GetSmtps)
+		admin.POST("/smtp", CreateSmtp)
+		adminSmtp := admin.Group("/smtp/:smtpID", middleware.SetSmtp)
 		{
-			adminSmtp.GET("")
-			adminSmtp.PUT("")
-			adminSmtp.DELETE("")
+			adminSmtp.GET("", GetSmtp)
+			adminSmtp.PUT("", UpdateSmtp)
+			adminSmtp.DELETE("", DeleteSmtp)
 		}
 
 		admin.GET("/challenges", GetChallenges)
