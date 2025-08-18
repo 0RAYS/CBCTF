@@ -8,6 +8,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
+	wh "CBCTF/internal/webhook"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -70,6 +71,15 @@ func UpdateWebhook(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
+	newWebhook, ok, msg := db.InitWebhookRepo(db.DB.WithContext(ctx)).GetByID(webhook.ID)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	wh.DelWebhook(webhook)
+	if newWebhook.On {
+		wh.AddWebhook(newWebhook)
+	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }
@@ -84,6 +94,7 @@ func DeleteWebhook(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
+	wh.DelWebhook(webhook)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }
