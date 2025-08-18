@@ -65,8 +65,8 @@ func Init() {
 	err = DB.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(
 		&model.Admin{}, &model.Challenge{}, &model.ChallengeFlag{}, &model.Cheat{}, &model.Container{}, &model.Contest{},
 		&model.ContestChallenge{}, &model.ContestFlag{}, &model.Device{}, &model.Docker{}, &model.Email{}, &model.Event{},
-		&model.File{}, &model.Notice{}, &model.Oauth{}, &model.Pod{}, &model.Request{}, &model.Submission{}, &model.Team{},
-		&model.TeamFlag{}, model.Traffic{}, model.User{}, model.Victim{}, model.Webhook{}, model.WebhookHistory{},
+		&model.File{}, &model.Notice{}, &model.Oauth{}, &model.Pod{}, &model.Request{}, &model.Smtp{}, &model.Submission{},
+		&model.Team{}, &model.TeamFlag{}, model.Traffic{}, model.User{}, model.Victim{}, model.Webhook{}, model.WebhookHistory{},
 	)
 	if err != nil {
 		log.Logger.Fatalf("Failed to migrate database: %s", err)
