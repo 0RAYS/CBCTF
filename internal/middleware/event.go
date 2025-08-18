@@ -21,8 +21,8 @@ func Events(ctx *gin.Context) {
 		return
 	}
 	models := []model.Model{
-		GetUser(ctx), GetContest(ctx), GetTeam(ctx), GetFile(ctx), GetNotice(ctx), GetChallenge(ctx),
-		GetContestChallenge(ctx), GetContestFlag(ctx), GetVictim(ctx), GetCheat(ctx), GetOauth(ctx),
+		GetUser(ctx), GetContest(ctx), GetTeam(ctx), GetFile(ctx), GetNotice(ctx), GetChallenge(ctx), GetWebhook(ctx),
+		GetContestChallenge(ctx), GetContestFlag(ctx), GetVictim(ctx), GetCheat(ctx), GetOauth(ctx), GetSmtp(ctx),
 	}
 	options := db.CreateEventOptions{
 		IsAdmin: IsAdmin(ctx),
