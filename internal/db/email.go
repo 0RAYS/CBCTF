@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -19,7 +18,6 @@ type CreateEmailOptions struct {
 	To      string
 	Subject string
 	Content string
-	Time    time.Time
 	Success bool
 }
 
@@ -30,7 +28,6 @@ func (c CreateEmailOptions) Convert2Model() model.Model {
 		To:      c.To,
 		Subject: c.Subject,
 		Content: c.Content,
-		Time:    c.Time,
 		Success: c.Success,
 	}
 }
@@ -56,7 +53,7 @@ func (e *EmailRepo) Create(options CreateEmailOptions) (model.Email, bool, strin
 		log.Logger.Warningf("Failed to create Email: %s", res.Error)
 		return model.Email{}, false, i18n.CreateEmailError
 	}
-	if ok, msg := InitSmtpRepo(e.DB).UpdateStatus(m.ID, m.Success, m.Time); !ok {
+	if ok, msg := InitSmtpRepo(e.DB).UpdateStatus(m.ID, m.Success, m.CreatedAt); !ok {
 		return model.Email{}, false, msg
 	}
 	return m, true, i18n.Success

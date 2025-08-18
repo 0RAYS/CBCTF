@@ -121,7 +121,6 @@ func SendEmail(to, subject, content string) error {
 	if err != nil {
 		options.Success = false
 	}
-	options.Time = time.Now()
 	db.InitEmailRepo(db.DB).Create(options)
 	return err
 }
