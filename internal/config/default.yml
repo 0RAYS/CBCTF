@@ -91,9 +91,3 @@ nfs:
   path: /mnt/data
   # Gi, Mi
   storage: 10Gi
-email:
-  senders:
-    - addr: "noreply@example.com"
-      pwd: "password"
-      host: "smtp.example.com"
-      port: 25

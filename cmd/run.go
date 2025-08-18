@@ -21,11 +21,11 @@ import (
 )
 
 func run() {
-	websocket.Init()
-	email.Init()
-	redis.Init()
 	db.Init()
+	redis.Init()
 	k8s.Init()
+	email.Init()
+	websocket.Init()
 	task.Init()
 	cron.Init()
 
