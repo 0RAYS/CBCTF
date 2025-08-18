@@ -6,14 +6,16 @@ import (
 )
 
 type Smtp struct {
-	Emails  []Email   `json:"-"`
-	Address string    `json:"address"`
-	Host    string    `json:"host"`
-	Port    int       `json:"port"`
-	Pwd     string    `json:"pwd"`
-	On      bool      `json:"on"`
-	Last    time.Time `json:"last"`
-	Count   int64     `json:"count"`
+	Emails      []Email   `json:"-"`
+	Address     string    `json:"address"`
+	Host        string    `json:"host"`
+	Port        int       `json:"port"`
+	Pwd         string    `json:"pwd"`
+	On          bool      `json:"on"`
+	Success     int64     `json:"success"`
+	SuccessLast time.Time `json:"success_last"`
+	Failure     int64     `json:"failure"`
+	FailureLast time.Time `json:"failure_last"`
 	BasicModel
 }
 

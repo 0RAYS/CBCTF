@@ -1,6 +1,8 @@
 package db
 
 import (
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"time"
 
@@ -46,4 +48,16 @@ func InitEmailRepo(tx *gorm.DB) *EmailRepo {
 			DB: tx,
 		},
 	}
+}
+
+func (e *EmailRepo) Create(options CreateEmailOptions) (model.Email, bool, string) {
+	m := options.Convert2Model().(model.Email)
+	if res := e.DB.Model(&model.Email{}).Create(&m); res.Error != nil {
+		log.Logger.Warningf("Failed to create Email: %s", res.Error)
+		return model.Email{}, false, i18n.CreateEmailError
+	}
+	if ok, msg := InitSmtpRepo(e.DB).UpdateStatus(m.ID, m.Success, m.Time); !ok {
+		return model.Email{}, false, msg
+	}
+	return m, true, i18n.Success
 }

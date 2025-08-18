@@ -30,13 +30,15 @@ func (c CreateSmtpOptions) Convert2Model() model.Model {
 }
 
 type UpdateSmtpOptions struct {
-	Address *string
-	Host    *string
-	Port    *int
-	Pwd     *string
-	On      *bool
-	Last    *time.Time
-	Count   *int64
+	Address     *string
+	Host        *string
+	Port        *int
+	Pwd         *string
+	On          *bool
+	Success     *int64
+	SuccessLast *time.Time
+	Failure     *int64
+	FailureLast *time.Time
 }
 
 func (u UpdateSmtpOptions) Convert2Map() map[string]any {
@@ -56,11 +58,17 @@ func (u UpdateSmtpOptions) Convert2Map() map[string]any {
 	if u.On != nil {
 		options["on"] = *u.On
 	}
-	if u.Last != nil {
-		options["last"] = *u.Last
+	if u.Success != nil {
+		options["success"] = *u.Success
 	}
-	if u.Count != nil {
-		options["count"] = *u.Count
+	if u.SuccessLast != nil {
+		options["success_last"] = *u.SuccessLast
+	}
+	if u.Failure != nil {
+		options["failure"] = *u.Failure
+	}
+	if u.FailureLast != nil {
+		options["failure_last"] = *u.FailureLast
 	}
 	return options
 }
@@ -71,4 +79,26 @@ func InitSmtpRepo(tx *gorm.DB) *SmtpRepo {
 			DB: tx,
 		},
 	}
+}
+
+func (s *SmtpRepo) UpdateStatus(id uint, success bool, last time.Time) (bool, string) {
+	old, ok, msg := s.GetByID(id)
+	if !ok {
+		return false, msg
+	}
+	var options UpdateSmtpOptions
+	if success {
+		count := old.Success + 1
+		options = UpdateSmtpOptions{
+			Success:     &count,
+			SuccessLast: &last,
+		}
+	} else {
+		count := old.Failure + 1
+		options = UpdateSmtpOptions{
+			Failure:     &count,
+			FailureLast: &last,
+		}
+	}
+	return s.Update(id, options)
 }
