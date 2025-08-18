@@ -11,6 +11,7 @@ type Smtp struct {
 	Host    string    `json:"host"`
 	Port    string    `json:"port"`
 	Pwd     string    `json:"pwd"`
+	On      bool      `json:"on"`
 	Last    time.Time `json:"last"`
 	Count   int64     `json:"count"`
 	BasicModel
