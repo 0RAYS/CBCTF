@@ -34,9 +34,10 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form f.CreateCon
 			contestChallenge, ok, msg := contestChallengeRepo.Create(db.CreateContestChallengeOptions{
 				ContestID:   contest.ID,
 				ChallengeID: challenge.ID,
-				Type:        challenge.Type,
 				Name:        challenge.Name,
 				Desc:        challenge.Desc,
+				Type:        challenge.Type,
+				Category:    challenge.Category,
 				Hidden:      true,
 			})
 			if !ok {
