@@ -49,7 +49,7 @@ func InitWebhookHistoryRepo(tx *gorm.DB) *WebhookHistoryRepo {
 
 func (w *WebhookHistoryRepo) Create(options CreateWebhookHistoryOptions) (model.WebhookHistory, bool, string) {
 	m := options.Convert2Model().(model.WebhookHistory)
-	if res := w.DB.Model(&model.Email{}).Create(&m); res.Error != nil {
+	if res := w.DB.Model(&model.WebhookHistory{}).Create(&m); res.Error != nil {
 		log.Logger.Warningf("Failed to create WebhookHistory: %s", res.Error)
 		return model.WebhookHistory{}, false, i18n.CreateWebhookHistoryError
 	}

@@ -68,7 +68,6 @@ func SendPayload(event model.Event, target model.Webhook) error {
 		log.Logger.Warningf("Failed to marshal payload: %v", err)
 		return err
 	}
-	repo := db.InitWebhookHistoryRepo(db.DB)
 	start := time.Now()
 	req, err := http.NewRequest(target.Method, target.URL, bytes.NewBuffer(data))
 	if err != nil {
@@ -101,6 +100,6 @@ func SendPayload(event model.Event, target model.Webhook) error {
 			options.Error = resp.Status
 		}
 	}
-	repo.Create(options)
+	db.InitWebhookHistoryRepo(db.DB).Create(options)
 	return nil
 }
