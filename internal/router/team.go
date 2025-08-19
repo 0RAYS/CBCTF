@@ -188,7 +188,7 @@ func CreateTeam(ctx *gin.Context) {
 		ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Team": team.ID})
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
-	_, msg = service.CreateTeamFlags(db.DB.WithContext(ctx.Copy()), team, contest)
+	go service.CreateTeamFlags(db.DB.WithContext(ctx.Copy()), team, contest)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
