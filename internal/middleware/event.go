@@ -55,5 +55,4 @@ func Events(ctx *gin.Context) {
 			}
 		}
 	}
-
 }
