@@ -24,7 +24,7 @@ func EnqueueWebhookTask(event model.Event, target model.Webhook) (*asynq.TaskInf
 		return nil, err
 	}
 	task := asynq.NewTask(WebhookTaskType, payload)
-	return client.Enqueue(task, asynq.MaxRetry(target.RetryCount), asynq.Timeout(time.Duration(target.Timeout)*time.Second))
+	return client.Enqueue(task, asynq.MaxRetry(target.Retry), asynq.Timeout(time.Duration(target.Timeout)*time.Second))
 }
 
 func HandleWebhookTask(_ context.Context, task *asynq.Task) error {

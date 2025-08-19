@@ -14,7 +14,7 @@ func GetWebhookResp(webhook model.Webhook) gin.H {
 		"method":       webhook.Method,
 		"headers":      webhook.Headers,
 		"timeout":      webhook.Timeout,
-		"retry_count":  webhook.RetryCount,
+		"retry":        webhook.Retry,
 		"on":           webhook.On,
 		"events":       webhook.Events,
 		"success":      webhook.Success,
