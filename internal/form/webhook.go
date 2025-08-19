@@ -19,8 +19,7 @@ type CreateWebhookForm struct {
 	Method     string           `form:"method" json:"method" binding:"required"`
 	Headers    model.StringMap  `form:"headers" json:"headers"`
 	Timeout    int64            `form:"timeout" json:"timeout"`
-	RetryCount int64            `form:"retry_count" json:"retry_count"`
-	RetryDelay int64            `form:"retry_delay" json:"retry_delay"`
+	RetryCount int              `form:"retry_count" json:"retry_count"`
 	Events     model.StringList `gorm:"type:json" json:"events"`
 }
 
@@ -42,8 +41,7 @@ type UpdateWebhookForm struct {
 	Method     *string           `form:"method" json:"method"`
 	Headers    *model.StringMap  `form:"headers" json:"headers"`
 	Timeout    *int64            `form:"timeout" json:"timeout"`
-	RetryCount *int64            `form:"retry_count" json:"retry_count"`
-	RetryDelay *int64            `form:"retry_delay" json:"retry_delay"`
+	RetryCount *int              `form:"retry_count" json:"retry_count"`
 	On         *bool             `form:"on" json:"on"`
 	Events     *model.StringList `form:"events" json:"events"`
 }
