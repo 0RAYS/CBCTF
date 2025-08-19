@@ -84,7 +84,7 @@ func InitSmtpRepo(tx *gorm.DB) *SmtpRepo {
 }
 
 func (s *SmtpRepo) UpdateStatus(id uint, success bool, last time.Time) (bool, string) {
-	old, ok, msg := s.GetByID(id)
+	old, ok, msg := s.GetByID(id, GetOptions{Selects: []string{"id", "success", "failure"}})
 	if !ok {
 		return false, msg
 	}
