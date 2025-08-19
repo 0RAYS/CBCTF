@@ -174,10 +174,7 @@ func (b *BasicRepo[M]) Update(id uint, options UpdateOptions) (bool, string) {
 			log.Logger.Warningf("Failed to update %s: too many times failed due to optimistic lock", M.GetModelName(*new(M)))
 			return false, i18n.DeadLock
 		}
-		m, ok, msg := b.Get(GetOptions{
-			Conditions: map[string]any{"id": id},
-			Selects:    []string{"id", "version"},
-		})
+		m, ok, msg := b.GetByID(id, GetOptions{Selects: []string{"id", "version"}})
 		if !ok {
 			return ok, msg
 		}
