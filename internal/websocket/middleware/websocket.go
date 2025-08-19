@@ -37,16 +37,14 @@ func WSAuth(ctx *gin.Context) {
 		}
 		magic := ctx.Query("m")
 		if !utils.CompareMagic(magic, claims.X) {
-			go func(ctx *gin.Context) {
-				db.InitCheatRepo(db.DB.WithContext(ctx)).Create(db.CreateCheatOptions{
-					UserID:  &user.ID,
-					Magic:   magic,
-					IP:      ctx.ClientIP(),
-					Reason:  fmt.Sprintf(model.DifferentTokenMagic, magic, claims.X),
-					Type:    model.Suspicious,
-					Checked: false,
-				})
-			}(ctx.Copy())
+			go db.InitCheatRepo(db.DB.WithContext(ctx.Copy())).Create(db.CreateCheatOptions{
+				UserID:  &user.ID,
+				Magic:   magic,
+				IP:      ctx.ClientIP(),
+				Reason:  fmt.Sprintf(model.DifferentTokenMagic, magic, claims.X),
+				Type:    model.Suspicious,
+				Checked: false,
+			})
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
 			return
 		}
