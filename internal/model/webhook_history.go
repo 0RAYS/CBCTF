@@ -6,16 +6,14 @@ import (
 )
 
 type WebhookHistory struct {
-	WebhookID  uint          `json:"webhook_id"`
-	Webhook    Webhook       `json:"-"`
-	EventID    uint          `json:"event_id"`
-	Event      Event         `json:"-"`
-	RespCode   int           `json:"resp_code"`
-	Duration   time.Duration `json:"duration"`
-	Success    bool          `json:"success"`
-	Error      string        `json:"error"`
-	RetryCount int64         `json:"retry_count"`
-	NextRetry  time.Time     `json:"next_retry"`
+	WebhookID uint          `json:"webhook_id"`
+	Webhook   Webhook       `json:"-"`
+	EventID   uint          `json:"event_id"`
+	Event     Event         `json:"-"`
+	RespCode  int           `json:"resp_code"`
+	Duration  time.Duration `json:"duration"`
+	Success   bool          `json:"success"`
+	Error     string        `json:"error"`
 	BasicModel
 }
 
