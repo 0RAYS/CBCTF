@@ -15,9 +15,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-// TODO
-// var secret = uuid.New().String()
-var secret = "0RAYS-JBNRZ"
+var secret = UUID()
 
 // GenerateToken 生成token
 func GenerateToken(id uint, name string, isAdmin bool, magic string) (tokenString string, err error) {
