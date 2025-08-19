@@ -221,6 +221,8 @@ func Init() *gin.Engine {
 			adminChallenge.PUT("", UpdateChallenge)
 			adminChallenge.DELETE("", DeleteChallenge)
 			adminChallenge.POST("/upload", UploadChallengeFile)
+			//TODO
+			adminChallenge.POST("/test")
 		}
 
 		admin.GET("/contests", GetContests)
