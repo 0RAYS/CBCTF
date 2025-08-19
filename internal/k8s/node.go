@@ -22,7 +22,7 @@ func ListNodes(ctx context.Context) (*corev1.NodeList, bool, string) {
 func ListSchedulableNodes(ctx context.Context) ([]*corev1.Node, bool, string) {
 	allNodes, ok, msg := ListNodes(ctx)
 	if !ok {
-		return nil, ok, msg
+		return nil, false, msg
 	}
 	nodes := make([]*corev1.Node, 0)
 	for _, node := range allNodes.Items {

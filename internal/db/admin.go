@@ -81,7 +81,7 @@ func (a *AdminRepo) InitAdmin() (bool, string) {
 			Email:    "admin@0rays.club",
 		})
 		if !ok {
-			return ok, msg
+			return false, msg
 		}
 		log.Logger.Infof("Init Admin: Admin{ name: admin, password: %s, email: admin@0rays.club}", pwd)
 	}
