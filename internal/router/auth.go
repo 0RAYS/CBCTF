@@ -98,6 +98,8 @@ func AdminLogin(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 		return
 	}
+	ctx.Set("IsAdmin", true)
+	ctx.Set("Self", admin)
 	log.Logger.Infof("%s:%d login", admin.Name, admin.ID)
 	ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	ctx.Set(middleware.CTXEventSuccessKey, true)
