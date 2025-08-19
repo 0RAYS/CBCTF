@@ -6,15 +6,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GetSolvedStateResp all 需要预加载 ContestChallenge.Challenge ContestChallenge
+// GetSolvedStateResp all 需要预加载 ContestChallenge
 func GetSolvedStateResp(solved []model.ContestFlag, all []model.ContestFlag) []gin.H {
 	categories := make(map[uint]string)
 	for _, v := range all {
-		categories[v.ContestChallengeID] = v.ContestChallenge.Challenge.Category
+		categories[v.ContestChallengeID] = v.ContestChallenge.Category
 	}
 	allCount := make(map[string]int64)
 	for _, v := range all {
-		allCount[v.ContestChallenge.Challenge.Category] += 1
+		allCount[v.ContestChallenge.Category] += 1
 	}
 	solvedCount := make(map[string]int64)
 	for _, flag := range solved {
