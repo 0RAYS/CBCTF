@@ -177,7 +177,7 @@ func CalcTeamScore(tx *gorm.DB, team model.Team) (float64, bool, string) {
 		Preloads:   map[string]db.GetOptions{"ContestFlag": {}},
 	})
 	if !ok {
-		return team.Score, false, msg
+		return 0, false, msg
 	}
 	totalScore := 0.0
 	for _, submission := range submissions {

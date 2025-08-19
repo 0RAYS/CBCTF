@@ -60,7 +60,7 @@ func CreateFrpc(victim model.Victim) (model.Endpoints, []string, bool, string) {
 			for _, dnat := range eip.DNats {
 				exposedPort, ok, msg := GetAvailableFrpsPort(frps.Host, portRange, dnat.Protocol)
 				if !ok {
-					return newEndpoints, frpcPodNameL, false, msg
+					return nil, nil, false, msg
 				}
 				data += fmt.Sprintf(
 					"[[proxies]]\nname = \"%s\"\ntype = \"%s\"\nlocalIP = \"%s\"\nlocalPort = %s\nremotePort = %d\n\n",
@@ -149,7 +149,7 @@ func CreateFrpc(victim model.Victim) (model.Endpoints, []string, bool, string) {
 	for _, res := range utils.RunFuncLConcurrently(createFrpcPodFuncL) {
 		if !res.OK {
 			log.Logger.Warningf("Failed to create frpc pod: %s", res.MSG)
-			return newEndpoints, frpcPodNameL, false, res.MSG
+			return nil, nil, false, res.MSG
 		}
 		frpcPodNameL = append(frpcPodNameL, res.Name)
 	}

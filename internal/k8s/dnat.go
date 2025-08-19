@@ -43,7 +43,7 @@ func CreateDNat(ctx context.Context, options CreateDNatOptions) (*kubeovnv1.Ipta
 	dnat, err = kubeOVNClient.KubeovnV1().IptablesDnatRules().Create(ctx, dnat, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create iptables DnatRule: %s", err)
-		return dnat, false, i18n.CreateDNatError
+		return nil, false, i18n.CreateDNatError
 	}
 	return dnat, true, i18n.Success
 }

@@ -63,7 +63,7 @@ func CalcContestFlagState(tx *gorm.DB, contestFlag model.ContestFlag) (int64, fl
 		Conditions: map[string]any{"contest_flag_id": contestFlag.ID, "solved": true},
 	})
 	if !ok {
-		return contestFlag.Solvers, contestFlag.CurrentScore, false, msg
+		return 0, 0, false, msg
 	}
 	return solvers, contestFlag.CalcScore(solvers - 1), true, i18n.Success
 }

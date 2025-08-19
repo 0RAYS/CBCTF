@@ -14,7 +14,7 @@ func ListNodes(ctx context.Context) (*corev1.NodeList, bool, string) {
 	nodes, err := kubeClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to list nodes: %s", err)
-		return nodes, false, i18n.GetNodeListError
+		return nil, false, i18n.GetNodeListError
 	}
 	return nodes, true, i18n.Success
 }
@@ -59,7 +59,7 @@ func GetNodeIPList(ctx context.Context) ([]string, bool, string) {
 func GetNodeImageList(ctx context.Context) (map[string][]string, bool, string) {
 	nodes, ok, msg := ListSchedulableNodes(ctx)
 	if !ok {
-		return make(map[string][]string), false, msg
+		return nil, false, msg
 	}
 	images := make(map[string][]string)
 	for _, node := range nodes {

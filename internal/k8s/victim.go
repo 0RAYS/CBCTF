@@ -98,7 +98,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 			return tmp
 		}(),
 	}); !ok {
-		return ipExposesMap, false, msg
+		return nil, false, msg
 	}
 	if victim.VPC.Name != "" {
 		// 首先创建 VPC 资源, 导致多跑一个循环
@@ -118,7 +118,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 			Labels:       labels,
 			PolicyRoutes: policyRoutes,
 		}); !ok {
-			return ipExposesMap, false, msg
+			return nil, false, msg
 		}
 		createNADFuncL := make([]func() CreateNADResult, 0)
 		createSubnetFuncL := make([]func() CreateSubnetResult, 0)
@@ -243,22 +243,22 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 		}
 		for _, res := range utils.RunFuncLConcurrently(createSubnetFuncL) {
 			if !res.OK {
-				return ipExposesMap, false, res.MSG
+				return nil, false, res.MSG
 			}
 		}
 		for _, res := range utils.RunFuncLConcurrently(createNADFuncL) {
 			if !res.OK {
-				return ipExposesMap, false, res.MSG
+				return nil, false, res.MSG
 			}
 		}
 		for _, res := range utils.RunFuncLConcurrently(createVPCNatGWFuncL) {
 			if !res.OK {
-				return ipExposesMap, false, res.MSG
+				return nil, false, res.MSG
 			}
 		}
 		for _, res := range utils.RunFuncLConcurrently(createEIPFuncL) {
 			if !res.OK {
-				return ipExposesMap, false, res.MSG
+				return nil, false, res.MSG
 			}
 		}
 	}
@@ -427,7 +427,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 	}
 	for _, res := range utils.RunFuncLConcurrently(createPodFuncL) {
 		if !res.OK {
-			return ipExposesMap, false, res.MSG
+			return nil, false, res.MSG
 		}
 	}
 	return ipExposesMap, true, i18n.Success

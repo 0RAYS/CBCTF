@@ -37,7 +37,7 @@ func CreateSNat(ctx context.Context, options CreateSNatOptions) (*kubeovnv1.Ipta
 	snat, err = kubeOVNClient.KubeovnV1().IptablesSnatRules().Create(ctx, snat, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warnf("Failed to create iptables SnatRule: %s", err)
-		return snat, false, i18n.CreateSNatError
+		return nil, false, i18n.CreateSNatError
 	}
 	return snat, true, i18n.Success
 }
@@ -46,7 +46,7 @@ func GetSNat(ctx context.Context, name string) (*kubeovnv1.IptablesSnatRule, boo
 	snat, err := kubeOVNClient.KubeovnV1().IptablesSnatRules().Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		log.Logger.Warnf("Failed to get iptables SnatRule: %s", err)
-		return snat, false, i18n.GetSNatError
+		return nil, false, i18n.GetSNatError
 	}
 	return snat, true, i18n.Success
 }
@@ -65,7 +65,7 @@ func GetSNatList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.I
 	snats, err := kubeOVNClient.KubeovnV1().IptablesSnatRules().List(ctx, options)
 	if err != nil {
 		log.Logger.Warnf("Failed to list iptables SnatRules: %s", err)
-		return snats, false, i18n.GetSNatError
+		return nil, false, i18n.GetSNatError
 	}
 	return snats, true, i18n.Success
 }
