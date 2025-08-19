@@ -53,7 +53,7 @@ func (e *EmailRepo) Create(options CreateEmailOptions) (model.Email, bool, strin
 		log.Logger.Warningf("Failed to create Email: %s", res.Error)
 		return model.Email{}, false, i18n.CreateEmailError
 	}
-	if ok, msg := InitSmtpRepo(e.DB).UpdateStatus(m.ID, m.Success, m.CreatedAt); !ok {
+	if ok, msg := InitSmtpRepo(e.DB).UpdateStatus(m.SmtpID, m.Success, m.CreatedAt); !ok {
 		return model.Email{}, false, msg
 	}
 	return m, true, i18n.Success
