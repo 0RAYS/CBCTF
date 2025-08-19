@@ -12,7 +12,7 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-func CheckCheat(c *cron.Cron) {
+func checkCheat(c *cron.Cron) {
 	function := exec("CheckCheat", func() {
 		contests, _, ok, _ := db.InitContestRepo(db.DB).List(-1, -1, db.GetOptions{
 			Selects: []string{"id", "start", "duration"},
@@ -25,13 +25,14 @@ func CheckCheat(c *cron.Cron) {
 				continue
 			}
 			checkRemoteIP(contest)
-			CheckWrongFlag(contest)
+			checkWrongFlag(contest)
 		}
 	})
 	function()
 	c.Schedule(cron.Every(10*time.Minute), cron.FuncJob(function))
 }
 
+// checkRemoteIP 检查用户涉及的 IP, 包含访问站点和靶机访问
 func checkRemoteIP(contest model.Contest) {
 	teams, _, ok, _ := db.InitTeamRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
@@ -115,7 +116,8 @@ func checkRemoteIP(contest model.Contest) {
 	}
 }
 
-func CheckWrongFlag(contest model.Contest) {
+// checkWrongFlag 检查是否提交别队 flag
+func checkWrongFlag(contest model.Contest) {
 	teams, _, ok, _ := db.InitTeamRepo(db.DB).List(-1, -1, db.GetOptions{
 		Selects:    []string{"id"},
 		Conditions: map[string]any{"contest_id": contest.ID},

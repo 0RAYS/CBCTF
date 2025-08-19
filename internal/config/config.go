@@ -130,6 +130,7 @@ func Init() {
 	tidy()
 }
 
+// tidy 格式化配置, 简单处理部分字符
 func tidy() {
 	Env.Log.Level = strings.ToUpper(Env.Log.Level)
 	if !slices.Contains(allowedLogLevel, Env.Log.Level) {

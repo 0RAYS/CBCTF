@@ -5,7 +5,9 @@ import (
 	"io/fs"
 )
 
-//go:embed dist/*
-var static embed.FS
-
-var SubFS, _ = fs.Sub(static, "dist")
+// 前端资源
+var (
+	//go:embed dist/*
+	static   embed.FS
+	SubFS, _ = fs.Sub(static, "dist")
+)
