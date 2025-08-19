@@ -126,7 +126,7 @@ func ReadPcapDir(path string) ([]Connection, error) {
 		connections = append(connections, packet...)
 	}
 	if len(connections) < 1 {
-		return connections, nil
+		return nil, nil
 	}
 	slices.SortStableFunc(connections, func(c1 Connection, c2 Connection) int { return c1.Time.Compare(c2.Time) })
 	firstPacket := connections[0]

@@ -51,7 +51,7 @@ func GetTeamRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Tea
 		err error
 	)
 	if !ok {
-		return teams, count, false, msg
+		return nil, count, false, msg
 	}
 	start, end := utils.TidyPaginate(int(count), limit, offset)
 	if end-start <= 0 {
@@ -60,7 +60,7 @@ func GetTeamRanking(tx *gorm.DB, contestID uint, limit, offset int) ([]model.Tea
 	teams, err = redis.GetTeamRanking(contestID, int64(start), int64(end-1))
 	if err != nil || (end-start > 0 && len(teams) == 0) {
 		if ok, msg = UpdateTeamRanking(tx, contestID); !ok {
-			return teams, count, false, msg
+			return nil, count, false, msg
 		}
 		return GetTeamRanking(tx, contestID, limit, offset)
 	}
@@ -93,7 +93,7 @@ func GetUserRanking(tx *gorm.DB, limit, offset int) ([]model.User, int64, bool, 
 		err error
 	)
 	if !ok {
-		return users, count, false, msg
+		return nil, count, false, msg
 	}
 	start, end := utils.TidyPaginate(int(count), limit, offset)
 	if end-start <= 0 {
@@ -102,7 +102,7 @@ func GetUserRanking(tx *gorm.DB, limit, offset int) ([]model.User, int64, bool, 
 	users, err = redis.GetUserRanking(int64(start), int64(end-1))
 	if err != nil || (end-start > 0 && len(users) == 0) {
 		if ok, msg = UpdateUserRanking(tx); !ok {
-			return users, count, false, msg
+			return nil, count, false, msg
 		}
 		return GetUserRanking(tx, limit, offset)
 	}

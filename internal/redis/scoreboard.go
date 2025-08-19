@@ -44,7 +44,7 @@ func GetTeamRanking(contestID uint, start int64, end int64) ([]model.Team, error
 	teams := make([]model.Team, 0)
 	results, err := RDB.ZRevRangeWithScores(ctx, key, start, end).Result()
 	if err != nil {
-		return teams, err
+		return nil, err
 	}
 
 	pipe := RDB.Pipeline()
@@ -58,7 +58,7 @@ func GetTeamRanking(contestID uint, start int64, end int64) ([]model.Team, error
 		var t model.Team
 		err = msgpack.Unmarshal(str, &t)
 		if err != nil {
-			return teams, err
+			return nil, err
 		}
 		teams = append(teams, t)
 	}
@@ -89,7 +89,7 @@ func GetUserRanking(start int64, end int64) ([]model.User, error) {
 	defer cancel()
 	results, err := RDB.ZRevRangeWithScores(ctx, userRankingKey, start, end).Result()
 	if err != nil {
-		return make([]model.User, 0), err
+		return nil, err
 	}
 	pipe := RDB.Pipeline()
 	for _, res := range results {
@@ -102,7 +102,7 @@ func GetUserRanking(start int64, end int64) ([]model.User, error) {
 		var u model.User
 		err = msgpack.Unmarshal(str, &u)
 		if err != nil {
-			return make([]model.User, 0), err
+			return nil, err
 		}
 		users = append(users, u)
 	}

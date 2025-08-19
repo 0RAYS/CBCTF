@@ -43,7 +43,7 @@ func ListSchedulableNodes(ctx context.Context) ([]*corev1.Node, bool, string) {
 func GetNodeIPList(ctx context.Context) ([]string, bool, string) {
 	nodes, ok, msg := ListNodes(ctx)
 	if !ok {
-		return make([]string, 0), false, msg
+		return nil, false, msg
 	}
 	ips := make([]string, 0)
 	for _, node := range nodes.Items {

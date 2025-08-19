@@ -47,23 +47,20 @@ func WarmUpContestChallengeImage(form f.WarmUpImageForm) (bool, string) {
 }
 
 func GetContestVictims(tx *gorm.DB, contest model.Contest, form f.GetContestVictimsForm) ([]model.Victim, int64, bool, string) {
-	var (
-		victims            = make([]model.Victim, 0)
-		contestChallengeID uint
-	)
+	var contestChallengeID uint
 	if form.ChallengeID != "" {
 		challenge, ok, msg := db.InitChallengeRepo(tx).GetByRandID(form.ChallengeID, db.GetOptions{
 			Selects: []string{"id", "type"},
 		})
 		if !ok || challenge.Type != model.PodsChallengeType {
-			return victims, 0, false, msg
+			return nil, 0, false, msg
 		}
 		contestChallenge, ok, msg := db.InitContestChallengeRepo(tx).Get(db.GetOptions{
 			Conditions: map[string]any{"contest_id": contest.ID, "challenge_id": challenge.ID},
 			Selects:    []string{"id"},
 		})
 		if !ok {
-			return victims, 0, false, msg
+			return nil, 0, false, msg
 		}
 		contestChallengeID = contestChallenge.ID
 	}

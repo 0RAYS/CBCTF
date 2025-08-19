@@ -59,10 +59,10 @@ func (r *RequestRepo) GetIPByMagic(magic string) ([]string, bool, string) {
 	res := r.DB.Model(&model.Request{}).Where("magic = ?", magic).Distinct("ip").Find(&ipL)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Requests: %s", res.Error)
-		return make([]string, 0), false, i18n.GetRequestError
+		return nil, false, i18n.GetRequestError
 	}
 	if res.RowsAffected == 0 {
-		return make([]string, 0), false, i18n.RequestNotFound
+		return nil, false, i18n.RequestNotFound
 	}
 	return ipL, true, i18n.Success
 }

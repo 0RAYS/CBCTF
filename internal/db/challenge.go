@@ -89,7 +89,7 @@ func (c *ChallengeRepo) ListCategories(t string) ([]string, bool, string) {
 	res = res.Select("distinct category").Find(&categories)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Categories: %s", res.Error)
-		return categories, false, i18n.GetChallengeError
+		return nil, false, i18n.GetChallengeError
 	}
 	return categories, true, i18n.Success
 }

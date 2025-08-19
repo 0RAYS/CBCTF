@@ -162,7 +162,7 @@ func GetTeamSolvedFlags(tx *gorm.DB, team model.Team) ([]model.ContestFlag, bool
 		Preloads:   map[string]db.GetOptions{"ContestFlag": {}},
 	})
 	if !ok {
-		return solvedContestFlags, false, msg
+		return nil, false, msg
 	}
 	for _, submission := range solvedSubmissions {
 		solvedContestFlags = append(solvedContestFlags, submission.ContestFlag)
