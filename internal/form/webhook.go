@@ -14,13 +14,13 @@ import (
 var allowMethods = []string{http.MethodPost, http.MethodGet}
 
 type CreateWebhookForm struct {
-	Name       string           `form:"name" json:"name" binding:"required"`
-	URL        string           `form:"url" json:"url" binding:"required"`
-	Method     string           `form:"method" json:"method" binding:"required"`
-	Headers    model.StringMap  `form:"headers" json:"headers"`
-	Timeout    int64            `form:"timeout" json:"timeout"`
-	RetryCount int              `form:"retry_count" json:"retry_count"`
-	Events     model.StringList `gorm:"type:json" json:"events"`
+	Name    string           `form:"name" json:"name" binding:"required"`
+	URL     string           `form:"url" json:"url" binding:"required"`
+	Method  string           `form:"method" json:"method" binding:"required"`
+	Headers model.StringMap  `form:"headers" json:"headers"`
+	Timeout int64            `form:"timeout" json:"timeout"`
+	Retry   int              `form:"retry" json:"retry"`
+	Events  model.StringList `gorm:"type:json" json:"events"`
 }
 
 func (f *CreateWebhookForm) Bind(ctx *gin.Context) (bool, string) {
@@ -36,14 +36,14 @@ func (f *CreateWebhookForm) Bind(ctx *gin.Context) (bool, string) {
 }
 
 type UpdateWebhookForm struct {
-	Name       *string           `form:"name" json:"name"`
-	URL        *string           `form:"url" json:"url"`
-	Method     *string           `form:"method" json:"method"`
-	Headers    *model.StringMap  `form:"headers" json:"headers"`
-	Timeout    *int64            `form:"timeout" json:"timeout"`
-	RetryCount *int              `form:"retry_count" json:"retry_count"`
-	On         *bool             `form:"on" json:"on"`
-	Events     *model.StringList `form:"events" json:"events"`
+	Name    *string           `form:"name" json:"name"`
+	URL     *string           `form:"url" json:"url"`
+	Method  *string           `form:"method" json:"method"`
+	Headers *model.StringMap  `form:"headers" json:"headers"`
+	Timeout *int64            `form:"timeout" json:"timeout"`
+	Retry   *int              `form:"retry" json:"retry"`
+	On      *bool             `form:"on" json:"on"`
+	Events  *model.StringList `form:"events" json:"events"`
 }
 
 func (f *UpdateWebhookForm) Bind(ctx *gin.Context) (bool, string) {

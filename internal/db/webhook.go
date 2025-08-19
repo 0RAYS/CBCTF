@@ -12,14 +12,14 @@ type WebhookRepo struct {
 }
 
 type CreateWebhookOptions struct {
-	Name       string
-	URL        string
-	Method     string
-	Headers    model.StringMap
-	Timeout    int64
-	RetryCount int
-	On         bool
-	Events     model.StringList
+	Name    string
+	URL     string
+	Method  string
+	Headers model.StringMap
+	Timeout int64
+	Retry   int
+	On      bool
+	Events  model.StringList
 }
 
 func (c CreateWebhookOptions) Convert2Model() model.Model {
@@ -29,7 +29,7 @@ func (c CreateWebhookOptions) Convert2Model() model.Model {
 		Method:      c.Method,
 		Headers:     c.Headers,
 		Timeout:     c.Timeout,
-		RetryCount:  c.RetryCount,
+		Retry:       c.Retry,
 		On:          c.On,
 		Events:      c.Events,
 		SuccessLast: time.Now(),
@@ -43,7 +43,7 @@ type UpdateWebhookOptions struct {
 	Method      *string
 	Headers     *model.StringMap
 	Timeout     *int64
-	RetryCount  *int
+	Retry       *int
 	On          *bool
 	Events      *model.StringList
 	Success     *int64
@@ -69,8 +69,8 @@ func (u UpdateWebhookOptions) Convert2Map() map[string]any {
 	if u.Timeout != nil {
 		options["timeout"] = *u.Timeout
 	}
-	if u.RetryCount != nil {
-		options["retry_count"] = *u.RetryCount
+	if u.Retry != nil {
+		options["retry"] = *u.Retry
 	}
 	if u.On != nil {
 		options["on"] = *u.On

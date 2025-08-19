@@ -10,25 +10,25 @@ import (
 
 func CreateWebhook(tx *gorm.DB, form f.CreateWebhookForm) (model.Webhook, bool, string) {
 	return db.InitWebhookRepo(tx).Create(db.CreateWebhookOptions{
-		Name:       form.Name,
-		URL:        form.URL,
-		Method:     form.Method,
-		Headers:    form.Headers,
-		Timeout:    form.Timeout,
-		RetryCount: form.RetryCount,
-		Events:     form.Events,
+		Name:    form.Name,
+		URL:     form.URL,
+		Method:  form.Method,
+		Headers: form.Headers,
+		Timeout: form.Timeout,
+		Retry:   form.Retry,
+		Events:  form.Events,
 	})
 }
 
 func UpdateWebhook(tx *gorm.DB, webhook model.Webhook, form f.UpdateWebhookForm) (bool, string) {
 	return db.InitWebhookRepo(tx).Update(webhook.ID, db.UpdateWebhookOptions{
-		Name:       form.Name,
-		URL:        form.URL,
-		Method:     form.Method,
-		Headers:    form.Headers,
-		Timeout:    form.Timeout,
-		RetryCount: form.RetryCount,
-		On:         form.On,
-		Events:     form.Events,
+		Name:    form.Name,
+		URL:     form.URL,
+		Method:  form.Method,
+		Headers: form.Headers,
+		Timeout: form.Timeout,
+		Retry:   form.Retry,
+		On:      form.On,
+		Events:  form.Events,
 	})
 }
