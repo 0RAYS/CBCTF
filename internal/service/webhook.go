@@ -16,7 +16,6 @@ func CreateWebhook(tx *gorm.DB, form f.CreateWebhookForm) (model.Webhook, bool, 
 		Headers:    form.Headers,
 		Timeout:    form.Timeout,
 		RetryCount: form.RetryCount,
-		RetryDelay: form.RetryDelay,
 		Events:     form.Events,
 	})
 }
@@ -29,7 +28,6 @@ func UpdateWebhook(tx *gorm.DB, webhook model.Webhook, form f.UpdateWebhookForm)
 		Headers:    form.Headers,
 		Timeout:    form.Timeout,
 		RetryCount: form.RetryCount,
-		RetryDelay: form.RetryDelay,
 		On:         form.On,
 		Events:     form.Events,
 	})

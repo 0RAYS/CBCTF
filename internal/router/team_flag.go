@@ -27,7 +27,7 @@ func InitTeamFlag(ctx *gin.Context) {
 	}
 	if contestChallenge.Type == model.DynamicChallengeType {
 		if _, err := task.EnqueueGenAttachmentTask(user.ID, contestChallenge, team, teamFlags); err != nil {
-			log.Logger.Warningf("Enqueue gen attachment task failed %v", err)
+			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
 			tx.Rollback()
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.EnqueueTaskError, "data": nil})
 			return
@@ -53,7 +53,7 @@ func ResetTeamFlag(ctx *gin.Context) {
 	switch contestChallenge.Type {
 	case model.DynamicChallengeType:
 		if _, err := task.EnqueueGenAttachmentTask(user.ID, contestChallenge, team, teamFlags); err != nil {
-			log.Logger.Warningf("Enqueue gen attachment task failed %v", err)
+			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
 			tx.Rollback()
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.EnqueueTaskError, "data": nil})
 			return

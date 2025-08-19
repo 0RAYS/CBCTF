@@ -2,7 +2,10 @@ package middleware
 
 import (
 	"CBCTF/internal/db"
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/task"
+	"CBCTF/internal/webhook"
 
 	"github.com/gin-gonic/gin"
 )
@@ -45,5 +48,12 @@ func Events(ctx *gin.Context) {
 		}
 	}
 	options.Models["Self"] = GetSelfID(ctx)
-	db.InitEventRepo(db.DB.WithContext(ctx)).Create(options)
+	if event, ok, _ := db.InitEventRepo(db.DB.WithContext(ctx)).Create(options); ok {
+		for _, target := range webhook.SelectWebhook(event) {
+			if _, err := task.EnqueueWebhookTask(event, target); err != nil {
+				log.Logger.Warningf("Failed to enqueue webhook task: %s", err)
+			}
+		}
+	}
+
 }

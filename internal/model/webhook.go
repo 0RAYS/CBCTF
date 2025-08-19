@@ -12,8 +12,7 @@ type Webhook struct {
 	Method           string           `json:"method"`
 	Headers          StringMap        `gorm:"type:json" json:"headers"`
 	Timeout          int64            `json:"timeout"`
-	RetryCount       int64            `json:"retry_count"`
-	RetryDelay       int64            `json:"retry_delay"`
+	RetryCount       int              `json:"retry_count"`
 	On               bool             `json:"on"`
 	Events           StringList       `gorm:"type:json" json:"events"`
 	Success          int64            `json:"success"`
