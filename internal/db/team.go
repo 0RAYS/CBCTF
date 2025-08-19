@@ -140,10 +140,8 @@ func (t *TeamRepo) GetBy2ID(userID, contestID uint, optionsL ...GetOptions) (mod
 	}
 	options.Conditions["contest_id"] = contestID
 	user, ok, msg := InitUserRepo(t.DB).GetByID(userID, GetOptions{
-		Selects: []string{"id"},
-		Preloads: map[string]GetOptions{
-			"Teams": options,
-		},
+		Selects:  []string{"id"},
+		Preloads: map[string]GetOptions{"Teams": options},
 	})
 	if !ok {
 		return model.Team{}, false, msg
