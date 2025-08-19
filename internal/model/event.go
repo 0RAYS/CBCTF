@@ -5,6 +5,8 @@ import (
 )
 
 const (
+	SkipEventType = "skip"
+
 	LoginEventType      = "login"
 	RegisterEventType   = "register"
 	OauthLoginEventType = "oauth_login"
