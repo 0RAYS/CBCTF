@@ -64,7 +64,7 @@ func (d *DockerRepo) Delete(idL ...uint) (bool, string) {
 		},
 	})
 	if !ok && msg != i18n.DockerNotFound {
-		return ok, msg
+		return false, msg
 	}
 	challengeFlagIDL := make([]uint, 0)
 	for _, docker := range dockerL {

@@ -135,7 +135,7 @@ func (c *ContestRepo) Delete(idL ...uint) (bool, string) {
 		},
 	})
 	if !ok && msg != i18n.ContestNotFound {
-		return ok, msg
+		return false, msg
 	}
 	teamIDL, noticeIDL, contestChallengeIDL, contestFlagIDL, submissionIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0)
 	for _, contest := range contestL {
