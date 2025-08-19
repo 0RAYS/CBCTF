@@ -19,9 +19,7 @@ func GetTeam(ctx *gin.Context) {
 	contestFlagRepo := db.InitContestFlagRepo(db.DB.WithContext(ctx))
 	contestFlagL, _, ok, msg := contestFlagRepo.List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": middleware.GetContest(ctx).ID},
-		Preloads: map[string]db.GetOptions{
-			"ContestChallenge": {Preloads: map[string]db.GetOptions{"Challenge": {}}},
-		},
+		Preloads:   map[string]db.GetOptions{"ContestChallenge": {}},
 	})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
