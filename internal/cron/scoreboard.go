@@ -11,8 +11,9 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-// UpdateTeamRanking 依据数据库, 更新 model.Team 的分数和排名
-func UpdateTeamRanking(c *cron.Cron) {
+// updateTeamRanking 全量更新 model.Team 的分数和排名
+// TODO 比赛结束时可能位于空档期，导致最终分数核算出现问题
+func updateTeamRanking(c *cron.Cron) {
 	function := exec("UpdateTeamRanking", func() {
 		repo := db.InitContestRepo(db.DB)
 		contests, _, ok, _ := repo.List(-1, -1, db.GetOptions{
@@ -42,8 +43,8 @@ func UpdateTeamRanking(c *cron.Cron) {
 	c.Schedule(cron.Every(5*time.Minute), cron.FuncJob(function))
 }
 
-// UpdateUserRanking 依据数据库, 更新 model.User 的分数和排名
-func UpdateUserRanking(c *cron.Cron) {
+// updateUserRanking 全量更新 model.User 的分数和排名
+func updateUserRanking(c *cron.Cron) {
 	function := exec("UpdateUserRanking", func() {
 		userRepo := db.InitUserRepo(db.DB)
 		users, _, ok, _ := userRepo.List(-1, -1, db.GetOptions{

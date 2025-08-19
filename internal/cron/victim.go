@@ -11,7 +11,8 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-func CloseTimeoutVictims(c *cron.Cron) {
+// closeTimeoutVictims 关闭超时的靶机
+func closeTimeoutVictims(c *cron.Cron) {
 	function := exec("CloseTimeoutVictims", func() {
 		repo := db.InitVictimRepo(db.DB)
 		victims, _, ok, _ := repo.List(-1, -1, db.GetOptions{
@@ -33,7 +34,8 @@ func CloseTimeoutVictims(c *cron.Cron) {
 	c.Schedule(cron.Every(5*time.Minute), cron.FuncJob(function))
 }
 
-func CloseUnCtrlVictims(c *cron.Cron) {
+// closeUnCtrlVictims 关闭数据库中记录关闭, 但仍在运行的靶机
+func closeUnCtrlVictims(c *cron.Cron) {
 	function := exec("CloseUnCtrlVictims", func() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		pods, ok, msg := k8s.GetPodList(ctx)

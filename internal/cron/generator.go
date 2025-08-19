@@ -15,9 +15,9 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-// PrepareGenerator 关闭超时的动态题目生成器, 释放部分资源
-func PrepareGenerator(c *cron.Cron) {
-	function := exec("ResetGenerator", func() {
+// prepareGenerator 预启动生成器 Pod, 同时关闭长时运行 Pod, 重置资源
+func prepareGenerator(c *cron.Cron) {
+	function := exec("PrepareGenerator", func() {
 		contests, _, ok, _ := db.InitContestRepo(db.DB).List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"hidden": false},
 			Selects:    []string{"id", "start", "duration"},
@@ -44,6 +44,7 @@ func PrepareGenerator(c *cron.Cron) {
 				timeoutL := make([]*corev1.Pod, 0)
 				k8s.GeneratorMapMutex.RLock()
 				for _, generator := range k8s.GeneratorMap[contestChallenge.ID] {
+					// TODO 此处需要注意平台所在时区与K8S节点需要相同
 					if generator.Status.Phase != corev1.PodRunning || generator.CreationTimestamp.Add(time.Hour).Before(time.Now()) {
 						timeoutL = append(timeoutL, generator)
 					}
@@ -65,7 +66,8 @@ func PrepareGenerator(c *cron.Cron) {
 	c.Schedule(cron.Every(2*time.Minute), cron.FuncJob(function))
 }
 
-func StopUnCtrlGenerator(c *cron.Cron) {
+// stopUnCtrlGenerator 关闭不受控的 (k8s.GeneratorMap) 以 `gen` 为命名前缀的 pod
+func stopUnCtrlGenerator(c *cron.Cron) {
 	function := exec("StopUnCtrlGenerator", func() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		pods, ok, msg := k8s.GetPodList(ctx)

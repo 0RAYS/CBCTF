@@ -9,8 +9,8 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-// ClearContestChallengeMutex 定时任务清理flag提交锁 service.SolvedMutex
-func ClearContestChallengeMutex(c *cron.Cron) {
+// clearSubmissionMutex 定时任务清理flag提交锁 service.SolvedMutex
+func clearSubmissionMutex(c *cron.Cron) {
 	c.Schedule(cron.Every(10*time.Minute), cron.FuncJob(exec("ClearSubmissionMutex", func() {
 		contests := make(map[uint]model.Contest)
 		contestRepo := db.InitContestRepo(db.DB)

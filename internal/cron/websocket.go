@@ -7,7 +7,8 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-func CheckWSConnection(c *cron.Cron) {
+// checkWSConnection 清理长时未通信的连接
+func checkWSConnection(c *cron.Cron) {
 	c.Schedule(cron.Every(5*time.Second), cron.FuncJob(func() {
 		for id, conn := range websocket.AdminClients {
 			if conn.LastActive.Add(10 * time.Second).Before(time.Now()) {

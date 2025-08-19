@@ -27,17 +27,17 @@ func Init() {
 
 func Start() {
 	log.Logger.Info("Cron started")
-	CollectSystemMetrics(c)
-	CheckWSConnection(c)
-	CloseTimeoutVictims(c)
-	CloseUnCtrlVictims(c)
-	UpdateFlagScore(c)
-	UpdateUserRanking(c)
-	UpdateTeamRanking(c)
-	StopUnCtrlGenerator(c)
-	PrepareGenerator(c)
-	ClearContestChallengeMutex(c)
-	CheckCheat(c)
+	collectSystemMetrics(c)
+	checkWSConnection(c)
+	closeTimeoutVictims(c)
+	closeUnCtrlVictims(c)
+	updateFlagScore(c)
+	updateUserRanking(c)
+	updateTeamRanking(c)
+	stopUnCtrlGenerator(c)
+	prepareGenerator(c)
+	clearSubmissionMutex(c)
+	checkCheat(c)
 	c.Start()
 }
 
