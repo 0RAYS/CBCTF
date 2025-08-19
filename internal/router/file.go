@@ -20,28 +20,30 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func DownloadFile(ctx *gin.Context) {
-	ctx.Set(middleware.CTXEventTypeKey, model.DownloadWriteUpEventType)
-	file := middleware.GetFile(ctx)
-	if _, err := os.Stat(file.Path); err != nil {
-		if os.IsNotExist(err) {
-			tx := db.DB.WithContext(ctx).Begin()
-			if ok, _ := db.InitFileRepo(tx).Delete(file.ID); !ok {
-				tx.Rollback()
-			} else {
-				tx.Commit()
+func DownloadFile(eventType string) func(ctx *gin.Context) {
+	return func(ctx *gin.Context) {
+		ctx.Set(middleware.CTXEventTypeKey, eventType)
+		file := middleware.GetFile(ctx)
+		if _, err := os.Stat(file.Path); err != nil {
+			if os.IsNotExist(err) {
+				tx := db.DB.WithContext(ctx).Begin()
+				if ok, _ := db.InitFileRepo(tx).Delete(file.ID); !ok {
+					tx.Rollback()
+				} else {
+					tx.Commit()
+				}
+				ctx.JSON(http.StatusOK, gin.H{"msg": i18n.FileNotFound, "data": file.ID})
+				return
 			}
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.FileNotFound, "data": file.ID})
+			log.Logger.Warningf("Failed to get file: %s", err)
+			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 			return
 		}
-		log.Logger.Warningf("Failed to get file: %s", err)
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
-		return
+		ctx.Set(middleware.CTXEventSuccessKey, true)
+		ctx.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", file.Filename))
+		ctx.Writer.Header().Add("Content-Type", "application/octet-stream")
+		ctx.File(file.Path)
 	}
-	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", file.Filename))
-	ctx.Writer.Header().Add("Content-Type", "application/octet-stream")
-	ctx.File(file.Path)
 }
 
 func DownloadChallengeFile(ctx *gin.Context) {

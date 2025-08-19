@@ -20,7 +20,7 @@ func Events(ctx *gin.Context) {
 	ctx.Next()
 
 	t := ctx.GetString(CTXEventTypeKey)
-	if t == "" {
+	if t == "" || t == model.SkipEventType {
 		return
 	}
 	models := []model.Model{
