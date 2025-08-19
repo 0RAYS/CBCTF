@@ -53,7 +53,7 @@ func (w *WebhookHistoryRepo) Create(options CreateWebhookHistoryOptions) (model.
 		log.Logger.Warningf("Failed to create WebhookHistory: %s", res.Error)
 		return model.WebhookHistory{}, false, i18n.CreateWebhookHistoryError
 	}
-	if ok, msg := InitWebhookRepo(w.DB).UpdateStatus(m.ID, m.Success, m.CreatedAt); !ok {
+	if ok, msg := InitWebhookRepo(w.DB).UpdateStatus(m.WebhookID, m.Success, m.CreatedAt); !ok {
 		return model.WebhookHistory{}, false, msg
 	}
 	return m, true, i18n.Success
