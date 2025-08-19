@@ -12,7 +12,7 @@ func GetWebhookHistoryResp(history model.WebhookHistory) gin.H {
 		"webhook":  history.Webhook.Name,
 		"event":    history.Event.Type,
 		"resp":     history.RespCode,
-		"duration": history.Duration,
+		"duration": history.Duration.Milliseconds(),
 		"success":  history.Success,
 		"error":    history.Error,
 		"time":     history.CreatedAt,
