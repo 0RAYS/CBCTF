@@ -153,14 +153,14 @@ func (b *BasicRepo[M]) List(limit, offset int, optionsL ...GetOptions) ([]M, int
 		})
 	)
 	if !ok {
-		return ms, count, false, msg
+		return nil, count, false, msg
 	}
 	if res := ApplyGetOptions(b.DB.Model(new(M)), options).Order("id").Limit(limit).Offset(offset).Find(&ms); res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return ms, count, false, M.NotFoundErrorString(*new(M))
+			return nil, count, false, M.NotFoundErrorString(*new(M))
 		}
 		log.Logger.Warningf("Failed to get %s: %s", M.GetModelName(*new(M)), res.Error)
-		return ms, count, false, M.GetErrorString(*new(M))
+		return nil, count, false, M.GetErrorString(*new(M))
 	}
 	return ms, count, true, i18n.Success
 }

@@ -55,7 +55,7 @@ func GetTraffic(victim model.Victim) ([]utils.Connection, bool, string) {
 	results, err := RDB.ZRangeWithScores(ctx, fmt.Sprintf(trafficsKey, victim.ID), 0, -1).Result()
 	if err != nil {
 		log.Logger.Warningf("Failed to get traffic: %s", err)
-		return connections, false, i18n.RedisError
+		return nil, false, i18n.RedisError
 	}
 	pipe := RDB.Pipeline()
 	for _, res := range results {
@@ -69,7 +69,7 @@ func GetTraffic(victim model.Victim) ([]utils.Connection, bool, string) {
 		var conn utils.Connection
 		if err = msgpack.Unmarshal(str, &conn); err != nil {
 			log.Logger.Warningf("Failed to unmarshal: %s", err)
-			return connections, false, i18n.UnknownError
+			return nil, false, i18n.UnknownError
 		}
 		connections = append(connections, conn)
 	}

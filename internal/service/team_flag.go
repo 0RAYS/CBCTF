@@ -71,7 +71,7 @@ func CreateTeamFlag(tx *gorm.DB, team model.Team, contestChallenge model.Contest
 		}
 		teamFlag, ok, msg = teamFlagRepo.Create(options)
 		if !ok {
-			return teamFlagL, false, msg
+			return nil, false, msg
 		}
 		teamFlagL = append(teamFlagL, teamFlag)
 	}
@@ -85,7 +85,7 @@ func UpdateTeamFlag(tx *gorm.DB, team model.Team, contestChallenge model.Contest
 		Conditions: map[string]any{"team_id": team.ID, "contest_challenge_id": contestChallenge.ID},
 	})
 	if !ok {
-		return make([]model.TeamFlag, 0), false, msg
+		return nil, false, msg
 	}
 	submissionIDL := make([]uint, 0)
 	for _, submission := range submissions {
@@ -98,15 +98,15 @@ func UpdateTeamFlag(tx *gorm.DB, team model.Team, contestChallenge model.Contest
 			Conditions: map[string]any{"team_id": team.ID, "contest_flag_id": contestFlag.ID},
 		})
 		if !ok {
-			return make([]model.TeamFlag, 0), false, msg
+			return nil, false, msg
 		}
 		teamFlagIDL = append(teamFlagIDL, teamFlag.ID)
 	}
 	if ok, msg = submissionRepo.Delete(submissionIDL...); !ok {
-		return make([]model.TeamFlag, 0), false, msg
+		return nil, false, msg
 	}
 	if ok, msg = teamFlagRepo.Delete(teamFlagIDL...); !ok {
-		return make([]model.TeamFlag, 0), false, msg
+		return nil, false, msg
 	}
 	return CreateTeamFlag(tx, team, contestChallenge)
 }

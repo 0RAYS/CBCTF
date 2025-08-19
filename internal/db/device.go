@@ -85,10 +85,10 @@ func (d *DeviceRepo) GetByMagic(magic string) ([]model.Device, bool, string) {
 	res := d.DB.Model(&model.Device{}).Where("magic = ?", magic).Order("id").Find(&devices)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Devices: %s", res.Error)
-		return make([]model.Device, 0), false, i18n.GetDeviceError
+		return nil, false, i18n.GetDeviceError
 	}
 	if res.RowsAffected == 0 {
-		return make([]model.Device, 0), false, i18n.DeviceNotFound
+		return nil, false, i18n.DeviceNotFound
 	}
 	return devices, true, i18n.Success
 }

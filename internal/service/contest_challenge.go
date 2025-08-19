@@ -86,7 +86,7 @@ func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string,
 		Preloads:   map[string]db.GetOptions{"Challenge": {Selects: []string{"id", "generator_image"}}},
 	})
 	if !ok {
-		return images, false, msg
+		return nil, false, msg
 	}
 	for _, contestChallenge := range dynamicContestChallenges {
 		if !slices.Contains(images, contestChallenge.Challenge.GeneratorImage) {
@@ -104,7 +104,7 @@ func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string,
 		},
 	})
 	if !ok {
-		return images, false, msg
+		return nil, false, msg
 	}
 	for _, contestChallenge := range podsContestChallenge {
 		for _, docker := range contestChallenge.Challenge.Dockers {
