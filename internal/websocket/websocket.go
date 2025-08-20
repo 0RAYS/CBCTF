@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/websocket/handler"
 	"CBCTF/internal/websocket/middleware"
 	"CBCTF/internal/websocket/model"
+	"net/http"
 	"sync"
 	"time"
 
@@ -14,7 +15,13 @@ import (
 )
 
 var (
-	upgrader = websocket.Upgrader{WriteBufferSize: 1024, ReadBufferSize: 1024}
+	upgrader = websocket.Upgrader{
+		WriteBufferSize: 1024,
+		ReadBufferSize:  1024,
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
 
 	AdminClients   = make(map[uint]*model.Connection)
 	AdminClientsMu sync.RWMutex
