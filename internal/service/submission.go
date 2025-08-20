@@ -11,10 +11,10 @@ import (
 	"gorm.io/gorm"
 )
 
-// SolvedMutex 使用定时任务 cron.ClearContestChallengeMutex 清理锁
+// SolvedMutex 使用定时任务 cron.clearSubmissionMutex 清理锁
 var SolvedMutex sync.Map
 
-// Submit model.Usage 需要预加载
+// Submit model.ContestChallenge 需要预加载
 func Submit(tx *gorm.DB, user model.User, team model.Team, contestChallenge model.ContestChallenge, form f.SubmitFlagForm, ip string) (string, model.Submission, bool, string) {
 	if contestChallenge.Attempt != 0 && contestChallenge.Attempt <= CountAttempts(tx, team, contestChallenge) {
 		return "", model.Submission{}, false, i18n.NotAllowSubmit

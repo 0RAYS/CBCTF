@@ -62,8 +62,8 @@ const (
 	LeaveTeamEventType  = "leave_team"
 	KickMemberEventType = "kick_member"
 
-	InitChallengeEventType      = "init_usage"
-	ResetChallengeEventType     = "reset_usage"
+	InitChallengeEventType      = "init_challenge"
+	ResetChallengeEventType     = "reset_challenge"
 	DownloadAttachmentEventType = "download_attachment"
 	PullImageEventType          = "pull_image"
 	StartVictimEventType        = "start_victim"

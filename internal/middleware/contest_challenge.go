@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// CheckSolved model.Team 是否完全解决 model.Usage
+// CheckSolved model.Team 是否完全解决 model.ContestChallenge
 func CheckSolved(ctx *gin.Context) {
 	team := GetTeam(ctx)
 	contestChallenge := GetContestChallenge(ctx)
