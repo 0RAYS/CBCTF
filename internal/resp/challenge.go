@@ -3,7 +3,7 @@ package resp
 import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"fmt"
+	"strconv"
 
 	"github.com/compose-spec/compose-go/types"
 	"github.com/gin-gonic/gin"
@@ -62,7 +62,7 @@ func Dockers2Yaml(dockers []model.Docker, challengeFlags []model.ChallengeFlag) 
 			for _, expose := range docker.Exposes {
 				service.Ports = append(service.Ports, types.ServicePortConfig{
 					Protocol:  expose.Protocol,
-					Published: fmt.Sprintf("%d", expose.Port),
+					Published: strconv.Itoa(int(expose.Port)),
 					Mode:      "ingress",
 					Target:    uint32(expose.Port),
 				})

@@ -10,6 +10,7 @@ import (
 	"CBCTF/internal/utils"
 	"fmt"
 	"slices"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -96,9 +97,9 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 						if !slices.Contains(networkDockerExposeDNat, key) {
 							eip.DNats = append(eip.DNats, &model.DNat{
 								Name:         fmt.Sprintf("dnat-%s", utils.RandStr(20)),
-								ExternalPort: fmt.Sprintf("%d", expose.Port),
+								ExternalPort: strconv.Itoa(int(expose.Port)),
 								InternalIP:   network.IP,
-								InternalPort: fmt.Sprintf("%d", expose.Port),
+								InternalPort: strconv.Itoa(int(expose.Port)),
 								Protocol:     expose.Protocol,
 							})
 							networkDockerExposeDNat = append(networkDockerExposeDNat, key)

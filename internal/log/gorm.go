@@ -105,7 +105,7 @@ func (l *gormTraceLogger) Trace(ctx context.Context, begin time.Time, fc func() 
 		"SQL":             sql,
 	}
 	if rows != -1 {
-		fields["Rows"] = strconv.FormatInt(rows, 10)
+		fields["Rows"] = strconv.Itoa(int(rows))
 	}
 	switch {
 	case err != nil && l.LogLevel >= Error && (!errors.Is(err, ErrRecordNotFound) || !l.IgnoreRecordNotFoundError):
