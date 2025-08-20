@@ -149,7 +149,7 @@ func StopGenerator(challenge model.Challenge, generator *corev1.Pod) (bool, stri
 	return true, i18n.Success
 }
 
-// GenAttachment 附加容器命令, 生成附件, model.ContestChallenge 需要预加载
+// GenAttachment 附加容器命令, 生成附件
 func GenAttachment(challenge model.Challenge, team model.Team, teamFlagL []model.TeamFlag) (bool, string) {
 	var err error
 	log.Logger.Debugf("Generating attachment for Team %d Challenge %d", team.ID, challenge.ID)
