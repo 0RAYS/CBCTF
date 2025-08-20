@@ -9,41 +9,57 @@ import (
 )
 
 func GetTeamIDByUserID(tx *gorm.DB, userID uint) ([]uint, bool, string) {
-	var idL []uint
-	res := tx.Model(&model.UserTeam{}).Where("user_id = ?", userID).Find(&idL)
+	var uts []model.UserTeam
+	res := tx.Model(&model.UserTeam{}).Where("user_id = ?", userID).Find(&uts)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get team: %s", res.Error)
 		return nil, false, i18n.GetTeamError
+	}
+	var idL []uint
+	for _, ut := range uts {
+		idL = append(idL, ut.TeamID)
 	}
 	return idL, true, i18n.Success
 }
 
 func GetContestIDByUserID(tx *gorm.DB, userID uint) ([]uint, bool, string) {
-	var idL []uint
-	res := tx.Model(&model.UserContest{}).Where("user_id = ?", userID).Find(&idL)
+	var ucs []model.UserContest
+	res := tx.Model(&model.UserContest{}).Where("user_id = ?", userID).Find(&ucs)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get contest: %s", res.Error)
 		return nil, false, i18n.GetContestError
+	}
+	var idL []uint
+	for _, uc := range ucs {
+		idL = append(idL, uc.ContestID)
 	}
 	return idL, true, i18n.Success
 }
 
 func GetUserIDByTeamID(tx *gorm.DB, teamID uint) ([]uint, bool, string) {
-	var idL []uint
-	res := tx.Model(&model.UserTeam{}).Where("team_id = ?", teamID).Find(&idL)
+	var uts []model.UserTeam
+	res := tx.Model(&model.UserTeam{}).Where("team_id = ?", teamID).Find(&uts)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get user: %s", res.Error)
 		return nil, false, i18n.GetUserError
+	}
+	var idL []uint
+	for _, ut := range uts {
+		idL = append(idL, ut.UserID)
 	}
 	return idL, true, i18n.Success
 }
 
 func GetUserIDByContestID(tx *gorm.DB, contestID uint) ([]uint, bool, string) {
-	var idL []uint
-	res := tx.Model(&model.UserContest{}).Where("contest_id = ?", contestID).Find(&idL)
+	var ucs []model.UserContest
+	res := tx.Model(&model.UserContest{}).Where("contest_id = ?", contestID).Find(&ucs)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get user: %s", res.Error)
 		return nil, false, i18n.GetUserError
+	}
+	var idL []uint
+	for _, uc := range ucs {
+		idL = append(idL, uc.UserID)
 	}
 	return idL, true, i18n.Success
 }
