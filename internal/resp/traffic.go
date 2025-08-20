@@ -22,7 +22,7 @@ func GetTrafficResp(connections []utils.Connection) gin.H {
 	ipL := make([]string, 0)
 	for _, connection := range connections {
 		key := fmt.Sprintf("%s-%s-%s-%s", connection.SrcIP, connection.DstIP, connection.Type, connection.Subtype)
-		if stats, exists := data[key]; exists {
+		if stats, ok := data[key]; ok {
 			stats.Count += 1
 			stats.Size += int64(connection.Size)
 			data[key] = stats

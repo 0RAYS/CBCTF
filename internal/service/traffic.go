@@ -37,10 +37,10 @@ func GetTraffic(victim model.Victim, form f.GetTrafficForm) ([]utils.Connection,
 	startIndex := 0
 	endIndex := len(connections) - 1
 	for i, connection := range connections {
-		if _, exists := ip[connection.SrcIP]; !exists {
+		if _, ok = ip[connection.SrcIP]; !ok {
 			ip[connection.SrcIP] = true
 		}
-		if _, exists := ip[connection.DstIP]; !exists {
+		if _, ok = ip[connection.DstIP]; !ok {
 			ip[connection.DstIP] = true
 		}
 		if connection.TimeShift < time.Duration(form.TimeShift*1e9) {
@@ -78,7 +78,7 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 	}
 	for _, conn := range connections {
 		connID := fmt.Sprintf("%s:%d-%s:%d-%s-%s", conn.SrcIP, conn.SrcPort, conn.DstIP, conn.DstPort, conn.Type, conn.Subtype)
-		if options, exists := optionsL[connID]; exists {
+		if options, ok := optionsL[connID]; ok {
 			options.Count += 1
 			options.Size += conn.Size
 			optionsL[connID] = options

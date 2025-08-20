@@ -34,10 +34,10 @@ func GetContests(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	if _, exists := ctx.GetQuery("limit"); !exists {
+	if _, ok := ctx.GetQuery("limit"); !ok {
 		form.Limit = 5
 	}
-	if _, exists := ctx.GetQuery("offset"); !exists {
+	if _, ok := ctx.GetQuery("offset"); !ok {
 		form.Offset = 0
 	}
 	options := db.GetOptions{Preloads: map[string]db.GetOptions{"Teams": {}, "Users": {}, "Notices": {}}}

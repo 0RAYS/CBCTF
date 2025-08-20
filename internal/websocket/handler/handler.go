@@ -20,8 +20,8 @@ func HandleReceive(conn *model.Connection, msg []byte) error {
 		return fmt.Errorf("failed to unmarshal message: %w", err)
 	}
 
-	handler, exists := receiveHandlerMap[req.Type]
-	if !exists {
+	handler, ok := receiveHandlerMap[req.Type]
+	if !ok {
 		return fmt.Errorf("unknown request type: %s", req.Type)
 	}
 	if err := handler(conn, msg); err != nil {
