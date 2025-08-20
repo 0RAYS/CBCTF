@@ -154,36 +154,3 @@ func SendToClients(admin bool, level, t, title, msg string, idL ...uint) {
 		log.Logger.Warningf("Failed to send message %s to %s %d clients", title, role, len(idL))
 	}
 }
-
-func SendToAll(admin bool, level, t, title, msg string) {
-	var (
-		mu      *sync.RWMutex
-		clients *map[uint]*model.Connection
-		role    string
-	)
-	if admin {
-		role = "admin"
-		mu = &AdminClientsMu
-		clients = &AdminClients
-	} else {
-		role = "user"
-		mu = &UserClientsMu
-		clients = &UserClients
-	}
-
-	mu.RLock()
-	defer mu.RUnlock()
-	var count int
-	for id, connection := range *clients {
-		if err := connection.Conn.WriteJSON(model.Send{Level: level, Type: t, Msg: msg, Title: title}); err != nil {
-			log.Logger.Warningf("Failed to send message to %s-%d: %s", role, id, err)
-			continue
-		}
-		count++
-	}
-	if count > 0 {
-		log.Logger.Debugf("Send message %s to %s %d clients", title, role, count)
-	} else {
-		log.Logger.Warningf("Failed to send message %s to %s %d clients", title, role, count)
-	}
-}
