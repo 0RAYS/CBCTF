@@ -13,8 +13,6 @@ import (
 )
 
 type Victim struct {
-	ChallengeID        uint             `json:"challenge_id"`
-	Challenge          Challenge        `json:"-"`
 	ContestChallengeID uint             `json:"contest_challenge_id"`
 	ContestChallenge   ContestChallenge `json:"-"`
 	TeamID             uint             `json:"team_id"`
