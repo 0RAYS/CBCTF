@@ -39,7 +39,7 @@ func GetTeamResp(team model.Team) gin.H {
 		"avatar":     team.Avatar,
 		"last":       team.Last,
 		"rank":       team.Rank,
-		"users":      len(team.Users),
+		"users":      team.UserCount,
 		"desc":       team.Desc,
 		"captain_id": team.CaptainID,
 	}

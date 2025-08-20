@@ -26,6 +26,7 @@ type Team struct {
 	CaptainID   uint         `json:"captain_id"`
 	Rank        int          `gorm:"default:-1" json:"rank"`
 	Last        time.Time    `gorm:"default:null" json:"last"`
+	UserCount   int64        `json:"user_count"`
 	BasicModel
 }
 

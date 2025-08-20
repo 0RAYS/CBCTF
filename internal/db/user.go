@@ -47,17 +47,21 @@ func (c CreateUserOptions) Convert2Model() model.Model {
 }
 
 type UpdateUserOptions struct {
-	Name     *string
-	Password *string
-	Email    *string
-	Country  *string
-	Desc     *string
-	Avatar   *model.AvatarURL
-	Verified *bool
-	Hidden   *bool
-	Banned   *bool
-	Score    *float64
-	Solved   *int64
+	Name             *string
+	Password         *string
+	Email            *string
+	Country          *string
+	Desc             *string
+	Avatar           *model.AvatarURL
+	Verified         *bool
+	Hidden           *bool
+	Banned           *bool
+	Score            *float64
+	Solved           *int64
+	DiffContestCount int64
+	ContestCount     *int64
+	DiffTeamCount    int64
+	TeamCount        *int64
 }
 
 func (u UpdateUserOptions) Convert2Map() map[string]any {
@@ -94,6 +98,18 @@ func (u UpdateUserOptions) Convert2Map() map[string]any {
 	}
 	if u.Solved != nil {
 		options["solved"] = *u.Solved
+	}
+	if u.DiffContestCount != 0 {
+		options["contest_count"] = gorm.Expr("contest_count + ?", u.DiffContestCount)
+	}
+	if u.ContestCount != nil {
+		options["contest_count"] = *u.ContestCount
+	}
+	if u.DiffTeamCount != 0 {
+		options["team_count"] = gorm.Expr("team_count + ?", u.DiffTeamCount)
+	}
+	if u.TeamCount != nil {
+		options["team_count"] = *u.TeamCount
 	}
 	return options
 }

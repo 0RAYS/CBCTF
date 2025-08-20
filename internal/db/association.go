@@ -15,7 +15,10 @@ func AppendUserToTeam(tx *gorm.DB, userID, teamID uint) (bool, string) {
 		log.Logger.Warningf("Failed to append User to Team: %s", res.Error)
 		return false, i18n.AppendUserToTeamError
 	}
-	return true, i18n.Success
+	if ok, msg := InitTeamRepo(tx).Update(teamID, UpdateTeamOptions{DiffUserCount: 1}); !ok {
+		return false, msg
+	}
+	return InitUserRepo(tx).Update(userID, UpdateUserOptions{DiffTeamCount: 1})
 }
 
 // AppendUserToContest Many2Many
@@ -25,7 +28,10 @@ func AppendUserToContest(tx *gorm.DB, userID, contestID uint) (bool, string) {
 		log.Logger.Warningf("Failed to append User to Contest: %s", res.Error)
 		return false, i18n.AppendUserToContestError
 	}
-	return true, i18n.Success
+	if ok, msg := InitContestRepo(tx).Update(contestID, UpdateContestOptions{DiffUserCount: 1}); !ok {
+		return false, msg
+	}
+	return InitUserRepo(tx).Update(userID, UpdateUserOptions{DiffContestCount: 1})
 }
 
 // DeleteUserFromTeam Many2Many
@@ -36,7 +42,10 @@ func DeleteUserFromTeam(tx *gorm.DB, userID, teamID uint) (bool, string) {
 		log.Logger.Warningf("Failed to delete User from Team: %s", res.Error)
 		return false, i18n.DeleteUserFromTeamError
 	}
-	return true, i18n.Success
+	if ok, msg := InitTeamRepo(tx).Update(teamID, UpdateTeamOptions{DiffUserCount: -1}); !ok {
+		return false, msg
+	}
+	return InitUserRepo(tx).Update(userID, UpdateUserOptions{DiffTeamCount: -1})
 }
 
 // DeleteUserFromContest Many2Many
@@ -47,5 +56,8 @@ func DeleteUserFromContest(tx *gorm.DB, userID, contestID uint) (bool, string) {
 		log.Logger.Warningf("Failed to delete User from Contest: %s", res.Error)
 		return false, i18n.DeleteUserFromContestError
 	}
-	return true, i18n.Success
+	if ok, msg := InitContestRepo(tx).Update(contestID, UpdateContestOptions{DiffUserCount: -1}); !ok {
+		return false, msg
+	}
+	return InitUserRepo(tx).Update(userID, UpdateUserOptions{DiffContestCount: -1})
 }

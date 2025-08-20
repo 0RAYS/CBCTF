@@ -19,10 +19,7 @@ func SetUser(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
-	user, ok, msg := db.InitUserRepo(db.DB.WithContext(ctx)).GetByID(userID.UserID, db.GetOptions{
-		Preloads: map[string]db.GetOptions{"Teams": {}, "Contests": {}},
-	},
-	)
+	user, ok, msg := db.InitUserRepo(db.DB.WithContext(ctx)).GetByID(userID.UserID)
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
