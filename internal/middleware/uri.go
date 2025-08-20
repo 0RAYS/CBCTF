@@ -257,6 +257,7 @@ func SetContestChallenge(ctx *gin.Context) {
 		return
 	}
 	ctx.Set("ContestChallenge", contestChallenge)
+	ctx.Set("Challenge", contestChallenge.Challenge)
 	ctx.Next()
 }
 
