@@ -31,8 +31,8 @@ type Generator struct {
 	Pod   *corev1.Pod
 }
 
-// StartGenerator 启动动态附件生成器, 等待附加命令, 生成附件, contestChallenge 需要预加载 Challenge
-func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool, string) {
+// StartGenerator 启动动态附件生成器, 等待附加命令, 生成附件
+func StartGenerator(challenge model.Challenge) (*corev1.Pod, bool, string) {
 	var (
 		pod           *corev1.Pod
 		ok            bool
@@ -41,12 +41,12 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 		generatorName = fmt.Sprintf("gen-%s", utils.RandStr(20))
 		containerName = fmt.Sprintf("ctn-%s", utils.RandStr(20))
 		volumeName    = fmt.Sprintf("vol-%s", utils.RandStr(20))
-		labels        = map[string]string{GeneratorPodTag: generatorName, "contest_challenge_id": strconv.Itoa(int(contestChallenge.ID))}
+		labels        = map[string]string{GeneratorPodTag: generatorName, "contest_challenge_id": strconv.Itoa(int(challenge.ID))}
 	)
-	if contestChallenge.Challenge.GeneratorImage == "" {
+	if challenge.GeneratorImage == "" {
 		return nil, false, i18n.InvalidDockerImage
 	}
-	log.Logger.Infof("Starting Generator for Challenge %d-%s", contestChallenge.ChallengeID, contestChallenge.Name)
+	log.Logger.Infof("Starting Generator for Challenge %d-%s", challenge.ID, challenge.Name)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	pwd := utils.UUID()
@@ -56,7 +56,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 		Containers: []corev1.Container{
 			{
 				Name:  containerName,
-				Image: contestChallenge.Challenge.GeneratorImage,
+				Image: challenge.GeneratorImage,
 				Env: []corev1.EnvVar{
 					{
 						Name:  "generator_pwd",
@@ -68,7 +68,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 						Name:      volumeName,
 						MountPath: "/root/mnt",
 						SubPath: strings.TrimPrefix(
-							strings.TrimPrefix(contestChallenge.Challenge.BasicDir(), config.Env.Path), "/",
+							strings.TrimPrefix(challenge.BasicDir(), config.Env.Path), "/",
 						),
 					},
 				},
@@ -91,7 +91,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 		return nil, false, msg
 	}
 	var commands []string
-	if _, err = os.Stat(contestChallenge.Challenge.GeneratorPath()); err == nil {
+	if _, err = os.Stat(challenge.GeneratorPath()); err == nil {
 		commands = append(commands, fmt.Sprintf("unzip /root/mnt/generator.zip -d /root"))
 	} else {
 		log.Logger.Info("Generator file not found, make sure the generator docker can work correctly")
@@ -104,17 +104,17 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 		}
 	}
 	GeneratorMapMutex.Lock()
-	GeneratorMap[contestChallenge.ID] = append(GeneratorMap[contestChallenge.ID], &Generator{Start: time.Now(), Pod: pod})
+	GeneratorMap[challenge.ID] = append(GeneratorMap[challenge.ID], &Generator{Start: time.Now(), Pod: pod})
 	GeneratorMapMutex.Unlock()
 	return pod, true, i18n.Success
 }
 
-func GetGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool, string) {
+func GetGenerator(challenge model.Challenge) (*corev1.Pod, bool, string) {
 	GeneratorMapMutex.RLock()
-	generators, ok := GeneratorMap[contestChallenge.ID]
+	generators, ok := GeneratorMap[challenge.ID]
 	GeneratorMapMutex.RUnlock()
 	if !ok {
-		return StartGenerator(contestChallenge)
+		return StartGenerator(challenge)
 	}
 	if len(generators) > 0 {
 		index, _ := rand.Int(rand.Reader, big.NewInt(time.Now().UnixNano()))
@@ -123,12 +123,12 @@ func GetGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool, s
 	return nil, false, i18n.UnknownError
 }
 
-// StopGenerator 停止动态附件生成器, contestChallenge 需要预加载 Challenge
-func StopGenerator(contestChallenge model.ContestChallenge, generator *corev1.Pod) (bool, string) {
-	log.Logger.Infof("Stopping generator for Challenge %d-%s", contestChallenge.ChallengeID, contestChallenge.Name)
+// StopGenerator 停止动态附件生成器
+func StopGenerator(challenge model.Challenge, generator *corev1.Pod) (bool, string) {
+	log.Logger.Infof("Stopping generator for Challenge %d-%s", challenge.ID, challenge.Name)
 
 	GeneratorMapMutex.RLock()
-	_, ok := GeneratorMap[contestChallenge.ID]
+	_, ok := GeneratorMap[challenge.ID]
 	GeneratorMapMutex.RUnlock()
 	if ok {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
@@ -136,12 +136,12 @@ func StopGenerator(contestChallenge model.ContestChallenge, generator *corev1.Po
 		if ok, msg := DeletePod(ctx, generator.Name); !ok {
 			return false, msg
 		}
-		labels := map[string]string{GeneratorPodTag: generator.Name, "contest_challenge_id": strconv.Itoa(int(contestChallenge.ID))}
+		labels := map[string]string{GeneratorPodTag: generator.Name, "contest_challenge_id": strconv.Itoa(int(challenge.ID))}
 		if ok, msg := DeleteServiceList(ctx, labels); !ok {
 			return false, msg
 		}
 		GeneratorMapMutex.Lock()
-		GeneratorMap[contestChallenge.ID] = slices.DeleteFunc(GeneratorMap[contestChallenge.ID], func(gen *Generator) bool {
+		GeneratorMap[challenge.ID] = slices.DeleteFunc(GeneratorMap[challenge.ID], func(gen *Generator) bool {
 			return gen.Pod.Name == generator.Name
 		})
 		GeneratorMapMutex.Unlock()
@@ -150,13 +150,13 @@ func StopGenerator(contestChallenge model.ContestChallenge, generator *corev1.Po
 }
 
 // GenAttachment 附加容器命令, 生成附件, model.ContestChallenge 需要预加载
-func GenAttachment(contestChallenge model.ContestChallenge, team model.Team, teamFlagL []model.TeamFlag) (bool, string) {
+func GenAttachment(challenge model.Challenge, team model.Team, teamFlagL []model.TeamFlag) (bool, string) {
 	var err error
-	log.Logger.Debugf("Generating attachment for Team %d Challenge %d", team.ID, contestChallenge.ChallengeID)
-	generator, ok, msg := GetGenerator(contestChallenge)
+	log.Logger.Debugf("Generating attachment for Team %d Challenge %d", team.ID, challenge.ID)
+	generator, ok, msg := GetGenerator(challenge)
 	// 附加失败则直接返回, 并尝试关闭生成器
 	if !ok || generator.Status.Phase != corev1.PodRunning {
-		go StopGenerator(contestChallenge, generator)
+		go StopGenerator(challenge, generator)
 		return false, msg
 	}
 	var flags string

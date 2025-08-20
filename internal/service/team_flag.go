@@ -28,7 +28,7 @@ func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) (bool,
 				return errors.New(msg)
 			}
 			if contestChallenge.Type == model.DynamicChallengeType {
-				if _, err := task.EnqueueGenAttachmentTask(team.CaptainID, contestChallenge, team, teamFlags); err != nil {
+				if _, err := task.EnqueueGenAttachmentTask(team.CaptainID, contestChallenge.Challenge, team, teamFlags); err != nil {
 					log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
 					return errors.New(i18n.EnqueueTaskError)
 				}

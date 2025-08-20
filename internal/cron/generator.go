@@ -32,31 +32,32 @@ func prepareGenerator(c *cron.Cron) {
 			}
 			contestChallengeL, _, ok, _ := contestChallengeRepo.List(-1, -1, db.GetOptions{
 				Conditions: map[string]any{"contest_id": contest.ID, "type": model.DynamicChallengeType},
-				Selects:    []string{"id", "name", "challenge_id"},
+				Selects:    []string{"id", "challenge_id"},
 				Preloads: map[string]db.GetOptions{
-					"Challenge": {Selects: []string{"id", "rand_id", "generator_image"}},
+					"Challenge": {Selects: []string{"id", "name", "rand_id", "generator_image"}},
 				},
 			})
 			if !ok {
 				continue
 			}
 			for _, contestChallenge := range contestChallengeL {
+				challenge := contestChallenge.Challenge
 				timeoutL := make([]*corev1.Pod, 0)
 				k8s.GeneratorMapMutex.RLock()
-				for _, generator := range k8s.GeneratorMap[contestChallenge.ID] {
+				for _, generator := range k8s.GeneratorMap[challenge.ID] {
 					if generator.Pod.Status.Phase != corev1.PodRunning || generator.Start.Add(time.Hour).Before(time.Now()) {
 						timeoutL = append(timeoutL, generator.Pod)
 					}
 				}
 				k8s.GeneratorMapMutex.RUnlock()
 				for _, generator := range timeoutL {
-					k8s.StopGenerator(contestChallenge, generator)
+					k8s.StopGenerator(challenge, generator)
 				}
 				k8s.GeneratorMapMutex.RLock()
-				length := len(k8s.GeneratorMap[contestChallenge.ID])
+				length := len(k8s.GeneratorMap[challenge.ID])
 				k8s.GeneratorMapMutex.RUnlock()
 				for i := 0; i < len(config.Env.K8S.Nodes)*config.Env.K8S.GeneratorWorker-length; i++ {
-					go k8s.StartGenerator(contestChallenge)
+					go k8s.StartGenerator(challenge)
 				}
 			}
 		}
