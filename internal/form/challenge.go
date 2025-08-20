@@ -32,10 +32,10 @@ func (f *GetChallengesForm) Bind(ctx *gin.Context) (bool, string) {
 	if f.Limit > 100 {
 		f.Limit = 15
 	}
-	if _, exists := ctx.GetQuery("limit"); !exists {
+	if _, ok := ctx.GetQuery("limit"); !ok {
 		f.Limit = 10
 	}
-	if _, exists := ctx.GetQuery("offset"); !exists {
+	if _, ok := ctx.GetQuery("offset"); !ok {
 		f.Offset = 0
 	}
 	if !slices.Contains(allowedChallengeType, f.Type) {
