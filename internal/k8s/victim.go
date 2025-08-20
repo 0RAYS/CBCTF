@@ -64,7 +64,7 @@ type CreateSNatResult struct {
 }
 
 func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
-	log.Logger.Infof("Creating Victim for Team %d Challenge %d", victim.TeamID, victim.ContestChallengeID)
+	log.Logger.Infof("Starting Victim for Team %d ContestChallenge %d", victim.TeamID, victim.ContestChallengeID)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	// 添加一个独立tag, 防止 NetworkPolicy 影响 frpc 通信
@@ -434,7 +434,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 }
 
 func StopVictim(victim model.Victim) (bool, string) {
-	log.Logger.Infof("Stopping Victim for Team %d Challenge %d", victim.TeamID, victim.ContestChallengeID)
+	log.Logger.Infof("Stopping Victim for Team %d ContestChallenge %d", victim.TeamID, victim.ContestChallengeID)
 	// 不添加独立 tag, 删除时直接删除所有相关资源
 	labels := map[string]string{
 		"victim_id":            fmt.Sprintf("%d", victim.ID),
