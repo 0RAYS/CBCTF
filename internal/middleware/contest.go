@@ -15,7 +15,7 @@ var (
 	ContestIsNotComing = ContestStatus(model.ContestIsRunning, model.ContestIsOver)
 )
 
-func ContestStatus(statusL ...string) func(ctx *gin.Context) {
+func ContestStatus(statusL ...string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		contest := GetContest(ctx)
 		if slices.Contains(statusL, contest.Status()) {
