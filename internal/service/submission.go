@@ -15,14 +15,14 @@ import (
 var SolvedMutex sync.Map
 
 // Submit model.ContestChallenge 需要预加载
-func Submit(tx *gorm.DB, user model.User, team model.Team, contestChallenge model.ContestChallenge, form f.SubmitFlagForm, ip string) (string, model.Submission, bool, string) {
+func Submit(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge, form f.SubmitFlagForm, ip string) (string, model.Submission, bool, string) {
 	if contestChallenge.Attempt != 0 && contestChallenge.Attempt <= CountAttempts(tx, team, contestChallenge) {
 		return "", model.Submission{}, false, i18n.NotAllowSubmit
 	}
 	submissionRepo := db.InitSubmissionRepo(tx)
 	options := db.CreateSubmissionOptions{
 		ContestChallengeID: contestChallenge.ID,
-		ContestID:          team.ContestID,
+		ContestID:          contest.ID,
 		ChallengeID:        contestChallenge.ChallengeID,
 		TeamID:             team.ID,
 		UserID:             user.ID,
@@ -77,7 +77,7 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, contestChallenge mode
 			return "", model.Submission{}, false, msg
 		}
 	}
-	prometheus.UpdateFlagSubmissionMetrics(contestChallenge.Contest, contestChallenge, team, solved)
+	prometheus.UpdateFlagSubmissionMetrics(contest, contestChallenge, team, solved)
 	return result, submission, true, i18n.Success
 }
 
@@ -90,10 +90,10 @@ func CountAttempts(tx *gorm.DB, team model.Team, contestChallenge model.ContestC
 }
 
 // CheckIfSolved contestChallenge 需要预加载 ContestFlags
-func CheckIfSolved(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) bool {
+func CheckIfSolved(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge, contestFlags []model.ContestFlag) bool {
 	submissionRepo := db.InitSubmissionRepo(tx)
 	count, _, _ := submissionRepo.Count(db.CountOptions{
 		Conditions: map[string]any{"team_id": team.ID, "contest_challenge_id": contestChallenge.ID, "solved": true},
 	})
-	return count == int64(len(contestChallenge.ContestFlags))
+	return count == int64(len(contestFlags))
 }

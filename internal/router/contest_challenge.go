@@ -52,8 +52,8 @@ func GetContestChallenges(ctx *gin.Context) {
 			team := middleware.GetTeam(ctx)
 			tmp["hidden"] = false
 			tmp["attempts"] = service.CountAttempts(db.DB.WithContext(ctx), team, contestChallenge)
-			tmp["init"] = service.CheckIfGenerated(db.DB.WithContext(ctx), team, contestChallenge)
-			tmp["solved"] = service.CheckIfSolved(db.DB.WithContext(ctx), team, contestChallenge)
+			tmp["init"] = service.CheckIfGenerated(db.DB.WithContext(ctx), team, contestChallenge.ContestFlags)
+			tmp["solved"] = service.CheckIfSolved(db.DB.WithContext(ctx), team, contestChallenge, contestChallenge.ContestFlags)
 			tmp["remote"] = service.GetTeamVictimStatus(db.DB.WithContext(ctx), team, contestChallenge)
 			tmp["file"] = func() string {
 				if _, err := os.Stat(contestChallenge.Challenge.AttachmentPath(team.ID)); err != nil {
@@ -78,8 +78,8 @@ func GetContestChallengeStatus(ctx *gin.Context) {
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	data := gin.H{
 		"attempts": service.CountAttempts(db.DB.WithContext(ctx), team, contestChallenge),
-		"init":     service.CheckIfGenerated(db.DB.WithContext(ctx), team, contestChallenge),
-		"solved":   service.CheckIfSolved(db.DB.WithContext(ctx), team, contestChallenge),
+		"init":     service.CheckIfGenerated(db.DB.WithContext(ctx), team, contestChallenge.ContestFlags),
+		"solved":   service.CheckIfSolved(db.DB.WithContext(ctx), team, contestChallenge, contestChallenge.ContestFlags),
 		"remote":   service.GetTeamVictimStatus(db.DB.WithContext(ctx), team, contestChallenge),
 		"file": func() string {
 			if _, err := os.Stat(contestChallenge.Challenge.AttachmentPath(team.ID)); err != nil {
