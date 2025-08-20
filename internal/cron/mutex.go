@@ -21,16 +21,17 @@ func clearSubmissionMutex(c *cron.Cron) {
 				service.SolvedMutex.Delete(k)
 				return true
 			}
-			if contest, ok := contests[contestFlag.ContestID]; !ok {
+			contest, ok := contests[contestFlag.ContestID]
+			if !ok {
 				contest, ok, _ = contestRepo.GetByID(contestFlag.ContestID)
 				if !ok {
 					service.SolvedMutex.Delete(k)
 					return true
 				}
 				contests[contestFlag.ContestID] = contest
-				if !contest.IsRunning() {
-					service.SolvedMutex.Delete(k)
-				}
+			}
+			if !contest.IsRunning() {
+				service.SolvedMutex.Delete(k)
 			}
 			return true
 		})
