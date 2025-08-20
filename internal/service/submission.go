@@ -50,14 +50,14 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, contestChallenge mode
 		mu.(*sync.Mutex).Lock()
 		defer mu.(*sync.Mutex).Unlock()
 
-		solvers, currentScore, ok, msg := CalcContestFlagState(tx, contestFlag)
+		_, currentScore, ok, msg := CalcContestFlagState(tx, contestFlag)
 		if !ok {
 			return "", model.Submission{}, false, msg
 		}
 		contestFlagRepo := db.InitContestFlagRepo(tx)
 		if ok, msg = contestFlagRepo.Update(contestFlag.ID, db.UpdateContestFlagOptions{
 			CurrentScore: &currentScore,
-			Solvers:      &solvers,
+			DiffSolvers:  1,
 			Last:         &submission.CreatedAt,
 		}); !ok {
 			return "", model.Submission{}, false, msg
