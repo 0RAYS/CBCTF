@@ -37,12 +37,6 @@ func (u UpdateEventOptions) Convert2Map() map[string]any {
 	return make(map[string]any)
 }
 
-type DiffUpdateEventOptions struct{}
-
-func (d DiffUpdateEventOptions) Convert2Expr() map[string]clause.Expr {
-	return nil
-}
-
 func InitEventRepo(tx *gorm.DB) *EventRepo {
 	return &EventRepo{
 		BasicRepo: BasicRepo[model.Event]{

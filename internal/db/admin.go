@@ -8,7 +8,6 @@ import (
 	"fmt"
 
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type AdminRepo struct {
@@ -59,12 +58,6 @@ func (u UpdateAdminOptions) Convert2Map() map[string]any {
 		options["verified"] = *u.Verified
 	}
 	return options
-}
-
-type DiffUpdateAdminOptions struct{}
-
-func (d DiffUpdateAdminOptions) Convert2Expr() map[string]clause.Expr {
-	return nil
 }
 
 func InitAdminRepo(tx *gorm.DB) *AdminRepo {

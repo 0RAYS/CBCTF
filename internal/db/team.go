@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type TeamRepo struct {
@@ -88,12 +87,6 @@ func (u UpdateTeamOptions) Convert2Map() map[string]any {
 		options["last"] = *u.Last
 	}
 	return options
-}
-
-type DiffUpdateTeamOptions struct{}
-
-func (d DiffUpdateTeamOptions) Convert2Expr() map[string]clause.Expr {
-	return nil
 }
 
 func InitTeamRepo(tx *gorm.DB) *TeamRepo {

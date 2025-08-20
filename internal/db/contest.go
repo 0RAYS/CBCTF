@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type ContestRepo struct {
@@ -108,12 +107,6 @@ func (u UpdateContestOptions) Convert2Map() map[string]any {
 		options["timelines"] = *u.Timelines
 	}
 	return options
-}
-
-type DiffUpdateContestOptions struct{}
-
-func (d DiffUpdateContestOptions) Convert2Expr() map[string]clause.Expr {
-	return nil
 }
 
 func InitContestRepo(tx *gorm.DB) *ContestRepo {

@@ -56,12 +56,6 @@ func (u UpdateSubmissionOptions) Convert2Map() map[string]any {
 	return options
 }
 
-type DiffUpdateSubmissionOptions struct{}
-
-func (d DiffUpdateSubmissionOptions) Convert2Expr() map[string]clause.Expr {
-	return nil
-}
-
 func InitSubmissionRepo(tx *gorm.DB) *SubmissionRepo {
 	return &SubmissionRepo{
 		BasicRepo: BasicRepo[model.Submission]{

@@ -45,12 +45,6 @@ func (u UpdateTeamFlagRepo) Convert2Map() map[string]any {
 	return options
 }
 
-type DiffUpdateTeamFlag struct{}
-
-func (d DiffUpdateTeamFlag) Convert2Expr() map[string]clause.Expr {
-	return nil
-}
-
 func InitTeamFlagRepo(tx *gorm.DB) *TeamFlagRepo {
 	return &TeamFlagRepo{
 		BasicRepo: BasicRepo[model.TeamFlag]{
