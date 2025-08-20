@@ -62,6 +62,7 @@ type UpdateUserOptions struct {
 	ContestCount     *int64
 	DiffTeamCount    int64
 	TeamCount        *int64
+	ProviderUserID   *string
 }
 
 func (u UpdateUserOptions) Convert2Map() map[string]any {
@@ -111,6 +112,9 @@ func (u UpdateUserOptions) Convert2Map() map[string]any {
 	if u.TeamCount != nil {
 		options["team_count"] = *u.TeamCount
 	}
+	if u.ProviderUserID != nil {
+		options["provider_user_id"] = *u.ProviderUserID
+	}
 	return options
 }
 
@@ -139,7 +143,7 @@ func (u *UserRepo) GetByName(name string, optionsL ...GetOptions) (model.User, b
 func (u *UserRepo) Delete(idL ...uint) (bool, string) {
 	userL, _, ok, msg := u.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},
-		Selects:    []string{"id", "name", "email"},
+		Selects:    []string{"id", "name", "email", "provider_user_id"},
 		Preloads: map[string]GetOptions{
 			"Teams":       {Selects: []string{"id", "contest_id"}},
 			"Submissions": {Selects: []string{"id", "user_id"}},
@@ -152,9 +156,11 @@ func (u *UserRepo) Delete(idL ...uint) (bool, string) {
 	for _, user := range userL {
 		deletedName := fmt.Sprintf("%s_deleted_%s", user.Name, utils.RandStr(6))
 		deletedEmail := fmt.Sprintf("%s_deleted_%s", user.Email, utils.RandStr(6))
+		deleteProviderUserID := fmt.Sprintf("%s_deleted_%s", user.ProviderUserID, utils.RandStr(6))
 		if ok, msg = u.Update(user.ID, UpdateUserOptions{
-			Name:  &deletedName,
-			Email: &deletedEmail,
+			Name:           &deletedName,
+			Email:          &deletedEmail,
+			ProviderUserID: &deleteProviderUserID,
 		}); !ok {
 			return false, msg
 		}
