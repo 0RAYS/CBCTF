@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/model"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ChallengeRepo struct {
@@ -43,6 +44,12 @@ type UpdateChallengeOptions struct {
 	GeneratorImage  *string
 	Options         *model.Options
 	NetworkPolicies *model.NetworkPolicies
+}
+
+type DiffUpdateChallengeOptions struct{}
+
+func (d DiffUpdateChallengeOptions) Convert2Expr() map[string]clause.Expr {
+	return nil
 }
 
 func (u UpdateChallengeOptions) Convert2Map() map[string]any {

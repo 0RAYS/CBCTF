@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/model"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type SubmissionRepo struct {
@@ -53,6 +54,12 @@ func (u UpdateSubmissionOptions) Convert2Map() map[string]any {
 		options["score"] = *u.Score
 	}
 	return options
+}
+
+type DiffUpdateSubmissionOptions struct{}
+
+func (d DiffUpdateSubmissionOptions) Convert2Expr() map[string]clause.Expr {
+	return nil
 }
 
 func InitSubmissionRepo(tx *gorm.DB) *SubmissionRepo {

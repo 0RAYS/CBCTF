@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type RequestRepo struct {
@@ -39,11 +40,16 @@ func (c CreateRequestOptions) Convert2Model() model.Model {
 	}
 }
 
-type UpdateRequestOptions struct {
-}
+type UpdateRequestOptions struct{}
 
 func (u UpdateRequestOptions) Convert2Map() map[string]any {
 	return make(map[string]any)
+}
+
+type DiffUpdateRequestOptions struct{}
+
+func (d DiffUpdateRequestOptions) Convert2Expr() map[string]clause.Expr {
+	return nil
 }
 
 func InitRequestRepo(tx *gorm.DB) *RequestRepo {

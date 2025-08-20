@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/model"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type EventRepo struct {
@@ -30,11 +31,16 @@ func (c CreateEventOptions) Convert2Model() model.Model {
 	}
 }
 
-type UpdateEventOptions struct {
-}
+type UpdateEventOptions struct{}
 
 func (u UpdateEventOptions) Convert2Map() map[string]any {
 	return make(map[string]any)
+}
+
+type DiffUpdateEventOptions struct{}
+
+func (d DiffUpdateEventOptions) Convert2Expr() map[string]clause.Expr {
+	return nil
 }
 
 func InitEventRepo(tx *gorm.DB) *EventRepo {

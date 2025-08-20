@@ -39,6 +39,10 @@ type UpdateOptions interface {
 	Convert2Map() map[string]any
 }
 
+type DiffUpdateOptions interface {
+	Convert2Expr() map[string]clause.Expr
+}
+
 func (b *BasicRepo[M]) Create(options CreateOptions) (M, bool, string) {
 	m := options.Convert2Model().(M)
 	if res := b.DB.Model(new(M)).Create(&m); res.Error != nil {
@@ -188,6 +192,18 @@ func (b *BasicRepo[M]) Update(id uint, options UpdateOptions) (bool, string) {
 			continue
 		}
 		break
+	}
+	return true, i18n.Success
+}
+
+func (b *BasicRepo[M]) DiffUpdate(id uint, options DiffUpdateOptions) (bool, string) {
+	res := b.DB.Model(new(M)).Where("id = ?", id)
+	for k, v := range options.Convert2Expr() {
+		res = res.Update(k, v)
+	}
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to update %s: %s", M.GetModelName(*new(M)), res.Error)
+		return false, M.UpdateErrorString(*new(M))
 	}
 	return true, i18n.Success
 }

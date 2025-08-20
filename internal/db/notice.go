@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/model"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type NoticeRepo struct {
@@ -44,6 +45,12 @@ func (u UpdateNoticeOptions) Convert2Map() map[string]any {
 		options["type"] = *u.Type
 	}
 	return options
+}
+
+type DiffUpdateNoticeOptions struct{}
+
+func (d DiffUpdateNoticeOptions) Convert2Expr() map[string]clause.Expr {
+	return nil
 }
 
 func InitNoticeRepo(tx *gorm.DB) *NoticeRepo {

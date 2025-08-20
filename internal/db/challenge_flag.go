@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/model"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ChallengeFlagRepo struct {
@@ -58,6 +59,12 @@ func InitChallengeFlagRepo(tx *gorm.DB) *ChallengeFlagRepo {
 			DB: tx,
 		},
 	}
+}
+
+type DiffUpdateChallengeFlagOptions struct{}
+
+func (d DiffUpdateChallengeFlagOptions) Convert2Expr() map[string]clause.Expr {
+	return nil
 }
 
 func (c *ChallengeFlagRepo) Delete(idL ...uint) (bool, string) {

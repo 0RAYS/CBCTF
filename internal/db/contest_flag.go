@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ContestFlagRepo struct {
@@ -79,6 +80,22 @@ func (c UpdateContestFlagOptions) Convert2Map() map[string]any {
 	}
 	if c.Last != nil {
 		options["last"] = *c.Last
+	}
+	return options
+}
+
+type DiffUpdateContestFlagOptions struct {
+	CurrentScore float64
+	Solvers      int64
+}
+
+func (d DiffUpdateContestFlagOptions) Convert2Expr() map[string]clause.Expr {
+	options := make(map[string]clause.Expr)
+	if d.CurrentScore != 0 {
+		options["current_score"] = gorm.Expr("current_score + ?", d.CurrentScore)
+	}
+	if d.Solvers != 0 {
+		options["solvers"] = gorm.Expr("solvers + ?", d.Solvers)
 	}
 	return options
 }

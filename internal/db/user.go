@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type UserRepo struct {
@@ -96,6 +97,12 @@ func (u UpdateUserOptions) Convert2Map() map[string]any {
 		options["solved"] = *u.Solved
 	}
 	return options
+}
+
+type DiffUpdateUserOptions struct{}
+
+func (d DiffUpdateUserOptions) Convert2Expr() map[string]clause.Expr {
+	return nil
 }
 
 func InitUserRepo(tx *gorm.DB) *UserRepo {
