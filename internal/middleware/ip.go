@@ -6,9 +6,9 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
-	"fmt"
 	"net/http"
 	"slices"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -22,7 +22,7 @@ func RateLimit(name string, maxRequests int, window time.Duration) gin.HandlerFu
 			return
 		}
 		if userID := GetSelfID(ctx); userID != 0 {
-			client = fmt.Sprintf("%d", userID)
+			client = strconv.Itoa(int(userID))
 		}
 		count, err := redis.RateLimit(name, client, window)
 		if err != nil {

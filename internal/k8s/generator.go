@@ -13,6 +13,7 @@ import (
 	"math/big"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -35,7 +36,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 		generatorName = fmt.Sprintf("gen-%s", utils.RandStr(20))
 		containerName = fmt.Sprintf("ctn-%s", utils.RandStr(20))
 		volumeName    = fmt.Sprintf("vol-%s", utils.RandStr(20))
-		lables        = map[string]string{GeneratorPodTag: generatorName, "contest_challenge_id": fmt.Sprintf("%d", contestChallenge.ID)}
+		labels        = map[string]string{GeneratorPodTag: generatorName, "contest_challenge_id": strconv.Itoa(int(contestChallenge.ID))}
 	)
 	if contestChallenge.Challenge.GeneratorImage == "" {
 		return nil, false, i18n.InvalidDockerImage
@@ -46,7 +47,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 	pwd := utils.UUID()
 	pod, ok, msg = CreatePod(ctx, CreatePodOptions{
 		Name:   generatorName,
-		Labels: lables,
+		Labels: labels,
 		Containers: []corev1.Container{
 			{
 				Name:  containerName,
@@ -130,7 +131,7 @@ func StopGenerator(contestChallenge model.ContestChallenge, generator *corev1.Po
 		if ok, msg := DeletePod(ctx, generator.Name); !ok {
 			return false, msg
 		}
-		labels := map[string]string{GeneratorPodTag: generator.Name, "contest_challenge_id": fmt.Sprintf("%d", contestChallenge.ID)}
+		labels := map[string]string{GeneratorPodTag: generator.Name, "contest_challenge_id": strconv.Itoa(int(contestChallenge.ID))}
 		if ok, msg := DeleteServiceList(ctx, labels); !ok {
 			return false, msg
 		}

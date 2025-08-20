@@ -69,10 +69,10 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 	defer cancel()
 	// 添加一个独立tag, 防止 NetworkPolicy 影响 frpc 通信
 	labels := map[string]string{
-		"victim_id":            fmt.Sprintf("%d", victim.ID),
-		"user_id":              fmt.Sprintf("%d", victim.UserID),
-		"team_id":              fmt.Sprintf("%d", victim.TeamID),
-		"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),
+		"victim_id":            strconv.Itoa(int(victim.ID)),
+		"user_id":              strconv.Itoa(int(victim.UserID)),
+		"team_id":              strconv.Itoa(int(victim.TeamID)),
+		"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID)),
 		VictimPodTag:           fmt.Sprintf("victim-%s", utils.RandStr(20)),
 	}
 	subnetMap := make(map[string]*model.Subnet)
@@ -346,7 +346,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 						limit["cpu"] = resource.MustParse(fmt.Sprintf("%dm", int(container.CPU*1000)))
 					}
 					if container.Memory > 0 {
-						limit["memory"] = resource.MustParse(fmt.Sprintf("%d", container.Memory))
+						limit["memory"] = resource.MustParse(strconv.Itoa(int(container.Memory)))
 					}
 					tmp := corev1.Container{
 						Name:         container.Name,
@@ -437,10 +437,10 @@ func StopVictim(victim model.Victim) (bool, string) {
 	log.Logger.Infof("Stopping Victim for Team %d ContestChallenge %d", victim.TeamID, victim.ContestChallengeID)
 	// 不添加独立 tag, 删除时直接删除所有相关资源
 	labels := map[string]string{
-		"victim_id":            fmt.Sprintf("%d", victim.ID),
-		"user_id":              fmt.Sprintf("%d", victim.UserID),
-		"team_id":              fmt.Sprintf("%d", victim.TeamID),
-		"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),
+		"victim_id":            strconv.Itoa(int(victim.ID)),
+		"user_id":              strconv.Itoa(int(victim.UserID)),
+		"team_id":              strconv.Itoa(int(victim.TeamID)),
+		"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID)),
 	}
 	for _, endpoint := range victim.Endpoints {
 		if err := redis.UnlockFrpsPort(endpoint.IP, endpoint.Port, endpoint.Protocol); err != nil {

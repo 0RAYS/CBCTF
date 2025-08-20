@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"math/big"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -49,10 +50,10 @@ func CreateFrpc(victim model.Victim) (model.Endpoints, []string, bool, string) {
 		podName := fmt.Sprintf("frpc-%s", utils.RandStr(20))
 		// 添加一个独立tag, 防止受 NetworkPolicy 影响
 		labels := map[string]string{
-			"victim_id":            fmt.Sprintf("%d", victim.ID),
-			"user_id":              fmt.Sprintf("%d", victim.UserID),
-			"team_id":              fmt.Sprintf("%d", victim.TeamID),
-			"contest_challenge_id": fmt.Sprintf("%d", victim.ContestChallengeID),
+			"victim_id":            strconv.Itoa(int(victim.ID)),
+			"user_id":              strconv.Itoa(int(victim.UserID)),
+			"team_id":              strconv.Itoa(int(victim.TeamID)),
+			"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID)),
 			FrpcPodTag:             podName,
 		}
 		data := fmt.Sprintf("serverAddr = \"%s\"\nserverPort = %d\nauth.token = \"%s\"\n\n", frps.Host, frps.Port, frps.Token)
