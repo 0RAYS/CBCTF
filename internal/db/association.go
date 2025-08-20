@@ -8,6 +8,46 @@ import (
 	"gorm.io/gorm"
 )
 
+func GetTeamIDByUserID(tx *gorm.DB, userID uint) ([]uint, bool, string) {
+	var idL []uint
+	res := tx.Model(&model.UserTeam{}).Where("user_id = ?", userID).Find(&idL)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get team: %s", res.Error)
+		return nil, false, i18n.GetTeamError
+	}
+	return idL, true, i18n.Success
+}
+
+func GetContestIDByUserID(tx *gorm.DB, userID uint) ([]uint, bool, string) {
+	var idL []uint
+	res := tx.Model(&model.UserContest{}).Where("user_id = ?", userID).Find(&idL)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get contest: %s", res.Error)
+		return nil, false, i18n.GetContestError
+	}
+	return idL, true, i18n.Success
+}
+
+func GetUserIDByTeamID(tx *gorm.DB, teamID uint) ([]uint, bool, string) {
+	var idL []uint
+	res := tx.Model(&model.UserTeam{}).Where("team_id = ?", teamID).Find(&idL)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get user: %s", res.Error)
+		return nil, false, i18n.GetUserError
+	}
+	return idL, true, i18n.Success
+}
+
+func GetUserIDByContestID(tx *gorm.DB, contestID uint) ([]uint, bool, string) {
+	var idL []uint
+	res := tx.Model(&model.UserContest{}).Where("contest_id = ?", contestID).Find(&idL)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get user: %s", res.Error)
+		return nil, false, i18n.GetUserError
+	}
+	return idL, true, i18n.Success
+}
+
 // AppendUserToTeam Many2Many
 func AppendUserToTeam(tx *gorm.DB, userID, teamID uint) (bool, string) {
 	res := tx.Model(&model.UserTeam{}).Create(&model.UserTeam{UserID: userID, TeamID: teamID})

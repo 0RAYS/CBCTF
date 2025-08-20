@@ -26,7 +26,7 @@ func StartVictim(ctx *gin.Context) {
 		tx := db.DB.WithContext(ctx).Begin()
 		_, ok, _ := service.StartTeamVictim(tx, user, team, contest, contestChallenge)
 		if !ok {
-			go service.StopTeamVictim(db.DB.WithContext(ctx.Copy()), team, contestChallenge)
+			go service.StopTeamVictim(db.DB.WithContext(ctx.Copy()), team, contest, contestChallenge)
 			tx.Rollback()
 			websocket.Send(false, user.ID, wm.ErrorLevel, wm.StartVictimWSType, "Start Victim", "Failed")
 			return
@@ -88,8 +88,9 @@ func IncreaseVictimDuration(ctx *gin.Context) {
 func StopVictim(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.StopVictimEventType)
 	team := middleware.GetTeam(ctx)
+	contest := middleware.GetContest(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	_, msg := service.StopTeamVictim(db.DB.WithContext(ctx), team, contestChallenge)
+	_, msg := service.StopTeamVictim(db.DB.WithContext(ctx), team, contest, contestChallenge)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

@@ -324,7 +324,7 @@ func GetTeamVictimStatus(tx *gorm.DB, team model.Team, contestChallenge model.Co
 	return data
 }
 
-func StopTeamVictim(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) (bool, string) {
+func StopTeamVictim(tx *gorm.DB, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge) (bool, string) {
 	victimRepo := db.InitVictimRepo(tx)
 	victims, _, ok, msg := victimRepo.List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"team_id": team.ID, "contest_challenge_id": contestChallenge.ID},
@@ -353,7 +353,7 @@ func StopTeamVictim(tx *gorm.DB, team model.Team, contestChallenge model.Contest
 	}
 	ok, msg = victimRepo.Delete(victimIDL...)
 	if ok {
-		prometheus.SubVictimContainerMetrics(team.Contest, contestChallenge, 1)
+		prometheus.SubVictimContainerMetrics(contest, contestChallenge, 1)
 	}
 	return ok, msg
 }

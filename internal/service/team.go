@@ -59,10 +59,10 @@ func UpdateTeamCaptcha(tx *gorm.DB, team model.Team, captcha string) (bool, stri
 	return repo.Update(team.ID, db.UpdateTeamOptions{Captcha: &captcha})
 }
 
-func DeleteTeam(tx *gorm.DB, team model.Team) (bool, string) {
+func DeleteTeam(tx *gorm.DB, team model.Team, contest model.Contest) (bool, string) {
 	repo := db.InitTeamRepo(tx)
-	prometheus.SubContestActiveTeamsMetrics(team.Contest, 1)
-	prometheus.SubContestActiveUsersMetrics(team.Contest, len(team.Users))
+	prometheus.SubContestActiveTeamsMetrics(contest, 1)
+	prometheus.SubContestActiveUsersMetrics(contest, int(team.UserCount))
 	return repo.Delete(team.ID)
 }
 
