@@ -73,7 +73,7 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, contestChallenge mode
 		}); !ok {
 			return "", model.Submission{}, false, msg
 		}
-		if ok, msg := submissionRepo.Update(submission.ID, db.UpdateSubmissionOptions{Score: &score}); !ok {
+		if ok, msg = submissionRepo.Update(submission.ID, db.UpdateSubmissionOptions{Score: &score}); !ok {
 			return "", model.Submission{}, false, msg
 		}
 	}
