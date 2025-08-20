@@ -22,8 +22,8 @@ func GetUserResp(user model.User, admin bool) gin.H {
 	if admin {
 		data["hidden"] = user.Hidden
 		data["banned"] = user.Banned
-		data["teams"] = len(user.Teams)
-		data["contests"] = len(user.Contests)
+		data["teams"] = user.TeamCount
+		data["contests"] = user.ContestCount
 	}
 	return data
 }

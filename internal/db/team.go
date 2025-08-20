@@ -42,16 +42,18 @@ func (c CreateTeamOptions) Convert2Model() model.Model {
 }
 
 type UpdateTeamOptions struct {
-	Name      *string
-	Desc      *string
-	Captcha   *string
-	Avatar    *model.AvatarURL
-	Banned    *bool
-	Hidden    *bool
-	CaptainID *uint
-	Score     *float64
-	Rank      *int
-	Last      *time.Time
+	Name          *string
+	Desc          *string
+	Captcha       *string
+	Avatar        *model.AvatarURL
+	Banned        *bool
+	Hidden        *bool
+	CaptainID     *uint
+	Score         *float64
+	Rank          *int
+	Last          *time.Time
+	DiffUserCount int64
+	UserCount     *int64
 }
 
 func (u UpdateTeamOptions) Convert2Map() map[string]any {
@@ -85,6 +87,12 @@ func (u UpdateTeamOptions) Convert2Map() map[string]any {
 	}
 	if u.Last != nil {
 		options["last"] = *u.Last
+	}
+	if u.DiffUserCount != 0 {
+		options["user_count"] = gorm.Expr("user_count + ?", u.DiffUserCount)
+	}
+	if u.UserCount != nil {
+		options["user_count"] = *u.UserCount
 	}
 	return options
 }

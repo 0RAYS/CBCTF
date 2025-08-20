@@ -29,9 +29,6 @@ func Search(ctx *gin.Context) {
 				}
 			}
 		}
-		options.Preloads = map[string]db.GetOptions{
-			"Teams": {Selects: []string{"id"}}, "Contests": {Selects: []string{"id"}},
-		}
 		users, count, ok, msg := db.InitUserRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, options)
 		if !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
