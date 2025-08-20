@@ -8,6 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetEvents(ctx *gin.Context) {
+func GetEventTypes(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": model.EventTypes})
 }
