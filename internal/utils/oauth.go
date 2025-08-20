@@ -8,7 +8,7 @@ import (
 )
 
 func GetFiledKeys(field string) []string {
-	re := regexp.MustCompile(`\{([^{}]*)\}`)
+	re := regexp.MustCompile(`\{([^{}]*)}`)
 	matches := re.FindAllStringSubmatch(field, -1)
 
 	var results []string
