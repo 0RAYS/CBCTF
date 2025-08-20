@@ -18,6 +18,7 @@ func InitTeamFlag(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	user := middleware.GetSelf(ctx).(model.User)
 	contestChallenge := middleware.GetContestChallenge(ctx)
+	challenge := middleware.GetChallenge(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
 	teamFlags, ok, msg := service.CreateTeamFlag(tx, team, contestChallenge)
 	if !ok {
@@ -25,8 +26,8 @@ func InitTeamFlag(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	if contestChallenge.Type == model.DynamicChallengeType {
-		if _, err := task.EnqueueGenAttachmentTask(user.ID, contestChallenge, team, teamFlags); err != nil {
+	if challenge.Type == model.DynamicChallengeType {
+		if _, err := task.EnqueueGenAttachmentTask(user.ID, challenge, team, teamFlags); err != nil {
 			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
 			tx.Rollback()
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.EnqueueTaskError, "data": nil})
@@ -43,6 +44,7 @@ func ResetTeamFlag(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	user := middleware.GetSelf(ctx).(model.User)
 	contestChallenge := middleware.GetContestChallenge(ctx)
+	challenge := middleware.GetChallenge(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
 	teamFlags, ok, msg := service.UpdateTeamFlag(tx, team, contestChallenge)
 	if !ok {
@@ -50,9 +52,9 @@ func ResetTeamFlag(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	switch contestChallenge.Type {
+	switch challenge.Type {
 	case model.DynamicChallengeType:
-		if _, err := task.EnqueueGenAttachmentTask(user.ID, contestChallenge, team, teamFlags); err != nil {
+		if _, err := task.EnqueueGenAttachmentTask(user.ID, challenge, team, teamFlags); err != nil {
 			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
 			tx.Rollback()
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.EnqueueTaskError, "data": nil})
