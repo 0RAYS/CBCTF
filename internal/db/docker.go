@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/model"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type DockerRepo struct {
@@ -40,11 +41,16 @@ func (c CreateDockerOptions) Convert2Model() model.Model {
 	}
 }
 
-type UpdateDockerOptions struct {
-}
+type UpdateDockerOptions struct{}
 
 func (u UpdateDockerOptions) Convert2Map() map[string]any {
 	return make(map[string]any)
+}
+
+type DiffUpdateDockerOptions struct{}
+
+func (d DiffUpdateDockerOptions) Convert2Expr() map[string]clause.Expr {
+	return nil
 }
 
 func InitDockerRepo(tx *gorm.DB) *DockerRepo {

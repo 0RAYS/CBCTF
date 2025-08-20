@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/model"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type EmailRepo struct {
@@ -32,11 +33,16 @@ func (c CreateEmailOptions) Convert2Model() model.Model {
 	}
 }
 
-type UpdateEmailOptions struct {
-}
+type UpdateEmailOptions struct{}
 
 func (u UpdateEmailOptions) Convert2Map() map[string]any {
 	return map[string]any{}
+}
+
+type DiffUpdateEmailOptions struct{}
+
+func (d DiffUpdateEmailOptions) Convert2Expr() map[string]clause.Expr {
+	return nil
 }
 
 func InitEmailRepo(tx *gorm.DB) *EmailRepo {

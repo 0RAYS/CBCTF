@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type WebhookHistoryRepo struct {
@@ -37,6 +38,12 @@ type UpdateWebhookHistoryOptions struct{}
 
 func (u UpdateWebhookHistoryOptions) Convert2Map() map[string]any {
 	return make(map[string]any)
+}
+
+type DiffUpdateWebhookHistoryOptions struct{}
+
+func (d DiffUpdateWebhookHistoryOptions) Convert2Expr() map[string]clause.Expr {
+	return nil
 }
 
 func InitWebhookHistoryRepo(tx *gorm.DB) *WebhookHistoryRepo {

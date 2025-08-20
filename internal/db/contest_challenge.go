@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/utils"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ContestChallengeRepo struct {
@@ -75,6 +76,12 @@ func (u UpdateContestChallengeOptions) Convert2Map() map[string]any {
 		options["deleted_salt"] = *u.DeletedSalt
 	}
 	return options
+}
+
+type DiffUpdateContestChallenge struct{}
+
+func (d DiffUpdateContestChallenge) Convert2Expr() map[string]clause.Expr {
+	return nil
 }
 
 func InitContestChallengeRepo(tx *gorm.DB) *ContestChallengeRepo {

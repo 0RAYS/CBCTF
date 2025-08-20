@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/model"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type PodRepo struct {
@@ -32,6 +33,12 @@ type UpdatePodOptions struct{}
 
 func (u UpdatePodOptions) Convert2Map() map[string]any {
 	return make(map[string]any)
+}
+
+type DiffUpdatePodOptions struct{}
+
+func (d DiffUpdatePodOptions) Convert2Expr() map[string]clause.Expr {
+	return nil
 }
 
 func InitPodRepo(tx *gorm.DB) *PodRepo {

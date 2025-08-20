@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type DeviceRepo struct {
@@ -36,6 +37,18 @@ func (u UpdateDeviceOptions) Convert2Map() map[string]any {
 	options := make(map[string]any)
 	if u.Count != nil {
 		options["count"] = *u.Count
+	}
+	return options
+}
+
+type DiffUpdateDeviceOptions struct {
+	Count int
+}
+
+func (d DiffUpdateDeviceOptions) Convert2Expr() map[string]clause.Expr {
+	options := make(map[string]clause.Expr)
+	if d.Count != 0 {
+		options["count"] = gorm.Expr("count + ?", d.Count)
 	}
 	return options
 }

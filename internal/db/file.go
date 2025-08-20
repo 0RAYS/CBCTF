@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/model"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type FileRepo struct {
@@ -44,11 +45,16 @@ func (c CreateFileOptions) Convert2Model() model.Model {
 	}
 }
 
-type UpdateFileOptions struct {
-}
+type UpdateFileOptions struct{}
 
 func (u UpdateFileOptions) Convert2Map() map[string]any {
 	return make(map[string]any)
+}
+
+type DiffUpdateFileOptions struct{}
+
+func (d DiffUpdateFileOptions) Convert2Expr() map[string]clause.Expr {
+	return nil
 }
 
 func InitFileRepo(tx *gorm.DB) *FileRepo {

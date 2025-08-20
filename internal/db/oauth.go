@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/oauth"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type OauthRepo struct {
@@ -116,6 +117,12 @@ func (u UpdateOauthOptions) Convert2Map() map[string]any {
 		options["avatar"] = *u.Avatar
 	}
 	return options
+}
+
+type DiffUpdateOauthOptions struct{}
+
+func (d DiffUpdateOauthOptions) Convert2Expr() map[string]clause.Expr {
+	return nil
 }
 
 func InitOauthRepo(tx *gorm.DB) *OauthRepo {

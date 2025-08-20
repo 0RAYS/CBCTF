@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/model"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type TeamFlagRepo struct {
@@ -42,6 +43,12 @@ func (u UpdateTeamFlagRepo) Convert2Map() map[string]any {
 		options["solved"] = *u.Solved
 	}
 	return options
+}
+
+type DiffUpdateTeamFlag struct{}
+
+func (d DiffUpdateTeamFlag) Convert2Expr() map[string]clause.Expr {
+	return nil
 }
 
 func InitTeamFlagRepo(tx *gorm.DB) *TeamFlagRepo {
