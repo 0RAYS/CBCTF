@@ -36,9 +36,7 @@ func CheckAuth(ctx *gin.Context) {
 		ctx.Set("Self", admin)
 		ctx.Next()
 	} else {
-		user, ok, msg := db.InitUserRepo(DB).GetByID(claims.UserID, db.GetOptions{
-			Preloads: map[string]db.GetOptions{"Teams": {}, "Contests": {}},
-		})
+		user, ok, msg := db.InitUserRepo(DB).GetByID(claims.UserID)
 		if !ok {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
