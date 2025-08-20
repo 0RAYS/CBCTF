@@ -44,9 +44,8 @@ func prepareGenerator(c *cron.Cron) {
 				timeoutL := make([]*corev1.Pod, 0)
 				k8s.GeneratorMapMutex.RLock()
 				for _, generator := range k8s.GeneratorMap[contestChallenge.ID] {
-					// TODO 此处需要注意平台所在时区与K8S节点需要相同
-					if generator.Status.Phase != corev1.PodRunning || generator.CreationTimestamp.Add(time.Hour).Before(time.Now()) {
-						timeoutL = append(timeoutL, generator)
+					if generator.Pod.Status.Phase != corev1.PodRunning || generator.Start.Add(time.Hour).Before(time.Now()) {
+						timeoutL = append(timeoutL, generator.Pod)
 					}
 				}
 				k8s.GeneratorMapMutex.RUnlock()
@@ -81,8 +80,8 @@ func stopUnCtrlGenerator(c *cron.Cron) {
 		k8s.GeneratorMapMutex.RLock()
 		for _, v := range k8s.GeneratorMap {
 			for _, generator := range v {
-				generators[generator.Name] = generator
-				names = append(names, generator.Name)
+				generators[generator.Pod.Name] = generator.Pod
+				names = append(names, generator.Pod.Name)
 			}
 		}
 		k8s.GeneratorMapMutex.RUnlock()

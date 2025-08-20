@@ -22,9 +22,14 @@ import (
 )
 
 var (
-	GeneratorMap      = make(map[uint][]*corev1.Pod)
+	GeneratorMap      = make(map[uint][]*Generator)
 	GeneratorMapMutex sync.RWMutex
 )
+
+type Generator struct {
+	Start time.Time
+	Pod   *corev1.Pod
+}
 
 // StartGenerator 启动动态附件生成器, 等待附加命令, 生成附件, contestChallenge 需要预加载 Challenge
 func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool, string) {
@@ -99,7 +104,7 @@ func StartGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool,
 		}
 	}
 	GeneratorMapMutex.Lock()
-	GeneratorMap[contestChallenge.ID] = append(GeneratorMap[contestChallenge.ID], pod)
+	GeneratorMap[contestChallenge.ID] = append(GeneratorMap[contestChallenge.ID], &Generator{Start: time.Now(), Pod: pod})
 	GeneratorMapMutex.Unlock()
 	return pod, true, i18n.Success
 }
@@ -113,7 +118,7 @@ func GetGenerator(contestChallenge model.ContestChallenge) (*corev1.Pod, bool, s
 	}
 	if len(generators) > 0 {
 		index, _ := rand.Int(rand.Reader, big.NewInt(time.Now().UnixNano()))
-		return generators[index.Int64()], true, i18n.Success
+		return generators[index.Int64()].Pod, true, i18n.Success
 	}
 	return nil, false, i18n.UnknownError
 }
@@ -136,8 +141,8 @@ func StopGenerator(contestChallenge model.ContestChallenge, generator *corev1.Po
 			return false, msg
 		}
 		GeneratorMapMutex.Lock()
-		GeneratorMap[contestChallenge.ID] = slices.DeleteFunc(GeneratorMap[contestChallenge.ID], func(pod *corev1.Pod) bool {
-			return pod.Name == generator.Name
+		GeneratorMap[contestChallenge.ID] = slices.DeleteFunc(GeneratorMap[contestChallenge.ID], func(gen *Generator) bool {
+			return gen.Pod.Name == generator.Name
 		})
 		GeneratorMapMutex.Unlock()
 	}
