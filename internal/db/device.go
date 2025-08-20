@@ -5,10 +5,8 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"fmt"
-	"sync"
 
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type DeviceRepo struct {
@@ -30,25 +28,17 @@ func (c CreateDeviceOptions) Convert2Model() model.Model {
 }
 
 type UpdateDeviceOptions struct {
-	Count *int
+	DiffCount int
+	Count     *int
 }
 
 func (u UpdateDeviceOptions) Convert2Map() map[string]any {
 	options := make(map[string]any)
+	if u.DiffCount != 0 {
+		options["count"] = gorm.Expr("count + ?", u.DiffCount)
+	}
 	if u.Count != nil {
 		options["count"] = *u.Count
-	}
-	return options
-}
-
-type DiffUpdateDeviceOptions struct {
-	Count int
-}
-
-func (d DiffUpdateDeviceOptions) Convert2Expr() map[string]clause.Expr {
-	options := make(map[string]clause.Expr)
-	if d.Count != 0 {
-		options["count"] = gorm.Expr("count + ?", d.Count)
 	}
 	return options
 }
@@ -61,9 +51,7 @@ func InitDeviceRepo(tx *gorm.DB) *DeviceRepo {
 	}
 }
 
-var UserDeviceMutex sync.Map
-
-func (d *DeviceRepo) RecordDevice(userID uint, magic, ip string) (model.Device, bool, string) {
+func (d *DeviceRepo) RecordDevice(userID uint, magic, ip string) (bool, string) {
 	if devices, ok, _ := d.GetByMagic(magic); ok {
 		cheatRepo := InitCheatRepo(d.DB)
 		for _, device := range devices {
@@ -79,18 +67,11 @@ func (d *DeviceRepo) RecordDevice(userID uint, magic, ip string) (model.Device, 
 			}
 		}
 	}
-	if device, ok, msg := d.GetBy2ID(userID, magic); ok {
-		mu, _ := UserDeviceMutex.LoadOrStore(userID, &sync.Mutex{})
-		mu.(*sync.Mutex).Lock()
-		defer mu.(*sync.Mutex).Unlock()
-		count := device.Count + 1
-		ok, msg = d.Update(device.ID, UpdateDeviceOptions{Count: &count})
-		if !ok {
-			return model.Device{}, false, msg
-		}
-		return d.GetByID(device.ID)
+	if device, ok, _ := d.GetBy2ID(userID, magic); ok {
+		return d.Update(device.ID, UpdateDeviceOptions{DiffCount: 1})
 	}
-	return d.Create(CreateDeviceOptions{UserID: userID, Magic: magic, Count: 1})
+	_, ok, msg := d.Create(CreateDeviceOptions{UserID: userID, Magic: magic, Count: 1})
+	return ok, msg
 }
 
 func (d *DeviceRepo) GetByMagic(magic string) ([]model.Device, bool, string) {

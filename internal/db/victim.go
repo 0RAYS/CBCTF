@@ -64,12 +64,6 @@ func (u UpdateVictimOptions) Convert2Map() map[string]any {
 	return options
 }
 
-type DiffUpdateVictimOptions struct{}
-
-func (d DiffUpdateVictimOptions) Convert2Expr() map[string]clause.Expr {
-	return nil
-}
-
 func InitVictimRepo(tx *gorm.DB) *VictimRepo {
 	return &VictimRepo{
 		BasicRepo: BasicRepo[model.Victim]{

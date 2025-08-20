@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/model"
 
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type TrafficRepo struct {
@@ -41,12 +40,6 @@ type UpdateTrafficOptions struct{}
 
 func (u UpdateTrafficOptions) Convert2Map() map[string]any {
 	return make(map[string]any)
-}
-
-type DiffUpdateTrafficOptions struct{}
-
-func (d DiffUpdateTrafficOptions) Convert2Expr() map[string]clause.Expr {
-	return nil
 }
 
 func InitTrafficRepo(tx *gorm.DB) *TrafficRepo {

@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type CheatRepo struct {
@@ -96,12 +95,6 @@ func (u UpdateCheatRepo) Convert2Map() map[string]any {
 		options["references"] = u.References
 	}
 	return options
-}
-
-type DiffUpdateCheatOptions struct{}
-
-func (d DiffUpdateCheatOptions) Convert2Expr() map[string]clause.Expr {
-	return nil
 }
 
 func InitCheatRepo(tx *gorm.DB) *CheatRepo {

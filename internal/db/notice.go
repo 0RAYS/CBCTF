@@ -47,12 +47,6 @@ func (u UpdateNoticeOptions) Convert2Map() map[string]any {
 	return options
 }
 
-type DiffUpdateNoticeOptions struct{}
-
-func (d DiffUpdateNoticeOptions) Convert2Expr() map[string]clause.Expr {
-	return nil
-}
-
 func InitNoticeRepo(tx *gorm.DB) *NoticeRepo {
 	return &NoticeRepo{
 		BasicRepo: BasicRepo[model.Notice]{

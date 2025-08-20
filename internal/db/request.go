@@ -46,12 +46,6 @@ func (u UpdateRequestOptions) Convert2Map() map[string]any {
 	return make(map[string]any)
 }
 
-type DiffUpdateRequestOptions struct{}
-
-func (d DiffUpdateRequestOptions) Convert2Expr() map[string]clause.Expr {
-	return nil
-}
-
 func InitRequestRepo(tx *gorm.DB) *RequestRepo {
 	return &RequestRepo{
 		BasicRepo: BasicRepo[model.Request]{

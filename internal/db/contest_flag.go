@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type ContestFlagRepo struct {
@@ -45,14 +44,16 @@ func (c CreateContestFlagOptions) Convert2Model() model.Model {
 }
 
 type UpdateContestFlagOptions struct {
-	Value        *string
-	Score        *float64
-	CurrentScore *float64
-	Decay        *float64
-	MinScore     *float64
-	ScoreType    *uint
-	Solvers      *int64
-	Last         *time.Time
+	Value            *string
+	Score            *float64
+	DiffCurrentScore float64
+	CurrentScore     *float64
+	Decay            *float64
+	MinScore         *float64
+	ScoreType        *uint
+	DiffSolvers      int64
+	Solvers          *int64
+	Last             *time.Time
 }
 
 func (c UpdateContestFlagOptions) Convert2Map() map[string]any {
@@ -62,6 +63,9 @@ func (c UpdateContestFlagOptions) Convert2Map() map[string]any {
 	}
 	if c.Score != nil {
 		options["score"] = *c.Score
+	}
+	if c.DiffCurrentScore != 0 {
+		options["current_score"] = gorm.Expr("current_score + ?", c.DiffCurrentScore)
 	}
 	if c.CurrentScore != nil {
 		options["current_score"] = *c.CurrentScore
@@ -75,27 +79,14 @@ func (c UpdateContestFlagOptions) Convert2Map() map[string]any {
 	if c.ScoreType != nil {
 		options["score_type"] = *c.ScoreType
 	}
+	if c.DiffSolvers != 0 {
+		options["solvers"] = gorm.Expr("solvers + ?", c.DiffSolvers)
+	}
 	if c.Solvers != nil {
 		options["solvers"] = *c.Solvers
 	}
 	if c.Last != nil {
 		options["last"] = *c.Last
-	}
-	return options
-}
-
-type DiffUpdateContestFlagOptions struct {
-	CurrentScore float64
-	Solvers      int64
-}
-
-func (d DiffUpdateContestFlagOptions) Convert2Expr() map[string]clause.Expr {
-	options := make(map[string]clause.Expr)
-	if d.CurrentScore != 0 {
-		options["current_score"] = gorm.Expr("current_score + ?", d.CurrentScore)
-	}
-	if d.Solvers != 0 {
-		options["solvers"] = gorm.Expr("solvers + ?", d.Solvers)
 	}
 	return options
 }

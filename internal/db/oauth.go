@@ -119,12 +119,6 @@ func (u UpdateOauthOptions) Convert2Map() map[string]any {
 	return options
 }
 
-type DiffUpdateOauthOptions struct{}
-
-func (d DiffUpdateOauthOptions) Convert2Expr() map[string]clause.Expr {
-	return nil
-}
-
 func InitOauthRepo(tx *gorm.DB) *OauthRepo {
 	return &OauthRepo{
 		BasicRepo: BasicRepo[model.Oauth]{

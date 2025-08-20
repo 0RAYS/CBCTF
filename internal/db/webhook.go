@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type WebhookRepo struct {
@@ -47,8 +46,10 @@ type UpdateWebhookOptions struct {
 	Retry       *int
 	On          *bool
 	Events      *model.StringList
+	DiffSuccess int64
 	Success     *int64
 	SuccessLast *time.Time
+	DiffFailure int64
 	Failure     *int64
 	FailureLast *time.Time
 }
@@ -79,33 +80,23 @@ func (u UpdateWebhookOptions) Convert2Map() map[string]any {
 	if u.Events != nil {
 		options["events"] = *u.Events
 	}
+	if u.DiffSuccess != 0 {
+		options["success"] = gorm.Expr("success + ?", u.DiffSuccess)
+	}
 	if u.Success != nil {
 		options["success"] = *u.Success
 	}
 	if u.SuccessLast != nil {
 		options["success_last"] = *u.SuccessLast
 	}
+	if u.DiffFailure != 0 {
+		options["failure"] = gorm.Expr("failure + ?", u.DiffFailure)
+	}
 	if u.Failure != nil {
 		options["failure"] = *u.Failure
 	}
 	if u.FailureLast != nil {
 		options["failure_last"] = *u.FailureLast
-	}
-	return options
-}
-
-type DiffUpdateWebhookOptions struct {
-	Success int64
-	Failure int64
-}
-
-func (d DiffUpdateWebhookOptions) Convert2Expr() map[string]clause.Expr {
-	options := make(map[string]clause.Expr)
-	if d.Success != 0 {
-		options["success"] = gorm.Expr("success + ?", d.Success)
-	}
-	if d.Failure != 0 {
-		options["failure"] = gorm.Expr("failure + ?", d.Failure)
 	}
 	return options
 }

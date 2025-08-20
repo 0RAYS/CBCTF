@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/model"
 
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type ContainerRepo struct {
@@ -45,12 +44,6 @@ type UpdateContainerOptions struct{}
 
 func (u UpdateContainerOptions) Convert2Map() map[string]any {
 	return make(map[string]any)
-}
-
-type DiffUpdateContainerOptions struct{}
-
-func (d DiffUpdateContainerOptions) Convert2Expr() map[string]clause.Expr {
-	return nil
 }
 
 func InitContainerRepo(tx *gorm.DB) *ContainerRepo {
