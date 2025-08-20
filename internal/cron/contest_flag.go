@@ -40,24 +40,24 @@ func updateFlagScore(c *cron.Cron) {
 				for _, contestFlag := range contestChallenge.ContestFlags {
 					mu, _ := service.SolvedMutex.LoadOrStore(contestFlag.ID, &sync.Mutex{})
 					mu.(*sync.Mutex).Lock()
-					func() {
-						contestFlagRepo := db.InitContestFlagRepo(db.DB)
-						solvers, currentScore, ok, _ := service.CalcContestFlagState(db.DB, contestFlag)
-						if !ok {
-							return
+					contestFlagRepo := db.InitContestFlagRepo(db.DB)
+					solvers, currentScore, ok, _ := service.CalcContestFlagState(db.DB, contestFlag)
+					if !ok {
+						mu.(*sync.Mutex).Unlock()
+						continue
+					}
+					if solvers != contestFlag.Solvers || currentScore != contestFlag.CurrentScore {
+						tx := db.DB.Begin()
+						if ok, _ = contestFlagRepo.Update(contestFlag.ID, db.UpdateContestFlagOptions{
+							CurrentScore: &currentScore,
+							Solvers:      &solvers,
+						}); !ok {
+							tx.Rollback()
+							mu.(*sync.Mutex).Unlock()
+							continue
 						}
-						if solvers != contestFlag.Solvers || currentScore != contestFlag.CurrentScore {
-							tx := db.DB.Begin()
-							if ok, _ = contestFlagRepo.Update(contestFlag.ID, db.UpdateContestFlagOptions{
-								CurrentScore: &currentScore,
-								Solvers:      &solvers,
-							}); !ok {
-								tx.Rollback()
-								return
-							}
-							tx.Commit()
-						}
-					}()
+						tx.Commit()
+					}
 					mu.(*sync.Mutex).Unlock()
 				}
 			}

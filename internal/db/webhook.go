@@ -110,21 +110,15 @@ func InitWebhookRepo(tx *gorm.DB) *WebhookRepo {
 }
 
 func (w *WebhookRepo) UpdateStatus(id uint, success bool, last time.Time) (bool, string) {
-	old, ok, msg := w.GetByID(id, GetOptions{Selects: []string{"id", "success", "failure"}})
-	if !ok {
-		return false, msg
-	}
 	var options UpdateWebhookOptions
 	if success {
-		count := old.Success + 1
 		options = UpdateWebhookOptions{
-			Success:     &count,
+			DiffSuccess: 1,
 			SuccessLast: &last,
 		}
 	} else {
-		count := old.Failure + 1
 		options = UpdateWebhookOptions{
-			Failure:     &count,
+			DiffFailure: 1,
 			FailureLast: &last,
 		}
 	}
