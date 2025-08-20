@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/oauth"
 
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type OauthRepo struct {
