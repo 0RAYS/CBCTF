@@ -133,9 +133,15 @@ func Init() *gin.Engine {
 				middleware.RateLimit("init_flag", 1, time.Minute),
 				middleware.ContestIsRunning, middleware.CheckIfGenerated, middleware.CheckSolved, ResetTeamFlag,
 			)
-			contestChallenge.POST("/start", middleware.RateLimit("start_victim", 1, time.Minute), middleware.CheckIfGenerated, StartVictim)
-			contestChallenge.POST("/increase", middleware.ContestIsRunning, middleware.CheckIfGenerated, IncreaseVictimDuration)
-			contestChallenge.POST("/stop", middleware.CheckIfGenerated, StopVictim)
+			contestChallenge.POST("/start",
+				middleware.CheckChallengeType(model.PodsChallengeType),
+				middleware.RateLimit("start_victim", 1, time.Minute), middleware.CheckIfGenerated, StartVictim,
+			)
+			contestChallenge.POST("/increase",
+				middleware.CheckChallengeType(model.PodsChallengeType), middleware.ContestIsRunning,
+				middleware.CheckIfGenerated, IncreaseVictimDuration,
+			)
+			contestChallenge.POST("/stop", middleware.CheckChallengeType(model.PodsChallengeType), middleware.CheckIfGenerated, StopVictim)
 			contestChallenge.POST("/submit",
 				middleware.RateLimit("submit_flag", 1, time.Second),
 				middleware.ContestIsRunning, middleware.CheckIfGenerated, middleware.CheckSolved, SubmitFlag,

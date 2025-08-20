@@ -9,6 +9,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func CheckChallengeType(t string) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		if GetChallenge(ctx).Type != t {
+			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.InvalidChallengeType, "data": nil})
+			return
+		}
+		ctx.Next()
+	}
+}
+
 // CheckSolved model.Team 是否完全解决 model.ContestChallenge
 func CheckSolved(ctx *gin.Context) {
 	team := GetTeam(ctx)
