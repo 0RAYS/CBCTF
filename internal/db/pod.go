@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/model"
 
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type PodRepo struct {
