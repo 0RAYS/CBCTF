@@ -1,13 +1,11 @@
 package websocket
 
 import (
-	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/websocket/handler"
 	"CBCTF/internal/websocket/middleware"
 	"CBCTF/internal/websocket/model"
-	"net/http"
 	"sync"
 	"time"
 
@@ -16,12 +14,7 @@ import (
 )
 
 var (
-	upgrader = websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool {
-			origin := r.Header.Get("Origin")
-			return origin == config.Env.Frontend
-		},
-	}
+	upgrader = websocket.Upgrader{WriteBufferSize: 1024, ReadBufferSize: 1024}
 
 	AdminClients   = make(map[uint]*model.Connection)
 	AdminClientsMu sync.RWMutex
@@ -50,7 +43,6 @@ func WS(ctx *gin.Context) {
 		mu = &UserClientsMu
 		clients = &UserClients
 	}
-
 	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
 		log.Logger.Warningf("Failed to upgrade connection: %s", err)

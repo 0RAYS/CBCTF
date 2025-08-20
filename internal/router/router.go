@@ -28,14 +28,16 @@ func Init() *gin.Engine {
 
 	router.MaxMultipartMemory = int64(config.Env.Gin.Upload.Max << 20)
 
+	router.Use(gin.Recovery(), middleware.Cors())
+
 	{
 		// 不可接入其他中间件
 		router.GET("/ws", wsm.WSAuth, websocket.WS)
 	}
 
 	router.Use(
-		gin.Recovery(), middleware.Cors, middleware.SetTrace, middleware.SetMagic, middleware.Logger, middleware.Prometheus,
-		middleware.AccessLog, middleware.I18n, middleware.RateLimit("globals", 100, time.Minute), middleware.Events,
+		middleware.SetTrace, middleware.SetMagic, middleware.Logger, middleware.Prometheus, middleware.AccessLog,
+		middleware.I18n, middleware.RateLimit("globals", 100, time.Minute), middleware.Events,
 	)
 
 	{
