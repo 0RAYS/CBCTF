@@ -208,7 +208,7 @@ func Init() *gin.Engine {
 		}
 
 		admin.GET("/webhook", GetWebhooks)
-		admin.GET("/webhook/events", GetEvents)
+		admin.GET("/webhook/events", GetEventTypes)
 		admin.GET("/webhook/history", GetWebhookHistory)
 		admin.POST("/webhook", CreateWebhook)
 		adminWebhook := admin.Group("/webhook/:webhookID", middleware.SetWebhook)
@@ -229,8 +229,18 @@ func Init() *gin.Engine {
 			adminChallenge.PUT("", UpdateChallenge)
 			adminChallenge.DELETE("", DeleteChallenge)
 			adminChallenge.POST("/upload", UploadChallengeFile)
-			//TODO
-			adminChallenge.POST("/test")
+
+			adminChallengeTest := adminChallenge.Group("/test")
+			{
+				adminChallengeTest.GET("")
+				adminChallengeTest.POST("/init")
+				adminChallengeTest.GET("/attachment")
+				adminChallengeTest.POST("/reset")
+				adminChallengeTest.POST("/start", middleware.CheckChallengeType(model.PodsChallengeType))
+				adminChallengeTest.POST("/increase", middleware.CheckChallengeType(model.PodsChallengeType))
+				adminChallengeTest.POST("/stop", middleware.CheckChallengeType(model.PodsChallengeType))
+				adminChallengeTest.POST("/submit")
+			}
 		}
 
 		admin.GET("/contests", GetContests)
