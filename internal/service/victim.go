@@ -28,7 +28,7 @@ func needVPC(dockers []model.Docker) bool {
 	return false
 }
 
-func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChallenge model.ContestChallenge) (model.Victim, bool, string) {
+func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge) (model.Victim, bool, string) {
 	var (
 		challengeRepo = db.InitChallengeRepo(tx)
 		victimRepo    = db.InitVictimRepo(tx)
@@ -287,7 +287,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 	}); !ok {
 		return model.Victim{}, false, msg
 	}
-	prometheus.AddVictimContainerMetrics(team.Contest, contestChallenge, 1)
+	prometheus.AddVictimContainerMetrics(contest, contestChallenge, 1)
 	return victim, true, i18n.Success
 }
 

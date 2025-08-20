@@ -15,12 +15,13 @@ import (
 
 func InitTeamFlag(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.InitChallengeEventType)
-	team := middleware.GetTeam(ctx)
 	user := middleware.GetSelf(ctx).(model.User)
+	team := middleware.GetTeam(ctx)
+	contest := middleware.GetContest(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	challenge := middleware.GetChallenge(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
-	teamFlags, ok, msg := service.CreateTeamFlag(tx, team, contestChallenge)
+	teamFlags, ok, msg := service.CreateTeamFlag(tx, team, contest, contestChallenge, contestChallenge.ContestFlags)
 	if !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -41,12 +42,13 @@ func InitTeamFlag(ctx *gin.Context) {
 
 func ResetTeamFlag(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.ResetChallengeEventType)
-	team := middleware.GetTeam(ctx)
 	user := middleware.GetSelf(ctx).(model.User)
+	team := middleware.GetTeam(ctx)
+	contest := middleware.GetContest(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	challenge := middleware.GetChallenge(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
-	teamFlags, ok, msg := service.UpdateTeamFlag(tx, team, contestChallenge)
+	teamFlags, ok, msg := service.UpdateTeamFlag(tx, team, contest, contestChallenge, contestChallenge.ContestFlags)
 	if !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

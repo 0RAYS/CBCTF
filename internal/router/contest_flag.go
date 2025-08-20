@@ -22,9 +22,10 @@ func SubmitFlag(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.SubmitFlagEventType)
 	user := middleware.GetSelf(ctx).(model.User)
 	team := middleware.GetTeam(ctx)
+	contest := middleware.GetContest(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
-	result, _, ok, msg := service.Submit(tx, user, team, contestChallenge, form, ctx.ClientIP())
+	result, _, ok, msg := service.Submit(tx, user, team, contest, contestChallenge, form, ctx.ClientIP())
 	if !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -32,7 +33,7 @@ func SubmitFlag(ctx *gin.Context) {
 	}
 	tx.Commit()
 	go func(ctx *gin.Context) {
-		if contestChallenge.Type == model.PodsChallengeType && service.CheckIfSolved(db.DB.WithContext(ctx), team, contestChallenge) {
+		if contestChallenge.Type == model.PodsChallengeType && service.CheckIfSolved(db.DB.WithContext(ctx), team, contestChallenge, contestChallenge.ContestFlags) {
 			service.StopTeamVictim(db.DB.WithContext(ctx), team, contestChallenge)
 		}
 	}(ctx.Copy())
