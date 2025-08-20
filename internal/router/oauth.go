@@ -189,6 +189,7 @@ func OauthCallback(ctx *gin.Context) {
 		}
 		prometheus.UpdateUserRegisterMetrics(provider.Provider)
 	}
+	ctx.Set("Self", user)
 	token, err := utils.GenerateToken(user.ID, user.Name, false, model.OauthLoginType)
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
