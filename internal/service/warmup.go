@@ -136,7 +136,7 @@ func StartContestVictims(tx *gorm.DB, contest model.Contest, form f.StartContest
 			tx2 := db.DB.Begin()
 			_, ok, msg = StartTeamVictim(tx2, model.User{BasicModel: model.BasicModel{ID: team.CaptainID}}, team, contest, contestChallenge)
 			if !ok {
-				go StopTeamVictim(db.DB, team, contestChallenge)
+				go StopTeamVictim(db.DB, team, contest, contestChallenge)
 				tx2.Rollback()
 				continue
 			}

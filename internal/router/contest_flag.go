@@ -34,7 +34,7 @@ func SubmitFlag(ctx *gin.Context) {
 	tx.Commit()
 	go func(ctx *gin.Context) {
 		if contestChallenge.Type == model.PodsChallengeType && service.CheckIfSolved(db.DB.WithContext(ctx), team, contestChallenge, contestChallenge.ContestFlags) {
-			service.StopTeamVictim(db.DB.WithContext(ctx), team, contestChallenge)
+			service.StopTeamVictim(db.DB.WithContext(ctx), team, contest, contestChallenge)
 		}
 	}(ctx.Copy())
 	ctx.Set(middleware.CTXEventSuccessKey, true)

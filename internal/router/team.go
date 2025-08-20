@@ -59,9 +59,21 @@ func GetTeamCaptcha(ctx *gin.Context) {
 }
 
 func GetTeammates(ctx *gin.Context) {
+	team := middleware.GetTeam(ctx)
+	DB := db.DB.WithContext(ctx)
+	userIDL, ok, msg := db.GetUserIDByTeamID(DB, team.ID)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	users, _, ok, msg := db.InitUserRepo(DB).List(-1, -1, db.GetOptions{Conditions: map[string]any{"id": userIDL}})
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
 	data := make([]gin.H, 0)
-	for _, user := range middleware.GetTeam(ctx).Users {
-		data = append(data, resp.GetUserResp(*user, middleware.IsAdmin(ctx)))
+	for _, user := range users {
+		data = append(data, resp.GetUserResp(user, middleware.IsAdmin(ctx)))
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
 	return
@@ -117,8 +129,9 @@ func UpdateCaptcha(ctx *gin.Context) {
 
 func DeleteTeam(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteTeamEventType)
+	contest := middleware.GetContest(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
-	ok, msg := service.DeleteTeam(tx, middleware.GetTeam(ctx))
+	ok, msg := service.DeleteTeam(tx, middleware.GetTeam(ctx), contest)
 	if !ok {
 		tx.Rollback()
 	} else {
