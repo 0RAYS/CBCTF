@@ -106,7 +106,7 @@ func IsAdmin(ctx *gin.Context) bool {
 }
 
 // CheckRole 检查角色
-func CheckRole(isAdmin bool) func(ctx *gin.Context) {
+func CheckRole(isAdmin bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		if IsAdmin(ctx) != isAdmin {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})

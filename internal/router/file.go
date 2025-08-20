@@ -20,7 +20,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func DownloadFile(eventType string) func(ctx *gin.Context) {
+func DownloadFile(eventType string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		ctx.Set(middleware.CTXEventTypeKey, eventType)
 		file := middleware.GetFile(ctx)
@@ -103,7 +103,7 @@ func DownloadTraffic(ctx *gin.Context) {
 	ctx.File(victim.TrafficZipPath())
 }
 
-func UploadAvatar(v string) func(ctx *gin.Context) {
+func UploadAvatar(v string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		file, err := ctx.FormFile(model.AvatarFile)
 		if err != nil {
