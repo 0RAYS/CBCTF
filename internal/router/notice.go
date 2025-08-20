@@ -12,7 +12,6 @@ import (
 	wsm "CBCTF/internal/websocket/model"
 	"fmt"
 	"net/http"
-	"slices"
 
 	"github.com/gin-gonic/gin"
 )
@@ -60,21 +59,23 @@ func CreateNotice(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	go func() {
+	go func(ctx *gin.Context) {
+		websocket.UserClientsMu.Lock()
+		userIDL := make([]uint, 0)
+		for userID := range websocket.UserClients {
+			userIDL = append(userIDL, userID)
+		}
+		websocket.UserClientsMu.Unlock()
+		contest, ok, msg = db.InitContestRepo(db.DB.WithContext(ctx)).GetByID(contest.ID, db.GetOptions{
+			Selects:  []string{"id"},
+			Preloads: map[string]db.GetOptions{"Users": {Conditions: map[string]any{"id": userIDL}, Selects: []string{"id"}}},
+		})
 		contestUserIDL := make([]uint, 0)
 		for _, user := range contest.Users {
 			contestUserIDL = append(contestUserIDL, user.ID)
 		}
-		idL := make([]uint, 0)
-		websocket.UserClientsMu.Lock()
-		for id, _ := range websocket.UserClients {
-			if slices.Contains(contestUserIDL, id) {
-				idL = append(idL, id)
-			}
-		}
-		websocket.UserClientsMu.Unlock()
-		websocket.SendToClients(false, wsm.NoticeLevel, wsm.ContestNoticeWSType, fmt.Sprintf("Notice: %s", notice.Title), notice.Content, idL...)
-	}()
+		websocket.SendToClients(false, wsm.NoticeLevel, wsm.ContestNoticeWSType, fmt.Sprintf("Notice: %s", notice.Title), notice.Content, userIDL...)
+	}(ctx.Copy())
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": &notice})
 }

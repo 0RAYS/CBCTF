@@ -47,9 +47,7 @@ func SetContest(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
-	contest, ok, msg := db.InitContestRepo(db.DB.WithContext(ctx)).GetByID(contestID.ContestID, db.GetOptions{
-		Preloads: map[string]db.GetOptions{"Teams": {}, "Users": {}, "Notices": {}},
-	})
+	contest, ok, msg := db.InitContestRepo(db.DB.WithContext(ctx)).GetByID(contestID.ContestID)
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
