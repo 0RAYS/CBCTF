@@ -229,18 +229,6 @@ func Init() *gin.Engine {
 			adminChallenge.PUT("", UpdateChallenge)
 			adminChallenge.DELETE("", DeleteChallenge)
 			adminChallenge.POST("/upload", UploadChallengeFile)
-
-			adminChallengeTest := adminChallenge.Group("/test")
-			{
-				adminChallengeTest.GET("")
-				adminChallengeTest.POST("/init")
-				adminChallengeTest.GET("/attachment")
-				adminChallengeTest.POST("/reset")
-				adminChallengeTest.POST("/start", middleware.CheckChallengeType(model.PodsChallengeType))
-				adminChallengeTest.POST("/increase", middleware.CheckChallengeType(model.PodsChallengeType))
-				adminChallengeTest.POST("/stop", middleware.CheckChallengeType(model.PodsChallengeType))
-				adminChallengeTest.POST("/submit")
-			}
 		}
 
 		admin.GET("/contests", GetContests)
