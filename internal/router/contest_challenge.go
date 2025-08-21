@@ -47,7 +47,7 @@ func GetContestChallenges(ctx *gin.Context) {
 	}
 	data := make([]gin.H, 0)
 	for _, contestChallenge := range contestChallengeL {
-		tmp := resp.GetContestChallengeResp(contestChallenge.Challenge, contestChallenge)
+		tmp := resp.GetContestChallengeResp(contestChallenge)
 		if !middleware.IsAdmin(ctx) {
 			team := middleware.GetTeam(ctx)
 			tmp["hidden"] = false
@@ -77,8 +77,9 @@ func GetContestChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	contestChallenge.Challenge = challenge
 	contestChallenge.ContestFlags = contestFlags
-	data := resp.GetContestChallengeResp(challenge, contestChallenge)
+	data := resp.GetContestChallengeResp(contestChallenge)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
 }
 
@@ -118,7 +119,7 @@ func AddContestChallenge(ctx *gin.Context) {
 	contestChallengeL, failedL, _, _ := service.CreateContestChallenge(db.DB.WithContext(ctx), middleware.GetContest(ctx), form)
 	data := make([]gin.H, 0)
 	for _, contestChallenge := range contestChallengeL {
-		data = append(data, resp.GetContestChallengeResp(contestChallenge.Challenge, contestChallenge))
+		data = append(data, resp.GetContestChallengeResp(contestChallenge))
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"contest_challenge": data, "failed": failedL}})

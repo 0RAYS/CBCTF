@@ -63,7 +63,8 @@ type CreateSNatResult struct {
 	MSG  string
 }
 
-func StartVictim(victim model.Victim, pods []model.Pod) (map[string]model.Exposes, bool, string) {
+// StartVictim model.Victim Preload model.Pod
+func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 	log.Logger.Infof("Starting Victim for Team %d ContestChallenge %d", victim.TeamID, victim.ContestChallengeID)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
@@ -263,7 +264,7 @@ func StartVictim(victim model.Victim, pods []model.Pod) (map[string]model.Expose
 		}
 	}
 	createPodFuncL := make([]func() Result, 0)
-	for _, pod := range pods {
+	for _, pod := range victim.Pods {
 		createPodFuncL = append(createPodFuncL, func() Result {
 			return func(pod model.Pod) Result {
 				nfsName := fmt.Sprintf("vol-%s", utils.RandStr(20))

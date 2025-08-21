@@ -39,7 +39,7 @@ func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) (bool,
 	return true, i18n.Success
 }
 
-// CreateTeamFlag 需要预加载 ContestFlags
+// CreateTeamFlag model.ContestChallenge Preload model.ContestFlag
 func CreateTeamFlag(tx *gorm.DB, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge) ([]model.TeamFlag, bool, string) {
 	teamFlagRepo := db.InitTeamFlagRepo(tx)
 	teamFlagL := make([]model.TeamFlag, 0)
@@ -78,7 +78,7 @@ func CreateTeamFlag(tx *gorm.DB, team model.Team, contest model.Contest, contest
 	return teamFlagL, true, i18n.Success
 }
 
-// UpdateTeamFlag 需要预加载 ContestFlags
+// UpdateTeamFlag model.ContestChallenge Preload model.ContestFlag
 func UpdateTeamFlag(tx *gorm.DB, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge) ([]model.TeamFlag, bool, string) {
 	submissionRepo := db.InitSubmissionRepo(tx)
 	submissions, _, ok, msg := submissionRepo.List(-1, -1, db.GetOptions{
@@ -111,7 +111,6 @@ func UpdateTeamFlag(tx *gorm.DB, team model.Team, contest model.Contest, contest
 	return CreateTeamFlag(tx, team, contest, contestChallenge)
 }
 
-// CheckIfGenerated contestChallenge 需要预加载 ContestFlags
 func CheckIfGenerated(tx *gorm.DB, team model.Team, contestFlags []model.ContestFlag) bool {
 	teamFlagRepo := db.InitTeamFlagRepo(tx)
 	for _, contestFlag := range contestFlags {
