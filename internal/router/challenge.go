@@ -101,7 +101,7 @@ func UpdateChallenge(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateChallengeEventType)
 	challenge := middleware.GetChallenge(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
-	ok, msg := service.UpdateChallenge(tx, challenge, challenge.ChallengeFlags, form)
+	ok, msg := service.UpdateChallenge(tx, challenge, form)
 	if !ok {
 		tx.Rollback()
 		return

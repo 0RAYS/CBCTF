@@ -197,10 +197,7 @@ func SetChallenge(ctx *gin.Context) {
 		return
 	}
 	challenge, ok, msg := db.InitChallengeRepo(db.DB.WithContext(ctx)).GetByRandID(challengeID.ChallengeID, db.GetOptions{
-		Preloads: map[string]db.GetOptions{
-			"Dockers":        {},
-			"ChallengeFlags": {},
-		},
+		Preloads: map[string]db.GetOptions{"Dockers": {}, "ChallengeFlags": {}},
 	})
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
