@@ -19,7 +19,7 @@ func GetTeamRankingResp(teamsData []struct {
 			"score":  team.Team.Score,
 			"avatar": team.Team.Avatar,
 			"last":   team.Team.Last,
-			"users":  len(team.Team.Users),
+			"users":  team.Team.UserCount,
 			"solved": GetSolvedStateResp(team.Solved, flags),
 		}
 		if admin {
