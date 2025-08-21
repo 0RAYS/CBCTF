@@ -196,9 +196,7 @@ func SetChallenge(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
-	challenge, ok, msg := db.InitChallengeRepo(db.DB.WithContext(ctx)).GetByRandID(challengeID.ChallengeID, db.GetOptions{
-		Preloads: map[string]db.GetOptions{"Dockers": {}, "ChallengeFlags": {}},
-	})
+	challenge, ok, msg := db.InitChallengeRepo(db.DB.WithContext(ctx)).GetByRandID(challengeID.ChallengeID)
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -232,7 +230,7 @@ func SetContestChallenge(ctx *gin.Context) {
 	}
 	contestChallenge, ok, msg := db.InitContestChallengeRepo(db.DB.WithContext(ctx)).Get(db.GetOptions{
 		Conditions: map[string]any{"challenge_id": challenge.ID, "contest_id": GetContest(ctx).ID},
-		Preloads:   map[string]db.GetOptions{"Contest": {}, "ContestFlags": {}},
+		Preloads:   map[string]db.GetOptions{"ContestFlags": {}},
 	})
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

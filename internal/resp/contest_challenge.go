@@ -8,9 +8,9 @@ import (
 )
 
 // GetContestChallengeResp 需要预加载 Challenge ContestFlags
-func GetContestChallengeResp(contestChallenge model.ContestChallenge) gin.H {
+func GetContestChallengeResp(challenge model.Challenge, contestChallenge model.ContestChallenge) gin.H {
 	options := make([]gin.H, 0)
-	for _, option := range contestChallenge.Challenge.Options {
+	for _, option := range challenge.Options {
 		options = append(options, gin.H{
 			"rand_id": option.RandID,
 			"content": option.Content,

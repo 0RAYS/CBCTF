@@ -68,12 +68,11 @@ func DownloadChallengeFile(ctx *gin.Context) {
 	ctx.File(path)
 }
 
-// DownloadAttachment 需要预加载 Challenge
 func DownloadAttachment(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DownloadAttachmentEventType)
-	contestChallenge := middleware.GetContestChallenge(ctx)
+	challenge := middleware.GetChallenge(ctx)
 	team := middleware.GetTeam(ctx)
-	path := contestChallenge.Challenge.AttachmentPath(team.ID)
+	path := challenge.AttachmentPath(team.ID)
 	if _, err := os.Stat(path); err != nil {
 		if os.IsNotExist(err) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.FileNotFound, "data": nil})
