@@ -69,30 +69,8 @@ func GetContest(ctx *gin.Context) model.Contest {
 	}
 }
 
-// SetTeamByUser 依照 model.User model.Contest 保存 model.Team 至上下文, 调用前前文须设置 model.Contest
-func SetTeamByUser(ctx *gin.Context) {
-	var (
-		self model.User
-		team model.Team
-		ok   bool
-		msg  string
-	)
-	self, ok = GetSelf(ctx).(model.User)
-	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
-		return
-	}
-	team, ok, msg = db.InitTeamRepo(db.DB.WithContext(ctx)).GetBy2ID(self.ID, GetContest(ctx).ID)
-	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	ctx.Set("Team", team)
-	ctx.Next()
-}
-
-// SetTeamByUri 保存 model.Team 至上下文
-func SetTeamByUri(ctx *gin.Context) {
+// SetTeam 保存 model.Team 至上下文
+func SetTeam(ctx *gin.Context) {
 	var (
 		team model.Team
 		ok   bool
@@ -107,6 +85,28 @@ func SetTeamByUri(ctx *gin.Context) {
 		return
 	}
 	team, ok, msg = db.InitTeamRepo(db.DB.WithContext(ctx)).GetByID(teamID.TeamID)
+	if !ok {
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	ctx.Set("Team", team)
+	ctx.Next()
+}
+
+// SetTeamByUser 依照 model.User model.Contest 保存 model.Team 至上下文, 调用前前文须设置 model.Contest
+func SetTeamByUser(ctx *gin.Context) {
+	var (
+		self model.User
+		team model.Team
+		ok   bool
+		msg  string
+	)
+	self, ok = GetSelf(ctx).(model.User)
+	if !ok {
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
+		return
+	}
+	team, ok, msg = db.InitTeamRepo(db.DB.WithContext(ctx)).GetBy2ID(self.ID, GetContest(ctx).ID)
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
