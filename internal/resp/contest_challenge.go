@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GetContestChallengeResp 需要预加载 Challenge ContestFlags
+// GetContestChallengeResp 需要预加载 ContestFlags
 func GetContestChallengeResp(challenge model.Challenge, contestChallenge model.ContestChallenge) gin.H {
 	options := make([]gin.H, 0)
 	for _, option := range challenge.Options {
