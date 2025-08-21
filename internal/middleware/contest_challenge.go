@@ -23,7 +23,7 @@ func CheckChallengeType(t string) gin.HandlerFunc {
 func CheckSolved(ctx *gin.Context) {
 	team := GetTeam(ctx)
 	contestChallenge := GetContestChallenge(ctx)
-	if service.CheckIfSolved(db.DB.WithContext(ctx), team, contestChallenge, contestChallenge.ContestFlags) {
+	if service.CheckIfSolved(db.DB.WithContext(ctx), team, contestChallenge.ContestFlags) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.AlreadySolved, "data": nil})
 		return
 	}

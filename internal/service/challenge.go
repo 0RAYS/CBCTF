@@ -195,11 +195,11 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 	})
 }
 
-func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, challengeFlags []model.ChallengeFlag, form f.UpdateChallengeForm) (bool, string) {
+func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChallengeForm) (bool, string) {
 	switch challenge.Type {
 	case model.StaticChallengeType, model.DynamicChallengeType:
 		oldChallengeFlagID := make([]uint, 0)
-		for _, flag := range challengeFlags {
+		for _, flag := range challenge.ChallengeFlags {
 			oldChallengeFlagID = append(oldChallengeFlagID, flag.ID)
 		}
 		challengeFlagRepo := db.InitChallengeFlagRepo(tx)
@@ -242,8 +242,8 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, challengeFlags []mo
 			}
 			answer = strings.TrimSuffix(answer, ",")
 			repo := db.InitChallengeFlagRepo(tx)
-			if len(challengeFlags) > 0 {
-				if ok, msg := repo.Update(challengeFlags[0].ID, db.UpdateChallengeFlagOptions{
+			if len(challenge.ChallengeFlags) > 0 {
+				if ok, msg := repo.Update(challenge.ChallengeFlags[0].ID, db.UpdateChallengeFlagOptions{
 					Value: &answer,
 				}); !ok {
 					return false, msg

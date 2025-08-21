@@ -90,10 +90,13 @@ func CountAttempts(tx *gorm.DB, team model.Team, contestChallenge model.ContestC
 }
 
 // CheckIfSolved contestChallenge 需要预加载 ContestFlags
-func CheckIfSolved(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge, contestFlags []model.ContestFlag) bool {
+func CheckIfSolved(tx *gorm.DB, team model.Team, contestFlags []model.ContestFlag) bool {
+	if len(contestFlags) == 0 {
+		return true
+	}
 	submissionRepo := db.InitSubmissionRepo(tx)
 	count, _, _ := submissionRepo.Count(db.CountOptions{
-		Conditions: map[string]any{"team_id": team.ID, "contest_challenge_id": contestChallenge.ID, "solved": true},
+		Conditions: map[string]any{"team_id": team.ID, "contest_challenge_id": contestFlags[0].ContestChallengeID, "solved": true},
 	})
 	return count == int64(len(contestFlags))
 }
