@@ -98,6 +98,7 @@ func Search(ctx *gin.Context) {
 				}
 			}
 		}
+		options.Preloads = map[string]db.GetOptions{"ChallengeFlags": {}, "Dockers": {}}
 		challenges, count, ok, msg := db.InitChallengeRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, options)
 		if !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
