@@ -24,6 +24,13 @@ func SubmitFlag(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	contest := middleware.GetContest(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
+	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB.WithContext(ctx)).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
+	})
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
 	tx := db.DB.WithContext(ctx).Begin()
 	result, _, ok, msg := service.Submit(tx, user, team, contest, contestChallenge, form, ctx.ClientIP())
 	if !ok {
@@ -33,7 +40,7 @@ func SubmitFlag(ctx *gin.Context) {
 	}
 	tx.Commit()
 	go func(ctx *gin.Context) {
-		if contestChallenge.Type == model.PodsChallengeType && service.CheckIfSolved(db.DB.WithContext(ctx), team, contestChallenge.ContestFlags) {
+		if contestChallenge.Type == model.PodsChallengeType && service.CheckIfSolved(db.DB.WithContext(ctx), team, contestFlags) {
 			service.StopTeamVictim(db.DB.WithContext(ctx), team, contest, contestChallenge)
 		}
 	}(ctx.Copy())
@@ -43,8 +50,15 @@ func SubmitFlag(ctx *gin.Context) {
 
 func GetContestFlags(ctx *gin.Context) {
 	contestChallenge := middleware.GetContestChallenge(ctx)
+	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB.WithContext(ctx)).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
+	})
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
 	data := make([]gin.H, 0)
-	for _, contestFlag := range contestChallenge.ContestFlags {
+	for _, contestFlag := range contestFlags {
 		data = append(data, resp.GetContestFlagResp(contestFlag))
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})

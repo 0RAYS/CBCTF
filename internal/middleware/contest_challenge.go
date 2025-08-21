@@ -23,7 +23,14 @@ func CheckChallengeType(t string) gin.HandlerFunc {
 func CheckSolved(ctx *gin.Context) {
 	team := GetTeam(ctx)
 	contestChallenge := GetContestChallenge(ctx)
-	if service.CheckIfSolved(db.DB.WithContext(ctx), team, contestChallenge.ContestFlags) {
+	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB.WithContext(ctx)).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
+	})
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	if service.CheckIfSolved(db.DB.WithContext(ctx), team, contestFlags) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.AlreadySolved, "data": nil})
 		return
 	}

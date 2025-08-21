@@ -20,7 +20,7 @@ func GetContestChallengeResp(challenge model.Challenge, contestChallenge model.C
 		options[i], options[j] = options[j], options[i]
 	})
 	data := gin.H{
-		"id":       contestChallenge.Challenge.RandID,
+		"id":       challenge.RandID,
 		"name":     contestChallenge.Name,
 		"desc":     contestChallenge.Desc,
 		"attempt":  contestChallenge.Attempt,

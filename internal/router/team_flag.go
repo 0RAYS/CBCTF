@@ -19,6 +19,14 @@ func InitTeamFlag(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	contest := middleware.GetContest(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
+	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB.WithContext(ctx)).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
+	})
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	contestChallenge.ContestFlags = contestFlags
 	challenge := middleware.GetChallenge(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
 	teamFlags, ok, msg := service.CreateTeamFlag(tx, team, contest, contestChallenge)
@@ -46,6 +54,14 @@ func ResetTeamFlag(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	contest := middleware.GetContest(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
+	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB.WithContext(ctx)).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
+	})
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	contestChallenge.ContestFlags = contestFlags
 	challenge := middleware.GetChallenge(ctx)
 	tx := db.DB.WithContext(ctx).Begin()
 	teamFlags, ok, msg := service.UpdateTeamFlag(tx, team, contest, contestChallenge)
