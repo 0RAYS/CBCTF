@@ -244,7 +244,7 @@ func Init() *gin.Engine {
 			adminContest.GET("/timeline", GetRankTimeline)
 
 			adminContest.GET("/teams", GetTeams)
-			adminContestTeam := adminContest.Group("/teams/:teamID", middleware.SetTeamByUri)
+			adminContestTeam := adminContest.Group("/teams/:teamID", middleware.SetTeam)
 			{
 				adminContestTeam.GET("", GetTeam)
 				adminContestTeam.GET("/users", GetTeammates)
