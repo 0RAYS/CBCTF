@@ -75,6 +75,7 @@ func GetContestChallenge(ctx *gin.Context) {
 
 func GetContestChallengeStatus(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
+	challenge := middleware.GetChallenge(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	data := gin.H{
 		"attempts": service.CountAttempts(db.DB.WithContext(ctx), team, contestChallenge),
@@ -82,7 +83,7 @@ func GetContestChallengeStatus(ctx *gin.Context) {
 		"solved":   service.CheckIfSolved(db.DB.WithContext(ctx), team, contestChallenge.ContestFlags),
 		"remote":   service.GetTeamVictimStatus(db.DB.WithContext(ctx), team, contestChallenge),
 		"file": func() string {
-			if _, err := os.Stat(contestChallenge.Challenge.AttachmentPath(team.ID)); err != nil {
+			if _, err := os.Stat(challenge.AttachmentPath(team.ID)); err != nil {
 				return ""
 			}
 			return "attachment.zip"
