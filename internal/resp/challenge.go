@@ -124,7 +124,7 @@ func Dockers2Yaml(dockers []model.Docker, challengeFlags []model.ChallengeFlag) 
 	return string(res)
 }
 
-// GetChallengeResp 需要预加载 ChallengeFlags, Dockers
+// GetChallengeResp model.Challenge Preload model.Docker model.ChallengeFlag
 func GetChallengeResp(challenge model.Challenge) gin.H {
 	flags := make([]gin.H, 0)
 	if challenge.Type != model.PodsChallengeType {

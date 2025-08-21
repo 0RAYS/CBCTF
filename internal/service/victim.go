@@ -249,7 +249,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contest mode
 		}
 		victim.Pods = append(victim.Pods, pod)
 	}
-	ipExposesMap, ok, msg := k8s.StartVictim(victim, victim.Pods)
+	ipExposesMap, ok, msg := k8s.StartVictim(victim)
 	if !ok {
 		return model.Victim{}, false, msg
 	}

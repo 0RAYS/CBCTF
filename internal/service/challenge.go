@@ -195,6 +195,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 	})
 }
 
+// UpdateChallenge model.Challenge Preload model.ChallengeFlag
 func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChallengeForm) (bool, string) {
 	switch challenge.Type {
 	case model.StaticChallengeType, model.DynamicChallengeType:

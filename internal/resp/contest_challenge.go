@@ -7,10 +7,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GetContestChallengeResp 需要预加载 ContestFlags
-func GetContestChallengeResp(challenge model.Challenge, contestChallenge model.ContestChallenge) gin.H {
+// GetContestChallengeResp model.ContestChallenge Preload model.Challenge model.ContestFlag
+func GetContestChallengeResp(contestChallenge model.ContestChallenge) gin.H {
 	options := make([]gin.H, 0)
-	for _, option := range challenge.Options {
+	for _, option := range contestChallenge.Challenge.Options {
 		options = append(options, gin.H{
 			"rand_id": option.RandID,
 			"content": option.Content,
@@ -20,7 +20,7 @@ func GetContestChallengeResp(challenge model.Challenge, contestChallenge model.C
 		options[i], options[j] = options[j], options[i]
 	})
 	data := gin.H{
-		"id":       challenge.RandID,
+		"id":       contestChallenge.Challenge.RandID,
 		"name":     contestChallenge.Name,
 		"desc":     contestChallenge.Desc,
 		"attempt":  contestChallenge.Attempt,

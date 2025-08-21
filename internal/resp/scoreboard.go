@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetTeamRankingResp model.ContestFlag Preload model.ContestChallenge
 func GetTeamRankingResp(teamsData []struct {
 	Team   model.Team
 	Solved []model.ContestFlag
@@ -50,14 +51,14 @@ func GetScoreboardResp(challengeMap map[string]model.Challenge, globalMap map[st
 			"score":      team.Score,
 			"avatar":     team.Avatar,
 			"last":       team.Last,
-			"users":      len(team.Users),
+			"users":      team.UserCount,
 			"challenges": solved,
 		})
 	}
 	return data
 }
 
-// GetRankTimelineResp 需要预加载 model.Submission
+// GetRankTimelineResp model.Team Preload model.Submission
 func GetRankTimelineResp(teams []model.Team) []gin.H {
 	data := make([]gin.H, 0)
 	for _, team := range teams {

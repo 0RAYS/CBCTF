@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GetSolvedStateResp all 需要预加载 ContestChallenge
+// GetSolvedStateResp model.ContestFlag Preload model.ContestChallenge
 func GetSolvedStateResp(solved []model.ContestFlag, all []model.ContestFlag) []gin.H {
 	categories := make(map[uint]string)
 	for _, v := range all {
