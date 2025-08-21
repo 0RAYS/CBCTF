@@ -304,9 +304,7 @@ func GetTeamVictimStatus(tx *gorm.DB, team model.Team, contestChallenge model.Co
 	}
 	victims, _, ok, _ := db.InitVictimRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID, "team_id": team.ID},
-		Preloads: map[string]db.GetOptions{
-			"Pods": {},
-		},
+		Preloads:   map[string]db.GetOptions{"Pods": {}},
 	})
 	if !ok {
 		return data
