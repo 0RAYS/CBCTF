@@ -8,6 +8,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/utils"
+	"database/sql"
 	"fmt"
 	"slices"
 	"strconv"
@@ -47,9 +48,9 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contest mode
 	}
 	vOptions := db.CreateVictimOptions{
 		ChallengeID:        contestChallenge.ChallengeID,
-		ContestChallengeID: contestChallenge.ID,
-		TeamID:             team.ID,
-		UserID:             user.ID,
+		ContestChallengeID: sql.Null[uint]{V: contestChallenge.ID, Valid: true},
+		TeamID:             sql.Null[uint]{V: team.ID, Valid: true},
+		UserID:             sql.Null[uint]{V: user.ID, Valid: true},
 		Start:              time.Now(),
 		Duration:           time.Hour,
 		NetworkPolicies:    challenge.NetworkPolicies,

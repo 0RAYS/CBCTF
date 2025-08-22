@@ -90,8 +90,8 @@ func checkRemoteIP(contest model.Contest) {
 				if netIP.IsLoopback() {
 					continue
 				}
-				if !slices.Contains(ipTeamIDMap[traffics.SrcIP], victim.TeamID) {
-					ipTeamIDMap[traffics.SrcIP] = append(ipTeamIDMap[traffics.SrcIP], victim.TeamID)
+				if !slices.Contains(ipTeamIDMap[traffics.SrcIP], victim.TeamID.V) {
+					ipTeamIDMap[traffics.SrcIP] = append(ipTeamIDMap[traffics.SrcIP], victim.TeamID.V)
 				}
 			}
 		}

@@ -51,10 +51,10 @@ func CreateFrpc(victim model.Victim) (model.Endpoints, []string, bool, string) {
 		// 添加一个独立tag, 防止受 NetworkPolicy 影响
 		labels := map[string]string{
 			"victim_id":            strconv.Itoa(int(victim.ID)),
-			"user_id":              strconv.Itoa(int(victim.UserID)),
-			"team_id":              strconv.Itoa(int(victim.TeamID)),
+			"user_id":              strconv.Itoa(int(victim.UserID.V)),
+			"team_id":              strconv.Itoa(int(victim.TeamID.V)),
 			"challenge_id":         strconv.Itoa(int(victim.ChallengeID)),
-			"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID)),
+			"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID.V)),
 			FrpcPodTag:             podName,
 		}
 		data := fmt.Sprintf("serverAddr = \"%s\"\nserverPort = %d\nauth.token = \"%s\"\n\n", frps.Host, frps.Port, frps.Token)
