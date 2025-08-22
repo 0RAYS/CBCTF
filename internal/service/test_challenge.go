@@ -16,6 +16,40 @@ import (
 	"gorm.io/gorm"
 )
 
+func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) (bool, string) {
+	challengeFlags, _, ok, msg := db.InitChallengeFlagRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"challenge_id": challenge.ID},
+	})
+	if !ok {
+		return false, msg
+	}
+	ok, msg = k8s.GenTestAttachment(challenge, challengeFlags)
+	if !ok {
+		return false, msg
+	}
+	return true, msg
+}
+
+func GetTestVictimStatus(tx *gorm.DB, challenge model.Challenge) gin.H {
+	data := gin.H{
+		"target":    make([]string, 0),
+		"remaining": 0,
+		"status":    "Down",
+	}
+	if challenge.Type != model.PodsChallengeType {
+		data["status"] = "NotDocker"
+		return data
+	}
+	victim, ok, _ := db.InitVictimRepo(tx).HasAliveTestVictim(challenge.ID)
+	if !ok {
+		return data
+	}
+	data["target"] = victim.RemoteAddr()
+	data["status"] = "Running"
+	data["remaining"] = victim.Remaining().Seconds()
+	return data
+}
+
 // StartTestVictim model.Challenge
 func StartTestVictim(tx *gorm.DB, challenge model.Challenge) (model.Victim, bool, string) {
 	var (
@@ -255,26 +289,6 @@ func StartTestVictim(tx *gorm.DB, challenge model.Challenge) (model.Victim, bool
 		return model.Victim{}, false, msg
 	}
 	return victim, true, i18n.Success
-}
-
-func GetTestVictimStatus(tx *gorm.DB, challenge model.Challenge) gin.H {
-	data := gin.H{
-		"target":    make([]string, 0),
-		"remaining": 0,
-		"status":    "Down",
-	}
-	if challenge.Type != model.PodsChallengeType {
-		data["status"] = "NotDocker"
-		return data
-	}
-	victim, ok, _ := db.InitVictimRepo(tx).HasAliveTestVictim(challenge.ID)
-	if !ok {
-		return data
-	}
-	data["target"] = victim.RemoteAddr()
-	data["status"] = "Running"
-	data["remaining"] = victim.Remaining().Seconds()
-	return data
 }
 
 func StopTestVictim(tx *gorm.DB, challenge model.Challenge) (bool, string) {
