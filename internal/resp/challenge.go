@@ -19,26 +19,26 @@ func Dockers2Yaml(dockers []model.Docker, challengeFlags []model.ChallengeFlag) 
 	volumeFlags := make(map[uint]map[string]string)
 	envFlags := make(map[uint]map[string]string)
 	for _, flag := range challengeFlags {
-		if flag.DockerID == nil {
+		if !flag.DockerID.Valid {
 			continue
 		}
 		switch flag.InjectType {
 		case model.VolumeInjectType:
-			if volumeFlags[*flag.DockerID] == nil {
-				volumeFlags[*flag.DockerID] = make(map[string]string)
+			if volumeFlags[flag.DockerID.V] == nil {
+				volumeFlags[flag.DockerID.V] = make(map[string]string)
 			}
-			volumeFlags[*flag.DockerID] = make(map[string]string)
-			volumeFlags[*flag.DockerID][flag.Name] = flag.Path
+			volumeFlags[flag.DockerID.V] = make(map[string]string)
+			volumeFlags[flag.DockerID.V][flag.Name] = flag.Path
 			cfg.Volumes[flag.Name] = types.VolumeConfig{
 				Labels: map[string]string{
 					model.VolumeFlagLabelKey: flag.Value,
 				},
 			}
 		case model.EnvInjectType:
-			if envFlags[*flag.DockerID] == nil {
-				envFlags[*flag.DockerID] = make(map[string]string)
+			if envFlags[flag.DockerID.V] == nil {
+				envFlags[flag.DockerID.V] = make(map[string]string)
 			}
-			envFlags[*flag.DockerID][flag.Name] = flag.Value
+			envFlags[flag.DockerID.V][flag.Name] = flag.Value
 		default:
 			continue
 		}

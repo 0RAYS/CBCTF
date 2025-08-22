@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
+	"database/sql"
 	"fmt"
 	"net/http"
 
@@ -36,7 +37,7 @@ func WSAuth(ctx *gin.Context) {
 		magic := ctx.Query("m")
 		if !utils.CompareMagic(magic, claims.X) {
 			go db.InitCheatRepo(db.DB.WithContext(ctx.Copy())).Create(db.CreateCheatOptions{
-				UserID:  &user.ID,
+				UserID:  sql.Null[uint]{V: user.ID, Valid: true},
 				Magic:   magic,
 				IP:      ctx.ClientIP(),
 				Reason:  fmt.Sprintf(model.DifferentTokenMagic, magic, claims.X),

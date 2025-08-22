@@ -3,6 +3,7 @@ package cron
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/model"
+	"database/sql"
 	"fmt"
 	"net"
 	"slices"
@@ -104,8 +105,8 @@ func checkRemoteIP(contest model.Contest) {
 			}
 			for _, teamID := range teamIDL {
 				cheatRepo.Create(db.CreateCheatOptions{
-					TeamID:    &teamID,
-					ContestID: &contest.ID,
+					TeamID:    sql.Null[uint]{V: teamID, Valid: true},
+					ContestID: sql.Null[uint]{V: contest.ID, Valid: true},
 					IP:        ip,
 					Reason:    fmt.Sprintf(model.SameIP, strings.Trim(tmp.String(), ", "), ip),
 					Type:      model.Suspicious,
@@ -154,8 +155,8 @@ func checkWrongFlag(contest model.Contest) {
 					}
 					cheatRepo := db.InitCheatRepo(db.DB)
 					cheatRepo.Create(db.CreateCheatOptions{
-						TeamID:    &team.ID,
-						ContestID: &contest.ID,
+						TeamID:    sql.Null[uint]{V: team.ID, Valid: true},
+						ContestID: sql.Null[uint]{V: contest.ID, Valid: true},
 						IP:        submission.IP,
 						Comment:   fmt.Sprintf("submission-%d", submission.ID),
 						Reason:    fmt.Sprintf(model.SubmitOtherTeamFlag, team.ID, strings.Trim(tmp.String(), ", "), contest.ID),

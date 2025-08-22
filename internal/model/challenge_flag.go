@@ -2,6 +2,7 @@ package model
 
 import (
 	"CBCTF/internal/i18n"
+	"database/sql"
 	"regexp"
 )
 
@@ -19,16 +20,16 @@ var (
 // BelongsTo Docker
 // HasMany ContestFlag
 type ChallengeFlag struct {
-	ChallengeID  uint          `json:"challenge_id"`
-	Challenge    Challenge     `json:"-"`
-	DockerID     *uint         `gorm:"default:null" json:"docker_id"`
-	Docker       *Docker       `json:"-"`
-	ContestFlags []ContestFlag `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	TeamFlags    []TeamFlag    `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Name         string        `json:"name"`
-	Value        string        `json:"value"`
-	InjectType   string        `json:"inject_type"`
-	Path         string        `json:"path"`
+	ChallengeID  uint           `json:"challenge_id"`
+	Challenge    Challenge      `json:"-"`
+	DockerID     sql.Null[uint] `gorm:"default:null" json:"docker_id"`
+	Docker       *Docker        `json:"-"`
+	ContestFlags []ContestFlag  `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	TeamFlags    []TeamFlag     `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Name         string         `json:"name"`
+	Value        string         `json:"value"`
+	InjectType   string         `json:"inject_type"`
+	Path         string         `json:"path"`
 	BasicModel
 }
 

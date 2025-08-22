@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"database/sql"
 
 	"gorm.io/gorm"
 )
@@ -14,7 +15,7 @@ type ChallengeFlagRepo struct {
 
 type CreateChallengeFlagOptions struct {
 	ChallengeID uint
-	DockerID    *uint
+	DockerID    sql.Null[uint]
 	Name        string
 	Value       string
 	InjectType  string

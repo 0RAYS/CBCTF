@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"database/sql"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -57,7 +58,7 @@ func (d *DeviceRepo) RecordDevice(userID uint, magic, ip string) (bool, string) 
 		for _, device := range devices {
 			if userID != device.UserID {
 				cheatRepo.Create(CreateCheatOptions{
-					UserID:  &userID,
+					UserID:  sql.Null[uint]{V: userID, Valid: true},
 					Magic:   magic,
 					IP:      ip,
 					Reason:  fmt.Sprintf(model.SameDeviceMagic, userID, device.UserID),
