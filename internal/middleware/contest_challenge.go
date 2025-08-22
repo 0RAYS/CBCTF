@@ -11,7 +11,7 @@ import (
 
 func CheckChallengeType(t string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		if GetContestChallenge(ctx).Type != t {
+		if GetChallenge(ctx).Type != t {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.InvalidChallengeType, "data": nil})
 			return
 		}
