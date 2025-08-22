@@ -233,6 +233,7 @@ func Init() *gin.Engine {
 			adminChallengeTest := adminChallenge.Group("/test")
 			{
 				adminChallengeTest.GET("", GetTestChallengeStatus)
+				adminChallengeTest.GET("/attachment", GenTestAttachment)
 				adminChallengeTest.POST("/start",
 					middleware.CheckChallengeType(model.PodsChallengeType),
 					middleware.RateLimit("start_victim", 1, time.Minute), StartTestVictim,

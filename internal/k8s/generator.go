@@ -173,3 +173,27 @@ func GenAttachment(challenge model.Challenge, team model.Team, teamFlagL []model
 	}
 	return true, i18n.Success
 }
+
+func GenTestAttachment(challenge model.Challenge, challengeFlags []model.ChallengeFlag) (bool, string) {
+	var err error
+	log.Logger.Debugf("Generating test attachment for Challenge %d", challenge.ID)
+	generator, ok, msg := GetGenerator(challenge)
+	// 附加失败则直接返回, 并尝试关闭生成器
+	if !ok || generator.Status.Phase != corev1.PodRunning {
+		go StopGenerator(challenge, generator)
+		return false, msg
+	}
+	var flags string
+	for _, flag := range challengeFlags {
+		flags += fmt.Sprintf("%s,", base64.StdEncoding.EncodeToString([]byte(flag.Value)))
+	}
+	flags = base64.StdEncoding.EncodeToString([]byte(strings.TrimSuffix(flags, ",")))
+	flags = strings.TrimSuffix(flags, ",")
+	command := fmt.Sprintf("./run.sh %d %s", 0, base64.StdEncoding.EncodeToString([]byte(flags)))
+	log.Logger.Debugf("Executing command in %s: %s", generator.Name, command)
+	if _, _, err = Exec(generator.Name, generator.Spec.Containers[0].Name, command, nil); err != nil {
+		log.Logger.Warningf("Failed to execute command %s: %s", command, err)
+		return false, i18n.ExecCommandError
+	}
+	return true, i18n.Success
+}
