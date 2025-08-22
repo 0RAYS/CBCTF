@@ -6,9 +6,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/model"
-	"CBCTF/internal/prometheus"
 	"CBCTF/internal/utils"
-	"database/sql"
 	"fmt"
 	"slices"
 	"strconv"
@@ -18,42 +16,25 @@ import (
 	"gorm.io/gorm"
 )
 
-func needVPC(dockers []model.Docker) bool {
-	for _, docker := range dockers {
-		for _, network := range docker.Networks {
-			if network.CIDR != "" {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge) (model.Victim, bool, string) {
+// StartTestVictim model.Challenge
+func StartTestVictim(tx *gorm.DB, challenge model.Challenge) (model.Victim, bool, string) {
 	var (
 		challengeRepo = db.InitChallengeRepo(tx)
 		victimRepo    = db.InitVictimRepo(tx)
-		teamFlagRepo  = db.InitTeamFlagRepo(tx)
 		podRepo       = db.InitPodRepo(tx)
 		containerRepo = db.InitContainerRepo(tx)
 	)
-	challenge, ok, msg := challengeRepo.GetByID(contestChallenge.ChallengeID, db.GetOptions{
+	challenge, ok, msg := challengeRepo.GetByID(challenge.ID, db.GetOptions{
 		Preloads: map[string]db.GetOptions{"Dockers": {Preloads: map[string]db.GetOptions{"ChallengeFlags": {}}}},
 	})
-	if !ok {
-		return model.Victim{}, false, msg
-	}
-	if victim, ok, _ := victimRepo.HasAliveVictim(team.ID, contestChallenge.ID); ok {
+	if victim, ok, _ := victimRepo.HasAliveTestVictim(challenge.ID); ok {
 		return victim, true, i18n.Success
 	}
 	vOptions := db.CreateVictimOptions{
-		ChallengeID:        contestChallenge.ChallengeID,
-		ContestChallengeID: sql.Null[uint]{V: contestChallenge.ID, Valid: true},
-		TeamID:             sql.Null[uint]{V: team.ID, Valid: true},
-		UserID:             sql.Null[uint]{V: user.ID, Valid: true},
-		Start:              time.Now(),
-		Duration:           time.Hour,
-		NetworkPolicies:    challenge.NetworkPolicies,
+		ChallengeID:     challenge.ID,
+		Start:           time.Now(),
+		Duration:        time.Hour,
+		NetworkPolicies: challenge.NetworkPolicies,
 	}
 	var victim model.Victim
 	if needVPC(challenge.Dockers) {
@@ -127,19 +108,11 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contest mode
 			envFlagL := make(model.StringMap)
 			volumeFlagL := make(model.StringMap)
 			for _, challengeFlag := range docker.ChallengeFlags {
-				teamFlag, ok, msg := teamFlagRepo.Get(db.GetOptions{
-					Selects:    []string{"id", "challenge_flag_id", "value"},
-					Conditions: map[string]any{"team_id": team.ID, "challenge_flag_id": challengeFlag.ID},
-					Preloads:   map[string]db.GetOptions{"ChallengeFlag": {Selects: []string{"id", "Name"}}},
-				})
-				if !ok {
-					return model.Victim{}, false, msg
-				}
 				switch challengeFlag.InjectType {
 				case model.EnvInjectType:
-					envFlagL[teamFlag.ChallengeFlag.Name] = teamFlag.Value
+					envFlagL[challengeFlag.Name] = challengeFlag.Value
 				case model.VolumeInjectType:
-					volumeFlagL[challengeFlag.Path] = teamFlag.Value
+					volumeFlagL[challengeFlag.Path] = challengeFlag.Value
 				default:
 					return model.Victim{}, false, i18n.InvalidChallengeFlagInjectType
 				}
@@ -200,19 +173,11 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contest mode
 			envFlagL := make(model.StringMap)
 			volumeFlagL := make(model.StringMap)
 			for _, challengeFlag := range docker.ChallengeFlags {
-				teamFlag, ok, msg := teamFlagRepo.Get(db.GetOptions{
-					Selects:    []string{"id", "challenge_flag_id", "value"},
-					Conditions: map[string]any{"team_id": team.ID, "challenge_flag_id": challengeFlag.ID},
-					Preloads:   map[string]db.GetOptions{"ChallengeFlag": {Selects: []string{"id", "Name"}}},
-				})
-				if !ok {
-					return model.Victim{}, false, msg
-				}
 				switch challengeFlag.InjectType {
 				case model.EnvInjectType:
-					envFlagL[teamFlag.ChallengeFlag.Name] = teamFlag.Value
+					envFlagL[challengeFlag.Name] = challengeFlag.Value
 				case model.VolumeInjectType:
-					volumeFlagL[challengeFlag.Path] = teamFlag.Value
+					volumeFlagL[challengeFlag.Path] = challengeFlag.Value
 				default:
 					return model.Victim{}, false, i18n.InvalidChallengeFlagInjectType
 				}
@@ -289,22 +254,20 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contest mode
 	}); !ok {
 		return model.Victim{}, false, msg
 	}
-	prometheus.AddVictimContainerMetrics(contest, contestChallenge, 1)
 	return victim, true, i18n.Success
 }
 
-// GetTeamVictimStatus contestChallenge 需要预加载 model.ContestChallenge
-func GetTeamVictimStatus(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) gin.H {
+func GetTestVictimStatus(tx *gorm.DB, challenge model.Challenge) gin.H {
 	data := gin.H{
 		"target":    make([]string, 0),
 		"remaining": 0,
 		"status":    "Down",
 	}
-	if contestChallenge.Type != model.PodsChallengeType {
+	if challenge.Type != model.PodsChallengeType {
 		data["status"] = "NotDocker"
 		return data
 	}
-	victim, ok, _ := db.InitVictimRepo(tx).HasAliveVictim(team.ID, contestChallenge.ID)
+	victim, ok, _ := db.InitVictimRepo(tx).HasAliveTestVictim(challenge.ID)
 	if !ok {
 		return data
 	}
@@ -314,36 +277,22 @@ func GetTeamVictimStatus(tx *gorm.DB, team model.Team, contestChallenge model.Co
 	return data
 }
 
-func StopTeamVictim(tx *gorm.DB, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge) (bool, string) {
+func StopTestVictim(tx *gorm.DB, challenge model.Challenge) (bool, string) {
 	victimRepo := db.InitVictimRepo(tx)
-	victims, _, ok, msg := victimRepo.List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"team_id": team.ID, "contest_challenge_id": contestChallenge.ID},
-		Preloads: map[string]db.GetOptions{
-			"Pods": {},
-		},
-	})
+	victim, ok, msg := victimRepo.HasAliveTestVictim(challenge.ID)
 	if !ok {
 		return false, msg
 	}
-	// 预期中, len(victims) == 1, 考虑意外情况
-	victimIDL := make([]uint, 0)
-	for _, victim := range victims {
-		ok, msg = k8s.StopVictim(victim)
-		if !ok {
-			return false, msg
-		}
-		duration := time.Now().Sub(victim.Start)
-		if ok, msg = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
-			Duration: &duration,
-		}); !ok {
-			return false, msg
-		}
-		victimIDL = append(victimIDL, victim.ID)
-		LoadTraffic(tx, victim)
+	ok, msg = k8s.StopVictim(victim)
+	if !ok {
+		return false, msg
 	}
-	ok, msg = victimRepo.Delete(victimIDL...)
-	if ok {
-		prometheus.SubVictimContainerMetrics(contest, contestChallenge, 1)
+	duration := time.Now().Sub(victim.Start)
+	if ok, msg = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
+		Duration: &duration,
+	}); !ok {
+		return false, msg
 	}
-	return ok, msg
+	LoadTraffic(tx, victim)
+	return victimRepo.Delete(victim.ID)
 }
