@@ -9,6 +9,7 @@ import (
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/utils"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -131,9 +132,9 @@ func SaveWriteUp(tx *gorm.DB, user model.User, contest model.Contest, team model
 		Filename:  file.Filename,
 		Size:      file.Size,
 		Path:      path,
-		UserID:    &user.ID,
-		TeamID:    &team.ID,
-		ContestID: &contest.ID,
+		UserID:    sql.Null[uint]{V: user.ID, Valid: true},
+		TeamID:    sql.Null[uint]{V: team.ID, Valid: true},
+		ContestID: sql.Null[uint]{V: contest.ID, Valid: true},
 		Suffix:    suffix,
 		Hash:      hash,
 		Type:      model.WriteUPFile,

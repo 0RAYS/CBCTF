@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
+	"database/sql"
 	"fmt"
 	"slices"
 	"strings"
@@ -162,7 +163,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 				if strings.HasPrefix(k, model.EnvFlagPrefix) {
 					flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
 						ChallengeID: challenge.ID,
-						DockerID:    &docker.ID,
+						DockerID:    sql.Null[uint]{V: docker.ID, Valid: true},
 						Name:        k,
 						Value:       *v,
 						InjectType:  model.EnvInjectType,
@@ -173,7 +174,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 				if value, ok := volumeFlag[volume.Source]; ok {
 					flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
 						ChallengeID: challenge.ID,
-						DockerID:    &docker.ID,
+						DockerID:    sql.Null[uint]{V: docker.ID, Valid: true},
 						Name:        volume.Source,
 						Value:       value,
 						InjectType:  model.VolumeInjectType,

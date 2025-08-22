@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"crypto/md5"
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -16,11 +17,11 @@ type CheatRepo struct {
 }
 
 type CreateCheatOptions struct {
-	UserID             *uint
-	TeamID             *uint
-	ContestID          *uint
-	ContestChallengeID *uint
-	ContestFlagID      *uint
+	UserID             sql.Null[uint]
+	TeamID             sql.Null[uint]
+	ContestID          sql.Null[uint]
+	ContestChallengeID sql.Null[uint]
+	ContestFlagID      sql.Null[uint]
 	Magic              string
 	IP                 string
 	Reason             string
@@ -31,23 +32,10 @@ type CreateCheatOptions struct {
 }
 
 func (c CreateCheatOptions) Convert2Model() model.Model {
-	tmp := make([]uint, 5)
-	if c.UserID != nil {
-		tmp[0] = *c.UserID
-	}
-	if c.TeamID != nil {
-		tmp[1] = *c.TeamID
-	}
-	if c.ContestID != nil {
-		tmp[2] = *c.ContestID
-	}
-	if c.ContestChallengeID != nil {
-		tmp[3] = *c.ContestChallengeID
-	}
-	if c.ContestFlagID != nil {
-		tmp[4] = *c.ContestFlagID
-	}
-	hash := fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%s-%d-%d-%d-%d-%d-%s-%s", time.Now().Format("2006-01-02"), tmp[0], tmp[1], tmp[2], tmp[3], tmp[4], c.Magic, c.IP))))
+	hash := fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf(
+		"%s-%d-%d-%d-%d-%d-%s-%s",
+		time.Now().Format("2006-01-02"), c.UserID.V, c.TeamID.V, c.ContestID.V, c.ContestChallengeID.V, c.ContestFlagID.V, c.Magic, c.IP,
+	))))
 	return model.Cheat{
 		UserID:             c.UserID,
 		TeamID:             c.TeamID,

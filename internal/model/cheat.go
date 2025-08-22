@@ -1,6 +1,9 @@
 package model
 
-import "CBCTF/internal/i18n"
+import (
+	"CBCTF/internal/i18n"
+	"database/sql"
+)
 
 const (
 	Cheater    = "cheater"
@@ -13,15 +16,15 @@ const (
 )
 
 type Cheat struct {
-	UserID             *uint             `gorm:"default:null" json:"user_id"`
+	UserID             sql.Null[uint]    `gorm:"default:null" json:"user_id"`
 	User               *User             `json:"-"`
-	TeamID             *uint             `gorm:"default:null" json:"team_id"`
+	TeamID             sql.Null[uint]    `gorm:"default:null" json:"team_id"`
 	Team               *Team             `json:"-"`
-	ContestID          *uint             `gorm:"default:null" json:"contest_id"`
+	ContestID          sql.Null[uint]    `gorm:"default:null" json:"contest_id"`
 	Contest            *Contest          `json:"-"`
-	ContestChallengeID *uint             `gorm:"default:null" json:"contest_challenge_id"`
+	ContestChallengeID sql.Null[uint]    `gorm:"default:null" json:"contest_challenge_id"`
 	ContestChallenge   *ContestChallenge `json:"-"`
-	ContestFlagID      *uint             `gorm:"default:null" json:"contest_flag_id"`
+	ContestFlagID      sql.Null[uint]    `gorm:"default:null" json:"contest_flag_id"`
 	ContestFlag        *ContestFlag      `json:"-"`
 	Magic              string            `json:"magic"`
 	IP                 string            `json:"ip"`

@@ -14,6 +14,6 @@ func GetFileResp(file model.File) gin.H {
 		"size":     file.Size,
 		"date":     file.CreatedAt,
 		"suffix":   file.Suffix,
-		"uploader": file.UserID,
+		"uploader": file.UserID.V,
 	}
 }

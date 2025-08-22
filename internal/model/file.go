@@ -1,6 +1,9 @@
 package model
 
-import "CBCTF/internal/i18n"
+import (
+	"CBCTF/internal/i18n"
+	"database/sql"
+)
 
 const (
 	ChallengeFile = "file"
@@ -14,23 +17,23 @@ const (
 // BelongsTo Team
 // BelongsTo Contest
 type File struct {
-	AdminID   *uint    `gorm:"default:null" json:"admin_id"`
-	Admin     *Admin   `json:"-"`
-	UserID    *uint    `gorm:"default:null" json:"user_id"`
-	User      *User    `json:"-"`
-	TeamID    *uint    `gorm:"default:null" json:"team_id"`
-	Team      *Team    `json:"-"`
-	ContestID *uint    `gorm:"default:null" json:"contest_id"`
-	Contest   *Contest `json:"-"`
-	OauthID   *uint    `gorm:"default:null" json:"oauth_id"`
-	Oauth     *Oauth   `json:"-"`
-	RandID    string   `gorm:"type:varchar(36);uniqueIndex;not null" json:"rand_id"`
-	Filename  string   `json:"filename"`
-	Size      int64    `json:"size"`
-	Path      string   `json:"-"`
-	Suffix    string   `json:"suffix"`
-	Hash      string   `json:"hash"`
-	Type      string   `json:"type"`
+	AdminID   sql.Null[uint] `gorm:"default:null" json:"admin_id"`
+	Admin     *Admin         `json:"-"`
+	UserID    sql.Null[uint] `gorm:"default:null" json:"user_id"`
+	User      *User          `json:"-"`
+	TeamID    sql.Null[uint] `gorm:"default:null" json:"team_id"`
+	Team      *Team          `json:"-"`
+	ContestID sql.Null[uint] `gorm:"default:null" json:"contest_id"`
+	Contest   *Contest       `json:"-"`
+	OauthID   sql.Null[uint] `gorm:"default:null" json:"oauth_id"`
+	Oauth     *Oauth         `json:"-"`
+	RandID    string         `gorm:"type:varchar(36);uniqueIndex;not null" json:"rand_id"`
+	Filename  string         `json:"filename"`
+	Size      int64          `json:"size"`
+	Path      string         `json:"-"`
+	Suffix    string         `json:"suffix"`
+	Hash      string         `json:"hash"`
+	Type      string         `json:"type"`
 	BasicModel
 }
 

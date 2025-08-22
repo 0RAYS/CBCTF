@@ -9,11 +9,11 @@ import (
 func GetCheatResp(cheat model.Cheat) gin.H {
 	return gin.H{
 		"id":                   cheat.ID,
-		"user_id":              cheat.UserID,
-		"team_id":              cheat.TeamID,
-		"contest_id":           cheat.ContestID,
-		"contest_challenge_id": cheat.ContestChallengeID,
-		"contest_flag_id":      cheat.ContestFlagID,
+		"user_id":              cheat.UserID.V,
+		"team_id":              cheat.TeamID.V,
+		"contest_id":           cheat.ContestID.V,
+		"contest_challenge_id": cheat.ContestChallengeID.V,
+		"contest_flag_id":      cheat.ContestFlagID.V,
 		"magic":                cheat.Magic,
 		"ip":                   cheat.IP,
 		"reason":               cheat.Reason,

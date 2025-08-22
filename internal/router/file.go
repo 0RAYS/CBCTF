@@ -11,6 +11,7 @@ import (
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
+	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
@@ -115,34 +116,34 @@ func UploadAvatar(v string) gin.HandlerFunc {
 		switch v {
 		case "admin":
 			id = middleware.GetSelfID(ctx)
-			options.AdminID = &id
+			options.AdminID = sql.Null[uint]{V: id, Valid: true}
 		case "self-user":
 			id = middleware.GetSelfID(ctx)
-			options.UserID = &id
+			options.UserID = sql.Null[uint]{V: id, Valid: true}
 		case "user":
 			id = middleware.GetUser(ctx).ID
 			selfID := middleware.GetSelfID(ctx)
-			options.AdminID = &selfID
-			options.UserID = &id
+			options.AdminID = sql.Null[uint]{V: selfID, Valid: true}
+			options.UserID = sql.Null[uint]{V: id, Valid: true}
 		case "contest":
 			id = middleware.GetContest(ctx).ID
 			selfID := middleware.GetSelfID(ctx)
-			options.AdminID = &selfID
-			options.ContestID = &id
+			options.AdminID = sql.Null[uint]{V: selfID, Valid: true}
+			options.ContestID = sql.Null[uint]{V: id, Valid: true}
 		case "team":
 			id = middleware.GetTeam(ctx).ID
-			options.TeamID = &id
+			options.TeamID = sql.Null[uint]{V: id, Valid: true}
 			selfID := middleware.GetSelfID(ctx)
 			if middleware.IsAdmin(ctx) {
-				options.AdminID = &selfID
+				options.AdminID = sql.Null[uint]{V: selfID, Valid: true}
 			} else {
-				options.UserID = &selfID
+				options.UserID = sql.Null[uint]{V: selfID, Valid: true}
 			}
 		case "oauth":
 			id = middleware.GetOauth(ctx).ID
-			options.OauthID = &id
+			options.OauthID = sql.Null[uint]{V: id, Valid: true}
 			selfID := middleware.GetSelfID(ctx)
-			options.AdminID = &selfID
+			options.AdminID = sql.Null[uint]{V: selfID, Valid: true}
 		}
 		tx := db.DB.WithContext(ctx).Begin()
 		record, ok, msg := service.SaveAvatar(tx, options, file)

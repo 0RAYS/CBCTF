@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"database/sql"
 
 	"gorm.io/gorm"
 )
@@ -17,11 +18,11 @@ type CreateFileOptions struct {
 	Filename  string
 	Size      int64
 	Path      string
-	AdminID   *uint
-	UserID    *uint
-	TeamID    *uint
-	ContestID *uint
-	OauthID   *uint
+	AdminID   sql.Null[uint]
+	UserID    sql.Null[uint]
+	TeamID    sql.Null[uint]
+	ContestID sql.Null[uint]
+	OauthID   sql.Null[uint]
 	Suffix    string
 	Hash      string
 	Type      string
