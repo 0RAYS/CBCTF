@@ -73,6 +73,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 		"victim_id":            strconv.Itoa(int(victim.ID)),
 		"user_id":              strconv.Itoa(int(victim.UserID)),
 		"team_id":              strconv.Itoa(int(victim.TeamID)),
+		"challenge_id":         strconv.Itoa(int(victim.ChallengeID)),
 		"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID)),
 		VictimPodTag:           fmt.Sprintf("victim-%s", utils.RandStr(20)),
 	}
@@ -441,6 +442,7 @@ func StopVictim(victim model.Victim) (bool, string) {
 		"victim_id":            strconv.Itoa(int(victim.ID)),
 		"user_id":              strconv.Itoa(int(victim.UserID)),
 		"team_id":              strconv.Itoa(int(victim.TeamID)),
+		"challenge_id":         strconv.Itoa(int(victim.ChallengeID)),
 		"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID)),
 	}
 	for _, endpoint := range victim.Endpoints {

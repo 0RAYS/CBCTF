@@ -46,6 +46,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contest mode
 		return victim, true, i18n.Success
 	}
 	vOptions := db.CreateVictimOptions{
+		ChallengeID:        contestChallenge.ChallengeID,
 		ContestChallengeID: contestChallenge.ID,
 		TeamID:             team.ID,
 		UserID:             user.ID,

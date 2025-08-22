@@ -53,6 +53,7 @@ func CreateFrpc(victim model.Victim) (model.Endpoints, []string, bool, string) {
 			"victim_id":            strconv.Itoa(int(victim.ID)),
 			"user_id":              strconv.Itoa(int(victim.UserID)),
 			"team_id":              strconv.Itoa(int(victim.TeamID)),
+			"challenge_id":         strconv.Itoa(int(victim.ChallengeID)),
 			"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID)),
 			FrpcPodTag:             podName,
 		}
