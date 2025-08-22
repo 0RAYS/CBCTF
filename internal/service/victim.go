@@ -266,21 +266,19 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contest mode
 	}
 	victim.ExposedEndpoints = victim.Endpoints
 	if config.Env.K8S.Frpc.On {
-		var frpc []string
+		var frpc string
 		victim.ExposedEndpoints, frpc, ok, msg = k8s.CreateFrpc(victim)
 		if !ok {
 			return model.Victim{}, false, msg
 		}
-		for _, frpcPodName := range frpc {
-			p, ok, msg := podRepo.Create(db.CreatePodOptions{
-				VictimID: victim.ID,
-				Name:     frpcPodName,
-			})
-			if !ok {
-				return model.Victim{}, false, msg
-			}
-			victim.Pods = append(victim.Pods, p)
+		p, ok, msg := podRepo.Create(db.CreatePodOptions{
+			VictimID: victim.ID,
+			Name:     frpc,
+		})
+		if !ok {
+			return model.Victim{}, false, msg
 		}
+		victim.Pods = append(victim.Pods, p)
 	}
 	if ok, msg = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
 		VPC:              &victim.VPC,

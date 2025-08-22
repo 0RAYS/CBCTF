@@ -20,7 +20,7 @@ type CreatePodOptions struct {
 	Annotations     map[string]string
 	Containers      []corev1.Container
 	Volumes         []corev1.Volume
-	PodAntiAffinity map[string]string
+	PodAntiAffinity map[string][]string
 }
 
 func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool, string) {
@@ -49,12 +49,20 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool
 		},
 	}
 	if len(options.PodAntiAffinity) > 0 {
+		expression := make([]metav1.LabelSelectorRequirement, 0)
+		for k, v := range options.PodAntiAffinity {
+			expression = append(expression, metav1.LabelSelectorRequirement{
+				Key:      k,
+				Operator: metav1.LabelSelectorOpIn,
+				Values:   v,
+			})
+		}
 		pod.Spec.Affinity = &corev1.Affinity{
 			PodAntiAffinity: &corev1.PodAntiAffinity{
 				RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
 					{
 						LabelSelector: &metav1.LabelSelector{
-							MatchLabels: options.PodAntiAffinity,
+							MatchExpressions: expression,
 						},
 						TopologyKey: "kubernetes.io/hostname",
 					},
