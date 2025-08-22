@@ -23,11 +23,7 @@ func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) (bool, string) {
 	if !ok {
 		return false, msg
 	}
-	ok, msg = k8s.GenTestAttachment(challenge, challengeFlags)
-	if !ok {
-		return false, msg
-	}
-	return true, msg
+	return k8s.GenTestAttachment(challenge, challengeFlags)
 }
 
 func GetTestVictimStatus(tx *gorm.DB, challenge model.Challenge) gin.H {
