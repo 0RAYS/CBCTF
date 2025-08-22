@@ -23,6 +23,8 @@ gin:
     # Size limited
     max: 8
   rate:
+    # Global rate limit
+    global: 100
     # Request without rate limited
     whitelist:
       - ::1

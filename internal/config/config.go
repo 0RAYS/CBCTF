@@ -43,6 +43,7 @@ type Config struct {
 		} `mapstructure:"upload" json:"upload" msgpack:"upload"`
 		Proxies   []string `mapstructure:"proxies" json:"proxies" msgpack:"proxies"` // 信任的代理服务器
 		RateLimit struct {
+			Global    int      `mapstructure:"global" json:"global" msgpack:"global"`
 			Whitelist []string `mapstructure:"whitelist" json:"whitelist" msgpack:"whitelist"` // IP 白名单，不限制频率
 		} `mapstructure:"rate" json:"rate" msgpack:"rate"`
 		Log struct {

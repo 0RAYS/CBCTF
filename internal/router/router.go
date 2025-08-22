@@ -37,7 +37,7 @@ func Init() *gin.Engine {
 
 	router.Use(
 		middleware.SetTrace, middleware.SetMagic, middleware.Logger, middleware.Prometheus, middleware.AccessLog,
-		middleware.I18n, middleware.RateLimit("globals", 100, time.Minute), middleware.Events,
+		middleware.I18n, middleware.RateLimit("globals", config.Env.Gin.RateLimit.Global, time.Minute), middleware.Events,
 	)
 
 	{
