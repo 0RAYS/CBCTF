@@ -3,6 +3,7 @@ package router
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
+	"CBCTF/internal/k8s"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/service"
@@ -29,6 +30,25 @@ func GetTestChallengeStatus(ctx *gin.Context) {
 		}(),
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
+}
+
+func GenTestAttachment(ctx *gin.Context) {
+	challenge := middleware.GetChallenge(ctx)
+	if challenge.Type == model.DynamicChallengeType {
+		challengeFlags, _, ok, msg := db.InitChallengeFlagRepo(db.DB.WithContext(ctx)).List(-1, -1, db.GetOptions{
+			Conditions: map[string]any{"challenge_id": challenge.ID},
+		})
+		if !ok {
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
+		}
+		ok, msg = k8s.GenTestAttachment(challenge, challengeFlags)
+		if !ok {
+			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			return
+		}
+	}
+	ctx.File(challenge.AttachmentPath(0))
 }
 
 func StartTestVictim(ctx *gin.Context) {
