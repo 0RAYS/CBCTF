@@ -117,7 +117,7 @@ func GetGenerator(challenge model.Challenge) (*corev1.Pod, bool, string) {
 		return StartGenerator(challenge)
 	}
 	if len(generators) > 0 {
-		index, _ := rand.Int(rand.Reader, big.NewInt(time.Now().UnixNano()))
+		index, _ := rand.Int(rand.Reader, big.NewInt(int64(len(generators))))
 		return generators[index.Int64()].Pod, true, i18n.Success
 	}
 	return nil, false, i18n.UnknownError
