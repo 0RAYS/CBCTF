@@ -304,23 +304,13 @@ func GetTeamVictimStatus(tx *gorm.DB, team model.Team, contestChallenge model.Co
 		data["status"] = "NotDocker"
 		return data
 	}
-	victims, _, ok, _ := db.InitVictimRepo(tx).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID, "team_id": team.ID},
-		Preloads:   map[string]db.GetOptions{"Pods": {}},
-	})
+	victim, ok, _ := db.InitVictimRepo(tx).HasAliveVictim(team.ID, contestChallenge.ID)
 	if !ok {
 		return data
 	}
-	if len(victims) == 0 {
-		return data
-	}
-	if len(victims) > 1 {
-		data["status"] = "Error"
-		return data
-	}
-	data["target"] = victims[0].RemoteAddr()
+	data["target"] = victim.RemoteAddr()
 	data["status"] = "Running"
-	data["remaining"] = victims[0].Remaining().Seconds()
+	data["remaining"] = victim.Remaining().Seconds()
 	return data
 }
 
