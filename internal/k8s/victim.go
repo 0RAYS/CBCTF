@@ -65,16 +65,16 @@ type CreateSNatResult struct {
 
 // StartVictim model.Victim Preload model.Pod
 func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
-	log.Logger.Infof("Starting Victim for Team %d ContestChallenge %d", victim.TeamID, victim.ContestChallengeID)
+	log.Logger.Infof("Starting Victim for Team %d ContestChallenge %d", victim.TeamID.V, victim.ContestChallengeID.V)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	// 添加一个独立tag, 防止 NetworkPolicy 影响 frpc 通信
 	labels := map[string]string{
 		"victim_id":            strconv.Itoa(int(victim.ID)),
-		"user_id":              strconv.Itoa(int(victim.UserID)),
-		"team_id":              strconv.Itoa(int(victim.TeamID)),
+		"user_id":              strconv.Itoa(int(victim.UserID.V)),
+		"team_id":              strconv.Itoa(int(victim.TeamID.V)),
 		"challenge_id":         strconv.Itoa(int(victim.ChallengeID)),
-		"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID)),
+		"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID.V)),
 		VictimPodTag:           fmt.Sprintf("victim-%s", utils.RandStr(20)),
 	}
 	subnetMap := make(map[string]*model.Subnet)
@@ -436,14 +436,14 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 }
 
 func StopVictim(victim model.Victim) (bool, string) {
-	log.Logger.Infof("Stopping Victim for Team %d ContestChallenge %d", victim.TeamID, victim.ContestChallengeID)
+	log.Logger.Infof("Stopping Victim for Team %d ContestChallenge %d", victim.TeamID.V, victim.ContestChallengeID.V)
 	// 不添加独立 tag, 删除时直接删除所有相关资源
 	labels := map[string]string{
 		"victim_id":            strconv.Itoa(int(victim.ID)),
-		"user_id":              strconv.Itoa(int(victim.UserID)),
-		"team_id":              strconv.Itoa(int(victim.TeamID)),
+		"user_id":              strconv.Itoa(int(victim.UserID.V)),
+		"team_id":              strconv.Itoa(int(victim.TeamID.V)),
 		"challenge_id":         strconv.Itoa(int(victim.ChallengeID)),
-		"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID)),
+		"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID.V)),
 	}
 	for _, endpoint := range victim.Endpoints {
 		if err := redis.UnlockFrpsPort(endpoint.IP, endpoint.Port, endpoint.Protocol); err != nil {

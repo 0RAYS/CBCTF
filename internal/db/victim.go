@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"database/sql"
 	"time"
 
 	"gorm.io/gorm"
@@ -15,9 +16,9 @@ type VictimRepo struct {
 
 type CreateVictimOptions struct {
 	ChallengeID        uint
-	ContestChallengeID uint
-	TeamID             uint
-	UserID             uint
+	ContestChallengeID sql.Null[uint]
+	TeamID             sql.Null[uint]
+	UserID             sql.Null[uint]
 	Start              time.Time
 	Duration           time.Duration
 	VPC                model.VPC

@@ -3,6 +3,7 @@ package model
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/i18n"
+	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
@@ -13,22 +14,22 @@ import (
 )
 
 type Victim struct {
-	ChallengeID        uint             `json:"challenge_id"`
-	Challenge          Challenge        `json:"-"`
-	ContestChallengeID uint             `json:"contest_challenge_id"`
-	ContestChallenge   ContestChallenge `json:"-"`
-	TeamID             uint             `json:"team_id"`
-	Team               Team             `json:"-"`
-	UserID             uint             `json:"user_id"`
-	User               User             `json:"-"`
-	Pods               []Pod            `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Traffics           []Traffic        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Start              time.Time        `json:"start"`
-	Duration           time.Duration    `json:"duration"`
-	VPC                VPC              `gorm:"default:null;type:json" json:"-"`
-	Endpoints          Endpoints        `gorm:"default:null;type:json" json:"-"`
-	ExposedEndpoints   Endpoints        `gorm:"default:null;type:json" json:"-"`
-	NetworkPolicies    NetworkPolicies  `gorm:"default:null;type:json" json:"network_policies"`
+	ChallengeID        uint              `json:"challenge_id"`
+	Challenge          Challenge         `json:"-"`
+	ContestChallengeID sql.Null[uint]    `json:"contest_challenge_id"`
+	ContestChallenge   *ContestChallenge `json:"-"`
+	TeamID             sql.Null[uint]    `json:"team_id"`
+	Team               *Team             `json:"-"`
+	UserID             sql.Null[uint]    `json:"user_id"`
+	User               *User             `json:"-"`
+	Pods               []Pod             `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Traffics           []Traffic         `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
+	Start              time.Time         `json:"start"`
+	Duration           time.Duration     `json:"duration"`
+	VPC                VPC               `gorm:"default:null;type:json" json:"-"`
+	Endpoints          Endpoints         `gorm:"default:null;type:json" json:"-"`
+	ExposedEndpoints   Endpoints         `gorm:"default:null;type:json" json:"-"`
+	NetworkPolicies    NetworkPolicies   `gorm:"default:null;type:json" json:"network_policies"`
 	BasicModel
 }
 
