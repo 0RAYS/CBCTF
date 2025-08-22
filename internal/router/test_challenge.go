@@ -11,6 +11,7 @@ import (
 	wm "CBCTF/internal/websocket/model"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -36,9 +37,16 @@ func DownloadTestAttachment(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DownloadAttachmentEventType)
 	challenge := middleware.GetChallenge(ctx)
 	if challenge.Type == model.DynamicChallengeType {
+		_ = os.Remove(challenge.AttachmentPath(0))
 		if ok, msg := service.GenTestAttachment(db.DB.WithContext(ctx), challenge); !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
+		}
+		for i := 0; i < 10; i++ {
+			if _, err := os.Stat(challenge.AttachmentPath(0)); err == nil {
+				break
+			}
+			time.Sleep(time.Second)
 		}
 	}
 	path := challenge.AttachmentPath(0)
