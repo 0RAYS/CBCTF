@@ -61,7 +61,8 @@ func StartTestVictim(ctx *gin.Context) {
 	selfID := middleware.GetSelfID(ctx)
 	go func(ctx *gin.Context) {
 		tx := db.DB.WithContext(ctx).Begin()
-		if _, ok, _ := service.StartTestVictim(tx, challenge); !ok {
+		_, ok, _ := service.StartTestVictim(tx, challenge)
+		if !ok {
 			go service.StopTestVictim(db.DB.WithContext(ctx.Copy()), challenge)
 			tx.Rollback()
 			websocket.Send(true, selfID, wm.ErrorLevel, wm.StartVictimWSType, "Start Victim", "Failed")
