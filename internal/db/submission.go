@@ -36,6 +36,7 @@ func (c CreateSubmissionOptions) Convert2Model() model.Model {
 		Value:              c.Value,
 		Solved:             c.Solved,
 		Score:              c.Score,
+		IP:                 c.IP,
 	}
 }
 
