@@ -70,5 +70,5 @@ func (c Cheat) UpdateErrorString() string {
 }
 
 func (c Cheat) GetUniqueKey() []string {
-	return []string{"id"}
+	return []string{"id", "hash"}
 }

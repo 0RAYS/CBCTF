@@ -33,8 +33,8 @@ type CreateCheatOptions struct {
 
 func (c CreateCheatOptions) Convert2Model() model.Model {
 	hash := fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf(
-		"%s-%d-%d-%d-%d-%d-%s-%s",
-		time.Now().Format("2006-01-02"), c.UserID.V, c.TeamID.V, c.ContestID.V, c.ContestChallengeID.V, c.ContestFlagID.V, c.Magic, c.IP,
+		"%s-%d-%d-%d-%d-%d-%s-%s-%s",
+		time.Now().Format("2006-01-02"), c.UserID.V, c.TeamID.V, c.ContestID.V, c.ContestChallengeID.V, c.ContestFlagID.V, c.Magic, c.IP, c.Comment,
 	))))
 	return model.Cheat{
 		UserID:             c.UserID,
