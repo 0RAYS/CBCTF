@@ -142,29 +142,29 @@ func checkWrongFlag(contest model.Contest) {
 			}
 		}
 	}
+	cheatRepo := db.InitCheatRepo(db.DB)
 	for _, team := range teams {
 		for _, submission := range team.Submissions {
 			if submission.Solved {
 				continue
 			}
+			var tmp strings.Builder
 			if teamIDL, ok := flagTeamIDMap[submission.Value]; ok {
 				if !slices.Contains(flagTeamIDMap[submission.Value], team.ID) {
-					var tmp strings.Builder
 					for _, teamID := range teamIDL {
 						tmp.WriteString(fmt.Sprintf("Team-%d, ", teamID))
 					}
-					cheatRepo := db.InitCheatRepo(db.DB)
-					cheatRepo.Create(db.CreateCheatOptions{
-						TeamID:    sql.Null[uint]{V: team.ID, Valid: true},
-						ContestID: sql.Null[uint]{V: contest.ID, Valid: true},
-						IP:        submission.IP,
-						Comment:   fmt.Sprintf("submission-%d", submission.ID),
-						Reason:    fmt.Sprintf(model.SubmitOtherTeamFlag, team.ID, strings.Trim(tmp.String(), ", "), contest.ID),
-						Type:      model.Cheater,
-						Checked:   false,
-					})
 				}
 			}
+			cheatRepo.Create(db.CreateCheatOptions{
+				TeamID:    sql.Null[uint]{V: team.ID, Valid: true},
+				ContestID: sql.Null[uint]{V: contest.ID, Valid: true},
+				IP:        submission.IP,
+				Comment:   fmt.Sprintf("submission-%d", submission.ID),
+				Reason:    fmt.Sprintf(model.SubmitOtherTeamFlag, team.ID, strings.Trim(tmp.String(), ", "), contest.ID),
+				Type:      model.Cheater,
+				Checked:   false,
+			})
 		}
 	}
 }
