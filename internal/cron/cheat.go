@@ -2,6 +2,7 @@ package cron
 
 import (
 	"CBCTF/internal/db"
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"database/sql"
 	"fmt"
@@ -120,12 +121,19 @@ func checkRemoteIP(contest model.Contest) {
 
 // checkWrongFlag 检查是否提交别队 flag
 func checkWrongFlag(contest model.Contest) {
+	questions, _, ok, _ := db.InitContestChallengeRepo(db.DB).List(-1, -1, db.GetOptions{
+		Selects:    []string{"id", "type"},
+		Conditions: map[string]any{"contest_id": contest.ID, "type": model.QuestionChallengeType},
+	})
+	if !ok {
+		log.Logger.Warning("Failed to get questions challenge, checkWrongFlag maybe wrong")
+	}
 	teams, _, ok, _ := db.InitTeamRepo(db.DB).List(-1, -1, db.GetOptions{
 		Selects:    []string{"id"},
 		Conditions: map[string]any{"contest_id": contest.ID},
 		Preloads: map[string]db.GetOptions{
 			"TeamFlags":   {Selects: []string{"id", "team_id", "value"}},
-			"Submissions": {Selects: []string{"id", "team_id", "solved", "ip", "value"}},
+			"Submissions": {Selects: []string{"id", "team_id", "solved", "ip", "value", "contest_challenge_id"}},
 		},
 	})
 	if !ok {
@@ -146,7 +154,9 @@ func checkWrongFlag(contest model.Contest) {
 	cheatRepo := db.InitCheatRepo(db.DB)
 	for _, team := range teams {
 		for _, submission := range team.Submissions {
-			if submission.Solved {
+			if submission.Solved || slices.ContainsFunc(questions, func(q model.ContestChallenge) bool {
+				return q.ID == submission.ContestChallengeID
+			}) {
 				continue
 			}
 			var tmp strings.Builder
