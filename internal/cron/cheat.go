@@ -108,7 +108,8 @@ func checkRemoteIP(contest model.Contest) {
 					TeamID:    sql.Null[uint]{V: teamID, Valid: true},
 					ContestID: sql.Null[uint]{V: contest.ID, Valid: true},
 					IP:        ip,
-					Reason:    fmt.Sprintf(model.SameIP, strings.Trim(tmp.String(), ", "), ip),
+					Comment:   ip,
+					Reason:    fmt.Sprintf(model.SameIP, strings.Trim(tmp.String(), ", ")),
 					Type:      model.Suspicious,
 					Checked:   false,
 				})
