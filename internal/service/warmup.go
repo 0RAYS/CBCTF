@@ -151,16 +151,15 @@ func StopContestVictims(tx *gorm.DB, form f.StopContestVictimsForm) (bool, strin
 		return true, i18n.Success
 	}
 	victimRepo := db.InitVictimRepo(tx)
-	victims, _, ok, msg := victimRepo.List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"id": form.Victims},
-		Preloads:   map[string]db.GetOptions{"Pods": {}},
-	})
+	victims, _, ok, msg := victimRepo.List(-1, -1, db.GetOptions{Conditions: map[string]any{"id": form.Victims}})
 	if !ok {
 		return false, msg
 	}
 	victimIDL := make([]uint, 0)
 	for _, victim := range victims {
-		ok, msg = k8s.StopVictim(victim)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		ok, msg = k8s.StopVictim(ctx, victim)
+		cancel()
 		if !ok {
 			return false, msg
 		}

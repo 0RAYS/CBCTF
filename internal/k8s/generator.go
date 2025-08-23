@@ -32,7 +32,7 @@ type Generator struct {
 }
 
 // StartGenerator 启动动态附件生成器, 等待附加命令, 生成附件
-func StartGenerator(challenge model.Challenge) (*corev1.Pod, bool, string) {
+func StartGenerator(ctx context.Context, challenge model.Challenge) (*corev1.Pod, bool, string) {
 	var (
 		pod           *corev1.Pod
 		ok            bool
@@ -47,8 +47,6 @@ func StartGenerator(challenge model.Challenge) (*corev1.Pod, bool, string) {
 		return nil, false, i18n.InvalidDockerImage
 	}
 	log.Logger.Infof("Starting Generator for Challenge %d-%s", challenge.ID, challenge.Name)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
 	pwd := utils.UUID()
 	pod, ok, msg = CreatePod(ctx, CreatePodOptions{
 		Name:   generatorName,
@@ -109,12 +107,12 @@ func StartGenerator(challenge model.Challenge) (*corev1.Pod, bool, string) {
 	return pod, true, i18n.Success
 }
 
-func GetGenerator(challenge model.Challenge) (*corev1.Pod, bool, string) {
+func GetGenerator(ctx context.Context, challenge model.Challenge) (*corev1.Pod, bool, string) {
 	GeneratorMapMutex.RLock()
 	generators, ok := GeneratorMap[challenge.ID]
 	GeneratorMapMutex.RUnlock()
 	if !ok {
-		return StartGenerator(challenge)
+		return StartGenerator(ctx, challenge)
 	}
 	if len(generators) > 0 {
 		index, _ := rand.Int(rand.Reader, big.NewInt(int64(len(generators))))
@@ -124,15 +122,12 @@ func GetGenerator(challenge model.Challenge) (*corev1.Pod, bool, string) {
 }
 
 // StopGenerator 停止动态附件生成器
-func StopGenerator(challenge model.Challenge, generator *corev1.Pod) (bool, string) {
+func StopGenerator(ctx context.Context, challenge model.Challenge, generator *corev1.Pod) (bool, string) {
 	log.Logger.Infof("Stopping generator for Challenge %d-%s", challenge.ID, challenge.Name)
-
 	GeneratorMapMutex.RLock()
 	_, ok := GeneratorMap[challenge.ID]
 	GeneratorMapMutex.RUnlock()
 	if ok {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-		defer cancel()
 		if ok, msg := DeletePod(ctx, generator.Name); !ok {
 			return false, msg
 		}
@@ -150,14 +145,13 @@ func StopGenerator(challenge model.Challenge, generator *corev1.Pod) (bool, stri
 }
 
 // GenAttachment 附加容器命令, 生成附件
-func GenAttachment(challenge model.Challenge, team model.Team, teamFlagL []model.TeamFlag) (bool, string) {
+func GenAttachment(ctx context.Context, challenge model.Challenge, team model.Team, teamFlagL []model.TeamFlag) (bool, string) {
 	var err error
 	log.Logger.Debugf("Generating attachment for Team %d Challenge %d", team.ID, challenge.ID)
-	generator, ok, msg := GetGenerator(challenge)
+	generator, ok, _ := GetGenerator(ctx, challenge)
 	// 附加失败则直接返回, 并尝试关闭生成器
 	if !ok || generator.Status.Phase != corev1.PodRunning {
-		go StopGenerator(challenge, generator)
-		return false, msg
+		return StopGenerator(ctx, challenge, generator)
 	}
 	var flags string
 	for _, teamFlag := range teamFlagL {
@@ -174,14 +168,13 @@ func GenAttachment(challenge model.Challenge, team model.Team, teamFlagL []model
 	return true, i18n.Success
 }
 
-func GenTestAttachment(challenge model.Challenge, challengeFlags []model.ChallengeFlag) (bool, string) {
+func GenTestAttachment(ctx context.Context, challenge model.Challenge, challengeFlags []model.ChallengeFlag) (bool, string) {
 	var err error
 	log.Logger.Debugf("Generating test attachment for Challenge %d", challenge.ID)
-	generator, ok, msg := GetGenerator(challenge)
+	generator, ok, _ := GetGenerator(ctx, challenge)
 	// 附加失败则直接返回, 并尝试关闭生成器
 	if !ok || generator.Status.Phase != corev1.PodRunning {
-		go StopGenerator(challenge, generator)
-		return false, msg
+		return StopGenerator(ctx, challenge, generator)
 	}
 	var flags string
 	for _, flag := range challengeFlags {
