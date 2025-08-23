@@ -8,6 +8,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/utils"
+	"context"
 	"database/sql"
 	"fmt"
 	"slices"
@@ -251,7 +252,9 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contest mode
 		}
 		victim.Pods = append(victim.Pods, pod)
 	}
-	ipExposesMap, ok, msg := k8s.StartVictim(victim)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	ipExposesMap, ok, msg := k8s.StartVictim(ctx, victim)
 	if !ok {
 		return model.Victim{}, false, msg
 	}
@@ -267,7 +270,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contest mode
 	victim.ExposedEndpoints = victim.Endpoints
 	if config.Env.K8S.Frpc.On {
 		var frpc []string
-		victim.ExposedEndpoints, frpc, ok, msg = k8s.CreateFrpc(victim)
+		victim.ExposedEndpoints, frpc, ok, msg = k8s.CreateFrpc(ctx, victim)
 		if !ok {
 			return model.Victim{}, false, msg
 		}
@@ -316,32 +319,24 @@ func GetTeamVictimStatus(tx *gorm.DB, team model.Team, contestChallenge model.Co
 
 func StopTeamVictim(tx *gorm.DB, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge) (bool, string) {
 	victimRepo := db.InitVictimRepo(tx)
-	victims, _, ok, msg := victimRepo.List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"team_id": team.ID, "contest_challenge_id": contestChallenge.ID},
-		Preloads: map[string]db.GetOptions{
-			"Pods": {},
-		},
-	})
+	victim, ok, msg := victimRepo.HasAliveVictim(team.ID, contestChallenge.ID)
 	if !ok {
 		return false, msg
 	}
-	// 预期中, len(victims) == 1, 考虑意外情况
-	victimIDL := make([]uint, 0)
-	for _, victim := range victims {
-		ok, msg = k8s.StopVictim(victim)
-		if !ok {
-			return false, msg
-		}
-		duration := time.Now().Sub(victim.Start)
-		if ok, msg = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
-			Duration: &duration,
-		}); !ok {
-			return false, msg
-		}
-		victimIDL = append(victimIDL, victim.ID)
-		LoadTraffic(tx, victim)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	ok, msg = k8s.StopVictim(ctx, victim)
+	if !ok {
+		return false, msg
 	}
-	ok, msg = victimRepo.Delete(victimIDL...)
+	duration := time.Now().Sub(victim.Start)
+	if ok, msg = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
+		Duration: &duration,
+	}); !ok {
+		return false, msg
+	}
+	LoadTraffic(tx, victim)
+	ok, msg = victimRepo.Delete(victim.ID)
 	if ok {
 		prometheus.SubVictimContainerMetrics(contest, contestChallenge, 1)
 	}

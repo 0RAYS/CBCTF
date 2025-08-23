@@ -25,7 +25,9 @@ func closeTimeoutVictims(c *cron.Cron) {
 		for _, victim := range victims {
 			if victim.Start.Add(victim.Duration).Before(time.Now()) {
 				idL = append(idL, victim.ID)
-				k8s.StopVictim(victim)
+				ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+				k8s.StopVictim(ctx, victim)
+				cancel()
 			}
 		}
 		repo.Delete(idL...)
@@ -53,7 +55,7 @@ func closeUnCtrlVictims(c *cron.Cron) {
 				})
 				if !ok {
 					ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
-					_, _ = k8s.DeletePod(ctx, pod.Name)
+					k8s.DeletePod(ctx, pod.Name)
 					cancel()
 				}
 			}

@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
+	"context"
 	"fmt"
 	"slices"
 	"strconv"
@@ -23,7 +24,9 @@ func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) (bool, string) {
 	if !ok {
 		return false, msg
 	}
-	return k8s.GenTestAttachment(challenge, challengeFlags)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	return k8s.GenTestAttachment(ctx, challenge, challengeFlags)
 }
 
 func GetTestVictimStatus(tx *gorm.DB, challenge model.Challenge) gin.H {
@@ -246,7 +249,9 @@ func StartTestVictim(tx *gorm.DB, challenge model.Challenge) (model.Victim, bool
 		}
 		victim.Pods = append(victim.Pods, pod)
 	}
-	ipExposesMap, ok, msg := k8s.StartVictim(victim)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	defer cancel()
+	ipExposesMap, ok, msg := k8s.StartVictim(ctx, victim)
 	if !ok {
 		return model.Victim{}, false, msg
 	}
@@ -262,7 +267,7 @@ func StartTestVictim(tx *gorm.DB, challenge model.Challenge) (model.Victim, bool
 	victim.ExposedEndpoints = victim.Endpoints
 	if config.Env.K8S.Frpc.On {
 		var frpc []string
-		victim.ExposedEndpoints, frpc, ok, msg = k8s.CreateFrpc(victim)
+		victim.ExposedEndpoints, frpc, ok, msg = k8s.CreateFrpc(ctx, victim)
 		if !ok {
 			return model.Victim{}, false, msg
 		}
@@ -293,7 +298,9 @@ func StopTestVictim(tx *gorm.DB, challenge model.Challenge) (bool, string) {
 	if !ok {
 		return false, msg
 	}
-	ok, msg = k8s.StopVictim(victim)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	ok, msg = k8s.StopVictim(ctx, victim)
 	if !ok {
 		return false, msg
 	}

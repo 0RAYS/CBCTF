@@ -14,7 +14,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	corev1 "k8s.io/api/core/v1"
 )
@@ -25,9 +24,7 @@ type CreateFrpcPodResult struct {
 	MSG  string
 }
 
-func CreateFrpc(victim model.Victim) (model.Endpoints, []string, bool, string) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
+func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []string, bool, string) {
 	idxBig, _ := rand.Int(rand.Reader, big.NewInt(int64(len(config.Env.K8S.Frpc.Frps))))
 	frps := config.Env.K8S.Frpc.Frps[idxBig.Int64()]
 	portRange := make([]int32, 0)

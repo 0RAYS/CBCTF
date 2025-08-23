@@ -51,13 +51,17 @@ func prepareGenerator(c *cron.Cron) {
 				}
 				k8s.GeneratorMapMutex.RUnlock()
 				for _, generator := range timeoutL {
-					k8s.StopGenerator(challenge, generator)
+					ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+					k8s.StopGenerator(ctx, challenge, generator)
+					cancel()
 				}
 				k8s.GeneratorMapMutex.RLock()
 				length := len(k8s.GeneratorMap[challenge.ID])
 				k8s.GeneratorMapMutex.RUnlock()
 				for i := 0; i < len(config.Env.K8S.Nodes)*config.Env.K8S.GeneratorWorker-length; i++ {
-					go k8s.StartGenerator(challenge)
+					ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+					k8s.StartGenerator(ctx, challenge)
+					cancel()
 				}
 			}
 		}

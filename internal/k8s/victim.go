@@ -13,7 +13,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	kubeovnv1 "github.com/JBNRZ/kubeovn-api/pkg/apis/kubeovn/v1"
 	netattv1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
@@ -64,10 +63,8 @@ type CreateSNatResult struct {
 }
 
 // StartVictim model.Victim Preload model.Pod
-func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
+func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exposes, bool, string) {
 	log.Logger.Infof("Starting Victim for Team %d ContestChallenge %d", victim.TeamID.V, victim.ContestChallengeID.V)
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-	defer cancel()
 	// 添加一个独立tag, 防止 NetworkPolicy 影响 frpc 通信
 	labels := map[string]string{
 		"victim_id":            strconv.Itoa(int(victim.ID)),
@@ -435,7 +432,7 @@ func StartVictim(victim model.Victim) (map[string]model.Exposes, bool, string) {
 	return ipExposesMap, true, i18n.Success
 }
 
-func StopVictim(victim model.Victim) (bool, string) {
+func StopVictim(ctx context.Context, victim model.Victim) (bool, string) {
 	log.Logger.Infof("Stopping Victim for Team %d ContestChallenge %d", victim.TeamID.V, victim.ContestChallengeID.V)
 	// 不添加独立 tag, 删除时直接删除所有相关资源
 	labels := map[string]string{
@@ -450,8 +447,6 @@ func StopVictim(victim model.Victim) (bool, string) {
 			log.Logger.Warningf("Failed to unlock frps port: %s", err)
 		}
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
 	if ok, msg := DeleteDNatList(ctx, labels); !ok {
 		return false, msg
 	}
