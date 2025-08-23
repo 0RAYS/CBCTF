@@ -159,11 +159,18 @@ func GenAttachment(ctx context.Context, challenge model.Challenge, team model.Te
 	}
 	flags = base64.StdEncoding.EncodeToString([]byte(strings.TrimSuffix(flags, ",")))
 	flags = strings.TrimSuffix(flags, ",")
+	_ = os.Remove(challenge.AttachmentPath(team.ID))
 	command := fmt.Sprintf("./run.sh %d %s", team.ID, base64.StdEncoding.EncodeToString([]byte(flags)))
 	log.Logger.Debugf("Executing command in %s: %s", generator.Name, command)
 	if _, _, err = Exec(generator.Name, generator.Spec.Containers[0].Name, command, nil); err != nil {
 		log.Logger.Warningf("Failed to execute command %s: %s", command, err)
 		return false, i18n.ExecCommandError
+	}
+	for {
+		if _, err = os.Stat(challenge.AttachmentPath(team.ID)); err == nil {
+			break
+		}
+		time.Sleep(time.Second)
 	}
 	return true, i18n.Success
 }
@@ -182,11 +189,18 @@ func GenTestAttachment(ctx context.Context, challenge model.Challenge, challenge
 	}
 	flags = base64.StdEncoding.EncodeToString([]byte(strings.TrimSuffix(flags, ",")))
 	flags = strings.TrimSuffix(flags, ",")
+	_ = os.Remove(challenge.AttachmentPath(0))
 	command := fmt.Sprintf("./run.sh %d %s", 0, base64.StdEncoding.EncodeToString([]byte(flags)))
 	log.Logger.Debugf("Executing command in %s: %s", generator.Name, command)
 	if _, _, err = Exec(generator.Name, generator.Spec.Containers[0].Name, command, nil); err != nil {
 		log.Logger.Warningf("Failed to execute command %s: %s", command, err)
 		return false, i18n.ExecCommandError
+	}
+	for {
+		if _, err = os.Stat(challenge.AttachmentPath(0)); err == nil {
+			break
+		}
+		time.Sleep(time.Second)
 	}
 	return true, i18n.Success
 }
