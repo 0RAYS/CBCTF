@@ -95,7 +95,7 @@ func InitCheatRepo(tx *gorm.DB) *CheatRepo {
 
 func (c *CheatRepo) Create(options CreateCheatOptions) (model.Cheat, bool, string) {
 	m := options.Convert2Model().(model.Cheat)
-	if cheat, ok, _ := c.GetByHash(m.Hash); ok {
+	if cheat, ok, _ := c.GetByHash(m.Hash); ok && !cheat.Checked {
 		return cheat, true, i18n.Success
 	}
 	if res := c.DB.Model(&model.Cheat{}).Create(&m); res.Error != nil {
