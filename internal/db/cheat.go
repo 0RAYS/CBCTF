@@ -28,13 +28,13 @@ type CreateCheatOptions struct {
 	Type               string
 	Checked            bool
 	Comment            string
-	References         model.UintList
+	Time               time.Time
 }
 
 func (c CreateCheatOptions) Convert2Model() model.Model {
 	hash := fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf(
 		"%s-%d-%d-%d-%d-%d-%s-%s-%s",
-		time.Now().Format("2006-01-02"), c.UserID.V, c.TeamID.V, c.ContestID.V, c.ContestChallengeID.V, c.ContestFlagID.V, c.Magic, c.IP, c.Comment,
+		c.Time.Format("2006-01-02"), c.UserID.V, c.TeamID.V, c.ContestID.V, c.ContestChallengeID.V, c.ContestFlagID.V, c.Magic, c.IP, c.Comment,
 	))))
 	return model.Cheat{
 		UserID:             c.UserID,
@@ -48,18 +48,17 @@ func (c CreateCheatOptions) Convert2Model() model.Model {
 		Type:               c.Type,
 		Checked:            c.Checked,
 		Comment:            c.Comment,
-		References:         c.References,
+		Time:               c.Time,
 		Hash:               hash,
 	}
 }
 
 type UpdateCheatRepo struct {
-	Reason     *string
-	Type       *string
-	Checked    *bool
-	Hash       *string
-	Comment    *string
-	References *model.UintList
+	Reason  *string
+	Type    *string
+	Checked *bool
+	Hash    *string
+	Comment *string
 }
 
 func (u UpdateCheatRepo) Convert2Map() map[string]any {
@@ -78,9 +77,6 @@ func (u UpdateCheatRepo) Convert2Map() map[string]any {
 	}
 	if u.Comment != nil {
 		options["comment"] = *u.Comment
-	}
-	if u.References != nil {
-		options["references"] = u.References
 	}
 	return options
 }

@@ -21,7 +21,6 @@ func GetCheatResp(cheat model.Cheat) gin.H {
 		"checked":              cheat.Checked,
 		"hash":                 cheat.Hash,
 		"comment":              cheat.Comment,
-		"references":           cheat.References,
-		"created_at":           cheat.CreatedAt,
+		"time":                 cheat.Time,
 	}
 }
