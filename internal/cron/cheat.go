@@ -109,9 +109,9 @@ func checkRemoteIP(contest model.Contest) {
 	cheatRepo := db.InitCheatRepo(db.DB)
 	for ip, v := range ipTeamMap {
 		if len(v) > 1 {
-			var tmp strings.Builder
+			var str strings.Builder
 			for _, team := range v {
-				tmp.WriteString(fmt.Sprintf("Team-%d, ", team.ID))
+				str.WriteString(fmt.Sprintf("Team-%d, ", team.ID))
 			}
 			for _, team := range v {
 				cheatRepo.Create(db.CreateCheatOptions{
@@ -119,7 +119,7 @@ func checkRemoteIP(contest model.Contest) {
 					ContestID: sql.Null[uint]{V: contest.ID, Valid: true},
 					IP:        ip,
 					Comment:   ip,
-					Reason:    fmt.Sprintf(model.SameIP, strings.Trim(tmp.String(), ", ")),
+					Reason:    fmt.Sprintf(model.SameIP, strings.Trim(str.String(), ", ")),
 					Type:      model.Suspicious,
 					Checked:   false,
 					Time:      team.Time,
