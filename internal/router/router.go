@@ -205,6 +205,8 @@ func Init() *gin.Engine {
 			adminSmtp.GET("", GetSmtp)
 			adminSmtp.PUT("", UpdateSmtp)
 			adminSmtp.DELETE("", DeleteSmtp)
+
+			adminOauth.GET("/email", GetEmails)
 		}
 
 		admin.GET("/webhook", GetWebhooks)
@@ -216,6 +218,8 @@ func Init() *gin.Engine {
 			adminWebhook.GET("", GetWebhook)
 			adminWebhook.PUT("", UpdateWebhook)
 			adminWebhook.DELETE("", DeleteWebhook)
+
+			adminWebhook.GET("/history", GetWebhookHistory)
 		}
 
 		admin.GET("/challenges", GetChallenges)

@@ -3,6 +3,7 @@ package router
 import (
 	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
+	"CBCTF/internal/middleware"
 	"CBCTF/internal/resp"
 	"net/http"
 
@@ -15,9 +16,14 @@ func GetWebhookHistory(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	histories, count, ok, msg := db.InitWebhookHistoryRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, db.GetOptions{
+	options := db.GetOptions{
 		Preloads: map[string]db.GetOptions{"Webhook": {}, "Event": {}},
-	})
+	}
+	webhook := middleware.GetWebhook(ctx)
+	if webhook.ID > 0 {
+		options.Conditions = map[string]any{"webhook_id": webhook.ID}
+	}
+	histories, count, ok, msg := db.InitWebhookHistoryRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
