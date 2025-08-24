@@ -102,9 +102,22 @@ func UpdateSelf(tx *gorm.DB, user model.User, form f.UpdateSelfForm) (bool, stri
 }
 
 func DeleteSelf(tx *gorm.DB, user model.User, form f.DeleteSelfForm) (bool, string) {
-	repo := db.InitUserRepo(tx)
 	if !utils.CompareHashAndPassword(user.Password, form.Password) {
 		return false, i18n.PasswordError
 	}
-	return repo.Delete(user.ID)
+	contestIDL, ok, msg := db.GetContestIDByUserID(tx, user.ID)
+	if !ok {
+		return false, msg
+	}
+	repo := db.InitContestRepo(tx)
+	for _, id := range contestIDL {
+		contest, ok, msg := repo.GetByID(id, db.GetOptions{Selects: []string{"id", "start", "duration"}})
+		if !ok {
+			return false, msg
+		}
+		if contest.IsRunning() {
+			return false, i18n.ContestIsRunning
+		}
+	}
+	return db.InitUserRepo(tx).Delete(user.ID)
 }
