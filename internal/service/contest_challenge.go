@@ -31,7 +31,7 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form f.CreateCon
 			continue
 		}
 		_ = tx.Transaction(func(tx2 *gorm.DB) error {
-			contestChallenge, ok, msg := contestChallengeRepo.Create(db.CreateContestChallengeOptions{
+			options := db.CreateContestChallengeOptions{
 				ContestID:   contest.ID,
 				ChallengeID: challenge.ID,
 				Name:        challenge.Name,
@@ -39,7 +39,11 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form f.CreateCon
 				Type:        challenge.Type,
 				Category:    challenge.Category,
 				Hidden:      true,
-			})
+			}
+			if challenge.Type == model.QuestionChallengeType {
+				options.Attempt = 1
+			}
+			contestChallenge, ok, msg := contestChallengeRepo.Create(options)
 			if !ok {
 				failedL = append(failedL, challengeRandID)
 				return errors.New(msg)
