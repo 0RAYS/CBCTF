@@ -53,17 +53,16 @@ func InitRequestRepo(tx *gorm.DB) *RequestRepo {
 	}
 }
 
-func (r *RequestRepo) GetIPByMagic(magic string) ([]string, bool, string) {
-	var ipL []string
-	res := r.DB.Model(&model.Request{}).Where("magic = ?", magic).Distinct("ip").Find(&ipL)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to get Requests: %s", res.Error)
-		return nil, false, i18n.GetRequestError
+func (r *RequestRepo) GetByMagic(magic string, optionsL ...GetOptions) ([]model.Request, int64, bool, string) {
+	options := GetOptions{}
+	if len(optionsL) > 0 {
+		options = optionsL[0]
 	}
-	if res.RowsAffected == 0 {
-		return nil, false, i18n.RequestNotFound
+	if len(options.Conditions) == 0 {
+		options.Conditions = make(map[string]any)
 	}
-	return ipL, true, i18n.Success
+	options.Conditions["magic"] = magic
+	return r.List(-1, -1, options)
 }
 
 func (r *RequestRepo) CountIP() (int64, bool, string) {

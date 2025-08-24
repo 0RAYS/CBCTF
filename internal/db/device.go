@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/model"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -64,6 +65,7 @@ func (d *DeviceRepo) RecordDevice(userID uint, magic, ip string) (bool, string) 
 					Reason:  fmt.Sprintf(model.SameDeviceMagic, userID, device.UserID),
 					Type:    model.Suspicious,
 					Checked: false,
+					Time:    time.Now(),
 				})
 			}
 		}

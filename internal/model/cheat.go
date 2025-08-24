@@ -3,6 +3,7 @@ package model
 import (
 	"CBCTF/internal/i18n"
 	"database/sql"
+	"time"
 )
 
 const (
@@ -33,7 +34,7 @@ type Cheat struct {
 	Checked            bool              `json:"checked"`
 	Hash               string            `json:"hash"`
 	Comment            string            `json:"comment"`
-	References         UintList          `gorm:"type:json" json:"references"`
+	Time               time.Time         `json:"time"`
 	BasicModel
 }
 

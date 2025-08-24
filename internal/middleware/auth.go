@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -60,6 +61,7 @@ func CheckAuth(ctx *gin.Context) {
 					Reason:  fmt.Sprintf(model.DifferentTokenMagic, magic, claims.X),
 					Type:    model.Suspicious,
 					Checked: false,
+					Time:    time.Now(),
 				})
 				ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
 				return

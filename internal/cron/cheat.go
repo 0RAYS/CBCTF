@@ -49,26 +49,32 @@ func checkRemoteIP(contest model.Contest) {
 	if !ok {
 		return
 	}
-	ipTeamIDMap := make(map[string][]uint)
+	type tmp struct {
+		Time time.Time
+		ID   uint
+	}
+	ipTeamMap := make(map[string][]tmp)
 	requestRepo := db.InitRequestRepo(db.DB)
 	victimRepo := db.InitVictimRepo(db.DB)
 	for _, team := range teams {
 		for _, user := range team.Users {
 			for _, device := range user.Devices {
-				ipL, ok, _ := requestRepo.GetIPByMagic(device.Magic)
+				requests, _, ok, _ := requestRepo.GetByMagic(device.Magic)
 				if !ok {
 					continue
 				}
-				for _, ip := range ipL {
-					netIP := net.ParseIP(ip)
+				for _, request := range requests {
+					netIP := net.ParseIP(request.IP)
 					if netIP == nil {
 						continue
 					}
 					if netIP.IsLoopback() {
 						continue
 					}
-					if !slices.Contains(ipTeamIDMap[ip], team.ID) {
-						ipTeamIDMap[ip] = append(ipTeamIDMap[ip], team.ID)
+					if !slices.ContainsFunc(ipTeamMap[request.IP], func(s tmp) bool {
+						return s.ID == team.ID
+					}) {
+						ipTeamMap[request.IP] = append(ipTeamMap[request.IP], tmp{Time: request.Time, ID: team.ID})
 					}
 				}
 			}
@@ -91,28 +97,32 @@ func checkRemoteIP(contest model.Contest) {
 				if netIP.IsLoopback() {
 					continue
 				}
-				if !slices.Contains(ipTeamIDMap[traffics.SrcIP], victim.TeamID.V) {
-					ipTeamIDMap[traffics.SrcIP] = append(ipTeamIDMap[traffics.SrcIP], victim.TeamID.V)
+				if !slices.ContainsFunc(ipTeamMap[traffics.SrcIP], func(s tmp) bool {
+					return s.ID == victim.TeamID.V
+				}) {
+					// 靶机流量的时间此处实际上为靶机关闭的时间, 但影响不大
+					ipTeamMap[traffics.SrcIP] = append(ipTeamMap[traffics.SrcIP], tmp{Time: traffics.CreatedAt, ID: victim.TeamID.V})
 				}
 			}
 		}
 	}
 	cheatRepo := db.InitCheatRepo(db.DB)
-	for ip, teamIDL := range ipTeamIDMap {
-		if len(teamIDL) > 1 {
+	for ip, v := range ipTeamMap {
+		if len(v) > 1 {
 			var tmp strings.Builder
-			for _, teamID := range teamIDL {
-				tmp.WriteString(fmt.Sprintf("Team-%d, ", teamID))
+			for _, team := range v {
+				tmp.WriteString(fmt.Sprintf("Team-%d, ", team.ID))
 			}
-			for _, teamID := range teamIDL {
+			for _, team := range v {
 				cheatRepo.Create(db.CreateCheatOptions{
-					TeamID:    sql.Null[uint]{V: teamID, Valid: true},
+					TeamID:    sql.Null[uint]{V: team.ID, Valid: true},
 					ContestID: sql.Null[uint]{V: contest.ID, Valid: true},
 					IP:        ip,
 					Comment:   ip,
 					Reason:    fmt.Sprintf(model.SameIP, strings.Trim(tmp.String(), ", ")),
 					Type:      model.Suspicious,
 					Checked:   false,
+					Time:      team.Time,
 				})
 			}
 		}
@@ -133,7 +143,7 @@ func checkWrongFlag(contest model.Contest) {
 		Conditions: map[string]any{"contest_id": contest.ID},
 		Preloads: map[string]db.GetOptions{
 			"TeamFlags":   {Selects: []string{"id", "team_id", "value"}},
-			"Submissions": {Selects: []string{"id", "team_id", "solved", "ip", "value", "contest_challenge_id"}},
+			"Submissions": {Selects: []string{"id", "team_id", "solved", "ip", "value", "contest_challenge_id", "created_at"}},
 		},
 	})
 	if !ok {
@@ -175,6 +185,7 @@ func checkWrongFlag(contest model.Contest) {
 				Reason:    fmt.Sprintf(model.SubmitOtherTeamFlag, team.ID, strings.Trim(tmp.String(), ", "), contest.ID),
 				Type:      model.Cheater,
 				Checked:   false,
+				Time:      submission.CreatedAt,
 			})
 		}
 	}
