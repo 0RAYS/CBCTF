@@ -23,7 +23,7 @@ func checkCheat(c *cron.Cron) {
 			return
 		}
 		for _, contest := range contests {
-			if !contest.IsRunning() {
+			if time.Now().Sub(contest.Start.Add(contest.Duration)) > 15*time.Minute {
 				continue
 			}
 			checkRemoteIP(contest)

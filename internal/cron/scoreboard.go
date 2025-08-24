@@ -12,7 +12,6 @@ import (
 )
 
 // updateTeamRanking 全量更新 model.Team 的分数和排名
-// TODO 比赛结束时可能位于空档期，导致最终分数核算出现问题
 func updateTeamRanking(c *cron.Cron) {
 	function := exec("UpdateTeamRanking", func() {
 		repo := db.InitContestRepo(db.DB)
@@ -24,7 +23,7 @@ func updateTeamRanking(c *cron.Cron) {
 			return
 		}
 		for _, contest := range contests {
-			if !contest.IsRunning() {
+			if time.Now().Sub(contest.Start.Add(contest.Duration)) > time.Minute*10 {
 				continue
 			}
 			service.UpdateTeamRanking(db.DB, contest.ID)

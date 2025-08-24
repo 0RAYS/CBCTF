@@ -20,7 +20,7 @@ func updateFlagScore(c *cron.Cron) {
 			return
 		}
 		for _, contest := range contests {
-			if !contest.IsRunning() {
+			if time.Now().Sub(contest.Start.Add(contest.Duration)) > 90*time.Minute {
 				continue
 			}
 			contestChallengeRepo := db.InitContestChallengeRepo(db.DB)
