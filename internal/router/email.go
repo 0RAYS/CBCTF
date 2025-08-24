@@ -20,7 +20,12 @@ func GetEmails(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	emails, count, ok, msg := db.InitEmailRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset)
+	options := db.GetOptions{}
+	smtp := middleware.GetSmtp(ctx)
+	if smtp.ID > 0 {
+		options.Conditions = map[string]any{"smtp_id": smtp.ID}
+	}
+	emails, count, ok, msg := db.InitEmailRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, options)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
