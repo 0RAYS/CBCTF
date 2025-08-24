@@ -83,7 +83,7 @@ func checkRemoteIP(contest model.Contest) {
 			Selects:    []string{"id", "team_id"},
 			Conditions: map[string]any{"team_id": team.ID},
 			Deleted:    true,
-			Preloads:   map[string]db.GetOptions{"Traffics": {Selects: []string{"id", "victim_id", "src_ip"}}},
+			Preloads:   map[string]db.GetOptions{"Traffics": {Selects: []string{"id", "victim_id", "src_ip", "created_at"}}},
 		})
 		if !ok {
 			continue
