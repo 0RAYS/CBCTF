@@ -27,12 +27,13 @@ func DownloadFile(eventType string) gin.HandlerFunc {
 		file := middleware.GetFile(ctx)
 		if _, err := os.Stat(file.Path); err != nil {
 			if os.IsNotExist(err) {
-				tx := db.DB.WithContext(ctx).Begin()
-				if ok, _ := db.InitFileRepo(tx).Delete(file.ID); !ok {
-					tx.Rollback()
-				} else {
-					tx.Commit()
-				}
+				// 保留数据库记录
+				//tx := db.DB.WithContext(ctx).Begin()
+				//if ok, _ := db.InitFileRepo(tx).Delete(file.ID); !ok {
+				//	tx.Rollback()
+				//} else {
+				//	tx.Commit()
+				//}
 				ctx.JSON(http.StatusOK, gin.H{"msg": i18n.FileNotFound, "data": file.ID})
 				return
 			}
