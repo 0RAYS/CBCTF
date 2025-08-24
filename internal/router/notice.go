@@ -39,11 +39,6 @@ func GetNotices(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "notices": data}})
 }
 
-func GetNotice(ctx *gin.Context) {
-	notice := middleware.GetNotice(ctx)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": resp.GetNoticeResp(notice)})
-}
-
 func CreateNotice(ctx *gin.Context) {
 	var form f.CreateNoticeForm
 	if ok, msg := form.Bind(ctx); !ok {
