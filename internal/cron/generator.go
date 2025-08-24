@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
 	"context"
 	"slices"
 	"strings"
@@ -40,30 +41,35 @@ func prepareGenerator(c *cron.Cron) {
 			if !ok {
 				continue
 			}
+			funcs := make([]func() bool, 0)
 			for _, contestChallenge := range contestChallengeL {
-				challenge := contestChallenge.Challenge
-				timeoutL := make([]*corev1.Pod, 0)
-				k8s.GeneratorMapMutex.RLock()
-				for _, generator := range k8s.GeneratorMap[challenge.ID] {
-					if generator.Pod.Status.Phase != corev1.PodRunning || generator.Start.Add(time.Hour).Before(time.Now()) {
-						timeoutL = append(timeoutL, generator.Pod)
+				funcs = append(funcs, func() bool {
+					challenge := contestChallenge.Challenge
+					timeoutL := make([]*corev1.Pod, 0)
+					k8s.GeneratorMapMutex.RLock()
+					for _, generator := range k8s.GeneratorMap[challenge.ID] {
+						if generator.Pod.Status.Phase != corev1.PodRunning || generator.Start.Add(time.Hour).Before(time.Now()) {
+							timeoutL = append(timeoutL, generator.Pod)
+						}
 					}
-				}
-				k8s.GeneratorMapMutex.RUnlock()
-				for _, generator := range timeoutL {
-					ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-					k8s.StopGenerator(ctx, challenge, generator)
-					cancel()
-				}
-				k8s.GeneratorMapMutex.RLock()
-				length := len(k8s.GeneratorMap[challenge.ID])
-				k8s.GeneratorMapMutex.RUnlock()
-				for i := 0; i < len(config.Env.K8S.Nodes)*config.Env.K8S.GeneratorWorker-length; i++ {
-					ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-					k8s.StartGenerator(ctx, challenge)
-					cancel()
-				}
+					k8s.GeneratorMapMutex.RUnlock()
+					for _, generator := range timeoutL {
+						ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+						k8s.StopGenerator(ctx, challenge, generator)
+						cancel()
+					}
+					k8s.GeneratorMapMutex.RLock()
+					length := len(k8s.GeneratorMap[challenge.ID])
+					k8s.GeneratorMapMutex.RUnlock()
+					for i := 0; i < len(config.Env.K8S.Nodes)*config.Env.K8S.GeneratorWorker-length; i++ {
+						ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+						k8s.StartGenerator(ctx, challenge)
+						cancel()
+					}
+					return true
+				})
 			}
+			utils.RunFuncLConcurrently(funcs)
 		}
 	})
 	function()
