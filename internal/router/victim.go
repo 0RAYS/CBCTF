@@ -95,11 +95,6 @@ func StopVictim(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
-func GetVictim(ctx *gin.Context) {
-	victim := middleware.GetVictim(ctx)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": resp.GetVictimResp(victim)})
-}
-
 func GetVictims(ctx *gin.Context) {
 	var form f.GetModelsForm
 	if ok, msg := form.Bind(ctx); !ok {

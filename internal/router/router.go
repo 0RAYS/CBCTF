@@ -114,7 +114,6 @@ func Init() *gin.Engine {
 		// 比赛公告
 		{
 			contest.GET("/notices", GetNotices)
-			contest.GET("/notices/:noticeID", middleware.SetNotice, GetNotice)
 		}
 
 		contest.GET("/challenges", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.ContestIsNotComing, GetContestChallenges)
@@ -199,7 +198,6 @@ func Init() *gin.Engine {
 		}
 
 		admin.GET("/email", GetEmails)
-
 		admin.GET("/smtp", GetSmtps)
 		admin.POST("/smtp", CreateSmtp)
 		adminSmtp := admin.Group("/smtp/:smtpID", middleware.SetSmtp)
@@ -273,11 +271,11 @@ func Init() *gin.Engine {
 				adminContestTeam.GET("/victims", GetVictims)
 				adminContainer := adminContestTeam.Group("/victims/:victimID", middleware.SetVictim)
 				{
-					adminContainer.GET("", GetVictim)
-
 					adminTraffic := adminContainer.Group("/traffic")
-					adminTraffic.GET("/download", DownloadTraffic)
-					adminTraffic.GET("", GetTraffics)
+					{
+						adminTraffic.GET("/download", DownloadTraffic)
+						adminTraffic.GET("", GetTraffics)
+					}
 				}
 
 				adminContestTeam.GET("/writeups", GetWriteUPs)
@@ -288,7 +286,6 @@ func Init() *gin.Engine {
 			adminContest.POST("/notices", CreateNotice)
 			adminContestNotice := adminContest.Group("/notices/:noticeID", middleware.SetNotice)
 			{
-				adminContestNotice.GET("", GetNotice)
 				adminContestNotice.PUT("", UpdateNotice)
 				adminContestNotice.DELETE("", DeleteNotice)
 			}
@@ -296,8 +293,7 @@ func Init() *gin.Engine {
 			adminContest.GET("/cheats", GetCheats)
 			adminContestCheat := adminContest.Group("/cheats/:cheatID", middleware.SetCheat)
 			{
-				adminContestCheat.GET("", GetCheat)
-				//adminContestCheat.PUT("")
+				adminContestCheat.PUT("")
 				//adminContestCheat.DELETE("")
 			}
 
