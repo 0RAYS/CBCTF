@@ -3,8 +3,8 @@ package router
 import (
 	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
+	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"net/http"
 
@@ -17,9 +17,11 @@ func GetCheats(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	options := db.GetOptions{}
+	options := db.GetOptions{
+		Conditions: map[string]any{"contest_id": middleware.GetContest(ctx).ID},
+	}
 	if form.Type != "" {
-		options.Conditions = map[string]any{"type": form.Type}
+		options.Conditions["type"] = form.Type
 	}
 	cheats, count, ok, msg := db.InitCheatRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, options)
 	if !ok {
@@ -33,7 +35,26 @@ func GetCheats(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "cheats": data}})
 }
 
-func GetCheat(ctx *gin.Context) {
+func UpdateCheat(ctx *gin.Context) {
+	var form f.UpdateCheatForm
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	ctx.Set(middleware.CTXEventTypeKey, model.UpdateCheatEventType)
 	cheat := middleware.GetCheat(ctx)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": resp.GetCheatResp(cheat)})
+	tx := db.DB.WithContext(ctx).Begin()
+	ok, msg := db.InitCheatRepo(tx).Update(cheat.ID, db.UpdateCheatRepo{
+		Reason:  form.Reason,
+		Type:    form.Type,
+		Checked: form.Checked,
+		Comment: form.Comment,
+	})
+	if !ok {
+		tx.Rollback()
+	} else {
+		ctx.Set(middleware.CTXEventSuccessKey, true)
+		tx.Commit()
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
