@@ -33,6 +33,8 @@ const (
 
 	UpdateContestChallengeFlagEventType = "update_contest_challenge_flag"
 
+	UpdateCheatEventType = "update_cheat"
+
 	CreateNoticeEventType = "create_notice"
 	UpdateNoticeEventType = "update_notice"
 	DeleteNoticeEventType = "delete_notice"
@@ -81,12 +83,12 @@ var EventTypes = []string{
 	CreateUserEventType, UpdateUserEventType, DeleteUserEventType, CreateContestEventType, UpdateContestEventType,
 	DeleteContestEventType, CreateChallengeEventType, UpdateChallengeEventType, DeleteChallengeEventType,
 	UploadChallengeFileEventType, CreateContestChallengeEventType, UpdateContestChallengeEventType,
-	DeleteContestChallengeEventType, UpdateContestChallengeFlagEventType, CreateNoticeEventType, UpdateNoticeEventType,
-	DeleteNoticeEventType, CreateOauthEventType, UpdateOauthEventType, DeleteOauthEventType, CreateSmtpEventType,
-	UpdateSmtpEventType, DeleteSmtpEventType, CreateWebhookEventType, UpdateWebhookEventType, DeleteWebhookEventType,
-	ActivateEmailEventType, VerifyEmailEventType, UploadAvatarEventType, DeleteAvatarEventType, JoinTeamEventType,
-	CreateTeamEventType, UpdateTeamEventType, DeleteTeamEventType, LeaveTeamEventType, KickMemberEventType,
-	InitChallengeEventType, ResetChallengeEventType, DownloadAttachmentEventType, PullImageEventType,
+	DeleteContestChallengeEventType, UpdateContestChallengeFlagEventType, UpdateCheatEventType, CreateNoticeEventType,
+	UpdateNoticeEventType, DeleteNoticeEventType, CreateOauthEventType, UpdateOauthEventType, DeleteOauthEventType,
+	CreateSmtpEventType, UpdateSmtpEventType, DeleteSmtpEventType, CreateWebhookEventType, UpdateWebhookEventType,
+	DeleteWebhookEventType, ActivateEmailEventType, VerifyEmailEventType, UploadAvatarEventType, DeleteAvatarEventType,
+	JoinTeamEventType, CreateTeamEventType, UpdateTeamEventType, DeleteTeamEventType, LeaveTeamEventType,
+	KickMemberEventType, InitChallengeEventType, ResetChallengeEventType, DownloadAttachmentEventType, PullImageEventType,
 	StartVictimEventType, IncreaseVictimEventType, StopVictimEventType, DownloadTrafficEventType, SubmitFlagEventType,
 	UploadWriteUpEventType, DownloadWriteUpEventType,
 }

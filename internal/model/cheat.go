@@ -9,6 +9,7 @@ import (
 const (
 	Cheater    = "cheater"
 	Suspicious = "suspicious"
+	Pass       = "pass"
 
 	DifferentTokenMagic = "Device magic %s is different from token magic %s"
 	SameDeviceMagic     = "User %d has the same Device magic as User %d"
