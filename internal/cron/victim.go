@@ -16,14 +16,16 @@ func closeTimeoutVictims(c *cron.Cron) {
 	function := exec("CloseTimeoutVictims", func() {
 		repo := db.InitVictimRepo(db.DB)
 		victims, _, ok, _ := repo.List(-1, -1, db.GetOptions{
-			Preloads: map[string]db.GetOptions{"Pods": {}},
+			Preloads: map[string]db.GetOptions{"Team": {Selects: []string{"id"}, Preloads: map[string]db.GetOptions{
+				"Contest": {Selects: []string{"id", "start", "duration"}},
+			}}},
 		})
 		if !ok {
 			return
 		}
 		idL := make([]uint, 0)
 		for _, victim := range victims {
-			if victim.Start.Add(victim.Duration).Before(time.Now()) {
+			if victim.Start.Add(victim.Duration).Before(time.Now()) || victim.Team.Contest.IsOver() {
 				idL = append(idL, victim.ID)
 				ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 				k8s.StopVictim(ctx, victim)
