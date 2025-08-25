@@ -13,7 +13,8 @@ const (
 
 	DifferentTokenMagic = "Device magic %s is different from token magic %s"
 	SameDeviceMagic     = "User %d has the same Device magic as User %d"
-	SameIP              = "%s has the same IP"
+	ReqWebSameIP        = "%s request web with same IP"
+	ReqVictimSameIP     = "%s request victim with same IP"
 	SubmitOtherTeamFlag = "Team %d submitted flag of %s in Contest %d"
 )
 
