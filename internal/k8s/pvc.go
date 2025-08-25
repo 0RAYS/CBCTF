@@ -40,6 +40,7 @@ func CreatePVC(ctx context.Context, options CreatePVCOptions) (*corev1.Persisten
 					corev1.ResourceStorage: storage,
 				},
 			},
+			VolumeName: nfsVolumeName,
 		},
 	}
 	pvc, err = kubeClient.CoreV1().PersistentVolumeClaims(globalNamespace).Create(ctx, pvc, metav1.CreateOptions{})
