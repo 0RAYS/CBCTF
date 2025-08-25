@@ -26,7 +26,8 @@ func checkCheat(c *cron.Cron) {
 			if time.Now().Sub(contest.Start.Add(contest.Duration)) > 15*time.Minute {
 				continue
 			}
-			checkRemoteIP(contest)
+			checkWebReqIP(contest)
+			checkVictimReqIP(contest)
 			checkWrongFlag(contest)
 		}
 	})
@@ -34,8 +35,8 @@ func checkCheat(c *cron.Cron) {
 	c.Schedule(cron.Every(10*time.Minute), cron.FuncJob(function))
 }
 
-// checkRemoteIP 检查用户涉及的 IP, 包含访问站点和靶机访问
-func checkRemoteIP(contest model.Contest) {
+// checkWebReqIP 检查用户访问站点的 IP
+func checkWebReqIP(contest model.Contest) {
 	teams, _, ok, _ := db.InitTeamRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
 		Selects:    []string{"id"},
@@ -55,7 +56,6 @@ func checkRemoteIP(contest model.Contest) {
 	}
 	ipTeamMap := make(map[string][]tmp)
 	requestRepo := db.InitRequestRepo(db.DB)
-	victimRepo := db.InitVictimRepo(db.DB)
 	for _, team := range teams {
 		for _, user := range team.Users {
 			for _, device := range user.Devices {
@@ -79,6 +79,46 @@ func checkRemoteIP(contest model.Contest) {
 				}
 			}
 		}
+	}
+	cheatRepo := db.InitCheatRepo(db.DB)
+	for ip, v := range ipTeamMap {
+		if len(v) > 1 {
+			var str strings.Builder
+			for _, team := range v {
+				str.WriteString(fmt.Sprintf("Team-%d, ", team.ID))
+			}
+			for _, team := range v {
+				cheatRepo.Create(db.CreateCheatOptions{
+					TeamID:    sql.Null[uint]{V: team.ID, Valid: true},
+					ContestID: sql.Null[uint]{V: contest.ID, Valid: true},
+					IP:        ip,
+					Comment:   ip,
+					Reason:    fmt.Sprintf(model.ReqWebSameIP, strings.Trim(str.String(), ", ")),
+					Type:      model.Suspicious,
+					Checked:   false,
+					Time:      team.Time,
+				})
+			}
+		}
+	}
+}
+
+// checkWebReqIP 检查用户访问靶机的 IP
+func checkVictimReqIP(contest model.Contest) {
+	teams, _, ok, _ := db.InitTeamRepo(db.DB).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_id": contest.ID},
+		Selects:    []string{"id"},
+	})
+	if !ok {
+		return
+	}
+	type tmp struct {
+		Time time.Time
+		ID   uint
+	}
+	ipTeamMap := make(map[string][]tmp)
+	victimRepo := db.InitVictimRepo(db.DB)
+	for _, team := range teams {
 		victims, _, ok, _ := victimRepo.List(-1, -1, db.GetOptions{
 			Selects:    []string{"id", "team_id"},
 			Conditions: map[string]any{"team_id": team.ID},
@@ -119,7 +159,7 @@ func checkRemoteIP(contest model.Contest) {
 					ContestID: sql.Null[uint]{V: contest.ID, Valid: true},
 					IP:        ip,
 					Comment:   ip,
-					Reason:    fmt.Sprintf(model.SameIP, strings.Trim(str.String(), ", ")),
+					Reason:    fmt.Sprintf(model.ReqVictimSameIP, strings.Trim(str.String(), ", ")),
 					Type:      model.Suspicious,
 					Checked:   false,
 					Time:      team.Time,
