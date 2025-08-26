@@ -20,7 +20,9 @@ type CreatePodOptions struct {
 	Annotations     map[string]string
 	Containers      []corev1.Container
 	Volumes         []corev1.Volume
+	PodAffinity     map[string]string
 	PodAntiAffinity map[string]string
+	Tolerations     map[string]string
 }
 
 func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool, string) {
@@ -48,9 +50,29 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool
 			RestartPolicy:                 corev1.RestartPolicyNever,
 		},
 	}
-	if len(options.PodAntiAffinity) > 0 {
-		pod.Spec.Affinity = &corev1.Affinity{
-			PodAntiAffinity: &corev1.PodAntiAffinity{
+	for key, value := range options.Tolerations {
+		pod.Spec.Tolerations = append(pod.Spec.Tolerations, corev1.Toleration{
+			Key:      key,
+			Operator: corev1.TolerationOpEqual,
+			Value:    value,
+			Effect:   corev1.TaintEffectNoSchedule,
+		})
+	}
+	if len(options.PodAffinity) > 0 || len(options.PodAntiAffinity) > 0 {
+		pod.Spec.Affinity = &corev1.Affinity{}
+		if len(options.PodAffinity) > 0 {
+			pod.Spec.Affinity.PodAffinity = &corev1.PodAffinity{
+				RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
+					{
+						LabelSelector: &metav1.LabelSelector{
+							MatchLabels: options.PodAffinity,
+						},
+					},
+				},
+			}
+		}
+		if len(options.PodAntiAffinity) > 0 {
+			pod.Spec.Affinity.PodAntiAffinity = &corev1.PodAntiAffinity{
 				RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
 					{
 						LabelSelector: &metav1.LabelSelector{
@@ -59,7 +81,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool
 						TopologyKey: "kubernetes.io/hostname",
 					},
 				},
-			},
+			}
 		}
 	}
 	pod, err = kubeClient.CoreV1().Pods(globalNamespace).Create(ctx, pod, metav1.CreateOptions{})
