@@ -48,8 +48,16 @@ func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.S
 				}
 				return tmp
 			}(),
-			Type:                  corev1.ServiceTypeNodePort,
-			ExternalIPs:           config.Env.K8S.Nodes,
+			Type: corev1.ServiceTypeNodePort,
+			ExternalIPs: func() []string {
+				ipL := make([]string, 0)
+				for _, node := range config.Env.K8S.Nodes {
+					if node.Public {
+						ipL = append(ipL, node.IP)
+					}
+				}
+				return ipL
+			}(),
 			ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeLocal,
 		},
 	}
