@@ -89,7 +89,7 @@ func StartGenerator(ctx context.Context, challenge model.Challenge) (*corev1.Pod
 	}
 	for _, command := range commands {
 		log.Logger.Debugf("Executing command: %s", command)
-		if _, _, err = Exec(generatorName, containerName, command, nil); err != nil {
+		if _, _, err = Exec(ctx, generatorName, containerName, command, nil); err != nil {
 			log.Logger.Warningf("Failed to execute command %s: %s", command, err)
 			return nil, false, i18n.ExecCommandError
 		}
@@ -155,7 +155,7 @@ func GenAttachment(ctx context.Context, challenge model.Challenge, team model.Te
 	_ = os.Remove(challenge.AttachmentPath(team.ID))
 	command := fmt.Sprintf("./run.sh %d %s", team.ID, base64.StdEncoding.EncodeToString([]byte(flags)))
 	log.Logger.Debugf("Executing command in %s: %s", generator.Name, command)
-	if _, _, err = Exec(generator.Name, generator.Spec.Containers[0].Name, command, nil); err != nil {
+	if _, _, err = Exec(ctx, generator.Name, generator.Spec.Containers[0].Name, command, nil); err != nil {
 		log.Logger.Warningf("Failed to execute command %s: %s", command, err)
 		return false, i18n.ExecCommandError
 	}
@@ -185,7 +185,7 @@ func GenTestAttachment(ctx context.Context, challenge model.Challenge, challenge
 	_ = os.Remove(challenge.AttachmentPath(0))
 	command := fmt.Sprintf("./run.sh %d %s", 0, base64.StdEncoding.EncodeToString([]byte(flags)))
 	log.Logger.Debugf("Executing command in %s: %s", generator.Name, command)
-	if _, _, err = Exec(generator.Name, generator.Spec.Containers[0].Name, command, nil); err != nil {
+	if _, _, err = Exec(ctx, generator.Name, generator.Spec.Containers[0].Name, command, nil); err != nil {
 		log.Logger.Warningf("Failed to execute command %s: %s", command, err)
 		return false, i18n.ExecCommandError
 	}
