@@ -298,6 +298,11 @@ const (
 	GetPVCError    = "GetPVCError"
 	PVCNotFound    = "PVCNotFound"
 
+	CreateEndpointError = "CreateEndpointError"
+	DeleteEndpointError = "DeleteEndpointError"
+	GetEndpointError    = "GetEndpointError"
+	EndpointNotFound    = "EndpointNotFound"
+
 	GetNodeListError = "GetNodeListError"
 
 	EnqueueTaskError = "EnqueueTaskError"
