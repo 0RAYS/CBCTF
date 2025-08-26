@@ -25,7 +25,7 @@ func closeTimeoutVictims(c *cron.Cron) {
 		}
 		idL := make([]uint, 0)
 		for _, victim := range victims {
-			if victim.Start.Add(victim.Duration).Before(time.Now()) || victim.Team.Contest.IsOver() {
+			if victim.Start.Add(victim.Duration).Before(time.Now()) || (victim.TeamID.Valid && victim.Team.Contest.IsOver()) {
 				idL = append(idL, victim.ID)
 				ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 				k8s.StopVictim(ctx, victim)
