@@ -63,12 +63,3 @@ func GetPVC(ctx context.Context, name string) (*corev1.PersistentVolumeClaim, bo
 	}
 	return pvc, true, i18n.Success
 }
-
-func DeletePVC(ctx context.Context, name string) (bool, string) {
-	err := kubeClient.CoreV1().PersistentVolumeClaims(globalNamespace).Delete(ctx, name, metav1.DeleteOptions{})
-	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete pvc: %s", err)
-		return false, i18n.DeletePVCError
-	}
-	return true, i18n.Success
-}

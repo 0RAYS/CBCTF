@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"strings"
 
-	kubeovnv1 "github.com/JBNRZ/kubeovn-api/pkg/apis/kubeovn/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -18,25 +17,6 @@ type CreateIPOptions struct {
 	Subnet  string
 	PodName string
 	IP      string
-}
-
-func GetIPList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.IPList, bool, string) {
-	var options metav1.ListOptions
-	if len(labels) > 0 {
-		var selector string
-		for k, v := range labels[0] {
-			selector += fmt.Sprintf("%s=%s,", k, v)
-		}
-		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector, ","),
-		}
-	}
-	ipList, err := kubeOVNClient.KubeovnV1().IPs().List(ctx, options)
-	if err != nil {
-		log.Logger.Warningf("Failed to get IP list: %s", err)
-		return nil, false, i18n.GetIPError
-	}
-	return ipList, true, i18n.Success
 }
 
 func DeleteIPList(ctx context.Context, labels ...map[string]string) (bool, string) {

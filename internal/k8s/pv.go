@@ -68,12 +68,3 @@ func GetPV(ctx context.Context, name string) (*corev1.PersistentVolume, bool, st
 	}
 	return pv, true, i18n.Success
 }
-
-func DeletePV(ctx context.Context, name string) (bool, string) {
-	err := kubeClient.CoreV1().PersistentVolumes().Delete(ctx, name, metav1.DeleteOptions{})
-	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete pv: %s", err)
-		return false, i18n.DeletePVError
-	}
-	return true, i18n.Success
-}

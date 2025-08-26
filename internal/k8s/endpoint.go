@@ -4,6 +4,8 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"context"
+	"fmt"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	discoveryv1 "k8s.io/api/discovery/v1"
@@ -50,12 +52,34 @@ func CreateEndpoint(ctx context.Context, options CreateEndpointOptions) (*discov
 }
 
 func GetEndpoint(ctx context.Context, name string) (*discoveryv1.EndpointSlice, bool, string) {
-	endpoints, err := kubeClient.DiscoveryV1().EndpointSlices(globalNamespace).Get(ctx, name, metav1.GetOptions{})
+	endpoint, err := kubeClient.DiscoveryV1().EndpointSlices(globalNamespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if apierror.IsNotFound(err) {
 			return nil, false, i18n.EndpointNotFound
 		}
-		log.Logger.Warningf("Failed to get EndpointSlice for %s", name)
+		log.Logger.Warningf("Failed to get EndpointSlice: %s", err)
+		return nil, false, i18n.GetEndpointError
+	}
+	return endpoint, true, i18n.Success
+}
+
+func GetEndpointList(ctx context.Context, labels ...map[string]string) (*discoveryv1.EndpointSliceList, bool, string) {
+	var options metav1.ListOptions
+	if len(labels) > 0 {
+		var selector string
+		for k, v := range labels[0] {
+			selector += fmt.Sprintf("%s=%s,", k, v)
+		}
+		options = metav1.ListOptions{
+			LabelSelector: strings.TrimSuffix(selector, ","),
+		}
+	}
+	endpoints, err := kubeClient.DiscoveryV1().EndpointSlices(globalNamespace).List(ctx, options)
+	if err != nil {
+		if apierror.IsNotFound(err) {
+			return nil, false, i18n.EndpointNotFound
+		}
+		log.Logger.Warningf("Failed to get EndpointSlice: %s", err)
 		return nil, false, i18n.GetEndpointError
 	}
 	return endpoints, true, i18n.Success
@@ -65,6 +89,25 @@ func DeleteEndpoint(ctx context.Context, name string) (bool, string) {
 	err := kubeClient.DiscoveryV1().EndpointSlices(globalNamespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to delete EndpointSlice for %s", name)
+		return false, i18n.DeleteEndpointError
+	}
+	return true, i18n.Success
+}
+
+func DeleteEndpointList(ctx context.Context, labels ...map[string]string) (bool, string) {
+	var options metav1.ListOptions
+	if len(labels) > 0 {
+		var selector string
+		for k, v := range labels[0] {
+			selector += fmt.Sprintf("%s=%s,", k, v)
+		}
+		options = metav1.ListOptions{
+			LabelSelector: strings.TrimSuffix(selector, ","),
+		}
+	}
+	err := kubeClient.DiscoveryV1().EndpointSlices(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
+	if err != nil && !apierror.IsNotFound(err) {
+		log.Logger.Warningf("Failed to delete EndpointSlice: %s", err)
 		return false, i18n.DeleteEndpointError
 	}
 	return true, i18n.Success
