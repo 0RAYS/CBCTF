@@ -298,6 +298,11 @@ var resp = map[string]map[string]any{
 	GetPVCError:    {"zh-CN": "获取PVC失败", "en-US": "Get PVC failed", "code": 500},
 	PVCNotFound:    {"zh-CN": "PVC不存在", "en-US": "PVC not found", "code": 404},
 
+	CreateEndpointError: {"zh-CN": "创建Endpoint失败", "en-US": "Create Endpoint failed", "code": 500},
+	DeleteEndpointError: {"zh-CN": "删除Endpoint失败", "en-US": "Delete Endpoint failed", "code": 500},
+	GetEndpointError:    {"zh-CN": "获取Endpoint失败", "en-US": "Get Endpoint failed", "code": 500},
+	EndpointNotFound:    {"zh-CN": "Endpoint不存在", "en-US": "Endpoint not found", "code": 404},
+
 	GetNodeListError: {"zh-CN": "获取K8S节点失败", "en-US": "Get node list failed", "code": 500},
 
 	EnqueueTaskError: {"zh-CN": "提交任务队列失败", "en-US": "Enqueue task failed", "code": 500},
