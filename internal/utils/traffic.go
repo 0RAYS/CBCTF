@@ -1,6 +1,9 @@
 package utils
 
 import (
+	"CBCTF/internal/config"
+	"bufio"
+	"bytes"
 	"fmt"
 	"os"
 	"slices"
@@ -10,6 +13,7 @@ import (
 	"github.com/gopacket/gopacket"
 	"github.com/gopacket/gopacket/layers"
 	"github.com/gopacket/gopacket/pcap"
+	pp "github.com/pires/go-proxyproto"
 )
 
 type Connection struct {
@@ -37,6 +41,16 @@ func ReadPcapFile(path string) ([]Connection, error) {
 		return nil, err
 	}
 	defer handle.Close()
+	frps := func() []string {
+		if !config.Env.K8S.Frpc.On {
+			return nil
+		}
+		ipL := make([]string, 0)
+		for _, frps := range config.Env.K8S.Frpc.Frps {
+			ipL = append(ipL, frps.Host)
+		}
+		return ipL
+	}()
 	traffic := gopacket.NewPacketSource(handle, handle.LinkType())
 	var connections []Connection
 	var firstPacketTime time.Time
@@ -71,6 +85,17 @@ func ReadPcapFile(path string) ([]Connection, error) {
 		transport := packet.TransportLayer()
 		if transport == nil {
 			continue
+		}
+		if config.Env.K8S.Frpc.On {
+			if header, err := pp.Read(bufio.NewReader(bytes.NewReader(transport.LayerPayload()))); err == nil {
+				ip := strings.Split(header.SourceAddr.String(), ":")[0]
+				if slices.Contains(frps, connection.SrcIP) {
+					connection.SrcIP = ip
+				}
+				if slices.Contains(frps, connection.DstIP) {
+					connection.DstIP = ip
+				}
+			}
 		}
 		switch transport.LayerType() {
 		case layers.LayerTypeTCP:
