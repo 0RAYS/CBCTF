@@ -43,7 +43,6 @@ func InitResources() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
-	updateNodeIPs(ctx)
 	CreateNamespace(ctx, CreateNamespaceOptions{Name: globalNamespace})
 	initNFSVolume(ctx)
 	initExternalNetwork(ctx)
@@ -80,19 +79,6 @@ func initClients() {
 	kubeOVNClient, err = kubeovnclient.NewForConfig(kubeConfig)
 	if err != nil {
 		log.Logger.Fatalf("Failed to init KubeOVN client: %s", err)
-	}
-}
-
-func updateNodeIPs(ctx context.Context) {
-	ips, ok, _ := GetNodeIPList(ctx)
-	if !ok {
-		log.Logger.Fatalf("Failed to get node IP list")
-	}
-	for _, ip := range ips {
-		config.Env.K8S.Nodes = append(config.Env.K8S.Nodes, struct {
-			IP     string `mapstructure:"ip" json:"ip" msgpack:"ip"`
-			Public bool   `mapstructure:"public" json:"public" msgpack:"public"`
-		}{IP: ip, Public: true})
 	}
 }
 
