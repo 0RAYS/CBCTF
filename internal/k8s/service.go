@@ -1,7 +1,6 @@
 package k8s
 
 import (
-	"CBCTF/internal/config"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
@@ -48,16 +47,7 @@ func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.S
 				}
 				return tmp
 			}(),
-			Type: corev1.ServiceTypeNodePort,
-			ExternalIPs: func() []string {
-				ipL := make([]string, 0)
-				for _, node := range config.Env.K8S.Nodes {
-					if node.Public {
-						ipL = append(ipL, node.IP)
-					}
-				}
-				return ipL
-			}(),
+			Type:                  corev1.ServiceTypeNodePort,
 			ExternalTrafficPolicy: corev1.ServiceExternalTrafficPolicyTypeLocal,
 		},
 	}
