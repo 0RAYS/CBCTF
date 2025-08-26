@@ -19,6 +19,13 @@ import (
 // prepareGenerator 预启动生成器 Pod, 同时关闭长时运行 Pod, 重置资源
 func prepareGenerator(c *cron.Cron) {
 	function := exec("PrepareGenerator", func() {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+		nodes, ok, _ := k8s.GetNodeIPList(ctx)
+		cancel()
+		if !ok {
+			log.Logger.Warningf("Failed to count nodes")
+			return
+		}
 		contests, _, ok, _ := db.InitContestRepo(db.DB).List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"hidden": false},
 			Selects:    []string{"id", "start", "duration"},
@@ -52,7 +59,7 @@ func prepareGenerator(c *cron.Cron) {
 				}
 				k8s.GeneratorMapMutex.RUnlock()
 				for _, generator := range timeoutL {
-					ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+					ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
 					k8s.StopGenerator(ctx, challenge, generator)
 					cancel()
 				}
@@ -60,9 +67,9 @@ func prepareGenerator(c *cron.Cron) {
 				length := len(k8s.GeneratorMap[challenge.ID])
 				k8s.GeneratorMapMutex.RUnlock()
 				funcs := make([]func() bool, 0)
-				for i := 0; i < len(config.Env.K8S.Nodes)*config.Env.K8S.GeneratorWorker-length; i++ {
+				for i := 0; i < len(nodes)*config.Env.K8S.GeneratorWorker-length; i++ {
 					funcs = append(funcs, func() bool {
-						ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+						ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
 						k8s.StartGenerator(ctx, challenge)
 						cancel()
 						return true
