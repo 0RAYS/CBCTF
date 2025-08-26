@@ -453,7 +453,7 @@ func StopVictim(ctx context.Context, victim model.Victim) (bool, string) {
 	if ok, msg := DeleteSNatList(ctx, labels); !ok {
 		return false, msg
 	}
-	if ok, msg := DeleteEIPByLabels(ctx, labels); !ok {
+	if ok, msg := DeleteEIPList(ctx, labels); !ok {
 		return false, msg
 	}
 	if ok, msg := DeleteSubnetList(ctx, labels); !ok {
@@ -472,6 +472,9 @@ func StopVictim(ctx context.Context, victim model.Victim) (bool, string) {
 		return false, msg
 	}
 	if ok, msg := DeleteNetworkPolicyList(ctx, labels); !ok {
+		return false, msg
+	}
+	if ok, msg := DeleteEndpointList(ctx, labels); !ok {
 		return false, msg
 	}
 	if ok, msg := DeleteServiceList(ctx, labels); !ok {

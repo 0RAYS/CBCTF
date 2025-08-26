@@ -96,7 +96,7 @@ func DeleteEIP(ctx context.Context, name string) (bool, string) {
 	return true, i18n.Success
 }
 
-func DeleteEIPByLabels(ctx context.Context, labels ...map[string]string) (bool, string) {
+func DeleteEIPList(ctx context.Context, labels ...map[string]string) (bool, string) {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string
