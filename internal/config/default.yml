@@ -84,7 +84,9 @@ k8s:
               - 50000
   # Nodes of k8s cluster, used for external service, will auto get from k8s when run `./CBCTF k8s init`
   nodes:
-    - 192.168.0.1
+    - ip: 192.168.0.1
+      # Is Public IP
+      public: true
   # (len(nodes) * generator_worker) pods for each dynamic challenge
   generator_worker: 2
 nfs:

@@ -96,8 +96,11 @@ type Config struct {
 				} `mapstructure:"allowed_ports" json:"allowed_ports" msgpack:"allowed_ports"` // Frps 服务器允许的端口范围
 			} `mapstructure:"frps" json:"frps" msgpack:"frps"` // Frps 服务器列表
 		} `mapstructure:"frpc" json:"frpc" msgpack:"frpc"`
-		Nodes           []string `mapstructure:"nodes" json:"nodes" msgpack:"nodes"` // Kubernetes 节点列表
-		GeneratorWorker int      `mapstructure:"generator_worker" json:"generator_worker" msgpack:"generator_worker"`
+		Nodes []struct {
+			IP     string `mapstructure:"ip" json:"ip" msgpack:"ip"`
+			Public bool   `mapstructure:"public" json:"public" msgpack:"public"`
+		} `mapstructure:"nodes" json:"nodes" msgpack:"nodes"` // Kubernetes 节点列表
+		GeneratorWorker int `mapstructure:"generator_worker" json:"generator_worker" msgpack:"generator_worker"`
 	} `mapstructure:"k8s" json:"k8s" msgpack:"k8s"`
 
 	NFS struct {
