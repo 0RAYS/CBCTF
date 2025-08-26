@@ -385,13 +385,18 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 						annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", netAttachDef.Name, globalNamespace)] = network.IP
 					}
 				}
-				p, ok, msg := CreatePod(ctx, CreatePodOptions{
+				pOptions := CreatePodOptions{
 					Name:        pod.Name,
 					Labels:      labels,
 					Annotations: annotations,
 					Containers:  containers,
 					Volumes:     volumes,
-				})
+				}
+				// 容忍不支持VPC网络的节点
+				if len(annotations) == 0 {
+					pOptions.Tolerations = map[string]string{"vpc-network": "unacceptable"}
+				}
+				p, ok, msg := CreatePod(ctx, pOptions)
 				if !ok {
 					return Result{OK: false, MSG: msg}
 				}
