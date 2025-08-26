@@ -228,6 +228,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 						},
 					},
 				}
+				labels["app"] = fmt.Sprintf("vpc-nat-gw-%s", subnet.NatGateway.Name)
 				_, ok, msg = CreatePod(ctx, CreatePodOptions{
 					Name:            podName,
 					Labels:          labels,
