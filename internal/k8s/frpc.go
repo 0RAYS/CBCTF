@@ -263,7 +263,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 			Name:       podName,
 			Labels:     labels,
 			Containers: containers,
-			Volumes:    []corev1.Volume{fcmVolume, nfsVolume},
+			Volumes:    []corev1.Volume{fcmVolume, ncmVolume, nfsVolume},
 		}
 		if gw, exists := podVPCGWMap[podName]; exists {
 			options.Labels["app"] = fmt.Sprintf("vpc-nat-gw-%s", gw)
