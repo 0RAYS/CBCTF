@@ -5,8 +5,10 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"net"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -41,16 +43,6 @@ func ReadPcapFile(path string) ([]Connection, error) {
 		return nil, err
 	}
 	defer handle.Close()
-	frps := func() []string {
-		if !config.Env.K8S.Frpc.On {
-			return nil
-		}
-		ipL := make([]string, 0)
-		for _, frps := range config.Env.K8S.Frpc.Frps {
-			ipL = append(ipL, frps.Host)
-		}
-		return ipL
-	}()
 	traffic := gopacket.NewPacketSource(handle, handle.LinkType())
 	var connections []Connection
 	var firstPacketTime time.Time
@@ -86,17 +78,6 @@ func ReadPcapFile(path string) ([]Connection, error) {
 		if transport == nil {
 			continue
 		}
-		if config.Env.K8S.Frpc.On {
-			if header, err := pp.Read(bufio.NewReader(bytes.NewReader(transport.LayerPayload()))); err == nil {
-				ip := strings.Split(header.SourceAddr.String(), ":")[0]
-				if slices.Contains(frps, connection.SrcIP) {
-					connection.SrcIP = ip
-				}
-				if slices.Contains(frps, connection.DstIP) {
-					connection.DstIP = ip
-				}
-			}
-		}
 		switch transport.LayerType() {
 		case layers.LayerTypeTCP:
 			if tcp, ok := transport.(*layers.TCP); ok {
@@ -122,6 +103,25 @@ func ReadPcapFile(path string) ([]Connection, error) {
 			continue
 		}
 		connection.Subtype = application.LayerType().String()
+		if config.Env.K8S.Frpc.On {
+			if header, err := pp.Read(bufio.NewReader(bytes.NewReader(transport.LayerPayload()))); err == nil {
+				srcIP, srcPort, err := net.SplitHostPort(header.SourceAddr.String())
+				if err != nil {
+					continue
+				}
+				dstIP, dstPort, err := net.SplitHostPort(header.DestinationAddr.String())
+				if err != nil {
+					continue
+				}
+				connection.SrcIP = srcIP
+				port, _ := strconv.Atoi(srcPort)
+				connection.SrcPort = uint16(port)
+				connection.DstIP = dstIP
+				port, _ = strconv.Atoi(dstPort)
+				connection.DstPort = uint16(port)
+				connection.Subtype = "Proxy"
+			}
+		}
 		connections = append(connections, connection)
 	}
 	return connections, nil
