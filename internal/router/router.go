@@ -238,11 +238,11 @@ func Init() *gin.Engine {
 			{
 				adminChallengeTest.GET("", GetTestChallengeStatus)
 				adminChallengeTest.GET("/attachment",
-					middleware.RateLimit("download_attachment", 1, time.Minute), DownloadTestAttachment,
+					middleware.RateLimit("download_attachment", 10, time.Minute), DownloadTestAttachment,
 				)
 				adminChallengeTest.POST("/start",
 					middleware.CheckChallengeType(model.PodsChallengeType),
-					middleware.RateLimit("start_victim", 1, time.Minute), StartTestVictim,
+					middleware.RateLimit("start_victim", 10, time.Minute), StartTestVictim,
 				)
 				adminChallengeTest.POST("/stop", middleware.CheckChallengeType(model.PodsChallengeType), StopTestVictim)
 			}
