@@ -266,7 +266,6 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 			Volumes:    []corev1.Volume{fcmVolume, ncmVolume, nfsVolume},
 		}
 		if gw, exists := podVPCGWMap[podName]; exists {
-			options.Labels["app"] = fmt.Sprintf("vpc-nat-gw-%s", gw)
 			options.PodAntiAffinity = map[string]string{"app": fmt.Sprintf("vpc-nat-gw-%s", gw)}
 		}
 		if _, ok, msg = CreatePod(ctx, options); !ok {
