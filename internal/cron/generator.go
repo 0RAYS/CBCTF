@@ -6,10 +6,10 @@ import (
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/utils"
 	"context"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/robfig/cron/v3"
@@ -66,16 +66,15 @@ func prepareGenerator(c *cron.Cron) {
 				k8s.GeneratorMapMutex.RLock()
 				length := len(k8s.GeneratorMap[challenge.ID])
 				k8s.GeneratorMapMutex.RUnlock()
-				funcs := make([]func() bool, 0)
+				var wg sync.WaitGroup
 				for i := 0; i < len(nodes)*config.Env.K8S.GeneratorWorker-length; i++ {
-					funcs = append(funcs, func() bool {
+					wg.Go(func() {
 						ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
 						k8s.StartGenerator(ctx, challenge)
 						cancel()
-						return true
 					})
 				}
-				utils.RunFuncLConcurrently(funcs)
+				wg.Wait()
 			}
 		}
 	})

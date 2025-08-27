@@ -38,7 +38,6 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 	}
 	newEndpoints := make(model.Endpoints, 0)
 	frpcPodNameL := make([]string, 0)
-	createFrpcPodFuncL := make([]func() CreateFrpcPodResult, 0)
 	if len(victim.VPC.Subnets) == 0 {
 		podName := fmt.Sprintf("frpc-%s", utils.RandStr(20))
 		// 添加一个独立tag, 防止受 NetworkPolicy 影响
@@ -133,6 +132,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 		}
 		frpcPodNameL = append(frpcPodNameL, podName)
 	} else {
+		createFrpcPodFuncL := make([]func() CreateFrpcPodResult, 0)
 		for _, subnet := range victim.VPC.Subnets {
 			if subnet.NatGateway == nil {
 				continue

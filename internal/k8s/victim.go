@@ -78,27 +78,31 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 	netAttchDefMap := make(map[string]*model.NetAttachDef)
 	ipExposesMap := make(map[string]model.Exposes)
 	ipExposesMapMutex := &sync.Mutex{}
-	if _, ok, msg := CreateNetworkPolicy(ctx, CreateNetworkPolicyOptions{
-		Name:        fmt.Sprintf("np-%s", utils.RandStr(20)),
-		Labels:      labels,
-		MatchLabels: labels,
-		From: func() []*netv1.IPBlock {
-			tmp := make([]*netv1.IPBlock, 0)
-			for _, p := range victim.NetworkPolicies {
-				tmp = append(tmp, p.From...)
-			}
-			return tmp
-		}(),
-		To: func() []*netv1.IPBlock {
-			tmp := make([]*netv1.IPBlock, 0)
-			for _, p := range victim.NetworkPolicies {
-				tmp = append(tmp, p.To...)
-			}
-			return tmp
-		}(),
-	}); !ok {
-		return nil, false, msg
-	}
+	funcL := make([]func() Result, 0)
+	funcL = append(funcL, func() Result {
+		name := fmt.Sprintf("np-%s", utils.RandStr(20))
+		_, ok, msg := CreateNetworkPolicy(ctx, CreateNetworkPolicyOptions{
+			Name:        name,
+			Labels:      labels,
+			MatchLabels: labels,
+			From: func() []*netv1.IPBlock {
+				tmp := make([]*netv1.IPBlock, 0)
+				for _, p := range victim.NetworkPolicies {
+					tmp = append(tmp, p.From...)
+				}
+				return tmp
+			}(),
+			To: func() []*netv1.IPBlock {
+				tmp := make([]*netv1.IPBlock, 0)
+				for _, p := range victim.NetworkPolicies {
+					tmp = append(tmp, p.To...)
+				}
+				return tmp
+			}(),
+		})
+		log.Logger.Debugf("Create NetworkPolicy %s: %s", name, msg)
+		return Result{OK: ok, MSG: msg}
+	})
 	if victim.VPC.Name != "" {
 		// 首先创建 VPC 资源, 导致多跑一个循环
 		var policyRoutes []*kubeovnv1.PolicyRoute
@@ -112,20 +116,18 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 				})
 			}
 		}
-		if _, ok, msg := CreateVPC(ctx, CreateVPCOptions{
-			Name:         victim.VPC.Name,
-			Labels:       labels,
-			PolicyRoutes: policyRoutes,
-		}); !ok {
-			return nil, false, msg
-		}
-		createNADFuncL := make([]func() CreateNADResult, 0)
-		createSubnetFuncL := make([]func() CreateSubnetResult, 0)
-		createVPCNatGWFuncL := make([]func() CreateVPCNatGWResult, 0)
-		createEIPFuncL := make([]func() CreateEIPResult, 0)
+		funcL = append(funcL, func() Result {
+			_, ok, msg := CreateVPC(ctx, CreateVPCOptions{
+				Name:         victim.VPC.Name,
+				Labels:       labels,
+				PolicyRoutes: policyRoutes,
+			})
+			log.Logger.Debugf("Create VPC %s: %s", victim.VPC.Name, msg)
+			return Result{ok, msg}
+		})
 		for _, subnet := range victim.VPC.Subnets {
-			createNADFuncL = append(createNADFuncL, func() CreateNADResult {
-				object, ok, msg := CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
+			funcL = append(funcL, func() Result {
+				_, ok, msg := CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
 					Name:      subnet.NetAttachDef.Name,
 					Namespace: globalNamespace,
 					Labels:    labels,
@@ -136,10 +138,11 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 						"provider": "%s.%s.ovn"
 					}`, subnet.NetAttachDef.Name, globalNamespace),
 				})
-				return CreateNADResult{object, ok, msg}
+				log.Logger.Debugf("Create NetAttachDef %s: %s", subnet.NetAttachDef.Name, msg)
+				return Result{ok, msg}
 			})
-			createSubnetFuncL = append(createSubnetFuncL, func() CreateSubnetResult {
-				object, ok, msg := CreateSubnet(ctx, CreateSubnetOptions{
+			funcL = append(funcL, func() Result {
+				_, ok, msg := CreateSubnet(ctx, CreateSubnetOptions{
 					Name:       subnet.Name,
 					Labels:     labels,
 					VPC:        victim.VPC.Name,
@@ -149,13 +152,13 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 					Provider:   fmt.Sprintf("%s.%s.ovn", subnet.NetAttachDef.Name, globalNamespace),
 				})
 				log.Logger.Debugf("CreateSubnet %s: %s", subnet.Name, msg)
-				return CreateSubnetResult{object, ok, msg}
+				return Result{ok, msg}
 			})
 			subnetMap[subnet.DefName] = subnet
 			netAttchDefMap[subnet.DefName] = subnet.NetAttachDef
 			if subnet.NatGateway != nil {
-				createVPCNatGWFuncL = append(createVPCNatGWFuncL, func() CreateVPCNatGWResult {
-					object, ok, msg := CreateVPCNatGateway(ctx, CreateVPCNatGatewayOptions{
+				funcL = append(funcL, func() Result {
+					_, ok, msg := CreateVPCNatGateway(ctx, CreateVPCNatGatewayOptions{
 						Name:           subnet.NatGateway.Name,
 						Labels:         labels,
 						VPC:            victim.VPC.Name,
@@ -164,106 +167,70 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 						ExternalSubnet: []string{externalSubnetName},
 					})
 					log.Logger.Debugf("CreateVPCNatGateway %s: %s", subnet.NatGateway.Name, msg)
-					return CreateVPCNatGWResult{object, ok, msg}
+					return Result{ok, msg}
 				})
 				for _, eip := range subnet.NatGateway.EIPs {
-					createEIPFuncL = append(createEIPFuncL, func() CreateEIPResult {
-						return func() CreateEIPResult {
-							e, ok, msg := CreateEIP(ctx, CreateEIPOptions{
-								Name:           eip.Name,
-								Labels:         labels,
-								NatGw:          subnet.NatGateway.Name,
-								ExternalSubnet: externalSubnetName,
+					funcL = append(funcL, func() Result {
+						e, ok, msg := CreateEIP(ctx, CreateEIPOptions{
+							Name:           eip.Name,
+							Labels:         labels,
+							NatGw:          subnet.NatGateway.Name,
+							ExternalSubnet: externalSubnetName,
+						})
+						log.Logger.Debugf("CreateEIP %s: %s", eip.Name, msg)
+						if !ok {
+							return Result{false, msg}
+						}
+						for _, dnat := range eip.DNats {
+							_, ok, msg = CreateDNat(ctx, CreateDNatOptions{
+								Name:         dnat.Name,
+								Labels:       labels,
+								EIP:          eip.Name,
+								ExternalPort: dnat.ExternalPort,
+								InternalPort: dnat.InternalPort,
+								InternalIP:   dnat.InternalIP,
+								Protocol:     dnat.Protocol,
 							})
-							log.Logger.Debugf("CreateEIP %s: %s", eip.Name, msg)
+							log.Logger.Debugf("CreateDNat %s: %s", dnat.Name, msg)
 							if !ok {
-								return CreateEIPResult{e, false, msg}
+								return Result{false, msg}
 							}
-							eip.IP = e.Spec.V4ip
-							createDNatFuncL := make([]func() CreateDNatResult, 0)
-							for _, dnat := range eip.DNats {
-								createDNatFuncL = append(createDNatFuncL, func() CreateDNatResult {
-									object, ok, msg := CreateDNat(ctx, CreateDNatOptions{
-										Name:         dnat.Name,
-										Labels:       labels,
-										EIP:          eip.Name,
-										ExternalPort: dnat.ExternalPort,
-										InternalPort: dnat.InternalPort,
-										InternalIP:   dnat.InternalIP,
-										Protocol:     dnat.Protocol,
-									})
-									log.Logger.Debugf("CreateDNat %s: %s", dnat.Name, msg)
-									return CreateDNatResult{object, ok, msg}
+							port, err := strconv.ParseInt(dnat.ExternalPort, 10, 64)
+							if err != nil {
+								log.Logger.Warningf("Failed to parse external port: %s", err)
+								return Result{false, i18n.UnknownError}
+							}
+							ipExposesMapMutex.Lock()
+							if !slices.ContainsFunc(ipExposesMap[e.Spec.V4ip], func(e model.Expose) bool {
+								return int32(port) == e.Port && dnat.Protocol == e.Protocol
+							}) {
+								ipExposesMap[e.Spec.V4ip] = append(ipExposesMap[e.Spec.V4ip], model.Expose{
+									Port:     int32(port),
+									Protocol: dnat.Protocol,
 								})
 							}
-							for _, res := range utils.RunFuncLConcurrently(createDNatFuncL) {
-								if !res.OK {
-									return CreateEIPResult{nil, false, res.MSG}
-								}
-								port, err := strconv.ParseInt(res.DNat.Spec.ExternalPort, 10, 64)
-								if err != nil {
-									log.Logger.Warningf("Failed to parse external port: %s", err)
-									return CreateEIPResult{nil, false, i18n.UnknownError}
-								}
-								ipExposesMapMutex.Lock()
-								if !slices.ContainsFunc(ipExposesMap[e.Spec.V4ip], func(e model.Expose) bool {
-									return int32(port) == e.Port && res.DNat.Spec.Protocol == e.Protocol
-								}) {
-									ipExposesMap[e.Spec.V4ip] = append(ipExposesMap[e.Spec.V4ip], model.Expose{
-										Port:     int32(port),
-										Protocol: res.DNat.Spec.Protocol,
-									})
-								}
-								ipExposesMapMutex.Unlock()
+							ipExposesMapMutex.Unlock()
+						}
+						for _, snat := range eip.SNats {
+							_, ok, msg = CreateSNat(ctx, CreateSNatOptions{
+								Name:         snat.Name,
+								Labels:       labels,
+								EIP:          eip.Name,
+								InternalCIDR: subnet.CIDRBlock,
+							})
+							log.Logger.Debugf("CreateSNat %s: %s", snat.Name, msg)
+							if !ok {
+								return Result{false, msg}
 							}
-							createSNatFuncL := make([]func() CreateSNatResult, 0)
-							for _, snat := range eip.SNats {
-								createSNatFuncL = append(createSNatFuncL, func() CreateSNatResult {
-									object, ok, msg := CreateSNat(ctx, CreateSNatOptions{
-										Name:         snat.Name,
-										Labels:       labels,
-										EIP:          eip.Name,
-										InternalCIDR: subnet.CIDRBlock,
-									})
-									log.Logger.Debugf("CreateSNat %s: %s", snat.Name, msg)
-									return CreateSNatResult{object, ok, msg}
-								})
-							}
-							for _, res := range utils.RunFuncLConcurrently(createSNatFuncL) {
-								if !res.OK {
-									return CreateEIPResult{nil, false, res.MSG}
-								}
-							}
-							return CreateEIPResult{e, true, msg}
-						}()
+						}
+						return Result{true, msg}
 					})
 				}
 			}
 		}
-		for _, res := range utils.RunFuncLConcurrently(createSubnetFuncL) {
-			if !res.OK {
-				return nil, false, res.MSG
-			}
-		}
-		for _, res := range utils.RunFuncLConcurrently(createNADFuncL) {
-			if !res.OK {
-				return nil, false, res.MSG
-			}
-		}
-		for _, res := range utils.RunFuncLConcurrently(createVPCNatGWFuncL) {
-			if !res.OK {
-				return nil, false, res.MSG
-			}
-		}
-		for _, res := range utils.RunFuncLConcurrently(createEIPFuncL) {
-			if !res.OK {
-				return nil, false, res.MSG
-			}
-		}
 	}
-	createPodFuncL := make([]func() Result, 0)
 	for _, pod := range victim.Pods {
-		createPodFuncL = append(createPodFuncL, func() Result {
+		funcL = append(funcL, func() Result {
 			return func(pod model.Pod) Result {
 				nfsName := fmt.Sprintf("vol-%s", utils.RandStr(20))
 				containers := []corev1.Container{
@@ -429,7 +396,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 			}(pod)
 		})
 	}
-	for _, res := range utils.RunFuncLConcurrently(createPodFuncL) {
+	for _, res := range utils.RunFuncLConcurrently(funcL) {
 		if !res.OK {
 			return nil, false, res.MSG
 		}
