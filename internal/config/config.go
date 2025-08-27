@@ -83,9 +83,10 @@ type Config struct {
 		} `mapstructure:"external_network" json:"external_network" msgpack:"external_network"`
 		TCPDumpImage string `mapstructure:"tcpdump" json:"tcpdump" msgpack:"tcpdump"` // TCPDump 镜像
 		Frpc         struct {
-			On    bool   `mapstructure:"on" json:"on" msgpack:"on"`
-			Image string `mapstructure:"image" json:"image" msgpack:"image"` // Frpc 镜像
-			Frps  []struct {
+			On         bool   `mapstructure:"on" json:"on" msgpack:"on"`
+			FrpcImage  string `mapstructure:"frpc_image" json:"frpc_image" msgpack:"frpc_image"`    // Frpc 镜像
+			NginxImage string `mapstructure:"nginx_image" json:"nginx_image" msgpack:"nginx_image"` // Nginx 镜像
+			Frps       []struct {
 				Host         string `mapstructure:"host" json:"host" msgpack:"host"`    // Frps 服务器地址
 				Port         int    `mapstructure:"port" json:"port" msgpack:"port"`    // Frps 服务器端口
 				Token        string `mapstructure:"token" json:"token" msgpack:"token"` // Frps 服务器 Token

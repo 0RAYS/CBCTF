@@ -204,8 +204,8 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 								Name:         dnat.Name,
 								Labels:       labels,
 								EIP:          eip.Name,
-								ExternalPort: dnat.ExternalPort,
-								InternalPort: dnat.InternalPort,
+								ExternalPort: strconv.Itoa(int(dnat.ExternalPort)),
+								InternalPort: strconv.Itoa(int(dnat.InternalPort)),
 								InternalIP:   dnat.InternalIP,
 								Protocol:     dnat.Protocol,
 							})
@@ -213,17 +213,12 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 							if !ok {
 								return errors.New(msg)
 							}
-							port, err := strconv.ParseInt(dnat.ExternalPort, 10, 64)
-							if err != nil {
-								log.Logger.Warningf("Failed to parse external port: %s", err)
-								return errors.New(i18n.UnknownError)
-							}
 							ipExposesMapMutex.Lock()
 							if !slices.ContainsFunc(ipExposesMap[e.Spec.V4ip], func(e model.Expose) bool {
-								return int32(port) == e.Port && dnat.Protocol == e.Protocol
+								return dnat.ExternalPort == e.Port && dnat.Protocol == e.Protocol
 							}) {
 								ipExposesMap[e.Spec.V4ip] = append(ipExposesMap[e.Spec.V4ip], model.Expose{
-									Port:     int32(port),
+									Port:     dnat.ExternalPort,
 									Protocol: dnat.Protocol,
 								})
 							}

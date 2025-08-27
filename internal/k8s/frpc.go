@@ -18,6 +18,45 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+const (
+	frpcHeaderTemplate = `
+serverAddr = "%s"
+serverPort = %d
+auth.token = "%s"
+`
+	frpcItemTemplate = `
+[[proxies]]
+name = "%s"
+type = "%s"
+localIP = "%s"
+localPort = %d
+remotePort = %d
+%s
+`
+	proxyProtocol = `transport.proxyProtocolVersion = "v2"`
+)
+
+const (
+	nginxHeaderTemplate = `
+worker_processes auto;
+events {
+    worker_connections 1024;
+}
+stream {
+%s
+}
+`
+	nginxItemTemplate = `
+    upstream %s {
+        server %s:%d;
+    }
+    server {
+        listen %d proxy_protocol;
+        proxy_pass %s;
+    }
+`
+)
+
 type CreateFrpcPodResult struct {
 	Name string
 	OK   bool
@@ -39,20 +78,35 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 	newEndpoints := make(model.Endpoints, 0)
 	frpcPodNameL := make([]string, 0)
 	podFrpcConfigMap := make(map[string]string)
+	podNginxConfigMap := make(map[string]string)
 	podVPCGWMap := make(map[string]string)
 	if len(victim.VPC.Subnets) == 0 {
 		podName := fmt.Sprintf("frpc-%s", utils.RandStr(20))
 		// 添加一个独立tag, 防止受 NetworkPolicy 影响
-		data := fmt.Sprintf("serverAddr = \"%s\"\nserverPort = %d\nauth.token = \"%s\"\n\n", frps.Host, frps.Port, frps.Token)
+		frpcConfig := fmt.Sprintf(frpcHeaderTemplate, frps.Host, frps.Port, frps.Token)
+		nginxConfig := ""
 		for _, endpoint := range victim.Endpoints {
 			exposedPort, ok, msg := GetAvailableFrpsPort(frps.Host, portRange, endpoint.Protocol)
 			if !ok {
 				return nil, nil, false, msg
 			}
-			data += fmt.Sprintf(
-				"[[proxies]]\nname = \"%s\"\ntype = \"%s\"\nlocalIP = \"%s\"\nlocalPort = %d\nremotePort = %d\n\n",
-				utils.RandStr(10), strings.ToLower(endpoint.Protocol), endpoint.IP, endpoint.Port, exposedPort,
-			)
+			// 对于 TCP 协议, 启用 proxy_protocol
+			if protocol := strings.ToLower(endpoint.Protocol); protocol == "tcp" {
+				frpcConfig += fmt.Sprintf(
+					frpcItemTemplate,
+					utils.RandStr(10), strings.ToLower(endpoint.Protocol), "127.0.0.1", endpoint.Port, exposedPort, proxyProtocol,
+				)
+				name := utils.RandStr(10)
+				nginxConfig += fmt.Sprintf(
+					nginxItemTemplate,
+					name, endpoint.IP, endpoint.Port, endpoint.Port, name,
+				)
+			} else {
+				frpcConfig += fmt.Sprintf(
+					frpcItemTemplate,
+					utils.RandStr(10), strings.ToLower(endpoint.Protocol), endpoint.IP, endpoint.Port, exposedPort, "",
+				)
+			}
 			newEndpoints = append(newEndpoints, model.Endpoint{
 				IP:       frps.Host,
 				Port:     exposedPort,
@@ -60,7 +114,8 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 			})
 			log.Logger.Infof("Frpc started: %s:%d -> %s:%d", frps.Host, exposedPort, endpoint.IP, endpoint.Port)
 		}
-		podFrpcConfigMap[podName] = data
+		podFrpcConfigMap[podName] = frpcConfig
+		podNginxConfigMap[podName] = fmt.Sprintf(nginxHeaderTemplate, nginxConfig)
 		frpcPodNameL = append(frpcPodNameL, podName)
 	} else {
 		for _, subnet := range victim.VPC.Subnets {
@@ -69,30 +124,45 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 			}
 			needFrpc := false
 			podName := fmt.Sprintf("frpc-%s", utils.RandStr(20))
-			data := fmt.Sprintf("serverAddr = \"%s\"\nserverPort = %d\nauth.token = \"%s\"\n\n", frps.Host, frps.Port, frps.Token)
+			frpcConfig := fmt.Sprintf(frpcHeaderTemplate, frps.Host, frps.Port, frps.Token)
+			nginxConfig := ""
 			for _, eip := range subnet.NatGateway.EIPs {
 				for _, dnat := range eip.DNats {
 					exposedPort, ok, msg := GetAvailableFrpsPort(frps.Host, portRange, dnat.Protocol)
 					if !ok {
 						return nil, nil, false, msg
 					}
-					data += fmt.Sprintf(
-						"[[proxies]]\nname = \"%s\"\ntype = \"%s\"\nlocalIP = \"%s\"\nlocalPort = %s\nremotePort = %d\n\n",
-						utils.RandStr(10), strings.ToLower(dnat.Protocol), eip.IP, dnat.ExternalPort, exposedPort,
-					)
+					// 对于 TCP 协议, 启用 proxy_protocol
+					if protocol := strings.ToLower(dnat.Protocol); protocol == "tcp" {
+						frpcConfig += fmt.Sprintf(
+							frpcItemTemplate,
+							utils.RandStr(10), strings.ToLower(dnat.Protocol), "127.0.0.1", dnat.ExternalPort, exposedPort, proxyProtocol,
+						)
+						name := utils.RandStr(10)
+						nginxConfig += fmt.Sprintf(
+							nginxItemTemplate,
+							name, eip.IP, dnat.ExternalPort, dnat.ExternalPort, name,
+						)
+					} else {
+						frpcConfig += fmt.Sprintf(
+							frpcItemTemplate,
+							utils.RandStr(10), strings.ToLower(dnat.Protocol), eip.IP, dnat.ExternalPort, exposedPort, "",
+						)
+					}
 					newEndpoints = append(newEndpoints, model.Endpoint{
 						IP:       frps.Host,
 						Port:     exposedPort,
 						Protocol: dnat.Protocol,
 					})
-					log.Logger.Infof("Frpc started: %s:%d -> %s:%s", frps.Host, exposedPort, eip.IP, dnat.ExternalPort)
+					log.Logger.Infof("Frpc started: %s:%d -> %s:%d", frps.Host, exposedPort, eip.IP, dnat.ExternalPort)
 					needFrpc = true
 				}
 			}
 			if !needFrpc {
 				continue
 			}
-			podFrpcConfigMap[podName] = data
+			podFrpcConfigMap[podName] = frpcConfig
+			podNginxConfigMap[podName] = fmt.Sprintf(nginxHeaderTemplate, nginxConfig)
 			podVPCGWMap[podName] = subnet.NatGateway.Name
 			frpcPodNameL = append(frpcPodNameL, podName)
 		}
@@ -106,7 +176,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 	}
 	for _, podName := range frpcPodNameL {
 		labels[FrpcPodTag] = podName
-		cm, ok, msg := CreateConfigMap(ctx, CreateConfigMapOptions{
+		fcm, ok, msg := CreateConfigMap(ctx, CreateConfigMapOptions{
 			Name:   fmt.Sprintf("cm-%s", utils.RandStr(20)),
 			Labels: labels,
 			Data:   map[string]string{"frpc.toml": podFrpcConfigMap[podName]},
@@ -114,12 +184,30 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 		if !ok {
 			return nil, nil, false, msg
 		}
-		cmVolume := corev1.Volume{
+		ncm, ok, msg := CreateConfigMap(ctx, CreateConfigMapOptions{
+			Name:   fmt.Sprintf("cm-%s", utils.RandStr(20)),
+			Labels: labels,
+			Data:   map[string]string{"nginx.conf": podNginxConfigMap[podName]},
+		})
+		if !ok {
+			return nil, nil, false, msg
+		}
+		fcmVolume := corev1.Volume{
 			Name: fmt.Sprintf("vol-%s", utils.RandStr(20)),
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					LocalObjectReference: corev1.LocalObjectReference{
-						Name: cm.Name,
+						Name: fcm.Name,
+					},
+				},
+			},
+		}
+		ncmVolume := corev1.Volume{
+			Name: fmt.Sprintf("vol-%s", utils.RandStr(20)),
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: ncm.Name,
 					},
 				},
 			},
@@ -134,14 +222,25 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 		}
 		containers := []corev1.Container{
 			{
-				Name:  fmt.Sprintf("frpc-%s", utils.RandStr(20)),
-				Image: config.Env.K8S.Frpc.Image,
+				Name:  "frpc",
+				Image: config.Env.K8S.Frpc.FrpcImage,
 				Args:  []string{"-c", "/etc/frp/frpc.toml"},
 				VolumeMounts: []corev1.VolumeMount{
 					{
-						Name:      cmVolume.Name,
+						Name:      fcmVolume.Name,
 						MountPath: "/etc/frp/frpc.toml",
 						SubPath:   "frpc.toml",
+					},
+				},
+			},
+			{
+				Name:  "nginx",
+				Image: config.Env.K8S.Frpc.NginxImage,
+				VolumeMounts: []corev1.VolumeMount{
+					{
+						Name:      ncmVolume.Name,
+						MountPath: "/etc/nginx/nginx.conf",
+						SubPath:   "nginx.conf",
 					},
 				},
 			},
@@ -164,7 +263,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 			Name:       podName,
 			Labels:     labels,
 			Containers: containers,
-			Volumes:    []corev1.Volume{cmVolume, nfsVolume},
+			Volumes:    []corev1.Volume{fcmVolume, nfsVolume},
 		}
 		if gw, exists := podVPCGWMap[podName]; exists {
 			options.Labels["app"] = fmt.Sprintf("vpc-nat-gw-%s", gw)

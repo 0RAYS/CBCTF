@@ -12,7 +12,6 @@ import (
 	"database/sql"
 	"fmt"
 	"slices"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -99,9 +98,9 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contest mode
 						if !slices.Contains(networkDockerExposeDNat, key) {
 							eip.DNats = append(eip.DNats, &model.DNat{
 								Name:         fmt.Sprintf("dnat-%s", utils.RandStr(20)),
-								ExternalPort: strconv.Itoa(int(expose.Port)),
+								ExternalPort: expose.Port,
 								InternalIP:   network.IP,
-								InternalPort: strconv.Itoa(int(expose.Port)),
+								InternalPort: expose.Port,
 								Protocol:     expose.Protocol,
 							})
 							networkDockerExposeDNat = append(networkDockerExposeDNat, key)
