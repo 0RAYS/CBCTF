@@ -65,8 +65,19 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool
 				RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
 					{
 						LabelSelector: &metav1.LabelSelector{
-							MatchLabels: options.PodAffinity,
+							MatchExpressions: func() []metav1.LabelSelectorRequirement {
+								tmp := make([]metav1.LabelSelectorRequirement, 0)
+								for key, value := range options.PodAffinity {
+									tmp = append(tmp, metav1.LabelSelectorRequirement{
+										Key:      key,
+										Operator: metav1.LabelSelectorOpIn,
+										Values:   []string{value},
+									})
+								}
+								return tmp
+							}(),
 						},
+						TopologyKey: "kubernetes.io/hostname",
 					},
 				},
 			}
@@ -76,7 +87,17 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool
 				RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
 					{
 						LabelSelector: &metav1.LabelSelector{
-							MatchLabels: options.PodAntiAffinity,
+							MatchExpressions: func() []metav1.LabelSelectorRequirement {
+								tmp := make([]metav1.LabelSelectorRequirement, 0)
+								for key, value := range options.PodAntiAffinity {
+									tmp = append(tmp, metav1.LabelSelectorRequirement{
+										Key:      key,
+										Operator: metav1.LabelSelectorOpIn,
+										Values:   []string{value},
+									})
+								}
+								return tmp
+							}(),
 						},
 						TopologyKey: "kubernetes.io/hostname",
 					},
