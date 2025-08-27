@@ -254,19 +254,15 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 func GetAvailableFrpsPort(host string, portRange []int32, protocol string) (int32, bool, string) {
 	idxBig, _ := rand.Int(rand.Reader, big.NewInt(int64(len(portRange))))
 	port := portRange[idxBig.Int64()]
-	locked, err := redis.IsFrpsPortLocked(host, port, protocol)
+	ok, err := redis.LockFrpsPort(host, port, protocol)
 	if err != nil {
-		log.Logger.Warningf("Failed to check if port %d is locked: %s", port, err)
 		return 0, false, i18n.RedisError
 	}
-	if locked {
+	if !ok {
 		portRange = slices.DeleteFunc(portRange, func(i int32) bool {
 			return i == port
 		})
 		return GetAvailableFrpsPort(host, portRange, protocol)
-	}
-	if err = redis.LockFrpsPort(host, port, protocol); err != nil {
-		return 0, false, i18n.RedisError
 	}
 	return port, true, i18n.Success
 }

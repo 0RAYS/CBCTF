@@ -3,25 +3,48 @@ package redis
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 )
 
 const frpsPortKey = "frps:%s:%s"
 
-func LockFrpsPort(host string, port int32, protocol string) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
-	return RDB.SAdd(ctx, fmt.Sprintf(frpsPortKey, host, protocol), port).Err()
-}
+var portLock sync.Map
 
-func IsFrpsPortLocked(host string, port int32, protocol string) (bool, error) {
+func LockFrpsPort(host string, port int32, protocol string) (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	return RDB.SIsMember(ctx, fmt.Sprintf(frpsPortKey, host, protocol), port).Result()
+	key := fmt.Sprintf(frpsPortKey, host, protocol)
+	mu, _ := portLock.LoadOrStore(key, &sync.Mutex{})
+	mu.(*sync.Mutex).Lock()
+	defer mu.(*sync.Mutex).Unlock()
+	locked, err := RDB.SIsMember(ctx, key, port).Result()
+	if err != nil {
+		return false, err
+	}
+	if locked {
+		return false, nil
+	}
+	err = RDB.SAdd(ctx, key, port).Err()
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 func UnlockFrpsPort(host string, port int32, protocol string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	return RDB.SRem(ctx, fmt.Sprintf(frpsPortKey, host, protocol), port).Err()
+	key := fmt.Sprintf(frpsPortKey, host, protocol)
+	mu, _ := portLock.LoadOrStore(key, &sync.Mutex{})
+	mu.(*sync.Mutex).Lock()
+	defer mu.(*sync.Mutex).Unlock()
+	locked, err := RDB.SIsMember(ctx, key, port).Result()
+	if err != nil {
+		return err
+	}
+	if locked {
+		return RDB.SRem(ctx, key, port).Err()
+	}
+	return nil
 }
