@@ -128,9 +128,9 @@ type EIP struct {
 
 type DNat struct {
 	Name         string `json:"name"`
-	ExternalPort string `json:"external_port"`
+	ExternalPort int32  `json:"external_port"`
 	InternalIP   string `json:"internal_ip"`
-	InternalPort string `json:"internal_port"`
+	InternalPort int32  `json:"internal_port"`
 	Protocol     string `json:"protocol"`
 }
 
