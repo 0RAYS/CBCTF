@@ -46,7 +46,7 @@ func StartGenerator(ctx context.Context, challenge model.Challenge) (*corev1.Pod
 	if challenge.GeneratorImage == "" {
 		return nil, false, i18n.InvalidDockerImage
 	}
-	log.Logger.Infof("Starting Generator for Challenge %d-%s", challenge.ID, challenge.Name)
+	log.Logger.Infof("Starting Generator %s for Challenge %d-%s", generatorName, challenge.ID, challenge.Name)
 	pod, ok, msg = CreatePod(ctx, CreatePodOptions{
 		Name:   generatorName,
 		Labels: labels,

@@ -69,9 +69,9 @@ func prepareGenerator(c *cron.Cron) {
 				var wg sync.WaitGroup
 				for i := 0; i < len(nodes)*config.Env.K8S.GeneratorWorker-length; i++ {
 					wg.Go(func() {
-						ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
-						k8s.StartGenerator(ctx, challenge)
-						cancel()
+						gCtx, gCancel := context.WithTimeout(context.Background(), time.Minute)
+						k8s.StartGenerator(gCtx, challenge)
+						gCancel()
 					})
 				}
 				wg.Wait()
