@@ -162,7 +162,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 					ExcludeIPs: subnet.ExcludeIps,
 					Provider:   fmt.Sprintf("%s.%s.ovn", subnet.NetAttachDef.Name, globalNamespace),
 				})
-				log.Logger.Debugf("CreateSubnet %s: %s", subnet.Name, msg)
+				log.Logger.Debugf("Create Subnet %s: %s", subnet.Name, msg)
 				if !ok {
 					return errors.New(msg)
 				}
@@ -180,7 +180,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 						LanIP:          subnet.NatGateway.LanIP,
 						ExternalSubnet: []string{externalSubnetName},
 					})
-					log.Logger.Debugf("CreateVPCNatGateway %s: %s", subnet.NatGateway.Name, msg)
+					log.Logger.Debugf("Create VPCNatGateway %s: %s", subnet.NatGateway.Name, msg)
 					if !ok {
 						return errors.New(msg)
 					}
@@ -194,7 +194,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 							NatGw:          subnet.NatGateway.Name,
 							ExternalSubnet: externalSubnetName,
 						})
-						log.Logger.Debugf("CreateEIP %s: %s", eip.Name, msg)
+						log.Logger.Debugf("Create EIP %s: %s", eip.Name, msg)
 						if !ok {
 							return errors.New(msg)
 						}
@@ -208,7 +208,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 								InternalIP:   dnat.InternalIP,
 								Protocol:     dnat.Protocol,
 							})
-							log.Logger.Debugf("CreateDNat %s: %s", dnat.Name, msg)
+							log.Logger.Debugf("Create DNat %s: %s", dnat.Name, msg)
 							if !ok {
 								return errors.New(msg)
 							}
@@ -235,7 +235,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 								EIP:          eip.Name,
 								InternalCIDR: subnet.CIDRBlock,
 							})
-							log.Logger.Debugf("CreateSNat %s: %s", snat.Name, msg)
+							log.Logger.Debugf("Create SNat %s: %s", snat.Name, msg)
 							if !ok {
 								return errors.New(msg)
 							}
