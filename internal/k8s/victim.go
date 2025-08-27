@@ -17,7 +17,6 @@ import (
 
 	kubeovnv1 "github.com/JBNRZ/kubeovn-api/pkg/apis/kubeovn/v1"
 	netattv1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
-	"golang.org/x/sync/errgroup"
 	corev1 "k8s.io/api/core/v1"
 	netv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -80,7 +79,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 	netAttchDefMap := make(map[string]*model.NetAttachDef)
 	ipExposesMap := make(map[string]model.Exposes)
 	ipExposesMapMutex := &sync.Mutex{}
-	wg := new(errgroup.Group)
+	wg := utils.NewGroup(ctx)
 	wg.Go(func() error {
 		name := fmt.Sprintf("np-%s", utils.RandStr(20))
 		_, ok, msg := CreateNetworkPolicy(ctx, CreateNetworkPolicyOptions{
