@@ -197,6 +197,8 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 						if !ok {
 							return errors.New(msg)
 						}
+						// 后续会用到
+						eip.IP = e.Spec.V4ip
 						for _, dnat := range eip.DNats {
 							_, ok, msg = CreateDNat(ctx, CreateDNatOptions{
 								Name:         dnat.Name,
