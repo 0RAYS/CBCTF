@@ -3,7 +3,7 @@ package utils
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"strings"
+	"unicode"
 
 	"github.com/google/uuid"
 )
@@ -24,11 +24,10 @@ func RandStr(n int) string {
 }
 
 func ToTitle(s string) string {
-	if len(s) != len([]rune(s)) {
-		return s
-	}
 	if len(s) == 0 {
-		return strings.ToUpper(s)
+		return ""
 	}
-	return strings.ToUpper(string(s[0])) + s[1:]
+	str := []rune(s)
+	str[0] = unicode.ToTitle(str[0])
+	return string(str)
 }
