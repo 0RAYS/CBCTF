@@ -373,7 +373,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 			}
 			// 容忍不支持VPC网络的节点
 			if len(annotations) == 0 {
-				pOptions.Tolerations = map[string]string{"vpc-network": "unacceptable"}
+				pOptions.Tolerations = map[string]string{VPCNetworkTaintKey: VPCNetworkTaintVal}
 			}
 			p, ok, msg := CreatePod(ctx, pOptions)
 			if !ok {
