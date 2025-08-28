@@ -9,6 +9,7 @@ import (
 	"CBCTF/internal/utils"
 	"context"
 	"fmt"
+	"slices"
 	"time"
 
 	"gorm.io/gorm"
@@ -82,7 +83,15 @@ func GetContestVictims(tx *gorm.DB, contest model.Contest, form f.GetContestVict
 	if form.UserID != 0 {
 		options.Conditions["user_id"] = form.UserID
 	}
-	return db.InitVictimRepo(tx).List(form.Limit, form.Offset, options)
+	victims, count, ok, msg := db.InitVictimRepo(tx).List(form.Limit, form.Offset, options)
+	slices.DeleteFunc(victims, func(victim model.Victim) bool {
+		if !victim.UserID.Valid || !victim.TeamID.Valid || !victim.ContestChallengeID.Valid {
+			count--
+			return true
+		}
+		return false
+	})
+	return victims, count, ok, msg
 }
 
 func StartContestVictims(tx *gorm.DB, contest model.Contest, form f.StartContestVictimsForm) (bool, string) {
