@@ -12,7 +12,7 @@ import (
 )
 
 // Exec executes a command in a Pod
-func Exec(ctx context.Context, pod, container, command string, stdin io.Reader) (*bytes.Buffer, *bytes.Buffer, error) {
+func Exec(_ context.Context, pod, container, command string, stdin io.Reader) (*bytes.Buffer, *bytes.Buffer, error) {
 	cmd := []string{"sh", "-c", command}
 	req := kubeClient.CoreV1().RESTClient().Post().
 		Resource("pods").
@@ -34,7 +34,8 @@ func Exec(ctx context.Context, pod, container, command string, stdin io.Reader) 
 		return nil, nil, err
 	}
 	stdout, stderr := new(bytes.Buffer), new(bytes.Buffer)
-	err = exec.StreamWithContext(ctx, remotecommand.StreamOptions{
+	//TODO StreamWithContext
+	err = exec.Stream(remotecommand.StreamOptions{
 		Stdin:  stdin,
 		Stdout: stdout,
 		Stderr: stderr,
