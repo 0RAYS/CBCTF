@@ -189,10 +189,13 @@ func GenTestAttachment(ctx context.Context, challenge model.Challenge, challenge
 		log.Logger.Warningf("Failed to execute command %s: %s", command, err)
 		return false, i18n.ExecCommandError
 	}
+	var count int
 	for {
+		log.Logger.Debugf("Checking attachment for Challenge %d: %d time", challenge.ID, count)
 		if _, err = os.Stat(challenge.AttachmentPath(0)); err == nil {
 			break
 		}
+		count++
 		time.Sleep(time.Second)
 	}
 	return true, i18n.Success
