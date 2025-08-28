@@ -85,11 +85,11 @@ func GetContestVictims(tx *gorm.DB, contest model.Contest, form f.GetContestVict
 	}
 	victims, count, ok, msg := db.InitVictimRepo(tx).List(form.Limit, form.Offset, options)
 	slices.DeleteFunc(victims, func(victim model.Victim) bool {
-		if !victim.UserID.Valid || !victim.TeamID.Valid || !victim.ContestChallengeID.Valid {
-			count--
-			return true
+		if victim.UserID.Valid && victim.TeamID.Valid && victim.ContestChallengeID.Valid {
+			return false
 		}
-		return false
+		count--
+		return true
 	})
 	return victims, count, ok, msg
 }
