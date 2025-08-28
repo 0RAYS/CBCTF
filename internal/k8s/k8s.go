@@ -23,8 +23,8 @@ const (
 )
 
 const (
-	VPCNetworkTaintKey = "vpc-network"
-	VPCNetworkTaintVal = "unacceptable"
+	VPCNetworkTolerationKey = "vpc-network"
+	VPCNetworkTolerationVal = "unacceptable"
 )
 
 var (
