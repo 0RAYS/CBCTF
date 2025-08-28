@@ -12,7 +12,7 @@ import (
 )
 
 // Exec executes a command in a Pod
-func Exec(_ context.Context, pod, container, command string, stdin io.Reader) (*bytes.Buffer, *bytes.Buffer, error) {
+func Exec(ctx context.Context, pod, container, command string, stdin io.Reader) (*bytes.Buffer, *bytes.Buffer, error) {
 	cmd := []string{"sh", "-c", command}
 	req := kubeClient.CoreV1().RESTClient().Post().
 		Resource("pods").
@@ -24,18 +24,16 @@ func Exec(_ context.Context, pod, container, command string, stdin io.Reader) (*
 			Command:   cmd,
 			Stdout:    true,
 			Stderr:    true,
-			Stdin:     &stdin != nil,
+			Stdin:     stdin != nil,
 			TTY:       false,
 		}, scheme.ParameterCodec)
-
 	exec, err := remotecommand.NewSPDYExecutor(kubeConfig, "POST", req.URL())
 	if err != nil {
 		log.Logger.Warningf("Failed to create SPDY executor: %s", err)
 		return nil, nil, err
 	}
 	stdout, stderr := new(bytes.Buffer), new(bytes.Buffer)
-	//TODO StreamWithContext
-	err = exec.Stream(remotecommand.StreamOptions{
+	err = exec.StreamWithContext(ctx, remotecommand.StreamOptions{
 		Stdin:  stdin,
 		Stdout: stdout,
 		Stderr: stderr,
