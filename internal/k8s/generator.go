@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"path"
 	"slices"
 	"strconv"
 	"strings"
@@ -152,7 +153,8 @@ func GenAttachment(ctx context.Context, challenge model.Challenge, team model.Te
 	}
 	flags = base64.StdEncoding.EncodeToString([]byte(strings.TrimSuffix(flags, ",")))
 	flags = strings.TrimSuffix(flags, ",")
-	_ = os.Remove(challenge.AttachmentPath(team.ID))
+	filepath := challenge.AttachmentPath(team.ID)
+	_ = os.Remove(filepath)
 	command := fmt.Sprintf("./run.sh %d %s", team.ID, base64.StdEncoding.EncodeToString([]byte(flags)))
 	log.Logger.Debugf("Executing command in %s: %s", generator.Name, command)
 	if _, _, err = Exec(ctx, generator.Name, generator.Spec.Containers[0].Name, command, nil); err != nil {
@@ -160,7 +162,9 @@ func GenAttachment(ctx context.Context, challenge model.Challenge, team model.Te
 		return false, i18n.ExecCommandError
 	}
 	for {
-		if _, err = os.Stat(challenge.AttachmentPath(team.ID)); err == nil {
+		// NFS 延迟写入, 主动触发读取
+		_, _ = os.ReadDir(path.Dir(filepath))
+		if _, err = os.Stat(filepath); err == nil {
 			break
 		}
 		time.Sleep(time.Second)
@@ -182,20 +186,20 @@ func GenTestAttachment(ctx context.Context, challenge model.Challenge, challenge
 	}
 	flags = base64.StdEncoding.EncodeToString([]byte(strings.TrimSuffix(flags, ",")))
 	flags = strings.TrimSuffix(flags, ",")
-	_ = os.Remove(challenge.AttachmentPath(0))
+	filepath := challenge.AttachmentPath(0)
+	_ = os.Remove(filepath)
 	command := fmt.Sprintf("./run.sh %d %s", 0, base64.StdEncoding.EncodeToString([]byte(flags)))
 	log.Logger.Debugf("Executing command in %s: %s", generator.Name, command)
 	if _, _, err = Exec(ctx, generator.Name, generator.Spec.Containers[0].Name, command, nil); err != nil {
 		log.Logger.Warningf("Failed to execute command %s: %s", command, err)
 		return false, i18n.ExecCommandError
 	}
-	var count int
 	for {
-		log.Logger.Debugf("Checking attachment for Challenge %d: %d time", challenge.ID, count)
-		if _, err = os.Stat(challenge.AttachmentPath(0)); err == nil {
+		// NFS 延迟写入, 主动触发读取
+		_, _ = os.ReadDir(path.Dir(filepath))
+		if _, err = os.Stat(filepath); err == nil {
 			break
 		}
-		count++
 		time.Sleep(time.Second)
 	}
 	return true, i18n.Success
