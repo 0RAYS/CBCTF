@@ -22,6 +22,11 @@ const (
 	FrpcPodTag      = "frpc"
 )
 
+const (
+	VPCNetworkTaintKey = "vpc-network"
+	VPCNetworkTaintVal = "unacceptable"
+)
+
 var (
 	kubeClient         *kubernetes.Clientset
 	natattClient       *netattclient.Clientset
