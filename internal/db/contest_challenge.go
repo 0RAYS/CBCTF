@@ -93,6 +93,19 @@ func (c *ContestChallengeRepo) IsUniqueContestChallenge(contestID uint, challeng
 	return !ok
 }
 
+func (c *ContestChallengeRepo) ListCategories(contestID uint, t string) ([]string, bool, string) {
+	var categories []string
+	tx := c.DB.Model(&model.ContestChallenge{}).Where("contest_id = ?", contestID)
+	if t != "" {
+		tx = tx.Where("type = ?", t)
+	}
+	if res := tx.Select("distinct category").Find(&categories); res.Error != nil {
+		log.Logger.Warningf("Failed to list ContestChallenge categories: %s", res.Error)
+		return nil, false, i18n.GetContestChallengeError
+	}
+	return categories, true, i18n.Success
+}
+
 func (c *ContestChallengeRepo) Delete(idL ...uint) (bool, string) {
 	contestChallengeL, _, ok, msg := c.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},

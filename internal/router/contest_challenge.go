@@ -83,6 +83,21 @@ func GetContestChallenge(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
 }
 
+func GetContestChallengeCategories(ctx *gin.Context) {
+	var form f.GetCategoriesForm
+	if ok, msg := form.Bind(ctx); !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	contest := middleware.GetContest(ctx)
+	categories, ok, msg := db.InitContestChallengeRepo(db.DB.WithContext(ctx)).ListCategories(contest.ID, form.Type)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": categories})
+}
+
 func GetContestChallengeStatus(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	challenge := middleware.GetChallenge(ctx)

@@ -57,14 +57,13 @@ func GetChallenge(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": resp.GetChallengeResp(challenge)})
 }
 
-func GetCategories(ctx *gin.Context) {
+func GetChallengeCategories(ctx *gin.Context) {
 	var form f.GetCategoriesForm
 	if ok, msg := form.Bind(ctx); !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	repo := db.InitChallengeRepo(db.DB.WithContext(ctx))
-	categories, ok, msg := repo.ListCategories(form.Type)
+	categories, ok, msg := db.InitChallengeRepo(db.DB.WithContext(ctx)).ListCategories(form.Type)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
