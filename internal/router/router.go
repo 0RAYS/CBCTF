@@ -117,6 +117,7 @@ func Init() *gin.Engine {
 		}
 
 		contest.GET("/challenges", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.ContestIsNotComing, GetContestChallenges)
+		contest.GET("/challenges/categories", middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.ContestIsNotComing, GetContestChallengeCategories)
 		contestChallenge := contest.Group(
 			"/challenges/:challengeID",
 			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.ContestIsNotComing, middleware.SetContestChallenge,
@@ -223,7 +224,7 @@ func Init() *gin.Engine {
 		}
 
 		admin.GET("/challenges", GetChallenges)
-		admin.GET("/challenges/categories", GetCategories)
+		admin.GET("/challenges/categories", GetChallengeCategories)
 		admin.POST("/challenges", CreateChallenge)
 		adminChallenge := admin.Group("/challenges/:challengeID", middleware.SetChallenge)
 		{
@@ -302,6 +303,7 @@ func Init() *gin.Engine {
 			}
 
 			adminContest.GET("/challenges", GetContestChallenges)
+			adminContest.GET("/challenges/categories", GetContestChallengeCategories)
 			adminContest.POST("/challenges", AddContestChallenge)
 			adminContestChallenge := adminContest.Group("/challenges/:challengeID", middleware.SetContestChallenge)
 			{
