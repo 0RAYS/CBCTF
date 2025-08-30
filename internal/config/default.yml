@@ -68,7 +68,8 @@ k8s:
   frpc:
     on: false
     # Docker image
-    image: snowdreamtech/frpc:latest
+    frpc_image: snowdreamtech/frpc:latest
+    nginx_image: nginx:latest
     frps:
       - host: example.com
         port: 7000
