@@ -93,6 +93,44 @@ func UpdateAvatar(tx *gorm.DB, v string, id uint, record model.File) (string, bo
 	return string(path), ok, msg
 }
 
+func SaveChallengeFile(tx *gorm.DB, challenge model.Challenge, file *multipart.FileHeader, path string) (model.File, bool, string) {
+	src, err := file.Open()
+	if err != nil {
+		log.Logger.Warningf("Failed to open file: %s", err)
+		return model.File{}, false, i18n.BadRequest
+	}
+	defer func(src multipart.File) {
+		err := src.Close()
+		if err != nil {
+			log.Logger.Warningf("Failed to close file: %s", err)
+		}
+	}(src)
+	sha256Sum := sha256.New()
+	if _, err := io.Copy(sha256Sum, src); err != nil {
+		log.Logger.Warningf("Failed to hash file: %s", err)
+		return model.File{}, false, i18n.UnknownError
+	}
+	var (
+		fileRepo = db.InitFileRepo(tx)
+		hash     = hex.EncodeToString(sha256Sum.Sum(nil))
+		suffix   = strings.ToLower(filepath.Ext(file.Filename))
+	)
+	record, ok, msg := fileRepo.Create(db.CreateFileOptions{
+		RandID:      utils.UUID(),
+		Filename:    file.Filename,
+		Size:        file.Size,
+		Path:        path,
+		ChallengeID: sql.Null[uint]{V: challenge.ID, Valid: true},
+		Suffix:      suffix,
+		Hash:        hash,
+		Type:        model.ChallengeFile,
+	})
+	if ok {
+		prometheus.UpdateFileUploadMetrics(record.Suffix, file.Size)
+	}
+	return record, ok, msg
+}
+
 func SaveWriteUp(tx *gorm.DB, user model.User, contest model.Contest, team model.Team, file *multipart.FileHeader) (model.File, bool, string) {
 	src, err := file.Open()
 	if err != nil {
@@ -117,6 +155,7 @@ func SaveWriteUp(tx *gorm.DB, user model.User, contest model.Contest, team model
 		path          string
 		allowed       = []string{".pdf", ".docx", ".doc"}
 		suffix        = strings.ToLower(filepath.Ext(file.Filename))
+		msg           string
 	)
 	if !slices.Contains(allowed, suffix) {
 		return model.File{}, false, i18n.FileNotAllowed
@@ -127,7 +166,7 @@ func SaveWriteUp(tx *gorm.DB, user model.User, contest model.Contest, team model
 	} else {
 		path = record.Path
 	}
-	f, ok, msg := fileRepo.Create(db.CreateFileOptions{
+	record, ok, msg = fileRepo.Create(db.CreateFileOptions{
 		RandID:    utils.UUID(),
 		Filename:  file.Filename,
 		Size:      file.Size,
@@ -142,5 +181,5 @@ func SaveWriteUp(tx *gorm.DB, user model.User, contest model.Contest, team model
 	if ok {
 		prometheus.UpdateFileUploadMetrics(record.Suffix, file.Size)
 	}
-	return f, ok, msg
+	return record, ok, msg
 }

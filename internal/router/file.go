@@ -8,7 +8,6 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
-	"CBCTF/internal/prometheus"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"database/sql"
@@ -56,8 +55,14 @@ func DownloadChallengeFile(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.DownloadAttachmentEventType)
 	challenge := middleware.GetChallenge(ctx)
-	path := fmt.Sprintf("%s/%s", challenge.BasicDir(), form.File)
-	if _, err := os.Stat(path); err != nil {
+	record, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).Get(db.GetOptions{
+		Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFile}},
+	)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	if _, err := os.Stat(record.Path); err != nil {
 		if os.IsNotExist(err) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.FileNotFound, "data": nil})
 			return
@@ -67,7 +72,7 @@ func DownloadChallengeFile(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.File(path)
+	ctx.FileAttachment(record.Path, record.Filename)
 }
 
 func DownloadAttachment(ctx *gin.Context) {
@@ -75,6 +80,13 @@ func DownloadAttachment(ctx *gin.Context) {
 	challenge := middleware.GetChallenge(ctx)
 	team := middleware.GetTeam(ctx)
 	path := challenge.AttachmentPath(team.ID)
+	record, _, _ := db.InitFileRepo(db.DB.WithContext(ctx)).Get(db.GetOptions{
+		Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFile}},
+	)
+	filename := "attachment.zip"
+	if record.Path == path {
+		filename = record.Filename
+	}
 	if _, err := os.Stat(path); err != nil {
 		if os.IsNotExist(err) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.FileNotFound, "data": nil})
@@ -85,7 +97,7 @@ func DownloadAttachment(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.File(path)
+	ctx.FileAttachment(path, filename)
 }
 
 func DownloadTraffic(ctx *gin.Context) {
@@ -190,12 +202,20 @@ func UploadChallengeFile(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.InvalidChallengeType, "data": nil})
 		return
 	}
-	if err = ctx.SaveUploadedFile(file, path); err != nil {
+	tx := db.DB.WithContext(ctx).Begin()
+	record, ok, msg := service.SaveChallengeFile(tx, challenge, file, path)
+	if !ok {
+		tx.Rollback()
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	if err = ctx.SaveUploadedFile(file, record.Path); err != nil {
+		tx.Rollback()
 		log.Logger.Warningf("Failed to save file: %s", err)
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 		return
 	}
-	prometheus.UpdateFileUploadMetrics(".zip", file.Size)
+	tx.Commit()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }
