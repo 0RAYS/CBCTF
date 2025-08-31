@@ -5,7 +5,6 @@ import (
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"context"
-	"strings"
 	"time"
 
 	"github.com/robfig/cron/v3"
@@ -50,15 +49,17 @@ func closeUnCtrlVictims(c *cron.Cron) {
 		}
 		podRepo := db.InitPodRepo(db.DB)
 		for _, pod := range pods.Items {
-			if strings.HasPrefix(pod.Name, k8s.VictimPodTag) {
-				_, ok, _ = podRepo.Get(db.GetOptions{
-					Conditions: map[string]any{"name": pod.Name},
-					Selects:    []string{"id"},
-				})
-				if !ok {
-					ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
-					k8s.DeletePod(ctx, pod.Name)
-					cancel()
+			for key := range pod.Labels {
+				if key == k8s.VictimPodTag {
+					_, ok, _ = podRepo.Get(db.GetOptions{
+						Conditions: map[string]any{"name": pod.Name},
+						Selects:    []string{"id"},
+					})
+					if !ok {
+						ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
+						k8s.DeletePod(ctx, pod.Name)
+						cancel()
+					}
 				}
 			}
 		}
