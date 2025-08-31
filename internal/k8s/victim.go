@@ -73,7 +73,6 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 		"team_id":              strconv.Itoa(int(victim.TeamID.V)),
 		"challenge_id":         strconv.Itoa(int(victim.ChallengeID)),
 		"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID.V)),
-		VictimPodTag:           fmt.Sprintf("victim-%s", utils.RandStr(20)),
 	}
 	subnetMap := make(map[string]*model.Subnet)
 	netAttchDefMap := make(map[string]*model.NetAttachDef)
@@ -364,6 +363,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", netAttachDef.Name, globalNamespace)] = network.IP
 				}
 			}
+			labels[VictimPodTag] = pod.Name
 			pOptions := CreatePodOptions{
 				Name:        pod.Name,
 				Labels:      labels,
