@@ -9,6 +9,7 @@ import (
 	"CBCTF/internal/utils"
 	"database/sql"
 	"fmt"
+	"net"
 	"slices"
 	"strings"
 
@@ -132,9 +133,15 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 				}
 			}
 			networks := make(model.Networks, 0)
+			if len(networksMap) > 0 && len(app.Networks) == 0 {
+				return model.Challenge{}, false, i18n.InvalidDockerComposeYaml
+			}
 			for key, value := range app.Networks {
 				if key == "default" {
 					continue
+				}
+				if net.ParseIP(value.Ipv4Address) == nil {
+					return model.Challenge{}, false, i18n.InvalidDockerComposeYaml
 				}
 				network, ok := networksMap[key]
 				if !ok {
