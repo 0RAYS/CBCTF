@@ -58,7 +58,7 @@ func AddSenders(smtp model.Smtp) {
 
 func DelSenders(smtp model.Smtp) {
 	lock.Lock()
-	slices.DeleteFunc(Senders, func(s *Sender) bool {
+	Senders = slices.DeleteFunc(Senders, func(s *Sender) bool {
 		return s != nil && s.Smtp.ID == smtp.ID
 	})
 	lock.Unlock()
