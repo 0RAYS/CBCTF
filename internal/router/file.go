@@ -41,8 +41,6 @@ func DownloadFile(eventType string) gin.HandlerFunc {
 			return
 		}
 		ctx.Set(middleware.CTXEventSuccessKey, true)
-		ctx.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", file.Filename))
-		ctx.Writer.Header().Add("Content-Type", "application/octet-stream")
 		ctx.FileAttachment(file.Path, file.Filename)
 	}
 }
@@ -72,8 +70,6 @@ func DownloadChallengeFile(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", record.Filename))
-	ctx.Writer.Header().Add("Content-Type", "application/octet-stream")
 	ctx.FileAttachment(record.Path, record.Filename)
 }
 
@@ -99,8 +95,6 @@ func DownloadAttachment(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
-	ctx.Writer.Header().Add("Content-Type", "application/octet-stream")
 	ctx.FileAttachment(path, filename)
 }
 
