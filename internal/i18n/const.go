@@ -216,7 +216,6 @@ const (
 
 	CreateDirError                 = "CreateDirError"
 	ReadDirError                   = "ReadDirError"
-	InvalidFileName                = "InvalidFileName"
 	InvalidDockerComposeYaml       = "InvalidDockerComposeYaml"
 	InvalidChallengeFlagInjectType = "InvalidChallengeFlagInjectType"
 	CopyFileError                  = "CopyFileError"

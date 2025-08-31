@@ -13,7 +13,6 @@ import (
 
 var (
 	allowedChallengeType = []string{model.StaticChallengeType, model.QuestionChallengeType, model.DynamicChallengeType, model.PodsChallengeType}
-	allowedFileName      = []string{model.AttachmentFile, model.GeneratorFile}
 )
 
 // GetChallengesForm for get challenges list
@@ -70,9 +69,6 @@ func (f *DownloadChallengeForm) Bind(ctx *gin.Context) (bool, string) {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
 		return false, i18n.BadRequest
-	}
-	if !slices.Contains(allowedFileName, f.File) {
-		return false, i18n.InvalidFileName
 	}
 	return true, i18n.Success
 }

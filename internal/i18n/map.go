@@ -216,7 +216,6 @@ var resp = map[string]map[string]any{
 
 	CreateDirError:                 {"zh-CN": "创建题目根目录失败", "en-US": "Create directory failed", "code": 500},
 	ReadDirError:                   {"zh-CN": "读取题目根目录失败", "en-US": "Read directory failed", "code": 500},
-	InvalidFileName:                {"zh-CN": "无效的文件名", "en-US": "Invalid file name", "code": 400},
 	InvalidDockerComposeYaml:       {"zh-CN": "无效的Docker Compose YAML文件", "en-US": "Invalid Docker Compose YAML file", "code": 400},
 	InvalidChallengeFlagInjectType: {"zh-CN": "不支持的flag注入方式", "en-US": "Invalid ChallengeFlag inject type", "code": 400},
 	CopyFileError:                  {"zh-CN": "复制文件失败", "en-US": "Copy file failed", "code": 500},
