@@ -9,6 +9,7 @@ import (
 	"CBCTF/internal/service"
 	"CBCTF/internal/websocket"
 	wm "CBCTF/internal/websocket/model"
+	"fmt"
 	"net/http"
 	"os"
 
@@ -60,6 +61,8 @@ func DownloadTestAttachment(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
+	ctx.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", filename))
+	ctx.Writer.Header().Add("Content-Type", "application/octet-stream")
 	ctx.FileAttachment(path, filename)
 }
 
