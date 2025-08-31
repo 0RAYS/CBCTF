@@ -71,21 +71,6 @@ func GetChallengeCategories(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": categories})
 }
 
-func GetChallengeFiles(ctx *gin.Context) {
-	challenge := middleware.GetChallenge(ctx)
-	dir, err := os.ReadDir(challenge.BasicDir())
-	if err != nil {
-		log.Logger.Warningf("Failed to read challenge directory: %s", err)
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.ReadDirError, "data": nil})
-		return
-	}
-	files := make([]string, 0)
-	for _, file := range dir {
-		files = append(files, file.Name())
-	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": files})
-}
-
 func CreateChallenge(ctx *gin.Context) {
 	var form f.CreateChallengeForm
 	if ok, msg := form.Bind(ctx); !ok {
