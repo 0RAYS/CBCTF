@@ -137,7 +137,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 				if key == "default" {
 					continue
 				}
-				if net.ParseIP(value.Ipv4Address) == nil {
+				if value == nil || net.ParseIP(value.Ipv4Address) == nil {
 					return model.Challenge{}, false, i18n.InvalidDockerComposeYaml
 				}
 				network, ok := networksMap[key]
