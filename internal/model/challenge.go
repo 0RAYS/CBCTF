@@ -6,6 +6,8 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"net"
+	"slices"
 
 	netv1 "k8s.io/api/networking/v1"
 )
@@ -146,6 +148,32 @@ var DefaultNetworkPolicy = NetworkPolicy{
 type NetworkPolicies []NetworkPolicy
 
 func (n NetworkPolicies) Value() (driver.Value, error) {
+	check := func(blocks []*netv1.IPBlock) []*netv1.IPBlock {
+		return slices.DeleteFunc(blocks, func(b *netv1.IPBlock) bool {
+			if b.CIDR == "" {
+				return true
+			}
+			_, cidr, err := net.ParseCIDR(b.CIDR)
+			if err != nil {
+				return true
+			}
+			for _, except := range b.Except {
+				_, exceptCidr, err := net.ParseCIDR(except)
+				if err != nil {
+					return true
+				}
+				if !cidr.Contains(exceptCidr.IP) {
+					return true
+				}
+			}
+			return false
+		})
+	}
+
+	for i, policy := range n {
+		n[i].From = check(policy.From)
+		n[i].To = check(policy.To)
+	}
 	return json.Marshal(n)
 }
 

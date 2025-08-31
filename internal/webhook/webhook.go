@@ -38,7 +38,7 @@ func AddWebhook(webhook model.Webhook) {
 
 func DelWebhook(webhook model.Webhook) {
 	lock.Lock()
-	slices.DeleteFunc(Webhooks, func(w model.Webhook) bool {
+	Webhooks = slices.DeleteFunc(Webhooks, func(w model.Webhook) bool {
 		return w.ID == webhook.ID
 	})
 	lock.Unlock()
