@@ -43,6 +43,13 @@ func DownloadTestAttachment(ctx *gin.Context) {
 		}
 	}
 	path := challenge.AttachmentPath(0)
+	record, _, _ := db.InitFileRepo(db.DB.WithContext(ctx)).Get(db.GetOptions{
+		Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFile}},
+	)
+	filename := "attachment.zip"
+	if record.Path == path {
+		filename = record.Filename
+	}
 	if _, err := os.Stat(path); err != nil {
 		if os.IsNotExist(err) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.FileNotFound, "data": nil})
@@ -53,7 +60,7 @@ func DownloadTestAttachment(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.File(path)
+	ctx.FileAttachment(path, filename)
 }
 
 func StartTestVictim(ctx *gin.Context) {
