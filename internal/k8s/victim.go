@@ -65,7 +65,7 @@ type CreateSNatResult struct {
 
 // StartVictim model.Victim Preload model.Pod
 func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exposes, bool, string) {
-	log.Logger.Infof("Starting Victim for Team %d ContestChallenge %d", victim.TeamID.V, victim.ContestChallengeID.V)
+	log.Logger.Infof("Stopping Victim for Team %d Challenge %d", victim.TeamID.V, victim.ChallengeID)
 	// 添加一个独立tag, 防止 NetworkPolicy 影响 frpc 通信
 	labels := map[string]string{
 		"victim_id":            strconv.Itoa(int(victim.ID)),
@@ -414,7 +414,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 }
 
 func StopVictim(ctx context.Context, victim model.Victim) (bool, string) {
-	log.Logger.Infof("Stopping Victim for Team %d ContestChallenge %d", victim.TeamID.V, victim.ContestChallengeID.V)
+	log.Logger.Infof("Stopping Victim for Team %d Challenge %d", victim.TeamID.V, victim.ChallengeID)
 	// 不添加独立 tag, 删除时直接删除所有相关资源
 	labels := map[string]string{
 		"victim_id":            strconv.Itoa(int(victim.ID)),
