@@ -229,7 +229,6 @@ func Init() *gin.Engine {
 		adminChallenge := admin.Group("/challenges/:challengeID", middleware.SetChallenge)
 		{
 			adminChallenge.GET("", GetChallenge)
-			adminChallenge.GET("/files", GetChallengeFiles)
 			adminChallenge.GET("/download", DownloadChallengeFile)
 			adminChallenge.PUT("", UpdateChallenge)
 			adminChallenge.DELETE("", DeleteChallenge)
