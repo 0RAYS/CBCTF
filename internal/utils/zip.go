@@ -3,7 +3,6 @@ package utils
 import (
 	"CBCTF/internal/log"
 	"archive/zip"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -14,46 +13,47 @@ func Zip(path, zipPath string) error {
 	if err != nil {
 		return err
 	}
-	defer func(zipFile *os.File) {
-		if err = zipFile.Close(); err != nil {
-			log.Logger.Warningf("Failed to zip files: %s", err)
+	defer func() {
+		if cerr := zipFile.Close(); cerr != nil {
+			log.Logger.Warningf("Failed to close zip file: %s", cerr)
 		}
-	}(zipFile)
-
+	}()
 	zipWriter := zip.NewWriter(zipFile)
-	defer func(zipWriter *zip.Writer) {
-		if err = zipWriter.Close(); err != nil {
-			log.Logger.Warningf("Failed to zip files: %s", err)
+	defer func() {
+		if cerr := zipWriter.Close(); cerr != nil {
+			log.Logger.Warningf("Failed to close zip writer: %s", cerr)
 		}
-	}(zipWriter)
-	dir, err := os.ReadDir(path)
+	}()
+	entries, err := os.ReadDir(path)
 	if err != nil {
 		return err
 	}
-	for _, file := range dir {
-		if file.IsDir() {
+	for _, entry := range entries {
+		if entry.IsDir() {
 			continue
 		}
-		err = func(path string) error {
-			file, err := os.Open(path)
+		filePath := filepath.Join(path, entry.Name())
+
+		if filePath == zipPath {
+			continue
+		}
+		err = func(filePath string) error {
+			f, err := os.Open(filePath)
 			if err != nil {
 				return err
 			}
-			defer func(file *os.File) {
-				if err = file.Close(); err != nil {
-					log.Logger.Warningf("Failed to zip files: %s", err)
+			defer func() {
+				if cerr := f.Close(); cerr != nil {
+					log.Logger.Warningf("Failed to close file %s: %s", filePath, cerr)
 				}
-			}(file)
-
-			w, err := zipWriter.Create(filepath.Base(path))
+			}()
+			w, err := zipWriter.Create(entry.Name())
 			if err != nil {
 				return err
 			}
-
-			_, err = io.Copy(w, file)
+			_, err = io.Copy(w, f)
 			return err
-		}(fmt.Sprintf("%s/%s", path, file.Name()))
-
+		}(filePath)
 		if err != nil {
 			return err
 		}
