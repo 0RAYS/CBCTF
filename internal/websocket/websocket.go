@@ -39,6 +39,7 @@ func WS(ctx *gin.Context) {
 		clients *map[uint]*model.Connection
 		role    string
 		id      = middleware.GetSelfID(ctx)
+		ip      = ctx.ClientIP()
 	)
 
 	if middleware.IsAdmin(ctx) {
@@ -56,7 +57,7 @@ func WS(ctx *gin.Context) {
 		return
 	}
 
-	log.Logger.Infof("New connection from %s %d %s", role, id, conn.RemoteAddr())
+	log.Logger.Infof("New connection from %s %d %s", role, id, ip)
 
 	defer func() {
 		if r := recover(); r != nil {
