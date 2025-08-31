@@ -115,7 +115,11 @@ func SaveChallengeFile(tx *gorm.DB, challenge model.Challenge, file *multipart.F
 		hash     = hex.EncodeToString(sha256Sum.Sum(nil))
 		suffix   = strings.ToLower(filepath.Ext(file.Filename))
 	)
-	record, ok, msg := fileRepo.Create(db.CreateFileOptions{
+	record, ok, msg := fileRepo.GetByHash(hash)
+	if ok {
+		fileRepo.Delete(record.ID)
+	}
+	record, ok, msg = fileRepo.Create(db.CreateFileOptions{
 		RandID:      utils.UUID(),
 		Filename:    file.Filename,
 		Size:        file.Size,
