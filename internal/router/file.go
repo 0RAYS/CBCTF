@@ -41,9 +41,7 @@ func DownloadFile(eventType string) gin.HandlerFunc {
 			return
 		}
 		ctx.Set(middleware.CTXEventSuccessKey, true)
-		ctx.Writer.Header().Add("Content-Disposition", fmt.Sprintf("attachment; filename=%s", file.Filename))
-		ctx.Writer.Header().Add("Content-Type", "application/octet-stream")
-		ctx.File(file.Path)
+		ctx.FileAttachment(file.Path, file.Filename)
 	}
 }
 
