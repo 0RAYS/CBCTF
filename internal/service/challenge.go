@@ -133,9 +133,6 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 				}
 			}
 			networks := make(model.Networks, 0)
-			if len(networksMap) > 0 && len(app.Networks) == 0 {
-				return model.Challenge{}, false, i18n.InvalidDockerComposeYaml
-			}
 			for key, value := range app.Networks {
 				if key == "default" {
 					continue
@@ -150,6 +147,9 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 				}
 				network.IP = value.Ipv4Address
 				networks = append(networks, network)
+			}
+			if len(networksMap) > 0 && len(networks) == 0 {
+				return model.Challenge{}, false, i18n.InvalidDockerComposeYaml
 			}
 			docker, ok, msg := dockerRepo.Create(db.CreateDockerOptions{
 				ChallengeID: challenge.ID,
