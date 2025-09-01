@@ -87,18 +87,13 @@ func (l *gormTraceLogger) Error(ctx context.Context, msg string, data ...any) {
 }
 
 // Trace print sql message
-func (l *gormTraceLogger) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
+func (l *gormTraceLogger) Trace(_ context.Context, begin time.Time, fc func() (string, int64), err error) {
 	if l.LogLevel <= Silent {
 		return
-	}
-	traceID := ctx.Value("TraceID")
-	if traceID == nil {
-		traceID = "00000000-0000-0000-0000-000000000000"
 	}
 	elapsed := time.Since(begin)
 	sql, rows := fc()
 	fields := logrus.Fields{
-		"TraceID":         traceID,
 		"FileWithLineNum": utils.FileWithLineNum(),
 		"Duration":        fmt.Sprintf("%.3fms", float64(elapsed.Nanoseconds())/1e6),
 		"Rows":            "-",
