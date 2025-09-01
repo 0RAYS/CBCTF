@@ -176,24 +176,26 @@ func UploadWriteUp(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
-func GetAvatars(ctx *gin.Context) {
-	var form f.GetModelsForm
+func GetFiles(ctx *gin.Context) {
+	var form f.GetFilesForm
 	if ok, msg := form.Bind(ctx); !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	avatars, count, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, db.GetOptions{
-		Conditions: map[string]any{"type": model.AvatarFileType},
-	})
+	options := db.GetOptions{}
+	if form.Type != "" {
+		options.Conditions = map[string]any{"type": form.Type}
+	}
+	files, count, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, options)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	data := make([]gin.H, 0)
-	for _, avatar := range avatars {
-		data = append(data, resp.GetFileResp(avatar))
+	for _, file := range files {
+		data = append(data, resp.GetFileResp(file))
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "avatars": data}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "files": data}})
 }
 
 func GetWriteUPs(ctx *gin.Context) {
@@ -218,7 +220,7 @@ func GetWriteUPs(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "writeups": data}})
 }
 
-func DeleteAvatars(ctx *gin.Context) {
+func DeleteFiles(ctx *gin.Context) {
 	var form f.DeleteFileForm
 	if ok, msg := form.Bind(ctx); !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

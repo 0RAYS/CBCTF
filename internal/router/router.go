@@ -335,8 +335,8 @@ func Init() *gin.Engine {
 			}
 		}
 
-		admin.GET("/avatars", GetAvatars)
-		admin.DELETE("/avatars", DeleteAvatars)
+		admin.GET("/files", GetFiles)
+		admin.DELETE("/files", DeleteFiles)
 	}
 	return router
 }
