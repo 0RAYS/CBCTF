@@ -20,11 +20,10 @@ func StartVictim(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.StartVictimEventType)
 	user := middleware.GetSelf(ctx).(model.User)
 	team := middleware.GetTeam(ctx)
-	contest := middleware.GetContest(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	go func(ctx *gin.Context) {
 		tx := db.DB.WithContext(ctx).Begin()
-		_, ok, _ := service.StartTeamVictim(tx, user, team, contest, contestChallenge)
+		_, ok, _ := service.StartTeamVictim(tx, user, team, contestChallenge)
 		if !ok {
 			go service.StopTeamVictim(db.DB.WithContext(ctx.Copy()), team, contestChallenge)
 			tx.Rollback()
