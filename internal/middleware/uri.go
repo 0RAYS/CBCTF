@@ -149,6 +149,19 @@ func SetFile(t string) gin.HandlerFunc {
 	}
 }
 
+func SetFileByChallenge(ctx *gin.Context) {
+	challenge := GetChallenge(ctx)
+	file, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).Get(db.GetOptions{
+		Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFile}},
+	)
+	if !ok {
+		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
+	ctx.Set("File", file)
+	ctx.Next()
+}
+
 // GetFile 从上下文中获取 model.File
 func GetFile(ctx *gin.Context) model.File {
 	if file, ok := ctx.Get("File"); !ok || file == nil {

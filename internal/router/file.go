@@ -45,34 +45,6 @@ func DownloadFile(eventType string) gin.HandlerFunc {
 	}
 }
 
-func DownloadChallengeFile(ctx *gin.Context) {
-	var form f.DownloadChallengeForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	ctx.Set(middleware.CTXEventTypeKey, model.DownloadAttachmentEventType)
-	challenge := middleware.GetChallenge(ctx)
-	record, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).Get(db.GetOptions{
-		Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFile}},
-	)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	if _, err := os.Stat(record.Path); err != nil {
-		if os.IsNotExist(err) {
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.FileNotFound, "data": nil})
-			return
-		}
-		log.Logger.Warningf("Failed to get file: %s", err)
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
-		return
-	}
-	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.FileAttachment(record.Path, record.Filename)
-}
-
 func DownloadAttachment(regen bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		ctx.Set(middleware.CTXEventTypeKey, model.DownloadAttachmentEventType)

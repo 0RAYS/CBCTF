@@ -60,19 +60,6 @@ func (f *GetCategoriesForm) Bind(ctx *gin.Context) (bool, string) {
 	return true, i18n.Success
 }
 
-// DownloadChallengeForm for download challenge
-type DownloadChallengeForm struct {
-	File string `form:"file" json:"file" binding:"required"`
-}
-
-func (f *DownloadChallengeForm) Bind(ctx *gin.Context) (bool, string) {
-	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
-	}
-	return true, i18n.Success
-}
-
 type CreateChallengeForm struct {
 	Name            string                `form:"name" json:"name" binding:"required"`
 	Type            string                `form:"type" json:"type" binding:"required"`
