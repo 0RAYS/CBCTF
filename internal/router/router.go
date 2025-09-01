@@ -129,7 +129,7 @@ func Init() *gin.Engine {
 				middleware.ContestIsRunning, middleware.CheckSolved, InitTeamFlag,
 			)
 			contestChallenge.GET("/attachment",
-				middleware.RateLimit("download_attachment", 1, time.Minute), DownloadAttachment,
+				middleware.RateLimit("download_attachment", 1, time.Minute), DownloadAttachment(false),
 			)
 			contestChallenge.POST("/reset",
 				middleware.RateLimit("init_flag", 1, time.Minute),
@@ -238,7 +238,7 @@ func Init() *gin.Engine {
 			{
 				adminChallengeTest.GET("", GetTestChallengeStatus)
 				adminChallengeTest.GET("/attachment",
-					middleware.RateLimit("download_attachment", 10, time.Minute), DownloadTestAttachment,
+					middleware.RateLimit("download_attachment", 10, time.Minute), DownloadAttachment(true),
 				)
 				adminChallengeTest.POST("/start",
 					middleware.CheckChallengeType(model.PodsChallengeType),
