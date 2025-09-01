@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
+	"CBCTF/internal/service"
 	"context"
 	"time"
 
@@ -22,16 +23,11 @@ func closeTimeoutVictims(c *cron.Cron) {
 		if !ok {
 			return
 		}
-		idL := make([]uint, 0)
 		for _, victim := range victims {
 			if victim.Start.Add(victim.Duration).Before(time.Now()) || (victim.TeamID.Valid && victim.Team.Contest.IsOver()) {
-				idL = append(idL, victim.ID)
-				ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-				k8s.StopVictim(ctx, victim)
-				cancel()
+				service.StopVictim(db.DB, victim)
 			}
 		}
-		repo.Delete(idL...)
 	})
 	function()
 	c.Schedule(cron.Every(5*time.Minute), cron.FuncJob(function))
