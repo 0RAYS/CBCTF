@@ -44,7 +44,6 @@ func DownloadTestAttachment(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DownloadAttachmentEventType)
 	challenge := middleware.GetChallenge(ctx)
 	if challenge.Type == model.DynamicChallengeType {
-		_ = os.Remove(challenge.AttachmentPath(0))
 		if ok, msg := service.GenTestAttachment(db.DB.WithContext(ctx), challenge); !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
