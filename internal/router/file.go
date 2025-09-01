@@ -44,39 +44,6 @@ func DownloadFile(eventType string) gin.HandlerFunc {
 	}
 }
 
-func DownloadAttachment(regen bool) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		ctx.Set(middleware.CTXEventTypeKey, model.DownloadAttachmentEventType)
-		challenge := middleware.GetChallenge(ctx)
-		if regen && challenge.Type == model.DynamicChallengeType {
-			if ok, msg := service.GenTestAttachment(db.DB.WithContext(ctx), challenge); !ok {
-				ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-				return
-			}
-		}
-		// 测试路由将获取到空 model.Team{ID: 0}
-		path := challenge.AttachmentPath(middleware.GetTeam(ctx).ID)
-		record, _, _ := db.InitFileRepo(db.DB.WithContext(ctx)).Get(db.GetOptions{
-			Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFile}},
-		)
-		filename := "attachment.zip"
-		if record.Path == path {
-			filename = record.Filename
-		}
-		if _, err := os.Stat(path); err != nil {
-			if os.IsNotExist(err) {
-				ctx.JSON(http.StatusOK, gin.H{"msg": i18n.FileNotFound, "data": nil})
-				return
-			}
-			log.Logger.Warningf("Failed to get attachment: %s", err)
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
-			return
-		}
-		ctx.Set(middleware.CTXEventSuccessKey, true)
-		ctx.FileAttachment(path, filename)
-	}
-}
-
 func UploadAvatar(v string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		file, err := ctx.FormFile(model.AvatarFile)
