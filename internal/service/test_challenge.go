@@ -301,18 +301,5 @@ func StopTestVictim(tx *gorm.DB, challenge model.Challenge) (bool, string) {
 	if !ok {
 		return false, msg
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
-	ok, msg = k8s.StopVictim(ctx, victim)
-	if !ok {
-		return false, msg
-	}
-	duration := time.Now().Sub(victim.Start)
-	if ok, msg = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
-		Duration: &duration,
-	}); !ok {
-		return false, msg
-	}
-	LoadTraffic(tx, victim)
-	return victimRepo.Delete(victim.ID)
+	return StopVictim(tx, victim)
 }

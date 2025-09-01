@@ -315,28 +315,29 @@ func GetTeamVictimStatus(tx *gorm.DB, team model.Team, contestChallenge model.Co
 	return data
 }
 
+func StopVictim(txt *gorm.DB, victim model.Victim) (bool, string) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	ok, msg := k8s.StopVictim(ctx, victim)
+	if !ok {
+		return false, msg
+	}
+	duration := time.Now().Sub(victim.Start)
+	if ok, msg = db.InitVictimRepo(txt).Update(victim.ID, db.UpdateVictimOptions{
+		Duration: &duration,
+	}); !ok {
+		return false, msg
+	}
+	LoadTraffic(txt, victim)
+	ok, msg = db.InitVictimRepo(txt).Delete(victim.ID)
+	return ok, msg
+}
+
 func StopTeamVictim(tx *gorm.DB, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge) (bool, string) {
 	victimRepo := db.InitVictimRepo(tx)
 	victim, ok, msg := victimRepo.HasAliveVictim(team.ID, contestChallenge.ID)
 	if !ok {
 		return false, msg
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
-	ok, msg = k8s.StopVictim(ctx, victim)
-	if !ok {
-		return false, msg
-	}
-	duration := time.Now().Sub(victim.Start)
-	if ok, msg = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
-		Duration: &duration,
-	}); !ok {
-		return false, msg
-	}
-	LoadTraffic(tx, victim)
-	ok, msg = victimRepo.Delete(victim.ID)
-	if ok {
-		prometheus.SubVictimContainerMetrics(contest, contestChallenge, 1)
-	}
-	return ok, msg
+	return StopVictim(tx, victim)
 }

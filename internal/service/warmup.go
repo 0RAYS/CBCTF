@@ -163,22 +163,10 @@ func StopContestVictims(tx *gorm.DB, form f.StopContestVictimsForm) (bool, strin
 	if !ok {
 		return false, msg
 	}
-	victimIDL := make([]uint, 0)
 	for _, victim := range victims {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-		ok, msg = k8s.StopVictim(ctx, victim)
-		cancel()
-		if !ok {
+		if ok, msg = StopVictim(tx, victim); !ok {
 			return false, msg
 		}
-		duration := time.Now().Sub(victim.Start)
-		if ok, msg = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
-			Duration: &duration,
-		}); !ok {
-			return false, msg
-		}
-		victimIDL = append(victimIDL, victim.ID)
-		LoadTraffic(tx, victim)
 	}
-	return victimRepo.Delete(victimIDL...)
+	return true, i18n.Success
 }
