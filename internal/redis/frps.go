@@ -3,6 +3,7 @@ package redis
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 )
@@ -14,6 +15,7 @@ var portLock sync.Map
 func LockFrpsPort(host string, port int32, protocol string) (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
+	protocol = strings.ToLower(protocol)
 	key := fmt.Sprintf(frpsPortKey, host, protocol)
 	mu, _ := portLock.LoadOrStore(key, &sync.Mutex{})
 	mu.(*sync.Mutex).Lock()
@@ -35,6 +37,7 @@ func LockFrpsPort(host string, port int32, protocol string) (bool, error) {
 func UnlockFrpsPort(host string, port int32, protocol string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
+	protocol = strings.ToLower(protocol)
 	key := fmt.Sprintf(frpsPortKey, host, protocol)
 	mu, _ := portLock.LoadOrStore(key, &sync.Mutex{})
 	mu.(*sync.Mutex).Lock()
