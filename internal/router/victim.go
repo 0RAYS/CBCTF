@@ -21,7 +21,7 @@ func StartVictim(ctx *gin.Context) {
 	user := middleware.GetSelf(ctx).(model.User)
 	team := middleware.GetTeam(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	go func(ctx *gin.Context) {
+	go func() {
 		tx := db.DB.Begin()
 		_, ok, _ := service.StartTeamVictim(tx, user, team, contestChallenge)
 		if !ok {
@@ -33,7 +33,7 @@ func StartVictim(ctx *gin.Context) {
 		tx.Commit()
 		websocket.Send(false, user.ID, wm.SuccessLevel, wm.StartVictimWSType, "Start Victim", "Done")
 		return
-	}(ctx.Copy())
+	}()
 	status := service.GetTeamVictimStatus(db.DB, team, contestChallenge)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": status})

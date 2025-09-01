@@ -39,11 +39,11 @@ func SubmitFlag(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	go func(ctx *gin.Context) {
+	go func() {
 		if contestChallenge.Type == model.PodsChallengeType && service.CheckIfSolved(db.DB, team, contestFlags) {
 			service.StopTeamVictim(db.DB, team, contestChallenge)
 		}
-	}(ctx.Copy())
+	}()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": result, "data": nil})
 }
