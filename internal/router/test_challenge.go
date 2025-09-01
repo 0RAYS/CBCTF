@@ -43,7 +43,7 @@ func StartTestVictim(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.StartVictimEventType)
 	challenge := middleware.GetChallenge(ctx)
 	selfID := middleware.GetSelfID(ctx)
-	go func(ctx *gin.Context) {
+	go func() {
 		tx := db.DB.Begin()
 		_, ok, _ := service.StartTestVictim(tx, challenge)
 		if !ok {
@@ -55,7 +55,7 @@ func StartTestVictim(ctx *gin.Context) {
 		tx.Commit()
 		websocket.Send(true, selfID, wm.SuccessLevel, wm.StartVictimWSType, "Start Victim", "Done")
 		return
-	}(ctx.Copy())
+	}()
 	status := service.GetTestVictimStatus(db.DB, challenge)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": status})

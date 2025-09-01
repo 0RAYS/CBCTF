@@ -55,7 +55,7 @@ func CreateNotice(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	go func(ctx *gin.Context) {
+	go func() {
 		contestUserIDL, ok, _ := db.GetUserIDByContestID(db.DB, contest.ID)
 		if !ok {
 			return
@@ -69,7 +69,7 @@ func CreateNotice(ctx *gin.Context) {
 		}
 		websocket.UserClientsMu.Unlock()
 		websocket.SendToClients(false, wsm.NoticeLevel, wsm.ContestNoticeWSType, fmt.Sprintf("Notice: %s", notice.Title), notice.Content, idL...)
-	}(ctx.Copy())
+	}()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": &notice})
 }
