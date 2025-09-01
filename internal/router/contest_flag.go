@@ -24,14 +24,14 @@ func SubmitFlag(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	contest := middleware.GetContest(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB.WithContext(ctx)).List(-1, -1, db.GetOptions{
+	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	result, _, ok, msg := service.Submit(tx, user, team, contest, contestChallenge, form, ctx.ClientIP())
 	if !ok {
 		tx.Rollback()
@@ -40,8 +40,8 @@ func SubmitFlag(ctx *gin.Context) {
 	}
 	tx.Commit()
 	go func(ctx *gin.Context) {
-		if contestChallenge.Type == model.PodsChallengeType && service.CheckIfSolved(db.DB.WithContext(ctx), team, contestFlags) {
-			service.StopTeamVictim(db.DB.WithContext(ctx), team, contestChallenge)
+		if contestChallenge.Type == model.PodsChallengeType && service.CheckIfSolved(db.DB, team, contestFlags) {
+			service.StopTeamVictim(db.DB, team, contestChallenge)
 		}
 	}(ctx.Copy())
 	ctx.Set(middleware.CTXEventSuccessKey, true)
@@ -50,7 +50,7 @@ func SubmitFlag(ctx *gin.Context) {
 
 func GetContestFlags(ctx *gin.Context) {
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB.WithContext(ctx)).List(-1, -1, db.GetOptions{
+	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
 	if !ok {
@@ -79,7 +79,7 @@ func UpdateContestFlag(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateContestChallengeFlagEventType)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	contestFlag := middleware.GetContestFlag(ctx)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	if contestChallenge.Type == model.QuestionChallengeType && form.Value != nil {
 		form.Value = &contestFlag.Value
 	}

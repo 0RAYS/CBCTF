@@ -39,7 +39,7 @@ func GetContestChallenges(ctx *gin.Context) {
 	if !middleware.IsAdmin(ctx) {
 		options.Conditions["hidden"] = false
 	}
-	contestChallengeL, count, ok, msg := db.InitContestChallengeRepo(db.DB.WithContext(ctx)).
+	contestChallengeL, count, ok, msg := db.InitContestChallengeRepo(db.DB).
 		List(form.Limit, form.Offset, options)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -51,10 +51,10 @@ func GetContestChallenges(ctx *gin.Context) {
 		if !middleware.IsAdmin(ctx) {
 			team := middleware.GetTeam(ctx)
 			tmp["hidden"] = false
-			tmp["attempts"] = service.CountAttempts(db.DB.WithContext(ctx), team, contestChallenge)
-			tmp["init"] = service.CheckIfGenerated(db.DB.WithContext(ctx), team, contestChallenge.ContestFlags)
-			tmp["solved"] = service.CheckIfSolved(db.DB.WithContext(ctx), team, contestChallenge.ContestFlags)
-			tmp["remote"] = service.GetTeamVictimStatus(db.DB.WithContext(ctx), team, contestChallenge)
+			tmp["attempts"] = service.CountAttempts(db.DB, team, contestChallenge)
+			tmp["init"] = service.CheckIfGenerated(db.DB, team, contestChallenge.ContestFlags)
+			tmp["solved"] = service.CheckIfSolved(db.DB, team, contestChallenge.ContestFlags)
+			tmp["remote"] = service.GetTeamVictimStatus(db.DB, team, contestChallenge)
 			tmp["file"] = func() string {
 				if _, err := os.Stat(contestChallenge.Challenge.AttachmentPath(team.ID)); err != nil {
 					return ""
@@ -70,7 +70,7 @@ func GetContestChallenges(ctx *gin.Context) {
 func GetContestChallenge(ctx *gin.Context) {
 	challenge := middleware.GetChallenge(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB.WithContext(ctx)).List(-1, -1, db.GetOptions{
+	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
 	if !ok {
@@ -90,7 +90,7 @@ func GetContestChallengeCategories(ctx *gin.Context) {
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	categories, ok, msg := db.InitContestChallengeRepo(db.DB.WithContext(ctx)).ListCategories(contest.ID, form.Type)
+	categories, ok, msg := db.InitContestChallengeRepo(db.DB).ListCategories(contest.ID, form.Type)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -102,7 +102,7 @@ func GetContestChallengeStatus(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	challenge := middleware.GetChallenge(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB.WithContext(ctx)).List(-1, -1, db.GetOptions{
+	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
 	if !ok {
@@ -110,13 +110,13 @@ func GetContestChallengeStatus(ctx *gin.Context) {
 		return
 	}
 	data := gin.H{
-		"attempts": service.CountAttempts(db.DB.WithContext(ctx), team, contestChallenge),
-		"init":     service.CheckIfGenerated(db.DB.WithContext(ctx), team, contestFlags),
-		"solved":   service.CheckIfSolved(db.DB.WithContext(ctx), team, contestFlags),
-		"remote":   service.GetTeamVictimStatus(db.DB.WithContext(ctx), team, contestChallenge),
+		"attempts": service.CountAttempts(db.DB, team, contestChallenge),
+		"init":     service.CheckIfGenerated(db.DB, team, contestFlags),
+		"solved":   service.CheckIfSolved(db.DB, team, contestFlags),
+		"remote":   service.GetTeamVictimStatus(db.DB, team, contestChallenge),
 		"file": func() string {
 			path := challenge.AttachmentPath(team.ID)
-			record, _, _ := db.InitFileRepo(db.DB.WithContext(ctx)).Get(db.GetOptions{
+			record, _, _ := db.InitFileRepo(db.DB).Get(db.GetOptions{
 				Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFileType}},
 			)
 			filename := "attachment.zip"
@@ -139,7 +139,7 @@ func AddContestChallenge(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateContestChallengeEventType)
-	contestChallengeL, failedL, _, _ := service.CreateContestChallenge(db.DB.WithContext(ctx), middleware.GetContest(ctx), form)
+	contestChallengeL, failedL, _, _ := service.CreateContestChallenge(db.DB, middleware.GetContest(ctx), form)
 	data := make([]gin.H, 0)
 	for _, contestChallenge := range contestChallengeL {
 		data = append(data, resp.GetContestChallengeResp(contestChallenge))
@@ -156,7 +156,7 @@ func UpdateContestChallenge(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateContestChallengeEventType)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	ok, msg := db.InitContestChallengeRepo(tx).Update(contestChallenge.ID, db.UpdateContestChallengeOptions{
 		Name:    form.Name,
 		Desc:    form.Desc,
@@ -177,7 +177,7 @@ func UpdateContestChallenge(ctx *gin.Context) {
 func DeleteContestChallenge(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteContestChallengeEventType)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	ok, msg := db.InitContestChallengeRepo(tx).Delete(contestChallenge.ID)
 	if !ok {
 		tx.Rollback()

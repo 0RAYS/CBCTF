@@ -23,7 +23,7 @@ func GetWebhookHistory(ctx *gin.Context) {
 	if webhook.ID > 0 {
 		options.Conditions = map[string]any{"webhook_id": webhook.ID}
 	}
-	histories, count, ok, msg := db.InitWebhookHistoryRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, options)
+	histories, count, ok, msg := db.InitWebhookHistoryRepo(db.DB).List(form.Limit, form.Offset, options)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

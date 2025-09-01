@@ -30,7 +30,7 @@ func GetUsers(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	users, count, ok, msg := db.InitUserRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset)
+	users, count, ok, msg := db.InitUserRepo(db.DB).List(form.Limit, form.Offset)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -49,7 +49,7 @@ func CreateUser(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateUserEventType)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	user, ok, msg := service.AdminCreateUser(tx, form)
 	if !ok {
 		tx.Rollback()
@@ -68,7 +68,7 @@ func ChangePwd(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateUserEventType)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	ok, msg := service.ChangeUserPwd(tx, middleware.GetSelf(ctx).(model.User), form)
 	if !ok {
 		tx.Rollback()
@@ -94,7 +94,7 @@ func UpdateUser(ctx *gin.Context) {
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.UpdateUserEventType)
 		user = middleware.GetUser(ctx)
-		tx = db.DB.WithContext(ctx).Begin()
+		tx = db.DB.Begin()
 		ok, msg = service.UpdateUser(tx, user, form)
 	} else {
 		var form f.UpdateSelfForm
@@ -104,7 +104,7 @@ func UpdateUser(ctx *gin.Context) {
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.UpdateUserEventType)
 		user = middleware.GetSelf(ctx).(model.User)
-		tx = db.DB.WithContext(ctx).Begin()
+		tx = db.DB.Begin()
 		ok, msg = service.UpdateSelf(tx, user, form)
 	}
 	if !ok {
@@ -118,7 +118,7 @@ func UpdateUser(ctx *gin.Context) {
 
 func DeleteUser(ctx *gin.Context) {
 	var (
-		tx  = db.DB.WithContext(ctx).Begin()
+		tx  = db.DB.Begin()
 		ok  bool
 		msg string
 	)

@@ -48,7 +48,7 @@ func Events(ctx *gin.Context) {
 		}
 	}
 	options.Models["Self"] = GetSelfID(ctx)
-	if event, ok, _ := db.InitEventRepo(db.DB.WithContext(ctx)).Create(options); ok {
+	if event, ok, _ := db.InitEventRepo(db.DB).Create(options); ok {
 		for _, target := range webhook.SelectWebhook(event) {
 			if _, err := task.EnqueueWebhookTask(event, target); err != nil {
 				log.Logger.Warningf("Failed to enqueue webhook task: %s", err)

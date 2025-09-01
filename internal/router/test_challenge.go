@@ -20,10 +20,10 @@ func GetTestChallengeStatus(ctx *gin.Context) {
 		"attempts": 0,
 		"init":     true,
 		"solved":   false,
-		"remote":   service.GetTestVictimStatus(db.DB.WithContext(ctx), challenge),
+		"remote":   service.GetTestVictimStatus(db.DB, challenge),
 		"file": func() string {
 			path := challenge.AttachmentPath(0)
-			record, _, _ := db.InitFileRepo(db.DB.WithContext(ctx)).Get(db.GetOptions{
+			record, _, _ := db.InitFileRepo(db.DB).Get(db.GetOptions{
 				Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFileType}},
 			)
 			filename := "attachment.zip"
@@ -44,10 +44,10 @@ func StartTestVictim(ctx *gin.Context) {
 	challenge := middleware.GetChallenge(ctx)
 	selfID := middleware.GetSelfID(ctx)
 	go func(ctx *gin.Context) {
-		tx := db.DB.WithContext(ctx).Begin()
+		tx := db.DB.Begin()
 		_, ok, _ := service.StartTestVictim(tx, challenge)
 		if !ok {
-			go service.StopTestVictim(db.DB.WithContext(ctx.Copy()), challenge)
+			go service.StopTestVictim(db.DB, challenge)
 			tx.Rollback()
 			websocket.Send(true, selfID, wm.ErrorLevel, wm.StartVictimWSType, "Start Victim", "Failed")
 			return
@@ -56,7 +56,7 @@ func StartTestVictim(ctx *gin.Context) {
 		websocket.Send(true, selfID, wm.SuccessLevel, wm.StartVictimWSType, "Start Victim", "Done")
 		return
 	}(ctx.Copy())
-	status := service.GetTestVictimStatus(db.DB.WithContext(ctx), challenge)
+	status := service.GetTestVictimStatus(db.DB, challenge)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": status})
 }
@@ -64,7 +64,7 @@ func StartTestVictim(ctx *gin.Context) {
 func StopTestVictim(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.StopVictimEventType)
 	challenge := middleware.GetChallenge(ctx)
-	_, msg := service.StopTestVictim(db.DB.WithContext(ctx), challenge)
+	_, msg := service.StopTestVictim(db.DB, challenge)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

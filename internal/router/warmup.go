@@ -18,7 +18,7 @@ import (
 
 func GetContestChallengeImage(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
-	contestChallengeImageList, ok, msg := service.GetContestChallengeImageList(db.DB.WithContext(ctx), contest)
+	contestChallengeImageList, ok, msg := service.GetContestChallengeImageList(db.DB, contest)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -71,7 +71,7 @@ func GetContestVictims(ctx *gin.Context) {
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	victims, count, _, _ := service.GetContestVictims(db.DB.WithContext(ctx), contest, form)
+	victims, count, _, _ := service.GetContestVictims(db.DB, contest, form)
 	data := make([]gin.H, 0)
 	for _, victim := range victims {
 		info := resp.GetVictimResp(victim)
@@ -94,7 +94,7 @@ func StartContestVictims(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.StartVictimEventType)
 	contest := middleware.GetContest(ctx)
 	go func(ctx *gin.Context) {
-		if ok, _ := service.StartContestVictims(db.DB.WithContext(ctx), contest, form); !ok {
+		if ok, _ := service.StartContestVictims(db.DB, contest, form); !ok {
 			websocket.Send(true, middleware.GetSelfID(ctx), wsm.ErrorLevel, wsm.StartVictimWSType, "Victims Warmup", "Failed")
 			return
 		}
@@ -112,7 +112,7 @@ func StopContestVictims(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.StopVictimEventType)
 	go func(ctx *gin.Context) {
-		if ok, _ := service.StopContestVictims(db.DB.WithContext(ctx), form); !ok {
+		if ok, _ := service.StopContestVictims(db.DB, form); !ok {
 			websocket.Send(true, middleware.GetSelfID(ctx), wsm.ErrorLevel, wsm.StopVictimWSType, "Victims Stop", "Failed")
 			return
 		}

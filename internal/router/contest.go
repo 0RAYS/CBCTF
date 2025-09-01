@@ -16,13 +16,13 @@ import (
 
 func GetContest(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
-	champion, _, _, _ := service.GetTeamRanking(db.DB.WithContext(ctx), contest.ID, 1, 0)
+	champion, _, _, _ := service.GetTeamRanking(db.DB, contest.ID, 1, 0)
 	data := resp.GetContestResp(contest, middleware.IsAdmin(ctx))
 	data["highest"] = 0
 	if len(champion) > 0 {
 		data["highest"] = champion[0].Score
 	}
-	data["solved"], _, _ = db.InitSubmissionRepo(db.DB.WithContext(ctx)).Count(db.CountOptions{
+	data["solved"], _, _ = db.InitSubmissionRepo(db.DB).Count(db.CountOptions{
 		Conditions: map[string]any{"solved": true, "contest_id": contest.ID},
 	})
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
@@ -44,7 +44,7 @@ func GetContests(ctx *gin.Context) {
 	if !middleware.IsAdmin(ctx) {
 		options.Conditions = map[string]any{"hidden": false}
 	}
-	contests, count, ok, msg := db.InitContestRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, options)
+	contests, count, ok, msg := db.InitContestRepo(db.DB).List(form.Limit, form.Offset, options)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -63,7 +63,7 @@ func CreateContest(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateContestEventType)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	contest, ok, msg := service.CreateContest(tx, form)
 	if !ok {
 		tx.Rollback()
@@ -83,7 +83,7 @@ func UpdateContest(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateContestEventType)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	contest := middleware.GetContest(ctx)
 	ok, msg := service.UpdateContest(tx, contest, form)
 	if !ok {
@@ -97,7 +97,7 @@ func UpdateContest(ctx *gin.Context) {
 
 func DeleteContest(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteContestEventType)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	contest := middleware.GetContest(ctx)
 	ok, msg := db.InitContestRepo(tx).Delete(contest.ID)
 	if !ok {

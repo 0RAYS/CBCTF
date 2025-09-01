@@ -19,7 +19,7 @@ func InitTeamFlag(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	contest := middleware.GetContest(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB.WithContext(ctx)).List(-1, -1, db.GetOptions{
+	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
 	if !ok {
@@ -28,7 +28,7 @@ func InitTeamFlag(ctx *gin.Context) {
 	}
 	contestChallenge.ContestFlags = contestFlags
 	challenge := middleware.GetChallenge(ctx)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	teamFlags, ok, msg := service.CreateTeamFlag(tx, team, contest, contestChallenge)
 	if !ok {
 		tx.Rollback()
@@ -54,7 +54,7 @@ func ResetTeamFlag(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	contest := middleware.GetContest(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB.WithContext(ctx)).List(-1, -1, db.GetOptions{
+	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
 	if !ok {
@@ -63,7 +63,7 @@ func ResetTeamFlag(ctx *gin.Context) {
 	}
 	contestChallenge.ContestFlags = contestFlags
 	challenge := middleware.GetChallenge(ctx)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	teamFlags, ok, msg := service.UpdateTeamFlag(tx, team, contest, contestChallenge)
 	if !ok {
 		tx.Rollback()
@@ -80,7 +80,7 @@ func ResetTeamFlag(ctx *gin.Context) {
 		}
 	case model.PodsChallengeType:
 		// 不考虑失败
-		go service.StopTeamVictim(db.DB.WithContext(ctx.Copy()), team, contestChallenge)
+		go service.StopTeamVictim(db.DB, team, contestChallenge)
 	}
 	tx.Commit()
 	ctx.Set(middleware.CTXEventSuccessKey, true)

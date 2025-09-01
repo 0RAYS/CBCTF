@@ -25,7 +25,7 @@ func GetWebhooks(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	webhooks, count, ok, msg := db.InitWebhookRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset)
+	webhooks, count, ok, msg := db.InitWebhookRepo(db.DB).List(form.Limit, form.Offset)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -44,7 +44,7 @@ func CreateWebhook(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateWebhookEventType)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	webhook, ok, msg := service.CreateWebhook(tx, form)
 	if !ok {
 		tx.Rollback()
@@ -64,14 +64,14 @@ func UpdateWebhook(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateWebhookEventType)
 	webhook := middleware.GetWebhook(ctx)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	if ok, msg := service.UpdateWebhook(tx, webhook, form); !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	tx.Commit()
-	newWebhook, ok, msg := db.InitWebhookRepo(db.DB.WithContext(ctx)).GetByID(webhook.ID)
+	newWebhook, ok, msg := db.InitWebhookRepo(db.DB).GetByID(webhook.ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -87,7 +87,7 @@ func UpdateWebhook(ctx *gin.Context) {
 func DeleteWebhook(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteWebhookEventType)
 	webhook := middleware.GetWebhook(ctx)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	if ok, msg := db.InitWebhookRepo(tx).Delete(webhook.ID); !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

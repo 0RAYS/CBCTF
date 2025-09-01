@@ -21,7 +21,7 @@ func GetChallenges(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	challenges, count, ok, msg := service.GetChallenges(db.DB.WithContext(ctx), form)
+	challenges, count, ok, msg := service.GetChallenges(db.DB, form)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -35,7 +35,7 @@ func GetChallenges(ctx *gin.Context) {
 
 func GetChallenge(ctx *gin.Context) {
 	var (
-		DB  = db.DB.WithContext(ctx)
+		DB  = db.DB
 		ok  bool
 		msg string
 	)
@@ -63,7 +63,7 @@ func GetChallengeCategories(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	categories, ok, msg := db.InitChallengeRepo(db.DB.WithContext(ctx)).ListCategories(form.Type)
+	categories, ok, msg := db.InitChallengeRepo(db.DB).ListCategories(form.Type)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -78,7 +78,7 @@ func CreateChallenge(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateChallengeEventType)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	challenge, ok, msg := service.CreateChallenge(tx, form)
 	if !ok {
 		tx.Rollback()
@@ -107,14 +107,14 @@ func UpdateChallenge(ctx *gin.Context) {
 		msg string
 	)
 	challenge := middleware.GetChallenge(ctx)
-	challenge.ChallengeFlags, _, ok, msg = db.InitChallengeFlagRepo(db.DB.WithContext(ctx)).List(-1, -1, db.GetOptions{
+	challenge.ChallengeFlags, _, ok, msg = db.InitChallengeFlagRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"challenge_id": challenge.ID},
 	})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	ok, msg = service.UpdateChallenge(tx, challenge, form)
 	if !ok {
 		tx.Rollback()
@@ -128,7 +128,7 @@ func UpdateChallenge(ctx *gin.Context) {
 func DeleteChallenge(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteChallengeEventType)
 	challenge := middleware.GetChallenge(ctx)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	ok, msg := db.InitChallengeRepo(tx).Delete(challenge.RandID)
 	if !ok {
 		tx.Rollback()
