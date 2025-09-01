@@ -3,7 +3,6 @@ package router
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/service"
@@ -38,36 +37,6 @@ func GetTestChallengeStatus(ctx *gin.Context) {
 		}(),
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
-}
-
-func DownloadTestAttachment(ctx *gin.Context) {
-	ctx.Set(middleware.CTXEventTypeKey, model.DownloadAttachmentEventType)
-	challenge := middleware.GetChallenge(ctx)
-	if challenge.Type == model.DynamicChallengeType {
-		if ok, msg := service.GenTestAttachment(db.DB.WithContext(ctx), challenge); !ok {
-			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-			return
-		}
-	}
-	path := challenge.AttachmentPath(0)
-	record, _, _ := db.InitFileRepo(db.DB.WithContext(ctx)).Get(db.GetOptions{
-		Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFile}},
-	)
-	filename := "attachment.zip"
-	if record.Path == path {
-		filename = record.Filename
-	}
-	if _, err := os.Stat(path); err != nil {
-		if os.IsNotExist(err) {
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.FileNotFound, "data": nil})
-			return
-		}
-		log.Logger.Warningf("Failed to get attachment: %s", err)
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
-		return
-	}
-	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.FileAttachment(path, filename)
 }
 
 func StartTestVictim(ctx *gin.Context) {
