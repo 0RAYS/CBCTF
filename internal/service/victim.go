@@ -295,7 +295,6 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contest mode
 	return victim, true, i18n.Success
 }
 
-// GetTeamVictimStatus contestChallenge 需要预加载 model.ContestChallenge
 func GetTeamVictimStatus(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) gin.H {
 	data := gin.H{
 		"target":    make([]string, 0),
