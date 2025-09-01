@@ -251,7 +251,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 		}
 		victim.Pods = append(victim.Pods, pod)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	ipExposesMap, ok, msg := k8s.StartVictim(ctx, victim)
 	if !ok {
