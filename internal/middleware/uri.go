@@ -136,13 +136,13 @@ func SetFile(t string) gin.HandlerFunc {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 			return
 		}
-		file, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).GetByRandID(fileID.FileID)
+		options := db.GetOptions{}
+		if t != "" {
+			options = db.GetOptions{Conditions: map[string]any{"type": t}}
+		}
+		file, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).GetByRandID(fileID.FileID, options)
 		if !ok {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-			return
-		}
-		if file.Type != t {
-			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 			return
 		}
 		ctx.Set("File", file)
