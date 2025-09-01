@@ -16,9 +16,14 @@ func closeTimeoutVictims(c *cron.Cron) {
 	function := exec("CloseTimeoutVictims", func() {
 		repo := db.InitVictimRepo(db.DB)
 		victims, _, ok, _ := repo.List(-1, -1, db.GetOptions{
-			Preloads: map[string]db.GetOptions{"Team": {Selects: []string{"id"}, Preloads: map[string]db.GetOptions{
-				"Contest": {Selects: []string{"id", "start", "duration"}},
-			}}},
+			Preloads: map[string]db.GetOptions{
+				"Team": {
+					Selects: []string{"id", "contest_id"},
+					Preloads: map[string]db.GetOptions{
+						"Contest": {Selects: []string{"id", "start", "duration"}},
+					},
+				},
+			},
 		})
 		if !ok {
 			return
