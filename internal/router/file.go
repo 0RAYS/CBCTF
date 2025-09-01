@@ -32,7 +32,7 @@ func DownloadFile(eventType string) gin.HandlerFunc {
 				//} else {
 				//	tx.Commit()
 				//}
-				ctx.JSON(http.StatusOK, gin.H{"msg": i18n.FileNotFound, "data": file.ID})
+				ctx.JSON(http.StatusOK, gin.H{"msg": i18n.FileNotFound, "data": nil})
 				return
 			}
 			log.Logger.Warningf("Failed to get file: %s", err)
