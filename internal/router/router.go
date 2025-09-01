@@ -337,6 +337,7 @@ func Init() *gin.Engine {
 
 		admin.GET("/files", GetFiles)
 		admin.DELETE("/files", DeleteFiles)
+		admin.GET("/files/:fileID", middleware.SetFile(""), DownloadFile(model.DownloadFileEventType))
 	}
 	return router
 }

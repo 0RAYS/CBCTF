@@ -76,6 +76,8 @@ const (
 
 	UploadWriteUpEventType   = "upload_writeup"
 	DownloadWriteUpEventType = "download_writeup"
+
+	DownloadFileEventType = "download_file"
 )
 
 var EventTypes = []string{
@@ -90,7 +92,7 @@ var EventTypes = []string{
 	JoinTeamEventType, CreateTeamEventType, UpdateTeamEventType, DeleteTeamEventType, LeaveTeamEventType,
 	KickMemberEventType, InitChallengeEventType, ResetChallengeEventType, DownloadAttachmentEventType, PullImageEventType,
 	StartVictimEventType, IncreaseVictimEventType, StopVictimEventType, DownloadTrafficEventType, SubmitFlagEventType,
-	UploadWriteUpEventType, DownloadWriteUpEventType,
+	UploadWriteUpEventType, DownloadWriteUpEventType, DownloadFileEventType,
 }
 
 type Event struct {
