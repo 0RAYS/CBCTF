@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
+	"CBCTF/internal/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -149,7 +150,7 @@ func SetFile(t string) gin.HandlerFunc {
 	}
 }
 
-func SetFileByChallenge(ctx *gin.Context) {
+func SetChallengeFile(ctx *gin.Context) {
 	challenge := GetChallenge(ctx)
 	file, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).Get(db.GetOptions{
 		Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFile}},
@@ -172,6 +173,30 @@ func SetTrafficFile(ctx *gin.Context) {
 	}
 	ctx.Set("File", file)
 	ctx.Next()
+}
+
+func SetAttachmentFile(regen bool) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		challenge := GetChallenge(ctx)
+		if regen && challenge.Type == model.DynamicChallengeType {
+			if ok, msg := service.GenTestAttachment(db.DB.WithContext(ctx), challenge); !ok {
+				ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+				return
+			}
+		}
+		path := challenge.AttachmentPath(GetTeam(ctx).ID)
+		record, ok, _ := db.InitFileRepo(db.DB.WithContext(ctx)).Get(db.GetOptions{
+			Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFile}},
+		)
+		if ok && record.Path == path {
+			ctx.Set("File", record)
+			ctx.Next()
+			return
+		}
+		ctx.Set("File", model.File{Filename: "attachment.zip", Path: path})
+		ctx.Next()
+		return
+	}
 }
 
 // GetFile 从上下文中获取 model.File
