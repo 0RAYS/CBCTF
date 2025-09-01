@@ -134,21 +134,14 @@ func StartContestVictims(tx *gorm.DB, contest model.Contest, form f.StartContest
 	for _, contestChallenge := range contestChallenges {
 		for _, team := range teams {
 			if !CheckIfGenerated(tx, team, contestChallenge.ContestFlags) {
-				tx2 := tx.Begin()
-				if _, ok, msg = CreateTeamFlag(tx2, team, contest, contestChallenge); !ok {
-					tx2.Rollback()
+				if _, ok, msg = CreateTeamFlag(tx, team, contest, contestChallenge); !ok {
 					continue
 				}
-				tx2.Commit()
 			}
-			tx2 := tx.Begin()
-			_, ok, msg = StartTeamVictim(tx2, model.User{BasicModel: model.BasicModel{ID: team.CaptainID}}, team, contestChallenge)
+			_, ok, msg = StartTeamVictim(tx, model.User{BasicModel: model.BasicModel{ID: team.CaptainID}}, team, contestChallenge)
 			if !ok {
-				tx2.Rollback()
 				StopTeamVictim(tx, team, contestChallenge)
-				continue
 			}
-			tx2.Commit()
 		}
 	}
 	return true, i18n.Success
