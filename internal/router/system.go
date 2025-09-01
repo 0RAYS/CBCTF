@@ -16,7 +16,7 @@ import (
 )
 
 func HomePage(ctx *gin.Context) {
-	DB := db.DB.WithContext(ctx)
+	DB := db.DB
 
 	data := gin.H{
 		"upcoming":   []gin.H{},
@@ -79,7 +79,7 @@ func SystemStatus(ctx *gin.Context) {
 		ret["recv"] = ioStats[0].BytesRecv
 	}
 
-	var DB = db.DB.WithContext(ctx)
+	var DB = db.DB
 	ret["users"], _, _ = db.InitUserRepo(DB).Count()
 	ret["contests"], _, _ = db.InitContestRepo(DB).Count()
 	ret["ip"], _, _ = db.InitRequestRepo(DB).CountIP()

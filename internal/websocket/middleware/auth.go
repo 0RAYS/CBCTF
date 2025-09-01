@@ -19,7 +19,7 @@ func WSAuth(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
 		return
 	}
-	DB := db.DB.WithContext(ctx)
+	DB := db.DB
 	if claims.IsAdmin {
 		admin, ok, msg := db.InitAdminRepo(DB).GetByID(claims.UserID)
 		if !ok {
@@ -37,7 +37,7 @@ func WSAuth(ctx *gin.Context) {
 		}
 		magic := ctx.Query("m")
 		if !utils.CompareMagic(magic, claims.X) {
-			go db.InitCheatRepo(db.DB.WithContext(ctx.Copy())).Create(db.CreateCheatOptions{
+			go db.InitCheatRepo(db.DB).Create(db.CreateCheatOptions{
 				UserID:  sql.Null[uint]{V: user.ID, Valid: true},
 				Magic:   magic,
 				IP:      ctx.ClientIP(),
@@ -49,7 +49,7 @@ func WSAuth(ctx *gin.Context) {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
 			return
 		}
-		go db.InitDeviceRepo(db.DB.WithContext(ctx.Copy())).RecordDevice(user.ID, magic, ctx.ClientIP())
+		go db.InitDeviceRepo(db.DB).RecordDevice(user.ID, magic, ctx.ClientIP())
 		if user.Banned {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
 			return

@@ -25,7 +25,7 @@ func GetSmtps(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	smtps, count, ok, msg := db.InitSmtpRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset)
+	smtps, count, ok, msg := db.InitSmtpRepo(db.DB).List(form.Limit, form.Offset)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -44,7 +44,7 @@ func CreateSmtp(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateSmtpEventType)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	smtp, ok, msg := service.CreateSmtp(tx, form)
 	if !ok {
 		tx.Rollback()
@@ -64,14 +64,14 @@ func UpdateSmtp(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateSmtpEventType)
 	smtp := middleware.GetSmtp(ctx)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	if ok, msg := service.UpdateSmtp(tx, smtp, form); !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	tx.Commit()
-	newSmtp, ok, msg := db.InitSmtpRepo(db.DB.WithContext(ctx)).GetByID(smtp.ID)
+	newSmtp, ok, msg := db.InitSmtpRepo(db.DB).GetByID(smtp.ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -87,7 +87,7 @@ func UpdateSmtp(ctx *gin.Context) {
 func DeleteSmtp(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteSmtpEventType)
 	smtp := middleware.GetSmtp(ctx)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	if ok, msg := db.InitSmtpRepo(tx).Delete(smtp.ID); !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

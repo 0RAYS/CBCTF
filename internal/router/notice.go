@@ -24,7 +24,7 @@ func GetNotices(ctx *gin.Context) {
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	DB := db.DB.WithContext(ctx)
+	DB := db.DB
 	notices, count, ok, msg := db.InitNoticeRepo(DB).List(form.Limit, form.Offset, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
 	})
@@ -47,7 +47,7 @@ func CreateNotice(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateNoticeEventType)
 	contest := middleware.GetContest(ctx)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	notice, ok, msg := service.CreateNotice(tx, contest, form)
 	if !ok {
 		tx.Rollback()
@@ -56,7 +56,7 @@ func CreateNotice(ctx *gin.Context) {
 	}
 	tx.Commit()
 	go func(ctx *gin.Context) {
-		contestUserIDL, ok, _ := db.GetUserIDByContestID(db.DB.WithContext(ctx), contest.ID)
+		contestUserIDL, ok, _ := db.GetUserIDByContestID(db.DB, contest.ID)
 		if !ok {
 			return
 		}
@@ -82,7 +82,7 @@ func UpdateNotice(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateNoticeEventType)
 	notice := middleware.GetNotice(ctx)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	ok, msg := service.UpdateNotice(tx, notice, form)
 	if !ok {
 		tx.Rollback()
@@ -96,7 +96,7 @@ func UpdateNotice(ctx *gin.Context) {
 func DeleteNotice(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteNoticeEventType)
 	notice := middleware.GetNotice(ctx)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	ok, msg := service.DeleteNotice(tx, notice)
 	if !ok {
 		tx.Rollback()

@@ -18,7 +18,7 @@ func GetSubmissions(ctx *gin.Context) {
 		return
 	}
 	team := middleware.GetTeam(ctx)
-	submissions, count, ok, msg := db.InitSubmissionRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, db.GetOptions{
+	submissions, count, ok, msg := db.InitSubmissionRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
 		Conditions: map[string]any{"team_id": team.ID},
 	})
 	if !ok {

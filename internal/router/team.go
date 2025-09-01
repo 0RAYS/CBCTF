@@ -16,7 +16,7 @@ import (
 
 func GetTeam(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
-	contestFlagRepo := db.InitContestFlagRepo(db.DB.WithContext(ctx))
+	contestFlagRepo := db.InitContestFlagRepo(db.DB)
 	contestFlagL, _, ok, msg := contestFlagRepo.List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": middleware.GetContest(ctx).ID},
 		Preloads:   map[string]db.GetOptions{"ContestChallenge": {}},
@@ -25,7 +25,7 @@ func GetTeam(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	solvedFlagL, _, _ := service.GetTeamSolvedFlags(db.DB.WithContext(ctx), team)
+	solvedFlagL, _, _ := service.GetTeamSolvedFlags(db.DB, team)
 	data := resp.GetTeamResp(team)
 	data["solved"] = resp.GetSolvedStateResp(solvedFlagL, contestFlagL)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
@@ -37,7 +37,7 @@ func GetTeams(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	DB := db.DB.WithContext(ctx)
+	DB := db.DB
 	contest := middleware.GetContest(ctx)
 	teams, count, ok, msg := db.InitTeamRepo(DB).List(form.Limit, form.Offset, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
@@ -60,7 +60,7 @@ func GetTeamCaptcha(ctx *gin.Context) {
 
 func GetTeammates(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
-	DB := db.DB.WithContext(ctx)
+	DB := db.DB
 	userIDL, ok, msg := db.GetUserIDByTeamID(DB, team.ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -82,7 +82,7 @@ func GetTeammates(ctx *gin.Context) {
 func UpdateTeam(ctx *gin.Context) {
 	var (
 		team = middleware.GetTeam(ctx)
-		tx   = db.DB.WithContext(ctx).Begin()
+		tx   = db.DB.Begin()
 		ok   bool
 		msg  string
 	)
@@ -115,7 +115,7 @@ func UpdateTeam(ctx *gin.Context) {
 func UpdateCaptcha(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateTeamEventType)
 	captcha := utils.UUID()
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	ok, msg := service.UpdateTeamCaptcha(tx, middleware.GetTeam(ctx), captcha)
 	if !ok {
 		tx.Rollback()
@@ -130,7 +130,7 @@ func UpdateCaptcha(ctx *gin.Context) {
 func DeleteTeam(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteTeamEventType)
 	contest := middleware.GetContest(ctx)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	ok, msg := service.DeleteTeam(tx, middleware.GetTeam(ctx), contest)
 	if !ok {
 		tx.Rollback()
@@ -150,7 +150,7 @@ func KickMember(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.KickMemberEventType)
 	team := middleware.GetTeam(ctx)
 	contest := middleware.GetContest(ctx)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	ok, msg := service.LeaveTeam(tx, contest, team, form.UserID)
 	if !ok {
 		tx.Rollback()
@@ -171,7 +171,7 @@ func JoinTeam(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.JoinTeamEventType)
 	contest := middleware.GetContest(ctx)
 	user := middleware.GetSelf(ctx).(model.User)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	team, ok, msg := service.JoinTeam(tx, contest, user, form)
 	if !ok {
 		tx.Rollback()
@@ -192,7 +192,7 @@ func CreateTeam(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateTeamEventType)
 	contest := middleware.GetContest(ctx)
 	user := middleware.GetSelf(ctx).(model.User)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	team, ok, msg := service.CreateTeam(tx, contest, user, form)
 	if !ok {
 		tx.Rollback()
@@ -201,7 +201,7 @@ func CreateTeam(ctx *gin.Context) {
 		ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Team": team.ID})
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
-	go service.CreateTeamFlags(db.DB.WithContext(ctx.Copy()), team, contest)
+	go service.CreateTeamFlags(db.DB, team, contest)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
@@ -210,7 +210,7 @@ func LeaveTeam(ctx *gin.Context) {
 	user := middleware.GetSelf(ctx).(model.User)
 	contest := middleware.GetContest(ctx)
 	team := middleware.GetTeam(ctx)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	ok, msg := service.LeaveTeam(tx, contest, team, user.ID)
 	if !ok {
 		tx.Rollback()

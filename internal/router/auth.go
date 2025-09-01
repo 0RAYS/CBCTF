@@ -25,7 +25,7 @@ func Register(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.RegisterEventType)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	user, ok, msg := service.CreateUser(tx, form)
 	if !ok {
 		tx.Rollback()
@@ -60,7 +60,7 @@ func Login(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.LoginEventType)
-	user, ok, msg := service.VerifyUser(db.DB.WithContext(ctx), form)
+	user, ok, msg := service.VerifyUser(db.DB, form)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -87,7 +87,7 @@ func AdminLogin(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.LoginEventType)
-	admin, ok, msg := service.VerifyAdmin(db.DB.WithContext(ctx), form)
+	admin, ok, msg := service.VerifyAdmin(db.DB, form)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

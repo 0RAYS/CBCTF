@@ -18,7 +18,7 @@ import (
 // CheckAuth 是否登录, 用户是否被 ban, 记录设备
 func CheckAuth(ctx *gin.Context) {
 	auth := strings.Fields(ctx.GetHeader("Authorization"))
-	DB := db.DB.WithContext(ctx)
+	DB := db.DB
 	if len(auth) != 2 || auth[0] != "Bearer" {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
 		return
@@ -54,7 +54,7 @@ func CheckAuth(ctx *gin.Context) {
 				}
 				ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
 			} else {
-				go db.InitCheatRepo(db.DB.WithContext(ctx.Copy())).Create(db.CreateCheatOptions{
+				go db.InitCheatRepo(db.DB).Create(db.CreateCheatOptions{
 					UserID:  sql.Null[uint]{V: user.ID, Valid: true},
 					Magic:   magic,
 					IP:      ctx.ClientIP(),
@@ -67,7 +67,7 @@ func CheckAuth(ctx *gin.Context) {
 				return
 			}
 		}
-		go db.InitDeviceRepo(db.DB.WithContext(ctx.Copy())).RecordDevice(user.ID, magic, ctx.ClientIP())
+		go db.InitDeviceRepo(db.DB).RecordDevice(user.ID, magic, ctx.ClientIP())
 		if user.Banned {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
 			return

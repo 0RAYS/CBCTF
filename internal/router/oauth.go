@@ -149,7 +149,7 @@ func OauthCallback(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 		return
 	}
-	userRepo := db.InitUserRepo(db.DB.WithContext(ctx))
+	userRepo := db.InitUserRepo(db.DB)
 	user, ok, msg := userRepo.Get(db.GetOptions{Conditions: map[string]any{"provider": provider.Provider, "provider_user_id": id}})
 	if !ok {
 		if msg != i18n.UserNotFound {
@@ -207,7 +207,7 @@ func GetOauthProviders(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	oauthProviders, count, ok, msg := db.InitOauthRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset)
+	oauthProviders, count, ok, msg := db.InitOauthRepo(db.DB).List(form.Limit, form.Offset)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -231,7 +231,7 @@ func CreateOauthProvider(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateOauthEventType)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	provider, ok, msg := service.CreateOauthProvider(tx, form)
 	if !ok {
 		tx.Rollback()
@@ -251,14 +251,14 @@ func UpdateOauthProvider(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateOauthEventType)
 	oauth := middleware.GetOauth(ctx)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	if ok, msg := service.UpdateOauthProvider(tx, oauth, form); !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	tx.Commit()
-	newOauth, ok, msg := db.InitOauthRepo(db.DB.WithContext(ctx)).GetByID(oauth.ID)
+	newOauth, ok, msg := db.InitOauthRepo(db.DB).GetByID(oauth.ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -278,7 +278,7 @@ func UpdateOauthProvider(ctx *gin.Context) {
 func DeleteOauthProvider(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteOauthEventType)
 	oauth := middleware.GetOauth(ctx)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	if ok, msg := db.InitOauthRepo(tx).Delete(oauth.ID); !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

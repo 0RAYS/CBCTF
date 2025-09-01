@@ -26,7 +26,7 @@ func DownloadFile(eventType string) gin.HandlerFunc {
 		if _, err := os.Stat(file.Path); err != nil {
 			if os.IsNotExist(err) {
 				// 保留数据库记录
-				//tx := db.DB.WithContext(ctx).Begin()
+				//tx := db.DB.Begin()
 				//if ok, _ := db.InitFileRepo(tx).Delete(file.ID); !ok {
 				//	tx.Rollback()
 				//} else {
@@ -86,7 +86,7 @@ func UploadAvatar(v string) gin.HandlerFunc {
 			selfID := middleware.GetSelfID(ctx)
 			options.AdminID = sql.Null[uint]{V: selfID, Valid: true}
 		}
-		tx := db.DB.WithContext(ctx).Begin()
+		tx := db.DB.Begin()
 		record, ok, msg := service.SaveAvatar(tx, options, file)
 		if !ok {
 			tx.Rollback()
@@ -130,7 +130,7 @@ func UploadChallengeFile(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.InvalidChallengeType, "data": nil})
 		return
 	}
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	record, ok, msg := service.SaveChallengeFile(tx, challenge, file, path)
 	if !ok {
 		tx.Rollback()
@@ -158,7 +158,7 @@ func UploadWriteUp(ctx *gin.Context) {
 	user := middleware.GetSelf(ctx).(model.User)
 	contest := middleware.GetContest(ctx)
 	team := middleware.GetTeam(ctx)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	record, ok, msg := service.SaveWriteUp(tx, user, contest, team, file)
 	if !ok {
 		tx.Rollback()
@@ -186,7 +186,7 @@ func GetFiles(ctx *gin.Context) {
 	if form.Type != "" {
 		options.Conditions = map[string]any{"type": form.Type}
 	}
-	files, count, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, options)
+	files, count, ok, msg := db.InitFileRepo(db.DB).List(form.Limit, form.Offset, options)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -205,7 +205,7 @@ func GetWriteUPs(ctx *gin.Context) {
 		return
 	}
 	team := middleware.GetTeam(ctx)
-	writeups, count, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).
+	writeups, count, ok, msg := db.InitFileRepo(db.DB).
 		List(form.Limit, form.Offset, db.GetOptions{
 			Conditions: map[string]any{"type": model.WriteUPFileType, "team_id": team.ID},
 		})
@@ -227,7 +227,7 @@ func DeleteFiles(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteAvatarEventType)
-	ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).DeleteByRandID(form.FileIDL...)
+	ok, msg := db.InitFileRepo(db.DB).DeleteByRandID(form.FileIDL...)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

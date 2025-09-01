@@ -22,10 +22,10 @@ func StartVictim(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	go func(ctx *gin.Context) {
-		tx := db.DB.WithContext(ctx).Begin()
+		tx := db.DB.Begin()
 		_, ok, _ := service.StartTeamVictim(tx, user, team, contestChallenge)
 		if !ok {
-			go service.StopTeamVictim(db.DB.WithContext(ctx.Copy()), team, contestChallenge)
+			go service.StopTeamVictim(db.DB, team, contestChallenge)
 			tx.Rollback()
 			websocket.Send(false, user.ID, wm.ErrorLevel, wm.StartVictimWSType, "Start Victim", "Failed")
 			return
@@ -34,7 +34,7 @@ func StartVictim(ctx *gin.Context) {
 		websocket.Send(false, user.ID, wm.SuccessLevel, wm.StartVictimWSType, "Start Victim", "Done")
 		return
 	}(ctx.Copy())
-	status := service.GetTeamVictimStatus(db.DB.WithContext(ctx), team, contestChallenge)
+	status := service.GetTeamVictimStatus(db.DB, team, contestChallenge)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": status})
 }
@@ -43,7 +43,7 @@ func IncreaseVictimDuration(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.IncreaseVictimEventType)
 	team := middleware.GetTeam(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	DB := db.DB.WithContext(ctx)
+	DB := db.DB
 	repo := db.InitVictimRepo(DB)
 	victims, _, ok, msg := repo.List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"team_id": team.ID, "contest_challenge_id": contestChallenge.ID},
@@ -88,7 +88,7 @@ func StopVictim(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.StopVictimEventType)
 	team := middleware.GetTeam(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	_, msg := service.StopTeamVictim(db.DB.WithContext(ctx), team, contestChallenge)
+	_, msg := service.StopTeamVictim(db.DB, team, contestChallenge)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
@@ -100,7 +100,7 @@ func GetVictims(ctx *gin.Context) {
 		return
 	}
 	team := middleware.GetTeam(ctx)
-	repo := db.InitVictimRepo(db.DB.WithContext(ctx))
+	repo := db.InitVictimRepo(db.DB)
 	victims, count, ok, msg := repo.List(form.Limit, form.Offset, db.GetOptions{
 		Conditions: map[string]any{"team_id": team.ID},
 		Deleted:    true,

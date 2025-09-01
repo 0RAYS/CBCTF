@@ -25,7 +25,7 @@ func AdminChangePassword(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateAdminEventType)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	ok, msg := service.ChangeAdminPassword(tx, middleware.GetSelf(ctx).(model.Admin), form)
 	if !ok {
 		tx.Rollback()
@@ -43,7 +43,7 @@ func UpdateAdmin(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateAdminEventType)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	ok, msg := service.UpdateAdmin(tx, middleware.GetSelf(ctx).(model.Admin), form)
 	if !ok {
 		tx.Rollback()
@@ -61,7 +61,7 @@ func CreateAdmin(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateAdminEventType)
-	tx := db.DB.WithContext(ctx).Begin()
+	tx := db.DB.Begin()
 	admin, ok, msg := service.CreateAdmin(tx, form)
 	if !ok {
 		tx.Rollback()

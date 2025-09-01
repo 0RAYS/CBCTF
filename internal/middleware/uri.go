@@ -20,7 +20,7 @@ func SetUser(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
-	user, ok, msg := db.InitUserRepo(db.DB.WithContext(ctx)).GetByID(userID.UserID)
+	user, ok, msg := db.InitUserRepo(db.DB).GetByID(userID.UserID)
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -48,7 +48,7 @@ func SetContest(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
-	contest, ok, msg := db.InitContestRepo(db.DB.WithContext(ctx)).GetByID(contestID.ContestID)
+	contest, ok, msg := db.InitContestRepo(db.DB).GetByID(contestID.ContestID)
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -85,7 +85,7 @@ func SetTeam(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
-	team, ok, msg = db.InitTeamRepo(db.DB.WithContext(ctx)).GetByID(teamID.TeamID)
+	team, ok, msg = db.InitTeamRepo(db.DB).GetByID(teamID.TeamID)
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -107,7 +107,7 @@ func SetTeamByUser(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
 		return
 	}
-	team, ok, msg = db.InitTeamRepo(db.DB.WithContext(ctx)).GetBy2ID(self.ID, GetContest(ctx).ID)
+	team, ok, msg = db.InitTeamRepo(db.DB).GetBy2ID(self.ID, GetContest(ctx).ID)
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -140,7 +140,7 @@ func SetFile(t string) gin.HandlerFunc {
 		if t != "" {
 			options = db.GetOptions{Conditions: map[string]any{"type": t}}
 		}
-		file, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).GetByRandID(fileID.FileID, options)
+		file, ok, msg := db.InitFileRepo(db.DB).GetByRandID(fileID.FileID, options)
 		if !ok {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
@@ -152,7 +152,7 @@ func SetFile(t string) gin.HandlerFunc {
 
 func SetChallengeFile(ctx *gin.Context) {
 	challenge := GetChallenge(ctx)
-	file, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).Get(db.GetOptions{
+	file, ok, msg := db.InitFileRepo(db.DB).Get(db.GetOptions{
 		Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFileType}},
 	)
 	if !ok {
@@ -164,7 +164,7 @@ func SetChallengeFile(ctx *gin.Context) {
 }
 
 func SetTrafficFile(ctx *gin.Context) {
-	file, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).Get(db.GetOptions{
+	file, ok, msg := db.InitFileRepo(db.DB).Get(db.GetOptions{
 		Conditions: map[string]any{"path": GetVictim(ctx).TrafficZipPath()},
 	})
 	if !ok {
@@ -179,13 +179,13 @@ func SetAttachmentFile(regen bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		challenge := GetChallenge(ctx)
 		if regen && challenge.Type == model.DynamicChallengeType {
-			if ok, msg := service.GenTestAttachment(db.DB.WithContext(ctx), challenge); !ok {
+			if ok, msg := service.GenTestAttachment(db.DB, challenge); !ok {
 				ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 				return
 			}
 		}
 		path := challenge.AttachmentPath(GetTeam(ctx).ID)
-		record, ok, _ := db.InitFileRepo(db.DB.WithContext(ctx)).Get(db.GetOptions{
+		record, ok, _ := db.InitFileRepo(db.DB).Get(db.GetOptions{
 			Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFileType}},
 		)
 		if ok && record.Path == path {
@@ -218,7 +218,7 @@ func SetNotice(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
-	notice, ok, msg := db.InitNoticeRepo(db.DB.WithContext(ctx)).GetByID(noticeID.NoticeID)
+	notice, ok, msg := db.InitNoticeRepo(db.DB).GetByID(noticeID.NoticeID)
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -246,7 +246,7 @@ func SetChallenge(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
-	challenge, ok, msg := db.InitChallengeRepo(db.DB.WithContext(ctx)).GetByRandID(challengeID.ChallengeID)
+	challenge, ok, msg := db.InitChallengeRepo(db.DB).GetByRandID(challengeID.ChallengeID)
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -273,12 +273,12 @@ func SetContestChallenge(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
-	challenge, ok, msg := db.InitChallengeRepo(db.DB.WithContext(ctx)).GetByRandID(challengeID.ChallengeID)
+	challenge, ok, msg := db.InitChallengeRepo(db.DB).GetByRandID(challengeID.ChallengeID)
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	contestChallenge, ok, msg := db.InitContestChallengeRepo(db.DB.WithContext(ctx)).Get(db.GetOptions{
+	contestChallenge, ok, msg := db.InitContestChallengeRepo(db.DB).Get(db.GetOptions{
 		Conditions: map[string]any{"challenge_id": challenge.ID, "contest_id": GetContest(ctx).ID},
 	})
 	if !ok {
@@ -308,7 +308,7 @@ func SetContestFlag(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
-	contestFlag, ok, msg := db.InitContestFlagRepo(db.DB.WithContext(ctx)).GetByID(flagID.FlagID)
+	contestFlag, ok, msg := db.InitContestFlagRepo(db.DB).GetByID(flagID.FlagID)
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -334,7 +334,7 @@ func SetVictim(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
-	victim, ok, msg := db.InitVictimRepo(db.DB.WithContext(ctx)).GetByID(victimID.VictimID, db.GetOptions{Deleted: true})
+	victim, ok, msg := db.InitVictimRepo(db.DB).GetByID(victimID.VictimID, db.GetOptions{Deleted: true})
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -360,7 +360,7 @@ func SetCheat(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
-	cheat, ok, msg := db.InitCheatRepo(db.DB.WithContext(ctx)).GetByID(cheatID.CheatID)
+	cheat, ok, msg := db.InitCheatRepo(db.DB).GetByID(cheatID.CheatID)
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -386,7 +386,7 @@ func SetOauth(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
-	oauth, ok, msg := db.InitOauthRepo(db.DB.WithContext(ctx)).GetByID(oauthID.OauthID)
+	oauth, ok, msg := db.InitOauthRepo(db.DB).GetByID(oauthID.OauthID)
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -434,7 +434,7 @@ func SetSmtp(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
-	smtp, ok, msg := db.InitSmtpRepo(db.DB.WithContext(ctx)).GetByID(smtpID.SmtpID)
+	smtp, ok, msg := db.InitSmtpRepo(db.DB).GetByID(smtpID.SmtpID)
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -459,7 +459,7 @@ func SetWebhook(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
 	}
-	webhook, ok, msg := db.InitWebhookRepo(db.DB.WithContext(ctx)).GetByID(webhookID.WebhookID)
+	webhook, ok, msg := db.InitWebhookRepo(db.DB).GetByID(webhookID.WebhookID)
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
