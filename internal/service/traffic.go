@@ -86,7 +86,7 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 			ChallengeID: sql.Null[uint]{V: victim.ChallengeID, Valid: true},
 			Suffix:      ".zip",
 			Hash:        hash,
-			Type:        model.TrafficFile,
+			Type:        model.TrafficFileType,
 		})
 	}(victim)
 	connections, err := utils.ReadPcapDir(victim.TrafficBasePath())

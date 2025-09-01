@@ -71,7 +71,7 @@ func Init() *gin.Engine {
 
 		router.GET("/verify", VerifyEmail)
 		router.GET("/assets", DefaultAssets)
-		router.GET("/avatars/:fileID", middleware.SetFile(model.AvatarFile), DownloadFile(model.SkipEventType))
+		router.GET("/avatars/:fileID", middleware.SetFile(model.AvatarFileType), DownloadFile(model.SkipEventType))
 
 		router.GET("/stats", HomePage)
 		router.GET("/contests", GetContests)
@@ -285,7 +285,7 @@ func Init() *gin.Engine {
 				}
 
 				adminContestTeam.GET("/writeups", GetWriteUPs)
-				adminContestTeam.GET("/writeups/:fileID", middleware.SetFile(model.WriteUPFile), DownloadFile(model.DownloadWriteUpEventType))
+				adminContestTeam.GET("/writeups/:fileID", middleware.SetFile(model.WriteUPFileType), DownloadFile(model.DownloadWriteUpEventType))
 			}
 
 			adminContest.GET("/notices", GetNotices)

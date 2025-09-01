@@ -153,7 +153,7 @@ func SetFile(t string) gin.HandlerFunc {
 func SetChallengeFile(ctx *gin.Context) {
 	challenge := GetChallenge(ctx)
 	file, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).Get(db.GetOptions{
-		Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFile}},
+		Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFileType}},
 	)
 	if !ok {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -186,7 +186,7 @@ func SetAttachmentFile(regen bool) gin.HandlerFunc {
 		}
 		path := challenge.AttachmentPath(GetTeam(ctx).ID)
 		record, ok, _ := db.InitFileRepo(db.DB.WithContext(ctx)).Get(db.GetOptions{
-			Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFile}},
+			Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFileType}},
 		)
 		if ok && record.Path == path {
 			ctx.Set("File", record)
