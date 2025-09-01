@@ -115,10 +115,18 @@ func GetContestChallengeStatus(ctx *gin.Context) {
 		"solved":   service.CheckIfSolved(db.DB.WithContext(ctx), team, contestFlags),
 		"remote":   service.GetTeamVictimStatus(db.DB.WithContext(ctx), team, contestChallenge),
 		"file": func() string {
-			if _, err := os.Stat(challenge.AttachmentPath(team.ID)); err != nil {
+			path := challenge.AttachmentPath(team.ID)
+			record, _, _ := db.InitFileRepo(db.DB.WithContext(ctx)).Get(db.GetOptions{
+				Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFile}},
+			)
+			filename := "attachment.zip"
+			if record.Path == path {
+				filename = record.Filename
+			}
+			if _, err := os.Stat(path); err != nil {
 				return ""
 			}
-			return "attachment.zip"
+			return filename
 		}(),
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
