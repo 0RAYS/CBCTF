@@ -17,12 +17,16 @@ const GenAttachmentTaskType = "tasks:attachment"
 type GenAttachmentPayload struct {
 	UserID    uint
 	Challenge model.Challenge
-	Team      model.Team
-	TeamFlags []model.TeamFlag
+	TeamID    uint
+	Flags     []string
 }
 
 func EnqueueGenAttachmentTask(userID uint, challenge model.Challenge, team model.Team, teamFlags []model.TeamFlag) (*asynq.TaskInfo, error) {
-	payload, err := msgpack.Marshal(GenAttachmentPayload{userID, challenge, team, teamFlags})
+	var flags []string
+	for _, flag := range teamFlags {
+		flags = append(flags, flag.Value)
+	}
+	payload, err := msgpack.Marshal(GenAttachmentPayload{userID, challenge, team.ID, flags})
 	if err != nil {
 		return nil, err
 	}
@@ -37,7 +41,7 @@ func HandleGenAttachmentTask(_ context.Context, t *asynq.Task) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	if ok, _ := k8s.GenAttachment(ctx, payload.Challenge, payload.Team, payload.TeamFlags); !ok {
+	if ok, _ := k8s.GenAttachment(ctx, payload.Challenge, payload.TeamID, payload.Flags); !ok {
 		websocket.Send(false, payload.UserID, wm.ErrorLevel, wm.GenerateAttachmentWSType, "Generate Attachment", "Failed")
 	} else {
 		websocket.Send(false, payload.UserID, wm.SuccessLevel, wm.GenerateAttachmentWSType, "Generate Attachment", "Done")

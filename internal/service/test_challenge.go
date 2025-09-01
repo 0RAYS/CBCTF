@@ -25,7 +25,11 @@ func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) (bool, string) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	return k8s.GenTestAttachment(ctx, challenge, challengeFlags)
+	var flags []string
+	for _, flag := range challengeFlags {
+		flags = append(flags, flag.Value)
+	}
+	return k8s.GenAttachment(ctx, challenge, 0, flags)
 }
 
 func GetTestVictimStatus(tx *gorm.DB, challenge model.Challenge) gin.H {

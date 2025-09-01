@@ -139,56 +139,23 @@ func StopGenerator(ctx context.Context, challenge model.Challenge, generator *co
 }
 
 // GenAttachment 附加容器命令, 生成附件
-func GenAttachment(ctx context.Context, challenge model.Challenge, team model.Team, teamFlagL []model.TeamFlag) (bool, string) {
+func GenAttachment(ctx context.Context, challenge model.Challenge, teamID uint, flags []string) (bool, string) {
 	var err error
-	log.Logger.Debugf("Generating attachment for Team %d Challenge %d", team.ID, challenge.ID)
+	log.Logger.Debugf("Generating attachment for Team %d Challenge %d", teamID, challenge.ID)
 	generator, ok, _ := GetGenerator(ctx, challenge)
-	// 附加失败则直接返回, 并尝试关闭生成器
+	// 获取失败则直接返回, 并尝试关闭生成器
 	if !ok || generator.Status.Phase != corev1.PodRunning {
 		return StopGenerator(ctx, challenge, generator)
 	}
-	var flags string
-	for _, teamFlag := range teamFlagL {
-		flags += fmt.Sprintf("%s,", base64.StdEncoding.EncodeToString([]byte(teamFlag.Value)))
+	var flag string
+	for _, value := range flags {
+		flag += fmt.Sprintf("%s,", base64.StdEncoding.EncodeToString([]byte(value)))
 	}
-	flags = base64.StdEncoding.EncodeToString([]byte(strings.TrimSuffix(flags, ",")))
-	flags = strings.TrimSuffix(flags, ",")
-	filepath := challenge.AttachmentPath(team.ID)
+	flag = base64.StdEncoding.EncodeToString([]byte(strings.TrimSuffix(flag, ",")))
+	flag = strings.TrimSuffix(flag, ",")
+	filepath := challenge.AttachmentPath(teamID)
 	_ = os.Remove(filepath)
-	command := fmt.Sprintf("./run.sh %d %s", team.ID, base64.StdEncoding.EncodeToString([]byte(flags)))
-	log.Logger.Debugf("Executing command in %s: %s", generator.Name, command)
-	if _, _, err = Exec(ctx, generator.Name, generator.Spec.Containers[0].Name, command, nil); err != nil {
-		log.Logger.Warningf("Failed to execute command %s: %s", command, err)
-		return false, i18n.ExecCommandError
-	}
-	for {
-		// NFS 延迟写入, 主动触发读取
-		_, _ = os.ReadDir(path.Dir(filepath))
-		if _, err = os.Stat(filepath); err == nil {
-			break
-		}
-		time.Sleep(time.Second)
-	}
-	return true, i18n.Success
-}
-
-func GenTestAttachment(ctx context.Context, challenge model.Challenge, challengeFlags []model.ChallengeFlag) (bool, string) {
-	var err error
-	log.Logger.Debugf("Generating test attachment for Challenge %d", challenge.ID)
-	generator, ok, _ := GetGenerator(ctx, challenge)
-	// 附加失败则直接返回, 并尝试关闭生成器
-	if !ok || generator.Status.Phase != corev1.PodRunning {
-		return StopGenerator(ctx, challenge, generator)
-	}
-	var flags string
-	for _, flag := range challengeFlags {
-		flags += fmt.Sprintf("%s,", base64.StdEncoding.EncodeToString([]byte(flag.Value)))
-	}
-	flags = base64.StdEncoding.EncodeToString([]byte(strings.TrimSuffix(flags, ",")))
-	flags = strings.TrimSuffix(flags, ",")
-	filepath := challenge.AttachmentPath(0)
-	_ = os.Remove(filepath)
-	command := fmt.Sprintf("./run.sh %d %s", 0, base64.StdEncoding.EncodeToString([]byte(flags)))
+	command := fmt.Sprintf("./run.sh %d %s", teamID, base64.StdEncoding.EncodeToString([]byte(flag)))
 	log.Logger.Debugf("Executing command in %s: %s", generator.Name, command)
 	if _, _, err = Exec(ctx, generator.Name, generator.Spec.Containers[0].Name, command, nil); err != nil {
 		log.Logger.Warningf("Failed to execute command %s: %s", command, err)
