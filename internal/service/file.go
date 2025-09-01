@@ -38,7 +38,7 @@ func SaveAvatar(tx *gorm.DB, options db.CreateFileOptions, file *multipart.FileH
 	options.Path = fmt.Sprintf("%s/avatars/%s%s", config.Env.Path, utils.UUID(), suffix)
 	options.Suffix = suffix
 	options.Hash = hash
-	options.Type = model.AvatarFile
+	options.Type = model.AvatarFileType
 	record, ok, msg := fileRepo.Create(options)
 	if ok {
 		prometheus.UpdateFileUploadMetrics(record.Suffix, record.Size)
@@ -89,7 +89,7 @@ func SaveChallengeFile(tx *gorm.DB, challenge model.Challenge, file *multipart.F
 		ChallengeID: sql.Null[uint]{V: challenge.ID, Valid: true},
 		Suffix:      suffix,
 		Hash:        hash,
-		Type:        model.ChallengeFile,
+		Type:        model.ChallengeFileType,
 	})
 	if ok {
 		prometheus.UpdateFileUploadMetrics(record.Suffix, file.Size)
@@ -120,7 +120,7 @@ func SaveWriteUp(tx *gorm.DB, user model.User, contest model.Contest, team model
 		ContestID: sql.Null[uint]{V: contest.ID, Valid: true},
 		Suffix:    suffix,
 		Hash:      hash,
-		Type:      model.WriteUPFile,
+		Type:      model.WriteUPFileType,
 	})
 	if ok {
 		prometheus.UpdateFileUploadMetrics(record.Suffix, file.Size)

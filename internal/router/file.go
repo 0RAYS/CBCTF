@@ -46,7 +46,7 @@ func DownloadFile(eventType string) gin.HandlerFunc {
 
 func UploadAvatar(v string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		file, err := ctx.FormFile(model.AvatarFile)
+		file, err := ctx.FormFile(model.AvatarFileType)
 		if err != nil {
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 			return
@@ -113,7 +113,7 @@ func UploadAvatar(v string) gin.HandlerFunc {
 }
 
 func UploadChallengeFile(ctx *gin.Context) {
-	file, err := ctx.FormFile(model.ChallengeFile)
+	file, err := ctx.FormFile(model.ChallengeFileType)
 	if err != nil {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
@@ -149,7 +149,7 @@ func UploadChallengeFile(ctx *gin.Context) {
 }
 
 func UploadWriteUp(ctx *gin.Context) {
-	file, err := ctx.FormFile(model.WriteUPFile)
+	file, err := ctx.FormFile(model.WriteUPFileType)
 	if err != nil {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
 		return
@@ -183,7 +183,7 @@ func GetAvatars(ctx *gin.Context) {
 		return
 	}
 	avatars, count, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).List(form.Limit, form.Offset, db.GetOptions{
-		Conditions: map[string]any{"type": model.AvatarFile},
+		Conditions: map[string]any{"type": model.AvatarFileType},
 	})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -205,7 +205,7 @@ func GetWriteUPs(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	writeups, count, ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).
 		List(form.Limit, form.Offset, db.GetOptions{
-			Conditions: map[string]any{"type": model.WriteUPFile, "team_id": team.ID},
+			Conditions: map[string]any{"type": model.WriteUPFileType, "team_id": team.ID},
 		})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

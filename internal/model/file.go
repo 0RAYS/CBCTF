@@ -6,10 +6,10 @@ import (
 )
 
 const (
-	ChallengeFile = "file"
-	AvatarFile    = "avatar"
-	WriteUPFile   = "writeup"
-	TrafficFile   = "traffic"
+	ChallengeFileType = "file"
+	AvatarFileType    = "avatar"
+	WriteUPFileType   = "writeup"
+	TrafficFileType   = "traffic"
 )
 
 // File
