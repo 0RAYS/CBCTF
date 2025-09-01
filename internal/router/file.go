@@ -11,7 +11,6 @@ import (
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"database/sql"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -76,22 +75,6 @@ func DownloadAttachment(regen bool) gin.HandlerFunc {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 		ctx.FileAttachment(path, filename)
 	}
-}
-
-func DownloadTraffic(ctx *gin.Context) {
-	ctx.Set(middleware.CTXEventTypeKey, model.DownloadTrafficEventType)
-	victim := middleware.GetVictim(ctx)
-	if _, err := os.Stat(victim.TrafficZipPath()); err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.FileNotFound, "data": nil})
-			return
-		}
-		log.Logger.Warningf("Failed to get file: %s", err)
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
-		return
-	}
-	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.File(victim.TrafficZipPath())
 }
 
 func UploadAvatar(v string) gin.HandlerFunc {
@@ -275,14 +258,11 @@ func DeleteAvatars(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteAvatarEventType)
-	repo := db.InitFileRepo(db.DB.WithContext(ctx))
-	// 保留文件
-	//for _, id := range form.FileIDL {
-	//	if file, ok, _ := db.GetByID(id); ok {
-	//		_ = os.Remove(file.Path)
-	//	}
-	//}
-	repo.DeleteByRandID(form.FileIDL...)
+	ok, msg := db.InitFileRepo(db.DB.WithContext(ctx)).DeleteByRandID(form.FileIDL...)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }

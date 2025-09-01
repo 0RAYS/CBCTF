@@ -61,12 +61,27 @@ func InitFileRepo(tx *gorm.DB) *FileRepo {
 	}
 }
 
-func (f *FileRepo) GetByRandID(randID string, optionsL ...GetOptions) (model.File, bool, string) {
-	return f.GetByUniqueKey("rand_id", randID, optionsL...)
+func (f *FileRepo) Create(options CreateFileOptions) (model.File, bool, string) {
+	records, _, ok, _ := f.List(-1, -1, GetOptions{
+		Conditions: map[string]any{"path": options.Path}, Selects: []string{"id"},
+	})
+	if ok {
+		idL := make([]uint, 0)
+		for _, record := range records {
+			idL = append(idL, record.ID)
+		}
+		f.Delete(idL...)
+	}
+	m := options.Convert2Model().(model.File)
+	if res := f.DB.Model(&model.File{}).Create(&m); res.Error != nil {
+		log.Logger.Warningf("Failed to create File: %s", res.Error)
+		return model.File{}, false, i18n.CreateFileError
+	}
+	return m, true, i18n.Success
 }
 
-func (f *FileRepo) GetByHash(hash string, optionsL ...GetOptions) (model.File, bool, string) {
-	return f.GetByUniqueKey("hash", hash, optionsL...)
+func (f *FileRepo) GetByRandID(randID string, optionsL ...GetOptions) (model.File, bool, string) {
+	return f.GetByUniqueKey("rand_id", randID, optionsL...)
 }
 
 func (f *FileRepo) DeleteByRandID(randIDL ...string) (bool, string) {

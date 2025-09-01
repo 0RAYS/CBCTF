@@ -277,7 +277,7 @@ func Init() *gin.Engine {
 				{
 					adminTraffic := adminContainer.Group("/traffic")
 					{
-						adminTraffic.GET("/download", DownloadTraffic)
+						adminTraffic.GET("/download", middleware.SetTrafficFile, DownloadFile(model.DownloadTrafficEventType))
 						adminTraffic.GET("", GetTraffics)
 					}
 				}
