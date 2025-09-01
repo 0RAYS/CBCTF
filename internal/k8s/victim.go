@@ -423,7 +423,7 @@ func StopVictim(ctx context.Context, victim model.Victim) (bool, string) {
 		"challenge_id":         strconv.Itoa(int(victim.ChallengeID)),
 		"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID.V)),
 	}
-	for _, endpoint := range victim.Endpoints {
+	for _, endpoint := range victim.ExposedEndpoints {
 		if err := redis.UnlockFrpsPort(endpoint.IP, endpoint.Port, endpoint.Protocol); err != nil {
 			log.Logger.Warningf("Failed to unlock frps port: %s", err)
 		}
