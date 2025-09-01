@@ -291,7 +291,7 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contest mode
 	}); !ok {
 		return model.Victim{}, false, msg
 	}
-	prometheus.AddVictimContainerMetrics(contest, contestChallenge, 1)
+	prometheus.AddVictimContainerMetrics(1)
 	return victim, true, i18n.Success
 }
 
@@ -330,10 +330,13 @@ func StopVictim(txt *gorm.DB, victim model.Victim) (bool, string) {
 	}
 	LoadTraffic(txt, victim)
 	ok, msg = db.InitVictimRepo(txt).Delete(victim.ID)
+	if ok {
+		prometheus.SubVictimContainerMetrics(1)
+	}
 	return ok, msg
 }
 
-func StopTeamVictim(tx *gorm.DB, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge) (bool, string) {
+func StopTeamVictim(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) (bool, string) {
 	victimRepo := db.InitVictimRepo(tx)
 	victim, ok, msg := victimRepo.HasAliveVictim(team.ID, contestChallenge.ID)
 	if !ok {
