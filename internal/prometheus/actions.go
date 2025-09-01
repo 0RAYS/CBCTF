@@ -26,12 +26,12 @@ func SubContestActiveUsersMetrics(contest model.Contest, count int) {
 	ContestActiveUsers.WithLabelValues(contest.Name).Sub(float64(count))
 }
 
-func AddVictimContainerMetrics(contest model.Contest, contestChallenge model.ContestChallenge, count int) {
-	VictimContainerTotal.WithLabelValues(contest.Name, contestChallenge.Name).Add(float64(count))
+func AddVictimContainerMetrics(count int) {
+	VictimContainerTotal.Add(float64(count))
 }
 
-func SubVictimContainerMetrics(contest model.Contest, contestChallenge model.ContestChallenge, count int) {
-	VictimContainerTotal.WithLabelValues(contest.Name, contestChallenge.Name).Sub(float64(count))
+func SubVictimContainerMetrics(count int) {
+	VictimContainerTotal.Sub(float64(count))
 }
 
 func UpdateUserRegisterMetrics(provider string) {

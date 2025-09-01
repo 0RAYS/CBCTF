@@ -71,12 +71,11 @@ var (
 		[]string{"contest_name"},
 	)
 
-	VictimContainerTotal = prometheus.NewGaugeVec(
+	VictimContainerTotal = prometheus.NewGauge(
 		prometheus.GaugeOpts{
 			Name: "ctf_victim_containers_total",
 			Help: "Total number of victim containers running",
 		},
-		[]string{"contest_name", "challenge_name"},
 	)
 
 	UserRegistrationTotal = prometheus.NewCounterVec(
