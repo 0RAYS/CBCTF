@@ -8,6 +8,7 @@ import (
 	"CBCTF/internal/model"
 	r "CBCTF/internal/redis"
 	"CBCTF/internal/utils"
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -66,10 +67,27 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 		return true, i18n.Success
 	}
 	go func(victim model.Victim) {
-		err := utils.Zip(victim.TrafficBasePath(), victim.TrafficZipPath())
-		if err != nil {
+		if err := utils.Zip(victim.TrafficBasePath(), victim.TrafficZipPath()); err != nil {
 			log.Logger.Warningf("Failed to zip .pcap files: %s", err)
+			return
 		}
+		size, hash, err := utils.GetFileInfoByPath(victim.TrafficZipPath())
+		if err != nil {
+			log.Logger.Warningf("Failed to get file info %s: %s", victim.TrafficZipPath(), err)
+			return
+		}
+		db.InitFileRepo(db.DB).Create(db.CreateFileOptions{
+			RandID:      utils.UUID(),
+			Filename:    "traffics.zip",
+			Size:        size,
+			Path:        victim.TrafficZipPath(),
+			UserID:      victim.UserID,
+			TeamID:      victim.TeamID,
+			ChallengeID: sql.Null[uint]{V: victim.ChallengeID, Valid: true},
+			Suffix:      ".zip",
+			Hash:        hash,
+			Type:        model.TrafficFile,
+		})
 	}(victim)
 	connections, err := utils.ReadPcapDir(victim.TrafficBasePath())
 	if err != nil {

@@ -9,6 +9,7 @@ const (
 	ChallengeFile = "file"
 	AvatarFile    = "avatar"
 	WriteUPFile   = "writeup"
+	TrafficFile   = "traffic"
 )
 
 // File
@@ -73,5 +74,5 @@ func (f File) UpdateErrorString() string {
 
 func (f File) GetUniqueKey() []string {
 	// 虽然hash并不唯一, 但不影响功能
-	return []string{"id", "rand_id", "hash"}
+	return []string{"id", "rand_id"}
 }
