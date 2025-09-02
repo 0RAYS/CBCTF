@@ -90,14 +90,14 @@ func UpdateContest(ctx *gin.Context) {
 
 func DeleteContest(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteContestEventType)
-	tx := db.DB.Begin()
 	contest := middleware.GetContest(ctx)
+	tx := db.DB.Begin()
 	ok, msg := db.InitContestRepo(tx).Delete(contest.ID)
 	if !ok {
 		tx.Rollback()
 	} else {
-		ctx.Set(middleware.CTXEventSuccessKey, true)
 		tx.Commit()
+		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

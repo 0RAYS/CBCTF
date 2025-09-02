@@ -88,12 +88,6 @@ func UploadAvatar(v string) gin.HandlerFunc {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
-		if err = ctx.SaveUploadedFile(file, record.Path); err != nil {
-			log.Logger.Warningf("Failed to save file: %s", err)
-			tx.Rollback()
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
-			return
-		}
 		path, ok, msg := service.UpdateAvatar(tx, v, id, record)
 		if !ok {
 			tx.Rollback()
@@ -101,6 +95,11 @@ func UploadAvatar(v string) gin.HandlerFunc {
 			return
 		}
 		tx.Commit()
+		if err = ctx.SaveUploadedFile(file, record.Path); err != nil {
+			log.Logger.Warningf("Failed to save file: %s", err)
+			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
+			return
+		}
 		path = fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(path, "/"))
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": path})
@@ -125,20 +124,16 @@ func UploadChallengeFile(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.InvalidChallengeType, "data": nil})
 		return
 	}
-	tx := db.DB.Begin()
-	record, ok, msg := service.SaveChallengeFile(tx, challenge, file, path)
+	record, ok, msg := service.SaveChallengeFile(db.DB, challenge, file, path)
 	if !ok {
-		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	if err = ctx.SaveUploadedFile(file, record.Path); err != nil {
-		tx.Rollback()
 		log.Logger.Warningf("Failed to save file: %s", err)
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 		return
 	}
-	tx.Commit()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }
@@ -153,20 +148,16 @@ func UploadWriteUp(ctx *gin.Context) {
 	user := middleware.GetSelf(ctx).(model.User)
 	contest := middleware.GetContest(ctx)
 	team := middleware.GetTeam(ctx)
-	tx := db.DB.Begin()
-	record, ok, msg := service.SaveWriteUp(tx, user, contest, team, file)
+	record, ok, msg := service.SaveWriteUp(db.DB, user, contest, team, file)
 	if !ok {
-		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	if err = ctx.SaveUploadedFile(file, record.Path); err != nil {
-		tx.Rollback()
 		log.Logger.Warningf("Failed to save file: %s", err)
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 		return
 	}
-	tx.Commit()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

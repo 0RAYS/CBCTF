@@ -44,14 +44,11 @@ func VerifyEmail(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.VerifyEmailEventType)
-	tx := db.DB.Begin()
-	ok, msg := service.VerifyEmail(tx, form)
+	ok, msg := service.VerifyEmail(db.DB, form)
 	if !ok {
-		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx.Commit()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.Redirect(http.StatusTemporaryRedirect, config.Env.Backend)
 }
