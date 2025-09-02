@@ -195,7 +195,6 @@ func SetAttachmentFile(regen bool) gin.HandlerFunc {
 		}
 		ctx.Set("File", model.File{Filename: "attachment.zip", Path: path})
 		ctx.Next()
-		return
 	}
 }
 
