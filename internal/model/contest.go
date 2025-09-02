@@ -51,10 +51,6 @@ func (c Contest) GetModelName() string {
 	return "Contest"
 }
 
-func (c Contest) GetVersion() uint {
-	return c.Version
-}
-
 func (c Contest) GetBasicModel() BasicModel {
 	return c.BasicModel
 }

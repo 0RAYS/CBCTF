@@ -110,10 +110,6 @@ func (e Event) GetModelName() string {
 	return "Event"
 }
 
-func (e Event) GetVersion() uint {
-	return e.Version
-}
-
 func (e Event) GetBasicModel() BasicModel {
 	return e.BasicModel
 }

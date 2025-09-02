@@ -19,10 +19,6 @@ func (e Email) GetModelName() string {
 	return "Email"
 }
 
-func (e Email) GetVersion() uint {
-	return e.Version
-}
-
 func (e Email) GetBasicModel() BasicModel {
 	return e.BasicModel
 }

@@ -23,10 +23,6 @@ func (s Smtp) GetModelName() string {
 	return "Smtp"
 }
 
-func (p Smtp) GetVersion() uint {
-	return p.Version
-}
-
 func (p Smtp) GetBasicModel() BasicModel {
 	return p.BasicModel
 }

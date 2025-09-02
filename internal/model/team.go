@@ -34,10 +34,6 @@ func (t Team) GetModelName() string {
 	return "Team"
 }
 
-func (t Team) GetVersion() uint {
-	return t.Version
-}
-
 func (t Team) GetBasicModel() BasicModel {
 	return t.BasicModel
 }

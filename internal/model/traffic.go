@@ -20,10 +20,6 @@ func (t Traffic) GetModelName() string {
 	return "Traffic"
 }
 
-func (t Traffic) GetVersion() uint {
-	return t.Version
-}
-
 func (t Traffic) GetBasicModel() BasicModel {
 	return t.BasicModel
 }

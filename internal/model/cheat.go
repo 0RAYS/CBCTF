@@ -44,10 +44,6 @@ func (c Cheat) GetModelName() string {
 	return "Cheat"
 }
 
-func (c Cheat) GetVersion() uint {
-	return c.Version
-}
-
 func (c Cheat) GetBasicModel() BasicModel {
 	return c.BasicModel
 }

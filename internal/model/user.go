@@ -37,10 +37,6 @@ func (u User) GetModelName() string {
 	return "User"
 }
 
-func (u User) GetVersion() uint {
-	return u.Version
-}
-
 func (u User) GetBasicModel() BasicModel {
 	return u.BasicModel
 }
