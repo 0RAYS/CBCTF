@@ -46,14 +46,17 @@ func StartTestVictim(ctx *gin.Context) {
 	go func() {
 		_, ok, _ := service.StartVictim(db.DB, 0, 0, 0, challenge.ID)
 		if !ok {
-			go func() {
-				victim, ok, _ := db.InitVictimRepo(db.DB).HasAliveVictim(0, challenge.ID)
-				if !ok {
-					return
-				}
-				service.StopVictim(db.DB, victim)
-			}()
 			websocket.Send(true, selfID, wm.ErrorLevel, wm.StartVictimWSType, "Start Victim", "Failed")
+			victim, ok, _ := db.InitVictimRepo(db.DB).HasAliveVictim(0, challenge.ID)
+			if !ok {
+				return
+			}
+			tx := db.DB.Begin()
+			if ok, _ = service.StopVictim(tx, victim); !ok {
+				tx.Rollback()
+				return
+			}
+			tx.Commit()
 			return
 		}
 		websocket.Send(true, selfID, wm.SuccessLevel, wm.StartVictimWSType, "Start Victim", "Done")
@@ -72,9 +75,13 @@ func StopTestVictim(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ok, msg = service.StopVictim(db.DB, victim)
-	if ok {
-		ctx.Set(middleware.CTXEventSuccessKey, true)
+	tx := db.DB.Begin()
+	if ok, msg = service.StopVictim(tx, victim); !ok {
+		tx.Rollback()
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
 	}
+	tx.Commit()
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

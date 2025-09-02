@@ -16,14 +16,12 @@ import (
 )
 
 func HomePage(ctx *gin.Context) {
-	DB := db.DB
-
 	data := gin.H{
 		"upcoming":   []gin.H{},
 		"stats":      []gin.H{},
 		"scoreboard": []gin.H{},
 	}
-	contests, count, ok, _ := db.InitContestRepo(DB).List(-1, -1, db.GetOptions{
+	contests, count, ok, _ := db.InitContestRepo(db.DB).List(-1, -1, db.GetOptions{
 		Preloads: map[string]db.GetOptions{"Teams": {}, "Users": {}},
 	})
 	if ok {
@@ -46,13 +44,13 @@ func HomePage(ctx *gin.Context) {
 		}
 	}
 	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "CTF Events", "value": count})
-	count, _, _ = db.InitUserRepo(DB).Count()
+	count, _, _ = db.InitUserRepo(db.DB).Count()
 	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "Activate CTFers", "value": count})
-	count, _, _ = db.InitChallengeRepo(DB).Count()
+	count, _, _ = db.InitChallengeRepo(db.DB).Count()
 	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "Challenges", "value": count})
-	count, _, _ = db.InitSubmissionRepo(DB).Count()
+	count, _, _ = db.InitSubmissionRepo(db.DB).Count()
 	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "Submissions", "value": count})
-	users, _, _, _ := service.GetUserRanking(DB, 5, 0)
+	users, _, _, _ := service.GetUserRanking(db.DB, 5, 0)
 	for _, user := range users {
 		data["scoreboard"] = append(data["scoreboard"].([]gin.H), gin.H{
 			"name":    user.Name,
@@ -79,11 +77,10 @@ func SystemStatus(ctx *gin.Context) {
 		ret["recv"] = ioStats[0].BytesRecv
 	}
 
-	var DB = db.DB
-	ret["users"], _, _ = db.InitUserRepo(DB).Count()
-	ret["contests"], _, _ = db.InitContestRepo(DB).Count()
-	ret["ip"], _, _ = db.InitRequestRepo(DB).CountIP()
-	ret["challenges"], _, _ = db.InitChallengeRepo(DB).Count()
+	ret["users"], _, _ = db.InitUserRepo(db.DB).Count()
+	ret["contests"], _, _ = db.InitContestRepo(db.DB).Count()
+	ret["ip"], _, _ = db.InitRequestRepo(db.DB).CountIP()
+	ret["challenges"], _, _ = db.InitChallengeRepo(db.DB).Count()
 	middleware.MU.Lock()
 	if middleware.TotalRequests == 0 {
 		ret["requests"] = 0

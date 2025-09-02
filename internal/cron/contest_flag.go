@@ -47,16 +47,13 @@ func updateFlagScore(c *cron.Cron) {
 						continue
 					}
 					if solvers != contestFlag.Solvers || currentScore != contestFlag.CurrentScore {
-						tx := db.DB.Begin()
 						if ok, _ = contestFlagRepo.Update(contestFlag.ID, db.UpdateContestFlagOptions{
 							CurrentScore: &currentScore,
 							Solvers:      &solvers,
 						}); !ok {
-							tx.Rollback()
 							mu.(*sync.Mutex).Unlock()
 							continue
 						}
-						tx.Commit()
 					}
 					mu.(*sync.Mutex).Unlock()
 				}

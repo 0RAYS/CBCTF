@@ -39,8 +39,7 @@ func GetContestChallenges(ctx *gin.Context) {
 	if !middleware.IsAdmin(ctx) {
 		options.Conditions["hidden"] = false
 	}
-	contestChallengeL, count, ok, msg := db.InitContestChallengeRepo(db.DB).
-		List(form.Limit, form.Offset, options)
+	contestChallengeL, count, ok, msg := db.InitContestChallengeRepo(db.DB).List(form.Limit, form.Offset, options)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -156,8 +155,7 @@ func UpdateContestChallenge(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateContestChallengeEventType)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	tx := db.DB.Begin()
-	ok, msg := db.InitContestChallengeRepo(tx).Update(contestChallenge.ID, db.UpdateContestChallengeOptions{
+	ok, msg := db.InitContestChallengeRepo(db.DB).Update(contestChallenge.ID, db.UpdateContestChallengeOptions{
 		Name:    form.Name,
 		Desc:    form.Desc,
 		Hidden:  form.Hidden,
@@ -165,11 +163,8 @@ func UpdateContestChallenge(ctx *gin.Context) {
 		Hints:   form.Hints,
 		Tags:    form.Tags,
 	})
-	if !ok {
-		tx.Rollback()
-	} else {
+	if ok {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
-		tx.Commit()
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
@@ -182,8 +177,8 @@ func DeleteContestChallenge(ctx *gin.Context) {
 	if !ok {
 		tx.Rollback()
 	} else {
-		ctx.Set(middleware.CTXEventSuccessKey, true)
 		tx.Commit()
+		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

@@ -86,9 +86,7 @@ func (v *VictimRepo) Delete(idL ...uint) (bool, string) {
 	victimL, _, ok, msg := v.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},
 		Selects:    []string{"id"},
-		Preloads: map[string]GetOptions{
-			"Pods": {Selects: []string{"id", "victim_id"}},
-		},
+		Preloads:   map[string]GetOptions{"Pods": {Selects: []string{"id", "victim_id"}}},
 	})
 	if !ok && msg != i18n.VictimNotFound {
 		return false, msg

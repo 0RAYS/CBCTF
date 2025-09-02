@@ -26,12 +26,7 @@ func DownloadFile(eventType string) gin.HandlerFunc {
 		if _, err := os.Stat(file.Path); err != nil {
 			if os.IsNotExist(err) {
 				// 保留数据库记录
-				//tx := db.DB.Begin()
-				//if ok, _ := db.InitFileRepo(tx).Delete(file.ID); !ok {
-				//	tx.Rollback()
-				//} else {
-				//	tx.Commit()
-				//}
+				//db.InitFileRepo(db.DB).Delete(file.ID)
 				ctx.JSON(http.StatusOK, gin.H{"msg": i18n.FileNotFound, "data": nil})
 				return
 			}
@@ -205,10 +200,9 @@ func GetWriteUPs(ctx *gin.Context) {
 		return
 	}
 	team := middleware.GetTeam(ctx)
-	writeups, count, ok, msg := db.InitFileRepo(db.DB).
-		List(form.Limit, form.Offset, db.GetOptions{
-			Conditions: map[string]any{"type": model.WriteUPFileType, "team_id": team.ID},
-		})
+	writeups, count, ok, msg := db.InitFileRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
+		Conditions: map[string]any{"type": model.WriteUPFileType, "team_id": team.ID},
+	})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

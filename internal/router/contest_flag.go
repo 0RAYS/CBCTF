@@ -40,15 +40,20 @@ func SubmitFlag(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	go func() {
-		if contestChallenge.Type == model.PodsChallengeType && service.CheckIfSolved(db.DB, team, contestFlags) {
+	if contestChallenge.Type == model.PodsChallengeType && service.CheckIfSolved(db.DB, team, contestFlags) {
+		go func() {
 			victim, ok, _ := db.InitVictimRepo(db.DB).HasAliveVictim(team.ID, challenge.ID)
 			if !ok {
 				return
 			}
-			service.StopVictim(db.DB, victim)
-		}
-	}()
+			gtx := db.DB.Begin()
+			if ok, _ = service.StopVictim(gtx, victim); !ok {
+				gtx.Rollback()
+				return
+			}
+			gtx.Commit()
+		}()
+	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": result, "data": nil})
 }
@@ -84,22 +89,18 @@ func UpdateContestFlag(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateContestChallengeFlagEventType)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	contestFlag := middleware.GetContestFlag(ctx)
-	tx := db.DB.Begin()
 	if contestChallenge.Type == model.QuestionChallengeType && form.Value != nil {
 		form.Value = &contestFlag.Value
 	}
-	ok, msg := db.InitContestFlagRepo(tx).Update(contestFlag.ID, db.UpdateContestFlagOptions{
+	ok, msg := db.InitContestFlagRepo(db.DB).Update(contestFlag.ID, db.UpdateContestFlagOptions{
 		Value:     form.Value,
 		Score:     form.Score,
 		Decay:     form.Decay,
 		MinScore:  form.MinScore,
 		ScoreType: form.ScoreType,
 	})
-	if !ok {
-		tx.Rollback()
-	} else {
+	if ok {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
-		tx.Commit()
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

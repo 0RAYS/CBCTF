@@ -26,13 +26,16 @@ func StartVictim(ctx *gin.Context) {
 		_, ok, _ := service.StartVictim(db.DB, user.ID, team.ID, contestChallenge.ID, challenge.ID)
 		if !ok {
 			websocket.Send(false, user.ID, wm.ErrorLevel, wm.StartVictimWSType, "Start Victim", "Failed")
-			go func() {
-				victim, ok, _ := db.InitVictimRepo(db.DB).HasAliveVictim(team.ID, challenge.ID)
-				if !ok {
-					return
-				}
-				service.StopVictim(db.DB, victim)
-			}()
+			victim, ok, _ := db.InitVictimRepo(db.DB).HasAliveVictim(team.ID, challenge.ID)
+			if !ok {
+				return
+			}
+			tx := db.DB.Begin()
+			if ok, _ = service.StopVictim(tx, victim); !ok {
+				tx.Rollback()
+				return
+			}
+			tx.Commit()
 			return
 		}
 		websocket.Send(false, user.ID, wm.SuccessLevel, wm.StartVictimWSType, "Start Victim", "Done")
@@ -47,8 +50,7 @@ func IncreaseVictimDuration(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.IncreaseVictimEventType)
 	team := middleware.GetTeam(ctx)
 	challenge := middleware.GetChallenge(ctx)
-	DB := db.DB
-	repo := db.InitVictimRepo(DB)
+	repo := db.InitVictimRepo(db.DB)
 	victim, ok, msg := repo.HasAliveVictim(team.ID, challenge.ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -59,17 +61,13 @@ func IncreaseVictimDuration(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.HasMuchTime, "data": nil})
 		return
 	}
-	tx := DB.Begin()
-	repo = db.InitVictimRepo(tx)
 	duration := victim.Duration + time.Hour
-	if ok, msg = repo.Update(victim.ID, db.UpdateVictimOptions{
+	if ok, msg = db.InitVictimRepo(db.DB).Update(victim.ID, db.UpdateVictimOptions{
 		Duration: &duration,
 	}); !ok {
-		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx.Commit()
 	data = append(data, gin.H{
 		"target":    victim.RemoteAddr(),
 		"remaining": victim.Remaining().Seconds(),
@@ -88,10 +86,14 @@ func StopVictim(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	ok, msg = service.StopVictim(db.DB, victim)
-	if ok {
-		ctx.Set(middleware.CTXEventSuccessKey, true)
+	tx := db.DB.Begin()
+	if ok, _ = service.StopVictim(tx, victim); !ok {
+		tx.Rollback()
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
 	}
+	tx.Commit()
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 
@@ -102,8 +104,7 @@ func GetVictims(ctx *gin.Context) {
 		return
 	}
 	team := middleware.GetTeam(ctx)
-	repo := db.InitVictimRepo(db.DB)
-	victims, count, ok, msg := repo.List(form.Limit, form.Offset, db.GetOptions{
+	victims, count, ok, msg := db.InitVictimRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
 		Conditions: map[string]any{"team_id": team.ID},
 		Deleted:    true,
 	})

@@ -42,12 +42,6 @@ func AccessLog(ctx *gin.Context) {
 			Referer:   referer,
 			Magic:     magic,
 		}
-		tx := db.DB.Begin()
-		_, ok, _ := db.InitRequestRepo(tx).Create(request)
-		if !ok {
-			tx.Rollback()
-			return
-		}
-		tx.Commit()
+		db.InitRequestRepo(db.DB).Create(request)
 	}
 }

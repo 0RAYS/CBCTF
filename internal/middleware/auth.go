@@ -18,7 +18,6 @@ import (
 // CheckAuth 是否登录, 用户是否被 ban, 记录设备
 func CheckAuth(ctx *gin.Context) {
 	auth := strings.Fields(ctx.GetHeader("Authorization"))
-	DB := db.DB
 	if len(auth) != 2 || auth[0] != "Bearer" {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
 		return
@@ -29,7 +28,7 @@ func CheckAuth(ctx *gin.Context) {
 		return
 	}
 	if claims.IsAdmin {
-		admin, ok, msg := db.InitAdminRepo(DB).GetByID(claims.UserID)
+		admin, ok, msg := db.InitAdminRepo(db.DB).GetByID(claims.UserID)
 		if !ok {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
@@ -38,7 +37,7 @@ func CheckAuth(ctx *gin.Context) {
 		ctx.Set("Self", admin)
 		ctx.Next()
 	} else {
-		user, ok, msg := db.InitUserRepo(DB).GetByID(claims.UserID)
+		user, ok, msg := db.InitUserRepo(db.DB).GetByID(claims.UserID)
 		if !ok {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return

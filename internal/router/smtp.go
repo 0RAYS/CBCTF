@@ -8,7 +8,6 @@ import (
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
-	"CBCTF/internal/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -44,14 +43,16 @@ func CreateSmtp(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateSmtpEventType)
-	tx := db.DB.Begin()
-	smtp, ok, msg := service.CreateSmtp(tx, form)
+	smtp, ok, msg := db.InitSmtpRepo(db.DB).Create(db.CreateSmtpOptions{
+		Address: form.Address,
+		Host:    form.Host,
+		Port:    form.Port,
+		Pwd:     form.Pwd,
+	})
 	if !ok {
-		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx.Commit()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetSmtpResp(smtp)})
 }
@@ -64,13 +65,16 @@ func UpdateSmtp(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateSmtpEventType)
 	smtp := middleware.GetSmtp(ctx)
-	tx := db.DB.Begin()
-	if ok, msg := service.UpdateSmtp(tx, smtp, form); !ok {
-		tx.Rollback()
+	if ok, msg := db.InitSmtpRepo(db.DB).Update(smtp.ID, db.UpdateSmtpOptions{
+		Address: form.Address,
+		Host:    form.Host,
+		Port:    form.Port,
+		Pwd:     form.Pwd,
+		On:      form.On,
+	}); !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx.Commit()
 	newSmtp, ok, msg := db.InitSmtpRepo(db.DB).GetByID(smtp.ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -87,13 +91,10 @@ func UpdateSmtp(ctx *gin.Context) {
 func DeleteSmtp(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteSmtpEventType)
 	smtp := middleware.GetSmtp(ctx)
-	tx := db.DB.Begin()
-	if ok, msg := db.InitSmtpRepo(tx).Delete(smtp.ID); !ok {
-		tx.Rollback()
+	if ok, msg := db.InitSmtpRepo(db.DB).Delete(smtp.ID); !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx.Commit()
 	email.DelSenders(smtp)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
