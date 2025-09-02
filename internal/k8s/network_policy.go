@@ -65,9 +65,6 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 	if len(egress) > 0 {
 		networkPolicy.Spec.Egress = egress
 	}
-	if len(ingress) == 0 && len(egress) == 0 {
-		return nil, true, i18n.Success
-	}
 	networkPolicy, err = kubeClient.NetworkingV1().NetworkPolicies(globalNamespace).Create(ctx, networkPolicy, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create NetworkPolicy: %s", err)
