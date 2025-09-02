@@ -27,10 +27,12 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.4.1
 	golang.org/x/crypto v0.41.0
 	golang.org/x/oauth2 v0.30.0
+	golang.org/x/sync v0.16.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/gorm v1.30.1
+	gorm.io/plugin/optimisticlock v1.1.3
 	gorm.io/plugin/prometheus v0.1.0
 	k8s.io/api v0.33.4
 	k8s.io/apimachinery v0.33.4
@@ -114,7 +116,6 @@ require (
 	golang.org/x/arch v0.18.0 // indirect
 	golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1 // indirect
 	golang.org/x/net v0.42.0 // indirect
-	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.35.0 // indirect
 	golang.org/x/term v0.34.0 // indirect
 	golang.org/x/text v0.28.0 // indirect

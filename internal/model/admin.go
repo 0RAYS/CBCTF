@@ -18,10 +18,6 @@ func (a Admin) GetModelName() string {
 	return "Admin"
 }
 
-func (a Admin) GetVersion() uint {
-	return a.Version
-}
-
 func (a Admin) GetBasicModel() BasicModel {
 	return a.BasicModel
 }

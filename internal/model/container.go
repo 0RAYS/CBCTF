@@ -22,10 +22,6 @@ func (c Container) GetModelName() string {
 	return "Container"
 }
 
-func (c Container) GetVersion() uint {
-	return c.Version
-}
-
 func (c Container) GetBasicModel() BasicModel {
 	return c.BasicModel
 }

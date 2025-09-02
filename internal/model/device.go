@@ -19,10 +19,6 @@ func (d Device) GetModelName() string {
 	return "Device"
 }
 
-func (d Device) GetVersion() uint {
-	return d.Version
-}
-
 func (d Device) GetBasicModel() BasicModel {
 	return d.BasicModel
 }

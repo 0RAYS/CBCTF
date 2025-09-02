@@ -44,10 +44,6 @@ func (f File) GetModelName() string {
 	return "File"
 }
 
-func (f File) GetVersion() uint {
-	return f.Version
-}
-
 func (f File) GetBasicModel() BasicModel {
 	return f.BasicModel
 }
@@ -73,6 +69,5 @@ func (f File) UpdateErrorString() string {
 }
 
 func (f File) GetUniqueKey() []string {
-	// 虽然hash并不唯一, 但不影响功能
 	return []string{"id", "rand_id"}
 }

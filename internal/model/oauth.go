@@ -25,10 +25,6 @@ func (o Oauth) GetModelName() string {
 	return "Oauth"
 }
 
-func (o Oauth) GetVersion() uint {
-	return o.Version
-}
-
 func (o Oauth) GetBasicModel() BasicModel {
 	return o.BasicModel
 }

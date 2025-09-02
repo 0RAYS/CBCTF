@@ -46,10 +46,6 @@ func (c ContestFlag) GetModelName() string {
 	return "ContestFlag"
 }
 
-func (c ContestFlag) GetVersion() uint {
-	return c.Version
-}
-
 func (c ContestFlag) GetBasicModel() BasicModel {
 	return c.BasicModel
 }

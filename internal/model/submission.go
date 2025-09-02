@@ -33,10 +33,6 @@ func (s Submission) GetModelName() string {
 	return "Submission"
 }
 
-func (s Submission) GetVersion() uint {
-	return s.Version
-}
-
 func (s Submission) GetBasicModel() BasicModel {
 	return s.BasicModel
 }

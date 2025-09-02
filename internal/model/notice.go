@@ -23,10 +23,6 @@ func (n Notice) GetModelName() string {
 	return "Notice"
 }
 
-func (n Notice) GetVersion() uint {
-	return n.Version
-}
-
 func (n Notice) GetBasicModel() BasicModel {
 	return n.BasicModel
 }

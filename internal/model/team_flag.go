@@ -21,10 +21,6 @@ func (t TeamFlag) GetModelName() string {
 	return "TeamFlag"
 }
 
-func (t TeamFlag) GetVersion() uint {
-	return t.Version
-}
-
 func (t TeamFlag) GetBasicModel() BasicModel {
 	return t.BasicModel
 }

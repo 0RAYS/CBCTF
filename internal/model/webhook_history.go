@@ -21,10 +21,6 @@ func (w WebhookHistory) GetModelName() string {
 	return "WebhookHistory"
 }
 
-func (w WebhookHistory) GetVersion() uint {
-	return w.Version
-}
-
 func (w WebhookHistory) GetBasicModel() BasicModel {
 	return w.BasicModel
 }
