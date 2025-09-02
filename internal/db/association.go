@@ -65,55 +65,61 @@ func GetUserIDByContestID(tx *gorm.DB, contestID uint) ([]uint, bool, string) {
 }
 
 // AppendUserToTeam Many2Many
-func AppendUserToTeam(tx *gorm.DB, userID, teamID uint) (bool, string) {
-	res := tx.Model(&model.UserTeam{}).Create(&model.UserTeam{UserID: userID, TeamID: teamID})
+func AppendUserToTeam(tx *gorm.DB, user model.User, team model.Team) (bool, string) {
+	res := tx.Model(&model.UserTeam{}).Create(&model.UserTeam{UserID: user.ID, TeamID: team.ID})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to append User to Team: %s", res.Error)
 		return false, i18n.AppendUserToTeamError
 	}
-	if ok, msg := InitTeamRepo(tx).Update(teamID, UpdateTeamOptions{DiffUserCount: 1}); !ok {
+	if ok, msg := InitTeamRepo(tx).Update(team.ID, UpdateTeamOptions{DiffUserCount: 1}); !ok {
 		return false, msg
 	}
-	return InitUserRepo(tx).Update(userID, UpdateUserOptions{DiffTeamCount: 1})
+	if ok, msg := InitContestRepo(tx).Update(team.ContestID, UpdateContestOptions{DiffTeamCount: 1}); !ok {
+		return false, msg
+	}
+	return InitUserRepo(tx).Update(user.ID, UpdateUserOptions{DiffTeamCount: 1})
 }
 
 // AppendUserToContest Many2Many
-func AppendUserToContest(tx *gorm.DB, userID, contestID uint) (bool, string) {
-	res := tx.Model(&model.UserContest{}).Create(&model.UserContest{UserID: userID, ContestID: contestID})
+func AppendUserToContest(tx *gorm.DB, user model.User, contest model.Contest) (bool, string) {
+	res := tx.Model(&model.UserContest{}).Create(&model.UserContest{UserID: user.ID, ContestID: contest.ID})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to append User to Contest: %s", res.Error)
 		return false, i18n.AppendUserToContestError
 	}
-	if ok, msg := InitContestRepo(tx).Update(contestID, UpdateContestOptions{DiffUserCount: 1}); !ok {
+	if ok, msg := InitContestRepo(tx).Update(contest.ID, UpdateContestOptions{DiffUserCount: 1}); !ok {
 		return false, msg
 	}
-	return InitUserRepo(tx).Update(userID, UpdateUserOptions{DiffContestCount: 1})
+	return InitUserRepo(tx).Update(user.ID, UpdateUserOptions{DiffContestCount: 1})
 }
 
 // DeleteUserFromTeam Many2Many
-func DeleteUserFromTeam(tx *gorm.DB, userID, teamID uint) (bool, string) {
-	res := tx.Model(&model.UserTeam{}).Where("user_id = ? AND team_id = ?", userID, teamID).
+func DeleteUserFromTeam(tx *gorm.DB, user model.User, team model.Team) (bool, string) {
+	res := tx.Model(&model.UserTeam{}).Where("user_id = ? AND team_id = ?", user.ID, team.ID).
 		Delete(&model.UserTeam{})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete User from Team: %s", res.Error)
 		return false, i18n.DeleteUserFromTeamError
 	}
-	if ok, msg := InitTeamRepo(tx).Update(teamID, UpdateTeamOptions{DiffUserCount: -1}); !ok {
+	if ok, msg := InitTeamRepo(tx).Update(team.ID, UpdateTeamOptions{DiffUserCount: -1}); !ok {
 		return false, msg
 	}
-	return InitUserRepo(tx).Update(userID, UpdateUserOptions{DiffTeamCount: -1})
+	if ok, msg := InitContestRepo(tx).Update(team.ContestID, UpdateContestOptions{DiffTeamCount: -1}); !ok {
+		return false, msg
+	}
+	return InitUserRepo(tx).Update(user.ID, UpdateUserOptions{DiffTeamCount: -1})
 }
 
 // DeleteUserFromContest Many2Many
-func DeleteUserFromContest(tx *gorm.DB, userID, contestID uint) (bool, string) {
-	res := tx.Model(&model.UserContest{}).Where("user_id = ? AND contest_id = ?", userID, contestID).
+func DeleteUserFromContest(tx *gorm.DB, user model.User, contest model.Contest) (bool, string) {
+	res := tx.Model(&model.UserContest{}).Where("user_id = ? AND contest_id = ?", user.ID, contest.ID).
 		Delete(&model.UserContest{})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete User from Contest: %s", res.Error)
 		return false, i18n.DeleteUserFromContestError
 	}
-	if ok, msg := InitContestRepo(tx).Update(contestID, UpdateContestOptions{DiffUserCount: -1}); !ok {
+	if ok, msg := InitContestRepo(tx).Update(contest.ID, UpdateContestOptions{DiffUserCount: -1}); !ok {
 		return false, msg
 	}
-	return InitUserRepo(tx).Update(userID, UpdateUserOptions{DiffContestCount: -1})
+	return InitUserRepo(tx).Update(user.ID, UpdateUserOptions{DiffContestCount: -1})
 }
