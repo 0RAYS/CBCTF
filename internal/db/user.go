@@ -165,10 +165,10 @@ func (u *UserRepo) Delete(idL ...uint) (bool, string) {
 			return false, msg
 		}
 		for _, team := range user.Teams {
-			if ok, msg = DeleteUserFromContest(u.DB, user.ID, team.ContestID); !ok {
+			if ok, msg = DeleteUserFromContest(u.DB, user, model.Contest{BasicModel: model.BasicModel{ID: team.ContestID}}); !ok {
 				return false, msg
 			}
-			if ok, msg = DeleteUserFromTeam(u.DB, user.ID, team.ID); !ok {
+			if ok, msg = DeleteUserFromTeam(u.DB, user, *team); !ok {
 				return false, msg
 			}
 		}

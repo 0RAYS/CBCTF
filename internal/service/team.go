@@ -76,11 +76,11 @@ func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.JoinTe
 	if repo.IsInContest(contest.ID, user.ID) {
 		return model.Team{}, false, i18n.DuplicateMember
 	}
-	if ok, msg = db.AppendUserToTeam(tx, user.ID, team.ID); !ok {
+	if ok, msg = db.AppendUserToTeam(tx, user, team); !ok {
 		return model.Team{}, false, msg
 	}
 	// 关联 User Contest Many2Many
-	if ok, msg = db.AppendUserToContest(tx, user.ID, contest.ID); !ok {
+	if ok, msg = db.AppendUserToContest(tx, user, contest); !ok {
 		return model.Team{}, false, msg
 	}
 	team.Users = append(team.Users, &user)
@@ -113,10 +113,10 @@ func CreateTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.Crea
 	if !ok {
 		return model.Team{}, false, msg
 	}
-	if ok, msg = db.AppendUserToTeam(tx, user.ID, team.ID); !ok {
+	if ok, msg = db.AppendUserToTeam(tx, user, team); !ok {
 		return model.Team{}, false, msg
 	}
-	if ok, msg = db.AppendUserToContest(tx, user.ID, contest.ID); !ok {
+	if ok, msg = db.AppendUserToContest(tx, user, contest); !ok {
 		return model.Team{}, false, msg
 	}
 	team.Users = append(team.Users, &user)
@@ -133,10 +133,10 @@ func LeaveTeam(tx *gorm.DB, contest model.Contest, team model.Team, userID uint)
 	if team.CaptainID == userID {
 		return false, i18n.CaptainCannotLeave
 	}
-	if ok, msg := db.DeleteUserFromTeam(tx, userID, team.ID); !ok {
+	if ok, msg := db.DeleteUserFromTeam(tx, model.User{BasicModel: model.BasicModel{ID: userID}}, team); !ok {
 		return false, msg
 	}
-	if ok, msg := db.DeleteUserFromContest(tx, userID, contest.ID); !ok {
+	if ok, msg := db.DeleteUserFromContest(tx, model.User{BasicModel: model.BasicModel{ID: userID}}, contest); !ok {
 		return false, msg
 	}
 	prometheus.SubContestActiveUsersMetrics(contest, 1)
