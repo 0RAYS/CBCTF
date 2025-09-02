@@ -72,33 +72,28 @@ func (l *gormTraceLogger) LogMode(level gormLogger.LogLevel) gormLogger.Interfac
 }
 
 // Info print info
-func (l *gormTraceLogger) Info(ctx context.Context, msg string, data ...any) {
-	l.WithField("TraceID", ctx.Value("TraceID")).Infof(l.infoStr+msg, append([]any{utils.FileWithLineNum()}, data...)...)
+func (l *gormTraceLogger) Info(_ context.Context, msg string, data ...any) {
+	l.Infof(l.infoStr+msg, append([]any{utils.FileWithLineNum()}, data...)...)
 }
 
 // Warn print warn messages
-func (l *gormTraceLogger) Warn(ctx context.Context, msg string, data ...any) {
-	l.WithField("TraceID", ctx.Value("TraceID")).Warnf(l.warnStr+msg, append([]any{utils.FileWithLineNum()}, data...)...)
+func (l *gormTraceLogger) Warn(_ context.Context, msg string, data ...any) {
+	l.Warnf(l.warnStr+msg, append([]any{utils.FileWithLineNum()}, data...)...)
 }
 
 // Error print error messages
-func (l *gormTraceLogger) Error(ctx context.Context, msg string, data ...any) {
-	l.WithField("TraceID", ctx.Value("TraceID")).Errorf(l.errStr+msg, append([]any{utils.FileWithLineNum()}, data...)...)
+func (l *gormTraceLogger) Error(_ context.Context, msg string, data ...any) {
+	l.Errorf(l.errStr+msg, append([]any{utils.FileWithLineNum()}, data...)...)
 }
 
 // Trace print sql message
-func (l *gormTraceLogger) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
+func (l *gormTraceLogger) Trace(_ context.Context, begin time.Time, fc func() (string, int64), err error) {
 	if l.LogLevel <= Silent {
 		return
-	}
-	traceID := ctx.Value("TraceID")
-	if traceID == nil {
-		traceID = "00000000-0000-0000-0000-000000000000"
 	}
 	elapsed := time.Since(begin)
 	sql, rows := fc()
 	fields := logrus.Fields{
-		"TraceID":         traceID,
 		"FileWithLineNum": utils.FileWithLineNum(),
 		"Duration":        fmt.Sprintf("%.3fms", float64(elapsed.Nanoseconds())/1e6),
 		"Rows":            "-",
