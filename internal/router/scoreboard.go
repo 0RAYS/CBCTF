@@ -110,7 +110,7 @@ func GetScoreboard(ctx *gin.Context) {
 			continue
 		}
 		teamMap[team.ID] = make(map[string]int)
-		for challengeID, _ := range globalMap {
+		for challengeID := range globalMap {
 			teamMap[team.ID][challengeID] = 0
 		}
 		teamFlags, _, ok, msg := teamFlagRepo.List(-1, -1, db.GetOptions{
