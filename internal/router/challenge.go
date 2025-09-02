@@ -35,19 +35,18 @@ func GetChallenges(ctx *gin.Context) {
 
 func GetChallenge(ctx *gin.Context) {
 	var (
-		DB  = db.DB
 		ok  bool
 		msg string
 	)
 	challenge := middleware.GetChallenge(ctx)
-	challenge.ChallengeFlags, _, ok, msg = db.InitChallengeFlagRepo(DB).List(-1, -1, db.GetOptions{
+	challenge.ChallengeFlags, _, ok, msg = db.InitChallengeFlagRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"challenge_id": challenge.ID},
 	})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	challenge.Dockers, _, ok, msg = db.InitDockerRepo(DB).List(-1, -1, db.GetOptions{
+	challenge.Dockers, _, ok, msg = db.InitDockerRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"challenge_id": challenge.ID},
 	})
 	if !ok {
