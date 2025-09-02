@@ -129,7 +129,7 @@ func Init() *gin.Engine {
 				middleware.ContestIsRunning, middleware.CheckSolved, InitTeamFlag,
 			)
 			contestChallenge.GET("/attachment",
-				middleware.RateLimit("download_attachment", 1, time.Minute),
+				middleware.RateLimit("download_attachment", 10, time.Minute),
 				middleware.SetAttachmentFile(false), DownloadFile(model.DownloadAttachmentEventType),
 			)
 			contestChallenge.POST("/reset",
