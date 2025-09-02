@@ -54,18 +54,6 @@ func AdminUpdateTeam(tx *gorm.DB, team model.Team, form f.AdminUpdateTeamForm) (
 	})
 }
 
-func UpdateTeamCaptcha(tx *gorm.DB, team model.Team, captcha string) (bool, string) {
-	repo := db.InitTeamRepo(tx)
-	return repo.Update(team.ID, db.UpdateTeamOptions{Captcha: &captcha})
-}
-
-func DeleteTeam(tx *gorm.DB, team model.Team, contest model.Contest) (bool, string) {
-	repo := db.InitTeamRepo(tx)
-	prometheus.SubContestActiveTeamsMetrics(contest, 1)
-	prometheus.SubContestActiveUsersMetrics(contest, int(team.UserCount))
-	return repo.Delete(team.ID)
-}
-
 func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.JoinTeamForm) (model.Team, bool, string) {
 	var (
 		repo          = db.InitTeamRepo(tx)

@@ -142,8 +142,7 @@ func GetScoreboard(ctx *gin.Context) {
 
 func GetRankTimeline(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
-	DB := db.DB
-	teams, _, ok, msg := service.GetTeamRanking(DB, contest.ID, 10, 0)
+	teams, _, ok, msg := service.GetTeamRanking(db.DB, contest.ID, 10, 0)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -155,7 +154,7 @@ func GetRankTimeline(ctx *gin.Context) {
 		return false
 	})
 	for i, team := range teams {
-		submissions, _, ok, msg := db.InitSubmissionRepo(DB).List(-1, -1, db.GetOptions{
+		submissions, _, ok, msg := db.InitSubmissionRepo(db.DB).List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"solved": true, "team_id": team.ID},
 			Selects:    []string{"id", "score", "created_at"},
 		})

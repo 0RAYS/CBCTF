@@ -19,9 +19,8 @@ func WSAuth(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
 		return
 	}
-	DB := db.DB
 	if claims.IsAdmin {
-		admin, ok, msg := db.InitAdminRepo(DB).GetByID(claims.UserID)
+		admin, ok, msg := db.InitAdminRepo(db.DB).GetByID(claims.UserID)
 		if !ok {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
@@ -30,7 +29,7 @@ func WSAuth(ctx *gin.Context) {
 		ctx.Set("Self", admin)
 		ctx.Next()
 	} else {
-		user, ok, msg := db.InitUserRepo(DB).GetByID(claims.UserID)
+		user, ok, msg := db.InitUserRepo(db.DB).GetByID(claims.UserID)
 		if !ok {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return

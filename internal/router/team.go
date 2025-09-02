@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
+	"CBCTF/internal/prometheus"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"CBCTF/internal/utils"
@@ -37,9 +38,8 @@ func GetTeams(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	DB := db.DB
 	contest := middleware.GetContest(ctx)
-	teams, count, ok, msg := db.InitTeamRepo(DB).List(form.Limit, form.Offset, db.GetOptions{
+	teams, count, ok, msg := db.InitTeamRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
 		Preloads:   map[string]db.GetOptions{"Users": {Selects: []string{"id"}}},
 	})
@@ -60,13 +60,12 @@ func GetTeamCaptcha(ctx *gin.Context) {
 
 func GetTeammates(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
-	DB := db.DB
-	userIDL, ok, msg := db.GetUserIDByTeamID(DB, team.ID)
+	userIDL, ok, msg := db.GetUserIDByTeamID(db.DB, team.ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	users, _, ok, msg := db.InitUserRepo(DB).List(-1, -1, db.GetOptions{Conditions: map[string]any{"id": userIDL}})
+	users, _, ok, msg := db.InitUserRepo(db.DB).List(-1, -1, db.GetOptions{Conditions: map[string]any{"id": userIDL}})
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -82,7 +81,6 @@ func GetTeammates(ctx *gin.Context) {
 func UpdateTeam(ctx *gin.Context) {
 	var (
 		team = middleware.GetTeam(ctx)
-		tx   = db.DB.Begin()
 		ok   bool
 		msg  string
 	)
@@ -93,7 +91,7 @@ func UpdateTeam(ctx *gin.Context) {
 			return
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.UpdateTeamEventType)
-		ok, msg = service.AdminUpdateTeam(tx, team, form)
+		ok, msg = service.AdminUpdateTeam(db.DB, team, form)
 	} else {
 		var form f.UpdateTeamForm
 		if ok, msg = form.Bind(ctx); !ok {
@@ -101,12 +99,9 @@ func UpdateTeam(ctx *gin.Context) {
 			return
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.UpdateTeamEventType)
-		ok, msg = service.UpdateTeam(tx, team, form)
+		ok, msg = service.UpdateTeam(db.DB, team, form)
 	}
-	if !ok {
-		tx.Rollback()
-	} else {
-		tx.Commit()
+	if ok {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -115,29 +110,31 @@ func UpdateTeam(ctx *gin.Context) {
 func UpdateCaptcha(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateTeamEventType)
 	captcha := utils.UUID()
-	tx := db.DB.Begin()
-	ok, msg := service.UpdateTeamCaptcha(tx, middleware.GetTeam(ctx), captcha)
+	team := middleware.GetTeam(ctx)
+	ok, msg := db.InitTeamRepo(db.DB).Update(team.ID, db.UpdateTeamOptions{Captcha: &captcha})
 	if !ok {
-		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx.Commit()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": captcha})
 }
 
 func DeleteTeam(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteTeamEventType)
+	team := middleware.GetTeam(ctx)
 	contest := middleware.GetContest(ctx)
 	tx := db.DB.Begin()
-	ok, msg := service.DeleteTeam(tx, middleware.GetTeam(ctx), contest)
-	if !ok {
+	ok, msg := db.InitTeamRepo(tx).Delete(team.ID)
+	if ok {
 		tx.Rollback()
-	} else {
-		tx.Commit()
-		ctx.Set(middleware.CTXEventSuccessKey, true)
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
 	}
+	tx.Commit()
+	prometheus.SubContestActiveTeamsMetrics(contest, 1)
+	prometheus.SubContestActiveUsersMetrics(contest, int(team.UserCount))
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
 

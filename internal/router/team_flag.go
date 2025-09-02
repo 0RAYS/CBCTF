@@ -79,16 +79,23 @@ func ResetTeamFlag(ctx *gin.Context) {
 			return
 		}
 	case model.PodsChallengeType:
+		tx.Commit()
 		// 不考虑失败
 		go func() {
 			victim, ok, _ := db.InitVictimRepo(db.DB).HasAliveVictim(team.ID, challenge.ID)
 			if !ok {
 				return
 			}
-			service.StopVictim(db.DB, victim)
+			gtx := db.DB.Begin()
+			if ok, _ = service.StopVictim(gtx, victim); !ok {
+				gtx.Rollback()
+				return
+			}
+			gtx.Commit()
 		}()
+	default:
+		tx.Commit()
 	}
-	tx.Commit()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

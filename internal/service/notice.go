@@ -25,14 +25,6 @@ func CreateNotice(tx *gorm.DB, contest model.Contest, form f.CreateNoticeForm) (
 	return notice, true, i18n.Success
 }
 
-func UpdateNotice(tx *gorm.DB, notice model.Notice, form f.UpdateNoticeForm) (bool, string) {
-	return db.InitNoticeRepo(tx).Update(notice.ID, db.UpdateNoticeOptions{
-		Title:   form.Title,
-		Content: form.Content,
-		Type:    form.Type,
-	})
-}
-
 func DeleteNotice(tx *gorm.DB, notice model.Notice) (bool, string) {
 	if ok, msg := db.InitNoticeRepo(tx).Delete(notice.ID); !ok {
 		return false, msg

@@ -25,12 +25,8 @@ func AdminChangePassword(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateAdminEventType)
-	tx := db.DB.Begin()
-	ok, msg := service.ChangeAdminPassword(tx, middleware.GetSelf(ctx).(model.Admin), form)
-	if !ok {
-		tx.Rollback()
-	} else {
-		tx.Commit()
+	ok, msg := service.ChangeAdminPassword(db.DB, middleware.GetSelf(ctx).(model.Admin), form)
+	if ok {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -43,12 +39,8 @@ func UpdateAdmin(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateAdminEventType)
-	tx := db.DB.Begin()
-	ok, msg := service.UpdateAdmin(tx, middleware.GetSelf(ctx).(model.Admin), form)
-	if !ok {
-		tx.Rollback()
-	} else {
-		tx.Commit()
+	ok, msg := service.UpdateAdmin(db.DB, middleware.GetSelf(ctx).(model.Admin), form)
+	if ok {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -61,14 +53,11 @@ func CreateAdmin(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateAdminEventType)
-	tx := db.DB.Begin()
-	admin, ok, msg := service.CreateAdmin(tx, form)
+	admin, ok, msg := service.CreateAdmin(db.DB, form)
 	if !ok {
-		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx.Commit()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetAdminResp(admin)})
 }

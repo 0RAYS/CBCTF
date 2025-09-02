@@ -24,8 +24,7 @@ func GetNotices(ctx *gin.Context) {
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	DB := db.DB
-	notices, count, ok, msg := db.InitNoticeRepo(DB).List(form.Limit, form.Offset, db.GetOptions{
+	notices, count, ok, msg := db.InitNoticeRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
 	})
 	if !ok {
@@ -82,13 +81,13 @@ func UpdateNotice(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateNoticeEventType)
 	notice := middleware.GetNotice(ctx)
-	tx := db.DB.Begin()
-	ok, msg := service.UpdateNotice(tx, notice, form)
-	if !ok {
-		tx.Rollback()
-	} else {
+	ok, msg := db.InitNoticeRepo(db.DB).Update(notice.ID, db.UpdateNoticeOptions{
+		Title:   form.Title,
+		Content: form.Content,
+		Type:    form.Type,
+	})
+	if ok {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
-		tx.Commit()
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
@@ -101,8 +100,8 @@ func DeleteNotice(ctx *gin.Context) {
 	if !ok {
 		tx.Rollback()
 	} else {
-		ctx.Set(middleware.CTXEventSuccessKey, true)
 		tx.Commit()
+		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

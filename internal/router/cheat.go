@@ -43,18 +43,14 @@ func UpdateCheat(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateCheatEventType)
 	cheat := middleware.GetCheat(ctx)
-	tx := db.DB.Begin()
-	ok, msg := db.InitCheatRepo(tx).Update(cheat.ID, db.UpdateCheatRepo{
+	ok, msg := db.InitCheatRepo(db.DB).Update(cheat.ID, db.UpdateCheatRepo{
 		Reason:  form.Reason,
 		Type:    form.Type,
 		Checked: form.Checked,
 		Comment: form.Comment,
 	})
-	if !ok {
-		tx.Rollback()
-	} else {
+	if ok {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
-		tx.Commit()
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

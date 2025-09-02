@@ -11,7 +11,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 func GetUser(ctx *gin.Context) {
@@ -49,14 +48,11 @@ func CreateUser(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateUserEventType)
-	tx := db.DB.Begin()
-	user, ok, msg := service.AdminCreateUser(tx, form)
+	user, ok, msg := service.AdminCreateUser(db.DB, form)
 	if !ok {
-		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx.Commit()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetUserResp(user, true)})
 }
@@ -68,12 +64,8 @@ func ChangePwd(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateUserEventType)
-	tx := db.DB.Begin()
-	ok, msg := service.ChangeUserPwd(tx, middleware.GetSelf(ctx).(model.User), form)
-	if !ok {
-		tx.Rollback()
-	} else {
-		tx.Commit()
+	ok, msg := service.ChangeUserPwd(db.DB, middleware.GetSelf(ctx).(model.User), form)
+	if ok {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -84,18 +76,16 @@ func UpdateUser(ctx *gin.Context) {
 		user model.User
 		ok   bool
 		msg  string
-		tx   *gorm.DB
 	)
 	if middleware.IsAdmin(ctx) {
 		var form f.UpdateUserForm
-		if ok, msg := form.Bind(ctx); !ok {
+		if ok, msg = form.Bind(ctx); !ok {
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.UpdateUserEventType)
 		user = middleware.GetUser(ctx)
-		tx = db.DB.Begin()
-		ok, msg = service.UpdateUser(tx, user, form)
+		ok, msg = service.UpdateUser(db.DB, user, form)
 	} else {
 		var form f.UpdateSelfForm
 		if ok, msg = form.Bind(ctx); !ok {
@@ -104,13 +94,9 @@ func UpdateUser(ctx *gin.Context) {
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.UpdateUserEventType)
 		user = middleware.GetSelf(ctx).(model.User)
-		tx = db.DB.Begin()
-		ok, msg = service.UpdateSelf(tx, user, form)
+		ok, msg = service.UpdateSelf(db.DB, user, form)
 	}
-	if !ok {
-		tx.Rollback()
-	} else {
-		tx.Commit()
+	if ok {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

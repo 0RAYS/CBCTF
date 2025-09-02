@@ -11,7 +11,6 @@ import (
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
-	"CBCTF/internal/service"
 	"CBCTF/internal/utils"
 	"encoding/json"
 	"fmt"
@@ -231,14 +230,25 @@ func CreateOauthProvider(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateOauthEventType)
-	tx := db.DB.Begin()
-	provider, ok, msg := service.CreateOauthProvider(tx, form)
+	provider, ok, msg := db.InitOauthRepo(db.DB).Create(db.CreateOauthOptions{
+		AuthURL:         form.AuthURL,
+		TokenURL:        form.TokenURL,
+		UserInfoURL:     form.UserInfoURL,
+		ClientID:        form.ClientID,
+		ClientSecret:    form.ClientSecret,
+		Provider:        form.Provider,
+		Uri:             form.Uri,
+		RespIDField:     form.RespIDField,
+		RespNameField:   form.RespNameField,
+		RespEmailField:  form.RespEmailField,
+		RespAvatarField: form.RespAvatarField,
+		RespDescField:   form.RespDescField,
+		On:              false,
+	})
 	if !ok {
-		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx.Commit()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetOauthResp(provider)})
 }
@@ -251,13 +261,24 @@ func UpdateOauthProvider(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateOauthEventType)
 	oauth := middleware.GetOauth(ctx)
-	tx := db.DB.Begin()
-	if ok, msg := service.UpdateOauthProvider(tx, oauth, form); !ok {
-		tx.Rollback()
+	if ok, msg := db.InitOauthRepo(db.DB).Update(oauth.ID, db.UpdateOauthOptions{
+		AuthURL:         form.AuthURL,
+		TokenURL:        form.TokenURL,
+		UserInfoURL:     form.UserInfoURL,
+		ClientID:        form.ClientID,
+		ClientSecret:    form.ClientSecret,
+		Provider:        form.Provider,
+		Uri:             form.Uri,
+		RespIDField:     form.RespIDField,
+		RespNameField:   form.RespNameField,
+		RespEmailField:  form.RespEmailField,
+		RespAvatarField: form.RespAvatarField,
+		RespDescField:   form.RespDescField,
+		On:              form.On,
+	}); !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx.Commit()
 	newOauth, ok, msg := db.InitOauthRepo(db.DB).GetByID(oauth.ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -278,13 +299,10 @@ func UpdateOauthProvider(ctx *gin.Context) {
 func DeleteOauthProvider(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteOauthEventType)
 	oauth := middleware.GetOauth(ctx)
-	tx := db.DB.Begin()
-	if ok, msg := db.InitOauthRepo(tx).Delete(oauth.ID); !ok {
-		tx.Rollback()
+	if ok, msg := db.InitOauthRepo(db.DB).Delete(oauth.ID); !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx.Commit()
 	oauthProviderMapLock.Lock()
 	if _, ok := oauthProviderMap[oauth.Uri]; ok {
 		delete(oauthProviderMap, oauth.Uri)

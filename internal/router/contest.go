@@ -63,14 +63,11 @@ func CreateContest(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateContestEventType)
-	tx := db.DB.Begin()
-	contest, ok, msg := service.CreateContest(tx, form)
+	contest, ok, msg := service.CreateContest(db.DB, form)
 	if !ok {
-		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx.Commit()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	contest.Duration = time.Duration(contest.Duration.Seconds())
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": &contest})
@@ -83,14 +80,10 @@ func UpdateContest(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateContestEventType)
-	tx := db.DB.Begin()
 	contest := middleware.GetContest(ctx)
-	ok, msg := service.UpdateContest(tx, contest, form)
-	if !ok {
-		tx.Rollback()
-	} else {
+	ok, msg := service.UpdateContest(db.DB, contest, form)
+	if ok {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
-		tx.Commit()
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

@@ -7,7 +7,6 @@ import (
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
-	"CBCTF/internal/service"
 	wh "CBCTF/internal/webhook"
 	"net/http"
 
@@ -44,14 +43,19 @@ func CreateWebhook(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateWebhookEventType)
-	tx := db.DB.Begin()
-	webhook, ok, msg := service.CreateWebhook(tx, form)
+	webhook, ok, msg := db.InitWebhookRepo(db.DB).Create(db.CreateWebhookOptions{
+		Name:    form.Name,
+		URL:     form.URL,
+		Method:  form.Method,
+		Headers: form.Headers,
+		Timeout: form.Timeout,
+		Retry:   form.Retry,
+		Events:  form.Events,
+	})
 	if !ok {
-		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx.Commit()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": resp.GetWebhookResp(webhook)})
 }
@@ -64,13 +68,19 @@ func UpdateWebhook(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateWebhookEventType)
 	webhook := middleware.GetWebhook(ctx)
-	tx := db.DB.Begin()
-	if ok, msg := service.UpdateWebhook(tx, webhook, form); !ok {
-		tx.Rollback()
+	if ok, msg := db.InitWebhookRepo(db.DB).Update(webhook.ID, db.UpdateWebhookOptions{
+		Name:    form.Name,
+		URL:     form.URL,
+		Method:  form.Method,
+		Headers: form.Headers,
+		Timeout: form.Timeout,
+		Retry:   form.Retry,
+		On:      form.On,
+		Events:  form.Events,
+	}); !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx.Commit()
 	newWebhook, ok, msg := db.InitWebhookRepo(db.DB).GetByID(webhook.ID)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
@@ -87,13 +97,10 @@ func UpdateWebhook(ctx *gin.Context) {
 func DeleteWebhook(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteWebhookEventType)
 	webhook := middleware.GetWebhook(ctx)
-	tx := db.DB.Begin()
-	if ok, msg := db.InitWebhookRepo(tx).Delete(webhook.ID); !ok {
-		tx.Rollback()
+	if ok, msg := db.InitWebhookRepo(db.DB).Delete(webhook.ID); !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx.Commit()
 	wh.DelWebhook(webhook)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
