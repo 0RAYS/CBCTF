@@ -80,7 +80,13 @@ func ResetTeamFlag(ctx *gin.Context) {
 		}
 	case model.PodsChallengeType:
 		// 不考虑失败
-		go service.StopTeamVictim(db.DB, team, contestChallenge)
+		go func() {
+			victim, ok, _ := db.InitVictimRepo(db.DB).HasAliveVictim(team.ID, challenge.ID)
+			if !ok {
+				return
+			}
+			service.StopVictim(db.DB, victim)
+		}()
 	}
 	tx.Commit()
 	ctx.Set(middleware.CTXEventSuccessKey, true)

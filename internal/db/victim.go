@@ -74,12 +74,12 @@ func InitVictimRepo(tx *gorm.DB) *VictimRepo {
 	}
 }
 
-func (v *VictimRepo) HasAliveVictim(teamID, contestChallengeID uint) (model.Victim, bool, string) {
-	return v.Get(GetOptions{Conditions: map[string]interface{}{"team_id": teamID, "contest_challenge_id": contestChallengeID}})
-}
-
-func (v *VictimRepo) HasAliveTestVictim(challengeID uint) (model.Victim, bool, string) {
-	return v.Get(GetOptions{Conditions: map[string]interface{}{"team_id": nil, "challenge_id": challengeID}})
+func (v *VictimRepo) HasAliveVictim(teamID, challengeID uint) (model.Victim, bool, string) {
+	options := GetOptions{Conditions: map[string]any{"team_id": teamID, "challenge_id": challengeID}}
+	if teamID > 0 {
+		options.Conditions["team_id"] = nil
+	}
+	return v.Get(options)
 }
 
 func (v *VictimRepo) Delete(idL ...uint) (bool, string) {

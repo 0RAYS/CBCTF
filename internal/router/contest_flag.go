@@ -23,6 +23,7 @@ func SubmitFlag(ctx *gin.Context) {
 	user := middleware.GetSelf(ctx).(model.User)
 	team := middleware.GetTeam(ctx)
 	contest := middleware.GetContest(ctx)
+	challenge := middleware.GetChallenge(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
@@ -41,7 +42,11 @@ func SubmitFlag(ctx *gin.Context) {
 	tx.Commit()
 	go func() {
 		if contestChallenge.Type == model.PodsChallengeType && service.CheckIfSolved(db.DB, team, contestFlags) {
-			service.StopTeamVictim(db.DB, team, contestChallenge)
+			victim, ok, _ := db.InitVictimRepo(db.DB).HasAliveVictim(team.ID, challenge.ID)
+			if !ok {
+				return
+			}
+			service.StopVictim(db.DB, victim)
 		}
 	}()
 	ctx.Set(middleware.CTXEventSuccessKey, true)

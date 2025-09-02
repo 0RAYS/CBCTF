@@ -54,7 +54,7 @@ func GetContestChallenges(ctx *gin.Context) {
 			tmp["attempts"] = service.CountAttempts(db.DB, team, contestChallenge)
 			tmp["init"] = service.CheckIfGenerated(db.DB, team, contestChallenge.ContestFlags)
 			tmp["solved"] = service.CheckIfSolved(db.DB, team, contestChallenge.ContestFlags)
-			tmp["remote"] = service.GetTeamVictimStatus(db.DB, team, contestChallenge)
+			tmp["remote"] = service.GetVictimStatus(db.DB, team.ID, contestChallenge.Challenge)
 			tmp["file"] = func() string {
 				if _, err := os.Stat(contestChallenge.Challenge.AttachmentPath(team.ID)); err != nil {
 					return ""
@@ -113,7 +113,7 @@ func GetContestChallengeStatus(ctx *gin.Context) {
 		"attempts": service.CountAttempts(db.DB, team, contestChallenge),
 		"init":     service.CheckIfGenerated(db.DB, team, contestFlags),
 		"solved":   service.CheckIfSolved(db.DB, team, contestFlags),
-		"remote":   service.GetTeamVictimStatus(db.DB, team, contestChallenge),
+		"remote":   service.GetVictimStatus(db.DB, team.ID, challenge),
 		"file": func() string {
 			path := challenge.AttachmentPath(team.ID)
 			record, _, _ := db.InitFileRepo(db.DB).Get(db.GetOptions{

@@ -138,9 +138,13 @@ func StartContestVictims(tx *gorm.DB, contest model.Contest, form f.StartContest
 					continue
 				}
 			}
-			_, ok, msg = StartTeamVictim(tx, model.User{BasicModel: model.BasicModel{ID: team.CaptainID}}, team, contestChallenge)
+			_, ok, msg = StartVictim(tx, team.CaptainID, team.ID, contestChallenge.ID, contestChallenge.ChallengeID)
 			if !ok {
-				StopTeamVictim(tx, team, contestChallenge)
+				victim, ok, _ := db.InitVictimRepo(db.DB).HasAliveVictim(team.ID, contestChallenge.ChallengeID)
+				if !ok {
+					continue
+				}
+				StopVictim(db.DB, victim)
 			}
 		}
 	}
