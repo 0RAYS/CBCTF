@@ -29,7 +29,7 @@ func needVPC(dockers []model.Docker) bool {
 	return false
 }
 
-func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChallenge model.ContestChallenge) (model.Victim, bool, string) {
+func StartVictim(tx *gorm.DB, userID, teamID, contestChallengeID, challengeID uint) (model.Victim, bool, string) {
 	var (
 		challengeRepo = db.InitChallengeRepo(tx)
 		victimRepo    = db.InitVictimRepo(tx)
@@ -37,20 +37,20 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 		podRepo       = db.InitPodRepo(tx)
 		containerRepo = db.InitContainerRepo(tx)
 	)
-	challenge, ok, msg := challengeRepo.GetByID(contestChallenge.ChallengeID, db.GetOptions{
+	challenge, ok, msg := challengeRepo.GetByID(challengeID, db.GetOptions{
 		Preloads: map[string]db.GetOptions{"Dockers": {Preloads: map[string]db.GetOptions{"ChallengeFlags": {}}}},
 	})
 	if !ok {
 		return model.Victim{}, false, msg
 	}
-	if victim, ok, _ := victimRepo.HasAliveVictim(team.ID, contestChallenge.ID); ok {
+	if victim, ok, _ := victimRepo.HasAliveVictim(teamID, challengeID); ok {
 		return victim, true, i18n.Success
 	}
 	vOptions := db.CreateVictimOptions{
-		ChallengeID:        contestChallenge.ChallengeID,
-		ContestChallengeID: sql.Null[uint]{V: contestChallenge.ID, Valid: true},
-		TeamID:             sql.Null[uint]{V: team.ID, Valid: true},
-		UserID:             sql.Null[uint]{V: user.ID, Valid: true},
+		ChallengeID:        challengeID,
+		ContestChallengeID: sql.Null[uint]{V: contestChallengeID, Valid: true},
+		TeamID:             sql.Null[uint]{V: teamID, Valid: true},
+		UserID:             sql.Null[uint]{V: userID, Valid: true},
 		Start:              time.Now(),
 		Duration:           time.Hour,
 		NetworkPolicies:    challenge.NetworkPolicies,
@@ -127,19 +127,24 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 			envFlagL := make(model.StringMap)
 			volumeFlagL := make(model.StringMap)
 			for _, challengeFlag := range docker.ChallengeFlags {
-				teamFlag, ok, msg := teamFlagRepo.Get(db.GetOptions{
-					Selects:    []string{"id", "challenge_flag_id", "value"},
-					Conditions: map[string]any{"team_id": team.ID, "challenge_flag_id": challengeFlag.ID},
-					Preloads:   map[string]db.GetOptions{"ChallengeFlag": {Selects: []string{"id", "Name"}}},
-				})
-				if !ok {
-					return model.Victim{}, false, msg
+				value := challengeFlag.Value
+				// teamID == 0 时为测试靶机
+				if teamID > 0 {
+					teamFlag, ok, msg := teamFlagRepo.Get(db.GetOptions{
+						Selects:    []string{"id", "challenge_flag_id", "value"},
+						Conditions: map[string]any{"team_id": teamID, "challenge_flag_id": challengeFlag.ID},
+						Preloads:   map[string]db.GetOptions{"ChallengeFlag": {Selects: []string{"id", "Name"}}},
+					})
+					if !ok {
+						return model.Victim{}, false, msg
+					}
+					value = teamFlag.Value
 				}
 				switch challengeFlag.InjectType {
 				case model.EnvInjectType:
-					envFlagL[teamFlag.ChallengeFlag.Name] = teamFlag.Value
+					envFlagL[challengeFlag.Name] = value
 				case model.VolumeInjectType:
-					volumeFlagL[challengeFlag.Path] = teamFlag.Value
+					volumeFlagL[challengeFlag.Path] = value
 				default:
 					return model.Victim{}, false, i18n.InvalidChallengeFlagInjectType
 				}
@@ -200,19 +205,24 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 			envFlagL := make(model.StringMap)
 			volumeFlagL := make(model.StringMap)
 			for _, challengeFlag := range docker.ChallengeFlags {
-				teamFlag, ok, msg := teamFlagRepo.Get(db.GetOptions{
-					Selects:    []string{"id", "challenge_flag_id", "value"},
-					Conditions: map[string]any{"team_id": team.ID, "challenge_flag_id": challengeFlag.ID},
-					Preloads:   map[string]db.GetOptions{"ChallengeFlag": {Selects: []string{"id", "Name"}}},
-				})
-				if !ok {
-					return model.Victim{}, false, msg
+				value := challengeFlag.Value
+				// team.ID == 0 时为测试靶机
+				if teamID > 0 {
+					teamFlag, ok, msg := teamFlagRepo.Get(db.GetOptions{
+						Selects:    []string{"id", "challenge_flag_id", "value"},
+						Conditions: map[string]any{"team_id": teamID, "challenge_flag_id": challengeFlag.ID},
+						Preloads:   map[string]db.GetOptions{"ChallengeFlag": {Selects: []string{"id", "Name"}}},
+					})
+					if !ok {
+						return model.Victim{}, false, msg
+					}
+					value = teamFlag.Value
 				}
 				switch challengeFlag.InjectType {
 				case model.EnvInjectType:
-					envFlagL[teamFlag.ChallengeFlag.Name] = teamFlag.Value
+					envFlagL[challengeFlag.Name] = value
 				case model.VolumeInjectType:
-					volumeFlagL[challengeFlag.Path] = teamFlag.Value
+					volumeFlagL[challengeFlag.Path] = value
 				default:
 					return model.Victim{}, false, i18n.InvalidChallengeFlagInjectType
 				}
@@ -295,17 +305,17 @@ func StartTeamVictim(tx *gorm.DB, user model.User, team model.Team, contestChall
 	return victim, true, i18n.Success
 }
 
-func GetTeamVictimStatus(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) gin.H {
+func GetVictimStatus(tx *gorm.DB, teamID uint, challenge model.Challenge) gin.H {
 	data := gin.H{
 		"target":    make([]string, 0),
 		"remaining": 0,
 		"status":    "Down",
 	}
-	if contestChallenge.Type != model.PodsChallengeType {
+	if challenge.Type != model.PodsChallengeType {
 		data["status"] = "NotDocker"
 		return data
 	}
-	victim, ok, _ := db.InitVictimRepo(tx).HasAliveVictim(team.ID, contestChallenge.ID)
+	victim, ok, _ := db.InitVictimRepo(tx).HasAliveVictim(teamID, challenge.ID)
 	if !ok {
 		return data
 	}
@@ -334,13 +344,4 @@ func StopVictim(tx *gorm.DB, victim model.Victim) (bool, string) {
 		prometheus.SubVictimContainerMetrics(1)
 	}
 	return ok, msg
-}
-
-func StopTeamVictim(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) (bool, string) {
-	victimRepo := db.InitVictimRepo(tx)
-	victim, ok, msg := victimRepo.HasAliveVictim(team.ID, contestChallenge.ID)
-	if !ok {
-		return false, msg
-	}
-	return StopVictim(tx, victim)
 }
