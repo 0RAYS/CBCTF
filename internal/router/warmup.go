@@ -94,13 +94,10 @@ func StartContestVictims(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.StartVictimEventType)
 	contest := middleware.GetContest(ctx)
 	go func(selfID uint) {
-		tx := db.DB.Begin()
-		if ok, _ := service.StartContestVictims(tx, contest, form); !ok {
-			tx.Rollback()
+		if ok, _ := service.StartContestVictims(db.DB, contest, form); !ok {
 			websocket.Send(true, selfID, wsm.ErrorLevel, wsm.StartVictimWSType, "Victims Warmup", "Failed")
 			return
 		}
-		tx.Commit()
 		websocket.Send(true, selfID, wsm.SuccessLevel, wsm.StartVictimWSType, "Victims Warmup", "Done")
 	}(middleware.GetSelfID(ctx))
 	ctx.Set(middleware.CTXEventSuccessKey, true)
