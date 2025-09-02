@@ -47,13 +47,19 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestChallengeID, challengeID ui
 		return victim, true, i18n.Success
 	}
 	vOptions := db.CreateVictimOptions{
-		ChallengeID:        challengeID,
-		ContestChallengeID: sql.Null[uint]{V: contestChallengeID, Valid: true},
-		TeamID:             sql.Null[uint]{V: teamID, Valid: true},
-		UserID:             sql.Null[uint]{V: userID, Valid: true},
-		Start:              time.Now(),
-		Duration:           time.Hour,
-		NetworkPolicies:    challenge.NetworkPolicies,
+		ChallengeID:     challengeID,
+		Start:           time.Now(),
+		Duration:        time.Hour,
+		NetworkPolicies: challenge.NetworkPolicies,
+	}
+	if userID > 0 {
+		vOptions.UserID = sql.Null[uint]{V: userID, Valid: true}
+	}
+	if teamID > 0 {
+		vOptions.TeamID = sql.Null[uint]{V: teamID, Valid: true}
+	}
+	if contestChallengeID > 0 {
+		vOptions.ContestChallengeID = sql.Null[uint]{V: contestChallengeID, Valid: true}
 	}
 	var victim model.Victim
 	if needVPC(challenge.Dockers) {
