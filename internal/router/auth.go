@@ -25,19 +25,15 @@ func Register(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.RegisterEventType)
-	tx := db.DB.Begin()
-	user, ok, msg := service.CreateUser(tx, form)
+	user, ok, msg := service.CreateUser(db.DB, form)
 	if !ok {
-		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	if ok, msg = service.SendEmail(user); !ok {
-		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx.Commit()
 	token, err := utils.GenerateToken(user.ID, user.Name, false, middleware.GetMagic(ctx))
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
