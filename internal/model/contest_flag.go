@@ -75,6 +75,9 @@ func (c ContestFlag) GetUniqueKey() []string {
 }
 
 func (c ContestFlag) CalcScore(solvers int64) float64 {
+	if solvers < 0 {
+		solvers = 0
+	}
 	var calc float64 = 0
 	switch c.ScoreType {
 	case StaticScore:
