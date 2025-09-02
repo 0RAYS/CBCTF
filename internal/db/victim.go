@@ -75,9 +75,9 @@ func InitVictimRepo(tx *gorm.DB) *VictimRepo {
 }
 
 func (v *VictimRepo) HasAliveVictim(teamID, challengeID uint) (model.Victim, bool, string) {
-	options := GetOptions{Conditions: map[string]any{"team_id": teamID, "challenge_id": challengeID}}
+	options := GetOptions{Conditions: map[string]any{"team_id": nil, "challenge_id": challengeID}}
 	if teamID > 0 {
-		options.Conditions["team_id"] = nil
+		options.Conditions["team_id"] = teamID
 	}
 	return v.Get(options)
 }
