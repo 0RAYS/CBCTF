@@ -61,7 +61,7 @@ func CreateNotice(ctx *gin.Context) {
 		}
 		idL := make([]uint, 0)
 		websocket.UserClientsMu.Lock()
-		for id, _ := range websocket.UserClients {
+		for id := range websocket.UserClients {
 			if slices.Contains(contestUserIDL, id) {
 				idL = append(idL, id)
 			}
