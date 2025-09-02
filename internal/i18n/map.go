@@ -3,7 +3,7 @@ package i18n
 var resp = map[string]map[string]any{
 	Success:        {"zh-CN": "操作成功", "en-US": "Success", "code": 200},
 	UnsupportedKey: {"zh-CN": "不支持的键", "en-US": "Unsupported key", "code": 400},
-	DeadLock:       {"zh-CN": "数据写入失败过多", "en-US": "Database deadlock", "code": 500},
+	DeadLock:       {"zh-CN": "服务器繁忙", "en-US": "Database deadlock", "code": 500},
 
 	BadRequest:      {"zh-CN": "参数缺失或错误", "en-US": "Bad request", "code": 400},
 	Unauthorized:    {"zh-CN": "未登录", "en-US": "Unauthorized", "code": 401},
