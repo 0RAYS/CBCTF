@@ -20,16 +20,22 @@ func GetTeamRanking(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	var teamsData []struct {
-		Team   model.Team
-		Solved []model.ContestFlag
-	}
 	contest := middleware.GetContest(ctx)
+	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_id": contest.ID},
+		Preloads:   map[string]db.GetOptions{"ContestChallenge": {}},
+	})
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
 	teams, count, ok, msg := service.GetTeamRanking(db.DB, contest.ID, form.Limit, form.Offset)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	repo := db.InitTeamRepo(db.DB)
+	data := make([]gin.H, 0)
 	for _, team := range teams {
 		if !middleware.IsAdmin(ctx) && team.Hidden {
 			count--
@@ -40,22 +46,10 @@ func GetTeamRanking(ctx *gin.Context) {
 			count--
 			continue
 		}
-		teamsData = append(teamsData, struct {
-			Team   model.Team
-			Solved []model.ContestFlag
-		}{Team: team, Solved: solved})
+		tmp := resp.GetTeamRankingResp(team, solved, contestFlags, middleware.IsAdmin(ctx))
+		tmp["users"] = repo.CountAssociation(team, "Users")
 	}
-	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"contest_id": contest.ID},
-		Preloads:   map[string]db.GetOptions{"ContestChallenge": {}},
-	})
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
-		return
-	}
-	data := resp.GetTeamRankingResp(teamsData, contestFlags, middleware.IsAdmin(ctx))
-	data["count"] = count
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"teams": data, "count": count}})
 }
 
 func GetScoreboard(ctx *gin.Context) {

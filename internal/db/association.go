@@ -71,13 +71,7 @@ func AppendUserToTeam(tx *gorm.DB, user model.User, team model.Team) (bool, stri
 		log.Logger.Warningf("Failed to append User to Team: %s", res.Error)
 		return false, i18n.AppendUserToTeamError
 	}
-	if ok, msg := InitTeamRepo(tx).DiffUpdate(team.ID, DiffUpdateTeamOptions{UserCount: 1}); !ok {
-		return false, msg
-	}
-	if ok, msg := InitContestRepo(tx).DiffUpdate(team.ContestID, DiffUpdateContestOptions{TeamCount: 1}); !ok {
-		return false, msg
-	}
-	return InitUserRepo(tx).DiffUpdate(user.ID, DiffUpdateUserOptions{TeamCount: 1})
+	return true, i18n.Success
 }
 
 // AppendUserToContest Many2Many
@@ -87,10 +81,7 @@ func AppendUserToContest(tx *gorm.DB, user model.User, contest model.Contest) (b
 		log.Logger.Warningf("Failed to append User to Contest: %s", res.Error)
 		return false, i18n.AppendUserToContestError
 	}
-	if ok, msg := InitContestRepo(tx).DiffUpdate(contest.ID, DiffUpdateContestOptions{UserCount: 1}); !ok {
-		return false, msg
-	}
-	return InitUserRepo(tx).DiffUpdate(user.ID, DiffUpdateUserOptions{ContestCount: 1})
+	return true, i18n.Success
 }
 
 // DeleteUserFromTeam Many2Many
@@ -101,13 +92,7 @@ func DeleteUserFromTeam(tx *gorm.DB, user model.User, team model.Team) (bool, st
 		log.Logger.Warningf("Failed to delete User from Team: %s", res.Error)
 		return false, i18n.DeleteUserFromTeamError
 	}
-	if ok, msg := InitTeamRepo(tx).DiffUpdate(team.ID, DiffUpdateTeamOptions{UserCount: -1}); !ok {
-		return false, msg
-	}
-	if ok, msg := InitContestRepo(tx).DiffUpdate(team.ContestID, DiffUpdateContestOptions{TeamCount: -1}); !ok {
-		return false, msg
-	}
-	return InitUserRepo(tx).DiffUpdate(user.ID, DiffUpdateUserOptions{TeamCount: -1})
+	return true, i18n.Success
 }
 
 // DeleteUserFromContest Many2Many
@@ -118,8 +103,5 @@ func DeleteUserFromContest(tx *gorm.DB, user model.User, contest model.Contest) 
 		log.Logger.Warningf("Failed to delete User from Contest: %s", res.Error)
 		return false, i18n.DeleteUserFromContestError
 	}
-	if ok, msg := InitContestRepo(tx).DiffUpdate(contest.ID, DiffUpdateContestOptions{UserCount: -1}); !ok {
-		return false, msg
-	}
-	return InitUserRepo(tx).DiffUpdate(user.ID, DiffUpdateUserOptions{ContestCount: -1})
+	return true, i18n.Success
 }

@@ -7,7 +7,6 @@ import (
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
-	"CBCTF/internal/service"
 	"CBCTF/internal/websocket"
 	wsm "CBCTF/internal/websocket/model"
 	"fmt"
@@ -46,14 +45,16 @@ func CreateNotice(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateNoticeEventType)
 	contest := middleware.GetContest(ctx)
-	tx := db.DB.Begin()
-	notice, ok, msg := service.CreateNotice(tx, contest, form)
+	notice, ok, msg := db.InitNoticeRepo(db.DB).Create(db.CreateNoticeOptions{
+		ContestID: contest.ID,
+		Title:     form.Title,
+		Content:   form.Content,
+		Type:      form.Type,
+	})
 	if !ok {
-		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx.Commit()
 	go func() {
 		contestUserIDL, ok, _ := db.GetUserIDByContestID(db.DB, contest.ID)
 		if !ok {
@@ -95,12 +96,8 @@ func UpdateNotice(ctx *gin.Context) {
 func DeleteNotice(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteNoticeEventType)
 	notice := middleware.GetNotice(ctx)
-	tx := db.DB.Begin()
-	ok, msg := service.DeleteNotice(tx, notice)
-	if !ok {
-		tx.Rollback()
-	} else {
-		tx.Commit()
+	ok, msg := db.InitNoticeRepo(db.DB).Delete(notice.ID)
+	if ok {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})

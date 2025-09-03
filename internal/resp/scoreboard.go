@@ -1,34 +1,27 @@
 package resp
 
 import (
+	"CBCTF/internal/db"
 	"CBCTF/internal/model"
 
 	"github.com/gin-gonic/gin"
 )
 
 // GetTeamRankingResp model.ContestFlag Preload model.ContestChallenge
-func GetTeamRankingResp(teamsData []struct {
-	Team   model.Team
-	Solved []model.ContestFlag
-}, flags []model.ContestFlag, admin bool) gin.H {
-	data := make([]gin.H, 0)
-	for _, team := range teamsData {
-		tmp := gin.H{
-			"id":     team.Team.ID,
-			"name":   team.Team.Name,
-			"desc":   team.Team.Desc,
-			"score":  team.Team.Score,
-			"avatar": team.Team.Avatar,
-			"last":   team.Team.Last,
-			"users":  team.Team.UserCount,
-			"solved": GetSolvedStateResp(team.Solved, flags),
-		}
-		if admin {
-			tmp["hidden"] = team.Team.Hidden
-		}
-		data = append(data, tmp)
+func GetTeamRankingResp(team model.Team, solved []model.ContestFlag, flags []model.ContestFlag, admin bool) gin.H {
+	data := gin.H{
+		"id":     team.ID,
+		"name":   team.Name,
+		"desc":   team.Desc,
+		"score":  team.Score,
+		"avatar": team.Avatar,
+		"last":   team.Last,
+		"solved": GetSolvedStateResp(solved, flags),
 	}
-	return gin.H{"teams": data}
+	if admin {
+		data["hidden"] = team.Hidden
+	}
+	return data
 }
 
 func GetScoreboardResp(challengeMap map[string]model.Challenge, globalMap map[string]int, teamMap map[uint]map[string]int, teams []model.Team) []gin.H {
@@ -51,7 +44,7 @@ func GetScoreboardResp(challengeMap map[string]model.Challenge, globalMap map[st
 			"score":      team.Score,
 			"avatar":     team.Avatar,
 			"last":       team.Last,
-			"users":      team.UserCount,
+			"users":      db.InitTeamRepo(db.DB).CountAssociation(team, "Users"),
 			"challenges": solved,
 		})
 	}

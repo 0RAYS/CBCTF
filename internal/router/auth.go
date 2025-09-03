@@ -46,7 +46,7 @@ func Register(ctx *gin.Context) {
 	ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	prometheus.UpdateUserRegisterMetrics(oauth.LocalProvider)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.RegisterResp(user, false)})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetUserResp(user, false)})
 }
 
 func Login(ctx *gin.Context) {
@@ -73,7 +73,7 @@ func Login(ctx *gin.Context) {
 	ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	prometheus.UpdateUserLoginMetrics(oauth.LocalProvider)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.LoginResp(user, false)})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetUserResp(user, false)})
 }
 
 func AdminLogin(ctx *gin.Context) {

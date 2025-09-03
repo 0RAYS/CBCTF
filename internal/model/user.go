@@ -25,8 +25,6 @@ type User struct {
 	Banned         bool         `gorm:"default:false" json:"banned"`
 	Score          float64      `gorm:"default:0" json:"score"`
 	Solved         int64        `gorm:"default:0" json:"solved"`
-	ContestCount   int64        `json:"contest_count"`
-	TeamCount      int64        `json:"team_count"`
 	Provider       string       `gorm:"type:varchar(255);index:idx_provider_id,unique;not null" json:"provider"`
 	ProviderUserID string       `gorm:"type:varchar(255);index:idx_provider_id,unique;not null" json:"provider_user_id"`
 	OauthRaw       string       `json:"oauth_raw"`

@@ -1,13 +1,11 @@
 package resp
 
 import (
+	"CBCTF/internal/db"
 	"CBCTF/internal/model"
 
 	"github.com/gin-gonic/gin"
 )
-
-var LoginResp = GetUserResp
-var RegisterResp = GetUserResp
 
 func GetUserResp(user model.User, admin bool) gin.H {
 	data := gin.H{
@@ -22,8 +20,8 @@ func GetUserResp(user model.User, admin bool) gin.H {
 	if admin {
 		data["hidden"] = user.Hidden
 		data["banned"] = user.Banned
-		data["teams"] = user.TeamCount
-		data["contests"] = user.ContestCount
+		data["teams"] = db.InitUserRepo(db.DB).CountAssociation(user, "Teams")
+		data["contests"] = db.InitUserRepo(db.DB).CountAssociation(user, "Contests")
 	}
 	return data
 }
