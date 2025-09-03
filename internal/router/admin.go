@@ -64,7 +64,7 @@ func CreateAdmin(ctx *gin.Context) {
 }
 
 func GetLogs(ctx *gin.Context) {
-	var form f.GetModelsForm
+	var form f.GetLogsForm
 	if ok, msg := form.Bind(ctx); !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
