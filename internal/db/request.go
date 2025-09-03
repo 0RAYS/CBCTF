@@ -74,7 +74,7 @@ func (r *RequestRepo) CountIP() (int64, bool, string) {
 
 func (r *RequestRepo) GetUserIP(userID uint) ([]string, bool, string) {
 	var ipL []string
-	res := r.DB.Model(&model.Request{}).Distinct("ip").Where("user_id = ?", userID).Find("ip", &ipL)
+	res := r.DB.Model(&model.Request{}).Where("user_id = ?", userID).Distinct("ip").Find(&ipL)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Reuqest: %s", res.Error)
 		return nil, false, i18n.GetRequestError
