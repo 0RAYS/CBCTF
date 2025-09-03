@@ -182,7 +182,15 @@ func (b *BasicRepo[M]) Update(id uint, options UpdateOptions) (bool, string) {
 		if !ok {
 			return ok, msg
 		}
-		res := b.DB.Model(&m).Where("id = ?", id).Updates(data)
+		version := m.GetBasicModel().Version.Int64
+		res := b.DB.Model(new(M)).Where("id = ?", id)
+		if !m.GetBasicModel().Version.Valid {
+			res = res.Where("version = ?", nil)
+		} else {
+			res = res.Where("version = ?", version)
+		}
+		data["version"] = version + 1
+		res = res.Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update %s: %s", M.GetModelName(*new(M)), res.Error)
 			return false, M.UpdateErrorString(*new(M))
