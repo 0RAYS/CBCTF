@@ -33,6 +33,7 @@ gin:
     # Request without logging
     whitelist:
       - /metrics
+      - /platform/*filepath
 gorm:
   mysql:
     host: 127.0.0.1
