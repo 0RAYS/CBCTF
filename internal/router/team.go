@@ -133,7 +133,7 @@ func DeleteTeam(ctx *gin.Context) {
 	}
 	tx.Commit()
 	prometheus.SubContestActiveTeamsMetrics(contest, 1)
-	prometheus.SubContestActiveUsersMetrics(contest, int(team.UserCount))
+	prometheus.SubContestActiveUsersMetrics(contest, int(db.InitTeamRepo(db.DB).CountAssociation(team, "Users")))
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }

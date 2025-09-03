@@ -1,6 +1,7 @@
 package resp
 
 import (
+	"CBCTF/internal/db"
 	"CBCTF/internal/model"
 
 	"github.com/gin-gonic/gin"
@@ -17,9 +18,9 @@ func GetContestResp(contest model.Contest, admin bool) gin.H {
 		"prizes":    contest.Prizes,
 		"size":      contest.Size,
 		"timelines": contest.Timelines,
-		"teams":     contest.TeamCount,
-		"users":     contest.UserCount,
-		"notices":   contest.NoticeCount,
+		"teams":     db.InitContestRepo(db.DB).CountAssociation(contest, "Teams"),
+		"users":     db.InitContestRepo(db.DB).CountAssociation(contest, "Users"),
+		"notices":   db.InitContestRepo(db.DB).CountAssociation(contest, "Notices"),
 		"prefix":    contest.Prefix,
 		"avatar":    contest.Avatar,
 		"hidden":    contest.Hidden,

@@ -144,6 +144,10 @@ func (b *BasicRepo[M]) Count(optionsL ...CountOptions) (int64, bool, string) {
 	return count, true, i18n.Success
 }
 
+func (b *BasicRepo[M]) CountAssociation(m M, association string) int64 {
+	return b.DB.Model(&m).Association(association).Count()
+}
+
 func (b *BasicRepo[M]) List(limit, offset int, optionsL ...GetOptions) ([]M, int64, bool, string) {
 	options := GetOptions{}
 	if len(optionsL) > 0 {

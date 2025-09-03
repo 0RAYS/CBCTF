@@ -1,6 +1,7 @@
 package resp
 
 import (
+	"CBCTF/internal/db"
 	"CBCTF/internal/model"
 
 	"github.com/gin-gonic/gin"
@@ -39,7 +40,7 @@ func GetTeamResp(team model.Team) gin.H {
 		"avatar":     team.Avatar,
 		"last":       team.Last,
 		"rank":       team.Rank,
-		"users":      team.UserCount,
+		"users":      db.InitTeamRepo(db.DB).CountAssociation(team, "Users"),
 		"desc":       team.Desc,
 		"captain_id": team.CaptainID,
 	}

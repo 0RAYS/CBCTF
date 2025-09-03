@@ -110,22 +110,6 @@ func (u UpdateUserOptions) Convert2Map() map[string]any {
 	return options
 }
 
-type DiffUpdateUserOptions struct {
-	TeamCount    int64
-	ContestCount int64
-}
-
-func (d DiffUpdateUserOptions) Convert2Expr() map[string]any {
-	options := make(map[string]any)
-	if d.TeamCount != 0 {
-		options["team_count"] = gorm.Expr("team_count + ?", d.TeamCount)
-	}
-	if d.ContestCount != 0 {
-		options["contest_count"] = gorm.Expr("contest_count + ?", d.ContestCount)
-	}
-	return options
-}
-
 func InitUserRepo(tx *gorm.DB) *UserRepo {
 	return &UserRepo{
 		BasicRepo: BasicRepo[model.User]{
