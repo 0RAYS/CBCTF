@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/model"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type DeviceRepo struct {
@@ -27,17 +28,25 @@ func (c CreateDeviceOptions) Convert2Model() model.Model {
 }
 
 type UpdateDeviceOptions struct {
-	DiffCount int
-	Count     *int
+	Count *int
 }
 
 func (u UpdateDeviceOptions) Convert2Map() map[string]any {
 	options := make(map[string]any)
-	if u.DiffCount != 0 {
-		options["count"] = gorm.Expr("count + ?", u.DiffCount)
-	}
 	if u.Count != nil {
 		options["count"] = *u.Count
+	}
+	return options
+}
+
+type DiffUpdateDeviceOptions struct {
+	Count int64
+}
+
+func (d DiffUpdateDeviceOptions) Convert2Expr() map[string]clause.Expr {
+	options := make(map[string]clause.Expr)
+	if d.Count != 0 {
+		options["count"] = gorm.Expr("count + ?", d.Count)
 	}
 	return options
 }
@@ -56,7 +65,7 @@ func (d *DeviceRepo) RecordDevice(userID uint, magic string) (bool, string) {
 	if res.Error != nil {
 		return false, i18n.GetDeviceError
 	}
-	return d.Update(device.ID, UpdateDeviceOptions{DiffCount: 1})
+	return d.DiffUpdate(device.ID, DiffUpdateDeviceOptions{Count: 1})
 }
 
 func (d *DeviceRepo) GetByMagic(magic string) ([]model.Device, bool, string) {

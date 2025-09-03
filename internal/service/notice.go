@@ -19,7 +19,7 @@ func CreateNotice(tx *gorm.DB, contest model.Contest, form f.CreateNoticeForm) (
 	if !ok {
 		return model.Notice{}, false, msg
 	}
-	if ok, msg = db.InitContestRepo(tx).Update(contest.ID, db.UpdateContestOptions{DiffNoticeCount: 1}); !ok {
+	if ok, msg = db.InitContestRepo(tx).DiffUpdate(contest.ID, db.DiffUpdateContestOptions{NoticeCount: 1}); !ok {
 		return model.Notice{}, false, msg
 	}
 	return notice, true, i18n.Success
@@ -29,5 +29,5 @@ func DeleteNotice(tx *gorm.DB, notice model.Notice) (bool, string) {
 	if ok, msg := db.InitNoticeRepo(tx).Delete(notice.ID); !ok {
 		return false, msg
 	}
-	return db.InitContestRepo(tx).Update(notice.ID, db.UpdateContestOptions{DiffNoticeCount: -1})
+	return db.InitContestRepo(tx).DiffUpdate(notice.ID, db.DiffUpdateContestOptions{NoticeCount: -1})
 }

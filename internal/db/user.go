@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type UserRepo struct {
@@ -47,22 +48,20 @@ func (c CreateUserOptions) Convert2Model() model.Model {
 }
 
 type UpdateUserOptions struct {
-	Name             *string
-	Password         *string
-	Email            *string
-	Country          *string
-	Desc             *string
-	Avatar           *model.AvatarURL
-	Verified         *bool
-	Hidden           *bool
-	Banned           *bool
-	Score            *float64
-	Solved           *int64
-	DiffContestCount int64
-	ContestCount     *int64
-	DiffTeamCount    int64
-	TeamCount        *int64
-	ProviderUserID   *string
+	Name           *string
+	Password       *string
+	Email          *string
+	Country        *string
+	Desc           *string
+	Avatar         *model.AvatarURL
+	Verified       *bool
+	Hidden         *bool
+	Banned         *bool
+	Score          *float64
+	Solved         *int64
+	ContestCount   *int64
+	TeamCount      *int64
+	ProviderUserID *string
 }
 
 func (u UpdateUserOptions) Convert2Map() map[string]any {
@@ -100,20 +99,30 @@ func (u UpdateUserOptions) Convert2Map() map[string]any {
 	if u.Solved != nil {
 		options["solved"] = *u.Solved
 	}
-	if u.DiffContestCount != 0 {
-		options["contest_count"] = gorm.Expr("contest_count + ?", u.DiffContestCount)
-	}
 	if u.ContestCount != nil {
 		options["contest_count"] = *u.ContestCount
-	}
-	if u.DiffTeamCount != 0 {
-		options["team_count"] = gorm.Expr("team_count + ?", u.DiffTeamCount)
 	}
 	if u.TeamCount != nil {
 		options["team_count"] = *u.TeamCount
 	}
 	if u.ProviderUserID != nil {
 		options["provider_user_id"] = *u.ProviderUserID
+	}
+	return options
+}
+
+type DiffUpdateUserOptions struct {
+	TeamCount    int64
+	ContestCount int64
+}
+
+func (d DiffUpdateUserOptions) Convert2Expr() map[string]clause.Expr {
+	options := make(map[string]clause.Expr)
+	if d.TeamCount != 0 {
+		options["team_count"] = gorm.Expr("team_count + ?", d.TeamCount)
+	}
+	if d.ContestCount != 0 {
+		options["contest_count"] = gorm.Expr("contest_count + ?", d.ContestCount)
 	}
 	return options
 }

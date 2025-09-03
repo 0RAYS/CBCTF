@@ -54,9 +54,11 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, contest model.Contest
 			return "", model.Submission{}, false, msg
 		}
 		contestFlagRepo := db.InitContestFlagRepo(tx)
+		if ok, msg = contestFlagRepo.DiffUpdate(contestFlag.ID, db.DiffUpdateContestFlagOptions{Solvers: 1}); !ok {
+			return "", model.Submission{}, false, msg
+		}
 		if ok, msg = contestFlagRepo.Update(contestFlag.ID, db.UpdateContestFlagOptions{
 			CurrentScore: &currentScore,
-			DiffSolvers:  1,
 			Last:         &submission.CreatedAt,
 		}); !ok {
 			return "", model.Submission{}, false, msg

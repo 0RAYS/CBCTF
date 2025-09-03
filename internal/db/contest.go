@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ContestRepo struct {
@@ -50,25 +51,22 @@ func (c CreateContestOptions) Convert2Model() model.Model {
 }
 
 type UpdateContestOptions struct {
-	Name            *string
-	Desc            *string
-	Captcha         *string
-	Avatar          *model.AvatarURL
-	Prefix          *string
-	Size            *int
-	Start           *time.Time
-	Duration        *time.Duration
-	Blood           *bool
-	Hidden          *bool
-	DiffUserCount   int64
-	UserCount       *int64
-	DiffTeamCount   int64
-	TeamCount       *int64
-	DiffNoticeCount int64
-	NoticeCount     *int64
-	Rules           *model.StringList
-	Prizes          *model.Prizes
-	Timelines       *model.Timelines
+	Name        *string
+	Desc        *string
+	Captcha     *string
+	Avatar      *model.AvatarURL
+	Prefix      *string
+	Size        *int
+	Start       *time.Time
+	Duration    *time.Duration
+	Blood       *bool
+	Hidden      *bool
+	UserCount   *int64
+	TeamCount   *int64
+	NoticeCount *int64
+	Rules       *model.StringList
+	Prizes      *model.Prizes
+	Timelines   *model.Timelines
 }
 
 func (u UpdateContestOptions) Convert2Map() map[string]any {
@@ -103,20 +101,11 @@ func (u UpdateContestOptions) Convert2Map() map[string]any {
 	if u.Hidden != nil {
 		options["hidden"] = *u.Hidden
 	}
-	if u.DiffUserCount != 0 {
-		options["user_count"] = gorm.Expr("user_count + ?", u.DiffUserCount)
-	}
 	if u.UserCount != nil {
 		options["user_count"] = *u.UserCount
 	}
-	if u.DiffTeamCount != 0 {
-		options["team_count"] = gorm.Expr("team_count + ?", u.DiffTeamCount)
-	}
 	if u.TeamCount != nil {
 		options["team_count"] = *u.TeamCount
-	}
-	if u.DiffNoticeCount != 0 {
-		options["notice_count"] = gorm.Expr("notice_count + ?", u.DiffNoticeCount)
 	}
 	if u.NoticeCount != nil {
 		options["notice_count"] = *u.NoticeCount
@@ -129,6 +118,26 @@ func (u UpdateContestOptions) Convert2Map() map[string]any {
 	}
 	if u.Timelines != nil {
 		options["timelines"] = *u.Timelines
+	}
+	return options
+}
+
+type DiffUpdateContestOptions struct {
+	UserCount   int64
+	TeamCount   int64
+	NoticeCount int64
+}
+
+func (d DiffUpdateContestOptions) Convert2Expr() map[string]clause.Expr {
+	options := make(map[string]clause.Expr)
+	if d.UserCount != 0 {
+		options["user_count"] = gorm.Expr("user_count + ?", d.UserCount)
+	}
+	if d.TeamCount != 0 {
+		options["team_count"] = gorm.Expr("team_count + ?", d.TeamCount)
+	}
+	if d.NoticeCount != 0 {
+		options["notice_count"] = gorm.Expr("notice_count + ?", d.NoticeCount)
 	}
 	return options
 }

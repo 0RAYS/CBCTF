@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type TeamRepo struct {
@@ -42,18 +43,17 @@ func (c CreateTeamOptions) Convert2Model() model.Model {
 }
 
 type UpdateTeamOptions struct {
-	Name          *string
-	Desc          *string
-	Captcha       *string
-	Avatar        *model.AvatarURL
-	Banned        *bool
-	Hidden        *bool
-	CaptainID     *uint
-	Score         *float64
-	Rank          *int
-	Last          *time.Time
-	DiffUserCount int64
-	UserCount     *int64
+	Name      *string
+	Desc      *string
+	Captcha   *string
+	Avatar    *model.AvatarURL
+	Banned    *bool
+	Hidden    *bool
+	CaptainID *uint
+	Score     *float64
+	Rank      *int
+	Last      *time.Time
+	UserCount *int64
 }
 
 func (u UpdateTeamOptions) Convert2Map() map[string]any {
@@ -88,11 +88,20 @@ func (u UpdateTeamOptions) Convert2Map() map[string]any {
 	if u.Last != nil {
 		options["last"] = *u.Last
 	}
-	if u.DiffUserCount != 0 {
-		options["user_count"] = gorm.Expr("user_count + ?", u.DiffUserCount)
-	}
 	if u.UserCount != nil {
 		options["user_count"] = *u.UserCount
+	}
+	return options
+}
+
+type DiffUpdateTeamOptions struct {
+	UserCount int64
+}
+
+func (d DiffUpdateTeamOptions) Convert2Expr() map[string]clause.Expr {
+	options := make(map[string]clause.Expr)
+	if d.UserCount != 0 {
+		options["user_count"] = gorm.Expr("user_count + ?", d.UserCount)
 	}
 	return options
 }
