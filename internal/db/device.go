@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/model"
 
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type DeviceRepo struct {
@@ -43,8 +42,8 @@ type DiffUpdateDeviceOptions struct {
 	Count int64
 }
 
-func (d DiffUpdateDeviceOptions) Convert2Expr() map[string]clause.Expr {
-	options := make(map[string]clause.Expr)
+func (d DiffUpdateDeviceOptions) Convert2Expr() map[string]any {
+	options := make(map[string]any)
 	if d.Count != 0 {
 		options["count"] = gorm.Expr("count + ?", d.Count)
 	}

@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type TeamRepo struct {
@@ -98,8 +97,8 @@ type DiffUpdateTeamOptions struct {
 	UserCount int64
 }
 
-func (d DiffUpdateTeamOptions) Convert2Expr() map[string]clause.Expr {
-	options := make(map[string]clause.Expr)
+func (d DiffUpdateTeamOptions) Convert2Expr() map[string]any {
+	options := make(map[string]any)
 	if d.UserCount != 0 {
 		options["user_count"] = gorm.Expr("user_count + ?", d.UserCount)
 	}
