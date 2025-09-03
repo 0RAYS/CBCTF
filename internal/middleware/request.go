@@ -3,6 +3,7 @@ package middleware
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
+	"database/sql"
 	"slices"
 	"time"
 
@@ -22,6 +23,7 @@ func AccessLog(ctx *gin.Context) {
 	ctx.Next()
 
 	statusCode := ctx.GetInt(CTXStatusCodeKey)
+	selfID := GetSelfID(ctx)
 
 	if !slices.Contains(config.Env.Gin.Log.Whitelist, path) {
 		// Truncate long headers to 255 characters to fit storage constraints
@@ -41,6 +43,9 @@ func AccessLog(ctx *gin.Context) {
 			Status:    statusCode,
 			Referer:   referer,
 			Magic:     magic,
+		}
+		if selfID > 0 && !IsAdmin(ctx) {
+			request.UserID = sql.Null[uint]{V: selfID, Valid: true}
 		}
 		db.InitRequestRepo(db.DB).Create(request)
 	}
