@@ -1,13 +1,15 @@
 package redis
 
 import (
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
 	"context"
 	"time"
 
 	"github.com/sirupsen/logrus"
 )
 
-const LogKey = "logs"
+const logKey = "logs"
 
 // LogHook is a logrus Hook that mirrors log lines to a Redis list.
 type LogHook struct {
@@ -24,7 +26,7 @@ func NewLogHook(max int, formatter logrus.Formatter) *LogHook {
 	if max <= 0 {
 		max = 1000
 	}
-	return &LogHook{Key: LogKey, Max: max, Formatter: formatter}
+	return &LogHook{Key: logKey, Max: max, Formatter: formatter}
 }
 
 // Levels returns all log levels to mirror everything.
@@ -54,4 +56,15 @@ func (h *LogHook) Fire(entry *logrus.Entry) error {
 	_ = RDB.RPush(ctx, h.Key, line).Err()
 	_ = RDB.LTrim(ctx, h.Key, int64(-h.Max), -1).Err()
 	return nil
+}
+
+func GetLogs(start, end int64) ([]string, bool, string) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	logs, err := RDB.LRange(ctx, logKey, start, end).Result()
+	if err != nil {
+		log.Logger.Warningf("Failed to get logs: %s", err)
+		return logs, false, i18n.RedisError
+	}
+	return logs, true, i18n.Success
 }
