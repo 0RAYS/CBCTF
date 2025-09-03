@@ -213,6 +213,7 @@ func LeaveTeam(ctx *gin.Context) {
 		tx.Rollback()
 	} else {
 		tx.Commit()
+		ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Team": team.ID})
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
