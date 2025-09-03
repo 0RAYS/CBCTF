@@ -30,12 +30,6 @@ func (c CreateEventOptions) Convert2Model() model.Model {
 	}
 }
 
-type UpdateEventOptions struct{}
-
-func (u UpdateEventOptions) Convert2Map() map[string]any {
-	return make(map[string]any)
-}
-
 func InitEventRepo(tx *gorm.DB) *EventRepo {
 	return &EventRepo{
 		BasicRepo: BasicRepo[model.Event]{

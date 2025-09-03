@@ -39,12 +39,6 @@ func (c CreateRequestOptions) Convert2Model() model.Model {
 	}
 }
 
-type UpdateRequestOptions struct{}
-
-func (u UpdateRequestOptions) Convert2Map() map[string]any {
-	return make(map[string]any)
-}
-
 func InitRequestRepo(tx *gorm.DB) *RequestRepo {
 	return &RequestRepo{
 		BasicRepo: BasicRepo[model.Request]{

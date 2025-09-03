@@ -40,12 +40,6 @@ func (c CreateContainerOptions) Convert2Model() model.Model {
 	}
 }
 
-type UpdateContainerOptions struct{}
-
-func (u UpdateContainerOptions) Convert2Map() map[string]any {
-	return make(map[string]any)
-}
-
 func InitContainerRepo(tx *gorm.DB) *ContainerRepo {
 	return &ContainerRepo{
 		BasicRepo: BasicRepo[model.Container]{

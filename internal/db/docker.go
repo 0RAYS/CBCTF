@@ -40,12 +40,6 @@ func (c CreateDockerOptions) Convert2Model() model.Model {
 	}
 }
 
-type UpdateDockerOptions struct{}
-
-func (u UpdateDockerOptions) Convert2Map() map[string]any {
-	return make(map[string]any)
-}
-
 func InitDockerRepo(tx *gorm.DB) *DockerRepo {
 	return &DockerRepo{
 		BasicRepo: BasicRepo[model.Docker]{

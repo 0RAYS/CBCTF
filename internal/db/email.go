@@ -32,12 +32,6 @@ func (c CreateEmailOptions) Convert2Model() model.Model {
 	}
 }
 
-type UpdateEmailOptions struct{}
-
-func (u UpdateEmailOptions) Convert2Map() map[string]any {
-	return map[string]any{}
-}
-
 func InitEmailRepo(tx *gorm.DB) *EmailRepo {
 	return &EmailRepo{
 		BasicRepo: BasicRepo[model.Email]{
