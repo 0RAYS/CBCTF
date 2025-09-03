@@ -7,9 +7,66 @@ import (
 	"fmt"
 	"net"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 )
+
+// CheckWebReqIP 检查用户访问 Web 的 IP
+func CheckWebReqIP(contest model.Contest) {
+	userIDL, ok, _ := db.GetUserIDByContestID(db.DB, contest.ID)
+	if !ok {
+		return
+	}
+	repo := db.InitRequestRepo(db.DB)
+	ipUserMap := make(map[string][]uint)
+	for _, userID := range userIDL {
+		ipL, ok, _ := repo.GetUserIP(userID)
+		if !ok {
+			continue
+		}
+		for _, ip := range ipL {
+			netIP := net.ParseIP(ip)
+			if netIP == nil {
+				continue
+			}
+			if netIP.IsLoopback() {
+				continue
+			}
+			if !slices.Contains(ipUserMap[ip], userID) {
+				ipUserMap[ip] = append(ipUserMap[ip], userID)
+			}
+		}
+	}
+	cheatRepo := db.InitCheatRepo(db.DB)
+	for ip, users := range ipUserMap {
+		if len(users) > 1 {
+			var str []string
+			for _, user := range users {
+				str = append(str, strconv.Itoa(int(user)))
+			}
+			for _, user := range users {
+				first, ok, _ := repo.Get(db.GetOptions{
+					Conditions: map[string]any{"id": user, "ip": ip},
+					Selects:    []string{"id", "time"},
+				})
+				if !ok {
+					continue
+				}
+				cheatRepo.Create(db.CreateCheatOptions{
+					UserID:    sql.Null[uint]{V: user, Valid: true},
+					ContestID: sql.Null[uint]{V: contest.ID, Valid: true},
+					IP:        ip,
+					Comment:   ip,
+					Reason:    fmt.Sprintf(model.ReqWebSameIP, strings.Join(str, ", ")),
+					Type:      model.Suspicious,
+					Checked:   false,
+					Time:      first.Time,
+				})
+			}
+		}
+	}
+}
 
 // CheckVictimReqIP 检查用户访问靶机的 IP
 func CheckVictimReqIP(contest model.Contest) {
@@ -57,9 +114,9 @@ func CheckVictimReqIP(contest model.Contest) {
 	cheatRepo := db.InitCheatRepo(db.DB)
 	for ip, v := range ipTeamMap {
 		if len(v) > 1 {
-			var str strings.Builder
-			for _, team := range v {
-				str.WriteString(fmt.Sprintf("Team-%d, ", team.ID))
+			var str []string
+			for _, team := range teams {
+				str = append(str, strconv.Itoa(int(team.ID)))
 			}
 			for _, team := range v {
 				cheatRepo.Create(db.CreateCheatOptions{
@@ -67,7 +124,7 @@ func CheckVictimReqIP(contest model.Contest) {
 					ContestID: sql.Null[uint]{V: contest.ID, Valid: true},
 					IP:        ip,
 					Comment:   ip,
-					Reason:    fmt.Sprintf(model.ReqVictimSameIP, strings.Trim(str.String(), ", ")),
+					Reason:    fmt.Sprintf(model.ReqVictimSameIP, strings.Join(str, ", ")),
 					Type:      model.Suspicious,
 					Checked:   false,
 					Time:      team.Time,
