@@ -20,7 +20,6 @@ func checkCheat(c *cron.Cron) {
 			if time.Now().Sub(contest.Start.Add(contest.Duration)) > 15*time.Minute {
 				continue
 			}
-			cheat.CheckWebReqIP(contest)
 			cheat.CheckVictimReqIP(contest)
 			cheat.CheckWrongFlag(contest)
 			cheat.CheckSameDevice(contest)
