@@ -40,7 +40,7 @@ type UpdateOptions interface {
 }
 
 type DiffUpdateOptions interface {
-	Convert2Expr() map[string]clause.Expr
+	Convert2Expr() map[string]any
 }
 
 func (b *BasicRepo[M]) Create(options CreateOptions) (M, bool, string) {
@@ -184,9 +184,7 @@ func (b *BasicRepo[M]) Update(id uint, options UpdateOptions) (bool, string) {
 		}
 		version := m.GetBasicModel().Version.Int64
 		res := b.DB.Model(new(M)).Where("id = ?", id)
-		if !m.GetBasicModel().Version.Valid {
-			res = res.Where("version = ?", nil)
-		} else {
+		if m.GetBasicModel().Version.Valid {
 			res = res.Where("version = ?", version)
 		}
 		data["version"] = version + 1

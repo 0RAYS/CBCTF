@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type SmtpRepo struct {
@@ -81,8 +80,8 @@ type DiffUpdateSmtpOptions struct {
 	Failure int64
 }
 
-func (d DiffUpdateSmtpOptions) Convert2Expr() map[string]clause.Expr {
-	options := make(map[string]clause.Expr)
+func (d DiffUpdateSmtpOptions) Convert2Expr() map[string]any {
+	options := make(map[string]any)
 	if d.Success != 0 {
 		options["success"] = gorm.Expr("success + ?", d.Success)
 	}
