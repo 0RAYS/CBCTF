@@ -71,3 +71,13 @@ func (r *RequestRepo) CountIP() (int64, bool, string) {
 	}
 	return count, true, i18n.Success
 }
+
+func (r *RequestRepo) GetUserIP(userID uint) ([]string, bool, string) {
+	var ipL []string
+	res := r.DB.Model(&model.Request{}).Distinct("ip").Where("user_id = ?", userID).Find("ip", &ipL)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Reuqest: %s", res.Error)
+		return nil, false, i18n.GetRequestError
+	}
+	return ipL, true, i18n.Success
+}
