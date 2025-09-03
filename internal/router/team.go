@@ -148,15 +148,15 @@ func KickMember(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	contest := middleware.GetContest(ctx)
 	tx := db.DB.Begin()
-	ok, msg := service.LeaveTeam(tx, contest, team, form.UserID)
-	if !ok {
+	if ok, msg := service.LeaveTeam(tx, contest, team, form.UserID); !ok {
 		tx.Rollback()
-	} else {
-		tx.Commit()
-		ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Operator": middleware.GetSelfID(ctx)})
-		ctx.Set(middleware.CTXEventSuccessKey, true)
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	tx.Commit()
+	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Operator": middleware.GetSelfID(ctx)})
+	ctx.Set(middleware.CTXEventSuccessKey, true)
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }
 
 func JoinTeam(ctx *gin.Context) {
@@ -172,12 +172,13 @@ func JoinTeam(ctx *gin.Context) {
 	team, ok, msg := service.JoinTeam(tx, contest, user, form)
 	if !ok {
 		tx.Rollback()
-	} else {
-		tx.Commit()
-		ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Team": team.ID})
-		ctx.Set(middleware.CTXEventSuccessKey, true)
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	tx.Commit()
+	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Team": team.ID})
+	ctx.Set(middleware.CTXEventSuccessKey, true)
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }
 
 func CreateTeam(ctx *gin.Context) {
@@ -193,13 +194,14 @@ func CreateTeam(ctx *gin.Context) {
 	team, ok, msg := service.CreateTeam(tx, contest, user, form)
 	if !ok {
 		tx.Rollback()
-	} else {
-		tx.Commit()
-		ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Team": team.ID})
-		ctx.Set(middleware.CTXEventSuccessKey, true)
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
 	}
+	tx.Commit()
 	go service.CreateTeamFlags(db.DB, team, contest)
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Team": team.ID})
+	ctx.Set(middleware.CTXEventSuccessKey, true)
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }
 
 func LeaveTeam(ctx *gin.Context) {
@@ -208,13 +210,13 @@ func LeaveTeam(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
 	team := middleware.GetTeam(ctx)
 	tx := db.DB.Begin()
-	ok, msg := service.LeaveTeam(tx, contest, team, user.ID)
-	if !ok {
+	if ok, msg := service.LeaveTeam(tx, contest, team, user.ID); !ok {
 		tx.Rollback()
-	} else {
-		tx.Commit()
-		ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Team": team.ID})
-		ctx.Set(middleware.CTXEventSuccessKey, true)
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	tx.Commit()
+	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Team": team.ID})
+	ctx.Set(middleware.CTXEventSuccessKey, true)
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }
