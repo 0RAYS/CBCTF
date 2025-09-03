@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"database/sql"
 	"time"
 
 	"gorm.io/gorm"
@@ -23,6 +24,7 @@ type CreateRequestOptions struct {
 	Status    int
 	Referer   string
 	Magic     string
+	UserID    sql.Null[uint]
 }
 
 func (c CreateRequestOptions) Convert2Model() model.Model {
@@ -36,6 +38,7 @@ func (c CreateRequestOptions) Convert2Model() model.Model {
 		Status:    c.Status,
 		Referer:   c.Referer,
 		Magic:     c.Magic,
+		UserID:    c.UserID,
 	}
 }
 
