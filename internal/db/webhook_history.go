@@ -33,12 +33,6 @@ func (c CreateWebhookHistoryOptions) Convert2Model() model.Model {
 	}
 }
 
-type UpdateWebhookHistoryOptions struct{}
-
-func (u UpdateWebhookHistoryOptions) Convert2Map() map[string]any {
-	return make(map[string]any)
-}
-
 func InitWebhookHistoryRepo(tx *gorm.DB) *WebhookHistoryRepo {
 	return &WebhookHistoryRepo{
 		BasicRepo: BasicRepo[model.WebhookHistory]{

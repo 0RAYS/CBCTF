@@ -36,12 +36,6 @@ func (c CreateTrafficOptions) Convert2Model() model.Model {
 	}
 }
 
-type UpdateTrafficOptions struct{}
-
-func (u UpdateTrafficOptions) Convert2Map() map[string]any {
-	return make(map[string]any)
-}
-
 func InitTrafficRepo(tx *gorm.DB) *TrafficRepo {
 	return &TrafficRepo{
 		BasicRepo: BasicRepo[model.Traffic]{

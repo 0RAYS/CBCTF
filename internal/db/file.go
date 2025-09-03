@@ -47,12 +47,6 @@ func (c CreateFileOptions) Convert2Model() model.Model {
 	}
 }
 
-type UpdateFileOptions struct{}
-
-func (u UpdateFileOptions) Convert2Map() map[string]any {
-	return make(map[string]any)
-}
-
 func InitFileRepo(tx *gorm.DB) *FileRepo {
 	return &FileRepo{
 		BasicRepo: BasicRepo[model.File]{
