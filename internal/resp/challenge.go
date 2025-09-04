@@ -1,6 +1,7 @@
 package resp
 
 import (
+	"CBCTF/internal/db"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"strconv"
@@ -137,6 +138,9 @@ func GetChallengeResp(challenge model.Challenge) gin.H {
 	if challenge.Type == model.PodsChallengeType {
 		dockerCompose = Dockers2Yaml(challenge.Dockers, challenge.ChallengeFlags)
 	}
+	file, _, _ := db.InitFileRepo(db.DB).Get(db.GetOptions{
+		Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFileType},
+	})
 	return gin.H{
 		"id":               challenge.RandID,
 		"name":             challenge.Name,
@@ -148,5 +152,6 @@ func GetChallengeResp(challenge model.Challenge) gin.H {
 		"docker_compose":   dockerCompose,
 		"options":          challenge.Options,
 		"network_policies": challenge.NetworkPolicies,
+		"file":             file.Filename,
 	}
 }
