@@ -26,15 +26,9 @@ func GetChallenges(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	repo := db.InitFileRepo(db.DB)
 	data := make([]gin.H, 0)
 	for _, challenge := range challenges {
-		file, _, _ := repo.Get(db.GetOptions{
-			Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFileType},
-		})
-		tmp := resp.GetChallengeResp(challenge)
-		tmp["file"] = file.Filename
-		data = append(data, tmp)
+		data = append(data, resp.GetChallengeResp(challenge))
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "challenges": data}})
 }
@@ -59,11 +53,7 @@ func GetChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	file, _, _ := db.InitFileRepo(db.DB).Get(db.GetOptions{
-		Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFileType},
-	})
 	data := resp.GetChallengeResp(challenge)
-	data["file"] = file.Filename
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
 }
 
