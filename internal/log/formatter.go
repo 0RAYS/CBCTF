@@ -98,9 +98,14 @@ func safeGetValue[T any](entry *logrus.Entry, key string, defaultV ...any) T {
 	return V
 }
 
-type Formatter struct{}
+type Formatter struct {
+	ForceColor bool
+}
 
 func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
+	if f.ForceColor {
+		color.NoColor = false
+	}
 	t, ok := entry.Data["Type"].(string)
 	if !ok {
 		t = DefaultLogType
