@@ -97,7 +97,3 @@ func (c *CheatRepo) Create(options CreateCheatOptions) (model.Cheat, bool, strin
 	}
 	return m, true, i18n.Success
 }
-
-func (c *CheatRepo) GetByHash(hash string, optionsL ...GetOptions) (model.Cheat, bool, string) {
-	return c.GetByUniqueKey("hash", hash, optionsL...)
-}

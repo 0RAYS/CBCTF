@@ -26,18 +26,6 @@ func (c CreateDeviceOptions) Convert2Model() model.Model {
 	}
 }
 
-type UpdateDeviceOptions struct {
-	Count *int
-}
-
-func (u UpdateDeviceOptions) Convert2Map() map[string]any {
-	options := make(map[string]any)
-	if u.Count != nil {
-		options["count"] = *u.Count
-	}
-	return options
-}
-
 type DiffUpdateDeviceOptions struct {
 	Count int64
 }
@@ -58,9 +46,9 @@ func InitDeviceRepo(tx *gorm.DB) *DeviceRepo {
 	}
 }
 
-func (d *DeviceRepo) RecordDevice(userID uint, magic string) (bool, string) {
-	var device model.Device
-	res := d.DB.Model(&model.Device{}).FirstOrCreate(&device, model.Device{UserID: userID, Magic: magic})
+func (d *DeviceRepo) RecordDevice(options CreateDeviceOptions) (bool, string) {
+	device := options.Convert2Model().(model.Device)
+	res := d.DB.Model(&model.Device{}).FirstOrCreate(&device, device)
 	if res.Error != nil {
 		return false, i18n.GetDeviceError
 	}
