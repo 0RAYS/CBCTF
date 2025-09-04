@@ -37,7 +37,7 @@ func Init() {
 	}
 	log.Logger.Infof("Connected to Redis: %s", addr)
 	// Mirror all logs to Redis list after a successful connection
-	log.Logger.AddHook(NewLogHook(5000, log.Formatter{}))
+	log.Logger.AddHook(NewLogHook(5000, log.Formatter{ForceColor: true}))
 }
 
 func Status() (int64, int64, int64) {
