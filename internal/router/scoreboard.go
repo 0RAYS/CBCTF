@@ -48,6 +48,7 @@ func GetTeamRanking(ctx *gin.Context) {
 		}
 		tmp := resp.GetTeamRankingResp(team, solved, contestFlags, middleware.IsAdmin(ctx))
 		tmp["users"] = repo.CountAssociation(team, "Users")
+		data = append(data, tmp)
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"teams": data, "count": count}})
 }

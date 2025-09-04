@@ -45,9 +45,7 @@ func GetContestChallengeImage(ctx *gin.Context) {
 				})
 			}
 		}
-		data = append(data, gin.H{
-			contestChallengeImage: status,
-		})
+		data = append(data, gin.H{contestChallengeImage: status})
 	}
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": data})
 }

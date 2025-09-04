@@ -56,7 +56,6 @@ func IncreaseVictimDuration(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	data := make([]gin.H, 0)
 	if !victim.Start.Add(victim.Duration).Before(time.Now().Add(20 * time.Minute)) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.HasMuchTime, "data": nil})
 		return
@@ -68,13 +67,12 @@ func IncreaseVictimDuration(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	data = append(data, gin.H{
+	ctx.Set(middleware.CTXEventSuccessKey, true)
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{
 		"target":    victim.RemoteAddr(),
 		"remaining": victim.Remaining().Seconds(),
 		"status":    "Running",
-	})
-	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data[0]})
+	}})
 }
 
 func StopVictim(ctx *gin.Context) {
