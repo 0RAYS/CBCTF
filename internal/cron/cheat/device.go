@@ -43,7 +43,7 @@ func CheckSameDevice(contest model.Contest) {
 					UserID:    sql.Null[uint]{V: user.UserID, Valid: true},
 					ContestID: sql.Null[uint]{V: contest.ID, Valid: true},
 					Magic:     magic,
-					Reason:    fmt.Sprintf(model.SameDeviceMagic, fmt.Sprintf("User %s", strings.Join(str, ", "))),
+					Reason:    fmt.Sprintf(model.SameDeviceMagic, fmt.Sprintf("User %s", strings.Join(str, ","))),
 					Type:      model.Suspicious,
 					Time:      user.Time,
 				})
