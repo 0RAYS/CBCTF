@@ -79,128 +79,137 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 			}
 		}
 	case model.PodsChallengeType:
-		config, ok, msg := utils.LoadDockerComposeYaml(form.DockerCompose)
-		if !ok {
+		if ok, msg = CreatePodChallenge(tx, challenge, form.DockerCompose); !ok {
 			return model.Challenge{}, false, msg
 		}
-		volumeFlag := make(map[string]string)
-		for _, volume := range config.Volumes {
-			volumeName := strings.TrimPrefix(volume.Name, "_")
-			if strings.HasPrefix(volumeName, model.VolumeFlagPrefix) {
-				for k, v := range volume.Labels {
-					if k == model.VolumeFlagLabelKey {
-						volumeFlag[volumeName] = v
-					}
-				}
-			}
-		}
-		networksMap := make(map[string]model.Network)
-		for _, network := range config.Networks {
-			network.Name = strings.TrimPrefix(network.Name, "_")
-			if network.Name == "default" {
-				continue
-			}
-			tmp := model.Network{External: network.External.External, Name: network.Name}
-			if len(network.Ipam.Config) > 0 {
-				tmp.CIDR = network.Ipam.Config[0].Subnet
-				tmp.Gateway = network.Ipam.Config[0].Gateway
-			}
-			networksMap[network.Name] = tmp
-		}
-		flagOptions := make([]db.CreateChallengeFlagOptions, 0)
-		dockerRepo := db.InitDockerRepo(tx)
-		for _, app := range config.Services {
-			name := app.Name
-			if app.ContainerName != "" {
-				name = app.ContainerName
-			}
-			if app.Image == "" {
-				return model.Challenge{}, false, i18n.InvalidDockerImage
-			}
-			environment := make(model.StringMap)
-			for k, v := range app.Environment {
-				if !strings.HasPrefix(k, model.EnvFlagPrefix) {
-					environment[k] = *v
-				}
-			}
-			ports := make(model.Exposes, 0)
-			tmp := make([]string, 0)
-			for _, port := range app.Ports {
-				target := fmt.Sprintf("%d/%s", port.Target, port.Protocol)
-				if !slices.Contains(tmp, target) {
-					ports = append(ports, model.Expose{Port: int32(port.Target), Protocol: port.Protocol})
-					tmp = append(tmp, target)
-				}
-			}
-			networks := make(model.Networks, 0)
-			for key, value := range app.Networks {
-				if key == "default" {
-					continue
-				}
-				if value == nil || net.ParseIP(value.Ipv4Address) == nil {
-					return model.Challenge{}, false, i18n.InvalidDockerComposeYaml
-				}
-				network, ok := networksMap[key]
-				if !ok {
-					log.Logger.Warningf("Network %s not found in networks", key)
-					return model.Challenge{}, false, i18n.UnknownError
-				}
-				network.IP = value.Ipv4Address
-				networks = append(networks, network)
-			}
-			if len(networksMap) > 0 && len(networks) == 0 {
-				return model.Challenge{}, false, i18n.InvalidDockerComposeYaml
-			}
-			docker, ok, msg := dockerRepo.Create(db.CreateDockerOptions{
-				ChallengeID: challenge.ID,
-				Name:        name,
-				Image:       app.Image,
-				CPU:         app.CPUS,
-				Memory:      int64(app.MemLimit),
-				WorkingDir:  app.WorkingDir,
-				Command:     model.StringList(app.Command),
-				Exposes:     ports,
-				Environment: environment,
-				Networks:    networks,
-			})
-			if !ok {
-				return model.Challenge{}, false, msg
-			}
-			for k, v := range app.Environment {
-				if strings.HasPrefix(k, model.EnvFlagPrefix) {
-					flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
-						ChallengeID: challenge.ID,
-						DockerID:    sql.Null[uint]{V: docker.ID, Valid: true},
-						Name:        k,
-						Value:       *v,
-						InjectType:  model.EnvInjectType,
-					})
-				}
-			}
-			for _, volume := range app.Volumes {
-				if value, ok := volumeFlag[volume.Source]; ok {
-					flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
-						ChallengeID: challenge.ID,
-						DockerID:    sql.Null[uint]{V: docker.ID, Valid: true},
-						Name:        volume.Source,
-						Value:       value,
-						InjectType:  model.VolumeInjectType,
-						Path:        volume.Target,
-					})
-				}
-			}
-		}
-		for _, options := range flagOptions {
-			if _, ok, msg = challengeFlagRepo.Create(options); !ok {
-				return model.Challenge{}, false, msg
-			}
-		}
+		return challenge, true, i18n.Success
 	default:
 		return model.Challenge{}, false, i18n.InvalidChallengeType
 	}
 	return challengeRepo.GetByID(challenge.ID, db.GetOptions{
 		Preloads: map[string]db.GetOptions{"Dockers": {}, "ChallengeFlags": {}},
 	})
+}
+
+func CreatePodChallenge(tx *gorm.DB, challenge model.Challenge, dockerCompose string) (bool, string) {
+	config, ok, msg := utils.LoadDockerComposeYaml(dockerCompose)
+	if !ok {
+		return false, msg
+	}
+	volumeFlag := make(map[string]string)
+	for _, volume := range config.Volumes {
+		volumeName := strings.TrimPrefix(volume.Name, "_")
+		if strings.HasPrefix(volumeName, model.VolumeFlagPrefix) {
+			for k, v := range volume.Labels {
+				if k == model.VolumeFlagLabelKey {
+					volumeFlag[volumeName] = v
+				}
+			}
+		}
+	}
+	networksMap := make(map[string]model.Network)
+	for _, network := range config.Networks {
+		network.Name = strings.TrimPrefix(network.Name, "_")
+		if network.Name == "default" {
+			continue
+		}
+		tmp := model.Network{External: network.External.External, Name: network.Name}
+		if len(network.Ipam.Config) > 0 {
+			tmp.CIDR = network.Ipam.Config[0].Subnet
+			tmp.Gateway = network.Ipam.Config[0].Gateway
+		}
+		networksMap[network.Name] = tmp
+	}
+	flagOptions := make([]db.CreateChallengeFlagOptions, 0)
+	dockerRepo := db.InitDockerRepo(tx)
+	for _, app := range config.Services {
+		name := app.Name
+		if app.ContainerName != "" {
+			name = app.ContainerName
+		}
+		if app.Image == "" {
+			return false, i18n.InvalidDockerImage
+		}
+		environment := make(model.StringMap)
+		for k, v := range app.Environment {
+			if !strings.HasPrefix(k, model.EnvFlagPrefix) {
+				environment[k] = *v
+			}
+		}
+		ports := make(model.Exposes, 0)
+		tmp := make([]string, 0)
+		for _, port := range app.Ports {
+			target := fmt.Sprintf("%d/%s", port.Target, port.Protocol)
+			if !slices.Contains(tmp, target) {
+				ports = append(ports, model.Expose{Port: int32(port.Target), Protocol: port.Protocol})
+				tmp = append(tmp, target)
+			}
+		}
+		networks := make(model.Networks, 0)
+		for key, value := range app.Networks {
+			if key == "default" {
+				continue
+			}
+			if value == nil || net.ParseIP(value.Ipv4Address) == nil {
+				return false, i18n.InvalidDockerComposeYaml
+			}
+			network, ok := networksMap[key]
+			if !ok {
+				log.Logger.Warningf("Network %s not found in networks", key)
+				return false, i18n.UnknownError
+			}
+			network.IP = value.Ipv4Address
+			networks = append(networks, network)
+		}
+		if len(networksMap) > 0 && len(networks) == 0 {
+			return false, i18n.InvalidDockerComposeYaml
+		}
+		docker, ok, msg := dockerRepo.Create(db.CreateDockerOptions{
+			ChallengeID: challenge.ID,
+			Name:        name,
+			Image:       app.Image,
+			CPU:         app.CPUS,
+			Memory:      int64(app.MemLimit),
+			WorkingDir:  app.WorkingDir,
+			Command:     model.StringList(app.Command),
+			Exposes:     ports,
+			Environment: environment,
+			Networks:    networks,
+		})
+		if !ok {
+			return false, msg
+		}
+		for k, v := range app.Environment {
+			if strings.HasPrefix(k, model.EnvFlagPrefix) {
+				flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
+					ChallengeID: challenge.ID,
+					DockerID:    sql.Null[uint]{V: docker.ID, Valid: true},
+					Name:        k,
+					Value:       *v,
+					InjectType:  model.EnvInjectType,
+				})
+			}
+		}
+		for _, volume := range app.Volumes {
+			if value, ok := volumeFlag[volume.Source]; ok {
+				flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
+					ChallengeID: challenge.ID,
+					DockerID:    sql.Null[uint]{V: docker.ID, Valid: true},
+					Name:        volume.Source,
+					Value:       value,
+					InjectType:  model.VolumeInjectType,
+					Path:        volume.Target,
+				})
+			}
+		}
+	}
+	challengeFlagRepo := db.InitChallengeFlagRepo(tx)
+	for _, options := range flagOptions {
+		if _, ok, msg = challengeFlagRepo.Create(options); !ok {
+			return false, msg
+		}
+	}
+	return true, i18n.Success
 }
 
 // UpdateChallenge model.Challenge Preload model.ChallengeFlag
