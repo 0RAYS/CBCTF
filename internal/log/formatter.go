@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
-	"os"
 	"reflect"
 	"strings"
 	"time"
@@ -108,13 +107,12 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	}
 	LevelColor := levelColor(entry.Level)
 	LevelText := fmt.Sprintf("%-12s", t+"-"+entry.Level.String())
-	base, _ := os.Getwd()
-	base = strings.ReplaceAll(base, "\\", "/") + "/"
 	ret := new(bytes.Buffer)
 	_, _ = fmt.Fprintf(ret, "%s %s | ", LevelColor(LevelText), entry.Time.Format("2006-01-02 15:04:05"))
 	switch t {
 	case DefaultLogType:
-		caller := fmt.Sprintf("%s:%d", strings.Replace(entry.Caller.File, base, "", 1), entry.Caller.Line)
+		filepath := strings.SplitN(entry.Caller.File, "/CBCTF/", 2)
+		caller := fmt.Sprintf("%s:%d", filepath[len(filepath)-1], entry.Caller.Line)
 		caller = fmt.Sprintf("%-36s", caller)
 		_, _ = fmt.Fprintf(ret, "%s | %s", caller, LevelColor(entry.Message))
 	case TaskLogType:
@@ -137,8 +135,9 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 			safeGetValue[string](entry, "Path"),
 		)
 	case GormLogType:
+		filepath := strings.SplitN(safeGetValue[string](entry, "FileWithLineNum"), "/CBCTF/", 2)
 		_, _ = fmt.Fprintf(ret, "%s | %s rows %s | %s",
-			fmt.Sprintf("%-36s", strings.Replace(safeGetValue[string](entry, "FileWithLineNum"), base, "", 1)),
+			fmt.Sprintf("%-36s", filepath[len(filepath)-1]),
 			colors["Debug"](safeGetValue[string](entry, "Rows")),
 			colors["Debug"](safeGetValue[string](entry, "Duration")),
 			safeGetValue[string](entry, "SQL"),
@@ -156,13 +155,12 @@ func (f TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 		t = DefaultLogType
 	}
 	LevelText := fmt.Sprintf("%-12s", t+"-"+entry.Level.String())
-	base, _ := os.Getwd()
-	base = strings.ReplaceAll(base, "\\", "/") + "/"
 	ret := new(bytes.Buffer)
 	_, _ = fmt.Fprintf(ret, "%s %s | ", LevelText, entry.Time.Format("2006-01-02 15:04:05"))
 	switch t {
 	case DefaultLogType:
-		caller := fmt.Sprintf("%s:%d", strings.Replace(entry.Caller.File, base, "", 1), entry.Caller.Line)
+		filepath := strings.SplitN(entry.Caller.File, "/CBCTF/", 2)
+		caller := fmt.Sprintf("%s:%d", filepath[len(filepath)-1], entry.Caller.Line)
 		caller = fmt.Sprintf("%-36s", caller)
 		_, _ = fmt.Fprintf(ret, "%s | %s", caller, entry.Message)
 	case TaskLogType:
@@ -183,8 +181,9 @@ func (f TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 			safeGetValue[string](entry, "Path"),
 		)
 	case GormLogType:
+		filepath := strings.SplitN(safeGetValue[string](entry, "FileWithLineNum"), "/CBCTF/", 2)
 		_, _ = fmt.Fprintf(ret, "%s | %s rows %s | %s",
-			fmt.Sprintf("%-36s", strings.Replace(safeGetValue[string](entry, "FileWithLineNum"), base, "", 1)),
+			fmt.Sprintf("%-36s", filepath[len(filepath)-1]),
 			safeGetValue[string](entry, "Rows"),
 			safeGetValue[string](entry, "Duration"),
 			safeGetValue[string](entry, "SQL"),
