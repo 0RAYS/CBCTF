@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
-	"reflect"
 	"strings"
 	"time"
 
@@ -82,17 +81,10 @@ func statusCodeColor(code int) func(a ...any) string {
 	}
 }
 
-func safeGetValue[T any](entry *logrus.Entry, key string, defaultV ...any) T {
-	V, err := entry.Data[key].(T)
-	if !err {
-		if len(defaultV) > 0 {
-			var tmp T
-			if reflect.TypeOf(tmp) != reflect.TypeOf(defaultV[0]) {
-				Logger.Fatalf("type mismatch: want %v, got %v", reflect.TypeOf(tmp), reflect.TypeOf(defaultV[0]))
-			}
-			return defaultV[0].(T)
-		}
-		return V
+func safeGetValue[T any](entry *logrus.Entry, key string, defaultV T) T {
+	V, ok := entry.Data[key].(T)
+	if !ok {
+		return defaultV
 	}
 	return V
 }
@@ -118,29 +110,26 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	case TaskLogType:
 		_, _ = fmt.Fprintf(ret, "%-36s | %s", "Async Queue Task", LevelColor(entry.Message))
 	case GinLogType:
-		StatusCodeColor := statusCodeColor(safeGetValue[int](entry, "StatusCode"))
-		MethodColor := methodColor(safeGetValue[string](entry, "Method"))
-		Latency := safeGetValue[time.Duration](entry, "Latency")
-		if Latency > time.Minute {
-			Latency = Latency.Truncate(time.Second)
-		}
+		StatusCodeColor := statusCodeColor(safeGetValue(entry, "StatusCode", -1))
+		MethodColor := methodColor(safeGetValue(entry, "Method", "ERROR"))
+		Latency := safeGetValue(entry, "Latency", time.Duration(0))
 		_, _ = fmt.Fprintf(ret, "%s | %s | %13v | ",
-			safeGetValue[string](entry, "TraceID"),
-			StatusCodeColor(safeGetValue[int](entry, "StatusCode")),
+			safeGetValue(entry, "TraceID", "00000000-0000-0000-0000-000000000000"),
+			StatusCodeColor(safeGetValue(entry, "StatusCode", -1)),
 			Latency,
 		)
 		_, _ = fmt.Fprintf(ret, "%s | %s | \"%s\"",
-			fmt.Sprintf("%-15s", safeGetValue[string](entry, "ClientIP")),
-			MethodColor(fmt.Sprintf("%-7s", safeGetValue[string](entry, "Method"))),
-			safeGetValue[string](entry, "Path"),
+			fmt.Sprintf("%-15s", safeGetValue(entry, "ClientIP", "0.0.0.0")),
+			MethodColor(fmt.Sprintf("%-7s", safeGetValue(entry, "Method", "ERROR"))),
+			safeGetValue(entry, "Path", "/error"),
 		)
 	case GormLogType:
-		filepath := strings.SplitN(safeGetValue[string](entry, "FileWithLineNum"), "/CBCTF/", 2)
+		filepath := strings.SplitN(safeGetValue(entry, "FileWithLineNum", "/unknown/path:-1"), "/CBCTF/", 2)
 		_, _ = fmt.Fprintf(ret, "%s | %s rows %s | %s",
 			fmt.Sprintf("%-36s", filepath[len(filepath)-1]),
-			colors["Debug"](safeGetValue[string](entry, "Rows")),
-			colors["Debug"](safeGetValue[string](entry, "Duration")),
-			safeGetValue[string](entry, "SQL"),
+			colors["Debug"](safeGetValue(entry, "Rows", "-1")),
+			colors["Debug"](safeGetValue(entry, "Duration", "0.000ms")),
+			safeGetValue(entry, "SQL", "SELECT 'unknown'"),
 		)
 	}
 	ret.WriteByte('\n')
@@ -166,27 +155,24 @@ func (f TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	case TaskLogType:
 		_, _ = fmt.Fprintf(ret, "%-36s | %s", "Async Queue Task", entry.Message)
 	case GinLogType:
-		Latency := safeGetValue[time.Duration](entry, "Latency")
-		if Latency > time.Minute {
-			Latency = Latency.Truncate(time.Second)
-		}
+		Latency := safeGetValue(entry, "Latency", time.Duration(0))
 		_, _ = fmt.Fprintf(ret, "%s | %d | %13v | ",
-			safeGetValue[string](entry, "TraceID"),
-			safeGetValue[int](entry, "StatusCode"),
+			safeGetValue(entry, "TraceID", "00000000-0000-0000-0000-000000000000"),
+			safeGetValue(entry, "StatusCode", -1),
 			Latency,
 		)
 		_, _ = fmt.Fprintf(ret, "%s | %s | \"%s\"",
-			fmt.Sprintf("%-15s", safeGetValue[string](entry, "ClientIP")),
-			fmt.Sprintf("%-7s", safeGetValue[string](entry, "Method")),
-			safeGetValue[string](entry, "Path"),
+			fmt.Sprintf("%-15s", safeGetValue(entry, "ClientIP", "0.0.0.0")),
+			fmt.Sprintf("%-7s", safeGetValue(entry, "Method", "ERROR")),
+			safeGetValue(entry, "Path", "/error"),
 		)
 	case GormLogType:
-		filepath := strings.SplitN(safeGetValue[string](entry, "FileWithLineNum"), "/CBCTF/", 2)
+		filepath := strings.SplitN(safeGetValue(entry, "FileWithLineNum", "/unknown/path:-1"), "/CBCTF/", 2)
 		_, _ = fmt.Fprintf(ret, "%s | %s rows %s | %s",
 			fmt.Sprintf("%-36s", filepath[len(filepath)-1]),
-			safeGetValue[string](entry, "Rows"),
-			safeGetValue[string](entry, "Duration"),
-			safeGetValue[string](entry, "SQL"),
+			safeGetValue(entry, "Rows", "-1"),
+			safeGetValue(entry, "Duration", "0.000ms"),
+			safeGetValue(entry, "SQL", "SELECT 'unknown'"),
 		)
 	}
 	ret.WriteByte('\n')
