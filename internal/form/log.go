@@ -17,8 +17,8 @@ func (f *GetLogsForm) Bind(ctx *gin.Context) (bool, string) {
 		log.Logger.Debugf("Failed to bind form: %s", err)
 		return false, i18n.BadRequest
 	}
-	if f.Limit > 100 || f.Limit < 0 {
-		f.Limit = 15
+	if f.Limit < 0 {
+		f.Limit = 100
 	}
 	if f.Offset < 0 {
 		f.Offset = 0
