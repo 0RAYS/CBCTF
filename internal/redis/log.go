@@ -34,7 +34,7 @@ func (h *LogHook) Fire(entry *logrus.Entry) error {
 	}
 	formatter := h.Formatter
 	if formatter == nil {
-		formatter = &logrus.TextFormatter{DisableTimestamp: true, DisableLevelTruncation: true}
+		formatter = &logrus.TextFormatter{ForceColors: true}
 	}
 	cpy := *entry
 	line, err := formatter.Format(&cpy)

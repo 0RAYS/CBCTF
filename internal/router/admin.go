@@ -69,6 +69,6 @@ func GetLogs(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	data, _, msg := redis.GetLogs(int64(form.Offset), int64(form.Limit))
+	data, _, msg := redis.GetLogs(int64(form.Offset), int64(form.Offset+form.Limit))
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": data})
 }
