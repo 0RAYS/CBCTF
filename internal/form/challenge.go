@@ -116,10 +116,5 @@ func (f *UpdateChallengeForm) Bind(ctx *gin.Context) (bool, string) {
 	if f.Category != nil {
 		f.Category = utils.Ptr(utils.ToTitle(*f.Category))
 	}
-	if f.DockerCompose != nil {
-		if *f.DockerCompose == "" {
-			f.DockerCompose = nil
-		}
-	}
 	return true, i18n.Success
 }
