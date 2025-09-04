@@ -113,6 +113,13 @@ func UpdateChallenge(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	challenge.Dockers, _, ok, msg = db.InitDockerRepo(db.DB).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"challenge_id": challenge.ID},
+	})
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
 	tx := db.DB.Begin()
 	ok, msg = service.UpdateChallenge(tx, challenge, form)
 	if !ok {
