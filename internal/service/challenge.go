@@ -56,16 +56,15 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 			}
 		}
 	case model.QuestionChallengeType:
-		answer := ""
+		answer := make([]string, 0)
 		for _, option := range form.Options {
 			if option.Correct {
-				answer += fmt.Sprintf("%s,", option.RandID)
+				answer = append(answer, option.RandID)
 			}
 		}
-		answer = strings.TrimSuffix(answer, ",")
 		if _, ok, msg = challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
 			ChallengeID: challenge.ID,
-			Value:       answer,
+			Value:       strings.Join(answer, ","),
 		}); !ok {
 			return model.Challenge{}, false, msg
 		}
