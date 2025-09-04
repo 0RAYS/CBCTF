@@ -85,6 +85,7 @@ func Dockers2Yaml(dockers []model.Docker, challengeFlags []model.ChallengeFlag) 
 			service.Volumes = make([]types.ServiceVolumeConfig, 0)
 			for key, path := range flags {
 				service.Volumes = append(service.Volumes, types.ServiceVolumeConfig{
+					Type:   "volume",
 					Source: key,
 					Target: path,
 				})
