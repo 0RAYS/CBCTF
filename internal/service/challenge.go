@@ -78,7 +78,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 			}
 		}
 	case model.PodsChallengeType:
-		if ok, msg = CreatePodChallenge(tx, challenge, form.DockerCompose); !ok {
+		if ok, msg = CreatePodDockerFlag(tx, challenge, form.DockerCompose); !ok {
 			return model.Challenge{}, false, msg
 		}
 		return challenge, true, i18n.Success
@@ -90,7 +90,7 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 	})
 }
 
-func CreatePodChallenge(tx *gorm.DB, challenge model.Challenge, dockerCompose string) (bool, string) {
+func CreatePodDockerFlag(tx *gorm.DB, challenge model.Challenge, dockerCompose string) (bool, string) {
 	config, ok, msg := utils.LoadDockerComposeYaml(dockerCompose)
 	if !ok {
 		return false, msg
@@ -281,6 +281,24 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChalle
 			Options:  form.Options,
 		})
 	case model.PodsChallengeType:
+		if form.DockerCompose != nil {
+			dockerIDL, challengeFlagIDL := make([]uint, 0), make([]uint, 0)
+			for _, docker := range challenge.Dockers {
+				dockerIDL = append(dockerIDL, docker.ID)
+			}
+			for _, flag := range challenge.ChallengeFlags {
+				dockerIDL = append(dockerIDL, flag.ID)
+			}
+			if ok, msg := db.InitDockerRepo(tx).Delete(dockerIDL...); !ok {
+				return false, msg
+			}
+			if ok, msg := db.InitChallengeFlagRepo(tx).Delete(challengeFlagIDL...); !ok {
+				return false, msg
+			}
+			if ok, msg := CreatePodDockerFlag(tx, challenge, *form.DockerCompose); !ok {
+				return false, msg
+			}
+		}
 		return db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
 			Name:            form.Name,
 			Desc:            form.Desc,
