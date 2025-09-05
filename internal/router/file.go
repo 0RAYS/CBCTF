@@ -27,7 +27,7 @@ func DownloadFile(eventType string) gin.HandlerFunc {
 			if os.IsNotExist(err) {
 				// 保留数据库记录
 				//db.InitFileRepo(db.DB).Delete(file.ID)
-				ctx.JSON(http.StatusOK, gin.H{"msg": i18n.FileNotFound, "data": nil})
+				ctx.JSON(http.StatusNotFound, gin.H{"msg": i18n.FileNotFound, "data": nil})
 				return
 			}
 			log.Logger.Warningf("Failed to get file: %s", err)
