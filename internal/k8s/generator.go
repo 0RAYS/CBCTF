@@ -155,7 +155,7 @@ func GenAttachment(ctx context.Context, challenge model.Challenge, teamID uint, 
 	flag = strings.TrimSuffix(flag, ",")
 	filepath := challenge.AttachmentPath(teamID)
 	_ = os.Remove(filepath)
-	command := fmt.Sprintf("./run.sh %d %s", teamID, base64.StdEncoding.EncodeToString([]byte(flag)))
+	command := fmt.Sprintf("./run.sh %d %s", teamID, flag)
 	log.Logger.Debugf("Executing command in %s: %s", generator.Name, command)
 	if _, _, err = Exec(ctx, generator.Name, generator.Spec.Containers[0].Name, command, nil); err != nil {
 		log.Logger.Warningf("Failed to execute command %s: %s", command, err)
