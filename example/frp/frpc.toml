@@ -8,3 +8,4 @@ type = "tcp"
 localIP = "127.0.0.1"
 localPort = 8000
 remotePort = 30000
+transport.proxyProtocolVersion = "v2"
