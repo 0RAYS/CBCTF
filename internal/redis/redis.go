@@ -40,6 +40,12 @@ func Init() {
 	log.Logger.AddHook(NewLogHook(5000, log.Formatter{}))
 }
 
+func Stop() {
+	if err := RDB.Close(); err != nil {
+		log.Logger.Warningf("Failed to stop Redis: %s", err)
+	}
+}
+
 func Status() (int64, int64, int64) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()

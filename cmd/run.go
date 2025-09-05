@@ -54,4 +54,6 @@ func run() {
 	}
 	task.Stop()
 	cron.Stop()
+	redis.Stop()
+	db.Stop()
 }
