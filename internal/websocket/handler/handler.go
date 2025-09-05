@@ -15,14 +15,14 @@ func AddReceiveHandler(requestType string, handler func(*model.Connection, []byt
 }
 
 func HandleReceive(conn *model.Connection, msg []byte) error {
-	var req model.Receive
-	if err := json.Unmarshal(msg, &req); err != nil {
+	var recv model.Recv
+	if err := json.Unmarshal(msg, &recv); err != nil {
 		return fmt.Errorf("failed to unmarshal message: %w", err)
 	}
 
-	handler, ok := receiveHandlerMap[req.Type]
+	handler, ok := receiveHandlerMap[recv.Type]
 	if !ok {
-		return fmt.Errorf("unknown request type: %s", req.Type)
+		return fmt.Errorf("unknown request type: %s", recv.Type)
 	}
 	if err := handler(conn, msg); err != nil {
 		return fmt.Errorf("handler error: %w", err)
