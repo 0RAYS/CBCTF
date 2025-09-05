@@ -86,3 +86,14 @@ func Init() {
 	}
 	InitOauthRepo(DB).RegisterDefault()
 }
+
+func Stop() {
+	db, err := DB.DB()
+	if err != nil {
+		log.Logger.Warningf("Failed to stop MySQL connection: %s", err)
+		return
+	}
+	if err = db.Close(); err != nil {
+		log.Logger.Warningf("Failed to stop MySQL connection: %s", err)
+	}
+}
