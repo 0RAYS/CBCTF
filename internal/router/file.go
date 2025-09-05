@@ -81,20 +81,16 @@ func UploadAvatar(v string) gin.HandlerFunc {
 			selfID := middleware.GetSelfID(ctx)
 			options.AdminID = sql.Null[uint]{V: selfID, Valid: true}
 		}
-		tx := db.DB.Begin()
-		record, ok, msg := service.SaveAvatar(tx, options, file)
+		record, ok, msg := service.SaveAvatar(db.DB, options, file)
 		if !ok {
-			tx.Rollback()
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
-		path, ok, msg := service.UpdateAvatar(tx, v, id, record)
+		path, ok, msg := service.UpdateAvatar(db.DB, v, id, record)
 		if !ok {
-			tx.Rollback()
 			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
-		tx.Commit()
 		if err = ctx.SaveUploadedFile(file, record.Path); err != nil {
 			log.Logger.Warningf("Failed to save file: %s", err)
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})

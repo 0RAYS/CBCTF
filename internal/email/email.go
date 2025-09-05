@@ -121,12 +121,6 @@ func SendEmail(to, subject, content string) error {
 	if err != nil {
 		options.Success = false
 	}
-	tx := db.DB.Begin()
-	_, ok, _ := db.InitEmailRepo(tx).Create(options)
-	if ok {
-		tx.Commit()
-	} else {
-		tx.Rollback()
-	}
+	db.InitEmailRepo(db.DB).Create(options)
 	return err
 }
