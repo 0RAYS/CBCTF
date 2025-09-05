@@ -10,6 +10,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
+	"CBCTF/internal/task"
 	"database/sql"
 	"fmt"
 	"net/http"
@@ -95,6 +96,9 @@ func UploadAvatar(v string) gin.HandlerFunc {
 			log.Logger.Warningf("Failed to save file: %s", err)
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
 			return
+		}
+		if v != "contest" {
+			_, _ = task.EnqueueResizeImageTask(record.Path, 100, 100)
 		}
 		path = fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(path, "/"))
 		ctx.Set(middleware.CTXEventSuccessKey, true)
