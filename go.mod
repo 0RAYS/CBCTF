@@ -5,6 +5,7 @@ go 1.25.0
 require (
 	github.com/JBNRZ/kubeovn-api v1.14.5
 	github.com/compose-spec/compose-go v1.20.2
+	github.com/disintegration/imaging v1.6.2
 	github.com/fatih/color v1.18.0
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-contrib/pprof v1.5.3
@@ -115,6 +116,7 @@ require (
 	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/arch v0.18.0 // indirect
 	golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1 // indirect
+	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
 	golang.org/x/net v0.42.0 // indirect
 	golang.org/x/sys v0.35.0 // indirect
 	golang.org/x/term v0.34.0 // indirect
