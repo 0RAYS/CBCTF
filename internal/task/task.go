@@ -38,6 +38,7 @@ func Init() {
 	mux.HandleFunc(SendEmailTaskType, HandleSendEmailTask)
 	mux.HandleFunc(GenAttachmentTaskType, HandleGenAttachmentTask)
 	mux.HandleFunc(WebhookTaskType, HandleWebhookTask)
+	mux.HandleFunc(ResizeImageTaskType, HandleResizeImageTask)
 }
 
 func Start() {
