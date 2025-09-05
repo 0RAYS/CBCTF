@@ -18,7 +18,7 @@ gin:
   port: 8000
   # Trusted proxy servers
   proxies:
-    - 10.0.0.1
+    - 127.0.0.1
   upload:
     # Size limited
     max: 8
