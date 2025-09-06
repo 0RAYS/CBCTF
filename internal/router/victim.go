@@ -41,9 +41,8 @@ func StartVictim(ctx *gin.Context) {
 		websocket.Send(false, user.ID, wm.SuccessLevel, wm.StartVictimWSType, "Start Victim", "Done")
 		return
 	}()
-	status := service.GetVictimStatus(db.DB, team.ID, challenge)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": status})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }
 
 func IncreaseVictimDuration(ctx *gin.Context) {

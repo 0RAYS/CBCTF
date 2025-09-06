@@ -62,9 +62,8 @@ func StartTestVictim(ctx *gin.Context) {
 		websocket.Send(true, selfID, wm.SuccessLevel, wm.StartVictimWSType, "Start Victim", "Done")
 		return
 	}()
-	status := service.GetVictimStatus(db.DB, 0, challenge)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": status})
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
 }
 
 func StopTestVictim(ctx *gin.Context) {
