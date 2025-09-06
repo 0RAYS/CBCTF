@@ -304,6 +304,7 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestChallengeID, challengeID ui
 		VPC:              &victim.VPC,
 		Endpoints:        &victim.Endpoints,
 		ExposedEndpoints: &victim.ExposedEndpoints,
+		Start:            utils.Ptr(time.Now()),
 	}); !ok {
 		return model.Victim{}, false, msg
 	}
@@ -325,7 +326,11 @@ func GetVictimStatus(tx *gorm.DB, teamID uint, challenge model.Challenge) gin.H 
 	if !ok {
 		return data
 	}
-	data["target"] = victim.RemoteAddr()
+	targets := victim.RemoteAddr()
+	if len(targets) == 0 {
+		return data
+	}
+	data["target"] = targets
 	data["status"] = "Running"
 	data["remaining"] = victim.Remaining().Seconds()
 	return data
