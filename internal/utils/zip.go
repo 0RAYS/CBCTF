@@ -9,6 +9,10 @@ import (
 )
 
 func Zip(path, zipPath string) error {
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return err
+	}
 	zipFile, err := os.Create(zipPath)
 	if err != nil {
 		return err
@@ -24,10 +28,6 @@ func Zip(path, zipPath string) error {
 			log.Logger.Warningf("Failed to close zip writer: %s", cerr)
 		}
 	}()
-	entries, err := os.ReadDir(path)
-	if err != nil {
-		return err
-	}
 	for _, entry := range entries {
 		if entry.IsDir() {
 			continue
