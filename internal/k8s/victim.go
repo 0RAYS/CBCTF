@@ -16,52 +16,10 @@ import (
 	"sync"
 
 	kubeovnv1 "github.com/JBNRZ/kubeovn-api/pkg/apis/kubeovn/v1"
-	netattv1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
 	corev1 "k8s.io/api/core/v1"
 	netv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
-
-type Result struct {
-	OK  bool
-	MSG string
-}
-
-type CreateNADResult struct {
-	NAD *netattv1.NetworkAttachmentDefinition
-	OK  bool
-	MSG string
-}
-
-type CreateSubnetResult struct {
-	Subnet *kubeovnv1.Subnet
-	OK     bool
-	MSG    string
-}
-
-type CreateVPCNatGWResult struct {
-	VPCNatGW *kubeovnv1.VpcNatGateway
-	OK       bool
-	MSG      string
-}
-
-type CreateEIPResult struct {
-	EIP *kubeovnv1.IptablesEIP
-	OK  bool
-	MSG string
-}
-
-type CreateDNatResult struct {
-	DNat *kubeovnv1.IptablesDnatRule
-	OK   bool
-	MSG  string
-}
-
-type CreateSNatResult struct {
-	SNat *kubeovnv1.IptablesSnatRule
-	OK   bool
-	MSG  string
-}
 
 // StartVictim model.Victim Preload model.Pod
 func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exposes, bool, string) {
@@ -73,6 +31,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 		"team_id":              strconv.Itoa(int(victim.TeamID.V)),
 		"challenge_id":         strconv.Itoa(int(victim.ChallengeID)),
 		"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID.V)),
+		VictimPodTag:           VictimPodTag,
 	}
 	subnetMap := make(map[string]*model.Subnet)
 	netAttchDefMap := make(map[string]*model.NetAttachDef)
@@ -363,7 +322,6 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", netAttachDef.Name, globalNamespace)] = network.IP
 				}
 			}
-			labels[VictimPodTag] = pod.Name
 			pOptions := CreatePodOptions{
 				Name:        pod.Name,
 				Labels:      labels,

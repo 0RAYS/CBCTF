@@ -173,9 +173,9 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 		"team_id":              strconv.Itoa(int(victim.TeamID.V)),
 		"challenge_id":         strconv.Itoa(int(victim.ChallengeID)),
 		"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID.V)),
+		FrpcPodTag:             FrpcPodTag,
 	}
 	for _, podName := range frpcPodNameL {
-		labels[FrpcPodTag] = podName
 		fcm, ok, msg := CreateConfigMap(ctx, CreateConfigMapOptions{
 			Name:   fmt.Sprintf("cm-%s", utils.RandStr(20)),
 			Labels: labels,

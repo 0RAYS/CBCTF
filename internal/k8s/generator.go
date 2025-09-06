@@ -42,7 +42,7 @@ func StartGenerator(ctx context.Context, challenge model.Challenge) (*corev1.Pod
 		generatorName = fmt.Sprintf("gen-%s", utils.RandStr(20))
 		containerName = fmt.Sprintf("ctn-%s", utils.RandStr(20))
 		volumeName    = fmt.Sprintf("vol-%s", utils.RandStr(20))
-		labels        = map[string]string{GeneratorPodTag: generatorName, "contest_challenge_id": strconv.Itoa(int(challenge.ID))}
+		labels        = map[string]string{GeneratorPodTag: GeneratorPodTag, "contest_challenge_id": strconv.Itoa(int(challenge.ID))}
 	)
 	if challenge.GeneratorImage == "" {
 		return nil, false, i18n.InvalidDockerImage
