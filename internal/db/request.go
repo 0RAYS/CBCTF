@@ -50,18 +50,6 @@ func InitRequestRepo(tx *gorm.DB) *RequestRepo {
 	}
 }
 
-func (r *RequestRepo) GetByMagic(magic string, optionsL ...GetOptions) ([]model.Request, int64, bool, string) {
-	options := GetOptions{}
-	if len(optionsL) > 0 {
-		options = optionsL[0]
-	}
-	if len(options.Conditions) == 0 {
-		options.Conditions = make(map[string]any)
-	}
-	options.Conditions["magic"] = magic
-	return r.List(-1, -1, options)
-}
-
 func (r *RequestRepo) CountIP() (int64, bool, string) {
 	var count int64
 	res := r.DB.Model(&model.Request{}).Distinct("ip").Count(&count)

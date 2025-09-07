@@ -8,20 +8,6 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetTeamIDByUserID(tx *gorm.DB, userID uint) ([]uint, bool, string) {
-	var uts []model.UserTeam
-	res := tx.Model(&model.UserTeam{}).Where("user_id = ?", userID).Find(&uts)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to get team: %s", res.Error)
-		return nil, false, i18n.GetTeamError
-	}
-	var idL []uint
-	for _, ut := range uts {
-		idL = append(idL, ut.TeamID)
-	}
-	return idL, true, i18n.Success
-}
-
 func GetContestIDByUserID(tx *gorm.DB, userID uint) ([]uint, bool, string) {
 	var ucs []model.UserContest
 	res := tx.Model(&model.UserContest{}).Where("user_id = ?", userID).Find(&ucs)
