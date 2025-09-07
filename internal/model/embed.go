@@ -8,27 +8,6 @@ import (
 	"strings"
 )
 
-type UintList []uint
-
-func (u UintList) Value() (driver.Value, error) {
-	if len(u) == 0 {
-		return nil, nil
-	}
-	return json.Marshal(u)
-}
-
-func (u *UintList) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
-		return fmt.Errorf("failed to scan UintList value")
-	}
-	if len(bytes) == 0 {
-		*u = nil
-		return nil
-	}
-	return json.Unmarshal(bytes, u)
-}
-
 type AvatarURL string
 
 func (a AvatarURL) Value() (driver.Value, error) {

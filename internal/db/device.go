@@ -2,7 +2,6 @@ package db
 
 import (
 	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 
 	"gorm.io/gorm"
@@ -53,30 +52,4 @@ func (d *DeviceRepo) RecordDevice(options CreateDeviceOptions) (bool, string) {
 		return false, i18n.GetDeviceError
 	}
 	return d.DiffUpdate(device.ID, DiffUpdateDeviceOptions{Count: 1})
-}
-
-func (d *DeviceRepo) GetByMagic(magic string) ([]model.Device, bool, string) {
-	var devices []model.Device
-	res := d.DB.Model(&model.Device{}).Where("magic = ?", magic).Order("id").Find(&devices)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to get Devices: %s", res.Error)
-		return nil, false, i18n.GetDeviceError
-	}
-	if res.RowsAffected == 0 {
-		return nil, false, i18n.DeviceNotFound
-	}
-	return devices, true, i18n.Success
-}
-
-func (d *DeviceRepo) GetBy2ID(userID uint, magic string) (model.Device, bool, string) {
-	var device model.Device
-	res := d.DB.Model(&model.Device{}).Where("user_id = ? AND magic = ?", userID, magic).Limit(1).Find(&device)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to get Device: %s", res.Error)
-		return model.Device{}, false, i18n.GetDeviceError
-	}
-	if res.RowsAffected == 0 {
-		return model.Device{}, false, i18n.DeviceNotFound
-	}
-	return device, true, i18n.Success
 }
