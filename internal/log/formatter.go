@@ -103,8 +103,7 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	_, _ = fmt.Fprintf(ret, "%s %s | ", LevelColor(LevelText), entry.Time.Format("2006-01-02 15:04:05"))
 	switch t {
 	case DefaultLogType:
-		filepath := strings.SplitN(entry.Caller.File, "/internal/", 2)
-		caller := fmt.Sprintf("internal/%s:%d", filepath[len(filepath)-1], entry.Caller.Line)
+		caller := fmt.Sprintf("%s:%d", entry.Caller.File, entry.Caller.Line)
 		caller = fmt.Sprintf("%-36s", caller)
 		_, _ = fmt.Fprintf(ret, "%s | %s", caller, LevelColor(entry.Message))
 	case TaskLogType:
@@ -148,8 +147,7 @@ func (f TextFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 	_, _ = fmt.Fprintf(ret, "%s %s | ", LevelText, entry.Time.Format("2006-01-02 15:04:05"))
 	switch t {
 	case DefaultLogType:
-		filepath := strings.SplitN(entry.Caller.File, "/internal/", 2)
-		caller := fmt.Sprintf("internal/%s:%d", filepath[len(filepath)-1], entry.Caller.Line)
+		caller := fmt.Sprintf("%s:%d", entry.Caller.File, entry.Caller.Line)
 		caller = fmt.Sprintf("%-36s", caller)
 		_, _ = fmt.Fprintf(ret, "%s | %s", caller, entry.Message)
 	case TaskLogType:
