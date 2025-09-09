@@ -125,6 +125,7 @@ func UpdateChallenge(ctx *gin.Context) {
 	ok, msg = service.UpdateChallenge(tx, challenge, form)
 	if !ok {
 		tx.Rollback()
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
 	tx.Commit()
