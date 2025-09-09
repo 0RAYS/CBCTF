@@ -144,7 +144,7 @@ var DefaultNetworkPolicy = NetworkPolicy{
 type NetworkPolicies []NetworkPolicy
 
 func (n NetworkPolicies) Value() (driver.Value, error) {
-	check := func(blocks []*netv1.IPBlock) []*netv1.IPBlock {
+	tidy := func(blocks []*netv1.IPBlock) []*netv1.IPBlock {
 		return slices.DeleteFunc(blocks, func(b *netv1.IPBlock) bool {
 			if b.CIDR == "" {
 				return true
@@ -153,25 +153,20 @@ func (n NetworkPolicies) Value() (driver.Value, error) {
 			if err != nil {
 				return true
 			}
-			for _, except := range b.Except {
-				if except == "" {
-					continue
-				}
+			b.Except = slices.DeleteFunc(b.Except, func(except string) bool {
 				_, exceptCidr, err := net.ParseCIDR(except)
 				if err != nil {
 					return true
 				}
-				if !cidr.Contains(exceptCidr.IP) {
-					return true
-				}
-			}
+				return !cidr.Contains(exceptCidr.IP)
+			})
 			return false
 		})
 	}
 
 	for i, policy := range n {
-		n[i].From = check(policy.From)
-		n[i].To = check(policy.To)
+		n[i].From = tidy(policy.From)
+		n[i].To = tidy(policy.To)
 	}
 	return json.Marshal(n)
 }
