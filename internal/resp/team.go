@@ -3,6 +3,8 @@ package resp
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/model"
+	"slices"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,6 +30,9 @@ func GetSolvedStateResp(solved []model.ContestFlag, all []model.ContestFlag) []g
 		}
 		data = append(data, gin.H{"category": k, "solved": solvedCount[k], "all": v})
 	}
+	slices.SortFunc(data, func(a, b gin.H) int {
+		return strings.Compare(a["category"].(string), b["category"].(string))
+	})
 	return data
 }
 
