@@ -28,7 +28,7 @@ func LoadDockerComposeYaml(data string) (*types.Project, bool, string) {
 	})
 	if err != nil {
 		log.Logger.Warningf("Failed to load docker-compose: %s", err)
-		return nil, false, i18n.UnknownError
+		return nil, false, i18n.InvalidDockerComposeYaml
 	}
 	return cfg, true, i18n.Success
 }
