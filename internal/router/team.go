@@ -126,7 +126,7 @@ func DeleteTeam(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
 	tx := db.DB.Begin()
 	ok, msg := db.InitTeamRepo(tx).Delete(team.ID)
-	if ok {
+	if !ok {
 		tx.Rollback()
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
