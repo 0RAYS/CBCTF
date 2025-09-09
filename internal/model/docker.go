@@ -2,8 +2,6 @@ package model
 
 import (
 	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
-	"CBCTF/internal/utils"
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
@@ -79,19 +77,12 @@ type Networks []Network
 
 func (n Networks) Value() (driver.Value, error) {
 	n = slices.DeleteFunc(n, func(n Network) bool {
-		if n.CIDR == "" && n.Gateway == "" && n.IP == "" {
+		if n.CIDR == "" || n.Gateway == "" || n.IP == "" {
 			return true
 		}
 		_, cidr, err := net.ParseCIDR(n.CIDR)
 		if err != nil {
 			return true
-		}
-		if n.Gateway == "" {
-			n.Gateway, err = utils.GetGatewayIP(n.CIDR)
-			if err != nil {
-				log.Logger.Warningf("Get first IP fail: %s", err)
-				return true
-			}
 		}
 		gateway := net.ParseIP(n.Gateway)
 		if gateway == nil || !cidr.Contains(gateway) {
