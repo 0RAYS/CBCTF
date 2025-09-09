@@ -43,6 +43,8 @@ func GetTeamResp(team model.Team) gin.H {
 		"users":      db.InitTeamRepo(db.DB).CountAssociation(team, "Users"),
 		"desc":       team.Desc,
 		"captain_id": team.CaptainID,
+		"banned":     team.Banned,
+		"hidden":     team.Hidden,
 	}
 	return data
 }
