@@ -154,6 +154,9 @@ func (n NetworkPolicies) Value() (driver.Value, error) {
 				return true
 			}
 			for _, except := range b.Except {
+				if except == "" {
+					continue
+				}
 				_, exceptCidr, err := net.ParseCIDR(except)
 				if err != nil {
 					return true
