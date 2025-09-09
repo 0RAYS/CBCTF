@@ -112,12 +112,26 @@ func CreatePodDockerFlag(tx *gorm.DB, challenge model.Challenge, dockerCompose s
 		if network.Name == "default" {
 			continue
 		}
-		tmp := model.Network{External: network.External.External, Name: network.Name}
-		if len(network.Ipam.Config) > 0 {
-			tmp.CIDR = network.Ipam.Config[0].Subnet
-			tmp.Gateway = network.Ipam.Config[0].Gateway
+		if len(network.Ipam.Config) < 0 {
+			return false, i18n.InvalidDockerComposeYaml
 		}
-		networksMap[network.Name] = tmp
+		_, subnet, err := net.ParseCIDR(network.Ipam.Config[0].Subnet)
+		if err != nil {
+			return false, i18n.InvalidDockerComposeYaml
+		}
+		gateway := net.ParseIP(network.Ipam.Config[0].Gateway)
+		if gateway == nil {
+			return false, i18n.InvalidDockerComposeYaml
+		}
+		if !subnet.Contains(gateway) {
+			return false, i18n.InvalidDockerComposeYaml
+		}
+		networksMap[network.Name] = model.Network{
+			External: network.External.External,
+			Name:     network.Name,
+			CIDR:     network.Ipam.Config[0].Subnet,
+			Gateway:  network.Ipam.Config[0].Gateway,
+		}
 	}
 	flagOptions := make([]db.CreateChallengeFlagOptions, 0)
 	dockerRepo := db.InitDockerRepo(tx)
@@ -149,13 +163,20 @@ func CreatePodDockerFlag(tx *gorm.DB, challenge model.Challenge, dockerCompose s
 			if key == "default" {
 				continue
 			}
-			if value == nil || net.ParseIP(value.Ipv4Address) == nil {
+			if value == nil {
+				return false, i18n.InvalidDockerComposeYaml
+			}
+			ip := net.ParseIP(value.Ipv4Address)
+			if ip == nil {
 				return false, i18n.InvalidDockerComposeYaml
 			}
 			network, ok := networksMap[key]
 			if !ok {
 				log.Logger.Warningf("Network %s not found in networks", key)
-				return false, i18n.UnknownError
+				return false, i18n.InvalidDockerComposeYaml
+			}
+			if _, subnet, err := net.ParseCIDR(network.CIDR); err != nil || !subnet.Contains(ip) {
+				return false, i18n.InvalidDockerComposeYaml
 			}
 			network.IP = value.Ipv4Address
 			networks = append(networks, network)
