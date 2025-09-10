@@ -15,7 +15,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-var secret = UUID()
+var JWTSecret = UUID()
 
 // GenerateToken 生成token
 func GenerateToken(id uint, name string, isAdmin bool, magic string) (tokenString string, err error) {
@@ -25,19 +25,19 @@ func GenerateToken(id uint, name string, isAdmin bool, magic string) (tokenStrin
 		IsAdmin: isAdmin,
 		X:       HashMagic(magic),
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(6 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
 		}}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-	tokenString, err = token.SignedString([]byte(secret))
+	tokenString, err = token.SignedString([]byte(JWTSecret))
 	return tokenString, err
 }
 
 // ParseToken 解析token
 func ParseToken(t string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(t, &Claims{}, func(token *jwt.Token) (any, error) {
-		return []byte(secret), nil
+		return []byte(JWTSecret), nil
 	})
 	if err != nil {
 		return nil, err
