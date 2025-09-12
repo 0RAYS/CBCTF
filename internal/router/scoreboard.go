@@ -46,7 +46,7 @@ func GetTeamRanking(ctx *gin.Context) {
 			count--
 			continue
 		}
-		tmp := resp.GetTeamRankingResp(team, solved, contestFlags, middleware.IsAdmin(ctx))
+		tmp := resp.GetTeamRankingResp(team, solved, contestFlags)
 		tmp["users"] = repo.CountAssociation(team, "Users")
 		data = append(data, tmp)
 	}
