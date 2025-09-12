@@ -8,7 +8,7 @@ import (
 )
 
 // GetTeamRankingResp model.ContestFlag Preload model.ContestChallenge
-func GetTeamRankingResp(team model.Team, solved []model.ContestFlag, flags []model.ContestFlag, admin bool) gin.H {
+func GetTeamRankingResp(team model.Team, solved []model.ContestFlag, flags []model.ContestFlag) gin.H {
 	data := gin.H{
 		"id":     team.ID,
 		"name":   team.Name,
@@ -16,10 +16,8 @@ func GetTeamRankingResp(team model.Team, solved []model.ContestFlag, flags []mod
 		"score":  team.Score,
 		"avatar": team.Avatar,
 		"last":   team.Last,
+		"hidden": team.Hidden,
 		"solved": GetSolvedStateResp(solved, flags),
-	}
-	if admin {
-		data["hidden"] = team.Hidden
 	}
 	return data
 }
