@@ -16,7 +16,7 @@ import (
 
 func GetContest(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
-	champion, _, _, _ := service.GetTeamRanking(db.DB, contest.ID, 1, 0)
+	champion, _, _, _ := service.GetTeamRanking(db.DB, contest, 1, 0)
 	data := resp.GetContestResp(contest, middleware.IsAdmin(ctx))
 	data["highest"] = 0
 	if len(champion) > 0 {
