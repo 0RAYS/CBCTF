@@ -29,7 +29,7 @@ func GetTeamRanking(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	teams, count, ok, msg := service.GetTeamRanking(db.DB, contest.ID, form.Limit, form.Offset)
+	teams, count, ok, msg := service.GetTeamRanking(db.DB, contest, form.Limit, form.Offset)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -60,7 +60,7 @@ func GetScoreboard(ctx *gin.Context) {
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	teams, count, ok, msg := service.GetTeamRanking(db.DB, contest.ID, form.Limit, form.Offset)
+	teams, count, ok, msg := service.GetTeamRanking(db.DB, contest, form.Limit, form.Offset)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
@@ -137,7 +137,7 @@ func GetScoreboard(ctx *gin.Context) {
 
 func GetRankTimeline(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
-	teams, _, ok, msg := service.GetTeamRanking(db.DB, contest.ID, 10, 0)
+	teams, _, ok, msg := service.GetTeamRanking(db.DB, contest, 10, 0)
 	if !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return

@@ -26,16 +26,7 @@ func updateTeamRanking(c *cron.Cron) {
 			if time.Now().Sub(contest.Start.Add(contest.Duration)) > time.Minute*10 {
 				continue
 			}
-			service.UpdateTeamRanking(db.DB, contest.ID)
-			teams, _, ok, _ := service.GetTeamRanking(db.DB, contest.ID, -1, -1)
-			if !ok {
-				continue
-			}
-			teamRepo := db.InitTeamRepo(db.DB)
-			for i, team := range teams {
-				rank := i + 1
-				teamRepo.Update(team.ID, db.UpdateTeamOptions{Rank: &rank})
-			}
+			service.UpdateTeamRanking(db.DB, contest, -1, -1)
 		}
 	})
 	function()
@@ -91,7 +82,7 @@ func updateUserRanking(c *cron.Cron) {
 				Solved: &solved,
 			})
 		}
-		service.UpdateUserRanking(db.DB)
+		service.UpdateUserRanking(db.DB, -1, -1)
 	})
 	function()
 	c.Schedule(cron.Every(3*time.Hour), cron.FuncJob(function))
