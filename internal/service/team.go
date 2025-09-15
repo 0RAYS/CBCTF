@@ -174,20 +174,22 @@ func CalcTeamScore(tx *gorm.DB, team model.Team) (float64, bool, string) {
 			continue
 		}
 		var rate float64
-		bloodTeam, _, _ := submissionRepo.GetBloodTeam(submission.ContestFlagID)
-		for i, teamID := range bloodTeam {
-			if teamID == team.ID {
-				switch i {
-				case 0:
-					rate = model.FirstBloodRate
-				case 1:
-					rate = model.SecondBloodRate
-				case 2:
-					rate = model.ThirdBloodRate
+		if team.Contest.Blood {
+			bloodTeam, _, _ := submissionRepo.GetBloodTeam(submission.ContestFlagID)
+			for i, teamID := range bloodTeam {
+				if teamID == team.ID {
+					switch i {
+					case 0:
+						rate = model.FirstBloodRate
+					case 1:
+						rate = model.SecondBloodRate
+					case 2:
+						rate = model.ThirdBloodRate
+					}
 				}
-			}
-			if rate > 0 {
-				break
+				if rate > 0 {
+					break
+				}
 			}
 		}
 		totalScore += score + submission.ContestFlag.Score*rate
