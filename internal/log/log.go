@@ -34,7 +34,7 @@ func Init() {
 				logrus.WarnLevel:  writer,
 				logrus.TraceLevel: writer,
 				logrus.FatalLevel: writer,
-			}, TextFormatter{},
+			}, Formatter{},
 		))
 	}
 	switch config.Env.Log.Level {
