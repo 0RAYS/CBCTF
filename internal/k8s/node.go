@@ -40,22 +40,6 @@ func ListSchedulableNodes(ctx context.Context) ([]*corev1.Node, bool, string) {
 	return nodes, true, i18n.Success
 }
 
-func GetNodeIPList(ctx context.Context) ([]string, bool, string) {
-	nodes, ok, msg := ListNodes(ctx)
-	if !ok {
-		return nil, false, msg
-	}
-	ips := make([]string, 0)
-	for _, node := range nodes.Items {
-		for _, addr := range node.Status.Addresses {
-			if addr.Type == corev1.NodeInternalIP || addr.Type == corev1.NodeExternalIP {
-				ips = append(ips, addr.Address)
-			}
-		}
-	}
-	return ips, true, i18n.Success
-}
-
 func GetNodeImageList(ctx context.Context) (map[string][]string, bool, string) {
 	nodes, ok, msg := ListSchedulableNodes(ctx)
 	if !ok {

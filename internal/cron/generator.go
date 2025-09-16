@@ -20,7 +20,7 @@ import (
 func prepareGenerator(c *cron.Cron) {
 	function := exec("PrepareGenerator", func() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-		nodes, ok, _ := k8s.GetNodeIPList(ctx)
+		nodes, ok, _ := k8s.ListSchedulableNodes(ctx)
 		cancel()
 		if !ok {
 			log.Logger.Warningf("Failed to count nodes")
