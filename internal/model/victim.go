@@ -16,6 +16,8 @@ import (
 type Victim struct {
 	ChallengeID        uint              `json:"challenge_id"`
 	Challenge          Challenge         `json:"-"`
+	ContestID          sql.Null[uint]    `json:"contest_id"`
+	Contest            Contest           `json:"-"`
 	ContestChallengeID sql.Null[uint]    `json:"contest_challenge_id"`
 	ContestChallenge   *ContestChallenge `json:"-"`
 	TeamID             sql.Null[uint]    `json:"team_id"`

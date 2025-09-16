@@ -29,6 +29,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 		"victim_id":            strconv.Itoa(int(victim.ID)),
 		"user_id":              strconv.Itoa(int(victim.UserID.V)),
 		"team_id":              strconv.Itoa(int(victim.TeamID.V)),
+		"contest_id":           strconv.Itoa(int(victim.ContestID.V)),
 		"challenge_id":         strconv.Itoa(int(victim.ChallengeID)),
 		"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID.V)),
 		VictimPodTag:           VictimPodTag,
@@ -378,6 +379,7 @@ func StopVictim(ctx context.Context, victim model.Victim) (bool, string) {
 		"victim_id":            strconv.Itoa(int(victim.ID)),
 		"user_id":              strconv.Itoa(int(victim.UserID.V)),
 		"team_id":              strconv.Itoa(int(victim.TeamID.V)),
+		"contest_id":           strconv.Itoa(int(victim.ContestID.V)),
 		"challenge_id":         strconv.Itoa(int(victim.ChallengeID)),
 		"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID.V)),
 	}

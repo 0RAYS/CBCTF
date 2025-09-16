@@ -29,7 +29,7 @@ func needVPC(dockers []model.Docker) bool {
 	return false
 }
 
-func StartVictim(tx *gorm.DB, userID, teamID, contestChallengeID, challengeID uint) (model.Victim, bool, string) {
+func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID, challengeID uint) (model.Victim, bool, string) {
 	var (
 		challengeRepo = db.InitChallengeRepo(tx)
 		victimRepo    = db.InitVictimRepo(tx)
@@ -57,6 +57,9 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestChallengeID, challengeID ui
 	}
 	if teamID > 0 {
 		vOptions.TeamID = sql.Null[uint]{V: teamID, Valid: true}
+	}
+	if contestID > 0 {
+		vOptions.ContestID = sql.Null[uint]{V: contestID, Valid: true}
 	}
 	if contestChallengeID > 0 {
 		vOptions.ContestChallengeID = sql.Null[uint]{V: contestChallengeID, Valid: true}
