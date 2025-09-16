@@ -158,7 +158,7 @@ func GetTeamSolvedFlags(tx *gorm.DB, team model.Team) ([]model.ContestFlag, bool
 	return solvedContestFlags, true, i18n.Success
 }
 
-func CalcTeamScore(tx *gorm.DB, team model.Team) (float64, bool, string) {
+func CalcTeamScore(tx *gorm.DB, team model.Team, blood bool) (float64, bool, string) {
 	submissionRepo := db.InitSubmissionRepo(tx)
 	submissions, _, ok, msg := submissionRepo.List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"team_id": team.ID, "solved": true},
@@ -174,7 +174,7 @@ func CalcTeamScore(tx *gorm.DB, team model.Team) (float64, bool, string) {
 			continue
 		}
 		var rate float64
-		if team.Contest.Blood {
+		if blood {
 			bloodTeam, _, _ := submissionRepo.GetBloodTeam(submission.ContestFlagID)
 			for i, teamID := range bloodTeam {
 				if teamID == team.ID {
