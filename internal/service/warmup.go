@@ -33,9 +33,22 @@ func WarmUpContestChallengeImage(form f.WarmUpImageForm) (bool, string) {
 		return false, msg
 	}
 	for _, node := range nodes {
+		images := form.Images
+		if corev1.PullPolicy(form.PullPolicy) != corev1.PullAlways {
+			images = slices.DeleteFunc(form.Images, func(image string) bool {
+				for _, containerImage := range node.Status.Images {
+					for _, name := range containerImage.Names {
+						if name == image {
+							return true
+						}
+					}
+				}
+				return false
+			})
+		}
 		if _, ok, msg = k8s.CreateJob(ctx, k8s.CreateJobOptions{
 			Name:       fmt.Sprintf("image-puller-%s", utils.RandStr(5)),
-			Images:     form.Images,
+			Images:     images,
 			PullPolicy: form.PullPolicy,
 			NodeSelector: map[string]string{
 				"kubernetes.io/hostname": node.Name,
