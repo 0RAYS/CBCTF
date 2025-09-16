@@ -20,10 +20,11 @@ func StartVictim(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.StartVictimEventType)
 	user := middleware.GetSelf(ctx).(model.User)
 	team := middleware.GetTeam(ctx)
+	contest := middleware.GetContest(ctx)
 	challenge := middleware.GetChallenge(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	go func() {
-		_, ok, _ := service.StartVictim(db.DB, user.ID, team.ID, contestChallenge.ID, challenge.ID)
+		_, ok, _ := service.StartVictim(db.DB, user.ID, team.ID, contest.ID, contestChallenge.ID, challenge.ID)
 		if !ok {
 			websocket.Send(false, user.ID, wm.ErrorLevel, wm.StartVictimWSType, "Start Victim", "Failed")
 			victim, ok, _ := db.InitVictimRepo(db.DB).HasAliveVictim(team.ID, challenge.ID)

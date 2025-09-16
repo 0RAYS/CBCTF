@@ -16,6 +16,7 @@ type VictimRepo struct {
 
 type CreateVictimOptions struct {
 	ChallengeID        uint
+	ContestID          sql.Null[uint]
 	ContestChallengeID sql.Null[uint]
 	TeamID             sql.Null[uint]
 	UserID             sql.Null[uint]
@@ -28,6 +29,7 @@ type CreateVictimOptions struct {
 func (c CreateVictimOptions) Convert2Model() model.Model {
 	return model.Victim{
 		ChallengeID:        c.ChallengeID,
+		ContestID:          c.ContestID,
 		ContestChallengeID: c.ContestChallengeID,
 		TeamID:             c.TeamID,
 		UserID:             c.UserID,

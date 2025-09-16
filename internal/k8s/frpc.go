@@ -171,6 +171,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 		"victim_id":            strconv.Itoa(int(victim.ID)),
 		"user_id":              strconv.Itoa(int(victim.UserID.V)),
 		"team_id":              strconv.Itoa(int(victim.TeamID.V)),
+		"contest_id":           strconv.Itoa(int(victim.ContestID.V)),
 		"challenge_id":         strconv.Itoa(int(victim.ChallengeID)),
 		"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID.V)),
 		FrpcPodTag:             FrpcPodTag,
