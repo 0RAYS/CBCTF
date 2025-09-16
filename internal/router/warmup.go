@@ -80,7 +80,13 @@ func GetContestVictims(ctx *gin.Context) {
 		info["challenge"] = victim.ContestChallenge.Name
 		data = append(data, info)
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"victims": data, "count": count}})
+	total, ok, _ := db.InitVictimRepo(db.DB).Count(db.CountOptions{
+		Conditions: map[string]any{"contest_id": contest.ID}, Deleted: true,
+	})
+	if !ok {
+		total = count
+	}
+	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"victims": data, "count": total, "running": count}})
 }
 
 func StartContestVictims(ctx *gin.Context) {
