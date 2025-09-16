@@ -48,7 +48,7 @@ func WarmUpContestChallengeImage(form f.WarmUpImageForm) (bool, string) {
 }
 
 func GetContestVictims(tx *gorm.DB, contest model.Contest, form f.GetContestVictimsForm) ([]model.Victim, int64, bool, string) {
-	var contestChallengeID uint
+	var challengeID uint
 	if form.ChallengeID != "" {
 		challenge, ok, msg := db.InitChallengeRepo(tx).GetByRandID(form.ChallengeID, db.GetOptions{
 			Selects: []string{"id", "type"},
@@ -56,17 +56,10 @@ func GetContestVictims(tx *gorm.DB, contest model.Contest, form f.GetContestVict
 		if !ok || challenge.Type != model.PodsChallengeType {
 			return nil, 0, false, msg
 		}
-		contestChallenge, ok, msg := db.InitContestChallengeRepo(tx).Get(db.GetOptions{
-			Conditions: map[string]any{"contest_id": contest.ID, "challenge_id": challenge.ID},
-			Selects:    []string{"id"},
-		})
-		if !ok {
-			return nil, 0, false, msg
-		}
-		contestChallengeID = contestChallenge.ID
+		challengeID = challenge.ID
 	}
 	options := db.GetOptions{
-		Conditions: make(map[string]any),
+		Conditions: map[string]any{"contest_id": contest.ID},
 		Preloads: map[string]db.GetOptions{
 			"Pods":             {},
 			"User":             {Selects: []string{"id", "name"}},
@@ -74,8 +67,8 @@ func GetContestVictims(tx *gorm.DB, contest model.Contest, form f.GetContestVict
 			"ContestChallenge": {Selects: []string{"id", "name"}},
 		},
 	}
-	if contestChallengeID != 0 {
-		options.Conditions["contest_challenge_id"] = contestChallengeID
+	if challengeID != 0 {
+		options.Conditions["challenge_id"] = challengeID
 	}
 	if form.TeamID != 0 {
 		options.Conditions["team_id"] = form.TeamID
@@ -85,11 +78,11 @@ func GetContestVictims(tx *gorm.DB, contest model.Contest, form f.GetContestVict
 	}
 	victims, count, ok, msg := db.InitVictimRepo(tx).List(form.Limit, form.Offset, options)
 	return slices.DeleteFunc(victims, func(victim model.Victim) bool {
-		if victim.UserID.Valid && victim.TeamID.Valid && victim.ContestChallengeID.Valid && victim.ContestID.Valid {
-			return false
+		if !victim.UserID.Valid || !victim.TeamID.Valid || !victim.ContestChallengeID.Valid || !victim.ContestID.Valid {
+			count--
+			return true
 		}
-		count--
-		return true
+		return false
 	}), count, ok, msg
 }
 
