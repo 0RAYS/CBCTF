@@ -35,16 +35,6 @@ func Init() *gin.Engine {
 		router.GET("/ws", wsm.WSAuth, websocket.WS)
 	}
 
-	router.Use(
-		middleware.SetTrace, middleware.SetMagic, middleware.Logger, middleware.Prometheus, middleware.AccessLog,
-		middleware.I18n, middleware.RateLimit("globals", config.Env.Gin.RateLimit.Global, time.Minute), middleware.Events,
-	)
-
-	{
-		pprof.Register(router)
-		RegisterMetricsRouter(router)
-	}
-
 	{
 		router.GET("/", func(ctx *gin.Context) {
 			if strings.HasPrefix(config.Env.Frontend, "http://") || strings.HasPrefix(config.Env.Frontend, "https://") {
@@ -54,6 +44,16 @@ func Init() *gin.Engine {
 			}
 		})
 		router.StaticFS("/platform", http.FS(frontend.SubFS))
+	}
+
+	router.Use(
+		middleware.SetTrace, middleware.SetMagic, middleware.Logger, middleware.Prometheus, middleware.AccessLog,
+		middleware.I18n, middleware.RateLimit("globals", config.Env.Gin.RateLimit.Global, time.Minute), middleware.Events,
+	)
+
+	{
+		pprof.Register(router)
+		RegisterMetricsRouter(router)
 	}
 
 	{
