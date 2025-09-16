@@ -63,7 +63,7 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, contest model.Contest
 		}); !ok {
 			return "", model.Submission{}, false, msg
 		}
-		score, ok, msg := CalcTeamScore(tx, team)
+		score, ok, msg := CalcTeamScore(tx, team, contest.Blood)
 		if !ok {
 			return "", model.Submission{}, false, msg
 		}

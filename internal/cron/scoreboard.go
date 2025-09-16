@@ -53,6 +53,25 @@ func updateUserRanking(c *cron.Cron) {
 		if !ok {
 			return
 		}
+		contestIDL := make([]uint, 0)
+		for _, user := range users {
+			for _, submission := range user.Submissions {
+				if !slices.Contains(contestIDL, submission.ContestID) {
+					contestIDL = append(contestIDL, submission.ContestID)
+				}
+			}
+		}
+		contests, _, ok, _ := db.InitContestRepo(db.DB).List(-1, -1, db.GetOptions{
+			Conditions: map[string]any{"id": contestIDL},
+			Selects:    []string{"id", "blood"},
+		})
+		if !ok {
+			return
+		}
+		blood := make(map[uint]bool)
+		for _, contest := range contests {
+			blood[contest.ID] = contest.Blood
+		}
 		submissionRepo := db.InitSubmissionRepo(db.DB)
 		for _, user := range users {
 			var solved int64 = 0
@@ -60,19 +79,21 @@ func updateUserRanking(c *cron.Cron) {
 			for _, submission := range user.Submissions {
 				solved++
 				var rate float64
-				bloodTeam, _, _ := submissionRepo.GetBloodTeam(submission.ContestFlagID)
-				switch slices.IndexFunc(bloodTeam, func(i uint) bool {
-					if i == submission.TeamID {
-						return true
+				if a, _ := blood[submission.ContestID]; a {
+					bloodTeam, _, _ := submissionRepo.GetBloodTeam(submission.ContestFlagID)
+					switch slices.IndexFunc(bloodTeam, func(i uint) bool {
+						if i == submission.TeamID {
+							return true
+						}
+						return false
+					}) {
+					case 0:
+						rate = model.FirstBloodRate
+					case 1:
+						rate = model.SecondBloodRate
+					case 2:
+						rate = model.ThirdBloodRate
 					}
-					return false
-				}) {
-				case 0:
-					rate = model.FirstBloodRate
-				case 1:
-					rate = model.SecondBloodRate
-				case 2:
-					rate = model.ThirdBloodRate
 				}
 				score += submission.ContestFlag.CurrentScore + submission.ContestFlag.Score*rate
 			}

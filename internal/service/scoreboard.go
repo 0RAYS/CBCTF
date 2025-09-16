@@ -23,7 +23,7 @@ func UpdateTeamRanking(tx *gorm.DB, contest model.Contest, limit, offset int) ([
 		return nil, 0, false, msg
 	}
 	for i, team := range teams {
-		score, ok, msg = CalcTeamScore(tx, team)
+		score, ok, msg = CalcTeamScore(tx, team, contest.Blood)
 		if !ok {
 			continue
 		}
