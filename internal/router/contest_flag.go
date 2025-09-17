@@ -46,12 +46,7 @@ func SubmitFlag(ctx *gin.Context) {
 			if !ok {
 				return
 			}
-			gtx := db.DB.Begin()
-			if ok, _ = service.StopVictim(gtx, victim); !ok {
-				gtx.Rollback()
-				return
-			}
-			gtx.Commit()
+			service.StopVictim(db.DB, victim)
 		}()
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)

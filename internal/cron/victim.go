@@ -30,12 +30,7 @@ func closeTimeoutVictims(c *cron.Cron) {
 		}
 		for _, victim := range victims {
 			if victim.Start.Add(victim.Duration).Before(time.Now()) || (victim.TeamID.Valid && victim.Team.Contest.IsOver()) {
-				tx := db.DB.Begin()
-				if ok, _ = service.StopVictim(tx, victim); !ok {
-					tx.Rollback()
-					continue
-				}
-				tx.Commit()
+				service.StopVictim(db.DB, victim)
 			}
 		}
 	})

@@ -31,12 +31,7 @@ func StartVictim(ctx *gin.Context) {
 			if !ok {
 				return
 			}
-			tx := db.DB.Begin()
-			if ok, _ = service.StopVictim(tx, victim); !ok {
-				tx.Rollback()
-				return
-			}
-			tx.Commit()
+			service.StopVictim(db.DB, victim)
 			return
 		}
 		websocket.Send(false, user.ID, wm.SuccessLevel, wm.StartVictimWSType, "Start Victim", "Done")
@@ -84,13 +79,10 @@ func StopVictim(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx := db.DB.Begin()
-	if ok, _ = service.StopVictim(tx, victim); !ok {
-		tx.Rollback()
+	if ok, _ = service.StopVictim(db.DB, victim); !ok {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
-	tx.Commit()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 }
