@@ -16,7 +16,7 @@ func updateTeamRanking(c *cron.Cron) {
 	function := exec("UpdateTeamRanking", func() {
 		repo := db.InitContestRepo(db.DB)
 		contests, _, ok, _ := repo.List(-1, -1, db.GetOptions{
-			Selects:    []string{"id", "start", "duration"},
+			Selects:    []string{"id", "start", "duration", "blood"},
 			Conditions: map[string]any{"hidden": false},
 		})
 		if !ok {
