@@ -187,6 +187,7 @@ const (
 	VictimNotFound    = "VictimNotFound"
 	UpdateVictimError = "UpdateVictimError"
 	HasMuchTime       = "HasMuchTime"
+	VictimLimited     = "VictimLimited"
 
 	CreateWebhookError = "CreateWebhookError"
 	DeleteWebhookError = "DeleteWebhookError"

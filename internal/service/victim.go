@@ -365,3 +365,7 @@ func StopVictim(tx *gorm.DB, victim model.Victim) (bool, string) {
 	prometheus.SubVictimContainerMetrics(1)
 	return ok, msg
 }
+
+func CountTeamVictims(tx *gorm.DB, team model.Team) (int64, bool, string) {
+	return db.InitVictimRepo(tx).Count(db.CountOptions{Conditions: map[string]any{"team_id": team.ID}})
+}
