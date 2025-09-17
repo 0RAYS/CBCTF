@@ -5,6 +5,7 @@ import (
 	f "CBCTF/internal/form"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 	"context"
@@ -120,6 +121,14 @@ func StartContestVictims(tx *gorm.DB, contest model.Contest, form f.StartContest
 			Preloads:   map[string]db.GetOptions{"Contest": {Selects: []string{"id", "name"}}},
 		})
 		if !ok {
+			continue
+		}
+		count, ok, _ := CountTeamVictims(tx, team)
+		if !ok {
+			continue
+		}
+		if count >= contest.Victims {
+			log.Logger.Infof("Team %s reached the limit of contest %d victims, skipping to start victim", team.Name, contest.Victims)
 			continue
 		}
 		teams = append(teams, team)

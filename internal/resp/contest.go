@@ -22,6 +22,7 @@ func GetContestResp(contest model.Contest, admin bool) gin.H {
 		"users":     db.InitContestRepo(db.DB).CountAssociation(contest, "Users"),
 		"notices":   db.InitContestRepo(db.DB).CountAssociation(contest, "Notices"),
 		"prefix":    contest.Prefix,
+		"victims":   contest.Victims,
 		"avatar":    contest.Avatar,
 		"hidden":    contest.Hidden,
 		"blood":     contest.Blood,

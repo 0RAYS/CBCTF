@@ -187,6 +187,7 @@ var resp = map[string]map[string]any{
 	VictimNotFound:    {"zh-CN": "靶机不存在", "en-US": "Victim not found", "code": 404},
 	UpdateVictimError: {"zh-CN": "更新靶机失败", "en-US": "Update Victim failed", "code": 500},
 	HasMuchTime:       {"zh-CN": "距容器关闭20分钟内才可延长时间", "en-US": "Can only extend time within 20 minutes before the container closes", "code": 400},
+	VictimLimited:     {"zh-CN": "队伍靶机数量达到上限", "en-US": "Victim Limited", "code": 400},
 
 	CreateWebhookError: {"zh-CN": "创建Webhook目标失败", "en-US": "Create Webhook failed", "code": 500},
 	DeleteWebhookError: {"zh-CN": "删除Webhook目标失败", "en-US": "Delete Webhook failed", "code": 500},

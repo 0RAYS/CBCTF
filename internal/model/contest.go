@@ -38,6 +38,7 @@ type Contest struct {
 	Duration          time.Duration      `json:"duration"`
 	Blood             bool               `gorm:"default:true" json:"blood"`
 	Hidden            bool               `gorm:"default:true" json:"hidden"`
+	Victims           int64              `gorm:"default:1" json:"victims"`
 	Rules             StringList         `gorm:"type:json" json:"rules"`
 	Prizes            Prizes             `gorm:"type:json" json:"prizes"`
 	Timelines         Timelines          `gorm:"type:json" json:"timelines"`

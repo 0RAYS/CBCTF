@@ -21,6 +21,7 @@ type CreateContestForm struct {
 	Size      int              `form:"size" json:"size"`
 	Start     time.Time        `form:"start" json:"start"`
 	Duration  int64            `form:"duration" json:"duration"`
+	Victims   int64            `form:"victims" json:"victims"`
 	Rules     model.StringList `form:"rules" json:"rules"`
 	Prizes    model.Prizes     `form:"prizes" json:"prizes"`
 	Timelines model.Timelines  `form:"timelines" json:"timelines"`
@@ -51,6 +52,7 @@ type UpdateContestForm struct {
 	Start     *time.Time        `form:"start" json:"start"`
 	Duration  *int64            `form:"duration" json:"duration"`
 	Rules     *model.StringList `form:"rules" json:"rules"`
+	Victims   *int64            `form:"victims" json:"victims"`
 	Prizes    *model.Prizes     `form:"prizes" json:"prizes"`
 	Timelines *model.Timelines  `form:"timelines" json:"timelines"`
 	Hidden    *bool             `form:"hidden" json:"hidden"`

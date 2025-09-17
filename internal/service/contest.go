@@ -5,6 +5,7 @@ import (
 	f "CBCTF/internal/form"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
 	"time"
 
 	"gorm.io/gorm"
@@ -20,6 +21,9 @@ func CreateContest(tx *gorm.DB, form f.CreateContestForm) (model.Contest, bool, 
 	}
 	if form.Duration == 0 {
 		form.Duration = 3600 * 24 * 7
+	}
+	if form.Victims < 1 {
+		form.Victims = 1
 	}
 	if len(form.Rules) == 0 {
 		form.Rules = model.StringList{
@@ -65,6 +69,7 @@ func CreateContest(tx *gorm.DB, form f.CreateContestForm) (model.Contest, bool, 
 		Duration:  time.Duration(form.Duration) * time.Second,
 		Blood:     form.Blood,
 		Hidden:    form.Hidden,
+		Victims:   form.Victims,
 		Rules:     form.Rules,
 		Prizes:    form.Prizes,
 		Timelines: form.Timelines,
@@ -81,6 +86,9 @@ func UpdateContest(tx *gorm.DB, contest model.Contest, form f.UpdateContestForm)
 	if form.Duration != nil {
 		*form.Duration = *form.Duration * 1e9
 	}
+	if form.Victims != nil && *form.Victims < 1 {
+		form.Victims = utils.Ptr(int64(1))
+	}
 	return repo.Update(contest.ID, db.UpdateContestOptions{
 		Name:      form.Name,
 		Desc:      form.Desc,
@@ -91,6 +99,7 @@ func UpdateContest(tx *gorm.DB, contest model.Contest, form f.UpdateContestForm)
 		Duration:  (*time.Duration)(form.Duration),
 		Blood:     form.Blood,
 		Hidden:    form.Hidden,
+		Victims:   form.Victims,
 		Rules:     form.Rules,
 		Prizes:    form.Prizes,
 		Timelines: form.Timelines,

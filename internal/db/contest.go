@@ -26,6 +26,7 @@ type CreateContestOptions struct {
 	Duration  time.Duration
 	Blood     bool
 	Hidden    bool
+	Victims   int64
 	Rules     model.StringList
 	Prizes    model.Prizes
 	Timelines model.Timelines
@@ -43,6 +44,7 @@ func (c CreateContestOptions) Convert2Model() model.Model {
 		Duration:  c.Duration,
 		Blood:     c.Blood,
 		Hidden:    c.Hidden,
+		Victims:   c.Victims,
 		Rules:     c.Rules,
 		Prizes:    c.Prizes,
 		Timelines: c.Timelines,
@@ -63,6 +65,7 @@ type UpdateContestOptions struct {
 	UserCount   *int64
 	TeamCount   *int64
 	NoticeCount *int64
+	Victims     *int64
 	Rules       *model.StringList
 	Prizes      *model.Prizes
 	Timelines   *model.Timelines
@@ -108,6 +111,9 @@ func (u UpdateContestOptions) Convert2Map() map[string]any {
 	}
 	if u.NoticeCount != nil {
 		options["notice_count"] = *u.NoticeCount
+	}
+	if u.Victims != nil {
+		options["victims"] = *u.Victims
 	}
 	if u.Rules != nil {
 		options["rules"] = *u.Rules
