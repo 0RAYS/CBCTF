@@ -92,12 +92,17 @@ func UpdateContestFlag(ctx *gin.Context) {
 	if contestChallenge.Type == model.QuestionChallengeType && form.Value != nil {
 		form.Value = &contestFlag.Value
 	}
+	currentScore := contestFlag.CurrentScore
+	if form.Score != nil && *form.Score < currentScore {
+		currentScore = *form.Score
+	}
 	ok, msg := db.InitContestFlagRepo(db.DB).Update(contestFlag.ID, db.UpdateContestFlagOptions{
-		Value:     form.Value,
-		Score:     form.Score,
-		Decay:     form.Decay,
-		MinScore:  form.MinScore,
-		ScoreType: form.ScoreType,
+		Value:        form.Value,
+		Score:        form.Score,
+		CurrentScore: &currentScore,
+		Decay:        form.Decay,
+		MinScore:     form.MinScore,
+		ScoreType:    form.ScoreType,
 	})
 	if ok {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
