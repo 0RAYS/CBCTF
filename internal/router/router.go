@@ -32,7 +32,7 @@ func Init() *gin.Engine {
 
 	{
 		// 不可接入其他中间件
-		router.GET("/ws", wsm.WSAuth, websocket.WS)
+		router.GET("/ws", wsm.SetTrace, wsm.SetMagic, wsm.Logger, wsm.WSAuth, websocket.WS)
 	}
 
 	{
