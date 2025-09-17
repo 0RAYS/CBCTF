@@ -148,6 +148,9 @@ func StartContestVictims(tx *gorm.DB, contest model.Contest, form f.StartContest
 	}
 	for _, contestChallenge := range contestChallenges {
 		for _, team := range teams {
+			if CheckIfSolved(tx, team, contestChallenge.ContestFlags) {
+				continue
+			}
 			if !CheckIfGenerated(tx, team, contestChallenge.ContestFlags) {
 				if _, ok, msg = CreateTeamFlag(tx, team, contest, contestChallenge); !ok {
 					continue
