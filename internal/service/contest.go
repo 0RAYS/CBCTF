@@ -48,6 +48,11 @@ func CreateContest(tx *gorm.DB, form f.CreateContestForm) (model.Contest, bool, 
 				Title: "比赛结束",
 				Desc:  "停止计分, 公布最终排名",
 			},
+			{
+				Date:  form.Start.Add(time.Duration(form.Duration)).Add(time.Hour * 2),
+				Title: "截至提交 WriteUp",
+				Desc:  "截至提交 WriteUp, 成绩作废",
+			},
 		}
 	}
 	if len(form.Prizes) == 0 {
