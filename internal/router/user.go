@@ -11,6 +11,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func GetUser(ctx *gin.Context) {
@@ -104,7 +105,7 @@ func UpdateUser(ctx *gin.Context) {
 
 func DeleteUser(ctx *gin.Context) {
 	var (
-		tx  = db.DB.Begin()
+		tx  *gorm.DB
 		ok  bool
 		msg string
 	)
@@ -115,9 +116,11 @@ func DeleteUser(ctx *gin.Context) {
 			return
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.DeleteUserEventType)
+		tx = db.DB.Begin()
 		ok, msg = service.DeleteSelf(tx, middleware.GetSelf(ctx).(model.User), form)
 	} else {
 		ctx.Set(middleware.CTXEventTypeKey, model.DeleteUserEventType)
+		tx = db.DB.Begin()
 		ok, msg = db.InitUserRepo(tx).Delete(middleware.GetUser(ctx).ID)
 	}
 	if !ok {
