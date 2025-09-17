@@ -53,7 +53,7 @@ func WS(ctx *gin.Context) {
 	}
 	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
-		log.Logger.Warningf("Failed to upgrade connection: %s", err)
+		log.Logger.Debugf("Failed to upgrade connection: %s", err)
 		return
 	}
 
@@ -61,7 +61,7 @@ func WS(ctx *gin.Context) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			log.Logger.Errorf("Recovered in WS handler: %v", r)
+			log.Logger.Debugf("Recovered in WS handler: %v", r)
 		}
 		mu.Lock()
 		if c, ok := (*clients)[id]; ok {
@@ -81,7 +81,7 @@ func WS(ctx *gin.Context) {
 	for {
 		_, msg, err := c.Conn.ReadMessage()
 		if err != nil && !websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
-			log.Logger.Warningf("Failed to read ws msg: %s", err)
+			log.Logger.Debugf("Failed to read ws msg: %s", err)
 			break
 		}
 		if len(msg) > 0 {
@@ -116,11 +116,11 @@ func Send(admin bool, id uint, level, t, title, msg string) {
 	connection, ok := (*clients)[id]
 	mu.RUnlock()
 	if !ok {
-		log.Logger.Warningf("Failed to found %s-%d connection", role, id)
+		log.Logger.Debugf("Failed to found %s-%d connection", role, id)
 		return
 	}
 	if err := connection.Conn.WriteJSON(model.Send{Level: level, Type: t, Msg: msg, Title: title}); err != nil {
-		log.Logger.Warningf("Failed to send message %s to %s %d: %s", title, role, id, err)
+		log.Logger.Debugf("Failed to send message %s to %s %d: %s", title, role, id, err)
 	} else {
 		log.Logger.Debugf("Send message %s to %s %d", title, role, id)
 	}
@@ -151,7 +151,7 @@ func SendToClients(admin bool, level, t, title, msg string, idL ...uint) {
 			continue
 		}
 		if err := connection.Conn.WriteJSON(model.Send{Level: level, Type: t, Msg: msg, Title: title}); err != nil {
-			log.Logger.Warningf("Failed to send message %s to %s %d: %s", title, role, id, err)
+			log.Logger.Debugf("Failed to send message %s to %s %d: %s", title, role, id, err)
 			continue
 		}
 		count++
@@ -159,6 +159,6 @@ func SendToClients(admin bool, level, t, title, msg string, idL ...uint) {
 	if count > 0 {
 		log.Logger.Debugf("Send message %s to %s %d clients", title, role, count)
 	} else {
-		log.Logger.Warningf("Failed to send message %s to %s %d clients", title, role, len(idL))
+		log.Logger.Debugf("Failed to send message %s to %s %d clients", title, role, len(idL))
 	}
 }
