@@ -157,6 +157,7 @@ func StartContestVictims(tx *gorm.DB, contest model.Contest, form f.StartContest
 	return true, i18n.Success
 }
 
+// StopContestVictims tx 无需开启事务
 func StopContestVictims(tx *gorm.DB, form f.StopContestVictimsForm) (bool, string) {
 	if len(form.Victims) == 0 {
 		return true, i18n.Success
