@@ -34,7 +34,7 @@ func WSAuth(ctx *gin.Context) {
 			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 			return
 		}
-		magic := ctx.Query("m")
+		magic := GetMagic(ctx)
 		if !utils.CompareMagic(magic, claims.X) {
 			go db.InitCheatRepo(db.DB).Create(db.CreateCheatOptions{
 				UserID:  sql.Null[uint]{V: user.ID, Valid: true},
