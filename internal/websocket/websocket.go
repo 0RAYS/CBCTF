@@ -53,16 +53,13 @@ func WS(ctx *gin.Context) {
 	}
 	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
-		log.Logger.Debugf("Failed to upgrade connection: %s", err)
 		return
 	}
 
 	log.Logger.Infof("New connection from %s %d %s", role, id, ip)
 
 	defer func() {
-		if r := recover(); r != nil {
-			log.Logger.Debugf("Recovered in WS handler: %v", r)
-		}
+		recover()
 		mu.Lock()
 		if c, ok := (*clients)[id]; ok {
 			_ = c.Conn.Close()
@@ -80,14 +77,11 @@ func WS(ctx *gin.Context) {
 
 	for {
 		_, msg, err := c.Conn.ReadMessage()
-		if err != nil && !websocket.IsCloseError(err, websocket.CloseNormalClosure, websocket.CloseGoingAway) {
-			log.Logger.Debugf("Failed to read ws msg: %s", err)
+		if err != nil {
 			break
 		}
 		if len(msg) > 0 {
-			if err = handler.HandleReceive(c, msg); err != nil {
-				log.Logger.Debugf("Failed to handle ws msg %s: %s", msg, err)
-			}
+			_ = handler.HandleReceive(c, msg)
 		}
 	}
 	mu.Lock()
@@ -116,12 +110,9 @@ func Send(admin bool, id uint, level, t, title, msg string) {
 	connection, ok := (*clients)[id]
 	mu.RUnlock()
 	if !ok {
-		log.Logger.Debugf("Failed to found %s-%d connection", role, id)
 		return
 	}
-	if err := connection.Conn.WriteJSON(model.Send{Level: level, Type: t, Msg: msg, Title: title}); err != nil {
-		log.Logger.Debugf("Failed to send message %s to %s %d: %s", title, role, id, err)
-	} else {
+	if err := connection.Conn.WriteJSON(model.Send{Level: level, Type: t, Msg: msg, Title: title}); err == nil {
 		log.Logger.Debugf("Send message %s to %s %d", title, role, id)
 	}
 }
@@ -151,14 +142,11 @@ func SendToClients(admin bool, level, t, title, msg string, idL ...uint) {
 			continue
 		}
 		if err := connection.Conn.WriteJSON(model.Send{Level: level, Type: t, Msg: msg, Title: title}); err != nil {
-			log.Logger.Debugf("Failed to send message %s to %s %d: %s", title, role, id, err)
 			continue
 		}
 		count++
 	}
 	if count > 0 {
 		log.Logger.Debugf("Send message %s to %s %d clients", title, role, count)
-	} else {
-		log.Logger.Debugf("Failed to send message %s to %s %d clients", title, role, len(idL))
 	}
 }
