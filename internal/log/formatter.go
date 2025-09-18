@@ -89,14 +89,14 @@ func safeGetValue[T any](entry *logrus.Entry, key string, defaultV T) T {
 	return V
 }
 
-func shortenCaller(old string) string {
-	if len(old) > 36 {
-		old = strings.TrimPrefix(old, "../")
-		old = strings.SplitN(old, "/", 2)[1]
-		old = fmt.Sprintf("../%s", old)
-		return shortenCaller(old)
+func shortenCaller(path string) string {
+	if len(path) > 36 {
+		path = strings.TrimPrefix(path, "../")
+		path = strings.SplitN(path, "/", 2)[1]
+		path = fmt.Sprintf("../%s", path)
+		return shortenCaller(path)
 	}
-	return old
+	return path
 }
 
 type Formatter struct{}
