@@ -40,10 +40,10 @@ func run() {
 			Addr:    fmt.Sprintf("%s:%d", ip, port),
 			Handler: router.Init(),
 		}
+		log.Logger.Infof("Server listening at %s:%d", ip, port)
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Logger.Fatalf("Failed to start: %s", err)
 		}
-		log.Logger.Infof("Server started at %s:%d", ip, port)
 	}()
 	go task.Start()
 	go cron.Start()
