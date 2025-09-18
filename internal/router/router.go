@@ -98,17 +98,17 @@ func Init() *gin.Engine {
 		contest.POST("/teams/join", middleware.ContestIsNotOver, middleware.CheckVerified, JoinTeam)
 		contest.POST("/teams/create", middleware.ContestIsNotOver, middleware.CheckVerified, CreateTeam)
 
-		contestTeam := contest.Group("/teams/me", middleware.SetTeamByUser)
+		contestTeam := contest.Group("/teams/me", middleware.CheckVerified, middleware.SetTeamByUser)
 		{
 			contestTeam.GET("", GetTeam)
 			contestTeam.GET("/captcha", GetTeamCaptcha)
 			contestTeam.GET("/users", GetTeammates)
-			contestTeam.PUT("/captcha", middleware.ContestIsNotOver, middleware.CheckVerified, middleware.CheckCaptain, UpdateCaptcha)
-			contestTeam.PUT("", middleware.ContestIsNotOver, middleware.CheckVerified, middleware.CheckCaptain, UpdateTeam)
-			contestTeam.POST("/avatar", middleware.ContestIsNotOver, middleware.CheckVerified, middleware.CheckCaptain, UploadAvatar("team"))
-			contestTeam.DELETE("", middleware.ContestIsComing, middleware.CheckVerified, middleware.CheckCaptain, DeleteTeam)
-			contestTeam.POST("/kick", middleware.ContestIsComing, middleware.CheckVerified, middleware.CheckCaptain, KickMember)
-			contestTeam.POST("/leave", middleware.ContestIsComing, middleware.CheckVerified, LeaveTeam)
+			contestTeam.PUT("/captcha", middleware.ContestIsNotOver, middleware.CheckCaptain, UpdateCaptcha)
+			contestTeam.PUT("", middleware.ContestIsNotOver, middleware.CheckCaptain, UpdateTeam)
+			contestTeam.POST("/avatar", middleware.ContestIsNotOver, middleware.CheckCaptain, UploadAvatar("team"))
+			contestTeam.DELETE("", middleware.ContestIsComing, middleware.CheckCaptain, DeleteTeam)
+			contestTeam.POST("/kick", middleware.ContestIsComing, middleware.CheckCaptain, KickMember)
+			contestTeam.POST("/leave", middleware.ContestIsComing, LeaveTeam)
 		}
 
 		// 比赛公告
