@@ -81,7 +81,18 @@ func SaveChallengeFile(tx *gorm.DB, challenge model.Challenge, file *multipart.F
 		log.Logger.Warningf("Failed to get file info: %s", err)
 		return model.File{}, false, i18n.UnknownError
 	}
-	record, ok, msg := fileRepo.Create(db.CreateFileOptions{
+	record, ok, msg := fileRepo.Get(db.GetOptions{
+		Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFileType},
+	})
+	if ok {
+		if hash == record.Hash {
+			return record, true, i18n.Success
+		}
+		if ok, msg = fileRepo.Delete(record.ID); !ok {
+			return model.File{}, false, msg
+		}
+	}
+	record, ok, msg = fileRepo.Create(db.CreateFileOptions{
 		RandID:      utils.UUID(),
 		Filename:    file.Filename,
 		Size:        size,
