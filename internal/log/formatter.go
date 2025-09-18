@@ -89,6 +89,16 @@ func safeGetValue[T any](entry *logrus.Entry, key string, defaultV T) T {
 	return V
 }
 
+func shortenCaller(old string) string {
+	if len(old) > 36 {
+		old = strings.TrimPrefix(old, "../")
+		old = strings.SplitN(old, "/", 2)[1]
+		old = fmt.Sprintf("../%s", old)
+		return shortenCaller(old)
+	}
+	return old
+}
+
 type Formatter struct{}
 
 func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
@@ -103,7 +113,7 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	_, _ = fmt.Fprintf(ret, "%s %s | ", LevelColor(LevelText), entry.Time.Format("2006-01-02 15:04:05"))
 	switch t {
 	case DefaultLogType:
-		caller := fmt.Sprintf("%s:%d", entry.Caller.File, entry.Caller.Line)
+		caller := shortenCaller(fmt.Sprintf("%s:%d", entry.Caller.File, entry.Caller.Line))
 		caller = fmt.Sprintf("%-36s", caller)
 		_, _ = fmt.Fprintf(ret, "%s | %s", caller, LevelColor(entry.Message))
 	case TaskLogType:
