@@ -56,15 +56,9 @@ func InitFileRepo(tx *gorm.DB) *FileRepo {
 }
 
 func (f *FileRepo) Create(options CreateFileOptions) (model.File, bool, string) {
-	records, _, ok, _ := f.List(-1, -1, GetOptions{
-		Conditions: map[string]any{"path": options.Path}, Selects: []string{"id"},
-	})
+	records, ok, _ := f.Get(GetOptions{Conditions: map[string]any{"hash": options.Hash}})
 	if ok {
-		idL := make([]uint, 0)
-		for _, record := range records {
-			idL = append(idL, record.ID)
-		}
-		f.Delete(idL...)
+		options.Path = records.Path
 	}
 	m := options.Convert2Model().(model.File)
 	if res := f.DB.Model(&model.File{}).Create(&m); res.Error != nil {
