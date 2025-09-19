@@ -6,6 +6,8 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/service"
 	"context"
+	"slices"
+	"strconv"
 	"time"
 
 	"github.com/robfig/cron/v3"
@@ -48,21 +50,29 @@ func closeUnCtrlVictims(c *cron.Cron) {
 			log.Logger.Warningf("Failed to get Victim %s", msg)
 			return
 		}
+		idL := make([]string, 0)
 		podRepo := db.InitPodRepo(db.DB)
 		for _, pod := range pods.Items {
 			for key := range pod.Labels {
-				if key == k8s.VictimPodTag {
-					_, ok, _ = podRepo.Get(db.GetOptions{
-						Conditions: map[string]any{"name": pod.Name},
-						Selects:    []string{"id"},
-					})
+				if key == "victim_id" {
+					if slices.Contains(idL, pod.Labels[key]) {
+						continue
+					}
+					victimID, err := strconv.Atoi(pod.Labels[key])
+					if err != nil {
+						continue
+					}
+					_, ok, _ = podRepo.GetByID(uint(victimID), db.GetOptions{Selects: []string{"id"}})
 					if !ok {
-						ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
-						k8s.DeletePod(ctx, pod.Name)
-						cancel()
+						idL = append(idL, pod.Labels[key])
 					}
 				}
 			}
+		}
+		for _, id := range idL {
+			ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
+			k8s.DeletePodList(ctx, map[string]string{"victim_id": id})
+			cancel()
 		}
 	})
 	function()
