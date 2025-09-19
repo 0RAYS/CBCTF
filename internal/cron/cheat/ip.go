@@ -84,16 +84,7 @@ func CheckVictimReqIP(contest model.Contest) {
 	ipTeamMap := make(map[string][]tmp)
 	victimRepo := db.InitVictimRepo(db.DB)
 	for _, team := range teams {
-		victims, _, ok, _ := victimRepo.List(-1, -1, db.GetOptions{
-			Selects:    []string{"id", "team_id"},
-			Conditions: map[string]any{"team_id": team.ID},
-			Deleted:    true,
-			Preloads:   map[string]db.GetOptions{"Traffics": {Selects: []string{"id", "victim_id", "src_ip", "created_at"}}},
-		})
-		if !ok {
-			continue
-		}
-		for _, victim := range victims {
+		victimRepo.ListInBatches(-1, -1, 5, func(victim model.Victim) error {
 			for _, traffics := range victim.Traffics {
 				netIP := net.ParseIP(traffics.SrcIP)
 				if netIP == nil {
@@ -109,7 +100,13 @@ func CheckVictimReqIP(contest model.Contest) {
 					ipTeamMap[traffics.SrcIP] = append(ipTeamMap[traffics.SrcIP], tmp{Time: traffics.CreatedAt, ID: victim.TeamID.V})
 				}
 			}
-		}
+			return nil
+		}, db.GetOptions{
+			Selects:    []string{"id", "team_id"},
+			Conditions: map[string]any{"team_id": team.ID},
+			Deleted:    true,
+			Preloads:   map[string]db.GetOptions{"Traffics": {Selects: []string{"id", "victim_id", "src_ip", "created_at"}}},
+		})
 	}
 	cheatRepo := db.InitCheatRepo(db.DB)
 	for ip, v := range ipTeamMap {
