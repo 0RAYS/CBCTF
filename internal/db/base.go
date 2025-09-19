@@ -173,6 +173,28 @@ func (b *BasicRepo[M]) List(limit, offset int, optionsL ...GetOptions) ([]M, int
 	return ms, count, true, i18n.Success
 }
 
+func (b *BasicRepo[M]) ListInBatches(limit, offset, size int, fc func(m M) error, optionsL ...GetOptions) (int64, bool, string) {
+	options := GetOptions{}
+	if len(optionsL) > 0 {
+		options = optionsL[0]
+	}
+	ms := make([]M, 0)
+	res := ApplyGetOptions(b.DB.Model(new(M)), options).Order("id").Limit(limit).Offset(offset).
+		FindInBatches(&ms, size, func(tx *gorm.DB, batch int) error {
+			for _, m := range ms {
+				if err := fc(m); err != nil {
+					return err
+				}
+			}
+			return nil
+		})
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get %s: %s", M.GetModelName(*new(M)), res.Error)
+		return 0, false, M.GetErrorString(*new(M))
+	}
+	return res.RowsAffected, true, i18n.Success
+}
+
 func (b *BasicRepo[M]) Update(id uint, options UpdateOptions) (bool, string) {
 	var count uint
 	data := options.Convert2Map()
