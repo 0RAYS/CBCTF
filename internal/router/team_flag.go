@@ -78,6 +78,7 @@ func ResetTeamFlag(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.EnqueueTaskError, "data": nil})
 			return
 		}
+		tx.Commit()
 	case model.PodsChallengeType:
 		tx.Commit()
 		// 不考虑失败
