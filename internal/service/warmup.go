@@ -46,15 +46,17 @@ func WarmUpContestChallengeImage(form f.WarmUpImageForm) (bool, string) {
 				return false
 			})
 		}
-		if _, ok, msg = k8s.CreateJob(ctx, k8s.CreateJobOptions{
-			Name:       fmt.Sprintf("image-puller-%s", utils.RandStr(5)),
-			Images:     images,
-			PullPolicy: form.PullPolicy,
-			NodeSelector: map[string]string{
-				"kubernetes.io/hostname": node.Name,
-			},
-		}); !ok {
-			return false, msg
+		if len(images) > 0 {
+			if _, ok, msg = k8s.CreateJob(ctx, k8s.CreateJobOptions{
+				Name:       fmt.Sprintf("image-puller-%s", utils.RandStr(5)),
+				Images:     images,
+				PullPolicy: form.PullPolicy,
+				NodeSelector: map[string]string{
+					"kubernetes.io/hostname": node.Name,
+				},
+			}); !ok {
+				return false, msg
+			}
 		}
 	}
 	return true, i18n.Success
