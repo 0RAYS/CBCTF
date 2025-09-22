@@ -51,7 +51,7 @@ func closeUnCtrlVictims(c *cron.Cron) {
 			return
 		}
 		idL := make([]string, 0)
-		podRepo := db.InitPodRepo(db.DB)
+		victimRepo := db.InitVictimRepo(db.DB)
 		for _, pod := range pods.Items {
 			for key := range pod.Labels {
 				if key == "victim_id" {
@@ -62,7 +62,7 @@ func closeUnCtrlVictims(c *cron.Cron) {
 					if err != nil {
 						continue
 					}
-					_, ok, _ = podRepo.GetByID(uint(victimID), db.GetOptions{Selects: []string{"id"}})
+					_, ok, _ = victimRepo.GetByID(uint(victimID), db.GetOptions{Selects: []string{"id"}})
 					if !ok {
 						idL = append(idL, pod.Labels[key])
 					}
