@@ -10,6 +10,7 @@ import (
 	"context"
 	"fmt"
 	"slices"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -36,6 +37,9 @@ func WarmUpContestChallengeImage(form f.WarmUpImageForm) (bool, string) {
 		images := form.Images
 		if corev1.PullPolicy(form.PullPolicy) != corev1.PullAlways {
 			images = slices.DeleteFunc(images, func(image string) bool {
+				if strings.TrimSpace(image) == "" {
+					return true
+				}
 				for _, containerImage := range node.Status.Images {
 					for _, name := range containerImage.Names {
 						if name == image {
