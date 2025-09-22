@@ -158,14 +158,10 @@ func OauthCallback(ctx *gin.Context) {
 		name, ok := utils.GetFiledValue(result, provider.RespNameField)
 		if !ok {
 			name = fmt.Sprintf("%s_%s", provider.Provider, utils.RandStr(10))
-		} else {
-			name = fmt.Sprintf("%s_%s", name, utils.RandStr(5))
 		}
 		email, ok := utils.GetFiledValue(result, provider.RespEmailField)
 		if !ok {
 			email = fmt.Sprintf("%s_%s@example.com", provider.Provider, utils.RandStr(10))
-		} else {
-			email = fmt.Sprintf("%s_%s", utils.RandStr(10), email)
 		}
 		avatar, _ := utils.GetFiledValue(result, provider.RespAvatarField)
 		desc, _ := utils.GetFiledValue(result, provider.RespDescField)
