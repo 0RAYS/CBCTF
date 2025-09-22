@@ -105,10 +105,6 @@ type Config struct {
 		Path    string `mapstructure:"path" json:"path" msgpack:"path"`
 		Storage string `mapstructure:"storage" json:"storage" msgpack:"storage"`
 	} `mapstructure:"nfs" json:"nfs" msgpack:"nfs"`
-
-	Cheat struct {
-		IPWhiteList []string `mapstructure:"ip_whitelist" json:"ip_whitelist" msgpack:"ip_whitelist"`
-	} `mapstructure:"cheat" json:"cheat" msgpack:"cheat"`
 }
 
 var Env *Config
