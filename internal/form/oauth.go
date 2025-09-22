@@ -102,11 +102,11 @@ type UpdateOauthProviderForm struct {
 	ClientSecret    *string          `form:"client_secret" json:"client_secret"`
 	Provider        *string          `form:"provider" json:"provider"`
 	Uri             *string          `form:"uri" json:"uri"`
-	RespIDField     *string          `form:"id_field" json:"id_field"`
-	RespNameField   *string          `form:"name_field" json:"name_field"`
-	RespEmailField  *string          `form:"email_field" json:"email_field"`
-	RespAvatarField *string          `form:"avatar_field" json:"avatar_field"`
-	RespDescField   *string          `form:"desc_field" json:"desc_field"`
+	RespIDField     *string          `form:"resp_id_field" json:"resp_id_field"`
+	RespNameField   *string          `form:"resp_name_field" json:"resp_name_field"`
+	RespEmailField  *string          `form:"resp_email_field" json:"resp_email_field"`
+	RespAvatarField *string          `form:"resp_avatar_field" json:"resp_avatar_field"`
+	RespDescField   *string          `form:"resp_desc_field" json:"resp_desc_field"`
 	On              *bool            `form:"on" json:"on"`
 	Avatar          *model.AvatarURL `form:"avatar" json:"avatar"`
 }
