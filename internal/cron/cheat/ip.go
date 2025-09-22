@@ -83,30 +83,29 @@ func CheckVictimReqIP(contest model.Contest) {
 	}
 	ipTeamMap := make(map[string][]tmp)
 	victimRepo := db.InitVictimRepo(db.DB)
+	trafficRepo := db.InitTrafficRepo(db.DB)
 	for _, team := range teams {
-		victimRepo.ListInBatches(-1, -1, 5, func(victim model.Victim) error {
-			for _, traffics := range victim.Traffics {
-				netIP := net.ParseIP(traffics.SrcIP)
-				if netIP == nil {
-					continue
-				}
-				if netIP.IsLoopback() {
-					continue
-				}
-				if !slices.ContainsFunc(ipTeamMap[traffics.SrcIP], func(s tmp) bool {
-					return s.ID == victim.TeamID.V
+		victims, _, ok, _ := victimRepo.List(-1, -1, db.GetOptions{
+			Conditions: map[string]any{"team_id": team.ID},
+			Selects:    []string{"id", "team_id", "deleted_at"},
+		})
+		if !ok {
+			continue
+		}
+		for _, victim := range victims {
+			ipL, ok, _ := trafficRepo.GetVictimReqIP(victim.ID)
+			if !ok {
+				continue
+			}
+			for _, ip := range ipL {
+				if !slices.ContainsFunc(ipTeamMap[ip], func(s tmp) bool {
+					return s.ID == team.ID
 				}) {
 					// 靶机流量的时间此处实际上为靶机关闭的时间, 但影响不大
-					ipTeamMap[traffics.SrcIP] = append(ipTeamMap[traffics.SrcIP], tmp{Time: traffics.CreatedAt, ID: victim.TeamID.V})
+					ipTeamMap[ip] = append(ipTeamMap[ip], tmp{Time: victim.DeletedAt.Time, ID: team.ID})
 				}
 			}
-			return nil
-		}, db.GetOptions{
-			Selects:    []string{"id", "team_id"},
-			Conditions: map[string]any{"team_id": team.ID},
-			Deleted:    true,
-			Preloads:   map[string]db.GetOptions{"Traffics": {Selects: []string{"id", "victim_id", "src_ip", "created_at"}}},
-		})
+		}
 	}
 	cheatRepo := db.InitCheatRepo(db.DB)
 	for ip, v := range ipTeamMap {
