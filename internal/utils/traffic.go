@@ -8,7 +8,6 @@ import (
 	"net"
 	"os"
 	"slices"
-	"strconv"
 	"strings"
 	"time"
 
@@ -23,8 +22,6 @@ type Connection struct {
 	Time      time.Time
 	SrcIP     string
 	DstIP     string
-	SrcPort   uint16
-	DstPort   uint16
 	Type      string
 	Subtype   string
 	Size      int
@@ -80,21 +77,9 @@ func ReadPcapFile(path string) ([]Connection, error) {
 		}
 		switch transport.LayerType() {
 		case layers.LayerTypeTCP:
-			if tcp, ok := transport.(*layers.TCP); ok {
-				connection.SrcPort = uint16(tcp.SrcPort)
-				connection.DstPort = uint16(tcp.DstPort)
-				connection.Type = layers.LayerTypeTCP.String()
-			} else {
-				continue
-			}
+			connection.Type = layers.LayerTypeTCP.String()
 		case layers.LayerTypeUDP:
-			if udp, ok := transport.(*layers.UDP); ok {
-				connection.SrcPort = uint16(udp.SrcPort)
-				connection.DstPort = uint16(udp.DstPort)
-				connection.Type = layers.LayerTypeUDP.String()
-			} else {
-				continue
-			}
+			connection.Type = layers.LayerTypeUDP.String()
 		default:
 			continue
 		}
@@ -105,20 +90,16 @@ func ReadPcapFile(path string) ([]Connection, error) {
 		connection.Subtype = application.LayerType().String()
 		if config.Env.K8S.Frpc.On {
 			if header, err := pp.Read(bufio.NewReader(bytes.NewReader(transport.LayerPayload()))); err == nil {
-				srcIP, srcPort, err := net.SplitHostPort(header.SourceAddr.String())
+				srcIP, _, err := net.SplitHostPort(header.SourceAddr.String())
 				if err != nil {
 					continue
 				}
-				dstIP, dstPort, err := net.SplitHostPort(header.DestinationAddr.String())
+				dstIP, _, err := net.SplitHostPort(header.DestinationAddr.String())
 				if err != nil {
 					continue
 				}
 				connection.SrcIP = srcIP
-				port, _ := strconv.Atoi(srcPort)
-				connection.SrcPort = uint16(port)
 				connection.DstIP = dstIP
-				port, _ = strconv.Atoi(dstPort)
-				connection.DstPort = uint16(port)
 				connection.Subtype = "Proxy"
 			}
 		}

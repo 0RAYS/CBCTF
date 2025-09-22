@@ -95,7 +95,7 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 		return false, i18n.ReadPcapError
 	}
 	for _, conn := range connections {
-		connID := fmt.Sprintf("%s:%d-%s:%d-%s-%s", conn.SrcIP, conn.SrcPort, conn.DstIP, conn.DstPort, conn.Type, conn.Subtype)
+		connID := fmt.Sprintf("%s-%s-%s-%s", conn.SrcIP, conn.DstIP, conn.Type, conn.Subtype)
 		if options, ok := optionsL[connID]; ok {
 			options.Count += 1
 			options.Size += conn.Size
@@ -105,8 +105,6 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 				VictimID: victim.ID,
 				SrcIP:    conn.SrcIP,
 				DstIP:    conn.DstIP,
-				SrcPort:  conn.SrcPort,
-				DstPort:  conn.DstPort,
 				Type:     conn.Type,
 				Subtype:  conn.Subtype,
 				Size:     conn.Size,
