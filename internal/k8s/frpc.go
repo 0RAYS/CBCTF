@@ -277,9 +277,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 }
 
 func GetAvailableFrpsPort(host string, portRange []int32, protocol string) (int32, bool, string) {
-	idxBig, _ := rand.Int(rand.Reader, big.NewInt(int64(len(portRange))))
-	port := portRange[idxBig.Int64()]
-	ok, err := redis.LockFrpsPort(host, port, protocol)
+	port, ok, err := redis.LockFrpsPort(host, portRange, protocol)
 	if err != nil {
 		return 0, false, i18n.RedisError
 	}
