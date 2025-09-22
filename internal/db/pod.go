@@ -43,8 +43,11 @@ func (p *PodRepo) Delete(idL ...uint) (bool, string) {
 			"Containers": {Selects: []string{"id", "pod_id"}},
 		},
 	})
-	if !ok && msg != i18n.PodNotFound {
-		return false, msg
+	if !ok {
+		if msg != i18n.PodNotFound {
+			return false, msg
+		}
+		return true, i18n.Success
 	}
 	containerIDL := make([]uint, 0)
 	for _, pod := range podL {

@@ -111,8 +111,11 @@ func (a *AdminRepo) Delete(idL ...uint) (bool, string) {
 		Conditions: map[string]any{"id": idL},
 		Selects:    []string{"id", "name", "email"},
 	})
-	if !ok && msg != i18n.AdminNotFound {
-		return false, msg
+	if !ok {
+		if msg != i18n.AdminNotFound {
+			return false, msg
+		}
+		return true, i18n.Success
 	}
 	for _, admin := range adminL {
 		deletedName := fmt.Sprintf("%s_deleted_%s", admin.Name, utils.RandStr(6))
