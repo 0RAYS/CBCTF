@@ -7,8 +7,6 @@ type Traffic struct {
 	Victim   Victim `json:"-"`
 	SrcIP    string `json:"src_ip"`
 	DstIP    string `json:"dst_ip"`
-	SrcPort  uint16 `json:"src_port"`
-	DstPort  uint16 `json:"dst_port"`
 	Type     string `json:"type"`
 	Subtype  string `json:"subtype"`
 	Count    uint   `json:"count"`

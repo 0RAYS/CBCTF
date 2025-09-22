@@ -14,8 +14,6 @@ type CreateTrafficOptions struct {
 	VictimID uint
 	SrcIP    string
 	DstIP    string
-	SrcPort  uint16
-	DstPort  uint16
 	Type     string
 	Subtype  string
 	Size     int
@@ -27,8 +25,6 @@ func (c CreateTrafficOptions) Convert2Model() model.Model {
 		VictimID: c.VictimID,
 		SrcIP:    c.SrcIP,
 		DstIP:    c.DstIP,
-		SrcPort:  c.SrcPort,
-		DstPort:  c.DstPort,
 		Type:     c.Type,
 		Subtype:  c.Subtype,
 		Count:    c.Count,
