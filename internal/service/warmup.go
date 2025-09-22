@@ -35,7 +35,7 @@ func WarmUpContestChallengeImage(form f.WarmUpImageForm) (bool, string) {
 	for _, node := range nodes {
 		images := form.Images
 		if corev1.PullPolicy(form.PullPolicy) != corev1.PullAlways {
-			images = slices.DeleteFunc(form.Images, func(image string) bool {
+			images = slices.DeleteFunc(images, func(image string) bool {
 				for _, containerImage := range node.Status.Images {
 					for _, name := range containerImage.Names {
 						if name == image {
