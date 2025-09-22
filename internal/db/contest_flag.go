@@ -116,8 +116,11 @@ func (c *ContestFlagRepo) Delete(idL ...uint) (bool, string) {
 			"TeamFlags":   {Selects: []string{"id", "contest_flag_id"}},
 		},
 	})
-	if !ok && msg != i18n.ContestFlagNotFound {
-		return false, msg
+	if !ok {
+		if msg != i18n.ContestFlagNotFound {
+			return false, msg
+		}
+		return true, i18n.Success
 	}
 	submissionIDL, teamFlagIDL := make([]uint, 0), make([]uint, 0)
 	for _, contestFlag := range contestFlagL {

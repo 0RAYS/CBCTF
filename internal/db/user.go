@@ -141,8 +141,11 @@ func (u *UserRepo) Delete(idL ...uint) (bool, string) {
 			"Submissions": {Selects: []string{"id", "user_id"}},
 		},
 	})
-	if !ok && msg != i18n.UserNotFound {
-		return false, msg
+	if !ok {
+		if msg != i18n.UserNotFound {
+			return false, msg
+		}
+		return true, i18n.Success
 	}
 	submissionIDL := make([]uint, 0)
 	for _, user := range userL {

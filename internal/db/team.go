@@ -166,8 +166,11 @@ func (t *TeamRepo) Delete(idL ...uint) (bool, string) {
 			"TeamFlags":   {Selects: []string{"id", "team_id"}},
 		},
 	})
-	if !ok && msg != i18n.TeamNotFound {
-		return false, msg
+	if !ok {
+		if msg != i18n.TeamNotFound {
+			return false, msg
+		}
+		return true, i18n.Success
 	}
 	submissionIDL, teamFlagIDL := make([]uint, 0), make([]uint, 0)
 	for _, team := range teamL {
