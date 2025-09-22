@@ -10,17 +10,32 @@ import (
 
 const frpsPortKey = "frps:%s:%s"
 
-// 锁定端口范围中的第一个可用端口
+// 锁定端口范围中的随机可用端口
 const lockFrpsPortScript = `
 local key = KEYS[1]
 local ports = cjson.decode(ARGV[1])
 local protocol = ARGV[2]
 
-for i, port in ipairs(ports) do
-    local is_member = redis.call('SISMEMBER', key, port)
-    if is_member == 0 then
-        redis.call('SADD', key, port)
-        return {port, 1}
+local n = #ports
+if n == 0 then
+    return {0, 0}
+end
+
+-- 记录已尝试的索引，避免重复尝试
+local tried = {}
+local triedCount = 0
+
+while triedCount < n do
+    local idx = math.random(1, n)
+    if not tried[idx] then
+        tried[idx] = true
+        triedCount = triedCount + 1
+
+        local selected_port = ports[idx]
+        if redis.call('SISMEMBER', key, selected_port) == 0 then
+            redis.call('SADD', key, selected_port)
+            return {selected_port, 1}
+        end
     end
 end
 
