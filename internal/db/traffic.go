@@ -1,6 +1,8 @@
 package db
 
 import (
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 
 	"gorm.io/gorm"
@@ -14,8 +16,6 @@ type CreateTrafficOptions struct {
 	VictimID uint
 	SrcIP    string
 	DstIP    string
-	SrcPort  uint16
-	DstPort  uint16
 	Type     string
 	Subtype  string
 	Size     int
@@ -27,8 +27,6 @@ func (c CreateTrafficOptions) Convert2Model() model.Model {
 		VictimID: c.VictimID,
 		SrcIP:    c.SrcIP,
 		DstIP:    c.DstIP,
-		SrcPort:  c.SrcPort,
-		DstPort:  c.DstPort,
 		Type:     c.Type,
 		Subtype:  c.Subtype,
 		Count:    c.Count,
@@ -42,4 +40,14 @@ func InitTrafficRepo(tx *gorm.DB) *TrafficRepo {
 			DB: tx,
 		},
 	}
+}
+
+func (t *TrafficRepo) GetVictimReqIP(id uint) ([]string, bool, string) {
+	var ipL []string
+	res := t.DB.Model(&model.Traffic{}).Where("victim_id IN ?", id).Distinct("src_ip").Find(&ipL)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Traffic: %s", res.Error)
+		return nil, false, i18n.GetTrafficError
+	}
+	return ipL, true, i18n.Success
 }
