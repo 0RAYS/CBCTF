@@ -5,7 +5,6 @@ import (
 	"CBCTF/internal/model"
 	"database/sql"
 	"fmt"
-	"net"
 	"slices"
 	"strconv"
 	"strings"
@@ -26,13 +25,6 @@ func CheckWebReqIP(contest model.Contest) {
 			continue
 		}
 		for _, ip := range ipL {
-			netIP := net.ParseIP(ip)
-			if netIP == nil {
-				continue
-			}
-			if netIP.IsLoopback() {
-				continue
-			}
 			if !slices.Contains(ipUserMap[ip], userID) {
 				ipUserMap[ip] = append(ipUserMap[ip], userID)
 			}
