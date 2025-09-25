@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -193,7 +194,11 @@ func OauthCallback(ctx *gin.Context) {
 	}
 	prometheus.UpdateUserLoginMetrics(provider.Provider)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s/platform/#/oauth/callback?token=%s", config.Env.Frontend, token))
+	url := "/platform/#/oauth/callback?token=" + token
+	if strings.HasPrefix(config.Env.Frontend, "http://") || strings.HasPrefix(config.Env.Frontend, "https://") {
+		url = config.Env.Frontend + url
+	}
+	ctx.Redirect(http.StatusTemporaryRedirect, url)
 }
 
 func GetOauthProviders(ctx *gin.Context) {
