@@ -8,7 +8,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/websocket"
 	wsm "CBCTF/internal/websocket/middleware"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -37,11 +36,11 @@ func Init() *gin.Engine {
 
 	{
 		router.GET("/", func(ctx *gin.Context) {
+			url := "/platform"
 			if strings.HasPrefix(config.Env.Frontend, "http://") || strings.HasPrefix(config.Env.Frontend, "https://") {
-				ctx.Redirect(http.StatusFound, fmt.Sprintf("%s/platform", config.Env.Frontend))
-			} else {
-				ctx.Redirect(http.StatusFound, "/platform")
+				url = config.Env.Frontend + url
 			}
+			ctx.Redirect(http.StatusFound, url)
 		})
 		router.StaticFS("/platform", http.FS(frontend.SubFS))
 	}
