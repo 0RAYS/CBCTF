@@ -105,8 +105,11 @@ func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
 			"Submissions":       {Selects: []string{"id", "challenge_id"}},
 		},
 	})
-	if !ok && msg != i18n.ChallengeNotFound {
-		return false, msg
+	if !ok {
+		if msg != i18n.ChallengeNotFound {
+			return false, msg
+		}
+		return true, i18n.Success
 	}
 	dockerIDL, challengeFlagIDL, contestChallengeIDL, submissionIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0)
 	for _, challenge := range challengeL {

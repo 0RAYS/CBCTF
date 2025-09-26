@@ -115,8 +115,11 @@ func (c *ContestChallengeRepo) Delete(idL ...uint) (bool, string) {
 			"Submissions":  {Selects: []string{"id", "contest_challenge_id"}},
 		},
 	})
-	if !ok && msg != i18n.ContestChallengeNotFound {
-		return false, msg
+	if !ok {
+		if msg != i18n.ContestChallengeNotFound {
+			return false, msg
+		}
+		return true, i18n.Success
 	}
 	contestFlagIDL, submissionIDL := make([]uint, 0), make([]uint, 0)
 	for _, contestChallenge := range contestChallengeL {
