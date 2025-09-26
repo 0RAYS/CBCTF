@@ -1,10 +1,12 @@
 package cheat
 
 import (
+	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/model"
 	"database/sql"
 	"fmt"
+	"net"
 	"slices"
 	"strconv"
 	"strings"
@@ -25,6 +27,19 @@ func CheckWebReqIP(contest model.Contest) {
 			continue
 		}
 		for _, ip := range ipL {
+			if addr := net.ParseIP(ip); addr == nil || slices.ContainsFunc(config.Env.Cheat.IP.Whitelist, func(cidr string) bool {
+				if strings.Contains(cidr, "/") {
+					_, network, err := net.ParseCIDR(cidr)
+					if err != nil {
+						return false
+					}
+					return network.Contains(addr)
+				} else {
+					return cidr == ip
+				}
+			}) {
+				continue
+			}
 			if !slices.Contains(ipUserMap[ip], userID) {
 				ipUserMap[ip] = append(ipUserMap[ip], userID)
 			}
@@ -90,6 +105,19 @@ func CheckVictimReqIP(contest model.Contest) {
 				continue
 			}
 			for _, ip := range ipL {
+				if addr := net.ParseIP(ip); addr == nil || slices.ContainsFunc(config.Env.Cheat.IP.Whitelist, func(cidr string) bool {
+					if strings.Contains(cidr, "/") {
+						_, network, err := net.ParseCIDR(cidr)
+						if err != nil {
+							return false
+						}
+						return network.Contains(addr)
+					} else {
+						return cidr == ip
+					}
+				}) {
+					continue
+				}
 				if !slices.ContainsFunc(ipTeamMap[ip], func(s tmp) bool {
 					return s.ID == team.ID
 				}) {
