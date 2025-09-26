@@ -28,11 +28,20 @@ func GetCheats(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
 		return
 	}
+	countOptions := db.CountOptions{
+		Conditions: options.Conditions,
+	}
+	countOptions.Conditions["checked"] = true
+	checked, ok, msg := db.InitCheatRepo(db.DB).Count(countOptions)
+	if !ok {
+		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		return
+	}
 	data := make([]gin.H, 0)
 	for _, cheat := range cheats {
 		data = append(data, resp.GetCheatResp(cheat))
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "cheats": data}})
+	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "checked": checked, "cheats": data}})
 }
 
 func UpdateCheat(ctx *gin.Context) {
