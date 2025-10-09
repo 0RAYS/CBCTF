@@ -141,7 +141,7 @@ var resp = map[string]map[string]any{
 	CreateTeamError:    {"zh-CN": "创建战队失败", "en-US": "Create Team failed", "code": 500},
 	DeleteTeamError:    {"zh-CN": "删除战队失败", "en-US": "Delete Team failed", "code": 500},
 	GetTeamError:       {"zh-CN": "获取战队失败", "en-US": "Get Team failed", "code": 500},
-	TeamNotFound:       {"zh-CN": "战队不存在，请创建或加入新队伍", "en-US": "Team not found, please join or create a team", "code": 404},
+	TeamNotFound:       {"zh-CN": "战队不存在，请加入或创建新队伍", "en-US": "Team not found, please join or create a team", "code": 404},
 	UpdateTeamError:    {"zh-CN": "更新战队失败", "en-US": "Update Team failed", "code": 500},
 	TeamIsBanned:       {"zh-CN": "战队已被封禁", "en-US": "Team is banned", "code": 403},
 	TeamIsFull:         {"zh-CN": "战队已满员", "en-US": "Team is full", "code": 400},
