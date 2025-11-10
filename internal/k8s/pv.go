@@ -40,6 +40,7 @@ func CreatePV(ctx context.Context, options CreatePVOptions) (*corev1.PersistentV
 			Capacity: map[corev1.ResourceName]resource.Quantity{
 				corev1.ResourceStorage: storage,
 			},
+			StorageClassName:              "",
 			PersistentVolumeReclaimPolicy: corev1.PersistentVolumeReclaimRetain,
 			PersistentVolumeSource: corev1.PersistentVolumeSource{
 				NFS: &corev1.NFSVolumeSource{
