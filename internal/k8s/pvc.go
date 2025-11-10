@@ -3,6 +3,7 @@ package k8s
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
+	"CBCTF/internal/utils"
 	"context"
 
 	corev1 "k8s.io/api/core/v1"
@@ -40,7 +41,8 @@ func CreatePVC(ctx context.Context, options CreatePVCOptions) (*corev1.Persisten
 					corev1.ResourceStorage: storage,
 				},
 			},
-			VolumeName: nfsVolumeName,
+			StorageClassName: utils.Ptr(""),
+			VolumeName:       nfsVolumeName,
 		},
 	}
 	pvc, err = kubeClient.CoreV1().PersistentVolumeClaims(globalNamespace).Create(ctx, pvc, metav1.CreateOptions{})
