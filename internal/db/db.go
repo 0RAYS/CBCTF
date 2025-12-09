@@ -3,6 +3,7 @@ package db
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"fmt"
 	"time"
 
@@ -61,23 +62,23 @@ func Init() {
 	}
 
 	// 指定数据表的存储引擎, 需要支持回滚操作
-	//err = DB.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(
-	//	&model.Admin{}, &model.Challenge{}, &model.ChallengeFlag{}, &model.Cheat{}, &model.Container{}, &model.Contest{},
-	//	&model.ContestChallenge{}, &model.ContestFlag{}, &model.Device{}, &model.Docker{}, &model.Email{}, &model.Event{},
-	//	&model.File{}, &model.Notice{}, &model.Oauth{}, &model.Pod{}, &model.Request{}, &model.Smtp{}, &model.Submission{},
-	//	&model.Team{}, &model.TeamFlag{}, model.Traffic{}, model.User{}, model.Victim{}, model.Webhook{}, model.WebhookHistory{},
-	//)
-	//if err != nil {
-	//	log.Logger.Fatalf("Failed to migrate database: %s", err)
-	//}
-	//err = DB.SetupJoinTable(&model.User{}, "Teams", &model.UserTeam{})
-	//if err != nil {
-	//	log.Logger.Fatalf("Failed to setup join table: %s", err)
-	//}
-	//err = DB.SetupJoinTable(&model.User{}, "Contests", &model.UserContest{})
-	//if err != nil {
-	//	log.Logger.Fatalf("Failed to setup join table: %s", err)
-	//}
+	err = DB.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(
+		&model.Admin{}, &model.Challenge{}, &model.ChallengeFlag{}, &model.Cheat{}, &model.Container{}, &model.Contest{},
+		&model.ContestChallenge{}, &model.ContestFlag{}, &model.Device{}, &model.Docker{}, &model.Email{}, &model.Event{},
+		&model.File{}, &model.Notice{}, &model.Oauth{}, &model.Pod{}, &model.Request{}, &model.Smtp{}, &model.Submission{},
+		&model.Team{}, &model.TeamFlag{}, model.Traffic{}, model.User{}, model.Victim{}, model.Webhook{}, model.WebhookHistory{},
+	)
+	if err != nil {
+		log.Logger.Fatalf("Failed to migrate database: %s", err)
+	}
+	err = DB.SetupJoinTable(&model.User{}, "Teams", &model.UserTeam{})
+	if err != nil {
+		log.Logger.Fatalf("Failed to setup join table: %s", err)
+	}
+	err = DB.SetupJoinTable(&model.User{}, "Contests", &model.UserContest{})
+	if err != nil {
+		log.Logger.Fatalf("Failed to setup join table: %s", err)
+	}
 	log.Logger.Info("Connected to database")
 
 	if ok, msg := InitAdminRepo(DB).InitAdmin(); !ok {
