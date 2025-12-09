@@ -15,7 +15,7 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-var JWTSecret = "0rays-jbnrz"
+var JWTSecret = UUID()
 
 // GenerateToken 生成token
 func GenerateToken(id uint, name string, isAdmin bool, magic string) (tokenString string, err error) {
