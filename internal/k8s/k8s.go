@@ -29,7 +29,7 @@ const (
 
 var (
 	kubeClient         *kubernetes.Clientset
-	natattClient       *netattclient.Clientset
+	netattClient       *netattclient.Clientset
 	kubeOVNClient      *kubeovnclient.Clientset
 	kubeConfig         *rest.Config
 	globalNamespace    string
@@ -77,7 +77,7 @@ func initClients() {
 	if err != nil {
 		log.Logger.Fatalf("Failed to init k8s client: %s", err)
 	}
-	natattClient, err = netattclient.NewForConfig(kubeConfig)
+	netattClient, err = netattclient.NewForConfig(kubeConfig)
 	if err != nil {
 		log.Logger.Fatalf("Failed to init NetworkAttachmentDefinition client: %s", err)
 	}
