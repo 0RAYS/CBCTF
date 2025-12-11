@@ -8,12 +8,8 @@ import (
 	"path/filepath"
 )
 
-func Zip(path, zipPath string) error {
-	entries, err := os.ReadDir(path)
-	if err != nil {
-		return err
-	}
-	zipFile, err := os.Create(zipPath)
+func Zip(src string, destZip string) error {
+	zipFile, err := os.Create(destZip)
 	if err != nil {
 		return err
 	}
@@ -28,35 +24,39 @@ func Zip(path, zipPath string) error {
 			log.Logger.Warningf("Failed to close zip writer: %s", cerr)
 		}
 	}()
-	for _, entry := range entries {
-		if entry.IsDir() {
-			continue
-		}
-		filePath := filepath.Join(path, entry.Name())
 
-		if filePath == zipPath {
-			continue
-		}
-		err = func(filePath string) error {
-			f, err := os.Open(filePath)
-			if err != nil {
-				return err
-			}
-			defer func() {
-				if cerr := f.Close(); cerr != nil {
-					log.Logger.Warningf("Failed to close file %s: %s", filePath, cerr)
-				}
-			}()
-			w, err := zipWriter.Create(entry.Name())
-			if err != nil {
-				return err
-			}
-			_, err = io.Copy(w, f)
-			return err
-		}(filePath)
+	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-	}
-	return nil
+		if filepath.Clean(path) == filepath.Clean(destZip) {
+			return nil
+		}
+		relPath, err := filepath.Rel(filepath.Dir(src), path)
+		if err != nil {
+			return err
+		}
+		if relPath == "." {
+			return nil
+		}
+		if info.IsDir() {
+			_, err = zipWriter.Create(relPath + "/")
+			return err
+		}
+		f, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer func(f *os.File) {
+			if cerr := f.Close(); cerr != nil {
+				log.Logger.Warningf("Failed to close zip file: %s", cerr)
+			}
+		}(f)
+		w, err := zipWriter.Create(relPath)
+		if err != nil {
+			return err
+		}
+		_, err = io.Copy(w, f)
+		return err
+	})
 }
