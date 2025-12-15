@@ -31,7 +31,7 @@ func closeTimeoutVictims(c *cron.Cron) {
 			return
 		}
 		for _, victim := range victims {
-			if victim.Start.Add(victim.Duration).Before(time.Now()) || (victim.TeamID.Valid && victim.Team.Contest.IsOver()) {
+			if victim.Start.Add(victim.Duration).Before(time.Now()) {
 				service.StopVictim(db.DB, victim)
 			}
 		}
