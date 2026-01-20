@@ -17,6 +17,7 @@ require (
 	github.com/hibiken/asynq v0.25.1
 	github.com/k8snetworkplumbingwg/network-attachment-definition-client v1.7.7
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
+	github.com/nicksnyder/go-i18n/v2 v2.6.1
 	github.com/pires/go-proxyproto v0.8.1
 	github.com/prometheus/client_golang v1.23.2
 	github.com/redis/go-redis/v9 v9.17.2
@@ -26,9 +27,11 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/viper v1.21.0
 	github.com/vmihailenco/msgpack/v5 v5.4.1
+	go.yaml.in/yaml/v3 v3.0.4
 	golang.org/x/crypto v0.46.0
 	golang.org/x/oauth2 v0.34.0
 	golang.org/x/sync v0.19.0
+	golang.org/x/text v0.32.0
 	gopkg.in/gomail.v2 v2.0.0-20160411212932-81ebce5c23df
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.6.0
@@ -116,7 +119,6 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.uber.org/mock v0.6.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
-	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/arch v0.21.0 // indirect
 	golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1 // indirect
 	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
@@ -124,7 +126,6 @@ require (
 	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/term v0.38.0 // indirect
-	golang.org/x/text v0.32.0 // indirect
 	golang.org/x/time v0.9.0 // indirect
 	golang.org/x/tools v0.39.0 // indirect
 	google.golang.org/protobuf v1.36.9 // indirect
