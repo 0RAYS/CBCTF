@@ -12,15 +12,15 @@ type Device struct {
 	User   User   `json:"-"`
 	Magic  string `json:"magic"`
 	Count  int    `json:"count"`
-	BasicModel
+	BaseModel
 }
 
 func (d Device) GetModelName() string {
 	return "Device"
 }
 
-func (d Device) GetBasicModel() BasicModel {
-	return d.BasicModel
+func (d Device) GetBaseModel() BaseModel {
+	return d.BaseModel
 }
 
 func (d Device) CreateErrorString() string {

@@ -39,15 +39,15 @@ type Challenge struct {
 	GeneratorImage    string             `json:"generator_image"`
 	Options           Options            `gorm:"type:json" json:"options"`
 	NetworkPolicies   NetworkPolicies    `gorm:"type:json" json:"network_policies"`
-	BasicModel
+	BaseModel
 }
 
 func (c Challenge) GetModelName() string {
 	return "Challenge"
 }
 
-func (c Challenge) GetBasicModel() BasicModel {
-	return c.BasicModel
+func (c Challenge) GetBaseModel() BaseModel {
+	return c.BaseModel
 }
 
 func (c Challenge) CreateErrorString() string {

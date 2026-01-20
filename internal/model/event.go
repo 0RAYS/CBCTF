@@ -103,15 +103,15 @@ type Event struct {
 	IP               string           `json:"ip"`
 	Magic            string           `json:"magic"`
 	Models           UintMap          `gorm:"type:json" json:"models"`
-	BasicModel
+	BaseModel
 }
 
 func (e Event) GetModelName() string {
 	return "Event"
 }
 
-func (e Event) GetBasicModel() BasicModel {
-	return e.BasicModel
+func (e Event) GetBaseModel() BaseModel {
+	return e.BaseModel
 }
 
 func (e Event) CreateErrorString() string {

@@ -26,15 +26,15 @@ type Submission struct {
 	Solved             bool             `json:"solved"`
 	Score              float64          `gorm:"default:0" json:"score"`
 	IP                 string           `json:"ip"`
-	BasicModel
+	BaseModel
 }
 
 func (s Submission) GetModelName() string {
 	return "Submission"
 }
 
-func (s Submission) GetBasicModel() BasicModel {
-	return s.BasicModel
+func (s Submission) GetBaseModel() BaseModel {
+	return s.BaseModel
 }
 
 func (s Submission) CreateErrorString() string {

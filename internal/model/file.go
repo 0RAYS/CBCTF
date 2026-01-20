@@ -37,15 +37,15 @@ type File struct {
 	Suffix      string         `json:"suffix"`
 	Hash        string         `json:"hash"`
 	Type        string         `json:"type"`
-	BasicModel
+	BaseModel
 }
 
 func (f File) GetModelName() string {
 	return "File"
 }
 
-func (f File) GetBasicModel() BasicModel {
-	return f.BasicModel
+func (f File) GetBaseModel() BaseModel {
+	return f.BaseModel
 }
 
 func (f File) CreateErrorString() string {

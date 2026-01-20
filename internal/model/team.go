@@ -26,15 +26,15 @@ type Team struct {
 	CaptainID   uint         `json:"captain_id"`
 	Rank        int          `gorm:"default:-1" json:"rank"`
 	Last        time.Time    `gorm:"default:null" json:"last"`
-	BasicModel
+	BaseModel
 }
 
 func (t Team) GetModelName() string {
 	return "Team"
 }
 
-func (t Team) GetBasicModel() BasicModel {
-	return t.BasicModel
+func (t Team) GetBaseModel() BaseModel {
+	return t.BaseModel
 }
 
 func (t Team) CreateErrorString() string {

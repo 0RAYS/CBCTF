@@ -37,15 +37,15 @@ type Cheat struct {
 	Hash               string            `json:"hash"`
 	Comment            string            `json:"comment"`
 	Time               time.Time         `json:"time"`
-	BasicModel
+	BaseModel
 }
 
 func (c Cheat) GetModelName() string {
 	return "Cheat"
 }
 
-func (c Cheat) GetBasicModel() BasicModel {
-	return c.BasicModel
+func (c Cheat) GetBaseModel() BaseModel {
+	return c.BaseModel
 }
 
 func (c Cheat) CreateErrorString() string {

@@ -18,15 +18,15 @@ type Oauth struct {
 	RespDescField   string    `json:"desc_field"`
 	On              bool      `json:"on"`
 	Avatar          AvatarURL `json:"avatar"`
-	BasicModel
+	BaseModel
 }
 
 func (o Oauth) GetModelName() string {
 	return "Oauth"
 }
 
-func (o Oauth) GetBasicModel() BasicModel {
-	return o.BasicModel
+func (o Oauth) GetBaseModel() BaseModel {
+	return o.BaseModel
 }
 
 func (o Oauth) CreateErrorString() string {

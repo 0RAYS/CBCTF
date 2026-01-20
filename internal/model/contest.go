@@ -42,15 +42,15 @@ type Contest struct {
 	Rules             StringList         `gorm:"type:json" json:"rules"`
 	Prizes            Prizes             `gorm:"type:json" json:"prizes"`
 	Timelines         Timelines          `gorm:"type:json" json:"timelines"`
-	BasicModel
+	BaseModel
 }
 
 func (c Contest) GetModelName() string {
 	return "Contest"
 }
 
-func (c Contest) GetBasicModel() BasicModel {
-	return c.BasicModel
+func (c Contest) GetBaseModel() BaseModel {
+	return c.BaseModel
 }
 
 func (c Contest) CreateErrorString() string {

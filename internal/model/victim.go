@@ -32,15 +32,15 @@ type Victim struct {
 	Endpoints          Endpoints         `gorm:"default:null;type:json" json:"-"`
 	ExposedEndpoints   Endpoints         `gorm:"default:null;type:json" json:"-"`
 	NetworkPolicies    NetworkPolicies   `gorm:"default:null;type:json" json:"network_policies"`
-	BasicModel
+	BaseModel
 }
 
 func (v Victim) GetModelName() string {
 	return "Victim"
 }
 
-func (v Victim) GetBasicModel() BasicModel {
-	return v.BasicModel
+func (v Victim) GetBaseModel() BaseModel {
+	return v.BaseModel
 }
 
 func (v Victim) CreateErrorString() string {

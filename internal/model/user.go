@@ -28,15 +28,15 @@ type User struct {
 	Provider       string       `gorm:"type:varchar(255);index:idx_provider_id,unique;not null" json:"provider"`
 	ProviderUserID string       `gorm:"type:varchar(255);index:idx_provider_id,unique;not null" json:"provider_user_id"`
 	OauthRaw       string       `json:"oauth_raw"`
-	BasicModel
+	BaseModel
 }
 
 func (u User) GetModelName() string {
 	return "User"
 }
 
-func (u User) GetBasicModel() BasicModel {
-	return u.BasicModel
+func (u User) GetBaseModel() BaseModel {
+	return u.BaseModel
 }
 
 func (u User) CreateErrorString() string {

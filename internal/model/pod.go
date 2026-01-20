@@ -12,15 +12,15 @@ type Pod struct {
 	Name       string      `json:"name"`
 	PodPorts   Exposes     `gorm:"type:json" json:"pod_ports"`
 	Networks   Networks    `gorm:"type:json" json:"-"`
-	BasicModel
+	BaseModel
 }
 
 func (p Pod) GetModelName() string {
 	return "Pod"
 }
 
-func (p Pod) GetBasicModel() BasicModel {
-	return p.BasicModel
+func (p Pod) GetBaseModel() BaseModel {
+	return p.BaseModel
 }
 
 func (p Pod) CreateErrorString() string {
@@ -48,5 +48,5 @@ func (p Pod) GetUniqueKey() []string {
 }
 
 func (p Pod) TrafficPcapPath() string {
-	return fmt.Sprintf("%s/pod-%d.pcap", Victim{BasicModel: BasicModel{ID: p.VictimID}}.TrafficBasePath(), p.ID)
+	return fmt.Sprintf("%s/pod-%d.pcap", Victim{BaseModel: BaseModel{ID: p.VictimID}}.TrafficBasePath(), p.ID)
 }

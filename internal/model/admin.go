@@ -11,15 +11,15 @@ type Admin struct {
 	Email    string    `gorm:"type:varchar(255);uniqueIndex;not null" json:"email"`
 	Avatar   AvatarURL `json:"avatar"`
 	Verified bool      `gorm:"default:false" json:"verified"`
-	BasicModel
+	BaseModel
 }
 
 func (a Admin) GetModelName() string {
 	return "Admin"
 }
 
-func (a Admin) GetBasicModel() BasicModel {
-	return a.BasicModel
+func (a Admin) GetBaseModel() BaseModel {
+	return a.BaseModel
 }
 
 func (a Admin) CreateErrorString() string {

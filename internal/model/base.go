@@ -7,7 +7,7 @@ import (
 	"gorm.io/plugin/optimisticlock"
 )
 
-type BasicModel struct {
+type BaseModel struct {
 	ID        uint                   `gorm:"primaryKey" json:"id"`
 	CreatedAt time.Time              `json:"-"`
 	UpdatedAt time.Time              `json:"-"`
@@ -17,7 +17,7 @@ type BasicModel struct {
 
 type Model interface {
 	GetModelName() string
-	GetBasicModel() BasicModel
+	GetBaseModel() BaseModel
 	CreateErrorString() string
 	DeleteErrorString() string
 	GetErrorString() string

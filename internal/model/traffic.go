@@ -11,15 +11,15 @@ type Traffic struct {
 	Subtype  string `json:"subtype"`
 	Count    uint   `json:"count"`
 	Size     int    `json:"size"`
-	BasicModel
+	BaseModel
 }
 
 func (t Traffic) GetModelName() string {
 	return "Traffic"
 }
 
-func (t Traffic) GetBasicModel() BasicModel {
-	return t.BasicModel
+func (t Traffic) GetBaseModel() BaseModel {
+	return t.BaseModel
 }
 
 func (t Traffic) CreateErrorString() string {
