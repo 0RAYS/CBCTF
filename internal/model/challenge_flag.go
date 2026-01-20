@@ -30,15 +30,15 @@ type ChallengeFlag struct {
 	Value        string         `json:"value"`
 	InjectType   string         `json:"inject_type"`
 	Path         string         `json:"path"`
-	BasicModel
+	BaseModel
 }
 
 func (c ChallengeFlag) GetModelName() string {
 	return "ChallengeFlag"
 }
 
-func (c ChallengeFlag) GetBasicModel() BasicModel {
-	return c.BasicModel
+func (c ChallengeFlag) GetBaseModel() BaseModel {
+	return c.BaseModel
 }
 
 func (c ChallengeFlag) CreateErrorString() string {

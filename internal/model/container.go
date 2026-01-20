@@ -15,15 +15,15 @@ type Container struct {
 	EnvFlags    StringMap  `gorm:"type:json" json:"env_flags"`
 	VolumeFlags StringMap  `gorm:"type:json" json:"volume_flags"`
 	Exposes     Exposes    `gorm:"type:json" json:"exposes"`
-	BasicModel
+	BaseModel
 }
 
 func (c Container) GetModelName() string {
 	return "Container"
 }
 
-func (c Container) GetBasicModel() BasicModel {
-	return c.BasicModel
+func (c Container) GetBaseModel() BaseModel {
+	return c.BaseModel
 }
 
 func (c Container) CreateErrorString() string {

@@ -19,15 +19,15 @@ type Webhook struct {
 	SuccessLast      time.Time        `json:"success_last"`
 	Failure          int64            `json:"failure"`
 	FailureLast      time.Time        `json:"failure_last"`
-	BasicModel
+	BaseModel
 }
 
 func (w Webhook) GetModelName() string {
 	return "Webhook"
 }
 
-func (w Webhook) GetBasicModel() BasicModel {
-	return w.BasicModel
+func (w Webhook) GetBaseModel() BaseModel {
+	return w.BaseModel
 }
 
 func (w Webhook) CreateErrorString() string {

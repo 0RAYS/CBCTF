@@ -14,15 +14,15 @@ type WebhookHistory struct {
 	Duration  time.Duration `json:"duration"`
 	Success   bool          `json:"success"`
 	Error     string        `json:"error"`
-	BasicModel
+	BaseModel
 }
 
 func (w WebhookHistory) GetModelName() string {
 	return "WebhookHistory"
 }
 
-func (w WebhookHistory) GetBasicModel() BasicModel {
-	return w.BasicModel
+func (w WebhookHistory) GetBaseModel() BaseModel {
+	return w.BaseModel
 }
 
 func (w WebhookHistory) CreateErrorString() string {

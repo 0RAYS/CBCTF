@@ -16,15 +16,15 @@ type Smtp struct {
 	SuccessLast time.Time `json:"success_last"`
 	Failure     int64     `json:"failure"`
 	FailureLast time.Time `json:"failure_last"`
-	BasicModel
+	BaseModel
 }
 
 func (s Smtp) GetModelName() string {
 	return "Smtp"
 }
 
-func (p Smtp) GetBasicModel() BasicModel {
-	return p.BasicModel
+func (p Smtp) GetBaseModel() BaseModel {
+	return p.BaseModel
 }
 
 func (p Smtp) CreateErrorString() string {

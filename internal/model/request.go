@@ -19,15 +19,15 @@ type Request struct {
 	Referer   string         `json:"referer"`
 	Magic     string         `json:"magic"`
 	UserID    sql.Null[uint] `json:"user_id"`
-	BasicModel
+	BaseModel
 }
 
 func (r Request) GetModelName() string {
 	return "Request"
 }
 
-func (r Request) GetBasicModel() BasicModel {
-	return r.BasicModel
+func (r Request) GetBaseModel() BaseModel {
+	return r.BaseModel
 }
 
 func (r Request) CreateErrorString() string {

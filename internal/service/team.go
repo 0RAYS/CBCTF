@@ -133,10 +133,10 @@ func LeaveTeam(tx *gorm.DB, contest model.Contest, team model.Team, userID uint)
 	if team.CaptainID == userID {
 		return false, i18n.CaptainCannotLeave
 	}
-	if ok, msg := db.DeleteUserFromTeam(tx, model.User{BasicModel: model.BasicModel{ID: userID}}, team); !ok {
+	if ok, msg := db.DeleteUserFromTeam(tx, model.User{BaseModel: model.BaseModel{ID: userID}}, team); !ok {
 		return false, msg
 	}
-	if ok, msg := db.DeleteUserFromContest(tx, model.User{BasicModel: model.BasicModel{ID: userID}}, contest); !ok {
+	if ok, msg := db.DeleteUserFromContest(tx, model.User{BaseModel: model.BaseModel{ID: userID}}, contest); !ok {
 		return false, msg
 	}
 	prometheus.SubContestActiveUsersMetrics(contest, 1)

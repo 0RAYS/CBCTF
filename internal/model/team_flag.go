@@ -14,15 +14,15 @@ type TeamFlag struct {
 	ChallengeFlag   ChallengeFlag `json:"-"`
 	Value           string        `json:"value"`
 	Solved          bool          `json:"solved"`
-	BasicModel
+	BaseModel
 }
 
 func (t TeamFlag) GetModelName() string {
 	return "TeamFlag"
 }
 
-func (t TeamFlag) GetBasicModel() BasicModel {
-	return t.BasicModel
+func (t TeamFlag) GetBaseModel() BaseModel {
+	return t.BaseModel
 }
 
 func (t TeamFlag) CreateErrorString() string {

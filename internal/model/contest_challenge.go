@@ -23,15 +23,15 @@ type ContestChallenge struct {
 	Hints        StringList    `gorm:"default:null;type:json" json:"hints"`
 	Tags         StringList    `gorm:"default:null;type:json" json:"tags"`
 	DeletedSalt  string        `gorm:"default:'';type:varchar(36);index:idx_contest_challenge_deleted_salt,unique;" json:"-"`
-	BasicModel
+	BaseModel
 }
 
 func (c ContestChallenge) GetModelName() string {
 	return "ContestChallenge"
 }
 
-func (c ContestChallenge) GetBasicModel() BasicModel {
-	return c.BasicModel
+func (c ContestChallenge) GetBaseModel() BaseModel {
+	return c.BaseModel
 }
 
 func (c ContestChallenge) CreateErrorString() string {

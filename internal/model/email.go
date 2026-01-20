@@ -12,15 +12,15 @@ type Email struct {
 	Subject string `json:"subject"`
 	Content string `json:"content"`
 	Success bool   `json:"success"`
-	BasicModel
+	BaseModel
 }
 
 func (e Email) GetModelName() string {
 	return "Email"
 }
 
-func (e Email) GetBasicModel() BasicModel {
-	return e.BasicModel
+func (e Email) GetBaseModel() BaseModel {
+	return e.BaseModel
 }
 
 func (e Email) CreateErrorString() string {

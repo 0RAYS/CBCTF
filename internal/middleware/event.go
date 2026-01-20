@@ -36,7 +36,7 @@ func Events(ctx *gin.Context) {
 		Models:  make(model.UintMap),
 	}
 	for _, m := range models {
-		if id := m.GetBasicModel().ID; id > 0 {
+		if id := m.GetBaseModel().ID; id > 0 {
 			options.Models[m.GetModelName()] = id
 		}
 	}

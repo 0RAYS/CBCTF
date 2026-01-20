@@ -16,15 +16,15 @@ type Notice struct {
 	Title     string  `json:"title"`
 	Content   string  `json:"content"`
 	Type      string  `gorm:"default:'normal'" json:"type"`
-	BasicModel
+	BaseModel
 }
 
 func (n Notice) GetModelName() string {
 	return "Notice"
 }
 
-func (n Notice) GetBasicModel() BasicModel {
-	return n.BasicModel
+func (n Notice) GetBaseModel() BaseModel {
+	return n.BaseModel
 }
 
 func (n Notice) CreateErrorString() string {

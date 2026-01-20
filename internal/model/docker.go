@@ -30,15 +30,15 @@ type Docker struct {
 	Exposes        Exposes         `gorm:"default:null;type:json" json:"exposes"`
 	Environment    StringMap       `gorm:"default:null;type:json" json:"environment"`
 	Networks       Networks        `gorm:"default:null;type:json" json:"networks"`
-	BasicModel
+	BaseModel
 }
 
 func (d Docker) GetModelName() string {
 	return "Docker"
 }
 
-func (d Docker) GetBasicModel() BasicModel {
-	return d.BasicModel
+func (d Docker) GetBaseModel() BaseModel {
+	return d.BaseModel
 }
 
 func (d Docker) CreateErrorString() string {
