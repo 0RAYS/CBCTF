@@ -1,7 +1,6 @@
 package model
 
 import (
-	"CBCTF/internal/i18n"
 	"time"
 
 	"gorm.io/gorm"
@@ -25,18 +24,4 @@ type Model interface {
 	NotFoundErrorString() string
 	UpdateErrorString() string
 	GetUniqueKey() []string
-}
-
-type RetVal struct {
-	OK   bool
-	Msg  string
-	Attr map[string]any
-	Data any
-}
-
-func SuccessRetVal(data ...any) RetVal {
-	if len(data) > 0 {
-		return RetVal{true, i18n.Public.Success, nil, data[0]}
-	}
-	return RetVal{true, i18n.Public.Success, nil, nil}
 }
