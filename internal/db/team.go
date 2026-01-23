@@ -12,7 +12,7 @@ import (
 )
 
 type TeamRepo struct {
-	BasicRepo[model.Team]
+	BaseRepo[model.Team]
 }
 
 type CreateTeamOptions struct {
@@ -95,7 +95,7 @@ func (u UpdateTeamOptions) Convert2Map() map[string]any {
 
 func InitTeamRepo(tx *gorm.DB) *TeamRepo {
 	return &TeamRepo{
-		BasicRepo: BasicRepo[model.Team]{
+		BaseRepo: BaseRepo[model.Team]{
 			DB: tx,
 		},
 	}

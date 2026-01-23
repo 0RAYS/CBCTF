@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
 	"errors"
 	"fmt"
 	"slices"
@@ -12,7 +13,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type BasicRepo[M model.Model] struct {
+type BaseRepo[M model.Model] struct {
 	DB *gorm.DB
 }
 
@@ -22,17 +23,18 @@ type CreateOptions interface {
 
 // GetOptions 设置 Preload 时, 须确保对应关系的外键被 Select
 type GetOptions struct {
-	Conditions       map[string]any
-	SearchConditions map[string]any
-	Selects          []string
-	Preloads         map[string]GetOptions
-	Deleted          bool
+	Conditions map[string]any
+	Search     map[string]any
+	Selects    []string
+	Preloads   map[string]GetOptions
+	Deleted    bool
+	Sort       []string
 }
 
 type CountOptions struct {
-	Conditions       map[string]any
-	SearchConditions map[string]any
-	Deleted          bool
+	Conditions map[string]any
+	Search     map[string]any
+	Deleted    bool
 }
 
 type UpdateOptions interface {
@@ -43,8 +45,18 @@ type DiffUpdateOptions interface {
 	Convert2Expr() map[string]any
 }
 
-func (b *BasicRepo[M]) Create(options CreateOptions) (M, bool, string) {
-	m := options.Convert2Model().(M)
+func (b *BaseRepo[M]) IsUniqueKeyValue(key string, value any) bool {
+	_, ok, _ := b.GetByUniqueKey(key, value, GetOptions{Selects: []string{"id"}})
+	return !ok
+}
+
+func (b *BaseRepo[M]) Insert(m M) (M, bool, string) {
+	for _, key := range m.GetUniqueKey() {
+		value := utils.GetFieldByJSONTag(m, key)
+		if !b.IsUniqueKeyValue(key, value) {
+			return *new(M), false, i18n.UnsupportedKey
+		}
+	}
 	if res := b.DB.Model(new(M)).Create(&m); res.Error != nil {
 		log.Logger.Warningf("Failed to create %T: %s", new(M), res.Error)
 		return *new(M), false, M.CreateErrorString(*new(M))
@@ -52,23 +64,24 @@ func (b *BasicRepo[M]) Create(options CreateOptions) (M, bool, string) {
 	return m, true, i18n.Success
 }
 
-func ApplyGetOptions(tx *gorm.DB, options GetOptions) *gorm.DB {
+func (b *BaseRepo[M]) Create(options CreateOptions) (M, bool, string) {
+	return b.Insert(options.Convert2Model().(M))
+}
+
+func applyGetOptions(tx *gorm.DB, options GetOptions) *gorm.DB {
+	if conditions := options.Conditions; len(conditions) > 0 {
+		tx = tx.Where(conditions)
+	}
+	if search := options.Search; len(search) > 0 {
+		for key, value := range search {
+			tx = tx.Where(fmt.Sprintf("%s LIKE ?", key), "%"+value.(string)+"%")
+		}
+	}
 	if columns := options.Selects; len(columns) > 0 {
 		if !slices.Contains(columns, "id") {
 			columns = append([]string{"id"}, columns...)
 		}
 		tx = tx.Select(columns)
-	}
-	if conditions := options.Conditions; len(conditions) > 0 {
-		tx = tx.Where(conditions)
-	}
-	if search := options.SearchConditions; len(search) > 0 {
-		for key, value := range search {
-			tx = tx.Where(fmt.Sprintf("%s LIKE ?", key), "%"+value.(string)+"%")
-		}
-	}
-	if options.Deleted {
-		tx = tx.Unscoped()
 	}
 	if preloads := options.Preloads; preloads != nil {
 		for rel, subOptions := range preloads {
@@ -77,16 +90,24 @@ func ApplyGetOptions(tx *gorm.DB, options GetOptions) *gorm.DB {
 				continue
 			}
 			tx = tx.Preload(rel, func(tx *gorm.DB) *gorm.DB {
-				return ApplyGetOptions(tx, subOptions)
+				return applyGetOptions(tx, subOptions)
 			})
+		}
+	}
+	if options.Deleted {
+		tx = tx.Unscoped()
+	}
+	if columns := options.Sort; len(columns) > 0 {
+		for _, order := range columns {
+			tx = tx.Order(order)
 		}
 	}
 	return tx
 }
 
-func (b *BasicRepo[M]) Get(options GetOptions) (M, bool, string) {
+func (b *BaseRepo[M]) Get(options GetOptions) (M, bool, string) {
 	var m M
-	res := ApplyGetOptions(b.DB.Model(new(M)), options).Limit(1).Find(&m)
+	res := applyGetOptions(b.DB.Model(new(M)), options).Limit(1).Find(&m)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get %s: %s", m.GetModelName(), res.Error)
 		return *new(M), false, m.GetErrorString()
@@ -97,7 +118,7 @@ func (b *BasicRepo[M]) Get(options GetOptions) (M, bool, string) {
 	return m, true, i18n.Success
 }
 
-func (b *BasicRepo[M]) GetByID(id uint, optionsL ...GetOptions) (M, bool, string) {
+func (b *BaseRepo[M]) GetByID(id uint, optionsL ...GetOptions) (M, bool, string) {
 	options := GetOptions{}
 	if len(optionsL) > 0 {
 		options = optionsL[0]
@@ -105,7 +126,7 @@ func (b *BasicRepo[M]) GetByID(id uint, optionsL ...GetOptions) (M, bool, string
 	return b.GetByUniqueKey("id", id, options)
 }
 
-func (b *BasicRepo[M]) GetByUniqueKey(key string, value any, optionsL ...GetOptions) (M, bool, string) {
+func (b *BaseRepo[M]) GetByUniqueKey(key string, value any, optionsL ...GetOptions) (M, bool, string) {
 	if !slices.Contains(M.GetUniqueKey(*new(M)), key) {
 		return *new(M), false, i18n.UnsupportedKey
 	}
@@ -120,7 +141,7 @@ func (b *BasicRepo[M]) GetByUniqueKey(key string, value any, optionsL ...GetOpti
 	return b.Get(options)
 }
 
-func (b *BasicRepo[M]) Count(optionsL ...CountOptions) (int64, bool, string) {
+func (b *BaseRepo[M]) Count(optionsL ...CountOptions) (int64, bool, string) {
 	var count int64
 	res := b.DB.Model(new(M))
 	if len(optionsL) > 0 {
@@ -128,7 +149,7 @@ func (b *BasicRepo[M]) Count(optionsL ...CountOptions) (int64, bool, string) {
 		if conditions := options.Conditions; len(conditions) > 0 {
 			res = res.Where(conditions)
 		}
-		if search := options.SearchConditions; len(search) > 0 {
+		if search := options.Search; len(search) > 0 {
 			for key, value := range search {
 				res = res.Where(fmt.Sprintf("%s LIKE ?", key), "%"+value.(string)+"%")
 			}
@@ -144,11 +165,11 @@ func (b *BasicRepo[M]) Count(optionsL ...CountOptions) (int64, bool, string) {
 	return count, true, i18n.Success
 }
 
-func (b *BasicRepo[M]) CountAssociation(m M, association string) int64 {
+func (b *BaseRepo[M]) CountAssociation(m M, association string) int64 {
 	return b.DB.Model(&m).Association(association).Count()
 }
 
-func (b *BasicRepo[M]) List(limit, offset int, optionsL ...GetOptions) ([]M, int64, bool, string) {
+func (b *BaseRepo[M]) List(limit, offset int, optionsL ...GetOptions) ([]M, int64, bool, string) {
 	options := GetOptions{}
 	if len(optionsL) > 0 {
 		options = optionsL[0]
@@ -163,7 +184,7 @@ func (b *BasicRepo[M]) List(limit, offset int, optionsL ...GetOptions) ([]M, int
 	if !ok {
 		return nil, count, false, msg
 	}
-	if res := ApplyGetOptions(b.DB.Model(new(M)), options).Order("id").Limit(limit).Offset(offset).Find(&ms); res.Error != nil {
+	if res := applyGetOptions(b.DB.Model(new(M)), options).Order("id").Limit(limit).Offset(offset).Find(&ms); res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			return nil, count, false, M.NotFoundErrorString(*new(M))
 		}
@@ -173,13 +194,13 @@ func (b *BasicRepo[M]) List(limit, offset int, optionsL ...GetOptions) ([]M, int
 	return ms, count, true, i18n.Success
 }
 
-func (b *BasicRepo[M]) ListInBatches(limit, offset, size int, fc func(m M) error, optionsL ...GetOptions) (int64, bool, string) {
+func (b *BaseRepo[M]) ListInBatches(limit, offset, size int, fc func(m M) error, optionsL ...GetOptions) (int64, bool, string) {
 	options := GetOptions{}
 	if len(optionsL) > 0 {
 		options = optionsL[0]
 	}
 	ms := make([]M, 0)
-	res := ApplyGetOptions(b.DB.Model(new(M)), options).Order("id").Limit(limit).Offset(offset).
+	res := applyGetOptions(b.DB.Model(new(M)), options).Order("id").Limit(limit).Offset(offset).
 		FindInBatches(&ms, size, func(tx *gorm.DB, batch int) error {
 			for _, m := range ms {
 				if err := fc(m); err != nil {
@@ -195,9 +216,14 @@ func (b *BasicRepo[M]) ListInBatches(limit, offset, size int, fc func(m M) error
 	return res.RowsAffected, true, i18n.Success
 }
 
-func (b *BasicRepo[M]) Update(id uint, options UpdateOptions) (bool, string) {
+func (b *BaseRepo[M]) Update(id uint, options UpdateOptions) (bool, string) {
 	var count uint
 	data := options.Convert2Map()
+	for _, key := range M.GetUniqueKey(*new(M)) {
+		if value, ok := data[key]; ok && !b.IsUniqueKeyValue(key, value) {
+			return false, i18n.UnsupportedKey
+		}
+	}
 	for {
 		count++
 		if count > 10 {
@@ -221,7 +247,7 @@ func (b *BasicRepo[M]) Update(id uint, options UpdateOptions) (bool, string) {
 	return true, i18n.Success
 }
 
-func (b *BasicRepo[M]) DiffUpdate(id uint, options DiffUpdateOptions) (bool, string) {
+func (b *BaseRepo[M]) DiffUpdate(id uint, options DiffUpdateOptions) (bool, string) {
 	data := options.Convert2Expr()
 	res := b.DB.Model(new(M)).Where("id = ?", id).Updates(data)
 	if res.Error != nil {
@@ -231,7 +257,7 @@ func (b *BasicRepo[M]) DiffUpdate(id uint, options DiffUpdateOptions) (bool, str
 	return true, i18n.Success
 }
 
-func (b *BasicRepo[M]) Delete(idL ...uint) (bool, string) {
+func (b *BaseRepo[M]) Delete(idL ...uint) (bool, string) {
 	res := b.DB.Model(new(M)).Where("id IN ?", idL).Delete(new(M))
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete %s: %s", M.GetModelName(*new(M)), res.Error)

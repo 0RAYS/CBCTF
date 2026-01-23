@@ -9,7 +9,7 @@ import (
 )
 
 type DockerRepo struct {
-	BasicRepo[model.Docker]
+	BaseRepo[model.Docker]
 }
 
 type CreateDockerOptions struct {
@@ -42,7 +42,7 @@ func (c CreateDockerOptions) Convert2Model() model.Model {
 
 func InitDockerRepo(tx *gorm.DB) *DockerRepo {
 	return &DockerRepo{
-		BasicRepo: BasicRepo[model.Docker]{
+		BaseRepo: BaseRepo[model.Docker]{
 			DB: tx,
 		},
 	}

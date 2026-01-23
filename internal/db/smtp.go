@@ -8,7 +8,7 @@ import (
 )
 
 type SmtpRepo struct {
-	BasicRepo[model.Smtp]
+	BaseRepo[model.Smtp]
 }
 
 type CreateSmtpOptions struct {
@@ -93,7 +93,7 @@ func (d DiffUpdateSmtpOptions) Convert2Expr() map[string]any {
 
 func InitSmtpRepo(tx *gorm.DB) *SmtpRepo {
 	return &SmtpRepo{
-		BasicRepo: BasicRepo[model.Smtp]{
+		BaseRepo: BaseRepo[model.Smtp]{
 			DB: tx,
 		},
 	}

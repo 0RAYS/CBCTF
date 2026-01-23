@@ -9,7 +9,7 @@ import (
 )
 
 type PodRepo struct {
-	BasicRepo[model.Pod]
+	BaseRepo[model.Pod]
 }
 
 type CreatePodOptions struct {
@@ -30,7 +30,7 @@ func (c CreatePodOptions) Convert2Model() model.Model {
 
 func InitPodRepo(tx *gorm.DB) *PodRepo {
 	return &PodRepo{
-		BasicRepo: BasicRepo[model.Pod]{
+		BaseRepo: BaseRepo[model.Pod]{
 			DB: tx,
 		},
 	}

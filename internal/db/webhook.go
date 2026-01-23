@@ -8,7 +8,7 @@ import (
 )
 
 type WebhookRepo struct {
-	BasicRepo[model.Webhook]
+	BaseRepo[model.Webhook]
 }
 
 type CreateWebhookOptions struct {
@@ -111,7 +111,7 @@ func (d DiffUpdateWebhookOptions) Convert2Expr() map[string]any {
 
 func InitWebhookRepo(tx *gorm.DB) *WebhookRepo {
 	return &WebhookRepo{
-		BasicRepo: BasicRepo[model.Webhook]{
+		BaseRepo: BaseRepo[model.Webhook]{
 			DB: tx,
 		},
 	}

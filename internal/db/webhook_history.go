@@ -10,7 +10,7 @@ import (
 )
 
 type WebhookHistoryRepo struct {
-	BasicRepo[model.WebhookHistory]
+	BaseRepo[model.WebhookHistory]
 }
 
 type CreateWebhookHistoryOptions struct {
@@ -35,7 +35,7 @@ func (c CreateWebhookHistoryOptions) Convert2Model() model.Model {
 
 func InitWebhookHistoryRepo(tx *gorm.DB) *WebhookHistoryRepo {
 	return &WebhookHistoryRepo{
-		BasicRepo: BasicRepo[model.WebhookHistory]{
+		BaseRepo: BaseRepo[model.WebhookHistory]{
 			DB: tx,
 		},
 	}

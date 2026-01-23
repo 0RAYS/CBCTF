@@ -18,14 +18,14 @@ func Search(ctx *gin.Context) {
 		return
 	}
 	query := ctx.Request.URL.Query()
-	options := db.GetOptions{SearchConditions: make(map[string]any)}
+	options := db.GetOptions{Search: make(map[string]any)}
 	switch form.Model {
 	case "user":
 		allowedKeys := []string{"name", "email", "id"}
 		for key, value := range query {
 			if slices.Contains(allowedKeys, key) {
 				if len(value) > 0 {
-					options.SearchConditions[key] = value[0]
+					options.Search[key] = value[0]
 				}
 			}
 		}
@@ -45,7 +45,7 @@ func Search(ctx *gin.Context) {
 		for key, value := range query {
 			if slices.Contains(allowedKeys, key) {
 				if len(value) > 0 {
-					options.SearchConditions[key] = value[0]
+					options.Search[key] = value[0]
 				}
 			}
 		}
@@ -68,7 +68,7 @@ func Search(ctx *gin.Context) {
 		for key, value := range query {
 			if slices.Contains(allowedKeys, key) {
 				if len(value) > 0 {
-					options.SearchConditions[key] = value[0]
+					options.Search[key] = value[0]
 				}
 			}
 		}
@@ -94,7 +94,7 @@ func Search(ctx *gin.Context) {
 					key = "rand_id"
 				}
 				if len(value) > 0 {
-					options.SearchConditions[key] = value[0]
+					options.Search[key] = value[0]
 				}
 			}
 		}
