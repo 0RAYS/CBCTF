@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var allowedFileType = []string{model.WriteUPFileType, model.AvatarFileType, model.ChallengeFileType, model.TrafficFileType}
+var allowedFileType = []string{model.WriteUPFileType, model.PictureFileType, model.ChallengeFileType, model.TrafficFileType}
 
 type GetFilesForm struct {
 	Offset int    `form:"offset" json:"offset"`

@@ -42,7 +42,7 @@ func GetTeamResp(team model.Team) gin.H {
 		"contest_id": team.ContestID,
 		"name":       team.Name,
 		"score":      team.Score,
-		"avatar":     team.Avatar,
+		"picture":    team.Picture,
 		"last":       team.Last,
 		"rank":       team.Rank,
 		"users":      db.InitTeamRepo(db.DB).CountAssociation(team, "Users"),

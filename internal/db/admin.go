@@ -18,7 +18,7 @@ type CreateAdminOptions struct {
 	Name     string
 	Password string
 	Email    string
-	Avatar   model.AvatarURL
+	Picture  model.FileURL
 	Verified bool
 }
 
@@ -27,7 +27,7 @@ func (c CreateAdminOptions) Convert2Model() model.Model {
 		Name:     c.Name,
 		Password: c.Password,
 		Email:    c.Email,
-		Avatar:   c.Avatar,
+		Picture:  c.Picture,
 		Verified: c.Verified,
 	}
 }
@@ -36,7 +36,7 @@ type UpdateAdminOptions struct {
 	Name     *string
 	Password *string
 	Email    *string
-	Avatar   *model.AvatarURL
+	Picture  *model.FileURL
 	Verified *bool
 }
 
@@ -51,8 +51,8 @@ func (u UpdateAdminOptions) Convert2Map() map[string]any {
 	if u.Email != nil {
 		options["email"] = *u.Email
 	}
-	if u.Avatar != nil {
-		options["avatar"] = *u.Avatar
+	if u.Picture != nil {
+		options["picture"] = *u.Picture
 	}
 	if u.Verified != nil {
 		options["verified"] = *u.Verified

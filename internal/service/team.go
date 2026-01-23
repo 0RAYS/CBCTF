@@ -91,7 +91,7 @@ func CreateTeam(tx *gorm.DB, contest model.Contest, user model.User, form dto.Cr
 		ContestID: contest.ID,
 		Desc:      form.Desc,
 		Captcha:   utils.UUID(),
-		Avatar:    "",
+		Picture:   "",
 		Banned:    false,
 		Hidden:    false,
 		CaptainID: user.ID,

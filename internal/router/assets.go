@@ -10,10 +10,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var DefaultAvatar = map[string][]byte{
+var DefaultPicture = map[string][]byte{
 	"github":       oauth.GithubMark,
 	"github-white": oauth.GithubMarkWhite,
-	"hduhelp":      oauth.HDUHelpAvatar,
+	"hduhelp":      oauth.HDUHelpPicture,
 }
 
 func DefaultAssets(ctx *gin.Context) {
@@ -22,7 +22,7 @@ func DefaultAssets(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
-	file, ok := DefaultAvatar[form.Filename]
+	file, ok := DefaultPicture[form.Filename]
 	if !ok {
 		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.File{}.GetModelName()}})
 		return

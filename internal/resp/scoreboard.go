@@ -10,14 +10,14 @@ import (
 // GetTeamRankingResp model.ContestFlag Preload model.ContestChallenge
 func GetTeamRankingResp(team model.Team, solved []model.ContestFlag, flags []model.ContestFlag) gin.H {
 	data := gin.H{
-		"id":     team.ID,
-		"name":   team.Name,
-		"desc":   team.Desc,
-		"score":  team.Score,
-		"avatar": team.Avatar,
-		"last":   team.Last,
-		"hidden": team.Hidden,
-		"solved": GetSolvedStateResp(solved, flags),
+		"id":      team.ID,
+		"name":    team.Name,
+		"desc":    team.Desc,
+		"score":   team.Score,
+		"picture": team.Picture,
+		"last":    team.Last,
+		"hidden":  team.Hidden,
+		"solved":  GetSolvedStateResp(solved, flags),
 	}
 	return data
 }
@@ -40,7 +40,7 @@ func GetScoreboardResp(challengeMap map[string]model.Challenge, globalMap map[st
 			"name":       team.Name,
 			"desc":       team.Desc,
 			"score":      team.Score,
-			"avatar":     team.Avatar,
+			"picture":    team.Picture,
 			"last":       team.Last,
 			"users":      db.InitTeamRepo(db.DB).CountAssociation(team, "Users"),
 			"challenges": solved,
@@ -63,7 +63,7 @@ func GetRankTimelineResp(teams []model.Team) []gin.H {
 		data = append(data, gin.H{
 			"id":       team.ID,
 			"name":     team.Name,
-			"avatar":   team.Avatar,
+			"picture":  team.Picture,
 			"rank":     team.Rank,
 			"score":    team.Score,
 			"timeline": timeline,

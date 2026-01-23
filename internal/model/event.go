@@ -50,8 +50,8 @@ const (
 	ActivateEmailEventType = "activate_email"
 	VerifyEmailEventType   = "verify_email"
 
-	UploadAvatarEventType = "upload_avatar"
-	DeleteAvatarEventType = "delete_avatar"
+	UploadPictureEventType = "upload_picture"
+	DeletePictureEventType = "delete_picture"
 
 	JoinTeamEventType   = "join_team"
 	CreateTeamEventType = "create_team"
@@ -84,7 +84,7 @@ var EventTypes = []string{
 	DeleteContestChallengeEventType, UpdateContestChallengeFlagEventType, UpdateCheatEventType, CreateNoticeEventType,
 	UpdateNoticeEventType, DeleteNoticeEventType, CreateOauthEventType, UpdateOauthEventType, DeleteOauthEventType,
 	CreateSmtpEventType, UpdateSmtpEventType, DeleteSmtpEventType, CreateWebhookEventType, UpdateWebhookEventType,
-	DeleteWebhookEventType, ActivateEmailEventType, VerifyEmailEventType, UploadAvatarEventType, DeleteAvatarEventType,
+	DeleteWebhookEventType, ActivateEmailEventType, VerifyEmailEventType, UploadPictureEventType, DeletePictureEventType,
 	JoinTeamEventType, CreateTeamEventType, UpdateTeamEventType, DeleteTeamEventType, LeaveTeamEventType,
 	KickMemberEventType, InitChallengeEventType, ResetChallengeEventType, DownloadAttachmentEventType, PullImageEventType,
 	StartVictimEventType, IncreaseVictimEventType, StopVictimEventType, DownloadTrafficEventType, SubmitFlagEventType,

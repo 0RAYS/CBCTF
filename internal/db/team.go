@@ -20,7 +20,7 @@ type CreateTeamOptions struct {
 	ContestID uint
 	Desc      string
 	Captcha   string
-	Avatar    model.AvatarURL
+	Picture   model.FileURL
 	Banned    bool
 	Hidden    bool
 	CaptainID uint
@@ -33,7 +33,7 @@ func (c CreateTeamOptions) Convert2Model() model.Model {
 		ContestID: c.ContestID,
 		Desc:      c.Desc,
 		Captcha:   c.Captcha,
-		Avatar:    c.Avatar,
+		Picture:   c.Picture,
 		Banned:    c.Banned,
 		Hidden:    c.Hidden,
 		CaptainID: c.CaptainID,
@@ -45,7 +45,7 @@ type UpdateTeamOptions struct {
 	Name      *string
 	Desc      *string
 	Captcha   *string
-	Avatar    *model.AvatarURL
+	Picture   *model.FileURL
 	Banned    *bool
 	Hidden    *bool
 	CaptainID *uint
@@ -66,8 +66,8 @@ func (u UpdateTeamOptions) Convert2Map() map[string]any {
 	if u.Captcha != nil {
 		options["captcha"] = *u.Captcha
 	}
-	if u.Avatar != nil {
-		options["avatar"] = *u.Avatar
+	if u.Picture != nil {
+		options["picture"] = *u.Picture
 	}
 	if u.Banned != nil {
 		options["banned"] = *u.Banned

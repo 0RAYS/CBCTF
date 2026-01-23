@@ -18,7 +18,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func SaveAvatar(tx *gorm.DB, options db.CreateFileOptions, file *multipart.FileHeader) (model.File, model.RetVal) {
+func SavePicture(tx *gorm.DB, options db.CreateFileOptions, file *multipart.FileHeader) (model.File, model.RetVal) {
 	var (
 		fileRepo = db.InitFileRepo(tx)
 		allowed  = []string{".png", ".jpg", ".jpeg"}
@@ -35,10 +35,10 @@ func SaveAvatar(tx *gorm.DB, options db.CreateFileOptions, file *multipart.FileH
 	options.RandID = utils.UUID()
 	options.Filename = file.Filename
 	options.Size = size
-	options.Path = fmt.Sprintf("%s/avatars/%s%s", config.Env.Path, utils.UUID(), suffix)
+	options.Path = fmt.Sprintf("%s/pictures/%s%s", config.Env.Path, utils.UUID(), suffix)
 	options.Suffix = suffix
 	options.Hash = hash
-	options.Type = model.AvatarFileType
+	options.Type = model.PictureFileType
 	record, ret := fileRepo.Create(options)
 	if ret.OK {
 		prometheus.UpdateFileUploadMetrics(record.Suffix, record.Size)
@@ -46,24 +46,24 @@ func SaveAvatar(tx *gorm.DB, options db.CreateFileOptions, file *multipart.FileH
 	return record, ret
 }
 
-func UpdateAvatar(tx *gorm.DB, v string, id uint, record model.File) (string, model.RetVal) {
+func UpdatePicture(tx *gorm.DB, v string, id uint, record model.File) (string, model.RetVal) {
 	var ret model.RetVal
-	path := model.AvatarURL(fmt.Sprintf("/avatars/%s", record.RandID))
+	path := model.FileURL(fmt.Sprintf("/pictures/%s", record.RandID))
 	switch v {
 	case "admin":
-		ret = db.InitAdminRepo(tx).Update(id, db.UpdateAdminOptions{Avatar: &path})
+		ret = db.InitAdminRepo(tx).Update(id, db.UpdateAdminOptions{Picture: &path})
 	case "self-user":
-		ret = db.InitUserRepo(tx).Update(id, db.UpdateUserOptions{Avatar: &path})
+		ret = db.InitUserRepo(tx).Update(id, db.UpdateUserOptions{Picture: &path})
 	case "user":
-		ret = db.InitUserRepo(tx).Update(id, db.UpdateUserOptions{Avatar: &path})
+		ret = db.InitUserRepo(tx).Update(id, db.UpdateUserOptions{Picture: &path})
 	case "contest":
-		ret = db.InitContestRepo(tx).Update(id, db.UpdateContestOptions{Avatar: &path})
+		ret = db.InitContestRepo(tx).Update(id, db.UpdateContestOptions{Picture: &path})
 	case "team":
-		ret = db.InitTeamRepo(tx).Update(id, db.UpdateTeamOptions{Avatar: &path})
+		ret = db.InitTeamRepo(tx).Update(id, db.UpdateTeamOptions{Picture: &path})
 	case "oauth":
-		ret = db.InitOauthRepo(tx).Update(id, db.UpdateOauthOptions{Avatar: &path})
+		ret = db.InitOauthRepo(tx).Update(id, db.UpdateOauthOptions{Picture: &path})
 	default:
-		ret = model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Invalid Avatar"}}
+		ret = model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Invalid Picture"}}
 	}
 	return string(path), ret
 }
