@@ -4,6 +4,6 @@ var Common = struct {
 	Success      string
 	UnknownError string
 }{
-	Success:      "success",
-	UnknownError: "unknownError",
+	Success:      "common.success",
+	UnknownError: "common.unknownError",
 }
