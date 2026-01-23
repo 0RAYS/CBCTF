@@ -1,7 +1,6 @@
 package model
 
 import (
-	"CBCTF/internal/i18n"
 	"math"
 	"time"
 )
@@ -48,26 +47,6 @@ func (c ContestFlag) GetModelName() string {
 
 func (c ContestFlag) GetBaseModel() BaseModel {
 	return c.BaseModel
-}
-
-func (c ContestFlag) CreateErrorString() string {
-	return i18n.CreateContestFlagError
-}
-
-func (c ContestFlag) DeleteErrorString() string {
-	return i18n.DeleteContestFlagError
-}
-
-func (c ContestFlag) GetErrorString() string {
-	return i18n.GetContestFlagError
-}
-
-func (c ContestFlag) NotFoundString() string {
-	return i18n.ContestFlagNotFound
-}
-
-func (c ContestFlag) UpdateErrorString() string {
-	return i18n.UpdateContestFlagError
 }
 
 func (c ContestFlag) GetUniqueKey() []string {

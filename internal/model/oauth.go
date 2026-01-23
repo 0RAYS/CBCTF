@@ -1,7 +1,5 @@
 package model
 
-import "CBCTF/internal/i18n"
-
 type Oauth struct {
 	AuthURL         string    `json:"auth_url"`
 	TokenURL        string    `json:"token_url"`
@@ -27,26 +25,6 @@ func (o Oauth) GetModelName() string {
 
 func (o Oauth) GetBaseModel() BaseModel {
 	return o.BaseModel
-}
-
-func (o Oauth) CreateErrorString() string {
-	return i18n.CreateOauthError
-}
-
-func (o Oauth) DeleteErrorString() string {
-	return i18n.DeleteOauthError
-}
-
-func (o Oauth) GetErrorString() string {
-	return i18n.GetOauthError
-}
-
-func (o Oauth) NotFoundString() string {
-	return i18n.OauthNotFound
-}
-
-func (o Oauth) UpdateErrorString() string {
-	return i18n.UpdateOauthError
 }
 
 func (o Oauth) GetUniqueKey() []string {

@@ -1,7 +1,5 @@
 package model
 
-import "CBCTF/internal/i18n"
-
 // Submission 提交记录
 // BelongsTo ContestChallenge
 // BelongsTo Contest
@@ -35,26 +33,6 @@ func (s Submission) GetModelName() string {
 
 func (s Submission) GetBaseModel() BaseModel {
 	return s.BaseModel
-}
-
-func (s Submission) CreateErrorString() string {
-	return i18n.CreateSubmissionError
-}
-
-func (s Submission) DeleteErrorString() string {
-	return i18n.DeleteSubmissionError
-}
-
-func (s Submission) GetErrorString() string {
-	return i18n.GetSubmissionError
-}
-
-func (s Submission) NotFoundString() string {
-	return i18n.SubmissionNotFound
-}
-
-func (s Submission) UpdateErrorString() string {
-	return i18n.UpdateSubmissionError
 }
 
 func (s Submission) GetUniqueKey() []string {

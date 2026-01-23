@@ -1,7 +1,5 @@
 package model
 
-import "CBCTF/internal/i18n"
-
 const NeverLoginPWD = "never_login_pwd"
 
 // User
@@ -37,26 +35,6 @@ func (u User) GetModelName() string {
 
 func (u User) GetBaseModel() BaseModel {
 	return u.BaseModel
-}
-
-func (u User) CreateErrorString() string {
-	return i18n.CreateUserError
-}
-
-func (u User) DeleteErrorString() string {
-	return i18n.DeleteUserError
-}
-
-func (u User) GetErrorString() string {
-	return i18n.GetUserError
-}
-
-func (u User) NotFoundString() string {
-	return i18n.UserNotFound
-}
-
-func (u User) UpdateErrorString() string {
-	return i18n.UpdateUserError
 }
 
 func (u User) GetUniqueKey() []string {

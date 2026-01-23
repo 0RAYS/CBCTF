@@ -2,7 +2,6 @@ package service
 
 import (
 	"CBCTF/internal/db"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/task"
@@ -30,7 +29,7 @@ func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) model.
 			if contestChallenge.Type == model.DynamicChallengeType {
 				if _, err := task.EnqueueGenAttachmentTask(team.CaptainID, contestChallenge.Challenge, team, teamFlags); err != nil {
 					log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
-					return errors.New(i18n.EnqueueTaskError)
+					return err
 				}
 			}
 			return nil

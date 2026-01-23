@@ -1,7 +1,5 @@
 package model
 
-import "CBCTF/internal/i18n"
-
 const OauthLoginType = "oauth_login"
 
 // Device
@@ -21,26 +19,6 @@ func (d Device) GetModelName() string {
 
 func (d Device) GetBaseModel() BaseModel {
 	return d.BaseModel
-}
-
-func (d Device) CreateErrorString() string {
-	return i18n.CreateDeviceError
-}
-
-func (d Device) DeleteErrorString() string {
-	return i18n.DeleteDeviceError
-}
-
-func (d Device) GetErrorString() string {
-	return i18n.GetDeviceError
-}
-
-func (d Device) NotFoundString() string {
-	return i18n.DeviceNotFound
-}
-
-func (d Device) UpdateErrorString() string {
-	return i18n.UpdateDeviceError
 }
 
 func (d Device) GetUniqueKey() []string {

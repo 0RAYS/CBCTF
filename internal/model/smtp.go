@@ -1,7 +1,6 @@
 package model
 
 import (
-	"CBCTF/internal/i18n"
 	"time"
 )
 
@@ -25,26 +24,6 @@ func (s Smtp) GetModelName() string {
 
 func (s Smtp) GetBaseModel() BaseModel {
 	return s.BaseModel
-}
-
-func (s Smtp) CreateErrorString() string {
-	return i18n.CreateSmtpError
-}
-
-func (s Smtp) DeleteErrorString() string {
-	return i18n.DeleteSmtpError
-}
-
-func (s Smtp) GetErrorString() string {
-	return i18n.GetSmtpError
-}
-
-func (s Smtp) NotFoundString() string {
-	return i18n.SmtpNotFound
-}
-
-func (s Smtp) UpdateErrorString() string {
-	return i18n.UpdateSmtpError
 }
 
 func (s Smtp) GetUniqueKey() []string {

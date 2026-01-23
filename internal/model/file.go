@@ -1,7 +1,6 @@
 package model
 
 import (
-	"CBCTF/internal/i18n"
 	"database/sql"
 )
 
@@ -46,26 +45,6 @@ func (f File) GetModelName() string {
 
 func (f File) GetBaseModel() BaseModel {
 	return f.BaseModel
-}
-
-func (f File) CreateErrorString() string {
-	return i18n.CreateFileError
-}
-
-func (f File) DeleteErrorString() string {
-	return i18n.DeleteFileError
-}
-
-func (f File) GetErrorString() string {
-	return i18n.GetFileError
-}
-
-func (f File) NotFoundString() string {
-	return i18n.FileNotFound
-}
-
-func (f File) UpdateErrorString() string {
-	return i18n.UpdateFileError
 }
 
 func (f File) GetUniqueKey() []string {

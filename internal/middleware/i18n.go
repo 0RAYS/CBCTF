@@ -5,9 +5,13 @@ import (
 	"CBCTF/internal/log"
 	"bytes"
 	"encoding/json"
-	"strings"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
+)
+
+const (
+	CTXStatusCodeKey = "StatusCode"
 )
 
 type i18nResponseWriter struct {
@@ -19,16 +23,6 @@ func (w *i18nResponseWriter) Write(p []byte) (n int, err error) {
 	return w.body.Write(p)
 }
 
-type Data struct {
-	Code  int    `json:"code"`
-	Msg   string `json:"msg"`
-	Data  any    `json:"data"`
-	Trace string `json:"trace"`
-}
-
-const CTXStatusCodeKey = "StatusCode"
-
-// I18n 重写响应
 func I18n(ctx *gin.Context) {
 	w := &i18nResponseWriter{
 		ResponseWriter: ctx.Writer,
@@ -39,26 +33,32 @@ func I18n(ctx *gin.Context) {
 	ctx.Next()
 
 	ctx.Set(CTXStatusCodeKey, ctx.Writer.Status())
-	var res Data
-	old := w.body.String()
-
-	err := json.Unmarshal([]byte(old), &res)
-	if err != nil {
-		_, _ = w.ResponseWriter.Write([]byte(old))
+	var old struct {
+		Msg  string         `json:"msg"`
+		Data any            `json:"data"`
+		Attr map[string]any `json:"attr"`
+	}
+	data := w.body.String()
+	if err := json.Unmarshal([]byte(data), &old); err != nil {
+		_, _ = w.ResponseWriter.Write([]byte(data))
 		return
 	}
-	language := ctx.GetHeader("Accept-Language")
-	if strings.HasPrefix(language, "en-US") {
-		language = "en-US"
-	} else if strings.HasPrefix(language, "origin") {
-		language = "origin"
-	} else {
-		language = "zh-CN"
-
+	code, err := strconv.Atoi(i18n.Translate("und", old.Msg))
+	if err != nil {
+		code = 500
 	}
-	res.Msg, res.Code = i18n.I18N(res.Msg, language)
-	ctx.Set(CTXStatusCodeKey, res.Code)
-	res.Trace = GetTraceID(ctx)
+	ctx.Set(CTXStatusCodeKey, code)
+	var res = struct {
+		Code  int    `json:"code"`
+		Msg   string `json:"msg"`
+		Data  any    `json:"data"`
+		Trace string `json:"trace"`
+	}{
+		Code:  code,
+		Msg:   i18n.Translate(detectLanguage(ctx), old.Msg, old.Attr),
+		Data:  old.Data,
+		Trace: GetTraceID(ctx),
+	}
 	ret, err := json.Marshal(res)
 	if err != nil {
 		log.Logger.Errorf("Rewrite response error: %s", err)
@@ -66,4 +66,11 @@ func I18n(ctx *gin.Context) {
 	}
 	defer w.body.Reset()
 	_, _ = w.ResponseWriter.Write(ret)
+}
+
+func detectLanguage(ctx *gin.Context) string {
+	if lang := ctx.Query("lang"); lang != "" {
+		return lang
+	}
+	return ctx.GetHeader("Accept-Language")
 }

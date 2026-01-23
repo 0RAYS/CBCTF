@@ -1,7 +1,6 @@
 package model
 
 import (
-	"CBCTF/internal/i18n"
 	"database/sql"
 	"time"
 )
@@ -28,26 +27,6 @@ func (r Request) GetModelName() string {
 
 func (r Request) GetBaseModel() BaseModel {
 	return r.BaseModel
-}
-
-func (r Request) CreateErrorString() string {
-	return i18n.CreateRequestError
-}
-
-func (r Request) DeleteErrorString() string {
-	return i18n.DeleteRequestError
-}
-
-func (r Request) GetErrorString() string {
-	return i18n.GetRequestError
-}
-
-func (r Request) NotFoundString() string {
-	return i18n.RequestNotFound
-}
-
-func (r Request) UpdateErrorString() string {
-	return i18n.UpdateRequestError
 }
 
 func (r Request) GetUniqueKey() []string {

@@ -2,7 +2,6 @@ package model
 
 import (
 	"CBCTF/internal/config"
-	"CBCTF/internal/i18n"
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
@@ -41,26 +40,6 @@ func (v Victim) GetModelName() string {
 
 func (v Victim) GetBaseModel() BaseModel {
 	return v.BaseModel
-}
-
-func (v Victim) CreateErrorString() string {
-	return i18n.CreateVictimError
-}
-
-func (v Victim) DeleteErrorString() string {
-	return i18n.DeleteVictimError
-}
-
-func (v Victim) GetErrorString() string {
-	return i18n.GetVictimError
-}
-
-func (v Victim) NotFoundString() string {
-	return i18n.VictimNotFound
-}
-
-func (v Victim) UpdateErrorString() string {
-	return i18n.UpdateVictimError
 }
 
 func (v Victim) GetUniqueKey() []string {

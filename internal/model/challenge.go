@@ -2,7 +2,6 @@ package model
 
 import (
 	"CBCTF/internal/config"
-	"CBCTF/internal/i18n"
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
@@ -48,26 +47,6 @@ func (c Challenge) GetModelName() string {
 
 func (c Challenge) GetBaseModel() BaseModel {
 	return c.BaseModel
-}
-
-func (c Challenge) CreateErrorString() string {
-	return i18n.CreateChallengeError
-}
-
-func (c Challenge) DeleteErrorString() string {
-	return i18n.DeleteChallengeError
-}
-
-func (c Challenge) GetErrorString() string {
-	return i18n.GetChallengeError
-}
-
-func (c Challenge) NotFoundString() string {
-	return i18n.ChallengeNotFound
-}
-
-func (c Challenge) UpdateErrorString() string {
-	return i18n.UpdateChallengeError
 }
 
 func (c Challenge) GetUniqueKey() []string {

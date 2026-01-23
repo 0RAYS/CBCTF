@@ -116,7 +116,7 @@ func (c *ContestChallengeRepo) Delete(idL ...uint) model.RetVal {
 		},
 	})
 	if !ret.OK {
-		if ret.Msg != i18n.ContestChallengeNotFound {
+		if ret.Msg != i18n.Model.NotFound {
 			return ret
 		}
 		return model.SuccessRetVal()

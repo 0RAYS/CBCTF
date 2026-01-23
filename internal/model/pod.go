@@ -1,7 +1,6 @@
 package model
 
 import (
-	"CBCTF/internal/i18n"
 	"fmt"
 )
 
@@ -21,26 +20,6 @@ func (p Pod) GetModelName() string {
 
 func (p Pod) GetBaseModel() BaseModel {
 	return p.BaseModel
-}
-
-func (p Pod) CreateErrorString() string {
-	return i18n.CreatePodError
-}
-
-func (p Pod) DeleteErrorString() string {
-	return i18n.DeletePodError
-}
-
-func (p Pod) GetErrorString() string {
-	return i18n.GetPodError
-}
-
-func (p Pod) NotFoundString() string {
-	return i18n.PodNotFound
-}
-
-func (p Pod) UpdateErrorString() string {
-	return i18n.UpdatePodError
 }
 
 func (p Pod) GetUniqueKey() []string {

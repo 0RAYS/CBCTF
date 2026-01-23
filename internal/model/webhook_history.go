@@ -1,7 +1,6 @@
 package model
 
 import (
-	"CBCTF/internal/i18n"
 	"time"
 )
 
@@ -23,26 +22,6 @@ func (w WebhookHistory) GetModelName() string {
 
 func (w WebhookHistory) GetBaseModel() BaseModel {
 	return w.BaseModel
-}
-
-func (w WebhookHistory) CreateErrorString() string {
-	return i18n.CreateWebhookHistoryError
-}
-
-func (w WebhookHistory) DeleteErrorString() string {
-	return i18n.DeleteWebhookHistoryError
-}
-
-func (w WebhookHistory) GetErrorString() string {
-	return i18n.GetWebhookHistoryError
-}
-
-func (w WebhookHistory) NotFoundString() string {
-	return i18n.WebhookHistoryNotFound
-}
-
-func (w WebhookHistory) UpdateErrorString() string {
-	return i18n.UpdateWebhookHistoryError
 }
 
 func (w WebhookHistory) GetUniqueKey() []string {

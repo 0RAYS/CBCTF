@@ -1,7 +1,5 @@
 package model
 
-import "CBCTF/internal/i18n"
-
 // ContestChallenge 被赛事引用的挑战
 // BelongsTo Contest
 // BelongsTo Challenge
@@ -32,26 +30,6 @@ func (c ContestChallenge) GetModelName() string {
 
 func (c ContestChallenge) GetBaseModel() BaseModel {
 	return c.BaseModel
-}
-
-func (c ContestChallenge) CreateErrorString() string {
-	return i18n.CreateContestChallengeError
-}
-
-func (c ContestChallenge) DeleteErrorString() string {
-	return i18n.DeleteContestChallengeError
-}
-
-func (c ContestChallenge) GetErrorString() string {
-	return i18n.GetContestChallengeError
-}
-
-func (c ContestChallenge) NotFoundString() string {
-	return i18n.ContestChallengeNotFound
-}
-
-func (c ContestChallenge) UpdateErrorString() string {
-	return i18n.UpdateContestChallengeError
 }
 
 func (c ContestChallenge) GetUniqueKey() []string {
