@@ -128,7 +128,7 @@ func SaveWriteUp(tx *gorm.DB, user model.User, contest model.Contest, team model
 		ContestID: sql.Null[uint]{V: contest.ID, Valid: true},
 		Suffix:    suffix,
 		Hash:      hash,
-		Type:      model.WriteUPFileType,
+		Type:      model.WriteupFileType,
 	})
 	if ret.OK {
 		prometheus.UpdateFileUploadMetrics(record.Suffix, file.Size)

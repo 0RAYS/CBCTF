@@ -7,7 +7,7 @@ import (
 const (
 	ChallengeFileType = "file"
 	PictureFileType   = "picture"
-	WriteUPFileType   = "writeup"
+	WriteupFileType   = "writeup"
 	TrafficFileType   = "traffic"
 )
 

@@ -139,7 +139,7 @@ func UploadChallengeFile(ctx *gin.Context) {
 }
 
 func UploadWriteUp(ctx *gin.Context) {
-	file, err := ctx.FormFile(model.WriteUPFileType)
+	file, err := ctx.FormFile(model.WriteupFileType)
 	if err != nil {
 		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 		return
@@ -192,7 +192,7 @@ func GetWriteUPs(ctx *gin.Context) {
 	}
 	team := middleware.GetTeam(ctx)
 	writeups, count, ret := db.InitFileRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
-		Conditions: map[string]any{"type": model.WriteUPFileType, "team_id": team.ID},
+		Conditions: map[string]any{"type": model.WriteupFileType, "team_id": team.ID},
 	})
 	if !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
