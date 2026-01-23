@@ -63,7 +63,7 @@ func CreateContest(tx *gorm.DB, form dto.CreateContestForm) (model.Contest, mode
 		Name:      form.Name,
 		Desc:      form.Desc,
 		Captcha:   form.Captcha,
-		Avatar:    "",
+		Picture:   "",
 		Prefix:    form.Prefix,
 		Size:      form.Size,
 		Start:     form.Start,

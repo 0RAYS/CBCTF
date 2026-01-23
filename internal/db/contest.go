@@ -19,7 +19,7 @@ type CreateContestOptions struct {
 	Name      string
 	Desc      string
 	Captcha   string
-	Avatar    model.AvatarURL
+	Picture   model.FileURL
 	Prefix    string
 	Size      int
 	Start     time.Time
@@ -37,7 +37,7 @@ func (c CreateContestOptions) Convert2Model() model.Model {
 		Name:      c.Name,
 		Desc:      c.Desc,
 		Captcha:   c.Captcha,
-		Avatar:    c.Avatar,
+		Picture:   c.Picture,
 		Prefix:    c.Prefix,
 		Size:      c.Size,
 		Start:     c.Start,
@@ -55,7 +55,7 @@ type UpdateContestOptions struct {
 	Name        *string
 	Desc        *string
 	Captcha     *string
-	Avatar      *model.AvatarURL
+	Picture     *model.FileURL
 	Prefix      *string
 	Size        *int
 	Start       *time.Time
@@ -82,8 +82,8 @@ func (u UpdateContestOptions) Convert2Map() map[string]any {
 	if u.Captcha != nil {
 		options["captcha"] = *u.Captcha
 	}
-	if u.Avatar != nil {
-		options["avatar"] = *u.Avatar
+	if u.Picture != nil {
+		options["picture"] = *u.Picture
 	}
 	if u.Prefix != nil {
 		options["prefix"] = *u.Prefix

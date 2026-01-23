@@ -18,7 +18,7 @@ type CreateUserOptions struct {
 	Name           string
 	Password       string
 	Email          string
-	Avatar         model.AvatarURL
+	Picture        model.FileURL
 	Desc           string
 	Verified       bool
 	Hidden         bool
@@ -33,7 +33,7 @@ func (c CreateUserOptions) Convert2Model() model.Model {
 		Name:           c.Name,
 		Password:       c.Password,
 		Email:          c.Email,
-		Avatar:         c.Avatar,
+		Picture:        c.Picture,
 		Desc:           c.Desc,
 		Verified:       c.Verified,
 		Hidden:         c.Hidden,
@@ -49,7 +49,7 @@ type UpdateUserOptions struct {
 	Password       *string
 	Email          *string
 	Desc           *string
-	Avatar         *model.AvatarURL
+	Picture        *model.FileURL
 	Verified       *bool
 	Hidden         *bool
 	Banned         *bool
@@ -74,8 +74,8 @@ func (u UpdateUserOptions) Convert2Map() map[string]any {
 	if u.Desc != nil {
 		options["desc"] = *u.Desc
 	}
-	if u.Avatar != nil {
-		options["avatar"] = *u.Avatar
+	if u.Picture != nil {
+		options["picture"] = *u.Picture
 	}
 	if u.Verified != nil {
 		options["verified"] = *u.Verified

@@ -15,7 +15,7 @@ func CreateAdmin(tx *gorm.DB, form dto.CreateAdminForm) (model.Admin, model.RetV
 		Name:     form.Name,
 		Password: utils.HashPassword(form.Password),
 		Email:    form.Email,
-		Avatar:   "",
+		Picture:  "",
 		Verified: false,
 	})
 }

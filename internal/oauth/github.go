@@ -11,30 +11,30 @@ import (
 
 // Download from: https://github.com/logos
 var (
-	//go:embed avatar/github-mark-white.png
+	//go:embed logo/github-mark-white.png
 	githubMarkWhiteFile embed.FS
-	GithubMarkWhite, _  = githubMarkWhiteFile.ReadFile("avatar/github-mark-white.png")
-	//go:embed avatar/github-mark.png
+	GithubMarkWhite, _  = githubMarkWhiteFile.ReadFile("logo/github-mark-white.png")
+	//go:embed logo/github-mark.png
 	githubMarkFile embed.FS
-	GithubMark, _  = githubMarkFile.ReadFile("avatar/github-mark.png")
+	GithubMark, _  = githubMarkFile.ReadFile("logo/github-mark.png")
 )
 
 func GetDefaultGithubOauth() model.Oauth {
 	return model.Oauth{
-		AuthURL:         github.Endpoint.AuthURL,
-		TokenURL:        github.Endpoint.TokenURL,
-		UserInfoURL:     "https://api.github.com/user",
-		CallbackURL:     fmt.Sprintf("%s/oauth/github/callback", config.Env.Backend),
-		ClientID:        "",
-		ClientSecret:    "",
-		Provider:        "Github",
-		Uri:             "github",
-		RespIDField:     "{id}",
-		RespNameField:   "{name}",
-		RespEmailField:  "{email}",
-		RespAvatarField: "{avatar_url}",
-		RespDescField:   "{blog}",
-		On:              false,
-		Avatar:          model.AvatarURL(fmt.Sprintf("%s/assets?filename=github", config.Env.Backend)),
+		AuthURL:          github.Endpoint.AuthURL,
+		TokenURL:         github.Endpoint.TokenURL,
+		UserInfoURL:      "https://api.github.com/user",
+		CallbackURL:      fmt.Sprintf("%s/oauth/github/callback", config.Env.Backend),
+		ClientID:         "",
+		ClientSecret:     "",
+		Provider:         "Github",
+		Uri:              "github",
+		RespIDField:      "{id}",
+		RespNameField:    "{name}",
+		RespEmailField:   "{email}",
+		RespPictureField: "{picture_url}",
+		RespDescField:    "{blog}",
+		On:               false,
+		Picture:          model.FileURL(fmt.Sprintf("%s/assets?filename=github", config.Env.Backend)),
 	}
 }

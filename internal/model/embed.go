@@ -8,28 +8,28 @@ import (
 	"strings"
 )
 
-type AvatarURL string
+type FileURL string
 
-func (a AvatarURL) Value() (driver.Value, error) {
+func (a FileURL) Value() (driver.Value, error) {
 	if a == "" {
 		return nil, nil
 	}
 	return strings.TrimPrefix(string(a), config.Env.Backend), nil
 }
 
-func (a *AvatarURL) Scan(value any) error {
+func (a *FileURL) Scan(value any) error {
 	bytes, ok := value.([]byte)
 	if !ok {
-		return fmt.Errorf("failed to scan AvatarURL: %v", value)
+		return fmt.Errorf("failed to scan FileURL: %v", value)
 	}
 	if len(bytes) == 0 {
 		*a = ""
 		return nil
 	}
 	if strings.HasPrefix(string(bytes), "https://") || strings.HasPrefix(string(bytes), "http://") {
-		*a = AvatarURL(bytes)
+		*a = FileURL(bytes)
 	} else {
-		*a = AvatarURL(config.Env.Backend + string(bytes))
+		*a = FileURL(config.Env.Backend + string(bytes))
 	}
 	return nil
 }

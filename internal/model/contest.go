@@ -31,7 +31,7 @@ type Contest struct {
 	Name              string             `gorm:"type:varchar(255);uniqueIndex;not null" json:"name"`
 	Desc              string             `json:"desc"`
 	Captcha           string             `json:"captcha"`
-	Avatar            AvatarURL          `json:"avatar"`
+	Picture           FileURL            `json:"picture"`
 	Prefix            string             `gorm:"default:'flag'" json:"prefix"`
 	Size              int                `gorm:"default:4" json:"size"`
 	Start             time.Time          `gorm:"not null" json:"start"`

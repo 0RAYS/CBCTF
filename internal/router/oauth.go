@@ -48,9 +48,9 @@ func ListOauth(ctx *gin.Context) {
 	oauthProviderMapLock.RLock()
 	for _, provider := range oauthProviderMap {
 		data = append(data, gin.H{
-			"url":    fmt.Sprintf("%s/oauth/%s", config.Env.Backend, provider.Uri),
-			"name":   provider.Provider,
-			"avatar": provider.Avatar,
+			"url":     fmt.Sprintf("%s/oauth/%s", config.Env.Backend, provider.Uri),
+			"name":    provider.Provider,
+			"picture": provider.Picture,
 		})
 	}
 	oauthProviderMapLock.RUnlock()
@@ -158,14 +158,14 @@ func OauthCallback(ctx *gin.Context) {
 		if !ok {
 			email = fmt.Sprintf("%s_%s@example.com", provider.Provider, utils.RandStr(10))
 		}
-		avatar, _ := utils.GetFiledValue(result, provider.RespAvatarField)
+		picture, _ := utils.GetFiledValue(result, provider.RespPictureField)
 		desc, _ := utils.GetFiledValue(result, provider.RespDescField)
 		raw, _ := json.Marshal(result)
 		user, ret = userRepo.Create(db.CreateUserOptions{
 			Name:           name,
 			Password:       model.NeverLoginPWD,
 			Email:          email,
-			Avatar:         model.AvatarURL(avatar),
+			Picture:        model.FileURL(picture),
 			Desc:           desc,
 			Verified:       true,
 			Provider:       provider.Provider,
@@ -225,19 +225,19 @@ func CreateOauthProvider(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateOauthEventType)
 	provider, ret := db.InitOauthRepo(db.DB).Create(db.CreateOauthOptions{
-		AuthURL:         form.AuthURL,
-		TokenURL:        form.TokenURL,
-		UserInfoURL:     form.UserInfoURL,
-		ClientID:        form.ClientID,
-		ClientSecret:    form.ClientSecret,
-		Provider:        form.Provider,
-		Uri:             form.Uri,
-		RespIDField:     form.RespIDField,
-		RespNameField:   form.RespNameField,
-		RespEmailField:  form.RespEmailField,
-		RespAvatarField: form.RespAvatarField,
-		RespDescField:   form.RespDescField,
-		On:              false,
+		AuthURL:          form.AuthURL,
+		TokenURL:         form.TokenURL,
+		UserInfoURL:      form.UserInfoURL,
+		ClientID:         form.ClientID,
+		ClientSecret:     form.ClientSecret,
+		Provider:         form.Provider,
+		Uri:              form.Uri,
+		RespIDField:      form.RespIDField,
+		RespNameField:    form.RespNameField,
+		RespEmailField:   form.RespEmailField,
+		RespPictureField: form.RespPictureField,
+		RespDescField:    form.RespDescField,
+		On:               false,
 	})
 	if !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
@@ -256,20 +256,20 @@ func UpdateOauthProvider(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateOauthEventType)
 	oauth := middleware.GetOauth(ctx)
 	if ret := db.InitOauthRepo(db.DB).Update(oauth.ID, db.UpdateOauthOptions{
-		AuthURL:         form.AuthURL,
-		TokenURL:        form.TokenURL,
-		UserInfoURL:     form.UserInfoURL,
-		CallbackURL:     form.CallbackURL,
-		ClientID:        form.ClientID,
-		ClientSecret:    form.ClientSecret,
-		Provider:        form.Provider,
-		Uri:             form.Uri,
-		RespIDField:     form.RespIDField,
-		RespNameField:   form.RespNameField,
-		RespEmailField:  form.RespEmailField,
-		RespAvatarField: form.RespAvatarField,
-		RespDescField:   form.RespDescField,
-		On:              form.On,
+		AuthURL:          form.AuthURL,
+		TokenURL:         form.TokenURL,
+		UserInfoURL:      form.UserInfoURL,
+		CallbackURL:      form.CallbackURL,
+		ClientID:         form.ClientID,
+		ClientSecret:     form.ClientSecret,
+		Provider:         form.Provider,
+		Uri:              form.Uri,
+		RespIDField:      form.RespIDField,
+		RespNameField:    form.RespNameField,
+		RespEmailField:   form.RespEmailField,
+		RespPictureField: form.RespPictureField,
+		RespDescField:    form.RespDescField,
+		On:               form.On,
 	}); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return

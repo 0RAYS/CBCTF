@@ -18,7 +18,7 @@ type Team struct {
 	Name        string       `gorm:"type:varchar(255);index:idx_name_contest,unique;not null" json:"name"`
 	Desc        string       `json:"desc"`
 	Captcha     string       `json:"-"`
-	Avatar      AvatarURL    `json:"avatar"`
+	Picture     FileURL      `json:"picture"`
 	Score       float64      `gorm:"default:0" json:"score"`
 	Banned      bool         `gorm:"default:false" json:"banned"`
 	Hidden      bool         `gorm:"default:false" json:"hidden"`

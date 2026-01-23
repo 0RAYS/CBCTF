@@ -70,7 +70,7 @@ func Init() *gin.Engine {
 
 		router.GET("/verify", VerifyEmail)
 		router.GET("/assets", DefaultAssets)
-		router.GET("/avatars/:fileID", middleware.SetFile(model.AvatarFileType), DownloadFile(model.SkipEventType))
+		router.GET("/pictures/:fileID", middleware.SetFile(model.PictureFileType), DownloadFile(model.SkipEventType))
 
 		router.GET("/stats", HomePage)
 		router.GET("/contests", GetContests)
@@ -84,7 +84,7 @@ func Init() *gin.Engine {
 		user.PUT("/password", ChangePwd)
 		user.PUT("", UpdateUser)
 		user.DELETE("", DeleteUser)
-		user.POST("/avatar", UploadAvatar("self-user"))
+		user.POST("/picture", UploadPicture("self-user"))
 		user.POST("/activate", middleware.RateLimit("activate", 1, time.Minute), ActivateEmail)
 	}
 
@@ -104,7 +104,7 @@ func Init() *gin.Engine {
 			contestTeam.GET("/users", GetTeammates)
 			contestTeam.PUT("/captcha", middleware.ContestIsNotOver, middleware.CheckCaptain, UpdateCaptcha)
 			contestTeam.PUT("", middleware.ContestIsNotOver, middleware.CheckCaptain, UpdateTeam)
-			contestTeam.POST("/avatar", middleware.ContestIsNotOver, middleware.CheckCaptain, UploadAvatar("team"))
+			contestTeam.POST("/picture", middleware.ContestIsNotOver, middleware.CheckCaptain, UploadPicture("team"))
 			contestTeam.DELETE("", middleware.ContestIsComing, middleware.CheckCaptain, DeleteTeam)
 			contestTeam.POST("/kick", middleware.ContestIsComing, middleware.CheckCaptain, KickMember)
 			contestTeam.POST("/leave", middleware.ContestIsComing, LeaveTeam)
@@ -166,7 +166,7 @@ func Init() *gin.Engine {
 		admin.GET("/me", GetAdmin)
 		admin.PUT("/me/password", AdminChangePassword)
 		admin.PUT("/me", UpdateAdmin)
-		admin.POST("/me/avatar", UploadAvatar("admin"))
+		admin.POST("/me/picture", UploadPicture("admin"))
 		admin.POST("", CreateAdmin)
 
 		admin.GET("/search", Search)
@@ -185,7 +185,7 @@ func Init() *gin.Engine {
 			adminUser.GET("", GetUser)
 			adminUser.PUT("", UpdateUser)
 			adminUser.DELETE("", DeleteUser)
-			adminUser.POST("/avatar", UploadAvatar("user"))
+			adminUser.POST("/picture", UploadPicture("user"))
 		}
 
 		admin.GET("/oauth", GetOauthProviders)
@@ -194,7 +194,7 @@ func Init() *gin.Engine {
 		{
 			adminOauth.GET("", GetOauthProvider)
 			adminOauth.PUT("", UpdateOauthProvider)
-			adminOauth.POST("/avatar", UploadAvatar("oauth"))
+			adminOauth.POST("/picture", UploadPicture("oauth"))
 			adminOauth.DELETE("", DeleteOauthProvider)
 		}
 
@@ -256,7 +256,7 @@ func Init() *gin.Engine {
 			adminContest.GET("", GetContest)
 			adminContest.PUT("", UpdateContest)
 			adminContest.DELETE("", DeleteContest)
-			adminContest.POST("/avatar", UploadAvatar("contest"))
+			adminContest.POST("/picture", UploadPicture("contest"))
 			adminContest.GET("/rank", GetTeamRanking)
 			adminContest.GET("/scoreboard", GetScoreboard)
 			adminContest.GET("/timeline", GetRankTimeline)
@@ -269,7 +269,7 @@ func Init() *gin.Engine {
 				adminContestTeam.PUT("", UpdateTeam)
 				adminContestTeam.DELETE("", DeleteTeam)
 				adminContestTeam.POST("/kick", KickMember)
-				adminContestTeam.POST("/avatar", UploadAvatar("team"))
+				adminContestTeam.POST("/picture", UploadPicture("team"))
 
 				adminContestTeam.GET("/submissions", GetSubmissions)
 

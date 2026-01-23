@@ -11,7 +11,7 @@ func GetAdminResp(admin model.Admin) gin.H {
 		"id":       admin.ID,
 		"name":     admin.Name,
 		"email":    admin.Email,
-		"avatar":   admin.Avatar,
+		"picture":  admin.Picture,
 		"verified": admin.Verified,
 	}
 	return data

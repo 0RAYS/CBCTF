@@ -40,14 +40,14 @@ func DownloadFile(eventType string) gin.HandlerFunc {
 	}
 }
 
-func UploadAvatar(v string) gin.HandlerFunc {
+func UploadPicture(v string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		file, err := ctx.FormFile(model.AvatarFileType)
+		file, err := ctx.FormFile(model.PictureFileType)
 		if err != nil {
 			ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 			return
 		}
-		ctx.Set(middleware.CTXEventTypeKey, model.UploadAvatarEventType)
+		ctx.Set(middleware.CTXEventTypeKey, model.UploadPictureEventType)
 		options := db.CreateFileOptions{}
 		var id uint
 		switch v {
@@ -82,12 +82,12 @@ func UploadAvatar(v string) gin.HandlerFunc {
 			selfID := middleware.GetSelfID(ctx)
 			options.AdminID = sql.Null[uint]{V: selfID, Valid: true}
 		}
-		record, ret := service.SaveAvatar(db.DB, options, file)
+		record, ret := service.SavePicture(db.DB, options, file)
 		if !ret.OK {
 			ctx.JSON(http.StatusOK, ret)
 			return
 		}
-		path, ret := service.UpdateAvatar(db.DB, v, id, record)
+		path, ret := service.UpdatePicture(db.DB, v, id, record)
 		if !ret.OK {
 			ctx.JSON(http.StatusOK, ret)
 			return
@@ -211,7 +211,7 @@ func DeleteFiles(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
-	ctx.Set(middleware.CTXEventTypeKey, model.DeleteAvatarEventType)
+	ctx.Set(middleware.CTXEventTypeKey, model.DeletePictureEventType)
 	ret := db.InitFileRepo(db.DB).DeleteByRandID(form.FileIDL...)
 	if !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
