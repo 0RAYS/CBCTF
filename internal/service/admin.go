@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
-	"strings"
 
 	"gorm.io/gorm"
 )
@@ -40,9 +39,6 @@ func UpdateUser(tx *gorm.DB, user model.User, form dto.UpdateUserForm) model.Ret
 		Hidden:   form.Hidden,
 		Banned:   form.Banned,
 		Verified: form.Verified,
-	}
-	if form.Country != nil && *form.Country != user.Country {
-		options.Country = utils.Ptr(strings.ToUpper(*form.Country))
 	}
 	if form.Email != nil && *form.Email != user.Email {
 		options.Verified = utils.Ptr(false)

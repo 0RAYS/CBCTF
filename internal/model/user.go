@@ -15,7 +15,6 @@ type User struct {
 	Name           string       `gorm:"type:varchar(255);uniqueIndex;not null" json:"name"`
 	Password       string       `gorm:"not null" json:"-"`
 	Email          string       `gorm:"type:varchar(255);uniqueIndex;not null" json:"email"`
-	Country        string       `gorm:"default:'CN'" json:"country"`
 	Avatar         AvatarURL    `json:"avatar"`
 	Desc           string       `json:"desc"`
 	Verified       bool         `gorm:"default:false" json:"verified"`
@@ -42,5 +41,5 @@ func (u User) GetUniqueKey() []string {
 }
 
 func (u User) GetAllowedQueryFields() []string {
-	return []string{"id", "name", "email", "country", "desc", "verified", "banned", "hidden"}
+	return []string{"id", "name", "email", "desc", "verified", "banned", "hidden"}
 }

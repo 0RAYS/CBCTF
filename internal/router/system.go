@@ -53,10 +53,9 @@ func HomePage(ctx *gin.Context) {
 	users, _, _ := service.GetUserRanking(db.DB, 5, 0)
 	for _, user := range users {
 		data["scoreboard"] = append(data["scoreboard"].([]gin.H), gin.H{
-			"name":    user.Name,
-			"score":   user.Score,
-			"solved":  user.Solved,
-			"country": user.Country,
+			"name":   user.Name,
+			"score":  user.Score,
+			"solved": user.Solved,
 		})
 	}
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
