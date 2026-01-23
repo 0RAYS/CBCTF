@@ -48,3 +48,7 @@ func (w WebhookHistory) UpdateErrorString() string {
 func (w WebhookHistory) GetUniqueKey() []string {
 	return []string{"id"}
 }
+
+func (w WebhookHistory) GetAllowedQueryFields() []string {
+	return []string{"id", "success"}
+}

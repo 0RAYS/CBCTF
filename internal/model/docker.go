@@ -65,6 +65,10 @@ func (d Docker) GetUniqueKey() []string {
 	return []string{"id"}
 }
 
+func (d Docker) GetAllowedQueryFields() []string {
+	return []string{}
+}
+
 type Network struct {
 	Name     string `json:"name"`
 	CIDR     string `json:"cidr"`

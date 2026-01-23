@@ -26,6 +26,7 @@ func (e Email) GetBaseModel() BaseModel {
 func (e Email) CreateErrorString() string {
 	return i18n.CreateEmailError
 }
+
 func (e Email) DeleteErrorString() string {
 	return i18n.DeleteEmailError
 }
@@ -44,4 +45,8 @@ func (e Email) UpdateErrorString() string {
 
 func (e Email) GetUniqueKey() []string {
 	return []string{"id"}
+}
+
+func (e Email) GetAllowedQueryFields() []string {
+	return []string{"id", "from", "to", "subject", "content"}
 }

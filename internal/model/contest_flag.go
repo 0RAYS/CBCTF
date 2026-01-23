@@ -74,6 +74,10 @@ func (c ContestFlag) GetUniqueKey() []string {
 	return []string{"id"}
 }
 
+func (c ContestFlag) GetAllowedQueryFields() []string {
+	return []string{}
+}
+
 func (c ContestFlag) CalcScore(solvers int64) float64 {
 	if solvers < 0 {
 		solvers = 0

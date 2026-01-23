@@ -53,3 +53,7 @@ func (w Webhook) UpdateErrorString() string {
 func (w Webhook) GetUniqueKey() []string {
 	return []string{"id"}
 }
+
+func (w Webhook) GetAllowedQueryFields() []string {
+	return []string{"id", "name", "url", "on"}
+}

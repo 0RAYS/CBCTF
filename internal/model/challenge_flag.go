@@ -64,3 +64,7 @@ func (c ChallengeFlag) UpdateErrorString() string {
 func (c ChallengeFlag) GetUniqueKey() []string {
 	return []string{"id"}
 }
+
+func (c ChallengeFlag) GetAllowedQueryFields() []string {
+	return []string{}
+}

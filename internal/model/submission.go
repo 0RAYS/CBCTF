@@ -60,3 +60,7 @@ func (s Submission) UpdateErrorString() string {
 func (s Submission) GetUniqueKey() []string {
 	return []string{"id"}
 }
+
+func (s Submission) GetAllowedQueryFields() []string {
+	return []string{"id", "value", "solved", "ip"}
+}

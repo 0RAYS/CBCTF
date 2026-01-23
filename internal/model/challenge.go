@@ -74,6 +74,10 @@ func (c Challenge) GetUniqueKey() []string {
 	return []string{"id", "rand_id"}
 }
 
+func (c Challenge) GetAllowedQueryFields() []string {
+	return []string{"id", "rand_id", "name", "desc", "category", "type", "generator_image"}
+}
+
 func (c Challenge) BasicDir() string {
 	return fmt.Sprintf("%s/challenges/%d", config.Env.Path, c.ID)
 }

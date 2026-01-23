@@ -67,6 +67,10 @@ func (v Victim) GetUniqueKey() []string {
 	return []string{"id"}
 }
 
+func (v Victim) GetAllowedQueryFields() []string {
+	return []string{}
+}
+
 func (v Victim) TrafficBasePath() string {
 	return fmt.Sprintf("%s/traffics/victim-%d", config.Env.Path, v.ID)
 }

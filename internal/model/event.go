@@ -137,3 +137,7 @@ func (e Event) UpdateErrorString() string {
 func (e Event) GetUniqueKey() []string {
 	return []string{"id"}
 }
+
+func (e Event) GetAllowedQueryFields() []string {
+	return []string{}
+}
