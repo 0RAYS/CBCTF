@@ -2,7 +2,7 @@ package service
 
 import (
 	"CBCTF/internal/db"
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/oauth"
@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateUser(tx *gorm.DB, form f.RegisterForm) (model.User, model.RetVal) {
+func CreateUser(tx *gorm.DB, form dto.RegisterForm) (model.User, model.RetVal) {
 	return db.InitUserRepo(tx).Create(db.CreateUserOptions{
 		Name:           form.Name,
 		Password:       utils.HashPassword(form.Password),
@@ -23,7 +23,7 @@ func CreateUser(tx *gorm.DB, form f.RegisterForm) (model.User, model.RetVal) {
 	})
 }
 
-func AdminCreateUser(tx *gorm.DB, form f.CreateUserForm) (model.User, model.RetVal) {
+func AdminCreateUser(tx *gorm.DB, form dto.CreateUserForm) (model.User, model.RetVal) {
 	return db.InitUserRepo(tx).Create(db.CreateUserOptions{
 		Name:           form.Name,
 		Password:       utils.HashPassword(form.Password),
@@ -39,7 +39,7 @@ func AdminCreateUser(tx *gorm.DB, form f.CreateUserForm) (model.User, model.RetV
 	})
 }
 
-func VerifyUser(tx *gorm.DB, form f.LoginForm) (model.User, model.RetVal) {
+func VerifyUser(tx *gorm.DB, form dto.LoginForm) (model.User, model.RetVal) {
 	repo := db.InitUserRepo(tx)
 	user, ret := repo.GetByUniqueKey("name", form.Name)
 	if !ret.OK {
@@ -51,7 +51,7 @@ func VerifyUser(tx *gorm.DB, form f.LoginForm) (model.User, model.RetVal) {
 	return user, model.SuccessRetVal()
 }
 
-func ChangeUserPwd(tx *gorm.DB, user model.User, form f.ChangePasswordForm) model.RetVal {
+func ChangeUserPwd(tx *gorm.DB, user model.User, form dto.ChangePasswordForm) model.RetVal {
 	repo := db.InitUserRepo(tx)
 	if user.Password != model.NeverLoginPWD && !utils.CompareHashAndPassword(user.Password, form.OldPassword) {
 		return model.RetVal{Msg: i18n.Model.User.PasswordWrong}
@@ -63,7 +63,7 @@ func ChangeUserPwd(tx *gorm.DB, user model.User, form f.ChangePasswordForm) mode
 	return repo.Update(user.ID, db.UpdateUserOptions{Password: &password})
 }
 
-func UpdateSelf(tx *gorm.DB, user model.User, form f.UpdateSelfForm) model.RetVal {
+func UpdateSelf(tx *gorm.DB, user model.User, form dto.UpdateSelfForm) model.RetVal {
 	repo := db.InitUserRepo(tx)
 	options := db.UpdateUserOptions{
 		Desc: form.Desc,
@@ -77,7 +77,7 @@ func UpdateSelf(tx *gorm.DB, user model.User, form f.UpdateSelfForm) model.RetVa
 	return repo.Update(user.ID, options)
 }
 
-func DeleteSelf(tx *gorm.DB, user model.User, form f.DeleteSelfForm) model.RetVal {
+func DeleteSelf(tx *gorm.DB, user model.User, form dto.DeleteSelfForm) model.RetVal {
 	if !utils.CompareHashAndPassword(user.Password, form.Password) {
 		return model.RetVal{Msg: i18n.Model.User.PasswordWrong}
 	}

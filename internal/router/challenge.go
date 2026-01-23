@@ -2,7 +2,7 @@ package router
 
 import (
 	"CBCTF/internal/db"
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
@@ -16,7 +16,7 @@ import (
 )
 
 func GetChallenges(ctx *gin.Context) {
-	var form f.GetChallengesForm
+	var form dto.GetChallengesForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -55,7 +55,7 @@ func GetChallenge(ctx *gin.Context) {
 }
 
 func GetChallengeCategories(ctx *gin.Context) {
-	var form f.GetCategoriesForm
+	var form dto.GetCategoriesForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -69,7 +69,7 @@ func GetChallengeCategories(ctx *gin.Context) {
 }
 
 func CreateChallenge(ctx *gin.Context) {
-	var form f.CreateChallengeForm
+	var form dto.CreateChallengeForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -93,7 +93,7 @@ func CreateChallenge(ctx *gin.Context) {
 }
 
 func UpdateChallenge(ctx *gin.Context) {
-	var form f.UpdateChallengeForm
+	var form dto.UpdateChallengeForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return

@@ -2,7 +2,7 @@ package router
 
 import (
 	"CBCTF/internal/db"
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
@@ -12,7 +12,7 @@ import (
 )
 
 func GetSubmissions(ctx *gin.Context) {
-	var form f.ListModelsForm
+	var form dto.ListModelsForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return

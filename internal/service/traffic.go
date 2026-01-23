@@ -2,7 +2,7 @@ package service
 
 import (
 	"CBCTF/internal/db"
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
@@ -15,7 +15,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetTraffic(victim model.Victim, form f.GetTrafficForm) ([]utils.Connection, []string, int64, model.RetVal) {
+func GetTraffic(victim model.Victim, form dto.GetTrafficForm) ([]utils.Connection, []string, int64, model.RetVal) {
 	connections, ret := r.GetTraffic(victim)
 	if !ret.OK {
 		return nil, nil, 0, ret

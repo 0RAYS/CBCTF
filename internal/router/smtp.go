@@ -2,8 +2,8 @@ package router
 
 import (
 	"CBCTF/internal/db"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/email"
-	f "CBCTF/internal/form"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
@@ -18,7 +18,7 @@ func GetSmtp(ctx *gin.Context) {
 }
 
 func GetSmtps(ctx *gin.Context) {
-	var form f.ListModelsForm
+	var form dto.ListModelsForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -36,7 +36,7 @@ func GetSmtps(ctx *gin.Context) {
 }
 
 func CreateSmtp(ctx *gin.Context) {
-	var form f.CreateSmtpForm
+	var form dto.CreateSmtpForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -57,7 +57,7 @@ func CreateSmtp(ctx *gin.Context) {
 }
 
 func UpdateSmtp(ctx *gin.Context) {
-	var form f.UpdateSmtpForm
+	var form dto.UpdateSmtpForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return

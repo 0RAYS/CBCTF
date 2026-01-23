@@ -2,7 +2,7 @@ package router
 
 import (
 	"CBCTF/internal/db"
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
@@ -12,7 +12,7 @@ import (
 )
 
 func GetCheats(ctx *gin.Context) {
-	var form f.GetCheatsForm
+	var form dto.GetCheatsForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -45,7 +45,7 @@ func GetCheats(ctx *gin.Context) {
 }
 
 func UpdateCheat(ctx *gin.Context) {
-	var form f.UpdateCheatForm
+	var form dto.UpdateCheatForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return

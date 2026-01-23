@@ -5,7 +5,7 @@ import (
 )
 
 func Search(ctx *gin.Context) {
-	//var form f.SearchForm
+	//var form dto.SearchForm
 	//if ret := form.Bind(ctx); !ret.OK {
 	//	ctx.JSON(http.StatusOK, ret)
 	//	return

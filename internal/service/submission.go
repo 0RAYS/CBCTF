@@ -2,7 +2,7 @@ package service
 
 import (
 	"CBCTF/internal/db"
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
@@ -14,7 +14,7 @@ import (
 // SolvedMutex 使用定时任务 cron.clearSubmissionMutex 清理锁
 var SolvedMutex sync.Map
 
-func Submit(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge, form f.SubmitFlagForm, ip string) (model.Submission, model.RetVal) {
+func Submit(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge, form dto.SubmitFlagForm, ip string) (model.Submission, model.RetVal) {
 	if contestChallenge.Attempt != 0 && contestChallenge.Attempt <= CountAttempts(tx, team, contestChallenge) {
 		return model.Submission{}, model.RetVal{Msg: i18n.Model.Submission.NotAllowed}
 	}

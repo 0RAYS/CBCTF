@@ -1,7 +1,7 @@
 package router
 
 import (
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/oauth"
@@ -17,7 +17,7 @@ var DefaultAvatar = map[string][]byte{
 }
 
 func DefaultAssets(ctx *gin.Context) {
-	var form f.GetAssetForm
+	var form dto.GetAssetForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return

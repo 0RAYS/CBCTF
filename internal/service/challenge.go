@@ -2,7 +2,7 @@ package service
 
 import (
 	"CBCTF/internal/db"
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
@@ -16,7 +16,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetChallenges(tx *gorm.DB, form f.GetChallengesForm) ([]model.Challenge, int64, model.RetVal) {
+func GetChallenges(tx *gorm.DB, form dto.GetChallengesForm) ([]model.Challenge, int64, model.RetVal) {
 	options := db.GetOptions{
 		Conditions: make(map[string]any),
 		Preloads:   map[string]db.GetOptions{"Dockers": {}, "ChallengeFlags": {}},
@@ -30,7 +30,7 @@ func GetChallenges(tx *gorm.DB, form f.GetChallengesForm) ([]model.Challenge, in
 	return db.InitChallengeRepo(tx).List(form.Limit, form.Offset, options)
 }
 
-func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, model.RetVal) {
+func CreateChallenge(tx *gorm.DB, form dto.CreateChallengeForm) (model.Challenge, model.RetVal) {
 	challengeRepo, challengeFlagRepo := db.InitChallengeRepo(tx), db.InitChallengeFlagRepo(tx)
 	challenge, ret := challengeRepo.Create(db.CreateChallengeOptions{
 		RandID:          utils.UUID(),
@@ -237,7 +237,7 @@ func CreatePodDockerFlag(tx *gorm.DB, challenge model.Challenge, dockerCompose s
 }
 
 // UpdateChallenge model.Challenge Preload model.ChallengeFlag
-func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChallengeForm) model.RetVal {
+func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChallengeForm) model.RetVal {
 	switch challenge.Type {
 	case model.StaticChallengeType, model.DynamicChallengeType:
 		oldChallengeFlagID := make([]uint, 0)

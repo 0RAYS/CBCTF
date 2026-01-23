@@ -2,7 +2,7 @@ package service
 
 import (
 	"CBCTF/internal/db"
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
@@ -13,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func UpdateTeam(tx *gorm.DB, team model.Team, form f.UpdateTeamForm) model.RetVal {
+func UpdateTeam(tx *gorm.DB, team model.Team, form dto.UpdateTeamForm) model.RetVal {
 	repo := db.InitTeamRepo(tx)
 	if form.CaptainID != nil && *form.CaptainID != team.CaptainID {
 		if !repo.IsInTeam(team.ID, *form.CaptainID) {
@@ -27,7 +27,7 @@ func UpdateTeam(tx *gorm.DB, team model.Team, form f.UpdateTeamForm) model.RetVa
 	})
 }
 
-func AdminUpdateTeam(tx *gorm.DB, team model.Team, form f.AdminUpdateTeamForm) model.RetVal {
+func AdminUpdateTeam(tx *gorm.DB, team model.Team, form dto.AdminUpdateTeamForm) model.RetVal {
 	repo := db.InitTeamRepo(tx)
 	if form.CaptainID != nil && *form.CaptainID != team.CaptainID {
 		if !repo.IsInTeam(team.ID, *form.CaptainID) {
@@ -44,7 +44,7 @@ func AdminUpdateTeam(tx *gorm.DB, team model.Team, form f.AdminUpdateTeamForm) m
 	})
 }
 
-func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.JoinTeamForm) (model.Team, model.RetVal) {
+func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form dto.JoinTeamForm) (model.Team, model.RetVal) {
 	var (
 		repo      = db.InitTeamRepo(tx)
 		team, ret = repo.GetByName(contest.ID, form.Name, db.GetOptions{
@@ -78,7 +78,7 @@ func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.JoinTe
 	return team, model.SuccessRetVal()
 }
 
-func CreateTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.CreateTeamForm) (model.Team, model.RetVal) {
+func CreateTeam(tx *gorm.DB, contest model.Contest, user model.User, form dto.CreateTeamForm) (model.Team, model.RetVal) {
 	if contest.Captcha != "" && form.Captcha != contest.Captcha {
 		return model.Team{}, model.RetVal{Msg: i18n.Model.Contest.CaptchaWrong}
 	}

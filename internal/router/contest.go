@@ -2,7 +2,7 @@ package router
 
 import (
 	"CBCTF/internal/db"
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
@@ -28,7 +28,7 @@ func GetContest(ctx *gin.Context) {
 }
 
 func GetContests(ctx *gin.Context) {
-	var form f.ListModelsForm
+	var form dto.ListModelsForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -56,7 +56,7 @@ func GetContests(ctx *gin.Context) {
 }
 
 func CreateContest(ctx *gin.Context) {
-	var form f.CreateContestForm
+	var form dto.CreateContestForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -73,7 +73,7 @@ func CreateContest(ctx *gin.Context) {
 }
 
 func UpdateContest(ctx *gin.Context) {
-	var form f.UpdateContestForm
+	var form dto.UpdateContestForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return

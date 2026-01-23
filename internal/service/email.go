@@ -2,7 +2,7 @@ package service
 
 import (
 	"CBCTF/internal/db"
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
@@ -30,7 +30,7 @@ func SendEmail(user model.User) model.RetVal {
 	return model.SuccessRetVal()
 }
 
-func VerifyEmail(tx *gorm.DB, form f.VerifyEmail) model.RetVal {
+func VerifyEmail(tx *gorm.DB, form dto.VerifyEmail) model.RetVal {
 	claims, err := utils.ParseToken(form.Token)
 	if err != nil || !utils.CompareMagic(form.ID, claims.X) {
 		return model.RetVal{Msg: i18n.Model.Email.InvalidVerifyToken}
