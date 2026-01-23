@@ -7,7 +7,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/oauth"
 	"CBCTF/internal/utils"
-	"strings"
 
 	"gorm.io/gorm"
 )
@@ -29,7 +28,6 @@ func AdminCreateUser(tx *gorm.DB, form dto.CreateUserForm) (model.User, model.Re
 		Password:       utils.HashPassword(form.Password),
 		Email:          form.Email,
 		Desc:           form.Desc,
-		Country:        strings.ToUpper(form.Country),
 		Verified:       form.Verified,
 		Banned:         form.Banned,
 		Hidden:         form.Hidden,
@@ -67,9 +65,6 @@ func UpdateSelf(tx *gorm.DB, user model.User, form dto.UpdateSelfForm) model.Ret
 	repo := db.InitUserRepo(tx)
 	options := db.UpdateUserOptions{
 		Desc: form.Desc,
-	}
-	if form.Country != nil && *form.Country != user.Country {
-		options.Country = utils.Ptr(strings.ToUpper(*form.Country))
 	}
 	if form.Email != nil && *form.Email != user.Email {
 		options.Verified = utils.Ptr(false)

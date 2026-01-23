@@ -12,7 +12,6 @@ func GetUserResp(user model.User, admin bool) gin.H {
 		"id":       user.ID,
 		"name":     user.Name,
 		"email":    user.Email,
-		"country":  user.Country,
 		"avatar":   user.Avatar,
 		"desc":     user.Desc,
 		"verified": user.Verified,
