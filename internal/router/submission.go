@@ -3,8 +3,8 @@ package router
 import (
 	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
+	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"net/http"
 
@@ -12,22 +12,22 @@ import (
 )
 
 func GetSubmissions(ctx *gin.Context) {
-	var form f.GetModelsForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	var form f.ListModelsForm
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	team := middleware.GetTeam(ctx)
-	submissions, count, ok, msg := db.InitSubmissionRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
+	submissions, count, ret := db.InitSubmissionRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
 		Conditions: map[string]any{"team_id": team.ID},
 	})
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	data := make([]gin.H, 0)
 	for _, submission := range submissions {
 		data = append(data, resp.GetSubmissionResp(submission))
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"submissions": data, "count": count}})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"submissions": data, "count": count}))
 }

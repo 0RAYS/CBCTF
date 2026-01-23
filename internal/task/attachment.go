@@ -41,7 +41,7 @@ func HandleGenAttachmentTask(_ context.Context, t *asynq.Task) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	if ok, _ := k8s.GenAttachment(ctx, payload.Challenge, payload.TeamID, payload.Flags); !ok {
+	if ret := k8s.GenAttachment(ctx, payload.Challenge, payload.TeamID, payload.Flags); !ret.OK {
 		websocket.Send(false, payload.UserID, wm.ErrorLevel, wm.GenerateAttachmentWSType, "Generate Attachment", "Failed")
 	} else {
 		websocket.Send(false, payload.UserID, wm.SuccessLevel, wm.GenerateAttachmentWSType, "Generate Attachment", "Done")

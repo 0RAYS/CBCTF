@@ -3,7 +3,6 @@ package router
 import (
 	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
@@ -15,8 +14,8 @@ import (
 
 func SubmitFlag(ctx *gin.Context) {
 	var form f.SubmitFlagForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.SubmitFlagEventType)
@@ -25,60 +24,60 @@ func SubmitFlag(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
 	challenge := middleware.GetChallenge(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
+	contestFlags, _, ret := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	tx := db.DB.Begin()
-	result, _, ok, msg := service.Submit(tx, user, team, contest, contestChallenge, form, ctx.ClientIP())
-	if !ok {
+	_, ret = service.Submit(tx, user, team, contest, contestChallenge, form, ctx.ClientIP())
+	if !ret.OK {
 		tx.Rollback()
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	tx.Commit()
 	if contestChallenge.Type == model.PodsChallengeType && service.CheckIfSolved(db.DB, team, contestFlags) {
 		go func() {
-			victim, ok, _ := db.InitVictimRepo(db.DB).HasAliveVictim(team.ID, challenge.ID)
-			if !ok {
+			victim, ret := db.InitVictimRepo(db.DB).HasAliveVictim(team.ID, challenge.ID)
+			if !ret.OK {
 				return
 			}
 			service.StopVictim(db.DB, victim)
 		}()
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": result, "data": nil})
+	ctx.JSON(http.StatusOK, ret)
 }
 
 func GetContestFlags(ctx *gin.Context) {
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
+	contestFlags, _, ret := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	data := make([]gin.H, 0)
 	for _, contestFlag := range contestFlags {
 		data = append(data, resp.GetContestFlagResp(contestFlag))
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
 }
 
 func GetContestFlag(ctx *gin.Context) {
 	contestFlag := middleware.GetContestFlag(ctx)
 	data := resp.GetContestFlagResp(contestFlag)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
 }
 
 func UpdateContestFlag(ctx *gin.Context) {
 	var form f.UpdateContestFlagForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateContestChallengeFlagEventType)
@@ -91,7 +90,7 @@ func UpdateContestFlag(ctx *gin.Context) {
 	if form.Score != nil && *form.Score < currentScore {
 		currentScore = *form.Score
 	}
-	ok, msg := db.InitContestFlagRepo(db.DB).Update(contestFlag.ID, db.UpdateContestFlagOptions{
+	ret := db.InitContestFlagRepo(db.DB).Update(contestFlag.ID, db.UpdateContestFlagOptions{
 		Value:        form.Value,
 		Score:        form.Score,
 		CurrentScore: &currentScore,
@@ -99,8 +98,8 @@ func UpdateContestFlag(ctx *gin.Context) {
 		MinScore:     form.MinScore,
 		ScoreType:    form.ScoreType,
 	})
-	if ok {
+	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	ctx.JSON(http.StatusOK, ret)
 }

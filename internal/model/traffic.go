@@ -34,7 +34,7 @@ func (t Traffic) GetErrorString() string {
 	return i18n.GetTrafficError
 }
 
-func (t Traffic) NotFoundErrorString() string {
+func (t Traffic) NotFoundString() string {
 	return i18n.TrafficNotFound
 }
 

@@ -4,8 +4,6 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/utils"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,12 +13,12 @@ type CreateContestChallengeForm struct {
 	ChallengeRandIDL []string `form:"challenge_id" json:"challenge_id" binding:"required"`
 }
 
-func (f *CreateContestChallengeForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *CreateContestChallengeForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 type UpdateContestChallengeForm struct {
@@ -32,16 +30,10 @@ type UpdateContestChallengeForm struct {
 	Tags    *model.StringList `form:"tags" json:"tags"`
 }
 
-func (f *UpdateContestChallengeForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *UpdateContestChallengeForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
-	if f.Name != nil {
-		f.Name = utils.Ptr(strings.TrimSpace(*f.Name))
-		if *f.Name == "" {
-			return false, i18n.BadRequest
-		}
-	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

@@ -19,33 +19,33 @@ func InitTeamFlag(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	contest := middleware.GetContest(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
+	contestFlags, _, ret := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	contestChallenge.ContestFlags = contestFlags
 	challenge := middleware.GetChallenge(ctx)
 	tx := db.DB.Begin()
-	teamFlags, ok, msg := service.CreateTeamFlag(tx, team, contest, contestChallenge)
-	if !ok {
+	teamFlags, ret := service.CreateTeamFlag(tx, team, contest, contestChallenge)
+	if !ret.OK {
 		tx.Rollback()
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	if challenge.Type == model.DynamicChallengeType {
 		if _, err := task.EnqueueGenAttachmentTask(user.ID, challenge, team, teamFlags); err != nil {
 			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
 			tx.Rollback()
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.EnqueueTaskError, "data": nil})
+			ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}})
 			return
 		}
 	}
 	tx.Commit()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal())
 }
 
 func ResetTeamFlag(ctx *gin.Context) {
@@ -54,20 +54,20 @@ func ResetTeamFlag(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	contest := middleware.GetContest(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
+	contestFlags, _, ret := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	contestChallenge.ContestFlags = contestFlags
 	challenge := middleware.GetChallenge(ctx)
 	tx := db.DB.Begin()
-	teamFlags, ok, msg := service.UpdateTeamFlag(tx, team, contest, contestChallenge)
-	if !ok {
+	teamFlags, ret := service.UpdateTeamFlag(tx, team, contest, contestChallenge)
+	if !ret.OK {
 		tx.Rollback()
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	switch challenge.Type {
@@ -75,7 +75,7 @@ func ResetTeamFlag(ctx *gin.Context) {
 		if _, err := task.EnqueueGenAttachmentTask(user.ID, challenge, team, teamFlags); err != nil {
 			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
 			tx.Rollback()
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.EnqueueTaskError, "data": nil})
+			ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}})
 			return
 		}
 		tx.Commit()
@@ -83,8 +83,8 @@ func ResetTeamFlag(ctx *gin.Context) {
 		tx.Commit()
 		// 不考虑失败
 		go func() {
-			victim, ok, _ := db.InitVictimRepo(db.DB).HasAliveVictim(team.ID, challenge.ID)
-			if !ok {
+			victim, ret := db.InitVictimRepo(db.DB).HasAliveVictim(team.ID, challenge.ID)
+			if !ret.OK {
 				return
 			}
 			service.StopVictim(db.DB, victim)
@@ -93,5 +93,5 @@ func ResetTeamFlag(ctx *gin.Context) {
 		tx.Commit()
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	ctx.JSON(http.StatusOK, ret)
 }

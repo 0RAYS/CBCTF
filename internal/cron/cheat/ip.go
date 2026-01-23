@@ -15,15 +15,15 @@ import (
 
 // CheckWebReqIP 检查用户访问 Web 的 IP
 func CheckWebReqIP(contest model.Contest) {
-	userIDL, ok, _ := db.GetUserIDByContestID(db.DB, contest.ID)
-	if !ok {
+	userIDL, ret := db.GetUserIDByContestID(db.DB, contest.ID)
+	if !ret.OK {
 		return
 	}
 	repo := db.InitRequestRepo(db.DB)
 	ipUserMap := make(map[string][]uint)
 	for _, userID := range userIDL {
-		ipL, ok, _ := repo.GetUserIP(userID)
-		if !ok {
+		ipL, ret := repo.GetUserIP(userID)
+		if !ret.OK {
 			continue
 		}
 		for _, ip := range ipL {
@@ -53,11 +53,11 @@ func CheckWebReqIP(contest model.Contest) {
 				str = append(str, strconv.Itoa(int(user)))
 			}
 			for _, user := range users {
-				first, ok, _ := repo.Get(db.GetOptions{
+				first, ret := repo.Get(db.GetOptions{
 					Conditions: map[string]any{"id": user, "ip": ip},
 					Selects:    []string{"id", "time"},
 				})
-				if !ok {
+				if !ret.OK {
 					continue
 				}
 				cheatRepo.Create(db.CreateCheatOptions{
@@ -77,11 +77,11 @@ func CheckWebReqIP(contest model.Contest) {
 
 // CheckVictimReqIP 检查用户访问靶机的 IP
 func CheckVictimReqIP(contest model.Contest) {
-	teams, _, ok, _ := db.InitTeamRepo(db.DB).List(-1, -1, db.GetOptions{
+	teams, _, ret := db.InitTeamRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
 		Selects:    []string{"id"},
 	})
-	if !ok {
+	if !ret.OK {
 		return
 	}
 	type tmp struct {
@@ -92,16 +92,16 @@ func CheckVictimReqIP(contest model.Contest) {
 	victimRepo := db.InitVictimRepo(db.DB)
 	trafficRepo := db.InitTrafficRepo(db.DB)
 	for _, team := range teams {
-		victims, _, ok, _ := victimRepo.List(-1, -1, db.GetOptions{
+		victims, _, ret := victimRepo.List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"team_id": team.ID},
 			Selects:    []string{"id", "team_id", "deleted_at"},
 		})
-		if !ok {
+		if !ret.OK {
 			continue
 		}
 		for _, victim := range victims {
-			ipL, ok, _ := trafficRepo.GetVictimReqIP(victim.ID)
-			if !ok {
+			ipL, ret := trafficRepo.GetVictimReqIP(victim.ID)
+			if !ret.OK {
 				continue
 			}
 			for _, ip := range ipL {

@@ -3,6 +3,7 @@ package form
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,15 +15,15 @@ type CreateSmtpForm struct {
 	Pwd     string `form:"pwd" json:"pwd" binding:"required"`
 }
 
-func (f *CreateSmtpForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *CreateSmtpForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
 	if f.Port < 0 || f.Port > 65535 {
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": "Invalid port number"}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 type UpdateSmtpForm struct {
@@ -33,15 +34,15 @@ type UpdateSmtpForm struct {
 	On      *bool   `form:"on" json:"on"`
 }
 
-func (f *UpdateSmtpForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *UpdateSmtpForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
 	if f.Port != nil {
 		if *f.Port < 0 || *f.Port > 65535 {
-			return false, i18n.BadRequest
+			return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": "Invalid port number"}}
 		}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

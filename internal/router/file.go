@@ -28,11 +28,11 @@ func DownloadFile(eventType string) gin.HandlerFunc {
 			if os.IsNotExist(err) {
 				// 保留数据库记录
 				//db.InitFileRepo(db.DB).Delete(file.ID)
-				ctx.JSON(http.StatusNotFound, gin.H{"msg": i18n.FileNotFound, "data": nil})
+				ctx.JSON(http.StatusNotFound, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": file.GetModelName()}})
 				return
 			}
 			log.Logger.Warningf("Failed to get file: %s", err)
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
+			ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
 			return
 		}
 		ctx.Set(middleware.CTXEventSuccessKey, true)
@@ -44,7 +44,7 @@ func UploadAvatar(v string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		file, err := ctx.FormFile(model.AvatarFileType)
 		if err != nil {
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+			ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 			return
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.UploadAvatarEventType)
@@ -82,19 +82,19 @@ func UploadAvatar(v string) gin.HandlerFunc {
 			selfID := middleware.GetSelfID(ctx)
 			options.AdminID = sql.Null[uint]{V: selfID, Valid: true}
 		}
-		record, ok, msg := service.SaveAvatar(db.DB, options, file)
-		if !ok {
-			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		record, ret := service.SaveAvatar(db.DB, options, file)
+		if !ret.OK {
+			ctx.JSON(http.StatusOK, ret)
 			return
 		}
-		path, ok, msg := service.UpdateAvatar(db.DB, v, id, record)
-		if !ok {
-			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		path, ret := service.UpdateAvatar(db.DB, v, id, record)
+		if !ret.OK {
+			ctx.JSON(http.StatusOK, ret)
 			return
 		}
 		if err = ctx.SaveUploadedFile(file, record.Path); err != nil {
 			log.Logger.Warningf("Failed to save file: %s", err)
-			ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
+			ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
 			return
 		}
 		if v != "contest" {
@@ -102,14 +102,14 @@ func UploadAvatar(v string) gin.HandlerFunc {
 		}
 		path = fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(path, "/"))
 		ctx.Set(middleware.CTXEventSuccessKey, true)
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": path})
+		ctx.JSON(http.StatusOK, model.SuccessRetVal(path))
 	}
 }
 
 func UploadChallengeFile(ctx *gin.Context) {
 	file, err := ctx.FormFile(model.ChallengeFileType)
 	if err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UploadChallengeFileEventType)
@@ -121,102 +121,102 @@ func UploadChallengeFile(ctx *gin.Context) {
 	case model.DynamicChallengeType:
 		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), model.GeneratorFile)
 	default:
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.InvalidChallengeType, "data": nil})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Model.Challenge.InvalidType})
 		return
 	}
-	record, ok, msg := service.SaveChallengeFile(db.DB, challenge, file, path)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	record, ret := service.SaveChallengeFile(db.DB, challenge, file, path)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	if err = ctx.SaveUploadedFile(file, record.Path); err != nil {
 		log.Logger.Warningf("Failed to save file: %s", err)
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal())
 }
 
 func UploadWriteUp(ctx *gin.Context) {
 	file, err := ctx.FormFile(model.WriteUPFileType)
 	if err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UploadWriteUpEventType)
 	user := middleware.GetSelf(ctx).(model.User)
 	contest := middleware.GetContest(ctx)
 	team := middleware.GetTeam(ctx)
-	record, ok, msg := service.SaveWriteUp(db.DB, user, contest, team, file)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	record, ret := service.SaveWriteUp(db.DB, user, contest, team, file)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	if err = ctx.SaveUploadedFile(file, record.Path); err != nil {
 		log.Logger.Warningf("Failed to save file: %s", err)
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	ctx.JSON(http.StatusOK, ret)
 }
 
 func GetFiles(ctx *gin.Context) {
 	var form f.GetFilesForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	options := db.GetOptions{}
 	if form.Type != "" {
 		options.Conditions = map[string]any{"type": form.Type}
 	}
-	files, count, ok, msg := db.InitFileRepo(db.DB).List(form.Limit, form.Offset, options)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	files, count, ret := db.InitFileRepo(db.DB).List(form.Limit, form.Offset, options)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	data := make([]gin.H, 0)
 	for _, file := range files {
 		data = append(data, resp.GetFileResp(file))
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "files": data}})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"count": count, "files": data}))
 }
 
 func GetWriteUPs(ctx *gin.Context) {
-	var form f.GetModelsForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	var form f.ListModelsForm
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	team := middleware.GetTeam(ctx)
-	writeups, count, ok, msg := db.InitFileRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
+	writeups, count, ret := db.InitFileRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
 		Conditions: map[string]any{"type": model.WriteUPFileType, "team_id": team.ID},
 	})
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	data := make([]gin.H, 0)
 	for _, writeup := range writeups {
 		data = append(data, resp.GetFileResp(writeup))
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "writeups": data}})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"count": count, "writeups": data}))
 }
 
 func DeleteFiles(ctx *gin.Context) {
 	var form f.DeleteFileForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteAvatarEventType)
-	ok, msg := db.InitFileRepo(db.DB).DeleteByRandID(form.FileIDL...)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	ret := db.InitFileRepo(db.DB).DeleteByRandID(form.FileIDL...)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal())
 }

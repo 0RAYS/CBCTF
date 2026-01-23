@@ -24,11 +24,11 @@ func StartVictim(ctx *gin.Context) {
 	challenge := middleware.GetChallenge(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	go func() {
-		_, ok, _ := service.StartVictim(db.DB, user.ID, team.ID, contest.ID, contestChallenge.ID, challenge.ID)
-		if !ok {
+		_, ret := service.StartVictim(db.DB, user.ID, team.ID, contest.ID, contestChallenge.ID, challenge.ID)
+		if !ret.OK {
 			websocket.Send(false, user.ID, wm.ErrorLevel, wm.StartVictimWSType, "Start Victim", "Failed")
-			victim, ok, _ := db.InitVictimRepo(db.DB).HasAliveVictim(team.ID, challenge.ID)
-			if !ok {
+			victim, ret := db.InitVictimRepo(db.DB).HasAliveVictim(team.ID, challenge.ID)
+			if !ret.OK {
 				return
 			}
 			service.StopVictim(db.DB, victim)
@@ -38,7 +38,7 @@ func StartVictim(ctx *gin.Context) {
 		return
 	}()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal())
 }
 
 func IncreaseVictimDuration(ctx *gin.Context) {
@@ -46,65 +46,65 @@ func IncreaseVictimDuration(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	challenge := middleware.GetChallenge(ctx)
 	repo := db.InitVictimRepo(db.DB)
-	victim, ok, msg := repo.HasAliveVictim(team.ID, challenge.ID)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	victim, ret := repo.HasAliveVictim(team.ID, challenge.ID)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	if !victim.Start.Add(victim.Duration).Before(time.Now().Add(20 * time.Minute)) {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.HasMuchTime, "data": nil})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Model.Victim.HasMuchTime})
 		return
 	}
 	duration := victim.Duration + time.Hour
-	if ok, msg = db.InitVictimRepo(db.DB).Update(victim.ID, db.UpdateVictimOptions{
+	if ret = db.InitVictimRepo(db.DB).Update(victim.ID, db.UpdateVictimOptions{
 		Duration: &duration,
-	}); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	}); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{
 		"target":    victim.RemoteAddr(),
 		"remaining": victim.Remaining().Seconds(),
 		"status":    "Running",
-	}})
+	}))
 }
 
 func StopVictim(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.StopVictimEventType)
 	team := middleware.GetTeam(ctx)
 	challenge := middleware.GetChallenge(ctx)
-	victim, ok, msg := db.InitVictimRepo(db.DB).HasAliveVictim(team.ID, challenge.ID)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	victim, ret := db.InitVictimRepo(db.DB).HasAliveVictim(team.ID, challenge.ID)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
-	if ok, _ = service.StopVictim(db.DB, victim); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret = service.StopVictim(db.DB, victim); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	ctx.JSON(http.StatusOK, ret)
 }
 
 func GetVictims(ctx *gin.Context) {
-	var form f.GetModelsForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	var form f.ListModelsForm
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	team := middleware.GetTeam(ctx)
-	victims, count, ok, msg := db.InitVictimRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
+	victims, count, ret := db.InitVictimRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
 		Conditions: map[string]any{"team_id": team.ID},
 		Deleted:    true,
 	})
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	data := make([]gin.H, 0)
 	for _, victim := range victims {
 		data = append(data, resp.GetVictimResp(victim))
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"victims": data, "count": count}})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"victims": data, "count": count}))
 }

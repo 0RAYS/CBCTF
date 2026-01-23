@@ -39,7 +39,7 @@ func (s Smtp) GetErrorString() string {
 	return i18n.GetSmtpError
 }
 
-func (s Smtp) NotFoundErrorString() string {
+func (s Smtp) NotFoundString() string {
 	return i18n.SmtpNotFound
 }
 

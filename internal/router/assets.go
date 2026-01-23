@@ -3,6 +3,7 @@ package router
 import (
 	f "CBCTF/internal/form"
 	"CBCTF/internal/i18n"
+	"CBCTF/internal/model"
 	"CBCTF/internal/oauth"
 	"net/http"
 
@@ -17,13 +18,13 @@ var DefaultAvatar = map[string][]byte{
 
 func DefaultAssets(ctx *gin.Context) {
 	var form f.GetAssetForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	file, ok := DefaultAvatar[form.Filename]
 	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.FileNotFound, "data": nil})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.File{}.GetModelName()}})
 		return
 	}
 	ctx.Data(http.StatusOK, "application/octet-stream", file)

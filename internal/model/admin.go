@@ -34,7 +34,7 @@ func (a Admin) GetErrorString() string {
 	return i18n.GetAdminError
 }
 
-func (a Admin) NotFoundErrorString() string {
+func (a Admin) NotFoundString() string {
 	return i18n.AdminNotFound
 }
 

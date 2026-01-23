@@ -3,6 +3,7 @@ package form
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 	"slices"
 
@@ -17,16 +18,16 @@ type WarmUpImageForm struct {
 	PullPolicy string   `form:"pull_policy" json:"pull_policy" binding:"required"`
 }
 
-func (f *WarmUpImageForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *WarmUpImageForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
 	f.PullPolicy = utils.ToTitle(f.PullPolicy)
 	if !slices.Contains(allowedPullPolicy, corev1.PullPolicy(f.PullPolicy)) {
 		f.PullPolicy = string(corev1.PullNever)
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 type GetContestVictimsForm struct {
@@ -37,10 +38,10 @@ type GetContestVictimsForm struct {
 	UserID      uint   `form:"user_id" json:"user_id"`
 }
 
-func (f *GetContestVictimsForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *GetContestVictimsForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
 	if f.Limit > 100 || f.Limit < 0 {
 		f.Limit = 15
@@ -54,19 +55,19 @@ func (f *GetContestVictimsForm) Bind(ctx *gin.Context) (bool, string) {
 	if _, ok := ctx.GetQuery("offset"); !ok {
 		f.Offset = 0
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 type StopContestVictimsForm struct {
 	Victims []uint `form:"victims" json:"victims" binding:"required"`
 }
 
-func (f *StopContestVictimsForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *StopContestVictimsForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 type StartContestVictimsForm struct {
@@ -74,10 +75,10 @@ type StartContestVictimsForm struct {
 	Teams      []uint   `form:"teams" json:"teams" binding:"required"`
 }
 
-func (f *StartContestVictimsForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *StartContestVictimsForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

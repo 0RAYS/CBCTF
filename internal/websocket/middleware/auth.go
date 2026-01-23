@@ -16,22 +16,22 @@ import (
 func WSAuth(ctx *gin.Context) {
 	claims, err := utils.ParseToken(ctx.Query("token"))
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Unauthorized})
 		return
 	}
 	if claims.IsAdmin {
-		admin, ok, msg := db.InitAdminRepo(db.DB).GetByID(claims.UserID)
-		if !ok {
-			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		admin, ret := db.InitAdminRepo(db.DB).GetByID(claims.UserID)
+		if !ret.OK {
+			ctx.AbortWithStatusJSON(http.StatusOK, ret)
 			return
 		}
 		ctx.Set("IsAdmin", true)
 		ctx.Set("Self", admin)
 		ctx.Next()
 	} else {
-		user, ok, msg := db.InitUserRepo(db.DB).GetByID(claims.UserID)
-		if !ok {
-			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		user, ret := db.InitUserRepo(db.DB).GetByID(claims.UserID)
+		if !ret.OK {
+			ctx.AbortWithStatusJSON(http.StatusOK, ret)
 			return
 		}
 		magic := GetMagic(ctx)
@@ -45,12 +45,12 @@ func WSAuth(ctx *gin.Context) {
 				Checked: false,
 				Time:    time.Now(),
 			})
-			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
+			ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Unauthorized})
 			return
 		}
 		go db.InitDeviceRepo(db.DB).RecordDevice(db.CreateDeviceOptions{UserID: user.ID, Magic: magic})
 		if user.Banned {
-			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
+			ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
 			return
 		}
 		ctx.Set("IsAdmin", false)

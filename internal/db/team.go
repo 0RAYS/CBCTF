@@ -101,14 +101,6 @@ func InitTeamRepo(tx *gorm.DB) *TeamRepo {
 	}
 }
 
-func (t *TeamRepo) IsUniqueName(contestID uint, name string) bool {
-	_, ok, _ := t.Get(GetOptions{
-		Conditions: map[string]any{"contest_id": contestID, "name": name},
-		Selects:    []string{"id"},
-	})
-	return !ok
-}
-
 func (t *TeamRepo) IsInTeam(teamID uint, userID uint) bool {
 	res := t.DB.Model(&model.UserTeam{}).
 		Where("team_id = ? AND user_id = ?", teamID, userID).Limit(1).Find(&model.UserTeam{})
@@ -121,7 +113,7 @@ func (t *TeamRepo) IsInContest(contestID uint, userID uint) bool {
 	return res.RowsAffected == 1
 }
 
-func (t *TeamRepo) GetByName(contestID uint, name string, optionsL ...GetOptions) (model.Team, bool, string) {
+func (t *TeamRepo) GetByName(contestID uint, name string, optionsL ...GetOptions) (model.Team, model.RetVal) {
 	var options GetOptions
 	if len(optionsL) > 0 {
 		options = optionsL[0]
@@ -134,7 +126,7 @@ func (t *TeamRepo) GetByName(contestID uint, name string, optionsL ...GetOptions
 	return t.Get(options)
 }
 
-func (t *TeamRepo) GetBy2ID(userID, contestID uint, optionsL ...GetOptions) (model.Team, bool, string) {
+func (t *TeamRepo) GetBy2ID(userID, contestID uint, optionsL ...GetOptions) (model.Team, model.RetVal) {
 	options := GetOptions{}
 	if len(optionsL) > 0 {
 		options = optionsL[0]
@@ -143,21 +135,21 @@ func (t *TeamRepo) GetBy2ID(userID, contestID uint, optionsL ...GetOptions) (mod
 		options.Conditions = make(map[string]any)
 	}
 	options.Conditions["contest_id"] = contestID
-	user, ok, msg := InitUserRepo(t.DB).GetByID(userID, GetOptions{
+	user, ret := InitUserRepo(t.DB).GetByID(userID, GetOptions{
 		Selects:  []string{"id"},
 		Preloads: map[string]GetOptions{"Teams": options},
 	})
-	if !ok {
-		return model.Team{}, false, msg
+	if !ret.OK {
+		return model.Team{}, ret
 	}
 	if len(user.Teams) == 0 {
-		return model.Team{}, false, i18n.TeamNotFound
+		return model.Team{}, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.Team{}.GetModelName()}}
 	}
-	return *user.Teams[0], true, i18n.Success
+	return *user.Teams[0], model.SuccessRetVal()
 }
 
-func (t *TeamRepo) Delete(idL ...uint) (bool, string) {
-	teamL, _, ok, msg := t.List(-1, -1, GetOptions{
+func (t *TeamRepo) Delete(idL ...uint) model.RetVal {
+	teamL, _, ret := t.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},
 		Selects:    []string{"id", "name", "contest_id"},
 		Preloads: map[string]GetOptions{
@@ -166,26 +158,26 @@ func (t *TeamRepo) Delete(idL ...uint) (bool, string) {
 			"TeamFlags":   {Selects: []string{"id", "team_id"}},
 		},
 	})
-	if !ok {
-		if msg != i18n.TeamNotFound {
-			return false, msg
+	if !ret.OK {
+		if ret.Msg != i18n.Model.NotFound {
+			return ret
 		}
-		return true, i18n.Success
+		return model.SuccessRetVal()
 	}
 	submissionIDL, teamFlagIDL := make([]uint, 0), make([]uint, 0)
 	for _, team := range teamL {
 		deletedName := fmt.Sprintf("%s_deleted_%s", team.Name, utils.RandStr(6))
-		if ok, msg = t.Update(team.ID, UpdateTeamOptions{
+		if ret = t.Update(team.ID, UpdateTeamOptions{
 			Name: &deletedName,
-		}); !ok {
-			return false, msg
+		}); !ret.OK {
+			return ret
 		}
 		for _, user := range team.Users {
-			if ok, msg = DeleteUserFromContest(t.DB, *user, model.Contest{BaseModel: model.BaseModel{ID: team.ContestID}}); !ok {
-				return false, msg
+			if ret = DeleteUserFromContest(t.DB, *user, model.Contest{BaseModel: model.BaseModel{ID: team.ContestID}}); !ret.OK {
+				return ret
 			}
-			if ok, msg = DeleteUserFromTeam(t.DB, *user, team); !ok {
-				return false, msg
+			if ret = DeleteUserFromTeam(t.DB, *user, team); !ret.OK {
+				return ret
 			}
 		}
 		for _, submission := range team.Submissions {
@@ -195,15 +187,15 @@ func (t *TeamRepo) Delete(idL ...uint) (bool, string) {
 			teamFlagIDL = append(teamFlagIDL, teamFlag.ID)
 		}
 	}
-	if ok, msg = InitSubmissionRepo(t.DB).Delete(submissionIDL...); !ok {
-		return false, msg
+	if ret = InitSubmissionRepo(t.DB).Delete(submissionIDL...); !ret.OK {
+		return ret
 	}
-	if ok, msg = InitTeamFlagRepo(t.DB).Delete(teamFlagIDL...); !ok {
-		return false, msg
+	if ret = InitTeamFlagRepo(t.DB).Delete(teamFlagIDL...); !ret.OK {
+		return ret
 	}
 	if res := t.DB.Model(&model.Team{}).Where("id IN ?", idL).Delete(&model.Team{}); res.Error != nil {
 		log.Logger.Errorf("Failed to delete Team: %s", res.Error)
-		return false, i18n.DeleteTeamError
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Team{}.GetModelName(), "Error": res.Error.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

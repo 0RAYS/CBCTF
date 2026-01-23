@@ -22,7 +22,7 @@ type CreateServiceOptions struct {
 	Selector map[string]string
 }
 
-func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.Service, bool, string) {
+func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.Service, model.RetVal) {
 	var (
 		service *corev1.Service
 		err     error
@@ -54,12 +54,12 @@ func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.S
 	service, err = kubeClient.CoreV1().Services(globalNamespace).Create(ctx, service, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create Service: %s", err)
-		return nil, false, i18n.CreateServiceError
+		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "Service", "Error": err.Error()}}
 	}
-	return service, true, i18n.Success
+	return service, model.SuccessRetVal()
 }
 
-func GetServiceList(ctx context.Context, labels ...map[string]string) (*corev1.ServiceList, bool, string) {
+func GetServiceList(ctx context.Context, labels ...map[string]string) (*corev1.ServiceList, model.RetVal) {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string
@@ -73,34 +73,34 @@ func GetServiceList(ctx context.Context, labels ...map[string]string) (*corev1.S
 	serviceList, err := kubeClient.CoreV1().Services(globalNamespace).List(ctx, options)
 	if err != nil {
 		if apierror.IsNotFound(err) {
-			return nil, false, i18n.ServiceNotFound
+			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "Service"}}
 		}
 		log.Logger.Warningf("Failed to list Service: %s", err)
-		return nil, false, i18n.GetServiceError
+		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "Service", "Error": err.Error()}}
 	}
-	return serviceList, true, i18n.Success
+	return serviceList, model.SuccessRetVal()
 }
 
 // DeleteService 删除 Service, 目前主要是靶机的端口映射
-func DeleteService(ctx context.Context, name string) (bool, string) {
+func DeleteService(ctx context.Context, name string) model.RetVal {
 	err := kubeClient.CoreV1().Services(globalNamespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete Service %s: %s", name, err)
-		return false, i18n.DeleteServiceError
+		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "Service", "Error": err.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 // DeleteServiceList Service 不支持 DeleteCollection
-func DeleteServiceList(ctx context.Context, labels ...map[string]string) (bool, string) {
-	services, ok, msg := GetServiceList(ctx, labels...)
-	if !ok {
-		return false, msg
+func DeleteServiceList(ctx context.Context, labels ...map[string]string) model.RetVal {
+	services, ret := GetServiceList(ctx, labels...)
+	if !ret.OK || services == nil {
+		return ret
 	}
 	for _, service := range services.Items {
-		if ok, msg = DeleteService(ctx, service.Name); !ok {
-			return false, msg
+		if ret = DeleteService(ctx, service.Name); !ret.OK {
+			return ret
 		}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

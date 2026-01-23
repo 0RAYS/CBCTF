@@ -3,6 +3,7 @@ package k8s
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"context"
 	"fmt"
 	"strings"
@@ -22,7 +23,7 @@ type CreateDNatOptions struct {
 	Protocol     string
 }
 
-func CreateDNat(ctx context.Context, options CreateDNatOptions) (*kubeovnv1.IptablesDnatRule, bool, string) {
+func CreateDNat(ctx context.Context, options CreateDNatOptions) (*kubeovnv1.IptablesDnatRule, model.RetVal) {
 	var (
 		dnat *kubeovnv1.IptablesDnatRule
 		err  error
@@ -43,24 +44,24 @@ func CreateDNat(ctx context.Context, options CreateDNatOptions) (*kubeovnv1.Ipta
 	dnat, err = kubeOVNClient.KubeovnV1().IptablesDnatRules().Create(ctx, dnat, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create iptables DnatRule: %s", err)
-		return nil, false, i18n.CreateDNatError
+		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "DnatRule", "Error": err.Error()}}
 	}
-	return dnat, true, i18n.Success
+	return dnat, model.SuccessRetVal()
 }
 
-func GetDNat(ctx context.Context, name string) (*kubeovnv1.IptablesDnatRule, bool, string) {
+func GetDNat(ctx context.Context, name string) (*kubeovnv1.IptablesDnatRule, model.RetVal) {
 	dnat, err := kubeOVNClient.KubeovnV1().IptablesDnatRules().Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if apierror.IsNotFound(err) {
-			return nil, false, i18n.DNatNotFound
+			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "DnatRule"}}
 		}
 		log.Logger.Warningf("Failed to get iptables DnatRule: %s", err)
-		return nil, false, i18n.GetDNatError
+		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "DnatRule", "Error": err.Error()}}
 	}
-	return dnat, true, i18n.Success
+	return dnat, model.SuccessRetVal()
 }
 
-func GetDNatList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.IptablesDnatRuleList, bool, string) {
+func GetDNatList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.IptablesDnatRuleList, model.RetVal) {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string
@@ -74,21 +75,21 @@ func GetDNatList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.I
 	dnats, err := kubeOVNClient.KubeovnV1().IptablesDnatRules().List(ctx, options)
 	if err != nil {
 		log.Logger.Warningf("Failed to list iptables DnatRules: %s", err)
-		return nil, false, i18n.GetDNatError
+		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "DnatRule", "Error": err.Error()}}
 	}
-	return dnats, true, i18n.Success
+	return dnats, model.SuccessRetVal()
 }
 
-func DeleteDNat(ctx context.Context, name string) (bool, string) {
+func DeleteDNat(ctx context.Context, name string) model.RetVal {
 	err := kubeOVNClient.KubeovnV1().IptablesDnatRules().Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete iptables DnatRule: %s", err)
-		return false, i18n.DeleteDNatError
+		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "DnatRule", "Error": err.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
-func DeleteDNatList(ctx context.Context, labels ...map[string]string) (bool, string) {
+func DeleteDNatList(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string
@@ -102,7 +103,7 @@ func DeleteDNatList(ctx context.Context, labels ...map[string]string) (bool, str
 	err := kubeOVNClient.KubeovnV1().IptablesDnatRules().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete iptables DnatRule: %s", err)
-		return false, i18n.DeleteDNatError
+		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "DnatRule", "Error": err.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

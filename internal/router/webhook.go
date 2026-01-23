@@ -3,7 +3,6 @@ package router
 import (
 	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
@@ -15,35 +14,35 @@ import (
 
 func GetWebhook(ctx *gin.Context) {
 	webhook := middleware.GetWebhook(ctx)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": resp.GetWebhookResp(webhook)})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetWebhookResp(webhook)))
 }
 
 func GetWebhooks(ctx *gin.Context) {
-	var form f.GetModelsForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	var form f.ListModelsForm
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
-	webhooks, count, ok, msg := db.InitWebhookRepo(db.DB).List(form.Limit, form.Offset)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	webhooks, count, ret := db.InitWebhookRepo(db.DB).List(form.Limit, form.Offset)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	data := make([]gin.H, 0)
 	for _, webhook := range webhooks {
 		data = append(data, resp.GetWebhookResp(webhook))
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"count": count, "webhooks": data}})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"count": count, "webhooks": data}))
 }
 
 func CreateWebhook(ctx *gin.Context) {
 	var form f.CreateWebhookForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateWebhookEventType)
-	webhook, ok, msg := db.InitWebhookRepo(db.DB).Create(db.CreateWebhookOptions{
+	webhook, ret := db.InitWebhookRepo(db.DB).Create(db.CreateWebhookOptions{
 		Name:    form.Name,
 		URL:     form.URL,
 		Method:  form.Method,
@@ -52,23 +51,23 @@ func CreateWebhook(ctx *gin.Context) {
 		Retry:   form.Retry,
 		Events:  form.Events,
 	})
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": resp.GetWebhookResp(webhook)})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetWebhookResp(webhook)))
 }
 
 func UpdateWebhook(ctx *gin.Context) {
 	var form f.UpdateWebhookForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateWebhookEventType)
 	webhook := middleware.GetWebhook(ctx)
-	if ok, msg := db.InitWebhookRepo(db.DB).Update(webhook.ID, db.UpdateWebhookOptions{
+	if ret := db.InitWebhookRepo(db.DB).Update(webhook.ID, db.UpdateWebhookOptions{
 		Name:    form.Name,
 		URL:     form.URL,
 		Method:  form.Method,
@@ -77,13 +76,13 @@ func UpdateWebhook(ctx *gin.Context) {
 		Retry:   form.Retry,
 		On:      form.On,
 		Events:  form.Events,
-	}); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	}); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
-	newWebhook, ok, msg := db.InitWebhookRepo(db.DB).GetByID(webhook.ID)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	newWebhook, ret := db.InitWebhookRepo(db.DB).GetByID(webhook.ID)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	wh.DelWebhook(webhook)
@@ -91,17 +90,17 @@ func UpdateWebhook(ctx *gin.Context) {
 		wh.AddWebhook(newWebhook)
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal())
 }
 
 func DeleteWebhook(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteWebhookEventType)
 	webhook := middleware.GetWebhook(ctx)
-	if ok, msg := db.InitWebhookRepo(db.DB).Delete(webhook.ID); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := db.InitWebhookRepo(db.DB).Delete(webhook.ID); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	wh.DelWebhook(webhook)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal())
 }

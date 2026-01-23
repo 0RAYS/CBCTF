@@ -138,7 +138,7 @@ func GetChallengeResp(challenge model.Challenge) gin.H {
 	if challenge.Type == model.PodsChallengeType {
 		dockerCompose = Dockers2Yaml(challenge.Dockers, challenge.ChallengeFlags)
 	}
-	file, _, _ := db.InitFileRepo(db.DB).Get(db.GetOptions{
+	file, _ := db.InitFileRepo(db.DB).Get(db.GetOptions{
 		Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFileType},
 	})
 	return gin.H{

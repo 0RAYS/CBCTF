@@ -30,10 +30,10 @@ var (
 )
 
 func RegisterOauthRouter() {
-	oauthProviders, _, ok, _ := db.InitOauthRepo(db.DB).List(-1, -1, db.GetOptions{
+	oauthProviders, _, ret := db.InitOauthRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"on": true},
 	})
-	if !ok {
+	if !ret.OK {
 		return
 	}
 	oauthProviderMapLock.Lock()
@@ -54,7 +54,7 @@ func ListOauth(ctx *gin.Context) {
 		})
 	}
 	oauthProviderMapLock.RUnlock()
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
 }
 
 func Oauth(ctx *gin.Context) {
@@ -63,7 +63,7 @@ func Oauth(ctx *gin.Context) {
 	provider, ok := oauthProviderMap[uri]
 	oauthProviderMapLock.RUnlock()
 	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 		return
 	}
 	oauthConfig := &oauth2.Config{
@@ -77,9 +77,8 @@ func Oauth(ctx *gin.Context) {
 	}
 	state := utils.UUID()
 	verifier := oauth2.GenerateVerifier()
-	if err := redis.SetOauthState(provider.Provider, state, verifier); err != nil {
-		log.Logger.Warningf("Failed to set oauth state for provider %s: %s", provider.Provider, err)
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.RedisError, "data": nil})
+	if ret := redis.SetOauthState(provider.Provider, state, verifier); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	url := oauthConfig.AuthCodeURL(state, oauth2.AccessTypeOnline, oauth2.S256ChallengeOption(verifier))
@@ -92,12 +91,12 @@ func OauthCallback(ctx *gin.Context) {
 	provider, ok := oauthProviderMap[uri]
 	oauthProviderMapLock.RUnlock()
 	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 		return
 	}
 	var form f.OauthCallbackForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	oauthConfig := &oauth2.Config{
@@ -110,27 +109,22 @@ func OauthCallback(ctx *gin.Context) {
 		RedirectURL: provider.CallbackURL,
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.OauthLoginEventType)
-	defer func(provider string, state string) {
-		if err := redis.DelOauthState(provider, state); err != nil {
-			log.Logger.Warningf("Failed to delete oauth state for provider %s: %s", provider, err)
-		}
-	}(provider.Provider, form.State)
-	verifier, err := redis.GetOauthVerifier(provider.Provider, form.State)
-	if err != nil {
-		log.Logger.Warningf("Failed to get oauth verifier for provider %s: %s", provider.Provider, err)
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.RedisError, "data": nil})
+	defer redis.DelOauthState(provider.Provider, form.State)
+	verifier, ret := redis.GetOauthVerifier(provider.Provider, form.State)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	tok, err := oauthConfig.Exchange(ctx, form.Code, oauth2.VerifierOption(verifier))
 	if err != nil {
 		log.Logger.Warningf("Failed to get token for provider %s: %s", provider.Provider, err)
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
 	}
 	client := oauthConfig.Client(ctx, tok)
 	response, err := client.Get(provider.UserInfoURL)
 	if err != nil {
 		log.Logger.Warningf("Failed to get User info by provider %s: %s", provider.Provider, err)
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
 		return
 	}
 	defer func(Body io.ReadCloser) {
@@ -141,19 +135,19 @@ func OauthCallback(ctx *gin.Context) {
 	var result map[string]any
 	if err = json.NewDecoder(response.Body).Decode(&result); err != nil {
 		log.Logger.Warningf("Failed to decode response body for provider %s: %s", provider.Provider, err)
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
 	}
 	id, ok := utils.GetFiledValue(result, provider.RespIDField)
 	if !ok {
 		log.Logger.Warningf("Failed to get user_id by provider %s: %s", provider.Provider, result)
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Get value failed"}})
 		return
 	}
 	userRepo := db.InitUserRepo(db.DB)
-	user, ok, msg := userRepo.Get(db.GetOptions{Conditions: map[string]any{"provider": provider.Provider, "provider_user_id": id}})
-	if !ok {
-		if msg != i18n.UserNotFound {
-			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	user, ret := userRepo.Get(db.GetOptions{Conditions: map[string]any{"provider": provider.Provider, "provider_user_id": id}})
+	if !ret.OK {
+		if ret.Msg != i18n.Model.NotFound {
+			ctx.JSON(http.StatusOK, ret)
 			return
 		}
 		name, ok := utils.GetFiledValue(result, provider.RespNameField)
@@ -167,7 +161,7 @@ func OauthCallback(ctx *gin.Context) {
 		avatar, _ := utils.GetFiledValue(result, provider.RespAvatarField)
 		desc, _ := utils.GetFiledValue(result, provider.RespDescField)
 		raw, _ := json.Marshal(result)
-		user, ok, msg = userRepo.Create(db.CreateUserOptions{
+		user, ret = userRepo.Create(db.CreateUserOptions{
 			Name:           name,
 			Password:       model.NeverLoginPWD,
 			Email:          email,
@@ -178,9 +172,8 @@ func OauthCallback(ctx *gin.Context) {
 			ProviderUserID: id,
 			OauthRaw:       string(raw),
 		})
-		if !ok {
-			log.Logger.Warningf("Failed to create User by provider %s: %s", provider.Provider, msg)
-			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		if !ret.OK {
+			ctx.JSON(http.StatusOK, ret)
 			return
 		}
 		prometheus.UpdateUserRegisterMetrics(provider.Provider)
@@ -189,7 +182,7 @@ func OauthCallback(ctx *gin.Context) {
 	token, err := utils.GenerateToken(user.ID, user.Name, false, model.OauthLoginType)
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
 		return
 	}
 	prometheus.UpdateUserLoginMetrics(provider.Provider)
@@ -202,36 +195,36 @@ func OauthCallback(ctx *gin.Context) {
 }
 
 func GetOauthProviders(ctx *gin.Context) {
-	var form f.GetModelsForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	var form f.ListModelsForm
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
-	oauthProviders, count, ok, msg := db.InitOauthRepo(db.DB).List(form.Limit, form.Offset)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	oauthProviders, count, ret := db.InitOauthRepo(db.DB).List(form.Limit, form.Offset)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	data := make([]gin.H, 0)
 	for _, provider := range oauthProviders {
 		data = append(data, resp.GetOauthResp(provider))
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"providers": data, "count": count}})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"providers": data, "count": count}))
 }
 
 func GetOauthProvider(ctx *gin.Context) {
 	provider := middleware.GetOauth(ctx)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": resp.GetOauthResp(provider)})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetOauthResp(provider)))
 }
 
 func CreateOauthProvider(ctx *gin.Context) {
 	var form f.CreateOauthProviderForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateOauthEventType)
-	provider, ok, msg := db.InitOauthRepo(db.DB).Create(db.CreateOauthOptions{
+	provider, ret := db.InitOauthRepo(db.DB).Create(db.CreateOauthOptions{
 		AuthURL:         form.AuthURL,
 		TokenURL:        form.TokenURL,
 		UserInfoURL:     form.UserInfoURL,
@@ -246,23 +239,23 @@ func CreateOauthProvider(ctx *gin.Context) {
 		RespDescField:   form.RespDescField,
 		On:              false,
 	})
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetOauthResp(provider)})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetOauthResp(provider)))
 }
 
 func UpdateOauthProvider(ctx *gin.Context) {
 	var form f.UpdateOauthProviderForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateOauthEventType)
 	oauth := middleware.GetOauth(ctx)
-	if ok, msg := db.InitOauthRepo(db.DB).Update(oauth.ID, db.UpdateOauthOptions{
+	if ret := db.InitOauthRepo(db.DB).Update(oauth.ID, db.UpdateOauthOptions{
 		AuthURL:         form.AuthURL,
 		TokenURL:        form.TokenURL,
 		UserInfoURL:     form.UserInfoURL,
@@ -277,17 +270,17 @@ func UpdateOauthProvider(ctx *gin.Context) {
 		RespAvatarField: form.RespAvatarField,
 		RespDescField:   form.RespDescField,
 		On:              form.On,
-	}); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	}); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
-	newOauth, ok, msg := db.InitOauthRepo(db.DB).GetByID(oauth.ID)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	newOauth, ret := db.InitOauthRepo(db.DB).GetByID(oauth.ID)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	oauthProviderMapLock.Lock()
-	if _, ok = oauthProviderMap[newOauth.Uri]; ok {
+	if _, ok := oauthProviderMap[newOauth.Uri]; ok {
 		delete(oauthProviderMap, newOauth.Uri)
 	}
 	if newOauth.On {
@@ -295,14 +288,14 @@ func UpdateOauthProvider(ctx *gin.Context) {
 	}
 	oauthProviderMapLock.Unlock()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	ctx.JSON(http.StatusOK, ret)
 }
 
 func DeleteOauthProvider(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteOauthEventType)
 	oauth := middleware.GetOauth(ctx)
-	if ok, msg := db.InitOauthRepo(db.DB).Delete(oauth.ID); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := db.InitOauthRepo(db.DB).Delete(oauth.ID); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	oauthProviderMapLock.Lock()
@@ -311,5 +304,5 @@ func DeleteOauthProvider(ctx *gin.Context) {
 	}
 	oauthProviderMapLock.Unlock()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal())
 }

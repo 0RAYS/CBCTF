@@ -11,12 +11,12 @@ import (
 )
 
 // GenTestAttachment 不使用任务队列生成附件，直接生成
-func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) (bool, string) {
-	challengeFlags, _, ok, msg := db.InitChallengeFlagRepo(tx).List(-1, -1, db.GetOptions{
+func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) model.RetVal {
+	challengeFlags, _, ret := db.InitChallengeFlagRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"challenge_id": challenge.ID},
 	})
-	if !ok {
-		return false, msg
+	if !ret.OK {
+		return ret
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()

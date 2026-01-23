@@ -1,7 +1,9 @@
 package i18n
 
 var Common = struct {
-	Success string
+	Success      string
+	UnknownError string
 }{
-	Success: "success",
+	Success:      "success",
+	UnknownError: "unknownError",
 }

@@ -53,7 +53,7 @@ func (d Docker) GetErrorString() string {
 	return i18n.GetDockerError
 }
 
-func (d Docker) NotFoundErrorString() string {
+func (d Docker) NotFoundString() string {
 	return i18n.DockerNotFound
 }
 

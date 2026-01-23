@@ -4,8 +4,6 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/utils"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,12 +13,12 @@ type OauthCallbackForm struct {
 	State string `form:"state" json:"state" binding:"required"`
 }
 
-func (f *OauthCallbackForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *OauthCallbackForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 type CreateOauthProviderForm struct {
@@ -39,58 +37,12 @@ type CreateOauthProviderForm struct {
 	RespDescField   string `form:"desc_field" json:"desc_field"`
 }
 
-func (f *CreateOauthProviderForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *CreateOauthProviderForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
-	f.AuthURL = strings.TrimSpace(f.AuthURL)
-	if !strings.HasPrefix(f.AuthURL, "http://") && !strings.HasPrefix(f.AuthURL, "https://") {
-		return false, i18n.BadRequest
-	}
-	f.TokenURL = strings.TrimSpace(f.TokenURL)
-	if !strings.HasPrefix(f.TokenURL, "http://") && !strings.HasPrefix(f.TokenURL, "https://") {
-		return false, i18n.BadRequest
-	}
-	f.UserInfoURL = strings.TrimSpace(f.UserInfoURL)
-	if !strings.HasPrefix(f.UserInfoURL, "http://") && !strings.HasPrefix(f.UserInfoURL, "https://") {
-		return false, i18n.BadRequest
-	}
-	f.CallbackURL = strings.TrimSpace(f.CallbackURL)
-	if !strings.HasPrefix(f.CallbackURL, "http://") && !strings.HasPrefix(f.CallbackURL, "https://") {
-		return false, i18n.BadRequest
-	}
-	f.ClientID = strings.TrimSpace(f.ClientID)
-	if f.ClientID == "" {
-		return false, i18n.BadRequest
-	}
-	f.ClientSecret = strings.TrimSpace(f.ClientSecret)
-	if f.ClientSecret == "" {
-		return false, i18n.BadRequest
-	}
-	f.Provider = strings.TrimSpace(f.Provider)
-	if f.Provider == "" {
-		f.Provider = utils.UUID()
-	}
-	f.Uri = strings.TrimSpace(f.Uri)
-	if f.Uri == "" {
-		f.Uri = utils.RandStr(10)
-	}
-	f.RespIDField = strings.TrimSpace(f.RespIDField)
-	if f.RespIDField == "" {
-		f.RespIDField = "{id}"
-	}
-	f.RespNameField = strings.TrimSpace(f.RespNameField)
-	if f.RespNameField == "" {
-		f.RespNameField = "{name}"
-	}
-	f.RespEmailField = strings.TrimSpace(f.RespEmailField)
-	if f.RespEmailField == "" {
-		f.RespEmailField = "{email}"
-	}
-	f.RespAvatarField = strings.TrimSpace(f.RespAvatarField)
-	f.RespDescField = strings.TrimSpace(f.RespDescField)
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 type UpdateOauthProviderForm struct {
@@ -111,85 +63,10 @@ type UpdateOauthProviderForm struct {
 	Avatar          *model.AvatarURL `form:"avatar" json:"avatar"`
 }
 
-func (f *UpdateOauthProviderForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *UpdateOauthProviderForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
-	if f.AuthURL != nil {
-		*f.AuthURL = strings.TrimSpace(*f.AuthURL)
-		if !strings.HasPrefix(*f.AuthURL, "http://") && !strings.HasPrefix(*f.AuthURL, "https://") {
-			return false, i18n.BadRequest
-		}
-	}
-	if f.TokenURL != nil {
-		*f.TokenURL = strings.TrimSpace(*f.TokenURL)
-		if !strings.HasPrefix(*f.TokenURL, "http://") && !strings.HasPrefix(*f.TokenURL, "https://") {
-			return false, i18n.BadRequest
-		}
-	}
-	if f.UserInfoURL != nil {
-		*f.UserInfoURL = strings.TrimSpace(*f.UserInfoURL)
-		if !strings.HasPrefix(*f.UserInfoURL, "http://") && !strings.HasPrefix(*f.UserInfoURL, "https://") {
-			return false, i18n.BadRequest
-		}
-	}
-	if f.CallbackURL != nil {
-		*f.CallbackURL = strings.TrimSpace(*f.CallbackURL)
-		if !strings.HasPrefix(*f.CallbackURL, "http://") && !strings.HasPrefix(*f.CallbackURL, "https://") {
-			return false, i18n.BadRequest
-		}
-	}
-	if f.ClientID != nil {
-		*f.ClientID = strings.TrimSpace(*f.ClientID)
-		if *f.ClientID == "" {
-			return false, i18n.BadRequest
-		}
-	}
-	if f.ClientSecret != nil {
-		*f.ClientSecret = strings.TrimSpace(*f.ClientSecret)
-		if *f.ClientSecret == "" {
-			return false, i18n.BadRequest
-		}
-	}
-	if f.Provider != nil {
-		*f.Provider = strings.TrimSpace(*f.Provider)
-		if *f.Provider == "" {
-			*f.Provider = utils.UUID()
-		}
-	}
-	if f.Uri != nil {
-		*f.Uri = strings.TrimSpace(*f.Uri)
-		if *f.Uri == "" {
-			*f.Uri = utils.RandStr(10)
-		}
-	}
-	if f.RespIDField != nil {
-		*f.RespIDField = strings.TrimSpace(*f.RespIDField)
-		if *f.RespIDField == "" {
-			*f.RespIDField = "id"
-		}
-	}
-	if f.RespNameField != nil {
-		*f.RespNameField = strings.TrimSpace(*f.RespNameField)
-		if *f.RespNameField == "" {
-			*f.RespNameField = "name"
-		}
-	}
-	if f.RespEmailField != nil {
-		*f.RespEmailField = strings.TrimSpace(*f.RespEmailField)
-		if *f.RespEmailField == "" {
-			*f.RespEmailField = "email"
-		}
-	}
-	if f.RespAvatarField != nil {
-		*f.RespAvatarField = strings.TrimSpace(*f.RespAvatarField)
-	}
-	if f.RespDescField != nil {
-		*f.RespDescField = strings.TrimSpace(*f.RespDescField)
-	}
-	if f.Avatar != nil {
-		*f.Avatar = model.AvatarURL(strings.TrimSpace(string(*f.Avatar)))
-	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

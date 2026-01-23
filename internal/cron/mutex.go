@@ -16,15 +16,15 @@ func clearSubmissionMutex(c *cron.Cron) {
 		contestRepo := db.InitContestRepo(db.DB)
 		contestFlagRepo := db.InitContestFlagRepo(db.DB)
 		service.SolvedMutex.Range(func(k, v any) bool {
-			contestFlag, ok, _ := contestFlagRepo.GetByID(k.(uint))
-			if !ok {
+			contestFlag, ret := contestFlagRepo.GetByID(k.(uint))
+			if !ret.OK {
 				service.SolvedMutex.Delete(k)
 				return true
 			}
 			contest, ok := contests[contestFlag.ContestID]
 			if !ok {
-				contest, ok, _ = contestRepo.GetByID(contestFlag.ContestID)
-				if !ok {
+				contest, ret = contestRepo.GetByID(contestFlag.ContestID)
+				if !ret.OK {
 					service.SolvedMutex.Delete(k)
 					return true
 				}

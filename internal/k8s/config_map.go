@@ -3,6 +3,7 @@ package k8s
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"context"
 	"fmt"
 	"strings"
@@ -18,7 +19,7 @@ type CreateConfigMapOptions struct {
 	Data   map[string]string
 }
 
-func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*corev1.ConfigMap, bool, string) {
+func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*corev1.ConfigMap, model.RetVal) {
 	var (
 		configMap *corev1.ConfigMap
 		err       error
@@ -34,24 +35,24 @@ func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*core
 	configMap, err = kubeClient.CoreV1().ConfigMaps(globalNamespace).Create(ctx, configMap, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create ConfigMap: %s", err)
-		return nil, false, i18n.CreateConfigMapError
+		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "ConfigMap", "Error": err.Error()}}
 	}
-	return configMap, true, i18n.Success
+	return configMap, model.SuccessRetVal()
 }
 
-func GetConfigMap(ctx context.Context, name string) (*corev1.ConfigMap, bool, string) {
+func GetConfigMap(ctx context.Context, name string) (*corev1.ConfigMap, model.RetVal) {
 	configMap, err := kubeClient.CoreV1().ConfigMaps(globalNamespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if apierror.IsNotFound(err) {
-			return nil, false, i18n.ConfigMapNotFound
+			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "ConfigMap"}}
 		}
 		log.Logger.Warningf("Failed to get ConfigMap: %s", err)
-		return nil, false, i18n.GetConfigMapError
+		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "ConfigMap", "Error": err.Error()}}
 	}
-	return configMap, true, i18n.Success
+	return configMap, model.SuccessRetVal()
 }
 
-func GetConfigMapList(ctx context.Context, labels ...map[string]string) (*corev1.ConfigMapList, bool, string) {
+func GetConfigMapList(ctx context.Context, labels ...map[string]string) (*corev1.ConfigMapList, model.RetVal) {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string
@@ -65,24 +66,24 @@ func GetConfigMapList(ctx context.Context, labels ...map[string]string) (*corev1
 	configMapList, err := kubeClient.CoreV1().ConfigMaps(globalNamespace).List(ctx, options)
 	if err != nil {
 		if apierror.IsNotFound(err) {
-			return nil, false, i18n.ConfigMapNotFound
+			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "ConfigMap"}}
 		}
 		log.Logger.Warningf("Failed to list ConfigMap: %s", err)
-		return nil, false, i18n.GetConfigMapError
+		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "ConfigMap", "Error": err.Error()}}
 	}
-	return configMapList, true, i18n.Success
+	return configMapList, model.SuccessRetVal()
 }
 
-func DeleteConfigMap(ctx context.Context, configMapName string) (bool, string) {
+func DeleteConfigMap(ctx context.Context, configMapName string) model.RetVal {
 	err := kubeClient.CoreV1().ConfigMaps(globalNamespace).Delete(ctx, configMapName, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete ConfigMap: %s", err)
-		return false, i18n.DeleteConfigMapError
+		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "ConfigMap", "Error": err.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
-func DeleteConfigMapList(ctx context.Context, labels ...map[string]string) (bool, string) {
+func DeleteConfigMapList(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string
@@ -96,7 +97,7 @@ func DeleteConfigMapList(ctx context.Context, labels ...map[string]string) (bool
 	err := kubeClient.CoreV1().ConfigMaps(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete ConfigMap: %s", err)
-		return false, i18n.DeleteConfigMapError
+		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "ConfigMap", "Error": err.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

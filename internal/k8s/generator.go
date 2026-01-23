@@ -33,11 +33,10 @@ type Generator struct {
 }
 
 // StartGenerator 启动动态附件生成器, 等待附加命令, 生成附件
-func StartGenerator(ctx context.Context, challenge model.Challenge) (*corev1.Pod, bool, string) {
+func StartGenerator(ctx context.Context, challenge model.Challenge) (*corev1.Pod, model.RetVal) {
 	var (
 		pod           *corev1.Pod
-		ok            bool
-		msg           string
+		ret           model.RetVal
 		err           error
 		generatorName = fmt.Sprintf("gen-%s", utils.RandStr(20))
 		containerName = fmt.Sprintf("ctn-%s", utils.RandStr(20))
@@ -45,10 +44,10 @@ func StartGenerator(ctx context.Context, challenge model.Challenge) (*corev1.Pod
 		labels        = map[string]string{GeneratorPodTag: GeneratorPodTag, "contest_challenge_id": strconv.Itoa(int(challenge.ID))}
 	)
 	if challenge.GeneratorImage == "" {
-		return nil, false, i18n.InvalidDockerImage
+		return nil, model.RetVal{Msg: i18n.Model.Challenge.EmptyImage}
 	}
 	log.Logger.Infof("Starting Generator %s for Challenge %d-%s", generatorName, challenge.ID, challenge.Name)
-	pod, ok, msg = CreatePod(ctx, CreatePodOptions{
+	pod, ret = CreatePod(ctx, CreatePodOptions{
 		Name:   generatorName,
 		Labels: labels,
 		Containers: []corev1.Container{
@@ -79,8 +78,8 @@ func StartGenerator(ctx context.Context, challenge model.Challenge) (*corev1.Pod
 			},
 		},
 	})
-	if !ok {
-		return nil, false, msg
+	if !ret.OK {
+		return nil, ret
 	}
 	var commands []string
 	if _, err = os.Stat(challenge.GeneratorPath()); err == nil {
@@ -92,16 +91,16 @@ func StartGenerator(ctx context.Context, challenge model.Challenge) (*corev1.Pod
 		log.Logger.Debugf("Executing command: %s", command)
 		if _, _, err = Exec(ctx, generatorName, containerName, command, nil); err != nil {
 			log.Logger.Warningf("Failed to execute command %s: %s", command, err)
-			return nil, false, i18n.ExecCommandError
+			return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 		}
 	}
 	GeneratorMapMutex.Lock()
 	GeneratorMap[challenge.ID] = append(GeneratorMap[challenge.ID], &Generator{Start: time.Now(), Pod: pod})
 	GeneratorMapMutex.Unlock()
-	return pod, true, i18n.Success
+	return pod, model.SuccessRetVal()
 }
 
-func GetGenerator(ctx context.Context, challenge model.Challenge) (*corev1.Pod, bool, string) {
+func GetGenerator(ctx context.Context, challenge model.Challenge) (*corev1.Pod, model.RetVal) {
 	GeneratorMapMutex.RLock()
 	generators, ok := GeneratorMap[challenge.ID]
 	GeneratorMapMutex.RUnlock()
@@ -110,24 +109,24 @@ func GetGenerator(ctx context.Context, challenge model.Challenge) (*corev1.Pod, 
 	}
 	if len(generators) > 0 {
 		index, _ := rand.Int(rand.Reader, big.NewInt(int64(len(generators))))
-		return generators[index.Int64()].Pod, true, i18n.Success
+		return generators[index.Int64()].Pod, model.SuccessRetVal()
 	}
-	return nil, false, i18n.UnknownError
+	return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Generators not found"}}
 }
 
 // StopGenerator 停止动态附件生成器
-func StopGenerator(ctx context.Context, challenge model.Challenge, generator *corev1.Pod) (bool, string) {
+func StopGenerator(ctx context.Context, challenge model.Challenge, generator *corev1.Pod) model.RetVal {
 	log.Logger.Infof("Stopping generator for Challenge %d-%s", challenge.ID, challenge.Name)
 	GeneratorMapMutex.RLock()
 	_, ok := GeneratorMap[challenge.ID]
 	GeneratorMapMutex.RUnlock()
 	if ok {
-		if ok, msg := DeletePod(ctx, generator.Name); !ok {
-			return false, msg
+		if ret := DeletePod(ctx, generator.Name); !ret.OK {
+			return ret
 		}
 		labels := map[string]string{GeneratorPodTag: generator.Name, "contest_challenge_id": strconv.Itoa(int(challenge.ID))}
-		if ok, msg := DeleteServiceList(ctx, labels); !ok {
-			return false, msg
+		if ret := DeleteServiceList(ctx, labels); !ret.OK {
+			return ret
 		}
 		GeneratorMapMutex.Lock()
 		GeneratorMap[challenge.ID] = slices.DeleteFunc(GeneratorMap[challenge.ID], func(gen *Generator) bool {
@@ -135,16 +134,16 @@ func StopGenerator(ctx context.Context, challenge model.Challenge, generator *co
 		})
 		GeneratorMapMutex.Unlock()
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 // GenAttachment 附加容器命令, 生成附件
-func GenAttachment(ctx context.Context, challenge model.Challenge, teamID uint, flags []string) (bool, string) {
+func GenAttachment(ctx context.Context, challenge model.Challenge, teamID uint, flags []string) model.RetVal {
 	var err error
 	log.Logger.Debugf("Generating attachment for Team %d Challenge %d", teamID, challenge.ID)
-	generator, ok, _ := GetGenerator(ctx, challenge)
+	generator, ret := GetGenerator(ctx, challenge)
 	// 获取失败则直接返回, 并尝试关闭生成器
-	if !ok || generator.Status.Phase != corev1.PodRunning {
+	if !ret.OK || generator.Status.Phase != corev1.PodRunning {
 		return StopGenerator(ctx, challenge, generator)
 	}
 	var flag string
@@ -159,7 +158,7 @@ func GenAttachment(ctx context.Context, challenge model.Challenge, teamID uint, 
 	log.Logger.Debugf("Executing command in %s: %s", generator.Name, command)
 	if _, _, err = Exec(ctx, generator.Name, generator.Spec.Containers[0].Name, command, nil); err != nil {
 		log.Logger.Warningf("Failed to execute command %s: %s", command, err)
-		return false, i18n.ExecCommandError
+		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	for {
 		// NFS 延迟写入, 主动触发读取
@@ -169,5 +168,5 @@ func GenAttachment(ctx context.Context, challenge model.Challenge, teamID uint, 
 		}
 		time.Sleep(time.Second)
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

@@ -1,2 +1,76 @@
 common:
   success: "200"
+  unknownError: "500"
+request:
+  badRequest: "400"
+  unauthorized: "401"
+  forbidden: "403"
+  tooManyRequests: "429"
+model:
+  duplicateKeyValue: "400"
+  notUniqueKey: "400"
+  deadLock: "500"
+  createError: "500"
+  getError: "500"
+  notFound: "404"
+  updateError: "500"
+  deleteError: "500"
+  challenge:
+    invalidType: "400"
+    emptyImage: "400"
+  challengeFlag:
+    invalidType: "400"
+  cheat:
+    invalidType: "400"
+  contest:
+    captchaWrong: "400"
+    duplicateMember: "400"
+    isComing: "400"
+    isRunning: "400"
+    isOver: "400"
+  contestFlag:
+    invalidType: "400"
+  docker:
+    invalidComposeYaml: "400"
+  email:
+    invalidVerifyToken: "400"
+  file:
+    notAllowed: "400"
+    readPcapError: "500"
+    createDirError: "500"
+  notice:
+    invalidType: "400"
+  submission:
+    notAllowed: "400"
+  team:
+    banned: "403"
+    full: "400"
+    captchaWrong: "400"
+    notHasMember: "400"
+    captainCannotLeave: "400"
+  teamFlag:
+    notMatch: "400"
+    alreadySolved: "400"
+  user:
+    weakPassword: "400"
+    samePassword: "400"
+    passwordWrong: "401"
+    namePasswordWrong: "401"
+    unverifiedEmail: "400"
+    alreadyVerified: "400"
+  victim:
+    limited: "400"
+    hasMuchTime: "400"
+  webhook:
+    invalidMethod: "400"
+redis:
+  setError: "500"
+  getError: "500"
+  deleteError: "500"
+task:
+  enqueueError: "500"
+k8s:
+  createError: "500"
+  getError: "500"
+  notFound: "404"
+  deleteError: "500"

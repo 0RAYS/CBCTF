@@ -15,8 +15,8 @@ import (
 func updateFlagScore(c *cron.Cron) {
 	function := exec("UpdateFlagScore", func() {
 		contestRepo := db.InitContestRepo(db.DB)
-		contests, _, ok, _ := contestRepo.List(-1, -1)
-		if !ok {
+		contests, _, ret := contestRepo.List(-1, -1)
+		if !ret.OK {
 			return
 		}
 		for _, contest := range contests {
@@ -24,7 +24,7 @@ func updateFlagScore(c *cron.Cron) {
 				continue
 			}
 			contestChallengeRepo := db.InitContestChallengeRepo(db.DB)
-			contestChallengeL, _, ok, _ := contestChallengeRepo.List(-1, -1, db.GetOptions{
+			contestChallengeL, _, ret := contestChallengeRepo.List(-1, -1, db.GetOptions{
 				Conditions: map[string]any{"contest_id": contest.ID},
 				Selects:    []string{"id"},
 				Preloads: map[string]db.GetOptions{
@@ -33,7 +33,7 @@ func updateFlagScore(c *cron.Cron) {
 					},
 				},
 			})
-			if !ok {
+			if !ret.OK {
 				return
 			}
 			for _, contestChallenge := range contestChallengeL {
@@ -41,16 +41,16 @@ func updateFlagScore(c *cron.Cron) {
 					mu, _ := service.SolvedMutex.LoadOrStore(contestFlag.ID, &sync.Mutex{})
 					mu.(*sync.Mutex).Lock()
 					contestFlagRepo := db.InitContestFlagRepo(db.DB)
-					solvers, currentScore, ok, _ := service.CalcContestFlagState(db.DB, contestFlag)
-					if !ok {
+					solvers, currentScore, ret := service.CalcContestFlagState(db.DB, contestFlag)
+					if !ret.OK {
 						mu.(*sync.Mutex).Unlock()
 						continue
 					}
 					if solvers != contestFlag.Solvers || currentScore != contestFlag.CurrentScore {
-						if ok, _ = contestFlagRepo.Update(contestFlag.ID, db.UpdateContestFlagOptions{
+						if ret = contestFlagRepo.Update(contestFlag.ID, db.UpdateContestFlagOptions{
 							CurrentScore: &currentScore,
 							Solvers:      &solvers,
-						}); !ok {
+						}); !ret.OK {
 							mu.(*sync.Mutex).Unlock()
 							continue
 						}

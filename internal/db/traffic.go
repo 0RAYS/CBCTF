@@ -42,12 +42,12 @@ func InitTrafficRepo(tx *gorm.DB) *TrafficRepo {
 	}
 }
 
-func (t *TrafficRepo) GetVictimReqIP(id uint) ([]string, bool, string) {
+func (t *TrafficRepo) GetVictimReqIP(id uint) ([]string, model.RetVal) {
 	var ipL []string
 	res := t.DB.Model(&model.Traffic{}).Where("victim_id = ?", id).Distinct("src_ip").Find(&ipL)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Traffic: %s", res.Error)
-		return nil, false, i18n.GetTrafficError
+		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Traffic{}.GetModelName(), "Error": res.Error.Error()}}
 	}
-	return ipL, true, i18n.Success
+	return ipL, model.SuccessRetVal()
 }

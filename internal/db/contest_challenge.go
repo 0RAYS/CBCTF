@@ -86,14 +86,14 @@ func InitContestChallengeRepo(tx *gorm.DB) *ContestChallengeRepo {
 }
 
 func (c *ContestChallengeRepo) IsUniqueContestChallenge(contestID uint, challengeID uint) bool {
-	_, ok, _ := c.Get(GetOptions{
+	_, ret := c.Get(GetOptions{
 		Conditions: map[string]any{"contest_id": contestID, "challenge_id": challengeID},
 		Selects:    []string{"id"},
 	})
-	return !ok
+	return !ret.OK
 }
 
-func (c *ContestChallengeRepo) ListCategories(contestID uint, t string) ([]string, bool, string) {
+func (c *ContestChallengeRepo) ListCategories(contestID uint, t string) ([]string, model.RetVal) {
 	var categories []string
 	tx := c.DB.Model(&model.ContestChallenge{}).Where("contest_id = ?", contestID)
 	if t != "" {
@@ -101,13 +101,13 @@ func (c *ContestChallengeRepo) ListCategories(contestID uint, t string) ([]strin
 	}
 	if res := tx.Select("distinct category").Find(&categories); res.Error != nil {
 		log.Logger.Warningf("Failed to list ContestChallenge categories: %s", res.Error)
-		return nil, false, i18n.GetContestChallengeError
+		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]interface{}{"Error": res.Error.Error()}}
 	}
-	return categories, true, i18n.Success
+	return categories, model.SuccessRetVal()
 }
 
-func (c *ContestChallengeRepo) Delete(idL ...uint) (bool, string) {
-	contestChallengeL, _, ok, msg := c.List(-1, -1, GetOptions{
+func (c *ContestChallengeRepo) Delete(idL ...uint) model.RetVal {
+	contestChallengeL, _, ret := c.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},
 		Selects:    []string{"id"},
 		Preloads: map[string]GetOptions{
@@ -115,17 +115,17 @@ func (c *ContestChallengeRepo) Delete(idL ...uint) (bool, string) {
 			"Submissions":  {Selects: []string{"id", "contest_challenge_id"}},
 		},
 	})
-	if !ok {
-		if msg != i18n.ContestChallengeNotFound {
-			return false, msg
+	if !ret.OK {
+		if ret.Msg != i18n.ContestChallengeNotFound {
+			return ret
 		}
-		return true, i18n.Success
+		return model.SuccessRetVal()
 	}
 	contestFlagIDL, submissionIDL := make([]uint, 0), make([]uint, 0)
 	for _, contestChallenge := range contestChallengeL {
 		deletedSalt := utils.UUID()
-		if ok, msg = c.Update(contestChallenge.ID, UpdateContestChallengeOptions{DeletedSalt: &deletedSalt}); !ok {
-			return false, msg
+		if ret = c.Update(contestChallenge.ID, UpdateContestChallengeOptions{DeletedSalt: &deletedSalt}); !ret.OK {
+			return ret
 		}
 		for _, contestFlag := range contestChallenge.ContestFlags {
 			contestFlagIDL = append(contestFlagIDL, contestFlag.ID)
@@ -134,15 +134,15 @@ func (c *ContestChallengeRepo) Delete(idL ...uint) (bool, string) {
 			submissionIDL = append(submissionIDL, submission.ID)
 		}
 	}
-	if ok, msg = InitContestFlagRepo(c.DB).Delete(contestFlagIDL...); !ok {
-		return false, msg
+	if ret = InitContestFlagRepo(c.DB).Delete(contestFlagIDL...); !ret.OK {
+		return ret
 	}
-	if ok, msg = InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ok {
-		return false, msg
+	if ret = InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ret.OK {
+		return ret
 	}
 	if res := c.DB.Model(&model.ContestChallenge{}).Where("id IN ?", idL).Delete(&model.ContestChallenge{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete ContestChallenge: %s", res.Error)
-		return false, i18n.DeleteContestChallengeError
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]interface{}{"Model": model.ContestChallenge{}.GetModelName(), "Error": res.Error.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

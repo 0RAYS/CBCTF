@@ -14,9 +14,9 @@ import (
 // SolvedMutex 使用定时任务 cron.clearSubmissionMutex 清理锁
 var SolvedMutex sync.Map
 
-func Submit(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge, form f.SubmitFlagForm, ip string) (string, model.Submission, bool, string) {
+func Submit(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge, form f.SubmitFlagForm, ip string) (model.Submission, model.RetVal) {
 	if contestChallenge.Attempt != 0 && contestChallenge.Attempt <= CountAttempts(tx, team, contestChallenge) {
-		return "", model.Submission{}, false, i18n.NotAllowSubmit
+		return model.Submission{}, model.RetVal{Msg: i18n.Model.Submission.NotAllowed}
 	}
 	submissionRepo := db.InitSubmissionRepo(tx)
 	options := db.CreateSubmissionOptions{
@@ -29,62 +29,62 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, contest model.Contest
 		Score:              team.Score,
 		IP:                 ip,
 	}
-	solved, contestFlag, teamFlag, ok, result := VerifyFlag(tx, team, contestChallenge, form.Flag)
+	solved, contestFlag, teamFlag, ret := VerifyFlag(tx, team, contestChallenge, form.Flag)
 	options.ContestFlagID = contestFlag.ID
 	options.Solved = solved
-	if !ok {
-		return "", model.Submission{}, false, result
+	if !ret.OK {
+		return model.Submission{}, ret
 	}
-	submission, ok, msg := submissionRepo.Create(options)
-	if !ok {
-		return "", model.Submission{}, false, msg
+	submission, ret := submissionRepo.Create(options)
+	if !ret.OK {
+		return model.Submission{}, ret
 	}
 	if solved {
 		teamFlagRepo := db.InitTeamFlagRepo(tx)
-		if ok, msg = teamFlagRepo.Update(teamFlag.ID, db.UpdateTeamFlagRepo{Solved: &solved}); !ok {
-			return "", model.Submission{}, false, msg
+		if ret = teamFlagRepo.Update(teamFlag.ID, db.UpdateTeamFlagRepo{Solved: &solved}); !ret.OK {
+			return model.Submission{}, ret
 		}
 		// 正确时需要更新分数等信息, 加锁
 		mu, _ := SolvedMutex.LoadOrStore(contestFlag.ID, &sync.Mutex{})
 		mu.(*sync.Mutex).Lock()
 		defer mu.(*sync.Mutex).Unlock()
 
-		_, currentScore, ok, msg := CalcContestFlagState(tx, contestFlag)
-		if !ok {
-			return "", model.Submission{}, false, msg
+		_, currentScore, ret := CalcContestFlagState(tx, contestFlag)
+		if !ret.OK {
+			return model.Submission{}, ret
 		}
 		contestFlagRepo := db.InitContestFlagRepo(tx)
-		if ok, msg = contestFlagRepo.DiffUpdate(contestFlag.ID, db.DiffUpdateContestFlagOptions{Solvers: 1}); !ok {
-			return "", model.Submission{}, false, msg
+		if ret = contestFlagRepo.DiffUpdate(contestFlag.ID, db.DiffUpdateContestFlagOptions{Solvers: 1}); !ret.OK {
+			return model.Submission{}, ret
 		}
-		if ok, msg = contestFlagRepo.Update(contestFlag.ID, db.UpdateContestFlagOptions{
+		if ret = contestFlagRepo.Update(contestFlag.ID, db.UpdateContestFlagOptions{
 			CurrentScore: &currentScore,
 			Last:         &submission.CreatedAt,
-		}); !ok {
-			return "", model.Submission{}, false, msg
+		}); !ret.OK {
+			return model.Submission{}, ret
 		}
-		score, ok, msg := CalcTeamScore(tx, team, contest.Blood)
-		if !ok {
-			return "", model.Submission{}, false, msg
+		score, ret := CalcTeamScore(tx, team, contest.Blood)
+		if !ret.OK {
+			return model.Submission{}, ret
 		}
 		teamRepo := db.InitTeamRepo(tx)
-		if ok, msg = teamRepo.Update(team.ID, db.UpdateTeamOptions{
+		if ret = teamRepo.Update(team.ID, db.UpdateTeamOptions{
 			Score: &score,
 			Last:  &submission.CreatedAt,
-		}); !ok {
-			return "", model.Submission{}, false, msg
+		}); !ret.OK {
+			return model.Submission{}, ret
 		}
-		if ok, msg = submissionRepo.Update(submission.ID, db.UpdateSubmissionOptions{Score: &score}); !ok {
-			return "", model.Submission{}, false, msg
+		if ret = submissionRepo.Update(submission.ID, db.UpdateSubmissionOptions{Score: &score}); !ret.OK {
+			return model.Submission{}, ret
 		}
 	}
 	prometheus.UpdateFlagSubmissionMetrics(contest, contestChallenge, team, solved)
-	return result, submission, true, i18n.Success
+	return submission, model.SuccessRetVal()
 }
 
 func CountAttempts(tx *gorm.DB, team model.Team, contestChallenge model.ContestChallenge) int64 {
 	submissionRepo := db.InitSubmissionRepo(tx)
-	count, _, _ := submissionRepo.Count(db.CountOptions{
+	count, _ := submissionRepo.Count(db.CountOptions{
 		Conditions: map[string]any{"team_id": team.ID, "contest_challenge_id": contestChallenge.ID, "solved": false},
 	})
 	return count
@@ -96,7 +96,7 @@ func CheckIfSolved(tx *gorm.DB, team model.Team, contestFlags []model.ContestFla
 		return true
 	}
 	submissionRepo := db.InitSubmissionRepo(tx)
-	count, _, _ := submissionRepo.Count(db.CountOptions{
+	count, _ := submissionRepo.Count(db.CountOptions{
 		Conditions: map[string]any{"team_id": team.ID, "contest_challenge_id": contestFlags[0].ContestChallengeID, "solved": true},
 	})
 	return count == int64(len(contestFlags))

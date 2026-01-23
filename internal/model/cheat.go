@@ -60,7 +60,7 @@ func (c Cheat) GetErrorString() string {
 	return i18n.GetCheatError
 }
 
-func (c Cheat) NotFoundErrorString() string {
+func (c Cheat) NotFoundString() string {
 	return i18n.CheatNotFound
 }
 

@@ -3,6 +3,7 @@ package k8s
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 	"context"
 
@@ -18,7 +19,7 @@ type CreatePVCOptions struct {
 	Storage string
 }
 
-func CreatePVC(ctx context.Context, options CreatePVCOptions) (*corev1.PersistentVolumeClaim, bool, string) {
+func CreatePVC(ctx context.Context, options CreatePVCOptions) (*corev1.PersistentVolumeClaim, model.RetVal) {
 	var (
 		pvc     *corev1.PersistentVolumeClaim
 		storage resource.Quantity
@@ -27,7 +28,7 @@ func CreatePVC(ctx context.Context, options CreatePVCOptions) (*corev1.Persisten
 	storage, err = resource.ParseQuantity(options.Storage)
 	if err != nil {
 		log.Logger.Warningf("Failed to parse storage resource: %s", err)
-		return nil, false, i18n.UnknownError
+		return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	pvc = &corev1.PersistentVolumeClaim{
 		ObjectMeta: metav1.ObjectMeta{
@@ -48,19 +49,19 @@ func CreatePVC(ctx context.Context, options CreatePVCOptions) (*corev1.Persisten
 	pvc, err = kubeClient.CoreV1().PersistentVolumeClaims(globalNamespace).Create(ctx, pvc, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create pvc: %s", err)
-		return nil, false, i18n.CreatePVCError
+		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "PVC", "Error": err.Error()}}
 	}
-	return pvc, true, i18n.Success
+	return pvc, model.SuccessRetVal()
 }
 
-func GetPVC(ctx context.Context, name string) (*corev1.PersistentVolumeClaim, bool, string) {
+func GetPVC(ctx context.Context, name string) (*corev1.PersistentVolumeClaim, model.RetVal) {
 	pvc, err := kubeClient.CoreV1().PersistentVolumeClaims(globalNamespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if apierror.IsNotFound(err) {
-			return nil, false, i18n.PVCNotFound
+			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "PVC"}}
 		}
 		log.Logger.Warningf("Failed to get pvc: %s", err)
-		return nil, false, i18n.GetPVCError
+		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "PVC", "Error": err.Error()}}
 	}
-	return pvc, true, i18n.Success
+	return pvc, model.SuccessRetVal()
 }

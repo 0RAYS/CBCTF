@@ -3,7 +3,6 @@ package router
 import (
 	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
@@ -18,15 +17,15 @@ import (
 
 func GetContestChallengeImage(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
-	contestChallengeImageList, ok, msg := service.GetContestChallengeImageList(db.DB, contest)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	contestChallengeImageList, ret := service.GetContestChallengeImageList(db.DB, contest)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 
-	nodeImageMap, ok, msg := service.GetNodeImageList()
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	nodeImageMap, ret := service.GetNodeImageList()
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	data := make([]gin.H, 0)
@@ -47,29 +46,29 @@ func GetContestChallengeImage(ctx *gin.Context) {
 		}
 		data = append(data, gin.H{contestChallengeImage: status})
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": data})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
 }
 
 func WarmUpContestChallengeImage(ctx *gin.Context) {
 	var form f.WarmUpImageForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.PullImageEventType)
-	_, msg := service.WarmUpContestChallengeImage(form)
+	ret := service.WarmUpContestChallengeImage(form)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	ctx.JSON(http.StatusOK, ret)
 }
 
 func GetContestVictims(ctx *gin.Context) {
 	var form f.GetContestVictimsForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	victims, count, _, _ := service.GetContestVictims(db.DB, contest, form)
+	victims, count, _ := service.GetContestVictims(db.DB, contest, form)
 	data := make([]gin.H, 0)
 	for _, victim := range victims {
 		info := resp.GetVictimResp(victim)
@@ -80,48 +79,48 @@ func GetContestVictims(ctx *gin.Context) {
 		info["challenge"] = victim.ContestChallenge.Name
 		data = append(data, info)
 	}
-	total, ok, _ := db.InitVictimRepo(db.DB).Count(db.CountOptions{
+	total, ret := db.InitVictimRepo(db.DB).Count(db.CountOptions{
 		Conditions: map[string]any{"contest_id": contest.ID}, Deleted: true,
 	})
-	if !ok {
+	if !ret.OK {
 		total = count
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"victims": data, "count": total, "running": count}})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"victims": data, "count": total, "running": count}))
 }
 
 func StartContestVictims(ctx *gin.Context) {
 	var form f.StartContestVictimsForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.StartVictimEventType)
 	contest := middleware.GetContest(ctx)
 	go func(selfID uint) {
-		if ok, _ := service.StartContestVictims(db.DB, contest, form); !ok {
+		if ret := service.StartContestVictims(db.DB, contest, form); !ret.OK {
 			websocket.Send(true, selfID, wsm.ErrorLevel, wsm.StartVictimWSType, "Victims Warmup", "Failed")
 			return
 		}
 		websocket.Send(true, selfID, wsm.SuccessLevel, wsm.StartVictimWSType, "Victims Warmup", "Done")
 	}(middleware.GetSelfID(ctx))
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal())
 }
 
 func StopContestVictims(ctx *gin.Context) {
 	var form f.StopContestVictimsForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.StopVictimEventType)
 	go func(selfID uint) {
-		if ok, _ := service.StopContestVictims(db.DB, form); !ok {
+		if ret := service.StopContestVictims(db.DB, form); !ret.OK {
 			websocket.Send(true, selfID, wsm.ErrorLevel, wsm.StopVictimWSType, "Victims Stop", "Failed")
 			return
 		}
 		websocket.Send(true, selfID, wsm.SuccessLevel, wsm.StopVictimWSType, "Victims Stop", "Done")
 	}(middleware.GetSelfID(ctx))
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": nil})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal())
 }

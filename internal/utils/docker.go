@@ -3,6 +3,7 @@ package utils
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"context"
 	"time"
 
@@ -11,11 +12,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func LoadDockerComposeYaml(data string) (*types.Project, bool, string) {
+func LoadDockerComposeYaml(data string) (*types.Project, model.RetVal) {
 	var raw map[string]any
-	if err := yaml.Unmarshal([]byte(data), &raw); err != nil || len(data) == 0 {
+	if err := yaml.Unmarshal([]byte(data), &raw); err != nil {
 		log.Logger.Warningf("Failed to load docker-compose: %s", err)
-		return nil, false, i18n.InvalidDockerComposeYaml
+		return nil, model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": err.Error()}}
+	}
+	if len(data) == 0 {
+		return nil, model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Empty yaml"}}
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
@@ -28,7 +32,7 @@ func LoadDockerComposeYaml(data string) (*types.Project, bool, string) {
 	})
 	if err != nil {
 		log.Logger.Warningf("Failed to load docker-compose: %s", err)
-		return nil, false, i18n.InvalidDockerComposeYaml
+		return nil, model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": err.Error()}}
 	}
-	return cfg, true, i18n.Success
+	return cfg, model.SuccessRetVal()
 }

@@ -35,7 +35,7 @@ func (d Device) GetErrorString() string {
 	return i18n.GetDeviceError
 }
 
-func (d Device) NotFoundErrorString() string {
+func (d Device) NotFoundString() string {
 	return i18n.DeviceNotFound
 }
 

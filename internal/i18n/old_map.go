@@ -310,12 +310,12 @@ var resp = map[string]map[string]any{
 
 // I18N 获取翻译与状态码, 非http响应状态码
 func I18N(key string, language string) (string, int) {
-	if v, ok := resp[key]; !ok {
+	v, ok := resp[key]
+	if !ok {
 		return key, 500
-	} else {
-		if language == "origin" {
-			return key, v["code"].(int)
-		}
-		return v[language].(string), v["code"].(int)
 	}
+	if language == "origin" {
+		return key, v["code"].(int)
+	}
+	return v[language].(string), v["code"].(int)
 }

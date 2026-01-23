@@ -12,15 +12,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateUser(tx *gorm.DB, form f.RegisterForm) (model.User, bool, string) {
-	repo := db.InitUserRepo(tx)
-	if !repo.IsUniqueName(form.Name) {
-		return model.User{}, false, i18n.DuplicateUserName
-	}
-	if !repo.IsUniqueEmail(form.Email) {
-		return model.User{}, false, i18n.DuplicateEmail
-	}
-	return repo.Create(db.CreateUserOptions{
+func CreateUser(tx *gorm.DB, form f.RegisterForm) (model.User, model.RetVal) {
+	return db.InitUserRepo(tx).Create(db.CreateUserOptions{
 		Name:           form.Name,
 		Password:       utils.HashPassword(form.Password),
 		Email:          form.Email,
@@ -30,15 +23,8 @@ func CreateUser(tx *gorm.DB, form f.RegisterForm) (model.User, bool, string) {
 	})
 }
 
-func AdminCreateUser(tx *gorm.DB, form f.CreateUserForm) (model.User, bool, string) {
-	repo := db.InitUserRepo(tx)
-	if !repo.IsUniqueName(form.Name) {
-		return model.User{}, false, i18n.DuplicateUserName
-	}
-	if !repo.IsUniqueEmail(form.Email) {
-		return model.User{}, false, i18n.DuplicateEmail
-	}
-	return repo.Create(db.CreateUserOptions{
+func AdminCreateUser(tx *gorm.DB, form f.CreateUserForm) (model.User, model.RetVal) {
+	return db.InitUserRepo(tx).Create(db.CreateUserOptions{
 		Name:           form.Name,
 		Password:       utils.HashPassword(form.Password),
 		Email:          form.Email,
@@ -53,31 +39,31 @@ func AdminCreateUser(tx *gorm.DB, form f.CreateUserForm) (model.User, bool, stri
 	})
 }
 
-func VerifyUser(tx *gorm.DB, form f.LoginForm) (model.User, bool, string) {
+func VerifyUser(tx *gorm.DB, form f.LoginForm) (model.User, model.RetVal) {
 	repo := db.InitUserRepo(tx)
-	user, ok, msg := repo.GetByName(form.Name)
-	if !ok {
-		return model.User{}, false, msg
+	user, ret := repo.GetByUniqueKey("name", form.Name)
+	if !ret.OK {
+		return model.User{}, ret
 	}
 	if !utils.CompareHashAndPassword(user.Password, form.Password) {
-		return model.User{}, false, i18n.NameOrPasswordError
+		return model.User{}, model.RetVal{Msg: i18n.Model.User.NamePasswordWrong}
 	}
-	return user, true, i18n.Success
+	return user, model.SuccessRetVal()
 }
 
-func ChangeUserPwd(tx *gorm.DB, user model.User, form f.ChangePasswordForm) (bool, string) {
+func ChangeUserPwd(tx *gorm.DB, user model.User, form f.ChangePasswordForm) model.RetVal {
 	repo := db.InitUserRepo(tx)
 	if user.Password != model.NeverLoginPWD && !utils.CompareHashAndPassword(user.Password, form.OldPassword) {
-		return false, i18n.PasswordError
+		return model.RetVal{Msg: i18n.Model.User.PasswordWrong}
 	}
 	if utils.CheckPassword(form.NewPassword) < 2 {
-		return false, i18n.WeakPassword
+		return model.RetVal{Msg: i18n.Model.User.WeakPassword}
 	}
 	password := utils.HashPassword(form.NewPassword)
 	return repo.Update(user.ID, db.UpdateUserOptions{Password: &password})
 }
 
-func UpdateSelf(tx *gorm.DB, user model.User, form f.UpdateSelfForm) (bool, string) {
+func UpdateSelf(tx *gorm.DB, user model.User, form f.UpdateSelfForm) model.RetVal {
 	repo := db.InitUserRepo(tx)
 	options := db.UpdateUserOptions{
 		Desc: form.Desc,
@@ -86,37 +72,27 @@ func UpdateSelf(tx *gorm.DB, user model.User, form f.UpdateSelfForm) (bool, stri
 		options.Country = utils.Ptr(strings.ToUpper(*form.Country))
 	}
 	if form.Email != nil && *form.Email != user.Email {
-		if !repo.IsUniqueEmail(*form.Email) {
-			return false, i18n.DuplicateEmail
-		}
-		options.Email = form.Email
 		options.Verified = utils.Ptr(false)
-	}
-	if form.Name != nil && *form.Name != user.Name {
-		if !repo.IsUniqueName(*form.Name) {
-			return false, i18n.DuplicateUserName
-		}
-		options.Name = form.Name
 	}
 	return repo.Update(user.ID, options)
 }
 
-func DeleteSelf(tx *gorm.DB, user model.User, form f.DeleteSelfForm) (bool, string) {
+func DeleteSelf(tx *gorm.DB, user model.User, form f.DeleteSelfForm) model.RetVal {
 	if !utils.CompareHashAndPassword(user.Password, form.Password) {
-		return false, i18n.PasswordError
+		return model.RetVal{Msg: i18n.Model.User.PasswordWrong}
 	}
-	contestIDL, ok, msg := db.GetContestIDByUserID(tx, user.ID)
-	if !ok {
-		return false, msg
+	contestIDL, ret := db.GetContestIDByUserID(tx, user.ID)
+	if !ret.OK {
+		return ret
 	}
 	repo := db.InitContestRepo(tx)
 	for _, id := range contestIDL {
-		contest, ok, msg := repo.GetByID(id, db.GetOptions{Selects: []string{"id", "start", "duration"}})
-		if !ok {
-			return false, msg
+		contest, ret := repo.GetByID(id, db.GetOptions{Selects: []string{"id", "start", "duration"}})
+		if !ret.OK {
+			return ret
 		}
 		if contest.IsRunning() {
-			return false, i18n.ContestIsRunning
+			return model.RetVal{Msg: i18n.Model.Contest.IsRunning}
 		}
 	}
 	return db.InitUserRepo(tx).Delete(user.ID)

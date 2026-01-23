@@ -118,22 +118,12 @@ func InitUserRepo(tx *gorm.DB) *UserRepo {
 	}
 }
 
-func (u *UserRepo) IsUniqueName(name string) bool {
-	_, ok, _ := u.GetByUniqueKey("name", name, GetOptions{Selects: []string{"id"}})
-	return !ok
-}
-
-func (u *UserRepo) IsUniqueEmail(email string) bool {
-	_, ok, _ := u.GetByUniqueKey("email", email, GetOptions{Selects: []string{"id"}})
-	return !ok
-}
-
-func (u *UserRepo) GetByName(name string, optionsL ...GetOptions) (model.User, bool, string) {
+func (u *UserRepo) GetByName(name string, optionsL ...GetOptions) (model.User, model.RetVal) {
 	return u.GetByUniqueKey("name", name, optionsL...)
 }
 
-func (u *UserRepo) Delete(idL ...uint) (bool, string) {
-	userL, _, ok, msg := u.List(-1, -1, GetOptions{
+func (u *UserRepo) Delete(idL ...uint) model.RetVal {
+	userL, _, ret := u.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},
 		Selects:    []string{"id", "name", "email", "provider_user_id"},
 		Preloads: map[string]GetOptions{
@@ -141,42 +131,42 @@ func (u *UserRepo) Delete(idL ...uint) (bool, string) {
 			"Submissions": {Selects: []string{"id", "user_id"}},
 		},
 	})
-	if !ok {
-		if msg != i18n.UserNotFound {
-			return false, msg
+	if !ret.OK {
+		if ret.Msg != i18n.Model.NotFound {
+			return ret
 		}
-		return true, i18n.Success
+		return model.SuccessRetVal()
 	}
 	submissionIDL := make([]uint, 0)
 	for _, user := range userL {
 		deletedName := fmt.Sprintf("%s_deleted_%s", user.Name, utils.RandStr(6))
 		deletedEmail := fmt.Sprintf("%s_deleted_%s", user.Email, utils.RandStr(6))
 		deleteProviderUserID := fmt.Sprintf("%s_deleted_%s", user.ProviderUserID, utils.RandStr(6))
-		if ok, msg = u.Update(user.ID, UpdateUserOptions{
+		if ret = u.Update(user.ID, UpdateUserOptions{
 			Name:           &deletedName,
 			Email:          &deletedEmail,
 			ProviderUserID: &deleteProviderUserID,
-		}); !ok {
-			return false, msg
+		}); !ret.OK {
+			return ret
 		}
 		for _, team := range user.Teams {
-			if ok, msg = DeleteUserFromContest(u.DB, user, model.Contest{BaseModel: model.BaseModel{ID: team.ContestID}}); !ok {
-				return false, msg
+			if ret = DeleteUserFromContest(u.DB, user, model.Contest{BaseModel: model.BaseModel{ID: team.ContestID}}); !ret.OK {
+				return ret
 			}
-			if ok, msg = DeleteUserFromTeam(u.DB, user, *team); !ok {
-				return false, msg
+			if ret = DeleteUserFromTeam(u.DB, user, *team); !ret.OK {
+				return ret
 			}
 		}
 		for _, submission := range user.Submissions {
 			submissionIDL = append(submissionIDL, submission.ID)
 		}
 	}
-	if ok, msg = InitSubmissionRepo(u.DB).Delete(submissionIDL...); !ok {
-		return false, msg
+	if ret = InitSubmissionRepo(u.DB).Delete(submissionIDL...); !ret.OK {
+		return ret
 	}
 	if res := u.DB.Model(&model.User{}).Where("id IN ?", idL).Delete(&model.User{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete User: %s", res.Error)
-		return false, i18n.DeleteUserError
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.User{}.GetModelName(), "Error": res.Error.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

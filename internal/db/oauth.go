@@ -128,15 +128,15 @@ func InitOauthRepo(tx *gorm.DB) *OauthRepo {
 
 func (o *OauthRepo) RegisterDefault() {
 	github := oauth.GetDefaultGithubOauth()
-	_, ok, _ := o.GetByUniqueKey("provider", github.Provider, GetOptions{Selects: []string{"id"}})
-	if !ok {
+	_, ret := o.GetByUniqueKey("provider", github.Provider, GetOptions{Selects: []string{"id"}})
+	if !ret.OK {
 		if err := o.DB.Model(&model.Oauth{}).Create(&github).Error; err != nil {
 			log.Logger.Warningf("Failed to register default github oauth provider: %s", err)
 		}
 	}
 	hduhelp := oauth.GetDefaultHDUHelpOauth()
-	_, ok, _ = o.GetByUniqueKey("provider", hduhelp.Provider, GetOptions{Selects: []string{"id"}})
-	if !ok {
+	_, ret = o.GetByUniqueKey("provider", hduhelp.Provider, GetOptions{Selects: []string{"id"}})
+	if !ret.OK {
 		if err := o.DB.Model(&model.Oauth{}).Create(&hduhelp).Error; err != nil {
 			log.Logger.Warningf("Failed to register default hduhelp oauth provider: %s", err)
 		}

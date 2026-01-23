@@ -60,7 +60,7 @@ func (f File) GetErrorString() string {
 	return i18n.GetFileError
 }
 
-func (f File) NotFoundErrorString() string {
+func (f File) NotFoundString() string {
 	return i18n.FileNotFound
 }
 

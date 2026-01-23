@@ -9,9 +9,9 @@ import (
 )
 
 var (
-	ContestIsComing  = i18n.ContestIsComing
-	ContestIsRunning = i18n.ContestIsRunning
-	ContestIsOver    = i18n.ContestIsOver
+	ContestIsComing  = i18n.Model.Contest.IsComing
+	ContestIsRunning = i18n.Model.Contest.IsRunning
+	ContestIsOver    = i18n.Model.Contest.IsOver
 )
 
 // Contest 赛事
@@ -65,7 +65,7 @@ func (c Contest) GetErrorString() string {
 	return i18n.GetContestError
 }
 
-func (c Contest) NotFoundErrorString() string {
+func (c Contest) NotFoundString() string {
 	return i18n.ContestNotFound
 }
 

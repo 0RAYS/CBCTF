@@ -53,7 +53,7 @@ func (c ChallengeFlag) GetErrorString() string {
 	return i18n.GetChallengeFlagError
 }
 
-func (c ChallengeFlag) NotFoundErrorString() string {
+func (c ChallengeFlag) NotFoundString() string {
 	return i18n.ChallengeFlagNotFound
 }
 

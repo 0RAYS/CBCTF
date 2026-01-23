@@ -3,8 +3,8 @@ package form
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,16 +15,12 @@ type LoginForm struct {
 	Password string `form:"password" json:"password" binding:"required"`
 }
 
-func (f *LoginForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *LoginForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
-	f.Name = strings.TrimSpace(f.Name)
-	if f.Name == "" {
-		return false, i18n.BadRequest
-	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 // RegisterForm for user register
@@ -34,19 +30,15 @@ type RegisterForm struct {
 	Email    string `form:"email" json:"email" binding:"required,email"`
 }
 
-func (f *RegisterForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *RegisterForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
-	}
-	f.Name = strings.TrimSpace(f.Name)
-	if f.Name == "" {
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
 	if utils.CheckPassword(f.Password) < 2 {
-		return false, i18n.WeakPassword
+		return model.RetVal{Msg: i18n.Model.User.WeakPassword}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 // CreateUserForm for create user
@@ -61,19 +53,15 @@ type CreateUserForm struct {
 	Banned   bool   `form:"banned" json:"banned"`
 }
 
-func (f *CreateUserForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *CreateUserForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
-	}
-	f.Name = strings.TrimSpace(f.Name)
-	if f.Name == "" {
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
 	if utils.CheckPassword(f.Password) < 2 {
-		return false, i18n.WeakPassword
+		return model.RetVal{Msg: i18n.Model.User.WeakPassword}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 // UpdateSelfForm for user update info
@@ -84,18 +72,12 @@ type UpdateSelfForm struct {
 	Country *string `form:"country" json:"country"`
 }
 
-func (f *UpdateSelfForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *UpdateSelfForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
-	if f.Name != nil {
-		f.Name = utils.Ptr(strings.TrimSpace(*f.Name))
-		if *f.Name == "" {
-			return false, i18n.BadRequest
-		}
-	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 // UpdateUserForm for admin update user info
@@ -110,23 +92,17 @@ type UpdateUserForm struct {
 	Verified *bool   `form:"verified" json:"verified"`
 }
 
-func (f *UpdateUserForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *UpdateUserForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
-	}
-	if f.Name != nil {
-		f.Name = utils.Ptr(strings.TrimSpace(*f.Name))
-		if *f.Name == "" {
-			return false, i18n.BadRequest
-		}
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
 	if f.Password != nil {
 		if utils.CheckPassword(*f.Password) < 2 {
-			return false, i18n.WeakPassword
+			return model.RetVal{Msg: i18n.Model.User.WeakPassword}
 		}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 // DeleteSelfForm for user delete self
@@ -134,10 +110,10 @@ type DeleteSelfForm struct {
 	Password string `form:"password" json:"password" binding:"required"`
 }
 
-func (f *DeleteSelfForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *DeleteSelfForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

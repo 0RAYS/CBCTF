@@ -99,7 +99,7 @@ func InitSmtpRepo(tx *gorm.DB) *SmtpRepo {
 	}
 }
 
-func (s *SmtpRepo) UpdateStatus(id uint, success bool, last time.Time) (bool, string) {
+func (s *SmtpRepo) UpdateStatus(id uint, success bool, last time.Time) model.RetVal {
 	var diffOptions DiffUpdateSmtpOptions
 	var options UpdateSmtpOptions
 	if success {
@@ -117,8 +117,8 @@ func (s *SmtpRepo) UpdateStatus(id uint, success bool, last time.Time) (bool, st
 			FailureLast: &last,
 		}
 	}
-	if ok, msg := s.DiffUpdate(id, diffOptions); !ok {
-		return false, msg
+	if ret := s.DiffUpdate(id, diffOptions); !ret.OK {
+		return ret
 	}
 	return s.Update(id, options)
 }

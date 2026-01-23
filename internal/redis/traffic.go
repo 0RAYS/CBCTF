@@ -18,14 +18,14 @@ const (
 	trafficKey  = "traffic:%d:%d"
 )
 
-func UpdateTraffics(victim model.Victim) (bool, string) {
+func UpdateTraffics(victim model.Victim) model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
 	connections, err := utils.ReadPcapDir(victim.TrafficBasePath())
 	if err != nil {
 		log.Logger.Warningf("Failed to read pcap: %s", err)
-		return false, i18n.ReadPcapError
+		return model.RetVal{Msg: i18n.UnknownError, Attr: map[string]any{"Error": err}}
 	}
 
 	key := fmt.Sprintf(trafficsKey, victim.ID)
@@ -43,19 +43,19 @@ func UpdateTraffics(victim model.Victim) (bool, string) {
 	pipe.Expire(ctx, key, 30*time.Minute)
 	if _, err = pipe.Exec(ctx); err != nil {
 		log.Logger.Warningf("Failed to update traffics: %s", err)
-		return false, i18n.RedisError
+		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": trafficsKey, "Error": err}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
-func GetTraffic(victim model.Victim) ([]utils.Connection, bool, string) {
+func GetTraffic(victim model.Victim) ([]utils.Connection, model.RetVal) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	connections := make([]utils.Connection, 0)
 	results, err := RDB.ZRangeWithScores(ctx, fmt.Sprintf(trafficsKey, victim.ID), 0, -1).Result()
 	if err != nil {
 		log.Logger.Warningf("Failed to get traffic: %s", err)
-		return nil, false, i18n.RedisError
+		return nil, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": trafficsKey, "Error": err}}
 	}
 	pipe := RDB.Pipeline()
 	for _, res := range results {
@@ -69,9 +69,9 @@ func GetTraffic(victim model.Victim) ([]utils.Connection, bool, string) {
 		var conn utils.Connection
 		if err = msgpack.Unmarshal(str, &conn); err != nil {
 			log.Logger.Warningf("Failed to unmarshal: %s", err)
-			return nil, false, i18n.UnknownError
+			return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}}
 		}
 		connections = append(connections, conn)
 	}
-	return connections, true, i18n.Success
+	return connections, model.SuccessRetVal()
 }

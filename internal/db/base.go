@@ -46,25 +46,25 @@ type DiffUpdateOptions interface {
 }
 
 func (b *BaseRepo[M]) IsUniqueKeyValue(key string, value any) bool {
-	_, ok, _ := b.GetByUniqueKey(key, value, GetOptions{Selects: []string{"id"}})
-	return !ok
+	_, ret := b.GetByUniqueKey(key, value, GetOptions{Selects: []string{"id"}})
+	return !ret.OK
 }
 
-func (b *BaseRepo[M]) Insert(m M) (M, bool, string) {
+func (b *BaseRepo[M]) Insert(m M) (M, model.RetVal) {
 	for _, key := range m.GetUniqueKey() {
 		value := utils.GetFieldByJSONTag(m, key)
 		if !b.IsUniqueKeyValue(key, value) {
-			return *new(M), false, i18n.UnsupportedKey
+			return *new(M), model.RetVal{Msg: i18n.Model.DuplicateKeyValue, Attr: map[string]any{"Model": m.GetModelName(), "Key": key}}
 		}
 	}
 	if res := b.DB.Model(new(M)).Create(&m); res.Error != nil {
 		log.Logger.Warningf("Failed to create %T: %s", new(M), res.Error)
-		return *new(M), false, M.CreateErrorString(*new(M))
+		return *new(M), model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": m.GetModelName(), "Error": res.Error.Error()}}
 	}
-	return m, true, i18n.Success
+	return m, model.SuccessRetVal()
 }
 
-func (b *BaseRepo[M]) Create(options CreateOptions) (M, bool, string) {
+func (b *BaseRepo[M]) Create(options CreateOptions) (M, model.RetVal) {
 	return b.Insert(options.Convert2Model().(M))
 }
 
@@ -105,26 +105,26 @@ func applyGetOptions(tx *gorm.DB, options GetOptions) *gorm.DB {
 	return tx
 }
 
-func (b *BaseRepo[M]) Get(options GetOptions) (M, bool, string) {
+func (b *BaseRepo[M]) Get(options GetOptions) (M, model.RetVal) {
 	var m M
 	res := applyGetOptions(b.DB.Model(new(M)), options).Limit(1).Find(&m)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get %s: %s", m.GetModelName(), res.Error)
-		return *new(M), false, m.GetErrorString()
+		return *new(M), model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": m.GetModelName(), "Error": res.Error.Error()}}
 	}
 	if res.RowsAffected == 0 {
-		return *new(M), false, m.NotFoundErrorString()
+		return *new(M), model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": m.GetModelName()}}
 	}
-	return m, true, i18n.Success
+	return m, model.SuccessRetVal()
 }
 
-func (b *BaseRepo[M]) GetByID(id uint, options ...GetOptions) (M, bool, string) {
+func (b *BaseRepo[M]) GetByID(id uint, options ...GetOptions) (M, model.RetVal) {
 	return b.GetByUniqueKey("id", id, options...)
 }
 
-func (b *BaseRepo[M]) GetByUniqueKey(key string, value any, optionsL ...GetOptions) (M, bool, string) {
+func (b *BaseRepo[M]) GetByUniqueKey(key string, value any, optionsL ...GetOptions) (M, model.RetVal) {
 	if !slices.Contains(M.GetUniqueKey(*new(M)), key) {
-		return *new(M), false, i18n.UnsupportedKey
+		return *new(M), model.RetVal{Msg: i18n.Model.NotUniqueKey, Attr: map[string]any{"Model": M.GetModelName(*new(M)), "Key": key}}
 	}
 	options := GetOptions{}
 	if len(optionsL) > 0 {
@@ -137,7 +137,7 @@ func (b *BaseRepo[M]) GetByUniqueKey(key string, value any, optionsL ...GetOptio
 	return b.Get(options)
 }
 
-func (b *BaseRepo[M]) Count(optionsL ...CountOptions) (int64, bool, string) {
+func (b *BaseRepo[M]) Count(optionsL ...CountOptions) (int64, model.RetVal) {
 	var count int64
 	res := b.DB.Model(new(M))
 	if len(optionsL) > 0 {
@@ -156,41 +156,41 @@ func (b *BaseRepo[M]) Count(optionsL ...CountOptions) (int64, bool, string) {
 	}
 	if res = res.Count(&count); res.Error != nil {
 		log.Logger.Warningf("Failed to count %s: %s", M.GetModelName(*new(M)), res.Error)
-		return 0, false, M.GetErrorString(*new(M))
+		return 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": M.GetModelName(*new(M)), "Error": res.Error.Error()}}
 	}
-	return count, true, i18n.Success
+	return count, model.SuccessRetVal()
 }
 
 func (b *BaseRepo[M]) CountAssociation(m M, association string) int64 {
 	return b.DB.Model(&m).Association(association).Count()
 }
 
-func (b *BaseRepo[M]) List(limit, offset int, optionsL ...GetOptions) ([]M, int64, bool, string) {
+func (b *BaseRepo[M]) List(limit, offset int, optionsL ...GetOptions) ([]M, int64, model.RetVal) {
 	options := GetOptions{}
 	if len(optionsL) > 0 {
 		options = optionsL[0]
 	}
 	var (
-		ms             = make([]M, 0)
-		count, ok, msg = b.Count(CountOptions{
+		ms         = make([]M, 0)
+		count, ret = b.Count(CountOptions{
 			Conditions: options.Conditions,
 			Deleted:    options.Deleted,
 		})
 	)
-	if !ok {
-		return nil, count, false, msg
+	if !ret.OK {
+		return nil, count, ret
 	}
 	if res := applyGetOptions(b.DB.Model(new(M)), options).Order("id").Limit(limit).Offset(offset).Find(&ms); res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return nil, count, false, M.NotFoundErrorString(*new(M))
+			return nil, count, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": M.GetModelName(*new(M))}}
 		}
 		log.Logger.Warningf("Failed to get %s: %s", M.GetModelName(*new(M)), res.Error)
-		return nil, count, false, M.GetErrorString(*new(M))
+		return nil, count, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": M.GetModelName(*new(M)), "Error": res.Error.Error()}}
 	}
-	return ms, count, true, i18n.Success
+	return ms, count, model.SuccessRetVal()
 }
 
-func (b *BaseRepo[M]) ListInBatches(limit, offset, size int, fc func(m M) error, optionsL ...GetOptions) (int64, bool, string) {
+func (b *BaseRepo[M]) ListInBatches(limit, offset, size int, fc func(m M) error, optionsL ...GetOptions) (int64, model.RetVal) {
 	options := GetOptions{}
 	if len(optionsL) > 0 {
 		options = optionsL[0]
@@ -207,57 +207,57 @@ func (b *BaseRepo[M]) ListInBatches(limit, offset, size int, fc func(m M) error,
 		})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get %s: %s", M.GetModelName(*new(M)), res.Error)
-		return 0, false, M.GetErrorString(*new(M))
+		return 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": M.GetModelName(*new(M)), "Error": res.Error.Error()}}
 	}
-	return res.RowsAffected, true, i18n.Success
+	return res.RowsAffected, model.SuccessRetVal()
 }
 
-func (b *BaseRepo[M]) Update(id uint, options UpdateOptions) (bool, string) {
+func (b *BaseRepo[M]) Update(id uint, options UpdateOptions) model.RetVal {
 	var count uint
 	data := options.Convert2Map()
 	for _, key := range M.GetUniqueKey(*new(M)) {
 		if value, ok := data[key]; ok && !b.IsUniqueKeyValue(key, value) {
-			return false, i18n.UnsupportedKey
+			return model.RetVal{Msg: i18n.Model.NotUniqueKey, Attr: map[string]any{"Model": M.GetModelName(*new(M)), "Key": key}}
 		}
 	}
 	for {
 		count++
 		if count > 10 {
 			log.Logger.Warningf("Failed to update %s: too many times failed due to optimistic lock", M.GetModelName(*new(M)))
-			return false, i18n.DeadLock
+			return model.RetVal{Msg: i18n.Model.DeadLock, Attr: map[string]any{"Model": M.GetModelName(*new(M))}}
 		}
-		m, ok, msg := b.GetByID(id, GetOptions{Selects: []string{"id", "version"}})
-		if !ok {
-			return ok, msg
+		m, ret := b.GetByID(id, GetOptions{Selects: []string{"id", "version"}})
+		if !ret.OK {
+			return ret
 		}
 		res := b.DB.Model(&m).Where("id = ?", id).Updates(data)
 		if res.Error != nil {
 			log.Logger.Warningf("Failed to update %s: %s", M.GetModelName(*new(M)), res.Error)
-			return false, M.UpdateErrorString(*new(M))
+			return model.RetVal{Msg: i18n.Model.UpdateError, Attr: map[string]any{"Model": M.GetModelName(*new(M)), "Error": res.Error.Error()}}
 		}
 		if res.RowsAffected == 0 {
 			continue
 		}
 		break
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
-func (b *BaseRepo[M]) DiffUpdate(id uint, options DiffUpdateOptions) (bool, string) {
+func (b *BaseRepo[M]) DiffUpdate(id uint, options DiffUpdateOptions) model.RetVal {
 	data := options.Convert2Expr()
 	res := b.DB.Model(new(M)).Where("id = ?", id).Updates(data)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to update %s: %s", M.GetModelName(*new(M)), res.Error)
-		return false, M.UpdateErrorString(*new(M))
+		return model.RetVal{Msg: i18n.Model.UpdateError, Attr: map[string]any{"Model": M.GetModelName(*new(M)), "Error": res.Error.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
-func (b *BaseRepo[M]) Delete(idL ...uint) (bool, string) {
+func (b *BaseRepo[M]) Delete(idL ...uint) model.RetVal {
 	res := b.DB.Model(new(M)).Where("id IN ?", idL).Delete(new(M))
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete %s: %s", M.GetModelName(*new(M)), res.Error)
-		return false, M.DeleteErrorString(*new(M))
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": M.GetModelName(*new(M)), "Error": res.Error.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

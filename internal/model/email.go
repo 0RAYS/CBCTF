@@ -35,7 +35,7 @@ func (e Email) GetErrorString() string {
 	return i18n.GetEmailError
 }
 
-func (e Email) NotFoundErrorString() string {
+func (e Email) NotFoundString() string {
 	return i18n.EmailNotFound
 }
 

@@ -3,7 +3,7 @@ package middleware
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
 	"net/http"
@@ -24,15 +24,14 @@ func RateLimit(name string, maxRequests int, window time.Duration) gin.HandlerFu
 		if userID := GetSelfID(ctx); userID != 0 {
 			client = strconv.Itoa(int(userID))
 		}
-		count, err := redis.RateLimit(name, client, window)
-		if err != nil {
-			log.Logger.Warningf("Failed to rate limit: %s", err)
-			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.RedisError, "data": nil})
+		count, ret := redis.RateLimit(name, client, window)
+		if !ret.OK {
+			ctx.AbortWithStatusJSON(http.StatusOK, ret)
 			return
 		}
 		if int(count) > maxRequests {
 			prometheus.UpdateRateLimitMetrics(name, client)
-			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.TooManyRequests, "data": nil})
+			ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.TooManyRequests})
 			return
 		}
 		ctx.Next()

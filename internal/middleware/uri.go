@@ -17,12 +17,12 @@ func SetUser(ctx *gin.Context) {
 	}
 	var userID userIDUri
 	if err := ctx.ShouldBindUri(&userID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 		return
 	}
-	user, ok, msg := db.InitUserRepo(db.DB).GetByID(userID.UserID)
-	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	user, ret := db.InitUserRepo(db.DB).GetByID(userID.UserID)
+	if !ret.OK {
+		ctx.AbortWithStatusJSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set("User", user)
@@ -31,11 +31,11 @@ func SetUser(ctx *gin.Context) {
 
 // GetUser 从上下文中获取 model.User
 func GetUser(ctx *gin.Context) model.User {
-	if user, ok := ctx.Get("User"); !ok || user == nil {
+	user, ok := ctx.Get("User")
+	if !ok || user == nil {
 		return model.User{}
-	} else {
-		return user.(model.User)
 	}
+	return user.(model.User)
 }
 
 // SetContest 保存 model.Contest 至上下文
@@ -45,16 +45,16 @@ func SetContest(ctx *gin.Context) {
 	}
 	var contestID contestIDUri
 	if err := ctx.ShouldBindUri(&contestID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 		return
 	}
-	contest, ok, msg := db.InitContestRepo(db.DB).GetByID(contestID.ContestID)
-	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	contest, ret := db.InitContestRepo(db.DB).GetByID(contestID.ContestID)
+	if !ret.OK {
+		ctx.AbortWithStatusJSON(http.StatusOK, ret)
 		return
 	}
 	if !IsAdmin(ctx) && contest.Hidden {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.ContestNotFound, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": contest.GetModelName()}})
 		return
 	}
 	ctx.Set("Contest", contest)
@@ -63,31 +63,26 @@ func SetContest(ctx *gin.Context) {
 
 // GetContest 从上下文中获取 model.Contest
 func GetContest(ctx *gin.Context) model.Contest {
-	if contest, ok := ctx.Get("Contest"); !ok || contest == nil {
+	contest, ok := ctx.Get("Contest")
+	if !ok || contest == nil {
 		return model.Contest{}
-	} else {
-		return contest.(model.Contest)
 	}
+	return contest.(model.Contest)
 }
 
 // SetTeam 保存 model.Team 至上下文
 func SetTeam(ctx *gin.Context) {
-	var (
-		team model.Team
-		ok   bool
-		msg  string
-	)
 	type teamIDUri struct {
 		TeamID uint `uri:"teamID" binding:"required"`
 	}
 	var teamID teamIDUri
 	if err := ctx.ShouldBindUri(&teamID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 		return
 	}
-	team, ok, msg = db.InitTeamRepo(db.DB).GetByID(teamID.TeamID)
-	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	team, ret := db.InitTeamRepo(db.DB).GetByID(teamID.TeamID)
+	if !ret.OK {
+		ctx.AbortWithStatusJSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set("Team", team)
@@ -99,17 +94,15 @@ func SetTeamByUser(ctx *gin.Context) {
 	var (
 		self model.User
 		team model.Team
-		ok   bool
-		msg  string
 	)
-	self, ok = GetSelf(ctx).(model.User)
+	self, ok := GetSelf(ctx).(model.User)
 	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
 		return
 	}
-	team, ok, msg = db.InitTeamRepo(db.DB).GetBy2ID(self.ID, GetContest(ctx).ID)
-	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	team, ret := db.InitTeamRepo(db.DB).GetBy2ID(self.ID, GetContest(ctx).ID)
+	if !ret.OK {
+		ctx.AbortWithStatusJSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set("Team", team)
@@ -118,11 +111,11 @@ func SetTeamByUser(ctx *gin.Context) {
 
 // GetTeam 从上下文中获取 model.Team
 func GetTeam(ctx *gin.Context) model.Team {
-	if team, ok := ctx.Get("Team"); !ok || team == nil {
+	team, ok := ctx.Get("Team")
+	if !ok || team == nil {
 		return model.Team{}
-	} else {
-		return team.(model.Team)
 	}
+	return team.(model.Team)
 }
 
 // SetFile 保存 model.File 至上下文
@@ -133,16 +126,16 @@ func SetFile(t string) gin.HandlerFunc {
 		}
 		var fileID fileIDUri
 		if err := ctx.ShouldBindUri(&fileID); err != nil {
-			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+			ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 			return
 		}
 		options := db.GetOptions{}
 		if t != "" {
 			options = db.GetOptions{Conditions: map[string]any{"type": t}}
 		}
-		file, ok, msg := db.InitFileRepo(db.DB).GetByRandID(fileID.FileID, options)
-		if !ok {
-			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		file, ret := db.InitFileRepo(db.DB).GetByUniqueKey("rand_id", fileID.FileID, options)
+		if !ret.OK {
+			ctx.AbortWithStatusJSON(http.StatusOK, ret)
 			return
 		}
 		ctx.Set("File", file)
@@ -152,11 +145,11 @@ func SetFile(t string) gin.HandlerFunc {
 
 func SetChallengeFile(ctx *gin.Context) {
 	challenge := GetChallenge(ctx)
-	file, ok, msg := db.InitFileRepo(db.DB).Get(db.GetOptions{
+	file, ret := db.InitFileRepo(db.DB).Get(db.GetOptions{
 		Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFileType}},
 	)
-	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if !ret.OK {
+		ctx.AbortWithStatusJSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set("File", file)
@@ -164,11 +157,11 @@ func SetChallengeFile(ctx *gin.Context) {
 }
 
 func SetTrafficFile(ctx *gin.Context) {
-	file, ok, msg := db.InitFileRepo(db.DB).Get(db.GetOptions{
+	file, ret := db.InitFileRepo(db.DB).Get(db.GetOptions{
 		Conditions: map[string]any{"path": GetVictim(ctx).TrafficZipPath()},
 	})
-	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if !ret.OK {
+		ctx.AbortWithStatusJSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set("File", file)
@@ -179,16 +172,16 @@ func SetAttachmentFile(regen bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		challenge := GetChallenge(ctx)
 		if regen && challenge.Type == model.DynamicChallengeType {
-			if ok, msg := service.GenTestAttachment(db.DB, challenge); !ok {
-				ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+			if ret := service.GenTestAttachment(db.DB, challenge); !ret.OK {
+				ctx.JSON(http.StatusOK, ret)
 				return
 			}
 		}
 		path := challenge.AttachmentPath(GetTeam(ctx).ID)
-		record, ok, _ := db.InitFileRepo(db.DB).Get(db.GetOptions{
+		record, ret := db.InitFileRepo(db.DB).Get(db.GetOptions{
 			Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFileType}},
 		)
-		if ok && record.Path == path {
+		if ret.OK && record.Path == path {
 			ctx.Set("File", record)
 			ctx.Next()
 			return
@@ -200,11 +193,11 @@ func SetAttachmentFile(regen bool) gin.HandlerFunc {
 
 // GetFile 从上下文中获取 model.File
 func GetFile(ctx *gin.Context) model.File {
-	if file, ok := ctx.Get("File"); !ok || file == nil {
+	file, ok := ctx.Get("File")
+	if !ok || file == nil {
 		return model.File{}
-	} else {
-		return file.(model.File)
 	}
+	return file.(model.File)
 }
 
 // SetNotice 保存 model.Notice 至上下文
@@ -214,12 +207,12 @@ func SetNotice(ctx *gin.Context) {
 	}
 	var noticeID noticeIDUri
 	if err := ctx.ShouldBindUri(&noticeID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 		return
 	}
-	notice, ok, msg := db.InitNoticeRepo(db.DB).GetByID(noticeID.NoticeID)
-	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	notice, ret := db.InitNoticeRepo(db.DB).GetByID(noticeID.NoticeID)
+	if !ret.OK {
+		ctx.AbortWithStatusJSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set("Notice", notice)
@@ -228,11 +221,11 @@ func SetNotice(ctx *gin.Context) {
 
 // GetNotice 从上下文中获取 model.Notice
 func GetNotice(ctx *gin.Context) model.Notice {
-	if notice, ok := ctx.Get("Notice"); !ok || notice == nil {
+	notice, ok := ctx.Get("Notice")
+	if !ok || notice == nil {
 		return model.Notice{}
-	} else {
-		return notice.(model.Notice)
 	}
+	return notice.(model.Notice)
 }
 
 // SetChallenge 保存 model.Challenge 至上下文
@@ -242,12 +235,12 @@ func SetChallenge(ctx *gin.Context) {
 	}
 	var challengeID challengeIDUri
 	if err := ctx.ShouldBindUri(&challengeID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 		return
 	}
-	challenge, ok, msg := db.InitChallengeRepo(db.DB).GetByRandID(challengeID.ChallengeID)
-	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	challenge, ret := db.InitChallengeRepo(db.DB).GetByRandID(challengeID.ChallengeID)
+	if !ret.OK {
+		ctx.AbortWithStatusJSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set("Challenge", challenge)
@@ -256,11 +249,11 @@ func SetChallenge(ctx *gin.Context) {
 
 // GetChallenge 从上下文中获取 model.Challenge
 func GetChallenge(ctx *gin.Context) model.Challenge {
-	if challenge, ok := ctx.Get("Challenge"); !ok || challenge == nil {
+	challenge, ok := ctx.Get("Challenge")
+	if !ok || challenge == nil {
 		return model.Challenge{}
-	} else {
-		return challenge.(model.Challenge)
 	}
+	return challenge.(model.Challenge)
 }
 
 func SetContestChallenge(ctx *gin.Context) {
@@ -269,19 +262,19 @@ func SetContestChallenge(ctx *gin.Context) {
 	}
 	var challengeID challengeIDUri
 	if err := ctx.ShouldBindUri(&challengeID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 		return
 	}
-	challenge, ok, msg := db.InitChallengeRepo(db.DB).GetByRandID(challengeID.ChallengeID)
-	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	challenge, ret := db.InitChallengeRepo(db.DB).GetByRandID(challengeID.ChallengeID)
+	if !ret.OK {
+		ctx.AbortWithStatusJSON(http.StatusOK, ret)
 		return
 	}
-	contestChallenge, ok, msg := db.InitContestChallengeRepo(db.DB).Get(db.GetOptions{
+	contestChallenge, ret := db.InitContestChallengeRepo(db.DB).Get(db.GetOptions{
 		Conditions: map[string]any{"challenge_id": challenge.ID, "contest_id": GetContest(ctx).ID},
 	})
-	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if !ret.OK {
+		ctx.AbortWithStatusJSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set("ContestChallenge", contestChallenge)
@@ -291,11 +284,11 @@ func SetContestChallenge(ctx *gin.Context) {
 
 // GetContestChallenge 从上下文中获取 model.ContestChallenge
 func GetContestChallenge(ctx *gin.Context) model.ContestChallenge {
-	if contestChallenge, ok := ctx.Get("ContestChallenge"); !ok || contestChallenge == nil {
+	contestChallenge, ok := ctx.Get("ContestChallenge")
+	if !ok || contestChallenge == nil {
 		return model.ContestChallenge{}
-	} else {
-		return contestChallenge.(model.ContestChallenge)
 	}
+	return contestChallenge.(model.ContestChallenge)
 }
 
 func SetContestFlag(ctx *gin.Context) {
@@ -304,12 +297,12 @@ func SetContestFlag(ctx *gin.Context) {
 	}
 	var flagID flagIDUri
 	if err := ctx.ShouldBindUri(&flagID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 		return
 	}
-	contestFlag, ok, msg := db.InitContestFlagRepo(db.DB).GetByID(flagID.FlagID)
-	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	contestFlag, ret := db.InitContestFlagRepo(db.DB).GetByID(flagID.FlagID)
+	if !ret.OK {
+		ctx.AbortWithStatusJSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set("ContestFlag", contestFlag)
@@ -317,11 +310,11 @@ func SetContestFlag(ctx *gin.Context) {
 }
 
 func GetContestFlag(ctx *gin.Context) model.ContestFlag {
-	if contestFlag, ok := ctx.Get("ContestFlag"); !ok || contestFlag == nil {
+	contestFlag, ok := ctx.Get("ContestFlag")
+	if !ok || contestFlag == nil {
 		return model.ContestFlag{}
-	} else {
-		return contestFlag.(model.ContestFlag)
 	}
+	return contestFlag.(model.ContestFlag)
 }
 
 func SetVictim(ctx *gin.Context) {
@@ -330,12 +323,12 @@ func SetVictim(ctx *gin.Context) {
 	}
 	var victimID victimIDUri
 	if err := ctx.ShouldBindUri(&victimID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 		return
 	}
-	victim, ok, msg := db.InitVictimRepo(db.DB).GetByID(victimID.VictimID, db.GetOptions{Deleted: true})
-	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	victim, ret := db.InitVictimRepo(db.DB).GetByID(victimID.VictimID, db.GetOptions{Deleted: true})
+	if !ret.OK {
+		ctx.AbortWithStatusJSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set("Victim", victim)
@@ -343,11 +336,11 @@ func SetVictim(ctx *gin.Context) {
 }
 
 func GetVictim(ctx *gin.Context) model.Victim {
-	if victim, ok := ctx.Get("Victim"); !ok || victim == nil {
+	victim, ok := ctx.Get("Victim")
+	if !ok || victim == nil {
 		return model.Victim{}
-	} else {
-		return victim.(model.Victim)
 	}
+	return victim.(model.Victim)
 }
 
 func SetCheat(ctx *gin.Context) {
@@ -356,12 +349,12 @@ func SetCheat(ctx *gin.Context) {
 	}
 	var cheatID cheatIDUri
 	if err := ctx.ShouldBindUri(&cheatID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 		return
 	}
-	cheat, ok, msg := db.InitCheatRepo(db.DB).GetByID(cheatID.CheatID)
-	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	cheat, ret := db.InitCheatRepo(db.DB).GetByID(cheatID.CheatID)
+	if !ret.OK {
+		ctx.AbortWithStatusJSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set("Cheat", cheat)
@@ -369,11 +362,11 @@ func SetCheat(ctx *gin.Context) {
 }
 
 func GetCheat(ctx *gin.Context) model.Cheat {
-	if cheat, ok := ctx.Get("Cheat"); !ok || cheat == nil {
+	cheat, ok := ctx.Get("Cheat")
+	if !ok || cheat == nil {
 		return model.Cheat{}
-	} else {
-		return cheat.(model.Cheat)
 	}
+	return cheat.(model.Cheat)
 }
 
 func SetOauth(ctx *gin.Context) {
@@ -382,12 +375,12 @@ func SetOauth(ctx *gin.Context) {
 	}
 	var oauthID oauthIDUri
 	if err := ctx.ShouldBindUri(&oauthID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 		return
 	}
-	oauth, ok, msg := db.InitOauthRepo(db.DB).GetByID(oauthID.OauthID)
-	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	oauth, ret := db.InitOauthRepo(db.DB).GetByID(oauthID.OauthID)
+	if !ret.OK {
+		ctx.AbortWithStatusJSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set("Oauth", oauth)
@@ -395,11 +388,11 @@ func SetOauth(ctx *gin.Context) {
 }
 
 func GetOauth(ctx *gin.Context) model.Oauth {
-	if oauth, ok := ctx.Get("Oauth"); !ok || oauth == nil {
+	oauth, ok := ctx.Get("Oauth")
+	if !ok || oauth == nil {
 		return model.Oauth{}
-	} else {
-		return oauth.(model.Oauth)
 	}
+	return oauth.(model.Oauth)
 }
 
 // SetOauthUri 不使用数据库查询, 只传递名称, 后续使用内存中的 map 进行获取
@@ -409,7 +402,7 @@ func SetOauthUri(ctx *gin.Context) {
 	}
 	var oauth oauthUri
 	if err := ctx.ShouldBindUri(&oauth); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 		return
 	}
 	ctx.Set("OauthUri", oauth.OauthUri)
@@ -417,11 +410,11 @@ func SetOauthUri(ctx *gin.Context) {
 }
 
 func GetOauthUri(ctx *gin.Context) string {
-	if oauth, ok := ctx.Get("OauthUri"); !ok || oauth == nil {
+	oauth, ok := ctx.Get("OauthUri")
+	if !ok || oauth == nil {
 		return ""
-	} else {
-		return oauth.(string)
 	}
+	return oauth.(string)
 }
 
 func SetSmtp(ctx *gin.Context) {
@@ -430,23 +423,23 @@ func SetSmtp(ctx *gin.Context) {
 	}
 	var smtpID smtpIDUri
 	if err := ctx.ShouldBindUri(&smtpID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 		return
 	}
-	smtp, ok, msg := db.InitSmtpRepo(db.DB).GetByID(smtpID.SmtpID)
-	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	smtp, ret := db.InitSmtpRepo(db.DB).GetByID(smtpID.SmtpID)
+	if !ret.OK {
+		ctx.AbortWithStatusJSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set("Smtp", smtp)
 }
 
 func GetSmtp(ctx *gin.Context) model.Smtp {
-	if smtp, ok := ctx.Get("Smtp"); !ok || smtp == nil {
+	smtp, ok := ctx.Get("Smtp")
+	if !ok || smtp == nil {
 		return model.Smtp{}
-	} else {
-		return smtp.(model.Smtp)
 	}
+	return smtp.(model.Smtp)
 }
 
 func SetWebhook(ctx *gin.Context) {
@@ -455,21 +448,21 @@ func SetWebhook(ctx *gin.Context) {
 	}
 	var webhookID webhookIDUti
 	if err := ctx.ShouldBindUri(&webhookID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.BadRequest, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 		return
 	}
-	webhook, ok, msg := db.InitWebhookRepo(db.DB).GetByID(webhookID.WebhookID)
-	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	webhook, ret := db.InitWebhookRepo(db.DB).GetByID(webhookID.WebhookID)
+	if !ret.OK {
+		ctx.AbortWithStatusJSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set("Webhook", webhook)
 }
 
 func GetWebhook(ctx *gin.Context) model.Webhook {
-	if webhook, ok := ctx.Get("Webhook"); !ok || webhook == nil {
+	webhook, ok := ctx.Get("Webhook")
+	if !ok || webhook == nil {
 		return model.Webhook{}
-	} else {
-		return webhook.(model.Webhook)
 	}
+	return webhook.(model.Webhook)
 }

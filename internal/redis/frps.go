@@ -1,6 +1,9 @@
 package redis
 
 import (
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -56,7 +59,7 @@ end
 return 0
 `
 
-func LockFrpsPort(host string, portRange []int32, protocol string) (int32, bool, error) {
+func LockFrpsPort(host string, portRange []int32, protocol string) (int32, model.RetVal) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
@@ -65,28 +68,33 @@ func LockFrpsPort(host string, portRange []int32, protocol string) (int32, bool,
 
 	portsJSON, err := json.Marshal(portRange)
 	if err != nil {
-		return 0, false, fmt.Errorf("failed to marshal port range: %w", err)
+		log.Logger.Warningf("Failed to encode frps port range: %s", err)
+		return 0, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	result, err := RDB.Eval(ctx, lockFrpsPortScript, []string{key}, string(portsJSON), protocol).Result()
 	if err != nil {
-		return 0, false, err
+		log.Logger.Warningf("Failed to eval lua script: %s", err)
+		return 0, model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
 	}
 	resultSlice, ok := result.([]interface{})
 	if !ok || len(resultSlice) != 2 {
-		return 0, false, fmt.Errorf("unexpected result format from Lua script")
+		return 0, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Unexpected result format from Lua script"}}
 	}
 	port, ok := resultSlice[0].(int64)
 	if !ok {
-		return 0, false, fmt.Errorf("invalid port in result")
+		return 0, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Invalid port in result"}}
 	}
 	success, ok := resultSlice[1].(int64)
 	if !ok {
-		return 0, false, fmt.Errorf("invalid success flag in result")
+		return 0, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Invalid success flag in result"}}
 	}
-	return int32(port), success == 1, nil
+	if success != 1 {
+		return int32(port), model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": nil}}
+	}
+	return int32(port), model.SuccessRetVal()
 }
 
-func UnlockFrpsPort(host string, port int32, protocol string) error {
+func UnlockFrpsPort(host string, port int32, protocol string) model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
@@ -95,7 +103,8 @@ func UnlockFrpsPort(host string, port int32, protocol string) error {
 
 	_, err := RDB.Eval(ctx, unlockFrpsPortScript, []string{key}, port).Result()
 	if err != nil {
-		return err
+		log.Logger.Warningf("Failed to eval lua script: %s", err)
+		return model.RetVal{Msg: i18n.Redis.DeleteError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
 	}
-	return nil
+	return model.SuccessRetVal()
 }

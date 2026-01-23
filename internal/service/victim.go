@@ -29,7 +29,7 @@ func needVPC(dockers []model.Docker) bool {
 	return false
 }
 
-func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID, challengeID uint) (model.Victim, bool, string) {
+func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID, challengeID uint) (model.Victim, model.RetVal) {
 	var (
 		challengeRepo = db.InitChallengeRepo(tx)
 		victimRepo    = db.InitVictimRepo(tx)
@@ -37,14 +37,14 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 		podRepo       = db.InitPodRepo(tx)
 		containerRepo = db.InitContainerRepo(tx)
 	)
-	challenge, ok, msg := challengeRepo.GetByID(challengeID, db.GetOptions{
+	challenge, ret := challengeRepo.GetByID(challengeID, db.GetOptions{
 		Preloads: map[string]db.GetOptions{"Dockers": {Preloads: map[string]db.GetOptions{"ChallengeFlags": {}}}},
 	})
-	if !ok {
-		return model.Victim{}, false, msg
+	if !ret.OK {
+		return model.Victim{}, ret
 	}
-	if victim, ok, _ := victimRepo.HasAliveVictim(teamID, challengeID); ok {
-		return victim, true, i18n.Success
+	if victim, ret := victimRepo.HasAliveVictim(teamID, challengeID); ret.OK {
+		return victim, model.SuccessRetVal()
 	}
 	vOptions := db.CreateVictimOptions{
 		ChallengeID:     challengeID,
@@ -118,7 +118,7 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 					if len(eip.SNats) > 0 || len(eip.DNats) > 0 {
 						lanIP, err := utils.GetLastIP(subnet.CIDRBlock)
 						if err != nil {
-							return model.Victim{}, false, i18n.GetIPError
+							return model.Victim{}, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "IP", "Error": err.Error()}}
 						}
 						subnet.NatGateway = &model.NatGateway{
 							Name:  fmt.Sprintf("nat-%s", utils.RandStr(20)),
@@ -139,13 +139,13 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 				value := challengeFlag.Value
 				// teamID == 0 时为测试靶机
 				if teamID > 0 {
-					teamFlag, ok, msg := teamFlagRepo.Get(db.GetOptions{
+					teamFlag, ret := teamFlagRepo.Get(db.GetOptions{
 						Selects:    []string{"id", "challenge_flag_id", "value"},
 						Conditions: map[string]any{"team_id": teamID, "challenge_flag_id": challengeFlag.ID},
 						Preloads:   map[string]db.GetOptions{"ChallengeFlag": {Selects: []string{"id", "Name"}}},
 					})
-					if !ok {
-						return model.Victim{}, false, msg
+					if !ret.OK {
+						return model.Victim{}, ret
 					}
 					value = teamFlag.Value
 				}
@@ -155,7 +155,7 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 				case model.VolumeInjectType:
 					volumeFlagL[challengeFlag.Path] = value
 				default:
-					return model.Victim{}, false, i18n.InvalidChallengeFlagInjectType
+					return model.Victim{}, model.RetVal{Msg: i18n.Model.ChallengeFlag.InvalidType}
 				}
 			}
 			cOptionsL[docker.ID] = db.CreateContainerOptions{
@@ -172,36 +172,36 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 			}
 		}
 		vOptions.VPC = vpc
-		victim, ok, msg = victimRepo.Create(vOptions)
-		if !ok {
-			return model.Victim{}, false, msg
+		victim, ret = victimRepo.Create(vOptions)
+		if !ret.OK {
+			return model.Victim{}, ret
 		}
 		for _, docker := range challenge.Dockers {
 			pOptions, ok := pOptionsL[docker.ID]
 			if !ok {
-				return model.Victim{}, false, i18n.UnknownError
+				return model.Victim{}, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Unknown docker.ID"}}
 			}
 			pOptions.VictimID = victim.ID
-			pod, ok, msg := podRepo.Create(pOptions)
-			if !ok {
-				return model.Victim{}, false, msg
+			pod, ret := podRepo.Create(pOptions)
+			if !ret.OK {
+				return model.Victim{}, ret
 			}
 			cOptions, ok := cOptionsL[docker.ID]
 			if !ok {
-				return model.Victim{}, false, i18n.UnknownError
+				return model.Victim{}, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Unknown docker.ID"}}
 			}
 			cOptions.PodID = pod.ID
-			container, ok, msg := containerRepo.Create(cOptions)
-			if !ok {
-				return model.Victim{}, false, msg
+			container, ret := containerRepo.Create(cOptions)
+			if !ret.OK {
+				return model.Victim{}, ret
 			}
 			pod.Containers = append(pod.Containers, container)
 			victim.Pods = append(victim.Pods, pod)
 		}
 	} else {
-		victim, ok, msg = victimRepo.Create(vOptions)
-		if !ok {
-			return model.Victim{}, false, msg
+		victim, ret = victimRepo.Create(vOptions)
+		if !ret.OK {
+			return model.Victim{}, ret
 		}
 		pOptions := db.CreatePodOptions{
 			VictimID: victim.ID,
@@ -217,13 +217,13 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 				value := challengeFlag.Value
 				// team.ID == 0 时为测试靶机
 				if teamID > 0 {
-					teamFlag, ok, msg := teamFlagRepo.Get(db.GetOptions{
+					teamFlag, ret := teamFlagRepo.Get(db.GetOptions{
 						Selects:    []string{"id", "challenge_flag_id", "value"},
 						Conditions: map[string]any{"team_id": teamID, "challenge_flag_id": challengeFlag.ID},
 						Preloads:   map[string]db.GetOptions{"ChallengeFlag": {Selects: []string{"id", "Name"}}},
 					})
-					if !ok {
-						return model.Victim{}, false, msg
+					if !ret.OK {
+						return model.Victim{}, ret
 					}
 					value = teamFlag.Value
 				}
@@ -233,7 +233,7 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 				case model.VolumeInjectType:
 					volumeFlagL[challengeFlag.Path] = value
 				default:
-					return model.Victim{}, false, i18n.InvalidChallengeFlagInjectType
+					return model.Victim{}, model.RetVal{Msg: i18n.Model.ChallengeFlag.InvalidType}
 				}
 			}
 			cOptionsL = append(cOptionsL, db.CreateContainerOptions{
@@ -256,15 +256,15 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 				}
 			}
 		}
-		pod, ok, msg := podRepo.Create(pOptions)
-		if !ok {
-			return model.Victim{}, false, msg
+		pod, ret := podRepo.Create(pOptions)
+		if !ret.OK {
+			return model.Victim{}, ret
 		}
 		for _, cOptions := range cOptionsL {
 			cOptions.PodID = pod.ID
-			container, ok, msg := containerRepo.Create(cOptions)
-			if !ok {
-				return model.Victim{}, false, msg
+			container, ret := containerRepo.Create(cOptions)
+			if !ret.OK {
+				return model.Victim{}, ret
 			}
 			pod.Containers = append(pod.Containers, container)
 		}
@@ -272,9 +272,9 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
-	ipExposesMap, ok, msg := k8s.StartVictim(ctx, victim)
-	if !ok {
-		return model.Victim{}, false, msg
+	ipExposesMap, ret := k8s.StartVictim(ctx, victim)
+	if !ret.OK {
+		return model.Victim{}, ret
 	}
 	for ip, exposes := range ipExposesMap {
 		for _, expose := range exposes {
@@ -288,31 +288,31 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 	victim.ExposedEndpoints = victim.Endpoints
 	if config.Env.K8S.Frpc.On {
 		var frpc []string
-		victim.ExposedEndpoints, frpc, ok, msg = k8s.CreateFrpc(ctx, victim)
-		if !ok {
-			return model.Victim{}, false, msg
+		victim.ExposedEndpoints, frpc, ret = k8s.CreateFrpc(ctx, victim)
+		if !ret.OK {
+			return model.Victim{}, ret
 		}
 		for _, frpcPodName := range frpc {
-			p, ok, msg := podRepo.Create(db.CreatePodOptions{
+			p, ret := podRepo.Create(db.CreatePodOptions{
 				VictimID: victim.ID,
 				Name:     frpcPodName,
 			})
-			if !ok {
-				return model.Victim{}, false, msg
+			if !ret.OK {
+				return model.Victim{}, ret
 			}
 			victim.Pods = append(victim.Pods, p)
 		}
 	}
-	if ok, msg = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
+	if ret = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
 		VPC:              &victim.VPC,
 		Endpoints:        &victim.Endpoints,
 		ExposedEndpoints: &victim.ExposedEndpoints,
 		Start:            utils.Ptr(time.Now()),
-	}); !ok {
-		return model.Victim{}, false, msg
+	}); !ret.OK {
+		return model.Victim{}, ret
 	}
 	prometheus.AddVictimContainerMetrics(1)
-	return victim, true, i18n.Success
+	return victim, model.SuccessRetVal()
 }
 
 func GetVictimStatus(tx *gorm.DB, teamID uint, challenge model.Challenge) gin.H {
@@ -325,8 +325,8 @@ func GetVictimStatus(tx *gorm.DB, teamID uint, challenge model.Challenge) gin.H 
 		data["status"] = "NotDocker"
 		return data
 	}
-	victim, ok, _ := db.InitVictimRepo(tx).HasAliveVictim(teamID, challenge.ID)
-	if !ok {
+	victim, ret := db.InitVictimRepo(tx).HasAliveVictim(teamID, challenge.ID)
+	if !ret.OK {
 		return data
 	}
 	targets := victim.RemoteAddr()
@@ -340,32 +340,32 @@ func GetVictimStatus(tx *gorm.DB, teamID uint, challenge model.Challenge) gin.H 
 }
 
 // StopVictim tx 无需开启事务
-func StopVictim(tx *gorm.DB, victim model.Victim) (bool, string) {
+func StopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	ok, msg := k8s.StopVictim(ctx, victim)
-	if !ok {
-		return false, msg
+	ret := k8s.StopVictim(ctx, victim)
+	if !ret.OK {
+		return ret
 	}
 	duration := time.Now().Sub(victim.Start)
 	tx2 := tx.Begin()
-	if ok, msg = db.InitVictimRepo(tx2).Update(victim.ID, db.UpdateVictimOptions{
+	if ret = db.InitVictimRepo(tx2).Update(victim.ID, db.UpdateVictimOptions{
 		Duration: &duration,
-	}); !ok {
+	}); !ret.OK {
 		tx2.Rollback()
-		return false, msg
+		return ret
 	}
 	LoadTraffic(tx2, victim)
-	ok, msg = db.InitVictimRepo(tx2).Delete(victim.ID)
-	if !ok {
+	ret = db.InitVictimRepo(tx2).Delete(victim.ID)
+	if !ret.OK {
 		tx2.Rollback()
-		return false, msg
+		return ret
 	}
 	tx2.Commit()
 	prometheus.SubVictimContainerMetrics(1)
-	return ok, msg
+	return ret
 }
 
-func CountTeamVictims(tx *gorm.DB, team model.Team) (int64, bool, string) {
+func CountTeamVictims(tx *gorm.DB, team model.Team) (int64, model.RetVal) {
 	return db.InitVictimRepo(tx).Count(db.CountOptions{Conditions: map[string]any{"team_id": team.ID}})
 }

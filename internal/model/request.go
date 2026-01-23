@@ -42,7 +42,7 @@ func (r Request) GetErrorString() string {
 	return i18n.GetRequestError
 }
 
-func (r Request) NotFoundErrorString() string {
+func (r Request) NotFoundString() string {
 	return i18n.RequestNotFound
 }
 

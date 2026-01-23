@@ -107,8 +107,8 @@ func InitContestFlagRepo(tx *gorm.DB) *ContestFlagRepo {
 	}
 }
 
-func (c *ContestFlagRepo) Delete(idL ...uint) (bool, string) {
-	contestFlagL, _, ok, msg := c.List(-1, -1, GetOptions{
+func (c *ContestFlagRepo) Delete(idL ...uint) model.RetVal {
+	contestFlagL, _, ret := c.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},
 		Selects:    []string{"id"},
 		Preloads: map[string]GetOptions{
@@ -116,11 +116,11 @@ func (c *ContestFlagRepo) Delete(idL ...uint) (bool, string) {
 			"TeamFlags":   {Selects: []string{"id", "contest_flag_id"}},
 		},
 	})
-	if !ok {
-		if msg != i18n.ContestFlagNotFound {
-			return false, msg
+	if !ret.OK {
+		if ret.Msg != i18n.Model.NotFound {
+			return ret
 		}
-		return true, i18n.Success
+		return model.SuccessRetVal()
 	}
 	submissionIDL, teamFlagIDL := make([]uint, 0), make([]uint, 0)
 	for _, contestFlag := range contestFlagL {
@@ -131,15 +131,15 @@ func (c *ContestFlagRepo) Delete(idL ...uint) (bool, string) {
 			teamFlagIDL = append(teamFlagIDL, teamFlag.ID)
 		}
 	}
-	if ok, msg = InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ok {
-		return false, msg
+	if ret = InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ret.OK {
+		return ret
 	}
-	if ok, msg = InitTeamFlagRepo(c.DB).Delete(teamFlagIDL...); !ok {
-		return false, msg
+	if ret = InitTeamFlagRepo(c.DB).Delete(teamFlagIDL...); !ret.OK {
+		return ret
 	}
 	if res := c.DB.Model(&model.ContestFlag{}).Where("id IN ?", idL).Delete(&model.ContestFlag{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete ContestFlags: %s", res.Error)
-		return false, i18n.DeleteContestFlagError
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]interface{}{"Model": model.ContestFlag{}.GetModelName(), "Error": res.Error.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

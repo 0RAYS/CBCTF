@@ -3,6 +3,7 @@ package k8s
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"context"
 	"fmt"
 	"strings"
@@ -19,7 +20,7 @@ type CreateVPCOptions struct {
 	PolicyRoutes []*kubeovnv1.PolicyRoute
 }
 
-func CreateVPC(ctx context.Context, options CreateVPCOptions) (*kubeovnv1.Vpc, bool, string) {
+func CreateVPC(ctx context.Context, options CreateVPCOptions) (*kubeovnv1.Vpc, model.RetVal) {
 	var (
 		vpc *kubeovnv1.Vpc
 		err error
@@ -38,24 +39,24 @@ func CreateVPC(ctx context.Context, options CreateVPCOptions) (*kubeovnv1.Vpc, b
 	vpc, err = kubeOVNClient.KubeovnV1().Vpcs().Create(ctx, vpc, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create VPC: %s", err)
-		return nil, false, i18n.CreateVPCError
+		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "VPC", "Error": err.Error()}}
 	}
-	return vpc, true, i18n.Success
+	return vpc, model.SuccessRetVal()
 }
 
-func GetVPC(ctx context.Context, name string) (*kubeovnv1.Vpc, bool, string) {
+func GetVPC(ctx context.Context, name string) (*kubeovnv1.Vpc, model.RetVal) {
 	vpc, err := kubeOVNClient.KubeovnV1().Vpcs().Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if apierror.IsNotFound(err) {
-			return nil, false, i18n.VPCNotFound
+			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "VPC"}}
 		}
 		log.Logger.Warningf("Failed to get VPC: %s", err)
-		return nil, false, i18n.GetVPCError
+		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "VPC", "Error": err.Error()}}
 	}
-	return vpc, true, i18n.Success
+	return vpc, model.SuccessRetVal()
 }
 
-func GetVPCList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.VpcList, bool, string) {
+func GetVPCList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.VpcList, model.RetVal) {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string
@@ -69,21 +70,21 @@ func GetVPCList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.Vp
 	vpcList, err := kubeOVNClient.KubeovnV1().Vpcs().List(ctx, options)
 	if err != nil {
 		log.Logger.Warningf("Failed to list VPC: %s", err)
-		return nil, false, i18n.GetVPCError
+		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "VPC", "Error": err.Error()}}
 	}
-	return vpcList, true, i18n.Success
+	return vpcList, model.SuccessRetVal()
 }
 
-func DeleteVPC(ctx context.Context, name string) (bool, string) {
+func DeleteVPC(ctx context.Context, name string) model.RetVal {
 	err := kubeOVNClient.KubeovnV1().Vpcs().Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete VPC: %s", err)
-		return false, i18n.DeleteVPCError
+		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "VPC", "Error": err.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
-func DeleteVPCList(ctx context.Context, labels ...map[string]string) (bool, string) {
+func DeleteVPCList(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string
@@ -97,7 +98,7 @@ func DeleteVPCList(ctx context.Context, labels ...map[string]string) (bool, stri
 	err := kubeOVNClient.KubeovnV1().Vpcs().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete VPC: %s", err)
-		return false, i18n.DeleteVPCError
+		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "VPC", "Error": err.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

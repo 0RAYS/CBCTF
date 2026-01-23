@@ -12,14 +12,14 @@ import (
 
 // CheckWrongFlag 检查是否提交别队 flag
 func CheckWrongFlag(contest model.Contest) {
-	questions, _, ok, _ := db.InitContestChallengeRepo(db.DB).List(-1, -1, db.GetOptions{
+	questions, _, ret := db.InitContestChallengeRepo(db.DB).List(-1, -1, db.GetOptions{
 		Selects:    []string{"id", "type"},
 		Conditions: map[string]any{"contest_id": contest.ID, "type": model.QuestionChallengeType},
 	})
-	if !ok {
+	if !ret.OK {
 		log.Logger.Warning("Failed to get questions challenge, CheckWrongFlag maybe wrong")
 	}
-	teams, _, ok, _ := db.InitTeamRepo(db.DB).List(-1, -1, db.GetOptions{
+	teams, _, ret := db.InitTeamRepo(db.DB).List(-1, -1, db.GetOptions{
 		Selects:    []string{"id"},
 		Conditions: map[string]any{"contest_id": contest.ID},
 		Preloads: map[string]db.GetOptions{
@@ -27,13 +27,13 @@ func CheckWrongFlag(contest model.Contest) {
 			"Submissions": {Selects: []string{"id", "team_id", "solved", "ip", "value", "contest_challenge_id", "created_at"}},
 		},
 	})
-	if !ok {
+	if !ret.OK {
 		return
 	}
 	flagTeamIDMap := make(map[string][]uint)
 	for _, team := range teams {
 		for _, teamFlag := range team.TeamFlags {
-			if _, ok = flagTeamIDMap[teamFlag.Value]; ok {
+			if _, ok := flagTeamIDMap[teamFlag.Value]; ok {
 				if !slices.Contains(flagTeamIDMap[teamFlag.Value], teamFlag.TeamID) {
 					flagTeamIDMap[teamFlag.Value] = append(flagTeamIDMap[teamFlag.Value], team.ID)
 				}

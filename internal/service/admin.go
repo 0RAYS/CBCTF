@@ -11,15 +11,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateAdmin(tx *gorm.DB, form f.CreateAdminForm) (model.Admin, bool, string) {
-	repo := db.InitAdminRepo(tx)
-	if !repo.IsUniqueEmail(form.Email) {
-		return model.Admin{}, false, i18n.DuplicateEmail
-	}
-	if !repo.IsUniqueName(form.Name) {
-		return model.Admin{}, false, i18n.DuplicateUserName
-	}
-	return repo.Create(db.CreateAdminOptions{
+func CreateAdmin(tx *gorm.DB, form f.CreateAdminForm) (model.Admin, model.RetVal) {
+	return db.InitAdminRepo(tx).Create(db.CreateAdminOptions{
 		Name:     form.Name,
 		Password: utils.HashPassword(form.Password),
 		Email:    form.Email,
@@ -28,19 +21,19 @@ func CreateAdmin(tx *gorm.DB, form f.CreateAdminForm) (model.Admin, bool, string
 	})
 }
 
-func VerifyAdmin(tx *gorm.DB, form f.LoginForm) (model.Admin, bool, string) {
+func VerifyAdmin(tx *gorm.DB, form f.LoginForm) (model.Admin, model.RetVal) {
 	repo := db.InitAdminRepo(tx)
-	admin, ok, msg := repo.GetByName(form.Name)
-	if !ok {
-		return model.Admin{}, false, msg
+	admin, ret := repo.GetByUniqueKey("name", form.Name)
+	if !ret.OK {
+		return model.Admin{}, ret
 	}
 	if !utils.CompareHashAndPassword(admin.Password, form.Password) {
-		return model.Admin{}, false, i18n.NameOrPasswordError
+		return model.Admin{}, model.RetVal{Msg: i18n.Model.User.NamePasswordWrong}
 	}
-	return admin, true, i18n.Success
+	return admin, model.SuccessRetVal()
 }
 
-func UpdateUser(tx *gorm.DB, user model.User, form f.UpdateUserForm) (bool, string) {
+func UpdateUser(tx *gorm.DB, user model.User, form f.UpdateUserForm) model.RetVal {
 	repo := db.InitUserRepo(tx)
 	options := db.UpdateUserOptions{
 		Desc:     form.Desc,
@@ -52,17 +45,7 @@ func UpdateUser(tx *gorm.DB, user model.User, form f.UpdateUserForm) (bool, stri
 		options.Country = utils.Ptr(strings.ToUpper(*form.Country))
 	}
 	if form.Email != nil && *form.Email != user.Email {
-		if !repo.IsUniqueEmail(*form.Email) {
-			return false, i18n.DuplicateEmail
-		}
-		options.Email = form.Email
 		options.Verified = utils.Ptr(false)
-	}
-	if form.Name != nil && *form.Name != user.Name {
-		if !repo.IsUniqueName(*form.Name) {
-			return false, i18n.DuplicateUserName
-		}
-		options.Name = form.Name
 	}
 	if form.Password != nil {
 		options.Password = utils.Ptr(utils.HashPassword(*form.Password))
@@ -70,30 +53,19 @@ func UpdateUser(tx *gorm.DB, user model.User, form f.UpdateUserForm) (bool, stri
 	return repo.Update(user.ID, options)
 }
 
-func UpdateAdmin(tx *gorm.DB, admin model.Admin, form f.UpdateAdminForm) (bool, string) {
+func UpdateAdmin(tx *gorm.DB, admin model.Admin, form f.UpdateAdminForm) model.RetVal {
 	repo := db.InitAdminRepo(tx)
 	options := db.UpdateAdminOptions{}
 	if form.Email != nil && *form.Email != admin.Email {
-		if !repo.IsUniqueEmail(*form.Email) {
-			return false, i18n.DuplicateEmail
-		}
-		options.Email = form.Email
 		options.Verified = utils.Ptr(false)
-	}
-	if form.Name != nil && *form.Name != admin.Name {
-		if !repo.IsUniqueName(*form.Name) {
-			return false, i18n.DuplicateUserName
-		}
-		options.Name = form.Name
 	}
 	return repo.Update(admin.ID, options)
 }
 
-func ChangeAdminPassword(tx *gorm.DB, admin model.Admin, form f.ChangePasswordForm) (bool, string) {
+func ChangeAdminPassword(tx *gorm.DB, admin model.Admin, form f.ChangePasswordForm) model.RetVal {
 	if !utils.CompareHashAndPassword(admin.Password, form.OldPassword) {
-		return false, i18n.PasswordError
+		return model.RetVal{Msg: i18n.Model.User.PasswordWrong}
 	}
 	hash := utils.HashPassword(form.NewPassword)
-	repo := db.InitAdminRepo(tx)
-	return repo.Update(admin.ID, db.UpdateAdminOptions{Password: &hash})
+	return db.InitAdminRepo(tx).Update(admin.ID, db.UpdateAdminOptions{Password: &hash})
 }

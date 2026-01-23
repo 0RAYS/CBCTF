@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"errors"
 	"slices"
@@ -13,17 +12,17 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form f.CreateContestChallengeForm) ([]model.ContestChallenge, []string, bool, string) {
+func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form f.CreateContestChallengeForm) ([]model.ContestChallenge, []string, model.RetVal) {
 	contestChallengeL := make([]model.ContestChallenge, 0)
 	failedL := make([]string, 0)
 	contestChallengeRepo := db.InitContestChallengeRepo(tx)
 	challengeRepo := db.InitChallengeRepo(tx)
 	contestFlagRepo := db.InitContestFlagRepo(tx)
 	for _, challengeRandID := range form.ChallengeRandIDL {
-		challenge, ok, _ := challengeRepo.GetByRandID(challengeRandID, db.GetOptions{
+		challenge, ret := challengeRepo.GetByRandID(challengeRandID, db.GetOptions{
 			Preloads: map[string]db.GetOptions{"ChallengeFlags": {}},
 		})
-		if !ok {
+		if !ret.OK {
 			failedL = append(failedL, challengeRandID)
 			continue
 		}
@@ -43,10 +42,10 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form f.CreateCon
 			if challenge.Type == model.QuestionChallengeType {
 				options.Attempt = 1
 			}
-			contestChallenge, ok, msg := contestChallengeRepo.Create(options)
-			if !ok {
+			contestChallenge, ret := contestChallengeRepo.Create(options)
+			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 				failedL = append(failedL, challengeRandID)
-				return errors.New(msg)
+				return errors.New(err.(string))
 			}
 			for _, flag := range challenge.ChallengeFlags {
 				contestFlagOptions := db.CreateContestFlagOptions{
@@ -62,42 +61,42 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form f.CreateCon
 					Solvers:            0,
 					Last:               time.Now(),
 				}
-				_, ok, msg = contestFlagRepo.Create(contestFlagOptions)
-				if !ok {
+				_, ret = contestFlagRepo.Create(contestFlagOptions)
+				if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 					failedL = append(failedL, challengeRandID)
-					return errors.New(msg)
+					return errors.New(err.(string))
 				}
 			}
-			contestChallenge, ok, msg = contestChallengeRepo.GetByID(contestChallenge.ID, db.GetOptions{
+			contestChallenge, ret = contestChallengeRepo.GetByID(contestChallenge.ID, db.GetOptions{
 				Preloads: map[string]db.GetOptions{"Challenge": {}, "ContestFlags": {}},
 			})
-			if !ok {
+			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 				failedL = append(failedL, challengeRandID)
-				return errors.New(msg)
+				return errors.New(err.(string))
 			}
 			contestChallengeL = append(contestChallengeL, contestChallenge)
 			return nil
 		})
 	}
-	return contestChallengeL, failedL, true, i18n.Success
+	return contestChallengeL, failedL, model.SuccessRetVal()
 }
 
-func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string, bool, string) {
+func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string, model.RetVal) {
 	images := make([]string, 0)
-	dynamicContestChallenges, _, ok, msg := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
+	dynamicContestChallenges, _, ret := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"type": model.DynamicChallengeType, "contest_id": contest.ID},
 		Selects:    []string{"id", "challenge_id"},
 		Preloads:   map[string]db.GetOptions{"Challenge": {Selects: []string{"id", "generator_image"}}},
 	})
-	if !ok {
-		return nil, false, msg
+	if !ret.OK {
+		return nil, ret
 	}
 	for _, contestChallenge := range dynamicContestChallenges {
 		if !slices.Contains(images, contestChallenge.Challenge.GeneratorImage) {
 			images = append(images, contestChallenge.Challenge.GeneratorImage)
 		}
 	}
-	podsContestChallenge, _, ok, msg := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
+	podsContestChallenge, _, ret := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"type": model.PodsChallengeType, "contest_id": contest.ID},
 		Selects:    []string{"id", "challenge_id"},
 		Preloads: map[string]db.GetOptions{
@@ -107,8 +106,8 @@ func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string,
 			},
 		},
 	})
-	if !ok {
-		return nil, false, msg
+	if !ret.OK {
+		return nil, ret
 	}
 	for _, contestChallenge := range podsContestChallenge {
 		for _, docker := range contestChallenge.Challenge.Dockers {
@@ -126,5 +125,5 @@ func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string,
 	if !slices.Contains(images, config.Env.K8S.TCPDumpImage) {
 		images = append(images, config.Env.K8S.TCPDumpImage)
 	}
-	return images, true, msg
+	return images, model.SuccessRetVal()
 }

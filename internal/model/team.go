@@ -49,7 +49,7 @@ func (t Team) GetErrorString() string {
 	return i18n.GetTeamError
 }
 
-func (t Team) NotFoundErrorString() string {
+func (t Team) NotFoundString() string {
 	return i18n.TeamNotFound
 }
 

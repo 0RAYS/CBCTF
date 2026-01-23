@@ -3,6 +3,7 @@ package k8s
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"context"
 	"fmt"
 	"net"
@@ -21,10 +22,10 @@ type CreateEIPOptions struct {
 	ExternalSubnet string
 }
 
-func CreateEIP(ctx context.Context, options CreateEIPOptions) (*kubeovnv1.IptablesEIP, bool, string) {
+func CreateEIP(ctx context.Context, options CreateEIPOptions) (*kubeovnv1.IptablesEIP, model.RetVal) {
 	var (
 		eip *kubeovnv1.IptablesEIP
-		ok  bool
+		ret model.RetVal
 		err error
 	)
 	eip = &kubeovnv1.IptablesEIP{
@@ -41,34 +42,34 @@ func CreateEIP(ctx context.Context, options CreateEIPOptions) (*kubeovnv1.Iptabl
 	eip, err = kubeOVNClient.KubeovnV1().IptablesEIPs().Create(ctx, eip, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create EIP: %s", err)
-		return nil, false, i18n.CreateEIPError
+		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "EIP", "Error": err.Error()}}
 	}
 	for {
-		eip, ok, _ = GetEIP(ctx, options.Name)
-		if !ok {
-			return nil, false, i18n.GetEIPError
+		eip, ret = GetEIP(ctx, options.Name)
+		if !ret.OK {
+			return nil, ret
 		}
-		if net.ParseIP(eip.Spec.V4ip) != nil {
+		if eip != nil && net.ParseIP(eip.Spec.V4ip) != nil {
 			break
 		}
 		time.Sleep(500 * time.Millisecond)
 	}
-	return eip, true, i18n.Success
+	return eip, model.SuccessRetVal()
 }
 
-func GetEIP(ctx context.Context, name string) (*kubeovnv1.IptablesEIP, bool, string) {
+func GetEIP(ctx context.Context, name string) (*kubeovnv1.IptablesEIP, model.RetVal) {
 	eip, err := kubeOVNClient.KubeovnV1().IptablesEIPs().Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if apierror.IsNotFound(err) {
-			return nil, false, i18n.EIPNotFound
+			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "EIP"}}
 		}
 		log.Logger.Warningf("Failed to get EIP: %s", err)
-		return nil, false, i18n.GetEIPError
+		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "EIP", "Error": err.Error()}}
 	}
-	return eip, true, i18n.Success
+	return eip, model.SuccessRetVal()
 }
 
-func GetEIPList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.IptablesEIPList, bool, string) {
+func GetEIPList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.IptablesEIPList, model.RetVal) {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string
@@ -82,21 +83,21 @@ func GetEIPList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.Ip
 	eips, err := kubeOVNClient.KubeovnV1().IptablesEIPs().List(ctx, options)
 	if err != nil {
 		log.Logger.Warningf("Failed to get EIP list: %s", err)
-		return nil, false, i18n.GetEIPError
+		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "EIP", "Error": err.Error()}}
 	}
-	return eips, true, i18n.Success
+	return eips, model.SuccessRetVal()
 }
 
-func DeleteEIP(ctx context.Context, name string) (bool, string) {
+func DeleteEIP(ctx context.Context, name string) model.RetVal {
 	err := kubeOVNClient.KubeovnV1().IptablesEIPs().Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete EIP: %s", err)
-		return false, i18n.DeleteEIPError
+		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "EIP", "Error": err.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
-func DeleteEIPList(ctx context.Context, labels ...map[string]string) (bool, string) {
+func DeleteEIPList(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string
@@ -110,7 +111,7 @@ func DeleteEIPList(ctx context.Context, labels ...map[string]string) (bool, stri
 	err := kubeOVNClient.KubeovnV1().IptablesEIPs().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete EIP: %s", err)
-		return false, i18n.DeleteEIPError
+		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "EIP", "Error": err.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

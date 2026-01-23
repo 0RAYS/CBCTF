@@ -41,7 +41,7 @@ func (o Oauth) GetErrorString() string {
 	return i18n.GetOauthError
 }
 
-func (o Oauth) NotFoundErrorString() string {
+func (o Oauth) NotFoundString() string {
 	return i18n.OauthNotFound
 }
 
