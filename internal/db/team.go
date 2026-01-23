@@ -16,43 +16,43 @@ type TeamRepo struct {
 }
 
 type CreateTeamOptions struct {
-	Name      string
-	ContestID uint
-	Desc      string
-	Captcha   string
-	Picture   model.FileURL
-	Banned    bool
-	Hidden    bool
-	CaptainID uint
-	Last      time.Time
+	Name        string
+	ContestID   uint
+	Description string
+	Captcha     string
+	Picture     model.FileURL
+	Banned      bool
+	Hidden      bool
+	CaptainID   uint
+	Last        time.Time
 }
 
 func (c CreateTeamOptions) Convert2Model() model.Model {
 	return model.Team{
-		Name:      c.Name,
-		ContestID: c.ContestID,
-		Desc:      c.Desc,
-		Captcha:   c.Captcha,
-		Picture:   c.Picture,
-		Banned:    c.Banned,
-		Hidden:    c.Hidden,
-		CaptainID: c.CaptainID,
-		Last:      c.Last,
+		Name:        c.Name,
+		ContestID:   c.ContestID,
+		Description: c.Description,
+		Captcha:     c.Captcha,
+		Picture:     c.Picture,
+		Banned:      c.Banned,
+		Hidden:      c.Hidden,
+		CaptainID:   c.CaptainID,
+		Last:        c.Last,
 	}
 }
 
 type UpdateTeamOptions struct {
-	Name      *string
-	Desc      *string
-	Captcha   *string
-	Picture   *model.FileURL
-	Banned    *bool
-	Hidden    *bool
-	CaptainID *uint
-	Score     *float64
-	Rank      *int
-	Last      *time.Time
-	UserCount *int64
+	Name        *string
+	Description *string
+	Captcha     *string
+	Picture     *model.FileURL
+	Banned      *bool
+	Hidden      *bool
+	CaptainID   *uint
+	Score       *float64
+	Rank        *int
+	Last        *time.Time
+	UserCount   *int64
 }
 
 func (u UpdateTeamOptions) Convert2Map() map[string]any {
@@ -60,8 +60,8 @@ func (u UpdateTeamOptions) Convert2Map() map[string]any {
 	if u.Name != nil {
 		options["name"] = *u.Name
 	}
-	if u.Desc != nil {
-		options["desc"] = *u.Desc
+	if u.Description != nil {
+		options["description"] = *u.Description
 	}
 	if u.Captcha != nil {
 		options["captcha"] = *u.Captcha

@@ -32,7 +32,7 @@ type Challenge struct {
 	Dockers           []Docker           `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	RandID            string             `gorm:"type:varchar(36);uniqueIndex;not null" json:"rand_id"`
 	Name              string             `json:"name"`
-	Desc              string             `json:"desc"`
+	Description       string             `json:"description"`
 	Category          string             `json:"category"`
 	Type              string             `json:"type"`
 	GeneratorImage    string             `json:"generator_image"`
@@ -54,7 +54,7 @@ func (c Challenge) GetUniqueKey() []string {
 }
 
 func (c Challenge) GetAllowedQueryFields() []string {
-	return []string{"id", "rand_id", "name", "desc", "category", "type", "generator_image"}
+	return []string{"id", "rand_id", "name", "description", "category", "type", "generator_image"}
 }
 
 func (c Challenge) BasicDir() string {

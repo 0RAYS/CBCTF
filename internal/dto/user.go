@@ -43,13 +43,13 @@ func (f *RegisterForm) Bind(ctx *gin.Context) model.RetVal {
 
 // CreateUserForm for create user
 type CreateUserForm struct {
-	Name     string `form:"name" json:"name" binding:"required"`
-	Password string `form:"password" json:"password" binding:"required"`
-	Email    string `form:"email" json:"email" binding:"required,email"`
-	Desc     string `form:"desc" json:"desc"`
-	Hidden   bool   `form:"hidden" json:"hidden"`
-	Verified bool   `form:"verified" json:"verified"`
-	Banned   bool   `form:"banned" json:"banned"`
+	Name        string `form:"name" json:"name" binding:"required"`
+	Password    string `form:"password" json:"password" binding:"required"`
+	Email       string `form:"email" json:"email" binding:"required,email"`
+	Description string `form:"description" json:"description"`
+	Hidden      bool   `form:"hidden" json:"hidden"`
+	Verified    bool   `form:"verified" json:"verified"`
+	Banned      bool   `form:"banned" json:"banned"`
 }
 
 func (f *CreateUserForm) Bind(ctx *gin.Context) model.RetVal {
@@ -65,9 +65,9 @@ func (f *CreateUserForm) Bind(ctx *gin.Context) model.RetVal {
 
 // UpdateSelfForm for user update info
 type UpdateSelfForm struct {
-	Name  *string `form:"name" json:"name"`
-	Email *string `form:"email" json:"email" binding:"omitempty,email"`
-	Desc  *string `form:"desc" json:"desc"`
+	Name        *string `form:"name" json:"name"`
+	Email       *string `form:"email" json:"email" binding:"omitempty,email"`
+	Description *string `form:"description" json:"description"`
 }
 
 func (f *UpdateSelfForm) Bind(ctx *gin.Context) model.RetVal {
@@ -80,13 +80,13 @@ func (f *UpdateSelfForm) Bind(ctx *gin.Context) model.RetVal {
 
 // UpdateUserForm for admin update user info
 type UpdateUserForm struct {
-	Name     *string `form:"name" json:"name"`
-	Email    *string `form:"name" json:"email" binding:"omitempty,email"`
-	Desc     *string `form:"desc" json:"desc"`
-	Password *string `form:"password" json:"password"`
-	Hidden   *bool   `form:"hidden" json:"hidden"`
-	Banned   *bool   `form:"banned" json:"banned"`
-	Verified *bool   `form:"verified" json:"verified"`
+	Name        *string `form:"name" json:"name"`
+	Email       *string `form:"name" json:"email" binding:"omitempty,email"`
+	Description *string `form:"description" json:"description"`
+	Password    *string `form:"password" json:"password"`
+	Hidden      *bool   `form:"hidden" json:"hidden"`
+	Banned      *bool   `form:"banned" json:"banned"`
+	Verified    *bool   `form:"verified" json:"verified"`
 }
 
 func (f *UpdateUserForm) Bind(ctx *gin.Context) model.RetVal {

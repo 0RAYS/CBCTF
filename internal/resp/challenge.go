@@ -144,7 +144,7 @@ func GetChallengeResp(challenge model.Challenge) gin.H {
 	return gin.H{
 		"id":               challenge.RandID,
 		"name":             challenge.Name,
-		"desc":             challenge.Desc,
+		"description":      challenge.Description,
 		"category":         challenge.Category,
 		"type":             challenge.Type,
 		"generator_image":  challenge.GeneratorImage,

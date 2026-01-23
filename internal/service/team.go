@@ -21,9 +21,9 @@ func UpdateTeam(tx *gorm.DB, team model.Team, form dto.UpdateTeamForm) model.Ret
 		}
 	}
 	return repo.Update(team.ID, db.UpdateTeamOptions{
-		Desc:      form.Desc,
-		Name:      form.Name,
-		CaptainID: form.CaptainID,
+		Description: form.Description,
+		Name:        form.Name,
+		CaptainID:   form.CaptainID,
 	})
 }
 
@@ -35,12 +35,12 @@ func AdminUpdateTeam(tx *gorm.DB, team model.Team, form dto.AdminUpdateTeamForm)
 		}
 	}
 	return repo.Update(team.ID, db.UpdateTeamOptions{
-		Name:      form.Name,
-		Desc:      form.Desc,
-		Hidden:    form.Hidden,
-		Banned:    form.Banned,
-		Captcha:   form.Captcha,
-		CaptainID: form.CaptainID,
+		Name:        form.Name,
+		Description: form.Description,
+		Hidden:      form.Hidden,
+		Banned:      form.Banned,
+		Captcha:     form.Captcha,
+		CaptainID:   form.CaptainID,
 	})
 }
 
@@ -87,15 +87,15 @@ func CreateTeam(tx *gorm.DB, contest model.Contest, user model.User, form dto.Cr
 		return model.Team{}, model.RetVal{Msg: i18n.Model.Contest.DuplicateMember}
 	}
 	team, ret := repo.Create(db.CreateTeamOptions{
-		Name:      form.Name,
-		ContestID: contest.ID,
-		Desc:      form.Desc,
-		Captcha:   utils.UUID(),
-		Picture:   "",
-		Banned:    false,
-		Hidden:    false,
-		CaptainID: user.ID,
-		Last:      time.Now(),
+		Name:        form.Name,
+		ContestID:   contest.ID,
+		Description: form.Description,
+		Captcha:     utils.UUID(),
+		Picture:     "",
+		Banned:      false,
+		Hidden:      false,
+		CaptainID:   user.ID,
+		Last:        time.Now(),
 	})
 	if !ret.OK {
 		return model.Team{}, ret

@@ -65,7 +65,7 @@ func (f *GetCategoriesForm) Bind(ctx *gin.Context) model.RetVal {
 type CreateChallengeForm struct {
 	Name            string                `form:"name" json:"name" binding:"required"`
 	Type            string                `form:"type" json:"type" binding:"required"`
-	Desc            string                `form:"desc" json:"desc"`
+	Description     string                `form:"description" json:"description"`
 	Category        string                `form:"category" json:"category"`
 	Flags           model.StringList      `form:"flags" json:"flags"`
 	GeneratorImage  string                `form:"generator_image" json:"generator_image"`
@@ -88,7 +88,7 @@ func (f *CreateChallengeForm) Bind(ctx *gin.Context) model.RetVal {
 
 type UpdateChallengeForm struct {
 	Name            *string                `form:"name" json:"name"`
-	Desc            *string                `form:"desc" json:"desc"`
+	Description     *string                `form:"description" json:"description"`
 	Category        *string                `form:"category" json:"category"`
 	GeneratorImage  *string                `form:"generator_image" json:"generator_image"`
 	NetworkPolicies *model.NetworkPolicies `json:"network_policies"`

@@ -35,45 +35,45 @@ func CreateContest(tx *gorm.DB, form dto.CreateContestForm) (model.Contest, mode
 	if len(form.Timelines) == 0 {
 		form.Timelines = model.Timelines{
 			{
-				Date:  form.Start,
-				Title: "比赛开始",
-				Desc:  "题目公布, 正式开始解题",
+				Date:        form.Start,
+				Title:       "比赛开始",
+				Description: "题目公布, 正式开始解题",
 			},
 			{
-				Date:  form.Start.Add(time.Duration(form.Duration)),
-				Title: "比赛结束",
-				Desc:  "停止计分, 公布最终排名",
+				Date:        form.Start.Add(time.Duration(form.Duration)),
+				Title:       "比赛结束",
+				Description: "停止计分, 公布最终排名",
 			},
 			{
-				Date:  form.Start.Add(time.Duration(form.Duration)).Add(time.Hour * 2),
-				Title: "截至提交 WriteUp",
-				Desc:  "截至提交 WriteUp, 成绩作废",
+				Date:        form.Start.Add(time.Duration(form.Duration)).Add(time.Hour * 2),
+				Title:       "截至提交 WriteUp",
+				Description: "截至提交 WriteUp, 成绩作废",
 			},
 		}
 	}
 	if len(form.Prizes) == 0 {
 		form.Prizes = model.Prizes{
 			{
-				Amount: "$0",
-				Desc:   "",
+				Amount:      "$0",
+				Description: "",
 			},
 		}
 	}
 	return repo.Create(db.CreateContestOptions{
-		Name:      form.Name,
-		Desc:      form.Desc,
-		Captcha:   form.Captcha,
-		Picture:   "",
-		Prefix:    form.Prefix,
-		Size:      form.Size,
-		Start:     form.Start,
-		Duration:  time.Duration(form.Duration) * time.Second,
-		Blood:     form.Blood,
-		Hidden:    form.Hidden,
-		Victims:   form.Victims,
-		Rules:     form.Rules,
-		Prizes:    form.Prizes,
-		Timelines: form.Timelines,
+		Name:        form.Name,
+		Description: form.Description,
+		Captcha:     form.Captcha,
+		Picture:     "",
+		Prefix:      form.Prefix,
+		Size:        form.Size,
+		Start:       form.Start,
+		Duration:    time.Duration(form.Duration) * time.Second,
+		Blood:       form.Blood,
+		Hidden:      form.Hidden,
+		Victims:     form.Victims,
+		Rules:       form.Rules,
+		Prizes:      form.Prizes,
+		Timelines:   form.Timelines,
 	})
 }
 
@@ -86,18 +86,18 @@ func UpdateContest(tx *gorm.DB, contest model.Contest, form dto.UpdateContestFor
 		form.Victims = utils.Ptr(int64(1))
 	}
 	return repo.Update(contest.ID, db.UpdateContestOptions{
-		Name:      form.Name,
-		Desc:      form.Desc,
-		Captcha:   form.Captcha,
-		Prefix:    form.Prefix,
-		Size:      form.Size,
-		Start:     form.Start,
-		Duration:  (*time.Duration)(form.Duration),
-		Blood:     form.Blood,
-		Hidden:    form.Hidden,
-		Victims:   form.Victims,
-		Rules:     form.Rules,
-		Prizes:    form.Prizes,
-		Timelines: form.Timelines,
+		Name:        form.Name,
+		Description: form.Description,
+		Captcha:     form.Captcha,
+		Prefix:      form.Prefix,
+		Size:        form.Size,
+		Start:       form.Start,
+		Duration:    (*time.Duration)(form.Duration),
+		Blood:       form.Blood,
+		Hidden:      form.Hidden,
+		Victims:     form.Victims,
+		Rules:       form.Rules,
+		Prizes:      form.Prizes,
+		Timelines:   form.Timelines,
 	})
 }

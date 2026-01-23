@@ -35,7 +35,7 @@ func CreateChallenge(tx *gorm.DB, form dto.CreateChallengeForm) (model.Challenge
 	challenge, ret := challengeRepo.Create(db.CreateChallengeOptions{
 		RandID:          utils.UUID(),
 		Name:            form.Name,
-		Desc:            form.Desc,
+		Description:     form.Description,
 		Type:            form.Type,
 		Category:        form.Category,
 		GeneratorImage:  form.GeneratorImage,
@@ -269,7 +269,7 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChal
 		}
 		return db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
 			Name:           form.Name,
-			Desc:           form.Desc,
+			Description:    form.Description,
 			Category:       form.Category,
 			Options:        form.Options,
 			GeneratorImage: form.GeneratorImage,
@@ -300,10 +300,10 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChal
 			}
 		}
 		return db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
-			Name:     form.Name,
-			Desc:     form.Desc,
-			Category: form.Category,
-			Options:  form.Options,
+			Name:        form.Name,
+			Description: form.Description,
+			Category:    form.Category,
+			Options:     form.Options,
 		})
 	case model.PodsChallengeType:
 		if form.DockerCompose != nil {
@@ -326,7 +326,7 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChal
 		}
 		return db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
 			Name:            form.Name,
-			Desc:            form.Desc,
+			Description:     form.Description,
 			Category:        form.Category,
 			NetworkPolicies: form.NetworkPolicies,
 		})

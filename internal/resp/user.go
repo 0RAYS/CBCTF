@@ -9,12 +9,12 @@ import (
 
 func GetUserResp(user model.User, admin bool) gin.H {
 	data := gin.H{
-		"id":       user.ID,
-		"name":     user.Name,
-		"email":    user.Email,
-		"picture":  user.Picture,
-		"desc":     user.Desc,
-		"verified": user.Verified,
+		"id":          user.ID,
+		"name":        user.Name,
+		"email":       user.Email,
+		"picture":     user.Picture,
+		"description": user.Description,
+		"verified":    user.Verified,
 	}
 	if admin {
 		data["hidden"] = user.Hidden

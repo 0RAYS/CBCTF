@@ -13,7 +13,7 @@ type ContestChallenge struct {
 	ContestFlags []ContestFlag `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Submissions  []Submission  `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Name         string        `json:"name"`
-	Desc         string        `json:"desc"`
+	Description  string        `json:"description"`
 	Type         string        `json:"type"`
 	Category     string        `json:"category"`
 	Hidden       bool          `json:"hidden"`

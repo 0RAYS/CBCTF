@@ -16,44 +16,44 @@ type ContestRepo struct {
 }
 
 type CreateContestOptions struct {
-	Name      string
-	Desc      string
-	Captcha   string
-	Picture   model.FileURL
-	Prefix    string
-	Size      int
-	Start     time.Time
-	Duration  time.Duration
-	Blood     bool
-	Hidden    bool
-	Victims   int64
-	Rules     model.StringList
-	Prizes    model.Prizes
-	Timelines model.Timelines
+	Name        string
+	Description string
+	Captcha     string
+	Picture     model.FileURL
+	Prefix      string
+	Size        int
+	Start       time.Time
+	Duration    time.Duration
+	Blood       bool
+	Hidden      bool
+	Victims     int64
+	Rules       model.StringList
+	Prizes      model.Prizes
+	Timelines   model.Timelines
 }
 
 func (c CreateContestOptions) Convert2Model() model.Model {
 	return model.Contest{
-		Name:      c.Name,
-		Desc:      c.Desc,
-		Captcha:   c.Captcha,
-		Picture:   c.Picture,
-		Prefix:    c.Prefix,
-		Size:      c.Size,
-		Start:     c.Start,
-		Duration:  c.Duration,
-		Blood:     c.Blood,
-		Hidden:    c.Hidden,
-		Victims:   c.Victims,
-		Rules:     c.Rules,
-		Prizes:    c.Prizes,
-		Timelines: c.Timelines,
+		Name:        c.Name,
+		Description: c.Description,
+		Captcha:     c.Captcha,
+		Picture:     c.Picture,
+		Prefix:      c.Prefix,
+		Size:        c.Size,
+		Start:       c.Start,
+		Duration:    c.Duration,
+		Blood:       c.Blood,
+		Hidden:      c.Hidden,
+		Victims:     c.Victims,
+		Rules:       c.Rules,
+		Prizes:      c.Prizes,
+		Timelines:   c.Timelines,
 	}
 }
 
 type UpdateContestOptions struct {
 	Name        *string
-	Desc        *string
+	Description *string
 	Captcha     *string
 	Picture     *model.FileURL
 	Prefix      *string
@@ -76,8 +76,8 @@ func (u UpdateContestOptions) Convert2Map() map[string]any {
 	if u.Name != nil {
 		options["name"] = *u.Name
 	}
-	if u.Desc != nil {
-		options["desc"] = *u.Desc
+	if u.Description != nil {
+		options["description"] = *u.Description
 	}
 	if u.Captcha != nil {
 		options["captcha"] = *u.Captcha
