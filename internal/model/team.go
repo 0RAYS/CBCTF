@@ -12,7 +12,7 @@ import (
 type Team struct {
 	ContestID   uint         `gorm:"index:idx_name_contest,unique;not null" json:"contest_id"`
 	Contest     Contest      `json:"-"`
-	Users       []*User      `gorm:"many2many:user_teams;" json:"-"`
+	Users       []User       `gorm:"many2many:user_teams;" json:"-"`
 	Submissions []Submission `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	TeamFlags   []TeamFlag   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Name        string       `gorm:"type:varchar(255);index:idx_name_contest,unique;not null" json:"name"`

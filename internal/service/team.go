@@ -73,7 +73,7 @@ func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form dto.Join
 	if ret = db.AppendUserToContest(tx, user, contest); !ret.OK {
 		return model.Team{}, ret
 	}
-	team.Users = append(team.Users, &user)
+	team.Users = append(team.Users, user)
 	prometheus.AddContestActiveUsersMetrics(contest, 1)
 	return team, model.SuccessRetVal()
 }
@@ -106,7 +106,7 @@ func CreateTeam(tx *gorm.DB, contest model.Contest, user model.User, form dto.Cr
 	if ret = db.AppendUserToContest(tx, user, contest); !ret.OK {
 		return model.Team{}, ret
 	}
-	team.Users = append(team.Users, &user)
+	team.Users = append(team.Users, user)
 	prometheus.AddContestActiveTeamsMetrics(contest, 1)
 	prometheus.AddContestActiveUsersMetrics(contest, 1)
 	return team, model.SuccessRetVal()
