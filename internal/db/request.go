@@ -50,22 +50,22 @@ func InitRequestRepo(tx *gorm.DB) *RequestRepo {
 	}
 }
 
-func (r *RequestRepo) CountIP() (int64, bool, string) {
+func (r *RequestRepo) CountIP() (int64, model.RetVal) {
 	var count int64
 	res := r.DB.Model(&model.Request{}).Distinct("ip").Count(&count)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to count Reuqest: %s", res.Error)
-		return 0, false, i18n.GetRequestError
+		log.Logger.Warningf("Failed to count Request: %s", res.Error)
+		return 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Request{}.GetModelName(), "Error": res.Error.Error()}}
 	}
-	return count, true, i18n.Success
+	return count, model.SuccessRetVal()
 }
 
-func (r *RequestRepo) GetUserIP(userID uint) ([]string, bool, string) {
+func (r *RequestRepo) GetUserIP(userID uint) ([]string, model.RetVal) {
 	var ipL []string
 	res := r.DB.Model(&model.Request{}).Where("user_id = ?", userID).Distinct("ip").Find(&ipL)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to get Reuqest: %s", res.Error)
-		return nil, false, i18n.GetRequestError
+		log.Logger.Warningf("Failed to get Request: %s", res.Error)
+		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Request{}.GetModelName(), "Error": res.Error.Error()}}
 	}
-	return ipL, true, i18n.Success
+	return ipL, model.SuccessRetVal()
 }

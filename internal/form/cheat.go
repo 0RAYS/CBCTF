@@ -4,9 +4,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/utils"
 	"slices"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,10 +17,10 @@ type GetCheatsForm struct {
 	Type   string `form:"type" json:"type"`
 }
 
-func (f *GetCheatsForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *GetCheatsForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
 	if f.Limit > 100 || f.Limit < 0 {
 		f.Limit = 15
@@ -39,7 +37,7 @@ func (f *GetCheatsForm) Bind(ctx *gin.Context) (bool, string) {
 	if !slices.Contains(allowedCheatType, f.Type) {
 		f.Type = ""
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 type UpdateCheatForm struct {
@@ -49,16 +47,15 @@ type UpdateCheatForm struct {
 	Comment *string `form:"comment" json:"comment"`
 }
 
-func (f *UpdateCheatForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *UpdateCheatForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBindJSON(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
 	if f.Type != nil {
-		f.Type = utils.Ptr(strings.Trim(*f.Type, " "))
 		if !slices.Contains(allowedCheatType, *f.Type) {
-			return false, i18n.BadRequest
+			return model.RetVal{Msg: i18n.Model.Cheat.InvalidType}
 		}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

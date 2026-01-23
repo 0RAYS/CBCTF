@@ -19,15 +19,15 @@ type UpdateContestFlagForm struct {
 	ScoreType *uint    `form:"score_type" json:"score_type"`
 }
 
-func (f *UpdateContestFlagForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *UpdateContestFlagForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
 	if f.ScoreType != nil {
 		if !slices.Contains(allowedScoreType, *f.ScoreType) {
-			return false, i18n.InvalidScoreType
+			return model.RetVal{Msg: i18n.Model.ContestFlag.InvalidType}
 		}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

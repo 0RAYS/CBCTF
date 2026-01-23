@@ -13,16 +13,11 @@ import (
 	"gorm.io/gorm"
 )
 
-func UpdateTeam(tx *gorm.DB, team model.Team, form f.UpdateTeamForm) (bool, string) {
+func UpdateTeam(tx *gorm.DB, team model.Team, form f.UpdateTeamForm) model.RetVal {
 	repo := db.InitTeamRepo(tx)
-	if form.Name != nil && *form.Name != team.Name {
-		if !repo.IsUniqueName(team.ContestID, *form.Name) {
-			return false, i18n.DuplicateTeamName
-		}
-	}
 	if form.CaptainID != nil && *form.CaptainID != team.CaptainID {
 		if !repo.IsInTeam(team.ID, *form.CaptainID) {
-			return false, i18n.UserNotInTeam
+			return model.RetVal{Msg: i18n.Model.Team.NotHasMember}
 		}
 	}
 	return repo.Update(team.ID, db.UpdateTeamOptions{
@@ -32,16 +27,11 @@ func UpdateTeam(tx *gorm.DB, team model.Team, form f.UpdateTeamForm) (bool, stri
 	})
 }
 
-func AdminUpdateTeam(tx *gorm.DB, team model.Team, form f.AdminUpdateTeamForm) (bool, string) {
+func AdminUpdateTeam(tx *gorm.DB, team model.Team, form f.AdminUpdateTeamForm) model.RetVal {
 	repo := db.InitTeamRepo(tx)
-	if form.Name != nil && *form.Name != team.Name {
-		if !repo.IsUniqueName(team.ContestID, *form.Name) {
-			return false, i18n.DuplicateTeamName
-		}
-	}
 	if form.CaptainID != nil && *form.CaptainID != team.CaptainID {
 		if !repo.IsInTeam(team.ID, *form.CaptainID) {
-			return false, i18n.UserNotInTeam
+			return model.RetVal{Msg: i18n.Model.Team.NotHasMember}
 		}
 	}
 	return repo.Update(team.ID, db.UpdateTeamOptions{
@@ -54,52 +44,49 @@ func AdminUpdateTeam(tx *gorm.DB, team model.Team, form f.AdminUpdateTeamForm) (
 	})
 }
 
-func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.JoinTeamForm) (model.Team, bool, string) {
+func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.JoinTeamForm) (model.Team, model.RetVal) {
 	var (
-		repo          = db.InitTeamRepo(tx)
-		team, ok, msg = repo.GetByName(contest.ID, form.Name, db.GetOptions{
+		repo      = db.InitTeamRepo(tx)
+		team, ret = repo.GetByName(contest.ID, form.Name, db.GetOptions{
 			Preloads: map[string]db.GetOptions{"Users": {}},
 		})
 	)
-	if !ok {
-		return model.Team{}, false, msg
+	if !ret.OK {
+		return model.Team{}, ret
 	}
 	if team.Banned {
-		return model.Team{}, false, i18n.TeamIsBanned
+		return model.Team{}, model.RetVal{Msg: i18n.Model.Team.Banned}
 	}
 	if form.Captcha != team.Captcha {
-		return model.Team{}, false, i18n.TeamCaptchaError
+		return model.Team{}, model.RetVal{Msg: i18n.Model.Team.CaptchaWrong}
 	}
 	if len(team.Users)+1 > contest.Size {
-		return model.Team{}, false, i18n.TeamIsFull
+		return model.Team{}, model.RetVal{Msg: i18n.Model.Team.Full}
 	}
 	if repo.IsInContest(contest.ID, user.ID) {
-		return model.Team{}, false, i18n.DuplicateMember
+		return model.Team{}, model.RetVal{Msg: i18n.Model.Contest.DuplicateMember}
 	}
-	if ok, msg = db.AppendUserToTeam(tx, user, team); !ok {
-		return model.Team{}, false, msg
+	if ret = db.AppendUserToTeam(tx, user, team); !ret.OK {
+		return model.Team{}, ret
 	}
 	// 关联 User Contest Many2Many
-	if ok, msg = db.AppendUserToContest(tx, user, contest); !ok {
-		return model.Team{}, false, msg
+	if ret = db.AppendUserToContest(tx, user, contest); !ret.OK {
+		return model.Team{}, ret
 	}
 	team.Users = append(team.Users, &user)
 	prometheus.AddContestActiveUsersMetrics(contest, 1)
-	return team, true, i18n.Success
+	return team, model.SuccessRetVal()
 }
 
-func CreateTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.CreateTeamForm) (model.Team, bool, string) {
+func CreateTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.CreateTeamForm) (model.Team, model.RetVal) {
 	if contest.Captcha != "" && form.Captcha != contest.Captcha {
-		return model.Team{}, false, i18n.ContestCaptchaError
+		return model.Team{}, model.RetVal{Msg: i18n.Model.Contest.CaptchaWrong}
 	}
 	repo := db.InitTeamRepo(tx)
-	if !repo.IsUniqueName(contest.ID, form.Name) {
-		return model.Team{}, false, i18n.DuplicateTeamName
-	}
 	if repo.IsInContest(contest.ID, user.ID) {
-		return model.Team{}, false, i18n.DuplicateMember
+		return model.Team{}, model.RetVal{Msg: i18n.Model.Contest.DuplicateMember}
 	}
-	team, ok, msg := repo.Create(db.CreateTeamOptions{
+	team, ret := repo.Create(db.CreateTeamOptions{
 		Name:      form.Name,
 		ContestID: contest.ID,
 		Desc:      form.Desc,
@@ -110,72 +97,72 @@ func CreateTeam(tx *gorm.DB, contest model.Contest, user model.User, form f.Crea
 		CaptainID: user.ID,
 		Last:      time.Now(),
 	})
-	if !ok {
-		return model.Team{}, false, msg
+	if !ret.OK {
+		return model.Team{}, ret
 	}
-	if ok, msg = db.AppendUserToTeam(tx, user, team); !ok {
-		return model.Team{}, false, msg
+	if ret = db.AppendUserToTeam(tx, user, team); !ret.OK {
+		return model.Team{}, ret
 	}
-	if ok, msg = db.AppendUserToContest(tx, user, contest); !ok {
-		return model.Team{}, false, msg
+	if ret = db.AppendUserToContest(tx, user, contest); !ret.OK {
+		return model.Team{}, ret
 	}
 	team.Users = append(team.Users, &user)
 	prometheus.AddContestActiveTeamsMetrics(contest, 1)
 	prometheus.AddContestActiveUsersMetrics(contest, 1)
-	return team, true, i18n.Success
+	return team, model.SuccessRetVal()
 }
 
-func LeaveTeam(tx *gorm.DB, contest model.Contest, team model.Team, userID uint) (bool, string) {
+func LeaveTeam(tx *gorm.DB, contest model.Contest, team model.Team, userID uint) model.RetVal {
 	repo := db.InitTeamRepo(tx)
 	if !repo.IsInTeam(team.ID, userID) {
-		return false, i18n.UserNotInTeam
+		return model.RetVal{Msg: i18n.Model.Team.NotHasMember}
 	}
 	if team.CaptainID == userID {
-		return false, i18n.CaptainCannotLeave
+		return model.RetVal{Msg: i18n.Model.Team.CaptainCannotLeave}
 	}
-	if ok, msg := db.DeleteUserFromTeam(tx, model.User{BaseModel: model.BaseModel{ID: userID}}, team); !ok {
-		return false, msg
+	if ret := db.DeleteUserFromTeam(tx, model.User{BaseModel: model.BaseModel{ID: userID}}, team); !ret.OK {
+		return ret
 	}
-	if ok, msg := db.DeleteUserFromContest(tx, model.User{BaseModel: model.BaseModel{ID: userID}}, contest); !ok {
-		return false, msg
+	if ret := db.DeleteUserFromContest(tx, model.User{BaseModel: model.BaseModel{ID: userID}}, contest); !ret.OK {
+		return ret
 	}
 	prometheus.SubContestActiveUsersMetrics(contest, 1)
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
-func GetTeamSolvedFlags(tx *gorm.DB, team model.Team) ([]model.ContestFlag, bool, string) {
+func GetTeamSolvedFlags(tx *gorm.DB, team model.Team) ([]model.ContestFlag, model.RetVal) {
 	solvedContestFlags := make([]model.ContestFlag, 0)
-	solvedSubmissions, _, ok, msg := db.InitSubmissionRepo(tx).List(-1, -1, db.GetOptions{
+	solvedSubmissions, _, ret := db.InitSubmissionRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"team_id": team.ID, "solved": true},
 		Preloads:   map[string]db.GetOptions{"ContestFlag": {}},
 	})
-	if !ok {
-		return nil, false, msg
+	if !ret.OK {
+		return nil, ret
 	}
 	for _, submission := range solvedSubmissions {
 		solvedContestFlags = append(solvedContestFlags, submission.ContestFlag)
 	}
-	return solvedContestFlags, true, i18n.Success
+	return solvedContestFlags, model.SuccessRetVal()
 }
 
-func CalcTeamScore(tx *gorm.DB, team model.Team, blood bool) (float64, bool, string) {
+func CalcTeamScore(tx *gorm.DB, team model.Team, blood bool) (float64, model.RetVal) {
 	submissionRepo := db.InitSubmissionRepo(tx)
-	submissions, _, ok, msg := submissionRepo.List(-1, -1, db.GetOptions{
+	submissions, _, ret := submissionRepo.List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"team_id": team.ID, "solved": true},
 		Preloads:   map[string]db.GetOptions{"ContestFlag": {}},
 	})
-	if !ok {
-		return 0, false, msg
+	if !ret.OK {
+		return 0, ret
 	}
 	totalScore := 0.0
 	for _, submission := range submissions {
-		_, score, ok, _ := CalcContestFlagState(tx, submission.ContestFlag)
-		if !ok {
+		_, score, ret := CalcContestFlagState(tx, submission.ContestFlag)
+		if !ret.OK {
 			continue
 		}
 		var rate float64
 		if blood {
-			bloodTeam, _, _ := submissionRepo.GetBloodTeam(submission.ContestFlagID)
+			bloodTeam, _ := submissionRepo.GetBloodTeam(submission.ContestFlagID)
 			for i, teamID := range bloodTeam {
 				if teamID == team.ID {
 					switch i {
@@ -195,5 +182,5 @@ func CalcTeamScore(tx *gorm.DB, team model.Team, blood bool) (float64, bool, str
 		totalScore += score + submission.ContestFlag.Score*rate
 	}
 	totalScore = math.Trunc(totalScore*100) / 100
-	return totalScore, true, i18n.Success
+	return totalScore, model.SuccessRetVal()
 }

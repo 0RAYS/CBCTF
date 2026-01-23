@@ -3,7 +3,6 @@ package router
 import (
 	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
@@ -16,8 +15,8 @@ import (
 
 func GetContestChallenges(ctx *gin.Context) {
 	var form f.GetChallengesForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	if _, ok := ctx.GetQuery("limit"); !ok {
@@ -39,9 +38,9 @@ func GetContestChallenges(ctx *gin.Context) {
 	if !middleware.IsAdmin(ctx) {
 		options.Conditions["hidden"] = false
 	}
-	contestChallengeL, count, ok, msg := db.InitContestChallengeRepo(db.DB).List(form.Limit, form.Offset, options)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	contestChallengeL, count, ret := db.InitContestChallengeRepo(db.DB).List(form.Limit, form.Offset, options)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	data := make([]gin.H, 0)
@@ -63,49 +62,49 @@ func GetContestChallenges(ctx *gin.Context) {
 		}
 		data = append(data, tmp)
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"challenges": data, "count": count}})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"challenges": data, "count": count}))
 }
 
 func GetContestChallenge(ctx *gin.Context) {
 	challenge := middleware.GetChallenge(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
+	contestFlags, _, ret := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	contestChallenge.Challenge = challenge
 	contestChallenge.ContestFlags = contestFlags
 	data := resp.GetContestChallengeResp(contestChallenge)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
 }
 
 func GetContestChallengeCategories(ctx *gin.Context) {
 	var form f.GetCategoriesForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	categories, ok, msg := db.InitContestChallengeRepo(db.DB).ListCategories(contest.ID, form.Type)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	categories, ret := db.InitContestChallengeRepo(db.DB).ListCategories(contest.ID, form.Type)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": categories})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(categories))
 }
 
 func GetContestChallengeStatus(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	challenge := middleware.GetChallenge(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
+	contestFlags, _, ret := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	data := gin.H{
@@ -115,7 +114,7 @@ func GetContestChallengeStatus(ctx *gin.Context) {
 		"remote":   service.GetVictimStatus(db.DB, team.ID, challenge),
 		"file": func() string {
 			path := challenge.AttachmentPath(team.ID)
-			record, _, _ := db.InitFileRepo(db.DB).Get(db.GetOptions{
+			record, _ := db.InitFileRepo(db.DB).Get(db.GetOptions{
 				Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFileType}},
 			)
 			filename := "attachment.zip"
@@ -128,34 +127,34 @@ func GetContestChallengeStatus(ctx *gin.Context) {
 			return filename
 		}(),
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
 }
 
 func AddContestChallenge(ctx *gin.Context) {
 	var form f.CreateContestChallengeForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateContestChallengeEventType)
-	contestChallengeL, failedL, _, _ := service.CreateContestChallenge(db.DB, middleware.GetContest(ctx), form)
+	contestChallengeL, failedL, _ := service.CreateContestChallenge(db.DB, middleware.GetContest(ctx), form)
 	data := make([]gin.H, 0)
 	for _, contestChallenge := range contestChallengeL {
 		data = append(data, resp.GetContestChallengeResp(contestChallenge))
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"contest_challenge": data, "failed": failedL}})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"contest_challenge": data, "failed": failedL}))
 }
 
 func UpdateContestChallenge(ctx *gin.Context) {
 	var form f.UpdateContestChallengeForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateContestChallengeEventType)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	ok, msg := db.InitContestChallengeRepo(db.DB).Update(contestChallenge.ID, db.UpdateContestChallengeOptions{
+	ret := db.InitContestChallengeRepo(db.DB).Update(contestChallenge.ID, db.UpdateContestChallengeOptions{
 		Name:    form.Name,
 		Desc:    form.Desc,
 		Hidden:  form.Hidden,
@@ -163,22 +162,22 @@ func UpdateContestChallenge(ctx *gin.Context) {
 		Hints:   form.Hints,
 		Tags:    form.Tags,
 	})
-	if ok {
+	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	ctx.JSON(http.StatusOK, ret)
 }
 
 func DeleteContestChallenge(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteContestChallengeEventType)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	tx := db.DB.Begin()
-	ok, msg := db.InitContestChallengeRepo(tx).Delete(contestChallenge.ID)
-	if !ok {
+	ret := db.InitContestChallengeRepo(tx).Delete(contestChallenge.ID)
+	if !ret.OK {
 		tx.Rollback()
 	} else {
 		tx.Commit()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	ctx.JSON(http.StatusOK, ret)
 }

@@ -16,7 +16,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetChallenges(tx *gorm.DB, form f.GetChallengesForm) ([]model.Challenge, int64, bool, string) {
+func GetChallenges(tx *gorm.DB, form f.GetChallengesForm) ([]model.Challenge, int64, model.RetVal) {
 	options := db.GetOptions{
 		Conditions: make(map[string]any),
 		Preloads:   map[string]db.GetOptions{"Dockers": {}, "ChallengeFlags": {}},
@@ -30,9 +30,9 @@ func GetChallenges(tx *gorm.DB, form f.GetChallengesForm) ([]model.Challenge, in
 	return db.InitChallengeRepo(tx).List(form.Limit, form.Offset, options)
 }
 
-func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, bool, string) {
+func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, model.RetVal) {
 	challengeRepo, challengeFlagRepo := db.InitChallengeRepo(tx), db.InitChallengeFlagRepo(tx)
-	challenge, ok, msg := challengeRepo.Create(db.CreateChallengeOptions{
+	challenge, ret := challengeRepo.Create(db.CreateChallengeOptions{
 		RandID:          utils.UUID(),
 		Name:            form.Name,
 		Desc:            form.Desc,
@@ -42,17 +42,17 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 		Options:         form.Options,
 		NetworkPolicies: form.NetworkPolicies,
 	})
-	if !ok {
-		return model.Challenge{}, false, msg
+	if !ret.OK {
+		return model.Challenge{}, ret
 	}
 	switch form.Type {
 	case model.StaticChallengeType:
 		for _, flag := range form.Flags {
-			if _, ok, msg = challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
+			if _, ret = challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
 				ChallengeID: challenge.ID,
 				Value:       flag,
-			}); !ok {
-				return model.Challenge{}, false, msg
+			}); !ret.OK {
+				return model.Challenge{}, ret
 			}
 		}
 	case model.QuestionChallengeType:
@@ -62,38 +62,38 @@ func CreateChallenge(tx *gorm.DB, form f.CreateChallengeForm) (model.Challenge, 
 				answer = append(answer, option.RandID)
 			}
 		}
-		if _, ok, msg = challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
+		if _, ret = challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
 			ChallengeID: challenge.ID,
 			Value:       strings.Join(answer, ","),
-		}); !ok {
-			return model.Challenge{}, false, msg
+		}); !ret.OK {
+			return model.Challenge{}, ret
 		}
 	case model.DynamicChallengeType:
 		for _, flag := range form.Flags {
-			if _, ok, msg = challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
+			if _, ret = challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
 				ChallengeID: challenge.ID,
 				Value:       flag,
-			}); !ok {
-				return model.Challenge{}, false, msg
+			}); !ret.OK {
+				return model.Challenge{}, ret
 			}
 		}
 	case model.PodsChallengeType:
-		if ok, msg = CreatePodDockerFlag(tx, challenge, form.DockerCompose); !ok {
-			return model.Challenge{}, false, msg
+		if ret = CreatePodDockerFlag(tx, challenge, form.DockerCompose); !ret.OK {
+			return model.Challenge{}, ret
 		}
-		return challenge, true, i18n.Success
+		return challenge, model.SuccessRetVal()
 	default:
-		return model.Challenge{}, false, i18n.InvalidChallengeType
+		return model.Challenge{}, model.RetVal{Msg: i18n.Model.Challenge.InvalidType}
 	}
 	return challengeRepo.GetByID(challenge.ID, db.GetOptions{
 		Preloads: map[string]db.GetOptions{"Dockers": {}, "ChallengeFlags": {}},
 	})
 }
 
-func CreatePodDockerFlag(tx *gorm.DB, challenge model.Challenge, dockerCompose string) (bool, string) {
-	config, ok, msg := utils.LoadDockerComposeYaml(dockerCompose)
-	if !ok {
-		return false, msg
+func CreatePodDockerFlag(tx *gorm.DB, challenge model.Challenge, dockerCompose string) model.RetVal {
+	config, ret := utils.LoadDockerComposeYaml(dockerCompose)
+	if !ret.OK || config == nil {
+		return ret
 	}
 	volumeFlag := make(map[string]string)
 	for _, volume := range config.Volumes {
@@ -113,18 +113,18 @@ func CreatePodDockerFlag(tx *gorm.DB, challenge model.Challenge, dockerCompose s
 			continue
 		}
 		if len(network.Ipam.Config) < 0 {
-			return false, i18n.InvalidDockerComposeYaml
+			return model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Empty IPAM"}}
 		}
 		_, subnet, err := net.ParseCIDR(network.Ipam.Config[0].Subnet)
 		if err != nil {
-			return false, i18n.InvalidDockerComposeYaml
+			return model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": err.Error()}}
 		}
 		gateway := net.ParseIP(network.Ipam.Config[0].Gateway)
 		if gateway == nil {
-			return false, i18n.InvalidDockerComposeYaml
+			return model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid gateway"}}
 		}
 		if !subnet.Contains(gateway) {
-			return false, i18n.InvalidDockerComposeYaml
+			return model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid gateway"}}
 		}
 		networksMap[network.Name] = model.Network{
 			External: network.External.External,
@@ -141,7 +141,7 @@ func CreatePodDockerFlag(tx *gorm.DB, challenge model.Challenge, dockerCompose s
 			name = app.ContainerName
 		}
 		if app.Image == "" {
-			return false, i18n.InvalidDockerImage
+			return model.RetVal{Msg: i18n.Model.Challenge.EmptyImage}
 		}
 		environment := make(model.StringMap)
 		for k, v := range app.Environment {
@@ -164,27 +164,31 @@ func CreatePodDockerFlag(tx *gorm.DB, challenge model.Challenge, dockerCompose s
 				continue
 			}
 			if value == nil {
-				return false, i18n.InvalidDockerComposeYaml
+				return model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Empty network name"}}
 			}
 			ip := net.ParseIP(value.Ipv4Address)
 			if ip == nil {
-				return false, i18n.InvalidDockerComposeYaml
+				return model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid ip"}}
 			}
 			network, ok := networksMap[key]
 			if !ok {
 				log.Logger.Warningf("Network %s not found in networks", key)
-				return false, i18n.InvalidDockerComposeYaml
+				return model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid network"}}
 			}
-			if _, subnet, err := net.ParseCIDR(network.CIDR); err != nil || !subnet.Contains(ip) {
-				return false, i18n.InvalidDockerComposeYaml
+			_, subnet, err := net.ParseCIDR(network.CIDR)
+			if err != nil {
+				return model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": err.Error()}}
+			}
+			if !subnet.Contains(ip) {
+				return model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid subnet"}}
 			}
 			network.IP = value.Ipv4Address
 			networks = append(networks, network)
 		}
 		if len(networksMap) > 0 && len(networks) == 0 {
-			return false, i18n.InvalidDockerComposeYaml
+			return model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid networks"}}
 		}
-		docker, ok, msg := dockerRepo.Create(db.CreateDockerOptions{
+		docker, ret := dockerRepo.Create(db.CreateDockerOptions{
 			ChallengeID: challenge.ID,
 			Name:        name,
 			Image:       app.Image,
@@ -196,8 +200,8 @@ func CreatePodDockerFlag(tx *gorm.DB, challenge model.Challenge, dockerCompose s
 			Environment: environment,
 			Networks:    networks,
 		})
-		if !ok {
-			return false, msg
+		if !ret.OK {
+			return ret
 		}
 		for k, v := range app.Environment {
 			if strings.HasPrefix(k, model.EnvFlagPrefix) {
@@ -225,15 +229,15 @@ func CreatePodDockerFlag(tx *gorm.DB, challenge model.Challenge, dockerCompose s
 	}
 	challengeFlagRepo := db.InitChallengeFlagRepo(tx)
 	for _, options := range flagOptions {
-		if _, ok, msg = challengeFlagRepo.Create(options); !ok {
-			return false, msg
+		if _, ret = challengeFlagRepo.Create(options); !ret.OK {
+			return ret
 		}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 // UpdateChallenge model.Challenge Preload model.ChallengeFlag
-func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChallengeForm) (bool, string) {
+func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChallengeForm) model.RetVal {
 	switch challenge.Type {
 	case model.StaticChallengeType, model.DynamicChallengeType:
 		oldChallengeFlagID := make([]uint, 0)
@@ -243,25 +247,25 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChalle
 		challengeFlagRepo := db.InitChallengeFlagRepo(tx)
 		for _, flag := range form.Flags {
 			if slices.Contains(oldChallengeFlagID, flag.ID) {
-				if ok, msg := challengeFlagRepo.Update(flag.ID, db.UpdateChallengeFlagOptions{
+				if ret := challengeFlagRepo.Update(flag.ID, db.UpdateChallengeFlagOptions{
 					Value: &flag.Value,
-				}); !ok {
-					return false, msg
+				}); !ret.OK {
+					return ret
 				}
 				oldChallengeFlagID = slices.DeleteFunc(oldChallengeFlagID, func(id uint) bool {
 					return id == flag.ID
 				})
 			} else {
-				if _, ok, msg := challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
+				if _, ret := challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
 					ChallengeID: challenge.ID,
 					Value:       flag.Value,
-				}); !ok {
-					return false, msg
+				}); !ret.OK {
+					return ret
 				}
 			}
 		}
-		if ok, msg := challengeFlagRepo.Delete(oldChallengeFlagID...); !ok {
-			return false, msg
+		if ret := challengeFlagRepo.Delete(oldChallengeFlagID...); !ret.OK {
+			return ret
 		}
 		return db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
 			Name:           form.Name,
@@ -281,17 +285,17 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChalle
 			answer = strings.TrimSuffix(answer, ",")
 			repo := db.InitChallengeFlagRepo(tx)
 			if len(challenge.ChallengeFlags) > 0 {
-				if ok, msg := repo.Update(challenge.ChallengeFlags[0].ID, db.UpdateChallengeFlagOptions{
+				if ret := repo.Update(challenge.ChallengeFlags[0].ID, db.UpdateChallengeFlagOptions{
 					Value: &answer,
-				}); !ok {
-					return false, msg
+				}); !ret.OK {
+					return ret
 				}
 			} else {
-				if _, ok, msg := repo.Create(db.CreateChallengeFlagOptions{
+				if _, ret := repo.Create(db.CreateChallengeFlagOptions{
 					ChallengeID: challenge.ID,
 					Value:       answer,
-				}); !ok {
-					return false, msg
+				}); !ret.OK {
+					return ret
 				}
 			}
 		}
@@ -310,14 +314,14 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChalle
 			for _, flag := range challenge.ChallengeFlags {
 				dockerIDL = append(dockerIDL, flag.ID)
 			}
-			if ok, msg := db.InitDockerRepo(tx).Delete(dockerIDL...); !ok {
-				return false, msg
+			if ret := db.InitDockerRepo(tx).Delete(dockerIDL...); !ret.OK {
+				return ret
 			}
-			if ok, msg := db.InitChallengeFlagRepo(tx).Delete(challengeFlagIDL...); !ok {
-				return false, msg
+			if ret := db.InitChallengeFlagRepo(tx).Delete(challengeFlagIDL...); !ret.OK {
+				return ret
 			}
-			if ok, msg := CreatePodDockerFlag(tx, challenge, *form.DockerCompose); !ok {
-				return false, msg
+			if ret := CreatePodDockerFlag(tx, challenge, *form.DockerCompose); !ret.OK {
+				return ret
 			}
 		}
 		return db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
@@ -327,6 +331,6 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form f.UpdateChalle
 			NetworkPolicies: form.NetworkPolicies,
 		})
 	default:
-		return false, i18n.InvalidChallengeType
+		return model.RetVal{Msg: i18n.Model.Challenge.InvalidType}
 	}
 }

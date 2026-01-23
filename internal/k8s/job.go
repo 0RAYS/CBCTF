@@ -3,6 +3,7 @@ package k8s
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 	"context"
 	"fmt"
@@ -20,7 +21,7 @@ type CreateJobOptions struct {
 	NodeSelector map[string]string
 }
 
-func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, bool, string) {
+func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, model.RetVal) {
 	var (
 		job *batchv1.Job
 		err error
@@ -58,7 +59,7 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, boo
 	job, err = kubeClient.BatchV1().Jobs(globalNamespace).Create(ctx, job, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create Job: %s", err)
-		return nil, false, i18n.CreateJobError
+		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "Job", "Error": err.Error()}}
 	}
-	return job, true, i18n.Success
+	return job, model.SuccessRetVal()
 }

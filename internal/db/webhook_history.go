@@ -41,14 +41,14 @@ func InitWebhookHistoryRepo(tx *gorm.DB) *WebhookHistoryRepo {
 	}
 }
 
-func (w *WebhookHistoryRepo) Create(options CreateWebhookHistoryOptions) (model.WebhookHistory, bool, string) {
+func (w *WebhookHistoryRepo) Create(options CreateWebhookHistoryOptions) (model.WebhookHistory, model.RetVal) {
 	m := options.Convert2Model().(model.WebhookHistory)
 	if res := w.DB.Model(&model.WebhookHistory{}).Create(&m); res.Error != nil {
 		log.Logger.Warningf("Failed to create WebhookHistory: %s", res.Error)
-		return model.WebhookHistory{}, false, i18n.CreateWebhookHistoryError
+		return model.WebhookHistory{}, model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]interface{}{"Model": m.GetModelName(), "Error": res.Error.Error()}}
 	}
-	if ok, msg := InitWebhookRepo(w.DB).UpdateStatus(m.WebhookID, m.Success, m.CreatedAt); !ok {
-		return model.WebhookHistory{}, false, msg
+	if ret := InitWebhookRepo(w.DB).UpdateStatus(m.WebhookID, m.Success, m.CreatedAt); !ret.OK {
+		return model.WebhookHistory{}, ret
 	}
-	return m, true, i18n.Success
+	return m, model.SuccessRetVal()
 }

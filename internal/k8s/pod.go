@@ -3,6 +3,7 @@ package k8s
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 	"context"
 	"fmt"
@@ -25,13 +26,13 @@ type CreatePodOptions struct {
 	Tolerations     map[string]string
 }
 
-func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool, string) {
+func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, model.RetVal) {
 	var (
 		pod *corev1.Pod
-		ok  bool
+		ret model.RetVal
 		err error
 	)
-	if _, ok, _ = GetPod(ctx, options.Name); ok {
+	if _, ret = GetPod(ctx, options.Name); !ret.OK {
 		DeletePod(ctx, options.Name)
 	}
 	pod = &corev1.Pod{
@@ -108,39 +109,39 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, bool
 	pod, err = kubeClient.CoreV1().Pods(globalNamespace).Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create Pod: %s", err)
-		return nil, false, i18n.CreatePodError
+		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
 	}
 	for {
-		pod, ok, _ = GetPod(ctx, options.Name)
-		if !ok {
-			return nil, false, i18n.GetPodError
+		pod, ret = GetPod(ctx, options.Name)
+		if !ret.OK {
+			return nil, ret
 		}
 		if pod.Status.Phase == corev1.PodRunning {
 			break
 		}
 		if pod.Status.Phase != corev1.PodPending {
 			log.Logger.Warningf("Failed to run Pod: %s", pod.Name)
-			return nil, false, i18n.CreatePodError
+			return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Failed to run Pod"}}
 		}
 		time.Sleep(500 * time.Millisecond)
 	}
-	return pod, true, i18n.Success
+	return pod, model.SuccessRetVal()
 }
 
 // GetPod 依据 name 获取 Pod
-func GetPod(ctx context.Context, name string) (*corev1.Pod, bool, string) {
+func GetPod(ctx context.Context, name string) (*corev1.Pod, model.RetVal) {
 	pod, err := kubeClient.CoreV1().Pods(globalNamespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if apierror.IsNotFound(err) {
-			return nil, false, i18n.PodNotFound
+			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "Pod"}}
 		}
 		log.Logger.Warningf("Failed to get Pod %s: %s", name, err)
-		return nil, false, i18n.GetPodError
+		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
 	}
-	return pod, true, i18n.Success
+	return pod, model.SuccessRetVal()
 }
 
-func GetPodList(ctx context.Context, labels ...map[string]string) (*corev1.PodList, bool, string) {
+func GetPodList(ctx context.Context, labels ...map[string]string) (*corev1.PodList, model.RetVal) {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string
@@ -154,22 +155,22 @@ func GetPodList(ctx context.Context, labels ...map[string]string) (*corev1.PodLi
 	podList, err := kubeClient.CoreV1().Pods(globalNamespace).List(ctx, options)
 	if err != nil {
 		log.Logger.Warningf("Failed to list Pods: %s", err)
-		return nil, false, i18n.GetPodError
+		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
 	}
-	return podList, true, i18n.Success
+	return podList, model.SuccessRetVal()
 }
 
 // DeletePod 依据 name 删除 Pod
-func DeletePod(ctx context.Context, name string) (bool, string) {
+func DeletePod(ctx context.Context, name string) model.RetVal {
 	err := kubeClient.CoreV1().Pods(globalNamespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete Pod: %s", err)
-		return false, i18n.DeletePodError
+		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
-func DeletePodList(ctx context.Context, labels ...map[string]string) (bool, string) {
+func DeletePodList(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string
@@ -183,7 +184,7 @@ func DeletePodList(ctx context.Context, labels ...map[string]string) (bool, stri
 	err := kubeClient.CoreV1().Pods(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete Pod: %s", err)
-		return false, i18n.DeletePodError
+		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "Pod", "Error": err.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

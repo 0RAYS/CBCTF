@@ -22,7 +22,7 @@ func ContestStatus(statusL ...string) gin.HandlerFunc {
 			ctx.Next()
 			return
 		}
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": contest.Status(), "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: contest.Status()})
 		return
 	}
 }

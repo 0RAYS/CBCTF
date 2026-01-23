@@ -3,7 +3,6 @@ package router
 import (
 	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
@@ -17,47 +16,47 @@ import (
 )
 
 func GetNotices(ctx *gin.Context) {
-	var form f.GetModelsForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	var form f.ListModelsForm
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	notices, count, ok, msg := db.InitNoticeRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
+	notices, count, ret := db.InitNoticeRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
 	})
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	data := make([]gin.H, 0)
 	for _, notice := range notices {
 		data = append(data, resp.GetNoticeResp(notice))
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"count": count, "notices": data}})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"count": count, "notices": data}))
 }
 
 func CreateNotice(ctx *gin.Context) {
 	var form f.CreateNoticeForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateNoticeEventType)
 	contest := middleware.GetContest(ctx)
-	notice, ok, msg := db.InitNoticeRepo(db.DB).Create(db.CreateNoticeOptions{
+	notice, ret := db.InitNoticeRepo(db.DB).Create(db.CreateNoticeOptions{
 		ContestID: contest.ID,
 		Title:     form.Title,
 		Content:   form.Content,
 		Type:      form.Type,
 	})
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	go func() {
-		contestUserIDL, ok, _ := db.GetUserIDByContestID(db.DB, contest.ID)
-		if !ok {
+		contestUserIDL, ret := db.GetUserIDByContestID(db.DB, contest.ID)
+		if !ret.OK {
 			return
 		}
 		idL := make([]uint, 0)
@@ -71,34 +70,34 @@ func CreateNotice(ctx *gin.Context) {
 		websocket.SendToClients(false, wsm.NoticeLevel, wsm.ContestNoticeWSType, fmt.Sprintf("Notice: %s", notice.Title), notice.Content, idL...)
 	}()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": &notice})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(notice))
 }
 
 func UpdateNotice(ctx *gin.Context) {
 	var form f.UpdateNoticeForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateNoticeEventType)
 	notice := middleware.GetNotice(ctx)
-	ok, msg := db.InitNoticeRepo(db.DB).Update(notice.ID, db.UpdateNoticeOptions{
+	ret := db.InitNoticeRepo(db.DB).Update(notice.ID, db.UpdateNoticeOptions{
 		Title:   form.Title,
 		Content: form.Content,
 		Type:    form.Type,
 	})
-	if ok {
+	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	ctx.JSON(http.StatusOK, ret)
 }
 
 func DeleteNotice(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteNoticeEventType)
 	notice := middleware.GetNotice(ctx)
-	ok, msg := db.InitNoticeRepo(db.DB).Delete(notice.ID)
-	if ok {
+	ret := db.InitNoticeRepo(db.DB).Delete(notice.ID)
+	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	ctx.JSON(http.StatusOK, ret)
 }

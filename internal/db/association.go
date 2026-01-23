@@ -8,86 +8,86 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetContestIDByUserID(tx *gorm.DB, userID uint) ([]uint, bool, string) {
+func GetContestIDByUserID(tx *gorm.DB, userID uint) ([]uint, model.RetVal) {
 	var ucs []model.UserContest
 	res := tx.Model(&model.UserContest{}).Where("user_id = ?", userID).Find(&ucs)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get contest: %s", res.Error)
-		return nil, false, i18n.GetContestError
+		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Contest{}.GetModelName(), "Error": res.Error.Error()}}
 	}
 	var idL []uint
 	for _, uc := range ucs {
 		idL = append(idL, uc.ContestID)
 	}
-	return idL, true, i18n.Success
+	return idL, model.SuccessRetVal()
 }
 
-func GetUserIDByTeamID(tx *gorm.DB, teamID uint) ([]uint, bool, string) {
+func GetUserIDByTeamID(tx *gorm.DB, teamID uint) ([]uint, model.RetVal) {
 	var uts []model.UserTeam
 	res := tx.Model(&model.UserTeam{}).Where("team_id = ?", teamID).Find(&uts)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get user: %s", res.Error)
-		return nil, false, i18n.GetUserError
+		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.User{}.GetModelName(), "Error": res.Error.Error()}}
 	}
 	var idL []uint
 	for _, ut := range uts {
 		idL = append(idL, ut.UserID)
 	}
-	return idL, true, i18n.Success
+	return idL, model.SuccessRetVal()
 }
 
-func GetUserIDByContestID(tx *gorm.DB, contestID uint) ([]uint, bool, string) {
+func GetUserIDByContestID(tx *gorm.DB, contestID uint) ([]uint, model.RetVal) {
 	var ucs []model.UserContest
 	res := tx.Model(&model.UserContest{}).Where("contest_id = ?", contestID).Find(&ucs)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get user: %s", res.Error)
-		return nil, false, i18n.GetUserError
+		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.User{}.GetModelName(), "Error": res.Error.Error()}}
 	}
 	var idL []uint
 	for _, uc := range ucs {
 		idL = append(idL, uc.UserID)
 	}
-	return idL, true, i18n.Success
+	return idL, model.SuccessRetVal()
 }
 
 // AppendUserToTeam Many2Many
-func AppendUserToTeam(tx *gorm.DB, user model.User, team model.Team) (bool, string) {
+func AppendUserToTeam(tx *gorm.DB, user model.User, team model.Team) model.RetVal {
 	res := tx.Model(&model.UserTeam{}).Create(&model.UserTeam{UserID: user.ID, TeamID: team.ID})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to append User to Team: %s", res.Error)
-		return false, i18n.AppendUserToTeamError
+		return model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": "UserTeam", "Error": res.Error.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 // AppendUserToContest Many2Many
-func AppendUserToContest(tx *gorm.DB, user model.User, contest model.Contest) (bool, string) {
+func AppendUserToContest(tx *gorm.DB, user model.User, contest model.Contest) model.RetVal {
 	res := tx.Model(&model.UserContest{}).Create(&model.UserContest{UserID: user.ID, ContestID: contest.ID})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to append User to Contest: %s", res.Error)
-		return false, i18n.AppendUserToContestError
+		return model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": "UserContest", "Error": res.Error.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 // DeleteUserFromTeam Many2Many
-func DeleteUserFromTeam(tx *gorm.DB, user model.User, team model.Team) (bool, string) {
+func DeleteUserFromTeam(tx *gorm.DB, user model.User, team model.Team) model.RetVal {
 	res := tx.Model(&model.UserTeam{}).Where("user_id = ? AND team_id = ?", user.ID, team.ID).
 		Delete(&model.UserTeam{})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete User from Team: %s", res.Error)
-		return false, i18n.DeleteUserFromTeamError
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": "UserTeam", "Error": res.Error.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 // DeleteUserFromContest Many2Many
-func DeleteUserFromContest(tx *gorm.DB, user model.User, contest model.Contest) (bool, string) {
+func DeleteUserFromContest(tx *gorm.DB, user model.User, contest model.Contest) model.RetVal {
 	res := tx.Model(&model.UserContest{}).Where("user_id = ? AND contest_id = ?", user.ID, contest.ID).
 		Delete(&model.UserContest{})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete User from Contest: %s", res.Error)
-		return false, i18n.DeleteUserFromContestError
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": "UserContest", "Error": res.Error.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

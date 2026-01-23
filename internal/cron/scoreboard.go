@@ -15,11 +15,11 @@ import (
 func updateTeamRanking(c *cron.Cron) {
 	function := exec("UpdateTeamRanking", func() {
 		repo := db.InitContestRepo(db.DB)
-		contests, _, ok, _ := repo.List(-1, -1, db.GetOptions{
+		contests, _, ret := repo.List(-1, -1, db.GetOptions{
 			Selects:    []string{"id", "start", "duration", "blood"},
 			Conditions: map[string]any{"hidden": false},
 		})
-		if !ok {
+		if !ret.OK {
 			return
 		}
 		for _, contest := range contests {
@@ -37,7 +37,7 @@ func updateTeamRanking(c *cron.Cron) {
 func updateUserRanking(c *cron.Cron) {
 	function := exec("UpdateUserRanking", func() {
 		userRepo := db.InitUserRepo(db.DB)
-		users, _, ok, _ := userRepo.List(-1, -1, db.GetOptions{
+		users, _, ret := userRepo.List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"banned": false},
 			Selects:    []string{"id"},
 			Preloads: map[string]db.GetOptions{
@@ -50,7 +50,7 @@ func updateUserRanking(c *cron.Cron) {
 				},
 			},
 		})
-		if !ok {
+		if !ret.OK {
 			return
 		}
 		contestIDL := make([]uint, 0)
@@ -61,11 +61,11 @@ func updateUserRanking(c *cron.Cron) {
 				}
 			}
 		}
-		contests, _, ok, _ := db.InitContestRepo(db.DB).List(-1, -1, db.GetOptions{
+		contests, _, ret := db.InitContestRepo(db.DB).List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"id": contestIDL},
 			Selects:    []string{"id", "blood"},
 		})
-		if !ok {
+		if !ret.OK {
 			return
 		}
 		blood := make(map[uint]bool)
@@ -80,7 +80,7 @@ func updateUserRanking(c *cron.Cron) {
 				solved++
 				var rate float64
 				if a, _ := blood[submission.ContestID]; a {
-					bloodTeam, _, _ := submissionRepo.GetBloodTeam(submission.ContestFlagID)
+					bloodTeam, _ := submissionRepo.GetBloodTeam(submission.ContestFlagID)
 					switch slices.IndexFunc(bloodTeam, func(i uint) bool {
 						if i == submission.TeamID {
 							return true

@@ -19,27 +19,27 @@ import (
 func CheckAuth(ctx *gin.Context) {
 	auth := strings.Fields(ctx.GetHeader("Authorization"))
 	if len(auth) != 2 || auth[0] != "Bearer" {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Unauthorized})
 		return
 	}
 	claims, err := utils.ParseToken(auth[1])
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Unauthorized})
 		return
 	}
 	if claims.IsAdmin {
-		admin, ok, msg := db.InitAdminRepo(db.DB).GetByID(claims.UserID)
-		if !ok {
-			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		admin, ret := db.InitAdminRepo(db.DB).GetByID(claims.UserID)
+		if !ret.OK {
+			ctx.AbortWithStatusJSON(http.StatusOK, ret)
 			return
 		}
 		ctx.Set("IsAdmin", true)
 		ctx.Set("Self", admin)
 		ctx.Next()
 	} else {
-		user, ok, msg := db.InitUserRepo(db.DB).GetByID(claims.UserID)
-		if !ok {
-			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		user, ret := db.InitUserRepo(db.DB).GetByID(claims.UserID)
+		if !ret.OK {
+			ctx.AbortWithStatusJSON(http.StatusOK, ret)
 			return
 		}
 		magic := GetMagic(ctx)
@@ -48,7 +48,7 @@ func CheckAuth(ctx *gin.Context) {
 				token, err := utils.GenerateToken(user.ID, user.Name, false, magic)
 				if err != nil {
 					log.Logger.Warningf("Failed to generate token: %s", err)
-					ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
+					ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
 					return
 				}
 				ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
@@ -62,13 +62,13 @@ func CheckAuth(ctx *gin.Context) {
 					Checked: false,
 					Time:    time.Now(),
 				})
-				ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Unauthorized, "data": nil})
+				ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Unauthorized})
 				return
 			}
 		}
 		go db.InitDeviceRepo(db.DB).RecordDevice(db.CreateDeviceOptions{UserID: user.ID, Magic: magic})
 		if user.Banned {
-			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
+			ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
 			return
 		}
 		ctx.Set("IsAdmin", false)
@@ -79,11 +79,11 @@ func CheckAuth(ctx *gin.Context) {
 
 // GetSelf 获取当前登录 admin 或 user
 func GetSelf(ctx *gin.Context) any {
-	if self, ok := ctx.Get("Self"); !ok || self == nil {
+	self, ok := ctx.Get("Self")
+	if !ok || self == nil {
 		return nil
-	} else {
-		return self
 	}
+	return self
 }
 
 // GetSelfID 获取当前登录 admin 或 user 的ID
@@ -109,7 +109,7 @@ func IsAdmin(ctx *gin.Context) bool {
 func CheckRole(isAdmin bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		if IsAdmin(ctx) != isAdmin {
-			ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
+			ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
 			return
 		}
 		ctx.Next()
@@ -120,7 +120,7 @@ func CheckRole(isAdmin bool) gin.HandlerFunc {
 func CheckCaptain(ctx *gin.Context) {
 	team := GetTeam(ctx)
 	if team.CaptainID != GetSelfID(ctx) {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
 		return
 	}
 	ctx.Next()
@@ -129,7 +129,7 @@ func CheckCaptain(ctx *gin.Context) {
 // CheckVerified 检查邮箱是否已验证
 func CheckVerified(ctx *gin.Context) {
 	if self, ok := GetSelf(ctx).(model.User); !IsAdmin(ctx) && ok && !self.Verified {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.UnverifiedEmail, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Model.User.UnverifiedEmail})
 		return
 	}
 	ctx.Next()
@@ -139,7 +139,7 @@ func CheckVerified(ctx *gin.Context) {
 func CheckBanned(ctx *gin.Context) {
 	team := GetTeam(ctx)
 	if team.Banned {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.Forbidden, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
 		return
 	}
 	ctx.Next()

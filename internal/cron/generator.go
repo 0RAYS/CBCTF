@@ -20,17 +20,17 @@ import (
 func prepareGenerator(c *cron.Cron) {
 	function := exec("PrepareGenerator", func() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-		nodes, ok, _ := k8s.ListSchedulableNodes(ctx)
+		nodes, ret := k8s.ListSchedulableNodes(ctx)
 		cancel()
-		if !ok {
+		if !ret.OK {
 			log.Logger.Warningf("Failed to count nodes")
 			return
 		}
-		contests, _, ok, _ := db.InitContestRepo(db.DB).List(-1, -1, db.GetOptions{
+		contests, _, ret := db.InitContestRepo(db.DB).List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"hidden": false},
 			Selects:    []string{"id", "start", "duration"},
 		})
-		if !ok {
+		if !ret.OK {
 			return
 		}
 		contestChallengeRepo := db.InitContestChallengeRepo(db.DB)
@@ -38,14 +38,14 @@ func prepareGenerator(c *cron.Cron) {
 			if contest.IsOver() {
 				continue
 			}
-			contestChallengeL, _, ok, _ := contestChallengeRepo.List(-1, -1, db.GetOptions{
+			contestChallengeL, _, ret := contestChallengeRepo.List(-1, -1, db.GetOptions{
 				Conditions: map[string]any{"contest_id": contest.ID, "type": model.DynamicChallengeType},
 				Selects:    []string{"id", "challenge_id"},
 				Preloads: map[string]db.GetOptions{
 					"Challenge": {Selects: []string{"id", "name", "rand_id", "generator_image"}},
 				},
 			})
-			if !ok {
+			if !ret.OK {
 				continue
 			}
 			for _, contestChallenge := range contestChallengeL {
@@ -86,10 +86,10 @@ func prepareGenerator(c *cron.Cron) {
 func stopUnCtrlGenerator(c *cron.Cron) {
 	function := exec("StopUnCtrlGenerator", func() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-		pods, ok, msg := k8s.GetPodList(ctx)
+		pods, ret := k8s.GetPodList(ctx)
 		cancel()
-		if !ok {
-			log.Logger.Warningf("Failed to get generators %s", msg)
+		if !ret.OK {
+			log.Logger.Warningf("Failed to get generators %v", ret)
 			return
 		}
 		generators := make(map[string]*corev1.Pod)
@@ -105,7 +105,7 @@ func stopUnCtrlGenerator(c *cron.Cron) {
 		for _, pod := range pods.Items {
 			if strings.HasPrefix(pod.Name, "gen") && !slices.Contains(names, pod.Name) {
 				ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
-				_, _ = k8s.DeletePod(ctx, pod.Name)
+				k8s.DeletePod(ctx, pod.Name)
 				cancel()
 			}
 		}

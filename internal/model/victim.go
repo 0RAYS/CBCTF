@@ -55,7 +55,7 @@ func (v Victim) GetErrorString() string {
 	return i18n.GetVictimError
 }
 
-func (v Victim) NotFoundErrorString() string {
+func (v Victim) NotFoundString() string {
 	return i18n.VictimNotFound
 }
 

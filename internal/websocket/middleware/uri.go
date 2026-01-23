@@ -8,11 +8,11 @@ import (
 
 // GetSelf 获取当前登录 admin 或 user
 func GetSelf(ctx *gin.Context) any {
-	if self, ok := ctx.Get("Self"); !ok || self == nil {
+	self, ok := ctx.Get("Self")
+	if !ok || self == nil {
 		return nil
-	} else {
-		return self
 	}
+	return self
 }
 
 // GetSelfID 获取当前登录 admin 或 user 的ID

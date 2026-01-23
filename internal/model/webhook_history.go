@@ -37,7 +37,7 @@ func (w WebhookHistory) GetErrorString() string {
 	return i18n.GetWebhookHistoryError
 }
 
-func (w WebhookHistory) NotFoundErrorString() string {
+func (w WebhookHistory) NotFoundString() string {
 	return i18n.WebhookHistoryNotFound
 }
 

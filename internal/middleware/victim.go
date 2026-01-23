@@ -3,6 +3,7 @@ package middleware
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
+	"CBCTF/internal/model"
 	"CBCTF/internal/service"
 	"net/http"
 
@@ -12,13 +13,13 @@ import (
 func CheckTeamVictimCount(ctx *gin.Context) {
 	contest := GetContest(ctx)
 	team := GetTeam(ctx)
-	count, ok, msg := service.CountTeamVictims(db.DB, team)
-	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	count, ret := service.CountTeamVictims(db.DB, team)
+	if !ret.OK {
+		ctx.AbortWithStatusJSON(http.StatusOK, ret)
 		return
 	}
 	if count >= contest.Victims {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.VictimLimited, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Model.Victim.Limited})
 		return
 	}
 	ctx.Next()

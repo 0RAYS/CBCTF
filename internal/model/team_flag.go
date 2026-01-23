@@ -37,7 +37,7 @@ func (t TeamFlag) GetErrorString() string {
 	return i18n.GetTeamFlagError
 }
 
-func (t TeamFlag) NotFoundErrorString() string {
+func (t TeamFlag) NotFoundString() string {
 	return i18n.TeamFlagNotFound
 }
 

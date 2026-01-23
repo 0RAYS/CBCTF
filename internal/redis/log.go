@@ -3,6 +3,7 @@ package redis
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"context"
 	"time"
 
@@ -48,13 +49,13 @@ func (h *LogHook) Fire(entry *logrus.Entry) error {
 	return nil
 }
 
-func GetLogs(start, end int64) ([]string, bool, string) {
+func GetLogs(start, end int64) ([]string, model.RetVal) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	logs, err := RDB.LRange(ctx, logKey, start, end).Result()
 	if err != nil {
 		log.Logger.Warningf("Failed to get logs: %s", err)
-		return logs, false, i18n.RedisError
+		return logs, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": logKey, "Error": err.Error()}}
 	}
-	return logs, true, i18n.Success
+	return logs, model.SuccessRetVal()
 }

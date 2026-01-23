@@ -3,7 +3,6 @@ package service
 import (
 	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
@@ -17,21 +16,21 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func GetNodeImageList() (map[string][]string, bool, string) {
+func GetNodeImageList() (map[string][]string, model.RetVal) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	return k8s.GetNodeImageList(ctx)
 }
 
-func WarmUpContestChallengeImage(form f.WarmUpImageForm) (bool, string) {
+func WarmUpContestChallengeImage(form f.WarmUpImageForm) model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	if form.PullPolicy == string(corev1.PullNever) {
-		return true, i18n.Success
+		return model.SuccessRetVal()
 	}
-	nodes, ok, msg := k8s.ListSchedulableNodes(ctx)
-	if !ok {
-		return false, msg
+	nodes, ret := k8s.ListSchedulableNodes(ctx)
+	if !ret.OK {
+		return ret
 	}
 	for _, node := range nodes {
 		images := form.Images
@@ -60,30 +59,30 @@ func WarmUpContestChallengeImage(form f.WarmUpImageForm) (bool, string) {
 				chunks = append(chunks, images[i:end])
 			}
 			for _, chunk := range chunks {
-				if _, ok, msg = k8s.CreateJob(ctx, k8s.CreateJobOptions{
+				if _, ret = k8s.CreateJob(ctx, k8s.CreateJobOptions{
 					Name:       fmt.Sprintf("image-puller-%s", utils.RandStr(5)),
 					Images:     chunk,
 					PullPolicy: form.PullPolicy,
 					NodeSelector: map[string]string{
 						"kubernetes.io/hostname": node.Name,
 					},
-				}); !ok {
-					return false, msg
+				}); !ret.OK {
+					return ret
 				}
 			}
 		}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
-func GetContestVictims(tx *gorm.DB, contest model.Contest, form f.GetContestVictimsForm) ([]model.Victim, int64, bool, string) {
+func GetContestVictims(tx *gorm.DB, contest model.Contest, form f.GetContestVictimsForm) ([]model.Victim, int64, model.RetVal) {
 	var challengeID uint
 	if form.ChallengeID != "" {
-		challenge, ok, msg := db.InitChallengeRepo(tx).GetByRandID(form.ChallengeID, db.GetOptions{
+		challenge, ret := db.InitChallengeRepo(tx).GetByRandID(form.ChallengeID, db.GetOptions{
 			Selects: []string{"id", "type"},
 		})
-		if !ok || challenge.Type != model.PodsChallengeType {
-			return nil, 0, false, msg
+		if !ret.OK || challenge.Type != model.PodsChallengeType {
+			return nil, 0, ret
 		}
 		challengeID = challenge.ID
 	}
@@ -105,53 +104,53 @@ func GetContestVictims(tx *gorm.DB, contest model.Contest, form f.GetContestVict
 	if form.UserID != 0 {
 		options.Conditions["user_id"] = form.UserID
 	}
-	victims, count, ok, msg := db.InitVictimRepo(tx).List(form.Limit, form.Offset, options)
+	victims, count, ret := db.InitVictimRepo(tx).List(form.Limit, form.Offset, options)
 	return slices.DeleteFunc(victims, func(victim model.Victim) bool {
 		if !victim.UserID.Valid || !victim.TeamID.Valid || !victim.ContestChallengeID.Valid || !victim.ContestID.Valid {
 			count--
 			return true
 		}
 		return false
-	}), count, ok, msg
+	}), count, ret
 }
 
-func StartContestVictims(tx *gorm.DB, contest model.Contest, form f.StartContestVictimsForm) (bool, string) {
+func StartContestVictims(tx *gorm.DB, contest model.Contest, form f.StartContestVictimsForm) model.RetVal {
 	if len(form.Challenges) == 0 || len(form.Teams) == 0 {
-		return true, i18n.Success
+		return model.SuccessRetVal()
 	}
 	challengeIDL := make([]uint, 0)
 	for _, randID := range form.Challenges {
-		challenge, ok, _ := db.InitChallengeRepo(tx).GetByRandID(randID, db.GetOptions{
+		challenge, ret := db.InitChallengeRepo(tx).GetByRandID(randID, db.GetOptions{
 			Conditions: map[string]any{"type": model.PodsChallengeType},
 		})
-		if !ok {
+		if !ret.OK {
 			continue
 		}
 		challengeIDL = append(challengeIDL, challenge.ID)
 	}
 	teams := make([]model.Team, 0)
 	for _, id := range form.Teams {
-		team, ok, _ := db.InitTeamRepo(tx).GetByID(id, db.GetOptions{
+		team, ret := db.InitTeamRepo(tx).GetByID(id, db.GetOptions{
 			Conditions: map[string]any{"contest_id": contest.ID},
 			Preloads:   map[string]db.GetOptions{"Contest": {Selects: []string{"id", "name"}}},
 		})
-		if !ok {
+		if !ret.OK {
 			continue
 		}
 		teams = append(teams, team)
 	}
 	if len(challengeIDL) == 0 || len(teams) == 0 {
-		return true, i18n.Success
+		return model.SuccessRetVal()
 	}
-	contestChallenges, _, ok, msg := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
+	contestChallenges, _, ret := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID, "challenge_id": challengeIDL},
 		Preloads:   map[string]db.GetOptions{"ContestFlags": {}},
 	})
-	if !ok {
-		return false, msg
+	if !ret.OK {
+		return ret
 	}
 	if len(contestChallenges) == 0 {
-		return true, i18n.Success
+		return model.SuccessRetVal()
 	}
 	for _, contestChallenge := range contestChallenges {
 		for _, team := range teams {
@@ -159,37 +158,37 @@ func StartContestVictims(tx *gorm.DB, contest model.Contest, form f.StartContest
 				continue
 			}
 			if !CheckIfGenerated(tx, team, contestChallenge.ContestFlags) {
-				if _, ok, msg = CreateTeamFlag(tx, team, contest, contestChallenge); !ok {
+				if _, ret = CreateTeamFlag(tx, team, contest, contestChallenge); !ret.OK {
 					continue
 				}
 			}
-			_, ok, msg = StartVictim(tx, team.CaptainID, team.ID, contest.ID, contestChallenge.ID, contestChallenge.ChallengeID)
-			if !ok {
-				victim, ok, _ := db.InitVictimRepo(tx).HasAliveVictim(team.ID, contestChallenge.ChallengeID)
-				if !ok {
+			_, ret = StartVictim(tx, team.CaptainID, team.ID, contest.ID, contestChallenge.ID, contestChallenge.ChallengeID)
+			if !ret.OK {
+				victim, ret := db.InitVictimRepo(tx).HasAliveVictim(team.ID, contestChallenge.ChallengeID)
+				if !ret.OK {
 					continue
 				}
 				StopVictim(tx, victim)
 			}
 		}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 // StopContestVictims tx 无需开启事务
-func StopContestVictims(tx *gorm.DB, form f.StopContestVictimsForm) (bool, string) {
+func StopContestVictims(tx *gorm.DB, form f.StopContestVictimsForm) model.RetVal {
 	if len(form.Victims) == 0 {
-		return true, i18n.Success
+		return model.SuccessRetVal()
 	}
 	victimRepo := db.InitVictimRepo(tx)
-	victims, _, ok, msg := victimRepo.List(-1, -1, db.GetOptions{Conditions: map[string]any{"id": form.Victims}})
-	if !ok {
-		return false, msg
+	victims, _, ret := victimRepo.List(-1, -1, db.GetOptions{Conditions: map[string]any{"id": form.Victims}})
+	if !ret.OK {
+		return ret
 	}
 	for _, victim := range victims {
-		if ok, msg = StopVictim(tx, victim); !ok {
-			return false, msg
+		if ret = StopVictim(tx, victim); !ret.OK {
+			return ret
 		}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

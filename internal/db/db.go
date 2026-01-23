@@ -81,8 +81,8 @@ func Init() {
 	}
 	log.Logger.Info("Connected to database")
 
-	if ok, msg := InitAdminRepo(DB).InitAdmin(); !ok {
-		log.Logger.Fatalf("Failed to init Admin: %s", msg)
+	if ret := InitAdminRepo(DB).InitAdmin(); !ret.OK {
+		log.Logger.Fatalf("Failed to init Admin: %v", ret)
 	}
 	InitOauthRepo(DB).RegisterDefault()
 }

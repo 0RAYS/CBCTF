@@ -11,8 +11,8 @@ import (
 )
 
 func CheckSameDevice(contest model.Contest) {
-	userIDL, ok, _ := db.GetUserIDByContestID(db.DB, contest.ID)
-	if !ok {
+	userIDL, ret := db.GetUserIDByContestID(db.DB, contest.ID)
+	if !ret.OK {
 		return
 	}
 	type tmp struct {
@@ -21,10 +21,10 @@ func CheckSameDevice(contest model.Contest) {
 	}
 	deviceUserMap := make(map[string][]tmp)
 	for _, userID := range userIDL {
-		devices, _, ok, _ := db.InitDeviceRepo(db.DB).List(-1, -1, db.GetOptions{
+		devices, _, ret := db.InitDeviceRepo(db.DB).List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"user_id": userID},
 		})
-		if !ok {
+		if !ret.OK {
 			continue
 		}
 		for _, device := range devices {

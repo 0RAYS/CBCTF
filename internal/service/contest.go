@@ -3,7 +3,6 @@ package service
 import (
 	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 	"time"
@@ -11,11 +10,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateContest(tx *gorm.DB, form f.CreateContestForm) (model.Contest, bool, string) {
+func CreateContest(tx *gorm.DB, form f.CreateContestForm) (model.Contest, model.RetVal) {
 	repo := db.InitContestRepo(tx)
-	if !repo.IsUniqueName(form.Name) {
-		return model.Contest{}, false, i18n.DuplicateContestName
-	}
 	if form.Start.IsZero() {
 		form.Start = time.Now()
 	}
@@ -81,13 +77,8 @@ func CreateContest(tx *gorm.DB, form f.CreateContestForm) (model.Contest, bool, 
 	})
 }
 
-func UpdateContest(tx *gorm.DB, contest model.Contest, form f.UpdateContestForm) (bool, string) {
+func UpdateContest(tx *gorm.DB, contest model.Contest, form f.UpdateContestForm) model.RetVal {
 	repo := db.InitContestRepo(tx)
-	if form.Name != nil && *form.Name != contest.Name {
-		if !repo.IsUniqueName(*form.Name) {
-			return false, i18n.DuplicateContestName
-		}
-	}
 	if form.Duration != nil {
 		*form.Duration = *form.Duration * 1e9
 	}

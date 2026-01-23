@@ -68,68 +68,50 @@ func InitAdminRepo(tx *gorm.DB) *AdminRepo {
 	}
 }
 
-func (a *AdminRepo) InitAdmin() (bool, string) {
-	count, ok, msg := a.Count()
-	if !ok {
-		return false, msg
+func (a *AdminRepo) InitAdmin() model.RetVal {
+	count, ret := a.Count()
+	if !ret.OK {
+		return ret
 	}
 	if count == 0 {
 		pwd := utils.UUID()
-		_, ok, msg = a.Create(CreateAdminOptions{
+		_, ret = a.Create(CreateAdminOptions{
 			Name:     "admin",
 			Password: utils.HashPassword(pwd),
 			Email:    "admin@0rays.club",
 		})
-		if !ok {
-			return false, msg
+		if !ret.OK {
+			return ret
 		}
 		log.Logger.Infof("Init Admin: Admin{ name: admin, password: %s, email: admin@0rays.club}", pwd)
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
-func (a *AdminRepo) IsUniqueName(name string) bool {
-	_, ok, _ := a.GetByUniqueKey("name", name, GetOptions{Selects: []string{"id"}})
-	return !ok
-}
-
-func (a *AdminRepo) IsUniqueEmail(email string) bool {
-	_, ok, _ := a.GetByUniqueKey("email", email, GetOptions{Selects: []string{"id"}})
-	return !ok
-}
-
-func (a *AdminRepo) GetByName(name string, optionsL ...GetOptions) (model.Admin, bool, string) {
-	options := GetOptions{}
-	if len(optionsL) > 0 {
-		options = optionsL[0]
-	}
-	return a.GetByUniqueKey("name", name, options)
-}
-
-func (a *AdminRepo) Delete(idL ...uint) (bool, string) {
-	adminL, _, ok, msg := a.List(-1, -1, GetOptions{
+func (a *AdminRepo) Delete(idL ...uint) model.RetVal {
+	adminL, _, ret := a.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},
 		Selects:    []string{"id", "name", "email"},
 	})
-	if !ok {
-		if msg != i18n.AdminNotFound {
-			return false, msg
+	if !ret.OK {
+		if ret.Msg != i18n.Model.NotFound {
+			return ret
 		}
-		return true, i18n.Success
+		return model.SuccessRetVal()
 	}
 	for _, admin := range adminL {
 		deletedName := fmt.Sprintf("%s_deleted_%s", admin.Name, utils.RandStr(6))
 		deletedEmail := fmt.Sprintf("%s_deleted_%s", admin.Email, utils.RandStr(6))
-		if ok, msg = a.Update(admin.ID, UpdateAdminOptions{
+		if ret = a.Update(admin.ID, UpdateAdminOptions{
 			Name:  &deletedName,
 			Email: &deletedEmail,
-		}); !ok {
-			return false, msg
+		}); !ret.OK {
+			return ret
 		}
 	}
 	if res := a.DB.Model(&model.Admin{}).Where("id IN ?", idL).Delete(&model.Admin{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Admin: %s", res.Error)
-		return false, i18n.DeleteAdminError
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Admin{}.GetModelName(), "Error": res.Error.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

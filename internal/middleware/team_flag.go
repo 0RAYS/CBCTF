@@ -3,6 +3,7 @@ package middleware
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
+	"CBCTF/internal/model"
 	"CBCTF/internal/service"
 	"net/http"
 
@@ -13,15 +14,15 @@ import (
 func CheckIfGenerated(ctx *gin.Context) {
 	team := GetTeam(ctx)
 	contestChallenge := GetContestChallenge(ctx)
-	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
+	contestFlags, _, ret := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	if !service.CheckIfGenerated(db.DB, team, contestFlags) {
-		ctx.AbortWithStatusJSON(http.StatusOK, gin.H{"msg": i18n.TeamFlagNotFound, "data": nil})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.TeamFlag{}.GetModelName()}})
 		return
 	}
 	ctx.Next()

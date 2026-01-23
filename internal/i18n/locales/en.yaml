@@ -1,2 +1,76 @@
 common:
   success: "Success"
+  unknownError: "Unknown error: {{.Error}}"
+request:
+  badRequest: "Bad request: {{.Error}}"
+  unauthorized: "Unauthorized"
+  forbidden: "Forbidden"
+  tooManyRequests: "Too many requests"
+model:
+  duplicateKeyValue: "{{.Model}} has duplicate key: {{.Key}}"
+  notUniqueKey: "{{.Model}} {{.Key}} is not unique key"
+  deadLock: "Update {{.Model}} error due to dead lock"
+  createError: "Create {{.Model}} error: {{.Error}}"
+  getError: "Get {{.Model}} error: {{.Error}}"
+  notFound: "{{.Model}} not found"
+  updateError: "Update {{.Model}} error: {{.Error}}"
+  deleteError: "Delete {{.Model}} error: {{.Error}}"
+  challenge:
+    invalidType: "Invalid challenge type"
+    emptyImage: "Challenge image is empty"
+  challengeFlag:
+    invalidType: "Invalid challenge flag type"
+  cheat:
+    invalidType: "Invalid cheat type"
+  contest:
+    captchaWrong: "Captcha is wrong"
+    duplicateMember: "User is already in team"
+    isComing: "Contest is coming"
+    isRunning: "Contest is running"
+    isOver: "Contest is over"
+  contestFlag:
+    invalidType: "Invalid flag type"
+  docker:
+    invalidComposeYaml: "Invalid docker-compose.yaml: {{.Error}}"
+  email:
+    invalidVerifyToken: "Invalid verify token"
+  file:
+    notAllowed: "File is not allowed"
+    readPcapError: "Read .pcap error: {{.Error}}"
+    createDirError: "Create dir error: {{.Error}}"
+  notice:
+    invalidType: "Invalid notice type"
+  submission:
+    notAllowed: "Not allowed submit flag"
+  team:
+    banned: "Team is banned"
+    full: "Team is full"
+    captchaWrong: "Captcha is wrong"
+    notHasMember: "User is not in team"
+    captainCannotLeave: "Captain cannot leave team"
+  teamFlag:
+    notMatch: "Flag is wrong"
+    alreadySolved: "Already solved"
+  user:
+    weakPassword: "Password is too weak"
+    samePassword: "New password is same with old password"
+    passwordWrong: "Password is wrong"
+    namePasswordWrong: "Name or password is wrong"
+    unverifiedEmail: "Email is unverified"
+    alreadyVerified: "Email is already verified"
+  victim:
+    limited: "Victims is max count"
+    hasMuchTime: "Can only extend time within 20 minutes before the container closes"
+  webhook:
+    invalidMethod: "Invalid Webhook request method"
+redis:
+  setError: "Cache {{.Key}} error: {{.Error}}"
+  getError: "Get {{.Key}} error: {{.Error}}"
+  deleteError: "Delete {{.Key}} error: {{.Error}}"
+task:
+  enqueueError: "Enqueue error: {{.Error}}"
+k8s:
+  createError: "Create {{.Model}} error: {{.Error}}"
+  getError: "Get {{.Model}} error: {{.Error}}"
+  notFound: "{{.Model}} not found"
+  deleteError: "Delete {{.Model}} error: {{.Error}}"

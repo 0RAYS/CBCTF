@@ -3,6 +3,7 @@ package k8s
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"context"
 
 	corev1 "k8s.io/api/core/v1"
@@ -19,7 +20,7 @@ type CreatePVOptions struct {
 	Storage string
 }
 
-func CreatePV(ctx context.Context, options CreatePVOptions) (*corev1.PersistentVolume, bool, string) {
+func CreatePV(ctx context.Context, options CreatePVOptions) (*corev1.PersistentVolume, model.RetVal) {
 	var (
 		pv      *corev1.PersistentVolume
 		storage resource.Quantity
@@ -28,7 +29,7 @@ func CreatePV(ctx context.Context, options CreatePVOptions) (*corev1.PersistentV
 	storage, err = resource.ParseQuantity(options.Storage)
 	if err != nil {
 		log.Logger.Warningf("Failed to parse storage resource: %s", err)
-		return nil, false, i18n.UnknownError
+		return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	pv = &corev1.PersistentVolume{
 		ObjectMeta: metav1.ObjectMeta{
@@ -53,19 +54,19 @@ func CreatePV(ctx context.Context, options CreatePVOptions) (*corev1.PersistentV
 	pv, err = kubeClient.CoreV1().PersistentVolumes().Create(ctx, pv, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create pv: %s", err)
-		return nil, false, i18n.CreatePVError
+		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "PV", "Error": err.Error()}}
 	}
-	return pv, true, i18n.Success
+	return pv, model.SuccessRetVal()
 }
 
-func GetPV(ctx context.Context, name string) (*corev1.PersistentVolume, bool, string) {
+func GetPV(ctx context.Context, name string) (*corev1.PersistentVolume, model.RetVal) {
 	pv, err := kubeClient.CoreV1().PersistentVolumes().Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if apierror.IsNotFound(err) {
-			return nil, false, i18n.PVNotFound
+			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "PV"}}
 		}
 		log.Logger.Warningf("Failed to get pv: %s", err)
-		return nil, false, i18n.GetPVError
+		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "PV", "Error": err.Error()}}
 	}
-	return pv, true, i18n.Success
+	return pv, model.SuccessRetVal()
 }

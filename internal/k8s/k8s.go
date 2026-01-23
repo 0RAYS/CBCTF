@@ -88,21 +88,21 @@ func initClients() {
 }
 
 func initExternalNetwork(ctx context.Context) {
-	if _, ok, _ := GetSubnet(ctx, externalSubnetName); !ok {
-		if _, ok, _ := CreateSubnet(ctx, CreateSubnetOptions{
+	if _, ret := GetSubnet(ctx, externalSubnetName); !ret.OK {
+		if _, ret := CreateSubnet(ctx, CreateSubnetOptions{
 			Name:       externalSubnetName,
 			CIDR:       config.Env.K8S.ExternalNetwork.CIDR,
 			Gateway:    config.Env.K8S.ExternalNetwork.Gateway,
 			ExcludeIPs: config.Env.K8S.ExternalNetwork.ExcludeIPs,
 			Provider:   fmt.Sprintf("%s.kube-system", externalSubnetName),
-		}); !ok {
+		}); !ret.OK {
 			log.Logger.Fatal("Failed to init external network")
 		}
 	} else {
 		log.Logger.Info("ExternalNetworkSubnet is already exists")
 	}
-	if _, ok, _ := GetNetAttachDef(ctx, externalSubnetName, "kube-system"); !ok {
-		if _, ok, _ := CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
+	if _, ret := GetNetAttachDef(ctx, externalSubnetName, "kube-system"); !ret.OK {
+		if _, ret := CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
 			Name:      externalSubnetName,
 			Namespace: "kube-system",
 			Config: fmt.Sprintf(`{
@@ -116,7 +116,7 @@ func initExternalNetwork(ctx context.Context) {
 				"provider": "%s.kube-system"
 			}
 		}`, config.Env.K8S.ExternalNetwork.Interface, externalSubnetName),
-		}); !ok {
+		}); !ret.OK {
 			log.Logger.Fatal("Failed to init external network attachment definition")
 		}
 	} else {
@@ -125,23 +125,23 @@ func initExternalNetwork(ctx context.Context) {
 }
 
 func initNFSVolume(ctx context.Context) {
-	if _, ok, _ := GetPV(ctx, nfsVolumeName); !ok {
-		if _, ok, _ := CreatePV(ctx, CreatePVOptions{
+	if _, ret := GetPV(ctx, nfsVolumeName); !ret.OK {
+		if _, ret := CreatePV(ctx, CreatePVOptions{
 			Name:    nfsVolumeName,
 			Server:  config.Env.NFS.Server,
 			Path:    config.Env.NFS.Path,
 			Storage: config.Env.NFS.Storage,
-		}); !ok {
+		}); !ret.OK {
 			log.Logger.Fatal("Failed to init pv")
 		}
 	} else {
 		log.Logger.Info("NFS Volume PV is already exists")
 	}
-	if _, ok, _ := GetPVC(ctx, nfsVolumeName); !ok {
-		if _, ok, _ := CreatePVC(ctx, CreatePVCOptions{
+	if _, ret := GetPVC(ctx, nfsVolumeName); !ret.OK {
+		if _, ret := CreatePVC(ctx, CreatePVCOptions{
 			Name:    nfsVolumeName,
 			Storage: config.Env.NFS.Storage,
-		}); !ok {
+		}); !ret.OK {
 			log.Logger.Fatalf("Failed to init pvc")
 		}
 	} else {

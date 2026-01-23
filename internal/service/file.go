@@ -18,19 +18,19 @@ import (
 	"gorm.io/gorm"
 )
 
-func SaveAvatar(tx *gorm.DB, options db.CreateFileOptions, file *multipart.FileHeader) (model.File, bool, string) {
+func SaveAvatar(tx *gorm.DB, options db.CreateFileOptions, file *multipart.FileHeader) (model.File, model.RetVal) {
 	var (
 		fileRepo = db.InitFileRepo(tx)
 		allowed  = []string{".png", ".jpg", ".jpeg"}
 		suffix   = strings.ToLower(filepath.Ext(file.Filename))
 	)
 	if !slices.Contains(allowed, suffix) {
-		return model.File{}, false, i18n.FileNotAllowed
+		return model.File{}, model.RetVal{Msg: i18n.Model.File.NotAllowed}
 	}
 	size, hash, err := utils.GetFileInfoByHeader(file)
 	if err != nil {
 		log.Logger.Warningf("Failed to get file info: %s", err)
-		return model.File{}, false, i18n.UnknownError
+		return model.File{}, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}}
 	}
 	options.RandID = utils.UUID()
 	options.Filename = file.Filename
@@ -39,39 +39,36 @@ func SaveAvatar(tx *gorm.DB, options db.CreateFileOptions, file *multipart.FileH
 	options.Suffix = suffix
 	options.Hash = hash
 	options.Type = model.AvatarFileType
-	record, ok, msg := fileRepo.Create(options)
-	if ok {
+	record, ret := fileRepo.Create(options)
+	if ret.OK {
 		prometheus.UpdateFileUploadMetrics(record.Suffix, record.Size)
 	}
-	return record, ok, msg
+	return record, ret
 }
 
-func UpdateAvatar(tx *gorm.DB, v string, id uint, record model.File) (string, bool, string) {
-	var (
-		ok  bool
-		msg string
-	)
+func UpdateAvatar(tx *gorm.DB, v string, id uint, record model.File) (string, model.RetVal) {
+	var ret model.RetVal
 	path := model.AvatarURL(fmt.Sprintf("/avatars/%s", record.RandID))
 	switch v {
 	case "admin":
-		ok, msg = db.InitAdminRepo(tx).Update(id, db.UpdateAdminOptions{Avatar: &path})
+		ret = db.InitAdminRepo(tx).Update(id, db.UpdateAdminOptions{Avatar: &path})
 	case "self-user":
-		ok, msg = db.InitUserRepo(tx).Update(id, db.UpdateUserOptions{Avatar: &path})
+		ret = db.InitUserRepo(tx).Update(id, db.UpdateUserOptions{Avatar: &path})
 	case "user":
-		ok, msg = db.InitUserRepo(tx).Update(id, db.UpdateUserOptions{Avatar: &path})
+		ret = db.InitUserRepo(tx).Update(id, db.UpdateUserOptions{Avatar: &path})
 	case "contest":
-		ok, msg = db.InitContestRepo(tx).Update(id, db.UpdateContestOptions{Avatar: &path})
+		ret = db.InitContestRepo(tx).Update(id, db.UpdateContestOptions{Avatar: &path})
 	case "team":
-		ok, msg = db.InitTeamRepo(tx).Update(id, db.UpdateTeamOptions{Avatar: &path})
-	case "oath":
-		ok, msg = db.InitOauthRepo(tx).Update(id, db.UpdateOauthOptions{Avatar: &path})
+		ret = db.InitTeamRepo(tx).Update(id, db.UpdateTeamOptions{Avatar: &path})
+	case "oauth":
+		ret = db.InitOauthRepo(tx).Update(id, db.UpdateOauthOptions{Avatar: &path})
 	default:
-		ok, msg = false, i18n.UnsupportedKey
+		ret = model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Invalid Avatar"}}
 	}
-	return string(path), ok, msg
+	return string(path), ret
 }
 
-func SaveChallengeFile(tx *gorm.DB, challenge model.Challenge, file *multipart.FileHeader, path string) (model.File, bool, string) {
+func SaveChallengeFile(tx *gorm.DB, challenge model.Challenge, file *multipart.FileHeader, path string) (model.File, model.RetVal) {
 	var (
 		fileRepo = db.InitFileRepo(tx)
 		suffix   = strings.ToLower(filepath.Ext(file.Filename))
@@ -79,20 +76,20 @@ func SaveChallengeFile(tx *gorm.DB, challenge model.Challenge, file *multipart.F
 	size, hash, err := utils.GetFileInfoByHeader(file)
 	if err != nil {
 		log.Logger.Warningf("Failed to get file info: %s", err)
-		return model.File{}, false, i18n.UnknownError
+		return model.File{}, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}}
 	}
-	record, ok, msg := fileRepo.Get(db.GetOptions{
+	record, ret := fileRepo.Get(db.GetOptions{
 		Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFileType},
 	})
-	if ok {
+	if ret.OK {
 		if hash == record.Hash {
-			return record, true, i18n.Success
+			return record, model.SuccessRetVal()
 		}
-		if ok, msg = fileRepo.Delete(record.ID); !ok {
-			return model.File{}, false, msg
+		if ret = fileRepo.Delete(record.ID); !ret.OK {
+			return model.File{}, ret
 		}
 	}
-	record, ok, msg = fileRepo.Create(db.CreateFileOptions{
+	record, ret = fileRepo.Create(db.CreateFileOptions{
 		RandID:      utils.UUID(),
 		Filename:    file.Filename,
 		Size:        size,
@@ -102,26 +99,26 @@ func SaveChallengeFile(tx *gorm.DB, challenge model.Challenge, file *multipart.F
 		Hash:        hash,
 		Type:        model.ChallengeFileType,
 	})
-	if ok {
+	if ret.OK {
 		prometheus.UpdateFileUploadMetrics(record.Suffix, file.Size)
 	}
-	return record, ok, msg
+	return record, ret
 }
 
-func SaveWriteUp(tx *gorm.DB, user model.User, contest model.Contest, team model.Team, file *multipart.FileHeader) (model.File, bool, string) {
+func SaveWriteUp(tx *gorm.DB, user model.User, contest model.Contest, team model.Team, file *multipart.FileHeader) (model.File, model.RetVal) {
 	var (
 		allowed = []string{".pdf", ".docx", ".doc"}
 		suffix  = strings.ToLower(filepath.Ext(file.Filename))
 	)
 	if !slices.Contains(allowed, suffix) {
-		return model.File{}, false, i18n.FileNotAllowed
+		return model.File{}, model.RetVal{Msg: i18n.Model.File.NotAllowed}
 	}
 	size, hash, err := utils.GetFileInfoByHeader(file)
 	if err != nil {
 		log.Logger.Warningf("Failed to get file info: %s", err)
-		return model.File{}, false, i18n.UnknownError
+		return model.File{}, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}}
 	}
-	record, ok, msg := db.InitFileRepo(tx).Create(db.CreateFileOptions{
+	record, ret := db.InitFileRepo(tx).Create(db.CreateFileOptions{
 		RandID:    utils.UUID(),
 		Filename:  file.Filename,
 		Size:      size,
@@ -133,8 +130,8 @@ func SaveWriteUp(tx *gorm.DB, user model.User, contest model.Contest, team model
 		Hash:      hash,
 		Type:      model.WriteUPFileType,
 	})
-	if ok {
+	if ret.OK {
 		prometheus.UpdateFileUploadMetrics(record.Suffix, file.Size)
 	}
-	return record, ok, msg
+	return record, ret
 }

@@ -48,19 +48,19 @@ func InitDockerRepo(tx *gorm.DB) *DockerRepo {
 	}
 }
 
-func (d *DockerRepo) Delete(idL ...uint) (bool, string) {
-	dockerL, _, ok, msg := d.List(-1, -1, GetOptions{
+func (d *DockerRepo) Delete(idL ...uint) model.RetVal {
+	dockerL, _, ret := d.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},
 		Selects:    []string{"id"},
 		Preloads: map[string]GetOptions{
 			"ChallengeFlags": {Selects: []string{"id", "docker_id"}},
 		},
 	})
-	if !ok {
-		if msg != i18n.DockerNotFound {
-			return false, msg
+	if !ret.OK {
+		if ret.Msg != i18n.Model.NotFound {
+			return ret
 		}
-		return true, i18n.Success
+		return model.SuccessRetVal()
 	}
 	challengeFlagIDL := make([]uint, 0)
 	for _, docker := range dockerL {
@@ -68,12 +68,12 @@ func (d *DockerRepo) Delete(idL ...uint) (bool, string) {
 			challengeFlagIDL = append(challengeFlagIDL, challengeFlag.ID)
 		}
 	}
-	if ok, msg = InitChallengeFlagRepo(d.DB).Delete(challengeFlagIDL...); !ok {
-		return false, msg
+	if ret = InitChallengeFlagRepo(d.DB).Delete(challengeFlagIDL...); !ret.OK {
+		return ret
 	}
 	if res := d.DB.Model(&model.Docker{}).Where("id IN ?", idL).Delete(&model.Docker{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Docker: %s", res.Error)
-		return false, i18n.DeleteDockerError
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Docker{}.GetModelName(), "Error": res.Error.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

@@ -20,24 +20,24 @@ import (
 
 func Register(ctx *gin.Context) {
 	var form f.RegisterForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.RegisterEventType)
-	user, ok, msg := service.CreateUser(db.DB, form)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	user, ret := service.CreateUser(db.DB, form)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
-	if ok, msg = service.SendEmail(user); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret = service.SendEmail(user); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	token, err := utils.GenerateToken(user.ID, user.Name, false, middleware.GetMagic(ctx))
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
 		return
 	}
 	ctx.Set("IsAdmin", false)
@@ -46,25 +46,25 @@ func Register(ctx *gin.Context) {
 	ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	prometheus.UpdateUserRegisterMetrics(oauth.LocalProvider)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetUserResp(user, false)})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetUserResp(user, false)))
 }
 
 func Login(ctx *gin.Context) {
 	var form f.LoginForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.LoginEventType)
-	user, ok, msg := service.VerifyUser(db.DB, form)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	user, ret := service.VerifyUser(db.DB, form)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	token, err := utils.GenerateToken(user.ID, user.Name, false, middleware.GetMagic(ctx))
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
 		return
 	}
 	ctx.Set("IsAdmin", false)
@@ -73,25 +73,25 @@ func Login(ctx *gin.Context) {
 	ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	prometheus.UpdateUserLoginMetrics(oauth.LocalProvider)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetUserResp(user, false)})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetUserResp(user, false)))
 }
 
 func AdminLogin(ctx *gin.Context) {
 	var form f.LoginForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.LoginEventType)
-	admin, ok, msg := service.VerifyAdmin(db.DB, form)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	admin, ret := service.VerifyAdmin(db.DB, form)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	token, err := utils.GenerateToken(admin.ID, admin.Name, true, "admin")
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
-		ctx.JSON(http.StatusOK, gin.H{"msg": i18n.UnknownError, "data": nil})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
 		return
 	}
 	ctx.Set("IsAdmin", true)
@@ -99,5 +99,5 @@ func AdminLogin(ctx *gin.Context) {
 	log.Logger.Infof("%s:%d login", admin.Name, admin.ID)
 	ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetAdminResp(admin)})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetAdminResp(admin)))
 }

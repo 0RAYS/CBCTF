@@ -89,11 +89,11 @@ func InitCheatRepo(tx *gorm.DB) *CheatRepo {
 	}
 }
 
-func (c *CheatRepo) Create(options CreateCheatOptions) (model.Cheat, bool, string) {
+func (c *CheatRepo) Create(options CreateCheatOptions) (model.Cheat, model.RetVal) {
 	m := options.Convert2Model().(model.Cheat)
 	if res := c.DB.Model(&model.Cheat{}).Attrs(m).FirstOrCreate(&m, model.Cheat{Hash: m.Hash}); res.Error != nil {
 		log.Logger.Warningf("Failed to create Cheat: %s", res.Error)
-		return model.Cheat{}, false, i18n.GetCheatError
+		return model.Cheat{}, model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.Cheat{}.GetModelName(), "Error": res.Error.Error()}}
 	}
-	return m, true, i18n.Success
+	return m, model.SuccessRetVal()
 }

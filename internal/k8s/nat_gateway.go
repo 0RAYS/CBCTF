@@ -3,6 +3,7 @@ package k8s
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"context"
 	"fmt"
 	"strings"
@@ -21,7 +22,7 @@ type CreateVPCNatGatewayOptions struct {
 	ExternalSubnet []string
 }
 
-func CreateVPCNatGateway(ctx context.Context, options CreateVPCNatGatewayOptions) (*kubeovnv1.VpcNatGateway, bool, string) {
+func CreateVPCNatGateway(ctx context.Context, options CreateVPCNatGatewayOptions) (*kubeovnv1.VpcNatGateway, model.RetVal) {
 	var (
 		gateway *kubeovnv1.VpcNatGateway
 		err     error
@@ -42,24 +43,24 @@ func CreateVPCNatGateway(ctx context.Context, options CreateVPCNatGatewayOptions
 	gateway, err = kubeOVNClient.KubeovnV1().VpcNatGateways().Create(ctx, gateway, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create VPCNatGateway: %s", err)
-		return nil, false, i18n.CreateVPCNatGatewayError
+		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "VPCNatGateway", "Error": err.Error()}}
 	}
-	return gateway, true, i18n.Success
+	return gateway, model.SuccessRetVal()
 }
 
-func GetVPCNatGateway(ctx context.Context, name string) (*kubeovnv1.VpcNatGateway, bool, string) {
+func GetVPCNatGateway(ctx context.Context, name string) (*kubeovnv1.VpcNatGateway, model.RetVal) {
 	gateway, err := kubeOVNClient.KubeovnV1().VpcNatGateways().Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if apierror.IsNotFound(err) {
-			return nil, false, i18n.VPCNatGatewayNotFound
+			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "VPCNatGateway"}}
 		}
 		log.Logger.Warningf("Failed to get VPCNatGateway: %s", err)
-		return nil, false, i18n.GetVPCNatGatewayError
+		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "VPCNatGateway", "Error": err.Error()}}
 	}
-	return gateway, true, i18n.Success
+	return gateway, model.SuccessRetVal()
 }
 
-func GetVPCNatGatewayList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.VpcNatGatewayList, bool, string) {
+func GetVPCNatGatewayList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.VpcNatGatewayList, model.RetVal) {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string
@@ -73,21 +74,21 @@ func GetVPCNatGatewayList(ctx context.Context, labels ...map[string]string) (*ku
 	gatewayList, err := kubeOVNClient.KubeovnV1().VpcNatGateways().List(ctx, options)
 	if err != nil {
 		log.Logger.Warningf("Failed to list VPCNatGateway: %s", err)
-		return nil, false, i18n.GetVPCNatGatewayError
+		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "VPCNatGateway", "Error": err.Error()}}
 	}
-	return gatewayList, true, i18n.Success
+	return gatewayList, model.SuccessRetVal()
 }
 
-func DeleteVPCNatGateway(ctx context.Context, name string) (bool, string) {
+func DeleteVPCNatGateway(ctx context.Context, name string) model.RetVal {
 	err := kubeOVNClient.KubeovnV1().VpcNatGateways().Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete VPCNatGateway: %s", err)
-		return false, i18n.DeleteVPCNatGatewayError
+		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "VPCNatGateway", "Error": err.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
-func DeleteVPCNatGatewayList(ctx context.Context, labels ...map[string]string) (bool, string) {
+func DeleteVPCNatGatewayList(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string
@@ -101,7 +102,7 @@ func DeleteVPCNatGatewayList(ctx context.Context, labels ...map[string]string) (
 	err := kubeOVNClient.KubeovnV1().VpcNatGateways().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete VPCNatGateway: %s", err)
-		return false, i18n.DeleteVPCNatGatewayError
+		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "VPCNatGateway", "Error": err.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

@@ -35,7 +35,7 @@ func (p Pod) GetErrorString() string {
 	return i18n.GetPodError
 }
 
-func (p Pod) NotFoundErrorString() string {
+func (p Pod) NotFoundString() string {
 	return i18n.PodNotFound
 }
 

@@ -3,7 +3,6 @@ package router
 import (
 	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
@@ -16,59 +15,59 @@ import (
 
 func GetAdmin(ctx *gin.Context) {
 	admin := middleware.GetSelf(ctx).(model.Admin)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": resp.GetAdminResp(admin)})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetAdminResp(admin)))
 }
 
 func AdminChangePassword(ctx *gin.Context) {
 	var form f.ChangePasswordForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateAdminEventType)
-	ok, msg := service.ChangeAdminPassword(db.DB, middleware.GetSelf(ctx).(model.Admin), form)
-	if ok {
+	ret := service.ChangeAdminPassword(db.DB, middleware.GetSelf(ctx).(model.Admin), form)
+	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	ctx.JSON(http.StatusOK, ret)
 }
 
 func UpdateAdmin(ctx *gin.Context) {
 	var form f.UpdateAdminForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateAdminEventType)
-	ok, msg := service.UpdateAdmin(db.DB, middleware.GetSelf(ctx).(model.Admin), form)
-	if ok {
+	ret := service.UpdateAdmin(db.DB, middleware.GetSelf(ctx).(model.Admin), form)
+	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	ctx.JSON(http.StatusOK, ret)
 }
 
 func CreateAdmin(ctx *gin.Context) {
 	var form f.CreateAdminForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateAdminEventType)
-	admin, ok, msg := service.CreateAdmin(db.DB, form)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	admin, ret := service.CreateAdmin(db.DB, form)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": resp.GetAdminResp(admin)})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetAdminResp(admin)))
 }
 
 func GetLogs(ctx *gin.Context) {
 	var form f.GetLogsForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
-	data, _, msg := redis.GetLogs(int64(form.Offset), int64(form.Offset+form.Limit))
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": data})
+	data, _ := redis.GetLogs(int64(form.Offset), int64(form.Offset+form.Limit))
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
 }

@@ -27,8 +27,8 @@ var (
 )
 
 func Init() {
-	smtpL, _, ok, _ := db.InitSmtpRepo(db.DB).List(-1, -1, db.GetOptions{Conditions: map[string]any{"on": true}})
-	if !ok {
+	smtpL, _, ret := db.InitSmtpRepo(db.DB).List(-1, -1, db.GetOptions{Conditions: map[string]any{"on": true}})
+	if !ret.OK {
 		log.Logger.Warningf("No smtp configured, email sending will be failed")
 		return
 	}

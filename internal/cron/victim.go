@@ -17,7 +17,7 @@ import (
 func closeTimeoutVictims(c *cron.Cron) {
 	function := exec("CloseTimeoutVictims", func() {
 		repo := db.InitVictimRepo(db.DB)
-		victims, _, ok, _ := repo.List(-1, -1, db.GetOptions{
+		victims, _, ret := repo.List(-1, -1, db.GetOptions{
 			Preloads: map[string]db.GetOptions{
 				"Team": {
 					Selects: []string{"id", "contest_id"},
@@ -27,7 +27,7 @@ func closeTimeoutVictims(c *cron.Cron) {
 				},
 			},
 		})
-		if !ok {
+		if !ret.OK {
 			return
 		}
 		for _, victim := range victims {
@@ -44,10 +44,10 @@ func closeTimeoutVictims(c *cron.Cron) {
 func closeUnCtrlVictims(c *cron.Cron) {
 	function := exec("CloseUnCtrlVictims", func() {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-		pods, ok, msg := k8s.GetPodList(ctx)
+		pods, ret := k8s.GetPodList(ctx)
 		cancel()
-		if !ok {
-			log.Logger.Warningf("Failed to get Victim %s", msg)
+		if !ret.OK {
+			log.Logger.Warningf("Failed to get Victim %v", ret)
 			return
 		}
 		idL := make([]string, 0)
@@ -62,8 +62,8 @@ func closeUnCtrlVictims(c *cron.Cron) {
 					if err != nil {
 						continue
 					}
-					_, ok, _ = victimRepo.GetByID(uint(victimID), db.GetOptions{Selects: []string{"id"}})
-					if !ok {
+					_, ret = victimRepo.GetByID(uint(victimID), db.GetOptions{Selects: []string{"id"}})
+					if !ret.OK {
 						idL = append(idL, pod.Labels[key])
 					}
 				}

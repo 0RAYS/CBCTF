@@ -76,7 +76,7 @@ func InitVictimRepo(tx *gorm.DB) *VictimRepo {
 	}
 }
 
-func (v *VictimRepo) HasAliveVictim(teamID, challengeID uint) (model.Victim, bool, string) {
+func (v *VictimRepo) HasAliveVictim(teamID, challengeID uint) (model.Victim, model.RetVal) {
 	options := GetOptions{Conditions: map[string]any{"team_id": nil, "challenge_id": challengeID}}
 	if teamID > 0 {
 		options.Conditions["team_id"] = teamID
@@ -84,17 +84,17 @@ func (v *VictimRepo) HasAliveVictim(teamID, challengeID uint) (model.Victim, boo
 	return v.Get(options)
 }
 
-func (v *VictimRepo) Delete(idL ...uint) (bool, string) {
-	victimL, _, ok, msg := v.List(-1, -1, GetOptions{
+func (v *VictimRepo) Delete(idL ...uint) model.RetVal {
+	victimL, _, ret := v.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},
 		Selects:    []string{"id"},
 		Preloads:   map[string]GetOptions{"Pods": {Selects: []string{"id", "victim_id"}}},
 	})
-	if !ok {
-		if msg != i18n.VictimNotFound {
-			return false, msg
+	if !ret.OK {
+		if ret.Msg != i18n.VictimNotFound {
+			return ret
 		}
-		return true, i18n.Success
+		return model.SuccessRetVal()
 	}
 	podIDL := make([]uint, 0)
 	for _, victim := range victimL {
@@ -102,12 +102,12 @@ func (v *VictimRepo) Delete(idL ...uint) (bool, string) {
 			podIDL = append(podIDL, pod.ID)
 		}
 	}
-	if ok, msg = InitPodRepo(v.DB).Delete(podIDL...); !ok {
-		return false, msg
+	if ret = InitPodRepo(v.DB).Delete(podIDL...); !ret.OK {
+		return ret
 	}
 	if res := v.DB.Model(&model.Victim{}).Where("id IN ?", idL).Delete(&model.Victim{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Victim: %s", res.Error)
-		return false, i18n.DeleteVictimError
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]interface{}{"Model": model.Victim{}.GetModelName(), "Error": res.Error.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

@@ -55,27 +55,27 @@ func InitFileRepo(tx *gorm.DB) *FileRepo {
 	}
 }
 
-func (f *FileRepo) Create(options CreateFileOptions) (model.File, bool, string) {
-	records, ok, _ := f.Get(GetOptions{Conditions: map[string]any{"hash": options.Hash}})
-	if ok {
+func (f *FileRepo) Create(options CreateFileOptions) (model.File, model.RetVal) {
+	records, ret := f.Get(GetOptions{Conditions: map[string]any{"hash": options.Hash}})
+	if ret.OK {
 		options.Path = records.Path
 	}
 	m := options.Convert2Model().(model.File)
 	if res := f.DB.Model(&model.File{}).Create(&m); res.Error != nil {
 		log.Logger.Warningf("Failed to create File: %s", res.Error)
-		return model.File{}, false, i18n.CreateFileError
+		return model.File{}, model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]interface{}{"Model": m.GetModelName(), "Error": res.Error.Error()}}
 	}
-	return m, true, i18n.Success
+	return m, model.SuccessRetVal()
 }
 
-func (f *FileRepo) GetByRandID(randID string, optionsL ...GetOptions) (model.File, bool, string) {
+func (f *FileRepo) GetByRandID(randID string, optionsL ...GetOptions) (model.File, model.RetVal) {
 	return f.GetByUniqueKey("rand_id", randID, optionsL...)
 }
 
-func (f *FileRepo) DeleteByRandID(randIDL ...string) (bool, string) {
+func (f *FileRepo) DeleteByRandID(randIDL ...string) model.RetVal {
 	if res := f.DB.Model(&model.File{}).Where("rand_id IN ?", randIDL).Delete(&model.File{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete File: %s", res.Error)
-		return false, i18n.DeleteFileError
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]interface{}{"Model": model.File{}.GetModelName(), "Error": res.Error.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

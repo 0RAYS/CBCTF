@@ -51,7 +51,7 @@ func (u User) GetErrorString() string {
 	return i18n.GetUserError
 }
 
-func (u User) NotFoundErrorString() string {
+func (u User) NotFoundString() string {
 	return i18n.UserNotFound
 }
 

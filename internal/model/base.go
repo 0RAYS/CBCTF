@@ -22,7 +22,7 @@ type Model interface {
 	CreateErrorString() string
 	DeleteErrorString() string
 	GetErrorString() string
-	NotFoundErrorString() string
+	NotFoundString() string
 	UpdateErrorString() string
 	GetUniqueKey() []string
 	GetAllowedQueryFields() []string

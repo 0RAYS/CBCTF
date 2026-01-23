@@ -37,8 +37,7 @@ func HandleSendEmailTask(_ context.Context, t *asynq.Task) error {
 		log.Logger.Warningf("Failed to send mail: %s", err)
 		prometheus.IncEmailSentMetrics(false)
 		return err
-	} else {
-		prometheus.IncEmailSentMetrics(true)
 	}
+	prometheus.IncEmailSentMetrics(true)
 	return nil
 }

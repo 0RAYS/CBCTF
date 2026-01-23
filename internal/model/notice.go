@@ -39,7 +39,7 @@ func (n Notice) GetErrorString() string {
 	return i18n.GetNoticeError
 }
 
-func (n Notice) NotFoundErrorString() string {
+func (n Notice) NotFoundString() string {
 	return i18n.NoticeNotFound
 }
 

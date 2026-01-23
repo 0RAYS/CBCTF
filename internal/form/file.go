@@ -17,10 +17,10 @@ type GetFilesForm struct {
 	Type   string `form:"type" json:"type"`
 }
 
-func (f *GetFilesForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *GetFilesForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
 	if f.Limit > 100 || f.Limit < 0 {
 		f.Limit = 15
@@ -37,5 +37,5 @@ func (f *GetFilesForm) Bind(ctx *gin.Context) (bool, string) {
 	if !slices.Contains(allowedFileType, f.Type) {
 		f.Type = ""
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

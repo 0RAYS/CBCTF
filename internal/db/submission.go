@@ -64,18 +64,18 @@ func InitSubmissionRepo(tx *gorm.DB) *SubmissionRepo {
 	}
 }
 
-func (s *SubmissionRepo) GetBloodTeam(contestFlagID uint) ([]uint, bool, string) {
+func (s *SubmissionRepo) GetBloodTeam(contestFlagID uint) ([]uint, model.RetVal) {
 	var submissions []model.Submission
 	teamIDL := make([]uint, 0)
 	res := s.DB.Model(&model.Submission{}).Where("contest_flag_id = ?", contestFlagID).Order("id").Limit(3).Find(&submissions)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Submission: %s", res.Error)
-		return nil, false, i18n.DeleteSubmissionError
+		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Submission{}.GetModelName(), "Error": res.Error.Error()}}
 	}
 	for _, submission := range submissions {
 		if submission.TeamID != 0 {
 			teamIDL = append(teamIDL, submission.TeamID)
 		}
 	}
-	return teamIDL, true, i18n.Success
+	return teamIDL, model.SuccessRetVal()
 }

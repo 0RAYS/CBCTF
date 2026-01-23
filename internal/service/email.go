@@ -13,40 +13,38 @@ import (
 	"gorm.io/gorm"
 )
 
-func SendEmail(user model.User) (bool, string) {
+func SendEmail(user model.User) model.RetVal {
 	id := utils.UUID()
 	token, err := utils.GenerateToken(user.ID, user.Name, false, id)
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
-		return false, i18n.UnknownError
+		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}}
 	}
-	if err = redis.SetEmailVerifyToken(user.ID, id); err != nil {
-		log.Logger.Warningf("Failed to set email verify token: %s", err)
-		return false, i18n.SetEmailVerifyTokenError
+	if ret := redis.SetEmailVerifyToken(user.ID, id); !ret.OK {
+		return ret
 	}
 	if _, err = task.EnqueueSendEmailTask(user.Email, token, id); err != nil {
 		log.Logger.Warningf("Failed to enqueue send email task: %s", err)
-		return false, i18n.EnqueueTaskError
+		return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
-func VerifyEmail(tx *gorm.DB, form f.VerifyEmail) (bool, string) {
+func VerifyEmail(tx *gorm.DB, form f.VerifyEmail) model.RetVal {
 	claims, err := utils.ParseToken(form.Token)
 	if err != nil || !utils.CompareMagic(form.ID, claims.X) {
-		return false, i18n.InvalidEmailVerifyToken
+		return model.RetVal{Msg: i18n.Model.Email.InvalidVerifyToken}
 	}
-	if _, err = redis.GetEmailVerifyToken(claims.UserID); err != nil {
-		return false, i18n.GetEmailVerifyTokenError
+	if _, ret := redis.GetEmailVerifyToken(claims.UserID); !ret.OK {
+		return ret
 	}
 	repo := db.InitUserRepo(tx)
-	ok, msg := repo.Update(claims.UserID, db.UpdateUserOptions{Verified: utils.Ptr(true)})
-	if !ok {
-		return false, msg
+	ret := repo.Update(claims.UserID, db.UpdateUserOptions{Verified: utils.Ptr(true)})
+	if !ret.OK {
+		return ret
 	}
-	if err = redis.DelEmailVerifyToken(claims.UserID); err != nil {
-		log.Logger.Warningf("Failed to delete email verify token: %s", err)
-		return false, i18n.DelEmailVerifyTokenError
+	if ret = redis.DelEmailVerifyToken(claims.UserID); !ret.OK {
+		return ret
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

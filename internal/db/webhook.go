@@ -117,7 +117,7 @@ func InitWebhookRepo(tx *gorm.DB) *WebhookRepo {
 	}
 }
 
-func (w *WebhookRepo) UpdateStatus(id uint, success bool, last time.Time) (bool, string) {
+func (w *WebhookRepo) UpdateStatus(id uint, success bool, last time.Time) model.RetVal {
 	var diffOptions DiffUpdateWebhookOptions
 	var options UpdateWebhookOptions
 	if success {
@@ -135,8 +135,8 @@ func (w *WebhookRepo) UpdateStatus(id uint, success bool, last time.Time) (bool,
 			FailureLast: &last,
 		}
 	}
-	if ok, msg := w.DiffUpdate(id, diffOptions); !ok {
-		return false, msg
+	if ret := w.DiffUpdate(id, diffOptions); !ret.OK {
+		return ret
 	}
 	return w.Update(id, options)
 }

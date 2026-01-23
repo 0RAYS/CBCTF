@@ -38,7 +38,7 @@ func (c Container) GetErrorString() string {
 	return i18n.GetContainerError
 }
 
-func (c Container) NotFoundErrorString() string {
+func (c Container) NotFoundString() string {
 	return i18n.ContainerNotFound
 }
 

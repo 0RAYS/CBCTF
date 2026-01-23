@@ -3,8 +3,7 @@ package form
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
-	"CBCTF/internal/utils"
-	"strings"
+	"CBCTF/internal/model"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,17 +15,12 @@ type CreateTeamForm struct {
 	Captcha string `form:"captcha" json:"captcha"`
 }
 
-func (f *CreateTeamForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *CreateTeamForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
-	f.Name = strings.TrimSpace(f.Name)
-	if f.Name == "" {
-		return false, i18n.BadRequest
-	}
-	f.Captcha = strings.TrimSpace(f.Captcha)
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 // UpdateTeamForm for user update team info
@@ -36,18 +30,12 @@ type UpdateTeamForm struct {
 	CaptainID *uint   `form:"captain_id" json:"captain_id"`
 }
 
-func (f *UpdateTeamForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *UpdateTeamForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
-	if f.Name != nil {
-		f.Name = utils.Ptr(strings.TrimSpace(*f.Name))
-		if *f.Name == "" {
-			return false, i18n.BadRequest
-		}
-	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 // JoinTeamForm for user join team
@@ -56,17 +44,12 @@ type JoinTeamForm struct {
 	Captcha string `form:"captcha" json:"captcha" binding:"required"`
 }
 
-func (f *JoinTeamForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *JoinTeamForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
-	f.Name = strings.TrimSpace(f.Name)
-	if f.Name == "" {
-		return false, i18n.BadRequest
-	}
-	f.Captcha = strings.TrimSpace(f.Captcha)
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 // KickMemberForm for admin or captain kick member
@@ -74,12 +57,12 @@ type KickMemberForm struct {
 	UserID uint `form:"user_id" json:"user_id" binding:"required"`
 }
 
-func (f *KickMemberForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *KickMemberForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 // AdminUpdateTeamForm for admin update team info
@@ -92,19 +75,10 @@ type AdminUpdateTeamForm struct {
 	CaptainID *uint   `form:"captain_id" json:"captain_id"`
 }
 
-func (f *AdminUpdateTeamForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *AdminUpdateTeamForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
-	if f.Name != nil {
-		f.Name = utils.Ptr(strings.TrimSpace(*f.Name))
-		if *f.Name == "" {
-			return false, i18n.BadRequest
-		}
-	}
-	if f.Captcha != nil {
-		f.Captcha = utils.Ptr(strings.TrimSpace(*f.Captcha))
-	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

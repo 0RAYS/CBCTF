@@ -2,7 +2,6 @@ package k8s
 
 import (
 	"CBCTF/internal/config"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
@@ -63,7 +62,7 @@ type CreateFrpcPodResult struct {
 	MSG  string
 }
 
-func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []string, bool, string) {
+func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []string, model.RetVal) {
 	idxBig, _ := rand.Int(rand.Reader, big.NewInt(int64(len(config.Env.K8S.Frpc.Frps))))
 	frps := config.Env.K8S.Frpc.Frps[idxBig.Int64()]
 	portRange := make([]int32, 0)
@@ -86,9 +85,9 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 		frpcConfig := fmt.Sprintf(frpcHeaderTemplate, frps.Host, frps.Port, frps.Token)
 		nginxConfig := ""
 		for _, endpoint := range victim.Endpoints {
-			exposedPort, ok, msg := GetAvailableFrpsPort(frps.Host, portRange, endpoint.Protocol)
-			if !ok {
-				return nil, nil, false, msg
+			exposedPort, ret := GetAvailableFrpsPort(frps.Host, portRange, endpoint.Protocol)
+			if !ret.OK {
+				return nil, nil, ret
 			}
 			// 对于 TCP 协议, 启用 proxy_protocol
 			if protocol := strings.ToLower(endpoint.Protocol); protocol == "tcp" {
@@ -128,9 +127,9 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 			nginxConfig := ""
 			for _, eip := range subnet.NatGateway.EIPs {
 				for _, dnat := range eip.DNats {
-					exposedPort, ok, msg := GetAvailableFrpsPort(frps.Host, portRange, dnat.Protocol)
-					if !ok {
-						return nil, nil, false, msg
+					exposedPort, ret := GetAvailableFrpsPort(frps.Host, portRange, dnat.Protocol)
+					if !ret.OK {
+						return nil, nil, ret
 					}
 					// 对于 TCP 协议, 启用 proxy_protocol
 					if protocol := strings.ToLower(dnat.Protocol); protocol == "tcp" {
@@ -177,21 +176,21 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 		FrpcPodTag:             FrpcPodTag,
 	}
 	for _, podName := range frpcPodNameL {
-		fcm, ok, msg := CreateConfigMap(ctx, CreateConfigMapOptions{
+		fcm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
 			Name:   fmt.Sprintf("cm-%s", utils.RandStr(20)),
 			Labels: labels,
 			Data:   map[string]string{"frpc.toml": podFrpcConfigMap[podName]},
 		})
-		if !ok {
-			return nil, nil, false, msg
+		if !ret.OK || fcm == nil {
+			return nil, nil, ret
 		}
-		ncm, ok, msg := CreateConfigMap(ctx, CreateConfigMapOptions{
+		ncm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
 			Name:   fmt.Sprintf("cm-%s", utils.RandStr(20)),
 			Labels: labels,
 			Data:   map[string]string{"nginx.conf": podNginxConfigMap[podName]},
 		})
-		if !ok {
-			return nil, nil, false, msg
+		if !ret.OK || ncm == nil {
+			return nil, nil, ret
 		}
 		fcmVolume := corev1.Volume{
 			Name: fmt.Sprintf("vol-%s", utils.RandStr(20)),
@@ -269,23 +268,23 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 		if gw, exists := podVPCGWMap[podName]; exists {
 			options.PodAntiAffinity = map[string]string{"app": fmt.Sprintf("vpc-nat-gw-%s", gw)}
 		}
-		if _, ok, msg = CreatePod(ctx, options); !ok {
-			return nil, nil, false, msg
+		if _, ret = CreatePod(ctx, options); !ret.OK {
+			return nil, nil, ret
 		}
 	}
-	return newEndpoints, frpcPodNameL, true, i18n.Success
+	return newEndpoints, frpcPodNameL, model.SuccessRetVal()
 }
 
-func GetAvailableFrpsPort(host string, portRange []int32, protocol string) (int32, bool, string) {
-	port, ok, err := redis.LockFrpsPort(host, portRange, protocol)
-	if err != nil {
-		return 0, false, i18n.RedisError
+func GetAvailableFrpsPort(host string, portRange []int32, protocol string) (int32, model.RetVal) {
+	port, ret := redis.LockFrpsPort(host, portRange, protocol)
+	if !ret.OK {
+		if err, ok := ret.Attr["Error"]; ok && err == nil {
+			portRange = slices.DeleteFunc(portRange, func(i int32) bool {
+				return i == port
+			})
+			return GetAvailableFrpsPort(host, portRange, protocol)
+		}
+		return 0, ret
 	}
-	if !ok {
-		portRange = slices.DeleteFunc(portRange, func(i int32) bool {
-			return i == port
-		})
-		return GetAvailableFrpsPort(host, portRange, protocol)
-	}
-	return port, true, i18n.Success
+	return port, model.SuccessRetVal()
 }

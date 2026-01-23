@@ -42,7 +42,7 @@ func (w Webhook) GetErrorString() string {
 	return i18n.GetWebhookError
 }
 
-func (w Webhook) NotFoundErrorString() string {
+func (w Webhook) NotFoundString() string {
 	return i18n.WebhookNotFound
 }
 

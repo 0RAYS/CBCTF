@@ -62,7 +62,7 @@ func (c ContestFlag) GetErrorString() string {
 	return i18n.GetContestFlagError
 }
 
-func (c ContestFlag) NotFoundErrorString() string {
+func (c ContestFlag) NotFoundString() string {
 	return i18n.ContestFlagNotFound
 }
 

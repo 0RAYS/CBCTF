@@ -3,6 +3,7 @@ package k8s
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"context"
 	"slices"
 
@@ -10,19 +11,19 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func ListNodes(ctx context.Context) (*corev1.NodeList, bool, string) {
+func ListNodes(ctx context.Context) (*corev1.NodeList, model.RetVal) {
 	nodes, err := kubeClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to list nodes: %s", err)
-		return nil, false, i18n.GetNodeListError
+		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "Nodes", "Error": err.Error()}}
 	}
-	return nodes, true, i18n.Success
+	return nodes, model.SuccessRetVal()
 }
 
-func ListSchedulableNodes(ctx context.Context) ([]*corev1.Node, bool, string) {
-	allNodes, ok, msg := ListNodes(ctx)
-	if !ok {
-		return nil, false, msg
+func ListSchedulableNodes(ctx context.Context) ([]*corev1.Node, model.RetVal) {
+	allNodes, ret := ListNodes(ctx)
+	if !ret.OK || allNodes == nil {
+		return nil, ret
 	}
 	nodes := make([]*corev1.Node, 0)
 	for _, node := range allNodes.Items {
@@ -37,13 +38,13 @@ func ListSchedulableNodes(ctx context.Context) ([]*corev1.Node, bool, string) {
 			nodes = append(nodes, &node)
 		}
 	}
-	return nodes, true, i18n.Success
+	return nodes, model.SuccessRetVal()
 }
 
-func GetNodeImageList(ctx context.Context) (map[string][]string, bool, string) {
-	nodes, ok, msg := ListSchedulableNodes(ctx)
-	if !ok {
-		return nil, false, msg
+func GetNodeImageList(ctx context.Context) (map[string][]string, model.RetVal) {
+	nodes, ret := ListSchedulableNodes(ctx)
+	if !ret.OK {
+		return nil, ret
 	}
 	images := make(map[string][]string)
 	for _, node := range nodes {
@@ -56,5 +57,5 @@ func GetNodeImageList(ctx context.Context) (map[string][]string, bool, string) {
 			}
 		}
 	}
-	return images, true, i18n.Success
+	return images, model.SuccessRetVal()
 }

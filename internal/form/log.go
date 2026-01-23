@@ -3,6 +3,7 @@ package form
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,10 +13,10 @@ type GetLogsForm struct {
 	Limit  int `form:"limit" json:"limit"`
 }
 
-func (f *GetLogsForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *GetLogsForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
 	if f.Limit < 0 {
 		f.Limit = 100
@@ -29,5 +30,5 @@ func (f *GetLogsForm) Bind(ctx *gin.Context) (bool, string) {
 	if _, ok := ctx.GetQuery("offset"); !ok {
 		f.Offset = 0
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

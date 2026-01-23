@@ -40,14 +40,14 @@ func InitEmailRepo(tx *gorm.DB) *EmailRepo {
 	}
 }
 
-func (e *EmailRepo) Create(options CreateEmailOptions) (model.Email, bool, string) {
+func (e *EmailRepo) Create(options CreateEmailOptions) (model.Email, model.RetVal) {
 	m := options.Convert2Model().(model.Email)
 	if res := e.DB.Model(&model.Email{}).Create(&m); res.Error != nil {
 		log.Logger.Warningf("Failed to create Email: %s", res.Error)
-		return model.Email{}, false, i18n.CreateEmailError
+		return model.Email{}, model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": m.GetModelName(), "Error": res.Error.Error()}}
 	}
-	if ok, msg := InitSmtpRepo(e.DB).UpdateStatus(m.SmtpID, m.Success, m.CreatedAt); !ok {
-		return model.Email{}, false, msg
+	if ret := InitSmtpRepo(e.DB).UpdateStatus(m.SmtpID, m.Success, m.CreatedAt); !ret.OK {
+		return model.Email{}, ret
 	}
-	return m, true, i18n.Success
+	return m, model.SuccessRetVal()
 }

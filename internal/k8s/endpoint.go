@@ -3,6 +3,7 @@ package k8s
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"context"
 	"fmt"
 	"strings"
@@ -21,7 +22,7 @@ type CreateEndpointOptions struct {
 	Protocol string
 }
 
-func CreateEndpoint(ctx context.Context, options CreateEndpointOptions) (*discoveryv1.EndpointSlice, bool, string) {
+func CreateEndpoint(ctx context.Context, options CreateEndpointOptions) (*discoveryv1.EndpointSlice, model.RetVal) {
 	var (
 		endpoint *discoveryv1.EndpointSlice
 		err      error
@@ -46,24 +47,24 @@ func CreateEndpoint(ctx context.Context, options CreateEndpointOptions) (*discov
 	endpoint, err = kubeClient.DiscoveryV1().EndpointSlices(globalNamespace).Create(ctx, endpoint, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create EndpointSlice for %s", err)
-		return nil, false, i18n.CreateEndpointError
+		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "EndpointSlice", "Error": err.Error()}}
 	}
-	return endpoint, true, i18n.Success
+	return endpoint, model.SuccessRetVal()
 }
 
-func GetEndpoint(ctx context.Context, name string) (*discoveryv1.EndpointSlice, bool, string) {
+func GetEndpoint(ctx context.Context, name string) (*discoveryv1.EndpointSlice, model.RetVal) {
 	endpoint, err := kubeClient.DiscoveryV1().EndpointSlices(globalNamespace).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if apierror.IsNotFound(err) {
-			return nil, false, i18n.EndpointNotFound
+			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "EndpointSlice"}}
 		}
 		log.Logger.Warningf("Failed to get EndpointSlice: %s", err)
-		return nil, false, i18n.GetEndpointError
+		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "EndpointSlice", "Error": err.Error()}}
 	}
-	return endpoint, true, i18n.Success
+	return endpoint, model.SuccessRetVal()
 }
 
-func GetEndpointList(ctx context.Context, labels ...map[string]string) (*discoveryv1.EndpointSliceList, bool, string) {
+func GetEndpointList(ctx context.Context, labels ...map[string]string) (*discoveryv1.EndpointSliceList, model.RetVal) {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string
@@ -77,24 +78,24 @@ func GetEndpointList(ctx context.Context, labels ...map[string]string) (*discove
 	endpoints, err := kubeClient.DiscoveryV1().EndpointSlices(globalNamespace).List(ctx, options)
 	if err != nil {
 		if apierror.IsNotFound(err) {
-			return nil, false, i18n.EndpointNotFound
+			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "EndpointSlice"}}
 		}
 		log.Logger.Warningf("Failed to get EndpointSlice: %s", err)
-		return nil, false, i18n.GetEndpointError
+		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "EndpointSlice", "Error": err.Error()}}
 	}
-	return endpoints, true, i18n.Success
+	return endpoints, model.SuccessRetVal()
 }
 
-func DeleteEndpoint(ctx context.Context, name string) (bool, string) {
+func DeleteEndpoint(ctx context.Context, name string) model.RetVal {
 	err := kubeClient.DiscoveryV1().EndpointSlices(globalNamespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to delete EndpointSlice for %s", name)
-		return false, i18n.DeleteEndpointError
+		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "EndpointSlice", "Error": err.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
-func DeleteEndpointList(ctx context.Context, labels ...map[string]string) (bool, string) {
+func DeleteEndpointList(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string
@@ -108,7 +109,7 @@ func DeleteEndpointList(ctx context.Context, labels ...map[string]string) (bool,
 	err := kubeClient.DiscoveryV1().EndpointSlices(globalNamespace).DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete EndpointSlice: %s", err)
-		return false, i18n.DeleteEndpointError
+		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "EndpointSlice", "Error": err.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

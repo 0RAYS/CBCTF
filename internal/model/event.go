@@ -126,7 +126,7 @@ func (e Event) GetErrorString() string {
 	return i18n.GetEventError
 }
 
-func (e Event) NotFoundErrorString() string {
+func (e Event) NotFoundString() string {
 	return i18n.EventNotFound
 }
 

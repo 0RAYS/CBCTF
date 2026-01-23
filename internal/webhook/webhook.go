@@ -25,7 +25,7 @@ var (
 )
 
 func Init() {
-	Webhooks, _, _, _ = db.InitWebhookRepo(db.DB).List(-1, -1, db.GetOptions{
+	Webhooks, _, _ = db.InitWebhookRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"on": true},
 	})
 }

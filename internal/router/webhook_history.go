@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
 	"CBCTF/internal/middleware"
+	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"net/http"
 
@@ -11,9 +12,9 @@ import (
 )
 
 func GetWebhookHistory(ctx *gin.Context) {
-	var form f.GetModelsForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	var form f.ListModelsForm
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	options := db.GetOptions{
@@ -23,14 +24,14 @@ func GetWebhookHistory(ctx *gin.Context) {
 	if webhook.ID > 0 {
 		options.Conditions = map[string]any{"webhook_id": webhook.ID}
 	}
-	histories, count, ok, msg := db.InitWebhookHistoryRepo(db.DB).List(form.Limit, form.Offset, options)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	histories, count, ret := db.InitWebhookHistoryRepo(db.DB).List(form.Limit, form.Offset, options)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	data := make([]gin.H, 0)
 	for _, history := range histories {
 		data = append(data, resp.GetWebhookHistoryResp(history))
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"histories": data, "count": count}})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"histories": data, "count": count}))
 }

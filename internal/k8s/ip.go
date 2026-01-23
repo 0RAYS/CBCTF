@@ -3,6 +3,7 @@ package k8s
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"context"
 	"fmt"
 	"strings"
@@ -19,7 +20,7 @@ type CreateIPOptions struct {
 	IP      string
 }
 
-func DeleteIPList(ctx context.Context, labels ...map[string]string) (bool, string) {
+func DeleteIPList(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string
@@ -33,7 +34,7 @@ func DeleteIPList(ctx context.Context, labels ...map[string]string) (bool, strin
 	err := kubeOVNClient.KubeovnV1().IPs().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete IP list: %s", err)
-		return false, i18n.DeleteIPError
+		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "IP", "Error": err.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

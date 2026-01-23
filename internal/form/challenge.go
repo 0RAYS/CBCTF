@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 	"slices"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,10 +22,10 @@ type GetChallengesForm struct {
 	Category string `form:"category" json:"category"`
 }
 
-func (f *GetChallengesForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *GetChallengesForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
 	if f.Limit > 100 || f.Limit < 0 {
 		f.Limit = 15
@@ -44,7 +43,7 @@ func (f *GetChallengesForm) Bind(ctx *gin.Context) (bool, string) {
 		f.Type = ""
 	}
 	f.Category = utils.ToTitle(f.Category)
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 // GetCategoriesForm for get categories list
@@ -52,15 +51,15 @@ type GetCategoriesForm struct {
 	Type string `form:"type" json:"type"`
 }
 
-func (f *GetCategoriesForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *GetCategoriesForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
 	if !slices.Contains(allowedChallengeType, f.Type) {
 		f.Type = ""
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 type CreateChallengeForm struct {
@@ -75,20 +74,16 @@ type CreateChallengeForm struct {
 	NetworkPolicies model.NetworkPolicies `form:"network_policies" json:"network_policies"`
 }
 
-func (f *CreateChallengeForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *CreateChallengeForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
-	}
-	f.Name = strings.TrimSpace(f.Name)
-	if f.Name == "" {
-		return false, i18n.BadRequest
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
 	if !slices.Contains(allowedChallengeType, f.Type) {
-		return false, i18n.InvalidChallengeType
+		return model.RetVal{Msg: i18n.Model.Challenge.InvalidType}
 	}
 	f.Category = utils.ToTitle(f.Category)
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }
 
 type UpdateChallengeForm struct {
@@ -105,19 +100,13 @@ type UpdateChallengeForm struct {
 	} `form:"flags" json:"flags"`
 }
 
-func (f *UpdateChallengeForm) Bind(ctx *gin.Context) (bool, string) {
+func (f *UpdateChallengeForm) Bind(ctx *gin.Context) model.RetVal {
 	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return false, i18n.BadRequest
-	}
-	if f.Name != nil {
-		f.Name = utils.Ptr(strings.TrimSpace(*f.Name))
-		if *f.Name == "" {
-			return false, i18n.BadRequest
-		}
+		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
 	if f.Category != nil {
 		f.Category = utils.Ptr(utils.ToTitle(*f.Category))
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

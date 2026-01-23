@@ -1,2 +1,76 @@
 common:
   success: "操作成功"
+  unknownError: "未知错误: {{.Error}}"
+request:
+  badRequest: "参数错误: {{.Error}}"
+  unauthorized: "未登录"
+  forbidden: "禁止访问"
+  tooManyRequests: "请求频率过快"
+model:
+  duplicateKeyValue: "{{.Model}} 存在重复字段: {{.Key}}"
+  notUniqueKey: "{{.Model}} {{.Key}} 不是唯一值字段"
+  deadLock: "服务器繁忙, {{.Model}} 更新失败"
+  createError: "创建 {{.Model}} 失败: {{.Error}}"
+  getError: "获取 {{.Model}} 失败: {{.Error}}"
+  notFound: "{{.Model}} 不存在"
+  updateError: "更新 {{.Model}} 失败: {{.Error}}"
+  deleteError: "删除 {{.Model}} 失败: {{.Error}}"
+  challenge:
+    invalidType: "不合法的题目类型"
+    emptyImage: "题目镜像为空"
+  challengeFlag:
+    invalidType: "错误的 flag 类型"
+  cheat:
+    invalidType: "不合法的作弊类型"
+  contest:
+    captchaWrong: "比赛邀请码错误"
+    duplicateMember: "用户已加入队伍"
+    isComing: "比赛未开始"
+    isRunning: "比赛正在进行中"
+    isOver: "比赛已结束"
+  contestFlag:
+    invalidType: "不合法的 flag 类型"
+  docker:
+    invalidComposeYaml: "不合法的 docker-compose.yaml: {{.Error}}"
+  email:
+    invalidVerifyToken: "不合法的验证 token"
+  file:
+    notAllowed: "不允许的文件后缀"
+    readPcapError: "读取流量文件失败: {{.Error}}"
+    createDirError: "创建文件夹失败: {{.Error}}"
+  notice:
+    invalidType: "不合法的通知类型"
+  submission:
+    notAllowed: "不允许提交 flag"
+  team:
+    banned: "队伍被封禁"
+    full: "队伍已满"
+    captchaWrong: "队伍邀请码错误"
+    notHasMember: "用户不在队伍中"
+    captainCannotLeave: "队长不可以离开队伍"
+  teamFlag:
+    notMatch: "flag 错误"
+    alreadySolved: "已解出 flag"
+  user:
+    weakPassword: "密码强度太低"
+    samePassword: "新密码与旧密码相同"
+    passwordWrong: "密码错误"
+    namePasswordWrong: "用户名或密码错误"
+    unverifiedEmail: "邮箱未验证"
+    alreadyVerified: "邮箱已验证"
+  victim:
+    limited: "容器数量达到上限"
+    hasMuchTime: "距容器关闭20分钟内才可延长时间"
+  webhook:
+    invalidMethod: "不合法的 Webhook 请求方式"
+redis:
+  setError: "缓存 {{.Key}} 失败: {{.Error}}"
+  getError: "获取 {{.Key}} 缓存失败: {{.Error}}"
+  deleteError: "删除 {{.Key}} 缓存失败: {{.Error}}"
+task:
+  enqueueError: "提交任务队列失败: {{.Error}}"
+k8s:
+  createError: "创建 {{.Model}} 失败: {{.Error}}"
+  getError: "获取 {{.Model}} 失败: {{.Error}}"
+  notFound: "{{.Model}} 不存在"
+  deleteError: "删除 {{.Model}} 失败: {{.Error}}"

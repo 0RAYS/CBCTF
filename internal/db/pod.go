@@ -36,18 +36,18 @@ func InitPodRepo(tx *gorm.DB) *PodRepo {
 	}
 }
 
-func (p *PodRepo) Delete(idL ...uint) (bool, string) {
-	podL, _, ok, msg := p.List(-1, -1, GetOptions{
+func (p *PodRepo) Delete(idL ...uint) model.RetVal {
+	podL, _, ret := p.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},
 		Preloads: map[string]GetOptions{
 			"Containers": {Selects: []string{"id", "pod_id"}},
 		},
 	})
-	if !ok {
-		if msg != i18n.PodNotFound {
-			return false, msg
+	if !ret.OK {
+		if ret.Msg != i18n.Model.NotFound {
+			return ret
 		}
-		return true, i18n.Success
+		return model.SuccessRetVal()
 	}
 	containerIDL := make([]uint, 0)
 	for _, pod := range podL {
@@ -55,12 +55,12 @@ func (p *PodRepo) Delete(idL ...uint) (bool, string) {
 			containerIDL = append(containerIDL, container.ID)
 		}
 	}
-	if ok, msg = InitContainerRepo(p.DB).Delete(containerIDL...); !ok {
-		return false, msg
+	if ret = InitContainerRepo(p.DB).Delete(containerIDL...); !ret.OK {
+		return ret
 	}
 	if res := p.DB.Model(&model.Pod{}).Where("id IN ?", idL).Delete(&model.Pod{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Pod: %s", res.Error)
-		return false, i18n.DeletePodError
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]interface{}{"Model": model.Pod{}.GetModelName(), "Error": res.Error.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

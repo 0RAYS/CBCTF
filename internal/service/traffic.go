@@ -15,22 +15,22 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetTraffic(victim model.Victim, form f.GetTrafficForm) ([]utils.Connection, []string, int64, bool, string) {
-	connections, ok, msg := r.GetTraffic(victim)
-	if !ok {
-		return nil, nil, 0, false, msg
+func GetTraffic(victim model.Victim, form f.GetTrafficForm) ([]utils.Connection, []string, int64, model.RetVal) {
+	connections, ret := r.GetTraffic(victim)
+	if !ret.OK {
+		return nil, nil, 0, ret
 	}
 	if len(connections) < 1 {
-		ok, msg = r.UpdateTraffics(victim)
-		if !ok {
-			return nil, nil, 0, false, msg
+		ret = r.UpdateTraffics(victim)
+		if !ret.OK {
+			return nil, nil, 0, ret
 		}
-		connections, ok, msg = r.GetTraffic(victim)
-		if !ok {
-			return nil, nil, 0, false, msg
+		connections, ret = r.GetTraffic(victim)
+		if !ret.OK {
+			return nil, nil, 0, ret
 		}
 		if len(connections) < 1 {
-			return make([]utils.Connection, 0), nil, 0, true, i18n.Success
+			return make([]utils.Connection, 0), nil, 0, model.SuccessRetVal()
 		}
 	}
 	totalDuration := int64(connections[len(connections)-1].Time.Sub(connections[0].Time))/1e9 + 1
@@ -38,10 +38,10 @@ func GetTraffic(victim model.Victim, form f.GetTrafficForm) ([]utils.Connection,
 	startIndex := 0
 	endIndex := len(connections) - 1
 	for i, connection := range connections {
-		if _, ok = ip[connection.SrcIP]; !ok {
+		if _, ok := ip[connection.SrcIP]; !ok {
 			ip[connection.SrcIP] = true
 		}
-		if _, ok = ip[connection.DstIP]; !ok {
+		if _, ok := ip[connection.DstIP]; !ok {
 			ip[connection.DstIP] = true
 		}
 		if connection.TimeShift < time.Duration(form.TimeShift*1e9) {
@@ -55,16 +55,16 @@ func GetTraffic(victim model.Victim, form f.GetTrafficForm) ([]utils.Connection,
 	for k := range ip {
 		ipL = append(ipL, k)
 	}
-	return connections[startIndex:endIndex], ipL, totalDuration, true, i18n.Success
+	return connections[startIndex:endIndex], ipL, totalDuration, model.SuccessRetVal()
 }
 
 // LoadTraffic 简单记录涉及到的 IP 地址
-func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
+func LoadTraffic(tx *gorm.DB, victim model.Victim) model.RetVal {
 	trafficRepo := db.InitTrafficRepo(tx)
 	optionsL := make(map[string]db.CreateTrafficOptions)
-	count, _, _ := trafficRepo.Count(db.CountOptions{Conditions: map[string]any{"victim_id": victim.ID}})
+	count, _ := trafficRepo.Count(db.CountOptions{Conditions: map[string]any{"victim_id": victim.ID}})
 	if count > 0 {
-		return true, i18n.Success
+		return model.SuccessRetVal()
 	}
 	go func(victim model.Victim) {
 		if err := utils.Zip(victim.TrafficBasePath(), victim.TrafficZipPath()); err != nil {
@@ -92,7 +92,7 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 	connections, err := utils.ReadPcapDir(victim.TrafficBasePath())
 	if err != nil {
 		log.Logger.Warningf("Failed to read pcap: %s", err)
-		return false, i18n.ReadPcapError
+		return model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	for _, conn := range connections {
 		connID := fmt.Sprintf("%s-%s-%s-%s", conn.SrcIP, conn.DstIP, conn.Type, conn.Subtype)
@@ -113,10 +113,10 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) (bool, string) {
 		}
 	}
 	for _, options := range optionsL {
-		_, ok, msg := trafficRepo.Create(options)
-		if !ok {
-			return false, msg
+		_, ret := trafficRepo.Create(options)
+		if !ret.OK {
+			return ret
 		}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

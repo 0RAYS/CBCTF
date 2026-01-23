@@ -3,7 +3,6 @@ package router
 import (
 	"CBCTF/internal/db"
 	f "CBCTF/internal/form"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
@@ -15,23 +14,23 @@ import (
 )
 
 func GetTeamRanking(ctx *gin.Context) {
-	var form f.GetModelsForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	var form f.ListModelsForm
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	contestFlags, _, ok, msg := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
+	contestFlags, _, ret := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
 		Preloads:   map[string]db.GetOptions{"ContestChallenge": {}},
 	})
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
-	teams, count, ok, msg := service.GetTeamRanking(db.DB, contest, form.Limit, form.Offset)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	teams, count, ret := service.GetTeamRanking(db.DB, contest, form.Limit, form.Offset)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	repo := db.InitTeamRepo(db.DB)
@@ -41,8 +40,8 @@ func GetTeamRanking(ctx *gin.Context) {
 			count--
 			continue
 		}
-		solved, ok, _ := service.GetTeamSolvedFlags(db.DB, team)
-		if !ok {
+		solved, ret := service.GetTeamSolvedFlags(db.DB, team)
+		if !ret.OK {
 			count--
 			continue
 		}
@@ -50,37 +49,37 @@ func GetTeamRanking(ctx *gin.Context) {
 		tmp["users"] = repo.CountAssociation(team, "Users")
 		data = append(data, tmp)
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": gin.H{"teams": data, "count": count}})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"teams": data, "count": count}))
 }
 
 func GetScoreboard(ctx *gin.Context) {
-	var form f.GetModelsForm
-	if ok, msg := form.Bind(ctx); !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	var form f.ListModelsForm
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	teams, count, ok, msg := service.GetTeamRanking(db.DB, contest, form.Limit, form.Offset)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	teams, count, ret := service.GetTeamRanking(db.DB, contest, form.Limit, form.Offset)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	contestFlagRepo := db.InitContestFlagRepo(db.DB)
-	contestFlags, _, ok, msg := contestFlagRepo.List(-1, -1, db.GetOptions{
+	contestFlags, _, ret := contestFlagRepo.List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
 		Preloads:   map[string]db.GetOptions{"ContestChallenge": {Preloads: map[string]db.GetOptions{"Challenge": {}}}},
 	})
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	contestChallengeRepo := db.InitContestChallengeRepo(db.DB)
-	contestChallenges, _, ok, msg := contestChallengeRepo.List(-1, -1, db.GetOptions{
+	contestChallenges, _, ret := contestChallengeRepo.List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID, "hidden": false},
 		Preloads:   map[string]db.GetOptions{"Challenge": {}},
 	})
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	challengeMap := make(map[string]model.Challenge)
@@ -108,7 +107,7 @@ func GetScoreboard(ctx *gin.Context) {
 		for challengeID := range globalMap {
 			teamMap[team.ID][challengeID] = 0
 		}
-		teamFlags, _, ok, msg := teamFlagRepo.List(-1, -1, db.GetOptions{
+		teamFlags, _, ret := teamFlagRepo.List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"team_id": team.ID},
 			Preloads: map[string]db.GetOptions{
 				"ContestFlag": {
@@ -118,8 +117,8 @@ func GetScoreboard(ctx *gin.Context) {
 				},
 			},
 		})
-		if !ok {
-			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		if !ret.OK {
+			ctx.JSON(http.StatusOK, ret)
 			return
 		}
 		for _, teamFlag := range teamFlags {
@@ -132,14 +131,14 @@ func GetScoreboard(ctx *gin.Context) {
 		}
 	}
 	data := resp.GetScoreboardResp(challengeMap, globalMap, teamMap, teams)
-	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"teams": data, "count": count}})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"teams": data, "count": count}))
 }
 
 func GetRankTimeline(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
-	teams, _, ok, msg := service.GetTeamRanking(db.DB, contest, 10, 0)
-	if !ok {
-		ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+	teams, _, ret := service.GetTeamRanking(db.DB, contest, 10, 0)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	teams = slices.DeleteFunc(teams, func(team model.Team) bool {
@@ -149,16 +148,16 @@ func GetRankTimeline(ctx *gin.Context) {
 		return false
 	})
 	for i, team := range teams {
-		submissions, _, ok, msg := db.InitSubmissionRepo(db.DB).List(-1, -1, db.GetOptions{
+		submissions, _, ret := db.InitSubmissionRepo(db.DB).List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"solved": true, "team_id": team.ID},
 			Selects:    []string{"id", "score", "created_at"},
 		})
-		if !ok {
-			ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": nil})
+		if !ret.OK {
+			ctx.JSON(http.StatusOK, ret)
 			return
 		}
 		teams[i].Submissions = submissions
 	}
 	data := resp.GetRankTimelineResp(teams)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
 }

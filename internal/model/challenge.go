@@ -62,7 +62,7 @@ func (c Challenge) GetErrorString() string {
 	return i18n.GetChallengeError
 }
 
-func (c Challenge) NotFoundErrorString() string {
+func (c Challenge) NotFoundString() string {
 	return i18n.ChallengeNotFound
 }
 

@@ -1,7 +1,6 @@
 package router
 
 import (
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"net/http"
 
@@ -9,5 +8,5 @@ import (
 )
 
 func GetEventTypes(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": model.EventTypes})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(model.EventTypes))
 }

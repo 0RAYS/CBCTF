@@ -49,7 +49,7 @@ func (s Submission) GetErrorString() string {
 	return i18n.GetSubmissionError
 }
 
-func (s Submission) NotFoundErrorString() string {
+func (s Submission) NotFoundString() string {
 	return i18n.SubmissionNotFound
 }
 

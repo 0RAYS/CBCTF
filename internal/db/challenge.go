@@ -76,11 +76,11 @@ func InitChallengeRepo(tx *gorm.DB) *ChallengeRepo {
 	}
 }
 
-func (c *ChallengeRepo) GetByRandID(randID string, optionsL ...GetOptions) (model.Challenge, bool, string) {
+func (c *ChallengeRepo) GetByRandID(randID string, optionsL ...GetOptions) (model.Challenge, model.RetVal) {
 	return c.GetByUniqueKey("rand_id", randID, optionsL...)
 }
 
-func (c *ChallengeRepo) ListCategories(t string) ([]string, bool, string) {
+func (c *ChallengeRepo) ListCategories(t string) ([]string, model.RetVal) {
 	var categories = make([]string, 0)
 	res := c.DB.Model(&model.Challenge{})
 	if t != "" {
@@ -89,13 +89,13 @@ func (c *ChallengeRepo) ListCategories(t string) ([]string, bool, string) {
 	res = res.Select("distinct category").Find(&categories)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Categories: %s", res.Error)
-		return nil, false, i18n.GetChallengeError
+		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Challenge{}.GetModelName(), "Error": res.Error.Error()}}
 	}
-	return categories, true, i18n.Success
+	return categories, model.SuccessRetVal()
 }
 
-func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
-	challengeL, _, ok, msg := c.List(-1, -1, GetOptions{
+func (c *ChallengeRepo) Delete(randIDL ...string) model.RetVal {
+	challengeL, _, ret := c.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"rand_id": randIDL},
 		Selects:    []string{"id"},
 		Preloads: map[string]GetOptions{
@@ -105,11 +105,11 @@ func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
 			"Submissions":       {Selects: []string{"id", "challenge_id"}},
 		},
 	})
-	if !ok {
-		if msg != i18n.ChallengeNotFound {
-			return false, msg
+	if !ret.OK {
+		if ret.Msg != i18n.Model.NotFound {
+			return ret
 		}
-		return true, i18n.Success
+		return model.SuccessRetVal()
 	}
 	dockerIDL, challengeFlagIDL, contestChallengeIDL, submissionIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0)
 	for _, challenge := range challengeL {
@@ -126,21 +126,21 @@ func (c *ChallengeRepo) Delete(randIDL ...string) (bool, string) {
 			submissionIDL = append(submissionIDL, submission.ID)
 		}
 	}
-	if ok, msg = InitDockerRepo(c.DB).Delete(dockerIDL...); !ok {
-		return false, msg
+	if ret = InitDockerRepo(c.DB).Delete(dockerIDL...); !ret.OK {
+		return ret
 	}
-	if ok, msg = InitChallengeFlagRepo(c.DB).Delete(challengeFlagIDL...); !ok {
-		return false, msg
+	if ret = InitChallengeFlagRepo(c.DB).Delete(challengeFlagIDL...); !ret.OK {
+		return ret
 	}
-	if ok, msg = InitContestChallengeRepo(c.DB).Delete(contestChallengeIDL...); !ok {
-		return false, msg
+	if ret = InitContestChallengeRepo(c.DB).Delete(contestChallengeIDL...); !ret.OK {
+		return ret
 	}
-	if ok, msg = InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ok {
-		return false, msg
+	if ret = InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ret.OK {
+		return ret
 	}
 	if res := c.DB.Model(&model.Challenge{}).Where("rand_id IN ?", randIDL).Delete(&model.Challenge{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Challenge: %s", res.Error)
-		return false, i18n.DeleteChallengeError
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Challenge{}.GetModelName(), "Error": res.Error.Error()}}
 	}
-	return true, i18n.Success
+	return model.SuccessRetVal()
 }

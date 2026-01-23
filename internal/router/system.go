@@ -3,8 +3,8 @@ package router
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
+	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/service"
@@ -21,10 +21,10 @@ func HomePage(ctx *gin.Context) {
 		"stats":      []gin.H{},
 		"scoreboard": []gin.H{},
 	}
-	contests, count, ok, _ := db.InitContestRepo(db.DB).List(-1, -1, db.GetOptions{
+	contests, count, ret := db.InitContestRepo(db.DB).List(-1, -1, db.GetOptions{
 		Preloads: map[string]db.GetOptions{"Teams": {}, "Users": {}},
 	})
-	if ok {
+	if ret.OK {
 		for i := 0; i < func() int {
 			if len(contests) > 3 {
 				return 3
@@ -44,13 +44,13 @@ func HomePage(ctx *gin.Context) {
 		}
 	}
 	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "CTF Events", "value": count})
-	count, _, _ = db.InitUserRepo(db.DB).Count()
+	count, _ = db.InitUserRepo(db.DB).Count()
 	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "Activate CTFers", "value": count})
-	count, _, _ = db.InitChallengeRepo(db.DB).Count()
+	count, _ = db.InitChallengeRepo(db.DB).Count()
 	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "Challenges", "value": count})
-	count, _, _ = db.InitSubmissionRepo(db.DB).Count()
+	count, _ = db.InitSubmissionRepo(db.DB).Count()
 	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "Submissions", "value": count})
-	users, _, _, _ := service.GetUserRanking(db.DB, 5, 0)
+	users, _, _ := service.GetUserRanking(db.DB, 5, 0)
 	for _, user := range users {
 		data["scoreboard"] = append(data["scoreboard"].([]gin.H), gin.H{
 			"name":    user.Name,
@@ -59,7 +59,7 @@ func HomePage(ctx *gin.Context) {
 			"country": user.Country,
 		})
 	}
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": data})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
 }
 
 func SystemStatus(ctx *gin.Context) {
@@ -77,10 +77,10 @@ func SystemStatus(ctx *gin.Context) {
 		ret["recv"] = ioStats[0].BytesRecv
 	}
 
-	ret["users"], _, _ = db.InitUserRepo(db.DB).Count()
-	ret["contests"], _, _ = db.InitContestRepo(db.DB).Count()
-	ret["ip"], _, _ = db.InitRequestRepo(db.DB).CountIP()
-	ret["challenges"], _, _ = db.InitChallengeRepo(db.DB).Count()
+	ret["users"], _ = db.InitUserRepo(db.DB).Count()
+	ret["contests"], _ = db.InitContestRepo(db.DB).Count()
+	ret["ip"], _ = db.InitRequestRepo(db.DB).CountIP()
+	ret["challenges"], _ = db.InitChallengeRepo(db.DB).Count()
 	middleware.MU.Lock()
 	if middleware.TotalRequests == 0 {
 		ret["requests"] = 0
@@ -100,9 +100,9 @@ func SystemStatus(ctx *gin.Context) {
 		ret["rate"] = fmt.Sprintf("%.2f", float64(hit)/float64(hit+miss)*100)
 	}
 	prometheus.UpdateCacheMetrics("redis", hit, miss)
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": ret})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(ret))
 }
 
 func SystemConfig(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, gin.H{"msg": i18n.Success, "data": config.Env})
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(config.Env))
 }

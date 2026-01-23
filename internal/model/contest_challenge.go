@@ -46,7 +46,7 @@ func (c ContestChallenge) GetErrorString() string {
 	return i18n.GetContestChallengeError
 }
 
-func (c ContestChallenge) NotFoundErrorString() string {
+func (c ContestChallenge) NotFoundString() string {
 	return i18n.ContestChallengeNotFound
 }
 
