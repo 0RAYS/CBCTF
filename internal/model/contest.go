@@ -23,7 +23,7 @@ var (
 // HasMany Submission
 type Contest struct {
 	Teams             []Team             `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Users             []*User            `gorm:"many2many:user_contests;" json:"-"`
+	Users             []User             `gorm:"many2many:user_contests;" json:"-"`
 	Notices           []Notice           `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	ContestChallenges []ContestChallenge `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	ContestFlags      []ContestFlag      `gorm:"constraint:OnDelete:CASCADE;" json:"-"`

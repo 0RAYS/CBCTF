@@ -147,7 +147,7 @@ func (u *UserRepo) Delete(idL ...uint) model.RetVal {
 			if ret = DeleteUserFromContest(u.DB, user, model.Contest{BaseModel: model.BaseModel{ID: team.ContestID}}); !ret.OK {
 				return ret
 			}
-			if ret = DeleteUserFromTeam(u.DB, user, *team); !ret.OK {
+			if ret = DeleteUserFromTeam(u.DB, user, team); !ret.OK {
 				return ret
 			}
 		}

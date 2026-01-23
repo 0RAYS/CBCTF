@@ -145,7 +145,7 @@ func (t *TeamRepo) GetBy2ID(userID, contestID uint, optionsL ...GetOptions) (mod
 	if len(user.Teams) == 0 {
 		return model.Team{}, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.Team{}.GetModelName()}}
 	}
-	return *user.Teams[0], model.SuccessRetVal()
+	return user.Teams[0], model.SuccessRetVal()
 }
 
 func (t *TeamRepo) Delete(idL ...uint) model.RetVal {
@@ -173,10 +173,10 @@ func (t *TeamRepo) Delete(idL ...uint) model.RetVal {
 			return ret
 		}
 		for _, user := range team.Users {
-			if ret = DeleteUserFromContest(t.DB, *user, model.Contest{BaseModel: model.BaseModel{ID: team.ContestID}}); !ret.OK {
+			if ret = DeleteUserFromContest(t.DB, user, model.Contest{BaseModel: model.BaseModel{ID: team.ContestID}}); !ret.OK {
 				return ret
 			}
-			if ret = DeleteUserFromTeam(t.DB, *user, team); !ret.OK {
+			if ret = DeleteUserFromTeam(t.DB, user, team); !ret.OK {
 				return ret
 			}
 		}
