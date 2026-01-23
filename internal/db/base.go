@@ -118,12 +118,8 @@ func (b *BaseRepo[M]) Get(options GetOptions) (M, bool, string) {
 	return m, true, i18n.Success
 }
 
-func (b *BaseRepo[M]) GetByID(id uint, optionsL ...GetOptions) (M, bool, string) {
-	options := GetOptions{}
-	if len(optionsL) > 0 {
-		options = optionsL[0]
-	}
-	return b.GetByUniqueKey("id", id, options)
+func (b *BaseRepo[M]) GetByID(id uint, options ...GetOptions) (M, bool, string) {
+	return b.GetByUniqueKey("id", id, options...)
 }
 
 func (b *BaseRepo[M]) GetByUniqueKey(key string, value any, optionsL ...GetOptions) (M, bool, string) {
