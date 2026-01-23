@@ -7,7 +7,7 @@ import (
 )
 
 type TeamFlagRepo struct {
-	BasicRepo[model.TeamFlag]
+	BaseRepo[model.TeamFlag]
 }
 
 type CreateTeamFlagOptions struct {
@@ -46,7 +46,7 @@ func (u UpdateTeamFlagRepo) Convert2Map() map[string]any {
 
 func InitTeamFlagRepo(tx *gorm.DB) *TeamFlagRepo {
 	return &TeamFlagRepo{
-		BasicRepo: BasicRepo[model.TeamFlag]{
+		BaseRepo: BaseRepo[model.TeamFlag]{
 			DB: tx,
 		},
 	}

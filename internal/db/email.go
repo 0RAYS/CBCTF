@@ -9,7 +9,7 @@ import (
 )
 
 type EmailRepo struct {
-	BasicRepo[model.Email]
+	BaseRepo[model.Email]
 }
 
 type CreateEmailOptions struct {
@@ -34,7 +34,7 @@ func (c CreateEmailOptions) Convert2Model() model.Model {
 
 func InitEmailRepo(tx *gorm.DB) *EmailRepo {
 	return &EmailRepo{
-		BasicRepo: BasicRepo[model.Email]{
+		BaseRepo: BaseRepo[model.Email]{
 			DB: tx,
 		},
 	}

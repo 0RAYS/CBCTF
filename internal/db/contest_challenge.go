@@ -10,7 +10,7 @@ import (
 )
 
 type ContestChallengeRepo struct {
-	BasicRepo[model.ContestChallenge]
+	BaseRepo[model.ContestChallenge]
 }
 
 type CreateContestChallengeOptions struct {
@@ -79,7 +79,7 @@ func (u UpdateContestChallengeOptions) Convert2Map() map[string]any {
 
 func InitContestChallengeRepo(tx *gorm.DB) *ContestChallengeRepo {
 	return &ContestChallengeRepo{
-		BasicRepo: BasicRepo[model.ContestChallenge]{
+		BaseRepo: BaseRepo[model.ContestChallenge]{
 			DB: tx,
 		},
 	}

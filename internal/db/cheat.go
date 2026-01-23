@@ -13,7 +13,7 @@ import (
 )
 
 type CheatRepo struct {
-	BasicRepo[model.Cheat]
+	BaseRepo[model.Cheat]
 }
 
 type CreateCheatOptions struct {
@@ -83,7 +83,7 @@ func (u UpdateCheatRepo) Convert2Map() map[string]any {
 
 func InitCheatRepo(tx *gorm.DB) *CheatRepo {
 	return &CheatRepo{
-		BasicRepo: BasicRepo[model.Cheat]{
+		BaseRepo: BaseRepo[model.Cheat]{
 			DB: tx,
 		},
 	}

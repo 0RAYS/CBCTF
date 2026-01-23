@@ -8,7 +8,7 @@ import (
 )
 
 type DeviceRepo struct {
-	BasicRepo[model.Device]
+	BaseRepo[model.Device]
 }
 
 type CreateDeviceOptions struct {
@@ -39,7 +39,7 @@ func (d DiffUpdateDeviceOptions) Convert2Expr() map[string]any {
 
 func InitDeviceRepo(tx *gorm.DB) *DeviceRepo {
 	return &DeviceRepo{
-		BasicRepo: BasicRepo[model.Device]{
+		BaseRepo: BaseRepo[model.Device]{
 			DB: tx,
 		},
 	}

@@ -9,7 +9,7 @@ import (
 )
 
 type OauthRepo struct {
-	BasicRepo[model.Oauth]
+	BaseRepo[model.Oauth]
 }
 
 type CreateOauthOptions struct {
@@ -120,7 +120,7 @@ func (u UpdateOauthOptions) Convert2Map() map[string]any {
 
 func InitOauthRepo(tx *gorm.DB) *OauthRepo {
 	return &OauthRepo{
-		BasicRepo: BasicRepo[model.Oauth]{
+		BaseRepo: BaseRepo[model.Oauth]{
 			DB: tx,
 		},
 	}
