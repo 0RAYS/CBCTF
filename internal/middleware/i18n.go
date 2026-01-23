@@ -45,6 +45,7 @@ func I18n(ctx *gin.Context) {
 	}
 	code, err := strconv.Atoi(i18n.Translate("und", old.Msg))
 	if err != nil {
+		log.Logger.Warningf("i18n.Translate err: %s", err)
 		code = 500
 	}
 	ctx.Set(CTXStatusCodeKey, code)
