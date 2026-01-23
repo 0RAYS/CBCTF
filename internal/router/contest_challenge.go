@@ -155,12 +155,12 @@ func UpdateContestChallenge(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateContestChallengeEventType)
 	contestChallenge := middleware.GetContestChallenge(ctx)
 	ret := db.InitContestChallengeRepo(db.DB).Update(contestChallenge.ID, db.UpdateContestChallengeOptions{
-		Name:    form.Name,
-		Desc:    form.Desc,
-		Hidden:  form.Hidden,
-		Attempt: form.Attempt,
-		Hints:   form.Hints,
-		Tags:    form.Tags,
+		Name:        form.Name,
+		Description: form.Description,
+		Hidden:      form.Hidden,
+		Attempt:     form.Attempt,
+		Hints:       form.Hints,
+		Tags:        form.Tags,
 	})
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)

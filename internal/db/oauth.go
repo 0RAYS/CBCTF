@@ -13,59 +13,59 @@ type OauthRepo struct {
 }
 
 type CreateOauthOptions struct {
-	AuthURL          string
-	TokenURL         string
-	UserInfoURL      string
-	CallbackURL      string
-	ClientID         string
-	ClientSecret     string
-	Provider         string
-	Uri              string
-	RespIDField      string
-	RespNameField    string
-	RespEmailField   string
-	RespPictureField string
-	RespDescField    string
-	On               bool
-	Picture          model.FileURL
+	AuthURL              string
+	TokenURL             string
+	UserInfoURL          string
+	CallbackURL          string
+	ClientID             string
+	ClientSecret         string
+	Provider             string
+	Uri                  string
+	RespIDField          string
+	RespNameField        string
+	RespEmailField       string
+	RespPictureField     string
+	RespDescriptionField string
+	On                   bool
+	Picture              model.FileURL
 }
 
 func (c CreateOauthOptions) Convert2Model() model.Model {
 	return model.Oauth{
-		AuthURL:          c.AuthURL,
-		TokenURL:         c.TokenURL,
-		UserInfoURL:      c.UserInfoURL,
-		CallbackURL:      c.CallbackURL,
-		ClientID:         c.ClientID,
-		ClientSecret:     c.ClientSecret,
-		Provider:         c.Provider,
-		Uri:              c.Uri,
-		RespIDField:      c.RespIDField,
-		RespNameField:    c.RespNameField,
-		RespEmailField:   c.RespEmailField,
-		RespPictureField: c.RespPictureField,
-		RespDescField:    c.RespDescField,
-		On:               c.On,
-		Picture:          c.Picture,
+		AuthURL:              c.AuthURL,
+		TokenURL:             c.TokenURL,
+		UserInfoURL:          c.UserInfoURL,
+		CallbackURL:          c.CallbackURL,
+		ClientID:             c.ClientID,
+		ClientSecret:         c.ClientSecret,
+		Provider:             c.Provider,
+		Uri:                  c.Uri,
+		RespIDField:          c.RespIDField,
+		RespNameField:        c.RespNameField,
+		RespEmailField:       c.RespEmailField,
+		RespPictureField:     c.RespPictureField,
+		RespDescriptionField: c.RespDescriptionField,
+		On:                   c.On,
+		Picture:              c.Picture,
 	}
 }
 
 type UpdateOauthOptions struct {
-	AuthURL          *string
-	TokenURL         *string
-	UserInfoURL      *string
-	CallbackURL      *string
-	ClientID         *string
-	ClientSecret     *string
-	Provider         *string
-	Uri              *string
-	RespIDField      *string
-	RespNameField    *string
-	RespEmailField   *string
-	RespPictureField *string
-	RespDescField    *string
-	On               *bool
-	Picture          *model.FileURL
+	AuthURL              *string
+	TokenURL             *string
+	UserInfoURL          *string
+	CallbackURL          *string
+	ClientID             *string
+	ClientSecret         *string
+	Provider             *string
+	Uri                  *string
+	RespIDField          *string
+	RespNameField        *string
+	RespEmailField       *string
+	RespPictureField     *string
+	RespDescriptionField *string
+	On                   *bool
+	Picture              *model.FileURL
 }
 
 func (u UpdateOauthOptions) Convert2Map() map[string]any {
@@ -106,8 +106,8 @@ func (u UpdateOauthOptions) Convert2Map() map[string]any {
 	if u.RespPictureField != nil {
 		options["resp_picture_field"] = *u.RespPictureField
 	}
-	if u.RespDescField != nil {
-		options["resp_desc_field"] = *u.RespDescField
+	if u.RespDescriptionField != nil {
+		options["resp_description_field"] = *u.RespDescriptionField
 	}
 	if u.On != nil {
 		options["on"] = *u.On

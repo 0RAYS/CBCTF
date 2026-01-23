@@ -10,9 +10,9 @@ import (
 
 // CreateTeamForm for create team
 type CreateTeamForm struct {
-	Name    string `form:"name" json:"name" binding:"required"`
-	Desc    string `form:"desc" json:"desc"`
-	Captcha string `form:"captcha" json:"captcha"`
+	Name        string `form:"name" json:"name" binding:"required"`
+	Description string `form:"description" json:"description"`
+	Captcha     string `form:"captcha" json:"captcha"`
 }
 
 func (f *CreateTeamForm) Bind(ctx *gin.Context) model.RetVal {
@@ -25,9 +25,9 @@ func (f *CreateTeamForm) Bind(ctx *gin.Context) model.RetVal {
 
 // UpdateTeamForm for user update team info
 type UpdateTeamForm struct {
-	Name      *string `form:"name" json:"name"`
-	Desc      *string `form:"desc" json:"desc"`
-	CaptainID *uint   `form:"captain_id" json:"captain_id"`
+	Name        *string `form:"name" json:"name"`
+	Description *string `form:"description" json:"description"`
+	CaptainID   *uint   `form:"captain_id" json:"captain_id"`
 }
 
 func (f *UpdateTeamForm) Bind(ctx *gin.Context) model.RetVal {
@@ -67,12 +67,12 @@ func (f *KickMemberForm) Bind(ctx *gin.Context) model.RetVal {
 
 // AdminUpdateTeamForm for admin update team info
 type AdminUpdateTeamForm struct {
-	Name      *string `form:"name" json:"name"`
-	Desc      *string `form:"desc" json:"desc"`
-	Hidden    *bool   `form:"hidden" json:"hidden"`
-	Banned    *bool   `form:"banned" json:"banned"`
-	Captcha   *string `form:"captcha" json:"captcha"`
-	CaptainID *uint   `form:"captain_id" json:"captain_id"`
+	Name        *string `form:"name" json:"name"`
+	Description *string `form:"description" json:"description"`
+	Hidden      *bool   `form:"hidden" json:"hidden"`
+	Banned      *bool   `form:"banned" json:"banned"`
+	Captcha     *string `form:"captcha" json:"captcha"`
+	CaptainID   *uint   `form:"captain_id" json:"captain_id"`
 }
 
 func (f *AdminUpdateTeamForm) Bind(ctx *gin.Context) model.RetVal {

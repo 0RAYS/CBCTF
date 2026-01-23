@@ -29,7 +29,7 @@ type Contest struct {
 	ContestFlags      []ContestFlag      `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Submissions       []Submission       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Name              string             `gorm:"type:varchar(255);uniqueIndex;not null" json:"name"`
-	Desc              string             `json:"desc"`
+	Description       string             `json:"description"`
 	Captcha           string             `json:"captcha"`
 	Picture           FileURL            `json:"picture"`
 	Prefix            string             `gorm:"default:'flag'" json:"prefix"`
@@ -58,7 +58,7 @@ func (c Contest) GetUniqueKey() []string {
 }
 
 func (c Contest) GetAllowedQueryFields() []string {
-	return []string{"id", "name", "desc", "prefix", "start", "duration", "hidden"}
+	return []string{"id", "name", "description", "prefix", "start", "duration", "hidden"}
 }
 
 func (c Contest) IsOver() bool {
@@ -84,8 +84,8 @@ func (c Contest) Status() string {
 }
 
 type Prizes []struct {
-	Amount string `json:"amount"`
-	Desc   string `json:"desc"`
+	Amount      string `json:"amount"`
+	Description string `json:"description"`
 }
 
 func (p Prizes) Value() (driver.Value, error) {
@@ -101,9 +101,9 @@ func (p *Prizes) Scan(value any) error {
 }
 
 type Timelines []struct {
-	Date  time.Time `json:"date"`
-	Title string    `json:"title"`
-	Desc  string    `json:"desc"`
+	Date        time.Time `json:"date"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
 }
 
 func (t Timelines) Value() (driver.Value, error) {

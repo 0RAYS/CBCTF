@@ -27,7 +27,7 @@ func AdminCreateUser(tx *gorm.DB, form dto.CreateUserForm) (model.User, model.Re
 		Name:           form.Name,
 		Password:       utils.HashPassword(form.Password),
 		Email:          form.Email,
-		Desc:           form.Desc,
+		Description:    form.Description,
 		Verified:       form.Verified,
 		Banned:         form.Banned,
 		Hidden:         form.Hidden,
@@ -64,7 +64,7 @@ func ChangeUserPwd(tx *gorm.DB, user model.User, form dto.ChangePasswordForm) mo
 func UpdateSelf(tx *gorm.DB, user model.User, form dto.UpdateSelfForm) model.RetVal {
 	repo := db.InitUserRepo(tx)
 	options := db.UpdateUserOptions{
-		Desc: form.Desc,
+		Description: form.Description,
 	}
 	if form.Email != nil && *form.Email != user.Email {
 		options.Verified = utils.Ptr(false)

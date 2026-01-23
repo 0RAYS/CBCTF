@@ -20,14 +20,14 @@ func GetContestChallengeResp(contestChallenge model.ContestChallenge) gin.H {
 		options[i], options[j] = options[j], options[i]
 	})
 	data := gin.H{
-		"id":       contestChallenge.Challenge.RandID,
-		"name":     contestChallenge.Name,
-		"desc":     contestChallenge.Desc,
-		"attempt":  contestChallenge.Attempt,
-		"type":     contestChallenge.Type,
-		"category": contestChallenge.Category,
-		"hidden":   contestChallenge.Hidden,
-		"options":  options,
+		"id":          contestChallenge.Challenge.RandID,
+		"name":        contestChallenge.Name,
+		"description": contestChallenge.Description,
+		"attempt":     contestChallenge.Attempt,
+		"type":        contestChallenge.Type,
+		"category":    contestChallenge.Category,
+		"hidden":      contestChallenge.Hidden,
+		"options":     options,
 		"score": func() float64 {
 			var score float64
 			for _, flag := range contestChallenge.ContestFlags {

@@ -22,12 +22,12 @@ func (f *CreateContestChallengeForm) Bind(ctx *gin.Context) model.RetVal {
 }
 
 type UpdateContestChallengeForm struct {
-	Name    *string           `form:"name" json:"name"`
-	Desc    *string           `form:"desc" json:"desc"`
-	Hidden  *bool             `form:"hidden" json:"hidden"`
-	Attempt *int64            `form:"attempt" json:"attempt"`
-	Hints   *model.StringList `form:"hints" json:"hints"`
-	Tags    *model.StringList `form:"tags" json:"tags"`
+	Name        *string           `form:"name" json:"name"`
+	Description *string           `form:"description" json:"description"`
+	Hidden      *bool             `form:"hidden" json:"hidden"`
+	Attempt     *int64            `form:"attempt" json:"attempt"`
+	Hints       *model.StringList `form:"hints" json:"hints"`
+	Tags        *model.StringList `form:"tags" json:"tags"`
 }
 
 func (f *UpdateContestChallengeForm) Bind(ctx *gin.Context) model.RetVal {

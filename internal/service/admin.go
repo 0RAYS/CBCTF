@@ -35,10 +35,10 @@ func VerifyAdmin(tx *gorm.DB, form dto.LoginForm) (model.Admin, model.RetVal) {
 func UpdateUser(tx *gorm.DB, user model.User, form dto.UpdateUserForm) model.RetVal {
 	repo := db.InitUserRepo(tx)
 	options := db.UpdateUserOptions{
-		Desc:     form.Desc,
-		Hidden:   form.Hidden,
-		Banned:   form.Banned,
-		Verified: form.Verified,
+		Description: form.Description,
+		Hidden:      form.Hidden,
+		Banned:      form.Banned,
+		Verified:    form.Verified,
 	}
 	if form.Email != nil && *form.Email != user.Email {
 		options.Verified = utils.Ptr(false)

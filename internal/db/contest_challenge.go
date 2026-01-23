@@ -17,7 +17,7 @@ type CreateContestChallengeOptions struct {
 	ContestID   uint
 	ChallengeID uint
 	Name        string
-	Desc        string
+	Description string
 	Type        string
 	Category    string
 	Hidden      bool
@@ -31,7 +31,7 @@ func (c CreateContestChallengeOptions) Convert2Model() model.Model {
 		ContestID:   c.ContestID,
 		ChallengeID: c.ChallengeID,
 		Name:        c.Name,
-		Desc:        c.Desc,
+		Description: c.Description,
 		Type:        c.Type,
 		Category:    c.Category,
 		Hidden:      c.Hidden,
@@ -43,7 +43,7 @@ func (c CreateContestChallengeOptions) Convert2Model() model.Model {
 
 type UpdateContestChallengeOptions struct {
 	Name        *string
-	Desc        *string
+	Description *string
 	Hidden      *bool
 	Attempt     *int64
 	Hints       *model.StringList
@@ -56,8 +56,8 @@ func (u UpdateContestChallengeOptions) Convert2Map() map[string]any {
 	if u.Name != nil {
 		options["name"] = *u.Name
 	}
-	if u.Desc != nil {
-		options["desc"] = *u.Desc
+	if u.Description != nil {
+		options["description"] = *u.Description
 	}
 	if u.Hidden != nil {
 		options["hidden"] = *u.Hidden

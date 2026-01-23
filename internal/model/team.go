@@ -16,7 +16,7 @@ type Team struct {
 	Submissions []Submission `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	TeamFlags   []TeamFlag   `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Name        string       `gorm:"type:varchar(255);index:idx_name_contest,unique;not null" json:"name"`
-	Desc        string       `json:"desc"`
+	Description string       `json:"description"`
 	Captcha     string       `json:"-"`
 	Picture     FileURL      `json:"picture"`
 	Score       float64      `gorm:"default:0" json:"score"`
@@ -41,5 +41,5 @@ func (t Team) GetUniqueKey() []string {
 }
 
 func (t Team) GetAllowedQueryFields() []string {
-	return []string{"id", "name", "desc", "banned", "hidden"}
+	return []string{"id", "name", "description", "banned", "hidden"}
 }

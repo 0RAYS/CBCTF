@@ -38,18 +38,18 @@ func GetSolvedStateResp(solved []model.ContestFlag, all []model.ContestFlag) []g
 
 func GetTeamResp(team model.Team) gin.H {
 	data := gin.H{
-		"id":         team.ID,
-		"contest_id": team.ContestID,
-		"name":       team.Name,
-		"score":      team.Score,
-		"picture":    team.Picture,
-		"last":       team.Last,
-		"rank":       team.Rank,
-		"users":      db.InitTeamRepo(db.DB).CountAssociation(team, "Users"),
-		"desc":       team.Desc,
-		"captain_id": team.CaptainID,
-		"banned":     team.Banned,
-		"hidden":     team.Hidden,
+		"id":          team.ID,
+		"contest_id":  team.ContestID,
+		"name":        team.Name,
+		"score":       team.Score,
+		"picture":     team.Picture,
+		"last":        team.Last,
+		"rank":        team.Rank,
+		"users":       db.InitTeamRepo(db.DB).CountAssociation(team, "Users"),
+		"description": team.Description,
+		"captain_id":  team.CaptainID,
+		"banned":      team.Banned,
+		"hidden":      team.Hidden,
 	}
 	return data
 }

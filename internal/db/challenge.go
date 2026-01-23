@@ -15,7 +15,7 @@ type ChallengeRepo struct {
 type CreateChallengeOptions struct {
 	RandID          string
 	Name            string
-	Desc            string
+	Description     string
 	Category        string
 	Type            string
 	GeneratorImage  string
@@ -27,7 +27,7 @@ func (c CreateChallengeOptions) Convert2Model() model.Model {
 	return model.Challenge{
 		RandID:          c.RandID,
 		Name:            c.Name,
-		Desc:            c.Desc,
+		Description:     c.Description,
 		Category:        c.Category,
 		Type:            c.Type,
 		GeneratorImage:  c.GeneratorImage,
@@ -38,7 +38,7 @@ func (c CreateChallengeOptions) Convert2Model() model.Model {
 
 type UpdateChallengeOptions struct {
 	Name            *string
-	Desc            *string
+	Description     *string
 	Category        *string
 	GeneratorImage  *string
 	Options         *model.Options
@@ -50,8 +50,8 @@ func (u UpdateChallengeOptions) Convert2Map() map[string]any {
 	if u.Name != nil {
 		options["name"] = *u.Name
 	}
-	if u.Desc != nil {
-		options["desc"] = *u.Desc
+	if u.Description != nil {
+		options["description"] = *u.Description
 	}
 	if u.Category != nil {
 		options["category"] = *u.Category

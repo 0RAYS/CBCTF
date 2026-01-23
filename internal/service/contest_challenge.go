@@ -34,7 +34,7 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 				ContestID:   contest.ID,
 				ChallengeID: challenge.ID,
 				Name:        challenge.Name,
-				Desc:        challenge.Desc,
+				Description: challenge.Description,
 				Type:        challenge.Type,
 				Category:    challenge.Category,
 				Hidden:      true,
