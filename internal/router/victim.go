@@ -2,7 +2,7 @@ package router
 
 import (
 	"CBCTF/internal/db"
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
@@ -88,7 +88,7 @@ func StopVictim(ctx *gin.Context) {
 }
 
 func GetVictims(ctx *gin.Context) {
-	var form f.ListModelsForm
+	var form dto.ListModelsForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return

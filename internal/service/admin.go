@@ -2,7 +2,7 @@ package service
 
 import (
 	"CBCTF/internal/db"
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateAdmin(tx *gorm.DB, form f.CreateAdminForm) (model.Admin, model.RetVal) {
+func CreateAdmin(tx *gorm.DB, form dto.CreateAdminForm) (model.Admin, model.RetVal) {
 	return db.InitAdminRepo(tx).Create(db.CreateAdminOptions{
 		Name:     form.Name,
 		Password: utils.HashPassword(form.Password),
@@ -21,7 +21,7 @@ func CreateAdmin(tx *gorm.DB, form f.CreateAdminForm) (model.Admin, model.RetVal
 	})
 }
 
-func VerifyAdmin(tx *gorm.DB, form f.LoginForm) (model.Admin, model.RetVal) {
+func VerifyAdmin(tx *gorm.DB, form dto.LoginForm) (model.Admin, model.RetVal) {
 	repo := db.InitAdminRepo(tx)
 	admin, ret := repo.GetByUniqueKey("name", form.Name)
 	if !ret.OK {
@@ -33,7 +33,7 @@ func VerifyAdmin(tx *gorm.DB, form f.LoginForm) (model.Admin, model.RetVal) {
 	return admin, model.SuccessRetVal()
 }
 
-func UpdateUser(tx *gorm.DB, user model.User, form f.UpdateUserForm) model.RetVal {
+func UpdateUser(tx *gorm.DB, user model.User, form dto.UpdateUserForm) model.RetVal {
 	repo := db.InitUserRepo(tx)
 	options := db.UpdateUserOptions{
 		Desc:     form.Desc,
@@ -53,7 +53,7 @@ func UpdateUser(tx *gorm.DB, user model.User, form f.UpdateUserForm) model.RetVa
 	return repo.Update(user.ID, options)
 }
 
-func UpdateAdmin(tx *gorm.DB, admin model.Admin, form f.UpdateAdminForm) model.RetVal {
+func UpdateAdmin(tx *gorm.DB, admin model.Admin, form dto.UpdateAdminForm) model.RetVal {
 	repo := db.InitAdminRepo(tx)
 	options := db.UpdateAdminOptions{}
 	if form.Email != nil && *form.Email != admin.Email {
@@ -62,7 +62,7 @@ func UpdateAdmin(tx *gorm.DB, admin model.Admin, form f.UpdateAdminForm) model.R
 	return repo.Update(admin.ID, options)
 }
 
-func ChangeAdminPassword(tx *gorm.DB, admin model.Admin, form f.ChangePasswordForm) model.RetVal {
+func ChangeAdminPassword(tx *gorm.DB, admin model.Admin, form dto.ChangePasswordForm) model.RetVal {
 	if !utils.CompareHashAndPassword(admin.Password, form.OldPassword) {
 		return model.RetVal{Msg: i18n.Model.User.PasswordWrong}
 	}

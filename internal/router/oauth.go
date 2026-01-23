@@ -3,7 +3,7 @@ package router
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
@@ -94,7 +94,7 @@ func OauthCallback(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 		return
 	}
-	var form f.OauthCallbackForm
+	var form dto.OauthCallbackForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -195,7 +195,7 @@ func OauthCallback(ctx *gin.Context) {
 }
 
 func GetOauthProviders(ctx *gin.Context) {
-	var form f.ListModelsForm
+	var form dto.ListModelsForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -218,7 +218,7 @@ func GetOauthProvider(ctx *gin.Context) {
 }
 
 func CreateOauthProvider(ctx *gin.Context) {
-	var form f.CreateOauthProviderForm
+	var form dto.CreateOauthProviderForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -248,7 +248,7 @@ func CreateOauthProvider(ctx *gin.Context) {
 }
 
 func UpdateOauthProvider(ctx *gin.Context) {
-	var form f.UpdateOauthProviderForm
+	var form dto.UpdateOauthProviderForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return

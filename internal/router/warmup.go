@@ -2,7 +2,7 @@ package router
 
 import (
 	"CBCTF/internal/db"
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
@@ -50,7 +50,7 @@ func GetContestChallengeImage(ctx *gin.Context) {
 }
 
 func WarmUpContestChallengeImage(ctx *gin.Context) {
-	var form f.WarmUpImageForm
+	var form dto.WarmUpImageForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -62,7 +62,7 @@ func WarmUpContestChallengeImage(ctx *gin.Context) {
 }
 
 func GetContestVictims(ctx *gin.Context) {
-	var form f.GetContestVictimsForm
+	var form dto.GetContestVictimsForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -89,7 +89,7 @@ func GetContestVictims(ctx *gin.Context) {
 }
 
 func StartContestVictims(ctx *gin.Context) {
-	var form f.StartContestVictimsForm
+	var form dto.StartContestVictimsForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -108,7 +108,7 @@ func StartContestVictims(ctx *gin.Context) {
 }
 
 func StopContestVictims(ctx *gin.Context) {
-	var form f.StopContestVictimsForm
+	var form dto.StopContestVictimsForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return

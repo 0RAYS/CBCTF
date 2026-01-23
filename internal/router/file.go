@@ -3,7 +3,7 @@ package router
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
@@ -163,7 +163,7 @@ func UploadWriteUp(ctx *gin.Context) {
 }
 
 func GetFiles(ctx *gin.Context) {
-	var form f.GetFilesForm
+	var form dto.GetFilesForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -185,7 +185,7 @@ func GetFiles(ctx *gin.Context) {
 }
 
 func GetWriteUPs(ctx *gin.Context) {
-	var form f.ListModelsForm
+	var form dto.ListModelsForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -206,7 +206,7 @@ func GetWriteUPs(ctx *gin.Context) {
 }
 
 func DeleteFiles(ctx *gin.Context) {
-	var form f.DeleteFileForm
+	var form dto.DeleteFileForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return

@@ -3,7 +3,7 @@ package service
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/model"
 	"errors"
 	"slices"
@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form f.CreateContestChallengeForm) ([]model.ContestChallenge, []string, model.RetVal) {
+func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateContestChallengeForm) ([]model.ContestChallenge, []string, model.RetVal) {
 	contestChallengeL := make([]model.ContestChallenge, 0)
 	failedL := make([]string, 0)
 	contestChallengeRepo := db.InitContestChallengeRepo(tx)

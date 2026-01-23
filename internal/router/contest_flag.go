@@ -2,7 +2,7 @@ package router
 
 import (
 	"CBCTF/internal/db"
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
@@ -13,7 +13,7 @@ import (
 )
 
 func SubmitFlag(ctx *gin.Context) {
-	var form f.SubmitFlagForm
+	var form dto.SubmitFlagForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -75,7 +75,7 @@ func GetContestFlag(ctx *gin.Context) {
 }
 
 func UpdateContestFlag(ctx *gin.Context) {
-	var form f.UpdateContestFlagForm
+	var form dto.UpdateContestFlagForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return

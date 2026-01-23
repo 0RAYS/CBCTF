@@ -1,7 +1,7 @@
 package router
 
 import (
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
@@ -13,7 +13,7 @@ import (
 )
 
 func GetTraffics(ctx *gin.Context) {
-	var form f.GetTrafficForm
+	var form dto.GetTrafficForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return

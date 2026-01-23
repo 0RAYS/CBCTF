@@ -2,7 +2,7 @@ package router
 
 import (
 	"CBCTF/internal/db"
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
@@ -18,7 +18,7 @@ func GetWebhook(ctx *gin.Context) {
 }
 
 func GetWebhooks(ctx *gin.Context) {
-	var form f.ListModelsForm
+	var form dto.ListModelsForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -36,7 +36,7 @@ func GetWebhooks(ctx *gin.Context) {
 }
 
 func CreateWebhook(ctx *gin.Context) {
-	var form f.CreateWebhookForm
+	var form dto.CreateWebhookForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -60,7 +60,7 @@ func CreateWebhook(ctx *gin.Context) {
 }
 
 func UpdateWebhook(ctx *gin.Context) {
-	var form f.UpdateWebhookForm
+	var form dto.UpdateWebhookForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return

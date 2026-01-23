@@ -2,7 +2,7 @@ package service
 
 import (
 	"CBCTF/internal/db"
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
@@ -22,7 +22,7 @@ func GetNodeImageList() (map[string][]string, model.RetVal) {
 	return k8s.GetNodeImageList(ctx)
 }
 
-func WarmUpContestChallengeImage(form f.WarmUpImageForm) model.RetVal {
+func WarmUpContestChallengeImage(form dto.WarmUpImageForm) model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	if form.PullPolicy == string(corev1.PullNever) {
@@ -75,7 +75,7 @@ func WarmUpContestChallengeImage(form f.WarmUpImageForm) model.RetVal {
 	return model.SuccessRetVal()
 }
 
-func GetContestVictims(tx *gorm.DB, contest model.Contest, form f.GetContestVictimsForm) ([]model.Victim, int64, model.RetVal) {
+func GetContestVictims(tx *gorm.DB, contest model.Contest, form dto.GetContestVictimsForm) ([]model.Victim, int64, model.RetVal) {
 	var challengeID uint
 	if form.ChallengeID != "" {
 		challenge, ret := db.InitChallengeRepo(tx).GetByRandID(form.ChallengeID, db.GetOptions{
@@ -114,7 +114,7 @@ func GetContestVictims(tx *gorm.DB, contest model.Contest, form f.GetContestVict
 	}), count, ret
 }
 
-func StartContestVictims(tx *gorm.DB, contest model.Contest, form f.StartContestVictimsForm) model.RetVal {
+func StartContestVictims(tx *gorm.DB, contest model.Contest, form dto.StartContestVictimsForm) model.RetVal {
 	if len(form.Challenges) == 0 || len(form.Teams) == 0 {
 		return model.SuccessRetVal()
 	}
@@ -176,7 +176,7 @@ func StartContestVictims(tx *gorm.DB, contest model.Contest, form f.StartContest
 }
 
 // StopContestVictims tx 无需开启事务
-func StopContestVictims(tx *gorm.DB, form f.StopContestVictimsForm) model.RetVal {
+func StopContestVictims(tx *gorm.DB, form dto.StopContestVictimsForm) model.RetVal {
 	if len(form.Victims) == 0 {
 		return model.SuccessRetVal()
 	}

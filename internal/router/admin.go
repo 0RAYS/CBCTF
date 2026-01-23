@@ -2,7 +2,7 @@ package router
 
 import (
 	"CBCTF/internal/db"
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
@@ -19,7 +19,7 @@ func GetAdmin(ctx *gin.Context) {
 }
 
 func AdminChangePassword(ctx *gin.Context) {
-	var form f.ChangePasswordForm
+	var form dto.ChangePasswordForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -33,7 +33,7 @@ func AdminChangePassword(ctx *gin.Context) {
 }
 
 func UpdateAdmin(ctx *gin.Context) {
-	var form f.UpdateAdminForm
+	var form dto.UpdateAdminForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -47,7 +47,7 @@ func UpdateAdmin(ctx *gin.Context) {
 }
 
 func CreateAdmin(ctx *gin.Context) {
-	var form f.CreateAdminForm
+	var form dto.CreateAdminForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -63,7 +63,7 @@ func CreateAdmin(ctx *gin.Context) {
 }
 
 func GetLogs(ctx *gin.Context) {
-	var form f.GetLogsForm
+	var form dto.GetLogsForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return

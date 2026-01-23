@@ -2,7 +2,7 @@ package router
 
 import (
 	"CBCTF/internal/db"
-	f "CBCTF/internal/form"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
@@ -32,7 +32,7 @@ func GetTeam(ctx *gin.Context) {
 }
 
 func GetTeams(ctx *gin.Context) {
-	var form f.ListModelsForm
+	var form dto.ListModelsForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -83,7 +83,7 @@ func UpdateTeam(ctx *gin.Context) {
 		ret  model.RetVal
 	)
 	if middleware.IsAdmin(ctx) {
-		var form f.AdminUpdateTeamForm
+		var form dto.AdminUpdateTeamForm
 		if ret = form.Bind(ctx); !ret.OK {
 			ctx.JSON(http.StatusOK, ret)
 			return
@@ -91,7 +91,7 @@ func UpdateTeam(ctx *gin.Context) {
 		ctx.Set(middleware.CTXEventTypeKey, model.UpdateTeamEventType)
 		ret = service.AdminUpdateTeam(db.DB, team, form)
 	} else {
-		var form f.UpdateTeamForm
+		var form dto.UpdateTeamForm
 		if ret = form.Bind(ctx); !ret.OK {
 			ctx.JSON(http.StatusOK, ret)
 			return
@@ -137,7 +137,7 @@ func DeleteTeam(ctx *gin.Context) {
 }
 
 func KickMember(ctx *gin.Context) {
-	var form f.KickMemberForm
+	var form dto.KickMemberForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -158,7 +158,7 @@ func KickMember(ctx *gin.Context) {
 }
 
 func JoinTeam(ctx *gin.Context) {
-	var form f.JoinTeamForm
+	var form dto.JoinTeamForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
@@ -180,7 +180,7 @@ func JoinTeam(ctx *gin.Context) {
 }
 
 func CreateTeam(ctx *gin.Context) {
-	var form f.CreateTeamForm
+	var form dto.CreateTeamForm
 	if ret := form.Bind(ctx); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return

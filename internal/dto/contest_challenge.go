@@ -1,4 +1,4 @@
-package form
+package dto
 
 import (
 	"CBCTF/internal/i18n"
