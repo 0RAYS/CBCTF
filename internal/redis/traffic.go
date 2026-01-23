@@ -25,7 +25,7 @@ func UpdateTraffics(victim model.Victim) model.RetVal {
 	connections, err := utils.ReadPcapDir(victim.TrafficBasePath())
 	if err != nil {
 		log.Logger.Warningf("Failed to read pcap: %s", err)
-		return model.RetVal{Msg: i18n.UnknownError, Attr: map[string]any{"Error": err}}
+		return model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err}}
 	}
 
 	key := fmt.Sprintf(trafficsKey, victim.ID)

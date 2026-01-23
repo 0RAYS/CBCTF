@@ -1,7 +1,5 @@
 package model
 
-import "CBCTF/internal/i18n"
-
 type Container struct {
 	PodID       uint       `json:"pod_id"`
 	Pod         Pod        `json:"-"`
@@ -24,26 +22,6 @@ func (c Container) GetModelName() string {
 
 func (c Container) GetBaseModel() BaseModel {
 	return c.BaseModel
-}
-
-func (c Container) CreateErrorString() string {
-	return i18n.CreateContainerError
-}
-
-func (c Container) DeleteErrorString() string {
-	return i18n.DeleteContainerError
-}
-
-func (c Container) GetErrorString() string {
-	return i18n.GetContainerError
-}
-
-func (c Container) NotFoundString() string {
-	return i18n.ContainerNotFound
-}
-
-func (c Container) UpdateErrorString() string {
-	return i18n.UpdateContainerError
 }
 
 func (c Container) GetUniqueKey() []string {

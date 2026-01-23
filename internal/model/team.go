@@ -1,7 +1,6 @@
 package model
 
 import (
-	"CBCTF/internal/i18n"
 	"time"
 )
 
@@ -35,26 +34,6 @@ func (t Team) GetModelName() string {
 
 func (t Team) GetBaseModel() BaseModel {
 	return t.BaseModel
-}
-
-func (t Team) CreateErrorString() string {
-	return i18n.CreateTeamError
-}
-
-func (t Team) DeleteErrorString() string {
-	return i18n.DeleteTeamError
-}
-
-func (t Team) GetErrorString() string {
-	return i18n.GetTeamError
-}
-
-func (t Team) NotFoundString() string {
-	return i18n.TeamNotFound
-}
-
-func (t Team) UpdateErrorString() string {
-	return i18n.UpdateTeamError
 }
 
 func (t Team) GetUniqueKey() []string {

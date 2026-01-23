@@ -1,7 +1,5 @@
 package model
 
-import "CBCTF/internal/i18n"
-
 const (
 	NoticeTypeNormal    = "normal"
 	NoticeTypeImportant = "important"
@@ -25,26 +23,6 @@ func (n Notice) GetModelName() string {
 
 func (n Notice) GetBaseModel() BaseModel {
 	return n.BaseModel
-}
-
-func (n Notice) CreateErrorString() string {
-	return i18n.CreateNoticeError
-}
-
-func (n Notice) DeleteErrorString() string {
-	return i18n.DeleteNoticeError
-}
-
-func (n Notice) GetErrorString() string {
-	return i18n.GetNoticeError
-}
-
-func (n Notice) NotFoundString() string {
-	return i18n.NoticeNotFound
-}
-
-func (n Notice) UpdateErrorString() string {
-	return i18n.UpdateNoticeError
 }
 
 func (n Notice) GetUniqueKey() []string {

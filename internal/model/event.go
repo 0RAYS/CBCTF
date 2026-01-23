@@ -1,9 +1,5 @@
 package model
 
-import (
-	"CBCTF/internal/i18n"
-)
-
 const (
 	SkipEventType = "skip"
 
@@ -112,26 +108,6 @@ func (e Event) GetModelName() string {
 
 func (e Event) GetBaseModel() BaseModel {
 	return e.BaseModel
-}
-
-func (e Event) CreateErrorString() string {
-	return i18n.CreateEventError
-}
-
-func (e Event) DeleteErrorString() string {
-	return i18n.DeleteEventError
-}
-
-func (e Event) GetErrorString() string {
-	return i18n.GetEventError
-}
-
-func (e Event) NotFoundString() string {
-	return i18n.EventNotFound
-}
-
-func (e Event) UpdateErrorString() string {
-	return i18n.UpdateEventError
 }
 
 func (e Event) GetUniqueKey() []string {

@@ -1,7 +1,6 @@
 package model
 
 import (
-	"CBCTF/internal/i18n"
 	"database/sql"
 	"time"
 )
@@ -46,26 +45,6 @@ func (c Cheat) GetModelName() string {
 
 func (c Cheat) GetBaseModel() BaseModel {
 	return c.BaseModel
-}
-
-func (c Cheat) CreateErrorString() string {
-	return i18n.CreateCheatError
-}
-
-func (c Cheat) DeleteErrorString() string {
-	return i18n.DeleteCheatError
-}
-
-func (c Cheat) GetErrorString() string {
-	return i18n.GetCheatError
-}
-
-func (c Cheat) NotFoundString() string {
-	return i18n.CheatNotFound
-}
-
-func (c Cheat) UpdateErrorString() string {
-	return i18n.UpdateCheatError
 }
 
 func (c Cheat) GetUniqueKey() []string {

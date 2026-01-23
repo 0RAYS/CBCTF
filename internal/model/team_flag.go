@@ -1,7 +1,5 @@
 package model
 
-import "CBCTF/internal/i18n"
-
 // TeamFlag
 // BelongsTo Team
 // BelongsTo ContestFlag
@@ -23,26 +21,6 @@ func (t TeamFlag) GetModelName() string {
 
 func (t TeamFlag) GetBaseModel() BaseModel {
 	return t.BaseModel
-}
-
-func (t TeamFlag) CreateErrorString() string {
-	return i18n.CreateTeamFlagError
-}
-
-func (t TeamFlag) DeleteErrorString() string {
-	return i18n.DeleteTeamFlagError
-}
-
-func (t TeamFlag) GetErrorString() string {
-	return i18n.GetTeamFlagError
-}
-
-func (t TeamFlag) NotFoundString() string {
-	return i18n.TeamFlagNotFound
-}
-
-func (t TeamFlag) UpdateErrorString() string {
-	return i18n.UpdateTeamFlagError
 }
 
 func (t TeamFlag) GetUniqueKey() []string {

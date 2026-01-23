@@ -19,11 +19,6 @@ type BaseModel struct {
 type Model interface {
 	GetModelName() string
 	GetBaseModel() BaseModel
-	CreateErrorString() string
-	DeleteErrorString() string
-	GetErrorString() string
-	NotFoundString() string
-	UpdateErrorString() string
 	GetUniqueKey() []string
 	GetAllowedQueryFields() []string
 }

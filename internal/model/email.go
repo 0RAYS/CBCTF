@@ -1,9 +1,5 @@
 package model
 
-import (
-	"CBCTF/internal/i18n"
-)
-
 type Email struct {
 	SmtpID  uint   `json:"smtp_id"`
 	Smtp    Smtp   `json:"-"`
@@ -21,26 +17,6 @@ func (e Email) GetModelName() string {
 
 func (e Email) GetBaseModel() BaseModel {
 	return e.BaseModel
-}
-
-func (e Email) CreateErrorString() string {
-	return i18n.CreateEmailError
-}
-
-func (e Email) DeleteErrorString() string {
-	return i18n.DeleteEmailError
-}
-
-func (e Email) GetErrorString() string {
-	return i18n.GetEmailError
-}
-
-func (e Email) NotFoundString() string {
-	return i18n.EmailNotFound
-}
-
-func (e Email) UpdateErrorString() string {
-	return i18n.UpdateEmailError
 }
 
 func (e Email) GetUniqueKey() []string {

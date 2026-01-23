@@ -1,7 +1,6 @@
 package model
 
 import (
-	"CBCTF/internal/i18n"
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
@@ -39,26 +38,6 @@ func (d Docker) GetModelName() string {
 
 func (d Docker) GetBaseModel() BaseModel {
 	return d.BaseModel
-}
-
-func (d Docker) CreateErrorString() string {
-	return i18n.CreateDockerError
-}
-
-func (d Docker) DeleteErrorString() string {
-	return i18n.DeleteDockerError
-}
-
-func (d Docker) GetErrorString() string {
-	return i18n.GetDockerError
-}
-
-func (d Docker) NotFoundString() string {
-	return i18n.DockerNotFound
-}
-
-func (d Docker) UpdateErrorString() string {
-	return i18n.UpdateDockerError
 }
 
 func (d Docker) GetUniqueKey() []string {

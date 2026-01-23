@@ -1,7 +1,6 @@
 package model
 
 import (
-	"CBCTF/internal/i18n"
 	"database/sql"
 	"regexp"
 )
@@ -39,26 +38,6 @@ func (c ChallengeFlag) GetModelName() string {
 
 func (c ChallengeFlag) GetBaseModel() BaseModel {
 	return c.BaseModel
-}
-
-func (c ChallengeFlag) CreateErrorString() string {
-	return i18n.CreateChallengeFlagError
-}
-
-func (c ChallengeFlag) DeleteErrorString() string {
-	return i18n.DeleteChallengeFlagError
-}
-
-func (c ChallengeFlag) GetErrorString() string {
-	return i18n.GetChallengeFlagError
-}
-
-func (c ChallengeFlag) NotFoundString() string {
-	return i18n.ChallengeFlagNotFound
-}
-
-func (c ChallengeFlag) UpdateErrorString() string {
-	return i18n.UpdateChallengeFlagError
 }
 
 func (c ChallengeFlag) GetUniqueKey() []string {

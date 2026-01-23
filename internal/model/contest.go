@@ -53,26 +53,6 @@ func (c Contest) GetBaseModel() BaseModel {
 	return c.BaseModel
 }
 
-func (c Contest) CreateErrorString() string {
-	return i18n.CreateContestError
-}
-
-func (c Contest) DeleteErrorString() string {
-	return i18n.DeleteContestError
-}
-
-func (c Contest) GetErrorString() string {
-	return i18n.GetContestError
-}
-
-func (c Contest) NotFoundString() string {
-	return i18n.ContestNotFound
-}
-
-func (c Contest) UpdateErrorString() string {
-	return i18n.UpdateContestError
-}
-
 func (c Contest) GetUniqueKey() []string {
 	return []string{"id", "name"}
 }
