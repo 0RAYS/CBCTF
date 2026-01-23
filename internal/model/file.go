@@ -71,3 +71,9 @@ func (f File) UpdateErrorString() string {
 func (f File) GetUniqueKey() []string {
 	return []string{"id", "rand_id"}
 }
+
+func (f File) GetAllowedQueryFields() []string {
+	return []string{
+		"id", "rand_id", "model_name", "model_id", "filename", "size", "suffix", "hash", "type",
+	}
+}

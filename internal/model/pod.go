@@ -50,3 +50,7 @@ func (p Pod) GetUniqueKey() []string {
 func (p Pod) TrafficPcapPath() string {
 	return fmt.Sprintf("%s/pod-%d.pcap", Victim{BaseModel: BaseModel{ID: p.VictimID}}.TrafficBasePath(), p.ID)
 }
+
+func (p Pod) GetAllowedQueryFields() []string {
+	return []string{}
+}

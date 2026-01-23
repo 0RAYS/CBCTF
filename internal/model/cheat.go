@@ -71,3 +71,7 @@ func (c Cheat) UpdateErrorString() string {
 func (c Cheat) GetUniqueKey() []string {
 	return []string{"id", "hash"}
 }
+
+func (c Cheat) GetAllowedQueryFields() []string {
+	return []string{"id", "magic", "ip", "reason", "type", "checked", "hash", "comment", "time"}
+}

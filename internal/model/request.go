@@ -53,3 +53,7 @@ func (r Request) UpdateErrorString() string {
 func (r Request) GetUniqueKey() []string {
 	return []string{"id"}
 }
+
+func (r Request) GetAllowedQueryFields() []string {
+	return []string{"id", "ip", "user_agent", "user_id"}
+}

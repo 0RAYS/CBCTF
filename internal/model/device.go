@@ -46,3 +46,7 @@ func (d Device) UpdateErrorString() string {
 func (d Device) GetUniqueKey() []string {
 	return []string{"id"}
 }
+
+func (d Device) GetAllowedQueryFields() []string {
+	return []string{}
+}

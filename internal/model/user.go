@@ -62,3 +62,7 @@ func (u User) UpdateErrorString() string {
 func (u User) GetUniqueKey() []string {
 	return []string{"id", "name", "email"}
 }
+
+func (u User) GetAllowedQueryFields() []string {
+	return []string{"id", "name", "email", "country", "desc", "verified", "banned", "hidden"}
+}

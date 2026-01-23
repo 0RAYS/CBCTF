@@ -45,3 +45,7 @@ func (t Traffic) UpdateErrorString() string {
 func (t Traffic) GetUniqueKey() []string {
 	return []string{"id"}
 }
+
+func (t Traffic) GetAllowedQueryFields() []string {
+	return []string{"id", "src_ip", "dst_ip", "type", "subtype"}
+}

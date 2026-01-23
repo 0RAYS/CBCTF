@@ -52,3 +52,7 @@ func (o Oauth) UpdateErrorString() string {
 func (o Oauth) GetUniqueKey() []string {
 	return []string{"id", "provider"}
 }
+
+func (o Oauth) GetAllowedQueryFields() []string {
+	return []string{"id", "provider", "on"}
+}

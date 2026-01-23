@@ -57,3 +57,7 @@ func (c ContestChallenge) UpdateErrorString() string {
 func (c ContestChallenge) GetUniqueKey() []string {
 	return []string{"id"}
 }
+
+func (c ContestChallenge) GetAllowedQueryFields() []string {
+	return []string{}
+}

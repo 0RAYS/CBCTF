@@ -23,30 +23,34 @@ func (s Smtp) GetModelName() string {
 	return "Smtp"
 }
 
-func (p Smtp) GetBaseModel() BaseModel {
-	return p.BaseModel
+func (s Smtp) GetBaseModel() BaseModel {
+	return s.BaseModel
 }
 
-func (p Smtp) CreateErrorString() string {
+func (s Smtp) CreateErrorString() string {
 	return i18n.CreateSmtpError
 }
 
-func (p Smtp) DeleteErrorString() string {
+func (s Smtp) DeleteErrorString() string {
 	return i18n.DeleteSmtpError
 }
 
-func (p Smtp) GetErrorString() string {
+func (s Smtp) GetErrorString() string {
 	return i18n.GetSmtpError
 }
 
-func (p Smtp) NotFoundErrorString() string {
+func (s Smtp) NotFoundErrorString() string {
 	return i18n.SmtpNotFound
 }
 
-func (p Smtp) UpdateErrorString() string {
+func (s Smtp) UpdateErrorString() string {
 	return i18n.UpdateSmtpError
 }
 
-func (p Smtp) GetUniqueKey() []string {
+func (s Smtp) GetUniqueKey() []string {
 	return []string{"id"}
+}
+
+func (s Smtp) GetAllowedQueryFields() []string {
+	return []string{"id", "address", "host", "on"}
 }

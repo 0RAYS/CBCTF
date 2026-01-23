@@ -50,3 +50,7 @@ func (n Notice) UpdateErrorString() string {
 func (n Notice) GetUniqueKey() []string {
 	return []string{"id"}
 }
+
+func (n Notice) GetAllowedQueryFields() []string {
+	return []string{"id", "title", "content"}
+}

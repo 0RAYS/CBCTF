@@ -48,3 +48,7 @@ func (t TeamFlag) UpdateErrorString() string {
 func (t TeamFlag) GetUniqueKey() []string {
 	return []string{"id"}
 }
+
+func (t TeamFlag) GetAllowedQueryFields() []string {
+	return []string{}
+}

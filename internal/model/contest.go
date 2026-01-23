@@ -77,6 +77,10 @@ func (c Contest) GetUniqueKey() []string {
 	return []string{"id", "name"}
 }
 
+func (c Contest) GetAllowedQueryFields() []string {
+	return []string{"id", "name", "desc", "prefix", "start", "duration", "hidden"}
+}
+
 func (c Contest) IsOver() bool {
 	return time.Now().After(c.Start.Add(c.Duration))
 }
