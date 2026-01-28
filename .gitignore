@@ -14,6 +14,7 @@ volumes
 ./docker-compose.yml
 *.conf
 *.db
+CLAUDE.md
 
 # Binaries for programs and plugins
 *.exe
