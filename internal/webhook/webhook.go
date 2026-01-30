@@ -101,5 +101,5 @@ func SendPayload(event model.Event, target model.Webhook) error {
 		}
 	}
 	db.InitWebhookHistoryRepo(db.DB).Create(options)
-	return nil
+	return resp.Body.Close()
 }
