@@ -18,7 +18,6 @@ const (
 // HasMany ChallengeFlag
 type Docker struct {
 	ChallengeID    uint            `json:"challenge_id"`
-	Challenge      Challenge       `json:"-"`
 	ChallengeFlags []ChallengeFlag `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Name           string          `json:"name"`
 	Image          string          `json:"image"`

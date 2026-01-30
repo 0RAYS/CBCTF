@@ -7,7 +7,6 @@ package model
 // HasMany Submission
 type ContestChallenge struct {
 	ContestID    uint          `gorm:"index:idx_contest_challenge_deleted_salt,unique;" json:"contest_id"`
-	Contest      Contest       `json:"-"`
 	ChallengeID  uint          `gorm:"index:idx_contest_challenge_deleted_salt,unique;" json:"challenge_id"`
 	Challenge    Challenge     `json:"-"`
 	ContestFlags []ContestFlag `gorm:"constraint:OnDelete:CASCADE;" json:"-"`

@@ -14,9 +14,7 @@ import (
 
 type Victim struct {
 	ChallengeID        uint             `json:"challenge_id"`
-	Challenge          Challenge        `json:"-"`
 	ContestID          sql.Null[uint]   `json:"contest_id"`
-	Contest            Contest          `json:"-"`
 	ContestChallengeID sql.Null[uint]   `json:"contest_challenge_id"`
 	ContestChallenge   ContestChallenge `json:"-"`
 	TeamID             sql.Null[uint]   `json:"team_id"`
@@ -24,7 +22,6 @@ type Victim struct {
 	UserID             sql.Null[uint]   `json:"user_id"`
 	User               User             `json:"-"`
 	Pods               []Pod            `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Traffics           []Traffic        `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Start              time.Time        `json:"start"`
 	Duration           time.Duration    `json:"duration"`
 	VPC                VPC              `gorm:"default:null;type:json" json:"-"`

@@ -2,7 +2,6 @@ package model
 
 type Traffic struct {
 	VictimID uint   `json:"victim_id"`
-	Victim   Victim `json:"-"`
 	SrcIP    string `json:"src_ip"`
 	DstIP    string `json:"dst_ip"`
 	Type     string `json:"type"`

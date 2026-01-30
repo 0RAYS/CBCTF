@@ -2,7 +2,6 @@ package model
 
 type Email struct {
 	SmtpID  uint   `json:"smtp_id"`
-	Smtp    Smtp   `json:"-"`
 	From    string `json:"from"`
 	To      string `json:"to"`
 	Subject string `json:"subject"`
