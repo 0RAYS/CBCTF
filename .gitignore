@@ -11,12 +11,13 @@ resources.yaml
 build.bat
 CBCTF
 volumes
-./docker-compose.yaml
-./build.sh
-./admin.yaml
 *.conf
 *.db
 CLAUDE.md
+
+/admin.yaml
+/build.sh
+/docker-compose.yml
 
 # Binaries for programs and plugins
 *.exe
