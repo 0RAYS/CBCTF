@@ -5,7 +5,6 @@ import (
 )
 
 type Smtp struct {
-	Emails      []Email   `json:"-"`
 	Address     string    `json:"address"`
 	Host        string    `json:"host"`
 	Port        int       `json:"port"`

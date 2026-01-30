@@ -20,7 +20,6 @@ var (
 // HasMany ContestFlag
 type ChallengeFlag struct {
 	ChallengeID  uint           `json:"challenge_id"`
-	Challenge    Challenge      `json:"-"`
 	DockerID     sql.Null[uint] `gorm:"default:null" json:"docker_id"`
 	ContestFlags []ContestFlag  `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	TeamFlags    []TeamFlag     `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
