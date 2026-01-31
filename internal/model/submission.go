@@ -30,7 +30,7 @@ func (s Submission) GetBaseModel() BaseModel {
 	return s.BaseModel
 }
 
-func (s Submission) GetUniqueKey() []string {
+func (s Submission) GetUniqueField() []string {
 	return []string{"id"}
 }
 

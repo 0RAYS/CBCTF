@@ -53,7 +53,7 @@ func (c Contest) GetBaseModel() BaseModel {
 	return c.BaseModel
 }
 
-func (c Contest) GetUniqueKey() []string {
+func (c Contest) GetUniqueField() []string {
 	return []string{"id", "name"}
 }
 

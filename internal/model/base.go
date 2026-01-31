@@ -19,7 +19,7 @@ type BaseModel struct {
 type Model interface {
 	GetModelName() string
 	GetBaseModel() BaseModel
-	GetUniqueKey() []string
+	GetUniqueField() []string
 	GetAllowedQueryFields() []string
 }
 

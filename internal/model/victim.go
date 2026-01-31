@@ -39,7 +39,7 @@ func (v Victim) GetBaseModel() BaseModel {
 	return v.BaseModel
 }
 
-func (v Victim) GetUniqueKey() []string {
+func (v Victim) GetUniqueField() []string {
 	return []string{"id"}
 }
 

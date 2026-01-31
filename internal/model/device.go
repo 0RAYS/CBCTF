@@ -20,7 +20,7 @@ func (d Device) GetBaseModel() BaseModel {
 	return d.BaseModel
 }
 
-func (d Device) GetUniqueKey() []string {
+func (d Device) GetUniqueField() []string {
 	return []string{"id"}
 }
 

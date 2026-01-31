@@ -41,7 +41,7 @@ func (f File) GetBaseModel() BaseModel {
 	return f.BaseModel
 }
 
-func (f File) GetUniqueKey() []string {
+func (f File) GetUniqueField() []string {
 	return []string{"id", "rand_id"}
 }
 

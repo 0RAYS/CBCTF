@@ -109,7 +109,7 @@ func (e Event) GetBaseModel() BaseModel {
 	return e.BaseModel
 }
 
-func (e Event) GetUniqueKey() []string {
+func (e Event) GetUniqueField() []string {
 	return []string{"id"}
 }
 

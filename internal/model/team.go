@@ -35,7 +35,7 @@ func (t Team) GetBaseModel() BaseModel {
 	return t.BaseModel
 }
 
-func (t Team) GetUniqueKey() []string {
+func (t Team) GetUniqueField() []string {
 	return []string{"id"}
 }
 

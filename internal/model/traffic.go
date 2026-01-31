@@ -19,7 +19,7 @@ func (t Traffic) GetBaseModel() BaseModel {
 	return t.BaseModel
 }
 
-func (t Traffic) GetUniqueKey() []string {
+func (t Traffic) GetUniqueField() []string {
 	return []string{"id"}
 }
 

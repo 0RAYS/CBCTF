@@ -42,7 +42,7 @@ func (c Cheat) GetBaseModel() BaseModel {
 	return c.BaseModel
 }
 
-func (c Cheat) GetUniqueKey() []string {
+func (c Cheat) GetUniqueField() []string {
 	return []string{"id", "hash"}
 }
 

@@ -24,7 +24,7 @@ func (n Notice) GetBaseModel() BaseModel {
 	return n.BaseModel
 }
 
-func (n Notice) GetUniqueKey() []string {
+func (n Notice) GetUniqueField() []string {
 	return []string{"id"}
 }
 

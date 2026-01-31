@@ -31,7 +31,7 @@ func (c ContestChallenge) GetBaseModel() BaseModel {
 	return c.BaseModel
 }
 
-func (c ContestChallenge) GetUniqueKey() []string {
+func (c ContestChallenge) GetUniqueField() []string {
 	return []string{"id"}
 }
 

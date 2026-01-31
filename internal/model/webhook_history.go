@@ -24,7 +24,7 @@ func (w WebhookHistory) GetBaseModel() BaseModel {
 	return w.BaseModel
 }
 
-func (w WebhookHistory) GetUniqueKey() []string {
+func (w WebhookHistory) GetUniqueField() []string {
 	return []string{"id"}
 }
 

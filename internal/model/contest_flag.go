@@ -47,7 +47,7 @@ func (c ContestFlag) GetBaseModel() BaseModel {
 	return c.BaseModel
 }
 
-func (c ContestFlag) GetUniqueKey() []string {
+func (c ContestFlag) GetUniqueField() []string {
 	return []string{"id"}
 }
 

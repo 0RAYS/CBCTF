@@ -49,7 +49,7 @@ func (c Challenge) GetBaseModel() BaseModel {
 	return c.BaseModel
 }
 
-func (c Challenge) GetUniqueKey() []string {
+func (c Challenge) GetUniqueField() []string {
 	return []string{"id", "rand_id"}
 }
 

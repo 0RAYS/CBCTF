@@ -18,7 +18,7 @@ func (e Email) GetBaseModel() BaseModel {
 	return e.BaseModel
 }
 
-func (e Email) GetUniqueKey() []string {
+func (e Email) GetUniqueField() []string {
 	return []string{"id"}
 }
 

@@ -25,7 +25,7 @@ func (s Smtp) GetBaseModel() BaseModel {
 	return s.BaseModel
 }
 
-func (s Smtp) GetUniqueKey() []string {
+func (s Smtp) GetUniqueField() []string {
 	return []string{"id"}
 }
 

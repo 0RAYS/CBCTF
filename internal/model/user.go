@@ -35,7 +35,7 @@ func (u User) GetBaseModel() BaseModel {
 	return u.BaseModel
 }
 
-func (u User) GetUniqueKey() []string {
+func (u User) GetUniqueField() []string {
 	return []string{"id", "name", "email"}
 }
 

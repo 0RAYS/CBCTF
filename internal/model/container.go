@@ -23,7 +23,7 @@ func (c Container) GetBaseModel() BaseModel {
 	return c.BaseModel
 }
 
-func (c Container) GetUniqueKey() []string {
+func (c Container) GetUniqueField() []string {
 	return []string{"id"}
 }
 

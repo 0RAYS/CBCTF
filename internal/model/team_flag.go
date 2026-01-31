@@ -21,7 +21,7 @@ func (t TeamFlag) GetBaseModel() BaseModel {
 	return t.BaseModel
 }
 
-func (t TeamFlag) GetUniqueKey() []string {
+func (t TeamFlag) GetUniqueField() []string {
 	return []string{"id"}
 }
 

@@ -18,7 +18,7 @@ func (a Admin) GetBaseModel() BaseModel {
 	return a.BaseModel
 }
 
-func (a Admin) GetUniqueKey() []string {
+func (a Admin) GetUniqueField() []string {
 	return []string{"id", "name", "email"}
 }
 
