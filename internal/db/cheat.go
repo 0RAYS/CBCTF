@@ -93,7 +93,7 @@ func (c *CheatRepo) Create(options CreateCheatOptions) (model.Cheat, model.RetVa
 	m := options.Convert2Model().(model.Cheat)
 	if res := c.DB.Model(&model.Cheat{}).Attrs(m).FirstOrCreate(&m, model.Cheat{Hash: m.Hash}); res.Error != nil {
 		log.Logger.Warningf("Failed to create Cheat: %s", res.Error)
-		return model.Cheat{}, model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.Cheat{}.GetModelName(), "Error": res.Error.Error()}}
+		return model.Cheat{}, model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.Cheat{}.ModelName(), "Error": res.Error.Error()}}
 	}
 	return m, model.SuccessRetVal()
 }

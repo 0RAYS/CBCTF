@@ -49,7 +49,7 @@ func (d *DeviceRepo) RecordDevice(options CreateDeviceOptions) model.RetVal {
 	device := options.Convert2Model().(model.Device)
 	res := d.DB.Model(&model.Device{}).FirstOrCreate(&device, device)
 	if res.Error != nil {
-		return model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.Device{}.GetModelName(), "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.Device{}.ModelName(), "Error": res.Error.Error()}}
 	}
 	return d.DiffUpdate(device.ID, DiffUpdateDeviceOptions{Count: 1})
 }

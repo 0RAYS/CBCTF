@@ -34,7 +34,7 @@ type Cheat struct {
 	BaseModel
 }
 
-func (c Cheat) GetModelName() string {
+func (c Cheat) ModelName() string {
 	return "Cheat"
 }
 
@@ -42,10 +42,10 @@ func (c Cheat) GetBaseModel() BaseModel {
 	return c.BaseModel
 }
 
-func (c Cheat) GetUniqueField() []string {
+func (c Cheat) UniqueFields() []string {
 	return []string{"id", "hash"}
 }
 
-func (c Cheat) GetAllowedQueryFields() []string {
+func (c Cheat) QueryFields() []string {
 	return []string{"id", "magic", "ip", "reason", "type", "checked", "hash", "comment", "time"}
 }

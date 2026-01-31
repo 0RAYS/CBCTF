@@ -13,7 +13,7 @@ type Pod struct {
 	BaseModel
 }
 
-func (p Pod) GetModelName() string {
+func (p Pod) ModelName() string {
 	return "Pod"
 }
 
@@ -21,7 +21,7 @@ func (p Pod) GetBaseModel() BaseModel {
 	return p.BaseModel
 }
 
-func (p Pod) GetUniqueField() []string {
+func (p Pod) UniqueFields() []string {
 	return []string{"id"}
 }
 
@@ -29,6 +29,6 @@ func (p Pod) TrafficPcapPath() string {
 	return fmt.Sprintf("%s/pod-%d.pcap", Victim{BaseModel: BaseModel{ID: p.VictimID}}.TrafficBasePath(), p.ID)
 }
 
-func (p Pod) GetAllowedQueryFields() []string {
+func (p Pod) QueryFields() []string {
 	return []string{}
 }

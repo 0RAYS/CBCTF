@@ -11,7 +11,7 @@ type Traffic struct {
 	BaseModel
 }
 
-func (t Traffic) GetModelName() string {
+func (t Traffic) ModelName() string {
 	return "Traffic"
 }
 
@@ -19,10 +19,10 @@ func (t Traffic) GetBaseModel() BaseModel {
 	return t.BaseModel
 }
 
-func (t Traffic) GetUniqueField() []string {
+func (t Traffic) UniqueFields() []string {
 	return []string{"id"}
 }
 
-func (t Traffic) GetAllowedQueryFields() []string {
+func (t Traffic) QueryFields() []string {
 	return []string{"id", "src_ip", "dst_ip", "type", "subtype"}
 }

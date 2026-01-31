@@ -22,7 +22,7 @@ func CheckIfGenerated(ctx *gin.Context) {
 		return
 	}
 	if !service.CheckIfGenerated(db.DB, team, contestFlags) {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.TeamFlag{}.GetModelName()}})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.TeamFlag{}.ModelName()}})
 		return
 	}
 	ctx.Next()

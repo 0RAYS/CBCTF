@@ -27,7 +27,7 @@ type Team struct {
 	BaseModel
 }
 
-func (t Team) GetModelName() string {
+func (t Team) ModelName() string {
 	return "Team"
 }
 
@@ -35,10 +35,10 @@ func (t Team) GetBaseModel() BaseModel {
 	return t.BaseModel
 }
 
-func (t Team) GetUniqueField() []string {
+func (t Team) UniqueFields() []string {
 	return []string{"id"}
 }
 
-func (t Team) GetAllowedQueryFields() []string {
+func (t Team) QueryFields() []string {
 	return []string{"id", "name", "description", "banned", "hidden"}
 }

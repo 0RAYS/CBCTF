@@ -93,7 +93,7 @@ func (c *ChallengeFlagRepo) Delete(idL ...uint) model.RetVal {
 	}
 	if res := c.DB.Model(&model.ChallengeFlag{}).Where("id IN ?", idL).Delete(&model.ChallengeFlag{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete ChallengeFlag: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]interface{}{"Model": model.ChallengeFlag{}.GetModelName(), "Error": res.Error}}
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]interface{}{"Model": model.ChallengeFlag{}.ModelName(), "Error": res.Error}}
 	}
 	return model.SuccessRetVal()
 }

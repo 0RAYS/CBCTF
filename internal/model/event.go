@@ -101,7 +101,7 @@ type Event struct {
 	BaseModel
 }
 
-func (e Event) GetModelName() string {
+func (e Event) ModelName() string {
 	return "Event"
 }
 
@@ -109,10 +109,10 @@ func (e Event) GetBaseModel() BaseModel {
 	return e.BaseModel
 }
 
-func (e Event) GetUniqueField() []string {
+func (e Event) UniqueFields() []string {
 	return []string{"id"}
 }
 
-func (e Event) GetAllowedQueryFields() []string {
+func (e Event) QueryFields() []string {
 	return []string{}
 }

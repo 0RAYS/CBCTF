@@ -44,7 +44,7 @@ func (e *EmailRepo) Create(options CreateEmailOptions) (model.Email, model.RetVa
 	m := options.Convert2Model().(model.Email)
 	if res := e.DB.Model(&model.Email{}).Create(&m); res.Error != nil {
 		log.Logger.Warningf("Failed to create Email: %s", res.Error)
-		return model.Email{}, model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": m.GetModelName(), "Error": res.Error.Error()}}
+		return model.Email{}, model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": m.ModelName(), "Error": res.Error.Error()}}
 	}
 	if ret := InitSmtpRepo(e.DB).UpdateStatus(m.SmtpID, m.Success, m.CreatedAt); !ret.OK {
 		return model.Email{}, ret

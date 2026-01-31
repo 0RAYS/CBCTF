@@ -19,7 +19,7 @@ type Oauth struct {
 	BaseModel
 }
 
-func (o Oauth) GetModelName() string {
+func (o Oauth) ModelName() string {
 	return "Oauth"
 }
 
@@ -27,10 +27,10 @@ func (o Oauth) GetBaseModel() BaseModel {
 	return o.BaseModel
 }
 
-func (o Oauth) GetUniqueField() []string {
+func (o Oauth) UniqueFields() []string {
 	return []string{"id", "provider"}
 }
 
-func (o Oauth) GetAllowedQueryFields() []string {
+func (o Oauth) QueryFields() []string {
 	return []string{"id", "provider", "on"}
 }

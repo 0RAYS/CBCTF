@@ -16,7 +16,7 @@ type WebhookHistory struct {
 	BaseModel
 }
 
-func (w WebhookHistory) GetModelName() string {
+func (w WebhookHistory) ModelName() string {
 	return "WebhookHistory"
 }
 
@@ -24,10 +24,10 @@ func (w WebhookHistory) GetBaseModel() BaseModel {
 	return w.BaseModel
 }
 
-func (w WebhookHistory) GetUniqueField() []string {
+func (w WebhookHistory) UniqueFields() []string {
 	return []string{"id"}
 }
 
-func (w WebhookHistory) GetAllowedQueryFields() []string {
+func (w WebhookHistory) QueryFields() []string {
 	return []string{"id", "success"}
 }

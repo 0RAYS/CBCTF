@@ -41,7 +41,7 @@ type Challenge struct {
 	BaseModel
 }
 
-func (c Challenge) GetModelName() string {
+func (c Challenge) ModelName() string {
 	return "Challenge"
 }
 
@@ -49,11 +49,11 @@ func (c Challenge) GetBaseModel() BaseModel {
 	return c.BaseModel
 }
 
-func (c Challenge) GetUniqueField() []string {
+func (c Challenge) UniqueFields() []string {
 	return []string{"id", "rand_id"}
 }
 
-func (c Challenge) GetAllowedQueryFields() []string {
+func (c Challenge) QueryFields() []string {
 	return []string{"id", "rand_id", "name", "description", "category", "type", "generator_image"}
 }
 

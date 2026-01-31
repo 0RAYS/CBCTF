@@ -17,10 +17,10 @@ type BaseModel struct {
 }
 
 type Model interface {
-	GetModelName() string
+	ModelName() string
 	GetBaseModel() BaseModel
-	GetUniqueField() []string
-	GetAllowedQueryFields() []string
+	UniqueFields() []string
+	QueryFields() []string
 }
 
 type RetVal struct {

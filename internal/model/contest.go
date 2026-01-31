@@ -45,7 +45,7 @@ type Contest struct {
 	BaseModel
 }
 
-func (c Contest) GetModelName() string {
+func (c Contest) ModelName() string {
 	return "Contest"
 }
 
@@ -53,11 +53,11 @@ func (c Contest) GetBaseModel() BaseModel {
 	return c.BaseModel
 }
 
-func (c Contest) GetUniqueField() []string {
+func (c Contest) UniqueFields() []string {
 	return []string{"id", "name"}
 }
 
-func (c Contest) GetAllowedQueryFields() []string {
+func (c Contest) QueryFields() []string {
 	return []string{"id", "name", "description", "prefix", "start", "duration", "hidden"}
 }
 

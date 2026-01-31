@@ -31,7 +31,7 @@ type Victim struct {
 	BaseModel
 }
 
-func (v Victim) GetModelName() string {
+func (v Victim) ModelName() string {
 	return "Victim"
 }
 
@@ -39,11 +39,11 @@ func (v Victim) GetBaseModel() BaseModel {
 	return v.BaseModel
 }
 
-func (v Victim) GetUniqueField() []string {
+func (v Victim) UniqueFields() []string {
 	return []string{"id"}
 }
 
-func (v Victim) GetAllowedQueryFields() []string {
+func (v Victim) QueryFields() []string {
 	return []string{}
 }
 

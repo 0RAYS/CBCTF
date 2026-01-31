@@ -54,7 +54,7 @@ func SetContest(ctx *gin.Context) {
 		return
 	}
 	if !IsAdmin(ctx) && contest.Hidden {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": contest.GetModelName()}})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": contest.ModelName()}})
 		return
 	}
 	ctx.Set("Contest", contest)
