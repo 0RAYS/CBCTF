@@ -23,7 +23,7 @@ type ContestChallenge struct {
 	BaseModel
 }
 
-func (c ContestChallenge) GetModelName() string {
+func (c ContestChallenge) ModelName() string {
 	return "ContestChallenge"
 }
 
@@ -31,10 +31,10 @@ func (c ContestChallenge) GetBaseModel() BaseModel {
 	return c.BaseModel
 }
 
-func (c ContestChallenge) GetUniqueField() []string {
+func (c ContestChallenge) UniqueFields() []string {
 	return []string{"id"}
 }
 
-func (c ContestChallenge) GetAllowedQueryFields() []string {
+func (c ContestChallenge) QueryFields() []string {
 	return []string{}
 }

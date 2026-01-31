@@ -13,7 +13,7 @@ type TeamFlag struct {
 	BaseModel
 }
 
-func (t TeamFlag) GetModelName() string {
+func (t TeamFlag) ModelName() string {
 	return "TeamFlag"
 }
 
@@ -21,10 +21,10 @@ func (t TeamFlag) GetBaseModel() BaseModel {
 	return t.BaseModel
 }
 
-func (t TeamFlag) GetUniqueField() []string {
+func (t TeamFlag) UniqueFields() []string {
 	return []string{"id"}
 }
 
-func (t TeamFlag) GetAllowedQueryFields() []string {
+func (t TeamFlag) QueryFields() []string {
 	return []string{}
 }

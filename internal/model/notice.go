@@ -16,7 +16,7 @@ type Notice struct {
 	BaseModel
 }
 
-func (n Notice) GetModelName() string {
+func (n Notice) ModelName() string {
 	return "Notice"
 }
 
@@ -24,10 +24,10 @@ func (n Notice) GetBaseModel() BaseModel {
 	return n.BaseModel
 }
 
-func (n Notice) GetUniqueField() []string {
+func (n Notice) UniqueFields() []string {
 	return []string{"id"}
 }
 
-func (n Notice) GetAllowedQueryFields() []string {
+func (n Notice) QueryFields() []string {
 	return []string{"id", "title", "content"}
 }

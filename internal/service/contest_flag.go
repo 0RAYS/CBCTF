@@ -21,7 +21,7 @@ func VerifyFlag(tx *gorm.DB, team model.Team, contestChallenge model.ContestChal
 	}
 	if contestChallenge.Type == model.QuestionChallengeType {
 		if len(contestFlagL) == 0 {
-			return false, model.ContestFlag{}, model.TeamFlag{}, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.ContestFlag{}.GetModelName()}}
+			return false, model.ContestFlag{}, model.TeamFlag{}, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.ContestFlag{}.ModelName()}}
 		}
 		optionsIDL := strings.Split(contestFlagL[0].Value, ",")
 		answerIDL := strings.Split(value, ",")
@@ -41,7 +41,7 @@ func VerifyFlag(tx *gorm.DB, team model.Team, contestChallenge model.ContestChal
 				return true, contestFlagL[0], teamFlag, model.SuccessRetVal()
 			}
 		}
-		return false, contestFlagL[0], model.TeamFlag{}, model.RetVal{OK: true, Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.TeamFlag{}.GetModelName()}}
+		return false, contestFlagL[0], model.TeamFlag{}, model.RetVal{OK: true, Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.TeamFlag{}.ModelName()}}
 	}
 	for _, contestFlag := range contestFlagL {
 		for _, teamFlag := range contestFlag.TeamFlags {

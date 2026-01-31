@@ -22,7 +22,7 @@ type Submission struct {
 	BaseModel
 }
 
-func (s Submission) GetModelName() string {
+func (s Submission) ModelName() string {
 	return "Submission"
 }
 
@@ -30,10 +30,10 @@ func (s Submission) GetBaseModel() BaseModel {
 	return s.BaseModel
 }
 
-func (s Submission) GetUniqueField() []string {
+func (s Submission) UniqueFields() []string {
 	return []string{"id"}
 }
 
-func (s Submission) GetAllowedQueryFields() []string {
+func (s Submission) QueryFields() []string {
 	return []string{"id", "value", "solved", "ip"}
 }

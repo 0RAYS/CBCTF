@@ -73,7 +73,7 @@ func (d *DockerRepo) Delete(idL ...uint) model.RetVal {
 	}
 	if res := d.DB.Model(&model.Docker{}).Where("id IN ?", idL).Delete(&model.Docker{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Docker: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Docker{}.GetModelName(), "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Docker{}.ModelName(), "Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }

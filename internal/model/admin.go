@@ -10,7 +10,7 @@ type Admin struct {
 	BaseModel
 }
 
-func (a Admin) GetModelName() string {
+func (a Admin) ModelName() string {
 	return "Admin"
 }
 
@@ -18,10 +18,10 @@ func (a Admin) GetBaseModel() BaseModel {
 	return a.BaseModel
 }
 
-func (a Admin) GetUniqueField() []string {
+func (a Admin) UniqueFields() []string {
 	return []string{"id", "name", "email"}
 }
 
-func (a Admin) GetAllowedQueryFields() []string {
+func (a Admin) QueryFields() []string {
 	return []string{"id", "name", "email", "verified"}
 }

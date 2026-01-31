@@ -31,7 +31,7 @@ type Docker struct {
 	BaseModel
 }
 
-func (d Docker) GetModelName() string {
+func (d Docker) ModelName() string {
 	return "Docker"
 }
 
@@ -39,11 +39,11 @@ func (d Docker) GetBaseModel() BaseModel {
 	return d.BaseModel
 }
 
-func (d Docker) GetUniqueField() []string {
+func (d Docker) UniqueFields() []string {
 	return []string{"id"}
 }
 
-func (d Docker) GetAllowedQueryFields() []string {
+func (d Docker) QueryFields() []string {
 	return []string{}
 }
 

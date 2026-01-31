@@ -15,7 +15,7 @@ type Container struct {
 	BaseModel
 }
 
-func (c Container) GetModelName() string {
+func (c Container) ModelName() string {
 	return "Container"
 }
 
@@ -23,10 +23,10 @@ func (c Container) GetBaseModel() BaseModel {
 	return c.BaseModel
 }
 
-func (c Container) GetUniqueField() []string {
+func (c Container) UniqueFields() []string {
 	return []string{"id"}
 }
 
-func (c Container) GetAllowedQueryFields() []string {
+func (c Container) QueryFields() []string {
 	return []string{}
 }

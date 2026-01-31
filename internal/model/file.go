@@ -33,7 +33,7 @@ type File struct {
 	BaseModel
 }
 
-func (f File) GetModelName() string {
+func (f File) ModelName() string {
 	return "File"
 }
 
@@ -41,11 +41,11 @@ func (f File) GetBaseModel() BaseModel {
 	return f.BaseModel
 }
 
-func (f File) GetUniqueField() []string {
+func (f File) UniqueFields() []string {
 	return []string{"id", "rand_id"}
 }
 
-func (f File) GetAllowedQueryFields() []string {
+func (f File) QueryFields() []string {
 	return []string{
 		"id", "rand_id", "model_name", "model_id", "filename", "size", "suffix", "hash", "type",
 	}

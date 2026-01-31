@@ -111,7 +111,7 @@ func (a *AdminRepo) Delete(idL ...uint) model.RetVal {
 	}
 	if res := a.DB.Model(&model.Admin{}).Where("id IN ?", idL).Delete(&model.Admin{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Admin: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Admin{}.GetModelName(), "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Admin{}.ModelName(), "Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }

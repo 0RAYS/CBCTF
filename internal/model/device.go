@@ -12,7 +12,7 @@ type Device struct {
 	BaseModel
 }
 
-func (d Device) GetModelName() string {
+func (d Device) ModelName() string {
 	return "Device"
 }
 
@@ -20,10 +20,10 @@ func (d Device) GetBaseModel() BaseModel {
 	return d.BaseModel
 }
 
-func (d Device) GetUniqueField() []string {
+func (d Device) UniqueFields() []string {
 	return []string{"id"}
 }
 
-func (d Device) GetAllowedQueryFields() []string {
+func (d Device) QueryFields() []string {
 	return []string{}
 }

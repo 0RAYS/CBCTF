@@ -13,7 +13,7 @@ func GetContestIDByUserID(tx *gorm.DB, userID uint) ([]uint, model.RetVal) {
 	res := tx.Model(&model.UserContest{}).Where("user_id = ?", userID).Find(&ucs)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get contest: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Contest{}.GetModelName(), "Error": res.Error.Error()}}
+		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Contest{}.ModelName(), "Error": res.Error.Error()}}
 	}
 	var idL []uint
 	for _, uc := range ucs {
@@ -27,7 +27,7 @@ func GetUserIDByTeamID(tx *gorm.DB, teamID uint) ([]uint, model.RetVal) {
 	res := tx.Model(&model.UserTeam{}).Where("team_id = ?", teamID).Find(&uts)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get user: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.User{}.GetModelName(), "Error": res.Error.Error()}}
+		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.User{}.ModelName(), "Error": res.Error.Error()}}
 	}
 	var idL []uint
 	for _, ut := range uts {
@@ -41,7 +41,7 @@ func GetUserIDByContestID(tx *gorm.DB, contestID uint) ([]uint, model.RetVal) {
 	res := tx.Model(&model.UserContest{}).Where("contest_id = ?", contestID).Find(&ucs)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get user: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.User{}.GetModelName(), "Error": res.Error.Error()}}
+		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.User{}.ModelName(), "Error": res.Error.Error()}}
 	}
 	var idL []uint
 	for _, uc := range ucs {

@@ -10,7 +10,7 @@ type Email struct {
 	BaseModel
 }
 
-func (e Email) GetModelName() string {
+func (e Email) ModelName() string {
 	return "Email"
 }
 
@@ -18,10 +18,10 @@ func (e Email) GetBaseModel() BaseModel {
 	return e.BaseModel
 }
 
-func (e Email) GetUniqueField() []string {
+func (e Email) UniqueFields() []string {
 	return []string{"id"}
 }
 
-func (e Email) GetAllowedQueryFields() []string {
+func (e Email) QueryFields() []string {
 	return []string{"id", "from", "to", "subject", "content"}
 }

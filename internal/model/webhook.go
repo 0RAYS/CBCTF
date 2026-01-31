@@ -21,7 +21,7 @@ type Webhook struct {
 	BaseModel
 }
 
-func (w Webhook) GetModelName() string {
+func (w Webhook) ModelName() string {
 	return "Webhook"
 }
 
@@ -29,10 +29,10 @@ func (w Webhook) GetBaseModel() BaseModel {
 	return w.BaseModel
 }
 
-func (w Webhook) GetUniqueField() []string {
+func (w Webhook) UniqueFields() []string {
 	return []string{"id"}
 }
 
-func (w Webhook) GetAllowedQueryFields() []string {
+func (w Webhook) QueryFields() []string {
 	return []string{"id", "name", "url", "on"}
 }

@@ -17,7 +17,7 @@ type Smtp struct {
 	BaseModel
 }
 
-func (s Smtp) GetModelName() string {
+func (s Smtp) ModelName() string {
 	return "Smtp"
 }
 
@@ -25,10 +25,10 @@ func (s Smtp) GetBaseModel() BaseModel {
 	return s.BaseModel
 }
 
-func (s Smtp) GetUniqueField() []string {
+func (s Smtp) UniqueFields() []string {
 	return []string{"id"}
 }
 
-func (s Smtp) GetAllowedQueryFields() []string {
+func (s Smtp) QueryFields() []string {
 	return []string{"id", "address", "host", "on"}
 }

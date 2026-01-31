@@ -39,7 +39,7 @@ type ContestFlag struct {
 	BaseModel
 }
 
-func (c ContestFlag) GetModelName() string {
+func (c ContestFlag) ModelName() string {
 	return "ContestFlag"
 }
 
@@ -47,11 +47,11 @@ func (c ContestFlag) GetBaseModel() BaseModel {
 	return c.BaseModel
 }
 
-func (c ContestFlag) GetUniqueField() []string {
+func (c ContestFlag) UniqueFields() []string {
 	return []string{"id"}
 }
 
-func (c ContestFlag) GetAllowedQueryFields() []string {
+func (c ContestFlag) QueryFields() []string {
 	return []string{}
 }
 

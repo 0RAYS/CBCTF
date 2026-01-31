@@ -27,7 +27,7 @@ type User struct {
 	BaseModel
 }
 
-func (u User) GetModelName() string {
+func (u User) ModelName() string {
 	return "User"
 }
 
@@ -35,10 +35,10 @@ func (u User) GetBaseModel() BaseModel {
 	return u.BaseModel
 }
 
-func (u User) GetUniqueField() []string {
+func (u User) UniqueFields() []string {
 	return []string{"id", "name", "email"}
 }
 
-func (u User) GetAllowedQueryFields() []string {
+func (u User) QueryFields() []string {
 	return []string{"id", "name", "email", "description", "verified", "banned", "hidden"}
 }

@@ -194,7 +194,7 @@ func (c *ContestRepo) Delete(idL ...uint) model.RetVal {
 	}
 	if res := c.DB.Model(&model.Contest{}).Where("id IN ?", idL).Delete(&model.Contest{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Contest: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Contest{}.GetModelName(), "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Contest{}.ModelName(), "Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }
