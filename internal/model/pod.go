@@ -21,7 +21,7 @@ func (p Pod) GetBaseModel() BaseModel {
 	return p.BaseModel
 }
 
-func (p Pod) GetUniqueKey() []string {
+func (p Pod) GetUniqueField() []string {
 	return []string{"id"}
 }
 

@@ -51,7 +51,7 @@ func (b *BaseRepo[M]) IsUniqueKeyValue(key string, value any) bool {
 }
 
 func (b *BaseRepo[M]) Insert(m M) (M, model.RetVal) {
-	for _, key := range m.GetUniqueKey() {
+	for _, key := range m.GetUniqueField() {
 		value := utils.GetFieldByJSONTag(m, key)
 		if !b.IsUniqueKeyValue(key, value) {
 			return *new(M), model.RetVal{Msg: i18n.Model.DuplicateKeyValue, Attr: map[string]any{"Model": m.GetModelName(), "Key": key}}
@@ -123,7 +123,7 @@ func (b *BaseRepo[M]) GetByID(id uint, options ...GetOptions) (M, model.RetVal) 
 }
 
 func (b *BaseRepo[M]) GetByUniqueKey(key string, value any, optionsL ...GetOptions) (M, model.RetVal) {
-	if !slices.Contains(M.GetUniqueKey(*new(M)), key) {
+	if !slices.Contains(M.GetUniqueField(*new(M)), key) {
 		return *new(M), model.RetVal{Msg: i18n.Model.NotUniqueKey, Attr: map[string]any{"Model": M.GetModelName(*new(M)), "Key": key}}
 	}
 	options := GetOptions{}
@@ -215,7 +215,7 @@ func (b *BaseRepo[M]) ListInBatches(limit, offset, size int, fc func(m M) error,
 func (b *BaseRepo[M]) Update(id uint, options UpdateOptions) model.RetVal {
 	var count uint
 	data := options.Convert2Map()
-	for _, key := range M.GetUniqueKey(*new(M)) {
+	for _, key := range M.GetUniqueField(*new(M)) {
 		if value, ok := data[key]; ok && !b.IsUniqueKeyValue(key, value) {
 			return model.RetVal{Msg: i18n.Model.NotUniqueKey, Attr: map[string]any{"Model": M.GetModelName(*new(M)), "Key": key}}
 		}

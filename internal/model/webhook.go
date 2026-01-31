@@ -29,7 +29,7 @@ func (w Webhook) GetBaseModel() BaseModel {
 	return w.BaseModel
 }
 
-func (w Webhook) GetUniqueKey() []string {
+func (w Webhook) GetUniqueField() []string {
 	return []string{"id"}
 }
 

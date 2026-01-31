@@ -29,7 +29,7 @@ func (r Request) GetBaseModel() BaseModel {
 	return r.BaseModel
 }
 
-func (r Request) GetUniqueKey() []string {
+func (r Request) GetUniqueField() []string {
 	return []string{"id"}
 }
 

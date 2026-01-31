@@ -39,7 +39,7 @@ func (d Docker) GetBaseModel() BaseModel {
 	return d.BaseModel
 }
 
-func (d Docker) GetUniqueKey() []string {
+func (d Docker) GetUniqueField() []string {
 	return []string{"id"}
 }
 

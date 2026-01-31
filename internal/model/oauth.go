@@ -27,7 +27,7 @@ func (o Oauth) GetBaseModel() BaseModel {
 	return o.BaseModel
 }
 
-func (o Oauth) GetUniqueKey() []string {
+func (o Oauth) GetUniqueField() []string {
 	return []string{"id", "provider"}
 }
 
