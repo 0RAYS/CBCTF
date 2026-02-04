@@ -75,7 +75,7 @@ func (r *RequestRepo) GetUserIP(userIDL ...uint) ([]UserIP, model.RetVal) {
 		SELECT user_id, ip, MIN(time) as first_time 
 		FROM requests WHERE user_id IN ? 
 		GROUP BY user_id, ip
-	`, userIDL[0]).Find(&userIPL)
+	`, userIDL[0]).Scan(&userIPL)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Request: %s", res.Error)
 		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Request{}.ModelName(), "Error": res.Error.Error()}}

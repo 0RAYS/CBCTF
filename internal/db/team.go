@@ -128,10 +128,13 @@ func (t *TeamRepo) GetByName(contestID uint, name string, optionsL ...GetOptions
 
 func (t *TeamRepo) GetBy2ID(userID, contestID uint) (model.Team, model.RetVal) {
 	var team model.Team
-	res := t.DB.Model(&model.Team{}).
-		Joins("INNER JOIN user_teams ON user_teams.team_id = teams.id").
-		Where("user_teams.user_id = ? AND teams.contest_id = ?", userID, contestID).
-		Limit(1).Find(&team)
+	res := t.DB.Raw(`
+		SELECT teams.*
+		FROM teams
+		INNER JOIN user_teams ON user_teams.team_id = teams.id
+		WHERE user_teams.user_id = ? AND teams.contest_id = ?
+		LIMIT 1
+	`, userID, contestID).Scan(&team)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Team: %s", res.Error)
 		return model.Team{}, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": team.ModelName(), "Error": res.Error.Error()}}

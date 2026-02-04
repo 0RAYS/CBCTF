@@ -108,7 +108,7 @@ func (s *SubmissionRepo) GetUserSolvedSubmissions(userIDL ...uint) ([]UserSolved
     	FROM submissions
 		INNER JOIN contest_flags ON submissions.contest_flag_id = contest_flags.id AND contest_flags.deleted_at IS NULL
 		WHERE submissions.user_id IN ? AND submissions.solved = true AND submissions.deleted_at IS NULL
-	`, userIDL).Find(&results)
+	`, userIDL).Scan(&results)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Submissions: %s", res.Error)
 		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Submission{}.ModelName(), "Error": res.Error.Error()}}
