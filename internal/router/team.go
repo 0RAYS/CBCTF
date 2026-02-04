@@ -40,7 +40,6 @@ func GetTeams(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
 	teams, count, ret := db.InitTeamRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
-		Preloads:   map[string]db.GetOptions{"Users": {Selects: []string{"id"}}},
 	})
 	if !ret.OK {
 		ctx.JSON(http.StatusOK, ret)

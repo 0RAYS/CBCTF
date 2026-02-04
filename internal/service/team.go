@@ -47,9 +47,7 @@ func AdminUpdateTeam(tx *gorm.DB, team model.Team, form dto.AdminUpdateTeamForm)
 func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form dto.JoinTeamForm) (model.Team, model.RetVal) {
 	var (
 		repo      = db.InitTeamRepo(tx)
-		team, ret = repo.GetByName(contest.ID, form.Name, db.GetOptions{
-			Preloads: map[string]db.GetOptions{"Users": {}},
-		})
+		team, ret = repo.GetByName(contest.ID, form.Name)
 	)
 	if !ret.OK {
 		return model.Team{}, ret
@@ -60,7 +58,7 @@ func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form dto.Join
 	if form.Captcha != team.Captcha {
 		return model.Team{}, model.RetVal{Msg: i18n.Model.Team.CaptchaWrong}
 	}
-	if len(team.Users)+1 > contest.Size {
+	if int(repo.CountAssociation(team, "Users"))+1 > contest.Size {
 		return model.Team{}, model.RetVal{Msg: i18n.Model.Team.Full}
 	}
 	if repo.IsInContest(contest.ID, user.ID) {
@@ -73,7 +71,6 @@ func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form dto.Join
 	if ret = db.AppendUserToContest(tx, user, contest); !ret.OK {
 		return model.Team{}, ret
 	}
-	team.Users = append(team.Users, user)
 	prometheus.AddContestActiveUsersMetrics(contest, 1)
 	return team, model.SuccessRetVal()
 }
@@ -106,7 +103,6 @@ func CreateTeam(tx *gorm.DB, contest model.Contest, user model.User, form dto.Cr
 	if ret = db.AppendUserToContest(tx, user, contest); !ret.OK {
 		return model.Team{}, ret
 	}
-	team.Users = append(team.Users, user)
 	prometheus.AddContestActiveTeamsMetrics(contest, 1)
 	prometheus.AddContestActiveUsersMetrics(contest, 1)
 	return team, model.SuccessRetVal()
