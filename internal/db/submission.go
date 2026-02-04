@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -81,34 +80,23 @@ func (s *SubmissionRepo) GetBloodTeamID(contestFlagID uint) ([]uint, model.RetVa
 	return teamIDL, model.SuccessRetVal()
 }
 
-type SolvedSubmission struct {
-	ID                            uint
-	UserID                        uint
-	TeamID                        uint
-	ContestID                     uint
-	ContestFlagID                 uint
-	Score                         float64
-	SubmissionTime                time.Time
-	ContestFlagContestChallengeID uint
-	ContestFlagScore              float64
-	ContestFlagCurrentScore       float64
-	ContestFlagMinScore           float64
-	ContestFlagDecay              float64
-	ContestFlagScoreType          uint
+type UserSolvedSubmission struct {
+	UserID                  uint
+	TeamID                  uint
+	ContestID               uint
+	ContestFlagID           uint
+	ContestFlagScore        float64
+	ContestFlagCurrentScore float64
 }
 
-func (s *SubmissionRepo) GetUserSolvedSubmissions(userIDL ...uint) ([]SolvedSubmission, model.RetVal) {
+func (s *SubmissionRepo) GetUserSolvedSubmissions(userIDL ...uint) ([]UserSolvedSubmission, model.RetVal) {
 	if len(userIDL) == 0 {
 		return nil, model.SuccessRetVal()
 	}
-	var results []SolvedSubmission
+	var results []UserSolvedSubmission
 	res := s.DB.Raw(`
-		SELECT submissions.id, submissions.user_id, submissions.team_id, submissions.contest_id, submissions.contest_flag_id,
-		submissions.score, submissions.created_at AS submission_time,
-		contest_flags.contest_challenge_id AS contest_flag_contest_challenge_id,
-		contest_flags.score AS contest_flag_score, contest_flags.current_score AS contest_flag_current_score,
-		contest_flags.min_score AS contest_flag_min_score, contest_flags.score_type AS contest_flag_score_type,
-		contest_flags.decay AS contest_flag_decay
+		SELECT submissions.user_id, submissions.team_id, submissions.contest_id, submissions.contest_flag_id,
+		contest_flags.score AS contest_flag_score, contest_flags.current_score AS contest_flag_current_score
     	FROM submissions
 		INNER JOIN contest_flags ON submissions.contest_flag_id = contest_flags.id AND contest_flags.deleted_at IS NULL
 		WHERE submissions.user_id IN ? AND submissions.solved = true AND submissions.deleted_at IS NULL
@@ -120,11 +108,21 @@ func (s *SubmissionRepo) GetUserSolvedSubmissions(userIDL ...uint) ([]SolvedSubm
 	return results, model.SuccessRetVal()
 }
 
-func (s *SubmissionRepo) GetTeamSolvedSubmissions(teamIDL ...uint) ([]SolvedSubmission, model.RetVal) {
+type TeamSolvedSubmission struct {
+	ContestFlagID                 uint
+	ContestFlagContestChallengeID uint
+	ContestFlagScore              float64
+	ContestFlagCurrentScore       float64
+	ContestFlagMinScore           float64
+	ContestFlagDecay              float64
+	ContestFlagScoreType          uint
+}
+
+func (s *SubmissionRepo) GetTeamSolvedSubmissions(teamIDL ...uint) ([]TeamSolvedSubmission, model.RetVal) {
 	if len(teamIDL) == 0 {
 		return nil, model.SuccessRetVal()
 	}
-	var results []SolvedSubmission
+	var results []TeamSolvedSubmission
 	res := s.DB.Raw(`
 		SELECT submissions.id, submissions.user_id, submissions.team_id, submissions.contest_id, submissions.contest_flag_id,
 		submissions.score, submissions.created_at AS submission_time,
