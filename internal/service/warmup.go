@@ -128,16 +128,12 @@ func StartContestVictims(tx *gorm.DB, contest model.Contest, form dto.StartConte
 		}
 		challengeIDL = append(challengeIDL, challenge.ID)
 	}
-	teams := make([]model.Team, 0)
-	for _, id := range form.Teams {
-		team, ret := db.InitTeamRepo(tx).GetByID(id, db.GetOptions{
-			Conditions: map[string]any{"contest_id": contest.ID},
-			Preloads:   map[string]db.GetOptions{"Contest": {Selects: []string{"id", "name"}}},
-		})
-		if !ret.OK {
-			continue
-		}
-		teams = append(teams, team)
+	teams, _, ret := db.InitTeamRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_id": contest.ID, "id": form.Teams},
+		Preloads:   map[string]db.GetOptions{"Contest": {Selects: []string{"id", "name"}}},
+	})
+	if !ret.OK {
+		return ret
 	}
 	if len(challengeIDL) == 0 || len(teams) == 0 {
 		return model.SuccessRetVal()
