@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -81,12 +82,17 @@ func (s *SubmissionRepo) GetBloodTeamID(contestFlagID uint) ([]uint, model.RetVa
 }
 
 type UserSolvedSubmission struct {
+	SubmissionID            uint
 	UserID                  uint
 	TeamID                  uint
 	ContestID               uint
+	Score                   float64
+	SubmissionTime          time.Time
 	ContestFlagID           uint
 	ContestFlagScore        float64
 	ContestFlagCurrentScore float64
+	ContestFlagMinScore     float64
+	ContestFlagScoreType    uint
 }
 
 func (s *SubmissionRepo) GetUserSolvedSubmissions(userIDL ...uint) ([]UserSolvedSubmission, model.RetVal) {
@@ -95,8 +101,11 @@ func (s *SubmissionRepo) GetUserSolvedSubmissions(userIDL ...uint) ([]UserSolved
 	}
 	var results []UserSolvedSubmission
 	res := s.DB.Raw(`
-		SELECT submissions.user_id, submissions.team_id, submission.contest_id, submissions.contest_flag_id,
-		contest_flags.score as contest_flag_score, contest_flags.current_score as contest_flag_current_flag
+		SELECT submissions.id, submissions.user_id, submissions.team_id, submissions.contest_id, submissions.contest_flag_id,
+		submissions.score, submissions.created_at AS submission_time,
+		contest_flags.score as contest_flag_score, contest_flags.current_score as contest_flag_current_flag,
+		contest_flags.min_score as contest_flag_min_score, contest_flags.score_type as contest_flag_score_type
+    	FROM submissions
 		INNER JOIN contest_flags ON submissions.contest_flag_id = contest_flags.id AND contest_flags.deleted_at IS NULL
 		WHERE submissions.user_id IN ? AND submissions.solved = true AND submissions.deleted_at IS NULL
 	`, userIDL).Find(&results)
