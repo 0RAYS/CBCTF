@@ -64,7 +64,7 @@ func InitSubmissionRepo(tx *gorm.DB) *SubmissionRepo {
 	}
 }
 
-func (s *SubmissionRepo) GetBloodTeam(contestFlagID uint) ([]uint, model.RetVal) {
+func (s *SubmissionRepo) GetBloodTeamID(contestFlagID uint) ([]uint, model.RetVal) {
 	var submissions []model.Submission
 	teamIDL := make([]uint, 0)
 	res := s.DB.Model(&model.Submission{}).Where("contest_flag_id = ?", contestFlagID).Order("id").Limit(3).Find(&submissions)
@@ -78,4 +78,31 @@ func (s *SubmissionRepo) GetBloodTeam(contestFlagID uint) ([]uint, model.RetVal)
 		}
 	}
 	return teamIDL, model.SuccessRetVal()
+}
+
+type UserSolvedSubmission struct {
+	UserID                  uint
+	TeamID                  uint
+	ContestID               uint
+	ContestFlagID           uint
+	ContestFlagScore        float64
+	ContestFlagCurrentScore float64
+}
+
+func (s *SubmissionRepo) GetUserSolvedSubmissions(userIDL ...uint) ([]UserSolvedSubmission, model.RetVal) {
+	if len(userIDL) == 0 {
+		return nil, model.SuccessRetVal()
+	}
+	var results []UserSolvedSubmission
+	res := s.DB.Raw(`
+		SELECT submissions.user_id, submissions.team_id, submission.contest_id, submissions.contest_flag_id,
+		contest_flags.score as contest_flag_score, contest_flags.current_score as contest_flag_current_flag
+		INNER JOIN contest_flags ON submissions.contest_flag_id = contest_flags.id AND contest_flags.deleted_at IS NULL
+		WHERE submissions.user_id IN ? AND submissions.solved = true AND submissions.deleted_at IS NULL
+	`, userIDL).Find(&results)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Submissions: %s", res.Error)
+		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Submission{}.ModelName(), "Error": res.Error.Error()}}
+	}
+	return results, model.SuccessRetVal()
 }
