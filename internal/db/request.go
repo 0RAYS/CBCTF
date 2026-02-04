@@ -60,12 +60,25 @@ func (r *RequestRepo) CountIP() (int64, model.RetVal) {
 	return count, model.SuccessRetVal()
 }
 
-func (r *RequestRepo) GetUserIP(userID uint) ([]string, model.RetVal) {
-	var ipL []string
-	res := r.DB.Model(&model.Request{}).Where("user_id = ?", userID).Distinct("ip").Find(&ipL)
+type UserIP struct {
+	UserID    uint
+	IP        string
+	FirstTime time.Time
+}
+
+func (r *RequestRepo) GetUserIP(userIDL ...uint) ([]UserIP, model.RetVal) {
+	if len(userIDL) == 0 {
+		return nil, model.SuccessRetVal()
+	}
+	var userIPL []UserIP
+	res := r.DB.Raw(`
+		SELECT user_id, ip, MIN(time) as first_time 
+		FROM requests WHERE user_id IN ? 
+		GROUP BY user_id, ip
+	`, userIDL[0]).Find(&userIPL)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Request: %s", res.Error)
 		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Request{}.ModelName(), "Error": res.Error.Error()}}
 	}
-	return ipL, model.SuccessRetVal()
+	return userIPL, model.SuccessRetVal()
 }

@@ -20,55 +20,54 @@ func CheckWebReqIP(contest model.Contest) {
 		return
 	}
 	repo := db.InitRequestRepo(db.DB)
-	ipUserMap := make(map[string][]uint)
-	for _, userID := range userIDL {
-		ipL, ret := repo.GetUserIP(userID)
-		if !ret.OK {
+	type ipUserInfo struct {
+		UserID uint
+		Time   time.Time
+	}
+	ipUserMap := make(map[string][]ipUserInfo)
+	userIPL, ret := repo.GetUserIP(userIDL...)
+	if !ret.OK {
+		return
+	}
+
+	for _, result := range userIPL {
+		if addr := net.ParseIP(result.IP); addr == nil || slices.ContainsFunc(config.Env.Cheat.IP.Whitelist, func(cidr string) bool {
+			if strings.Contains(cidr, "/") {
+				_, network, err := net.ParseCIDR(cidr)
+				if err != nil {
+					return false
+				}
+				return network.Contains(addr)
+			}
+			return cidr == result.IP
+		}) {
 			continue
 		}
-		for _, ip := range ipL {
-			if addr := net.ParseIP(ip); addr == nil || slices.ContainsFunc(config.Env.Cheat.IP.Whitelist, func(cidr string) bool {
-				if strings.Contains(cidr, "/") {
-					_, network, err := net.ParseCIDR(cidr)
-					if err != nil {
-						return false
-					}
-					return network.Contains(addr)
-				} else {
-					return cidr == ip
-				}
-			}) {
-				continue
-			}
-			if !slices.Contains(ipUserMap[ip], userID) {
-				ipUserMap[ip] = append(ipUserMap[ip], userID)
-			}
+
+		if !slices.ContainsFunc(ipUserMap[result.IP], func(info ipUserInfo) bool {
+			return info.UserID == result.UserID
+		}) {
+			ipUserMap[result.IP] = append(ipUserMap[result.IP], ipUserInfo{UserID: result.UserID, Time: result.FirstTime})
 		}
 	}
+
 	cheatRepo := db.InitCheatRepo(db.DB)
 	for ip, users := range ipUserMap {
 		if len(users) > 1 {
 			var str []string
 			for _, user := range users {
-				str = append(str, strconv.Itoa(int(user)))
+				str = append(str, strconv.Itoa(int(user.UserID)))
 			}
 			for _, user := range users {
-				first, ret := repo.Get(db.GetOptions{
-					Conditions: map[string]any{"id": user, "ip": ip},
-					Selects:    []string{"id", "time"},
-				})
-				if !ret.OK {
-					continue
-				}
 				cheatRepo.Create(db.CreateCheatOptions{
-					UserID:    sql.Null[uint]{V: user, Valid: true},
+					UserID:    sql.Null[uint]{V: user.UserID, Valid: true},
 					ContestID: sql.Null[uint]{V: contest.ID, Valid: true},
 					IP:        ip,
 					Comment:   ip,
 					Reason:    fmt.Sprintf(model.ReqWebSameIP, fmt.Sprintf("User %s", strings.Join(str, ","))),
 					Type:      model.Suspicious,
 					Checked:   false,
-					Time:      first.Time,
+					Time:      user.Time,
 				})
 			}
 		}
@@ -78,60 +77,57 @@ func CheckWebReqIP(contest model.Contest) {
 // CheckVictimReqIP 检查用户访问靶机的 IP
 func CheckVictimReqIP(contest model.Contest) {
 	teams, _, ret := db.InitTeamRepo(db.DB).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"contest_id": contest.ID},
+		Conditions: map[string]any{"contest_id": contest.ID, "banned": false},
 		Selects:    []string{"id"},
 	})
 	if !ret.OK {
 		return
 	}
+	teamIDs := make([]uint, len(teams))
+	for i, team := range teams {
+		teamIDs[i] = team.ID
+	}
+
+	trafficRepo := db.InitTrafficRepo(db.DB)
+	trafficResults, ret := trafficRepo.GetTeamVictimIP(teamIDs...)
+	if !ret.OK {
+		return
+	}
+
 	type tmp struct {
 		Time time.Time
 		ID   uint
 	}
 	ipTeamMap := make(map[string][]tmp)
-	victimRepo := db.InitVictimRepo(db.DB)
-	trafficRepo := db.InitTrafficRepo(db.DB)
-	for _, team := range teams {
-		victims, _, ret := victimRepo.List(-1, -1, db.GetOptions{
-			Conditions: map[string]any{"team_id": team.ID},
-			Selects:    []string{"id", "team_id", "deleted_at"},
-		})
-		if !ret.OK {
+
+	// 构建 IP -> teams 映射，同时过滤白名单
+	for _, result := range trafficResults {
+		if addr := net.ParseIP(result.SrcIP); addr == nil || slices.ContainsFunc(config.Env.Cheat.IP.Whitelist, func(cidr string) bool {
+			if strings.Contains(cidr, "/") {
+				_, network, err := net.ParseCIDR(cidr)
+				if err != nil {
+					return false
+				}
+				return network.Contains(addr)
+			}
+			return cidr == result.SrcIP
+		}) {
 			continue
 		}
-		for _, victim := range victims {
-			ipL, ret := trafficRepo.GetVictimReqIP(victim.ID)
-			if !ret.OK {
-				continue
-			}
-			for _, ip := range ipL {
-				if addr := net.ParseIP(ip); addr == nil || slices.ContainsFunc(config.Env.Cheat.IP.Whitelist, func(cidr string) bool {
-					if strings.Contains(cidr, "/") {
-						_, network, err := net.ParseCIDR(cidr)
-						if err != nil {
-							return false
-						}
-						return network.Contains(addr)
-					} else {
-						return cidr == ip
-					}
-				}) {
-					continue
-				}
-				if !slices.ContainsFunc(ipTeamMap[ip], func(s tmp) bool {
-					return s.ID == team.ID
-				}) {
-					// 靶机流量的时间此处实际上为靶机关闭的时间, 但影响不大
-					ipTeamMap[ip] = append(ipTeamMap[ip], tmp{Time: victim.DeletedAt.Time, ID: team.ID})
-				}
-			}
+
+		if !slices.ContainsFunc(ipTeamMap[result.SrcIP], func(s tmp) bool {
+			return s.ID == result.TeamID
+		}) {
+			// 靶机流量的时间此处实际上为靶机关闭的时间, 但影响不大
+			ipTeamMap[result.SrcIP] = append(ipTeamMap[result.SrcIP], tmp{Time: result.StopTime.Time, ID: result.TeamID})
 		}
 	}
+
 	cheatRepo := db.InitCheatRepo(db.DB)
 	for ip, v := range ipTeamMap {
 		if len(v) > 1 {
 			var str []string
-			for _, team := range teams {
+			for _, team := range v {
 				str = append(str, strconv.Itoa(int(team.ID)))
 			}
 			for _, team := range v {
