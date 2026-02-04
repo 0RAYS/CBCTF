@@ -126,26 +126,17 @@ func (t *TeamRepo) GetByName(contestID uint, name string, optionsL ...GetOptions
 	return t.Get(options)
 }
 
-func (t *TeamRepo) GetBy2ID(userID, contestID uint, optionsL ...GetOptions) (model.Team, model.RetVal) {
-	options := GetOptions{}
-	if len(optionsL) > 0 {
-		options = optionsL[0]
+func (t *TeamRepo) GetBy2ID(userID, contestID uint) (model.Team, model.RetVal) {
+	var team model.Team
+	res := t.DB.Model(&model.Team{}).
+		Joins("INNER JOIN user_teams ON user_teams.team_id = teams.id").
+		Where("user_teams.user_id = ? AND teams.contest_id = ?", userID, contestID).
+		Limit(1).Find(&team)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Team: %s", res.Error)
+		return model.Team{}, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": team.ModelName(), "Error": res.Error.Error()}}
 	}
-	if options.Conditions == nil {
-		options.Conditions = make(map[string]any)
-	}
-	options.Conditions["contest_id"] = contestID
-	user, ret := InitUserRepo(t.DB).GetByID(userID, GetOptions{
-		Selects:  []string{"id"},
-		Preloads: map[string]GetOptions{"Teams": options},
-	})
-	if !ret.OK {
-		return model.Team{}, ret
-	}
-	if len(user.Teams) == 0 {
-		return model.Team{}, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.Team{}.ModelName()}}
-	}
-	return user.Teams[0], model.SuccessRetVal()
+	return team, model.SuccessRetVal()
 }
 
 func (t *TeamRepo) Delete(idL ...uint) model.RetVal {
