@@ -21,9 +21,8 @@ func HomePage(ctx *gin.Context) {
 		"stats":      []gin.H{},
 		"scoreboard": []gin.H{},
 	}
-	contests, count, ret := db.InitContestRepo(db.DB).List(-1, -1, db.GetOptions{
-		Preloads: map[string]db.GetOptions{"Teams": {}, "Users": {}},
-	})
+	repo := db.InitContestRepo(db.DB)
+	contests, count, ret := repo.List(-1, -1)
 	if ret.OK {
 		for i := 0; i < func() int {
 			if len(contests) > 3 {
@@ -36,8 +35,8 @@ func HomePage(ctx *gin.Context) {
 				"name":     contest.Name,
 				"start":    contest.Start,
 				"duration": contest.Duration.Seconds(),
-				"users":    len(contest.Users),
-				"teams":    len(contest.Teams),
+				"users":    repo.CountAssociation(contest, "Users"),
+				"teams":    repo.CountAssociation(contest, "Teams"),
 				"picture":  contest.Picture,
 			}
 			data["upcoming"] = append(data["upcoming"].([]gin.H), info)
