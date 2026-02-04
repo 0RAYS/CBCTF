@@ -157,6 +157,7 @@ func CalcTeamScore(tx *gorm.DB, team model.Team, blood bool) (float64, model.Ret
 			Score:        submission.ContestFlagCurrentScore,
 			CurrentScore: submission.ContestFlagCurrentScore,
 			MinScore:     submission.ContestFlagMinScore,
+			Decay:        submission.ContestFlagDecay,
 			ScoreType:    submission.ContestFlagScoreType,
 		}
 		_, score, ret := CalcContestFlagState(tx, contestFlag)

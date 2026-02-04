@@ -72,7 +72,7 @@ func (r *RequestRepo) GetUserIP(userIDL ...uint) ([]UserIP, model.RetVal) {
 	}
 	var userIPL []UserIP
 	res := r.DB.Raw(`
-		SELECT user_id, ip, MIN(time) as first_time 
+		SELECT user_id, ip, MIN(time) AS first_time 
 		FROM requests WHERE user_id IN ? 
 		GROUP BY user_id, ip
 	`, userIDL[0]).Scan(&userIPL)

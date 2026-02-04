@@ -1,3 +1,3 @@
 package redis
 
-const teamKey = "contest:%d:teams:%d"
+const teamKey = "contests:%d:teams:%d"
