@@ -38,10 +38,18 @@ func I18n(ctx *gin.Context) {
 		Data any            `json:"data"`
 		Attr map[string]any `json:"attr"`
 	}
-	data := w.body.String()
-	if err := json.Unmarshal([]byte(data), &old); err != nil {
-		_, _ = w.ResponseWriter.Write([]byte(data))
-		return
+	if len(ctx.Errors) > 0 {
+		old = struct {
+			Msg  string         `json:"msg"`
+			Data any            `json:"data"`
+			Attr map[string]any `json:"attr"`
+		}{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": ctx.Errors}}
+	} else {
+		data := w.body.Bytes()
+		if err := json.Unmarshal(data, &old); err != nil {
+			_, _ = w.ResponseWriter.Write(data)
+			return
+		}
 	}
 	code, err := strconv.Atoi(i18n.Translate("und", old.Msg))
 	if err != nil {
