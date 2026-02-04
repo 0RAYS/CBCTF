@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	teamRankingKey = "contests:%d:teams:rank"
+	teamRankingKey = "contests:%d:rank"
 	userRankingKey = "users:rank"
 )
 

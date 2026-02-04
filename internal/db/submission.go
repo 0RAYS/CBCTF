@@ -82,7 +82,7 @@ func (s *SubmissionRepo) GetBloodTeamID(contestFlagID uint) ([]uint, model.RetVa
 }
 
 type UserSolvedSubmission struct {
-	SubmissionID            uint
+	ID                      uint
 	UserID                  uint
 	TeamID                  uint
 	ContestID               uint
@@ -92,6 +92,7 @@ type UserSolvedSubmission struct {
 	ContestFlagScore        float64
 	ContestFlagCurrentScore float64
 	ContestFlagMinScore     float64
+	ContestFlagDecay        float64
 	ContestFlagScoreType    uint
 }
 
@@ -103,8 +104,9 @@ func (s *SubmissionRepo) GetUserSolvedSubmissions(userIDL ...uint) ([]UserSolved
 	res := s.DB.Raw(`
 		SELECT submissions.id, submissions.user_id, submissions.team_id, submissions.contest_id, submissions.contest_flag_id,
 		submissions.score, submissions.created_at AS submission_time,
-		contest_flags.score as contest_flag_score, contest_flags.current_score as contest_flag_current_flag,
-		contest_flags.min_score as contest_flag_min_score, contest_flags.score_type as contest_flag_score_type
+		contest_flags.score AS contest_flag_score, contest_flags.current_score AS contest_flag_current_score,
+		contest_flags.min_score AS contest_flag_min_score, contest_flags.score_type AS contest_flag_score_type,
+		contest_flags.decay AS contest_flag_decay
     	FROM submissions
 		INNER JOIN contest_flags ON submissions.contest_flag_id = contest_flags.id AND contest_flags.deleted_at IS NULL
 		WHERE submissions.user_id IN ? AND submissions.solved = true AND submissions.deleted_at IS NULL
