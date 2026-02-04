@@ -57,7 +57,7 @@ func updateUserRanking(c *cron.Cron) {
 		}
 
 		// 构建 userID -> submissions 映射
-		userSubmissionsMap := make(map[uint][]db.SolvedSubmission)
+		userSubmissionsMap := make(map[uint][]db.UserSolvedSubmission)
 		contestIDSet := make(map[uint]bool)
 		for _, submission := range submissions {
 			userSubmissionsMap[submission.UserID] = append(userSubmissionsMap[submission.UserID], submission)
