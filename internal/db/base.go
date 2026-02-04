@@ -190,28 +190,6 @@ func (b *BaseRepo[M]) List(limit, offset int, optionsL ...GetOptions) ([]M, int6
 	return ms, count, model.SuccessRetVal()
 }
 
-func (b *BaseRepo[M]) ListInBatches(limit, offset, size int, fc func(m M) error, optionsL ...GetOptions) (int64, model.RetVal) {
-	options := GetOptions{}
-	if len(optionsL) > 0 {
-		options = optionsL[0]
-	}
-	ms := make([]M, 0)
-	res := applyGetOptions(b.DB.Model(new(M)), options).Order("id").Limit(limit).Offset(offset).
-		FindInBatches(&ms, size, func(tx *gorm.DB, batch int) error {
-			for _, m := range ms {
-				if err := fc(m); err != nil {
-					return err
-				}
-			}
-			return nil
-		})
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to get %s: %s", M.ModelName(*new(M)), res.Error)
-		return 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": M.ModelName(*new(M)), "Error": res.Error.Error()}}
-	}
-	return res.RowsAffected, model.SuccessRetVal()
-}
-
 func (b *BaseRepo[M]) Update(id uint, options UpdateOptions) model.RetVal {
 	var count uint
 	data := options.Convert2Map()
