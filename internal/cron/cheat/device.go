@@ -20,16 +20,14 @@ func CheckSameDevice(contest model.Contest) {
 		UserID uint
 	}
 	deviceUserMap := make(map[string][]tmp)
-	for _, userID := range userIDL {
-		devices, _, ret := db.InitDeviceRepo(db.DB).List(-1, -1, db.GetOptions{
-			Conditions: map[string]any{"user_id": userID},
-		})
-		if !ret.OK {
-			continue
-		}
-		for _, device := range devices {
-			deviceUserMap[device.Magic] = append(deviceUserMap[device.Magic], tmp{device.CreatedAt, userID})
-		}
+	devices, _, ret := db.InitDeviceRepo(db.DB).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"user_id": userIDL},
+	})
+	if !ret.OK {
+		return
+	}
+	for _, device := range devices {
+		deviceUserMap[device.Magic] = append(deviceUserMap[device.Magic], tmp{device.CreatedAt, device.UserID})
 	}
 	repo := db.InitCheatRepo(db.DB)
 	for magic, users := range deviceUserMap {

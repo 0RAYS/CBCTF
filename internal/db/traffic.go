@@ -42,12 +42,28 @@ func InitTrafficRepo(tx *gorm.DB) *TrafficRepo {
 	}
 }
 
-func (t *TrafficRepo) GetVictimReqIP(id uint) ([]string, model.RetVal) {
-	var ipL []string
-	res := t.DB.Model(&model.Traffic{}).Where("victim_id = ?", id).Distinct("src_ip").Find(&ipL)
+type TeamVictimIP struct {
+	TeamID   uint
+	VictimID uint
+	SrcIP    string
+	StopTime gorm.DeletedAt
+}
+
+func (t *TrafficRepo) GetTeamVictimIP(teamIDL ...uint) ([]TeamVictimIP, model.RetVal) {
+	if len(teamIDL) == 0 {
+		return nil, model.SuccessRetVal()
+	}
+	var teamVictimIPL []TeamVictimIP
+	res := t.DB.Raw(`
+		SELECT victims.team_id, victims.id AS victim_id, traffics.src_ip, victims.deleted_at AS stop_time
+		FROM victims
+		INNER JOIN victims ON traffics.victim_id = victims.id
+		WHERE victims.team_id IN ?
+		GROUP BY victims.team_id, victims.id, traffics.src_ip, victims.deleted_at
+	`).Find(&teamVictimIPL)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Traffic: %s", res.Error)
 		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Traffic{}.ModelName(), "Error": res.Error.Error()}}
 	}
-	return ipL, model.SuccessRetVal()
+	return teamVictimIPL, model.SuccessRetVal()
 }
