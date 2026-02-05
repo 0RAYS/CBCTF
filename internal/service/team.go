@@ -126,50 +126,21 @@ func LeaveTeam(tx *gorm.DB, contest model.Contest, team model.Team, userID uint)
 	return model.SuccessRetVal()
 }
 
-func GetTeamSolvedFlags(tx *gorm.DB, team model.Team) ([]model.ContestFlag, model.RetVal) {
-	submissions, ret := db.InitSubmissionRepo(tx).GetTeamSolvedSubmissions(team.ID)
-	if !ret.OK {
-		return nil, ret
-	}
-	solvedContestFlags := make([]model.ContestFlag, 0, len(submissions))
-	for _, submission := range submissions {
-		solvedContestFlags = append(solvedContestFlags, model.ContestFlag{
-			BaseModel:          model.BaseModel{ID: submission.ContestFlagID},
-			ContestChallengeID: submission.ContestFlagContestChallengeID,
-			Score:              submission.ContestFlagCurrentScore,
-			CurrentScore:       submission.ContestFlagCurrentScore,
-			MinScore:           submission.ContestFlagMinScore,
-			Decay:              submission.ContestFlagDecay,
-			ScoreType:          submission.ContestFlagScoreType,
-		})
-	}
-	return solvedContestFlags, model.SuccessRetVal()
-}
-
 func CalcTeamScore(tx *gorm.DB, team model.Team, blood bool) (float64, model.RetVal) {
-	submissionRepo := db.InitSubmissionRepo(tx)
-	submissions, ret := submissionRepo.GetTeamSolvedSubmissions(team.ID)
+	contestFlags, ret := db.InitContestFlagRepo(tx).GetTeamSolvedContestFlags(team.ID)
 	if !ret.OK {
 		return 0, ret
 	}
 	totalScore := 0.0
-	for _, submission := range submissions {
-		contestFlag := model.ContestFlag{
-			BaseModel:          model.BaseModel{ID: submission.ContestFlagID},
-			ContestChallengeID: submission.ContestFlagContestChallengeID,
-			Score:              submission.ContestFlagCurrentScore,
-			CurrentScore:       submission.ContestFlagCurrentScore,
-			MinScore:           submission.ContestFlagMinScore,
-			Decay:              submission.ContestFlagDecay,
-			ScoreType:          submission.ContestFlagScoreType,
-		}
+	submissionRepo := db.InitSubmissionRepo(tx)
+	for _, contestFlag := range contestFlags {
 		_, score, ret := CalcContestFlagState(tx, contestFlag)
 		if !ret.OK {
 			continue
 		}
 		var rate float64
 		if blood {
-			bloodTeam, _ := submissionRepo.GetBloodTeamID(submission.ContestFlagID)
+			bloodTeam, _ := submissionRepo.GetBloodTeamID(contestFlag.ID)
 			for i, teamID := range bloodTeam {
 				if teamID == team.ID {
 					switch i {
@@ -186,7 +157,7 @@ func CalcTeamScore(tx *gorm.DB, team model.Team, blood bool) (float64, model.Ret
 				}
 			}
 		}
-		totalScore += score + submission.ContestFlagScore*rate
+		totalScore += score + contestFlag.Score*rate
 	}
 	totalScore = math.Trunc(totalScore*100) / 100
 	return totalScore, model.SuccessRetVal()

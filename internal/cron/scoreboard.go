@@ -49,19 +49,17 @@ func updateUserRanking(c *cron.Cron) {
 			userIDs[i] = user.ID
 		}
 
-		// 批量查询所有用户的已解决提交 - 优化：从嵌套 Preload 改为单次 JOIN 查询
-		submissionRepo := db.InitSubmissionRepo(db.DB)
-		submissions, ret := submissionRepo.GetUserSolvedSubmissions(userIDs...)
+		solvedContestFlags, ret := db.InitContestFlagRepo(db.DB).GetUserSolvedContestFlags(userIDs...)
 		if !ret.OK {
 			return
 		}
 
-		// 构建 userID -> submissions 映射
-		userSubmissionsMap := make(map[uint][]db.UserSolvedSubmission)
+		// 构建 userID -> solvedContestFlags 映射
+		userSolvedContestFlagsMap := make(map[uint][]db.UserSolvedContestFlag)
 		contestIDSet := make(map[uint]bool)
-		for _, submission := range submissions {
-			userSubmissionsMap[submission.UserID] = append(userSubmissionsMap[submission.UserID], submission)
-			contestIDSet[submission.ContestID] = true
+		for _, contestFlag := range solvedContestFlags {
+			userSolvedContestFlagsMap[contestFlag.UserID] = append(userSolvedContestFlagsMap[contestFlag.UserID], contestFlag)
+			contestIDSet[contestFlag.ContestID] = true
 		}
 
 		// 查询涉及的 contests 以获取 blood 设置
@@ -80,17 +78,18 @@ func updateUserRanking(c *cron.Cron) {
 		for _, contest := range contests {
 			blood[contest.ID] = contest.Blood
 		}
+		submissionRepo := db.InitSubmissionRepo(db.DB)
 		for _, user := range users {
-			userSubmissions := userSubmissionsMap[user.ID]
+			userSolvedContestFlags := userSolvedContestFlagsMap[user.ID]
 			var solved int64 = 0
 			var score float64 = 0
-			for _, submission := range userSubmissions {
+			for _, contestFlag := range userSolvedContestFlags {
 				solved++
 				var rate float64
-				if blood[submission.ContestID] {
-					bloodTeam, _ := submissionRepo.GetBloodTeamID(submission.ContestFlagID)
+				if blood[contestFlag.ContestID] {
+					bloodTeam, _ := submissionRepo.GetBloodTeamID(contestFlag.ID)
 					switch slices.IndexFunc(bloodTeam, func(i uint) bool {
-						return i == submission.TeamID
+						return i == contestFlag.TeamID
 					}) {
 					case 0:
 						rate = model.FirstBloodRate
@@ -100,7 +99,7 @@ func updateUserRanking(c *cron.Cron) {
 						rate = model.ThirdBloodRate
 					}
 				}
-				score += submission.ContestFlagCurrentScore + submission.ContestFlagScore*rate
+				score += contestFlag.CurrentScore + contestFlag.Score*rate
 			}
 			score = math.Trunc(score*100) / 100
 			userRepo.Update(user.ID, db.UpdateUserOptions{
