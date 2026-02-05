@@ -8,8 +8,9 @@ log:
   level: info
   save: true
 asynq:
-  # DEBUG INFO WARNING ERROR
-  level: warning
+  log:
+    # DEBUG INFO WARNING ERROR
+    level: warning
   # Concurrent workers
   concurrency: 50
 gin:

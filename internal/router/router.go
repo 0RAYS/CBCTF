@@ -17,7 +17,7 @@ import (
 )
 
 func Init() *gin.Engine {
-	gin.SetMode(config.Env.Gin.Mode)
+	gin.SetMode(strings.ToLower(config.Env.Gin.Mode))
 	router := gin.New()
 
 	log.Logger.Infof("Trust proxies: %s", config.Env.Gin.Proxies)

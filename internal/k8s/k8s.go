@@ -52,9 +52,6 @@ func InitResources() {
 	initNFSVolume(ctx)
 	initExternalNetwork(ctx)
 
-	if err := config.Save(config.Env); err != nil {
-		log.Logger.Fatalf("Failed to update config: %s", err)
-	}
 	os.Exit(0)
 }
 
