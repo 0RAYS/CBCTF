@@ -31,6 +31,7 @@ func Start() {
 	checkWSConnection(c)
 	closeTimeoutVictims(c)
 	closeUnCtrlVictims(c)
+	ClearEmptyTeam(c)
 	updateFlagScore(c)
 	updateUserRanking(c)
 	updateTeamRanking(c)
