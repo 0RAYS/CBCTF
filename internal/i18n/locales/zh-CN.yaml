@@ -40,6 +40,8 @@ model:
     createDirError: "创建文件夹失败: {{.Error}}"
   notice:
     invalidType: "不合法的通知类型"
+  setting:
+    invalidType: "不合法的配置类型"
   submission:
     notAllowed: "不允许提交 flag"
   team:

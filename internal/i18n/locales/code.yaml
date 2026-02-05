@@ -40,6 +40,8 @@ model:
     createDirError: "500"
   notice:
     invalidType: "400"
+  setting:
+    invalidType: "400"
   submission:
     notAllowed: "400"
   team:
