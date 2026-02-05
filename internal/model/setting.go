@@ -21,8 +21,8 @@ var DefaultSettings = []Setting{
 	{Key: AsyncQConcurrencySettingKey, Value: SettingValue{V: 50}},
 
 	{Key: GinRateLimitGlobalSettingKey, Value: SettingValue{V: 120}},
-	{Key: GinRateLimitWhitelistSettingKey, Value: SettingValue{V: []string{"127.0.0.1"}}},
-	{Key: GinCORSSettingKey, Value: SettingValue{V: []string{"http://127.0.0.1:8000", "http://127.0.0.1:5173"}}},
+	{Key: GinRateLimitWhitelistSettingKey, Value: SettingValue{V: []string{}}},
+	{Key: GinCORSSettingKey, Value: SettingValue{V: []string{"*"}}},
 	{Key: GinLogWhitelistSettingKey, Value: SettingValue{V: []string{"/metrics", "/platform/*filepath"}}},
 }
 
