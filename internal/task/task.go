@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"CBCTF/internal/redis"
+	"strings"
 
 	"github.com/hibiken/asynq"
 )
@@ -19,7 +20,7 @@ func Init() {
 		Concurrency: config.Env.AsyncQ.Concurrency,
 		Logger:      log.Logger.WithField("Type", log.TaskLogType),
 	}
-	switch config.Env.AsyncQ.Level {
+	switch strings.ToUpper(config.Env.AsyncQ.Log.Level) {
 	case "DEBUG":
 		cfg.LogLevel = asynq.DebugLevel
 	case "INFO":
