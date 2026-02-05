@@ -1,6 +1,4 @@
-backend: http://127.0.0.1:8000
-# CORS
-frontend: http://127.0.0.1:3000
+host: http://127.0.0.1:8000
 # Data path and NFS mount path if needed
 path: ./data
 log:
@@ -23,13 +21,16 @@ gin:
   upload:
     # Size limited
     max: 8
-  rate:
+  ratelimit:
     # Global rate limit
     global: 100
     # Request without rate limited
     whitelist:
       - ::1
       - 127.0.0.1
+  cors:
+    - http://127.0.0.1:8000
+    - http://127.0.0.1:5173
   log:
     # Request without logging
     whitelist:

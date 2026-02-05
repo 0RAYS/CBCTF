@@ -100,7 +100,7 @@ func UploadPicture(v string) gin.HandlerFunc {
 		if v != "contest" {
 			_, _ = task.EnqueueResizeImageTask(record.Path, 100, 100)
 		}
-		path = fmt.Sprintf("%s/%s", config.Env.Backend, strings.TrimPrefix(path, "/"))
+		path = fmt.Sprintf("%s/%s", config.Env.Host, strings.TrimPrefix(path, "/"))
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 		ctx.JSON(http.StatusOK, model.SuccessRetVal(path))
 	}

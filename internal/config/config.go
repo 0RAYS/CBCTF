@@ -11,10 +11,9 @@ import (
 )
 
 type Config struct {
-	Backend  string `mapstructure:"backend" json:"backend"`   // 后端地址
-	Frontend string `mapstructure:"frontend" json:"frontend"` // 前端地址
-	Path     string `mapstructure:"path" json:"path"`         // 数据存储路径
-	Log      struct {
+	Host string `mapstructure:"host" json:"host"` // 后端地址
+	Path string `mapstructure:"path" json:"path"` // 数据存储路径
+	Log  struct {
 		Level string `mapstructure:"level" json:"level"` // 日志级别:DEBUG, INFO, WARNING, ERROR
 		Save  bool   `mapstructure:"save" json:"save"`   // 是否保存日志到文件
 	} `mapstructure:"log" json:"log"`
@@ -35,8 +34,9 @@ type Config struct {
 		RateLimit struct {
 			Global    float64  `mapstructure:"global" json:"global"`
 			Whitelist []string `mapstructure:"whitelist" json:"whitelist"` // IP 白名单,不限制频率
-		} `mapstructure:"rate" json:"rate"`
-		Log struct {
+		} `mapstructure:"ratelimit" json:"ratelimit"`
+		CORS []string `mapstructure:"cors" json:"cors"`
+		Log  struct {
 			Whitelist []string `mapstructure:"whitelist" json:"whitelist"` // 日志白名单路径
 		} `mapstructure:"log" json:"log"`
 	} `mapstructure:"gin" json:"gin"`
@@ -124,6 +124,5 @@ func Init() {
 
 // tidy 格式化配置, 简单处理部分字符
 func tidy() {
-	Env.Backend = strings.TrimSuffix(Env.Backend, "/")
-	Env.Frontend = strings.TrimSuffix(Env.Frontend, "/")
+	Env.Host = strings.TrimSuffix(Env.Host, "/")
 }

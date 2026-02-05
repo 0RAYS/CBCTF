@@ -18,7 +18,7 @@ func GetDefaultHDUHelpOauth() model.Oauth {
 		AuthURL:              "https://api.hduhelp.com/oauth/authorize",
 		TokenURL:             "https://api.hduhelp.com/oauth/token",
 		UserInfoURL:          "https://api.hduhelp.com/salmon_base/student/info",
-		CallbackURL:          fmt.Sprintf("%s/oauth/hduhelp/callback", config.Env.Backend),
+		CallbackURL:          fmt.Sprintf("%s/oauth/hduhelp/callback", config.Env.Host),
 		ClientID:             "",
 		ClientSecret:         "",
 		Provider:             "HDUHelp",
@@ -29,6 +29,6 @@ func GetDefaultHDUHelpOauth() model.Oauth {
 		RespPictureField:     "",
 		RespDescriptionField: "{data.unitName} {data.majorName} {data.staffName}",
 		On:                   false,
-		Picture:              model.FileURL(fmt.Sprintf("%s/assets?filename=hduhelp", config.Env.Backend)),
+		Picture:              model.FileURL(fmt.Sprintf("%s/assets?filename=hduhelp", config.Env.Host)),
 	}
 }

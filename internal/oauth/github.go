@@ -24,7 +24,7 @@ func GetDefaultGithubOauth() model.Oauth {
 		AuthURL:              github.Endpoint.AuthURL,
 		TokenURL:             github.Endpoint.TokenURL,
 		UserInfoURL:          "https://api.github.com/user",
-		CallbackURL:          fmt.Sprintf("%s/oauth/github/callback", config.Env.Backend),
+		CallbackURL:          fmt.Sprintf("%s/oauth/github/callback", config.Env.Host),
 		ClientID:             "",
 		ClientSecret:         "",
 		Provider:             "Github",
@@ -35,6 +35,6 @@ func GetDefaultGithubOauth() model.Oauth {
 		RespPictureField:     "{picture_url}",
 		RespDescriptionField: "{blog}",
 		On:                   false,
-		Picture:              model.FileURL(fmt.Sprintf("%s/assets?filename=github", config.Env.Backend)),
+		Picture:              model.FileURL(fmt.Sprintf("%s/assets?filename=github", config.Env.Host)),
 	}
 }
