@@ -40,6 +40,8 @@ model:
     createDirError: "Create dir error: {{.Error}}"
   notice:
     invalidType: "Invalid notice type"
+  setting:
+    invalidType: "Invalid setting type"
   submission:
     notAllowed: "Not allowed submit flag"
   team:

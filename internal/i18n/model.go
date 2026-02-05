@@ -46,6 +46,10 @@ type Notice struct {
 	InvalidType string
 }
 
+type Setting struct {
+	InvalidType string
+}
+
 type Submission struct {
 	NotAllowed string
 }
@@ -108,6 +112,7 @@ var Model = struct {
 	Email         Email
 	File          File
 	Notice        Notice
+	Setting       Setting
 	Submission    Submission
 	Team          Team
 	TeamFlag      TeamFlag
@@ -156,6 +161,9 @@ var Model = struct {
 	},
 	Notice: Notice{
 		InvalidType: "model.notice.invalidType",
+	},
+	Setting: Setting{
+		InvalidType: "model.setting.invalidType",
 	},
 	Submission: Submission{
 		NotAllowed: "model.submission.notAllowed",

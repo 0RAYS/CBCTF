@@ -22,7 +22,7 @@ type Config struct {
 		Log struct {
 			Level string `mapstructure:"level" json:"level"`
 		} `mapstructure:"log" json:"log"`
-		Concurrency int `mapstructure:"concurrency" json:"concurrency"`
+		Concurrency float64 `mapstructure:"concurrency" json:"concurrency"`
 	} `mapstructure:"asynq" json:"asynq"`
 	Gin struct {
 		Mode   string `mapstructure:"mode" json:"mode"` // Gin 模式:debug, release, test
@@ -33,7 +33,7 @@ type Config struct {
 		} `mapstructure:"upload" json:"upload"`
 		Proxies   []string `mapstructure:"proxies" json:"proxies"` // 信任的代理服务器
 		RateLimit struct {
-			Global    int      `mapstructure:"global" json:"global"`
+			Global    float64  `mapstructure:"global" json:"global"`
 			Whitelist []string `mapstructure:"whitelist" json:"whitelist"` // IP 白名单,不限制频率
 		} `mapstructure:"rate" json:"rate"`
 		Log struct {
