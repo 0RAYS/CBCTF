@@ -70,6 +70,7 @@ type User struct {
 	NamePasswordWrong string
 	UnverifiedEmail   string
 	AlreadyVerified   string
+	InContest         string
 }
 
 type Victim struct {
@@ -177,6 +178,7 @@ var Model = struct {
 		NamePasswordWrong: "model.user.namePasswordWrong",
 		UnverifiedEmail:   "model.user.unverifiedEmail",
 		AlreadyVerified:   "model.user.alreadyVerified",
+		InContest:         "model.user.inContest",
 	},
 	Victim: Victim{
 		Limited:     "model.victim.limited",

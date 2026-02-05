@@ -58,6 +58,7 @@ model:
     namePasswordWrong: "401"
     unverifiedEmail: "400"
     alreadyVerified: "400"
+    inContest: "400"
   victim:
     limited: "400"
     hasMuchTime: "400"

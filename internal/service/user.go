@@ -80,15 +80,8 @@ func DeleteSelf(tx *gorm.DB, user model.User, form dto.DeleteSelfForm) model.Ret
 	if !ret.OK {
 		return ret
 	}
-	repo := db.InitContestRepo(tx)
-	for _, id := range contestIDL {
-		contest, ret := repo.GetByID(id, db.GetOptions{Selects: []string{"id", "start", "duration"}})
-		if !ret.OK {
-			return ret
-		}
-		if contest.IsRunning() {
-			return model.RetVal{Msg: i18n.Model.Contest.IsRunning}
-		}
+	if len(contestIDL) > 0 {
+		return model.RetVal{Msg: i18n.Model.User.InContest, Attr: map[string]any{"Contest": contestIDL}}
 	}
 	return db.InitUserRepo(tx).Delete(user.ID)
 }
