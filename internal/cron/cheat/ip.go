@@ -13,6 +13,20 @@ import (
 	"time"
 )
 
+func checkWhitelistIP(ip string) bool {
+	addr := net.ParseIP(ip)
+	return addr == nil || slices.ContainsFunc(config.Env.Cheat.IP.Whitelist, func(cidr string) bool {
+		if strings.Contains(cidr, "/") {
+			_, network, err := net.ParseCIDR(cidr)
+			if err != nil {
+				return false
+			}
+			return network.Contains(addr)
+		}
+		return cidr == ip
+	})
+}
+
 // CheckWebReqIP 检查用户访问 Web 的 IP
 func CheckWebReqIP(contest model.Contest) {
 	userIDL, ret := db.GetUserIDByContestID(db.DB, contest.ID)
@@ -31,19 +45,9 @@ func CheckWebReqIP(contest model.Contest) {
 	}
 
 	for _, result := range userIPL {
-		if addr := net.ParseIP(result.IP); addr == nil || slices.ContainsFunc(config.Env.Cheat.IP.Whitelist, func(cidr string) bool {
-			if strings.Contains(cidr, "/") {
-				_, network, err := net.ParseCIDR(cidr)
-				if err != nil {
-					return false
-				}
-				return network.Contains(addr)
-			}
-			return cidr == result.IP
-		}) {
+		if checkWhitelistIP(result.IP) {
 			continue
 		}
-
 		if !slices.ContainsFunc(ipUserMap[result.IP], func(info ipUserInfo) bool {
 			return info.UserID == result.UserID
 		}) {
@@ -102,19 +106,9 @@ func CheckVictimReqIP(contest model.Contest) {
 
 	// 构建 IP -> teams 映射，同时过滤白名单
 	for _, result := range trafficResults {
-		if addr := net.ParseIP(result.SrcIP); addr == nil || slices.ContainsFunc(config.Env.Cheat.IP.Whitelist, func(cidr string) bool {
-			if strings.Contains(cidr, "/") {
-				_, network, err := net.ParseCIDR(cidr)
-				if err != nil {
-					return false
-				}
-				return network.Contains(addr)
-			}
-			return cidr == result.SrcIP
-		}) {
+		if checkWhitelistIP(result.SrcIP) {
 			continue
 		}
-
 		if !slices.ContainsFunc(ipTeamMap[result.SrcIP], func(s tmp) bool {
 			return s.ID == result.TeamID
 		}) {
