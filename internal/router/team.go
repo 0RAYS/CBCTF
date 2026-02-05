@@ -25,7 +25,7 @@ func GetTeam(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
-	solvedFlagL, _ := service.GetTeamSolvedFlags(db.DB, team)
+	solvedFlagL, _ := db.InitContestFlagRepo(db.DB).GetTeamSolvedContestFlags(team.ID)
 	data := resp.GetTeamResp(team)
 	data["solved"] = resp.GetSolvedStateResp(solvedFlagL, contestFlagL)
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))

@@ -40,7 +40,7 @@ func GetTeamRanking(ctx *gin.Context) {
 			count--
 			continue
 		}
-		solved, ret := service.GetTeamSolvedFlags(db.DB, team)
+		solved, ret := db.InitContestFlagRepo(db.DB).GetTeamSolvedContestFlags(team.ID)
 		if !ret.OK {
 			count--
 			continue
