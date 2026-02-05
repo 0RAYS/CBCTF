@@ -23,7 +23,7 @@ var DefaultSettings = []Setting{
 	{Key: GinRateLimitGlobalSettingKey, Value: SettingValue{V: 120}},
 	{Key: GinRateLimitWhitelistSettingKey, Value: SettingValue{V: []string{"127.0.0.1"}}},
 	{Key: GinCORSSettingKey, Value: SettingValue{V: []string{"http://127.0.0.1:8000", "http://127.0.0.1:5173"}}},
-	{Key: GinLogWhitelistSettingKey, Value: SettingValue{V: []string{"/metrics"}}},
+	{Key: GinLogWhitelistSettingKey, Value: SettingValue{V: []string{"/metrics", "/platform/*filepath"}}},
 }
 
 type Setting struct {
