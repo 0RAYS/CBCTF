@@ -97,6 +97,7 @@ func GetScoreboard(ctx *gin.Context) {
 		globalMap[contestFlag.ContestChallenge.Challenge.RandID] += 1
 	}
 	teamMap := make(map[uint]map[string]int)
+	teamIDL := make([]uint, 0, len(teams))
 	teamFlagRepo := db.InitTeamFlagRepo(db.DB)
 	for _, team := range teams {
 		if !middleware.IsAdmin(ctx) && team.Hidden {
@@ -107,26 +108,24 @@ func GetScoreboard(ctx *gin.Context) {
 		for challengeID := range globalMap {
 			teamMap[team.ID][challengeID] = 0
 		}
-		teamFlags, _, ret := teamFlagRepo.List(-1, -1, db.GetOptions{
-			Conditions: map[string]any{"team_id": team.ID},
-			Preloads: map[string]db.GetOptions{
-				"ContestFlag": {
-					Preloads: map[string]db.GetOptions{
-						"ContestChallenge": {Preloads: map[string]db.GetOptions{"Challenge": {}}},
-					},
-				},
-			},
-		})
-		if !ret.OK {
-			ctx.JSON(http.StatusOK, ret)
-			return
-		}
-		for _, teamFlag := range teamFlags {
-			if teamFlag.ContestFlag.ContestChallenge.Hidden {
+		teamIDL = append(teamIDL, team.ID)
+	}
+	teamFlags, ret := teamFlagRepo.GetTeamFlagsWithChallenge(teamIDL...)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
+		return
+	}
+	teamFlagsMap := make(map[uint][]db.TeamFlagWithChallenge)
+	for _, teamFlag := range teamFlags {
+		teamFlagsMap[teamFlag.TeamID] = append(teamFlagsMap[teamFlag.TeamID], teamFlag)
+	}
+	for teamID := range teamMap {
+		for _, teamFlag := range teamFlagsMap[teamID] {
+			if teamFlag.ContestChallengeHidden {
 				continue
 			}
 			if teamFlag.Solved {
-				teamMap[team.ID][teamFlag.ContestFlag.ContestChallenge.Challenge.RandID] += 1
+				teamMap[teamID][teamFlag.ChallengeRandID] += 1
 			}
 		}
 	}
