@@ -16,16 +16,6 @@ const (
 	GinLogWhitelistSettingKey       = "gin.log.whitelist"
 )
 
-var DefaultSettings = []Setting{
-	{Key: AsyncQLogLevelSettingKey, Value: SettingValue{V: "INFO"}},
-	{Key: AsyncQConcurrencySettingKey, Value: SettingValue{V: 50}},
-
-	{Key: GinRateLimitGlobalSettingKey, Value: SettingValue{V: 120}},
-	{Key: GinRateLimitWhitelistSettingKey, Value: SettingValue{V: []string{}}},
-	{Key: GinCORSSettingKey, Value: SettingValue{V: []string{"*"}}},
-	{Key: GinLogWhitelistSettingKey, Value: SettingValue{V: []string{"/metrics", "/platform/*filepath"}}},
-}
-
 type Setting struct {
 	Key   string       `gorm:"size:50;uniqueIndex" json:"key"`
 	Value SettingValue `gorm:"type:json;size:255" json:"value"`

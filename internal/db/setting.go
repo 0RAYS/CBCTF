@@ -50,7 +50,15 @@ func (s *SettingRepo) Get(key string, optionsL ...GetOptions) (model.Setting, mo
 }
 
 func (s *SettingRepo) InitSettings() model.RetVal {
-	for _, setting := range model.DefaultSettings {
+	for _, setting := range []model.Setting{
+		{Key: model.AsyncQLogLevelSettingKey, Value: model.SettingValue{V: config.Env.AsyncQ.Log.Level}},
+		{Key: model.AsyncQConcurrencySettingKey, Value: model.SettingValue{V: config.Env.AsyncQ.Concurrency}},
+
+		{Key: model.GinRateLimitGlobalSettingKey, Value: model.SettingValue{V: config.Env.Gin.RateLimit.Global}},
+		{Key: model.GinRateLimitWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Gin.RateLimit.Whitelist}},
+		{Key: model.GinCORSSettingKey, Value: model.SettingValue{V: config.Env.Gin.CORS}},
+		{Key: model.GinLogWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Gin.Log.Whitelist}},
+	} {
 		if _, ret := s.Create(CreateSettingOptions{
 			Key:   setting.Key,
 			Value: setting.Value,
