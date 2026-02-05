@@ -14,7 +14,7 @@ func (a FileURL) Value() (driver.Value, error) {
 	if a == "" {
 		return nil, nil
 	}
-	return strings.TrimPrefix(string(a), config.Env.Backend), nil
+	return strings.TrimPrefix(string(a), config.Env.Host), nil
 }
 
 func (a *FileURL) Scan(value any) error {
@@ -29,7 +29,7 @@ func (a *FileURL) Scan(value any) error {
 	if strings.HasPrefix(string(bytes), "https://") || strings.HasPrefix(string(bytes), "http://") {
 		*a = FileURL(bytes)
 	} else {
-		*a = FileURL(config.Env.Backend + string(bytes))
+		*a = FileURL(config.Env.Host + string(bytes))
 	}
 	return nil
 }

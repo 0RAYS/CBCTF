@@ -77,6 +77,9 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 	if config.Env.Gin.RateLimit.Whitelist, ret = GetValue[[]string](s, model.GinRateLimitWhitelistSettingKey); !ret.OK {
 		return ret
 	}
+	if config.Env.Gin.CORS, ret = GetValue[[]string](s, model.GinCORSSettingKey); !ret.OK {
+		return ret
+	}
 	if config.Env.Gin.Log.Whitelist, ret = GetValue[[]string](s, model.GinLogWhitelistSettingKey); !ret.OK {
 		return ret
 	}

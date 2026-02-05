@@ -16,7 +16,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -48,7 +47,7 @@ func ListOauth(ctx *gin.Context) {
 	oauthProviderMapLock.RLock()
 	for _, provider := range oauthProviderMap {
 		data = append(data, gin.H{
-			"url":     fmt.Sprintf("%s/oauth/%s", config.Env.Backend, provider.Uri),
+			"url":     fmt.Sprintf("%s/oauth/%s", config.Env.Host, provider.Uri),
 			"name":    provider.Provider,
 			"picture": provider.Picture,
 		})
@@ -187,10 +186,7 @@ func OauthCallback(ctx *gin.Context) {
 	}
 	prometheus.UpdateUserLoginMetrics(provider.Provider)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	url := "/platform/#/oauth/callback?token=" + token
-	if strings.HasPrefix(config.Env.Frontend, "http://") || strings.HasPrefix(config.Env.Frontend, "https://") {
-		url = config.Env.Frontend + url
-	}
+	url := fmt.Sprintf("%s/platform/#/oauth/callback?token=%s", config.Env.Host, token)
 	ctx.Redirect(http.StatusTemporaryRedirect, url)
 }
 

@@ -50,7 +50,7 @@ func VerifyEmail(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.Redirect(http.StatusTemporaryRedirect, config.Env.Backend)
+	ctx.Redirect(http.StatusTemporaryRedirect, config.Env.Host)
 }
 
 func ActivateEmail(ctx *gin.Context) {
