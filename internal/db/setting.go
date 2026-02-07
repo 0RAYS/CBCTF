@@ -250,6 +250,9 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 	if config.Env.Cheat.IP.Whitelist, ret = GetValue[[]string](s, model.CheatIPWhitelistSettingKey); !ret.OK {
 		return ret
 	}
+	if err := config.Save(); err != nil {
+		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+	}
 
 	return model.SuccessRetVal()
 }

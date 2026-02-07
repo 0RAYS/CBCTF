@@ -5,7 +5,11 @@ import (
 	"errors"
 	"log"
 	"os"
+	"reflect"
 	"strings"
+
+	"github.com/mitchellh/mapstructure"
+	"gopkg.in/yaml.v3"
 
 	"github.com/spf13/viper"
 )
@@ -127,4 +131,158 @@ func Init() {
 // tidy 格式化配置, 简单处理部分字符
 func tidy() {
 	Env.Host = strings.TrimSuffix(Env.Host, "/")
+}
+
+// Save writes the current Env to config.yml.
+// It preserves formatting only by overwriting the whole file.
+func Save() error {
+	if Env == nil {
+		return errors.New("config env is nil")
+	}
+	tidy()
+	settings := make(map[string]any)
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		TagName: "mapstructure",
+		Result:  &settings,
+	})
+	if err != nil {
+		return err
+	}
+	if err := decoder.Decode(Env); err != nil {
+		return err
+	}
+
+	var root yaml.Node
+	if err := yaml.Unmarshal(defaultConf, &root); err != nil {
+		return err
+	}
+	if root.Kind == 0 {
+		root.Kind = yaml.DocumentNode
+	}
+	if len(root.Content) == 0 {
+		root.Content = []*yaml.Node{{Kind: yaml.MappingNode}}
+	}
+	if err := mergeYAMLNode(&root, settings); err != nil {
+		return err
+	}
+
+	bytes, err := yaml.Marshal(&root)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile("./config.yml", bytes, 0666)
+}
+
+func mergeYAMLNode(node *yaml.Node, data any) error {
+	switch node.Kind {
+	case yaml.DocumentNode:
+		if len(node.Content) == 0 {
+			node.Content = []*yaml.Node{{Kind: yaml.MappingNode}}
+		}
+		return mergeYAMLNode(node.Content[0], data)
+	case yaml.MappingNode:
+		mapped, ok := data.(map[string]any)
+		if !ok {
+			return nil
+		}
+		remaining := make(map[string]any, len(mapped))
+		for key, value := range mapped {
+			remaining[key] = value
+		}
+		for i := 0; i+1 < len(node.Content); i += 2 {
+			keyNode := node.Content[i]
+			valueNode := node.Content[i+1]
+			if keyNode.Kind != yaml.ScalarNode {
+				continue
+			}
+			key := keyNode.Value
+			value, ok := remaining[key]
+			if !ok {
+				continue
+			}
+			if err := applyYAMLValue(valueNode, value); err != nil {
+				return err
+			}
+			delete(remaining, key)
+		}
+		for key, value := range remaining {
+			keyNode := &yaml.Node{Kind: yaml.ScalarNode, Value: key, Tag: "!!str"}
+			valueNode, err := valueToNode(value)
+			if err != nil {
+				return err
+			}
+			node.Content = append(node.Content, keyNode, valueNode)
+		}
+		return nil
+	case yaml.SequenceNode:
+		items, ok := toSlice(data)
+		if !ok {
+			return nil
+		}
+		node.Content = node.Content[:0]
+		for _, item := range items {
+			itemNode, err := valueToNode(item)
+			if err != nil {
+				return err
+			}
+			node.Content = append(node.Content, itemNode)
+		}
+		return nil
+	default:
+		valueNode, err := valueToNode(data)
+		if err != nil {
+			return err
+		}
+		*node = *valueNode
+		return nil
+	}
+}
+
+func applyYAMLValue(node *yaml.Node, value any) error {
+	switch node.Kind {
+	case yaml.MappingNode, yaml.SequenceNode:
+		return mergeYAMLNode(node, value)
+	default:
+		valueNode, err := valueToNode(value)
+		if err != nil {
+			return err
+		}
+		node.Kind = valueNode.Kind
+		node.Tag = valueNode.Tag
+		node.Value = valueNode.Value
+		node.Content = valueNode.Content
+		node.Style = valueNode.Style
+		return nil
+	}
+}
+
+func valueToNode(value any) (*yaml.Node, error) {
+	bytes, err := yaml.Marshal(value)
+	if err != nil {
+		return nil, err
+	}
+	var node yaml.Node
+	if err := yaml.Unmarshal(bytes, &node); err != nil {
+		return nil, err
+	}
+	if node.Kind == yaml.DocumentNode && len(node.Content) > 0 {
+		return node.Content[0], nil
+	}
+	return &node, nil
+}
+
+func toSlice(value any) ([]any, bool) {
+	val := reflect.ValueOf(value)
+	if !val.IsValid() {
+		return nil, false
+	}
+	kind := val.Kind()
+	if kind != reflect.Slice && kind != reflect.Array {
+		return nil, false
+	}
+	items := make([]any, val.Len())
+	for i := 0; i < val.Len(); i++ {
+		items[i] = val.Index(i).Interface()
+	}
+	return items, true
 }
