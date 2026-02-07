@@ -71,8 +71,8 @@ type Config struct {
 		TCPDumpImage string `mapstructure:"tcpdump" json:"tcpdump"` // TCPDump 镜像
 		Frp          struct {
 			On         bool   `mapstructure:"on" json:"on"`
-			FrpcImage  string `mapstructure:"frpc_image" json:"frpc_image"`   // Frpc 镜像
-			NginxImage string `mapstructure:"nginx_image" json:"nginx_image"` // Nginx 镜像
+			FrpcImage  string `mapstructure:"frpc" json:"frpc"`   // Frpc 镜像
+			NginxImage string `mapstructure:"nginx" json:"nginx"` // Nginx 镜像
 			Frps       []struct {
 				Host         string `mapstructure:"host" json:"host"`   // Frps 服务器地址
 				Port         int    `mapstructure:"port" json:"port"`   // Frps 服务器端口
