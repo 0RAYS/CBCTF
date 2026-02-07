@@ -63,8 +63,8 @@ type CreateFrpcPodResult struct {
 }
 
 func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []string, model.RetVal) {
-	idxBig, _ := rand.Int(rand.Reader, big.NewInt(int64(len(config.Env.K8S.Frpc.Frps))))
-	frps := config.Env.K8S.Frpc.Frps[idxBig.Int64()]
+	idxBig, _ := rand.Int(rand.Reader, big.NewInt(int64(len(config.Env.K8S.Frp.Frps))))
+	frps := config.Env.K8S.Frp.Frps[idxBig.Int64()]
 	portRange := make([]int32, 0)
 	for _, pr := range frps.AllowedPorts {
 		for i := pr.From; i <= pr.To; i++ {
@@ -223,7 +223,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 		containers := []corev1.Container{
 			{
 				Name:  "frpc",
-				Image: config.Env.K8S.Frpc.FrpcImage,
+				Image: config.Env.K8S.Frp.FrpcImage,
 				Args:  []string{"-c", "/etc/frp/frpc.toml"},
 				VolumeMounts: []corev1.VolumeMount{
 					{
@@ -235,7 +235,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 			},
 			{
 				Name:  "nginx",
-				Image: config.Env.K8S.Frpc.NginxImage,
+				Image: config.Env.K8S.Frp.NginxImage,
 				VolumeMounts: []corev1.VolumeMount{
 					{
 						Name:      ncmVolume.Name,

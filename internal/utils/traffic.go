@@ -88,7 +88,7 @@ func ReadPcapFile(path string) ([]Connection, error) {
 			continue
 		}
 		connection.Subtype = application.LayerType().String()
-		if config.Env.K8S.Frpc.On {
+		if config.Env.K8S.Frp.On {
 			if header, err := pp.Read(bufio.NewReader(bytes.NewReader(transport.LayerPayload()))); err == nil {
 				srcIP, _, err := net.SplitHostPort(header.SourceAddr.String())
 				if err != nil {

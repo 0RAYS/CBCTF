@@ -67,7 +67,7 @@ k8s:
       - 192.168.0.254
   # Docker image
   tcpdump: nicolaka/netshoot:latest
-  frpc:
+  frp:
     on: false
     # Docker image
     frpc_image: snowdreamtech/frpc:latest
