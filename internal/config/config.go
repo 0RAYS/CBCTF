@@ -10,6 +10,17 @@ import (
 	"github.com/spf13/viper"
 )
 
+type FrpsConfig struct {
+	Host         string `mapstructure:"host" json:"host"`   // Frps 服务器地址
+	Port         int    `mapstructure:"port" json:"port"`   // Frps 服务器端口
+	Token        string `mapstructure:"token" json:"token"` // Frps 服务器 Token
+	AllowedPorts []struct {
+		From    int32   `mapstructure:"from" json:"from"`       // Frps 服务器允许的端口范围
+		To      int32   `mapstructure:"to" json:"to"`           // Frps 服务器允许的端口范围
+		Exclude []int32 `mapstructure:"exclude" json:"exclude"` // Frps 服务器排除的端口
+	} `mapstructure:"allowed_ports" json:"allowed_ports"`
+}
+
 type Config struct {
 	Host string `mapstructure:"host" json:"host"` // 后端地址
 	Path string `mapstructure:"path" json:"path"` // 数据存储路径
@@ -21,7 +32,7 @@ type Config struct {
 		Log struct {
 			Level string `mapstructure:"level" json:"level"`
 		} `mapstructure:"log" json:"log"`
-		Concurrency float64 `mapstructure:"concurrency" json:"concurrency"`
+		Concurrency int `mapstructure:"concurrency" json:"concurrency"`
 	} `mapstructure:"asynq" json:"asynq"`
 	Gin struct {
 		Mode   string `mapstructure:"mode" json:"mode"` // Gin 模式:debug, release, test
@@ -32,7 +43,7 @@ type Config struct {
 		} `mapstructure:"upload" json:"upload"`
 		Proxies   []string `mapstructure:"proxies" json:"proxies"` // 信任的代理服务器
 		RateLimit struct {
-			Global    float64  `mapstructure:"global" json:"global"`
+			Global    int      `mapstructure:"global" json:"global"`
 			Whitelist []string `mapstructure:"whitelist" json:"whitelist"` // IP 白名单,不限制频率
 		} `mapstructure:"ratelimit" json:"ratelimit"`
 		CORS []string `mapstructure:"cors" json:"cors"`
@@ -70,19 +81,10 @@ type Config struct {
 		} `mapstructure:"external_network" json:"external_network"`
 		TCPDumpImage string `mapstructure:"tcpdump" json:"tcpdump"` // TCPDump 镜像
 		Frp          struct {
-			On         bool   `mapstructure:"on" json:"on"`
-			FrpcImage  string `mapstructure:"frpc" json:"frpc"`   // Frpc 镜像
-			NginxImage string `mapstructure:"nginx" json:"nginx"` // Nginx 镜像
-			Frps       []struct {
-				Host         string `mapstructure:"host" json:"host"`   // Frps 服务器地址
-				Port         int    `mapstructure:"port" json:"port"`   // Frps 服务器端口
-				Token        string `mapstructure:"token" json:"token"` // Frps 服务器 Token
-				AllowedPorts []struct {
-					From    int32   `mapstructure:"from" json:"from"`       // Frps 服务器允许的端口范围
-					To      int32   `mapstructure:"to" json:"to"`           // Frps 服务器允许的端口范围
-					Exclude []int32 `mapstructure:"exclude" json:"exclude"` // Frps 服务器排除的端口
-				} `mapstructure:"allowed_ports" json:"allowed_ports"` // Frps 服务器允许的端口范围
-			} `mapstructure:"frps" json:"frps"` // Frps 服务器列表
+			On         bool         `mapstructure:"on" json:"on"`
+			FrpcImage  string       `mapstructure:"frpc" json:"frpc"`   // Frpc 镜像
+			NginxImage string       `mapstructure:"nginx" json:"nginx"` // Nginx 镜像
+			Frps       []FrpsConfig `mapstructure:"frps" json:"frps"`
 		} `mapstructure:"frp" json:"frp"`
 		GeneratorWorker int `mapstructure:"generator_worker" json:"generator_worker"`
 	} `mapstructure:"k8s" json:"k8s"`

@@ -17,7 +17,7 @@ var (
 
 func Init() {
 	cfg := asynq.Config{
-		Concurrency: int(config.Env.AsyncQ.Concurrency),
+		Concurrency: config.Env.AsyncQ.Concurrency,
 		Logger:      log.Logger.WithField("Type", log.TaskLogType),
 	}
 	switch strings.ToUpper(config.Env.AsyncQ.Log.Level) {
