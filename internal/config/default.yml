@@ -53,7 +53,7 @@ redis:
   pwd: password
 k8s:
   # Kubeconfig path
-  config: ./admin.conf
+  config: ./admin.yaml
   # Also as prefix of resources
   namespace: cbctf
   # Maybe your k8s nodes cidr
