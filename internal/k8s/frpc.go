@@ -66,7 +66,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 	idxBig, _ := rand.Int(rand.Reader, big.NewInt(int64(len(config.Env.K8S.Frp.Frps))))
 	frps := config.Env.K8S.Frp.Frps[idxBig.Int64()]
 	portRange := make([]int32, 0)
-	for _, pr := range frps.AllowedPorts {
+	for _, pr := range frps.Allowed {
 		for i := pr.From; i <= pr.To; i++ {
 			if slices.Contains(pr.Exclude, i) {
 				continue
