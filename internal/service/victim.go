@@ -286,7 +286,7 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 		}
 	}
 	victim.ExposedEndpoints = victim.Endpoints
-	if config.Env.K8S.Frpc.On {
+	if config.Env.K8S.Frp.On {
 		var frpc []string
 		victim.ExposedEndpoints, frpc, ret = k8s.CreateFrpc(ctx, victim)
 		if !ret.OK {

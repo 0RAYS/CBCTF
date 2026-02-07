@@ -69,7 +69,7 @@ type Config struct {
 			ExcludeIPs []string `mapstructure:"exclude_ips" json:"exclude_ips"`
 		} `mapstructure:"external_network" json:"external_network"`
 		TCPDumpImage string `mapstructure:"tcpdump" json:"tcpdump"` // TCPDump 镜像
-		Frpc         struct {
+		Frp          struct {
 			On         bool   `mapstructure:"on" json:"on"`
 			FrpcImage  string `mapstructure:"frpc_image" json:"frpc_image"`   // Frpc 镜像
 			NginxImage string `mapstructure:"nginx_image" json:"nginx_image"` // Nginx 镜像
@@ -83,7 +83,7 @@ type Config struct {
 					Exclude []int32 `mapstructure:"exclude" json:"exclude"` // Frps 服务器排除的端口
 				} `mapstructure:"allowed_ports" json:"allowed_ports"` // Frps 服务器允许的端口范围
 			} `mapstructure:"frps" json:"frps"` // Frps 服务器列表
-		} `mapstructure:"frpc" json:"frpc"`
+		} `mapstructure:"frp" json:"frp"`
 		GeneratorWorker int `mapstructure:"generator_worker" json:"generator_worker"`
 	} `mapstructure:"k8s" json:"k8s"`
 	NFS struct {

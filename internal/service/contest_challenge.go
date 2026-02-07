@@ -116,11 +116,11 @@ func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string,
 			}
 		}
 	}
-	if !slices.Contains(images, config.Env.K8S.Frpc.FrpcImage) {
-		images = append(images, config.Env.K8S.Frpc.FrpcImage)
+	if !slices.Contains(images, config.Env.K8S.Frp.FrpcImage) {
+		images = append(images, config.Env.K8S.Frp.FrpcImage)
 	}
-	if !slices.Contains(images, config.Env.K8S.Frpc.NginxImage) {
-		images = append(images, config.Env.K8S.Frpc.NginxImage)
+	if !slices.Contains(images, config.Env.K8S.Frp.NginxImage) {
+		images = append(images, config.Env.K8S.Frp.NginxImage)
 	}
 	if !slices.Contains(images, config.Env.K8S.TCPDumpImage) {
 		images = append(images, config.Env.K8S.TCPDumpImage)
