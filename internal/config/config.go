@@ -15,14 +15,14 @@ import (
 )
 
 type FrpsConfig struct {
-	Host         string `mapstructure:"host" json:"host"`   // Frps 服务器地址
-	Port         int    `mapstructure:"port" json:"port"`   // Frps 服务器端口
-	Token        string `mapstructure:"token" json:"token"` // Frps 服务器 Token
-	AllowedPorts []struct {
-		From    int32   `mapstructure:"from" json:"from"`       // Frps 服务器允许的端口范围
-		To      int32   `mapstructure:"to" json:"to"`           // Frps 服务器允许的端口范围
-		Exclude []int32 `mapstructure:"exclude" json:"exclude"` // Frps 服务器排除的端口
-	} `mapstructure:"allowed_ports" json:"allowed_ports"`
+	Host    string `json:"host"`  // Frps 服务器地址
+	Port    int    `json:"port"`  // Frps 服务器端口
+	Token   string `json:"token"` // Frps 服务器 Token
+	Allowed []struct {
+		From    int32   `json:"from"`    // Frps 服务器允许的端口范围
+		To      int32   `son:"to"`       // Frps 服务器允许的端口范围
+		Exclude []int32 `json:"exclude"` // Frps 服务器排除的端口
+	} `json:"allowed"`
 }
 
 type Config struct {
@@ -148,12 +148,12 @@ func Save() error {
 	if err != nil {
 		return err
 	}
-	if err := decoder.Decode(Env); err != nil {
+	if err = decoder.Decode(Env); err != nil {
 		return err
 	}
 
 	var root yaml.Node
-	if err := yaml.Unmarshal(defaultConf, &root); err != nil {
+	if err = yaml.Unmarshal(defaultConf, &root); err != nil {
 		return err
 	}
 	if root.Kind == 0 {
@@ -162,7 +162,7 @@ func Save() error {
 	if len(root.Content) == 0 {
 		root.Content = []*yaml.Node{{Kind: yaml.MappingNode}}
 	}
-	if err := mergeYAMLNode(&root, settings); err != nil {
+	if err = mergeYAMLNode(&root, settings); err != nil {
 		return err
 	}
 
