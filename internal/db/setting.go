@@ -266,16 +266,6 @@ func GetValue[T any](s *SettingRepo, key string) (T, model.RetVal) {
 
 	var zero T
 	targetType := reflect.TypeOf(zero)
-	if data.Value.V == nil {
-		return zero, model.RetVal{
-			Msg: i18n.Model.Setting.InvalidType,
-			Attr: map[string]any{
-				"Key":         data.Key,
-				"Type":        targetType.String(),
-				"InvalidType": "nil",
-			},
-		}
-	}
 
 	var out T
 	bytes, err := json.Marshal(data.Value.V)

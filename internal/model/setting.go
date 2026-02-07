@@ -102,10 +102,6 @@ func (s *SettingValue) Scan(value any) error {
 	if !ok {
 		return fmt.Errorf("failed to scan SettingValue value")
 	}
-	if len(bs) == 0 {
-		s.V = nil
-		return nil
-	}
 	decoder := json.NewDecoder(bytes.NewReader(bs))
 	decoder.UseNumber()
 	var data any
