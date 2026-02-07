@@ -76,7 +76,7 @@ k8s:
       - host: example.com
         port: 7000
         token: token
-        allowed_ports:
+        allowed:
           - from: 10000
             to: 30000
             exclude:
