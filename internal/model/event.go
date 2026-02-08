@@ -48,6 +48,7 @@ const (
 	DeleteWebhookEventType = "delete_webhook"
 
 	UpdateSettingEventType = "update_setting"
+	RestartSystemEventType = "restart_system"
 
 	ActivateEmailEventType = "activate_email"
 	VerifyEmailEventType   = "verify_email"
@@ -86,7 +87,7 @@ var EventTypes = []string{
 	DeleteContestChallengeEventType, UpdateContestChallengeFlagEventType, UpdateCheatEventType, CreateNoticeEventType,
 	UpdateNoticeEventType, DeleteNoticeEventType, CreateOauthEventType, UpdateOauthEventType, DeleteOauthEventType,
 	CreateSmtpEventType, UpdateSmtpEventType, DeleteSmtpEventType, CreateWebhookEventType, UpdateWebhookEventType,
-	DeleteWebhookEventType, UpdateSettingEventType, ActivateEmailEventType, VerifyEmailEventType,
+	DeleteWebhookEventType, UpdateSettingEventType, RestartSystemEventType, ActivateEmailEventType, VerifyEmailEventType,
 	UploadPictureEventType, DeletePictureEventType, JoinTeamEventType, CreateTeamEventType, UpdateTeamEventType,
 	DeleteTeamEventType, LeaveTeamEventType, KickMemberEventType, InitChallengeEventType, ResetChallengeEventType,
 	DownloadAttachmentEventType, PullImageEventType, StartVictimEventType, IncreaseVictimEventType, StopVictimEventType,

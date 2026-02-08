@@ -19,6 +19,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 func run() {
@@ -33,7 +34,9 @@ func run() {
 
 	ip, port := config.Env.Gin.Host, config.Env.Gin.Port
 	quit := make(chan os.Signal, 1)
+	restart := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(restart, syscall.SIGUSR1)
 	var server *http.Server
 	go func() {
 		server = &http.Server{
@@ -47,13 +50,30 @@ func run() {
 	}()
 	go task.Start()
 	go cron.Start()
-	<-quit
-	log.Logger.Info("Shutting down server...")
-	if err := server.Shutdown(context.TODO()); err != nil {
-		log.Logger.Fatalf("Failed to shutdown server: %s", err)
+	for {
+		select {
+		case <-restart:
+			log.Logger.Info("Restarting server...")
+			if err := server.Shutdown(context.TODO()); err != nil {
+				log.Logger.Fatalf("Failed to shutdown server: %s", err)
+			}
+			task.Stop()
+			cron.Stop()
+			redis.Stop()
+			db.Stop()
+			time.Sleep(time.Second)
+			run()
+			return
+		case <-quit:
+			log.Logger.Info("Shutting down server...")
+			if err := server.Shutdown(context.TODO()); err != nil {
+				log.Logger.Fatalf("Failed to shutdown server: %s", err)
+			}
+			task.Stop()
+			cron.Stop()
+			redis.Stop()
+			db.Stop()
+			return
+		}
 	}
-	task.Stop()
-	cron.Stop()
-	redis.Stop()
-	db.Stop()
 }
