@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type WebhookRepo struct {
@@ -98,8 +99,8 @@ type DiffUpdateWebhookOptions struct {
 	Failure int64
 }
 
-func (d DiffUpdateWebhookOptions) Convert2Expr() map[string]any {
-	options := make(map[string]any)
+func (d DiffUpdateWebhookOptions) Convert2Expr() map[string]clause.Expr {
+	options := make(map[string]clause.Expr)
 	if d.Success != 0 {
 		options["success"] = gorm.Expr("success + ?", d.Success)
 	}

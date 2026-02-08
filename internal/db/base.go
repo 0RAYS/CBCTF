@@ -42,7 +42,7 @@ type UpdateOptions interface {
 }
 
 type DiffUpdateOptions interface {
-	Convert2Expr() map[string]any
+	Convert2Expr() map[string]clause.Expr
 }
 
 func (b *BaseRepo[M]) IsUniqueKeyValue(key string, value any) bool {
