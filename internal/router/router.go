@@ -173,6 +173,7 @@ func Init() *gin.Engine {
 		{
 			adminSystem.GET("/status", SystemStatus)
 			adminSystem.GET("/config", SystemConfig)
+			adminSystem.PUT("/config", UpdateSystem)
 		}
 
 		admin.GET("/users", GetUsers)
