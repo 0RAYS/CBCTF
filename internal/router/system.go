@@ -178,7 +178,7 @@ func UpdateSystem(ctx *gin.Context) {
 		}
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(config.Env))
+	ctx.JSON(http.StatusOK, model.SuccessRetVal())
 }
 
 func RestartSystem(ctx *gin.Context) {
