@@ -106,7 +106,61 @@ func SystemStatus(ctx *gin.Context) {
 }
 
 func SystemConfig(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(config.Env))
+	data := gin.H{
+		"host": config.Env.Host,
+		"path": config.Env.Path,
+
+		"log_level": config.Env.Log.Level,
+		"log_save":  config.Env.Log.Save,
+
+		"asyncq_log_level":   config.Env.AsyncQ.Log.Level,
+		"asyncq_concurrency": config.Env.AsyncQ.Concurrency,
+
+		"gin_mode":                config.Env.Gin.Mode,
+		"gin_host":                config.Env.Gin.Host,
+		"gin_port":                config.Env.Gin.Port,
+		"gin_upload_max":          config.Env.Gin.Upload.Max,
+		"gin_proxies":             config.Env.Gin.Proxies,
+		"gin_ratelimit_global":    config.Env.Gin.RateLimit.Global,
+		"gin_ratelimit_whitelist": config.Env.Gin.RateLimit.Whitelist,
+		"gin_cors":                config.Env.Gin.CORS,
+		"gin_log_whitelist":       config.Env.Gin.Log.Whitelist,
+
+		"gorm_mysql_host":   config.Env.Gorm.MySQL.Host,
+		"gorm_mysql_port":   config.Env.Gorm.MySQL.Port,
+		"gorm_mysql_user":   config.Env.Gorm.MySQL.User,
+		"gorm_mysql_pwd":    "******",
+		"gorm_mysql_db":     config.Env.Gorm.MySQL.DB,
+		"gorm_mysql_mxopen": config.Env.Gorm.MySQL.MaxOpenConns,
+		"gorm_mysql_mxidle": config.Env.Gorm.MySQL.MaxIdleConns,
+		"gorm_log_level":    config.Env.Gorm.Log.Level,
+
+		"redis_host": config.Env.Redis.Host,
+		"redis_port": config.Env.Redis.Port,
+		"redis_pwd":  "******",
+
+		"k8s_config":                       config.Env.K8S.Config,
+		"k8s_namespace":                    config.Env.K8S.Namespace,
+		"k8s_external_network_cidr":        config.Env.K8S.ExternalNetwork.CIDR,
+		"k8s_external_network_gateway":     config.Env.K8S.ExternalNetwork.Gateway,
+		"k8s_external_network_interface":   config.Env.K8S.ExternalNetwork.Interface,
+		"k8s_external_network_exclude_ips": config.Env.K8S.ExternalNetwork.ExcludeIPs,
+		"k8s_tcpdump":                      config.Env.K8S.TCPDumpImage,
+
+		"k8s_frp_on":    config.Env.K8S.Frp.On,
+		"k8s_frp_frpc":  config.Env.K8S.Frp.FrpcImage,
+		"k8s_frp_nginx": config.Env.K8S.Frp.NginxImage,
+		"k8s_frp_frps":  config.Env.K8S.Frp.Frps,
+
+		"k8s_generator_worker": config.Env.K8S.GeneratorWorker,
+
+		"nfs_server":  config.Env.NFS.Server,
+		"nfs_path":    config.Env.NFS.Path,
+		"nfs_storage": config.Env.NFS.Storage,
+
+		"cheat_ip_whitelist": config.Env.Cheat.IP.Whitelist,
+	}
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
 }
 
 func UpdateSystem(ctx *gin.Context) {
