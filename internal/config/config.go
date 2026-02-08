@@ -125,12 +125,14 @@ func Init() {
 	if err := viper.Unmarshal(&Env); err != nil {
 		log.Panicf("error unmarshalling config: %s", err)
 	}
-	tidy()
+	Tidy()
 }
 
-// tidy 格式化配置, 简单处理部分字符
-func tidy() {
+// Tidy 格式化配置, 简单处理部分配置
+func Tidy() {
 	Env.Host = strings.TrimSuffix(Env.Host, "/")
+	Env.Path = strings.TrimSuffix(Env.Path, "/")
+	Env.NFS.Path = strings.TrimSuffix(Env.NFS.Path, "/")
 }
 
 // Save writes the current Env to config.yml.
@@ -139,7 +141,6 @@ func Save() error {
 	if Env == nil {
 		return errors.New("config env is nil")
 	}
-	tidy()
 	settings := make(map[string]any)
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		TagName: "mapstructure",

@@ -236,11 +236,6 @@ func UpdateSystem(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
-	// 覆写文件
-	if err := config.Save(); err != nil {
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
-		return
-	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, model.SuccessRetVal())
 }
