@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
@@ -11,6 +12,8 @@ import (
 	"CBCTF/internal/service"
 	"fmt"
 	"net/http"
+	"os"
+	"syscall"
 
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/net"
@@ -176,4 +179,18 @@ func UpdateSystem(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(config.Env))
+}
+
+func RestartSystem(ctx *gin.Context) {
+	ctx.Set(middleware.CTXEventTypeKey, model.UpdateSettingEventType)
+	proc, err := os.FindProcess(os.Getpid())
+	if err != nil {
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		return
+	}
+	go func(proc *os.Process) {
+		_ = proc.Signal(syscall.SIGUSR1)
+	}(proc)
+	ctx.Set(middleware.CTXEventSuccessKey, true)
+	ctx.JSON(http.StatusOK, model.SuccessRetVal())
 }
