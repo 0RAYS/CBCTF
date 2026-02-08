@@ -1,9 +1,7 @@
 package router
 
 import (
-	"CBCTF/internal/log"
 	p "CBCTF/internal/prometheus"
-	"errors"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
@@ -12,37 +10,39 @@ import (
 )
 
 func RegisterMetricsRouter(router *gin.Engine) {
+	// 不使用默认 registry, 防止重启时重复注册导致 panic
+	var (
+		registry                         = prometheus.NewRegistry()
+		registerer prometheus.Registerer = registry
+		gatherer   prometheus.Gatherer   = registry
+	)
+
 	// 注册HTTP基础指标
-	prometheus.MustRegister(p.HttpRequestsTotal)
-	prometheus.MustRegister(p.HttpRequestDuration)
-	prometheus.MustRegister(p.HttpRequestSize)
-	prometheus.MustRegister(p.HttpResponseSize)
-	prometheus.MustRegister(p.InFlightRequests)
+	registerer.MustRegister(p.HttpRequestsTotal)
+	registerer.MustRegister(p.HttpRequestDuration)
+	registerer.MustRegister(p.HttpRequestSize)
+	registerer.MustRegister(p.HttpResponseSize)
+	registerer.MustRegister(p.InFlightRequests)
 
 	// 注册CTF业务指标
-	prometheus.MustRegister(p.FlagSubmissionTotal)
-	prometheus.MustRegister(p.ContestActiveTeams)
-	prometheus.MustRegister(p.ContestActiveUsers)
-	prometheus.MustRegister(p.VictimContainerTotal)
-	prometheus.MustRegister(p.UserRegistrationTotal)
-	prometheus.MustRegister(p.UserLoginTotal)
-	prometheus.MustRegister(p.FileUploadTotal)
-	prometheus.MustRegister(p.FileUploadSize)
-	prometheus.MustRegister(p.WebSocketConnections)
-	prometheus.MustRegister(p.EmailSentTotal)
-	prometheus.MustRegister(p.CacheHitRate)
-	prometheus.MustRegister(p.RateLimitHits)
-	prometheus.MustRegister(p.ErrorTotal)
-	var alreadyRegisteredError prometheus.AlreadyRegisteredError
-	if err := prometheus.Register(collectors.NewGoCollector()); err != nil {
-		if !errors.As(err, &alreadyRegisteredError) {
-			log.Logger.Warningf("failed to register GoCollector: %s", err)
-		}
-	}
-	if err := prometheus.Register(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{})); err != nil {
-		if !errors.As(err, &alreadyRegisteredError) {
-			log.Logger.Warningf("failed to register ProcessCollector: %s", err)
-		}
-	}
-	router.GET("/metrics", gin.WrapH(promhttp.Handler()))
+	registerer.MustRegister(p.FlagSubmissionTotal)
+	registerer.MustRegister(p.ContestActiveTeams)
+	registerer.MustRegister(p.ContestActiveUsers)
+	registerer.MustRegister(p.VictimContainerTotal)
+	registerer.MustRegister(p.UserRegistrationTotal)
+	registerer.MustRegister(p.UserLoginTotal)
+	registerer.MustRegister(p.FileUploadTotal)
+	registerer.MustRegister(p.FileUploadSize)
+	registerer.MustRegister(p.WebSocketConnections)
+	registerer.MustRegister(p.EmailSentTotal)
+	registerer.MustRegister(p.CacheHitRate)
+	registerer.MustRegister(p.RateLimitHits)
+	registerer.MustRegister(p.ErrorTotal)
+
+	registerer.MustRegister(collectors.NewGoCollector())
+	registerer.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+
+	router.GET("/metrics", gin.WrapH(promhttp.InstrumentMetricHandler(
+		registerer, promhttp.HandlerFor(gatherer, promhttp.HandlerOpts{}),
+	)))
 }
