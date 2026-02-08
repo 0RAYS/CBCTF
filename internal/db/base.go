@@ -193,6 +193,9 @@ func (b *BaseRepo[M]) List(limit, offset int, optionsL ...GetOptions) ([]M, int6
 func (b *BaseRepo[M]) Update(id uint, options UpdateOptions) model.RetVal {
 	var count uint
 	data := options.Convert2Map()
+	if len(data) == 0 {
+		return model.SuccessRetVal()
+	}
 	for _, key := range M.UniqueFields(*new(M)) {
 		if value, ok := data[key]; ok && !b.IsUniqueKeyValue(key, value) {
 			return model.RetVal{Msg: i18n.Model.NotUniqueKey, Attr: map[string]any{"Model": M.ModelName(*new(M)), "Key": key}}
