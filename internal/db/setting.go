@@ -3,6 +3,7 @@ package db
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"encoding/json"
 	"reflect"
@@ -27,7 +28,7 @@ func (c CreateSettingOptions) Convert2Model() model.Model {
 }
 
 type UpdateSettingOptions struct {
-	Value *string
+	Value *model.SettingValue
 }
 
 func (u UpdateSettingOptions) Convert2Map() map[string]any {
@@ -48,6 +49,35 @@ func InitSettingRepo(tx *gorm.DB) *SettingRepo {
 
 func (s *SettingRepo) Get(key string, optionsL ...GetOptions) (model.Setting, model.RetVal) {
 	return s.GetByUniqueKey("key", key, optionsL...)
+}
+
+func (s *SettingRepo) Update(key string, options UpdateSettingOptions) model.RetVal {
+	var count uint
+	data := options.Convert2Map()
+	if value, ok := data["value"]; !ok || value == nil || value.(model.SettingValue).V == nil {
+		return model.SuccessRetVal()
+	}
+	for {
+		count++
+		if count > 10 {
+			log.Logger.Warningf("Failed to update Setting: too many times failed due to optimistic lock")
+			return model.RetVal{Msg: i18n.Model.DeadLock, Attr: map[string]any{"Model": model.Setting{}.ModelName()}}
+		}
+		m, ret := s.Get(key, GetOptions{Selects: []string{"id", "version"}})
+		if !ret.OK {
+			return ret
+		}
+		res := s.DB.Model(&m).Where("id = ?", m.ID).Updates(data)
+		if res.Error != nil {
+			log.Logger.Warningf("Failed to update Setting: %s", res.Error)
+			return model.RetVal{Msg: i18n.Model.UpdateError, Attr: map[string]any{"Model": m.ModelName(), "Error": res.Error.Error()}}
+		}
+		if res.RowsAffected == 0 {
+			continue
+		}
+		break
+	}
+	return model.SuccessRetVal()
 }
 
 func (s *SettingRepo) InitSettings() model.RetVal {

@@ -3,6 +3,7 @@ package router
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
@@ -102,5 +103,77 @@ func SystemStatus(ctx *gin.Context) {
 }
 
 func SystemConfig(ctx *gin.Context) {
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(config.Env))
+}
+
+func UpdateSystem(ctx *gin.Context) {
+	var form dto.UpdateSettingForm
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
+		return
+	}
+	ctx.Set(middleware.CTXEventTypeKey, model.UpdateSettingEventType)
+	kv := map[string]any{
+		model.HostSettingKey: form.Host,
+		model.PathSettingKey: form.Path,
+
+		model.LogLevelSettingKey: form.LogLevel,
+		model.LogSaveSettingKey:  form.LogSave,
+
+		model.AsyncQLogLevelSettingKey:    form.AsyncQLogLevel,
+		model.AsyncQConcurrencySettingKey: form.AsyncQConcurrency,
+
+		model.GinModeSettingKey:               form.GinMode,
+		model.GinHostSettingKey:               form.GinHost,
+		model.GinPortSettingKey:               form.GinPort,
+		model.GinUploadMaxSettingKey:          form.GinUploadMax,
+		model.GinProxiesSettingKey:            form.GinProxies,
+		model.GinRateLimitGlobalSettingKey:    form.GinRateLimitGlobal,
+		model.GinRateLimitWhitelistSettingKey: form.GinRateLimitWhitelist,
+		model.GinCORSSettingKey:               form.GinCORS,
+		model.GinLogWhitelistSettingKey:       form.GinLogWhitelist,
+
+		model.GormMySQLHostSettingKey:   form.GormMySQLHost,
+		model.GormMySQLPortSettingKey:   form.GormMySQLPort,
+		model.GormMySQLUserSettingKey:   form.GormMySQLUser,
+		model.GormMySQLPwdSettingKey:    form.GormMySQLPwd,
+		model.GormMySQLDBSettingKey:     form.GormMySQLDB,
+		model.GormMySQLMXOpenSettingKey: form.GormMySQLMXOpen,
+		model.GormMySQLMXIdleSettingKey: form.GormMySQLMXIdle,
+		model.GormLogLevelSettingKey:    form.GormLogLevel,
+
+		model.RedisHostSettingKey: form.RedisHost,
+		model.RedisPortSettingKey: form.RedisPort,
+		model.RedisPwdSettingKey:  form.RedisPwd,
+
+		model.K8SConfigSettingKey:                    form.K8SConfig,
+		model.K8SNamespaceSettingKey:                 form.K8SNamespace,
+		model.K8SExternalNetworkCIDRSettingKey:       form.K8SExternalNetworkCIDR,
+		model.K8SExternalNetworkGatewaySettingKey:    form.K8SExternalNetworkGateway,
+		model.K8SExternalNetworkInterfaceSettingKey:  form.K8SExternalNetworkInterface,
+		model.K8SExternalNetworkExcludeIPsSettingKey: form.K8SExternalNetworkExcludeIPs,
+		model.K8STCPDumpImageSettingKey:              form.K8STCPDumpImage,
+
+		model.K8SFrpOnSettingKey:         form.K8SFrpOn,
+		model.K8SFrpFrpcImageSettingKey:  form.K8SFrpFrpcImage,
+		model.K8SFrpNginxImageSettingKey: form.K8SFrpNginxImage,
+		model.K8SFrpFrpsSettingKey:       form.K8SFrpFrps,
+
+		model.K8SGeneratorWorkerSettingKey: form.K8SGeneratorWorker,
+
+		model.NFSServerSettingKey:  form.NFSServer,
+		model.NFSPathSettingKey:    form.NFSPath,
+		model.NFSStorageSettingKey: form.NFSStorage,
+
+		model.CheatIPWhitelistSettingKey: form.CheatIPWhitelist,
+	}
+	repo := db.InitSettingRepo(db.DB)
+	for key, value := range kv {
+		if ret := repo.Update(key, db.UpdateSettingOptions{Value: &model.SettingValue{V: value}}); !ret.OK {
+			ctx.JSON(http.StatusOK, ret)
+			return
+		}
+	}
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(config.Env))
 }

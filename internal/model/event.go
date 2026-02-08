@@ -47,6 +47,8 @@ const (
 	UpdateWebhookEventType = "update_webhook"
 	DeleteWebhookEventType = "delete_webhook"
 
+	UpdateSettingEventType = "update_setting"
+
 	ActivateEmailEventType = "activate_email"
 	VerifyEmailEventType   = "verify_email"
 
@@ -84,11 +86,11 @@ var EventTypes = []string{
 	DeleteContestChallengeEventType, UpdateContestChallengeFlagEventType, UpdateCheatEventType, CreateNoticeEventType,
 	UpdateNoticeEventType, DeleteNoticeEventType, CreateOauthEventType, UpdateOauthEventType, DeleteOauthEventType,
 	CreateSmtpEventType, UpdateSmtpEventType, DeleteSmtpEventType, CreateWebhookEventType, UpdateWebhookEventType,
-	DeleteWebhookEventType, ActivateEmailEventType, VerifyEmailEventType, UploadPictureEventType, DeletePictureEventType,
-	JoinTeamEventType, CreateTeamEventType, UpdateTeamEventType, DeleteTeamEventType, LeaveTeamEventType,
-	KickMemberEventType, InitChallengeEventType, ResetChallengeEventType, DownloadAttachmentEventType, PullImageEventType,
-	StartVictimEventType, IncreaseVictimEventType, StopVictimEventType, DownloadTrafficEventType, SubmitFlagEventType,
-	UploadWriteUpEventType, DownloadWriteUpEventType, DownloadFileEventType,
+	DeleteWebhookEventType, UpdateSettingEventType, ActivateEmailEventType, VerifyEmailEventType,
+	UploadPictureEventType, DeletePictureEventType, JoinTeamEventType, CreateTeamEventType, UpdateTeamEventType,
+	DeleteTeamEventType, LeaveTeamEventType, KickMemberEventType, InitChallengeEventType, ResetChallengeEventType,
+	DownloadAttachmentEventType, PullImageEventType, StartVictimEventType, IncreaseVictimEventType, StopVictimEventType,
+	DownloadTrafficEventType, SubmitFlagEventType, UploadWriteUpEventType, DownloadWriteUpEventType, DownloadFileEventType,
 }
 
 type Event struct {
