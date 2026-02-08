@@ -60,7 +60,7 @@ type Config struct {
 			Host         string `mapstructure:"host" json:"host"`     // 数据库地址
 			Port         int    `mapstructure:"port" json:"port"`     // 数据库端口
 			User         string `mapstructure:"user" json:"user"`     // 数据库用户名
-			Pwd          string `mapstructure:"pwd" json:"-"`         // 数据库密码
+			Pwd          string `mapstructure:"pwd" json:"pwd"`       // 数据库密码
 			DB           string `mapstructure:"db" json:"db"`         // 数据库名称
 			MaxOpenConns int    `mapstructure:"mxopen" json:"mxopen"` // 最大连接数
 			MaxIdleConns int    `mapstructure:"mxidle" json:"mxidle"` // 最大空闲连接数
@@ -72,7 +72,7 @@ type Config struct {
 	Redis struct {
 		Host string `mapstructure:"host" json:"host"` // Redis 地址
 		Port int    `mapstructure:"port" json:"port"` // Redis 端口
-		Pwd  string `mapstructure:"pwd" json:"-"`     // Redis 密码
+		Pwd  string `mapstructure:"pwd" json:"pwd"`   // Redis 密码
 	} `mapstructure:"redis" json:"redis"`
 	K8S struct {
 		Config          string `mapstructure:"config" json:"config"`
