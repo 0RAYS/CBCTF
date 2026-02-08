@@ -21,16 +21,16 @@ type UpdateSettingForm struct {
 
 	GinMode               *string   `form:"gin_mode" json:"gin_mode" binding:"omitempty,oneof=debug test release"`
 	GinHost               *string   `form:"gin_host" json:"gin_host" binding:"omitempty,ip"`
-	GinPort               *int      `form:"gin_port" json:"gin_port" binding:"omitempty,port"`
+	GinPort               *uint     `form:"gin_port" json:"gin_port" binding:"omitempty,port"`
 	GinUploadMax          *int      `form:"gin_upload_max" json:"gin_upload_max" binding:"omitempty,min=1"`
-	GinProxies            *[]string `form:"gin_proxies" json:"gin_proxies" binding:"omitempty,ip|cidr"`
+	GinProxies            *[]string `form:"gin_proxies" json:"gin_proxies" binding:"omitempty,dive,ip|cidr"`
 	GinRateLimitGlobal    *int      `form:"gin_ratelimit_global" json:"gin_ratelimit_global" binding:"omitempty,min=1"`
-	GinRateLimitWhitelist *[]string `form:"gin_ratelimit_whitelist" json:"gin_ratelimit_whitelist" binding:"omitempty,ip|cidr"`
-	GinCORS               *[]string `form:"gin_cors" json:"gin_cors" binding:"omitempty,url"`
-	GinLogWhitelist       *[]string `form:"gin_log_whitelist" json:"gin_log_whitelist" binding:"omitempty,uri"`
+	GinRateLimitWhitelist *[]string `form:"gin_ratelimit_whitelist" json:"gin_ratelimit_whitelist" binding:"omitempty,dive,ip|cidr"`
+	GinCORS               *[]string `form:"gin_cors" json:"gin_cors" binding:"omitempty,dive,url"`
+	GinLogWhitelist       *[]string `form:"gin_log_whitelist" json:"gin_log_whitelist" binding:"omitempty,dive,uri"`
 
 	GormMySQLHost   *string `form:"gorm_mysql_host" json:"gorm_mysql_host" binding:"omitempty,ip"`
-	GormMySQLPort   *int    `form:"gorm_mysql_port" json:"gorm_mysql_port" binding:"omitempty,port"`
+	GormMySQLPort   *uint   `form:"gorm_mysql_port" json:"gorm_mysql_port" binding:"omitempty,port"`
 	GormMySQLUser   *string `form:"gorm_mysql_user" json:"gorm_mysql_user" binding:"omitempty,min=1,alphanum"`
 	GormMySQLPwd    *string `form:"gorm_mysql_pwd" json:"gorm_mysql_pwd" binding:"omitempty,min=1,ascii"`
 	GormMySQLDB     *string `form:"gorm_mysql_db" json:"gorm_mysql_db" binding:"omitempty,min=1,alphanum"`
@@ -39,15 +39,15 @@ type UpdateSettingForm struct {
 	GormLogLevel    *string `form:"gorm_log_level" json:"gorm_log_level" binding:"omitempty,oneof=SILENT INFO WARNING ERROR"`
 
 	RedisHost *string `form:"redis_host" json:"redis_host" binding:"omitempty,ip"`
-	RedisPort *int    `form:"redis_port" json:"redis_port" binding:"omitempty,port"`
+	RedisPort *uint   `form:"redis_port" json:"redis_port" binding:"omitempty,port"`
 	RedisPwd  *string `form:"redis_pwd" json:"redis_pwd" binding:"omitempty,min=1,ascii"`
 
-	K8SConfig                    *string   `form:"k8s_config" json:"k8s_config" binding:"omitempty,filepath"`
+	K8SConfig                    *string   `form:"k8s_config" json:"k8s_config" binding:"omitempty,file"`
 	K8SNamespace                 *string   `form:"k8s_namespace" json:"k8s_namespace" binding:"omitempty,min=1,alphanum"`
 	K8SExternalNetworkCIDR       *string   `form:"k8s_external_network_cidr" json:"k8s_external_network_cidr" binding:"omitempty,cidr"`
 	K8SExternalNetworkGateway    *string   `form:"k8s_external_network_gateway" json:"k8s_external_network_gateway" binding:"omitempty,ip"`
 	K8SExternalNetworkInterface  *string   `form:"k8s_external_network_interface" json:"k8s_external_network_interface" binding:"omitempty,min=1,alphanum"`
-	K8SExternalNetworkExcludeIPs *[]string `form:"k8s_external_network_exclude_ips" json:"k8s_external_network_exclude_ips" binding:"omitempty,ip|cidr"`
+	K8SExternalNetworkExcludeIPs *[]string `form:"k8s_external_network_exclude_ips" json:"k8s_external_network_exclude_ips" binding:"omitempty,dive,ip|cidr"`
 	K8STCPDumpImage              *string   `form:"k8s_tcpdump" json:"k8s_tcpdump" binding:"omitempty,min=1"`
 
 	K8SFrpOn         *bool                `form:"k8s_frp_on" json:"k8s_frp_on"`
@@ -58,10 +58,10 @@ type UpdateSettingForm struct {
 	K8SGeneratorWorker *int `form:"k8s_generator_worker" json:"k8s_generator_worker" binding:"omitempty,min=1"`
 
 	NFSServer  *string `form:"nfs_server" json:"nfs_server" binding:"omitempty,ip|hostname"`
-	NFSPath    *string `form:"nfs_path" json:"nfs_path" binding:"omitempty,dir"`
+	NFSPath    *string `form:"nfs_path" json:"nfs_path" binding:"omitempty,dirpath|filepath"`
 	NFSStorage *string `form:"nfs_storage" json:"nfs_storage"`
 
-	CheatIPWhitelist *[]string `form:"cheat_ip_whitelist" json:"cheat_ip_whitelist" binding:"omitempty,ip|cidr"`
+	CheatIPWhitelist *[]string `form:"cheat_ip_whitelist" json:"cheat_ip_whitelist" binding:"omitempty,dive,ip|cidr"`
 }
 
 func (f *UpdateSettingForm) Bind(ctx *gin.Context) model.RetVal {
