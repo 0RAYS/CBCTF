@@ -173,7 +173,7 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 	if config.Env.Gin.Host, ret = GetValue[string](s, model.GinHostSettingKey); !ret.OK {
 		return ret
 	}
-	if config.Env.Gin.Port, ret = GetValue[int](s, model.GinPortSettingKey); !ret.OK {
+	if config.Env.Gin.Port, ret = GetValue[uint](s, model.GinPortSettingKey); !ret.OK {
 		return ret
 	}
 	if config.Env.Gin.Upload.Max, ret = GetValue[int](s, model.GinUploadMaxSettingKey); !ret.OK {
@@ -198,7 +198,7 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 	if config.Env.Gorm.MySQL.Host, ret = GetValue[string](s, model.GormMySQLHostSettingKey); !ret.OK {
 		return ret
 	}
-	if config.Env.Gorm.MySQL.Port, ret = GetValue[int](s, model.GormMySQLPortSettingKey); !ret.OK {
+	if config.Env.Gorm.MySQL.Port, ret = GetValue[uint](s, model.GormMySQLPortSettingKey); !ret.OK {
 		return ret
 	}
 	if config.Env.Gorm.MySQL.User, ret = GetValue[string](s, model.GormMySQLUserSettingKey); !ret.OK {
@@ -223,7 +223,7 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 	if config.Env.Redis.Host, ret = GetValue[string](s, model.RedisHostSettingKey); !ret.OK {
 		return ret
 	}
-	if config.Env.Redis.Port, ret = GetValue[int](s, model.RedisPortSettingKey); !ret.OK {
+	if config.Env.Redis.Port, ret = GetValue[uint](s, model.RedisPortSettingKey); !ret.OK {
 		return ret
 	}
 	if config.Env.Redis.Pwd, ret = GetValue[string](s, model.RedisPwdSettingKey); !ret.OK {

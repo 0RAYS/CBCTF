@@ -15,13 +15,13 @@ import (
 )
 
 type FrpsConfig struct {
-	Host    string `json:"host"`  // Frps 服务器地址
-	Port    int    `json:"port"`  // Frps 服务器端口
-	Token   string `json:"token"` // Frps 服务器 Token
+	Host    string `json:"host" binding:"hostname"` // Frps 服务器地址
+	Port    uint   `json:"port" binding:"port"`     // Frps 服务器端口
+	Token   string `json:"token"`                   // Frps 服务器 Token
 	Allowed []struct {
-		From    int32   `json:"from"`    // Frps 服务器允许的端口范围
-		To      int32   `json:"to"`      // Frps 服务器允许的端口范围
-		Exclude []int32 `json:"exclude"` // Frps 服务器排除的端口
+		From    uint   `json:"from" binding:"port"`         // Frps 服务器允许的端口范围
+		To      uint   `json:"to" binding:"port"`           // Frps 服务器允许的端口范围
+		Exclude []uint `json:"exclude" binding:"dive,port"` // Frps 服务器排除的端口
 	} `json:"allowed"`
 }
 
@@ -41,7 +41,7 @@ type Config struct {
 	Gin struct {
 		Mode   string `mapstructure:"mode" json:"mode"` // Gin 模式:debug, release, test
 		Host   string `mapstructure:"host" json:"host"` // Gin 服务监听地址
-		Port   int    `mapstructure:"port" json:"port"` // Gin 服务监听端口
+		Port   uint   `mapstructure:"port" json:"port"` // Gin 服务监听端口
 		Upload struct {
 			Max int `mapstructure:"max" json:"max"` // 上传文件最大大小(单位:MB)
 		} `mapstructure:"upload" json:"upload"`
@@ -58,7 +58,7 @@ type Config struct {
 	Gorm struct {
 		MySQL struct {
 			Host         string `mapstructure:"host" json:"host"`     // 数据库地址
-			Port         int    `mapstructure:"port" json:"port"`     // 数据库端口
+			Port         uint   `mapstructure:"port" json:"port"`     // 数据库端口
 			User         string `mapstructure:"user" json:"user"`     // 数据库用户名
 			Pwd          string `mapstructure:"pwd" json:"pwd"`       // 数据库密码
 			DB           string `mapstructure:"db" json:"db"`         // 数据库名称
@@ -71,7 +71,7 @@ type Config struct {
 	} `mapstructure:"gorm" json:"gorm"`
 	Redis struct {
 		Host string `mapstructure:"host" json:"host"` // Redis 地址
-		Port int    `mapstructure:"port" json:"port"` // Redis 端口
+		Port uint   `mapstructure:"port" json:"port"` // Redis 端口
 		Pwd  string `mapstructure:"pwd" json:"pwd"`   // Redis 密码
 	} `mapstructure:"redis" json:"redis"`
 	K8S struct {
