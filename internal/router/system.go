@@ -231,17 +231,17 @@ func UpdateSystem(ctx *gin.Context) {
 			return
 		}
 	}
+	// 读取数据库配置至内存并覆写配置文件
+	if ret := db.InitSettingRepo(db.DB).ReadSettings(); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
+		return
+	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, model.SuccessRetVal())
 }
 
 func RestartSystem(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateSettingEventType)
-	// 读取数据库配置至内存并覆写配置文件
-	if ret := db.InitSettingRepo(db.DB).ReadSettings(); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
-		return
-	}
 	proc, err := os.FindProcess(os.Getpid())
 	if err != nil {
 		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
