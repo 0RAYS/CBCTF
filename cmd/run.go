@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/cron"
 	"CBCTF/internal/db"
 	"CBCTF/internal/email"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/redis"
@@ -22,6 +23,8 @@ import (
 	"time"
 )
 
+var server *http.Server
+
 func run() {
 	db.Init()
 	redis.Init()
@@ -37,7 +40,6 @@ func run() {
 	restart := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	signal.Notify(restart, syscall.SIGUSR1)
-	var server *http.Server
 	go func() {
 		server = &http.Server{
 			Addr:    fmt.Sprintf("%s:%d", ip, port),
@@ -54,26 +56,31 @@ func run() {
 		select {
 		case <-restart:
 			log.Logger.Info("Restarting server...")
-			if err := server.Shutdown(context.TODO()); err != nil {
-				log.Logger.Fatalf("Failed to shutdown server: %s", err)
-			}
-			task.Stop()
-			cron.Stop()
-			redis.Stop()
-			db.Stop()
-			time.Sleep(time.Second)
-			run()
+			reboot()
 			return
 		case <-quit:
 			log.Logger.Info("Shutting down server...")
-			if err := server.Shutdown(context.TODO()); err != nil {
-				log.Logger.Fatalf("Failed to shutdown server: %s", err)
-			}
-			task.Stop()
-			cron.Stop()
-			redis.Stop()
-			db.Stop()
+			stop()
 			return
 		}
 	}
+}
+
+func stop() {
+	if err := server.Shutdown(context.TODO()); err != nil {
+		log.Logger.Fatalf("Failed to shutdown server: %s", err)
+	}
+	task.Stop()
+	cron.Stop()
+	redis.Stop()
+	db.Stop()
+}
+
+func reboot() {
+	stop()
+	time.Sleep(time.Second)
+	i18n.Init()
+	config.Init()
+	log.Init()
+	run()
 }
