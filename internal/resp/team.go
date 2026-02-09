@@ -36,7 +36,7 @@ func GetSolvedStateResp(solved []model.ContestFlag, all []model.ContestFlag) []g
 	return data
 }
 
-func GetTeamResp(team model.Team) gin.H {
+func GetTeamResp(team model.Team, isAdmin bool) gin.H {
 	data := gin.H{
 		"id":          team.ID,
 		"contest_id":  team.ContestID,
@@ -50,6 +50,9 @@ func GetTeamResp(team model.Team) gin.H {
 		"captain_id":  team.CaptainID,
 		"banned":      team.Banned,
 		"hidden":      team.Hidden,
+	}
+	if isAdmin {
+		data["captcha"] = team.Captcha
 	}
 	return data
 }

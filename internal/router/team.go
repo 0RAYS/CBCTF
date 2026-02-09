@@ -26,7 +26,7 @@ func GetTeam(ctx *gin.Context) {
 		return
 	}
 	solvedFlagL, _ := db.InitContestFlagRepo(db.DB).GetTeamSolvedContestFlags(team.ID)
-	data := resp.GetTeamResp(team)
+	data := resp.GetTeamResp(team, middleware.IsAdmin(ctx))
 	data["solved"] = resp.GetSolvedStateResp(solvedFlagL, contestFlagL)
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
 }
@@ -45,9 +45,10 @@ func GetTeams(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
+	isAdmin := middleware.IsAdmin(ctx)
 	data := make([]gin.H, 0)
 	for _, team := range teams {
-		data = append(data, resp.GetTeamResp(team))
+		data = append(data, resp.GetTeamResp(team, isAdmin))
 	}
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"count": count, "teams": data}))
 }

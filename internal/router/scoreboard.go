@@ -35,6 +35,7 @@ func GetTeamRanking(ctx *gin.Context) {
 	}
 	repo := db.InitTeamRepo(db.DB)
 	data := make([]gin.H, 0)
+	isAdmin := middleware.IsAdmin(ctx)
 	for _, team := range teams {
 		if !middleware.IsAdmin(ctx) && team.Hidden {
 			count--
@@ -45,7 +46,7 @@ func GetTeamRanking(ctx *gin.Context) {
 			count--
 			continue
 		}
-		tmp := resp.GetTeamRankingResp(team, solved, contestFlags)
+		tmp := resp.GetTeamRankingResp(team, solved, contestFlags, isAdmin)
 		tmp["users"] = repo.CountAssociation(team, "Users")
 		data = append(data, tmp)
 	}
