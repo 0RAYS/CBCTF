@@ -13,6 +13,48 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func GetTeamFlags(ctx *gin.Context) {
+	ctx.Set(middleware.CTXEventTypeKey, model.ReadFlagEventType)
+	team := middleware.GetTeam(ctx)
+	teamFlags, _, ret := db.InitTeamFlagRepo(db.DB).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"team_id": team.ID},
+		Preloads: map[string]db.GetOptions{"ContestFlag": {
+			Preloads: map[string]db.GetOptions{"ContestChallenge": {}},
+		}},
+	})
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
+		return
+	}
+	challengeFlagMap := make(map[uint]gin.H)
+	for _, flag := range teamFlags {
+		if _, ok := challengeFlagMap[flag.ContestFlag.ContestChallengeID]; !ok {
+			challengeFlagMap[flag.ContestFlag.ContestChallengeID] = gin.H{
+				"name":     flag.ContestFlag.ContestChallenge.Name,
+				"type":     flag.ContestFlag.ContestChallenge.Type,
+				"category": flag.ContestFlag.ContestChallenge.Category,
+				"hidden":   flag.ContestFlag.ContestChallenge.Hidden,
+				"flags":    make([]gin.H, 0),
+			}
+		}
+		challengeFlagMap[flag.ContestFlag.ContestChallengeID]["flags"] = append(challengeFlagMap[flag.ContestFlag.ContestChallengeID]["flags"].([]gin.H), gin.H{
+			"value":         flag.Value,
+			"solved":        flag.Solved,
+			"template":      flag.ContestFlag.Value,
+			"init_score":    flag.ContestFlag.Score,
+			"current_score": flag.ContestFlag.CurrentScore,
+			"decay":         flag.ContestFlag.Decay,
+			"min_score":     flag.ContestFlag.MinScore,
+			"solvers":       flag.ContestFlag.Solvers,
+		})
+	}
+	data := make([]gin.H, 0)
+	for _, flags := range challengeFlagMap {
+		data = append(data, flags)
+	}
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
+}
+
 func InitTeamFlag(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.InitChallengeEventType)
 	user := middleware.GetSelf(ctx).(model.User)

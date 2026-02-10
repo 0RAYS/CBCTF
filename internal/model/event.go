@@ -71,6 +71,7 @@ const (
 	IncreaseVictimEventType     = "increase_victim"
 	StopVictimEventType         = "stop_victim"
 	DownloadTrafficEventType    = "download_traffic"
+	ReadFlagEventType           = "read_flag"
 	SubmitFlagEventType         = "submit_flag"
 
 	UploadWriteUpEventType   = "upload_writeup"
@@ -91,7 +92,8 @@ var EventTypes = []string{
 	UploadPictureEventType, DeletePictureEventType, JoinTeamEventType, CreateTeamEventType, UpdateTeamEventType,
 	DeleteTeamEventType, LeaveTeamEventType, KickMemberEventType, InitChallengeEventType, ResetChallengeEventType,
 	DownloadAttachmentEventType, PullImageEventType, StartVictimEventType, IncreaseVictimEventType, StopVictimEventType,
-	DownloadTrafficEventType, SubmitFlagEventType, UploadWriteUpEventType, DownloadWriteUpEventType, DownloadFileEventType,
+	DownloadTrafficEventType, ReadFlagEventType, SubmitFlagEventType, UploadWriteUpEventType, DownloadWriteUpEventType,
+	DownloadFileEventType,
 }
 
 type Event struct {
