@@ -270,6 +270,8 @@ func Init() *gin.Engine {
 				adminContestTeam.POST("/kick", KickMember)
 				adminContestTeam.POST("/picture", UploadPicture("team"))
 
+				adminContestTeam.GET("/flags", GetTeamFlags)
+
 				adminContestTeam.GET("/submissions", GetSubmissions)
 
 				adminContestTeam.GET("/victims", GetVictims)
