@@ -117,13 +117,13 @@ func OauthCallback(ctx *gin.Context) {
 	tok, err := oauthConfig.Exchange(ctx, form.Code, oauth2.VerifierOption(verifier))
 	if err != nil {
 		log.Logger.Warningf("Failed to get token for provider %s: %s", provider.Provider, err)
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 	}
 	client := oauthConfig.Client(ctx, tok)
 	response, err := client.Get(provider.UserInfoURL)
 	if err != nil {
 		log.Logger.Warningf("Failed to get User info by provider %s: %s", provider.Provider, err)
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return
 	}
 	defer func(Body io.ReadCloser) {
@@ -134,7 +134,7 @@ func OauthCallback(ctx *gin.Context) {
 	var result map[string]any
 	if err = json.NewDecoder(response.Body).Decode(&result); err != nil {
 		log.Logger.Warningf("Failed to decode response body for provider %s: %s", provider.Provider, err)
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 	}
 	id, ok := utils.GetFiledValue(result, provider.RespIDField)
 	if !ok {
@@ -181,7 +181,7 @@ func OauthCallback(ctx *gin.Context) {
 	token, err := utils.GenerateToken(user.ID, user.Name, false, model.OauthLoginType)
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return
 	}
 	prometheus.UpdateUserLoginMetrics(provider.Provider)

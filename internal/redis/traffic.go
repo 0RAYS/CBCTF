@@ -25,7 +25,7 @@ func UpdateTraffics(victim model.Victim) model.RetVal {
 	connections, err := utils.ReadPcapDir(victim.TrafficBasePath())
 	if err != nil {
 		log.Logger.Warningf("Failed to read pcap: %s", err)
-		return model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err}}
+		return model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err.Error()}}
 	}
 
 	key := fmt.Sprintf(trafficsKey, victim.ID)
@@ -43,7 +43,7 @@ func UpdateTraffics(victim model.Victim) model.RetVal {
 	pipe.Expire(ctx, key, 30*time.Minute)
 	if _, err = pipe.Exec(ctx); err != nil {
 		log.Logger.Warningf("Failed to update traffics: %s", err)
-		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": trafficsKey, "Error": err}}
+		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": trafficsKey, "Error": err.Error()}}
 	}
 	return model.SuccessRetVal()
 }
@@ -55,7 +55,7 @@ func GetTraffic(victim model.Victim) ([]utils.Connection, model.RetVal) {
 	results, err := RDB.ZRangeWithScores(ctx, fmt.Sprintf(trafficsKey, victim.ID), 0, -1).Result()
 	if err != nil {
 		log.Logger.Warningf("Failed to get traffic: %s", err)
-		return nil, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": trafficsKey, "Error": err}}
+		return nil, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": trafficsKey, "Error": err.Error()}}
 	}
 	pipe := RDB.Pipeline()
 	for _, res := range results {
@@ -69,7 +69,7 @@ func GetTraffic(victim model.Victim) ([]utils.Connection, model.RetVal) {
 		var conn utils.Connection
 		if err = msgpack.Unmarshal(str, &conn); err != nil {
 			log.Logger.Warningf("Failed to unmarshal: %s", err)
-			return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}}
+			return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 		}
 		connections = append(connections, conn)
 	}

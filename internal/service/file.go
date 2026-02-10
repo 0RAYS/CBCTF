@@ -30,7 +30,7 @@ func SavePicture(tx *gorm.DB, options db.CreateFileOptions, file *multipart.File
 	size, hash, err := utils.GetFileInfoByHeader(file)
 	if err != nil {
 		log.Logger.Warningf("Failed to get file info: %s", err)
-		return model.File{}, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}}
+		return model.File{}, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	options.RandID = utils.UUID()
 	options.Filename = file.Filename
@@ -76,7 +76,7 @@ func SaveChallengeFile(tx *gorm.DB, challenge model.Challenge, file *multipart.F
 	size, hash, err := utils.GetFileInfoByHeader(file)
 	if err != nil {
 		log.Logger.Warningf("Failed to get file info: %s", err)
-		return model.File{}, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}}
+		return model.File{}, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	record, ret := fileRepo.Get(db.GetOptions{
 		Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFileType},
@@ -116,7 +116,7 @@ func SaveWriteUp(tx *gorm.DB, user model.User, contest model.Contest, team model
 	size, hash, err := utils.GetFileInfoByHeader(file)
 	if err != nil {
 		log.Logger.Warningf("Failed to get file info: %s", err)
-		return model.File{}, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}}
+		return model.File{}, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	record, ret := db.InitFileRepo(tx).Create(db.CreateFileOptions{
 		RandID:    utils.UUID(),
