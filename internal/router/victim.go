@@ -96,6 +96,7 @@ func GetVictims(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	victims, count, ret := db.InitVictimRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
 		Conditions: map[string]any{"team_id": team.ID},
+		Preloads:   map[string]db.GetOptions{"ContestChallenge": {}},
 		Deleted:    true,
 	})
 	if !ret.OK {
