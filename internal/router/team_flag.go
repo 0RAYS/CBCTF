@@ -26,18 +26,19 @@ func GetTeamFlags(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
-	challengeFlagMap := make(map[uint]gin.H)
+	challengeInfoMap := make(map[uint]gin.H)
+	challengeFlagsMap := make(map[uint][]gin.H)
 	for _, flag := range teamFlags {
-		if _, ok := challengeFlagMap[flag.ContestFlag.ContestChallengeID]; !ok {
-			challengeFlagMap[flag.ContestFlag.ContestChallengeID] = gin.H{
+		id := flag.ContestFlag.ContestChallengeID
+		if _, ok := challengeInfoMap[id]; !ok {
+			challengeInfoMap[id] = gin.H{
 				"name":     flag.ContestFlag.ContestChallenge.Name,
 				"type":     flag.ContestFlag.ContestChallenge.Type,
 				"category": flag.ContestFlag.ContestChallenge.Category,
 				"hidden":   flag.ContestFlag.ContestChallenge.Hidden,
-				"flags":    make([]gin.H, 0),
 			}
 		}
-		challengeFlagMap[flag.ContestFlag.ContestChallengeID]["flags"] = append(challengeFlagMap[flag.ContestFlag.ContestChallengeID]["flags"].([]gin.H), gin.H{
+		challengeFlagsMap[id] = append(challengeFlagsMap[id], gin.H{
 			"value":         flag.Value,
 			"solved":        flag.Solved,
 			"template":      flag.ContestFlag.Value,
@@ -48,9 +49,10 @@ func GetTeamFlags(ctx *gin.Context) {
 			"solvers":       flag.ContestFlag.Solvers,
 		})
 	}
-	data := make([]gin.H, 0)
-	for _, flags := range challengeFlagMap {
-		data = append(data, flags)
+	data := make([]gin.H, 0, len(challengeInfoMap))
+	for id, info := range challengeInfoMap {
+		info["flags"] = challengeFlagsMap[id]
+		data = append(data, info)
 	}
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
 }
