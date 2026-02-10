@@ -48,7 +48,7 @@ func CheckAuth(ctx *gin.Context) {
 				token, err := utils.GenerateToken(user.ID, user.Name, false, magic)
 				if err != nil {
 					log.Logger.Warningf("Failed to generate token: %s", err)
-					ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
+					ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 					return
 				}
 				ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))

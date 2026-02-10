@@ -18,14 +18,14 @@ func SendEmail(user model.User) model.RetVal {
 	token, err := utils.GenerateToken(user.ID, user.Name, false, id)
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
-		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}}
+		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	if ret := redis.SetEmailVerifyToken(user.ID, id); !ret.OK {
 		return ret
 	}
 	if _, err = task.EnqueueSendEmailTask(user.Email, token, id); err != nil {
 		log.Logger.Warningf("Failed to enqueue send email task: %s", err)
-		return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err}}
+		return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	return model.SuccessRetVal()
 }

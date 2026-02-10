@@ -32,7 +32,7 @@ func DownloadFile(eventType string) gin.HandlerFunc {
 				return
 			}
 			log.Logger.Warningf("Failed to get file: %s", err)
-			ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
+			ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 			return
 		}
 		ctx.Set(middleware.CTXEventSuccessKey, true)
@@ -94,7 +94,7 @@ func UploadPicture(v string) gin.HandlerFunc {
 		}
 		if err = ctx.SaveUploadedFile(file, record.Path); err != nil {
 			log.Logger.Warningf("Failed to save file: %s", err)
-			ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
+			ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 			return
 		}
 		if v != "contest" {
@@ -131,7 +131,7 @@ func UploadChallengeFile(ctx *gin.Context) {
 	}
 	if err = ctx.SaveUploadedFile(file, record.Path); err != nil {
 		log.Logger.Warningf("Failed to save file: %s", err)
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
@@ -155,7 +155,7 @@ func UploadWriteUp(ctx *gin.Context) {
 	}
 	if err = ctx.SaveUploadedFile(file, record.Path); err != nil {
 		log.Logger.Warningf("Failed to save file: %s", err)
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)

@@ -37,7 +37,7 @@ func Register(ctx *gin.Context) {
 	token, err := utils.GenerateToken(user.ID, user.Name, false, middleware.GetMagic(ctx))
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return
 	}
 	ctx.Set("IsAdmin", false)
@@ -64,7 +64,7 @@ func Login(ctx *gin.Context) {
 	token, err := utils.GenerateToken(user.ID, user.Name, false, middleware.GetMagic(ctx))
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return
 	}
 	ctx.Set("IsAdmin", false)
@@ -91,7 +91,7 @@ func AdminLogin(ctx *gin.Context) {
 	token, err := utils.GenerateToken(admin.ID, admin.Name, true, "admin")
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err}})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return
 	}
 	ctx.Set("IsAdmin", true)
