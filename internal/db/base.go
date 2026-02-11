@@ -45,15 +45,15 @@ type DiffUpdateOptions interface {
 	Convert2Expr() map[string]any
 }
 
-func (b *BaseRepo[M]) IsUniqueKeyValue(key string, value any) bool {
-	_, ret := b.GetByUniqueKey(key, value, GetOptions{Selects: []string{"id"}})
-	return !ret.OK
+func (b *BaseRepo[M]) IsUniqueKeyValue(id uint, key string, value any) bool {
+	m, ret := b.GetByUniqueKey(key, value, GetOptions{Selects: []string{"id"}})
+	return m.GetBaseModel().ID == id || !ret.OK
 }
 
 func (b *BaseRepo[M]) Insert(m M) (M, model.RetVal) {
 	for _, key := range m.UniqueFields() {
 		value := utils.GetFieldByJSONTag(m, key)
-		if !b.IsUniqueKeyValue(key, value) {
+		if !b.IsUniqueKeyValue(0, key, value) {
 			return *new(M), model.RetVal{Msg: i18n.Model.DuplicateKeyValue, Attr: map[string]any{"Model": m.ModelName(), "Key": key}}
 		}
 	}
@@ -197,7 +197,7 @@ func (b *BaseRepo[M]) Update(id uint, options UpdateOptions) model.RetVal {
 		return model.SuccessRetVal()
 	}
 	for _, key := range M.UniqueFields(*new(M)) {
-		if value, ok := data[key]; ok && !b.IsUniqueKeyValue(key, value) {
+		if value, ok := data[key]; ok && !b.IsUniqueKeyValue(id, key, value) {
 			return model.RetVal{Msg: i18n.Model.NotUniqueKey, Attr: map[string]any{"Model": M.ModelName(*new(M)), "Key": key}}
 		}
 	}
