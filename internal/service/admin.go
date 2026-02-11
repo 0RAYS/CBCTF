@@ -24,7 +24,7 @@ func VerifyAdmin(tx *gorm.DB, form dto.LoginForm) (model.Admin, model.RetVal) {
 	repo := db.InitAdminRepo(tx)
 	admin, ret := repo.GetByUniqueKey("name", form.Name)
 	if !ret.OK {
-		return model.Admin{}, ret
+		return model.Admin{}, model.RetVal{Msg: i18n.Model.User.NamePasswordWrong}
 	}
 	if !utils.CompareHashAndPassword(admin.Password, form.Password) {
 		return model.Admin{}, model.RetVal{Msg: i18n.Model.User.NamePasswordWrong}
