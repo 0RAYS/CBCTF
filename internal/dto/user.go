@@ -81,7 +81,7 @@ func (f *UpdateSelfForm) Bind(ctx *gin.Context) model.RetVal {
 // UpdateUserForm for admin update user info
 type UpdateUserForm struct {
 	Name        *string `form:"name" json:"name"`
-	Email       *string `form:"name" json:"email" binding:"omitempty,email"`
+	Email       *string `form:"email" json:"email" binding:"omitempty,email"`
 	Description *string `form:"description" json:"description"`
 	Password    *string `form:"password" json:"password"`
 	Hidden      *bool   `form:"hidden" json:"hidden"`

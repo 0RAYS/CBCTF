@@ -71,7 +71,7 @@ func (f *StopContestVictimsForm) Bind(ctx *gin.Context) model.RetVal {
 }
 
 type StartContestVictimsForm struct {
-	Challenges []string `form:"challenges" json:"challenges" binding:"required"`
+	Challenges []string `form:"challenges" json:"challenges" binding:"required,dive,uuid"`
 	Teams      []uint   `form:"teams" json:"teams" binding:"required"`
 }
 

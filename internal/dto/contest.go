@@ -44,7 +44,7 @@ type UpdateContestForm struct {
 	Captcha     *string           `form:"captcha" json:"captcha"`
 	Blood       *bool             `form:"blood" json:"blood"`
 	Prefix      *string           `form:"prefix" json:"prefix"`
-	Size        *int              `form:"start" json:"size"`
+	Size        *int              `form:"size" json:"size"`
 	Start       *time.Time        `form:"start" json:"start"`
 	Duration    *int64            `form:"duration" json:"duration"`
 	Rules       *model.StringList `form:"rules" json:"rules"`

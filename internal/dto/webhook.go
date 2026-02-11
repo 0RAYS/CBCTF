@@ -15,12 +15,12 @@ var allowMethods = []string{http.MethodPost, http.MethodGet}
 
 type CreateWebhookForm struct {
 	Name    string           `form:"name" json:"name" binding:"required"`
-	URL     string           `form:"url" json:"url" binding:"required"`
+	URL     string           `form:"url" json:"url" binding:"required,url"`
 	Method  string           `form:"method" json:"method" binding:"required"`
 	Headers model.StringMap  `form:"headers" json:"headers"`
 	Timeout int64            `form:"timeout" json:"timeout"`
 	Retry   int              `form:"retry" json:"retry"`
-	Events  model.StringList `gorm:"type:json" json:"events"`
+	Events  model.StringList `form:"events" json:"events"`
 }
 
 func (f *CreateWebhookForm) Bind(ctx *gin.Context) model.RetVal {
@@ -37,7 +37,7 @@ func (f *CreateWebhookForm) Bind(ctx *gin.Context) model.RetVal {
 
 type UpdateWebhookForm struct {
 	Name    *string           `form:"name" json:"name"`
-	URL     *string           `form:"url" json:"url"`
+	URL     *string           `form:"url" json:"url" binding:"omitempty,url"`
 	Method  *string           `form:"method" json:"method"`
 	Headers *model.StringMap  `form:"headers" json:"headers"`
 	Timeout *int64            `form:"timeout" json:"timeout"`
