@@ -10,7 +10,7 @@ import (
 
 // CreateContestChallengeForm add challenge to contest
 type CreateContestChallengeForm struct {
-	ChallengeRandIDL []string `form:"challenge_id" json:"challenge_id" binding:"required"`
+	ChallengeRandIDL []string `form:"challenge_id" json:"challenge_id" binding:"required,dive,uuid"`
 }
 
 func (f *CreateContestChallengeForm) Bind(ctx *gin.Context) model.RetVal {
@@ -22,10 +22,10 @@ func (f *CreateContestChallengeForm) Bind(ctx *gin.Context) model.RetVal {
 }
 
 type UpdateContestChallengeForm struct {
-	Name        *string           `form:"name" json:"name"`
+	Name        *string           `form:"name" json:"name" binding:"omitempty,min=1"`
 	Description *string           `form:"description" json:"description"`
 	Hidden      *bool             `form:"hidden" json:"hidden"`
-	Attempt     *int64            `form:"attempt" json:"attempt"`
+	Attempt     *int64            `form:"attempt" json:"attempt" binding:"omitempty,gte=0"`
 	Hints       *model.StringList `form:"hints" json:"hints"`
 	Tags        *model.StringList `form:"tags" json:"tags"`
 }

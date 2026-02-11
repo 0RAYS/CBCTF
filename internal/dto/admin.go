@@ -25,7 +25,7 @@ func (f *CreateAdminForm) Bind(ctx *gin.Context) model.RetVal {
 
 // UpdateAdminForm for admin update info
 type UpdateAdminForm struct {
-	Name  *string `form:"name" json:"name"`
+	Name  *string `form:"name" json:"name" binding:"omitempty,min=1"`
 	Email *string `form:"email" json:"email" binding:"omitempty,email"`
 }
 

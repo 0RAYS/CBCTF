@@ -39,16 +39,16 @@ func (f *CreateContestForm) Bind(ctx *gin.Context) model.RetVal {
 
 // UpdateContestForm for admin update contest info
 type UpdateContestForm struct {
-	Name        *string           `form:"name" json:"name"`
+	Name        *string           `form:"name" json:"name" binding:"omitempty,min=1"`
 	Description *string           `form:"description" json:"description"`
 	Captcha     *string           `form:"captcha" json:"captcha"`
 	Blood       *bool             `form:"blood" json:"blood"`
 	Prefix      *string           `form:"prefix" json:"prefix"`
-	Size        *int              `form:"size" json:"size"`
+	Size        *int              `form:"size" json:"size" binding:"omitempty,gte=1"`
 	Start       *time.Time        `form:"start" json:"start"`
-	Duration    *int64            `form:"duration" json:"duration"`
+	Duration    *int64            `form:"duration" json:"duration" binding:"omitempty,gte=1"`
+	Victims     *int64            `form:"victims" json:"victims" binding:"omitempty,gte=1"`
 	Rules       *model.StringList `form:"rules" json:"rules"`
-	Victims     *int64            `form:"victims" json:"victims"`
 	Prizes      *model.Prizes     `form:"prizes" json:"prizes"`
 	Timelines   *model.Timelines  `form:"timelines" json:"timelines"`
 	Hidden      *bool             `form:"hidden" json:"hidden"`
