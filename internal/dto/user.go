@@ -65,7 +65,7 @@ func (f *CreateUserForm) Bind(ctx *gin.Context) model.RetVal {
 
 // UpdateSelfForm for user update info
 type UpdateSelfForm struct {
-	Name        *string `form:"name" json:"name"`
+	Name        *string `form:"name" json:"name" binding:"omitempty,min=1"`
 	Email       *string `form:"email" json:"email" binding:"omitempty,email"`
 	Description *string `form:"description" json:"description"`
 }
@@ -80,10 +80,10 @@ func (f *UpdateSelfForm) Bind(ctx *gin.Context) model.RetVal {
 
 // UpdateUserForm for admin update user info
 type UpdateUserForm struct {
-	Name        *string `form:"name" json:"name"`
+	Name        *string `form:"name" json:"name" binding:"omitempty,min=1"`
 	Email       *string `form:"email" json:"email" binding:"omitempty,email"`
 	Description *string `form:"description" json:"description"`
-	Password    *string `form:"password" json:"password"`
+	Password    *string `form:"password" json:"password" binding:"omitempty,min=1"`
 	Hidden      *bool   `form:"hidden" json:"hidden"`
 	Banned      *bool   `form:"banned" json:"banned"`
 	Verified    *bool   `form:"verified" json:"verified"`

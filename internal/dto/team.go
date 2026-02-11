@@ -25,7 +25,7 @@ func (f *CreateTeamForm) Bind(ctx *gin.Context) model.RetVal {
 
 // UpdateTeamForm for user update team info
 type UpdateTeamForm struct {
-	Name        *string `form:"name" json:"name"`
+	Name        *string `form:"name" json:"name" binding:"omitempty,min=1"`
 	Description *string `form:"description" json:"description"`
 	CaptainID   *uint   `form:"captain_id" json:"captain_id"`
 }
@@ -67,11 +67,11 @@ func (f *KickMemberForm) Bind(ctx *gin.Context) model.RetVal {
 
 // AdminUpdateTeamForm for admin update team info
 type AdminUpdateTeamForm struct {
-	Name        *string `form:"name" json:"name"`
+	Name        *string `form:"name" json:"name" binding:"omitempty,min=1"`
 	Description *string `form:"description" json:"description"`
 	Hidden      *bool   `form:"hidden" json:"hidden"`
 	Banned      *bool   `form:"banned" json:"banned"`
-	Captcha     *string `form:"captcha" json:"captcha"`
+	Captcha     *string `form:"captcha" json:"captcha" binding:"omitempty,min=1"`
 	CaptainID   *uint   `form:"captain_id" json:"captain_id"`
 }
 

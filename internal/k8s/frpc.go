@@ -71,7 +71,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 			if slices.Contains(pr.Exclude, i) {
 				continue
 			}
-			portRange = append(portRange, int32(i))
+			portRange = append(portRange, i)
 		}
 	}
 	newEndpoints := make(model.Endpoints, 0)
