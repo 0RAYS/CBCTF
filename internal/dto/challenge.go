@@ -91,7 +91,7 @@ type UpdateChallengeForm struct {
 	Description     *string                `form:"description" json:"description"`
 	Category        *string                `form:"category" json:"category"`
 	GeneratorImage  *string                `form:"generator_image" json:"generator_image"`
-	NetworkPolicies *model.NetworkPolicies `json:"network_policies"`
+	NetworkPolicies *model.NetworkPolicies `form:"network_policies" json:"network_policies"`
 	Options         *model.Options         `form:"options" json:"options"`
 	DockerCompose   *string                `form:"docker_compose" json:"docker_compose"`
 	Flags           []struct {

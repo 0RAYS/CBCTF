@@ -9,9 +9,9 @@ import (
 )
 
 type CreateSmtpForm struct {
-	Address string `form:"address" json:"address" binding:"required"`
+	Address string `form:"address" json:"address" binding:"required,email"`
 	Host    string `form:"host" json:"host" binding:"required"`
-	Port    int    `form:"port" json:"port" binding:"required"`
+	Port    int    `form:"port" json:"port" binding:"required,gte=0,lte=65535"`
 	Pwd     string `form:"pwd" json:"pwd" binding:"required"`
 }
 
@@ -27,9 +27,9 @@ func (f *CreateSmtpForm) Bind(ctx *gin.Context) model.RetVal {
 }
 
 type UpdateSmtpForm struct {
-	Address *string `form:"address" json:"address"`
+	Address *string `form:"address" json:"address" binding:"omitempty,email"`
 	Host    *string `form:"host" json:"host"`
-	Port    *int    `form:"port" json:"port"`
+	Port    *int    `form:"port" json:"port" binding:"omitempty,gte=0,lte=65535"`
 	Pwd     *string `form:"pwd" json:"pwd"`
 	On      *bool   `form:"on" json:"on"`
 }
