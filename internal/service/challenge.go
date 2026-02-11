@@ -30,6 +30,10 @@ func GetChallenges(tx *gorm.DB, form dto.GetChallengesForm) ([]model.Challenge, 
 	return db.InitChallengeRepo(tx).List(form.Limit, form.Offset, options)
 }
 
+func GetChallengeNotInContest(tx *gorm.DB, contestID uint, form dto.GetChallengesForm) ([]model.Challenge, int64, model.RetVal) {
+	return db.InitChallengeRepo(tx).ListChallengesNotInContest(contestID, form.Limit, form.Offset, form.Category, form.Type)
+}
+
 func CreateChallenge(tx *gorm.DB, form dto.CreateChallengeForm) (model.Challenge, model.RetVal) {
 	challengeRepo, challengeFlagRepo := db.InitChallengeRepo(tx), db.InitChallengeFlagRepo(tx)
 	challenge, ret := challengeRepo.Create(db.CreateChallengeOptions{

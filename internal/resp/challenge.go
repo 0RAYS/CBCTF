@@ -155,3 +155,16 @@ func GetChallengeResp(challenge model.Challenge) gin.H {
 		"file":             file.Filename,
 	}
 }
+
+func GetSimpleChallengeResp(challenge model.Challenge) gin.H {
+	return gin.H{
+		"id":               challenge.RandID,
+		"name":             challenge.Name,
+		"description":      challenge.Description,
+		"category":         challenge.Category,
+		"type":             challenge.Type,
+		"generator_image":  challenge.GeneratorImage,
+		"options":          challenge.Options,
+		"network_policies": challenge.NetworkPolicies,
+	}
+}

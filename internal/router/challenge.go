@@ -33,6 +33,24 @@ func GetChallenges(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"count": count, "challenges": data}))
 }
 
+func GetChallengeNotInContest(ctx *gin.Context) {
+	var form dto.GetChallengesForm
+	if ret := form.Bind(ctx); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
+		return
+	}
+	challenges, count, ret := service.GetChallengeNotInContest(db.DB, middleware.GetContest(ctx).ID, form)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
+		return
+	}
+	data := make([]gin.H, 0)
+	for _, challenge := range challenges {
+		data = append(data, resp.GetSimpleChallengeResp(challenge))
+	}
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"count": count, "challenges": data}))
+}
+
 func GetChallenge(ctx *gin.Context) {
 	var ret model.RetVal
 	challenge := middleware.GetChallenge(ctx)
