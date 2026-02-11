@@ -30,7 +30,7 @@ type UpdateCheatForm struct {
 }
 
 func (f *UpdateCheatForm) Bind(ctx *gin.Context) model.RetVal {
-	if err := ctx.ShouldBindJSON(f); err != nil {
+	if err := ctx.ShouldBind(f); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
 		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
