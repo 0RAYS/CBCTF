@@ -41,7 +41,7 @@ func VerifyUser(tx *gorm.DB, form dto.LoginForm) (model.User, model.RetVal) {
 	repo := db.InitUserRepo(tx)
 	user, ret := repo.GetByUniqueKey("name", form.Name)
 	if !ret.OK {
-		return model.User{}, ret
+		return model.User{}, model.RetVal{Msg: i18n.Model.User.NamePasswordWrong}
 	}
 	if !utils.CompareHashAndPassword(user.Password, form.Password) {
 		return model.User{}, model.RetVal{Msg: i18n.Model.User.NamePasswordWrong}
