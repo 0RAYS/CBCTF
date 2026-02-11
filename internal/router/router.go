@@ -304,6 +304,7 @@ func Init() *gin.Engine {
 			}
 
 			adminContest.GET("/challenges", GetContestChallenges)
+			adminContest.GET("/challenges/others", GetChallengeNotInContest)
 			adminContest.GET("/challenges/categories", GetContestChallengeCategories)
 			adminContest.POST("/challenges", AddContestChallenge)
 			adminContestChallenge := adminContest.Group("/challenges/:challengeID", middleware.SetContestChallenge)
