@@ -115,7 +115,7 @@ func GetContestChallengeStatus(ctx *gin.Context) {
 		"file": func() string {
 			path := challenge.AttachmentPath(team.ID)
 			record, _ := db.InitFileRepo(db.DB).Get(db.GetOptions{
-				Conditions: map[string]any{"challenge_id": challenge.ID, "type": model.ChallengeFileType}},
+				Conditions: map[string]any{"model": challenge.ModelName(), "model_id": challenge.ID, "type": model.ChallengeFileType}},
 			)
 			filename := "attachment.zip"
 			if record.Path == path {
