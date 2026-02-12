@@ -51,23 +51,29 @@ func UploadPicture(v string) gin.HandlerFunc {
 		var id uint
 		switch v {
 		case "admin":
+			id = middleware.GetSelfID(ctx)
 			options.Model = model.Admin{}.ModelName()
-			options.ModelID = middleware.GetSelfID(ctx)
+			options.ModelID = id
 		case "self-user":
+			id = middleware.GetSelfID(ctx)
 			options.Model = model.User{}.ModelName()
-			options.ModelID = middleware.GetSelfID(ctx)
+			options.ModelID = id
 		case "user":
+			id = middleware.GetUser(ctx).ID
 			options.Model = model.User{}.ModelName()
-			options.ModelID = middleware.GetUser(ctx).ID
+			options.ModelID = id
 		case "contest":
+			id = middleware.GetContest(ctx).ID
 			options.Model = model.Contest{}.ModelName()
-			options.ModelID = middleware.GetContest(ctx).ID
+			options.ModelID = id
 		case "team":
+			id = middleware.GetTeam(ctx).ID
 			options.Model = model.Team{}.ModelName()
-			options.ModelID = middleware.GetTeam(ctx).ID
+			options.ModelID = id
 		case "oauth":
+			id = middleware.GetOauth(ctx).ID
 			options.Model = model.Oauth{}.ModelName()
-			options.ModelID = middleware.GetOauth(ctx).ID
+			options.ModelID = id
 		}
 		record, ret := service.SavePicture(db.DB, options, file)
 		if !ret.OK {
