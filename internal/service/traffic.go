@@ -8,7 +8,6 @@ import (
 	"CBCTF/internal/model"
 	r "CBCTF/internal/redis"
 	"CBCTF/internal/utils"
-	"database/sql"
 	"fmt"
 	"time"
 
@@ -77,16 +76,15 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) model.RetVal {
 			return
 		}
 		db.InitFileRepo(db.DB).Create(db.CreateFileOptions{
-			RandID:      utils.UUID(),
-			Filename:    "traffics.zip",
-			Size:        size,
-			Path:        victim.TrafficZipPath(),
-			UserID:      victim.UserID,
-			TeamID:      victim.TeamID,
-			ChallengeID: sql.Null[uint]{V: victim.ChallengeID, Valid: true},
-			Suffix:      ".zip",
-			Hash:        hash,
-			Type:        model.TrafficFileType,
+			RandID:   utils.UUID(),
+			Filename: "traffics.zip",
+			Size:     size,
+			Path:     victim.TrafficZipPath(),
+			Model:    victim.ModelName(),
+			ModelID:  victim.ID,
+			Suffix:   ".zip",
+			Hash:     hash,
+			Type:     model.TrafficFileType,
 		})
 	}(victim)
 	connections, err := utils.ReadPcapDir(victim.TrafficBasePath())

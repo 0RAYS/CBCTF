@@ -11,7 +11,6 @@ import (
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"CBCTF/internal/task"
-	"database/sql"
 	"fmt"
 	"net/http"
 	"os"
@@ -52,35 +51,23 @@ func UploadPicture(v string) gin.HandlerFunc {
 		var id uint
 		switch v {
 		case "admin":
-			id = middleware.GetSelfID(ctx)
-			options.AdminID = sql.Null[uint]{V: id, Valid: true}
+			options.Model = model.Admin{}.ModelName()
+			options.ModelID = middleware.GetSelfID(ctx)
 		case "self-user":
-			id = middleware.GetSelfID(ctx)
-			options.UserID = sql.Null[uint]{V: id, Valid: true}
+			options.Model = model.User{}.ModelName()
+			options.ModelID = middleware.GetSelfID(ctx)
 		case "user":
-			id = middleware.GetUser(ctx).ID
-			selfID := middleware.GetSelfID(ctx)
-			options.AdminID = sql.Null[uint]{V: selfID, Valid: true}
-			options.UserID = sql.Null[uint]{V: id, Valid: true}
+			options.Model = model.User{}.ModelName()
+			options.ModelID = middleware.GetUser(ctx).ID
 		case "contest":
-			id = middleware.GetContest(ctx).ID
-			selfID := middleware.GetSelfID(ctx)
-			options.AdminID = sql.Null[uint]{V: selfID, Valid: true}
-			options.ContestID = sql.Null[uint]{V: id, Valid: true}
+			options.Model = model.Contest{}.ModelName()
+			options.ModelID = middleware.GetContest(ctx).ID
 		case "team":
-			id = middleware.GetTeam(ctx).ID
-			options.TeamID = sql.Null[uint]{V: id, Valid: true}
-			selfID := middleware.GetSelfID(ctx)
-			if middleware.IsAdmin(ctx) {
-				options.AdminID = sql.Null[uint]{V: selfID, Valid: true}
-			} else {
-				options.UserID = sql.Null[uint]{V: selfID, Valid: true}
-			}
+			options.Model = model.Team{}.ModelName()
+			options.ModelID = middleware.GetTeam(ctx).ID
 		case "oauth":
-			id = middleware.GetOauth(ctx).ID
-			options.OauthID = sql.Null[uint]{V: id, Valid: true}
-			selfID := middleware.GetSelfID(ctx)
-			options.AdminID = sql.Null[uint]{V: selfID, Valid: true}
+			options.Model = model.Oauth{}.ModelName()
+			options.ModelID = middleware.GetOauth(ctx).ID
 		}
 		record, ret := service.SavePicture(db.DB, options, file)
 		if !ret.OK {
@@ -145,10 +132,9 @@ func UploadWriteUp(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UploadWriteUpEventType)
-	user := middleware.GetSelf(ctx).(model.User)
 	contest := middleware.GetContest(ctx)
 	team := middleware.GetTeam(ctx)
-	record, ret := service.SaveWriteUp(db.DB, user, contest, team, file)
+	record, ret := service.SaveWriteUp(db.DB, contest, team, file)
 	if !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
