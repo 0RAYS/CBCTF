@@ -5,8 +5,8 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"crypto/md5"
-	"database/sql"
 	"fmt"
+	"sort"
 	"time"
 
 	"gorm.io/gorm"
@@ -17,39 +17,37 @@ type CheatRepo struct {
 }
 
 type CreateCheatOptions struct {
-	UserID             sql.Null[uint]
-	TeamID             sql.Null[uint]
-	ContestID          sql.Null[uint]
-	ContestChallengeID sql.Null[uint]
-	ContestFlagID      sql.Null[uint]
-	Magic              string
-	IP                 string
-	Reason             string
-	Type               string
-	Checked            bool
-	Comment            string
-	Time               time.Time
+	Model   model.UintMap
+	Magic   string
+	IP      string
+	Reason  string
+	Type    string
+	Checked bool
+	Comment string
+	Time    time.Time
 }
 
 func (c CreateCheatOptions) Convert2Model() model.Model {
-	hash := fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf(
-		"%s-%d-%d-%d-%d-%d-%s-%s-%s",
-		c.Time.Format("2006-01-02"), c.UserID.V, c.TeamID.V, c.ContestID.V, c.ContestChallengeID.V, c.ContestFlagID.V, c.Magic, c.IP, c.Comment,
-	))))
+	keys := make([]string, 0)
+	for k := range c.Model {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	hash := fmt.Sprintf("%s", c.Time.Format("2006-01-02"))
+	for _, k := range keys {
+		hash = fmt.Sprintf("%s-%d", hash, c.Model[k])
+	}
+	hash = fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%s-%s-%s-%s", hash, c.Magic, c.IP, c.Comment))))
 	return model.Cheat{
-		UserID:             c.UserID,
-		TeamID:             c.TeamID,
-		ContestID:          c.ContestID,
-		ContestChallengeID: c.ContestChallengeID,
-		ContestFlagID:      c.ContestFlagID,
-		Magic:              c.Magic,
-		IP:                 c.IP,
-		Reason:             c.Reason,
-		Type:               c.Type,
-		Checked:            c.Checked,
-		Comment:            c.Comment,
-		Time:               c.Time,
-		Hash:               hash,
+		Model:   c.Model,
+		Magic:   c.Magic,
+		IP:      c.IP,
+		Reason:  c.Reason,
+		Type:    c.Type,
+		Checked: c.Checked,
+		Comment: c.Comment,
+		Time:    c.Time,
+		Hash:    hash,
 	}
 }
 
@@ -57,7 +55,6 @@ type UpdateCheatRepo struct {
 	Reason  *string
 	Type    *string
 	Checked *bool
-	Hash    *string
 	Comment *string
 }
 
@@ -71,9 +68,6 @@ func (u UpdateCheatRepo) Convert2Map() map[string]any {
 	}
 	if u.Checked != nil {
 		options["checked"] = *u.Checked
-	}
-	if u.Hash != nil {
-		options["hash"] = *u.Hash
 	}
 	if u.Comment != nil {
 		options["comment"] = *u.Comment

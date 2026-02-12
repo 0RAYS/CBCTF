@@ -3,7 +3,6 @@ package cheat
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/model"
-	"database/sql"
 	"fmt"
 	"strconv"
 	"strings"
@@ -38,12 +37,11 @@ func CheckSameDevice(contest model.Contest) {
 			}
 			for _, user := range users {
 				repo.Create(db.CreateCheatOptions{
-					UserID:    sql.Null[uint]{V: user.UserID, Valid: true},
-					ContestID: sql.Null[uint]{V: contest.ID, Valid: true},
-					Magic:     magic,
-					Reason:    fmt.Sprintf(model.SameDeviceMagic, fmt.Sprintf("User %s", strings.Join(str, ","))),
-					Type:      model.Suspicious,
-					Time:      user.Time,
+					Model:  map[string]uint{model.User{}.ModelName(): user.UserID, contest.ModelName(): contest.ID},
+					Magic:  magic,
+					Reason: fmt.Sprintf(model.SameDeviceMagic, fmt.Sprintf("User %s", strings.Join(str, ","))),
+					Type:   model.Suspicious,
+					Time:   user.Time,
 				})
 			}
 		}

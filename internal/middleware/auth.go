@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
-	"database/sql"
 	"fmt"
 	"net/http"
 	"strings"
@@ -54,7 +53,7 @@ func CheckAuth(ctx *gin.Context) {
 				ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
 			} else {
 				go db.InitCheatRepo(db.DB).Create(db.CreateCheatOptions{
-					UserID:  sql.Null[uint]{V: user.ID, Valid: true},
+					Model:   map[string]uint{user.ModelName(): user.ID},
 					Magic:   magic,
 					IP:      ctx.ClientIP(),
 					Reason:  fmt.Sprintf(model.DifferentTokenMagic, magic, claims.X),
