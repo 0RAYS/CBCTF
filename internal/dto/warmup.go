@@ -9,7 +9,7 @@ import (
 )
 
 type WarmUpImageForm struct {
-	Images     []string `form:"images" json:"images" binding:"required"`
+	Images     []string `form:"images" json:"images" binding:"required,dive,min=1"`
 	PullPolicy string   `form:"pull_policy" json:"pull_policy" binding:"required,oneof=Always Never IfNotPresent"`
 }
 
@@ -38,7 +38,7 @@ func (f *GetContestVictimsForm) Bind(ctx *gin.Context) model.RetVal {
 }
 
 type StopContestVictimsForm struct {
-	Victims []uint `form:"victims" json:"victims" binding:"required"`
+	Victims []uint `form:"victims" json:"victims" binding:"required,dive,gt=0"`
 }
 
 func (f *StopContestVictimsForm) Bind(ctx *gin.Context) model.RetVal {
@@ -51,7 +51,7 @@ func (f *StopContestVictimsForm) Bind(ctx *gin.Context) model.RetVal {
 
 type StartContestVictimsForm struct {
 	Challenges []string `form:"challenges" json:"challenges" binding:"required,dive,uuid"`
-	Teams      []uint   `form:"teams" json:"teams" binding:"required"`
+	Teams      []uint   `form:"teams" json:"teams" binding:"required,dive,gt=0"`
 }
 
 func (f *StartContestVictimsForm) Bind(ctx *gin.Context) model.RetVal {

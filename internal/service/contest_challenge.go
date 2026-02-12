@@ -18,7 +18,7 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 	contestChallengeRepo := db.InitContestChallengeRepo(tx)
 	challengeRepo := db.InitChallengeRepo(tx)
 	contestFlagRepo := db.InitContestFlagRepo(tx)
-	for _, challengeRandID := range form.ChallengeRandIDL {
+	for _, challengeRandID := range form.ChallengeIDs {
 		challenge, ret := challengeRepo.GetByRandID(challengeRandID, db.GetOptions{
 			Preloads: map[string]db.GetOptions{"ChallengeFlags": {}},
 		})

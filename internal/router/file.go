@@ -212,7 +212,7 @@ func DeleteFiles(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.DeletePictureEventType)
-	ret := db.InitFileRepo(db.DB).DeleteByRandID(form.FileIDL...)
+	ret := db.InitFileRepo(db.DB).DeleteByRandID(form.FileIDs...)
 	if !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
