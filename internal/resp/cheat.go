@@ -8,15 +8,16 @@ import (
 
 func GetCheatResp(cheat model.Cheat) gin.H {
 	return gin.H{
-		"id":      cheat.ID,
-		"model":   cheat.Model,
-		"magic":   cheat.Magic,
-		"ip":      cheat.IP,
-		"reason":  cheat.Reason,
-		"type":    cheat.Type,
-		"checked": cheat.Checked,
-		"hash":    cheat.Hash,
-		"comment": cheat.Comment,
-		"time":    cheat.Time,
+		"id":          cheat.ID,
+		"model":       cheat.Model,
+		"magic":       cheat.Magic,
+		"ip":          cheat.IP,
+		"reason":      cheat.Reason,
+		"reason_type": cheat.ReasonType,
+		"type":        cheat.Type,
+		"checked":     cheat.Checked,
+		"hash":        cheat.Hash,
+		"comment":     cheat.Comment,
+		"time":        cheat.Time,
 	}
 }

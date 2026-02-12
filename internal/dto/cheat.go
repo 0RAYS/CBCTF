@@ -9,9 +9,10 @@ import (
 )
 
 type GetCheatsForm struct {
-	Offset int    `form:"offset" json:"offset" binding:"gte=0"`
-	Limit  int    `form:"limit" json:"limit" binding:"gte=0,lte=100"`
-	Type   string `form:"type" json:"type" binding:"omitempty,oneof=suspicious cheater pass"`
+	Offset     int    `form:"offset" json:"offset" binding:"gte=0"`
+	Limit      int    `form:"limit" json:"limit" binding:"gte=0,lte=100"`
+	Type       string `form:"type" json:"type" binding:"omitempty,oneof=suspicious cheater pass"`
+	ReasonType string `form:"reason_type" json:"reason_type" binding:"omitempty,oneof=same_device same_web_ip same_victim_ip wrong_flag token_magic"`
 }
 
 func (f *GetCheatsForm) Bind(ctx *gin.Context) model.RetVal {

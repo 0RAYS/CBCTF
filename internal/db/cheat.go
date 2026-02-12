@@ -5,10 +5,12 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"sort"
 	"time"
 
+	"github.com/go-sql-driver/mysql"
 	"gorm.io/gorm"
 )
 
@@ -17,14 +19,15 @@ type CheatRepo struct {
 }
 
 type CreateCheatOptions struct {
-	Model   model.UintMap
-	Magic   string
-	IP      string
-	Reason  string
-	Type    string
-	Checked bool
-	Comment string
-	Time    time.Time
+	Model      model.UintMap
+	Magic      string
+	IP         string
+	Reason     string
+	ReasonType string
+	Type       string
+	Checked    bool
+	Comment    string
+	Time       time.Time
 }
 
 func (c CreateCheatOptions) Convert2Model() model.Model {
@@ -33,21 +36,22 @@ func (c CreateCheatOptions) Convert2Model() model.Model {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
-	hash := fmt.Sprintf("%s", c.Time.Format("2006-01-02"))
+	hash := ""
 	for _, k := range keys {
-		hash = fmt.Sprintf("%s-%d", hash, c.Model[k])
+		hash = fmt.Sprintf("%s%s-%d-", hash, k, c.Model[k])
 	}
-	hash = fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%s-%s-%s-%s", hash, c.Magic, c.IP, c.Comment))))
+	hash = fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%s%s-%s-%s-%s", hash, c.ReasonType, c.Magic, c.IP, c.Comment))))
 	return model.Cheat{
-		Model:   c.Model,
-		Magic:   c.Magic,
-		IP:      c.IP,
-		Reason:  c.Reason,
-		Type:    c.Type,
-		Checked: c.Checked,
-		Comment: c.Comment,
-		Time:    c.Time,
-		Hash:    hash,
+		Model:      c.Model,
+		Magic:      c.Magic,
+		IP:         c.IP,
+		Reason:     c.Reason,
+		ReasonType: c.ReasonType,
+		Type:       c.Type,
+		Checked:    c.Checked,
+		Comment:    c.Comment,
+		Time:       c.Time,
+		Hash:       hash,
 	}
 }
 
@@ -86,6 +90,14 @@ func InitCheatRepo(tx *gorm.DB) *CheatRepo {
 func (c *CheatRepo) Create(options CreateCheatOptions) (model.Cheat, model.RetVal) {
 	m := options.Convert2Model().(model.Cheat)
 	if res := c.DB.Model(&model.Cheat{}).Attrs(m).FirstOrCreate(&m, model.Cheat{Hash: m.Hash}); res.Error != nil {
+		var mysqlErr *mysql.MySQLError
+		if errors.As(res.Error, &mysqlErr) && mysqlErr.Number == 1062 {
+			// Duplicate key: fallback to query existing record
+			var existing model.Cheat
+			if err := c.DB.Where("hash = ?", m.Hash).First(&existing).Error; err == nil {
+				return existing, model.SuccessRetVal()
+			}
+		}
 		log.Logger.Warningf("Failed to create Cheat: %s", res.Error)
 		return model.Cheat{}, model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.Cheat{}.ModelName(), "Error": res.Error.Error()}}
 	}

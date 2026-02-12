@@ -21,6 +21,9 @@ func GetCheats(ctx *gin.Context) {
 	if form.Type != "" {
 		options.Conditions["type"] = form.Type
 	}
+	if form.ReasonType != "" {
+		options.Conditions["reason_type"] = form.ReasonType
+	}
 	cheats, count, ret := db.InitCheatRepo(db.DB).List(form.Limit, form.Offset, options)
 	if !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
