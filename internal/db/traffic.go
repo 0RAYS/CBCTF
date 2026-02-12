@@ -60,7 +60,7 @@ func (t *TrafficRepo) GetTeamVictimIP(teamIDL ...uint) ([]TeamVictimIP, model.Re
 		INNER JOIN victims ON traffics.victim_id = victims.id
 		WHERE victims.team_id IN ?
 		GROUP BY victims.team_id, victims.id, traffics.src_ip, victims.deleted_at
-	`).Scan(&teamVictimIPL)
+	`, teamIDL).Scan(&teamVictimIPL)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Traffic: %s", res.Error)
 		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Traffic{}.ModelName(), "Error": res.Error.Error()}}
