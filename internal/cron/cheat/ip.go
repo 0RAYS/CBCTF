@@ -92,8 +92,7 @@ func CheckVictimReqIP(contest model.Contest) {
 		teamIDs[i] = team.ID
 	}
 
-	trafficRepo := db.InitTrafficRepo(db.DB)
-	trafficResults, ret := trafficRepo.GetTeamVictimIP(teamIDs...)
+	trafficResults, ret := db.InitTrafficRepo(db.DB).GetTeamVictimIP(teamIDs...)
 	if !ret.OK {
 		return
 	}

@@ -56,7 +56,7 @@ func (t *TrafficRepo) GetTeamVictimIP(teamIDL ...uint) ([]TeamVictimIP, model.Re
 	var teamVictimIPL []TeamVictimIP
 	res := t.DB.Raw(`
 		SELECT victims.team_id, victims.id AS victim_id, traffics.src_ip, victims.deleted_at AS stop_time
-		FROM victims
+		FROM traffics
 		INNER JOIN victims ON traffics.victim_id = victims.id
 		WHERE victims.team_id IN ?
 		GROUP BY victims.team_id, victims.id, traffics.src_ip, victims.deleted_at
