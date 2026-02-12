@@ -184,7 +184,7 @@ func GetWriteUPs(ctx *gin.Context) {
 	}
 	team := middleware.GetTeam(ctx)
 	writeups, count, ret := db.InitFileRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
-		Conditions: map[string]any{"type": model.WriteupFileType, "team_id": team.ID},
+		Conditions: map[string]any{"model": team.ModelName(), "model_id": team.ID, "type": model.WriteupFileType},
 	})
 	if !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
