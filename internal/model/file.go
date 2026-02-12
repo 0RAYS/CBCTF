@@ -39,6 +39,6 @@ func (f File) UniqueFields() []string {
 
 func (f File) QueryFields() []string {
 	return []string{
-		"id", "rand_id", "model_name", "model_id", "filename", "size", "suffix", "hash", "type",
+		"id", "rand_id", "model", "model_id", "filename", "size", "suffix", "hash", "type",
 	}
 }
