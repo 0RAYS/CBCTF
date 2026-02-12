@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/model"
-	"database/sql"
 	"fmt"
 	"net"
 	"slices"
@@ -64,14 +63,13 @@ func CheckWebReqIP(contest model.Contest) {
 			}
 			for _, user := range users {
 				cheatRepo.Create(db.CreateCheatOptions{
-					UserID:    sql.Null[uint]{V: user.UserID, Valid: true},
-					ContestID: sql.Null[uint]{V: contest.ID, Valid: true},
-					IP:        ip,
-					Comment:   ip,
-					Reason:    fmt.Sprintf(model.ReqWebSameIP, fmt.Sprintf("User %s", strings.Join(str, ","))),
-					Type:      model.Suspicious,
-					Checked:   false,
-					Time:      user.Time,
+					Model:   map[string]uint{model.User{}.ModelName(): user.UserID, contest.ModelName(): contest.ID},
+					IP:      ip,
+					Comment: ip,
+					Reason:  fmt.Sprintf(model.ReqWebSameIP, fmt.Sprintf("User %s", strings.Join(str, ","))),
+					Type:    model.Suspicious,
+					Checked: false,
+					Time:    user.Time,
 				})
 			}
 		}
@@ -125,14 +123,13 @@ func CheckVictimReqIP(contest model.Contest) {
 			}
 			for _, team := range v {
 				cheatRepo.Create(db.CreateCheatOptions{
-					TeamID:    sql.Null[uint]{V: team.ID, Valid: true},
-					ContestID: sql.Null[uint]{V: contest.ID, Valid: true},
-					IP:        ip,
-					Comment:   ip,
-					Reason:    fmt.Sprintf(model.ReqVictimSameIP, fmt.Sprintf("Team %s", strings.Join(str, ","))),
-					Type:      model.Suspicious,
-					Checked:   false,
-					Time:      team.Time,
+					Model:   map[string]uint{model.Team{}.ModelName(): team.ID, contest.ModelName(): contest.ID},
+					IP:      ip,
+					Comment: ip,
+					Reason:  fmt.Sprintf(model.ReqVictimSameIP, fmt.Sprintf("Team %s", strings.Join(str, ","))),
+					Type:    model.Suspicious,
+					Checked: false,
+					Time:    team.Time,
 				})
 			}
 		}
