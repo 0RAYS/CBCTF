@@ -35,6 +35,8 @@ func VerifyAdmin(tx *gorm.DB, form dto.LoginForm) (model.Admin, model.RetVal) {
 func UpdateUser(tx *gorm.DB, user model.User, form dto.UpdateUserForm) model.RetVal {
 	repo := db.InitUserRepo(tx)
 	options := db.UpdateUserOptions{
+		Name:        form.Name,
+		Email:       form.Email,
 		Description: form.Description,
 		Hidden:      form.Hidden,
 		Banned:      form.Banned,
@@ -51,7 +53,10 @@ func UpdateUser(tx *gorm.DB, user model.User, form dto.UpdateUserForm) model.Ret
 
 func UpdateAdmin(tx *gorm.DB, admin model.Admin, form dto.UpdateAdminForm) model.RetVal {
 	repo := db.InitAdminRepo(tx)
-	options := db.UpdateAdminOptions{}
+	options := db.UpdateAdminOptions{
+		Name:  form.Name,
+		Email: form.Email,
+	}
 	if form.Email != nil && *form.Email != admin.Email {
 		options.Verified = utils.Ptr(false)
 	}

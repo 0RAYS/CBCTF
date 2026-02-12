@@ -224,6 +224,7 @@ func CreateOauthProvider(ctx *gin.Context) {
 		AuthURL:          form.AuthURL,
 		TokenURL:         form.TokenURL,
 		UserInfoURL:      form.UserInfoURL,
+		CallbackURL:      form.CallbackURL,
 		ClientID:         form.ClientID,
 		ClientSecret:     form.ClientSecret,
 		Provider:         form.Provider,

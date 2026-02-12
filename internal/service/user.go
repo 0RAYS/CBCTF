@@ -64,6 +64,8 @@ func ChangeUserPwd(tx *gorm.DB, user model.User, form dto.ChangePasswordForm) mo
 func UpdateSelf(tx *gorm.DB, user model.User, form dto.UpdateSelfForm) model.RetVal {
 	repo := db.InitUserRepo(tx)
 	options := db.UpdateUserOptions{
+		Name:        form.Name,
+		Email:       form.Email,
 		Description: form.Description,
 	}
 	if form.Email != nil && *form.Email != user.Email {
