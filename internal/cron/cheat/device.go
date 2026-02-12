@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"time"
 )
 
 func CheckSameDevice(contest model.Contest) {
@@ -14,11 +13,7 @@ func CheckSameDevice(contest model.Contest) {
 	if !ret.OK {
 		return
 	}
-	type tmp struct {
-		Time   time.Time
-		UserID uint
-	}
-	deviceUserMap := make(map[string][]tmp)
+	deviceUserMap := make(map[string][]uint)
 	devices, _, ret := db.InitDeviceRepo(db.DB).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"user_id": userIDL},
 	})
@@ -26,25 +21,37 @@ func CheckSameDevice(contest model.Contest) {
 		return
 	}
 	for _, device := range devices {
-		deviceUserMap[device.Magic] = append(deviceUserMap[device.Magic], tmp{device.CreatedAt, device.UserID})
-	}
-	repo := db.InitCheatRepo(db.DB)
-	for magic, users := range deviceUserMap {
-		if len(users) > 1 {
-			var str []string
-			for _, user := range users {
-				str = append(str, strconv.Itoa(int(user.UserID)))
-			}
-			for _, user := range users {
-				repo.Create(db.CreateCheatOptions{
-					Model:      map[string]uint{model.User{}.ModelName(): user.UserID, contest.ModelName(): contest.ID},
-					Magic:      magic,
-					Reason:     fmt.Sprintf(model.SameDeviceMagic, fmt.Sprintf("User %s", strings.Join(str, ","))),
-					ReasonType: model.ReasonTypeSameDevice,
-					Type:       model.Suspicious,
-					Time:       user.Time,
-				})
-			}
+		if !slicesContains(deviceUserMap[device.Magic], device.UserID) {
+			deviceUserMap[device.Magic] = append(deviceUserMap[device.Magic], device.UserID)
 		}
 	}
+	repo := db.InitCheatRepo(db.DB)
+	for magic, userIDs := range deviceUserMap {
+		if len(userIDs) > 1 {
+			var str []string
+			for _, uid := range userIDs {
+				str = append(str, strconv.Itoa(int(uid)))
+			}
+			repo.Create(db.CreateCheatOptions{
+				Model: model.CheatRefModel{
+					model.User{}.ModelName(): userIDs,
+					contest.ModelName():      {contest.ID},
+				},
+				Magic:      magic,
+				Reason:     fmt.Sprintf(model.SameDeviceMagic, fmt.Sprintf("User %s", strings.Join(str, ","))),
+				ReasonType: model.ReasonTypeSameDevice,
+				Type:       model.Suspicious,
+				Time:       devices[0].CreatedAt,
+			})
+		}
+	}
+}
+
+func slicesContains(s []uint, v uint) bool {
+	for _, x := range s {
+		if x == v {
+			return true
+		}
+	}
+	return false
 }

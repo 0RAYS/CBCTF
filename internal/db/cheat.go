@@ -19,7 +19,7 @@ type CheatRepo struct {
 }
 
 type CreateCheatOptions struct {
-	Model      model.UintMap
+	Model      model.CheatRefModel
 	Magic      string
 	IP         string
 	Reason     string
@@ -38,7 +38,13 @@ func (c CreateCheatOptions) Convert2Model() model.Model {
 	sort.Strings(keys)
 	hash := ""
 	for _, k := range keys {
-		hash = fmt.Sprintf("%s%s-%d-", hash, k, c.Model[k])
+		ids := make([]uint, len(c.Model[k]))
+		copy(ids, c.Model[k])
+		sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
+		hash += fmt.Sprintf("%s-", k)
+		for _, id := range ids {
+			hash += fmt.Sprintf("%d,", id)
+		}
 	}
 	hash = fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%s%s-%s-%s-%s", hash, c.ReasonType, c.Magic, c.IP, c.Comment))))
 	return model.Cheat{

@@ -1,6 +1,9 @@
 package model
 
 import (
+	"database/sql/driver"
+	"encoding/json"
+	"fmt"
 	"time"
 )
 
@@ -23,16 +26,16 @@ const (
 )
 
 type Cheat struct {
-	Model      UintMap   `gorm:"default:null;type:json" json:"model"`
-	Magic      string    `json:"magic"`
-	IP         string    `json:"ip"`
-	Reason     string    `json:"reason"`
-	ReasonType string    `gorm:"index" json:"reason_type"`
-	Type       string    `json:"type"`
-	Checked    bool      `json:"checked"`
-	Hash       string    `gorm:"type:varchar(32);uniqueIndex" json:"hash"`
-	Comment    string    `json:"comment"`
-	Time       time.Time `json:"time"`
+	Model      CheatRefModel `gorm:"default:null;type:json" json:"model"`
+	Magic      string        `json:"magic"`
+	IP         string        `json:"ip"`
+	Reason     string        `json:"reason"`
+	ReasonType string        `gorm:"index" json:"reason_type"`
+	Type       string        `json:"type"`
+	Checked    bool          `json:"checked"`
+	Hash       string        `gorm:"type:varchar(32);uniqueIndex" json:"hash"`
+	Comment    string        `json:"comment"`
+	Time       time.Time     `json:"time"`
 	BaseModel
 }
 
@@ -50,4 +53,25 @@ func (c Cheat) UniqueFields() []string {
 
 func (c Cheat) QueryFields() []string {
 	return []string{"id", "magic", "ip", "reason", "reason_type", "type", "checked", "hash", "comment", "time"}
+}
+
+type CheatRefModel map[string][]uint
+
+func (c CheatRefModel) Value() (driver.Value, error) {
+	if len(c) == 0 {
+		return nil, nil
+	}
+	return json.Marshal(c)
+}
+
+func (c *CheatRefModel) Scan(value any) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan CheatRefModel value")
+	}
+	if len(bytes) == 0 {
+		*c = nil
+		return nil
+	}
+	return json.Unmarshal(bytes, c)
 }
