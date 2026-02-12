@@ -8,7 +8,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/utils"
-	"database/sql"
 	"fmt"
 	"mime/multipart"
 	"path/filepath"
@@ -90,14 +89,15 @@ func SaveChallengeFile(tx *gorm.DB, challenge model.Challenge, file *multipart.F
 		}
 	}
 	record, ret = fileRepo.Create(db.CreateFileOptions{
-		RandID:      utils.UUID(),
-		Filename:    file.Filename,
-		Size:        size,
-		Path:        path,
-		ChallengeID: sql.Null[uint]{V: challenge.ID, Valid: true},
-		Suffix:      suffix,
-		Hash:        hash,
-		Type:        model.ChallengeFileType,
+		RandID:   utils.UUID(),
+		Filename: file.Filename,
+		Size:     size,
+		Path:     path,
+		Model:    challenge.ModelName(),
+		ModelID:  challenge.ID,
+		Suffix:   suffix,
+		Hash:     hash,
+		Type:     model.ChallengeFileType,
 	})
 	if ret.OK {
 		prometheus.UpdateFileUploadMetrics(record.Suffix, file.Size)
@@ -105,7 +105,7 @@ func SaveChallengeFile(tx *gorm.DB, challenge model.Challenge, file *multipart.F
 	return record, ret
 }
 
-func SaveWriteUp(tx *gorm.DB, user model.User, contest model.Contest, team model.Team, file *multipart.FileHeader) (model.File, model.RetVal) {
+func SaveWriteUp(tx *gorm.DB, contest model.Contest, team model.Team, file *multipart.FileHeader) (model.File, model.RetVal) {
 	var (
 		allowed = []string{".pdf", ".docx", ".doc"}
 		suffix  = strings.ToLower(filepath.Ext(file.Filename))
@@ -119,16 +119,15 @@ func SaveWriteUp(tx *gorm.DB, user model.User, contest model.Contest, team model
 		return model.File{}, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	record, ret := db.InitFileRepo(tx).Create(db.CreateFileOptions{
-		RandID:    utils.UUID(),
-		Filename:  file.Filename,
-		Size:      size,
-		Path:      fmt.Sprintf("%s/writeups/contest-%d/team-%d/%s%s", config.Env.Path, contest.ID, team.ID, utils.UUID(), suffix),
-		UserID:    sql.Null[uint]{V: user.ID, Valid: true},
-		TeamID:    sql.Null[uint]{V: team.ID, Valid: true},
-		ContestID: sql.Null[uint]{V: contest.ID, Valid: true},
-		Suffix:    suffix,
-		Hash:      hash,
-		Type:      model.WriteupFileType,
+		RandID:   utils.UUID(),
+		Filename: file.Filename,
+		Size:     size,
+		Path:     fmt.Sprintf("%s/writeups/contest-%d/team-%d/%s%s", config.Env.Path, contest.ID, team.ID, utils.UUID(), suffix),
+		Model:    team.ModelName(),
+		ModelID:  team.ID,
+		Suffix:   suffix,
+		Hash:     hash,
+		Type:     model.WriteupFileType,
 	})
 	if ret.OK {
 		prometheus.UpdateFileUploadMetrics(record.Suffix, file.Size)

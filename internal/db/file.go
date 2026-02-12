@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"database/sql"
 
 	"gorm.io/gorm"
 )
@@ -14,36 +13,28 @@ type FileRepo struct {
 }
 
 type CreateFileOptions struct {
-	RandID      string
-	Filename    string
-	Size        int64
-	Path        string
-	AdminID     sql.Null[uint]
-	UserID      sql.Null[uint]
-	TeamID      sql.Null[uint]
-	ContestID   sql.Null[uint]
-	OauthID     sql.Null[uint]
-	ChallengeID sql.Null[uint]
-	Suffix      string
-	Hash        string
-	Type        string
+	RandID   string
+	Filename string
+	Size     int64
+	Path     string
+	Model    string
+	ModelID  uint
+	Suffix   string
+	Hash     string
+	Type     string
 }
 
 func (c CreateFileOptions) Convert2Model() model.Model {
 	return model.File{
-		RandID:      c.RandID,
-		Filename:    c.Filename,
-		Size:        c.Size,
-		Path:        c.Path,
-		AdminID:     c.AdminID,
-		UserID:      c.UserID,
-		TeamID:      c.TeamID,
-		ContestID:   c.ContestID,
-		OauthID:     c.OauthID,
-		ChallengeID: c.ChallengeID,
-		Suffix:      c.Suffix,
-		Hash:        c.Hash,
-		Type:        c.Type,
+		RandID:   c.RandID,
+		Filename: c.Filename,
+		Size:     c.Size,
+		Path:     c.Path,
+		Model:    c.Model,
+		ModelID:  c.ModelID,
+		Suffix:   c.Suffix,
+		Hash:     c.Hash,
+		Type:     c.Type,
 	}
 }
 
