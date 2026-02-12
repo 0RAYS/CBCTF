@@ -63,13 +63,14 @@ func CheckWebReqIP(contest model.Contest) {
 			}
 			for _, user := range users {
 				cheatRepo.Create(db.CreateCheatOptions{
-					Model:   map[string]uint{model.User{}.ModelName(): user.UserID, contest.ModelName(): contest.ID},
-					IP:      ip,
-					Comment: ip,
-					Reason:  fmt.Sprintf(model.ReqWebSameIP, fmt.Sprintf("User %s", strings.Join(str, ","))),
-					Type:    model.Suspicious,
-					Checked: false,
-					Time:    user.Time,
+					Model:      map[string]uint{model.User{}.ModelName(): user.UserID, contest.ModelName(): contest.ID},
+					IP:         ip,
+					Comment:    ip,
+					Reason:     fmt.Sprintf(model.ReqWebSameIP, fmt.Sprintf("User %s", strings.Join(str, ","))),
+					ReasonType: model.ReasonTypeSameWebIP,
+					Type:       model.Suspicious,
+					Checked:    false,
+					Time:       user.Time,
 				})
 			}
 		}
@@ -123,13 +124,14 @@ func CheckVictimReqIP(contest model.Contest) {
 			}
 			for _, team := range v {
 				cheatRepo.Create(db.CreateCheatOptions{
-					Model:   map[string]uint{model.Team{}.ModelName(): team.ID, contest.ModelName(): contest.ID},
-					IP:      ip,
-					Comment: ip,
-					Reason:  fmt.Sprintf(model.ReqVictimSameIP, fmt.Sprintf("Team %s", strings.Join(str, ","))),
-					Type:    model.Suspicious,
-					Checked: false,
-					Time:    team.Time,
+					Model:      map[string]uint{model.Team{}.ModelName(): team.ID, contest.ModelName(): contest.ID},
+					IP:         ip,
+					Comment:    ip,
+					Reason:     fmt.Sprintf(model.ReqVictimSameIP, fmt.Sprintf("Team %s", strings.Join(str, ","))),
+					ReasonType: model.ReasonTypeSameVictimIP,
+					Type:       model.Suspicious,
+					Checked:    false,
+					Time:       team.Time,
 				})
 			}
 		}

@@ -37,11 +37,12 @@ func CheckSameDevice(contest model.Contest) {
 			}
 			for _, user := range users {
 				repo.Create(db.CreateCheatOptions{
-					Model:  map[string]uint{model.User{}.ModelName(): user.UserID, contest.ModelName(): contest.ID},
-					Magic:  magic,
-					Reason: fmt.Sprintf(model.SameDeviceMagic, fmt.Sprintf("User %s", strings.Join(str, ","))),
-					Type:   model.Suspicious,
-					Time:   user.Time,
+					Model:      map[string]uint{model.User{}.ModelName(): user.UserID, contest.ModelName(): contest.ID},
+					Magic:      magic,
+					Reason:     fmt.Sprintf(model.SameDeviceMagic, fmt.Sprintf("User %s", strings.Join(str, ","))),
+					ReasonType: model.ReasonTypeSameDevice,
+					Type:       model.Suspicious,
+					Time:       user.Time,
 				})
 			}
 		}

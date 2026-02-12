@@ -68,13 +68,14 @@ func CheckWrongFlag(contest model.Contest) {
 				tmp.WriteString(fmt.Sprintf("Team-%d, ", teamID))
 			}
 			cheatRepo.Create(db.CreateCheatOptions{
-				Model:   map[string]uint{model.Team{}.ModelName(): submission.TeamID, contest.ModelName(): contest.ID},
-				IP:      submission.IP,
-				Comment: submission.Value,
-				Reason:  fmt.Sprintf(model.SubmitOtherTeamFlag, submission.TeamID, strings.Trim(tmp.String(), ", "), contest.ID),
-				Type:    model.Cheater,
-				Checked: false,
-				Time:    submission.CreatedAt,
+				Model:      map[string]uint{model.Team{}.ModelName(): submission.TeamID, contest.ModelName(): contest.ID},
+				IP:         submission.IP,
+				Comment:    submission.Value,
+				Reason:     fmt.Sprintf(model.SubmitOtherTeamFlag, submission.TeamID, strings.Trim(tmp.String(), ", "), contest.ID),
+				ReasonType: model.ReasonTypeWrongFlag,
+				Type:       model.Cheater,
+				Checked:    false,
+				Time:       submission.CreatedAt,
 			})
 		}
 	}
