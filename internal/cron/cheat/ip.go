@@ -126,7 +126,7 @@ func CheckVictimReqIP(contest model.Contest) {
 	for ip, v := range ipTeamMap {
 		if len(v) > 1 {
 			var str []string
-			teamIDs := make([]uint, 0, len(v))
+			teamIDs = make([]uint, 0, len(v))
 			var earliest time.Time
 			for i, team := range v {
 				str = append(str, strconv.Itoa(int(team.ID)))
