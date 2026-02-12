@@ -53,7 +53,9 @@ func CheckAuth(ctx *gin.Context) {
 				ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
 			} else {
 				go db.InitCheatRepo(db.DB).Create(db.CreateCheatOptions{
-					Model:      map[string]uint{user.ModelName(): user.ID},
+					Model: model.CheatRefModel{
+						user.ModelName(): {user.ID},
+					},
 					Magic:      magic,
 					IP:         ctx.ClientIP(),
 					Reason:     fmt.Sprintf(model.DifferentTokenMagic, magic, claims.X),

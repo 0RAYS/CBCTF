@@ -36,7 +36,9 @@ func WSAuth(ctx *gin.Context) {
 		magic := GetMagic(ctx)
 		if !utils.CompareMagic(magic, claims.X) {
 			go db.InitCheatRepo(db.DB).Create(db.CreateCheatOptions{
-				Model:      map[string]uint{user.ModelName(): user.ID},
+				Model: model.CheatRefModel{
+					user.ModelName(): {user.ID},
+				},
 				Magic:      magic,
 				IP:         ctx.ClientIP(),
 				Reason:     fmt.Sprintf(model.DifferentTokenMagic, magic, claims.X),
