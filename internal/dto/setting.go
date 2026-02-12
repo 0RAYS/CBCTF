@@ -17,14 +17,14 @@ type UpdateSettingForm struct {
 	LogSave  *bool   `form:"log_save" json:"log_save"`
 
 	AsyncQLogLevel    *string `form:"asyncq_log_level" json:"asyncq_log_level" binding:"omitempty,oneof=DEBUG INFO WARNING ERROR"`
-	AsyncQConcurrency *int    `form:"asyncq_concurrency" json:"asyncq_concurrency" binding:"omitempty,min=1"`
+	AsyncQConcurrency *int    `form:"asyncq_concurrency" json:"asyncq_concurrency" binding:"omitempty,gte=1"`
 
 	GinMode               *string   `form:"gin_mode" json:"gin_mode" binding:"omitempty,oneof=debug test release"`
 	GinHost               *string   `form:"gin_host" json:"gin_host" binding:"omitempty,ip"`
 	GinPort               *uint     `form:"gin_port" json:"gin_port" binding:"omitempty,port"`
-	GinUploadMax          *int      `form:"gin_upload_max" json:"gin_upload_max" binding:"omitempty,min=1"`
+	GinUploadMax          *int      `form:"gin_upload_max" json:"gin_upload_max" binding:"omitempty,gte=1"`
 	GinProxies            *[]string `form:"gin_proxies" json:"gin_proxies" binding:"omitempty,dive,ip|cidr"`
-	GinRateLimitGlobal    *int      `form:"gin_ratelimit_global" json:"gin_ratelimit_global" binding:"omitempty,min=1"`
+	GinRateLimitGlobal    *int      `form:"gin_ratelimit_global" json:"gin_ratelimit_global" binding:"omitempty,gte=1"`
 	GinRateLimitWhitelist *[]string `form:"gin_ratelimit_whitelist" json:"gin_ratelimit_whitelist" binding:"omitempty,dive,ip|cidr"`
 	GinCORS               *[]string `form:"gin_cors" json:"gin_cors" binding:"omitempty,dive,url"`
 	GinLogWhitelist       *[]string `form:"gin_log_whitelist" json:"gin_log_whitelist" binding:"omitempty,dive,uri"`
@@ -55,7 +55,7 @@ type UpdateSettingForm struct {
 	K8SFrpNginxImage *string              `form:"k8s_frp_nginx" json:"k8s_frp_nginx" binding:"omitempty,min=1"`
 	K8SFrpFrps       *[]config.FrpsConfig `form:"k8s_frp_frps" json:"k8s_frp_frps"`
 
-	K8SGeneratorWorker *int `form:"k8s_generator_worker" json:"k8s_generator_worker" binding:"omitempty,min=1"`
+	K8SGeneratorWorker *int `form:"k8s_generator_worker" json:"k8s_generator_worker" binding:"omitempty,gte=1"`
 
 	NFSServer  *string `form:"nfs_server" json:"nfs_server" binding:"omitempty,ip|hostname"`
 	NFSPath    *string `form:"nfs_path" json:"nfs_path" binding:"omitempty,dirpath|filepath"`
