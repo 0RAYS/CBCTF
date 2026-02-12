@@ -266,6 +266,7 @@ func UpdateOauthProvider(ctx *gin.Context) {
 		PictureField:     form.PictureField,
 		DescriptionField: form.DescriptionField,
 		On:               form.On,
+		Picture:          form.Picture,
 	}); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
