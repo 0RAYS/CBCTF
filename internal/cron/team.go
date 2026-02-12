@@ -3,7 +3,6 @@ package cron
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/log"
-	"CBCTF/internal/model"
 	"time"
 
 	"github.com/robfig/cron/v3"
@@ -17,12 +16,12 @@ func ClearEmptyTeam(c *cron.Cron) {
 		if !ret.OK {
 			return
 		}
-		contestIDL := make([]model.Contest, 0)
+		contestIDL := make([]uint, 0)
 		for _, contest := range contests {
 			if time.Now().Sub(contest.Start.Add(contest.Duration)) > 10*time.Minute {
 				continue
 			}
-			contestIDL = append(contestIDL, contest)
+			contestIDL = append(contestIDL, contest.ID)
 		}
 		repo := db.InitTeamRepo(db.DB)
 		teams, _, ret := repo.List(-1, -1, db.GetOptions{
