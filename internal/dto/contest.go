@@ -18,10 +18,10 @@ type CreateContestForm struct {
 	Captcha     string           `form:"captcha" json:"captcha"`
 	Prefix      string           `form:"prefix" json:"prefix"`
 	Blood       bool             `form:"blood" json:"blood"`
-	Size        int              `form:"size" json:"size"`
+	Size        int              `form:"size" json:"size" binding:"omitempty,gte=1"`
 	Start       time.Time        `form:"start" json:"start"`
-	Duration    int64            `form:"duration" json:"duration"`
-	Victims     int64            `form:"victims" json:"victims"`
+	Duration    int64            `form:"duration" json:"duration" binding:"omitempty,gte=1"`
+	Victims     int64            `form:"victims" json:"victims" binding:"omitempty,gte=1"`
 	Rules       model.StringList `form:"rules" json:"rules"`
 	Prizes      model.Prizes     `form:"prizes" json:"prizes"`
 	Timelines   model.Timelines  `form:"timelines" json:"timelines"`

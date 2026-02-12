@@ -136,7 +136,7 @@ func OauthCallback(ctx *gin.Context) {
 		log.Logger.Warningf("Failed to decode response body for provider %s: %s", provider.Provider, err)
 		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 	}
-	id, ok := utils.GetFiledValue(result, provider.RespIDField)
+	id, ok := utils.GetFiledValue(result, provider.IDField)
 	if !ok {
 		log.Logger.Warningf("Failed to get user_id by provider %s: %s", provider.Provider, result)
 		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Get value failed"}})
@@ -149,16 +149,16 @@ func OauthCallback(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, ret)
 			return
 		}
-		name, ok := utils.GetFiledValue(result, provider.RespNameField)
+		name, ok := utils.GetFiledValue(result, provider.NameField)
 		if !ok {
 			name = fmt.Sprintf("%s_%s", provider.Provider, utils.RandStr(10))
 		}
-		email, ok := utils.GetFiledValue(result, provider.RespEmailField)
+		email, ok := utils.GetFiledValue(result, provider.EmailField)
 		if !ok {
 			email = fmt.Sprintf("%s_%s@example.com", provider.Provider, utils.RandStr(10))
 		}
-		picture, _ := utils.GetFiledValue(result, provider.RespPictureField)
-		description, _ := utils.GetFiledValue(result, provider.RespDescriptionField)
+		picture, _ := utils.GetFiledValue(result, provider.PictureField)
+		description, _ := utils.GetFiledValue(result, provider.DescriptionField)
 		raw, _ := json.Marshal(result)
 		user, ret = userRepo.Create(db.CreateUserOptions{
 			Name:           name,
@@ -221,19 +221,19 @@ func CreateOauthProvider(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateOauthEventType)
 	provider, ret := db.InitOauthRepo(db.DB).Create(db.CreateOauthOptions{
-		AuthURL:              form.AuthURL,
-		TokenURL:             form.TokenURL,
-		UserInfoURL:          form.UserInfoURL,
-		ClientID:             form.ClientID,
-		ClientSecret:         form.ClientSecret,
-		Provider:             form.Provider,
-		Uri:                  form.Uri,
-		RespIDField:          form.RespIDField,
-		RespNameField:        form.RespNameField,
-		RespEmailField:       form.RespEmailField,
-		RespPictureField:     form.RespPictureField,
-		RespDescriptionField: form.RespDescriptionField,
-		On:                   false,
+		AuthURL:          form.AuthURL,
+		TokenURL:         form.TokenURL,
+		UserInfoURL:      form.UserInfoURL,
+		ClientID:         form.ClientID,
+		ClientSecret:     form.ClientSecret,
+		Provider:         form.Provider,
+		Uri:              form.Uri,
+		IDField:          form.IDField,
+		NameField:        form.NameField,
+		EmailField:       form.EmailField,
+		PictureField:     form.PictureField,
+		DescriptionField: form.DescriptionField,
+		On:               false,
 	})
 	if !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
@@ -252,20 +252,20 @@ func UpdateOauthProvider(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateOauthEventType)
 	oauth := middleware.GetOauth(ctx)
 	if ret := db.InitOauthRepo(db.DB).Update(oauth.ID, db.UpdateOauthOptions{
-		AuthURL:              form.AuthURL,
-		TokenURL:             form.TokenURL,
-		UserInfoURL:          form.UserInfoURL,
-		CallbackURL:          form.CallbackURL,
-		ClientID:             form.ClientID,
-		ClientSecret:         form.ClientSecret,
-		Provider:             form.Provider,
-		Uri:                  form.Uri,
-		RespIDField:          form.RespIDField,
-		RespNameField:        form.RespNameField,
-		RespEmailField:       form.RespEmailField,
-		RespPictureField:     form.RespPictureField,
-		RespDescriptionField: form.RespDescriptionField,
-		On:                   form.On,
+		AuthURL:          form.AuthURL,
+		TokenURL:         form.TokenURL,
+		UserInfoURL:      form.UserInfoURL,
+		CallbackURL:      form.CallbackURL,
+		ClientID:         form.ClientID,
+		ClientSecret:     form.ClientSecret,
+		Provider:         form.Provider,
+		Uri:              form.Uri,
+		IDField:          form.IDField,
+		NameField:        form.NameField,
+		EmailField:       form.EmailField,
+		PictureField:     form.PictureField,
+		DescriptionField: form.DescriptionField,
+		On:               form.On,
 	}); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return

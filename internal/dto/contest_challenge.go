@@ -10,7 +10,7 @@ import (
 
 // CreateContestChallengeForm add challenge to contest
 type CreateContestChallengeForm struct {
-	ChallengeRandIDL []string `form:"challenge_id" json:"challenge_id" binding:"required,dive,uuid"`
+	ChallengeIDs []string `form:"challenge_ids" json:"challenge_ids" binding:"required,dive,uuid"`
 }
 
 func (f *CreateContestChallengeForm) Bind(ctx *gin.Context) model.RetVal {

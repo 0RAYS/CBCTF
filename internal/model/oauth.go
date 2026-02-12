@@ -1,21 +1,21 @@
 package model
 
 type Oauth struct {
-	AuthURL              string  `json:"auth_url"`
-	TokenURL             string  `json:"token_url"`
-	UserInfoURL          string  `json:"user_info_url"`
-	CallbackURL          string  `json:"callback_url"`
-	ClientID             string  `json:"client_id"`
-	ClientSecret         string  `json:"client_secret"`
-	Provider             string  `gorm:"type:varchar(255);uniqueIndex;not null" json:"provider"`
-	Uri                  string  `json:"uri"`
-	RespIDField          string  `json:"id_field"`
-	RespNameField        string  `json:"name_field"`
-	RespEmailField       string  `json:"email_field"`
-	RespPictureField     string  `json:"picture_field"`
-	RespDescriptionField string  `json:"description_field"`
-	On                   bool    `json:"on"`
-	Picture              FileURL `json:"picture"`
+	AuthURL          string  `json:"auth_url"`
+	TokenURL         string  `json:"token_url"`
+	UserInfoURL      string  `json:"user_info_url"`
+	CallbackURL      string  `json:"callback_url"`
+	ClientID         string  `json:"client_id"`
+	ClientSecret     string  `json:"client_secret"`
+	Provider         string  `gorm:"type:varchar(255);uniqueIndex;not null" json:"provider"`
+	Uri              string  `json:"uri"`
+	IDField          string  `json:"id_field"`
+	NameField        string  `json:"name_field"`
+	EmailField       string  `json:"email_field"`
+	PictureField     string  `json:"picture_field"`
+	DescriptionField string  `json:"description_field"`
+	On               bool    `json:"on"`
+	Picture          FileURL `json:"picture"`
 	BaseModel
 }
 

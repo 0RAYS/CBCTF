@@ -10,8 +10,8 @@ import (
 
 // VerifyEmail 邮箱验证表单
 type VerifyEmail struct {
-	ID    string `form:"id" binding:"required"`
-	Token string `form:"token" binding:"required"`
+	ID    string `form:"id" json:"id" binding:"required"`
+	Token string `form:"token" json:"token" binding:"required"`
 }
 
 func (f *VerifyEmail) Bind(ctx *gin.Context) model.RetVal {
