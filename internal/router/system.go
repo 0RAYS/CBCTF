@@ -241,7 +241,7 @@ func UpdateSystem(ctx *gin.Context) {
 }
 
 func RestartSystem(ctx *gin.Context) {
-	ctx.Set(middleware.CTXEventTypeKey, model.UpdateSettingEventType)
+	ctx.Set(middleware.CTXEventTypeKey, model.RestartSystemEventType)
 	proc, err := os.FindProcess(os.Getpid())
 	if err != nil {
 		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
