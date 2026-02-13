@@ -29,7 +29,10 @@ const (
 
 	UpdateContestChallengeFlagEventType = "update_contest_challenge_flag"
 
-	UpdateCheatEventType = "update_cheat"
+	UpdateCheatEventType      = "update_cheat"
+	DeleteCheatEventType      = "delete_cheat"
+	DeleteAllCheatEventType   = "delete_all_cheat"
+	ManualCheckCheatEventType = "manual_check_cheat"
 
 	CreateNoticeEventType = "create_notice"
 	UpdateNoticeEventType = "update_notice"
@@ -81,18 +84,28 @@ const (
 )
 
 var EventTypes = []string{
-	LoginEventType, RegisterEventType, OauthLoginEventType, CreateAdminEventType, UpdateAdminEventType,
-	CreateUserEventType, UpdateUserEventType, DeleteUserEventType, CreateContestEventType, UpdateContestEventType,
-	DeleteContestEventType, CreateChallengeEventType, UpdateChallengeEventType, DeleteChallengeEventType,
-	UploadChallengeFileEventType, CreateContestChallengeEventType, UpdateContestChallengeEventType,
-	DeleteContestChallengeEventType, UpdateContestChallengeFlagEventType, UpdateCheatEventType, CreateNoticeEventType,
-	UpdateNoticeEventType, DeleteNoticeEventType, CreateOauthEventType, UpdateOauthEventType, DeleteOauthEventType,
-	CreateSmtpEventType, UpdateSmtpEventType, DeleteSmtpEventType, CreateWebhookEventType, UpdateWebhookEventType,
-	DeleteWebhookEventType, UpdateSettingEventType, RestartSystemEventType, ActivateEmailEventType, VerifyEmailEventType,
-	UploadPictureEventType, DeletePictureEventType, JoinTeamEventType, CreateTeamEventType, UpdateTeamEventType,
-	DeleteTeamEventType, LeaveTeamEventType, KickMemberEventType, InitChallengeEventType, ResetChallengeEventType,
+	LoginEventType, RegisterEventType, OauthLoginEventType,
+	CreateAdminEventType, UpdateAdminEventType,
+	CreateUserEventType, UpdateUserEventType, DeleteUserEventType,
+	CreateContestEventType, UpdateContestEventType, DeleteContestEventType,
+	CreateChallengeEventType, UpdateChallengeEventType, DeleteChallengeEventType, UploadChallengeFileEventType,
+	CreateContestChallengeEventType, UpdateContestChallengeEventType, DeleteContestChallengeEventType,
+	UpdateContestChallengeFlagEventType,
+	UpdateCheatEventType, DeleteCheatEventType, DeleteAllCheatEventType, ManualCheckCheatEventType,
+	CreateNoticeEventType, UpdateNoticeEventType, DeleteNoticeEventType,
+	CreateOauthEventType, UpdateOauthEventType, DeleteOauthEventType,
+	CreateSmtpEventType, UpdateSmtpEventType, DeleteSmtpEventType,
+	CreateWebhookEventType, UpdateWebhookEventType, DeleteWebhookEventType,
+	UpdateSettingEventType, RestartSystemEventType,
+	ActivateEmailEventType, VerifyEmailEventType,
+	UploadPictureEventType, DeletePictureEventType,
+	JoinTeamEventType, CreateTeamEventType, UpdateTeamEventType, DeleteTeamEventType,
+	LeaveTeamEventType, KickMemberEventType,
+	InitChallengeEventType, ResetChallengeEventType,
 	DownloadAttachmentEventType, PullImageEventType, StartVictimEventType, IncreaseVictimEventType, StopVictimEventType,
-	DownloadTrafficEventType, ReadFlagEventType, SubmitFlagEventType, UploadWriteUpEventType, DownloadWriteUpEventType,
+	DownloadTrafficEventType,
+	ReadFlagEventType, SubmitFlagEventType,
+	UploadWriteUpEventType, DownloadWriteUpEventType,
 	DownloadFileEventType,
 }
 
