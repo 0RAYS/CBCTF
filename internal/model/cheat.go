@@ -34,7 +34,7 @@ type Cheat struct {
 	ReasonType string        `gorm:"index" json:"reason_type"`
 	Type       string        `json:"type"`
 	Checked    bool          `json:"checked"`
-	Hash       string        `gorm:"type:varchar(32);uniqueIndex" json:"hash"`
+	Hash       string        `gorm:"type:varchar(32);index" json:"hash"`
 	Comment    string        `json:"comment"`
 	Time       time.Time     `json:"time"`
 	BaseModel
@@ -49,7 +49,7 @@ func (c Cheat) GetBaseModel() BaseModel {
 }
 
 func (c Cheat) UniqueFields() []string {
-	return []string{"id", "hash"}
+	return []string{"id"}
 }
 
 func (c Cheat) QueryFields() []string {

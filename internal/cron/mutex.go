@@ -37,3 +37,36 @@ func clearSubmissionMutex(c *cron.Cron) {
 		})
 	})))
 }
+
+// clearCheatMutex 定时任务清理作弊检测锁 db.CheatMutex
+func clearCheatMutex(c *cron.Cron) {
+	c.Schedule(cron.Every(10*time.Minute), cron.FuncJob(exec("ClearCheatMutex", func() {
+		contests := make(map[uint]model.Contest)
+		contestRepo := db.InitContestRepo(db.DB)
+		cheatRepo := db.InitCheatRepo(db.DB)
+		db.CheatMutex.Range(func(k, v any) bool {
+			hash := k.(string)
+			cheat, ret := cheatRepo.Get(db.GetOptions{
+				Conditions: map[string]any{"hash": hash},
+				Selects:    []string{"id", "contest_id"},
+			})
+			if !ret.OK {
+				db.CheatMutex.Delete(k)
+				return true
+			}
+			contest, ok := contests[cheat.ContestID]
+			if !ok {
+				contest, ret = contestRepo.GetByID(cheat.ContestID)
+				if !ret.OK {
+					db.CheatMutex.Delete(k)
+					return true
+				}
+				contests[cheat.ContestID] = contest
+			}
+			if !contest.IsRunning() {
+				db.CheatMutex.Delete(k)
+			}
+			return true
+		})
+	})))
+}
