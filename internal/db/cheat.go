@@ -5,13 +5,12 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"crypto/md5"
-	"errors"
 	"fmt"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
-	"github.com/go-sql-driver/mysql"
 	"gorm.io/gorm"
 )
 
@@ -97,19 +96,32 @@ func InitCheatRepo(tx *gorm.DB) *CheatRepo {
 	}
 }
 
+var CheatMutex sync.Map
+
 func (c *CheatRepo) Create(options CreateCheatOptions) (model.Cheat, model.RetVal) {
 	m := options.Convert2Model().(model.Cheat)
-	if res := c.DB.Model(&model.Cheat{}).Attrs(m).FirstOrCreate(&m, model.Cheat{Hash: m.Hash}); res.Error != nil {
-		var mysqlErr *mysql.MySQLError
-		if errors.As(res.Error, &mysqlErr) && mysqlErr.Number == 1062 {
-			// Duplicate key: fallback to query existing record
-			var existing model.Cheat
-			if err := c.DB.Where("hash = ?", m.Hash).First(&existing).Error; err == nil {
-				return existing, model.SuccessRetVal()
-			}
-		}
+
+	mu, _ := CheatMutex.LoadOrStore(m.Hash, &sync.Mutex{})
+	mu.(*sync.Mutex).Lock()
+	defer mu.(*sync.Mutex).Unlock()
+
+	var existing model.Cheat
+	if res := c.DB.Where("hash = ?", m.Hash).First(&existing); res.Error == nil {
+		return existing, model.SuccessRetVal()
+	}
+
+	if res := c.DB.Create(&m); res.Error != nil {
 		log.Logger.Warningf("Failed to create Cheat: %s", res.Error)
 		return model.Cheat{}, model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.Cheat{}.ModelName(), "Error": res.Error.Error()}}
 	}
 	return m, model.SuccessRetVal()
+}
+
+func (c *CheatRepo) DeleteByContestID(contestID uint) model.RetVal {
+	res := c.DB.Model(&model.Cheat{}).Where("contest_id = ?", contestID).Delete(&model.Cheat{})
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to delete Cheat: %s", res.Error)
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Cheat{}.ModelName(), "Error": res.Error.Error()}}
+	}
+	return model.SuccessRetVal()
 }

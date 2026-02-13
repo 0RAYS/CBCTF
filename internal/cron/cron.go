@@ -39,6 +39,7 @@ func Start() {
 	prepareGenerator(c)
 	clearSubmissionMutex(c)
 	checkCheat(c)
+	clearCheatMutex(c)
 	updateJWTSecret(c)
 	c.Start()
 }
