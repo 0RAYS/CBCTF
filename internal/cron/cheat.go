@@ -1,8 +1,8 @@
 package cron
 
 import (
-	"CBCTF/internal/cron/cheat"
 	"CBCTF/internal/db"
+	"CBCTF/internal/service"
 	"time"
 
 	"github.com/robfig/cron/v3"
@@ -20,10 +20,10 @@ func checkCheat(c *cron.Cron) {
 			if time.Now().Sub(contest.Start.Add(contest.Duration)) > 15*time.Minute {
 				continue
 			}
-			cheat.CheckWebReqIP(contest)
-			cheat.CheckVictimReqIP(contest)
-			cheat.CheckWrongFlag(contest)
-			cheat.CheckSameDevice(contest)
+			service.CheckWebReqIP(db.DB, contest)
+			service.CheckVictimReqIP(db.DB, contest)
+			service.CheckWrongFlag(db.DB, contest)
+			service.CheckSameDevice(db.DB, contest)
 		}
 	})
 	function()

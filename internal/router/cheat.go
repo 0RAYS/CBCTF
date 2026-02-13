@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
+	"CBCTF/internal/service"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -63,4 +64,33 @@ func UpdateCheat(ctx *gin.Context) {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	ctx.JSON(http.StatusOK, ret)
+}
+
+func DeleteCheat(all bool) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var ret model.RetVal
+		if all {
+			ctx.Set(middleware.CTXEventTypeKey, model.DeleteAllCheatEventType)
+			ret = db.InitCheatRepo(db.DB).DeleteByContestID(middleware.GetContest(ctx).ID)
+		} else {
+			ctx.Set(middleware.CTXEventTypeKey, model.DeleteCheatEventType)
+			cheat := middleware.GetCheat(ctx)
+			ret = db.InitCheatRepo(db.DB).Delete(cheat.ID)
+		}
+		if ret.OK {
+			ctx.Set(middleware.CTXEventSuccessKey, true)
+		}
+		ctx.JSON(http.StatusOK, ret)
+	}
+}
+
+func CheckCheat(ctx *gin.Context) {
+	ctx.Set(middleware.CTXEventTypeKey, model.ManualCheckCheatEventType)
+	contest := middleware.GetContest(ctx)
+	service.CheckWebReqIP(db.DB, contest)
+	service.CheckVictimReqIP(db.DB, contest)
+	service.CheckWrongFlag(db.DB, contest)
+	service.CheckSameDevice(db.DB, contest)
+	ctx.Set(middleware.CTXEventSuccessKey, true)
+	ctx.JSON(http.StatusOK, model.SuccessRetVal())
 }
