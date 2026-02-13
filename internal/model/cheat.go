@@ -26,6 +26,7 @@ const (
 )
 
 type Cheat struct {
+	ContestID  uint          `json:"contest_id"`
 	Model      CheatRefModel `gorm:"default:null;type:json" json:"model"`
 	Magic      string        `json:"magic"`
 	IP         string        `json:"ip"`

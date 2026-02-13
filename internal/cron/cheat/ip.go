@@ -68,10 +68,8 @@ func CheckWebReqIP(contest model.Contest) {
 				}
 			}
 			cheatRepo.Create(db.CreateCheatOptions{
-				Model: model.CheatRefModel{
-					model.User{}.ModelName(): userIDs,
-					contest.ModelName():      {contest.ID},
-				},
+				ContestID:  contest.ID,
+				Model:      model.CheatRefModel{model.User{}.ModelName(): userIDs},
 				IP:         ip,
 				Comment:    ip,
 				Reason:     fmt.Sprintf(model.ReqWebSameIP, fmt.Sprintf("User %s", strings.Join(str, ","))),
@@ -136,10 +134,8 @@ func CheckVictimReqIP(contest model.Contest) {
 				}
 			}
 			cheatRepo.Create(db.CreateCheatOptions{
-				Model: model.CheatRefModel{
-					model.Team{}.ModelName(): teamIDs,
-					contest.ModelName():      {contest.ID},
-				},
+				ContestID:  contest.ID,
+				Model:      model.CheatRefModel{model.Team{}.ModelName(): teamIDs},
 				IP:         ip,
 				Comment:    ip,
 				Reason:     fmt.Sprintf(model.ReqVictimSameIP, fmt.Sprintf("Team %s", strings.Join(str, ","))),

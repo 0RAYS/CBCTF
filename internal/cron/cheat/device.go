@@ -33,10 +33,8 @@ func CheckSameDevice(contest model.Contest) {
 				str = append(str, strconv.Itoa(int(uid)))
 			}
 			repo.Create(db.CreateCheatOptions{
-				Model: model.CheatRefModel{
-					model.User{}.ModelName(): userIDs,
-					contest.ModelName():      {contest.ID},
-				},
+				ContestID:  contest.ID,
+				Model:      model.CheatRefModel{model.User{}.ModelName(): userIDs},
 				Magic:      magic,
 				Reason:     fmt.Sprintf(model.SameDeviceMagic, fmt.Sprintf("User %s", strings.Join(str, ","))),
 				ReasonType: model.ReasonTypeSameDevice,

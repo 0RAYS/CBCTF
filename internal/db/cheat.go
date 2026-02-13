@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/go-sql-driver/mysql"
@@ -19,6 +20,7 @@ type CheatRepo struct {
 }
 
 type CreateCheatOptions struct {
+	ContestID  uint
 	Model      model.CheatRefModel
 	Magic      string
 	IP         string
@@ -36,18 +38,20 @@ func (c CreateCheatOptions) Convert2Model() model.Model {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
-	hash := ""
+	hash := fmt.Sprintf("%d-", c.ContestID)
 	for _, k := range keys {
 		ids := make([]uint, len(c.Model[k]))
 		copy(ids, c.Model[k])
 		sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
 		hash += fmt.Sprintf("%s-", k)
 		for _, id := range ids {
-			hash += fmt.Sprintf("%d,", id)
+			hash += fmt.Sprintf("%d-,", id)
 		}
+		hash = strings.TrimSuffix(hash, "-")
 	}
-	hash = fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%s%s-%s-%s-%s", hash, c.ReasonType, c.Magic, c.IP, c.Comment))))
+	hash = fmt.Sprintf("%x", md5.Sum([]byte(fmt.Sprintf("%s-%s-%s-%s-%s", hash, c.ReasonType, c.Magic, c.IP, c.Comment))))
 	return model.Cheat{
+		ContestID:  c.ContestID,
 		Model:      c.Model,
 		Magic:      c.Magic,
 		IP:         c.IP,
