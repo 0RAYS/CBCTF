@@ -9,6 +9,7 @@ import (
 func GetEmailResp(email model.Email) gin.H {
 	return gin.H{
 		"id":      email.ID,
+		"smtp_id": email.SmtpID,
 		"from":    email.From,
 		"to":      email.To,
 		"subject": email.Subject,
