@@ -102,6 +102,7 @@ type Config struct {
 			Whitelist []string `mapstructure:"whitelist" json:"whitelist"`
 		} `mapstructure:"ip" json:"ip"`
 	} `mapstructure:"cheat" json:"cheat"`
+	GeoCityDB string `mapstructure:"geocity_db" json:"geocity_db"`
 }
 
 var Env *Config

@@ -6,6 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type SearchIP struct {
+	IP string `form:"ip" json:"ip" binding:"required,ip|cidr"`
+}
+
 // ListModelsForm for get models list
 type ListModelsForm struct {
 	Offset int               `form:"offset" json:"offset" binding:"gte=0"`

@@ -57,4 +57,6 @@ type UpdateSettingForm struct {
 	NFSStorage *string `form:"nfs_storage" json:"nfs_storage"`
 
 	CheatIPWhitelist *[]string `form:"cheat_ip_whitelist" json:"cheat_ip_whitelist" binding:"omitempty,dive,ip|cidr"`
+
+	GeoCityDB *string `form:"geocity_db" json:"geocity_db" binding:"omitempty,file"`
 }

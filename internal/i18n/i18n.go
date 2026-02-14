@@ -3,6 +3,7 @@ package i18n
 import (
 	_ "embed"
 
+	"github.com/gin-gonic/gin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"go.yaml.in/yaml/v3"
 	"golang.org/x/text/language"
@@ -42,4 +43,11 @@ func Translate(lang, key string, args ...map[string]any) string {
 		return key
 	}
 	return msg
+}
+
+func DetectLanguage(ctx *gin.Context) string {
+	if lang := ctx.Query("lang"); lang != "" {
+		return lang
+	}
+	return ctx.GetHeader("Accept-Language")
 }

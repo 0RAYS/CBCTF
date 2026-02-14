@@ -167,6 +167,7 @@ func Init() *gin.Engine {
 		admin.POST("", CreateAdmin)
 
 		admin.GET("/search", Search)
+		admin.GET("/ip", SearchIP)
 
 		// 系统管理
 		adminSystem := admin.Group("/system")
