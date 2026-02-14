@@ -66,7 +66,12 @@ func (c ContestFlag) CalcScore(solvers int64) float64 {
 	case LinearScore:
 		calc = c.Score - float64(solvers)*c.Decay
 	case LogarithmicScore:
-		calc = (c.MinScore-c.Score)/(c.Decay*c.Decay)*float64(solvers*solvers) + c.Score
+		if c.Decay > 0 {
+			k := 5.0 / c.Decay
+			calc = (c.Score-c.MinScore)*math.Exp(-k*float64(solvers)) + c.MinScore
+		} else {
+			calc = c.MinScore
+		}
 	default:
 		calc = c.Score
 	}
