@@ -6,7 +6,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
-	"net"
+	"net/netip"
 	"slices"
 	"strings"
 	"time"
@@ -122,26 +122,26 @@ type NetAttachDef struct {
 
 func (v VPC) Value() (driver.Value, error) {
 	v.Subnets = slices.DeleteFunc(v.Subnets, func(s *Subnet) bool {
-		_, cidr, err := net.ParseCIDR(s.CIDRBlock)
+		cidr, err := netip.ParsePrefix(s.CIDRBlock)
 		if err != nil {
 			return true
 		}
-		if gateway := net.ParseIP(s.Gateway); gateway == nil || !cidr.Contains(gateway) {
+		if gateway, err := netip.ParseAddr(s.Gateway); err != nil || !cidr.Contains(gateway) {
 			return true
 		}
 		s.ExcludeIps = slices.DeleteFunc(s.ExcludeIps, func(ip string) bool {
-			if i := net.ParseIP(ip); i == nil || !cidr.Contains(i) {
+			if i, err := netip.ParseAddr(ip); err != nil || !cidr.Contains(i) {
 				return true
 			}
 			return false
 		})
 		if s.NatGateway != nil {
-			if lanIP := net.ParseIP(s.NatGateway.LanIP); lanIP == nil || !cidr.Contains(lanIP) {
+			if lanIP, err := netip.ParseAddr(s.NatGateway.LanIP); err != nil || !cidr.Contains(lanIP) {
 				return true
 			}
 			for _, eip := range s.NatGateway.EIPs {
 				eip.DNats = slices.DeleteFunc(eip.DNats, func(d *DNat) bool {
-					if i := net.ParseIP(d.InternalIP); i == nil || !cidr.Contains(i) {
+					if i, err := netip.ParseAddr(d.InternalIP); err != nil || !cidr.Contains(i) {
 						return true
 					}
 					return false
@@ -171,7 +171,7 @@ type Endpoints []Endpoint
 
 func (e Endpoints) Value() (driver.Value, error) {
 	e = slices.DeleteFunc(e, func(e Endpoint) bool {
-		if net.ParseIP(e.IP) == nil {
+		if _, err := netip.ParseAddr(e.IP); err != nil {
 			return true
 		}
 		if e.Port < 0 || e.Port > 65535 {

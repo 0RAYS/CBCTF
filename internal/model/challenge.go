@@ -5,7 +5,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
-	"net"
+	"net/netip"
 	"slices"
 
 	netv1 "k8s.io/api/networking/v1"
@@ -132,16 +132,16 @@ func (n NetworkPolicies) Value() (driver.Value, error) {
 			if b.CIDR == "" {
 				return true
 			}
-			_, cidr, err := net.ParseCIDR(b.CIDR)
+			cidr, err := netip.ParsePrefix(b.CIDR)
 			if err != nil {
 				return true
 			}
 			b.Except = slices.DeleteFunc(b.Except, func(except string) bool {
-				_, exceptCidr, err := net.ParseCIDR(except)
+				exceptPrefix, err := netip.ParsePrefix(except)
 				if err != nil {
 					return true
 				}
-				return !cidr.Contains(exceptCidr.IP)
+				return !cidr.Contains(exceptPrefix.Addr())
 			})
 			return false
 		})

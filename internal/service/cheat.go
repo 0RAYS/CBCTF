@@ -6,7 +6,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"fmt"
-	"net"
+	"net/netip"
 	"slices"
 	"strconv"
 	"strings"
@@ -126,14 +126,14 @@ func CheckWrongFlag(tx *gorm.DB, contest model.Contest) {
 }
 
 func checkWhitelistIP(ip string) bool {
-	addr := net.ParseIP(ip)
-	return addr == nil || slices.ContainsFunc(config.Env.Cheat.IP.Whitelist, func(cidr string) bool {
+	addr, err := netip.ParseAddr(ip)
+	return err != nil || slices.ContainsFunc(config.Env.Cheat.IP.Whitelist, func(cidr string) bool {
 		if strings.Contains(cidr, "/") {
-			_, network, err := net.ParseCIDR(cidr)
+			prefix, err := netip.ParsePrefix(cidr)
 			if err != nil {
 				return false
 			}
-			return network.Contains(addr)
+			return prefix.Contains(addr)
 		}
 		return cidr == ip
 	})

@@ -9,7 +9,7 @@ import (
 	"CBCTF/internal/utils"
 	"database/sql"
 	"fmt"
-	"net"
+	"net/netip"
 	"slices"
 	"strings"
 
@@ -119,12 +119,12 @@ func CreatePodDockerFlag(tx *gorm.DB, challenge model.Challenge, dockerCompose s
 		if len(network.Ipam.Config) < 0 {
 			return model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Empty IPAM"}}
 		}
-		_, subnet, err := net.ParseCIDR(network.Ipam.Config[0].Subnet)
+		subnet, err := netip.ParsePrefix(network.Ipam.Config[0].Subnet)
 		if err != nil {
 			return model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": err.Error()}}
 		}
-		gateway := net.ParseIP(network.Ipam.Config[0].Gateway)
-		if gateway == nil {
+		gateway, err := netip.ParseAddr(network.Ipam.Config[0].Gateway)
+		if err != nil {
 			return model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid gateway"}}
 		}
 		if !subnet.Contains(gateway) {
@@ -170,8 +170,8 @@ func CreatePodDockerFlag(tx *gorm.DB, challenge model.Challenge, dockerCompose s
 			if value == nil {
 				return model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Empty network name"}}
 			}
-			ip := net.ParseIP(value.Ipv4Address)
-			if ip == nil {
+			ip, err := netip.ParseAddr(value.Ipv4Address)
+			if err != nil {
 				return model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid ip"}}
 			}
 			network, ok := networksMap[key]
@@ -179,7 +179,7 @@ func CreatePodDockerFlag(tx *gorm.DB, challenge model.Challenge, dockerCompose s
 				log.Logger.Warningf("Network %s not found in networks", key)
 				return model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid network"}}
 			}
-			_, subnet, err := net.ParseCIDR(network.CIDR)
+			subnet, err := netip.ParsePrefix(network.CIDR)
 			if err != nil {
 				return model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": err.Error()}}
 			}
