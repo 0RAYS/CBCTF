@@ -8,13 +8,15 @@ import (
 
 func GetWebhookHistoryResp(history model.WebhookHistory) gin.H {
 	return gin.H{
-		"id":       history.ID,
-		"webhook":  history.Webhook.Name,
-		"event":    history.Event.Type,
-		"resp":     history.RespCode,
-		"duration": history.Duration.Milliseconds(),
-		"success":  history.Success,
-		"error":    history.Error,
-		"time":     history.CreatedAt,
+		"id":         history.ID,
+		"webhook_id": history.WebhookID,
+		"webhook":    history.Webhook.Name,
+		"event_id":   history.EventID,
+		"event":      history.Event.Type,
+		"resp":       history.RespCode,
+		"duration":   history.Duration.Milliseconds(),
+		"success":    history.Success,
+		"error":      history.Error,
+		"time":       history.CreatedAt,
 	}
 }

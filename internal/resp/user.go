@@ -15,10 +15,13 @@ func GetUserResp(user model.User, admin bool) gin.H {
 		"picture":     user.Picture,
 		"description": user.Description,
 		"verified":    user.Verified,
+		"score":       user.Score,
+		"solved":      user.Solved,
+		"provider":    user.Provider,
+		"hidden":      user.Hidden,
+		"banned":      user.Banned,
 	}
 	if admin {
-		data["hidden"] = user.Hidden
-		data["banned"] = user.Banned
 		data["teams"] = db.InitUserRepo(db.DB).CountAssociation(user, "Teams")
 		data["contests"] = db.InitUserRepo(db.DB).CountAssociation(user, "Contests")
 	}
