@@ -81,7 +81,7 @@ func (s Setting) UniqueFields() []string {
 }
 
 func (s Setting) QueryFields() []string {
-	return []string{"id", "key", "value"}
+	return []string{"id", "key"}
 }
 
 type SettingValue struct {

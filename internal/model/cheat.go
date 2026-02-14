@@ -53,7 +53,7 @@ func (c Cheat) UniqueFields() []string {
 }
 
 func (c Cheat) QueryFields() []string {
-	return []string{"id", "magic", "ip", "reason", "reason_type", "type", "checked", "hash", "comment", "time"}
+	return []string{"id", "magic", "ip", "reason", "reason_type", "type", "checked", "hash", "comment", "time", "contest_id"}
 }
 
 type CheatRefModel map[string][]uint

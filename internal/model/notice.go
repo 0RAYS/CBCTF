@@ -29,5 +29,5 @@ func (n Notice) UniqueFields() []string {
 }
 
 func (n Notice) QueryFields() []string {
-	return []string{"id", "title", "content"}
+	return []string{"id", "title", "content", "type", "contest_id"}
 }

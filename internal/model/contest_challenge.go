@@ -36,5 +36,5 @@ func (c ContestChallenge) UniqueFields() []string {
 }
 
 func (c ContestChallenge) QueryFields() []string {
-	return []string{}
+	return []string{"id", "contest_id", "challenge_id", "name", "category", "type", "hidden"}
 }

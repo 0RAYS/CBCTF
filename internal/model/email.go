@@ -23,5 +23,5 @@ func (e Email) UniqueFields() []string {
 }
 
 func (e Email) QueryFields() []string {
-	return []string{"id", "from", "to", "subject", "content"}
+	return []string{"id", "from", "to", "subject", "content", "success", "smtp_id"}
 }

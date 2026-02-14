@@ -40,5 +40,5 @@ func (t Team) UniqueFields() []string {
 }
 
 func (t Team) QueryFields() []string {
-	return []string{"id", "name", "description", "banned", "hidden"}
+	return []string{"id", "name", "description", "banned", "hidden", "contest_id"}
 }

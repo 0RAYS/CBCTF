@@ -34,5 +34,5 @@ func (w Webhook) UniqueFields() []string {
 }
 
 func (w Webhook) QueryFields() []string {
-	return []string{"id", "name", "url", "on"}
+	return []string{"id", "name", "url", "on", "method"}
 }
