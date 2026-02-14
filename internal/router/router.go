@@ -168,6 +168,7 @@ func Init() *gin.Engine {
 		admin.POST("/me/picture", UploadPicture("admin"))
 		admin.POST("", CreateAdmin)
 
+		admin.GET("/models", GetAllowQueryModels)
 		admin.GET("/search", Search)
 
 		// 系统管理
