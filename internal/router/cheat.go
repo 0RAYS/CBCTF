@@ -14,7 +14,7 @@ import (
 
 func GetCheats(ctx *gin.Context) {
 	var form dto.GetCheatsForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -48,7 +48,7 @@ func GetCheats(ctx *gin.Context) {
 
 func UpdateCheat(ctx *gin.Context) {
 	var form dto.UpdateCheatForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}

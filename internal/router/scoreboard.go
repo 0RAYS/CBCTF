@@ -15,7 +15,7 @@ import (
 
 func GetTeamRanking(ctx *gin.Context) {
 	var form dto.ListModelsForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -55,7 +55,7 @@ func GetTeamRanking(ctx *gin.Context) {
 
 func GetScoreboard(ctx *gin.Context) {
 	var form dto.ListModelsForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}

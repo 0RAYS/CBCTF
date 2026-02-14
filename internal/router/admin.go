@@ -20,7 +20,7 @@ func GetAdmin(ctx *gin.Context) {
 
 func AdminChangePassword(ctx *gin.Context) {
 	var form dto.ChangePasswordForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -34,7 +34,7 @@ func AdminChangePassword(ctx *gin.Context) {
 
 func UpdateAdmin(ctx *gin.Context) {
 	var form dto.UpdateAdminForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -48,7 +48,7 @@ func UpdateAdmin(ctx *gin.Context) {
 
 func CreateAdmin(ctx *gin.Context) {
 	var form dto.CreateAdminForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -64,7 +64,7 @@ func CreateAdmin(ctx *gin.Context) {
 
 func GetLogs(ctx *gin.Context) {
 	var form dto.GetLogsForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}

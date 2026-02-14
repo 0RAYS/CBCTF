@@ -156,7 +156,7 @@ func UploadWriteUp(ctx *gin.Context) {
 
 func GetFiles(ctx *gin.Context) {
 	var form dto.GetFilesForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -178,7 +178,7 @@ func GetFiles(ctx *gin.Context) {
 
 func GetWriteUPs(ctx *gin.Context) {
 	var form dto.ListModelsForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -199,7 +199,7 @@ func GetWriteUPs(ctx *gin.Context) {
 
 func DeleteFiles(ctx *gin.Context) {
 	var form dto.DeleteFileForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}

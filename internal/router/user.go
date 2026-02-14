@@ -25,7 +25,7 @@ func GetUser(ctx *gin.Context) {
 
 func GetUsers(ctx *gin.Context) {
 	var form dto.ListModelsForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -43,7 +43,7 @@ func GetUsers(ctx *gin.Context) {
 
 func CreateUser(ctx *gin.Context) {
 	var form dto.CreateUserForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -59,7 +59,7 @@ func CreateUser(ctx *gin.Context) {
 
 func ChangePwd(ctx *gin.Context) {
 	var form dto.ChangePasswordForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -78,7 +78,7 @@ func UpdateUser(ctx *gin.Context) {
 	)
 	if middleware.IsAdmin(ctx) {
 		var form dto.UpdateUserForm
-		if ret = form.Bind(ctx); !ret.OK {
+		if ret = dto.Bind(ctx, &form); !ret.OK {
 			ctx.JSON(http.StatusOK, ret)
 			return
 		}
@@ -87,7 +87,7 @@ func UpdateUser(ctx *gin.Context) {
 		ret = service.UpdateUser(db.DB, user, form)
 	} else {
 		var form dto.UpdateSelfForm
-		if ret = form.Bind(ctx); !ret.OK {
+		if ret = dto.Bind(ctx, &form); !ret.OK {
 			ctx.JSON(http.StatusOK, ret)
 			return
 		}
@@ -108,7 +108,7 @@ func DeleteUser(ctx *gin.Context) {
 	)
 	if !middleware.IsAdmin(ctx) {
 		var form dto.DeleteSelfForm
-		if ret = form.Bind(ctx); !ret.OK {
+		if ret = dto.Bind(ctx, &form); !ret.OK {
 			ctx.JSON(http.StatusOK, ret)
 			return
 		}

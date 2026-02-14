@@ -19,7 +19,7 @@ func GetSmtp(ctx *gin.Context) {
 
 func GetSmtps(ctx *gin.Context) {
 	var form dto.ListModelsForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -37,7 +37,7 @@ func GetSmtps(ctx *gin.Context) {
 
 func CreateSmtp(ctx *gin.Context) {
 	var form dto.CreateSmtpForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -58,7 +58,7 @@ func CreateSmtp(ctx *gin.Context) {
 
 func UpdateSmtp(ctx *gin.Context) {
 	var form dto.UpdateSmtpForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}

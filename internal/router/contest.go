@@ -29,7 +29,7 @@ func GetContest(ctx *gin.Context) {
 
 func GetContests(ctx *gin.Context) {
 	var form dto.ListModelsForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -57,7 +57,7 @@ func GetContests(ctx *gin.Context) {
 
 func CreateContest(ctx *gin.Context) {
 	var form dto.CreateContestForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -74,7 +74,7 @@ func CreateContest(ctx *gin.Context) {
 
 func UpdateContest(ctx *gin.Context) {
 	var form dto.UpdateContestForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}

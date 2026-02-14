@@ -1,24 +1,12 @@
 package dto
 
 import (
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-
-	"github.com/gin-gonic/gin"
 )
 
 type OauthCallbackForm struct {
 	Code  string `form:"code" json:"code" binding:"required"`
 	State string `form:"state" json:"state" binding:"required"`
-}
-
-func (f *OauthCallbackForm) Bind(ctx *gin.Context) model.RetVal {
-	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %s", err)
-		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
-	}
-	return model.SuccessRetVal()
 }
 
 type CreateOauthProviderForm struct {
@@ -37,14 +25,6 @@ type CreateOauthProviderForm struct {
 	DescriptionField string `form:"description_field" json:"description_field"`
 }
 
-func (f *CreateOauthProviderForm) Bind(ctx *gin.Context) model.RetVal {
-	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %s", err)
-		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
-	}
-	return model.SuccessRetVal()
-}
-
 type UpdateOauthProviderForm struct {
 	AuthURL          *string        `form:"auth_url" json:"auth_url" binding:"omitempty,url"`
 	TokenURL         *string        `form:"token_url" json:"token_url" binding:"omitempty,url"`
@@ -61,12 +41,4 @@ type UpdateOauthProviderForm struct {
 	DescriptionField *string        `form:"description_field" json:"description_field"`
 	On               *bool          `form:"on" json:"on"`
 	Picture          *model.FileURL `form:"picture" json:"picture"`
-}
-
-func (f *UpdateOauthProviderForm) Bind(ctx *gin.Context) model.RetVal {
-	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %s", err)
-		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
-	}
-	return model.SuccessRetVal()
 }

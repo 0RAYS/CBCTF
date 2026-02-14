@@ -1,8 +1,6 @@
 package dto
 
 import (
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 
 	"github.com/gin-gonic/gin"
@@ -13,14 +11,6 @@ type WarmUpImageForm struct {
 	PullPolicy string   `form:"pull_policy" json:"pull_policy" binding:"required,oneof=Always Never IfNotPresent"`
 }
 
-func (f *WarmUpImageForm) Bind(ctx *gin.Context) model.RetVal {
-	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %s", err)
-		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
-	}
-	return model.SuccessRetVal()
-}
-
 type GetContestVictimsForm struct {
 	Offset      int    `form:"offset" json:"offset" binding:"gte=0"`
 	Limit       int    `form:"limit" json:"limit" binding:"gte=0,lte=100"`
@@ -29,11 +19,7 @@ type GetContestVictimsForm struct {
 	UserID      uint   `form:"user_id" json:"user_id"`
 }
 
-func (f *GetContestVictimsForm) Bind(ctx *gin.Context) model.RetVal {
-	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %s", err)
-		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
-	}
+func (f *GetContestVictimsForm) Validate(ctx *gin.Context) model.RetVal {
 	if _, ok := ctx.GetQuery("limit"); !ok {
 		f.Limit = 10
 	}
@@ -47,23 +33,7 @@ type StopContestVictimsForm struct {
 	Victims []uint `form:"victims" json:"victims" binding:"required,dive,gt=0"`
 }
 
-func (f *StopContestVictimsForm) Bind(ctx *gin.Context) model.RetVal {
-	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %s", err)
-		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
-	}
-	return model.SuccessRetVal()
-}
-
 type StartContestVictimsForm struct {
 	Challenges []string `form:"challenges" json:"challenges" binding:"required,dive,uuid"`
 	Teams      []uint   `form:"teams" json:"teams" binding:"required,dive,gt=0"`
-}
-
-func (f *StartContestVictimsForm) Bind(ctx *gin.Context) model.RetVal {
-	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %s", err)
-		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
-	}
-	return model.SuccessRetVal()
 }
