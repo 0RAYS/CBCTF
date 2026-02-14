@@ -103,4 +103,5 @@ cheat:
       - 172.16.0.0/12
       - 100.64.0.0/10
 # GeoCityDB Path
+# https://github.com/wp-statistics/GeoLite2-City
 geocity_db: ./data/GeoLite2-City.mmdb
