@@ -2,7 +2,6 @@ package dto
 
 import (
 	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 
@@ -12,11 +11,7 @@ import (
 // CreateAdminForm for create admin
 type CreateAdminForm RegisterForm
 
-func (f *CreateAdminForm) Bind(ctx *gin.Context) model.RetVal {
-	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %s", err)
-		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
-	}
+func (f *CreateAdminForm) Validate(_ *gin.Context) model.RetVal {
 	if utils.CheckPassword(f.Password) < 2 {
 		return model.RetVal{Msg: i18n.Model.User.WeakPassword}
 	}
@@ -27,12 +22,4 @@ func (f *CreateAdminForm) Bind(ctx *gin.Context) model.RetVal {
 type UpdateAdminForm struct {
 	Name  *string `form:"name" json:"name" binding:"omitempty,min=1"`
 	Email *string `form:"email" json:"email" binding:"omitempty,email"`
-}
-
-func (f *UpdateAdminForm) Bind(ctx *gin.Context) model.RetVal {
-	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %s", err)
-		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
-	}
-	return model.SuccessRetVal()
 }

@@ -14,7 +14,7 @@ import (
 
 func SubmitFlag(ctx *gin.Context) {
 	var form dto.SubmitFlagForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -76,7 +76,7 @@ func GetContestFlag(ctx *gin.Context) {
 
 func UpdateContestFlag(ctx *gin.Context) {
 	var form dto.UpdateContestFlagForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}

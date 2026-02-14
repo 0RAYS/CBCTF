@@ -19,7 +19,7 @@ func GetWebhook(ctx *gin.Context) {
 
 func GetWebhooks(ctx *gin.Context) {
 	var form dto.ListModelsForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -37,7 +37,7 @@ func GetWebhooks(ctx *gin.Context) {
 
 func CreateWebhook(ctx *gin.Context) {
 	var form dto.CreateWebhookForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -61,7 +61,7 @@ func CreateWebhook(ctx *gin.Context) {
 
 func UpdateWebhook(ctx *gin.Context) {
 	var form dto.UpdateWebhookForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}

@@ -16,7 +16,7 @@ import (
 
 func GetEmails(ctx *gin.Context) {
 	var form dto.ListModelsForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -39,7 +39,7 @@ func GetEmails(ctx *gin.Context) {
 
 func VerifyEmail(ctx *gin.Context) {
 	var form dto.VerifyEmail
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}

@@ -165,7 +165,7 @@ func SystemConfig(ctx *gin.Context) {
 
 func UpdateSystem(ctx *gin.Context) {
 	var form dto.UpdateSettingForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}

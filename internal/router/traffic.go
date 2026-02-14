@@ -14,7 +14,7 @@ import (
 
 func GetTraffics(ctx *gin.Context) {
 	var form dto.GetTrafficForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}

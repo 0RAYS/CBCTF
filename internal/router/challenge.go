@@ -17,7 +17,7 @@ import (
 
 func GetChallenges(ctx *gin.Context) {
 	var form dto.GetChallengesForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -35,7 +35,7 @@ func GetChallenges(ctx *gin.Context) {
 
 func GetChallengeNotInContest(ctx *gin.Context) {
 	var form dto.GetChallengesForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -74,7 +74,7 @@ func GetChallenge(ctx *gin.Context) {
 
 func GetChallengeCategories(ctx *gin.Context) {
 	var form dto.GetCategoriesForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -88,7 +88,7 @@ func GetChallengeCategories(ctx *gin.Context) {
 
 func CreateChallenge(ctx *gin.Context) {
 	var form dto.CreateChallengeForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -112,7 +112,7 @@ func CreateChallenge(ctx *gin.Context) {
 
 func UpdateChallenge(ctx *gin.Context) {
 	var form dto.UpdateChallengeForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}

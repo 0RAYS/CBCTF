@@ -1,8 +1,6 @@
 package dto
 
 import (
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 
 	"github.com/gin-gonic/gin"
@@ -16,11 +14,7 @@ type ListModelsForm struct {
 	Search map[string]string `form:"search" json:"search"`
 }
 
-func (f *ListModelsForm) Bind(ctx *gin.Context) model.RetVal {
-	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %s", err)
-		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
-	}
+func (f *ListModelsForm) Validate(ctx *gin.Context) model.RetVal {
 	if _, ok := ctx.GetQuery("limit"); !ok {
 		f.Limit = 10
 	}
@@ -36,12 +30,4 @@ func (f *ListModelsForm) Bind(ctx *gin.Context) model.RetVal {
 type ChangePasswordForm struct {
 	OldPassword string `form:"old" json:"old" binding:"required,nefield=NewPassword"`
 	NewPassword string `form:"new" json:"new" binding:"required,nefield=OldPassword"`
-}
-
-func (f *ChangePasswordForm) Bind(ctx *gin.Context) model.RetVal {
-	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %s", err)
-		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
-	}
-	return model.SuccessRetVal()
 }

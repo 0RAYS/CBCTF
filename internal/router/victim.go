@@ -89,7 +89,7 @@ func StopVictim(ctx *gin.Context) {
 
 func GetVictims(ctx *gin.Context) {
 	var form dto.ListModelsForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}

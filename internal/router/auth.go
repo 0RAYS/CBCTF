@@ -20,7 +20,7 @@ import (
 
 func Register(ctx *gin.Context) {
 	var form dto.RegisterForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -51,7 +51,7 @@ func Register(ctx *gin.Context) {
 
 func Login(ctx *gin.Context) {
 	var form dto.LoginForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -78,7 +78,7 @@ func Login(ctx *gin.Context) {
 
 func AdminLogin(ctx *gin.Context) {
 	var form dto.LoginForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}

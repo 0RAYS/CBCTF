@@ -1,8 +1,6 @@
 package dto
 
 import (
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 
 	"github.com/gin-gonic/gin"
@@ -13,11 +11,7 @@ type GetLogsForm struct {
 	Limit  int `form:"limit" json:"limit" binding:"gte=0,lte=100"`
 }
 
-func (f *GetLogsForm) Bind(ctx *gin.Context) model.RetVal {
-	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %s", err)
-		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
-	}
+func (f *GetLogsForm) Validate(ctx *gin.Context) model.RetVal {
 	if _, ok := ctx.GetQuery("limit"); !ok {
 		f.Limit = 100
 	}

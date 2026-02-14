@@ -18,7 +18,7 @@ var DefaultPicture = map[string][]byte{
 
 func DefaultAssets(ctx *gin.Context) {
 	var form dto.GetAssetForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}

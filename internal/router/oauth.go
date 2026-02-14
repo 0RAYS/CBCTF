@@ -94,7 +94,7 @@ func OauthCallback(ctx *gin.Context) {
 		return
 	}
 	var form dto.OauthCallbackForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -192,7 +192,7 @@ func OauthCallback(ctx *gin.Context) {
 
 func GetOauthProviders(ctx *gin.Context) {
 	var form dto.ListModelsForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -215,7 +215,7 @@ func GetOauthProvider(ctx *gin.Context) {
 
 func CreateOauthProvider(ctx *gin.Context) {
 	var form dto.CreateOauthProviderForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
@@ -246,7 +246,7 @@ func CreateOauthProvider(ctx *gin.Context) {
 
 func UpdateOauthProvider(ctx *gin.Context) {
 	var form dto.UpdateOauthProviderForm
-	if ret := form.Bind(ctx); !ret.OK {
+	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}

@@ -1,8 +1,6 @@
 package dto
 
 import (
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 
@@ -17,11 +15,7 @@ type GetChallengesForm struct {
 	Category string `form:"category" json:"category"`
 }
 
-func (f *GetChallengesForm) Bind(ctx *gin.Context) model.RetVal {
-	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %s", err)
-		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
-	}
+func (f *GetChallengesForm) Validate(ctx *gin.Context) model.RetVal {
 	if _, ok := ctx.GetQuery("limit"); !ok {
 		f.Limit = 10
 	}
@@ -37,14 +31,6 @@ type GetCategoriesForm struct {
 	Type string `form:"type" json:"type" binding:"omitempty,oneof=static question dynamic pods"`
 }
 
-func (f *GetCategoriesForm) Bind(ctx *gin.Context) model.RetVal {
-	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %s", err)
-		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
-	}
-	return model.SuccessRetVal()
-}
-
 type CreateChallengeForm struct {
 	Name            string                `form:"name" json:"name" binding:"required"`
 	Type            string                `form:"type" json:"type" binding:"required,oneof=static question dynamic pods"`
@@ -57,11 +43,7 @@ type CreateChallengeForm struct {
 	NetworkPolicies model.NetworkPolicies `form:"network_policies" json:"network_policies" `
 }
 
-func (f *CreateChallengeForm) Bind(ctx *gin.Context) model.RetVal {
-	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %s", err)
-		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
-	}
+func (f *CreateChallengeForm) Validate(_ *gin.Context) model.RetVal {
 	f.Category = utils.ToTitle(f.Category)
 	return model.SuccessRetVal()
 }
@@ -80,11 +62,7 @@ type UpdateChallengeForm struct {
 	} `form:"flags" json:"flags"`
 }
 
-func (f *UpdateChallengeForm) Bind(ctx *gin.Context) model.RetVal {
-	if err := ctx.ShouldBind(f); err != nil {
-		log.Logger.Debugf("Failed to bind form: %s", err)
-		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
-	}
+func (f *UpdateChallengeForm) Validate(_ *gin.Context) model.RetVal {
 	if f.Category != nil {
 		f.Category = utils.Ptr(utils.ToTitle(*f.Category))
 	}
