@@ -3,11 +3,11 @@ module CBCTF
 go 1.25.7
 
 ignore (
-	./volumes
 	./data
-	./uploads
-	./logs
 	./frontend/dist
+	./logs
+	./uploads
+	./volumes
 )
 
 require (
