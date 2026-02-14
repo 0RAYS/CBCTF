@@ -1,6 +1,6 @@
 module CBCTF
 
-go 1.25.0
+go 1.25.7
 
 require (
 	github.com/JBNRZ/kubeovn-api v1.15.4
