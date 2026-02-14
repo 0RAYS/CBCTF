@@ -10,6 +10,10 @@ type Email struct {
 	BaseModel
 }
 
+func (e Email) TableName() string {
+	return "emails"
+}
+
 func (e Email) ModelName() string {
 	return "Email"
 }

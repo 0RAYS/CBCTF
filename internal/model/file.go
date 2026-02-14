@@ -25,6 +25,10 @@ type File struct {
 	BaseModel
 }
 
+func (f File) TableName() string {
+	return "files"
+}
+
 func (f File) ModelName() string {
 	return "File"
 }

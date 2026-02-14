@@ -17,6 +17,7 @@ type BaseModel struct {
 }
 
 type Model interface {
+	TableName() string
 	ModelName() string
 	GetBaseModel() BaseModel
 	UniqueFields() []string

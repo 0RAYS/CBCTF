@@ -31,6 +31,10 @@ type Docker struct {
 	BaseModel
 }
 
+func (d Docker) TableName() string {
+	return "dockers"
+}
+
 func (d Docker) ModelName() string {
 	return "Docker"
 }

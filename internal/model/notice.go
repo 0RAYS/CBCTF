@@ -16,6 +16,10 @@ type Notice struct {
 	BaseModel
 }
 
+func (n Notice) TableName() string {
+	return "notices"
+}
+
 func (n Notice) ModelName() string {
 	return "Notice"
 }

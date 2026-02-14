@@ -39,6 +39,10 @@ type ContestFlag struct {
 	BaseModel
 }
 
+func (c ContestFlag) TableName() string {
+	return "contest_flags"
+}
+
 func (c ContestFlag) ModelName() string {
 	return "ContestFlag"
 }

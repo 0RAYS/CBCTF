@@ -17,6 +17,10 @@ type Smtp struct {
 	BaseModel
 }
 
+func (s Smtp) TableName() string {
+	return "smtps"
+}
+
 func (s Smtp) ModelName() string {
 	return "Smtp"
 }

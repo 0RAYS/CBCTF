@@ -12,6 +12,10 @@ type Device struct {
 	BaseModel
 }
 
+func (d Device) TableName() string {
+	return "devices"
+}
+
 func (d Device) ModelName() string {
 	return "Device"
 }

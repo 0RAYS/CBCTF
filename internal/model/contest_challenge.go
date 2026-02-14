@@ -23,6 +23,10 @@ type ContestChallenge struct {
 	BaseModel
 }
 
+func (c ContestChallenge) TableName() string {
+	return "contest_challenges"
+}
+
 func (c ContestChallenge) ModelName() string {
 	return "ContestChallenge"
 }

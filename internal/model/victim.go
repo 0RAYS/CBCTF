@@ -31,6 +31,10 @@ type Victim struct {
 	BaseModel
 }
 
+func (v Victim) TableName() string {
+	return "victims"
+}
+
 func (v Victim) ModelName() string {
 	return "Victim"
 }

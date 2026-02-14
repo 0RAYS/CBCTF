@@ -27,6 +27,10 @@ type User struct {
 	BaseModel
 }
 
+func (u User) TableName() string {
+	return "users"
+}
+
 func (u User) ModelName() string {
 	return "User"
 }

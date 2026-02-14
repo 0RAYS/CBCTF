@@ -68,6 +68,9 @@ type Setting struct {
 	BaseModel
 }
 
+func (s Setting) TableName() string {
+	return "settings"
+}
 func (s Setting) ModelName() string {
 	return "Setting"
 }

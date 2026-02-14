@@ -27,6 +27,10 @@ type Team struct {
 	BaseModel
 }
 
+func (t Team) TableName() string {
+	return "teams"
+}
+
 func (t Team) ModelName() string {
 	return "Team"
 }
