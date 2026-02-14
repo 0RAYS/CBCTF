@@ -160,6 +160,8 @@ func Init() *gin.Engine {
 
 	admin := auth.Group("/admin", middleware.CheckRole(true))
 	{
+		admin.GET("/ip", SearchIP)
+
 		admin.GET("/me", GetAdmin)
 		admin.PUT("/me/password", AdminChangePassword)
 		admin.PUT("/me", UpdateAdmin)
@@ -167,7 +169,6 @@ func Init() *gin.Engine {
 		admin.POST("", CreateAdmin)
 
 		admin.GET("/search", Search)
-		admin.GET("/ip", SearchIP)
 
 		// 系统管理
 		adminSystem := admin.Group("/system")
