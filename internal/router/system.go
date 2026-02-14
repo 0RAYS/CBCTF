@@ -159,6 +159,8 @@ func SystemConfig(ctx *gin.Context) {
 		"nfs_storage": config.Env.NFS.Storage,
 
 		"cheat_ip_whitelist": config.Env.Cheat.IP.Whitelist,
+
+		"geocity_db": config.Env.GeoCityDB,
 	}
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
 }
@@ -223,6 +225,7 @@ func UpdateSystem(ctx *gin.Context) {
 		model.NFSStorageSettingKey: form.NFSStorage,
 
 		model.CheatIPWhitelistSettingKey: form.CheatIPWhitelist,
+		model.GeoCityDBSettingKey:        form.GeoCityDB,
 	}
 	repo := db.InitSettingRepo(db.DB)
 	for key, value := range kv {

@@ -64,7 +64,7 @@ func I18n(ctx *gin.Context) {
 		Trace string `json:"trace"`
 	}{
 		Code:  code,
-		Msg:   i18n.Translate(detectLanguage(ctx), old.Msg, old.Attr),
+		Msg:   i18n.Translate(i18n.DetectLanguage(ctx), old.Msg, old.Attr),
 		Data:  old.Data,
 		Trace: GetTraceID(ctx),
 	}
@@ -75,11 +75,4 @@ func I18n(ctx *gin.Context) {
 	}
 	defer w.body.Reset()
 	_, _ = w.ResponseWriter.Write(ret)
-}
-
-func detectLanguage(ctx *gin.Context) string {
-	if lang := ctx.Query("lang"); lang != "" {
-		return lang
-	}
-	return ctx.GetHeader("Accept-Language")
 }

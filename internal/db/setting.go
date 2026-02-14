@@ -132,6 +132,8 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 		{Key: model.NFSStorageSettingKey, Value: model.SettingValue{V: config.Env.NFS.Storage}},
 
 		{Key: model.CheatIPWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Cheat.IP.Whitelist}},
+
+		{Key: model.GeoCityDBSettingKey, Value: model.SettingValue{V: config.Env.GeoCityDB}},
 	} {
 		if _, ret := s.Create(CreateSettingOptions{
 			Key:   setting.Key,
@@ -278,6 +280,10 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 	}
 
 	if config.Env.Cheat.IP.Whitelist, ret = GetValue[[]string](s, model.CheatIPWhitelistSettingKey); !ret.OK {
+		return ret
+	}
+
+	if config.Env.GeoCityDB, ret = GetValue[string](s, model.GeoCityDBSettingKey); !ret.OK {
 		return ret
 	}
 	config.Tidy()

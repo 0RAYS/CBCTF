@@ -58,6 +58,8 @@ const (
 	NFSStorageSettingKey = "nfs.storage"
 
 	CheatIPWhitelistSettingKey = "cheat.ip.whitelist"
+
+	GeoCityDBSettingKey = "geocity_db"
 )
 
 type Setting struct {
