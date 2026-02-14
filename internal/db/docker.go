@@ -51,9 +51,8 @@ func InitDockerRepo(tx *gorm.DB) *DockerRepo {
 func (d *DockerRepo) Delete(idL ...uint) model.RetVal {
 	dockerL, _, ret := d.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},
-		Selects:    []string{"id"},
 		Preloads: map[string]GetOptions{
-			"ChallengeFlags": {Selects: []string{"id", "docker_id"}},
+			"ChallengeFlags": {},
 		},
 	})
 	if !ret.OK {

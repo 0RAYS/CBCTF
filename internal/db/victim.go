@@ -87,8 +87,7 @@ func (v *VictimRepo) HasAliveVictim(teamID, challengeID uint) (model.Victim, mod
 func (v *VictimRepo) Delete(idL ...uint) model.RetVal {
 	victimL, _, ret := v.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},
-		Selects:    []string{"id"},
-		Preloads:   map[string]GetOptions{"Pods": {Selects: []string{"id", "victim_id"}}},
+		Preloads:   map[string]GetOptions{"Pods": {}},
 	})
 	if !ret.OK {
 		if ret.Msg != i18n.Model.NotFound {

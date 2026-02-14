@@ -152,11 +152,7 @@ func (c *ContestFlagRepo) GetTeamSolvedContestFlags(teamIDL ...uint) ([]model.Co
 func (c *ContestFlagRepo) Delete(idL ...uint) model.RetVal {
 	contestFlagL, _, ret := c.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},
-		Selects:    []string{"id"},
-		Preloads: map[string]GetOptions{
-			"Submissions": {Selects: []string{"id", "contest_flag_id"}},
-			"TeamFlags":   {Selects: []string{"id", "contest_flag_id"}},
-		},
+		Preloads:   map[string]GetOptions{"Submissions": {}, "TeamFlags": {}},
 	})
 	if !ret.OK {
 		if ret.Msg != i18n.Model.NotFound {

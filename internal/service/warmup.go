@@ -78,9 +78,7 @@ func WarmUpContestChallengeImage(form dto.WarmUpImageForm) model.RetVal {
 func GetContestVictims(tx *gorm.DB, contest model.Contest, form dto.GetContestVictimsForm) ([]model.Victim, int64, model.RetVal) {
 	var challengeID uint
 	if form.ChallengeID != "" {
-		challenge, ret := db.InitChallengeRepo(tx).GetByRandID(form.ChallengeID, db.GetOptions{
-			Selects: []string{"id", "type"},
-		})
+		challenge, ret := db.InitChallengeRepo(tx).GetByRandID(form.ChallengeID)
 		if !ret.OK || challenge.Type != model.PodsChallengeType {
 			return nil, 0, ret
 		}
@@ -90,9 +88,9 @@ func GetContestVictims(tx *gorm.DB, contest model.Contest, form dto.GetContestVi
 		Conditions: map[string]any{"contest_id": contest.ID},
 		Preloads: map[string]db.GetOptions{
 			"Pods":             {},
-			"User":             {Selects: []string{"id", "name"}},
-			"Team":             {Selects: []string{"id", "name"}},
-			"ContestChallenge": {Selects: []string{"id", "name"}},
+			"User":             {},
+			"Team":             {},
+			"ContestChallenge": {},
 		},
 	}
 	if challengeID != 0 {
@@ -130,7 +128,7 @@ func StartContestVictims(tx *gorm.DB, contest model.Contest, form dto.StartConte
 	}
 	teams, _, ret := db.InitTeamRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID, "id": form.Teams},
-		Preloads:   map[string]db.GetOptions{"Contest": {Selects: []string{"id", "name"}}},
+		Preloads:   map[string]db.GetOptions{"Contest": {}},
 	})
 	if !ret.OK {
 		return ret

@@ -28,7 +28,6 @@ func prepareGenerator(c *cron.Cron) {
 		}
 		contests, _, ret := db.InitContestRepo(db.DB).List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"hidden": false},
-			Selects:    []string{"id", "start", "duration"},
 		})
 		if !ret.OK {
 			return
@@ -40,10 +39,7 @@ func prepareGenerator(c *cron.Cron) {
 			}
 			contestChallengeL, _, ret := contestChallengeRepo.List(-1, -1, db.GetOptions{
 				Conditions: map[string]any{"contest_id": contest.ID, "type": model.DynamicChallengeType},
-				Selects:    []string{"id", "challenge_id"},
-				Preloads: map[string]db.GetOptions{
-					"Challenge": {Selects: []string{"id", "name", "rand_id", "generator_image"}},
-				},
+				Preloads:   map[string]db.GetOptions{"Challenge": {}},
 			})
 			if !ret.OK {
 				continue

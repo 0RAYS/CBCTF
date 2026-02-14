@@ -63,7 +63,7 @@ func (s *SettingRepo) Update(key string, options UpdateSettingOptions) model.Ret
 			log.Logger.Warningf("Failed to update Setting: too many times failed due to optimistic lock")
 			return model.RetVal{Msg: i18n.Model.DeadLock, Attr: map[string]any{"Model": model.Setting{}.ModelName()}}
 		}
-		m, ret := s.Get(key, GetOptions{Selects: []string{"id", "version"}})
+		m, ret := s.Get(key)
 		if !ret.OK {
 			return ret
 		}

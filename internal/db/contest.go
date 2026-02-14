@@ -138,13 +138,12 @@ func InitContestRepo(tx *gorm.DB) *ContestRepo {
 func (c *ContestRepo) Delete(idL ...uint) model.RetVal {
 	contestL, _, ret := c.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},
-		Selects:    []string{"id", "name"},
 		Preloads: map[string]GetOptions{
-			"Teams":             {Selects: []string{"id", "contest_id"}},
-			"Notices":           {Selects: []string{"id", "contest_id"}},
-			"ContestChallenges": {Selects: []string{"id", "contest_id"}},
-			"ContestFlags":      {Selects: []string{"id", "contest_id"}},
-			"Submissions":       {Selects: []string{"id", "contest_id"}},
+			"Teams":             {},
+			"Notices":           {},
+			"ContestChallenges": {},
+			"ContestFlags":      {},
+			"Submissions":       {},
 		},
 	})
 	if !ret.OK {

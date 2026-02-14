@@ -150,7 +150,6 @@ func GetRankTimeline(ctx *gin.Context) {
 	for i, team := range teams {
 		submissions, _, ret := db.InitSubmissionRepo(db.DB).List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"solved": true, "team_id": team.ID},
-			Selects:    []string{"id", "score", "created_at"},
 		})
 		if !ret.OK {
 			ctx.JSON(http.StatusOK, ret)

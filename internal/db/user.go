@@ -119,11 +119,7 @@ func (u *UserRepo) GetByName(name string, optionsL ...GetOptions) (model.User, m
 func (u *UserRepo) Delete(idL ...uint) model.RetVal {
 	userL, _, ret := u.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},
-		Selects:    []string{"id", "name", "email", "provider_user_id"},
-		Preloads: map[string]GetOptions{
-			"Teams":       {Selects: []string{"id", "contest_id"}},
-			"Submissions": {Selects: []string{"id", "user_id"}},
-		},
+		Preloads:   map[string]GetOptions{"Teams": {}, "Submissions": {}},
 	})
 	if !ret.OK {
 		if ret.Msg != i18n.Model.NotFound {

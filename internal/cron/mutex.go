@@ -46,10 +46,7 @@ func clearCheatMutex(c *cron.Cron) {
 		cheatRepo := db.InitCheatRepo(db.DB)
 		db.CheatMutex.Range(func(k, v any) bool {
 			hash := k.(string)
-			cheat, ret := cheatRepo.Get(db.GetOptions{
-				Conditions: map[string]any{"hash": hash},
-				Selects:    []string{"id", "contest_id"},
-			})
+			cheat, ret := cheatRepo.Get(db.GetOptions{Conditions: map[string]any{"hash": hash}})
 			if !ret.OK {
 				db.CheatMutex.Delete(k)
 				return true

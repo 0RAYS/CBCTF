@@ -145,12 +145,11 @@ func (c *ChallengeRepo) ListChallengesNotInContest(contestID uint, limit, offset
 func (c *ChallengeRepo) Delete(randIDL ...string) model.RetVal {
 	challengeL, _, ret := c.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"rand_id": randIDL},
-		Selects:    []string{"id"},
 		Preloads: map[string]GetOptions{
-			"Dockers":           {Selects: []string{"id", "challenge_id"}},
-			"ChallengeFlags":    {Selects: []string{"id", "challenge_id"}},
-			"ContestChallenges": {Selects: []string{"id", "challenge_id"}},
-			"Submissions":       {Selects: []string{"id", "challenge_id"}},
+			"Dockers":           {},
+			"ChallengeFlags":    {},
+			"ContestChallenges": {},
+			"Submissions":       {},
 		},
 	})
 	if !ret.OK {
