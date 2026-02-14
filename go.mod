@@ -2,6 +2,14 @@ module CBCTF
 
 go 1.25.7
 
+ignore (
+	./volumes
+	./data
+	./uploads
+	./logs
+	./frontend/dist
+)
+
 require (
 	github.com/JBNRZ/kubeovn-api v1.15.4
 	github.com/compose-spec/compose-go v1.20.2
