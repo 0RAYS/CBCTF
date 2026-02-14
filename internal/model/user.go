@@ -40,5 +40,5 @@ func (u User) UniqueFields() []string {
 }
 
 func (u User) QueryFields() []string {
-	return []string{"id", "name", "email", "description", "verified", "banned", "hidden"}
+	return []string{"id", "name", "email", "description", "verified", "banned", "hidden", "provider"}
 }

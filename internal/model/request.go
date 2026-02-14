@@ -34,5 +34,5 @@ func (r Request) UniqueFields() []string {
 }
 
 func (r Request) QueryFields() []string {
-	return []string{"id", "ip", "user_agent", "user_id"}
+	return []string{"id", "ip", "user_agent", "user_id", "method", "path", "status", "magic"}
 }

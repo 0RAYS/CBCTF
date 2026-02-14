@@ -29,5 +29,5 @@ func (w WebhookHistory) UniqueFields() []string {
 }
 
 func (w WebhookHistory) QueryFields() []string {
-	return []string{"id", "success"}
+	return []string{"id", "success", "webhook_id", "resp_code"}
 }

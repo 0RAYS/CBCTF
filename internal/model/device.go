@@ -25,5 +25,5 @@ func (d Device) UniqueFields() []string {
 }
 
 func (d Device) QueryFields() []string {
-	return []string{}
+	return []string{"id", "user_id", "magic"}
 }

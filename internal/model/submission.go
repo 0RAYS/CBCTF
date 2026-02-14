@@ -35,5 +35,5 @@ func (s Submission) UniqueFields() []string {
 }
 
 func (s Submission) QueryFields() []string {
-	return []string{"id", "value", "solved", "ip"}
+	return []string{"id", "value", "solved", "ip", "user_id", "team_id", "contest_id", "challenge_id", "contest_challenge_id"}
 }

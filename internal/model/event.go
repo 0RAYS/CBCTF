@@ -132,5 +132,5 @@ func (e Event) UniqueFields() []string {
 }
 
 func (e Event) QueryFields() []string {
-	return []string{}
+	return []string{"id", "type", "success", "ip", "is_admin"}
 }
