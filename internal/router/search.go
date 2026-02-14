@@ -36,7 +36,7 @@ func SearchIP(ctx *gin.Context) {
 		data["city"] = ip.City.Names.SimplifiedChinese
 		data["subdivision"] = ""
 		for _, sub := range ip.Subdivisions {
-			data["subdivision"] = fmt.Sprintf("%s / %s", data["subdivision"], sub.Names.English)
+			data["subdivision"] = fmt.Sprintf("%s / %s", data["subdivision"], sub.Names.SimplifiedChinese)
 		}
 	} else {
 		data["country"] = ip.Country.Names.English
@@ -46,6 +46,7 @@ func SearchIP(ctx *gin.Context) {
 			data["subdivision"] = fmt.Sprintf("%s / %s", data["subdivision"], sub.Names.English)
 		}
 	}
+	data["subdivision"] = strings.TrimSpace(strings.Trim(data["subdivision"].(string), "/"))
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
 }
 
