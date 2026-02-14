@@ -46,7 +46,7 @@ func SearchIP(ctx *gin.Context) {
 			data["subdivision"] = fmt.Sprintf("%s / %s", data["subdivision"], sub.Names.English)
 		}
 	}
-	data["subdivision"] = strings.TrimSpace(strings.Trim(data["subdivision"].(string), "/"))
+	data["subdivision"] = strings.Trim(data["subdivision"].(string), " / ")
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
 }
 
