@@ -23,7 +23,7 @@ type CreateOptions interface {
 
 type GetOptions struct {
 	Conditions map[string]any
-	Search     map[string]any
+	Search     map[string]string
 	Preloads   map[string]GetOptions
 	Deleted    bool
 	Sort       []string
@@ -31,7 +31,7 @@ type GetOptions struct {
 
 type CountOptions struct {
 	Conditions map[string]any
-	Search     map[string]any
+	Search     map[string]string
 	Deleted    bool
 }
 
@@ -72,7 +72,7 @@ func applyGetOptions(tx *gorm.DB, options GetOptions) *gorm.DB {
 	}
 	if search := options.Search; len(search) > 0 {
 		for key, value := range search {
-			tx = tx.Where(fmt.Sprintf("%s LIKE ?", key), "%"+value.(string)+"%")
+			tx = tx.Where(fmt.Sprintf("%s LIKE ?", key), "%"+value+"%")
 		}
 	}
 	if preloads := options.Preloads; preloads != nil {
@@ -93,6 +93,21 @@ func applyGetOptions(tx *gorm.DB, options GetOptions) *gorm.DB {
 		for _, order := range columns {
 			tx = tx.Order(order)
 		}
+	}
+	return tx
+}
+
+func applyCountOptions(tx *gorm.DB, options CountOptions) *gorm.DB {
+	if conditions := options.Conditions; len(conditions) > 0 {
+		tx = tx.Where(conditions)
+	}
+	if search := options.Search; len(search) > 0 {
+		for key, value := range search {
+			tx = tx.Where(fmt.Sprintf("%s LIKE ?", key), "%"+value+"%")
+		}
+	}
+	if options.Deleted {
+		tx = tx.Unscoped()
 	}
 	return tx
 }
@@ -133,18 +148,7 @@ func (b *BaseRepo[M]) Count(optionsL ...CountOptions) (int64, model.RetVal) {
 	var count int64
 	res := b.DB.Model(new(M))
 	if len(optionsL) > 0 {
-		options := optionsL[0]
-		if conditions := options.Conditions; len(conditions) > 0 {
-			res = res.Where(conditions)
-		}
-		if search := options.Search; len(search) > 0 {
-			for key, value := range search {
-				res = res.Where(fmt.Sprintf("%s LIKE ?", key), "%"+value.(string)+"%")
-			}
-		}
-		if options.Deleted {
-			res = res.Unscoped()
-		}
+		res = applyCountOptions(res, optionsL[0])
 	}
 	if res = res.Count(&count); res.Error != nil {
 		log.Logger.Warningf("Failed to count %s: %s", M.ModelName(*new(M)), res.Error)

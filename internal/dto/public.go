@@ -2,6 +2,8 @@ package dto
 
 import (
 	"CBCTF/internal/model"
+	"slices"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -10,6 +12,7 @@ import (
 type ListModelsForm struct {
 	Offset int               `form:"offset" json:"offset" binding:"gte=0"`
 	Limit  int               `form:"limit" json:"limit" binding:"gte=0,lte=100"`
+	Model  string            `form:"model" json:"model"`
 	Sort   map[string]string `form:"sort" json:"sort"`
 	Search map[string]string `form:"search" json:"search"`
 }
@@ -21,8 +24,16 @@ func (f *ListModelsForm) Validate(ctx *gin.Context) model.RetVal {
 	if _, ok := ctx.GetQuery("offset"); !ok {
 		f.Offset = 0
 	}
-	f.Sort = ctx.QueryMap("sort")
-	f.Search = ctx.QueryMap("search")
+	f.Sort = make(map[string]string)
+	for k, v := range ctx.QueryMap("sort") {
+		if slices.Contains([]string{"desc", "asc"}, strings.ToLower(v)) {
+			f.Sort[strings.ToLower(k)] = strings.ToLower(v)
+		}
+	}
+	f.Search = make(map[string]string)
+	for k, v := range ctx.QueryMap("search") {
+		f.Search[strings.ToLower(k)] = v
+	}
 	return model.SuccessRetVal()
 }
 

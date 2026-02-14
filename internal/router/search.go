@@ -1,108 +1,71 @@
 package router
 
 import (
+	"CBCTF/internal/db"
+	"CBCTF/internal/dto"
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/model"
+	"fmt"
+	"net/http"
+	"slices"
+
 	"github.com/gin-gonic/gin"
 )
 
+var models = []model.Model{
+	model.Admin{}, model.Challenge{}, model.ChallengeFlag{}, model.Cheat{}, model.Container{}, model.Contest{},
+	model.ContestChallenge{}, model.ContestFlag{}, model.Device{}, model.Docker{}, model.Email{}, model.Event{},
+	model.File{}, model.Notice{}, model.Oauth{}, model.Pod{}, model.Request{}, model.Setting{}, model.Smtp{},
+	model.Submission{}, model.Team{}, model.TeamFlag{}, model.Traffic{}, model.User{}, model.Victim{}, model.Webhook{},
+	model.WebhookHistory{},
+}
+
+func GetAllowQueryModels(ctx *gin.Context) {
+	data := gin.H{}
+	for _, m := range models {
+		if len(m.QueryFields()) > 0 {
+			data[m.ModelName()] = m.QueryFields()
+		}
+	}
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
+}
+
 func Search(ctx *gin.Context) {
-	//var form dto.SearchForm
-	//if ret := form.Bind(ctx); !ret.OK {
-	//	ctx.JSON(http.StatusOK, ret)
-	//	return
-	//}
-	//query := ctx.Request.URL.Query()
-	//options := db.GetOptions{Search: make(map[string]any)}
-	//switch form.Model {
-	//case "user":
-	//	allowedKeys := []string{"name", "email", "id"}
-	//	for key, value := range query {
-	//		if slices.Contains(allowedKeys, key) {
-	//			if len(value) > 0 {
-	//				options.Search[key] = value[0]
-	//			}
-	//		}
-	//	}
-	//	users, count, ret := db.InitUserRepo(db.DB).List(form.Limit, form.Offset, options)
-	//	if !ok {
-	//		ctx.JSON(http.StatusOK, ret)
-	//		return
-	//	}
-	//	data := make([]gin.H, 0)
-	//	for _, user := range users {
-	//		data = append(data, resp.GetUserResp(user, true))
-	//	}
-	//	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"results": data, "count": count}})
-	//	return
-	//case "contest":
-	//	allowedKeys := []string{"name", "id"}
-	//	for key, value := range query {
-	//		if slices.Contains(allowedKeys, key) {
-	//			if len(value) > 0 {
-	//				options.Search[key] = value[0]
-	//			}
-	//		}
-	//	}
-	//	options.Preloads = map[string]db.GetOptions{
-	//		"Teams": {}, "Users": {}, "Notices": {},
-	//	}
-	//	contests, count, ret := db.InitContestRepo(db.DB).List(form.Limit, form.Offset, options)
-	//	if !ok {
-	//		ctx.JSON(http.StatusOK, ret)
-	//		return
-	//	}
-	//	data := make([]gin.H, 0)
-	//	for _, contest := range contests {
-	//		data = append(data, resp.GetContestResp(contest, true))
-	//	}
-	//	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"results": data, "count": count}})
-	//	return
-	//case "team":
-	//	allowedKeys := []string{"name", "id"}
-	//	for key, value := range query {
-	//		if slices.Contains(allowedKeys, key) {
-	//			if len(value) > 0 {
-	//				options.Search[key] = value[0]
-	//			}
-	//		}
-	//	}
-	//	options.Preloads = map[string]db.GetOptions{"Users": {}}
-	//	teams, count, ret := db.InitTeamRepo(db.DB).List(form.Limit, form.Offset, options)
-	//	if !ok {
-	//		ctx.JSON(http.StatusOK, ret)
-	//		return
-	//	}
-	//	data := make([]gin.H, 0)
-	//	for _, team := range teams {
-	//		data = append(data, resp.GetTeamResp(team))
-	//	}
-	//	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"results": data, "count": count}})
-	//	return
-	//case "challenge":
-	//	allowedKeys := []string{"name", "id", "category", "type"}
-	//	for key, value := range query {
-	//		if slices.Contains(allowedKeys, key) {
-	//			if key == "id" {
-	//				key = "rand_id"
-	//			}
-	//			if len(value) > 0 {
-	//				options.Search[key] = value[0]
-	//			}
-	//		}
-	//	}
-	//	options.Preloads = map[string]db.GetOptions{"ChallengeFlags": {}, "Dockers": {}}
-	//	challenges, count, ret := db.InitChallengeRepo(db.DB).List(form.Limit, form.Offset, options)
-	//	if !ok {
-	//		ctx.JSON(http.StatusOK, ret)
-	//		return
-	//	}
-	//	data := make([]gin.H, 0)
-	//	for _, challenge := range challenges {
-	//		data = append(data, resp.GetChallengeResp(challenge))
-	//	}
-	//	ctx.JSON(http.StatusOK, gin.H{"msg": msg, "data": gin.H{"results": data, "count": count}})
-	//	return
-	//default:
-	//	ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
-	//	return
-	//}
+	var form dto.ListModelsForm
+	if ret := dto.Bind(ctx, &form); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
+		return
+	}
+	var m model.Model
+	var fields []string
+	var found bool
+	for _, m = range models {
+		if fields = m.QueryFields(); len(fields) > 0 && m.ModelName() == form.Model {
+			found = true
+			break
+		}
+	}
+	if !found {
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": "Not allowed model"}})
+		return
+	}
+	options := db.GetOptions{Search: make(map[string]string), Sort: make([]string, 0)}
+	for key, value := range form.Search {
+		if !slices.Contains(fields, key) {
+			continue
+		}
+		options.Search[key] = value
+	}
+	for key, value := range form.Sort {
+		if !slices.Contains(fields, key) {
+			continue
+		}
+		options.Sort = append(options.Sort, fmt.Sprintf("%s %s", key, value))
+	}
+	ms, count, ret := db.Search(m, form.Limit, form.Offset, options)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
+		return
+	}
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"count": count, "models": ms}))
 }
