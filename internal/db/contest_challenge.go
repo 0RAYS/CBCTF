@@ -88,7 +88,6 @@ func InitContestChallengeRepo(tx *gorm.DB) *ContestChallengeRepo {
 func (c *ContestChallengeRepo) IsUniqueContestChallenge(contestID uint, challengeID uint) bool {
 	_, ret := c.Get(GetOptions{
 		Conditions: map[string]any{"contest_id": contestID, "challenge_id": challengeID},
-		Selects:    []string{"id"},
 	})
 	return !ret.OK
 }
@@ -109,11 +108,7 @@ func (c *ContestChallengeRepo) ListCategories(contestID uint, t string) ([]strin
 func (c *ContestChallengeRepo) Delete(idL ...uint) model.RetVal {
 	contestChallengeL, _, ret := c.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},
-		Selects:    []string{"id"},
-		Preloads: map[string]GetOptions{
-			"ContestFlags": {Selects: []string{"id", "contest_challenge_id"}},
-			"Submissions":  {Selects: []string{"id", "contest_challenge_id"}},
-		},
+		Preloads:   map[string]GetOptions{"ContestFlags": {}, "Submissions": {}},
 	})
 	if !ret.OK {
 		if ret.Msg != i18n.Model.NotFound {

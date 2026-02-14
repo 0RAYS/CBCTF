@@ -10,9 +10,7 @@ import (
 
 func checkCheat(c *cron.Cron) {
 	function := exec("CheckCheat", func() {
-		contests, _, ret := db.InitContestRepo(db.DB).List(-1, -1, db.GetOptions{
-			Selects: []string{"id", "start", "duration"},
-		})
+		contests, _, ret := db.InitContestRepo(db.DB).List(-1, -1)
 		if !ret.OK {
 			return
 		}

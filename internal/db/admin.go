@@ -89,10 +89,7 @@ func (a *AdminRepo) InitAdmin() model.RetVal {
 }
 
 func (a *AdminRepo) Delete(idL ...uint) model.RetVal {
-	adminL, _, ret := a.List(-1, -1, GetOptions{
-		Conditions: map[string]any{"id": idL},
-		Selects:    []string{"id", "name", "email"},
-	})
+	adminL, _, ret := a.List(-1, -1, GetOptions{Conditions: map[string]any{"id": idL}})
 	if !ret.OK {
 		if ret.Msg != i18n.Model.NotFound {
 			return ret

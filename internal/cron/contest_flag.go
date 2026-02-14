@@ -26,12 +26,7 @@ func updateFlagScore(c *cron.Cron) {
 			contestChallengeRepo := db.InitContestChallengeRepo(db.DB)
 			contestChallengeL, _, ret := contestChallengeRepo.List(-1, -1, db.GetOptions{
 				Conditions: map[string]any{"contest_id": contest.ID},
-				Selects:    []string{"id"},
-				Preloads: map[string]db.GetOptions{
-					"ContestFlags": {
-						Selects: []string{"id", "contest_challenge_id", "solvers", "score", "current_score", "decay", "min_score", "score_type"},
-					},
-				},
+				Preloads:   map[string]db.GetOptions{"ContestFlags": {}},
 			})
 			if !ret.OK {
 				return

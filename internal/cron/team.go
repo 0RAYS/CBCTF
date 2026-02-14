@@ -10,9 +10,7 @@ import (
 
 func ClearEmptyTeam(c *cron.Cron) {
 	function := exec("ClearEmptyTeam", func() {
-		contests, _, ret := db.InitContestRepo(db.DB).List(-1, -1, db.GetOptions{
-			Selects: []string{"id", "start", "duration"},
-		})
+		contests, _, ret := db.InitContestRepo(db.DB).List(-1, -1)
 		if !ret.OK {
 			return
 		}
@@ -24,10 +22,7 @@ func ClearEmptyTeam(c *cron.Cron) {
 			contestIDL = append(contestIDL, contest.ID)
 		}
 		repo := db.InitTeamRepo(db.DB)
-		teams, _, ret := repo.List(-1, -1, db.GetOptions{
-			Conditions: map[string]any{"contest_id": contestIDL},
-			Selects:    []string{"id"},
-		})
+		teams, _, ret := repo.List(-1, -1, db.GetOptions{Conditions: map[string]any{"contest_id": contestIDL}})
 		if !ret.OK {
 			return
 		}

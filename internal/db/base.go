@@ -21,11 +21,9 @@ type CreateOptions interface {
 	Convert2Model() model.Model
 }
 
-// GetOptions 设置 Preload 时, 须确保对应关系的外键被 Select
 type GetOptions struct {
 	Conditions map[string]any
 	Search     map[string]any
-	Selects    []string
 	Preloads   map[string]GetOptions
 	Deleted    bool
 	Sort       []string
@@ -46,7 +44,7 @@ type DiffUpdateOptions interface {
 }
 
 func (b *BaseRepo[M]) IsUniqueKeyValue(id uint, key string, value any) bool {
-	m, ret := b.GetByUniqueKey(key, value, GetOptions{Selects: []string{"id"}})
+	m, ret := b.GetByUniqueKey(key, value)
 	return m.GetBaseModel().ID == id || !ret.OK
 }
 
@@ -76,12 +74,6 @@ func applyGetOptions(tx *gorm.DB, options GetOptions) *gorm.DB {
 		for key, value := range search {
 			tx = tx.Where(fmt.Sprintf("%s LIKE ?", key), "%"+value.(string)+"%")
 		}
-	}
-	if columns := options.Selects; len(columns) > 0 {
-		if !slices.Contains(columns, "id") {
-			columns = append([]string{"id"}, columns...)
-		}
-		tx = tx.Select(columns)
 	}
 	if preloads := options.Preloads; preloads != nil {
 		for rel, subOptions := range preloads {
@@ -207,7 +199,7 @@ func (b *BaseRepo[M]) Update(id uint, options UpdateOptions) model.RetVal {
 			log.Logger.Warningf("Failed to update %s: too many times failed due to optimistic lock", M.ModelName(*new(M)))
 			return model.RetVal{Msg: i18n.Model.DeadLock, Attr: map[string]any{"Model": M.ModelName(*new(M))}}
 		}
-		m, ret := b.GetByID(id, GetOptions{Selects: []string{"id", "version"}})
+		m, ret := b.GetByID(id)
 		if !ret.OK {
 			return ret
 		}

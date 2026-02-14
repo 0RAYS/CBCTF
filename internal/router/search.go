@@ -89,7 +89,7 @@ func Search(ctx *gin.Context) {
 	//		}
 	//	}
 	//	options.Preloads = map[string]db.GetOptions{
-	//		"Teams": {Selects: []string{"id"}}, "Users": {Selects: []string{"id"}}, "Notices": {Selects: []string{"id"}},
+	//		"Teams": {}, "Users": {}, "Notices": {},
 	//	}
 	//	contests, count, ret := db.InitContestRepo(db.DB).List(form.Limit, form.Offset, options)
 	//	if !ok {
@@ -111,9 +111,7 @@ func Search(ctx *gin.Context) {
 	//			}
 	//		}
 	//	}
-	//	options.Preloads = map[string]db.GetOptions{
-	//		"Users": {Selects: []string{"id"}},
-	//	}
+	//	options.Preloads = map[string]db.GetOptions{"Users": {}}
 	//	teams, count, ret := db.InitTeamRepo(db.DB).List(form.Limit, form.Offset, options)
 	//	if !ok {
 	//		ctx.JSON(http.StatusOK, ret)

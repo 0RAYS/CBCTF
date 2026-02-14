@@ -39,9 +39,7 @@ func InitPodRepo(tx *gorm.DB) *PodRepo {
 func (p *PodRepo) Delete(idL ...uint) model.RetVal {
 	podL, _, ret := p.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},
-		Preloads: map[string]GetOptions{
-			"Containers": {Selects: []string{"id", "pod_id"}},
-		},
+		Preloads:   map[string]GetOptions{"Containers": {}},
 	})
 	if !ret.OK {
 		if ret.Msg != i18n.Model.NotFound {

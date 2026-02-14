@@ -15,10 +15,7 @@ import (
 func updateTeamRanking(c *cron.Cron) {
 	function := exec("UpdateTeamRanking", func() {
 		repo := db.InitContestRepo(db.DB)
-		contests, _, ret := repo.List(-1, -1, db.GetOptions{
-			Selects:    []string{"id", "start", "duration", "blood"},
-			Conditions: map[string]any{"hidden": false},
-		})
+		contests, _, ret := repo.List(-1, -1, db.GetOptions{Conditions: map[string]any{"hidden": false}})
 		if !ret.OK {
 			return
 		}
@@ -39,7 +36,6 @@ func updateUserRanking(c *cron.Cron) {
 		userRepo := db.InitUserRepo(db.DB)
 		users, _, ret := userRepo.List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"banned": false},
-			Selects:    []string{"id"},
 		})
 		if !ret.OK {
 			return
@@ -69,7 +65,6 @@ func updateUserRanking(c *cron.Cron) {
 		}
 		contests, _, ret := db.InitContestRepo(db.DB).List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"id": contestIDL},
-			Selects:    []string{"id", "blood"},
 		})
 		if !ret.OK {
 			return

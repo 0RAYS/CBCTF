@@ -55,14 +55,12 @@ func CheckSameDevice(tx *gorm.DB, contest model.Contest) {
 // CheckWrongFlag 检查是否提交别队 flag
 func CheckWrongFlag(tx *gorm.DB, contest model.Contest) {
 	questions, _, ret := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
-		Selects:    []string{"id", "type"},
 		Conditions: map[string]any{"contest_id": contest.ID, "type": model.QuestionChallengeType},
 	})
 	if !ret.OK {
 		log.Logger.Warning("Failed to get questions challenge, CheckWrongFlag maybe wrong")
 	}
 	teams, _, ret := db.InitTeamRepo(tx).List(-1, -1, db.GetOptions{
-		Selects:    []string{"id"},
 		Conditions: map[string]any{"contest_id": contest.ID},
 	})
 	if !ret.OK {
@@ -74,14 +72,12 @@ func CheckWrongFlag(tx *gorm.DB, contest model.Contest) {
 	}
 	teamFlags, _, ret := db.InitTeamFlagRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"team_id": teamIDs},
-		Selects:    []string{"id", "team_id", "value"},
 	})
 	if !ret.OK {
 		return
 	}
 	submissions, _, ret := db.InitSubmissionRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"team_id": teamIDs},
-		Selects:    []string{"id", "team_id", "solved", "ip", "value", "contest_challenge_id", "created_at"},
 	})
 	if !ret.OK {
 		return
@@ -199,7 +195,6 @@ func CheckWebReqIP(tx *gorm.DB, contest model.Contest) {
 func CheckVictimReqIP(tx *gorm.DB, contest model.Contest) {
 	teams, _, ret := db.InitTeamRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID, "banned": false},
-		Selects:    []string{"id"},
 	})
 	if !ret.OK {
 		return

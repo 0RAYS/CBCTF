@@ -85,8 +85,7 @@ func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string,
 	images := make([]string, 0)
 	dynamicContestChallenges, _, ret := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"type": model.DynamicChallengeType, "contest_id": contest.ID},
-		Selects:    []string{"id", "challenge_id"},
-		Preloads:   map[string]db.GetOptions{"Challenge": {Selects: []string{"id", "generator_image"}}},
+		Preloads:   map[string]db.GetOptions{"Challenge": {}},
 	})
 	if !ret.OK {
 		return nil, ret
@@ -98,11 +97,9 @@ func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string,
 	}
 	podsContestChallenge, _, ret := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"type": model.PodsChallengeType, "contest_id": contest.ID},
-		Selects:    []string{"id", "challenge_id"},
 		Preloads: map[string]db.GetOptions{
 			"Challenge": {
-				Selects:  []string{"id"},
-				Preloads: map[string]db.GetOptions{"Dockers": {Selects: []string{"id", "challenge_id", "image"}}},
+				Preloads: map[string]db.GetOptions{"Dockers": {}},
 			},
 		},
 	})

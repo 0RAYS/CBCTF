@@ -145,11 +145,10 @@ func (t *TeamRepo) GetBy2ID(userID, contestID uint) (model.Team, model.RetVal) {
 func (t *TeamRepo) Delete(idL ...uint) model.RetVal {
 	teamL, _, ret := t.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},
-		Selects:    []string{"id", "name", "contest_id"},
 		Preloads: map[string]GetOptions{
-			"Users":       {Selects: []string{"id"}},
-			"Submissions": {Selects: []string{"id", "team_id"}},
-			"TeamFlags":   {Selects: []string{"id", "team_id"}},
+			"Users":       {},
+			"Submissions": {},
+			"TeamFlags":   {},
 		},
 	})
 	if !ret.OK {

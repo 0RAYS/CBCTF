@@ -140,9 +140,8 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 				// teamID == 0 时为测试靶机
 				if teamID > 0 {
 					teamFlag, ret := teamFlagRepo.Get(db.GetOptions{
-						Selects:    []string{"id", "challenge_flag_id", "value"},
 						Conditions: map[string]any{"team_id": teamID, "challenge_flag_id": challengeFlag.ID},
-						Preloads:   map[string]db.GetOptions{"ChallengeFlag": {Selects: []string{"id", "Name"}}},
+						Preloads:   map[string]db.GetOptions{"ChallengeFlag": {}},
 					})
 					if !ret.OK {
 						return model.Victim{}, ret
@@ -218,9 +217,8 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 				// team.ID == 0 时为测试靶机
 				if teamID > 0 {
 					teamFlag, ret := teamFlagRepo.Get(db.GetOptions{
-						Selects:    []string{"id", "challenge_flag_id", "value"},
 						Conditions: map[string]any{"team_id": teamID, "challenge_flag_id": challengeFlag.ID},
-						Preloads:   map[string]db.GetOptions{"ChallengeFlag": {Selects: []string{"id", "Name"}}},
+						Preloads:   map[string]db.GetOptions{"ChallengeFlag": {}},
 					})
 					if !ret.OK {
 						return model.Victim{}, ret
