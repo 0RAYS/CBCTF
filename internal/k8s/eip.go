@@ -6,7 +6,7 @@ import (
 	"CBCTF/internal/model"
 	"context"
 	"fmt"
-	"net"
+	"net/netip"
 	"strings"
 	"time"
 
@@ -49,8 +49,10 @@ func CreateEIP(ctx context.Context, options CreateEIPOptions) (*kubeovnv1.Iptabl
 		if !ret.OK {
 			return nil, ret
 		}
-		if eip != nil && net.ParseIP(eip.Spec.V4ip) != nil {
-			break
+		if eip != nil {
+			if _, err = netip.ParseAddr(eip.Spec.V4ip); err == nil {
+				break
+			}
 		}
 		time.Sleep(500 * time.Millisecond)
 	}

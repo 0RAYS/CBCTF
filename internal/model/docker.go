@@ -4,7 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
-	"net"
+	"net/netip"
 	"slices"
 )
 
@@ -62,19 +62,19 @@ func (n Networks) Value() (driver.Value, error) {
 		if n.CIDR == "" || n.Gateway == "" || n.IP == "" {
 			return true
 		}
-		_, cidr, err := net.ParseCIDR(n.CIDR)
+		cidr, err := netip.ParsePrefix(n.CIDR)
 		if err != nil {
 			return true
 		}
-		gateway := net.ParseIP(n.Gateway)
-		if gateway == nil || !cidr.Contains(gateway) {
+		gateway, err := netip.ParseAddr(n.Gateway)
+		if err != nil || !cidr.Contains(gateway) {
 			return true
 		}
 		if n.IP == "" {
 			return false
 		}
-		ip := net.ParseIP(n.IP)
-		if ip == nil {
+		ip, err := netip.ParseAddr(n.IP)
+		if err != nil {
 			return true
 		}
 		return !cidr.Contains(ip)

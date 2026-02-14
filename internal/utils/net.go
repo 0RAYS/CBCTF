@@ -2,33 +2,25 @@ package utils
 
 import (
 	"fmt"
-	"net"
+	"net/netip"
 )
 
 func GetLastIP(cidr string) (string, error) {
-	ip, ipNet, err := net.ParseCIDR(cidr)
+	prefix, err := netip.ParsePrefix(cidr)
 	if err != nil {
 		return "", err
 	}
-	ip4 := ip.To4()
-	if ip4 == nil {
+	if !prefix.Addr().Is4() {
 		return "", fmt.Errorf("only IPv4 is supported")
 	}
-	start := ipToInt(ip.Mask(ipNet.Mask))
-	ones, bits := ipNet.Mask.Size()
-	num := uint32(1) << uint32(bits-ones)
-	lastIP := intToIP(start + num - 2)
-	if !ipNet.Contains(lastIP) {
+	addr := prefix.Masked().Addr()
+	raw := addr.As4()
+	start := uint32(raw[0])<<24 | uint32(raw[1])<<16 | uint32(raw[2])<<8 | uint32(raw[3])
+	num := uint32(1) << (32 - prefix.Bits())
+	last := start + num - 2
+	lastAddr := netip.AddrFrom4([4]byte{byte(last >> 24), byte(last >> 16), byte(last >> 8), byte(last)})
+	if !prefix.Contains(lastAddr) {
 		return "", fmt.Errorf("no usable IPs in this CIDR")
 	}
-	return lastIP.String(), nil
-}
-
-func ipToInt(ip net.IP) uint32 {
-	ip4 := ip.To4()
-	return uint32(ip4[0])<<24 | uint32(ip4[1])<<16 | uint32(ip4[2])<<8 | uint32(ip4[3])
-}
-
-func intToIP(n uint32) net.IP {
-	return net.IPv4(byte(n>>24), byte(n>>16), byte(n>>8), byte(n))
+	return lastAddr.String(), nil
 }
