@@ -112,7 +112,7 @@ func CheckWrongFlag(tx *gorm.DB, contest model.Contest) {
 			}
 			cheatRepo.Create(db.CreateCheatOptions{
 				ContestID:  contest.ID,
-				Model:      model.CheatRefModel{model.Team{}.ModelName(): {submission.TeamID}},
+				Model:      model.CheatRefModel{model.Team{}.ModelName(): append(teamIDL, submission.TeamID)},
 				IP:         submission.IP,
 				Comment:    submission.Value,
 				Reason:     fmt.Sprintf(model.SubmitOtherTeamFlag, submission.TeamID, strings.Trim(tmp.String(), ", "), contest.ID),
