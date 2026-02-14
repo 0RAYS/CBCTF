@@ -119,6 +119,10 @@ type Event struct {
 	BaseModel
 }
 
+func (e Event) TableName() string {
+	return "events"
+}
+
 func (e Event) ModelName() string {
 	return "Event"
 }

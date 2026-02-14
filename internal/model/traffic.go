@@ -11,6 +11,10 @@ type Traffic struct {
 	BaseModel
 }
 
+func (t Traffic) TableName() string {
+	return "traffics"
+}
+
 func (t Traffic) ModelName() string {
 	return "Traffic"
 }

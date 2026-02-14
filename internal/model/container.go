@@ -15,6 +15,10 @@ type Container struct {
 	BaseModel
 }
 
+func (c Container) TableName() string {
+	return "containers"
+}
+
 func (c Container) ModelName() string {
 	return "Container"
 }

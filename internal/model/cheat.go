@@ -40,6 +40,10 @@ type Cheat struct {
 	BaseModel
 }
 
+func (c Cheat) TableName() string {
+	return "cheats"
+}
+
 func (c Cheat) ModelName() string {
 	return "Cheat"
 }

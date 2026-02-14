@@ -21,6 +21,10 @@ type Webhook struct {
 	BaseModel
 }
 
+func (w Webhook) TableName() string {
+	return "webhooks"
+}
+
 func (w Webhook) ModelName() string {
 	return "Webhook"
 }

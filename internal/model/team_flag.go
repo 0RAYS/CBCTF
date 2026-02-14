@@ -13,6 +13,10 @@ type TeamFlag struct {
 	BaseModel
 }
 
+func (t TeamFlag) TableName() string {
+	return "team_flags"
+}
+
 func (t TeamFlag) ModelName() string {
 	return "TeamFlag"
 }

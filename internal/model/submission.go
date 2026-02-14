@@ -22,6 +22,10 @@ type Submission struct {
 	BaseModel
 }
 
+func (s Submission) TableName() string {
+	return "submissions"
+}
+
 func (s Submission) ModelName() string {
 	return "Submission"
 }

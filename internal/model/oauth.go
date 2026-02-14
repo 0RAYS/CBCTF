@@ -19,6 +19,10 @@ type Oauth struct {
 	BaseModel
 }
 
+func (o Oauth) TableName() string {
+	return "oauths"
+}
+
 func (o Oauth) ModelName() string {
 	return "Oauth"
 }

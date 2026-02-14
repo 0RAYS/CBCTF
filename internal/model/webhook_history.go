@@ -16,6 +16,10 @@ type WebhookHistory struct {
 	BaseModel
 }
 
+func (w WebhookHistory) TableName() string {
+	return "webhook_histories"
+}
+
 func (w WebhookHistory) ModelName() string {
 	return "WebhookHistory"
 }

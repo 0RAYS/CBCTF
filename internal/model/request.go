@@ -21,6 +21,10 @@ type Request struct {
 	BaseModel
 }
 
+func (r Request) TableName() string {
+	return "requests"
+}
+
 func (r Request) ModelName() string {
 	return "Request"
 }

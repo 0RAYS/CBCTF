@@ -10,6 +10,10 @@ type Admin struct {
 	BaseModel
 }
 
+func (a Admin) TableName() string {
+	return "admins"
+}
+
 func (a Admin) ModelName() string {
 	return "Admin"
 }

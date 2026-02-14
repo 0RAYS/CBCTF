@@ -13,6 +13,10 @@ type Pod struct {
 	BaseModel
 }
 
+func (p Pod) TableName() string {
+	return "pods"
+}
+
 func (p Pod) ModelName() string {
 	return "Pod"
 }
