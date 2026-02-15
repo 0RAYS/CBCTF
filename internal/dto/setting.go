@@ -23,6 +23,8 @@ type UpdateSettingForm struct {
 	GinRateLimitWhitelist *[]string `form:"gin_ratelimit_whitelist" json:"gin_ratelimit_whitelist" binding:"omitempty,dive,ip|cidr"`
 	GinCORS               *[]string `form:"gin_cors" json:"gin_cors" binding:"omitempty,dive,url"`
 	GinLogWhitelist       *[]string `form:"gin_log_whitelist" json:"gin_log_whitelist" binding:"omitempty,dive,uri"`
+	GinJWTSecret          *string   `form:"gin_jwt_secret" json:"gin_jwt_secret" binding:"omitempty,min=11"`
+	GinJWTStatic          *bool     `form:"gin_jwt_static" json:"gin_jwt_static"`
 
 	GormMySQLHost   *string `form:"gorm_mysql_host" json:"gorm_mysql_host" binding:"omitempty,ip"`
 	GormMySQLPort   *uint   `form:"gorm_mysql_port" json:"gorm_mysql_port" binding:"omitempty,port"`

@@ -125,6 +125,8 @@ func SystemConfig(ctx *gin.Context) {
 		"gin_ratelimit_whitelist": config.Env.Gin.RateLimit.Whitelist,
 		"gin_cors":                config.Env.Gin.CORS,
 		"gin_log_whitelist":       config.Env.Gin.Log.Whitelist,
+		"gin_jwt_secret":          config.Env.Gin.JWT.Secret,
+		"gin_jwt_static":          config.Env.Gin.JWT.Static,
 
 		"gorm_mysql_host":   config.Env.Gorm.MySQL.Host,
 		"gorm_mysql_port":   config.Env.Gorm.MySQL.Port,
@@ -191,6 +193,8 @@ func UpdateSystem(ctx *gin.Context) {
 		model.GinRateLimitWhitelistSettingKey: form.GinRateLimitWhitelist,
 		model.GinCORSSettingKey:               form.GinCORS,
 		model.GinLogWhitelistSettingKey:       form.GinLogWhitelist,
+		model.GinJWTSecretSettingKey:          form.GinJWTSecret,
+		model.GinJWTStaticSettingKey:          form.GinJWTStatic,
 
 		model.GormMySQLHostSettingKey:   form.GormMySQLHost,
 		model.GormMySQLPortSettingKey:   form.GormMySQLPort,
@@ -235,7 +239,7 @@ func UpdateSystem(ctx *gin.Context) {
 		}
 	}
 	// 读取数据库配置至内存并覆写配置文件
-	if ret := db.InitSettingRepo(db.DB).ReadSettings(); !ret.OK {
+	if ret := repo.ReadSettings(); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
