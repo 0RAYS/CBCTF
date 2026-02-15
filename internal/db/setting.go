@@ -100,6 +100,8 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 		{Key: model.GinRateLimitWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Gin.RateLimit.Whitelist}},
 		{Key: model.GinCORSSettingKey, Value: model.SettingValue{V: config.Env.Gin.CORS}},
 		{Key: model.GinLogWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Gin.Log.Whitelist}},
+		{Key: model.GinJWTSecretSettingKey, Value: model.SettingValue{V: config.Env.Gin.JWT.Secret}},
+		{Key: model.GinJWTStaticSettingKey, Value: model.SettingValue{V: config.Env.Gin.JWT.Static}},
 
 		{Key: model.GormMySQLHostSettingKey, Value: model.SettingValue{V: config.Env.Gorm.MySQL.Host}},
 		{Key: model.GormMySQLPortSettingKey, Value: model.SettingValue{V: config.Env.Gorm.MySQL.Port}},
@@ -194,6 +196,12 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 		return ret
 	}
 	if config.Env.Gin.Log.Whitelist, ret = GetValue[[]string](s, model.GinLogWhitelistSettingKey); !ret.OK {
+		return ret
+	}
+	if config.Env.Gin.JWT.Secret, ret = GetValue[string](s, model.GinJWTSecretSettingKey); !ret.OK {
+		return ret
+	}
+	if config.Env.Gin.JWT.Static, ret = GetValue[bool](s, model.GinJWTStaticSettingKey); !ret.OK {
 		return ret
 	}
 

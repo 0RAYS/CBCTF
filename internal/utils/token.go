@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"CBCTF/internal/config"
 	"errors"
 	"time"
 
@@ -15,29 +16,31 @@ type Claims struct {
 	jwt.RegisteredClaims
 }
 
-var JWTSecret = UUID()
-
 // GenerateToken 生成token
 func GenerateToken(id uint, name string, isAdmin bool, magic string) (tokenString string, err error) {
+	if !config.Env.Gin.JWT.Static || config.Env.Gin.JWT.Secret == "" {
+		config.Env.Gin.JWT.Secret = UUID()
+		config.Env.Gin.JWT.Static = false
+	}
 	claim := Claims{
 		UserID:  id,
 		Name:    name,
 		IsAdmin: isAdmin,
 		X:       HashMagic(magic),
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(6 * time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
 		}}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-	tokenString, err = token.SignedString([]byte(JWTSecret))
+	tokenString, err = token.SignedString([]byte(config.Env.Gin.JWT.Secret))
 	return tokenString, err
 }
 
 // ParseToken 解析token
 func ParseToken(t string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(t, &Claims{}, func(token *jwt.Token) (any, error) {
-		return []byte(JWTSecret), nil
+		return []byte(config.Env.Gin.JWT.Secret), nil
 	})
 	if err != nil {
 		return nil, err

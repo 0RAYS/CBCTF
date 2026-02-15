@@ -35,6 +35,10 @@ gin:
     whitelist:
       - /metrics
       - /platform/*filepath
+  jwt:
+    # will be ignored when static is false, use cron job to update randomly
+    secret: 0rays-jbnrz
+    static: false
 gorm:
   mysql:
     host: 127.0.0.1

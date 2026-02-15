@@ -54,6 +54,10 @@ type Config struct {
 		Log  struct {
 			Whitelist []string `mapstructure:"whitelist" json:"whitelist"` // 日志白名单路径
 		} `mapstructure:"log" json:"log"`
+		JWT struct {
+			Secret string `mapstructure:"secret" json:"secret"`
+			Static bool   `mapstructure:"static" json:"static"`
+		} `mapstructure:"jwt" json:"jwt"`
 	} `mapstructure:"gin" json:"gin"`
 	Gorm struct {
 		MySQL struct {

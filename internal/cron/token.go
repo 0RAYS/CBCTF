@@ -1,6 +1,7 @@
 package cron
 
 import (
+	"CBCTF/internal/config"
 	"CBCTF/internal/utils"
 	"time"
 
@@ -8,7 +9,10 @@ import (
 )
 
 func updateJWTSecret(c *cron.Cron) {
-	c.Schedule(cron.Every(time.Hour*12), cron.FuncJob(exec("UpdateJWTSecret", func() {
-		utils.JWTSecret = utils.UUID()
+	c.Schedule(cron.Every(time.Hour*2), cron.FuncJob(exec("UpdateJWTSecret", func() {
+		if !config.Env.Gin.JWT.Static || config.Env.Gin.JWT.Secret == "" {
+			config.Env.Gin.JWT.Secret = utils.UUID()
+			config.Env.Gin.JWT.Static = false
+		}
 	})))
 }
