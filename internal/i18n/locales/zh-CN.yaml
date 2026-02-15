@@ -66,6 +66,7 @@ model:
     hasMuchTime: "距容器关闭20分钟内才可延长时间"
   webhook:
     invalidMethod: "不合法的 Webhook 请求方式"
+    notAllowedTarget: "不允许的 Webhook 地址"
 redis:
   setError: "缓存 {{.Key}} 失败: {{.Error}}"
   getError: "获取 {{.Key}} 缓存失败: {{.Error}}"

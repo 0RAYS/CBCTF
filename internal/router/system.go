@@ -162,6 +162,8 @@ func SystemConfig(ctx *gin.Context) {
 
 		"cheat_ip_whitelist": config.Env.Cheat.IP.Whitelist,
 
+		"webhook_blacklist": config.Env.Webhook.Blacklist,
+
 		"geocity_db": config.Env.GeoCityDB,
 	}
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
@@ -229,7 +231,10 @@ func UpdateSystem(ctx *gin.Context) {
 		model.NFSStorageSettingKey: form.NFSStorage,
 
 		model.CheatIPWhitelistSettingKey: form.CheatIPWhitelist,
-		model.GeoCityDBSettingKey:        form.GeoCityDB,
+
+		model.WebhookBlacklistSettingKey: form.WebhookBlacklist,
+
+		model.GeoCityDBSettingKey: form.GeoCityDB,
 	}
 	repo := db.InitSettingRepo(db.DB)
 	for key, value := range kv {

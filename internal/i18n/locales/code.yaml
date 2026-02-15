@@ -66,6 +66,7 @@ model:
     hasMuchTime: "400"
   webhook:
     invalidMethod: "400"
+    notAllowedTarget: "403"
 redis:
   setError: "500"
   getError: "500"

@@ -106,6 +106,9 @@ type Config struct {
 			Whitelist []string `mapstructure:"whitelist" json:"whitelist"`
 		} `mapstructure:"ip" json:"ip"`
 	} `mapstructure:"cheat" json:"cheat"`
+	Webhook struct {
+		Blacklist []string `mapstructure:"blacklist" json:"blacklist"`
+	} `mapstructure:"webhook" json:"webhook"`
 	GeoCityDB string `mapstructure:"geocity_db" json:"geocity_db"`
 }
 

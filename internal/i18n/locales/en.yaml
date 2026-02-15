@@ -66,6 +66,7 @@ model:
     hasMuchTime: "Can only extend time within 20 minutes before the container closes"
   webhook:
     invalidMethod: "Invalid Webhook request method"
+    notAllowedTarget: "Not allowed Webhook target"
 redis:
   setError: "Cache {{.Key}} error: {{.Error}}"
   getError: "Get {{.Key}} error: {{.Error}}"
