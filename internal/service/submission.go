@@ -11,7 +11,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// SolvedMutex 使用定时任务 cron.clearSubmissionMutex 清理锁
 var SolvedMutex sync.Map
 
 func Submit(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, contestChallenge model.ContestChallenge, form dto.SubmitFlagForm, ip string) (model.Submission, model.RetVal) {

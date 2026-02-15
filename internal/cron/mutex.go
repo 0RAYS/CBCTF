@@ -67,3 +67,32 @@ func clearCheatMutex(c *cron.Cron) {
 		})
 	})))
 }
+
+// clearJoinTeamMutes 定时任务清理作弊检测锁 service.JoinTeamMutex
+func clearJoinTeamMutes(c *cron.Cron) {
+	c.Schedule(cron.Every(10*time.Minute), cron.FuncJob(exec("ClearJoinTeamMutes", func() {
+		contests := make(map[uint]model.Contest)
+		contestRepo := db.InitContestRepo(db.DB)
+		teamRepo := db.InitTeamRepo(db.DB)
+		service.JoinTeamMutex.Range(func(k, v any) bool {
+			contestFlag, ret := teamRepo.GetByID(k.(uint))
+			if !ret.OK {
+				service.JoinTeamMutex.Delete(k)
+				return true
+			}
+			contest, ok := contests[contestFlag.ContestID]
+			if !ok {
+				contest, ret = contestRepo.GetByID(contestFlag.ContestID)
+				if !ret.OK {
+					service.JoinTeamMutex.Delete(k)
+					return true
+				}
+				contests[contestFlag.ContestID] = contest
+			}
+			if contest.IsOver() {
+				service.JoinTeamMutex.Delete(k)
+			}
+			return true
+		})
+	})))
+}

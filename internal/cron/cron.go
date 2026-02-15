@@ -40,6 +40,7 @@ func Start() {
 	clearSubmissionMutex(c)
 	checkCheat(c)
 	clearCheatMutex(c)
+	clearJoinTeamMutes(c)
 	updateJWTSecret(c)
 	c.Start()
 }
