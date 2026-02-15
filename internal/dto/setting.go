@@ -60,5 +60,7 @@ type UpdateSettingForm struct {
 
 	CheatIPWhitelist *[]string `form:"cheat_ip_whitelist" json:"cheat_ip_whitelist" binding:"omitempty,dive,ip|cidr"`
 
+	WebhookBlacklist *[]string `form:"webhook_blacklist" json:"webhook_blacklist" binding:"omitempty,dive,ip|cidr|hostname|hostname_port"`
+
 	GeoCityDB *string `form:"geocity_db" json:"geocity_db" binding:"omitempty,file"`
 }

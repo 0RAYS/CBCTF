@@ -83,7 +83,8 @@ type Victim struct {
 }
 
 type Webhook struct {
-	InvalidMethod string
+	InvalidMethod    string
+	NotAllowedTarget string
 }
 
 var Model = struct {
@@ -193,6 +194,7 @@ var Model = struct {
 		HasMuchTime: "model.victim.hasMuchTime",
 	},
 	Webhook: Webhook{
-		InvalidMethod: "model.webhook.invalidMethod",
+		InvalidMethod:    "model.webhook.invalidMethod",
+		NotAllowedTarget: "model.webhook.notAllowedTarget",
 	},
 }

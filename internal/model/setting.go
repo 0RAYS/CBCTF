@@ -61,6 +61,8 @@ const (
 
 	CheatIPWhitelistSettingKey = "cheat.ip.whitelist"
 
+	WebhookBlacklistSettingKey = "webhook.blacklist"
+
 	GeoCityDBSettingKey = "geocity_db"
 )
 
