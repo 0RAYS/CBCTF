@@ -8,6 +8,7 @@ import (
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/utils"
 	"math"
+	"sync"
 	"time"
 
 	"gorm.io/gorm"
@@ -44,6 +45,8 @@ func AdminUpdateTeam(tx *gorm.DB, team model.Team, form dto.AdminUpdateTeamForm)
 	})
 }
 
+var JoinTeamMutex sync.Map
+
 func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form dto.JoinTeamForm) (model.Team, model.RetVal) {
 	var (
 		repo      = db.InitTeamRepo(tx)
@@ -58,6 +61,9 @@ func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form dto.Join
 	if form.Captcha != team.Captcha {
 		return model.Team{}, model.RetVal{Msg: i18n.Model.Team.CaptchaWrong}
 	}
+	mu, _ := JoinTeamMutex.LoadOrStore(team.ID, &sync.Mutex{})
+	mu.(*sync.Mutex).Lock()
+	defer mu.(*sync.Mutex).Unlock()
 	if int(repo.CountAssociation(team, "Users"))+1 > contest.Size {
 		return model.Team{}, model.RetVal{Msg: i18n.Model.Team.Full}
 	}
