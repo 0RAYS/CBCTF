@@ -40,15 +40,14 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, contest model.Contest
 		return model.Submission{}, ret
 	}
 	if solved {
-		teamFlagRepo := db.InitTeamFlagRepo(tx)
-		if ret = teamFlagRepo.Update(teamFlag.ID, db.UpdateTeamFlagRepo{Solved: &solved}); !ret.OK {
-			return model.Submission{}, ret
-		}
 		// 正确时需要更新分数等信息, 加锁
 		mu, _ := SolvedMutex.LoadOrStore(contestFlag.ID, &sync.Mutex{})
 		mu.(*sync.Mutex).Lock()
 		defer mu.(*sync.Mutex).Unlock()
-
+		teamFlagRepo := db.InitTeamFlagRepo(tx)
+		if ret = teamFlagRepo.Update(teamFlag.ID, db.UpdateTeamFlagRepo{Solved: &solved}); !ret.OK {
+			return model.Submission{}, ret
+		}
 		_, currentScore, ret := CalcContestFlagState(tx, contestFlag)
 		if !ret.OK {
 			return model.Submission{}, ret
