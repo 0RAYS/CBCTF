@@ -10,19 +10,19 @@ import (
 // checkWSConnection 清理长时未通信的连接
 func checkWSConnection(c *cron.Cron) {
 	c.Schedule(cron.Every(5*time.Second), cron.FuncJob(func() {
+		websocket.AdminClientsMu.Lock()
 		for id, conn := range websocket.AdminClients {
 			if conn.LastActive.Add(10 * time.Second).Before(time.Now()) {
-				websocket.AdminClientsMu.Lock()
 				delete(websocket.AdminClients, id)
-				websocket.AdminClientsMu.Unlock()
 			}
 		}
+		websocket.AdminClientsMu.Unlock()
+		websocket.UserClientsMu.Lock()
 		for id, conn := range websocket.UserClients {
 			if conn.LastActive.Add(10 * time.Second).Before(time.Now()) {
-				websocket.UserClientsMu.Lock()
 				delete(websocket.UserClients, id)
-				websocket.UserClientsMu.Unlock()
 			}
 		}
+		websocket.UserClientsMu.Unlock()
 	}))
 }
