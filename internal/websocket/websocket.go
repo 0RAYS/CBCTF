@@ -18,6 +18,7 @@ var (
 	upgrader = websocket.Upgrader{
 		WriteBufferSize: 1024,
 		ReadBufferSize:  1024,
+		// 由 middleware.CORS 检查
 		CheckOrigin: func(r *http.Request) bool {
 			return true
 		},
