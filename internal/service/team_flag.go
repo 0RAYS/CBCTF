@@ -56,11 +56,11 @@ func CreateTeamFlag(tx *gorm.DB, team model.Team, contest model.Contest, contest
 			ChallengeFlagID: contestFlag.ChallengeFlagID,
 			Solved:          false,
 		}
-		if result := model.StaticFlag.FindAllStringSubmatch(contestFlag.Value, 1); len(result) > 0 {
+		if result := model.StaticFlagTmpl.FindAllStringSubmatch(contestFlag.Value, 1); len(result) > 0 {
 			options.Value = result[0][1]
-		} else if result = model.DynamicFlag.FindAllStringSubmatch(contestFlag.Value, 1); len(result) > 0 {
+		} else if result = model.DynamicFlagTmpl.FindAllStringSubmatch(contestFlag.Value, 1); len(result) > 0 {
 			options.Value = utils.RandFlag(result[0][1])
-		} else if result = model.UUIDFlag.FindAllStringSubmatch(contestFlag.Value, 1); len(result) > 0 {
+		} else if result = model.UUIDFlagTmpl.FindAllStringSubmatch(contestFlag.Value, 1); len(result) > 0 {
 			options.Value = utils.UUID()
 		} else {
 			options.Value = contestFlag.Value

@@ -8,21 +8,21 @@ import (
 )
 
 const (
-	Cheater    = "cheater"
-	Suspicious = "suspicious"
-	Pass       = "pass"
+	CheaterType    = "cheater"
+	SuspiciousType = "suspicious"
+	PassType       = "pass"
 
-	DifferentTokenMagic = "Device magic %s is different from token magic %s"
-	SameDeviceMagic     = "%s has the same Device magic"
-	ReqWebSameIP        = "%s request web with same IP"
-	ReqVictimSameIP     = "%s request victim with same IP"
-	SubmitOtherTeamFlag = "Team %d submitted flag of %s in Contest %d"
+	DifferentTokenMagicTmpl = "Device magic %s is different from token magic %s"
+	SameDeviceMagicTmpl     = "%s has the same Device magic"
+	ReqWebSameIPTmpl        = "%s request web with same IP"
+	ReqVictimSameIPTmpl     = "%s request victim with same IP"
+	SubmitOtherTeamFlagTmpl = "Team %d submitted flag of %s in Contest %d"
 
-	ReasonTypeSameDevice   = "same_device"
-	ReasonTypeSameWebIP    = "same_web_ip"
-	ReasonTypeSameVictimIP = "same_victim_ip"
-	ReasonTypeWrongFlag    = "wrong_flag"
-	ReasonTypeTokenMagic   = "token_magic"
+	ReasonTypeSameDeviceType   = "same_device"
+	ReasonTypeSameWebIPType    = "same_web_ip"
+	ReasonTypeSameVictimIPType = "same_victim_ip"
+	ReasonTypeWrongFlagType    = "wrong_flag"
+	ReasonTypeTokenMagicType   = "token_magic"
 )
 
 type Cheat struct {

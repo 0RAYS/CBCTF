@@ -47,9 +47,9 @@ func WSAuth(ctx *gin.Context) {
 						Model:      model.CheatRefModel{user.ModelName(): {user.ID}},
 						Magic:      magic,
 						IP:         ctx.ClientIP(),
-						Reason:     fmt.Sprintf(model.DifferentTokenMagic, magic, claims.X),
-						ReasonType: model.ReasonTypeTokenMagic,
-						Type:       model.Suspicious,
+						Reason:     fmt.Sprintf(model.DifferentTokenMagicTmpl, magic, claims.X),
+						ReasonType: model.ReasonTypeTokenMagicType,
+						Type:       model.SuspiciousType,
 						Checked:    false,
 						Time:       time.Now(),
 					})
