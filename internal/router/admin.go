@@ -5,7 +5,6 @@ import (
 	"CBCTF/internal/dto"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
-	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"net/http"
@@ -60,14 +59,4 @@ func CreateAdmin(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetAdminResp(admin)))
-}
-
-func GetLogs(ctx *gin.Context) {
-	var form dto.GetLogsForm
-	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
-		return
-	}
-	data, _ := redis.GetLogs(int64(form.Offset), int64(form.Offset+form.Limit))
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
 }
