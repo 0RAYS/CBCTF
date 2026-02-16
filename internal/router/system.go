@@ -105,6 +105,16 @@ func SystemStatus(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(ret))
 }
 
+func GetLogs(ctx *gin.Context) {
+	var form dto.GetLogsForm
+	if ret := dto.Bind(ctx, &form); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
+		return
+	}
+	data, _ := redis.GetLogs(int64(form.Offset), int64(form.Offset+form.Limit))
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
+}
+
 func SystemConfig(ctx *gin.Context) {
 	data := gin.H{
 		"host": config.Env.Host,
