@@ -9,10 +9,10 @@ import (
 
 // GetChallengesForm for get challenges list
 type GetChallengesForm struct {
-	Offset   int    `form:"offset" json:"offset" binding:"gte=0"`
-	Limit    int    `form:"limit" json:"limit" binding:"gte=0,lte=100"`
-	Type     string `form:"type" json:"type" binding:"omitempty,oneof=static question dynamic pods"`
-	Category string `form:"category" json:"category"`
+	Offset   int                 `form:"offset" json:"offset" binding:"gte=0"`
+	Limit    int                 `form:"limit" json:"limit" binding:"gte=0,lte=100"`
+	Type     model.ChallengeType `form:"type" json:"type" binding:"omitempty,oneof=static question dynamic pods"`
+	Category string              `form:"category" json:"category"`
 }
 
 func (f *GetChallengesForm) Validate(ctx *gin.Context) model.RetVal {
@@ -28,12 +28,12 @@ func (f *GetChallengesForm) Validate(ctx *gin.Context) model.RetVal {
 
 // GetCategoriesForm for get categories list
 type GetCategoriesForm struct {
-	Type string `form:"type" json:"type" binding:"omitempty,oneof=static question dynamic pods"`
+	Type model.ChallengeType `form:"type" json:"type" binding:"omitempty,oneof=static question dynamic pods"`
 }
 
 type CreateChallengeForm struct {
 	Name            string                `form:"name" json:"name" binding:"required"`
-	Type            string                `form:"type" json:"type" binding:"required,oneof=static question dynamic pods"`
+	Type            model.ChallengeType   `form:"type" json:"type" binding:"required,oneof=static question dynamic pods"`
 	Description     string                `form:"description" json:"description"`
 	Category        string                `form:"category" json:"category"`
 	Flags           model.StringList      `form:"flags" json:"flags"`

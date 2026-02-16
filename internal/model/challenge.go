@@ -11,11 +11,13 @@ import (
 	netv1 "k8s.io/api/networking/v1"
 )
 
+type ChallengeType string
+
 const (
-	StaticChallengeType   = "static"
-	QuestionChallengeType = "question"
-	DynamicChallengeType  = "dynamic"
-	PodsChallengeType     = "pods"
+	StaticChallengeType   ChallengeType = "static"
+	QuestionChallengeType ChallengeType = "question"
+	DynamicChallengeType  ChallengeType = "dynamic"
+	PodsChallengeType     ChallengeType = "pods"
 
 	AttachmentFileName = "attachment.zip"
 	GeneratorFileName  = "generator.zip"
@@ -34,7 +36,7 @@ type Challenge struct {
 	Name              string             `json:"name"`
 	Description       string             `json:"description"`
 	Category          string             `json:"category"`
-	Type              string             `json:"type"`
+	Type              ChallengeType      `json:"type"`
 	GeneratorImage    string             `json:"generator_image"`
 	Options           Options            `gorm:"type:json" json:"options"`
 	NetworkPolicies   NetworkPolicies    `gorm:"type:json" json:"network_policies"`

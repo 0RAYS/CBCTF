@@ -18,7 +18,7 @@ type CreateChallengeOptions struct {
 	Name            string
 	Description     string
 	Category        string
-	Type            string
+	Type            model.ChallengeType
 	GeneratorImage  string
 	Options         model.Options
 	NetworkPolicies model.NetworkPolicies
@@ -81,7 +81,7 @@ func (c *ChallengeRepo) GetByRandID(randID string, optionsL ...GetOptions) (mode
 	return c.GetByUniqueKey("rand_id", randID, optionsL...)
 }
 
-func (c *ChallengeRepo) ListCategories(t string) ([]string, model.RetVal) {
+func (c *ChallengeRepo) ListCategories(t model.ChallengeType) ([]string, model.RetVal) {
 	var categories = make([]string, 0)
 	res := c.DB.Model(&model.Challenge{})
 	if t != "" {
@@ -95,7 +95,7 @@ func (c *ChallengeRepo) ListCategories(t string) ([]string, model.RetVal) {
 	return categories, model.SuccessRetVal()
 }
 
-func (c *ChallengeRepo) ListChallengesNotInContest(contestID uint, limit, offset int, category, t string) ([]model.Challenge, int64, model.RetVal) {
+func (c *ChallengeRepo) ListChallengesNotInContest(contestID uint, limit, offset int, category string, t model.ChallengeType) ([]model.Challenge, int64, model.RetVal) {
 	whereClause := "contest_challenges.id IS NULL AND challenges.deleted_at IS NULL"
 	args := []any{contestID}
 

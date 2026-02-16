@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CheckChallengeType(t string) gin.HandlerFunc {
+func CheckChallengeType(t model.ChallengeType) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		if GetChallenge(ctx).Type != t {
 			ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Model.Challenge.InvalidType})
