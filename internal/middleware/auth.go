@@ -64,7 +64,7 @@ func CheckAuth(ctx *gin.Context) {
 							Model:      model.CheatRefModel{user.ModelName(): {user.ID}},
 							Magic:      magic,
 							IP:         ctx.ClientIP(),
-							Reason:     fmt.Sprintf(model.DifferentTokenMagicTmpl, magic, claims.X),
+							Reason:     fmt.Sprintf(string(model.DifferentTokenMagicTmpl), magic, claims.X),
 							ReasonType: model.ReasonTypeTokenMagicType,
 							Type:       model.SuspiciousType,
 							Checked:    false,

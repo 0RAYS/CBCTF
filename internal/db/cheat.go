@@ -24,8 +24,8 @@ type CreateCheatOptions struct {
 	Magic      string
 	IP         string
 	Reason     string
-	ReasonType string
-	Type       string
+	ReasonType model.CheatReasonType
+	Type       model.CheatType
 	Checked    bool
 	Comment    string
 	Time       time.Time
@@ -66,7 +66,7 @@ func (c CreateCheatOptions) Convert2Model() model.Model {
 
 type UpdateCheatRepo struct {
 	Reason  *string
-	Type    *string
+	Type    *model.CheatType
 	Checked *bool
 	Comment *string
 }
