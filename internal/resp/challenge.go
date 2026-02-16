@@ -24,7 +24,7 @@ func Dockers2Yaml(dockers []model.Docker, challengeFlags []model.ChallengeFlag) 
 			continue
 		}
 		switch flag.InjectType {
-		case model.VolumeInjectType:
+		case model.VolumeFlagInjectType:
 			if volumeFlags[flag.DockerID.V] == nil {
 				volumeFlags[flag.DockerID.V] = make(map[string]string)
 			}
@@ -35,7 +35,7 @@ func Dockers2Yaml(dockers []model.Docker, challengeFlags []model.ChallengeFlag) 
 					model.VolumeFlagLabelKey: flag.Value,
 				},
 			}
-		case model.EnvInjectType:
+		case model.EnvFlagInjectType:
 			if envFlags[flag.DockerID.V] == nil {
 				envFlags[flag.DockerID.V] = make(map[string]string)
 			}
