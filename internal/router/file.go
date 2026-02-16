@@ -110,9 +110,9 @@ func UploadChallengeFile(ctx *gin.Context) {
 	challenge := middleware.GetChallenge(ctx)
 	switch challenge.Type {
 	case model.StaticChallengeType, model.QuestionChallengeType, model.PodsChallengeType:
-		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), model.AttachmentFile)
+		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), model.AttachmentFileName)
 	case model.DynamicChallengeType:
-		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), model.GeneratorFile)
+		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), model.GeneratorFileName)
 	default:
 		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Model.Challenge.InvalidType})
 		return

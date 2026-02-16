@@ -17,8 +17,8 @@ const (
 	DynamicChallengeType  = "dynamic"
 	PodsChallengeType     = "pods"
 
-	AttachmentFile = "attachment.zip"
-	GeneratorFile  = "generator.zip"
+	AttachmentFileName = "attachment.zip"
+	GeneratorFileName  = "generator.zip"
 )
 
 // Challenge 题库中的挑战
@@ -67,12 +67,12 @@ func (c Challenge) BasicDir() string {
 
 // StaticPath 获取静态题目文件的路径
 func (c Challenge) StaticPath() string {
-	return fmt.Sprintf("%s/%s", c.BasicDir(), AttachmentFile)
+	return fmt.Sprintf("%s/%s", c.BasicDir(), AttachmentFileName)
 }
 
 // GeneratorPath 获取动态题目生成器的路径
 func (c Challenge) GeneratorPath() string {
-	return fmt.Sprintf("%s/%s", c.BasicDir(), GeneratorFile)
+	return fmt.Sprintf("%s/%s", c.BasicDir(), GeneratorFileName)
 }
 
 func (c Challenge) NFSBasicDir() string {
