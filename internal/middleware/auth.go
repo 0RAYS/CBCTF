@@ -43,7 +43,7 @@ func CheckAuth(ctx *gin.Context) {
 		}
 		magic := GetMagic(ctx)
 		if !utils.CompareMagic(magic, claims.X) {
-			if utils.CompareMagic(model.OauthLoginType, claims.X) {
+			if utils.CompareMagic(model.OauthLoginDeviceMagic, claims.X) {
 				token, err := utils.GenerateToken(user.ID, user.Name, false, magic)
 				if err != nil {
 					log.Logger.Warningf("Failed to generate token: %s", err)

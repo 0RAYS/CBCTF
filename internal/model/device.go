@@ -1,6 +1,6 @@
 package model
 
-const OauthLoginType = "oauth_login"
+const OauthLoginDeviceMagic = "oauth_login"
 
 // Device
 // BelongsTo User
