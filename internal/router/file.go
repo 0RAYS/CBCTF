@@ -41,7 +41,7 @@ func DownloadFile(eventType string) gin.HandlerFunc {
 
 func UploadPicture(v string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		file, err := ctx.FormFile(model.PictureFileType)
+		file, err := ctx.FormFile(string(model.PictureFileType))
 		if err != nil {
 			ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 			return
@@ -100,7 +100,7 @@ func UploadPicture(v string) gin.HandlerFunc {
 }
 
 func UploadChallengeFile(ctx *gin.Context) {
-	file, err := ctx.FormFile(model.ChallengeFileType)
+	file, err := ctx.FormFile(string(model.ChallengeFileType))
 	if err != nil {
 		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 		return
@@ -132,7 +132,7 @@ func UploadChallengeFile(ctx *gin.Context) {
 }
 
 func UploadWriteUp(ctx *gin.Context) {
-	file, err := ctx.FormFile(model.WriteupFileType)
+	file, err := ctx.FormFile(string(model.WriteupFileType))
 	if err != nil {
 		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
 		return

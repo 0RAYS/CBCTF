@@ -119,7 +119,7 @@ func GetTeam(ctx *gin.Context) model.Team {
 }
 
 // SetFile 保存 model.File 至上下文
-func SetFile(t string) gin.HandlerFunc {
+func SetFile(t model.FileType) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		type fileIDUri struct {
 			FileID string `uri:"fileID" binding:"required"`

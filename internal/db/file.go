@@ -21,7 +21,7 @@ type CreateFileOptions struct {
 	ModelID  uint
 	Suffix   string
 	Hash     string
-	Type     string
+	Type     model.FileType
 }
 
 func (c CreateFileOptions) Convert2Model() model.Model {
