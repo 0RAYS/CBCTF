@@ -214,7 +214,7 @@ func CreatePodDockerFlag(tx *gorm.DB, challenge model.Challenge, dockerCompose s
 					DockerID:    sql.Null[uint]{V: docker.ID, Valid: true},
 					Name:        k,
 					Value:       *v,
-					InjectType:  model.EnvInjectType,
+					InjectType:  model.EnvFlagInjectType,
 				})
 			}
 		}
@@ -225,7 +225,7 @@ func CreatePodDockerFlag(tx *gorm.DB, challenge model.Challenge, dockerCompose s
 					DockerID:    sql.Null[uint]{V: docker.ID, Valid: true},
 					Name:        volume.Source,
 					Value:       value,
-					InjectType:  model.VolumeInjectType,
+					InjectType:  model.VolumeFlagInjectType,
 					Path:        volume.Target,
 				})
 			}

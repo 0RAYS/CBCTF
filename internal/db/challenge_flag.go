@@ -18,7 +18,7 @@ type CreateChallengeFlagOptions struct {
 	DockerID    sql.Null[uint]
 	Name        string
 	Value       string
-	InjectType  string
+	InjectType  model.FlagInjectType
 	Path        string
 }
 
@@ -35,7 +35,7 @@ func (c CreateChallengeFlagOptions) Convert2Model() model.Model {
 
 type UpdateChallengeFlagOptions struct {
 	Value      *string
-	InjectType *string
+	InjectType *model.FlagInjectType
 	Path       *string
 }
 

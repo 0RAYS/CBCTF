@@ -149,9 +149,9 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 					value = teamFlag.Value
 				}
 				switch challengeFlag.InjectType {
-				case model.EnvInjectType:
+				case model.EnvFlagInjectType:
 					envFlagL[challengeFlag.Name] = value
-				case model.VolumeInjectType:
+				case model.VolumeFlagInjectType:
 					volumeFlagL[challengeFlag.Path] = value
 				default:
 					return model.Victim{}, model.RetVal{Msg: i18n.Model.ChallengeFlag.InvalidType}
@@ -226,9 +226,9 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 					value = teamFlag.Value
 				}
 				switch challengeFlag.InjectType {
-				case model.EnvInjectType:
+				case model.EnvFlagInjectType:
 					envFlagL[challengeFlag.Name] = value
-				case model.VolumeInjectType:
+				case model.VolumeFlagInjectType:
 					volumeFlagL[challengeFlag.Path] = value
 				default:
 					return model.Victim{}, model.RetVal{Msg: i18n.Model.ChallengeFlag.InvalidType}

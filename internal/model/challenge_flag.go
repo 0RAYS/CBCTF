@@ -5,13 +5,15 @@ import (
 	"regexp"
 )
 
+type FlagInjectType string
+
 var (
 	StaticFlagTmpl  = regexp.MustCompile(`static\{(.*?)}`)
 	UUIDFlagTmpl    = regexp.MustCompile(`uuid\{(.*?)}`)
 	DynamicFlagTmpl = regexp.MustCompile(`dynamic\{(.*?)}`)
 
-	EnvInjectType    = "env"
-	VolumeInjectType = "volume"
+	EnvFlagInjectType    FlagInjectType = "env"
+	VolumeFlagInjectType FlagInjectType = "volume"
 )
 
 // ChallengeFlag 题库中挑战的 flag 定义
@@ -25,7 +27,7 @@ type ChallengeFlag struct {
 	TeamFlags    []TeamFlag     `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Name         string         `json:"name"`
 	Value        string         `json:"value"`
-	InjectType   string         `json:"inject_type"`
+	InjectType   FlagInjectType `json:"inject_type"`
 	Path         string         `json:"path"`
 	BaseModel
 }
