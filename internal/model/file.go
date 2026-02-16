@@ -1,10 +1,12 @@
 package model
 
+type FileType string
+
 const (
-	ChallengeFileType = "file"
-	PictureFileType   = "picture"
-	WriteupFileType   = "writeup"
-	TrafficFileType   = "traffic"
+	ChallengeFileType FileType = "file"
+	PictureFileType   FileType = "picture"
+	WriteupFileType   FileType = "writeup"
+	TrafficFileType   FileType = "traffic"
 )
 
 // File
@@ -13,15 +15,15 @@ const (
 // BelongsTo Team
 // BelongsTo Contest
 type File struct {
-	Model    string `gorm:"not null" json:"model"`
-	ModelID  uint   `gorm:"not null" json:"model_id"`
-	RandID   string `gorm:"type:varchar(36);uniqueIndex;not null" json:"rand_id"`
-	Filename string `json:"filename"`
-	Size     int64  `json:"size"`
-	Path     string `json:"-"`
-	Suffix   string `json:"suffix"`
-	Hash     string `json:"hash"`
-	Type     string `json:"type"`
+	Model    string   `gorm:"not null" json:"model"`
+	ModelID  uint     `gorm:"not null" json:"model_id"`
+	RandID   string   `gorm:"type:varchar(36);uniqueIndex;not null" json:"rand_id"`
+	Filename string   `json:"filename"`
+	Size     int64    `json:"size"`
+	Path     string   `json:"-"`
+	Suffix   string   `json:"suffix"`
+	Hash     string   `json:"hash"`
+	Type     FileType `json:"type"`
 	BaseModel
 }
 
