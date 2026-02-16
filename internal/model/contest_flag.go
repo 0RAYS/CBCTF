@@ -5,10 +5,12 @@ import (
 	"time"
 )
 
+type ScoreType uint
+
 const (
-	StaticScore      uint = 0
-	LinearScore      uint = 1
-	LogarithmicScore uint = 2
+	StaticScoreType      ScoreType = 0
+	LinearScoreType      ScoreType = 1
+	LogarithmicScoreType ScoreType = 2
 
 	FirstBloodRate  float64 = 0.05
 	SecondBloodRate float64 = 0.03
@@ -33,7 +35,7 @@ type ContestFlag struct {
 	CurrentScore       float64          `gorm:"default:1000" json:"current_score"`
 	Decay              float64          `gorm:"default:50" json:"decay"`
 	MinScore           float64          `gorm:"default:100" json:"min_score"`
-	ScoreType          uint             `gorm:"default:0" json:"score_type"`
+	ScoreType          ScoreType        `gorm:"default:0" json:"score_type"`
 	Solvers            int64            `json:"solvers"`
 	Last               time.Time        `gorm:"default:null" json:"last"`
 	BaseModel
@@ -65,11 +67,11 @@ func (c ContestFlag) CalcScore(solvers int64) float64 {
 	}
 	var calc float64 = 0
 	switch c.ScoreType {
-	case StaticScore:
+	case StaticScoreType:
 		calc = c.Score
-	case LinearScore:
+	case LinearScoreType:
 		calc = c.Score - float64(solvers)*c.Decay
-	case LogarithmicScore:
+	case LogarithmicScoreType:
 		if c.Decay > 0 {
 			k := 5.0 / c.Decay
 			calc = (c.Score-c.MinScore)*math.Exp(-k*float64(solvers)) + c.MinScore

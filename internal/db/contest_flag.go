@@ -22,7 +22,7 @@ type CreateContestFlagOptions struct {
 	CurrentScore       float64
 	Decay              float64
 	MinScore           float64
-	ScoreType          uint
+	ScoreType          model.ScoreType
 	Solvers            int64
 	Last               time.Time
 }
@@ -49,7 +49,7 @@ type UpdateContestFlagOptions struct {
 	CurrentScore *float64
 	Decay        *float64
 	MinScore     *float64
-	ScoreType    *uint
+	ScoreType    *model.ScoreType
 	Solvers      *int64
 	Last         *time.Time
 }
