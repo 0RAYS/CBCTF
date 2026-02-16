@@ -18,7 +18,7 @@ type CreateContestChallengeOptions struct {
 	ChallengeID uint
 	Name        string
 	Description string
-	Type        string
+	Type        model.ChallengeType
 	Category    string
 	Hidden      bool
 	Attempt     int64
@@ -92,7 +92,7 @@ func (c *ContestChallengeRepo) IsUniqueContestChallenge(contestID uint, challeng
 	return !ret.OK
 }
 
-func (c *ContestChallengeRepo) ListCategories(contestID uint, t string) ([]string, model.RetVal) {
+func (c *ContestChallengeRepo) ListCategories(contestID uint, t model.ChallengeType) ([]string, model.RetVal) {
 	var categories []string
 	tx := c.DB.Model(&model.ContestChallenge{}).Where("contest_id = ?", contestID)
 	if t != "" {

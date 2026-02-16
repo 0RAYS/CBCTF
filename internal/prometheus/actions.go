@@ -4,9 +4,9 @@ import "CBCTF/internal/model"
 
 func UpdateFlagSubmissionMetrics(contest model.Contest, contestChallenge model.ContestChallenge, team model.Team, solved bool) {
 	if solved {
-		FlagSubmissionTotal.WithLabelValues(contest.Name, contestChallenge.Name, team.Name, "success", contestChallenge.Type).Inc()
+		FlagSubmissionTotal.WithLabelValues(contest.Name, contestChallenge.Name, team.Name, "success", string(contestChallenge.Type)).Inc()
 	} else {
-		FlagSubmissionTotal.WithLabelValues(contest.Name, contestChallenge.Name, team.Name, "failed", contestChallenge.Type).Inc()
+		FlagSubmissionTotal.WithLabelValues(contest.Name, contestChallenge.Name, team.Name, "failed", string(contestChallenge.Type)).Inc()
 	}
 }
 
