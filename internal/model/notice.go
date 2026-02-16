@@ -1,9 +1,11 @@
 package model
 
+type NoticeType string
+
 const (
-	NoticeNormalTypeNormal       = "normal"
-	NoticeImportantTypeImportant = "important"
-	NoticeUpdateTypeUpdate       = "update"
+	NoticeNormalType    NoticeType = "normal"
+	NoticeImportantType NoticeType = "important"
+	NoticeUpdateType    NoticeType = "update"
 )
 
 // Notice
