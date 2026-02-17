@@ -95,6 +95,15 @@ func Init() {
 	if ret := InitSettingRepo(DB).InitSettings(); !ret.OK {
 		log.Logger.Fatalf("Failed to init settings: %s %v", ret.Msg, ret.Attr)
 	}
+	if ret := InitPermissionRepo(DB).InitPermissions(); !ret.OK {
+		log.Logger.Fatalf("Failed to init permissions: %s %v", ret.Msg, ret.Attr)
+	}
+	if ret := InitRoleRepo(DB).InitDefaultRoles(); !ret.OK {
+		log.Logger.Fatalf("Failed to init default roles: %s %v", ret.Msg, ret.Attr)
+	}
+	if ret := InitGroupRepo(DB).InitDefaultGroups(); !ret.OK {
+		log.Logger.Fatalf("Failed to init default groups: %s %v", ret.Msg, ret.Attr)
+	}
 	if ret := InitAdminRepo(DB).InitAdmin(); !ret.OK {
 		log.Logger.Fatalf("Failed to init Admin: %v", ret)
 	}
