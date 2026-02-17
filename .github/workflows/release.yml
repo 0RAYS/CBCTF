@@ -1,0 +1,48 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+
+      - name: Install UPX
+        run: sudo apt-get update && sudo apt-get install -y upx
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Build
+        run: go build -ldflags="-s -w" -trimpath -o CBCTF .
+
+      - name: Compress with UPX
+        run: upx --best CBCTF
+
+      - name: Delete previous release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          LATEST=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || true)
+          if [ -n "$LATEST" ]; then
+            gh release delete "$LATEST" --yes --cleanup-tag
+          fi
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="build-$(git rev-parse --short HEAD)"
+          gh release create "$TAG" CBCTF \
+            --title "$TAG" \
+            --notes "Auto build from commit $(git rev-parse --short HEAD)"
