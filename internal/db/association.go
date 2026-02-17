@@ -22,34 +22,6 @@ func GetContestIDByUserID(tx *gorm.DB, userID uint) ([]uint, model.RetVal) {
 	return idL, model.SuccessRetVal()
 }
 
-func GetUserIDByTeamID(tx *gorm.DB, teamID uint) ([]uint, model.RetVal) {
-	var uts []model.UserTeam
-	res := tx.Model(&model.UserTeam{}).Where("team_id = ?", teamID).Find(&uts)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to get user: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.User{}.ModelName(), "Error": res.Error.Error()}}
-	}
-	var idL []uint
-	for _, ut := range uts {
-		idL = append(idL, ut.UserID)
-	}
-	return idL, model.SuccessRetVal()
-}
-
-func GetUserIDByContestID(tx *gorm.DB, contestID uint) ([]uint, model.RetVal) {
-	var ucs []model.UserContest
-	res := tx.Model(&model.UserContest{}).Where("contest_id = ?", contestID).Find(&ucs)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to get user: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.User{}.ModelName(), "Error": res.Error.Error()}}
-	}
-	var idL []uint
-	for _, uc := range ucs {
-		idL = append(idL, uc.UserID)
-	}
-	return idL, model.SuccessRetVal()
-}
-
 // AppendUserToTeam Many2Many
 func AppendUserToTeam(tx *gorm.DB, user model.User, team model.Team) model.RetVal {
 	res := tx.Model(&model.UserTeam{}).Create(&model.UserTeam{UserID: user.ID, TeamID: team.ID})

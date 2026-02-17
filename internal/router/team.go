@@ -59,12 +59,7 @@ func GetTeamCaptcha(ctx *gin.Context) {
 
 func GetTeammates(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
-	userIDL, ret := db.GetUserIDByTeamID(db.DB, team.ID)
-	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
-		return
-	}
-	users, _, ret := db.InitUserRepo(db.DB).List(-1, -1, db.GetOptions{Conditions: map[string]any{"id": userIDL}})
+	users, ret := db.InitUserRepo(db.DB).GetByTeamID(team.ID)
 	if !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
