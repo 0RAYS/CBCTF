@@ -43,6 +43,11 @@ jobs:
       - name: Compress with UPX
         run: upx --best CBCTF
 
+      - name: Package archives
+        run: |
+          tar -czf CBCTF-linux-amd64.tar.gz CBCTF
+          zip CBCTF-linux-amd64.zip CBCTF
+
       - name: Delete previous release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -57,6 +62,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="build-$(git rev-parse --short HEAD)"
-          gh release create "$TAG" CBCTF \
+          gh release create "$TAG" CBCTF-linux-amd64.tar.gz CBCTF-linux-amd64.zip \
             --title "$TAG" \
             --notes "Auto build from commit $(git rev-parse --short HEAD)"
