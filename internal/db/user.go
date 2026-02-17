@@ -116,6 +116,58 @@ func (u *UserRepo) GetByName(name string, optionsL ...GetOptions) (model.User, m
 	return u.GetByUniqueKey("name", name, optionsL...)
 }
 
+func (u *UserRepo) GetByTeamID(teamID uint) ([]model.User, model.RetVal) {
+	var users []model.User
+	res := u.DB.Raw(`
+		SELECT users.* FROM users
+		INNER JOIN user_teams ON user_teams.user_id = users.id
+		WHERE user_teams.team_id = ? AND users.deleted_at IS NULL
+	`, teamID).Scan(&users)
+	if res.Error != nil {
+		log.Logger.Fatalf("Failed to get Users: %v", res.Error)
+		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.User{}.ModelName(), "Error": res.Error.Error()}}
+	}
+	return users, model.RetVal{}
+}
+
+func (u *UserRepo) GetIDByTeamID(teamID uint) ([]uint, model.RetVal) {
+	users, ret := u.GetByTeamID(teamID)
+	if !ret.OK {
+		return nil, ret
+	}
+	var userIDL []uint
+	for _, user := range users {
+		userIDL = append(userIDL, user.ID)
+	}
+	return userIDL, ret
+}
+
+func (u *UserRepo) GetByContestID(contestID uint) ([]model.User, model.RetVal) {
+	var users []model.User
+	res := u.DB.Raw(`
+		SELECT users.* FROM users
+		INNER JOIN user_contests ON user_contests.user_id = users.id
+		WHERE user_contests.contest_id = ? AND users.deleted_at IS NULL
+	`, contestID).Scan(&users)
+	if res.Error != nil {
+		log.Logger.Fatalf("Failed to get Users: %v", res.Error)
+		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.User{}.ModelName(), "Error": res.Error.Error()}}
+	}
+	return users, model.RetVal{}
+}
+
+func (u *UserRepo) GetIDByContestID(contestID uint) ([]uint, model.RetVal) {
+	users, ret := u.GetByContestID(contestID)
+	if !ret.OK {
+		return nil, ret
+	}
+	var userIDL []uint
+	for _, user := range users {
+		userIDL = append(userIDL, user.ID)
+	}
+	return userIDL, ret
+}
+
 func (u *UserRepo) Delete(idL ...uint) model.RetVal {
 	userL, _, ret := u.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},

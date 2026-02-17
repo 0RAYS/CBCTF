@@ -55,7 +55,7 @@ func CreateNotice(ctx *gin.Context) {
 		return
 	}
 	go func() {
-		contestUserIDL, ret := db.GetUserIDByContestID(db.DB, contest.ID)
+		contestUserIDL, ret := db.InitUserRepo(db.DB).GetIDByContestID(contest.ID)
 		if !ret.OK {
 			return
 		}
