@@ -1,0 +1,161 @@
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'motion/react';
+import { IconX } from '@tabler/icons-react';
+import Button from './Button';
+import { useModalPortal } from './ModalProvider';
+
+/**
+ * 统一模态框组件（合并ConfirmModal和AdminModal）
+ * @param {Object} props
+ * @param {boolean} props.isOpen - 是否显示模态框
+ * @param {function} props.onClose - 关闭模态框的回调函数
+ * @param {string} props.title - 模态框标题
+ * @param {React.ReactNode} props.children - 模态框内容
+ * @param {React.ReactNode} props.footer - 模态框底部内容（default模式使用）
+ * @param {'sm'|'md'|'lg'|'xl'|'2xl'} props.size - 模态框大小
+ * @param {'default'|'confirm'} props.variant - 模态框变体
+ * @param {string} props.confirmText - 确认按钮文本（confirm模式使用）
+ * @param {string} props.cancelText - 取消按钮文本（confirm模式使用）
+ * @param {function} props.onConfirm - 确认回调（confirm模式使用）
+ * @param {'primary'|'danger'} props.confirmType - 确认按钮类型（confirm模式使用）
+ * @param {string} props.className - 额外的自定义类名
+ */
+function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  footer,
+  size = 'md',
+  variant = 'default',
+  confirmText = 'CONFIRM',
+  cancelText = 'CANCEL',
+  onConfirm,
+  confirmType = 'primary',
+  className = '',
+}) {
+  const portalContainer = useModalPortal();
+
+  // 根据size确定宽度
+  const sizeClasses = {
+    sm: 'max-w-[400px]',
+    md: 'max-w-[600px]',
+    lg: 'max-w-[800px]',
+    xl: 'max-w-[1000px]',
+    '2xl': 'max-w-[1200px]',
+  };
+
+  // Portal容器未就绪时不渲染
+  if (!portalContainer) return null;
+
+  // Confirm模式：简化的确认对话框
+  if (variant === 'confirm') {
+    return createPortal(
+      <AnimatePresence>
+        {isOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center">
+            <motion.div
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={onClose}
+            />
+            <motion.div
+              className={`relative w-full ${sizeClasses.sm} m-4 p-6 border border-neutral-300 rounded-md bg-black/80 ${className}`}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+            >
+              <h3 className="text-lg font-mono text-neutral-50 mb-4">{title}</h3>
+              <div className="text-neutral-300 mb-6">{children}</div>
+              <div className="flex justify-end gap-4">
+                <Button size="sm" variant="ghost" onClick={onClose}>
+                  {cancelText}
+                </Button>
+                <Button size="sm" variant={confirmType === 'danger' ? 'danger' : 'primary'} onClick={onConfirm}>
+                  {confirmText}
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>,
+      portalContainer
+    );
+  }
+
+  // Default模式：完整的模态框
+  return createPortal(
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center">
+          {/* 背景遮罩 */}
+          <motion.div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
+
+          {/* 模态框主体 */}
+          <motion.div
+            className={`relative w-full ${sizeClasses[size]} mx-4`}
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+          >
+            <div
+              className={`border border-neutral-300/30 rounded-lg bg-black/80 backdrop-blur-[8px] overflow-hidden ${className}`}
+            >
+              {/* 头部 */}
+              <div className="p-6 border-b border-neutral-300/30">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xl font-mono text-neutral-50">{title}</h2>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="!bg-transparent !text-neutral-400 hover:!text-neutral-200"
+                    onClick={onClose}
+                  >
+                    <IconX size={18} />
+                  </Button>
+                </div>
+              </div>
+
+              {/* 内容区域 */}
+              <div className="p-6 max-h-[70vh] overflow-y-auto">{children}</div>
+
+              {/* 底部 */}
+              {footer && (
+                <div className="p-6 border-t border-neutral-300/30 bg-black/40">
+                  <div className="flex justify-end gap-3">{footer}</div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>,
+    portalContainer
+  );
+}
+
+// 子组件：模态框头部
+Modal.Header = function ModalHeader({ children, className = '' }) {
+  return <div className={`mb-4 ${className}`}>{children}</div>;
+};
+
+// 子组件：模态框主体
+Modal.Body = function ModalBody({ children, className = '' }) {
+  return <div className={className}>{children}</div>;
+};
+
+// 子组件：模态框底部
+Modal.Footer = function ModalFooter({ children, className = '' }) {
+  return <div className={`mt-4 ${className}`}>{children}</div>;
+};
+
+export default Modal;

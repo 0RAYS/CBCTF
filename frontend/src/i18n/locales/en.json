@@ -1,0 +1,2073 @@
+{
+  "branding": {
+    "main": "DEEP DIVE CTF",
+    "admin": "CBCTF"
+  },
+  "common": {
+    "loading": "Loading...",
+    "loadingShort": "Loading",
+    "language": "Language",
+    "login": "Login",
+    "processing": "Processing...",
+    "date": "Date",
+    "duration": "Duration",
+    "registrations": "Registrations",
+    "teams": "Teams",
+    "challenges": "Challenges",
+    "score": "Score",
+    "solved": "Solved",
+    "rank": "Rank",
+    "start": "Start",
+    "end": "End",
+    "saveChanges": "Save Changes",
+    "delete": "Delete",
+    "send": "Send",
+    "submit": "Submit",
+    "change": "Change",
+    "github": "GitHub",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "create": "Create",
+    "save": "Save",
+    "previous": "Previous",
+    "next": "Next",
+    "points": "{{count}} pts",
+    "refresh": "Refresh",
+    "yes": "Yes",
+    "no": "No",
+    "notAvailable": "N/A",
+    "noData": "No data",
+    "none": "None",
+    "closeNotification": "Close notification",
+    "pagination": {
+      "totalItems": "Total {{count}} items",
+      "jumpTo": "Go to",
+      "page": "page",
+      "pagePlaceholder": "Page",
+      "jump": "Go"
+    },
+    "dateTimeInput": {
+      "placeholder": "YYYY-MM-DD HH:MM",
+      "now": "Now",
+      "ok": "OK",
+      "time": "Time"
+    }
+  },
+  "footer": {
+    "copyright": "© 2025 DEEP DIVE CTF",
+    "icp": "陕ICP备2025076339号-1",
+    "support": "Support",
+    "contact": "Contact",
+    "github": "GitHub"
+  },
+  "nav": {
+    "games": "GAMES",
+    "overview": "OVERVIEW",
+    "challenges": "CHALLENGES",
+    "scoreboard": "SCOREBOARD",
+    "team": "TEAM",
+    "notice": "NOTICE",
+    "writeup": "WRITEUP",
+    "settings": "SETTINGS",
+    "dashboard": "DASHBOARD",
+    "contests": "CONTESTS",
+    "users": "USERS",
+    "oauth": "OAUTH",
+    "smtp": "SMTP",
+    "webhook": "WEBHOOK",
+    "files": "FILES",
+    "system": "SYSTEM",
+    "logs": "LOGS",
+    "containers": "CONTAINERS",
+    "images": "IMAGES",
+    "cheats": "CHEATS",
+    "notices": "NOTICES"
+  },
+  "admin": {
+    "title": "Admin Center",
+    "navigation": "Navigation",
+    "contest": "Contest",
+    "overview": "Overview",
+    "welcome": "Welcome",
+    "quickActions": "Quick Actions",
+    "sidebar": {
+      "close": "Close sidebar"
+    },
+    "topbar": {
+      "toggleSidebar": "Toggle sidebar",
+      "role": "ADMIN",
+      "userPicture": "User picture",
+      "defaultUser": "ADMIN",
+      "managementTitle": "{{label}} Management"
+    },
+    "dashboard": {
+      "title": "System Status",
+      "realtime": "Live Monitoring",
+      "cards": {
+        "serverIp": "Server IP",
+        "users": "Users",
+        "contests": "Contests",
+        "challenges": "Challenges",
+        "requests": "Requests",
+        "responseTime": "Avg Response",
+        "downlink": "Downlink",
+        "uplink": "Uplink",
+        "totalTraffic": "Total Traffic",
+        "cacheSize": "Cache Size",
+        "cacheHit": "Cache Hits",
+        "cacheRate": "Cache Hit Rate"
+      },
+      "chart": {
+        "cpu": "CPU Usage (%)",
+        "memory": "Memory Usage (%)",
+        "disk": "Disk Usage (%)"
+      },
+      "toast": {
+        "fetchFailed": "Failed to fetch system status"
+      }
+    },
+    "contests": {
+      "title": "Contest Management",
+      "empty": "No contests",
+      "table": {
+        "cover": "Cover",
+        "name": "Contest",
+        "status": "Status",
+        "schedule": "Schedule",
+        "metrics": "Metrics",
+        "actions": "Actions"
+      },
+      "actions": {
+        "add": "Add Contest",
+        "replaceCover": "Replace Cover"
+      },
+      "status": {
+        "upcoming": "Upcoming",
+        "running": "Running",
+        "ended": "Ended",
+        "hidden": "Hidden"
+      },
+      "labels": {
+        "startTime": "Start Time",
+        "duration": "Duration"
+      },
+      "metrics": {
+        "teamSize": "Team size: {{count}}",
+        "registrations": "Registrations: {{count}}",
+        "teams": "Teams: {{count}}"
+      },
+      "units": {
+        "hours": "{{count}}h"
+      },
+      "form": {
+        "name": "Contest Name",
+        "description": "Description",
+        "flagPrefix": "Flag Prefix",
+        "teamSize": "Team Size",
+        "startTime": "Start Time",
+        "durationHours": "Duration (hours)"
+      },
+      "modal": {
+        "createTitle": "Create Contest",
+        "deleteTitle": "Delete Contest",
+        "deletePrompt": "Are you sure you want to delete the contest",
+        "deleteWarning": "This action cannot be undone."
+      },
+      "toast": {
+        "fetchFailed": "Failed to load contests",
+        "coverUpdated": "Cover updated",
+        "coverUpdateFailed": "Failed to update cover",
+        "createSuccess": "Contest created",
+        "deleteSuccess": "Contest deleted",
+        "createFailed": "Failed to create contest",
+        "deleteFailed": "Failed to delete contest"
+      },
+      "teamContainers": {
+        "toast": {
+          "fetchSubmissionsFailed": "Failed to load submissions",
+          "fetchWriteupsFailed": "Failed to load writeups",
+          "fetchContainersFailed": "Failed to load containers",
+          "fetchTrafficFailed": "Failed to load traffic data",
+          "downloadTrafficFailed": "Failed to download traffic file",
+          "downloadWriteupFailed": "Failed to download writeup"
+        },
+        "modal": {
+          "title": "Container Traffic",
+          "empty": "No traffic data"
+        },
+        "labels": {
+          "type": "Type:",
+          "sourceIp": "Source IP:",
+          "sourcePort": "Source Port:",
+          "timestamp": "Timestamp:",
+          "destinationIp": "Destination IP:",
+          "destinationPort": "Destination Port:",
+          "payload": "Payload:"
+        },
+        "types": {
+          "request": "Request",
+          "response": "Response",
+          "tcp": "TCP"
+        },
+        "payload": {
+          "expand": "Expand",
+          "collapse": "Collapse",
+          "parseError": "Parse error: {{message}}"
+        }
+      },
+      "teamDetail": {
+        "title": "Team Detail",
+        "tabs": {
+          "submissions": "Submissions",
+          "writeups": "Writeups",
+          "traffic": "Instance Traffic",
+          "flags": "Flags"
+        },
+        "sections": {
+          "submissions": "Submissions",
+          "writeups": "Writeups",
+          "traffic": "Instance Traffic",
+          "flags": "Flags"
+        },
+        "empty": {
+          "submissions": "No submission records",
+          "writeups": "No writeups submitted",
+          "traffic": "No traffic data",
+          "flags": "No flag data"
+        },
+        "submissions": {
+          "columns": {
+            "challengeId": "Challenge ID",
+            "teamId": "Team ID",
+            "userId": "User ID",
+            "submittedFlag": "Submitted Flag",
+            "score": "Score",
+            "ip": "IP",
+            "status": "Status",
+            "time": "Time"
+          },
+          "status": {
+            "correct": "Correct",
+            "incorrect": "Incorrect"
+          }
+        },
+        "writeups": {
+          "columns": {
+            "submittedAt": "Submitted at",
+            "filename": "Filename",
+            "size": "Size",
+            "hash": "Hash",
+            "uploader": "Uploader",
+            "actions": "Actions"
+          },
+          "actions": {
+            "download": "Download writeup"
+          }
+        },
+        "traffic": {
+          "columns": {
+            "containerId": "Container ID",
+            "userId": "User ID",
+            "challengeName": "Challenge Name",
+            "startTime": "Start Time",
+            "duration": "Duration",
+            "status": "Status",
+            "actions": "Actions"
+          },
+          "actions": {
+            "viewTraffic": "View traffic",
+            "downloadTraffic": "Download traffic file"
+          },
+          "status": {
+            "upcoming": "Not started",
+            "ended": "Ended",
+            "running": "Running"
+          }
+        }
+      },
+      "challengeModal": {
+        "titleAdd": "Add Challenge",
+        "titleEdit": "Edit Challenge",
+        "sections": {
+          "basic": "Basic Info",
+          "flags": "Flag Settings",
+          "tags": "Tag Settings",
+          "hints": "Hint Settings"
+        },
+        "labels": {
+          "name": "Challenge Name",
+          "description": "Description",
+          "attempts": "Attempts",
+          "hidden": "Hide challenge",
+          "flagValueHint": "Flag value: static{} uuid{} dynamic{}",
+          "scoreCurve": "Score curve",
+          "initialScore": "Initial score",
+          "currentScore": "Current score",
+          "decay": "Decay",
+          "minScore": "Minimum score",
+          "solvers": "Solvers"
+        },
+        "placeholders": {
+          "name": "Enter challenge name",
+          "description": "Enter challenge description",
+          "flagValue": "Enter flag value",
+          "tag": "Tag {{index}}",
+          "hint": "Hint {{index}}"
+        },
+        "scoreCurve": {
+          "static": "Static score",
+          "linear": "Linear decay",
+          "log": "Exponential decay"
+        },
+        "actions": {
+          "updateFlag": "Update flag",
+          "addTag": "Add tag",
+          "addHint": "Add hint",
+          "add": "Add Challenge"
+        }
+      },
+      "challengeSelector": {
+        "title": "Select Challenges",
+        "search": {
+          "placeholder": "Search challenges..."
+        },
+        "filters": {
+          "categoryAll": "All categories",
+          "typeAll": "All types"
+        },
+        "types": {
+          "static": "Static Challenge",
+          "question": "Question Challenge",
+          "dynamic": "Dynamic Challenge",
+          "pods": "Container Challenge"
+        },
+        "empty": {
+          "noMatch": "No matching challenges"
+        },
+        "selectedPrefix": "Selected ",
+        "selectedSuffix": " challenges",
+        "actions": {
+          "confirmAdd": "Confirm Add"
+        }
+      },
+      "trafficGraph": {
+        "title": "Network Traffic Graph",
+        "controls": {
+          "timeShift": "Time Offset:",
+          "timeSlice": "Time Slice:",
+          "seconds": "s"
+        },
+        "tooltip": {
+          "connectionTitle": "Traffic Connection",
+          "size": "Traffic size: {{value}} bytes",
+          "count": "Connections: {{count}}",
+          "protocol": "Protocol: {{type}} / {{subtype}}",
+          "connections": "Connections: {{count}}"
+        },
+        "footer": {
+          "ipCount": "IP count: {{count}}",
+          "connectionCount": "Connections: {{count}}",
+          "maxDuration": "Max duration: {{count}}s",
+          "timeSlice": "Time slice: {{count}}s",
+          "playing": "Playing: {{current}}/{{total}}s",
+          "updatedAt": "Updated at: {{time}}",
+          "demoMode": "Demo Mode (sample data)"
+        },
+        "toast": {
+          "fetchFailed": "Failed to load traffic data",
+          "demoFallback": "Failed to load traffic data, using sample data for preview"
+        },
+        "demoNotice": "Unable to fetch real traffic data. Currently displaying sample data for demonstration purposes. Click refresh to retry."
+      },
+      "notices": {
+        "title": "Notice Management",
+        "actions": {
+          "create": "Publish Notice"
+        },
+        "table": {
+          "title": "Title",
+          "type": "Type",
+          "content": "Content",
+          "actions": "Actions"
+        },
+        "form": {
+          "title": "Notice Title",
+          "titlePlaceholder": "Enter notice title",
+          "type": "Notice Type",
+          "content": "Notice Content",
+          "contentPlaceholder": "Enter notice content"
+        },
+        "types": {
+          "normal": "Normal",
+          "important": "Important",
+          "update": "Update"
+        },
+        "modal": {
+          "title": {
+            "create": "Publish Notice",
+            "edit": "Edit Notice",
+            "delete": "Delete Notice"
+          },
+          "deletePrompt": "Are you sure you want to delete notice \"{{title}}\"? This action cannot be undone."
+        },
+        "toast": {
+          "fetchFailed": "Failed to load notices",
+          "createSuccess": "Notice created",
+          "createFailed": "Failed to create notice",
+          "updateSuccess": "Notice updated",
+          "updateFailed": "Failed to update notice",
+          "deleteSuccess": "Notice deleted",
+          "deleteFailed": "Failed to delete notice"
+        }
+      },
+      "imagesWarmup": {
+        "title": "Image Warmup",
+        "control": {
+          "title": "Warmup Control",
+          "subtitle": "Warm up Docker images used in the contest"
+        },
+        "labels": {
+          "pullPolicy": "Pull Policy"
+        },
+        "actions": {
+          "selectAll": "Select all",
+          "deselectAll": "Deselect all",
+          "warmup": "Start warmup ({{count}})"
+        },
+        "table": {
+          "image": "Image",
+          "nodes": "Nodes"
+        },
+        "pullPolicy": {
+          "always": "Always - pull latest image",
+          "ifNotPresent": "IfNotPresent - pull when missing locally",
+          "never": "Never - use local images only"
+        },
+        "status": {
+          "loaded": "Loaded",
+          "notLoaded": "Not loaded"
+        },
+        "statusTitle": "Image Status",
+        "empty": "No images",
+        "toast": {
+          "fetchFailed": "Failed to load warmup images",
+          "selectRequired": "Select images to warm up",
+          "submitSuccess": "Warmup task submitted",
+          "warmupFailed": "Warmup failed"
+        }
+      },
+      "teams": {
+        "title": "Team Management",
+        "search": {
+          "label": "Search teams",
+          "placeholder": "Search by team name..."
+        },
+        "empty": {
+          "noMembers": "No team members",
+          "noResults": "No matching teams",
+          "noData": "No data"
+        },
+        "table": {
+          "team": "Team",
+          "score": "Score",
+          "members": "Members",
+          "lastSubmit": "Last Submit",
+          "status": "Status",
+          "actions": "Actions"
+        },
+        "form": {
+          "name": "Team Name",
+          "description": "Team Description",
+          "captain": "Captain",
+          "selectCaptain": "Select captain",
+          "inviteCode": "Invite Code"
+        },
+        "labels": {
+          "banned": "Banned",
+          "hidden": "Hidden"
+        },
+        "status": {
+          "banned": "Banned",
+          "normal": "Active",
+          "hidden": "Hidden",
+          "visible": "Visible"
+        },
+        "lastSubmit": {
+          "none": "No submissions"
+        },
+        "memberCount": "{{count}} members",
+        "picture": {
+          "replace": "Replace"
+        },
+        "modal": {
+          "title": {
+            "edit": "Edit Team Info",
+            "delete": "Delete Team",
+            "kick": "Remove Team Member"
+          },
+          "deletePrompt": "Are you sure you want to delete team {{name}}? This action cannot be undone.",
+          "kickPrompt": "Remove a member from team {{name}}:",
+          "selectMemberLabel": "Select member to remove",
+          "selectMemberPlaceholder": "Select a member"
+        },
+        "toast": {
+          "fetchFailed": "Failed to load teams",
+          "fetchMembersFailed": "Failed to load team members",
+          "searchFailed": "Search failed",
+          "updateSuccess": "Team updated",
+          "deleteSuccess": "Team deleted",
+          "selectMember": "Select a member to remove",
+          "kickSuccess": "Member removed",
+          "actionFailed": "Operation failed",
+          "pictureUpdated": "Team avatar updated",
+          "pictureUpdateFailed": "Failed to update team avatar"
+        },
+        "detail": {
+          "title": "Team Detail",
+          "tabs": {
+            "info": "Info",
+            "submissions": "Submissions",
+            "writeups": "Writeups",
+            "containers": "Containers",
+            "flags": "Flags"
+          },
+          "info": {
+            "score": "Score",
+            "captain": "Captain ID",
+            "inviteCode": "Invite Code",
+            "members": "Members",
+            "memberId": "ID",
+            "memberName": "Name",
+            "memberRole": "Role",
+            "captainBadge": "Captain",
+            "memberBadge": "Member",
+            "noDescription": "No description"
+          },
+          "flags": {
+            "filterName": "Challenge Name",
+            "filterNamePlaceholder": "Filter by name...",
+            "filterType": "Type",
+            "filterTypePlaceholder": "All types",
+            "filterCategory": "Category",
+            "filterCategoryPlaceholder": "All categories",
+            "filterSolved": "Solved Status",
+            "filterSolvedPlaceholder": "All",
+            "filterSolvedYes": "Solved",
+            "filterSolvedNo": "Unsolved",
+            "value": "Value",
+            "template": "Template",
+            "currentScore": "Current Score",
+            "initScore": "Init Score",
+            "minScore": "Min Score",
+            "decay": "Decay",
+            "solvers": "Solvers",
+            "solved": "Solved",
+            "solvedYes": "Solved",
+            "solvedNo": "Unsolved",
+            "hidden": "Hidden"
+          },
+          "empty": {
+            "members": "No team members",
+            "flags": "No flag data"
+          }
+        }
+      },
+      "editor": {
+        "labels": {
+          "title": "Contest Title",
+          "description": "Description",
+          "backgroundImage": "Background Image",
+          "backgroundAlt": "Contest background",
+          "status": "Status",
+          "startTime": "Start Time",
+          "endTime": "End Time",
+          "flagPrefix": "Flag Prefix",
+          "teamSize": "Team Size Limit",
+          "teamVictims": "Team Instance Limit",
+          "captcha": "Contest Code",
+          "hiddenContest": "Hide Contest",
+          "bloodBonus": "Enable Blood Bonus",
+          "prizeAmount": "Amount",
+          "prizeDescription": "Description",
+          "timelineDate": "Date",
+          "timelineTitle": "Title",
+          "timelineDescription": "Description"
+        },
+        "sections": {
+          "advanced": "Advanced Settings",
+          "rules": "Contest Rules",
+          "prizes": "Prize Settings",
+          "timeline": "Timeline"
+        },
+        "placeholders": {
+          "flagPrefix": "e.g., CBCTF",
+          "teamSize": "Max team size",
+          "teamVictims": "Max instances per team",
+          "captcha": "Leave empty to disable",
+          "newRule": "Add a new rule..."
+        },
+        "help": {
+          "flagPrefix": "Prefix used to generate flags, e.g. CBCTF{flag}",
+          "teamSize": "Maximum members per team",
+          "teamVictims": "Maximum instances per team",
+          "captcha": "Code required to join the contest",
+          "hiddenContest": "Hidden contests cannot be accessed",
+          "bloodBonus": "Extra points for the first three solves"
+        },
+        "status": {
+          "upcoming": "Upcoming",
+          "active": "Active",
+          "ended": "Ended"
+        },
+        "actions": {
+          "replaceImage": "Replace Image",
+          "uploadImage": "Click to upload background image",
+          "addRule": "Add",
+          "addPrize": "Add Prize",
+          "addTimeline": "Add Event"
+        },
+        "prizeRank": {
+          "first": "1ST",
+          "second": "2ND",
+          "third": "3RD",
+          "other": "{{rank}}TH"
+        },
+        "validation": {
+          "invalidDate": "Invalid date format",
+          "titleRequired": "Title is required",
+          "startTimeRequired": "Start time is required",
+          "endTimeRequired": "End time is required",
+          "endTimeAfterStart": "End time must be after start time"
+        },
+        "toast": {
+          "fetchFailed": "Failed to load contest",
+          "coverUpdated": "Cover updated",
+          "coverUpdateFailed": "Failed to update cover",
+          "updateSuccess": "Contest updated",
+          "updateFailed": "Failed to update contest"
+        }
+      },
+      "containers": {
+        "toast": {
+          "fetchContainersFailed": "Failed to load containers",
+          "fetchTeamsFailed": "Failed to load teams",
+          "fetchChallengesFailed": "Failed to load challenges",
+          "searchFailed": "Search failed",
+          "selectStopRequired": "Select containers to stop",
+          "selectStartRequired": "Select challenges and teams",
+          "taskDispatched": "Task dispatched",
+          "taskDispatchFailed": "Task dispatch failed"
+        },
+        "status": {
+          "stopped": "Stopped"
+        },
+        "page": {
+          "title": "Container Management",
+          "subtitle": "Manage contest containers with batch start/stop actions",
+          "refresh": "Refresh"
+        },
+        "stats": {
+          "total": "Total containers",
+          "running": "Running",
+          "stopped": "Stopped"
+        },
+        "quickActions": {
+          "title": "Quick Actions",
+          "selectChallenges": "Select challenges",
+          "randomTeams": "Random team selection",
+          "selectAll": "Select all",
+          "clear": "Clear",
+          "startButton": "Start ({{challenges}}×{{teams}})"
+        },
+        "filters": {
+          "title": "Filters",
+          "reset": "Reset",
+          "userName": "User name",
+          "teamName": "Team name",
+          "challengeName": "Challenge name",
+          "searchUserPlaceholder": "Search users...",
+          "searchTeamPlaceholder": "Search teams...",
+          "searchChallengePlaceholder": "Search challenges...",
+          "userFallback": "User {{id}}",
+          "teamFallback": "Team {{id}}",
+          "challengeFallback": "Challenge {{id}}",
+          "userIdLabel": "User ID",
+          "teamIdLabel": "Team ID",
+          "challengeIdLabel": "Challenge ID"
+        },
+        "table": {
+          "title": "Containers",
+          "total": "(Total {{count}} containers)",
+          "selectedCount": "Selected: {{count}}",
+          "stopButton": "Stop containers",
+          "columns": {
+            "id": "ID",
+            "challenge": "Challenge",
+            "team": "Team",
+            "user": "User",
+            "remote": "Remote",
+            "startTime": "Start time",
+            "status": "Status"
+          },
+          "empty": "No container data"
+        },
+        "modals": {
+          "startTitle": "Confirm start",
+          "startConfirm": "Confirm start",
+          "startPrompt": "Start containers for the selected combinations?",
+          "selectedChallenges": "Selected challenges ({{count}}):",
+          "selectedTeams": "Selected teams ({{count}}):",
+          "summaryPrefix": "Will start ",
+          "summaryMiddle": " challenges × ",
+          "summaryEquals": " teams =",
+          "summarySuffix": " container combinations",
+          "stopTitle": "Stop containers",
+          "stopConfirm": "Stop",
+          "stopPrompt": "Stop {{count}} selected containers?"
+        }
+      },
+      "challenges": {
+        "title": "Challenge Management",
+        "table": {
+          "name": "Challenge",
+          "category": "Category",
+          "type": "Type",
+          "metrics": "Metrics",
+          "tags": "Tags",
+          "hints": "Hints",
+          "actions": "Actions"
+        },
+        "hintLabel": "Hint {{index}}",
+        "hidden": "Hidden",
+        "attemptsLabel": "Attempts:",
+        "tagsLabel": "Tags:",
+        "hintsLabel": "Hints:",
+        "solves": "{{count}} solves",
+        "toast": {
+          "fetchCategoriesFailed": "Failed to load categories",
+          "fetchListFailed": "Failed to load contest challenges",
+          "fetchPoolFailed": "Failed to load challenge pool",
+          "selectRequired": "Select challenges to add",
+          "addSuccess": "Challenges added",
+          "addFailed": "Failed to add challenges",
+          "updateSuccess": "Challenge updated",
+          "updateFailed": "Failed to update challenge",
+          "removeSuccess": "Challenge removed",
+          "removeFailed": "Failed to remove challenge",
+          "updateFlagSuccess": "Challenge flag updated"
+        }
+      },
+      "scoreboard": {
+        "headers": {
+          "rank": "RANK",
+          "team": "TEAM",
+          "score": "SCORE",
+          "challenges": "CHALLENGES",
+          "lastSubmit": "LAST SUBMIT"
+        },
+        "total": "TOTAL",
+        "title": "Scoreboard Management",
+        "export": "Export scoreboard",
+        "toast": {
+          "fetchTimelineFailed": "Failed to load timeline",
+          "fetchTeamsFailed": "Failed to load rankings",
+          "fetchScoreboardFailed": "Failed to load scoreboard",
+          "exportUnavailable": "Export not implemented yet"
+        }
+      },
+      "cheats": {
+        "title": "Cheat Events",
+        "filterButton": "Filter",
+        "filterLabel": "Filter by type:",
+        "stats": {
+          "total": "Total",
+          "processed": "Processed",
+          "unprocessed": "Unprocessed"
+        },
+        "empty": "No cheat events",
+        "columns": {
+          "id": "ID",
+          "model": "Related Models",
+          "type": "Type",
+          "reasonType": "Detection Type",
+          "reason": "Reason",
+          "ipOrDevice": "IP / Device",
+          "status": "Status",
+          "time": "Time",
+          "actions": "Actions"
+        },
+        "status": {
+          "processed": "Processed",
+          "unprocessed": "Unprocessed"
+        },
+        "types": {
+          "cheater": "Cheating",
+          "suspicious": "Suspicious",
+          "pass": "False positive"
+        },
+        "reasonTypes": {
+          "same_device": "Same Device",
+          "same_web_ip": "Same Web IP",
+          "same_victim_ip": "Same Victim IP",
+          "wrong_flag": "Wrong Flag",
+          "token_magic": "Token Mismatch"
+        },
+        "reasonTypeFilterLabel": "Detection type:",
+        "modals": {
+          "editTitle": "Edit Cheat Event",
+          "detailTitle": "Cheat Event Details"
+        },
+        "actions": {
+          "close": "Close",
+          "delete": "Delete",
+          "deleteAll": "Clear",
+          "check": "Check",
+          "confirmDeleteTitle": "Confirm Delete",
+          "confirmDeletePrompt": "Are you sure you want to delete this cheat event?",
+          "confirmDeleteAllTitle": "Confirm Delete All",
+          "confirmDeleteAllPrompt": "Are you sure you want to delete all cheat events for this contest? This action cannot be undone.",
+          "confirmCheckTitle": "Manual Cheat Detection",
+          "confirmCheckPrompt": "This will run all cheat detection checks for this contest. Continue?"
+        },
+        "form": {
+          "verdict": "Verdict",
+          "reason": "Reason",
+          "reasonPlaceholder": "Enter reason",
+          "status": "Status",
+          "comment": "Comment",
+          "commentPlaceholder": "Enter comment"
+        },
+        "detail": {
+          "eventId": "Event ID",
+          "model": "Related Models",
+          "ip": "IP Address",
+          "time": "Time",
+          "type": "Cheat Type",
+          "reasonType": "Detection Type",
+          "reason": "Reason",
+          "status": "Status",
+          "comment": "Comment",
+          "device": "Device",
+          "hash": "Hash"
+        },
+        "toast": {
+          "fetchFailed": "Failed to load cheat events",
+          "updateSuccess": "Cheat event updated",
+          "updateFailed": "Failed to update cheat event",
+          "deleteSuccess": "Cheat event deleted",
+          "deleteFailed": "Failed to delete cheat event",
+          "deleteAllSuccess": "All cheat events deleted",
+          "deleteAllFailed": "Failed to delete all cheat events",
+          "checkSuccess": "Cheat detection completed",
+          "checkFailed": "Cheat detection failed"
+        },
+        "ipDetail": {
+          "title": "IP Geolocation",
+          "ip": "IP Address",
+          "iso": "ISO Code",
+          "country": "Country",
+          "city": "City",
+          "subdivision": "Subdivision",
+          "timezone": "Timezone",
+          "coordinates": "Coordinates",
+          "fetchFailed": "Failed to look up IP geolocation"
+        }
+      }
+    },
+    "challenge": {
+      "title": "Challenge Management",
+      "table": {
+        "name": "Challenge",
+        "category": "Category",
+        "type": "Type",
+        "flags": "Flags",
+        "file": "Attachment",
+        "actions": "Actions"
+      },
+      "actions": {
+        "add": "Add Challenge",
+        "test": "Test Challenge"
+      },
+      "search": {
+        "label": "Search Challenges",
+        "placeholder": "Search by challenge name..."
+      },
+      "filters": {
+        "all": "All",
+        "static": "Static",
+        "question": "Question",
+        "dynamic": "Dynamic",
+        "pods": "Container"
+      },
+      "category": {
+        "all": "All categories"
+      },
+      "empty": {
+        "search": "No matching challenges found"
+      },
+      "labels": {
+        "flags": "Flags:",
+        "files": "Files:"
+      },
+      "types": {
+        "static": "Static Challenge",
+        "question": "Question Challenge",
+        "dynamic": "Dynamic Challenge",
+        "pods": "Container Challenge"
+      },
+      "toast": {
+        "searchFailed": "Search failed",
+        "fetchCategoriesFailed": "Failed to fetch categories",
+        "fetchListFailed": "Failed to load challenges",
+        "downloadFailed": "Failed to download attachment",
+        "uploadSuccess": "Attachment uploaded",
+        "uploadFailed": "Failed to upload attachment",
+        "createSuccess": "Challenge created",
+        "createFailed": "Failed to create challenge",
+        "updateSuccess": "Challenge updated",
+        "updateFailed": "Failed to update challenge",
+        "deleteSuccess": "Challenge deleted",
+        "deleteFailed": "Failed to delete challenge"
+      },
+      "testModal": {
+        "title": "Test",
+        "toast": {
+          "startCompleted": "Instance started",
+          "stopCompleted": "Instance stopped",
+          "statusRefreshSuccess": "Status refreshed",
+          "fetchStatusFailed": "Failed to fetch test status",
+          "actionSuccess": "Action dispatched",
+          "actionFailed": "Action failed",
+          "downloadSuccess": "Test attachment downloaded",
+          "downloadFailed": "Failed to download test attachment",
+          "copyIpSuccess": "IP address copied to clipboard"
+        },
+        "instance": {
+          "running": "RUNNING",
+          "notRunning": "NOT RUNNING",
+          "time": "Time:",
+          "address": "Address:"
+        },
+        "actions": {
+          "launching": "LAUNCHING...",
+          "launch": "LAUNCH INSTANCE",
+          "stopping": "STOPPING...",
+          "stop": "STOP INSTANCE"
+        },
+        "sections": {
+          "description": "Description",
+          "attachments": "Test Attachments",
+          "instance": "Test Instance"
+        },
+        "attachments": {
+          "generating": "Generating...",
+          "generateAndDownload": "Generate & Download",
+          "download": "Download"
+        }
+      }
+    },
+    "challengeModal": {
+      "title": {
+        "add": "Add Challenge",
+        "edit": "Edit Challenge",
+        "delete": "Delete Challenge"
+      },
+      "delete": {
+        "title": "Confirm Delete Challenge",
+        "prompt": "Are you sure you want to delete this challenge?",
+        "warning": "⚠️ This action cannot be undone. Proceed with caution."
+      },
+      "sections": {
+        "basic": "Basic Info",
+        "generator": "Generator Image",
+        "flags": "Flag Settings",
+        "options": "Option Settings",
+        "podsNotice": "docker-compose Notes",
+        "containers": "Container Settings"
+      },
+      "labels": {
+        "name": "Challenge Name",
+        "category": "Category",
+        "type": "Type",
+        "description": "Description",
+        "generatorImage": "Generator Image",
+        "networkPolicy": "Network Policy",
+        "policy": "Policy {{index}}",
+        "allowInbound": "Allow Inbound",
+        "allowOutbound": "Allow Outbound",
+        "excludeList": "Exclude List"
+      },
+      "types": {
+        "static": "Static Challenge",
+        "question": "Question Challenge",
+        "dynamic": "Dynamic Challenge",
+        "pods": "Container Challenge"
+      },
+      "placeholders": {
+        "name": "Enter challenge name",
+        "category": "Select category",
+        "description": "Enter challenge description",
+        "generatorImage": "Enter generator image",
+        "flag": "Flag {{index}}",
+        "option": "Option {{index}}"
+      },
+      "actions": {
+        "addFlag": "Add Flag",
+        "addOption": "Add Option",
+        "setCorrect": "Mark as correct",
+        "unsetCorrect": "Unmark correct",
+        "fullscreen": "Fullscreen Edit",
+        "addPolicy": "Add Policy",
+        "addRule": "Add Rule",
+        "addExclude": "Add Exclusion",
+        "add": "Add Challenge",
+        "confirmDelete": "Confirm Delete"
+      },
+      "empty": {
+        "options": "No options yet, please add options"
+      },
+      "podsNotice": {
+        "flagFormat": "Flag format: {{format}}",
+        "flagPrefix": "Flag environment variables / file mounts must start with `FLAG`; variable names can repeat and are not used as injection identifiers",
+        "flagVolume": "Flag file mounts use volumes.FLAG_x.labels.value to specify the value",
+        "services": "services only accepts: image, expose, ports, environment, volumes, working_dir, command, cpus, mem_limit",
+        "networks": "You can configure multiple networks; each container may belong to multiple networks",
+        "networksWithIp": "When networks are set, each container must specify its network; if no IP is specified, one is assigned from the subnet",
+        "networksShared": "Without networks, containers share a random IP; for inter-container access use 127.0.0.1",
+        "portUnique": "When sharing an IP, ensure ports are unique",
+        "exampleIndent": "The example below includes all supported fields; other fields are ignored. Use 2-space indentation."
+      },
+      "yamlNotice": {
+        "flagFormat": "Flag format: {{format}}",
+        "flagPrefix": "Flag environment variables / file mounts must start with `FLAG`; variable names can repeat and are not used as injection identifiers",
+        "flagVolume": "Flag file mounts use labels value to specify the value",
+        "dockerParams": "Docker parameters only accept: image, expose, ports, environment, volumes, working_dir, command",
+        "containerUnique": "Within a challenge, all container names must be unique and serve as the DNS hostname",
+        "containerNetwork": "Containers communicate via Hostname or localhost"
+      },
+      "fullscreen": {
+        "title": "Fullscreen Edit - docker-compose.yaml",
+        "save": "Save (Ctrl+S)",
+        "exit": "Exit (Esc)"
+      }
+    },
+    "users": {
+      "title": "User Management",
+      "actions": {
+        "create": "Create User"
+      },
+      "columns": {
+        "picture": "Avatar",
+        "name": "Username",
+        "email": "Email",
+        "status": "Status",
+        "contests": "Contests",
+        "teams": "Teams",
+        "actions": "Actions"
+      },
+      "picture": {
+        "replace": "Replace"
+      },
+      "id": "ID: {{id}}",
+      "status": {
+        "verified": "Verified",
+        "banned": "Banned",
+        "hidden": "Hidden"
+      },
+      "search": {
+        "label": "Search Users",
+        "placeholder": "Search by username..."
+      },
+      "toast": {
+        "searchFailed": "Search failed",
+        "fetchFailed": "Failed to load users",
+        "createSuccess": "User created",
+        "createFailed": "Failed to create user",
+        "updateSuccess": "User updated",
+        "updateFailed": "Failed to update user",
+        "deleteSuccess": "User deleted",
+        "deleteFailed": "Failed to delete user",
+        "pictureUpdated": "Avatar updated",
+        "pictureUpdateFailed": "Failed to update avatar"
+      },
+      "modal": {
+        "createTitle": "Create User",
+        "editTitle": "Edit User",
+        "deleteTitle": "Delete User",
+        "deletePrompt": "Are you sure you want to delete user",
+        "deleteWarning": "This action cannot be undone."
+      },
+      "form": {
+        "username": "Username",
+        "email": "Email",
+        "password": "Password",
+        "description": "Description",
+        "usernamePlaceholder": "Enter username",
+        "emailPlaceholder": "Enter email",
+        "passwordPlaceholder": "Enter password",
+        "descriptionPlaceholder": "Enter user description"
+      },
+      "detail": {
+        "title": "User Detail",
+        "info": {
+          "id": "User ID",
+          "email": "Email",
+          "description": "Description",
+          "score": "Score",
+          "solved": "Solved",
+          "provider": "Provider",
+          "contests": "Contests",
+          "teams": "Teams",
+          "noDescription": "No description"
+        }
+      }
+    },
+    "logs": {
+      "title": "System Logs",
+      "loadMore": "Load more",
+      "noMore": "No more logs",
+      "toast": {
+        "fetchFailed": "Failed to fetch logs"
+      }
+    },
+    "smtp": {
+      "title": "SMTP Management",
+      "tabs": {
+        "config": "SMTP Config",
+        "history": "Email History"
+      },
+      "columns": {
+        "id": "ID",
+        "address": "Email address",
+        "host": "SMTP server",
+        "port": "Port",
+        "status": "Status",
+        "success": "Success count",
+        "failure": "Failure count",
+        "actions": "Actions"
+      },
+      "status": {
+        "enabled": "Enabled",
+        "disabled": "Disabled"
+      },
+      "empty": "No SMTP configs",
+      "modal": {
+        "createTitle": "Create SMTP Config",
+        "editTitle": "Edit SMTP Config",
+        "deleteTitle": "Delete SMTP Config",
+        "deletePrompt": "Are you sure you want to delete SMTP config",
+        "deleteWarning": "This action cannot be undone."
+      },
+      "form": {
+        "addressLabel": "Email address *",
+        "addressPlaceholder": "e.g. noreply@example.com",
+        "hostLabel": "SMTP server *",
+        "hostPlaceholder": "e.g. smtp.gmail.com",
+        "portLabel": "Port *",
+        "portPlaceholder": "587",
+        "passwordLabelCreate": "Password *",
+        "passwordLabelEdit": "Password (leave blank to keep)",
+        "passwordPlaceholderCreate": "Email password or app password",
+        "passwordPlaceholderEdit": "Leave blank to keep password",
+        "enable": "Enable this SMTP config"
+      },
+      "toast": {
+        "fetchListFailed": "Failed to load SMTP configs",
+        "fetchHistoryFailed": "Failed to load email history",
+        "createSuccess": "SMTP config created",
+        "createFailed": "Failed to create SMTP config",
+        "updateSuccess": "SMTP config updated",
+        "updateFailed": "Failed to update SMTP config",
+        "deleteSuccess": "SMTP config deleted",
+        "deleteFailed": "Failed to delete SMTP config"
+      },
+      "email": {
+        "detailTitle": "Email Details",
+        "id": "Email ID",
+        "status": "Send status",
+        "statusSuccess": "Sent",
+        "statusFailed": "Failed",
+        "from": "From",
+        "to": "To",
+        "subject": "Subject",
+        "noSubject": "No subject",
+        "time": "Sent at",
+        "content": "Content",
+        "noContent": "No content"
+      },
+      "history": {
+        "title": "Email History",
+        "currentViewing": "Viewing: {{address}}",
+        "empty": "No email history",
+        "columns": {
+          "id": "ID",
+          "from": "From",
+          "to": "To",
+          "subject": "Subject",
+          "status": "Status",
+          "time": "Sent at",
+          "actions": "Actions"
+        },
+        "actions": {
+          "viewDetail": "View details"
+        }
+      },
+      "actions": {
+        "close": "Close",
+        "add": "Add SMTP Config",
+        "viewHistory": "View history"
+      }
+    },
+    "settings": {
+      "ui": {
+        "title": "Admin Settings",
+        "sections": {
+          "profile": "Profile",
+          "security": "Security",
+          "logout": "Logout"
+        },
+        "avatar": {
+          "change": "Change avatar"
+        },
+        "accountLabel": "Admin Account",
+        "form": {
+          "username": "Username",
+          "email": "Email",
+          "save": "Save Changes"
+        },
+        "security": {
+          "title": "Change Password",
+          "placeholders": {
+            "current": "Current password",
+            "new": "New password",
+            "confirm": "Confirm new password"
+          },
+          "update": "Update Password",
+          "hintTitle": "Account Security Tips",
+          "hintBody": "As an admin, please use strong passwords and update them regularly. Do not share your credentials and keep your devices secure."
+        }
+      },
+      "validation": {
+        "currentRequired": "Current password is required",
+        "newMin": "Password must be at least 6 characters",
+        "confirmMismatch": "Passwords do not match"
+      },
+      "toast": {
+        "updateInfoSuccess": "Admin profile updated",
+        "updateInfoFailed": "Failed to update admin profile",
+        "passwordUpdated": "Password updated",
+        "passwordUpdateFailed": "Failed to update password",
+        "avatarUpdated": "Avatar updated",
+        "avatarUpdateFailed": "Failed to update avatar",
+        "logoutSuccess": "Logged out"
+      }
+    },
+    "webhook": {
+      "tabs": {
+        "webhook": "Webhook Config",
+        "history": "History"
+      },
+      "list": {
+        "title": "Webhook Management",
+        "empty": "No webhook configs",
+        "columns": {
+          "id": "ID",
+          "name": "Name",
+          "url": "URL",
+          "method": "Method",
+          "status": "Status",
+          "events": "Events",
+          "success": "Success count",
+          "failure": "Failure count",
+          "actions": "Actions"
+        },
+        "status": {
+          "enabled": "Enabled",
+          "disabled": "Disabled"
+        },
+        "events": {
+          "all": "All events"
+        },
+        "actions": {
+          "add": "Add Webhook",
+          "edit": "Edit",
+          "viewHistory": "View history",
+          "delete": "Delete"
+        }
+      },
+      "modal": {
+        "createTitle": "Create Webhook",
+        "editTitle": "Edit Webhook",
+        "deleteTitle": "Delete Webhook",
+        "deletePrompt": "Are you sure you want to delete webhook",
+        "deleteWarning": "This action cannot be undone."
+      },
+      "form": {
+        "headerKeyPlaceholder": "Header key",
+        "headerValuePlaceholder": "Header value",
+        "nameLabel": "Name *",
+        "namePlaceholder": "Identifier",
+        "methodLabel": "HTTP Method *",
+        "urlLabel": "URL *",
+        "urlPlaceholder": "https://example.com/webhook",
+        "timeoutLabel": "Timeout (seconds)",
+        "retryLabel": "Retry count",
+        "headers": "Headers",
+        "addHeader": "Add header",
+        "events": "Events",
+        "noEvents": "No events available",
+        "eventsHint": "Select none to listen to all events",
+        "enable": "Enable this webhook"
+      },
+      "history": {
+        "detailTitle": "Webhook Call Details",
+        "webhook": "Webhook",
+        "event": "Event",
+        "status": "Status",
+        "statusSuccess": "Success",
+        "statusFailed": "Failed",
+        "responseCode": "Response Code",
+        "duration": "Duration",
+        "retry": "Retry count",
+        "error": "Error"
+      },
+      "historyList": {
+        "title": "Webhook Call History",
+        "currentViewing": "Viewing: {{name}}",
+        "empty": "No webhook call history",
+        "columns": {
+          "id": "ID",
+          "webhook": "Webhook",
+          "event": "Event",
+          "status": "Status",
+          "responseCode": "Response Code",
+          "duration": "Duration",
+          "time": "Called at",
+          "actions": "Actions"
+        },
+        "actions": {
+          "viewDetail": "View details"
+        }
+      },
+      "actions": {
+        "close": "Close"
+      },
+      "toast": {
+        "fetchEventsFailed": "Failed to load events",
+        "fetchListFailed": "Failed to load webhooks",
+        "fetchHistoryFailed": "Failed to load webhook history",
+        "createSuccess": "Webhook created",
+        "createFailed": "Failed to create webhook",
+        "updateSuccess": "Webhook updated",
+        "updateFailed": "Failed to update webhook",
+        "deleteSuccess": "Webhook deleted",
+        "deleteFailed": "Failed to delete webhook"
+      }
+    },
+    "oauthProviders": {
+      "title": "OAuth Providers",
+      "actions": {
+        "add": "Add OAuth Provider",
+        "uploadLogo": "Click to upload logo"
+      },
+      "empty": "No OAuth providers",
+      "status": {
+        "enabled": "Enabled",
+        "disabled": "Disabled"
+      },
+      "columns": {
+        "logo": "Logo",
+        "provider": "Provider",
+        "uri": "URI",
+        "status": "Enabled",
+        "callback": "Callback URL",
+        "actions": "Actions",
+        "id": "ID: {{id}}"
+      },
+      "toast": {
+        "fetchFailed": "Failed to load OAuth providers",
+        "createSuccess": "OAuth provider created",
+        "createFailed": "Failed to create OAuth provider",
+        "updateSuccess": "OAuth provider updated",
+        "updateFailed": "Failed to update OAuth provider",
+        "deleteSuccess": "OAuth provider deleted",
+        "deleteFailed": "Failed to delete OAuth provider",
+        "pictureUpdated": "Logo updated",
+        "pictureUpdateFailed": "Failed to update logo"
+      },
+      "modal": {
+        "createTitle": "Create OAuth Provider",
+        "editTitle": "Edit OAuth Provider",
+        "deleteTitle": "Delete OAuth Provider",
+        "deletePrompt": "Are you sure you want to delete OAuth provider",
+        "deleteWarning": "This action cannot be undone."
+      },
+      "form": {
+        "providerLabel": "Provider name *",
+        "providerPlaceholder": "e.g. GitHub",
+        "uriLabel": "URI *",
+        "uriPlaceholder": "e.g. github, URL becomes /oauth/github",
+        "authUrlLabel": "Authorization URL *",
+        "authUrlPlaceholder": "https://example.com/oauth/authorize",
+        "tokenUrlLabel": "Token URL *",
+        "tokenUrlPlaceholder": "https://example.com/oauth/token",
+        "userInfoUrlLabel": "User info URL *",
+        "userInfoUrlPlaceholder": "https://api.example.com/user",
+        "callbackUrlLabel": "Callback URL",
+        "callbackUrlPlaceholder": "https://example.com/oauth/callback",
+        "clientIdLabel": "Client ID",
+        "clientIdPlaceholder": "Client ID",
+        "clientSecretLabel": "Client Secret",
+        "clientSecretPlaceholder": "Client Secret",
+        "mappingTitle": "Field Mapping",
+        "pictureFieldLabel": "Avatar field",
+        "nameFieldLabel": "Name field",
+        "emailFieldLabel": "Email field",
+        "descriptionFieldLabel": "Description field",
+        "idFieldLabel": "ID field",
+        "logoUrlLabel": "Logo URL",
+        "logoUrlPlaceholder": "https://example.com/picture.png",
+        "enable": "Enable"
+      }
+    },
+    "files": {
+      "title": "File Management",
+      "types": {
+        "file": "Attachments",
+        "picture": "Images",
+        "traffic": "Traffic",
+        "writeup": "Writeups"
+      },
+      "selectAll": "Select all",
+      "empty": "No files",
+      "columns": {
+        "name": "Filename",
+        "type": "Type",
+        "size": "Size",
+        "uploaded": "Uploaded",
+        "meta": "Meta",
+        "actions": "Actions"
+      },
+      "meta": {
+        "model": "{{model}}: {{id}}",
+        "sha256": "sha256: {{hash}}"
+      },
+      "toast": {
+        "fetchFailed": "Failed to load files",
+        "downloadFailed": "Failed to download file",
+        "deleteSuccess": "Files deleted",
+        "deleteFailed": "Failed to delete files"
+      },
+      "modal": {
+        "confirmTitle": "Confirm Delete",
+        "confirmPrompt": "Delete {{count}} selected files?",
+        "confirmWarning": "This action cannot be undone."
+      },
+      "actions": {
+        "confirm": "Confirm",
+        "batchDelete": "Delete Selected ({{count}})"
+      }
+    },
+    "images": {
+      "title": "Image Management",
+      "selectAll": "Select all",
+      "empty": "No images",
+      "columns": {
+        "preview": "Preview",
+        "filename": "Filename",
+        "size": "Size",
+        "type": "Type",
+        "uploaded": "Uploaded",
+        "actions": "Actions"
+      },
+      "actions": {
+        "batchDelete": "Delete Selected ({{count}})"
+      }
+    },
+    "globalSearch": {
+      "title": "Global Search",
+      "model": "Model",
+      "selectModel": "Select a model...",
+      "filters": "Filter Fields",
+      "sort": "Sort By",
+      "noResults": "No results found",
+      "detailTitle": "{{model}} Detail",
+      "toast": {
+        "modelsFailed": "Failed to load models",
+        "searchFailed": "Search failed"
+      }
+    },
+    "system": {
+      "title": "System Settings",
+      "noData": "No configuration data available",
+      "actions": {
+        "update": "Update Config",
+        "reset": "Reset",
+        "restart": "Restart System"
+      },
+      "toast": {
+        "fetchFailed": "Failed to fetch system configuration",
+        "updateSuccess": "System configuration updated",
+        "updateFailed": "Failed to update system configuration",
+        "restartSuccess": "System restarted successfully",
+        "restartFailed": "Failed to restart system",
+        "invalidJsonArray": "Enter a valid JSON array or object"
+      },
+      "update": {
+        "title": "Confirm Update",
+        "prompt": "You are about to update system configuration. Continue?",
+        "warning": "Warning: This may cause the system to fail.",
+        "confirm": "Update",
+        "cancel": "Cancel"
+      },
+      "restart": {
+        "title": "Restart Required",
+        "manualTitle": "Confirm Restart",
+        "prompt": "Configuration updated. Restart now to apply changes?",
+        "manualPrompt": "The system will restart now. Continue?",
+        "warning": "Warning: Restart may cause the system to become unavailable.",
+        "confirm": "Restart Now",
+        "cancel": "Restart Later",
+        "inProgress": "Restarting..."
+      },
+      "sections": {
+        "basic": "Basic Settings",
+        "gin": "Gin Settings",
+        "database": "Database Settings",
+        "redis": "Redis Settings",
+        "k8s": "Kubernetes Settings",
+        "nfs": "NFS Settings",
+        "cheat": "Risk Control",
+        "webhook": "Webhook Settings"
+      },
+      "labels": {
+        "host": "External Host",
+        "path": "Data Path",
+        "geocity_db": "GeoCityDB Path",
+        "logLevel": "Log Level",
+        "saveLogs": "Save Logs to files",
+        "workerLog": "Task Queue Log Level",
+        "concurrency": "Task Queue Max Concurrency",
+        "ginHost": "Host",
+        "ginMode": "Mode",
+        "ginPort": "Port",
+        "ginUploadMax": "Max Upload Size (MB)",
+        "ginGlobalRate": "Global Rate Limit (RPS)",
+        "ginProxies": "Trusted Proxy List",
+        "ginLogWhitelist": "Request Log Filter Whitelist",
+        "ginRateWhitelist": " IP Rate Limit Whitelist",
+        "ginCORS": "CORS",
+        "ginJWTSecret": "JWT Secret",
+        "ginJWTStatic": "Use Static Value",
+        "dbHost": "DB Host",
+        "dbPort": "DB Port",
+        "dbName": "DB Name",
+        "dbUser": "DB User",
+        "dbPassword": "Password",
+        "dbIdle": "Max Idle Connections",
+        "dbOpen": "Max Open Connections",
+        "dbLogLevel": "DB Log Level",
+        "redisHost": "Redis Host",
+        "redisPort": "Redis Port",
+        "redisPassword": "Password",
+        "k8sConfig": "Kubeconfig Path",
+        "k8sNamespace": "Namespace",
+        "k8sTcpdump": "TCPdump Image",
+        "k8sWorker": "Pods = len(nodes) * rate * len(challenges)",
+        "externalNetwork": "External Network",
+        "frp": "Frp",
+        "frpOn": "Use Frp to Expose Victims",
+        "frpc": "Frpc Image",
+        "nginx": "Nginx Image",
+        "frps": "Frps",
+        "frpsHostname": "Hostname",
+        "frpsPort": "Port",
+        "frpsToken": "Auth Token",
+        "nfsServer": "Server",
+        "nfsPath": "Storage Path",
+        "nfsStorage": "Storage Size",
+        "cheatIpWhitelist": "Cheat Filter IP Whitelist",
+        "webhookBlacklist": "Webhook Target Blacklist (IP / CIDR / Hostname)"
+      },
+      "k8s": {
+        "cidr": "CIDR",
+        "gateway": "Gateway",
+        "interface": "Interface",
+        "excludeIps": "Exclude IPs",
+        "frp": "Frp",
+        "nginx": "Nginx",
+        "enabled": "Enabled",
+        "host": "Host",
+        "port": "Port",
+        "token": "Token",
+        "allowedPorts": "Allowed Ports"
+      }
+    }
+  },
+  "home": {
+    "hero": {
+      "titlePrefix": "Dive Deep into the",
+      "titleHighlight": "Cyber Security",
+      "titleSuffix": "Challenge",
+      "subtitle": "Join the elite community of hackers, compete in real-world challenges, and master the art of cybersecurity through hands-on experience.",
+      "start": "START HACKING",
+      "learnMore": "LEARN MORE"
+    },
+    "stats": {
+      "activePlayers": "Active Players",
+      "challenges": "Challenges",
+      "events": "CTF Events",
+      "successRate": "Success Rate"
+    },
+    "challengeTypes": {
+      "titlePrefix": "Master All Aspects of",
+      "titleHighlight": "Cyber Security",
+      "subtitle": "From web exploitation to binary analysis, our challenges cover every major domain of cybersecurity",
+      "web": {
+        "name": "Web Security",
+        "description": "Exploit web vulnerabilities, master XSS, SQLi, and more"
+      },
+      "crypto": {
+        "name": "Cryptography",
+        "description": "Break ciphers, crack codes, and solve cryptographic puzzles"
+      },
+      "forensics": {
+        "name": "Forensics",
+        "description": "Analyze digital evidence and recover hidden data"
+      },
+      "binary": {
+        "name": "Binary Exploitation",
+        "description": "Exploit buffer overflows, PWN"
+      },
+      "reverse": {
+        "name": "Reverse Engineering",
+        "description": "Reverse engineering, exploit reverse engineering"
+      },
+      "blockchain": {
+        "name": "Blockchain",
+        "description": "Blockchain Security"
+      }
+    },
+    "upcoming": {
+      "titlePrefix": "Upcoming",
+      "titleHighlight": "Competitions",
+      "subtitle": "Register now for our upcoming CTF events and compete with the best"
+    },
+    "leaderboard": {
+      "titlePrefix": "Top",
+      "titleHighlight": "Performers",
+      "subtitle": "Meet the elite teams leading our global leaderboard"
+    }
+  },
+  "auth": {
+    "login": "LOGIN",
+    "register": "REGISTER",
+    "adminLogin": "ADMIN LOGIN",
+    "placeholders": {
+      "username": "Username",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password"
+    },
+    "validation": {
+      "usernameMin": "Username must be at least 3 characters",
+      "passwordMin": "Password must be at least 6 characters",
+      "passwordMismatch": "Passwords do not match",
+      "emailInvalid": "Invalid email address",
+      "usernameRequired": "Username is required",
+      "passwordRequired": "Password is required"
+    },
+    "oauth": {
+      "or": "Or sign in with",
+      "useProvider": "Sign in with {{provider}}"
+    }
+  },
+  "oauth": {
+    "callback": {
+      "errorWithReason": "OAuth error: {{reason}}",
+      "tokenMissing": "OAuth token missing",
+      "toast": {
+        "success": "Login successful",
+        "failed": "OAuth login failed"
+      },
+      "processing": {
+        "title": "Processing...",
+        "subtitle": "Finishing secure login"
+      },
+      "success": {
+        "title": "Login successful",
+        "subtitle": "Redirecting to games..."
+      },
+      "error": {
+        "title": "Login failed",
+        "subtitle": "Redirecting to login..."
+      }
+    }
+  },
+  "toast": {
+    "home": {
+      "fetchFailed": "Failed to load home data"
+    },
+    "oauth": {
+      "providersFailed": "Failed to load OAuth providers"
+    },
+    "auth": {
+      "loginSuccess": "Login successful",
+      "loginFailed": "Login failed",
+      "registerFailed": "Registration failed"
+    },
+    "user": {
+      "profileUpdated": "Profile updated",
+      "passwordUpdated": "Password updated",
+      "passwordUpdateFailed": "Password update failed",
+      "verifyEmailSent": "Verification email sent",
+      "verifyEmailHint": "Please check your inbox",
+      "accountDeleted": "Account deleted",
+      "avatarUpdated": "Avatar updated",
+      "fetchFailed": "Failed to fetch user info",
+      "fetchAdminFailed": "Failed to fetch admin info"
+    },
+    "common": {
+      "updateFailed": "Update failed",
+      "sendFailed": "Send failed",
+      "deleteFailed": "Delete failed",
+      "operationFailed": "Operation failed"
+    },
+    "game": {
+      "fetchListFailed": "Failed to load contests"
+    },
+    "team": {
+      "checkStatusFailed": "Failed to check team status",
+      "createSuccess": "Team created",
+      "createFailed": "Failed to create team",
+      "joinSuccess": "Joined team",
+      "joinFailed": "Failed to join team"
+    }
+  },
+  "errors": {
+    "unauthorized": "Unauthorized or session expired",
+    "forbidden": "You do not have permission to access this resource",
+    "notFound": "Requested resource not found",
+    "serverError": "Internal server error",
+    "badGateway": "Bad gateway",
+    "serviceUnavailable": "Service temporarily unavailable",
+    "gatewayTimeout": "Gateway timeout",
+    "requestFailed": "Request failed",
+    "requestTimeout": "Request timed out. Please check your network connection",
+    "networkError": "Unable to connect to server"
+  },
+  "user": {
+    "settings": {
+      "title": "User Settings",
+      "sections": {
+        "profile": "Profile",
+        "security": "Security",
+        "logout": "Logout"
+      },
+      "emailVerified": "✓ Email verified",
+      "emailNotVerified": "⚠ Email not verified",
+      "displayName": "Display Name",
+      "verify": "VERIFY",
+      "bio": "Bio",
+      "changePassword": "Change Password",
+      "placeholders": {
+        "currentPassword": "Current password",
+        "newPassword": "New password",
+        "confirmPassword": "Confirm new password"
+      },
+      "updatePassword": "UPDATE PASSWORD",
+      "deleteAccount": "Delete Account",
+      "deleteAccountHint": "Once you delete your account, there is no going back. Please be certain.",
+      "deleteAccountAction": "DELETE ACCOUNT",
+      "deleteAccountConfirm": "Are you sure you want to delete your account? This action cannot be undone.",
+      "verifyEmail": "Verify Email",
+      "verifyEmailHint": "We will send a verification link to your email address. Please check your inbox and follow the instructions.",
+      "validation": {
+        "currentPasswordRequired": "Current password is required"
+      }
+    }
+  },
+  "contact": {
+    "title": "Contact Us",
+    "methods": {
+      "github": {
+        "title": "GitHub",
+        "description": "Search in our repositories",
+        "action": "VIEW REPO"
+      },
+      "email": {
+        "title": "Email Support",
+        "description": "Contact us directly for business inquiries",
+        "action": "SEND EMAIL"
+      }
+    }
+  },
+  "support": {
+    "techStack": {
+      "title": "Technology Stack",
+      "categories": {
+        "frontend": "Frontend",
+        "backend": "Backend",
+        "devops": "DevOps"
+      },
+      "items": {
+        "react": "UI Framework",
+        "tailwind": "Styling",
+        "motion": "Animations",
+        "go": "API Server",
+        "mysql": "Database",
+        "redis": "Caching",
+        "docker": "Container Platform",
+        "k8s": "Container Orchestration",
+        "jenkins": "CI/CD Pipeline"
+      },
+      "roles": {
+        "frontendLead": "Frontend Lead",
+        "backendLead": "Backend Lead"
+      }
+    },
+    "team": {
+      "title": "Development Team"
+    }
+  },
+  "game": {
+    "status": {
+      "upcoming": "UPCOMING",
+      "active": "ACTIVE",
+      "ended": "ENDED"
+    },
+    "actions": {
+      "results": "RESULTS",
+      "joinNow": "JOIN NOW",
+      "ended": "ENDED"
+    },
+    "challengeBoard": {
+      "solves": "Solves:",
+      "status": {
+        "notInitialized": "Not Initialized",
+        "instanceRunning": "Instance Running"
+      }
+    },
+    "challengeModal": {
+      "hint": {
+        "show": "Show Hint",
+        "hide": "Hide Hint"
+      },
+      "errors": {
+        "selectOption": "Please select at least one option"
+      },
+      "instance": {
+        "running": "RUNNING",
+        "notRunning": "NOT RUNNING",
+        "time": "Time:",
+        "address": "Address:"
+      },
+      "actions": {
+        "launching": "LAUNCHING...",
+        "launch": "LAUNCH INSTANCE",
+        "extending": "EXTENDING...",
+        "extend": "EXTEND TIME",
+        "destroying": "DESTROYING...",
+        "destroy": "DESTROY",
+        "resetting": "RESETTING...",
+        "reset": "RESET FLAG"
+      },
+      "sections": {
+        "hints": "Hints",
+        "questionOptions": "Select Answer",
+        "description": "Description",
+        "attachments": "Attachments",
+        "submitAnswer": "Submit Answer",
+        "submitFlag": "Submit Flag"
+      },
+      "initialize": {
+        "message": "Initialize the challenge to view its content",
+        "loading": "INITIALIZING...",
+        "action": "INITIALIZE CHALLENGE"
+      },
+      "submit": {
+        "selectedOptions": "Selected {{count}} options",
+        "selectOptions": "Please select answer options",
+        "submitting": "SUBMITTING...",
+        "button": "{{status}} {{attempts}}/{{max}}"
+      }
+    },
+    "contestEnded": {
+      "titlePrefix": "Contest",
+      "titleHighlight": "Completed",
+      "teamPerformance": {
+        "title": "Your Team Performance"
+      },
+      "writeups": {
+        "title": "Writeups",
+        "dropzone": "Drag and drop files or click here to upload your writeups",
+        "supports": "Supports PDF, DOC, DOCX",
+        "uploaded": "Uploaded Writeups"
+      },
+      "actions": {
+        "viewChallenges": "VIEW CHALLENGES",
+        "viewFinalScoreboard": "VIEW FINAL SCOREBOARD"
+      }
+    },
+    "teamStatus": {
+      "rank": "Rank #{{rank}}"
+    },
+    "statusPanel": {
+      "contestStatus": "Contest Status",
+      "startTime": "Start Time",
+      "timeUntilStart": "Time Until Start",
+      "timeRemaining": "Time Remaining",
+      "teamScore": "Team Score",
+      "flagsSolved": "Flags Solved"
+    },
+    "scoreboardStats": {
+      "totalTeams": "Total Teams",
+      "totalPlayers": "Total Players",
+      "totalSolves": "Total Solves",
+      "highestScore": "Highest Score"
+    },
+    "scoreboardTable": {
+      "headers": {
+        "rank": "RANK",
+        "team": "TEAM",
+        "score": "SCORE"
+      },
+      "members": "{{count}} members",
+      "status": {
+        "solved": "Solved",
+        "unsolved": "Unsolved"
+      }
+    },
+    "detail": {
+      "defaultRules": [
+        "Participants must follow contest rules and ethics",
+        "Attacking the contest platform or other participants is prohibited",
+        "Do not share challenge answers or solution writeups",
+        "Each team may have up to 4 members",
+        "The contest uses a dynamic scoring system",
+        "First Blood awards are available",
+        "Violations will result in disqualification"
+      ],
+      "defaultPrizes": [
+        {
+          "amount": "¥10,000",
+          "description": "First Prize: cash award and CBCTF souvenir"
+        },
+        {
+          "amount": "¥5,000",
+          "description": "Second Prize: cash award and gifts"
+        },
+        {
+          "amount": "¥3,000",
+          "description": "Third Prize: cash award"
+        }
+      ],
+      "defaultTimeline": [
+        {
+          "date": "2024-02-15",
+          "title": "Registration Opens",
+          "description": "Registration opens and teams can sign up"
+        },
+        {
+          "date": "2024-02-16",
+          "title": "Contest Starts",
+          "description": "Challenges are released and the contest begins"
+        },
+        {
+          "date": "2024-02-17",
+          "title": "Contest Ends",
+          "description": "Scoring stops and final rankings are published"
+        },
+        {
+          "date": "2024-02-18",
+          "title": "Writeups Released",
+          "description": "Official writeups are published for sharing"
+        }
+      ],
+      "toast": {
+        "fetchFailed": "Failed to load contest details"
+      }
+    },
+    "team": {
+      "empty": "No team information available",
+      "toast": {
+        "fetchFailed": "Failed to load team information",
+        "inviteCopied": "Invite code copied",
+        "inviteRefreshed": "Invite code refreshed",
+        "inviteRefreshFailed": "Failed to refresh invite code",
+        "updateSuccess": "Team info updated",
+        "updateFailed": "Failed to update team info",
+        "memberRemoved": "Member removed",
+        "memberRemovedDescription": "{{name}} has been removed from the team",
+        "removeFailed": "Failed to remove member",
+        "disbanded": "Team disbanded",
+        "disbandFailed": "Failed to disband team",
+        "avatarUpdated": "Team avatar updated",
+        "avatarUploadFailed": "Failed to upload avatar"
+      }
+    },
+    "challenges": {
+      "backToSummary": "← Back to contest summary",
+      "toast": {
+        "fetchFailed": "Failed to load contest data",
+        "fetchCategoriesFailed": "Failed to load categories",
+        "fetchListFailed": "Failed to load challenges",
+        "fetchWriteupsFailed": "Failed to load writeups",
+        "refreshStatusFailed": "Failed to refresh challenge status",
+        "initSuccess": "Challenge initialized",
+        "initFailed": "Initialization failed",
+        "resetSuccess": "Task dispatched",
+        "resetFailed": "Reset failed",
+        "launchSuccess": "Task dispatched",
+        "launchFailed": "Failed to start instance",
+        "extendSuccess": "Time extended",
+        "extendFailed": "Failed to extend time",
+        "destroySuccess": "Instance destroyed",
+        "destroyFailed": "Destroy failed",
+        "submitSuccess": "Submission successful",
+        "submitSuccessMessage": "Submission successful!",
+        "fetchStatusFailed": "Failed to load challenge status",
+        "downloadSuccess": "Attachment downloaded",
+        "downloadFailed": "Download failed",
+        "uploadSuccess": "Writeup uploaded",
+        "uploadThanks": "Thanks for sharing your solution!",
+        "uploadFailed": "Failed to upload writeup"
+      }
+    },
+    "scoreboard": {
+      "headers": {
+        "rank": "RANK",
+        "team": "TEAM",
+        "score": "SCORE",
+        "challenges": "CHALLENGES",
+        "lastSubmit": "LAST SUBMIT"
+      },
+      "total": "TOTAL",
+      "toast": {
+        "fetchFailed": "Failed to load scoreboard"
+      }
+    }
+  },
+  "utils": {
+    "time": {
+      "stopped": "Stopped",
+      "ended": "Ended",
+      "startingSoon": "Starting soon",
+      "justNow": "Just now",
+      "units": {
+        "day": "{{count}}d",
+        "hour": "{{count}}h",
+        "minute": "{{count}}m",
+        "second": "{{count}}s"
+      },
+      "ago": {
+        "minute": "{{count}} minutes ago",
+        "hour": "{{count}} hours ago",
+        "day": "{{count}} days ago"
+      }
+    },
+    "hex": {
+      "invalid": "Invalid hex data"
+    }
+  }
+}
