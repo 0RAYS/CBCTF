@@ -1,6 +1,7 @@
 package db
 
 import (
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 
 	"gorm.io/gorm"
@@ -50,4 +51,12 @@ func InitGroupRepo(tx *gorm.DB) *GroupRepo {
 			DB: tx,
 		},
 	}
+}
+func (g *GroupRepo) InitDefaultGroups() model.RetVal {
+	for _, group := range model.DefaultGroups {
+		if _, ret := g.Insert(group); !ret.OK && ret.Msg != i18n.Model.DuplicateKeyValue {
+			return ret
+		}
+	}
+	return model.SuccessRetVal()
 }

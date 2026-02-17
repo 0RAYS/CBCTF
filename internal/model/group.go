@@ -1,10 +1,23 @@
 package model
 
+const (
+	AdminGroupName     = "admin"
+	OrganizerGroupName = "organizer"
+	UserGroupName      = "user"
+)
+
+var DefaultGroups = []Group{
+	{Name: AdminGroupName, Description: "系统管理员", Default: true},
+	{Name: OrganizerGroupName, Description: "赛事主办方", Default: true},
+	{Name: UserGroupName, Description: "选手", Default: true},
+}
+
 type Group struct {
 	Users       []User `gorm:"many2many:user_groups;" json:"-"`
-	RoleID      uint   `gorm:"default:null" json:"role_id"`
+	RoleID      uint   `gorm:"default:null;index" json:"role_id"`
 	Name        string `gorm:"type:varchar(255);uniqueIndex;not null" json:"name"`
 	Description string `json:"description"`
+	Default     bool   `json:"default"`
 	BaseModel
 }
 
@@ -25,5 +38,5 @@ func (g Group) UniqueFields() []string {
 }
 
 func (g Group) QueryFields() []string {
-	return []string{"id", "role_id", "name", "description"}
+	return []string{"id", "role_id", "name", "description", "default"}
 }

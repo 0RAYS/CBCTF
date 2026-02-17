@@ -1,6 +1,7 @@
 package db
 
 import (
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 
 	"gorm.io/gorm"
@@ -44,4 +45,13 @@ func InitRoleRepo(tx *gorm.DB) *RoleRepo {
 			DB: tx,
 		},
 	}
+}
+
+func (r *RoleRepo) InitDefaultRoles() model.RetVal {
+	for _, role := range model.DefaultRoles {
+		if _, ret := r.Insert(role); !ret.OK && ret.Msg != i18n.Model.DuplicateKeyValue {
+			return ret
+		}
+	}
+	return model.SuccessRetVal()
 }

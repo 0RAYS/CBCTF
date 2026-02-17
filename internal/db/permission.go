@@ -1,6 +1,7 @@
 package db
 
 import (
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 
 	"gorm.io/gorm"
@@ -44,4 +45,13 @@ func InitPermissionRepo(tx *gorm.DB) *PermissionRepo {
 			DB: tx,
 		},
 	}
+}
+
+func (p *PermissionRepo) InitPermissions() model.RetVal {
+	for _, permission := range model.Permissions {
+		if _, ret := p.Insert(permission); !ret.OK && ret.Msg != i18n.Model.DuplicateKeyValue {
+			return ret
+		}
+	}
+	return model.SuccessRetVal()
 }
