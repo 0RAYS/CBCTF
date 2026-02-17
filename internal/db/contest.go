@@ -135,6 +135,32 @@ func InitContestRepo(tx *gorm.DB) *ContestRepo {
 	}
 }
 
+func (c *ContestRepo) GetByUserID(userID uint) ([]model.Contest, model.RetVal) {
+	var contests []model.Contest
+	res := c.DB.Raw(`
+		SlECT contests.* FROM contests
+		INNER JOIN user_contests ON user_contests.contest_id = contests.id
+		WHERE user_contests.user_id = ? AND contests.deleted_at IS NULL
+	`, userID).Scan(&contests)
+	if res.Error != nil {
+		log.Logger.Fatalf("Failed to get Contests: %s", res.Error)
+		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Contest{}.ModelName(), "Error": res.Error.Error()}}
+	}
+	return contests, model.RetVal{}
+}
+
+func (c *ContestRepo) GetIDByUserID(userID uint) ([]uint, model.RetVal) {
+	contests, ret := c.GetByUserID(userID)
+	if !ret.OK {
+		return nil, ret
+	}
+	var contestIDL []uint
+	for _, contest := range contests {
+		contestIDL = append(contestIDL, contest.ID)
+	}
+	return contestIDL, ret
+}
+
 func (c *ContestRepo) Delete(idL ...uint) model.RetVal {
 	contestL, _, ret := c.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},

@@ -52,7 +52,7 @@ func CheckAuth(ctx *gin.Context) {
 				}
 				ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
 			} else {
-				contestIDL, ret := db.GetContestIDByUserID(db.DB, user.ID)
+				contestIDL, ret := db.InitContestRepo(db.DB).GetIDByUserID(user.ID)
 				if !ret.OK {
 					ctx.JSON(http.StatusOK, ret)
 					return

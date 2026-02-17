@@ -60,7 +60,7 @@ model:
     namePasswordWrong: "Name or password is wrong"
     unverifiedEmail: "Email is unverified"
     alreadyVerified: "Email is already verified"
-    inContest: "User is in Contest {{.Contest}}, cannot delete account"
+    inContest: "User has joined Contest, cannot delete account"
   victim:
     limited: "Victims is max count"
     hasMuchTime: "Can only extend time within 20 minutes before the container closes"

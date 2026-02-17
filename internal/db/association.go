@@ -8,20 +8,6 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetContestIDByUserID(tx *gorm.DB, userID uint) ([]uint, model.RetVal) {
-	var ucs []model.UserContest
-	res := tx.Model(&model.UserContest{}).Where("user_id = ?", userID).Find(&ucs)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to get contest: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Contest{}.ModelName(), "Error": res.Error.Error()}}
-	}
-	var idL []uint
-	for _, uc := range ucs {
-		idL = append(idL, uc.ContestID)
-	}
-	return idL, model.SuccessRetVal()
-}
-
 // AppendUserToTeam Many2Many
 func AppendUserToTeam(tx *gorm.DB, user model.User, team model.Team) model.RetVal {
 	res := tx.Model(&model.UserTeam{}).Create(&model.UserTeam{UserID: user.ID, TeamID: team.ID})
