@@ -13,9 +13,12 @@ const (
 	PermRoleDelete = "role:delete"
 	PermRoleList   = "role:list"
 	PermRoleAssign = "role:assign"
+	PermRoleRevoke = "role:revoke"
 
-	PermPermissionRead = "permission:read"
-	PermPermissionList = "permission:list"
+	PermPermissionRead   = "permission:read"
+	PermPermissionList   = "permission:list"
+	PermPermissionAssign = "permission:assign"
+	PermPermissionRevoke = "permission:revoke"
 
 	PermGroupCreate = "group:create"
 	PermGroupRead   = "group:read"
@@ -37,9 +40,12 @@ var Permissions = []Permission{
 	{Name: PermRoleDelete, Resource: "role", Operation: "delete", Description: "删除角色"},
 	{Name: PermRoleList, Resource: "role", Operation: "list", Description: "查看角色列表"},
 	{Name: PermRoleAssign, Resource: "role", Operation: "assign", Description: "分配角色"},
+	{Name: PermRoleRevoke, Resource: "role", Operation: "revoke", Description: "移除角色"},
 
 	{Name: PermPermissionRead, Resource: "permission", Operation: "read", Description: "查看权限详情"},
 	{Name: PermPermissionList, Resource: "permission", Operation: "list", Description: "查看权限列表"},
+	{Name: PermPermissionAssign, Resource: "permission", Operation: "assign", Description: "分配权限"},
+	{Name: PermPermissionRevoke, Resource: "permission", Operation: "revoke", Description: "移除权限"},
 
 	{Name: PermGroupCreate, Resource: "group", Operation: "create", Description: "创建权限分组"},
 	{Name: PermGroupRead, Resource: "group", Operation: "read", Description: "查看权限分组详情"},
