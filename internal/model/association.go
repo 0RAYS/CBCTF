@@ -16,6 +16,6 @@ type UserGroup struct {
 }
 
 type RolePermission struct {
-	UserID uint `gorm:"index:idx_role_permission,unique"`
-	RoleID uint `gorm:"index:idx_role_permission,unique"`
+	RoleID       uint `gorm:"index:idx_role_permission,unique"`
+	PermissionID uint `gorm:"index:idx_role_permission,unique"`
 }
