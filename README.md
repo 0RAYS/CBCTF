@@ -1,76 +1,185 @@
-# 🏆 CBCTF
+# CBCTF
 
-[![Go Version](https://img.shields.io/badge/Go-1.21+-blue.svg)](https://golang.org)
-[![License](https://img.shields.io/badge/License-Apache-green.svg)](LICENSE)
+[![Go Version](https://img.shields.io/badge/Go-1.26+-blue.svg)](https://golang.org)
+[![React](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev)
 [![Kubernetes](https://img.shields.io/badge/Kubernetes-1.20+-blue.svg)](https://kubernetes.io)
-[![Redis](https://img.shields.io/badge/Redis-6.0+-red.svg)](https://redis.io)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0+-orange.svg)](https://mysql.com)
+[![Redis](https://img.shields.io/badge/Redis-6.0+-red.svg)](https://redis.io)
+[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 
-> **CBCTF** 是一个基于 Go 语言开发的高性能 CTF 竞赛平台
+CBCTF 是一个基于 Go 语言开发的高性能 CTF 竞赛平台，前后端一体化编译，支持动态容器、动态附件、VPC 网络隔离等特性。
 
-## ✨ 核心特性
+## 特性概览
 
-### 🎯 多样化题目类型
+**题目系统**
+- 静态题目 / 动态题目 / 动态容器，支持问答类题目
+- Flag 类型：静态 Flag、动态 Flag、UUID Flag，可注入环境变量或文件挂载
+- 分值系统：静态 / 线性 / 非线性动态分值，支持三血奖励
 
-#### 📝 题目类型
+**竞赛管理**
+- 团队管理、实时排行榜、公告系统
+- Writeup 收集与批量下载
+- 完整的比赛事件日志
+
+**动态容器**
+- 基于 Kubernetes 的队伍隔离容器环境
+- Pod / VPC 两种网络模式，VPC 基于 Kube-OVN 实现网络隔离
+- 支持 Frp 端口转发、镜像预热、容器预热、流量抓取
+
+**动态附件生成**
+- 基于 Kubernetes 的容器化隔离生成
+- 可基于通用 Docker 镜像，通过上传 Python 脚本进行生成
+
+**安全特性**
+- 设备指纹 (FingerprintJS) + JWT 双重认证
+- 作弊检测（Flag 共享、设备指纹异常）
+- 基于 Redis 的速率限制，支持全局及 IP 白名单
+
+**其他**
+- WebSocket 实时通知
+- 异步任务队列（邮件、Webhook、附件生成、图片处理）
+- OAuth / OIDC 第三方认证
+- 国际化 (i18n) 支持
+- Prometheus 监控指标
+
+## 技术栈
+
+### 后端
+
+| 组件        | 技术                | 版本    |
+|-----------|-------------------|-------|
+| 语言        | Go                | 1.26  |
+| Web 框架    | Gin               | 1.11  |
+| ORM       | GORM              | 1.31  |
+| 数据库       | MySQL             | 8.0+  |
+| 缓存 / 消息队列 | Redis             | 6.0+  |
+| 异步任务      | Asynq             | 0.26  |
+| 定时任务      | robfig/cron       | v3    |
+| WebSocket | Gorilla WebSocket | 1.5   |
+| 容器编排      | Kubernetes        | 1.20+ |
+| 网络插件      | Kube-OVN / Multus | -     |
+| JWT       | golang-jwt        | v5    |
+| 配置管理      | Viper             | 1.21  |
+
+### 前端
+
+| 组件       | 技术            | 版本   |
+|----------|---------------|------|
+| 框架       | React         | 19   |
+| 构建工具     | Vite          | 7    |
+| 状态管理     | Redux Toolkit | 2    |
+| HTTP 客户端 | Axios         | 1.13 |
+| CSS      | Tailwind CSS  | 4    |
+| 路由       | React Router  | 7    |
+| 国际化      | i18next       | 25   |
+| 图表       | ECharts       | 6    |
+| 代码编辑器    | Monaco Editor | 4    |
+| 设备指纹     | FingerprintJS | 5    |
+
+## 快速开始
+
+### 环境要求
+
+- Go 1.26+
+- Node.js 22+ / pnpm
+- MySQL 8.0+
+- Redis 6.0+
+- Kubernetes 1.20+（动态容器功能需要）
+
+### 启动依赖服务
+
+项目根目录提供了 `docker-compose.yml`，可快速启动 MySQL 和 Redis：
+
+```bash
+docker compose up -d
+```
+
+### 构建
+
+```bash
+# 构建前端
+cd frontend && pnpm install && pnpm run build && cd ..
+
+# 构建后端（前端静态文件会被嵌入二进制）
+go build -ldflags="-s -w" -trimpath
+```
+
+### 运行
+
+首次运行会自动生成 `config.yml` 配置文件，修改配置后重新启动：
+
+```bash
+./CBCTF
+```
+
+如需使用动态容器功能，需先初始化 Kubernetes 资源（命名空间、NFS PV/PVC、外部网络子网）：
+
+```bash
+./CBCTF k8s init
+```
+
+## 配置说明
+
+配置文件 `config.yml` 在首次运行时从内置默认配置自动生成。主要配置段：
+
+| 配置段          | 说明                                    |
+|--------------|---------------------------------------|
+| `host`       | 后端服务对外地址                              |
+| `path`       | 数据存储路径                                |
+| `log`        | 日志级别 (DEBUG/INFO/WARNING/ERROR)、是否持久化 |
+| `gin`        | 服务监听地址/端口、上传限制、速率限制、CORS、JWT          |
+| `gorm.mysql` | MySQL 连接配置、连接池参数                      |
+| `redis`      | Redis 连接配置                            |
+| `k8s`        | Kubeconfig 路径、命名空间、外部网络 CIDR、Frp 配置   |
+| `nfs`        | NFS 服务器地址、挂载路径、存储容量                   |
+| `cheat`      | 作弊检测 IP 白名单                           |
+| `webhook`    | Webhook 目标地址黑名单                       |
+| `asynq`      | 异步任务并发数                               |
+
+支持环境变量覆盖，前缀为 `CBCTF_`，例如 `CBCTF_GIN_PORT=9000`。
+
+## 题目系统
+
+### 题目类型
+
 - **静态题目** - 队伍间共用附件，适合传统 CTF 题目
 - **动态题目** - 实时生成唯一附件，确保每个队伍获得不同的挑战
 - **动态容器** - 自动生成并启动队伍隔离的容器环境
 
-#### 🚩 Flag 类型
-| 类型 | 格式 | 说明 |
-|------|------|------|
-| **静态 Flag** | `static{固定内容}` | 每次生成的 flag 均相等 |
-| **动态 Flag** | `dynamic{随机内容}` | 基于模板随机变化，保持可读性 |
-| **UUID Flag** | `uuid{}` | 标准 UUID 格式 |
+### Flag 类型
 
-> 💡 **动态容器支持**：Flag 可注入至环境变量或作为文件挂载至指定路径
+| 类型        | 格式              | 说明             |
+|-----------|-----------------|----------------|
+| 静态 Flag   | `static{固定内容}`  | 每次生成的 Flag 均相等 |
+| 动态 Flag   | `dynamic{随机内容}` | 基于模板随机变化，保持可读性 |
+| UUID Flag | `uuid{}`        | 标准 UUID 格式     |
 
-#### 🏅 分值系统
-- **静态分数** - 每个 flag 的分数不随接触人数变化
-- **线性分数** - 随着接触人数增加，等量减少分值
-- **非线性分数** - 使用公式：`(MinScore - InitScore) / (Decay²) * (Solvers²) + InitScore`
+动态容器支持将 Flag 注入至环境变量或作为文件挂载至指定路径。
 
-> 🎁 **三血奖励**：一二三血奖励依次为初始分数的 5%、3%、1%
+### 分值系统
 
-### 🚀 技术架构
+- **静态分数** - 分值固定，不随解题人数变化
+- **线性分数** - 随解题人数增加等量递减
+- **非线性分数** - 计算公式：`(MinScore - InitScore) / (Decay^2) * (Solvers^2) + InitScore`
 
-- **🔄 动态附件生成** - 基于 Kubernetes 的容器化生成
-- **🌐 自定义网络** - 基于 Kube-OVN 的 VPC 网络隔离
-- **📧 邮件验证** - SMTP 邮件验证功能
-- **📝 Writeup 管理** - 平台内 Writeup 收集与下载
-- **📊 事件日志** - 完整的比赛期间动作事件记录
-- **⚡ 高性能缓存** - 基于 Redis 的数据缓存
-- **💾 数据存储** - MySQL 数据库存储
-- **📁 文件存储** - 基于 NFS 的文件存储系统
-- **🔥 预热机制** - 支持镜像预热、容器预热
+三血奖励：一血 / 二血 / 三血分别额外获得初始分数的 5% / 3% / 1%。
 
-## 🐳 动态附件系统
+## 动态容器系统
 
-### 核心优势
-- ✅ **环境隔离** - 采用 Docker 容器进行生成，与主机环境完全隔离
-- ✅ **灵活配置** - 可基于通用 Docker 镜像，通过上传 Python 脚本进行生成
-- ✅ **减轻负担** - 大幅减轻出题人的配置压力
+### 网络模式
 
-### 📖 使用示例
-详细示例请参考：[动态附件示例](example/dynamic/README.md)
+后端通过 docker-compose 配置自动区分网络环境：
 
-## 🏗️ 动态容器系统
+| 模式  | 判断条件              | 说明                              |
+|-----|-------------------|---------------------------------|
+| Pod | 未配置 `networks` 字段 | 使用默认网络，容器间可直接通信                 |
+| VPC | 配置了 `networks` 字段 | 基于 Kube-OVN 的 VPC 网络隔离，需手动指定 IP |
 
-### 网络环境区分
+### 配置示例
 
-后端通过以下方式区分题目网络环境：
+**Pod 模式：**
 
-| 环境类型 | 判断条件 | 配置要求 |
-|----------|----------|----------|
-| **Pod** | docker-compose 中未配置 `networks` 字段 | 使用默认网络 |
-| **VPC** | docker-compose 中配置了 `networks` 字段 | 所有容器须配置 `networks`，手动指定 IP 地址 |
-
-### 📁 配置示例
-
-#### Pod 环境
 ```yaml
-# 示例配置
 version: '3'
 services:
   web:
@@ -78,11 +187,12 @@ services:
     ports:
       - "80:80"
 ```
+
 详细示例：[Pod 配置示例](example/pods/pod/docker-compose.yml)
 
-#### VPC 环境
+**VPC 模式：**
+
 ```yaml
-# 示例配置
 version: '3'
 services:
   web:
@@ -94,38 +204,35 @@ networks:
   vpc:
     external: true
 ```
+
 详细示例：[VPC 配置示例](example/pods/vpc/docker-compose.yml)
 
-## 🔧 环境依赖
+## 动态附件系统
 
-### 必需组件
+基于 Kubernetes 容器化生成，支持上传 Python 脚本在隔离环境中为每个队伍生成唯一附件。
 
-| 组件 | 版本要求 | 说明 |
-|------|----------|------|
-| **[Kube-OVN](https://kubeovn.github.io/docs/stable/start/prepare/)** | 最新稳定版 | 自定义 VPC 网络支持 |
-| **[Multus](https://github.com/k8snetworkplumbingwg/multus-cni/tree/master)** | 最新版本 | 多网络接口支持 |
+详细示例：[动态附件示例](example/dynamic/README.md)
 
-### ⚠️ 重要提示
+## 环境依赖（Kubernetes）
+
+动态容器和动态附件功能依赖以下 Kubernetes 组件：
+
+| 组件                                                               | 说明         |
+|------------------------------------------------------------------|------------|
+| [Kube-OVN](https://kubeovn.github.io/docs/stable/start/prepare/) | VPC 网络隔离支持 |
+| [Multus](https://github.com/k8snetworkplumbingwg/multus-cni)     | 多网络接口支持    |
 
 **Multus 插件选择建议：**
 
-- ✅ **推荐使用 Thin Plugin** - 无需手动配置，稳定性更好
-- ❌ **避免使用 Thick Plugin** - 容易发生以下问题：
-  - [OOMKilled](https://github.com/k8snetworkplumbingwg/multus-cni/issues/1346)
-  - [Text file busy](https://github.com/k8snetworkplumbingwg/multus-cni/issues/1221)
+推荐使用 **Thin Plugin**，无需手动配置且稳定性更好。避免使用 Thick Plugin，已知存在以下问题：
+
+- [OOMKilled](https://github.com/k8snetworkplumbingwg/multus-cni/issues/1346)
+- [Text file busy](https://github.com/k8snetworkplumbingwg/multus-cni/issues/1221)
 
 如需使用 Thick Plugin，请参考：
 - [Issue #1346](https://github.com/k8snetworkplumbingwg/multus-cni/issues/1346#issuecomment-2644110944)
 - [PR #1213](https://github.com/k8snetworkplumbingwg/multus-cni/pull/1213)
 
-## 📄 许可证
+## 许可证
 
-本项目采用 [Apache 许可证](LICENSE)。
-
----
-
-<div align="center">
-
-**⭐ 如果这个项目对您有帮助，请给我们一个星标！**
-
-</div>
+本项目采用 [Apache License 2.0](LICENSE)。
