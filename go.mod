@@ -5,6 +5,9 @@ go 1.26.0
 ignore (
 	./data
 	./frontend/dist
+	./frontend/node_modules
+	./frontend/public
+	./frontend/src
 	./logs
 	./uploads
 	./volumes
