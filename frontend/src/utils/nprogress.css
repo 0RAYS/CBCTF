@@ -1,0 +1,32 @@
+#nprogress {
+    pointer-events: none;
+    position: fixed;
+    top: 80px; /* NavBar 的高度 */
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+#nprogress .bar {
+    background: rgb(89, 126, 247); /* 使用项目主题色 */
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+}
+
+/* 隐藏其他效果 */
+#nprogress .peg {
+    display: none;
+}
+
+/* 添加渐变效果 */
+#nprogress .bar {
+    background: linear-gradient(
+        to right,
+        rgba(89, 126, 247, 0.2),
+        rgb(89, 126, 247)
+    );
+    box-shadow: 0 0 10px rgba(89, 126, 247, 0.5);
+    transition: all 0.2s ease;
+}

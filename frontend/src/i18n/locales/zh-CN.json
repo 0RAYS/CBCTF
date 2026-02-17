@@ -1,0 +1,2072 @@
+{
+  "branding": {
+    "main": "DEEP DIVE CTF",
+    "admin": "CBCTF"
+  },
+  "common": {
+    "loading": "加载中...",
+    "loadingShort": "加载中",
+    "language": "语言",
+    "login": "登录",
+    "processing": "处理中...",
+    "date": "日期",
+    "duration": "时长",
+    "registrations": "报名",
+    "teams": "队伍",
+    "challenges": "题目",
+    "score": "分数",
+    "solved": "已解",
+    "rank": "排名",
+    "start": "开始",
+    "end": "结束",
+    "saveChanges": "保存更改",
+    "delete": "删除",
+    "send": "发送",
+    "submit": "提交",
+    "change": "修改",
+    "github": "GitHub",
+    "cancel": "取消",
+    "confirm": "确认",
+    "create": "创建",
+    "save": "保存",
+    "previous": "上一页",
+    "next": "下一页",
+    "points": "{{count}} 分",
+    "refresh": "刷新",
+    "yes": "是",
+    "no": "否",
+    "notAvailable": "暂无",
+    "noData": "暂无数据",
+    "none": "无",
+    "closeNotification": "关闭通知",
+    "pagination": {
+      "totalItems": "共 {{count}} 条",
+      "jumpTo": "跳转到",
+      "page": "页",
+      "pagePlaceholder": "页码",
+      "jump": "跳转"
+    },
+    "dateTimeInput": {
+      "placeholder": "YYYY-MM-DD HH:MM",
+      "now": "现在",
+      "ok": "确定",
+      "time": "时间"
+    }
+  },
+  "footer": {
+    "copyright": "© 2025 DEEP DIVE CTF",
+    "icp": "陕ICP备2025076339号-1",
+    "support": "支持",
+    "contact": "联系",
+    "github": "GitHub"
+  },
+  "nav": {
+    "games": "比赛",
+    "settings": "设置",
+    "challenges": "题目",
+    "scoreboard": "排行榜",
+    "team": "队伍",
+    "notice": "公告",
+    "writeup": "题解",
+    "dashboard": "仪表盘",
+    "contests": "赛事",
+    "users": "用户",
+    "oauth": "OAuth",
+    "smtp": "SMTP",
+    "webhook": "Webhook",
+    "files": "文件",
+    "system": "系统",
+    "logs": "日志",
+    "containers": "容器",
+    "images": "镜像",
+    "cheats": "风控",
+    "notices": "公告"
+  },
+  "admin": {
+    "title": "管理中心",
+    "navigation": "导航",
+    "contest": "赛事",
+    "overview": "概览",
+    "welcome": "欢迎",
+    "quickActions": "快捷操作",
+    "sidebar": {
+      "close": "关闭侧边栏"
+    },
+    "topbar": {
+      "toggleSidebar": "切换侧边栏",
+      "role": "管理员",
+      "userPicture": "用户头像",
+      "defaultUser": "管理员",
+      "managementTitle": "{{label}}管理"
+    },
+    "dashboard": {
+      "title": "系统状态",
+      "realtime": "实时监控",
+      "cards": {
+        "serverIp": "服务器IP",
+        "users": "用户数量",
+        "contests": "赛事数量",
+        "challenges": "题目数量",
+        "requests": "请求数量",
+        "responseTime": "平均响应",
+        "downlink": "下行流量",
+        "uplink": "上行流量",
+        "totalTraffic": "总流量",
+        "cacheSize": "缓存总量",
+        "cacheHit": "命中数",
+        "cacheRate": "命中率"
+      },
+      "chart": {
+        "cpu": "CPU 使用率 (%)",
+        "memory": "内存使用率 (%)",
+        "disk": "磁盘使用率 (%)"
+      },
+      "toast": {
+        "fetchFailed": "获取系统状态失败"
+      }
+    },
+    "contests": {
+      "title": "比赛管理",
+      "empty": "暂无比赛",
+      "table": {
+        "cover": "封面",
+        "name": "比赛",
+        "status": "状态",
+        "schedule": "时间",
+        "metrics": "统计",
+        "actions": "操作"
+      },
+      "actions": {
+        "add": "添加比赛",
+        "replaceCover": "更换封面"
+      },
+      "status": {
+        "upcoming": "未开始",
+        "running": "进行中",
+        "ended": "已结束",
+        "hidden": "隐藏"
+      },
+      "labels": {
+        "startTime": "开始时间",
+        "duration": "持续时间"
+      },
+      "metrics": {
+        "teamSize": "每队人数：{{count}}人",
+        "registrations": "报名总数：{{count}}人",
+        "teams": "队伍总数：{{count}}队"
+      },
+      "units": {
+        "hours": "{{count}}小时"
+      },
+      "form": {
+        "name": "赛事名称",
+        "description": "赛事描述",
+        "flagPrefix": "Flag 前缀",
+        "teamSize": "队伍人数",
+        "startTime": "开始时间",
+        "durationHours": "持续时间（小时）"
+      },
+      "modal": {
+        "createTitle": "创建赛事",
+        "deleteTitle": "删除赛事",
+        "deletePrompt": "确定要删除赛事",
+        "deleteWarning": "此操作无法撤销。"
+      },
+      "toast": {
+        "fetchFailed": "获取比赛列表失败",
+        "coverUpdated": "更新封面成功",
+        "coverUpdateFailed": "更新封面失败",
+        "createSuccess": "创建赛事成功",
+        "deleteSuccess": "删除赛事成功",
+        "createFailed": "创建赛事失败",
+        "deleteFailed": "删除赛事失败"
+      },
+      "teamContainers": {
+        "toast": {
+          "fetchSubmissionsFailed": "获取提交记录失败",
+          "fetchWriteupsFailed": "获取题解列表失败",
+          "fetchContainersFailed": "获取容器列表失败",
+          "fetchTrafficFailed": "获取流量数据失败",
+          "downloadTrafficFailed": "下载流量文件失败",
+          "downloadWriteupFailed": "下载题解失败"
+        },
+        "modal": {
+          "title": "容器流量记录",
+          "empty": "暂无流量数据"
+        },
+        "labels": {
+          "type": "类型:",
+          "sourceIp": "源IP:",
+          "sourcePort": "源端口:",
+          "timestamp": "时间戳:",
+          "destinationIp": "目标IP:",
+          "destinationPort": "目标端口:",
+          "payload": "负载:"
+        },
+        "types": {
+          "request": "请求",
+          "response": "响应",
+          "tcp": "TCP"
+        },
+        "payload": {
+          "expand": "展开",
+          "collapse": "收起",
+          "parseError": "解析错误：{{message}}"
+        }
+      },
+      "teamDetail": {
+        "title": "队伍详情",
+        "tabs": {
+          "submissions": "最近提交",
+          "writeups": "题解列表",
+          "traffic": "靶机流量",
+          "flags": "Flag"
+        },
+        "sections": {
+          "submissions": "最近提交",
+          "writeups": "题解列表",
+          "traffic": "靶机流量",
+          "flags": "Flag"
+        },
+        "empty": {
+          "submissions": "暂无提交记录",
+          "writeups": "暂无题解提交",
+          "traffic": "暂无靶机流量数据",
+          "flags": "暂无Flag数据"
+        },
+        "submissions": {
+          "columns": {
+            "challengeId": "赛题ID",
+            "teamId": "队伍ID",
+            "userId": "用户ID",
+            "submittedFlag": "提交Flag",
+            "score": "得分",
+            "ip": "IP",
+            "status": "状态",
+            "time": "时间"
+          },
+          "status": {
+            "correct": "正确",
+            "incorrect": "错误"
+          }
+        },
+        "writeups": {
+          "columns": {
+            "submittedAt": "提交日期",
+            "filename": "文件名",
+            "size": "大小",
+            "hash": "哈希值",
+            "uploader": "上传者",
+            "actions": "操作"
+          },
+          "actions": {
+            "download": "下载题解"
+          }
+        },
+        "traffic": {
+          "columns": {
+            "containerId": "容器ID",
+            "userId": "用户ID",
+            "challengeName": "赛题名称",
+            "startTime": "开始时间",
+            "duration": "持续时间",
+            "status": "状态",
+            "actions": "操作"
+          },
+          "actions": {
+            "viewTraffic": "查看流量",
+            "downloadTraffic": "下载流量文件"
+          },
+          "status": {
+            "upcoming": "未开始",
+            "ended": "已结束",
+            "running": "运行中"
+          }
+        }
+      },
+      "challengeModal": {
+        "titleAdd": "添加赛题",
+        "titleEdit": "编辑赛题",
+        "sections": {
+          "basic": "基本信息",
+          "flags": "Flag设置",
+          "tags": "标签设置",
+          "hints": "提示设置"
+        },
+        "labels": {
+          "name": "题目名称",
+          "description": "题目描述",
+          "attempts": "尝试次数",
+          "hidden": "隐藏题目",
+          "flagValueHint": "Flag值: static{} uuid{} dynamic{}",
+          "scoreCurve": "分数曲线",
+          "initialScore": "初始分值",
+          "currentScore": "当前分值",
+          "decay": "衰减值",
+          "minScore": "最低分值",
+          "solvers": "解出人数"
+        },
+        "placeholders": {
+          "name": "输入题目名称",
+          "description": "输入题目描述内容",
+          "flagValue": "输入Flag值",
+          "tag": "标签 {{index}}",
+          "hint": "提示 {{index}}"
+        },
+        "scoreCurve": {
+          "static": "静态分值",
+          "linear": "线性衰减",
+          "log": "指数衰减"
+        },
+        "actions": {
+          "updateFlag": "更新Flag",
+          "addTag": "添加标签",
+          "addHint": "添加提示",
+          "add": "添加赛题"
+        }
+      },
+      "challengeSelector": {
+        "title": "选择赛题",
+        "search": {
+          "placeholder": "搜索赛题..."
+        },
+        "filters": {
+          "categoryAll": "全部分类",
+          "typeAll": "全部类型"
+        },
+        "types": {
+          "static": "静态题目",
+          "question": "问答题目",
+          "dynamic": "动态题目",
+          "pods": "容器题目"
+        },
+        "empty": {
+          "noMatch": "暂无匹配赛题"
+        },
+        "selectedPrefix": "已选择 ",
+        "selectedSuffix": " 个赛题",
+        "actions": {
+          "confirmAdd": "确认添加"
+        }
+      },
+      "trafficGraph": {
+        "title": "网络流量关系图",
+        "controls": {
+          "timeShift": "时间偏移:",
+          "timeSlice": "时间片:",
+          "seconds": "秒"
+        },
+        "tooltip": {
+          "connectionTitle": "流量连接",
+          "size": "流量大小: {{value}} 字节",
+          "count": "连接次数: {{count}}",
+          "protocol": "协议类型: {{type}} / {{subtype}}",
+          "connections": "连接数: {{count}}"
+        },
+        "footer": {
+          "ipCount": "IP数量: {{count}}",
+          "connectionCount": "连接数: {{count}}",
+          "maxDuration": "最大时长: {{count}}秒",
+          "timeSlice": "时间片: {{count}}秒",
+          "playing": "播放中: {{current}}/{{total}}秒",
+          "updatedAt": "更新时间: {{time}}",
+          "demoMode": "演示模式（样例数据）"
+        },
+        "toast": {
+          "fetchFailed": "获取流量数据失败",
+          "demoFallback": "获取流量数据失败，使用样例数据预览效果"
+        },
+        "demoNotice": "无法获取真实流量数据，当前展示的是示例数据。点击刷新按钮可重新尝试获取。"
+      },
+      "notices": {
+        "title": "公告管理",
+        "actions": {
+          "create": "发布公告"
+        },
+        "table": {
+          "title": "标题",
+          "type": "类型",
+          "content": "内容",
+          "actions": "操作"
+        },
+        "form": {
+          "title": "公告标题",
+          "titlePlaceholder": "请输入公告标题",
+          "type": "公告类型",
+          "content": "公告内容",
+          "contentPlaceholder": "请输入公告内容"
+        },
+        "types": {
+          "normal": "普通",
+          "important": "重要",
+          "update": "更新"
+        },
+        "modal": {
+          "title": {
+            "create": "发布公告",
+            "edit": "编辑公告",
+            "delete": "删除公告"
+          },
+          "deletePrompt": "确定要删除公告 \"{{title}}\" 吗？此操作不可恢复。"
+        },
+        "toast": {
+          "fetchFailed": "获取公告列表失败",
+          "createSuccess": "创建公告成功",
+          "createFailed": "创建公告失败",
+          "updateSuccess": "更新公告成功",
+          "updateFailed": "更新公告失败",
+          "deleteSuccess": "删除公告成功",
+          "deleteFailed": "删除公告失败"
+        }
+      },
+      "imagesWarmup": {
+        "title": "镜像预热",
+        "control": {
+          "title": "预热控制",
+          "subtitle": "预热比赛中使用到的Docker镜像"
+        },
+        "labels": {
+          "pullPolicy": "拉取策略"
+        },
+        "actions": {
+          "selectAll": "全选",
+          "deselectAll": "取消全选",
+          "warmup": "执行预热 ({{count}})"
+        },
+        "table": {
+          "image": "镜像",
+          "nodes": "节点"
+        },
+        "pullPolicy": {
+          "always": "Always - 总是拉取最新镜像",
+          "ifNotPresent": "IfNotPresent - 本地不存在时拉取",
+          "never": "Never - 仅使用本地镜像"
+        },
+        "status": {
+          "loaded": "已存在",
+          "notLoaded": "未加载"
+        },
+        "statusTitle": "镜像状态",
+        "empty": "暂无镜像数据",
+        "toast": {
+          "fetchFailed": "获取预热镜像信息失败",
+          "selectRequired": "请选择要预热的镜像",
+          "submitSuccess": "预热镜像任务已提交",
+          "warmupFailed": "预热镜像失败"
+        }
+      },
+      "teams": {
+        "title": "团队管理",
+        "search": {
+          "label": "搜索团队",
+          "placeholder": "输入团队名称搜索..."
+        },
+        "empty": {
+          "noMembers": "暂无团队成员",
+          "noResults": "未找到匹配的团队",
+          "noData": "暂无数据"
+        },
+        "table": {
+          "team": "团队",
+          "score": "得分",
+          "members": "成员数",
+          "lastSubmit": "最后提交",
+          "status": "状态",
+          "actions": "操作"
+        },
+        "form": {
+          "name": "团队名称",
+          "description": "团队描述",
+          "captain": "队长",
+          "selectCaptain": "选择队长",
+          "inviteCode": "邀请码"
+        },
+        "labels": {
+          "banned": "封禁",
+          "hidden": "隐藏"
+        },
+        "status": {
+          "banned": "已封禁",
+          "normal": "正常",
+          "hidden": "已隐藏",
+          "visible": "可见"
+        },
+        "lastSubmit": {
+          "none": "无提交"
+        },
+        "memberCount": "{{count}} 人",
+        "picture": {
+          "replace": "更换"
+        },
+        "modal": {
+          "title": {
+            "edit": "编辑团队信息",
+            "delete": "删除团队",
+            "kick": "移除团队成员"
+          },
+          "deletePrompt": "确定要删除团队 {{name}} 吗？此操作不可恢复。",
+          "kickPrompt": "从团队 {{name}} 中移出成员：",
+          "selectMemberLabel": "选择要移出的成员",
+          "selectMemberPlaceholder": "请选择成员"
+        },
+        "toast": {
+          "fetchFailed": "获取团队列表失败",
+          "fetchMembersFailed": "获取团队成员失败",
+          "searchFailed": "搜索失败",
+          "updateSuccess": "更新团队信息成功",
+          "deleteSuccess": "删除团队成功",
+          "selectMember": "请选择要移出的成员",
+          "kickSuccess": "移出成员成功",
+          "actionFailed": "操作失败",
+          "pictureUpdated": "更新队伍头像成功",
+          "pictureUpdateFailed": "更新队伍头像失败"
+        },
+        "detail": {
+          "title": "队伍详情",
+          "tabs": {
+            "info": "基本信息",
+            "submissions": "提交记录",
+            "writeups": "题解",
+            "containers": "容器",
+            "flags": "Flag"
+          },
+          "info": {
+            "score": "得分",
+            "captain": "队长ID",
+            "inviteCode": "邀请码",
+            "members": "成员列表",
+            "memberId": "ID",
+            "memberName": "名称",
+            "memberRole": "角色",
+            "captainBadge": "队长",
+            "memberBadge": "成员",
+            "noDescription": "暂无描述"
+          },
+          "flags": {
+            "filterName": "题目名称",
+            "filterNamePlaceholder": "按名称筛选...",
+            "filterType": "类型",
+            "filterTypePlaceholder": "全部类型",
+            "filterCategory": "分类",
+            "filterCategoryPlaceholder": "全部分类",
+            "filterSolved": "解出状态",
+            "filterSolvedPlaceholder": "全部状态",
+            "filterSolvedYes": "已解出",
+            "filterSolvedNo": "未解出",
+            "value": "值",
+            "template": "模板",
+            "currentScore": "当前分数",
+            "initScore": "初始分数",
+            "minScore": "最低分数",
+            "decay": "衰减",
+            "solvers": "解题数",
+            "solved": "状态",
+            "solvedYes": "已解出",
+            "solvedNo": "未解出",
+            "hidden": "隐藏"
+          },
+          "empty": {
+            "members": "暂无团队成员",
+            "flags": "暂无Flag数据"
+          }
+        }
+      },
+      "editor": {
+        "labels": {
+          "title": "比赛标题",
+          "description": "描述",
+          "backgroundImage": "背景图片",
+          "backgroundAlt": "比赛背景",
+          "status": "状态",
+          "startTime": "开始时间",
+          "endTime": "结束时间",
+          "flagPrefix": "Flag前缀",
+          "teamSize": "团队人数上限",
+          "teamVictims": "队伍靶机数上限",
+          "captcha": "比赛验证码",
+          "hiddenContest": "隐藏比赛",
+          "bloodBonus": "启用血分奖励",
+          "prizeAmount": "金额",
+          "prizeDescription": "描述",
+          "timelineDate": "日期",
+          "timelineTitle": "标题",
+          "timelineDescription": "描述"
+        },
+        "sections": {
+          "advanced": "高级设置",
+          "rules": "比赛规则",
+          "prizes": "奖励设置",
+          "timeline": "时间线"
+        },
+        "placeholders": {
+          "flagPrefix": "例如: CBCTF",
+          "teamSize": "团队最大人数",
+          "teamVictims": "团队最大靶机数",
+          "captcha": "留空则不需要验证码",
+          "newRule": "添加新规则..."
+        },
+        "help": {
+          "flagPrefix": "用于生成flag的前缀，例如：CBCTF{flag}",
+          "teamSize": "每个参赛团队的最大人数",
+          "teamVictims": "每个参赛团队的最大靶机数",
+          "captcha": "加入比赛需要的验证码",
+          "hiddenContest": "隐藏后比赛将无法访问",
+          "bloodBonus": "对前三个解出题目的队伍提供额外加分"
+        },
+        "status": {
+          "upcoming": "即将开始",
+          "active": "进行中",
+          "ended": "已结束"
+        },
+        "actions": {
+          "replaceImage": "更换图片",
+          "uploadImage": "点击上传背景图片",
+          "addRule": "添加",
+          "addPrize": "添加奖励",
+          "addTimeline": "添加事件"
+        },
+        "prizeRank": {
+          "first": "第1名",
+          "second": "第2名",
+          "third": "第3名",
+          "other": "第{{rank}}名"
+        },
+        "validation": {
+          "invalidDate": "无效的日期格式",
+          "titleRequired": "标题不能为空",
+          "startTimeRequired": "请选择开始时间",
+          "endTimeRequired": "请选择结束时间",
+          "endTimeAfterStart": "结束时间必须晚于开始时间"
+        },
+        "toast": {
+          "fetchFailed": "获取比赛信息失败",
+          "coverUpdated": "更新比赛封面成功",
+          "coverUpdateFailed": "更新封面失败",
+          "updateSuccess": "更新比赛信息成功",
+          "updateFailed": "更新比赛信息失败"
+        }
+      },
+      "containers": {
+        "toast": {
+          "fetchContainersFailed": "获取容器列表失败",
+          "fetchTeamsFailed": "获取团队列表失败",
+          "fetchChallengesFailed": "获取题目列表失败",
+          "searchFailed": "搜索失败",
+          "selectStopRequired": "请选择要停止的容器",
+          "selectStartRequired": "请选择题目和团队",
+          "taskDispatched": "任务下发成功",
+          "taskDispatchFailed": "任务下发失败"
+        },
+        "status": {
+          "stopped": "已停止"
+        },
+        "page": {
+          "title": "容器管理",
+          "subtitle": "管理比赛中的容器实例，支持批量开启和停止操作",
+          "refresh": "刷新"
+        },
+        "stats": {
+          "total": "总容器数",
+          "running": "运行中",
+          "stopped": "已停止"
+        },
+        "quickActions": {
+          "title": "快速操作",
+          "selectChallenges": "选择题目",
+          "randomTeams": "随机选择队伍",
+          "selectAll": "全选",
+          "clear": "清空",
+          "startButton": "开启 ({{challenges}}×{{teams}})"
+        },
+        "filters": {
+          "title": "过滤条件",
+          "reset": "重置",
+          "userName": "用户名称",
+          "teamName": "团队名称",
+          "challengeName": "题目名称",
+          "searchUserPlaceholder": "搜索用户...",
+          "searchTeamPlaceholder": "搜索团队...",
+          "searchChallengePlaceholder": "搜索题目...",
+          "userFallback": "用户{{id}}",
+          "teamFallback": "团队{{id}}",
+          "challengeFallback": "题目{{id}}",
+          "userIdLabel": "用户ID",
+          "teamIdLabel": "团队ID",
+          "challengeIdLabel": "题目ID"
+        },
+        "table": {
+          "title": "容器列表",
+          "total": "(共 {{count}} 个容器)",
+          "selectedCount": "已选择: {{count}}",
+          "stopButton": "停止容器",
+          "columns": {
+            "id": "ID",
+            "challenge": "题目",
+            "team": "团队",
+            "user": "用户",
+            "remote": "远程地址",
+            "startTime": "开始时间",
+            "status": "状态"
+          },
+          "empty": "暂无容器数据"
+        },
+        "modals": {
+          "startTitle": "确认开启容器",
+          "startConfirm": "确认开启",
+          "startPrompt": "确定要为以下选中的组合开启容器吗？",
+          "selectedChallenges": "选中的题目 ({{count}}个):",
+          "selectedTeams": "选中的团队 ({{count}}个):",
+          "summaryPrefix": "将为 ",
+          "summaryMiddle": " 个题目 × ",
+          "summaryEquals": " 个团队 =",
+          "summarySuffix": " 个容器组合开启容器",
+          "stopTitle": "停止容器",
+          "stopConfirm": "停止",
+          "stopPrompt": "确定要停止选中的 {{count}} 个容器吗？"
+        }
+      },
+      "challenges": {
+        "title": "赛题管理",
+        "table": {
+          "name": "赛题",
+          "category": "分类",
+          "type": "类型",
+          "metrics": "统计",
+          "tags": "标签",
+          "hints": "提示",
+          "actions": "操作"
+        },
+        "hintLabel": "提示 {{index}}",
+        "hidden": "隐藏",
+        "attemptsLabel": "尝试次数:",
+        "tagsLabel": "标签:",
+        "hintsLabel": "提示:",
+        "solves": "{{count}} 解",
+        "toast": {
+          "fetchCategoriesFailed": "获取题目分类失败",
+          "fetchListFailed": "获取题目列表失败",
+          "fetchPoolFailed": "获取题库列表失败",
+          "selectRequired": "请选择要添加的题目",
+          "addSuccess": "添加题目成功",
+          "addFailed": "添加题目失败",
+          "updateSuccess": "更新题目成功",
+          "updateFailed": "更新题目失败",
+          "removeSuccess": "移出题目成功",
+          "removeFailed": "移出题目失败",
+          "updateFlagSuccess": "更新题目flag成功"
+        }
+      },
+      "scoreboard": {
+        "headers": {
+          "rank": "排名",
+          "team": "队伍",
+          "score": "得分",
+          "challenges": "题目",
+          "lastSubmit": "最后提交"
+        },
+        "total": "总计",
+        "title": "积分榜管理",
+        "export": "导出积分榜",
+        "toast": {
+          "fetchTimelineFailed": "获取时间线数据失败",
+          "fetchTeamsFailed": "获取团队列表失败",
+          "fetchScoreboardFailed": "获取积分榜失败",
+          "exportUnavailable": "此功能暂未实现"
+        }
+      },
+      "cheats": {
+        "title": "作弊事件",
+        "filterButton": "筛选",
+        "filterLabel": "类型筛选:",
+        "stats": {
+          "total": "总计数",
+          "processed": "已处理",
+          "unprocessed": "未处理"
+        },
+        "empty": "暂无作弊事件",
+        "columns": {
+          "id": "ID",
+          "model": "关联对象",
+          "type": "类型",
+          "reasonType": "检测类型",
+          "reason": "原因",
+          "ipOrDevice": "IP / 设备指纹",
+          "status": "状态",
+          "time": "时间",
+          "actions": "操作"
+        },
+        "status": {
+          "processed": "已处理",
+          "unprocessed": "未处理"
+        },
+        "types": {
+          "cheater": "确认作弊",
+          "suspicious": "疑似作弊",
+          "pass": "误报"
+        },
+        "reasonTypes": {
+          "same_device": "相同设备",
+          "same_web_ip": "相同Web IP",
+          "same_victim_ip": "相同靶机IP",
+          "wrong_flag": "提交他队Flag",
+          "token_magic": "令牌不匹配"
+        },
+        "reasonTypeFilterLabel": "检测类型:",
+        "modals": {
+          "editTitle": "编辑作弊事件",
+          "detailTitle": "作弊事件详情"
+        },
+        "actions": {
+          "close": "关闭",
+          "delete": "删除",
+          "deleteAll": "清空",
+          "check": "检测",
+          "confirmDeleteTitle": "确认删除",
+          "confirmDeletePrompt": "确定要删除此作弊事件吗？",
+          "confirmDeleteAllTitle": "确认清空全部",
+          "confirmDeleteAllPrompt": "确定要删除此比赛的所有作弊事件吗？此操作不可撤销。",
+          "confirmCheckTitle": "手动作弊检测",
+          "confirmCheckPrompt": "将对此比赛执行全部作弊检测，是否继续？"
+        },
+        "form": {
+          "verdict": "判断结果",
+          "reason": "作弊原因",
+          "reasonPlaceholder": "请输入作弊原因",
+          "status": "处理状态",
+          "comment": "备注",
+          "commentPlaceholder": "请输入备注"
+        },
+        "detail": {
+          "eventId": "事件ID",
+          "model": "关联对象",
+          "ip": "IP",
+          "time": "时间",
+          "type": "作弊类型",
+          "reasonType": "检测类型",
+          "reason": "作弊原因",
+          "status": "处理状态",
+          "comment": "处理备注",
+          "device": "设备指纹",
+          "hash": "Hash值"
+        },
+        "toast": {
+          "fetchFailed": "获取作弊事件失败",
+          "updateSuccess": "更新作弊事件成功",
+          "updateFailed": "更新作弊事件失败",
+          "deleteSuccess": "删除作弊事件成功",
+          "deleteFailed": "删除作弊事件失败",
+          "deleteAllSuccess": "清空全部作弊事件成功",
+          "deleteAllFailed": "清空全部作弊事件失败",
+          "checkSuccess": "作弊检测完成",
+          "checkFailed": "作弊检测失败"
+        },
+        "ipDetail": {
+          "title": "IP 地理位置",
+          "ip": "IP 地址",
+          "iso": "ISO 代码",
+          "country": "国家",
+          "city": "城市",
+          "subdivision": "行政区划",
+          "timezone": "时区",
+          "coordinates": "坐标",
+          "fetchFailed": "查询 IP 地理位置失败"
+        }
+      }
+    },
+    "challenge": {
+      "title": "题目管理",
+      "table": {
+        "name": "题目",
+        "category": "分类",
+        "type": "类型",
+        "flags": "Flag",
+        "file": "附件",
+        "actions": "操作"
+      },
+      "actions": {
+        "add": "添加题目",
+        "test": "测试题目"
+      },
+      "search": {
+        "label": "搜索题目",
+        "placeholder": "输入题目名搜索..."
+      },
+      "filters": {
+        "all": "全部",
+        "static": "静态题目",
+        "question": "问答题目",
+        "dynamic": "动态题目",
+        "pods": "容器题目"
+      },
+      "category": {
+        "all": "全部分类"
+      },
+      "empty": {
+        "search": "未找到匹配的题目"
+      },
+      "labels": {
+        "flags": "Flag：",
+        "files": "附件："
+      },
+      "types": {
+        "static": "静态题目",
+        "question": "问答题目",
+        "dynamic": "动态题目",
+        "pods": "容器题目"
+      },
+      "toast": {
+        "searchFailed": "搜索失败",
+        "fetchCategoriesFailed": "获取题目分类失败",
+        "fetchListFailed": "获取题目列表失败",
+        "downloadFailed": "下载附件失败",
+        "uploadSuccess": "上传附件成功",
+        "uploadFailed": "上传附件失败",
+        "createSuccess": "创建题目成功",
+        "createFailed": "创建题目失败",
+        "updateSuccess": "更新题目成功",
+        "updateFailed": "更新题目失败",
+        "deleteSuccess": "删除题目成功",
+        "deleteFailed": "删除题目失败"
+      },
+      "testModal": {
+        "title": "测试",
+        "toast": {
+          "startCompleted": "靶机启动完成",
+          "stopCompleted": "靶机停止完成",
+          "statusRefreshSuccess": "状态刷新成功",
+          "fetchStatusFailed": "获取测试状态失败",
+          "actionSuccess": "任务下发成功",
+          "actionFailed": "操作失败",
+          "downloadSuccess": "测试附件下载成功",
+          "downloadFailed": "下载测试附件失败",
+          "copyIpSuccess": "IP地址已复制到剪贴板"
+        },
+        "instance": {
+          "running": "运行中",
+          "notRunning": "未运行",
+          "time": "时间：",
+          "address": "地址："
+        },
+        "actions": {
+          "launching": "启动中...",
+          "launch": "启动靶机",
+          "stopping": "停止中...",
+          "stop": "停止靶机"
+        },
+        "sections": {
+          "description": "描述",
+          "attachments": "测试附件",
+          "instance": "测试靶机"
+        },
+        "attachments": {
+          "generating": "生成中...",
+          "generateAndDownload": "生成并下载",
+          "download": "下载"
+        }
+      }
+    },
+    "challengeModal": {
+      "title": {
+        "add": "添加题目",
+        "edit": "编辑题目",
+        "delete": "删除题目"
+      },
+      "delete": {
+        "title": "确认删除题目",
+        "prompt": "您确定要删除这个题目吗？",
+        "warning": "⚠️ 此操作无法撤销，请谨慎操作"
+      },
+      "sections": {
+        "basic": "基本信息",
+        "generator": "生成器镜像",
+        "flags": "Flag设置",
+        "options": "选项设置",
+        "podsNotice": "docker-compose注意事项",
+        "containers": "容器设置"
+      },
+      "labels": {
+        "name": "题目名称",
+        "category": "题目分类",
+        "type": "题目类型",
+        "description": "题目描述",
+        "generatorImage": "Generator镜像地址",
+        "networkPolicy": "网络策略",
+        "policy": "策略 {{index}}",
+        "allowInbound": "允许入站",
+        "allowOutbound": "允许出站",
+        "excludeList": "排除列表"
+      },
+      "types": {
+        "static": "静态题目",
+        "question": "问答题目",
+        "dynamic": "动态题目",
+        "pods": "容器题目"
+      },
+      "placeholders": {
+        "name": "输入题目名称",
+        "category": "请选择分类",
+        "description": "输入题目描述内容",
+        "generatorImage": "输入Generator镜像地址",
+        "flag": "Flag {{index}}",
+        "option": "选项 {{index}}"
+      },
+      "actions": {
+        "addFlag": "添加Flag",
+        "addOption": "添加选项",
+        "setCorrect": "设为正确答案",
+        "unsetCorrect": "取消正确答案",
+        "fullscreen": "全屏编辑",
+        "addPolicy": "添加策略",
+        "addRule": "添加规则",
+        "addExclude": "添加排除",
+        "add": "添加题目",
+        "confirmDelete": "确认删除"
+      },
+      "empty": {
+        "options": "暂无选项，请添加选项"
+      },
+      "podsNotice": {
+        "flagFormat": "flag格式: {{format}}",
+        "flagPrefix": "flag `环境变量` / `文件挂载` 必须以 `FLAG` 为前缀; 变量名可重复，不作为注入时的标识符使用",
+        "flagVolume": "flag `文件挂载` 通过 volumes.FLAG_x.labels.value 字段指定值",
+        "services": "services参数只接受: image, expose, ports, environment, volumes, working_dir, command, cpus, mem_limit",
+        "networks": "可通过networks配置多个网段, 每个容器可占据多个网段",
+        "networksWithIp": "当设置networks时, 每个容器必须指定所使用的network; 不指定时具体IP时, 随机从定义的网段中选取",
+        "networksShared": "当不设置networks时, 容器之间共用同一个随机IP地址, 容器间通信请使用本地地址: 127.0.0.1",
+        "portUnique": "共用IP地址时, 请注意端口唯一性",
+        "exampleIndent": "下述示例中包含了所有可接受字段, 未在其中的字段将被忽略; 务必使用2个空格进行缩进"
+      },
+      "yamlNotice": {
+        "flagFormat": "flag格式: {{format}}",
+        "flagPrefix": "flag `环境变量` / `文件挂载` 必须以 `FLAG` 为前缀; 变量名可重复，不作为注入时的标识符使用",
+        "flagVolume": "flag `文件挂载` 通过 labels value 字段指定值",
+        "dockerParams": "Docker参数只接受: image, expose, ports, environment, volumes, working_dir, command",
+        "containerUnique": "同一道题目中, 所有的容器名必须唯一, 作为唯一 DNS Hostname",
+        "containerNetwork": "容器间通过 Hostname 或 本地地址 通信"
+      },
+      "fullscreen": {
+        "title": "全屏编辑 - docker-compose.yaml",
+        "save": "保存 (Ctrl+S)",
+        "exit": "退出 (Esc)"
+      }
+    },
+    "users": {
+      "title": "用户管理",
+      "actions": {
+        "create": "创建用户"
+      },
+      "columns": {
+        "picture": "头像",
+        "name": "用户名",
+        "email": "邮箱",
+        "status": "状态",
+        "contests": "参赛次数",
+        "teams": "组队次数",
+        "actions": "操作"
+      },
+      "picture": {
+        "replace": "更换"
+      },
+      "id": "ID：{{id}}",
+      "status": {
+        "verified": "已验证",
+        "banned": "已封禁",
+        "hidden": "已隐藏"
+      },
+      "search": {
+        "label": "搜索用户",
+        "placeholder": "输入用户名搜索..."
+      },
+      "toast": {
+        "searchFailed": "搜索失败",
+        "fetchFailed": "获取用户列表失败",
+        "createSuccess": "创建用户成功",
+        "createFailed": "创建用户失败",
+        "updateSuccess": "更新用户成功",
+        "updateFailed": "更新用户失败",
+        "deleteSuccess": "删除用户成功",
+        "deleteFailed": "删除用户失败",
+        "pictureUpdated": "更新头像成功",
+        "pictureUpdateFailed": "更新头像失败"
+      },
+      "modal": {
+        "createTitle": "创建用户",
+        "editTitle": "编辑用户",
+        "deleteTitle": "删除用户",
+        "deletePrompt": "确定要删除用户",
+        "deleteWarning": "此操作无法撤销。"
+      },
+      "form": {
+        "username": "用户名",
+        "email": "邮箱",
+        "password": "密码",
+        "description": "描述",
+        "usernamePlaceholder": "请输入用户名",
+        "emailPlaceholder": "请输入邮箱",
+        "passwordPlaceholder": "请输入密码",
+        "descriptionPlaceholder": "请输入用户简介"
+      },
+      "detail": {
+        "title": "用户详情",
+        "info": {
+          "id": "用户ID",
+          "email": "邮箱",
+          "description": "简介",
+          "score": "分数",
+          "solved": "已解题数",
+          "provider": "登录方式",
+          "contests": "参赛次数",
+          "teams": "组队次数",
+          "noDescription": "暂无个签"
+        }
+      }
+    },
+    "logs": {
+      "title": "系统日志",
+      "loadMore": "下拉加载更多",
+      "noMore": "没有更多了",
+      "toast": {
+        "fetchFailed": "获取日志失败"
+      }
+    },
+    "smtp": {
+      "title": "SMTP 管理",
+      "tabs": {
+        "config": "SMTP 配置",
+        "history": "邮件历史"
+      },
+      "columns": {
+        "id": "ID",
+        "address": "邮箱地址",
+        "host": "SMTP服务器",
+        "port": "端口",
+        "status": "状态",
+        "success": "成功次数",
+        "failure": "失败次数",
+        "actions": "操作"
+      },
+      "status": {
+        "enabled": "已启用",
+        "disabled": "已禁用"
+      },
+      "empty": "暂无 SMTP 配置",
+      "modal": {
+        "createTitle": "创建 SMTP 配置",
+        "editTitle": "编辑 SMTP 配置",
+        "deleteTitle": "删除 SMTP 配置",
+        "deletePrompt": "确定要删除 SMTP 配置",
+        "deleteWarning": "此操作不可撤销。"
+      },
+      "form": {
+        "addressLabel": "邮箱地址 *",
+        "addressPlaceholder": "例如: noreply@example.com",
+        "hostLabel": "SMTP 服务器 *",
+        "hostPlaceholder": "例如: smtp.gmail.com",
+        "portLabel": "端口 *",
+        "portPlaceholder": "587",
+        "passwordLabelCreate": "密码 *",
+        "passwordLabelEdit": "密码 (留空不修改)",
+        "passwordPlaceholderCreate": "邮箱密码或应用专用密码",
+        "passwordPlaceholderEdit": "留空不修改密码",
+        "enable": "启用此 SMTP 配置"
+      },
+      "toast": {
+        "fetchListFailed": "获取 SMTP 配置列表失败",
+        "fetchHistoryFailed": "获取邮件历史记录失败",
+        "createSuccess": "创建 SMTP 配置成功",
+        "createFailed": "创建 SMTP 配置失败",
+        "updateSuccess": "更新 SMTP 配置成功",
+        "updateFailed": "更新 SMTP 配置失败",
+        "deleteSuccess": "删除 SMTP 配置成功",
+        "deleteFailed": "删除 SMTP 配置失败"
+      },
+      "email": {
+        "detailTitle": "邮件详情",
+        "id": "邮件ID",
+        "status": "发送状态",
+        "statusSuccess": "发送成功",
+        "statusFailed": "发送失败",
+        "from": "发件人",
+        "to": "收件人",
+        "subject": "邮件主题",
+        "noSubject": "无主题",
+        "time": "发送时间",
+        "content": "邮件内容",
+        "noContent": "无内容"
+      },
+      "history": {
+        "title": "邮件发送历史",
+        "currentViewing": "当前查看: {{address}}",
+        "empty": "暂无邮件发送记录",
+        "columns": {
+          "id": "ID",
+          "from": "发件人",
+          "to": "收件人",
+          "subject": "主题",
+          "status": "状态",
+          "time": "发送时间",
+          "actions": "操作"
+        },
+        "actions": {
+          "viewDetail": "查看详情"
+        }
+      },
+      "actions": {
+        "close": "关闭",
+        "add": "添加 SMTP 配置",
+        "viewHistory": "查看历史"
+      }
+    },
+    "settings": {
+      "ui": {
+        "title": "管理员设置",
+        "sections": {
+          "profile": "个人资料",
+          "security": "安全设置",
+          "logout": "退出登录"
+        },
+        "avatar": {
+          "change": "更换头像"
+        },
+        "accountLabel": "管理员账户",
+        "form": {
+          "username": "用户名",
+          "email": "邮箱",
+          "save": "保存更改"
+        },
+        "security": {
+          "title": "修改密码",
+          "placeholders": {
+            "current": "当前密码",
+            "new": "新密码",
+            "confirm": "确认新密码"
+          },
+          "update": "更新密码",
+          "hintTitle": "账户安全提示",
+          "hintBody": "作为管理员，请确保使用强密码并定期更新。请勿与他人共享您的登录凭据，并确保您的操作设备安全。"
+        }
+      },
+      "validation": {
+        "currentRequired": "请输入当前密码",
+        "newMin": "密码至少需要6个字符",
+        "confirmMismatch": "两次输入的密码不一致"
+      },
+      "toast": {
+        "updateInfoSuccess": "管理员信息更新成功",
+        "updateInfoFailed": "更新管理员信息失败",
+        "passwordUpdated": "密码修改成功",
+        "passwordUpdateFailed": "密码修改失败",
+        "avatarUpdated": "头像更新成功",
+        "avatarUpdateFailed": "头像更新失败",
+        "logoutSuccess": "已成功退出登录"
+      }
+    },
+    "webhook": {
+      "tabs": {
+        "webhook": "Webhook 配置",
+        "history": "调用历史"
+      },
+      "list": {
+        "title": "Webhook 管理",
+        "empty": "暂无 Webhook 配置",
+        "columns": {
+          "id": "ID",
+          "name": "名称",
+          "url": "URL",
+          "method": "方法",
+          "status": "状态",
+          "events": "事件",
+          "success": "成功次数",
+          "failure": "失败次数",
+          "actions": "操作"
+        },
+        "status": {
+          "enabled": "已启用",
+          "disabled": "已禁用"
+        },
+        "events": {
+          "all": "全部事件"
+        },
+        "actions": {
+          "add": "添加 Webhook 配置",
+          "edit": "编辑",
+          "viewHistory": "查看历史",
+          "delete": "删除"
+        }
+      },
+      "modal": {
+        "createTitle": "创建 Webhook 配置",
+        "editTitle": "编辑 Webhook 配置",
+        "deleteTitle": "删除 Webhook 配置",
+        "deletePrompt": "确定要删除 Webhook 配置",
+        "deleteWarning": "此操作不可撤销。"
+      },
+      "form": {
+        "headerKeyPlaceholder": "Header名称",
+        "headerValuePlaceholder": "Header值",
+        "nameLabel": "名称 *",
+        "namePlaceholder": "标识名",
+        "methodLabel": "HTTP方法 *",
+        "urlLabel": "URL *",
+        "urlPlaceholder": "https://example.com/webhook",
+        "timeoutLabel": "超时时间(秒)",
+        "retryLabel": "重试次数",
+        "headers": "请求头",
+        "addHeader": "添加请求头",
+        "events": "监听事件",
+        "noEvents": "暂无可用事件",
+        "eventsHint": "不选择任何事件表示监听所有事件",
+        "enable": "启用此Webhook配置"
+      },
+      "history": {
+        "detailTitle": "Webhook 调用详情",
+        "webhook": "Webhook",
+        "event": "事件",
+        "status": "状态",
+        "statusSuccess": "成功",
+        "statusFailed": "失败",
+        "responseCode": "响应码",
+        "duration": "耗时",
+        "retry": "重试次数",
+        "error": "错误信息"
+      },
+      "historyList": {
+        "title": "Webhook 调用历史",
+        "currentViewing": "当前查看: {{name}}",
+        "empty": "暂无 Webhook 调用记录",
+        "columns": {
+          "id": "ID",
+          "webhook": "Webhook",
+          "event": "事件",
+          "status": "状态",
+          "responseCode": "响应码",
+          "duration": "耗时",
+          "time": "调用时间",
+          "actions": "操作"
+        },
+        "actions": {
+          "viewDetail": "查看详情"
+        }
+      },
+      "actions": {
+        "close": "关闭"
+      },
+      "toast": {
+        "fetchEventsFailed": "获取事件列表失败",
+        "fetchListFailed": "获取Webhook配置列表失败",
+        "fetchHistoryFailed": "获取Webhook历史记录失败",
+        "createSuccess": "创建Webhook配置成功",
+        "createFailed": "创建Webhook配置失败",
+        "updateSuccess": "更新Webhook配置成功",
+        "updateFailed": "更新Webhook配置失败",
+        "deleteSuccess": "删除Webhook配置成功",
+        "deleteFailed": "删除Webhook配置失败"
+      }
+    },
+    "oauthProviders": {
+      "title": "OAuth 管理",
+      "actions": {
+        "add": "添加 OAuth",
+        "uploadLogo": "点击上传 Logo"
+      },
+      "empty": "暂无 OAuth",
+      "status": {
+        "enabled": "已启用",
+        "disabled": "已禁用"
+      },
+      "columns": {
+        "logo": "Logo",
+        "provider": "服务商",
+        "uri": "URI",
+        "status": "启用",
+        "callback": "回调URL",
+        "actions": "操作",
+        "id": "ID: {{id}}"
+      },
+      "toast": {
+        "fetchFailed": "获取 OAuth Provider 列表失败",
+        "createSuccess": "创建 OAuth Provider 成功",
+        "createFailed": "创建 OAuth Provider 失败",
+        "updateSuccess": "更新 OAuth Provider 成功",
+        "updateFailed": "更新 OAuth Provider 失败",
+        "deleteSuccess": "删除 OAuth Provider 成功",
+        "deleteFailed": "删除 OAuth Provider 失败",
+        "pictureUpdated": "Logo 已更新",
+        "pictureUpdateFailed": "Logo 更新失败"
+      },
+      "modal": {
+        "createTitle": "创建 OAuth Provider",
+        "editTitle": "编辑 OAuth Provider",
+        "deleteTitle": "删除 OAuth Provider",
+        "deletePrompt": "确定要删除 OAuth Provider",
+        "deleteWarning": "此操作不可撤销。"
+      },
+      "form": {
+        "providerLabel": "提供商名称 *",
+        "providerPlaceholder": "例如: GitHub",
+        "uriLabel": "URI *",
+        "uriPlaceholder": "例如: github, URL 将拼接为 /oauth/github",
+        "authUrlLabel": "授权URL *",
+        "authUrlPlaceholder": "https://example.com/oauth/authorize",
+        "tokenUrlLabel": "Token URL *",
+        "tokenUrlPlaceholder": "https://example.com/oauth/token",
+        "userInfoUrlLabel": "用户信息URL *",
+        "userInfoUrlPlaceholder": "https://api.example.com/user",
+        "callbackUrlLabel": "回调URL",
+        "callbackUrlPlaceholder": "https://example.com/oauth/callback",
+        "clientIdLabel": "ClientID",
+        "clientIdPlaceholder": "ClientID",
+        "clientSecretLabel": "ClientSecret",
+        "clientSecretPlaceholder": "ClientSecret",
+        "mappingTitle": "字段映射",
+        "pictureFieldLabel": "头像字段",
+        "nameFieldLabel": "名称字段",
+        "emailFieldLabel": "邮箱字段",
+        "descriptionFieldLabel": "描述字段",
+        "idFieldLabel": "ID字段",
+        "logoUrlLabel": "Logo URL",
+        "logoUrlPlaceholder": "https://example.com/picture.png",
+        "enable": "启用"
+      }
+    },
+    "files": {
+      "title": "文件管理",
+      "types": {
+        "file": "附件",
+        "picture": "图片",
+        "traffic": "流量",
+        "writeup": "题解"
+      },
+      "selectAll": "全选",
+      "empty": "暂无文件",
+      "columns": {
+        "name": "文件名",
+        "type": "类型",
+        "size": "大小",
+        "uploaded": "上传时间",
+        "meta": "元数据",
+        "actions": "操作"
+      },
+      "meta": {
+        "model": "{{model}}: {{id}}",
+        "sha256": "sha256: {{hash}}"
+      },
+      "toast": {
+        "fetchFailed": "获取文件列表失败",
+        "downloadFailed": "下载文件失败",
+        "deleteSuccess": "删除文件成功",
+        "deleteFailed": "删除文件失败"
+      },
+      "modal": {
+        "confirmTitle": "确认删除",
+        "confirmPrompt": "确定要删除选中的 {{count}} 个文件吗？",
+        "confirmWarning": "此操作不可恢复。"
+      },
+      "actions": {
+        "confirm": "确认",
+        "batchDelete": "批量删除 ({{count}})"
+      }
+    },
+    "images": {
+      "title": "图片管理",
+      "selectAll": "全选",
+      "empty": "暂无图片",
+      "columns": {
+        "preview": "预览",
+        "filename": "文件名",
+        "size": "大小",
+        "type": "类型",
+        "uploaded": "上传时间",
+        "actions": "操作"
+      },
+      "actions": {
+        "batchDelete": "批量删除 ({{count}})"
+      }
+    },
+    "globalSearch": {
+      "title": "全局搜索",
+      "model": "模型",
+      "selectModel": "选择模型...",
+      "filters": "过滤字段",
+      "sort": "排序",
+      "noResults": "未找到结果",
+      "detailTitle": "{{model}} 详情",
+      "toast": {
+        "modelsFailed": "获取模型列表失败",
+        "searchFailed": "搜索失败"
+      }
+    },
+    "system": {
+      "title": "系统设置",
+      "noData": "无可用配置数据",
+      "actions": {
+        "update": "更新配置",
+        "reset": "重置",
+        "restart": "重启系统"
+      },
+      "toast": {
+        "fetchFailed": "获取系统配置失败",
+        "updateSuccess": "系统配置更新成功",
+        "updateFailed": "系统配置更新失败",
+        "restartSuccess": "系统重启成功",
+        "restartFailed": "系统重启失败",
+        "invalidJsonArray": "请输入有效的 JSON 数组或对象"
+      },
+      "update": {
+        "title": "更新配置确认",
+        "prompt": "即将更新系统配置，是否继续？",
+        "warning": "提示：可能导致系统运行失败。",
+        "confirm": "继续更新",
+        "cancel": "取消"
+      },
+      "restart": {
+        "title": "需要重启服务",
+        "manualTitle": "重启系统确认",
+        "prompt": "系统配置已更新，是否立即重启以使配置生效？",
+        "manualPrompt": "系统即将重启，是否继续？",
+        "warning": "提示：重启可能导致系统无法正常运行。",
+        "confirm": "立即重启",
+        "cancel": "暂不重启",
+        "inProgress": "正在重启..."
+      },
+      "sections": {
+        "basic": "基础配置",
+        "gin": "Gin配置",
+        "database": "数据库配置",
+        "redis": "Redis配置",
+        "k8s": "Kubernetes配置",
+        "nfs": "NFS配置",
+        "cheat": "风控配置",
+        "webhook": "Webhook配置"
+      },
+      "labels": {
+        "host": "外部访问地址",
+        "path": "数据路径",
+        "geocity_db": "GeoCityDB 路径",
+        "logLevel": "日志级别",
+        "saveLogs": "是否保存日志",
+        "workerLog": "任务队列日志级别",
+        "concurrency": "任务队列最大线程",
+        "ginHost": "监听地址",
+        "ginMode": "运行模式",
+        "ginPort": "监听端口",
+        "ginUploadMax": "最大上传大小 (MB)",
+        "ginGlobalRate": "全局频率限制 (RPS)",
+        "ginProxies": "信任上游代理列表",
+        "ginLogWhitelist": "请求日志白名单路径",
+        "ginRateWhitelist": "IP 速率限制白名单",
+        "ginCORS": "CORS",
+        "ginJWTSecret": "JWT Secret",
+        "ginJWTStatic": "是否使用静态值",
+        "dbHost": "数据库地址",
+        "dbPort": "数据库端口",
+        "dbName": "数据库名称",
+        "dbUser": "用户名",
+        "dbPassword": "密码",
+        "dbIdle": "最大空闲连接",
+        "dbOpen": "最大打开连接",
+        "dbLogLevel": "日志级别",
+        "redisHost": "主机地址",
+        "redisPort": "端口",
+        "redisPassword": "密码",
+        "k8sConfig": "Kubeconfig 文件路径",
+        "k8sNamespace": "命名空间",
+        "k8sTcpdump": "TCPdump 容器镜像",
+        "k8sWorker": "动态附件生成器数量 = 节点数量 * 倍率 * 动态题目数量",
+        "externalNetwork": "外部网络配置",
+        "frp": "Frp",
+        "frpOn": "是否启用 Frp 暴露靶机",
+        "frpc": "Frpc 容器镜像",
+        "nginx": "Nginx 容器镜像",
+        "frps": "Frps",
+        "frpsHostname": "远程地址",
+        "frpsPort": "端口",
+        "frpsToken": "连接 Token",
+        "nfsServer": "服务器地址",
+        "nfsPath": "存储路径",
+        "nfsStorage": "存储大小",
+        "cheatIpWhitelist": "作弊检测过滤 IP",
+        "webhookBlacklist": "Webhook 黑名单 (IP / CIDR / Hostname)"
+      },
+      "k8s": {
+        "cidr": "CIDR",
+        "gateway": "网关",
+        "interface": "网卡",
+        "excludeIps": "排除IP",
+        "frp": "Frp",
+        "nginx": "Nginx",
+        "enabled": "启用",
+        "host": "主机",
+        "port": "端口",
+        "token": "令牌",
+        "allowedPorts": "允许端口"
+      }
+    }
+  },
+  "home": {
+    "hero": {
+      "titlePrefix": "Dive Deep into the",
+      "titleHighlight": "Cyber Security",
+      "titleSuffix": "Challenge",
+      "subtitle": "Join the elite community of hackers, compete in real-world challenges, and master the art of cybersecurity through hands-on experience.",
+      "start": "START HACKING",
+      "learnMore": "LEARN MORE"
+    },
+    "stats": {
+      "activePlayers": "Active Players",
+      "challenges": "Challenges",
+      "events": "CTF Events",
+      "successRate": "Success Rate"
+    },
+    "challengeTypes": {
+      "titlePrefix": "Master All Aspects of",
+      "titleHighlight": "Cyber Security",
+      "subtitle": "From web exploitation to binary analysis, our challenges cover every major domain of cybersecurity",
+      "web": {
+        "name": "Web Security",
+        "description": "Exploit web vulnerabilities, master XSS, SQLi, and more"
+      },
+      "crypto": {
+        "name": "Cryptography",
+        "description": "Break ciphers, crack codes, and solve cryptographic puzzles"
+      },
+      "forensics": {
+        "name": "Forensics",
+        "description": "Analyze digital evidence and recover hidden data"
+      },
+      "binary": {
+        "name": "Binary Exploitation",
+        "description": "Exploit buffer overflows, PWN"
+      },
+      "reverse": {
+        "name": "Reverse Engineering",
+        "description": "Reverse engineering, exploit reverse engineering"
+      },
+      "blockchain": {
+        "name": "Blockchain",
+        "description": "Blockchain Security"
+      }
+    },
+    "upcoming": {
+      "titlePrefix": "Upcoming",
+      "titleHighlight": "Competitions",
+      "subtitle": "Register now for our upcoming CTF events and compete with the best"
+    },
+    "leaderboard": {
+      "titlePrefix": "Top",
+      "titleHighlight": "Performers",
+      "subtitle": "Meet the elite teams leading our global leaderboard"
+    }
+  },
+  "auth": {
+    "login": "登录",
+    "register": "注册",
+    "adminLogin": "管理员登录",
+    "placeholders": {
+      "username": "用户名",
+      "email": "邮箱",
+      "password": "密码",
+      "confirmPassword": "确认密码"
+    },
+    "validation": {
+      "usernameMin": "用户名至少 3 个字符",
+      "passwordMin": "密码至少 6 个字符",
+      "passwordMismatch": "两次密码不一致",
+      "emailInvalid": "邮箱格式不正确",
+      "usernameRequired": "用户名必填",
+      "passwordRequired": "密码必填"
+    },
+    "oauth": {
+      "or": "或者使用以下方式登录",
+      "useProvider": "使用 {{provider}} 登录"
+    }
+  },
+  "oauth": {
+    "callback": {
+      "errorWithReason": "OAuth登录失败：{{reason}}",
+      "tokenMissing": "OAuth token缺失",
+      "toast": {
+        "success": "OAuth登录成功",
+        "failed": "OAuth登录失败"
+      },
+      "processing": {
+        "title": "正在处理OAuth登录...",
+        "subtitle": "请稍候，正在验证您的身份"
+      },
+      "success": {
+        "title": "登录成功！",
+        "subtitle": "正在跳转..."
+      },
+      "error": {
+        "title": "登录失败",
+        "subtitle": "正在返回登录页面..."
+      }
+    }
+  },
+  "toast": {
+    "home": {
+      "fetchFailed": "获取首页数据失败"
+    },
+    "oauth": {
+      "providersFailed": "获取 OAuth 提供商失败"
+    },
+    "auth": {
+      "loginSuccess": "登录成功",
+      "loginFailed": "登录失败",
+      "registerFailed": "注册失败"
+    },
+    "user": {
+      "profileUpdated": "个人资料已更新",
+      "passwordUpdated": "密码已更新",
+      "passwordUpdateFailed": "密码更新失败",
+      "verifyEmailSent": "验证邮件已发送",
+      "verifyEmailHint": "请检查邮箱",
+      "accountDeleted": "账户已删除",
+      "avatarUpdated": "头像已更新",
+      "fetchFailed": "获取用户信息失败",
+      "fetchAdminFailed": "获取管理员信息失败"
+    },
+    "common": {
+      "updateFailed": "更新失败",
+      "sendFailed": "发送失败",
+      "deleteFailed": "删除失败",
+      "operationFailed": "操作失败"
+    },
+    "game": {
+      "fetchListFailed": "获取比赛列表失败"
+    },
+    "team": {
+      "checkStatusFailed": "获取队伍状态失败",
+      "createSuccess": "创建队伍成功",
+      "createFailed": "创建队伍失败",
+      "joinSuccess": "加入队伍成功",
+      "joinFailed": "加入队伍失败"
+    }
+  },
+  "errors": {
+    "unauthorized": "未授权或登录已过期",
+    "forbidden": "没有权限访问该资源",
+    "notFound": "请求的资源不存在",
+    "serverError": "服务器内部错误",
+    "badGateway": "网关错误",
+    "serviceUnavailable": "服务暂时不可用",
+    "gatewayTimeout": "网关超时",
+    "requestFailed": "请求失败",
+    "requestTimeout": "请求超时，请检查网络连接",
+    "networkError": "无法连接到服务器"
+  },
+  "user": {
+    "settings": {
+      "title": "用户设置",
+      "sections": {
+        "profile": "个人资料",
+        "security": "安全",
+        "logout": "退出登录"
+      },
+      "emailVerified": "✓ 邮箱已验证",
+      "emailNotVerified": "⚠ 邮箱未验证",
+      "displayName": "显示名称",
+      "verify": "验证",
+      "bio": "个人简介",
+      "changePassword": "修改密码",
+      "placeholders": {
+        "currentPassword": "当前密码",
+        "newPassword": "新密码",
+        "confirmPassword": "确认新密码"
+      },
+      "updatePassword": "更新密码",
+      "deleteAccount": "删除账户",
+      "deleteAccountHint": "删除账户后无法恢复，请谨慎操作。",
+      "deleteAccountAction": "删除账户",
+      "deleteAccountConfirm": "确定要删除你的账户吗？此操作无法撤销。",
+      "verifyEmail": "验证邮箱",
+      "verifyEmailHint": "我们会向你的邮箱发送验证链接，请检查收件箱并按提示操作。",
+      "validation": {
+        "currentPasswordRequired": "当前密码为必填"
+      }
+    }
+  },
+  "contact": {
+    "title": "联系我们",
+    "methods": {
+      "github": {
+        "title": "GitHub",
+        "description": "在我们的仓库中查找",
+        "action": "查看仓库"
+      },
+      "email": {
+        "title": "邮件支持",
+        "description": "直接联系我们进行商务咨询",
+        "action": "发送邮件"
+      }
+    }
+  },
+  "support": {
+    "techStack": {
+      "title": "技术栈",
+      "categories": {
+        "frontend": "前端",
+        "backend": "后端",
+        "devops": "DevOps"
+      },
+      "items": {
+        "react": "UI 框架",
+        "tailwind": "样式",
+        "motion": "动效",
+        "go": "API 服务",
+        "mysql": "数据库",
+        "redis": "缓存",
+        "docker": "容器平台",
+        "k8s": "容器编排",
+        "jenkins": "CI/CD 流水线"
+      },
+      "roles": {
+        "frontendLead": "前端负责人",
+        "backendLead": "后端负责人"
+      }
+    },
+    "team": {
+      "title": "开发团队"
+    }
+  },
+  "game": {
+    "status": {
+      "upcoming": "即将开始",
+      "active": "进行中",
+      "ended": "已结束"
+    },
+    "actions": {
+      "results": "查看结果",
+      "joinNow": "立即加入",
+      "ended": "已结束"
+    },
+    "challengeBoard": {
+      "solves": "解题数：",
+      "status": {
+        "notInitialized": "未初始化",
+        "instanceRunning": "靶机运行中"
+      }
+    },
+    "challengeModal": {
+      "hint": {
+        "show": "显示提示",
+        "hide": "隐藏提示"
+      },
+      "errors": {
+        "selectOption": "请至少选择一个选项"
+      },
+      "instance": {
+        "running": "运行中",
+        "notRunning": "未运行",
+        "time": "时间：",
+        "address": "地址："
+      },
+      "actions": {
+        "launching": "启动中...",
+        "launch": "启动靶机",
+        "extending": "延长中...",
+        "extend": "延长时间",
+        "destroying": "销毁中...",
+        "destroy": "销毁",
+        "resetting": "重置中...",
+        "reset": "重置题目"
+      },
+      "sections": {
+        "hints": "提示",
+        "questionOptions": "选择答案",
+        "description": "描述",
+        "attachments": "附件",
+        "submitAnswer": "提交答案",
+        "submitFlag": "提交 Flag"
+      },
+      "initialize": {
+        "message": "初始化题目后可查看内容",
+        "loading": "初始化中...",
+        "action": "初始化题目"
+      },
+      "submit": {
+        "selectedOptions": "已选择 {{count}} 个选项",
+        "selectOptions": "请选择答案选项",
+        "submitting": "提交中...",
+        "button": "{{status}} {{attempts}}/{{max}}"
+      }
+    },
+    "contestEnded": {
+      "titlePrefix": "比赛",
+      "titleHighlight": "已结束",
+      "teamPerformance": {
+        "title": "队伍成绩"
+      },
+      "writeups": {
+        "title": "题解",
+        "dropzone": "拖拽文件或点击此处上传题解",
+        "supports": "支持 PDF、DOC、DOCX",
+        "uploaded": "已上传题解"
+      },
+      "actions": {
+        "viewChallenges": "查看题目",
+        "viewFinalScoreboard": "查看最终排行榜"
+      }
+    },
+    "teamStatus": {
+      "rank": "排名 #{{rank}}"
+    },
+    "statusPanel": {
+      "contestStatus": "比赛状态",
+      "startTime": "开始时间",
+      "timeUntilStart": "距离开始",
+      "timeRemaining": "剩余时间",
+      "teamScore": "队伍得分",
+      "flagsSolved": "解题数"
+    },
+    "scoreboardStats": {
+      "totalTeams": "队伍总数",
+      "totalPlayers": "参赛总人数",
+      "totalSolves": "解题总数",
+      "highestScore": "最高分"
+    },
+    "scoreboardTable": {
+      "headers": {
+        "rank": "排名",
+        "team": "队伍",
+        "score": "得分"
+      },
+      "members": "{{count}}人",
+      "status": {
+        "solved": "已解出",
+        "unsolved": "未解出"
+      }
+    },
+    "detail": {
+      "defaultRules": [
+        "参赛者必须遵守比赛规则与伦理",
+        "禁止攻击比赛平台或其他参赛者",
+        "请勿分享题目答案或解题报告",
+        "每支队伍最多 4 名成员",
+        "比赛采用动态计分系统",
+        "设有首杀奖励",
+        "违规将被取消资格"
+      ],
+      "defaultPrizes": [
+        {
+          "amount": "¥10,000",
+          "description": "一等奖：奖金与 CBCTF 纪念品"
+        },
+        {
+          "amount": "¥5,000",
+          "description": "二等奖：奖金与礼品"
+        },
+        {
+          "amount": "¥3,000",
+          "description": "三等奖：奖金"
+        }
+      ],
+      "defaultTimeline": [
+        {
+          "date": "2024-02-15",
+          "title": "报名开启",
+          "description": "报名开启，队伍可开始报名"
+        },
+        {
+          "date": "2024-02-16",
+          "title": "比赛开始",
+          "description": "题目发布，比赛开始"
+        },
+        {
+          "date": "2024-02-17",
+          "title": "比赛结束",
+          "description": "停止计分并公布最终排名"
+        },
+        {
+          "date": "2024-02-18",
+          "title": "题解发布",
+          "description": "发布官方题解供交流"
+        }
+      ],
+      "toast": {
+        "fetchFailed": "获取比赛详情失败"
+      }
+    },
+    "team": {
+      "empty": "暂无队伍信息",
+      "toast": {
+        "fetchFailed": "获取队伍信息失败",
+        "inviteCopied": "邀请码已复制",
+        "inviteRefreshed": "邀请码已刷新",
+        "inviteRefreshFailed": "刷新邀请码失败",
+        "updateSuccess": "队伍信息已更新",
+        "updateFailed": "更新队伍信息失败",
+        "memberRemoved": "队员已移除",
+        "memberRemovedDescription": "{{name}} 已被移出队伍",
+        "removeFailed": "移除队员失败",
+        "disbanded": "队伍已解散",
+        "disbandFailed": "解散队伍失败",
+        "avatarUpdated": "头像已更新",
+        "avatarUploadFailed": "上传头像失败"
+      }
+    },
+    "challenges": {
+      "backToSummary": "← 返回比赛总结",
+      "toast": {
+        "fetchFailed": "获取数据失败",
+        "fetchCategoriesFailed": "获取分类失败",
+        "fetchListFailed": "获取题目列表失败",
+        "fetchWriteupsFailed": "获取题解失败",
+        "refreshStatusFailed": "刷新题目状态失败",
+        "initSuccess": "题目初始化成功",
+        "initFailed": "初始化失败",
+        "resetSuccess": "任务下发成功",
+        "resetFailed": "重置失败",
+        "launchSuccess": "任务下发成功",
+        "launchFailed": "任务下发启动失败",
+        "extendSuccess": "延长时间成功",
+        "extendFailed": "延长时间失败",
+        "destroySuccess": "靶机已销毁",
+        "destroyFailed": "销毁失败",
+        "submitSuccess": "提交成功",
+        "submitSuccessMessage": "提交成功！",
+        "fetchStatusFailed": "获取题目状态失败",
+        "downloadSuccess": "附件下载成功",
+        "downloadFailed": "下载失败",
+        "uploadSuccess": "题解上传成功",
+        "uploadThanks": "感谢您分享您的解题思路！",
+        "uploadFailed": "题解上传失败"
+      }
+    },
+    "scoreboard": {
+      "headers": {
+        "rank": "排名",
+        "team": "队伍",
+        "score": "得分",
+        "challenges": "题目",
+        "lastSubmit": "最后提交"
+      },
+      "total": "总计",
+      "toast": {
+        "fetchFailed": "获取排行榜失败"
+      }
+    }
+  },
+  "utils": {
+    "time": {
+      "stopped": "已停止",
+      "ended": "已结束",
+      "startingSoon": "即将开始",
+      "justNow": "刚刚",
+      "units": {
+        "day": "{{count}}天",
+        "hour": "{{count}}小时",
+        "minute": "{{count}}分钟",
+        "second": "{{count}}秒"
+      },
+      "ago": {
+        "minute": "{{count}}分钟前",
+        "hour": "{{count}}小时前",
+        "day": "{{count}}天前"
+      }
+    },
+    "hex": {
+      "invalid": "无效的 hex 数据"
+    }
+  }
+}

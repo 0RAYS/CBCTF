@@ -1,0 +1,178 @@
+/* Maple UI */
+@font-face {
+  font-family: 'Maple UI';
+  src: url('./assets/fonts/Maple UI.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Maple UI';
+  src: url('./assets/fonts/Maple UI Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Maple Mono */
+@font-face {
+  font-family: 'Maple Mono';
+  src: url('./assets/fonts/MapleMono-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Maple Mono';
+  src: url('./assets/fonts/MapleMono-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Maple Mono';
+  src: url('./assets/fonts/MapleMono-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Source Han Sans SC */
+@font-face {
+  font-family: 'Source Han Sans SC';
+  src: url('./assets/fonts/SourceHanSansSC-Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Source Han Sans SC';
+  src: url('./assets/fonts/SourceHanSansSC-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+/* 自定义下拉框样式 */
+@layer components {
+  /* 统一的select样式 */
+  .select-custom {
+    @apply w-full bg-black/20 border border-neutral-300/30 rounded-md text-neutral-50 
+           focus:outline-none focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.3)]
+           transition-all duration-200;
+  }
+  
+  /* 小尺寸select */
+  .select-custom-sm {
+    @apply h-8 px-3 text-sm;
+  }
+  
+  /* 中等尺寸select */
+  .select-custom-md {
+    @apply h-10 px-4;
+  }
+  
+  /* 大尺寸select */
+  .select-custom-lg {
+    @apply h-12 px-4 text-base;
+  }
+
+  .contest-container {
+    width: clamp(320px, 92vw, 1400px);
+  }
+  
+  /* 自定义下拉框容器样式 */
+  .dropdown-custom {
+    @apply absolute z-10 w-full mt-1 bg-neutral-800/95 border border-neutral-300/50 
+           rounded-md shadow-lg backdrop-blur-sm max-h-48 overflow-y-auto;
+  }
+  
+  /* 下拉框选项样式 */
+  .dropdown-option {
+    @apply px-3 py-2 text-sm font-mono text-neutral-200 hover:bg-neutral-700/80 
+           hover:text-neutral-50 cursor-pointer transition-colors duration-150
+           border-b border-neutral-300/10 last:border-b-0;
+  }
+  
+  /* 下拉框选项激活状态 */
+  .dropdown-option-active {
+    @apply bg-geek-400/20 text-geek-300 border-geek-400/30;
+  }
+  
+  /* 下拉框选项禁用状态 */
+  .dropdown-option-disabled {
+    @apply text-neutral-500 cursor-not-allowed hover:bg-transparent;
+  }
+  
+  /* 下拉框加载状态 */
+  .dropdown-loading {
+    @apply px-3 py-2 text-sm font-mono text-neutral-400 text-center;
+  }
+  
+  /* 下拉框空状态 */
+  .dropdown-empty {
+    @apply px-3 py-2 text-sm font-mono text-neutral-400 text-center;
+  }
+}
+
+/* 全局select和option样式覆盖 */
+select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23b3b3b3' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+  appearance: none;
+}
+
+select:focus {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23597ef7' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+}
+
+/* option元素样式 */
+option {
+  @apply bg-neutral-800 text-neutral-200;
+}
+
+option:hover {
+  @apply bg-neutral-700;
+}
+
+option:checked {
+  @apply bg-geek-400/20 text-geek-300;
+}
+
+/* 自定义滚动条样式 */
+.dropdown-custom::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdown-custom::-webkit-scrollbar-track {
+  @apply bg-neutral-700/30 rounded-full;
+}
+
+.dropdown-custom::-webkit-scrollbar-thumb {
+  @apply bg-neutral-500/50 rounded-full;
+}
+
+.dropdown-custom::-webkit-scrollbar-thumb:hover {
+  @apply bg-neutral-400/70;
+}
