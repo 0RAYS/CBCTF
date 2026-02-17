@@ -64,9 +64,10 @@ func Init() {
 
 	// 指定数据表的存储引擎, 需要支持回滚操作
 	err = DB.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(
-		&model.Admin{}, &model.Challenge{}, &model.ChallengeFlag{}, &model.Cheat{}, &model.Container{}, &model.Contest{},
-		&model.ContestChallenge{}, &model.ContestFlag{}, &model.Device{}, &model.Docker{}, &model.Email{}, &model.Event{},
-		&model.File{}, &model.Notice{}, &model.Oauth{}, &model.Pod{}, &model.Request{}, &model.Setting{}, &model.Smtp{},
+		&model.Admin{}, &model.Challenge{}, &model.ChallengeFlag{}, &model.Cheat{}, &model.Container{},
+		&model.Contest{}, &model.ContestChallenge{}, &model.ContestFlag{}, &model.Device{}, &model.Docker{},
+		&model.Email{}, &model.Event{}, &model.File{}, model.Group{}, &model.Notice{}, &model.Oauth{},
+		&model.Permission{}, &model.Pod{}, &model.Request{}, &model.Role{}, &model.Setting{}, &model.Smtp{},
 		&model.Submission{}, &model.Team{}, &model.TeamFlag{}, &model.Traffic{}, &model.User{}, &model.Victim{},
 		&model.Webhook{}, &model.WebhookHistory{},
 	)
@@ -78,6 +79,14 @@ func Init() {
 		log.Logger.Fatalf("Failed to setup join table: %s", err)
 	}
 	err = DB.SetupJoinTable(&model.User{}, "Contests", &model.UserContest{})
+	if err != nil {
+		log.Logger.Fatalf("Failed to setup join table: %s", err)
+	}
+	err = DB.SetupJoinTable(&model.User{}, "Groups", &model.UserGroup{})
+	if err != nil {
+		log.Logger.Fatalf("Failed to setup join table: %s", err)
+	}
+	err = DB.SetupJoinTable(&model.Role{}, "Permissions", &model.RolePermission{})
 	if err != nil {
 		log.Logger.Fatalf("Failed to setup join table: %s", err)
 	}
