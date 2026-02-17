@@ -60,7 +60,7 @@ model:
     namePasswordWrong: "用户名或密码错误"
     unverifiedEmail: "邮箱未验证"
     alreadyVerified: "邮箱已验证"
-    inContest: "用户已参赛: {{.Contest}}, 不可以删除账户"
+    inContest: "用户已参与过赛事, 不可以删除账户"
   victim:
     limited: "容器数量达到上限"
     hasMuchTime: "距容器关闭20分钟内才可延长时间"

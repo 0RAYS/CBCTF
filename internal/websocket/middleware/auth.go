@@ -35,7 +35,7 @@ func WSAuth(ctx *gin.Context) {
 		}
 		magic := GetMagic(ctx)
 		if !utils.CompareMagic(magic, claims.X) {
-			contestIDL, ret := db.GetContestIDByUserID(db.DB, user.ID)
+			contestIDL, ret := db.InitContestRepo(db.DB).GetIDByUserID(user.ID)
 			if !ret.OK {
 				ctx.JSON(http.StatusOK, ret)
 				return
