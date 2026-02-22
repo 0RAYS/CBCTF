@@ -31,7 +31,7 @@ func GetAllowQueryModels(ctx *gin.Context) {
 }
 
 func Search(ctx *gin.Context) {
-	var form dto.ListModelsForm
+	var form dto.SearchModelsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
