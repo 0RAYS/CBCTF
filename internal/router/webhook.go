@@ -17,11 +17,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetWebhook(ctx *gin.Context) {
-	webhook := middleware.GetWebhook(ctx)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetWebhookResp(webhook)))
-}
-
 func GetWebhooks(ctx *gin.Context) {
 	var form dto.ListModelsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
