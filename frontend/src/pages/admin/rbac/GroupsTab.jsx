@@ -325,7 +325,7 @@ function GroupsTab() {
             <label className="block text-sm font-medium text-neutral-400 mb-1">
               {t('admin.rbac.groups.form.userId')}
             </label>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
               <Input
                 type="number"
                 value={userId}
@@ -333,9 +333,11 @@ function GroupsTab() {
                 placeholder={t('admin.rbac.groups.form.userIdPlaceholder')}
                 fullWidth
               />
-              <ModalButton variant="primary" onClick={handleAssignUser}>
-                {t('admin.rbac.groups.form.addUser')}
-              </ModalButton>
+              <div className="shrink-0">
+                <ModalButton variant="primary" onClick={handleAssignUser}>
+                  {t('admin.rbac.groups.form.addUser')}
+                </ModalButton>
+              </div>
             </div>
           </div>
         </div>
