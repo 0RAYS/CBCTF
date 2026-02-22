@@ -106,7 +106,7 @@ func SystemStatus(ctx *gin.Context) {
 }
 
 func GetLogs(ctx *gin.Context) {
-	var form dto.GetLogsForm
+	var form dto.ListModelsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return

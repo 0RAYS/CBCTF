@@ -9,8 +9,7 @@ import (
 
 // GetChallengesForm for get challenges list
 type GetChallengesForm struct {
-	Offset   int                 `form:"offset" json:"offset" binding:"gte=0"`
-	Limit    int                 `form:"limit" json:"limit" binding:"gte=0,lte=100"`
+	ListModelsForm
 	Type     model.ChallengeType `form:"type" json:"type" binding:"omitempty,oneof=static question dynamic pods"`
 	Category string              `form:"category" json:"category"`
 }

@@ -12,8 +12,7 @@ type WarmUpImageForm struct {
 }
 
 type GetContestVictimsForm struct {
-	Offset      int    `form:"offset" json:"offset" binding:"gte=0"`
-	Limit       int    `form:"limit" json:"limit" binding:"gte=0,lte=100"`
+	ListModelsForm
 	ChallengeID string `form:"challenge_id" json:"challenge_id" binding:"omitempty,uuid"`
 	TeamID      uint   `form:"team_id" json:"team_id"`
 	UserID      uint   `form:"user_id" json:"user_id"`
