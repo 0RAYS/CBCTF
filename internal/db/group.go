@@ -54,7 +54,26 @@ func InitGroupRepo(tx *gorm.DB) *GroupRepo {
 }
 func (g *GroupRepo) InitDefaultGroups() model.RetVal {
 	for _, group := range model.DefaultGroups {
-		if _, ret := g.Insert(group); !ret.OK && ret.Msg != i18n.Model.DuplicateKeyValue {
+		group, ret := g.Insert(group)
+		if !ret.OK && ret.Msg != i18n.Model.DuplicateKeyValue {
+			return ret
+		}
+		group, ret = g.GetByID(group.ID, GetOptions{Preloads: map[string]GetOptions{"Role": {}}})
+		if !ret.OK {
+			return ret
+		}
+		if group.RoleID > 0 {
+			continue
+		}
+		roleName, ok := model.DefaultGroupRoleMap[group.Name]
+		if !ok {
+			continue
+		}
+		role, ret := InitRoleRepo(g.DB).GetByUniqueKey("name", roleName)
+		if !ret.OK {
+			return ret
+		}
+		if ret = g.Update(group.ID, UpdateGroupOptions{RoleID: new(role.ID)}); !ret.OK {
 			return ret
 		}
 	}

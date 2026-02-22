@@ -12,6 +12,21 @@ var DefaultRoles = []Role{
 	{Name: UserRoleName, Description: "参赛选手, 拥有参赛相关权限", Default: true},
 }
 
+var DefaultRolePermissionMap = map[string][]string{
+	AdminRoleName: {
+		PermUserCreate, PermUserRead, PermUserUpdate, PermUserDelete, PermUserList,
+		PermRoleCreate, PermRoleRead, PermRoleUpdate, PermRoleDelete, PermRoleList, PermRoleAssign, PermRoleRevoke,
+		PermPermissionRead, PermPermissionList, PermPermissionAssign, PermPermissionRevoke,
+		PermGroupCreate, PermGroupRead, PermGroupUpdate, PermGroupDelete, PermGroupList,
+	},
+	OrganizerRoleName: {
+		PermUserRead, PermUserDelete, PermUserList,
+	},
+	UserRoleName: {
+		PermUserRead, PermUserDelete,
+	},
+}
+
 type Role struct {
 	Permissions []Permission `gorm:"many2many:role_permissions;" json:"-"`
 	Name        string       `gorm:"type:varchar(255);uniqueIndex;not null" json:"name"`
