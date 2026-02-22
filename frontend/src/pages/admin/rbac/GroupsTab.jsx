@@ -11,7 +11,7 @@ import {
   getGroupUsers,
 } from '../../../api/admin/rbac';
 import AdminGroups from '../../../components/features/Admin/AdminGroups';
-import { Modal } from '../../../components/common';
+import { Modal, Pagination } from '../../../components/common';
 import CRUDModalFooter from '../../../components/common/CRUDModalFooter';
 import ModalButton from '../../../components/common/ModalButton';
 import Input from '../../../components/common/Input';
@@ -38,6 +38,9 @@ function GroupsTab() {
   const [userId, setUserId] = useState('');
   const [groupUsers, setGroupUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [userPage, setUserPage] = useState(1);
+  const [userTotalCount, setUserTotalCount] = useState(0);
+  const userPageSize = 10;
 
   function fetchGroups() {
     getGroupList({
@@ -116,12 +119,16 @@ function GroupsTab() {
     fetchGroups();
   }, [currentPage]);
 
-  const fetchGroupUsers = async (groupId) => {
+  const fetchGroupUsers = async (groupId, page = 1) => {
     setLoadingUsers(true);
     try {
-      const response = await getGroupUsers(groupId);
+      const response = await getGroupUsers(groupId, {
+        limit: userPageSize,
+        offset: (page - 1) * userPageSize,
+      });
       if (response.code === 200) {
         setGroupUsers(response.data.users || []);
+        setUserTotalCount(response.data.count || 0);
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.rbac.groups.toast.fetchUsersFailed') });
@@ -134,8 +141,10 @@ function GroupsTab() {
     setSelectedGroupForUsers(group);
     setUserId('');
     setGroupUsers([]);
+    setUserPage(1);
+    setUserTotalCount(0);
     setUserModalOpen(true);
-    fetchGroupUsers(group.id);
+    fetchGroupUsers(group.id, 1);
   };
 
   const handleAssignUser = async () => {
@@ -148,7 +157,7 @@ function GroupsTab() {
         toast.success({ description: t('admin.rbac.groups.toast.assignUserSuccess') });
         setUserId('');
         fetchGroups();
-        fetchGroupUsers(selectedGroupForUsers.id);
+        fetchGroupUsers(selectedGroupForUsers.id, userPage);
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.rbac.groups.toast.assignUserFailed') });
@@ -161,10 +170,17 @@ function GroupsTab() {
       if (response.code === 200) {
         toast.success({ description: t('admin.rbac.groups.toast.removeUserSuccess') });
         fetchGroups();
-        fetchGroupUsers(selectedGroupForUsers.id);
+        fetchGroupUsers(selectedGroupForUsers.id, userPage);
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.rbac.groups.toast.removeUserFailed') });
+    }
+  };
+
+  const handleUserPageChange = (page) => {
+    setUserPage(page);
+    if (selectedGroupForUsers) {
+      fetchGroupUsers(selectedGroupForUsers.id, page);
     }
   };
 
@@ -293,6 +309,17 @@ function GroupsTab() {
               }
               return item[column.key] ?? '-';
             }}
+            footer={
+              userTotalCount > userPageSize && (
+                <Pagination
+                  total={Math.ceil(userTotalCount / userPageSize)}
+                  current={userPage}
+                  onChange={handleUserPageChange}
+                  showTotal
+                  totalItems={userTotalCount}
+                />
+              )
+            }
           />
           <div className="border-t border-neutral-300/10 pt-4">
             <label className="block text-sm font-medium text-neutral-400 mb-1">

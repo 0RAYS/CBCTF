@@ -83,3 +83,24 @@ func RevokePermissionFromRole(tx *gorm.DB, permission model.Permission, role mod
 	}
 	return model.SuccessRetVal()
 }
+
+func GetGroupUsers(tx *gorm.DB, group model.Group, limit, offset int) ([]model.User, int64, model.RetVal) {
+	var count int64
+	if res := tx.Model(&model.UserGroup{}).Where("group_id = ?", group.ID).Count(&count); res.Error != nil {
+		log.Logger.Warningf("Failed to count Group Users: %s", res.Error)
+		return nil, 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": "UserGroup", "Error": res.Error.Error()}}
+	}
+	var users []model.User
+	res := tx.Raw(`
+		SELECT users.* FROM users
+		INNER JOIN user_groups ON user_groups.user_id = users.id
+		WHERE user_groups.group_id = ? AND users.deleted_at IS NULL
+		ORDER BY users.id
+		LIMIT ? OFFSET ?
+	`, group.ID, limit, offset).Scan(&users)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Group Users: %s", res.Error)
+		return nil, 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.User{}.ModelName(), "Error": res.Error.Error()}}
+	}
+	return users, count, model.SuccessRetVal()
+}
