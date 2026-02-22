@@ -24,7 +24,7 @@ func GetGroupUsers(ctx *gin.Context) {
 		return
 	}
 	group := middleware.GetGroup(ctx)
-	users, count, ret := db.GetGroupUsers(db.DB, group, form.Limit, form.Offset)
+	users, count, ret := db.InitUserRepo(db.DB).GetByGroupID(group.ID, form.Limit, form.Offset)
 	if !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
