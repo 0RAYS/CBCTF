@@ -8,6 +8,7 @@ import {
   getRoleList,
   assignUserToGroup,
   removeUserFromGroup,
+  getGroupUsers,
 } from '../../../api/admin/rbac';
 import AdminGroups from '../../../components/features/Admin/AdminGroups';
 import { Modal } from '../../../components/common';
@@ -16,6 +17,7 @@ import ModalButton from '../../../components/common/ModalButton';
 import Input from '../../../components/common/Input';
 import Textarea from '../../../components/common/Textarea';
 import Select from '../../../components/common/Select';
+import List from '../../../components/common/List';
 import { useCRUDModal } from '../../../hooks/index.js';
 import { useTranslation } from 'react-i18next';
 
@@ -34,6 +36,8 @@ function GroupsTab() {
   const [userModalOpen, setUserModalOpen] = useState(false);
   const [selectedGroupForUsers, setSelectedGroupForUsers] = useState(null);
   const [userId, setUserId] = useState('');
+  const [groupUsers, setGroupUsers] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   function fetchGroups() {
     getGroupList({
@@ -112,10 +116,26 @@ function GroupsTab() {
     fetchGroups();
   }, [currentPage]);
 
+  const fetchGroupUsers = async (groupId) => {
+    setLoadingUsers(true);
+    try {
+      const response = await getGroupUsers(groupId);
+      if (response.code === 200) {
+        setGroupUsers(response.data.users || []);
+      }
+    } catch (error) {
+      toast.danger({ description: error.message || t('admin.rbac.groups.toast.fetchUsersFailed') });
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
   const handleManageUsers = (group) => {
     setSelectedGroupForUsers(group);
     setUserId('');
+    setGroupUsers([]);
     setUserModalOpen(true);
+    fetchGroupUsers(group.id);
   };
 
   const handleAssignUser = async () => {
@@ -128,22 +148,20 @@ function GroupsTab() {
         toast.success({ description: t('admin.rbac.groups.toast.assignUserSuccess') });
         setUserId('');
         fetchGroups();
+        fetchGroupUsers(selectedGroupForUsers.id);
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.rbac.groups.toast.assignUserFailed') });
     }
   };
 
-  const handleRemoveUser = async () => {
-    const id = parseInt(userId, 10);
-    if (!id || isNaN(id)) return;
-
+  const handleRemoveUserFromList = async (user) => {
     try {
-      const response = await removeUserFromGroup(selectedGroupForUsers.id, { user_id: id });
+      const response = await removeUserFromGroup(selectedGroupForUsers.id, { user_id: user.id });
       if (response.code === 200) {
         toast.success({ description: t('admin.rbac.groups.toast.removeUserSuccess') });
-        setUserId('');
         fetchGroups();
+        fetchGroupUsers(selectedGroupForUsers.id);
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.rbac.groups.toast.removeUserFailed') });
@@ -250,29 +268,48 @@ function GroupsTab() {
         isOpen={userModalOpen}
         onClose={() => setUserModalOpen(false)}
         title={`${t('admin.rbac.groups.modal.usersTitle')} - ${selectedGroupForUsers?.name || ''}`}
-        size="md"
+        size="lg"
         footer={<ModalButton onClick={() => setUserModalOpen(false)}>{t('common.confirm')}</ModalButton>}
       >
         <div className="space-y-4">
-          <div>
+          <List
+            columns={[
+              { key: 'id', label: 'ID', width: '15%' },
+              { key: 'name', label: t('admin.rbac.groups.columns.userName'), width: '30%' },
+              { key: 'email', label: t('admin.rbac.groups.columns.email'), width: '35%' },
+              { key: 'actions', label: t('admin.rbac.groups.columns.actions'), width: '20%' },
+            ]}
+            data={groupUsers}
+            loading={loadingUsers}
+            empty={!loadingUsers && groupUsers.length === 0}
+            animate={false}
+            renderCell={(item, column) => {
+              if (column.key === 'actions') {
+                return (
+                  <ModalButton variant="danger" onClick={() => handleRemoveUserFromList(item)}>
+                    {t('admin.rbac.groups.form.remove')}
+                  </ModalButton>
+                );
+              }
+              return item[column.key] ?? '-';
+            }}
+          />
+          <div className="border-t border-neutral-300/10 pt-4">
             <label className="block text-sm font-medium text-neutral-400 mb-1">
               {t('admin.rbac.groups.form.userId')}
             </label>
-            <Input
-              type="number"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              placeholder={t('admin.rbac.groups.form.userIdPlaceholder')}
-              fullWidth
-            />
-          </div>
-          <div className="flex gap-2">
-            <ModalButton variant="primary" onClick={handleAssignUser}>
-              {t('admin.rbac.groups.form.addUser')}
-            </ModalButton>
-            <ModalButton variant="danger" onClick={handleRemoveUser}>
-              {t('admin.rbac.groups.form.removeUser')}
-            </ModalButton>
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                placeholder={t('admin.rbac.groups.form.userIdPlaceholder')}
+                fullWidth
+              />
+              <ModalButton variant="primary" onClick={handleAssignUser}>
+                {t('admin.rbac.groups.form.addUser')}
+              </ModalButton>
+            </div>
           </div>
         </div>
       </Modal>

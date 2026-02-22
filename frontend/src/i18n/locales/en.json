@@ -1189,7 +1189,9 @@
           "role": "Role",
           "users": "Users",
           "default": "Default",
-          "actions": "Actions"
+          "actions": "Actions",
+          "userName": "Username",
+          "email": "Email"
         },
         "toast": {
           "fetchFailed": "Failed to load groups",
@@ -1203,7 +1205,8 @@
           "assignUserFailed": "Failed to add user",
           "removeUserSuccess": "User removed",
           "removeUserFailed": "Failed to remove user",
-          "fetchRolesFailed": "Failed to load roles"
+          "fetchRolesFailed": "Failed to load roles",
+          "fetchUsersFailed": "Failed to load group users"
         },
         "modal": {
           "createTitle": "Create Group",
@@ -1223,7 +1226,8 @@
           "userId": "User ID",
           "userIdPlaceholder": "Enter user ID",
           "addUser": "Add",
-          "removeUser": "Remove"
+          "removeUser": "Remove",
+          "remove": "Remove"
         }
       },
       "permissions": {

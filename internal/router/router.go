@@ -192,6 +192,7 @@ func Init() *gin.Engine {
 		adminRole := admin.Group("/roles/:roleID", middleware.SetRole)
 		{
 			adminRole.GET("", GetRole)
+			adminRole.GET("/permissions", GetRolePermissions)
 			adminRole.PUT("", UpdateRole)
 			adminRole.DELETE("", DeleteRole)
 			adminRole.POST("/permissions", AssignPermission)
@@ -203,6 +204,7 @@ func Init() *gin.Engine {
 		adminGroup := admin.Group("/groups/:groupID", middleware.SetGroup)
 		{
 			adminGroup.GET("", GetGroup)
+			adminGroup.GET("/users", GetGroupUsers)
 			adminGroup.PUT("", UpdateGroup)
 			adminGroup.DELETE("", DeleteGroup)
 			adminGroup.POST("/users", AssignUserToGroup)

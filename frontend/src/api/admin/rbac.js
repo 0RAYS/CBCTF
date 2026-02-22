@@ -74,6 +74,13 @@ export const revokePermissionFromRole = (roleId, data) => {
   });
 };
 
+export const getRolePermissions = (roleId) => {
+  return request({
+    url: `/admin/roles/${roleId}/permissions`,
+    method: 'GET',
+  });
+};
+
 // ========== Groups ==========
 
 export const getGroupList = (params = { limit: 20, offset: 0 }) => {
@@ -127,5 +134,12 @@ export const removeUserFromGroup = (groupId, data) => {
     url: `/admin/groups/${groupId}/users`,
     method: 'DELETE',
     data,
+  });
+};
+
+export const getGroupUsers = (groupId) => {
+  return request({
+    url: `/admin/groups/${groupId}/users`,
+    method: 'GET',
   });
 };
