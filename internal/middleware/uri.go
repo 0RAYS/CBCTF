@@ -10,6 +10,90 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// SetRole 保存 model.Role 至上下文
+func SetRole(ctx *gin.Context) {
+	type roleIDUri struct {
+		RoleID uint `uri:"roleID" binding:"required"`
+	}
+	var roleID roleIDUri
+	if err := ctx.ShouldBindUri(&roleID); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		return
+	}
+	role, ret := db.InitRoleRepo(db.DB).GetByID(roleID.RoleID)
+	if !ret.OK {
+		ctx.AbortWithStatusJSON(http.StatusOK, ret)
+		return
+	}
+	ctx.Set("Role", role)
+	ctx.Next()
+}
+
+// GetRole 从上下文中获取 model.Role
+func GetRole(ctx *gin.Context) model.Role {
+	role, ok := ctx.Get("Role")
+	if !ok || role == nil {
+		return model.Role{}
+	}
+	return role.(model.Role)
+}
+
+// SetGroup 保存 model.Group 至上下文
+func SetGroup(ctx *gin.Context) {
+	type groupIDUri struct {
+		GroupID uint `uri:"groupID" binding:"required"`
+	}
+	var groupID groupIDUri
+	if err := ctx.ShouldBindUri(&groupID); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		return
+	}
+	group, ret := db.InitGroupRepo(db.DB).GetByID(groupID.GroupID)
+	if !ret.OK {
+		ctx.AbortWithStatusJSON(http.StatusOK, ret)
+		return
+	}
+	ctx.Set("Group", group)
+	ctx.Next()
+}
+
+// GetGroup 从上下文中获取 model.Group
+func GetGroup(ctx *gin.Context) model.Group {
+	group, ok := ctx.Get("Group")
+	if !ok || group == nil {
+		return model.Group{}
+	}
+	return group.(model.Group)
+}
+
+// SetPermission 保存 model.Permission 至上下文
+func SetPermission(ctx *gin.Context) {
+	type permissionIDUri struct {
+		PermissionID uint `uri:"permissionID" binding:"required"`
+	}
+	var permissionID permissionIDUri
+	if err := ctx.ShouldBindUri(&permissionID); err != nil {
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		return
+	}
+	permission, ret := db.InitPermissionRepo(db.DB).GetByID(permissionID.PermissionID)
+	if !ret.OK {
+		ctx.AbortWithStatusJSON(http.StatusOK, ret)
+		return
+	}
+	ctx.Set("Permission", permission)
+	ctx.Next()
+}
+
+// GetPermission 从上下文中获取 model.Permission
+func GetPermission(ctx *gin.Context) model.Permission {
+	permission, ok := ctx.Get("Permission")
+	if !ok || permission == nil {
+		return model.Permission{}
+	}
+	return permission.(model.Permission)
+}
+
 // SetUser 保存 model.User 至上下文
 func SetUser(ctx *gin.Context) {
 	type userIDUri struct {

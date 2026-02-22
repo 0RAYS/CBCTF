@@ -81,6 +81,21 @@ const (
 	DownloadWriteUpEventType = "download_writeup"
 
 	DownloadFileEventType = "download_file"
+
+	CreateRoleEventType = "create_role"
+	UpdateRoleEventType = "update_role"
+	DeleteRoleEventType = "delete_role"
+
+	CreateGroupEventType = "create_group"
+	UpdateGroupEventType = "update_group"
+	DeleteGroupEventType = "delete_group"
+
+	UpdatePermissionEventType = "update_permission"
+	AssignPermissionEventType = "assign_permission"
+	RevokePermissionEventType = "revoke_permission"
+
+	AssignUserGroupEventType = "assign_user_group"
+	RemoveUserGroupEventType = "remove_user_group"
 )
 
 var EventTypes = []string{
@@ -107,6 +122,10 @@ var EventTypes = []string{
 	ReadFlagEventType, SubmitFlagEventType,
 	UploadWriteUpEventType, DownloadWriteUpEventType,
 	DownloadFileEventType,
+	CreateRoleEventType, UpdateRoleEventType, DeleteRoleEventType,
+	CreateGroupEventType, UpdateGroupEventType, DeleteGroupEventType,
+	UpdatePermissionEventType, AssignPermissionEventType, RevokePermissionEventType,
+	AssignUserGroupEventType, RemoveUserGroupEventType,
 }
 
 type Event struct {
