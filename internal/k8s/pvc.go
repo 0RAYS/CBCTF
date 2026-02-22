@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/utils"
 	"context"
 
 	corev1 "k8s.io/api/core/v1"
@@ -42,7 +41,7 @@ func CreatePVC(ctx context.Context, options CreatePVCOptions) (*corev1.Persisten
 					corev1.ResourceStorage: storage,
 				},
 			},
-			StorageClassName: utils.Ptr(""),
+			StorageClassName: new(string),
 			VolumeName:       nfsVolumeName,
 		},
 	}

@@ -97,11 +97,9 @@ func (a *AdminRepo) Delete(idL ...uint) model.RetVal {
 		return model.SuccessRetVal()
 	}
 	for _, admin := range adminL {
-		deletedName := fmt.Sprintf("%s_deleted_%s", admin.Name, utils.RandStr(6))
-		deletedEmail := fmt.Sprintf("%s_deleted_%s", admin.Email, utils.RandStr(6))
 		if ret = a.Update(admin.ID, UpdateAdminOptions{
-			Name:  &deletedName,
-			Email: &deletedEmail,
+			Name:  new(fmt.Sprintf("%s_deleted_%s", admin.Name, utils.RandStr(6))),
+			Email: new(fmt.Sprintf("%s_deleted_%s", admin.Email, utils.RandStr(6))),
 		}); !ret.OK {
 			return ret
 		}

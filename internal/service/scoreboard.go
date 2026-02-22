@@ -36,7 +36,7 @@ func UpdateTeamRanking(tx *gorm.DB, contest model.Contest, limit, offset int) ([
 	}
 	for i, team := range teams {
 		teams[i].Rank = i + 1
-		repo.Update(team.ID, db.UpdateTeamOptions{Score: &team.Score, Rank: utils.Ptr(i + 1)})
+		repo.Update(team.ID, db.UpdateTeamOptions{Score: &team.Score, Rank: new(i + 1)})
 	}
 	return teams, count, model.SuccessRetVal()
 }

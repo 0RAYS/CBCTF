@@ -39,7 +39,7 @@ func VerifyEmail(tx *gorm.DB, form dto.VerifyEmail) model.RetVal {
 		return ret
 	}
 	repo := db.InitUserRepo(tx)
-	ret := repo.Update(claims.UserID, db.UpdateUserOptions{Verified: utils.Ptr(true)})
+	ret := repo.Update(claims.UserID, db.UpdateUserOptions{Verified: new(true)})
 	if !ret.OK {
 		return ret
 	}

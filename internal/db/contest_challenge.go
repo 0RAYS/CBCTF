@@ -118,8 +118,7 @@ func (c *ContestChallengeRepo) Delete(idL ...uint) model.RetVal {
 	}
 	contestFlagIDL, submissionIDL := make([]uint, 0), make([]uint, 0)
 	for _, contestChallenge := range contestChallengeL {
-		deletedSalt := utils.UUID()
-		if ret = c.Update(contestChallenge.ID, UpdateContestChallengeOptions{DeletedSalt: &deletedSalt}); !ret.OK {
+		if ret = c.Update(contestChallenge.ID, UpdateContestChallengeOptions{DeletedSalt: new(utils.UUID())}); !ret.OK {
 			return ret
 		}
 		for _, contestFlag := range contestChallenge.ContestFlags {

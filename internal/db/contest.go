@@ -180,9 +180,8 @@ func (c *ContestRepo) Delete(idL ...uint) model.RetVal {
 	}
 	teamIDL, noticeIDL, contestChallengeIDL, contestFlagIDL, submissionIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0)
 	for _, contest := range contestL {
-		deletedName := fmt.Sprintf("%s_deleted_%s", contest.Name, utils.RandStr(6))
 		if ret = c.Update(contest.ID, UpdateContestOptions{
-			Name: &deletedName,
+			Name: new(fmt.Sprintf("%s_deleted_%s", contest.Name, utils.RandStr(6))),
 		}); !ret.OK {
 			return ret
 		}

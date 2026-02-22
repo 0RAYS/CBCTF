@@ -43,10 +43,10 @@ func UpdateUser(tx *gorm.DB, user model.User, form dto.UpdateUserForm) model.Ret
 		Verified:    form.Verified,
 	}
 	if form.Email != nil && *form.Email != user.Email {
-		options.Verified = utils.Ptr(false)
+		options.Verified = new(false)
 	}
 	if form.Password != nil {
-		options.Password = utils.Ptr(utils.HashPassword(*form.Password))
+		options.Password = new(utils.HashPassword(*form.Password))
 	}
 	return repo.Update(user.ID, options)
 }
@@ -58,7 +58,7 @@ func UpdateAdmin(tx *gorm.DB, admin model.Admin, form dto.UpdateAdminForm) model
 		Email: form.Email,
 	}
 	if form.Email != nil && *form.Email != admin.Email {
-		options.Verified = utils.Ptr(false)
+		options.Verified = new(false)
 	}
 	return repo.Update(admin.ID, options)
 }

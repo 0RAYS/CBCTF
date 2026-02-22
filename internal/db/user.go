@@ -203,13 +203,10 @@ func (u *UserRepo) Delete(idL ...uint) model.RetVal {
 	}
 	submissionIDL := make([]uint, 0)
 	for _, user := range userL {
-		deletedName := fmt.Sprintf("%s_deleted_%s", user.Name, utils.RandStr(6))
-		deletedEmail := fmt.Sprintf("%s_deleted_%s", user.Email, utils.RandStr(6))
-		deleteProviderUserID := fmt.Sprintf("%s_deleted_%s", user.ProviderUserID, utils.RandStr(6))
 		if ret = u.Update(user.ID, UpdateUserOptions{
-			Name:           &deletedName,
-			Email:          &deletedEmail,
-			ProviderUserID: &deleteProviderUserID,
+			Name:           new(fmt.Sprintf("%s_deleted_%s", user.Name, utils.RandStr(6))),
+			Email:          new(fmt.Sprintf("%s_deleted_%s", user.Email, utils.RandStr(6))),
+			ProviderUserID: new(fmt.Sprintf("%s_deleted_%s", user.ProviderUserID, utils.RandStr(6))),
 		}); !ret.OK {
 			return ret
 		}

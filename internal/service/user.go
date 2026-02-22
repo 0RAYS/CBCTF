@@ -57,8 +57,7 @@ func ChangeUserPwd(tx *gorm.DB, user model.User, form dto.ChangePasswordForm) mo
 	if utils.CheckPassword(form.NewPassword) < 2 {
 		return model.RetVal{Msg: i18n.Model.User.WeakPassword}
 	}
-	password := utils.HashPassword(form.NewPassword)
-	return repo.Update(user.ID, db.UpdateUserOptions{Password: &password})
+	return repo.Update(user.ID, db.UpdateUserOptions{Password: new(utils.HashPassword(form.NewPassword))})
 }
 
 func UpdateSelf(tx *gorm.DB, user model.User, form dto.UpdateSelfForm) model.RetVal {
@@ -69,7 +68,7 @@ func UpdateSelf(tx *gorm.DB, user model.User, form dto.UpdateSelfForm) model.Ret
 		Description: form.Description,
 	}
 	if form.Email != nil && *form.Email != user.Email {
-		options.Verified = utils.Ptr(false)
+		options.Verified = new(false)
 	}
 	return repo.Update(user.ID, options)
 }
