@@ -25,8 +25,7 @@ func (f *ListModelsForm) Validate(ctx *gin.Context) model.RetVal {
 }
 
 type SearchModelsForm struct {
-	Offset int               `form:"offset" json:"offset" binding:"gte=0"`
-	Limit  int               `form:"limit" json:"limit" binding:"gte=0,lte=100"`
+	ListModelsForm
 	Model  string            `form:"model" json:"model"`
 	Sort   map[string]string `form:"sort" json:"sort"`
 	Search map[string]string `form:"search" json:"search"`

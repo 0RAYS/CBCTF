@@ -12,9 +12,8 @@ type DeleteFileForm struct {
 }
 
 type GetFilesForm struct {
-	Offset int    `form:"offset" json:"offset" binding:"gte=0"`
-	Limit  int    `form:"limit" json:"limit" binding:"gte=0,lte=100"`
-	Type   string `form:"type" json:"type" binding:"omitempty,oneof=writeup picture file traffic"`
+	ListModelsForm
+	Type string `form:"type" json:"type" binding:"omitempty,oneof=writeup picture file traffic"`
 }
 
 func (f *GetFilesForm) Validate(ctx *gin.Context) model.RetVal {
