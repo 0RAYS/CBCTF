@@ -16,6 +16,7 @@ volumes
 CLAUDE.md
 AGENTS.md
 
+/.claude
 /admin.yaml
 /build.sh
 /docker-compose.yml
