@@ -224,8 +224,8 @@ func Init() *gin.Engine {
 			adminRole.GET("/permissions", middleware.RequirePermission(model.PermAdminPermissionList), GetRolePermissions)
 			adminRole.PUT("", middleware.RequirePermission(model.PermAdminRoleUpdate), UpdateRole)
 			adminRole.DELETE("", middleware.RequirePermission(model.PermAdminRoleDelete), DeleteRole)
-			adminRole.POST("/permissions", middleware.RequirePermission(model.PermAdminPermissionAssign), AssignPermission)
-			adminRole.DELETE("/permissions", middleware.RequirePermission(model.PermAdminPermissionRevoke), RevokePermission)
+			adminRole.POST("/permissions", middleware.RequirePermission(model.PermAdminRoleAssign), AssignPermission)
+			adminRole.DELETE("/permissions", middleware.RequirePermission(model.PermAdminRoleRevoke), RevokePermission)
 		}
 
 		admin.GET("/groups", middleware.RequirePermission(model.PermAdminGroupList), GetGroups)
