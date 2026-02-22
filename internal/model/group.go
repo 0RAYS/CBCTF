@@ -14,8 +14,8 @@ var DefaultGroups = []Group{
 
 var DefaultGroupRoleMap = map[string]string{
 	AdminGroupName:     AdminRoleName,
-	OrganizerGroupName: OrganizerGroupName,
-	UserGroupName:      UserGroupName,
+	OrganizerGroupName: OrganizerRoleName,
+	UserGroupName:      UserRoleName,
 }
 
 type Group struct {
