@@ -1188,7 +1188,9 @@
           "role": "角色",
           "users": "用户数",
           "default": "默认",
-          "actions": "操作"
+          "actions": "操作",
+          "userName": "用户名",
+          "email": "邮箱"
         },
         "toast": {
           "fetchFailed": "获取分组列表失败",
@@ -1202,7 +1204,8 @@
           "assignUserFailed": "添加用户失败",
           "removeUserSuccess": "移除用户成功",
           "removeUserFailed": "移除用户失败",
-          "fetchRolesFailed": "获取角色列表失败"
+          "fetchRolesFailed": "获取角色列表失败",
+          "fetchUsersFailed": "获取分组用户失败"
         },
         "modal": {
           "createTitle": "创建分组",
@@ -1222,7 +1225,8 @@
           "userId": "用户 ID",
           "userIdPlaceholder": "请输入用户 ID",
           "addUser": "添加",
-          "removeUser": "移除"
+          "removeUser": "移除",
+          "remove": "移除"
         }
       },
       "permissions": {

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { toast } from '../../../utils/toast';
 import {
   getRoleList,
-  getRole,
+  getRolePermissions,
   createRole,
   updateRole,
   deleteRole,
@@ -104,7 +104,7 @@ function RolesTab() {
   const handleManagePermissions = async (role) => {
     setSelectedRoleForPerms(role);
     try {
-      const response = await getRole(role.id);
+      const response = await getRolePermissions(role.id);
       if (response.code === 200) {
         setRolePermissions(response.data.permissions || []);
       }

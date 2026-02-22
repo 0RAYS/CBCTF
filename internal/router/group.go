@@ -17,6 +17,21 @@ func GetGroup(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetGroupResp(group)))
 }
 
+func GetGroupUsers(ctx *gin.Context) {
+	group, ret := db.InitGroupRepo(db.DB).GetByID(middleware.GetGroup(ctx).ID, db.GetOptions{
+		Preloads: map[string]db.GetOptions{"Users": {}},
+	})
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
+		return
+	}
+	users := make([]gin.H, 0, len(group.Users))
+	for _, user := range group.Users {
+		users = append(users, resp.GetUserResp(user, true))
+	}
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"users": users}))
+}
+
 func GetGroups(ctx *gin.Context) {
 	var form dto.ListModelsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {

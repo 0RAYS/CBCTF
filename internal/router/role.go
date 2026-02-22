@@ -13,14 +13,23 @@ import (
 )
 
 func GetRole(ctx *gin.Context) {
-	roles, ret := db.InitRoleRepo(db.DB).GetByID(middleware.GetRole(ctx).ID, db.GetOptions{
+	role := middleware.GetRole(ctx)
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetRoleResp(role)))
+}
+
+func GetRolePermissions(ctx *gin.Context) {
+	role, ret := db.InitRoleRepo(db.DB).GetByID(middleware.GetRole(ctx).ID, db.GetOptions{
 		Preloads: map[string]db.GetOptions{"Permissions": {}},
 	})
 	if !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetRoleResp(roles)))
+	permissions := make([]gin.H, 0, len(role.Permissions))
+	for _, perm := range role.Permissions {
+		permissions = append(permissions, resp.GetPermissionResp(perm))
+	}
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"permissions": permissions}))
 }
 
 func GetRoles(ctx *gin.Context) {
