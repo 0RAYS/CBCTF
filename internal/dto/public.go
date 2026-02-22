@@ -10,6 +10,21 @@ import (
 
 // ListModelsForm for get models list
 type ListModelsForm struct {
+	Offset int `form:"offset" json:"offset" binding:"gte=0"`
+	Limit  int `form:"limit" json:"limit" binding:"gte=0,lte=100"`
+}
+
+func (f *ListModelsForm) Validate(ctx *gin.Context) model.RetVal {
+	if _, ok := ctx.GetQuery("limit"); !ok {
+		f.Limit = 10
+	}
+	if _, ok := ctx.GetQuery("offset"); !ok {
+		f.Offset = 0
+	}
+	return model.SuccessRetVal()
+}
+
+type SearchModelsForm struct {
 	Offset int               `form:"offset" json:"offset" binding:"gte=0"`
 	Limit  int               `form:"limit" json:"limit" binding:"gte=0,lte=100"`
 	Model  string            `form:"model" json:"model"`
@@ -17,7 +32,7 @@ type ListModelsForm struct {
 	Search map[string]string `form:"search" json:"search"`
 }
 
-func (f *ListModelsForm) Validate(ctx *gin.Context) model.RetVal {
+func (f *SearchModelsForm) Validate(ctx *gin.Context) model.RetVal {
 	if _, ok := ctx.GetQuery("limit"); !ok {
 		f.Limit = 10
 	}
