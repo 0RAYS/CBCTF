@@ -50,16 +50,13 @@ func InitRoleRepo(tx *gorm.DB) *RoleRepo {
 
 func (r *RoleRepo) InitDefaultRoles() model.RetVal {
 	for _, role := range model.DefaultRoles {
-		res := r.DB.Model(&model.Role{}).FirstOrCreate(&role, "name = ?", role.Name)
+		res := r.DB.Model(&model.Role{}).FirstOrCreate(&role, role)
 		if res.Error != nil {
 			return model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": role.ModelName(), "Error": res.Error.Error()}}
 		}
 		role, ret := r.GetByID(role.ID, GetOptions{Preloads: map[string]GetOptions{"Permissions": {}}})
 		if !ret.OK {
 			return ret
-		}
-		if len(role.Permissions) > 0 {
-			continue
 		}
 		permissions, ok := model.DefaultRolePermissionMap[role.Name]
 		if !ok {
