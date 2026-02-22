@@ -12,6 +12,12 @@ var DefaultGroups = []Group{
 	{Name: UserGroupName, Description: "选手", Default: true},
 }
 
+var DefaultGroupRoleMap = map[string]string{
+	AdminGroupName:     AdminRoleName,
+	OrganizerGroupName: OrganizerGroupName,
+	UserGroupName:      UserGroupName,
+}
+
 type Group struct {
 	Users       []User `gorm:"many2many:user_groups;" json:"-"`
 	RoleID      uint   `gorm:"default:null;index" json:"role_id"`

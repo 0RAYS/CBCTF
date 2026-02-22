@@ -3,6 +3,7 @@ package db
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
+	"slices"
 
 	"gorm.io/gorm"
 )
@@ -49,8 +50,34 @@ func InitRoleRepo(tx *gorm.DB) *RoleRepo {
 
 func (r *RoleRepo) InitDefaultRoles() model.RetVal {
 	for _, role := range model.DefaultRoles {
-		if _, ret := r.Insert(role); !ret.OK && ret.Msg != i18n.Model.DuplicateKeyValue {
+		role, ret := r.Insert(role)
+		if !ret.OK && ret.Msg != i18n.Model.DuplicateKeyValue {
 			return ret
+		}
+		role, ret = r.GetByID(role.ID, GetOptions{Preloads: map[string]GetOptions{"Permissions": {}}})
+		if !ret.OK {
+			return ret
+		}
+		if len(role.Permissions) > 0 {
+			continue
+		}
+		permissions, ok := model.DefaultRolePermissionMap[role.Name]
+		if !ok {
+			continue
+		}
+		for _, permission := range permissions {
+			perm, ret := InitPermissionRepo(r.DB).GetByUniqueKey("name", permission)
+			if !ret.OK {
+				return ret
+			}
+			if slices.ContainsFunc(role.Permissions, func(permission model.Permission) bool {
+				return permission.ID == perm.ID
+			}) {
+				continue
+			}
+			if ret = AssignPermissionToRole(r.DB, perm, role); !ret.OK {
+				return ret
+			}
 		}
 	}
 	return model.SuccessRetVal()
