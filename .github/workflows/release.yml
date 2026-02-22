@@ -31,17 +31,14 @@ jobs:
         with:
           go-version: '1.26'
 
-      - name: Install UPX && libpcap-dev
-        run: sudo apt-get update && sudo apt-get install -y upx libpcap-dev
+      - name: Install libpcap-dev
+        run: sudo apt-get update && sudo apt-get install -y libpcap-dev
 
       - name: Download dependencies
         run: go mod download
 
       - name: Build
         run: go build -ldflags="-s -w" -trimpath -o CBCTF .
-
-      - name: Compress with UPX
-        run: upx --best CBCTF
 
       - name: Package archives
         run: |
