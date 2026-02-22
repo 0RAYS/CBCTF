@@ -14,16 +14,16 @@ var DefaultRoles = []Role{
 
 var DefaultRolePermissionMap = map[string][]string{
 	AdminRoleName: {
-		PermUserCreate, PermUserRead, PermUserUpdate, PermUserDelete, PermUserList,
-		PermRoleCreate, PermRoleRead, PermRoleUpdate, PermRoleDelete, PermRoleList, PermRoleAssign, PermRoleRevoke,
-		PermPermissionRead, PermPermissionList, PermPermissionAssign, PermPermissionRevoke,
-		PermGroupCreate, PermGroupRead, PermGroupUpdate, PermGroupDelete, PermGroupList,
+		PermAdminUserCreate, PermAdminUserRead, PermAdminUserUpdate, PermAdminUserDelete, PermAdminUserList,
+		PermAdminRoleCreate, PermAdminRoleRead, PermAdminRoleUpdate, PermAdminRoleDelete, PermAdminRoleList, PermAdminRoleAssign, PermAdminRoleRevoke,
+		PermAdminPermissionRead, PermAdminPermissionList, PermAdminPermissionAssign, PermAdminPermissionRevoke,
+		PermAdminGroupCreate, PermAdminGroupRead, PermAdminGroupUpdate, PermAdminGroupDelete, PermAdminGroupList,
 	},
 	OrganizerRoleName: {
-		PermUserRead, PermUserDelete, PermUserList,
+		PermAdminUserRead, PermAdminUserDelete, PermAdminUserList,
 	},
 	UserRoleName: {
-		PermUserRead, PermUserDelete,
+		PermAdminUserRead, PermAdminUserDelete,
 	},
 }
 
