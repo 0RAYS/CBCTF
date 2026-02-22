@@ -180,6 +180,35 @@ func Init() *gin.Engine {
 			adminSystem.POST("/restart", RestartSystem)
 		}
 
+		admin.GET("/permissions", GetPermissions)
+		adminPermission := admin.Group("/permissions/:permissionID", middleware.SetPermission)
+		{
+			adminPermission.GET("", GetPermission)
+			adminPermission.PUT("", UpdatePermission)
+		}
+
+		admin.GET("/roles", GetRoles)
+		admin.POST("/roles", CreateRole)
+		adminRole := admin.Group("/roles/:roleID", middleware.SetRole)
+		{
+			adminRole.GET("", GetRole)
+			adminRole.PUT("", UpdateRole)
+			adminRole.DELETE("", DeleteRole)
+			adminRole.POST("/permissions", AssignPermission)
+			adminRole.DELETE("/permissions", RevokePermission)
+		}
+
+		admin.GET("/groups", GetGroups)
+		admin.POST("/groups", CreateGroup)
+		adminGroup := admin.Group("/groups/:groupID", middleware.SetGroup)
+		{
+			adminGroup.GET("", GetGroup)
+			adminGroup.PUT("", UpdateGroup)
+			adminGroup.DELETE("", DeleteGroup)
+			adminGroup.POST("/users", AssignUserToGroup)
+			adminGroup.DELETE("/users", RemoveUserFromGroup)
+		}
+
 		admin.GET("/users", GetUsers)
 		admin.POST("/users", CreateUser)
 		adminUser := admin.Group("/users/:userID", middleware.SetUser)
