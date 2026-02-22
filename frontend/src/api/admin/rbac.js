@@ -137,9 +137,10 @@ export const removeUserFromGroup = (groupId, data) => {
   });
 };
 
-export const getGroupUsers = (groupId) => {
+export const getGroupUsers = (groupId, params = { limit: 10, offset: 0 }) => {
   return request({
     url: `/admin/groups/${groupId}/users`,
     method: 'GET',
+    params,
   });
 };
