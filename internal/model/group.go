@@ -21,6 +21,7 @@ var DefaultGroupRoleMap = map[string]string{
 type Group struct {
 	Users       []User `gorm:"many2many:user_groups;" json:"-"`
 	RoleID      uint   `gorm:"default:null;index" json:"role_id"`
+	Role        Role   `json:"-"`
 	Name        string `gorm:"type:varchar(255);uniqueIndex;not null" json:"name"`
 	Description string `json:"description"`
 	Default     bool   `json:"default"`
