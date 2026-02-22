@@ -54,16 +54,13 @@ func InitGroupRepo(tx *gorm.DB) *GroupRepo {
 }
 func (g *GroupRepo) InitDefaultGroups() model.RetVal {
 	for _, group := range model.DefaultGroups {
-		res := g.DB.Model(&model.Group{}).FirstOrCreate(&group, "name = ?", group.Name)
+		res := g.DB.Model(&model.Group{}).FirstOrCreate(&group, group)
 		if res.Error != nil {
 			return model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": group.ModelName(), "Error": res.Error.Error()}}
 		}
 		group, ret := g.GetByID(group.ID, GetOptions{Preloads: map[string]GetOptions{"Role": {}}})
 		if !ret.OK {
 			return ret
-		}
-		if group.RoleID > 0 {
-			continue
 		}
 		roleName, ok := model.DefaultGroupRoleMap[group.Name]
 		if !ok {
