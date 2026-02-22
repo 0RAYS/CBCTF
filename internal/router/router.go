@@ -212,7 +212,6 @@ func Init() *gin.Engine {
 		admin.GET("/permissions", middleware.RequirePermission(model.PermAdminPermissionList), GetPermissions)
 		adminPermission := admin.Group("/permissions/:permissionID", middleware.SetPermission)
 		{
-			adminPermission.GET("", middleware.RequirePermission(model.PermAdminPermissionRead), GetPermission)
 			adminPermission.PUT("", middleware.RequirePermission(model.PermAdminPermissionUpdate), UpdatePermission)
 		}
 
@@ -254,7 +253,6 @@ func Init() *gin.Engine {
 		admin.POST("/oauth", middleware.RequirePermission(model.PermAdminOauthCreate), CreateOauthProvider)
 		adminOauth := admin.Group("/oauth/:oauthID", middleware.SetOauth)
 		{
-			adminOauth.GET("", middleware.RequirePermission(model.PermAdminOauthRead), GetOauthProvider)
 			adminOauth.PUT("", middleware.RequirePermission(model.PermAdminOauthUpdate), UpdateOauthProvider)
 			adminOauth.POST("/picture", middleware.RequirePermission(model.PermAdminOauthUpdate), UploadPicture("oauth"))
 			adminOauth.DELETE("", middleware.RequirePermission(model.PermAdminOauthDelete), DeleteOauthProvider)
@@ -265,7 +263,6 @@ func Init() *gin.Engine {
 		admin.POST("/smtp", middleware.RequirePermission(model.PermAdminSMTPCreate), CreateSmtp)
 		adminSmtp := admin.Group("/smtp/:smtpID", middleware.SetSmtp)
 		{
-			adminSmtp.GET("", middleware.RequirePermission(model.PermAdminSMTPRead), GetSmtp)
 			adminSmtp.PUT("", middleware.RequirePermission(model.PermAdminSMTPUpdate), UpdateSmtp)
 			adminSmtp.DELETE("", middleware.RequirePermission(model.PermAdminSMTPDelete), DeleteSmtp)
 
@@ -278,7 +275,6 @@ func Init() *gin.Engine {
 		admin.POST("/webhook", middleware.RequirePermission(model.PermAdminWebhookCreate), CreateWebhook)
 		adminWebhook := admin.Group("/webhook/:webhookID", middleware.SetWebhook)
 		{
-			adminWebhook.GET("", middleware.RequirePermission(model.PermAdminWebhookRead), GetWebhook)
 			adminWebhook.PUT("", middleware.RequirePermission(model.PermAdminWebhookUpdate), UpdateWebhook)
 			adminWebhook.DELETE("", middleware.RequirePermission(model.PermAdminWebhookDelete), DeleteWebhook)
 
@@ -290,7 +286,6 @@ func Init() *gin.Engine {
 		admin.POST("/challenges", middleware.RequirePermission(model.PermAdminChallengeCreate), CreateChallenge)
 		adminChallenge := admin.Group("/challenges/:challengeID", middleware.SetChallenge)
 		{
-			adminChallenge.GET("", middleware.RequirePermission(model.PermAdminChallengeRead), GetChallenge)
 			adminChallenge.GET("/download", middleware.RequirePermission(model.PermAdminChallengeRead),
 				middleware.SetChallengeFile, DownloadFile(model.DownloadAttachmentEventType),
 			)
@@ -381,7 +376,6 @@ func Init() *gin.Engine {
 			adminContest.POST("/challenges", middleware.RequirePermission(model.PermAdminContestChallengeCreate), AddContestChallenge)
 			adminContestChallenge := adminContest.Group("/challenges/:challengeID", middleware.SetContestChallenge)
 			{
-				adminContestChallenge.GET("", middleware.RequirePermission(model.PermAdminContestChallengeRead), GetContestChallenge)
 				adminContestChallenge.PUT("", middleware.RequirePermission(model.PermAdminContestChallengeUpdate), UpdateContestChallenge)
 				adminContestChallenge.DELETE("", middleware.RequirePermission(model.PermAdminContestChallengeDelete), DeleteContestChallenge)
 
@@ -389,7 +383,6 @@ func Init() *gin.Engine {
 				adminContestChallenge.GET("/flags", middleware.RequirePermission(model.PermAdminContestChallengeFlagList), GetContestFlags)
 				adminContestFlag := adminContestChallenge.Group("/flags/:flagID", middleware.SetContestFlag)
 				{
-					adminContestFlag.GET("", middleware.RequirePermission(model.PermAdminContestChallengeFlagRead), GetContestFlag)
 					adminContestFlag.PUT("", middleware.RequirePermission(model.PermAdminContestChallengeFlagUpdate), UpdateContestFlag)
 				}
 			}

@@ -68,12 +68,6 @@ func GetContestFlags(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
 }
 
-func GetContestFlag(ctx *gin.Context) {
-	contestFlag := middleware.GetContestFlag(ctx)
-	data := resp.GetContestFlagResp(contestFlag)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
-}
-
 func UpdateContestFlag(ctx *gin.Context) {
 	var form dto.UpdateContestFlagForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {

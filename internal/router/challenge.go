@@ -51,27 +51,6 @@ func GetChallengeNotInContest(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"count": count, "challenges": data}))
 }
 
-func GetChallenge(ctx *gin.Context) {
-	var ret model.RetVal
-	challenge := middleware.GetChallenge(ctx)
-	challenge.ChallengeFlags, _, ret = db.InitChallengeFlagRepo(db.DB).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"challenge_id": challenge.ID},
-	})
-	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
-		return
-	}
-	challenge.Dockers, _, ret = db.InitDockerRepo(db.DB).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"challenge_id": challenge.ID},
-	})
-	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
-		return
-	}
-	data := resp.GetChallengeResp(challenge)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
-}
-
 func GetChallengeCategories(ctx *gin.Context) {
 	var form dto.GetCategoriesForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {

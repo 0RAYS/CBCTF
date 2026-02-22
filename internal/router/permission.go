@@ -11,11 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetPermission(ctx *gin.Context) {
-	permission := middleware.GetPermission(ctx)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetPermissionResp(permission)))
-}
-
 func GetPermissions(ctx *gin.Context) {
 	var form dto.ListModelsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {

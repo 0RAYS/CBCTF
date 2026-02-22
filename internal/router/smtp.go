@@ -12,11 +12,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetSmtp(ctx *gin.Context) {
-	smtp := middleware.GetSmtp(ctx)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetSmtpResp(smtp)))
-}
-
 func GetSmtps(ctx *gin.Context) {
 	var form dto.ListModelsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {

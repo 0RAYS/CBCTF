@@ -65,22 +65,6 @@ func GetContestChallenges(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"challenges": data, "count": count}))
 }
 
-func GetContestChallenge(ctx *gin.Context) {
-	challenge := middleware.GetChallenge(ctx)
-	contestChallenge := middleware.GetContestChallenge(ctx)
-	contestFlags, _, ret := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
-	})
-	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
-		return
-	}
-	contestChallenge.Challenge = challenge
-	contestChallenge.ContestFlags = contestFlags
-	data := resp.GetContestChallengeResp(contestChallenge)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
-}
-
 func GetContestChallengeCategories(ctx *gin.Context) {
 	var form dto.GetCategoriesForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
