@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/model"
-	"CBCTF/internal/utils"
 	"time"
 
 	"gorm.io/gorm"
@@ -83,7 +82,7 @@ func UpdateContest(tx *gorm.DB, contest model.Contest, form dto.UpdateContestFor
 		*form.Duration = *form.Duration * 1e9
 	}
 	if form.Victims != nil && *form.Victims < 1 {
-		form.Victims = utils.Ptr(int64(1))
+		form.Victims = new(int64(1))
 	}
 	return repo.Update(contest.ID, db.UpdateContestOptions{
 		Name:        form.Name,

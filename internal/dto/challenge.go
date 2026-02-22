@@ -63,7 +63,7 @@ type UpdateChallengeForm struct {
 
 func (f *UpdateChallengeForm) Validate(_ *gin.Context) model.RetVal {
 	if f.Category != nil {
-		f.Category = utils.Ptr(utils.ToTitle(*f.Category))
+		f.Category = new(utils.ToTitle(*f.Category))
 	}
 	return model.SuccessRetVal()
 }

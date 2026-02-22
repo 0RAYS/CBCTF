@@ -2,7 +2,6 @@ package dto
 
 import (
 	"CBCTF/internal/model"
-	"CBCTF/internal/utils"
 	"strings"
 	"time"
 
@@ -50,7 +49,7 @@ type UpdateContestForm struct {
 
 func (f *UpdateContestForm) Validate(_ *gin.Context) model.RetVal {
 	if f.Prefix != nil {
-		f.Prefix = utils.Ptr(strings.TrimSpace(*f.Prefix))
+		f.Prefix = new(strings.TrimSpace(*f.Prefix))
 	}
 	return model.SuccessRetVal()
 }

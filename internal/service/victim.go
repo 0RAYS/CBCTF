@@ -305,7 +305,7 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 		VPC:              &victim.VPC,
 		Endpoints:        &victim.Endpoints,
 		ExposedEndpoints: &victim.ExposedEndpoints,
-		Start:            utils.Ptr(time.Now()),
+		Start:            new(time.Now()),
 	}); !ret.OK {
 		return model.Victim{}, ret
 	}
@@ -345,10 +345,9 @@ func StopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
 	if !ret.OK {
 		return ret
 	}
-	duration := time.Now().Sub(victim.Start)
 	tx2 := tx.Begin()
 	if ret = db.InitVictimRepo(tx2).Update(victim.ID, db.UpdateVictimOptions{
-		Duration: &duration,
+		Duration: new(time.Now().Sub(victim.Start)),
 	}); !ret.OK {
 		tx2.Rollback()
 		return ret

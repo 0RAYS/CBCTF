@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/utils"
 	"context"
 	"fmt"
 	"strings"
@@ -43,11 +42,11 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 			Annotations: options.Annotations,
 		},
 		Spec: corev1.PodSpec{
-			EnableServiceLinks:            utils.Ptr(false),
-			AutomountServiceAccountToken:  utils.Ptr(false),
+			EnableServiceLinks:            new(false),
+			AutomountServiceAccountToken:  new(false),
 			Containers:                    options.Containers,
 			Volumes:                       options.Volumes,
-			TerminationGracePeriodSeconds: utils.Ptr(int64(3)),
+			TerminationGracePeriodSeconds: new(int64(3)),
 			RestartPolicy:                 corev1.RestartPolicyNever,
 		},
 	}
