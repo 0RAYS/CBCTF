@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RequirePermission(permission string) gin.HandlerFunc {
+func RBAC(permission string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		pass, ret := db.InitPermissionRepo(db.DB).CheckUserPermission(middleware.GetSelfID(ctx), permission)
 		if !ret.OK {
