@@ -62,8 +62,8 @@ func (p *PermissionRepo) CheckUserPermission(userID uint, permission string) (bo
 		SELECT permissions.* FROM permissions
 		INNER JOIN role_permissions ON permissions.id = role_permissions.permission_id
 		INNER JOIN roles ON role_permissions.role_id = roles.id
-	`+"INNER JOIN `groups` ON roles.id = `groups`.role_id"+
-		"INNER JOIN user_groups ON `groups`.id = user_groups.group_id"+`
+	`+"INNER JOIN `groups` ON roles.id = `groups`.role_id\n"+
+		"INNER JOIN user_groups ON `groups`.id = user_groups.group_id\n"+`
 		INNER JOIN users ON user_groups.user_id = users.id
 		WHERE users.deleted_at IS NULL AND permissions.deleted_at IS NULL AND
 		users.id = ? AND permissions.name = ? 
