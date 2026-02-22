@@ -24,7 +24,7 @@ var DefaultRolePermissionMap = map[string][]string{
 
 		PermAdminIPSearch, PermAdminModelsSearch,
 		PermAdminSystemRead, PermAdminSystemUpdate, PermAdminSystemRestart,
-		PermAdminPermissionRead, PermAdminPermissionUpdate, PermAdminPermissionList, PermAdminPermissionAssign, PermAdminPermissionRevoke,
+		PermAdminPermissionRead, PermAdminPermissionUpdate, PermAdminPermissionList,
 		PermAdminRoleCreate, PermAdminRoleRead, PermAdminRoleUpdate, PermAdminRoleDelete, PermAdminRoleList, PermAdminRoleAssign, PermAdminRoleRevoke,
 		PermAdminGroupCreate, PermAdminGroupRead, PermAdminGroupUpdate, PermAdminGroupDelete, PermAdminGroupList,
 		PermAdminUserCreate, PermAdminUserRead, PermAdminUserUpdate, PermAdminUserDelete, PermAdminUserList, PermAdminUserAssign, PermAdminUserRevoke,
@@ -33,7 +33,7 @@ var DefaultRolePermissionMap = map[string][]string{
 		PermAdminWebhookCreate, PermAdminWebhookRead, PermAdminWebhookUpdate, PermAdminWebhookDelete, PermAdminWebhookList,
 		PermAdminChallengeCreate, PermAdminChallengeRead, PermAdminChallengeUpdate, PermAdminChallengeDelete, PermAdminChallengeList, PermAdminChallengeTest,
 		PermAdminContestCreate, PermAdminContestRead, PermAdminContestUpdate, PermAdminContestDelete, PermAdminContestList, PermAdminContestRank,
-		PermAdminTeamCreate, PermAdminTeamRead, PermAdminTeamUpdate, PermAdminTeamDelete, PermAdminTeamList,
+		PermAdminTeamRead, PermAdminTeamUpdate, PermAdminTeamDelete, PermAdminTeamList,
 		PermAdminTeamWriteupList, PermAdminTeamWriteupRead,
 		PermAdminNoticeCreate, PermAdminNoticeUpdate, PermAdminNoticeDelete, PermAdminNoticeList,
 		PermAdminCheatCreate, PermAdminCheatUpdate, PermAdminCheatDelete, PermAdminCheatList,
@@ -54,7 +54,7 @@ var DefaultRolePermissionMap = map[string][]string{
 		PermUserWriteupUpload, PermUserWriteupList,
 
 		PermAdminContestCreate, PermAdminContestRead, PermAdminContestUpdate, PermAdminContestDelete, PermAdminContestList, PermAdminContestRank,
-		PermAdminTeamCreate, PermAdminTeamRead, PermAdminTeamUpdate, PermAdminTeamDelete, PermAdminTeamList,
+		PermAdminTeamRead, PermAdminTeamUpdate, PermAdminTeamDelete, PermAdminTeamList,
 		PermAdminTeamWriteupList, PermAdminTeamWriteupRead,
 		PermAdminNoticeCreate, PermAdminNoticeUpdate, PermAdminNoticeDelete, PermAdminNoticeList,
 		PermAdminCheatCreate, PermAdminCheatUpdate, PermAdminCheatDelete, PermAdminCheatList,

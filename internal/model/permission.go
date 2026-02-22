@@ -38,8 +38,6 @@ const (
 	PermAdminPermissionRead   = "admin:permission:read"
 	PermAdminPermissionUpdate = "admin:permission:update"
 	PermAdminPermissionList   = "admin:permission:list"
-	PermAdminPermissionAssign = "admin:permission:assign"
-	PermAdminPermissionRevoke = "admin:permission:revoke"
 
 	PermAdminRoleCreate = "admin:role:create"
 	PermAdminRoleRead   = "admin:role:read"
@@ -95,7 +93,6 @@ const (
 	PermAdminContestList   = "admin:contest:list"
 	PermAdminContestRank   = "admin:contest:rank"
 
-	PermAdminTeamCreate = "admin:team:create"
 	PermAdminTeamRead   = "admin:team:read"
 	PermAdminTeamUpdate = "admin:team:update"
 	PermAdminTeamDelete = "admin:team:delete"
@@ -166,8 +163,6 @@ var Permissions = []Permission{
 	{Name: PermAdminPermissionRead, Resource: "admin:permission", Operation: "read", Description: "查看权限详情"},
 	{Name: PermAdminPermissionUpdate, Resource: "admin:permission", Operation: "update", Description: "更新权限"},
 	{Name: PermAdminPermissionList, Resource: "admin:permission", Operation: "list", Description: "查看权限列表"},
-	{Name: PermAdminPermissionAssign, Resource: "admin:permission", Operation: "assign", Description: "分配权限"},
-	{Name: PermAdminPermissionRevoke, Resource: "admin:permission", Operation: "revoke", Description: "移除权限"},
 
 	{Name: PermAdminRoleCreate, Resource: "admin:role", Operation: "create", Description: "创建角色"},
 	{Name: PermAdminRoleRead, Resource: "admin:role", Operation: "read", Description: "查看角色详情"},
@@ -230,7 +225,6 @@ var Permissions = []Permission{
 	{Name: PermAdminContestList, Resource: "admin:contest", Operation: "list", Description: "查看比赛列表"},
 	{Name: PermAdminContestRank, Resource: "admin:contest", Operation: "rank", Description: "查看比赛排名"},
 
-	{Name: PermAdminTeamCreate, Resource: "admin:team", Operation: "create", Description: "创建队伍"},
 	{Name: PermAdminTeamRead, Resource: "admin:team", Operation: "read", Description: "查看队伍详情"},
 	{Name: PermAdminTeamUpdate, Resource: "admin:team", Operation: "update", Description: "更新队伍"},
 	{Name: PermAdminTeamDelete, Resource: "admin:team", Operation: "delete", Description: "删除队伍"},
