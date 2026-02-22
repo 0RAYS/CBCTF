@@ -15,7 +15,7 @@ const Login = lazy(() => import('../pages/Login'));
 const AdminLogin = lazy(() => import('../pages/admin/Login'));
 const Dashboard = lazy(() => import('../pages/admin/Dashboard'));
 const ContestsManagement = lazy(() => import('../pages/admin/Contests'));
-const UsersManagement = lazy(() => import('../pages/admin/Users'));
+const RbacManagement = lazy(() => import('../pages/admin/Rbac'));
 const ChallengesManagement = lazy(() => import('../pages/admin/Challenges'));
 const FilesManagement = lazy(() => import('../pages/admin/Files.jsx'));
 const SystemSettings = lazy(() => import('../pages/admin/System'));
@@ -217,10 +217,10 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="users"
+          path="rbac"
           element={
             <Suspense fallback={<Loading />}>
-              <UsersManagement />
+              <RbacManagement />
             </Suspense>
           }
         />

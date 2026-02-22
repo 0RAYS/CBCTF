@@ -1,18 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
-import { toast } from '../../utils/toast';
-import { getUserList, updateUser, deleteUser, createUser, updateUserPicture } from '../../api/admin/user';
-import AdminUsers from '../../components/features/Admin/AdminUsers';
-import { Modal } from '../../components/common';
-import CRUDModalFooter from '../../components/common/CRUDModalFooter';
-import { searchAdmin } from '../../api/admin/contest.js';
-import { useDebounceSearch } from '../../hooks';
-import { useCRUDModal } from '../../hooks/index.js';
-import Input from '../../components/common/Input';
-import Textarea from '../../components/common/Textarea';
+import { toast } from '../../../utils/toast';
+import { getUserList, updateUser, deleteUser, createUser, updateUserPicture } from '../../../api/admin/user';
+import AdminUsers from '../../../components/features/Admin/AdminUsers';
+import { Modal } from '../../../components/common';
+import CRUDModalFooter from '../../../components/common/CRUDModalFooter';
+import { searchAdmin } from '../../../api/admin/contest.js';
+import { useDebounceSearch } from '../../../hooks';
+import { useCRUDModal } from '../../../hooks/index.js';
+import Input from '../../../components/common/Input';
+import Textarea from '../../../components/common/Textarea';
 import { useTranslation } from 'react-i18next';
 
-function UsersManagement() {
-  // 状态管理
+function UsersTab() {
   const [users, setUsers] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -20,7 +19,6 @@ function UsersManagement() {
   const fileInputRef = useRef(null);
   const { t } = useTranslation();
 
-  // Detail dialog state
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [detailUser, setDetailUser] = useState(null);
 
@@ -85,7 +83,6 @@ function UsersManagement() {
     },
   });
 
-  // 使用防抖搜索 Hook
   const {
     query: searchQuery,
     setQuery: setSearchQuery,
@@ -115,22 +112,18 @@ function UsersManagement() {
     { delay: 300, minLength: 1 }
   );
 
-  // 搜索结果和模式
   const searchResults = rawSearchResults || [];
   const isSearchMode = searchQuery.trim().length > 0;
 
-  // 数据获取
   useEffect(() => {
     if (!isSearchMode) {
       fetchUsers();
     }
   }, [currentPage, isSearchMode]);
 
-  // 头像上传
   const handlePictureUpload = (user) => {
     openEdit(user);
     closeModal();
-    // Need to keep the selected user for file upload
     fileInputRef.current?.click();
   };
 
@@ -150,7 +143,6 @@ function UsersManagement() {
     }
   };
 
-  // 模态框内容
   const renderModalContent = () => {
     if (mode === 'delete') {
       return (
@@ -260,7 +252,6 @@ function UsersManagement() {
     return <CRUDModalFooter mode={mode} onCancel={closeModal} onSubmit={handleSubmit} />;
   };
 
-  // 确定要显示的用户数据
   const displayUsers = isSearchMode ? searchResults : users;
   const displayTotalCount = isSearchMode ? searchResults.length : totalCount;
 
@@ -318,4 +309,4 @@ function UsersManagement() {
   );
 }
 
-export default UsersManagement;
+export default UsersTab;
