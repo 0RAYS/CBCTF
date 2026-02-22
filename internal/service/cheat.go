@@ -16,7 +16,7 @@ import (
 )
 
 func CheckSameDevice(tx *gorm.DB, contest model.Contest) {
-	userIDL, ret := db.InitUserRepo(tx).GetIDByContestID(contest.ID)
+	userIDL, ret := db.InitUserRepo(tx).GetIDByContestID(contest.ID, -1, -1)
 	if !ret.OK {
 		return
 	}
@@ -137,7 +137,7 @@ func checkWhitelistIP(ip string) bool {
 
 // CheckWebReqIP 检查用户访问 Web 的 IP
 func CheckWebReqIP(tx *gorm.DB, contest model.Contest) {
-	userIDL, ret := db.InitUserRepo(tx).GetIDByContestID(contest.ID)
+	userIDL, ret := db.InitUserRepo(tx).GetIDByContestID(contest.ID, -1, -1)
 	if !ret.OK {
 		return
 	}

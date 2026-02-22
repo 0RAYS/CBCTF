@@ -116,13 +116,14 @@ func (u *UserRepo) GetByName(name string, optionsL ...GetOptions) (model.User, m
 	return u.GetByUniqueKey("name", name, optionsL...)
 }
 
-func (u *UserRepo) GetByTeamID(teamID uint) ([]model.User, model.RetVal) {
+func (u *UserRepo) GetByTeamID(teamID uint, limit, offset int) ([]model.User, model.RetVal) {
 	var users []model.User
 	res := u.DB.Raw(`
 		SELECT users.* FROM users
 		INNER JOIN user_teams ON user_teams.user_id = users.id
 		WHERE user_teams.team_id = ? AND users.deleted_at IS NULL
-	`, teamID).Scan(&users)
+		LIMIT ? OFFSET ?
+	`, teamID, limit, offset).Scan(&users)
 	if res.Error != nil {
 		log.Logger.Fatalf("Failed to get Users: %v", res.Error)
 		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.User{}.ModelName(), "Error": res.Error.Error()}}
@@ -130,8 +131,8 @@ func (u *UserRepo) GetByTeamID(teamID uint) ([]model.User, model.RetVal) {
 	return users, model.RetVal{}
 }
 
-func (u *UserRepo) GetIDByTeamID(teamID uint) ([]uint, model.RetVal) {
-	users, ret := u.GetByTeamID(teamID)
+func (u *UserRepo) GetIDByTeamID(teamID uint, limit, offset int) ([]uint, model.RetVal) {
+	users, ret := u.GetByTeamID(teamID, limit, offset)
 	if !ret.OK {
 		return nil, ret
 	}
@@ -142,13 +143,14 @@ func (u *UserRepo) GetIDByTeamID(teamID uint) ([]uint, model.RetVal) {
 	return userIDL, ret
 }
 
-func (u *UserRepo) GetByContestID(contestID uint) ([]model.User, model.RetVal) {
+func (u *UserRepo) GetByContestID(contestID uint, limit, offset int) ([]model.User, model.RetVal) {
 	var users []model.User
 	res := u.DB.Raw(`
 		SELECT users.* FROM users
 		INNER JOIN user_contests ON user_contests.user_id = users.id
 		WHERE user_contests.contest_id = ? AND users.deleted_at IS NULL
-	`, contestID).Scan(&users)
+		LIMIT ? OFFSET ?
+	`, contestID, limit, offset).Scan(&users)
 	if res.Error != nil {
 		log.Logger.Fatalf("Failed to get Users: %v", res.Error)
 		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.User{}.ModelName(), "Error": res.Error.Error()}}
@@ -156,8 +158,8 @@ func (u *UserRepo) GetByContestID(contestID uint) ([]model.User, model.RetVal) {
 	return users, model.RetVal{}
 }
 
-func (u *UserRepo) GetIDByContestID(contestID uint) ([]uint, model.RetVal) {
-	users, ret := u.GetByContestID(contestID)
+func (u *UserRepo) GetIDByContestID(contestID uint, limit, offset int) ([]uint, model.RetVal) {
+	users, ret := u.GetByContestID(contestID, limit, offset)
 	if !ret.OK {
 		return nil, ret
 	}
