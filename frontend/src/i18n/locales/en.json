@@ -72,6 +72,7 @@
     "dashboard": "DASHBOARD",
     "contests": "CONTESTS",
     "users": "USERS",
+    "rbac": "RBAC",
     "oauth": "OAUTH",
     "smtp": "SMTP",
     "webhook": "WEBHOOK",
@@ -1119,6 +1120,132 @@
           "contests": "Contests",
           "teams": "Teams",
           "noDescription": "No description"
+        }
+      }
+    },
+    "rbac": {
+      "tabs": {
+        "users": "Users",
+        "roles": "Roles",
+        "groups": "Groups",
+        "permissions": "Permissions"
+      },
+      "roles": {
+        "actions": {
+          "create": "Create Role",
+          "permissions": "Permissions"
+        },
+        "columns": {
+          "id": "ID",
+          "name": "Name",
+          "description": "Description",
+          "default": "Default",
+          "actions": "Actions"
+        },
+        "toast": {
+          "fetchFailed": "Failed to load roles",
+          "createSuccess": "Role created",
+          "createFailed": "Failed to create role",
+          "updateSuccess": "Role updated",
+          "updateFailed": "Failed to update role",
+          "deleteSuccess": "Role deleted",
+          "deleteFailed": "Failed to delete role",
+          "assignPermSuccess": "Permission assigned",
+          "assignPermFailed": "Failed to assign permission",
+          "revokePermSuccess": "Permission revoked",
+          "revokePermFailed": "Failed to revoke permission",
+          "fetchPermFailed": "Failed to load permissions"
+        },
+        "modal": {
+          "createTitle": "Create Role",
+          "editTitle": "Edit Role",
+          "deleteTitle": "Delete Role",
+          "deletePrompt": "Are you sure you want to delete role",
+          "deleteWarning": "This action cannot be undone.",
+          "permissionsTitle": "Manage Permissions"
+        },
+        "form": {
+          "name": "Name",
+          "description": "Description",
+          "namePlaceholder": "Enter role name",
+          "descriptionPlaceholder": "Enter role description"
+        },
+        "permGroup": {
+          "user": "User",
+          "role": "Role",
+          "permission": "Permission",
+          "group": "Group"
+        }
+      },
+      "groups": {
+        "actions": {
+          "create": "Create Group",
+          "users": "Users"
+        },
+        "columns": {
+          "id": "ID",
+          "name": "Name",
+          "description": "Description",
+          "role": "Role",
+          "users": "Users",
+          "default": "Default",
+          "actions": "Actions"
+        },
+        "toast": {
+          "fetchFailed": "Failed to load groups",
+          "createSuccess": "Group created",
+          "createFailed": "Failed to create group",
+          "updateSuccess": "Group updated",
+          "updateFailed": "Failed to update group",
+          "deleteSuccess": "Group deleted",
+          "deleteFailed": "Failed to delete group",
+          "assignUserSuccess": "User added",
+          "assignUserFailed": "Failed to add user",
+          "removeUserSuccess": "User removed",
+          "removeUserFailed": "Failed to remove user",
+          "fetchRolesFailed": "Failed to load roles"
+        },
+        "modal": {
+          "createTitle": "Create Group",
+          "editTitle": "Edit Group",
+          "deleteTitle": "Delete Group",
+          "deletePrompt": "Are you sure you want to delete group",
+          "deleteWarning": "This action cannot be undone.",
+          "usersTitle": "Manage Users"
+        },
+        "form": {
+          "name": "Name",
+          "description": "Description",
+          "role": "Role",
+          "namePlaceholder": "Enter group name",
+          "descriptionPlaceholder": "Enter group description",
+          "rolePlaceholder": "Select a role",
+          "userId": "User ID",
+          "userIdPlaceholder": "Enter user ID",
+          "addUser": "Add",
+          "removeUser": "Remove"
+        }
+      },
+      "permissions": {
+        "columns": {
+          "id": "ID",
+          "name": "Name",
+          "resource": "Resource",
+          "operation": "Operation",
+          "description": "Description",
+          "actions": "Actions"
+        },
+        "toast": {
+          "fetchFailed": "Failed to load permissions",
+          "updateSuccess": "Permission updated",
+          "updateFailed": "Failed to update permission"
+        },
+        "modal": {
+          "editTitle": "Edit Permission"
+        },
+        "form": {
+          "description": "Description",
+          "descriptionPlaceholder": "Enter permission description"
         }
       }
     },

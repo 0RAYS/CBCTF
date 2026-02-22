@@ -71,6 +71,7 @@
     "dashboard": "仪表盘",
     "contests": "赛事",
     "users": "用户",
+    "rbac": "权限管理",
     "oauth": "OAuth",
     "smtp": "SMTP",
     "webhook": "Webhook",
@@ -1118,6 +1119,132 @@
           "contests": "参赛次数",
           "teams": "组队次数",
           "noDescription": "暂无个签"
+        }
+      }
+    },
+    "rbac": {
+      "tabs": {
+        "users": "用户",
+        "roles": "角色",
+        "groups": "分组",
+        "permissions": "权限"
+      },
+      "roles": {
+        "actions": {
+          "create": "创建角色",
+          "permissions": "权限管理"
+        },
+        "columns": {
+          "id": "ID",
+          "name": "角色名",
+          "description": "描述",
+          "default": "默认",
+          "actions": "操作"
+        },
+        "toast": {
+          "fetchFailed": "获取角色列表失败",
+          "createSuccess": "创建角色成功",
+          "createFailed": "创建角色失败",
+          "updateSuccess": "更新角色成功",
+          "updateFailed": "更新角色失败",
+          "deleteSuccess": "删除角色成功",
+          "deleteFailed": "删除角色失败",
+          "assignPermSuccess": "分配权限成功",
+          "assignPermFailed": "分配权限失败",
+          "revokePermSuccess": "移除权限成功",
+          "revokePermFailed": "移除权限失败",
+          "fetchPermFailed": "获取权限列表失败"
+        },
+        "modal": {
+          "createTitle": "创建角色",
+          "editTitle": "编辑角色",
+          "deleteTitle": "删除角色",
+          "deletePrompt": "确定要删除角色",
+          "deleteWarning": "此操作无法撤销。",
+          "permissionsTitle": "权限管理"
+        },
+        "form": {
+          "name": "角色名",
+          "description": "描述",
+          "namePlaceholder": "请输入角色名",
+          "descriptionPlaceholder": "请输入角色描述"
+        },
+        "permGroup": {
+          "user": "用户",
+          "role": "角色",
+          "permission": "权限",
+          "group": "分组"
+        }
+      },
+      "groups": {
+        "actions": {
+          "create": "创建分组",
+          "users": "用户管理"
+        },
+        "columns": {
+          "id": "ID",
+          "name": "分组名",
+          "description": "描述",
+          "role": "角色",
+          "users": "用户数",
+          "default": "默认",
+          "actions": "操作"
+        },
+        "toast": {
+          "fetchFailed": "获取分组列表失败",
+          "createSuccess": "创建分组成功",
+          "createFailed": "创建分组失败",
+          "updateSuccess": "更新分组成功",
+          "updateFailed": "更新分组失败",
+          "deleteSuccess": "删除分组成功",
+          "deleteFailed": "删除分组失败",
+          "assignUserSuccess": "添加用户成功",
+          "assignUserFailed": "添加用户失败",
+          "removeUserSuccess": "移除用户成功",
+          "removeUserFailed": "移除用户失败",
+          "fetchRolesFailed": "获取角色列表失败"
+        },
+        "modal": {
+          "createTitle": "创建分组",
+          "editTitle": "编辑分组",
+          "deleteTitle": "删除分组",
+          "deletePrompt": "确定要删除分组",
+          "deleteWarning": "此操作无法撤销。",
+          "usersTitle": "用户管理"
+        },
+        "form": {
+          "name": "分组名",
+          "description": "描述",
+          "role": "角色",
+          "namePlaceholder": "请输入分组名",
+          "descriptionPlaceholder": "请输入分组描述",
+          "rolePlaceholder": "请选择角色",
+          "userId": "用户 ID",
+          "userIdPlaceholder": "请输入用户 ID",
+          "addUser": "添加",
+          "removeUser": "移除"
+        }
+      },
+      "permissions": {
+        "columns": {
+          "id": "ID",
+          "name": "权限名",
+          "resource": "资源",
+          "operation": "操作类型",
+          "description": "描述",
+          "actions": "操作"
+        },
+        "toast": {
+          "fetchFailed": "获取权限列表失败",
+          "updateSuccess": "更新权限成功",
+          "updateFailed": "更新权限失败"
+        },
+        "modal": {
+          "editTitle": "编辑权限"
+        },
+        "form": {
+          "description": "描述",
+          "descriptionPlaceholder": "请输入权限描述"
         }
       }
     },

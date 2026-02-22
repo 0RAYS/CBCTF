@@ -5,7 +5,7 @@ export const getAdminNavSections = (t) => [
     items: [
       { id: 'dashboard', label: t('nav.dashboard'), path: '/admin/dashboard' },
       { id: 'contests', label: t('nav.contests'), path: '/admin/contests' },
-      { id: 'users', label: t('nav.users'), path: '/admin/users' },
+      { id: 'rbac', label: t('nav.rbac'), path: '/admin/rbac' },
       { id: 'challenges', label: t('nav.challenges'), path: '/admin/challenges' },
       { id: 'oauth', label: t('nav.oauth'), path: '/admin/oauth' },
       { id: 'smtp', label: t('nav.smtp'), path: '/admin/smtp' },
