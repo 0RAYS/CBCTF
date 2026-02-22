@@ -71,7 +71,7 @@
     "dashboard": "仪表盘",
     "contests": "赛事",
     "users": "用户",
-    "rbac": "权限管理",
+    "rbac": "RBAC",
     "oauth": "OAuth",
     "smtp": "SMTP",
     "webhook": "Webhook",
