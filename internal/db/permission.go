@@ -56,7 +56,7 @@ func (p *PermissionRepo) InitPermissions() model.RetVal {
 	return model.SuccessRetVal()
 }
 
-func (p *PermissionRepo) CheckUserPermission(userID uint, resource, operation string) (bool, model.RetVal) {
+func (p *PermissionRepo) CheckUserPermission(userID uint, permission string) (bool, model.RetVal) {
 	var perm model.Permission
 	res := p.DB.Raw(`
 		SELECT permissions.* FROM permissions
@@ -66,8 +66,8 @@ func (p *PermissionRepo) CheckUserPermission(userID uint, resource, operation st
 		"INNER JOIN user_groups ON `groups`.id = user_groups.group_id"+`
 		INNER JOIN users ON user_groups.user_id = users.id
 		WHERE users.deleted_at IS NULL AND permissions.deleted_at IS NULL AND
-		users.id = ? AND permissions.resource = ? AND permissions.operation = ? 
-	`, userID, resource, operation).Scan(&perm)
+		users.id = ? AND permissions.name = ? 
+	`, userID, permission).Scan(&perm)
 	if res.Error != nil {
 		return false, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": perm.ModelName(), "Error": res.Error.Error()}}
 	}
