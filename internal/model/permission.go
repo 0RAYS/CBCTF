@@ -35,7 +35,6 @@ const (
 	PermAdminSystemUpdate  = "admin:system:update"
 	PermAdminSystemRestart = "admin:system:restart"
 
-	PermAdminPermissionRead   = "admin:permission:read"
 	PermAdminPermissionUpdate = "admin:permission:update"
 	PermAdminPermissionList   = "admin:permission:list"
 
@@ -160,7 +159,6 @@ var Permissions = []Permission{
 	{Name: PermUserWriteupUpload, Resource: "user:writeup", Operation: "upload", Description: "上传 Writeup"},
 	{Name: PermUserWriteupList, Resource: "user:writeup", Operation: "list", Description: "查看 Writeup 列表"},
 
-	{Name: PermAdminPermissionRead, Resource: "admin:permission", Operation: "read", Description: "查看权限详情"},
 	{Name: PermAdminPermissionUpdate, Resource: "admin:permission", Operation: "update", Description: "更新权限"},
 	{Name: PermAdminPermissionList, Resource: "admin:permission", Operation: "list", Description: "查看权限列表"},
 
