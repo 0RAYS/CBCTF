@@ -50,11 +50,11 @@ func InitRoleRepo(tx *gorm.DB) *RoleRepo {
 
 func (r *RoleRepo) InitDefaultRoles() model.RetVal {
 	for _, role := range model.DefaultRoles {
-		role, ret := r.Insert(role)
-		if !ret.OK && ret.Msg != i18n.Model.DuplicateKeyValue {
-			return ret
+		res := r.DB.Model(&model.Role{}).FirstOrCreate(&role, "name = ?", role.Name)
+		if res.Error != nil {
+			return model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": role.ModelName(), "Error": res.Error.Error()}}
 		}
-		role, ret = r.GetByID(role.ID, GetOptions{Preloads: map[string]GetOptions{"Permissions": {}}})
+		role, ret := r.GetByID(role.ID, GetOptions{Preloads: map[string]GetOptions{"Permissions": {}}})
 		if !ret.OK {
 			return ret
 		}
