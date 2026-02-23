@@ -42,7 +42,9 @@ func WS(ctx *gin.Context) {
 
 	mu = &UserClientsMu
 	clients = &UserClients
-	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
+	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, http.Header{
+		"Sec-Websocket-Protocol": {ctx.Request.Header.Get("Sec-Websocket-Protocol")},
+	})
 	if err != nil {
 		return
 	}

@@ -5,6 +5,7 @@ import { fetchUserInfo } from '../store/user';
 import { toast } from '../utils/toast';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
+import { exchangeOauthCode } from '../api/oauth';
 
 function OAuthCallback() {
   const navigate = useNavigate();
@@ -21,14 +22,20 @@ function OAuthCallback() {
     try {
       setStatus('processing');
 
-      // 从URL参数中获取token
-      const token = searchParams.get('token');
+      const code = searchParams.get('code');
       const error = searchParams.get('error');
 
       if (error) {
         throw new Error(t('oauth.callback.errorWithReason', { reason: error }));
       }
 
+      if (!code) {
+        throw new Error(t('oauth.callback.tokenMissing'));
+      }
+
+      // 用一次性 code 换取真实 token
+      const res = await exchangeOauthCode(code);
+      const token = res?.data?.token;
       if (!token) {
         throw new Error(t('oauth.callback.tokenMissing'));
       }
@@ -36,10 +43,6 @@ function OAuthCallback() {
       // 将token保存到localStorage
       localStorage.setItem('token', 'Bearer ' + token);
       localStorage.setItem('userType', 'user');
-
-      // 设置请求头中的Authorization
-      // 这里需要更新axios的默认请求头
-      // 由于request.js中可能已经有token处理逻辑，我们只需要确保localStorage中有token即可
 
       // 等待一下确保token已保存
       await new Promise((resolve) => setTimeout(resolve, 500));

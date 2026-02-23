@@ -65,9 +65,8 @@ class WebSocketService {
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         wsUrl = `${protocol}//${window.location.host}`;
       }
-      this.ws = new WebSocket(
-        wsUrl + `/ws?token=${encodeURIComponent(tokenValue)}&m=${localStorage.getItem('LXM') || ''}`
-      );
+      const magic = localStorage.getItem('LXM') || '';
+      this.ws = new WebSocket(wsUrl + '/ws', ['Bearer', tokenValue, 'Magic', magic]);
 
       this.ws.onopen = () => {
         this.isConnecting = false;
