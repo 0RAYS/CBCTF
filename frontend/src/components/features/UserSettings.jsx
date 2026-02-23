@@ -39,7 +39,7 @@ import { useDispatch } from 'react-redux';
 import { Button, Card, Input } from '../../components/common';
 import { useTranslation } from 'react-i18next';
 
-function UserSettings({ user, onUpdate, onPasswordChange, onEmailVerify, onDeleteAccount, onPictureChange }) {
+function UserSettings({ user, onUpdate, onPasswordChange, onEmailVerify, onDeleteAccount, onPictureChange, onLogout }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { t } = useTranslation();
@@ -144,6 +144,10 @@ function UserSettings({ user, onUpdate, onPasswordChange, onEmailVerify, onDelet
   };
 
   const handleLogout = () => {
+    if (onLogout) {
+      onLogout();
+      return;
+    }
     navigate('/');
     dispatch(logoutUser());
   };
@@ -279,7 +283,7 @@ function UserSettings({ user, onUpdate, onPasswordChange, onEmailVerify, onDelet
                                                     text-neutral-50 font-mono
                                                     focus:outline-none focus:border-geek-400"
                       />
-                      {!user.emailVerified && (
+                      {!user.emailVerified && onEmailVerify && (
                         <Button
                           variant="primary"
                           size="sm"
@@ -424,13 +428,15 @@ function UserSettings({ user, onUpdate, onPasswordChange, onEmailVerify, onDelet
                 </form>
 
                 {/* 账户注销 */}
-                <div className="p-4 border border-red-400/30 rounded-md bg-red-400/5">
-                  <h3 className="text-red-400 font-mono mb-2">{t('user.settings.deleteAccount')}</h3>
-                  <p className="text-neutral-400 text-sm mb-4">{t('user.settings.deleteAccountHint')}</p>
-                  <Button variant="danger" size="sm" onClick={openDeleteModal}>
-                    {t('user.settings.deleteAccountAction')}
-                  </Button>
-                </div>
+                {onDeleteAccount && (
+                  <div className="p-4 border border-red-400/30 rounded-md bg-red-400/5">
+                    <h3 className="text-red-400 font-mono mb-2">{t('user.settings.deleteAccount')}</h3>
+                    <p className="text-neutral-400 text-sm mb-4">{t('user.settings.deleteAccountHint')}</p>
+                    <Button variant="danger" size="sm" onClick={openDeleteModal}>
+                      {t('user.settings.deleteAccountAction')}
+                    </Button>
+                  </div>
+                )}
               </motion.div>
             )}
           </div>
