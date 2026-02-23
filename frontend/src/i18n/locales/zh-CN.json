@@ -1559,6 +1559,8 @@
         "logoUrlPlaceholder": "https://example.com/picture.png",
         "groupsClaimLabel": "分组字段",
         "adminGroupLabel": "管理员组",
+        "defaultGroupLabel": "默认组",
+        "defaultGroupNone": "无",
         "enable": "启用"
       }
     },

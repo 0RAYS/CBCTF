@@ -7,6 +7,7 @@ import {
   deleteOAuthProvider,
   uploadOAuthPicture,
 } from '../../api/admin/oauth';
+import { getGroupList } from '../../api/admin/rbac';
 import AdminOAuthProviders from '../../components/features/Admin/AdminOAuthProviders';
 import { Modal } from '../../components/common';
 import ModalButton from '../../components/common/ModalButton';
@@ -22,6 +23,7 @@ function OAuthProvidersManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState(null);
   const [mode, setMode] = useState('edit'); // 'edit' | 'create' | 'delete'
+  const [groups, setGroups] = useState([]);
   const fileInputRef = useRef(null);
   const uploadTargetRef = useRef(null);
   const [editForm, setEditForm] = useState({
@@ -41,6 +43,7 @@ function OAuthProvidersManagement() {
     id_claim: '',
     groups_claim: '',
     admin_group: '',
+    default_group: 0,
     on: false,
   });
   const { t } = useTranslation();
@@ -66,6 +69,12 @@ function OAuthProvidersManagement() {
     fetchProviders();
   }, [currentPage]);
 
+  useEffect(() => {
+    getGroupList({ limit: 100, offset: 0 }).then((res) => {
+      if (res.code === 200) setGroups(res.data.groups);
+    });
+  }, []);
+
   const handleCreateClick = () => {
     setMode('create');
     setSelectedProvider(null);
@@ -86,6 +95,7 @@ function OAuthProvidersManagement() {
       id_claim: '',
       groups_claim: '',
       admin_group: '',
+      default_group: 0,
       on: false,
     });
     setIsModalOpen(true);
@@ -111,6 +121,7 @@ function OAuthProvidersManagement() {
       id_claim: provider.id_claim,
       groups_claim: provider.groups_claim || '',
       admin_group: provider.admin_group || '',
+      default_group: provider.default_group || 0,
       on: provider.on,
     });
     setIsModalOpen(true);
@@ -424,6 +435,24 @@ function OAuthProvidersManagement() {
         </div>
 
         {/* 状态 */}
+        <div>
+          <label className="block text-neutral-300 text-sm font-medium mb-2">
+            {t('admin.oauthProviders.form.defaultGroupLabel')}
+          </label>
+          <select
+            value={editForm.default_group}
+            onChange={(e) => setEditForm({ ...editForm, default_group: Number(e.target.value) })}
+            className="w-full bg-neutral-800 border border-neutral-600 text-neutral-200 text-sm rounded px-3 py-2 focus:outline-none focus:border-neutral-400"
+          >
+            <option value={0}>{t('admin.oauthProviders.form.defaultGroupNone')}</option>
+            {groups.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="flex items-center">
           <input
             type="checkbox"

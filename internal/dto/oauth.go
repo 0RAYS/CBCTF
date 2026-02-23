@@ -25,6 +25,7 @@ type CreateOauthProviderForm struct {
 	DescriptionClaim string `form:"description_claim" json:"description_claim"`
 	GroupsClaim      string `form:"groups_claim" json:"groups_claim"`
 	AdminGroup       string `form:"admin_group" json:"admin_group"`
+	DefaultGroup     uint   `form:"default_group" json:"default_group"`
 }
 
 type UpdateOauthProviderForm struct {
@@ -43,6 +44,7 @@ type UpdateOauthProviderForm struct {
 	DescriptionClaim *string        `form:"description_claim" json:"description_claim"`
 	GroupsClaim      *string        `form:"groups_claim" json:"groups_claim"`
 	AdminGroup       *string        `form:"admin_group" json:"admin_group"`
+	DefaultGroup     *uint          `form:"default_group" json:"default_group"`
 	On               *bool          `form:"on" json:"on"`
 	Picture          *model.FileURL `form:"picture" json:"picture"`
 }

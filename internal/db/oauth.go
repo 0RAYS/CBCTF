@@ -27,6 +27,7 @@ type CreateOauthOptions struct {
 	DescriptionClaim string
 	GroupsClaim      string
 	AdminGroup       string
+	DefaultGroup     uint
 	On               bool
 	Picture          model.FileURL
 }
@@ -48,6 +49,7 @@ func (c CreateOauthOptions) Convert2Model() model.Model {
 		DescriptionClaim: c.DescriptionClaim,
 		GroupsClaim:      c.GroupsClaim,
 		AdminGroup:       c.AdminGroup,
+		DefaultGroup:     c.DefaultGroup,
 		On:               c.On,
 		Picture:          c.Picture,
 	}
@@ -69,6 +71,7 @@ type UpdateOauthOptions struct {
 	DescriptionClaim *string
 	GroupsClaim      *string
 	AdminGroup       *string
+	DefaultGroup     *uint
 	On               *bool
 	Picture          *model.FileURL
 }
@@ -119,6 +122,9 @@ func (u UpdateOauthOptions) Convert2Map() map[string]any {
 	}
 	if u.AdminGroup != nil {
 		options["admin_group"] = *u.AdminGroup
+	}
+	if u.DefaultGroup != nil {
+		options["default_group"] = *u.DefaultGroup
 	}
 	if u.On != nil {
 		options["on"] = *u.On
