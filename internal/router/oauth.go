@@ -118,6 +118,7 @@ func OauthCallback(ctx *gin.Context) {
 	if err != nil {
 		log.Logger.Warningf("Failed to get token for provider %s: %s", provider.Provider, err)
 		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		return
 	}
 	client := oauthConfig.Client(ctx, tok)
 	response, err := client.Get(provider.UserInfoURL)
@@ -135,6 +136,7 @@ func OauthCallback(ctx *gin.Context) {
 	if err = json.NewDecoder(response.Body).Decode(&result); err != nil {
 		log.Logger.Warningf("Failed to decode response body for provider %s: %s", provider.Provider, err)
 		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		return
 	}
 	tx := db.DB.Begin()
 	user, ret := service.OauthLogin(tx, provider, result)
