@@ -21,7 +21,7 @@ import (
 
 func Register(ctx *gin.Context) {
 	if !config.Env.Registration.Enabled {
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Model.User.NotAllowedRegister})
 		return
 	}
 	var form dto.RegisterForm
