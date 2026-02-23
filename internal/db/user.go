@@ -166,7 +166,7 @@ func (u *UserRepo) CountGroupUser(group string) (int64, model.RetVal) {
 	res := u.DB.Raw(`
 		SELECT count(*) FROM users
 		INNER JOIN user_groups ON users.id = user_groups.user_id
-	`+" INNER JOIN `groups` ON user_groups.group_id = groups.id"+`
+		INNER JOIN `+"`groups`"+` ON user_groups.group_id = groups.id
 		WHERE groups.name = ? AND users.deleted_at IS NULL AND groups.deleted_at IS NULL
 	`, group).Scan(&count)
 	if res.Error != nil {
