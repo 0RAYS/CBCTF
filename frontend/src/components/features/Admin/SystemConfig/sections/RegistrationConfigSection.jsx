@@ -38,9 +38,7 @@ export function RegistrationConfigSection({ config, updateConfig }) {
         }
       />
       <div className="space-y-1">
-        <span className="text-xs font-mono text-neutral-400">
-          {t('admin.system.labels.registrationDefaultGroup')}
-        </span>
+        <span className="text-xs font-mono text-neutral-400">{t('admin.system.labels.registrationDefaultGroup')}</span>
         <Select
           size="sm"
           value={String(config.registration.default_group ?? 0)}
