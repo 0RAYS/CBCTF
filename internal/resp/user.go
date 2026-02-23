@@ -9,18 +9,18 @@ import (
 
 func GetUserResp(user model.User, admin bool) gin.H {
 	data := gin.H{
-		"id":          user.ID,
-		"name":        user.Name,
-		"email":       user.Email,
-		"picture":     user.Picture,
-		"description": user.Description,
-		"verified":    user.Verified,
-		"score":       user.Score,
-		"solved":      user.Solved,
-		"provider":    user.Provider,
-		"hidden":      user.Hidden,
-		"banned":      user.Banned,
-		"is_admin":    db.InitUserRepo(db.DB).IsInGroup(user.ID, model.AdminGroupName),
+		"id":               user.ID,
+		"name":             user.Name,
+		"email":            user.Email,
+		"picture":          user.Picture,
+		"description":      user.Description,
+		"verified":         user.Verified,
+		"score":            user.Score,
+		"solved":           user.Solved,
+		"provider":         user.Provider,
+		"hidden":           user.Hidden,
+		"banned":           user.Banned,
+		"has_admin_access": db.InitPermissionRepo(db.DB).HasAdminAccess(user.ID),
 	}
 	if admin {
 		data["teams"] = db.InitUserRepo(db.DB).CountAssociation(user, "Teams")
