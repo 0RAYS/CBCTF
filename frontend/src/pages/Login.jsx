@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { login, register } from '../api/auth';
-import { fetchUserInfo } from '../store/user';
+import { fetchUserInfo, fetchAccessibleRoutes } from '../store/user';
 import { setEffectLoading } from '../store/app';
 import AuthPanel from '../components/features/Auth/AuthPanel';
 import { toast } from '../utils/toast.js';
@@ -32,7 +32,10 @@ function Login() {
       }
       if (response.code === 200) {
         await dispatch(fetchUserInfo());
-        navigate('/games');
+        await dispatch(fetchAccessibleRoutes());
+        // 根据角色跳转到不同首页
+        const state = await import('../store/index').then((m) => m.default.getState());
+        navigate(state.user.isAdmin ? '/admin/dashboard' : '/games');
       }
     } catch (error) {
       toast.danger({ title: msg, description: error.message });

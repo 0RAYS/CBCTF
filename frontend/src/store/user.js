@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { getUserInfo } from '../api/user';
+import { getUserInfo, getAccessibleRoutes } from '../api/user';
 import i18n from '../i18n';
 
 const initialState = {
@@ -9,6 +9,7 @@ const initialState = {
   loading: true,
   error: null,
   isAdmin: false,
+  routes: [],
 };
 
 const userSlice = createSlice({
@@ -27,6 +28,9 @@ const userSlice = createSlice({
       state.isAuthenticated = true;
       localStorage.setItem('userType', 'admin');
     },
+    setRoutes: (state, action) => {
+      state.routes = action.payload;
+    },
     setLoading: (state, action) => {
       state.loading = action.payload;
     },
@@ -38,6 +42,7 @@ const userSlice = createSlice({
       state.token = null;
       state.isAuthenticated = false;
       state.isAdmin = false;
+      state.routes = [];
       localStorage.removeItem('token');
       localStorage.removeItem('userType');
     },
@@ -47,7 +52,7 @@ const userSlice = createSlice({
   },
 });
 
-export const { setUser, setAdmin, setLoading, setError, logout, clearError } = userSlice.actions;
+export const { setUser, setAdmin, setRoutes, setLoading, setError, logout, clearError } = userSlice.actions;
 
 /**
  * 获取用户信息
@@ -74,6 +79,20 @@ export const fetchUserInfo = () => async (dispatch) => {
     dispatch(logout());
   } finally {
     dispatch(setLoading(false));
+  }
+};
+
+/**
+ * 获取当前用户可访问的 API 路由列表，存入 store
+ */
+export const fetchAccessibleRoutes = () => async (dispatch) => {
+  try {
+    const response = await getAccessibleRoutes();
+    if (response.code === 200) {
+      dispatch(setRoutes(response.data));
+    }
+  } catch {
+    // 静默失败，routes 保持为空数组
   }
 };
 

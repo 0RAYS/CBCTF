@@ -8,6 +8,14 @@ export const getUserInfo = () => {
   });
 };
 
+// 获取当前用户可访问的 API 路由列表
+export const getAccessibleRoutes = () => {
+  return request({
+    url: '/me/permissions',
+    method: 'GET',
+  });
+};
+
 // 更新密码
 export const updatePassword = (data) => {
   // 请求示例数据:
