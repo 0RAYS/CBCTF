@@ -59,7 +59,7 @@ func GetTeamFlags(ctx *gin.Context) {
 
 func InitTeamFlag(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.InitChallengeEventType)
-	user := middleware.GetSelf(ctx).(model.User)
+	user := middleware.GetSelf(ctx)
 	team := middleware.GetTeam(ctx)
 	contest := middleware.GetContest(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
@@ -94,7 +94,7 @@ func InitTeamFlag(ctx *gin.Context) {
 
 func ResetTeamFlag(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.ResetChallengeEventType)
-	user := middleware.GetSelf(ctx).(model.User)
+	user := middleware.GetSelf(ctx)
 	team := middleware.GetTeam(ctx)
 	contest := middleware.GetContest(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)

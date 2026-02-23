@@ -15,12 +15,12 @@ import (
 
 func GetUser(ctx *gin.Context) {
 	var user model.User
-	if middleware.IsAdmin(ctx) {
+	if middleware.IsFullAccess(ctx) {
 		user = middleware.GetUser(ctx)
 	} else {
-		user = middleware.GetSelf(ctx).(model.User)
+		user = middleware.GetSelf(ctx)
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetUserResp(user, middleware.IsAdmin(ctx))))
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetUserResp(user, middleware.IsFullAccess(ctx))))
 }
 
 func GetUsers(ctx *gin.Context) {
@@ -64,7 +64,7 @@ func ChangePwd(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateUserEventType)
-	ret := service.ChangeUserPwd(db.DB, middleware.GetSelf(ctx).(model.User), form)
+	ret := service.ChangeUserPwd(db.DB, middleware.GetSelf(ctx), form)
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
@@ -76,7 +76,7 @@ func UpdateUser(ctx *gin.Context) {
 		user model.User
 		ret  model.RetVal
 	)
-	if middleware.IsAdmin(ctx) {
+	if middleware.IsFullAccess(ctx) {
 		var form dto.UpdateUserForm
 		if ret = dto.Bind(ctx, &form); !ret.OK {
 			ctx.JSON(http.StatusOK, ret)
@@ -92,7 +92,7 @@ func UpdateUser(ctx *gin.Context) {
 			return
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.UpdateUserEventType)
-		user = middleware.GetSelf(ctx).(model.User)
+		user = middleware.GetSelf(ctx)
 		ret = service.UpdateSelf(db.DB, user, form)
 	}
 	if ret.OK {
@@ -106,7 +106,7 @@ func DeleteUser(ctx *gin.Context) {
 		tx  *gorm.DB
 		ret model.RetVal
 	)
-	if !middleware.IsAdmin(ctx) {
+	if !middleware.IsFullAccess(ctx) {
 		var form dto.DeleteSelfForm
 		if ret = dto.Bind(ctx, &form); !ret.OK {
 			ctx.JSON(http.StatusOK, ret)
@@ -114,7 +114,7 @@ func DeleteUser(ctx *gin.Context) {
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.DeleteUserEventType)
 		tx = db.DB.Begin()
-		ret = service.DeleteSelf(tx, middleware.GetSelf(ctx).(model.User), form)
+		ret = service.DeleteSelf(tx, middleware.GetSelf(ctx), form)
 	} else {
 		ctx.Set(middleware.CTXEventTypeKey, model.DeleteUserEventType)
 		tx = db.DB.Begin()

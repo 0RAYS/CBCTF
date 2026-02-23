@@ -9,24 +9,22 @@ import (
 )
 
 type Claims struct {
-	Name    string `json:"name"`
-	UserID  uint   `json:"id"`
-	IsAdmin bool   `json:"admin"`
-	X       string `json:"x"`
+	Name   string `json:"name"`
+	UserID uint   `json:"id"`
+	X      string `json:"x"`
 	jwt.RegisteredClaims
 }
 
 // GenerateToken 生成token
-func GenerateToken(id uint, name string, isAdmin bool, magic string) (tokenString string, err error) {
+func GenerateToken(id uint, name string, magic string) (tokenString string, err error) {
 	if !config.Env.Gin.JWT.Static || config.Env.Gin.JWT.Secret == "" {
 		config.Env.Gin.JWT.Secret = UUID()
 		config.Env.Gin.JWT.Static = false
 	}
 	claim := Claims{
-		UserID:  id,
-		Name:    name,
-		IsAdmin: isAdmin,
-		X:       HashMagic(magic),
+		UserID: id,
+		Name:   name,
+		X:      HashMagic(magic),
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

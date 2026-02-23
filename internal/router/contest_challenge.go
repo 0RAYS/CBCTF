@@ -32,10 +32,10 @@ func GetContestChallenges(ctx *gin.Context) {
 	if form.Category != "" {
 		options.Conditions["category"] = form.Category
 	}
-	if middleware.IsAdmin(ctx) && form.Type != "" {
+	if middleware.IsFullAccess(ctx) && form.Type != "" {
 		options.Conditions["type"] = form.Type
 	}
-	if !middleware.IsAdmin(ctx) {
+	if !middleware.IsFullAccess(ctx) {
 		options.Conditions["hidden"] = false
 	}
 	contestChallengeL, count, ret := db.InitContestChallengeRepo(db.DB).List(form.Limit, form.Offset, options)
@@ -46,7 +46,7 @@ func GetContestChallenges(ctx *gin.Context) {
 	data := make([]gin.H, 0)
 	for _, contestChallenge := range contestChallengeL {
 		tmp := resp.GetContestChallengeResp(contestChallenge)
-		if !middleware.IsAdmin(ctx) {
+		if !middleware.IsFullAccess(ctx) {
 			team := middleware.GetTeam(ctx)
 			tmp["hidden"] = false
 			tmp["attempts"] = service.CountAttempts(db.DB, team, contestChallenge)

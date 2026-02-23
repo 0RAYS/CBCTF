@@ -19,7 +19,7 @@ func SubmitFlag(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.SubmitFlagEventType)
-	user := middleware.GetSelf(ctx).(model.User)
+	user := middleware.GetSelf(ctx)
 	team := middleware.GetTeam(ctx)
 	contest := middleware.GetContest(ctx)
 	challenge := middleware.GetChallenge(ctx)

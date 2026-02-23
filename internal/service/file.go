@@ -49,8 +49,6 @@ func UpdatePicture(tx *gorm.DB, v string, id uint, record model.File) (string, m
 	var ret model.RetVal
 	path := model.FileURL(fmt.Sprintf("/pictures/%s", record.RandID))
 	switch v {
-	case "admin":
-		ret = db.InitAdminRepo(tx).Update(id, db.UpdateAdminOptions{Picture: &path})
 	case "self-user":
 		ret = db.InitUserRepo(tx).Update(id, db.UpdateUserOptions{Picture: &path})
 	case "user":

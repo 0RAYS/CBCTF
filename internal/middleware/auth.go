@@ -26,110 +26,68 @@ func CheckAuth(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Unauthorized})
 		return
 	}
-	if claims.IsAdmin {
-		admin, ret := db.InitAdminRepo(db.DB).GetByID(claims.UserID)
-		if !ret.OK {
-			ctx.AbortWithStatusJSON(http.StatusOK, ret)
-			return
-		}
-		ctx.Set("IsAdmin", true)
-		ctx.Set("Self", admin)
-		ctx.Next()
-	} else {
-		user, ret := db.InitUserRepo(db.DB).GetByID(claims.UserID)
-		if !ret.OK {
-			ctx.AbortWithStatusJSON(http.StatusOK, ret)
-			return
-		}
-		magic := GetMagic(ctx)
-		if !utils.CompareMagic(magic, claims.X) {
-			if utils.CompareMagic(model.OauthLoginDeviceMagic, claims.X) {
-				token, err := utils.GenerateToken(user.ID, user.Name, false, magic)
-				if err != nil {
-					log.Logger.Warningf("Failed to generate token: %s", err)
-					ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
-					return
-				}
-				ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
-			} else {
-				contestIDL, ret := db.InitContestRepo(db.DB).GetIDByUserID(user.ID)
-				if !ret.OK {
-					ctx.JSON(http.StatusOK, ret)
-					return
-				}
-				go func(contestIDL []uint) {
-					for _, contestID := range contestIDL {
-						db.InitCheatRepo(db.DB).Create(db.CreateCheatOptions{
-							ContestID:  contestID,
-							Model:      model.CheatRefModel{user.ModelName(): {user.ID}},
-							Magic:      magic,
-							IP:         ctx.ClientIP(),
-							Reason:     fmt.Sprintf(string(model.DifferentTokenMagicTmpl), magic, claims.X),
-							ReasonType: model.ReasonTypeTokenMagicType,
-							Type:       model.SuspiciousType,
-							Checked:    false,
-							Time:       time.Now(),
-						})
-					}
-				}(contestIDL)
-				ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Unauthorized})
+	user, ret := db.InitUserRepo(db.DB).GetByID(claims.UserID)
+	if !ret.OK {
+		ctx.AbortWithStatusJSON(http.StatusOK, ret)
+		return
+	}
+	magic := GetMagic(ctx)
+	if !utils.CompareMagic(magic, claims.X) {
+		if utils.CompareMagic(model.OauthLoginDeviceMagic, claims.X) {
+			token, err := utils.GenerateToken(user.ID, user.Name, magic)
+			if err != nil {
+				log.Logger.Warningf("Failed to generate token: %s", err)
+				ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 				return
 			}
-		}
-		go db.InitDeviceRepo(db.DB).RecordDevice(db.CreateDeviceOptions{UserID: user.ID, Magic: magic})
-		if user.Banned {
-			ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
+			ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
+		} else {
+			contestIDL, ret := db.InitContestRepo(db.DB).GetIDByUserID(user.ID)
+			if !ret.OK {
+				ctx.JSON(http.StatusOK, ret)
+				return
+			}
+			go func(contestIDL []uint) {
+				for _, contestID := range contestIDL {
+					db.InitCheatRepo(db.DB).Create(db.CreateCheatOptions{
+						ContestID:  contestID,
+						Model:      model.CheatRefModel{user.ModelName(): {user.ID}},
+						Magic:      magic,
+						IP:         ctx.ClientIP(),
+						Reason:     fmt.Sprintf(string(model.DifferentTokenMagicTmpl), magic, claims.X),
+						ReasonType: model.ReasonTypeTokenMagicType,
+						Type:       model.SuspiciousType,
+						Checked:    false,
+						Time:       time.Now(),
+					})
+				}
+			}(contestIDL)
+			ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Unauthorized})
 			return
 		}
-		ctx.Set("IsAdmin", false)
-		ctx.Set("Self", user)
-		ctx.Next()
 	}
+	go db.InitDeviceRepo(db.DB).RecordDevice(db.CreateDeviceOptions{UserID: user.ID, Magic: magic})
+	if user.Banned {
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
+		return
+	}
+	ctx.Set("Self", user)
+	ctx.Next()
 }
 
 // GetSelf 获取当前登录 admin 或 user
-func GetSelf(ctx *gin.Context) any {
+func GetSelf(ctx *gin.Context) model.User {
 	self, ok := ctx.Get("Self")
 	if !ok || self == nil {
-		return nil
+		return model.User{}
 	}
-	return self
-}
-
-// GetSelfID 获取当前登录 admin 或 user 的ID
-func GetSelfID(ctx *gin.Context) uint {
-	var id uint
-	if IsAdmin(ctx) {
-		if self, ok := GetSelf(ctx).(model.Admin); ok {
-			id = self.ID
-		}
-	} else {
-		if self, ok := GetSelf(ctx).(model.User); ok {
-			id = self.ID
-		}
-	}
-	return id
-}
-
-func IsAdmin(ctx *gin.Context) bool {
-	return ctx.GetBool("IsAdmin")
-}
-
-// CheckRole 检查角色
-func CheckRole(isAdmin bool) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		if IsAdmin(ctx) != isAdmin {
-			ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
-			return
-		}
-		ctx.Next()
-	}
+	return self.(model.User)
 }
 
 // CheckCaptain 检查是否为队伍队长, 要求 uri 中必须包含 contestID, admin 路由不能使用
 func CheckCaptain(ctx *gin.Context) {
 	team := GetTeam(ctx)
-	if team.CaptainID != GetSelfID(ctx) {
+	if team.CaptainID != GetSelf(ctx).ID {
 		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
 		return
 	}
@@ -138,7 +96,7 @@ func CheckCaptain(ctx *gin.Context) {
 
 // CheckVerified 检查邮箱是否已验证
 func CheckVerified(ctx *gin.Context) {
-	if self, ok := GetSelf(ctx).(model.User); !IsAdmin(ctx) && ok && !self.Verified {
+	if !GetSelf(ctx).Verified {
 		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Model.User.UnverifiedEmail})
 		return
 	}

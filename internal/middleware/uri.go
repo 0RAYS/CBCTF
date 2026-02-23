@@ -10,6 +10,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func SetFullAccess(ctx *gin.Context) {
+	ctx.Set("FullAccess", true)
+	ctx.Next()
+}
+
+func IsFullAccess(ctx *gin.Context) bool {
+	return ctx.GetBool("FullAccess")
+}
+
 // SetRole 保存 model.Role 至上下文
 func SetRole(ctx *gin.Context) {
 	type roleIDUri struct {
@@ -137,7 +146,7 @@ func SetContest(ctx *gin.Context) {
 		ctx.AbortWithStatusJSON(http.StatusOK, ret)
 		return
 	}
-	if !IsAdmin(ctx) && contest.Hidden {
+	if !IsFullAccess(ctx) && contest.Hidden {
 		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": contest.ModelName()}})
 		return
 	}
@@ -175,16 +184,7 @@ func SetTeam(ctx *gin.Context) {
 
 // SetTeamByUser 依照 model.User model.Contest 保存 model.Team 至上下文, 调用前前文须设置 model.Contest
 func SetTeamByUser(ctx *gin.Context) {
-	var (
-		self model.User
-		team model.Team
-	)
-	self, ok := GetSelf(ctx).(model.User)
-	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
-		return
-	}
-	team, ret := db.InitTeamRepo(db.DB).GetBy2ID(self.ID, GetContest(ctx).ID)
+	team, ret := db.InitTeamRepo(db.DB).GetBy2ID(GetSelf(ctx).ID, GetContest(ctx).ID)
 	if !ret.OK {
 		ctx.AbortWithStatusJSON(http.StatusOK, ret)
 		return

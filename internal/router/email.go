@@ -55,7 +55,7 @@ func VerifyEmail(ctx *gin.Context) {
 
 func ActivateEmail(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.ActivateEmailEventType)
-	user := middleware.GetSelf(ctx).(model.User)
+	user := middleware.GetSelf(ctx)
 	if user.Verified {
 		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Model.User.AlreadyVerified})
 		return

@@ -7,29 +7,10 @@ import (
 )
 
 // GetSelf 获取当前登录 admin 或 user
-func GetSelf(ctx *gin.Context) any {
+func GetSelf(ctx *gin.Context) model.User {
 	self, ok := ctx.Get("Self")
 	if !ok || self == nil {
-		return nil
+		return model.User{}
 	}
-	return self
-}
-
-// GetSelfID 获取当前登录 admin 或 user 的ID
-func GetSelfID(ctx *gin.Context) uint {
-	var id uint
-	if IsAdmin(ctx) {
-		if self, ok := GetSelf(ctx).(model.Admin); ok {
-			id = self.ID
-		}
-	} else {
-		if self, ok := GetSelf(ctx).(model.User); ok {
-			id = self.ID
-		}
-	}
-	return id
-}
-
-func IsAdmin(ctx *gin.Context) bool {
-	return ctx.GetBool("IsAdmin")
+	return self.(model.User)
 }

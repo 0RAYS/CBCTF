@@ -13,10 +13,9 @@ import (
 )
 
 type Payload struct {
-	IsAdmin bool          `json:"is_admin"`
-	Type    string        `json:"type"`
-	IP      string        `json:"ip"`
-	Models  model.UintMap `json:"models"`
+	Type   string        `json:"type"`
+	IP     string        `json:"ip"`
+	Models model.UintMap `json:"models"`
 }
 
 var (
@@ -58,10 +57,9 @@ func SelectWebhook(event model.Event) []model.Webhook {
 
 func SendPayload(event model.Event, target model.Webhook) error {
 	payload := Payload{
-		IsAdmin: event.IsAdmin,
-		Type:    event.Type,
-		IP:      event.IP,
-		Models:  event.Models,
+		Type:   event.Type,
+		IP:     event.IP,
+		Models: event.Models,
 	}
 	data, err := json.Marshal(payload)
 	if err != nil {

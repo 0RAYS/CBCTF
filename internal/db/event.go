@@ -11,7 +11,6 @@ type EventRepo struct {
 }
 
 type CreateEventOptions struct {
-	IsAdmin bool
 	Type    string
 	Success bool
 	IP      string
@@ -21,7 +20,6 @@ type CreateEventOptions struct {
 
 func (c CreateEventOptions) Convert2Model() model.Model {
 	return model.Event{
-		IsAdmin: c.IsAdmin,
 		Type:    c.Type,
 		Success: c.Success,
 		IP:      c.IP,

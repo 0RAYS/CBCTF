@@ -23,7 +23,7 @@ func AccessLog(ctx *gin.Context) {
 	ctx.Next()
 
 	statusCode := ctx.GetInt(CTXStatusCodeKey)
-	selfID := GetSelfID(ctx)
+	selfID := GetSelf(ctx).ID
 
 	if !slices.Contains(config.Env.Gin.Log.Whitelist, path) {
 		// Truncate long headers to 255 characters to fit storage constraints
@@ -44,7 +44,7 @@ func AccessLog(ctx *gin.Context) {
 			Referer:   referer,
 			Magic:     magic,
 		}
-		if selfID > 0 && !IsAdmin(ctx) {
+		if selfID > 0 {
 			request.UserID = sql.Null[uint]{V: selfID, Valid: true}
 		}
 		db.InitRequestRepo(db.DB).Create(request)

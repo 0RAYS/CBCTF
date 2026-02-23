@@ -24,10 +24,8 @@ var (
 		},
 	}
 
-	AdminClients   = make(map[uint]*model.Connection)
-	AdminClientsMu sync.RWMutex
-	UserClients    = make(map[uint]*model.Connection)
-	UserClientsMu  sync.RWMutex
+	UserClients   = make(map[uint]*model.Connection)
+	UserClientsMu sync.RWMutex
 )
 
 func Init() {
@@ -38,26 +36,18 @@ func WS(ctx *gin.Context) {
 	var (
 		mu      *sync.RWMutex
 		clients *map[uint]*model.Connection
-		role    string
-		id      = middleware.GetSelfID(ctx)
+		id      = middleware.GetSelf(ctx).ID
 		ip      = ctx.ClientIP()
 	)
 
-	if middleware.IsAdmin(ctx) {
-		role = "admin"
-		mu = &AdminClientsMu
-		clients = &AdminClients
-	} else {
-		role = "user"
-		mu = &UserClientsMu
-		clients = &UserClients
-	}
+	mu = &UserClientsMu
+	clients = &UserClients
 	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
 	if err != nil {
 		return
 	}
 
-	log.Logger.Infof("New connection from %s %d %s", role, id, ip)
+	log.Logger.Infof("New connection from %d %s", id, ip)
 
 	defer func() {
 		recover()
@@ -91,21 +81,13 @@ func WS(ctx *gin.Context) {
 	prometheus.UpdateWebSocketMetrics(len(*clients))
 }
 
-func Send(admin bool, id uint, level, t, title, msg string) {
+func Send(id uint, level, t, title, msg string) {
 	var (
 		mu      *sync.RWMutex
 		clients *map[uint]*model.Connection
-		role    string
 	)
-	if admin {
-		role = "admin"
-		mu = &AdminClientsMu
-		clients = &AdminClients
-	} else {
-		role = "user"
-		mu = &UserClientsMu
-		clients = &UserClients
-	}
+	mu = &UserClientsMu
+	clients = &UserClients
 
 	mu.RLock()
 	connection, ok := (*clients)[id]
@@ -114,25 +96,17 @@ func Send(admin bool, id uint, level, t, title, msg string) {
 		return
 	}
 	if err := connection.Conn.WriteJSON(model.Send{Level: level, Type: t, Msg: msg, Title: title}); err == nil {
-		log.Logger.Debugf("Send message %s to %s %d", title, role, id)
+		log.Logger.Debugf("Send message %s to %d", title, id)
 	}
 }
 
-func SendToClients(admin bool, level, t, title, msg string, idL ...uint) {
+func SendToClients(level, t, title, msg string, idL ...uint) {
 	var (
 		mu      *sync.RWMutex
 		clients *map[uint]*model.Connection
-		role    string
 	)
-	if admin {
-		role = "admin"
-		mu = &AdminClientsMu
-		clients = &AdminClients
-	} else {
-		role = "user"
-		mu = &UserClientsMu
-		clients = &UserClients
-	}
+	mu = &UserClientsMu
+	clients = &UserClients
 
 	mu.RLock()
 	defer mu.RUnlock()
@@ -148,6 +122,6 @@ func SendToClients(admin bool, level, t, title, msg string, idL ...uint) {
 		count++
 	}
 	if count > 0 {
-		log.Logger.Debugf("Send message %s to %s %d clients", title, role, count)
+		log.Logger.Debugf("Send message %s to %d clients", title, count)
 	}
 }
