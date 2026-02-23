@@ -16,6 +16,7 @@ type Oauth struct {
 	DescriptionClaim string  `json:"description_claim"`
 	GroupsClaim      string  `json:"groups_claim"`
 	AdminGroup       string  `json:"admin_group"`
+	DefaultGroup     uint    `json:"default_group"`
 	On               bool    `json:"on"`
 	Picture          FileURL `json:"picture"`
 	BaseModel

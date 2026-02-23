@@ -244,6 +244,7 @@ func CreateOauthProvider(ctx *gin.Context) {
 		DescriptionClaim: form.DescriptionClaim,
 		GroupsClaim:      form.GroupsClaim,
 		AdminGroup:       form.AdminGroup,
+		DefaultGroup:     form.DefaultGroup,
 		On:               false,
 	})
 	if !ret.OK {
@@ -278,6 +279,7 @@ func UpdateOauthProvider(ctx *gin.Context) {
 		DescriptionClaim: form.DescriptionClaim,
 		GroupsClaim:      form.GroupsClaim,
 		AdminGroup:       form.AdminGroup,
+		DefaultGroup:     form.DefaultGroup,
 		On:               form.On,
 		Picture:          form.Picture,
 	}); !ret.OK {
