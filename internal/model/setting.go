@@ -63,6 +63,9 @@ const (
 
 	WebhookBlacklistSettingKey = "webhook.blacklist"
 
+	RegistrationEnabledSettingKey      = "registration.enabled"
+	RegistrationDefaultGroupSettingKey = "registration.default_group"
+
 	GeoCityDBSettingKey = "geocity_db"
 )
 

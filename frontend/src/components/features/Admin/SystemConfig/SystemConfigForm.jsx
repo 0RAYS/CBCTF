@@ -9,6 +9,7 @@ import { K8sConfigSection } from './sections/K8sConfigSection';
 import { NFSConfigSection } from './sections/NFSConfigSection';
 import { CheatConfigSection } from './sections/CheatConfigSection';
 import { WebhookConfigSection } from './sections/WebhookConfigSection.jsx';
+import { RegistrationConfigSection } from './sections/RegistrationConfigSection';
 
 const tabs = [
   { key: 'basic', i18nKey: 'admin.system.sections.basic', Component: BasicConfigSection },
@@ -19,6 +20,7 @@ const tabs = [
   { key: 'nfs', i18nKey: 'admin.system.sections.nfs', Component: NFSConfigSection },
   { key: 'webhook', i18nKey: 'admin.system.sections.webhook', Component: WebhookConfigSection },
   { key: 'cheat', i18nKey: 'admin.system.sections.cheat', Component: CheatConfigSection },
+  { key: 'registration', i18nKey: 'admin.system.sections.registration', Component: RegistrationConfigSection },
 ];
 
 export function SystemConfigForm({ config, updateConfig, onUpdate, onRestart, isUpdating, isRestarting }) {

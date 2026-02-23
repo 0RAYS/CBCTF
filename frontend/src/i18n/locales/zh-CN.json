@@ -1672,7 +1672,8 @@
         "k8s": "Kubernetes配置",
         "nfs": "NFS配置",
         "cheat": "风控配置",
-        "webhook": "Webhook配置"
+        "webhook": "Webhook配置",
+        "registration": "注册配置"
       },
       "labels": {
         "host": "外部访问地址",
@@ -1721,7 +1722,10 @@
         "nfsPath": "存储路径",
         "nfsStorage": "存储大小",
         "cheatIpWhitelist": "作弊检测过滤 IP",
-        "webhookBlacklist": "Webhook 黑名单 (IP / CIDR / Hostname)"
+        "webhookBlacklist": "Webhook 黑名单 (IP / CIDR / Hostname)",
+        "registrationEnabled": "允许注册",
+        "registrationDefaultGroup": "注册默认组",
+        "registrationDefaultGroupNone": "无"
       },
       "k8s": {
         "cidr": "CIDR",

@@ -110,6 +110,10 @@ export function normalizeConfig(source) {
     webhook: {
       blacklist: fallback(source?.webhook_blacklist, fallback(source?.webhook?.blacklist, [])),
     },
+    registration: {
+      enabled: fallback(source?.registration_enabled, fallback(source?.registration?.enabled, true)),
+      default_group: fallback(source?.registration_default_group, fallback(source?.registration?.default_group, 0)),
+    },
     geocity_db: fallback(source?.geocity_db, ''),
   };
 }

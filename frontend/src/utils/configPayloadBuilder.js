@@ -51,5 +51,7 @@ export function buildPayload(config) {
     redis_port: config.redis.port,
     redis_pwd: config.redis.pwd || undefined,
     webhook_blacklist: config.webhook.blacklist,
+    registration_enabled: config.registration.enabled,
+    registration_default_group: config.registration.default_group,
   };
 }

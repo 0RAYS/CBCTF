@@ -137,6 +137,9 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 
 		{Key: model.WebhookBlacklistSettingKey, Value: model.SettingValue{V: config.Env.Webhook.Blacklist}},
 
+		{Key: model.RegistrationEnabledSettingKey, Value: model.SettingValue{V: config.Env.Registration.Enabled}},
+		{Key: model.RegistrationDefaultGroupSettingKey, Value: model.SettingValue{V: config.Env.Registration.DefaultGroup}},
+
 		{Key: model.GeoCityDBSettingKey, Value: model.SettingValue{V: config.Env.GeoCityDB}},
 	} {
 		if _, ret := s.Create(CreateSettingOptions{
@@ -294,6 +297,13 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 	}
 
 	if config.Env.Webhook.Blacklist, ret = GetValue[[]string](s, model.WebhookBlacklistSettingKey); !ret.OK {
+		return ret
+	}
+
+	if config.Env.Registration.Enabled, ret = GetValue[bool](s, model.RegistrationEnabledSettingKey); !ret.OK {
+		return ret
+	}
+	if config.Env.Registration.DefaultGroup, ret = GetValue[uint](s, model.RegistrationDefaultGroupSettingKey); !ret.OK {
 		return ret
 	}
 

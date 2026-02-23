@@ -1,6 +1,7 @@
 package router
 
 import (
+	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
@@ -19,17 +20,33 @@ import (
 )
 
 func Register(ctx *gin.Context) {
+	if !config.Env.Registration.Enabled {
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
+		return
+	}
 	var form dto.RegisterForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.RegisterEventType)
-	user, ret := service.CreateUser(db.DB, form)
+	tx := db.DB.Begin()
+	user, ret := service.CreateUser(tx, form)
 	if !ret.OK {
+		tx.Rollback()
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
+	if config.Env.Registration.DefaultGroup != 0 {
+		if defaultGroup, ret := db.InitGroupRepo(tx).GetByID(config.Env.Registration.DefaultGroup); ret.OK {
+			if ret = db.AppendUserToGroup(tx, user, defaultGroup); !ret.OK {
+				tx.Rollback()
+				ctx.JSON(http.StatusOK, ret)
+				return
+			}
+		}
+	}
+	tx.Commit()
 	if ret = service.SendEmail(user); !ret.OK {
 		ctx.JSON(http.StatusOK, ret)
 		return

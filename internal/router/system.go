@@ -174,6 +174,9 @@ func SystemConfig(ctx *gin.Context) {
 
 		"webhook_blacklist": config.Env.Webhook.Blacklist,
 
+		"registration_enabled":       config.Env.Registration.Enabled,
+		"registration_default_group": config.Env.Registration.DefaultGroup,
+
 		"geocity_db": config.Env.GeoCityDB,
 	}
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
@@ -243,6 +246,9 @@ func UpdateSystem(ctx *gin.Context) {
 		model.CheatIPWhitelistSettingKey: form.CheatIPWhitelist,
 
 		model.WebhookBlacklistSettingKey: form.WebhookBlacklist,
+
+		model.RegistrationEnabledSettingKey:      form.RegistrationEnabled,
+		model.RegistrationDefaultGroupSettingKey: form.RegistrationDefaultGroup,
 
 		model.GeoCityDBSettingKey: form.GeoCityDB,
 	}
