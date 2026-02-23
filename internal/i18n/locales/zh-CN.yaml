@@ -38,8 +38,14 @@ model:
     notAllowed: "不允许的文件后缀"
     readPcapError: "读取流量文件失败: {{.Error}}"
     createDirError: "创建文件夹失败: {{.Error}}"
+  group:
+    cannotUpdateDefault: "不允许更新默认组"
+    cannotDeleteDefault: "不允许删除默认组"
   notice:
     invalidType: "不合法的通知类型"
+  role:
+    cannotUpdateDefault: "不允许更新默认角色"
+    cannotDeleteDefault: "不允许删除默认角色"
   setting:
     invalidType: "不合法的配置类型"
   submission:

@@ -42,8 +42,18 @@ type File struct {
 	CreateDirError string
 }
 
+type Group struct {
+	CannotUpdateDefault string
+	CannotDeleteDefault string
+}
+
 type Notice struct {
 	InvalidType string
+}
+
+type Role struct {
+	CannotUpdateDefault string
+	CannotDeleteDefault string
 }
 
 type Setting struct {
@@ -112,7 +122,9 @@ var Model = struct {
 	Docker        Docker
 	Email         Email
 	File          File
+	Group         Group
 	Notice        Notice
+	Role          Role
 	Setting       Setting
 	Submission    Submission
 	Team          Team
@@ -160,8 +172,16 @@ var Model = struct {
 		ReadPcapError:  "model.file.readPcapError",
 		CreateDirError: "model.file.createDirError",
 	},
+	Group: Group{
+		CannotUpdateDefault: "model.group.cannotUpdateDefault",
+		CannotDeleteDefault: "model.group.cannotDeleteDefault",
+	},
 	Notice: Notice{
 		InvalidType: "model.notice.invalidType",
+	},
+	Role: Role{
+		CannotUpdateDefault: "model.role.cannotUpdateDefault",
+		CannotDeleteDefault: "model.role.cannotDeleteDefault",
 	},
 	Setting: Setting{
 		InvalidType: "model.setting.invalidType",

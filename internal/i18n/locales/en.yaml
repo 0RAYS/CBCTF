@@ -38,8 +38,14 @@ model:
     notAllowed: "File is not allowed"
     readPcapError: "Read .pcap error: {{.Error}}"
     createDirError: "Create dir error: {{.Error}}"
+  group:
+    cannotUpdateDefault: "Cannot update default group"
+    cannotDeleteDefault: "Cannot delete default group"
   notice:
     invalidType: "Invalid notice type"
+  role:
+    cannotUpdateDefault: "Cannot update default role"
+    cannotDeleteDefault: "Cannot delete default role"
   setting:
     invalidType: "Invalid setting type"
   submission:
