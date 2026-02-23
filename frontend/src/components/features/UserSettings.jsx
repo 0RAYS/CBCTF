@@ -103,7 +103,11 @@ function UserSettings({ user, onUpdate, onPasswordChange, onEmailVerify, onDelet
     e.preventDefault();
 
     const errors = {
-      currentPassword: !passwordValues.currentPassword ? t('user.settings.validation.currentPasswordRequired') : '',
+      currentPassword: user.hasNoPwd
+        ? ''
+        : !passwordValues.currentPassword
+          ? t('user.settings.validation.currentPasswordRequired')
+          : '',
       newPassword: passwordValues.newPassword.length < 6 ? t('auth.validation.passwordMin') : '',
       confirmPassword:
         passwordValues.newPassword !== passwordValues.confirmPassword ? t('auth.validation.passwordMismatch') : '',
@@ -316,36 +320,38 @@ function UserSettings({ user, onUpdate, onPasswordChange, onEmailVerify, onDelet
                 <form onSubmit={handlePasswordChange} className="p-4 border border-neutral-300/30 rounded-md">
                   <h3 className="text-neutral-50 font-mono mb-4">{t('user.settings.changePassword')}</h3>
                   <div className="space-y-4">
-                    <div>
-                      <input
-                        name="currentPassword"
-                        type="password"
-                        placeholder={t('user.settings.placeholders.currentPassword')}
-                        value={passwordValues.currentPassword}
-                        onChange={handlePasswordInputChange}
-                        onBlur={handlePasswordBlur}
-                        className={`w-full p-3 bg-neutral-900 border rounded-md
+                    {!user.hasNoPwd && (
+                      <div>
+                        <input
+                          name="currentPassword"
+                          type="password"
+                          placeholder={t('user.settings.placeholders.currentPassword')}
+                          value={passwordValues.currentPassword}
+                          onChange={handlePasswordInputChange}
+                          onBlur={handlePasswordBlur}
+                          className={`w-full p-3 bg-neutral-900 border rounded-md
                                                     text-neutral-50 font-mono focus:outline-none transition-all duration-200
                                                     ${
                                                       passwordErrors.currentPassword
                                                         ? 'border-red-400 focus:border-red-400 shadow-[0_0_10px_rgba(248,113,113,0.1)]'
                                                         : 'border-neutral-300/30 focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.1)]'
                                                     }`}
-                        required
-                      />
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{
-                          opacity: passwordErrors.currentPassword ? 1 : 0,
-                          height: passwordErrors.currentPassword ? 'auto' : 0,
-                        }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        {passwordErrors.currentPassword && (
-                          <p className="mt-1 text-red-400 text-sm">{passwordErrors.currentPassword}</p>
-                        )}
-                      </motion.div>
-                    </div>
+                          required
+                        />
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{
+                            opacity: passwordErrors.currentPassword ? 1 : 0,
+                            height: passwordErrors.currentPassword ? 'auto' : 0,
+                          }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          {passwordErrors.currentPassword && (
+                            <p className="mt-1 text-red-400 text-sm">{passwordErrors.currentPassword}</p>
+                          )}
+                        </motion.div>
+                      </div>
+                    )}
 
                     <div>
                       <input
