@@ -137,7 +137,7 @@ func (t *TeamRepo) GetBy2ID(userID, contestID uint) (model.Team, model.RetVal) {
 		return model.Team{}, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": team.ModelName(), "Error": res.Error.Error()}}
 	}
 	if res.RowsAffected == 0 {
-		return model.Team{}, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": team.ModelName(), "Error": res.Error.Error()}}
+		return model.Team{}, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": team.ModelName()}}
 	}
 	return team, model.SuccessRetVal()
 }
