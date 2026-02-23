@@ -183,7 +183,7 @@ func Save() error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile("./config.yml", bytes, 0666)
+	return os.WriteFile("./config.yml", bytes, 0644)
 }
 
 func mergeYAMLNode(node *yaml.Node, data any) error {
