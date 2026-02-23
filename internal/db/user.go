@@ -149,11 +149,10 @@ func (u *UserRepo) InitAdmin() model.RetVal {
 
 func (u *UserRepo) IsInGroup(userID uint, groupName string) bool {
 	var count int64
-	res := u.DB.Raw(`
-		SELECT count(*) FROM user_groups
-		INNER JOIN `+"`groups`"+` ON user_groups.group_id = groups.id
-		WHERE user_groups.user_id = ? AND groups.name = ? AND groups.deleted_at IS NULL
-	`, userID, groupName).Scan(&count)
+	res := u.DB.Table("user_groups").
+		Joins("INNER JOIN `groups` ON user_groups.group_id = groups.id").
+		Where("user_groups.user_id = ? AND groups.name = ? AND groups.deleted_at IS NULL", userID, groupName).
+		Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to check user group membership: %v", res.Error)
 		return false
@@ -163,12 +162,11 @@ func (u *UserRepo) IsInGroup(userID uint, groupName string) bool {
 
 func (u *UserRepo) CountGroupUser(group string) (int64, model.RetVal) {
 	var count int64
-	res := u.DB.Raw(`
-		SELECT count(*) FROM users
-		INNER JOIN user_groups ON users.id = user_groups.user_id
-		INNER JOIN `+"`groups`"+` ON user_groups.group_id = groups.id
-		WHERE groups.name = ? AND users.deleted_at IS NULL AND groups.deleted_at IS NULL
-	`, group).Scan(&count)
+	res := u.DB.Table("users").
+		Joins("INNER JOIN user_groups ON users.id = user_groups.user_id").
+		Joins("INNER JOIN `groups` ON user_groups.group_id = groups.id").
+		Where("groups.name = ? AND users.deleted_at IS NULL AND groups.deleted_at IS NULL", group).
+		Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count role users: %v", res.Error)
 		return 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.User{}.ModelName(), "Error": res.Error.Error()}}
@@ -182,17 +180,15 @@ func (u *UserRepo) GetByName(name string, optionsL ...GetOptions) (model.User, m
 
 func (u *UserRepo) GetByTeamID(teamID uint, limit, offset int) ([]model.User, model.RetVal) {
 	var users []model.User
-	res := u.DB.Raw(`
-		SELECT users.* FROM users
-		INNER JOIN user_teams ON user_teams.user_id = users.id
-		WHERE user_teams.team_id = ? AND users.deleted_at IS NULL
-		LIMIT ? OFFSET ?
-	`, teamID, limit, offset).Scan(&users)
+	res := u.DB.Table("users").Select("users.*").
+		Joins("INNER JOIN user_teams ON user_teams.user_id = users.id").
+		Where("user_teams.team_id = ? AND users.deleted_at IS NULL", teamID).
+		Limit(limit).Offset(offset).Scan(&users)
 	if res.Error != nil {
 		log.Logger.Fatalf("Failed to get Users: %v", res.Error)
 		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.User{}.ModelName(), "Error": res.Error.Error()}}
 	}
-	return users, model.RetVal{}
+	return users, model.SuccessRetVal()
 }
 
 func (u *UserRepo) GetIDByTeamID(teamID uint, limit, offset int) ([]uint, model.RetVal) {
@@ -209,17 +205,15 @@ func (u *UserRepo) GetIDByTeamID(teamID uint, limit, offset int) ([]uint, model.
 
 func (u *UserRepo) GetByContestID(contestID uint, limit, offset int) ([]model.User, model.RetVal) {
 	var users []model.User
-	res := u.DB.Raw(`
-		SELECT users.* FROM users
-		INNER JOIN user_contests ON user_contests.user_id = users.id
-		WHERE user_contests.contest_id = ? AND users.deleted_at IS NULL
-		LIMIT ? OFFSET ?
-	`, contestID, limit, offset).Scan(&users)
+	res := u.DB.Table("users").Select("users.*").
+		Joins("INNER JOIN user_contests ON user_contests.user_id = users.id").
+		Where("user_contests.contest_id = ? AND users.deleted_at IS NULL", contestID).
+		Limit(limit).Offset(offset).Scan(&users)
 	if res.Error != nil {
 		log.Logger.Fatalf("Failed to get Users: %v", res.Error)
 		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.User{}.ModelName(), "Error": res.Error.Error()}}
 	}
-	return users, model.RetVal{}
+	return users, model.SuccessRetVal()
 }
 
 func (u *UserRepo) GetIDByContestID(contestID uint, limit, offset int) ([]uint, model.RetVal) {
@@ -241,12 +235,10 @@ func (u *UserRepo) GetByGroupID(groupID uint, limit, offset int) ([]model.User, 
 		return nil, 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": "UserGroup", "Error": res.Error.Error()}}
 	}
 	var users []model.User
-	res := u.DB.Raw(`
-		SELECT users.* FROM users
-		INNER JOIN user_groups ON user_groups.user_id = users.id
-		WHERE user_groups.group_id = ? AND users.deleted_at IS NULL
-		LIMIT ? OFFSET ?
-	`, groupID, limit, offset).Scan(&users)
+	res := u.DB.Table("users").Select("users.*").
+		Joins("INNER JOIN user_groups ON user_groups.user_id = users.id").
+		Where("user_groups.group_id = ? AND users.deleted_at IS NULL", groupID).
+		Limit(limit).Offset(offset).Scan(&users)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Group Users: %s", res.Error)
 		return nil, 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.User{}.ModelName(), "Error": res.Error.Error()}}

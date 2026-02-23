@@ -71,11 +71,10 @@ func (r *RequestRepo) GetUserIP(userIDL ...uint) ([]UserIP, model.RetVal) {
 		return nil, model.SuccessRetVal()
 	}
 	var userIPL []UserIP
-	res := r.DB.Raw(`
-		SELECT user_id, ip, MIN(time) AS first_time 
-		FROM requests WHERE user_id IN ? 
-		GROUP BY user_id, ip
-	`, userIDL).Scan(&userIPL)
+	res := r.DB.Model(&model.Request{}).Select("user_id, ip, MIN(time) AS first_time").
+		Where("user_id IN ?", userIDL).
+		Group("user_id, ip").
+		Scan(&userIPL)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Request: %s", res.Error)
 		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Request{}.ModelName(), "Error": res.Error.Error()}}

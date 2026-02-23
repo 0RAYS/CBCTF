@@ -118,12 +118,11 @@ func (c *ContestFlagRepo) GetUserSolvedContestFlags(userIDL ...uint) ([]UserSolv
 		return nil, model.SuccessRetVal()
 	}
 	var results []UserSolvedContestFlag
-	res := c.DB.Raw(`
-		SELECT submissions.user_id, submissions.team_id, contest_flags.*
-    	FROM submissions
-		INNER JOIN contest_flags ON submissions.contest_flag_id = contest_flags.id AND contest_flags.deleted_at IS NULL
-		WHERE submissions.user_id IN ? AND submissions.solved = true AND submissions.deleted_at IS NULL
-	`, userIDL).Scan(&results)
+	res := c.DB.Table("submissions").
+		Select("submissions.user_id, submissions.team_id, contest_flags.*").
+		Joins("INNER JOIN contest_flags ON submissions.contest_flag_id = contest_flags.id AND contest_flags.deleted_at IS NULL").
+		Where("submissions.user_id IN ? AND submissions.solved = true AND submissions.deleted_at IS NULL", userIDL).
+		Scan(&results)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get ContestFlag: %s", res.Error)
 		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.ContestFlag{}.ModelName(), "Error": res.Error.Error()}}
@@ -136,12 +135,11 @@ func (c *ContestFlagRepo) GetTeamSolvedContestFlags(teamIDL ...uint) ([]model.Co
 		return nil, model.SuccessRetVal()
 	}
 	var results []model.ContestFlag
-	res := c.DB.Raw(`
-		SELECT contest_flags.*
-    	FROM submissions
-		INNER JOIN contest_flags ON submissions.contest_flag_id = contest_flags.id AND contest_flags.deleted_at IS NULL
-		WHERE submissions.team_id IN ? AND submissions.solved = true AND submissions.deleted_at IS NULL
-	`, teamIDL).Scan(&results)
+	res := c.DB.Table("submissions").
+		Select("contest_flags.*").
+		Joins("INNER JOIN contest_flags ON submissions.contest_flag_id = contest_flags.id AND contest_flags.deleted_at IS NULL").
+		Where("submissions.team_id IN ? AND submissions.solved = true AND submissions.deleted_at IS NULL", teamIDL).
+		Scan(&results)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get ContestFlags: %s", res.Error)
 		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.ContestFlag{}.ModelName(), "Error": res.Error.Error()}}
