@@ -9,7 +9,6 @@ import {
   addContestChallenge,
   updateContestChallenge,
   removeContestChallenge,
-  searchAdmin,
 } from '../../../api/admin/contest';
 import {
   getNotInContestChallengeList,
@@ -18,6 +17,7 @@ import {
   getContestChallengeCategories,
 } from '../../../api/admin/challenge';
 import { useTranslation } from 'react-i18next';
+import { searchModels } from '../../../api/admin/search.js';
 
 function AdminContestChallengesPage() {
   const { id } = useParams();
@@ -174,8 +174,8 @@ function AdminContestChallengesPage() {
         params.category = category;
       }
       if (query.trim() !== '') {
-        const response = await searchAdmin({
-          model: 'challenge',
+        const response = await searchModels({
+          model: 'Challenge',
           limit: 10,
           offset: 0,
           name: query,

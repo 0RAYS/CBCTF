@@ -7,7 +7,6 @@ import {
   startContestVictims,
   getContestTeams,
   getContestChallenges,
-  searchAdmin,
 } from '../../../api/admin/contest';
 import { Modal } from '../../../components/common';
 import ModalButton from '../../../components/common/ModalButton';
@@ -26,6 +25,7 @@ import {
 } from '@tabler/icons-react';
 import { useWebSocket } from '../../../components/common/WebSocketProvider.jsx';
 import { useTranslation } from 'react-i18next';
+import { searchModels } from '../../../api/admin/search.js';
 
 function ContestContainers() {
   const { id: contestId } = useParams();
@@ -220,7 +220,7 @@ function ContestContainers() {
 
     setLoading(true);
     try {
-      const response = await searchAdmin({
+      const response = await searchModels({
         model,
         name: name.trim(),
         limit: 10,
@@ -231,7 +231,7 @@ function ContestContainers() {
         let results = response.data.results || [];
 
         // 如果是搜索团队，需要过滤contest_id
-        if (model === 'team') {
+        if (model === 'Team') {
           results = results.filter((item) => item.contest_id === parseInt(contestId));
         }
 
@@ -689,7 +689,7 @@ function ContestContainers() {
                     onChange={(e) => {
                       const value = e.target.value;
                       debouncedSearch(
-                        'user',
+                        'User',
                         value,
                         (results) => setSearchResults((prev) => ({ ...prev, users: results })),
                         (loading) => setSearchLoading((prev) => ({ ...prev, users: loading }))
@@ -743,7 +743,7 @@ function ContestContainers() {
                     onChange={(e) => {
                       const value = e.target.value;
                       debouncedSearch(
-                        'team',
+                        'Team',
                         value,
                         (results) => setSearchResults((prev) => ({ ...prev, teams: results })),
                         (loading) => setSearchLoading((prev) => ({ ...prev, teams: loading }))
@@ -795,7 +795,7 @@ function ContestContainers() {
                     onChange={(e) => {
                       const value = e.target.value;
                       debouncedSearch(
-                        'challenge',
+                        'Challenge',
                         value,
                         (results) => setSearchResults((prev) => ({ ...prev, challenges: results })),
                         (loading) => setSearchLoading((prev) => ({ ...prev, challenges: loading }))

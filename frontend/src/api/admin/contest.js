@@ -337,15 +337,6 @@ export const startContestVictims = (contestId, challenges, teams) => {
   });
 };
 
-// 搜索接口
-export const searchAdmin = (params) => {
-  return request({
-    url: '/admin/search',
-    method: 'GET',
-    params,
-  });
-};
-
 // 获取比赛作弊事件列表
 export const getContestCheats = (contestId, params = { limit: 20, offset: 0 }) => {
   return request({

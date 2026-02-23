@@ -13,10 +13,10 @@ import {
   uploadChallengeFile,
   downloadChallengeFile,
 } from '../../api/admin/challenge';
-import { searchAdmin } from '../../api/admin/contest.js';
 import { generateUUID } from '../../utils/uuid';
 import { useDebounceSearch } from '../../hooks';
 import { useTranslation } from 'react-i18next';
+import { searchModels } from '../../api/admin/search.js';
 
 function ChallengesManagement() {
   const [challenges, setChallenges] = useState([]);
@@ -72,8 +72,8 @@ function ChallengesManagement() {
       if (!name || name.trim() === '') return [];
 
       try {
-        const response = await searchAdmin({
-          model: 'challenge',
+        const response = await searchModels({
+          model: 'Challenge',
           name: name.trim(),
           limit: 10,
           offset: 0,
