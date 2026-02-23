@@ -52,7 +52,6 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 		if !ret.OK {
 			return model.User{}, ret
 		}
-		var hasJoinGroup bool
 		if provider.GroupsClaim != "" {
 			groupRepo := db.InitGroupRepo(tx)
 			if groups, ok := utils.GetClaimValue[[]string](response, provider.GroupsClaim); ok {
@@ -63,9 +62,7 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 						continue
 					}
 					if !userRepo.IsInGroup(user.ID, group.Name) {
-						if ret = db.AppendUserToGroup(tx, user, group); ret.OK {
-							hasJoinGroup = true
-						}
+						db.AppendUserToGroup(tx, user, group)
 					}
 				}
 				// 尝试添加到管理员组
@@ -73,16 +70,14 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 					if !userRepo.IsInGroup(user.ID, model.AdminGroupName) {
 						adminGroup, ret := db.InitGroupRepo(tx).GetByUniqueKey("name", model.AdminGroupName)
 						if ret.OK {
-							if ret = db.AppendUserToGroup(tx, user, adminGroup); ret.OK {
-								hasJoinGroup = true
-							}
+							db.AppendUserToGroup(tx, user, adminGroup)
 						}
 					}
 				}
 			}
 		}
 		// 获取组声明或加组失败后尝试加入默认组
-		if !hasJoinGroup && provider.DefaultGroup != 0 {
+		if provider.DefaultGroup != 0 {
 			defaultGroup, ret := db.InitGroupRepo(tx).GetByID(provider.DefaultGroup)
 			if ret.OK {
 				// 最终都无法获取到组则放弃加组
