@@ -39,6 +39,8 @@ function OAuthProvidersManagement() {
     email_claim: '',
     description_claim: '',
     id_claim: '',
+    groups_claim: '',
+    admin_group: '',
     on: false,
   });
   const { t } = useTranslation();
@@ -82,6 +84,8 @@ function OAuthProvidersManagement() {
       email_claim: '',
       description_claim: '',
       id_claim: '',
+      groups_claim: '',
+      admin_group: '',
       on: false,
     });
     setIsModalOpen(true);
@@ -105,6 +109,8 @@ function OAuthProvidersManagement() {
       email_claim: provider.email_claim,
       description_claim: provider.description_claim,
       id_claim: provider.id_claim,
+      groups_claim: provider.groups_claim || '',
+      admin_group: provider.admin_group || '',
       on: provider.on,
     });
     setIsModalOpen(true);
@@ -387,6 +393,30 @@ function OAuthProvidersManagement() {
                 value={editForm.picture}
                 onChange={(e) => setEditForm({ ...editForm, picture: e.target.value })}
                 placeholder={t('admin.oauthProviders.form.logoUrlPlaceholder')}
+                fullWidth
+              />
+            </div>
+            <div>
+              <label className="block text-neutral-300 text-sm font-medium mb-2">
+                {t('admin.oauthProviders.form.groupsClaimLabel')}
+              </label>
+              <Input
+                type="text"
+                value={editForm.groups_claim}
+                onChange={(e) => setEditForm({ ...editForm, groups_claim: e.target.value })}
+                placeholder="{groups}"
+                fullWidth
+              />
+            </div>
+            <div>
+              <label className="block text-neutral-300 text-sm font-medium mb-2">
+                {t('admin.oauthProviders.form.adminGroupLabel')}
+              </label>
+              <Input
+                type="text"
+                value={editForm.admin_group}
+                onChange={(e) => setEditForm({ ...editForm, admin_group: e.target.value })}
+                placeholder="admin"
                 fullWidth
               />
             </div>
