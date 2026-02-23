@@ -34,11 +34,11 @@ function OAuthProvidersManagement() {
     client_id: '',
     client_secret: '',
     picture: '',
-    picture_field: '',
-    name_field: '',
-    email_field: '',
-    description_field: '',
-    id_field: '',
+    picture_claim: '',
+    name_claim: '',
+    email_claim: '',
+    description_claim: '',
+    id_claim: '',
     on: false,
   });
   const { t } = useTranslation();
@@ -77,11 +77,11 @@ function OAuthProvidersManagement() {
       client_id: '',
       client_secret: '',
       picture: '',
-      picture_field: '',
-      name_field: '',
-      email_field: '',
-      description_field: '',
-      id_field: '',
+      picture_claim: '',
+      name_claim: '',
+      email_claim: '',
+      description_claim: '',
+      id_claim: '',
       on: false,
     });
     setIsModalOpen(true);
@@ -100,11 +100,11 @@ function OAuthProvidersManagement() {
       client_id: provider.client_id,
       client_secret: provider.client_secret,
       picture: provider.picture,
-      picture_field: provider.picture_field,
-      name_field: provider.name_field,
-      email_field: provider.email_field,
-      description_field: provider.description_field,
-      id_field: provider.id_field,
+      picture_claim: provider.picture_claim,
+      name_claim: provider.name_claim,
+      email_claim: provider.email_claim,
+      description_claim: provider.description_claim,
+      id_claim: provider.id_claim,
       on: provider.on,
     });
     setIsModalOpen(true);
@@ -317,24 +317,24 @@ function OAuthProvidersManagement() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-neutral-300 text-sm font-medium mb-2">
-                {t('admin.oauthProviders.form.pictureFieldLabel')}
+                {t('admin.oauthProviders.form.pictureClaimLabel')}
               </label>
               <Input
                 type="text"
-                value={editForm.picture_field}
-                onChange={(e) => setEditForm({ ...editForm, picture_field: e.target.value })}
+                value={editForm.picture_claim}
+                onChange={(e) => setEditForm({ ...editForm, picture_claim: e.target.value })}
                 placeholder="{picture_url}"
                 fullWidth
               />
             </div>
             <div>
               <label className="block text-neutral-300 text-sm font-medium mb-2">
-                {t('admin.oauthProviders.form.nameFieldLabel')}
+                {t('admin.oauthProviders.form.nameClaimLabel')}
               </label>
               <Input
                 type="text"
-                value={editForm.name_field}
-                onChange={(e) => setEditForm({ ...editForm, name_field: e.target.value })}
+                value={editForm.name_claim}
+                onChange={(e) => setEditForm({ ...editForm, name_claim: e.target.value })}
                 placeholder="{name}"
                 fullWidth
                 required={mode === 'create'}
@@ -342,12 +342,12 @@ function OAuthProvidersManagement() {
             </div>
             <div>
               <label className="block text-neutral-300 text-sm font-medium mb-2">
-                {t('admin.oauthProviders.form.emailFieldLabel')}
+                {t('admin.oauthProviders.form.emailClaimLabel')}
               </label>
               <Input
                 type="text"
-                value={editForm.email_field}
-                onChange={(e) => setEditForm({ ...editForm, email_field: e.target.value })}
+                value={editForm.email_claim}
+                onChange={(e) => setEditForm({ ...editForm, email_claim: e.target.value })}
                 placeholder="{email}"
                 fullWidth
                 required={mode === 'create'}
@@ -355,24 +355,24 @@ function OAuthProvidersManagement() {
             </div>
             <div>
               <label className="block text-neutral-300 text-sm font-medium mb-2">
-                {t('admin.oauthProviders.form.descriptionFieldLabel')}
+                {t('admin.oauthProviders.form.descriptionClaimLabel')}
               </label>
               <Input
                 type="text"
-                value={editForm.description_field}
-                onChange={(e) => setEditForm({ ...editForm, description_field: e.target.value })}
+                value={editForm.description_claim}
+                onChange={(e) => setEditForm({ ...editForm, description_claim: e.target.value })}
                 placeholder="{description}"
                 fullWidth
               />
             </div>
             <div>
               <label className="block text-neutral-300 text-sm font-medium mb-2">
-                {t('admin.oauthProviders.form.idFieldLabel')}
+                {t('admin.oauthProviders.form.idClaimLabel')}
               </label>
               <Input
                 type="text"
-                value={editForm.id_field}
-                onChange={(e) => setEditForm({ ...editForm, id_field: e.target.value })}
+                value={editForm.id_claim}
+                onChange={(e) => setEditForm({ ...editForm, id_claim: e.target.value })}
                 placeholder="{id}"
                 fullWidth
                 required={mode === 'create'}

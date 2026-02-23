@@ -18,11 +18,11 @@ type CreateOauthProviderForm struct {
 	ClientSecret     string `form:"client_secret" json:"client_secret" binding:"required"`
 	Provider         string `form:"provider" json:"provider" binding:"required"`
 	Uri              string `form:"uri" json:"uri" binding:"required,alphanum"`
-	IDField          string `form:"id_field" json:"id_field" binding:"required"`
-	NameField        string `form:"name_field" json:"name_field" binding:"required"`
-	EmailField       string `form:"email_field" json:"email_field" binding:"required"`
-	PictureField     string `form:"picture_field" json:"picture_field"`
-	DescriptionField string `form:"description_field" json:"description_field"`
+	IDClaim          string `form:"id_claim" json:"id_claim" binding:"required"`
+	NameClaim        string `form:"name_claim" json:"name_claim" binding:"required"`
+	EmailClaim       string `form:"email_claim" json:"email_claim" binding:"required"`
+	PictureClaim     string `form:"picture_claim" json:"picture_claim"`
+	DescriptionClaim string `form:"description_claim" json:"description_claim"`
 }
 
 type UpdateOauthProviderForm struct {
@@ -34,11 +34,11 @@ type UpdateOauthProviderForm struct {
 	ClientSecret     *string        `form:"client_secret" json:"client_secret" binding:"omitempty,min=1"`
 	Provider         *string        `form:"provider" json:"provider" binding:"omitempty,min=1"`
 	Uri              *string        `form:"uri" json:"uri" binding:"omitempty,min=1,alphanum"`
-	IDField          *string        `form:"id_field" json:"id_field" binding:"omitempty,min=1"`
-	NameField        *string        `form:"name_field" json:"name_field" binding:"omitempty,min=1"`
-	EmailField       *string        `form:"email_field" json:"email_field" binding:"omitempty,min=1"`
-	PictureField     *string        `form:"picture_field" json:"picture_field"`
-	DescriptionField *string        `form:"description_field" json:"description_field"`
+	IDClaim          *string        `form:"id_claim" json:"id_claim" binding:"omitempty,min=1"`
+	NameClaim        *string        `form:"name_claim" json:"name_claim" binding:"omitempty,min=1"`
+	EmailClaim       *string        `form:"email_claim" json:"email_claim" binding:"omitempty,min=1"`
+	PictureClaim     *string        `form:"picture_claim" json:"picture_claim"`
+	DescriptionClaim *string        `form:"description_claim" json:"description_claim"`
 	On               *bool          `form:"on" json:"on"`
 	Picture          *model.FileURL `form:"picture" json:"picture"`
 }

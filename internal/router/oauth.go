@@ -136,7 +136,7 @@ func OauthCallback(ctx *gin.Context) {
 		log.Logger.Warningf("Failed to decode response body for provider %s: %s", provider.Provider, err)
 		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 	}
-	id, ok := utils.GetFiledValue(result, provider.IDField)
+	id, ok := utils.GetFiledValue(result, provider.IDClaim)
 	if !ok {
 		log.Logger.Warningf("Failed to get user_id by provider %s: %s", provider.Provider, result)
 		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Get value failed"}})
@@ -149,16 +149,16 @@ func OauthCallback(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, ret)
 			return
 		}
-		name, ok := utils.GetFiledValue(result, provider.NameField)
+		name, ok := utils.GetFiledValue(result, provider.NameClaim)
 		if !ok {
 			name = fmt.Sprintf("%s_%s", provider.Provider, utils.RandStr(10))
 		}
-		email, ok := utils.GetFiledValue(result, provider.EmailField)
+		email, ok := utils.GetFiledValue(result, provider.EmailClaim)
 		if !ok {
 			email = fmt.Sprintf("%s_%s@example.com", provider.Provider, utils.RandStr(10))
 		}
-		picture, _ := utils.GetFiledValue(result, provider.PictureField)
-		description, _ := utils.GetFiledValue(result, provider.DescriptionField)
+		picture, _ := utils.GetFiledValue(result, provider.PictureClaim)
+		description, _ := utils.GetFiledValue(result, provider.DescriptionClaim)
 		raw, _ := json.Marshal(result)
 		user, ret = userRepo.Create(db.CreateUserOptions{
 			Name:           name,
@@ -224,11 +224,11 @@ func CreateOauthProvider(ctx *gin.Context) {
 		ClientSecret:     form.ClientSecret,
 		Provider:         form.Provider,
 		Uri:              form.Uri,
-		IDField:          form.IDField,
-		NameField:        form.NameField,
-		EmailField:       form.EmailField,
-		PictureField:     form.PictureField,
-		DescriptionField: form.DescriptionField,
+		IDClaim:          form.IDClaim,
+		NameClaim:        form.NameClaim,
+		EmailClaim:       form.EmailClaim,
+		PictureClaim:     form.PictureClaim,
+		DescriptionClaim: form.DescriptionClaim,
 		On:               false,
 	})
 	if !ret.OK {
@@ -256,11 +256,11 @@ func UpdateOauthProvider(ctx *gin.Context) {
 		ClientSecret:     form.ClientSecret,
 		Provider:         form.Provider,
 		Uri:              form.Uri,
-		IDField:          form.IDField,
-		NameField:        form.NameField,
-		EmailField:       form.EmailField,
-		PictureField:     form.PictureField,
-		DescriptionField: form.DescriptionField,
+		IDClaim:          form.IDClaim,
+		NameClaim:        form.NameClaim,
+		EmailClaim:       form.EmailClaim,
+		PictureClaim:     form.PictureClaim,
+		DescriptionClaim: form.DescriptionClaim,
 		On:               form.On,
 		Picture:          form.Picture,
 	}); !ret.OK {
