@@ -59,6 +59,7 @@ type UpdateUserOptions struct {
 	ContestCount   *int64
 	TeamCount      *int64
 	ProviderUserID *string
+	OauthRaw       *string
 }
 
 func (u UpdateUserOptions) Convert2Map() map[string]any {
@@ -101,6 +102,9 @@ func (u UpdateUserOptions) Convert2Map() map[string]any {
 	}
 	if u.ProviderUserID != nil {
 		options["provider_user_id"] = *u.ProviderUserID
+	}
+	if u.OauthRaw != nil {
+		options["oauth_raw"] = *u.OauthRaw
 	}
 	return options
 }
