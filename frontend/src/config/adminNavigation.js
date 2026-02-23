@@ -20,7 +20,6 @@ export const getAdminNavSections = (t, routes = null) => {
     { id: 'files', label: t('nav.files'), path: '/admin/files', apiRoute: 'GET /admin/files' },
     { id: 'system', label: t('nav.system'), path: '/admin/system', apiRoute: 'GET /admin/system/config' },
     { id: 'logs', label: t('nav.logs'), path: '/admin/logs', apiRoute: 'GET /admin/logs' },
-    { id: 'settings', label: t('nav.settings'), path: '/admin/settings' },
   ];
 
   const routeSet = routes ? new Set(routes) : null;
