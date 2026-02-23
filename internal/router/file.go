@@ -50,7 +50,7 @@ func UploadPicture(v string) gin.HandlerFunc {
 		options := db.CreateFileOptions{}
 		var id uint
 		switch v {
-		case "self-user":
+		case "self":
 			id = middleware.GetSelf(ctx).ID
 			options.Model = model.User{}.ModelName()
 			options.ModelID = id

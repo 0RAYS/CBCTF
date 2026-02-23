@@ -82,7 +82,7 @@ func Init() *gin.Engine {
 		user.PUT("/password", ChangePwd)
 		user.PUT("", UpdateUser)
 		user.DELETE("", DeleteUser)
-		user.POST("/picture", UploadPicture("self-user"))
+		user.POST("/picture", UploadPicture("self"))
 		user.POST("/activate",
 			middleware.RateLimit("activate", 1, time.Minute), ActivateEmail,
 		)
