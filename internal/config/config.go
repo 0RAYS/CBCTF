@@ -128,7 +128,7 @@ func Init() {
 	viper.AddConfigPath(".")
 	if err := viper.ReadInConfig(); err != nil {
 		if errors.As(err, &viper.ConfigFileNotFoundError{}) {
-			if err := os.WriteFile("./config.yml", defaultConf, 0666); err != nil {
+			if err := os.WriteFile("./config.yml", defaultConf, 0644); err != nil {
 				log.Panicf("Failed to init config: %s", err)
 			}
 			log.Fatalf("Please configure the config.yml file and restart the program")
