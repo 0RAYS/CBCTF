@@ -20,11 +20,11 @@ type CreateOauthOptions struct {
 	ClientSecret     string
 	Provider         string
 	Uri              string
-	IDField          string
-	NameField        string
-	EmailField       string
-	PictureField     string
-	DescriptionField string
+	IDClaim          string
+	NameClaim        string
+	EmailClaim       string
+	PictureClaim     string
+	DescriptionClaim string
 	On               bool
 	Picture          model.FileURL
 }
@@ -39,11 +39,11 @@ func (c CreateOauthOptions) Convert2Model() model.Model {
 		ClientSecret:     c.ClientSecret,
 		Provider:         c.Provider,
 		Uri:              c.Uri,
-		IDField:          c.IDField,
-		NameField:        c.NameField,
-		EmailField:       c.EmailField,
-		PictureField:     c.PictureField,
-		DescriptionField: c.DescriptionField,
+		IDClaim:          c.IDClaim,
+		NameClaim:        c.NameClaim,
+		EmailClaim:       c.EmailClaim,
+		PictureClaim:     c.PictureClaim,
+		DescriptionClaim: c.DescriptionClaim,
 		On:               c.On,
 		Picture:          c.Picture,
 	}
@@ -58,11 +58,11 @@ type UpdateOauthOptions struct {
 	ClientSecret     *string
 	Provider         *string
 	Uri              *string
-	IDField          *string
-	NameField        *string
-	EmailField       *string
-	PictureField     *string
-	DescriptionField *string
+	IDClaim          *string
+	NameClaim        *string
+	EmailClaim       *string
+	PictureClaim     *string
+	DescriptionClaim *string
 	On               *bool
 	Picture          *model.FileURL
 }
@@ -93,20 +93,20 @@ func (u UpdateOauthOptions) Convert2Map() map[string]any {
 	if u.Uri != nil {
 		options["uri"] = *u.Uri
 	}
-	if u.IDField != nil {
-		options["id_field"] = *u.IDField
+	if u.IDClaim != nil {
+		options["id_claim"] = *u.IDClaim
 	}
-	if u.NameField != nil {
-		options["name_field"] = *u.NameField
+	if u.NameClaim != nil {
+		options["name_claim"] = *u.NameClaim
 	}
-	if u.EmailField != nil {
-		options["email_field"] = *u.EmailField
+	if u.EmailClaim != nil {
+		options["email_claim"] = *u.EmailClaim
 	}
-	if u.PictureField != nil {
-		options["picture_field"] = *u.PictureField
+	if u.PictureClaim != nil {
+		options["picture_claim"] = *u.PictureClaim
 	}
-	if u.DescriptionField != nil {
-		options["description_field"] = *u.DescriptionField
+	if u.DescriptionClaim != nil {
+		options["description_claim"] = *u.DescriptionClaim
 	}
 	if u.On != nil {
 		options["on"] = *u.On

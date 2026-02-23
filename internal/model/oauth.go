@@ -9,11 +9,11 @@ type Oauth struct {
 	ClientSecret     string  `json:"client_secret"`
 	Provider         string  `gorm:"type:varchar(255);uniqueIndex;not null" json:"provider"`
 	Uri              string  `json:"uri"`
-	IDField          string  `json:"id_field"`
-	NameField        string  `json:"name_field"`
-	EmailField       string  `json:"email_field"`
-	PictureField     string  `json:"picture_field"`
-	DescriptionField string  `json:"description_field"`
+	IDClaim          string  `json:"id_claim"`
+	NameClaim        string  `json:"name_claim"`
+	EmailClaim       string  `json:"email_claim"`
+	PictureClaim     string  `json:"picture_claim"`
+	DescriptionClaim string  `json:"description_claim"`
 	On               bool    `json:"on"`
 	Picture          FileURL `json:"picture"`
 	BaseModel
