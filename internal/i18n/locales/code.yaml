@@ -38,8 +38,14 @@ model:
     notAllowed: "400"
     readPcapError: "500"
     createDirError: "500"
+  group:
+    cannotUpdateDefault: "403"
+    cannotDeleteDefault: "403"
   notice:
     invalidType: "400"
+  role:
+    cannotUpdateDefault: "403"
+    cannotDeleteDefault: "403"
   setting:
     invalidType: "400"
   submission:

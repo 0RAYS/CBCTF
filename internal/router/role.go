@@ -78,7 +78,7 @@ func UpdateRole(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateRoleEventType)
 	role := middleware.GetRole(ctx)
 	if role.Default && form.Name != nil {
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Model.Role.CannotUpdateDefault})
 		return
 	}
 	ret := db.InitRoleRepo(db.DB).Update(role.ID, db.UpdateRoleOptions{
@@ -95,7 +95,7 @@ func DeleteRole(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteRoleEventType)
 	role := middleware.GetRole(ctx)
 	if role.Default {
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Model.Role.CannotDeleteDefault})
 		return
 	}
 	ret := db.InitRoleRepo(db.DB).Delete(role.ID)

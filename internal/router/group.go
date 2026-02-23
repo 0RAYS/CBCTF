@@ -83,7 +83,7 @@ func UpdateGroup(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateGroupEventType)
 	group := middleware.GetGroup(ctx)
 	if group.Default && form.Name != nil {
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Model.Group.CannotUpdateDefault})
 		return
 	}
 	ret := db.InitGroupRepo(db.DB).Update(group.ID, db.UpdateGroupOptions{
@@ -101,7 +101,7 @@ func DeleteGroup(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteGroupEventType)
 	group := middleware.GetGroup(ctx)
 	if group.Default {
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Model.Group.CannotDeleteDefault})
 		return
 	}
 	ret := db.InitGroupRepo(db.DB).Delete(group.ID)
