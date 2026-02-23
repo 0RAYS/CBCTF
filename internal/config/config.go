@@ -109,6 +109,10 @@ type Config struct {
 	Webhook struct {
 		Blacklist []string `mapstructure:"blacklist" json:"blacklist"`
 	} `mapstructure:"webhook" json:"webhook"`
+	Registration struct {
+		Enabled      bool `mapstructure:"enabled" json:"enabled"`
+		DefaultGroup uint `mapstructure:"default_group" json:"default_group"`
+	} `mapstructure:"registration" json:"registration"`
 	GeoCityDB string `mapstructure:"geocity_db" json:"geocity_db"`
 }
 

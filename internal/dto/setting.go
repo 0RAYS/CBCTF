@@ -62,5 +62,8 @@ type UpdateSettingForm struct {
 
 	WebhookBlacklist *[]string `form:"webhook_blacklist" json:"webhook_blacklist" binding:"omitempty,dive,ip|cidr|hostname|hostname_port"`
 
+	RegistrationEnabled      *bool `form:"registration_enabled" json:"registration_enabled"`
+	RegistrationDefaultGroup *uint `form:"registration_default_group" json:"registration_default_group"`
+
 	GeoCityDB *string `form:"geocity_db" json:"geocity_db" binding:"omitempty,file"`
 }

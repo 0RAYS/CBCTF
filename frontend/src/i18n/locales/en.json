@@ -1673,7 +1673,8 @@
         "k8s": "Kubernetes Settings",
         "nfs": "NFS Settings",
         "cheat": "Risk Control",
-        "webhook": "Webhook Settings"
+        "webhook": "Webhook Settings",
+        "registration": "Registration"
       },
       "labels": {
         "host": "External Host",
@@ -1722,7 +1723,10 @@
         "nfsPath": "Storage Path",
         "nfsStorage": "Storage Size",
         "cheatIpWhitelist": "Cheat Filter IP Whitelist",
-        "webhookBlacklist": "Webhook Target Blacklist (IP / CIDR / Hostname)"
+        "webhookBlacklist": "Webhook Target Blacklist (IP / CIDR / Hostname)",
+        "registrationEnabled": "Allow Registration",
+        "registrationDefaultGroup": "Default Group for New Users",
+        "registrationDefaultGroupNone": "None"
       },
       "k8s": {
         "cidr": "CIDR",
