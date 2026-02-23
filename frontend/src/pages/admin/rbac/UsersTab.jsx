@@ -4,12 +4,12 @@ import { getUserList, updateUser, deleteUser, createUser, updateUserPicture } fr
 import AdminUsers from '../../../components/features/Admin/AdminUsers';
 import { Modal } from '../../../components/common';
 import CRUDModalFooter from '../../../components/common/CRUDModalFooter';
-import { searchAdmin } from '../../../api/admin/contest.js';
 import { useDebounceSearch } from '../../../hooks';
 import { useCRUDModal } from '../../../hooks/index.js';
 import Input from '../../../components/common/Input';
 import Textarea from '../../../components/common/Textarea';
 import { useTranslation } from 'react-i18next';
+import { searchModels } from '../../../api/admin/search.js';
 
 function UsersTab() {
   const [users, setUsers] = useState([]);
@@ -93,8 +93,8 @@ function UsersTab() {
       if (!name || name.trim() === '') return [];
 
       try {
-        const response = await searchAdmin({
-          model: 'user',
+        const response = await searchModels({
+          model: 'User',
           name: name.trim(),
           limit: 20,
           offset: 0,

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from '../../../utils/toast';
-import { downloadBlobResponse } from '../../../utils/fileDownload';
+import { downloadBlobResponse } from '../../../utils/index.js';
 import AdminTeams from '../../../components/features/Admin/Contests/AdminTeams';
 import {
   getContestTeams,
@@ -10,7 +10,6 @@ import {
   deleteTeam,
   kickTeamMember,
   getTeamMembers,
-  searchAdmin,
   getContestTeamSubmissions,
   getContestTeamWriteups,
   getTeamContainers,
@@ -19,6 +18,7 @@ import {
   getContestTeamFlags,
 } from '../../../api/admin/contest';
 import { useTranslation } from 'react-i18next';
+import { searchModels } from '../../../api/admin/search.js';
 
 function AdminContestTeams() {
   const { id } = useParams();
@@ -157,8 +157,8 @@ function AdminContestTeams() {
 
     setSearchLoading(true);
     try {
-      const response = await searchAdmin({
-        model: 'team',
+      const response = await searchModels({
+        model: 'Team',
         name: name.trim(),
         limit: 10,
         offset: 0,
