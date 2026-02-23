@@ -66,7 +66,12 @@ class WebSocketService {
         wsUrl = `${protocol}//${window.location.host}`;
       }
       const magic = localStorage.getItem('LXM') || '';
-      this.ws = new WebSocket(wsUrl + '/ws', ['Bearer', tokenValue, 'Magic', magic]);
+      // JWT 含有 '.' 字符，不是合法的 Sec-WebSocket-Protocol token。
+      // 将整个 token 做 base64url 编码后传输，后端再解码。
+      const encodedToken = btoa(tokenValue).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+      const encodedMagic = magic ? btoa(magic).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '') : '';
+      const protocols = encodedMagic ? ['token-' + encodedToken, 'magic-' + encodedMagic] : ['token-' + encodedToken];
+      this.ws = new WebSocket(wsUrl + '/ws', protocols);
 
       this.ws.onopen = () => {
         this.isConnecting = false;

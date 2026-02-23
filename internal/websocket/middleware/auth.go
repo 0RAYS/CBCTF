@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"strings"
@@ -13,23 +14,29 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// parseWSProtocols parses the Sec-WebSocket-Protocol header value into a map.
-// The browser sends protocols as a comma-separated list, e.g. "Bearer, <token>, Magic, <magic>".
-// We treat consecutive pairs as key→value.
-func parseWSProtocols(header string) map[string]string {
-	result := make(map[string]string)
-	parts := strings.Split(header, ",")
-	for i := 0; i+1 < len(parts); i += 2 {
-		key := strings.TrimSpace(parts[i])
-		val := strings.TrimSpace(parts[i+1])
-		result[key] = val
+// parseWSToken extracts the JWT token and magic from the Sec-WebSocket-Protocol header.
+// Frontend encodes each value as base64url (no padding) and prefixes with "token-" / "magic-"
+// to stay within the valid HTTP token character set required by RFC 6455.
+func parseWSToken(header string) (token, magic string) {
+	for _, part := range strings.Split(header, ",") {
+		part = strings.TrimSpace(part)
+		if strings.HasPrefix(part, "token-") {
+			decoded, err := base64.RawURLEncoding.DecodeString(part[len("token-"):])
+			if err == nil {
+				token = string(decoded)
+			}
+		} else if strings.HasPrefix(part, "magic-") {
+			decoded, err := base64.RawURLEncoding.DecodeString(part[len("magic-"):])
+			if err == nil {
+				magic = string(decoded)
+			}
+		}
 	}
-	return result
+	return
 }
 
 func WSAuth(ctx *gin.Context) {
-	protocols := parseWSProtocols(ctx.Request.Header.Get("Sec-Websocket-Protocol"))
-	tokenValue := protocols["Bearer"]
+	tokenValue, _ := parseWSToken(ctx.Request.Header.Get("Sec-Websocket-Protocol"))
 	claims, err := utils.ParseToken(tokenValue)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Unauthorized})
@@ -72,5 +79,4 @@ func WSAuth(ctx *gin.Context) {
 	}
 	ctx.Set("Self", user)
 	ctx.Next()
-
 }

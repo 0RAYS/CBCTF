@@ -5,12 +5,7 @@ import (
 )
 
 func SetMagic(ctx *gin.Context) {
-	protocols := parseWSProtocols(ctx.Request.Header.Get("Sec-Websocket-Protocol"))
-	magic := protocols["Magic"]
-	if magic == "" {
-		// fallback: legacy query param
-		magic = ctx.Query("m")
-	}
+	_, magic := parseWSToken(ctx.Request.Header.Get("Sec-Websocket-Protocol"))
 	ctx.Set("Magic", magic)
 	ctx.Next()
 }
