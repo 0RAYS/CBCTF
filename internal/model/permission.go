@@ -131,6 +131,201 @@ const (
 	PermAdminLogRead = "admin:log:read"
 )
 
+// RoutePermissions maps "METHOD /full-path" to the required permission name.
+// Used by CheckPermission middleware and the /me/permissions handler.
+var RoutePermissions = map[string]string{
+	// /me
+	"GET /me":             PermSelfRead,
+	"GET /me/permissions": PermSelfRead,
+	"PUT /me":             PermSelfUpdate,
+	"PUT /me/password":    PermSelfUpdate,
+	"DELETE /me":          PermSelfDelete,
+	"POST /me/picture":    PermSelfUpdate,
+	"POST /me/activate":   PermSelfActivate,
+
+	// /contests/:contestID
+	"GET /contests/:contestID":            PermUserContestRead,
+	"GET /contests/:contestID/rank":       PermUserContestRank,
+	"GET /contests/:contestID/scoreboard": PermUserContestRank,
+	"GET /contests/:contestID/timeline":   PermUserContestRank,
+
+	"POST /contests/:contestID/teams/join":   PermUserTeamJoin,
+	"POST /contests/:contestID/teams/create": PermUserTeamCreate,
+
+	"GET /contests/:contestID/teams/me":          PermUserTeamRead,
+	"GET /contests/:contestID/teams/me/captcha":  PermUserTeamRead,
+	"GET /contests/:contestID/teams/me/users":    PermUserTeamRead,
+	"PUT /contests/:contestID/teams/me/captcha":  PermUserTeamUpdate,
+	"PUT /contests/:contestID/teams/me":          PermUserTeamUpdate,
+	"POST /contests/:contestID/teams/me/picture": PermUserTeamUpdate,
+	"DELETE /contests/:contestID/teams/me":       PermUserTeamDelete,
+	"POST /contests/:contestID/teams/me/kick":    PermUserTeamUpdate,
+	"POST /contests/:contestID/teams/me/leave":   PermUserTeamRead,
+
+	"GET /contests/:contestID/notices": PermUserNoticeList,
+
+	"GET /contests/:contestID/challenges":                         PermUserChallengeList,
+	"GET /contests/:contestID/challenges/categories":              PermUserChallengeList,
+	"GET /contests/:contestID/challenges/:challengeID":            PermUserChallengeRead,
+	"GET /contests/:contestID/challenges/:challengeID/attachment": PermUserChallengeRead,
+	"POST /contests/:contestID/challenges/:challengeID/init":      PermUserChallengeInit,
+	"POST /contests/:contestID/challenges/:challengeID/reset":     PermUserChallengeReset,
+	"POST /contests/:contestID/challenges/:challengeID/start":     PermUserVictimControl,
+	"POST /contests/:contestID/challenges/:challengeID/increase":  PermUserVictimControl,
+	"POST /contests/:contestID/challenges/:challengeID/stop":      PermUserVictimControl,
+	"POST /contests/:contestID/challenges/:challengeID/submit":    PermUserChallengeSubmit,
+
+	"POST /contests/:contestID/writeups": PermUserWriteupUpload,
+	"GET /contests/:contestID/writeups":  PermUserWriteupList,
+
+	// /admin 基础
+	"GET /admin/ip":     PermAdminIPSearch,
+	"GET /admin/models": PermAdminModelsSearch,
+	"GET /admin/search": PermAdminModelsSearch,
+
+	// /admin/system
+	"GET /admin/system/status":   PermAdminSystemRead,
+	"GET /admin/system/config":   PermAdminSystemRead,
+	"PUT /admin/system/config":   PermAdminSystemUpdate,
+	"POST /admin/system/restart": PermAdminSystemRestart,
+
+	// /admin/permissions
+	"GET /admin/permissions":               PermAdminPermissionList,
+	"PUT /admin/permissions/:permissionID": PermAdminPermissionUpdate,
+
+	// /admin/roles
+	"GET /admin/roles":                        PermAdminRoleList,
+	"POST /admin/roles":                       PermAdminRoleCreate,
+	"GET /admin/roles/:roleID":                PermAdminRoleRead,
+	"GET /admin/roles/:roleID/permissions":    PermAdminPermissionList,
+	"PUT /admin/roles/:roleID":                PermAdminRoleUpdate,
+	"DELETE /admin/roles/:roleID":             PermAdminRoleDelete,
+	"POST /admin/roles/:roleID/permissions":   PermAdminRoleAssign,
+	"DELETE /admin/roles/:roleID/permissions": PermAdminRoleRevoke,
+
+	// /admin/groups
+	"GET /admin/groups":                   PermAdminGroupList,
+	"POST /admin/groups":                  PermAdminGroupCreate,
+	"GET /admin/groups/:groupID":          PermAdminGroupRead,
+	"GET /admin/groups/:groupID/users":    PermAdminUserList,
+	"PUT /admin/groups/:groupID":          PermAdminGroupUpdate,
+	"DELETE /admin/groups/:groupID":       PermAdminGroupDelete,
+	"POST /admin/groups/:groupID/users":   PermAdminUserAssign,
+	"DELETE /admin/groups/:groupID/users": PermAdminUserRevoke,
+
+	// /admin/users
+	"GET /admin/users":                  PermAdminUserList,
+	"POST /admin/users":                 PermAdminUserCreate,
+	"GET /admin/users/:userID":          PermAdminUserRead,
+	"PUT /admin/users/:userID":          PermAdminUserUpdate,
+	"DELETE /admin/users/:userID":       PermAdminUserDelete,
+	"POST /admin/users/:userID/picture": PermAdminUserUpdate,
+
+	// /admin/oauth
+	"GET /admin/oauth":                   PermAdminOauthList,
+	"POST /admin/oauth":                  PermAdminOauthCreate,
+	"PUT /admin/oauth/:oauthID":          PermAdminOauthUpdate,
+	"POST /admin/oauth/:oauthID/picture": PermAdminOauthUpdate,
+	"DELETE /admin/oauth/:oauthID":       PermAdminOauthDelete,
+
+	// /admin/email + /admin/smtp
+	"GET /admin/email":              PermAdminSMTPList,
+	"GET /admin/smtp":               PermAdminSMTPList,
+	"POST /admin/smtp":              PermAdminSMTPCreate,
+	"PUT /admin/smtp/:smtpID":       PermAdminSMTPUpdate,
+	"DELETE /admin/smtp/:smtpID":    PermAdminSMTPDelete,
+	"GET /admin/smtp/:smtpID/email": PermAdminSMTPList,
+
+	// /admin/webhook
+	"GET /admin/webhook":                    PermAdminWebhookList,
+	"GET /admin/webhook/events":             PermAdminWebhookList,
+	"GET /admin/webhook/history":            PermAdminWebhookList,
+	"POST /admin/webhook":                   PermAdminWebhookCreate,
+	"PUT /admin/webhook/:webhookID":         PermAdminWebhookUpdate,
+	"DELETE /admin/webhook/:webhookID":      PermAdminWebhookDelete,
+	"GET /admin/webhook/:webhookID/history": PermAdminWebhookList,
+
+	// /admin/challenges
+	"GET /admin/challenges":                              PermAdminChallengeList,
+	"GET /admin/challenges/categories":                   PermAdminChallengeList,
+	"POST /admin/challenges":                             PermAdminChallengeCreate,
+	"GET /admin/challenges/:challengeID/download":        PermAdminChallengeRead,
+	"PUT /admin/challenges/:challengeID":                 PermAdminChallengeUpdate,
+	"DELETE /admin/challenges/:challengeID":              PermAdminChallengeDelete,
+	"POST /admin/challenges/:challengeID/upload":         PermAdminChallengeUpdate,
+	"GET /admin/challenges/:challengeID/test":            PermAdminChallengeTest,
+	"GET /admin/challenges/:challengeID/test/attachment": PermAdminChallengeTest,
+	"POST /admin/challenges/:challengeID/test/start":     PermAdminChallengeTest,
+	"POST /admin/challenges/:challengeID/test/stop":      PermAdminChallengeTest,
+
+	// /admin/contests
+	"GET /admin/contests":                       PermAdminContestList,
+	"POST /admin/contests":                      PermAdminContestCreate,
+	"GET /admin/contests/:contestID":            PermAdminContestRead,
+	"PUT /admin/contests/:contestID":            PermAdminContestUpdate,
+	"DELETE /admin/contests/:contestID":         PermAdminContestDelete,
+	"POST /admin/contests/:contestID/picture":   PermAdminContestUpdate,
+	"GET /admin/contests/:contestID/rank":       PermAdminContestRank,
+	"GET /admin/contests/:contestID/scoreboard": PermAdminContestRank,
+	"GET /admin/contests/:contestID/timeline":   PermAdminContestRank,
+
+	// /admin/contests/:contestID/teams
+	"GET /admin/contests/:contestID/teams":                                            PermAdminTeamList,
+	"GET /admin/contests/:contestID/teams/:teamID":                                    PermAdminTeamRead,
+	"GET /admin/contests/:contestID/teams/:teamID/users":                              PermAdminTeamRead,
+	"PUT /admin/contests/:contestID/teams/:teamID":                                    PermAdminTeamUpdate,
+	"DELETE /admin/contests/:contestID/teams/:teamID":                                 PermAdminTeamDelete,
+	"POST /admin/contests/:contestID/teams/:teamID/kick":                              PermAdminTeamUpdate,
+	"POST /admin/contests/:contestID/teams/:teamID/picture":                           PermAdminTeamUpdate,
+	"GET /admin/contests/:contestID/teams/:teamID/flags":                              PermAdminTeamRead,
+	"GET /admin/contests/:contestID/teams/:teamID/submissions":                        PermAdminTeamRead,
+	"GET /admin/contests/:contestID/teams/:teamID/victims":                            PermAdminTeamRead,
+	"GET /admin/contests/:contestID/teams/:teamID/victims/:victimID/traffic":          PermAdminTeamRead,
+	"GET /admin/contests/:contestID/teams/:teamID/victims/:victimID/traffic/download": PermAdminTeamRead,
+	"GET /admin/contests/:contestID/teams/:teamID/writeups":                           PermAdminTeamWriteupList,
+	"GET /admin/contests/:contestID/teams/:teamID/writeups/:fileID":                   PermAdminTeamWriteupRead,
+
+	// /admin/contests/:contestID/notices
+	"GET /admin/contests/:contestID/notices":              PermAdminNoticeList,
+	"POST /admin/contests/:contestID/notices":             PermAdminNoticeCreate,
+	"PUT /admin/contests/:contestID/notices/:noticeID":    PermAdminNoticeUpdate,
+	"DELETE /admin/contests/:contestID/notices/:noticeID": PermAdminNoticeDelete,
+
+	// /admin/contests/:contestID/cheats
+	"GET /admin/contests/:contestID/cheats":             PermAdminCheatList,
+	"DELETE /admin/contests/:contestID/cheats":          PermAdminCheatDelete,
+	"POST /admin/contests/:contestID/cheats":            PermAdminCheatCreate,
+	"PUT /admin/contests/:contestID/cheats/:cheatID":    PermAdminCheatUpdate,
+	"DELETE /admin/contests/:contestID/cheats/:cheatID": PermAdminCheatDelete,
+
+	// /admin/contests/:contestID/challenges
+	"GET /admin/contests/:contestID/challenges":                            PermAdminContestChallengeList,
+	"GET /admin/contests/:contestID/challenges/others":                     PermAdminChallengeList,
+	"GET /admin/contests/:contestID/challenges/categories":                 PermAdminContestChallengeList,
+	"POST /admin/contests/:contestID/challenges":                           PermAdminContestChallengeCreate,
+	"PUT /admin/contests/:contestID/challenges/:challengeID":               PermAdminContestChallengeUpdate,
+	"DELETE /admin/contests/:contestID/challenges/:challengeID":            PermAdminContestChallengeDelete,
+	"GET /admin/contests/:contestID/challenges/:challengeID/flags":         PermAdminContestChallengeFlagList,
+	"PUT /admin/contests/:contestID/challenges/:challengeID/flags/:flagID": PermAdminContestChallengeFlagUpdate,
+
+	// /admin/contests/:contestID/images
+	"GET /admin/contests/:contestID/images":  PermAdminImagePull,
+	"POST /admin/contests/:contestID/images": PermAdminImagePull,
+
+	// /admin/contests/:contestID/victims
+	"GET /admin/contests/:contestID/victims":    PermAdminVictimControl,
+	"POST /admin/contests/:contestID/victims":   PermAdminVictimControl,
+	"DELETE /admin/contests/:contestID/victims": PermAdminVictimControl,
+
+	// /admin/files
+	"GET /admin/files":         PermAdminFileList,
+	"DELETE /admin/files":      PermAdminFileDelete,
+	"GET /admin/files/:fileID": PermAdminFileRead,
+
+	// /admin/logs
+	"GET /admin/logs": PermAdminLogRead,
+}
+
 var Permissions = []Permission{
 	{Name: PermSelfRead, Resource: "self", Operation: "read", Description: "查看自身信息"},
 	{Name: PermSelfUpdate, Resource: "self", Operation: "update", Description: "更新自身信息"},
