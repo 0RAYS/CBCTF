@@ -20,35 +20,79 @@ func GetClaimKeys(field string) []string {
 	return results
 }
 
-func GetClaimValue(resp map[string]any, field string) (string, bool) {
+// GetClaimValue extracts a value from an OAuth userinfo response map.
+//
+// The field string may contain one or more {key} or {nested.key} placeholders.
+// When T is string, each placeholder is resolved and substituted back into the
+// field template, matching the original behaviour.
+// When T is any other type, the field must be a single bare placeholder and the
+// resolved map value is returned via a direct type assertion to T.
+func GetClaimValue[T any](resp map[string]any, field string) (T, bool) {
+	var zero T
 	keys := GetClaimKeys(field)
+
+	// Non-string path: single placeholder, return the raw value as T.
+	var isString bool
+	switch any(zero).(type) {
+	case string:
+		isString = true
+	}
+
+	if !isString {
+		if len(keys) != 1 {
+			return zero, false
+		}
+		ks := strings.Split(keys[0], ".")
+		data := resp
+		for i, k := range ks {
+			v, ok := data[k]
+			if !ok {
+				return zero, false
+			}
+			if i == len(ks)-1 {
+				typed, ok := v.(T)
+				if !ok {
+					return zero, false
+				}
+				return typed, true
+			}
+			subData, ok := v.(map[string]any)
+			if !ok {
+				return zero, false
+			}
+			data = subData
+		}
+		return zero, false
+	}
+
+	// String path: substitute all placeholders into the template.
+	result := field
 	for _, key := range keys {
 		ks := strings.Split(key, ".")
 		data := resp
 		for i, k := range ks {
 			v, ok := data[k]
 			if !ok {
-				return "", false
+				return zero, false
 			}
 			if i == len(ks)-1 {
-				if v != nil {
-					if reflect.TypeOf(v).Kind() == reflect.Float64 {
-						v = fmt.Sprintf("%f", v)
-					} else {
-						v = fmt.Sprintf("%v", v)
-					}
+				var s string
+				if v == nil {
+					s = "<nil>"
+				} else if reflect.TypeOf(v).Kind() == reflect.Float64 {
+					s = fmt.Sprintf("%f", v)
 				} else {
-					v = "<nil>"
+					s = fmt.Sprintf("%v", v)
 				}
-				field = strings.ReplaceAll(field, fmt.Sprintf("{%s}", key), v.(string))
+				result = strings.ReplaceAll(result, fmt.Sprintf("{%s}", key), s)
 			} else {
-				if subData, ok := v.(map[string]any); ok {
-					data = subData
-				} else {
-					return "", false
+				subData, ok := v.(map[string]any)
+				if !ok {
+					return zero, false
 				}
+				data = subData
 			}
 		}
 	}
-	return field, true
+	return any(result).(T), true
 }
