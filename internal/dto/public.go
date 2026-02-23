@@ -2,7 +2,6 @@ package dto
 
 import (
 	"CBCTF/internal/model"
-	"slices"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -40,9 +39,7 @@ func (f *SearchModelsForm) Validate(ctx *gin.Context) model.RetVal {
 	}
 	f.Sort = make(map[string]string)
 	for k, v := range ctx.QueryMap("sort") {
-		if slices.Contains([]string{"desc", "asc"}, strings.ToLower(v)) {
-			f.Sort[strings.ToLower(k)] = strings.ToLower(v)
-		}
+		f.Sort[strings.ToLower(k)] = strings.ToLower(v)
 	}
 	f.Search = make(map[string]string)
 	for k, v := range ctx.QueryMap("search") {
