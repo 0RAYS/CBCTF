@@ -36,7 +36,7 @@ export const restartSystem = () => {
 // 更新管理员密码
 export const updateAdminPassword = (data) => {
   return request({
-    url: '/admin/me/password',
+    url: '/me/password',
     method: 'PUT',
     data,
   });
@@ -45,7 +45,7 @@ export const updateAdminPassword = (data) => {
 // 更新管理员信息
 export const updateAdminInfo = (data) => {
   return request({
-    url: '/admin/me',
+    url: '/me',
     method: 'PUT',
     data,
   });
@@ -56,7 +56,7 @@ export const updateAdminPicture = (file) => {
   const formData = new FormData();
   formData.append('picture', file);
   return request({
-    url: '/admin/me/picture',
+    url: '/me/picture',
     method: 'POST',
     data: formData,
     headers: {
