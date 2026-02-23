@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/websocket/middleware"
 	"CBCTF/internal/websocket/model"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -42,9 +43,18 @@ func WS(ctx *gin.Context) {
 
 	mu = &UserClientsMu
 	clients = &UserClients
-	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, http.Header{
-		"Sec-Websocket-Protocol": {ctx.Request.Header.Get("Sec-Websocket-Protocol")},
-	})
+	// 从请求的 Sec-WebSocket-Protocol 中取第一个协议名回写，
+	// 浏览器要求服务端必须选择一个已提议的子协议，否则连接会被关闭。
+	var selectedProtocol string
+	if proto := ctx.Request.Header.Get("Sec-Websocket-Protocol"); proto != "" {
+		parts := strings.SplitN(proto, ",", 2)
+		selectedProtocol = strings.TrimSpace(parts[0])
+	}
+	var responseHeader http.Header
+	if selectedProtocol != "" {
+		responseHeader = http.Header{"Sec-Websocket-Protocol": {selectedProtocol}}
+	}
+	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, responseHeader)
 	if err != nil {
 		return
 	}
