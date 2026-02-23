@@ -154,8 +154,27 @@ func OauthCallback(ctx *gin.Context) {
 	}
 	ctx.Set("Self", user)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	url := fmt.Sprintf("%s/platform/#/oauth/callback?token=%s", config.Env.Host, token)
+	code := utils.UUID()
+	if ret := redis.SetOauthCode(code, token); !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
+		return
+	}
+	url := fmt.Sprintf("%s/platform/#/oauth/callback?code=%s", config.Env.Host, code)
 	ctx.Redirect(http.StatusTemporaryRedirect, url)
+}
+
+func ExchangeOauthCode(ctx *gin.Context) {
+	code := ctx.Query("code")
+	if code == "" {
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		return
+	}
+	token, ret := redis.GetAndDelOauthToken(code)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
+		return
+	}
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"token": token}))
 }
 
 func GetOauthProviders(ctx *gin.Context) {

@@ -7,3 +7,12 @@ export const getOAuthProviders = () => {
     method: 'GET',
   });
 };
+
+// 用一次性 code 换取真实 token
+export const exchangeOauthCode = (code) => {
+  return request({
+    url: '/oauth/token',
+    method: 'GET',
+    params: { code },
+  });
+};

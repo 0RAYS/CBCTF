@@ -1,9 +1,17 @@
 package middleware
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 func SetMagic(ctx *gin.Context) {
-	ctx.Set("Magic", ctx.Query("m"))
+	protocols := parseWSProtocols(ctx.Request.Header.Get("Sec-Websocket-Protocol"))
+	magic := protocols["Magic"]
+	if magic == "" {
+		// fallback: legacy query param
+		magic = ctx.Query("m")
+	}
+	ctx.Set("Magic", magic)
 	ctx.Next()
 }
 

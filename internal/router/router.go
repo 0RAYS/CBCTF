@@ -58,6 +58,7 @@ func Init() *gin.Engine {
 
 		RegisterOauthRouter()
 		router.GET("/oauth", ListOauth)
+		router.GET("/oauth/token", ExchangeOauthCode)
 		oauth := router.Group("/oauth/:oauth", middleware.SetOauthUri)
 		{
 			oauth.GET("", Oauth)
