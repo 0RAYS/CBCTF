@@ -1,7 +1,6 @@
 package db
 
 import (
-	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/oauth"
 
@@ -130,15 +129,11 @@ func (o *OauthRepo) RegisterDefault() {
 	github := oauth.GetDefaultGithubOauth()
 	_, ret := o.GetByUniqueKey("provider", github.Provider)
 	if !ret.OK {
-		if err := o.DB.Model(&model.Oauth{}).Create(&github).Error; err != nil {
-			log.Logger.Warningf("Failed to register default github oauth provider: %s", err)
-		}
+		o.Insert(github)
 	}
 	hduhelp := oauth.GetDefaultHDUHelpOauth()
 	_, ret = o.GetByUniqueKey("provider", hduhelp.Provider)
 	if !ret.OK {
-		if err := o.DB.Model(&model.Oauth{}).Create(&hduhelp).Error; err != nil {
-			log.Logger.Warningf("Failed to register default hduhelp oauth provider: %s", err)
-		}
+		o.Insert(hduhelp)
 	}
 }
