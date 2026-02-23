@@ -22,6 +22,8 @@ func GetOauthResp(oauth model.Oauth) gin.H {
 		"email_claim":       oauth.EmailClaim,
 		"picture_claim":     oauth.PictureClaim,
 		"description_claim": oauth.DescriptionClaim,
+		"groups_claim":      oauth.GroupsClaim,
+		"admin_group":       oauth.AdminGroup,
 		"on":                oauth.On,
 		"picture":           oauth.Picture,
 	}

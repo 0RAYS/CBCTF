@@ -23,6 +23,8 @@ type CreateOauthProviderForm struct {
 	EmailClaim       string `form:"email_claim" json:"email_claim" binding:"required"`
 	PictureClaim     string `form:"picture_claim" json:"picture_claim"`
 	DescriptionClaim string `form:"description_claim" json:"description_claim"`
+	GroupsClaim      string `form:"groups_claim" json:"groups_claim"`
+	AdminGroup       string `form:"admin_group" json:"admin_group"`
 }
 
 type UpdateOauthProviderForm struct {
@@ -39,6 +41,8 @@ type UpdateOauthProviderForm struct {
 	EmailClaim       *string        `form:"email_claim" json:"email_claim" binding:"omitempty,min=1"`
 	PictureClaim     *string        `form:"picture_claim" json:"picture_claim"`
 	DescriptionClaim *string        `form:"description_claim" json:"description_claim"`
+	GroupsClaim      *string        `form:"groups_claim" json:"groups_claim"`
+	AdminGroup       *string        `form:"admin_group" json:"admin_group"`
 	On               *bool          `form:"on" json:"on"`
 	Picture          *model.FileURL `form:"picture" json:"picture"`
 }

@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -142,6 +143,17 @@ func OauthCallback(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Get value failed"}})
 		return
 	}
+	name, ok := utils.GetFiledValue(result, provider.NameClaim)
+	if !ok {
+		name = fmt.Sprintf("%s_%s", provider.Provider, utils.RandStr(10))
+	}
+	email, ok := utils.GetFiledValue(result, provider.EmailClaim)
+	if !ok {
+		email = fmt.Sprintf("%s_%s@example.com", provider.Provider, utils.RandStr(10))
+	}
+	picture, _ := utils.GetFiledValue(result, provider.PictureClaim)
+	description, _ := utils.GetFiledValue(result, provider.DescriptionClaim)
+	raw, _ := json.Marshal(result)
 	userRepo := db.InitUserRepo(db.DB)
 	user, ret := userRepo.Get(db.GetOptions{Conditions: map[string]any{"provider": provider.Provider, "provider_user_id": id}})
 	if !ret.OK {
@@ -149,17 +161,6 @@ func OauthCallback(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, ret)
 			return
 		}
-		name, ok := utils.GetFiledValue(result, provider.NameClaim)
-		if !ok {
-			name = fmt.Sprintf("%s_%s", provider.Provider, utils.RandStr(10))
-		}
-		email, ok := utils.GetFiledValue(result, provider.EmailClaim)
-		if !ok {
-			email = fmt.Sprintf("%s_%s@example.com", provider.Provider, utils.RandStr(10))
-		}
-		picture, _ := utils.GetFiledValue(result, provider.PictureClaim)
-		description, _ := utils.GetFiledValue(result, provider.DescriptionClaim)
-		raw, _ := json.Marshal(result)
 		user, ret = userRepo.Create(db.CreateUserOptions{
 			Name:           name,
 			Password:       model.NeverLoginPWD,
@@ -176,15 +177,27 @@ func OauthCallback(ctx *gin.Context) {
 			return
 		}
 		prometheus.UpdateUserRegisterMetrics(provider.Provider)
+	} else {
+		ret = userRepo.Update(user.ID, db.UpdateUserOptions{
+			Name:        &name,
+			Email:       &email,
+			Description: &description,
+			Picture:     new(model.FileURL(picture)),
+			OauthRaw:    new(string(raw)),
+		})
+		if !ret.OK {
+			ctx.JSON(http.StatusOK, ret)
+			return
+		}
+		prometheus.UpdateUserLoginMetrics(provider.Provider)
 	}
-	ctx.Set("Self", user)
 	token, err := utils.GenerateToken(user.ID, user.Name, model.OauthLoginDeviceMagic)
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return
 	}
-	prometheus.UpdateUserLoginMetrics(provider.Provider)
+	ctx.Set("Self", user)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	url := fmt.Sprintf("%s/platform/#/oauth/callback?token=%s", config.Env.Host, token)
 	ctx.Redirect(http.StatusTemporaryRedirect, url)
@@ -229,6 +242,8 @@ func CreateOauthProvider(ctx *gin.Context) {
 		EmailClaim:       form.EmailClaim,
 		PictureClaim:     form.PictureClaim,
 		DescriptionClaim: form.DescriptionClaim,
+		GroupsClaim:      form.GroupsClaim,
+		AdminGroup:       form.AdminGroup,
 		On:               false,
 	})
 	if !ret.OK {
@@ -261,6 +276,8 @@ func UpdateOauthProvider(ctx *gin.Context) {
 		EmailClaim:       form.EmailClaim,
 		PictureClaim:     form.PictureClaim,
 		DescriptionClaim: form.DescriptionClaim,
+		GroupsClaim:      form.GroupsClaim,
+		AdminGroup:       form.AdminGroup,
 		On:               form.On,
 		Picture:          form.Picture,
 	}); !ret.OK {

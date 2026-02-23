@@ -1557,6 +1557,8 @@
         "idClaimLabel": "ID字段",
         "logoUrlLabel": "Logo URL",
         "logoUrlPlaceholder": "https://example.com/picture.png",
+        "groupsClaimLabel": "分组字段",
+        "adminGroupLabel": "管理员组",
         "enable": "启用"
       }
     },

@@ -25,6 +25,8 @@ type CreateOauthOptions struct {
 	EmailClaim       string
 	PictureClaim     string
 	DescriptionClaim string
+	GroupsClaim      string
+	AdminGroup       string
 	On               bool
 	Picture          model.FileURL
 }
@@ -44,6 +46,8 @@ func (c CreateOauthOptions) Convert2Model() model.Model {
 		EmailClaim:       c.EmailClaim,
 		PictureClaim:     c.PictureClaim,
 		DescriptionClaim: c.DescriptionClaim,
+		GroupsClaim:      c.GroupsClaim,
+		AdminGroup:       c.AdminGroup,
 		On:               c.On,
 		Picture:          c.Picture,
 	}
@@ -63,6 +67,8 @@ type UpdateOauthOptions struct {
 	EmailClaim       *string
 	PictureClaim     *string
 	DescriptionClaim *string
+	GroupsClaim      *string
+	AdminGroup       *string
 	On               *bool
 	Picture          *model.FileURL
 }
@@ -107,6 +113,12 @@ func (u UpdateOauthOptions) Convert2Map() map[string]any {
 	}
 	if u.DescriptionClaim != nil {
 		options["description_claim"] = *u.DescriptionClaim
+	}
+	if u.GroupsClaim != nil {
+		options["groups_claim"] = *u.GroupsClaim
+	}
+	if u.AdminGroup != nil {
+		options["admin_group"] = *u.AdminGroup
 	}
 	if u.On != nil {
 		options["on"] = *u.On

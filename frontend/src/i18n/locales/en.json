@@ -1558,6 +1558,8 @@
         "idClaimLabel": "ID field",
         "logoUrlLabel": "Logo URL",
         "logoUrlPlaceholder": "https://example.com/picture.png",
+        "groupsClaimLabel": "Groups field",
+        "adminGroupLabel": "Admin group",
         "enable": "Enable"
       }
     },
