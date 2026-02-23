@@ -3,8 +3,9 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import Loading from '../components/common/Loading';
 import { useTranslation } from 'react-i18next';
+
 export const UserRoute = ({ children, requiresAuth = true }) => {
-  const { isAuthenticated, isAdmin, loading } = useSelector((state) => state.user);
+  const { isAuthenticated, loading } = useSelector((state) => state.user);
   const location = useLocation();
   const { t } = useTranslation();
 
@@ -20,15 +21,11 @@ export const UserRoute = ({ children, requiresAuth = true }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (requiresAuth && isAuthenticated && isAdmin) {
-    return <Navigate to="/admin/dashboard" state={{ from: location }} replace />;
-  }
-
   return children;
 };
 
-export const AdminRoute = ({ children, requiresAuth = true }) => {
-  const { isAuthenticated, isAdmin, loading } = useSelector((state) => state.user);
+export const AdminRoute = ({ children, requiresAuth = true, apiRoute = null }) => {
+  const { isAuthenticated, isAdmin, loading, routes } = useSelector((state) => state.user);
 
   const location = useLocation();
   useEffect(() => {
@@ -45,6 +42,10 @@ export const AdminRoute = ({ children, requiresAuth = true }) => {
 
   if (requiresAuth && isAuthenticated && !isAdmin) {
     return <Navigate to="/" replace />;
+  }
+
+  if (apiRoute && routes.length > 0 && !routes.includes(apiRoute)) {
+    return <Navigate to="/admin/dashboard" replace />;
   }
 
   return children;

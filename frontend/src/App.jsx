@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { HashRouter as Router } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import AppRoutes from './routes';
-import { fetchUserInfo } from './store/user';
+import { fetchUserInfo, fetchAccessibleRoutes } from './store/user';
 import { WebSocketStatus } from './components/common/websocket/WebSocketStatus.jsx';
 import { WebSocketNotice } from './components/common/websocket/WebSocketNotice.jsx';
 
@@ -14,6 +14,7 @@ function App() {
     const initializeAuth = async () => {
       if (token) {
         await dispatch(fetchUserInfo());
+        await dispatch(fetchAccessibleRoutes());
       }
     };
     initializeAuth();

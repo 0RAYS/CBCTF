@@ -8,9 +8,10 @@ import { getAdminNavSections } from '../../../config/adminNavigation';
 function AdminLayout() {
   const navigate = useNavigate();
   const user = useSelector((state) => state.user);
+  const routes = useSelector((state) => state.user.routes);
   const { t } = useTranslation();
 
-  const sections = useMemo(() => getAdminNavSections(t), [t]);
+  const sections = useMemo(() => getAdminNavSections(t, routes), [t, routes]);
 
   // Handle logo click
   const handleLogoClick = () => {
@@ -22,7 +23,7 @@ function AdminLayout() {
     if (user.user) {
       navigate('/admin/settings');
     } else {
-      navigate('/admin/login');
+      navigate('/login');
     }
   };
 

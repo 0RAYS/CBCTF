@@ -9,9 +9,10 @@ function AdminContestsLayout() {
   const { id } = useParams();
   const navigate = useNavigate();
   const user = useSelector((state) => state.user);
+  const routes = useSelector((state) => state.user.routes);
   const { t } = useTranslation();
 
-  const sections = useMemo(() => getAdminContestNavSections(t, id), [t, id]);
+  const sections = useMemo(() => getAdminContestNavSections(t, id, routes), [t, id, routes]);
 
   const handleLogoClick = () => {
     navigate('/admin/dashboard');
