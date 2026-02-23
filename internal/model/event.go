@@ -7,9 +7,6 @@ const (
 	RegisterEventType   = "register"
 	OauthLoginEventType = "oauth_login"
 
-	CreateAdminEventType = "create_admin"
-	UpdateAdminEventType = "update_admin"
-
 	CreateUserEventType = "create_user"
 	UpdateUserEventType = "update_user"
 	DeleteUserEventType = "delete_user"
@@ -100,7 +97,6 @@ const (
 
 var EventTypes = []string{
 	LoginEventType, RegisterEventType, OauthLoginEventType,
-	CreateAdminEventType, UpdateAdminEventType,
 	CreateUserEventType, UpdateUserEventType, DeleteUserEventType,
 	CreateContestEventType, UpdateContestEventType, DeleteContestEventType,
 	CreateChallengeEventType, UpdateChallengeEventType, DeleteChallengeEventType, UploadChallengeFileEventType,
@@ -129,7 +125,6 @@ var EventTypes = []string{
 }
 
 type Event struct {
-	IsAdmin bool    `json:"is_admin"`
 	Type    string  `json:"type"`
 	Success bool    `json:"success"`
 	IP      string  `json:"ip"`
@@ -155,5 +150,5 @@ func (e Event) UniqueFields() []string {
 }
 
 func (e Event) QueryFields() []string {
-	return []string{"id", "type", "success", "ip", "is_admin"}
+	return []string{"id", "type", "success", "ip"}
 }

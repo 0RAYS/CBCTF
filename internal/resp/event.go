@@ -9,7 +9,6 @@ import (
 func GetEventResp(event model.Event) gin.H {
 	return gin.H{
 		"id":         event.ID,
-		"is_admin":   event.IsAdmin,
 		"type":       event.Type,
 		"success":    event.Success,
 		"ip":         event.IP,

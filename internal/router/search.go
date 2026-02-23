@@ -13,7 +13,7 @@ import (
 )
 
 var models = []model.Model{
-	model.Admin{}, model.Challenge{}, model.ChallengeFlag{}, model.Cheat{}, model.Container{}, model.Contest{},
+	model.Challenge{}, model.ChallengeFlag{}, model.Cheat{}, model.Container{}, model.Contest{},
 	model.ContestChallenge{}, model.ContestFlag{}, model.Device{}, model.Docker{}, model.Email{}, model.Event{},
 	model.File{}, model.Group{}, model.Notice{}, model.Oauth{}, model.Permission{}, model.Pod{}, model.Request{},
 	model.Role{}, model.Setting{}, model.Smtp{}, model.Submission{}, model.Team{}, model.TeamFlag{}, model.Traffic{},

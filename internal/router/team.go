@@ -26,7 +26,7 @@ func GetTeam(ctx *gin.Context) {
 		return
 	}
 	solvedFlagL, _ := db.InitContestFlagRepo(db.DB).GetTeamSolvedContestFlags(team.ID)
-	data := resp.GetTeamResp(team, middleware.IsAdmin(ctx))
+	data := resp.GetTeamResp(team, middleware.IsFullAccess(ctx))
 	data["solved"] = resp.GetSolvedStateResp(solvedFlagL, contestFlagL)
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
 }
@@ -45,10 +45,9 @@ func GetTeams(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
-	isAdmin := middleware.IsAdmin(ctx)
 	data := make([]gin.H, 0)
 	for _, team := range teams {
-		data = append(data, resp.GetTeamResp(team, isAdmin))
+		data = append(data, resp.GetTeamResp(team, true))
 	}
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"count": count, "teams": data}))
 }
@@ -66,7 +65,7 @@ func GetTeammates(ctx *gin.Context) {
 	}
 	data := make([]gin.H, 0)
 	for _, user := range users {
-		data = append(data, resp.GetUserResp(user, middleware.IsAdmin(ctx)))
+		data = append(data, resp.GetUserResp(user, middleware.IsFullAccess(ctx)))
 	}
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
 	return
@@ -77,7 +76,7 @@ func UpdateTeam(ctx *gin.Context) {
 		team = middleware.GetTeam(ctx)
 		ret  model.RetVal
 	)
-	if middleware.IsAdmin(ctx) {
+	if middleware.IsFullAccess(ctx) {
 		var form dto.AdminUpdateTeamForm
 		if ret = dto.Bind(ctx, &form); !ret.OK {
 			ctx.JSON(http.StatusOK, ret)
@@ -147,7 +146,7 @@ func KickMember(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Operator": middleware.GetSelfID(ctx)})
+	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Operator": middleware.GetSelf(ctx).ID})
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, model.SuccessRetVal())
 }
@@ -160,7 +159,7 @@ func JoinTeam(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.JoinTeamEventType)
 	contest := middleware.GetContest(ctx)
-	user := middleware.GetSelf(ctx).(model.User)
+	user := middleware.GetSelf(ctx)
 	tx := db.DB.Begin()
 	team, ret := service.JoinTeam(tx, contest, user, form)
 	if !ret.OK {
@@ -182,7 +181,7 @@ func CreateTeam(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateTeamEventType)
 	contest := middleware.GetContest(ctx)
-	user := middleware.GetSelf(ctx).(model.User)
+	user := middleware.GetSelf(ctx)
 	tx := db.DB.Begin()
 	team, ret := service.CreateTeam(tx, contest, user, form)
 	if !ret.OK {
@@ -199,7 +198,7 @@ func CreateTeam(ctx *gin.Context) {
 
 func LeaveTeam(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.LeaveTeamEventType)
-	user := middleware.GetSelf(ctx).(model.User)
+	user := middleware.GetSelf(ctx)
 	contest := middleware.GetContest(ctx)
 	team := middleware.GetTeam(ctx)
 	tx := db.DB.Begin()

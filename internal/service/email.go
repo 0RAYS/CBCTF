@@ -15,7 +15,7 @@ import (
 
 func SendEmail(user model.User) model.RetVal {
 	id := utils.UUID()
-	token, err := utils.GenerateToken(user.ID, user.Name, false, id)
+	token, err := utils.GenerateToken(user.ID, user.Name, id)
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}

@@ -28,7 +28,6 @@ func Events(ctx *gin.Context) {
 		GetContestChallenge(ctx), GetContestFlag(ctx), GetVictim(ctx), GetCheat(ctx), GetOauth(ctx), GetSmtp(ctx),
 	}
 	options := db.CreateEventOptions{
-		IsAdmin: IsAdmin(ctx),
 		Type:    t,
 		Success: ctx.GetBool(CTXEventSuccessKey),
 		IP:      ctx.ClientIP(),
@@ -47,7 +46,7 @@ func Events(ctx *gin.Context) {
 			}
 		}
 	}
-	options.Models["Self"] = GetSelfID(ctx)
+	options.Models["Self"] = GetSelf(ctx).ID
 	if event, ret := db.InitEventRepo(db.DB).Create(options); ret.OK {
 		for _, target := range webhook.SelectWebhook(event) {
 			if _, err := task.EnqueueWebhookTask(event, target); err != nil {

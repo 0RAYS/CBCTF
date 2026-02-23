@@ -73,6 +73,25 @@ func UpdateSelf(tx *gorm.DB, user model.User, form dto.UpdateSelfForm) model.Ret
 	return repo.Update(user.ID, options)
 }
 
+func UpdateUser(tx *gorm.DB, user model.User, form dto.UpdateUserForm) model.RetVal {
+	repo := db.InitUserRepo(tx)
+	options := db.UpdateUserOptions{
+		Name:        form.Name,
+		Email:       form.Email,
+		Description: form.Description,
+		Hidden:      form.Hidden,
+		Banned:      form.Banned,
+		Verified:    form.Verified,
+	}
+	if form.Email != nil && *form.Email != user.Email {
+		options.Verified = new(false)
+	}
+	if form.Password != nil {
+		options.Password = new(utils.HashPassword(*form.Password))
+	}
+	return repo.Update(user.ID, options)
+}
+
 func DeleteSelf(tx *gorm.DB, user model.User, form dto.DeleteSelfForm) model.RetVal {
 	if !utils.CompareHashAndPassword(user.Password, form.Password) {
 		return model.RetVal{Msg: i18n.Model.User.PasswordWrong}

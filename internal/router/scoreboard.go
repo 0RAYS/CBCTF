@@ -35,9 +35,8 @@ func GetTeamRanking(ctx *gin.Context) {
 	}
 	repo := db.InitTeamRepo(db.DB)
 	data := make([]gin.H, 0)
-	isAdmin := middleware.IsAdmin(ctx)
 	for _, team := range teams {
-		if !middleware.IsAdmin(ctx) && team.Hidden {
+		if !middleware.IsFullAccess(ctx) && team.Hidden {
 			count--
 			continue
 		}
@@ -46,7 +45,7 @@ func GetTeamRanking(ctx *gin.Context) {
 			count--
 			continue
 		}
-		tmp := resp.GetTeamRankingResp(team, solved, contestFlags, isAdmin)
+		tmp := resp.GetTeamRankingResp(team, solved, contestFlags, middleware.IsFullAccess(ctx))
 		tmp["users"] = repo.CountAssociation(team, "Users")
 		data = append(data, tmp)
 	}
@@ -101,7 +100,7 @@ func GetScoreboard(ctx *gin.Context) {
 	teamIDL := make([]uint, 0, len(teams))
 	teamFlagRepo := db.InitTeamFlagRepo(db.DB)
 	for _, team := range teams {
-		if !middleware.IsAdmin(ctx) && team.Hidden {
+		if !middleware.IsFullAccess(ctx) && team.Hidden {
 			count--
 			continue
 		}

@@ -179,7 +179,7 @@ func Init() *gin.Engine {
 		}
 	}
 
-	admin := auth.Group("/admin")
+	admin := auth.Group("/admin", middleware.SetFullAccess)
 	{
 		admin.GET("/ip", SearchIP)
 		admin.GET("/models", GetAllowQueryModels)

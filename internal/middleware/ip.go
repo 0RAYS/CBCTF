@@ -21,7 +21,7 @@ func RateLimit(name string, maxRequests int, window time.Duration) gin.HandlerFu
 			ctx.Next()
 			return
 		}
-		if userID := GetSelfID(ctx); userID != 0 {
+		if userID := GetSelf(ctx).ID; userID != 0 {
 			client = strconv.Itoa(int(userID))
 		}
 		count, ret := redis.RateLimit(name, client, window)

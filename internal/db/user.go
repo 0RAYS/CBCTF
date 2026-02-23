@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/oauth"
 	"CBCTF/internal/utils"
 	"fmt"
 
@@ -110,6 +111,55 @@ func InitUserRepo(tx *gorm.DB) *UserRepo {
 			DB: tx,
 		},
 	}
+}
+
+func (u *UserRepo) InitAdmin() model.RetVal {
+	count, ret := u.CountGroupUser(model.AdminGroupName)
+	if !ret.OK {
+		return ret
+	}
+	if count == 0 {
+		pwd := utils.UUID()
+		admin, ret := u.Insert(model.User{
+			Name:           "admin",
+			Password:       utils.HashPassword(pwd),
+			Email:          "admin@0rays.club",
+			Description:    "default administrator",
+			Verified:       true,
+			Hidden:         true,
+			Banned:         false,
+			Provider:       oauth.LocalProvider,
+			ProviderUserID: utils.UUID(),
+			OauthRaw:       "{}",
+		})
+		if !ret.OK {
+			return ret
+		}
+		group, ret := InitGroupRepo(u.DB).GetByUniqueKey("name", model.AdminGroupName)
+		if !ret.OK {
+			return ret
+		}
+		if ret = AppendUserToGroup(u.DB, admin, group); !ret.OK {
+			return ret
+		}
+		log.Logger.Infof("Init Admin: Admin{ name: admin, password: %s, email: admin@0rays.club}", pwd)
+	}
+	return model.SuccessRetVal()
+}
+
+func (u *UserRepo) CountGroupUser(group string) (int64, model.RetVal) {
+	var count int64
+	res := u.DB.Raw(`
+		SELECT count(*) FROM users
+		INNER JOIN user_groups ON users.id = user_groups.user_id
+	`+" INNER JOIN `groups` ON user_groups.group_id = groups.id"+`
+		WHERE groups.name = ? AND users.deleted_at IS NULL AND groups.deleted_at IS NULL
+	`, group).Scan(&count)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to count role users: %v", res.Error)
+		return 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.User{}.ModelName(), "Error": res.Error.Error()}}
+	}
+	return count, model.SuccessRetVal()
 }
 
 func (u *UserRepo) GetByName(name string, optionsL ...GetOptions) (model.User, model.RetVal) {
