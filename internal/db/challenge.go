@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -96,45 +95,25 @@ func (c *ChallengeRepo) ListCategories(t model.ChallengeType) ([]string, model.R
 }
 
 func (c *ChallengeRepo) ListChallengesNotInContest(contestID uint, limit, offset int, category string, t model.ChallengeType) ([]model.Challenge, int64, model.RetVal) {
-	whereClause := "contest_challenges.id IS NULL AND challenges.deleted_at IS NULL"
-	args := []any{contestID}
+	base := c.DB.Table("challenges").
+		Joins("LEFT JOIN contest_challenges ON challenges.id = contest_challenges.challenge_id AND contest_challenges.contest_id = ? AND contest_challenges.deleted_at IS NULL", contestID).
+		Where("contest_challenges.id IS NULL AND challenges.deleted_at IS NULL")
 
 	if category != "" {
-		whereClause += " AND challenges.category = ?"
-		args = append(args, category)
+		base = base.Where("challenges.category = ?", category)
 	}
 	if t != "" {
-		whereClause += " AND challenges.type = ?"
-		args = append(args, t)
+		base = base.Where("challenges.type = ?", t)
 	}
 
 	var count int64
-	countSQL := fmt.Sprintf(`
-		SELECT COUNT(*) FROM challenges
-		LEFT JOIN contest_challenges
-			ON challenges.id = contest_challenges.challenge_id
-			AND contest_challenges.contest_id = ?
-			AND contest_challenges.deleted_at IS NULL
-		WHERE %s
-	`, whereClause)
-	if res := c.DB.Raw(countSQL, args...).Scan(&count); res.Error != nil {
+	if res := base.Count(&count); res.Error != nil {
 		log.Logger.Warningf("Failed to count Challenges not in contest: %s", res.Error)
 		return nil, 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Challenge{}.ModelName(), "Error": res.Error.Error()}}
 	}
 
 	var challenges = make([]model.Challenge, 0)
-	dataSQL := fmt.Sprintf(`
-		SELECT challenges.* FROM challenges
-		LEFT JOIN contest_challenges
-			ON challenges.id = contest_challenges.challenge_id
-			AND contest_challenges.contest_id = ?
-			AND contest_challenges.deleted_at IS NULL
-		WHERE %s
-		ORDER BY challenges.id DESC
-		LIMIT ? OFFSET ?
-	`, whereClause)
-	dataArgs := append(args, limit, offset)
-	if res := c.DB.Raw(dataSQL, dataArgs...).Scan(&challenges); res.Error != nil {
+	if res := base.Select("challenges.*").Order("challenges.id DESC").Limit(limit).Offset(offset).Scan(&challenges); res.Error != nil {
 		log.Logger.Warningf("Failed to list Challenges not in contest: %s", res.Error)
 		return nil, 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Challenge{}.ModelName(), "Error": res.Error.Error()}}
 	}

@@ -56,16 +56,31 @@ func (p *PermissionRepo) InitPermissions() model.RetVal {
 	return model.SuccessRetVal()
 }
 
+func (p *PermissionRepo) HasAdminAccess(userID uint) bool {
+	var count int64
+	res := p.DB.Table("permissions").
+		Joins("INNER JOIN role_permissions ON permissions.id = role_permissions.permission_id").
+		Joins("INNER JOIN roles ON role_permissions.role_id = roles.id").
+		Joins("INNER JOIN `groups` ON roles.id = groups.role_id").
+		Joins("INNER JOIN user_groups ON groups.id = user_groups.group_id").
+		Where("user_groups.user_id = ? AND permissions.deleted_at IS NULL AND permissions.resource LIKE ?", userID, "admin:%").
+		Count(&count)
+	if res.Error != nil {
+		return false
+	}
+	return count > 0
+}
+
 func (p *PermissionRepo) GetUserPermissions(userID uint) ([]string, model.RetVal) {
 	var perms []model.Permission
-	res := p.DB.Raw(`
-		SELECT DISTINCT permissions.* FROM permissions
-		INNER JOIN role_permissions ON permissions.id = role_permissions.permission_id
-		INNER JOIN roles ON role_permissions.role_id = roles.id
-		INNER JOIN `+"`groups`"+` ON roles.id = groups.role_id
-		INNER JOIN user_groups ON groups.id = user_groups.group_id
-		WHERE user_groups.user_id = ? AND permissions.deleted_at IS NULL
-	`, userID).Scan(&perms)
+	res := p.DB.Table("permissions").
+		Distinct("permissions.*").
+		Joins("INNER JOIN role_permissions ON permissions.id = role_permissions.permission_id").
+		Joins("INNER JOIN roles ON role_permissions.role_id = roles.id").
+		Joins("INNER JOIN `groups` ON roles.id = groups.role_id").
+		Joins("INNER JOIN user_groups ON groups.id = user_groups.group_id").
+		Where("user_groups.user_id = ? AND permissions.deleted_at IS NULL", userID).
+		Scan(&perms)
 	if res.Error != nil {
 		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Permission{}.ModelName(), "Error": res.Error.Error()}}
 	}
@@ -78,20 +93,18 @@ func (p *PermissionRepo) GetUserPermissions(userID uint) ([]string, model.RetVal
 
 func (p *PermissionRepo) CheckUserPermission(userID uint, permission string) (bool, model.RetVal) {
 	var perm model.Permission
-	res := p.DB.Raw(`
-		SELECT permissions.* FROM permissions
-		INNER JOIN role_permissions ON permissions.id = role_permissions.permission_id
-		INNER JOIN roles ON role_permissions.role_id = roles.id
-		INNER JOIN `+"`groups`"+` ON roles.id = groups.role_id
-		INNER JOIN user_groups ON groups.id = user_groups.group_id
-		INNER JOIN users ON user_groups.user_id = users.id
-		WHERE users.deleted_at IS NULL AND permissions.deleted_at IS NULL AND
-		users.id = ? AND permissions.name = ? 
-	`, userID, permission).Scan(&perm)
+	res := p.DB.Table("permissions").
+		Joins("INNER JOIN role_permissions ON permissions.id = role_permissions.permission_id").
+		Joins("INNER JOIN roles ON role_permissions.role_id = roles.id").
+		Joins("INNER JOIN `groups` ON roles.id = groups.role_id").
+		Joins("INNER JOIN user_groups ON groups.id = user_groups.group_id").
+		Joins("INNER JOIN users ON user_groups.user_id = users.id").
+		Where("users.deleted_at IS NULL AND permissions.deleted_at IS NULL AND users.id = ? AND permissions.name = ?", userID, permission).
+		Limit(1).Find(&perm)
 	if res.Error != nil {
 		return false, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": perm.ModelName(), "Error": res.Error.Error()}}
 	}
-	if res.RowsAffected == 0 || perm.ID == 0 {
+	if res.RowsAffected == 0 {
 		return false, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": perm.ModelName()}}
 	}
 	return true, model.SuccessRetVal()

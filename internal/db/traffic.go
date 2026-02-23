@@ -54,13 +54,12 @@ func (t *TrafficRepo) GetTeamVictimIP(teamIDL ...uint) ([]TeamVictimIP, model.Re
 		return nil, model.SuccessRetVal()
 	}
 	var teamVictimIPL []TeamVictimIP
-	res := t.DB.Raw(`
-		SELECT victims.team_id, victims.id AS victim_id, traffics.src_ip, victims.deleted_at AS stop_time
-		FROM traffics
-		INNER JOIN victims ON traffics.victim_id = victims.id
-		WHERE victims.team_id IN ?
-		GROUP BY victims.team_id, victims.id, traffics.src_ip, victims.deleted_at
-	`, teamIDL).Scan(&teamVictimIPL)
+	res := t.DB.Table("traffics").
+		Select("victims.team_id, victims.id AS victim_id, traffics.src_ip, victims.deleted_at AS stop_time").
+		Joins("INNER JOIN victims ON traffics.victim_id = victims.id").
+		Where("victims.team_id IN ?", teamIDL).
+		Group("victims.team_id, victims.id, traffics.src_ip, victims.deleted_at").
+		Scan(&teamVictimIPL)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Traffic: %s", res.Error)
 		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Traffic{}.ModelName(), "Error": res.Error.Error()}}

@@ -137,16 +137,15 @@ func InitContestRepo(tx *gorm.DB) *ContestRepo {
 
 func (c *ContestRepo) GetByUserID(userID uint) ([]model.Contest, model.RetVal) {
 	var contests []model.Contest
-	res := c.DB.Raw(`
-		SlECT contests.* FROM contests
-		INNER JOIN user_contests ON user_contests.contest_id = contests.id
-		WHERE user_contests.user_id = ? AND contests.deleted_at IS NULL
-	`, userID).Scan(&contests)
+	res := c.DB.Table("contests").Select("contests.*").
+		Joins("INNER JOIN user_contests ON user_contests.contest_id = contests.id").
+		Where("user_contests.user_id = ? AND contests.deleted_at IS NULL", userID).
+		Scan(&contests)
 	if res.Error != nil {
 		log.Logger.Fatalf("Failed to get Contests: %s", res.Error)
 		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Contest{}.ModelName(), "Error": res.Error.Error()}}
 	}
-	return contests, model.RetVal{}
+	return contests, model.SuccessRetVal()
 }
 
 func (c *ContestRepo) GetIDByUserID(userID uint) ([]uint, model.RetVal) {
