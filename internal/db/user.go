@@ -147,6 +147,20 @@ func (u *UserRepo) InitAdmin() model.RetVal {
 	return model.SuccessRetVal()
 }
 
+func (u *UserRepo) IsInGroup(userID uint, groupName string) bool {
+	var count int64
+	res := u.DB.Raw(`
+		SELECT count(*) FROM user_groups
+		INNER JOIN `+"`groups`"+` ON user_groups.group_id = groups.id
+		WHERE user_groups.user_id = ? AND groups.name = ? AND groups.deleted_at IS NULL
+	`, userID, groupName).Scan(&count)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to check user group membership: %v", res.Error)
+		return false
+	}
+	return count > 0
+}
+
 func (u *UserRepo) CountGroupUser(group string) (int64, model.RetVal) {
 	var count int64
 	res := u.DB.Raw(`

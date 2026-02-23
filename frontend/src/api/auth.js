@@ -24,15 +24,3 @@ export const register = (data) => {
     },
   });
 };
-
-// 管理员登录
-export const adminLogin = (data) => {
-  return request({
-    url: '/admin/login',
-    method: 'POST',
-    data: {
-      name: data.name,
-      password: data.password,
-    },
-  });
-};

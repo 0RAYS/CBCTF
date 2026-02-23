@@ -7,12 +7,10 @@ import Loading from '../components/common/Loading';
 import ContestLayout from '../components/features/layouts/ContestLayout';
 import MainLayout from '../components/features/layouts/MainLayout';
 import AdminLayout from '../components/features/layouts/AdminLayout';
-import AdminAuthLayout from '../components/features/layouts/AdminAuthLayout';
 import AdminContestsLayout from '../components/features/layouts/AdminContestsLayout';
 
 // 懒加载页面组件
 const Login = lazy(() => import('../pages/Login'));
-const AdminLogin = lazy(() => import('../pages/admin/Login'));
 const Dashboard = lazy(() => import('../pages/admin/Dashboard'));
 const ContestsManagement = lazy(() => import('../pages/admin/Contests'));
 const RbacManagement = lazy(() => import('../pages/admin/Rbac'));
@@ -174,16 +172,6 @@ const AppRoutes = () => {
       </Route>
 
       {/* 管理员路由 */}
-      <Route path="/admin" element={<AdminAuthLayout />}>
-        <Route
-          path="login"
-          element={
-            <Suspense fallback={<Loading />}>
-              <AdminLogin />
-            </Suspense>
-          }
-        />
-      </Route>
       <Route
         path="/admin"
         element={

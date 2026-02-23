@@ -20,6 +20,7 @@ func GetUserResp(user model.User, admin bool) gin.H {
 		"provider":    user.Provider,
 		"hidden":      user.Hidden,
 		"banned":      user.Banned,
+		"is_admin":    db.InitUserRepo(db.DB).IsInGroup(user.ID, model.AdminGroupName),
 	}
 	if admin {
 		data["teams"] = db.InitUserRepo(db.DB).CountAssociation(user, "Teams")
