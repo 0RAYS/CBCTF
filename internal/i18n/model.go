@@ -78,13 +78,14 @@ type TeamFlag struct {
 }
 
 type User struct {
-	WeakPassword      string
-	SamePassword      string
-	PasswordWrong     string
-	NamePasswordWrong string
-	UnverifiedEmail   string
-	AlreadyVerified   string
-	InContest         string
+	WeakPassword       string
+	SamePassword       string
+	PasswordWrong      string
+	NamePasswordWrong  string
+	UnverifiedEmail    string
+	AlreadyVerified    string
+	InContest          string
+	NotAllowedRegister string
 }
 
 type Victim struct {
@@ -201,13 +202,14 @@ var Model = struct {
 		AlreadySolved: "model.teamFlag.alreadySolved",
 	},
 	User: User{
-		WeakPassword:      "model.user.weakPassword",
-		SamePassword:      "model.user.samePassword",
-		PasswordWrong:     "model.user.passwordWrong",
-		NamePasswordWrong: "model.user.namePasswordWrong",
-		UnverifiedEmail:   "model.user.unverifiedEmail",
-		AlreadyVerified:   "model.user.alreadyVerified",
-		InContest:         "model.user.inContest",
+		WeakPassword:       "model.user.weakPassword",
+		SamePassword:       "model.user.samePassword",
+		PasswordWrong:      "model.user.passwordWrong",
+		NamePasswordWrong:  "model.user.namePasswordWrong",
+		UnverifiedEmail:    "model.user.unverifiedEmail",
+		AlreadyVerified:    "model.user.alreadyVerified",
+		InContest:          "model.user.inContest",
+		NotAllowedRegister: "model.user.notAllowedRegister",
 	},
 	Victim: Victim{
 		Limited:     "model.victim.limited",

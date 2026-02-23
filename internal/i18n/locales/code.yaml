@@ -67,6 +67,7 @@ model:
     unverifiedEmail: "400"
     alreadyVerified: "400"
     inContest: "400"
+    notAllowedRegister: "403"
   victim:
     limited: "400"
     hasMuchTime: "400"
