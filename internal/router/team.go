@@ -68,7 +68,6 @@ func GetTeammates(ctx *gin.Context) {
 		data = append(data, resp.GetUserResp(user, middleware.IsFullAccess(ctx)))
 	}
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
-	return
 }
 
 func UpdateTeam(ctx *gin.Context) {

@@ -8,9 +8,17 @@ const initialState = {
   isAuthenticated: false,
   loading: true,
   error: null,
-  isAdmin: false,
   routes: [],
+  hasAdminAccess: false,
+  hasUserAccess: false,
 };
+
+function deriveAccess(routes) {
+  return {
+    hasAdminAccess: routes.some((r) => r.startsWith('GET /admin/')),
+    hasUserAccess: routes.some((r) => r.includes('/contests/:contestID')),
+  };
+}
 
 const userSlice = createSlice({
   name: 'user',
@@ -19,17 +27,12 @@ const userSlice = createSlice({
     setUser: (state, action) => {
       state.user = action.payload;
       state.isAuthenticated = true;
-      state.isAdmin = false;
-      localStorage.setItem('userType', 'user');
-    },
-    setAdmin: (state, action) => {
-      state.user = action.payload;
-      state.isAdmin = true;
-      state.isAuthenticated = true;
-      localStorage.setItem('userType', 'admin');
     },
     setRoutes: (state, action) => {
       state.routes = action.payload;
+      const { hasAdminAccess, hasUserAccess } = deriveAccess(action.payload);
+      state.hasAdminAccess = hasAdminAccess;
+      state.hasUserAccess = hasUserAccess;
     },
     setLoading: (state, action) => {
       state.loading = action.payload;
@@ -41,7 +44,8 @@ const userSlice = createSlice({
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
-      state.isAdmin = false;
+      state.hasAdminAccess = false;
+      state.hasUserAccess = false;
       state.routes = [];
       localStorage.removeItem('token');
       localStorage.removeItem('userType');
@@ -52,7 +56,7 @@ const userSlice = createSlice({
   },
 });
 
-export const { setUser, setAdmin, setRoutes, setLoading, setError, logout, clearError } = userSlice.actions;
+export const { setUser, setRoutes, setLoading, setError, logout, clearError } = userSlice.actions;
 
 /**
  * 获取用户信息
@@ -64,11 +68,7 @@ export const fetchUserInfo = () => async (dispatch) => {
     const response = await getUserInfo();
 
     if (response.code === 200) {
-      if (response.data.is_admin) {
-        dispatch(setAdmin(response.data));
-      } else {
-        dispatch(setUser(response.data));
-      }
+      dispatch(setUser(response.data));
     } else {
       const errorMsg = response.msg || i18n.t('toast.user.fetchFailed');
       dispatch(setError(errorMsg));
@@ -83,13 +83,13 @@ export const fetchUserInfo = () => async (dispatch) => {
 };
 
 /**
- * 获取当前用户可访问的 API 路由列表，存入 store
+ * 获取当前用户可访问的 API 路由列表，存入 store 并派生访问标志
  */
 export const fetchAccessibleRoutes = () => async (dispatch) => {
   try {
     const response = await getAccessibleRoutes();
     if (response.code === 200) {
-      dispatch(setRoutes(response.data));
+      dispatch(setRoutes(response.data ?? []));
     }
   } catch {
     // 静默失败，routes 保持为空数组

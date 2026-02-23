@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+import { store } from '../store/index';
 import { login, register } from '../api/auth';
 import { fetchUserInfo, fetchAccessibleRoutes } from '../store/user';
 import { setEffectLoading } from '../store/app';
@@ -23,7 +24,6 @@ function Login() {
           password: data.password,
         });
       } else {
-        // 处理注册逻辑
         response = await register({
           name: data.username,
           email: data.email,
@@ -33,9 +33,7 @@ function Login() {
       if (response.code === 200) {
         await dispatch(fetchUserInfo());
         await dispatch(fetchAccessibleRoutes());
-        // 根据角色跳转到不同首页
-        const state = await import('../store/index').then((m) => m.default.getState());
-        navigate(state.user.isAdmin ? '/admin/dashboard' : '/games');
+        navigate(store.getState().user.hasAdminAccess ? '/admin/dashboard' : '/games');
       }
     } catch (error) {
       toast.danger({ title: msg, description: error.message });

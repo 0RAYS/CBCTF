@@ -5,7 +5,7 @@ import Loading from '../components/common/Loading';
 import { useTranslation } from 'react-i18next';
 
 export const UserRoute = ({ children, requiresAuth = true }) => {
-  const { isAuthenticated, loading } = useSelector((state) => state.user);
+  const { isAuthenticated, hasUserAccess, loading } = useSelector((state) => state.user);
   const location = useLocation();
   const { t } = useTranslation();
 
@@ -21,13 +21,18 @@ export const UserRoute = ({ children, requiresAuth = true }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // routes 尚未加载完成时放行，加载完成后若无权则拦截
+  if (requiresAuth && isAuthenticated && !loading && !hasUserAccess) {
+    return <Navigate to="/" replace />;
+  }
+
   return children;
 };
 
 export const AdminRoute = ({ children, requiresAuth = true, apiRoute = null }) => {
-  const { isAuthenticated, isAdmin, loading, routes } = useSelector((state) => state.user);
-
+  const { isAuthenticated, hasAdminAccess, loading, routes } = useSelector((state) => state.user);
   const location = useLocation();
+
   useEffect(() => {
     document.title = `CBCTF - ${location.pathname.split('/').pop() || 'Home'}`;
   }, [location]);
@@ -40,7 +45,7 @@ export const AdminRoute = ({ children, requiresAuth = true, apiRoute = null }) =
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (requiresAuth && isAuthenticated && !isAdmin) {
+  if (requiresAuth && isAuthenticated && !hasAdminAccess) {
     return <Navigate to="/" replace />;
   }
 
