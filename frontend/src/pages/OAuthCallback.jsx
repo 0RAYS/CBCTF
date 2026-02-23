@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { fetchUserInfo } from '../store/user';
+import { fetchUserInfo, fetchAccessibleRoutes } from '../store/user';
+import { store } from '../store';
 import { toast } from '../utils/toast';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
@@ -47,14 +48,16 @@ function OAuthCallback() {
       // 等待一下确保token已保存
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      // 获取用户信息
+      // 获取用户信息及可访问路由（需两者都完成才能正确判断权限）
       await dispatch(fetchUserInfo());
+      await dispatch(fetchAccessibleRoutes());
 
       setStatus('success');
       toast.success({ description: t('oauth.callback.toast.success') });
 
-      // 跳转到游戏页面
-      navigate('/games');
+      // 根据权限跳转（与 Login.jsx 保持一致）
+      const { hasAdminAccess } = store.getState().user;
+      navigate(hasAdminAccess ? '/admin/dashboard' : '/games');
     } catch (error) {
       setStatus('error');
       toast.danger({ description: error.message || t('oauth.callback.toast.failed') });
