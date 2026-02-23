@@ -55,7 +55,6 @@ func Init() *gin.Engine {
 	{
 		router.POST("/register", middleware.RateLimit("register", 1, time.Minute), Register)
 		router.POST("/login", Login)
-		router.POST("/admin/login", AdminLogin)
 
 		RegisterOauthRouter()
 		router.GET("/oauth", ListOauth)
@@ -73,66 +72,65 @@ func Init() *gin.Engine {
 		router.GET("/contests", GetContests)
 	}
 
-	auth := router.Group("", middleware.CheckAuth)
+	auth := router.Group("", middleware.CheckAuth, middleware.CheckPermission)
 
-	user := auth.Group("/me", middleware.CheckRole(false))
+	user := auth.Group("/me")
 	{
-		user.GET("", middleware.RBAC(model.PermSelfRead), GetUser)
-		user.PUT("/password", middleware.RBAC(model.PermSelfUpdate), ChangePwd)
-		user.PUT("", middleware.RBAC(model.PermSelfUpdate), UpdateUser)
-		user.DELETE("", middleware.RBAC(model.PermSelfDelete), DeleteUser)
-		user.POST("/picture", middleware.RBAC(model.PermSelfUpdate), UploadPicture("self-user"))
+		user.GET("", GetUser)
+		user.PUT("/password", ChangePwd)
+		user.PUT("", UpdateUser)
+		user.DELETE("", DeleteUser)
+		user.POST("/picture", UploadPicture("self-user"))
 		user.POST("/activate",
-			middleware.RBAC(model.PermSelfActivate),
 			middleware.RateLimit("activate", 1, time.Minute), ActivateEmail,
 		)
 	}
 
-	contest := auth.Group("/contests/:contestID", middleware.CheckRole(false), middleware.SetContest)
+	contest := auth.Group("/contests/:contestID", middleware.SetContest)
 	{
-		contest.GET("", middleware.RBAC(model.PermUserContestRead), GetContest)
-		contest.GET("/rank", middleware.RBAC(model.PermUserContestRank), GetTeamRanking)
-		contest.GET("/scoreboard", middleware.RBAC(model.PermUserContestRank), GetScoreboard)
-		contest.GET("/timeline", middleware.RBAC(model.PermUserContestRank), GetRankTimeline)
-		contest.POST("/teams/join", middleware.RBAC(model.PermUserTeamJoin),
+		contest.GET("", GetContest)
+		contest.GET("/rank", GetTeamRanking)
+		contest.GET("/scoreboard", GetScoreboard)
+		contest.GET("/timeline", GetRankTimeline)
+		contest.POST("/teams/join",
 			middleware.ContestIsNotOver, middleware.CheckVerified, JoinTeam,
 		)
-		contest.POST("/teams/create", middleware.RBAC(model.PermUserTeamCreate),
+		contest.POST("/teams/create",
 			middleware.ContestIsNotOver, middleware.CheckVerified, CreateTeam,
 		)
 
 		contestTeam := contest.Group("/teams/me", middleware.CheckVerified, middleware.SetTeamByUser)
 		{
-			contestTeam.GET("", middleware.RBAC(model.PermUserTeamRead), GetTeam)
-			contestTeam.GET("/captcha", middleware.RBAC(model.PermUserTeamRead), GetTeamCaptcha)
-			contestTeam.GET("/users", middleware.RBAC(model.PermUserTeamRead), GetTeammates)
-			contestTeam.PUT("/captcha", middleware.RBAC(model.PermUserTeamUpdate),
+			contestTeam.GET("", GetTeam)
+			contestTeam.GET("/captcha", GetTeamCaptcha)
+			contestTeam.GET("/users", GetTeammates)
+			contestTeam.PUT("/captcha",
 				middleware.ContestIsNotOver, middleware.CheckCaptain, UpdateCaptcha,
 			)
-			contestTeam.PUT("", middleware.RBAC(model.PermUserTeamUpdate),
+			contestTeam.PUT("",
 				middleware.ContestIsNotOver, middleware.CheckCaptain, UpdateTeam,
 			)
-			contestTeam.POST("/picture", middleware.RBAC(model.PermUserTeamUpdate),
+			contestTeam.POST("/picture",
 				middleware.ContestIsNotOver, middleware.CheckCaptain, UploadPicture("team"),
 			)
-			contestTeam.DELETE("", middleware.RBAC(model.PermUserTeamDelete),
+			contestTeam.DELETE("",
 				middleware.ContestIsComing, middleware.CheckCaptain, DeleteTeam,
 			)
-			contestTeam.POST("/kick", middleware.RBAC(model.PermUserTeamUpdate),
+			contestTeam.POST("/kick",
 				middleware.ContestIsComing, middleware.CheckCaptain, KickMember,
 			)
-			contestTeam.POST("/leave", middleware.RBAC(model.PermUserTeamRead), middleware.ContestIsComing, LeaveTeam)
+			contestTeam.POST("/leave", middleware.ContestIsComing, LeaveTeam)
 		}
 
 		// 比赛公告
 		{
-			contest.GET("/notices", middleware.RBAC(model.PermUserNoticeList), GetNotices)
+			contest.GET("/notices", GetNotices)
 		}
 
-		contest.GET("/challenges", middleware.RBAC(model.PermUserChallengeList),
+		contest.GET("/challenges",
 			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.ContestIsNotComing, GetContestChallenges,
 		)
-		contest.GET("/challenges/categories", middleware.RBAC(model.PermUserChallengeList),
+		contest.GET("/challenges/categories",
 			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.ContestIsNotComing, GetContestChallengeCategories,
 		)
 		contestChallenge := contest.Group(
@@ -140,37 +138,31 @@ func Init() *gin.Engine {
 			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.ContestIsNotComing, middleware.SetContestChallenge,
 		)
 		{
-			contestChallenge.GET("", middleware.RBAC(model.PermUserChallengeRead), GetContestChallengeStatus)
+			contestChallenge.GET("", GetContestChallengeStatus)
 			contestChallenge.POST("/init",
-				middleware.RBAC(model.PermUserChallengeInit),
 				middleware.RateLimit("init_flag", 1, time.Minute),
 				middleware.ContestIsRunning, middleware.CheckSolved, InitTeamFlag,
 			)
 			contestChallenge.GET("/attachment",
-				middleware.RBAC(model.PermUserChallengeRead),
 				middleware.RateLimit("download_attachment", 10, time.Minute),
 				middleware.SetAttachmentFile(false), DownloadFile(model.DownloadAttachmentEventType),
 			)
 			contestChallenge.POST("/reset",
-				middleware.RBAC(model.PermUserChallengeReset),
 				middleware.RateLimit("init_flag", 1, time.Minute),
 				middleware.ContestIsRunning, middleware.CheckIfGenerated, middleware.CheckSolved, ResetTeamFlag,
 			)
 			contestChallenge.POST("/start",
-				middleware.RBAC(model.PermUserVictimControl),
 				middleware.CheckChallengeType(model.PodsChallengeType),
 				middleware.RateLimit("start_victim", 1, time.Minute), middleware.CheckTeamVictimCount, middleware.CheckIfGenerated, StartVictim,
 			)
 			contestChallenge.POST("/increase",
-				middleware.RBAC(model.PermUserVictimControl),
 				middleware.CheckChallengeType(model.PodsChallengeType), middleware.ContestIsRunning,
 				middleware.CheckIfGenerated, IncreaseVictimDuration,
 			)
-			contestChallenge.POST("/stop", middleware.RBAC(model.PermUserVictimControl),
+			contestChallenge.POST("/stop",
 				middleware.CheckChallengeType(model.PodsChallengeType), middleware.CheckIfGenerated, StopVictim,
 			)
 			contestChallenge.POST("/submit",
-				middleware.RBAC(model.PermUserChallengeSubmit),
 				middleware.RateLimit("submit_flag", 1, time.Second),
 				middleware.ContestIsRunning, middleware.CheckIfGenerated, middleware.CheckSolved, SubmitFlag,
 			)
@@ -182,118 +174,111 @@ func Init() *gin.Engine {
 			middleware.CheckVerified, middleware.SetTeamByUser, middleware.CheckBanned, middleware.ContestIsNotComing,
 		)
 		{
-			contestWriteUp.POST("", middleware.RBAC(model.PermUserWriteupUpload), UploadWriteUp)
-			contestWriteUp.GET("", middleware.RBAC(model.PermUserWriteupList), GetWriteUPs)
+			contestWriteUp.POST("", UploadWriteUp)
+			contestWriteUp.GET("", GetWriteUPs)
 		}
 	}
 
-	admin := auth.Group("/admin", middleware.CheckRole(true))
+	admin := auth.Group("/admin")
 	{
-		admin.GET("/ip", middleware.RBAC(model.PermAdminIPSearch), SearchIP)
-
-		admin.GET("/me", GetAdmin)
-		admin.PUT("/me/password", AdminChangePassword)
-		admin.PUT("/me", UpdateAdmin)
-		admin.POST("/me/picture", UploadPicture("admin"))
-		admin.POST("", CreateAdmin)
-
-		admin.GET("/models", middleware.RBAC(model.PermAdminModelsSearch), GetAllowQueryModels)
-		admin.GET("/search", middleware.RBAC(model.PermAdminModelsSearch), Search)
+		admin.GET("/ip", SearchIP)
+		admin.GET("/models", GetAllowQueryModels)
+		admin.GET("/search", Search)
 
 		// 系统管理
 		adminSystem := admin.Group("/system")
 		{
-			adminSystem.GET("/status", middleware.RBAC(model.PermAdminSystemRead), SystemStatus)
-			adminSystem.GET("/config", middleware.RBAC(model.PermAdminSystemRead), SystemConfig)
-			adminSystem.PUT("/config", middleware.RBAC(model.PermAdminSystemUpdate), UpdateSystem)
-			adminSystem.POST("/restart", middleware.RBAC(model.PermAdminSystemRestart), RestartSystem)
+			adminSystem.GET("/status", SystemStatus)
+			adminSystem.GET("/config", SystemConfig)
+			adminSystem.PUT("/config", UpdateSystem)
+			adminSystem.POST("/restart", RestartSystem)
 		}
 
-		admin.GET("/permissions", middleware.RBAC(model.PermAdminPermissionList), GetPermissions)
+		admin.GET("/permissions", GetPermissions)
 		adminPermission := admin.Group("/permissions/:permissionID", middleware.SetPermission)
 		{
-			adminPermission.PUT("", middleware.RBAC(model.PermAdminPermissionUpdate), UpdatePermission)
+			adminPermission.PUT("", UpdatePermission)
 		}
 
-		admin.GET("/roles", middleware.RBAC(model.PermAdminRoleList), GetRoles)
-		admin.POST("/roles", middleware.RBAC(model.PermAdminRoleCreate), CreateRole)
+		admin.GET("/roles", GetRoles)
+		admin.POST("/roles", CreateRole)
 		adminRole := admin.Group("/roles/:roleID", middleware.SetRole)
 		{
-			adminRole.GET("", middleware.RBAC(model.PermAdminRoleRead), GetRole)
-			adminRole.GET("/permissions", middleware.RBAC(model.PermAdminPermissionList), GetRolePermissions)
-			adminRole.PUT("", middleware.RBAC(model.PermAdminRoleUpdate), UpdateRole)
-			adminRole.DELETE("", middleware.RBAC(model.PermAdminRoleDelete), DeleteRole)
-			adminRole.POST("/permissions", middleware.RBAC(model.PermAdminRoleAssign), AssignPermission)
-			adminRole.DELETE("/permissions", middleware.RBAC(model.PermAdminRoleRevoke), RevokePermission)
+			adminRole.GET("", GetRole)
+			adminRole.GET("/permissions", GetRolePermissions)
+			adminRole.PUT("", UpdateRole)
+			adminRole.DELETE("", DeleteRole)
+			adminRole.POST("/permissions", AssignPermission)
+			adminRole.DELETE("/permissions", RevokePermission)
 		}
 
-		admin.GET("/groups", middleware.RBAC(model.PermAdminGroupList), GetGroups)
-		admin.POST("/groups", middleware.RBAC(model.PermAdminGroupCreate), CreateGroup)
+		admin.GET("/groups", GetGroups)
+		admin.POST("/groups", CreateGroup)
 		adminGroup := admin.Group("/groups/:groupID", middleware.SetGroup)
 		{
-			adminGroup.GET("", middleware.RBAC(model.PermAdminGroupRead), GetGroup)
-			adminGroup.GET("/users", middleware.RBAC(model.PermAdminUserList), GetGroupUsers)
-			adminGroup.PUT("", middleware.RBAC(model.PermAdminGroupUpdate), UpdateGroup)
-			adminGroup.DELETE("", middleware.RBAC(model.PermAdminGroupDelete), DeleteGroup)
-			adminGroup.POST("/users", middleware.RBAC(model.PermAdminUserAssign), AssignUserToGroup)
-			adminGroup.DELETE("/users", middleware.RBAC(model.PermAdminUserRevoke), RemoveUserFromGroup)
+			adminGroup.GET("", GetGroup)
+			adminGroup.GET("/users", GetGroupUsers)
+			adminGroup.PUT("", UpdateGroup)
+			adminGroup.DELETE("", DeleteGroup)
+			adminGroup.POST("/users", AssignUserToGroup)
+			adminGroup.DELETE("/users", RemoveUserFromGroup)
 		}
 
-		admin.GET("/users", middleware.RBAC(model.PermAdminUserList), GetUsers)
-		admin.POST("/users", middleware.RBAC(model.PermAdminUserCreate), CreateUser)
+		admin.GET("/users", GetUsers)
+		admin.POST("/users", CreateUser)
 		adminUser := admin.Group("/users/:userID", middleware.SetUser)
 		{
-			adminUser.GET("", middleware.RBAC(model.PermAdminUserRead), GetUser)
-			adminUser.PUT("", middleware.RBAC(model.PermAdminUserUpdate), UpdateUser)
-			adminUser.DELETE("", middleware.RBAC(model.PermAdminUserDelete), DeleteUser)
-			adminUser.POST("/picture", middleware.RBAC(model.PermAdminUserUpdate), UploadPicture("user"))
+			adminUser.GET("", GetUser)
+			adminUser.PUT("", UpdateUser)
+			adminUser.DELETE("", DeleteUser)
+			adminUser.POST("/picture", UploadPicture("user"))
 		}
 
-		admin.GET("/oauth", middleware.RBAC(model.PermAdminOauthList), GetOauthProviders)
-		admin.POST("/oauth", middleware.RBAC(model.PermAdminOauthCreate), CreateOauthProvider)
+		admin.GET("/oauth", GetOauthProviders)
+		admin.POST("/oauth", CreateOauthProvider)
 		adminOauth := admin.Group("/oauth/:oauthID", middleware.SetOauth)
 		{
-			adminOauth.PUT("", middleware.RBAC(model.PermAdminOauthUpdate), UpdateOauthProvider)
-			adminOauth.POST("/picture", middleware.RBAC(model.PermAdminOauthUpdate), UploadPicture("oauth"))
-			adminOauth.DELETE("", middleware.RBAC(model.PermAdminOauthDelete), DeleteOauthProvider)
+			adminOauth.PUT("", UpdateOauthProvider)
+			adminOauth.POST("/picture", UploadPicture("oauth"))
+			adminOauth.DELETE("", DeleteOauthProvider)
 		}
 
-		admin.GET("/email", middleware.RBAC(model.PermAdminSMTPList), GetEmails)
-		admin.GET("/smtp", middleware.RBAC(model.PermAdminSMTPList), GetSmtps)
-		admin.POST("/smtp", middleware.RBAC(model.PermAdminSMTPCreate), CreateSmtp)
+		admin.GET("/email", GetEmails)
+		admin.GET("/smtp", GetSmtps)
+		admin.POST("/smtp", CreateSmtp)
 		adminSmtp := admin.Group("/smtp/:smtpID", middleware.SetSmtp)
 		{
-			adminSmtp.PUT("", middleware.RBAC(model.PermAdminSMTPUpdate), UpdateSmtp)
-			adminSmtp.DELETE("", middleware.RBAC(model.PermAdminSMTPDelete), DeleteSmtp)
+			adminSmtp.PUT("", UpdateSmtp)
+			adminSmtp.DELETE("", DeleteSmtp)
 
-			adminSmtp.GET("/email", middleware.RBAC(model.PermAdminSMTPList), GetEmails)
+			adminSmtp.GET("/email", GetEmails)
 		}
 
-		admin.GET("/webhook", middleware.RBAC(model.PermAdminWebhookList), GetWebhooks)
-		admin.GET("/webhook/events", middleware.RBAC(model.PermAdminWebhookList), GetEventTypes)
-		admin.GET("/webhook/history", middleware.RBAC(model.PermAdminWebhookList), GetWebhookHistory)
-		admin.POST("/webhook", middleware.RBAC(model.PermAdminWebhookCreate), CreateWebhook)
+		admin.GET("/webhook", GetWebhooks)
+		admin.GET("/webhook/events", GetEventTypes)
+		admin.GET("/webhook/history", GetWebhookHistory)
+		admin.POST("/webhook", CreateWebhook)
 		adminWebhook := admin.Group("/webhook/:webhookID", middleware.SetWebhook)
 		{
-			adminWebhook.PUT("", middleware.RBAC(model.PermAdminWebhookUpdate), UpdateWebhook)
-			adminWebhook.DELETE("", middleware.RBAC(model.PermAdminWebhookDelete), DeleteWebhook)
+			adminWebhook.PUT("", UpdateWebhook)
+			adminWebhook.DELETE("", DeleteWebhook)
 
-			adminWebhook.GET("/history", middleware.RBAC(model.PermAdminWebhookList), GetWebhookHistory)
+			adminWebhook.GET("/history", GetWebhookHistory)
 		}
 
-		admin.GET("/challenges", middleware.RBAC(model.PermAdminChallengeList), GetChallenges)
-		admin.GET("/challenges/categories", middleware.RBAC(model.PermAdminChallengeList), GetChallengeCategories)
-		admin.POST("/challenges", middleware.RBAC(model.PermAdminChallengeCreate), CreateChallenge)
+		admin.GET("/challenges", GetChallenges)
+		admin.GET("/challenges/categories", GetChallengeCategories)
+		admin.POST("/challenges", CreateChallenge)
 		adminChallenge := admin.Group("/challenges/:challengeID", middleware.SetChallenge)
 		{
-			adminChallenge.GET("/download", middleware.RBAC(model.PermAdminChallengeRead),
+			adminChallenge.GET("/download",
 				middleware.SetChallengeFile, DownloadFile(model.DownloadAttachmentEventType),
 			)
-			adminChallenge.PUT("", middleware.RBAC(model.PermAdminChallengeUpdate), UpdateChallenge)
-			adminChallenge.DELETE("", middleware.RBAC(model.PermAdminChallengeDelete), DeleteChallenge)
-			adminChallenge.POST("/upload", middleware.RBAC(model.PermAdminChallengeUpdate), UploadChallengeFile)
+			adminChallenge.PUT("", UpdateChallenge)
+			adminChallenge.DELETE("", DeleteChallenge)
+			adminChallenge.POST("/upload", UploadChallengeFile)
 
-			adminChallengeTest := adminChallenge.Group("/test", middleware.RBAC(model.PermAdminChallengeTest))
+			adminChallengeTest := adminChallenge.Group("/test")
 			{
 				adminChallengeTest.GET("", GetTestChallengeStatus)
 				adminChallengeTest.GET("/attachment",
@@ -308,34 +293,34 @@ func Init() *gin.Engine {
 			}
 		}
 
-		admin.GET("/contests", middleware.RBAC(model.PermAdminContestList), GetContests)
-		admin.POST("/contests", middleware.RBAC(model.PermAdminContestCreate), CreateContest)
+		admin.GET("/contests", GetContests)
+		admin.POST("/contests", CreateContest)
 		adminContest := admin.Group("/contests/:contestID", middleware.SetContest)
 		{
-			adminContest.GET("", middleware.RBAC(model.PermAdminContestRead), GetContest)
-			adminContest.PUT("", middleware.RBAC(model.PermAdminContestUpdate), UpdateContest)
-			adminContest.DELETE("", middleware.RBAC(model.PermAdminContestDelete), DeleteContest)
-			adminContest.POST("/picture", middleware.RBAC(model.PermAdminContestUpdate), UploadPicture("contest"))
-			adminContest.GET("/rank", middleware.RBAC(model.PermAdminContestRank), GetTeamRanking)
-			adminContest.GET("/scoreboard", middleware.RBAC(model.PermAdminContestRank), GetScoreboard)
-			adminContest.GET("/timeline", middleware.RBAC(model.PermAdminContestRank), GetRankTimeline)
+			adminContest.GET("", GetContest)
+			adminContest.PUT("", UpdateContest)
+			adminContest.DELETE("", DeleteContest)
+			adminContest.POST("/picture", UploadPicture("contest"))
+			adminContest.GET("/rank", GetTeamRanking)
+			adminContest.GET("/scoreboard", GetScoreboard)
+			adminContest.GET("/timeline", GetRankTimeline)
 
-			adminContest.GET("/teams", middleware.RBAC(model.PermAdminTeamList), GetTeams)
+			adminContest.GET("/teams", GetTeams)
 			adminContestTeam := adminContest.Group("/teams/:teamID", middleware.SetTeam)
 			{
-				adminContestTeam.GET("", middleware.RBAC(model.PermAdminTeamRead), GetTeam)
-				adminContestTeam.GET("/users", middleware.RBAC(model.PermAdminTeamRead), GetTeammates)
-				adminContestTeam.PUT("", middleware.RBAC(model.PermAdminTeamUpdate), UpdateTeam)
-				adminContestTeam.DELETE("", middleware.RBAC(model.PermAdminTeamDelete), DeleteTeam)
-				adminContestTeam.POST("/kick", middleware.RBAC(model.PermAdminTeamUpdate), KickMember)
-				adminContestTeam.POST("/picture", middleware.RBAC(model.PermAdminTeamUpdate), UploadPicture("team"))
+				adminContestTeam.GET("", GetTeam)
+				adminContestTeam.GET("/users", GetTeammates)
+				adminContestTeam.PUT("", UpdateTeam)
+				adminContestTeam.DELETE("", DeleteTeam)
+				adminContestTeam.POST("/kick", KickMember)
+				adminContestTeam.POST("/picture", UploadPicture("team"))
 
-				adminContestTeam.GET("/flags", middleware.RBAC(model.PermAdminTeamRead), GetTeamFlags)
+				adminContestTeam.GET("/flags", GetTeamFlags)
 
-				adminContestTeam.GET("/submissions", middleware.RBAC(model.PermAdminTeamRead), GetSubmissions)
+				adminContestTeam.GET("/submissions", GetSubmissions)
 
-				adminContestTeam.GET("/victims", middleware.RBAC(model.PermAdminTeamRead), GetVictims)
-				adminContainer := adminContestTeam.Group("/victims/:victimID", middleware.RBAC(model.PermAdminTeamRead), middleware.SetVictim)
+				adminContestTeam.GET("/victims", GetVictims)
+				adminContainer := adminContestTeam.Group("/victims/:victimID", middleware.SetVictim)
 				{
 					adminTraffic := adminContainer.Group("/traffic")
 					{
@@ -345,55 +330,54 @@ func Init() *gin.Engine {
 				}
 
 				adminContestTeam.GET("/writeups",
-					middleware.RBAC(model.PermAdminTeamWriteupList), GetWriteUPs,
+					GetWriteUPs,
 				)
 				adminContestTeam.GET("/writeups/:fileID",
-					middleware.RBAC(model.PermAdminTeamWriteupRead),
 					middleware.SetFile(model.WriteupFileType), DownloadFile(model.DownloadWriteUpEventType),
 				)
 			}
 
-			adminContest.GET("/notices", middleware.RBAC(model.PermAdminNoticeList), GetNotices)
-			adminContest.POST("/notices", middleware.RBAC(model.PermAdminNoticeCreate), CreateNotice)
+			adminContest.GET("/notices", GetNotices)
+			adminContest.POST("/notices", CreateNotice)
 			adminContestNotice := adminContest.Group("/notices/:noticeID", middleware.SetNotice)
 			{
-				adminContestNotice.PUT("", middleware.RBAC(model.PermAdminNoticeUpdate), UpdateNotice)
-				adminContestNotice.DELETE("", middleware.RBAC(model.PermAdminNoticeDelete), DeleteNotice)
+				adminContestNotice.PUT("", UpdateNotice)
+				adminContestNotice.DELETE("", DeleteNotice)
 			}
 
-			adminContest.GET("/cheats", middleware.RBAC(model.PermAdminCheatList), GetCheats)
-			adminContest.DELETE("/cheats", middleware.RBAC(model.PermAdminCheatDelete), DeleteCheat(true))
-			adminContest.POST("/cheats", middleware.RBAC(model.PermAdminCheatCreate), CheckCheat)
+			adminContest.GET("/cheats", GetCheats)
+			adminContest.DELETE("/cheats", DeleteCheat(true))
+			adminContest.POST("/cheats", CheckCheat)
 			adminContestCheat := adminContest.Group("/cheats/:cheatID", middleware.SetCheat)
 			{
-				adminContestCheat.PUT("", middleware.RBAC(model.PermAdminCheatUpdate), UpdateCheat)
-				adminContestCheat.DELETE("", middleware.RBAC(model.PermAdminCheatDelete), DeleteCheat(false))
+				adminContestCheat.PUT("", UpdateCheat)
+				adminContestCheat.DELETE("", DeleteCheat(false))
 			}
 
-			adminContest.GET("/challenges", middleware.RBAC(model.PermAdminContestChallengeList), GetContestChallenges)
-			adminContest.GET("/challenges/others", middleware.RBAC(model.PermAdminChallengeList), GetChallengeNotInContest)
-			adminContest.GET("/challenges/categories", middleware.RBAC(model.PermAdminContestChallengeList), GetContestChallengeCategories)
-			adminContest.POST("/challenges", middleware.RBAC(model.PermAdminContestChallengeCreate), AddContestChallenge)
+			adminContest.GET("/challenges", GetContestChallenges)
+			adminContest.GET("/challenges/others", GetChallengeNotInContest)
+			adminContest.GET("/challenges/categories", GetContestChallengeCategories)
+			adminContest.POST("/challenges", AddContestChallenge)
 			adminContestChallenge := adminContest.Group("/challenges/:challengeID", middleware.SetContestChallenge)
 			{
-				adminContestChallenge.PUT("", middleware.RBAC(model.PermAdminContestChallengeUpdate), UpdateContestChallenge)
-				adminContestChallenge.DELETE("", middleware.RBAC(model.PermAdminContestChallengeDelete), DeleteContestChallenge)
+				adminContestChallenge.PUT("", UpdateContestChallenge)
+				adminContestChallenge.DELETE("", DeleteContestChallenge)
 
 				//不允许后期创建和删除
-				adminContestChallenge.GET("/flags", middleware.RBAC(model.PermAdminContestChallengeFlagList), GetContestFlags)
+				adminContestChallenge.GET("/flags", GetContestFlags)
 				adminContestFlag := adminContestChallenge.Group("/flags/:flagID", middleware.SetContestFlag)
 				{
-					adminContestFlag.PUT("", middleware.RBAC(model.PermAdminContestChallengeFlagUpdate), UpdateContestFlag)
+					adminContestFlag.PUT("", UpdateContestFlag)
 				}
 			}
 
-			adminContestImages := adminContest.Group("/images", middleware.RBAC(model.PermAdminImagePull))
+			adminContestImages := adminContest.Group("/images")
 			{
 				adminContestImages.GET("", GetContestChallengeImage)
 				adminContestImages.POST("", WarmUpContestChallengeImage)
 			}
 
-			adminContestVictim := adminContest.Group("/victims", middleware.RBAC(model.PermAdminVictimControl))
+			adminContestVictim := adminContest.Group("/victims")
 			{
 				adminContestVictim.GET("", GetContestVictims)
 				adminContestVictim.POST("", StartContestVictims)
@@ -401,11 +385,11 @@ func Init() *gin.Engine {
 			}
 		}
 
-		admin.GET("/files", middleware.RBAC(model.PermAdminFileList), GetFiles)
-		admin.DELETE("/files", middleware.RBAC(model.PermAdminFileDelete), DeleteFiles)
-		admin.GET("/files/:fileID", middleware.RBAC(model.PermAdminFileRead), middleware.SetFile(""), DownloadFile(model.DownloadFileEventType))
+		admin.GET("/files", GetFiles)
+		admin.DELETE("/files", DeleteFiles)
+		admin.GET("/files/:fileID", middleware.SetFile(""), DownloadFile(model.DownloadFileEventType))
 
-		admin.GET("/logs", middleware.RBAC(model.PermAdminLogRead), GetLogs)
+		admin.GET("/logs", GetLogs)
 	}
 	return router
 }
