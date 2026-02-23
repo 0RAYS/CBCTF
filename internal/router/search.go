@@ -61,6 +61,11 @@ func Search(ctx *gin.Context) {
 		if !slices.Contains(fields, key) {
 			continue
 		}
+		switch strings.ToLower(value) {
+		case "asc", "desc":
+		default:
+			continue
+		}
 		options.Sort = append(options.Sort, fmt.Sprintf("%s %s", key, strings.ToLower(value)))
 	}
 	ms, count, ret := db.Search(m, form.Limit, form.Offset, options)
