@@ -31,8 +31,8 @@ type UpdateSettingForm struct {
 	GormMySQLUser   *string `form:"gorm_mysql_user" json:"gorm_mysql_user" binding:"omitempty,min=1,alphanum"`
 	GormMySQLPwd    *string `form:"gorm_mysql_pwd" json:"gorm_mysql_pwd" binding:"omitempty,min=1,ascii"`
 	GormMySQLDB     *string `form:"gorm_mysql_db" json:"gorm_mysql_db" binding:"omitempty,min=1,alphanum"`
-	GormMySQLMXOpen *int    `form:"gorm_mysql_mxopen" json:"gorm_mysql_mxopen" binding:"omitempty,min=1"`
-	GormMySQLMXIdle *int    `form:"gorm_mysql_mxidle" json:"gorm_mysql_mxidle" binding:"omitempty,min=1"`
+	GormMySQLMXOpen *int    `form:"gorm_mysql_mxopen" json:"gorm_mysql_mxopen" binding:"omitempty,gte=1"`
+	GormMySQLMXIdle *int    `form:"gorm_mysql_mxidle" json:"gorm_mysql_mxidle" binding:"omitempty,gte=1"`
 	GormLogLevel    *string `form:"gorm_log_level" json:"gorm_log_level" binding:"omitempty,oneof=SILENT INFO WARNING ERROR"`
 
 	RedisHost *string `form:"redis_host" json:"redis_host" binding:"omitempty,ip"`
@@ -63,7 +63,7 @@ type UpdateSettingForm struct {
 	WebhookBlacklist *[]string `form:"webhook_blacklist" json:"webhook_blacklist" binding:"omitempty,dive,ip|cidr|hostname|hostname_port"`
 
 	RegistrationEnabled      *bool `form:"registration_enabled" json:"registration_enabled"`
-	RegistrationDefaultGroup *uint `form:"registration_default_group" json:"registration_default_group"`
+	RegistrationDefaultGroup *uint `form:"registration_default_group" json:"registration_default_group" binding:"omitempty,gte=0"`
 
 	GeoCityDB *string `form:"geocity_db" json:"geocity_db" binding:"omitempty,file"`
 }
