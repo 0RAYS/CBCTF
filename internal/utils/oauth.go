@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func GetFiledKeys(field string) []string {
+func GetClaimKeys(field string) []string {
 	re := regexp.MustCompile(`\{([^{}]*)}`)
 	matches := re.FindAllStringSubmatch(field, -1)
 
@@ -20,8 +20,8 @@ func GetFiledKeys(field string) []string {
 	return results
 }
 
-func GetFiledValue(resp map[string]any, field string) (string, bool) {
-	keys := GetFiledKeys(field)
+func GetClaimValue(resp map[string]any, field string) (string, bool) {
+	keys := GetClaimKeys(field)
 	for _, key := range keys {
 		ks := strings.Split(key, ".")
 		data := resp
