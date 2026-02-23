@@ -77,6 +77,7 @@ func Init() *gin.Engine {
 	user := auth.Group("/me")
 	{
 		user.GET("", GetUser)
+		user.GET("/permissions", GetAccessibleRoutes)
 		user.PUT("/password", ChangePwd)
 		user.PUT("", UpdateUser)
 		user.DELETE("", DeleteUser)

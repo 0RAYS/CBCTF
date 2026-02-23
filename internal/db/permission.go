@@ -56,6 +56,26 @@ func (p *PermissionRepo) InitPermissions() model.RetVal {
 	return model.SuccessRetVal()
 }
 
+func (p *PermissionRepo) GetUserPermissions(userID uint) ([]string, model.RetVal) {
+	var perms []model.Permission
+	res := p.DB.Raw(`
+		SELECT DISTINCT permissions.* FROM permissions
+		INNER JOIN role_permissions ON permissions.id = role_permissions.permission_id
+		INNER JOIN roles ON role_permissions.role_id = roles.id
+		INNER JOIN `+"`groups`"+` ON roles.id = groups.role_id
+		INNER JOIN user_groups ON groups.id = user_groups.group_id
+		WHERE user_groups.user_id = ? AND permissions.deleted_at IS NULL
+	`, userID).Scan(&perms)
+	if res.Error != nil {
+		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Permission{}.ModelName(), "Error": res.Error.Error()}}
+	}
+	names := make([]string, len(perms))
+	for i, perm := range perms {
+		names[i] = perm.Name
+	}
+	return names, model.SuccessRetVal()
+}
+
 func (p *PermissionRepo) CheckUserPermission(userID uint, permission string) (bool, model.RetVal) {
 	var perm model.Permission
 	res := p.DB.Raw(`

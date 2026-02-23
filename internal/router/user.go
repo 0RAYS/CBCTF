@@ -23,6 +23,29 @@ func GetUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetUserResp(user, middleware.IsFullAccess(ctx))))
 }
 
+func GetAccessibleRoutes(ctx *gin.Context) {
+	userID := middleware.GetSelf(ctx).ID
+	permNames, ret := db.InitPermissionRepo(db.DB).GetUserPermissions(userID)
+	if !ret.OK {
+		ctx.JSON(http.StatusOK, ret)
+		return
+	}
+
+	permSet := make(map[string]struct{}, len(permNames))
+	for _, name := range permNames {
+		permSet[name] = struct{}{}
+	}
+
+	routes := make([]string, 0)
+	for route, perm := range model.RoutePermissions {
+		if _, ok := permSet[perm]; ok {
+			routes = append(routes, route)
+		}
+	}
+
+	ctx.JSON(http.StatusOK, model.SuccessRetVal(routes))
+}
+
 func GetUsers(ctx *gin.Context) {
 	var form dto.ListModelsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
