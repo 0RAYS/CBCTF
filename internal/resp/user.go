@@ -18,6 +18,7 @@ func GetUserResp(user model.User, admin bool) gin.H {
 		"score":            user.Score,
 		"solved":           user.Solved,
 		"provider":         user.Provider,
+		"has_no_pwd":       user.Password == model.NeverLoginPWD,
 		"hidden":           user.Hidden,
 		"banned":           user.Banned,
 		"has_admin_access": db.InitPermissionRepo(db.DB).HasAdminAccess(user.ID),

@@ -26,10 +26,11 @@ function Settings() {
   // 处理密码修改
   const handlePasswordChange = async (data) => {
     try {
-      await updatePassword({
-        old: data.currentPassword,
-        new: data.newPassword,
-      });
+      const payload = { new: data.newPassword };
+      if (!user.has_no_pwd) {
+        payload.old = data.currentPassword;
+      }
+      await updatePassword(payload);
     } catch (error) {
       toast.danger({ title: t('toast.user.passwordUpdateFailed'), description: error.message });
     }
@@ -77,6 +78,7 @@ function Settings() {
         emailVerified: user.verified || false,
         picture: user.picture || 'https://avatars.githubusercontent.com/u/default',
         description: user.description || '',
+        hasNoPwd: user.has_no_pwd || false,
       }}
       onUpdate={handleUpdate}
       onPasswordChange={handlePasswordChange}
