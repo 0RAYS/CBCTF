@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { getUserInfo, getAdminInfo } from '../api/user';
+import { getUserInfo } from '../api/user';
 import i18n from '../i18n';
 
 const initialState = {
@@ -50,47 +50,32 @@ const userSlice = createSlice({
 export const { setUser, setAdmin, setLoading, setError, logout, clearError } = userSlice.actions;
 
 /**
- * 处理API响应的通用函数
+ * 获取用户信息
  */
-const handleApiResponse = (response, dispatch, isAdmin) => {
-  if (response.code === 200) {
-    if (isAdmin) {
-      dispatch(setAdmin(response.data));
+export const fetchUserInfo = () => async (dispatch) => {
+  dispatch(setLoading(true));
+
+  try {
+    const response = await getUserInfo();
+
+    if (response.code === 200) {
+      if (response.data.is_admin) {
+        dispatch(setAdmin(response.data));
+      } else {
+        dispatch(setUser(response.data));
+      }
     } else {
-      dispatch(setUser(response.data));
+      const errorMsg = response.msg || i18n.t('toast.user.fetchFailed');
+      dispatch(setError(errorMsg));
+      dispatch(logout());
     }
-    return true;
-  } else {
-    const errorMsg = response.msg || i18n.t(isAdmin ? 'toast.user.fetchAdminFailed' : 'toast.user.fetchFailed');
-    dispatch(setError(errorMsg));
+  } catch (error) {
+    dispatch(setError(error.message));
     dispatch(logout());
-    return false;
+  } finally {
+    dispatch(setLoading(false));
   }
 };
-
-/**
- * 获取用户信息
- * @param {boolean} isAdmin - 是否为管理员
- */
-export const fetchUserInfo =
-  (isAdmin = false) =>
-  async (dispatch) => {
-    dispatch(setLoading(true));
-
-    try {
-      // 根据用户类型请求不同API
-      const apiMethod = isAdmin ? getAdminInfo : getUserInfo;
-      const response = await apiMethod();
-
-      // 处理API响应
-      handleApiResponse(response, dispatch, isAdmin);
-    } catch (error) {
-      dispatch(setError(error.message));
-      dispatch(logout());
-    } finally {
-      dispatch(setLoading(false));
-    }
-  };
 
 /**
  * 登出用户

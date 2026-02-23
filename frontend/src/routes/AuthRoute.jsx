@@ -40,7 +40,7 @@ export const AdminRoute = ({ children, requiresAuth = true }) => {
   }
 
   if (requiresAuth && !isAuthenticated) {
-    return <Navigate to="/admin/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   if (requiresAuth && isAuthenticated && !isAdmin) {

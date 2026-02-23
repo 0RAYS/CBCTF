@@ -72,11 +72,3 @@ export const uploadPicture = (file) => {
     },
   });
 };
-
-// 获取管理员信息
-export const getAdminInfo = () => {
-  return request({
-    url: '/admin/me',
-    method: 'GET',
-  });
-};

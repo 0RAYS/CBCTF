@@ -9,16 +9,15 @@ import { WebSocketNotice } from './components/common/websocket/WebSocketNotice.j
 function App() {
   const dispatch = useDispatch();
   const token = localStorage.getItem('token');
-  const userType = localStorage.getItem('userType');
 
   useEffect(() => {
     const initializeAuth = async () => {
-      if (token && userType) {
-        await dispatch(fetchUserInfo(userType === 'admin'));
+      if (token) {
+        await dispatch(fetchUserInfo());
       }
     };
     initializeAuth();
-  }, [dispatch, token, userType]);
+  }, [dispatch, token]);
 
   return (
     <div className="relative h-screen w-screen">
