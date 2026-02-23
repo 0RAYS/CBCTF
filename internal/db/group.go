@@ -2,7 +2,10 @@ package db
 
 import (
 	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -73,6 +76,36 @@ func (g *GroupRepo) InitDefaultGroups() model.RetVal {
 		if ret = g.Update(group.ID, UpdateGroupOptions{RoleID: new(role.ID)}); !ret.OK {
 			return ret
 		}
+	}
+	return model.SuccessRetVal()
+}
+
+func (g *GroupRepo) Delete(idL ...uint) model.RetVal {
+	groupL, _, ret := g.List(-1, -1, GetOptions{
+		Conditions: map[string]interface{}{"id": idL},
+		Preloads:   map[string]GetOptions{"Users": {}},
+	})
+	if !ret.OK {
+		if ret.Msg != i18n.Model.NotFound {
+			return ret
+		}
+		return model.SuccessRetVal()
+	}
+	for _, group := range groupL {
+		if ret = g.Update(group.ID, UpdateGroupOptions{
+			Name: new(fmt.Sprintf("%s_deleted_%s", group.Name, utils.RandStr(6))),
+		}); !ret.OK {
+			return ret
+		}
+		for _, user := range group.Users {
+			if ret = DeleteUserFromGroup(g.DB, user, group); !ret.OK {
+				return ret
+			}
+		}
+	}
+	if res := g.DB.Model(&model.Group{}).Where("id IN ?", idL).Delete(&model.Group{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete Group: %s", res.Error)
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Group{}.ModelName(), "Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }

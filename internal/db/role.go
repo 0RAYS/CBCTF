@@ -1,8 +1,12 @@
 package db
 
 import (
+	"CBCTF/internal/config"
 	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
+	"fmt"
 	"slices"
 
 	"gorm.io/gorm"
@@ -76,6 +80,40 @@ func (r *RoleRepo) InitDefaultRoles() model.RetVal {
 				return ret
 			}
 		}
+	}
+	return model.SuccessRetVal()
+}
+
+func (r *RoleRepo) Delete(idL ...uint) model.RetVal {
+	roleL, _, ret := r.List(-1, -1, GetOptions{Conditions: map[string]interface{}{"id": idL}})
+	if !ret.OK {
+		if ret.Msg != i18n.Model.NotFound {
+			return ret
+		}
+		return model.SuccessRetVal()
+	}
+	groupRepo := InitGroupRepo(r.DB)
+	groupL, _, ret := groupRepo.List(-1, -1, GetOptions{
+		Conditions: map[string]any{"role_id": idL},
+	})
+	if !ret.OK {
+		return ret
+	}
+	for _, group := range groupL {
+		if ret = groupRepo.Update(group.ID, UpdateGroupOptions{RoleID: &config.Env.Registration.DefaultGroup}); !ret.OK {
+			return ret
+		}
+	}
+	for _, role := range roleL {
+		if ret = r.Update(role.ID, UpdateRoleOptions{
+			Name: new(fmt.Sprintf("%s_deleted_%s", role.Name, utils.RandStr(6))),
+		}); !ret.OK {
+			return ret
+		}
+	}
+	if res := r.DB.Model(&model.Role{}).Where("id IN ?", idL).Delete(&model.Role{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete Role: %s", res.Error)
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Role{}.ModelName(), "Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }
