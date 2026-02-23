@@ -49,7 +49,7 @@ func UpdatePicture(tx *gorm.DB, v string, id uint, record model.File) (string, m
 	var ret model.RetVal
 	path := model.FileURL(fmt.Sprintf("/pictures/%s", record.RandID))
 	switch v {
-	case "self-user":
+	case "self":
 		ret = db.InitUserRepo(tx).Update(id, db.UpdateUserOptions{Picture: &path})
 	case "user":
 		ret = db.InitUserRepo(tx).Update(id, db.UpdateUserOptions{Picture: &path})
