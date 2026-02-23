@@ -31,6 +31,7 @@ const (
 	PermAdminIPSearch     = "admin:ip:search"
 	PermAdminModelsSearch = "admin:models:search"
 
+	PermAdminSystemStatus  = "admin:system:status"
 	PermAdminSystemRead    = "admin:system:read"
 	PermAdminSystemUpdate  = "admin:system:update"
 	PermAdminSystemRestart = "admin:system:restart"
@@ -184,7 +185,7 @@ var RoutePermissions = map[string]string{
 	"GET /admin/search": PermAdminModelsSearch,
 
 	// /admin/system
-	"GET /admin/system/status":   PermAdminSystemRead,
+	"GET /admin/system/status":   PermAdminSystemStatus,
 	"GET /admin/system/config":   PermAdminSystemRead,
 	"PUT /admin/system/config":   PermAdminSystemUpdate,
 	"POST /admin/system/restart": PermAdminSystemRestart,
@@ -379,6 +380,7 @@ var Permissions = []Permission{
 	{Name: PermAdminUserAssign, Resource: "admin:user", Operation: "assign", Description: "分配用户"},
 	{Name: PermAdminUserRevoke, Resource: "admin:user", Operation: "revoke", Description: "移除用户"},
 
+	{Name: PermAdminSystemStatus, Resource: "admin:system", Operation: "status", Description: "查看系统状态"},
 	{Name: PermAdminSystemRead, Resource: "admin:system", Operation: "read", Description: "查看系统配置"},
 	{Name: PermAdminSystemUpdate, Resource: "admin:system", Operation: "update", Description: "更新系统配置"},
 	{Name: PermAdminSystemRestart, Resource: "admin:system", Operation: "restart", Description: "重启系统"},
