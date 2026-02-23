@@ -24,7 +24,7 @@ function MainLayout() {
 
   const handlePictureClick = () => {
     if (user.user) {
-      navigate('/settings');
+      navigate(user.hasAdminAccess ? '/admin/settings' : '/settings');
     } else {
       navigate('/login');
     }
