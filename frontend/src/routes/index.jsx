@@ -17,7 +17,7 @@ const RbacManagement = lazy(() => import('../pages/admin/Rbac'));
 const ChallengesManagement = lazy(() => import('../pages/admin/Challenges'));
 const FilesManagement = lazy(() => import('../pages/admin/Files.jsx'));
 const SystemSettings = lazy(() => import('../pages/admin/System'));
-const AdminSettings = lazy(() => import('../pages/admin/Settings'));
+const AdminSettings = lazy(() => import('../pages/user/Settings'));
 const OAuthProvidersManagement = lazy(() => import('../pages/admin/OAuthProviders'));
 const SmtpManagement = lazy(() => import('../pages/admin/Smtp'));
 const WebhookManagement = lazy(() => import('../pages/admin/Webhook'));
