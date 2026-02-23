@@ -16,7 +16,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
+	"slices"
 	"sync"
 
 	"github.com/gin-gonic/gin"
@@ -137,22 +137,22 @@ func OauthCallback(ctx *gin.Context) {
 		log.Logger.Warningf("Failed to decode response body for provider %s: %s", provider.Provider, err)
 		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 	}
-	id, ok := utils.GetClaimValue(result, provider.IDClaim)
+	id, ok := utils.GetClaimValue[string](result, provider.IDClaim)
 	if !ok {
 		log.Logger.Warningf("Failed to get user_id by provider %s: %s", provider.Provider, result)
 		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Get value failed"}})
 		return
 	}
-	name, ok := utils.GetClaimValue(result, provider.NameClaim)
+	name, ok := utils.GetClaimValue[string](result, provider.NameClaim)
 	if !ok {
 		name = fmt.Sprintf("%s_%s", provider.Provider, utils.RandStr(10))
 	}
-	email, ok := utils.GetClaimValue(result, provider.EmailClaim)
+	email, ok := utils.GetClaimValue[string](result, provider.EmailClaim)
 	if !ok {
 		email = fmt.Sprintf("%s_%s@example.com", provider.Provider, utils.RandStr(10))
 	}
-	picture, _ := utils.GetClaimValue(result, provider.PictureClaim)
-	description, _ := utils.GetClaimValue(result, provider.DescriptionClaim)
+	picture, _ := utils.GetClaimValue[string](result, provider.PictureClaim)
+	description, _ := utils.GetClaimValue[string](result, provider.DescriptionClaim)
 	raw, _ := json.Marshal(result)
 	userRepo := db.InitUserRepo(db.DB)
 	user, ret := userRepo.Get(db.GetOptions{Conditions: map[string]any{"provider": provider.Provider, "provider_user_id": id}})
@@ -161,6 +161,7 @@ func OauthCallback(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, ret)
 			return
 		}
+		// 获取用户失败的时创建新用户
 		user, ret = userRepo.Create(db.CreateUserOptions{
 			Name:           name,
 			Password:       model.NeverLoginPWD,
@@ -176,8 +177,58 @@ func OauthCallback(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, ret)
 			return
 		}
+		var hasJoinGroup bool
+		if provider.GroupsClaim != "" {
+			groupRepo := db.InitGroupRepo(db.DB)
+			if groups, ok := utils.GetClaimValue[[]string](result, provider.GroupsClaim); ok {
+				// 同步所有组
+				for _, groupName := range groups {
+					group, ret := groupRepo.GetByUniqueKey("name", groupName)
+					if !ret.OK {
+						if ret.Msg != i18n.Model.NotFound {
+							ctx.JSON(http.StatusOK, ret)
+							return
+						}
+						continue
+					}
+					if !userRepo.IsInGroup(user.ID, group.Name) {
+						if ret = db.AppendUserToGroup(db.DB, user, group); !ret.OK {
+							ctx.JSON(http.StatusOK, ret)
+							return
+						}
+						hasJoinGroup = true
+					}
+				}
+				// 尝试添加到管理员组
+				if slices.Contains(groups, provider.AdminGroup) {
+					if !userRepo.IsInGroup(user.ID, model.AdminGroupName) {
+						adminGroup, ret := db.InitGroupRepo(db.DB).GetByUniqueKey("name", model.AdminGroupName)
+						if !ret.OK {
+							ctx.JSON(http.StatusOK, ret)
+							return
+						}
+						if ret = db.AppendUserToGroup(db.DB, user, adminGroup); !ret.OK {
+							ctx.JSON(http.StatusOK, ret)
+							return
+						}
+						hasJoinGroup = true
+					}
+				}
+			}
+		}
+		// 获取组声明或加组失败后尝试加入默认组
+		if !hasJoinGroup && provider.DefaultGroup != 0 {
+			// 最终都无法获取到组则放弃加组
+			if defaultGroup, ret := db.InitGroupRepo(db.DB).GetByID(provider.DefaultGroup); ret.OK {
+				if ret = db.AppendUserToGroup(db.DB, user, defaultGroup); !ret.OK {
+					ctx.JSON(http.StatusOK, ret)
+					return
+				}
+			}
+		}
 		prometheus.UpdateUserRegisterMetrics(provider.Provider)
 	} else {
+		// 获取用户成功的时更新用户信息
 		ret = userRepo.Update(user.ID, db.UpdateUserOptions{
 			Name:        &name,
 			Email:       &email,
