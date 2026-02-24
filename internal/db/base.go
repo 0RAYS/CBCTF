@@ -10,7 +10,6 @@ import (
 	"slices"
 
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 type BaseRepo[M model.Model] struct {
