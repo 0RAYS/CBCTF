@@ -55,7 +55,7 @@ func (r *RequestRepo) CountIP() (int64, model.RetVal) {
 	res := r.DB.Model(&model.Request{}).Distinct("ip").Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Request: %s", res.Error)
-		return 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Request{}.ModelName(), "Error": res.Error.Error()}}
+		return 0, model.RetVal{Msg: i18n.Model.Request.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return count, model.SuccessRetVal()
 }
@@ -77,7 +77,7 @@ func (r *RequestRepo) GetUserIP(userIDL ...uint) ([]UserIP, model.RetVal) {
 		Scan(&userIPL)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Request: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Request{}.ModelName(), "Error": res.Error.Error()}}
+		return nil, model.RetVal{Msg: i18n.Model.Request.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return userIPL, model.SuccessRetVal()
 }

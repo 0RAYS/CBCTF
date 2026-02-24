@@ -1,7 +1,7 @@
 common:
   success: "200"
   unknownError: "500"
-request:
+response:
   badRequest: "400"
   unauthorized: "401"
   forbidden: "403"
@@ -18,47 +18,92 @@ model:
   challenge:
     invalidType: "400"
     emptyImage: "400"
+    getError: "500"
+    deleteError: "500"
   challengeFlag:
     invalidType: "400"
+    deleteError: "500"
   cheat:
     invalidType: "400"
+    createError: "500"
+    deleteError: "500"
   contest:
     captchaWrong: "400"
     duplicateMember: "400"
     isComing: "400"
     isRunning: "400"
     isOver: "400"
+    getError: "500"
+    deleteError: "500"
+    notFound: "404"
+  contestChallenge:
+    getError: "500"
+    deleteError: "500"
   contestFlag:
     invalidType: "400"
+    getError: "500"
+    deleteError: "500"
+    notFound: "404"
+  device:
+    createError: "500"
   docker:
     invalidComposeYaml: "400"
+    deleteError: "500"
   email:
     invalidVerifyToken: "400"
+    createError: "500"
   file:
     notAllowed: "400"
     readPcapError: "500"
     createDirError: "500"
+    createError: "500"
+    deleteError: "500"
+    notFound: "404"
   group:
     cannotUpdateDefault: "403"
     cannotDeleteDefault: "403"
+    getError: "500"
+    deleteError: "500"
   notice:
     invalidType: "400"
+  permission:
+    getError: "500"
+    notFound: "404"
+  pod:
+    deleteError: "500"
+  request:
+    getError: "500"
   role:
     cannotUpdateDefault: "403"
     cannotDeleteDefault: "403"
+    getError: "500"
+    deleteError: "500"
+  rolePermission:
+    createError: "500"
+    deleteError: "500"
   setting:
     invalidType: "400"
+    deadLock: "500"
+    updateError: "500"
   submission:
     notAllowed: "400"
+    getError: "500"
   team:
     banned: "403"
     full: "400"
     captchaWrong: "400"
     notHasMember: "400"
     captainCannotLeave: "400"
+    getError: "500"
+    notFound: "404"
+    deleteError: "500"
   teamFlag:
     notMatch: "400"
     alreadySolved: "400"
+    getError: "500"
+    notFound: "404"
+  traffic:
+    getError: "500"
   user:
     weakPassword: "400"
     samePassword: "400"
@@ -68,12 +113,27 @@ model:
     alreadyVerified: "400"
     inContest: "400"
     notAllowedRegister: "403"
+    getError: "500"
+    deleteError: "500"
+  userContest:
+    createError: "500"
+    deleteError: "500"
+  userGroup:
+    getError: "500"
+    createError: "500"
+    deleteError: "500"
+  userTeam:
+    createError: "500"
+    deleteError: "500"
   victim:
     limited: "400"
     hasMuchTime: "400"
+    deleteError: "500"
   webhook:
     invalidMethod: "400"
     notAllowedTarget: "403"
+  webhookHistory:
+    createError: "500"
 redis:
   setError: "500"
   getError: "500"

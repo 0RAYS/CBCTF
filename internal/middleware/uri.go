@@ -26,7 +26,7 @@ func SetRole(ctx *gin.Context) {
 	}
 	var roleID roleIDUri
 	if err := ctx.ShouldBindUri(&roleID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
 	role, ret := db.InitRoleRepo(db.DB).GetByID(roleID.RoleID)
@@ -54,7 +54,7 @@ func SetGroup(ctx *gin.Context) {
 	}
 	var groupID groupIDUri
 	if err := ctx.ShouldBindUri(&groupID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
 	group, ret := db.InitGroupRepo(db.DB).GetByID(groupID.GroupID)
@@ -82,7 +82,7 @@ func SetPermission(ctx *gin.Context) {
 	}
 	var permissionID permissionIDUri
 	if err := ctx.ShouldBindUri(&permissionID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
 	permission, ret := db.InitPermissionRepo(db.DB).GetByID(permissionID.PermissionID)
@@ -110,7 +110,7 @@ func SetUser(ctx *gin.Context) {
 	}
 	var userID userIDUri
 	if err := ctx.ShouldBindUri(&userID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
 	user, ret := db.InitUserRepo(db.DB).GetByID(userID.UserID)
@@ -138,7 +138,7 @@ func SetContest(ctx *gin.Context) {
 	}
 	var contestID contestIDUri
 	if err := ctx.ShouldBindUri(&contestID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
 	contest, ret := db.InitContestRepo(db.DB).GetByID(contestID.ContestID)
@@ -147,7 +147,7 @@ func SetContest(ctx *gin.Context) {
 		return
 	}
 	if !IsFullAccess(ctx) && contest.Hidden {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": contest.ModelName()}})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Model.Contest.NotFound})
 		return
 	}
 	ctx.Set("Contest", contest)
@@ -170,7 +170,7 @@ func SetTeam(ctx *gin.Context) {
 	}
 	var teamID teamIDUri
 	if err := ctx.ShouldBindUri(&teamID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
 	team, ret := db.InitTeamRepo(db.DB).GetByID(teamID.TeamID)
@@ -210,7 +210,7 @@ func SetFile(t model.FileType) gin.HandlerFunc {
 		}
 		var fileID fileIDUri
 		if err := ctx.ShouldBindUri(&fileID); err != nil {
-			ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+			ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 			return
 		}
 		options := db.GetOptions{}
@@ -291,7 +291,7 @@ func SetNotice(ctx *gin.Context) {
 	}
 	var noticeID noticeIDUri
 	if err := ctx.ShouldBindUri(&noticeID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
 	notice, ret := db.InitNoticeRepo(db.DB).GetByID(noticeID.NoticeID)
@@ -319,7 +319,7 @@ func SetChallenge(ctx *gin.Context) {
 	}
 	var challengeID challengeIDUri
 	if err := ctx.ShouldBindUri(&challengeID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
 	challenge, ret := db.InitChallengeRepo(db.DB).GetByRandID(challengeID.ChallengeID)
@@ -346,7 +346,7 @@ func SetContestChallenge(ctx *gin.Context) {
 	}
 	var challengeID challengeIDUri
 	if err := ctx.ShouldBindUri(&challengeID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
 	challenge, ret := db.InitChallengeRepo(db.DB).GetByRandID(challengeID.ChallengeID)
@@ -381,7 +381,7 @@ func SetContestFlag(ctx *gin.Context) {
 	}
 	var flagID flagIDUri
 	if err := ctx.ShouldBindUri(&flagID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
 	contestFlag, ret := db.InitContestFlagRepo(db.DB).GetByID(flagID.FlagID)
@@ -407,7 +407,7 @@ func SetVictim(ctx *gin.Context) {
 	}
 	var victimID victimIDUri
 	if err := ctx.ShouldBindUri(&victimID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
 	victim, ret := db.InitVictimRepo(db.DB).GetByID(victimID.VictimID, db.GetOptions{Deleted: true})
@@ -433,7 +433,7 @@ func SetCheat(ctx *gin.Context) {
 	}
 	var cheatID cheatIDUri
 	if err := ctx.ShouldBindUri(&cheatID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
 	cheat, ret := db.InitCheatRepo(db.DB).GetByID(cheatID.CheatID)
@@ -459,7 +459,7 @@ func SetOauth(ctx *gin.Context) {
 	}
 	var oauthID oauthIDUri
 	if err := ctx.ShouldBindUri(&oauthID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
 	oauth, ret := db.InitOauthRepo(db.DB).GetByID(oauthID.OauthID)
@@ -486,7 +486,7 @@ func SetOauthUri(ctx *gin.Context) {
 	}
 	var oauth oauthUri
 	if err := ctx.ShouldBindUri(&oauth); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
 	ctx.Set("OauthUri", oauth.OauthUri)
@@ -507,7 +507,7 @@ func SetSmtp(ctx *gin.Context) {
 	}
 	var smtpID smtpIDUri
 	if err := ctx.ShouldBindUri(&smtpID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
 	smtp, ret := db.InitSmtpRepo(db.DB).GetByID(smtpID.SmtpID)
@@ -532,7 +532,7 @@ func SetWebhook(ctx *gin.Context) {
 	}
 	var webhookID webhookIDUti
 	if err := ctx.ShouldBindUri(&webhookID); err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
 	webhook, ret := db.InitWebhookRepo(db.DB).GetByID(webhookID.WebhookID)

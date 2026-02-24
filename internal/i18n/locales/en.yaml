@@ -1,7 +1,7 @@
 common:
   success: "Success"
   unknownError: "Unknown error: {{.Error}}"
-request:
+response:
   badRequest: "Bad request: {{.Error}}"
   unauthorized: "Unauthorized"
   forbidden: "Forbidden"
@@ -18,47 +18,92 @@ model:
   challenge:
     invalidType: "Invalid challenge type"
     emptyImage: "Challenge image is empty"
+    getError: "Get Challenge error: {{.Error}}"
+    deleteError: "Delete Challenge error: {{.Error}}"
   challengeFlag:
     invalidType: "Invalid challenge flag type"
+    deleteError: "Delete ChallengeFlag error: {{.Error}}"
   cheat:
     invalidType: "Invalid cheat type"
+    createError: "Create Cheat error: {{.Error}}"
+    deleteError: "Delete Cheat error: {{.Error}}"
   contest:
     captchaWrong: "Captcha is wrong"
     duplicateMember: "User is already in team"
     isComing: "Contest is coming"
     isRunning: "Contest is running"
     isOver: "Contest is over"
+    getError: "Get Contest error: {{.Error}}"
+    deleteError: "Delete Contest error: {{.Error}}"
+    notFound: "Contest not found"
+  contestChallenge:
+    getError: "Get ContestChallenge error: {{.Error}}"
+    deleteError: "Delete ContestChallenge error: {{.Error}}"
   contestFlag:
     invalidType: "Invalid flag type"
+    getError: "Get ContestFlag error: {{.Error}}"
+    deleteError: "Delete ContestFlag error: {{.Error}}"
+    notFound: "ContestFlag not found"
+  device:
+    createError: "Create Device error: {{.Error}}"
   docker:
     invalidComposeYaml: "Invalid docker-compose.yaml: {{.Error}}"
+    deleteError: "Delete Docker error: {{.Error}}"
   email:
     invalidVerifyToken: "Invalid verify token"
+    createError: "Create Email error: {{.Error}}"
   file:
     notAllowed: "File is not allowed"
     readPcapError: "Read .pcap error: {{.Error}}"
     createDirError: "Create dir error: {{.Error}}"
+    createError: "Create File error: {{.Error}}"
+    deleteError: "Delete File error: {{.Error}}"
+    notFound: "File not found"
   group:
     cannotUpdateDefault: "Cannot update default group"
     cannotDeleteDefault: "Cannot delete default group"
+    getError: "Get Group error: {{.Error}}"
+    deleteError: "Delete Group error: {{.Error}}"
   notice:
     invalidType: "Invalid notice type"
+  permission:
+    getError: "Get Permission error: {{.Error}}"
+    notFound: "Permission not found"
+  pod:
+    deleteError: "Delete Pod error: {{.Error}}"
+  request:
+    getError: "Get Request error: {{.Error}}"
   role:
     cannotUpdateDefault: "Cannot update default role"
     cannotDeleteDefault: "Cannot delete default role"
+    getError: "Get Role error: {{.Error}}"
+    deleteError: "Delete Role error: {{.Error}}"
+  rolePermission:
+    createError: "Create RolePermission error: {{.Error}}"
+    deleteError: "Delete RolePermission error: {{.Error}}"
   setting:
     invalidType: "Invalid setting type"
+    deadLock: "Update Setting error due to dead lock"
+    updateError: "Update Setting error: {{.Error}}"
   submission:
     notAllowed: "Not allowed submit flag"
+    getError: "Get Submission error: {{.Error}}"
   team:
     banned: "Team is banned"
     full: "Team is full"
     captchaWrong: "Captcha is wrong"
     notHasMember: "User is not in team"
     captainCannotLeave: "Captain cannot leave team"
+    getError: "Get Team error: {{.Error}}"
+    notFound: "Team not found"
+    deleteError: "Delete Team error: {{.Error}}"
   teamFlag:
     notMatch: "Flag is wrong"
     alreadySolved: "Already solved"
+    getError: "Get TeamFlag error: {{.Error}}"
+    notFound: "TeamFlag not found"
+  traffic:
+    getError: "Get Traffic error: {{.Error}}"
   user:
     weakPassword: "Password is too weak"
     samePassword: "New password is same with old password"
@@ -68,12 +113,27 @@ model:
     alreadyVerified: "Email is already verified"
     inContest: "User has joined Contest, cannot delete account"
     notAllowedRegister: "Not allowed register"
+    getError: "Get User error: {{.Error}}"
+    deleteError: "Delete User error: {{.Error}}"
+  userContest:
+    createError: "Create UserContest error: {{.Error}}"
+    deleteError: "Delete UserContest error: {{.Error}}"
+  userGroup:
+    getError: "Get UserGroup error: {{.Error}}"
+    createError: "Create UserGroup error: {{.Error}}"
+    deleteError: "Delete UserGroup error: {{.Error}}"
+  userTeam:
+    createError: "Create UserTeam error: {{.Error}}"
+    deleteError: "Delete UserTeam error: {{.Error}}"
   victim:
     limited: "Victims is max count"
     hasMuchTime: "Can only extend time within 20 minutes before the container closes"
+    deleteError: "Delete Victim error: {{.Error}}"
   webhook:
     invalidMethod: "Invalid Webhook request method"
     notAllowedTarget: "Not allowed Webhook target"
+  webhookHistory:
+    createError: "Create WebhookHistory error: {{.Error}}"
 redis:
   setError: "Cache {{.Key}} error: {{.Error}}"
   getError: "Get {{.Key}} error: {{.Error}}"

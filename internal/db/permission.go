@@ -82,7 +82,7 @@ func (p *PermissionRepo) GetUserPermissions(userID uint) ([]string, model.RetVal
 		Where("user_groups.user_id = ? AND permissions.deleted_at IS NULL", userID).
 		Scan(&perms)
 	if res.Error != nil {
-		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Permission{}.ModelName(), "Error": res.Error.Error()}}
+		return nil, model.RetVal{Msg: i18n.Model.Permission.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	names := make([]string, len(perms))
 	for i, perm := range perms {
@@ -102,10 +102,10 @@ func (p *PermissionRepo) CheckUserPermission(userID uint, permission string) (bo
 		Where("users.deleted_at IS NULL AND permissions.deleted_at IS NULL AND users.id = ? AND permissions.name = ?", userID, permission).
 		Limit(1).Find(&perm)
 	if res.Error != nil {
-		return false, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": perm.ModelName(), "Error": res.Error.Error()}}
+		return false, model.RetVal{Msg: i18n.Model.Permission.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	if res.RowsAffected == 0 {
-		return false, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": perm.ModelName()}}
+		return false, model.RetVal{Msg: i18n.Model.Permission.NotFound}
 	}
 	return true, model.SuccessRetVal()
 }

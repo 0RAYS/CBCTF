@@ -54,7 +54,7 @@ func (f *FileRepo) Create(options CreateFileOptions) (model.File, model.RetVal) 
 	m := options.Convert2Model().(model.File)
 	if res := f.DB.Model(&model.File{}).Create(&m); res.Error != nil {
 		log.Logger.Warningf("Failed to create File: %s", res.Error)
-		return model.File{}, model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]interface{}{"Model": m.ModelName(), "Error": res.Error.Error()}}
+		return model.File{}, model.RetVal{Msg: i18n.Model.File.CreateError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return m, model.SuccessRetVal()
 }
@@ -66,7 +66,7 @@ func (f *FileRepo) GetByRandID(randID string, optionsL ...GetOptions) (model.Fil
 func (f *FileRepo) DeleteByRandID(randIDL ...string) model.RetVal {
 	if res := f.DB.Model(&model.File{}).Where("rand_id IN ?", randIDL).Delete(&model.File{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete File: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]interface{}{"Model": model.File{}.ModelName(), "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.File.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }

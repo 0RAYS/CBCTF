@@ -56,7 +56,7 @@ func (r *RoleRepo) InitDefaultRoles() model.RetVal {
 	for _, role := range model.DefaultRoles {
 		res := r.DB.Model(&model.Role{}).FirstOrCreate(&role, role)
 		if res.Error != nil {
-			return model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": role.ModelName(), "Error": res.Error.Error()}}
+			return model.RetVal{Msg: i18n.Model.Role.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 		}
 		role, ret := r.GetByID(role.ID, GetOptions{Preloads: map[string]GetOptions{"Permissions": {}}})
 		if !ret.OK {
@@ -113,7 +113,7 @@ func (r *RoleRepo) Delete(idL ...uint) model.RetVal {
 	}
 	if res := r.DB.Model(&model.Role{}).Where("id IN ?", idL).Delete(&model.Role{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Role: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Role{}.ModelName(), "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.Role.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }

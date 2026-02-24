@@ -143,7 +143,7 @@ func (c *ContestRepo) GetByUserID(userID uint) ([]model.Contest, model.RetVal) {
 		Scan(&contests)
 	if res.Error != nil {
 		log.Logger.Fatalf("Failed to get Contests: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Contest{}.ModelName(), "Error": res.Error.Error()}}
+		return nil, model.RetVal{Msg: i18n.Model.Contest.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return contests, model.SuccessRetVal()
 }
@@ -217,7 +217,7 @@ func (c *ContestRepo) Delete(idL ...uint) model.RetVal {
 	}
 	if res := c.DB.Model(&model.Contest{}).Where("id IN ?", idL).Delete(&model.Contest{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Contest: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Contest{}.ModelName(), "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.Contest.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }

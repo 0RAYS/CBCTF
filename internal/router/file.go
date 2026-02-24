@@ -27,7 +27,7 @@ func DownloadFile(eventType string) gin.HandlerFunc {
 			if os.IsNotExist(err) {
 				// 保留数据库记录
 				//db.InitFileRepo(db.DB).Delete(file.ID)
-				ctx.JSON(http.StatusNotFound, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": file.ModelName()}})
+				ctx.JSON(http.StatusNotFound, model.RetVal{Msg: i18n.Model.File.NotFound})
 				return
 			}
 			log.Logger.Warningf("Failed to get file: %s", err)
@@ -43,7 +43,7 @@ func UploadPicture(v string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		file, err := ctx.FormFile(string(model.PictureFileType))
 		if err != nil {
-			ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+			ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 			return
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.UploadPictureEventType)
@@ -98,7 +98,7 @@ func UploadPicture(v string) gin.HandlerFunc {
 func UploadChallengeFile(ctx *gin.Context) {
 	file, err := ctx.FormFile(string(model.ChallengeFileType))
 	if err != nil {
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UploadChallengeFileEventType)
@@ -130,7 +130,7 @@ func UploadChallengeFile(ctx *gin.Context) {
 func UploadWriteUp(ctx *gin.Context) {
 	file, err := ctx.FormFile(string(model.WriteupFileType))
 	if err != nil {
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UploadWriteUpEventType)

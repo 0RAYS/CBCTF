@@ -112,7 +112,7 @@ func (c *CheatRepo) Create(options CreateCheatOptions) (model.Cheat, model.RetVa
 
 	if res := c.DB.Create(&m); res.Error != nil {
 		log.Logger.Warningf("Failed to create Cheat: %s", res.Error)
-		return model.Cheat{}, model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.Cheat{}.ModelName(), "Error": res.Error.Error()}}
+		return model.Cheat{}, model.RetVal{Msg: i18n.Model.Cheat.CreateError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return m, model.SuccessRetVal()
 }
@@ -121,7 +121,7 @@ func (c *CheatRepo) DeleteByContestID(contestID uint) model.RetVal {
 	res := c.DB.Model(&model.Cheat{}).Where("contest_id = ?", contestID).Delete(&model.Cheat{})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete Cheat: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Cheat{}.ModelName(), "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.Cheat.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }

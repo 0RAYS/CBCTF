@@ -39,7 +39,7 @@ func WSAuth(ctx *gin.Context) {
 	tokenValue, _ := parseWSToken(ctx.Request.Header.Get("Sec-Websocket-Protocol"))
 	claims, err := utils.ParseToken(tokenValue)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Unauthorized})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.Unauthorized})
 		return
 	}
 	user, ret := db.InitUserRepo(db.DB).GetByID(claims.UserID)
@@ -69,12 +69,12 @@ func WSAuth(ctx *gin.Context) {
 				})
 			}
 		}(contestIDL)
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Unauthorized})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.Unauthorized})
 		return
 	}
 	go db.InitDeviceRepo(db.DB).RecordDevice(db.CreateDeviceOptions{UserID: user.ID, Magic: magic})
 	if user.Banned {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.Forbidden})
 		return
 	}
 	ctx.Set("Self", user)

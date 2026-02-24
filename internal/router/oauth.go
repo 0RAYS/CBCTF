@@ -62,7 +62,7 @@ func Oauth(ctx *gin.Context) {
 	provider, ok := oauthProviderMap[uri]
 	oauthProviderMapLock.RUnlock()
 	if !ok {
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
 	oauthConfig := &oauth2.Config{
@@ -90,7 +90,7 @@ func OauthCallback(ctx *gin.Context) {
 	provider, ok := oauthProviderMap[uri]
 	oauthProviderMapLock.RUnlock()
 	if !ok {
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
 	var form dto.OauthCallbackForm
@@ -166,7 +166,7 @@ func OauthCallback(ctx *gin.Context) {
 func ExchangeOauthCode(ctx *gin.Context) {
 	code := ctx.Query("code")
 	if code == "" {
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
 	token, ret := redis.GetAndDelOauthToken(code)

@@ -89,7 +89,7 @@ func (c *ChallengeRepo) ListCategories(t model.ChallengeType) ([]string, model.R
 	res = res.Select("distinct category").Find(&categories)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Categories: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Challenge{}.ModelName(), "Error": res.Error.Error()}}
+		return nil, model.RetVal{Msg: i18n.Model.Challenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return categories, model.SuccessRetVal()
 }
@@ -109,13 +109,13 @@ func (c *ChallengeRepo) ListChallengesNotInContest(contestID uint, limit, offset
 	var count int64
 	if res := base.Count(&count); res.Error != nil {
 		log.Logger.Warningf("Failed to count Challenges not in contest: %s", res.Error)
-		return nil, 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Challenge{}.ModelName(), "Error": res.Error.Error()}}
+		return nil, 0, model.RetVal{Msg: i18n.Model.Challenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 
 	var challenges = make([]model.Challenge, 0)
 	if res := base.Select("challenges.*").Order("challenges.id DESC").Limit(limit).Offset(offset).Scan(&challenges); res.Error != nil {
 		log.Logger.Warningf("Failed to list Challenges not in contest: %s", res.Error)
-		return nil, 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Challenge{}.ModelName(), "Error": res.Error.Error()}}
+		return nil, 0, model.RetVal{Msg: i18n.Model.Challenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 
 	return challenges, count, model.SuccessRetVal()
@@ -166,7 +166,7 @@ func (c *ChallengeRepo) Delete(randIDL ...string) model.RetVal {
 	}
 	if res := c.DB.Model(&model.Challenge{}).Where("rand_id IN ?", randIDL).Delete(&model.Challenge{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Challenge: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Challenge{}.ModelName(), "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.Challenge.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }

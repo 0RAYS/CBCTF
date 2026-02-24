@@ -173,7 +173,7 @@ func (u *UserRepo) CountGroupUser(group string) (int64, model.RetVal) {
 		Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count role users: %v", res.Error)
-		return 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.User{}.ModelName(), "Error": res.Error.Error()}}
+		return 0, model.RetVal{Msg: i18n.Model.User.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return count, model.SuccessRetVal()
 }
@@ -190,7 +190,7 @@ func (u *UserRepo) GetByTeamID(teamID uint, limit, offset int) ([]model.User, mo
 		Limit(limit).Offset(offset).Scan(&users)
 	if res.Error != nil {
 		log.Logger.Fatalf("Failed to get Users: %v", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.User{}.ModelName(), "Error": res.Error.Error()}}
+		return nil, model.RetVal{Msg: i18n.Model.User.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return users, model.SuccessRetVal()
 }
@@ -215,7 +215,7 @@ func (u *UserRepo) GetByContestID(contestID uint, limit, offset int) ([]model.Us
 		Limit(limit).Offset(offset).Scan(&users)
 	if res.Error != nil {
 		log.Logger.Fatalf("Failed to get Users: %v", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.User{}.ModelName(), "Error": res.Error.Error()}}
+		return nil, model.RetVal{Msg: i18n.Model.User.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return users, model.SuccessRetVal()
 }
@@ -236,7 +236,7 @@ func (u *UserRepo) GetByGroupID(groupID uint, limit, offset int) ([]model.User, 
 	var count int64
 	if res := u.DB.Model(&model.UserGroup{}).Where("group_id = ?", groupID).Count(&count); res.Error != nil {
 		log.Logger.Warningf("Failed to count Group Users: %s", res.Error)
-		return nil, 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": "UserGroup", "Error": res.Error.Error()}}
+		return nil, 0, model.RetVal{Msg: i18n.Model.UserGroup.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	var users []model.User
 	res := u.DB.Table("users").Select("users.*").
@@ -245,7 +245,7 @@ func (u *UserRepo) GetByGroupID(groupID uint, limit, offset int) ([]model.User, 
 		Limit(limit).Offset(offset).Scan(&users)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Group Users: %s", res.Error)
-		return nil, 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.User{}.ModelName(), "Error": res.Error.Error()}}
+		return nil, 0, model.RetVal{Msg: i18n.Model.User.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return users, count, model.SuccessRetVal()
 }
@@ -287,7 +287,7 @@ func (u *UserRepo) Delete(idL ...uint) model.RetVal {
 	}
 	if res := u.DB.Model(&model.User{}).Where("id IN ?", idL).Delete(&model.User{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete User: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.User{}.ModelName(), "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.User.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }

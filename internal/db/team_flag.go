@@ -95,7 +95,7 @@ func (t *TeamFlagRepo) GetTeamFlagsWithChallenge(teamIDL ...uint) ([]TeamFlagWit
 		Scan(&results)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get TeamFlags: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.TeamFlag{}.ModelName(), "Error": res.Error.Error()}}
+		return nil, model.RetVal{Msg: i18n.Model.TeamFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return results, model.SuccessRetVal()
 }
