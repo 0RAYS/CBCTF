@@ -59,7 +59,7 @@ func (g *GroupRepo) InitDefaultGroups() model.RetVal {
 	for _, group := range model.DefaultGroups {
 		res := g.DB.Model(&model.Group{}).FirstOrCreate(&group, group)
 		if res.Error != nil {
-			return model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": group.ModelName(), "Error": res.Error.Error()}}
+			return model.RetVal{Msg: i18n.Model.Group.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 		}
 		group, ret := g.GetByID(group.ID, GetOptions{Preloads: map[string]GetOptions{"Role": {}}})
 		if !ret.OK {
@@ -105,7 +105,7 @@ func (g *GroupRepo) Delete(idL ...uint) model.RetVal {
 	}
 	if res := g.DB.Model(&model.Group{}).Where("id IN ?", idL).Delete(&model.Group{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Group: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Group{}.ModelName(), "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.Group.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }

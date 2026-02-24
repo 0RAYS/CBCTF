@@ -1,7 +1,7 @@
 common:
   success: "操作成功"
   unknownError: "未知错误: {{.Error}}"
-request:
+response:
   badRequest: "参数错误: {{.Error}}"
   unauthorized: "未登录"
   forbidden: "禁止访问"
@@ -18,47 +18,92 @@ model:
   challenge:
     invalidType: "不合法的题目类型"
     emptyImage: "题目镜像为空"
+    getError: "获取 Challenge 失败: {{.Error}}"
+    deleteError: "删除 Challenge 失败: {{.Error}}"
   challengeFlag:
     invalidType: "错误的 flag 类型"
+    deleteError: "删除 ChallengeFlag 失败: {{.Error}}"
   cheat:
     invalidType: "不合法的作弊类型"
+    createError: "创建 Cheat 失败: {{.Error}}"
+    deleteError: "删除 Cheat 失败: {{.Error}}"
   contest:
     captchaWrong: "比赛邀请码错误"
     duplicateMember: "用户已加入队伍"
     isComing: "比赛未开始"
     isRunning: "比赛正在进行中"
     isOver: "比赛已结束"
+    getError: "获取 Contest 失败: {{.Error}}"
+    deleteError: "删除 Contest 失败: {{.Error}}"
+    notFound: "比赛不存在"
+  contestChallenge:
+    getError: "获取 ContestChallenge 失败: {{.Error}}"
+    deleteError: "删除 ContestChallenge 失败: {{.Error}}"
   contestFlag:
     invalidType: "不合法的 flag 类型"
+    getError: "获取 ContestFlag 失败: {{.Error}}"
+    deleteError: "删除 ContestFlag 失败: {{.Error}}"
+    notFound: "ContestFlag 不存在"
+  device:
+    createError: "创建 Device 失败: {{.Error}}"
   docker:
     invalidComposeYaml: "不合法的 docker-compose.yaml: {{.Error}}"
+    deleteError: "删除 Docker 失败: {{.Error}}"
   email:
     invalidVerifyToken: "不合法的验证 token"
+    createError: "创建 Email 失败: {{.Error}}"
   file:
     notAllowed: "不允许的文件后缀"
     readPcapError: "读取流量文件失败: {{.Error}}"
     createDirError: "创建文件夹失败: {{.Error}}"
+    createError: "创建 File 失败: {{.Error}}"
+    deleteError: "删除 File 失败: {{.Error}}"
+    notFound: "文件不存在"
   group:
     cannotUpdateDefault: "不允许更新默认组"
     cannotDeleteDefault: "不允许删除默认组"
+    getError: "获取 Group 失败: {{.Error}}"
+    deleteError: "删除 Group 失败: {{.Error}}"
   notice:
     invalidType: "不合法的通知类型"
+  permission:
+    getError: "获取 Permission 失败: {{.Error}}"
+    notFound: "权限不存在"
+  pod:
+    deleteError: "删除 Pod 失败: {{.Error}}"
+  request:
+    getError: "获取 Request 失败: {{.Error}}"
   role:
     cannotUpdateDefault: "不允许更新默认角色"
     cannotDeleteDefault: "不允许删除默认角色"
+    getError: "获取 Role 失败: {{.Error}}"
+    deleteError: "删除 Role 失败: {{.Error}}"
+  rolePermission:
+    createError: "创建 RolePermission 失败: {{.Error}}"
+    deleteError: "删除 RolePermission 失败: {{.Error}}"
   setting:
     invalidType: "不合法的配置类型"
+    deadLock: "服务器繁忙, Setting 更新失败"
+    updateError: "更新 Setting 失败: {{.Error}}"
   submission:
     notAllowed: "不允许提交 flag"
+    getError: "获取 Submission 失败: {{.Error}}"
   team:
     banned: "队伍被封禁"
     full: "队伍已满"
     captchaWrong: "队伍邀请码错误"
     notHasMember: "用户不在队伍中"
     captainCannotLeave: "队长不可以离开队伍"
+    getError: "获取 Team 失败: {{.Error}}"
+    notFound: "队伍不存在"
+    deleteError: "删除 Team 失败: {{.Error}}"
   teamFlag:
     notMatch: "flag 错误"
     alreadySolved: "已解出 flag"
+    getError: "获取 TeamFlag 失败: {{.Error}}"
+    notFound: "TeamFlag 不存在"
+  traffic:
+    getError: "获取 Traffic 失败: {{.Error}}"
   user:
     weakPassword: "密码强度太低"
     samePassword: "新密码与旧密码相同"
@@ -68,12 +113,27 @@ model:
     alreadyVerified: "邮箱已验证"
     inContest: "用户已参与过赛事, 不可以删除账户"
     notAllowedRegister: "不允许注册"
+    getError: "获取 User 失败: {{.Error}}"
+    deleteError: "删除 User 失败: {{.Error}}"
+  userContest:
+    createError: "创建 UserContest 失败: {{.Error}}"
+    deleteError: "删除 UserContest 失败: {{.Error}}"
+  userGroup:
+    getError: "获取 UserGroup 失败: {{.Error}}"
+    createError: "创建 UserGroup 失败: {{.Error}}"
+    deleteError: "删除 UserGroup 失败: {{.Error}}"
+  userTeam:
+    createError: "创建 UserTeam 失败: {{.Error}}"
+    deleteError: "删除 UserTeam 失败: {{.Error}}"
   victim:
     limited: "容器数量达到上限"
     hasMuchTime: "距容器关闭20分钟内才可延长时间"
+    deleteError: "删除 Victim 失败: {{.Error}}"
   webhook:
     invalidMethod: "不合法的 Webhook 请求方式"
     notAllowedTarget: "不允许的 Webhook 地址"
+  webhookHistory:
+    createError: "创建 WebhookHistory 失败: {{.Error}}"
 redis:
   setError: "缓存 {{.Key}} 失败: {{.Error}}"
   getError: "获取 {{.Key}} 缓存失败: {{.Error}}"

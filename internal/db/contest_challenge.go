@@ -100,7 +100,7 @@ func (c *ContestChallengeRepo) ListCategories(contestID uint, t model.ChallengeT
 	}
 	if res := tx.Select("distinct category").Find(&categories); res.Error != nil {
 		log.Logger.Warningf("Failed to list ContestChallenge categories: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]interface{}{"Error": res.Error.Error()}}
+		return nil, model.RetVal{Msg: i18n.Model.ContestChallenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return categories, model.SuccessRetVal()
 }
@@ -136,7 +136,7 @@ func (c *ContestChallengeRepo) Delete(idL ...uint) model.RetVal {
 	}
 	if res := c.DB.Model(&model.ContestChallenge{}).Where("id IN ?", idL).Delete(&model.ContestChallenge{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete ContestChallenge: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]interface{}{"Model": model.ContestChallenge{}.ModelName(), "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.ContestChallenge.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }

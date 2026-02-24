@@ -45,7 +45,7 @@ func (w *WebhookHistoryRepo) Create(options CreateWebhookHistoryOptions) (model.
 	m := options.Convert2Model().(model.WebhookHistory)
 	if res := w.DB.Model(&model.WebhookHistory{}).Create(&m); res.Error != nil {
 		log.Logger.Warningf("Failed to create WebhookHistory: %s", res.Error)
-		return model.WebhookHistory{}, model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]interface{}{"Model": m.ModelName(), "Error": res.Error.Error()}}
+		return model.WebhookHistory{}, model.RetVal{Msg: i18n.Model.WebhookHistory.CreateError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	if ret := InitWebhookRepo(w.DB).UpdateStatus(m.WebhookID, m.Success, m.CreatedAt); !ret.OK {
 		return model.WebhookHistory{}, ret

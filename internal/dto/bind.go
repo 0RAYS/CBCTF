@@ -19,7 +19,7 @@ type Validator interface {
 func Bind[T any](ctx *gin.Context, form *T) model.RetVal {
 	if err := ctx.ShouldBind(form); err != nil {
 		log.Logger.Debugf("Failed to bind form: %s", err)
-		return model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": err.Error()}}
+		return model.RetVal{Msg: i18n.Response.BadRequest, Attr: map[string]any{"Error": err.Error()}}
 	}
 	if v, ok := any(form).(Validator); ok {
 		return v.Validate(ctx)

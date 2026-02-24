@@ -62,7 +62,7 @@ func (t *TrafficRepo) GetTeamVictimIP(teamIDL ...uint) ([]TeamVictimIP, model.Re
 		Scan(&teamVictimIPL)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Traffic: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Traffic{}.ModelName(), "Error": res.Error.Error()}}
+		return nil, model.RetVal{Msg: i18n.Model.Traffic.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return teamVictimIPL, model.SuccessRetVal()
 }

@@ -12,7 +12,7 @@ func AppendUserToTeam(tx *gorm.DB, user model.User, team model.Team) model.RetVa
 	res := tx.Model(&model.UserTeam{}).Create(&model.UserTeam{UserID: user.ID, TeamID: team.ID})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to append User to Team: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": "UserTeam", "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.UserTeam.CreateError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }
@@ -22,7 +22,7 @@ func DeleteUserFromTeam(tx *gorm.DB, user model.User, team model.Team) model.Ret
 		Delete(&model.UserTeam{})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete User from Team: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": "UserTeam", "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.UserTeam.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }
@@ -31,7 +31,7 @@ func AppendUserToContest(tx *gorm.DB, user model.User, contest model.Contest) mo
 	res := tx.Model(&model.UserContest{}).Create(&model.UserContest{UserID: user.ID, ContestID: contest.ID})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to append User to Contest: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": "UserContest", "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.UserContest.CreateError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }
@@ -41,7 +41,7 @@ func DeleteUserFromContest(tx *gorm.DB, user model.User, contest model.Contest) 
 		Delete(&model.UserContest{})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete User from Contest: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": "UserContest", "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.UserContest.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }
@@ -50,7 +50,7 @@ func AppendUserToGroup(tx *gorm.DB, user model.User, group model.Group) model.Re
 	res := tx.Model(&model.UserGroup{}).Create(&model.UserGroup{UserID: user.ID, GroupID: group.ID})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to append User to Group: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": "UserGroup", "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.UserGroup.CreateError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }
@@ -60,7 +60,7 @@ func DeleteUserFromGroup(tx *gorm.DB, user model.User, group model.Group) model.
 		Delete(&model.UserGroup{})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete User from Group: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": "UserGroup", "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.UserGroup.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }
@@ -69,7 +69,7 @@ func AssignPermissionToRole(tx *gorm.DB, permission model.Permission, role model
 	res := tx.Model(&model.RolePermission{}).Create(&model.RolePermission{RoleID: role.ID, PermissionID: permission.ID})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to assign Role Permission: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": "RolePermission", "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.RolePermission.CreateError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }
@@ -79,7 +79,7 @@ func RevokePermissionFromRole(tx *gorm.DB, permission model.Permission, role mod
 		Delete(&model.RolePermission{})
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to revoke Role Permission: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": "RolePermission", "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.RolePermission.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }

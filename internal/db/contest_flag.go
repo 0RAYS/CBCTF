@@ -125,7 +125,7 @@ func (c *ContestFlagRepo) GetUserSolvedContestFlags(userIDL ...uint) ([]UserSolv
 		Scan(&results)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get ContestFlag: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.ContestFlag{}.ModelName(), "Error": res.Error.Error()}}
+		return nil, model.RetVal{Msg: i18n.Model.ContestFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return results, model.SuccessRetVal()
 }
@@ -142,7 +142,7 @@ func (c *ContestFlagRepo) GetTeamSolvedContestFlags(teamIDL ...uint) ([]model.Co
 		Scan(&results)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get ContestFlags: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.ContestFlag{}.ModelName(), "Error": res.Error.Error()}}
+		return nil, model.RetVal{Msg: i18n.Model.ContestFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return results, model.SuccessRetVal()
 }
@@ -175,7 +175,7 @@ func (c *ContestFlagRepo) Delete(idL ...uint) model.RetVal {
 	}
 	if res := c.DB.Model(&model.ContestFlag{}).Where("id IN ?", idL).Delete(&model.ContestFlag{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete ContestFlags: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]interface{}{"Model": model.ContestFlag{}.ModelName(), "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.ContestFlag.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }

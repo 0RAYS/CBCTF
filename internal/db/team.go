@@ -134,10 +134,10 @@ func (t *TeamRepo) GetBy2ID(userID, contestID uint) (model.Team, model.RetVal) {
 		Limit(1).Scan(&team)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Team: %s", res.Error)
-		return model.Team{}, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": team.ModelName(), "Error": res.Error.Error()}}
+		return model.Team{}, model.RetVal{Msg: i18n.Model.Team.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	if res.RowsAffected == 0 {
-		return model.Team{}, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": team.ModelName()}}
+		return model.Team{}, model.RetVal{Msg: i18n.Model.Team.NotFound}
 	}
 	return team, model.SuccessRetVal()
 }
@@ -187,7 +187,7 @@ func (t *TeamRepo) Delete(idL ...uint) model.RetVal {
 	}
 	if res := t.DB.Model(&model.Team{}).Where("id IN ?", idL).Delete(&model.Team{}); res.Error != nil {
 		log.Logger.Errorf("Failed to delete Team: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Team{}.ModelName(), "Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.Team.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }

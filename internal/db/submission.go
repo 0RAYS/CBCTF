@@ -70,7 +70,7 @@ func (s *SubmissionRepo) GetBloodTeamID(contestFlagID uint) ([]uint, model.RetVa
 	res := s.DB.Model(&model.Submission{}).Where("contest_flag_id = ?", contestFlagID).Order("id").Limit(3).Find(&submissions)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Submission: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Submission{}.ModelName(), "Error": res.Error.Error()}}
+		return nil, model.RetVal{Msg: i18n.Model.Submission.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	for _, submission := range submissions {
 		if submission.TeamID != 0 {

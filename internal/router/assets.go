@@ -24,7 +24,7 @@ func DefaultAssets(ctx *gin.Context) {
 	}
 	file, ok := DefaultPicture[form.Filename]
 	if !ok {
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.File{}.ModelName()}})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Model.File.NotFound})
 		return
 	}
 	ctx.Data(http.StatusOK, "application/octet-stream", file)

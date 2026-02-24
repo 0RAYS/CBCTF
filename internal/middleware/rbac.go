@@ -14,7 +14,7 @@ func CheckPermission(ctx *gin.Context) {
 	key := fmt.Sprintf("%s %s", ctx.Request.Method, ctx.FullPath())
 	permission, ok := model.RoutePermissions[key]
 	if !ok {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.Forbidden})
 		return
 	}
 
@@ -24,7 +24,7 @@ func CheckPermission(ctx *gin.Context) {
 		return
 	}
 	if !pass {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.Forbidden})
 		return
 	}
 	ctx.Next()

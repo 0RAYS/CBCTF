@@ -46,7 +46,7 @@ func Search(ctx *gin.Context) {
 		}
 	}
 	if !found {
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Request.BadRequest, Attr: map[string]any{"Error": "Not allowed model"}})
+		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest, Attr: map[string]any{"Error": "Not allowed model"}})
 		return
 	}
 	options := db.GetOptions{Search: make(map[string]string), Sort: make([]string, 0)}

@@ -18,12 +18,12 @@ import (
 func CheckAuth(ctx *gin.Context) {
 	auth := strings.Fields(ctx.GetHeader("Authorization"))
 	if len(auth) != 2 || auth[0] != "Bearer" {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Unauthorized})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.Unauthorized})
 		return
 	}
 	claims, err := utils.ParseToken(auth[1])
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Unauthorized})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.Unauthorized})
 		return
 	}
 	user, ret := db.InitUserRepo(db.DB).GetByID(claims.UserID)
@@ -62,13 +62,13 @@ func CheckAuth(ctx *gin.Context) {
 					})
 				}
 			}(contestIDL)
-			ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Unauthorized})
+			ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.Unauthorized})
 			return
 		}
 	}
 	go db.InitDeviceRepo(db.DB).RecordDevice(db.CreateDeviceOptions{UserID: user.ID, Magic: magic})
 	if user.Banned {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.Forbidden})
 		return
 	}
 	ctx.Set("Self", user)
@@ -88,7 +88,7 @@ func GetSelf(ctx *gin.Context) model.User {
 func CheckCaptain(ctx *gin.Context) {
 	team := GetTeam(ctx)
 	if team.CaptainID != GetSelf(ctx).ID {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.Forbidden})
 		return
 	}
 	ctx.Next()
@@ -107,7 +107,7 @@ func CheckVerified(ctx *gin.Context) {
 func CheckBanned(ctx *gin.Context) {
 	team := GetTeam(ctx)
 	if team.Banned {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.Forbidden})
+		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.Forbidden})
 		return
 	}
 	ctx.Next()

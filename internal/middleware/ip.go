@@ -31,7 +31,7 @@ func RateLimit(name string, maxRequests int, window time.Duration) gin.HandlerFu
 		}
 		if int(count) > maxRequests {
 			prometheus.UpdateRateLimitMetrics(name, client)
-			ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Request.TooManyRequests})
+			ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.TooManyRequests})
 			return
 		}
 		ctx.Next()
