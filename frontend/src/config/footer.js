@@ -14,4 +14,3 @@ export function getFooterConfig(t) {
     ],
   };
 }
-

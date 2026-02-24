@@ -21,4 +21,3 @@ export function isContestEnded(startTime, durationSeconds, nowMs = Date.now()) {
   const end = start + durationSeconds * 1000;
   return nowMs > end;
 }
-
