@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { REPO_URL } from '../../../config/footer';
 
 function Footer({ copyright, icp, links }) {
   const { t } = useTranslation();
@@ -13,7 +14,7 @@ function Footer({ copyright, icp, links }) {
   const resolvedLinks = links ?? [
     { label: t('footer.support'), href: '/support', isExternal: false },
     { label: t('footer.contact'), href: '/contact', isExternal: false },
-    { label: t('footer.github'), href: 'https://github.com/your-repo', isExternal: true },
+    { label: t('footer.github'), href: REPO_URL, isExternal: true },
   ];
   // 渲染链接的辅助函数
   const renderLink = (link, index) => {

@@ -4,6 +4,7 @@ import { toast } from '../../../utils/toast';
 import { getContestInfo, updateContestInfo, updateContestPicture } from '../../../api/admin/contest';
 import AdminContestEditor from '../../../components/features/Admin/Contests/AdminContestEditor';
 import { useTranslation } from 'react-i18next';
+import { getContestStatus, getContestTimeRange } from '../../../config/contest';
 
 function AdminContestDetail() {
   const { id } = useParams();
@@ -11,40 +12,19 @@ function AdminContestDetail() {
   const [contest, setContest] = useState(null);
   const { t } = useTranslation();
 
-  const getContestStatus = (contest) => {
-    const now = new Date().getTime() / 1000;
-    const startTime = new Date(contest?.start).getTime() / 1000;
-    const duration = contest?.duration;
-    const endTime = startTime + duration;
-
-    if (now < startTime) {
-      return 'upcoming';
-    } else if (now > endTime) {
-      return 'ended';
-    } else {
-      return 'active';
-    }
-  };
-
-  const calculateEndTime = (startTime, duration) => {
-    if (!startTime || !duration) return '';
-    const start = new Date(startTime);
-    const end = new Date(start.getTime() + duration * 1000);
-    return end.toISOString();
-  };
-
   const fetchContestInfo = async () => {
     try {
       const response = await getContestInfo(parseInt(id));
       if (response.code === 200) {
+        const { endTime } = getContestTimeRange(response.data.start, response.data.duration);
         // 转换数据格式以适配编辑器组件
         const contestData = {
           title: response.data.name,
           description: response.data.description,
           image: response.data.picture,
-          status: getContestStatus(response.data),
+          status: getContestStatus(response.data.start, response.data.duration),
           startTime: response.data.start,
-          endTime: calculateEndTime(response.data.start, response.data.duration),
+          endTime,
           participants: response.data.users,
           rules: response.data.rules || [],
           prizes:

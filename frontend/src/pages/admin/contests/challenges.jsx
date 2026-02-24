@@ -18,6 +18,7 @@ import {
 } from '../../../api/admin/challenge';
 import { useTranslation } from 'react-i18next';
 import { searchModels } from '../../../api/admin/search.js';
+import { DEFAULT_CHALLENGE_CATEGORIES, mergeChallengeCategories } from '../../../config/challenges';
 
 function AdminContestChallengesPage() {
   const { id } = useParams();
@@ -96,22 +97,17 @@ function AdminContestChallengesPage() {
   // 获取分类列表
   const fetchCategories = async () => {
     try {
-      // 定义默认分类
-      const defaultCategories = ['Web', 'Misc', 'Pwn', 'Crypto', 'Reverse'];
-
       const response = await getContestChallengeCategories(parseInt(id));
       if (response.code === 200) {
-        // 合并API返回的分类和默认分类，并去重
-        const mergedCategories = [...new Set([...defaultCategories, ...(response.data || [])])];
-        setCategories(mergedCategories);
+        setCategories(mergeChallengeCategories(response.data));
       } else {
         // API请求失败时仍然设置默认分类
-        setCategories(defaultCategories);
+        setCategories(DEFAULT_CHALLENGE_CATEGORIES);
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.contests.challenges.toast.fetchCategoriesFailed') });
       // 出现异常时仍然设置默认分类
-      setCategories(['Web', 'Misc', 'Pwn', 'Crypto', 'Reverse']);
+      setCategories(DEFAULT_CHALLENGE_CATEGORIES);
     }
   };
 

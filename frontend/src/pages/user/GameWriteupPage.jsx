@@ -6,6 +6,7 @@ import { getContestInfo } from '../../api/contest';
 import WriteupUpload from '../../components/features/CTFGame/Challenges/WriteupUpload';
 import Loading from '../../components/common/Loading';
 import { useTranslation } from 'react-i18next';
+import { isContestEnded } from '../../config/contest';
 
 function GameWriteupPage() {
   const { contestId } = useParams();
@@ -23,11 +24,7 @@ function GameWriteupPage() {
       const contestRes = await getContestInfo(contestId);
       if (contestRes.code === 200) {
         const contest = contestRes.data;
-        const now = Date.now();
-        const start = new Date(contest.start).getTime();
-        const end = start + contest.duration * 1000;
-
-        if (now > end) {
+        if (isContestEnded(contest.start, contest.duration)) {
           navigate(`/contests/${contestId}/challenges`, { replace: true });
           return;
         }

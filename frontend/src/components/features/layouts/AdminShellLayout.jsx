@@ -5,6 +5,7 @@ import AdminSidebar from '../Admin/AdminSidebar';
 import AdminTopbar from '../Admin/AdminTopbar';
 import AdminGlobalSearch from '../Admin/AdminGlobalSearch';
 import Footer from './Footer';
+import { getFooterConfig } from '../../../config/footer';
 
 function AdminShellLayout({
   children,
@@ -61,18 +62,7 @@ function AdminShellLayout({
     setSidebarOpen(false);
   };
 
-  const footerConfig = {
-    copyright: t('footer.copyright'),
-    icp: {
-      number: t('footer.icp'),
-      link: 'https://beian.miit.gov.cn/',
-    },
-    links: [
-      { label: t('footer.support'), href: '/support', isExternal: false },
-      { label: t('footer.contact'), href: '/contact', isExternal: false },
-      { label: t('footer.github'), href: 'https://github.com/0RAYS/CBCTF', isExternal: true },
-    ],
-  };
+  const footerConfig = getFooterConfig(t);
 
   return (
     <div className="h-screen w-screen overflow-hidden">

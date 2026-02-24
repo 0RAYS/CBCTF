@@ -4,6 +4,7 @@ import BaseLayout from './BaseLayout';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { getContestInfo } from '../../../api/contest';
+import { isContestEnded } from '../../../config/contest';
 
 function ContestLayout() {
   const { contestId } = useParams();
@@ -17,10 +18,7 @@ function ContestLayout() {
     getContestInfo(contestId).then((res) => {
       if (res.code === 200) {
         const contest = res.data;
-        const now = Date.now();
-        const start = new Date(contest.start).getTime();
-        const end = start + contest.duration * 1000;
-        setContestEnded(now > end);
+        setContestEnded(isContestEnded(contest.start, contest.duration));
       }
     });
   }, [contestId]);

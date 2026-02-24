@@ -1,6 +1,6 @@
 import { List, StatusTag, Avatar } from '../../common';
 import { IconPlus, IconEdit, IconTrash, IconSearch } from '@tabler/icons-react';
-import { Button, Input, Pagination } from '../../../components/common';
+import { Button, Input, Pagination, Spinner } from '../../../components/common';
 import { useTranslation } from 'react-i18next';
 import AdminUserDetailDialog from './AdminUserDetailDialog';
 
@@ -155,11 +155,7 @@ function AdminUsers({
               placeholder={t('admin.users.search.placeholder')}
               onChange={(e) => onSearchChange?.(e.target.value)}
               icon={<IconSearch size={16} />}
-              iconRight={
-                searchLoading && (
-                  <div className="w-4 h-4 border border-geek-400 border-t-transparent rounded-full animate-spin"></div>
-                )
-              }
+              iconRight={searchLoading && <Spinner size="sm" />}
             />
           </div>
         </div>

@@ -2,6 +2,7 @@ import { motion } from 'motion/react';
 import { IconX, IconSearch } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { Button, Pagination, Card, EmptyState } from '../../../../components/common';
+import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../../config/challengeChips';
 
 /**
  * 赛事赛题选择弹窗组件
@@ -45,37 +46,33 @@ function AdminContestChallengeSelector({
 
   // 分类标签渲染
   const renderCategoryChip = (category) => {
-    const categoryColors = {
-      web: 'bg-blue-400/20 text-blue-400',
-      crypto: 'bg-purple-400/20 text-purple-400',
-      pwn: 'bg-red-400/20 text-red-400',
-      reverse: 'bg-green-400/20 text-green-400',
-      misc: 'bg-yellow-400/20 text-yellow-400',
-    };
-
-    const colorClass = categoryColors[category.toLowerCase()] || 'bg-neutral-400/20 text-neutral-400';
-
-    return <span className={`px-2 py-1 rounded-full text-xs font-mono ${colorClass}`}>{category}</span>;
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-mono ${getChallengeCategoryChipClass(category)}`}>
+        {category}
+      </span>
+    );
   };
 
   // 类型标签渲染
   const renderTypeChip = (type) => {
     const typeMap = {
-      static: { label: t('admin.contests.challengeSelector.types.static'), class: 'bg-geek-400/20 text-geek-400' },
+      static: { label: t('admin.contests.challengeSelector.types.static') },
       question: {
         label: t('admin.contests.challengeSelector.types.question'),
-        class: 'bg-green-400/20 text-green-400',
       },
       dynamic: {
         label: t('admin.contests.challengeSelector.types.dynamic'),
-        class: 'bg-orange-400/20 text-orange-400',
       },
-      pods: { label: t('admin.contests.challengeSelector.types.pods'), class: 'bg-cyan-400/20 text-cyan-400' },
+      pods: { label: t('admin.contests.challengeSelector.types.pods') },
     };
 
-    const typeInfo = typeMap[type] || { label: type, class: 'bg-neutral-400/20 text-neutral-400' };
+    const typeInfo = typeMap[type] || { label: type };
 
-    return <span className={`px-2 py-1 rounded-full text-xs font-mono ${typeInfo.class}`}>{typeInfo.label}</span>;
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-mono ${getChallengeTypeChipClass(type)}`}>
+        {typeInfo.label}
+      </span>
+    );
   };
 
   if (!isOpen) return null;

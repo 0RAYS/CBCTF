@@ -5,6 +5,7 @@ import { toast } from '../../utils/toast';
 import { getContestInfo } from '../../api/contest';
 import Loading from '../../components/common/Loading';
 import { useTranslation } from 'react-i18next';
+import { DEFAULT_CONTEST_IMAGE, getContestStatus, getContestTimeRange } from '../../config/contest';
 
 const getDefaultContestData = (t) => ({
   rules: t('game.detail.defaultRules', { returnObjects: true }),
@@ -12,32 +13,18 @@ const getDefaultContestData = (t) => ({
   timeline: t('game.detail.defaultTimeline', { returnObjects: true }),
 });
 
-// 转换比赛状态
-const getContestStatus = (startTime, duration) => {
-  const now = new Date().getTime();
-  const start = new Date(startTime).getTime();
-  const end = start + duration * 1000;
-
-  if (now < start) return 'upcoming';
-  if (now > end) return 'ended';
-  return 'active';
-};
-
 // 转换API数据为组件所需格式
 const transformContestData = (apiData, defaults) => {
   if (!apiData) return null;
-
-  const startTime = new Date(apiData.start);
-  const endTime = new Date(startTime.getTime() + apiData.duration * 1000);
+  const { startTime, endTime } = getContestTimeRange(apiData.start, apiData.duration);
 
   return {
     title: `${apiData.prefix} ${apiData.name}`,
     description: apiData.description,
-    image:
-      apiData.picture || 'https://images.unsplash.com/photo-1562813733-b31f71025d54?q=80&w=2069&auto=format&fit=crop',
+    image: apiData.picture || DEFAULT_CONTEST_IMAGE,
     status: getContestStatus(apiData.start, apiData.duration),
-    startTime: startTime.toISOString(),
-    endTime: endTime.toISOString(),
+    startTime,
+    endTime,
     participants: apiData.users || 0,
     rules: apiData.rules || defaults.rules,
     prizes: apiData.prizes || defaults.prizes,

@@ -1,6 +1,7 @@
 import NavBar from './NavBar';
 import Footer from './Footer';
 import { useTranslation } from 'react-i18next';
+import { getFooterConfig } from '../../../config/footer';
 
 function BaseLayout({
   children,
@@ -15,18 +16,7 @@ function BaseLayout({
 }) {
   const { t } = useTranslation();
   const resolvedLogo = logo || t('branding.main');
-  const footerConfig = {
-    copyright: t('footer.copyright'),
-    icp: {
-      number: t('footer.icp'),
-      link: 'https://beian.miit.gov.cn/',
-    },
-    links: [
-      { label: t('footer.support'), href: '/support', isExternal: false },
-      { label: t('footer.contact'), href: '/contact', isExternal: false },
-      { label: t('footer.github'), href: 'https://github.com/0RAYS/CBCTF', isExternal: true },
-    ],
-  };
+  const footerConfig = getFooterConfig(t);
 
   return (
     <div className="h-full w-full overflow-x-hidden">
