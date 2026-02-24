@@ -26,4 +26,3 @@ export function getChallengeTypeChipClass(type) {
   const key = String(type).toLowerCase();
   return typeChipClasses[key] || fallbackChipClass;
 }
-
