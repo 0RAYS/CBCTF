@@ -19,6 +19,7 @@ import {
 } from '../../../api/admin/contest';
 import { useTranslation } from 'react-i18next';
 import { searchModels } from '../../../api/admin/search.js';
+import { useDebounceSearch } from '../../../hooks';
 
 function AdminContestTeams() {
   const { id } = useParams();
@@ -43,11 +44,46 @@ function AdminContestTeams() {
   const { t } = useTranslation();
 
   // 搜索相关状态
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [isSearchMode, setIsSearchMode] = useState(false);
   const searchRef = useRef(null);
+  const {
+    query: searchQuery,
+    setQuery: setSearchQuery,
+    results: rawSearchResults,
+    loading: searchLoading,
+    error: searchError,
+  } = useDebounceSearch(
+    async (name) => {
+      if (!name || name.trim() === '') return [];
+
+      try {
+        const response = await searchModels({
+          model: 'Team',
+          name: name.trim(),
+          limit: 10,
+          offset: 0,
+        });
+
+        if (response.code !== 200) {
+          const businessError = new Error(response.msg || t('admin.contests.teams.toast.searchFailed'));
+          businessError.__business = true;
+          throw businessError;
+        }
+
+        const contestId = parseInt(id, 10);
+        const results = response.data.results || [];
+        return Number.isFinite(contestId) ? results.filter((item) => item.contest_id === contestId) : results;
+      } catch (error) {
+        if (!error?.__business) {
+          toast.danger({ description: error.message || t('admin.contests.teams.toast.searchFailed') });
+        }
+        throw error;
+      }
+    },
+    { delay: 300, minLength: 1 }
+  );
+
+  const searchResults = rawSearchResults || [];
+  const isSearchMode = searchQuery.trim().length > 0 && !searchError;
 
   // Detail dialog state
   const [showDetailDialog, setShowDetailDialog] = useState(false);
@@ -105,24 +141,10 @@ function AdminContestTeams() {
   };
 
   useEffect(() => {
-    fetchTeams();
-  }, [id, currentPage]);
-
-  // 点击外部关闭搜索结果
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
-        if (searchResults.length > 0 && !isSearchMode) {
-          setSearchResults([]);
-        }
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [searchResults, isSearchMode]);
+    if (!isSearchMode) {
+      fetchTeams();
+    }
+  }, [id, currentPage, isSearchMode]);
 
   const fetchTeams = async () => {
     try {
@@ -147,62 +169,9 @@ function AdminContestTeams() {
     }
   };
 
-  // 搜索函数
-  const handleSearch = async (name) => {
-    if (!name || name.trim() === '') {
-      setSearchResults([]);
-      setIsSearchMode(false);
-      return;
-    }
-
-    setSearchLoading(true);
-    try {
-      const response = await searchModels({
-        model: 'Team',
-        name: name.trim(),
-        limit: 10,
-        offset: 0,
-      });
-
-      if (response.code === 200) {
-        let results = response.data.results || [];
-        // 过滤当前比赛的团队
-        results = results.filter((item) => item.contest_id === parseInt(id));
-        setSearchResults(results);
-        setIsSearchMode(true);
-      } else {
-        setSearchResults([]);
-        setIsSearchMode(false);
-      }
-    } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.teams.toast.searchFailed') });
-      setSearchResults([]);
-      setIsSearchMode(false);
-    } finally {
-      setSearchLoading(false);
-    }
-  };
-
-  // 防抖搜索函数
-  const debouncedSearch = (() => {
-    let timeoutId;
-    return (name) => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        handleSearch(name);
-      }, 300); // 300ms 防抖延迟
-    };
-  })();
-
   // 处理搜索输入变化
   const handleSearchChange = (value) => {
     setSearchQuery(value);
-    if (!value || value.trim() === '') {
-      setIsSearchMode(false);
-      setSearchResults([]);
-    } else {
-      debouncedSearch(value);
-    }
   };
 
   const handleEditTeam = (team) => {

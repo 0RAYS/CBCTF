@@ -17,6 +17,7 @@ import { generateUUID } from '../../utils/uuid';
 import { useDebounceSearch } from '../../hooks';
 import { useTranslation } from 'react-i18next';
 import { searchModels } from '../../api/admin/search.js';
+import { DEFAULT_CHALLENGE_CATEGORIES, mergeChallengeCategories } from '../../config/challenges';
 
 function ChallengesManagement() {
   const [challenges, setChallenges] = useState([]);
@@ -102,19 +103,14 @@ function ChallengesManagement() {
     try {
       const response = await getChallengeCategories();
       if (response.code === 200) {
-        // 定义默认分类
-        const defaultCategories = ['Web', 'Misc', 'Pwn', 'Crypto', 'Reverse'];
-
-        // 合并API返回的分类和默认分类，并去重
-        const mergedCategories = [...new Set([...defaultCategories, ...(response.data || [])])];
-        setCategories(mergedCategories);
+        setCategories(mergeChallengeCategories(response.data));
       } else {
-        setCategories(['Web', 'Misc', 'Pwn', 'Crypto', 'Reverse']);
+        setCategories(DEFAULT_CHALLENGE_CATEGORIES);
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.challenge.toast.fetchCategoriesFailed') });
       // 出现异常时仍然设置默认分类
-      setCategories(['Web', 'Misc', 'Pwn', 'Crypto', 'Reverse']);
+      setCategories(DEFAULT_CHALLENGE_CATEGORIES);
     }
   };
 

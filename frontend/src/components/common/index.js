@@ -28,3 +28,4 @@ export { default as CRUDModalFooter } from './CRUDModalFooter';
 export { default as DateTimeInput } from './DateTimeInput';
 export { default as DeleteConfirmation } from './DeleteConfirmation';
 export { default as IpAddress } from './IpAddress';
+export { default as Spinner } from './Spinner';

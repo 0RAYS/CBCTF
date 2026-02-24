@@ -8,35 +8,21 @@ import { useSelector } from 'react-redux';
 import { getTeamInfo, createTeam, joinTeam } from '../../api/game/team';
 import Loading from '../../components/common/Loading';
 import { useTranslation } from 'react-i18next';
-
-// 将比赛状态转换为组件需要的状态
-const getContestStatus = (startTime, duration) => {
-  const now = new Date().getTime();
-  const start = new Date(startTime).getTime();
-  // 将秒转换为毫秒
-  const end = start + duration * 1000;
-
-  if (now < start) return 'upcoming';
-  if (now > end) return 'ended';
-  return 'active';
-};
+import { DEFAULT_CONTEST_IMAGE, getContestStatus, getContestTimeRange } from '../../config/contest';
 
 // 转换比赛数据为组件需要的格式
 const transformContestData = (contests) => {
   return contests.map((contest) => {
-    const startTime = new Date(contest.start);
-    // 将秒转换为毫秒计算结束时间
-    const endTime = new Date(startTime.getTime() + contest.duration * 1000);
+    const { startTime, endTime } = getContestTimeRange(contest.start, contest.duration);
 
     return {
       id: contest.id,
       title: `${contest.prefix} ${contest.name}`,
       description: contest.description,
       status: getContestStatus(contest.start, contest.duration),
-      startTime: startTime.toISOString(),
-      endTime: endTime.toISOString(),
-      image:
-        contest.picture || 'https://images.unsplash.com/photo-1562813733-b31f71025d54?q=80&w=2069&auto=format&fit=crop',
+      startTime,
+      endTime,
+      image: contest.picture || DEFAULT_CONTEST_IMAGE,
       // 额外信息
       teamSize: contest.size,
       teamsCount: contest.teams,

@@ -33,7 +33,7 @@
 import { IconEdit, IconTrash, IconUserMinus, IconContainer, IconSearch } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import ModalButton from '../../../common/ModalButton';
-import { Button, Pagination, ScrollingText, Modal, List, EmptyState, Avatar } from '../../../common';
+import { Button, Pagination, ScrollingText, Modal, List, EmptyState, Avatar, Input, Spinner } from '../../../common';
 import AdminTeamDetailDialog from './AdminTeamDetailDialog';
 
 function AdminTeams({
@@ -112,7 +112,12 @@ function AdminTeams({
               }}
             >
               <Avatar src={team.picture} name={team.name} size="xs" className="border border-neutral-300/30" />
-              <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-opacity">
+              <div
+                className={[
+                  'absolute inset-0 bg-black/50 flex items-center justify-center opacity-0',
+                  'group-hover/avatar:opacity-100 transition-opacity',
+                ].join(' ')}
+              >
                 <span className="text-neutral-300 text-[10px]">{t('admin.contests.teams.picture.replace')}</span>
               </div>
             </div>
@@ -353,24 +358,14 @@ function AdminTeams({
             <label className="block text-sm font-mono text-neutral-400 mb-2">
               {t('admin.contests.teams.search.label')}
             </label>
-            <div className="relative">
-              <IconSearch size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                placeholder={t('admin.contests.teams.search.placeholder')}
-                onChange={(e) => onSearchChange(e.target.value)}
-                className="w-full h-10 pl-10 pr-10 bg-black/20 border border-neutral-300/30 rounded-md
-                        text-neutral-50 placeholder-neutral-500
-                        focus:outline-none focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.3)]
-                        transition-all duration-200"
-              />
-              {searchLoading && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <div className="w-4 h-4 border border-geek-400 border-t-transparent rounded-full animate-spin"></div>
-                </div>
-              )}
-            </div>
+            <Input
+              type="text"
+              value={searchQuery}
+              placeholder={t('admin.contests.teams.search.placeholder')}
+              onChange={(e) => onSearchChange(e.target.value)}
+              icon={<IconSearch size={16} />}
+              iconRight={searchLoading && <Spinner size="sm" />}
+            />
           </div>
         </div>
       </div>

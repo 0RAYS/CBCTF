@@ -2,7 +2,7 @@ import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
-function UpcomingContests(contests) {
+function UpcomingContests({ contests = [] }) {
   // const contests = [
   //   {
   //     title: 'Web Warriors Challenge',
@@ -34,7 +34,14 @@ function UpcomingContests(contests) {
   // ];
   const navigate = useNavigate();
   const { t } = useTranslation();
-  contests = contests?.contests;
+  const gridColsClass =
+    contests.length <= 1
+      ? 'grid-cols-1'
+      : contests.length === 2
+        ? 'grid-cols-2'
+        : contests.length === 3
+          ? 'grid-cols-3'
+          : 'grid-cols-4';
 
   return (
     <div className="py-20 px-8">
@@ -53,7 +60,7 @@ function UpcomingContests(contests) {
         </motion.div>
 
         {/* 比赛列表 */}
-        <div className={`grid grid-cols-${contests.length} gap-6`}>
+        <div className={`grid ${gridColsClass} gap-6`}>
           {contests.length > 0 &&
             contests.map((contest, index) => (
               <motion.div

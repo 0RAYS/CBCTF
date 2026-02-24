@@ -1,8 +1,9 @@
 import { motion } from 'motion/react';
 import { IconEdit, IconTrash, IconPlus, IconUpload, IconDownload, IconSearch, IconFlask } from '@tabler/icons-react';
-import { Button, Pagination } from '../../../components/common';
+import { Button, Pagination, Input, Spinner } from '../../../components/common';
 import { List } from '../../common';
 import { useTranslation } from 'react-i18next';
+import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../config/challengeChips';
 
 /**
  * 题目管理组件
@@ -54,31 +55,29 @@ function AdminChallenge({
 
   // 分类标签渲染
   const renderCategoryChip = (category) => {
-    const categoryColors = {
-      web: 'bg-blue-400/20 text-blue-400',
-      crypto: 'bg-purple-400/20 text-purple-400',
-      pwn: 'bg-red-400/20 text-red-400',
-      reverse: 'bg-green-400/20 text-green-400',
-      misc: 'bg-yellow-400/20 text-yellow-400',
-    };
-
-    const colorClass = categoryColors[category.toLowerCase()] || 'bg-neutral-400/20 text-neutral-400';
-
-    return <span className={`px-2 py-1 rounded-full text-xs font-mono ${colorClass}`}>{category}</span>;
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-mono ${getChallengeCategoryChipClass(category)}`}>
+        {category}
+      </span>
+    );
   };
 
   // 类型标签渲染
   const renderTypeChip = (type) => {
     const typeMap = {
-      static: { label: t('admin.challenge.types.static'), class: 'bg-geek-400/20 text-geek-400' },
-      question: { label: t('admin.challenge.types.question'), class: 'bg-green-400/20 text-green-400' },
-      dynamic: { label: t('admin.challenge.types.dynamic'), class: 'bg-orange-400/20 text-orange-400' },
-      pods: { label: t('admin.challenge.types.pods'), class: 'bg-cyan-400/20 text-cyan-400' },
+      static: { label: t('admin.challenge.types.static') },
+      question: { label: t('admin.challenge.types.question') },
+      dynamic: { label: t('admin.challenge.types.dynamic') },
+      pods: { label: t('admin.challenge.types.pods') },
     };
 
-    const typeInfo = typeMap[type] || { label: type, class: 'bg-neutral-400/20 text-neutral-400' };
+    const typeInfo = typeMap[type] || { label: type };
 
-    return <span className={`px-2 py-1 rounded-full text-xs font-mono ${typeInfo.class}`}>{typeInfo.label}</span>;
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-mono ${getChallengeTypeChipClass(type)}`}>
+        {typeInfo.label}
+      </span>
+    );
   };
 
   // Flag 展示
@@ -135,7 +134,10 @@ function AdminChallenge({
       case 'file':
         return challenge.file ? (
           <span
-            className="px-2 py-1 bg-black/30 border border-neutral-300/30 rounded text-xs font-mono text-neutral-300 whitespace-normal"
+            className={[
+              'px-2 py-1 bg-black/30 border border-neutral-300/30 rounded text-xs font-mono text-neutral-300',
+              'whitespace-normal',
+            ].join(' ')}
             title={challenge.file}
           >
             {challenge.file}
@@ -219,24 +221,14 @@ function AdminChallenge({
         <div className="flex items-center gap-4">
           <div className="relative flex-1 max-w-md">
             <label className="block text-sm font-mono text-neutral-400 mb-2">{t('admin.challenge.search.label')}</label>
-            <div className="relative">
-              <IconSearch size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                placeholder={t('admin.challenge.search.placeholder')}
-                onChange={(e) => onSearchChange?.(e.target.value)}
-                className="w-full h-10 pl-10 pr-10 bg-black/20 border border-neutral-300/30 rounded-md
-                        text-neutral-50 placeholder-neutral-500
-                        focus:outline-none focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.3)]
-                        transition-all duration-200"
-              />
-              {searchLoading && (
-                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  <div className="w-4 h-4 border border-geek-400 border-t-transparent rounded-full animate-spin"></div>
-                </div>
-              )}
-            </div>
+            <Input
+              type="text"
+              value={searchQuery}
+              placeholder={t('admin.challenge.search.placeholder')}
+              onChange={(e) => onSearchChange?.(e.target.value)}
+              icon={<IconSearch size={16} />}
+              iconRight={searchLoading && <Spinner size="sm" />}
+            />
           </div>
         </div>
       </div>
