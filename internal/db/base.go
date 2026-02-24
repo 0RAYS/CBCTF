@@ -75,7 +75,7 @@ func applyGetOptions(tx *gorm.DB, options GetOptions) *gorm.DB {
 			tx = tx.Where(fmt.Sprintf("%s LIKE ?", key), "%"+value+"%")
 		}
 	}
-	if preloads := options.Preloads; preloads != nil {
+	if preloads := options.Preloads; len(preloads) > 0 {
 		for rel, subOptions := range preloads {
 			if rel == "all" {
 				tx = tx.Preload(clause.Associations)
