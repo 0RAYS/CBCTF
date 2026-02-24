@@ -77,10 +77,6 @@ func applyGetOptions(tx *gorm.DB, options GetOptions) *gorm.DB {
 	}
 	if preloads := options.Preloads; len(preloads) > 0 {
 		for rel, subOptions := range preloads {
-			if rel == "all" {
-				tx = tx.Preload(clause.Associations)
-				continue
-			}
 			tx = tx.Preload(rel, func(tx *gorm.DB) *gorm.DB {
 				return applyGetOptions(tx, subOptions)
 			})
