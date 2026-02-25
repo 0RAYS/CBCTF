@@ -19,12 +19,6 @@ func GetContestChallenges(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
-	if _, ok := ctx.GetQuery("limit"); !ok {
-		form.Limit = 10
-	}
-	if _, ok := ctx.GetQuery("offset"); !ok {
-		form.Offset = 0
-	}
 	options := db.GetOptions{
 		Conditions: map[string]any{"contest_id": middleware.GetContest(ctx).ID},
 		Preloads:   map[string]db.GetOptions{"Challenge": {}, "ContestFlags": {}},
