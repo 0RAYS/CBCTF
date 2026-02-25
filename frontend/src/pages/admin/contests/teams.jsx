@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from '../../../utils/toast';
-import { downloadBlobResponse } from '../../../utils/index.js';
+import { downloadBlobResponse } from '../../../utils/fileDownload';
 import AdminTeams from '../../../components/features/Admin/Contests/AdminTeams';
 import {
   getContestTeams,

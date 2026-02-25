@@ -4,6 +4,7 @@ import RolesTab from './rbac/RolesTab';
 import GroupsTab from './rbac/GroupsTab';
 import PermissionsTab from './rbac/PermissionsTab';
 import { useTranslation } from 'react-i18next';
+import { Tabs } from '../../components/common';
 
 function RbacManagement() {
   const [activeTab, setActiveTab] = useState('users');
@@ -18,23 +19,7 @@ function RbacManagement() {
 
   return (
     <>
-      <div className="w-full mx-auto mb-6">
-        <div className="flex border-b border-neutral-700">
-          {tabs.map((tab) => (
-            <button
-              key={tab.key}
-              className={`px-6 py-3 text-sm font-medium transition-colors ${
-                activeTab === tab.key
-                  ? 'text-blue-400 border-b-2 border-blue-400'
-                  : 'text-neutral-400 hover:text-neutral-300'
-              }`}
-              onClick={() => setActiveTab(tab.key)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <Tabs items={tabs} value={activeTab} onChange={setActiveTab} />
 
       {activeTab === 'users' && <UsersTab />}
       {activeTab === 'roles' && <RolesTab />}

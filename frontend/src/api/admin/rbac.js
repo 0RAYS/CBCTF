@@ -28,13 +28,6 @@ export const getRoleList = (params = { limit: 20, offset: 0 }) => {
   });
 };
 
-export const getRole = (roleId) => {
-  return request({
-    url: `/admin/roles/${roleId}`,
-    method: 'GET',
-  });
-};
-
 export const createRole = (data) => {
   return request({
     url: '/admin/roles',
@@ -88,13 +81,6 @@ export const getGroupList = (params = { limit: 20, offset: 0 }) => {
     url: '/admin/groups',
     method: 'GET',
     params,
-  });
-};
-
-export const getGroup = (groupId) => {
-  return request({
-    url: `/admin/groups/${groupId}`,
-    method: 'GET',
   });
 };
 

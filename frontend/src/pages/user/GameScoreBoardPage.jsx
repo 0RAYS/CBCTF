@@ -249,9 +249,6 @@ function GameScoreBoardPage() {
   if (viewMode === 'timeline') {
     return (
       <div className="contest-container mx-auto space-y-6">
-        {/* 用户队伍状态 */}
-        {/*{scoreboardData.userTeam && <TeamStatus team={scoreboardData.userTeam} />}*/}
-
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-mono text-neutral-50 tracking-wider"></h1>
 
@@ -292,9 +289,6 @@ function GameScoreBoardPage() {
 
   return (
     <div className="contest-container mx-auto space-y-6">
-      {/* 用户队伍状态 */}
-      {/*{scoreboardData.userTeam && <TeamStatus team={scoreboardData.userTeam} />}*/}
-
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-mono text-neutral-50 tracking-wider"></h1>
 

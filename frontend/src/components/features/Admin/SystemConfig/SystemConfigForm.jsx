@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button } from '../../../common';
+import { Button, Tabs } from '../../../common';
 import { BasicConfigSection } from './sections/BasicConfigSection';
 import { GinConfigSection } from './sections/GinConfigSection';
 import { DatabaseConfigSection } from './sections/DatabaseConfigSection';
@@ -45,21 +45,13 @@ export function SystemConfigForm({ config, updateConfig, onUpdate, onRestart, is
         </Button>
       </div>
 
-      <div className="flex flex-wrap border-b border-neutral-700">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            className={`px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === tab.key
-                ? 'text-blue-400 border-b-2 border-blue-400'
-                : 'text-neutral-400 hover:text-neutral-300'
-            }`}
-            onClick={() => setActiveTab(tab.key)}
-          >
-            {t(tab.i18nKey)}
-          </button>
-        ))}
-      </div>
+      <Tabs
+        variant="compact"
+        wrapperClassName={null}
+        value={activeTab}
+        onChange={setActiveTab}
+        items={tabs.map((tab) => ({ key: tab.key, label: t(tab.i18nKey) }))}
+      />
 
       {ActiveComponent && <ActiveComponent config={config} updateConfig={updateConfig} />}
     </div>

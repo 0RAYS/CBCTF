@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { toast } from '../../utils/toast';
-import { downloadBlobResponse } from '../../utils/index.js';
+import { downloadBlobResponse } from '../../utils/fileDownload';
 import AdminChallenge from '../../components/features/Admin/AdminChallenge.jsx';
 import AdminChallengeModal from '../../components/features/Admin/AdminChallengeModal.jsx';
 import AdminChallengeTestModal from '../../components/features/Admin/AdminChallengeTestModal.jsx';

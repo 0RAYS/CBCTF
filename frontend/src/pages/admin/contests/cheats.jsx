@@ -19,7 +19,7 @@ import {
   getContestTeamFlags,
 } from '../../../api/admin/contest';
 import { getUserInfo } from '../../../api/admin/user';
-import { downloadBlobResponse } from '../../../utils/index';
+import { downloadBlobResponse } from '../../../utils/fileDownload';
 import { List, StatusTag, IpAddress } from '../../../components/common';
 import { Modal } from '../../../components/common';
 import ModalButton from '../../../components/common/ModalButton';
