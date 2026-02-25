@@ -17,7 +17,7 @@ import (
 type FrpsConfig struct {
 	Host    string `json:"host" binding:"hostname"`        // Frps 服务器地址
 	Port    int32  `json:"port" binding:"gte=0,lte=65535"` // Frps 服务器端口
-	Token   string `json:"-"`                              // Frps 服务器 Token
+	Token   string `json:"token"`                          // Frps 服务器 Token
 	Allowed []struct {
 		From    int32   `json:"from" binding:"gte=0,lte=65535"`         // Frps 服务器允许的端口范围
 		To      int32   `json:"to" binding:"gte=0,lte=65535"`           // Frps 服务器允许的端口范围

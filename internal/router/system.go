@@ -126,7 +126,7 @@ func SystemConfig(ctx *gin.Context) {
 		"gin_ratelimit_whitelist": config.Env.Gin.RateLimit.Whitelist,
 		"gin_cors":                config.Env.Gin.CORS,
 		"gin_log_whitelist":       config.Env.Gin.Log.Whitelist,
-		"gin_jwt_secret":          "******",
+		"gin_jwt_secret":          config.Env.Gin.JWT.Secret,
 		"gin_jwt_static":          config.Env.Gin.JWT.Static,
 		"gin_metrics_whitelist":   config.Env.Gin.Metrics.Whitelist,
 

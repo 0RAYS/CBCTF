@@ -14,6 +14,7 @@ func GetOauthResp(oauth model.Oauth) gin.H {
 		"user_info_url":     oauth.UserInfoURL,
 		"callback_url":      oauth.CallbackURL,
 		"client_id":         oauth.ClientID,
+		"client_secret":     oauth.ClientSecret,
 		"provider":          oauth.Provider,
 		"uri":               oauth.Uri,
 		"id_claim":          oauth.IDClaim,
