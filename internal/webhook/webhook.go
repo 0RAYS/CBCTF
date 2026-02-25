@@ -91,12 +91,13 @@ func SendPayload(event model.Event, target model.Webhook) error {
 		log.Logger.Warningf("Failed to send request: %v", err)
 		options.Success = false
 		options.Error = err.Error()
-	} else {
-		options.RespCode = resp.StatusCode
-		options.Success = resp.StatusCode >= 200 && resp.StatusCode < 300
-		if !options.Success {
-			options.Error = resp.Status
-		}
+		db.InitWebhookHistoryRepo(db.DB).Create(options)
+		return err
+	}
+	options.RespCode = resp.StatusCode
+	options.Success = resp.StatusCode >= 200 && resp.StatusCode < 300
+	if !options.Success {
+		options.Error = resp.Status
 	}
 	db.InitWebhookHistoryRepo(db.DB).Create(options)
 	return resp.Body.Close()
