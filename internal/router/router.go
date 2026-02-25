@@ -47,10 +47,11 @@ func Init() *gin.Engine {
 		middleware.I18n, middleware.RateLimit("globals", config.Env.Gin.RateLimit.Global, time.Minute), middleware.Events,
 	)
 
-	{
+	if strings.ToLower(config.Env.Gin.Mode) != gin.ReleaseMode {
 		pprof.Register(router)
-		RegisterMetricsRouter(router)
 	}
+
+	RegisterMetricsRouter(router)
 
 	{
 		router.POST("/register", middleware.RateLimit("register", 1, time.Minute), Register)
