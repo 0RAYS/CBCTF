@@ -40,7 +40,7 @@ func SavePicture(tx *gorm.DB, options db.CreateFileOptions, file *multipart.File
 	options.Type = model.PictureFileType
 	record, ret := fileRepo.Create(options)
 	if ret.OK {
-		prometheus.UpdateFileUploadMetrics(record.Suffix, record.Size)
+		prometheus.RecordFileUpload(record.Suffix, record.Size)
 	}
 	return record, ret
 }
@@ -98,7 +98,7 @@ func SaveChallengeFile(tx *gorm.DB, challenge model.Challenge, file *multipart.F
 		Type:     model.ChallengeFileType,
 	})
 	if ret.OK {
-		prometheus.UpdateFileUploadMetrics(record.Suffix, file.Size)
+		prometheus.RecordFileUpload(record.Suffix, file.Size)
 	}
 	return record, ret
 }
@@ -128,7 +128,7 @@ func SaveWriteUp(tx *gorm.DB, contest model.Contest, team model.Team, file *mult
 		Type:     model.WriteupFileType,
 	})
 	if ret.OK {
-		prometheus.UpdateFileUploadMetrics(record.Suffix, file.Size)
+		prometheus.RecordFileUpload(record.Suffix, file.Size)
 	}
 	return record, ret
 }

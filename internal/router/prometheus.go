@@ -10,25 +10,25 @@ import (
 )
 
 func RegisterMetricsRouter(router *gin.Engine) {
-	// 不使用默认 registry, 防止重启时重复注册导致 panic
+	// 不使用默认 registry，防止重启时重复注册导致 panic
 	var (
 		registry                         = prometheus.NewRegistry()
 		registerer prometheus.Registerer = registry
 		gatherer   prometheus.Gatherer   = registry
 	)
 
-	// 注册HTTP基础指标
+	// 注册 DB 驱动的自定义 Collector
+	registerer.MustRegister(p.NewCTFCollector())
+
+	// 注册 HTTP 基础指标
 	registerer.MustRegister(p.HttpRequestsTotal)
 	registerer.MustRegister(p.HttpRequestDuration)
-	registerer.MustRegister(p.HttpRequestSize)
 	registerer.MustRegister(p.HttpResponseSize)
 	registerer.MustRegister(p.InFlightRequests)
 
-	// 注册CTF业务指标
-	registerer.MustRegister(p.FlagSubmissionTotal)
-	registerer.MustRegister(p.ContestActiveTeams)
-	registerer.MustRegister(p.ContestActiveUsers)
-	registerer.MustRegister(p.VictimContainerTotal)
+	// 注册 CTF 业务事件指标
+	registerer.MustRegister(p.FlagSubmissionsTotal)
+	registerer.MustRegister(p.BloodTotal)
 	registerer.MustRegister(p.UserRegistrationTotal)
 	registerer.MustRegister(p.UserLoginTotal)
 	registerer.MustRegister(p.FileUploadTotal)
@@ -36,8 +36,18 @@ func RegisterMetricsRouter(router *gin.Engine) {
 	registerer.MustRegister(p.WebSocketConnections)
 	registerer.MustRegister(p.EmailSentTotal)
 	registerer.MustRegister(p.RateLimitHits)
-	registerer.MustRegister(p.ErrorTotal)
+	registerer.MustRegister(p.CheatDetectionsTotal)
 
+	// 注册 Cron Job 指标
+	registerer.MustRegister(p.CronJobDuration)
+	registerer.MustRegister(p.CronJobRunsTotal)
+
+	// 注册异步任务指标
+	registerer.MustRegister(p.TaskEnqueuedTotal)
+	registerer.MustRegister(p.TaskProcessedTotal)
+	registerer.MustRegister(p.TaskProcessingDuration)
+
+	// 注册 Go 运行时指标
 	registerer.MustRegister(collectors.NewGoCollector())
 	registerer.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 

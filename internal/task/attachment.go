@@ -3,6 +3,7 @@ package task
 import (
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/model"
+	"CBCTF/internal/prometheus"
 	"CBCTF/internal/websocket"
 	wm "CBCTF/internal/websocket/model"
 	"context"
@@ -31,7 +32,11 @@ func EnqueueGenAttachmentTask(userID uint, challenge model.Challenge, team model
 		return nil, err
 	}
 	task := asynq.NewTask(GenAttachmentTaskType, payload)
-	return client.Enqueue(task, asynq.Timeout(2*time.Minute))
+	info, err := client.Enqueue(task, asynq.Timeout(2*time.Minute))
+	if err == nil {
+		prometheus.RecordTaskEnqueued(GenAttachmentTaskType)
+	}
+	return info, err
 }
 
 func HandleGenAttachmentTask(_ context.Context, t *asynq.Task) error {

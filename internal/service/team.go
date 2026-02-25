@@ -5,7 +5,6 @@ import (
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
-	"CBCTF/internal/prometheus"
 	"CBCTF/internal/utils"
 	"math"
 	"sync"
@@ -77,7 +76,6 @@ func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form dto.Join
 	if ret = db.AppendUserToContest(tx, user, contest); !ret.OK {
 		return model.Team{}, ret
 	}
-	prometheus.AddContestActiveUsersMetrics(contest, 1)
 	return team, model.SuccessRetVal()
 }
 
@@ -109,8 +107,6 @@ func CreateTeam(tx *gorm.DB, contest model.Contest, user model.User, form dto.Cr
 	if ret = db.AppendUserToContest(tx, user, contest); !ret.OK {
 		return model.Team{}, ret
 	}
-	prometheus.AddContestActiveTeamsMetrics(contest, 1)
-	prometheus.AddContestActiveUsersMetrics(contest, 1)
 	return team, model.SuccessRetVal()
 }
 
@@ -128,7 +124,6 @@ func LeaveTeam(tx *gorm.DB, contest model.Contest, team model.Team, userID uint)
 	if ret := db.DeleteUserFromContest(tx, model.User{BaseModel: model.BaseModel{ID: userID}}, contest); !ret.OK {
 		return ret
 	}
-	prometheus.SubContestActiveUsersMetrics(contest, 1)
 	return model.SuccessRetVal()
 }
 

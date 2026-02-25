@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
+	"errors"
 	"slices"
 	"strings"
 	"sync"
@@ -18,19 +19,19 @@ import (
 
 // prepareGenerator 预启动生成器 Pod, 同时关闭长时运行 Pod, 重置资源
 func prepareGenerator(c *cron.Cron) {
-	function := exec("PrepareGenerator", func() {
+	function := exec("PrepareGenerator", func() error {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		nodes, ret := k8s.ListSchedulableNodes(ctx)
 		cancel()
 		if !ret.OK {
 			log.Logger.Warningf("Failed to count nodes")
-			return
+			return errors.New(ret.Msg)
 		}
 		contests, _, ret := db.InitContestRepo(db.DB).List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"hidden": false},
 		})
 		if !ret.OK {
-			return
+			return errors.New(ret.Msg)
 		}
 		contestChallengeRepo := db.InitContestChallengeRepo(db.DB)
 		for _, contest := range contests {
@@ -73,6 +74,7 @@ func prepareGenerator(c *cron.Cron) {
 				wg.Wait()
 			}
 		}
+		return nil
 	})
 	function()
 	c.Schedule(cron.Every(2*time.Minute), cron.FuncJob(function))
@@ -80,20 +82,18 @@ func prepareGenerator(c *cron.Cron) {
 
 // stopUnCtrlGenerator 关闭不受控的 (k8s.GeneratorMap) 以 `gen` 为命名前缀的 pod
 func stopUnCtrlGenerator(c *cron.Cron) {
-	function := exec("StopUnCtrlGenerator", func() {
+	function := exec("StopUnCtrlGenerator", func() error {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		pods, ret := k8s.GetPodList(ctx)
 		cancel()
 		if !ret.OK {
 			log.Logger.Warningf("Failed to get generators %v", ret)
-			return
+			return errors.New(ret.Msg)
 		}
-		generators := make(map[string]*corev1.Pod)
 		names := make([]string, 0)
 		k8s.GeneratorMapMutex.RLock()
 		for _, v := range k8s.GeneratorMap {
 			for _, generator := range v {
-				generators[generator.Pod.Name] = generator.Pod
 				names = append(names, generator.Pod.Name)
 			}
 		}
@@ -105,6 +105,7 @@ func stopUnCtrlGenerator(c *cron.Cron) {
 				cancel()
 			}
 		}
+		return nil
 	})
 	function()
 	c.Schedule(cron.Every(time.Hour), cron.FuncJob(function))

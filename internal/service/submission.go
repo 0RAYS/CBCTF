@@ -43,6 +43,17 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, contest model.Contest
 		mu, _ := SolvedMutex.LoadOrStore(contestFlag.ID, &sync.Mutex{})
 		mu.(*sync.Mutex).Lock()
 		defer mu.(*sync.Mutex).Unlock()
+		// 记录血分事件（在 Solvers 递增前，contestFlag.Solvers 为当前值）
+		if contest.Blood {
+			switch contestFlag.Solvers {
+			case 0:
+				prometheus.RecordBlood(contest.ID, "first")
+			case 1:
+				prometheus.RecordBlood(contest.ID, "second")
+			case 2:
+				prometheus.RecordBlood(contest.ID, "third")
+			}
+		}
 		teamFlagRepo := db.InitTeamFlagRepo(tx)
 		if ret = teamFlagRepo.Update(teamFlag.ID, db.UpdateTeamFlagRepo{Solved: &solved}); !ret.OK {
 			return model.Submission{}, ret
@@ -76,7 +87,7 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, contest model.Contest
 			return model.Submission{}, ret
 		}
 	}
-	prometheus.UpdateFlagSubmissionMetrics(contest, contestChallenge, team, solved)
+	prometheus.RecordFlagSubmission(contest.ID, string(contestChallenge.Type), solved)
 	return submission, model.SuccessRetVal()
 }
 

@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/prometheus"
 	"fmt"
 	"net/netip"
 	"slices"
@@ -48,6 +49,7 @@ func CheckSameDevice(tx *gorm.DB, contest model.Contest) {
 				Type:       model.SuspiciousType,
 				Time:       devices[0].CreatedAt,
 			})
+			prometheus.RecordCheatDetection(string(model.ReasonTypeSameDeviceType))
 		}
 	}
 }
@@ -117,6 +119,7 @@ func CheckWrongFlag(tx *gorm.DB, contest model.Contest) {
 				Checked:    false,
 				Time:       submission.CreatedAt,
 			})
+			prometheus.RecordCheatDetection(string(model.ReasonTypeWrongFlagType))
 		}
 	}
 }
@@ -186,6 +189,7 @@ func CheckWebReqIP(tx *gorm.DB, contest model.Contest) {
 				Checked:    false,
 				Time:       earliest,
 			})
+			prometheus.RecordCheatDetection(string(model.ReasonTypeSameWebIPType))
 		}
 	}
 }
@@ -251,6 +255,7 @@ func CheckVictimReqIP(tx *gorm.DB, contest model.Contest) {
 				Checked:    false,
 				Time:       earliest,
 			})
+			prometheus.RecordCheatDetection(string(model.ReasonTypeSameVictimIPType))
 		}
 	}
 }

@@ -86,7 +86,7 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 				}
 			}
 		}
-		prometheus.UpdateUserRegisterMetrics(provider.Provider)
+		prometheus.RecordUserRegister(provider.Provider)
 	} else {
 		// 获取用户成功的时更新用户信息
 		ret = userRepo.Update(user.ID, db.UpdateUserOptions{
@@ -99,7 +99,7 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 		if !ret.OK {
 			return model.User{}, ret
 		}
-		prometheus.UpdateUserLoginMetrics(provider.Provider)
+		prometheus.RecordUserLogin(provider.Provider)
 	}
 	return userRepo.Get(db.GetOptions{Conditions: map[string]any{"provider": provider.Provider, "provider_user_id": id}})
 }

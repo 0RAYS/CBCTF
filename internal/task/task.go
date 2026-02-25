@@ -3,8 +3,11 @@ package task
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/log"
+	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
+	"context"
 	"strings"
+	"time"
 
 	"github.com/hibiken/asynq"
 )
@@ -14,6 +17,15 @@ var (
 	client *asynq.Client
 	mux    *asynq.ServeMux
 )
+
+func wrapHandler(taskType string, h asynq.HandlerFunc) asynq.HandlerFunc {
+	return func(ctx context.Context, t *asynq.Task) error {
+		start := time.Now()
+		err := h(ctx, t)
+		prometheus.RecordTaskProcessed(taskType, time.Since(start).Seconds(), err == nil)
+		return err
+	}
+}
 
 func Init() {
 	cfg := asynq.Config{
@@ -36,10 +48,10 @@ func Init() {
 	client = asynq.NewClientFromRedisClient(redis.RDB)
 	mux = asynq.NewServeMux()
 
-	mux.HandleFunc(SendEmailTaskType, HandleSendEmailTask)
-	mux.HandleFunc(GenAttachmentTaskType, HandleGenAttachmentTask)
-	mux.HandleFunc(WebhookTaskType, HandleWebhookTask)
-	mux.HandleFunc(ResizeImageTaskType, HandleResizeImageTask)
+	mux.HandleFunc(SendEmailTaskType, wrapHandler(SendEmailTaskType, HandleSendEmailTask))
+	mux.HandleFunc(GenAttachmentTaskType, wrapHandler(GenAttachmentTaskType, HandleGenAttachmentTask))
+	mux.HandleFunc(WebhookTaskType, wrapHandler(WebhookTaskType, HandleWebhookTask))
+	mux.HandleFunc(ResizeImageTaskType, wrapHandler(ResizeImageTaskType, HandleResizeImageTask))
 }
 
 func Start() {

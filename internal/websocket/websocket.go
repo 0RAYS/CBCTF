@@ -76,7 +76,7 @@ func WS(ctx *gin.Context) {
 	mu.Lock()
 	(*clients)[id] = c
 	mu.Unlock()
-	prometheus.UpdateWebSocketMetrics(len(*clients))
+	prometheus.SetWebSocketConnections(len(*clients))
 
 	for {
 		_, msg, err := c.Conn.ReadMessage()
@@ -90,7 +90,7 @@ func WS(ctx *gin.Context) {
 	mu.Lock()
 	delete(*clients, id)
 	mu.Unlock()
-	prometheus.UpdateWebSocketMetrics(len(*clients))
+	prometheus.SetWebSocketConnections(len(*clients))
 }
 
 func Send(id uint, level, t, title, msg string) {
