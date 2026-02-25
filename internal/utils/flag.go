@@ -2,7 +2,8 @@ package utils
 
 import (
 	"bytes"
-	"math/rand"
+	"crypto/rand"
+	"math/big"
 )
 
 // copied from https://github.com/ret2shell/ret2script/blob/main/src/modules/audit.rs
@@ -74,11 +75,19 @@ var replaceMap = map[string][]string{
 	"!": {"!", "1", "l"},
 }
 
+func randIntn(n int) int {
+	v, err := rand.Int(rand.Reader, big.NewInt(int64(n)))
+	if err != nil {
+		panic(err)
+	}
+	return int(v.Int64())
+}
+
 func repeat(s string, max int) string {
 	tmp := []byte(s)
 	var p int
 	for {
-		p = rand.Int() % len(tmp)
+		p = randIntn(len(tmp))
 		if tmp[p] != '_' {
 			break
 		}
@@ -86,7 +95,7 @@ func repeat(s string, max int) string {
 	char := []byte{tmp[p]}
 	var res []byte
 	res = append(res, tmp[:p]...)
-	res = append(res, bytes.Repeat(char, rand.Int()%max)...)
+	res = append(res, bytes.Repeat(char, randIntn(max))...)
 	res = append(res, tmp[p:]...)
 	return string(res)
 }
@@ -99,8 +108,8 @@ func replace(s string, max int) string {
 			break
 		}
 		if v, ok := replaceMap[string(tmp[i])]; ok {
-			if rand.Int()%2 == 0 {
-				tmp[i] = []byte(v[rand.Int()%len(v)])[0]
+			if randIntn(2) == 0 {
+				tmp[i] = []byte(v[randIntn(len(v))])[0]
 				n++
 			}
 		}
@@ -115,7 +124,7 @@ func upper(s string, max int) string {
 		if n >= max {
 			break
 		}
-		if rand.Int()%2 == 0 {
+		if randIntn(2) == 0 {
 			tmp[i] = bytes.ToUpper([]byte{tmp[i]})[0]
 			n++
 		}

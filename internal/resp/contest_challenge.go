@@ -2,7 +2,8 @@ package resp
 
 import (
 	"CBCTF/internal/model"
-	"math/rand"
+	"crypto/rand"
+	"math/big"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,9 +17,13 @@ func GetContestChallengeResp(contestChallenge model.ContestChallenge) gin.H {
 			"content": option.Content,
 		})
 	}
-	rand.Shuffle(len(options), func(i, j int) {
-		options[i], options[j] = options[j], options[i]
-	})
+	for i := len(options) - 1; i > 0; i-- {
+		j, err := rand.Int(rand.Reader, big.NewInt(int64(i+1)))
+		if err != nil {
+			panic(err)
+		}
+		options[i], options[j.Int64()] = options[j.Int64()], options[i]
+	}
 	data := gin.H{
 		"id":          contestChallenge.Challenge.RandID,
 		"name":        contestChallenge.Name,
