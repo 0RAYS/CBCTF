@@ -54,13 +54,14 @@ func WSAuth(ctx *gin.Context) {
 			ctx.JSON(http.StatusOK, ret)
 			return
 		}
+		ip := ctx.ClientIP()
 		go func(contestIDL []uint) {
 			for _, contestID := range contestIDL {
 				db.InitCheatRepo(db.DB).Create(db.CreateCheatOptions{
 					ContestID:  contestID,
 					Model:      model.CheatRefModel{user.ModelName(): {user.ID}},
 					Magic:      magic,
-					IP:         ctx.ClientIP(),
+					IP:         ip,
 					Reason:     fmt.Sprintf(string(model.DifferentTokenMagicTmpl), magic, claims.X),
 					ReasonType: model.ReasonTypeTokenMagicType,
 					Type:       model.SuspiciousType,
