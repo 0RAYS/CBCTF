@@ -59,11 +59,6 @@ func IncEmailSentMetrics(success bool) {
 	}
 }
 
-func UpdateCacheMetrics(cacheType string, hits, misses int64) {
-	hitRate := float64(hits) / float64(hits+misses)
-	CacheHitRate.WithLabelValues(cacheType).Set(hitRate)
-}
-
 func UpdateRateLimitMetrics(endpoint, ip string) {
 	RateLimitHits.WithLabelValues(endpoint, ip).Inc()
 }

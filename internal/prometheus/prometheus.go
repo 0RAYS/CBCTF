@@ -126,14 +126,6 @@ var (
 		[]string{"status"},
 	)
 
-	CacheHitRate = prometheus.NewGaugeVec(
-		prometheus.GaugeOpts{
-			Name: "ctf_cache_hit_rate",
-			Help: "Cache hit rate (0-1)",
-		},
-		[]string{"cache_type"},
-	)
-
 	RateLimitHits = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "ctf_rate_limit_hits_total",

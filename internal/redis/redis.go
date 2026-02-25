@@ -5,16 +5,13 @@ import (
 	"CBCTF/internal/log"
 	"context"
 	"fmt"
-	"sync/atomic"
 	"time"
 
 	"github.com/redis/go-redis/v9"
 )
 
 var (
-	RDB       *redis.Client
-	CacheHit  atomic.Int64
-	CacheMiss atomic.Int64
+	RDB *redis.Client
 )
 
 func Init() {
@@ -46,13 +43,13 @@ func Stop() {
 	}
 }
 
-func Status() (int64, int64, int64) {
+func Count() int64 {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	count, err := RDB.DBSize(ctx).Result()
 	if err != nil {
 		log.Logger.Warningf("Failed to get cache total: %s", err)
-		return 0, CacheHit.Load(), CacheMiss.Load()
+		return 0
 	}
-	return count, CacheHit.Load(), CacheMiss.Load()
+	return count
 }

@@ -7,10 +7,8 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
-	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/service"
-	"fmt"
 	"net/http"
 	"os"
 	"syscall"
@@ -83,25 +81,18 @@ func SystemStatus(ctx *gin.Context) {
 	ret["contests"], _ = db.InitContestRepo(db.DB).Count()
 	ret["ip"], _ = db.InitRequestRepo(db.DB).CountIP()
 	ret["challenges"], _ = db.InitChallengeRepo(db.DB).Count()
+	ret["submissions"], _ = db.InitSubmissionRepo(db.DB).Count()
+	ret["victims"], _ = db.InitVictimRepo(db.DB).Count()
+	ret["requests"], _ = db.InitRequestRepo(db.DB).Count()
 	middleware.MU.Lock()
 	if middleware.TotalRequests == 0 {
-		ret["requests"] = 0
 		ret["duration"] = 0
 	} else {
-		ret["requests"] = middleware.TotalRequests
 		ret["duration"] = middleware.TotalDuration.Milliseconds() / int64(middleware.TotalRequests)
 	}
 	middleware.MU.Unlock()
 
-	total, hit, miss := redis.Status()
-	ret["cache"] = total
-	ret["hit"] = hit
-	if hit+miss == 0 {
-		ret["rate"] = "0.00"
-	} else {
-		ret["rate"] = fmt.Sprintf("%.2f", float64(hit)/float64(hit+miss)*100)
-	}
-	prometheus.UpdateCacheMetrics("redis", hit, miss)
+	ret["cache"] = redis.Count()
 	ctx.JSON(http.StatusOK, model.SuccessRetVal(ret))
 }
 

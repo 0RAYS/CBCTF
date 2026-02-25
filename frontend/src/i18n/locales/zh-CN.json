@@ -114,8 +114,8 @@
         "uplink": "上行流量",
         "totalTraffic": "总流量",
         "cacheSize": "缓存总量",
-        "cacheHit": "命中数",
-        "cacheRate": "命中率"
+        "victims": "靶机总数",
+        "submissions": "提交次数"
       },
       "chart": {
         "cpu": "CPU 使用率 (%)",

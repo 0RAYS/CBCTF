@@ -12,8 +12,8 @@
  * @param {number} props.status.recv - 上行流量(bytes)
  * @param {number} props.status.io - 总流量(bytes)
  * @param {number} props.status.cache - 缓存总量
- * @param {number} props.status.hit - 缓存命中数
- * @param {number} props.status.rate - 缓存命中率(%)
+ * @param {number} props.status.victims - 靶机数量
+ * @param {number} props.status.submissions - 提交次数
  * @param {React.ReactNode} props.chartContent - 图表内容
  * @param {React.ReactNode} props.extraContent - 额外内容，如表格等
  */
@@ -65,6 +65,8 @@ function AdminDashboard({ status, chartContent, extraContent }) {
           <StatusCard title={t('admin.dashboard.cards.users')} value={status?.users || 0} />
           <StatusCard title={t('admin.dashboard.cards.contests')} value={status?.contests || 0} />
           <StatusCard title={t('admin.dashboard.cards.challenges')} value={status?.challenges || 0} />
+          <StatusCard title={t('admin.dashboard.cards.victims')} value={status?.victims || 0} />
+          <StatusCard title={t('admin.dashboard.cards.submissions')} value={status?.submissions || 0} />
           <StatusCard title={t('admin.dashboard.cards.requests')} value={status?.requests || 0} />
           <StatusCard
             title={t('admin.dashboard.cards.responseTime')}
@@ -74,12 +76,6 @@ function AdminDashboard({ status, chartContent, extraContent }) {
           <StatusCard title={t('admin.dashboard.cards.uplink')} value={formatBytes(status?.recv)} />
           <StatusCard title={t('admin.dashboard.cards.totalTraffic')} value={formatBytes(status?.io)} />
           <StatusCard title={t('admin.dashboard.cards.cacheSize')} value={status?.cache || 0} />
-          <StatusCard title={t('admin.dashboard.cards.cacheHit')} value={status?.hit || 0} />
-          <StatusCard
-            title={t('admin.dashboard.cards.cacheRate')}
-            value={status?.rate ? `${status.rate}%` : t('common.notAvailable')}
-            valueColor="text-yellow-400"
-          />
         </div>
       </motion.div>
 

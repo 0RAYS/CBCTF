@@ -35,7 +35,6 @@ func RegisterMetricsRouter(router *gin.Engine) {
 	registerer.MustRegister(p.FileUploadSize)
 	registerer.MustRegister(p.WebSocketConnections)
 	registerer.MustRegister(p.EmailSentTotal)
-	registerer.MustRegister(p.CacheHitRate)
 	registerer.MustRegister(p.RateLimitHits)
 	registerer.MustRegister(p.ErrorTotal)
 
