@@ -8,7 +8,6 @@ import (
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"CBCTF/internal/utils"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,19 +20,19 @@ func GetTeam(ctx *gin.Context) {
 		Preloads:   map[string]db.GetOptions{"ContestChallenge": {}},
 	})
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	solvedFlagL, _ := db.InitContestFlagRepo(db.DB).GetTeamSolvedContestFlags(team.ID)
 	data := resp.GetTeamResp(team, middleware.IsFullAccess(ctx))
 	data["solved"] = resp.GetSolvedStateResp(solvedFlagL, contestFlagL)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
+	resp.JSON(ctx, model.SuccessRetVal(data))
 }
 
 func GetTeams(ctx *gin.Context) {
 	var form dto.ListModelsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	contest := middleware.GetContest(ctx)
@@ -41,32 +40,32 @@ func GetTeams(ctx *gin.Context) {
 		Conditions: map[string]any{"contest_id": contest.ID},
 	})
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	data := make([]gin.H, 0)
 	for _, team := range teams {
 		data = append(data, resp.GetTeamResp(team, true))
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"count": count, "teams": data}))
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"count": count, "teams": data}))
 }
 
 func GetTeamCaptcha(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(middleware.GetTeam(ctx).Captcha))
+	resp.JSON(ctx, model.SuccessRetVal(middleware.GetTeam(ctx).Captcha))
 }
 
 func GetTeammates(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	users, ret := db.InitUserRepo(db.DB).GetByTeamID(team.ID, -1, -1)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	data := make([]gin.H, 0)
 	for _, user := range users {
 		data = append(data, resp.GetUserResp(user, middleware.IsFullAccess(ctx)))
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
+	resp.JSON(ctx, model.SuccessRetVal(data))
 }
 
 func UpdateTeam(ctx *gin.Context) {
@@ -77,7 +76,7 @@ func UpdateTeam(ctx *gin.Context) {
 	if middleware.IsFullAccess(ctx) {
 		var form dto.AdminUpdateTeamForm
 		if ret = dto.Bind(ctx, &form); !ret.OK {
-			ctx.JSON(http.StatusOK, ret)
+			resp.JSON(ctx, ret)
 			return
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.UpdateTeamEventType)
@@ -85,7 +84,7 @@ func UpdateTeam(ctx *gin.Context) {
 	} else {
 		var form dto.UpdateTeamForm
 		if ret = dto.Bind(ctx, &form); !ret.OK {
-			ctx.JSON(http.StatusOK, ret)
+			resp.JSON(ctx, ret)
 			return
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.UpdateTeamEventType)
@@ -94,7 +93,7 @@ func UpdateTeam(ctx *gin.Context) {
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
-	ctx.JSON(http.StatusOK, ret)
+	resp.JSON(ctx, ret)
 }
 
 func UpdateCaptcha(ctx *gin.Context) {
@@ -103,11 +102,11 @@ func UpdateCaptcha(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	ret := db.InitTeamRepo(db.DB).Update(team.ID, db.UpdateTeamOptions{Captcha: &captcha})
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(captcha))
+	resp.JSON(ctx, model.SuccessRetVal(captcha))
 }
 
 func DeleteTeam(ctx *gin.Context) {
@@ -117,18 +116,18 @@ func DeleteTeam(ctx *gin.Context) {
 	ret := db.InitTeamRepo(tx).Delete(team.ID)
 	if !ret.OK {
 		tx.Rollback()
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	tx.Commit()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, ret)
+	resp.JSON(ctx, ret)
 }
 
 func KickMember(ctx *gin.Context) {
 	var form dto.KickMemberForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.KickMemberEventType)
@@ -137,19 +136,19 @@ func KickMember(ctx *gin.Context) {
 	tx := db.DB.Begin()
 	if ret := service.LeaveTeam(tx, contest, team, form.UserID); !ret.OK {
 		tx.Rollback()
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	tx.Commit()
 	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Operator": middleware.GetSelf(ctx).ID})
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal())
+	resp.JSON(ctx, model.SuccessRetVal())
 }
 
 func JoinTeam(ctx *gin.Context) {
 	var form dto.JoinTeamForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.JoinTeamEventType)
@@ -159,19 +158,19 @@ func JoinTeam(ctx *gin.Context) {
 	team, ret := service.JoinTeam(tx, contest, user, form)
 	if !ret.OK {
 		tx.Rollback()
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	tx.Commit()
 	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Team": team.ID})
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal())
+	resp.JSON(ctx, model.SuccessRetVal())
 }
 
 func CreateTeam(ctx *gin.Context) {
 	var form dto.CreateTeamForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateTeamEventType)
@@ -181,14 +180,14 @@ func CreateTeam(ctx *gin.Context) {
 	team, ret := service.CreateTeam(tx, contest, user, form)
 	if !ret.OK {
 		tx.Rollback()
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	tx.Commit()
 	go service.CreateTeamFlags(db.DB, team, contest)
 	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Team": team.ID})
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal())
+	resp.JSON(ctx, model.SuccessRetVal())
 }
 
 func LeaveTeam(ctx *gin.Context) {
@@ -199,11 +198,11 @@ func LeaveTeam(ctx *gin.Context) {
 	tx := db.DB.Begin()
 	if ret := service.LeaveTeam(tx, contest, team, user.ID); !ret.OK {
 		tx.Rollback()
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	tx.Commit()
 	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Team": team.ID})
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal())
+	resp.JSON(ctx, model.SuccessRetVal())
 }

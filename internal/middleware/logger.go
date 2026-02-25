@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"CBCTF/internal/log"
+	"CBCTF/internal/resp"
 	"sync"
 	"time"
 
@@ -33,9 +34,13 @@ func Logger(ctx *gin.Context) {
 	if raw != "" {
 		path = path + "?" + raw
 	}
+	statusCode := ctx.GetInt(resp.CTXStatusCodeKey)
+	if statusCode == 0 {
+		statusCode = ctx.Writer.Status()
+	}
 	e := l.WithFields(logrus.Fields{
 		"Latency":    latency,
-		"StatusCode": ctx.GetInt(CTXStatusCodeKey),
+		"StatusCode": statusCode,
 		"Method":     ctx.Request.Method,
 		"ClientIP":   ctx.ClientIP(),
 		"Path":       path,

@@ -10,7 +10,6 @@ import (
 	"CBCTF/internal/service"
 	"CBCTF/internal/websocket"
 	wm "CBCTF/internal/websocket/model"
-	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -38,7 +37,7 @@ func StartVictim(ctx *gin.Context) {
 		return
 	}()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal())
+	resp.JSON(ctx, model.SuccessRetVal())
 }
 
 func IncreaseVictimDuration(ctx *gin.Context) {
@@ -48,22 +47,22 @@ func IncreaseVictimDuration(ctx *gin.Context) {
 	repo := db.InitVictimRepo(db.DB)
 	victim, ret := repo.HasAliveVictim(team.ID, challenge.ID)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	if !victim.Start.Add(victim.Duration).Before(time.Now().Add(20 * time.Minute)) {
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Model.Victim.HasMuchTime})
+		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.Victim.HasMuchTime})
 		return
 	}
 	duration := victim.Duration + time.Hour
 	if ret = db.InitVictimRepo(db.DB).Update(victim.ID, db.UpdateVictimOptions{
 		Duration: &duration,
 	}); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{
 		"target":    victim.RemoteAddr(),
 		"remaining": victim.Remaining().Seconds(),
 		"status":    "Running",
@@ -76,21 +75,21 @@ func StopVictim(ctx *gin.Context) {
 	challenge := middleware.GetChallenge(ctx)
 	victim, ret := db.InitVictimRepo(db.DB).HasAliveVictim(team.ID, challenge.ID)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	if ret = service.StopVictim(db.DB, victim); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, ret)
+	resp.JSON(ctx, ret)
 }
 
 func GetVictims(ctx *gin.Context) {
 	var form dto.ListModelsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	team := middleware.GetTeam(ctx)
@@ -100,12 +99,12 @@ func GetVictims(ctx *gin.Context) {
 		Deleted:    true,
 	})
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	data := make([]gin.H, 0)
 	for _, victim := range victims {
 		data = append(data, resp.GetVictimResp(victim))
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"victims": data, "count": count}))
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"victims": data, "count": count}))
 }

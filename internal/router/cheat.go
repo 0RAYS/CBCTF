@@ -7,7 +7,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,7 +14,7 @@ import (
 func GetCheats(ctx *gin.Context) {
 	var form dto.GetCheatsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	options := db.GetOptions{Conditions: map[string]any{"contest_id": middleware.GetContest(ctx).ID}}
@@ -27,7 +26,7 @@ func GetCheats(ctx *gin.Context) {
 	}
 	cheats, count, ret := db.InitCheatRepo(db.DB).List(form.Limit, form.Offset, options)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	countOptions := db.CountOptions{
@@ -36,20 +35,20 @@ func GetCheats(ctx *gin.Context) {
 	countOptions.Conditions["checked"] = true
 	checked, ret := db.InitCheatRepo(db.DB).Count(countOptions)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	data := make([]gin.H, 0)
 	for _, cheat := range cheats {
 		data = append(data, resp.GetCheatResp(cheat))
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"count": count, "checked": checked, "cheats": data}))
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"count": count, "checked": checked, "cheats": data}))
 }
 
 func UpdateCheat(ctx *gin.Context) {
 	var form dto.UpdateCheatForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateCheatEventType)
@@ -63,7 +62,7 @@ func UpdateCheat(ctx *gin.Context) {
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
-	ctx.JSON(http.StatusOK, ret)
+	resp.JSON(ctx, ret)
 }
 
 func DeleteCheat(all bool) gin.HandlerFunc {
@@ -80,7 +79,7 @@ func DeleteCheat(all bool) gin.HandlerFunc {
 		if ret.OK {
 			ctx.Set(middleware.CTXEventSuccessKey, true)
 		}
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 	}
 }
 
@@ -92,5 +91,5 @@ func CheckCheat(ctx *gin.Context) {
 	service.CheckWrongFlag(db.DB, contest)
 	service.CheckSameDevice(db.DB, contest)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal())
+	resp.JSON(ctx, model.SuccessRetVal())
 }

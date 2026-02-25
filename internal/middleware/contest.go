@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"CBCTF/internal/model"
-	"net/http"
+	"CBCTF/internal/resp"
 	"slices"
 
 	"github.com/gin-gonic/gin"
@@ -22,7 +22,7 @@ func ContestStatus(statusL ...string) gin.HandlerFunc {
 			ctx.Next()
 			return
 		}
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: contest.Status()})
+		resp.AbortJSON(ctx, model.RetVal{Msg: contest.Status()})
 		return
 	}
 }

@@ -7,7 +7,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +15,7 @@ import (
 func GetContestChallenges(ctx *gin.Context) {
 	var form dto.GetChallengesForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	options := db.GetOptions{
@@ -34,7 +33,7 @@ func GetContestChallenges(ctx *gin.Context) {
 	}
 	contestChallengeL, count, ret := db.InitContestChallengeRepo(db.DB).List(form.Limit, form.Offset, options)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	data := make([]gin.H, 0)
@@ -56,22 +55,22 @@ func GetContestChallenges(ctx *gin.Context) {
 		}
 		data = append(data, tmp)
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"challenges": data, "count": count}))
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"challenges": data, "count": count}))
 }
 
 func GetContestChallengeCategories(ctx *gin.Context) {
 	var form dto.GetCategoriesForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	contest := middleware.GetContest(ctx)
 	categories, ret := db.InitContestChallengeRepo(db.DB).ListCategories(contest.ID, form.Type)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(categories))
+	resp.JSON(ctx, model.SuccessRetVal(categories))
 }
 
 func GetContestChallengeStatus(ctx *gin.Context) {
@@ -82,7 +81,7 @@ func GetContestChallengeStatus(ctx *gin.Context) {
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	data := gin.H{
@@ -105,13 +104,13 @@ func GetContestChallengeStatus(ctx *gin.Context) {
 			return filename
 		}(),
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
+	resp.JSON(ctx, model.SuccessRetVal(data))
 }
 
 func AddContestChallenge(ctx *gin.Context) {
 	var form dto.CreateContestChallengeForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateContestChallengeEventType)
@@ -121,13 +120,13 @@ func AddContestChallenge(ctx *gin.Context) {
 		data = append(data, resp.GetContestChallengeResp(contestChallenge))
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"contest_challenge": data, "failed": failedL}))
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"contest_challenge": data, "failed": failedL}))
 }
 
 func UpdateContestChallenge(ctx *gin.Context) {
 	var form dto.UpdateContestChallengeForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateContestChallengeEventType)
@@ -143,7 +142,7 @@ func UpdateContestChallenge(ctx *gin.Context) {
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
-	ctx.JSON(http.StatusOK, ret)
+	resp.JSON(ctx, ret)
 }
 
 func DeleteContestChallenge(ctx *gin.Context) {
@@ -157,5 +156,5 @@ func DeleteContestChallenge(ctx *gin.Context) {
 		tx.Commit()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
-	ctx.JSON(http.StatusOK, ret)
+	resp.JSON(ctx, ret)
 }

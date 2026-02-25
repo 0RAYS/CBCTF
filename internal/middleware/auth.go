@@ -6,9 +6,9 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
+	"CBCTF/internal/resp"
 	"CBCTF/internal/utils"
 	"fmt"
-	"net/http"
 	"strings"
 	"time"
 
@@ -19,17 +19,17 @@ import (
 func CheckAuth(ctx *gin.Context) {
 	auth := strings.Fields(ctx.GetHeader("Authorization"))
 	if len(auth) != 2 || auth[0] != "Bearer" {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.Unauthorized})
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Unauthorized})
 		return
 	}
 	claims, err := utils.ParseToken(auth[1])
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.Unauthorized})
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Unauthorized})
 		return
 	}
 	user, ret := db.InitUserRepo(db.DB).GetByID(claims.UserID)
 	if !ret.OK {
-		ctx.AbortWithStatusJSON(http.StatusOK, ret)
+		resp.AbortJSON(ctx, ret)
 		return
 	}
 	magic := GetMagic(ctx)
@@ -38,14 +38,14 @@ func CheckAuth(ctx *gin.Context) {
 			token, err := utils.GenerateToken(user.ID, user.Name, magic)
 			if err != nil {
 				log.Logger.Warningf("Failed to generate token: %s", err)
-				ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+				resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 				return
 			}
 			ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
 		} else {
 			contestIDL, ret := db.InitContestRepo(db.DB).GetIDByUserID(user.ID)
 			if !ret.OK {
-				ctx.JSON(http.StatusOK, ret)
+				resp.JSON(ctx, ret)
 				return
 			}
 			go func(contestIDL []uint) {
@@ -64,13 +64,13 @@ func CheckAuth(ctx *gin.Context) {
 				}
 				prometheus.RecordCheatDetection(string(model.ReasonTypeTokenMagicType))
 			}(contestIDL)
-			ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.Unauthorized})
+			resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Unauthorized})
 			return
 		}
 	}
 	go db.InitDeviceRepo(db.DB).RecordDevice(db.CreateDeviceOptions{UserID: user.ID, Magic: magic})
 	if user.Banned {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.Forbidden})
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Forbidden})
 		return
 	}
 	ctx.Set("Self", user)
@@ -90,7 +90,7 @@ func GetSelf(ctx *gin.Context) model.User {
 func CheckCaptain(ctx *gin.Context) {
 	team := GetTeam(ctx)
 	if team.CaptainID != GetSelf(ctx).ID {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.Forbidden})
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Forbidden})
 		return
 	}
 	ctx.Next()
@@ -99,7 +99,7 @@ func CheckCaptain(ctx *gin.Context) {
 // CheckVerified 检查邮箱是否已验证
 func CheckVerified(ctx *gin.Context) {
 	if !GetSelf(ctx).Verified {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Model.User.UnverifiedEmail})
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.User.UnverifiedEmail})
 		return
 	}
 	ctx.Next()
@@ -109,7 +109,7 @@ func CheckVerified(ctx *gin.Context) {
 func CheckBanned(ctx *gin.Context) {
 	team := GetTeam(ctx)
 	if team.Banned {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.Forbidden})
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Forbidden})
 		return
 	}
 	ctx.Next()

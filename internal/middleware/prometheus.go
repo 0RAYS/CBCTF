@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"CBCTF/internal/prometheus"
+	"CBCTF/internal/resp"
 	"strconv"
 	"time"
 
@@ -14,7 +15,7 @@ func Prometheus(ctx *gin.Context) {
 
 	ctx.Next()
 
-	status := ctx.GetInt(CTXStatusCodeKey)
+	status := ctx.GetInt(resp.CTXStatusCodeKey)
 	path := ctx.FullPath()
 	if path == "" {
 		path = ctx.Request.URL.Path

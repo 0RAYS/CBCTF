@@ -9,7 +9,6 @@ import (
 	"CBCTF/internal/websocket"
 	wsm "CBCTF/internal/websocket/model"
 	"fmt"
-	"net/http"
 	"slices"
 
 	"github.com/gin-gonic/gin"
@@ -18,7 +17,7 @@ import (
 func GetNotices(ctx *gin.Context) {
 	var form dto.ListModelsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	contest := middleware.GetContest(ctx)
@@ -26,20 +25,20 @@ func GetNotices(ctx *gin.Context) {
 		Conditions: map[string]any{"contest_id": contest.ID},
 	})
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	data := make([]gin.H, 0)
 	for _, notice := range notices {
 		data = append(data, resp.GetNoticeResp(notice))
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"count": count, "notices": data}))
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"count": count, "notices": data}))
 }
 
 func CreateNotice(ctx *gin.Context) {
 	var form dto.CreateNoticeForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateNoticeEventType)
@@ -51,7 +50,7 @@ func CreateNotice(ctx *gin.Context) {
 		Type:      form.Type,
 	})
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	go func() {
@@ -70,13 +69,13 @@ func CreateNotice(ctx *gin.Context) {
 		websocket.SendToClients(wsm.NoticeLevel, wsm.ContestNoticeWSType, fmt.Sprintf("Notice: %s", notice.Title), notice.Content, idL...)
 	}()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(notice))
+	resp.JSON(ctx, model.SuccessRetVal(notice))
 }
 
 func UpdateNotice(ctx *gin.Context) {
 	var form dto.UpdateNoticeForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateNoticeEventType)
@@ -89,7 +88,7 @@ func UpdateNotice(ctx *gin.Context) {
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
-	ctx.JSON(http.StatusOK, ret)
+	resp.JSON(ctx, ret)
 }
 
 func DeleteNotice(ctx *gin.Context) {
@@ -99,5 +98,5 @@ func DeleteNotice(ctx *gin.Context) {
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
-	ctx.JSON(http.StatusOK, ret)
+	resp.JSON(ctx, ret)
 }

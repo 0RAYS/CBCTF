@@ -3,6 +3,7 @@ package middleware
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
+	"CBCTF/internal/resp"
 	"database/sql"
 	"slices"
 	"time"
@@ -22,7 +23,7 @@ func AccessLog(ctx *gin.Context) {
 	path := ctx.FullPath()
 	ctx.Next()
 
-	statusCode := ctx.GetInt(CTXStatusCodeKey)
+	statusCode := ctx.GetInt(resp.CTXStatusCodeKey)
 	selfID := GetSelf(ctx).ID
 
 	if !slices.Contains(config.Env.Gin.Log.Whitelist, path) {

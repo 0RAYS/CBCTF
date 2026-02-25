@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/oauth"
+	"CBCTF/internal/resp"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -19,12 +20,12 @@ var DefaultPicture = map[string][]byte{
 func DefaultAssets(ctx *gin.Context) {
 	var form dto.GetAssetForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	file, ok := DefaultPicture[form.Filename]
 	if !ok {
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Model.File.NotFound})
+		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.File.NotFound})
 		return
 	}
 	ctx.Data(http.StatusOK, "application/octet-stream", file)

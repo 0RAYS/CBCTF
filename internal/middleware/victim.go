@@ -4,8 +4,8 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
+	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,11 +15,11 @@ func CheckTeamVictimCount(ctx *gin.Context) {
 	team := GetTeam(ctx)
 	count, ret := service.CountTeamVictims(db.DB, team)
 	if !ret.OK {
-		ctx.AbortWithStatusJSON(http.StatusOK, ret)
+		resp.AbortJSON(ctx, ret)
 		return
 	}
 	if count >= contest.Victims {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Model.Victim.Limited})
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Victim.Limited})
 		return
 	}
 	ctx.Next()
