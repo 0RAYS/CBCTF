@@ -3,16 +3,17 @@ package cron
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/log"
+	"errors"
 	"time"
 
 	"github.com/robfig/cron/v3"
 )
 
 func ClearEmptyTeam(c *cron.Cron) {
-	function := exec("ClearEmptyTeam", func() {
+	function := exec("ClearEmptyTeam", func() error {
 		contests, _, ret := db.InitContestRepo(db.DB).List(-1, -1)
 		if !ret.OK {
-			return
+			return errors.New(ret.Msg)
 		}
 		contestIDL := make([]uint, 0)
 		for _, contest := range contests {
@@ -24,7 +25,7 @@ func ClearEmptyTeam(c *cron.Cron) {
 		repo := db.InitTeamRepo(db.DB)
 		teams, _, ret := repo.List(-1, -1, db.GetOptions{Conditions: map[string]any{"contest_id": contestIDL}})
 		if !ret.OK {
-			return
+			return errors.New(ret.Msg)
 		}
 		for _, team := range teams {
 			if repo.CountAssociation(team, "Users") == 0 {
@@ -33,6 +34,7 @@ func ClearEmptyTeam(c *cron.Cron) {
 				}
 			}
 		}
+		return nil
 	})
 	function()
 	c.Schedule(cron.Every(5*time.Minute), cron.FuncJob(function))

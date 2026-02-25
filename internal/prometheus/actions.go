@@ -1,57 +1,37 @@
 package prometheus
 
-import "CBCTF/internal/model"
+import "fmt"
 
-func UpdateFlagSubmissionMetrics(contest model.Contest, contestChallenge model.ContestChallenge, team model.Team, solved bool) {
+func RecordFlagSubmission(contestID uint, challengeType string, solved bool) {
+	status := "failed"
 	if solved {
-		FlagSubmissionTotal.WithLabelValues(contest.Name, contestChallenge.Name, team.Name, "success", string(contestChallenge.Type)).Inc()
-	} else {
-		FlagSubmissionTotal.WithLabelValues(contest.Name, contestChallenge.Name, team.Name, "failed", string(contestChallenge.Type)).Inc()
+		status = "success"
 	}
+	FlagSubmissionsTotal.WithLabelValues(fmt.Sprintf("%d", contestID), challengeType, status).Inc()
 }
 
-func AddContestActiveTeamsMetrics(contest model.Contest, count int) {
-	ContestActiveTeams.WithLabelValues(contest.Name).Add(float64(count))
+func RecordBlood(contestID uint, order string) {
+	BloodTotal.WithLabelValues(fmt.Sprintf("%d", contestID), order).Inc()
 }
 
-func SubContestActiveTeamsMetrics(contest model.Contest, count int) {
-	ContestActiveTeams.WithLabelValues(contest.Name).Sub(float64(count))
-}
-
-func AddContestActiveUsersMetrics(contest model.Contest, count int) {
-	ContestActiveUsers.WithLabelValues(contest.Name).Add(float64(count))
-}
-
-func SubContestActiveUsersMetrics(contest model.Contest, count int) {
-	ContestActiveUsers.WithLabelValues(contest.Name).Sub(float64(count))
-}
-
-func AddVictimContainerMetrics(count int) {
-	VictimContainerTotal.Add(float64(count))
-}
-
-func SubVictimContainerMetrics(count int) {
-	VictimContainerTotal.Sub(float64(count))
-}
-
-func UpdateUserRegisterMetrics(provider string) {
+func RecordUserRegister(provider string) {
 	UserRegistrationTotal.WithLabelValues(provider).Inc()
 }
 
-func UpdateUserLoginMetrics(provider string) {
+func RecordUserLogin(provider string) {
 	UserLoginTotal.WithLabelValues(provider).Inc()
 }
 
-func UpdateFileUploadMetrics(fileType string, size int64) {
+func RecordFileUpload(fileType string, size int64) {
 	FileUploadTotal.WithLabelValues(fileType).Inc()
 	FileUploadSize.WithLabelValues(fileType).Observe(float64(size))
 }
 
-func UpdateWebSocketMetrics(connections int) {
-	WebSocketConnections.Set(float64(connections))
+func SetWebSocketConnections(n int) {
+	WebSocketConnections.Set(float64(n))
 }
 
-func IncEmailSentMetrics(success bool) {
+func RecordEmailSent(success bool) {
 	if success {
 		EmailSentTotal.WithLabelValues("success").Inc()
 	} else {
@@ -59,6 +39,32 @@ func IncEmailSentMetrics(success bool) {
 	}
 }
 
-func UpdateRateLimitMetrics(endpoint, ip string) {
-	RateLimitHits.WithLabelValues(endpoint, ip).Inc()
+func RecordRateLimitHit(endpoint string) {
+	RateLimitHits.WithLabelValues(endpoint).Inc()
+}
+
+func RecordCheatDetection(reasonType string) {
+	CheatDetectionsTotal.WithLabelValues(reasonType).Inc()
+}
+
+func RecordCronJob(jobName string, duration float64, success bool) {
+	CronJobDuration.WithLabelValues(jobName).Observe(duration)
+	if success {
+		CronJobRunsTotal.WithLabelValues(jobName, "success").Inc()
+	} else {
+		CronJobRunsTotal.WithLabelValues(jobName, "failed").Inc()
+	}
+}
+
+func RecordTaskEnqueued(taskType string) {
+	TaskEnqueuedTotal.WithLabelValues(taskType).Inc()
+}
+
+func RecordTaskProcessed(taskType string, duration float64, success bool) {
+	TaskProcessingDuration.WithLabelValues(taskType).Observe(duration)
+	if success {
+		TaskProcessedTotal.WithLabelValues(taskType, "success").Inc()
+	} else {
+		TaskProcessedTotal.WithLabelValues(taskType, "failed").Inc()
+	}
 }

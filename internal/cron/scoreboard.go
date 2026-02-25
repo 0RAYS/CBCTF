@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/model"
 	"CBCTF/internal/service"
+	"errors"
 	"math"
 	"slices"
 	"time"
@@ -13,11 +14,11 @@ import (
 
 // updateTeamRanking 全量更新 model.Team 的分数和排名
 func updateTeamRanking(c *cron.Cron) {
-	function := exec("UpdateTeamRanking", func() {
+	function := exec("UpdateTeamRanking", func() error {
 		repo := db.InitContestRepo(db.DB)
 		contests, _, ret := repo.List(-1, -1, db.GetOptions{Conditions: map[string]any{"hidden": false}})
 		if !ret.OK {
-			return
+			return errors.New(ret.Msg)
 		}
 		for _, contest := range contests {
 			if time.Now().Sub(contest.Start.Add(contest.Duration)) > time.Minute*10 {
@@ -25,6 +26,7 @@ func updateTeamRanking(c *cron.Cron) {
 			}
 			service.UpdateTeamRanking(db.DB, contest, -1, -1)
 		}
+		return nil
 	})
 	function()
 	c.Schedule(cron.Every(5*time.Minute), cron.FuncJob(function))
@@ -32,13 +34,13 @@ func updateTeamRanking(c *cron.Cron) {
 
 // updateUserRanking 全量更新 model.User 的分数和排名
 func updateUserRanking(c *cron.Cron) {
-	function := exec("UpdateUserRanking", func() {
+	function := exec("UpdateUserRanking", func() error {
 		userRepo := db.InitUserRepo(db.DB)
 		users, _, ret := userRepo.List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"banned": false},
 		})
 		if !ret.OK {
-			return
+			return errors.New(ret.Msg)
 		}
 		userIDs := make([]uint, len(users))
 		for i, user := range users {
@@ -47,7 +49,7 @@ func updateUserRanking(c *cron.Cron) {
 
 		solvedContestFlags, ret := db.InitContestFlagRepo(db.DB).GetUserSolvedContestFlags(userIDs...)
 		if !ret.OK {
-			return
+			return errors.New(ret.Msg)
 		}
 
 		// 构建 userID -> solvedContestFlags 映射
@@ -67,7 +69,7 @@ func updateUserRanking(c *cron.Cron) {
 			Conditions: map[string]any{"id": contestIDL},
 		})
 		if !ret.OK {
-			return
+			return errors.New(ret.Msg)
 		}
 		blood := make(map[uint]bool)
 		for _, contest := range contests {
@@ -103,6 +105,7 @@ func updateUserRanking(c *cron.Cron) {
 			})
 		}
 		service.UpdateUserRanking(db.DB, -1, -1)
+		return nil
 	})
 	function()
 	c.Schedule(cron.Every(3*time.Hour), cron.FuncJob(function))

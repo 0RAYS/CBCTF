@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/prometheus"
 	"CBCTF/internal/utils"
 	"fmt"
 	"net/http"
@@ -61,6 +62,7 @@ func CheckAuth(ctx *gin.Context) {
 						Time:       time.Now(),
 					})
 				}
+				prometheus.RecordCheatDetection(string(model.ReasonTypeTokenMagicType))
 			}(contestIDL)
 			ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.Unauthorized})
 			return

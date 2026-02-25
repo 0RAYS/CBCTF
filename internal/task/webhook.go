@@ -3,6 +3,7 @@ package task
 import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/prometheus"
 	"CBCTF/internal/webhook"
 	"context"
 	"time"
@@ -24,7 +25,11 @@ func EnqueueWebhookTask(event model.Event, target model.Webhook) (*asynq.TaskInf
 		return nil, err
 	}
 	task := asynq.NewTask(WebhookTaskType, payload)
-	return client.Enqueue(task, asynq.MaxRetry(target.Retry), asynq.Timeout(time.Duration(target.Timeout)*time.Second))
+	info, err := client.Enqueue(task, asynq.MaxRetry(target.Retry), asynq.Timeout(time.Duration(target.Timeout)*time.Second))
+	if err == nil {
+		prometheus.RecordTaskEnqueued(WebhookTaskType)
+	}
+	return info, err
 }
 
 func HandleWebhookTask(_ context.Context, task *asynq.Task) error {

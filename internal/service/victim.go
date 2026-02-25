@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/model"
-	"CBCTF/internal/prometheus"
 	"CBCTF/internal/utils"
 	"context"
 	"database/sql"
@@ -309,7 +308,6 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 	}); !ret.OK {
 		return model.Victim{}, ret
 	}
-	prometheus.AddVictimContainerMetrics(1)
 	return victim, model.SuccessRetVal()
 }
 
@@ -359,7 +357,6 @@ func StopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
 		return ret
 	}
 	tx2.Commit()
-	prometheus.SubVictimContainerMetrics(1)
 	return ret
 }
 

@@ -5,7 +5,6 @@ import (
 	"CBCTF/internal/dto"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
-	"CBCTF/internal/prometheus"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"CBCTF/internal/utils"
@@ -114,7 +113,6 @@ func UpdateCaptcha(ctx *gin.Context) {
 func DeleteTeam(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteTeamEventType)
 	team := middleware.GetTeam(ctx)
-	contest := middleware.GetContest(ctx)
 	tx := db.DB.Begin()
 	ret := db.InitTeamRepo(tx).Delete(team.ID)
 	if !ret.OK {
@@ -123,8 +121,6 @@ func DeleteTeam(ctx *gin.Context) {
 		return
 	}
 	tx.Commit()
-	prometheus.SubContestActiveTeamsMetrics(contest, 1)
-	prometheus.SubContestActiveUsersMetrics(contest, int(db.InitTeamRepo(db.DB).CountAssociation(team, "Users")))
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	ctx.JSON(http.StatusOK, ret)
 }

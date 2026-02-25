@@ -2,6 +2,7 @@ package cron
 
 import (
 	"CBCTF/internal/log"
+	"CBCTF/internal/prometheus"
 	"time"
 
 	"github.com/robfig/cron/v3"
@@ -9,14 +10,18 @@ import (
 
 var c *cron.Cron
 
-func exec(name string, task func()) func() {
+func exec(name string, task func() error) func() {
 	return func() {
 		start := time.Now()
-		task()
-		if duration := time.Since(start); duration > time.Second {
-			log.Logger.Warningf("%s processing time: %s", name, duration)
+		err := task()
+		duration := time.Since(start).Seconds()
+		prometheus.RecordCronJob(name, duration, err == nil)
+		if err != nil {
+			log.Logger.Warningf("%s failed: %s, processing time: %s", name, err, time.Duration(duration*float64(time.Second)))
+		} else if duration > time.Second.Seconds() {
+			log.Logger.Warningf("%s processing time: %s", name, time.Duration(duration*float64(time.Second)))
 		} else {
-			log.Logger.Debugf("%s processing time: %s", name, duration)
+			log.Logger.Debugf("%s processing time: %s", name, time.Duration(duration*float64(time.Second)))
 		}
 	}
 }
