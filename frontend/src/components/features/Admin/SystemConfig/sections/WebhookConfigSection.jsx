@@ -9,21 +9,21 @@ export function WebhookConfigSection({ config, updateConfig }) {
   return (
     <ConfigSection title={t('admin.system.sections.webhook')} icon={IconServer}>
       <ConfigListField
-        label={t('admin.system.labels.webhookBlacklist')}
-        items={config.webhook.blacklist || []}
+        label={t('admin.system.labels.webhookWhitelist')}
+        items={config.webhook.whitelist || []}
         onAdd={() =>
           updateConfig((draft) => {
-            draft.webhook.blacklist.push('');
+            draft.webhook.whitelist.push('');
           })
         }
         onUpdate={(index, value) =>
           updateConfig((draft) => {
-            draft.webhook.blacklist[index] = value;
+            draft.webhook.whitelist[index] = value;
           })
         }
         onRemove={(index) =>
           updateConfig((draft) => {
-            draft.webhook.blacklist.splice(index, 1);
+            draft.webhook.whitelist.splice(index, 1);
           })
         }
       />

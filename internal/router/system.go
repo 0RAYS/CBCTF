@@ -163,7 +163,7 @@ func SystemConfig(ctx *gin.Context) {
 
 		"cheat_ip_whitelist": config.Env.Cheat.IP.Whitelist,
 
-		"webhook_blacklist": config.Env.Webhook.Blacklist,
+		"webhook_whitelist": config.Env.Webhook.Whitelist,
 
 		"registration_enabled":       config.Env.Registration.Enabled,
 		"registration_default_group": config.Env.Registration.DefaultGroup,
@@ -236,7 +236,7 @@ func UpdateSystem(ctx *gin.Context) {
 
 		model.CheatIPWhitelistSettingKey: form.CheatIPWhitelist,
 
-		model.WebhookBlacklistSettingKey: form.WebhookBlacklist,
+		model.WebhookWhitelistSettingKey: form.WebhookWhitelist,
 
 		model.RegistrationEnabledSettingKey:      form.RegistrationEnabled,
 		model.RegistrationDefaultGroupSettingKey: form.RegistrationDefaultGroup,

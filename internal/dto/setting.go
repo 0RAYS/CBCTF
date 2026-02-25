@@ -60,7 +60,7 @@ type UpdateSettingForm struct {
 
 	CheatIPWhitelist *[]string `form:"cheat_ip_whitelist" json:"cheat_ip_whitelist" binding:"omitempty,dive,ip|cidr"`
 
-	WebhookBlacklist *[]string `form:"webhook_blacklist" json:"webhook_blacklist" binding:"omitempty,dive,ip|cidr|hostname|hostname_port"`
+	WebhookWhitelist *[]string `form:"webhook_whitelist" json:"webhook_whitelist" binding:"omitempty,dive,ip|cidr|hostname|hostname_port"`
 
 	RegistrationEnabled      *bool `form:"registration_enabled" json:"registration_enabled"`
 	RegistrationDefaultGroup *uint `form:"registration_default_group" json:"registration_default_group" binding:"omitempty,gte=0"`

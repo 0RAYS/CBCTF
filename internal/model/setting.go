@@ -61,7 +61,7 @@ const (
 
 	CheatIPWhitelistSettingKey = "cheat.ip.whitelist"
 
-	WebhookBlacklistSettingKey = "webhook.blacklist"
+	WebhookWhitelistSettingKey = "webhook.whitelist"
 
 	RegistrationEnabledSettingKey      = "registration.enabled"
 	RegistrationDefaultGroupSettingKey = "registration.default_group"

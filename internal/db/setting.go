@@ -135,7 +135,7 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 
 		{Key: model.CheatIPWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Cheat.IP.Whitelist}},
 
-		{Key: model.WebhookBlacklistSettingKey, Value: model.SettingValue{V: config.Env.Webhook.Blacklist}},
+		{Key: model.WebhookWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Webhook.Whitelist}},
 
 		{Key: model.RegistrationEnabledSettingKey, Value: model.SettingValue{V: config.Env.Registration.Enabled}},
 		{Key: model.RegistrationDefaultGroupSettingKey, Value: model.SettingValue{V: config.Env.Registration.DefaultGroup}},
@@ -296,7 +296,7 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 		return ret
 	}
 
-	if config.Env.Webhook.Blacklist, ret = GetValue[[]string](s, model.WebhookBlacklistSettingKey); !ret.OK {
+	if config.Env.Webhook.Whitelist, ret = GetValue[[]string](s, model.WebhookWhitelistSettingKey); !ret.OK {
 		return ret
 	}
 

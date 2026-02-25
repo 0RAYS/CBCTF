@@ -107,7 +107,7 @@ type Config struct {
 		} `mapstructure:"ip" json:"ip"`
 	} `mapstructure:"cheat" json:"cheat"`
 	Webhook struct {
-		Blacklist []string `mapstructure:"blacklist" json:"blacklist"`
+		Whitelist []string `mapstructure:"whitelist" json:"whitelist"`
 	} `mapstructure:"webhook" json:"webhook"`
 	Registration struct {
 		Enabled      bool `mapstructure:"enabled" json:"enabled"`
