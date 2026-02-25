@@ -5,8 +5,8 @@ import (
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
+	"CBCTF/internal/resp"
 	"fmt"
-	"net/http"
 	"slices"
 
 	"github.com/gin-gonic/gin"
@@ -27,13 +27,13 @@ func GetAllowQueryModels(ctx *gin.Context) {
 			data[m.ModelName()] = m.QueryFields()
 		}
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
+	resp.JSON(ctx, model.SuccessRetVal(data))
 }
 
 func Search(ctx *gin.Context) {
 	var form dto.SearchModelsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	var m model.Model
@@ -46,7 +46,7 @@ func Search(ctx *gin.Context) {
 		}
 	}
 	if !found {
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Response.BadRequest, Attr: map[string]any{"Error": "Not allowed model"}})
+		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest, Attr: map[string]any{"Error": "Not allowed model"}})
 		return
 	}
 	options := db.GetOptions{Search: make(map[string]string), Sort: make([]string, 0)}
@@ -69,8 +69,8 @@ func Search(ctx *gin.Context) {
 	}
 	ms, count, ret := db.Search(m, form.Limit, form.Offset, options)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"count": count, "models": ms}))
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"count": count, "models": ms}))
 }

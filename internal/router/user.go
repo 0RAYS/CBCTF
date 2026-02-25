@@ -7,7 +7,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -20,14 +19,14 @@ func GetUser(ctx *gin.Context) {
 	} else {
 		user = middleware.GetSelf(ctx)
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetUserResp(user, middleware.IsFullAccess(ctx))))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(user, middleware.IsFullAccess(ctx))))
 }
 
 func GetAccessibleRoutes(ctx *gin.Context) {
 	userID := middleware.GetSelf(ctx).ID
 	permNames, ret := db.InitPermissionRepo(db.DB).GetUserPermissions(userID)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 
@@ -43,47 +42,47 @@ func GetAccessibleRoutes(ctx *gin.Context) {
 		}
 	}
 
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(routes))
+	resp.JSON(ctx, model.SuccessRetVal(routes))
 }
 
 func GetUsers(ctx *gin.Context) {
 	var form dto.ListModelsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	users, count, ret := db.InitUserRepo(db.DB).List(form.Limit, form.Offset)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	data := make([]gin.H, 0)
 	for _, user := range users {
 		data = append(data, resp.GetUserResp(user, true))
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"count": count, "users": data}))
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"count": count, "users": data}))
 }
 
 func CreateUser(ctx *gin.Context) {
 	var form dto.CreateUserForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateUserEventType)
 	user, ret := service.AdminCreateUser(db.DB, form)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetUserResp(user, true)))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(user, true)))
 }
 
 func ChangePwd(ctx *gin.Context) {
 	var form dto.ChangePasswordForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateUserEventType)
@@ -91,7 +90,7 @@ func ChangePwd(ctx *gin.Context) {
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
-	ctx.JSON(http.StatusOK, ret)
+	resp.JSON(ctx, ret)
 }
 
 func UpdateUser(ctx *gin.Context) {
@@ -102,7 +101,7 @@ func UpdateUser(ctx *gin.Context) {
 	if middleware.IsFullAccess(ctx) {
 		var form dto.UpdateUserForm
 		if ret = dto.Bind(ctx, &form); !ret.OK {
-			ctx.JSON(http.StatusOK, ret)
+			resp.JSON(ctx, ret)
 			return
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.UpdateUserEventType)
@@ -111,7 +110,7 @@ func UpdateUser(ctx *gin.Context) {
 	} else {
 		var form dto.UpdateSelfForm
 		if ret = dto.Bind(ctx, &form); !ret.OK {
-			ctx.JSON(http.StatusOK, ret)
+			resp.JSON(ctx, ret)
 			return
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.UpdateUserEventType)
@@ -121,7 +120,7 @@ func UpdateUser(ctx *gin.Context) {
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
-	ctx.JSON(http.StatusOK, ret)
+	resp.JSON(ctx, ret)
 }
 
 func DeleteUser(ctx *gin.Context) {
@@ -132,7 +131,7 @@ func DeleteUser(ctx *gin.Context) {
 	if !middleware.IsFullAccess(ctx) {
 		var form dto.DeleteSelfForm
 		if ret = dto.Bind(ctx, &form); !ret.OK {
-			ctx.JSON(http.StatusOK, ret)
+			resp.JSON(ctx, ret)
 			return
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.DeleteUserEventType)
@@ -149,5 +148,5 @@ func DeleteUser(ctx *gin.Context) {
 		tx.Commit()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
-	ctx.JSON(http.StatusOK, ret)
+	resp.JSON(ctx, ret)
 }

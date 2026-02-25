@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,7 +13,7 @@ import (
 func GetSubmissions(ctx *gin.Context) {
 	var form dto.ListModelsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	team := middleware.GetTeam(ctx)
@@ -22,12 +21,12 @@ func GetSubmissions(ctx *gin.Context) {
 		Conditions: map[string]any{"team_id": team.ID},
 	})
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	data := make([]gin.H, 0)
 	for _, submission := range submissions {
 		data = append(data, resp.GetSubmissionResp(submission))
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"submissions": data, "count": count}))
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"submissions": data, "count": count}))
 }

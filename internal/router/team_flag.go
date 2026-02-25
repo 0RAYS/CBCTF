@@ -6,9 +6,9 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
+	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"CBCTF/internal/task"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -23,7 +23,7 @@ func GetTeamFlags(ctx *gin.Context) {
 		}},
 	})
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	challengeInfoMap := make(map[uint]gin.H)
@@ -54,7 +54,7 @@ func GetTeamFlags(ctx *gin.Context) {
 		info["flags"] = challengeFlagsMap[id]
 		data = append(data, info)
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
+	resp.JSON(ctx, model.SuccessRetVal(data))
 }
 
 func InitTeamFlag(ctx *gin.Context) {
@@ -67,7 +67,7 @@ func InitTeamFlag(ctx *gin.Context) {
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	contestChallenge.ContestFlags = contestFlags
@@ -76,20 +76,20 @@ func InitTeamFlag(ctx *gin.Context) {
 	teamFlags, ret := service.CreateTeamFlag(tx, team, contest, contestChallenge)
 	if !ret.OK {
 		tx.Rollback()
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	if challenge.Type == model.DynamicChallengeType {
 		if _, err := task.EnqueueGenAttachmentTask(user.ID, challenge, team, teamFlags); err != nil {
 			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
 			tx.Rollback()
-			ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}})
+			resp.JSON(ctx, model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}})
 			return
 		}
 	}
 	tx.Commit()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal())
+	resp.JSON(ctx, model.SuccessRetVal())
 }
 
 func ResetTeamFlag(ctx *gin.Context) {
@@ -102,7 +102,7 @@ func ResetTeamFlag(ctx *gin.Context) {
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	contestChallenge.ContestFlags = contestFlags
@@ -111,7 +111,7 @@ func ResetTeamFlag(ctx *gin.Context) {
 	teamFlags, ret := service.UpdateTeamFlag(tx, team, contest, contestChallenge)
 	if !ret.OK {
 		tx.Rollback()
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	switch challenge.Type {
@@ -119,7 +119,7 @@ func ResetTeamFlag(ctx *gin.Context) {
 		if _, err := task.EnqueueGenAttachmentTask(user.ID, challenge, team, teamFlags); err != nil {
 			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
 			tx.Rollback()
-			ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}})
+			resp.JSON(ctx, model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}})
 			return
 		}
 		tx.Commit()
@@ -137,5 +137,5 @@ func ResetTeamFlag(ctx *gin.Context) {
 		tx.Commit()
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, ret)
+	resp.JSON(ctx, ret)
 }

@@ -4,10 +4,10 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
+	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"CBCTF/internal/websocket"
 	wm "CBCTF/internal/websocket/model"
-	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -35,7 +35,7 @@ func GetTestChallengeStatus(ctx *gin.Context) {
 			return filename
 		}(),
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
+	resp.JSON(ctx, model.SuccessRetVal(data))
 }
 
 func StartTestVictim(ctx *gin.Context) {
@@ -57,7 +57,7 @@ func StartTestVictim(ctx *gin.Context) {
 		return
 	}()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal())
+	resp.JSON(ctx, model.SuccessRetVal())
 }
 
 func StopTestVictim(ctx *gin.Context) {
@@ -65,13 +65,13 @@ func StopTestVictim(ctx *gin.Context) {
 	challenge := middleware.GetChallenge(ctx)
 	victim, ret := db.InitVictimRepo(db.DB).HasAliveVictim(0, challenge.ID)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	if ret = service.StopVictim(db.DB, victim); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, ret)
+	resp.JSON(ctx, ret)
 }

@@ -4,8 +4,8 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
+	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,7 +13,7 @@ import (
 func CheckChallengeType(t model.ChallengeType) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		if GetChallenge(ctx).Type != t {
-			ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Model.Challenge.InvalidType})
+			resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Challenge.InvalidType})
 			return
 		}
 		ctx.Next()
@@ -28,11 +28,11 @@ func CheckSolved(ctx *gin.Context) {
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	if service.CheckIfSolved(db.DB, team, contestFlags) {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Model.TeamFlag.AlreadySolved})
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.TeamFlag.AlreadySolved})
 		return
 	}
 	ctx.Next()

@@ -7,7 +7,6 @@ import (
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,25 +14,25 @@ import (
 func GetSmtps(ctx *gin.Context) {
 	var form dto.ListModelsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	smtps, count, ret := db.InitSmtpRepo(db.DB).List(form.Limit, form.Offset)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	data := make([]gin.H, 0)
 	for _, smtp := range smtps {
 		data = append(data, resp.GetSmtpResp(smtp))
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"smtps": data, "count": count}))
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"smtps": data, "count": count}))
 }
 
 func CreateSmtp(ctx *gin.Context) {
 	var form dto.CreateSmtpForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateSmtpEventType)
@@ -44,17 +43,17 @@ func CreateSmtp(ctx *gin.Context) {
 		Pwd:     form.Pwd,
 	})
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetSmtpResp(smtp)))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetSmtpResp(smtp)))
 }
 
 func UpdateSmtp(ctx *gin.Context) {
 	var form dto.UpdateSmtpForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateSmtpEventType)
@@ -66,12 +65,12 @@ func UpdateSmtp(ctx *gin.Context) {
 		Pwd:     form.Pwd,
 		On:      form.On,
 	}); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	newSmtp, ret := db.InitSmtpRepo(db.DB).GetByID(smtp.ID)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	email.DelSenders(smtp)
@@ -79,17 +78,17 @@ func UpdateSmtp(ctx *gin.Context) {
 		email.AddSenders(smtp)
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, ret)
+	resp.JSON(ctx, ret)
 }
 
 func DeleteSmtp(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteSmtpEventType)
 	smtp := middleware.GetSmtp(ctx)
 	if ret := db.InitSmtpRepo(db.DB).Delete(smtp.ID); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	email.DelSenders(smtp)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal())
+	resp.JSON(ctx, model.SuccessRetVal())
 }

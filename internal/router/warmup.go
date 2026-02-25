@@ -9,7 +9,6 @@ import (
 	"CBCTF/internal/service"
 	"CBCTF/internal/websocket"
 	wsm "CBCTF/internal/websocket/model"
-	"net/http"
 	"slices"
 
 	"github.com/gin-gonic/gin"
@@ -19,13 +18,13 @@ func GetContestChallengeImage(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
 	contestChallengeImageList, ret := service.GetContestChallengeImageList(db.DB, contest)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 
 	nodeImageMap, ret := service.GetNodeImageList()
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	data := make([]gin.H, 0)
@@ -46,25 +45,25 @@ func GetContestChallengeImage(ctx *gin.Context) {
 		}
 		data = append(data, gin.H{contestChallengeImage: status})
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
+	resp.JSON(ctx, model.SuccessRetVal(data))
 }
 
 func WarmUpContestChallengeImage(ctx *gin.Context) {
 	var form dto.WarmUpImageForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.PullImageEventType)
 	ret := service.WarmUpContestChallengeImage(form)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, ret)
+	resp.JSON(ctx, ret)
 }
 
 func GetContestVictims(ctx *gin.Context) {
 	var form dto.GetContestVictimsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	contest := middleware.GetContest(ctx)
@@ -85,13 +84,13 @@ func GetContestVictims(ctx *gin.Context) {
 	if !ret.OK {
 		total = count
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"victims": data, "count": total, "running": count}))
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"victims": data, "count": total, "running": count}))
 }
 
 func StartContestVictims(ctx *gin.Context) {
 	var form dto.StartContestVictimsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.StartVictimEventType)
@@ -104,13 +103,13 @@ func StartContestVictims(ctx *gin.Context) {
 		websocket.Send(selfID, wsm.SuccessLevel, wsm.StartVictimWSType, "Victims Warmup", "Done")
 	}(middleware.GetSelf(ctx).ID)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal())
+	resp.JSON(ctx, model.SuccessRetVal())
 }
 
 func StopContestVictims(ctx *gin.Context) {
 	var form dto.StopContestVictimsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.StopVictimEventType)
@@ -122,5 +121,5 @@ func StopContestVictims(ctx *gin.Context) {
 		websocket.Send(selfID, wsm.SuccessLevel, wsm.StopVictimWSType, "Victims Stop", "Done")
 	}(middleware.GetSelf(ctx).ID)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal())
+	resp.JSON(ctx, model.SuccessRetVal())
 }

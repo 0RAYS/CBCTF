@@ -44,7 +44,7 @@ func Init() *gin.Engine {
 
 	router.Use(
 		middleware.SetTrace, middleware.SetMagic, middleware.Logger, middleware.Prometheus, middleware.AccessLog,
-		middleware.I18n, middleware.RateLimit("globals", config.Env.Gin.RateLimit.Global, time.Minute), middleware.Events,
+		middleware.RateLimit("globals", config.Env.Gin.RateLimit.Global, time.Minute), middleware.Events,
 	)
 
 	if strings.ToLower(config.Env.Gin.Mode) != gin.ReleaseMode {

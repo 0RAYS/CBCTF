@@ -4,8 +4,8 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
+	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,11 +18,11 @@ func CheckIfGenerated(ctx *gin.Context) {
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	if !service.CheckIfGenerated(db.DB, team, contestFlags) {
-		ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Model.TeamFlag.NotFound})
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.TeamFlag.NotFound})
 		return
 	}
 	ctx.Next()

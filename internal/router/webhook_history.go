@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,7 +13,7 @@ import (
 func GetWebhookHistory(ctx *gin.Context) {
 	var form dto.ListModelsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	options := db.GetOptions{
@@ -26,12 +25,12 @@ func GetWebhookHistory(ctx *gin.Context) {
 	}
 	histories, count, ret := db.InitWebhookHistoryRepo(db.DB).List(form.Limit, form.Offset, options)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	data := make([]gin.H, 0)
 	for _, history := range histories {
 		data = append(data, resp.GetWebhookHistoryResp(history))
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"histories": data, "count": count}))
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"histories": data, "count": count}))
 }

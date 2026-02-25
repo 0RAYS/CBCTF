@@ -6,7 +6,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
-	"net/http"
+	"CBCTF/internal/resp"
 	"slices"
 	"strconv"
 	"time"
@@ -26,12 +26,12 @@ func RateLimit(name string, maxRequests int, window time.Duration) gin.HandlerFu
 		}
 		count, ret := redis.RateLimit(name, client, window)
 		if !ret.OK {
-			ctx.AbortWithStatusJSON(http.StatusOK, ret)
+			resp.AbortJSON(ctx, ret)
 			return
 		}
 		if int(count) > maxRequests {
 			prometheus.RecordRateLimitHit(name)
-			ctx.AbortWithStatusJSON(http.StatusOK, model.RetVal{Msg: i18n.Response.TooManyRequests})
+			resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.TooManyRequests})
 			return
 		}
 		ctx.Next()

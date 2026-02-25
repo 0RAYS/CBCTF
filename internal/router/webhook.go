@@ -9,7 +9,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	wh "CBCTF/internal/webhook"
-	"net/http"
 	"net/netip"
 	"net/url"
 	"strings"
@@ -20,19 +19,19 @@ import (
 func GetWebhooks(ctx *gin.Context) {
 	var form dto.ListModelsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	webhooks, count, ret := db.InitWebhookRepo(db.DB).List(form.Limit, form.Offset)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	data := make([]gin.H, 0)
 	for _, webhook := range webhooks {
 		data = append(data, resp.GetWebhookResp(webhook))
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"count": count, "webhooks": data}))
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"count": count, "webhooks": data}))
 }
 
 func checkWebhookBlacklist(target string) (bool, error) {
@@ -74,17 +73,17 @@ func checkWebhookBlacklist(target string) (bool, error) {
 func CreateWebhook(ctx *gin.Context) {
 	var form dto.CreateWebhookForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateWebhookEventType)
 	banned, err := checkWebhookBlacklist(form.URL)
 	if err != nil {
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return
 	}
 	if banned {
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Model.Webhook.NotAllowedTarget})
+		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.Webhook.NotAllowedTarget})
 		return
 	}
 	webhook, ret := db.InitWebhookRepo(db.DB).Create(db.CreateWebhookOptions{
@@ -97,28 +96,28 @@ func CreateWebhook(ctx *gin.Context) {
 		Events:  form.Events,
 	})
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(resp.GetWebhookResp(webhook)))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetWebhookResp(webhook)))
 }
 
 func UpdateWebhook(ctx *gin.Context) {
 	var form dto.UpdateWebhookForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateWebhookEventType)
 	if form.URL != nil {
 		banned, err := checkWebhookBlacklist(*form.URL)
 		if err != nil {
-			ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+			resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 			return
 		}
 		if banned {
-			ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Model.Webhook.NotAllowedTarget})
+			resp.JSON(ctx, model.RetVal{Msg: i18n.Model.Webhook.NotAllowedTarget})
 			return
 		}
 	}
@@ -133,12 +132,12 @@ func UpdateWebhook(ctx *gin.Context) {
 		On:      form.On,
 		Events:  form.Events,
 	}); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	newWebhook, ret := db.InitWebhookRepo(db.DB).GetByID(webhook.ID)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	wh.DelWebhook(webhook)
@@ -146,17 +145,17 @@ func UpdateWebhook(ctx *gin.Context) {
 		wh.AddWebhook(newWebhook)
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal())
+	resp.JSON(ctx, model.SuccessRetVal())
 }
 
 func DeleteWebhook(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteWebhookEventType)
 	webhook := middleware.GetWebhook(ctx)
 	if ret := db.InitWebhookRepo(db.DB).Delete(webhook.ID); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	wh.DelWebhook(webhook)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal())
+	resp.JSON(ctx, model.SuccessRetVal())
 }

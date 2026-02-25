@@ -7,7 +7,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-	"net/http"
 	"slices"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +15,7 @@ import (
 func GetTeamRanking(ctx *gin.Context) {
 	var form dto.ListModelsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	contest := middleware.GetContest(ctx)
@@ -25,12 +24,12 @@ func GetTeamRanking(ctx *gin.Context) {
 		Preloads:   map[string]db.GetOptions{"ContestChallenge": {}},
 	})
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	teams, count, ret := service.GetTeamRanking(db.DB, contest, form.Limit, form.Offset)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	repo := db.InitTeamRepo(db.DB)
@@ -49,19 +48,19 @@ func GetTeamRanking(ctx *gin.Context) {
 		tmp["users"] = repo.CountAssociation(team, "Users")
 		data = append(data, tmp)
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"teams": data, "count": count}))
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"teams": data, "count": count}))
 }
 
 func GetScoreboard(ctx *gin.Context) {
 	var form dto.ListModelsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	contest := middleware.GetContest(ctx)
 	teams, count, ret := service.GetTeamRanking(db.DB, contest, form.Limit, form.Offset)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	contestFlagRepo := db.InitContestFlagRepo(db.DB)
@@ -70,7 +69,7 @@ func GetScoreboard(ctx *gin.Context) {
 		Preloads:   map[string]db.GetOptions{"ContestChallenge": {Preloads: map[string]db.GetOptions{"Challenge": {}}}},
 	})
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	contestChallengeRepo := db.InitContestChallengeRepo(db.DB)
@@ -79,7 +78,7 @@ func GetScoreboard(ctx *gin.Context) {
 		Preloads:   map[string]db.GetOptions{"Challenge": {}},
 	})
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	challengeMap := make(map[string]model.Challenge)
@@ -112,7 +111,7 @@ func GetScoreboard(ctx *gin.Context) {
 	}
 	teamFlags, ret := teamFlagRepo.GetTeamFlagsWithChallenge(teamIDL...)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	teamFlagsMap := make(map[uint][]db.TeamFlagWithChallenge)
@@ -130,14 +129,14 @@ func GetScoreboard(ctx *gin.Context) {
 		}
 	}
 	data := resp.GetScoreboardResp(challengeMap, globalMap, teamMap, teams)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(gin.H{"teams": data, "count": count}))
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"teams": data, "count": count}))
 }
 
 func GetRankTimeline(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
 	teams, _, ret := service.GetTeamRanking(db.DB, contest, 10, 0)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	teams = slices.DeleteFunc(teams, func(team model.Team) bool {
@@ -151,11 +150,11 @@ func GetRankTimeline(ctx *gin.Context) {
 			Conditions: map[string]any{"solved": true, "team_id": team.ID},
 		})
 		if !ret.OK {
-			ctx.JSON(http.StatusOK, ret)
+			resp.JSON(ctx, ret)
 			return
 		}
 		teams[i].Submissions = submissions
 	}
 	data := resp.GetRankTimelineResp(teams)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
+	resp.JSON(ctx, model.SuccessRetVal(data))
 }

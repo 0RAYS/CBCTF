@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-	"net/http"
 	"sort"
 
 	"github.com/gin-gonic/gin"
@@ -15,18 +14,18 @@ import (
 func GetTraffics(ctx *gin.Context) {
 	var form dto.GetTrafficForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	victim := middleware.GetVictim(ctx)
 	connections, ipL, totalDuration, ret := service.GetTraffic(victim, form)
 	if !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	sort.Strings(ipL)
 	data := resp.GetTrafficResp(connections)
 	data["ip"] = ipL
 	data["duration"] = totalDuration
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
+	resp.JSON(ctx, model.SuccessRetVal(data))
 }

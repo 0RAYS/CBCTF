@@ -8,8 +8,8 @@ import (
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
+	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-	"net/http"
 	"os"
 	"syscall"
 
@@ -59,7 +59,7 @@ func HomePage(ctx *gin.Context) {
 			"solved": user.Solved,
 		})
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
+	resp.JSON(ctx, model.SuccessRetVal(data))
 }
 
 func SystemStatus(ctx *gin.Context) {
@@ -93,17 +93,17 @@ func SystemStatus(ctx *gin.Context) {
 	middleware.MU.Unlock()
 
 	ret["cache"] = redis.Count()
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(ret))
+	resp.JSON(ctx, model.SuccessRetVal(ret))
 }
 
 func GetLogs(ctx *gin.Context) {
 	var form dto.ListModelsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	data, _ := redis.GetLogs(int64(form.Offset), int64(form.Offset+form.Limit))
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
+	resp.JSON(ctx, model.SuccessRetVal(data))
 }
 
 func SystemConfig(ctx *gin.Context) {
@@ -170,13 +170,13 @@ func SystemConfig(ctx *gin.Context) {
 
 		"geocity_db": config.Env.GeoCityDB,
 	}
-	ctx.JSON(http.StatusOK, model.SuccessRetVal(data))
+	resp.JSON(ctx, model.SuccessRetVal(data))
 }
 
 func UpdateSystem(ctx *gin.Context) {
 	var form dto.UpdateSettingForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateSettingEventType)
@@ -246,29 +246,29 @@ func UpdateSystem(ctx *gin.Context) {
 	repo := db.InitSettingRepo(db.DB)
 	for key, value := range kv {
 		if ret := repo.Update(key, db.UpdateSettingOptions{Value: &model.SettingValue{V: value}}); !ret.OK {
-			ctx.JSON(http.StatusOK, ret)
+			resp.JSON(ctx, ret)
 			return
 		}
 	}
 	// 读取数据库配置至内存并覆写配置文件
 	if ret := repo.ReadSettings(); !ret.OK {
-		ctx.JSON(http.StatusOK, ret)
+		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal())
+	resp.JSON(ctx, model.SuccessRetVal())
 }
 
 func RestartSystem(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.RestartSystemEventType)
 	proc, err := os.FindProcess(os.Getpid())
 	if err != nil {
-		ctx.JSON(http.StatusOK, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return
 	}
 	go func(proc *os.Process) {
 		_ = proc.Signal(syscall.SIGUSR1)
 	}(proc)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	ctx.JSON(http.StatusOK, model.SuccessRetVal())
+	resp.JSON(ctx, model.SuccessRetVal())
 }
