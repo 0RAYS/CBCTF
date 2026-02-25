@@ -112,7 +112,7 @@ function OAuthProvidersManagement() {
       user_info_url: provider.user_info_url,
       callback_url: provider.callback_url || '',
       client_id: provider.client_id,
-      client_secret: '',
+      client_secret: provider.client_secret,
       picture: provider.picture,
       picture_claim: provider.picture_claim,
       name_claim: provider.name_claim,
