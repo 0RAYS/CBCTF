@@ -4,9 +4,8 @@ import { getSmtpList, createSmtp, updateSmtp, deleteSmtp } from '../../api/admin
 import { getEmailHistory, getAllEmailHistory } from '../../api/admin/email';
 import AdminSmtp from '../../components/features/Admin/AdminSmtp';
 import AdminEmailHistory from '../../components/features/Admin/AdminEmailHistory';
-import { Modal } from '../../components/common';
+import { Input, Modal, Tabs } from '../../components/common';
 import ModalButton from '../../components/common/ModalButton';
-import Input from '../../components/common/Input';
 import { useTranslation } from 'react-i18next';
 
 function SmtpManagement() {
@@ -350,34 +349,22 @@ function SmtpManagement() {
   return (
     <>
       {/* 标签页切换 */}
-      <div className="w-full mx-auto mb-6">
-        <div className="flex border-b border-neutral-700">
-          <button
-            className={`px-6 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'smtp'
-                ? 'text-blue-400 border-b-2 border-blue-400'
-                : 'text-neutral-400 hover:text-neutral-300'
-            }`}
-            onClick={() => setActiveTab('smtp')}
-          >
-            {t('admin.smtp.tabs.config')}
-          </button>
-          <button
-            className={`px-6 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'history'
-                ? 'text-blue-400 border-b-2 border-blue-400'
-                : 'text-neutral-400 hover:text-neutral-300'
-            }`}
-            onClick={() => {
-              setSelectedSmtp(null);
-              setActiveTab('history');
-              setEmailCurrentPage(1);
-            }}
-          >
-            {t('admin.smtp.tabs.history')}
-          </button>
-        </div>
-      </div>
+      <Tabs
+        value={activeTab}
+        onChange={(next) => {
+          if (next === 'smtp') {
+            setActiveTab('smtp');
+            return;
+          }
+          setSelectedSmtp(null);
+          setActiveTab('history');
+          setEmailCurrentPage(1);
+        }}
+        items={[
+          { key: 'smtp', label: t('admin.smtp.tabs.config') },
+          { key: 'history', label: t('admin.smtp.tabs.history') },
+        ]}
+      />
 
       {/* SMTP配置管理 */}
       {activeTab === 'smtp' && (

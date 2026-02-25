@@ -33,9 +33,4 @@ export const setLanguage = (lng) => {
   }
 };
 
-export const languageOptions = [
-  { value: 'en', label: 'EN' },
-  { value: 'zh-CN', label: '中文' },
-];
-
 export default i18n;

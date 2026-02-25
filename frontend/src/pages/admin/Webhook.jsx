@@ -12,10 +12,8 @@ import {
 } from '../../api/admin/webhook';
 import AdminWebhook from '../../components/features/Admin/AdminWebhook';
 import AdminWebhookHistory from '../../components/features/Admin/AdminWebhookHistory';
-import { Modal } from '../../components/common';
+import { Button, Input, Modal, Tabs } from '../../components/common';
 import ModalButton from '../../components/common/ModalButton';
-import { Button } from '../../components/common/index.js';
-import Input from '../../components/common/Input';
 import { useTranslation } from 'react-i18next';
 
 function WebhookManagement() {
@@ -592,30 +590,20 @@ function WebhookManagement() {
   return (
     <>
       {/* 标签页切换 */}
-      <div className="w-full mx-auto mb-6">
-        <div className="flex border-b border-neutral-700">
-          <button
-            className={`px-6 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'webhook'
-                ? 'text-blue-400 border-b-2 border-blue-400'
-                : 'text-neutral-400 hover:text-neutral-300'
-            }`}
-            onClick={() => setActiveTab('webhook')}
-          >
-            {t('admin.webhook.tabs.webhook')}
-          </button>
-          <button
-            className={`px-6 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'history'
-                ? 'text-blue-400 border-b-2 border-blue-400'
-                : 'text-neutral-400 hover:text-neutral-300'
-            }`}
-            onClick={handleViewAllHistory}
-          >
-            {t('admin.webhook.tabs.history')}
-          </button>
-        </div>
-      </div>
+      <Tabs
+        value={activeTab}
+        onChange={(next) => {
+          if (next === 'webhook') {
+            setActiveTab('webhook');
+            return;
+          }
+          handleViewAllHistory();
+        }}
+        items={[
+          { key: 'webhook', label: t('admin.webhook.tabs.webhook') },
+          { key: 'history', label: t('admin.webhook.tabs.history') },
+        ]}
+      />
 
       {/* Webhook配置管理 */}
       {activeTab === 'webhook' && (

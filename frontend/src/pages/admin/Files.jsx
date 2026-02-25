@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { toast } from '../../utils/toast';
-import { downloadBlobResponse } from '../../utils/index.js';
+import { downloadBlobResponse } from '../../utils/fileDownload';
 import AdminFiles from '../../components/features/Admin/AdminFiles';
 import { Modal } from '../../components/common';
 import ModalButton from '../../components/common/ModalButton';

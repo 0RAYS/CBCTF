@@ -1,30 +1,5 @@
 import request from '../request';
 
-// 获取队伍信息（检查是否已加入）
-// 请求示例响应:
-// {
-//    "code": 200,
-//    "msg": "Success",
-//    "data": {
-//        "picture": "https://test.jbnrz.com.cn/picture/6592c0ad-f64f-4281-a1b4-a5c20f2f13fa",
-//        "banned": false,
-//        "captain_id": 13,
-//        "contest_id": 11,
-//        "description": "testsetsetsetset",
-//        "hidden": false,
-//        "id": 10,
-//        "name": "0RAYS",
-//        "users": 1
-//    },
-//    "trace": "e0311e5b-a0c7-477b-8fdc-768eda1c1ee9"
-// }
-export const checkTeamStatus = (contestId) => {
-  return request({
-    url: `/contests/${contestId}/teams/me`,
-    method: 'GET',
-  });
-};
-
 // 上传队伍头像
 // 请求参数: FormData，包含picture字段
 // 响应示例:
@@ -62,14 +37,6 @@ export const kickTeamMember = (contestId, userId) => {
     data: {
       user_id: userId,
     },
-  });
-};
-
-// 退出队伍
-export const leaveTeam = (contestId) => {
-  return request({
-    url: `/contests/${contestId}/teams/me/leave`,
-    method: 'POST',
   });
 };
 

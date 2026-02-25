@@ -33,38 +33,6 @@ export const restartSystem = () => {
   });
 };
 
-// 更新管理员密码
-export const updateAdminPassword = (data) => {
-  return request({
-    url: '/me/password',
-    method: 'PUT',
-    data,
-  });
-};
-
-// 更新管理员信息
-export const updateAdminInfo = (data) => {
-  return request({
-    url: '/me',
-    method: 'PUT',
-    data,
-  });
-};
-
-// 更新管理员头像
-export const updateAdminPicture = (file) => {
-  const formData = new FormData();
-  formData.append('picture', file);
-  return request({
-    url: '/me/picture',
-    method: 'POST',
-    data: formData,
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
-};
-
 // 获取系统运行日志（带颜色的ANSI文本数组）
 // 支持分页参数：limit，offset
 export const getSystemLogs = (params = { limit: 100, offset: 0 }) => {
