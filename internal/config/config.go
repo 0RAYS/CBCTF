@@ -58,6 +58,9 @@ type Config struct {
 			Secret string `mapstructure:"secret" json:"secret"`
 			Static bool   `mapstructure:"static" json:"static"`
 		} `mapstructure:"jwt" json:"jwt"`
+		Metrics struct {
+			Whitelist []string `mapstructure:"whitelist" json:"whitelist"` // Metrics 访问 IP 白名单
+		} `mapstructure:"metrics" json:"metrics"`
 	} `mapstructure:"gin" json:"gin"`
 	Gorm struct {
 		MySQL struct {

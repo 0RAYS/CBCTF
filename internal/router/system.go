@@ -128,6 +128,7 @@ func SystemConfig(ctx *gin.Context) {
 		"gin_log_whitelist":       config.Env.Gin.Log.Whitelist,
 		"gin_jwt_secret":          "******",
 		"gin_jwt_static":          config.Env.Gin.JWT.Static,
+		"gin_metrics_whitelist":   config.Env.Gin.Metrics.Whitelist,
 
 		"gorm_mysql_host":   config.Env.Gorm.MySQL.Host,
 		"gorm_mysql_port":   config.Env.Gorm.MySQL.Port,
@@ -201,6 +202,7 @@ func UpdateSystem(ctx *gin.Context) {
 		model.GinLogWhitelistSettingKey:       form.GinLogWhitelist,
 		model.GinJWTSecretSettingKey:          form.GinJWTSecret,
 		model.GinJWTStaticSettingKey:          form.GinJWTStatic,
+		model.GinMetricsWhitelistSettingKey:   form.GinMetricsWhitelist,
 
 		model.GormMySQLHostSettingKey:   form.GormMySQLHost,
 		model.GormMySQLPortSettingKey:   form.GormMySQLPort,

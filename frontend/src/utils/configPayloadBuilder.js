@@ -8,6 +8,7 @@ export function buildPayload(config) {
     asyncq_concurrency: config.asyncq.concurrency,
     asyncq_log_level: config.asyncq.log.level,
     cheat_ip_whitelist: config.cheat.ip_whitelist,
+    gin_metrics_whitelist: config.gin.metrics.whitelist,
     geocity_db: config.geocity_db,
     gin_cors: config.gin.cors,
     gin_host: config.gin.host,

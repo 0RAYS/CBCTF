@@ -28,6 +28,7 @@ const (
 	GinLogWhitelistSettingKey       = "gin.log.whitelist"
 	GinJWTSecretSettingKey          = "gin.jwt.secret"
 	GinJWTStaticSettingKey          = "gin.jwt.static"
+	GinMetricsWhitelistSettingKey   = "gin.metrics.whitelist"
 
 	GormMySQLHostSettingKey   = "gorm.mysql.host"
 	GormMySQLPortSettingKey   = "gorm.mysql.port"
