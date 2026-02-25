@@ -33,12 +33,6 @@ func GetContests(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, ret)
 		return
 	}
-	if _, ok := ctx.GetQuery("limit"); !ok {
-		form.Limit = 5
-	}
-	if _, ok := ctx.GetQuery("offset"); !ok {
-		form.Offset = 0
-	}
 	options := db.GetOptions{}
 	if !middleware.IsFullAccess(ctx) {
 		options.Conditions = map[string]any{"hidden": false}
