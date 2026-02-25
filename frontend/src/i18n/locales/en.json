@@ -115,8 +115,8 @@
         "uplink": "Uplink",
         "totalTraffic": "Total Traffic",
         "cacheSize": "Cache Size",
-        "cacheHit": "Cache Hits",
-        "cacheRate": "Cache Hit Rate"
+        "victims": "Victims",
+        "submissions": "Submissions"
       },
       "chart": {
         "cpu": "CPU Usage (%)",
