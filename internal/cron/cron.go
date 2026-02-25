@@ -46,7 +46,6 @@ func Start() {
 	checkCheat(c)
 	clearCheatMutex(c)
 	clearJoinTeamMutes(c)
-	updateJWTSecret(c)
 	c.Start()
 }
 
