@@ -167,6 +167,25 @@ export function GinConfigSection({ config, updateConfig }) {
           })
         }
       />
+      <ConfigListField
+        label={t('admin.system.labels.metricsWhitelist')}
+        items={config.gin.metrics.whitelist || []}
+        onAdd={() =>
+          updateConfig((draft) => {
+            draft.gin.metrics.whitelist.push('');
+          })
+        }
+        onUpdate={(index, value) =>
+          updateConfig((draft) => {
+            draft.gin.metrics.whitelist[index] = value;
+          })
+        }
+        onRemove={(index) =>
+          updateConfig((draft) => {
+            draft.gin.metrics.whitelist.splice(index, 1);
+          })
+        }
+      />
     </ConfigSection>
   );
 }
