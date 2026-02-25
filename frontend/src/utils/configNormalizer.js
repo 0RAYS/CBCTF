@@ -108,7 +108,7 @@ export function normalizeConfig(source) {
       ip_whitelist: fallback(source?.cheat_ip_whitelist, fallback(source?.cheat?.ip_whitelist, [])),
     },
     webhook: {
-      blacklist: fallback(source?.webhook_blacklist, fallback(source?.webhook?.blacklist, [])),
+      whitelist: fallback(source?.webhook_whitelist, fallback(source?.webhook?.whitelist, [])),
     },
     registration: {
       enabled: fallback(source?.registration_enabled, fallback(source?.registration?.enabled, true)),

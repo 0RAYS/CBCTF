@@ -1723,7 +1723,7 @@
         "nfsPath": "Storage Path",
         "nfsStorage": "Storage Size",
         "cheatIpWhitelist": "Cheat Filter IP Whitelist",
-        "webhookBlacklist": "Webhook Target Blacklist (IP / CIDR / Hostname)",
+        "webhookWhitelist": "Webhook Target Whitelist (IP / CIDR / Hostname)",
         "registrationEnabled": "Allow Registration",
         "registrationDefaultGroup": "Default Group for New Users",
         "registrationDefaultGroupNone": "None"
