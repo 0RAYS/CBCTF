@@ -121,7 +121,7 @@ type Config struct {
 
 var Env *Config
 
-//go:embed default.yml
+//go:embed default.yaml
 var defaultConf []byte
 
 // Init 初始化配置
@@ -134,10 +134,10 @@ func Init() {
 	viper.AutomaticEnv()
 	if err := viper.ReadInConfig(); err != nil {
 		if errors.As(err, &viper.ConfigFileNotFoundError{}) {
-			if err := os.WriteFile("./config.yml", defaultConf, 0600); err != nil {
+			if err := os.WriteFile("./config.yaml", defaultConf, 0600); err != nil {
 				log.Panicf("Failed to init config: %s", err)
 			}
-			log.Fatalf("Please configure the config.yml file and restart the program")
+			log.Fatalf("Please configure the config.yaml file and restart the program")
 		}
 	}
 	if err := viper.Unmarshal(&Env); err != nil {
@@ -153,7 +153,7 @@ func Tidy() {
 	Env.NFS.Path = strings.TrimSuffix(Env.NFS.Path, "/")
 }
 
-// Save writes the current Env to config.yml.
+// Save writes the current Env to config.yaml.
 // It preserves formatting only by overwriting the whole file.
 func Save() error {
 	if Env == nil {
@@ -189,7 +189,7 @@ func Save() error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile("./config.yml", bytes, 0600)
+	return os.WriteFile("./config.yaml", bytes, 0600)
 }
 
 func mergeYAMLNode(node *yaml.Node, data any) error {

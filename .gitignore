@@ -6,7 +6,7 @@ logs
 uploads
 frontend/dist/*
 !frontend/dist/.gitkeep
-config.yml
+config.yaml
 resources.yaml
 build.bat
 CBCTF
@@ -19,7 +19,7 @@ AGENTS.md
 /.claude
 /admin.yaml
 /build.sh
-/docker-compose.yml
+/docker-compose.yaml
 
 # Binaries for programs and plugins
 *.exe
