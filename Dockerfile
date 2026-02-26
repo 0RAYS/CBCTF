@@ -13,7 +13,7 @@ RUN pnpm run build
 FROM golang:1.26-alpine AS backend-builder
 WORKDIR /app
 
-RUN apk add --no-cache libpcap
+RUN apk add --no-cache libpcap gcc
 
 COPY go.mod go.sum ./
 RUN go mod download
