@@ -34,11 +34,6 @@ func checkExternalNetwork(ctx context.Context) {
 }
 
 func checkNFSVolume(ctx context.Context) {
-	if _, ret := GetPV(ctx, nfsVolumeName); !ret.OK {
-		log.Logger.Warningf("PersistentVolume %q not found: %s", nfsVolumeName, ret.Msg)
-		log.Logger.Warningf("Dynamic attachments will not be generated correctly")
-	}
-
 	if _, ret := GetPVC(ctx, nfsVolumeName); !ret.OK {
 		log.Logger.Warningf("PersistentVolumeClaim %q not found: %s", nfsVolumeName, ret.Msg)
 		log.Logger.Warningf("Dynamic attachments will not be generated correctly")
