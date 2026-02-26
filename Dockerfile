@@ -24,11 +24,11 @@ COPY --from=frontend-builder /app/dist ./frontend/dist
 RUN CGO_ENABLED=1 go build -ldflags="-linkmode external -extldflags '-static' -s -w" -trimpath -o CBCTF .
 
 
-FROM alpine:latest
+FROM scratch
 WORKDIR /app
 
 COPY --from=backend-builder /app/CBCTF .
-RUN chmod +x /app/CBCTF
+COPY --from=backend-builder /app/internal/config/default.yaml ./config.yaml
 
 EXPOSE 8000
 
