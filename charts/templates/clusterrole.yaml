@@ -1,0 +1,79 @@
+{{- if .Values.serviceAccount.create -}}
+---
+# ClusterRole: permissions the CBCTF app needs to manage CTF challenge pods
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "cbctf.fullname" . }}
+  labels:
+    {{- include "cbctf.labels" . | nindent 4 }}
+rules:
+  # ── Namespace-scoped resources (in the challenge namespace) ──────────────
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["create", "get", "list", "watch", "delete"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["create", "get", "list", "watch", "delete"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["create", "get", "list", "delete"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["create", "get", "list", "delete"]
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get", "list", "watch"]
+
+  # ── Cluster-scoped resources ─────────────────────────────────────────────
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["create", "get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["list", "get"]
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["create", "get", "list"]
+
+  # ── NetworkPolicy ────────────────────────────────────────────────────────
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["networkpolicies"]
+    verbs: ["create", "get", "list", "delete"]
+
+  # ── EndpointSlices ───────────────────────────────────────────────────────
+  - apiGroups: ["discovery.k8s.io"]
+    resources: ["endpointslices"]
+    verbs: ["create", "get", "list", "delete"]
+
+  # ── Permission self-check ────────────────────────────────────────────────
+  - apiGroups: ["authorization.k8s.io"]
+    resources: ["selfsubjectaccessreviews"]
+    verbs: ["create"]
+
+{{- if .Values.cbctf.k8s.multusRBAC }}
+  # ── Multus CNI (NetworkAttachmentDefinitions) ────────────────────────────
+  - apiGroups: ["k8s.cni.cncf.io"]
+    resources: ["network-attachment-definitions"]
+    verbs: ["create", "get", "list", "delete"]
+{{- end }}
+
+{{- if .Values.cbctf.k8s.kubeovnRBAC }}
+  # ── KubeOVN resources (VPC networking mode) ──────────────────────────────
+  - apiGroups: ["kubeovn.io"]
+    resources: ["subnets", "vpcs"]
+    verbs: ["create", "get", "list", "delete"]
+  - apiGroups: ["kubeovn.io"]
+    resources: ["ips"]
+    verbs: ["delete"]
+  - apiGroups: ["kubeovn.io"]
+    resources: ["iptables-eips", "iptables-dnat-rules", "iptables-snat-rules", "vpc-nat-gateways"]
+    verbs: ["create", "get", "list", "delete"]
+{{- end }}
+{{- end }}
