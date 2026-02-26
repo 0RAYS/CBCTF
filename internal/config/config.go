@@ -120,28 +120,29 @@ type Config struct {
 }
 
 var Env *Config
+var configFile string
 
 //go:embed default.yaml
 var defaultConf []byte
 
-// Init 初始化配置
-func Init() {
-	viper.SetConfigType("yaml")
-	viper.SetConfigName("config")
-	viper.AddConfigPath(".")
+// Init 初始化配置，path 为配置文件路径
+func Init(path string) {
+	configFile = path
+	viper.SetConfigFile(path)
 	viper.SetEnvPrefix("CBCTF")
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
 	if err := viper.ReadInConfig(); err != nil {
-		if errors.As(err, &viper.ConfigFileNotFoundError{}) {
-			if err := os.WriteFile("./config.yaml", defaultConf, 0600); err != nil {
-				log.Panicf("Failed to init config: %s", err)
+		if errors.Is(err, os.ErrNotExist) || errors.As(err, &viper.ConfigFileNotFoundError{}) {
+			if err := os.WriteFile(path, defaultConf, 0600); err != nil {
+				log.Fatalf("Failed to init config: %s", err)
 			}
-			log.Fatalf("Please configure the config.yaml file and restart the program")
+			log.Fatalf("Config created at %s, please edit and restart", path)
 		}
+		log.Fatalf("Failed to read config: %s", err)
 	}
 	if err := viper.Unmarshal(&Env); err != nil {
-		log.Panicf("error unmarshalling config: %s", err)
+		log.Fatalf("error unmarshalling config: %s", err)
 	}
 	Tidy()
 }
@@ -189,7 +190,7 @@ func Save() error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile("./config.yaml", bytes, 0600)
+	return os.WriteFile(configFile, bytes, 0600)
 }
 
 func mergeYAMLNode(node *yaml.Node, data any) error {

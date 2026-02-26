@@ -83,7 +83,7 @@ func reboot() {
 	stop()
 	time.Sleep(time.Second)
 	i18n.Init()
-	config.Init()
+	config.Init(configPath)
 	log.Init()
 	run()
 }
