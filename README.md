@@ -131,7 +131,6 @@ go build -ldflags="-s -w" -trimpath
 | `gorm.mysql` | MySQL 连接配置、连接池参数                      |
 | `redis`      | Redis 连接配置                            |
 | `k8s`        | Kubeconfig 路径、命名空间、外部网络 CIDR、Frp 配置   |
-| `nfs`        | NFS 服务器地址、挂载路径、存储容量                   |
 | `cheat`      | 作弊检测 IP 白名单                           |
 | `webhook`    | Webhook 目标地址黑名单                       |
 | `asynq`      | 异步任务并发数                               |

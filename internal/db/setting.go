@@ -130,10 +130,6 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 		{Key: model.K8SFrpFrpsSettingKey, Value: model.SettingValue{V: config.Env.K8S.Frp.Frps}},
 		{Key: model.K8SGeneratorWorkerSettingKey, Value: model.SettingValue{V: config.Env.K8S.GeneratorWorker}},
 
-		{Key: model.NFSServerSettingKey, Value: model.SettingValue{V: config.Env.NFS.Server}},
-		{Key: model.NFSPathSettingKey, Value: model.SettingValue{V: config.Env.NFS.Path}},
-		{Key: model.NFSStorageSettingKey, Value: model.SettingValue{V: config.Env.NFS.Storage}},
-
 		{Key: model.CheatIPWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Cheat.IP.Whitelist}},
 
 		{Key: model.WebhookWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Webhook.Whitelist}},
@@ -283,16 +279,6 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 		return ret
 	}
 	if config.Env.K8S.GeneratorWorker, ret = GetValue[int](s, model.K8SGeneratorWorkerSettingKey); !ret.OK {
-		return ret
-	}
-
-	if config.Env.NFS.Server, ret = GetValue[string](s, model.NFSServerSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.NFS.Path, ret = GetValue[string](s, model.NFSPathSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.NFS.Storage, ret = GetValue[string](s, model.NFSStorageSettingKey); !ret.OK {
 		return ret
 	}
 

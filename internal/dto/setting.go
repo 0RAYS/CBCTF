@@ -55,10 +55,6 @@ type UpdateSettingForm struct {
 
 	K8SGeneratorWorker *int `form:"k8s_generator_worker" json:"k8s_generator_worker" binding:"omitempty,gte=1"`
 
-	NFSServer  *string `form:"nfs_server" json:"nfs_server" binding:"omitempty,ip|hostname"`
-	NFSPath    *string `form:"nfs_path" json:"nfs_path" binding:"omitempty,dirpath|filepath"`
-	NFSStorage *string `form:"nfs_storage" json:"nfs_storage"`
-
 	CheatIPWhitelist *[]string `form:"cheat_ip_whitelist" json:"cheat_ip_whitelist" binding:"omitempty,dive,ip|cidr"`
 
 	WebhookWhitelist *[]string `form:"webhook_whitelist" json:"webhook_whitelist" binding:"omitempty,dive,ip|cidr|hostname|hostname_port"`

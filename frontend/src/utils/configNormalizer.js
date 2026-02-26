@@ -102,11 +102,6 @@ export function normalizeConfig(source) {
         frps: fallback(source?.k8s_frp_frps, fallback(source?.k8s?.frp?.frps, [])),
       },
     },
-    nfs: {
-      server: fallback(source?.nfs_server, fallback(source?.nfs?.server, '')),
-      path: fallback(source?.nfs_path, fallback(source?.nfs?.path, '')),
-      storage: fallback(source?.nfs_storage, fallback(source?.nfs?.storage, '')),
-    },
     cheat: {
       ip_whitelist: fallback(source?.cheat_ip_whitelist, fallback(source?.cheat?.ip_whitelist, [])),
     },

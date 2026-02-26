@@ -6,7 +6,6 @@ import { GinConfigSection } from './sections/GinConfigSection';
 import { DatabaseConfigSection } from './sections/DatabaseConfigSection';
 import { RedisConfigSection } from './sections/RedisConfigSection';
 import { K8sConfigSection } from './sections/K8sConfigSection';
-import { NFSConfigSection } from './sections/NFSConfigSection';
 import { CheatConfigSection } from './sections/CheatConfigSection';
 import { WebhookConfigSection } from './sections/WebhookConfigSection.jsx';
 import { RegistrationConfigSection } from './sections/RegistrationConfigSection';
@@ -17,7 +16,6 @@ const tabs = [
   { key: 'database', i18nKey: 'admin.system.sections.database', Component: DatabaseConfigSection },
   { key: 'redis', i18nKey: 'admin.system.sections.redis', Component: RedisConfigSection },
   { key: 'k8s', i18nKey: 'admin.system.sections.k8s', Component: K8sConfigSection },
-  { key: 'nfs', i18nKey: 'admin.system.sections.nfs', Component: NFSConfigSection },
   { key: 'webhook', i18nKey: 'admin.system.sections.webhook', Component: WebhookConfigSection },
   { key: 'cheat', i18nKey: 'admin.system.sections.cheat', Component: CheatConfigSection },
   { key: 'registration', i18nKey: 'admin.system.sections.registration', Component: RegistrationConfigSection },

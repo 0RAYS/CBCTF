@@ -95,12 +95,6 @@ k8s:
               - 50000
   # (len(nodes) * generator_worker) pods for each dynamic challenge
   generator_worker: 2
-nfs:
-  server: 127.0.0.1
-  # Accessible path (RW) in NFS server
-  path: /mnt/data
-  # Gi, Mi
-  storage: 10Gi
 cheat:
   ip:
     whitelist:
