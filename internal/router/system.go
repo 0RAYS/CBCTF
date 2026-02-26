@@ -143,13 +143,9 @@ func SystemConfig(ctx *gin.Context) {
 		"redis_port": config.Env.Redis.Port,
 		"redis_pwd":  "******",
 
-		"k8s_config":                       config.Env.K8S.Config,
-		"k8s_namespace":                    config.Env.K8S.Namespace,
-		"k8s_external_network_cidr":        config.Env.K8S.ExternalNetwork.CIDR,
-		"k8s_external_network_gateway":     config.Env.K8S.ExternalNetwork.Gateway,
-		"k8s_external_network_interface":   config.Env.K8S.ExternalNetwork.Interface,
-		"k8s_external_network_exclude_ips": config.Env.K8S.ExternalNetwork.ExcludeIPs,
-		"k8s_tcpdump":                      config.Env.K8S.TCPDumpImage,
+		"k8s_config":    config.Env.K8S.Config,
+		"k8s_namespace": config.Env.K8S.Namespace,
+		"k8s_tcpdump":   config.Env.K8S.TCPDumpImage,
 
 		"k8s_frp_on":    config.Env.K8S.Frp.On,
 		"k8s_frp_frpc":  config.Env.K8S.Frp.FrpcImage,
@@ -213,19 +209,13 @@ func UpdateSystem(ctx *gin.Context) {
 		model.RedisPortSettingKey: form.RedisPort,
 		model.RedisPwdSettingKey:  form.RedisPwd,
 
-		model.K8SConfigSettingKey:                    form.K8SConfig,
-		model.K8SNamespaceSettingKey:                 form.K8SNamespace,
-		model.K8SExternalNetworkCIDRSettingKey:       form.K8SExternalNetworkCIDR,
-		model.K8SExternalNetworkGatewaySettingKey:    form.K8SExternalNetworkGateway,
-		model.K8SExternalNetworkInterfaceSettingKey:  form.K8SExternalNetworkInterface,
-		model.K8SExternalNetworkExcludeIPsSettingKey: form.K8SExternalNetworkExcludeIPs,
-		model.K8STCPDumpImageSettingKey:              form.K8STCPDumpImage,
-
-		model.K8SFrpOnSettingKey:         form.K8SFrpOn,
-		model.K8SFrpFrpcImageSettingKey:  form.K8SFrpFrpcImage,
-		model.K8SFrpNginxImageSettingKey: form.K8SFrpNginxImage,
-		model.K8SFrpFrpsSettingKey:       form.K8SFrpFrps,
-
+		model.K8SConfigSettingKey:          form.K8SConfig,
+		model.K8SNamespaceSettingKey:       form.K8SNamespace,
+		model.K8STCPDumpImageSettingKey:    form.K8STCPDumpImage,
+		model.K8SFrpOnSettingKey:           form.K8SFrpOn,
+		model.K8SFrpFrpcImageSettingKey:    form.K8SFrpFrpcImage,
+		model.K8SFrpNginxImageSettingKey:   form.K8SFrpNginxImage,
+		model.K8SFrpFrpsSettingKey:         form.K8SFrpFrps,
 		model.K8SGeneratorWorkerSettingKey: form.K8SGeneratorWorker,
 
 		model.CheatIPWhitelistSettingKey: form.CheatIPWhitelist,

@@ -1726,10 +1726,6 @@
         "registrationDefaultGroupNone": "None"
       },
       "k8s": {
-        "cidr": "CIDR",
-        "gateway": "Gateway",
-        "interface": "Interface",
-        "excludeIps": "Exclude IPs",
         "frp": "Frp",
         "nginx": "Nginx",
         "enabled": "Enabled",
