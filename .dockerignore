@@ -3,7 +3,7 @@ frontend/dist/*
 !frontend/dist/.gitkeep
 frontend/node_modules/
 
-config.yml
+config.yaml
 admin.yaml
 data/
 uploads/
