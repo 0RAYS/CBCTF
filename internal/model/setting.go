@@ -56,10 +56,6 @@ const (
 	K8SFrpFrpsSettingKey                   = "k8s.frp.frps"
 	K8SGeneratorWorkerSettingKey           = "k8s.generator_worker"
 
-	NFSServerSettingKey  = "nfs.server"
-	NFSPathSettingKey    = "nfs.path"
-	NFSStorageSettingKey = "nfs.storage"
-
 	CheatIPWhitelistSettingKey = "cheat.ip.whitelist"
 
 	WebhookWhitelistSettingKey = "webhook.whitelist"

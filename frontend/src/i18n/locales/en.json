@@ -1671,7 +1671,6 @@
         "database": "Database Settings",
         "redis": "Redis Settings",
         "k8s": "Kubernetes Settings",
-        "nfs": "NFS Settings",
         "cheat": "Risk Control",
         "webhook": "Webhook Settings",
         "registration": "Registration"
@@ -1719,9 +1718,6 @@
         "frpsHostname": "Hostname",
         "frpsPort": "Port",
         "frpsToken": "Auth Token",
-        "nfsServer": "Server",
-        "nfsPath": "Storage Path",
-        "nfsStorage": "Storage Size",
         "cheatIpWhitelist": "Cheat Filter IP Whitelist",
         "metricsWhitelist": "Metrics Access IP Whitelist (IP / CIDR)",
         "webhookWhitelist": "Webhook Target Whitelist (IP / CIDR / Hostname)",

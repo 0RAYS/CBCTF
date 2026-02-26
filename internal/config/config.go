@@ -99,11 +99,6 @@ type Config struct {
 		} `mapstructure:"frp" json:"frp"`
 		GeneratorWorker int `mapstructure:"generator_worker" json:"generator_worker"`
 	} `mapstructure:"k8s" json:"k8s"`
-	NFS struct {
-		Server  string `mapstructure:"server" json:"server"`
-		Path    string `mapstructure:"path" json:"path"`
-		Storage string `mapstructure:"storage" json:"storage"`
-	} `mapstructure:"nfs" json:"nfs"`
 	Cheat struct {
 		IP struct {
 			Whitelist []string `mapstructure:"whitelist" json:"whitelist"`
@@ -151,7 +146,6 @@ func Init(path string) {
 func Tidy() {
 	Env.Host = strings.TrimSuffix(Env.Host, "/")
 	Env.Path = strings.TrimSuffix(Env.Path, "/")
-	Env.NFS.Path = strings.TrimSuffix(Env.NFS.Path, "/")
 }
 
 // Save writes the current Env to config.yaml.

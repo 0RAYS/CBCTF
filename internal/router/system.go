@@ -158,10 +158,6 @@ func SystemConfig(ctx *gin.Context) {
 
 		"k8s_generator_worker": config.Env.K8S.GeneratorWorker,
 
-		"nfs_server":  config.Env.NFS.Server,
-		"nfs_path":    config.Env.NFS.Path,
-		"nfs_storage": config.Env.NFS.Storage,
-
 		"cheat_ip_whitelist": config.Env.Cheat.IP.Whitelist,
 
 		"webhook_whitelist": config.Env.Webhook.Whitelist,
@@ -231,10 +227,6 @@ func UpdateSystem(ctx *gin.Context) {
 		model.K8SFrpFrpsSettingKey:       form.K8SFrpFrps,
 
 		model.K8SGeneratorWorkerSettingKey: form.K8SGeneratorWorker,
-
-		model.NFSServerSettingKey:  form.NFSServer,
-		model.NFSPathSettingKey:    form.NFSPath,
-		model.NFSStorageSettingKey: form.NFSStorage,
 
 		model.CheatIPWhitelistSettingKey: form.CheatIPWhitelist,
 

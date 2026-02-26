@@ -1670,7 +1670,6 @@
         "database": "数据库配置",
         "redis": "Redis配置",
         "k8s": "Kubernetes配置",
-        "nfs": "NFS配置",
         "cheat": "风控配置",
         "webhook": "Webhook配置",
         "registration": "注册配置"
@@ -1718,9 +1717,6 @@
         "frpsHostname": "远程地址",
         "frpsPort": "端口",
         "frpsToken": "连接 Token",
-        "nfsServer": "服务器地址",
-        "nfsPath": "存储路径",
-        "nfsStorage": "存储大小",
         "cheatIpWhitelist": "作弊检测过滤 IP",
         "metricsWhitelist": "Metrics 访问 IP 白名单 (IP / CIDR)",
         "webhookWhitelist": "Webhook 白名单 (IP / CIDR / Hostname)",
