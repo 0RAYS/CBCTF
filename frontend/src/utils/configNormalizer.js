@@ -83,18 +83,6 @@ export function normalizeConfig(source) {
       namespace: fallback(source?.k8s_namespace, fallback(source?.k8s?.namespace, '')),
       tcpdump: fallback(source?.k8s_tcpdump, fallback(source?.k8s?.tcpdump, '')),
       generator_worker: fallback(source?.k8s_generator_worker, fallback(source?.k8s?.generator_worker, 0)),
-      external_network: {
-        cidr: fallback(source?.k8s_external_network_cidr, fallback(source?.k8s?.external_network?.cidr, '')),
-        gateway: fallback(source?.k8s_external_network_gateway, fallback(source?.k8s?.external_network?.gateway, '')),
-        interface: fallback(
-          source?.k8s_external_network_interface,
-          fallback(source?.k8s?.external_network?.interface, '')
-        ),
-        exclude_ips: fallback(
-          source?.k8s_external_network_exclude_ips,
-          fallback(source?.k8s?.external_network?.exclude_ips, [])
-        ),
-      },
       frp: {
         frpc: fallback(source?.k8s_frp_frpc, fallback(source?.k8s?.frp?.frpc, '')),
         nginx: fallback(source?.k8s_frp_nginx, fallback(source?.k8s?.frp?.nginx, '')),

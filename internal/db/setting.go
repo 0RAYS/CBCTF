@@ -119,10 +119,6 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 
 		{Key: model.K8SConfigSettingKey, Value: model.SettingValue{V: config.Env.K8S.Config}},
 		{Key: model.K8SNamespaceSettingKey, Value: model.SettingValue{V: config.Env.K8S.Namespace}},
-		{Key: model.K8SExternalNetworkCIDRSettingKey, Value: model.SettingValue{V: config.Env.K8S.ExternalNetwork.CIDR}},
-		{Key: model.K8SExternalNetworkGatewaySettingKey, Value: model.SettingValue{V: config.Env.K8S.ExternalNetwork.Gateway}},
-		{Key: model.K8SExternalNetworkInterfaceSettingKey, Value: model.SettingValue{V: config.Env.K8S.ExternalNetwork.Interface}},
-		{Key: model.K8SExternalNetworkExcludeIPsSettingKey, Value: model.SettingValue{V: config.Env.K8S.ExternalNetwork.ExcludeIPs}},
 		{Key: model.K8STCPDumpImageSettingKey, Value: model.SettingValue{V: config.Env.K8S.TCPDumpImage}},
 		{Key: model.K8SFrpOnSettingKey, Value: model.SettingValue{V: config.Env.K8S.Frp.On}},
 		{Key: model.K8SFrpFrpcImageSettingKey, Value: model.SettingValue{V: config.Env.K8S.Frp.FrpcImage}},
@@ -249,18 +245,6 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 		return ret
 	}
 	if config.Env.K8S.Namespace, ret = GetValue[string](s, model.K8SNamespaceSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.K8S.ExternalNetwork.CIDR, ret = GetValue[string](s, model.K8SExternalNetworkCIDRSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.K8S.ExternalNetwork.Gateway, ret = GetValue[string](s, model.K8SExternalNetworkGatewaySettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.K8S.ExternalNetwork.Interface, ret = GetValue[string](s, model.K8SExternalNetworkInterfaceSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.K8S.ExternalNetwork.ExcludeIPs, ret = GetValue[[]string](s, model.K8SExternalNetworkExcludeIPsSettingKey); !ret.OK {
 		return ret
 	}
 	if config.Env.K8S.TCPDumpImage, ret = GetValue[string](s, model.K8STCPDumpImageSettingKey); !ret.OK {

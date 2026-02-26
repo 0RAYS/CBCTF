@@ -1725,10 +1725,6 @@
         "registrationDefaultGroupNone": "无"
       },
       "k8s": {
-        "cidr": "CIDR",
-        "gateway": "网关",
-        "interface": "网卡",
-        "excludeIps": "排除IP",
         "frp": "Frp",
         "nginx": "Nginx",
         "enabled": "启用",

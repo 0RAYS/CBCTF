@@ -64,15 +64,6 @@ k8s:
   config: ./admin.yaml
   # Also as prefix of resources
   namespace: cbctf
-  # Maybe your k8s nodes cidr
-  # https://kubeovn.github.io/docs/stable/vpc/vpc/#_2
-  external_network:
-    cidr: 192.168.0.0/16
-    gateway: 192.168.0.1
-    interface: eth0
-    exclude_ips:
-      - 192.168.0.1
-      - 192.168.0.254
   # Docker image
   tcpdump: nicolaka/netshoot:latest
   frp:

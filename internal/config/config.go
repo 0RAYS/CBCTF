@@ -82,15 +82,9 @@ type Config struct {
 		Pwd  string `mapstructure:"pwd" json:"pwd"`   // Redis 密码
 	} `mapstructure:"redis" json:"redis"`
 	K8S struct {
-		Config          string `mapstructure:"config" json:"config"`
-		Namespace       string `mapstructure:"namespace" json:"namespace"` // Kubernetes 命名空间
-		ExternalNetwork struct {
-			CIDR       string   `mapstructure:"cidr" json:"cidr"` // 外部网络 CIDR
-			Gateway    string   `mapstructure:"gateway" json:"gateway"`
-			Interface  string   `mapstructure:"interface" json:"interface"`
-			ExcludeIPs []string `mapstructure:"exclude_ips" json:"exclude_ips"`
-		} `mapstructure:"external_network" json:"external_network"`
-		TCPDumpImage string `mapstructure:"tcpdump" json:"tcpdump"` // TCPDump 镜像
+		Config       string `mapstructure:"config" json:"config"`
+		Namespace    string `mapstructure:"namespace" json:"namespace"` // Kubernetes 命名空间
+		TCPDumpImage string `mapstructure:"tcpdump" json:"tcpdump"`     // TCPDump 镜像
 		Frp          struct {
 			On         bool         `mapstructure:"on" json:"on"`
 			FrpcImage  string       `mapstructure:"frpc" json:"frpc"`   // Frpc 镜像

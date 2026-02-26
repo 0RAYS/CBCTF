@@ -2,7 +2,6 @@ import { IconCloudComputing } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { ConfigSection } from '../fields/ConfigSection';
 import { ConfigField } from '../fields/ConfigField';
-import { ConfigListField } from '../fields/ConfigListField';
 import { FrpServerField } from '../fields/FrpServerField';
 import { Input } from '../../../../common';
 
@@ -56,81 +55,6 @@ export function K8sConfigSection({ config, updateConfig }) {
           })
         }
       />
-
-      <div className="space-y-1">
-        <span className="text-xs font-mono text-neutral-400">{t('admin.system.labels.externalNetwork')} CIDR</span>
-        <div className="space-y-2">
-          <Input
-            size="sm"
-            value={config.k8s.external_network.cidr}
-            onChange={(event) =>
-              updateConfig((draft) => {
-                draft.k8s.external_network.cidr = event.target.value;
-              })
-            }
-            placeholder={t('admin.system.k8s.cidr')}
-          />
-          <span className="text-xs font-mono text-neutral-400">{t('admin.system.k8s.gateway')}</span>
-          <Input
-            size="sm"
-            value={config.k8s.external_network.gateway}
-            onChange={(event) =>
-              updateConfig((draft) => {
-                draft.k8s.external_network.gateway = event.target.value;
-              })
-            }
-            placeholder={t('admin.system.k8s.gateway')}
-          />
-          <span className="text-xs font-mono text-neutral-400">{t('admin.system.k8s.interface')}</span>
-          <Input
-            size="sm"
-            value={config.k8s.external_network.interface}
-            onChange={(event) =>
-              updateConfig((draft) => {
-                draft.k8s.external_network.interface = event.target.value;
-              })
-            }
-            placeholder={t('admin.system.k8s.interface')}
-          />
-          <ConfigListField
-            label={t('admin.system.k8s.excludeIps')}
-            items={config.k8s.external_network.exclude_ips || []}
-            onAdd={() =>
-              updateConfig((draft) => {
-                draft.k8s.external_network.exclude_ips.push('');
-              })
-            }
-            onUpdate={(index, value) =>
-              updateConfig((draft) => {
-                draft.k8s.external_network.exclude_ips[index] = value;
-              })
-            }
-            onRemove={(index) =>
-              updateConfig((draft) => {
-                draft.k8s.external_network.exclude_ips.splice(index, 1);
-              })
-            }
-          />
-        </div>
-
-        <div className="space-y-1 pt-2">
-          <div className="text-xs font-mono text-neutral-400 bg-neutral-800/50 px-2 py-0.5 rounded">
-            <span className="text-neutral-400">{t('admin.system.k8s.cidr')}:</span> {config.k8s.external_network.cidr}
-          </div>
-          <div className="text-xs font-mono text-neutral-400 bg-neutral-800/50 px-2 py-0.5 rounded">
-            <span className="text-neutral-400">{t('admin.system.k8s.gateway')}:</span>{' '}
-            {config.k8s.external_network.gateway}
-          </div>
-          <div className="text-xs font-mono text-neutral-400 bg-neutral-800/50 px-2 py-0.5 rounded">
-            <span className="text-neutral-400">{t('admin.system.k8s.interface')}:</span>{' '}
-            {config.k8s.external_network.interface}
-          </div>
-          <div className="text-xs font-mono text-neutral-400 bg-neutral-800/50 px-2 py-0.5 rounded">
-            <span className="text-neutral-400">{t('admin.system.k8s.excludeIps')}:</span>{' '}
-            {(config.k8s.external_network.exclude_ips || []).join(', ')}
-          </div>
-        </div>
-      </div>
 
       <div className="border-b border-neutral-300/20" />
 
