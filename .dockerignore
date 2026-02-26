@@ -1,0 +1,21 @@
+# 编译产物
+CBCTF
+frontend/dist/*
+!frontend/dist/.gitkeep
+
+# 依赖和缓存
+frontend/node_modules/
+
+# 运行时数据（不应进镜像）
+config.yml
+admin.yaml
+data/
+uploads/
+logs/
+volumes/
+
+# 开发文件
+.git/
+*.md
+build.sh
+example/
