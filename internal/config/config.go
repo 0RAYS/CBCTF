@@ -129,6 +129,9 @@ func Init() {
 	viper.SetConfigType("yaml")
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
+	viper.SetEnvPrefix("CBCTF")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.AutomaticEnv()
 	if err := viper.ReadInConfig(); err != nil {
 		if errors.As(err, &viper.ConfigFileNotFoundError{}) {
 			if err := os.WriteFile("./config.yml", defaultConf, 0600); err != nil {
