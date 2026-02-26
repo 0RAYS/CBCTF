@@ -1,0 +1,16 @@
+apiVersion: v2
+name: CBCTF
+description: A Kubernetes-native CTF competition platform
+type: application
+version: 0.0.1
+appVersion: "latest"
+keywords:
+  - ctf
+  - cybersecurity
+  - competition
+  - 0RAYS
+home: https://github.com/JBNRZ/CBCTF
+sources:
+  - https://github.com/JBNRZ/CBCTF
+maintainers:
+  - name: JBNRZ
