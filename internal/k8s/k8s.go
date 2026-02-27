@@ -7,11 +7,11 @@ import (
 	"os"
 
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 
 	kubeovnclient "github.com/JBNRZ/kubeovn-api/pkg/client/clientset/versioned"
 	netattclient "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/client/clientset/versioned"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
 )
 
 const (
@@ -45,16 +45,16 @@ func Init() {
 }
 
 func initClients() {
-	if _, err := os.Stat(config.Env.K8S.Config); err != nil {
-		log.Logger.Fatalf("Invalid config.k8s.config.admin: %s", err)
-	}
-	adminAPIConfig, err := clientcmd.LoadFromFile(config.Env.K8S.Config)
+	var err error
+	kubeConfig, err = rest.InClusterConfig()
 	if err != nil {
-		log.Logger.Fatalf("Failed to load admin config: %s", err)
-	}
-	kubeConfig, err = clientcmd.NewNonInteractiveClientConfig(*adminAPIConfig, adminAPIConfig.CurrentContext, &clientcmd.ConfigOverrides{}, nil).ClientConfig()
-	if err != nil {
-		log.Logger.Fatalf("Failed to create client config: %s", err)
+		if _, err = os.Stat(config.Env.K8S.Config); err != nil {
+			log.Logger.Fatalf("Invalid config.k8s.config.admin: %s", err)
+		}
+		kubeConfig, err = clientcmd.BuildConfigFromFlags("", config.Env.K8S.Config)
+		if err != nil {
+			log.Logger.Fatalf("Failed to create client config: %s", err)
+		}
 	}
 	kubeConfig.QPS = 700
 	kubeConfig.Burst = 1000
