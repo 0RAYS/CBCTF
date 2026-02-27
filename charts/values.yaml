@@ -98,8 +98,8 @@ cbctf:
         - "/metrics"
         - "/platform/*filepath"
     jwt:
-      # !! Override this in production !!
-      secret: "change-me-in-production"
+      # Leave empty to auto-generate a random secret on first install.
+      secret: ""
       static: false
     metrics:
       # IPs allowed to hit /metrics — include Prometheus pod CIDR or exact IPs
@@ -175,10 +175,10 @@ mysql:
     tag: "8.0"
     pullPolicy: IfNotPresent
   auth:
-    rootPassword: "root-password-change-me"
+    rootPassword: ""  # auto-generated if empty
     database: "cbctf"
     username: "cbctf"
-    password: "cbctf-password-change-me"
+    password: ""      # auto-generated if empty
   persistence:
     enabled: true
     storageClass: ""
@@ -210,7 +210,7 @@ redis:
     tag: "7-alpine"
     pullPolicy: IfNotPresent
   auth:
-    password: "redis-password-change-me"
+    password: ""  # auto-generated if empty
   persistence:
     enabled: true
     storageClass: ""
