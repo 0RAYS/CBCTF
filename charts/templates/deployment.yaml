@@ -28,9 +28,8 @@ spec:
       # Prevent Kubernetes service env vars (e.g. CBCTF_REDIS_PORT=tcp://...)
       # from conflicting with Viper's AutomaticEnv (prefix=CBCTF).
       enableServiceLinks: false
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+      {{- with include "cbctf.imagePullSecrets" . }}
+      {{- . | nindent 6 }}
       {{- end }}
       serviceAccountName: {{ include "cbctf.serviceAccountName" . }}
       {{- with .Values.podSecurityContext }}
