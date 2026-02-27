@@ -4,6 +4,8 @@ kind: PersistentVolumeClaim
 metadata:
   name: {{ .Release.Namespace }}-shared-volume
   namespace: {{ .Release.Namespace }}
+  annotations:
+    "helm.sh/resource-policy": keep
   labels:
     {{- include "cbctf.labels" . | nindent 4 }}
 spec:
