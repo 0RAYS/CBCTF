@@ -1,4 +1,4 @@
-FROM node:22-alpine AS frontend-builder
+FROM node:alpine AS frontend-builder
 WORKDIR /app
 
 RUN corepack enable
@@ -10,7 +10,7 @@ COPY frontend/ .
 RUN pnpm run build
 
 
-FROM golang:1.26-alpine AS backend-builder
+FROM golang:alpine AS backend-builder
 WORKDIR /app
 
 RUN apk add --no-cache build-base libpcap-dev
