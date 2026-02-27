@@ -34,7 +34,7 @@ func SavePicture(tx *gorm.DB, options db.CreateFileOptions, file *multipart.File
 	options.RandID = utils.UUID()
 	options.Filename = file.Filename
 	options.Size = size
-	options.Path = fmt.Sprintf("%s/pictures/%s%s", config.Env.Path, utils.UUID(), suffix)
+	options.Path = model.FilePath(fmt.Sprintf("%s/pictures/%s%s", config.Env.Path, utils.UUID(), suffix))
 	options.Suffix = suffix
 	options.Hash = hash
 	options.Type = model.PictureFileType
@@ -90,7 +90,7 @@ func SaveChallengeFile(tx *gorm.DB, challenge model.Challenge, file *multipart.F
 		RandID:   utils.UUID(),
 		Filename: file.Filename,
 		Size:     size,
-		Path:     path,
+		Path:     model.FilePath(path),
 		Model:    challenge.ModelName(),
 		ModelID:  challenge.ID,
 		Suffix:   suffix,
@@ -120,7 +120,7 @@ func SaveWriteUp(tx *gorm.DB, contest model.Contest, team model.Team, file *mult
 		RandID:   utils.UUID(),
 		Filename: file.Filename,
 		Size:     size,
-		Path:     fmt.Sprintf("%s/writeups/contest-%d/team-%d/%s%s", config.Env.Path, contest.ID, team.ID, utils.UUID(), suffix),
+		Path:     model.FilePath(fmt.Sprintf("%s/writeups/contest-%d/team-%d/%s%s", config.Env.Path, contest.ID, team.ID, utils.UUID(), suffix)),
 		Model:    team.ModelName(),
 		ModelID:  team.ID,
 		Suffix:   suffix,

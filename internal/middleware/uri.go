@@ -265,12 +265,12 @@ func SetAttachmentFile(regen bool) gin.HandlerFunc {
 		record, ret := db.InitFileRepo(db.DB).Get(db.GetOptions{
 			Conditions: map[string]any{"model": challenge.ModelName(), "model_id": challenge.ID, "type": model.ChallengeFileType}},
 		)
-		if ret.OK && record.Path == path {
+		if ret.OK && string(record.Path) == path {
 			ctx.Set("File", record)
 			ctx.Next()
 			return
 		}
-		ctx.Set("File", model.File{Filename: "attachment.zip", Path: path})
+		ctx.Set("File", model.File{Filename: "attachment.zip", Path: model.FilePath(path)})
 		ctx.Next()
 	}
 }

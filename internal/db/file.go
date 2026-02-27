@@ -16,7 +16,7 @@ type CreateFileOptions struct {
 	RandID   string
 	Filename string
 	Size     int64
-	Path     string
+	Path     model.FilePath
 	Model    string
 	ModelID  uint
 	Suffix   string

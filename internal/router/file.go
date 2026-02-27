@@ -22,7 +22,7 @@ func DownloadFile(eventType string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		ctx.Set(middleware.CTXEventTypeKey, eventType)
 		file := middleware.GetFile(ctx)
-		if _, err := os.Stat(file.Path); err != nil {
+		if _, err := os.Stat(string(file.Path)); err != nil {
 			if os.IsNotExist(err) {
 				// 保留数据库记录
 				//db.InitFileRepo(db.DB).Delete(file.ID)
@@ -34,7 +34,7 @@ func DownloadFile(eventType string) gin.HandlerFunc {
 			return
 		}
 		ctx.Set(middleware.CTXEventSuccessKey, true)
-		ctx.FileAttachment(file.Path, file.Filename)
+		ctx.FileAttachment(string(file.Path), file.Filename)
 	}
 }
 
@@ -80,13 +80,13 @@ func UploadPicture(v string) gin.HandlerFunc {
 			resp.JSON(ctx, ret)
 			return
 		}
-		if err = ctx.SaveUploadedFile(file, record.Path); err != nil {
+		if err = ctx.SaveUploadedFile(file, string(record.Path)); err != nil {
 			log.Logger.Warningf("Failed to save file: %s", err)
 			resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 			return
 		}
 		if v != "contest" {
-			_, _ = task.EnqueueResizeImageTask(record.Path, 100, 100)
+			_, _ = task.EnqueueResizeImageTask(string(record.Path), 100, 100)
 		}
 		path = fmt.Sprintf("%s/%s", config.Env.Host, strings.TrimPrefix(path, "/"))
 		ctx.Set(middleware.CTXEventSuccessKey, true)
@@ -117,7 +117,7 @@ func UploadChallengeFile(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	if err = ctx.SaveUploadedFile(file, record.Path); err != nil {
+	if err = ctx.SaveUploadedFile(file, string(record.Path)); err != nil {
 		log.Logger.Warningf("Failed to save file: %s", err)
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return
@@ -140,7 +140,7 @@ func UploadWriteUp(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	if err = ctx.SaveUploadedFile(file, record.Path); err != nil {
+	if err = ctx.SaveUploadedFile(file, string(record.Path)); err != nil {
 		log.Logger.Warningf("Failed to save file: %s", err)
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return

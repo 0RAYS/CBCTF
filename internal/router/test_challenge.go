@@ -26,7 +26,7 @@ func GetTestChallengeStatus(ctx *gin.Context) {
 				Conditions: map[string]any{"model": challenge.ModelName(), "model_id": challenge.ID, "type": model.ChallengeFileType}},
 			)
 			filename := "attachment.zip"
-			if record.Path == path {
+			if string(record.Path) == path {
 				filename = record.Filename
 			}
 			if _, err := os.Stat(path); err != nil {
