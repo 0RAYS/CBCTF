@@ -27,7 +27,7 @@ type UpdateSettingForm struct {
 	GinJWTStatic          *bool     `form:"gin_jwt_static" json:"gin_jwt_static"`
 	GinMetricsWhitelist   *[]string `form:"gin_metrics_whitelist" json:"gin_metrics_whitelist" binding:"omitempty,dive,ip|cidr"`
 
-	GormMySQLHost   *string `form:"gorm_mysql_host" json:"gorm_mysql_host" binding:"omitempty,ip"`
+	GormMySQLHost   *string `form:"gorm_mysql_host" json:"gorm_mysql_host" binding:"omitempty,ip|hostname"`
 	GormMySQLPort   *uint   `form:"gorm_mysql_port" json:"gorm_mysql_port" binding:"omitempty,port"`
 	GormMySQLUser   *string `form:"gorm_mysql_user" json:"gorm_mysql_user" binding:"omitempty,min=1,alphanum"`
 	GormMySQLPwd    *string `form:"gorm_mysql_pwd" json:"gorm_mysql_pwd" binding:"omitempty,min=1,ascii"`
@@ -36,7 +36,7 @@ type UpdateSettingForm struct {
 	GormMySQLMXIdle *int    `form:"gorm_mysql_mxidle" json:"gorm_mysql_mxidle" binding:"omitempty,gte=1"`
 	GormLogLevel    *string `form:"gorm_log_level" json:"gorm_log_level" binding:"omitempty,oneof=SILENT INFO WARNING ERROR"`
 
-	RedisHost *string `form:"redis_host" json:"redis_host" binding:"omitempty,ip"`
+	RedisHost *string `form:"redis_host" json:"redis_host" binding:"omitempty,ip|hostname"`
 	RedisPort *uint   `form:"redis_port" json:"redis_port" binding:"omitempty,port"`
 	RedisPwd  *string `form:"redis_pwd" json:"redis_pwd" binding:"omitempty,min=1,ascii"`
 
