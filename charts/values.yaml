@@ -163,7 +163,7 @@ persistence:
   enabled: true
   storageClass: ""     # Leave empty to use cluster default
   accessMode: ReadWriteMany
-  size: 10Gi
+  size: 20Gi
   # existingClaim: ""  # Use an existing PVC
 
 # ── MySQL ─────────────────────────────────────────────────────────────────────
@@ -183,7 +183,7 @@ mysql:
     enabled: true
     storageClass: ""
     accessMode: ReadWriteOnce
-    size: 20Gi
+    size: 5Gi
   resources: {}
     # limits:
     #   cpu: 2000m
@@ -215,7 +215,7 @@ redis:
     enabled: true
     storageClass: ""
     accessMode: ReadWriteOnce
-    size: 5Gi
+    size: 1Gi
   resources: {}
   service:
     port: 6379
