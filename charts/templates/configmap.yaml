@@ -56,7 +56,7 @@ data:
 
     gorm:
       mysql:
-        host: {{ include "cbctf.mysql.host" . | quote }}
+        host: {{ printf "%s.%s" (include "cbctf.mysql.host" .) .Release.Namespace | quote }}
         port: {{ .Values.mysql.service.port }}
         user: {{ .Values.mysql.auth.username | quote }}
         # Value overridden by CBCTF_GORM_MYSQL_PWD env var from Secret
@@ -68,7 +68,7 @@ data:
         level: {{ .Values.cbctf.gorm.log.level | quote }}
 
     redis:
-      host: {{ include "cbctf.redis.host" . | quote }}
+      host: {{ printf "%s.%s" (include "cbctf.redis.host" .) .Release.Namespace | quote }}
       port: {{ .Values.redis.service.port }}
       # Value overridden by CBCTF_REDIS_PWD env var from Secret
       pwd: ""
