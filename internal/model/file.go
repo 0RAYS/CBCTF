@@ -1,5 +1,12 @@
 package model
 
+import (
+	"CBCTF/internal/config"
+	"database/sql/driver"
+	"fmt"
+	"strings"
+)
+
 type FileType string
 
 const (
@@ -20,7 +27,7 @@ type File struct {
 	RandID   string   `gorm:"type:varchar(36);uniqueIndex;not null" json:"rand_id"`
 	Filename string   `json:"filename"`
 	Size     int64    `json:"size"`
-	Path     string   `json:"-"`
+	Path     FilePath `json:"-"`
 	Suffix   string   `json:"suffix"`
 	Hash     string   `json:"hash"`
 	Type     FileType `json:"type"`
@@ -47,4 +54,26 @@ func (f File) QueryFields() []string {
 	return []string{
 		"id", "rand_id", "model", "model_id", "filename", "size", "suffix", "hash", "type",
 	}
+}
+
+type FilePath string
+
+func (f FilePath) Value() (driver.Value, error) {
+	if f == "" {
+		return nil, nil
+	}
+	return strings.TrimPrefix(string(f), config.Env.Path), nil
+}
+
+func (f *FilePath) Scan(value any) error {
+	bytes, ok := value.([]byte)
+	if !ok {
+		return fmt.Errorf("failed to scan FilePath: %v", value)
+	}
+	if len(bytes) == 0 {
+		*f = ""
+		return nil
+	}
+	*f = FilePath(config.Env.Path + string(bytes))
+	return nil
 }
