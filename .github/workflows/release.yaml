@@ -44,34 +44,3 @@ jobs:
             ghcr.io/${{ steps.vars.outputs.repo }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Extract binary from image
-        run: |
-          IMAGE="ghcr.io/${{ steps.vars.outputs.repo }}:${{ steps.vars.outputs.tag }}"
-          docker pull "$IMAGE"
-          docker create --name tmp_container "$IMAGE"
-          docker cp tmp_container:/app/CBCTF ./CBCTF
-          docker rm tmp_container
-
-      - name: Package archives
-        run: |
-          tar -czf CBCTF-linux-amd64.tar.gz CBCTF
-          zip CBCTF-linux-amd64.zip CBCTF
-
-      - name: Delete previous release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          LATEST=$(gh release list --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || true)
-          if [ -n "$LATEST" ]; then
-            gh release delete "$LATEST" --yes --cleanup-tag
-          fi
-
-      - name: Create release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          TAG="${{ steps.vars.outputs.tag }}"
-          gh release create "$TAG" CBCTF-linux-amd64.tar.gz CBCTF-linux-amd64.zip \
-            --title "$TAG" \
-            --notes "Auto build from commit $(git rev-parse --short HEAD)"
