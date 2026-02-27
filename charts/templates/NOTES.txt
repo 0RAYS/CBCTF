@@ -25,13 +25,12 @@ CBCTF URL:
 {{- end }}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- Kubernetes Initialization
+ Default Admin Password
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 After the pod is running, initialize Kubernetes resources:
 
-  kubectl exec -n {{ .Release.Namespace }} \
-    deploy/{{ include "cbctf.fullname" . }} -- /app/CBCTF k8s init
+  kubectl logs -n {{ .Release.Namespace }} deploy/{{ include "cbctf.fullname" . }}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  !! Security Reminder !!
