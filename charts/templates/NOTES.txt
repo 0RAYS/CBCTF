@@ -30,7 +30,7 @@ CBCTF URL:
 
 After the pod is running, initialize Kubernetes resources:
 
-  kubectl logs -n {{ .Release.Namespace }} deploy/{{ include "cbctf.fullname" . }}
+  kubectl logs -n {{ .Release.Namespace }} deploy/{{ include "cbctf.fullname" . }} | grep "Init Admin"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  !! Security Reminder !!
