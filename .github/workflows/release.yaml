@@ -70,4 +70,4 @@ jobs:
           TAG="${{ steps.vars.outputs.tag }}"
           gh release create "$TAG" CBCTF-linux-amd64.tar.gz CBCTF-linux-amd64.zip \
             --title "$TAG" \
-            --notes "Auto build from commit $(git rev-parse --short HEAD)
+            --notes "Auto build from commit $(git rev-parse --short HEAD)"
