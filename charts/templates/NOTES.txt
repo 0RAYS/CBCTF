@@ -31,13 +31,3 @@ CBCTF URL:
 After the pod is running, initialize Kubernetes resources:
 
   kubectl logs -n {{ .Release.Namespace }} deploy/{{ include "cbctf.fullname" . }} | grep "Init Admin"
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- !! Security Reminder !!
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Please ensure you have changed the following default passwords:
-  - cbctf.gin.jwt.secret
-  - mysql.auth.rootPassword
-  - mysql.auth.password
-  - redis.auth.password
