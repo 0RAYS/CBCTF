@@ -109,7 +109,7 @@ spec:
         - name: data
           {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
-            claimName: {{ default (printf "%s-shared-volume" (include "cbctf.fullname" .)) .Values.persistence.existingClaim }}
+            claimName: {{ default (printf "%s-shared-volume" (.Release.Namespace)) .Values.persistence.existingClaim }}
           {{- else }}
           emptyDir: {}
           {{- end }}
