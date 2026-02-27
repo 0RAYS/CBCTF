@@ -31,7 +31,7 @@ func Init() {
 		level = log.Silent
 	}
 	dsn := fmt.Sprintf(
-		"%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		"%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&timeout=30s",
 		config.Env.Gorm.MySQL.User,
 		config.Env.Gorm.MySQL.Pwd,
 		config.Env.Gorm.MySQL.Host,
