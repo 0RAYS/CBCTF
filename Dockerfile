@@ -31,7 +31,7 @@ COPY --from=backend-builder /app/CBCTF .
 COPY --from=backend-builder /app/internal/config/default.yaml ./config.yaml
 
 RUN apk update && \
-    apk --no-cache add --no-check-certificate ca-certificates && \
+    apk --no-cache add --no-check-certificate ca-certificates tzdata && \
     update-ca-certificates
 
 EXPOSE 8000
