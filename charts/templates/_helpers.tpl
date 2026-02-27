@@ -129,3 +129,21 @@ Redis service hostname
 {{- required "redis.externalHost is required when redis.enabled is false" .Values.redis.externalHost }}
 {{- end }}
 {{- end }}
+
+{{/*
+Combined imagePullSecrets: merges .Values.imagePullSecrets with the auto-generated
+registry secret (when imageCredentials are provided). Outputs the full
+`imagePullSecrets:` block, or empty string if no secrets are configured.
+*/}}
+{{- define "cbctf.imagePullSecrets" -}}
+{{- $secrets := .Values.imagePullSecrets | default list -}}
+{{- with .Values.imageCredentials -}}
+  {{- if and .registry .username .password -}}
+    {{- $secrets = append $secrets (dict "name" (printf "%s-registry" (include "cbctf.fullname" $))) -}}
+  {{- end -}}
+{{- end -}}
+{{- if $secrets -}}
+imagePullSecrets:
+  {{- toYaml $secrets | nindent 2 }}
+{{- end -}}
+{{- end }}

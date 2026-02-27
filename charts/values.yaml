@@ -9,6 +9,12 @@ image:
   tag: "latest"
 
 imagePullSecrets: []
+# Inline registry credentials — the chart creates a docker registry Secret automatically
+# and appends it to imagePullSecrets on all pods.
+imageCredentials:
+  registry: ""   # e.g. ghcr.io
+  username: ""
+  password: ""
 nameOverride: ""
 fullnameOverride: ""
 
