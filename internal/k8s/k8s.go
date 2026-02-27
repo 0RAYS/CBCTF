@@ -38,7 +38,7 @@ var (
 func Init() {
 	globalNamespace = config.Env.K8S.Namespace
 	externalSubnetName = fmt.Sprintf("%s-external-network", globalNamespace)
-	nfsVolumeName = fmt.Sprintf("%s-nfs-volume", globalNamespace)
+	nfsVolumeName = fmt.Sprintf("%s-shared-volume", globalNamespace)
 	initClients()
 	checkResources()
 	checkPermissions()

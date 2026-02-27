@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ include "cbctf.fullname" . }}-nfs-volume
+  name: {{ include "cbctf.fullname" . }}-shared-volume
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "cbctf.labels" . | nindent 4 }}

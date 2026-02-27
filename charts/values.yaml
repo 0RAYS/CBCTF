@@ -3,10 +3,8 @@
 
 # ── CBCTF Application ─────────────────────────────────────────────────────────
 
-replicaCount: 1
-
 image:
-  repository: ghcr.io/jbnrz/cbctf
+  repository: ghcr.io/0rays/cbctf
   pullPolicy: IfNotPresent
   tag: "latest"
 
