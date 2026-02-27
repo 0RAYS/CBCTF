@@ -80,8 +80,8 @@ func stop() {
 }
 
 func reboot() {
-	stop()
 	time.Sleep(time.Second)
+	stop()
 	i18n.Init()
 	config.Init(configPath)
 	log.Init()
