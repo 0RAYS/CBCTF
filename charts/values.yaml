@@ -120,8 +120,6 @@ cbctf:
       level: silent   # INFO / WARNING / ERROR / SILENT
 
   k8s:
-    # Namespace where CTF challenge pods will be created
-    namespace: "cbctf"
     tcpdump: "nicolaka/netshoot:latest"
     generator_worker: 2
     frp:

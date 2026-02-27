@@ -3,7 +3,7 @@
 apiVersion: kubeovn.io/v1
 kind: Subnet
 metadata:
-  name: {{ .Values.cbctf.k8s.namespace }}-external-network
+  name: {{ .Release.Namespace }}-external-network
   labels:
     {{- include "cbctf.labels" . | nindent 4 }}
 spec:
@@ -16,12 +16,12 @@ spec:
     - {{ . | quote }}
     {{- end }}
   {{- end }}
-  provider: {{ printf "%s-external-network.kube-system" .Values.cbctf.k8s.namespace | quote }}
+  provider: {{ printf "%s-external-network.kube-system" .Release.Namespace | quote }}
 ---
 apiVersion: k8s.cni.cncf.io/v1
 kind: NetworkAttachmentDefinition
 metadata:
-  name: {{ .Values.cbctf.k8s.namespace }}-external-network
+  name: {{ .Release.Namespace }}-external-network
   namespace: kube-system
   labels:
     {{- include "cbctf.labels" . | nindent 4 }}
@@ -35,7 +35,7 @@ spec:
       "ipam": {
         "type": "kube-ovn",
         "server_socket": "/run/openvswitch/kube-ovn-daemon.sock",
-        "provider": {{ printf "%s-external-network.kube-system" .Values.cbctf.k8s.namespace | quote }}
+        "provider": {{ printf "%s-external-network.kube-system" .Release.Namespace | quote }}
       }
     }
 {{- end }}

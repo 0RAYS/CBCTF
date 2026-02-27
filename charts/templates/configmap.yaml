@@ -76,7 +76,7 @@ data:
     k8s:
       # Kubeconfig generated at startup by init container using ServiceAccount token
       config: /admin/admin.yaml
-      namespace: {{ .Values.cbctf.k8s.namespace | quote }}
+      namespace: {{ .Release.Namespace | quote }}
       tcpdump: {{ .Values.cbctf.k8s.tcpdump | quote }}
       generator_worker: {{ .Values.cbctf.k8s.generator_worker }}
       frp:
