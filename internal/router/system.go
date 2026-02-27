@@ -81,9 +81,9 @@ func SystemStatus(ctx *gin.Context) {
 	ret["contests"], _ = db.InitContestRepo(db.DB).Count()
 	ret["ip"], _ = db.InitRequestRepo(db.DB).CountIP()
 	ret["challenges"], _ = db.InitChallengeRepo(db.DB).Count()
-	ret["submissions"], _ = db.InitSubmissionRepo(db.DB).Count()
-	ret["victims"], _ = db.InitVictimRepo(db.DB).Count()
-	ret["requests"], _ = db.InitRequestRepo(db.DB).Count()
+	ret["submissions"], _ = db.InitSubmissionRepo(db.DB).Count(db.CountOptions{Deleted: true})
+	ret["victims"], _ = db.InitVictimRepo(db.DB).Count(db.CountOptions{Deleted: true})
+	ret["requests"], _ = db.InitRequestRepo(db.DB).Count(db.CountOptions{Deleted: true})
 	middleware.MU.Lock()
 	if middleware.TotalRequests == 0 {
 		ret["duration"] = 0
