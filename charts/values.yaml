@@ -135,6 +135,12 @@ cbctf:
     kubeovnRBAC: false
     # Enable RBAC rules for Multus CNI
     multusRBAC: false
+    externalNetwork:
+      enabled: false
+      cidr: ""           # e.g. "192.168.100.0/24"
+      gateway: ""        # e.g. "192.168.100.1"
+      excludeIPs: []     # e.g. ["192.168.100.1.192.168.100.10"]
+      interface: ""      # host NIC name, e.g. "eth1"
 
   cheat:
     ip:
