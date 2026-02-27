@@ -12,7 +12,6 @@ import (
 	"CBCTF/internal/service"
 	"CBCTF/internal/task"
 	"fmt"
-	"net/http"
 	"os"
 	"strings"
 
@@ -27,7 +26,7 @@ func DownloadFile(eventType string) gin.HandlerFunc {
 			if os.IsNotExist(err) {
 				// 保留数据库记录
 				//db.InitFileRepo(db.DB).Delete(file.ID)
-				ctx.JSON(http.StatusNotFound, model.RetVal{Msg: i18n.Model.File.NotFound})
+				resp.JSON(ctx, model.RetVal{Msg: i18n.Model.File.NotFound})
 				return
 			}
 			log.Logger.Warningf("Failed to get file: %s", err)
