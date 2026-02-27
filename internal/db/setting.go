@@ -286,7 +286,7 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 	}
 	config.Tidy()
 	if err := config.Save(); err != nil {
-		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		log.Logger.Warningf("Failed to save config: %s, but it's not important, all config will be read from database", err.Error())
 	}
 
 	return model.SuccessRetVal()
