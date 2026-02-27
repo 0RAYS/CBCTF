@@ -38,43 +38,6 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
 
-      # ── Init container: generate kubeconfig from ServiceAccount token ──────
-      initContainers:
-        - name: gen-kubeconfig
-          image: alpine:3.20
-          command:
-            - sh
-            - -c
-            - |
-              set -e
-              SA_TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
-              CA_DATA=$(base64 -w 0 /var/run/secrets/kubernetes.io/serviceaccount/ca.crt)
-              APISERVER="https://kubernetes.default.svc"
-              cat > /admin/admin.yaml << EOF
-              apiVersion: v1
-              kind: Config
-              clusters:
-              - cluster:
-                  certificate-authority-data: ${CA_DATA}
-                  server: ${APISERVER}
-                name: in-cluster
-              contexts:
-              - context:
-                  cluster: in-cluster
-                  user: cbctf
-                name: cbctf
-              current-context: cbctf
-              users:
-              - name: cbctf
-                user:
-                  token: ${SA_TOKEN}
-              EOF
-              chmod 600 /admin/admin.yaml
-              echo "kubeconfig generated at /admin/admin.yaml"
-          volumeMounts:
-            - name: kubeconfig
-              mountPath: /admin
-
       containers:
         - name: {{ .Chart.Name }}
           {{- with .Values.securityContext }}
@@ -133,9 +96,6 @@ spec:
             - name: config
               mountPath: /app/config.yaml
               subPath: config.yaml
-              readOnly: true
-            - name: kubeconfig
-              mountPath: /admin
               readOnly: true
             - name: data
               mountPath: /app/data
