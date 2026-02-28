@@ -15,6 +15,7 @@ var colors = map[string]func(a ...any) string{
 	"Time":    color.New(color.FgGreen).Add(color.Bold).SprintFunc(),
 	"Warning": color.New(color.FgYellow).Add(color.Bold).SprintFunc(),
 	"Panic":   color.New(color.FgRed, color.BgWhite).SprintFunc(),
+	"Fatal":   color.New(color.FgWhite, color.BgRed).Add(color.Bold).SprintFunc(),
 	"Error":   color.New(color.FgRed).Add(color.Bold).SprintFunc(),
 	"Info":    color.New(color.FgGreen).Add(color.Bold).SprintFunc(),
 	"Debug":   color.New(color.FgBlue).Add(color.Bold).SprintFunc(),
@@ -62,7 +63,7 @@ func levelColor(level logrus.Level) func(a ...any) string {
 	case logrus.PanicLevel:
 		return colors["Panic"]
 	case logrus.FatalLevel:
-		return colors["Error"]
+		return colors["Fatal"]
 	default:
 		return colors["Time"]
 	}
@@ -90,11 +91,16 @@ func safeGetValue[T any](entry *logrus.Entry, key string, defaultV T) T {
 }
 
 func shortenCaller(path string) string {
-	if len(path) > 36 {
-		path = strings.TrimPrefix(path, "../")
-		path = strings.SplitN(path, "/", 2)[1]
-		path = fmt.Sprintf("../%s", path)
-		return shortenCaller(path)
+	for len(path) > 36 {
+		trimmed := strings.TrimPrefix(path, "../")
+		parts := strings.SplitN(trimmed, "/", 2)
+		if len(parts) < 2 {
+			if len(path) > 36 {
+				return "..." + path[len(path)-33:]
+			}
+			return path
+		}
+		path = "../" + parts[1]
 	}
 	return path
 }
@@ -113,9 +119,18 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 	_, _ = fmt.Fprintf(ret, "%s %s | ", LevelColor(LevelText), entry.Time.Format("2006-01-02 15:04:05"))
 	switch t {
 	case DefaultLogType:
-		caller := shortenCaller(fmt.Sprintf("%s:%d", entry.Caller.File, entry.Caller.Line))
-		caller = fmt.Sprintf("%-36s", caller)
-		_, _ = fmt.Fprintf(ret, "%s | %s", caller, LevelColor(entry.Message))
+		var callerStr string
+		if entry.Caller != nil {
+			callerStr = shortenCaller(fmt.Sprintf("%s:%d", entry.Caller.File, entry.Caller.Line))
+		} else {
+			callerStr = "unknown:0"
+		}
+		caller := fmt.Sprintf("%-36s", callerStr)
+		msg := entry.Message
+		if entry.Level <= logrus.ErrorLevel {
+			msg = fmt.Sprintf("[%s] %s", strings.ToUpper(entry.Level.String()), entry.Message)
+		}
+		_, _ = fmt.Fprintf(ret, "%s | %s", caller, LevelColor(msg))
 	case TaskLogType:
 		_, _ = fmt.Fprintf(ret, "%-36s | %s", "Async Queue Task", LevelColor(entry.Message))
 	case GinLogType:

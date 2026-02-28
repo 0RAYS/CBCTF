@@ -19,7 +19,6 @@ const (
 )
 
 func Init() {
-	Logger.WithFields(logrus.Fields{"Type": DefaultLogType})
 	Logger.SetReportCaller(true)
 	Logger.SetFormatter(Formatter{})
 	if config.Env.Log.Save {
