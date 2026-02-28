@@ -46,7 +46,7 @@ func CreateEndpoint(ctx context.Context, options CreateEndpointOptions) (*discov
 	}
 	endpoint, err = kubeClient.DiscoveryV1().EndpointSlices(globalNamespace).Create(ctx, endpoint, metav1.CreateOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to create EndpointSlice for %s", err)
+		log.Logger.Warningf("Failed to create EndpointSlice: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "EndpointSlice", "Error": err.Error()}}
 	}
 	return endpoint, model.SuccessRetVal()
@@ -89,7 +89,7 @@ func GetEndpointList(ctx context.Context, labels ...map[string]string) (*discove
 func DeleteEndpoint(ctx context.Context, name string) model.RetVal {
 	err := kubeClient.DiscoveryV1().EndpointSlices(globalNamespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil {
-		log.Logger.Warningf("Failed to delete EndpointSlice for %s", name)
+		log.Logger.Warningf("Failed to delete EndpointSlice %s: %s", name, err)
 		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "EndpointSlice", "Error": err.Error()}}
 	}
 	return model.SuccessRetVal()

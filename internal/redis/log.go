@@ -37,7 +37,7 @@ func (h *LogHook) Fire(entry *logrus.Entry) error {
 	if formatter == nil {
 		formatter = &logrus.TextFormatter{ForceColors: true}
 	}
-	line, err := formatter.Format(new(*entry))
+	line, err := formatter.Format(entry)
 	if err != nil {
 		return nil
 	}
