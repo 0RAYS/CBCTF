@@ -60,28 +60,35 @@ func buildPermissionChecks() []permissionCheck {
 		{Group: "kubeovn.io", Resource: "subnets", Verb: "create"},
 		{Group: "kubeovn.io", Resource: "subnets", Verb: "get"},
 		{Group: "kubeovn.io", Resource: "subnets", Verb: "delete"},
+		{Group: "kubeovn.io", Resource: "subnets", Verb: "deletecollection"},
 		// KubeOVN: VPCs (集群级别)
 		{Group: "kubeovn.io", Resource: "vpcs", Verb: "create"},
 		{Group: "kubeovn.io", Resource: "vpcs", Verb: "get"},
 		{Group: "kubeovn.io", Resource: "vpcs", Verb: "delete"},
+		{Group: "kubeovn.io", Resource: "vpcs", Verb: "deletecollection"},
 		// KubeOVN: IPs (集群级别)
 		{Group: "kubeovn.io", Resource: "ips", Verb: "delete"},
+		{Group: "kubeovn.io", Resource: "ips", Verb: "deletecollection"},
 		// KubeOVN: IptablesEIPs (集群级别)
 		{Group: "kubeovn.io", Resource: "iptables-eips", Verb: "create"},
 		{Group: "kubeovn.io", Resource: "iptables-eips", Verb: "get"},
 		{Group: "kubeovn.io", Resource: "iptables-eips", Verb: "delete"},
+		{Group: "kubeovn.io", Resource: "iptables-eips", Verb: "deletecollection"},
 		// KubeOVN: IptablesDnatRules (集群级别)
 		{Group: "kubeovn.io", Resource: "iptables-dnat-rules", Verb: "create"},
 		{Group: "kubeovn.io", Resource: "iptables-dnat-rules", Verb: "get"},
 		{Group: "kubeovn.io", Resource: "iptables-dnat-rules", Verb: "delete"},
+		{Group: "kubeovn.io", Resource: "iptables-dnat-rules", Verb: "deletecollection"},
 		// KubeOVN: IptablesSnatRules (集群级别)
 		{Group: "kubeovn.io", Resource: "iptables-snat-rules", Verb: "create"},
 		{Group: "kubeovn.io", Resource: "iptables-snat-rules", Verb: "get"},
 		{Group: "kubeovn.io", Resource: "iptables-snat-rules", Verb: "delete"},
+		{Group: "kubeovn.io", Resource: "iptables-snat-rules", Verb: "deletecollection"},
 		// KubeOVN: VpcNatGateways (集群级别)
 		{Group: "kubeovn.io", Resource: "vpc-nat-gateways", Verb: "create"},
 		{Group: "kubeovn.io", Resource: "vpc-nat-gateways", Verb: "get"},
 		{Group: "kubeovn.io", Resource: "vpc-nat-gateways", Verb: "delete"},
+		{Group: "kubeovn.io", Resource: "vpc-nat-gateways", Verb: "deletecollection"},
 	}
 }
 
