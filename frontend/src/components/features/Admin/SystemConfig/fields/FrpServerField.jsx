@@ -113,7 +113,7 @@ export function FrpServerField({ frpsList = [], updateConfig }) {
               <Input
                 size="sm"
                 value={frps.token || ''}
-                placeholder={t('admin.system.k8s.token')}
+                placeholder={t('common.leaveBlankToKeep')}
                 onChange={(event) => updateFrpsField(frpsIndex, 'token', event.target.value)}
               />
             </div>

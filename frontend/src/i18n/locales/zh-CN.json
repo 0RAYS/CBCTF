@@ -39,6 +39,7 @@
     "noData": "暂无数据",
     "none": "无",
     "closeNotification": "关闭通知",
+    "leaveBlankToKeep": "留空则不修改",
     "pagination": {
       "totalItems": "共 {{count}} 条",
       "jumpTo": "跳转到",
