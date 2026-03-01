@@ -107,6 +107,11 @@ func GetLogs(ctx *gin.Context) {
 }
 
 func SystemConfig(ctx *gin.Context) {
+	maskedFrps := make([]config.FrpsConfig, len(config.Env.K8S.Frp.Frps))
+	copy(maskedFrps, config.Env.K8S.Frp.Frps)
+	for i := range maskedFrps {
+		maskedFrps[i].Token = "******"
+	}
 	data := gin.H{
 		"host": config.Env.Host,
 		"path": config.Env.Path,
@@ -126,7 +131,7 @@ func SystemConfig(ctx *gin.Context) {
 		"gin_ratelimit_whitelist": config.Env.Gin.RateLimit.Whitelist,
 		"gin_cors":                config.Env.Gin.CORS,
 		"gin_log_whitelist":       config.Env.Gin.Log.Whitelist,
-		"gin_jwt_secret":          config.Env.Gin.JWT.Secret,
+		"gin_jwt_secret":          "******",
 		"gin_jwt_static":          config.Env.Gin.JWT.Static,
 		"gin_metrics_whitelist":   config.Env.Gin.Metrics.Whitelist,
 
@@ -147,11 +152,10 @@ func SystemConfig(ctx *gin.Context) {
 		"k8s_namespace": config.Env.K8S.Namespace,
 		"k8s_tcpdump":   config.Env.K8S.TCPDumpImage,
 
-		"k8s_frp_on":    config.Env.K8S.Frp.On,
-		"k8s_frp_frpc":  config.Env.K8S.Frp.FrpcImage,
-		"k8s_frp_nginx": config.Env.K8S.Frp.NginxImage,
-		"k8s_frp_frps":  config.Env.K8S.Frp.Frps,
-
+		"k8s_frp_on":           config.Env.K8S.Frp.On,
+		"k8s_frp_frpc":         config.Env.K8S.Frp.FrpcImage,
+		"k8s_frp_nginx":        config.Env.K8S.Frp.NginxImage,
+		"k8s_frp_frps":         maskedFrps,
 		"k8s_generator_worker": config.Env.K8S.GeneratorWorker,
 
 		"cheat_ip_whitelist": config.Env.Cheat.IP.Whitelist,
@@ -173,6 +177,19 @@ func UpdateSystem(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateSettingEventType)
+	// 恢复被脱敏的 FRP Server Token
+	if form.K8SFrpFrps != nil {
+		for i, server := range *form.K8SFrpFrps {
+			if server.Token == "" {
+				for _, existing := range config.Env.K8S.Frp.Frps {
+					if existing.Host == server.Host && existing.Port == server.Port {
+						(*form.K8SFrpFrps)[i].Token = existing.Token
+						break
+					}
+				}
+			}
+		}
+	}
 	kv := map[string]any{
 		model.HostSettingKey: form.Host,
 		model.PathSettingKey: form.Path,
