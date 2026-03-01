@@ -52,6 +52,30 @@
       "now": "现在",
       "ok": "确定",
       "time": "时间"
+    },
+    "challengeTypes": {
+      "static": "静态题目",
+      "question": "问答题目",
+      "dynamic": "动态题目",
+      "pods": "容器题目"
+    },
+    "toggle": {
+      "enabled": "已启用",
+      "disabled": "已禁用"
+    },
+    "modal": {
+      "deleteWarning": "此操作不可撤销。"
+    },
+    "selectAll": "全选",
+    "deselectAll": "取消全选",
+    "scoreboard": {
+      "headers": {
+        "rank": "排名",
+        "team": "队伍",
+        "score": "得分",
+        "challenges": "题目",
+        "lastSubmit": "最后提交"
+      }
     }
   },
   "footer": {
@@ -63,6 +87,7 @@
   },
   "nav": {
     "games": "比赛",
+    "overview": "概览",
     "settings": "设置",
     "challenges": "题目",
     "scoreboard": "排行榜",
@@ -172,7 +197,7 @@
         "createTitle": "创建赛事",
         "deleteTitle": "删除赛事",
         "deletePrompt": "确定要删除赛事",
-        "deleteWarning": "此操作无法撤销。"
+        "deleteWarning": "$t(common.modal.deleteWarning)"
       },
       "toast": {
         "fetchFailed": "获取比赛列表失败",
@@ -225,10 +250,10 @@
           "flags": "Flag"
         },
         "sections": {
-          "submissions": "最近提交",
-          "writeups": "题解列表",
-          "traffic": "靶机流量",
-          "flags": "Flag"
+          "submissions": "$t(admin.contests.teamDetail.tabs.submissions)",
+          "writeups": "$t(admin.contests.teamDetail.tabs.writeups)",
+          "traffic": "$t(admin.contests.teamDetail.tabs.traffic)",
+          "flags": "$t(admin.contests.teamDetail.tabs.flags)"
         },
         "empty": {
           "submissions": "暂无提交记录",
@@ -337,10 +362,10 @@
           "typeAll": "全部类型"
         },
         "types": {
-          "static": "静态题目",
-          "question": "问答题目",
-          "dynamic": "动态题目",
-          "pods": "容器题目"
+          "static": "$t(common.challengeTypes.static)",
+          "question": "$t(common.challengeTypes.question)",
+          "dynamic": "$t(common.challengeTypes.dynamic)",
+          "pods": "$t(common.challengeTypes.pods)"
         },
         "empty": {
           "noMatch": "暂无匹配赛题"
@@ -431,8 +456,8 @@
           "pullPolicy": "拉取策略"
         },
         "actions": {
-          "selectAll": "全选",
-          "deselectAll": "取消全选",
+          "selectAll": "$t(common.selectAll)",
+          "deselectAll": "$t(common.deselectAll)",
           "warmup": "执行预热 ({{count}})"
         },
         "table": {
@@ -760,11 +785,11 @@
       },
       "scoreboard": {
         "headers": {
-          "rank": "排名",
-          "team": "队伍",
-          "score": "得分",
-          "challenges": "题目",
-          "lastSubmit": "最后提交"
+          "rank": "$t(common.scoreboard.headers.rank)",
+          "team": "$t(common.scoreboard.headers.team)",
+          "score": "$t(common.scoreboard.headers.score)",
+          "challenges": "$t(common.scoreboard.headers.challenges)",
+          "lastSubmit": "$t(common.scoreboard.headers.lastSubmit)"
         },
         "total": "总计",
         "title": "积分榜管理",
@@ -911,10 +936,10 @@
         "files": "附件："
       },
       "types": {
-        "static": "静态题目",
-        "question": "问答题目",
-        "dynamic": "动态题目",
-        "pods": "容器题目"
+        "static": "$t(common.challengeTypes.static)",
+        "question": "$t(common.challengeTypes.question)",
+        "dynamic": "$t(common.challengeTypes.dynamic)",
+        "pods": "$t(common.challengeTypes.pods)"
       },
       "toast": {
         "searchFailed": "搜索失败",
@@ -999,10 +1024,10 @@
         "excludeList": "排除列表"
       },
       "types": {
-        "static": "静态题目",
-        "question": "问答题目",
-        "dynamic": "动态题目",
-        "pods": "容器题目"
+        "static": "$t(common.challengeTypes.static)",
+        "question": "$t(common.challengeTypes.question)",
+        "dynamic": "$t(common.challengeTypes.dynamic)",
+        "pods": "$t(common.challengeTypes.pods)"
       },
       "placeholders": {
         "name": "输入题目名称",
@@ -1096,7 +1121,7 @@
         "editTitle": "编辑用户",
         "deleteTitle": "删除用户",
         "deletePrompt": "确定要删除用户",
-        "deleteWarning": "此操作无法撤销。"
+        "deleteWarning": "$t(common.modal.deleteWarning)"
       },
       "form": {
         "username": "用户名",
@@ -1161,7 +1186,7 @@
           "editTitle": "编辑角色",
           "deleteTitle": "删除角色",
           "deletePrompt": "确定要删除角色",
-          "deleteWarning": "此操作无法撤销。",
+          "deleteWarning": "$t(common.modal.deleteWarning)",
           "permissionsTitle": "权限管理"
         },
         "form": {
@@ -1213,7 +1238,7 @@
           "editTitle": "编辑分组",
           "deleteTitle": "删除分组",
           "deletePrompt": "确定要删除分组",
-          "deleteWarning": "此操作无法撤销。",
+          "deleteWarning": "$t(common.modal.deleteWarning)",
           "usersTitle": "用户管理"
         },
         "form": {
@@ -1278,8 +1303,8 @@
         "actions": "操作"
       },
       "status": {
-        "enabled": "已启用",
-        "disabled": "已禁用"
+        "enabled": "$t(common.toggle.enabled)",
+        "disabled": "$t(common.toggle.disabled)"
       },
       "empty": "暂无 SMTP 配置",
       "modal": {
@@ -1287,7 +1312,7 @@
         "editTitle": "编辑 SMTP 配置",
         "deleteTitle": "删除 SMTP 配置",
         "deletePrompt": "确定要删除 SMTP 配置",
-        "deleteWarning": "此操作不可撤销。"
+        "deleteWarning": "$t(common.modal.deleteWarning)"
       },
       "form": {
         "addressLabel": "邮箱地址 *",
@@ -1413,8 +1438,8 @@
           "actions": "操作"
         },
         "status": {
-          "enabled": "已启用",
-          "disabled": "已禁用"
+          "enabled": "$t(common.toggle.enabled)",
+          "disabled": "$t(common.toggle.disabled)"
         },
         "events": {
           "all": "全部事件"
@@ -1431,7 +1456,7 @@
         "editTitle": "编辑 Webhook 配置",
         "deleteTitle": "删除 Webhook 配置",
         "deletePrompt": "确定要删除 Webhook 配置",
-        "deleteWarning": "此操作不可撤销。"
+        "deleteWarning": "$t(common.modal.deleteWarning)"
       },
       "form": {
         "headerKeyPlaceholder": "Header名称",
@@ -1503,8 +1528,8 @@
       },
       "empty": "暂无 OAuth",
       "status": {
-        "enabled": "已启用",
-        "disabled": "已禁用"
+        "enabled": "$t(common.toggle.enabled)",
+        "disabled": "$t(common.toggle.disabled)"
       },
       "columns": {
         "logo": "Logo",
@@ -1531,7 +1556,7 @@
         "editTitle": "编辑 OAuth Provider",
         "deleteTitle": "删除 OAuth Provider",
         "deletePrompt": "确定要删除 OAuth Provider",
-        "deleteWarning": "此操作不可撤销。"
+        "deleteWarning": "$t(common.modal.deleteWarning)"
       },
       "form": {
         "providerLabel": "提供商名称 *",
@@ -1573,7 +1598,7 @@
         "traffic": "流量",
         "writeup": "题解"
       },
-      "selectAll": "全选",
+      "selectAll": "$t(common.selectAll)",
       "empty": "暂无文件",
       "columns": {
         "name": "文件名",
@@ -1596,7 +1621,7 @@
       "modal": {
         "confirmTitle": "确认删除",
         "confirmPrompt": "确定要删除选中的 {{count}} 个文件吗？",
-        "confirmWarning": "此操作不可恢复。"
+        "confirmWarning": "$t(common.modal.deleteWarning)"
       },
       "actions": {
         "confirm": "确认",
@@ -1605,7 +1630,7 @@
     },
     "images": {
       "title": "图片管理",
-      "selectAll": "全选",
+      "selectAll": "$t(common.selectAll)",
       "empty": "暂无图片",
       "columns": {
         "preview": "预览",
@@ -1738,57 +1763,57 @@
   },
   "home": {
     "hero": {
-      "titlePrefix": "Dive Deep into the",
-      "titleHighlight": "Cyber Security",
-      "titleSuffix": "Challenge",
-      "subtitle": "Join the elite community of hackers, compete in real-world challenges, and master the art of cybersecurity through hands-on experience.",
-      "start": "START HACKING",
-      "learnMore": "LEARN MORE"
+      "titlePrefix": "深入探索",
+      "titleHighlight": "网络安全",
+      "titleSuffix": "挑战",
+      "subtitle": "加入顶尖黑客社区，参与真实场景挑战，通过实战掌握网络安全技术。",
+      "start": "开始挑战",
+      "learnMore": "了解更多"
     },
     "stats": {
-      "activePlayers": "Active Players",
-      "challenges": "Challenges",
-      "events": "CTF Events",
-      "successRate": "Success Rate"
+      "activePlayers": "活跃选手",
+      "challenges": "挑战题目",
+      "events": "CTF 赛事",
+      "successRate": "解题率"
     },
     "challengeTypes": {
-      "titlePrefix": "Master All Aspects of",
-      "titleHighlight": "Cyber Security",
-      "subtitle": "From web exploitation to binary analysis, our challenges cover every major domain of cybersecurity",
+      "titlePrefix": "全面掌握",
+      "titleHighlight": "网络安全",
+      "subtitle": "从 Web 漏洞利用到二进制分析，我们的题目涵盖网络安全各大领域",
       "web": {
-        "name": "Web Security",
-        "description": "Exploit web vulnerabilities, master XSS, SQLi, and more"
+        "name": "Web 安全",
+        "description": "利用 Web 漏洞，掌握 XSS、SQL 注入等攻击技术"
       },
       "crypto": {
-        "name": "Cryptography",
-        "description": "Break ciphers, crack codes, and solve cryptographic puzzles"
+        "name": "密码学",
+        "description": "破解密文，攻克密码学难题"
       },
       "forensics": {
-        "name": "Forensics",
-        "description": "Analyze digital evidence and recover hidden data"
+        "name": "数字取证",
+        "description": "分析数字证据，还原隐藏数据"
       },
       "binary": {
-        "name": "Binary Exploitation",
-        "description": "Exploit buffer overflows, PWN"
+        "name": "二进制利用",
+        "description": "利用缓冲区溢出，PWN"
       },
       "reverse": {
-        "name": "Reverse Engineering",
-        "description": "Reverse engineering, exploit reverse engineering"
+        "name": "逆向工程",
+        "description": "逆向分析，攻克逆向题目"
       },
       "blockchain": {
-        "name": "Blockchain",
-        "description": "Blockchain Security"
+        "name": "区块链",
+        "description": "区块链安全"
       }
     },
     "upcoming": {
-      "titlePrefix": "Upcoming",
-      "titleHighlight": "Competitions",
-      "subtitle": "Register now for our upcoming CTF events and compete with the best"
+      "titlePrefix": "即将举办的",
+      "titleHighlight": "竞赛",
+      "subtitle": "立即报名参加我们即将举办的 CTF 赛事，与最强选手同场竞技"
     },
     "leaderboard": {
-      "titlePrefix": "Top",
-      "titleHighlight": "Performers",
-      "subtitle": "Meet the elite teams leading our global leaderboard"
+      "titlePrefix": "顶尖",
+      "titleHighlight": "选手",
+      "subtitle": "认识在全球排行榜上领跑的精英团队"
     }
   },
   "auth": {
@@ -2060,9 +2085,9 @@
     },
     "scoreboardTable": {
       "headers": {
-        "rank": "排名",
-        "team": "队伍",
-        "score": "得分"
+        "rank": "$t(common.scoreboard.headers.rank)",
+        "team": "$t(common.scoreboard.headers.team)",
+        "score": "$t(common.scoreboard.headers.score)"
       },
       "members": "{{count}}人",
       "status": {
@@ -2168,11 +2193,11 @@
     },
     "scoreboard": {
       "headers": {
-        "rank": "排名",
-        "team": "队伍",
-        "score": "得分",
-        "challenges": "题目",
-        "lastSubmit": "最后提交"
+        "rank": "$t(common.scoreboard.headers.rank)",
+        "team": "$t(common.scoreboard.headers.team)",
+        "score": "$t(common.scoreboard.headers.score)",
+        "challenges": "$t(common.scoreboard.headers.challenges)",
+        "lastSubmit": "$t(common.scoreboard.headers.lastSubmit)"
       },
       "total": "总计",
       "toast": {
