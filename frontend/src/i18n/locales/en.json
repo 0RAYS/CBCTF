@@ -52,6 +52,30 @@
       "now": "Now",
       "ok": "OK",
       "time": "Time"
+    },
+    "challengeTypes": {
+      "static": "Static Challenge",
+      "question": "Question Challenge",
+      "dynamic": "Dynamic Challenge",
+      "pods": "Container Challenge"
+    },
+    "toggle": {
+      "enabled": "Enabled",
+      "disabled": "Disabled"
+    },
+    "modal": {
+      "deleteWarning": "This action cannot be undone."
+    },
+    "selectAll": "Select all",
+    "deselectAll": "Deselect all",
+    "scoreboard": {
+      "headers": {
+        "rank": "RANK",
+        "team": "TEAM",
+        "score": "SCORE",
+        "challenges": "CHALLENGES",
+        "lastSubmit": "LAST SUBMIT"
+      }
     }
   },
   "footer": {
@@ -173,7 +197,7 @@
         "createTitle": "Create Contest",
         "deleteTitle": "Delete Contest",
         "deletePrompt": "Are you sure you want to delete the contest",
-        "deleteWarning": "This action cannot be undone."
+        "deleteWarning": "$t(common.modal.deleteWarning)"
       },
       "toast": {
         "fetchFailed": "Failed to load contests",
@@ -226,10 +250,10 @@
           "flags": "Flags"
         },
         "sections": {
-          "submissions": "Submissions",
-          "writeups": "Writeups",
-          "traffic": "Instance Traffic",
-          "flags": "Flags"
+          "submissions": "$t(admin.contests.teamDetail.tabs.submissions)",
+          "writeups": "$t(admin.contests.teamDetail.tabs.writeups)",
+          "traffic": "$t(admin.contests.teamDetail.tabs.traffic)",
+          "flags": "$t(admin.contests.teamDetail.tabs.flags)"
         },
         "empty": {
           "submissions": "No submission records",
@@ -338,10 +362,10 @@
           "typeAll": "All types"
         },
         "types": {
-          "static": "Static Challenge",
-          "question": "Question Challenge",
-          "dynamic": "Dynamic Challenge",
-          "pods": "Container Challenge"
+          "static": "$t(common.challengeTypes.static)",
+          "question": "$t(common.challengeTypes.question)",
+          "dynamic": "$t(common.challengeTypes.dynamic)",
+          "pods": "$t(common.challengeTypes.pods)"
         },
         "empty": {
           "noMatch": "No matching challenges"
@@ -432,8 +456,8 @@
           "pullPolicy": "Pull Policy"
         },
         "actions": {
-          "selectAll": "Select all",
-          "deselectAll": "Deselect all",
+          "selectAll": "$t(common.selectAll)",
+          "deselectAll": "$t(common.deselectAll)",
           "warmup": "Start warmup ({{count}})"
         },
         "table": {
@@ -761,11 +785,11 @@
       },
       "scoreboard": {
         "headers": {
-          "rank": "RANK",
-          "team": "TEAM",
-          "score": "SCORE",
-          "challenges": "CHALLENGES",
-          "lastSubmit": "LAST SUBMIT"
+          "rank": "$t(common.scoreboard.headers.rank)",
+          "team": "$t(common.scoreboard.headers.team)",
+          "score": "$t(common.scoreboard.headers.score)",
+          "challenges": "$t(common.scoreboard.headers.challenges)",
+          "lastSubmit": "$t(common.scoreboard.headers.lastSubmit)"
         },
         "total": "TOTAL",
         "title": "Scoreboard Management",
@@ -912,10 +936,10 @@
         "files": "Files:"
       },
       "types": {
-        "static": "Static Challenge",
-        "question": "Question Challenge",
-        "dynamic": "Dynamic Challenge",
-        "pods": "Container Challenge"
+        "static": "$t(common.challengeTypes.static)",
+        "question": "$t(common.challengeTypes.question)",
+        "dynamic": "$t(common.challengeTypes.dynamic)",
+        "pods": "$t(common.challengeTypes.pods)"
       },
       "toast": {
         "searchFailed": "Search failed",
@@ -1000,10 +1024,10 @@
         "excludeList": "Exclude List"
       },
       "types": {
-        "static": "Static Challenge",
-        "question": "Question Challenge",
-        "dynamic": "Dynamic Challenge",
-        "pods": "Container Challenge"
+        "static": "$t(common.challengeTypes.static)",
+        "question": "$t(common.challengeTypes.question)",
+        "dynamic": "$t(common.challengeTypes.dynamic)",
+        "pods": "$t(common.challengeTypes.pods)"
       },
       "placeholders": {
         "name": "Enter challenge name",
@@ -1097,7 +1121,7 @@
         "editTitle": "Edit User",
         "deleteTitle": "Delete User",
         "deletePrompt": "Are you sure you want to delete user",
-        "deleteWarning": "This action cannot be undone."
+        "deleteWarning": "$t(common.modal.deleteWarning)"
       },
       "form": {
         "username": "Username",
@@ -1162,7 +1186,7 @@
           "editTitle": "Edit Role",
           "deleteTitle": "Delete Role",
           "deletePrompt": "Are you sure you want to delete role",
-          "deleteWarning": "This action cannot be undone.",
+          "deleteWarning": "$t(common.modal.deleteWarning)",
           "permissionsTitle": "Manage Permissions"
         },
         "form": {
@@ -1214,7 +1238,7 @@
           "editTitle": "Edit Group",
           "deleteTitle": "Delete Group",
           "deletePrompt": "Are you sure you want to delete group",
-          "deleteWarning": "This action cannot be undone.",
+          "deleteWarning": "$t(common.modal.deleteWarning)",
           "usersTitle": "Manage Users"
         },
         "form": {
@@ -1279,8 +1303,8 @@
         "actions": "Actions"
       },
       "status": {
-        "enabled": "Enabled",
-        "disabled": "Disabled"
+        "enabled": "$t(common.toggle.enabled)",
+        "disabled": "$t(common.toggle.disabled)"
       },
       "empty": "No SMTP configs",
       "modal": {
@@ -1288,7 +1312,7 @@
         "editTitle": "Edit SMTP Config",
         "deleteTitle": "Delete SMTP Config",
         "deletePrompt": "Are you sure you want to delete SMTP config",
-        "deleteWarning": "This action cannot be undone."
+        "deleteWarning": "$t(common.modal.deleteWarning)"
       },
       "form": {
         "addressLabel": "Email address *",
@@ -1414,8 +1438,8 @@
           "actions": "Actions"
         },
         "status": {
-          "enabled": "Enabled",
-          "disabled": "Disabled"
+          "enabled": "$t(common.toggle.enabled)",
+          "disabled": "$t(common.toggle.disabled)"
         },
         "events": {
           "all": "All events"
@@ -1432,7 +1456,7 @@
         "editTitle": "Edit Webhook",
         "deleteTitle": "Delete Webhook",
         "deletePrompt": "Are you sure you want to delete webhook",
-        "deleteWarning": "This action cannot be undone."
+        "deleteWarning": "$t(common.modal.deleteWarning)"
       },
       "form": {
         "headerKeyPlaceholder": "Header key",
@@ -1504,8 +1528,8 @@
       },
       "empty": "No OAuth providers",
       "status": {
-        "enabled": "Enabled",
-        "disabled": "Disabled"
+        "enabled": "$t(common.toggle.enabled)",
+        "disabled": "$t(common.toggle.disabled)"
       },
       "columns": {
         "logo": "Logo",
@@ -1532,7 +1556,7 @@
         "editTitle": "Edit OAuth Provider",
         "deleteTitle": "Delete OAuth Provider",
         "deletePrompt": "Are you sure you want to delete OAuth provider",
-        "deleteWarning": "This action cannot be undone."
+        "deleteWarning": "$t(common.modal.deleteWarning)"
       },
       "form": {
         "providerLabel": "Provider name *",
@@ -1574,7 +1598,7 @@
         "traffic": "Traffic",
         "writeup": "Writeups"
       },
-      "selectAll": "Select all",
+      "selectAll": "$t(common.selectAll)",
       "empty": "No files",
       "columns": {
         "name": "Filename",
@@ -1597,7 +1621,7 @@
       "modal": {
         "confirmTitle": "Confirm Delete",
         "confirmPrompt": "Delete {{count}} selected files?",
-        "confirmWarning": "This action cannot be undone."
+        "confirmWarning": "$t(common.modal.deleteWarning)"
       },
       "actions": {
         "confirm": "Confirm",
@@ -1606,7 +1630,7 @@
     },
     "images": {
       "title": "Image Management",
-      "selectAll": "Select all",
+      "selectAll": "$t(common.selectAll)",
       "empty": "No images",
       "columns": {
         "preview": "Preview",
@@ -2061,9 +2085,9 @@
     },
     "scoreboardTable": {
       "headers": {
-        "rank": "RANK",
-        "team": "TEAM",
-        "score": "SCORE"
+        "rank": "$t(common.scoreboard.headers.rank)",
+        "team": "$t(common.scoreboard.headers.team)",
+        "score": "$t(common.scoreboard.headers.score)"
       },
       "members": "{{count}} members",
       "status": {
@@ -2169,11 +2193,11 @@
     },
     "scoreboard": {
       "headers": {
-        "rank": "RANK",
-        "team": "TEAM",
-        "score": "SCORE",
-        "challenges": "CHALLENGES",
-        "lastSubmit": "LAST SUBMIT"
+        "rank": "$t(common.scoreboard.headers.rank)",
+        "team": "$t(common.scoreboard.headers.team)",
+        "score": "$t(common.scoreboard.headers.score)",
+        "challenges": "$t(common.scoreboard.headers.challenges)",
+        "lastSubmit": "$t(common.scoreboard.headers.lastSubmit)"
       },
       "total": "TOTAL",
       "toast": {
