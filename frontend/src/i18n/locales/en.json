@@ -39,6 +39,7 @@
     "noData": "No data",
     "none": "None",
     "closeNotification": "Close notification",
+    "leaveBlankToKeep": "Leave blank to keep unchanged",
     "pagination": {
       "totalItems": "Total {{count}} items",
       "jumpTo": "Go to",

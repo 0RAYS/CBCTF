@@ -324,7 +324,9 @@ function OAuthProvidersManagement() {
               type="password"
               value={editForm.client_secret}
               onChange={(e) => setEditForm({ ...editForm, client_secret: e.target.value })}
-              placeholder={t('admin.oauthProviders.form.clientSecretPlaceholder')}
+              placeholder={
+                mode === 'edit' ? t('common.leaveBlankToKeep') : t('admin.oauthProviders.form.clientSecretPlaceholder')
+              }
               fullWidth
               required={mode === 'create'}
             />

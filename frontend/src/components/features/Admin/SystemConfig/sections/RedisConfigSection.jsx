@@ -39,6 +39,7 @@ export function RedisConfigSection({ config, updateConfig }) {
         label={t('admin.system.labels.redisPassword')}
         type="password"
         value={config.redis.pwd}
+        placeholder={t('common.leaveBlankToKeep')}
         onChange={(value) =>
           updateConfig((draft) => {
             draft.redis.pwd = value;

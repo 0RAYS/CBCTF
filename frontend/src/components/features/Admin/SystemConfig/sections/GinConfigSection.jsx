@@ -147,6 +147,7 @@ export function GinConfigSection({ config, updateConfig }) {
         label={t('admin.system.labels.ginJWTSecret')}
         type="password"
         value={config.gin.jwt.secret}
+        placeholder={t('common.leaveBlankToKeep')}
         onChange={(value) =>
           updateConfig((draft) => {
             draft.gin.jwt.secret = value;

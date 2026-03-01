@@ -57,6 +57,7 @@ export function DatabaseConfigSection({ config, updateConfig }) {
         label={t('admin.system.labels.dbPassword')}
         type="password"
         value={config.gorm.mysql.pwd}
+        placeholder={t('common.leaveBlankToKeep')}
         onChange={(value) =>
           updateConfig((draft) => {
             draft.gorm.mysql.pwd = value;
