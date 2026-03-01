@@ -145,7 +145,7 @@ export function GinConfigSection({ config, updateConfig }) {
       />
       <ConfigField
         label={t('admin.system.labels.ginJWTSecret')}
-        type="string"
+        type="password"
         value={config.gin.jwt.secret}
         onChange={(value) =>
           updateConfig((draft) => {
