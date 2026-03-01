@@ -107,10 +107,13 @@ func GetLogs(ctx *gin.Context) {
 }
 
 func SystemConfig(ctx *gin.Context) {
-	maskedFrps := make([]config.FrpsConfig, len(config.Env.K8S.Frp.Frps))
-	copy(maskedFrps, config.Env.K8S.Frp.Frps)
-	for i := range maskedFrps {
-		maskedFrps[i].Token = "******"
+	maskedFrps := make([]gin.H, len(config.Env.K8S.Frp.Frps))
+	for i, frps := range config.Env.K8S.Frp.Frps {
+		maskedFrps[i] = gin.H{
+			"host":    frps.Host,
+			"port":    frps.Port,
+			"allowed": frps.Allowed,
+		}
 	}
 	data := gin.H{
 		"host": config.Env.Host,
@@ -131,7 +134,6 @@ func SystemConfig(ctx *gin.Context) {
 		"gin_ratelimit_whitelist": config.Env.Gin.RateLimit.Whitelist,
 		"gin_cors":                config.Env.Gin.CORS,
 		"gin_log_whitelist":       config.Env.Gin.Log.Whitelist,
-		"gin_jwt_secret":          "******",
 		"gin_jwt_static":          config.Env.Gin.JWT.Static,
 		"gin_metrics_whitelist":   config.Env.Gin.Metrics.Whitelist,
 

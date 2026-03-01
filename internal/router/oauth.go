@@ -236,9 +236,6 @@ func UpdateOauthProvider(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateOauthEventType)
-	if form.ClientSecret != nil && *form.ClientSecret == "******" {
-		form.ClientSecret = nil
-	}
 	oauth := middleware.GetOauth(ctx)
 	if ret := db.InitOauthRepo(db.DB).Update(oauth.ID, db.UpdateOauthOptions{
 		AuthURL:          form.AuthURL,
