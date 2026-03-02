@@ -142,8 +142,14 @@ func GenAttachment(ctx context.Context, challenge model.Challenge, teamID uint, 
 	var err error
 	log.Logger.Debugf("Generating attachment for Team %d Challenge %d", teamID, challenge.ID)
 	generator, ret := GetGenerator(ctx, challenge)
-	// 获取失败则直接返回, 并尝试关闭生成器
-	if !ret.OK || generator.Status.Phase != corev1.PodRunning {
+	// 3.3: Check generator != nil before passing to StopGenerator
+	if !ret.OK {
+		if generator != nil {
+			return StopGenerator(ctx, challenge, generator)
+		}
+		return ret
+	}
+	if generator.Status.Phase != corev1.PodRunning {
 		return StopGenerator(ctx, challenge, generator)
 	}
 	var flag string
@@ -151,7 +157,6 @@ func GenAttachment(ctx context.Context, challenge model.Challenge, teamID uint, 
 		flag += fmt.Sprintf("%s,", base64.StdEncoding.EncodeToString([]byte(value)))
 	}
 	flag = base64.StdEncoding.EncodeToString([]byte(strings.TrimSuffix(flag, ",")))
-	flag = strings.TrimSuffix(flag, ",")
 	filepath := challenge.AttachmentPath(teamID)
 	_ = os.Remove(filepath)
 	command := fmt.Sprintf("./run.sh %d %s", teamID, flag)
@@ -161,6 +166,11 @@ func GenAttachment(ctx context.Context, challenge model.Challenge, teamID uint, 
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	for {
+		select {
+		case <-ctx.Done():
+			return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "timeout waiting for attachment"}}
+		default:
+		}
 		// NFS 延迟写入, 主动触发读取
 		_, _ = os.ReadDir(path.Dir(filepath))
 		if _, err = os.Stat(filepath); err == nil {
