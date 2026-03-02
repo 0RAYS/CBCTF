@@ -14,7 +14,7 @@ func GetVictimResp(victim model.Victim) gin.H {
 		"contest_id":             victim.ContestID.V,
 		"contest_challenge_id":   victim.ContestChallengeID.V,
 		"contest_challenge_name": victim.ContestChallenge.Name,
-		"user_id":                victim.UserID.V,
+		"user_id":                victim.UserID,
 		"start":                  victim.Start,
 		"duration":               victim.Duration,
 	}

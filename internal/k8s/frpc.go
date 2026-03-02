@@ -168,7 +168,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 	}
 	labels := map[string]string{
 		"victim_id":            strconv.Itoa(int(victim.ID)),
-		"user_id":              strconv.Itoa(int(victim.UserID.V)),
+		"user_id":              strconv.Itoa(int(victim.UserID)),
 		"team_id":              strconv.Itoa(int(victim.TeamID.V)),
 		"contest_id":           strconv.Itoa(int(victim.ContestID.V)),
 		"challenge_id":         strconv.Itoa(int(victim.ChallengeID)),

@@ -51,9 +51,7 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 		Duration:        time.Hour,
 		NetworkPolicies: challenge.NetworkPolicies,
 	}
-	if userID > 0 {
-		vOptions.UserID = sql.Null[uint]{V: userID, Valid: true}
-	}
+	vOptions.UserID = userID
 	if teamID > 0 {
 		vOptions.TeamID = sql.Null[uint]{V: teamID, Valid: true}
 	}
