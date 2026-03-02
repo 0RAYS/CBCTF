@@ -27,7 +27,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 	// 添加一个独立tag, 防止 NetworkPolicy 影响 frpc 通信
 	labels := map[string]string{
 		"victim_id":            strconv.Itoa(int(victim.ID)),
-		"user_id":              strconv.Itoa(int(victim.UserID.V)),
+		"user_id":              strconv.Itoa(int(victim.UserID)),
 		"team_id":              strconv.Itoa(int(victim.TeamID.V)),
 		"contest_id":           strconv.Itoa(int(victim.ContestID.V)),
 		"challenge_id":         strconv.Itoa(int(victim.ChallengeID)),
@@ -376,7 +376,7 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 	// 不添加独立 tag, 删除时直接删除所有相关资源
 	labels := map[string]string{
 		"victim_id":            strconv.Itoa(int(victim.ID)),
-		"user_id":              strconv.Itoa(int(victim.UserID.V)),
+		"user_id":              strconv.Itoa(int(victim.UserID)),
 		"team_id":              strconv.Itoa(int(victim.TeamID.V)),
 		"contest_id":           strconv.Itoa(int(victim.ContestID.V)),
 		"challenge_id":         strconv.Itoa(int(victim.ChallengeID)),

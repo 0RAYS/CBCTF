@@ -43,7 +43,7 @@ func StartTestVictim(ctx *gin.Context) {
 	challenge := middleware.GetChallenge(ctx)
 	selfID := middleware.GetSelf(ctx).ID
 	go func() {
-		_, ret := service.StartVictim(db.DB, 0, 0, 0, 0, challenge.ID)
+		_, ret := service.StartVictim(db.DB, selfID, 0, 0, 0, challenge.ID)
 		if !ret.OK {
 			websocket.Send(selfID, wm.ErrorLevel, wm.StartVictimWSType, "Start Victim", "Failed")
 			victim, ret := db.InitVictimRepo(db.DB).HasAliveVictim(0, challenge.ID)

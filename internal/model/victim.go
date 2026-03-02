@@ -19,7 +19,7 @@ type Victim struct {
 	ContestChallenge   ContestChallenge `json:"-"`
 	TeamID             sql.Null[uint]   `json:"team_id"`
 	Team               Team             `json:"-"`
-	UserID             sql.Null[uint]   `json:"user_id"`
+	UserID             uint             `json:"user_id"`
 	User               User             `json:"-"`
 	Pods               []Pod            `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Start              time.Time        `json:"start"`

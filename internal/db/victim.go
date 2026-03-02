@@ -19,7 +19,7 @@ type CreateVictimOptions struct {
 	ContestID          sql.Null[uint]
 	ContestChallengeID sql.Null[uint]
 	TeamID             sql.Null[uint]
-	UserID             sql.Null[uint]
+	UserID             uint
 	Start              time.Time
 	Duration           time.Duration
 	VPC                model.VPC
