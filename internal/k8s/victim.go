@@ -385,46 +385,27 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 	for _, endpoint := range victim.ExposedEndpoints {
 		redis.UnlockFrpsPort(endpoint.IP, endpoint.Port, endpoint.Protocol)
 	}
-	if ret := DeleteDNatList(ctx, labels); !ret.OK {
-		return ret
-	}
-	if ret := DeleteSNatList(ctx, labels); !ret.OK {
-		return ret
-	}
-	if ret := DeleteEIPList(ctx, labels); !ret.OK {
-		return ret
-	}
-	if ret := DeleteSubnetList(ctx, labels); !ret.OK {
-		return ret
-	}
-	if ret := DeleteNetAttachDefList(ctx, globalNamespace, labels); !ret.OK {
-		return ret
-	}
-	if ret := DeleteVPCNatGatewayList(ctx, labels); !ret.OK {
-		return ret
-	}
-	if ret := DeleteVPCList(ctx, labels); !ret.OK {
-		return ret
-	}
-	if ret := DeleteConfigMapList(ctx, labels); !ret.OK {
-		return ret
-	}
-	if ret := DeleteNetworkPolicyList(ctx, labels); !ret.OK {
-		return ret
-	}
-	if ret := DeleteEndpointList(ctx, labels); !ret.OK {
-		return ret
-	}
-	if ret := DeleteServiceList(ctx, labels); !ret.OK {
-		return ret
-	}
-	if ret := DeletePodList(ctx, labels); !ret.OK {
-		return ret
-	}
-	for _, subnet := range victim.VPC.Subnets {
-		if ret := DeleteIPList(ctx, map[string]string{"ovn.kubernetes.io/subnet": subnet.Name}); !ret.OK {
-			return ret
+	var firstErr model.RetVal
+	tryDelete := func(ret model.RetVal) {
+		if !ret.OK && firstErr.OK {
+			firstErr = ret
 		}
 	}
-	return model.SuccessRetVal()
+	firstErr = model.SuccessRetVal()
+	tryDelete(DeleteDNatList(ctx, labels))
+	tryDelete(DeleteSNatList(ctx, labels))
+	tryDelete(DeleteEIPList(ctx, labels))
+	tryDelete(DeleteSubnetList(ctx, labels))
+	tryDelete(DeleteNetAttachDefList(ctx, globalNamespace, labels))
+	tryDelete(DeleteVPCNatGatewayList(ctx, labels))
+	tryDelete(DeleteVPCList(ctx, labels))
+	tryDelete(DeleteConfigMapList(ctx, labels))
+	tryDelete(DeleteNetworkPolicyList(ctx, labels))
+	tryDelete(DeleteEndpointList(ctx, labels))
+	tryDelete(DeleteServiceList(ctx, labels))
+	tryDelete(DeletePodList(ctx, labels))
+	for _, subnet := range victim.VPC.Subnets {
+		tryDelete(DeleteIPList(ctx, map[string]string{"ovn.kubernetes.io/subnet": subnet.Name}))
+	}
+	return firstErr
 }

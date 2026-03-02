@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/websocket"
 	wm "CBCTF/internal/websocket/model"
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hibiken/asynq"
@@ -48,8 +49,8 @@ func HandleGenAttachmentTask(_ context.Context, t *asynq.Task) error {
 	defer cancel()
 	if ret := k8s.GenAttachment(ctx, payload.Challenge, payload.TeamID, payload.Flags); !ret.OK {
 		websocket.Send(payload.UserID, wm.ErrorLevel, wm.GenerateAttachmentWSType, "Generate Attachment", "Failed")
-	} else {
-		websocket.Send(payload.UserID, wm.SuccessLevel, wm.GenerateAttachmentWSType, "Generate Attachment", "Done")
+		return fmt.Errorf("generate attachment failed: %s", ret.Msg)
 	}
+	websocket.Send(payload.UserID, wm.SuccessLevel, wm.GenerateAttachmentWSType, "Generate Attachment", "Done")
 	return nil
 }
