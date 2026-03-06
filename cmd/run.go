@@ -67,16 +67,16 @@ func run() {
 }
 
 func stop() {
-	if err := config.Save(); err != nil {
-		log.Logger.Fatalf("Failed to save config: %s", err)
-	}
-	if err := server.Shutdown(context.TODO()); err != nil {
-		log.Logger.Fatalf("Failed to shutdown server: %s", err)
-	}
 	task.Stop()
 	cron.Stop()
 	redis.Stop()
 	db.Stop()
+	if err := config.Save(); err != nil {
+		log.Logger.Warningf("Failed to save config: %s", err)
+	}
+	if err := server.Shutdown(context.TODO()); err != nil {
+		log.Logger.Warningf("Failed to shutdown server: %s", err)
+	}
 }
 
 func reboot() {
