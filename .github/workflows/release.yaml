@@ -30,7 +30,7 @@ jobs:
           package-name: ${{ github.event.repository.name }}
           package-type: container
           min-versions-to-keep: 0
-          delete-only-untagged-versions: true
+          delete-only-untagged-versions: false
         continue-on-error: true
 
       - name: Set up Docker Buildx
