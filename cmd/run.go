@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/cron"
 	"CBCTF/internal/db"
 	"CBCTF/internal/email"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/redis"
@@ -24,15 +25,7 @@ import (
 
 var server *http.Server
 
-// log 与 db 需 Init 两次
-func preInit() {
-	config.Init(configPath)
-	log.Init()
-	db.Init()
-}
-
 func run() {
-	log.Init()
 	db.Init()
 	redis.Init()
 	k8s.Init()
@@ -89,6 +82,8 @@ func stop() {
 func reboot() {
 	time.Sleep(time.Second)
 	stop()
-	preInit()
+	i18n.Init()
+	config.Init(configPath)
+	log.Init()
 	run()
 }
