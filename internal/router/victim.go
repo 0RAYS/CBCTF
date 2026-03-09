@@ -54,9 +54,8 @@ func IncreaseVictimDuration(ctx *gin.Context) {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.Victim.HasMuchTime})
 		return
 	}
-	duration := victim.Duration + time.Hour
 	if ret = db.InitVictimRepo(db.DB).Update(victim.ID, db.UpdateVictimOptions{
-		Duration: &duration,
+		Duration: new(victim.Duration + time.Hour),
 	}); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
