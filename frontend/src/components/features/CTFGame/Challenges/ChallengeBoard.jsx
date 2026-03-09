@@ -21,7 +21,6 @@
  */
 
 import { motion } from 'motion/react';
-import { useState } from 'react';
 import { Button, Pagination, Card, Avatar } from '../../../../components/common';
 import { useTranslation } from 'react-i18next';
 
@@ -38,7 +37,6 @@ function ChallengeBoard({
   onPageChange,
 }) {
   const { t } = useTranslation();
-  const [hoveredChallenge, setHoveredChallenge] = useState(null);
 
   return (
     <Card variant="default" padding="lg" animate className="">
@@ -62,13 +60,15 @@ function ChallengeBoard({
         </div>
 
         {/* 团队信息 */}
-        <div className="flex items-center gap-4">
-          <div className="flex -space-x-2">
+        <div className="flex items-center gap-4 min-w-0">
+          <div className="flex -space-x-2 flex-shrink-0">
             {teamInfo.members.map((member, i) => (
               <Avatar key={i} src={member.picture} name={member.name} size="xs" className="border-2 border-black" />
             ))}
           </div>
-          <span className="text-neutral-400 font-mono">{teamInfo.name}</span>
+          <span className="text-neutral-400 font-mono truncate max-w-[160px]" title={teamInfo.name}>
+            {teamInfo.name}
+          </span>
         </div>
       </div>
 
@@ -82,23 +82,24 @@ function ChallengeBoard({
                   challenge.solved
                     ? 'border-geek-400/50 bg-geek-400/5 hover:bg-geek-400/10'
                     : 'border-neutral-300/30 bg-black/30 hover:bg-black/50'
-                }
-                ${hoveredChallenge === index ? 'scale-[1.02]' : ''}`}
-            onMouseEnter={() => setHoveredChallenge(index)}
-            onMouseLeave={() => setHoveredChallenge(null)}
+                }`}
             whileHover={{ y: -2 }}
             onClick={() => onChallengeClick(challenge)}
           >
             {/* 标题栏 */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <span className="text-geek-400 font-mono">{challenge.category}</span>
-                <h3 className="text-neutral-50 font-mono">{challenge.title}</h3>
-                <span className="text-yellow-400 font-mono text-sm">
+            <div className="flex items-center justify-between mb-3 min-w-0">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <span className="text-geek-400 font-mono flex-shrink-0 truncate max-w-[80px]" title={challenge.category}>
+                  {challenge.category}
+                </span>
+                <h3 className="text-neutral-50 font-mono truncate min-w-0" title={challenge.title}>
+                  {challenge.title}
+                </h3>
+                <span className="text-yellow-400 font-mono text-sm flex-shrink-0">
                   {t('common.points', { count: challenge.score })}
                 </span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                 <span className="text-neutral-400 text-sm">{t('game.challengeBoard.solves')}</span>
                 <span className="text-neutral-50 font-mono">{challenge.solves}</span>
               </div>
@@ -107,21 +108,23 @@ function ChallengeBoard({
             {/* 标签和状态区域 */}
             <div className="flex items-center justify-between">
               {/* 标签列表 */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
                 {challenge.tags &&
                   challenge.tags.map((tag, index) => (
                     <span
                       key={index}
                       className={`
-                      px-2 py-0.5 rounded 
+                      px-2 py-0.5 rounded
                       text-xs font-mono
                       border backdrop-blur-none
+                      truncate max-w-[96px]
                       ${
                         challenge.solved
                           ? 'border-geek-400/30 bg-geek-400/20 text-neutral-50'
                           : 'border-neutral-600 bg-neutral-900 text-neutral-300'
                       }
                     `}
+                      title={tag}
                     >
                       {tag}
                     </span>
