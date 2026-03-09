@@ -14,31 +14,25 @@ function EmptyState({ icon, title, description, action, className = '' }) {
   const { t } = useTranslation();
   const resolvedTitle = title ?? t('common.noData');
 
-  // 默认图标 - 档案/盒子图标
   const defaultIcon = (
-    <svg className="w-12 h-12 text-neutral-300/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className="w-14 h-14 text-neutral-300/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
-        strokeWidth={1.5}
+        strokeWidth={1}
         d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
       />
     </svg>
   );
 
   return (
-    <div className={`flex flex-col items-center justify-center space-y-3 py-12 ${className}`}>
-      {/* 图标 */}
-      <div className="flex items-center justify-center">{icon || defaultIcon}</div>
-
-      {/* 主标题 */}
-      <span className="font-mono text-neutral-400">{resolvedTitle}</span>
-
-      {/* 描述 */}
-      {description && <span className="text-sm text-neutral-500">{description}</span>}
-
-      {/* 操作按钮 */}
-      {action && <div className="mt-4">{action}</div>}
+    <div className={`flex flex-col items-center justify-center space-y-3 py-16 px-4 ${className}`}>
+      <div className="flex items-center justify-center mb-1">{icon || defaultIcon}</div>
+      <span className="text-lg font-mono text-neutral-300">{resolvedTitle}</span>
+      {description && (
+        <span className="text-sm text-neutral-400 text-center max-w-[360px] leading-relaxed">{description}</span>
+      )}
+      {action && <div className="mt-2">{action}</div>}
     </div>
   );
 }

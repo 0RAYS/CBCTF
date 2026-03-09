@@ -2248,7 +2248,34 @@
       "toast": {
         "fetchFailed": "获取排行榜失败"
       }
-    }
+    },
+    "countdown": {
+      "title": "比赛即将开始",
+      "subtitle": "做好准备——比赛开始后即可挑战题目",
+      "joined": "已加入",
+      "joinNow": "立即加入",
+      "days": "天",
+      "hours": "时",
+      "minutes": "分",
+      "seconds": "秒",
+      "tipTitle": "备赛提示",
+      "tip1": "配置好工具和工作环境",
+      "tip2": "阅读比赛规则和计分说明",
+      "tip3": "与队友协调分工和题目方向"
+    },
+    "welcome": {
+      "title": "欢迎来到 CBCTF",
+      "subtitle": "初次参加 CTF？了解一下比赛流程。",
+      "step1": "加入比赛",
+      "step1Desc": "浏览赛事，和队伍一起报名参赛",
+      "step2": "解题得旗",
+      "step2Desc": "在 Web、密码、逆向、取证、二进制等方向中寻找 flag",
+      "step3": "积分排名",
+      "step3Desc": "一血奖励最快解出每道题目的参赛者",
+      "dismiss": "知道了"
+    },
+    "noGamesDescription": "暂无已发布的比赛，请稍后再来查看，或联系主办方。",
+    "noChallengesDescription": "题目尚未发布，主办方将在比赛开始时释放题目。"
   },
   "utils": {
     "time": {

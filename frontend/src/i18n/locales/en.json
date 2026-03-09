@@ -2248,7 +2248,34 @@
       "toast": {
         "fetchFailed": "Failed to load scoreboard"
       }
-    }
+    },
+    "countdown": {
+      "title": "Contest Starting In",
+      "subtitle": "Get ready — challenges will be available when the competition begins",
+      "joined": "JOINED",
+      "joinNow": "JOIN NOW",
+      "days": "DAYS",
+      "hours": "HOURS",
+      "minutes": "MINUTES",
+      "seconds": "SECONDS",
+      "tipTitle": "Prepare while you wait",
+      "tip1": "Set up your tools and working environment",
+      "tip2": "Read the contest rules and scoring details",
+      "tip3": "Coordinate roles and categories with your team"
+    },
+    "welcome": {
+      "title": "Welcome to CBCTF",
+      "subtitle": "New to CTF competitions? Here's how it works.",
+      "step1": "Join a contest",
+      "step1Desc": "Browse available contests and register with your team",
+      "step2": "Solve challenges",
+      "step2Desc": "Find flags hidden in web, crypto, reverse, forensics, and binary tasks",
+      "step3": "Score points",
+      "step3Desc": "First-blood bonuses reward the fastest solvers on each challenge",
+      "dismiss": "Got it"
+    },
+    "noGamesDescription": "No contests have been published yet. Check back soon, or contact the organizer.",
+    "noChallengesDescription": "Challenges haven't been released yet. The organizer will publish them when the competition opens."
   },
   "utils": {
     "time": {
