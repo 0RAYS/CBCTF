@@ -7,7 +7,7 @@ function LeaderboardPreview(props) {
   const { t } = useTranslation();
 
   return (
-    <div className="py-20 px-8 bg-black/30">
+    <div className="py-20 px-8">
       <div className="w-full max-w-[1200px] mx-auto">
         {/* 标题 */}
         <motion.div
@@ -34,9 +34,9 @@ function LeaderboardPreview(props) {
             topUsers.map((team, index) => (
               <motion.div
                 key={index}
-                className={`flex items-center justify-between p-6 bg-black/30 backdrop-blur-[2px]
-                                ${index !== topUsers.length - 1 ? 'border-b border-neutral-300/30' : ''}
-                                hover:bg-black/50 transition-all duration-200 cursor-pointer group`}
+                className={`flex items-center justify-between p-6 bg-neutral-900
+                                ${index !== topUsers.length - 1 ? 'border-b border-neutral-600' : ''}
+                                hover:bg-neutral-800 transition-all duration-200 cursor-pointer group`}
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}

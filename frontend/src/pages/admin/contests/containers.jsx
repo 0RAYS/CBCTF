@@ -436,7 +436,7 @@ function ContestContainers() {
           {/* 统计卡片 */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <motion.div
-              className="border border-neutral-300/30 rounded-md bg-black/30 backdrop-blur-[2px] p-4"
+              className="border border-neutral-600 rounded-md bg-neutral-900 p-4"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
             >
@@ -452,7 +452,7 @@ function ContestContainers() {
             </motion.div>
 
             <motion.div
-              className="border border-neutral-300/30 rounded-md bg-black/30 backdrop-blur-[2px] p-4"
+              className="border border-neutral-600 rounded-md bg-neutral-900 p-4"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -469,7 +469,7 @@ function ContestContainers() {
             </motion.div>
 
             <motion.div
-              className="border border-neutral-300/30 rounded-md bg-black/30 backdrop-blur-[2px] p-4"
+              className="border border-neutral-600 rounded-md bg-neutral-900 p-4"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -657,7 +657,7 @@ function ContestContainers() {
           </div>
 
           {/* 过滤器 */}
-          <div className="border border-neutral-300/30 rounded-md bg-black/30 backdrop-blur-[2px] p-4">
+          <div className="border border-neutral-600 rounded-md bg-neutral-900 p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <IconFilter size={18} className="text-neutral-400" />

@@ -25,7 +25,7 @@ import { useTranslation } from 'react-i18next';
 // 卡片组件
 const StatusCard = ({ title, value, valueColor = 'text-geek-400' }) => (
   <motion.div
-    className="border border-neutral-300/30 rounded-md bg-black/30 backdrop-blur-[2px] p-4"
+    className="border border-neutral-600 rounded-md bg-neutral-900 p-4"
     whileHover={{ y: -2, boxShadow: '0 4px 20px rgba(89, 126, 247, 0.1)' }}
     transition={{ duration: 0.2 }}
   >
@@ -57,7 +57,7 @@ function AdminDashboard({ status, chartContent, extraContent }) {
         </div>
 
         {/* 图表区域 - 由外部传入 */}
-        {chartContent && <div className="mb-5 border border-neutral-300/30 rounded-md bg-black/40">{chartContent}</div>}
+        {chartContent && <div className="mb-5 border border-neutral-600 rounded-md bg-neutral-900">{chartContent}</div>}
 
         {/* 状态卡片网格 */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
