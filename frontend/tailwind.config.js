@@ -22,13 +22,6 @@ export default {
           ],
         },
         colors: {
-          'cyber': {
-            light: '#99e6ff',
-            DEFAULT: '#00a3ff',
-            dark: '#0066cc',
-            accent: '#00b4ff',
-            subtle: 'rgba(0, 163, 255, 0.15)'
-          },
           // 中性灰系
           'neutral': {
             50: '#ffffff',
@@ -71,6 +64,5 @@ export default {
         },
       },
     },
-    darkMode: "class",
     plugins: [],
   }

@@ -1,23 +1,16 @@
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Button } from '../../../components/common';
 
-function UpcomingContests({ contests = [] }) {
+function UpcomingContests({ contests = [], isLoading }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const gridColsClass =
-    contests.length <= 1
-      ? 'grid-cols-1'
-      : contests.length === 2
-        ? 'grid-cols-2'
-        : contests.length === 3
-          ? 'grid-cols-3'
-          : 'grid-cols-4';
 
   return (
-    <div className="py-20 px-8">
+    <div className="py-12 md:py-20 px-4 md:px-8">
       <div className="w-full max-w-[1200px] mx-auto">
-        {/* 标题 */}
+        {/* Heading */}
         <motion.div
           className="text-center mb-12"
           initial={{ opacity: 0, y: 20 }}
@@ -30,57 +23,66 @@ function UpcomingContests({ contests = [] }) {
           <p className="text-neutral-300">{t('home.upcoming.subtitle')}</p>
         </motion.div>
 
-        {/* 比赛列表 */}
-        <div className={`grid ${gridColsClass} gap-6`}>
-          {contests.length > 0 &&
-            contests.map((contest, index) => (
-              <motion.div
-                key={index}
-                className="border border-neutral-300 rounded-md overflow-hidden
-                                bg-neutral-900 group cursor-pointer"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -5 }}
-                onClick={() => {
-                  navigate(`/games`);
-                }}
-              >
-                {/* 比赛信息 */}
-                <div className="p-6 space-y-4">
-                  <h3
-                    className="text-xl font-mono text-neutral-50 group-hover:text-geek-400
-                                    transition-colors duration-200"
-                  >
-                    {contest.title}
-                  </h3>
+        {/* Contest list */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {isLoading
+            ? Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="h-[200px] rounded-md bg-neutral-800 animate-pulse" />
+              ))
+            : contests.map((contest, index) => (
+                <motion.div
+                  key={index}
+                  className="border border-neutral-300/30 rounded-md overflow-hidden
+                             bg-neutral-900 group cursor-pointer hover:border-geek-400/50 transition-colors duration-200"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  onClick={() => navigate('/games')}
+                >
+                  {/* Contest info */}
+                  <div className="p-6 space-y-4">
+                    <h3
+                      className="text-xl font-mono text-neutral-50 group-hover:text-geek-400
+                                 transition-colors duration-200"
+                    >
+                      {contest.title}
+                    </h3>
 
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-neutral-400">{t('common.date')}</span>
-                      <span className="text-neutral-50 font-mono">{contest.date}</span>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-neutral-400">{t('common.date')}</span>
+                        <span className="text-neutral-50 font-mono">{contest.date}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-neutral-400">{t('common.duration')}</span>
+                        <span className="text-neutral-50 font-mono">{contest.duration}</span>
+                      </div>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-neutral-400">{t('common.duration')}</span>
-                      <span className="text-neutral-50 font-mono">{contest.duration}</span>
+
+                    <div className="pt-4 border-t border-neutral-300/30 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-neutral-400">{t('common.registrations')}</span>
+                        <span className="text-geek-400 font-mono">{contest.registrations}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-neutral-400">{t('common.teams')}</span>
+                        <span className="text-geek-400 font-mono">{contest.teams}</span>
+                      </div>
                     </div>
                   </div>
-
-                  <div className="pt-4 border-t border-neutral-300/30 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-neutral-400">{t('common.registrations')}</span>
-                      <span className="text-geek-400 font-mono">{contest.registrations}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-neutral-400">{t('common.teams')}</span>
-                      <span className="text-geek-400 font-mono">{contest.teams}</span>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))}
         </div>
+
+        {/* View All CTA */}
+        {!isLoading && (
+          <div className="flex justify-center mt-8">
+            <Button variant="outline" onClick={() => navigate('/games')}>
+              {t('home.upcoming.viewAll')}
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );

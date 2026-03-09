@@ -90,7 +90,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                     variant="primary"
                     size="lg"
                     fullWidth
-                    className="shadow-[0_0_20px_rgba(89,126,247,0.4)]"
+                    className="shadow-focus-strong"
                     onClick={() => setMode('create')}
                   >
                     {t('game.team.joinModal.createTeam')}
@@ -190,7 +190,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                       type="submit"
                       variant="primary"
                       fullWidth
-                      className="shadow-[0_0_20px_rgba(89,126,247,0.4)]"
+                      className="shadow-focus-strong"
                       disabled={!createForm.teamName || loading}
                       loading={loading}
                     >
@@ -264,7 +264,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                       type="submit"
                       variant="primary"
                       fullWidth
-                      className="shadow-[0_0_20px_rgba(89,126,247,0.4)]"
+                      className="shadow-focus-strong"
                       disabled={!joinForm.teamName || !joinForm.teamCode || loading}
                       loading={loading}
                     >

@@ -49,22 +49,13 @@ function Home() {
     fetchStats();
   }, []);
 
-  if (loading) {
-    return (
-      <>
-        <HeroSection />
-        <ChallengeTypes />
-      </>
-    );
-  }
-
   return (
     <div className="-mt-10">
       <HeroSection />
-      <StatsSection stats={stats} />
+      <StatsSection stats={stats} isLoading={loading} />
       <ChallengeTypes />
-      <UpcomingContests contests={upcomingContests} />
-      <LeaderboardPreview topUsers={leaderboard} />
+      <UpcomingContests contests={upcomingContests} isLoading={loading} />
+      <LeaderboardPreview topUsers={leaderboard} isLoading={loading} />
     </div>
   );
 }
