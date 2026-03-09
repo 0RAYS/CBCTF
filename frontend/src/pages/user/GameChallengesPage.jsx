@@ -25,6 +25,7 @@ import { getTeamMembers, getTeamInfo } from '../../api/game/team';
 import { downloadChallengeAttachment } from '../../api/challenge';
 import { getContestNotices } from '../../api/contest';
 import Loading from '../../components/common/Loading';
+import EmptyState from '../../components/common/EmptyState';
 import { Button } from '../../components/common';
 import { useWebSocket } from '../../components/common/WebSocketProvider.jsx';
 import { useTranslation } from 'react-i18next';
@@ -439,6 +440,7 @@ function GameChallengesPage() {
 
   return (
     <div className="contest-container mx-auto space-y-6">
+      <h1 className="sr-only">{contestStatus?.name || t('game.challenges.title')}</h1>
       <StatusPanel
         contestStatus={contestStatus}
         onStatusExpired={(newStatus) => {
@@ -464,18 +466,22 @@ function GameChallengesPage() {
                 {t('game.challenges.backToSummary')}
               </Button>
             </div>
-            <ChallengeBoard
-              categories={categories}
-              selectedCategory={selectedCategory}
-              onCategoryChange={handleCategoryChange}
-              challenges={challenges}
-              onChallengeClick={handleChallengeClick}
-              teamInfo={teamInfo}
-              totalCount={totalCount}
-              currentPage={currentPage}
-              pageSize={pageSize}
-              onPageChange={setCurrentPage}
-            />
+            {challenges.length === 0 ? (
+              <EmptyState title={t('game.noChallenges')} />
+            ) : (
+              <ChallengeBoard
+                categories={categories}
+                selectedCategory={selectedCategory}
+                onCategoryChange={handleCategoryChange}
+                challenges={challenges}
+                onChallengeClick={handleChallengeClick}
+                teamInfo={teamInfo}
+                totalCount={totalCount}
+                currentPage={currentPage}
+                pageSize={pageSize}
+                onPageChange={setCurrentPage}
+              />
+            )}
             <ChallengeModal
               challenge={selectedChallenge}
               contest={contestStatus}
@@ -510,18 +516,22 @@ function GameChallengesPage() {
         )
       ) : (
         <div>
-          <ChallengeBoard
-            categories={categories}
-            selectedCategory={selectedCategory}
-            onCategoryChange={handleCategoryChange}
-            challenges={challenges}
-            onChallengeClick={handleChallengeClick}
-            teamInfo={teamInfo}
-            totalCount={totalCount}
-            currentPage={currentPage}
-            pageSize={pageSize}
-            onPageChange={setCurrentPage}
-          />
+          {challenges.length === 0 ? (
+            <EmptyState title={t('game.noChallenges')} />
+          ) : (
+            <ChallengeBoard
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onCategoryChange={handleCategoryChange}
+              challenges={challenges}
+              onChallengeClick={handleChallengeClick}
+              teamInfo={teamInfo}
+              totalCount={totalCount}
+              currentPage={currentPage}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+            />
+          )}
           <ChallengeModal
             challenge={selectedChallenge}
             contest={contestStatus}

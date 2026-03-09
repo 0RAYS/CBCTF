@@ -44,7 +44,7 @@ function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-190px)]">
+    <div className="flex items-center justify-center min-h-[calc(100vh-190px)] px-4">
       <AuthPanel onSubmit={handleAuth} />
     </div>
   );

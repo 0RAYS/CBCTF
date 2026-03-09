@@ -7,6 +7,7 @@ import { getContestList } from '../../api/contest';
 import { useSelector } from 'react-redux';
 import { getTeamInfo, createTeam, joinTeam } from '../../api/game/team';
 import Loading from '../../components/common/Loading';
+import EmptyState from '../../components/common/EmptyState';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_CONTEST_IMAGE, getContestStatus, getContestTimeRange } from '../../config/contest';
 
@@ -134,13 +135,19 @@ function GamesPage() {
 
   return (
     <div>
-      <GameSlider
-        games={games}
-        currentIndex={currentIndex}
-        onIndexChange={setCurrentIndex}
-        onGameAction={handleGameAction}
-        user={user}
-      />
+      {games.length === 0 ? (
+        <div className="py-24">
+          <EmptyState title={t('game.noGames')} />
+        </div>
+      ) : (
+        <GameSlider
+          games={games}
+          currentIndex={currentIndex}
+          onIndexChange={setCurrentIndex}
+          onGameAction={handleGameAction}
+          user={user}
+        />
+      )}
       <TeamJoinModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}

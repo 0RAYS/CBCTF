@@ -102,7 +102,7 @@ function Pagination({
         key={page}
         variant={isCurrent ? 'primary' : 'ghost'}
         size="icon"
-        className={`!w-8 !h-8 ${isCurrent ? '' : '!bg-black/30'}`}
+        className={`!w-10 !h-10 ${isCurrent ? '' : '!bg-transparent'}`}
         onClick={() => onChange?.(page)}
         disabled={page <= 0}
         animate={false}

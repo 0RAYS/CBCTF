@@ -30,7 +30,7 @@ function Avatar({ src, name = '', size = 'md', shape = 'rounded', className = ''
           <span className="font-mono text-neutral-300 leading-none">{initial}</span>
         </div>
       ) : (
-        <img src={src} alt={name} className="w-full h-full object-cover" onError={() => setImgError(true)} />
+        <img src={src} alt={name} loading="lazy" className="w-full h-full object-cover" onError={() => setImgError(true)} />
       )}
     </div>
   );

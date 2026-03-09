@@ -116,7 +116,7 @@ function GameSlider({ games = [], currentIndex: externalIndex, onIndexChange, on
           >
             <motion.div
               className="w-full h-full flex items-center justify-center"
-              whileTap={games.length > 1 ? { scale: 0.9 } : {}}
+              whileTap={games.length > 1 ? { opacity: 0.7 } : {}}
             >
               <span
                 className={`text-xl transition-colors duration-200
@@ -143,7 +143,7 @@ function GameSlider({ games = [], currentIndex: externalIndex, onIndexChange, on
           >
             <motion.div
               className="w-full h-full flex items-center justify-center"
-              whileTap={games.length > 1 ? { scale: 0.9 } : {}}
+              whileTap={games.length > 1 ? { opacity: 0.7 } : {}}
             >
               <span
                 className={`text-xl transition-colors duration-200

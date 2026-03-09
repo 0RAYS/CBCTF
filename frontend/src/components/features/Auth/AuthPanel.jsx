@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { useState } from 'react';
-import { Button } from '../../common';
+import { Button, Input } from '../../common';
 import OAuthLogin from './OAuthLogin';
 import { useTranslation } from 'react-i18next';
 
@@ -94,7 +94,7 @@ function AuthPanel({ onSubmit }) {
 
   return (
     <motion.div
-      className="w-[400px] bg-neutral-900 border border-neutral-600 rounded-md p-8"
+      className="w-full max-w-[400px] bg-neutral-900 border border-neutral-600 rounded-md p-8"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
@@ -103,7 +103,7 @@ function AuthPanel({ onSubmit }) {
       <div className="relative flex justify-center mb-8">
         <div className="absolute -top-[3px] -right-[3px] w-[10px] h-[10px] border-t border-r border-neutral-300" />
         <div className="absolute -bottom-[3px] -left-[3px] w-[10px] h-[10px] border-b border-l border-neutral-300" />
-        <motion.span
+        <motion.h1
           className="text-neutral-300 text-2xl font-mono tracking-wider"
           key={isLogin ? 'login' : 'register'}
           initial={{ opacity: 0 }}
@@ -112,7 +112,7 @@ function AuthPanel({ onSubmit }) {
           transition={{ duration: 0.15 }}
         >
           {isLogin ? t('auth.login') : t('auth.register')}
-        </motion.span>
+        </motion.h1>
       </div>
 
       {/* 切换按钮 */}
@@ -154,37 +154,16 @@ function AuthPanel({ onSubmit }) {
             }}
           >
             <div className="space-y-4">
-              <div>
-                <input
-                  type="text"
-                  required
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  placeholder={t('auth.placeholders.username')}
-                  className={`
-                                        w-full h-[40px] bg-black/20 border rounded-md px-4 
-                                        text-neutral-50 placeholder-neutral-400
-                                        transition-all duration-200
-                                        ${
-                                          errors.username
-                                            ? 'border-red-500 focus:border-red-500 focus:shadow-[0_0_15px_rgba(239,68,68,0.3)]'
-                                            : 'border-neutral-300 focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.3)]'
-                                        }
-                                    `}
-                />
-                {errors.username && (
-                  <motion.span
-                    className="text-red-500 text-xs mt-1 block"
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.15 }}
-                  >
-                    {errors.username}
-                  </motion.span>
-                )}
-              </div>
+              <Input
+                type="text"
+                name="username"
+                required
+                value={formData.username}
+                onChange={handleChange}
+                label={t('auth.placeholders.username')}
+                placeholder={t('auth.placeholders.username')}
+                error={errors.username}
+              />
 
               {!isLogin && (
                 <motion.div
@@ -196,58 +175,29 @@ function AuthPanel({ onSubmit }) {
                     ease: 'easeInOut',
                   }}
                 >
-                  <input
+                  <Input
                     type="email"
                     name="email"
                     required
                     value={formData.email}
                     onChange={handleChange}
+                    label={t('auth.placeholders.email')}
                     placeholder={t('auth.placeholders.email')}
-                    className={`
-                                            w-full h-[40px] bg-black/20 border rounded-md px-4 
-                                            text-neutral-50 placeholder-neutral-400
-                                            transition-all duration-200
-                                            ${
-                                              errors.email
-                                                ? 'border-red-500 focus:border-red-500 focus:shadow-[0_0_15px_rgba(239,68,68,0.3)]'
-                                                : 'border-neutral-300 focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.3)]'
-                                            }
-                                        `}
+                    error={errors.email}
                   />
-                  {errors.email && (
-                    <motion.span
-                      className="text-red-500 text-xs mt-1 block"
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                    >
-                      {errors.email}
-                    </motion.span>
-                  )}
                 </motion.div>
               )}
 
-              <div>
-                <input
-                  type="password"
-                  name="password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder={t('auth.placeholders.password')}
-                  className={`
-                                        w-full h-[40px] bg-black/20 border rounded-md px-4 
-                                        text-neutral-50 placeholder-neutral-400
-                                        transition-all duration-200
-                                        ${
-                                          errors.password
-                                            ? 'border-red-500 focus:border-red-500 focus:shadow-[0_0_15px_rgba(239,68,68,0.3)]'
-                                            : 'border-neutral-300 focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.3)]'
-                                        }
-                                    `}
-                />
-                {errors.password && <span className="text-red-500 text-xs mt-1 block">{errors.password}</span>}
-              </div>
+              <Input
+                type="password"
+                name="password"
+                required
+                value={formData.password}
+                onChange={handleChange}
+                label={t('auth.placeholders.password')}
+                placeholder={t('auth.placeholders.password')}
+                error={errors.password}
+              />
 
               {!isLogin && (
                 <motion.div
@@ -259,34 +209,16 @@ function AuthPanel({ onSubmit }) {
                     ease: 'easeInOut',
                   }}
                 >
-                  <input
+                  <Input
                     type="password"
                     name="confirmPassword"
                     required
                     value={formData.confirmPassword}
                     onChange={handleChange}
+                    label={t('auth.placeholders.confirmPassword')}
                     placeholder={t('auth.placeholders.confirmPassword')}
-                    className={`
-                                            w-full h-[40px] bg-black/20 border rounded-md px-4 
-                                            text-neutral-50 placeholder-neutral-400
-                                            transition-all duration-200
-                                            ${
-                                              errors.confirmPassword
-                                                ? 'border-red-500 focus:border-red-500 focus:shadow-[0_0_15px_rgba(239,68,68,0.3)]'
-                                                : 'border-neutral-300 focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.3)]'
-                                            }
-                                        `}
+                    error={errors.confirmPassword}
                   />
-                  {errors.confirmPassword && (
-                    <motion.span
-                      className="text-red-500 text-xs mt-1 block"
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                    >
-                      {errors.confirmPassword}
-                    </motion.span>
-                  )}
                 </motion.div>
               )}
             </div>
@@ -297,7 +229,7 @@ function AuthPanel({ onSubmit }) {
           type="submit"
           variant="primary"
           fullWidth
-          className="shadow-[0_0_20px_rgba(89,126,247,0.4)]"
+          className="shadow-focus-strong"
           disabled={isSubmitting}
         >
           {isSubmitting ? t('common.processing') : isLogin ? t('auth.login') : t('auth.register')}

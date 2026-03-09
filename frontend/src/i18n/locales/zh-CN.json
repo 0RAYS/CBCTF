@@ -39,6 +39,9 @@
     "noData": "暂无数据",
     "none": "无",
     "closeNotification": "关闭通知",
+    "openUserMenu": "打开用户菜单",
+    "mainNavigation": "主导航",
+    "toggleMenu": "切换导航菜单",
     "leaveBlankToKeep": "留空则不修改",
     "pagination": {
       "totalItems": "共 {{count}} 条",
@@ -117,7 +120,8 @@
     "welcome": "欢迎",
     "quickActions": "快捷操作",
     "sidebar": {
-      "close": "关闭侧边栏"
+      "close": "关闭侧边栏",
+      "navigation": "管理员导航"
     },
     "topbar": {
       "toggleSidebar": "切换侧边栏",
@@ -1988,6 +1992,8 @@
     }
   },
   "game": {
+    "noGames": "暂无比赛",
+    "noChallenges": "暂无题目发布",
     "status": {
       "upcoming": "即将开始",
       "active": "进行中",
@@ -2164,6 +2170,7 @@
       }
     },
     "challenges": {
+      "title": "题目",
       "backToSummary": "← 返回比赛总结",
       "toast": {
         "fetchFailed": "获取数据失败",

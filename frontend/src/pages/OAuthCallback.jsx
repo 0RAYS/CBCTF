@@ -112,9 +112,9 @@ function OAuthCallback() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-190px)]">
+    <div className="flex items-center justify-center min-h-[calc(100vh-190px)] px-4">
       <motion.div
-        className="w-[400px] bg-neutral-900 border border-neutral-600 rounded-md p-8"
+        className="w-full max-w-[400px] bg-neutral-900 border border-neutral-600 rounded-md p-8"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}

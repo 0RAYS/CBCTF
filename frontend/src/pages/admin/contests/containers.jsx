@@ -494,7 +494,7 @@ function ContestContainers() {
           animate={{ opacity: 1, y: 0 }}
         >
           {/* 快速操作区域 */}
-          <div className="border border-neutral-300/30 rounded-md bg-black/30 backdrop-blur-[2px] p-4">
+          <div className="border border-neutral-600 rounded-md bg-neutral-900 p-4">
             <div className="flex items-center gap-2 mb-3">
               <IconPlayerPlay size={18} className="text-neutral-400" />
               <h3 className="text-base font-mono text-neutral-50">
@@ -697,7 +697,7 @@ function ContestContainers() {
                     }}
                     className="w-full h-8 pl-7 pr-2 bg-black/20 border border-neutral-300/30 rounded-md
                             text-xs text-neutral-50 placeholder-neutral-500
-                            focus:outline-none focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.3)]
+                            focus:outline-none focus:border-geek-400 focus:shadow-focus
                             transition-all duration-200"
                   />
                   {searchLoading.users && (
@@ -751,7 +751,7 @@ function ContestContainers() {
                     }}
                     className="w-full h-8 pl-7 pr-2 bg-black/20 border border-neutral-300/30 rounded-md
                             text-xs text-neutral-50 placeholder-neutral-500
-                            focus:outline-none focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.3)]
+                            focus:outline-none focus:border-geek-400 focus:shadow-focus
                             transition-all duration-200"
                   />
                   {searchLoading.teams && (
@@ -803,7 +803,7 @@ function ContestContainers() {
                     }}
                     className="w-full h-8 pl-7 pr-2 bg-black/20 border border-neutral-300/30 rounded-md
                             text-xs text-neutral-50 placeholder-neutral-500
-                            focus:outline-none focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.3)]
+                            focus:outline-none focus:border-geek-400 focus:shadow-focus
                             transition-all duration-200"
                   />
                   {searchLoading.challenges && (
