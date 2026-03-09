@@ -111,7 +111,7 @@ const Toast = forwardRef(({ id, title, description, color = 'default', onClose, 
         {/* 内容 */}
         <div className="flex-1 min-w-0">
           {title && <h3 className={`font-medium text-base ${config.title}`}>{title}</h3>}
-          {description && <div className="mt-1 text-sm opacity-90 font-light">{description}</div>}
+          {description && <div className="mt-1 text-sm opacity-90 font-light break-words overflow-wrap-anywhere">{description}</div>}
         </div>
 
         {/* 关闭按钮 */}
