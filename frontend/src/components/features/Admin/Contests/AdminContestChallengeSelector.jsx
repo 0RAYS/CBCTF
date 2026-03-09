@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { IconX, IconSearch } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { Button, Pagination, Card, EmptyState } from '../../../../components/common';
+import { Button, Pagination, Card, EmptyState, Chip } from '../../../../components/common';
 import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../../config/challengeChips';
 
 /**
@@ -44,36 +44,7 @@ function AdminContestChallengeSelector({
   const inputBaseClass =
     'w-full bg-black/20 border border-neutral-300/30 rounded-md p-3 text-neutral-50 font-mono focus:border-geek-400 focus:outline-none transition-colors duration-200';
 
-  // 分类标签渲染
-  const renderCategoryChip = (category) => {
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-mono ${getChallengeCategoryChipClass(category)}`}>
-        {category}
-      </span>
-    );
-  };
-
-  // 类型标签渲染
-  const renderTypeChip = (type) => {
-    const typeMap = {
-      static: { label: t('admin.contests.challengeSelector.types.static') },
-      question: {
-        label: t('admin.contests.challengeSelector.types.question'),
-      },
-      dynamic: {
-        label: t('admin.contests.challengeSelector.types.dynamic'),
-      },
-      pods: { label: t('admin.contests.challengeSelector.types.pods') },
-    };
-
-    const typeInfo = typeMap[type] || { label: type };
-
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-mono ${getChallengeTypeChipClass(type)}`}>
-        {typeInfo.label}
-      </span>
-    );
-  };
+  // 分类标签 / 类型标签由 Chip 组件统一渲染
 
   if (!isOpen) return null;
 
@@ -183,8 +154,16 @@ function AdminContestChallengeSelector({
                         <div className="flex items-center gap-3 mb-2">
                           <h3 className="text-lg font-mono text-neutral-50">{challenge.name}</h3>
                           <div className="flex gap-2">
-                            {renderCategoryChip(challenge.category)}
-                            {renderTypeChip(challenge.type)}
+                            <Chip
+                              label={challenge.category}
+                              colorClass={getChallengeCategoryChipClass(challenge.category)}
+                            />
+                            <Chip
+                              label={t(`admin.contests.challengeSelector.types.${challenge.type}`, {
+                                defaultValue: challenge.type,
+                              })}
+                              colorClass={getChallengeTypeChipClass(challenge.type)}
+                            />
                           </div>
                         </div>
 

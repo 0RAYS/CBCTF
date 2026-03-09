@@ -19,20 +19,8 @@
  */
 
 import { motion } from 'motion/react';
-import { Card } from '../../common';
+import { Card, StatCard } from '../../common';
 import { useTranslation } from 'react-i18next';
-
-// 卡片组件
-const StatusCard = ({ title, value, valueColor = 'text-geek-400' }) => (
-  <motion.div
-    className="border border-neutral-600 rounded-md bg-neutral-900 p-4"
-    whileHover={{ y: -2, boxShadow: '0 4px 20px rgba(89, 126, 247, 0.1)' }}
-    transition={{ duration: 0.2 }}
-  >
-    <h2 className="text-sm font-mono text-neutral-400 mb-2">{title}</h2>
-    <p className={`text-2xl ${valueColor}`}>{value}</p>
-  </motion.div>
-);
 
 function AdminDashboard({ status, chartContent, extraContent }) {
   const { t } = useTranslation();
@@ -61,21 +49,21 @@ function AdminDashboard({ status, chartContent, extraContent }) {
 
         {/* 状态卡片网格 */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <StatusCard title={t('admin.dashboard.cards.serverIp')} value={status?.ip || t('common.notAvailable')} />
-          <StatusCard title={t('admin.dashboard.cards.users')} value={status?.users || 0} />
-          <StatusCard title={t('admin.dashboard.cards.contests')} value={status?.contests || 0} />
-          <StatusCard title={t('admin.dashboard.cards.challenges')} value={status?.challenges || 0} />
-          <StatusCard title={t('admin.dashboard.cards.victims')} value={status?.victims || 0} />
-          <StatusCard title={t('admin.dashboard.cards.submissions')} value={status?.submissions || 0} />
-          <StatusCard title={t('admin.dashboard.cards.requests')} value={status?.requests || 0} />
-          <StatusCard
+          <StatCard title={t('admin.dashboard.cards.serverIp')} value={status?.ip || t('common.notAvailable')} />
+          <StatCard title={t('admin.dashboard.cards.users')} value={status?.users || 0} />
+          <StatCard title={t('admin.dashboard.cards.contests')} value={status?.contests || 0} />
+          <StatCard title={t('admin.dashboard.cards.challenges')} value={status?.challenges || 0} />
+          <StatCard title={t('admin.dashboard.cards.victims')} value={status?.victims || 0} />
+          <StatCard title={t('admin.dashboard.cards.submissions')} value={status?.submissions || 0} />
+          <StatCard title={t('admin.dashboard.cards.requests')} value={status?.requests || 0} />
+          <StatCard
             title={t('admin.dashboard.cards.responseTime')}
             value={status?.duration ? `${status.duration} ms` : t('common.notAvailable')}
           />
-          <StatusCard title={t('admin.dashboard.cards.downlink')} value={formatBytes(status?.sent)} />
-          <StatusCard title={t('admin.dashboard.cards.uplink')} value={formatBytes(status?.recv)} />
-          <StatusCard title={t('admin.dashboard.cards.totalTraffic')} value={formatBytes(status?.io)} />
-          <StatusCard title={t('admin.dashboard.cards.cacheSize')} value={status?.cache || 0} />
+          <StatCard title={t('admin.dashboard.cards.downlink')} value={formatBytes(status?.sent)} />
+          <StatCard title={t('admin.dashboard.cards.uplink')} value={formatBytes(status?.recv)} />
+          <StatCard title={t('admin.dashboard.cards.totalTraffic')} value={formatBytes(status?.io)} />
+          <StatCard title={t('admin.dashboard.cards.cacheSize')} value={status?.cache || 0} />
         </div>
       </motion.div>
 

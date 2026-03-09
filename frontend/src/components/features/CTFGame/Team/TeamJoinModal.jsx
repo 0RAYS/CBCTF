@@ -129,7 +129,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                       }
                       className="w-full h-[40px] bg-black/20 border border-neutral-300 rounded-md px-4
                                                 text-neutral-50 placeholder-neutral-400
-                                                focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.3)]
+                                                focus:border-geek-400 focus:shadow-focus
                                                 transition-all duration-200"
                       placeholder="Enter team name"
                     />
@@ -147,7 +147,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                       }
                       className="w-full h-[80px] bg-black/20 border border-neutral-300 rounded-md p-4
                                                 text-neutral-50 placeholder-neutral-400
-                                                focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.3)]
+                                                focus:border-geek-400 focus:shadow-focus
                                                 transition-all duration-200 resize-none"
                       placeholder="Describe your team"
                     />
@@ -166,7 +166,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                       }
                       className="w-full h-[40px] bg-black/20 border border-neutral-300 rounded-md px-4
                                                 text-neutral-50 placeholder-neutral-400
-                                                focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.3)]
+                                                focus:border-geek-400 focus:shadow-focus
                                                 transition-all duration-200"
                       placeholder="Enter contest code"
                     />
@@ -221,7 +221,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                       }
                       className="w-full h-[40px] bg-black/20 border border-neutral-300 rounded-md px-4
                                                 text-neutral-50 placeholder-neutral-400
-                                                focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.3)]
+                                                focus:border-geek-400 focus:shadow-focus
                                                 transition-all duration-200"
                       placeholder="Enter team name"
                     />
@@ -240,7 +240,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                       }
                       className="w-full h-[40px] bg-black/20 border border-neutral-300 rounded-md px-4
                                                 text-neutral-50 placeholder-neutral-400
-                                                focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.3)]
+                                                focus:border-geek-400 focus:shadow-focus
                                                 transition-all duration-200"
                       placeholder="Enter team invitation code"
                     />

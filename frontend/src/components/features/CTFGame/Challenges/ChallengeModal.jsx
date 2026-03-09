@@ -668,7 +668,7 @@ function ChallengeModal({
                         placeholder={`${contest.prefix}{...}`}
                         className="flex-1 h-[40px] bg-black/20 border border-neutral-300 rounded-md px-4
                                                   text-neutral-50 placeholder-neutral-400
-                                                  focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.3)]
+                                                  focus:border-geek-400 focus:shadow-focus
                                                   transition-all duration-200"
                       />
                       <Button

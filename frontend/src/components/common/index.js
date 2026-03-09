@@ -19,3 +19,5 @@ export { default as LanguageSwitcher } from './LanguageSwitcher';
 export { default as DateTimeInput } from './DateTimeInput';
 export { default as IpAddress } from './IpAddress';
 export { default as Spinner } from './Spinner';
+export { default as Chip } from './Chip';
+export { default as StatCard } from './StatCard';

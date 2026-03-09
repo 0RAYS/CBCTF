@@ -678,7 +678,13 @@ function AdminChallengeModal({
                           </Button>
                         </div>
                         <div className="border border-neutral-300/30 rounded-md overflow-hidden">
-                          <Suspense fallback={<div className="flex items-center justify-center h-[200px] text-neutral-400 font-mono text-sm">Loading editor…</div>}>
+                          <Suspense
+                            fallback={
+                              <div className="flex items-center justify-center h-[200px] text-neutral-400 font-mono text-sm">
+                                Loading editor…
+                              </div>
+                            }
+                          >
                             <Editor
                               value={challenge.docker_compose || defaultYAML}
                               onChange={updateDockerCompose}
@@ -994,7 +1000,13 @@ function AdminChallengeModal({
               </div>
             </div>
             <div className="flex-1 h-full">
-              <Suspense fallback={<div className="flex items-center justify-center h-full text-neutral-400 font-mono text-sm">Loading editor…</div>}>
+              <Suspense
+                fallback={
+                  <div className="flex items-center justify-center h-full text-neutral-400 font-mono text-sm">
+                    Loading editor…
+                  </div>
+                }
+              >
                 <Editor
                   value={fullscreenEditor.value}
                   onChange={updateFullscreenValue}

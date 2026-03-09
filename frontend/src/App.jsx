@@ -13,10 +13,7 @@ function App() {
   useEffect(() => {
     const initializeAuth = async () => {
       if (token) {
-        await Promise.all([
-          dispatch(fetchUserInfo()),
-          dispatch(fetchAccessibleRoutes()),
-        ]);
+        await Promise.all([dispatch(fetchUserInfo()), dispatch(fetchAccessibleRoutes())]);
       }
       dispatch(setInitialized());
     };

@@ -10,7 +10,7 @@ import {
 } from '../../../api/admin/contest';
 import { Modal } from '../../../components/common';
 import ModalButton from '../../../components/common/ModalButton';
-import { Button, Pagination, Card, EmptyState } from '../../../components/common';
+import { Button, Pagination, Card, EmptyState, StatCard } from '../../../components/common';
 import { motion } from 'motion/react';
 import {
   IconPlayerPlay,
@@ -435,55 +435,28 @@ function ContestContainers() {
 
           {/* 统计卡片 */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <motion.div
-              className="border border-neutral-600 rounded-md bg-neutral-900 p-4"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-geek-400/20 rounded-md flex items-center justify-center">
-                  <IconServer size={20} className="text-geek-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-mono text-neutral-400">{t('admin.contests.containers.stats.total')}</p>
-                  <p className="text-2xl font-mono text-neutral-50">{stats.totalContainers}</p>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              className="border border-neutral-600 rounded-md bg-neutral-900 p-4"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-400/20 rounded-md flex items-center justify-center">
-                  <IconPlayerPlay size={20} className="text-green-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-mono text-neutral-400">{t('admin.contests.containers.stats.running')}</p>
-                  <p className="text-2xl font-mono text-green-400">{stats.runningContainers}</p>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              className="border border-neutral-600 rounded-md bg-neutral-900 p-4"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-red-400/20 rounded-md flex items-center justify-center">
-                  <IconBan size={20} className="text-red-400" />
-                </div>
-                <div>
-                  <p className="text-sm font-mono text-neutral-400">{t('admin.contests.containers.stats.stopped')}</p>
-                  <p className="text-2xl font-mono text-red-400">{stats.stoppedContainers}</p>
-                </div>
-              </div>
-            </motion.div>
+            <StatCard
+              title={t('admin.contests.containers.stats.total')}
+              value={stats.totalContainers}
+              valueColor="text-neutral-50"
+              icon={<IconServer size={20} className="text-geek-400" />}
+            />
+            <StatCard
+              title={t('admin.contests.containers.stats.running')}
+              value={stats.runningContainers}
+              valueColor="text-green-400"
+              icon={<IconPlayerPlay size={20} className="text-green-400" />}
+              iconBgClass="bg-green-400/20"
+              delay={0.1}
+            />
+            <StatCard
+              title={t('admin.contests.containers.stats.stopped')}
+              value={stats.stoppedContainers}
+              valueColor="text-red-400"
+              icon={<IconBan size={20} className="text-red-400" />}
+              iconBgClass="bg-red-400/20"
+              delay={0.2}
+            />
           </div>
         </div>
 

@@ -20,7 +20,7 @@ import {
 } from '../../../api/admin/contest';
 import { getUserInfo } from '../../../api/admin/user';
 import { downloadBlobResponse } from '../../../utils/fileDownload';
-import { List, StatusTag, IpAddress } from '../../../components/common';
+import { List, StatusTag, IpAddress, StatCard } from '../../../components/common';
 import { Modal } from '../../../components/common';
 import ModalButton from '../../../components/common/ModalButton';
 import { Button, Pagination, EmptyState } from '../../../components/common';
@@ -642,18 +642,19 @@ function AdminContestCheats() {
 
         {/* 统计信息 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="border border-neutral-600 rounded-md bg-neutral-900 p-4">
-            <h3 className="text-sm font-mono text-neutral-400 mb-2">{t('admin.contests.cheats.stats.total')}</h3>
-            <p className="text-2xl text-neutral-50">{total}</p>
-          </div>
-          <div className="border border-neutral-600 rounded-md bg-neutral-900 p-4">
-            <h3 className="text-sm font-mono text-neutral-400 mb-2">{t('admin.contests.cheats.stats.processed')}</h3>
-            <p className="text-2xl text-green-400">{checked}</p>
-          </div>
-          <div className="border border-neutral-600 rounded-md bg-neutral-900 p-4">
-            <h3 className="text-sm font-mono text-neutral-400 mb-2">{t('admin.contests.cheats.stats.unprocessed')}</h3>
-            <p className="text-2xl text-yellow-400">{total - checked}</p>
-          </div>
+          <StatCard title={t('admin.contests.cheats.stats.total')} value={total} valueColor="text-neutral-50" />
+          <StatCard
+            title={t('admin.contests.cheats.stats.processed')}
+            value={checked}
+            valueColor="text-green-400"
+            delay={0.1}
+          />
+          <StatCard
+            title={t('admin.contests.cheats.stats.unprocessed')}
+            value={total - checked}
+            valueColor="text-yellow-400"
+            delay={0.2}
+          />
         </div>
 
         {/* 作弊事件列表 */}
