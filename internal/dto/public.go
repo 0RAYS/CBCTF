@@ -47,9 +47,3 @@ func (f *SearchModelsForm) Validate(ctx *gin.Context) model.RetVal {
 	}
 	return model.SuccessRetVal()
 }
-
-// ChangePasswordForm for user or admin change password
-type ChangePasswordForm struct {
-	OldPassword string `form:"old" json:"old" binding:"required,nefield=NewPassword"`
-	NewPassword string `form:"new" json:"new" binding:"required,nefield=OldPassword"`
-}
