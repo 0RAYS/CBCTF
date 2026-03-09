@@ -21,11 +21,17 @@ type RegisterForm struct {
 	Email    string `form:"email" json:"email" binding:"required,email"`
 }
 
-func (f *RegisterForm) Validate(ctx *gin.Context) model.RetVal {
+func (f *RegisterForm) Validate(_ *gin.Context) model.RetVal {
 	if utils.CheckPassword(f.Password) < 2 {
 		return model.RetVal{Msg: i18n.Model.User.WeakPassword}
 	}
 	return model.SuccessRetVal()
+}
+
+// ChangePasswordForm for user or admin change password
+type ChangePasswordForm struct {
+	OldPassword string `form:"old" json:"old" binding:"required,nefield=NewPassword"`
+	NewPassword string `form:"new" json:"new" binding:"required,nefield=OldPassword"`
 }
 
 // CreateUserForm for create user
@@ -39,7 +45,7 @@ type CreateUserForm struct {
 	Banned      bool   `form:"banned" json:"banned"`
 }
 
-func (f *CreateUserForm) Validate(ctx *gin.Context) model.RetVal {
+func (f *CreateUserForm) Validate(_ *gin.Context) model.RetVal {
 	if utils.CheckPassword(f.Password) < 2 {
 		return model.RetVal{Msg: i18n.Model.User.WeakPassword}
 	}
@@ -64,7 +70,7 @@ type UpdateUserForm struct {
 	Verified    *bool   `form:"verified" json:"verified"`
 }
 
-func (f *UpdateUserForm) Validate(ctx *gin.Context) model.RetVal {
+func (f *UpdateUserForm) Validate(_ *gin.Context) model.RetVal {
 	if f.Password != nil {
 		if utils.CheckPassword(*f.Password) < 2 {
 			return model.RetVal{Msg: i18n.Model.User.WeakPassword}
