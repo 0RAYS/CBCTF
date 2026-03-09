@@ -162,7 +162,7 @@ function GameSlider({ games = [], currentIndex: externalIndex, onIndexChange, on
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -100 }}
             transition={{ duration: 0.3 }}
-            className="relative h-[500px] border border-neutral-300 rounded-md overflow-hidden bg-black/30"
+            className="relative h-[300px] md:h-[500px] border border-neutral-300 rounded-md overflow-hidden bg-black/30"
           >
             {/* 背景图片 */}
             <div
@@ -175,11 +175,11 @@ function GameSlider({ games = [], currentIndex: externalIndex, onIndexChange, on
             />
 
             {/* 内容区域 */}
-            <div className="relative h-full p-8 flex flex-col justify-between">
+            <div className="relative h-full p-4 md:p-8 flex flex-col justify-between">
               {/* 标题和状态 */}
               <div>
                 <div className="flex items-center gap-4 mb-4">
-                  <h2 className="text-3xl font-mono text-neutral-50 tracking-wider">{currentGame.title}</h2>
+                  <h2 className="text-xl md:text-3xl font-mono text-neutral-50 tracking-wider">{currentGame.title}</h2>
                   <span className={`px-3 py-1 border rounded-md text-sm ${getStatusColor(currentGame.status)}`}>
                     {statusLabel}
                   </span>
@@ -190,7 +190,7 @@ function GameSlider({ games = [], currentIndex: externalIndex, onIndexChange, on
               </div>
 
               {/* 时间信息和操作按钮 */}
-              <div className="flex items-end justify-between">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <span className="text-neutral-400">{t('common.start')}:</span>
