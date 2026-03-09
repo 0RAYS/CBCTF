@@ -467,7 +467,7 @@ function GameChallengesPage() {
               </Button>
             </div>
             {challenges.length === 0 ? (
-              <EmptyState title={t('game.noChallenges')} />
+              <EmptyState title={t('game.noChallenges')} description={t('game.noChallengesDescription')} />
             ) : (
               <ChallengeBoard
                 categories={categories}
@@ -517,7 +517,7 @@ function GameChallengesPage() {
       ) : (
         <div>
           {challenges.length === 0 ? (
-            <EmptyState title={t('game.noChallenges')} />
+            <EmptyState title={t('game.noChallenges')} description={t('game.noChallengesDescription')} />
           ) : (
             <ChallengeBoard
               categories={categories}
