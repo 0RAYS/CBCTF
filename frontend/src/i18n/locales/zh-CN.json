@@ -1763,57 +1763,57 @@
   },
   "home": {
     "hero": {
-      "titlePrefix": "深入探索",
-      "titleHighlight": "网络安全",
-      "titleSuffix": "挑战",
-      "subtitle": "加入顶尖黑客社区，参与真实场景挑战，通过实战掌握网络安全技术。",
-      "start": "开始挑战",
-      "learnMore": "了解更多"
+      "titlePrefix": "Dive Deep into the",
+      "titleHighlight": "Cyber Security",
+      "titleSuffix": "Challenge",
+      "subtitle": "Join the elite community of hackers, compete in real-world challenges, and master the art of cybersecurity through hands-on experience.",
+      "start": "START HACKING",
+      "learnMore": "LEARN MORE"
     },
     "stats": {
-      "activePlayers": "活跃选手",
-      "challenges": "挑战题目",
-      "events": "CTF 赛事",
-      "successRate": "解题率"
+      "activePlayers": "Active Players",
+      "challenges": "Challenges",
+      "events": "CTF Events",
+      "successRate": "Success Rate"
     },
     "challengeTypes": {
-      "titlePrefix": "全面掌握",
-      "titleHighlight": "网络安全",
-      "subtitle": "从 Web 漏洞利用到二进制分析，我们的题目涵盖网络安全各大领域",
+      "titlePrefix": "Master All Aspects of",
+      "titleHighlight": "Cyber Security",
+      "subtitle": "From web exploitation to binary analysis, our challenges cover every major domain of cybersecurity",
       "web": {
-        "name": "Web 安全",
-        "description": "利用 Web 漏洞，掌握 XSS、SQL 注入等攻击技术"
+        "name": "Web Security",
+        "description": "Exploit web vulnerabilities, master XSS, SQLi, and more"
       },
       "crypto": {
-        "name": "密码学",
-        "description": "破解密文，攻克密码学难题"
+        "name": "Cryptography",
+        "description": "Break ciphers, crack codes, and solve cryptographic puzzles"
       },
       "forensics": {
-        "name": "数字取证",
-        "description": "分析数字证据，还原隐藏数据"
+        "name": "Forensics",
+        "description": "Analyze digital evidence and recover hidden data"
       },
       "binary": {
-        "name": "二进制利用",
-        "description": "利用缓冲区溢出，PWN"
+        "name": "Binary Exploitation",
+        "description": "Exploit buffer overflows, PWN"
       },
       "reverse": {
-        "name": "逆向工程",
-        "description": "逆向分析，攻克逆向题目"
+        "name": "Reverse Engineering",
+        "description": "Reverse engineering, exploit reverse engineering"
       },
       "blockchain": {
-        "name": "区块链",
-        "description": "区块链安全"
+        "name": "Blockchain",
+        "description": "Blockchain Security"
       }
     },
     "upcoming": {
-      "titlePrefix": "即将举办的",
-      "titleHighlight": "竞赛",
-      "subtitle": "立即报名参加我们即将举办的 CTF 赛事，与最强选手同场竞技"
+      "titlePrefix": "Upcoming",
+      "titleHighlight": "Competitions",
+      "subtitle": "Register now for our upcoming CTF events and compete with the best"
     },
     "leaderboard": {
-      "titlePrefix": "顶尖",
-      "titleHighlight": "选手",
-      "subtitle": "认识在全球排行榜上领跑的精英团队"
+      "titlePrefix": "Top",
+      "titleHighlight": "Performers",
+      "subtitle": "Meet the elite teams leading our global leaderboard"
     }
   },
   "auth": {
