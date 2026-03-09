@@ -702,7 +702,7 @@ function AdminContestCheats() {
             <select
               value={editForm.type}
               onChange={(e) => setEditForm({ ...editForm, type: e.target.value })}
-              className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded text-neutral-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded text-neutral-300 focus:outline-none focus:ring-2 focus:ring-geek-400"
             >
               {filterOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -719,7 +719,7 @@ function AdminContestCheats() {
             <textarea
               value={editForm.reason}
               onChange={(e) => setEditForm({ ...editForm, reason: e.target.value })}
-              className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded text-neutral-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded text-neutral-300 focus:outline-none focus:ring-2 focus:ring-geek-400"
               rows={3}
               placeholder={t('admin.contests.cheats.form.reasonPlaceholder')}
             />
@@ -735,7 +735,7 @@ function AdminContestCheats() {
                   type="checkbox"
                   checked={editForm.checked}
                   onChange={(e) => setEditForm({ ...editForm, checked: e.target.checked })}
-                  className="w-4 h-4 text-blue-600 bg-neutral-800 border-neutral-700 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-geek-400 bg-neutral-800 border-neutral-700 rounded focus:ring-geek-400"
                 />
                 <span className="text-neutral-300">{t('admin.contests.cheats.status.processed')}</span>
               </label>
@@ -749,7 +749,7 @@ function AdminContestCheats() {
             <textarea
               value={editForm.comment}
               onChange={(e) => setEditForm({ ...editForm, comment: e.target.value })}
-              className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded text-neutral-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-neutral-800 border border-neutral-700 rounded text-neutral-300 focus:outline-none focus:ring-2 focus:ring-geek-400"
               rows={3}
               placeholder={t('admin.contests.cheats.form.commentPlaceholder')}
             />

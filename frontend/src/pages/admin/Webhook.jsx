@@ -392,7 +392,7 @@ function WebhookManagement() {
             <select
               value={editForm.method}
               onChange={(e) => setEditForm({ ...editForm, method: e.target.value })}
-              className="w-full px-3 py-1.5 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-1.5 bg-neutral-800 border border-neutral-700 rounded-lg text-neutral-300 focus:outline-none focus:ring-2 focus:ring-geek-400"
               required={mode === 'create'}
             >
               <option value="GET">GET</option>
@@ -469,7 +469,7 @@ function WebhookManagement() {
                       type="checkbox"
                       checked={editForm.events.includes(event)}
                       onChange={() => handleEventToggle(event)}
-                      className="text-blue-500"
+                      className="text-geek-400"
                     />
                     <span className="text-neutral-300 text-sm">{event}</span>
                   </label>

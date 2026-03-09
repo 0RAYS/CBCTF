@@ -16,9 +16,9 @@ const TOAST_CONFIG = {
     icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />,
   },
   secondary: {
-    container: 'border-indigo-400/70 bg-indigo-900/70 text-indigo-300 shadow-[0_0_15px_rgba(99,102,241,0.2)]',
-    title: 'text-indigo-300 font-mono',
-    iconColor: 'text-indigo-400',
+    container: 'border-geek-400/70 bg-geek-900/70 text-geek-300 shadow-[0_0_15px_rgba(89,126,247,0.2)]',
+    title: 'text-geek-300 font-mono',
+    iconColor: 'text-geek-400',
     icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />,
   },
   success: {

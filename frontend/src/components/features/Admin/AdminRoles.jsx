@@ -49,7 +49,7 @@ function AdminRoles({
             <Button
               variant="ghost"
               size="icon"
-              className="!bg-blue-400/20 !text-blue-400 hover:!bg-blue-400/30"
+              className="!bg-geek-400/20 !text-geek-400 hover:!bg-geek-400/30"
               onClick={(e) => {
                 e.stopPropagation();
                 onManagePermissions?.(role);

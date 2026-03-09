@@ -411,7 +411,7 @@ function TeamDetails() {
                             ? 'bg-geek-500/20 text-geek-400'
                             : traffic.type === 'response'
                               ? 'bg-green-400/20 text-green-400'
-                              : 'bg-blue-400/20 text-blue-400'
+                              : 'bg-geek-400/20 text-geek-400'
                         }`}
                       >
                         {traffic.type === 'request'

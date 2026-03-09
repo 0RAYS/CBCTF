@@ -38,8 +38,9 @@ function Tabs({
           key={item.key}
           type="button"
           disabled={item.disabled}
-          className={`${resolvedVariant.button} text-sm font-medium transition-colors ${
-            value === item.key ? 'text-blue-400 border-b-2 border-blue-400' : 'text-neutral-400 hover:text-neutral-300'
+          className={`${resolvedVariant.button} text-sm font-medium transition-colors
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70 ${
+            value === item.key ? 'text-geek-400 border-b-2 border-geek-400' : 'text-neutral-400 hover:text-neutral-300'
           } ${item.disabled ? 'opacity-50 cursor-not-allowed' : ''} ${buttonClassName}`.trim()}
           onClick={() => {
             if (!item.disabled) onChange?.(item.key);

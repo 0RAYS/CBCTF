@@ -45,7 +45,7 @@ function Select({
     select-custom focus-visible:ring-2 focus-visible:ring-geek-400/70
     ${sizeClasses[size] || sizeClasses.md}
     ${fullWidth ? 'w-full' : ''}
-    ${error ? '!border-red-400 focus:!border-red-400 focus:!shadow-[0_0_15px_rgba(239,68,68,0.3)]' : ''}
+    ${error ? '!border-red-400 focus:!border-red-400 focus:!shadow-error' : ''}
     ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
     ${className}
   `

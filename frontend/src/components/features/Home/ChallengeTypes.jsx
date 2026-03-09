@@ -40,9 +40,9 @@ function ChallengeTypes() {
       name: t('home.challengeTypes.reverse.name'),
       icon: '🚩',
       description: t('home.challengeTypes.reverse.description'),
-      color: 'border-blue-400',
-      hoverColor: 'hover:border-blue-400',
-      textColor: 'text-blue-400',
+      color: 'border-geek-400',
+      hoverColor: 'hover:border-geek-400',
+      textColor: 'text-geek-400',
     },
     {
       name: t('home.challengeTypes.blockchain.name'),

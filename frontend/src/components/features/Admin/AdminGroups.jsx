@@ -40,7 +40,7 @@ function AdminGroups({
         return <span className="text-neutral-300">{group.description || '-'}</span>;
 
       case 'role':
-        return <span className="text-blue-400">{rolesMap[group.role_id] || '-'}</span>;
+        return <span className="text-geek-400">{rolesMap[group.role_id] || '-'}</span>;
 
       case 'users':
         return <span className="text-neutral-300">{group.users}</span>;
@@ -58,7 +58,7 @@ function AdminGroups({
             <Button
               variant="ghost"
               size="icon"
-              className="!bg-blue-400/20 !text-blue-400 hover:!bg-blue-400/30"
+              className="!bg-geek-400/20 !text-geek-400 hover:!bg-geek-400/30"
               onClick={(e) => {
                 e.stopPropagation();
                 onManageUsers?.(group);

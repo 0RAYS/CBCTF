@@ -55,6 +55,13 @@ export default {
             900: '#030852',
           }
         },
+        boxShadow: {
+          // Design token: focus state glow (geek-400 accent)
+          'focus': '0 0 15px rgba(89,126,247,0.3)',
+          'focus-strong': '0 0 20px rgba(89,126,247,0.4)',
+          // Design token: error state glow (red-400)
+          'error': '0 0 15px rgba(239,68,68,0.3)',
+        },
       },
     },
     darkMode: "class",

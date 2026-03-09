@@ -441,8 +441,8 @@ function ContestContainers() {
               animate={{ opacity: 1, y: 0 }}
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-400/20 rounded-md flex items-center justify-center">
-                  <IconServer size={20} className="text-blue-400" />
+                <div className="w-10 h-10 bg-geek-400/20 rounded-md flex items-center justify-center">
+                  <IconServer size={20} className="text-geek-400" />
                 </div>
                 <div>
                   <p className="text-sm font-mono text-neutral-400">{t('admin.contests.containers.stats.total')}</p>
@@ -846,7 +846,7 @@ function ContestContainers() {
                     </span>
                   )}
                   {filters.team_id && (
-                    <span className="px-2 py-1 bg-blue-400/20 text-blue-400 text-xs font-mono rounded border border-blue-400/30">
+                    <span className="px-2 py-1 bg-geek-400/20 text-geek-400 text-xs font-mono rounded border border-geek-400/30">
                       {t('admin.contests.containers.filters.teamIdLabel')}: {filters.team_id}
                       <button onClick={() => handleFilterChange('team_id', '')} className="ml-1 hover:text-red-400">
                         ×

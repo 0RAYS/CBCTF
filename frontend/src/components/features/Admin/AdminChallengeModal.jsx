@@ -634,8 +634,8 @@ function AdminChallengeModal({
                   <h3 className="text-lg font-mono text-neutral-50 mb-3">
                     {t('admin.challengeModal.sections.podsNotice')}
                   </h3>
-                  <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-md">
-                    <p className="text-sm text-blue-400 font-mono">
+                  <div className="p-3 bg-geek-400/10 border border-geek-400/20 rounded-md">
+                    <p className="text-sm text-geek-400 font-mono">
                       {podNoticeLines.map((line, index) =>
                         line ? (
                           <span key={index}>
