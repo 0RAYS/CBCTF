@@ -175,7 +175,9 @@ export function getTeamMembers(contestID, teamID) {
 
 // 获取团队容器列表
 export const getTeamContainers = async (contestId, teamId, params) => {
-  return request.get(`/admin/contests/${contestId}/teams/${teamId}/victims`, {
+  return request({
+    url: `/admin/contests/${contestId}/teams/${teamId}/victims`,
+    method: 'GET',
     params,
   });
 };

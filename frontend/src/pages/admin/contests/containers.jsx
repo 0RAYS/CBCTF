@@ -75,6 +75,13 @@ function ContestContainers() {
   const [selectedChallenges, setSelectedChallenges] = useState([]);
   const [randomTeamPercentage, setRandomTeamPercentage] = useState(50); // 随机选择队伍的百分比
 
+  const challengePageSize = 50;
+  const teamPageSize = 50;
+  const [challengePage, setChallengePage] = useState(1);
+  const [challengeTotal, setChallengeTotal] = useState(0);
+  const [teamPage, setTeamPage] = useState(1);
+  const [teamTotal, setTeamTotal] = useState(0);
+
   // 统计信息
   const [stats, setStats] = useState({
     totalContainers: 0,
@@ -122,9 +129,13 @@ function ContestContainers() {
   // 获取团队列表
   const fetchTeams = async () => {
     try {
-      const response = await getContestTeams(parseInt(contestId), { limit: 20, offset: 0 });
+      const response = await getContestTeams(parseInt(contestId), {
+        limit: teamPageSize,
+        offset: (teamPage - 1) * teamPageSize,
+      });
       if (response.code === 200) {
         setTeams(response.data.teams || []);
+        setTeamTotal(response.data.count || 0);
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.contests.containers.toast.fetchTeamsFailed') });
@@ -134,9 +145,14 @@ function ContestContainers() {
   // 获取题目列表
   const fetchChallenges = async () => {
     try {
-      const response = await getContestChallenges(parseInt(contestId));
+      const response = await getContestChallenges(parseInt(contestId), {
+        type: 'pods',
+        limit: challengePageSize,
+        offset: (challengePage - 1) * challengePageSize,
+      });
       if (response.code === 200) {
         setChallenges(response.data.challenges || []);
+        setChallengeTotal(response.data.count || 0);
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.contests.containers.toast.fetchChallengesFailed') });
@@ -177,6 +193,14 @@ function ContestContainers() {
   useEffect(() => {
     fetchContainers();
   }, [currentPage, filters.user_id, filters.team_id, filters.challenge_id]);
+
+  useEffect(() => {
+    fetchChallenges();
+  }, [challengePage]);
+
+  useEffect(() => {
+    fetchTeams();
+  }, [teamPage]);
 
   // 点击外部关闭搜索结果
   useEffect(() => {
@@ -487,9 +511,7 @@ function ContestContainers() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() =>
-                        setSelectedChallenges(challenges.filter((c) => c.type === 'pods').map((c) => c.id))
-                      }
+                      onClick={() => setSelectedChallenges(challenges.map((c) => c.id))}
                       className="!text-xs !h-5 !px-1"
                     >
                       {t('admin.contests.containers.quickActions.selectAll')}
@@ -505,33 +527,52 @@ function ContestContainers() {
                   </div>
                 </div>
                 <div className="max-h-24 overflow-y-auto border border-neutral-300/30 rounded-md bg-black/10">
-                  {challenges
-                    .filter((challenge) => challenge.type === 'pods')
-                    .map((challenge) => (
-                      <div key={challenge.id} className="flex items-center p-1 hover:bg-black/30 transition-colors">
-                        <input
-                          type="checkbox"
-                          id={`challenge-${challenge.id}`}
-                          checked={selectedChallenges.includes(challenge.id)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedChallenges((prev) => [...prev, challenge.id]);
-                            } else {
-                              setSelectedChallenges((prev) => prev.filter((id) => id !== challenge.id));
-                            }
-                          }}
-                          className="w-3 h-3 rounded border-neutral-300/30 text-geek-400
-                                focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
-                        />
-                        <label
-                          htmlFor={`challenge-${challenge.id}`}
-                          className="ml-2 text-xs font-mono text-neutral-300 cursor-pointer flex-1 truncate"
-                        >
-                          {challenge.name}
-                        </label>
-                      </div>
-                    ))}
+                  {challenges.map((challenge) => (
+                    <div key={challenge.id} className="flex items-center p-1 hover:bg-black/30 transition-colors">
+                      <input
+                        type="checkbox"
+                        id={`challenge-${challenge.id}`}
+                        checked={selectedChallenges.includes(challenge.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedChallenges((prev) => [...prev, challenge.id]);
+                          } else {
+                            setSelectedChallenges((prev) => prev.filter((id) => id !== challenge.id));
+                          }
+                        }}
+                        className="w-3 h-3 rounded border-neutral-300/30 text-geek-400
+                              focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
+                      />
+                      <label
+                        htmlFor={`challenge-${challenge.id}`}
+                        className="ml-2 text-xs font-mono text-neutral-300 cursor-pointer flex-1 truncate"
+                      >
+                        {challenge.name}
+                      </label>
+                    </div>
+                  ))}
                 </div>
+                {Math.ceil(challengeTotal / challengePageSize) > 1 && (
+                  <div className="flex items-center justify-between mt-1">
+                    <button
+                      disabled={challengePage === 1}
+                      onClick={() => setChallengePage((p) => p - 1)}
+                      className="text-xs font-mono text-neutral-400 hover:text-neutral-200 disabled:opacity-30 px-1"
+                    >
+                      ‹
+                    </button>
+                    <span className="text-xs font-mono text-neutral-500">
+                      {challengePage} / {Math.ceil(challengeTotal / challengePageSize)}
+                    </span>
+                    <button
+                      disabled={challengePage >= Math.ceil(challengeTotal / challengePageSize)}
+                      onClick={() => setChallengePage((p) => p + 1)}
+                      className="text-xs font-mono text-neutral-400 hover:text-neutral-200 disabled:opacity-30 px-1"
+                    >
+                      ›
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* 选择队伍 */}
@@ -607,6 +648,27 @@ function ContestContainers() {
                     </div>
                   ))}
                 </div>
+                {Math.ceil(teamTotal / teamPageSize) > 1 && (
+                  <div className="flex items-center justify-between mt-1">
+                    <button
+                      disabled={teamPage === 1}
+                      onClick={() => setTeamPage((p) => p - 1)}
+                      className="text-xs font-mono text-neutral-400 hover:text-neutral-200 disabled:opacity-30 px-1"
+                    >
+                      ‹
+                    </button>
+                    <span className="text-xs font-mono text-neutral-500">
+                      {teamPage} / {Math.ceil(teamTotal / teamPageSize)}
+                    </span>
+                    <button
+                      disabled={teamPage >= Math.ceil(teamTotal / teamPageSize)}
+                      onClick={() => setTeamPage((p) => p + 1)}
+                      className="text-xs font-mono text-neutral-400 hover:text-neutral-200 disabled:opacity-30 px-1"
+                    >
+                      ›
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
