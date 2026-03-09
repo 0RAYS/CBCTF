@@ -27,8 +27,8 @@ function Settings() {
   const handlePasswordChange = async (data) => {
     try {
       const payload = { new: data.newPassword };
-      if (!user.has_no_pwd) {
-        payload.old = data.currentPassword;
+      if (user.has_no_pwd) {
+        payload.old = 'never_login_pwd';
       }
       await updatePassword(payload);
     } catch (error) {
