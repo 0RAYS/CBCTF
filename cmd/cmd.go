@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"CBCTF/internal/config"
 	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
 	"flag"
 	"fmt"
 	"os"
@@ -25,8 +23,6 @@ func Cmd() {
 	}
 	_ = fs.Parse(os.Args[1:])
 
-	config.Init(configPath)
-	log.Init()
-
+	preInit()
 	run()
 }
