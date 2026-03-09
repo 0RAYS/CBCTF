@@ -183,10 +183,7 @@ function GamesPage() {
 
       {games.length === 0 ? (
         <div className="py-16">
-          <EmptyState
-            title={t('game.noGames')}
-            description={t('game.noGamesDescription')}
-          />
+          <EmptyState title={t('game.noGames')} description={t('game.noGamesDescription')} />
         </div>
       ) : (
         <GameSlider
