@@ -32,7 +32,14 @@ function DateTimeInput({
   const hourListRef = useRef(null);
   const minuteListRef = useRef(null);
 
-  const [inputText, setInputText] = useState('');
+  const [inputText, setInputText] = useState(() => {
+    if (value) {
+      const parsed = parseDateTimeString(value);
+      if (parsed) return formatToDateTimeLocal(parsed).replace('T', ' ');
+      return value;
+    }
+    return '';
+  });
   const [isOpen, setIsOpen] = useState(false);
   const [viewYear, setViewYear] = useState(() => new Date().getFullYear());
   const [viewMonth, setViewMonth] = useState(() => new Date().getMonth());
