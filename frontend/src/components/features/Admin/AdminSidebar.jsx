@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { motion } from 'motion/react';
 import { Button } from '../../common';
 import { useTranslation } from 'react-i18next';
@@ -13,6 +14,13 @@ function AdminSidebar({
 }) {
   const { t } = useTranslation();
   const resolvedLogo = logo || t('branding.admin');
+
+  const activeItemId = useMemo(() => {
+    const allItems = sections.flatMap((s) => s.items || []);
+    const matches = allItems.filter((item) => activePath.startsWith(item.path));
+    const winner = matches.sort((a, b) => b.path.length - a.path.length)[0];
+    return winner?.id ?? null;
+  }, [activePath, sections]);
 
   return (
     <>
@@ -51,7 +59,7 @@ function AdminSidebar({
               )}
               <div className="space-y-2">
                 {section.items.map((item) => {
-                  const isActive = activePath.startsWith(item.path);
+                  const isActive = item.id === activeItemId;
                   return (
                     <motion.button
                       key={item.id}
