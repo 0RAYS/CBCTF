@@ -49,7 +49,7 @@ function AdminContestChallenges({
             key={index}
             variant="tag"
             size="sm"
-            label={tag}
+            label={tag.length > 4 ? tag.slice(0, 4) + '…' : tag}
             colorClass="border-geek-600/30 text-geek-300"
             className="rounded-full"
           />
@@ -70,7 +70,7 @@ function AdminContestChallenges({
             key={index}
             variant="tag"
             size="sm"
-            label={t('admin.contests.challenges.hintLabel', { index: index + 1 })}
+            label={hint.length > 8 ? hint.slice(0, 8) + '…' : hint}
             colorClass="border-yellow-400/30 text-yellow-300"
             title={hint}
           />
