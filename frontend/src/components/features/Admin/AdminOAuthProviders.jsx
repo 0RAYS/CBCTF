@@ -36,14 +36,11 @@ function AdminOAuthProviders({
   // 列定义
   const columns = [
     { key: 'picture', label: t('admin.oauthProviders.columns.logo'), width: '5%' },
-    { key: 'provider', label: t('admin.oauthProviders.columns.provider'), width: '5%' },
-    { key: 'uri', label: t('admin.oauthProviders.columns.uri'), width: '5%' },
-    { key: 'status', label: t('admin.oauthProviders.columns.status'), width: '5%' },
-    // { key: 'auth_url', label: 'AuthURL', width: '10%' },
-    // { key: 'token_url', label: 'TokenURL', width: '10%' },
-    // { key: 'user_info_url', label: 'UserInfoURL', width: '10%' },
-    { key: 'callback_url', label: t('admin.oauthProviders.columns.callback'), width: '10%' },
-    { key: 'actions', label: t('admin.oauthProviders.columns.actions'), width: '5%' },
+    { key: 'provider', label: t('admin.oauthProviders.columns.provider'), width: '10%' },
+    { key: 'uri', label: t('admin.oauthProviders.columns.uri'), width: '12%' },
+    { key: 'status', label: t('admin.oauthProviders.columns.status'), width: '8%' },
+    { key: 'callback_url', label: t('admin.oauthProviders.columns.callback'), width: '30%' },
+    { key: 'actions', label: t('admin.oauthProviders.columns.actions'), width: '10%' },
   ];
 
   // 自定义单元格渲染
@@ -117,12 +114,16 @@ function AdminOAuthProviders({
       //     </div>
       //   );
 
-      case 'callback_url':
+      case 'callback_url': {
+        const url = provider.callback_url || '';
         return (
-          <div className="max-w-25 truncate" title={provider.callback_url}>
-            <span className="text-neutral-300 text-sm">{provider.callback_url || ''}</span>
+          <div className="flex items-center gap-2 min-w-0 w-full">
+            <span className="text-neutral-300 font-mono text-sm truncate block min-w-0 flex-1" title={url}>
+              {url}
+            </span>
           </div>
         );
+      }
 
       case 'actions':
         return (
