@@ -13,7 +13,7 @@ import { motion } from 'motion/react';
 import { ScrollingText } from '../../common/index.js';
 
 const categoryColors = {
-  WEB: 'bg-blue-400',
+  WEB: 'bg-geek-400',
   CRYPTO: 'bg-purple-400',
   PWN: 'bg-red-400',
   REVERSE: 'bg-green-400',

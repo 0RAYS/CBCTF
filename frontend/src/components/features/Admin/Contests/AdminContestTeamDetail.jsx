@@ -726,7 +726,7 @@ const getContainerStatusClass = (startTime, duration) => {
   const durationInMilliseconds = duration / 1000000; // 纳秒转毫秒
   const end = new Date(start.getTime() + durationInMilliseconds);
 
-  if (now < start) return 'bg-blue-400/20 text-blue-400';
+  if (now < start) return 'bg-geek-400/20 text-geek-400';
   if (now > end) return 'bg-red-400/20 text-red-400';
   return 'bg-green-400/20 text-green-400';
 };

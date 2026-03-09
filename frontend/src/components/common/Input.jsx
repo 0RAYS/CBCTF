@@ -62,7 +62,7 @@ function Input({
     ${sizes[size] || sizes.md}
     ${getPadding()}
     ${fullWidth ? 'w-full' : ''}
-    ${error ? 'border-red-400 focus:border-red-400 focus:shadow-[0_0_15px_rgba(239,68,68,0.3)]' : 'border-neutral-300/30 focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.3)]'}
+    ${error ? 'border-red-400 focus:border-red-400 focus:shadow-error' : 'border-neutral-300/30 focus:border-geek-400 focus:shadow-focus'}
     ${disabled ? 'opacity-50 cursor-not-allowed bg-black/10' : ''}
     ${className}
   `

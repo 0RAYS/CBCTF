@@ -32,7 +32,7 @@ function AdminPermissions({
         return <span className="text-neutral-50 font-mono">{permission.name}</span>;
 
       case 'resource':
-        return <span className="text-blue-400">{permission.resource}</span>;
+        return <span className="text-geek-400">{permission.resource}</span>;
 
       case 'operation':
         return <span className="text-neutral-300">{permission.operation}</span>;

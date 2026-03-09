@@ -1,7 +1,7 @@
 const fallbackChipClass = 'bg-neutral-400/20 text-neutral-400';
 
 const categoryChipClasses = {
-  web: 'bg-blue-400/20 text-blue-400',
+  web: 'bg-geek-400/20 text-geek-400',
   crypto: 'bg-purple-400/20 text-purple-400',
   pwn: 'bg-red-400/20 text-red-400',
   reverse: 'bg-green-400/20 text-green-400',

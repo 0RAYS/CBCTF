@@ -48,7 +48,7 @@ function Textarea({
     bg-black/20 border rounded-md px-4 py-2 text-neutral-50 placeholder-neutral-500
     focus:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70 transition-all duration-200
     ${fullWidth ? 'w-full' : ''}
-    ${error ? 'border-red-400 focus:border-red-400 focus:shadow-[0_0_15px_rgba(239,68,68,0.3)]' : 'border-neutral-300/30 focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.3)]'}
+    ${error ? 'border-red-400 focus:border-red-400 focus:shadow-error' : 'border-neutral-300/30 focus:border-geek-400 focus:shadow-focus'}
     ${disabled ? 'opacity-50 cursor-not-allowed bg-black/10' : ''}
     ${resizeOptions[resize] || resizeOptions.none}
     ${className}

@@ -78,7 +78,7 @@ function AdminWebhook({
             <span
               className={`text-sm font-mono px-2 py-1 rounded ${
                 webhook.method === 'GET'
-                  ? 'bg-blue-400/20 text-blue-400'
+                  ? 'bg-geek-400/20 text-geek-400'
                   : webhook.method === 'POST'
                     ? 'bg-green-400/20 text-green-400'
                     : webhook.method === 'PUT'
