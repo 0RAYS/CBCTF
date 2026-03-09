@@ -86,7 +86,7 @@ function AdminContests({
               onPictureUpload?.(contest);
             }}
           >
-            <img src={contest.picture} alt={contest.name} className="w-full h-full object-cover" />
+            <img src={contest.picture} alt={contest.name} loading="lazy" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <span className="text-neutral-300 text-xs">{t('admin.contests.actions.replaceCover')}</span>
             </div>

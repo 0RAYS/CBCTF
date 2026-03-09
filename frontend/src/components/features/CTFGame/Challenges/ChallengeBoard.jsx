@@ -77,7 +77,7 @@ function ChallengeBoard({
         {challenges.map((challenge) => (
           <motion.div
             key={challenge.id}
-            className={`p-4 border rounded-md transition-all duration-200 cursor-pointer backdrop-blur-none
+            className={`p-4 border rounded-md transition-colors duration-200 cursor-pointer backdrop-blur-none
                 ${
                   challenge.solved
                     ? 'border-geek-400/50 bg-geek-400/5 hover:bg-geek-400/10'

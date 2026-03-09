@@ -68,7 +68,7 @@ function NavBar({
             className="relative group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70 rounded-md"
             onClick={onPictureClick}
           >
-            <div className="w-[45px] h-[45px] border border-neutral-300 rounded-md overflow-hidden transition-all duration-200 hover:border-neutral-100 cursor-pointer">
+            <div className="w-[45px] h-[45px] border border-neutral-300 rounded-md overflow-hidden transition-colors duration-200 hover:border-neutral-100 cursor-pointer">
               <Avatar src={pictureSrc} name={userName} size={45} shape="rounded" />
             </div>
             {/* 装饰角 */}

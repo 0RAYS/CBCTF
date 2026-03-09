@@ -56,7 +56,7 @@ function AdminOAuthProviders({
             }}
             title={t('admin.oauthProviders.actions.uploadLogo')}
           >
-            <img src={provider.picture} alt={provider.provider} className="w-full h-full object-cover" />
+            <img src={provider.picture} alt={provider.provider} loading="lazy" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               <IconEdit size={16} className="text-white" />
             </div>
