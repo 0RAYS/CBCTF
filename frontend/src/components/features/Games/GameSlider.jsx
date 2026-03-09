@@ -103,9 +103,9 @@ function GameSlider({ games = [], currentIndex: externalIndex, onIndexChange, on
         >
           {/* 导航按钮 */}
           <div
-            className={`absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 
+            className={`absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12
                             border rounded-md overflow-hidden
-                            bg-black/30 backdrop-blur-[2px] group cursor-pointer
+                            bg-neutral-900 group cursor-pointer
                             transition-all duration-200
                             ${
                               games.length <= 1
@@ -132,7 +132,7 @@ function GameSlider({ games = [], currentIndex: externalIndex, onIndexChange, on
           <div
             className={`absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 
                             border rounded-md overflow-hidden
-                            bg-black/30 backdrop-blur-[2px] group cursor-pointer
+                            bg-neutral-900 group cursor-pointer
                             transition-all duration-200
                             ${
                               games.length <= 1
@@ -162,7 +162,7 @@ function GameSlider({ games = [], currentIndex: externalIndex, onIndexChange, on
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -100 }}
             transition={{ duration: 0.3 }}
-            className="relative h-[500px] border border-neutral-300 rounded-md overflow-hidden bg-black/30 backdrop-blur-[4px]"
+            className="relative h-[500px] border border-neutral-300 rounded-md overflow-hidden bg-black/30"
           >
             {/* 背景图片 */}
             <div

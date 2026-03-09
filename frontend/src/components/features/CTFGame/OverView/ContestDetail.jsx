@@ -34,7 +34,7 @@ function ContestDetail({ contest, handleJoinContest }) {
     <div className="contest-container mx-auto space-y-6">
       {/* 头部信息区域 - 移除悬停效果 */}
       <motion.div
-        className="relative w-full h-[300px] border border-neutral-300 rounded-md overflow-hidden bg-black/30 backdrop-blur-[2px]"
+        className="relative w-full h-[300px] border border-neutral-300 rounded-md overflow-hidden bg-black/30"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}

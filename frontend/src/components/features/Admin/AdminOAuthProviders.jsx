@@ -160,7 +160,7 @@ function AdminOAuthProviders({
   return (
     <div className="w-full mx-auto">
       <motion.div
-        className="rounded-md bg-black/30 backdrop-blur-[2px] overflow-hidden"
+        className="rounded-md bg-neutral-900 overflow-hidden"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >

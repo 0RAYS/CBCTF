@@ -147,7 +147,7 @@ function AdminContestChallengeSelector({
                 return (
                   <motion.div
                     key={challenge.id || challenge.name}
-                    className={`border rounded-md bg-black/30 backdrop-blur-[2px] overflow-hidden transition-colors duration-200 ${
+                    className={`border rounded-md bg-neutral-900 overflow-hidden transition-colors duration-200 ${
                       isSelected ? 'border-geek-400' : 'border-neutral-300/30'
                     }`}
                     whileHover={{ y: -1, boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}

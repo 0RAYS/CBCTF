@@ -66,7 +66,7 @@ function UpcomingContests({ contests = [] }) {
               <motion.div
                 key={index}
                 className="border border-neutral-300 rounded-md overflow-hidden
-                                bg-black/30 backdrop-blur-[2px] group cursor-pointer"
+                                bg-neutral-900 group cursor-pointer"
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}

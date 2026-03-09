@@ -90,7 +90,7 @@ const Toast = forwardRef(({ id, title, description, color = 'default', onClose, 
   return (
     <motion.div
       ref={ref}
-      className={`border rounded-md ${config.container} backdrop-blur-md p-3.5 shadow-lg max-w-md z-[10000] overflow-hidden`}
+      className={`border rounded-md ${config.container} p-3.5 shadow-lg max-w-md z-[10000] overflow-hidden`}
       variants={toastVariants}
       initial="initial"
       animate="animate"

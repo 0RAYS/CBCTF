@@ -276,7 +276,7 @@ function AdminContestEditor({ contest: initialContest, onSave, onCancel, onImage
     <form onSubmit={handleSubmit} className="w-full mx-auto space-y-6">
       {/* 头部信息编辑区域 */}
       <motion.div
-        className="relative w-full border-2 border-neutral-300 rounded-md overflow-hidden bg-black/50 backdrop-blur-[2px] p-8"
+        className="relative w-full border-2 border-neutral-300 rounded-md overflow-hidden bg-neutral-900 p-8"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
@@ -533,7 +533,7 @@ function AdminContestEditor({ contest: initialContest, onSave, onCancel, onImage
       {/* 详细信息编辑区域 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* 比赛规则编辑 */}
-        <motion.div className="col-span-1 md:col-span-2 border-2 border-neutral-300 rounded-md bg-black/50 backdrop-blur-[2px] p-8">
+        <motion.div className="col-span-1 md:col-span-2 border-2 border-neutral-300 rounded-md bg-neutral-900 p-8">
           <h2 className="text-2xl font-mono text-neutral-50 tracking-wider mb-6">
             {t('admin.contests.editor.sections.rules')}
           </h2>
@@ -597,7 +597,7 @@ function AdminContestEditor({ contest: initialContest, onSave, onCancel, onImage
         </motion.div>
 
         {/* 奖励信息编辑 */}
-        <motion.div className="border-2 border-neutral-300 rounded-md bg-black/50 backdrop-blur-[2px] p-8">
+        <motion.div className="border-2 border-neutral-300 rounded-md bg-neutral-900 p-8">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-mono text-neutral-50 tracking-wider">奖励设置</h2>
             <Button variant="primary" size="sm" align="icon-left" icon={<IconPlus size={16} />} onClick={addPrize}>
@@ -672,7 +672,7 @@ function AdminContestEditor({ contest: initialContest, onSave, onCancel, onImage
       </div>
 
       {/* 时间线编辑 */}
-      <motion.div className="border-2 border-neutral-300 rounded-md bg-black/50 backdrop-blur-[2px] p-8">
+      <motion.div className="border-2 border-neutral-300 rounded-md bg-neutral-900 p-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-mono text-neutral-50 tracking-wider">
             {t('admin.contests.editor.sections.timeline')}

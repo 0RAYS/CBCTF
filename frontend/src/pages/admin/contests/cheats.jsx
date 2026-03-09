@@ -600,7 +600,7 @@ function AdminContestCheats() {
         {/* 筛选器 */}
         {showFilter && (
           <motion.div
-            className="border border-neutral-300/30 rounded-md bg-black/30 backdrop-blur-[2px] p-4 mb-6"
+            className="border border-neutral-600 rounded-md bg-neutral-900 p-4 mb-6"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
@@ -642,15 +642,15 @@ function AdminContestCheats() {
 
         {/* 统计信息 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="border border-neutral-300/30 rounded-md bg-black/30 backdrop-blur-[2px] p-4">
+          <div className="border border-neutral-600 rounded-md bg-neutral-900 p-4">
             <h3 className="text-sm font-mono text-neutral-400 mb-2">{t('admin.contests.cheats.stats.total')}</h3>
             <p className="text-2xl text-neutral-50">{total}</p>
           </div>
-          <div className="border border-neutral-300/30 rounded-md bg-black/30 backdrop-blur-[2px] p-4">
+          <div className="border border-neutral-600 rounded-md bg-neutral-900 p-4">
             <h3 className="text-sm font-mono text-neutral-400 mb-2">{t('admin.contests.cheats.stats.processed')}</h3>
             <p className="text-2xl text-green-400">{checked}</p>
           </div>
-          <div className="border border-neutral-300/30 rounded-md bg-black/30 backdrop-blur-[2px] p-4">
+          <div className="border border-neutral-600 rounded-md bg-neutral-900 p-4">
             <h3 className="text-sm font-mono text-neutral-400 mb-2">{t('admin.contests.cheats.stats.unprocessed')}</h3>
             <p className="text-2xl text-yellow-400">{total - checked}</p>
           </div>

@@ -14,9 +14,9 @@ import 'react';
 function Card({ children, variant = 'default', padding = 'md', className = '', animate = false, onClick, ...rest }) {
   // 卡片风格变体
   const variants = {
-    default: 'bg-black/30 backdrop-blur-[2px] border border-neutral-300 rounded-md',
-    bordered: 'bg-black/40 border border-neutral-300/30 rounded-md',
-    glass: 'bg-black/20 backdrop-blur-[8px] border border-neutral-300/30 rounded-lg',
+    default: 'bg-neutral-900 border border-neutral-600 rounded-md',
+    bordered: 'bg-neutral-900 border border-neutral-600 rounded-md',
+    glass: 'bg-neutral-800 border border-neutral-600 rounded-lg',
     dark: 'bg-neutral-900 border border-neutral-300 rounded-md',
   };
 

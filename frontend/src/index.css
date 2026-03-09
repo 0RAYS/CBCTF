@@ -112,8 +112,8 @@
   
   /* 自定义下拉框容器样式 */
   .dropdown-custom {
-    @apply absolute z-10 w-full mt-1 bg-neutral-800/95 border border-neutral-300/50 
-           rounded-md shadow-lg backdrop-blur-sm max-h-48 overflow-y-auto;
+    @apply absolute z-10 w-full mt-1 bg-neutral-900 border border-neutral-600
+           rounded-md shadow-lg max-h-48 overflow-y-auto;
   }
   
   /* 下拉框选项样式 */

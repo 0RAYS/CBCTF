@@ -84,8 +84,8 @@ function ChallengeTypes() {
           {types.map((type, index) => (
             <motion.div
               key={index}
-              className={`p-6 border ${type.color} rounded-md bg-black/30 backdrop-blur-[2px]
-                                hover:bg-black/50 transition-all duration-200 cursor-pointer group`}
+              className={`p-6 border ${type.color} rounded-md bg-neutral-900
+                                hover:bg-neutral-800 transition-all duration-200 cursor-pointer group`}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
