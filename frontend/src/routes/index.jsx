@@ -51,353 +51,353 @@ const AppRoutes = () => {
   return (
     <ErrorBoundary>
       <Routes>
-      {/* 主布局路由 */}
-      <Route path="/" element={<MainLayout />}>
+        {/* 主布局路由 */}
+        <Route path="/" element={<MainLayout />}>
+          <Route
+            index
+            element={
+              <Suspense fallback={<Loading />}>
+                <Home />
+              </Suspense>
+            }
+          />
+          <Route
+            path="settings"
+            element={
+              <UserRoute>
+                <Suspense fallback={<Loading />}>
+                  <Settings />
+                </Suspense>
+              </UserRoute>
+            }
+          />
+          <Route
+            path="games"
+            element={
+              <Suspense fallback={<Loading />}>
+                <GamesPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="login"
+            element={
+              <Suspense fallback={<Loading />}>
+                <Login />
+              </Suspense>
+            }
+          />
+          <Route
+            path="oauth/callback"
+            element={
+              <Suspense fallback={<Loading />}>
+                <OAuthCallback />
+              </Suspense>
+            }
+          />
+          <Route
+            path="support"
+            element={
+              <Suspense fallback={<Loading />}>
+                <TechStackPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="contact"
+            element={
+              <Suspense fallback={<Loading />}>
+                <ContactPage />
+              </Suspense>
+            }
+          />
+        </Route>
+
+        {/* 比赛详情路由 */}
         <Route
-          index
-          element={
-            <Suspense fallback={<Loading />}>
-              <Home />
-            </Suspense>
-          }
-        />
-        <Route
-          path="settings"
+          path="/contests/:contestId"
           element={
             <UserRoute>
+              <ContestLayout />
+            </UserRoute>
+          }
+        >
+          <Route
+            index
+            element={
+              <Suspense fallback={<Loading />}>
+                <GameDetailPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="challenges"
+            element={
+              <Suspense fallback={<Loading />}>
+                <GameChallengesPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="scoreboard"
+            element={
+              <Suspense fallback={<Loading />}>
+                <GameScoreBoardPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="team"
+            element={
+              <Suspense fallback={<Loading />}>
+                <GameTeamPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="notice"
+            element={
+              <Suspense fallback={<Loading />}>
+                <GameNoticePage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="writeup"
+            element={
+              <Suspense fallback={<Loading />}>
+                <GameWriteupPage />
+              </Suspense>
+            }
+          />
+        </Route>
+
+        {/* 管理员路由 */}
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminLayout />
+            </AdminRoute>
+          }
+        >
+          <Route
+            path="settings"
+            element={
               <Suspense fallback={<Loading />}>
                 <Settings />
               </Suspense>
-            </UserRoute>
-          }
-        />
-        <Route
-          path="games"
-          element={
-            <Suspense fallback={<Loading />}>
-              <GamesPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path="login"
-          element={
-            <Suspense fallback={<Loading />}>
-              <Login />
-            </Suspense>
-          }
-        />
-        <Route
-          path="oauth/callback"
-          element={
-            <Suspense fallback={<Loading />}>
-              <OAuthCallback />
-            </Suspense>
-          }
-        />
-        <Route
-          path="support"
-          element={
-            <Suspense fallback={<Loading />}>
-              <TechStackPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path="contact"
-          element={
-            <Suspense fallback={<Loading />}>
-              <ContactPage />
-            </Suspense>
-          }
-        />
-      </Route>
+            }
+          />
+          <Route
+            path="dashboard"
+            element={
+              <AdminRoute apiRoute="GET /admin/system/status">
+                <Suspense fallback={<Loading />}>
+                  <Dashboard />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="contests"
+            element={
+              <AdminRoute apiRoute="GET /admin/contests">
+                <Suspense fallback={<Loading />}>
+                  <ContestsManagement />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="rbac"
+            element={
+              <AdminRoute apiRoute="GET /admin/roles">
+                <Suspense fallback={<Loading />}>
+                  <RbacManagement />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="challenges"
+            element={
+              <AdminRoute apiRoute="GET /admin/challenges">
+                <Suspense fallback={<Loading />}>
+                  <ChallengesManagement />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="oauth"
+            element={
+              <AdminRoute apiRoute="GET /admin/oauth">
+                <Suspense fallback={<Loading />}>
+                  <OAuthProvidersManagement />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="smtp"
+            element={
+              <AdminRoute apiRoute="GET /admin/smtp">
+                <Suspense fallback={<Loading />}>
+                  <SmtpManagement />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="webhook"
+            element={
+              <AdminRoute apiRoute="GET /admin/webhook">
+                <Suspense fallback={<Loading />}>
+                  <WebhookManagement />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="files"
+            element={
+              <AdminRoute apiRoute="GET /admin/files">
+                <Suspense fallback={<Loading />}>
+                  <FilesManagement />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="system"
+            element={
+              <AdminRoute apiRoute="GET /admin/system/config">
+                <Suspense fallback={<Loading />}>
+                  <SystemSettings />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="logs"
+            element={
+              <AdminRoute apiRoute="GET /admin/logs">
+                <Suspense fallback={<Loading />}>
+                  <AdminLogs />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+        </Route>
 
-      {/* 比赛详情路由 */}
-      <Route
-        path="/contests/:contestId"
-        element={
-          <UserRoute>
-            <ContestLayout />
-          </UserRoute>
-        }
-      >
+        {/* 管理端比赛详情路由 */}
         <Route
-          index
+          path="/admin/contests/:id"
           element={
-            <Suspense fallback={<Loading />}>
-              <GameDetailPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path="challenges"
-          element={
-            <Suspense fallback={<Loading />}>
-              <GameChallengesPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path="scoreboard"
-          element={
-            <Suspense fallback={<Loading />}>
-              <GameScoreBoardPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path="team"
-          element={
-            <Suspense fallback={<Loading />}>
-              <GameTeamPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path="notice"
-          element={
-            <Suspense fallback={<Loading />}>
-              <GameNoticePage />
-            </Suspense>
-          }
-        />
-        <Route
-          path="writeup"
-          element={
-            <Suspense fallback={<Loading />}>
-              <GameWriteupPage />
-            </Suspense>
-          }
-        />
-      </Route>
-
-      {/* 管理员路由 */}
-      <Route
-        path="/admin"
-        element={
-          <AdminRoute>
-            <AdminLayout />
-          </AdminRoute>
-        }
-      >
-        <Route
-          path="settings"
-          element={
-            <Suspense fallback={<Loading />}>
-              <Settings />
-            </Suspense>
-          }
-        />
-        <Route
-          path="dashboard"
-          element={
-            <AdminRoute apiRoute="GET /admin/system/status">
-              <Suspense fallback={<Loading />}>
-                <Dashboard />
-              </Suspense>
+            <AdminRoute apiRoute="GET /admin/contests/:contestID">
+              <AdminContestsLayout />
             </AdminRoute>
           }
-        />
-        <Route
-          path="contests"
-          element={
-            <AdminRoute apiRoute="GET /admin/contests">
+        >
+          <Route
+            index
+            element={
               <Suspense fallback={<Loading />}>
-                <ContestsManagement />
+                <AdminContestDetail />
               </Suspense>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="rbac"
-          element={
-            <AdminRoute apiRoute="GET /admin/roles">
+            }
+          />
+          <Route
+            path="challenges"
+            element={
+              <AdminRoute apiRoute="GET /admin/contests/:contestID/challenges">
+                <Suspense fallback={<Loading />}>
+                  <AdminContestChallenges />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="scoreboard"
+            element={
+              <AdminRoute apiRoute="GET /admin/contests/:contestID/scoreboard">
+                <Suspense fallback={<Loading />}>
+                  <AdminContestScoreboard />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="teams"
+            element={
+              <AdminRoute apiRoute="GET /admin/contests/:contestID/teams">
+                <Suspense fallback={<Loading />}>
+                  <AdminContestTeams />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="teams/:teamId/details"
+            element={
+              <AdminRoute apiRoute="GET /admin/contests/:contestID/teams">
+                <Suspense fallback={<Loading />}>
+                  <TeamDetails />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="settings"
+            element={
               <Suspense fallback={<Loading />}>
-                <RbacManagement />
+                <AdminContestSettings />
               </Suspense>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="challenges"
-          element={
-            <AdminRoute apiRoute="GET /admin/challenges">
-              <Suspense fallback={<Loading />}>
-                <ChallengesManagement />
-              </Suspense>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="oauth"
-          element={
-            <AdminRoute apiRoute="GET /admin/oauth">
-              <Suspense fallback={<Loading />}>
-                <OAuthProvidersManagement />
-              </Suspense>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="smtp"
-          element={
-            <AdminRoute apiRoute="GET /admin/smtp">
-              <Suspense fallback={<Loading />}>
-                <SmtpManagement />
-              </Suspense>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="webhook"
-          element={
-            <AdminRoute apiRoute="GET /admin/webhook">
-              <Suspense fallback={<Loading />}>
-                <WebhookManagement />
-              </Suspense>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="files"
-          element={
-            <AdminRoute apiRoute="GET /admin/files">
-              <Suspense fallback={<Loading />}>
-                <FilesManagement />
-              </Suspense>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="system"
-          element={
-            <AdminRoute apiRoute="GET /admin/system/config">
-              <Suspense fallback={<Loading />}>
-                <SystemSettings />
-              </Suspense>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="logs"
-          element={
-            <AdminRoute apiRoute="GET /admin/logs">
-              <Suspense fallback={<Loading />}>
-                <AdminLogs />
-              </Suspense>
-            </AdminRoute>
-          }
-        />
-      </Route>
-
-      {/* 管理端比赛详情路由 */}
-      <Route
-        path="/admin/contests/:id"
-        element={
-          <AdminRoute apiRoute="GET /admin/contests/:contestID">
-            <AdminContestsLayout />
-          </AdminRoute>
-        }
-      >
-        <Route
-          index
-          element={
-            <Suspense fallback={<Loading />}>
-              <AdminContestDetail />
-            </Suspense>
-          }
-        />
-        <Route
-          path="challenges"
-          element={
-            <AdminRoute apiRoute="GET /admin/contests/:contestID/challenges">
-              <Suspense fallback={<Loading />}>
-                <AdminContestChallenges />
-              </Suspense>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="scoreboard"
-          element={
-            <AdminRoute apiRoute="GET /admin/contests/:contestID/scoreboard">
-              <Suspense fallback={<Loading />}>
-                <AdminContestScoreboard />
-              </Suspense>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="teams"
-          element={
-            <AdminRoute apiRoute="GET /admin/contests/:contestID/teams">
-              <Suspense fallback={<Loading />}>
-                <AdminContestTeams />
-              </Suspense>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="teams/:teamId/details"
-          element={
-            <AdminRoute apiRoute="GET /admin/contests/:contestID/teams">
-              <Suspense fallback={<Loading />}>
-                <TeamDetails />
-              </Suspense>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="settings"
-          element={
-            <Suspense fallback={<Loading />}>
-              <AdminContestSettings />
-            </Suspense>
-          }
-        />
-        <Route
-          path="notices"
-          element={
-            <AdminRoute apiRoute="GET /admin/contests/:contestID/notices">
-              <Suspense fallback={<Loading />}>
-                <AdminContestNotices />
-              </Suspense>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="images"
-          element={
-            <AdminRoute apiRoute="GET /admin/contests/:contestID/images">
-              <Suspense fallback={<Loading />}>
-                <AdminContestImagesWarmup />
-              </Suspense>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="containers"
-          element={
-            <AdminRoute apiRoute="GET /admin/contests/:contestID/victims">
-              <Suspense fallback={<Loading />}>
-                <ContestContainers />
-              </Suspense>
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="cheats"
-          element={
-            <AdminRoute apiRoute="GET /admin/contests/:contestID/cheats">
-              <Suspense fallback={<Loading />}>
-                <AdminContestCheats />
-              </Suspense>
-            </AdminRoute>
-          }
-        />
-      </Route>
-    </Routes>
+            }
+          />
+          <Route
+            path="notices"
+            element={
+              <AdminRoute apiRoute="GET /admin/contests/:contestID/notices">
+                <Suspense fallback={<Loading />}>
+                  <AdminContestNotices />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="images"
+            element={
+              <AdminRoute apiRoute="GET /admin/contests/:contestID/images">
+                <Suspense fallback={<Loading />}>
+                  <AdminContestImagesWarmup />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="containers"
+            element={
+              <AdminRoute apiRoute="GET /admin/contests/:contestID/victims">
+                <Suspense fallback={<Loading />}>
+                  <ContestContainers />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="cheats"
+            element={
+              <AdminRoute apiRoute="GET /admin/contests/:contestID/cheats">
+                <Suspense fallback={<Loading />}>
+                  <AdminContestCheats />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+        </Route>
+      </Routes>
     </ErrorBoundary>
   );
 };

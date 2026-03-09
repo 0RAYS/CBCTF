@@ -24,12 +24,7 @@ function HeroSection() {
           </h1>
           <p className="text-neutral-300 text-lg">{t('home.hero.subtitle')}</p>
           <div className="flex gap-4">
-            <Button
-              variant="primary"
-              size="lg"
-              className="shadow-focus-strong"
-              onClick={() => navigate('/games')}
-            >
+            <Button variant="primary" size="lg" className="shadow-focus-strong" onClick={() => navigate('/games')}>
               {t('home.hero.start')}
             </Button>
             <Button variant="outline" size="lg" onClick={() => navigate('/support')}>

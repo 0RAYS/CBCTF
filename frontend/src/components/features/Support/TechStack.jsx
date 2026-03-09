@@ -67,11 +67,7 @@ function TechStack({
               <div className="space-y-2">
                 {tech.items.map((item, itemIndex) => (
                   <motion.div key={itemIndex} whileHover={{ x: 5 }}>
-                    <Card
-                      variant="default"
-                      padding="sm"
-                      className="hover:border-geek-400 transition-all duration-200"
-                    >
+                    <Card variant="default" padding="sm" className="hover:border-geek-400 transition-all duration-200">
                       <div className="flex items-center gap-3">
                         <span className="text-xl">{item.icon}</span>
                         <div>

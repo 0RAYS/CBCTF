@@ -15,8 +15,8 @@ class ErrorBoundary extends Component {
   }
 
   componentDidCatch(error, info) {
-    // 可在此处上报错误监控服务
-    console.error('[ErrorBoundary]', error, info.componentStack);
+    error;
+    info;
   }
 
   handleReset = () => {
