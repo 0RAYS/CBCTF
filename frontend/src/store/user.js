@@ -7,6 +7,7 @@ const initialState = {
   token: localStorage.getItem('token') || null,
   isAuthenticated: false,
   loading: true,
+  initialized: false, // true once userInfo + routes have both been fetched on startup
   error: null,
   routes: [],
   hasAdminAccess: false,
@@ -53,10 +54,13 @@ const userSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    setInitialized: (state) => {
+      state.initialized = true;
+    },
   },
 });
 
-export const { setUser, setRoutes, setLoading, setError, logout, clearError } = userSlice.actions;
+export const { setUser, setRoutes, setLoading, setError, logout, clearError, setInitialized } = userSlice.actions;
 
 /**
  * 获取用户信息
