@@ -1813,12 +1813,14 @@
     "upcoming": {
       "titlePrefix": "Upcoming",
       "titleHighlight": "Competitions",
-      "subtitle": "Register now for our upcoming CTF events and compete with the best"
+      "subtitle": "Register now for our upcoming CTF events and compete with the best",
+      "viewAll": "VIEW ALL CONTESTS"
     },
     "leaderboard": {
       "titlePrefix": "Top",
       "titleHighlight": "Performers",
-      "subtitle": "Meet the elite teams leading our global leaderboard"
+      "subtitle": "Meet the elite teams leading our global leaderboard",
+      "viewScoreboard": "VIEW SCOREBOARD"
     }
   },
   "auth": {

@@ -65,7 +65,7 @@ function ContestDetail({ contest, handleJoinContest }) {
                       : 'text-neutral-400 border-neutral-400'
                 }`}
               >
-                {contest.status.toUpperCase()}
+                {t(`game.status.${contest.status}`)}
               </span>
             </div>
             <div className="text-neutral-300 max-w-[800px] text-lg prose prose-invert">
@@ -187,7 +187,7 @@ function ContestDetail({ contest, handleJoinContest }) {
               >
                 <motion.div
                   animate={{
-                    y: hoveredTimeline === index ? -5 : 0,
+                    x: hoveredTimeline === index ? 5 : 0,
                     transition: { duration: 0.2 },
                   }}
                   className="border-none"
