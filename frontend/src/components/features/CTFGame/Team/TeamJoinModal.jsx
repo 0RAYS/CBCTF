@@ -63,9 +63,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
           {/* 头部 */}
           <div className="p-5 border-b border-neutral-300/30">
             <div className="flex items-center justify-between">
-              <h2 className="text-2xl text-neutral-50 font-mono">
-                {t(`game.team.joinModal.title.${mode}`)}
-              </h2>
+              <h2 className="text-2xl text-neutral-50 font-mono">{t(`game.team.joinModal.title.${mode}`)}</h2>
               <Button
                 variant="ghost"
                 size="icon"
@@ -118,9 +116,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                   exit={{ opacity: 0, x: -20 }}
                 >
                   <div className="space-y-2">
-                    <label className="text-neutral-400 text-sm">
-                      {t('game.team.joinModal.form.teamName')}
-                    </label>
+                    <label className="text-neutral-400 text-sm">{t('game.team.joinModal.form.teamName')}</label>
                     <input
                       type="text"
                       required
@@ -140,9 +136,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-neutral-400 text-sm">
-                      {t('game.team.joinModal.form.description')}
-                    </label>
+                    <label className="text-neutral-400 text-sm">{t('game.team.joinModal.form.description')}</label>
                     <textarea
                       value={createForm.description}
                       onChange={(e) =>
@@ -160,9 +154,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-neutral-400 text-sm">
-                      {t('game.team.joinModal.form.contestCode')}
-                    </label>
+                    <label className="text-neutral-400 text-sm">{t('game.team.joinModal.form.contestCode')}</label>
                     <input
                       type="text"
                       value={createForm.contestCode}
@@ -202,9 +194,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                       disabled={!createForm.teamName || loading}
                       loading={loading}
                     >
-                      {loading
-                        ? t('game.team.joinModal.actions.creating')
-                        : t('game.team.joinModal.actions.create')}
+                      {loading ? t('game.team.joinModal.actions.creating') : t('game.team.joinModal.actions.create')}
                     </Button>
                   </div>
                 </motion.form>
@@ -218,9 +208,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                   exit={{ opacity: 0, x: -20 }}
                 >
                   <div className="space-y-2">
-                    <label className="text-neutral-400 text-sm">
-                      {t('game.team.joinModal.form.teamName')}
-                    </label>
+                    <label className="text-neutral-400 text-sm">{t('game.team.joinModal.form.teamName')}</label>
                     <input
                       type="text"
                       required
@@ -239,9 +227,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-neutral-400 text-sm">
-                      {t('game.team.joinModal.form.inviteCode')}
-                    </label>
+                    <label className="text-neutral-400 text-sm">{t('game.team.joinModal.form.inviteCode')}</label>
                     <input
                       type="text"
                       required
@@ -282,9 +268,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                       disabled={!joinForm.teamName || !joinForm.teamCode || loading}
                       loading={loading}
                     >
-                      {loading
-                        ? t('game.team.joinModal.actions.joining')
-                        : t('game.team.joinModal.actions.join')}
+                      {loading ? t('game.team.joinModal.actions.joining') : t('game.team.joinModal.actions.join')}
                     </Button>
                   </div>
                 </motion.form>
