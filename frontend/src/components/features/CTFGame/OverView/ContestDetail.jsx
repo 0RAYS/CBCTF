@@ -101,7 +101,9 @@ function ContestDetail({ contest, handleJoinContest }) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* 比赛规则 - 添加规则项悬停效果 */}
         <Card className="col-span-1 md:col-span-2" variant="default" padding="lg">
-          <h2 className="text-2xl font-mono text-neutral-50 tracking-wider mb-6">{t('game.detail.labels.contestRules')}</h2>
+          <h2 className="text-2xl font-mono text-neutral-50 tracking-wider mb-6">
+            {t('game.detail.labels.contestRules')}
+          </h2>
           <div className="space-y-4 text-neutral-300">
             {contest.rules?.map((rule, index) => (
               <motion.div
@@ -171,34 +173,34 @@ function ContestDetail({ contest, handleJoinContest }) {
       <Card variant="default" padding="lg">
         <h2 className="text-2xl font-mono text-neutral-50 tracking-wider mb-6">{t('game.detail.labels.timeline')}</h2>
         <div className="overflow-x-auto">
-        <div className="relative flex items-start gap-8 min-w-max">
-          {/* 连接线 */}
-          <div className="absolute top-[30px] left-0 right-0 h-[2px] bg-neutral-300/20" />
+          <div className="relative flex items-start gap-8 min-w-max">
+            {/* 连接线 */}
+            <div className="absolute top-[30px] left-0 right-0 h-[2px] bg-neutral-300/20" />
 
-          {contest.timeline?.map((item, index) => (
-            <motion.div
-              key={index}
-              className={`flex-1 relative p-4 rounded-md transition-all duration-200 cursor-default
-                                ${hoveredTimeline === index ? 'bg-neutral-300/5' : 'hover:bg-neutral-300/5'}`}
-              onMouseEnter={() => setHoveredTimeline(index)}
-              onMouseLeave={() => setHoveredTimeline(null)}
-            >
+            {contest.timeline?.map((item, index) => (
               <motion.div
-                animate={{
-                  y: hoveredTimeline === index ? -5 : 0,
-                  transition: { duration: 0.2 },
-                }}
-                className="border-none"
+                key={index}
+                className={`flex-1 relative p-4 rounded-md transition-all duration-200 cursor-default
+                                ${hoveredTimeline === index ? 'bg-neutral-300/5' : 'hover:bg-neutral-300/5'}`}
+                onMouseEnter={() => setHoveredTimeline(index)}
+                onMouseLeave={() => setHoveredTimeline(null)}
               >
-                <div className="text-geek-400 font-mono mb-2">{new Date(item.date).toISOString().slice(0, 10)}</div>
-                <div className="text-neutral-50 font-mono mb-1">{item.title}</div>
-                <div className="text-neutral-400 text-sm prose prose-invert prose-sm max-w-none">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{item.description || ''}</ReactMarkdown>
-                </div>
+                <motion.div
+                  animate={{
+                    y: hoveredTimeline === index ? -5 : 0,
+                    transition: { duration: 0.2 },
+                  }}
+                  className="border-none"
+                >
+                  <div className="text-geek-400 font-mono mb-2">{new Date(item.date).toISOString().slice(0, 10)}</div>
+                  <div className="text-neutral-50 font-mono mb-1">{item.title}</div>
+                  <div className="text-neutral-400 text-sm prose prose-invert prose-sm max-w-none">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{item.description || ''}</ReactMarkdown>
+                  </div>
+                </motion.div>
               </motion.div>
-            </motion.div>
-          ))}
-        </div>
+            ))}
+          </div>
         </div>
       </Card>
     </div>
