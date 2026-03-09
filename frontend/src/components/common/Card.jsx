@@ -38,7 +38,7 @@ function Card({ children, variant = 'default', padding = 'md', className = '', a
     .trim()
     .replace(/\s+/g, ' ');
 
-  // 动画属性
+  // 动画属性：clickable 卡片改用 opacity 替代 scale，避免抖动感
   const motionProps =
     animate && !onClick
       ? {
@@ -48,9 +48,9 @@ function Card({ children, variant = 'default', padding = 'md', className = '', a
         }
       : animate && onClick
         ? {
-            whileHover: { scale: 1.02, y: -2 },
-            whileTap: { scale: 0.98 },
-            transition: { duration: 0.2 },
+            whileHover: { opacity: 0.85 },
+            whileTap: { opacity: 0.7 },
+            transition: { duration: 0.15 },
           }
         : {};
 

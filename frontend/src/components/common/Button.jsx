@@ -34,13 +34,13 @@ function Button({
   animate = true,
   ...rest
 }) {
-  // 按钮风格变体
+  // 按钮风格变体（已移除 hover glow，改用 border/opacity 过渡）
   const variants = {
     default: 'bg-black/30 border-neutral-300/30 text-neutral-400 hover:border-neutral-300 hover:text-neutral-300',
-    primary: 'border-geek-400 text-geek-400 hover:bg-geek-400/10 hover:shadow-[0_0_20px_rgba(89,126,247,0.4)]',
-    danger: 'border-red-400 text-red-400 hover:bg-red-400/10 hover:shadow-[0_0_20px_rgba(239,68,68,0.4)]',
+    primary: 'border-geek-400 text-geek-400 hover:bg-geek-400/10 hover:border-geek-400/80',
+    danger: 'border-red-400 text-red-400 hover:bg-red-400/10 hover:border-red-400/80',
     outline:
-      'border-neutral-300 text-neutral-300 hover:bg-neutral-300/10 hover:text-neutral-50 hover:border-neutral-50 hover:shadow-[0_0_20px_rgba(179,179,179,0.4)]',
+      'border-neutral-300 text-neutral-300 hover:bg-neutral-300/10 hover:text-neutral-50 hover:border-neutral-50',
     ghost: 'border-transparent text-neutral-400 hover:text-neutral-200 hover:bg-white/5',
   };
 
@@ -68,9 +68,10 @@ function Button({
     return 'px-6';
   };
 
-  // 基础样式
+  // 基础样式（含 focus-visible ring，替代原先的 outline-none）
   const buttonClasses = `
     relative border rounded-md font-mono transition-colors
+    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70 focus-visible:ring-offset-1 focus-visible:ring-offset-black
     ${variants[variant] || variants.default}
     ${sizes[size] || sizes.md}
     ${getPadding()}
@@ -80,20 +81,15 @@ function Button({
     ${className}
   `;
 
-  // 动画属性
+  // 动画属性：使用 opacity 替代 scale，更克制
   const motionProps =
     animate && !disabled && !loading
       ? {
-          whileHover: { scale: 1.02 },
-          whileTap: { scale: 0.98 },
+          whileHover: { opacity: 0.85 },
+          whileTap: { opacity: 0.7 },
+          transition: { duration: 0.15 },
         }
       : {};
-
-  // 调整图标按钮的动画效果
-  if (size === 'icon' && animate && !disabled && !loading) {
-    motionProps.whileHover = { scale: 1.05 };
-    motionProps.whileTap = { scale: 0.95 };
-  }
 
   // 渲染按钮
   const ButtonComponent = animate ? motion.button : 'button';
@@ -146,7 +142,7 @@ function Button({
       {...motionProps}
       {...rest}
     >
-      {/* 按钮背景动画效果 */}
+      {/* 主按钮 hover 填充动画（仅 primary 变体） */}
       {!disabled && !loading && variant === 'primary' && animate && size !== 'icon' && (
         <motion.div
           className="absolute inset-0 bg-geek-400/20"

@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { IconChevronsLeft, IconChevronsRight } from '@tabler/icons-react';
 import Button from './Button';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -32,6 +32,18 @@ function Pagination({
 }) {
   const { t } = useTranslation();
   const [jumpPage, setJumpPage] = useState('');
+  const liveRef = useRef(null);
+
+  // 页码改变时更新 aria-live 区域
+  useEffect(() => {
+    if (liveRef.current && total > 0) {
+      liveRef.current.textContent = t('common.pagination.liveAnnounce', {
+        current,
+        total,
+        defaultValue: `Page ${current} of ${total}`,
+      });
+    }
+  }, [current, total, t]);
 
   // 计算要显示的页码范围
   const calculatePageRange = () => {
@@ -78,21 +90,24 @@ function Pagination({
     if (typeof page === 'string') {
       // 渲染省略号
       return (
-        <span key={page} className="w-8 h-8 flex items-center justify-center text-neutral-400 font-mono">
+        <span key={page} className="w-8 h-8 flex items-center justify-center text-neutral-400 font-mono" aria-hidden="true">
           ...
         </span>
       );
     }
 
+    const isCurrent = current === page;
     return (
       <Button
         key={page}
-        variant={current === page ? 'primary' : 'ghost'}
+        variant={isCurrent ? 'primary' : 'ghost'}
         size="icon"
-        className={`!w-8 !h-8 ${current === page ? '' : '!bg-black/30'}`}
+        className={`!w-8 !h-8 ${isCurrent ? '' : '!bg-black/30'}`}
         onClick={() => onChange?.(page)}
         disabled={page <= 0}
         animate={false}
+        aria-label={t('common.pagination.goToPage', { page, defaultValue: `Go to page ${page}` })}
+        aria-current={isCurrent ? 'page' : undefined}
       >
         {page}
       </Button>
@@ -112,6 +127,9 @@ function Pagination({
         onClick={() => !disabled && onChange?.(isNext ? current + 1 : current - 1)}
         className={`!bg-black/30 ${disabled ? '!border-neutral-300/10 !text-neutral-600' : ''}`}
         animate={false}
+        aria-label={isNext
+          ? t('common.pagination.nextPage', { defaultValue: 'Next page' })
+          : t('common.pagination.prevPage', { defaultValue: 'Previous page' })}
       >
         {isNext ? t('common.next') : t('common.previous')}
       </Button>
@@ -132,6 +150,7 @@ function Pagination({
           onClick={() => !disabledFirst && onChange?.(1)}
           className={`!w-8 !h-8 !bg-black/30 ${disabledFirst ? '!border-neutral-300/10 !text-neutral-600' : ''}`}
           animate={false}
+          aria-label={t('common.pagination.firstPage', { defaultValue: 'First page' })}
         >
           <IconChevronsLeft size={16} />
         </Button>
@@ -142,6 +161,7 @@ function Pagination({
           onClick={() => !disabledLast && onChange?.(total)}
           className={`!w-8 !h-8 !bg-black/30 ${disabledLast ? '!border-neutral-300/10 !text-neutral-600' : ''}`}
           animate={false}
+          aria-label={t('common.pagination.lastPage', { defaultValue: 'Last page' })}
         >
           <IconChevronsRight size={16} />
         </Button>
@@ -177,9 +197,19 @@ function Pagination({
 
   return (
     <PaginationContainer
+      role="navigation"
+      aria-label={t('common.pagination.label', { defaultValue: 'Pagination' })}
       className={`flex flex-wrap items-center justify-center gap-2 max-w-full ${className}`}
       {...containerProps}
     >
+      {/* 隐藏的 aria-live 区域，宣告翻页结果 */}
+      <span
+        ref={liveRef}
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      />
+
       {/* 总数显示 */}
       {showTotal && totalItems !== undefined && (
         <span className="text-sm font-mono text-neutral-400 mr-4 whitespace-nowrap">
@@ -214,7 +244,8 @@ function Pagination({
             value={jumpPage}
             onChange={(e) => setJumpPage(e.target.value)}
             onKeyPress={handleKeyPress}
-            className="w-16 px-2 py-1 text-sm bg-neutral-800 border border-neutral-700 rounded text-neutral-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            aria-label={t('common.pagination.jumpToLabel', { defaultValue: 'Jump to page number' })}
+            className="w-16 px-2 py-1 text-sm bg-neutral-800 border border-neutral-700 rounded text-neutral-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70"
             placeholder={t('common.pagination.pagePlaceholder')}
           />
           <span className="text-sm text-neutral-400">{t('common.pagination.page')}</span>

@@ -1,8 +1,19 @@
 import { createPortal } from 'react-dom';
+import { useEffect, useRef, useId } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { IconX } from '@tabler/icons-react';
 import Button from './Button';
 import { useModalPortal } from './ModalProvider';
+
+// 可聚焦元素选择器
+const FOCUSABLE_SELECTORS = [
+  'a[href]',
+  'button:not([disabled])',
+  'textarea:not([disabled])',
+  'input:not([disabled])',
+  'select:not([disabled])',
+  '[tabindex]:not([tabindex="-1"])',
+].join(', ');
 
 /**
  * 统一模态框组件（合并ConfirmModal和AdminModal）
@@ -35,6 +46,62 @@ function Modal({
   className = '',
 }) {
   const portalContainer = useModalPortal();
+  const titleId = useId();
+  const dialogRef = useRef(null);
+  const triggerRef = useRef(null);
+
+  // 保存触发元素，关闭时恢复焦点
+  useEffect(() => {
+    if (isOpen) {
+      triggerRef.current = document.activeElement;
+    }
+  }, [isOpen]);
+
+  // 焦点陷阱：将焦点移入模态框，并限制 Tab 键在内部循环
+  useEffect(() => {
+    if (!isOpen || !dialogRef.current) return;
+
+    // 将焦点移至模态框内第一个可聚焦元素
+    const focusableElements = dialogRef.current.querySelectorAll(FOCUSABLE_SELECTORS);
+    if (focusableElements.length > 0) {
+      focusableElements[0].focus();
+    } else {
+      dialogRef.current.focus();
+    }
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        onClose?.();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+
+      const elements = dialogRef.current.querySelectorAll(FOCUSABLE_SELECTORS);
+      if (elements.length === 0) return;
+
+      const first = elements[0];
+      const last = elements[elements.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      // 恢复焦点到触发元素
+      triggerRef.current?.focus();
+    };
+  }, [isOpen, onClose]);
 
   // 根据size确定宽度
   const sizeClasses = {
@@ -62,12 +129,17 @@ function Modal({
               onClick={onClose}
             />
             <motion.div
+              ref={dialogRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={titleId}
+              tabIndex={-1}
               className={`relative w-full ${sizeClasses.sm} m-4 p-6 border border-neutral-300 rounded-md bg-black/80 ${className}`}
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
             >
-              <h3 className="text-lg font-mono text-neutral-50 mb-4">{title}</h3>
+              <h3 id={titleId} className="text-lg font-mono text-neutral-50 mb-4">{title}</h3>
               <div className="text-neutral-300 mb-6">{children}</div>
               <div className="flex justify-end gap-4">
                 <Button size="sm" variant="ghost" onClick={onClose}>
@@ -101,6 +173,11 @@ function Modal({
 
           {/* 模态框主体 */}
           <motion.div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            tabIndex={-1}
             className={`relative w-full ${sizeClasses[size]} mx-4`}
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -113,10 +190,11 @@ function Modal({
               {/* 头部 */}
               <div className="p-6 border-b border-neutral-300/30">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-mono text-neutral-50">{title}</h2>
+                  <h2 id={titleId} className="text-xl font-mono text-neutral-50">{title}</h2>
                   <Button
                     variant="ghost"
                     size="icon"
+                    aria-label="Close dialog"
                     className="!bg-transparent !text-neutral-400 hover:!text-neutral-200"
                     onClick={onClose}
                   >

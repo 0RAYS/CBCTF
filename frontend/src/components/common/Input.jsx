@@ -1,4 +1,4 @@
-import 'react';
+import { useId } from 'react';
 
 /**
  * 通用输入框组件
@@ -15,6 +15,8 @@ import 'react';
  * @param {'sm'|'md'|'lg'} props.size - 输入框大小
  * @param {boolean} props.fullWidth - 是否占满宽度
  * @param {string} props.className - 额外的自定义类名
+ * @param {string} props.label - 关联标签文本
+ * @param {string} props.id - 输入框 id（自动生成可省略）
  */
 function Input({
   type = 'text',
@@ -29,8 +31,14 @@ function Input({
   size = 'md',
   fullWidth = true,
   className = '',
+  label,
+  id: externalId,
   ...rest
 }) {
+  const generatedId = useId();
+  const id = externalId || generatedId;
+  const errorId = `${id}-error`;
+
   // 尺寸变体
   const sizes = {
     sm: 'h-8 text-sm',
@@ -50,7 +58,7 @@ function Input({
   // 基础样式
   const inputClasses = `
     bg-black/20 border rounded-md text-neutral-50 placeholder-neutral-500
-    focus:outline-none transition-all duration-200
+    focus:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70 transition-all duration-200
     ${sizes[size] || sizes.md}
     ${getPadding()}
     ${fullWidth ? 'w-full' : ''}
@@ -63,32 +71,48 @@ function Input({
 
   return (
     <div className={`relative ${fullWidth ? 'w-full' : 'inline-block'}`}>
-      {/* 左侧图标 */}
-      {icon && (
-        <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 pointer-events-none">
-          {icon}
-        </div>
+      {/* 关联标签 */}
+      {label && (
+        <label htmlFor={id} className="block text-sm text-neutral-300 mb-1">
+          {label}
+        </label>
       )}
 
-      {/* 输入框 */}
-      <input
-        type={type}
-        value={value}
-        onChange={onChange}
-        onBlur={onBlur}
-        placeholder={placeholder}
-        disabled={disabled}
-        className={inputClasses}
-        {...rest}
-      />
+      <div className="relative">
+        {/* 左侧图标 */}
+        {icon && (
+          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 pointer-events-none">
+            {icon}
+          </div>
+        )}
 
-      {/* 右侧图标 */}
-      {iconRight && (
-        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400">{iconRight}</div>
-      )}
+        {/* 输入框 */}
+        <input
+          id={id}
+          type={type}
+          value={value}
+          onChange={onChange}
+          onBlur={onBlur}
+          placeholder={placeholder}
+          disabled={disabled}
+          aria-invalid={error ? 'true' : undefined}
+          aria-describedby={error ? errorId : undefined}
+          className={inputClasses}
+          {...rest}
+        />
+
+        {/* 右侧图标 */}
+        {iconRight && (
+          <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400">{iconRight}</div>
+        )}
+      </div>
 
       {/* 错误信息 */}
-      {error && <div className="mt-1 text-sm text-red-400">{error}</div>}
+      {error && (
+        <div id={errorId} role="alert" className="mt-1 text-sm text-red-400">
+          {error}
+        </div>
+      )}
     </div>
   );
 }

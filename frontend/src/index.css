@@ -71,6 +71,17 @@
   animation: slide-up 0.3s ease-out;
 }
 
+/* 减少动画（尊重系统设置） */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* 自定义下拉框样式 */
 @layer components {
   /* 统一的select样式 */
