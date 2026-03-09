@@ -26,6 +26,7 @@ function AdminSidebar({
         />
       )}
       <aside
+        aria-label={t('admin.sidebar.navigation')}
         className={`fixed md:static z-40 top-0 left-0 h-full w-[240px] border-r border-neutral-300/30 bg-black/60 backdrop-blur-[2px] transition-transform duration-200 flex flex-col ${
           open ? 'translate-x-0' : '-translate-x-full'
         } md:translate-x-0`}
@@ -62,7 +63,6 @@ function AdminSidebar({
                       }`}
                       onClick={() => onNavigate(item.path)}
                       whileHover={{ x: 2 }}
-                      whileTap={{ scale: 0.98 }}
                     >
                       {item.label}
                     </motion.button>

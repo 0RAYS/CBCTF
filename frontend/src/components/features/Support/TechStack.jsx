@@ -70,8 +70,7 @@ function TechStack({
                     <Card
                       variant="default"
                       padding="sm"
-                      className="hover:border-geek-400 hover:shadow-[0_0_20px_rgba(89,126,247,0.4)]
-                                            transition-all duration-200"
+                      className="hover:border-geek-400 transition-all duration-200"
                     >
                       <div className="flex items-center gap-3">
                         <span className="text-xl">{item.icon}</span>

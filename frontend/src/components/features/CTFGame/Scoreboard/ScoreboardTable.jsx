@@ -122,12 +122,14 @@ function ScoreboardTable({
               <tr className="bg-black/50">
                 {/* 固定列 */}
                 <th
+                  scope="col"
                   className="sticky left-0 z-10 bg-black/50 p-3 text-center text-neutral-400 font-mono text-sm border-r border-neutral-300/30"
                   style={{ width: 'var(--sb-rank-width)', minWidth: 'var(--sb-rank-width)' }}
                 >
                   {t('game.scoreboardTable.headers.rank')}
                 </th>
                 <th
+                  scope="col"
                   className="sticky z-10 bg-black/50 p-3 text-center text-neutral-400 font-mono text-sm border-r border-neutral-300/30"
                   style={{
                     width: 'var(--sb-team-width)',
@@ -138,6 +140,7 @@ function ScoreboardTable({
                   {t('game.scoreboardTable.headers.team')}
                 </th>
                 <th
+                  scope="col"
                   className="sticky z-10 bg-black/50 p-3 text-center text-neutral-400 font-mono text-sm border-r border-neutral-300/30"
                   style={{
                     width: 'var(--sb-score-width)',
@@ -152,6 +155,7 @@ function ScoreboardTable({
                 {categoryEntries.map(([category, categoryIchallenges]) => (
                   <th
                     key={category}
+                    scope="colgroup"
                     className="text-center text-neutral-400 font-mono text-sm border-r border-neutral-300/30"
                     colSpan={categoryIchallenges.length}
                   >
@@ -192,6 +196,7 @@ function ScoreboardTable({
                     const colWidth = challengeWidthMap.get(challenge.id) || 80;
                     return (
                       <th
+                        scope="col"
                         key={challenge.id}
                         className="p-3 text-center text-neutral-400 font-mono text-xs border-r border-neutral-300/30"
                         style={{ width: `${colWidth}px` }}

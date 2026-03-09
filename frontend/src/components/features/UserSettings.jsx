@@ -337,8 +337,8 @@ function UserSettings({ user, onUpdate, onPasswordChange, onEmailVerify, onDelet
                                                     text-neutral-50 font-mono focus:outline-none transition-all duration-200
                                                     ${
                                                       passwordErrors.currentPassword
-                                                        ? 'border-red-400 focus:border-red-400 shadow-[0_0_10px_rgba(248,113,113,0.1)]'
-                                                        : 'border-neutral-300/30 focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.1)]'
+                                                        ? 'border-red-400 focus:border-red-400 focus:shadow-error'
+                                                        : 'border-neutral-300/30 focus:border-geek-400 focus:shadow-focus'
                                                     }`}
                           required
                         />
@@ -369,8 +369,8 @@ function UserSettings({ user, onUpdate, onPasswordChange, onEmailVerify, onDelet
                                                     text-neutral-50 font-mono focus:outline-none transition-all duration-200
                                                     ${
                                                       passwordErrors.newPassword
-                                                        ? 'border-red-400 focus:border-red-400 shadow-[0_0_10px_rgba(248,113,113,0.1)]'
-                                                        : 'border-neutral-300/30 focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.1)]'
+                                                        ? 'border-red-400 focus:border-red-400 focus:shadow-error'
+                                                        : 'border-neutral-300/30 focus:border-geek-400 focus:shadow-focus'
                                                     }`}
                         required
                       />
@@ -400,8 +400,8 @@ function UserSettings({ user, onUpdate, onPasswordChange, onEmailVerify, onDelet
                                                     text-neutral-50 font-mono focus:outline-none transition-all duration-200
                                                     ${
                                                       passwordErrors.confirmPassword
-                                                        ? 'border-red-400 focus:border-red-400 shadow-[0_0_10px_rgba(248,113,113,0.1)]'
-                                                        : 'border-neutral-300/30 focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.1)]'
+                                                        ? 'border-red-400 focus:border-red-400 focus:shadow-error'
+                                                        : 'border-neutral-300/30 focus:border-geek-400 focus:shadow-focus'
                                                     }`}
                         required
                       />

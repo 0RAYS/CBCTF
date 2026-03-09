@@ -610,7 +610,6 @@ function AdminContestEditor({ contest: initialContest, onSave, onCancel, onImage
               <motion.div
                 key={index}
                 className="p-4 border border-neutral-700 rounded-md bg-black/30"
-                whileHover={{ scale: 1.02 }}
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">

@@ -20,7 +20,7 @@ function LanguageSwitcher({ size = 'sm', className = '' }) {
       type="button"
       onClick={handleToggle}
       aria-label={t('common.language')}
-      className={`inline-flex items-center justify-center rounded-md border border-neutral-300/40 bg-black/40 text-neutral-300 transition-colors hover:border-geek-400/60 hover:text-neutral-100 hover:shadow-[0_0_10px_rgba(89,126,247,0.2)] ${sizeClasses[size] || sizeClasses.sm} ${className}`}
+      className={`inline-flex items-center justify-center rounded-md border border-neutral-300/40 bg-black/40 text-neutral-300 transition-colors hover:border-geek-400/60 hover:text-neutral-100 ${sizeClasses[size] || sizeClasses.sm} ${className}`}
     >
       <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" aria-hidden="true">
         <path

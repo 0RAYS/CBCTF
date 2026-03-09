@@ -83,6 +83,7 @@ function List({
             <tr className="bg-black/40">
               {columns.map((column, index) => (
                 <th
+                  scope="col"
                   key={index}
                   className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap"
                   style={{ width: column.width || 'auto' }}

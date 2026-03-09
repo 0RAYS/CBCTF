@@ -39,19 +39,24 @@ function AdminTopbar({
 
       <div className="flex items-center gap-4">
         <LanguageSwitcher size="sm" />
-        <div className="flex items-center gap-3 cursor-pointer" onClick={onAvatarClick} role="button" tabIndex={0}>
+        <button
+          type="button"
+          aria-label={t('common.openUserMenu')}
+          className="flex items-center gap-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70 rounded-md"
+          onClick={onAvatarClick}
+        >
           <div className="text-right">
             <div className="text-sm font-mono text-neutral-200">{resolvedUserName}</div>
             <div className="text-xs text-neutral-500">{t('admin.topbar.role')}</div>
           </div>
           <div className="relative group">
-            <div className="w-[42px] h-[42px] border border-neutral-300 rounded-md overflow-hidden transition-all duration-200 hover:border-neutral-100 hover:shadow-[0_0_15px_rgba(179,179,179,0.3)]">
+            <div className="w-[42px] h-[42px] border border-neutral-300 rounded-md overflow-hidden transition-all duration-200 hover:border-neutral-100">
               <Avatar src={pictureSrc} name={userName} size={42} shape="rounded" />
             </div>
             <div className="absolute -top-[2px] -right-[2px] w-[8px] h-[8px] border-t border-r border-neutral-300 group-hover:border-neutral-100" />
             <div className="absolute -bottom-[2px] -left-[2px] w-[8px] h-[8px] border-b border-l border-neutral-300 group-hover:border-neutral-100" />
           </div>
-        </div>
+        </button>
       </div>
     </div>
   );

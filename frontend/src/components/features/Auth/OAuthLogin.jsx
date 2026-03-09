@@ -77,6 +77,7 @@ function OAuthLogin() {
             <img
               src={provider.picture}
               alt={provider.name}
+              loading="lazy"
               className="w-5 h-5 rounded-full"
               onError={(e) => {
                 e.target.style.display = 'none';

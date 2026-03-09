@@ -39,6 +39,9 @@
     "noData": "No data",
     "none": "None",
     "closeNotification": "Close notification",
+    "openUserMenu": "Open user menu",
+    "mainNavigation": "Main navigation",
+    "toggleMenu": "Toggle navigation menu",
     "leaveBlankToKeep": "Leave blank to keep unchanged",
     "pagination": {
       "totalItems": "Total {{count}} items",
@@ -117,7 +120,8 @@
     "welcome": "Welcome",
     "quickActions": "Quick Actions",
     "sidebar": {
-      "close": "Close sidebar"
+      "close": "Close sidebar",
+      "navigation": "Admin navigation"
     },
     "topbar": {
       "toggleSidebar": "Toggle sidebar",
@@ -1988,6 +1992,8 @@
     }
   },
   "game": {
+    "noGames": "No contests available",
+    "noChallenges": "No challenges published yet",
     "status": {
       "upcoming": "UPCOMING",
       "active": "ACTIVE",
@@ -2164,6 +2170,7 @@
       }
     },
     "challenges": {
+      "title": "Challenges",
       "backToSummary": "← Back to contest summary",
       "toast": {
         "fetchFailed": "Failed to load contest data",
