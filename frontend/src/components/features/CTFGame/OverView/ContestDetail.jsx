@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { useState } from 'react';
 import { Button, Card } from '../../../../components/common';
+import { useTranslation } from 'react-i18next';
 
 /**
  * @param {Object} contest - 比赛详情对象
@@ -27,6 +28,7 @@ import { Button, Card } from '../../../../components/common';
 function ContestDetail({ contest, handleJoinContest }) {
   const [hoveredPrize, setHoveredPrize] = useState(null);
   const [hoveredTimeline, setHoveredTimeline] = useState(null);
+  const { t } = useTranslation();
 
   if (!contest) return null;
 
@@ -74,15 +76,15 @@ function ContestDetail({ contest, handleJoinContest }) {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-wrap gap-4 md:gap-8">
               <div>
-                <span className="text-neutral-400">Start Time</span>
+                <span className="text-neutral-400">{t('game.detail.labels.startTime')}</span>
                 <div className="text-neutral-50 font-mono">{new Date(contest.startTime).toLocaleString()}</div>
               </div>
               <div>
-                <span className="text-neutral-400">End Time</span>
+                <span className="text-neutral-400">{t('game.detail.labels.endTime')}</span>
                 <div className="text-neutral-50 font-mono">{new Date(contest.endTime).toLocaleString()}</div>
               </div>
               <div>
-                <span className="text-neutral-400">Participants</span>
+                <span className="text-neutral-400">{t('game.detail.labels.participants')}</span>
                 <div className="text-neutral-50 font-mono">{contest.participants || 0}</div>
               </div>
             </div>
@@ -99,7 +101,7 @@ function ContestDetail({ contest, handleJoinContest }) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* 比赛规则 - 添加规则项悬停效果 */}
         <Card className="col-span-1 md:col-span-2" variant="default" padding="lg">
-          <h2 className="text-2xl font-mono text-neutral-50 tracking-wider mb-6">Contest Rules</h2>
+          <h2 className="text-2xl font-mono text-neutral-50 tracking-wider mb-6">{t('game.detail.labels.contestRules')}</h2>
           <div className="space-y-4 text-neutral-300">
             {contest.rules?.map((rule, index) => (
               <motion.div
@@ -116,7 +118,7 @@ function ContestDetail({ contest, handleJoinContest }) {
 
         {/* 奖励信息 - 添加奖项悬停效果 */}
         <Card variant="default" padding="lg">
-          <h2 className="text-2xl font-mono text-neutral-50 tracking-wider mb-6">Prizes</h2>
+          <h2 className="text-2xl font-mono text-neutral-50 tracking-wider mb-6">{t('game.detail.labels.prizes')}</h2>
           <div className="space-y-6">
             {contest.prizes?.map((prize, index) => (
               <motion.div
@@ -167,7 +169,7 @@ function ContestDetail({ contest, handleJoinContest }) {
 
       {/* 时间线 - 简化动画效果 */}
       <Card variant="default" padding="lg">
-        <h2 className="text-2xl font-mono text-neutral-50 tracking-wider mb-6">Timeline</h2>
+        <h2 className="text-2xl font-mono text-neutral-50 tracking-wider mb-6">{t('game.detail.labels.timeline')}</h2>
         <div className="overflow-x-auto">
         <div className="relative flex items-start gap-8 min-w-max">
           {/* 连接线 */}

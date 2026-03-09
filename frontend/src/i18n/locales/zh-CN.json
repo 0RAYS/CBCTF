@@ -330,7 +330,7 @@
           "description": "题目描述",
           "attempts": "尝试次数",
           "hidden": "隐藏题目",
-          "flagValueHint": "Flag值: static{} uuid{} dynamic{}",
+          "flagValueHint": "格式：static{value} | uuid{} | dynamic{value}",
           "scoreCurve": "分数曲线",
           "initialScore": "初始分值",
           "currentScore": "当前分值",
@@ -615,7 +615,7 @@
           "flagPrefix": "Flag前缀",
           "teamSize": "团队人数上限",
           "teamVictims": "队伍靶机数上限",
-          "captcha": "比赛验证码",
+          "captcha": "邀请码",
           "hiddenContest": "隐藏比赛",
           "bloodBonus": "启用血分奖励",
           "prizeAmount": "金额",
@@ -641,7 +641,7 @@
           "flagPrefix": "用于生成flag的前缀，例如：CBCTF{flag}",
           "teamSize": "每个参赛团队的最大人数",
           "teamVictims": "每个参赛团队的最大靶机数",
-          "captcha": "加入比赛需要的验证码",
+          "captcha": "加入比赛所需的邀请码，留空则允许任意报名。",
           "hiddenContest": "隐藏后比赛将无法访问",
           "bloodBonus": "对前三个解出题目的队伍提供额外加分"
         },
@@ -664,7 +664,7 @@
           "other": "第{{rank}}名"
         },
         "validation": {
-          "invalidDate": "无效的日期格式",
+          "invalidDate": "日期格式无效，请使用格式：YYYY-MM-DD HH:MM",
           "titleRequired": "标题不能为空",
           "startTimeRequired": "请选择开始时间",
           "endTimeRequired": "请选择结束时间",
@@ -685,9 +685,9 @@
           "fetchChallengesFailed": "获取题目列表失败",
           "searchFailed": "搜索失败",
           "selectStopRequired": "请选择要停止的容器",
-          "selectStartRequired": "请选择题目和团队",
-          "taskDispatched": "任务下发成功",
-          "taskDispatchFailed": "任务下发失败"
+          "selectStartRequired": "请至少选择一道题目和一支队伍",
+          "taskDispatched": "任务已入队",
+          "taskDispatchFailed": "任务入队失败"
         },
         "status": {
           "stopped": "已停止"
@@ -1013,7 +1013,7 @@
         "generator": "生成器镜像",
         "flags": "Flag设置",
         "options": "选项设置",
-        "podsNotice": "docker-compose注意事项",
+        "podsNotice": "容器配置说明",
         "containers": "容器设置"
       },
       "labels": {
@@ -1681,7 +1681,7 @@
       "update": {
         "title": "更新配置确认",
         "prompt": "即将更新系统配置，是否继续？",
-        "warning": "提示：可能导致系统运行失败。",
+        "warning": "提示：配置错误可能导致服务异常，请仔细核查后再继续。",
         "confirm": "继续更新",
         "cancel": "取消"
       },
@@ -1690,7 +1690,7 @@
         "manualTitle": "重启系统确认",
         "prompt": "系统配置已更新，是否立即重启以使配置生效？",
         "manualPrompt": "系统即将重启，是否继续？",
-        "warning": "提示：重启可能导致系统无法正常运行。",
+        "warning": "提示：重启期间系统将短暂不可用。",
         "confirm": "立即重启",
         "cancel": "暂不重启",
         "inProgress": "正在重启..."
@@ -1799,15 +1799,15 @@
       },
       "binary": {
         "name": "Binary Exploitation",
-        "description": "Exploit buffer overflows, PWN"
+        "description": "Exploit memory vulnerabilities including buffer overflows and heap exploits"
       },
       "reverse": {
         "name": "Reverse Engineering",
-        "description": "Reverse engineering, exploit reverse engineering"
+        "description": "Disassemble binaries and firmware to uncover hidden logic and secrets"
       },
       "blockchain": {
         "name": "Blockchain",
-        "description": "Blockchain Security"
+        "description": "Audit smart contracts and find vulnerabilities in blockchain protocols"
       }
     },
     "upcoming": {
@@ -1846,8 +1846,8 @@
   },
   "oauth": {
     "callback": {
-      "errorWithReason": "OAuth登录失败：{{reason}}",
-      "tokenMissing": "OAuth token缺失",
+      "errorWithReason": "登录失败：{{reason}}",
+      "tokenMissing": "登录会话已过期，请重试。",
       "toast": {
         "success": "OAuth登录成功",
         "failed": "OAuth登录失败"
@@ -1875,8 +1875,8 @@
     },
     "auth": {
       "loginSuccess": "登录成功",
-      "loginFailed": "登录失败",
-      "registerFailed": "注册失败"
+      "loginFailed": "登录失败，请检查用户名和密码。",
+      "registerFailed": "注册失败，请检查填写内容后重试。"
     },
     "user": {
       "profileUpdated": "个人资料已更新",
@@ -1890,10 +1890,10 @@
       "fetchAdminFailed": "获取管理员信息失败"
     },
     "common": {
-      "updateFailed": "更新失败",
-      "sendFailed": "发送失败",
-      "deleteFailed": "删除失败",
-      "operationFailed": "操作失败"
+      "updateFailed": "更新失败，请重试。",
+      "sendFailed": "发送失败，请重试。",
+      "deleteFailed": "删除失败，请重试。",
+      "operationFailed": "操作失败，请重试。"
     },
     "game": {
       "fetchListFailed": "获取比赛列表失败"
@@ -1907,16 +1907,16 @@
     }
   },
   "errors": {
-    "unauthorized": "未授权或登录已过期",
-    "forbidden": "没有权限访问该资源",
-    "notFound": "请求的资源不存在",
-    "serverError": "服务器内部错误",
-    "badGateway": "网关错误",
-    "serviceUnavailable": "服务暂时不可用",
-    "gatewayTimeout": "网关超时",
-    "requestFailed": "请求失败",
-    "requestTimeout": "请求超时，请检查网络连接",
-    "networkError": "无法连接到服务器"
+    "unauthorized": "登录已过期，请重新登录。",
+    "forbidden": "您没有权限访问该资源。",
+    "notFound": "该页面或资源不存在。",
+    "serverError": "服务器出现问题，请稍后重试。",
+    "badGateway": "服务器暂时无法访问，请稍后再试。",
+    "serviceUnavailable": "服务暂时不可用，请稍后再试。",
+    "gatewayTimeout": "服务器响应超时，请重试。",
+    "requestFailed": "请求失败，请重试。",
+    "requestTimeout": "请求超时，请检查网络连接。",
+    "networkError": "无法连接到服务器，请检查网络后重试。"
   },
   "user": {
     "settings": {
@@ -2003,12 +2003,12 @@
     "actions": {
       "results": "查看结果",
       "joinNow": "立即加入",
-      "ended": "已结束"
+      "ended": "查看结果"
     },
     "challengeBoard": {
       "solves": "解题数：",
       "status": {
-        "notInitialized": "未初始化",
+        "notInitialized": "待配置",
         "instanceRunning": "靶机运行中"
       }
     },
@@ -2045,7 +2045,7 @@
         "submitFlag": "提交 Flag"
       },
       "initialize": {
-        "message": "初始化题目后可查看内容",
+        "message": "该题目尚未初始化，初始化后即可查看内容。",
         "loading": "初始化中...",
         "action": "初始化题目"
       },
@@ -2103,6 +2103,14 @@
       }
     },
     "detail": {
+      "labels": {
+        "startTime": "开始时间",
+        "endTime": "结束时间",
+        "participants": "参赛人数",
+        "contestRules": "比赛规则",
+        "prizes": "奖励",
+        "timeline": "时间线"
+      },
       "defaultRules": [
         "参赛者必须遵守比赛规则与伦理",
         "禁止攻击比赛平台或其他参赛者",
@@ -2154,6 +2162,33 @@
     },
     "team": {
       "empty": "暂无队伍信息",
+      "joinModal": {
+        "title": {
+          "select": "加入比赛",
+          "create": "创建队伍",
+          "join": "加入队伍"
+        },
+        "createTeam": "创建新队伍",
+        "joinTeam": "加入已有队伍",
+        "or": "或",
+        "form": {
+          "teamName": "队伍名称",
+          "teamNamePlaceholder": "你的队伍名称",
+          "description": "简介（可选）",
+          "descriptionPlaceholder": "简单介绍你的队伍",
+          "contestCode": "比赛邀请码",
+          "contestCodePlaceholder": "输入比赛邀请码",
+          "inviteCode": "队伍邀请码",
+          "inviteCodePlaceholder": "输入队长分享的邀请码"
+        },
+        "actions": {
+          "back": "返回",
+          "creating": "创建中...",
+          "create": "创建队伍",
+          "joining": "加入中...",
+          "join": "加入队伍"
+        }
+      },
       "toast": {
         "fetchFailed": "获取队伍信息失败",
         "inviteCopied": "邀请码已复制",
@@ -2181,10 +2216,10 @@
         "refreshStatusFailed": "刷新题目状态失败",
         "initSuccess": "题目初始化成功",
         "initFailed": "初始化失败",
-        "resetSuccess": "任务下发成功",
-        "resetFailed": "重置失败",
-        "launchSuccess": "任务下发成功",
-        "launchFailed": "任务下发启动失败",
+        "resetSuccess": "Flag 重置中",
+        "resetFailed": "重置失败，请重试。",
+        "launchSuccess": "靶机启动中",
+        "launchFailed": "靶机启动失败，请重试。",
         "extendSuccess": "延长时间成功",
         "extendFailed": "延长时间失败",
         "destroySuccess": "靶机已销毁",

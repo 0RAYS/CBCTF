@@ -330,7 +330,7 @@
           "description": "Description",
           "attempts": "Attempts",
           "hidden": "Hide challenge",
-          "flagValueHint": "Flag value: static{} uuid{} dynamic{}",
+          "flagValueHint": "Format: static{value} | uuid{} | dynamic{value}",
           "scoreCurve": "Score curve",
           "initialScore": "Initial score",
           "currentScore": "Current score",
@@ -615,7 +615,7 @@
           "flagPrefix": "Flag Prefix",
           "teamSize": "Team Size Limit",
           "teamVictims": "Team Instance Limit",
-          "captcha": "Contest Code",
+          "captcha": "Invitation Code",
           "hiddenContest": "Hide Contest",
           "bloodBonus": "Enable Blood Bonus",
           "prizeAmount": "Amount",
@@ -641,7 +641,7 @@
           "flagPrefix": "Prefix used to generate flags, e.g. CBCTF{flag}",
           "teamSize": "Maximum members per team",
           "teamVictims": "Maximum instances per team",
-          "captcha": "Code required to join the contest",
+          "captcha": "Invitation code required to join the contest. Leave empty to allow open registration.",
           "hiddenContest": "Hidden contests cannot be accessed",
           "bloodBonus": "Extra points for the first three solves"
         },
@@ -664,7 +664,7 @@
           "other": "{{rank}}TH"
         },
         "validation": {
-          "invalidDate": "Invalid date format",
+          "invalidDate": "Invalid date. Use format: YYYY-MM-DD HH:MM",
           "titleRequired": "Title is required",
           "startTimeRequired": "Start time is required",
           "endTimeRequired": "End time is required",
@@ -685,9 +685,9 @@
           "fetchChallengesFailed": "Failed to load challenges",
           "searchFailed": "Search failed",
           "selectStopRequired": "Select containers to stop",
-          "selectStartRequired": "Select challenges and teams",
-          "taskDispatched": "Task dispatched",
-          "taskDispatchFailed": "Task dispatch failed"
+          "selectStartRequired": "Select at least one challenge and one team",
+          "taskDispatched": "Task queued",
+          "taskDispatchFailed": "Failed to queue task"
         },
         "status": {
           "stopped": "Stopped"
@@ -1013,7 +1013,7 @@
         "generator": "Generator Image",
         "flags": "Flag Settings",
         "options": "Option Settings",
-        "podsNotice": "docker-compose Notes",
+        "podsNotice": "Container Config Notes",
         "containers": "Container Settings"
       },
       "labels": {
@@ -1681,7 +1681,7 @@
       "update": {
         "title": "Confirm Update",
         "prompt": "You are about to update system configuration. Continue?",
-        "warning": "Warning: This may cause the system to fail.",
+        "warning": "Warning: Incorrect settings may disrupt service. Review carefully before proceeding.",
         "confirm": "Update",
         "cancel": "Cancel"
       },
@@ -1690,7 +1690,7 @@
         "manualTitle": "Confirm Restart",
         "prompt": "Configuration updated. Restart now to apply changes?",
         "manualPrompt": "The system will restart now. Continue?",
-        "warning": "Warning: Restart may cause the system to become unavailable.",
+        "warning": "Warning: The system will be briefly unavailable during restart.",
         "confirm": "Restart Now",
         "cancel": "Restart Later",
         "inProgress": "Restarting..."
@@ -1799,15 +1799,15 @@
       },
       "binary": {
         "name": "Binary Exploitation",
-        "description": "Exploit buffer overflows, PWN"
+        "description": "Exploit memory vulnerabilities including buffer overflows and heap exploits"
       },
       "reverse": {
         "name": "Reverse Engineering",
-        "description": "Reverse engineering, exploit reverse engineering"
+        "description": "Disassemble binaries and firmware to uncover hidden logic and secrets"
       },
       "blockchain": {
         "name": "Blockchain",
-        "description": "Blockchain Security"
+        "description": "Audit smart contracts and find vulnerabilities in blockchain protocols"
       }
     },
     "upcoming": {
@@ -1846,8 +1846,8 @@
   },
   "oauth": {
     "callback": {
-      "errorWithReason": "OAuth error: {{reason}}",
-      "tokenMissing": "OAuth token missing",
+      "errorWithReason": "Sign-in failed: {{reason}}",
+      "tokenMissing": "Sign-in session expired. Please try again.",
       "toast": {
         "success": "Login successful",
         "failed": "OAuth login failed"
@@ -1875,8 +1875,8 @@
     },
     "auth": {
       "loginSuccess": "Login successful",
-      "loginFailed": "Login failed",
-      "registerFailed": "Registration failed"
+      "loginFailed": "Login failed. Please check your credentials.",
+      "registerFailed": "Registration failed. Please check your details and try again."
     },
     "user": {
       "profileUpdated": "Profile updated",
@@ -1890,10 +1890,10 @@
       "fetchAdminFailed": "Failed to fetch admin info"
     },
     "common": {
-      "updateFailed": "Update failed",
-      "sendFailed": "Send failed",
-      "deleteFailed": "Delete failed",
-      "operationFailed": "Operation failed"
+      "updateFailed": "Update failed. Please try again.",
+      "sendFailed": "Couldn't send. Please try again.",
+      "deleteFailed": "Delete failed. Please try again.",
+      "operationFailed": "Something went wrong. Please try again."
     },
     "game": {
       "fetchListFailed": "Failed to load contests"
@@ -1907,16 +1907,16 @@
     }
   },
   "errors": {
-    "unauthorized": "Unauthorized or session expired",
-    "forbidden": "You do not have permission to access this resource",
-    "notFound": "Requested resource not found",
-    "serverError": "Internal server error",
-    "badGateway": "Bad gateway",
-    "serviceUnavailable": "Service temporarily unavailable",
-    "gatewayTimeout": "Gateway timeout",
-    "requestFailed": "Request failed",
-    "requestTimeout": "Request timed out. Please check your network connection",
-    "networkError": "Unable to connect to server"
+    "unauthorized": "Your session has expired. Please log in again.",
+    "forbidden": "You don't have permission to access this resource.",
+    "notFound": "This page or resource doesn't exist.",
+    "serverError": "Something went wrong on our end. Please try again.",
+    "badGateway": "Our server is temporarily unreachable. Please try again shortly.",
+    "serviceUnavailable": "Service temporarily unavailable. Please try again later.",
+    "gatewayTimeout": "The server took too long to respond. Please try again.",
+    "requestFailed": "Unable to complete your request. Please try again.",
+    "requestTimeout": "Request timed out. Please check your network connection.",
+    "networkError": "Unable to connect to the server. Check your network and try again."
   },
   "user": {
     "settings": {
@@ -2001,14 +2001,14 @@
       "ended": "ENDED"
     },
     "actions": {
-      "results": "RESULTS",
+      "results": "VIEW RESULTS",
       "joinNow": "JOIN NOW",
-      "ended": "ENDED"
+      "ended": "VIEW RESULTS"
     },
     "challengeBoard": {
       "solves": "Solves:",
       "status": {
-        "notInitialized": "Not Initialized",
+        "notInitialized": "Setup Pending",
         "instanceRunning": "Instance Running"
       }
     },
@@ -2045,7 +2045,7 @@
         "submitFlag": "Submit Flag"
       },
       "initialize": {
-        "message": "Initialize the challenge to view its content",
+        "message": "This challenge hasn't been set up yet. Initialize it to view its content.",
         "loading": "INITIALIZING...",
         "action": "INITIALIZE CHALLENGE"
       },
@@ -2103,6 +2103,14 @@
       }
     },
     "detail": {
+      "labels": {
+        "startTime": "Start Time",
+        "endTime": "End Time",
+        "participants": "Participants",
+        "contestRules": "Contest Rules",
+        "prizes": "Prizes",
+        "timeline": "Timeline"
+      },
       "defaultRules": [
         "Participants must follow contest rules and ethics",
         "Attacking the contest platform or other participants is prohibited",
@@ -2154,6 +2162,33 @@
     },
     "team": {
       "empty": "No team information available",
+      "joinModal": {
+        "title": {
+          "select": "JOIN CONTEST",
+          "create": "CREATE TEAM",
+          "join": "JOIN TEAM"
+        },
+        "createTeam": "CREATE NEW TEAM",
+        "joinTeam": "JOIN EXISTING TEAM",
+        "or": "OR",
+        "form": {
+          "teamName": "Team Name",
+          "teamNamePlaceholder": "Your team's name",
+          "description": "Description (optional)",
+          "descriptionPlaceholder": "Brief description of your team",
+          "contestCode": "Contest Access Code",
+          "contestCodePlaceholder": "Enter the contest access code",
+          "inviteCode": "Team Invitation Code",
+          "inviteCodePlaceholder": "Enter the code shared by your team captain"
+        },
+        "actions": {
+          "back": "BACK",
+          "creating": "CREATING...",
+          "create": "CREATE TEAM",
+          "joining": "JOINING...",
+          "join": "JOIN TEAM"
+        }
+      },
       "toast": {
         "fetchFailed": "Failed to load team information",
         "inviteCopied": "Invite code copied",
@@ -2181,10 +2216,10 @@
         "refreshStatusFailed": "Failed to refresh challenge status",
         "initSuccess": "Challenge initialized",
         "initFailed": "Initialization failed",
-        "resetSuccess": "Task dispatched",
-        "resetFailed": "Reset failed",
-        "launchSuccess": "Task dispatched",
-        "launchFailed": "Failed to start instance",
+        "resetSuccess": "Flag reset in progress",
+        "resetFailed": "Reset failed. Please try again.",
+        "launchSuccess": "Instance starting",
+        "launchFailed": "Failed to start instance. Please try again.",
         "extendSuccess": "Time extended",
         "extendFailed": "Failed to extend time",
         "destroySuccess": "Instance destroyed",

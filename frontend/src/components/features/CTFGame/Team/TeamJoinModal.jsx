@@ -1,11 +1,13 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { useState } from 'react';
 import { Button } from '../../../../components/common';
+import { useTranslation } from 'react-i18next';
 
 function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
   const [mode, setMode] = useState('select'); // 'select' | 'create' | 'join'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { t } = useTranslation();
 
   // 创建队伍表单
   const [createForm, setCreateForm] = useState({
@@ -62,7 +64,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
           <div className="p-5 border-b border-neutral-300/30">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl text-neutral-50 font-mono">
-                {mode === 'select' ? 'JOIN CONTEST' : mode === 'create' ? 'CREATE TEAM' : 'JOIN TEAM'}
+                {t(`game.team.joinModal.title.${mode}`)}
               </h2>
               <Button
                 variant="ghost"
@@ -93,17 +95,17 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                     className="shadow-[0_0_20px_rgba(89,126,247,0.4)]"
                     onClick={() => setMode('create')}
                   >
-                    CREATE NEW TEAM
+                    {t('game.team.joinModal.createTeam')}
                   </Button>
 
                   <div className="flex items-center gap-4">
                     <div className="h-[1px] flex-1 bg-neutral-300/30" />
-                    <span className="text-neutral-400 text-sm">OR</span>
+                    <span className="text-neutral-400 text-sm">{t('game.team.joinModal.or')}</span>
                     <div className="h-[1px] flex-1 bg-neutral-300/30" />
                   </div>
 
                   <Button variant="outline" size="lg" fullWidth onClick={() => setMode('join')}>
-                    JOIN EXISTING TEAM
+                    {t('game.team.joinModal.joinTeam')}
                   </Button>
                 </motion.div>
               ) : mode === 'create' ? (
@@ -116,7 +118,9 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                   exit={{ opacity: 0, x: -20 }}
                 >
                   <div className="space-y-2">
-                    <label className="text-neutral-400 text-sm">Team Name</label>
+                    <label className="text-neutral-400 text-sm">
+                      {t('game.team.joinModal.form.teamName')}
+                    </label>
                     <input
                       type="text"
                       required
@@ -131,12 +135,14 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                                                 text-neutral-50 placeholder-neutral-400
                                                 focus:border-geek-400 focus:shadow-focus
                                                 transition-all duration-200"
-                      placeholder="Enter team name"
+                      placeholder={t('game.team.joinModal.form.teamNamePlaceholder')}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-neutral-400 text-sm">Description</label>
+                    <label className="text-neutral-400 text-sm">
+                      {t('game.team.joinModal.form.description')}
+                    </label>
                     <textarea
                       value={createForm.description}
                       onChange={(e) =>
@@ -149,12 +155,14 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                                                 text-neutral-50 placeholder-neutral-400
                                                 focus:border-geek-400 focus:shadow-focus
                                                 transition-all duration-200 resize-none"
-                      placeholder="Describe your team"
+                      placeholder={t('game.team.joinModal.form.descriptionPlaceholder')}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-neutral-400 text-sm">Contest Invitation Code</label>
+                    <label className="text-neutral-400 text-sm">
+                      {t('game.team.joinModal.form.contestCode')}
+                    </label>
                     <input
                       type="text"
                       value={createForm.contestCode}
@@ -168,7 +176,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                                                 text-neutral-50 placeholder-neutral-400
                                                 focus:border-geek-400 focus:shadow-focus
                                                 transition-all duration-200"
-                      placeholder="Enter contest code"
+                      placeholder={t('game.team.joinModal.form.contestCodePlaceholder')}
                     />
                   </div>
 
@@ -184,7 +192,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
 
                   <div className="flex items-center gap-3 pt-2">
                     <Button type="button" variant="outline" fullWidth onClick={() => setMode('select')}>
-                      BACK
+                      {t('game.team.joinModal.actions.back')}
                     </Button>
                     <Button
                       type="submit"
@@ -194,7 +202,9 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                       disabled={!createForm.teamName || loading}
                       loading={loading}
                     >
-                      {loading ? 'CREATING...' : 'CREATE'}
+                      {loading
+                        ? t('game.team.joinModal.actions.creating')
+                        : t('game.team.joinModal.actions.create')}
                     </Button>
                   </div>
                 </motion.form>
@@ -208,7 +218,9 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                   exit={{ opacity: 0, x: -20 }}
                 >
                   <div className="space-y-2">
-                    <label className="text-neutral-400 text-sm">Team Name</label>
+                    <label className="text-neutral-400 text-sm">
+                      {t('game.team.joinModal.form.teamName')}
+                    </label>
                     <input
                       type="text"
                       required
@@ -223,11 +235,13 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                                                 text-neutral-50 placeholder-neutral-400
                                                 focus:border-geek-400 focus:shadow-focus
                                                 transition-all duration-200"
-                      placeholder="Enter team name"
+                      placeholder={t('game.team.joinModal.form.teamNamePlaceholder')}
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-neutral-400 text-sm">Team Invitation Code</label>
+                    <label className="text-neutral-400 text-sm">
+                      {t('game.team.joinModal.form.inviteCode')}
+                    </label>
                     <input
                       type="text"
                       required
@@ -242,7 +256,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                                                 text-neutral-50 placeholder-neutral-400
                                                 focus:border-geek-400 focus:shadow-focus
                                                 transition-all duration-200"
-                      placeholder="Enter team invitation code"
+                      placeholder={t('game.team.joinModal.form.inviteCodePlaceholder')}
                     />
                   </div>
 
@@ -258,7 +272,7 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
 
                   <div className="flex items-center gap-3 pt-2">
                     <Button type="button" variant="outline" fullWidth onClick={() => setMode('select')}>
-                      BACK
+                      {t('game.team.joinModal.actions.back')}
                     </Button>
                     <Button
                       type="submit"
@@ -268,7 +282,9 @@ function TeamJoinModal({ isOpen, onClose, onCreateTeam, onJoinTeam }) {
                       disabled={!joinForm.teamName || !joinForm.teamCode || loading}
                       loading={loading}
                     >
-                      {loading ? 'JOINING...' : 'JOIN'}
+                      {loading
+                        ? t('game.team.joinModal.actions.joining')
+                        : t('game.team.joinModal.actions.join')}
                     </Button>
                   </div>
                 </motion.form>
