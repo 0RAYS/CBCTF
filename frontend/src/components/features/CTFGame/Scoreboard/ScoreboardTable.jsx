@@ -279,7 +279,7 @@ function ScoreboardTable({
                           onMouseLeave={() => setHoveredCell(null)}
                         >
                           <div
-                            className={`transition-all duration-200 ${hoveredCell === cellKey ? 'scale-110' : ''}
+                            className={`transition-transform duration-200 ${hoveredCell === cellKey ? 'scale-110' : ''}
                               flex items-center justify-center font-mono text-lg
                             `}
                             title={`${team.name} - ${challenge.name}: ${

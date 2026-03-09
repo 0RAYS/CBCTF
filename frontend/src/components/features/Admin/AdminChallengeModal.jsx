@@ -9,8 +9,8 @@ import {
   IconCheck,
 } from '@tabler/icons-react';
 import { Button } from '../../../components/common';
-import Editor from '@monaco-editor/react';
-import { useState, useEffect } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
+const Editor = lazy(() => import('@monaco-editor/react'));
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -678,30 +678,32 @@ function AdminChallengeModal({
                           </Button>
                         </div>
                         <div className="border border-neutral-300/30 rounded-md overflow-hidden">
-                          <Editor
-                            value={challenge.docker_compose || defaultYAML}
-                            onChange={updateDockerCompose}
-                            language="yaml"
-                            options={{
-                              readOnly: false,
-                              minimap: { enabled: false },
-                              scrollBeyondLastLine: false,
-                              scrollbar: {
-                                vertical: 'auto',
-                                horizontal: 'auto',
-                              },
-                              lineNumbers: 'on',
-                              folding: true,
-                              wordWrap: 'on',
-                              fontSize: 14,
-                              fontFamily: '"Maple Mono", "Source Han Sans SC", ui-monospace, monospace',
-                              tabSize: 2,
-                              insertSpaces: true,
-                              renderLineHighlight: 'line',
-                            }}
-                            height={`${19 * (challenge.docker_compose || defaultYAML).split('\n').length}px`}
-                            theme="vs-dark"
-                          />
+                          <Suspense fallback={<div className="flex items-center justify-center h-[200px] text-neutral-400 font-mono text-sm">Loading editor…</div>}>
+                            <Editor
+                              value={challenge.docker_compose || defaultYAML}
+                              onChange={updateDockerCompose}
+                              language="yaml"
+                              options={{
+                                readOnly: false,
+                                minimap: { enabled: false },
+                                scrollBeyondLastLine: false,
+                                scrollbar: {
+                                  vertical: 'auto',
+                                  horizontal: 'auto',
+                                },
+                                lineNumbers: 'on',
+                                folding: true,
+                                wordWrap: 'on',
+                                fontSize: 14,
+                                fontFamily: '"Maple Mono", "Source Han Sans SC", ui-monospace, monospace',
+                                tabSize: 2,
+                                insertSpaces: true,
+                                renderLineHighlight: 'line',
+                              }}
+                              height={`${19 * (challenge.docker_compose || defaultYAML).split('\n').length}px`}
+                              theme="vs-dark"
+                            />
+                          </Suspense>
                         </div>
                         <div className="mt-1 text-xs text-neutral-500 font-mono">
                           {yamlNoticeLines.map((line, index) => (
@@ -992,26 +994,28 @@ function AdminChallengeModal({
               </div>
             </div>
             <div className="flex-1 h-full">
-              <Editor
-                value={fullscreenEditor.value}
-                onChange={updateFullscreenValue}
-                language="yaml"
-                options={{
-                  readOnly: false,
-                  minimap: { enabled: true },
-                  scrollBeyondLastLine: false,
-                  lineNumbers: 'on',
-                  folding: true,
-                  wordWrap: 'on',
-                  fontSize: 16,
-                  fontFamily: 'Consolas, "Courier New", monospace',
-                  tabSize: 2,
-                  insertSpaces: true,
-                  renderLineHighlight: 'line',
-                }}
-                height="calc(95vh - 70px)"
-                theme="vs-dark"
-              />
+              <Suspense fallback={<div className="flex items-center justify-center h-full text-neutral-400 font-mono text-sm">Loading editor…</div>}>
+                <Editor
+                  value={fullscreenEditor.value}
+                  onChange={updateFullscreenValue}
+                  language="yaml"
+                  options={{
+                    readOnly: false,
+                    minimap: { enabled: true },
+                    scrollBeyondLastLine: false,
+                    lineNumbers: 'on',
+                    folding: true,
+                    wordWrap: 'on',
+                    fontSize: 16,
+                    fontFamily: 'Consolas, "Courier New", monospace',
+                    tabSize: 2,
+                    insertSpaces: true,
+                    renderLineHighlight: 'line',
+                  }}
+                  height="calc(95vh - 70px)"
+                  theme="vs-dark"
+                />
+              </Suspense>
             </div>
           </motion.div>
         </div>

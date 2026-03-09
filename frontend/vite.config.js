@@ -9,4 +9,14 @@ export default defineConfig({
     react(),
   ],
   base: '/platform/',
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-monaco': ['@monaco-editor/react'],
+          'vendor-echarts': ['echarts', 'echarts-for-react'],
+        },
+      },
+    },
+  },
 });

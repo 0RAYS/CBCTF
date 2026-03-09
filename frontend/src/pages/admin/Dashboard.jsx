@@ -24,7 +24,7 @@ function Dashboard() {
     fetchSystemStatus().then();
     const interval = setInterval(() => {
       fetchSystemStatus().then();
-    }, 3000);
+    }, 10000);
     return () => {
       clearInterval(interval);
     };

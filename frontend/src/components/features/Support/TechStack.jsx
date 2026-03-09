@@ -67,7 +67,7 @@ function TechStack({
               <div className="space-y-2">
                 {tech.items.map((item, itemIndex) => (
                   <motion.div key={itemIndex} whileHover={{ x: 5 }}>
-                    <Card variant="default" padding="sm" className="hover:border-geek-400 transition-all duration-200">
+                    <Card variant="default" padding="sm" className="hover:border-geek-400 transition-colors duration-200">
                       <div className="flex items-center gap-3">
                         <span className="text-xl">{item.icon}</span>
                         <div>
@@ -97,10 +97,10 @@ function TechStack({
         <div className="grid grid-cols-2 gap-6">
           {developers.map((dev, index) => (
             <motion.div key={index} whileHover={{ y: -2 }}>
-              <Card variant="default" padding="md" className="hover:border-geek-400 transition-all duration-200">
+              <Card variant="default" padding="md" className="hover:border-geek-400 transition-colors duration-200">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-md border-2 border-neutral-300 overflow-hidden">
-                    <img src={dev.picture} alt={dev.name} className="w-full h-full object-cover" />
+                    <img src={dev.picture} alt={dev.name} loading="lazy" className="w-full h-full object-cover" />
                   </div>
                   <div>
                     <h3 className="text-neutral-50 font-mono text-lg">{dev.name}</h3>

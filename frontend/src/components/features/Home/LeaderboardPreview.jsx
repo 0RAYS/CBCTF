@@ -36,7 +36,7 @@ function LeaderboardPreview(props) {
                 key={index}
                 className={`flex items-center justify-between p-6 bg-neutral-900
                                 ${index !== topUsers.length - 1 ? 'border-b border-neutral-600' : ''}
-                                hover:bg-neutral-800 transition-all duration-200 cursor-pointer group`}
+                                hover:bg-neutral-800 transition-colors duration-200 cursor-pointer group`}
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
