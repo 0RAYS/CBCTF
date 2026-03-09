@@ -8,7 +8,7 @@ function HeroSection() {
   const { t } = useTranslation();
 
   return (
-    <div className="min-h-[600px] flex items-center justify-center px-4 md:px-8">
+    <div className="min-h-[480px] md:min-h-[600px] flex items-center justify-center px-4 md:px-8">
       <div className="w-full max-w-[1200px] flex flex-col md:flex-row items-center md:justify-between gap-8">
         {/* 左侧文本区域 */}
         <motion.div
@@ -17,7 +17,7 @@ function HeroSection() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-5xl font-mono text-neutral-50 leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-mono text-neutral-50 leading-tight">
             {t('home.hero.titlePrefix')}
             <span className="text-geek-400"> {t('home.hero.titleHighlight')} </span>
             {t('home.hero.titleSuffix')}

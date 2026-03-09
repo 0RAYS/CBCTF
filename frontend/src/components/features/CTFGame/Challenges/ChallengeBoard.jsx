@@ -41,9 +41,9 @@ function ChallengeBoard({
   return (
     <Card variant="default" padding="lg" animate className="">
       {/* 分类和团队信息 */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:justify-between sm:items-center">
         {/* 分类标签 */}
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-2 md:gap-4">
           {categories.map((category) => (
             <Button
               key={category}
@@ -73,7 +73,7 @@ function ChallengeBoard({
       </div>
 
       {/* 赛题列表 */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {challenges.map((challenge) => (
           <motion.div
             key={challenge.id}

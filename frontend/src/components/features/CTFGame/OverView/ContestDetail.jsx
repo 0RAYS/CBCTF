@@ -34,7 +34,7 @@ function ContestDetail({ contest, handleJoinContest }) {
     <div className="contest-container mx-auto space-y-6">
       {/* 头部信息区域 - 移除悬停效果 */}
       <motion.div
-        className="relative w-full h-[300px] border border-neutral-600 rounded-md overflow-hidden bg-black/30"
+        className="relative w-full h-auto min-h-[250px] md:h-[300px] border border-neutral-600 rounded-md overflow-hidden bg-black/30"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
@@ -50,10 +50,10 @@ function ContestDetail({ contest, handleJoinContest }) {
         />
 
         {/* 内容 */}
-        <div className="relative h-full p-8 flex flex-col justify-between">
+        <div className="relative h-full p-4 md:p-8 flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-4 mb-4">
-              <h1 className="text-4xl font-mono text-neutral-50 tracking-wider">{contest.title}</h1>
+            <div className="flex flex-wrap items-center gap-2 md:gap-4 mb-4">
+              <h1 className="text-2xl md:text-4xl font-mono text-neutral-50 tracking-wider">{contest.title}</h1>
               <span
                 className={`px-3 py-1 border rounded-md text-sm ${
                   contest.status === 'upcoming'
@@ -71,8 +71,8 @@ function ContestDetail({ contest, handleJoinContest }) {
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex gap-8">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-wrap gap-4 md:gap-8">
               <div>
                 <span className="text-neutral-400">Start Time</span>
                 <div className="text-neutral-50 font-mono">{new Date(contest.startTime).toLocaleString()}</div>
@@ -96,9 +96,9 @@ function ContestDetail({ contest, handleJoinContest }) {
       </motion.div>
 
       {/* 详细信息区域 */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* 比赛规则 - 添加规则项悬停效果 */}
-        <Card className="col-span-2" variant="default" padding="lg">
+        <Card className="col-span-1 md:col-span-2" variant="default" padding="lg">
           <h2 className="text-2xl font-mono text-neutral-50 tracking-wider mb-6">Contest Rules</h2>
           <div className="space-y-4 text-neutral-300">
             {contest.rules?.map((rule, index) => (
@@ -168,7 +168,8 @@ function ContestDetail({ contest, handleJoinContest }) {
       {/* 时间线 - 简化动画效果 */}
       <Card variant="default" padding="lg">
         <h2 className="text-2xl font-mono text-neutral-50 tracking-wider mb-6">Timeline</h2>
-        <div className="relative flex items-start gap-8">
+        <div className="overflow-x-auto">
+        <div className="relative flex items-start gap-8 min-w-max">
           {/* 连接线 */}
           <div className="absolute top-[30px] left-0 right-0 h-[2px] bg-neutral-300/20" />
 
@@ -195,6 +196,7 @@ function ContestDetail({ contest, handleJoinContest }) {
               </motion.div>
             </motion.div>
           ))}
+        </div>
         </div>
       </Card>
     </div>
