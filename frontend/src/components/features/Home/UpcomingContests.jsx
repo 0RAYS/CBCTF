@@ -3,35 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 function UpcomingContests({ contests = [] }) {
-  // const contests = [
-  //   {
-  //     title: 'Web Warriors Challenge',
-  //     date: '2024-04-15',
-  //     duration: '48h',
-  //     difficulty: 'Intermediate',
-  //     prizes: '$5,000',
-  //     registrations: 256,
-  //     image: 'url_to_image',
-  //   },
-  //   {
-  //     title: 'Crypto Masters Cup',
-  //     date: '2024-04-20',
-  //     duration: '24h',
-  //     difficulty: 'Advanced',
-  //     prizes: '$3,000',
-  //     registrations: 128,
-  //     image: 'url_to_image',
-  //   },
-  //   {
-  //     title: 'Binary Blast',
-  //     date: '2024-04-25',
-  //     duration: '36h',
-  //     difficulty: 'Expert',
-  //     prizes: '$8,000',
-  //     registrations: 192,
-  //     image: 'url_to_image',
-  //   },
-  // ];
   const navigate = useNavigate();
   const { t } = useTranslation();
   const gridColsClass =

@@ -4,22 +4,17 @@ import { useTranslation } from 'react-i18next';
 function Loading() {
   const { t } = useTranslation();
   return (
-    <div className="flex items-center justify-center min-h-[500px] w-full">
+    <div role="status" aria-live="polite" className="flex items-center justify-center min-h-[500px] w-full">
       <motion.div
-        className="text-neutral-300 font-mono text-lg"
+        className="flex flex-col items-center gap-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.3 }}
       >
-        {t('common.loading')}
+        <div className="w-8 h-8 border-2 border-t-geek-400 border-neutral-400/30 rounded-full animate-spin" />
+        <span className="text-sm font-mono text-neutral-400">{t('common.loading')}</span>
       </motion.div>
     </div>
-    // <div className="min-h-[400px] flex items-center justify-center">
-    //   <div className="flex flex-col items-center gap-4">
-    //     <div className="w-8 h-8 border-2 border-t-geek-400 border-neutral-400/30 rounded-full animate-spin" />
-    //     <span className="text-sm font-mono text-neutral-400">加载中...</span>
-    //   </div>
-    // </div>
   );
 }
 

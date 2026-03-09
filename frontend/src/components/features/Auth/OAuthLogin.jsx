@@ -58,7 +58,7 @@ function OAuthLogin() {
           <div className="w-full border-t border-neutral-600"></div>
         </div>
         <div className="relative flex justify-center text-xs">
-          <span className="bg-black/40 px-2 text-neutral-400">{t('auth.oauth.or')}</span>
+          <span className="bg-neutral-900 px-2 text-neutral-400">{t('auth.oauth.or')}</span>
         </div>
       </div>
 
@@ -68,11 +68,11 @@ function OAuthLogin() {
           <motion.button
             key={providerName}
             onClick={() => handleOAuthLogin(providerName, provider.url)}
-            className="w-full h-[40px] bg-black/20 border border-neutral-300 rounded-md px-4 
-                     text-neutral-50 hover:border-geek-400 hover:shadow-[0_0_15px_rgba(89,126,247,0.3)]
+            className="w-full h-[40px] bg-black/20 border border-neutral-300 rounded-md px-4
+                     text-neutral-50 hover:border-geek-400 hover:shadow-focus
                      transition-all duration-200 flex items-center justify-center gap-3"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ opacity: 0.85 }}
+            whileTap={{ opacity: 0.7 }}
           >
             <img
               src={provider.picture}

@@ -20,29 +20,26 @@ function Footer({ copyright, icp, links }) {
   const renderLink = (link, index) => {
     if (link.isExternal) {
       return (
-        <motion.a
+        <a
           key={index}
           href={link.href}
           target="_blank"
           rel="noopener noreferrer"
           className="text-neutral-300 text-sm tracking-wider hover:text-geek-400 transition-colors duration-200"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
         >
           {link.label}
-        </motion.a>
+        </a>
       );
     }
 
     return (
-      <motion.div key={index} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-        <Link
-          to={link.href}
-          className="text-neutral-300 text-sm tracking-wider hover:text-geek-400 transition-colors duration-200"
-        >
-          {link.label}
-        </Link>
-      </motion.div>
+      <Link
+        key={index}
+        to={link.href}
+        className="text-neutral-300 text-sm tracking-wider hover:text-geek-400 transition-colors duration-200"
+      >
+        {link.label}
+      </Link>
     );
   };
 
