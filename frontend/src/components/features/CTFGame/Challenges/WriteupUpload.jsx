@@ -50,7 +50,6 @@ function WriteupUpload({ onUploadWriteup, writeups = [] }) {
         <motion.div
           className={`border-2 border-dashed rounded-md p-6 text-center cursor-pointer transition-all duration-300
             ${isDragging ? 'border-yellow-400 bg-yellow-400/10' : 'border-neutral-400 hover:border-yellow-400 hover:bg-yellow-400/5'}`}
-          whileHover={{ scale: 1.01 }}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}

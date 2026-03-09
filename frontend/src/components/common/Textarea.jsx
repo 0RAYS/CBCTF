@@ -82,7 +82,7 @@ function Textarea({
 
       {/* 错误信息 */}
       {error && (
-        <div id={errorId} role="alert" className="mt-1 text-sm text-red-400">
+        <div id={errorId} role="alert" className="mt-2 text-sm text-red-400">
           {error}
         </div>
       )}

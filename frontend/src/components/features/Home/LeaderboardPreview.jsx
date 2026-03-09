@@ -82,25 +82,7 @@ function LeaderboardPreview(props) {
             ))}
         </motion.div>
 
-        {/* 查看更多按钮 */}
-        {/*<motion.div*/}
-        {/*  className="flex justify-center mt-8"*/}
-        {/*  initial={{ opacity: 0 }}*/}
-        {/*  whileInView={{ opacity: 1 }}*/}
-        {/*  viewport={{ once: true }}*/}
-        {/*  transition={{ delay: 0.5 }}*/}
-        {/*>*/}
-        {/*  <motion.button*/}
-        {/*    className="px-8 h-[40px] border border-neutral-300 rounded-md*/}
-        {/*                    text-neutral-300 font-mono tracking-wider*/}
-        {/*                    hover:border-geek-400 hover:text-geek-400 hover:bg-geek-400/10*/}
-        {/*                    transition-all duration-200"*/}
-        {/*    whileHover={{ scale: 1.05 }}*/}
-        {/*    whileTap={{ scale: 0.95 }}*/}
-        {/*  >*/}
-        {/*    VIEW FULL LEADERBOARD*/}
-        {/*  </motion.button>*/}
-        {/*</motion.div>*/}
+        {/* 查看更多按钮（待实现） */}
       </div>
     </div>
   );

@@ -27,7 +27,7 @@ function HeroSection() {
             <Button
               variant="primary"
               size="lg"
-              className="shadow-[0_0_20px_rgba(89,126,247,0.4)]"
+              className="shadow-focus-strong"
               onClick={() => navigate('/games')}
             >
               {t('home.hero.start')}
@@ -47,7 +47,7 @@ function HeroSection() {
         >
           {/* 这里可以添加一些科技感的SVG动画或3D模型 */}
           <div className="absolute inset-0 border border-neutral-300/30 rounded-md">
-            <img alt={'logo'} src={'./logo.png'} />
+            <img alt="CBCTF" src="./logo.png" />
           </div>
         </motion.div>
       </div>
