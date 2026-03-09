@@ -56,11 +56,18 @@ export default {
           }
         },
         boxShadow: {
-          // Design token: focus state glow (geek-400 accent)
+          // Design token: focus state glow (geek-400 accent) — inputs & interactive elements
           'focus': '0 0 15px rgba(89,126,247,0.3)',
           'focus-strong': '0 0 20px rgba(89,126,247,0.4)',
-          // Design token: error state glow (red-400)
+          // Design token: error state glow (red-400) — input error state
           'error': '0 0 15px rgba(239,68,68,0.3)',
+          // Design tokens: status glow — toast notifications & status indicators (0.2 opacity)
+          'glow-primary': '0 0 15px rgba(89,126,247,0.2)',
+          'glow-success': '0 0 15px rgba(74,222,128,0.2)',
+          'glow-warning': '0 0 15px rgba(251,191,36,0.2)',
+          'glow-danger':  '0 0 15px rgba(239,68,68,0.2)',
+          'glow-info':    '0 0 15px rgba(34,211,238,0.2)',
+          'glow-muted':   '0 0 15px rgba(115,115,115,0.1)',
         },
       },
     },

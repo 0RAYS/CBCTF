@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { IconEdit, IconTrash, IconPlus } from '@tabler/icons-react';
-import { Button, Pagination, List } from '../../../common';
+import { Button, Pagination, List, Chip } from '../../../common';
 import { useTranslation } from 'react-i18next';
 import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../../config/challengeChips';
 
@@ -37,33 +37,6 @@ function AdminContestChallenges({
   onFilterCategoryChange,
 }) {
   const { t } = useTranslation();
-  // 分类标签渲染
-  const renderCategoryChip = (category) => {
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-mono ${getChallengeCategoryChipClass(category)}`}>
-        {category}
-      </span>
-    );
-  };
-
-  // 类型标签渲染
-  const renderTypeChip = (type) => {
-    const typeMap = {
-      static: { label: t('admin.challenge.types.static') },
-      question: { label: t('admin.challenge.types.question') },
-      dynamic: { label: t('admin.challenge.types.dynamic') },
-      pods: { label: t('admin.challenge.types.pods') },
-    };
-
-    const typeInfo = typeMap[type] || { label: type };
-
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-mono ${getChallengeTypeChipClass(type)}`}>
-        {typeInfo.label}
-      </span>
-    );
-  };
-
   // 自定义标签渲染
   const renderTags = (tags) => {
     if (!tags || tags.length === 0)
@@ -72,12 +45,14 @@ function AdminContestChallenges({
     return (
       <div className="flex flex-wrap gap-1">
         {tags.map((tag, index) => (
-          <span
+          <Chip
             key={index}
-            className="px-2 py-0.5 bg-black/30 border border-geek-600/30 rounded-full text-xs font-mono text-geek-300"
-          >
-            {tag}
-          </span>
+            variant="tag"
+            size="sm"
+            label={tag}
+            colorClass="border-geek-600/30 text-geek-300"
+            className="rounded-full"
+          />
         ))}
       </div>
     );
@@ -91,13 +66,14 @@ function AdminContestChallenges({
     return (
       <div className="flex flex-wrap gap-1">
         {hints.map((hint, index) => (
-          <span
+          <Chip
             key={index}
-            className="px-2 py-0.5 bg-black/30 border border-yellow-400/30 rounded text-xs font-mono text-yellow-300"
+            variant="tag"
+            size="sm"
+            label={t('admin.contests.challenges.hintLabel', { index: index + 1 })}
+            colorClass="border-yellow-400/30 text-yellow-300"
             title={hint}
-          >
-            {t('admin.contests.challenges.hintLabel', { index: index + 1 })}
-          </span>
+          />
         ))}
       </div>
     );
@@ -121,9 +97,7 @@ function AdminContestChallenges({
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-neutral-50 font-mono truncate">{challenge.name}</span>
               {challenge.hidden && (
-                <span className="px-2 py-0.5 rounded-full text-xs font-mono bg-red-400/20 text-red-400">
-                  {t('admin.contests.challenges.hidden')}
-                </span>
+                <Chip size="sm" label={t('admin.contests.challenges.hidden')} colorClass="bg-red-400/20 text-red-400" />
               )}
             </div>
             <span className="text-xs text-neutral-400 line-clamp-1 break-all">{challenge.description || '-'}</span>
@@ -131,12 +105,24 @@ function AdminContestChallenges({
         );
       case 'category':
         return challenge.category ? (
-          renderCategoryChip(challenge.category)
+          <Chip label={challenge.category} colorClass={getChallengeCategoryChipClass(challenge.category)} />
         ) : (
           <span className="text-neutral-500">-</span>
         );
-      case 'type':
-        return renderTypeChip(challenge.type);
+      case 'type': {
+        const typeLabels = {
+          static: t('admin.challenge.types.static'),
+          question: t('admin.challenge.types.question'),
+          dynamic: t('admin.challenge.types.dynamic'),
+          pods: t('admin.challenge.types.pods'),
+        };
+        return (
+          <Chip
+            label={typeLabels[challenge.type] || challenge.type}
+            colorClass={getChallengeTypeChipClass(challenge.type)}
+          />
+        );
+      }
       case 'metrics':
         return (
           <div className="flex flex-col gap-1 text-xs font-mono text-neutral-400">

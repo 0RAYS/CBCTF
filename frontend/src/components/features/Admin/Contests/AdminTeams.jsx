@@ -257,7 +257,7 @@ function AdminTeams({
             onChange={(e) => onFormChange({ ...editForm, name: e.target.value })}
             className="w-full h-[40px] px-4 bg-black/20 border border-neutral-300/30 rounded-md
                             text-neutral-50 placeholder-neutral-500
-                            focus:outline-none focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.3)]
+                            focus:outline-none focus:border-geek-400 focus:shadow-focus
                             transition-all duration-200"
           />
         </div>
@@ -271,7 +271,7 @@ function AdminTeams({
             rows={3}
             className="w-full p-4 bg-black/20 border border-neutral-300/30 rounded-md
                             text-neutral-50 placeholder-neutral-500
-                            focus:outline-none focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.3)]
+                            focus:outline-none focus:border-geek-400 focus:shadow-focus
                             transition-all duration-200 resize-none"
           />
         </div>
@@ -302,7 +302,7 @@ function AdminTeams({
             onChange={(e) => onFormChange({ ...editForm, captcha: e.target.value })}
             className="w-full h-[40px] px-4 bg-black/20 border border-neutral-300/30 rounded-md
                             text-neutral-50 placeholder-neutral-500
-                            focus:outline-none focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.3)]
+                            focus:outline-none focus:border-geek-400 focus:shadow-focus
                             transition-all duration-200"
           />
         </div>

@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { IconEdit, IconTrash, IconPlus, IconUpload, IconDownload, IconSearch, IconFlask } from '@tabler/icons-react';
-import { Button, Pagination, Input, Spinner } from '../../../components/common';
+import { Button, Pagination, Input, Spinner, Chip } from '../../../components/common';
 import { List } from '../../common';
 import { useTranslation } from 'react-i18next';
 import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../config/challengeChips';
@@ -53,33 +53,6 @@ function AdminChallenge({
 }) {
   const { t } = useTranslation();
 
-  // 分类标签渲染
-  const renderCategoryChip = (category) => {
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-mono ${getChallengeCategoryChipClass(category)}`}>
-        {category}
-      </span>
-    );
-  };
-
-  // 类型标签渲染
-  const renderTypeChip = (type) => {
-    const typeMap = {
-      static: { label: t('admin.challenge.types.static') },
-      question: { label: t('admin.challenge.types.question') },
-      dynamic: { label: t('admin.challenge.types.dynamic') },
-      pods: { label: t('admin.challenge.types.pods') },
-    };
-
-    const typeInfo = typeMap[type] || { label: type };
-
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-mono ${getChallengeTypeChipClass(type)}`}>
-        {typeInfo.label}
-      </span>
-    );
-  };
-
   // Flag 展示
   const renderFlags = (flags) => {
     if (!flags || flags.length === 0)
@@ -88,13 +61,12 @@ function AdminChallenge({
     return (
       <div className="flex flex-wrap gap-1">
         {flags.map((flag, index) => (
-          <span
+          <Chip
             key={index}
-            className="px-2 py-1 bg-black/30 border border-neutral-300/30 rounded text-xs font-mono text-neutral-300"
+            variant="tag"
+            label={flag.value.length > 15 ? `${flag.value.substring(0, 15)}...` : flag.value}
             title={flag.value}
-          >
-            {flag.value.length > 15 ? `${flag.value.substring(0, 15)}...` : flag.value}
-          </span>
+          />
         ))}
       </div>
     );
@@ -120,12 +92,24 @@ function AdminChallenge({
         );
       case 'category':
         return challenge.category ? (
-          renderCategoryChip(challenge.category)
+          <Chip label={challenge.category} colorClass={getChallengeCategoryChipClass(challenge.category)} />
         ) : (
           <span className="text-neutral-500">-</span>
         );
-      case 'type':
-        return renderTypeChip(challenge.type);
+      case 'type': {
+        const typeLabels = {
+          static: t('admin.challenge.types.static'),
+          question: t('admin.challenge.types.question'),
+          dynamic: t('admin.challenge.types.dynamic'),
+          pods: t('admin.challenge.types.pods'),
+        };
+        return (
+          <Chip
+            label={typeLabels[challenge.type] || challenge.type}
+            colorClass={getChallengeTypeChipClass(challenge.type)}
+          />
+        );
+      }
       case 'flags':
         if (challenge.type === 'pods' || challenge.type === 'question') {
           return <span className="text-neutral-500 font-mono text-sm">{t('common.notAvailable')}</span>;
@@ -133,15 +117,7 @@ function AdminChallenge({
         return <div className="whitespace-normal">{renderFlags(challenge.flags)}</div>;
       case 'file':
         return challenge.file ? (
-          <span
-            className={[
-              'px-2 py-1 bg-black/30 border border-neutral-300/30 rounded text-xs font-mono text-neutral-300',
-              'whitespace-normal',
-            ].join(' ')}
-            title={challenge.file}
-          >
-            {challenge.file}
-          </span>
+          <Chip variant="tag" label={challenge.file} title={challenge.file} className="whitespace-normal" />
         ) : (
           <span className="text-neutral-500 font-mono text-sm">{t('common.none')}</span>
         );

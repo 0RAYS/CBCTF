@@ -10,25 +10,25 @@ const toastVariants = {
 
 const TOAST_CONFIG = {
   primary: {
-    container: 'border-geek-400/70 bg-geek-900/70 text-geek-300 shadow-[0_0_15px_rgba(89,126,247,0.2)]',
+    container: 'border-geek-400/70 bg-geek-900/70 text-geek-300 shadow-glow-primary',
     title: 'text-geek-300 font-mono',
     iconColor: 'text-geek-400',
     icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />,
   },
   secondary: {
-    container: 'border-geek-400/70 bg-geek-900/70 text-geek-300 shadow-[0_0_15px_rgba(89,126,247,0.2)]',
+    container: 'border-geek-400/70 bg-geek-900/70 text-geek-300 shadow-glow-primary',
     title: 'text-geek-300 font-mono',
     iconColor: 'text-geek-400',
     icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />,
   },
   success: {
-    container: 'border-green-400/70 bg-green-900/70 text-green-300 shadow-[0_0_15px_rgba(74,222,128,0.2)]',
+    container: 'border-green-400/70 bg-green-900/70 text-green-300 shadow-glow-success',
     title: 'text-green-300 font-mono',
     iconColor: 'text-green-400',
     icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />,
   },
   warning: {
-    container: 'border-amber-400/70 bg-amber-900/70 text-amber-300 shadow-[0_0_15px_rgba(251,191,36,0.2)]',
+    container: 'border-amber-400/70 bg-amber-900/70 text-amber-300 shadow-glow-warning',
     title: 'text-amber-300 font-mono',
     iconColor: 'text-amber-400',
     icon: (
@@ -41,13 +41,13 @@ const TOAST_CONFIG = {
     ),
   },
   danger: {
-    container: 'border-red-400/70 bg-red-900/70 text-red-300 shadow-[0_0_15px_rgba(239,68,68,0.2)]',
+    container: 'border-red-400/70 bg-red-900/70 text-red-300 shadow-glow-danger',
     title: 'text-red-300 font-mono',
     iconColor: 'text-red-400',
     icon: <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />,
   },
   info: {
-    container: 'border-cyan-400/70 bg-cyan-900/70 text-cyan-300 shadow-[0_0_15px_rgba(34,211,238,0.2)]',
+    container: 'border-cyan-400/70 bg-cyan-900/70 text-cyan-300 shadow-glow-info',
     title: 'text-cyan-300 font-mono',
     iconColor: 'text-cyan-400',
     icon: (
@@ -60,7 +60,7 @@ const TOAST_CONFIG = {
     ),
   },
   default: {
-    container: 'border-neutral-500/50 bg-black/70 text-neutral-300 shadow-[0_0_15px_rgba(115,115,115,0.1)]',
+    container: 'border-neutral-500/50 bg-black/70 text-neutral-300 shadow-glow-muted',
     title: 'text-neutral-200 font-mono',
     iconColor: 'text-neutral-400',
     icon: (

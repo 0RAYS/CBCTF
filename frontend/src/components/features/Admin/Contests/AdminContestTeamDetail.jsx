@@ -319,7 +319,7 @@ function TeamDetail({
                 placeholder={t('admin.contests.teams.detail.flags.filterNamePlaceholder')}
                 className="w-full h-9 px-3 bg-black/20 border border-neutral-300/30 rounded-md
                   text-sm text-neutral-50 placeholder-neutral-500
-                  focus:outline-none focus:border-geek-400 focus:shadow-[0_0_15px_rgba(89,126,247,0.3)]
+                  focus:outline-none focus:border-geek-400 focus:shadow-focus
                   transition-all duration-200"
               />
             </div>
