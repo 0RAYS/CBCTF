@@ -1,13 +1,6 @@
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import {
-  IconWorld,
-  IconLock,
-  IconMicroscope,
-  IconTerminal2,
-  IconRotateClockwise,
-  IconLink,
-} from '@tabler/icons-react';
+import { IconWorld, IconLock, IconMicroscope, IconTerminal2, IconRotateClockwise, IconLink } from '@tabler/icons-react';
 
 function ChallengeTypes() {
   const { t } = useTranslation();

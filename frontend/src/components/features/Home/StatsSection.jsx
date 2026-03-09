@@ -1,10 +1,7 @@
 import { motion } from 'motion/react';
 import { Card } from '../../../components/common';
-import { useTranslation } from 'react-i18next';
 
 function StatsSection({ stats, isLoading }) {
-  const { t } = useTranslation();
-
   if (!isLoading && (!stats || stats.length === 0)) {
     return null;
   }
@@ -15,10 +12,7 @@ function StatsSection({ stats, isLoading }) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {isLoading
             ? Array.from({ length: 4 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="h-[88px] rounded-md bg-neutral-800 animate-pulse"
-                />
+                <div key={index} className="h-[88px] rounded-md bg-neutral-800 animate-pulse" />
               ))
             : stats.map((stat, index) => (
                 <motion.div

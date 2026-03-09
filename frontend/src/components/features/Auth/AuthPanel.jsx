@@ -146,11 +146,7 @@ function AuthPanel({ onSubmit }) {
       </div>
 
       {/* 账号密码表单 */}
-      <motion.form
-        onSubmit={handleSubmit}
-        className="space-y-4"
-        animate={formControls}
-      >
+      <motion.form onSubmit={handleSubmit} className="space-y-4" animate={formControls}>
         <AnimatePresence mode="wait">
           <motion.div
             key={isLogin ? 'login-form' : 'register-form'}
