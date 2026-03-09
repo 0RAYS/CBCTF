@@ -58,10 +58,10 @@
       "time": "Time"
     },
     "challengeTypes": {
-      "static": "Static Challenge",
-      "question": "Question Challenge",
-      "dynamic": "Dynamic Challenge",
-      "pods": "Container Challenge"
+      "static": "Static",
+      "question": "Question",
+      "dynamic": "Dynamic",
+      "pods": "Container"
     },
     "toggle": {
       "enabled": "Enabled",
