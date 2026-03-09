@@ -20,6 +20,9 @@ const ToastContainer = ({ position = 'top-right', toasts = [], removeToast }) =>
 
   return (
     <div
+      aria-live="polite"
+      aria-atomic="false"
+      aria-label="Notifications"
       className={`fixed z-[9999] flex flex-col ${POSITION_CLASSES[position] || POSITION_CLASSES['top-right']} pointer-events-none`}
       style={{
         gap: '0.75rem',

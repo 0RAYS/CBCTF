@@ -25,11 +25,23 @@ i18n.use(initReactI18next).init({
   interpolation: { escapeValue: false },
 });
 
+const LANG_ATTR_MAP = {
+  'zh-CN': 'zh-Hans',
+  en: 'en',
+};
+
+// 初始化时立即设置正确的 lang 属性
+if (typeof window !== 'undefined') {
+  const initialLang = getInitialLanguage();
+  document.documentElement.lang = LANG_ATTR_MAP[initialLang] || initialLang;
+}
+
 export const setLanguage = (lng) => {
   if (!supportedLanguages.includes(lng)) return;
   i18n.changeLanguage(lng);
   if (typeof window !== 'undefined') {
     window.localStorage.setItem('language', lng);
+    document.documentElement.lang = LANG_ATTR_MAP[lng] || lng;
   }
 };
 

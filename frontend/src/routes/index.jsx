@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
 import { AdminRoute, UserRoute } from './AuthRoute';
 import Loading from '../components/common/Loading';
+import ErrorBoundary from '../components/common/ErrorBoundary';
 
 // 直接导入重要的布局组件
 import ContestLayout from '../components/features/layouts/ContestLayout';
@@ -48,7 +49,8 @@ const ContactPage = lazy(() => import('../pages/ContactPage'));
 
 const AppRoutes = () => {
   return (
-    <Routes>
+    <ErrorBoundary>
+      <Routes>
       {/* 主布局路由 */}
       <Route path="/" element={<MainLayout />}>
         <Route
@@ -396,6 +398,7 @@ const AppRoutes = () => {
         />
       </Route>
     </Routes>
+    </ErrorBoundary>
   );
 };
 

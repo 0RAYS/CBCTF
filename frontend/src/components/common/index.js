@@ -4,6 +4,7 @@ export { default as Avatar } from './Avatar';
 export { default as Button } from './Button';
 export { default as ScrollingText } from './ScrollingText';
 export { default as Tabs } from './Tabs';
+export { default as ErrorBoundary } from './ErrorBoundary';
 
 // Common UI
 export { default as Card } from './Card';
