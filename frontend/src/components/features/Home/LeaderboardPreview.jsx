@@ -16,6 +16,7 @@ function LeaderboardPreview({ topUsers, isLoading }) {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
+          transition={{ ease: [0.25, 1, 0.5, 1], duration: 0.4 }}
         >
           {isLoading
             ? Array.from({ length: 5 }).map((_, index) => (
@@ -34,7 +35,7 @@ function LeaderboardPreview({ topUsers, isLoading }) {
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: index * 0.1, ease: [0.25, 1, 0.5, 1], duration: 0.3 }}
                 >
                   {/* Rank and team info */}
                   <div className="flex items-center gap-6">

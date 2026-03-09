@@ -74,7 +74,7 @@ function ChallengeBoard({
 
       {/* 赛题列表 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {challenges.map((challenge) => (
+        {challenges.map((challenge, index) => (
           <motion.div
             key={challenge.id}
             className={`p-4 border rounded-md transition-colors duration-200 cursor-pointer backdrop-blur-none
@@ -83,6 +83,9 @@ function ChallengeBoard({
                     ? 'border-geek-400/50 bg-geek-400/5 hover:bg-geek-400/10'
                     : 'border-neutral-300/30 bg-black/30 hover:bg-black/50'
                 }`}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.04, ease: [0.25, 1, 0.5, 1], duration: 0.2 }}
             whileHover={{ y: -2 }}
             onClick={() => onChallengeClick(challenge)}
           >

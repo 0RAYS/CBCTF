@@ -15,7 +15,7 @@ function HeroSection() {
           className="max-w-[600px] space-y-6"
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
         >
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-mono text-neutral-50 leading-tight">
             {t('home.hero.titlePrefix')}
@@ -38,7 +38,7 @@ function HeroSection() {
           className="relative w-[400px] h-[400px] hidden md:block"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          transition={{ duration: 0.5, delay: 0.2, ease: [0.25, 1, 0.5, 1] }}
         >
           {/* 这里可以添加一些科技感的SVG动画或3D模型 */}
           <div className="absolute inset-0 border border-neutral-300/30 rounded-md">
