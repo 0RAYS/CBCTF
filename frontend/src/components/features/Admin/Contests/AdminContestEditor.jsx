@@ -607,10 +607,7 @@ function AdminContestEditor({ contest: initialContest, onSave, onCancel, onImage
 
           <div className="space-y-6">
             {contest.prizes?.map((prize, index) => (
-              <motion.div
-                key={index}
-                className="p-4 border border-neutral-700 rounded-md bg-black/30"
-              >
+              <motion.div key={index} className="p-4 border border-neutral-700 rounded-md bg-black/30">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <span

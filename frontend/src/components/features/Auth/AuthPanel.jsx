@@ -225,13 +225,7 @@ function AuthPanel({ onSubmit }) {
           </motion.div>
         </AnimatePresence>
 
-        <Button
-          type="submit"
-          variant="primary"
-          fullWidth
-          className="shadow-focus-strong"
-          disabled={isSubmitting}
-        >
+        <Button type="submit" variant="primary" fullWidth className="shadow-focus-strong" disabled={isSubmitting}>
           {isSubmitting ? t('common.processing') : isLogin ? t('auth.login') : t('auth.register')}
         </Button>
       </motion.form>

@@ -90,7 +90,11 @@ function Pagination({
     if (typeof page === 'string') {
       // 渲染省略号
       return (
-        <span key={page} className="w-8 h-8 flex items-center justify-center text-neutral-400 font-mono" aria-hidden="true">
+        <span
+          key={page}
+          className="w-8 h-8 flex items-center justify-center text-neutral-400 font-mono"
+          aria-hidden="true"
+        >
           ...
         </span>
       );
@@ -127,9 +131,11 @@ function Pagination({
         onClick={() => !disabled && onChange?.(isNext ? current + 1 : current - 1)}
         className={`!bg-black/30 ${disabled ? '!border-neutral-300/10 !text-neutral-600' : ''}`}
         animate={false}
-        aria-label={isNext
-          ? t('common.pagination.nextPage', { defaultValue: 'Next page' })
-          : t('common.pagination.prevPage', { defaultValue: 'Previous page' })}
+        aria-label={
+          isNext
+            ? t('common.pagination.nextPage', { defaultValue: 'Next page' })
+            : t('common.pagination.prevPage', { defaultValue: 'Previous page' })
+        }
       >
         {isNext ? t('common.next') : t('common.previous')}
       </Button>
@@ -203,12 +209,7 @@ function Pagination({
       {...containerProps}
     >
       {/* 隐藏的 aria-live 区域，宣告翻页结果 */}
-      <span
-        ref={liveRef}
-        aria-live="polite"
-        aria-atomic="true"
-        className="sr-only"
-      />
+      <span ref={liveRef} aria-live="polite" aria-atomic="true" className="sr-only" />
 
       {/* 总数显示 */}
       {showTotal && totalItems !== undefined && (

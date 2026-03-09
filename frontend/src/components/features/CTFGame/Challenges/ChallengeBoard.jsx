@@ -74,7 +74,7 @@ function ChallengeBoard({
 
       {/* 赛题列表 */}
       <div className="grid grid-cols-2 gap-4">
-        {challenges.map((challenge, index) => (
+        {challenges.map((challenge) => (
           <motion.div
             key={challenge.id}
             className={`p-4 border rounded-md transition-all duration-200 cursor-pointer backdrop-blur-none
@@ -89,7 +89,10 @@ function ChallengeBoard({
             {/* 标题栏 */}
             <div className="flex items-center justify-between mb-3 min-w-0">
               <div className="flex items-center gap-3 min-w-0 flex-1">
-                <span className="text-geek-400 font-mono flex-shrink-0 truncate max-w-[80px]" title={challenge.category}>
+                <span
+                  className="text-geek-400 font-mono flex-shrink-0 truncate max-w-[80px]"
+                  title={challenge.category}
+                >
                   {challenge.category}
                 </span>
                 <h3 className="text-neutral-50 font-mono truncate min-w-0" title={challenge.title}>

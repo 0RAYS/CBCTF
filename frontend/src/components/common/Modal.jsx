@@ -139,7 +139,9 @@ function Modal({
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
             >
-              <h3 id={titleId} className="text-lg font-mono text-neutral-50 mb-4">{title}</h3>
+              <h3 id={titleId} className="text-lg font-mono text-neutral-50 mb-4">
+                {title}
+              </h3>
               <div className="text-neutral-300 mb-6">{children}</div>
               <div className="flex justify-end gap-4">
                 <Button size="sm" variant="ghost" onClick={onClose}>
@@ -190,7 +192,9 @@ function Modal({
               {/* 头部 */}
               <div className="p-6 border-b border-neutral-300/30">
                 <div className="flex items-center justify-between">
-                  <h2 id={titleId} className="text-xl font-mono text-neutral-50">{title}</h2>
+                  <h2 id={titleId} className="text-xl font-mono text-neutral-50">
+                    {title}
+                  </h2>
                   <Button
                     variant="ghost"
                     size="icon"
