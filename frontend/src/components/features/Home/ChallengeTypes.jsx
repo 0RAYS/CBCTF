@@ -60,6 +60,7 @@ function ChallengeTypes() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            transition={{ ease: [0.25, 1, 0.5, 1], duration: 0.4 }}
           >
             {t('home.challengeTypes.titlePrefix')} {t('home.challengeTypes.titleHighlight')}
           </motion.p>
@@ -68,7 +69,7 @@ function ChallengeTypes() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
+            transition={{ delay: 0.1, ease: [0.25, 1, 0.5, 1], duration: 0.4 }}
           >
             {t('home.challengeTypes.subtitle')}
           </motion.p>
@@ -84,7 +85,7 @@ function ChallengeTypes() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              transition={{ delay: index * 0.1, ease: [0.25, 1, 0.5, 1], duration: 0.4 }}
             >
               <div className="flex items-start gap-4">
                 <type.Icon className={`w-8 h-8 shrink-0 mt-0.5 ${type.iconColor}`} />

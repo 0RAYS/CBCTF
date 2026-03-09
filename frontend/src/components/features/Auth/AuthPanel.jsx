@@ -1,5 +1,5 @@
-import { motion, AnimatePresence } from 'motion/react';
-import { useState } from 'react';
+import { motion, AnimatePresence, useAnimationControls } from 'motion/react';
+import { useState, useEffect } from 'react';
 import { Button, Input } from '../../common';
 import OAuthLogin from './OAuthLogin';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +15,16 @@ function AuthPanel({ onSubmit }) {
   });
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const formControls = useAnimationControls();
+
+  useEffect(() => {
+    if (errors.submit) {
+      formControls.start({
+        x: [-8, 8, -6, 6, -3, 3, 0],
+        transition: { duration: 0.35 },
+      });
+    }
+  }, [errors.submit]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -97,7 +107,7 @@ function AuthPanel({ onSubmit }) {
       className="w-full max-w-[400px] bg-neutral-900 border border-neutral-600 rounded-md p-8"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2 }}
+      transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
     >
       {/* 标题区域 */}
       <div className="relative flex justify-center mb-8">
@@ -139,8 +149,7 @@ function AuthPanel({ onSubmit }) {
       <motion.form
         onSubmit={handleSubmit}
         className="space-y-4"
-        animate={{ height: isLogin ? 'auto' : 'auto' }}
-        transition={{ duration: 0.2 }}
+        animate={formControls}
       >
         <AnimatePresence mode="wait">
           <motion.div
@@ -150,7 +159,7 @@ function AuthPanel({ onSubmit }) {
             exit={{ opacity: 0, x: isLogin ? 20 : -20 }}
             transition={{
               duration: 0.2,
-              ease: 'easeOut',
+              ease: [0.25, 1, 0.5, 1],
             }}
           >
             <div className="space-y-4">
@@ -172,7 +181,7 @@ function AuthPanel({ onSubmit }) {
                   exit={{ opacity: 0, height: 0 }}
                   transition={{
                     duration: 0.15,
-                    ease: 'easeInOut',
+                    ease: [0.25, 1, 0.5, 1],
                   }}
                 >
                   <Input
@@ -206,7 +215,7 @@ function AuthPanel({ onSubmit }) {
                   exit={{ opacity: 0, height: 0 }}
                   transition={{
                     duration: 0.15,
-                    ease: 'easeInOut',
+                    ease: [0.25, 1, 0.5, 1],
                   }}
                 >
                   <Input
@@ -228,6 +237,12 @@ function AuthPanel({ onSubmit }) {
         <Button type="submit" variant="primary" fullWidth className="shadow-focus-strong" disabled={isSubmitting}>
           {isSubmitting ? t('common.processing') : isLogin ? t('auth.login') : t('auth.register')}
         </Button>
+
+        {errors.submit && (
+          <p className="text-red-400 text-sm font-mono text-center" role="alert">
+            {errors.submit}
+          </p>
+        )}
       </motion.form>
 
       {/* OAuth登录 - 独立于表单 */}

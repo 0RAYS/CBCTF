@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { Button, LanguageSwitcher, Avatar } from '../../common';
 import { useTranslation } from 'react-i18next';
 
@@ -83,52 +84,82 @@ function NavBar({
               aria-label={t('common.toggleMenu')}
               aria-expanded={mobileMenuOpen}
               aria-controls="mobile-nav-menu"
-              className="md:hidden w-9 h-9 border border-neutral-300/40 rounded-md flex items-center justify-center text-neutral-300 hover:text-neutral-100 hover:border-neutral-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70"
+              className="md:hidden w-9 h-9 border border-neutral-300/40 rounded-md flex items-center justify-center text-neutral-300 hover:text-neutral-100 hover:border-neutral-100 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70 relative overflow-hidden"
               onClick={() => setMobileMenuOpen((prev) => !prev)}
             >
-              {mobileMenuOpen ? (
-                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none">
-                  <path d="M6 6L18 18M6 18L18 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-              ) : (
-                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none">
-                  <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
-              )}
+              <AnimatePresence mode="wait" initial={false}>
+                {mobileMenuOpen ? (
+                  <motion.svg
+                    key="close"
+                    viewBox="0 0 24 24"
+                    className="w-5 h-5 absolute"
+                    fill="none"
+                    initial={{ opacity: 0, rotate: -45 }}
+                    animate={{ opacity: 1, rotate: 0 }}
+                    exit={{ opacity: 0, rotate: 45 }}
+                    transition={{ duration: 0.18, ease: [0.25, 1, 0.5, 1] }}
+                  >
+                    <path d="M6 6L18 18M6 18L18 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  </motion.svg>
+                ) : (
+                  <motion.svg
+                    key="open"
+                    viewBox="0 0 24 24"
+                    className="w-5 h-5 absolute"
+                    fill="none"
+                    initial={{ opacity: 0, rotate: 45 }}
+                    animate={{ opacity: 1, rotate: 0 }}
+                    exit={{ opacity: 0, rotate: -45 }}
+                    transition={{ duration: 0.18, ease: [0.25, 1, 0.5, 1] }}
+                  >
+                    <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                  </motion.svg>
+                )}
+              </AnimatePresence>
             </button>
           )}
         </div>
       </div>
 
       {/* 移动端导航菜单 */}
-      {mobileMenuOpen && tabs.length > 0 && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/60 z-30 md:hidden"
-            onClick={() => setMobileMenuOpen(false)}
-            aria-hidden="true"
-          />
-          <nav
-            id="mobile-nav-menu"
-            aria-label={t('common.mainNavigation')}
-            className="fixed top-[80px] left-0 right-0 z-40 bg-neutral-900 border-b border-neutral-300/30 md:hidden"
-          >
-            <div className="flex flex-col p-4 gap-2">
-              {tabs.map((tab) => (
-                <Button
-                  key={tab.id}
-                  variant={activeTab === tab.id ? 'primary' : 'outline'}
-                  size="sm"
-                  fullWidth
-                  onClick={() => handleTabChange(tab.id)}
-                >
-                  {tab.label}
-                </Button>
-              ))}
-            </div>
-          </nav>
-        </>
-      )}
+      <AnimatePresence>
+        {mobileMenuOpen && tabs.length > 0 && (
+          <>
+            <motion.div
+              className="fixed inset-0 bg-black/60 z-30 md:hidden"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-hidden="true"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2, ease: [0.25, 1, 0.5, 1] }}
+            />
+            <motion.nav
+              id="mobile-nav-menu"
+              aria-label={t('common.mainNavigation')}
+              className="fixed top-[80px] left-0 right-0 z-40 bg-neutral-900 border-b border-neutral-300/30 md:hidden"
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2, ease: [0.25, 1, 0.5, 1] }}
+            >
+              <div className="flex flex-col p-4 gap-2">
+                {tabs.map((tab) => (
+                  <Button
+                    key={tab.id}
+                    variant={activeTab === tab.id ? 'primary' : 'outline'}
+                    size="sm"
+                    fullWidth
+                    onClick={() => handleTabChange(tab.id)}
+                  >
+                    {tab.label}
+                  </Button>
+                ))}
+              </div>
+            </motion.nav>
+          </>
+        )}
+      </AnimatePresence>
     </>
   );
 }

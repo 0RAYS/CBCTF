@@ -28,7 +28,7 @@
  * @param {Function} props.onDownloadAttachment - 下载附件的回调函数，参数为附件对象
  */
 
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useAnimationControls } from 'motion/react';
 import { useState, useEffect, useRef } from 'react';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
@@ -103,6 +103,7 @@ function ChallengeModal({
   onDownloadAttachment,
 }) {
   const { t } = useTranslation();
+  const flagControls = useAnimationControls();
 
   // 状态管理
   const [loading, setLoading] = useState({
@@ -122,6 +123,16 @@ function ChallengeModal({
   // 修改倒计时效果，使用 useRef 来避免不必要的重新渲染
   const timerRef = useRef(null);
   const { addMessageHandler } = useWebSocket();
+
+  // Flag 提交错误时抖动动画
+  useEffect(() => {
+    if (error) {
+      flagControls.start({
+        x: [-8, 8, -6, 6, -3, 3, 0],
+        transition: { duration: 0.35 },
+      });
+    }
+  }, [error]);
 
   useEffect(() => {
     return addMessageHandler((data) => {
@@ -461,9 +472,10 @@ function ChallengeModal({
         <div className="relative z-10 w-full max-w-[800px] p-4">
           <motion.div
             className="relative w-full bg-black/80 border border-neutral-300 rounded-md"
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.9, opacity: 0 }}
+            initial={{ scale: 0.97, opacity: 0, y: 8 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.97, opacity: 0, y: 8 }}
+            transition={{ type: 'tween', ease: [0.25, 1, 0.5, 1], duration: 0.22 }}
           >
             {/* 头部 */}
             <div className="p-5 border-b border-neutral-300/30">
@@ -540,9 +552,10 @@ function ChallengeModal({
             {/* 模态框内容 */}
             <motion.div
               className="relative w-full bg-black/80 border border-neutral-300 rounded-md"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.97, opacity: 0, y: 8 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.97, opacity: 0, y: 8 }}
+              transition={{ type: 'tween', ease: [0.25, 1, 0.5, 1], duration: 0.22 }}
             >
               {/* 头部 - 减小内边距 */}
               <div className="p-5 border-b border-neutral-300/30">
@@ -630,7 +643,7 @@ function ChallengeModal({
                 {renderQuestionOptions()}
 
                 {/* Flag 提交 - 调整间距 */}
-                <div className="space-y-1.5">
+                <motion.div className="space-y-1.5" animate={flagControls}>
                   <h3 className="text-neutral-400 font-mono text-sm">
                     {challenge.type === 'question'
                       ? t('game.challengeModal.sections.submitAnswer')
@@ -696,7 +709,7 @@ function ChallengeModal({
                       {error}
                     </motion.div>
                   )}
-                </div>
+                </motion.div>
               </div>
             </motion.div>
           </div>

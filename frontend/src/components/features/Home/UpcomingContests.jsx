@@ -16,6 +16,7 @@ function UpcomingContests({ contests = [], isLoading }) {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
+          transition={{ ease: [0.25, 1, 0.5, 1], duration: 0.4 }}
         >
           <h2 className="text-3xl font-mono text-neutral-50 mb-4">
             {t('home.upcoming.titlePrefix')} <span className="text-geek-400">{t('home.upcoming.titleHighlight')}</span>
@@ -37,7 +38,7 @@ function UpcomingContests({ contests = [], isLoading }) {
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
+                  transition={{ delay: index * 0.1, ease: [0.25, 1, 0.5, 1], duration: 0.4 }}
                   onClick={() => navigate('/games')}
                 >
                   {/* Contest info */}

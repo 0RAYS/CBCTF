@@ -12,13 +12,7 @@ function StatsSection({ stats, isLoading }) {
   return (
     <div className="py-12 md:py-20 px-4 md:px-8">
       <div className="w-full max-w-[1200px] mx-auto">
-        <motion.div
-          className="grid grid-cols-2 md:grid-cols-4 gap-6"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {isLoading
             ? Array.from({ length: 4 }).map((_, index) => (
                 <div
@@ -27,17 +21,24 @@ function StatsSection({ stats, isLoading }) {
                 />
               ))
             : stats.map((stat, index) => (
-                <Card
+                <motion.div
                   key={index}
-                  variant="default"
-                  padding="md"
-                  className="flex flex-col items-center justify-center text-center hover:border-geek-400/50 transition-colors duration-200"
+                  initial={{ opacity: 0, y: 16 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.08, duration: 0.4, ease: [0.25, 1, 0.5, 1] }}
                 >
-                  <span className="text-3xl font-mono text-geek-400 mb-2">{stat.value}</span>
-                  <span className="text-neutral-300">{stat.label}</span>
-                </Card>
+                  <Card
+                    variant="default"
+                    padding="md"
+                    className="flex flex-col items-center justify-center text-center hover:border-geek-400/50 transition-colors duration-200"
+                  >
+                    <span className="text-3xl font-mono text-geek-400 mb-2">{stat.value}</span>
+                    <span className="text-neutral-300">{stat.label}</span>
+                  </Card>
+                </motion.div>
               ))}
-        </motion.div>
+        </div>
       </div>
     </div>
   );
