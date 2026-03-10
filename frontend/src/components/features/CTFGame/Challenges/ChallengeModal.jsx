@@ -122,7 +122,22 @@ function ChallengeModal({
 
   // 修改倒计时效果，使用 useRef 来避免不必要的重新渲染
   const timerRef = useRef(null);
+  const prevRunningRef = useRef(challenge?.instanceRunning);
+  const launchingTimeoutRef = useRef(null);
   const { addMessageHandler } = useWebSocket();
+
+  // Clear launching state when instanceRunning transitions false → true (via polling or WS)
+  useEffect(() => {
+    const prev = prevRunningRef.current;
+    prevRunningRef.current = challenge?.instanceRunning;
+    if (!prev && challenge?.instanceRunning) {
+      if (launchingTimeoutRef.current) {
+        clearTimeout(launchingTimeoutRef.current);
+        launchingTimeoutRef.current = null;
+      }
+      setLoading((p) => ({ ...p, launching: false }));
+    }
+  }, [challenge?.instanceRunning]);
 
   // Flag 提交错误时抖动动画
   useEffect(() => {
@@ -220,19 +235,54 @@ function ChallengeModal({
     handleAsyncAction('resetting', onReset, challenge.id);
   };
 
-  // 启动靶机
-  const handleLaunchInstance = () => {
-    handleAsyncAction('launching', onLaunchInstance, challenge.id);
+  // 启动靶机 — 从点击瞬间到 Pod Ready 全程 loading，3 分钟超时兜底
+  const handleLaunchInstance = async () => {
+    setError(null);
+    setLoading((p) => ({ ...p, launching: true }));
+    try {
+      const ok = await onLaunchInstance(challenge.id);
+      if (!ok) {
+        setLoading((p) => ({ ...p, launching: false }));
+      } else {
+        // HTTP 成功，等待 Pod Ready（由 Fix3 / WS 清除），3 分钟后强制清除
+        launchingTimeoutRef.current = setTimeout(
+          () => {
+            setLoading((p) => ({ ...p, launching: false }));
+            launchingTimeoutRef.current = null;
+          },
+          3 * 60 * 1000
+        );
+      }
+    } catch (err) {
+      setError(err.message);
+      setLoading((p) => ({ ...p, launching: false }));
+    }
   };
 
   // 延长靶机时间
-  const handleExtendTime = () => {
-    handleAsyncAction('extending', onExtendInstance, challenge.id);
+  const handleExtendTime = async () => {
+    setError(null);
+    setLoading((p) => ({ ...p, extending: true }));
+    try {
+      await onExtendInstance(challenge.id);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading((p) => ({ ...p, extending: false }));
+    }
   };
 
   // 销毁靶机
-  const handleDestroy = () => {
-    handleAsyncAction('destroying', onDestroyInstance, challenge.id);
+  const handleDestroy = async () => {
+    setError(null);
+    setLoading((p) => ({ ...p, destroying: true }));
+    try {
+      await onDestroyInstance(challenge.id);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading((p) => ({ ...p, destroying: false }));
+    }
   };
 
   // 处理选项选择
@@ -304,27 +354,34 @@ function ChallengeModal({
 
   // 靶机部分的渲染
   const renderInstanceContent = () => {
+    const isRunning = challenge.instanceRunning;
+    const isLaunching = loading.launching && !isRunning;
+
     return (
       <div className="space-y-3">
-        {/* 状态行 - 包含状态和操作按钮 */}
+        {/* 状态行 */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             {/* 状态指示器 */}
             <div className="flex items-center gap-2">
               <span
-                className={`w-2 h-2 rounded-full ${challenge.instanceRunning ? 'bg-green-400' : 'bg-neutral-400'}`}
+                className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+                  isRunning ? 'bg-green-400' : isLaunching ? 'bg-yellow-400 animate-pulse' : 'bg-neutral-500'
+                }`}
               />
               <span className="text-neutral-50 font-mono text-sm">
-                {challenge.instanceRunning
+                {isRunning
                   ? t('game.challengeModal.instance.running')
-                  : t('game.challengeModal.instance.notRunning')}
+                  : isLaunching
+                    ? t('game.challengeModal.actions.launching')
+                    : t('game.challengeModal.instance.notRunning')}
               </span>
             </div>
 
             {/* 运行中时显示剩余时间 */}
-            {challenge.instanceRunning && (
-              <div className="flex items-center gap-2">
-                <span className="text-neutral-400 text-sm">{t('game.challengeModal.instance.time')}</span>
+            {isRunning && (
+              <div className="flex items-center gap-1.5">
+                <span className="text-neutral-400 text-xs">{t('game.challengeModal.instance.time')}</span>
                 <span className="text-yellow-400 font-mono text-sm">{formatTimeLeft(timeLeft)}</span>
               </div>
             )}
@@ -332,35 +389,38 @@ function ChallengeModal({
 
           {/* 操作按钮 */}
           <div className="flex items-center gap-2">
-            {!challenge.instanceRunning ? (
-              /* 启动按钮 */
+            {!isRunning ? (
               <Button
                 variant="primary"
                 size="sm"
                 onClick={handleLaunchInstance}
-                disabled={loading.launching}
-                loading={loading.launching}
-                className={loading.launching ? 'border-yellow-400 text-yellow-400' : ''}
+                disabled={isLaunching}
+                loading={isLaunching}
+                className={isLaunching ? 'border-yellow-400 text-yellow-400' : ''}
               >
-                {loading.launching
-                  ? t('game.challengeModal.actions.launching')
-                  : t('game.challengeModal.actions.launch')}
+                {isLaunching ? t('game.challengeModal.actions.launching') : t('game.challengeModal.actions.launch')}
               </Button>
             ) : (
-              /* 运行中显示延长和销毁按钮 */
               <>
                 <Button
                   variant="primary"
                   size="sm"
                   onClick={handleExtendTime}
                   disabled={loading.extending}
+                  loading={loading.extending}
                   className="border-yellow-400 text-yellow-400 hover:bg-yellow-400/10"
                 >
                   {loading.extending
                     ? t('game.challengeModal.actions.extending')
                     : t('game.challengeModal.actions.extend')}
                 </Button>
-                <Button variant="danger" size="sm" onClick={handleDestroy} disabled={loading.destroying}>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={handleDestroy}
+                  disabled={loading.destroying}
+                  loading={loading.destroying}
+                >
                   {loading.destroying
                     ? t('game.challengeModal.actions.destroying')
                     : t('game.challengeModal.actions.destroy')}
@@ -370,31 +430,35 @@ function ChallengeModal({
           </div>
         </div>
 
-        {/* 运行中状态 - 进度条 */}
-        {challenge.instanceRunning && (
+        {/* 进度条：运行中显示倒计时进度，启动中显示不定进度条 */}
+        {(isRunning || isLaunching) && (
           <div className="h-1.5 bg-neutral-700 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-yellow-400"
-              initial={{ width: 0 }}
-              animate={{
-                width: `${(timeLeft / challenge.instanceDuration) * 100}%`,
-              }}
-              transition={{ duration: 0.5 }}
-            />
+            {isRunning ? (
+              <motion.div
+                className="h-full bg-yellow-400"
+                initial={{ width: 0 }}
+                animate={{ width: `${(timeLeft / challenge.instanceDuration) * 100}%` }}
+                transition={{ duration: 0.5 }}
+              />
+            ) : (
+              <motion.div
+                className="h-full w-2/5 bg-yellow-400/60 rounded-full"
+                animate={{ x: ['-100%', '350%'] }}
+                transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+              />
+            )}
           </div>
         )}
 
         {/* 靶机地址 - 只在运行中显示 */}
-        {challenge.instanceRunning && challenge.instanceIP && (
+        {isRunning && challenge.instanceIP && (
           <div>
-            <div className="flex items-center justify-between p-2 bg-neutral-900 rounded-md">
+            <div className="p-2 bg-neutral-900 rounded-md">
               <span className="text-neutral-400 text-xs">{t('game.challengeModal.instance.address')}</span>
             </div>
             {challenge.instanceIP.map((ip, index) => (
-              <div key={index} className="flex justify-between p-1.5">
-                <span className="font-mono text-neutral-50 text-sm" onClick={() => handleCopyIP(ip)}>
-                  {ip}
-                </span>
+              <div key={index} className="flex items-center justify-between p-1.5">
+                <span className="font-mono text-neutral-50 text-sm">{ip}</span>
                 <Button
                   variant="ghost"
                   size="icon"

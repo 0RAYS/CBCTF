@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from '../../utils/toast';
 import { downloadBlobResponse } from '../../utils/fileDownload';
@@ -103,6 +103,49 @@ function GameChallengesPage() {
   const pageSize = 10;
   const { addMessageHandler } = useWebSocket();
 
+  const selectedChallengeRef = useRef(null);
+  const pollingIntervalRef = useRef(null);
+  const pollingTimeoutRef = useRef(null);
+
+  const stopPolling = () => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    if (pollingTimeoutRef.current) {
+      clearTimeout(pollingTimeoutRef.current);
+      pollingTimeoutRef.current = null;
+    }
+  };
+
+  const startPolling = () => {
+    stopPolling();
+    pollingIntervalRef.current = setInterval(async () => {
+      if (!selectedChallengeRef.current) {
+        stopPolling();
+        return;
+      }
+      try {
+        const statusRes = await getChallengeStatus(contestId, selectedChallengeRef.current.id);
+        if (statusRes.code === 200 && statusRes.data.remote.status === 'Running') {
+          stopPolling();
+          refreshChallengeStatus();
+        }
+      } catch {
+        // Silently ignore polling errors
+      }
+    }, 5000);
+    pollingTimeoutRef.current = setTimeout(stopPolling, 3 * 60 * 1000);
+  };
+
+  // Keep selectedChallengeRef in sync; stop polling when modal closes
+  useEffect(() => {
+    selectedChallengeRef.current = selectedChallenge;
+    if (!selectedChallenge) {
+      stopPolling();
+    }
+  }, [selectedChallenge]);
+
   useEffect(() => {
     return addMessageHandler((data) => {
       if (data.type === 'start_victim' || data.type === 'stop_victim' || data.type === 'generate_attachment') {
@@ -122,6 +165,9 @@ function GameChallengesPage() {
           default:
             toast.default({ title: data.title, description: data.msg });
             break;
+        }
+        if (data.type === 'start_victim' || data.type === 'stop_victim') {
+          stopPolling();
         }
         refreshChallengeStatus();
       }
@@ -242,14 +288,14 @@ function GameChallengesPage() {
 
   // 刷新当前选中题目的状态
   const refreshChallengeStatus = async () => {
-    if (!selectedChallenge) return;
+    if (!selectedChallengeRef.current) return;
 
     try {
-      const statusRes = await getChallengeStatus(contestId, selectedChallenge.id);
+      const statusRes = await getChallengeStatus(contestId, selectedChallengeRef.current.id);
 
       if (statusRes.code === 200) {
         const updatedChallenge = {
-          ...selectedChallenge,
+          ...selectedChallengeRef.current,
           attachment: statusRes.data.file || '',
           isInitialized: statusRes.data.init,
           isSolved: statusRes.data.solved,
@@ -303,6 +349,7 @@ function GameChallengesPage() {
       const res = await startRemoteTarget(contestId, challengeId);
       if (res.code === 200) {
         toast.success({ title: t('game.challenges.toast.launchSuccess') });
+        startPolling();
         return true;
       }
     } catch (error) {
