@@ -10,9 +10,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-var (
-	RDB *redis.Client
-)
+var RDB *redis.Client
 
 func Init() {
 	addr := fmt.Sprintf("%s:%d", config.Env.Redis.Host, config.Env.Redis.Port)

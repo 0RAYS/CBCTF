@@ -22,11 +22,12 @@ type Sender struct {
 }
 
 var (
-	Senders = make([]*Sender, 0)
+	Senders []*Sender
 	lock    sync.RWMutex
 )
 
 func Init() {
+	Senders = make([]*Sender, 0)
 	smtpL, _, ret := db.InitSmtpRepo(db.DB).List(-1, -1, db.GetOptions{Conditions: map[string]any{"on": true}})
 	if !ret.OK {
 		log.Logger.Warningf("No smtp configured, email sending will be failed")
