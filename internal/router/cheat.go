@@ -17,7 +17,10 @@ func GetCheats(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	options := db.GetOptions{Conditions: map[string]any{"contest_id": middleware.GetContest(ctx).ID}}
+	options := db.GetOptions{
+		Conditions: map[string]any{"contest_id": middleware.GetContest(ctx).ID},
+		Sort:       []string{"id DESC"},
+	}
 	if form.Type != "" {
 		options.Conditions["type"] = form.Type
 	}

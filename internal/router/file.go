@@ -155,7 +155,7 @@ func GetFiles(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	options := db.GetOptions{}
+	options := db.GetOptions{Sort: []string{"id DESC"}}
 	if form.Type != "" {
 		options.Conditions = map[string]any{"type": form.Type}
 	}
@@ -180,6 +180,7 @@ func GetWriteUPs(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
 	writeups, count, ret := db.InitFileRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
 		Conditions: map[string]any{"model": team.ModelName(), "model_id": team.ID, "type": model.WriteupFileType},
+		Sort:       []string{"id DESC"},
 	})
 	if !ret.OK {
 		resp.JSON(ctx, ret)
