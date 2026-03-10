@@ -24,10 +24,8 @@ import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../
  * @param {Function} props.onTestChallenge - 测试题目回调
  * @param {Function} props.onFilterTypeChange - 过滤类型改变回调
  * @param {Function} props.onFilterCategoryChange - 过滤分类改变回调
- * @param {string} props.searchQuery - 搜索查询
  * @param {boolean} props.searchLoading - 搜索加载状态
  * @param {boolean} props.isSearchMode - 是否处于搜索模式
- * @param {Function} props.onSearchChange - 搜索查询变化回调
  */
 function AdminChallenge({
   challenges = [],
@@ -209,7 +207,9 @@ function AdminChallenge({
             />
           </div>
           <div>
-            <label className="block text-sm font-mono text-neutral-400 mb-2">{t('admin.challenge.search.descLabel')}</label>
+            <label className="block text-sm font-mono text-neutral-400 mb-2">
+              {t('admin.challenge.search.descLabel')}
+            </label>
             <Input
               type="text"
               value={descQuery}

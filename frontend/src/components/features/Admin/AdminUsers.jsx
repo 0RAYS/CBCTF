@@ -17,10 +17,8 @@ import AdminUserDetailDialog from './AdminUserDetailDialog';
  * @param {function} props.onEditUser - 编辑用户回调
  * @param {function} props.onDeleteUser - 删除用户回调
  * @param {function} props.onPictureUpload - 上传头像回调
- * @param {string} props.searchQuery - 搜索查询
  * @param {boolean} props.searchLoading - 搜索加载状态
  * @param {boolean} props.isSearchMode - 是否处于搜索模式
- * @param {function} props.onSearchChange - 搜索查询变化回调
  */
 function AdminUsers({
   users = [],
@@ -168,7 +166,9 @@ function AdminUsers({
             />
           </div>
           <div>
-            <label className="block text-sm font-mono text-neutral-400 mb-2">{t('admin.users.search.emailLabel')}</label>
+            <label className="block text-sm font-mono text-neutral-400 mb-2">
+              {t('admin.users.search.emailLabel')}
+            </label>
             <Input
               type="search"
               value={emailQuery}
