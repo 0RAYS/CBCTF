@@ -80,7 +80,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 	podNginxConfigMap := make(map[string]string)
 	podVPCGWMap := make(map[string]string)
 	if len(victim.VPC.Subnets) == 0 {
-		podName := fmt.Sprintf("frpc-%s", utils.RandStr(20))
+		podName := fmt.Sprintf("frpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6))
 		// 添加一个独立tag, 防止受 NetworkPolicy 影响
 		frpcConfig := fmt.Sprintf(frpcHeaderTemplate, frps.Host, frps.Port, frps.Token)
 		nginxConfig := ""
@@ -122,7 +122,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 				continue
 			}
 			needFrpc := false
-			podName := fmt.Sprintf("frpc-%s", utils.RandStr(20))
+			podName := fmt.Sprintf("frpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6))
 			frpcConfig := fmt.Sprintf(frpcHeaderTemplate, frps.Host, frps.Port, frps.Token)
 			nginxConfig := ""
 			for _, eip := range subnet.NatGateway.EIPs {
@@ -177,7 +177,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 	}
 	for _, podName := range frpcPodNameL {
 		fcm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
-			Name:   fmt.Sprintf("cm-%s", utils.RandStr(20)),
+			Name:   fmt.Sprintf("frpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6)),
 			Labels: labels,
 			Data:   map[string]string{"frpc.toml": podFrpcConfigMap[podName]},
 		})
@@ -185,7 +185,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 			return nil, nil, ret
 		}
 		ncm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
-			Name:   fmt.Sprintf("cm-%s", utils.RandStr(20)),
+			Name:   fmt.Sprintf("nginx-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6)),
 			Labels: labels,
 			Data:   map[string]string{"nginx.conf": podNginxConfigMap[podName]},
 		})
@@ -193,7 +193,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 			return nil, nil, ret
 		}
 		fcmVolume := corev1.Volume{
-			Name: fmt.Sprintf("vol-%s", utils.RandStr(20)),
+			Name: "frpc-volume",
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					LocalObjectReference: corev1.LocalObjectReference{
@@ -203,7 +203,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 			},
 		}
 		ncmVolume := corev1.Volume{
-			Name: fmt.Sprintf("vol-%s", utils.RandStr(20)),
+			Name: "nginx-volume",
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					LocalObjectReference: corev1.LocalObjectReference{
@@ -213,7 +213,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 			},
 		}
 		nfsVolume := corev1.Volume{
-			Name: fmt.Sprintf("vol-%s", utils.RandStr(20)),
+			Name: nfsVolumeName,
 			VolumeSource: corev1.VolumeSource{
 				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 					ClaimName: nfsVolumeName,
