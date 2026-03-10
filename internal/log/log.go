@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var Logger = logrus.New()
+var Logger *logrus.Logger
 
 const (
 	DefaultLogType = "LOG"
@@ -19,6 +19,7 @@ const (
 )
 
 func Init() {
+	Logger = logrus.New()
 	Logger.SetReportCaller(true)
 	Logger.SetFormatter(Formatter{})
 	if config.Env.Log.Save {
