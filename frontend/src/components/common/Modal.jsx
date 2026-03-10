@@ -49,6 +49,10 @@ function Modal({
   const titleId = useId();
   const dialogRef = useRef(null);
   const triggerRef = useRef(null);
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
 
   // 保存触发元素，关闭时恢复焦点
   useEffect(() => {
@@ -71,7 +75,7 @@ function Modal({
 
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
-        onClose?.();
+        onCloseRef.current?.();
         return;
       }
       if (e.key !== 'Tab') return;
@@ -101,7 +105,7 @@ function Modal({
       // 恢复焦点到触发元素
       triggerRef.current?.focus();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 根据size确定宽度
   const sizeClasses = {
