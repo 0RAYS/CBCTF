@@ -4,7 +4,7 @@ import { getUserList, updateUser, deleteUser, createUser, updateUserPicture } fr
 import AdminUsers from '../../../components/features/Admin/AdminUsers';
 import { Modal } from '../../../components/common';
 import CRUDModalFooter from '../../../components/common/CRUDModalFooter';
-import { useDebounceSearch } from '../../../hooks';
+import { useDebounce } from '../../../hooks';
 import { useCRUDModal } from '../../../hooks/index.js';
 import Input from '../../../components/common/Input';
 import Textarea from '../../../components/common/Textarea';
@@ -83,37 +83,47 @@ function UsersTab() {
     },
   });
 
-  const {
-    query: searchQuery,
-    setQuery: setSearchQuery,
-    results: rawSearchResults,
-    loading: searchLoading,
-  } = useDebounceSearch(
-    async (name) => {
-      if (!name || name.trim() === '') return [];
+  const [nameQuery, setNameQuery] = useState('');
+  const [emailQuery, setEmailQuery] = useState('');
+  const [descQuery, setDescQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
 
+  const debouncedName = useDebounce(nameQuery, 300);
+  const debouncedEmail = useDebounce(emailQuery, 300);
+  const debouncedDesc = useDebounce(descQuery, 300);
+
+  const isSearchMode = !!(nameQuery.trim() || emailQuery.trim() || descQuery.trim());
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!debouncedName.trim() && !debouncedEmail.trim() && !debouncedDesc.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const doSearch = async () => {
+      setSearchLoading(true);
       try {
-        const response = await searchModels({
-          model: 'User',
-          'search[name]': name.trim(),
-          limit: 20,
-          offset: 0,
-        });
-
-        if (response.code === 200) {
-          return response.data.models || [];
+        const params = { model: 'User', limit: 20, offset: 0 };
+        if (debouncedName.trim()) params['search[name]'] = debouncedName.trim();
+        if (debouncedEmail.trim()) params['search[email]'] = debouncedEmail.trim();
+        if (debouncedDesc.trim()) params['search[description]'] = debouncedDesc.trim();
+        const response = await searchModels(params);
+        if (!cancelled && response.code === 200) {
+          setSearchResults(response.data.models || []);
         }
-        return [];
       } catch (error) {
-        toast.danger({ description: error.message || t('admin.users.toast.searchFailed') });
-        return [];
+        if (!cancelled) {
+          toast.danger({ description: error.message || t('admin.users.toast.searchFailed') });
+          setSearchResults([]);
+        }
+      } finally {
+        if (!cancelled) setSearchLoading(false);
       }
-    },
-    { delay: 300, minLength: 1 }
-  );
-
-  const searchResults = rawSearchResults || [];
-  const isSearchMode = searchQuery.trim().length > 0;
+    };
+    doSearch();
+    return () => { cancelled = true; };
+  }, [debouncedName, debouncedEmail, debouncedDesc]);
 
   useEffect(() => {
     if (!isSearchMode) {
@@ -278,10 +288,14 @@ function UsersTab() {
         onEditUser={openEdit}
         onDeleteUser={openDelete}
         onPictureUpload={handlePictureUpload}
-        searchQuery={searchQuery}
+        nameQuery={nameQuery}
+        emailQuery={emailQuery}
+        descQuery={descQuery}
         searchLoading={searchLoading}
         isSearchMode={isSearchMode}
-        onSearchChange={setSearchQuery}
+        onNameChange={setNameQuery}
+        onEmailChange={setEmailQuery}
+        onDescChange={setDescQuery}
         onRowClick={handleRowClick}
         showDetailDialog={showDetailDialog}
         detailUser={detailUser}

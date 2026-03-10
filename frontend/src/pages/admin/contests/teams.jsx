@@ -19,7 +19,7 @@ import {
 } from '../../../api/admin/contest';
 import { useTranslation } from 'react-i18next';
 import { searchModels } from '../../../api/admin/search.js';
-import { useDebounceSearch } from '../../../hooks';
+import { useDebounce } from '../../../hooks';
 
 function AdminContestTeams() {
   const { id } = useParams();
@@ -45,45 +45,53 @@ function AdminContestTeams() {
 
   // 搜索相关状态
   const searchRef = useRef(null);
-  const {
-    query: searchQuery,
-    setQuery: setSearchQuery,
-    results: rawSearchResults,
-    loading: searchLoading,
-    error: searchError,
-  } = useDebounceSearch(
-    async (name) => {
-      if (!name || name.trim() === '') return [];
+  const [nameQuery, setNameQuery] = useState('');
+  const [descQuery, setDescQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState(null);
 
+  const debouncedName = useDebounce(nameQuery, 300);
+  const debouncedDesc = useDebounce(descQuery, 300);
+
+  const isSearchMode = !!(nameQuery.trim() || descQuery.trim()) && !searchError;
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!debouncedName.trim() && !debouncedDesc.trim()) {
+      setSearchResults([]);
+      setSearchError(null);
+      return;
+    }
+    const doSearch = async () => {
+      setSearchLoading(true);
+      setSearchError(null);
       try {
-        const response = await searchModels({
-          model: 'Team',
-          'search[name]': name.trim(),
-          limit: 10,
-          offset: 0,
-        });
-
+        const params = { model: 'Team', limit: 10, offset: 0 };
+        if (debouncedName.trim()) params['search[name]'] = debouncedName.trim();
+        if (debouncedDesc.trim()) params['search[description]'] = debouncedDesc.trim();
+        const response = await searchModels(params);
         if (response.code !== 200) {
-          const businessError = new Error(response.msg || t('admin.contests.teams.toast.searchFailed'));
-          businessError.__business = true;
-          throw businessError;
+          throw new Error(response.msg || t('admin.contests.teams.toast.searchFailed'));
         }
-
-        const contestId = parseInt(id, 10);
-        const results = response.data.models || [];
-        return Number.isFinite(contestId) ? results.filter((item) => item.contest_id === contestId) : results;
+        if (!cancelled) {
+          const contestId = parseInt(id, 10);
+          const results = response.data.models || [];
+          setSearchResults(Number.isFinite(contestId) ? results.filter((item) => item.contest_id === contestId) : results);
+        }
       } catch (error) {
-        if (!error?.__business) {
+        if (!cancelled) {
+          setSearchError(error);
           toast.danger({ description: error.message || t('admin.contests.teams.toast.searchFailed') });
+          setSearchResults([]);
         }
-        throw error;
+      } finally {
+        if (!cancelled) setSearchLoading(false);
       }
-    },
-    { delay: 300, minLength: 1 }
-  );
-
-  const searchResults = rawSearchResults || [];
-  const isSearchMode = searchQuery.trim().length > 0 && !searchError;
+    };
+    doSearch();
+    return () => { cancelled = true; };
+  }, [debouncedName, debouncedDesc]);
 
   // Detail dialog state
   const [showDetailDialog, setShowDetailDialog] = useState(false);
@@ -170,8 +178,13 @@ function AdminContestTeams() {
   };
 
   // 处理搜索输入变化
-  const handleSearchChange = (value) => {
-    setSearchQuery(value);
+  const handleNameChange = (value) => {
+    setNameQuery(value);
+    setSearchError(null);
+  };
+  const handleDescChange = (value) => {
+    setDescQuery(value);
+    setSearchError(null);
   };
 
   const handleEditTeam = (team) => {
@@ -430,10 +443,12 @@ function AdminContestTeams() {
         onModalSubmit={handleModalSubmit}
         onFormChange={handleFormChange}
         onUserSelect={handleUserSelect}
-        searchQuery={searchQuery}
+        nameQuery={nameQuery}
+        descQuery={descQuery}
         searchResults={searchResults}
         searchLoading={searchLoading}
-        onSearchChange={handleSearchChange}
+        onNameChange={handleNameChange}
+        onDescChange={handleDescChange}
         searchRef={searchRef}
         isSearchMode={isSearchMode}
         onRowClick={handleRowClick}

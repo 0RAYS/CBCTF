@@ -33,10 +33,14 @@ function AdminUsers({
   onEditUser,
   onDeleteUser,
   onPictureUpload,
-  searchQuery = '',
+  nameQuery = '',
+  emailQuery = '',
+  descQuery = '',
   searchLoading = false,
   isSearchMode = false,
-  onSearchChange,
+  onNameChange,
+  onEmailChange,
+  onDescChange,
   onRowClick,
   showDetailDialog = false,
   detailUser = null,
@@ -79,6 +83,11 @@ function AdminUsers({
           <div className="flex flex-col">
             <span className="text-neutral-50">{user.name}</span>
             <span className="text-xs text-neutral-400">{t('admin.users.id', { id: user.id })}</span>
+            {user.description && (
+              <span className="text-xs text-neutral-500 line-clamp-1 mt-0.5" title={user.description}>
+                {user.description}
+              </span>
+            )}
           </div>
         );
 
@@ -146,16 +155,36 @@ function AdminUsers({
 
       {/* 搜索框 */}
       <div className="mb-6">
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1 max-w-md">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
             <label className="block text-sm font-mono text-neutral-400 mb-2">{t('admin.users.search.label')}</label>
             <Input
               type="search"
-              value={searchQuery}
+              value={nameQuery}
               placeholder={t('admin.users.search.placeholder')}
-              onChange={(e) => onSearchChange?.(e.target.value)}
+              onChange={(e) => onNameChange?.(e.target.value)}
               icon={<IconSearch size={16} />}
               iconRight={searchLoading && <Spinner size="sm" />}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-mono text-neutral-400 mb-2">{t('admin.users.search.emailLabel')}</label>
+            <Input
+              type="search"
+              value={emailQuery}
+              placeholder={t('admin.users.search.emailPlaceholder')}
+              onChange={(e) => onEmailChange?.(e.target.value)}
+              icon={<IconSearch size={16} />}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-mono text-neutral-400 mb-2">{t('admin.users.search.descLabel')}</label>
+            <Input
+              type="search"
+              value={descQuery}
+              placeholder={t('admin.users.search.descPlaceholder')}
+              onChange={(e) => onDescChange?.(e.target.value)}
+              icon={<IconSearch size={16} />}
             />
           </div>
         </div>
@@ -184,9 +213,6 @@ function AdminUsers({
           ) : undefined
         }
         footer={paginationComponent}
-        searchQuery={searchQuery}
-        searchLoading={searchLoading}
-        onSearchChange={onSearchChange}
       />
 
       <AdminUserDetailDialog isOpen={showDetailDialog} onClose={onDetailClose} user={detailUser} />
