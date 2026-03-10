@@ -96,8 +96,13 @@ func DeleteSelf(tx *gorm.DB, user model.User, form dto.DeleteSelfForm) model.Ret
 	if !utils.CompareHashAndPassword(user.Password, form.Password) {
 		return model.RetVal{Msg: i18n.Model.User.PasswordWrong}
 	}
-	if db.InitUserRepo(tx).CountAssociation(user, "Contests") > 0 {
+	return DeleteUser(tx, user)
+}
+
+func DeleteUser(tx *gorm.DB, user model.User) model.RetVal {
+	repo := db.InitUserRepo(tx)
+	if repo.CountAssociation(user, "Contests") > 0 {
 		return model.RetVal{Msg: i18n.Model.User.InContest}
 	}
-	return db.InitUserRepo(tx).Delete(user.ID)
+	return repo.Delete(user.ID)
 }
