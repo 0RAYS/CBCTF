@@ -34,13 +34,13 @@ function AdminSmtp({
   const { t, i18n } = useTranslation();
   // 列定义
   const columns = [
-    { key: 'id', label: t('admin.smtp.columns.id'), width: '5%' },
-    { key: 'address', label: t('admin.smtp.columns.address'), width: '15%' },
-    { key: 'host', label: t('admin.smtp.columns.host'), width: '15%' },
-    { key: 'port', label: t('admin.smtp.columns.port'), width: '8%' },
-    { key: 'status', label: t('admin.smtp.columns.status'), width: '10%' },
-    { key: 'success', label: t('admin.smtp.columns.success'), width: '10%' },
-    { key: 'failure', label: t('admin.smtp.columns.failure'), width: '10%' },
+    { key: 'id', label: t('admin.smtp.columns.id'), width: '2%' },
+    { key: 'address', label: t('admin.smtp.columns.address'), width: '8%' },
+    { key: 'host', label: t('admin.smtp.columns.host'), width: '5%' },
+    { key: 'port', label: t('admin.smtp.columns.port'), width: '3%' },
+    { key: 'status', label: t('admin.smtp.columns.status'), width: '3%' },
+    { key: 'success', label: t('admin.smtp.columns.success'), width: '5%' },
+    { key: 'failure', label: t('admin.smtp.columns.failure'), width: '5%' },
     { key: 'actions', label: t('admin.smtp.columns.actions'), width: '5%' },
   ];
 
@@ -112,21 +112,21 @@ function AdminSmtp({
 
       case 'actions':
         return (
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={(e) => {
                 e.stopPropagation();
                 onEditSmtp?.(smtp);
               }}
               className="p-1"
             >
-              <IconEdit size={16} />
+              <IconEdit size={18} />
             </Button>
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={(e) => {
                 e.stopPropagation();
                 onViewHistory?.(smtp);
@@ -134,18 +134,18 @@ function AdminSmtp({
               className="p-1"
               title={t('admin.smtp.actions.viewHistory')}
             >
-              <IconHistory size={16} />
+              <IconHistory size={18} />
             </Button>
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={(e) => {
                 e.stopPropagation();
                 onDeleteSmtp?.(smtp);
               }}
               className="p-1 text-red-400 hover:text-red-300"
             >
-              <IconTrash size={16} />
+              <IconTrash size={18} />
             </Button>
           </div>
         );

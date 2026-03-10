@@ -48,12 +48,12 @@ function AdminUsers({
 
   // 列定义
   const columns = [
-    { key: 'picture', label: t('admin.users.columns.picture'), width: '10%' },
-    { key: 'name', label: t('admin.users.columns.name'), width: '15%' },
-    { key: 'email', label: t('admin.users.columns.email'), width: '20%' },
-    { key: 'status', label: t('admin.users.columns.status'), width: '15%' },
-    { key: 'contests', label: t('admin.users.columns.contests'), width: '10%' },
-    { key: 'teams', label: t('admin.users.columns.teams'), width: '10%' },
+    { key: 'picture', label: t('admin.users.columns.picture'), width: '3%' },
+    { key: 'name', label: t('admin.users.columns.name'), width: '10%' },
+    { key: 'email', label: t('admin.users.columns.email'), width: '15%' },
+    { key: 'status', label: t('admin.users.columns.status'), width: '5%' },
+    { key: 'contests', label: t('admin.users.columns.contests'), width: '5%' },
+    { key: 'teams', label: t('admin.users.columns.teams'), width: '5%' },
     { key: 'actions', label: t('admin.users.columns.actions'), width: '5%' },
   ];
 
@@ -100,11 +100,11 @@ function AdminUsers({
 
       case 'actions':
         return (
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
-              className="!bg-yellow-400/20 !text-yellow-400 hover:!bg-yellow-400/30"
+              className="!bg-transparent !text-yellow-400"
               onClick={(e) => {
                 e.stopPropagation();
                 onEditUser?.(user);
@@ -115,7 +115,7 @@ function AdminUsers({
             <Button
               variant="ghost"
               size="icon"
-              className="!bg-red-400/20 !text-red-400 hover:!bg-red-400/30"
+              className="!bg-transparent !text-red-400"
               onClick={(e) => {
                 e.stopPropagation();
                 onDeleteUser?.(user);

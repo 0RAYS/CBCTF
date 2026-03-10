@@ -422,13 +422,13 @@ function AdminContestCheats() {
   };
 
   const columns = [
-    { key: 'id', label: t('admin.contests.cheats.columns.id'), width: '6%' },
-    { key: 'model', label: t('admin.contests.cheats.columns.model'), width: '18%' },
+    { key: 'id', label: t('admin.contests.cheats.columns.id'), width: '5%' },
+    { key: 'model', label: t('admin.contests.cheats.columns.model'), width: '15%' },
     { key: 'type', label: t('admin.contests.cheats.columns.type'), width: '10%' },
-    { key: 'reason_type', label: t('admin.contests.cheats.columns.reasonType'), width: '10%' },
+    { key: 'reason_type', label: t('admin.contests.cheats.columns.reasonType'), width: '12%' },
     { key: 'reason', label: t('admin.contests.cheats.columns.reason'), width: '14%' },
     { key: 'ip', label: t('admin.contests.cheats.columns.ipOrDevice'), width: '10%' },
-    { key: 'checked', label: t('admin.contests.cheats.columns.status'), width: '8%' },
+    { key: 'checked', label: t('admin.contests.cheats.columns.status'), width: '10%' },
     { key: 'time', label: t('admin.contests.cheats.columns.time'), width: '14%' },
     { key: 'actions', label: t('admin.contests.cheats.columns.actions'), width: '10%' },
   ];

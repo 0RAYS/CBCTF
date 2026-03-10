@@ -67,12 +67,12 @@ function AdminContests({
   };
 
   const columns = [
-    { key: 'cover', label: t('admin.contests.table.cover'), width: '12%' },
-    { key: 'name', label: t('admin.contests.table.name'), width: '22%' },
-    { key: 'status', label: t('admin.contests.table.status'), width: '12%' },
-    { key: 'schedule', label: t('admin.contests.table.schedule'), width: '18%' },
-    { key: 'metrics', label: t('admin.contests.table.metrics'), width: '22%' },
-    { key: 'actions', label: t('admin.contests.table.actions'), width: '8%' },
+    { key: 'cover', label: t('admin.contests.table.cover'), width: '10%' },
+    { key: 'name', label: t('admin.contests.table.name'), width: '25%' },
+    { key: 'status', label: t('admin.contests.table.status'), width: '7%' },
+    { key: 'schedule', label: t('admin.contests.table.schedule'), width: '15%' },
+    { key: 'metrics', label: t('admin.contests.table.metrics'), width: '10%' },
+    { key: 'actions', label: t('admin.contests.table.actions'), width: '5%' },
   ];
 
   const renderCell = (contest, column) => {
@@ -139,7 +139,7 @@ function AdminContests({
             <Button
               variant="ghost"
               size="icon"
-              className="!bg-red-400/20 !text-red-400 hover:!bg-red-400/30"
+              className="!bg-transparent !text-red-400"
               onClick={(e) => {
                 e.stopPropagation();
                 onDeleteContest?.(contest);

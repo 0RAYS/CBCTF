@@ -15,12 +15,12 @@ function AdminPermissions({
   const { t } = useTranslation();
 
   const columns = [
-    { key: 'id', label: t('admin.rbac.permissions.columns.id'), width: '8%' },
-    { key: 'name', label: t('admin.rbac.permissions.columns.name'), width: '22%' },
+    { key: 'id', label: t('admin.rbac.permissions.columns.id'), width: '5%' },
+    { key: 'name', label: t('admin.rbac.permissions.columns.name'), width: '15%' },
     { key: 'resource', label: t('admin.rbac.permissions.columns.resource'), width: '15%' },
     { key: 'operation', label: t('admin.rbac.permissions.columns.operation'), width: '15%' },
     { key: 'description', label: t('admin.rbac.permissions.columns.description'), width: '30%' },
-    { key: 'actions', label: t('admin.rbac.permissions.columns.actions'), width: '10%' },
+    { key: 'actions', label: t('admin.rbac.permissions.columns.actions'), width: '7%' },
   ];
 
   const renderCell = (permission, column) => {
@@ -42,11 +42,11 @@ function AdminPermissions({
 
       case 'actions':
         return (
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
-              className="!bg-yellow-400/20 !text-yellow-400 hover:!bg-yellow-400/30"
+              className="!bg-transparent !text-yellow-400"
               onClick={(e) => {
                 e.stopPropagation();
                 onEditPermission?.(permission);

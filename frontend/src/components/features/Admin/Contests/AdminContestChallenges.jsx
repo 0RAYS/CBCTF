@@ -80,13 +80,13 @@ function AdminContestChallenges({
   };
 
   const columns = [
-    { key: 'name', label: t('admin.contests.challenges.table.name'), width: '28%' },
+    { key: 'name', label: t('admin.contests.challenges.table.name'), width: '15%' },
     { key: 'category', label: t('admin.contests.challenges.table.category'), width: '10%' },
     { key: 'type', label: t('admin.contests.challenges.table.type'), width: '10%' },
-    { key: 'metrics', label: t('admin.contests.challenges.table.metrics'), width: '16%' },
-    { key: 'tags', label: t('admin.contests.challenges.table.tags'), width: '16%' },
-    { key: 'hints', label: t('admin.contests.challenges.table.hints'), width: '12%' },
-    { key: 'actions', label: t('admin.contests.challenges.table.actions'), width: '8%' },
+    { key: 'metrics', label: t('admin.contests.challenges.table.metrics'), width: '10%' },
+    { key: 'tags', label: t('admin.contests.challenges.table.tags'), width: '10%' },
+    { key: 'hints', label: t('admin.contests.challenges.table.hints'), width: '10%' },
+    { key: 'actions', label: t('admin.contests.challenges.table.actions'), width: '7%' },
   ];
 
   const renderCell = (challenge, column) => {
@@ -139,7 +139,7 @@ function AdminContestChallenges({
         return <div className="whitespace-normal">{renderHints(challenge.hints)}</div>;
       case 'actions':
         return (
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"

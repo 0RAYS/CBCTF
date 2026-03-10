@@ -34,7 +34,7 @@ function AdminEmailHistory({
     { key: 'id', label: t('admin.smtp.history.columns.id'), width: '5%' },
     { key: 'from', label: t('admin.smtp.history.columns.from'), width: '15%' },
     { key: 'to', label: t('admin.smtp.history.columns.to'), width: '15%' },
-    { key: 'subject', label: t('admin.smtp.history.columns.subject'), width: '20%' },
+    { key: 'subject', label: t('admin.smtp.history.columns.subject'), width: '10%' },
     { key: 'status', label: t('admin.smtp.history.columns.status'), width: '10%' },
     { key: 'time', label: t('admin.smtp.history.columns.time'), width: '15%' },
     { key: 'actions', label: t('admin.smtp.history.columns.actions'), width: '5%' },
@@ -95,10 +95,10 @@ function AdminEmailHistory({
 
       case 'actions':
         return (
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={(e) => {
                 e.stopPropagation();
                 onViewEmail?.(email);
@@ -106,7 +106,7 @@ function AdminEmailHistory({
               className="p-1"
               title={t('admin.smtp.history.actions.viewDetail')}
             >
-              <IconEye size={16} />
+              <IconEye size={18} />
             </Button>
           </div>
         );

@@ -39,10 +39,10 @@ function AdminNotice({
   });
 
   const columns = [
-    { key: 'title', label: t('admin.contests.notices.table.title'), width: '28%' },
-    { key: 'type', label: t('admin.contests.notices.table.type'), width: '12%' },
+    { key: 'title', label: t('admin.contests.notices.table.title'), width: '15%' },
+    { key: 'type', label: t('admin.contests.notices.table.type'), width: '10%' },
     { key: 'content', label: t('admin.contests.notices.table.content'), width: '48%' },
-    { key: 'actions', label: t('admin.contests.notices.table.actions'), width: '12%' },
+    { key: 'actions', label: t('admin.contests.notices.table.actions'), width: '7%' },
   ];
 
   const typeLabels = {
@@ -65,7 +65,7 @@ function AdminNotice({
         return <div className="text-neutral-300 line-clamp-2 whitespace-normal">{notice.content}</div>;
       case 'actions':
         return (
-          <div className="flex items-center gap-2 justify-end">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"

@@ -35,15 +35,15 @@ function AdminWebhook({
   const { t, i18n } = useTranslation();
   // 列定义
   const columns = [
-    { key: 'id', label: t('admin.webhook.list.columns.id'), width: '5%' },
-    { key: 'name', label: t('admin.webhook.list.columns.name'), width: '15%' },
-    { key: 'url', label: t('admin.webhook.list.columns.url'), width: '20%' },
-    { key: 'method', label: t('admin.webhook.list.columns.method'), width: '8%' },
-    { key: 'status', label: t('admin.webhook.list.columns.status'), width: '10%' },
-    { key: 'events', label: t('admin.webhook.list.columns.events'), width: '15%' },
-    { key: 'success', label: t('admin.webhook.list.columns.success'), width: '10%' },
-    { key: 'failure', label: t('admin.webhook.list.columns.failure'), width: '10%' },
-    { key: 'actions', label: t('admin.webhook.list.columns.actions'), width: '7%' },
+    { key: 'id', label: t('admin.webhook.list.columns.id'), width: '2%' },
+    { key: 'name', label: t('admin.webhook.list.columns.name'), width: '3%' },
+    { key: 'url', label: t('admin.webhook.list.columns.url'), width: '10%' },
+    { key: 'method', label: t('admin.webhook.list.columns.method'), width: '5%' },
+    { key: 'status', label: t('admin.webhook.list.columns.status'), width: '5%' },
+    { key: 'events', label: t('admin.webhook.list.columns.events'), width: '5%' },
+    { key: 'success', label: t('admin.webhook.list.columns.success'), width: '7%' },
+    { key: 'failure', label: t('admin.webhook.list.columns.failure'), width: '7%' },
+    { key: 'actions', label: t('admin.webhook.list.columns.actions'), width: '5%' },
   ];
 
   // 自定义单元格渲染
@@ -66,7 +66,7 @@ function AdminWebhook({
       case 'url':
         return (
           <div className="flex flex-col">
-            <span className="text-neutral-300 font-mono text-sm truncate max-w-48" title={webhook.url}>
+            <span className="text-neutral-300 font-mono text-sm truncate max-w-60" title={webhook.url}>
               {webhook.url}
             </span>
           </div>
@@ -150,10 +150,10 @@ function AdminWebhook({
 
       case 'actions':
         return (
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={(e) => {
                 e.stopPropagation();
                 onEditWebhook?.(webhook);
@@ -161,11 +161,11 @@ function AdminWebhook({
               className="p-1"
               title={t('admin.webhook.list.actions.edit')}
             >
-              <IconEdit size={16} />
+              <IconEdit size={18} />
             </Button>
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={(e) => {
                 e.stopPropagation();
                 onViewHistory?.(webhook);
@@ -173,11 +173,11 @@ function AdminWebhook({
               className="p-1"
               title={t('admin.webhook.list.actions.viewHistory')}
             >
-              <IconHistory size={16} />
+              <IconHistory size={18} />
             </Button>
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={(e) => {
                 e.stopPropagation();
                 onDeleteWebhook?.(webhook);
@@ -185,7 +185,7 @@ function AdminWebhook({
               className="p-1 text-red-400 hover:text-red-300"
               title={t('admin.webhook.list.actions.delete')}
             >
-              <IconTrash size={16} />
+              <IconTrash size={18} />
             </Button>
           </div>
         );
