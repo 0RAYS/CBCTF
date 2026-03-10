@@ -13,7 +13,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          'vendor-monaco': ['@monaco-editor/react'],
+          'vendor-monaco': ['@monaco-editor/react', 'monaco-editor'],
           'vendor-echarts': ['echarts', 'echarts-for-react'],
         },
       },
