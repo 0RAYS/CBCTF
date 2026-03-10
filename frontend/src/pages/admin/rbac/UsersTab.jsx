@@ -95,13 +95,13 @@ function UsersTab() {
       try {
         const response = await searchModels({
           model: 'User',
-          name: name.trim(),
+          'search[name]': name.trim(),
           limit: 20,
           offset: 0,
         });
 
         if (response.code === 200) {
-          return response.data.results || [];
+          return response.data.models || [];
         }
         return [];
       } catch (error) {
