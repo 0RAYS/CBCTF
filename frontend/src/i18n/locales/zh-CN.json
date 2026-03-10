@@ -1066,7 +1066,7 @@
         "flagFormat": "flag格式: {{format}}",
         "flagPrefix": "flag `环境变量` / `文件挂载` 必须以 `FLAG` 为前缀; 变量名可重复，不作为注入时的标识符使用",
         "flagVolume": "flag `文件挂载` 通过 volumes.FLAG_x.labels.value 字段指定值",
-        "services": "services参数只接受: image, expose, ports, environment, volumes, working_dir, command, cpus, mem_limit",
+        "services": "services参数只接受: image, ports, environment, volumes, working_dir, command, cpus, mem_limit",
         "networks": "可通过networks配置多个网段, 每个容器可占据多个网段",
         "networksWithIp": "当设置networks时, 每个容器必须指定所使用的network; 不指定时具体IP时, 随机从定义的网段中选取",
         "networksShared": "当不设置networks时, 容器之间共用同一个随机IP地址, 容器间通信请使用本地地址: 127.0.0.1",
@@ -1077,7 +1077,7 @@
         "flagFormat": "flag格式: {{format}}",
         "flagPrefix": "flag `环境变量` / `文件挂载` 必须以 `FLAG` 为前缀; 变量名可重复，不作为注入时的标识符使用",
         "flagVolume": "flag `文件挂载` 通过 labels value 字段指定值",
-        "dockerParams": "Docker参数只接受: image, expose, ports, environment, volumes, working_dir, command",
+        "dockerParams": "Docker参数只接受: image, ports, environment, volumes, working_dir, command",
         "containerUnique": "同一道题目中, 所有的容器名必须唯一, 作为唯一 DNS Hostname",
         "containerNetwork": "容器间通过 Hostname 或 本地地址 通信"
       },
