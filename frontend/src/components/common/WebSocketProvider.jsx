@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import websocketService from '../../api/websocket.js';
 
 const WebSocketContext = createContext();
@@ -89,17 +89,44 @@ export const WebSocketProvider = ({ children }) => {
     return () => clearInterval(interval);
   }, []);
 
-  const value = {
-    isConnected,
-    connectionInfo,
-    send: websocketService.send.bind(websocketService),
-    addMessageHandler: websocketService.addMessageHandler.bind(websocketService),
-    addConnectionHandler: websocketService.addConnectionHandler.bind(websocketService),
-    connect: websocketService.connect.bind(websocketService),
-    disconnect: websocketService.disconnect.bind(websocketService),
-    getConnectionInfo: websocketService.getConnectionInfo.bind(websocketService),
-    hasValidToken: websocketService.hasValidToken.bind(websocketService),
-  };
+  const send = useMemo(() => websocketService.send.bind(websocketService), []);
+
+  const addMessageHandler = useMemo(() => websocketService.addMessageHandler.bind(websocketService), []);
+
+  const addConnectionHandler = useMemo(() => websocketService.addConnectionHandler.bind(websocketService), []);
+
+  const connect = useMemo(() => websocketService.connect.bind(websocketService), []);
+
+  const disconnect = useMemo(() => websocketService.disconnect.bind(websocketService), []);
+
+  const getConnectionInfo = useMemo(() => websocketService.getConnectionInfo.bind(websocketService), []);
+
+  const hasValidToken = useMemo(() => websocketService.hasValidToken.bind(websocketService), []);
+
+  const value = useMemo(
+    () => ({
+      isConnected,
+      connectionInfo,
+      send,
+      addMessageHandler,
+      addConnectionHandler,
+      connect,
+      disconnect,
+      getConnectionInfo,
+      hasValidToken,
+    }),
+    [
+      isConnected,
+      connectionInfo,
+      send,
+      addMessageHandler,
+      addConnectionHandler,
+      connect,
+      disconnect,
+      getConnectionInfo,
+      hasValidToken,
+    ]
+  );
 
   return <WebSocketContext.Provider value={value}>{children}</WebSocketContext.Provider>;
 };
