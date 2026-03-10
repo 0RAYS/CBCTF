@@ -21,6 +21,19 @@ import { motion } from 'motion/react';
 import { Pagination, EmptyState } from '../../../components/common';
 import { useTranslation } from 'react-i18next';
 
+function LoadingSpinner({ className = '' }) {
+  const { t } = useTranslation();
+  return (
+    <div className={`flex justify-center items-center ${className}`}>
+      <div className="relative w-12 h-12">
+        <div className="absolute inset-0 border-2 border-t-geek-400 border-r-geek-400 border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+        <div className="absolute inset-1 border-2 border-t-transparent border-r-transparent border-b-geek-400 border-l-geek-400 rounded-full animate-spin animate-delay-150"></div>
+      </div>
+      <span className="ml-3 text-neutral-300 font-mono">{t('common.loading')}</span>
+    </div>
+  );
+}
+
 function TeamDetails() {
   const { id: contestId, teamId } = useParams();
 
@@ -290,17 +303,6 @@ function TeamDetails() {
     setShowUserDetail(false);
     setUserDetailData(null);
   };
-
-  // 自定义Loading组件，替换Spinner
-  const LoadingSpinner = ({ className = '' }) => (
-    <div className={`flex justify-center items-center ${className}`}>
-      <div className="relative w-12 h-12">
-        <div className="absolute inset-0 border-2 border-t-geek-400 border-r-geek-400 border-b-transparent border-l-transparent rounded-full animate-spin"></div>
-        <div className="absolute inset-1 border-2 border-t-transparent border-r-transparent border-b-geek-400 border-l-geek-400 rounded-full animate-spin animate-delay-150"></div>
-      </div>
-      <span className="ml-3 text-neutral-300 font-mono">{t('common.loading')}</span>
-    </div>
-  );
 
   // 处理负载数据点击展开/收起
   const togglePayload = (index) => {
