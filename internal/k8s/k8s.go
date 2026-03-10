@@ -40,8 +40,8 @@ func Init() {
 	externalSubnetName = fmt.Sprintf("%s-external-network", globalNamespace)
 	nfsVolumeName = fmt.Sprintf("%s-shared-volume", globalNamespace)
 	initClients()
-	checkResources()
 	checkPermissions()
+	checkResources()
 }
 
 func initClients() {
