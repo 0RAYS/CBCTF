@@ -1066,7 +1066,7 @@
         "flagFormat": "Flag format: {{format}}",
         "flagPrefix": "Flag environment variables / file mounts must start with `FLAG`; variable names can repeat and are not used as injection identifiers",
         "flagVolume": "Flag file mounts use volumes.FLAG_x.labels.value to specify the value",
-        "services": "services only accepts: image, expose, ports, environment, volumes, working_dir, command, cpus, mem_limit",
+        "services": "services only accepts: image, ports, environment, volumes, working_dir, command, cpus, mem_limit",
         "networks": "You can configure multiple networks; each container may belong to multiple networks",
         "networksWithIp": "When networks are set, each container must specify its network; if no IP is specified, one is assigned from the subnet",
         "networksShared": "Without networks, containers share a random IP; for inter-container access use 127.0.0.1",
@@ -1077,7 +1077,7 @@
         "flagFormat": "Flag format: {{format}}",
         "flagPrefix": "Flag environment variables / file mounts must start with `FLAG`; variable names can repeat and are not used as injection identifiers",
         "flagVolume": "Flag file mounts use labels value to specify the value",
-        "dockerParams": "Docker parameters only accept: image, expose, ports, environment, volumes, working_dir, command",
+        "dockerParams": "Docker parameters only accept: image, ports, environment, volumes, working_dir, command",
         "containerUnique": "Within a challenge, all container names must be unique and serve as the DNS hostname",
         "containerNetwork": "Containers communicate via Hostname or localhost"
       },
