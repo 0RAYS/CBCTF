@@ -35,6 +35,9 @@ importers:
       immer:
         specifier: ^11.1.4
         version: 11.1.4
+      monaco-editor:
+        specifier: ^0.52.0
+        version: 0.52.2
       motion:
         specifier: ^12.34.0
         version: 12.34.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
