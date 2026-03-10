@@ -23,6 +23,7 @@ func GetNotices(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
 	notices, count, ret := db.InitNoticeRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
+		Sort:       []string{"id DESC"},
 	})
 	if !ret.OK {
 		resp.JSON(ctx, ret)

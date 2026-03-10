@@ -171,7 +171,11 @@ func (b *BaseRepo[M]) List(limit, offset int, optionsL ...GetOptions) ([]M, int6
 	if !ret.OK {
 		return nil, count, ret
 	}
-	if res := applyGetOptions(b.DB.Model(new(M)), options).Order("id").Limit(limit).Offset(offset).Find(&ms); res.Error != nil {
+	tx := applyGetOptions(b.DB.Model(new(M)), options)
+	if len(options.Sort) == 0 {
+		tx = tx.Order("id")
+	}
+	if res := tx.Limit(limit).Offset(offset).Find(&ms); res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
 			return nil, count, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": M.ModelName(*new(M))}}
 		}

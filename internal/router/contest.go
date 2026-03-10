@@ -32,7 +32,7 @@ func GetContests(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	options := db.GetOptions{}
+	options := db.GetOptions{Sort: []string{"id DESC"}}
 	if !middleware.IsFullAccess(ctx) {
 		options.Conditions = map[string]any{"hidden": false}
 	}
