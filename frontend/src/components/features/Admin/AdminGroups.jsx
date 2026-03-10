@@ -19,13 +19,13 @@ function AdminGroups({
   const { t } = useTranslation();
 
   const columns = [
-    { key: 'id', label: t('admin.rbac.groups.columns.id'), width: '8%' },
-    { key: 'name', label: t('admin.rbac.groups.columns.name'), width: '15%' },
-    { key: 'description', label: t('admin.rbac.groups.columns.description'), width: '20%' },
-    { key: 'role', label: t('admin.rbac.groups.columns.role'), width: '15%' },
-    { key: 'users', label: t('admin.rbac.groups.columns.users'), width: '10%' },
+    { key: 'id', label: t('admin.rbac.groups.columns.id'), width: '5%' },
+    { key: 'name', label: t('admin.rbac.groups.columns.name'), width: '10%' },
+    { key: 'description', label: t('admin.rbac.groups.columns.description'), width: '10%' },
+    { key: 'role', label: t('admin.rbac.groups.columns.role'), width: '10%' },
+    { key: 'users', label: t('admin.rbac.groups.columns.users'), width: '7%' },
     { key: 'default', label: t('admin.rbac.groups.columns.default'), width: '10%' },
-    { key: 'actions', label: t('admin.rbac.groups.columns.actions'), width: '22%' },
+    { key: 'actions', label: t('admin.rbac.groups.columns.actions'), width: '7%' },
   ];
 
   const renderCell = (group, column) => {
@@ -49,16 +49,16 @@ function AdminGroups({
         return group.default ? (
           <StatusTag type="info" text={t('common.yes')} />
         ) : (
-          <span className="text-neutral-500">{t('common.no')}</span>
+          <StatusTag type="error" text={t('common.no')} />
         );
 
       case 'actions':
         return (
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
-              className="!bg-geek-400/20 !text-geek-400 hover:!bg-geek-400/30"
+              className="!bg-transparent !text-geek-400"
               onClick={(e) => {
                 e.stopPropagation();
                 onManageUsers?.(group);
@@ -69,7 +69,7 @@ function AdminGroups({
             <Button
               variant="ghost"
               size="icon"
-              className="!bg-yellow-400/20 !text-yellow-400 hover:!bg-yellow-400/30"
+              className="!bg-transparent !text-yellow-400"
               onClick={(e) => {
                 e.stopPropagation();
                 onEditGroup?.(group);
@@ -81,7 +81,7 @@ function AdminGroups({
               <Button
                 variant="ghost"
                 size="icon"
-                className="!bg-red-400/20 !text-red-400 hover:!bg-red-400/30"
+                className="!bg-transparent !text-red-400"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDeleteGroup?.(group);

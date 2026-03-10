@@ -18,11 +18,11 @@ function AdminRoles({
   const { t } = useTranslation();
 
   const columns = [
-    { key: 'id', label: t('admin.rbac.roles.columns.id'), width: '10%' },
-    { key: 'name', label: t('admin.rbac.roles.columns.name'), width: '20%' },
-    { key: 'description', label: t('admin.rbac.roles.columns.description'), width: '30%' },
-    { key: 'default', label: t('admin.rbac.roles.columns.default'), width: '15%' },
-    { key: 'actions', label: t('admin.rbac.roles.columns.actions'), width: '25%' },
+    { key: 'id', label: t('admin.rbac.roles.columns.id'), width: '5%' },
+    { key: 'name', label: t('admin.rbac.roles.columns.name'), width: '10%' },
+    { key: 'description', label: t('admin.rbac.roles.columns.description'), width: '15%' },
+    { key: 'default', label: t('admin.rbac.roles.columns.default'), width: '10%' },
+    { key: 'actions', label: t('admin.rbac.roles.columns.actions'), width: '5%' },
   ];
 
   const renderCell = (role, column) => {
@@ -40,16 +40,16 @@ function AdminRoles({
         return role.default ? (
           <StatusTag type="info" text={t('common.yes')} />
         ) : (
-          <span className="text-neutral-500">{t('common.no')}</span>
+          <StatusTag type="error" text={t('common.no')} />
         );
 
       case 'actions':
         return (
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
-              className="!bg-geek-400/20 !text-geek-400 hover:!bg-geek-400/30"
+              className="!bg-transparent !text-geek-400"
               onClick={(e) => {
                 e.stopPropagation();
                 onManagePermissions?.(role);
@@ -60,7 +60,7 @@ function AdminRoles({
             <Button
               variant="ghost"
               size="icon"
-              className="!bg-yellow-400/20 !text-yellow-400 hover:!bg-yellow-400/30"
+              className="!bg-transparent !text-yellow-400"
               onClick={(e) => {
                 e.stopPropagation();
                 onEditRole?.(role);
@@ -72,7 +72,7 @@ function AdminRoles({
               <Button
                 variant="ghost"
                 size="icon"
-                className="!bg-red-400/20 !text-red-400 hover:!bg-red-400/30"
+                className="!bg-transparent !text-red-400"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDeleteRole?.(role);

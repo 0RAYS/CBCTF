@@ -40,7 +40,7 @@ function AdminOAuthProviders({
     { key: 'uri', label: t('admin.oauthProviders.columns.uri'), width: '12%' },
     { key: 'status', label: t('admin.oauthProviders.columns.status'), width: '8%' },
     { key: 'callback_url', label: t('admin.oauthProviders.columns.callback'), width: '30%' },
-    { key: 'actions', label: t('admin.oauthProviders.columns.actions'), width: '10%' },
+    { key: 'actions', label: t('admin.oauthProviders.columns.actions'), width: '5%' },
   ];
 
   // 自定义单元格渲染
@@ -127,28 +127,28 @@ function AdminOAuthProviders({
 
       case 'actions':
         return (
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={(e) => {
                 e.stopPropagation();
                 onEditProvider?.(provider);
               }}
               className="p-1"
             >
-              <IconEdit size={16} />
+              <IconEdit size={18} />
             </Button>
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={(e) => {
                 e.stopPropagation();
                 onDeleteProvider?.(provider);
               }}
               className="p-1 text-red-400 hover:text-red-300"
             >
-              <IconTrash size={16} />
+              <IconTrash size={18} />
             </Button>
           </div>
         );

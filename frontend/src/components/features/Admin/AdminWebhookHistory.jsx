@@ -31,13 +31,13 @@ function AdminWebhookHistory({
   const { t, i18n } = useTranslation();
   // 列定义
   const columns = [
-    { key: 'id', label: t('admin.webhook.historyList.columns.id'), width: '5%' },
-    { key: 'webhook', label: t('admin.webhook.historyList.columns.webhook'), width: '15%' },
-    { key: 'event', label: t('admin.webhook.historyList.columns.event'), width: '15%' },
-    { key: 'status', label: t('admin.webhook.historyList.columns.status'), width: '10%' },
-    { key: 'resp', label: t('admin.webhook.historyList.columns.responseCode'), width: '10%' },
-    { key: 'duration', label: t('admin.webhook.historyList.columns.duration'), width: '10%' },
-    { key: 'time', label: t('admin.webhook.historyList.columns.time'), width: '12%' },
+    { key: 'id', label: t('admin.webhook.historyList.columns.id'), width: '3%' },
+    { key: 'webhook', label: t('admin.webhook.historyList.columns.webhook'), width: '5%' },
+    { key: 'event', label: t('admin.webhook.historyList.columns.event'), width: '8%' },
+    { key: 'status', label: t('admin.webhook.historyList.columns.status'), width: '5%' },
+    { key: 'resp', label: t('admin.webhook.historyList.columns.responseCode'), width: '5%' },
+    { key: 'duration', label: t('admin.webhook.historyList.columns.duration'), width: '5%' },
+    { key: 'time', label: t('admin.webhook.historyList.columns.time'), width: '8%' },
     { key: 'actions', label: t('admin.webhook.historyList.columns.actions'), width: '5%' },
   ];
 
@@ -113,10 +113,10 @@ function AdminWebhookHistory({
 
       case 'actions':
         return (
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={(e) => {
                 e.stopPropagation();
                 onViewDetail?.(history);
@@ -124,7 +124,7 @@ function AdminWebhookHistory({
               className="p-1"
               title={t('admin.webhook.historyList.actions.viewDetail')}
             >
-              <IconEye size={16} />
+              <IconEye size={18} />
             </Button>
           </div>
         );

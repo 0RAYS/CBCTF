@@ -93,12 +93,12 @@ function AdminTeams({
   const locale = i18n.language || 'en-US';
 
   const columns = [
-    { key: 'team', label: t('admin.contests.teams.table.team'), width: '28%' },
-    { key: 'score', label: t('admin.contests.teams.table.score'), width: '12%' },
-    { key: 'members', label: t('admin.contests.teams.table.members'), width: '12%' },
-    { key: 'lastSubmit', label: t('admin.contests.teams.table.lastSubmit'), width: '20%' },
-    { key: 'status', label: t('admin.contests.teams.table.status'), width: '16%' },
-    { key: 'actions', label: t('admin.contests.teams.table.actions'), width: '12%' },
+    { key: 'team', label: t('admin.contests.teams.table.team'), width: '8%' },
+    { key: 'score', label: t('admin.contests.teams.table.score'), width: '5%' },
+    { key: 'members', label: t('admin.contests.teams.table.members'), width: '5%' },
+    { key: 'lastSubmit', label: t('admin.contests.teams.table.lastSubmit'), width: '8%' },
+    { key: 'status', label: t('admin.contests.teams.table.status'), width: '5%' },
+    { key: 'actions', label: t('admin.contests.teams.table.actions'), width: '7%' },
   ];
 
   const renderCell = (team, column) => {
@@ -168,7 +168,7 @@ function AdminTeams({
         );
       case 'actions':
         return (
-          <div className="flex justify-end gap-3" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
             <Button
               variant="ghost"
               size="icon"

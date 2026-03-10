@@ -87,13 +87,13 @@ function AdminFiles({
   );
 
   const columns = [
-    { key: 'select', label: selectAllLabel, width: '10%' },
-    { key: 'name', label: t('admin.files.columns.name'), width: '28%' },
-    { key: 'type', label: t('admin.files.columns.type'), width: '10%' },
-    { key: 'size', label: t('admin.files.columns.size'), width: '10%' },
-    { key: 'uploaded', label: t('admin.files.columns.uploaded'), width: '14%' },
+    { key: 'select', label: selectAllLabel, width: '5%' },
+    { key: 'name', label: t('admin.files.columns.name'), width: '15%' },
+    { key: 'type', label: t('admin.files.columns.type'), width: '5%' },
+    { key: 'size', label: t('admin.files.columns.size'), width: '5%' },
+    { key: 'uploaded', label: t('admin.files.columns.uploaded'), width: '5%' },
     { key: 'meta', label: t('admin.files.columns.meta'), width: '18%' },
-    { key: 'actions', label: t('admin.files.columns.actions'), width: '10%' },
+    { key: 'actions', label: t('admin.files.columns.actions'), width: '5%' },
   ];
 
   const renderMetaBadge = (text) => (

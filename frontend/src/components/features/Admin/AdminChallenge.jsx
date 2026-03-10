@@ -73,12 +73,12 @@ function AdminChallenge({
   };
 
   const columns = [
-    { key: 'name', label: t('admin.challenge.table.name'), width: '24%' },
-    { key: 'category', label: t('admin.challenge.table.category'), width: '12%' },
-    { key: 'type', label: t('admin.challenge.table.type'), width: '12%' },
-    { key: 'flags', label: t('admin.challenge.table.flags'), width: '22%' },
-    { key: 'file', label: t('admin.challenge.table.file'), width: '14%' },
-    { key: 'actions', label: t('admin.challenge.table.actions'), width: '16%' },
+    { key: 'name', label: t('admin.challenge.table.name'), width: '10%' },
+    { key: 'category', label: t('admin.challenge.table.category'), width: '5%' },
+    { key: 'type', label: t('admin.challenge.table.type'), width: '5%' },
+    { key: 'flags', label: t('admin.challenge.table.flags'), width: '5%' },
+    { key: 'file', label: t('admin.challenge.table.file'), width: '5%' },
+    { key: 'actions', label: t('admin.challenge.table.actions'), width: '5%' },
   ];
 
   const renderCell = (challenge, column) => {
@@ -123,7 +123,7 @@ function AdminChallenge({
         );
       case 'actions':
         return (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
