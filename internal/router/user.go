@@ -140,7 +140,7 @@ func DeleteUser(ctx *gin.Context) {
 	} else {
 		ctx.Set(middleware.CTXEventTypeKey, model.DeleteUserEventType)
 		tx = db.DB.Begin()
-		ret = db.InitUserRepo(tx).Delete(middleware.GetUser(ctx).ID)
+		ret = service.DeleteUser(tx, middleware.GetUser(ctx))
 	}
 	if !ret.OK {
 		tx.Rollback()
