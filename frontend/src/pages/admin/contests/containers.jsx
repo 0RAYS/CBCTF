@@ -246,13 +246,13 @@ function ContestContainers() {
     try {
       const response = await searchModels({
         model,
-        name: name.trim(),
+        'search[name]': name.trim(),
         limit: 10,
         offset: 0,
       });
 
       if (response.code === 200) {
-        let results = response.data.results || [];
+        let results = response.data.models || [];
 
         // 如果是搜索团队，需要过滤contest_id
         if (model === 'Team') {

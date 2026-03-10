@@ -73,17 +73,18 @@ function ChallengesManagement() {
       if (!name || name.trim() === '') return [];
 
       try {
-        const response = await searchModels({
+        const params = {
           model: 'Challenge',
-          name: name.trim(),
+          'search[name]': name.trim(),
           limit: 10,
           offset: 0,
-          type: selectedType !== 'all' ? selectedType : '',
-          category: selectedCategory !== 'all' ? selectedCategory : '',
-        });
+        };
+        if (selectedType !== 'all') params['search[type]'] = selectedType;
+        if (selectedCategory !== 'all') params['search[category]'] = selectedCategory;
+        const response = await searchModels(params);
 
         if (response.code === 200) {
-          const results = response.data.results || [];
+          const results = response.data.models || [];
           return results.map(processFlags);
         }
         return [];

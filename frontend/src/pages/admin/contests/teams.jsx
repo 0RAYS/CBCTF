@@ -58,7 +58,7 @@ function AdminContestTeams() {
       try {
         const response = await searchModels({
           model: 'Team',
-          name: name.trim(),
+          'search[name]': name.trim(),
           limit: 10,
           offset: 0,
         });
@@ -70,7 +70,7 @@ function AdminContestTeams() {
         }
 
         const contestId = parseInt(id, 10);
-        const results = response.data.results || [];
+        const results = response.data.models || [];
         return Number.isFinite(contestId) ? results.filter((item) => item.contest_id === contestId) : results;
       } catch (error) {
         if (!error?.__business) {

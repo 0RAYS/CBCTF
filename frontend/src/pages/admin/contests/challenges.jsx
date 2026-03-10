@@ -170,16 +170,17 @@ function AdminContestChallengesPage() {
         params.category = category;
       }
       if (query.trim() !== '') {
-        const response = await searchModels({
+        const searchParams = {
           model: 'Challenge',
           limit: 10,
           offset: 0,
-          name: query,
-          type: params.type,
-          category: params.category,
-        });
+          'search[name]': query,
+        };
+        if (params.type) searchParams['search[type]'] = params.type;
+        if (params.category) searchParams['search[category]'] = params.category;
+        const response = await searchModels(searchParams);
         if (response.code === 200) {
-          setAvailableChallenges(response.data.results || []);
+          setAvailableChallenges(response.data.models || []);
           setModalTotalCount(response.data.count || 0);
         }
       } else {
