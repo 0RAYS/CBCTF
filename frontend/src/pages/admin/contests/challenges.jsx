@@ -36,6 +36,7 @@ function AdminContestChallengesPage() {
   const [isSelectorOpen, setSelectorOpen] = useState(false);
   const [availableChallenges, setAvailableChallenges] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [descSearchQuery, setDescSearchQuery] = useState('');
   const [selectedChallenges, setSelectedChallenges] = useState([]);
   const [modalType, setModalType] = useState('all');
   const [modalCategory, setModalCategory] = useState('all');
@@ -151,7 +152,8 @@ function AdminContestChallengesPage() {
     page = modalCurrentPage,
     type = modalType,
     category = modalCategory,
-    query = ''
+    query = '',
+    descQuery = ''
   ) => {
     setModalLoading(true);
     try {
@@ -169,13 +171,14 @@ function AdminContestChallengesPage() {
       if (category !== 'all') {
         params.category = category;
       }
-      if (query.trim() !== '') {
+      if (query.trim() !== '' || descQuery.trim() !== '') {
         const searchParams = {
           model: 'Challenge',
           limit: 10,
           offset: 0,
-          'search[name]': query,
         };
+        if (query.trim()) searchParams['search[name]'] = query;
+        if (descQuery.trim()) searchParams['search[description]'] = descQuery;
         if (params.type) searchParams['search[type]'] = params.type;
         if (params.category) searchParams['search[category]'] = params.category;
         const response = await searchModels(searchParams);
@@ -211,27 +214,34 @@ function AdminContestChallengesPage() {
   const handleModalTypeChange = (type) => {
     setModalType(type);
     setModalCurrentPage(1); // 重置页码
-    fetchAvailableChallenges(1, type, modalCategory, searchQuery);
+    fetchAvailableChallenges(1, type, modalCategory, searchQuery, descSearchQuery);
   };
 
   // 处理模态框分类过滤变化
   const handleModalCategoryChange = (category) => {
     setModalCategory(category);
     setModalCurrentPage(1); // 重置页码
-    fetchAvailableChallenges(1, modalType, category, searchQuery);
+    fetchAvailableChallenges(1, modalType, category, searchQuery, descSearchQuery);
   };
 
   // 处理搜索查询变化
   const handleSearchChange = (query) => {
     setSearchQuery(query);
     setModalCurrentPage(1); // 重置页码
-    fetchAvailableChallenges(1, modalType, modalCategory, query);
+    fetchAvailableChallenges(1, modalType, modalCategory, query, descSearchQuery);
+  };
+
+  // 处理描述搜索查询变化
+  const handleDescSearchChange = (query) => {
+    setDescSearchQuery(query);
+    setModalCurrentPage(1); // 重置页码
+    fetchAvailableChallenges(1, modalType, modalCategory, searchQuery, query);
   };
 
   // 处理模态框分页变化
   const handleModalPageChange = async (page) => {
     setModalCurrentPage(page);
-    fetchAvailableChallenges(page, modalType, modalCategory, searchQuery);
+    fetchAvailableChallenges(page, modalType, modalCategory, searchQuery, descSearchQuery);
   };
 
   // 选择器相关处理
@@ -243,7 +253,7 @@ function AdminContestChallengesPage() {
     setModalCurrentPage(1);
 
     // 获取可用题目列表
-    await fetchAvailableChallenges(1, 'all', 'all', '');
+    await fetchAvailableChallenges(1, 'all', 'all', '', '');
 
     // 打开选择器
     setSelectorOpen(true);
@@ -419,6 +429,7 @@ function AdminContestChallengesPage() {
         loading={modalLoading}
         onClose={() => setSelectorOpen(false)}
         onSearch={handleSearchChange}
+        onDescSearch={handleDescSearchChange}
         onSelect={handleSelectChallenge}
         onConfirm={handleAddChallenges}
         onPageChange={handleModalPageChange}

@@ -32,6 +32,7 @@ function AdminContestChallengeSelector({
   pageSize = 10,
   onClose,
   onSearch,
+  onDescSearch,
   onSelect,
   onConfirm,
   onPageChange,
@@ -67,7 +68,7 @@ function AdminContestChallengeSelector({
 
         {/* 搜索和过滤 */}
         <div className="p-4 border-b border-neutral-700">
-          <div className="flex gap-4">
+          <div className="flex gap-4 mb-3">
             <div className="flex-1 relative">
               <IconSearch size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" />
               <input
@@ -77,7 +78,17 @@ function AdminContestChallengeSelector({
                 onChange={(e) => onSearch(e.target.value)}
               />
             </div>
-
+            <div className="flex-1 relative">
+              <IconSearch size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" />
+              <input
+                type="text"
+                className={`${inputBaseClass} pl-10`}
+                placeholder={t('admin.contests.challengeSelector.search.descPlaceholder')}
+                onChange={(e) => onDescSearch?.(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="flex gap-4">
             <div className="w-48">
               <select
                 onChange={(e) => onFilterCategoryChange(e.target.value)}

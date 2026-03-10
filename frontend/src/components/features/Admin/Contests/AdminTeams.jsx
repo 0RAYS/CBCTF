@@ -56,10 +56,12 @@ function AdminTeams({
   onModalSubmit,
   onFormChange,
   onUserSelect,
-  searchQuery = '',
+  nameQuery = '',
+  descQuery = '',
   searchResults = [],
   searchLoading = false,
-  onSearchChange,
+  onNameChange,
+  onDescChange,
   searchRef,
   isSearchMode = false,
   onRowClick,
@@ -123,7 +125,11 @@ function AdminTeams({
             </div>
             <div className="min-w-0">
               <ScrollingText text={team.name} className="text-neutral-50 font-medium" maxWidth={240} speed={15} />
-              {team.description && <div className="text-sm text-neutral-400 mt-0.5">{team.description}</div>}
+              {team.description && (
+                <div className="text-sm text-neutral-400 mt-0.5 line-clamp-1" title={team.description}>
+                  {team.description}
+                </div>
+              )}
             </div>
           </div>
         );
@@ -353,18 +359,30 @@ function AdminTeams({
 
       {/* 搜索框 */}
       <div className="mb-6">
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1 max-w-md" ref={searchRef}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div ref={searchRef}>
             <label className="block text-sm font-mono text-neutral-400 mb-2">
               {t('admin.contests.teams.search.label')}
             </label>
             <Input
               type="text"
-              value={searchQuery}
+              value={nameQuery}
               placeholder={t('admin.contests.teams.search.placeholder')}
-              onChange={(e) => onSearchChange(e.target.value)}
+              onChange={(e) => onNameChange(e.target.value)}
               icon={<IconSearch size={16} />}
               iconRight={searchLoading && <Spinner size="sm" />}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-mono text-neutral-400 mb-2">
+              {t('admin.contests.teams.search.descLabel')}
+            </label>
+            <Input
+              type="text"
+              value={descQuery}
+              placeholder={t('admin.contests.teams.search.descPlaceholder')}
+              onChange={(e) => onDescChange(e.target.value)}
+              icon={<IconSearch size={16} />}
             />
           </div>
         </div>

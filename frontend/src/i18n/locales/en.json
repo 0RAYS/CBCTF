@@ -360,7 +360,8 @@
       "challengeSelector": {
         "title": "Select Challenges",
         "search": {
-          "placeholder": "Search challenges..."
+          "placeholder": "Search challenges...",
+          "descPlaceholder": "Search by description..."
         },
         "filters": {
           "categoryAll": "All categories",
@@ -491,7 +492,9 @@
         "title": "Team Management",
         "search": {
           "label": "Search teams",
-          "placeholder": "Search by team name..."
+          "placeholder": "Search by team name...",
+          "descLabel": "Description",
+          "descPlaceholder": "Search by description..."
         },
         "empty": {
           "noMembers": "No team members",
@@ -921,7 +924,9 @@
       },
       "search": {
         "label": "Search Challenges",
-        "placeholder": "Search by challenge name..."
+        "placeholder": "Search by challenge name...",
+        "descLabel": "Description",
+        "descPlaceholder": "Search by description..."
       },
       "filters": {
         "all": "All",
@@ -1107,7 +1112,11 @@
       },
       "search": {
         "label": "Search Users",
-        "placeholder": "Search by username..."
+        "placeholder": "Search by username...",
+        "emailLabel": "Email",
+        "emailPlaceholder": "Search by email...",
+        "descLabel": "Description",
+        "descPlaceholder": "Search by description..."
       },
       "toast": {
         "searchFailed": "Search failed",

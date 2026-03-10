@@ -360,7 +360,8 @@
       "challengeSelector": {
         "title": "选择赛题",
         "search": {
-          "placeholder": "搜索赛题..."
+          "placeholder": "搜索赛题...",
+          "descPlaceholder": "按描述搜索..."
         },
         "filters": {
           "categoryAll": "全部分类",
@@ -491,7 +492,9 @@
         "title": "团队管理",
         "search": {
           "label": "搜索团队",
-          "placeholder": "输入团队名称搜索..."
+          "placeholder": "输入团队名称搜索...",
+          "descLabel": "描述",
+          "descPlaceholder": "按描述搜索..."
         },
         "empty": {
           "noMembers": "暂无团队成员",
@@ -921,7 +924,9 @@
       },
       "search": {
         "label": "搜索题目",
-        "placeholder": "输入题目名搜索..."
+        "placeholder": "输入题目名搜索...",
+        "descLabel": "描述",
+        "descPlaceholder": "按描述搜索..."
       },
       "filters": {
         "all": "全部",
@@ -1107,7 +1112,11 @@
       },
       "search": {
         "label": "搜索用户",
-        "placeholder": "输入用户名搜索..."
+        "placeholder": "输入用户名搜索...",
+        "emailLabel": "邮箱",
+        "emailPlaceholder": "按邮箱搜索...",
+        "descLabel": "描述",
+        "descPlaceholder": "按描述搜索..."
       },
       "toast": {
         "searchFailed": "搜索失败",

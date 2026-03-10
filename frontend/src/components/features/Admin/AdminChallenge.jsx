@@ -46,10 +46,12 @@ function AdminChallenge({
   onTestChallenge,
   onFilterTypeChange,
   onFilterCategoryChange,
-  searchQuery = '',
+  nameQuery = '',
+  descQuery = '',
   searchLoading = false,
   isSearchMode = false,
-  onSearchChange,
+  onNameChange,
+  onDescChange,
 }) {
   const { t } = useTranslation();
 
@@ -194,16 +196,26 @@ function AdminChallenge({
 
       {/* 搜索框 */}
       <div className="mb-6">
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1 max-w-md">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
             <label className="block text-sm font-mono text-neutral-400 mb-2">{t('admin.challenge.search.label')}</label>
             <Input
               type="text"
-              value={searchQuery}
+              value={nameQuery}
               placeholder={t('admin.challenge.search.placeholder')}
-              onChange={(e) => onSearchChange?.(e.target.value)}
+              onChange={(e) => onNameChange?.(e.target.value)}
               icon={<IconSearch size={16} />}
               iconRight={searchLoading && <Spinner size="sm" />}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-mono text-neutral-400 mb-2">{t('admin.challenge.search.descLabel')}</label>
+            <Input
+              type="text"
+              value={descQuery}
+              placeholder={t('admin.challenge.search.descPlaceholder')}
+              onChange={(e) => onDescChange?.(e.target.value)}
+              icon={<IconSearch size={16} />}
             />
           </div>
         </div>

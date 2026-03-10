@@ -14,7 +14,7 @@ import {
   downloadChallengeFile,
 } from '../../api/admin/challenge';
 import { generateUUID } from '../../utils/uuid';
-import { useDebounceSearch } from '../../hooks';
+import { useDebounce } from '../../hooks';
 import { useTranslation } from 'react-i18next';
 import { searchModels } from '../../api/admin/search.js';
 import { DEFAULT_CHALLENGE_CATEGORIES, mergeChallengeCategories } from '../../config/challenges';
@@ -62,43 +62,48 @@ function ChallengesManagement() {
     };
   };
 
-  // 使用防抖搜索 Hook
-  const {
-    query: searchQuery,
-    setQuery: setSearchQuery,
-    results: rawSearchResults,
-    loading: searchLoading,
-  } = useDebounceSearch(
-    async (name) => {
-      if (!name || name.trim() === '') return [];
+  // 使用防抖搜索
+  const [nameQuery, setNameQuery] = useState('');
+  const [descQuery, setDescQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
 
+  const debouncedName = useDebounce(nameQuery, 300);
+  const debouncedDesc = useDebounce(descQuery, 300);
+
+  // 搜索结果和模式
+  const isSearchMode = !!(nameQuery.trim() || descQuery.trim());
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!debouncedName.trim() && !debouncedDesc.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const doSearch = async () => {
+      setSearchLoading(true);
       try {
-        const params = {
-          model: 'Challenge',
-          'search[name]': name.trim(),
-          limit: 10,
-          offset: 0,
-        };
+        const params = { model: 'Challenge', limit: 10, offset: 0 };
+        if (debouncedName.trim()) params['search[name]'] = debouncedName.trim();
+        if (debouncedDesc.trim()) params['search[description]'] = debouncedDesc.trim();
         if (selectedType !== 'all') params['search[type]'] = selectedType;
         if (selectedCategory !== 'all') params['search[category]'] = selectedCategory;
         const response = await searchModels(params);
-
-        if (response.code === 200) {
-          const results = response.data.models || [];
-          return results.map(processFlags);
+        if (!cancelled && response.code === 200) {
+          setSearchResults((response.data.models || []).map(processFlags));
         }
-        return [];
       } catch (error) {
-        toast.danger({ description: error.message || t('admin.challenge.toast.searchFailed') });
-        return [];
+        if (!cancelled) {
+          toast.danger({ description: error.message || t('admin.challenge.toast.searchFailed') });
+          setSearchResults([]);
+        }
+      } finally {
+        if (!cancelled) setSearchLoading(false);
       }
-    },
-    { delay: 300, minLength: 1 }
-  );
-
-  // 搜索结果和模式
-  const searchResults = rawSearchResults || [];
-  const isSearchMode = searchQuery.trim().length > 0;
+    };
+    doSearch();
+    return () => { cancelled = true; };
+  }, [debouncedName, debouncedDesc, selectedType, selectedCategory]);
 
   const fetchCategories = async () => {
     try {
@@ -158,13 +163,15 @@ function ChallengesManagement() {
   const handleFilterTypeChange = (type) => {
     setSelectedType(type);
     setCurrentPage(1);
-    setSearchQuery('');
+    setNameQuery('');
+    setDescQuery('');
   };
 
   const handleFilterCategoryChange = (category) => {
     setSelectedCategory(category);
     setCurrentPage(1);
-    setSearchQuery('');
+    setNameQuery('');
+    setDescQuery('');
   };
 
   const handleAddChallenge = () => {
@@ -468,10 +475,12 @@ function ChallengesManagement() {
         onTestChallenge={handleTestChallenge}
         onFilterTypeChange={handleFilterTypeChange}
         onFilterCategoryChange={handleFilterCategoryChange}
-        searchQuery={searchQuery}
+        nameQuery={nameQuery}
+        descQuery={descQuery}
         searchLoading={searchLoading}
         isSearchMode={isSearchMode}
-        onSearchChange={setSearchQuery}
+        onNameChange={setNameQuery}
+        onDescChange={setDescQuery}
       />
 
       <AdminChallengeModal
