@@ -77,7 +77,9 @@ function AdminContestTeams() {
         if (!cancelled) {
           const contestId = parseInt(id, 10);
           const results = response.data.models || [];
-          setSearchResults(Number.isFinite(contestId) ? results.filter((item) => item.contest_id === contestId) : results);
+          setSearchResults(
+            Number.isFinite(contestId) ? results.filter((item) => item.contest_id === contestId) : results
+          );
         }
       } catch (error) {
         if (!cancelled) {
@@ -90,7 +92,9 @@ function AdminContestTeams() {
       }
     };
     doSearch();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [debouncedName, debouncedDesc]);
 
   // Detail dialog state

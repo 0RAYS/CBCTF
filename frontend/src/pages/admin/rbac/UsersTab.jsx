@@ -122,7 +122,9 @@ function UsersTab() {
       }
     };
     doSearch();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [debouncedName, debouncedEmail, debouncedDesc]);
 
   useEffect(() => {

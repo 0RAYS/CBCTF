@@ -102,7 +102,9 @@ function ChallengesManagement() {
       }
     };
     doSearch();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [debouncedName, debouncedDesc, selectedType, selectedCategory]);
 
   const fetchCategories = async () => {

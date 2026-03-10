@@ -105,7 +105,7 @@ function Modal({
       // 恢复焦点到触发元素
       triggerRef.current?.focus();
     };
-  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   // 根据size确定宽度
   const sizeClasses = {
