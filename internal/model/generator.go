@@ -12,9 +12,9 @@ type Generator struct {
 	Contest     Contest   `json:"-"`
 	Name        string    `json:"pod_name"`
 	Success     int64     `json:"success"`
-	SuccessLast time.Time `json:"success_last"`
+	SuccessLast time.Time `gorm:"default:null" json:"success_last"`
 	Failure     int64     `json:"failure"`
-	FailureLast time.Time `json:"failure_last"`
+	FailureLast time.Time `gorm:"default:null" json:"failure_last"`
 	BaseModel
 }
 
