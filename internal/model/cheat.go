@@ -42,7 +42,7 @@ type Cheat struct {
 	Checked    bool            `json:"checked"`
 	Hash       string          `gorm:"type:varchar(32);index" json:"hash"`
 	Comment    string          `json:"comment"`
-	Time       time.Time       `json:"time"`
+	Time       time.Time       `gorm:"default:null" json:"time"`
 	BaseModel
 }
 

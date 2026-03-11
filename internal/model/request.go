@@ -9,7 +9,7 @@ import (
 // BelongsTo Device
 type Request struct {
 	IP        string         `json:"ip"`
-	Time      time.Time      `json:"time"`
+	Time      time.Time      `gorm:"default:null" json:"time"`
 	Method    string         `json:"method"`
 	Path      string         `json:"path"`
 	URL       string         `json:"url"`

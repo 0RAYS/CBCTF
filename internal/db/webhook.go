@@ -24,16 +24,14 @@ type CreateWebhookOptions struct {
 
 func (c CreateWebhookOptions) Convert2Model() model.Model {
 	return model.Webhook{
-		Name:        c.Name,
-		URL:         c.URL,
-		Method:      c.Method,
-		Headers:     c.Headers,
-		Timeout:     c.Timeout,
-		Retry:       c.Retry,
-		On:          c.On,
-		Events:      c.Events,
-		SuccessLast: time.Now(),
-		FailureLast: time.Now(),
+		Name:    c.Name,
+		URL:     c.URL,
+		Method:  c.Method,
+		Headers: c.Headers,
+		Timeout: c.Timeout,
+		Retry:   c.Retry,
+		On:      c.On,
+		Events:  c.Events,
 	}
 }
 

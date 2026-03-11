@@ -17,9 +17,9 @@ type Webhook struct {
 	On               bool             `json:"on"`
 	Events           StringList       `gorm:"type:json" json:"events"`
 	Success          int64            `json:"success"`
-	SuccessLast      time.Time        `json:"success_last"`
+	SuccessLast      time.Time        `gorm:"default:null" json:"success_last"`
 	Failure          int64            `json:"failure"`
-	FailureLast      time.Time        `json:"failure_last"`
+	FailureLast      time.Time        `gorm:"default:null" json:"failure_last"`
 	BaseModel
 }
 
