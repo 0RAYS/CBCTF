@@ -113,20 +113,6 @@ type NetworkPolicy struct {
 	To   []*netv1.IPBlock `json:"to"`
 }
 
-var DefaultNetworkPolicy = NetworkPolicy{
-	To: []*netv1.IPBlock{
-		{
-			CIDR: "0.0.0.0/0",
-			Except: []string{
-				"10.0.0.0/8",
-				"172.16.0.0/12",
-				"192.168.0.0/16",
-				"100.64.0.0/10",
-			},
-		},
-	},
-}
-
 type NetworkPolicies []NetworkPolicy
 
 func (n NetworkPolicies) Value() (driver.Value, error) {
