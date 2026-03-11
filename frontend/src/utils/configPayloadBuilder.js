@@ -35,7 +35,6 @@ export function buildPayload(config) {
     k8s_frp_frps: config.k8s.frp.frps,
     k8s_frp_nginx: config.k8s.frp.nginx,
     k8s_frp_on: config.k8s.frp.on,
-    k8s_generator_worker: config.k8s.generator_worker,
     k8s_namespace: config.k8s.namespace,
     k8s_tcpdump: config.k8s.tcpdump,
     log_level: config.log.level,

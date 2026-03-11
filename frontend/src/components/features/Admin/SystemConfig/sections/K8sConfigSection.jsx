@@ -45,16 +45,6 @@ export function K8sConfigSection({ config, updateConfig }) {
           })
         }
       />
-      <ConfigField
-        label={t('admin.system.labels.k8sWorker')}
-        type="number"
-        value={config.k8s.generator_worker}
-        onChange={(value) =>
-          updateConfig((draft) => {
-            draft.k8s.generator_worker = sanitizeNumber(value, config.k8s.generator_worker);
-          })
-        }
-      />
 
       <div className="border-b border-neutral-300/20" />
 

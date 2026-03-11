@@ -1779,7 +1779,6 @@
         "k8sConfig": "Kubeconfig Path",
         "k8sNamespace": "Namespace",
         "k8sTcpdump": "TCPdump Image",
-        "k8sWorker": "Pods = len(nodes) * rate * len(challenges)",
         "externalNetwork": "External Network",
         "frp": "Frp",
         "frpOn": "Use Frp to Expose Victims",

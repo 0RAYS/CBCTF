@@ -84,8 +84,6 @@ k8s:
             to: 60000
             exclude:
               - 50000
-  # (len(nodes) * generator_worker) pods for each dynamic challenge
-  generator_worker: 2
 cheat:
   ip:
     whitelist:
