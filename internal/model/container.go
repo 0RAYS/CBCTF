@@ -4,6 +4,7 @@ package model
 // BelongsTo Pod
 type Container struct {
 	PodID       uint       `json:"pod_id"`
+	Pod         Pod        `json:"-"`
 	Name        string     `json:"name"`
 	Image       string     `json:"image"`
 	CPU         float32    `json:"cpu"`

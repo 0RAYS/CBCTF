@@ -25,9 +25,11 @@ const (
 // HasMany TeamFlag
 type ContestFlag struct {
 	ContestID          uint             `json:"contest_id"`
+	Contest            Contest          `json:"-"`
 	ContestChallengeID uint             `json:"contest_challenge_id"`
 	ContestChallenge   ContestChallenge `json:"-"`
 	ChallengeFlagID    uint             `json:"challenge_flag_id"`
+	ChallengeFlag      ChallengeFlag    `json:"-"`
 	Submissions        []Submission     `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	TeamFlags          []TeamFlag       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Value              string           `json:"value"`
