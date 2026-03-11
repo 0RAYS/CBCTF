@@ -121,6 +121,7 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 						if err != nil {
 							return model.Victim{}, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "IP", "Error": err.Error()}}
 						}
+						subnet.ExcludeIps = append(subnet.ExcludeIps, lanIP)
 						if subnet.NatGateway == nil {
 							subnet.NatGateway = &model.NatGateway{
 								Name:  fmt.Sprintf("nat-%s", utils.RandStr(20)),
