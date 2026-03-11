@@ -70,7 +70,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 		// 首先创建 VPC 资源, 导致多跑一个循环
 		var policyRoutes []*kubeovnv1.PolicyRoute
 		for _, subnet := range victim.VPC.Subnets {
-			if subnet.NatGateway != nil {
+			if subnet.NatGateway != nil && len(subnet.NatGateway.EIP.SNats) > 0 {
 				policyRoutes = append(policyRoutes, &kubeovnv1.PolicyRoute{
 					Action:    kubeovnv1.PolicyRouteActionReroute,
 					Match:     fmt.Sprintf("ip4.src == %s", subnet.CIDRBlock),
