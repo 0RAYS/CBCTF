@@ -20,6 +20,7 @@ var (
 // BelongsTo Challenge
 // BelongsTo Docker
 // HasMany ContestFlag
+// HasMany TeamFlag
 type ChallengeFlag struct {
 	ChallengeID  uint           `json:"challenge_id"`
 	DockerID     sql.Null[uint] `gorm:"default:null" json:"docker_id"`

@@ -4,6 +4,9 @@ import (
 	"fmt"
 )
 
+// Pod K8s Pod 实例
+// BelongsTo Victim
+// HasMany Container
 type Pod struct {
 	VictimID   uint        `json:"victim_id"`
 	Containers []Container `gorm:"constraint:OnDelete:CASCADE;" json:"-"`

@@ -18,6 +18,9 @@ var DefaultGroupRoleMap = map[string]string{
 	UserGroupName:      UserRoleName,
 }
 
+// Group 用户组
+// ManyToMany User
+// BelongsTo Role
 type Group struct {
 	Users       []User `gorm:"many2many:user_groups;" json:"-"`
 	RoleID      uint   `gorm:"default:null;index" json:"role_id"`

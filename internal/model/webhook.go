@@ -4,6 +4,8 @@ import (
 	"time"
 )
 
+// Webhook
+// HasMany WebhookHistory
 type Webhook struct {
 	WebhookHistories []WebhookHistory `json:"-"`
 	Name             string           `json:"name"`

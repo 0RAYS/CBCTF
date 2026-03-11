@@ -77,6 +77,8 @@ var DefaultRolePermissionMap = map[string][]string{
 	},
 }
 
+// Role 角色
+// ManyToMany Permission
 type Role struct {
 	Permissions []Permission `gorm:"many2many:role_permissions;" json:"-"`
 	Name        string       `gorm:"type:varchar(255);uniqueIndex;not null" json:"name"`
