@@ -27,10 +27,6 @@ func RecordFileUpload(fileType string, size int64) {
 	FileUploadSize.WithLabelValues(fileType).Observe(float64(size))
 }
 
-func SetWebSocketConnections(n int) {
-	WebSocketConnections.Set(float64(n))
-}
-
 func RecordEmailSent(success bool) {
 	if success {
 		EmailSentTotal.WithLabelValues("success").Inc()

@@ -8,8 +8,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-	"CBCTF/internal/websocket"
-	wm "CBCTF/internal/websocket/model"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -25,16 +23,12 @@ func StartVictim(ctx *gin.Context) {
 	go func() {
 		_, ret := service.StartVictim(db.DB, user.ID, team.ID, contest.ID, contestChallenge.ID, challenge.ID)
 		if !ret.OK {
-			websocket.Send(user.ID, wm.ErrorLevel, wm.StartVictimWSType, "Start Victim", "Failed")
 			victim, ret := db.InitVictimRepo(db.DB).HasAliveVictim(team.ID, challenge.ID)
 			if !ret.OK {
 				return
 			}
 			service.StopVictim(db.DB, victim)
-			return
 		}
-		websocket.Send(user.ID, wm.SuccessLevel, wm.StartVictimWSType, "Start Victim", "Done")
-		return
 	}()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())

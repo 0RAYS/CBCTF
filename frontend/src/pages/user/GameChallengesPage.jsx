@@ -27,7 +27,6 @@ import { getContestNotices } from '../../api/contest';
 import Loading from '../../components/common/Loading';
 import EmptyState from '../../components/common/EmptyState';
 import { Button } from '../../components/common';
-import { useWebSocket } from '../../components/common/WebSocketProvider.jsx';
 import { useTranslation } from 'react-i18next';
 
 // 计算比赛状态
@@ -101,7 +100,6 @@ function GameChallengesPage() {
 
   // 分页配置
   const pageSize = 10;
-  const { addMessageHandler } = useWebSocket();
 
   const selectedChallengeRef = useRef(null);
   const pollingIntervalRef = useRef(null);
@@ -145,34 +143,6 @@ function GameChallengesPage() {
       stopPolling();
     }
   }, [selectedChallenge]);
-
-  useEffect(() => {
-    return addMessageHandler((data) => {
-      if (data.type === 'start_victim' || data.type === 'stop_victim' || data.type === 'generate_attachment') {
-        switch (data.level) {
-          case 'error':
-            toast.danger({ title: data.title, description: data.msg });
-            break;
-          case 'warning':
-            toast.warning({ title: data.title, description: data.msg });
-            break;
-          case 'success':
-            toast.success({ title: data.title, description: data.msg });
-            break;
-          case 'info':
-            toast.info({ title: data.title, description: data.msg });
-            break;
-          default:
-            toast.default({ title: data.title, description: data.msg });
-            break;
-        }
-        if (data.type === 'start_victim' || data.type === 'stop_victim') {
-          stopPolling();
-        }
-        refreshChallengeStatus();
-      }
-    });
-  }, [addMessageHandler]);
 
   // 获取比赛信息和题目列表
   useEffect(() => {

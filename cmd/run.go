@@ -11,7 +11,6 @@ import (
 	"CBCTF/internal/router"
 	"CBCTF/internal/task"
 	"CBCTF/internal/webhook"
-	"CBCTF/internal/websocket"
 	"context"
 	"errors"
 	"fmt"
@@ -40,7 +39,6 @@ func run() {
 	k8s.Init()
 	email.Init()
 	webhook.Init()
-	websocket.Init()
 	task.Init()
 	cron.Init()
 

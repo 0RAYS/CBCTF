@@ -33,7 +33,6 @@ func Init() {
 func Start() {
 	log.Logger.Info("Cron started")
 	collectSystemMetrics(c)
-	checkWSConnection(c)
 	closeTimeoutVictims(c)
 	closeUnCtrlVictims(c)
 	ClearEmptyTeam(c)

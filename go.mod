@@ -24,7 +24,6 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
 	github.com/gopacket/gopacket v1.5.0
-	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674
 	github.com/hibiken/asynq v0.26.0
 	github.com/k8snetworkplumbingwg/network-attachment-definition-client v1.7.7
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
@@ -98,6 +97,7 @@ require (
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/goccy/go-yaml v1.19.2 // indirect
 	github.com/google/gnostic-models v0.7.1 // indirect
+	github.com/gorilla/websocket v1.5.4-0.20250319132907-e064f32e3674 // indirect
 	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect

@@ -6,8 +6,6 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
-	"CBCTF/internal/websocket"
-	wsm "CBCTF/internal/websocket/middleware"
 	"fmt"
 	"net/http"
 	"strings"
@@ -29,11 +27,6 @@ func Init() *gin.Engine {
 	router.MaxMultipartMemory = int64(config.Env.Gin.Upload.Max << 20)
 
 	router.Use(gin.Recovery(), middleware.Cors())
-
-	{
-		// 不可接入其他中间件
-		router.GET("/ws", wsm.SetTrace, wsm.SetMagic, wsm.WSAuth, websocket.WS)
-	}
 
 	{
 		router.GET("/", func(ctx *gin.Context) {

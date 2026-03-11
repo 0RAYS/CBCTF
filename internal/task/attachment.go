@@ -4,8 +4,6 @@ import (
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
-	"CBCTF/internal/websocket"
-	wm "CBCTF/internal/websocket/model"
 	"context"
 	"fmt"
 	"time"
@@ -48,9 +46,7 @@ func HandleGenAttachmentTask(_ context.Context, t *asynq.Task) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	if ret := k8s.GenAttachment(ctx, payload.Challenge, payload.TeamID, payload.Flags); !ret.OK {
-		websocket.Send(payload.UserID, wm.ErrorLevel, wm.GenerateAttachmentWSType, "Generate Attachment", "Failed")
 		return fmt.Errorf("generate attachment failed: %s", ret.Msg)
 	}
-	websocket.Send(payload.UserID, wm.SuccessLevel, wm.GenerateAttachmentWSType, "Generate Attachment", "Done")
 	return nil
 }

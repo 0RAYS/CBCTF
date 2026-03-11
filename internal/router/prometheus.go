@@ -38,7 +38,6 @@ func RegisterMetricsRouter(router *gin.Engine) {
 	registerer.MustRegister(p.UserLoginTotal)
 	registerer.MustRegister(p.FileUploadTotal)
 	registerer.MustRegister(p.FileUploadSize)
-	registerer.MustRegister(p.WebSocketConnections)
 	registerer.MustRegister(p.EmailSentTotal)
 	registerer.MustRegister(p.RateLimitHits)
 	registerer.MustRegister(p.CheatDetectionsTotal)
