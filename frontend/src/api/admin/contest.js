@@ -397,3 +397,22 @@ export const getIpInfo = (ip) => {
     params: { ip },
   });
 };
+
+// 获取附件生成器列表
+export const getContestGenerators = (contestId, params = { limit: 20, offset: 0 }) => {
+  return request({ url: `/admin/contests/${contestId}/generators`, method: 'GET', params });
+};
+
+// 启动附件生成器
+export const startContestGenerators = (contestId, challenges) => {
+  return request({ url: `/admin/contests/${contestId}/generators`, method: 'POST', data: { challenges } });
+};
+
+// 停止附件生成器
+export const stopContestGenerators = (contestId, generatorIds) => {
+  return request({
+    url: `/admin/contests/${contestId}/generators`,
+    method: 'DELETE',
+    data: { generators: generatorIds },
+  });
+};
