@@ -2,8 +2,8 @@ package cron
 
 import (
 	"CBCTF/internal/db"
+	"CBCTF/internal/model"
 	"CBCTF/internal/service"
-	"errors"
 	"sync"
 	"time"
 
@@ -14,11 +14,11 @@ import (
 // 正常情况下该定时任务无意义, 每次有新解出时即更新 current_score 和 solvers
 // 当 submissions 且 model.Submission.Solved == true 时的数据减少 (队伍解散 引发的数据删除), 该函数才有意义
 func updateFlagScore(c *cron.Cron) {
-	function := exec("UpdateFlagScore", func() error {
+	function := exec("UpdateFlagScore", func() model.RetVal {
 		contestRepo := db.InitContestRepo(db.DB)
 		contests, _, ret := contestRepo.List(-1, -1)
 		if !ret.OK {
-			return errors.New(ret.Msg)
+			return ret
 		}
 		for _, contest := range contests {
 			if time.Now().Sub(contest.Start.Add(contest.Duration)) > 90*time.Minute {
@@ -55,7 +55,7 @@ func updateFlagScore(c *cron.Cron) {
 				}
 			}
 		}
-		return nil
+		return model.SuccessRetVal()
 	})
 	function()
 	c.Schedule(cron.Every(time.Hour), cron.FuncJob(function))

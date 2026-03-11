@@ -4,9 +4,9 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"CBCTF/internal/service"
 	"context"
-	"errors"
 	"slices"
 	"strconv"
 	"time"
@@ -16,18 +16,18 @@ import (
 
 // closeTimeoutVictims 关闭超时的靶机
 func closeTimeoutVictims(c *cron.Cron) {
-	function := exec("CloseTimeoutVictims", func() error {
+	function := exec("CloseTimeoutVictims", func() model.RetVal {
 		repo := db.InitVictimRepo(db.DB)
 		victims, _, ret := repo.List(-1, -1)
 		if !ret.OK {
-			return errors.New(ret.Msg)
+			return ret
 		}
 		for _, victim := range victims {
 			if victim.Start.Add(victim.Duration).Before(time.Now()) {
 				service.StopVictim(db.DB, victim)
 			}
 		}
-		return nil
+		return model.SuccessRetVal()
 	})
 	function()
 	c.Schedule(cron.Every(5*time.Minute), cron.FuncJob(function))
@@ -35,13 +35,13 @@ func closeTimeoutVictims(c *cron.Cron) {
 
 // closeUnCtrlVictims 关闭数据库中记录关闭, 但仍在运行的靶机
 func closeUnCtrlVictims(c *cron.Cron) {
-	function := exec("CloseUnCtrlVictims", func() error {
+	function := exec("CloseUnCtrlVictims", func() model.RetVal {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		pods, ret := k8s.GetPodList(ctx)
 		cancel()
 		if !ret.OK {
 			log.Logger.Warningf("Failed to get Victim %v", ret)
-			return errors.New(ret.Msg)
+			return ret
 		}
 		idL := make([]string, 0)
 		victimRepo := db.InitVictimRepo(db.DB)
@@ -67,7 +67,7 @@ func closeUnCtrlVictims(c *cron.Cron) {
 			k8s.DeletePodList(ctx, map[string]string{"victim_id": id})
 			cancel()
 		}
-		return nil
+		return model.SuccessRetVal()
 	})
 	function()
 	c.Schedule(cron.Every(time.Hour), cron.FuncJob(function))

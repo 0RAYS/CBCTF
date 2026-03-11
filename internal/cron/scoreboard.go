@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/model"
 	"CBCTF/internal/service"
-	"errors"
 	"math"
 	"slices"
 	"time"
@@ -14,11 +13,11 @@ import (
 
 // updateTeamRanking 全量更新 model.Team 的分数和排名
 func updateTeamRanking(c *cron.Cron) {
-	function := exec("UpdateTeamRanking", func() error {
+	function := exec("UpdateTeamRanking", func() model.RetVal {
 		repo := db.InitContestRepo(db.DB)
 		contests, _, ret := repo.List(-1, -1, db.GetOptions{Conditions: map[string]any{"hidden": false}})
 		if !ret.OK {
-			return errors.New(ret.Msg)
+			return ret
 		}
 		for _, contest := range contests {
 			if time.Now().Sub(contest.Start.Add(contest.Duration)) > time.Minute*10 {
@@ -26,7 +25,7 @@ func updateTeamRanking(c *cron.Cron) {
 			}
 			service.UpdateTeamRanking(db.DB, contest, -1, -1)
 		}
-		return nil
+		return model.SuccessRetVal()
 	})
 	function()
 	c.Schedule(cron.Every(5*time.Minute), cron.FuncJob(function))
@@ -34,13 +33,13 @@ func updateTeamRanking(c *cron.Cron) {
 
 // updateUserRanking 全量更新 model.User 的分数和排名
 func updateUserRanking(c *cron.Cron) {
-	function := exec("UpdateUserRanking", func() error {
+	function := exec("UpdateUserRanking", func() model.RetVal {
 		userRepo := db.InitUserRepo(db.DB)
 		users, _, ret := userRepo.List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"banned": false},
 		})
 		if !ret.OK {
-			return errors.New(ret.Msg)
+			return ret
 		}
 		userIDs := make([]uint, len(users))
 		for i, user := range users {
@@ -49,7 +48,7 @@ func updateUserRanking(c *cron.Cron) {
 
 		solvedContestFlags, ret := db.InitContestFlagRepo(db.DB).GetUserSolvedContestFlags(userIDs...)
 		if !ret.OK {
-			return errors.New(ret.Msg)
+			return ret
 		}
 
 		// 构建 userID -> solvedContestFlags 映射
@@ -69,7 +68,7 @@ func updateUserRanking(c *cron.Cron) {
 			Conditions: map[string]any{"id": contestIDL},
 		})
 		if !ret.OK {
-			return errors.New(ret.Msg)
+			return ret
 		}
 		blood := make(map[uint]bool)
 		for _, contest := range contests {
@@ -105,7 +104,7 @@ func updateUserRanking(c *cron.Cron) {
 			})
 		}
 		service.UpdateUserRanking(db.DB, -1, -1)
-		return nil
+		return model.SuccessRetVal()
 	})
 	function()
 	c.Schedule(cron.Every(3*time.Hour), cron.FuncJob(function))
