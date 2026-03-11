@@ -113,6 +113,10 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
           if (showSuccessToast) {
             toast.success({ description: t('admin.challenge.testModal.toast.statusRefreshSuccess') });
           }
+          // Pod 仍在启动中（页面刷新后恢复）→ 自动开始轮询
+          if (response.data.remote?.status === 'Pending') {
+            startPolling(challenge.id);
+          }
         }
       } catch (error) {
         toast.danger({ description: error.message || t('admin.challenge.testModal.toast.fetchStatusFailed') });
@@ -120,7 +124,7 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
         setLoading((prev) => ({ ...prev, status: false }));
       }
     },
-    [challenge?.id, t]
+    [challenge?.id, startPolling, t]
   );
 
   // 当弹窗打开时获取初始状态
@@ -244,7 +248,7 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
   // 靶机部分的渲染
   const renderInstanceContent = useCallback(() => {
     const isRunning = testStatus?.remote?.status === 'Running';
-    const isLaunching = loading.starting && !isRunning;
+    const isLaunching = (loading.starting || testStatus?.remote?.status === 'Pending') && !isRunning;
     const targets = testStatus?.remote?.target || [];
 
     if (!testStatus && !isLaunching) return null;

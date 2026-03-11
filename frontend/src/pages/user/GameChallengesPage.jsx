@@ -66,6 +66,7 @@ const transformChallengeData = (challenge) => {
     hasInstance: challenge.type === 'pods',
     hasAttachments: challenge.type === 'dynamic',
     instanceRunning: challenge.remote.status === 'Running',
+    instancePending: challenge.remote.status === 'Pending',
     instanceIP: challenge.remote.target || [''],
     instanceDuration: challenge.remote.remaining || 0,
     instanceTimeLeft: challenge.remote.remaining || 0,
@@ -270,6 +271,7 @@ function GameChallengesPage() {
           isInitialized: statusRes.data.init,
           isSolved: statusRes.data.solved,
           instanceRunning: statusRes.data.remote.status === 'Running',
+          instancePending: statusRes.data.remote.status === 'Pending',
           instanceIP: statusRes.data.remote.target || [''],
           instanceDuration: statusRes.data.remote.remaining || 0,
           instanceTimeLeft: statusRes.data.remote.remaining || 0,
@@ -395,6 +397,7 @@ function GameChallengesPage() {
           isInitialized: statusRes.data.init, // 是否已初始化
           isSolved: statusRes.data.solved,
           instanceRunning: statusRes.data.remote.status === 'Running',
+          instancePending: statusRes.data.remote.status === 'Pending',
           instanceIP: statusRes.data.remote.target || [''],
           instanceTimeLeft: statusRes.data.remote.remaining || 0,
           instanceDuration: statusRes.data.remote.duration || 3600,
@@ -402,6 +405,11 @@ function GameChallengesPage() {
         };
 
         setSelectedChallenge(updatedChallenge);
+
+        // 页面刷新后 Pod 仍在启动中 → 自动开始轮询
+        if (statusRes.data.remote.status === 'Pending') {
+          startPolling();
+        }
       }
     } catch (error) {
       setSelectedChallenge(challenge); // 即使失败也显示题目

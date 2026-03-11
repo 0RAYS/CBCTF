@@ -319,6 +319,7 @@ func GetVictimStatus(tx *gorm.DB, teamID uint, challenge model.Challenge) gin.H 
 	}
 	targets := victim.RemoteAddr()
 	if len(targets) == 0 {
+		data["status"] = "Pending"
 		return data
 	}
 	data["target"] = targets
