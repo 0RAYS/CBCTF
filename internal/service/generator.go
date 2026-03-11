@@ -9,6 +9,7 @@ import (
 	"CBCTF/internal/utils"
 	"context"
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"math/big"
 	"time"
@@ -26,29 +27,30 @@ func StartContestGenerators(tx *gorm.DB, contest model.Contest, form dto.StartGe
 	if !ret.OK {
 		return ret
 	}
-	contestChallengeRepo := db.InitContestChallengeRepo(tx)
-	generatorRepo := db.InitGeneratorRepo(tx)
 	for _, challenge := range challenges {
-		_, ret = contestChallengeRepo.Get(db.GetOptions{
+		_, ret = db.InitContestChallengeRepo(tx).Get(db.GetOptions{
 			Conditions: map[string]any{"contest_id": contest.ID, "challenge_id": challenge.ID},
 		})
 		if !ret.OK {
 			continue
 		}
-		generator, ret := generatorRepo.Create(db.CreateGeneratorOptions{
-			ChallengeID: challenge.ID,
-			ContestID:   contest.ID,
-			Name:        fmt.Sprintf("gen-%d-%d-%s", contest.ID, challenge.ID, utils.RandStr(6)),
+		_ = tx.Transaction(func(tx2 *gorm.DB) error {
+			generator, ret := db.InitGeneratorRepo(tx2).Create(db.CreateGeneratorOptions{
+				ChallengeID: challenge.ID,
+				ContestID:   contest.ID,
+				Name:        fmt.Sprintf("gen-%d-%d-%s", contest.ID, challenge.ID, utils.RandStr(6)),
+			})
+			if !ret.OK {
+				return errors.New(ret.Msg)
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+			_, ret = k8s.StartGenerator(ctx, challenge, generator)
+			cancel()
+			if !ret.OK {
+				return errors.New(ret.Msg)
+			}
+			return nil
 		})
-		if !ret.OK {
-			return ret
-		}
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-		_, ret = k8s.StartGenerator(ctx, challenge, generator)
-		cancel()
-		if !ret.OK {
-			return ret
-		}
 	}
 	return model.SuccessRetVal()
 }

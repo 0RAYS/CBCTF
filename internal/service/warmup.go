@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 	"context"
+	"errors"
 	"fmt"
 	"slices"
 	"strings"
@@ -145,25 +146,27 @@ func StartContestVictims(tx *gorm.DB, contest model.Contest, form dto.StartConte
 	if len(contestChallenges) == 0 {
 		return model.SuccessRetVal()
 	}
-	victimRepo := db.InitVictimRepo(tx)
 	for _, contestChallenge := range contestChallenges {
 		for _, team := range teams {
 			if CheckIfSolved(tx, team, contestChallenge.ContestFlags) {
 				continue
 			}
-			if !CheckIfGenerated(tx, team, contestChallenge.ContestFlags) {
-				if _, ret = CreateTeamFlag(tx, team, contest, contestChallenge); !ret.OK {
-					continue
+			_ = tx.Transaction(func(tx2 *gorm.DB) error {
+				if !CheckIfGenerated(tx2, team, contestChallenge.ContestFlags) {
+					if _, ret = CreateTeamFlag(tx2, team, contest, contestChallenge); !ret.OK {
+						return errors.New(ret.Msg)
+					}
 				}
-			}
-			_, ret = StartVictim(tx, team.CaptainID, team.ID, contest.ID, contestChallenge.ID, contestChallenge.ChallengeID)
-			if !ret.OK {
-				victim, ret := victimRepo.HasAliveVictim(team.ID, contestChallenge.ChallengeID)
+				_, ret = StartVictim(tx2, team.CaptainID, team.ID, contest.ID, contestChallenge.ID, contestChallenge.ChallengeID)
 				if !ret.OK {
-					continue
+					victim, ret := db.InitVictimRepo(tx2).HasAliveVictim(team.ID, contestChallenge.ChallengeID)
+					if !ret.OK {
+						return errors.New(ret.Msg)
+					}
+					StopVictim(tx2, victim)
 				}
-				StopVictim(tx, victim)
-			}
+				return nil
+			})
 		}
 	}
 	return model.SuccessRetVal()
