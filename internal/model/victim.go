@@ -31,7 +31,7 @@ type Victim struct {
 	UserID             uint             `json:"user_id"`
 	User               User             `json:"-"`
 	Pods               []Pod            `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Start              time.Time        `json:"start"`
+	Start              time.Time        `gorm:"default:null" json:"start"`
 	Duration           time.Duration    `json:"duration"`
 	VPC                VPC              `gorm:"default:null;type:json" json:"-"`
 	Endpoints          Endpoints        `gorm:"default:null;type:json" json:"-"`
