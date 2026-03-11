@@ -125,6 +125,8 @@ const (
 
 	PermAdminVictimControl = "admin:victim:control"
 
+	PermAdminGeneratorControl = "admin:generator:control"
+
 	PermAdminFileList   = "admin:file:list"
 	PermAdminFileRead   = "admin:file:read"
 	PermAdminFileDelete = "admin:file:delete"
@@ -318,6 +320,11 @@ var RoutePermissions = map[string]string{
 	"POST /admin/contests/:contestID/victims":   PermAdminVictimControl,
 	"DELETE /admin/contests/:contestID/victims": PermAdminVictimControl,
 
+	// /admin/contests/:contestID/generators
+	"GET /admin/contests/:contestID/generators":    PermAdminGeneratorControl,
+	"POST /admin/contests/:contestID/generators":   PermAdminGeneratorControl,
+	"DELETE /admin/contests/:contestID/generators": PermAdminGeneratorControl,
+
 	// /admin/files
 	"GET /admin/files":         PermAdminFileList,
 	"DELETE /admin/files":      PermAdminFileDelete,
@@ -451,6 +458,8 @@ var Permissions = []Permission{
 	{Name: PermAdminImagePull, Resource: "admin:image", Operation: "pull", Description: "拉取镜像"},
 
 	{Name: PermAdminVictimControl, Resource: "admin:victim", Operation: "control", Description: "控制靶机"},
+
+	{Name: PermAdminGeneratorControl, Resource: "admin:generator", Operation: "control", Description: "控制附件生成器"},
 
 	{Name: PermAdminFileList, Resource: "admin:file", Operation: "list", Description: "查看文件列表"},
 	{Name: PermAdminFileRead, Resource: "admin:file", Operation: "read", Description: "查看文件详情"},

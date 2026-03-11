@@ -74,6 +74,10 @@ const (
 	ReadFlagEventType           = "read_flag"
 	SubmitFlagEventType         = "submit_flag"
 
+	CreateGeneratorEventType = "create_generator"
+	UpdateGeneratorEventType = "update_generator"
+	DeleteGeneratorEventType = "delete_generator"
+
 	UploadWriteUpEventType   = "upload_writeup"
 	DownloadWriteUpEventType = "download_writeup"
 
@@ -116,6 +120,7 @@ var EventTypes = []string{
 	DownloadAttachmentEventType, PullImageEventType, StartVictimEventType, IncreaseVictimEventType, StopVictimEventType,
 	DownloadTrafficEventType,
 	ReadFlagEventType, SubmitFlagEventType,
+	CreateGeneratorEventType, UpdateGeneratorEventType, DeleteGeneratorEventType,
 	UploadWriteUpEventType, DownloadWriteUpEventType,
 	DownloadFileEventType,
 	CreateRoleEventType, UpdateRoleEventType, DeleteRoleEventType,
