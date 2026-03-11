@@ -283,7 +283,7 @@ func Init() *gin.Engine {
 				)
 				adminChallengeTest.POST("/start",
 					middleware.CheckChallengeType(model.PodsChallengeType),
-					middleware.RateLimit("start_victim", 10, time.Minute), StartTestVictim,
+					middleware.RateLimit("test_victim", 10, time.Minute), StartTestVictim,
 				)
 				adminChallengeTest.POST("/stop", middleware.CheckChallengeType(model.PodsChallengeType), StopTestVictim)
 			}
