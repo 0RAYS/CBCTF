@@ -336,7 +336,7 @@ function ChallengeModal({
   // 靶机部分的渲染
   const renderInstanceContent = () => {
     const isRunning = challenge.instanceRunning;
-    const isLaunching = loading.launching && !isRunning;
+    const isLaunching = (loading.launching || challenge.instancePending) && !isRunning;
 
     return (
       <div className="space-y-3">
