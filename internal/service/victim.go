@@ -8,8 +8,10 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 	"context"
+	"crypto/rand"
 	"database/sql"
 	"fmt"
+	"math/big"
 	"slices"
 	"time"
 
@@ -68,37 +70,45 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 		networkDockerExposeDNat := make([]string, 0)
 		// SNat 去重
 		networkExternalSNat := make([]string, 0)
+		// port 去重
+		dnatPort := make([]int32, 0)
 		for _, docker := range challenge.Dockers {
 			for _, network := range docker.Networks {
 				subnet, ok := subnets[network.Name]
 				if !ok {
 					subnet = &model.Subnet{
-						DefName:   network.Name,
-						Name:      fmt.Sprintf("net-%d-%d-%s", contestChallengeID, userID, utils.RandStr(6)),
-						CIDRBlock: network.CIDR,
-						Gateway:   network.Gateway,
-						//ExcludeIps:   []string{network.Gateway, network.IP},
+						DefName:      network.Name,
+						Name:         fmt.Sprintf("net-%d-%d-%s", contestChallengeID, userID, utils.RandStr(6)),
+						CIDRBlock:    network.CIDR,
+						Gateway:      network.Gateway,
 						NetAttachDef: &model.NetAttachDef{Name: fmt.Sprintf("nad-%d-%d-%s", contestChallengeID, userID, utils.RandStr(6))},
 					}
 					vpc.Subnets = append(vpc.Subnets, subnet)
 					subnets[network.Name] = subnet
 				}
 				if network.External || len(docker.Exposes) > 0 {
-					eip := &model.EIP{
-						Name: fmt.Sprintf("eip-%s", utils.RandStr(20)),
-					}
+					snats := make([]*model.SNat, 0)
+					dnats := make([]*model.DNat, 0)
 					if network.External {
 						if !slices.Contains(networkExternalSNat, network.Name) {
-							eip.SNats = []*model.SNat{{Name: fmt.Sprintf("snat-%d-%d-%s", contestChallengeID, userID, utils.RandStr(6))}}
+							snats = []*model.SNat{{Name: fmt.Sprintf("snat-%d-%d-%s", contestChallengeID, userID, utils.RandStr(6))}}
 							networkExternalSNat = append(networkExternalSNat, network.Name)
 						}
 					}
 					for _, expose := range docker.Exposes {
 						key := fmt.Sprintf("%s-%d-%s", docker.Name, expose.Port, expose.Protocol)
 						if !slices.Contains(networkDockerExposeDNat, key) {
-							eip.DNats = append(eip.DNats, &model.DNat{
-								Name:         fmt.Sprintf("dnat-%d-%d-%s", contestChallengeID, userID, utils.RandStr(6)),
-								ExternalPort: expose.Port,
+							dnats = append(dnats, &model.DNat{
+								Name: fmt.Sprintf("dnat-%d-%d-%s", contestChallengeID, userID, utils.RandStr(6)),
+								ExternalPort: func() int32 {
+									for {
+										port, _ := rand.Int(rand.Reader, big.NewInt(65534))
+										if !slices.Contains(dnatPort, int32(port.Int64())) {
+											dnatPort = append(dnatPort, int32(port.Int64()))
+											return int32(port.Int64())
+										}
+									}
+								}(),
 								InternalIP:   network.IP,
 								InternalPort: expose.Port,
 								Protocol:     expose.Protocol,
@@ -106,16 +116,22 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 							networkDockerExposeDNat = append(networkDockerExposeDNat, key)
 						}
 					}
-					if len(eip.SNats) > 0 || len(eip.DNats) > 0 {
+					if len(snats) > 0 || len(dnats) > 0 {
 						lanIP, err := utils.GetLastIP(subnet.CIDRBlock)
 						if err != nil {
 							return model.Victim{}, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "IP", "Error": err.Error()}}
 						}
-						subnet.NatGateway = &model.NatGateway{
-							Name:  fmt.Sprintf("nat-%s", utils.RandStr(20)),
-							LanIP: lanIP,
+						if subnet.NatGateway == nil {
+							subnet.NatGateway = &model.NatGateway{
+								Name:  fmt.Sprintf("nat-%s", utils.RandStr(20)),
+								LanIP: lanIP,
+								EIP: &model.EIP{
+									Name: fmt.Sprintf("eip-%s", utils.RandStr(20)),
+								},
+							}
 						}
-						subnet.NatGateway.EIPs = append(subnet.NatGateway.EIPs, eip)
+						subnet.NatGateway.EIP.DNats = append(subnet.NatGateway.EIP.DNats, dnats...)
+						subnet.NatGateway.EIP.SNats = append(subnet.NatGateway.EIP.SNats, snats...)
 					}
 				}
 			}

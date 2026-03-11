@@ -125,37 +125,35 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 			podName := fmt.Sprintf("frpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6))
 			frpcConfig := fmt.Sprintf(frpcHeaderTemplate, frps.Host, frps.Port, frps.Token)
 			nginxConfig := ""
-			for _, eip := range subnet.NatGateway.EIPs {
-				for _, dnat := range eip.DNats {
-					exposedPort, ret := GetAvailableFrpsPort(frps.Host, portRange, dnat.Protocol)
-					if !ret.OK {
-						return nil, nil, ret
-					}
-					// 对于 TCP 协议, 启用 proxy_protocol
-					if protocol := strings.ToLower(dnat.Protocol); protocol == "tcp" {
-						frpcConfig += fmt.Sprintf(
-							frpcItemTemplate,
-							utils.RandStr(10), strings.ToLower(dnat.Protocol), "127.0.0.1", dnat.ExternalPort, exposedPort, proxyProtocol,
-						)
-						name := utils.RandStr(10)
-						nginxConfig += fmt.Sprintf(
-							nginxItemTemplate,
-							name, eip.IP, dnat.ExternalPort, dnat.ExternalPort, name,
-						)
-					} else {
-						frpcConfig += fmt.Sprintf(
-							frpcItemTemplate,
-							utils.RandStr(10), strings.ToLower(dnat.Protocol), eip.IP, dnat.ExternalPort, exposedPort, "",
-						)
-					}
-					newEndpoints = append(newEndpoints, model.Endpoint{
-						IP:       frps.Host,
-						Port:     exposedPort,
-						Protocol: dnat.Protocol,
-					})
-					log.Logger.Infof("Frpc started: %s:%d -> %s:%d", frps.Host, exposedPort, eip.IP, dnat.ExternalPort)
-					needFrpc = true
+			for _, dnat := range subnet.NatGateway.EIP.DNats {
+				exposedPort, ret := GetAvailableFrpsPort(frps.Host, portRange, dnat.Protocol)
+				if !ret.OK {
+					return nil, nil, ret
 				}
+				// 对于 TCP 协议, 启用 proxy_protocol
+				if protocol := strings.ToLower(dnat.Protocol); protocol == "tcp" {
+					frpcConfig += fmt.Sprintf(
+						frpcItemTemplate,
+						utils.RandStr(10), strings.ToLower(dnat.Protocol), "127.0.0.1", dnat.ExternalPort, exposedPort, proxyProtocol,
+					)
+					name := utils.RandStr(10)
+					nginxConfig += fmt.Sprintf(
+						nginxItemTemplate,
+						name, subnet.NatGateway.EIP.IP, dnat.ExternalPort, dnat.ExternalPort, name,
+					)
+				} else {
+					frpcConfig += fmt.Sprintf(
+						frpcItemTemplate,
+						utils.RandStr(10), strings.ToLower(dnat.Protocol), subnet.NatGateway.EIP.IP, dnat.ExternalPort, exposedPort, "",
+					)
+				}
+				newEndpoints = append(newEndpoints, model.Endpoint{
+					IP:       frps.Host,
+					Port:     exposedPort,
+					Protocol: dnat.Protocol,
+				})
+				log.Logger.Infof("Frpc started: %s:%d -> %s:%d", frps.Host, exposedPort, subnet.NatGateway.EIP.IP, dnat.ExternalPort)
+				needFrpc = true
 			}
 			if !needFrpc {
 				continue
