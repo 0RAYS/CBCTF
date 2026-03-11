@@ -34,7 +34,6 @@ import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Button } from '../../../../components/common';
-import { useWebSocket } from '../../../common/WebSocketProvider.jsx';
 import { useTranslation } from 'react-i18next';
 
 // 将 HintItem 组件移到外部，使用 React.memo 包装以避免不必要的重新渲染
@@ -124,7 +123,6 @@ function ChallengeModal({
   const timerRef = useRef(null);
   const prevRunningRef = useRef(challenge?.instanceRunning);
   const launchingTimeoutRef = useRef(null);
-  const { addMessageHandler } = useWebSocket();
 
   // Clear launching state when instanceRunning transitions false → true (via polling or WS)
   useEffect(() => {
@@ -148,18 +146,6 @@ function ChallengeModal({
       });
     }
   }, [error]);
-
-  useEffect(() => {
-    return addMessageHandler((data) => {
-      if (data.type === 'start_victim' || data.type === 'stop_victim') {
-        setLoading((prev) => ({ ...prev, ['launching']: false }));
-      }
-      if (data.type === 'generate_attachment') {
-        setLoading((prev) => ({ ...prev, ['resetting']: false }));
-        setLoading((prev) => ({ ...prev, ['initializing']: false }));
-      }
-    });
-  }, [addMessageHandler]);
 
   // 初始化时间
   useEffect(() => {
@@ -214,12 +200,7 @@ function ChallengeModal({
     } catch (err) {
       setError(err.message);
     } finally {
-      if (
-        !(
-          actionType === 'launching' ||
-          ((actionType === 'resetting' || actionType === 'initializing') && challenge.hasAttachments)
-        )
-      ) {
+      if (actionType !== 'launching') {
         setLoading((prev) => ({ ...prev, [actionType]: false }));
       }
     }

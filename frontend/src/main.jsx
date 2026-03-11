@@ -8,7 +8,6 @@ import './i18n';
 import { store } from './store';
 import { Provider } from 'react-redux';
 import ToastProvider from './components/common/ToastProvider';
-import { WebSocketProvider } from './components/common/WebSocketProvider';
 import ModalProvider from './components/common/ModalProvider';
 import ErrorBoundary from './components/common/ErrorBoundary';
 
@@ -17,12 +16,10 @@ createRoot(document.getElementById('root')).render(
     <ErrorBoundary>
       <ModalProvider>
         <Provider store={store}>
-          <WebSocketProvider>
             <ToastProvider position="bottom-right" maxToasts={5}>
               <App />
             </ToastProvider>
-          </WebSocketProvider>
-        </Provider>
+          </Provider>
       </ModalProvider>
     </ErrorBoundary>
   </StrictMode>

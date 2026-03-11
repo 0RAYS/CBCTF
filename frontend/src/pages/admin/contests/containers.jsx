@@ -23,7 +23,6 @@ import {
   IconSearch,
   IconRefresh,
 } from '@tabler/icons-react';
-import { useWebSocket } from '../../../components/common/WebSocketProvider.jsx';
 import { useTranslation } from 'react-i18next';
 import { searchModels } from '../../../api/admin/search.js';
 
@@ -88,7 +87,6 @@ function ContestContainers() {
     runningContainers: 0,
     stoppedContainers: 0,
   });
-  const { addMessageHandler } = useWebSocket();
   const { t, i18n } = useTranslation();
 
   const pageSize = 20; // 增加每页显示数量
@@ -158,31 +156,6 @@ function ContestContainers() {
       toast.danger({ description: error.message || t('admin.contests.containers.toast.fetchChallengesFailed') });
     }
   };
-
-  useEffect(() => {
-    return addMessageHandler((data) => {
-      if (data.type === 'start_victim' || data.type === 'stop_victim') {
-        switch (data.level) {
-          case 'error':
-            toast.danger({ title: data.title, description: data.msg });
-            break;
-          case 'warning':
-            toast.warning({ title: data.title, description: data.msg });
-            break;
-          case 'success':
-            toast.success({ title: data.title, description: data.msg });
-            break;
-          case 'info':
-            toast.info({ title: data.title, description: data.msg });
-            break;
-          default:
-            toast.default({ title: data.title, description: data.msg });
-            break;
-        }
-        fetchContainers();
-      }
-    });
-  }, [addMessageHandler]);
 
   useEffect(() => {
     fetchContainers();

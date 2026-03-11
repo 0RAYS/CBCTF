@@ -3,7 +3,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '../../../components/common';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { useWebSocket } from '../../common/WebSocketProvider.jsx';
 import { toast } from '../../../utils/toast';
 import { downloadBlobResponse } from '../../../utils/fileDownload';
 import {
@@ -46,25 +45,6 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
 
   // 倒计时定时器
   const timerRef = useRef(null);
-  const { addMessageHandler } = useWebSocket();
-
-  useEffect(() => {
-    return addMessageHandler((data) => {
-      if (data.type === 'start_victim' || data.type === 'stop_victim') {
-        setLoading((prev) => ({ ...prev, starting: false, stopping: false }));
-        // 刷新状态
-        fetchTestStatus(false);
-        // 显示WebSocket消息提示
-        const messages = {
-          start_victim: t('admin.challenge.testModal.toast.startCompleted'),
-          stop_victim: t('admin.challenge.testModal.toast.stopCompleted'),
-        };
-        if (messages[data.type]) {
-          toast.success({ description: messages[data.type] });
-        }
-      }
-    });
-  }, [addMessageHandler, t]);
 
   // 获取测试状态
   const fetchTestStatus = useCallback(
@@ -165,9 +145,7 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
       } catch (error) {
         toast.danger({ description: error.message || t('admin.challenge.testModal.toast.actionFailed') });
       } finally {
-        if (actionType !== 'starting' && actionType !== 'stopping') {
-          setLoading((prev) => ({ ...prev, [actionType]: false }));
-        }
+        setLoading((prev) => ({ ...prev, [actionType]: false }));
       }
     },
     [fetchTestStatus]

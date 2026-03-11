@@ -7,8 +7,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-	"CBCTF/internal/websocket"
-	wsm "CBCTF/internal/websocket/model"
 	"slices"
 
 	"github.com/gin-gonic/gin"
@@ -95,13 +93,7 @@ func StartContestVictims(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.StartVictimEventType)
 	contest := middleware.GetContest(ctx)
-	go func(selfID uint) {
-		if ret := service.StartContestVictims(db.DB, contest, form); !ret.OK {
-			websocket.Send(selfID, wsm.ErrorLevel, wsm.StartVictimWSType, "Victims Warmup", "Failed")
-			return
-		}
-		websocket.Send(selfID, wsm.SuccessLevel, wsm.StartVictimWSType, "Victims Warmup", "Done")
-	}(middleware.GetSelf(ctx).ID)
+	go service.StartContestVictims(db.DB, contest, form)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }
@@ -113,13 +105,7 @@ func StopContestVictims(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.StopVictimEventType)
-	go func(selfID uint) {
-		if ret := service.StopContestVictims(db.DB, form); !ret.OK {
-			websocket.Send(selfID, wsm.ErrorLevel, wsm.StopVictimWSType, "Victims Stop", "Failed")
-			return
-		}
-		websocket.Send(selfID, wsm.SuccessLevel, wsm.StopVictimWSType, "Victims Stop", "Done")
-	}(middleware.GetSelf(ctx).ID)
+	go service.StopContestVictims(db.DB, form)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }

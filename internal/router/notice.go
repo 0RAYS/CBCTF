@@ -6,10 +6,6 @@ import (
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
-	"CBCTF/internal/websocket"
-	wsm "CBCTF/internal/websocket/model"
-	"fmt"
-	"slices"
 
 	"github.com/gin-gonic/gin"
 )
@@ -54,21 +50,6 @@ func CreateNotice(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	go func() {
-		contestUserIDL, ret := db.InitUserRepo(db.DB).GetIDByContestID(contest.ID, -1, -1)
-		if !ret.OK {
-			return
-		}
-		idL := make([]uint, 0)
-		websocket.UserClientsMu.Lock()
-		for id := range websocket.UserClients {
-			if slices.Contains(contestUserIDL, id) {
-				idL = append(idL, id)
-			}
-		}
-		websocket.UserClientsMu.Unlock()
-		websocket.SendToClients(wsm.NoticeLevel, wsm.ContestNoticeWSType, fmt.Sprintf("Notice: %s", notice.Title), notice.Content, idL...)
-	}()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal(notice))
 }

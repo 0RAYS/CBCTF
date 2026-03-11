@@ -89,13 +89,6 @@ var (
 		[]string{"file_type"},
 	)
 
-	WebSocketConnections = prometheus.NewGauge(
-		prometheus.GaugeOpts{
-			Name: "cbctf_websocket_connections",
-			Help: "Current number of WebSocket connections",
-		},
-	)
-
 	EmailSentTotal = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "cbctf_email_sent_total",
