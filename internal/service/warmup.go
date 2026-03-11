@@ -128,7 +128,6 @@ func StartContestVictims(tx *gorm.DB, contest model.Contest, form dto.StartConte
 	}
 	teams, _, ret := db.InitTeamRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID, "id": form.Teams},
-		Preloads:   map[string]db.GetOptions{"Contest": {}},
 	})
 	if !ret.OK {
 		return ret
