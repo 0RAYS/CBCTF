@@ -47,9 +47,9 @@ function ContestGenerators() {
 
   const fetchDynamicChallenges = async () => {
     try {
-      const res = await getContestChallenges(contestId, { limit: 100, offset: 0 });
+      const res = await getContestChallenges(contestId, { limit: 100, offset: 0, type: 'dynamic' });
       const all = res.data?.challenges ?? [];
-      setDynamicChallenges(all.filter((c) => c.type === 'dynamic'));
+      setDynamicChallenges(all);
     } catch {
       // silent — modal will show empty list
     }
