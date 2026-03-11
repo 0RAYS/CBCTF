@@ -1,5 +1,7 @@
 package model
 
+// Container K8s 容器
+// BelongsTo Pod
 type Container struct {
 	PodID       uint       `json:"pod_id"`
 	Name        string     `json:"name"`

@@ -5,7 +5,7 @@ const NeverLoginPWD = "never_login_pwd"
 // User
 // ManyToMany Teams
 // ManyToMany Contests
-// HasMany Devices
+// ManyToMany Groups
 // HasMany Submissions
 type User struct {
 	Teams          []Team       `gorm:"many2many:user_teams;" json:"-"`

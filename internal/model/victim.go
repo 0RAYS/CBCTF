@@ -12,6 +12,13 @@ import (
 	"time"
 )
 
+// Victim 靶机实例
+// BelongsTo Challenge
+// BelongsTo Contest (nullable)
+// BelongsTo ContestChallenge (nullable)
+// BelongsTo Team (nullable)
+// BelongsTo User
+// HasMany Pod
 type Victim struct {
 	ChallengeID        uint             `json:"challenge_id"`
 	ContestID          sql.Null[uint]   `json:"contest_id"`

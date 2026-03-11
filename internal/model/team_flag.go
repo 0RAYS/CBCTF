@@ -3,6 +3,7 @@ package model
 // TeamFlag
 // BelongsTo Team
 // BelongsTo ContestFlag
+// BelongsTo ChallengeFlag
 type TeamFlag struct {
 	TeamID          uint        `json:"team_id"`
 	ContestFlagID   uint        `json:"contest_flag_id"`

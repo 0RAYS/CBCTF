@@ -7,7 +7,7 @@ import (
 // Team
 // BelongsTo Contest
 // ManyToMany User
-// ManyToMany Submission
+// HasMany Submission
 // HasMany TeamFlag
 type Team struct {
 	ContestID   uint         `gorm:"index:idx_name_contest,unique;not null" json:"contest_id"`

@@ -27,6 +27,7 @@ const (
 // HasMany ChallengeFlag
 // HasMany ContestChallenge
 // HasMany Submission
+// HasMany Docker
 type Challenge struct {
 	ChallengeFlags    []ChallengeFlag    `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	ContestChallenges []ContestChallenge `gorm:"constraint:OnDelete:CASCADE;" json:"-"`

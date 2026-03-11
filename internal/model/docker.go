@@ -15,6 +15,7 @@ const (
 )
 
 // Docker
+// BelongsTo Challenge
 // HasMany ChallengeFlag
 type Docker struct {
 	ChallengeID    uint            `json:"challenge_id"`
