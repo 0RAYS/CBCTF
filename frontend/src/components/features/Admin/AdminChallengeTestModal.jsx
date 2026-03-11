@@ -43,8 +43,59 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
   const [timeLeft, setTimeLeft] = useState(0);
   const [isCopied, setIsCopied] = useState({});
 
-  // 倒计时定时器
+  // 定时器 & 轮询 refs
   const timerRef = useRef(null);
+  const pollingIntervalRef = useRef(null);
+  const pollingTimeoutRef = useRef(null);
+  const isOpenRef = useRef(isOpen);
+
+  // 保持 isOpenRef 与 isOpen 同步，供轮询回调使用
+  useEffect(() => {
+    isOpenRef.current = isOpen;
+  }, [isOpen]);
+
+  const stopPolling = useCallback(() => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+    if (pollingTimeoutRef.current) {
+      clearTimeout(pollingTimeoutRef.current);
+      pollingTimeoutRef.current = null;
+    }
+  }, []);
+
+  // 仅在弹窗打开期间轮询；检测到 Running 后停止并更新状态
+  const startPolling = useCallback(
+    (challengeId) => {
+      stopPolling();
+      pollingIntervalRef.current = setInterval(async () => {
+        if (!isOpenRef.current) {
+          stopPolling();
+          return;
+        }
+        try {
+          const response = await getTestChallengeStatus(challengeId);
+          if (response.code === 200 && response.data.remote?.status === 'Running') {
+            stopPolling();
+            setTestStatus(response.data);
+            if (response.data.remote?.remaining) {
+              setTimeLeft(response.data.remote.remaining);
+            }
+            setLoading((prev) => ({ ...prev, starting: false }));
+          }
+        } catch {
+          // 忽略轮询中的网络错误
+        }
+      }, 5000);
+      // 3 分钟超时兜底
+      pollingTimeoutRef.current = setTimeout(() => {
+        stopPolling();
+        setLoading((prev) => ({ ...prev, starting: false }));
+      }, 3 * 60 * 1000);
+    },
+    [stopPolling]
+  );
 
   // 获取测试状态
   const fetchTestStatus = useCallback(
@@ -56,11 +107,9 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
         const response = await getTestChallengeStatus(challenge.id);
         if (response.code === 200) {
           setTestStatus(response.data);
-          // 根据实际API数据结构设置剩余时间
           if (response.data.remote?.remaining) {
             setTimeLeft(response.data.remote.remaining);
           }
-          // 如果是手动刷新，显示成功提示
           if (showSuccessToast) {
             toast.success({ description: t('admin.challenge.testModal.toast.statusRefreshSuccess') });
           }
@@ -71,29 +120,30 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
         setLoading((prev) => ({ ...prev, status: false }));
       }
     },
-    [challenge?.id]
+    [challenge?.id, t]
   );
 
-  // 当弹窗打开时获取状态
+  // 当弹窗打开时获取初始状态
   useEffect(() => {
     if (isOpen && challenge?.id) {
       fetchTestStatus(false);
     }
   }, [isOpen, challenge?.id, fetchTestStatus]);
 
-  // 当弹窗关闭时清理状态
+  // 当弹窗关闭时停止轮询并重置所有状态
   useEffect(() => {
     if (!isOpen) {
+      stopPolling();
+      setLoading({ status: false, downloading: false, starting: false, stopping: false });
       setTestStatus(null);
       setTimeLeft(0);
       setIsCopied({});
-      // 清理定时器
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
     }
-  }, [isOpen]);
+  }, [isOpen, stopPolling]);
 
   // 初始化时间
   useEffect(() => {
@@ -105,7 +155,6 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
   // 倒计时效果
   useEffect(() => {
     if (!testStatus || !isOpen) return;
-    // 根据实际API数据结构判断靶机是否运行
     const isRunning = testStatus.remote?.status === 'Running';
     if (!isRunning || !timeLeft) return;
 
@@ -130,26 +179,38 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
     };
   }, [testStatus?.remote?.status, isOpen, timeLeft]);
 
-  // 处理异步操作的通用函数
-  const handleAsyncAction = useCallback(
-    async (actionType, action, ...args) => {
-      setLoading((prev) => ({ ...prev, [actionType]: true }));
-      try {
-        const response = await action(...args);
-        if (response.code === 200) {
-          // 操作成功后刷新状态
-          await fetchTestStatus(false);
-          // 显示成功提示
-          toast.success({ description: t('admin.challenge.testModal.toast.actionSuccess') });
-        }
-      } catch (error) {
-        toast.danger({ description: error.message || t('admin.challenge.testModal.toast.actionFailed') });
-      } finally {
-        setLoading((prev) => ({ ...prev, [actionType]: false }));
+  // 启动测试靶机 — HTTP 成功后保持 loading，通过轮询等待 Running
+  const handleStartVictim = useCallback(async () => {
+    setLoading((prev) => ({ ...prev, starting: true }));
+    try {
+      const response = await startTestVictim(challenge.id);
+      if (response.code === 200) {
+        toast.success({ description: t('admin.challenge.testModal.toast.actionSuccess') });
+        startPolling(challenge.id);
+      } else {
+        setLoading((prev) => ({ ...prev, starting: false }));
       }
-    },
-    [fetchTestStatus]
-  );
+    } catch (error) {
+      toast.danger({ description: error.message || t('admin.challenge.testModal.toast.actionFailed') });
+      setLoading((prev) => ({ ...prev, starting: false }));
+    }
+  }, [challenge?.id, startPolling, t]);
+
+  // 停止测试靶机 — 后端同步执行，HTTP 返回后直接刷新状态
+  const handleStopVictim = useCallback(async () => {
+    setLoading((prev) => ({ ...prev, stopping: true }));
+    try {
+      const response = await stopTestVictim(challenge.id);
+      if (response.code === 200) {
+        await fetchTestStatus(false);
+        toast.success({ description: t('admin.challenge.testModal.toast.actionSuccess') });
+      }
+    } catch (error) {
+      toast.danger({ description: error.message || t('admin.challenge.testModal.toast.actionFailed') });
+    } finally {
+      setLoading((prev) => ({ ...prev, stopping: false }));
+    }
+  }, [challenge?.id, fetchTestStatus, t]);
 
   // 下载测试附件
   const handleDownloadAttachment = useCallback(async () => {
@@ -165,17 +226,7 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
     } finally {
       setLoading((prev) => ({ ...prev, downloading: false }));
     }
-  }, [challenge?.id]);
-
-  // 启动测试靶机
-  const handleStartVictim = () => {
-    handleAsyncAction('starting', startTestVictim, challenge.id);
-  };
-
-  // 停止测试靶机
-  const handleStopVictim = () => {
-    handleAsyncAction('stopping', stopTestVictim, challenge.id);
-  };
+  }, [challenge?.id, t]);
 
   // 复制IP地址
   const handleCopyIP = useCallback(
@@ -190,26 +241,32 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
     [t]
   );
 
-  // 靶机部分的渲染 - 完全仿照用户比赛时的样式
+  // 靶机部分的渲染
   const renderInstanceContent = useCallback(() => {
-    if (!testStatus) return null;
+    const isRunning = testStatus?.remote?.status === 'Running';
+    const isLaunching = loading.starting && !isRunning;
+    const targets = testStatus?.remote?.target || [];
 
-    // 根据实际API数据结构判断靶机状态
-    const isRunning = testStatus.remote?.status === 'Running';
-    const targets = testStatus.remote?.target || [];
+    if (!testStatus && !isLaunching) return null;
 
     return (
       <div className="space-y-3">
-        {/* 状态行 - 包含状态和操作按钮 */}
+        {/* 状态行 */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             {/* 状态指示器 */}
             <div className="flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full ${isRunning ? 'bg-green-400' : 'bg-neutral-400'}`} />
+              <span
+                className={`w-2 h-2 rounded-full transition-colors duration-300 ${
+                  isRunning ? 'bg-green-400' : isLaunching ? 'bg-yellow-400 animate-pulse' : 'bg-neutral-400'
+                }`}
+              />
               <span className="text-neutral-50 font-mono text-sm">
                 {isRunning
                   ? t('admin.challenge.testModal.instance.running')
-                  : t('admin.challenge.testModal.instance.notRunning')}
+                  : isLaunching
+                    ? t('admin.challenge.testModal.actions.launching')
+                    : t('admin.challenge.testModal.instance.notRunning')}
               </span>
             </div>
 
@@ -225,21 +282,19 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
           {/* 操作按钮 */}
           <div className="flex items-center gap-2">
             {!isRunning ? (
-              /* 启动按钮 */
               <Button
                 variant="primary"
                 size="sm"
                 onClick={handleStartVictim}
-                disabled={loading.starting}
-                loading={loading.starting}
-                className={loading.starting ? 'border-yellow-400 text-yellow-400' : ''}
+                disabled={isLaunching}
+                loading={isLaunching}
+                className={isLaunching ? 'border-yellow-400 text-yellow-400' : ''}
               >
-                {loading.starting
+                {isLaunching
                   ? t('admin.challenge.testModal.actions.launching')
                   : t('admin.challenge.testModal.actions.launch')}
               </Button>
             ) : (
-              /* 运行中显示停止按钮 */
               <Button
                 variant="danger"
                 size="sm"
@@ -255,18 +310,23 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
           </div>
         </div>
 
-        {/* 运行中状态 - 进度条 */}
-        {isRunning && (
+        {/* 进度条：运行中显示倒计时进度，启动中显示不定进度条 */}
+        {(isRunning || isLaunching) && (
           <div className="h-1.5 bg-neutral-700 rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-yellow-400"
-              initial={{ width: 0 }}
-              animate={{
-                // 假设总时长为1小时（3600秒），根据剩余时间计算进度
-                width: `${Math.max(0, Math.min(100, (timeLeft / 3600) * 100))}%`,
-              }}
-              transition={{ duration: 0.5 }}
-            />
+            {isRunning ? (
+              <motion.div
+                className="h-full bg-yellow-400"
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.max(0, Math.min(100, (timeLeft / 3600) * 100))}%` }}
+                transition={{ duration: 0.5 }}
+              />
+            ) : (
+              <motion.div
+                className="h-full w-2/5 bg-yellow-400/60 rounded-full"
+                animate={{ x: ['-100%', '350%'] }}
+                transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+              />
+            )}
           </div>
         )}
 
