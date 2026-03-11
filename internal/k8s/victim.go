@@ -144,60 +144,58 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 					}
 					return nil
 				})
-				for _, eip := range subnet.NatGateway.EIPs {
-					wg.Go(func() error {
-						e, ret := CreateEIP(ctx, CreateEIPOptions{
-							Name:           eip.Name,
-							Labels:         labels,
-							NatGw:          subnet.NatGateway.Name,
-							ExternalSubnet: externalSubnetName,
+				wg.Go(func() error {
+					e, ret := CreateEIP(ctx, CreateEIPOptions{
+						Name:           subnet.NatGateway.EIP.Name,
+						Labels:         labels,
+						NatGw:          subnet.NatGateway.Name,
+						ExternalSubnet: externalSubnetName,
+					})
+					log.Logger.Debugf("Create EIP %s: %s", subnet.NatGateway.EIP.Name, ret.Msg)
+					if err, ok := ret.Attr["Error"]; ok && !ret.OK {
+						return errors.New(err.(string))
+					}
+					// 后续会用到
+					subnet.NatGateway.EIP.IP = e.Spec.V4ip
+					for _, dnat := range subnet.NatGateway.EIP.DNats {
+						_, ret = CreateDNat(ctx, CreateDNatOptions{
+							Name:         dnat.Name,
+							Labels:       labels,
+							EIP:          subnet.NatGateway.EIP.Name,
+							ExternalPort: strconv.Itoa(int(dnat.ExternalPort)),
+							InternalPort: strconv.Itoa(int(dnat.InternalPort)),
+							InternalIP:   dnat.InternalIP,
+							Protocol:     dnat.Protocol,
 						})
-						log.Logger.Debugf("Create EIP %s: %s", eip.Name, ret.Msg)
+						log.Logger.Debugf("Create DNat %s: %s", dnat.Name, ret.Msg)
 						if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 							return errors.New(err.(string))
 						}
-						// 后续会用到
-						eip.IP = e.Spec.V4ip
-						for _, dnat := range eip.DNats {
-							_, ret = CreateDNat(ctx, CreateDNatOptions{
-								Name:         dnat.Name,
-								Labels:       labels,
-								EIP:          eip.Name,
-								ExternalPort: strconv.Itoa(int(dnat.ExternalPort)),
-								InternalPort: strconv.Itoa(int(dnat.InternalPort)),
-								InternalIP:   dnat.InternalIP,
-								Protocol:     dnat.Protocol,
+						ipExposesMapMutex.Lock()
+						if !slices.ContainsFunc(ipExposesMap[e.Spec.V4ip], func(e model.Expose) bool {
+							return dnat.ExternalPort == e.Port && dnat.Protocol == e.Protocol
+						}) {
+							ipExposesMap[e.Spec.V4ip] = append(ipExposesMap[e.Spec.V4ip], model.Expose{
+								Port:     dnat.ExternalPort,
+								Protocol: dnat.Protocol,
 							})
-							log.Logger.Debugf("Create DNat %s: %s", dnat.Name, ret.Msg)
-							if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-								return errors.New(err.(string))
-							}
-							ipExposesMapMutex.Lock()
-							if !slices.ContainsFunc(ipExposesMap[e.Spec.V4ip], func(e model.Expose) bool {
-								return dnat.ExternalPort == e.Port && dnat.Protocol == e.Protocol
-							}) {
-								ipExposesMap[e.Spec.V4ip] = append(ipExposesMap[e.Spec.V4ip], model.Expose{
-									Port:     dnat.ExternalPort,
-									Protocol: dnat.Protocol,
-								})
-							}
-							ipExposesMapMutex.Unlock()
 						}
-						for _, snat := range eip.SNats {
-							_, ret = CreateSNat(ctx, CreateSNatOptions{
-								Name:         snat.Name,
-								Labels:       labels,
-								EIP:          eip.Name,
-								InternalCIDR: subnet.CIDRBlock,
-							})
-							log.Logger.Debugf("Create SNat %s: %s", snat.Name, ret.Msg)
-							if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-								return errors.New(err.(string))
-							}
+						ipExposesMapMutex.Unlock()
+					}
+					for _, snat := range subnet.NatGateway.EIP.SNats {
+						_, ret = CreateSNat(ctx, CreateSNatOptions{
+							Name:         snat.Name,
+							Labels:       labels,
+							EIP:          subnet.NatGateway.EIP.Name,
+							InternalCIDR: subnet.CIDRBlock,
+						})
+						log.Logger.Debugf("Create SNat %s: %s", snat.Name, ret.Msg)
+						if err, ok := ret.Attr["Error"]; ok && !ret.OK {
+							return errors.New(err.(string))
 						}
-						return nil
-					})
-				}
+					}
+					return nil
+				})
 			}
 		}
 	}

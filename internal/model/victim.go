@@ -107,7 +107,7 @@ type Subnet struct {
 type NatGateway struct {
 	Name  string `json:"name"`
 	LanIP string `json:"lan_ip"`
-	EIPs  []*EIP `json:"eips"`
+	EIP   *EIP   `json:"eip"`
 }
 
 type EIP struct {
@@ -152,14 +152,12 @@ func (v VPC) Value() (driver.Value, error) {
 			if lanIP, err := netip.ParseAddr(s.NatGateway.LanIP); err != nil || !cidr.Contains(lanIP) {
 				return true
 			}
-			for _, eip := range s.NatGateway.EIPs {
-				eip.DNats = slices.DeleteFunc(eip.DNats, func(d *DNat) bool {
-					if i, err := netip.ParseAddr(d.InternalIP); err != nil || !cidr.Contains(i) {
-						return true
-					}
-					return false
-				})
-			}
+			s.NatGateway.EIP.DNats = slices.DeleteFunc(s.NatGateway.EIP.DNats, func(d *DNat) bool {
+				if i, err := netip.ParseAddr(d.InternalIP); err != nil || !cidr.Contains(i) {
+					return true
+				}
+				return false
+			})
 		}
 		return false
 	})
