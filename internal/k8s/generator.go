@@ -82,7 +82,7 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 }
 
 func StopGenerator(ctx context.Context, generator model.Generator) model.RetVal {
-	log.Logger.Infof("Stopping generator for Challenge %d %s", generator.ChallengeID, generator.Name)
+	log.Logger.Infof("Stopping generator %s for Challenge %d", generator.Name, generator.ChallengeID)
 	if ret := DeletePod(ctx, generator.Name); !ret.OK {
 		return ret
 	}
