@@ -379,6 +379,13 @@ func Init() *gin.Engine {
 				adminContestVictim.POST("", StartContestVictims)
 				adminContestVictim.DELETE("", StopContestVictims)
 			}
+
+			adminContestGenerator := adminContest.Group("/generators")
+			{
+				adminContestGenerator.GET("")
+				adminContestGenerator.POST("")
+				adminContestGenerator.DELETE("")
+			}
 		}
 
 		admin.GET("/files", GetFiles)

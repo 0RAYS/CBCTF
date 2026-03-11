@@ -41,6 +41,7 @@ var DefaultRolePermissionMap = map[string][]string{
 		PermAdminContestChallengeFlagList, PermAdminContestChallengeFlagRead, PermAdminContestChallengeFlagUpdate,
 		PermAdminImagePull,
 		PermAdminVictimControl,
+		PermAdminGeneratorControl,
 		PermAdminFileList, PermAdminFileRead, PermAdminFileDelete,
 		PermAdminLogRead,
 	},
@@ -65,6 +66,7 @@ var DefaultRolePermissionMap = map[string][]string{
 		PermAdminContestChallengeFlagList, PermAdminContestChallengeFlagRead, PermAdminContestChallengeFlagUpdate,
 		PermAdminImagePull,
 		PermAdminVictimControl,
+		PermAdminGeneratorControl,
 	},
 	UserRoleName: {
 		PermSelfRead, PermSelfUpdate, PermSelfDelete, PermSelfActivate,
