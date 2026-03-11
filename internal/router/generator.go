@@ -21,7 +21,7 @@ func GetContestGenerators(ctx *gin.Context) {
 	generators, count, ret := db.InitGeneratorRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
 	})
-	if ret.OK {
+	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
