@@ -2,6 +2,7 @@ package cron
 
 import (
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
 	"time"
 
@@ -10,14 +11,14 @@ import (
 
 var c *cron.Cron
 
-func exec(name string, task func() error) func() {
+func exec(name string, task func() model.RetVal) func() {
 	return func() {
 		start := time.Now()
-		err := task()
+		ret := task()
 		duration := time.Since(start).Seconds()
-		prometheus.RecordCronJob(name, duration, err == nil)
-		if err != nil {
-			log.Logger.Warningf("%s failed: %s, processing time: %s", name, err, time.Duration(duration*float64(time.Second)))
+		prometheus.RecordCronJob(name, duration, ret.OK)
+		if !ret.OK {
+			log.Logger.Warningf("%s failed: %s, processing time: %s", name, ret.Msg, time.Duration(duration*float64(time.Second)))
 		} else if duration > time.Second.Seconds() {
 			log.Logger.Warningf("%s processing time: %s", name, time.Duration(duration*float64(time.Second)))
 		} else {

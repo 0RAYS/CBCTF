@@ -6,7 +6,6 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
-	"errors"
 	"slices"
 	"time"
 
@@ -15,18 +14,18 @@ import (
 
 // stopUnCtrlGenerator 关闭不受控的以 `gen` 为命名前缀的 pod
 func stopUnCtrlGenerator(c *cron.Cron) {
-	function := exec("StopUnCtrlGenerator", func() error {
+	function := exec("StopUnCtrlGenerator", func() model.RetVal {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 		pods, ret := k8s.GetPodList(ctx, map[string]string{k8s.GeneratorPodTag: k8s.GeneratorPodTag})
 		cancel()
 		if !ret.OK {
 			log.Logger.Warningf("Failed to get generators %v", ret)
-			return errors.New(ret.Msg)
+			return ret
 		}
 		generators, _, ret := db.InitGeneratorRepo(db.DB).List(-1, -1)
 		if !ret.OK {
 			log.Logger.Warningf("Failed to get generators %v", ret)
-			return errors.New(ret.Msg)
+			return ret
 		}
 		for _, pod := range pods.Items {
 			if !slices.ContainsFunc(generators, func(generator model.Generator) bool {
@@ -37,7 +36,7 @@ func stopUnCtrlGenerator(c *cron.Cron) {
 				cancel()
 			}
 		}
-		return nil
+		return model.SuccessRetVal()
 	})
 	function()
 	c.Schedule(cron.Every(time.Hour), cron.FuncJob(function))

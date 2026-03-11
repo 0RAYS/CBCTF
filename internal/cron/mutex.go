@@ -11,7 +11,7 @@ import (
 
 // clearSubmissionMutex 定时任务清理flag提交锁 service.SolvedMutex
 func clearSubmissionMutex(c *cron.Cron) {
-	c.Schedule(cron.Every(10*time.Minute), cron.FuncJob(exec("ClearSubmissionMutex", func() error {
+	c.Schedule(cron.Every(10*time.Minute), cron.FuncJob(exec("ClearSubmissionMutex", func() model.RetVal {
 		contests := make(map[uint]model.Contest)
 		contestRepo := db.InitContestRepo(db.DB)
 		contestFlagRepo := db.InitContestFlagRepo(db.DB)
@@ -35,13 +35,13 @@ func clearSubmissionMutex(c *cron.Cron) {
 			}
 			return true
 		})
-		return nil
+		return model.SuccessRetVal()
 	})))
 }
 
 // clearCheatMutex 定时任务清理作弊检测锁 db.CheatMutex
 func clearCheatMutex(c *cron.Cron) {
-	c.Schedule(cron.Every(10*time.Minute), cron.FuncJob(exec("ClearCheatMutex", func() error {
+	c.Schedule(cron.Every(10*time.Minute), cron.FuncJob(exec("ClearCheatMutex", func() model.RetVal {
 		contests := make(map[uint]model.Contest)
 		contestRepo := db.InitContestRepo(db.DB)
 		cheatRepo := db.InitCheatRepo(db.DB)
@@ -66,13 +66,13 @@ func clearCheatMutex(c *cron.Cron) {
 			}
 			return true
 		})
-		return nil
+		return model.SuccessRetVal()
 	})))
 }
 
 // clearJoinTeamMutes 定时任务清理作弊检测锁 service.JoinTeamMutex
 func clearJoinTeamMutes(c *cron.Cron) {
-	c.Schedule(cron.Every(10*time.Minute), cron.FuncJob(exec("ClearJoinTeamMutes", func() error {
+	c.Schedule(cron.Every(10*time.Minute), cron.FuncJob(exec("ClearJoinTeamMutes", func() model.RetVal {
 		contests := make(map[uint]model.Contest)
 		contestRepo := db.InitContestRepo(db.DB)
 		teamRepo := db.InitTeamRepo(db.DB)
@@ -96,6 +96,6 @@ func clearJoinTeamMutes(c *cron.Cron) {
 			}
 			return true
 		})
-		return nil
+		return model.SuccessRetVal()
 	})))
 }
