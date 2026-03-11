@@ -24,5 +24,9 @@ func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) model.RetVal {
 	for _, flag := range challengeFlags {
 		flags = append(flags, flag.Value)
 	}
-	return k8s.GenAttachment(ctx, challenge, 0, flags)
+	generator, ret := GetGenerator(tx, 0, challenge)
+	if !ret.OK {
+		return ret
+	}
+	return k8s.GenAttachment(ctx, challenge, generator, 0, flags)
 }

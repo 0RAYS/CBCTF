@@ -116,14 +116,14 @@ func StartContestVictims(tx *gorm.DB, contest model.Contest, form dto.StartConte
 	if len(form.Challenges) == 0 || len(form.Teams) == 0 {
 		return model.SuccessRetVal()
 	}
+	challenges, _, ret := db.InitChallengeRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"type": model.PodsChallengeType},
+	})
+	if !ret.OK {
+		return ret
+	}
 	challengeIDL := make([]uint, 0)
-	for _, randID := range form.Challenges {
-		challenge, ret := db.InitChallengeRepo(tx).GetByRandID(randID, db.GetOptions{
-			Conditions: map[string]any{"type": model.PodsChallengeType},
-		})
-		if !ret.OK {
-			continue
-		}
+	for _, challenge := range challenges {
 		challengeIDL = append(challengeIDL, challenge.ID)
 	}
 	teams, _, ret := db.InitTeamRepo(tx).List(-1, -1, db.GetOptions{
@@ -145,6 +145,7 @@ func StartContestVictims(tx *gorm.DB, contest model.Contest, form dto.StartConte
 	if len(contestChallenges) == 0 {
 		return model.SuccessRetVal()
 	}
+	victimRepo := db.InitVictimRepo(tx)
 	for _, contestChallenge := range contestChallenges {
 		for _, team := range teams {
 			if CheckIfSolved(tx, team, contestChallenge.ContestFlags) {
@@ -157,7 +158,7 @@ func StartContestVictims(tx *gorm.DB, contest model.Contest, form dto.StartConte
 			}
 			_, ret = StartVictim(tx, team.CaptainID, team.ID, contest.ID, contestChallenge.ID, contestChallenge.ChallengeID)
 			if !ret.OK {
-				victim, ret := db.InitVictimRepo(tx).HasAliveVictim(team.ID, contestChallenge.ChallengeID)
+				victim, ret := victimRepo.HasAliveVictim(team.ID, contestChallenge.ChallengeID)
 				if !ret.OK {
 					continue
 				}
@@ -173,8 +174,7 @@ func StopContestVictims(tx *gorm.DB, form dto.StopContestVictimsForm) model.RetV
 	if len(form.Victims) == 0 {
 		return model.SuccessRetVal()
 	}
-	victimRepo := db.InitVictimRepo(tx)
-	victims, _, ret := victimRepo.List(-1, -1, db.GetOptions{Conditions: map[string]any{"id": form.Victims}})
+	victims, _, ret := db.InitVictimRepo(tx).List(-1, -1, db.GetOptions{Conditions: map[string]any{"id": form.Victims}})
 	if !ret.OK {
 		return ret
 	}

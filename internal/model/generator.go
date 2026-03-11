@@ -6,16 +6,15 @@ import "time"
 // BelongsTo Challenge
 // BelongsTo Contest
 type Generator struct {
-	ChallengeID uint          `json:"challenge_id"`
-	Challenge   Challenge     `json:"-"`
-	ContestID   uint          `json:"contest_id"`
-	Contest     Contest       `json:"-"`
-	Name        string        `json:"pod_name"`
-	Success     int64         `json:"success"`
-	SuccessLast time.Time     `json:"success_last"`
-	Failure     int64         `json:"failure"`
-	FailureLast time.Time     `json:"failure_last"`
-	Period      time.Duration `json:"period"`
+	ChallengeID uint      `json:"challenge_id"`
+	Challenge   Challenge `json:"-"`
+	ContestID   uint      `json:"contest_id"`
+	Contest     Contest   `json:"-"`
+	Name        string    `json:"pod_name"`
+	Success     int64     `json:"success"`
+	SuccessLast time.Time `json:"success_last"`
+	Failure     int64     `json:"failure"`
+	FailureLast time.Time `json:"failure_last"`
 	BaseModel
 }
 

@@ -67,6 +67,10 @@ type File struct {
 	NotFound       string
 }
 
+type Generator struct {
+	NotAvailable string
+}
+
 type Group struct {
 	CannotUpdateDefault string
 	CannotDeleteDefault string
@@ -207,6 +211,7 @@ var Model = struct {
 	Docker           Docker
 	Email            Email
 	File             File
+	Generator        Generator
 	Group            Group
 	Notice           Notice
 	Permission       Permission
@@ -288,6 +293,9 @@ var Model = struct {
 		CreateError:    "model.file.createError",
 		DeleteError:    "model.file.deleteError",
 		NotFound:       "model.file.notFound",
+	},
+	Generator: Generator{
+		NotAvailable: "model.generator.notAvailable",
 	},
 	Group: Group{
 		CannotUpdateDefault: "model.group.cannotUpdateDefault",

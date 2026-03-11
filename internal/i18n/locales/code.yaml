@@ -59,6 +59,8 @@ model:
     createError: "500"
     deleteError: "500"
     notFound: "404"
+  generator:
+    notAvailable: "400"
   group:
     cannotUpdateDefault: "403"
     cannotDeleteDefault: "403"

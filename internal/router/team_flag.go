@@ -80,7 +80,13 @@ func InitTeamFlag(ctx *gin.Context) {
 		return
 	}
 	if challenge.Type == model.DynamicChallengeType {
-		if _, err := task.EnqueueGenAttachmentTask(user.ID, challenge, team, teamFlags); err != nil {
+		generator, ret := service.GetGenerator(tx, contest.ID, challenge)
+		if !ret.OK {
+			tx.Rollback()
+			resp.JSON(ctx, ret)
+			return
+		}
+		if _, err := task.EnqueueGenAttachmentTask(user.ID, generator, challenge, team, teamFlags); err != nil {
 			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
 			tx.Rollback()
 			resp.JSON(ctx, model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}})
@@ -116,7 +122,13 @@ func ResetTeamFlag(ctx *gin.Context) {
 	}
 	switch challenge.Type {
 	case model.DynamicChallengeType:
-		if _, err := task.EnqueueGenAttachmentTask(user.ID, challenge, team, teamFlags); err != nil {
+		generator, ret := service.GetGenerator(tx, contest.ID, challenge)
+		if !ret.OK {
+			tx.Rollback()
+			resp.JSON(ctx, ret)
+			return
+		}
+		if _, err := task.EnqueueGenAttachmentTask(user.ID, generator, challenge, team, teamFlags); err != nil {
 			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
 			tx.Rollback()
 			resp.JSON(ctx, model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}})

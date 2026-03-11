@@ -40,7 +40,6 @@ func Start() {
 	updateUserRanking(c)
 	updateTeamRanking(c)
 	stopUnCtrlGenerator(c)
-	prepareGenerator(c)
 	clearSubmissionMutex(c)
 	checkCheat(c)
 	clearCheatMutex(c)

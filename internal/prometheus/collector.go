@@ -2,7 +2,6 @@ package prometheus
 
 import (
 	"CBCTF/internal/db"
-	"CBCTF/internal/k8s"
 	"fmt"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -13,7 +12,6 @@ type CTFCollector struct {
 	contestTeamsDesc        *prometheus.Desc
 	contestParticipantsDesc *prometheus.Desc
 	victimsActiveDesc       *prometheus.Desc
-	generatorPodsDesc       *prometheus.Desc
 }
 
 func NewCTFCollector() *CTFCollector {
@@ -33,11 +31,6 @@ func NewCTFCollector() *CTFCollector {
 			"Number of active victim containers (DB-driven)",
 			nil, nil,
 		),
-		generatorPodsDesc: prometheus.NewDesc(
-			"cbctf_generator_pods_active_total",
-			"Number of active generator pods (in-memory)",
-			nil, nil,
-		),
 	}
 }
 
@@ -45,7 +38,6 @@ func (c *CTFCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.contestTeamsDesc
 	ch <- c.contestParticipantsDesc
 	ch <- c.victimsActiveDesc
-	ch <- c.generatorPodsDesc
 }
 
 func (c *CTFCollector) Collect(ch chan<- prometheus.Metric) {
@@ -77,18 +69,5 @@ func (c *CTFCollector) Collect(ch chan<- prometheus.Metric) {
 		c.victimsActiveDesc,
 		prometheus.GaugeValue,
 		float64(count),
-	)
-
-	// 活跃 Generator Pod 数
-	k8s.GeneratorMapMutex.RLock()
-	genCount := 0
-	for _, generators := range k8s.GeneratorMap {
-		genCount += len(generators)
-	}
-	k8s.GeneratorMapMutex.RUnlock()
-	ch <- prometheus.MustNewConstMetric(
-		c.generatorPodsDesc,
-		prometheus.GaugeValue,
-		float64(genCount),
 	)
 }

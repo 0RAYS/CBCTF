@@ -382,9 +382,9 @@ func Init() *gin.Engine {
 
 			adminContestGenerator := adminContest.Group("/generators")
 			{
-				adminContestGenerator.GET("")
-				adminContestGenerator.POST("")
-				adminContestGenerator.DELETE("")
+				adminContestGenerator.GET("", GetContestGenerators)
+				adminContestGenerator.POST("", StartContestGenerator)
+				adminContestGenerator.DELETE("", StopContestGenerator)
 			}
 		}
 

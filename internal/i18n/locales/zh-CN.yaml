@@ -59,6 +59,8 @@ model:
     createError: "创建 File 失败: {{.Error}}"
     deleteError: "删除 File 失败: {{.Error}}"
     notFound: "文件不存在"
+  generator:
+    notAvailable: "没有可用的附件生成器, 请联系管理员检查生成器状态"
   group:
     cannotUpdateDefault: "不允许更新默认组"
     cannotDeleteDefault: "不允许删除默认组"
