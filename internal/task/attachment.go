@@ -1,6 +1,7 @@
 package task
 
 import (
+	"CBCTF/internal/db"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
@@ -46,7 +47,9 @@ func HandleGenAttachmentTask(_ context.Context, t *asynq.Task) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	if ret := k8s.GenAttachment(ctx, payload.Challenge, payload.Generator, payload.TeamID, payload.Flags); !ret.OK {
+	ret := k8s.GenAttachment(ctx, payload.Challenge, payload.Generator, payload.TeamID, payload.Flags)
+	db.InitGeneratorRepo(db.DB).UpdateStatus(payload.Generator.ID, ret.OK, time.Now())
+	if !ret.OK {
 		return fmt.Errorf("generate attachment failed: %s", ret.Msg)
 	}
 	return nil

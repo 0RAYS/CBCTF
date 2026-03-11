@@ -18,8 +18,6 @@ func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) model.RetVal {
 	if !ret.OK {
 		return ret
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
 	var flags []string
 	for _, flag := range challengeFlags {
 		flags = append(flags, flag.Value)
@@ -28,5 +26,9 @@ func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) model.RetVal {
 	if !ret.OK {
 		return ret
 	}
-	return k8s.GenAttachment(ctx, challenge, generator, 0, flags)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	ret = k8s.GenAttachment(ctx, challenge, generator, 0, flags)
+	db.InitGeneratorRepo(tx).UpdateStatus(generator.ID, ret.OK, time.Now())
+	return ret
 }
