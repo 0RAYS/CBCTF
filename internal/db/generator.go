@@ -15,7 +15,6 @@ type CreateGeneratorOptions struct {
 	ChallengeID uint
 	ContestID   uint
 	Name        string
-	Period      time.Duration
 }
 
 func (c CreateGeneratorOptions) Convert2Model() model.Model {
@@ -23,7 +22,6 @@ func (c CreateGeneratorOptions) Convert2Model() model.Model {
 		ChallengeID: c.ChallengeID,
 		ContestID:   c.ContestID,
 		Name:        c.Name,
-		Period:      c.Period,
 	}
 }
 
@@ -33,7 +31,6 @@ type UpdateGeneratorOptions struct {
 	SuccessLast *time.Time
 	Failure     *int64
 	FailureLast *time.Time
-	Period      *time.Duration
 }
 
 func (u UpdateGeneratorOptions) Convert2Map() map[string]any {
@@ -52,9 +49,6 @@ func (u UpdateGeneratorOptions) Convert2Map() map[string]any {
 	}
 	if u.FailureLast != nil {
 		options["failure_last"] = u.FailureLast
-	}
-	if u.Period != nil {
-		options["period"] = u.Period
 	}
 	return options
 }

@@ -5,58 +5,42 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"CBCTF/internal/utils"
 	"context"
-	"crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"math/big"
 	"os"
 	"path"
-	"slices"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
 )
 
-var (
-	GeneratorMap      = make(map[uint][]*Generator)
-	GeneratorMapMutex sync.RWMutex
-)
-
-type Generator struct {
-	Start time.Time
-	Pod   *corev1.Pod
-}
-
-// StartGenerator 启动动态附件生成器, 等待附加命令, 生成附件
-func StartGenerator(ctx context.Context, challenge model.Challenge) (*corev1.Pod, model.RetVal) {
+func StartGenerator(ctx context.Context, challenge model.Challenge, generator model.Generator) (*corev1.Pod, model.RetVal) {
 	var (
-		pod           *corev1.Pod
-		ret           model.RetVal
-		err           error
-		generatorName = fmt.Sprintf("gen-%s", utils.RandStr(20))
-		containerName = fmt.Sprintf("ctn-%s", utils.RandStr(20))
-		volumeName    = fmt.Sprintf("vol-%s", utils.RandStr(20))
-		labels        = map[string]string{GeneratorPodTag: GeneratorPodTag, "contest_challenge_id": strconv.Itoa(int(challenge.ID))}
+		pod    *corev1.Pod
+		ret    model.RetVal
+		err    error
+		labels = map[string]string{
+			GeneratorPodTag:        GeneratorPodTag,
+			"contest_challenge_id": strconv.Itoa(int(challenge.ID)),
+		}
 	)
 	if challenge.GeneratorImage == "" {
 		return nil, model.RetVal{Msg: i18n.Model.Challenge.EmptyImage}
 	}
-	log.Logger.Infof("Starting Generator %s for Challenge %d-%s", generatorName, challenge.ID, challenge.Name)
+	log.Logger.Infof("Starting Generator %s for Challenge %d-%s", generator.Name, challenge.ID, challenge.Name)
 	pod, ret = CreatePod(ctx, CreatePodOptions{
-		Name:   generatorName,
+		Name:   generator.Name,
 		Labels: labels,
 		Containers: []corev1.Container{
 			{
-				Name:  containerName,
+				Name:  "generator",
 				Image: challenge.GeneratorImage,
 				VolumeMounts: []corev1.VolumeMount{
 					{
-						Name:      volumeName,
+						Name:      nfsVolumeName,
 						MountPath: "/root/mnt",
 						SubPath: strings.TrimPrefix(
 							strings.TrimPrefix(challenge.BasicDir(), config.Env.Path), "/",
@@ -69,7 +53,7 @@ func StartGenerator(ctx context.Context, challenge model.Challenge) (*corev1.Pod
 		},
 		Volumes: []corev1.Volume{
 			{
-				Name: volumeName,
+				Name: nfsVolumeName,
 				VolumeSource: corev1.VolumeSource{
 					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 						ClaimName: nfsVolumeName,
@@ -89,68 +73,39 @@ func StartGenerator(ctx context.Context, challenge model.Challenge) (*corev1.Pod
 	}
 	for _, command := range commands {
 		log.Logger.Debugf("Executing command: %s", command)
-		if _, _, err = Exec(ctx, generatorName, containerName, command, nil); err != nil {
+		if _, _, err = Exec(ctx, generator.Name, pod.Spec.Containers[0].Name, command, nil); err != nil {
 			log.Logger.Warningf("Failed to execute command %s: %s", command, err)
 			return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 		}
 	}
-	GeneratorMapMutex.Lock()
-	GeneratorMap[challenge.ID] = append(GeneratorMap[challenge.ID], &Generator{Start: time.Now(), Pod: pod})
-	GeneratorMapMutex.Unlock()
 	return pod, model.SuccessRetVal()
 }
 
-func GetGenerator(ctx context.Context, challenge model.Challenge) (*corev1.Pod, model.RetVal) {
-	GeneratorMapMutex.RLock()
-	generators, ok := GeneratorMap[challenge.ID]
-	GeneratorMapMutex.RUnlock()
-	if !ok {
-		return StartGenerator(ctx, challenge)
+func StopGenerator(ctx context.Context, generator model.Generator) model.RetVal {
+	log.Logger.Infof("Stopping generator for Challenge %d %s", generator.ChallengeID, generator.Name)
+	if ret := DeletePod(ctx, generator.Name); !ret.OK {
+		return ret
 	}
-	if len(generators) > 0 {
-		index, _ := rand.Int(rand.Reader, big.NewInt(int64(len(generators))))
-		return generators[index.Int64()].Pod, model.SuccessRetVal()
+	labels := map[string]string{
+		GeneratorPodTag:        generator.Name,
+		"contest_challenge_id": strconv.Itoa(int(generator.ChallengeID)),
 	}
-	return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Generators not found"}}
-}
-
-// StopGenerator 停止动态附件生成器
-func StopGenerator(ctx context.Context, challenge model.Challenge, generator *corev1.Pod) model.RetVal {
-	log.Logger.Infof("Stopping generator for Challenge %d-%s", challenge.ID, challenge.Name)
-	GeneratorMapMutex.RLock()
-	_, ok := GeneratorMap[challenge.ID]
-	GeneratorMapMutex.RUnlock()
-	if ok {
-		if ret := DeletePod(ctx, generator.Name); !ret.OK {
-			return ret
-		}
-		labels := map[string]string{GeneratorPodTag: generator.Name, "contest_challenge_id": strconv.Itoa(int(challenge.ID))}
-		if ret := DeleteServiceList(ctx, labels); !ret.OK {
-			return ret
-		}
-		GeneratorMapMutex.Lock()
-		GeneratorMap[challenge.ID] = slices.DeleteFunc(GeneratorMap[challenge.ID], func(gen *Generator) bool {
-			return gen.Pod.Name == generator.Name
-		})
-		GeneratorMapMutex.Unlock()
+	if ret := DeleteServiceList(ctx, labels); !ret.OK {
+		return ret
 	}
 	return model.SuccessRetVal()
 }
 
 // GenAttachment 附加容器命令, 生成附件
-func GenAttachment(ctx context.Context, challenge model.Challenge, teamID uint, flags []string) model.RetVal {
+func GenAttachment(ctx context.Context, challenge model.Challenge, generator model.Generator, teamID uint, flags []string) model.RetVal {
 	var err error
 	log.Logger.Debugf("Generating attachment for Team %d Challenge %d", teamID, challenge.ID)
-	generator, ret := GetGenerator(ctx, challenge)
-	// 3.3: Check generator != nil before passing to StopGenerator
+	pod, ret := GetPod(ctx, generator.Name)
 	if !ret.OK {
-		if generator != nil {
-			return StopGenerator(ctx, challenge, generator)
-		}
 		return ret
 	}
-	if generator.Status.Phase != corev1.PodRunning {
-		return StopGenerator(ctx, challenge, generator)
+	if pod.Status.Phase != corev1.PodRunning {
+		return StopGenerator(ctx, generator)
 	}
 	var flag string
 	for _, value := range flags {
@@ -161,7 +116,7 @@ func GenAttachment(ctx context.Context, challenge model.Challenge, teamID uint, 
 	_ = os.Remove(filepath)
 	command := fmt.Sprintf("./run.sh %d %s", teamID, flag)
 	log.Logger.Debugf("Executing command in %s: %s", generator.Name, command)
-	if _, _, err = Exec(ctx, generator.Name, generator.Spec.Containers[0].Name, command, nil); err != nil {
+	if _, _, err = Exec(ctx, generator.Name, pod.Spec.Containers[0].Name, command, nil); err != nil {
 		log.Logger.Warningf("Failed to execute command %s: %s", command, err)
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
@@ -179,4 +134,5 @@ func GenAttachment(ctx context.Context, challenge model.Challenge, teamID uint, 
 		time.Sleep(time.Second)
 	}
 	return model.SuccessRetVal()
+
 }
