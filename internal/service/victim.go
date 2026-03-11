@@ -132,7 +132,6 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 				if teamID > 0 {
 					teamFlag, ret := teamFlagRepo.Get(db.GetOptions{
 						Conditions: map[string]any{"team_id": teamID, "challenge_flag_id": challengeFlag.ID},
-						Preloads:   map[string]db.GetOptions{"ChallengeFlag": {}},
 					})
 					if !ret.OK {
 						return model.Victim{}, ret
@@ -209,7 +208,6 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 				if teamID > 0 {
 					teamFlag, ret := teamFlagRepo.Get(db.GetOptions{
 						Conditions: map[string]any{"team_id": teamID, "challenge_flag_id": challengeFlag.ID},
-						Preloads:   map[string]db.GetOptions{"ChallengeFlag": {}},
 					})
 					if !ret.OK {
 						return model.Victim{}, ret
