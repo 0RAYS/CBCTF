@@ -23,8 +23,8 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 		ret    model.RetVal
 		err    error
 		labels = map[string]string{
-			GeneratorPodTag:        GeneratorPodTag,
-			"contest_challenge_id": strconv.Itoa(int(challenge.ID)),
+			GeneratorPodTag: GeneratorPodTag,
+			"challenge_id":  strconv.Itoa(int(challenge.ID)),
 		}
 	)
 	if challenge.GeneratorImage == "" {
@@ -87,8 +87,8 @@ func StopGenerator(ctx context.Context, generator model.Generator) model.RetVal 
 		return ret
 	}
 	labels := map[string]string{
-		GeneratorPodTag:        generator.Name,
-		"contest_challenge_id": strconv.Itoa(int(generator.ChallengeID)),
+		GeneratorPodTag: generator.Name,
+		"challenge_id":  strconv.Itoa(int(generator.ChallengeID)),
 	}
 	if ret := DeleteServiceList(ctx, labels); !ret.OK {
 		return ret
