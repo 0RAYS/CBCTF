@@ -77,6 +77,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 								return tmp
 							}(),
 						},
+						Namespaces:  []string{globalNamespace, "kube-system"},
 						TopologyKey: "kubernetes.io/hostname",
 					},
 				},
@@ -99,6 +100,7 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 								return tmp
 							}(),
 						},
+						Namespaces:  []string{globalNamespace, "kube-system"},
 						TopologyKey: "kubernetes.io/hostname",
 					},
 				},
