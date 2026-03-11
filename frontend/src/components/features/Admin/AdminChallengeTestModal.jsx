@@ -89,10 +89,13 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
         }
       }, 5000);
       // 3 分钟超时兜底
-      pollingTimeoutRef.current = setTimeout(() => {
-        stopPolling();
-        setLoading((prev) => ({ ...prev, starting: false }));
-      }, 3 * 60 * 1000);
+      pollingTimeoutRef.current = setTimeout(
+        () => {
+          stopPolling();
+          setLoading((prev) => ({ ...prev, starting: false }));
+        },
+        3 * 60 * 1000
+      );
     },
     [stopPolling]
   );

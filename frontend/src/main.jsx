@@ -16,10 +16,10 @@ createRoot(document.getElementById('root')).render(
     <ErrorBoundary>
       <ModalProvider>
         <Provider store={store}>
-            <ToastProvider position="bottom-right" maxToasts={5}>
-              <App />
-            </ToastProvider>
-          </Provider>
+          <ToastProvider position="bottom-right" maxToasts={5}>
+            <App />
+          </ToastProvider>
+        </Provider>
       </ModalProvider>
     </ErrorBoundary>
   </StrictMode>
