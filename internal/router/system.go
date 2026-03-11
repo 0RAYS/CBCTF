@@ -154,11 +154,10 @@ func SystemConfig(ctx *gin.Context) {
 		"k8s_namespace": config.Env.K8S.Namespace,
 		"k8s_tcpdump":   config.Env.K8S.TCPDumpImage,
 
-		"k8s_frp_on":           config.Env.K8S.Frp.On,
-		"k8s_frp_frpc":         config.Env.K8S.Frp.FrpcImage,
-		"k8s_frp_nginx":        config.Env.K8S.Frp.NginxImage,
-		"k8s_frp_frps":         maskedFrps,
-		"k8s_generator_worker": config.Env.K8S.GeneratorWorker,
+		"k8s_frp_on":    config.Env.K8S.Frp.On,
+		"k8s_frp_frpc":  config.Env.K8S.Frp.FrpcImage,
+		"k8s_frp_nginx": config.Env.K8S.Frp.NginxImage,
+		"k8s_frp_frps":  maskedFrps,
 
 		"cheat_ip_whitelist": config.Env.Cheat.IP.Whitelist,
 
@@ -228,14 +227,13 @@ func UpdateSystem(ctx *gin.Context) {
 		model.RedisPortSettingKey: form.RedisPort,
 		model.RedisPwdSettingKey:  form.RedisPwd,
 
-		model.K8SConfigSettingKey:          form.K8SConfig,
-		model.K8SNamespaceSettingKey:       form.K8SNamespace,
-		model.K8STCPDumpImageSettingKey:    form.K8STCPDumpImage,
-		model.K8SFrpOnSettingKey:           form.K8SFrpOn,
-		model.K8SFrpFrpcImageSettingKey:    form.K8SFrpFrpcImage,
-		model.K8SFrpNginxImageSettingKey:   form.K8SFrpNginxImage,
-		model.K8SFrpFrpsSettingKey:         form.K8SFrpFrps,
-		model.K8SGeneratorWorkerSettingKey: form.K8SGeneratorWorker,
+		model.K8SConfigSettingKey:        form.K8SConfig,
+		model.K8SNamespaceSettingKey:     form.K8SNamespace,
+		model.K8STCPDumpImageSettingKey:  form.K8STCPDumpImage,
+		model.K8SFrpOnSettingKey:         form.K8SFrpOn,
+		model.K8SFrpFrpcImageSettingKey:  form.K8SFrpFrpcImage,
+		model.K8SFrpNginxImageSettingKey: form.K8SFrpNginxImage,
+		model.K8SFrpFrpsSettingKey:       form.K8SFrpFrps,
 
 		model.CheatIPWhitelistSettingKey: form.CheatIPWhitelist,
 

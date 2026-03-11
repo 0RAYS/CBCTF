@@ -124,7 +124,6 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 		{Key: model.K8SFrpFrpcImageSettingKey, Value: model.SettingValue{V: config.Env.K8S.Frp.FrpcImage}},
 		{Key: model.K8SFrpNginxImageSettingKey, Value: model.SettingValue{V: config.Env.K8S.Frp.NginxImage}},
 		{Key: model.K8SFrpFrpsSettingKey, Value: model.SettingValue{V: config.Env.K8S.Frp.Frps}},
-		{Key: model.K8SGeneratorWorkerSettingKey, Value: model.SettingValue{V: config.Env.K8S.GeneratorWorker}},
 
 		{Key: model.CheatIPWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Cheat.IP.Whitelist}},
 
@@ -260,9 +259,6 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 		return ret
 	}
 	if config.Env.K8S.Frp.Frps, ret = GetValue[[]config.FrpsConfig](s, model.K8SFrpFrpsSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.K8S.GeneratorWorker, ret = GetValue[int](s, model.K8SGeneratorWorkerSettingKey); !ret.OK {
 		return ret
 	}
 

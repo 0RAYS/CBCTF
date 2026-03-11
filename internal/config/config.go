@@ -91,7 +91,6 @@ type Config struct {
 			NginxImage string       `mapstructure:"nginx" json:"nginx"` // Nginx 镜像
 			Frps       []FrpsConfig `mapstructure:"frps" json:"frps"`
 		} `mapstructure:"frp" json:"frp"`
-		GeneratorWorker int `mapstructure:"generator_worker" json:"generator_worker"`
 	} `mapstructure:"k8s" json:"k8s"`
 	Cheat struct {
 		IP struct {
