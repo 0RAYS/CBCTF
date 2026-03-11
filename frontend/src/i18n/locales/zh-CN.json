@@ -111,7 +111,8 @@
     "containers": "容器",
     "images": "镜像",
     "cheats": "风控",
-    "notices": "公告"
+    "notices": "公告",
+    "generators": "生成器"
   },
   "admin": {
     "title": "管理中心",
@@ -905,6 +906,37 @@
           "timezone": "时区",
           "coordinates": "坐标",
           "fetchFailed": "查询 IP 地理位置失败"
+        }
+      },
+      "generators": {
+        "title": "生成器管理",
+        "startButton": "启动生成器",
+        "stopButton": "停止所选",
+        "noGenerators": "当前没有运行中的生成器",
+        "noGeneratorsDesc": "为动态题目启动生成器，以启用按队伍生成文件附件功能。",
+        "noDynamicChallenges": "此比赛中没有动态类型题目",
+        "selectChallenges": "选择要启动生成器的题目",
+        "startSelected": "启动所选",
+        "columns": {
+          "name": "Pod 名称",
+          "challengeId": "题目 ID",
+          "success": "成功次数",
+          "successLast": "最近成功",
+          "failure": "失败次数",
+          "failureLast": "最近失败"
+        },
+        "stats": {
+          "total": "生成器总数",
+          "successes": "总成功次数",
+          "failures": "总失败次数"
+        },
+        "toast": {
+          "fetchFailed": "加载生成器列表失败",
+          "startSuccess": "生成器已启动",
+          "startFailed": "启动生成器失败",
+          "stopSuccess": "生成器已停止",
+          "stopFailed": "停止生成器失败",
+          "selectRequired": "请至少选择一个题目"
         }
       }
     },

@@ -111,7 +111,8 @@
     "containers": "CONTAINERS",
     "images": "IMAGES",
     "cheats": "CHEATS",
-    "notices": "NOTICES"
+    "notices": "NOTICES",
+    "generators": "GENERATORS"
   },
   "admin": {
     "title": "Admin Center",
@@ -905,6 +906,37 @@
           "timezone": "Timezone",
           "coordinates": "Coordinates",
           "fetchFailed": "Failed to look up IP geolocation"
+        }
+      },
+      "generators": {
+        "title": "Generator Management",
+        "startButton": "Start Generator",
+        "stopButton": "Stop Selected",
+        "noGenerators": "No generators running",
+        "noGeneratorsDesc": "Start generators for dynamic challenges to enable per-team file generation.",
+        "noDynamicChallenges": "No dynamic challenges in this contest",
+        "selectChallenges": "Select challenges to start generators for",
+        "startSelected": "Start Selected",
+        "columns": {
+          "name": "Pod Name",
+          "challengeId": "Challenge ID",
+          "success": "Successes",
+          "successLast": "Last Success",
+          "failure": "Failures",
+          "failureLast": "Last Failure"
+        },
+        "stats": {
+          "total": "Total Generators",
+          "successes": "Total Successes",
+          "failures": "Total Failures"
+        },
+        "toast": {
+          "fetchFailed": "Failed to load generators",
+          "startSuccess": "Generators started",
+          "startFailed": "Failed to start generators",
+          "stopSuccess": "Generators stopped",
+          "stopFailed": "Failed to stop generators",
+          "selectRequired": "Please select at least one challenge"
         }
       }
     },

@@ -73,6 +73,12 @@ export const getAdminContestNavSections = (t, contestId, routes = null) => {
       apiRoute: 'GET /admin/contests/:contestID/images',
     },
     {
+      id: 'generators',
+      label: t('nav.generators'),
+      path: `/admin/contests/${contestId}/generators`,
+      apiRoute: 'GET /admin/contests/:contestID/generators',
+    },
+    {
       id: 'cheats',
       label: t('nav.cheats'),
       path: `/admin/contests/${contestId}/cheats`,
