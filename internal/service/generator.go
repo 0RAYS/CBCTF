@@ -47,6 +47,7 @@ func StartContestGenerators(tx *gorm.DB, contest model.Contest, form dto.StartGe
 			_, ret = k8s.StartGenerator(ctx, challenge, generator)
 			cancel()
 			if !ret.OK {
+				k8s.StopGenerator(ctx, generator)
 				return errors.New(ret.Msg)
 			}
 			return nil
