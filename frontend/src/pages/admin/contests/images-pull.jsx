@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from '../../../utils/toast';
-import { getContestWarmupImages, warmupContestImages } from '../../../api/admin/contest';
-import AdminImagesWarmup from '../../../components/features/Admin/Contests/AdminImagesWarmup.jsx';
+import { getContestPullImages, pullContestImages } from '../../../api/admin/contest';
+import AdminImagesPull from '../../../components/features/Admin/Contests/AdminImagesPull.jsx';
 import { useTranslation } from 'react-i18next';
 
-function AdminContestImagesWarmup() {
+function AdminContestImagesPull() {
   const { id } = useParams();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -15,18 +15,18 @@ function AdminContestImagesWarmup() {
   const { t } = useTranslation();
 
   useEffect(() => {
-    fetchWarmupImages();
+    fetchPullImages();
   }, [id]);
 
-  const fetchWarmupImages = async () => {
+  const fetchPullImages = async () => {
     setLoading(true);
     try {
-      const response = await getContestWarmupImages(parseInt(id));
+      const response = await getContestPullImages(parseInt(id));
       if (response.code === 200) {
         setImages(response.data || []);
       }
     } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.imagesWarmup.toast.fetchFailed') });
+      toast.danger({ description: error.message || t('admin.contests.imagesPull.toast.fetchFailed') });
     } finally {
       setLoading(false);
     }
@@ -46,35 +46,35 @@ function AdminContestImagesWarmup() {
     }
   };
 
-  const handleWarmup = async () => {
+  const handlePull = async () => {
     if (selectedImages.length === 0) {
-      toast.warning({ description: t('admin.contests.imagesWarmup.toast.selectRequired') });
+      toast.warning({ description: t('admin.contests.imagesPull.toast.selectRequired') });
       return;
     }
 
     setSubmitting(true);
     try {
-      const response = await warmupContestImages(parseInt(id), {
+      const response = await pullContestImages(parseInt(id), {
         images: selectedImages,
         pull_policy: pullPolicy,
       });
 
       if (response.code === 200) {
-        toast.success({ description: t('admin.contests.imagesWarmup.toast.submitSuccess') });
+        toast.success({ description: t('admin.contests.imagesPull.toast.submitSuccess') });
         // 重新获取数据以更新状态
         setTimeout(() => {
-          fetchWarmupImages();
+          fetchPullImages();
         }, 2000);
       }
     } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.imagesWarmup.toast.warmupFailed') });
+      toast.danger({ description: error.message || t('admin.contests.imagesPull.toast.pullFailed') });
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <AdminImagesWarmup
+    <AdminImagesPull
       images={images}
       selectedImages={selectedImages}
       pullPolicy={pullPolicy}
@@ -83,10 +83,10 @@ function AdminContestImagesWarmup() {
       onImageToggle={handleImageToggle}
       onSelectAll={handleSelectAll}
       onPullPolicyChange={setPullPolicy}
-      onWarmup={handleWarmup}
-      onRefresh={fetchWarmupImages}
+      onPull={handlePull}
+      onRefresh={fetchPullImages}
     />
   );
 }
 
-export default AdminContestImagesWarmup;
+export default AdminContestImagesPull;

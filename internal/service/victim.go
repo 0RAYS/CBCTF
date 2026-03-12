@@ -3,6 +3,7 @@ package service
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/model"
@@ -10,6 +11,7 @@ import (
 	"context"
 	"crypto/rand"
 	"database/sql"
+	"errors"
 	"fmt"
 	"math/big"
 	"slices"
@@ -377,4 +379,117 @@ func StopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
 
 func CountTeamVictims(tx *gorm.DB, team model.Team) (int64, model.RetVal) {
 	return db.InitVictimRepo(tx).Count(db.CountOptions{Conditions: map[string]any{"team_id": team.ID}})
+}
+
+func GetContestVictims(tx *gorm.DB, contest model.Contest, form dto.GetContestVictimsForm) ([]model.Victim, int64, model.RetVal) {
+	var challengeID uint
+	if form.ChallengeID != "" {
+		challenge, ret := db.InitChallengeRepo(tx).GetByRandID(form.ChallengeID)
+		if !ret.OK || challenge.Type != model.PodsChallengeType {
+			return nil, 0, ret
+		}
+		challengeID = challenge.ID
+	}
+	options := db.GetOptions{
+		Conditions: map[string]any{"contest_id": contest.ID},
+		Preloads: map[string]db.GetOptions{
+			"Pods":             {},
+			"User":             {},
+			"Team":             {},
+			"ContestChallenge": {},
+		},
+	}
+	if challengeID != 0 {
+		options.Conditions["challenge_id"] = challengeID
+	}
+	if form.TeamID != 0 {
+		options.Conditions["team_id"] = form.TeamID
+	}
+	if form.UserID != 0 {
+		options.Conditions["user_id"] = form.UserID
+	}
+	victims, count, ret := db.InitVictimRepo(tx).List(form.Limit, form.Offset, options)
+	return slices.DeleteFunc(victims, func(victim model.Victim) bool {
+		if !victim.TeamID.Valid || !victim.ContestChallengeID.Valid || !victim.ContestID.Valid {
+			count--
+			return true
+		}
+		return false
+	}), count, ret
+}
+
+func StartContestVictims(tx *gorm.DB, contest model.Contest, form dto.StartContestVictimsForm) model.RetVal {
+	if len(form.Challenges) == 0 || len(form.Teams) == 0 {
+		return model.SuccessRetVal()
+	}
+	challenges, _, ret := db.InitChallengeRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"type": model.PodsChallengeType},
+	})
+	if !ret.OK {
+		return ret
+	}
+	challengeIDL := make([]uint, 0)
+	for _, challenge := range challenges {
+		challengeIDL = append(challengeIDL, challenge.ID)
+	}
+	teams, _, ret := db.InitTeamRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_id": contest.ID, "id": form.Teams},
+	})
+	if !ret.OK {
+		return ret
+	}
+	if len(challengeIDL) == 0 || len(teams) == 0 {
+		return model.SuccessRetVal()
+	}
+	contestChallenges, _, ret := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_id": contest.ID, "challenge_id": challengeIDL},
+		Preloads:   map[string]db.GetOptions{"ContestFlags": {}},
+	})
+	if !ret.OK {
+		return ret
+	}
+	if len(contestChallenges) == 0 {
+		return model.SuccessRetVal()
+	}
+	for _, contestChallenge := range contestChallenges {
+		for _, team := range teams {
+			if CheckIfSolved(tx, team, contestChallenge.ContestFlags) {
+				continue
+			}
+			_ = tx.Transaction(func(tx2 *gorm.DB) error {
+				if !CheckIfGenerated(tx2, team, contestChallenge.ContestFlags) {
+					if _, ret = CreateTeamFlag(tx2, team, contest, contestChallenge); !ret.OK {
+						return errors.New(ret.Msg)
+					}
+				}
+				_, ret = StartVictim(tx2, team.CaptainID, team.ID, contest.ID, contestChallenge.ID, contestChallenge.ChallengeID)
+				if !ret.OK {
+					victim, ret := db.InitVictimRepo(tx2).HasAliveVictim(team.ID, contestChallenge.ChallengeID)
+					if !ret.OK {
+						return errors.New(ret.Msg)
+					}
+					StopVictim(tx2, victim)
+				}
+				return nil
+			})
+		}
+	}
+	return model.SuccessRetVal()
+}
+
+// StopContestVictims tx 无需开启事务
+func StopContestVictims(tx *gorm.DB, form dto.StopContestVictimsForm) model.RetVal {
+	if len(form.Victims) == 0 {
+		return model.SuccessRetVal()
+	}
+	victims, _, ret := db.InitVictimRepo(tx).List(-1, -1, db.GetOptions{Conditions: map[string]any{"id": form.Victims}})
+	if !ret.OK {
+		return ret
+	}
+	for _, victim := range victims {
+		if ret = StopVictim(tx, victim); !ret.OK {
+			return ret
+		}
+	}
+	return model.SuccessRetVal()
 }

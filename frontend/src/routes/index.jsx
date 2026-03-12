@@ -33,7 +33,7 @@ const AdminContestTeams = lazy(() => import('../pages/admin/contests/teams'));
 const AdminContestSettings = lazy(() => import('../pages/admin/contests/settings'));
 const TeamDetails = lazy(() => import('../pages/admin/contests/team-details'));
 const AdminContestNotices = lazy(() => import('../pages/admin/contests/notice'));
-const AdminContestImagesWarmup = lazy(() => import('../pages/admin/contests/images-warmup.jsx'));
+const AdminContestImagesPull = lazy(() => import('../pages/admin/contests/images-pull.jsx'));
 const ContestContainers = lazy(() => import('../pages/admin/contests/containers'));
 const AdminContestCheats = lazy(() => import('../pages/admin/contests/cheats'));
 const AdminContestGenerators = lazy(() => import('../pages/admin/contests/generators.jsx'));
@@ -372,7 +372,7 @@ const AppRoutes = () => {
             element={
               <AdminRoute apiRoute="GET /admin/contests/:contestID/images">
                 <Suspense fallback={<Loading />}>
-                  <AdminContestImagesWarmup />
+                  <AdminContestImagesPull />
                 </Suspense>
               </AdminRoute>
             }

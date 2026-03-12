@@ -453,10 +453,10 @@
           "deleteFailed": "Failed to delete notice"
         }
       },
-      "imagesWarmup": {
-        "title": "Image Warmup",
+      "imagesPull": {
+        "title": "Image Pull",
         "control": {
-          "title": "Warmup Control",
+          "title": "Pull Control",
           "subtitle": "Warm up Docker images used in the contest"
         },
         "labels": {
@@ -465,7 +465,7 @@
         "actions": {
           "selectAll": "$t(common.selectAll)",
           "deselectAll": "$t(common.deselectAll)",
-          "warmup": "Start warmup ({{count}})"
+          "pull": "Start pull ({{count}})"
         },
         "table": {
           "image": "Image",
@@ -483,10 +483,10 @@
         "statusTitle": "Image Status",
         "empty": "No images",
         "toast": {
-          "fetchFailed": "Failed to load warmup images",
+          "fetchFailed": "Failed to load pull images",
           "selectRequired": "Select images to warm up",
-          "submitSuccess": "Warmup task submitted",
-          "warmupFailed": "Warmup failed"
+          "submitSuccess": "Pull task submitted",
+          "pullFailed": "Pull failed"
         }
       },
       "teams": {

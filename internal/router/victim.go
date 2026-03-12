@@ -79,7 +79,7 @@ func StopVictim(ctx *gin.Context) {
 	resp.JSON(ctx, ret)
 }
 
-func GetVictims(ctx *gin.Context) {
+func GetVictimHistories(ctx *gin.Context) {
 	var form dto.ListModelsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		resp.JSON(ctx, ret)
@@ -100,4 +100,56 @@ func GetVictims(ctx *gin.Context) {
 		data = append(data, resp.GetVictimResp(victim))
 	}
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"victims": data, "count": count}))
+}
+
+func GetContestVictims(ctx *gin.Context) {
+	var form dto.GetContestVictimsForm
+	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	contest := middleware.GetContest(ctx)
+	victims, count, _ := service.GetContestVictims(db.DB, contest, form)
+	data := make([]gin.H, 0)
+	for _, victim := range victims {
+		info := resp.GetVictimResp(victim)
+		info["remote"] = victim.RemoteAddr()
+		info["remaining"] = victim.Remaining().Seconds()
+		info["team"] = victim.Team.Name
+		info["user"] = victim.User.Name
+		info["challenge"] = victim.ContestChallenge.Name
+		data = append(data, info)
+	}
+	total, ret := db.InitVictimRepo(db.DB).Count(db.CountOptions{
+		Conditions: map[string]any{"contest_id": contest.ID}, Deleted: true,
+	})
+	if !ret.OK {
+		total = count
+	}
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"victims": data, "count": total, "running": count}))
+}
+
+func StartContestVictims(ctx *gin.Context) {
+	var form dto.StartContestVictimsForm
+	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	ctx.Set(middleware.CTXEventTypeKey, model.StartVictimEventType)
+	contest := middleware.GetContest(ctx)
+	go service.StartContestVictims(db.DB, contest, form)
+	ctx.Set(middleware.CTXEventSuccessKey, true)
+	resp.JSON(ctx, model.SuccessRetVal())
+}
+
+func StopContestVictims(ctx *gin.Context) {
+	var form dto.StopContestVictimsForm
+	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	ctx.Set(middleware.CTXEventTypeKey, model.StopVictimEventType)
+	go service.StopContestVictims(db.DB, form)
+	ctx.Set(middleware.CTXEventSuccessKey, true)
+	resp.JSON(ctx, model.SuccessRetVal())
 }

@@ -9,7 +9,7 @@
  * @param {Function} props.onImageToggle - 镜像选择切换回调
  * @param {Function} props.onSelectAll - 全选/取消全选回调
  * @param {Function} props.onPullPolicyChange - 拉取策略改变回调
- * @param {Function} props.onWarmup - 执行预热回调
+ * @param {Function} props.onPull - 执行预热回调
  * @param {Function} props.onRefresh - 刷新状态回调
  */
 
@@ -17,7 +17,7 @@ import { IconRefresh, IconDownload, IconServer } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { Button, Card, EmptyState, List } from '../../../common';
 
-function AdminImagesWarmup({
+function AdminImagesPull({
   images = [],
   selectedImages = [],
   pullPolicy = 'IfNotPresent',
@@ -26,7 +26,7 @@ function AdminImagesWarmup({
   onImageToggle,
   onSelectAll,
   onPullPolicyChange,
-  onWarmup,
+  onPull,
   onRefresh,
 }) {
   const { t } = useTranslation();
@@ -35,21 +35,21 @@ function AdminImagesWarmup({
     if (status) {
       return (
         <span className="px-2 py-1 text-xs font-mono rounded border bg-green-400/20 text-green-400 border-green-400/30">
-          {t('admin.contests.imagesWarmup.status.loaded')}
+          {t('admin.contests.imagesPull.status.loaded')}
         </span>
       );
     }
     return (
       <span className="px-2 py-1 text-xs font-mono rounded border bg-neutral-400/20 text-neutral-400 border-neutral-400/30">
-        {t('admin.contests.imagesWarmup.status.notLoaded')}
+        {t('admin.contests.imagesPull.status.notLoaded')}
       </span>
     );
   };
 
   const pullPolicyOptions = [
-    { value: 'Always', label: t('admin.contests.imagesWarmup.pullPolicy.always') },
-    { value: 'IfNotPresent', label: t('admin.contests.imagesWarmup.pullPolicy.ifNotPresent') },
-    { value: 'Never', label: t('admin.contests.imagesWarmup.pullPolicy.never') },
+    { value: 'Always', label: t('admin.contests.imagesPull.pullPolicy.always') },
+    { value: 'IfNotPresent', label: t('admin.contests.imagesPull.pullPolicy.ifNotPresent') },
+    { value: 'Never', label: t('admin.contests.imagesPull.pullPolicy.never') },
   ];
 
   const selectAllLabel = (
@@ -60,14 +60,14 @@ function AdminImagesWarmup({
         onChange={onSelectAll}
         className="w-4 h-4 rounded border-neutral-300/30 text-geek-400 focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
       />
-      <span className="text-xs font-mono text-neutral-400">{t('admin.contests.imagesWarmup.actions.selectAll')}</span>
+      <span className="text-xs font-mono text-neutral-400">{t('admin.contests.imagesPull.actions.selectAll')}</span>
     </div>
   );
 
   const columns = [
     { key: 'select', label: selectAllLabel, width: '12%' },
-    { key: 'image', label: t('admin.contests.imagesWarmup.table.image'), width: '38%' },
-    { key: 'nodes', label: t('admin.contests.imagesWarmup.table.nodes'), width: '50%' },
+    { key: 'image', label: t('admin.contests.imagesPull.table.image'), width: '38%' },
+    { key: 'nodes', label: t('admin.contests.imagesPull.table.nodes'), width: '50%' },
   ];
 
   const renderCell = (imageObj, column) => {
@@ -134,17 +134,17 @@ function AdminImagesWarmup({
 
       <Card variant="default" padding="md" animate>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-mono text-neutral-50">{t('admin.contests.imagesWarmup.control.title')}</h2>
+          <h2 className="text-lg font-mono text-neutral-50">{t('admin.contests.imagesPull.control.title')}</h2>
           <div className="flex items-center gap-2 text-neutral-400 font-mono text-sm">
             <IconServer size={16} />
-            <span>{t('admin.contests.imagesWarmup.control.subtitle')}</span>
+            <span>{t('admin.contests.imagesPull.control.subtitle')}</span>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="block text-sm font-mono text-neutral-400 mb-2">
-              {t('admin.contests.imagesWarmup.labels.pullPolicy')}
+              {t('admin.contests.imagesPull.labels.pullPolicy')}
             </label>
             <select
               value={pullPolicy}
@@ -162,22 +162,22 @@ function AdminImagesWarmup({
           <div className="flex items-end">
             <Button variant="outline" onClick={onSelectAll} className="w-full">
               {selectedImages.length === images.length
-                ? t('admin.contests.imagesWarmup.actions.deselectAll')
-                : t('admin.contests.imagesWarmup.actions.selectAll')}
+                ? t('admin.contests.imagesPull.actions.deselectAll')
+                : t('admin.contests.imagesPull.actions.selectAll')}
             </Button>
           </div>
 
           <div className="flex items-end">
             <Button
               variant="primary"
-              onClick={onWarmup}
+              onClick={onPull}
               loading={submitting}
               disabled={selectedImages.length === 0}
               className="w-full"
               align="icon-left"
               icon={<IconDownload size={18} />}
             >
-              {t('admin.contests.imagesWarmup.actions.warmup', { count: selectedImages.length })}
+              {t('admin.contests.imagesPull.actions.pull', { count: selectedImages.length })}
             </Button>
           </div>
         </div>
@@ -185,11 +185,11 @@ function AdminImagesWarmup({
 
       <Card variant="default" padding="none" animate className="overflow-hidden">
         <div className="px-6 py-4 border-b border-neutral-300/30">
-          <h2 className="text-lg font-mono text-neutral-50">{t('admin.contests.imagesWarmup.statusTitle')}</h2>
+          <h2 className="text-lg font-mono text-neutral-50">{t('admin.contests.imagesPull.statusTitle')}</h2>
         </div>
 
         {images.length === 0 ? (
-          <EmptyState title={t('admin.contests.imagesWarmup.empty')} />
+          <EmptyState title={t('admin.contests.imagesPull.empty')} />
         ) : (
           <div className="p-4">
             <List columns={columns} data={images} renderCell={renderCell} />
@@ -200,4 +200,4 @@ function AdminImagesWarmup({
   );
 }
 
-export default AdminImagesWarmup;
+export default AdminImagesPull;
