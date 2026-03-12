@@ -18,7 +18,6 @@
 import { useTranslation } from 'react-i18next';
 import { Pagination } from '../../../../components/common';
 import ScoreboardRanking from '../../CTFGame/Scoreboard/ScoreboardRanking.jsx';
-import AdminTeamDetailDialog from './AdminTeamDetailDialog';
 
 function AdminScoreboard({
   teams = [],
@@ -27,87 +26,38 @@ function AdminScoreboard({
   totalCount = 0,
   onPageChange,
   onRowClick,
-  showDetailDialog = false,
-  detailTeam = null,
-  detailTab = 'info',
-  detailMembers = [],
-  detailMembersLoading = false,
-  detailSubmissions = [],
-  detailSubmissionCount = 0,
-  detailSubmissionPage = 1,
-  detailWriteups = [],
-  detailWriteupCount = 0,
-  detailWriteupPage = 1,
-  detailContainers = [],
-  detailContainerCount = 0,
-  detailContainerPage = 1,
-  detailLoading = { submissions: false, writeups: false, traffic: false },
-  onDetailClose,
-  onDetailTabChange,
-  onDetailPageChange,
-  onDetailDownloadTraffic,
-  onDetailDownloadWriteup,
-  detailFlags = [],
-  detailFlagsLoading = false,
 }) {
   const { t, i18n } = useTranslation();
 
   return (
-    <>
-      <ScoreboardRanking
-        teams={teams}
-        locale={i18n.language || 'en-US'}
-        labels={{
-          rank: t('admin.contests.scoreboard.headers.rank'),
-          team: t('admin.contests.scoreboard.headers.team'),
-          score: t('admin.contests.scoreboard.headers.score'),
-          challenges: t('admin.contests.scoreboard.headers.challenges'),
-          lastSubmit: t('admin.contests.scoreboard.headers.lastSubmit'),
-          total: t('admin.contests.scoreboard.total'),
-        }}
-        emptyMessage={t('common.noData')}
-        onRowClick={onRowClick}
-        footer={
-          totalCount > pageSize ? (
-            <div className="mt-6">
-              <Pagination
-                total={Math.ceil(totalCount / pageSize)}
-                current={currentPage}
-                pageSize={pageSize}
-                onChange={onPageChange}
-                showTotal
-                totalItems={totalCount}
-              />
-            </div>
-          ) : null
-        }
-      />
-
-      <AdminTeamDetailDialog
-        isOpen={showDetailDialog}
-        onClose={onDetailClose}
-        team={detailTeam}
-        activeTab={detailTab}
-        onTabChange={onDetailTabChange}
-        members={detailMembers}
-        membersLoading={detailMembersLoading}
-        detailSubmissions={detailSubmissions}
-        detailSubmissionCount={detailSubmissionCount}
-        detailSubmissionPage={detailSubmissionPage}
-        detailWriteups={detailWriteups}
-        detailWriteupCount={detailWriteupCount}
-        detailWriteupPage={detailWriteupPage}
-        detailContainers={detailContainers}
-        detailContainerCount={detailContainerCount}
-        detailContainerPage={detailContainerPage}
-        detailLoading={detailLoading}
-        onDetailPageChange={onDetailPageChange}
-        onDetailDownloadTraffic={onDetailDownloadTraffic}
-        onDetailDownloadWriteup={onDetailDownloadWriteup}
-        detailFlags={detailFlags}
-        detailFlagsLoading={detailFlagsLoading}
-      />
-    </>
+    <ScoreboardRanking
+      teams={teams}
+      locale={i18n.language || 'en-US'}
+      labels={{
+        rank: t('admin.contests.scoreboard.headers.rank'),
+        team: t('admin.contests.scoreboard.headers.team'),
+        score: t('admin.contests.scoreboard.headers.score'),
+        challenges: t('admin.contests.scoreboard.headers.challenges'),
+        lastSubmit: t('admin.contests.scoreboard.headers.lastSubmit'),
+        total: t('admin.contests.scoreboard.total'),
+      }}
+      emptyMessage={t('common.noData')}
+      onRowClick={onRowClick}
+      footer={
+        totalCount > pageSize ? (
+          <div className="mt-6">
+            <Pagination
+              total={Math.ceil(totalCount / pageSize)}
+              current={currentPage}
+              pageSize={pageSize}
+              onChange={onPageChange}
+              showTotal
+              totalItems={totalCount}
+            />
+          </div>
+        ) : null
+      }
+    />
   );
 }
 

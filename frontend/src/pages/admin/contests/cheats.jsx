@@ -9,24 +9,13 @@ import {
   deleteContestCheat,
   deleteAllContestCheats,
   checkContestCheats,
-  getContestTeam,
-  getTeamMembers,
-  getContestTeamSubmissions,
-  getContestTeamWriteups,
-  getTeamContainers,
-  downloadContainerTraffic,
-  downloadContestTeamWriteup,
-  getContestTeamFlags,
 } from '../../../api/admin/contest';
-import { getUserInfo } from '../../../api/admin/user';
-import { downloadBlobResponse } from '../../../utils/fileDownload';
 import { List, StatusTag, IpAddress, StatCard } from '../../../components/common';
 import { Modal } from '../../../components/common';
 import ModalButton from '../../../components/common/ModalButton';
 import { Button, Pagination, EmptyState } from '../../../components/common';
-import AdminUserDetailDialog from '../../../components/features/Admin/AdminUserDetailDialog';
-import AdminTeamDetailDialog from '../../../components/features/Admin/Contests/AdminTeamDetailDialog';
 import { useTranslation } from 'react-i18next';
+import { useUserDetailDialog, useTeamDetailDialog } from '../../../hooks';
 
 function AdminContestCheats() {
   const { id } = useParams();
@@ -53,29 +42,8 @@ function AdminContestCheats() {
   });
   const { t, i18n } = useTranslation();
 
-  // User detail dialog state
-  const [showUserDetail, setShowUserDetail] = useState(false);
-  const [userDetailData, setUserDetailData] = useState(null);
-
-  // Team detail dialog state
-  const [showTeamDetail, setShowTeamDetail] = useState(false);
-  const [teamDetailData, setTeamDetailData] = useState(null);
-  const [teamDetailTab, setTeamDetailTab] = useState('info');
-  const [teamDetailMembers, setTeamDetailMembers] = useState([]);
-  const [teamDetailMembersLoading, setTeamDetailMembersLoading] = useState(false);
-  const [teamDetailSubmissions, setTeamDetailSubmissions] = useState([]);
-  const [teamDetailSubmissionCount, setTeamDetailSubmissionCount] = useState(0);
-  const [teamDetailSubmissionPage, setTeamDetailSubmissionPage] = useState(1);
-  const [teamDetailWriteups, setTeamDetailWriteups] = useState([]);
-  const [teamDetailWriteupCount, setTeamDetailWriteupCount] = useState(0);
-  const [teamDetailWriteupPage, setTeamDetailWriteupPage] = useState(1);
-  const [teamDetailContainers, setTeamDetailContainers] = useState([]);
-  const [teamDetailContainerCount, setTeamDetailContainerCount] = useState(0);
-  const [teamDetailContainerPage, setTeamDetailContainerPage] = useState(1);
-  const [teamDetailLoading, setTeamDetailLoading] = useState({ submissions: false, writeups: false, traffic: false });
-  const [teamDetailFlags, setTeamDetailFlags] = useState([]);
-  const [teamDetailFlagsLoading, setTeamDetailFlagsLoading] = useState(false);
-  const teamDetailPageSize = 20;
+  const { openUserDetail, renderUserDetailDialog } = useUserDetailDialog();
+  const { openTeamDetail, renderTeamDetailDialog } = useTeamDetailDialog(parseInt(id));
 
   useEffect(() => {
     fetchCheats();
@@ -220,182 +188,6 @@ function AdminContestCheats() {
     return new Date(timestamp).toLocaleString(i18n.language || 'en-US');
   };
 
-  // === User detail handlers ===
-  const handleUserClick = async (userId) => {
-    if (!userId) return;
-    try {
-      const response = await getUserInfo(userId);
-      if (response.code === 200) {
-        setUserDetailData(response.data);
-        setShowUserDetail(true);
-      }
-    } catch (error) {
-      toast.danger({ description: error.message || t('admin.users.toast.fetchFailed') });
-    }
-  };
-
-  // === Team detail handlers ===
-  const handleTeamClick = async (teamId) => {
-    if (!teamId) return;
-    try {
-      const response = await getContestTeam(parseInt(id), teamId);
-      if (response.code === 200) {
-        setTeamDetailData(response.data);
-        setTeamDetailTab('info');
-        setShowTeamDetail(true);
-        setTeamDetailMembersLoading(true);
-        try {
-          const membersRes = await getTeamMembers(parseInt(id), teamId);
-          if (membersRes.code === 200) {
-            setTeamDetailMembers(membersRes.data || []);
-          }
-        } finally {
-          setTeamDetailMembersLoading(false);
-        }
-      }
-    } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.cheats.toast.fetchFailed') });
-    }
-  };
-
-  const handleTeamDetailClose = () => {
-    setShowTeamDetail(false);
-    setTeamDetailData(null);
-    setTeamDetailTab('info');
-    setTeamDetailMembers([]);
-    setTeamDetailSubmissions([]);
-    setTeamDetailSubmissionCount(0);
-    setTeamDetailSubmissionPage(1);
-    setTeamDetailWriteups([]);
-    setTeamDetailWriteupCount(0);
-    setTeamDetailWriteupPage(1);
-    setTeamDetailContainers([]);
-    setTeamDetailContainerCount(0);
-    setTeamDetailContainerPage(1);
-    setTeamDetailLoading({ submissions: false, writeups: false, traffic: false });
-    setTeamDetailFlags([]);
-    setTeamDetailFlagsLoading(false);
-  };
-
-  const fetchTeamDetailSubmissions = async (teamId, page = 1) => {
-    setTeamDetailLoading((prev) => ({ ...prev, submissions: true }));
-    try {
-      const response = await getContestTeamSubmissions(parseInt(id), teamId, {
-        limit: teamDetailPageSize,
-        offset: (page - 1) * teamDetailPageSize,
-      });
-      if (response.code === 200) {
-        setTeamDetailSubmissions(response.data.submissions || []);
-        setTeamDetailSubmissionCount(response.data.count || 0);
-      }
-    } catch (error) {
-      toast.danger({ description: error.message });
-    } finally {
-      setTeamDetailLoading((prev) => ({ ...prev, submissions: false }));
-    }
-  };
-
-  const fetchTeamDetailWriteups = async (teamId, page = 1) => {
-    setTeamDetailLoading((prev) => ({ ...prev, writeups: true }));
-    try {
-      const response = await getContestTeamWriteups(parseInt(id), teamId, {
-        limit: teamDetailPageSize,
-        offset: (page - 1) * teamDetailPageSize,
-      });
-      if (response.code === 200) {
-        setTeamDetailWriteups(response.data.writeups || []);
-        setTeamDetailWriteupCount(response.data.count || 0);
-      }
-    } catch (error) {
-      toast.danger({ description: error.message });
-    } finally {
-      setTeamDetailLoading((prev) => ({ ...prev, writeups: false }));
-    }
-  };
-
-  const fetchTeamDetailContainers = async (teamId, page = 1) => {
-    setTeamDetailLoading((prev) => ({ ...prev, traffic: true }));
-    try {
-      const response = await getTeamContainers(parseInt(id), teamId, {
-        limit: teamDetailPageSize,
-        offset: (page - 1) * teamDetailPageSize,
-      });
-      if (response.code === 200) {
-        setTeamDetailContainers(response.data.victims || []);
-        setTeamDetailContainerCount(response.data.count || 0);
-      }
-    } catch (error) {
-      toast.danger({ description: error.message });
-    } finally {
-      setTeamDetailLoading((prev) => ({ ...prev, traffic: false }));
-    }
-  };
-
-  const fetchTeamDetailFlags = async (teamId) => {
-    setTeamDetailFlagsLoading(true);
-    try {
-      const response = await getContestTeamFlags(parseInt(id), teamId);
-      if (response.code === 200) {
-        setTeamDetailFlags(response.data || []);
-      }
-    } catch (error) {
-      toast.danger({ description: error.message });
-    } finally {
-      setTeamDetailFlagsLoading(false);
-    }
-  };
-
-  const handleTeamDetailTabChange = (tab) => {
-    setTeamDetailTab(tab);
-    if (!teamDetailData) return;
-    if (tab === 'submissions') {
-      setTeamDetailSubmissionPage(1);
-      fetchTeamDetailSubmissions(teamDetailData.id, 1);
-    } else if (tab === 'writeups') {
-      setTeamDetailWriteupPage(1);
-      fetchTeamDetailWriteups(teamDetailData.id, 1);
-    } else if (tab === 'containers') {
-      setTeamDetailContainerPage(1);
-      fetchTeamDetailContainers(teamDetailData.id, 1);
-    } else if (tab === 'flags') {
-      fetchTeamDetailFlags(teamDetailData.id);
-    }
-  };
-
-  const handleTeamDetailPageChange = (type, page) => {
-    if (!teamDetailData) return;
-    if (type === 'submissions') {
-      setTeamDetailSubmissionPage(page);
-      fetchTeamDetailSubmissions(teamDetailData.id, page);
-    } else if (type === 'writeups') {
-      setTeamDetailWriteupPage(page);
-      fetchTeamDetailWriteups(teamDetailData.id, page);
-    } else if (type === 'containers') {
-      setTeamDetailContainerPage(page);
-      fetchTeamDetailContainers(teamDetailData.id, page);
-    }
-  };
-
-  const handleTeamDetailDownloadTraffic = async (container) => {
-    if (!teamDetailData) return;
-    try {
-      const response = await downloadContainerTraffic(parseInt(id), teamDetailData.id, container.id);
-      downloadBlobResponse(response);
-    } catch (error) {
-      toast.danger({ description: error.message });
-    }
-  };
-
-  const handleTeamDetailDownloadWriteup = async (writeup) => {
-    if (!teamDetailData) return;
-    try {
-      const response = await downloadContestTeamWriteup(parseInt(id), teamDetailData.id, writeup.id);
-      downloadBlobResponse(response);
-    } catch (error) {
-      toast.danger({ description: error.message });
-    }
-  };
-
   const getCheatTypeLabel = (type) => {
     const typeMap = {
       cheater: t('admin.contests.cheats.types.cheater'),
@@ -455,7 +247,7 @@ function AdminContestCheats() {
                     className="text-geek-400 cursor-pointer hover:underline"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleUserClick(uid);
+                      openUserDetail(uid);
                     }}
                   >
                     {key}-{uid};
@@ -469,7 +261,7 @@ function AdminContestCheats() {
                     className="text-geek-400 cursor-pointer hover:underline"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleTeamClick(tid);
+                      openTeamDetail(tid);
                     }}
                   >
                     {key}-{tid};
@@ -791,7 +583,7 @@ function AdminContestCheats() {
                             <p
                               key={uid}
                               className="text-geek-400 cursor-pointer hover:underline w-fit"
-                              onClick={() => handleUserClick(uid)}
+                              onClick={() => openUserDetail(uid)}
                             >
                               {uid}
                             </p>
@@ -803,7 +595,7 @@ function AdminContestCheats() {
                             <p
                               key={tid}
                               className="text-geek-400 cursor-pointer hover:underline w-fit"
-                              onClick={() => handleTeamClick(tid)}
+                              onClick={() => openTeamDetail(tid)}
                             >
                               {tid}
                             </p>
@@ -970,41 +762,8 @@ function AdminContestCheats() {
         <p className="text-neutral-300">{t('admin.contests.cheats.actions.confirmCheckPrompt')}</p>
       </Modal>
 
-      {/* 用户信息对话框 */}
-      <AdminUserDetailDialog
-        isOpen={showUserDetail}
-        onClose={() => {
-          setShowUserDetail(false);
-          setUserDetailData(null);
-        }}
-        user={userDetailData}
-      />
-
-      {/* 队伍信息对话框 */}
-      <AdminTeamDetailDialog
-        isOpen={showTeamDetail}
-        onClose={handleTeamDetailClose}
-        team={teamDetailData}
-        activeTab={teamDetailTab}
-        onTabChange={handleTeamDetailTabChange}
-        members={teamDetailMembers}
-        membersLoading={teamDetailMembersLoading}
-        detailSubmissions={teamDetailSubmissions}
-        detailSubmissionCount={teamDetailSubmissionCount}
-        detailSubmissionPage={teamDetailSubmissionPage}
-        detailWriteups={teamDetailWriteups}
-        detailWriteupCount={teamDetailWriteupCount}
-        detailWriteupPage={teamDetailWriteupPage}
-        detailContainers={teamDetailContainers}
-        detailContainerCount={teamDetailContainerCount}
-        detailContainerPage={teamDetailContainerPage}
-        detailLoading={teamDetailLoading}
-        onDetailPageChange={handleTeamDetailPageChange}
-        onDetailDownloadTraffic={handleTeamDetailDownloadTraffic}
-        onDetailDownloadWriteup={handleTeamDetailDownloadWriteup}
-        detailFlags={teamDetailFlags}
-        detailFlagsLoading={teamDetailFlagsLoading}
-      />
+      {renderUserDetailDialog()}
+      {renderTeamDetailDialog()}
     </div>
   );
 }

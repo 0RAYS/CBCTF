@@ -11,11 +11,10 @@ import {
   downloadContestTeamWriteup,
   getContestTeamFlags,
 } from '../../../api/admin/contest';
-import { getUserInfo } from '../../../api/admin/user';
 import { hexToUtf8 } from '../../../utils/hex';
 import AdminContestTeamDetail from '../../../components/features/Admin/Contests/AdminContestTeamDetail';
-import AdminUserDetailDialog from '../../../components/features/Admin/AdminUserDetailDialog';
 import { Modal } from '../../../components/common';
+import { useUserDetailDialog } from '../../../hooks';
 import TrafficGraphModal from '../../../components/features/Admin/Contests/TrafficGraphModal';
 import { motion } from 'motion/react';
 import { Pagination, EmptyState } from '../../../components/common';
@@ -75,8 +74,7 @@ function TeamDetails() {
   const [detailFlags, setDetailFlags] = useState([]);
   const [detailFlagsLoading, setDetailFlagsLoading] = useState(false);
 
-  const [showUserDetail, setShowUserDetail] = useState(false);
-  const [userDetailData, setUserDetailData] = useState(null);
+  const { openUserDetail, renderUserDetailDialog } = useUserDetailDialog();
 
   const pageSize = 20;
   const trafficLimit = 20;
@@ -286,24 +284,6 @@ function TeamDetails() {
     }
   };
 
-  const handleUserClick = async (userId) => {
-    if (!userId) return;
-    try {
-      const response = await getUserInfo(userId);
-      if (response.code === 200) {
-        setUserDetailData(response.data);
-        setShowUserDetail(true);
-      }
-    } catch (error) {
-      toast.danger({ description: error.message || t('admin.users.toast.fetchFailed') });
-    }
-  };
-
-  const handleUserDetailClose = () => {
-    setShowUserDetail(false);
-    setUserDetailData(null);
-  };
-
   // 处理负载数据点击展开/收起
   const togglePayload = (index) => {
     if (expandedPayloadIndex === index) {
@@ -381,7 +361,7 @@ function TeamDetails() {
         loading={loading}
         onTabChange={handleTabChange}
         activeTab={activeTab}
-        onUserClick={handleUserClick}
+        onUserClick={openUserDetail}
         detailFlags={detailFlags}
         detailFlagsLoading={detailFlagsLoading}
       />
@@ -492,8 +472,7 @@ function TeamDetails() {
         teamId={parseInt(teamId)}
       />
 
-      {/* 用户详情弹窗 */}
-      <AdminUserDetailDialog isOpen={showUserDetail} onClose={handleUserDetailClose} user={userDetailData} />
+      {renderUserDetailDialog()}
     </>
   );
 }
