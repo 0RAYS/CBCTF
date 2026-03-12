@@ -1,11 +1,8 @@
-import { useState } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { Modal, Button, Card, EmptyState, Avatar } from '../../../common';
 import AdminContestTeamDetail from './AdminContestTeamDetail';
-import AdminUserDetailDialog from '../AdminUserDetailDialog';
-import { getUserInfo } from '../../../../api/admin/user';
-import { toast } from '../../../../utils/toast';
+import { useUserDetailDialog } from '../../../../hooks';
 
 const TABS = ['info', 'flags', 'submissions', 'writeups', 'containers'];
 
@@ -38,10 +35,7 @@ function AdminTeamDetailDialog({
   detailFlagsLoading = false,
 }) {
   const { t } = useTranslation();
-
-  // User detail dialog state (self-managed)
-  const [showUserDetail, setShowUserDetail] = useState(false);
-  const [userDetailData, setUserDetailData] = useState(null);
+  const { openUserDetail, renderUserDetailDialog } = useUserDetailDialog();
 
   if (!team) return null;
 
@@ -65,24 +59,6 @@ function AdminTeamDetailDialog({
     } else {
       onDetailPageChange(type, page);
     }
-  };
-
-  const handleUserClick = async (userId) => {
-    if (!userId) return;
-    try {
-      const response = await getUserInfo(userId);
-      if (response.code === 200) {
-        setUserDetailData(response.data);
-        setShowUserDetail(true);
-      }
-    } catch (error) {
-      toast.danger({ description: error.message || t('admin.users.toast.fetchFailed') });
-    }
-  };
-
-  const handleUserDetailClose = () => {
-    setShowUserDetail(false);
-    setUserDetailData(null);
   };
 
   const renderInfoTab = () => (
@@ -119,7 +95,7 @@ function AdminTeamDetailDialog({
         <Card
           variant="default"
           padding="md"
-          onClick={team.captain_id ? () => handleUserClick(team.captain_id) : undefined}
+          onClick={team.captain_id ? () => openUserDetail(team.captain_id) : undefined}
         >
           <div className="text-xs font-mono text-neutral-400 mb-1">{t('admin.contests.teams.detail.info.captain')}</div>
           <div className={`text-lg font-mono ${team.captain_id ? 'text-geek-400' : 'text-neutral-50'}`}>
@@ -170,7 +146,7 @@ function AdminTeamDetailDialog({
                   <tr
                     key={member.id}
                     className="hover:bg-neutral-800/30 transition-colors cursor-pointer"
-                    onClick={() => handleUserClick(member.id)}
+                    onClick={() => openUserDetail(member.id)}
                   >
                     <td className="px-4 py-2 text-sm font-mono text-geek-400">{member.id}</td>
                     <td className="px-4 py-2 text-sm font-mono text-geek-400">{member.name}</td>
@@ -216,7 +192,7 @@ function AdminTeamDetailDialog({
       onDownloadTraffic={onDetailDownloadTraffic}
       onDownloadWriteup={onDetailDownloadWriteup}
       onViewTrafficGraph={onViewTrafficGraph}
-      onUserClick={handleUserClick}
+      onUserClick={openUserDetail}
     />
   );
 
@@ -256,7 +232,7 @@ function AdminTeamDetailDialog({
         {renderTabContent()}
       </Modal>
 
-      <AdminUserDetailDialog isOpen={showUserDetail} onClose={handleUserDetailClose} user={userDetailData} />
+      {renderUserDetailDialog()}
     </>
   );
 }

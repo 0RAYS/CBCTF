@@ -34,7 +34,6 @@ import { IconEdit, IconTrash, IconUserMinus, IconContainer, IconSearch } from '@
 import { useTranslation } from 'react-i18next';
 import ModalButton from '../../../common/ModalButton';
 import { Button, Pagination, ScrollingText, Modal, List, EmptyState, Avatar, Input, Spinner } from '../../../common';
-import AdminTeamDetailDialog from './AdminTeamDetailDialog';
 
 function AdminTeams({
   teams = [],
@@ -65,29 +64,7 @@ function AdminTeams({
   searchRef,
   isSearchMode = false,
   onRowClick,
-  showDetailDialog = false,
-  detailTeam = null,
-  detailTab = 'info',
-  detailMembers = [],
-  detailMembersLoading = false,
-  detailSubmissions = [],
-  detailSubmissionCount = 0,
-  detailSubmissionPage = 1,
-  detailWriteups = [],
-  detailWriteupCount = 0,
-  detailWriteupPage = 1,
-  detailContainers = [],
-  detailContainerCount = 0,
-  detailContainerPage = 1,
-  detailLoading = { submissions: false, writeups: false, traffic: false },
-  onDetailClose,
-  onDetailTabChange,
-  onDetailPageChange,
-  onDetailDownloadTraffic,
-  onDetailDownloadWriteup,
   onPictureUpload,
-  detailFlags = [],
-  detailFlagsLoading = false,
 }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language || 'en-US';
@@ -319,7 +296,7 @@ function AdminTeams({
               id="banned"
               checked={editForm.banned}
               onChange={(e) => onFormChange({ ...editForm, banned: e.target.checked })}
-              className="w-4 h-4 rounded border-neutral-300/30 text-geek-400 
+              className="w-4 h-4 rounded border-neutral-300/30 text-geek-400
                                 focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
             />
             <label htmlFor="banned" className="text-sm font-mono text-neutral-400">
@@ -332,7 +309,7 @@ function AdminTeams({
               id="hidden"
               checked={editForm.hidden}
               onChange={(e) => onFormChange({ ...editForm, hidden: e.target.checked })}
-              className="w-4 h-4 rounded border-neutral-300/30 text-geek-400 
+              className="w-4 h-4 rounded border-neutral-300/30 text-geek-400
                                 focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
             />
             <label htmlFor="hidden" className="text-sm font-mono text-neutral-400">
@@ -427,32 +404,6 @@ function AdminTeams({
       >
         {renderModalContent()}
       </Modal>
-
-      {/* 详情对话框 */}
-      <AdminTeamDetailDialog
-        isOpen={showDetailDialog}
-        onClose={onDetailClose}
-        team={detailTeam}
-        activeTab={detailTab}
-        onTabChange={onDetailTabChange}
-        members={detailMembers}
-        membersLoading={detailMembersLoading}
-        detailSubmissions={detailSubmissions}
-        detailSubmissionCount={detailSubmissionCount}
-        detailSubmissionPage={detailSubmissionPage}
-        detailWriteups={detailWriteups}
-        detailWriteupCount={detailWriteupCount}
-        detailWriteupPage={detailWriteupPage}
-        detailContainers={detailContainers}
-        detailContainerCount={detailContainerCount}
-        detailContainerPage={detailContainerPage}
-        detailLoading={detailLoading}
-        onDetailPageChange={onDetailPageChange}
-        onDetailDownloadTraffic={onDetailDownloadTraffic}
-        onDetailDownloadWriteup={onDetailDownloadWriteup}
-        detailFlags={detailFlags}
-        detailFlagsLoading={detailFlagsLoading}
-      />
     </div>
   );
 }

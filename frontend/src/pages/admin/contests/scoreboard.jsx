@@ -1,19 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from '../../../utils/toast';
-import { downloadBlobResponse } from '../../../utils/fileDownload';
 import {
   getContestInfo,
   getContestRank,
   getContestScoreboard,
   getContestTimeline,
-  getTeamMembers,
-  getContestTeamSubmissions,
-  getContestTeamWriteups,
-  getTeamContainers,
-  downloadContainerTraffic,
-  downloadContestTeamWriteup,
-  getContestTeamFlags,
 } from '../../../api/admin/contest';
 import AdminScoreboard from '../../../components/features/Admin/Contests/AdminScoreboard';
 import AdminScoreboardTable from '../../../components/features/Admin/Contests/AdminScoreboardTable';
@@ -22,6 +14,7 @@ import { Button } from '../../../components/common';
 import { IconTable, IconList, IconChartLine } from '@tabler/icons-react';
 import ScoreboardStats from '../../../components/features/CTFGame/Scoreboard/ScoreboardStats.jsx';
 import { useTranslation } from 'react-i18next';
+import { useTeamDetailDialog } from '../../../hooks';
 
 function AdminContestScoreboard({ viewMode: externalViewMode, onViewModeChange: externalOnViewModeChange }) {
   const { id } = useParams();
@@ -53,35 +46,7 @@ function AdminContestScoreboard({ viewMode: externalViewMode, onViewModeChange: 
   const [timelineLoading, setTimelineLoading] = useState(false);
   const { t, i18n } = useTranslation();
 
-  // Detail dialog state
-  const [showDetailDialog, setShowDetailDialog] = useState(false);
-  const [detailTeam, setDetailTeam] = useState(null);
-  const [detailTab, setDetailTab] = useState('info');
-  const [detailMembers, setDetailMembers] = useState([]);
-  const [detailMembersLoading, setDetailMembersLoading] = useState(false);
-
-  const [detailSubmissions, setDetailSubmissions] = useState([]);
-  const [detailSubmissionCount, setDetailSubmissionCount] = useState(0);
-  const [detailSubmissionPage, setDetailSubmissionPage] = useState(1);
-
-  const [detailWriteups, setDetailWriteups] = useState([]);
-  const [detailWriteupCount, setDetailWriteupCount] = useState(0);
-  const [detailWriteupPage, setDetailWriteupPage] = useState(1);
-
-  const [detailContainers, setDetailContainers] = useState([]);
-  const [detailContainerCount, setDetailContainerCount] = useState(0);
-  const [detailContainerPage, setDetailContainerPage] = useState(1);
-
-  const [detailLoading, setDetailLoading] = useState({
-    submissions: false,
-    writeups: false,
-    traffic: false,
-  });
-
-  const [detailFlags, setDetailFlags] = useState([]);
-  const [detailFlagsLoading, setDetailFlagsLoading] = useState(false);
-
-  const detailPageSize = 20;
+  const { openTeamDetail, renderTeamDetailDialog } = useTeamDetailDialog(parseInt(id));
 
   // 处理视图模式变化
   const handleViewModeChange = (mode) => {
@@ -246,163 +211,9 @@ function AdminContestScoreboard({ viewMode: externalViewMode, onViewModeChange: 
     toast.info({ description: t('admin.contests.scoreboard.toast.exportUnavailable') });
   };
 
-  // === Detail dialog handlers ===
-
-  const fetchDetailSubmissions = async (teamId, page = 1) => {
-    setDetailLoading((prev) => ({ ...prev, submissions: true }));
-    try {
-      const response = await getContestTeamSubmissions(parseInt(id), teamId, {
-        limit: detailPageSize,
-        offset: (page - 1) * detailPageSize,
-      });
-      if (response.code === 200) {
-        setDetailSubmissions(response.data.submissions || []);
-        setDetailSubmissionCount(response.data.count || 0);
-      }
-    } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchTeamsFailed') });
-    } finally {
-      setDetailLoading((prev) => ({ ...prev, submissions: false }));
-    }
-  };
-
-  const fetchDetailWriteups = async (teamId, page = 1) => {
-    setDetailLoading((prev) => ({ ...prev, writeups: true }));
-    try {
-      const response = await getContestTeamWriteups(parseInt(id), teamId, {
-        limit: detailPageSize,
-        offset: (page - 1) * detailPageSize,
-      });
-      if (response.code === 200) {
-        setDetailWriteups(response.data.writeups || []);
-        setDetailWriteupCount(response.data.count || 0);
-      }
-    } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchTeamsFailed') });
-    } finally {
-      setDetailLoading((prev) => ({ ...prev, writeups: false }));
-    }
-  };
-
-  const fetchDetailContainers = async (teamId, page = 1) => {
-    setDetailLoading((prev) => ({ ...prev, traffic: true }));
-    try {
-      const response = await getTeamContainers(parseInt(id), teamId, {
-        limit: detailPageSize,
-        offset: (page - 1) * detailPageSize,
-      });
-      if (response.code === 200) {
-        setDetailContainers(response.data.victims || []);
-        setDetailContainerCount(response.data.count || 0);
-      }
-    } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchTeamsFailed') });
-    } finally {
-      setDetailLoading((prev) => ({ ...prev, traffic: false }));
-    }
-  };
-
-  const fetchDetailFlags = async (teamId) => {
-    setDetailFlagsLoading(true);
-    try {
-      const response = await getContestTeamFlags(parseInt(id), teamId);
-      if (response.code === 200) {
-        setDetailFlags(response.data || []);
-      }
-    } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchTeamsFailed') });
-    } finally {
-      setDetailFlagsLoading(false);
-    }
-  };
-
-  const handleRowClick = async (team) => {
+  const handleRowClick = (team) => {
     if (!team.id) return;
-    setDetailTeam(team);
-    setDetailTab('info');
-    setShowDetailDialog(true);
-    setDetailMembersLoading(true);
-    try {
-      const response = await getTeamMembers(parseInt(id), team.id);
-      if (response.code === 200) {
-        setDetailMembers(response.data || []);
-      }
-    } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchTeamsFailed') });
-    } finally {
-      setDetailMembersLoading(false);
-    }
-  };
-
-  const handleDetailClose = () => {
-    setShowDetailDialog(false);
-    setDetailTeam(null);
-    setDetailTab('info');
-    setDetailMembers([]);
-    setDetailSubmissions([]);
-    setDetailSubmissionCount(0);
-    setDetailSubmissionPage(1);
-    setDetailWriteups([]);
-    setDetailWriteupCount(0);
-    setDetailWriteupPage(1);
-    setDetailContainers([]);
-    setDetailContainerCount(0);
-    setDetailContainerPage(1);
-    setDetailLoading({ submissions: false, writeups: false, traffic: false });
-    setDetailFlags([]);
-    setDetailFlagsLoading(false);
-  };
-
-  const handleDetailTabChange = (tab) => {
-    setDetailTab(tab);
-    if (!detailTeam) return;
-
-    if (tab === 'submissions') {
-      setDetailSubmissionPage(1);
-      fetchDetailSubmissions(detailTeam.id, 1);
-    } else if (tab === 'writeups') {
-      setDetailWriteupPage(1);
-      fetchDetailWriteups(detailTeam.id, 1);
-    } else if (tab === 'containers') {
-      setDetailContainerPage(1);
-      fetchDetailContainers(detailTeam.id, 1);
-    } else if (tab === 'flags') {
-      fetchDetailFlags(detailTeam.id);
-    }
-  };
-
-  const handleDetailPageChange = (type, page) => {
-    if (!detailTeam) return;
-    if (type === 'submissions') {
-      setDetailSubmissionPage(page);
-      fetchDetailSubmissions(detailTeam.id, page);
-    } else if (type === 'writeups') {
-      setDetailWriteupPage(page);
-      fetchDetailWriteups(detailTeam.id, page);
-    } else if (type === 'containers') {
-      setDetailContainerPage(page);
-      fetchDetailContainers(detailTeam.id, page);
-    }
-  };
-
-  const handleDetailDownloadTraffic = async (container) => {
-    if (!detailTeam) return;
-    try {
-      const response = await downloadContainerTraffic(parseInt(id), detailTeam.id, container.id);
-      downloadBlobResponse(response, `traffic_${container.id}.zip`);
-    } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchTeamsFailed') });
-    }
-  };
-
-  const handleDetailDownloadWriteup = async (writeup) => {
-    if (!detailTeam) return;
-    try {
-      const response = await downloadContestTeamWriteup(parseInt(id), detailTeam.id, writeup.id);
-      downloadBlobResponse(response, writeup.filename);
-    } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchTeamsFailed') });
-    }
+    openTeamDetail(team);
   };
 
   return (
@@ -455,28 +266,6 @@ function AdminContestScoreboard({ viewMode: externalViewMode, onViewModeChange: 
           viewMode={viewMode}
           onViewModeChange={handleViewModeChange}
           onRowClick={handleRowClick}
-          showDetailDialog={showDetailDialog}
-          detailTeam={detailTeam}
-          detailTab={detailTab}
-          detailMembers={detailMembers}
-          detailMembersLoading={detailMembersLoading}
-          detailSubmissions={detailSubmissions}
-          detailSubmissionCount={detailSubmissionCount}
-          detailSubmissionPage={detailSubmissionPage}
-          detailWriteups={detailWriteups}
-          detailWriteupCount={detailWriteupCount}
-          detailWriteupPage={detailWriteupPage}
-          detailContainers={detailContainers}
-          detailContainerCount={detailContainerCount}
-          detailContainerPage={detailContainerPage}
-          detailLoading={detailLoading}
-          onDetailClose={handleDetailClose}
-          onDetailTabChange={handleDetailTabChange}
-          onDetailPageChange={handleDetailPageChange}
-          onDetailDownloadTraffic={handleDetailDownloadTraffic}
-          onDetailDownloadWriteup={handleDetailDownloadWriteup}
-          detailFlags={detailFlags}
-          detailFlagsLoading={detailFlagsLoading}
         />
       ) : viewMode === 'table' ? (
         <AdminScoreboardTable
@@ -490,6 +279,8 @@ function AdminContestScoreboard({ viewMode: externalViewMode, onViewModeChange: 
       ) : (
         <ScoreboardTimeline timelineData={timelineData} loading={timelineLoading} />
       )}
+
+      {renderTeamDetailDialog()}
     </div>
   );
 }
