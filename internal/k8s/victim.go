@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -302,7 +303,12 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 				containers = append(containers, tmp)
 			}
 			annotations := make(map[string]string)
-			for i, network := range pod.Networks {
+			networks := slices.Clone(pod.Networks)
+			// 需要出网的子网网卡须为第一张网卡
+			sort.Slice(networks, func(i, j int) bool {
+				return networks[i].External
+			})
+			for i, network := range networks {
 				subnet, ok := subnetMap[network.Name]
 				if !ok {
 					return fmt.Errorf("subnet %s not found", network.Name)
@@ -312,6 +318,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 					return fmt.Errorf("netAttachDef %s not found", network.Name)
 				}
 				if i == 0 {
+					// 指定主网卡使用的子网以覆盖默认子网
 					annotations["ovn.kubernetes.io/logical_switch"] = subnet.Name
 					annotations["ovn.kubernetes.io/ip_address"] = network.IP
 				} else {
