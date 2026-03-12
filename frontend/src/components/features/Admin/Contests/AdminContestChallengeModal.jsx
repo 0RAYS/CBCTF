@@ -1,9 +1,10 @@
 import { motion } from 'motion/react';
-import { IconX, IconPlus, IconTrash, IconDeviceFloppy } from '@tabler/icons-react';
+import { IconX, IconPlus, IconTrash, IconDeviceFloppy, IconUsers } from '@tabler/icons-react';
 import { useState, useEffect } from 'react';
 import { Button } from '../../../../components/common';
 import { useTranslation } from 'react-i18next';
 import ScoreCurveChart from './ScoreCurveChart';
+import FlagSolversModal from './FlagSolversModal';
 
 /**
  * 赛事内部赛题编辑弹窗组件
@@ -26,6 +27,8 @@ import ScoreCurveChart from './ScoreCurveChart';
 function AdminContestChallengeModal({
   isOpen = false,
   mode = 'add',
+  contestId,
+  challengeId,
   challenge = {
     name: '',
     description: '',
@@ -62,6 +65,7 @@ function AdminContestChallengeModal({
   const { t } = useTranslation();
   // 用于本地编辑的flags状态
   const [editingFlags, setEditingFlags] = useState([...flags]);
+  const [solversModal, setSolversModal] = useState({ open: false, flagId: null, flagIndex: 0 });
 
   // 本地更新flag，不触发onFlagChange
   const handleFlagChange = (index, updatedFlag) => {
@@ -187,15 +191,20 @@ function AdminContestChallengeModal({
                 <div key={index} className="mb-6 p-4 border border-neutral-700 rounded-md bg-black/20">
                   <div className="flex justify-between mb-2">
                     <h4 className="text-md font-mono text-geek-400">Flag #{index + 1}</h4>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="!text-geek-400 hover:!text-geek-300 !bg-geek-500/10 hover:!bg-geek-500/20"
-                      onClick={() => handleUpdateFlag(index)}
-                      title={t('admin.contests.challengeModal.actions.updateFlag')}
-                    >
-                      <IconDeviceFloppy size={18} />
-                    </Button>
+                    <div className="flex gap-1">
+                      {mode === 'edit' && flag.id && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          align="icon-left"
+                          icon={<IconUsers size={15} />}
+                          className="!text-neutral-300 hover:!text-neutral-100 !bg-neutral-700/40 hover:!bg-neutral-700/70 !text-xs"
+                          onClick={() => setSolversModal({ open: true, flagId: flag.id, flagIndex: index })}
+                        >
+                          {t('admin.contests.challengeModal.actions.viewSolvers')}
+                        </Button>
+                      )}
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
@@ -406,6 +415,14 @@ function AdminContestChallengeModal({
           </Button>
         </div>
       </motion.div>
+      <FlagSolversModal
+        isOpen={solversModal.open}
+        onClose={() => setSolversModal({ ...solversModal, open: false })}
+        flagIndex={solversModal.flagIndex}
+        contestId={contestId}
+        challengeId={challengeId}
+        flagId={solversModal.flagId}
+      />
     </div>
   );
 }

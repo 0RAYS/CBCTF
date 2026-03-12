@@ -441,6 +441,8 @@ function AdminContestChallengesPage() {
       <AdminContestChallengeModal
         isOpen={isModalOpen}
         mode="edit"
+        contestId={parseInt(id)}
+        challengeId={editingChallenge?.id}
         challenge={editForm}
         flags={adminContestChallengeFlags}
         onClose={() => setModalOpen(false)}

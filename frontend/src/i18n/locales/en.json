@@ -353,9 +353,22 @@
         },
         "actions": {
           "updateFlag": "Update flag",
+          "viewSolvers": "View Solvers",
           "addTag": "Add tag",
           "addHint": "Add hint",
           "add": "Add Challenge"
+        },
+        "solversModal": {
+          "title": "Flag #{{index}} Solvers",
+          "columns": {
+            "rank": "Rank",
+            "user": "User",
+            "team": "Team",
+            "score": "Score",
+            "solvedAt": "Solved At"
+          },
+          "empty": "No solvers yet",
+          "loading": "Loading..."
         }
       },
       "challengeSelector": {

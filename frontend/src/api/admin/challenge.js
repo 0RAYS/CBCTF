@@ -131,3 +131,11 @@ export const stopTestVictim = (challengeId) => {
     method: 'POST',
   });
 };
+
+// 获取flag解题队伍列表
+export const getFlagSolvers = (contestId, challengeId, flagId) => {
+  return request({
+    url: `/admin/contests/${contestId}/challenges/${challengeId}/flags/${flagId}/solvers`,
+    method: 'GET',
+  });
+};
