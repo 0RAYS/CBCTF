@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"math/big"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -137,7 +138,13 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 				}
 			}
 			pOptionsL[docker.ID] = db.CreatePodOptions{
-				Name:     fmt.Sprintf("pod-%d-%d-%s", contestChallengeID, userID, utils.RandStr(6)),
+				Name: fmt.Sprintf("pod-%d-%d-%s-%s", contestChallengeID, userID, func() string {
+					name := strings.ToLower(docker.Name)
+					if len(name) < 15 {
+						return name
+					}
+					return name[:15]
+				}(), utils.RandStr(6)),
 				PodPorts: docker.Exposes,
 				Networks: docker.Networks,
 			}
