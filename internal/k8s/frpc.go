@@ -264,6 +264,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 			Volumes:    []corev1.Volume{fcmVolume, ncmVolume, nfsVolume},
 		}
 		if gw, exists := podVPCGWMap[podName]; exists {
+			// frpc pod 需要与 子网 pod 进行通信, 不能与 VPCNatGW pod 位于同一个节点, 并且跨 kube-system 与本 namespace
 			options.PodAntiAffinity = map[string]string{"app": fmt.Sprintf("vpc-nat-gw-%s", gw)}
 		}
 		if _, ret = CreatePod(ctx, options); !ret.OK {
