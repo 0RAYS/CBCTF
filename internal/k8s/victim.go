@@ -201,7 +201,6 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 	}
 	for _, pod := range victim.Pods {
 		wg.Go(func() error {
-			nfsName := fmt.Sprintf("vol-%s", utils.RandStr(20))
 			containers := []corev1.Container{
 				{
 					Name:    "tcpdump",
@@ -209,7 +208,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 					Command: []string{"/bin/sh", "-c", fmt.Sprintf("tcpdump -i any -w /root/mnt/pod-%d.pcap", pod.ID)},
 					VolumeMounts: []corev1.VolumeMount{
 						{
-							Name:      nfsName,
+							Name:      nfsVolumeName,
 							MountPath: "/root/mnt",
 							SubPath: strings.TrimPrefix(
 								strings.TrimPrefix(victim.TrafficBasePath(), config.Env.Path), "/",
@@ -220,7 +219,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 			}
 			volumes := []corev1.Volume{
 				{
-					Name: nfsName,
+					Name: nfsVolumeName,
 					VolumeSource: corev1.VolumeSource{
 						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 							ClaimName: nfsVolumeName,
@@ -233,14 +232,14 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 				for path, volumeFlag := range container.VolumeFlags {
 					filename := strings.Split(path, "/")[len(strings.Split(path, "/"))-1]
 					flagConfigMap, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
-						Name:   fmt.Sprintf("cm-%s", utils.RandStr(20)),
+						Name:   fmt.Sprintf("flag-%s", utils.RandStr(20)),
 						Labels: labels,
 						Data:   map[string]string{filename: volumeFlag},
 					})
 					if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 						return errors.New(err.(string))
 					}
-					volumeName := fmt.Sprintf("vol-%s", utils.RandStr(10))
+					volumeName := fmt.Sprintf("flag-%s", utils.RandStr(10))
 					volumeMounts = append(volumeMounts, corev1.VolumeMount{
 						Name:      volumeName,
 						MountPath: path,
