@@ -135,5 +135,4 @@ func GenAttachment(ctx context.Context, challenge model.Challenge, generator mod
 		time.Sleep(time.Second)
 	}
 	return model.SuccessRetVal()
-
 }

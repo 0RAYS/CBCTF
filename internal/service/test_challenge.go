@@ -42,5 +42,6 @@ func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) model.RetVal {
 	defer cancel()
 	ret = k8s.GenAttachment(ctx, challenge, generator, 0, flags)
 	db.InitGeneratorRepo(tx).UpdateStatus(generator.ID, ret.OK, time.Now())
+	StopContestGenerators(tx, dto.StopGeneratorsForm{Generators: []uint{generator.ID}})
 	return ret
 }
