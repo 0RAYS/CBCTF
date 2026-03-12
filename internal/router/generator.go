@@ -40,7 +40,7 @@ func StartContestGenerator(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.StartGeneratorEventType)
 	contest := middleware.GetContest(ctx)
-	go service.StartContestGenerators(db.DB, contest, form)
+	go service.StartContestGenerators(db.DB, contest.ID, form)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }
