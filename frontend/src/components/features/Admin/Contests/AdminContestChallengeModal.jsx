@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { IconX, IconPlus, IconTrash, IconDeviceFloppy, IconUsers } from '@tabler/icons-react';
+import { IconX, IconPlus, IconTrash, IconUsers } from '@tabler/icons-react';
 import { useState, useEffect } from 'react';
 import { Button } from '../../../../components/common';
 import { useTranslation } from 'react-i18next';
