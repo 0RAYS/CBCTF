@@ -11,7 +11,6 @@ import (
 	"errors"
 	"fmt"
 	"slices"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -303,12 +302,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 				containers = append(containers, tmp)
 			}
 			annotations := make(map[string]string)
-			networks := slices.Clone(pod.Networks)
-			// 需要出网的子网网卡须为第一张网卡
-			sort.Slice(networks, func(i, j int) bool {
-				return networks[i].External
-			})
-			for i, network := range networks {
+			for i, network := range pod.Networks {
 				subnet, ok := subnetMap[network.Name]
 				if !ok {
 					return fmt.Errorf("subnet %s not found", network.Name)
@@ -326,6 +320,10 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 					annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
 					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", netAttachDef.Name, globalNamespace)] = subnet.Name
 					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", netAttachDef.Name, globalNamespace)] = network.IP
+					// 需要出网则修改默认主路由, 多个出网则默认使用第一个出网路由
+					if network.External {
+						annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/routes", netAttachDef.Name, globalNamespace)] = fmt.Sprintf("[{\"gw\":\"%s\"}]", network.Gateway)
+					}
 				}
 			}
 			pOptions := CreatePodOptions{
