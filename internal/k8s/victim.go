@@ -316,6 +316,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 					// 兼容 kube-ovn 主 / 从 CNI 模式
 					annotations["ovn.kubernetes.io/logical_switch"] = subnet.Name
 					annotations["ovn.kubernetes.io/ip_address"] = network.IP
+					annotations["v1.multus-cni.io/default-network"] = fmt.Sprintf("%s/%s", globalNamespace, netAttachDef.Name)
 				} else {
 					annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", globalNamespace, netAttachDef.Name)
 					annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
