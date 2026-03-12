@@ -315,7 +315,7 @@ func Init() *gin.Engine {
 
 				adminContestTeam.GET("/submissions", GetSubmissions)
 
-				adminContestTeam.GET("/victims", GetVictims)
+				adminContestTeam.GET("/victims", GetVictimHistories)
 				adminContainer := adminContestTeam.Group("/victims/:victimID", middleware.SetVictim)
 				{
 					adminTraffic := adminContainer.Group("/traffic")
@@ -370,7 +370,7 @@ func Init() *gin.Engine {
 			adminContestImages := adminContest.Group("/images")
 			{
 				adminContestImages.GET("", GetContestChallengeImage)
-				adminContestImages.POST("", WarmUpContestChallengeImage)
+				adminContestImages.POST("", PullContestChallengeImage)
 			}
 
 			adminContestVictim := adminContest.Group("/victims")

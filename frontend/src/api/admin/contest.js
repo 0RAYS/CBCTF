@@ -274,7 +274,7 @@ export const getContestTeamTraffic = (contestId, teamId, victimID, params) => {
 };
 
 // 获取预热镜像状态
-export const getContestWarmupImages = (contestId) => {
+export const getContestPullImages = (contestId) => {
   return request({
     url: `/admin/contests/${contestId}/images`,
     method: 'GET',
@@ -282,7 +282,7 @@ export const getContestWarmupImages = (contestId) => {
 };
 
 // 执行预热镜像
-export const warmupContestImages = (contestId, data) => {
+export const pullContestImages = (contestId, data) => {
   return request({
     url: `/admin/contests/${contestId}/images`,
     method: 'POST',

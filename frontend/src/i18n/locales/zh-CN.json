@@ -453,7 +453,7 @@
           "deleteFailed": "删除公告失败"
         }
       },
-      "imagesWarmup": {
+      "imagesPull": {
         "title": "镜像预热",
         "control": {
           "title": "预热控制",
@@ -465,7 +465,7 @@
         "actions": {
           "selectAll": "$t(common.selectAll)",
           "deselectAll": "$t(common.deselectAll)",
-          "warmup": "执行预热 ({{count}})"
+          "pull": "执行预热 ({{count}})"
         },
         "table": {
           "image": "镜像",
@@ -486,7 +486,7 @@
           "fetchFailed": "获取预热镜像信息失败",
           "selectRequired": "请选择要预热的镜像",
           "submitSuccess": "预热镜像任务已提交",
-          "warmupFailed": "预热镜像失败"
+          "pullFailed": "预热镜像失败"
         }
       },
       "teams": {
