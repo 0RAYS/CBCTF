@@ -302,14 +302,15 @@ var RoutePermissions = map[string]string{
 	"DELETE /admin/contests/:contestID/cheats/:cheatID": PermAdminCheatDelete,
 
 	// /admin/contests/:contestID/challenges
-	"GET /admin/contests/:contestID/challenges":                            PermAdminContestChallengeList,
-	"GET /admin/contests/:contestID/challenges/others":                     PermAdminChallengeList,
-	"GET /admin/contests/:contestID/challenges/categories":                 PermAdminContestChallengeList,
-	"POST /admin/contests/:contestID/challenges":                           PermAdminContestChallengeCreate,
-	"PUT /admin/contests/:contestID/challenges/:challengeID":               PermAdminContestChallengeUpdate,
-	"DELETE /admin/contests/:contestID/challenges/:challengeID":            PermAdminContestChallengeDelete,
-	"GET /admin/contests/:contestID/challenges/:challengeID/flags":         PermAdminContestChallengeFlagList,
-	"PUT /admin/contests/:contestID/challenges/:challengeID/flags/:flagID": PermAdminContestChallengeFlagUpdate,
+	"GET /admin/contests/:contestID/challenges":                                    PermAdminContestChallengeList,
+	"GET /admin/contests/:contestID/challenges/others":                             PermAdminChallengeList,
+	"GET /admin/contests/:contestID/challenges/categories":                         PermAdminContestChallengeList,
+	"POST /admin/contests/:contestID/challenges":                                   PermAdminContestChallengeCreate,
+	"PUT /admin/contests/:contestID/challenges/:challengeID":                       PermAdminContestChallengeUpdate,
+	"DELETE /admin/contests/:contestID/challenges/:challengeID":                    PermAdminContestChallengeDelete,
+	"GET /admin/contests/:contestID/challenges/:challengeID/flags":                 PermAdminContestChallengeFlagList,
+	"PUT /admin/contests/:contestID/challenges/:challengeID/flags/:flagID":         PermAdminContestChallengeFlagUpdate,
+	"GET /admin/contests/:contestID/challenges/:challengeID/flags/:flagID/solvers": PermAdminContestChallengeFlagList,
 
 	// /admin/contests/:contestID/images
 	"GET /admin/contests/:contestID/images":  PermAdminImagePull,

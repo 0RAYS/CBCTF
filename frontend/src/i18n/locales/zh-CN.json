@@ -353,9 +353,22 @@
         },
         "actions": {
           "updateFlag": "更新Flag",
+          "viewSolvers": "查看解题队伍",
           "addTag": "添加标签",
           "addHint": "添加提示",
           "add": "添加赛题"
+        },
+        "solversModal": {
+          "title": "Flag #{{index}} 解题队伍",
+          "columns": {
+            "rank": "排名",
+            "user": "用户",
+            "team": "队伍",
+            "score": "分数",
+            "solvedAt": "解题时间"
+          },
+          "empty": "暂无解题记录",
+          "loading": "加载中..."
         }
       },
       "challengeSelector": {

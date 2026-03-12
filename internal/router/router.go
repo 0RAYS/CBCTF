@@ -364,6 +364,7 @@ func Init() *gin.Engine {
 				adminContestFlag := adminContestChallenge.Group("/flags/:flagID", middleware.SetContestFlag)
 				{
 					adminContestFlag.PUT("", UpdateContestFlag)
+					adminContestFlag.GET("/solvers", GetContestFlagSolvers)
 				}
 			}
 
