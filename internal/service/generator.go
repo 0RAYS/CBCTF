@@ -17,19 +17,20 @@ import (
 	"gorm.io/gorm"
 )
 
-func StartContestGenerators(tx *gorm.DB, contest model.Contest, form dto.StartGeneratorsForm) model.RetVal {
+func StartContestGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) ([]model.Generator, model.RetVal) {
+	generators := make([]model.Generator, 0)
 	if len(form.Challenges) == 0 {
-		return model.SuccessRetVal()
+		return generators, model.SuccessRetVal()
 	}
 	challenges, _, ret := db.InitChallengeRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"type": model.DynamicChallengeType, "rand_id": form.Challenges},
 	})
 	if !ret.OK {
-		return ret
+		return generators, ret
 	}
 	for _, challenge := range challenges {
 		_, ret = db.InitContestChallengeRepo(tx).Get(db.GetOptions{
-			Conditions: map[string]any{"contest_id": contest.ID, "challenge_id": challenge.ID},
+			Conditions: map[string]any{"contest_id": contestID, "challenge_id": challenge.ID},
 		})
 		if !ret.OK {
 			continue
@@ -37,8 +38,8 @@ func StartContestGenerators(tx *gorm.DB, contest model.Contest, form dto.StartGe
 		_ = tx.Transaction(func(tx2 *gorm.DB) error {
 			generator, ret := db.InitGeneratorRepo(tx2).Create(db.CreateGeneratorOptions{
 				ChallengeID: challenge.ID,
-				ContestID:   contest.ID,
-				Name:        fmt.Sprintf("gen-%d-%d-%s", contest.ID, challenge.ID, utils.RandStr(6)),
+				ContestID:   contestID,
+				Name:        fmt.Sprintf("gen-%d-%d-%s", contestID, challenge.ID, utils.RandStr(6)),
 			})
 			if !ret.OK {
 				return errors.New(ret.Msg)
@@ -50,10 +51,11 @@ func StartContestGenerators(tx *gorm.DB, contest model.Contest, form dto.StartGe
 				k8s.StopGenerator(ctx, generator)
 				return errors.New(ret.Msg)
 			}
+			generators = append(generators, generator)
 			return nil
 		})
 	}
-	return model.SuccessRetVal()
+	return generators, model.SuccessRetVal()
 }
 
 func StopContestGenerators(tx *gorm.DB, form dto.StopGeneratorsForm) model.RetVal {

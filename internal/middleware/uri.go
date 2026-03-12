@@ -252,10 +252,10 @@ func SetTrafficFile(ctx *gin.Context) {
 	ctx.Next()
 }
 
-func SetAttachmentFile(regen bool) gin.HandlerFunc {
+func SetAttachmentFile(test bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		challenge := GetChallenge(ctx)
-		if regen && challenge.Type == model.DynamicChallengeType {
+		if test && challenge.Type == model.DynamicChallengeType {
 			if ret := service.GenTestAttachment(db.DB, challenge); !ret.OK {
 				resp.AbortJSON(ctx, ret)
 				return
