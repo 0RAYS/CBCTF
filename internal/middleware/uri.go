@@ -257,7 +257,7 @@ func SetAttachmentFile(regen bool) gin.HandlerFunc {
 		challenge := GetChallenge(ctx)
 		if regen && challenge.Type == model.DynamicChallengeType {
 			if ret := service.GenTestAttachment(db.DB, challenge); !ret.OK {
-				resp.JSON(ctx, ret)
+				resp.AbortJSON(ctx, ret)
 				return
 			}
 		}
