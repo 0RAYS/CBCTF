@@ -313,17 +313,18 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 				}
 				if i == 0 {
 					// 指定主网卡使用的子网以覆盖默认子网
+					// 兼容 kube-ovn 主 / 从 CNI 模式
 					annotations["ovn.kubernetes.io/logical_switch"] = subnet.Name
 					annotations["ovn.kubernetes.io/ip_address"] = network.IP
 				} else {
 					annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", globalNamespace, netAttachDef.Name)
 					annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
-					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", netAttachDef.Name, globalNamespace)] = subnet.Name
-					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", netAttachDef.Name, globalNamespace)] = network.IP
-					// 需要出网则修改默认主路由, 多个出网则默认使用第一个出网路由
-					if network.External {
-						annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/routes", netAttachDef.Name, globalNamespace)] = fmt.Sprintf("[{\"gw\":\"%s\"}]", network.Gateway)
-					}
+				}
+				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", netAttachDef.Name, globalNamespace)] = subnet.Name
+				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", netAttachDef.Name, globalNamespace)] = network.IP
+				// 需要出网则修改默认主路由, 多个出网则默认使用第一个出网路由
+				if network.External {
+					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/routes", netAttachDef.Name, globalNamespace)] = fmt.Sprintf("[{\"gw\":\"%s\"}]", network.Gateway)
 				}
 			}
 			pOptions := CreatePodOptions{
