@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { IconX } from '@tabler/icons-react';
+import { IconX, IconTrophy } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../../../components/common';
 import { getFlagSolvers } from '../../../../api/admin/challenge';
@@ -292,11 +292,21 @@ function FlagSolversModal({ isOpen, onClose, flagIndex, contestId, challengeId, 
               <tbody>
                 {solvers.map((solver, i) => (
                   <tr key={i} className="border-b border-neutral-800 hover:bg-white/5 transition-colors">
-                    <td className="py-2 pr-4 text-neutral-400">{i + 1}</td>
+                    <td className="py-2 pr-4">
+                      {i === 0 ? (
+                        <IconTrophy size={16} className="text-yellow-400" />
+                      ) : i === 1 ? (
+                        <IconTrophy size={16} className="text-neutral-300" />
+                      ) : i === 2 ? (
+                        <IconTrophy size={16} className="text-amber-600" />
+                      ) : (
+                        <span className="text-neutral-400">{i + 1}</span>
+                      )}
+                    </td>
                     <td className="py-2 pr-4">
                       {solver.user_id ? (
                         <button
-                          className="text-neutral-200 hover:text-geek-400 hover:underline transition-colors cursor-pointer text-left"
+                          className="text-neutral-200 hover:text-geek-400 transition-colors cursor-pointer text-left"
                           onClick={() => handleUserClick(solver.user_id)}
                         >
                           {solver.user_name || '—'}
@@ -308,7 +318,7 @@ function FlagSolversModal({ isOpen, onClose, flagIndex, contestId, challengeId, 
                     <td className="py-2 pr-4">
                       {solver.team_id ? (
                         <button
-                          className="text-neutral-300 hover:text-geek-400 hover:underline transition-colors cursor-pointer text-left"
+                          className="text-neutral-300 hover:text-geek-400 transition-colors cursor-pointer text-left"
                           onClick={() => handleTeamClick(solver.team_id)}
                         >
                           {solver.team_name || '—'}
