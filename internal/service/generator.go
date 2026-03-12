@@ -73,6 +73,7 @@ func StopContestGenerators(tx *gorm.DB, form dto.StopGeneratorsForm) model.RetVa
 		if !ret.OK {
 			return ret
 		}
+		db.InitGeneratorRepo(tx).Delete(generator.ID)
 	}
 	return model.SuccessRetVal()
 }
