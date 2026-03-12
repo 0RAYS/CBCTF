@@ -161,30 +161,20 @@ func DeleteContestChallenge(ctx *gin.Context) {
 
 func GetContestFlagSolvers(ctx *gin.Context) {
 	contestFlag := middleware.GetContestFlag(ctx)
-	submissions, _, ret := db.InitSubmissionRepo(db.DB).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{
-			"contest_flag_id": contestFlag.ID,
-			"solved":          true,
-		},
-		Preloads: map[string]db.GetOptions{
-			"User": {},
-			"Team": {},
-		},
-		Sort: []string{"id ASC"},
-	})
+	rows, ret := db.InitSubmissionRepo(db.DB).ListFlagSolvers(contestFlag.ID)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	data := make([]gin.H, 0)
-	for _, submission := range submissions {
+	data := make([]gin.H, 0, len(rows))
+	for _, row := range rows {
 		data = append(data, gin.H{
-			"user_id":   submission.UserID,
-			"user_name": submission.User.Name,
-			"team_id":   submission.TeamID,
-			"team_name": submission.Team.Name,
-			"score":     submission.Score,
-			"solved_at": submission.CreatedAt,
+			"user_id":   row.UserID,
+			"user_name": row.UserName,
+			"team_id":   row.TeamID,
+			"team_name": row.TeamName,
+			"score":     row.Score,
+			"solved_at": row.SolvedAt,
 		})
 	}
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"solvers": data, "count": int64(len(data))}))
