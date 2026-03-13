@@ -17,9 +17,7 @@ func GetCronJobs(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	cronJobs, count, ret := db.InitCronJobRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
-		Sort: []string{"id DESC"},
-	})
+	cronJobs, count, ret := db.InitCronJobRepo(db.DB).List(form.Limit, form.Offset)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
