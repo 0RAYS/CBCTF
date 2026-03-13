@@ -504,12 +504,7 @@ function AdminVictims() {
           {t('admin.victims.showDeleted')}
         </Button>
         {selectedContainers.length > 0 && (
-          <Button
-            variant="danger"
-            size="sm"
-            leftIcon={<IconBan size={14} />}
-            onClick={() => setIsStopModalOpen(true)}
-          >
+          <Button variant="danger" size="sm" leftIcon={<IconBan size={14} />} onClick={() => setIsStopModalOpen(true)}>
             {t('admin.victims.table.stopButton')} ({selectedContainers.length})
           </Button>
         )}
