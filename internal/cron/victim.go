@@ -30,7 +30,7 @@ func closeTimeoutVictims(c *cron.Cron) {
 		return model.SuccessRetVal()
 	})
 	function()
-	c.Schedule(cron.Every(5*time.Minute), cron.FuncJob(function))
+	c.Schedule(cron.Every(time.Minute), cron.FuncJob(function))
 }
 
 // closeUnCtrlVictims 关闭数据库中记录关闭, 但仍在运行的靶机
@@ -70,5 +70,5 @@ func closeUnCtrlVictims(c *cron.Cron) {
 		return model.SuccessRetVal()
 	})
 	function()
-	c.Schedule(cron.Every(time.Hour), cron.FuncJob(function))
+	c.Schedule(cron.Every(10*time.Minute), cron.FuncJob(function))
 }
