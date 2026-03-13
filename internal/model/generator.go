@@ -5,6 +5,13 @@ import (
 	"time"
 )
 
+const (
+	WaitingGeneratorStatus = "waiting"
+	PendingGeneratorStatus = "pending"
+	RunningGeneratorStatus = "running"
+	StoppedGeneratorStatus = "stopped"
+)
+
 // Generator
 // BelongsTo Challenge
 // BelongsTo Contest
@@ -18,6 +25,7 @@ type Generator struct {
 	SuccessLast time.Time      `gorm:"default:null" json:"success_last"`
 	Failure     int64          `json:"failure"`
 	FailureLast time.Time      `gorm:"default:null" json:"failure_last"`
+	Status      string         `json:"status"`
 	BaseModel
 }
 
@@ -38,5 +46,5 @@ func (g Generator) UniqueFields() []string {
 }
 
 func (g Generator) QueryFields() []string {
-	return []string{"id", "challenge_id", "contest_id", "success_count", "failure_count", "period"}
+	return []string{"id", "challenge_id", "contest_id", "success_count", "failure_count", "status"}
 }

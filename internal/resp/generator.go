@@ -17,5 +17,6 @@ func GetGeneratorResp(generator model.Generator) gin.H {
 		"success_last": generator.SuccessLast,
 		"failure":      generator.Failure,
 		"failure_last": generator.FailureLast,
+		"status":       generator.Status,
 	}
 }

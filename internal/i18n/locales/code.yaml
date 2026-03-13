@@ -61,6 +61,7 @@ model:
     notFound: "404"
   generator:
     notAvailable: "400"
+    deleteError: "500"
   group:
     cannotUpdateDefault: "403"
     cannotDeleteDefault: "403"

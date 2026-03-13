@@ -165,6 +165,7 @@ func (b *BaseRepo[M]) List(limit, offset int, optionsL ...GetOptions) ([]M, int6
 		ms         = make([]M, 0)
 		count, ret = b.Count(CountOptions{
 			Conditions: options.Conditions,
+			Search:     options.Search,
 			Deleted:    options.Deleted,
 		})
 	)

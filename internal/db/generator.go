@@ -1,6 +1,8 @@
 package db
 
 import (
+	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"database/sql"
 	"time"
@@ -23,6 +25,7 @@ func (c CreateGeneratorOptions) Convert2Model() model.Model {
 		ChallengeID: c.ChallengeID,
 		ContestID:   c.ContestID,
 		Name:        c.Name,
+		Status:      model.WaitingGeneratorStatus,
 	}
 }
 
@@ -32,6 +35,7 @@ type UpdateGeneratorOptions struct {
 	SuccessLast *time.Time
 	Failure     *int64
 	FailureLast *time.Time
+	Status      *string
 }
 
 func (u UpdateGeneratorOptions) Convert2Map() map[string]any {
@@ -50,6 +54,9 @@ func (u UpdateGeneratorOptions) Convert2Map() map[string]any {
 	}
 	if u.FailureLast != nil {
 		options["failure_last"] = u.FailureLast
+	}
+	if u.Status != nil {
+		options["status"] = u.Status
 	}
 	return options
 }
@@ -100,4 +107,17 @@ func (g *GeneratorRepo) UpdateStatus(id uint, success bool, last time.Time) mode
 		return ret
 	}
 	return g.Update(id, options)
+}
+
+func (g *GeneratorRepo) Delete(idL ...uint) model.RetVal {
+	for _, id := range idL {
+		if ret := g.Update(id, UpdateGeneratorOptions{Status: new(model.StoppedGeneratorStatus)}); !ret.OK {
+			return ret
+		}
+	}
+	if res := g.DB.Model(&model.Generator{}).Where("id IN ?", idL).Delete(&model.Generator{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete Generator: %s", res.Error)
+		return model.RetVal{Msg: i18n.Model.Generator.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return model.SuccessRetVal()
 }
