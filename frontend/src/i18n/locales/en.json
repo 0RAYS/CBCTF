@@ -930,13 +930,22 @@
         "noDynamicChallenges": "No dynamic challenges in this contest",
         "selectChallenges": "Select challenges to start generators for",
         "startSelected": "Start Selected",
+        "showDeleted": "Show Deleted",
         "columns": {
+          "id": "ID",
           "name": "Pod Name",
           "challengeId": "Challenge ID",
           "success": "Successes",
           "successLast": "Last Success",
           "failure": "Failures",
-          "failureLast": "Last Failure"
+          "failureLast": "Last Failure",
+          "status": "Status"
+        },
+        "status": {
+          "waiting": "Waiting",
+          "pending": "Pending",
+          "running": "Running",
+          "stopped": "Stopped"
         },
         "stats": {
           "total": "Total Generators",

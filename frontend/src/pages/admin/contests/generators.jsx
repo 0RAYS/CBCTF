@@ -10,11 +10,26 @@ import {
 import { Modal } from '../../../components/common';
 import { Button, Pagination, Card, EmptyState, StatCard } from '../../../components/common';
 import { motion } from 'motion/react';
-import { IconPlayerPlay, IconBan, IconRefresh, IconCheck, IconX } from '@tabler/icons-react';
+import { IconPlayerPlay, IconBan, IconRefresh, IconCheck, IconX, IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 
-const PAGE_SIZE = 20;
+const STATUS_STYLES = {
+  waiting: 'bg-yellow-400/10 text-yellow-400 border-yellow-400/30',
+  pending: 'bg-geek-400/10 text-geek-400 border-geek-400/30',
+  running: 'bg-green-400/10 text-green-400 border-green-400/30',
+  stopped: 'bg-neutral-500/10 text-neutral-400 border-neutral-500/30',
+};
 
+function GeneratorStatusBadge({ status, t }) {
+  const style = STATUS_STYLES[status] ?? STATUS_STYLES.stopped;
+  return (
+    <span className={`inline-block px-2 py-0.5 rounded border text-xs font-mono ${style}`}>
+      {t(`admin.contests.generators.status.${status}`, status)}
+    </span>
+  );
+}
+
+const PAGE_SIZE = 20;
 function ContestGenerators() {
   const { id: contestId } = useParams();
   const { t } = useTranslation();
@@ -24,20 +39,22 @@ function ContestGenerators() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedIds, setSelectedIds] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showDeleted, setShowDeleted] = useState(false);
 
   const [dynamicChallenges, setDynamicChallenges] = useState([]);
   const [startModalOpen, setStartModalOpen] = useState(false);
   const [startSelected, setStartSelected] = useState([]);
 
-  const fetchGenerators = async (page = 1) => {
+  const fetchGenerators = async (page = 1, deleted = showDeleted) => {
     setLoading(true);
     try {
       const res = await getContestGenerators(contestId, {
         limit: PAGE_SIZE,
         offset: (page - 1) * PAGE_SIZE,
+        ...(deleted && { deleted: true }),
       });
       setGenerators(res.data?.generators ?? []);
-      setTotalCount(res.data?.total ?? 0);
+      setTotalCount(res.data?.count ?? 0);
     } catch {
       toast.error(t('admin.contests.generators.toast.fetchFailed'));
     } finally {
@@ -64,6 +81,14 @@ function ContestGenerators() {
     setCurrentPage(page);
     setSelectedIds([]);
     fetchGenerators(page);
+  };
+
+  const toggleShowDeleted = () => {
+    const next = !showDeleted;
+    setShowDeleted(next);
+    setCurrentPage(1);
+    setSelectedIds([]);
+    fetchGenerators(1, next);
   };
 
   const toggleSelect = (id) => {
@@ -157,6 +182,14 @@ function ContestGenerators() {
         <Button variant="primary" size="sm" onClick={openStartModal} leftIcon={<IconPlayerPlay size={14} />}>
           {t('admin.contests.generators.startButton')}
         </Button>
+        <Button
+          variant={showDeleted ? 'danger' : 'ghost'}
+          size="sm"
+          onClick={toggleShowDeleted}
+          leftIcon={<IconTrash size={14} />}
+        >
+          {t('admin.contests.generators.showDeleted')}
+        </Button>
         {selectedIds.length > 0 && (
           <Button variant="danger" size="sm" onClick={handleStop} leftIcon={<IconBan size={14} />}>
             {t('admin.contests.generators.stopButton')} ({selectedIds.length})
@@ -187,6 +220,9 @@ function ContestGenerators() {
                     />
                   </th>
                   <th className="py-3 px-4 text-left" scope="col">
+                    {t('admin.contests.generators.columns.id')}
+                  </th>
+                  <th className="py-3 px-4 text-left" scope="col">
                     {t('admin.contests.generators.columns.name')}
                   </th>
                   <th className="py-3 px-4 text-left" scope="col">
@@ -203,6 +239,9 @@ function ContestGenerators() {
                   </th>
                   <th className="py-3 px-4 text-left" scope="col">
                     {t('admin.contests.generators.columns.failureLast')}
+                  </th>
+                  <th className="py-3 px-4 text-left" scope="col">
+                    {t('admin.contests.generators.columns.status')}
                   </th>
                 </tr>
               </thead>
@@ -222,12 +261,16 @@ function ContestGenerators() {
                         onChange={() => toggleSelect(gen.id)}
                       />
                     </td>
+                    <td className="py-3 px-4 font-mono text-xs text-neutral-500">{gen.id}</td>
                     <td className="py-3 px-4 font-mono text-xs text-neutral-200">{gen.name}</td>
                     <td className="py-3 px-4 text-neutral-400">{gen.challenge_id}</td>
                     <td className="py-3 px-4 text-green-400">{gen.success ?? 0}</td>
                     <td className="py-3 px-4 text-neutral-400 text-xs">{formatTime(gen.success_last)}</td>
                     <td className="py-3 px-4 text-red-400">{gen.failure ?? 0}</td>
                     <td className="py-3 px-4 text-neutral-400 text-xs">{formatTime(gen.failure_last)}</td>
+                    <td className="py-3 px-4">
+                      <GeneratorStatusBadge status={gen.status} t={t} />
+                    </td>
                   </motion.tr>
                 ))}
               </tbody>
@@ -237,7 +280,13 @@ function ContestGenerators() {
       </Card>
 
       {totalCount > PAGE_SIZE && (
-        <Pagination current={currentPage} total={totalCount} pageSize={PAGE_SIZE} onChange={handlePageChange} />
+        <Pagination
+          current={currentPage}
+          total={Math.ceil(totalCount / PAGE_SIZE)}
+          totalItems={totalCount}
+          showTotal
+          onChange={handlePageChange}
+        />
       )}
 
       {/* Start Modal */}

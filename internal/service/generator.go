@@ -10,7 +10,6 @@ import (
 	"context"
 	"crypto/rand"
 	"database/sql"
-	"errors"
 	"fmt"
 	"math/big"
 	"time"
@@ -18,49 +17,54 @@ import (
 	"gorm.io/gorm"
 )
 
-func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) ([]model.Generator, model.RetVal) {
-	generators := make([]model.Generator, 0)
+func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) model.RetVal {
 	if len(form.Challenges) == 0 {
-		return generators, model.SuccessRetVal()
+		return model.SuccessRetVal()
 	}
 	challenges, _, ret := db.InitChallengeRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"type": model.DynamicChallengeType, "rand_id": form.Challenges},
 	})
 	if !ret.OK {
-		return generators, ret
+		return ret
 	}
+	contestChallengeRepo := db.InitContestChallengeRepo(tx)
 	for _, challenge := range challenges {
 		if contestID > 0 {
-			_, ret = db.InitContestChallengeRepo(tx).Get(db.GetOptions{
+			_, ret = contestChallengeRepo.Get(db.GetOptions{
 				Conditions: map[string]any{"contest_id": contestID, "challenge_id": challenge.ID},
 			})
 			if !ret.OK {
 				continue
 			}
 		}
-		_ = tx.Transaction(func(tx2 *gorm.DB) error {
-			generator, ret := db.InitGeneratorRepo(tx2).Create(db.CreateGeneratorOptions{
+		go func(contestID uint, challenge model.Challenge) {
+			generatorRepo := db.InitGeneratorRepo(tx)
+			generator, ret := generatorRepo.Create(db.CreateGeneratorOptions{
 				ChallengeID: challenge.ID,
 				ContestID:   sql.Null[uint]{V: contestID, Valid: contestID > 0},
 				Name:        fmt.Sprintf("gen-%d-%d-%s", contestID, challenge.ID, utils.RandStr(6)),
 			})
 			if !ret.OK {
-				return errors.New(ret.Msg)
+				return
+			}
+			ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.PendingGeneratorStatus)})
+			if !ret.OK {
+				return
 			}
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 			_, ret = k8s.StartGenerator(ctx, challenge, generator)
 			cancel()
 			if !ret.OK {
-				ctx, cancel = context.WithTimeout(context.Background(), 2*time.Minute)
-				k8s.StopGenerator(ctx, generator)
-				cancel()
-				return errors.New(ret.Msg)
+				StopGenerators(tx, dto.StopGeneratorsForm{Generators: []uint{generator.ID}})
+				return
 			}
-			generators = append(generators, generator)
-			return nil
-		})
+			ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.RunningGeneratorStatus)})
+			if !ret.OK {
+				return
+			}
+		}(contestID, challenge)
 	}
-	return generators, model.SuccessRetVal()
+	return model.SuccessRetVal()
 }
 
 func StopGenerators(tx *gorm.DB, form dto.StopGeneratorsForm) model.RetVal {

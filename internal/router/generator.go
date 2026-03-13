@@ -12,7 +12,7 @@ import (
 )
 
 func GetContestGenerators(ctx *gin.Context) {
-	var form dto.ListModelsForm
+	var form dto.ListGeneratorsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -20,6 +20,7 @@ func GetContestGenerators(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
 	generators, count, ret := db.InitGeneratorRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID},
+		Deleted:    form.Deleted,
 	})
 	if !ret.OK {
 		resp.JSON(ctx, ret)

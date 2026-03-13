@@ -930,13 +930,22 @@
         "noDynamicChallenges": "此比赛中没有动态类型题目",
         "selectChallenges": "选择要启动生成器的题目",
         "startSelected": "启动所选",
+        "showDeleted": "显示已删除",
         "columns": {
+          "id": "ID",
           "name": "Pod 名称",
           "challengeId": "题目 ID",
           "success": "成功次数",
           "successLast": "最近成功",
           "failure": "失败次数",
-          "failureLast": "最近失败"
+          "failureLast": "最近失败",
+          "status": "状态"
+        },
+        "status": {
+          "waiting": "等待中",
+          "pending": "挂起中",
+          "running": "运行中",
+          "stopped": "已停止"
         },
         "stats": {
           "total": "生成器总数",

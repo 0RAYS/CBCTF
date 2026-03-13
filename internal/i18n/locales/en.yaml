@@ -61,6 +61,7 @@ model:
     notFound: "File not found"
   generator:
     notAvailable: "Has no available attachment generators, please contact administrator"
+    deleteError: "Delete Generator error: {{.Error}}"
   group:
     cannotUpdateDefault: "Cannot update default group"
     cannotDeleteDefault: "Cannot delete default group"

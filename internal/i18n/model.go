@@ -69,6 +69,7 @@ type File struct {
 
 type Generator struct {
 	NotAvailable string
+	DeleteError  string
 }
 
 type Group struct {
@@ -296,6 +297,7 @@ var Model = struct {
 	},
 	Generator: Generator{
 		NotAvailable: "model.generator.notAvailable",
+		DeleteError:  "model.generator.deleteError",
 	},
 	Group: Group{
 		CannotUpdateDefault: "model.group.cannotUpdateDefault",
