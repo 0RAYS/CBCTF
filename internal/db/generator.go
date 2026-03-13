@@ -2,6 +2,7 @@ package db
 
 import (
 	"CBCTF/internal/model"
+	"database/sql"
 	"time"
 
 	"gorm.io/gorm"
@@ -13,7 +14,7 @@ type GeneratorRepo struct {
 
 type CreateGeneratorOptions struct {
 	ChallengeID uint
-	ContestID   uint
+	ContestID   sql.Null[uint]
 	Name        string
 }
 

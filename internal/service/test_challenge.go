@@ -29,7 +29,7 @@ func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) model.RetVal {
 		if ret.Msg != i18n.Model.Generator.NotAvailable {
 			return ret
 		}
-		generators, ret := StartContestGenerators(tx, 0, dto.StartGeneratorsForm{Challenges: []string{challenge.RandID}})
+		generators, ret := StartGenerators(tx, 0, dto.StartGeneratorsForm{Challenges: []string{challenge.RandID}})
 		if !ret.OK {
 			return ret
 		}
@@ -42,6 +42,6 @@ func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) model.RetVal {
 	defer cancel()
 	ret = k8s.GenAttachment(ctx, challenge, generator, 0, flags)
 	db.InitGeneratorRepo(tx).UpdateStatus(generator.ID, ret.OK, time.Now())
-	StopContestGenerators(tx, dto.StopGeneratorsForm{Generators: []uint{generator.ID}})
+	StopGenerators(tx, dto.StopGeneratorsForm{Generators: []uint{generator.ID}})
 	return ret
 }
