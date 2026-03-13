@@ -5,7 +5,6 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
-	"fmt"
 	"sync"
 	"time"
 
@@ -21,7 +20,6 @@ var (
 	c           *cron.Cron
 	taskEntries sync.Map
 	taskMap     = map[string]taskDefinition{
-		model.CollectSystemMetricsCronJob: {name: model.CollectSystemMetricsCronJob, run: collectSystemMetricsTask},
 		model.CloseTimeoutVictimsCronJob:  {name: model.CloseTimeoutVictimsCronJob, run: closeTimeoutVictimsTask},
 		model.CloseUnCtrlVictimsCronJob:   {name: model.CloseUnCtrlVictimsCronJob, run: closeUnCtrlVictimsTask},
 		model.ClearEmptyTeamCronJob:       {name: model.ClearEmptyTeamCronJob, run: clearEmptyTeamTask},
@@ -61,6 +59,9 @@ func Init() {
 
 func Start() {
 	log.Logger.Info("Cron started")
+
+	c.Schedule(cron.Every(time.Second), cron.FuncJob(collectSystemMetricsTask))
+
 	if ret := reloadAll(); !ret.OK {
 		log.Logger.Warningf("Failed to load cron jobs: %s %v", ret.Msg, ret.Attr)
 	}
@@ -116,28 +117,4 @@ func registerCronJob(cronJob model.CronJob, def taskDefinition) model.RetVal {
 	taskEntries.Store(cronJob.Name, entryID)
 	log.Logger.Infof("Cron job loaded: %s (%s)", cronJob.Name, spec)
 	return model.SuccessRetVal()
-}
-
-func mustSchedule(name, schedule string, task func() model.RetVal) {
-	entryID, err := c.AddFunc(schedule, exec(name, task))
-	if err != nil {
-		log.Logger.Fatalf("Failed to schedule cron job %s: %s", name, err)
-	}
-	taskEntries.Store(name, entryID)
-}
-
-func RegisterCronJobForTest(name, schedule string, task func() model.RetVal) error {
-	if c == nil {
-		return fmt.Errorf("cron is not initialized")
-	}
-	if value, ok := taskEntries.Load(name); ok {
-		c.Remove(value.(cron.EntryID))
-		taskEntries.Delete(name)
-	}
-	entryID, err := c.AddFunc(schedule, exec(name, task))
-	if err != nil {
-		return err
-	}
-	taskEntries.Store(name, entryID)
-	return nil
 }

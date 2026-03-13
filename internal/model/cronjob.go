@@ -11,14 +11,12 @@ const (
 	ClearJoinTeamMutexCronJob   = "ClearJoinTeamMutes"
 	UpdateTeamRankingCronJob    = "UpdateTeamRanking"
 	UpdateUserRankingCronJob    = "UpdateUserRanking"
-	CollectSystemMetricsCronJob = "CollectSystemMetrics"
 	ClearEmptyTeamCronJob       = "ClearEmptyTeam"
 	CloseTimeoutVictimsCronJob  = "CloseTimeoutVictims"
 	CloseUnCtrlVictimsCronJob   = "CloseUnCtrlVictims"
 )
 
 var CronJobs = []CronJob{
-	{Name: CollectSystemMetricsCronJob, Description: "收集系统监控指标", Schedule: time.Second},
 	{Name: CloseTimeoutVictimsCronJob, Description: "关闭运行超时的靶机实例", Schedule: time.Minute},
 	{Name: CloseUnCtrlVictimsCronJob, Description: "清理数据库外仍在运行的失控靶机实例", Schedule: 10 * time.Minute},
 	{Name: ClearEmptyTeamCronJob, Description: "清理没有成员的空队伍", Schedule: 5 * time.Minute},
