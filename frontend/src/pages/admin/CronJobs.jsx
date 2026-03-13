@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { IconEdit } from '@tabler/icons-react';
-import { Button, Input, List, Modal, Pagination, StatusTag } from '../../components/common';
+import { Button, Input, List, Modal, Pagination } from '../../components/common';
 import { getCronJobList, updateCronJob } from '../../api/admin/cronjob';
 import { toast } from '../../utils/toast';
 import { useTranslation } from 'react-i18next';
@@ -70,21 +70,82 @@ function CronJobs() {
 
   const columns = [
     { key: 'id', label: t('admin.cronjobs.columns.id'), width: '10%' },
-    { key: 'name', label: t('admin.cronjobs.columns.name'), width: '20%' },
-    { key: 'description', label: t('admin.cronjobs.columns.description'), width: '35%' },
-    { key: 'schedule', label: t('admin.cronjobs.columns.schedule'), width: '20%' },
-    { key: 'status', label: t('admin.cronjobs.columns.status'), width: '15%' },
+    { key: 'name', label: t('admin.cronjobs.columns.name'), width: '16%' },
+    { key: 'description', label: t('admin.cronjobs.columns.description'), width: '24%' },
+    { key: 'schedule', label: t('admin.cronjobs.columns.schedule'), width: '18%' },
+    { key: 'last', label: t('admin.cronjobs.columns.last'), width: '16%' },
+    { key: 'next', label: t('admin.cronjobs.columns.next'), width: '16%' },
     { key: 'actions', label: t('admin.cronjobs.columns.actions'), width: '10%' },
   ];
 
-  const renderStatus = (status) => {
-    if (status === 'enabled') {
-      return <StatusTag type="success" text={t('admin.cronjobs.status.enabled')} />;
+  const formatDateTime = (value) => {
+    if (!value) return t('common.notAvailable');
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return t('admin.cronjobs.time.invalid');
+    return date.toLocaleString();
+  };
+
+  const getEveryMs = (schedule) => {
+    const match = /^@every\s+(\d+)(ms|s|m|h)$/i.exec(schedule?.trim() || '');
+    if (!match) return null;
+    const value = Number(match[1]);
+    const unit = match[2].toLowerCase();
+    const unitMs = { ms: 1, s: 1000, m: 60 * 1000, h: 60 * 60 * 1000 };
+    return value * unitMs[unit];
+  };
+
+  const matchField = (field, value, min, max) => {
+    if (field === '*') return true;
+    if (/^\d+$/.test(field)) return Number(field) === value;
+    if (/^\*\/\d+$/.test(field)) return value % Number(field.slice(2)) === 0;
+    if (/^\d+-\d+$/.test(field)) {
+      const [start, end] = field.split('-').map(Number);
+      return value >= start && value <= end;
     }
-    if (status === 'running') {
-      return <StatusTag type="info" text={t('admin.cronjobs.status.running')} />;
+    if (/^\d+(,\d+)+$/.test(field)) return field.split(',').map(Number).includes(value);
+    if (/^\d+-\d+\/\d+$/.test(field)) {
+      const [range, step] = field.split('/');
+      const [start, end] = range.split('-').map(Number);
+      return value >= start && value <= end && (value - start) % Number(step) === 0;
     }
-    return <StatusTag type="warning" text={t('admin.cronjobs.status.disabled')} />;
+    if (/^\*\/\d+(,\*\/\d+)*$/.test(field)) {
+      return field.split(',').some((part) => value % Number(part.slice(2)) === 0);
+    }
+    return value >= min && value <= max && field.split(',').some((part) => matchField(part, value, min, max));
+  };
+
+  const matchesCron = (schedule, date) => {
+    const parts = (schedule || '').trim().split(/\s+/);
+    if (parts.length !== 5 && parts.length !== 6) return false;
+    const normalized = parts.length === 5 ? ['0', ...parts] : parts;
+    const [second, minute, hour, day, month, week] = normalized;
+    return (
+      matchField(second, date.getSeconds(), 0, 59) &&
+      matchField(minute, date.getMinutes(), 0, 59) &&
+      matchField(hour, date.getHours(), 0, 23) &&
+      matchField(day, date.getDate(), 1, 31) &&
+      matchField(month, date.getMonth() + 1, 1, 12) &&
+      matchField(week, date.getDay(), 0, 6)
+    );
+  };
+
+  const getNextRun = (schedule, last) => {
+    const everyMs = getEveryMs(schedule);
+    const base = last ? new Date(last) : new Date();
+    if (!Number.isNaN(base.getTime()) && everyMs) {
+      return new Date(base.getTime() + everyMs);
+    }
+
+    const start = new Date();
+    start.setMilliseconds(0);
+    const limit = 366 * 24 * 60 * 60;
+    for (let offset = 1; offset <= limit; offset++) {
+      const candidate = new Date(start.getTime() + offset * 1000);
+      if (matchesCron(schedule, candidate)) {
+        return candidate;
+      }
+    }
+    return null;
   };
 
   const renderCell = (cronJob, column) => {
@@ -97,8 +158,16 @@ function CronJobs() {
         return <span className="text-neutral-300 text-sm">{cronJob.description || t('common.none')}</span>;
       case 'schedule':
         return <span className="text-neutral-300 font-mono text-sm">{cronJob.schedule}</span>;
-      case 'status':
-        return renderStatus(cronJob.status);
+      case 'last':
+        return <span className="text-neutral-300 text-sm">{formatDateTime(cronJob.last)}</span>;
+      case 'next': {
+        const nextRun = getNextRun(cronJob.schedule, cronJob.last);
+        return (
+          <span className="text-neutral-300 text-sm">
+            {nextRun ? formatDateTime(nextRun) : t('admin.cronjobs.time.unknown')}
+          </span>
+        );
+      }
       case 'actions':
         return (
           <div className="flex items-center gap-2">
@@ -177,11 +246,21 @@ function CronJobs() {
           </div>
           <div>
             <label className="block text-neutral-300 text-sm font-medium mb-2">
-              {t('admin.cronjobs.form.statusLabel')}
+              {t('admin.cronjobs.form.lastLabel')}
+            </label>
+            <Input type="text" value={formatDateTime(selectedCronJob?.last)} fullWidth disabled />
+          </div>
+          <div>
+            <label className="block text-neutral-300 text-sm font-medium mb-2">
+              {t('admin.cronjobs.form.nextLabel')}
             </label>
             <Input
               type="text"
-              value={t(`admin.cronjobs.status.${selectedCronJob?.status || 'disabled'}`)}
+              value={
+                selectedCronJob
+                  ? formatDateTime(getNextRun(form.schedule || selectedCronJob.schedule, selectedCronJob.last))
+                  : t('admin.cronjobs.time.unknown')
+              }
               fullWidth
               disabled
             />
