@@ -36,7 +36,7 @@ type CronJob struct {
 	Name        string        `gorm:"size:50;not null;uniqueIndex" json:"name"`
 	Description string        `json:"description"`
 	Schedule    time.Duration `gorm:"not null" json:"schedule"`
-	Last        time.Time     `json:"last"`
+	Last        time.Time     `gorm:"default:null" json:"last"`
 	BaseModel
 }
 
