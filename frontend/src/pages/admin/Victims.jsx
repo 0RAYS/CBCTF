@@ -15,9 +15,26 @@ import {
   IconRefresh,
   IconTarget,
   IconUsers,
+  IconTrash,
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { searchModels } from '../../api/admin/search.js';
+
+const VICTIM_STATUS_STYLES = {
+  waiting: 'bg-yellow-400/10 text-yellow-400 border-yellow-400/30',
+  pending: 'bg-geek-400/10 text-geek-400 border-geek-400/30',
+  running: 'bg-green-400/10 text-green-400 border-green-400/30',
+  stopped: 'bg-neutral-500/10 text-neutral-400 border-neutral-500/30',
+};
+
+function VictimStatusBadge({ status, t }) {
+  const style = VICTIM_STATUS_STYLES[status] ?? VICTIM_STATUS_STYLES.stopped;
+  return (
+    <span className={`inline-block px-2 py-0.5 rounded border text-xs font-mono ${style}`}>
+      {t(`admin.victims.statusBadge.${status}`, status)}
+    </span>
+  );
+}
 
 function AdminVictims() {
   const [containers, setContainers] = useState([]);
@@ -49,17 +66,19 @@ function AdminVictims() {
 
   const [selectedContainers, setSelectedContainers] = useState([]);
   const [isStopModalOpen, setIsStopModalOpen] = useState(false);
+  const [showDeleted, setShowDeleted] = useState(false);
   const [stats, setStats] = useState({ totalContainers: 0, runningContainers: 0, stoppedContainers: 0 });
   const { t, i18n } = useTranslation();
 
   const pageSize = 20;
 
-  const fetchContainers = async () => {
+  const fetchContainers = async (page = currentPage, deleted = showDeleted) => {
     try {
       const params = {
         ...filters,
         limit: pageSize,
-        offset: (currentPage - 1) * pageSize,
+        offset: (page - 1) * pageSize,
+        ...(deleted && { deleted: true }),
       };
       Object.keys(params).forEach((key) => {
         if (params[key] === '') delete params[key];
@@ -76,6 +95,14 @@ function AdminVictims() {
     } catch (error) {
       toast.danger({ description: error.message || t('admin.victims.toast.fetchContainersFailed') });
     }
+  };
+
+  const toggleShowDeleted = () => {
+    const next = !showDeleted;
+    setShowDeleted(next);
+    setCurrentPage(1);
+    setSelectedContainers([]);
+    fetchContainers(1, next);
   };
 
   useEffect(() => {
@@ -207,15 +234,25 @@ function AdminVictims() {
           <div>
             <p className="text-neutral-400 font-mono">{t('admin.victims.page.subtitle')}</p>
           </div>
-          <Button
-            variant="primary"
-            size="sm"
-            align="icon-left"
-            icon={<IconRefresh size={16} />}
-            onClick={fetchContainers}
-          >
-            {t('common.refresh')}
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={showDeleted ? 'danger' : 'ghost'}
+              size="sm"
+              leftIcon={<IconTrash size={14} />}
+              onClick={toggleShowDeleted}
+            >
+              {t('admin.victims.showDeleted')}
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              align="icon-left"
+              icon={<IconRefresh size={16} />}
+              onClick={() => fetchContainers()}
+            >
+              {t('common.refresh')}
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -501,12 +538,15 @@ function AdminVictims() {
                 <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap" scope="col">
                   {t('admin.victims.table.columns.status')}
                 </th>
+                <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap" scope="col">
+                  {t('admin.victims.table.columns.remaining')}
+                </th>
               </tr>
             </thead>
             <tbody>
               {containers.length === 0 ? (
                 <tr>
-                  <td colSpan="9">
+                  <td colSpan="10">
                     <EmptyState title={t('admin.victims.table.empty')} />
                   </td>
                 </tr>
@@ -554,6 +594,9 @@ function AdminVictims() {
                       )}
                     </td>
                     <td className="p-4 text-neutral-300 font-mono whitespace-nowrap">{formatTime(container.start)}</td>
+                    <td className="p-4 whitespace-nowrap">
+                      <VictimStatusBadge status={container.status} t={t} />
+                    </td>
                     <td className="p-4 text-neutral-300 font-mono whitespace-nowrap">
                       <span
                         className={`px-2 py-1 rounded-md text-xs font-mono border ${getContainerStatusStyle(container.remaining)}`}

@@ -22,7 +22,24 @@ import {
   IconTarget,
   IconSearch,
   IconRefresh,
+  IconTrash,
 } from '@tabler/icons-react';
+
+const VICTIM_STATUS_STYLES = {
+  waiting: 'bg-yellow-400/10 text-yellow-400 border-yellow-400/30',
+  pending: 'bg-geek-400/10 text-geek-400 border-geek-400/30',
+  running: 'bg-green-400/10 text-green-400 border-green-400/30',
+  stopped: 'bg-neutral-500/10 text-neutral-400 border-neutral-500/30',
+};
+
+function VictimStatusBadge({ status, t }) {
+  const style = VICTIM_STATUS_STYLES[status] ?? VICTIM_STATUS_STYLES.stopped;
+  return (
+    <span className={`inline-block px-2 py-0.5 rounded border text-xs font-mono ${style}`}>
+      {t(`admin.contests.containers.statusBadge.${status}`, status)}
+    </span>
+  );
+}
 import { useTranslation } from 'react-i18next';
 import { searchModels } from '../../../api/admin/search.js';
 
@@ -87,17 +104,19 @@ function ContestContainers() {
     runningContainers: 0,
     stoppedContainers: 0,
   });
+  const [showDeleted, setShowDeleted] = useState(false);
   const { t, i18n } = useTranslation();
 
   const pageSize = 20; // 增加每页显示数量
 
   // 获取容器列表
-  const fetchContainers = async () => {
+  const fetchContainers = async (page = currentPage, deleted = showDeleted) => {
     try {
       const params = {
         ...filters,
         limit: pageSize,
-        offset: (currentPage - 1) * pageSize,
+        offset: (page - 1) * pageSize,
+        ...(deleted && { deleted: true }),
       };
       // 清除空值
       Object.keys(params).forEach((key) => {
@@ -122,6 +141,14 @@ function ContestContainers() {
     } catch (error) {
       toast.danger({ description: error.message || t('admin.contests.containers.toast.fetchContainersFailed') });
     }
+  };
+
+  const toggleShowDeleted = () => {
+    const next = !showDeleted;
+    setShowDeleted(next);
+    setCurrentPage(1);
+    setSelectedContainers([]);
+    fetchContainers(1, next);
   };
 
   // 获取团队列表
@@ -419,15 +446,25 @@ function ContestContainers() {
             <div>
               <p className="text-neutral-400 font-mono">{t('admin.contests.containers.page.subtitle')}</p>
             </div>
-            <Button
-              variant="primary"
-              size="sm"
-              align="icon-left"
-              icon={<IconRefresh size={16} />}
-              onClick={fetchContainers}
-            >
-              {t('common.refresh')}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant={showDeleted ? 'danger' : 'ghost'}
+                size="sm"
+                leftIcon={<IconTrash size={14} />}
+                onClick={toggleShowDeleted}
+              >
+                {t('admin.contests.containers.showDeleted')}
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                align="icon-left"
+                icon={<IconRefresh size={16} />}
+                onClick={() => fetchContainers()}
+              >
+                {t('common.refresh')}
+              </Button>
+            </div>
           </div>
 
           {/* 统计卡片 */}
@@ -940,12 +977,15 @@ function ContestContainers() {
                   <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">
                     {t('admin.contests.containers.table.columns.status')}
                   </th>
+                  <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">
+                    {t('admin.contests.containers.table.columns.remaining')}
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {containers.length === 0 ? (
                   <tr>
-                    <td colSpan="9">
+                    <td colSpan="10">
                       <EmptyState title={t('admin.contests.containers.table.empty')} />
                     </td>
                   </tr>
@@ -990,6 +1030,9 @@ function ContestContainers() {
                       </td>
                       <td className="p-4 text-neutral-300 font-mono whitespace-nowrap">
                         {formatTime(container.start)}
+                      </td>
+                      <td className="p-4 whitespace-nowrap">
+                        <VictimStatusBadge status={container.status} t={t} />
                       </td>
                       <td className="p-4 text-neutral-300 font-mono whitespace-nowrap">
                         <span
