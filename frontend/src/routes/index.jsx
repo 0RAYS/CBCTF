@@ -400,7 +400,7 @@ const AppRoutes = () => {
             }
           />
           <Route
-            path="containers"
+            path="victims"
             element={
               <AdminRoute apiRoute="GET /admin/contests/:contestID/victims">
                 <Suspense fallback={<Loading />}>
