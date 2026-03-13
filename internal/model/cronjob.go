@@ -18,25 +18,25 @@ const (
 )
 
 var CronJobs = []CronJob{
-	{Name: CollectSystemMetricsCronJob, Description: "收集系统监控指标", Schedule: "@every 1s"},
-	{Name: CloseTimeoutVictimsCronJob, Description: "关闭运行超时的靶机实例", Schedule: "@every 1m"},
-	{Name: CloseUnCtrlVictimsCronJob, Description: "清理数据库外仍在运行的失控靶机实例", Schedule: "@every 10m"},
-	{Name: ClearEmptyTeamCronJob, Description: "清理没有成员的空队伍", Schedule: "@every 5m"},
-	{Name: UpdateFlagScoreCronJob, Description: "重算比赛题目 Flag 分数和解题人数", Schedule: "@every 5m"},
-	{Name: UpdateUserRankingCronJob, Description: "全量刷新用户得分和排名", Schedule: "@every 3h"},
-	{Name: UpdateTeamRankingCronJob, Description: "全量刷新队伍得分和排名", Schedule: "@every 5m"},
-	{Name: StopUnCtrlGeneratorCronJob, Description: "清理未受数据库管控的附件生成器 Pod", Schedule: "@every 10m"},
-	{Name: ClearSubmissionMutexCronJob, Description: "清理解题提交锁缓存", Schedule: "@every 10m"},
-	{Name: CheckCheatCronJob, Description: "扫描并分析比赛作弊事件", Schedule: "@every 10m"},
-	{Name: ClearCheatMutexCronJob, Description: "清理作弊检测锁缓存", Schedule: "@every 10m"},
-	{Name: ClearJoinTeamMutexCronJob, Description: "清理队伍加入锁缓存", Schedule: "@every 10m"},
+	{Name: CollectSystemMetricsCronJob, Description: "收集系统监控指标", Schedule: time.Second},
+	{Name: CloseTimeoutVictimsCronJob, Description: "关闭运行超时的靶机实例", Schedule: time.Minute},
+	{Name: CloseUnCtrlVictimsCronJob, Description: "清理数据库外仍在运行的失控靶机实例", Schedule: 10 * time.Minute},
+	{Name: ClearEmptyTeamCronJob, Description: "清理没有成员的空队伍", Schedule: 5 * time.Minute},
+	{Name: UpdateFlagScoreCronJob, Description: "重算比赛题目 Flag 分数和解题人数", Schedule: 5 * time.Minute},
+	{Name: UpdateUserRankingCronJob, Description: "全量刷新用户得分和排名", Schedule: 3 * time.Hour},
+	{Name: UpdateTeamRankingCronJob, Description: "全量刷新队伍得分和排名", Schedule: 5 * time.Minute},
+	{Name: StopUnCtrlGeneratorCronJob, Description: "清理未受数据库管控的附件生成器 Pod", Schedule: 10 * time.Minute},
+	{Name: ClearSubmissionMutexCronJob, Description: "清理解题提交锁缓存", Schedule: 10 * time.Minute},
+	{Name: CheckCheatCronJob, Description: "扫描并分析比赛作弊事件", Schedule: 10 * time.Minute},
+	{Name: ClearCheatMutexCronJob, Description: "清理作弊检测锁缓存", Schedule: 10 * time.Minute},
+	{Name: ClearJoinTeamMutexCronJob, Description: "清理队伍加入锁缓存", Schedule: 10 * time.Minute},
 }
 
 type CronJob struct {
-	Name        string     `gorm:"size:50;not null;uniqueIndex" json:"name"`
-	Description string     `json:"description"`
-	Schedule    string     `gorm:"not null" json:"schedule"`
-	Last        *time.Time `json:"last"`
+	Name        string        `gorm:"size:50;not null;uniqueIndex" json:"name"`
+	Description string        `json:"description"`
+	Schedule    time.Duration `gorm:"not null" json:"schedule"`
+	Last        time.Time     `json:"last"`
 	BaseModel
 }
 

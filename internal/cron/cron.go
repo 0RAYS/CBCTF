@@ -109,12 +109,13 @@ func registerCronJob(cronJob model.CronJob, def taskDefinition) model.RetVal {
 		c.Remove(value.(cron.EntryID))
 		taskEntries.Delete(cronJob.Name)
 	}
-	entryID, err := c.AddFunc(cronJob.Schedule, exec(def.name, def.run))
+	spec := "@every " + cronJob.Schedule.String()
+	entryID, err := c.AddFunc(spec, exec(def.name, def.run))
 	if err != nil {
-		return model.RetVal{Msg: "Invalid cron schedule", Attr: map[string]any{"Name": cronJob.Name, "Schedule": cronJob.Schedule, "Error": err.Error()}}
+		return model.RetVal{Msg: "Invalid cron schedule", Attr: map[string]any{"Name": cronJob.Name, "Schedule": spec, "Error": err.Error()}}
 	}
 	taskEntries.Store(cronJob.Name, entryID)
-	log.Logger.Infof("Cron job loaded: %s (%s)", cronJob.Name, cronJob.Schedule)
+	log.Logger.Infof("Cron job loaded: %s (%s)", cronJob.Name, spec)
 	return model.SuccessRetVal()
 }
 

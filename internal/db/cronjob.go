@@ -13,7 +13,7 @@ type CronJobRepo struct {
 }
 
 type UpdateCronJobOptions struct {
-	Schedule *string
+	Schedule *time.Duration
 	Last     *time.Time
 }
 

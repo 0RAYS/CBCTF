@@ -6,10 +6,65 @@ import { toast } from '../../utils/toast';
 import { useTranslation } from 'react-i18next';
 
 const PAGE_SIZE = 20;
+const SECOND_NS = 1_000_000_000;
+const MINUTE_NS = 60 * SECOND_NS;
+const HOUR_NS = 60 * MINUTE_NS;
 
 const DEFAULT_FORM = {
-  schedule: '',
+  hours: '0',
+  minutes: '0',
+  seconds: '0',
 };
+
+function parseDurationNs(value) {
+  if (typeof value === 'number') return value;
+  if (typeof value !== 'string') return 0;
+
+  const hourMatch = value.match(/(\d+)h/);
+  const minuteMatch = value.match(/(\d+)m/);
+  const secondMatch = value.match(/(\d+)s/);
+  const msMatch = value.match(/(\d+)ms/);
+
+  let total = 0;
+  if (hourMatch) total += Number(hourMatch[1]) * HOUR_NS;
+  if (minuteMatch) total += Number(minuteMatch[1]) * MINUTE_NS;
+  if (secondMatch) total += Number(secondMatch[1]) * SECOND_NS;
+  if (msMatch) total += Number(msMatch[1]) * 1_000_000;
+  return total;
+}
+
+function splitDuration(durationNs) {
+  const totalSeconds = Math.max(1, Math.floor(durationNs / SECOND_NS));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return {
+    hours: String(hours),
+    minutes: String(minutes),
+    seconds: String(seconds),
+  };
+}
+
+function formatDuration(durationNs, t) {
+  const totalSeconds = Math.max(1, Math.floor(durationNs / SECOND_NS));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const parts = [];
+  if (hours > 0) parts.push(t('admin.cronjobs.duration.hours', { count: hours }));
+  if (minutes > 0) parts.push(t('admin.cronjobs.duration.minutes', { count: minutes }));
+  if (seconds > 0 || parts.length === 0) parts.push(t('admin.cronjobs.duration.seconds', { count: seconds }));
+  return parts.join(' ');
+}
+
+function buildDurationNs(form) {
+  const hours = Math.max(0, Number(form.hours) || 0);
+  const minutes = Math.max(0, Number(form.minutes) || 0);
+  const seconds = Math.max(0, Number(form.seconds) || 0);
+  const total = hours * HOUR_NS + minutes * MINUTE_NS + seconds * SECOND_NS;
+  return Math.max(SECOND_NS, total);
+}
 
 function CronJobs() {
   const { t } = useTranslation();
@@ -44,18 +99,19 @@ function CronJobs() {
   }, [currentPage]);
 
   const openEditModal = (cronJob) => {
+    const durationNs = cronJob.schedule_ns ?? parseDurationNs(cronJob.schedule);
     setSelectedCronJob(cronJob);
-    setForm({
-      schedule: cronJob.schedule,
-    });
+    setForm(splitDuration(durationNs));
     setIsModalOpen(true);
   };
 
   const handleSubmit = async () => {
     try {
       if (selectedCronJob) {
+        const durationNs = buildDurationNs(form);
+        const currentNs = selectedCronJob.schedule_ns ?? parseDurationNs(selectedCronJob.schedule);
         const payload = {};
-        if (form.schedule !== selectedCronJob.schedule) payload.schedule = form.schedule;
+        if (durationNs !== currentNs) payload.schedule = durationNs;
         const response = await updateCronJob(selectedCronJob.id, payload);
         if (response.code === 200) {
           toast.success({ description: t('admin.cronjobs.toast.updateSuccess') });
@@ -68,6 +124,20 @@ function CronJobs() {
     }
   };
 
+  const formatDateTime = (value) => {
+    if (!value) return t('common.notAvailable');
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return t('admin.cronjobs.time.invalid');
+    return date.toLocaleString();
+  };
+
+  const getNextRun = (durationNs, last) => {
+    if (!durationNs) return null;
+    const base = last ? new Date(last) : new Date();
+    if (Number.isNaN(base.getTime())) return null;
+    return new Date(base.getTime() + durationNs / 1_000_000);
+  };
+
   const columns = [
     { key: 'id', label: t('admin.cronjobs.columns.id'), width: '10%' },
     { key: 'name', label: t('admin.cronjobs.columns.name'), width: '16%' },
@@ -78,77 +148,8 @@ function CronJobs() {
     { key: 'actions', label: t('admin.cronjobs.columns.actions'), width: '10%' },
   ];
 
-  const formatDateTime = (value) => {
-    if (!value) return t('common.notAvailable');
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return t('admin.cronjobs.time.invalid');
-    return date.toLocaleString();
-  };
-
-  const getEveryMs = (schedule) => {
-    const match = /^@every\s+(\d+)(ms|s|m|h)$/i.exec(schedule?.trim() || '');
-    if (!match) return null;
-    const value = Number(match[1]);
-    const unit = match[2].toLowerCase();
-    const unitMs = { ms: 1, s: 1000, m: 60 * 1000, h: 60 * 60 * 1000 };
-    return value * unitMs[unit];
-  };
-
-  const matchField = (field, value, min, max) => {
-    if (field === '*') return true;
-    if (/^\d+$/.test(field)) return Number(field) === value;
-    if (/^\*\/\d+$/.test(field)) return value % Number(field.slice(2)) === 0;
-    if (/^\d+-\d+$/.test(field)) {
-      const [start, end] = field.split('-').map(Number);
-      return value >= start && value <= end;
-    }
-    if (/^\d+(,\d+)+$/.test(field)) return field.split(',').map(Number).includes(value);
-    if (/^\d+-\d+\/\d+$/.test(field)) {
-      const [range, step] = field.split('/');
-      const [start, end] = range.split('-').map(Number);
-      return value >= start && value <= end && (value - start) % Number(step) === 0;
-    }
-    if (/^\*\/\d+(,\*\/\d+)*$/.test(field)) {
-      return field.split(',').some((part) => value % Number(part.slice(2)) === 0);
-    }
-    return value >= min && value <= max && field.split(',').some((part) => matchField(part, value, min, max));
-  };
-
-  const matchesCron = (schedule, date) => {
-    const parts = (schedule || '').trim().split(/\s+/);
-    if (parts.length !== 5 && parts.length !== 6) return false;
-    const normalized = parts.length === 5 ? ['0', ...parts] : parts;
-    const [second, minute, hour, day, month, week] = normalized;
-    return (
-      matchField(second, date.getSeconds(), 0, 59) &&
-      matchField(minute, date.getMinutes(), 0, 59) &&
-      matchField(hour, date.getHours(), 0, 23) &&
-      matchField(day, date.getDate(), 1, 31) &&
-      matchField(month, date.getMonth() + 1, 1, 12) &&
-      matchField(week, date.getDay(), 0, 6)
-    );
-  };
-
-  const getNextRun = (schedule, last) => {
-    const everyMs = getEveryMs(schedule);
-    const base = last ? new Date(last) : new Date();
-    if (!Number.isNaN(base.getTime()) && everyMs) {
-      return new Date(base.getTime() + everyMs);
-    }
-
-    const start = new Date();
-    start.setMilliseconds(0);
-    const limit = 366 * 24 * 60 * 60;
-    for (let offset = 1; offset <= limit; offset++) {
-      const candidate = new Date(start.getTime() + offset * 1000);
-      if (matchesCron(schedule, candidate)) {
-        return candidate;
-      }
-    }
-    return null;
-  };
-
   const renderCell = (cronJob, column) => {
+    const durationNs = cronJob.schedule_ns ?? parseDurationNs(cronJob.schedule);
     switch (column.key) {
       case 'id':
         return <span className="text-neutral-50 font-medium">#{cronJob.id}</span>;
@@ -157,11 +158,11 @@ function CronJobs() {
       case 'description':
         return <span className="text-neutral-300 text-sm">{cronJob.description || t('common.none')}</span>;
       case 'schedule':
-        return <span className="text-neutral-300 font-mono text-sm">{cronJob.schedule}</span>;
+        return <span className="text-neutral-300 font-mono text-sm">{formatDuration(durationNs, t)}</span>;
       case 'last':
         return <span className="text-neutral-300 text-sm">{formatDateTime(cronJob.last)}</span>;
       case 'next': {
-        const nextRun = getNextRun(cronJob.schedule, cronJob.last);
+        const nextRun = getNextRun(durationNs, cronJob.last);
         return (
           <span className="text-neutral-300 text-sm">
             {nextRun ? formatDateTime(nextRun) : t('admin.cronjobs.time.unknown')}
@@ -187,6 +188,9 @@ function CronJobs() {
         return cronJob[column.key];
     }
   };
+
+  const previewDurationNs = buildDurationNs(form);
+  const previewNextRun = selectedCronJob ? getNextRun(previewDurationNs, selectedCronJob.last) : null;
 
   return (
     <div className="w-full mx-auto">
@@ -256,11 +260,7 @@ function CronJobs() {
             </label>
             <Input
               type="text"
-              value={
-                selectedCronJob
-                  ? formatDateTime(getNextRun(form.schedule || selectedCronJob.schedule, selectedCronJob.last))
-                  : t('admin.cronjobs.time.unknown')
-              }
+              value={previewNextRun ? formatDateTime(previewNextRun) : t('admin.cronjobs.time.unknown')}
               fullWidth
               disabled
             />
@@ -269,14 +269,38 @@ function CronJobs() {
             <label className="block text-neutral-300 text-sm font-medium mb-2">
               {t('admin.cronjobs.form.scheduleLabel')}
             </label>
-            <Input
-              type="text"
-              value={form.schedule}
-              onChange={(e) => setForm((prev) => ({ ...prev, schedule: e.target.value }))}
-              placeholder={t('admin.cronjobs.form.schedulePlaceholder')}
-              fullWidth
-              required
-            />
+            <div className="grid grid-cols-3 gap-4">
+              <Input
+                type="number"
+                min="0"
+                value={form.hours}
+                onChange={(e) => setForm((prev) => ({ ...prev, hours: e.target.value }))}
+                placeholder={t('admin.cronjobs.form.hoursPlaceholder')}
+                fullWidth
+              />
+              <Input
+                type="number"
+                min="0"
+                value={form.minutes}
+                onChange={(e) => setForm((prev) => ({ ...prev, minutes: e.target.value }))}
+                placeholder={t('admin.cronjobs.form.minutesPlaceholder')}
+                fullWidth
+              />
+              <Input
+                type="number"
+                min="0"
+                value={form.seconds}
+                onChange={(e) => setForm((prev) => ({ ...prev, seconds: e.target.value }))}
+                placeholder={t('admin.cronjobs.form.secondsPlaceholder')}
+                fullWidth
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-neutral-300 text-sm font-medium mb-2">
+              {t('admin.cronjobs.form.durationPreviewLabel')}
+            </label>
+            <Input type="text" value={formatDuration(previewDurationNs, t)} fullWidth disabled />
           </div>
         </div>
       </Modal>

@@ -1576,10 +1576,18 @@
       "form": {
         "nameLabel": "Job name",
         "descriptionLabel": "Description",
-        "scheduleLabel": "Cron schedule *",
-        "schedulePlaceholder": "e.g. 0 0 * * *",
+        "scheduleLabel": "Duration *",
+        "hoursPlaceholder": "Hours",
+        "minutesPlaceholder": "Minutes",
+        "secondsPlaceholder": "Seconds",
+        "durationPreviewLabel": "Duration preview",
         "lastLabel": "Last run time",
         "nextLabel": "Next run time"
+      },
+      "duration": {
+        "hours": "{{count}} hour",
+        "minutes": "{{count}} minute",
+        "seconds": "{{count}} second"
       },
       "time": {
         "invalid": "Invalid time",
