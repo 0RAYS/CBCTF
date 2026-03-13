@@ -103,6 +103,9 @@ func Init() {
 	if ret := InitGroupRepo(DB).InitDefaultGroups(); !ret.OK {
 		log.Logger.Fatalf("Failed to init default groups: %s %v", ret.Msg, ret.Attr)
 	}
+	if ret := InitCronJobRepo(DB).InitCronJob(); !ret.OK {
+		log.Logger.Fatalf("Failed to init cron jobs: %s %v", ret.Msg, ret.Attr)
+	}
 	if ret := InitUserRepo(DB).InitAdmin(); !ret.OK {
 		log.Logger.Fatalf("Failed to init Admin: %v", ret)
 	}

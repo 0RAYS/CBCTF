@@ -1,6 +1,7 @@
 package db
 
 import (
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 
 	"gorm.io/gorm"
@@ -28,4 +29,14 @@ func InitCronJobRepo(tx *gorm.DB) *CronJobRepo {
 			DB: tx,
 		},
 	}
+}
+
+func (c *CronJobRepo) InitCronJob() model.RetVal {
+	for _, cronJob := range model.CronJobs {
+		res := c.DB.Model(&model.CronJob{}).FirstOrCreate(&cronJob, model.CronJob{Name: cronJob.Name})
+		if res.Error != nil {
+			return model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": cronJob.ModelName(), "Error": res.Error.Error()}}
+		}
+	}
+	return model.SuccessRetVal()
 }
