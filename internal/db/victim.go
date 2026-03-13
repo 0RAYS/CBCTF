@@ -37,6 +37,7 @@ func (c CreateVictimOptions) Convert2Model() model.Model {
 		Duration:           c.Duration,
 		VPC:                c.VPC,
 		NetworkPolicies:    c.NetworkPolicies,
+		Status:             model.WaitingVictimStatus,
 	}
 }
 
@@ -46,6 +47,7 @@ type UpdateVictimOptions struct {
 	VPC              *model.VPC
 	Endpoints        *model.Endpoints
 	ExposedEndpoints *model.Endpoints
+	Status           *string
 }
 
 func (u UpdateVictimOptions) Convert2Map() map[string]any {
@@ -64,6 +66,9 @@ func (u UpdateVictimOptions) Convert2Map() map[string]any {
 	}
 	if u.ExposedEndpoints != nil {
 		options["exposed_endpoints"] = *u.ExposedEndpoints
+	}
+	if u.Status != nil {
+		options["status"] = *u.Status
 	}
 	return options
 }
@@ -103,6 +108,11 @@ func (v *VictimRepo) Delete(idL ...uint) model.RetVal {
 	}
 	if ret = InitPodRepo(v.DB).Delete(podIDL...); !ret.OK {
 		return ret
+	}
+	for _, victim := range victimL {
+		if ret = v.Update(victim.ID, UpdateVictimOptions{Status: new(model.StoppedVictimStatus)}); !ret.OK {
+			return ret
+		}
 	}
 	if res := v.DB.Model(&model.Victim{}).Where("id IN ?", idL).Delete(&model.Victim{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Victim: %s", res.Error)
