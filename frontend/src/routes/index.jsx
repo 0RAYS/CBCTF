@@ -20,6 +20,7 @@ const FilesManagement = lazy(() => import('../pages/admin/Files.jsx'));
 const SystemSettings = lazy(() => import('../pages/admin/System'));
 const OAuthProvidersManagement = lazy(() => import('../pages/admin/OAuthProviders'));
 const SmtpManagement = lazy(() => import('../pages/admin/Smtp'));
+const CronJobsManagement = lazy(() => import('../pages/admin/CronJobs'));
 const WebhookManagement = lazy(() => import('../pages/admin/Webhook'));
 const AdminLogs = lazy(() => import('../pages/admin/Logs'));
 const OAuthCallback = lazy(() => import('../pages/OAuthCallback'));
@@ -248,6 +249,16 @@ const AppRoutes = () => {
               <AdminRoute apiRoute="GET /admin/smtp">
                 <Suspense fallback={<Loading />}>
                   <SmtpManagement />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="cronjobs"
+            element={
+              <AdminRoute apiRoute="GET /admin/cronjobs">
+                <Suspense fallback={<Loading />}>
+                  <CronJobsManagement />
                 </Suspense>
               </AdminRoute>
             }

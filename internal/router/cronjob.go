@@ -1,0 +1,49 @@
+package router
+
+import (
+	"CBCTF/internal/db"
+	"CBCTF/internal/dto"
+	"CBCTF/internal/middleware"
+	"CBCTF/internal/model"
+	"CBCTF/internal/resp"
+
+	"github.com/gin-gonic/gin"
+)
+
+func GetCronJobs(ctx *gin.Context) {
+	var form dto.ListModelsForm
+	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	cronJobs, count, ret := db.InitCronJobRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
+		Sort: []string{"id DESC"},
+	})
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	data := make([]gin.H, 0, len(cronJobs))
+	for _, cronJob := range cronJobs {
+		data = append(data, resp.GetCronJobResp(cronJob))
+	}
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"cronjobs": data, "count": count}))
+}
+
+func UpdateCronJob(ctx *gin.Context) {
+	var form dto.UpdateCronJobForm
+	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	ctx.Set(middleware.CTXEventTypeKey, model.UpdateCronJobEventType)
+	cronJob := middleware.GetCronJob(ctx)
+	if ret := db.InitCronJobRepo(db.DB).Update(cronJob.ID, db.UpdateCronJobOptions{
+		Schedule: form.Schedule,
+	}); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	ctx.Set(middleware.CTXEventSuccessKey, true)
+	resp.JSON(ctx, model.SuccessRetVal())
+}

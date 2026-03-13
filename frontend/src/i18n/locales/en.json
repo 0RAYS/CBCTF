@@ -106,6 +106,7 @@
     "rbac": "RBAC",
     "oauth": "OAUTH",
     "smtp": "SMTP",
+    "cronjobs": "CRONJOBS",
     "webhook": "WEBHOOK",
     "files": "FILES",
     "system": "SYSTEM",
@@ -1554,6 +1555,39 @@
         "close": "Close",
         "add": "Add SMTP Config",
         "viewHistory": "View history"
+      }
+    },
+    "cronjobs": {
+      "title": "Cron Job Management",
+      "columns": {
+        "id": "ID",
+        "name": "Name",
+        "description": "Description",
+        "schedule": "Schedule",
+        "status": "Run Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "running": "Running"
+      },
+      "empty": "No cron jobs",
+      "modal": {
+        "editTitle": "Edit Cron Job",
+        "scheduleOnlyHint": "Only cron schedule can be changed"
+      },
+      "form": {
+        "nameLabel": "Job name",
+        "descriptionLabel": "Description",
+        "scheduleLabel": "Cron schedule *",
+        "schedulePlaceholder": "e.g. 0 0 * * *",
+        "statusLabel": "Run status"
+      },
+      "toast": {
+        "fetchListFailed": "Failed to load cron jobs",
+        "updateSuccess": "Cron job updated",
+        "updateFailed": "Failed to update cron job"
       }
     },
     "settings": {
