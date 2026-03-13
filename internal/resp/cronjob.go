@@ -11,7 +11,8 @@ func GetCronJobResp(cronJob model.CronJob) gin.H {
 		"id":          cronJob.ID,
 		"name":        cronJob.Name,
 		"description": cronJob.Description,
-		"schedule":    cronJob.Schedule,
+		"schedule":    cronJob.Schedule.String(),
+		"schedule_ns": int64(cronJob.Schedule),
 		"last":        cronJob.Last,
 	}
 }

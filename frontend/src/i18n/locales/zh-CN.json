@@ -1576,10 +1576,18 @@
       "form": {
         "nameLabel": "任务名称",
         "descriptionLabel": "任务描述",
-        "scheduleLabel": "Cron 周期 *",
-        "schedulePlaceholder": "例如: 0 0 * * *",
+        "scheduleLabel": "运行时长 *",
+        "hoursPlaceholder": "小时",
+        "minutesPlaceholder": "分钟",
+        "secondsPlaceholder": "秒",
+        "durationPreviewLabel": "时长预览",
         "lastLabel": "上次运行时间",
         "nextLabel": "下次运行时间"
+      },
+      "duration": {
+        "hours": "{{count}} 小时",
+        "minutes": "{{count}} 分钟",
+        "seconds": "{{count}} 秒"
       },
       "time": {
         "invalid": "无效时间",
