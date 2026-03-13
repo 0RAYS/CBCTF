@@ -250,6 +250,12 @@ func Init() *gin.Engine {
 			adminSmtp.GET("/email", GetEmails)
 		}
 
+		admin.GET("/cronjobs", GetCronJobs)
+		adminCronJob := admin.Group("/cronjobs/:cronJobID", middleware.SetCronJob)
+		{
+			adminCronJob.PUT("", UpdateCronJob)
+		}
+
 		admin.GET("/webhook", GetWebhooks)
 		admin.GET("/webhook/events", GetEventTypes)
 		admin.GET("/webhook/history", GetWebhookHistory)

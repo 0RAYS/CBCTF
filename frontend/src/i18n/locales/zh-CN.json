@@ -106,6 +106,7 @@
     "rbac": "RBAC",
     "oauth": "OAuth",
     "smtp": "SMTP",
+    "cronjobs": "CronJobs",
     "webhook": "Webhook",
     "files": "文件",
     "system": "系统",
@@ -1554,6 +1555,39 @@
         "close": "关闭",
         "add": "添加 SMTP 配置",
         "viewHistory": "查看历史"
+      }
+    },
+    "cronjobs": {
+      "title": "Cron 任务管理",
+      "columns": {
+        "id": "ID",
+        "name": "名称",
+        "description": "描述",
+        "schedule": "周期",
+        "status": "运行状态",
+        "actions": "操作"
+      },
+      "status": {
+        "enabled": "已启用",
+        "disabled": "已禁用",
+        "running": "运行中"
+      },
+      "empty": "暂无 Cron 任务",
+      "modal": {
+        "editTitle": "编辑 Cron 任务",
+        "scheduleOnlyHint": "仅允许修改 Cron 周期"
+      },
+      "form": {
+        "nameLabel": "任务名称",
+        "descriptionLabel": "任务描述",
+        "scheduleLabel": "Cron 周期 *",
+        "schedulePlaceholder": "例如: 0 0 * * *",
+        "statusLabel": "运行状态"
+      },
+      "toast": {
+        "fetchListFailed": "获取 Cron 任务列表失败",
+        "updateSuccess": "更新 Cron 任务成功",
+        "updateFailed": "更新 Cron 任务失败"
       }
     },
     "settings": {

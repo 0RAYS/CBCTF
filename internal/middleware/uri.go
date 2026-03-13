@@ -516,6 +516,7 @@ func SetSmtp(ctx *gin.Context) {
 		return
 	}
 	ctx.Set("Smtp", smtp)
+	ctx.Next()
 }
 
 func GetSmtp(ctx *gin.Context) model.Smtp {
@@ -524,6 +525,32 @@ func GetSmtp(ctx *gin.Context) model.Smtp {
 		return model.Smtp{}
 	}
 	return smtp.(model.Smtp)
+}
+
+func SetCronJob(ctx *gin.Context) {
+	type cronJobIDUri struct {
+		CronJobID uint `uri:"cronJobID" binding:"required"`
+	}
+	var cronJobID cronJobIDUri
+	if err := ctx.ShouldBindUri(&cronJobID); err != nil {
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		return
+	}
+	cronJob, ret := db.InitCronJobRepo(db.DB).GetByID(cronJobID.CronJobID)
+	if !ret.OK {
+		resp.AbortJSON(ctx, ret)
+		return
+	}
+	ctx.Set("CronJob", cronJob)
+	ctx.Next()
+}
+
+func GetCronJob(ctx *gin.Context) model.CronJob {
+	cronJob, ok := ctx.Get("CronJob")
+	if !ok || cronJob == nil {
+		return model.CronJob{}
+	}
+	return cronJob.(model.CronJob)
 }
 
 func SetWebhook(ctx *gin.Context) {

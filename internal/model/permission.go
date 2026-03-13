@@ -73,6 +73,9 @@ const (
 	PermAdminSMTPDelete = "admin:smtp:delete"
 	PermAdminSMTPList   = "admin:smtp:list"
 
+	PermAdminCronJobUpdate = "admin:cronjob:update"
+	PermAdminCronJobList   = "admin:cronjob:list"
+
 	PermAdminWebhookCreate = "admin:webhook:create"
 	PermAdminWebhookRead   = "admin:webhook:read"
 	PermAdminWebhookUpdate = "admin:webhook:update"
@@ -238,6 +241,10 @@ var RoutePermissions = map[string]string{
 	"PUT /admin/smtp/:smtpID":       PermAdminSMTPUpdate,
 	"DELETE /admin/smtp/:smtpID":    PermAdminSMTPDelete,
 	"GET /admin/smtp/:smtpID/email": PermAdminSMTPList,
+
+	// /admin/cronjobs
+	"GET /admin/cronjobs":            PermAdminCronJobList,
+	"PUT /admin/cronjobs/:cronJobID": PermAdminCronJobUpdate,
 
 	// /admin/webhook
 	"GET /admin/webhook":                    PermAdminWebhookList,
@@ -414,6 +421,9 @@ var Permissions = []Permission{
 	{Name: PermAdminSMTPUpdate, Resource: "admin:smtp", Operation: "update", Description: "更新 SMTP 配置"},
 	{Name: PermAdminSMTPDelete, Resource: "admin:smtp", Operation: "delete", Description: "删除 SMTP 配置"},
 	{Name: PermAdminSMTPList, Resource: "admin:smtp", Operation: "list", Description: "查看 SMTP 配置列表"},
+
+	{Name: PermAdminCronJobUpdate, Resource: "admin:cronjob", Operation: "update", Description: "更新 Cron 任务"},
+	{Name: PermAdminCronJobList, Resource: "admin:cronjob", Operation: "list", Description: "查看 Cron 任务列表"},
 
 	{Name: PermAdminWebhookCreate, Resource: "admin:webhook", Operation: "create", Description: "创建 Webhook"},
 	{Name: PermAdminWebhookRead, Resource: "admin:webhook", Operation: "read", Description: "查看 Webhook"},

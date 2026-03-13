@@ -30,6 +30,7 @@ var DefaultRolePermissionMap = map[string][]string{
 		PermAdminUserCreate, PermAdminUserRead, PermAdminUserUpdate, PermAdminUserDelete, PermAdminUserList, PermAdminUserAssign, PermAdminUserRevoke,
 		PermAdminOauthCreate, PermAdminOauthRead, PermAdminOauthUpdate, PermAdminOauthDelete, PermAdminOauthList,
 		PermAdminSMTPCreate, PermAdminSMTPRead, PermAdminSMTPUpdate, PermAdminSMTPDelete, PermAdminSMTPList,
+		PermAdminCronJobList, PermAdminCronJobUpdate,
 		PermAdminWebhookCreate, PermAdminWebhookRead, PermAdminWebhookUpdate, PermAdminWebhookDelete, PermAdminWebhookList,
 		PermAdminChallengeCreate, PermAdminChallengeRead, PermAdminChallengeUpdate, PermAdminChallengeDelete, PermAdminChallengeList, PermAdminChallengeTest,
 		PermAdminContestCreate, PermAdminContestRead, PermAdminContestUpdate, PermAdminContestDelete, PermAdminContestList, PermAdminContestRank,

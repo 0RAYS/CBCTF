@@ -18,6 +18,7 @@ export const getAdminNavSections = (t, routes = null) => {
     { id: 'generators', label: t('nav.generators'), path: '/admin/generators', apiRoute: 'GET /admin/generators' },
     { id: 'oauth', label: t('nav.oauth'), path: '/admin/oauth', apiRoute: 'GET /admin/oauth' },
     { id: 'smtp', label: t('nav.smtp'), path: '/admin/smtp', apiRoute: 'GET /admin/smtp' },
+    { id: 'cronjobs', label: t('nav.cronjobs'), path: '/admin/cronjobs', apiRoute: 'GET /admin/cronjobs' },
     { id: 'webhook', label: t('nav.webhook'), path: '/admin/webhook', apiRoute: 'GET /admin/webhook' },
     { id: 'files', label: t('nav.files'), path: '/admin/files', apiRoute: 'GET /admin/files' },
     { id: 'system', label: t('nav.system'), path: '/admin/system', apiRoute: 'GET /admin/system/config' },
