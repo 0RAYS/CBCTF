@@ -715,6 +715,7 @@
           "subtitle": "Manage contest containers with batch start/stop actions",
           "refresh": "Refresh"
         },
+        "showDeleted": "Show Deleted",
         "stats": {
           "total": "Total containers",
           "running": "Running",
@@ -756,9 +757,16 @@
             "user": "User",
             "remote": "Remote",
             "startTime": "Start time",
-            "status": "Status"
+            "status": "Status",
+            "remaining": "Remaining"
           },
           "empty": "No container data"
+        },
+        "statusBadge": {
+          "waiting": "Waiting",
+          "pending": "Pending",
+          "running": "Running",
+          "stopped": "Stopped"
         },
         "modals": {
           "startTitle": "Confirm start",
@@ -979,6 +987,7 @@
         "title": "Global Container Management",
         "subtitle": "View and stop all running containers across contests"
       },
+      "showDeleted": "Show Deleted",
       "stats": {
         "total": "Total containers",
         "running": "Running",
@@ -1013,9 +1022,16 @@
           "user": "User",
           "remote": "Remote",
           "startTime": "Start time",
-          "status": "Status"
+          "status": "Status",
+          "remaining": "Remaining"
         },
         "empty": "No container data"
+      },
+      "statusBadge": {
+        "waiting": "Waiting",
+        "pending": "Pending",
+        "running": "Running",
+        "stopped": "Stopped"
       },
       "modals": {
         "stopTitle": "Stop containers",

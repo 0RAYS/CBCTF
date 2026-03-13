@@ -16,6 +16,7 @@ type GetVictimsForm struct {
 	ChallengeID string `form:"challenge_id" json:"challenge_id" binding:"omitempty,uuid"`
 	TeamID      uint   `form:"team_id" json:"team_id"`
 	UserID      uint   `form:"user_id" json:"user_id"`
+	Deleted     bool   `form:"deleted" json:"deleted"`
 }
 
 func (f *GetVictimsForm) Validate(ctx *gin.Context) model.RetVal {

@@ -20,16 +20,7 @@ func StartVictim(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
 	challenge := middleware.GetChallenge(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	go func() {
-		_, ret := service.StartVictim(db.DB, user.ID, team.ID, contest.ID, contestChallenge.ID, challenge.ID)
-		if !ret.OK {
-			victim, ret := db.InitVictimRepo(db.DB).HasAliveVictim(team.ID, challenge.ID)
-			if !ret.OK {
-				return
-			}
-			service.StopVictim(db.DB, victim)
-		}
-	}()
+	go service.StartVictim(db.DB, user.ID, team.ID, contest.ID, contestChallenge.ID, challenge.ID)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }

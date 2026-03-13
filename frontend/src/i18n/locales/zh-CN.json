@@ -715,6 +715,7 @@
           "subtitle": "管理比赛中的靶机实例，支持批量开启和停止操作",
           "refresh": "刷新"
         },
+        "showDeleted": "显示已删除",
         "stats": {
           "total": "总靶机数",
           "running": "运行中",
@@ -756,9 +757,16 @@
             "user": "用户",
             "remote": "远程地址",
             "startTime": "开始时间",
-            "status": "状态"
+            "status": "状态",
+            "remaining": "剩余时间"
           },
           "empty": "暂无靶机数据"
+        },
+        "statusBadge": {
+          "waiting": "等待中",
+          "pending": "准备中",
+          "running": "运行中",
+          "stopped": "已停止"
         },
         "modals": {
           "startTitle": "确认开启靶机",
@@ -979,6 +987,7 @@
         "title": "全局靶机管理",
         "subtitle": "查看并停止所有比赛中的运行中靶机"
       },
+      "showDeleted": "显示已删除",
       "stats": {
         "total": "总靶机数",
         "running": "运行中",
@@ -1013,9 +1022,16 @@
           "user": "用户",
           "remote": "远程地址",
           "startTime": "开始时间",
-          "status": "状态"
+          "status": "状态",
+          "remaining": "剩余时间"
         },
         "empty": "暂无靶机数据"
+      },
+      "statusBadge": {
+        "waiting": "等待中",
+        "pending": "准备中",
+        "running": "运行中",
+        "stopped": "已停止"
       },
       "modals": {
         "stopTitle": "停止靶机",
