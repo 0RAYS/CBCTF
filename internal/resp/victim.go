@@ -17,5 +17,6 @@ func GetVictimResp(victim model.Victim) gin.H {
 		"user_id":                victim.UserID,
 		"start":                  victim.Start,
 		"duration":               victim.Duration,
+		"status":                 victim.Status,
 	}
 }

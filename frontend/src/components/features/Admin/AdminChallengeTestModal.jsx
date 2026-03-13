@@ -117,7 +117,7 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
             toast.success({ description: t('admin.challenge.testModal.toast.statusRefreshSuccess') });
           }
           // Pod 仍在启动中（页面刷新后恢复）→ 自动开始轮询
-          if (response.data.remote?.status === 'Pending') {
+          if (response.data.remote?.status === 'pending') {
             startPolling(challenge.id);
           }
         }
@@ -252,8 +252,8 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
 
   // 靶机部分的渲染
   const renderInstanceContent = useCallback(() => {
-    const isRunning = testStatus?.remote?.status === 'Running';
-    const isLaunching = (loading.starting || testStatus?.remote?.status === 'Pending') && !isRunning;
+    const isRunning = testStatus?.remote?.status === 'running';
+    const isLaunching = (loading.starting || testStatus?.remote?.status === 'pending') && !isRunning;
     const targets = testStatus?.remote?.target || [];
 
     if (!testStatus && !isLaunching) return null;

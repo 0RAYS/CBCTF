@@ -283,6 +283,9 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 		}
 		victim.Pods = append(victim.Pods, pod)
 	}
+	if ret = victimRepo.Update(victim.ID, db.UpdateVictimOptions{Status: new(model.PendingVictimStatus)}); !ret.OK {
+		return model.Victim{}, ret
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	ipExposesMap, ret := k8s.StartVictim(ctx, victim)
@@ -321,6 +324,7 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 		Endpoints:        &victim.Endpoints,
 		ExposedEndpoints: &victim.ExposedEndpoints,
 		Start:            new(time.Now()),
+		Status:           new(model.RunningVictimStatus),
 	}); !ret.OK {
 		return model.Victim{}, ret
 	}
@@ -334,7 +338,7 @@ func GetVictimStatus(tx *gorm.DB, teamID uint, challenge model.Challenge) gin.H 
 		"status":    "Down",
 	}
 	if challenge.Type != model.PodsChallengeType {
-		data["status"] = "NotDocker"
+		data["status"] = "not_docker"
 		return data
 	}
 	victim, ret := db.InitVictimRepo(tx).HasAliveVictim(teamID, challenge.ID)
@@ -342,12 +346,8 @@ func GetVictimStatus(tx *gorm.DB, teamID uint, challenge model.Challenge) gin.H 
 		return data
 	}
 	targets := victim.RemoteAddr()
-	if len(targets) == 0 {
-		data["status"] = "Pending"
-		return data
-	}
 	data["target"] = targets
-	data["status"] = "Running"
+	data["status"] = victim.Status
 	data["remaining"] = victim.Remaining().Seconds()
 	return data
 }

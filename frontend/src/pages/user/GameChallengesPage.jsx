@@ -65,8 +65,8 @@ const transformChallengeData = (challenge) => {
     attachments: [], // 默认为空，点击时再获取
     hasInstance: challenge.type === 'pods',
     hasAttachments: challenge.type === 'dynamic',
-    instanceRunning: challenge.remote.status === 'Running',
-    instancePending: challenge.remote.status === 'Pending',
+    instanceRunning: challenge.remote.status === 'running',
+    instancePending: challenge.remote.status === 'pending',
     instanceIP: challenge.remote.target || [''],
     instanceDuration: challenge.remote.remaining || 0,
     instanceTimeLeft: challenge.remote.remaining || 0,
@@ -126,7 +126,7 @@ function GameChallengesPage() {
       }
       try {
         const statusRes = await getChallengeStatus(contestId, selectedChallengeRef.current.id);
-        if (statusRes.code === 200 && statusRes.data.remote.status === 'Running') {
+        if (statusRes.code === 200 && statusRes.data.remote.status === 'running') {
           stopPolling();
           refreshChallengeStatus();
         }
@@ -270,8 +270,8 @@ function GameChallengesPage() {
           attachment: statusRes.data.file || '',
           isInitialized: statusRes.data.init,
           isSolved: statusRes.data.solved,
-          instanceRunning: statusRes.data.remote.status === 'Running',
-          instancePending: statusRes.data.remote.status === 'Pending',
+          instanceRunning: statusRes.data.remote.status === 'running',
+          instancePending: statusRes.data.remote.status === 'pending',
           instanceIP: statusRes.data.remote.target || [''],
           instanceDuration: statusRes.data.remote.remaining || 0,
           instanceTimeLeft: statusRes.data.remote.remaining || 0,
@@ -396,8 +396,8 @@ function GameChallengesPage() {
           attachment: statusRes.data.file || '', // 如果有附件名称则添加
           isInitialized: statusRes.data.init, // 是否已初始化
           isSolved: statusRes.data.solved,
-          instanceRunning: statusRes.data.remote.status === 'Running',
-          instancePending: statusRes.data.remote.status === 'Pending',
+          instanceRunning: statusRes.data.remote.status === 'running',
+          instancePending: statusRes.data.remote.status === 'pending',
           instanceIP: statusRes.data.remote.target || [''],
           instanceTimeLeft: statusRes.data.remote.remaining || 0,
           instanceDuration: statusRes.data.remote.duration || 3600,
@@ -407,7 +407,7 @@ function GameChallengesPage() {
         setSelectedChallenge(updatedChallenge);
 
         // 页面刷新后 Pod 仍在启动中 → 自动开始轮询
-        if (statusRes.data.remote.status === 'Pending') {
+        if (statusRes.data.remote.status === 'pending') {
           startPolling();
         }
       }

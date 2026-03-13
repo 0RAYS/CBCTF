@@ -12,6 +12,13 @@ import (
 	"time"
 )
 
+const (
+	WaitingVictimStatus = "waiting"
+	PendingVictimStatus = "pending"
+	RunningVictimStatus = "running"
+	StoppedVictimStatus = "stopped"
+)
+
 // Victim 靶机实例
 // BelongsTo Challenge
 // BelongsTo Contest (nullable)
@@ -37,6 +44,7 @@ type Victim struct {
 	Endpoints          Endpoints        `gorm:"default:null;type:json" json:"-"`
 	ExposedEndpoints   Endpoints        `gorm:"default:null;type:json" json:"-"`
 	NetworkPolicies    NetworkPolicies  `gorm:"default:null;type:json" json:"network_policies"`
+	Status             string           `json:"status"`
 	BaseModel
 }
 
