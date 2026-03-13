@@ -316,12 +316,12 @@ func Init() *gin.Engine {
 				adminContestTeam.GET("/submissions", GetSubmissions)
 
 				adminContestTeam.GET("/victims", GetVictimHistories)
-				adminContainer := adminContestTeam.Group("/victims/:victimID", middleware.SetVictim)
+				adminContestVictim := adminContestTeam.Group("/victims/:victimID", middleware.SetVictim)
 				{
-					adminTraffic := adminContainer.Group("/traffic")
+					adminContestVictimTraffic := adminContestVictim.Group("/traffic")
 					{
-						adminTraffic.GET("/download", middleware.SetTrafficFile, DownloadFile(model.DownloadTrafficEventType))
-						adminTraffic.GET("", GetTraffics)
+						adminContestVictimTraffic.GET("/download", middleware.SetTrafficFile, DownloadFile(model.DownloadTrafficEventType))
+						adminContestVictimTraffic.GET("", GetTraffics)
 					}
 				}
 
