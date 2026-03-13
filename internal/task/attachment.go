@@ -46,8 +46,8 @@ func HandleGenAttachmentTask(_ context.Context, t *asynq.Task) error {
 		return err
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
 	ret := k8s.GenAttachment(ctx, payload.Challenge, payload.Generator, payload.TeamID, payload.Flags)
+	cancel()
 	db.InitGeneratorRepo(db.DB).UpdateStatus(payload.Generator.ID, ret.OK, time.Now())
 	if !ret.OK {
 		return fmt.Errorf("generate attachment failed: %s", ret.Msg)
