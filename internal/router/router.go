@@ -371,20 +371,20 @@ func Init() *gin.Engine {
 			adminContestImages := adminContest.Group("/images")
 			{
 				adminContestImages.GET("", GetContestChallengeImage)
-				adminContestImages.POST("", middleware.RateLimit("warmup_images", 10, time.Minute), PullContestChallengeImage)
+				adminContestImages.POST("", middleware.RateLimit("warmup_images", 1, time.Minute), PullContestChallengeImage)
 			}
 
 			adminContestVictim := adminContest.Group("/victims")
 			{
 				adminContestVictim.GET("", GetVictims)
-				adminContestVictim.POST("", middleware.RateLimit("warmup_victims", 10, time.Minute), StartVictims)
+				adminContestVictim.POST("", middleware.RateLimit("warmup_victims", 1, time.Minute), StartVictims)
 				adminContestVictim.DELETE("", StopVictims)
 			}
 
 			adminContestGenerator := adminContest.Group("/generators")
 			{
 				adminContestGenerator.GET("", GetGenerators)
-				adminContestGenerator.POST("", middleware.RateLimit("warmup_generators", 10, time.Minute), StartGenerator)
+				adminContestGenerator.POST("", middleware.RateLimit("warmup_generators", 1, time.Minute), StartGenerator)
 				adminContestGenerator.DELETE("", StopGenerator)
 			}
 		}
