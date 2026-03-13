@@ -12,10 +12,10 @@ import {
   IconTable,
   IconServer,
   IconSearch,
-  IconRefresh,
   IconTarget,
   IconUsers,
   IconTrash,
+  IconClockPlay,
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { searchModels } from '../../api/admin/search.js';
@@ -67,6 +67,7 @@ function AdminVictims() {
   const [selectedContainers, setSelectedContainers] = useState([]);
   const [isStopModalOpen, setIsStopModalOpen] = useState(false);
   const [showDeleted, setShowDeleted] = useState(false);
+  const [refreshInterval, setRefreshInterval] = useState(10);
   const [stats, setStats] = useState({ totalContainers: 0, runningContainers: 0, stoppedContainers: 0 });
   const { t, i18n } = useTranslation();
 
@@ -105,6 +106,16 @@ function AdminVictims() {
     fetchContainers(1, next);
   };
 
+  const currentPageRef = useRef(currentPage);
+  const showDeletedRef = useRef(showDeleted);
+
+  useEffect(() => {
+    currentPageRef.current = currentPage;
+  }, [currentPage]);
+  useEffect(() => {
+    showDeletedRef.current = showDeleted;
+  }, [showDeleted]);
+
   useEffect(() => {
     fetchContainers();
   }, []);
@@ -112,6 +123,15 @@ function AdminVictims() {
   useEffect(() => {
     fetchContainers();
   }, [currentPage, filters.user_id, filters.team_id, filters.challenge_id]);
+
+  useEffect(() => {
+    if (refreshInterval <= 0) return;
+    const id = setInterval(
+      () => fetchContainers(currentPageRef.current, showDeletedRef.current),
+      refreshInterval * 1000
+    );
+    return () => clearInterval(id);
+  }, [refreshInterval]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -243,15 +263,24 @@ function AdminVictims() {
             >
               {t('admin.victims.showDeleted')}
             </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              align="icon-left"
-              icon={<IconRefresh size={16} />}
-              onClick={() => fetchContainers()}
-            >
-              {t('common.refresh')}
-            </Button>
+            <div className="flex items-center gap-1 px-2 h-8 rounded-md border border-neutral-700 bg-neutral-900">
+              <IconClockPlay size={13} className="text-neutral-400 shrink-0" />
+              <span className="text-xs text-neutral-400 shrink-0">{t('common.autoRefresh')}</span>
+              <select
+                value={refreshInterval}
+                onChange={(e) => setRefreshInterval(Number(e.target.value))}
+                className="bg-transparent text-xs text-neutral-300 outline-none cursor-pointer"
+              >
+                {[5, 10, 30, 60].map((s) => (
+                  <option key={s} value={s} className="bg-neutral-900">
+                    {s}s
+                  </option>
+                ))}
+                <option value={0} className="bg-neutral-900">
+                  {t('common.autoRefreshOff')}
+                </option>
+              </select>
+            </div>
           </div>
         </div>
 

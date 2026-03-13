@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { toast } from '../../utils/toast';
 import { getGenerators, startGenerators, stopGenerators } from '../../api/admin/generators';
 import { getChallengeList } from '../../api/admin/challenge';
 import { Modal } from '../../components/common';
 import { Button, Pagination, Card, EmptyState, StatCard } from '../../components/common';
 import { motion } from 'motion/react';
-import { IconPlayerPlay, IconBan, IconRefresh, IconCheck, IconX, IconTrash } from '@tabler/icons-react';
+import { IconPlayerPlay, IconBan, IconCheck, IconX, IconTrash, IconClockPlay } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 
 const STATUS_STYLES = {
@@ -35,6 +35,7 @@ function AdminGenerators() {
   const [selectedIds, setSelectedIds] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showDeleted, setShowDeleted] = useState(false);
+  const [refreshInterval, setRefreshInterval] = useState(10);
 
   const [dynamicChallenges, setDynamicChallenges] = useState([]);
   const [startModalOpen, setStartModalOpen] = useState(false);
@@ -70,6 +71,25 @@ function AdminGenerators() {
     fetchGenerators(1);
     fetchDynamicChallenges();
   }, []);
+
+  const currentPageRef = useRef(currentPage);
+  const showDeletedRef = useRef(showDeleted);
+
+  useEffect(() => {
+    currentPageRef.current = currentPage;
+  }, [currentPage]);
+  useEffect(() => {
+    showDeletedRef.current = showDeleted;
+  }, [showDeleted]);
+
+  useEffect(() => {
+    if (refreshInterval <= 0) return;
+    const id = setInterval(
+      () => fetchGenerators(currentPageRef.current, showDeletedRef.current),
+      refreshInterval * 1000
+    );
+    return () => clearInterval(id);
+  }, [refreshInterval]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -156,14 +176,24 @@ function AdminGenerators() {
 
       {/* Toolbar */}
       <div className="flex flex-wrap gap-2 items-center">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => fetchGenerators(currentPage)}
-          leftIcon={<IconRefresh size={14} />}
-        >
-          {t('common.refresh')}
-        </Button>
+        <div className="flex items-center gap-1 px-2 h-8 rounded-md border border-neutral-700 bg-neutral-900">
+          <IconClockPlay size={13} className="text-neutral-400 shrink-0" />
+          <span className="text-xs text-neutral-400 shrink-0">{t('common.autoRefresh')}</span>
+          <select
+            value={refreshInterval}
+            onChange={(e) => setRefreshInterval(Number(e.target.value))}
+            className="bg-transparent text-xs text-neutral-300 outline-none cursor-pointer"
+          >
+            {[5, 10, 30, 60].map((s) => (
+              <option key={s} value={s} className="bg-neutral-900">
+                {s}s
+              </option>
+            ))}
+            <option value={0} className="bg-neutral-900">
+              {t('common.autoRefreshOff')}
+            </option>
+          </select>
+        </div>
         <Button variant="primary" size="sm" onClick={openStartModal} leftIcon={<IconPlayerPlay size={14} />}>
           {t('admin.generators.startButton')}
         </Button>
