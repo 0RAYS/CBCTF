@@ -270,9 +270,9 @@
         },
         "submissions": {
           "columns": {
-            "challengeId": "赛题ID",
-            "teamId": "队伍ID",
-            "userId": "用户ID",
+            "challengeId": "赛题 ID",
+            "teamId": "队伍 ID",
+            "userId": "用户 ID",
             "submittedFlag": "提交Flag",
             "score": "得分",
             "ip": "IP",
@@ -299,8 +299,8 @@
         },
         "traffic": {
           "columns": {
-            "containerId": "靶机ID",
-            "userId": "用户ID",
+            "containerId": "靶机 ID",
+            "userId": "用户 ID",
             "challengeName": "赛题名称",
             "startTime": "开始时间",
             "duration": "持续时间",
@@ -582,7 +582,7 @@
           },
           "info": {
             "score": "得分",
-            "captain": "队长ID",
+            "captain": "队长 ID",
             "inviteCode": "邀请码",
             "members": "成员列表",
             "memberId": "ID",
@@ -740,9 +740,9 @@
           "userFallback": "用户{{id}}",
           "teamFallback": "团队{{id}}",
           "challengeFallback": "题目{{id}}",
-          "userIdLabel": "用户ID",
-          "teamIdLabel": "团队ID",
-          "challengeIdLabel": "题目ID"
+          "userIdLabel": "用户 ID",
+          "teamIdLabel": "团队 ID",
+          "challengeIdLabel": "题目 ID"
         },
         "table": {
           "title": "靶机列表",
@@ -887,7 +887,7 @@
           "commentPlaceholder": "请输入备注"
         },
         "detail": {
-          "eventId": "事件ID",
+          "eventId": "事件 ID",
           "model": "关联对象",
           "ip": "IP",
           "time": "时间",
@@ -935,6 +935,7 @@
         "columns": {
           "id": "ID",
           "name": "Pod 名称",
+          "contestId": "赛事 ID",
           "challengeId": "题目 ID",
           "success": "成功次数",
           "successLast": "最近成功",
@@ -995,9 +996,9 @@
         "userFallback": "用户{{id}}",
         "teamFallback": "团队{{id}}",
         "challengeFallback": "题目{{id}}",
-        "userIdLabel": "用户ID",
-        "teamIdLabel": "团队ID",
-        "challengeIdLabel": "题目ID"
+        "userIdLabel": "用户 ID",
+        "teamIdLabel": "团队 ID",
+        "challengeIdLabel": "题目 ID"
       },
       "table": {
         "title": "靶机列表",
@@ -1035,7 +1036,8 @@
       "columns": {
         "id": "ID",
         "name": "Pod名称",
-        "challengeId": "题目ID",
+        "contestId": "比赛 ID",
+        "challengeId": "题目 ID",
         "success": "成功次数",
         "successLast": "最后成功",
         "failure": "失败次数",
@@ -1252,7 +1254,7 @@
       "picture": {
         "replace": "更换"
       },
-      "id": "ID：{{id}}",
+      "id": "ID: {{id}}",
       "status": {
         "verified": "已验证",
         "banned": "已封禁",
@@ -1298,7 +1300,7 @@
       "detail": {
         "title": "用户详情",
         "info": {
-          "id": "用户ID",
+          "id": "用户 ID",
           "email": "邮箱",
           "description": "简介",
           "score": "分数",
@@ -1501,7 +1503,7 @@
       },
       "email": {
         "detailTitle": "邮件详情",
-        "id": "邮件ID",
+        "id": "邮件 ID",
         "status": "发送状态",
         "statusSuccess": "发送成功",
         "statusFailed": "发送失败",
@@ -1742,7 +1744,7 @@
         "nameClaimLabel": "名称字段",
         "emailClaimLabel": "邮箱字段",
         "descriptionClaimLabel": "描述字段",
-        "idClaimLabel": "ID字段",
+        "idClaimLabel": "ID 字段",
         "logoUrlLabel": "Logo URL",
         "logoUrlPlaceholder": "https://example.com/picture.png",
         "groupsClaimLabel": "分组字段",

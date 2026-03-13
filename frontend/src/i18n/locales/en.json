@@ -935,6 +935,7 @@
         "columns": {
           "id": "ID",
           "name": "Pod Name",
+          "contestId": "Contest ID",
           "challengeId": "Challenge ID",
           "success": "Successes",
           "successLast": "Last Success",
@@ -1035,6 +1036,7 @@
       "columns": {
         "id": "ID",
         "name": "Pod Name",
+        "contestId": "Contest ID",
         "challengeId": "Challenge ID",
         "success": "Successes",
         "successLast": "Last Success",
