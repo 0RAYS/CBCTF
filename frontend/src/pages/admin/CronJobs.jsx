@@ -17,7 +17,7 @@ const DEFAULT_FORM = {
 };
 
 function parseDurationNs(value) {
-  if (typeof value === 'number') return value;
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
   if (typeof value !== 'string') return 0;
 
   const hourMatch = value.match(/(\d+)h/);
@@ -88,7 +88,9 @@ function CronJobs() {
         setTotalCount(response.data.count || 0);
       }
     } catch (error) {
-      toast.danger({ description: error.message || t('admin.cronjobs.toast.fetchListFailed') });
+      toast.danger({
+        description: error.message || t('admin.cronjobs.toast.fetchListFailed'),
+      });
     } finally {
       setLoading(false);
     }
@@ -112,22 +114,30 @@ function CronJobs() {
         const currentNs = selectedCronJob.schedule_ns ?? parseDurationNs(selectedCronJob.schedule);
         const payload = {};
         if (durationNs !== currentNs) payload.schedule = durationNs;
+        if (Object.keys(payload).length === 0) {
+          setIsModalOpen(false);
+          return;
+        }
         const response = await updateCronJob(selectedCronJob.id, payload);
         if (response.code === 200) {
-          toast.success({ description: t('admin.cronjobs.toast.updateSuccess') });
+          toast.success({
+            description: t('admin.cronjobs.toast.updateSuccess'),
+          });
         }
       }
       setIsModalOpen(false);
       fetchCronJobs(currentPage);
     } catch (error) {
-      toast.danger({ description: error.message || t('admin.cronjobs.toast.updateFailed') });
+      toast.danger({
+        description: error.message || t('admin.cronjobs.toast.updateFailed'),
+      });
     }
   };
 
   const formatDateTime = (value) => {
     if (!value) return t('common.notAvailable');
     const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return t('admin.cronjobs.time.invalid');
+    if (Number.isNaN(date.getTime()) || date.getUTCFullYear() <= 1) return t('common.notAvailable');
     return date.toLocaleString();
   };
 
@@ -141,11 +151,23 @@ function CronJobs() {
   const columns = [
     { key: 'id', label: t('admin.cronjobs.columns.id'), width: '10%' },
     { key: 'name', label: t('admin.cronjobs.columns.name'), width: '16%' },
-    { key: 'description', label: t('admin.cronjobs.columns.description'), width: '24%' },
-    { key: 'schedule', label: t('admin.cronjobs.columns.schedule'), width: '18%' },
+    {
+      key: 'description',
+      label: t('admin.cronjobs.columns.description'),
+      width: '24%',
+    },
+    {
+      key: 'schedule',
+      label: t('admin.cronjobs.columns.schedule'),
+      width: '18%',
+    },
     { key: 'last', label: t('admin.cronjobs.columns.last'), width: '16%' },
     { key: 'next', label: t('admin.cronjobs.columns.next'), width: '16%' },
-    { key: 'actions', label: t('admin.cronjobs.columns.actions'), width: '10%' },
+    {
+      key: 'actions',
+      label: t('admin.cronjobs.columns.actions'),
+      width: '10%',
+    },
   ];
 
   const renderCell = (cronJob, column) => {
