@@ -21,8 +21,8 @@ import {
   IconUsers,
   IconTarget,
   IconSearch,
-  IconRefresh,
   IconTrash,
+  IconClockPlay,
 } from '@tabler/icons-react';
 
 const VICTIM_STATUS_STYLES = {
@@ -105,6 +105,7 @@ function ContestContainers() {
     stoppedContainers: 0,
   });
   const [showDeleted, setShowDeleted] = useState(false);
+  const [refreshInterval, setRefreshInterval] = useState(10);
   const { t, i18n } = useTranslation();
 
   const pageSize = 20; // 增加每页显示数量
@@ -193,6 +194,25 @@ function ContestContainers() {
   useEffect(() => {
     fetchContainers();
   }, [currentPage, filters.user_id, filters.team_id, filters.challenge_id]);
+
+  const currentPageRef = useRef(currentPage);
+  const showDeletedRef = useRef(showDeleted);
+
+  useEffect(() => {
+    currentPageRef.current = currentPage;
+  }, [currentPage]);
+  useEffect(() => {
+    showDeletedRef.current = showDeleted;
+  }, [showDeleted]);
+
+  useEffect(() => {
+    if (refreshInterval <= 0) return;
+    const id = setInterval(
+      () => fetchContainers(currentPageRef.current, showDeletedRef.current),
+      refreshInterval * 1000
+    );
+    return () => clearInterval(id);
+  }, [refreshInterval]);
 
   useEffect(() => {
     fetchChallenges();
@@ -455,15 +475,24 @@ function ContestContainers() {
               >
                 {t('admin.contests.containers.showDeleted')}
               </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                align="icon-left"
-                icon={<IconRefresh size={16} />}
-                onClick={() => fetchContainers()}
-              >
-                {t('common.refresh')}
-              </Button>
+              <div className="flex items-center gap-1 px-2 h-8 rounded-md border border-neutral-700 bg-neutral-900">
+                <IconClockPlay size={13} className="text-neutral-400 shrink-0" />
+                <span className="text-xs text-neutral-400 shrink-0">{t('common.autoRefresh')}</span>
+                <select
+                  value={refreshInterval}
+                  onChange={(e) => setRefreshInterval(Number(e.target.value))}
+                  className="bg-transparent text-xs text-neutral-300 outline-none cursor-pointer"
+                >
+                  {[5, 10, 30, 60].map((s) => (
+                    <option key={s} value={s} className="bg-neutral-900">
+                      {s}s
+                    </option>
+                  ))}
+                  <option value={0} className="bg-neutral-900">
+                    {t('common.autoRefreshOff')}
+                  </option>
+                </select>
+              </div>
             </div>
           </div>
 

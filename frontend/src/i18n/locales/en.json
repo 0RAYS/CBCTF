@@ -33,6 +33,8 @@
     "next": "Next",
     "points": "{{count}} pts",
     "refresh": "Refresh",
+    "autoRefresh": "Auto Refresh",
+    "autoRefreshOff": "Off",
     "yes": "Yes",
     "no": "No",
     "notAvailable": "N/A",
