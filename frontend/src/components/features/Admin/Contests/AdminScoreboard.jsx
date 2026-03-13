@@ -19,14 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { Pagination } from '../../../../components/common';
 import ScoreboardRanking from '../../CTFGame/Scoreboard/ScoreboardRanking.jsx';
 
-function AdminScoreboard({
-  teams = [],
-  currentPage = 1,
-  pageSize = 6,
-  totalCount = 0,
-  onPageChange,
-  onRowClick,
-}) {
+function AdminScoreboard({ teams = [], currentPage = 1, pageSize = 6, totalCount = 0, onPageChange, onRowClick }) {
   const { t, i18n } = useTranslation();
 
   return (

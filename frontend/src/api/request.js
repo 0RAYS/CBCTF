@@ -109,7 +109,7 @@ request.interceptors.request.use(
 
 // 响应拦截器
 request.interceptors.response.use(
-  (response) => {
+  async (response) => {
     // 如果没有设置 noLoading 标识，则执行全局 loading 逻辑
     const { config } = response;
     if (!config.noLoading) {
@@ -123,11 +123,24 @@ request.interceptors.response.use(
     }
 
     // 处理文件下载
-    if (response.data instanceof Blob) {
+    if (response.data instanceof Blob && response.headers?.['file'] === 'true') {
       return response;
     }
 
-    const { code, msg, data } = response.data;
+    let { code, msg, data } = response.data;
+
+    if (response.data instanceof Blob) {
+      let parsed;
+      try {
+        const text = await response.data.text();
+        parsed = JSON.parse(text);
+      } catch {
+        return Promise.reject(new Error(response.data));
+      }
+      code = parsed.code;
+      msg = parsed.msg;
+      data = parsed.data;
+    }
 
     // 处理业务错误
     if (code !== 200) {
@@ -145,7 +158,7 @@ request.interceptors.response.use(
 
     return { code, msg, data };
   },
-  (error) => {
+  async (error) => {
     // 减少请求计数
     finishLoading();
     updateGlobalLoading(requestCount - 1);
@@ -154,7 +167,20 @@ request.interceptors.response.use(
     let errorMessage;
     if (error.response) {
       const { status, data } = error.response;
+      // responseType: 'blob' 时错误体也是 Blob，需异步解析
+      const resolveData = async () => {
+        if (data instanceof Blob) {
+          try {
+            const text = await data.text();
+            return JSON.parse(text);
+          } catch {
+            return null;
+          }
+        }
+        return data;
+      };
 
+      const resolved = await resolveData();
       switch (status) {
         case 401:
           errorMessage = i18n.t('errors.unauthorized');
@@ -184,7 +210,7 @@ request.interceptors.response.use(
           errorMessage = i18n.t('errors.gatewayTimeout');
           break;
         default:
-          errorMessage = data?.msg || i18n.t('errors.requestFailed');
+          errorMessage = resolved?.msg || i18n.t('errors.requestFailed');
       }
     } else if (error.request) {
       if (error.code === 'ECONNABORTED') {

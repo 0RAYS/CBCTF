@@ -1,12 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from '../../../utils/toast';
-import {
-  getContestInfo,
-  getContestRank,
-  getContestScoreboard,
-  getContestTimeline,
-} from '../../../api/admin/contest';
+import { getContestInfo, getContestRank, getContestScoreboard, getContestTimeline } from '../../../api/admin/contest';
 import AdminScoreboard from '../../../components/features/Admin/Contests/AdminScoreboard';
 import AdminScoreboardTable from '../../../components/features/Admin/Contests/AdminScoreboardTable';
 import ScoreboardTimeline from '../../../components/features/CTFGame/Scoreboard/ScoreboardTimeline';

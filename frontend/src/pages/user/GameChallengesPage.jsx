@@ -421,7 +421,9 @@ function GameChallengesPage() {
   const handleDownloadAttachment = async (attachment) => {
     try {
       const response = await downloadChallengeAttachment(contestId, selectedChallenge.id);
-      downloadBlobResponse(response, attachment, 'application/octet-stream');
+      if (response.headers?.['file'] === 'true') {
+        downloadBlobResponse(response, attachment, 'application/octet-stream');
+      }
 
       toast.success({ title: t('game.challenges.toast.downloadSuccess') });
     } catch (error) {

@@ -67,7 +67,9 @@ function FilesManagement() {
   const handleDownload = async (file) => {
     try {
       const response = await downloadFile(file.id);
-      downloadBlobResponse(response, file.filename, 'application/octet-stream');
+      if (response.headers?.['file'] === 'true') {
+        downloadBlobResponse(response, file.filename, 'application/octet-stream');
+      }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.files.toast.downloadFailed') });
     }

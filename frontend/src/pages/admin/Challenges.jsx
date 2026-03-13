@@ -215,7 +215,9 @@ function ChallengesManagement() {
   const handleDownloadAttachment = async (challenge) => {
     try {
       const response = await downloadChallengeFile(challenge.id);
-      downloadBlobResponse(response, 'attachment.zip', 'application/octet-stream');
+      if (response.headers?.['file'] === 'true') {
+        downloadBlobResponse(response, 'attachment.zip', 'application/octet-stream');
+      }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.challenge.toast.downloadFailed') });
     }
