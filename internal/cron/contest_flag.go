@@ -58,5 +58,5 @@ func updateFlagScore(c *cron.Cron) {
 		return model.SuccessRetVal()
 	})
 	function()
-	c.Schedule(cron.Every(time.Hour), cron.FuncJob(function))
+	c.Schedule(cron.Every(5*time.Minute), cron.FuncJob(function))
 }

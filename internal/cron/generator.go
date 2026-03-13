@@ -12,7 +12,7 @@ import (
 	"github.com/robfig/cron/v3"
 )
 
-// stopUnCtrlGenerator 关闭不受控的以 `gen` 为命名前缀的 pod
+// stopUnCtrlGenerator 关闭不受控的 model.Generator
 func stopUnCtrlGenerator(c *cron.Cron) {
 	function := exec("StopUnCtrlGenerator", func() model.RetVal {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
@@ -39,5 +39,5 @@ func stopUnCtrlGenerator(c *cron.Cron) {
 		return model.SuccessRetVal()
 	})
 	function()
-	c.Schedule(cron.Every(time.Hour), cron.FuncJob(function))
+	c.Schedule(cron.Every(10*time.Minute), cron.FuncJob(function))
 }
