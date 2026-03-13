@@ -409,6 +409,7 @@ func GetVictims(tx *gorm.DB, contest model.Contest, form dto.GetVictimsForm) ([]
 			"Team":             {},
 			"ContestChallenge": {},
 		},
+		Sort:    []string{"id DESC"},
 		Deleted: form.Deleted,
 	}
 	if contest.ID != 0 {
