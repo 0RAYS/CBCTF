@@ -2,8 +2,6 @@ package service
 
 import (
 	"CBCTF/internal/db"
-	"CBCTF/internal/dto"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/model"
 	"context"
@@ -26,22 +24,11 @@ func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) model.RetVal {
 	}
 	generator, ret := GetGenerator(tx, 0, challenge)
 	if !ret.OK {
-		if ret.Msg != i18n.Model.Generator.NotAvailable {
-			return ret
-		}
-		generators, ret := StartGenerators(tx, 0, dto.StartGeneratorsForm{Challenges: []string{challenge.RandID}})
-		if !ret.OK {
-			return ret
-		}
-		if len(generators) < 1 {
-			return model.RetVal{Msg: i18n.Model.Generator.NotAvailable}
-		}
-		generator = generators[0]
+		return ret
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
 	ret = k8s.GenAttachment(ctx, challenge, generator, 0, flags)
+	cancel()
 	db.InitGeneratorRepo(tx).UpdateStatus(generator.ID, ret.OK, time.Now())
-	StopGenerators(tx, dto.StopGeneratorsForm{Generators: []uint{generator.ID}})
 	return ret
 }

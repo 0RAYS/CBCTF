@@ -51,7 +51,9 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 			_, ret = k8s.StartGenerator(ctx, challenge, generator)
 			cancel()
 			if !ret.OK {
+				ctx, cancel = context.WithTimeout(context.Background(), 2*time.Minute)
 				k8s.StopGenerator(ctx, generator)
+				cancel()
 				return errors.New(ret.Msg)
 			}
 			generators = append(generators, generator)
