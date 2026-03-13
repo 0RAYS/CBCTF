@@ -381,7 +381,7 @@ func CountTeamVictims(tx *gorm.DB, team model.Team) (int64, model.RetVal) {
 	return db.InitVictimRepo(tx).Count(db.CountOptions{Conditions: map[string]any{"team_id": team.ID}})
 }
 
-func GetContestVictims(tx *gorm.DB, contest model.Contest, form dto.GetContestVictimsForm) ([]model.Victim, int64, model.RetVal) {
+func GetVictims(tx *gorm.DB, contest model.Contest, form dto.GetVictimsForm) ([]model.Victim, int64, model.RetVal) {
 	var challengeID uint
 	if form.ChallengeID != "" {
 		challenge, ret := db.InitChallengeRepo(tx).GetByRandID(form.ChallengeID)
@@ -391,13 +391,16 @@ func GetContestVictims(tx *gorm.DB, contest model.Contest, form dto.GetContestVi
 		challengeID = challenge.ID
 	}
 	options := db.GetOptions{
-		Conditions: map[string]any{"contest_id": contest.ID},
+		Conditions: make(map[string]any),
 		Preloads: map[string]db.GetOptions{
 			"Pods":             {},
 			"User":             {},
 			"Team":             {},
 			"ContestChallenge": {},
 		},
+	}
+	if contest.ID != 0 {
+		options.Conditions["contest_id"] = contest.ID
 	}
 	if challengeID != 0 {
 		options.Conditions["challenge_id"] = challengeID
@@ -418,7 +421,7 @@ func GetContestVictims(tx *gorm.DB, contest model.Contest, form dto.GetContestVi
 	}), count, ret
 }
 
-func StartContestVictims(tx *gorm.DB, contest model.Contest, form dto.StartContestVictimsForm) model.RetVal {
+func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm) model.RetVal {
 	if len(form.Challenges) == 0 || len(form.Teams) == 0 {
 		return model.SuccessRetVal()
 	}
@@ -477,8 +480,8 @@ func StartContestVictims(tx *gorm.DB, contest model.Contest, form dto.StartConte
 	return model.SuccessRetVal()
 }
 
-// StopContestVictims tx 无需开启事务
-func StopContestVictims(tx *gorm.DB, form dto.StopContestVictimsForm) model.RetVal {
+// StopVictims tx 无需开启事务
+func StopVictims(tx *gorm.DB, form dto.StopVictimsForm) model.RetVal {
 	if len(form.Victims) == 0 {
 		return model.SuccessRetVal()
 	}

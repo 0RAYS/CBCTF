@@ -11,17 +11,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetContestGenerators(ctx *gin.Context) {
+func GetGenerators(ctx *gin.Context) {
 	var form dto.ListGeneratorsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
+	options := db.GetOptions{
+		Deleted: form.Deleted,
+	}
 	contest := middleware.GetContest(ctx)
-	generators, count, ret := db.InitGeneratorRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
-		Conditions: map[string]any{"contest_id": contest.ID},
-		Deleted:    form.Deleted,
-	})
+	if contest.ID > 0 {
+		options.Conditions = map[string]any{"contest_id": contest.ID}
+	}
+	generators, count, ret := db.InitGeneratorRepo(db.DB).List(form.Limit, form.Offset)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -33,7 +36,7 @@ func GetContestGenerators(ctx *gin.Context) {
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"count": count, "generators": data}))
 }
 
-func StartContestGenerator(ctx *gin.Context) {
+func StartGenerator(ctx *gin.Context) {
 	var form dto.StartGeneratorsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		resp.JSON(ctx, ret)
@@ -46,7 +49,7 @@ func StartContestGenerator(ctx *gin.Context) {
 	resp.JSON(ctx, model.SuccessRetVal())
 }
 
-func StopContestGenerator(ctx *gin.Context) {
+func StopGenerator(ctx *gin.Context) {
 	var form dto.StopGeneratorsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		resp.JSON(ctx, ret)

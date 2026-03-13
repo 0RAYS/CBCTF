@@ -376,16 +376,16 @@ func Init() *gin.Engine {
 
 			adminContestVictim := adminContest.Group("/victims")
 			{
-				adminContestVictim.GET("", GetContestVictims)
-				adminContestVictim.POST("", StartContestVictims)
-				adminContestVictim.DELETE("", StopContestVictims)
+				adminContestVictim.GET("", GetVictims)
+				adminContestVictim.POST("", StartVictims)
+				adminContestVictim.DELETE("", StopVictims)
 			}
 
 			adminContestGenerator := adminContest.Group("/generators")
 			{
-				adminContestGenerator.GET("", GetContestGenerators)
-				adminContestGenerator.POST("", StartContestGenerator)
-				adminContestGenerator.DELETE("", StopContestGenerator)
+				adminContestGenerator.GET("", GetGenerators)
+				adminContestGenerator.POST("", StartGenerator)
+				adminContestGenerator.DELETE("", StopGenerator)
 			}
 		}
 

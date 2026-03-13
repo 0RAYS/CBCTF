@@ -102,14 +102,14 @@ func GetVictimHistories(ctx *gin.Context) {
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"victims": data, "count": count}))
 }
 
-func GetContestVictims(ctx *gin.Context) {
-	var form dto.GetContestVictimsForm
+func GetVictims(ctx *gin.Context) {
+	var form dto.GetVictimsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
 	contest := middleware.GetContest(ctx)
-	victims, count, _ := service.GetContestVictims(db.DB, contest, form)
+	victims, count, _ := service.GetVictims(db.DB, contest, form)
 	data := make([]gin.H, 0)
 	for _, victim := range victims {
 		info := resp.GetVictimResp(victim)
@@ -129,27 +129,27 @@ func GetContestVictims(ctx *gin.Context) {
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"victims": data, "count": total, "running": count}))
 }
 
-func StartContestVictims(ctx *gin.Context) {
-	var form dto.StartContestVictimsForm
+func StartVictims(ctx *gin.Context) {
+	var form dto.StartVictimsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.StartVictimEventType)
 	contest := middleware.GetContest(ctx)
-	go service.StartContestVictims(db.DB, contest, form)
+	go service.StartVictims(db.DB, contest, form)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }
 
-func StopContestVictims(ctx *gin.Context) {
-	var form dto.StopContestVictimsForm
+func StopVictims(ctx *gin.Context) {
+	var form dto.StopVictimsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.StopVictimEventType)
-	go service.StopContestVictims(db.DB, form)
+	go service.StopVictims(db.DB, form)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }
