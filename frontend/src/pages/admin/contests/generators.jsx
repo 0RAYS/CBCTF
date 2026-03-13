@@ -43,7 +43,7 @@ function ContestGenerators() {
 
   const [dynamicChallenges, setDynamicChallenges] = useState([]);
   const [startModalOpen, setStartModalOpen] = useState(false);
-  const [startSelected, setStartSelected] = useState([]);
+  const [startCounts, setStartCounts] = useState({});
 
   const fetchGenerators = async (page = 1, deleted = showDeleted) => {
     setLoading(true);
@@ -116,22 +116,25 @@ function ContestGenerators() {
   };
 
   const openStartModal = () => {
-    setStartSelected([]);
+    setStartCounts({});
     setStartModalOpen(true);
   };
 
-  const toggleStartChallenge = (randId) => {
-    setStartSelected((prev) => (prev.includes(randId) ? prev.filter((x) => x !== randId) : [...prev, randId]));
+  const handleCountChange = (id, value) => {
+    const count = Math.max(0, parseInt(value, 10) || 0);
+    setStartCounts((prev) => ({ ...prev, [id]: count }));
   };
 
   const handleStart = async () => {
-    if (startSelected.length === 0) {
+    const challenges = Object.entries(startCounts)
+      .filter(([, count]) => count > 0)
+      .flatMap(([id, count]) => Array(count).fill(id));
+    if (challenges.length === 0) {
       toast.error(t('admin.contests.generators.toast.selectRequired'));
       return;
     }
     try {
-      await startContestGenerators(contestId, startSelected);
-      toast.success(t('admin.contests.generators.toast.startSuccess'));
+      await startContestGenerators(contestId, challenges);
       setStartModalOpen(false);
       setCurrentPage(1);
       fetchGenerators(1);
@@ -302,21 +305,26 @@ function ContestGenerators() {
             </p>
           ) : (
             <div className="flex flex-col gap-2 max-h-72 overflow-y-auto">
-              {dynamicChallenges.map((c) => (
-                <label
-                  key={c.rand_id ?? c.id}
-                  className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-neutral-800 cursor-pointer transition-colors"
-                >
-                  <input
-                    type="checkbox"
-                    className="accent-geek-400"
-                    checked={startSelected.includes(c.rand_id ?? c.id)}
-                    onChange={() => toggleStartChallenge(c.rand_id ?? c.id)}
-                  />
-                  <span className="text-sm text-neutral-200">{c.title ?? c.name}</span>
-                  <span className="text-xs text-neutral-500 font-mono ml-auto">{c.rand_id ?? c.id}</span>
-                </label>
-              ))}
+              {dynamicChallenges.map((c) => {
+                const id = c.rand_id ?? c.id;
+                return (
+                  <div
+                    key={id}
+                    className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-neutral-800 transition-colors"
+                  >
+                    <span className="text-sm text-neutral-200 flex-1">{c.title ?? c.name}</span>
+                    <span className="text-xs text-neutral-500 font-mono">{id}</span>
+                    <input
+                      type="number"
+                      min={0}
+                      step={1}
+                      value={startCounts[id] ?? 0}
+                      onChange={(e) => handleCountChange(id, e.target.value)}
+                      className="w-16 bg-neutral-800 border border-neutral-700 rounded px-2 py-1 text-sm text-neutral-200 text-center focus:outline-none focus:border-geek-400"
+                    />
+                  </div>
+                );
+              })}
             </div>
           )}
           <div className="flex justify-end gap-2 pt-2">
@@ -327,7 +335,7 @@ function ContestGenerators() {
               variant="primary"
               size="sm"
               onClick={handleStart}
-              disabled={startSelected.length === 0}
+              disabled={!Object.values(startCounts).some((c) => c > 0)}
               leftIcon={<IconPlayerPlay size={14} />}
             >
               {t('admin.contests.generators.startSelected')}

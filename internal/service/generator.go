@@ -21,6 +21,10 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 	if len(form.Challenges) == 0 {
 		return model.SuccessRetVal()
 	}
+	challengeCount := make(map[string]int)
+	for _, challenge := range form.Challenges {
+		challengeCount[challenge] = challengeCount[challenge] + 1
+	}
 	challenges, _, ret := db.InitChallengeRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"type": model.DynamicChallengeType, "rand_id": form.Challenges},
 	})
@@ -37,32 +41,34 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 				continue
 			}
 		}
-		go func(contestID uint, challenge model.Challenge) {
-			generatorRepo := db.InitGeneratorRepo(tx)
-			generator, ret := generatorRepo.Create(db.CreateGeneratorOptions{
-				ChallengeID: challenge.ID,
-				ContestID:   sql.Null[uint]{V: contestID, Valid: contestID > 0},
-				Name:        fmt.Sprintf("gen-%d-%d-%s", contestID, challenge.ID, utils.RandStr(6)),
-			})
-			if !ret.OK {
-				return
-			}
-			ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.PendingGeneratorStatus)})
-			if !ret.OK {
-				return
-			}
-			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-			_, ret = k8s.StartGenerator(ctx, challenge, generator)
-			cancel()
-			if !ret.OK {
-				StopGenerators(tx, dto.StopGeneratorsForm{Generators: []uint{generator.ID}})
-				return
-			}
-			ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.RunningGeneratorStatus)})
-			if !ret.OK {
-				return
-			}
-		}(contestID, challenge)
+		for range challengeCount[challenge.RandID] {
+			go func(contestID uint, challenge model.Challenge) {
+				generatorRepo := db.InitGeneratorRepo(tx)
+				generator, ret := generatorRepo.Create(db.CreateGeneratorOptions{
+					ChallengeID: challenge.ID,
+					ContestID:   sql.Null[uint]{V: contestID, Valid: contestID > 0},
+					Name:        fmt.Sprintf("gen-%d-%d-%s", contestID, challenge.ID, utils.RandStr(6)),
+				})
+				if !ret.OK {
+					return
+				}
+				ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.PendingGeneratorStatus)})
+				if !ret.OK {
+					return
+				}
+				ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+				_, ret = k8s.StartGenerator(ctx, challenge, generator)
+				cancel()
+				if !ret.OK {
+					StopGenerators(tx, dto.StopGeneratorsForm{Generators: []uint{generator.ID}})
+					return
+				}
+				ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.RunningGeneratorStatus)})
+				if !ret.OK {
+					return
+				}
+			}(contestID, challenge)
+		}
 	}
 	return model.SuccessRetVal()
 }
