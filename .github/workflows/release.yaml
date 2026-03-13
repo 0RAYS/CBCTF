@@ -21,7 +21,7 @@ jobs:
       - name: Set build variables
         id: vars
         run: |
-          echo "tag=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+          echo "tag=$(date +'%Y%m%d-%H%M')" >> $GITHUB_OUTPUT
           echo "repo=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
       - name: Delete old package versions
