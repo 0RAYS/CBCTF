@@ -34,10 +34,7 @@ func Init() {
 		return
 	}
 	for _, smtp := range smtpL {
-		AddSenders(smtp)
-	}
-	if len(Senders) == 0 {
-		log.Logger.Warningf("No smtp configured, email sending will be failed")
+		go AddSenders(smtp)
 	}
 }
 
