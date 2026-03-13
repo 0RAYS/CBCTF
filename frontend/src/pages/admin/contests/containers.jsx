@@ -462,38 +462,8 @@ function ContestContainers() {
       <div className="w-full mx-auto space-y-6">
         {/* 页面标题和统计信息 */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <p className="text-neutral-400 font-mono">{t('admin.contests.containers.page.subtitle')}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant={showDeleted ? 'danger' : 'ghost'}
-                size="sm"
-                leftIcon={<IconTrash size={14} />}
-                onClick={toggleShowDeleted}
-              >
-                {t('admin.contests.containers.showDeleted')}
-              </Button>
-              <div className="flex items-center gap-1 px-2 h-8 rounded-md border border-neutral-700 bg-neutral-900">
-                <IconClockPlay size={13} className="text-neutral-400 shrink-0" />
-                <span className="text-xs text-neutral-400 shrink-0">{t('common.autoRefresh')}</span>
-                <select
-                  value={refreshInterval}
-                  onChange={(e) => setRefreshInterval(Number(e.target.value))}
-                  className="bg-transparent text-xs text-neutral-300 outline-none cursor-pointer"
-                >
-                  {[5, 10, 30, 60].map((s) => (
-                    <option key={s} value={s} className="bg-neutral-900">
-                      {s}s
-                    </option>
-                  ))}
-                  <option value={0} className="bg-neutral-900">
-                    {t('common.autoRefreshOff')}
-                  </option>
-                </select>
-              </div>
-            </div>
+          <div className="mb-4">
+            <p className="text-neutral-400 font-mono">{t('admin.contests.containers.page.subtitle')}</p>
           </div>
 
           {/* 统计卡片 */}
@@ -945,31 +915,55 @@ function ContestContainers() {
         </motion.div>
 
         {/* 容器列表 */}
+
+        {/* 工具栏 */}
+        <div className="flex flex-wrap gap-2 items-center">
+          <div className="flex items-center gap-1 px-2 h-8 rounded-md border border-neutral-700 bg-neutral-900">
+            <IconClockPlay size={13} className="text-neutral-400 shrink-0" />
+            <span className="text-xs text-neutral-400 shrink-0">{t('common.autoRefresh')}</span>
+            <select
+              value={refreshInterval}
+              onChange={(e) => setRefreshInterval(Number(e.target.value))}
+              className="bg-transparent text-xs text-neutral-300 outline-none cursor-pointer"
+            >
+              {[5, 10, 30, 60].map((s) => (
+                <option key={s} value={s} className="bg-neutral-900">
+                  {s}s
+                </option>
+              ))}
+              <option value={0} className="bg-neutral-900">
+                {t('common.autoRefreshOff')}
+              </option>
+            </select>
+          </div>
+          <Button
+            variant={showDeleted ? 'danger' : 'ghost'}
+            size="sm"
+            leftIcon={<IconTrash size={14} />}
+            onClick={toggleShowDeleted}
+          >
+            {t('admin.contests.containers.showDeleted')}
+          </Button>
+          {selectedContainers.length > 0 && (
+            <Button
+              variant="danger"
+              size="sm"
+              leftIcon={<IconBan size={14} />}
+              onClick={() => setIsStopModalOpen(true)}
+            >
+              {t('admin.contests.containers.table.stopButton')} ({selectedContainers.length})
+            </Button>
+          )}
+        </div>
+
         <Card variant="default" padding="none" className="overflow-hidden">
           {/* 列表头部 */}
-          <div className="p-4 bg-black/20 border-b border-neutral-300/30 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <IconTable size={20} className="text-neutral-400" />
-              <h3 className="text-lg font-mono text-neutral-50">{t('admin.contests.containers.table.title')}</h3>
-              <span className="text-sm font-mono text-neutral-400">
-                {t('admin.contests.containers.table.total', { count: runningCount })}
-              </span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-mono text-neutral-400">
-                {t('admin.contests.containers.table.selectedCount', { count: selectedContainers.length })}
-              </span>
-              <Button
-                variant="danger"
-                size="sm"
-                align="icon-left"
-                icon={<IconBan size={16} />}
-                onClick={() => setIsStopModalOpen(true)}
-                disabled={selectedContainers.length === 0}
-              >
-                {t('admin.contests.containers.table.stopButton')}
-              </Button>
-            </div>
+          <div className="p-4 bg-black/20 border-b border-neutral-300/30 flex items-center gap-2">
+            <IconTable size={20} className="text-neutral-400" />
+            <h3 className="text-lg font-mono text-neutral-50">{t('admin.contests.containers.table.title')}</h3>
+            <span className="text-sm font-mono text-neutral-400">
+              {t('admin.contests.containers.table.total', { count: runningCount })}
+            </span>
           </div>
 
           <div className="overflow-x-auto">
