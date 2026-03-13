@@ -1,20 +1,23 @@
 package model
 
-import "time"
+import (
+	"database/sql"
+	"time"
+)
 
 // Generator
 // BelongsTo Challenge
 // BelongsTo Contest
 type Generator struct {
-	ChallengeID uint      `json:"challenge_id"`
-	Challenge   Challenge `json:"-"`
-	ContestID   uint      `json:"contest_id"`
-	Contest     Contest   `json:"-"`
-	Name        string    `json:"pod_name"`
-	Success     int64     `json:"success"`
-	SuccessLast time.Time `gorm:"default:null" json:"success_last"`
-	Failure     int64     `json:"failure"`
-	FailureLast time.Time `gorm:"default:null" json:"failure_last"`
+	ChallengeID uint           `json:"challenge_id"`
+	Challenge   Challenge      `json:"-"`
+	ContestID   sql.Null[uint] `json:"contest_id"`
+	Contest     Contest        `json:"-"`
+	Name        string         `json:"pod_name"`
+	Success     int64          `json:"success"`
+	SuccessLast time.Time      `gorm:"default:null" json:"success_last"`
+	Failure     int64          `json:"failure"`
+	FailureLast time.Time      `gorm:"default:null" json:"failure_last"`
 	BaseModel
 }
 

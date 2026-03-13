@@ -10,7 +10,7 @@ func GetGeneratorResp(generator model.Generator) gin.H {
 	return gin.H{
 		"id":           generator.ID,
 		"challenge_id": generator.ChallengeID,
-		"contest_id":   generator.ContestID,
+		"contest_id":   generator.ContestID.V,
 		"name":         generator.Name,
 		"start_time":   generator.CreatedAt,
 		"success":      generator.Success,

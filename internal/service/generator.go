@@ -9,6 +9,7 @@ import (
 	"CBCTF/internal/utils"
 	"context"
 	"crypto/rand"
+	"database/sql"
 	"errors"
 	"fmt"
 	"math/big"
@@ -17,7 +18,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func StartContestGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) ([]model.Generator, model.RetVal) {
+func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) ([]model.Generator, model.RetVal) {
 	generators := make([]model.Generator, 0)
 	if len(form.Challenges) == 0 {
 		return generators, model.SuccessRetVal()
@@ -29,16 +30,18 @@ func StartContestGenerators(tx *gorm.DB, contestID uint, form dto.StartGenerator
 		return generators, ret
 	}
 	for _, challenge := range challenges {
-		_, ret = db.InitContestChallengeRepo(tx).Get(db.GetOptions{
-			Conditions: map[string]any{"contest_id": contestID, "challenge_id": challenge.ID},
-		})
-		if !ret.OK {
-			continue
+		if contestID > 0 {
+			_, ret = db.InitContestChallengeRepo(tx).Get(db.GetOptions{
+				Conditions: map[string]any{"contest_id": contestID, "challenge_id": challenge.ID},
+			})
+			if !ret.OK {
+				continue
+			}
 		}
 		_ = tx.Transaction(func(tx2 *gorm.DB) error {
 			generator, ret := db.InitGeneratorRepo(tx2).Create(db.CreateGeneratorOptions{
 				ChallengeID: challenge.ID,
-				ContestID:   contestID,
+				ContestID:   sql.Null[uint]{V: contestID, Valid: contestID > 0},
 				Name:        fmt.Sprintf("gen-%d-%d-%s", contestID, challenge.ID, utils.RandStr(6)),
 			})
 			if !ret.OK {
@@ -58,7 +61,7 @@ func StartContestGenerators(tx *gorm.DB, contestID uint, form dto.StartGenerator
 	return generators, model.SuccessRetVal()
 }
 
-func StopContestGenerators(tx *gorm.DB, form dto.StopGeneratorsForm) model.RetVal {
+func StopGenerators(tx *gorm.DB, form dto.StopGeneratorsForm) model.RetVal {
 	if len(form.Generators) == 0 {
 		return model.SuccessRetVal()
 	}
