@@ -1,6 +1,7 @@
 package router
 
 import (
+	"CBCTF/internal/cron"
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/middleware"
@@ -30,6 +31,10 @@ func GetCronJobs(ctx *gin.Context) {
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"cronjobs": data, "count": count}))
 }
 
+func GetCronJob(ctx *gin.Context) {
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetCronJobResp(middleware.GetCronJob(ctx))))
+}
+
 func UpdateCronJob(ctx *gin.Context) {
 	var form dto.UpdateCronJobForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
@@ -44,6 +49,15 @@ func UpdateCronJob(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
+	newCronJob, ret := db.InitCronJobRepo(db.DB).GetByID(cronJob.ID)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	if ret = cron.ReloadCronJob(newCronJob.Name); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal())
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetCronJobResp(newCronJob)))
 }

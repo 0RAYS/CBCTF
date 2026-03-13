@@ -253,6 +253,7 @@ func Init() *gin.Engine {
 		admin.GET("/cronjobs", GetCronJobs)
 		adminCronJob := admin.Group("/cronjobs/:cronJobID", middleware.SetCronJob)
 		{
+			adminCronJob.GET("", GetCronJob)
 			adminCronJob.PUT("", UpdateCronJob)
 		}
 
