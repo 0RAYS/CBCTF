@@ -108,11 +108,12 @@
     "files": "文件",
     "system": "系统",
     "logs": "日志",
-    "containers": "容器",
+    "containers": "靶机",
     "images": "镜像",
     "cheats": "风控",
     "notices": "公告",
-    "generators": "生成器"
+    "generators": "生成器",
+    "victims": "靶机"
   },
   "admin": {
     "title": "管理中心",
@@ -218,13 +219,13 @@
         "toast": {
           "fetchSubmissionsFailed": "获取提交记录失败",
           "fetchWriteupsFailed": "获取题解列表失败",
-          "fetchContainersFailed": "获取容器列表失败",
+          "fetchContainersFailed": "获取靶机列表失败",
           "fetchTrafficFailed": "获取流量数据失败",
           "downloadTrafficFailed": "下载流量文件失败",
           "downloadWriteupFailed": "下载题解失败"
         },
         "modal": {
-          "title": "容器流量记录",
+          "title": "靶机流量记录",
           "empty": "暂无流量数据"
         },
         "labels": {
@@ -298,7 +299,7 @@
         },
         "traffic": {
           "columns": {
-            "containerId": "容器ID",
+            "containerId": "靶机ID",
             "userId": "用户ID",
             "challengeName": "赛题名称",
             "startTime": "开始时间",
@@ -576,7 +577,7 @@
             "info": "基本信息",
             "submissions": "提交记录",
             "writeups": "题解",
-            "containers": "容器",
+            "containers": "靶机",
             "flags": "Flag"
           },
           "info": {
@@ -697,11 +698,11 @@
       },
       "containers": {
         "toast": {
-          "fetchContainersFailed": "获取容器列表失败",
+          "fetchContainersFailed": "获取靶机列表失败",
           "fetchTeamsFailed": "获取团队列表失败",
           "fetchChallengesFailed": "获取题目列表失败",
           "searchFailed": "搜索失败",
-          "selectStopRequired": "请选择要停止的容器",
+          "selectStopRequired": "请选择要停止的靶机",
           "selectStartRequired": "请至少选择一道题目和一支队伍",
           "taskDispatched": "任务已入队",
           "taskDispatchFailed": "任务入队失败"
@@ -710,12 +711,12 @@
           "stopped": "已停止"
         },
         "page": {
-          "title": "容器管理",
-          "subtitle": "管理比赛中的容器实例，支持批量开启和停止操作",
+          "title": "靶机管理",
+          "subtitle": "管理比赛中的靶机实例，支持批量开启和停止操作",
           "refresh": "刷新"
         },
         "stats": {
-          "total": "总容器数",
+          "total": "总靶机数",
           "running": "运行中",
           "stopped": "已停止"
         },
@@ -744,10 +745,10 @@
           "challengeIdLabel": "题目ID"
         },
         "table": {
-          "title": "容器列表",
-          "total": "(共 {{count}} 个容器)",
+          "title": "靶机列表",
+          "total": "(共 {{count}} 个靶机)",
           "selectedCount": "已选择: {{count}}",
-          "stopButton": "停止容器",
+          "stopButton": "停止靶机",
           "columns": {
             "id": "ID",
             "challenge": "题目",
@@ -757,21 +758,21 @@
             "startTime": "开始时间",
             "status": "状态"
           },
-          "empty": "暂无容器数据"
+          "empty": "暂无靶机数据"
         },
         "modals": {
-          "startTitle": "确认开启容器",
+          "startTitle": "确认开启靶机",
           "startConfirm": "确认开启",
-          "startPrompt": "确定要为以下选中的组合开启容器吗？",
+          "startPrompt": "确定要为以下选中的组合开启靶机吗？",
           "selectedChallenges": "选中的题目 ({{count}}个):",
           "selectedTeams": "选中的团队 ({{count}}个):",
           "summaryPrefix": "将为 ",
           "summaryMiddle": " 个题目 × ",
           "summaryEquals": " 个团队 =",
-          "summarySuffix": " 个容器组合开启容器",
-          "stopTitle": "停止容器",
+          "summarySuffix": " 个靶机组合开启靶机",
+          "stopTitle": "停止靶机",
           "stopConfirm": "停止",
-          "stopPrompt": "确定要停止选中的 {{count}} 个容器吗？"
+          "stopPrompt": "确定要停止选中的 {{count}} 个靶机吗？"
         }
       },
       "challenges": {
@@ -960,6 +961,99 @@
           "stopFailed": "停止生成器失败",
           "selectRequired": "请至少选择一个题目"
         }
+      }
+    },
+    "victims": {
+      "toast": {
+        "fetchContainersFailed": "获取靶机列表失败",
+        "searchFailed": "搜索失败",
+        "selectStopRequired": "请选择要停止的靶机",
+        "taskDispatched": "任务已入队",
+        "taskDispatchFailed": "任务入队失败"
+      },
+      "status": {
+        "stopped": "已停止"
+      },
+      "page": {
+        "title": "全局靶机管理",
+        "subtitle": "查看并停止所有比赛中的运行中靶机"
+      },
+      "stats": {
+        "total": "总靶机数",
+        "running": "运行中",
+        "stopped": "已停止"
+      },
+      "filters": {
+        "title": "过滤条件",
+        "reset": "重置",
+        "userName": "用户名称",
+        "teamName": "团队名称",
+        "challengeName": "题目名称",
+        "searchUserPlaceholder": "搜索用户...",
+        "searchTeamPlaceholder": "搜索团队...",
+        "searchChallengePlaceholder": "搜索题目...",
+        "userFallback": "用户{{id}}",
+        "teamFallback": "团队{{id}}",
+        "challengeFallback": "题目{{id}}",
+        "userIdLabel": "用户ID",
+        "teamIdLabel": "团队ID",
+        "challengeIdLabel": "题目ID"
+      },
+      "table": {
+        "title": "靶机列表",
+        "total": "(共 {{count}} 个运行中)",
+        "selectedCount": "已选择: {{count}}",
+        "stopButton": "停止靶机",
+        "columns": {
+          "id": "ID",
+          "contest": "比赛",
+          "challenge": "题目",
+          "team": "团队",
+          "user": "用户",
+          "remote": "远程地址",
+          "startTime": "开始时间",
+          "status": "状态"
+        },
+        "empty": "暂无靶机数据"
+      },
+      "modals": {
+        "stopTitle": "停止靶机",
+        "stopConfirm": "停止",
+        "stopPrompt": "确定要停止选中的 {{count}} 个靶机吗？"
+      }
+    },
+    "generators": {
+      "title": "全局生成器管理",
+      "startButton": "启动生成器",
+      "stopButton": "停止所选",
+      "noGenerators": "当前没有运行中的生成器",
+      "noGeneratorsDesc": "为动态题目启动生成器，以启用按队伍生成文件附件功能。",
+      "noDynamicChallenges": "系统中暂无动态类型题目",
+      "selectChallenges": "选择要启动生成器的题目",
+      "startSelected": "启动所选",
+      "showDeleted": "显示已删除",
+      "columns": {
+        "id": "ID",
+        "name": "Pod名称",
+        "challengeId": "题目ID",
+        "success": "成功次数",
+        "successLast": "最后成功",
+        "failure": "失败次数",
+        "failureLast": "最后失败",
+        "status": "状态"
+      },
+      "stats": {
+        "total": "生成器总数",
+        "successes": "总成功次数",
+        "failures": "总失败次数"
+      },
+      "toast": {
+        "fetchFailed": "获取生成器列表失败",
+        "startSuccess": "生成器已启动",
+        "startFailed": "启动生成器失败",
+        "stopSuccess": "生成器已停止",
+        "stopFailed": "停止生成器失败",
+        "selectRequired": "请至少选择一个题目"
       }
     },
     "challenge": {
@@ -2043,8 +2137,8 @@
         "go": "API 服务",
         "mysql": "数据库",
         "redis": "缓存",
-        "docker": "容器平台",
-        "k8s": "容器编排",
+        "docker": "靶机平台",
+        "k8s": "靶机编排",
         "jenkins": "CI/CD 流水线"
       },
       "roles": {

@@ -289,6 +289,19 @@ func Init() *gin.Engine {
 			}
 		}
 
+		adminVictim := admin.Group("/victims")
+		{
+			adminVictim.GET("", GetVictims)
+			adminVictim.DELETE("", StopVictims)
+		}
+
+		adminGenerator := admin.Group("/generators")
+		{
+			adminGenerator.GET("", GetGenerators)
+			adminGenerator.POST("", middleware.RateLimit("test_generators", 1, time.Minute), StartGenerator)
+			adminGenerator.DELETE("", StopGenerator)
+		}
+
 		admin.GET("/contests", GetContests)
 		admin.POST("/contests", CreateContest)
 		adminContest := admin.Group("/contests/:contestID", middleware.SetContest)

@@ -37,6 +37,8 @@ const AdminContestImagesPull = lazy(() => import('../pages/admin/contests/images
 const ContestContainers = lazy(() => import('../pages/admin/contests/containers'));
 const AdminContestCheats = lazy(() => import('../pages/admin/contests/cheats'));
 const AdminContestGenerators = lazy(() => import('../pages/admin/contests/generators.jsx'));
+const AdminVictims = lazy(() => import('../pages/admin/Victims'));
+const AdminGenerators = lazy(() => import('../pages/admin/Generators'));
 const Settings = lazy(() => import('../pages/user/Settings'));
 const GamesPage = lazy(() => import('../pages/user/GamesPage'));
 const GameDetailPage = lazy(() => import('../pages/user/GameDetailPage'));
@@ -286,6 +288,26 @@ const AppRoutes = () => {
               <AdminRoute apiRoute="GET /admin/logs">
                 <Suspense fallback={<Loading />}>
                   <AdminLogs />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="victims"
+            element={
+              <AdminRoute apiRoute="GET /admin/victims">
+                <Suspense fallback={<Loading />}>
+                  <AdminVictims />
+                </Suspense>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="generators"
+            element={
+              <AdminRoute apiRoute="GET /admin/generators">
+                <Suspense fallback={<Loading />}>
+                  <AdminGenerators />
                 </Suspense>
               </AdminRoute>
             }

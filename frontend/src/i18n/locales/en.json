@@ -112,7 +112,8 @@
     "images": "IMAGES",
     "cheats": "CHEATS",
     "notices": "NOTICES",
-    "generators": "GENERATORS"
+    "generators": "GENERATORS",
+    "victims": "VICTIMS"
   },
   "admin": {
     "title": "Admin Center",
@@ -960,6 +961,99 @@
           "stopFailed": "Failed to stop generators",
           "selectRequired": "Please select at least one challenge"
         }
+      }
+    },
+    "victims": {
+      "toast": {
+        "fetchContainersFailed": "Failed to load containers",
+        "searchFailed": "Search failed",
+        "selectStopRequired": "Select containers to stop",
+        "taskDispatched": "Task queued",
+        "taskDispatchFailed": "Failed to queue task"
+      },
+      "status": {
+        "stopped": "Stopped"
+      },
+      "page": {
+        "title": "Global Container Management",
+        "subtitle": "View and stop all running containers across contests"
+      },
+      "stats": {
+        "total": "Total containers",
+        "running": "Running",
+        "stopped": "Stopped"
+      },
+      "filters": {
+        "title": "Filters",
+        "reset": "Reset",
+        "userName": "User name",
+        "teamName": "Team name",
+        "challengeName": "Challenge name",
+        "searchUserPlaceholder": "Search users...",
+        "searchTeamPlaceholder": "Search teams...",
+        "searchChallengePlaceholder": "Search challenges...",
+        "userFallback": "User {{id}}",
+        "teamFallback": "Team {{id}}",
+        "challengeFallback": "Challenge {{id}}",
+        "userIdLabel": "User ID",
+        "teamIdLabel": "Team ID",
+        "challengeIdLabel": "Challenge ID"
+      },
+      "table": {
+        "title": "Containers",
+        "total": "(Total {{count}} running)",
+        "selectedCount": "Selected: {{count}}",
+        "stopButton": "Stop containers",
+        "columns": {
+          "id": "ID",
+          "contest": "Contest",
+          "challenge": "Challenge",
+          "team": "Team",
+          "user": "User",
+          "remote": "Remote",
+          "startTime": "Start time",
+          "status": "Status"
+        },
+        "empty": "No container data"
+      },
+      "modals": {
+        "stopTitle": "Stop containers",
+        "stopConfirm": "Stop",
+        "stopPrompt": "Stop {{count}} selected containers?"
+      }
+    },
+    "generators": {
+      "title": "Global Generator Management",
+      "startButton": "Start Generator",
+      "stopButton": "Stop Selected",
+      "noGenerators": "No generators running",
+      "noGeneratorsDesc": "Start generators for dynamic challenges to enable per-team file generation.",
+      "noDynamicChallenges": "No dynamic challenges in the system",
+      "selectChallenges": "Select challenges to start generators for",
+      "startSelected": "Start Selected",
+      "showDeleted": "Show Deleted",
+      "columns": {
+        "id": "ID",
+        "name": "Pod Name",
+        "challengeId": "Challenge ID",
+        "success": "Successes",
+        "successLast": "Last Success",
+        "failure": "Failures",
+        "failureLast": "Last Failure",
+        "status": "Status"
+      },
+      "stats": {
+        "total": "Total Generators",
+        "successes": "Total Successes",
+        "failures": "Total Failures"
+      },
+      "toast": {
+        "fetchFailed": "Failed to load generators",
+        "startSuccess": "Generators started",
+        "startFailed": "Failed to start generators",
+        "stopSuccess": "Generators stopped",
+        "stopFailed": "Failed to stop generators",
+        "selectRequired": "Please select at least one challenge"
       }
     },
     "challenge": {
