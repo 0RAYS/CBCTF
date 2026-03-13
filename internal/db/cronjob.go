@@ -3,6 +3,7 @@ package db
 import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -13,12 +14,16 @@ type CronJobRepo struct {
 
 type UpdateCronJobOptions struct {
 	Schedule *string
+	Last     *time.Time
 }
 
 func (u UpdateCronJobOptions) Convert2Map() map[string]any {
 	options := make(map[string]any)
 	if u.Schedule != nil {
 		options["schedule"] = *u.Schedule
+	}
+	if u.Last != nil {
+		options["last"] = *u.Last
 	}
 	return options
 }
@@ -39,4 +44,12 @@ func (c *CronJobRepo) InitCronJob() model.RetVal {
 		}
 	}
 	return model.SuccessRetVal()
+}
+
+func (c *CronJobRepo) UpdateByName(name string, options UpdateCronJobOptions) model.RetVal {
+	cronJob, ret := c.GetByUniqueKey("name", name)
+	if !ret.OK {
+		return ret
+	}
+	return c.Update(cronJob.ID, options)
 }

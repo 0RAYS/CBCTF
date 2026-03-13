@@ -1564,13 +1564,9 @@
         "name": "名称",
         "description": "描述",
         "schedule": "周期",
-        "status": "运行状态",
+        "last": "上次运行",
+        "next": "下次运行",
         "actions": "操作"
-      },
-      "status": {
-        "enabled": "已启用",
-        "disabled": "已禁用",
-        "running": "运行中"
       },
       "empty": "暂无 Cron 任务",
       "modal": {
@@ -1582,7 +1578,12 @@
         "descriptionLabel": "任务描述",
         "scheduleLabel": "Cron 周期 *",
         "schedulePlaceholder": "例如: 0 0 * * *",
-        "statusLabel": "运行状态"
+        "lastLabel": "上次运行时间",
+        "nextLabel": "下次运行时间"
+      },
+      "time": {
+        "invalid": "无效时间",
+        "unknown": "无法计算"
       },
       "toast": {
         "fetchListFailed": "获取 Cron 任务列表失败",

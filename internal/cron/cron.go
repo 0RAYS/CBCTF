@@ -40,6 +40,10 @@ func exec(name string, task func() model.RetVal) func() {
 	return func() {
 		start := time.Now()
 		ret := task()
+		now := time.Now()
+		if updateRet := db.InitCronJobRepo(db.DB).UpdateByName(name, db.UpdateCronJobOptions{Last: &now}); !updateRet.OK {
+			log.Logger.Warningf("Failed to update cron last runtime %s: %s", name, updateRet.Msg)
+		}
 		duration := time.Since(start).Seconds()
 		prometheus.RecordCronJob(name, duration, ret.OK)
 		if !ret.OK {
@@ -104,10 +108,6 @@ func registerCronJob(cronJob model.CronJob, def taskDefinition) model.RetVal {
 	if value, ok := taskEntries.Load(cronJob.Name); ok {
 		c.Remove(value.(cron.EntryID))
 		taskEntries.Delete(cronJob.Name)
-	}
-	if cronJob.Status != "enabled" {
-		log.Logger.Infof("Cron job disabled: %s", cronJob.Name)
-		return model.SuccessRetVal()
 	}
 	entryID, err := c.AddFunc(cronJob.Schedule, exec(def.name, def.run))
 	if err != nil {

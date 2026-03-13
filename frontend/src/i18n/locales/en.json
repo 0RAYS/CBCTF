@@ -1564,13 +1564,9 @@
         "name": "Name",
         "description": "Description",
         "schedule": "Schedule",
-        "status": "Run Status",
+        "last": "Last Run",
+        "next": "Next Run",
         "actions": "Actions"
-      },
-      "status": {
-        "enabled": "Enabled",
-        "disabled": "Disabled",
-        "running": "Running"
       },
       "empty": "No cron jobs",
       "modal": {
@@ -1582,7 +1578,12 @@
         "descriptionLabel": "Description",
         "scheduleLabel": "Cron schedule *",
         "schedulePlaceholder": "e.g. 0 0 * * *",
-        "statusLabel": "Run status"
+        "lastLabel": "Last run time",
+        "nextLabel": "Next run time"
+      },
+      "time": {
+        "invalid": "Invalid time",
+        "unknown": "Unable to calculate"
       },
       "toast": {
         "fetchListFailed": "Failed to load cron jobs",
