@@ -381,12 +381,12 @@ func CountTeamVictims(tx *gorm.DB, team model.Team) (int64, model.RetVal) {
 	return db.InitVictimRepo(tx).Count(db.CountOptions{Conditions: map[string]any{"team_id": team.ID}})
 }
 
-func GetVictims(tx *gorm.DB, contest model.Contest, form dto.GetVictimsForm) ([]model.Victim, int64, model.RetVal) {
+func GetVictims(tx *gorm.DB, contest model.Contest, form dto.GetVictimsForm) ([]model.Victim, int64, int64, model.RetVal) {
 	var challengeID uint
 	if form.ChallengeID != "" {
 		challenge, ret := db.InitChallengeRepo(tx).GetByRandID(form.ChallengeID)
 		if !ret.OK || challenge.Type != model.PodsChallengeType {
-			return nil, 0, ret
+			return nil, 0, 0, ret
 		}
 		challengeID = challenge.ID
 	}
@@ -412,13 +412,18 @@ func GetVictims(tx *gorm.DB, contest model.Contest, form dto.GetVictimsForm) ([]
 		options.Conditions["user_id"] = form.UserID
 	}
 	victims, count, ret := db.InitVictimRepo(tx).List(form.Limit, form.Offset, options)
-	return slices.DeleteFunc(victims, func(victim model.Victim) bool {
-		if !victim.TeamID.Valid || !victim.ContestChallengeID.Valid || !victim.ContestID.Valid {
-			count--
-			return true
-		}
-		return false
-	}), count, ret
+	if !ret.OK {
+		return nil, 0, 0, ret
+	}
+	countOptions := db.CountOptions{Deleted: true}
+	if contest.ID != 0 {
+		countOptions.Conditions = map[string]any{"contest_id": contest.ID}
+	}
+	total, ret := db.InitVictimRepo(db.DB).Count(countOptions)
+	if !ret.OK {
+		total = count
+	}
+	return victims, count, total, ret
 }
 
 func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm) model.RetVal {

@@ -261,6 +261,13 @@ var RoutePermissions = map[string]string{
 	"POST /admin/challenges/:challengeID/test/start":     PermAdminChallengeTest,
 	"POST /admin/challenges/:challengeID/test/stop":      PermAdminChallengeTest,
 
+	"GET /admin/victims":    PermAdminVictimControl,
+	"DELETE /admin/victims": PermAdminVictimControl,
+
+	"GET /admin/generators":    PermAdminGeneratorControl,
+	"POST /admin/generators":   PermAdminGeneratorControl,
+	"DELETE /admin/generators": PermAdminGeneratorControl,
+
 	// /admin/contests
 	"GET /admin/contests":                       PermAdminContestList,
 	"POST /admin/contests":                      PermAdminContestCreate,
