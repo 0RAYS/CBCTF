@@ -11,13 +11,17 @@ import (
 
 // updateTeamRankingTask 全量更新 model.Team 的分数和排名
 func updateTeamRankingTask() model.RetVal {
+	job, ret := db.InitCronJobRepo(db.DB).GetByUniqueKey("name", model.UpdateTeamRankingCronJob)
+	if !ret.OK {
+		return ret
+	}
 	repo := db.InitContestRepo(db.DB)
 	contests, _, ret := repo.List(-1, -1, db.GetOptions{Conditions: map[string]any{"hidden": false}})
 	if !ret.OK {
 		return ret
 	}
 	for _, contest := range contests {
-		if time.Now().Sub(contest.Start.Add(contest.Duration)) > time.Minute*10 {
+		if time.Now().Sub(contest.Start.Add(contest.Duration)) > job.Schedule*2 {
 			continue
 		}
 		service.UpdateTeamRanking(db.DB, contest, -1, -1)
