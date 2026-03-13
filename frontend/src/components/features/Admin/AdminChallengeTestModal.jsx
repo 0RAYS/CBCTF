@@ -226,8 +226,10 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
     setLoading((prev) => ({ ...prev, downloading: true }));
     try {
       const response = await downloadTestAttachment(challenge.id);
-      downloadBlobResponse(response, 'attachment.zip', 'application/octet-stream');
-      toast.success({ description: t('admin.challenge.testModal.toast.downloadSuccess') });
+      if (response.headers?.['file'] === 'true') {
+        downloadBlobResponse(response, 'attachment.zip', 'application/octet-stream');
+        toast.success({ description: t('admin.challenge.testModal.toast.downloadSuccess') });
+      }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.challenge.testModal.toast.downloadFailed') });
     } finally {

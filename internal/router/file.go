@@ -8,15 +8,38 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
+	"CBCTF/internal/oauth"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"CBCTF/internal/task"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 )
+
+var DefaultPicture = map[string][]byte{
+	"github":       oauth.GithubMark,
+	"github-white": oauth.GithubMarkWhite,
+	"hduhelp":      oauth.HDUHelpPicture,
+}
+
+func DefaultAssets(ctx *gin.Context) {
+	var form dto.GetAssetForm
+	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	file, ok := DefaultPicture[form.Filename]
+	if !ok {
+		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.File.NotFound})
+		return
+	}
+	ctx.Writer.Header().Set("File", "true")
+	ctx.Data(http.StatusOK, "application/octet-stream", file)
+}
 
 func DownloadFile(eventType string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
@@ -33,6 +56,7 @@ func DownloadFile(eventType string) gin.HandlerFunc {
 			resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 			return
 		}
+		ctx.Writer.Header().Set("File", "true")
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 		ctx.FileAttachment(string(file.Path), file.Filename)
 	}

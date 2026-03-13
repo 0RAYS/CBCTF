@@ -269,7 +269,9 @@ function TeamDetails() {
   const handleDownloadTraffic = async (container) => {
     try {
       const response = await downloadContainerTraffic(parseInt(contestId), parseInt(teamId), container.id);
-      downloadBlobResponse(response, `traffic_${container.id}.zip`);
+      if (response.headers?.['file'] === 'true') {
+        downloadBlobResponse(response, `traffic_${container.id}.zip`);
+      }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.contests.teamContainers.toast.downloadTrafficFailed') });
     }
@@ -278,7 +280,9 @@ function TeamDetails() {
   const handleDownloadWriteup = async (writeup) => {
     try {
       const response = await downloadContestTeamWriteup(parseInt(contestId), parseInt(teamId), writeup.id);
-      downloadBlobResponse(response, writeup.filename);
+      if (response.headers?.['file'] === 'true') {
+        downloadBlobResponse(response, writeup.filename);
+      }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.contests.teamContainers.toast.downloadWriteupFailed') });
     }

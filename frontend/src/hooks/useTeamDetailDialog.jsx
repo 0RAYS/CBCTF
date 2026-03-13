@@ -191,8 +191,10 @@ export function useTeamDetailDialog(contestId) {
   const handleDownloadTraffic = async (container) => {
     if (!teamData) return;
     try {
-      const res = await downloadContainerTraffic(contestId, teamData.id, container.id);
-      downloadBlobResponse(res);
+      const response = await downloadContainerTraffic(contestId, teamData.id, container.id);
+      if (response.headers?.['file'] === 'true') {
+        downloadBlobResponse(response);
+      }
     } catch (err) {
       toast.danger({ description: err.message });
     }
@@ -201,8 +203,10 @@ export function useTeamDetailDialog(contestId) {
   const handleDownloadWriteup = async (writeup) => {
     if (!teamData) return;
     try {
-      const res = await downloadContestTeamWriteup(contestId, teamData.id, writeup.id);
-      downloadBlobResponse(res);
+      const response = await downloadContestTeamWriteup(contestId, teamData.id, writeup.id);
+      if (response.headers?.['file'] === 'true') {
+        downloadBlobResponse(response);
+      }
     } catch (err) {
       toast.danger({ description: err.message });
     }
