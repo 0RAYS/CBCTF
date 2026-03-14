@@ -31,7 +31,7 @@ func closeUnCtrlVictimsTask() model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	pods, ret := k8s.GetPodList(ctx)
 	cancel()
-	if !ret.OK || pods == nil {
+	if !ret.OK {
 		return ret
 	}
 	idL := make([]string, 0)

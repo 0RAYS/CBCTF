@@ -14,7 +14,7 @@ func stopUnCtrlGeneratorTask() model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	pods, ret := k8s.GetPodList(ctx, map[string]string{k8s.GeneratorPodTag: k8s.GeneratorPodTag})
 	cancel()
-	if !ret.OK || pods == nil {
+	if !ret.OK {
 		return ret
 	}
 	generators, _, ret := db.InitGeneratorRepo(db.DB).List(-1, -1)
