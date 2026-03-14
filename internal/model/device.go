@@ -8,7 +8,7 @@ const OauthLoginDeviceMagic = "oauth_login"
 type Device struct {
 	UserID uint   `json:"user_id"`
 	Magic  string `json:"magic"`
-	Count  int    `json:"count"`
+	Count  int    `gorm:"default:0" json:"count"`
 	BaseModel
 }
 
