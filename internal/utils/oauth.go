@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"CBCTF/internal/log"
 	"encoding/json"
+	"fmt"
 	"regexp"
 	"strings"
 )
@@ -20,17 +20,13 @@ func GetClaimKeys(field string) []string {
 	return results
 }
 
-// GetClaimValue resolves a single {key} or {nested.key} placeholder in field,
+// GetClaimRawValue resolves a single {key} or {nested.key} placeholder in field,
 // looks up the path in resp, and returns the raw map value converted to T via
 // JSON round-trip. No string formatting or template substitution is performed;
 // the value is returned exactly as it appears in the map.
-func GetClaimValue[T any](resp map[string]any, field string) (T, bool) {
+func GetClaimRawValue[T any](resp map[string]any, key string) (T, bool) {
 	var zero T
-	keys := GetClaimKeys(field)
-	if len(keys) != 1 {
-		return zero, false
-	}
-	ks := strings.Split(keys[0], ".")
+	ks := strings.Split(key, ".")
 	data := resp
 	for i, k := range ks {
 		v, ok := data[k]
@@ -48,15 +44,27 @@ func GetClaimValue[T any](resp map[string]any, field string) (T, bool) {
 		// Leaf value: convert to T via JSON round-trip.
 		b, err := json.Marshal(v)
 		if err != nil {
-			log.Logger.Warningf("Failed to marshal claim value for key %s: %s", field, err.Error())
+			fmt.Println(err)
 			return zero, false
 		}
 		var out T
 		if err = json.Unmarshal(b, &out); err != nil {
-			log.Logger.Warningf("Failed to unmarshal claim value for key %s: %s", field, err.Error())
+			fmt.Println(err)
 			return zero, false
 		}
 		return out, true
 	}
 	return zero, false
+}
+
+func GetClaimStringValue(resp map[string]any, field string) (string, bool) {
+	keys := GetClaimKeys(field)
+	for _, key := range keys {
+		out, ok := GetClaimRawValue[any](resp, key)
+		if !ok {
+			return "", false
+		}
+		field = strings.Replace(field, fmt.Sprintf("{%s}", key), fmt.Sprintf("%v", out), 1)
+	}
+	return field, true
 }
