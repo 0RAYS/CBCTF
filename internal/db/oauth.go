@@ -145,12 +145,12 @@ func InitOauthRepo(tx *gorm.DB) *OauthRepo {
 
 func (o *OauthRepo) RegisterDefault() {
 	github := oauth.GetDefaultGithubOauth()
-	_, ret := o.GetByUniqueKey("provider", github.Provider)
+	_, ret := o.GetByUniqueField("provider", github.Provider)
 	if !ret.OK {
 		o.Insert(github)
 	}
 	hduhelp := oauth.GetDefaultHDUHelpOauth()
-	_, ret = o.GetByUniqueKey("provider", hduhelp.Provider)
+	_, ret = o.GetByUniqueField("provider", hduhelp.Provider)
 	if !ret.OK {
 		o.Insert(hduhelp)
 	}

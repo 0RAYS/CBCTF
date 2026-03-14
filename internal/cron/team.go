@@ -8,7 +8,7 @@ import (
 )
 
 func clearEmptyTeamTask() model.RetVal {
-	job, ret := db.InitCronJobRepo(db.DB).GetByUniqueKey("name", model.ClearEmptyTeamCronJob)
+	job, ret := db.InitCronJobRepo(db.DB).GetByUniqueField("name", model.ClearEmptyTeamCronJob)
 	if !ret.OK {
 		return ret
 	}

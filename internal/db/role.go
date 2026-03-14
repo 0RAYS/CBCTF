@@ -67,7 +67,7 @@ func (r *RoleRepo) InitDefaultRoles() model.RetVal {
 			continue
 		}
 		for _, permission := range permissions {
-			perm, ret := InitPermissionRepo(r.DB).GetByUniqueKey("name", permission)
+			perm, ret := InitPermissionRepo(r.DB).GetByUniqueField("name", permission)
 			if !ret.OK {
 				return ret
 			}

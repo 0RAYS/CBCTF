@@ -60,7 +60,7 @@ func (f *FileRepo) Create(options CreateFileOptions) (model.File, model.RetVal) 
 }
 
 func (f *FileRepo) GetByRandID(randID string, optionsL ...GetOptions) (model.File, model.RetVal) {
-	return f.GetByUniqueKey("rand_id", randID, optionsL...)
+	return f.GetByUniqueField("rand_id", randID, optionsL...)
 }
 
 func (f *FileRepo) DeleteByRandID(randIDL ...string) model.RetVal {

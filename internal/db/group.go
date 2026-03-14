@@ -69,7 +69,7 @@ func (g *GroupRepo) InitDefaultGroups() model.RetVal {
 		if !ok {
 			continue
 		}
-		role, ret := InitRoleRepo(g.DB).GetByUniqueKey("name", roleName)
+		role, ret := InitRoleRepo(g.DB).GetByUniqueField("name", roleName)
 		if !ret.OK {
 			return ret
 		}

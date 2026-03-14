@@ -67,7 +67,7 @@ func (c *CronJobRepo) InitCronJob() model.RetVal {
 }
 
 func (c *CronJobRepo) UpdateByName(name string, options UpdateCronJobOptions) model.RetVal {
-	cronJob, ret := c.GetByUniqueKey("name", name)
+	cronJob, ret := c.GetByUniqueField("name", name)
 	if !ret.OK {
 		return ret
 	}

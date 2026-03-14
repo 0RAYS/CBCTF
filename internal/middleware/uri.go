@@ -217,7 +217,7 @@ func SetFile(t model.FileType) gin.HandlerFunc {
 		if t != "" {
 			options = db.GetOptions{Conditions: map[string]any{"type": t}}
 		}
-		file, ret := db.InitFileRepo(db.DB).GetByUniqueKey("rand_id", fileID.FileID, options)
+		file, ret := db.InitFileRepo(db.DB).GetByUniqueField("rand_id", fileID.FileID, options)
 		if !ret.OK {
 			resp.AbortJSON(ctx, ret)
 			return

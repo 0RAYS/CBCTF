@@ -57,7 +57,7 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 			if groups, ok := utils.GetClaimValue[[]string](response, provider.GroupsClaim); ok {
 				// 同步所有组
 				for _, groupName := range groups {
-					group, ret := groupRepo.GetByUniqueKey("name", groupName)
+					group, ret := groupRepo.GetByUniqueField("name", groupName)
 					if !ret.OK {
 						continue
 					}
@@ -68,7 +68,7 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 				// 尝试添加到管理员组
 				if slices.Contains(groups, provider.AdminGroup) {
 					if !userRepo.IsInGroup(user.ID, model.AdminGroupName) {
-						adminGroup, ret := db.InitGroupRepo(tx).GetByUniqueKey("name", model.AdminGroupName)
+						adminGroup, ret := db.InitGroupRepo(tx).GetByUniqueField("name", model.AdminGroupName)
 						if ret.OK {
 							db.AppendUserToGroup(tx, user, adminGroup)
 						}
