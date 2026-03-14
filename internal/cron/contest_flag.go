@@ -12,7 +12,7 @@ import (
 // 正常情况下该定时任务无意义, 每次有新解出时即更新 current_score 和 solvers
 // 当 submissions 且 model.Submission.Solved == true 时的数据减少 (队伍解散 引发的数据删除), 该函数才有意义
 func updateFlagScoreTask() model.RetVal {
-	job, ret := db.InitCronJobRepo(db.DB).GetByUniqueKey("name", model.UpdateFlagScoreCronJob)
+	job, ret := db.InitCronJobRepo(db.DB).GetByUniqueField("name", model.UpdateFlagScoreCronJob)
 	if !ret.OK {
 		return ret
 	}

@@ -48,7 +48,7 @@ func InitSettingRepo(tx *gorm.DB) *SettingRepo {
 }
 
 func (s *SettingRepo) Get(key string, optionsL ...GetOptions) (model.Setting, model.RetVal) {
-	return s.GetByUniqueKey("key", key, optionsL...)
+	return s.GetByUniqueField("key", key, optionsL...)
 }
 
 func (s *SettingRepo) Update(key string, options UpdateSettingOptions) model.RetVal {

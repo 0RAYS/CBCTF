@@ -11,7 +11,7 @@ import (
 
 // updateTeamRankingTask 全量更新 model.Team 的分数和排名
 func updateTeamRankingTask() model.RetVal {
-	job, ret := db.InitCronJobRepo(db.DB).GetByUniqueKey("name", model.UpdateTeamRankingCronJob)
+	job, ret := db.InitCronJobRepo(db.DB).GetByUniqueField("name", model.UpdateTeamRankingCronJob)
 	if !ret.OK {
 		return ret
 	}

@@ -139,7 +139,7 @@ func (u *UserRepo) InitAdmin() model.RetVal {
 		if !ret.OK {
 			return ret
 		}
-		group, ret := InitGroupRepo(u.DB).GetByUniqueKey("name", model.AdminGroupName)
+		group, ret := InitGroupRepo(u.DB).GetByUniqueField("name", model.AdminGroupName)
 		if !ret.OK {
 			return ret
 		}
@@ -179,7 +179,7 @@ func (u *UserRepo) CountGroupUser(group string) (int64, model.RetVal) {
 }
 
 func (u *UserRepo) GetByName(name string, optionsL ...GetOptions) (model.User, model.RetVal) {
-	return u.GetByUniqueKey("name", name, optionsL...)
+	return u.GetByUniqueField("name", name, optionsL...)
 }
 
 func (u *UserRepo) GetByTeamID(teamID uint, limit, offset int) ([]model.User, model.RetVal) {

@@ -77,7 +77,7 @@ func InitChallengeRepo(tx *gorm.DB) *ChallengeRepo {
 }
 
 func (c *ChallengeRepo) GetByRandID(randID string, optionsL ...GetOptions) (model.Challenge, model.RetVal) {
-	return c.GetByUniqueKey("rand_id", randID, optionsL...)
+	return c.GetByUniqueField("rand_id", randID, optionsL...)
 }
 
 func (c *ChallengeRepo) ListCategories(t model.ChallengeType) ([]string, model.RetVal) {

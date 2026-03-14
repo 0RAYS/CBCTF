@@ -39,7 +39,7 @@ func AdminCreateUser(tx *gorm.DB, form dto.CreateUserForm) (model.User, model.Re
 
 func VerifyUser(tx *gorm.DB, form dto.LoginForm) (model.User, model.RetVal) {
 	repo := db.InitUserRepo(tx)
-	user, ret := repo.GetByUniqueKey("name", form.Name)
+	user, ret := repo.GetByUniqueField("name", form.Name)
 	if !ret.OK {
 		return model.User{}, model.RetVal{Msg: i18n.Model.User.NamePasswordWrong}
 	}

@@ -43,7 +43,7 @@ type DiffUpdateOptions interface {
 }
 
 func (b *BaseRepo[M]) IsUniqueKeyValue(id uint, key string, value any) bool {
-	m, ret := b.GetByUniqueKey(key, value)
+	m, ret := b.GetByUniqueField(key, value)
 	return m.GetBaseModel().ID == id || !ret.OK
 }
 
@@ -121,10 +121,10 @@ func (b *BaseRepo[M]) Get(options GetOptions) (M, model.RetVal) {
 }
 
 func (b *BaseRepo[M]) GetByID(id uint, options ...GetOptions) (M, model.RetVal) {
-	return b.GetByUniqueKey("id", id, options...)
+	return b.GetByUniqueField("id", id, options...)
 }
 
-func (b *BaseRepo[M]) GetByUniqueKey(key string, value any, optionsL ...GetOptions) (M, model.RetVal) {
+func (b *BaseRepo[M]) GetByUniqueField(key string, value any, optionsL ...GetOptions) (M, model.RetVal) {
 	if !slices.Contains(M.UniqueFields(*new(M)), key) {
 		return *new(M), model.RetVal{Msg: i18n.Model.NotUniqueKey, Attr: map[string]any{"Model": M.ModelName(*new(M)), "Key": key}}
 	}

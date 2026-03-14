@@ -88,7 +88,7 @@ func ReloadCronJob(name string) model.RetVal {
 	if !ok {
 		return model.RetVal{Msg: "Cron job not registered", Attr: map[string]any{"Name": name}}
 	}
-	cronJob, ret := db.InitCronJobRepo(db.DB).GetByUniqueKey("name", name)
+	cronJob, ret := db.InitCronJobRepo(db.DB).GetByUniqueField("name", name)
 	if !ret.OK {
 		return ret
 	}
