@@ -162,12 +162,12 @@ function CronJobs() {
   };
 
   const columns = [
-    { key: 'id', label: t('admin.cronjobs.columns.id'), width: '8%' },
+    { key: 'id', label: t('admin.cronjobs.columns.id'), width: '4%' },
     { key: 'name', label: t('admin.cronjobs.columns.name'), width: '14%' },
     {
       key: 'description',
       label: t('admin.cronjobs.columns.description'),
-      width: '20%',
+      width: '15%',
     },
     {
       key: 'schedule',
@@ -187,18 +187,18 @@ function CronJobs() {
     {
       key: 'successLast',
       label: t('admin.cronjobs.columns.successLast'),
-      width: '12%',
+      width: '13%',
     },
     {
       key: 'failureLast',
       label: t('admin.cronjobs.columns.failureLast'),
-      width: '12%',
+      width: '13%',
     },
-    { key: 'next', label: t('admin.cronjobs.columns.next'), width: '12%' },
+    { key: 'next', label: t('admin.cronjobs.columns.next'), width: '13%' },
     {
       key: 'actions',
       label: t('admin.cronjobs.columns.actions'),
-      width: '8%',
+      width: '7%',
     },
   ];
 
