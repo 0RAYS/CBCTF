@@ -17,6 +17,7 @@ import (
 	"io"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/oauth2"
@@ -121,6 +122,7 @@ func OauthCallback(ctx *gin.Context) {
 		return
 	}
 	client := oauthConfig.Client(ctx, tok)
+	client.Timeout = time.Second * 10
 	response, err := client.Get(provider.UserInfoURL)
 	if err != nil {
 		log.Logger.Warningf("Failed to get User info by provider %s: %s", provider.Provider, err)
