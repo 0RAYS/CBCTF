@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"CBCTF/internal/log"
 	"encoding/json"
 	"regexp"
 	"strings"
@@ -47,10 +48,12 @@ func GetClaimValue[T any](resp map[string]any, field string) (T, bool) {
 		// Leaf value: convert to T via JSON round-trip.
 		b, err := json.Marshal(v)
 		if err != nil {
+			log.Logger.Warningf("Failed to marshal claim value for key %s: %s", field, err.Error())
 			return zero, false
 		}
 		var out T
 		if err = json.Unmarshal(b, &out); err != nil {
+			log.Logger.Warningf("Failed to unmarshal claim value for key %s: %s", field, err.Error())
 			return zero, false
 		}
 		return out, true
