@@ -214,9 +214,9 @@ function CronJobs() {
       case 'schedule':
         return <span className="text-neutral-300 font-mono text-sm">{formatDuration(durationNs, t)}</span>;
       case 'successCount':
-        return <span className="text-emerald-300 text-sm font-medium">{cronJob.success_count ?? 0}</span>;
+        return <span className="text-emerald-300 text-sm font-medium">{cronJob.success ?? 0}</span>;
       case 'failureCount':
-        return <span className="text-rose-300 text-sm font-medium">{cronJob.failure_count ?? 0}</span>;
+        return <span className="text-rose-300 text-sm font-medium">{cronJob.failure ?? 0}</span>;
       case 'successLast':
         return <span className="text-neutral-300 text-sm">{formatDateTime(cronJob.success_last)}</span>;
       case 'failureLast':
@@ -314,13 +314,13 @@ function CronJobs() {
             <label className="block text-neutral-300 text-sm font-medium mb-2">
               {t('admin.cronjobs.form.successCountLabel')}
             </label>
-            <Input type="text" value={String(selectedCronJob?.success_count ?? 0)} fullWidth disabled />
+            <Input type="text" value={String(selectedCronJob?.success ?? 0)} fullWidth disabled />
           </div>
           <div>
             <label className="block text-neutral-300 text-sm font-medium mb-2">
               {t('admin.cronjobs.form.failureCountLabel')}
             </label>
-            <Input type="text" value={String(selectedCronJob?.failure_count ?? 0)} fullWidth disabled />
+            <Input type="text" value={String(selectedCronJob?.failure ?? 0)} fullWidth disabled />
           </div>
           <div>
             <label className="block text-neutral-300 text-sm font-medium mb-2">
