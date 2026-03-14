@@ -31,13 +31,13 @@ var CronJobs = []CronJob{
 }
 
 type CronJob struct {
-	Name         string        `gorm:"size:50;not null;uniqueIndex" json:"name"`
-	Description  string        `json:"description"`
-	Schedule     time.Duration `gorm:"not null" json:"schedule"`
-	SuccessLast  time.Time     `gorm:"default:null" json:"success_last"`
-	FailureLast  time.Time     `gorm:"default:null" json:"failure_last"`
-	SuccessCount uint          `json:"success_count"`
-	FailureCount uint          `json:"failure_count"`
+	Name        string        `gorm:"size:50;not null;uniqueIndex" json:"name"`
+	Description string        `json:"description"`
+	Schedule    time.Duration `gorm:"not null" json:"schedule"`
+	Success     int64         `json:"success"`
+	SuccessLast time.Time     `gorm:"default:null" json:"success_last"`
+	Failure     int64         `json:"failure"`
+	FailureLast time.Time     `gorm:"default:null" json:"failure_last"`
 	BaseModel
 }
 
@@ -58,5 +58,5 @@ func (c CronJob) UniqueFields() []string {
 }
 
 func (c CronJob) QueryFields() []string {
-	return []string{"id", "name", "description", "schedule", "success_last", "failure_last", "success_count", "failure_count"}
+	return []string{"id", "name", "description", "schedule", "success_last", "failure_last", "success", "failure"}
 }

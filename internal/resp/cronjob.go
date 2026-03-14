@@ -8,14 +8,14 @@ import (
 
 func GetCronJobResp(cronJob model.CronJob) gin.H {
 	return gin.H{
-		"id":            cronJob.ID,
-		"name":          cronJob.Name,
-		"description":   cronJob.Description,
-		"schedule":      cronJob.Schedule.String(),
-		"schedule_ns":   int64(cronJob.Schedule),
-		"success_last":  cronJob.SuccessLast,
-		"failure_last":  cronJob.FailureLast,
-		"success_count": cronJob.SuccessCount,
-		"failure_count": cronJob.FailureCount,
+		"id":           cronJob.ID,
+		"name":         cronJob.Name,
+		"description":  cronJob.Description,
+		"schedule":     cronJob.Schedule.String(),
+		"schedule_ns":  int64(cronJob.Schedule),
+		"success_last": cronJob.SuccessLast,
+		"failure_last": cronJob.FailureLast,
+		"success":      cronJob.Success,
+		"failure":      cronJob.Failure,
 	}
 }

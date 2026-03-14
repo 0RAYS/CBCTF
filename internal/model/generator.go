@@ -46,5 +46,5 @@ func (g Generator) UniqueFields() []string {
 }
 
 func (g Generator) QueryFields() []string {
-	return []string{"id", "challenge_id", "contest_id", "success_count", "failure_count", "status"}
+	return []string{"id", "challenge_id", "contest_id", "success", "failure", "status"}
 }

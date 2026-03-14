@@ -13,13 +13,11 @@ type CronJobRepo struct {
 }
 
 type UpdateCronJobOptions struct {
-	Schedule        *time.Duration
-	SuccessLast     *time.Time
-	FailureLast     *time.Time
-	SuccessCount    *uint
-	FailureCount    *uint
-	IncreaseSuccess bool
-	IncreaseFailure bool
+	Schedule    *time.Duration
+	Success     *int64
+	SuccessLast *time.Time
+	Failure     *int64
+	FailureLast *time.Time
 }
 
 func (u UpdateCronJobOptions) Convert2Map() map[string]any {
@@ -27,23 +25,33 @@ func (u UpdateCronJobOptions) Convert2Map() map[string]any {
 	if u.Schedule != nil {
 		options["schedule"] = *u.Schedule
 	}
+	if u.Success != nil {
+		options["success"] = *u.Success
+	}
 	if u.SuccessLast != nil {
 		options["success_last"] = *u.SuccessLast
+	}
+	if u.Failure != nil {
+		options["failure"] = *u.Failure
 	}
 	if u.FailureLast != nil {
 		options["failure_last"] = *u.FailureLast
 	}
-	if u.SuccessCount != nil {
-		options["success_count"] = *u.SuccessCount
+	return options
+}
+
+type DiffUpdateCronJobOptions struct {
+	Success int64
+	Failure int64
+}
+
+func (d DiffUpdateCronJobOptions) Convert2Expr() map[string]any {
+	options := make(map[string]any)
+	if d.Success != 0 {
+		options["success"] = gorm.Expr("success + ?", d.Success)
 	}
-	if u.FailureCount != nil {
-		options["failure_count"] = *u.FailureCount
-	}
-	if u.IncreaseSuccess {
-		options["success_count"] = gorm.Expr("success_count + ?", 1)
-	}
-	if u.IncreaseFailure {
-		options["failure_count"] = gorm.Expr("failure_count + ?", 1)
+	if d.Failure != 0 {
+		options["failure"] = gorm.Expr("failure + ?", d.Failure)
 	}
 	return options
 }
@@ -66,10 +74,26 @@ func (c *CronJobRepo) InitCronJob() model.RetVal {
 	return model.SuccessRetVal()
 }
 
-func (c *CronJobRepo) UpdateByName(name string, options UpdateCronJobOptions) model.RetVal {
-	cronJob, ret := c.GetByUniqueField("name", name)
-	if !ret.OK {
+func (c *CronJobRepo) UpdateStatus(id uint, success bool, last time.Time) model.RetVal {
+	var diffOptions DiffUpdateCronJobOptions
+	var options UpdateCronJobOptions
+	if success {
+		diffOptions = DiffUpdateCronJobOptions{
+			Success: 1,
+		}
+		options = UpdateCronJobOptions{
+			SuccessLast: &last,
+		}
+	} else {
+		diffOptions = DiffUpdateCronJobOptions{
+			Failure: 1,
+		}
+		options = UpdateCronJobOptions{
+			FailureLast: &last,
+		}
+	}
+	if ret := c.DiffUpdate(id, diffOptions); !ret.OK {
 		return ret
 	}
-	return c.Update(cronJob.ID, options)
+	return c.Update(id, options)
 }

@@ -37,17 +37,13 @@ var (
 func exec(name string, task func() model.RetVal) func() {
 	return func() {
 		start := time.Now()
-		ret := task()
+		result := task()
 		now := time.Now()
-		options := db.UpdateCronJobOptions{}
-		if ret.OK {
-			options.SuccessLast = &now
-			options.IncreaseSuccess = true
-		} else {
-			options.FailureLast = &now
-			options.IncreaseFailure = true
+		cronjob, ret := db.InitCronJobRepo(db.DB).GetByUniqueField("name", name)
+		if !ret.OK {
+			return
 		}
-		if updateRet := db.InitCronJobRepo(db.DB).UpdateByName(name, options); !updateRet.OK {
+		if updateRet := db.InitCronJobRepo(db.DB).UpdateStatus(cronjob.ID, result.OK, now); !updateRet.OK {
 			log.Logger.Warningf("Failed to update cron last runtime %s: %s", name, updateRet.Msg)
 		}
 		duration := time.Since(start).Seconds()
