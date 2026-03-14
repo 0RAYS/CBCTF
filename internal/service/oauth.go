@@ -96,8 +96,6 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 	} else {
 		// 获取用户成功的时更新用户信息
 		ret = userRepo.Update(user.ID, db.UpdateUserOptions{
-			Name:        &name,
-			Email:       &email,
 			Description: &description,
 			Picture:     new(model.FileURL(picture)),
 			OauthRaw:    new(string(raw)),
