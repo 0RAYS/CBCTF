@@ -43,6 +43,12 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 			return model.User{}, ret
 		}
 		// 获取用户失败的时创建新用户
+		if !userRepo.IsUniqueKeyValue(0, "name", name) {
+			name = fmt.Sprintf("%s_%s", provider.Provider, utils.RandStr(10))
+		}
+		if !userRepo.IsUniqueKeyValue(0, "email", email) {
+			email = fmt.Sprintf("%s_%s@example.com", provider.Provider, utils.RandStr(10))
+		}
 		user, ret = userRepo.Create(db.CreateUserOptions{
 			Name:           name,
 			Password:       model.NeverLoginPWD,
