@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
+	"strconv"
 
 	"gorm.io/gorm"
 )
@@ -17,8 +18,12 @@ import (
 func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (model.User, model.RetVal) {
 	id, ok := utils.GetClaimValue[string](response, provider.IDClaim)
 	if !ok {
-		log.Logger.Warningf("Failed to get user_id by provider %s: %s", provider.Provider, response)
-		return model.User{}, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Get value failed"}}
+		fallback, ok := utils.GetClaimValue[float64](response, provider.IDClaim)
+		if !ok {
+			log.Logger.Warningf("Failed to get user_id by provider %s: %s", provider.Provider, response)
+			return model.User{}, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Get value failed"}}
+		}
+		id = strconv.FormatFloat(fallback, 'f', -1, 64)
 	}
 	name, ok := utils.GetClaimValue[string](response, provider.NameClaim)
 	if !ok {
