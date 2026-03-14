@@ -24,7 +24,7 @@ func GetDefaultHDUHelpOauth() model.Oauth {
 		Provider:         "HDUHelp",
 		Uri:              "hduhelp",
 		IDClaim:          "{data.staffId}",
-		NameClaim:        "HDU_{data.staffId}",
+		NameClaim:        "{data.staffId}",
 		EmailClaim:       "{data.staffId}@hdu.edu.cn",
 		PictureClaim:     "",
 		DescriptionClaim: "{data.unitName} {data.majorName} {data.staffName}",
