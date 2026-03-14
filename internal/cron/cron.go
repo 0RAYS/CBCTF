@@ -43,13 +43,13 @@ func exec(name string, task func() model.RetVal) func() {
 		if !ret.OK {
 			return
 		}
-		if updateRet := db.InitCronJobRepo(db.DB).UpdateStatus(cronjob.ID, result.OK, now); !updateRet.OK {
-			log.Logger.Warningf("Failed to update cron last runtime %s: %s", name, updateRet.Msg)
+		if ret = db.InitCronJobRepo(db.DB).UpdateStatus(cronjob.ID, result.OK, now); !ret.OK {
+			log.Logger.Warningf("Failed to update cron last runtime %s: %s", name, ret.Msg)
 		}
 		duration := time.Since(start).Seconds()
-		prometheus.RecordCronJob(name, duration, ret.OK)
-		if !ret.OK {
-			log.Logger.Warningf("%s failed: %s, processing time: %s", name, ret.Msg, time.Duration(duration*float64(time.Second)))
+		prometheus.RecordCronJob(name, duration, result.OK)
+		if !result.OK {
+			log.Logger.Warningf("%s failed: %s, processing time: %s", name, result.Msg, time.Duration(duration*float64(time.Second)))
 		} else if duration > time.Second.Seconds() {
 			log.Logger.Warningf("%s processing time: %s", name, time.Duration(duration*float64(time.Second)))
 		} else {
