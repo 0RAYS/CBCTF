@@ -3,7 +3,6 @@ package cron
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/k8s"
-	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
 	"slices"
@@ -15,13 +14,11 @@ func stopUnCtrlGeneratorTask() model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	pods, ret := k8s.GetPodList(ctx, map[string]string{k8s.GeneratorPodTag: k8s.GeneratorPodTag})
 	cancel()
-	if !ret.OK {
-		log.Logger.Warningf("Failed to get generators %v", ret)
+	if !ret.OK || pods == nil {
 		return ret
 	}
 	generators, _, ret := db.InitGeneratorRepo(db.DB).List(-1, -1)
 	if !ret.OK {
-		log.Logger.Warningf("Failed to get generators %v", ret)
 		return ret
 	}
 	for _, pod := range pods.Items {

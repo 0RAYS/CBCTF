@@ -3,7 +3,6 @@ package cron
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/k8s"
-	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/service"
 	"context"
@@ -32,8 +31,7 @@ func closeUnCtrlVictimsTask() model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	pods, ret := k8s.GetPodList(ctx)
 	cancel()
-	if !ret.OK {
-		log.Logger.Warningf("Failed to get Victim %v", ret)
+	if !ret.OK || pods == nil {
 		return ret
 	}
 	idL := make([]string, 0)
