@@ -66,6 +66,18 @@ function buildDurationNs(form) {
   return Math.max(SECOND_NS, total);
 }
 
+function getLatestRunTime(successLast, failureLast) {
+  const successTime = successLast ? new Date(successLast) : null;
+  const failureTime = failureLast ? new Date(failureLast) : null;
+  const successTs = successTime && !Number.isNaN(successTime.getTime()) ? successTime.getTime() : null;
+  const failureTs = failureTime && !Number.isNaN(failureTime.getTime()) ? failureTime.getTime() : null;
+
+  if (successTs === null && failureTs === null) return null;
+  if (successTs === null) return failureTime;
+  if (failureTs === null) return successTime;
+  return successTs >= failureTs ? successTime : failureTime;
+}
+
 function CronJobs() {
   const { t } = useTranslation();
   const [cronJobs, setCronJobs] = useState([]);
@@ -141,32 +153,52 @@ function CronJobs() {
     return date.toLocaleString();
   };
 
-  const getNextRun = (durationNs, last) => {
+  const getNextRun = (durationNs, successLast, failureLast) => {
     if (!durationNs) return null;
-    const base = last ? new Date(last) : new Date();
+    const latestRun = getLatestRunTime(successLast, failureLast);
+    const base = latestRun || new Date();
     if (Number.isNaN(base.getTime())) return null;
     return new Date(base.getTime() + durationNs / 1_000_000);
   };
 
   const columns = [
-    { key: 'id', label: t('admin.cronjobs.columns.id'), width: '10%' },
-    { key: 'name', label: t('admin.cronjobs.columns.name'), width: '16%' },
+    { key: 'id', label: t('admin.cronjobs.columns.id'), width: '8%' },
+    { key: 'name', label: t('admin.cronjobs.columns.name'), width: '14%' },
     {
       key: 'description',
       label: t('admin.cronjobs.columns.description'),
-      width: '24%',
+      width: '20%',
     },
     {
       key: 'schedule',
       label: t('admin.cronjobs.columns.schedule'),
-      width: '18%',
+      width: '14%',
     },
-    { key: 'last', label: t('admin.cronjobs.columns.last'), width: '16%' },
-    { key: 'next', label: t('admin.cronjobs.columns.next'), width: '16%' },
+    {
+      key: 'successCount',
+      label: t('admin.cronjobs.columns.successCount'),
+      width: '10%',
+    },
+    {
+      key: 'failureCount',
+      label: t('admin.cronjobs.columns.failureCount'),
+      width: '10%',
+    },
+    {
+      key: 'successLast',
+      label: t('admin.cronjobs.columns.successLast'),
+      width: '12%',
+    },
+    {
+      key: 'failureLast',
+      label: t('admin.cronjobs.columns.failureLast'),
+      width: '12%',
+    },
+    { key: 'next', label: t('admin.cronjobs.columns.next'), width: '12%' },
     {
       key: 'actions',
       label: t('admin.cronjobs.columns.actions'),
-      width: '10%',
+      width: '8%',
     },
   ];
 
@@ -181,10 +213,16 @@ function CronJobs() {
         return <span className="text-neutral-300 text-sm">{cronJob.description || t('common.none')}</span>;
       case 'schedule':
         return <span className="text-neutral-300 font-mono text-sm">{formatDuration(durationNs, t)}</span>;
-      case 'last':
-        return <span className="text-neutral-300 text-sm">{formatDateTime(cronJob.last)}</span>;
+      case 'successCount':
+        return <span className="text-emerald-300 text-sm font-medium">{cronJob.success_count ?? 0}</span>;
+      case 'failureCount':
+        return <span className="text-rose-300 text-sm font-medium">{cronJob.failure_count ?? 0}</span>;
+      case 'successLast':
+        return <span className="text-neutral-300 text-sm">{formatDateTime(cronJob.success_last)}</span>;
+      case 'failureLast':
+        return <span className="text-neutral-300 text-sm">{formatDateTime(cronJob.failure_last)}</span>;
       case 'next': {
-        const nextRun = getNextRun(durationNs, cronJob.last);
+        const nextRun = getNextRun(durationNs, cronJob.success_last, cronJob.failure_last);
         return (
           <span className="text-neutral-300 text-sm">
             {nextRun ? formatDateTime(nextRun) : t('admin.cronjobs.time.unknown')}
@@ -212,7 +250,9 @@ function CronJobs() {
   };
 
   const previewDurationNs = buildDurationNs(form);
-  const previewNextRun = selectedCronJob ? getNextRun(previewDurationNs, selectedCronJob.last) : null;
+  const previewNextRun = selectedCronJob
+    ? getNextRun(previewDurationNs, selectedCronJob.success_last, selectedCronJob.failure_last)
+    : null;
 
   return (
     <div className="w-full mx-auto">
@@ -272,9 +312,27 @@ function CronJobs() {
           </div>
           <div>
             <label className="block text-neutral-300 text-sm font-medium mb-2">
-              {t('admin.cronjobs.form.lastLabel')}
+              {t('admin.cronjobs.form.successCountLabel')}
             </label>
-            <Input type="text" value={formatDateTime(selectedCronJob?.last)} fullWidth disabled />
+            <Input type="text" value={String(selectedCronJob?.success_count ?? 0)} fullWidth disabled />
+          </div>
+          <div>
+            <label className="block text-neutral-300 text-sm font-medium mb-2">
+              {t('admin.cronjobs.form.failureCountLabel')}
+            </label>
+            <Input type="text" value={String(selectedCronJob?.failure_count ?? 0)} fullWidth disabled />
+          </div>
+          <div>
+            <label className="block text-neutral-300 text-sm font-medium mb-2">
+              {t('admin.cronjobs.form.successLastLabel')}
+            </label>
+            <Input type="text" value={formatDateTime(selectedCronJob?.success_last)} fullWidth disabled />
+          </div>
+          <div>
+            <label className="block text-neutral-300 text-sm font-medium mb-2">
+              {t('admin.cronjobs.form.failureLastLabel')}
+            </label>
+            <Input type="text" value={formatDateTime(selectedCronJob?.failure_last)} fullWidth disabled />
           </div>
           <div>
             <label className="block text-neutral-300 text-sm font-medium mb-2">

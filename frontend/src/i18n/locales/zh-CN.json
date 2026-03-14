@@ -1564,7 +1564,10 @@
         "name": "名称",
         "description": "描述",
         "schedule": "周期",
-        "last": "上次运行",
+        "successCount": "成功次数",
+        "failureCount": "失败次数",
+        "successLast": "上次成功",
+        "failureLast": "上次失败",
         "next": "下次运行",
         "actions": "操作"
       },
@@ -1581,7 +1584,10 @@
         "minutesPlaceholder": "分钟",
         "secondsPlaceholder": "秒",
         "durationPreviewLabel": "时长预览",
-        "lastLabel": "上次运行时间",
+        "successCountLabel": "成功次数",
+        "failureCountLabel": "失败次数",
+        "successLastLabel": "上次成功时间",
+        "failureLastLabel": "上次失败时间",
         "nextLabel": "下次运行时间"
       },
       "duration": {

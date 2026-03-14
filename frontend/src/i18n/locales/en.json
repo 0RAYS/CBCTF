@@ -1564,7 +1564,10 @@
         "name": "Name",
         "description": "Description",
         "schedule": "Schedule",
-        "last": "Last Run",
+        "successCount": "Successes",
+        "failureCount": "Failures",
+        "successLast": "Last Success",
+        "failureLast": "Last Failure",
         "next": "Next Run",
         "actions": "Actions"
       },
@@ -1581,7 +1584,10 @@
         "minutesPlaceholder": "Minutes",
         "secondsPlaceholder": "Seconds",
         "durationPreviewLabel": "Duration preview",
-        "lastLabel": "Last run time",
+        "successCountLabel": "Success count",
+        "failureCountLabel": "Failure count",
+        "successLastLabel": "Last success time",
+        "failureLastLabel": "Last failure time",
         "nextLabel": "Next run time"
       },
       "duration": {
