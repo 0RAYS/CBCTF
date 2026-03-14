@@ -13,8 +13,13 @@ type CronJobRepo struct {
 }
 
 type UpdateCronJobOptions struct {
-	Schedule *time.Duration
-	Last     *time.Time
+	Schedule        *time.Duration
+	SuccessLast     *time.Time
+	FailureLast     *time.Time
+	SuccessCount    *uint
+	FailureCount    *uint
+	IncreaseSuccess bool
+	IncreaseFailure bool
 }
 
 func (u UpdateCronJobOptions) Convert2Map() map[string]any {
@@ -22,8 +27,23 @@ func (u UpdateCronJobOptions) Convert2Map() map[string]any {
 	if u.Schedule != nil {
 		options["schedule"] = *u.Schedule
 	}
-	if u.Last != nil {
-		options["last"] = *u.Last
+	if u.SuccessLast != nil {
+		options["success_last"] = *u.SuccessLast
+	}
+	if u.FailureLast != nil {
+		options["failure_last"] = *u.FailureLast
+	}
+	if u.SuccessCount != nil {
+		options["success_count"] = *u.SuccessCount
+	}
+	if u.FailureCount != nil {
+		options["failure_count"] = *u.FailureCount
+	}
+	if u.IncreaseSuccess {
+		options["success_count"] = gorm.Expr("success_count + ?", 1)
+	}
+	if u.IncreaseFailure {
+		options["failure_count"] = gorm.Expr("failure_count + ?", 1)
 	}
 	return options
 }
