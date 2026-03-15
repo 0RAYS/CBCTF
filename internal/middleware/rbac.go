@@ -19,9 +19,10 @@ func CheckPermission(ctx *gin.Context) {
 		return
 	}
 	userID := GetSelf(ctx).ID
+	var permissions []string
 	pass, ret := redis.CheckUserRBAC(userID, permission)
 	if !ret.OK {
-		permissions, ret := db.InitPermissionRepo(db.DB).GetUserPermissions(userID)
+		permissions, ret = db.InitPermissionRepo(db.DB).GetUserPermissions(userID)
 		if !ret.OK {
 			resp.AbortJSON(ctx, ret)
 			return
@@ -31,10 +32,10 @@ func CheckPermission(ctx *gin.Context) {
 			return
 		}
 		pass, ret = redis.CheckUserRBAC(userID, permission)
-	}
-	if !ret.OK {
-		resp.AbortJSON(ctx, ret)
-		return
+		if !ret.OK {
+			resp.AbortJSON(ctx, ret)
+			return
+		}
 	}
 	if !pass {
 		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Forbidden})
