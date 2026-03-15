@@ -4,15 +4,10 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
-	"CBCTF/internal/k8s"
 	"CBCTF/internal/model"
-	"CBCTF/internal/utils"
-	"context"
+	"CBCTF/internal/task"
 	"crypto/rand"
-	"database/sql"
-	"fmt"
 	"math/big"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -42,32 +37,7 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 			}
 		}
 		for range challengeCount[challenge.RandID] {
-			go func(contestID uint, challenge model.Challenge) {
-				generatorRepo := db.InitGeneratorRepo(tx)
-				generator, ret := generatorRepo.Create(db.CreateGeneratorOptions{
-					ChallengeID: challenge.ID,
-					ContestID:   sql.Null[uint]{V: contestID, Valid: contestID > 0},
-					Name:        fmt.Sprintf("gen-%d-%d-%s", contestID, challenge.ID, utils.RandStr(6)),
-				})
-				if !ret.OK {
-					return
-				}
-				ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.PendingGeneratorStatus)})
-				if !ret.OK {
-					return
-				}
-				ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-				_, ret = k8s.StartGenerator(ctx, challenge, generator)
-				cancel()
-				if !ret.OK {
-					StopGenerators(tx, dto.StopGeneratorsForm{Generators: []uint{generator.ID}})
-					return
-				}
-				ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.RunningGeneratorStatus)})
-				if !ret.OK {
-					return
-				}
-			}(contestID, challenge)
+			_, _ = task.EnqueueStartGeneratorTask(contestID, challenge)
 		}
 	}
 	return model.SuccessRetVal()
@@ -84,13 +54,7 @@ func StopGenerators(tx *gorm.DB, form dto.StopGeneratorsForm) model.RetVal {
 		return ret
 	}
 	for _, generator := range generators {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-		ret = k8s.StopGenerator(ctx, generator)
-		cancel()
-		if !ret.OK {
-			return ret
-		}
-		db.InitGeneratorRepo(tx).Delete(generator.ID)
+		_, _ = task.EnqueueStopGeneratorTask(generator)
 	}
 	return model.SuccessRetVal()
 }
