@@ -40,7 +40,7 @@ docker compose logs cbctf | grep "Init Admin"
 
 ```bash
 # 1. 添加 Chart 仓库
-helm repo add 0rays https://0rays.github.io/CBCTF-charts
+helm repo add 0rays https://cbctf.github.io/CBCTF
 helm repo update
 # 2. 安装（最小配置）
 helm install cbctf 0rays/cbctf \
