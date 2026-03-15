@@ -238,8 +238,8 @@ func UpdateOauthProvider(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateOauthEventType)
-	oauth := middleware.GetOauth(ctx)
-	if ret := db.InitOauthRepo(db.DB).Update(oauth.ID, db.UpdateOauthOptions{
+	oldOauth := middleware.GetOauth(ctx)
+	if ret := db.InitOauthRepo(db.DB).Update(oldOauth.ID, db.UpdateOauthOptions{
 		AuthURL:          form.AuthURL,
 		TokenURL:         form.TokenURL,
 		UserInfoURL:      form.UserInfoURL,
@@ -262,14 +262,14 @@ func UpdateOauthProvider(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	newOauth, ret := db.InitOauthRepo(db.DB).GetByID(oauth.ID)
+	newOauth, ret := db.InitOauthRepo(db.DB).GetByID(oldOauth.ID)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
 	oauthProviderMapLock.Lock()
-	if _, ok := oauthProviderMap[newOauth.Uri]; ok {
-		delete(oauthProviderMap, newOauth.Uri)
+	if _, ok := oauthProviderMap[oldOauth.Uri]; ok {
+		delete(oauthProviderMap, oldOauth.Uri)
 	}
 	if newOauth.On {
 		oauthProviderMap[newOauth.Uri] = newOauth
