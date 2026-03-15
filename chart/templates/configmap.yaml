@@ -47,7 +47,6 @@ data:
       jwt:
         # Value overridden by CBCTF_GIN_JWT_SECRET env var from Secret
         secret: ""
-        static: {{ .Values.cbctf.gin.jwt.static }}
       metrics:
         whitelist:
           {{- range .Values.cbctf.gin.metrics.whitelist }}
