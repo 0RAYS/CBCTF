@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
+	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
 
 	"github.com/gin-gonic/gin"
@@ -64,6 +65,7 @@ func CreateRole(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
+	redis.DeleteRBAC()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal(resp.GetRoleResp(role)))
 }
@@ -85,6 +87,7 @@ func UpdateRole(ctx *gin.Context) {
 		Description: form.Description,
 	})
 	if ret.OK {
+		redis.DeleteRBAC()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	resp.JSON(ctx, ret)
@@ -99,6 +102,7 @@ func DeleteRole(ctx *gin.Context) {
 	}
 	ret := db.InitRoleRepo(db.DB).Delete(role.ID)
 	if ret.OK {
+		redis.DeleteRBAC()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	resp.JSON(ctx, ret)
@@ -119,6 +123,7 @@ func AssignPermission(ctx *gin.Context) {
 	}
 	ret = db.AssignPermissionToRole(db.DB, permission, role)
 	if ret.OK {
+		redis.DeleteRBAC()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	resp.JSON(ctx, ret)
@@ -139,6 +144,7 @@ func RevokePermission(ctx *gin.Context) {
 	}
 	ret = db.RevokePermissionFromRole(db.DB, permission, role)
 	if ret.OK {
+		redis.DeleteRBAC()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	resp.JSON(ctx, ret)

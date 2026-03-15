@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/dto"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
+	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 
@@ -128,6 +129,7 @@ func DeleteUser(ctx *gin.Context) {
 		tx  *gorm.DB
 		ret model.RetVal
 	)
+	var user model.User
 	if !middleware.IsFullAccess(ctx) {
 		var form dto.DeleteSelfForm
 		if ret = dto.Bind(ctx, &form); !ret.OK {
@@ -135,16 +137,19 @@ func DeleteUser(ctx *gin.Context) {
 			return
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.DeleteUserEventType)
+		user = middleware.GetSelf(ctx)
 		tx = db.DB.Begin()
-		ret = service.DeleteSelf(tx, middleware.GetSelf(ctx), form)
+		ret = service.DeleteSelf(tx, user, form)
 	} else {
 		ctx.Set(middleware.CTXEventTypeKey, model.DeleteUserEventType)
+		user = middleware.GetUser(ctx)
 		tx = db.DB.Begin()
-		ret = service.DeleteUser(tx, middleware.GetUser(ctx))
+		ret = service.DeleteUser(tx, user)
 	}
 	if !ret.OK {
 		tx.Rollback()
 	} else {
+		redis.DeleteUserRBAC(user.ID)
 		tx.Commit()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}

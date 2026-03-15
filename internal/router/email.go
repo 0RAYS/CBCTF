@@ -44,8 +44,7 @@ func VerifyEmail(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.VerifyEmailEventType)
-	ret := service.VerifyEmail(db.DB, form)
-	if !ret.OK {
+	if ret := service.VerifyEmail(db.DB, form); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
