@@ -90,22 +90,3 @@ func (p *PermissionRepo) GetUserPermissions(userID uint) ([]string, model.RetVal
 	}
 	return names, model.SuccessRetVal()
 }
-
-func (p *PermissionRepo) CheckUserPermission(userID uint, permission string) (bool, model.RetVal) {
-	var perm model.Permission
-	res := p.DB.Table("permissions").
-		Joins("INNER JOIN role_permissions ON permissions.id = role_permissions.permission_id").
-		Joins("INNER JOIN roles ON role_permissions.role_id = roles.id").
-		Joins("INNER JOIN `groups` ON roles.id = groups.role_id").
-		Joins("INNER JOIN user_groups ON groups.id = user_groups.group_id").
-		Joins("INNER JOIN users ON user_groups.user_id = users.id").
-		Where("users.deleted_at IS NULL AND permissions.deleted_at IS NULL AND users.id = ? AND permissions.name = ?", userID, permission).
-		Limit(1).Find(&perm)
-	if res.Error != nil {
-		return false, model.RetVal{Msg: i18n.Model.Permission.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	if res.RowsAffected == 0 {
-		return false, model.RetVal{Msg: i18n.Model.Permission.NotFound}
-	}
-	return true, model.SuccessRetVal()
-}
