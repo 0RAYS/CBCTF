@@ -110,7 +110,6 @@ cbctf:
     jwt:
       # Leave empty to auto-generate a random secret on first install.
       secret: ""
-      static: false
     metrics:
       # IPs allowed to hit /metrics — include Prometheus pod CIDR or exact IPs
       whitelist:
