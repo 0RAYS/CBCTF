@@ -50,6 +50,8 @@ func Init() {
 
 	mux.HandleFunc(SendEmailTaskType, wrapHandler(SendEmailTaskType, HandleSendEmailTask))
 	mux.HandleFunc(GenAttachmentTaskType, wrapHandler(GenAttachmentTaskType, HandleGenAttachmentTask))
+	mux.HandleFunc(StartVictimTaskType, wrapHandler(StartVictimTaskType, HandleStartVictimTask))
+	mux.HandleFunc(StopVictimTaskType, wrapHandler(StopVictimTaskType, HandleStopVictimTask))
 	mux.HandleFunc(WebhookTaskType, wrapHandler(WebhookTaskType, HandleWebhookTask))
 	mux.HandleFunc(ResizeImageTaskType, wrapHandler(ResizeImageTaskType, HandleResizeImageTask))
 }
