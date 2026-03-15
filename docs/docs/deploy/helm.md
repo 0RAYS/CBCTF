@@ -17,7 +17,7 @@ CBCTF 提供官方 Helm Chart，可一键在 Kubernetes 集群上部署完整平
 ### 添加 Chart 仓库
 
 ```bash
-helm repo add 0rays https://cbctf.github.io/CBCTF
+helm repo add 0rays https://cbctf.0rays.club/CBCTF
 helm repo update
 ```
 
