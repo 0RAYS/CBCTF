@@ -48,7 +48,7 @@ func Init() *gin.Engine {
 
 	{
 		router.POST("/register", middleware.RateLimit("register", 1, time.Minute), Register)
-		router.POST("/login", Login)
+		router.POST("/login", middleware.RateLimit("register", 10, time.Minute), Login)
 
 		RegisterOauthRouter()
 		router.GET("/oauth", ListOauth)
