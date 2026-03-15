@@ -332,7 +332,7 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 			return model.SuccessRetVal()
 		}()
 		if !ret.OK {
-			victim, ret := db.InitVictimRepo(db.DB).HasAliveVictim(0, challenge.ID)
+			victim, ret = db.InitVictimRepo(db.DB).HasAliveVictim(teamID, challenge.ID)
 			if !ret.OK {
 				return
 			}
