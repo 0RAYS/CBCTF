@@ -23,25 +23,25 @@ func VerifyFlag(tx *gorm.DB, team model.Team, contestChallenge model.ContestChal
 		if len(contestFlagL) == 0 {
 			return false, model.ContestFlag{}, model.TeamFlag{}, model.RetVal{Msg: i18n.Model.ContestFlag.NotFound}
 		}
-		optionsIDL := strings.Split(contestFlagL[0].Value, ",")
+		contestFlag := contestFlagL[0]
+		if len(contestFlag.TeamFlags) == 0 {
+			return false, model.ContestFlag{}, model.TeamFlag{}, model.RetVal{Msg: i18n.Model.TeamFlag.NotFound}
+		}
+		teamFlag := contestFlag.TeamFlags[0]
+		optionsIDL := strings.Split(contestFlag.Value, ",")
 		answerIDL := strings.Split(value, ",")
 		if len(optionsIDL) != len(answerIDL) {
-			return false, contestFlagL[0], model.TeamFlag{}, model.RetVal{OK: true, Msg: i18n.Model.TeamFlag.NotMatch}
+			return false, contestFlag, model.TeamFlag{}, model.RetVal{OK: true, Msg: i18n.Model.TeamFlag.NotMatch}
 		}
 		for _, answerID := range answerIDL {
 			if !slices.Contains(optionsIDL, answerID) {
-				return false, contestFlagL[0], model.TeamFlag{}, model.RetVal{OK: true, Msg: i18n.Model.TeamFlag.NotMatch}
+				return false, contestFlag, model.TeamFlag{}, model.RetVal{OK: true, Msg: i18n.Model.TeamFlag.NotMatch}
 			}
 		}
-		for _, teamFlag := range contestFlagL[0].TeamFlags {
-			if teamFlag.TeamID == team.ID {
-				if teamFlag.Solved {
-					return false, contestFlagL[0], teamFlag, model.RetVal{OK: true, Msg: i18n.Model.TeamFlag.AlreadySolved}
-				}
-				return true, contestFlagL[0], teamFlag, model.SuccessRetVal()
-			}
+		if teamFlag.Solved {
+			return false, contestFlag, teamFlag, model.RetVal{OK: true, Msg: i18n.Model.TeamFlag.AlreadySolved}
 		}
-		return false, contestFlagL[0], model.TeamFlag{}, model.RetVal{OK: true, Msg: i18n.Model.TeamFlag.NotFound}
+		return true, contestFlag, teamFlag, model.SuccessRetVal()
 	}
 	for _, contestFlag := range contestFlagL {
 		for _, teamFlag := range contestFlag.TeamFlags {
