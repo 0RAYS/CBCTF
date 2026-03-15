@@ -14,8 +14,28 @@ import (
 
 var (
 	RequestsPool  = make([]model.Request, 0)
-	RequestsMutex sync.RWMutex
+	RequestsMutex sync.Mutex
 )
+
+func AppendRequest(request model.Request) {
+	RequestsMutex.Lock()
+	RequestsPool = append(RequestsPool, request)
+	RequestsMutex.Unlock()
+}
+
+func DrainRequestsPool() []model.Request {
+	RequestsMutex.Lock()
+
+	if len(RequestsPool) == 0 {
+		RequestsMutex.Unlock()
+		return nil
+	}
+
+	requests := RequestsPool
+	RequestsPool = make([]model.Request, 0)
+	RequestsMutex.Unlock()
+	return requests
+}
 
 // AccessLog 记录访问日志
 func AccessLog(ctx *gin.Context) {
@@ -54,8 +74,6 @@ func AccessLog(ctx *gin.Context) {
 		if selfID > 0 {
 			request.UserID = sql.Null[uint]{V: selfID, Valid: true}
 		}
-		RequestsMutex.Lock()
-		RequestsPool = append(RequestsPool, request)
-		RequestsMutex.Unlock()
+		AppendRequest(request)
 	}
 }
