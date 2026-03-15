@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
+	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
 	"fmt"
 
@@ -17,8 +18,20 @@ func CheckPermission(ctx *gin.Context) {
 		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Forbidden})
 		return
 	}
-
-	pass, ret := db.InitPermissionRepo(db.DB).CheckUserPermission(GetSelf(ctx).ID, permission)
+	userID := GetSelf(ctx).ID
+	pass, ret := redis.CheckUserRBAC(userID, permission)
+	if !ret.OK {
+		permissions, ret := db.InitPermissionRepo(db.DB).GetUserPermissions(userID)
+		if !ret.OK {
+			resp.AbortJSON(ctx, ret)
+			return
+		}
+		if ret = redis.SetUserRBAC(userID, permissions); !ret.OK {
+			resp.AbortJSON(ctx, ret)
+			return
+		}
+		pass, ret = redis.CheckUserRBAC(userID, permission)
+	}
 	if !ret.OK {
 		resp.AbortJSON(ctx, ret)
 		return

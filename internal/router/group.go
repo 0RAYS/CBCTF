@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
+	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
 
 	"github.com/gin-gonic/gin"
@@ -66,6 +67,7 @@ func CreateGroup(ctx *gin.Context) {
 		Description: form.Description,
 	})
 	if !ret.OK {
+		redis.DeleteRBAC()
 		resp.JSON(ctx, ret)
 		return
 	}
@@ -91,6 +93,7 @@ func UpdateGroup(ctx *gin.Context) {
 		Description: form.Description,
 	})
 	if ret.OK {
+		redis.DeleteRBAC()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	resp.JSON(ctx, ret)
@@ -105,6 +108,7 @@ func DeleteGroup(ctx *gin.Context) {
 	}
 	ret := db.InitGroupRepo(db.DB).Delete(group.ID)
 	if ret.OK {
+		redis.DeleteRBAC()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	resp.JSON(ctx, ret)
@@ -125,6 +129,7 @@ func AssignUserToGroup(ctx *gin.Context) {
 	}
 	ret = db.AppendUserToGroup(db.DB, user, group)
 	if ret.OK {
+		redis.DeleteUserRBAC(user.ID)
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	resp.JSON(ctx, ret)
@@ -145,6 +150,7 @@ func RemoveUserFromGroup(ctx *gin.Context) {
 	}
 	ret = db.DeleteUserFromGroup(db.DB, user, group)
 	if ret.OK {
+		redis.DeleteUserRBAC(user.ID)
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	resp.JSON(ctx, ret)
