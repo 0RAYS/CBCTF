@@ -20,9 +20,11 @@ func StartVictim(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
 	challenge := middleware.GetChallenge(ctx)
 	contestChallenge := middleware.GetContestChallenge(ctx)
-	go service.StartVictim(db.DB, user.ID, team.ID, contest.ID, contestChallenge.ID, challenge.ID)
-	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal())
+	ret := service.StartVictim(db.DB, user.ID, team.ID, contest.ID, contestChallenge.ID, challenge.ID)
+	if ret.OK {
+		ctx.Set(middleware.CTXEventSuccessKey, true)
+	}
+	resp.JSON(ctx, ret)
 }
 
 func IncreaseVictimDuration(ctx *gin.Context) {
@@ -122,9 +124,11 @@ func StartVictims(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.StartVictimEventType)
 	contest := middleware.GetContest(ctx)
-	go service.StartVictims(db.DB, contest, form)
-	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal())
+	ret := service.StartVictims(db.DB, contest, form)
+	if ret.OK {
+		ctx.Set(middleware.CTXEventSuccessKey, true)
+	}
+	resp.JSON(ctx, ret)
 }
 
 func StopVictims(ctx *gin.Context) {
