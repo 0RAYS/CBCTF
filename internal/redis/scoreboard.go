@@ -34,7 +34,6 @@ func UpdateTeamRanking(contestID uint, teams []model.Team) model.RetVal {
 		data, _ := msgpack.Marshal(&team)
 		pipe.Set(ctx, fmt.Sprintf(teamKey, contestID, team.ID), data, 0)
 	}
-	pipe.Expire(ctx, key, 0)
 	if _, err := pipe.Exec(ctx); err != nil {
 		log.Logger.Warningf("Failed to update TeamRanking: %s", err)
 		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
@@ -83,7 +82,6 @@ func UpdateUserRanking(users []model.User) model.RetVal {
 		data, _ := msgpack.Marshal(&user)
 		pipe.Set(ctx, fmt.Sprintf(userKey, user.ID), data, 0)
 	}
-	pipe.Expire(ctx, userRankingKey, 0)
 	if _, err := pipe.Exec(ctx); err != nil {
 		log.Logger.Warningf("Failed to update UserRanking: %s", err)
 		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": userRankingKey, "Error": err.Error()}}
