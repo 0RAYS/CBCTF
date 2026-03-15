@@ -19,10 +19,10 @@ func VerifyFlag(tx *gorm.DB, team model.Team, contestChallenge model.ContestChal
 	if !ret.OK {
 		return false, model.ContestFlag{}, model.TeamFlag{}, ret
 	}
+	if len(contestFlagL) == 0 {
+		return false, model.ContestFlag{}, model.TeamFlag{}, model.RetVal{Msg: i18n.Model.ContestFlag.NotFound}
+	}
 	if contestChallenge.Type == model.QuestionChallengeType {
-		if len(contestFlagL) == 0 {
-			return false, model.ContestFlag{}, model.TeamFlag{}, model.RetVal{Msg: i18n.Model.ContestFlag.NotFound}
-		}
 		contestFlag := contestFlagL[0]
 		if len(contestFlag.TeamFlags) == 0 {
 			return false, model.ContestFlag{}, model.TeamFlag{}, model.RetVal{Msg: i18n.Model.TeamFlag.NotFound}
