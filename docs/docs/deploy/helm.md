@@ -4,17 +4,18 @@ sidebar_position: 3
 
 # Helm 部署
 
-CBCTF 提供官方 Helm Chart，可一键在 Kubernetes 集群上部署完整平台，包含 MySQL、Redis 及所有必要的 RBAC 配置。
+CBCTF 提供官方 Helm Chart，可在 Kubernetes 中部署应用、共享存储接入以及可选的内置 MySQL/Redis。
 
 ## 前置要求
 
 - Helm 3.10+
-- 已搭建 Kubernetes 集群（参考 [集群搭建](./cluster.md)）
-- 支持 `ReadWriteMany` 的 StorageClass（NFS 等）
+- 可用的 Kubernetes 集群
+- 支持 `ReadWriteMany` 的存储类，用于附件与动态附件共享
+- 如需 VPC 网络，需提前安装 Kube-OVN 与 Multus
 
 ## 基本操作
 
-### 添加 Chart 仓库
+### 添加仓库
 
 ```bash
 helm repo add 0rays https://cbctf.0rays.club/CBCTF
@@ -24,227 +25,145 @@ helm repo update
 ### 安装
 
 ```bash
-# 使用默认值快速安装
 helm install cbctf 0rays/cbctf \
   --namespace cbctf \
   --create-namespace \
   --set cbctf.host=https://ctf.example.com
+```
 
-# 推荐：下载并自定义 values 文件后安装
+推荐先导出默认值再修改：
+
+```bash
 helm show values 0rays/cbctf > my-values.yaml
-# 编辑 my-values.yaml ...
 helm install cbctf 0rays/cbctf \
   --namespace cbctf \
   --create-namespace \
   -f my-values.yaml
 ```
 
-### 升级
+### 升级与卸载
 
 ```bash
-helm upgrade cbctf 0rays/cbctf --namespace cbctf -f my-values.yaml
-```
-
-### 卸载
-
-```bash
-helm uninstall cbctf --namespace cbctf
+helm upgrade cbctf 0rays/cbctf -n cbctf -f my-values.yaml
+helm uninstall cbctf -n cbctf
 ```
 
 :::caution
-卸载不会自动删除 PVC。如需清理所有数据：
-```bash
-kubectl delete pvc --all -n cbctf
-```
+卸载不会自动清理 PVC；若需清空数据，请手动删除对应 PVC。
 :::
 
 ### 查看初始管理员密码
 
 ```bash
-kubectl logs -n cbctf deploy/cbctf | grep "Init Admin"
+kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
 ```
 
----
+## 核心 Values
 
-## Values 完整参数说明
+### 镜像与运行环境
 
-### `image.*` — 镜像配置
+| 参数 | 说明 |
+|------|------|
+| `image.repository` / `image.tag` | CBCTF 应用镜像 |
+| `image.pullPolicy` | 镜像拉取策略 |
+| `timezone` | 容器时区 |
+| `imagePullSecrets` | 额外拉取凭据 |
+| `imageCredentials.*` | 自动生成 registry Secret 的内联凭据 |
 
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| `image.repository` | `ghcr.io/0rays/cbctf` | 镜像仓库地址 |
-| `image.tag` | `latest` | 镜像标签，生产环境建议固定版本如 `20250101` |
-| `image.pullPolicy` | `IfNotPresent` | 镜像拉取策略 |
+### 服务暴露
 
-### `imageCredentials.*` — 私有仓库凭证
+| 参数 | 说明 |
+|------|------|
+| `service.type` | `ClusterIP` / `NodePort` / `LoadBalancer` |
+| `service.port` | 应用服务端口 |
+| `ingress.*` | Ingress 主机、路径和 TLS |
 
-Chart 会自动创建 `docker-registry` 类型的 Secret：
+### `cbctf.*`
 
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| `imageCredentials.registry` | `""` | 仓库地址，如 `ghcr.io` |
-| `imageCredentials.username` | `""` | 用户名 |
-| `imageCredentials.password` | `""` | 密码或 Token |
+#### `cbctf.host`
 
-### `timezone` — 时区
+平台公开访问地址。必须与最终对外地址一致，并且不要带尾部 `/`。
 
-```yaml
-timezone: "Asia/Shanghai"   # 留空使用 UTC
-```
+#### `cbctf.log.*`
 
-### `service.*` — 服务配置
+- `cbctf.log.level`
+- `cbctf.log.save`
 
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| `service.type` | `ClusterIP` | 服务类型：`ClusterIP` / `NodePort` / `LoadBalancer` |
-| `service.port` | `8000` | 服务端口 |
+#### `cbctf.gin.*`
 
-### `ingress.*` — Ingress 配置
+- `mode`
+- `host`
+- `port`
+- `upload.max`
+- `proxies`
+- `cors`
+- `ratelimit.global`
+- `ratelimit.whitelist`
+- `log.whitelist`
+- `jwt.secret`
+- `metrics.whitelist`
 
-```yaml
-ingress:
-  enabled: false
-  className: "nginx"
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-  hosts:
-    - host: ctf.example.com
-      paths:
-        - path: /
-          pathType: Prefix
-  tls:
-    - secretName: cbctf-tls
-      hosts:
-        - ctf.example.com
-```
+Chart 会将 `cbctf.gin.jwt.secret` 写入 Secret，并通过环境变量注入容器。
 
-### `cbctf.host` — 平台公网地址
+#### `cbctf.asynq.*`
 
-平台对外公开 URL，用于邮件链接、OAuth 回调等。**必须配置，不含末尾斜线。**
+- `concurrency`
+- `log.level`
 
-```yaml
-cbctf:
-  host: "https://ctf.example.com"
-```
+#### `cbctf.gorm.log.level`
 
-### `cbctf.log.*` — 日志
+控制 GORM 日志等级。MySQL 连接信息由 Chart 根据 `mysql.*` 自动拼装。
 
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| `cbctf.log.level` | `info` | 日志等级：`DEBUG` / `INFO` / `WARNING` / `ERROR` |
-| `cbctf.log.save` | `true` | 是否持久化日志文件 |
+#### `cbctf.k8s.*`
 
-### `cbctf.gin.*` — HTTP 服务
+- `tcpdump`
+- `frp.on`
+- `frp.frpc`
+- `frp.nginx`
+- `frp.frps`
+- `externalNetwork.enabled`
+- `externalNetwork.cidr`
+- `externalNetwork.gateway`
+- `externalNetwork.interface`
 
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| `cbctf.gin.mode` | `release` | Gin 运行模式：`debug` / `release` / `test` |
-| `cbctf.gin.host` | `0.0.0.0` | 监听地址 |
-| `cbctf.gin.port` | `8000` | 监听端口 |
-| `cbctf.gin.upload.max` | `8` | 单文件上传大小限制（MiB） |
-| `cbctf.gin.proxies` | `["127.0.0.1", "::1"]` | 可信反向代理 IP 列表（CIDR 支持） |
-| `cbctf.gin.cors` | `["http://cbctf.local"]` | 允许跨域的前端地址列表 |
-| `cbctf.gin.ratelimit.global` | `100` | 全局速率限制（req/s） |
-| `cbctf.gin.ratelimit.whitelist` | `["::1", "127.0.0.1"]` | 不受限速约束的 IP 列表 |
-| `cbctf.gin.log.whitelist` | `["/metrics", "/platform/*filepath"]` | 不记录访问日志的路径 |
-| `cbctf.gin.jwt.secret` | `""` | JWT 密钥，留空自动生成 |
-| `cbctf.gin.jwt.static` | `false` | 是否禁止动态更新 JWT 密钥 |
-| `cbctf.gin.metrics.whitelist` | `["127.0.0.1", "::1", ...]` | 允许访问 `/metrics` 的 IP 列表 |
+当前 Chart 和应用代码中 **不存在** `cbctf.k8s.generator_worker`、`cbctf.k8s.kubeovnRBAC`、`cbctf.k8s.multusRBAC` 这些可配置项。
 
-:::info JWT 密钥自动生成
-`cbctf.gin.jwt.secret` 留空时，Helm 在首次安装时自动生成随机密钥并存入 Kubernetes Secret，`helm upgrade` 时保持不变。
-:::
+#### 其他配置
 
-### `cbctf.asynq.*` — 异步任务队列
+- `cbctf.cheat.ip.whitelist`
+- `cbctf.registration.enabled`
+- `cbctf.registration.default_group`
+- `cbctf.webhook.whitelist`
 
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| `cbctf.asynq.concurrency` | `50` | 最大并发 worker 数 |
-| `cbctf.asynq.log.level` | `warning` | Asynq 内部日志等级 |
+### 持久化
 
-### `cbctf.gorm.log.level` — 数据库日志
+| 参数 | 说明 |
+|------|------|
+| `persistence.enabled` | 是否启用共享存储 |
+| `persistence.storageClass` | RWX 存储类 |
+| `persistence.accessMode` | 默认 `ReadWriteMany` |
+| `persistence.size` | 共享卷容量 |
+| `persistence.existingClaim` | 复用已有 PVC |
 
-支持 `INFO` / `WARNING` / `ERROR` / `SILENT`，默认 `silent`。MySQL 连接信息由 Chart 从 `mysql.auth.*` 自动注入。
+动态附件依赖共享卷；若使用不支持 RWX 的存储类，动态附件会失败。
 
-### `cbctf.k8s.*` — Kubernetes 集成
+### MySQL / Redis
 
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| `cbctf.k8s.tcpdump` | `nicolaka/netshoot:latest` | 流量捕获辅助容器镜像 |
-| `cbctf.k8s.generator_worker` | `2` | 动态附件生成器 Pod 数量倍率（每节点） |
-| `cbctf.k8s.frp.on` | `false` | 是否启用 FRP 端口转发 |
-| `cbctf.k8s.frp.frpc` | `snowdreamtech/frpc:latest` | frpc 容器镜像 |
-| `cbctf.k8s.frp.nginx` | `nginx:latest` | Nginx 反向代理容器镜像 |
-| `cbctf.k8s.frp.frps` | `[]` | frps 服务器配置列表 |
-| `cbctf.k8s.kubeovnRBAC` | `false` | 是否创建 KubeOVN RBAC 规则（VPC 模式必须设 true） |
-| `cbctf.k8s.multusRBAC` | `false` | 是否创建 Multus RBAC 规则（VPC 模式必须设 true） |
-| `cbctf.k8s.externalNetwork.enabled` | `false` | 是否配置靶机外部网络访问 |
-| `cbctf.k8s.externalNetwork.cidr` | `""` | 宿主机网段，如 `192.168.100.0/24` |
-| `cbctf.k8s.externalNetwork.gateway` | `""` | 宿主机网关 |
-| `cbctf.k8s.externalNetwork.interface` | `""` | 宿主机网卡名（所有节点须一致） |
+| 参数 | 说明 |
+|------|------|
+| `mysql.enabled` | 是否部署内置 MySQL |
+| `mysql.externalHost` | 关闭内置 MySQL 时必须提供 |
+| `mysql.auth.*` | 用户名、密码、数据库名 |
+| `mysql.persistence.*` | MySQL 数据卷 |
+| `mysql.extraConfig` | 额外 MySQL 配置 |
+| `redis.enabled` | 是否部署内置 Redis |
+| `redis.externalHost` | 关闭内置 Redis 时必须提供 |
+| `redis.auth.password` | Redis 密码 |
+| `redis.persistence.*` | Redis 数据卷 |
 
-### `cbctf.cheat.ip.whitelist` — 作弊检测 IP 白名单
+## 示例
 
-白名单内的 IP 不参与作弊检测，默认包含所有私有地址段。
-
-### `cbctf.registration.*` — 注册配置
-
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| `cbctf.registration.enabled` | `true` | 是否开放公开注册 |
-| `cbctf.registration.default_group` | `0` | 新用户默认分组 ID（0 表示不分配） |
-
-### `cbctf.webhook.whitelist` — Webhook 目标白名单
-
-允许的 Webhook 目标 URL 前缀列表，空列表表示不限制。
-
-### `persistence.*` — 持久化存储
-
-CBCTF 需要 `ReadWriteMany` 类型的 PVC 用于附件文件共享。
-
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| `persistence.enabled` | `true` | 是否启用持久化 |
-| `persistence.storageClass` | `""` | StorageClass 名称，留空使用集群默认 |
-| `persistence.accessMode` | `ReadWriteMany` | 访问模式，**必须为 RWX** |
-| `persistence.size` | `20Gi` | 存储容量 |
-
-:::warning StorageClass 要求
-K3S 默认的 `local-path` **不支持** `ReadWriteMany`。部署前需配置支持 RWX 的 StorageClass（如 NFS Provisioner）。
-:::
-
-### `mysql.*` — MySQL
-
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| `mysql.enabled` | `true` | 是否使用内置 MySQL |
-| `mysql.image.repository` | `mysql` | 镜像 |
-| `mysql.image.tag` | `8.0` | 版本 |
-| `mysql.auth.rootPassword` | `""` | root 密码，留空自动生成 |
-| `mysql.auth.database` | `cbctf` | 数据库名 |
-| `mysql.auth.username` | `cbctf` | 用户名 |
-| `mysql.auth.password` | `""` | 密码，留空自动生成 |
-| `mysql.persistence.size` | `5Gi` | 数据卷容量 |
-| `mysql.extraConfig` | `utf8mb4 + max_connections=500` | 追加到 `my.cnf` 的 MySQL 配置 |
-
-### `redis.*` — Redis
-
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| `redis.enabled` | `true` | 是否使用内置 Redis |
-| `redis.image.tag` | `7-alpine` | 版本 |
-| `redis.auth.password` | `""` | 密码，留空自动生成 |
-| `redis.persistence.size` | `1Gi` | 数据卷容量 |
-
-### `resources` / `nodeSelector` / `tolerations` / `affinity`
-
-标准 Kubernetes Pod 调度配置，按需配置。
-
----
-
-## 常见场景示例
-
-### 最小化部署（ClusterIP + port-forward）
+### 最小部署
 
 ```yaml
 cbctf:
@@ -265,11 +184,11 @@ redis:
 ```
 
 ```bash
-helm install cbctf 0rays/cbctf -f values.yaml -n cbctf --create-namespace
+helm install cbctf 0rays/cbctf -n cbctf --create-namespace -f values.yaml
 kubectl port-forward svc/cbctf 8000:8000 -n cbctf
 ```
 
-### 生产部署（Ingress + TLS + VPC 网络）
+### Ingress + TLS + 外部网络
 
 ```yaml
 cbctf:
@@ -278,12 +197,10 @@ cbctf:
     cors:
       - "https://ctf.example.com"
     jwt:
-      secret: "your-very-long-random-secret-here"
+      secret: "your-very-long-random-secret"
     proxies:
-      - "10.244.0.0/16"    # Ingress Controller Pod CIDR
+      - "10.244.0.0/16"
   k8s:
-    kubeovnRBAC: true
-    multusRBAC: true
     externalNetwork:
       enabled: true
       cidr: "192.168.0.0/24"
@@ -292,9 +209,7 @@ cbctf:
 
 ingress:
   enabled: true
-  className: "nginx"
-  annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  className: nginx
   hosts:
     - host: ctf.example.com
       paths:
@@ -306,17 +221,18 @@ ingress:
         - ctf.example.com
 
 persistence:
-  storageClass: "nfs-client"
+  storageClass: nfs-client
   size: 50Gi
-
-mysql:
-  auth:
-    rootPassword: "strong-root-password"
-    password: "strong-cbctf-password"
-  persistence:
-    size: 20Gi
-
-redis:
-  auth:
-    password: "strong-redis-password"
 ```
+
+## Chart 生成的资源
+
+默认会创建：
+
+- Deployment / Service / Ingress
+- ServiceAccount / ClusterRole / ClusterRoleBinding
+- 共享 PVC
+- 可选的 MySQL 与 Redis StatefulSet
+- 可选的外部网络 Subnet 与 NAD
+
+Chart 已内置 Kube-OVN 与 Multus 所需 ClusterRole 规则，无需额外启用开关。

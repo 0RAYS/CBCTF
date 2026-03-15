@@ -4,9 +4,9 @@ sidebar_position: 5
 
 # 配置说明
 
-CBCTF 的核心配置文件为程序根目录下的 `config.yaml`，使用 YAML 格式。
+CBCTF 使用根目录 `config.yaml` 作为主配置文件；若文件不存在，程序首次启动时会自动生成默认配置并退出。
 
-## 完整默认配置
+## 默认配置
 
 ```yaml
 host: http://127.0.0.1:8000
@@ -39,7 +39,6 @@ gin:
       - /platform/*filepath
   jwt:
     secret: 0rays-jbnrz
-    static: false
   metrics:
     whitelist:
       - 127.0.0.1
@@ -76,11 +75,6 @@ k8s:
             to: 30000
             exclude:
               - 20000
-          - from: 40000
-            to: 60000
-            exclude:
-              - 50000
-  generator_worker: 2
 cheat:
   ip:
     whitelist:
@@ -98,273 +92,111 @@ registration:
 geocity_db: ./data/GeoLite2-City.mmdb
 ```
 
----
-
 ## 环境变量覆盖
 
-所有配置项均可通过以 `CBCTF_` 为前缀的环境变量覆盖，使用 `_` 作为层级分隔符：
+所有配置项都可通过 `CBCTF_` 前缀环境变量覆盖，例如：
 
 ```bash
-CBCTF_GIN_PORT=9000              # 覆盖 gin.port
-CBCTF_GORM_MYSQL_PWD=newpassword # 覆盖 gorm.mysql.pwd
-CBCTF_LOG_LEVEL=DEBUG            # 覆盖 log.level
+CBCTF_GIN_PORT=9000
+CBCTF_GORM_MYSQL_PWD=newpassword
+CBCTF_LOG_LEVEL=DEBUG
 ```
 
-环境变量优先级高于 `config.yaml`。
+`.` 会被 `_` 替换，因此 `gorm.mysql.pwd` 对应 `CBCTF_GORM_MYSQL_PWD`。
 
----
-
-## 字段说明
+## 关键字段
 
 ### `host`
 
-- **类型**：string
-- **默认值**：`http://127.0.0.1:8000`
-- **说明**：平台对外公开访问 URL，用于 OAuth 回调地址、邮件中的链接、前端跨域校验等。**不含末尾斜线。**
+平台对外访问地址，用于 OAuth 回调、邮件链接和静态资源跳转，不要带尾部 `/`。
 
 ### `path`
 
-- **类型**：string
-- **默认值**：`./data`
-- **说明**：程序数据存储根目录，需具备完整读写权限。存储内容包括上传的附件、GeoIP 数据库等。
+数据根目录。题目附件、动态附件、流量文件和 GeoIP 数据库都依赖这里的读写权限。
 
-### `log.level`
+### `log.level` / `log.save`
 
-- **类型**：string
-- **默认值**：`info`
-- **说明**：日志输出等级，支持 `DEBUG` `INFO` `WARNING` `ERROR`。
+- `level` 支持 `DEBUG`、`INFO`、`WARNING`、`ERROR`
+- `save: true` 时日志写入 `./logs/%Y%m%d.log`
 
-### `log.save`
+### `asynq.*`
 
-- **类型**：bool
-- **默认值**：`true`
-- **说明**：是否将日志持久化到 `./logs/` 目录，支持文件轮转。
+异步任务队列配置，负责邮件、Webhook、动态附件生成等后台任务。
 
-### `asynq.concurrency`
+### `gin.*`
 
-- **类型**：int
-- **默认值**：`50`
-- **说明**：Asynq 异步任务队列最大并发 worker 数。过低会导致任务积压，过高会占用过多资源。
+- `gin.host` / `gin.port`：HTTP 监听地址
+- `gin.proxies`：可信代理 IP 或 CIDR
+- `gin.upload.max`：上传大小限制，单位 MiB
+- `gin.ratelimit.*`：全局限流与白名单
+- `gin.cors`：允许跨域的前端地址
+- `gin.log.whitelist`：不记录访问日志的路由
+- `gin.jwt.secret`：JWT 签名密钥，必须替换默认值
+- `gin.metrics.whitelist`：允许访问 `/metrics` 的 IP 白名单
 
-### `asynq.log.level`
+当前代码中 **不存在** `gin.jwt.static` 配置项。
 
-- **类型**：string
-- **默认值**：`warning`
-- **说明**：Asynq 内部日志等级，支持 `DEBUG` `INFO` `WARNING` `ERROR`。
+### `gorm.mysql.*`
 
-### `gin.mode`
+MySQL 连接信息与连接池参数：
 
-- **类型**：string
-- **默认值**：`release`
-- **说明**：Gin 框架运行模式。`release` 为生产模式，`debug` 输出详细路由日志。
+- `host`、`port`、`user`、`pwd`、`db`
+- `mxopen`：最大连接数
+- `mxidle`：最大空闲连接数
 
-### `gin.host`
+### `redis.*`
 
-- **类型**：string
-- **默认值**：`127.0.0.1`
-- **说明**：HTTP 服务监听地址。有反向代理时可仅监听 `127.0.0.1`；直接对外暴露时设为 `0.0.0.0`。
+Redis 既用作缓存，也用作 Asynq 的任务队列后端。
 
-### `gin.port`
+### `k8s.*`
 
-- **类型**：int
-- **默认值**：`8000`
-- **说明**：HTTP 服务监听端口。
+- `k8s.config`：kubeconfig 路径；容器内 Helm 部署时会写成 `/admin/admin.yaml`
+- `k8s.namespace`：题目相关资源所在命名空间
+- `k8s.tcpdump`：流量捕获 sidecar 镜像
+- `k8s.frp.on`：是否启用 FRP 暴露题目端口
+- `k8s.frp.frpc` / `k8s.frp.nginx`：FRP 相关镜像
+- `k8s.frp.frps`：FRPS 服务端配置列表
 
-### `gin.upload.max`
-
-- **类型**：int
-- **默认值**：`8`
-- **说明**：单次文件上传大小限制，单位 MiB。
-
-### `gin.proxies`
-
-- **类型**：[]string
-- **默认值**：`["127.0.0.1"]`
-- **说明**：可信反向代理服务器 IP 列表，支持 CIDR 格式。配置后平台才能从 `X-Forwarded-For` 正确获取真实客户端 IP（影响作弊检测、速率限制、IP 日志等）。
-
-### `gin.cors`
-
-- **类型**：[]string
-- **默认值**：`["http://127.0.0.1:8000"]`
-- **说明**：允许跨域访问的前端地址列表。前后端同域部署时填平台地址，分离部署时填前端域名。
-
-### `gin.ratelimit.global`
-
-- **类型**：int
-- **默认值**：`100`
-- **说明**：全局请求速率限制（每秒请求数），超出返回 `429 Too Many Requests`。部分敏感接口有独立更严格的限制。
-
-### `gin.ratelimit.whitelist`
-
-- **类型**：[]string
-- **默认值**：`["::1", "127.0.0.1"]`
-- **说明**：不受速率限制约束的 IP 列表，支持 CIDR 格式。
-
-### `gin.log.whitelist`
-
-- **类型**：[]string
-- **默认值**：`["/metrics", "/platform/*filepath"]`
-- **说明**：不记录访问日志的请求路径列表。支持 Gin 风格的路由通配符（`*filepath`）。
-
-### `gin.jwt.secret`
-
-- **类型**：string
-- **默认值**：`0rays-jbnrz`（示例，**必须修改**）
-- **说明**：JWT 签名密钥。泄露将导致认证绕过。建议使用 32 位以上随机字符串。`static: false` 时，平台会通过定时任务定期轮转密钥。
-
-### `gin.jwt.static`
-
-- **类型**：bool
-- **默认值**：`false`
-- **说明**：设为 `true` 时禁止动态轮转 JWT 密钥（`secret` 值永久有效）。不推荐在生产环境使用。
-
-### `gin.metrics.whitelist`
-
-- **类型**：[]string
-- **默认值**：`["127.0.0.1", "::1"]`
-- **说明**：允许访问 `/metrics`（Prometheus 指标）端点的 IP 列表，支持 CIDR。未在白名单内的请求返回 `403`。
-
-### `gorm.mysql.host`
-
-- **类型**：string
-- **默认值**：`127.0.0.1`
-
-### `gorm.mysql.port`
-
-- **类型**：int
-- **默认值**：`3306`
-
-### `gorm.mysql.user`
-
-- **类型**：string
-- **默认值**：`cbctf`
-
-### `gorm.mysql.pwd`
-
-- **类型**：string
-- **默认值**：`password`（**必须修改**）
-
-### `gorm.mysql.db`
-
-- **类型**：string
-- **默认值**：`cbctf`
-
-### `gorm.mysql.mxopen`
-
-- **类型**：int
-- **默认值**：`100`
-- **说明**：数据库连接池最大连接数。
-
-### `gorm.mysql.mxidle`
-
-- **类型**：int
-- **默认值**：`10`
-- **说明**：数据库连接池最大空闲连接数。
-
-### `gorm.log.level`
-
-- **类型**：string
-- **默认值**：`silent`
-- **说明**：GORM SQL 日志等级，支持 `INFO` `WARNING` `ERROR` `SILENT`。
-
-### `redis.host`
-
-- **类型**：string
-- **默认值**：`127.0.0.1`
-
-### `redis.port`
-
-- **类型**：int
-- **默认值**：`6379`
-
-### `redis.pwd`
-
-- **类型**：string
-- **默认值**：`password`
-- **说明**：Redis 密码。无密码时留空。
-
-### `k8s.config`
-
-- **类型**：string
-- **默认值**：`./admin.yaml`
-- **说明**：Kubernetes kubeconfig 文件路径，用于访问 K8s API。
-
-### `k8s.namespace`
-
-- **类型**：string
-- **默认值**：`cbctf`
-- **说明**：动态题目容器部署的 Kubernetes 命名空间，同时作为相关 K8s 资源名称前缀。
-
-### `k8s.tcpdump`
-
-- **类型**：string
-- **默认值**：`nicolaka/netshoot:latest`
-- **说明**：流量捕获功能使用的 sidecar 容器镜像。
-
-### `k8s.frp.on`
-
-- **类型**：bool
-- **默认值**：`false`
-- **说明**：是否启用 FRP 端口转发功能，用于将题目容器端口暴露给选手。
-
-### `k8s.frp.frpc`
-
-- **类型**：string
-- **默认值**：`snowdreamtech/frpc:latest`
-- **说明**：frpc 客户端容器镜像。
-
-### `k8s.frp.nginx`
-
-- **类型**：string
-- **默认值**：`nginx:latest`
-- **说明**：Nginx 反向代理容器镜像，用于 HTTP 类题目的端口转发。
-
-### `k8s.frp.frps`
-
-- **类型**：[]object
-- **默认值**：`[]`
-- **说明**：frps 服务器列表，多个时随机选择。每个条目包含 `host`、`port`、`token` 和 `allowed`（端口范围列表）。
-
-### `k8s.generator_worker`
-
-- **类型**：int
-- **默认值**：`2`
-- **说明**：每个动态附件题目的生成器 Pod 数量倍率，实际 Pod 数 = `节点数 × generator_worker`。
+当前代码中 **不存在** `k8s.generator_worker` 配置项。
 
 ### `cheat.ip.whitelist`
 
-- **类型**：[]string
-- **默认值**：私有地址段
-- **说明**：不参与作弊检测（IP 共享检测）的 IP 列表，支持 CIDR。默认包含所有 RFC 1918 私有地址段，防止内网 IP 误报。
+IP 白名单；命中的地址不会参与 IP 相关作弊检测。
 
 ### `webhook.whitelist`
 
-- **类型**：[]string
-- **默认值**：`[]`
-- **说明**：允许的 Webhook 目标 URL 前缀列表。空列表时不限制目标地址；配置后仅允许向匹配前缀的 URL 发送请求。
+Webhook 允许访问的目标白名单，支持 IP、CIDR、主机名和 `host:port`。
 
-### `registration.enabled`
+### `registration.*`
 
-- **类型**：bool
-- **默认值**：`true`
-- **说明**：是否开放公开注册。设为 `false` 后禁止新用户自助注册，管理员仍可手动创建用户。
-
-### `registration.default_group`
-
-- **类型**：int
-- **默认值**：`0`
-- **说明**：新注册用户自动加入的分组 ID，`0` 表示不分配分组。
+- `registration.enabled`：是否允许公开注册
+- `registration.default_group`：注册后自动加入的分组 ID
 
 ### `geocity_db`
 
-- **类型**：string
-- **默认值**：`./data/GeoLite2-City.mmdb`
-- **说明**：MaxMind GeoLite2-City 数据库文件路径，用于 IP 地理位置解析（事件日志、用户 IP 信息显示）。文件需从 [MaxMind](https://dev.maxmind.com/geoip/geolite2-free-geolocation-data) 自行下载。缺少此文件时其他功能不受影响。
+GeoLite2-City 数据库路径。配置后，可在后台查看 IP 的地理位置。
 
----
+## 启动时的 K8s 资源检查
 
-:::warning 安全建议
-- **`gin.jwt.secret`**：必须修改为随机字符串，泄露将导致认证绕过
-- **`gin.metrics.whitelist`**：限制为 Prometheus 服务 IP，不要对公网开放 `/metrics`
-- **`gorm.mysql.pwd` / `redis.pwd`**：使用强密码，避免使用默认值
-:::
+程序启动后会检查以下 K8s 资源：
+
+- 命名空间 `{namespace}`
+- PVC `{namespace}-shared-volume`
+- Subnet `{namespace}-external-network`
+- `kube-system/{namespace}-external-network` 对应的 NAD
+
+含义如下：
+
+- 命名空间缺失：启动失败
+- PVC 缺失：动态附件不可用
+- 外部网络资源缺失：VPC 网络模式不可用
+
+## 在线配置更新
+
+管理后台的系统配置页对应以下接口：
+
+- `GET /admin/system/config`
+- `PUT /admin/system/config`
+- `POST /admin/system/restart`
+
+`POST /admin/system/restart` 会向当前进程发送 `SIGUSR1`，触发热重启。

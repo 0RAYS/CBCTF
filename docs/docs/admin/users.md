@@ -21,7 +21,7 @@ sidebar_position: 3
 ## 查找用户
 
 - **列表**：`GET /admin/users`，支持分页和筛选
-- **全局搜索**：`/admin/search`（`admin:models:search`），跨所有模型搜索
+- **全局搜索**：`GET /admin/models` + `GET /admin/search`（`admin:models:search`）
 
 ## 用户分组（Groups）
 

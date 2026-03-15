@@ -4,15 +4,15 @@ sidebar_position: 6
 
 # 前后端分离
 
-CBCTF 默认将前端静态资源嵌入 Go 二进制，通过同一端口提供服务。如需将前端托管至 CDN、GitHub Pages 或其他静态托管服务，可采用前后端分离部署方式。
+CBCTF 默认将前端静态资源嵌入 Go 二进制，通过同一个服务地址提供 `/platform`。如果需要把前端单独托管到 CDN、静态站点或其他域名，可以采用前后端分离方式。
 
-## 使用场景
+## 适用场景
 
-- 需要通过 CDN 加速前端资源
-- 前端部署在 GitHub Pages 等静态托管服务
-- 前后端使用不同域名
+- 需要 CDN 加速前端资源
+- 前端需部署到独立域名
+- 希望前后端分别发布
 
-## 编译前端
+## 前端构建
 
 ```bash
 git clone https://github.com/0RAYS/CBCTF.git
@@ -20,13 +20,11 @@ cd CBCTF/frontend
 pnpm install
 ```
 
-编辑 `src/api/config.js`，将 `BASE_URL` 修改为后端 API 地址（**不含末尾 `/`**）：
+修改 `frontend/src/api/config.js`：
 
 ```javascript
 export const API_CONFIG = {
-  BASE_URL: 'https://api.ctf.example.com',   // 修改为后端地址
-  TIMEOUT: 10000,
-  // ...
+  BASE_URL: 'https://api.ctf.example.com',
 };
 ```
 
@@ -36,29 +34,37 @@ export const API_CONFIG = {
 pnpm build
 ```
 
-构建产物位于 `dist/` 目录，将其部署至任意静态托管服务。
+构建完成后，将 `frontend/dist/` 部署到任意静态托管环境。
 
 ## 后端配置
 
-编辑 `config.yaml`：
+`config.yaml` 示例：
 
 ```yaml
-host: https://api.ctf.example.com    # 后端 API 地址
+host: https://api.ctf.example.com
 
 gin:
   cors:
-    - https://ctf.example.com        # 前端部署地址（允许跨域）
+    - https://ctf.example.com
 ```
 
-:::info
-分离部署时：
-- `host` 填写**后端** API 服务域名，用于 OAuth 回调等
-- `gin.cors` 填写**前端**部署域名，允许跨域请求
-:::
+说明：
 
-## 使用 Helm 时的分离部署
+- `host` 必须填写后端真实对外地址，OAuth 回调与邮件链接都会使用它
+- `gin.cors` 需要包含前端独立域名
 
-在 `values.yaml` 中配置：
+## OAuth 注意事项
+
+前后端分离时，OAuth 回调链路为：
+
+1. 第三方回调到后端 `https://api.ctf.example.com/oauth/{uri}/callback`
+2. 后端完成登录后重定向到 `https://api.ctf.example.com/platform/#/oauth/callback?...`
+
+也就是说，当前代码默认仍依赖后端提供 `/platform` 下的前端回调页。若完全拆离前端托管位置，需要同步调整 OAuth 回调后的前端跳转逻辑。
+
+## Helm 场景
+
+若后端仍通过 Helm 部署，只需在 `values.yaml` 中设置：
 
 ```yaml
 cbctf:

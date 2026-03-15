@@ -8,73 +8,90 @@ sidebar_position: 4
 
 | 类型 | 适用题型 | 说明 |
 |------|---------|------|
-| 静态附件 | 问答题、静态题、容器题 | 上传 zip，所有队伍共享下载 |
-| 动态附件 | 动态附件题 | 每队独立生成，需 Kubernetes |
+| 静态附件 | 问答题、静态题、容器题 | 上传一次，所有队伍共享 |
+| 动态附件 | 动态附件题 | 每队单独生成，依赖 Kubernetes |
 
-## 动态附件工作原理
+## 真实工作流程
 
-平台在 Kubernetes 集群中为每道动态附件题运行一组生成器 Pod（数量 = `节点数 × k8s.generator_worker`），每个生成器 Pod 处理不同队伍的附件生成请求。
+动态附件不会根据配置自动常驻启动生成器池。当前实现是：
 
-### 生成流程
+1. 管理员先在后台启动生成器 Pod
+2. 队伍初始化或重置题目时，平台从可用生成器中随机选择一个
+3. 平台在容器内执行 `./run.sh {team_id} {flags}`
+4. 等待输出文件写入共享卷
+5. 将 `{team_id}.zip` 提供给队伍下载
 
-1. **生成 flag 和 team_id**：平台为该队伍生成 flag，准备 team_id
+如果没有预热生成器，动态附件题会因“无可用生成器”而无法初始化。
 
-2. **启动生成器容器**：以 `sleep infinity` 替代镜像的默认 entrypoint，保持容器存活等待指令
+## 生成器要求
 
-3. **上传 generator.zip（可选）**：若出题人在平台上传了 `generator.zip`，平台将其上传至容器的 `/root` 目录并解压。适用于依赖环境相同但脚本不同的场景，避免每次改脚本都要重新构建镜像
+### 容器启动方式
 
-4. **执行生成脚本**：平台在容器内执行：
-   ```bash
-   /root/run.sh {team_id} {base64(base64(flag1),base64(flag2),...)}
-   ```
-   脚本必须由出题人编写，包含生成附件的完整逻辑
+平台会以 `sleep infinity` 覆盖镜像入口，保持生成器容器常驻。因此镜像内必须存在 `sleep` 命令。
 
-5. **周期性重启容器**：定期重启生成器容器，清理状态
+### 可选上传 `generator.zip`
 
-### `/root/run.sh` 接口约定
+若题目上传了 `generator.zip`，平台会在容器内执行：
 
-| 参数 | 说明 |
-|------|------|
-| `$1` | `team_id`，整型，队伍唯一标识符 |
-| `$2` | `base64(base64(flag1) + "," + base64(flag2) + ...)` |
+```bash
+unzip /root/mnt/generator.zip -d /root
+```
 
-**输出路径（硬性要求）**：`/root/mnt/attachments/{team_id}.zip`
+因此镜像还必须包含 `unzip`。
 
-平台只读取此路径的文件并提供给选手下载，其他路径的文件会被忽略。
+### 执行入口
 
-### 示例脚本
+平台执行命令：
+
+```bash
+./run.sh {team_id} {base64(base64(flag1),base64(flag2),...)}
+```
+
+参数说明：
+
+- `$1`：队伍 ID
+- `$2`：多 Flag 的二次 Base64 编码结果
+
+### 输出路径
+
+生成结果必须写入：
+
+```text
+/root/mnt/attachments/{team_id}.zip
+```
+
+平台只会读取这个固定路径。
+
+## 示例脚本
 
 ```bash
 #!/bin/bash
 TEAM_ID=$1
 FLAGS_B64=$2
 
-# 解码 flags（逗号分隔的 base64 列表）
 FLAGS=$(echo "$FLAGS_B64" | base64 -d | tr ',' '\n' | while read f; do echo "$f" | base64 -d; done)
 FLAG1=$(echo "$FLAGS" | head -1)
 
-# 生成附件
 mkdir -p /tmp/challenge
 echo "$FLAG1" > /tmp/challenge/flag.txt
-# ... 其他题目文件生成逻辑 ...
 
-# 打包输出（路径固定）
 mkdir -p /root/mnt/attachments
 zip -j /root/mnt/attachments/${TEAM_ID}.zip /tmp/challenge/*
 ```
 
 ## 注意事项
 
-1. **容器须包含 `sleep` 和 `unzip` 命令**（平台内部使用）
+1. 镜像必须包含 `sleep` 与 `unzip`。
+2. 脚本入口固定为 `/root/run.sh` 或当前工作目录下的 `./run.sh`。
+3. 输出文件必须是 `/root/mnt/attachments/{team_id}.zip`。
+4. 动态 Flag 的实际结果可能与模板字符表现不同，题目逻辑不要依赖固定字符形态。
+5. 共享存储不可用时，动态附件无法生成。
 
-2. **输出路径固定**：`/root/mnt/attachments/{team_id}.zip`，不可更改
+## 管理入口
 
-3. **脚本入口固定**：`/root/run.sh`，不可更改
+生成器支持两种预热方式：
 
-4. **动态 flag 长度可变**：动态 flag 生成结果长度可能与模板不同，题目设计中不要依赖固定 flag 长度
+- 全局生成器：`/admin/generators`
+- 某场比赛专用生成器：`/admin/contests/{contestID}/generators`
 
-5. **镜像 platform**：建议在 Dockerfile 中指定 `--platform linux/amd64`，避免架构不匹配问题
-
-## 示例题目
-
-参考官方示例：[dynamic-attachment](https://github.com/0RAYS/CBCTF/tree/main/example/dynamic)
+建议在比赛开始前预热动态附件题所需的生成器实例。
