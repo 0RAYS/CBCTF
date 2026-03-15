@@ -28,7 +28,7 @@ const config = {
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
   organizationName: '0RAYS', // Usually your GitHub org/user name.
-  projectName: 'CBCTF-docs', // Usually your repo name.
+  projectName: 'CBCTF', // Usually your repo name.
 
   onBrokenLinks: 'throw',
   markdown: {
@@ -55,7 +55,7 @@ const config = {
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
-            'https://github.com/0RAYS/CBCTF-docs/tree/master/',
+            'https://github.com/0RAYS/CBCTF/tree/main/docs/',
         },
         blog: false,
         theme: {
@@ -98,7 +98,7 @@ const config = {
             items: [
               {
                 label: 'Guide',
-                to: '/docs/start/introduction',
+                to: 'docs/start/introduction',
               },
             ],
           },
