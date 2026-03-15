@@ -29,15 +29,17 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
+          cache-dependency-path: docs/pnpm-lock.yaml
       - name: Install dependencies
+        working-directory: docs
         run: pnpm install --frozen-lockfile
       - name: Build
+        working-directory: docs
         run: pnpm build
       - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: build
+          publish_dir: docs/build
           destination_dir: docs
           keep_files: true
