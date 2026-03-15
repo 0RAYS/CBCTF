@@ -1,11 +1,11 @@
 package i18n
 
 var Redis = struct {
-	// Error
+	// Key Error
 	SetError string
-	// Error
+	// Key Error
 	GetError string
-	// Error
+	// Key Error
 	DeleteError string
 }{
 	SetError:    "redis.setError",
