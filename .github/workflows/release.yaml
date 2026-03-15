@@ -3,6 +3,14 @@ name: Build Release
 on:
   push:
     branches: [main]
+    paths:
+      - 'cmd/**'
+      - 'frontend/**'
+      - 'internal/**'
+      - '*.go'
+      - 'go.mod'
+      - 'go.sum'
+      - 'Dockerfile'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
