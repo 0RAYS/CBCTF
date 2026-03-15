@@ -2,13 +2,19 @@ package middleware
 
 import (
 	"CBCTF/internal/config"
-	"CBCTF/internal/db"
+	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"database/sql"
 	"slices"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
+)
+
+var (
+	RequestsPool  = make([]model.Request, 0)
+	RequestsMutex sync.RWMutex
 )
 
 // AccessLog 记录访问日志
@@ -34,7 +40,7 @@ func AccessLog(ctx *gin.Context) {
 		if len(referer) > 255 {
 			referer = referer[:255]
 		}
-		request := db.CreateRequestOptions{
+		request := model.Request{
 			IP:        ip,
 			Time:      accessTime,
 			Method:    method,
@@ -48,6 +54,8 @@ func AccessLog(ctx *gin.Context) {
 		if selfID > 0 {
 			request.UserID = sql.Null[uint]{V: selfID, Valid: true}
 		}
-		db.InitRequestRepo(db.DB).Create(request)
+		RequestsMutex.Lock()
+		RequestsPool = append(RequestsPool, request)
+		RequestsMutex.Unlock()
 	}
 }

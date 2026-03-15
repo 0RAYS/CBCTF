@@ -50,6 +50,14 @@ func InitRequestRepo(tx *gorm.DB) *RequestRepo {
 	}
 }
 
+func (r *RequestRepo) Insert(requests ...model.Request) model.RetVal {
+	if res := r.DB.CreateInBatches(requests, len(requests)); res.Error != nil {
+		log.Logger.Warningf("Failed to create requests: %s", res.Error)
+		return model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.Request{}.ModelName(), "Error": res.Error}}
+	}
+	return model.SuccessRetVal()
+}
+
 func (r *RequestRepo) CountIP() (int64, model.RetVal) {
 	var count int64
 	res := r.DB.Model(&model.Request{}).Distinct("ip").Count(&count)
