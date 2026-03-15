@@ -1949,7 +1949,6 @@
         "ginRateWhitelist": "IP 速率限制白名单",
         "ginCORS": "CORS",
         "ginJWTSecret": "JWT Secret",
-        "ginJWTStatic": "是否使用静态值",
         "dbHost": "数据库地址",
         "dbPort": "数据库端口",
         "dbName": "数据库名称",

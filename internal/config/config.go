@@ -56,7 +56,6 @@ type Config struct {
 		} `mapstructure:"log" json:"log"`
 		JWT struct {
 			Secret string `mapstructure:"secret" json:"secret"`
-			Static bool   `mapstructure:"static" json:"static"`
 		} `mapstructure:"jwt" json:"jwt"`
 		Metrics struct {
 			Whitelist []string `mapstructure:"whitelist" json:"whitelist"` // Metrics 访问 IP 白名单

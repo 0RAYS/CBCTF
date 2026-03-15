@@ -53,7 +53,6 @@ export function normalizeConfig(source) {
       cors: fallback(source?.gin_cors, fallback(source?.gin?.cors, [])),
       jwt: {
         secret: fallback(source?.gin_jwt_secret, fallback(source?.gin?.jwt?.secret, '')),
-        static: fallback(source?.gin_jwt_static, fallback(source?.gin?.jwt?.static, false)),
       },
       metrics: {
         whitelist: fallback(source?.gin_metrics_whitelist, fallback(source?.gin?.metrics?.whitelist, [])),
