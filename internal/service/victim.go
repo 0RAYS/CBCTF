@@ -1,14 +1,13 @@
 package service
 
 import (
-	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
-	"CBCTF/internal/k8s"
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/task"
 	"CBCTF/internal/utils"
-	"context"
 	"crypto/rand"
 	"database/sql"
 	"fmt"
@@ -285,60 +284,11 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 	if ret = victimRepo.Update(victim.ID, db.UpdateVictimOptions{Status: new(model.PendingVictimStatus)}); !ret.OK {
 		return ret
 	}
-	go func() {
-		ret = func() model.RetVal {
-			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-			defer cancel()
-			ipExposesMap, ret := k8s.StartVictim(ctx, victim)
-			if !ret.OK {
-				return ret
-			}
-			for ip, exposes := range ipExposesMap {
-				for _, expose := range exposes {
-					victim.Endpoints = append(victim.Endpoints, model.Endpoint{
-						IP:       ip,
-						Port:     expose.Port,
-						Protocol: expose.Protocol,
-					})
-				}
-			}
-			victim.ExposedEndpoints = victim.Endpoints
-			if config.Env.K8S.Frp.On {
-				var frpc []string
-				victim.ExposedEndpoints, frpc, ret = k8s.CreateFrpc(ctx, victim)
-				if !ret.OK {
-					return ret
-				}
-				for _, frpcPodName := range frpc {
-					p, ret := podRepo.Create(db.CreatePodOptions{
-						VictimID: victim.ID,
-						Name:     frpcPodName,
-					})
-					if !ret.OK {
-						return ret
-					}
-					victim.Pods = append(victim.Pods, p)
-				}
-			}
-			if ret = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
-				VPC:              &victim.VPC,
-				Endpoints:        &victim.Endpoints,
-				ExposedEndpoints: &victim.ExposedEndpoints,
-				Start:            new(time.Now()),
-				Status:           new(model.RunningVictimStatus),
-			}); !ret.OK {
-				return ret
-			}
-			return model.SuccessRetVal()
-		}()
-		if !ret.OK {
-			victim, ret = db.InitVictimRepo(db.DB).HasAliveVictim(teamID, challenge.ID)
-			if !ret.OK {
-				return
-			}
-			StopVictim(db.DB, victim)
-		}
-	}()
+	_, err := task.EnqueueStartVictimTask(victim)
+	if err != nil {
+		log.Logger.Warningf("Failed to enqueue start victim task: %v", err)
+		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+	}
 	return model.SuccessRetVal()
 }
 
@@ -365,27 +315,13 @@ func GetVictimStatus(tx *gorm.DB, teamID uint, challenge model.Challenge) gin.H 
 
 // StopVictim tx 无需开启事务
 func StopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	defer cancel()
-	ret := k8s.StopVictim(ctx, victim)
-	if !ret.OK {
-		return ret
+	LoadTraffic(tx, victim)
+	_, err := task.EnqueueStopVictimTask(victim)
+	if err != nil {
+		log.Logger.Warningf("Failed to enqueue stop victim task: %v", err)
+		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
-	tx2 := tx.Begin()
-	if ret = db.InitVictimRepo(tx2).Update(victim.ID, db.UpdateVictimOptions{
-		Duration: new(time.Now().Sub(victim.Start)),
-	}); !ret.OK {
-		tx2.Rollback()
-		return ret
-	}
-	LoadTraffic(tx2, victim)
-	ret = db.InitVictimRepo(tx2).Delete(victim.ID)
-	if !ret.OK {
-		tx2.Rollback()
-		return ret
-	}
-	tx2.Commit()
-	return ret
+	return model.SuccessRetVal()
 }
 
 func CountTeamVictims(tx *gorm.DB, team model.Team) (int64, model.RetVal) {
