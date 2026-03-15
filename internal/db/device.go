@@ -14,7 +14,7 @@ type DeviceRepo struct {
 type CreateDeviceOptions struct {
 	UserID uint
 	Magic  string
-	Count  int
+	Count  int64
 }
 
 func (c CreateDeviceOptions) Convert2Model() model.Model {
@@ -45,11 +45,15 @@ func InitDeviceRepo(tx *gorm.DB) *DeviceRepo {
 	}
 }
 
-func (d *DeviceRepo) RecordDevice(options CreateDeviceOptions) model.RetVal {
+func (d *DeviceRepo) RecordDevice(options CreateDeviceOptions, count int64) model.RetVal {
+	if count == 0 {
+		return model.SuccessRetVal()
+	}
+
 	device := options.Convert2Model().(model.Device)
 	res := d.DB.Model(&model.Device{}).FirstOrCreate(&device, device)
 	if res.Error != nil {
 		return model.RetVal{Msg: i18n.Model.Device.CreateError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
-	return d.DiffUpdate(device.ID, DiffUpdateDeviceOptions{Count: 1})
+	return d.DiffUpdate(device.ID, DiffUpdateDeviceOptions{Count: count})
 }

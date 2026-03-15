@@ -69,7 +69,7 @@ func CheckAuth(ctx *gin.Context) {
 			return
 		}
 	}
-	go db.InitDeviceRepo(db.DB).RecordDevice(db.CreateDeviceOptions{UserID: user.ID, Magic: magic})
+	RecordRequestDevice(user.ID, magic, 1)
 	if user.Banned {
 		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Forbidden})
 		return

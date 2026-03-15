@@ -67,6 +67,7 @@ func Start() {
 
 	c.Schedule(cron.Every(time.Second), cron.FuncJob(collectSystemMetricsTask))
 	c.Schedule(cron.Every(time.Second), cron.FuncJob(saveRequestLogTask))
+	c.Schedule(cron.Every(time.Second), cron.FuncJob(saveRequestDeviceTask))
 
 	if ret := reloadAll(); !ret.OK {
 		log.Logger.Warningf("Failed to load cron jobs: %s %v", ret.Msg, ret.Attr)
