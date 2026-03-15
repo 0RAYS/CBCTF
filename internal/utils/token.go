@@ -17,7 +17,7 @@ type Claims struct {
 
 // GenerateToken 生成token
 func GenerateToken(id uint, name string, magic string) (tokenString string, err error) {
-	if !config.Env.Gin.JWT.Static || config.Env.Gin.JWT.Secret == "" {
+	if config.Env.Gin.JWT.Secret == "" {
 		config.Env.Gin.JWT.Secret = UUID()
 	}
 	claim := Claims{

@@ -154,20 +154,6 @@ export function GinConfigSection({ config, updateConfig }) {
           })
         }
       />
-      <ConfigField
-        label={t('admin.system.labels.ginJWTStatic')}
-        type="boolean"
-        value={config.gin.jwt.static}
-        options={[
-          { value: 'true', label: t('common.yes') },
-          { value: 'false', label: t('common.no') },
-        ]}
-        onChange={(value) =>
-          updateConfig((draft) => {
-            draft.gin.jwt.static = value;
-          })
-        }
-      />
       <ConfigListField
         label={t('admin.system.labels.metricsWhitelist')}
         items={config.gin.metrics.whitelist || []}

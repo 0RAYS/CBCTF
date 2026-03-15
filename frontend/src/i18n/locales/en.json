@@ -1949,7 +1949,6 @@
         "ginRateWhitelist": " IP Rate Limit Whitelist",
         "ginCORS": "CORS",
         "ginJWTSecret": "JWT Secret",
-        "ginJWTStatic": "Use Static Value",
         "dbHost": "DB Host",
         "dbPort": "DB Port",
         "dbName": "DB Name",

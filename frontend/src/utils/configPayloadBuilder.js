@@ -13,7 +13,6 @@ export function buildPayload(config) {
     gin_cors: config.gin.cors,
     gin_host: config.gin.host,
     gin_jwt_secret: config.gin.jwt.secret || undefined,
-    gin_jwt_static: config.gin.jwt.static,
     gin_log_whitelist: config.gin.log.whitelist,
     gin_mode: config.gin.mode,
     gin_port: config.gin.port,
