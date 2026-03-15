@@ -1,0 +1,223 @@
+# Default values for cbctf.
+# Override these values with your own configuration.
+
+# ── CBCTF Application ─────────────────────────────────────────────────────────
+
+image:
+  repository: ghcr.io/0rays/cbctf
+  pullPolicy: Always
+  tag: "latest"
+
+# Timezone for all containers (e.g. "Asia/Shanghai", "UTC"). Leave empty for container default.
+timezone: "Asia/Shanghai"
+
+imagePullSecrets: []
+# Inline registry credentials — the chart creates a docker registry Secret automatically
+# and appends it to imagePullSecrets on all pods.
+imageCredentials:
+  registry: ""   # e.g. ghcr.io
+  username: ""
+  password: ""
+nameOverride: ""
+fullnameOverride: ""
+
+# Service Account for the CBCTF pod (requires ClusterRole to manage k8s resources)
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #     - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+resources: {}
+  # limits:
+  #   cpu: 2000m
+  #   memory: 1Gi
+  # requests:
+  #   cpu: 500m
+  #   memory: 256Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+# ── Networking ────────────────────────────────────────────────────────────────
+
+service:
+  type: ClusterIP
+  port: 8000
+
+ingress:
+  enabled: true
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: cbctf.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: cbctf-tls
+  #    hosts:
+  #      - cbctf.local
+
+# ── CBCTF App Config ──────────────────────────────────────────────────────────
+
+cbctf:
+  # Public URL of the platform (used in emails, links, etc.)
+  host: "http://cbctf.local"
+
+  log:
+    level: info   # DEBUG / INFO / WARNING / ERROR
+    save: false
+
+  gin:
+    mode: release   # debug / release / test
+    host: "0.0.0.0"
+    port: 8000
+    upload:
+      max: 8        # MB
+    # Trusted reverse proxy IPs (add your ingress controller pod CIDR)
+    proxies:
+      - "127.0.0.1"
+      - "::1"
+    cors:
+      - "http://cbctf.local"
+    ratelimit:
+      global: 100
+      whitelist:
+        - "::1"
+        - "127.0.0.1"
+    log:
+      whitelist:
+        - "/metrics"
+        - "/platform/*filepath"
+        - "/admin/system/status"
+    jwt:
+      # Leave empty to auto-generate a random secret on first install.
+      secret: ""
+      static: false
+    metrics:
+      # IPs allowed to hit /metrics — include Prometheus pod CIDR or exact IPs
+      whitelist:
+        - "127.0.0.1"
+        - "::1"
+        - "10.0.0.0/8"
+        - "172.16.0.0/12"
+        - "192.168.0.0/16"
+
+  asynq:
+    concurrency: 50
+    log:
+      level: info
+
+  gorm:
+    log:
+      level: warning   # INFO / WARNING / ERROR / SILENT
+
+  k8s:
+    tcpdump: "nicolaka/netshoot:latest"
+    frp:
+      on: false
+      frpc: "snowdreamtech/frpc:latest"
+      nginx: "nginx:latest"
+      frps: []
+    externalNetwork:
+      enabled: true
+      cidr: "192.168.0.0/24"           # e.g. "192.168.100.0/24"
+      gateway: "192.168.0.1"        # e.g. "192.168.100.1"
+      interface: "ens192"      # host NIC name, e.g. "eth1"
+
+  cheat:
+    ip:
+      whitelist:
+        - "127.0.0.1"
+        - "::1"
+        - "10.0.0.0/8"
+        - "192.168.0.0/16"
+        - "172.16.0.0/12"
+        - "100.64.0.0/10"
+
+  registration:
+    enabled: true
+    default_group: 0
+
+  webhook:
+    whitelist: []
+
+# ── Persistent Storage for CBCTF data (/app/data) ────────────────────────────
+
+persistence:
+  enabled: true
+  storageClass: ""     # Leave empty to use cluster default
+  accessMode: ReadWriteMany
+  size: 20Gi
+  # existingClaim: ""  # Use an existing PVC
+
+# ── MySQL ─────────────────────────────────────────────────────────────────────
+
+mysql:
+  enabled: true
+  image:
+    repository: mysql
+    tag: "8.0"
+    pullPolicy: IfNotPresent
+  auth:
+    rootPassword: ""  # auto-generated if empty
+    database: "cbctf"
+    username: "cbctf"
+    password: ""      # auto-generated if empty
+  persistence:
+    enabled: true
+    storageClass: ""
+    accessMode: ReadWriteOnce
+    size: 5Gi
+  resources: {}
+    # limits:
+    #   cpu: 2000m
+    #   memory: 2Gi
+    # requests:
+    #   cpu: 500m
+    #   memory: 512Mi
+  service:
+    port: 3306
+  # Extra MySQL configuration appended to /etc/mysql/conf.d/custom.cnf
+  extraConfig: |
+    [mysqld]
+    character-set-server = utf8mb4
+    collation-server = utf8mb4_unicode_ci
+    max_connections = 500
+    innodb_buffer_pool_size = 256M
+
+# ── Redis ─────────────────────────────────────────────────────────────────────
+
+redis:
+  enabled: true
+  image:
+    repository: redis
+    tag: "7-alpine"
+    pullPolicy: IfNotPresent
+  auth:
+    password: ""  # auto-generated if empty
+  persistence:
+    enabled: true
+    storageClass: ""
+    accessMode: ReadWriteOnce
+    size: 1Gi
+  resources: {}
+  service:
+    port: 6379

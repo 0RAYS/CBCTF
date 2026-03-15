@@ -1,0 +1,102 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "cbctf.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cbctf.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    host: {{ .Values.cbctf.host | quote }}
+    path: /app/data
+
+    log:
+      level: {{ .Values.cbctf.log.level | quote }}
+      save: {{ .Values.cbctf.log.save }}
+
+    asynq:
+      concurrency: {{ .Values.cbctf.asynq.concurrency }}
+      log:
+        level: {{ .Values.cbctf.asynq.log.level | quote }}
+
+    gin:
+      mode: {{ .Values.cbctf.gin.mode | quote }}
+      host: {{ .Values.cbctf.gin.host | quote }}
+      port: {{ .Values.cbctf.gin.port }}
+      upload:
+        max: {{ .Values.cbctf.gin.upload.max }}
+      proxies:
+        {{- range .Values.cbctf.gin.proxies }}
+        - {{ . | quote }}
+        {{- end }}
+      ratelimit:
+        global: {{ .Values.cbctf.gin.ratelimit.global }}
+        whitelist:
+          {{- range .Values.cbctf.gin.ratelimit.whitelist }}
+          - {{ . | quote }}
+          {{- end }}
+      cors:
+        {{- range .Values.cbctf.gin.cors }}
+        - {{ . | quote }}
+        {{- end }}
+      log:
+        whitelist:
+          {{- range .Values.cbctf.gin.log.whitelist }}
+          - {{ . | quote }}
+          {{- end }}
+      jwt:
+        # Value overridden by CBCTF_GIN_JWT_SECRET env var from Secret
+        secret: ""
+        static: {{ .Values.cbctf.gin.jwt.static }}
+      metrics:
+        whitelist:
+          {{- range .Values.cbctf.gin.metrics.whitelist }}
+          - {{ . | quote }}
+          {{- end }}
+
+    gorm:
+      mysql:
+        host: {{ printf "%s.%s" (include "cbctf.mysql.host" .) .Release.Namespace | quote }}
+        port: {{ .Values.mysql.service.port }}
+        user: {{ .Values.mysql.auth.username | quote }}
+        # Value overridden by CBCTF_GORM_MYSQL_PWD env var from Secret
+        pwd: ""
+        db: {{ .Values.mysql.auth.database | quote }}
+        mxopen: 100
+        mxidle: 10
+      log:
+        level: {{ .Values.cbctf.gorm.log.level | quote }}
+
+    redis:
+      host: {{ printf "%s.%s" (include "cbctf.redis.host" .) .Release.Namespace | quote }}
+      port: {{ .Values.redis.service.port }}
+      # Value overridden by CBCTF_REDIS_PWD env var from Secret
+      pwd: ""
+
+    k8s:
+      # Kubeconfig generated at startup by init container using ServiceAccount token
+      config: /admin/admin.yaml
+      namespace: {{ .Release.Namespace | quote }}
+      tcpdump: {{ .Values.cbctf.k8s.tcpdump | quote }}
+      generator_worker: {{ .Values.cbctf.k8s.generator_worker }}
+      frp:
+        on: {{ .Values.cbctf.k8s.frp.on }}
+        frpc: {{ .Values.cbctf.k8s.frp.frpc | quote }}
+        nginx: {{ .Values.cbctf.k8s.frp.nginx | quote }}
+        frps: {{ toYaml .Values.cbctf.k8s.frp.frps | nindent 10 }}
+
+    cheat:
+      ip:
+        whitelist:
+          {{- range .Values.cbctf.cheat.ip.whitelist }}
+          - {{ . | quote }}
+          {{- end }}
+
+    webhook:
+      whitelist: {{ toYaml .Values.cbctf.webhook.whitelist | nindent 8 }}
+
+    registration:
+      enabled: {{ .Values.cbctf.registration.enabled }}
+      default_group: {{ .Values.cbctf.registration.default_group }}
+
+    geocity_db: /app/data/GeoLite2-City.mmdb
