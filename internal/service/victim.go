@@ -380,7 +380,7 @@ func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm)
 		return model.SuccessRetVal()
 	}
 	challenges, _, ret := db.InitChallengeRepo(tx).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"type": model.PodsChallengeType},
+		Conditions: map[string]any{"type": model.PodsChallengeType, "rand_id": form.Challenges},
 	})
 	if !ret.OK {
 		return ret
