@@ -69,7 +69,7 @@ CBCTF 采用两层题目管理：
 }
 ```
 
-详见 [计分系统](/features/scoring)。
+详见 [计分系统](../features/scoring.md)。
 
 ## NetworkPolicy
 

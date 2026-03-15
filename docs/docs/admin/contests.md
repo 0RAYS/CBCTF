@@ -78,7 +78,7 @@ GET /admin/contests/:contestID/teams/:teamID/writeups/:fileID  # 下载（需 ad
 
 ## 作弊检测
 
-详见 [作弊检测](/admin/cheat)。通过 `POST /admin/contests/:contestID/cheats` 可手动重新运行一次全量作弊检测。
+详见 [作弊检测](./cheat.md)。通过 `POST /admin/contests/:contestID/cheats` 可手动重新运行一次全量作弊检测。
 
 ## 排行榜
 

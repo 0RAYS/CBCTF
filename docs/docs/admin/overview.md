@@ -27,7 +27,7 @@ Init Admin: Admin{ name: admin, password: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx, 
 | `admin` | 拥有所有权限（`SetFullAccess`），可管理整个平台 |
 | `organizer` | 拥有部分管理权限，通常用于授权赛事组织者管理特定比赛 |
 
-organizer 角色由管理员通过 RBAC 系统自定义权限集合，详见 [权限与角色](/admin/rbac)。
+organizer 角色由管理员通过 RBAC 系统自定义权限集合，详见 [权限与角色](./rbac.md)。
 
 ## 后台导航结构
 
