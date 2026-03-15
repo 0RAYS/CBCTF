@@ -21,7 +21,7 @@ func SetUserRBAC(userID uint, permissions []string) model.RetVal {
 	data, _ := msgpack.Marshal(permissions)
 	if err := RDB.Set(ctx, fmt.Sprintf(userRBACKey, userID), data, time.Hour).Err(); err != nil {
 		log.Logger.Warningf("Failed to set user RBAC permissions: %s", err)
-		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Error": err.Error()}}
+		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": userRBACKey, "Error": err.Error()}}
 	}
 	return model.SuccessRetVal()
 }
@@ -32,7 +32,7 @@ func CheckUserRBAC(userID uint, permission string) (bool, model.RetVal) {
 	data, err := RDB.Get(ctx, fmt.Sprintf(userRBACKey, userID)).Result()
 	if err != nil {
 		log.Logger.Warningf("Failed to get user RBAC permissions: %s", err)
-		return false, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Error": err.Error()}}
+		return false, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": userRBACKey, "Error": err.Error()}}
 	}
 	var permissions []string
 	_ = msgpack.Unmarshal([]byte(data), &permissions)
@@ -44,7 +44,7 @@ func DeleteUserRBAC(userID uint) model.RetVal {
 	defer cancel()
 	if err := RDB.Del(ctx, fmt.Sprintf(userRBACKey, userID)).Err(); err != nil {
 		log.Logger.Warningf("Failed to delete user RBAC permissions: %s", err)
-		return model.RetVal{Msg: i18n.Redis.DeleteError, Attr: map[string]any{"Error": err.Error()}}
+		return model.RetVal{Msg: i18n.Redis.DeleteError, Attr: map[string]any{"Key": userRBACKey, "Error": err.Error()}}
 	}
 	return model.SuccessRetVal()
 }
@@ -58,7 +58,7 @@ func DeleteRBAC() model.RetVal {
 		keys, nextCursor, err := RDB.Scan(ctx, cursor, pattern, 2000).Result()
 		if err != nil {
 			log.Logger.Warningf("Failed delete RBAC permissions: %s", err)
-			return model.RetVal{Msg: i18n.Redis.DeleteError, Attr: map[string]any{"Error": err.Error()}}
+			return model.RetVal{Msg: i18n.Redis.DeleteError, Attr: map[string]any{"Key": userRBACKey, "Error": err.Error()}}
 		}
 
 		if len(keys) > 0 {
@@ -68,7 +68,7 @@ func DeleteRBAC() model.RetVal {
 			}
 			if _, err = pipe.Exec(ctx); err != nil {
 				log.Logger.Warningf("Failed delete RBAC permissions: %s", err)
-				return model.RetVal{Msg: i18n.Redis.DeleteError, Attr: map[string]any{"Error": err.Error()}}
+				return model.RetVal{Msg: i18n.Redis.DeleteError, Attr: map[string]any{"Key": userRBACKey, "Error": err.Error()}}
 			}
 		}
 		cursor = nextCursor
