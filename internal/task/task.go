@@ -49,6 +49,8 @@ func Init() {
 	mux = asynq.NewServeMux()
 
 	mux.HandleFunc(SendEmailTaskType, wrapHandler(SendEmailTaskType, HandleSendEmailTask))
+	mux.HandleFunc(StartGeneratorTaskType, wrapHandler(StartGeneratorTaskType, HandleStartGeneratorTask))
+	mux.HandleFunc(StopGeneratorTaskType, wrapHandler(StopGeneratorTaskType, HandleStopGeneratorTask))
 	mux.HandleFunc(GenAttachmentTaskType, wrapHandler(GenAttachmentTaskType, HandleGenAttachmentTask))
 	mux.HandleFunc(StartVictimTaskType, wrapHandler(StartVictimTaskType, HandleStartVictimTask))
 	mux.HandleFunc(StopVictimTaskType, wrapHandler(StopVictimTaskType, HandleStopVictimTask))
