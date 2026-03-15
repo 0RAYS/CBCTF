@@ -13,8 +13,11 @@ import (
 )
 
 const (
-	teamRankingKey = "contests:%d:rank"
+	userKey        = "users:%d"
 	userRankingKey = "users:rank"
+
+	teamKey        = "contests:%d:teams:%d"
+	teamRankingKey = "contests:%d:rank"
 )
 
 func UpdateTeamRanking(contestID uint, teams []model.Team) model.RetVal {
