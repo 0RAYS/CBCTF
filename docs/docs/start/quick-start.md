@@ -18,7 +18,7 @@ sidebar_position: 2
 
 ## Docker 快速部署
 
-详细说明见 [Docker 部署](/deploy/docker)，以下为极简流程：
+详细说明见 [Docker 部署](../deploy/docker.md)，以下为极简流程：
 
 ```bash
 # 1. 准备 docker-compose.yaml 和 config.yaml（见 Docker 部署文档）
@@ -36,7 +36,7 @@ docker compose logs cbctf | grep "Init Admin"
 
 ## Helm 快速部署
 
-详细说明见 [Helm 部署](/deploy/helm)，以下为极简流程：
+详细说明见 [Helm 部署](../deploy/helm.md)，以下为极简流程：
 
 ```bash
 # 1. 添加 Chart 仓库

@@ -50,7 +50,7 @@ sidebar_position: 3
 
 ## 邮箱验证流程
 
-1. 确保已配置 SMTP 服务器（见 [邮件配置](/admin/smtp)）
+1. 确保已配置 SMTP 服务器（见 [邮件配置](./smtp.md)）
 2. 为 `user` 角色分配 `self:activate` 权限
 3. 用户调用 `POST /me/activate` 触发发送激活邮件
 4. 用户点击邮件中的链接，`verified` 字段变为 `true`

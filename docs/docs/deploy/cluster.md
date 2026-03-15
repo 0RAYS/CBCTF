@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # K8s 集群搭建
 
-本文介绍如何搭建支持 CBCTF 容器题目的 Kubernetes 集群。若仅使用问答题和静态题，可跳过本节直接使用 [Docker 部署](/deploy/docker) 或 [二进制部署](/deploy/binary)。
+本文介绍如何搭建支持 CBCTF 容器题目的 Kubernetes 集群。若仅使用问答题和静态题，可跳过本节直接使用 [Docker 部署](./docker.md) 或 [二进制部署](./binary.md)。
 
 ## 硬件要求
 
