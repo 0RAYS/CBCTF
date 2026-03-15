@@ -35,6 +35,6 @@ jobs:
         with:
           charts_dir: .
           skip_existing: true
-          pages_index_path: CBCTF/index.yaml
+          pages_index_path: index.yaml
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
