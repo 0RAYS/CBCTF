@@ -30,14 +30,14 @@ func RecordRequestDevice(userID uint, magic string, count int64) {
 
 func DrainRequestDevicePool() []RequestDevice {
 	RequestDeviceMutex.Lock()
-	defer RequestDeviceMutex.Unlock()
-
 	if len(RequestDevicePool) == 0 {
+		RequestDeviceMutex.Unlock()
 		return nil
 	}
 
 	pool := RequestDevicePool
-	RequestDevicePool = make(map[requestDeviceKey]int64, len(pool))
+	RequestDevicePool = make(map[requestDeviceKey]int64)
+	RequestDeviceMutex.Unlock()
 
 	devices := make([]RequestDevice, 0, len(pool))
 	for key, count := range pool {
