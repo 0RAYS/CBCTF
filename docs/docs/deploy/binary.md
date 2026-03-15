@@ -105,7 +105,7 @@ k8s:
   namespace: cbctf
 ```
 
-完整配置字段说明见 [配置说明](/docs/deploy/settings)。
+完整配置字段说明见 [配置说明](/deploy/settings)。
 
 ## 运行
 

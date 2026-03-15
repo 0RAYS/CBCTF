@@ -9,7 +9,7 @@ CBCTF 提供官方 Helm Chart，可一键在 Kubernetes 集群上部署完整平
 ## 前置要求
 
 - Helm 3.10+
-- 已搭建 Kubernetes 集群（参考 [集群搭建](/docs/deploy/cluster)）
+- 已搭建 Kubernetes 集群（参考 [集群搭建](/deploy/cluster)）
 - 支持 `ReadWriteMany` 的 StorageClass（NFS 等）
 
 ## 基本操作

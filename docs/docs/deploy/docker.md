@@ -96,7 +96,7 @@ k8s:
   namespace: cbctf
 ```
 
-完整配置说明见 [配置说明](/docs/deploy/settings)。
+完整配置说明见 [配置说明](/deploy/settings)。
 
 ## 挂载 kubeconfig
 
