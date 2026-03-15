@@ -84,7 +84,7 @@ const config = {
             label: '文档',
           },
           {
-            href: 'https://github.com/0RAYS/CBCTF-docs',
+            href: 'https://github.com/0RAYS/CBCTF',
             label: 'GitHub',
             position: 'right',
           },
@@ -115,7 +115,7 @@ const config = {
               },
               {
                 label: 'GitHub',
-                href: 'https://github.com/0RAYS/CBCTF-docs',
+                href: 'https://github.com/0RAYS/CBCTF',
               },
             ],
           },
