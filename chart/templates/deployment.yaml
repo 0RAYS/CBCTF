@@ -1,0 +1,133 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "cbctf.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "cbctf.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "cbctf.selectorLabels" . | nindent 6 }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        # Restart pod when config changes
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "cbctf.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      # Prevent Kubernetes service env vars (e.g. CBCTF_REDIS_PORT=tcp://...)
+      # from conflicting with Viper's AutomaticEnv (prefix=CBCTF).
+      enableServiceLinks: false
+      {{- with include "cbctf.imagePullSecrets" . }}
+      {{- . | nindent 6 }}
+      {{- end }}
+      serviceAccountName: {{ include "cbctf.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.cbctf.gin.port }}
+              protocol: TCP
+
+          # ── Environment variables (secrets injected via env vars) ──────────
+          env:
+            {{- if .Values.timezone }}
+            - name: TZ
+              value: {{ .Values.timezone | quote }}
+            {{- end }}
+            - name: CBCTF_GIN_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "cbctf.fullname" . }}
+                  key: jwt-secret
+            {{- if .Values.mysql.enabled }}
+            - name: CBCTF_GORM_MYSQL_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "cbctf.mysql.fullname" . }}
+                  key: mysql-password
+            {{- end }}
+            {{- if .Values.redis.enabled }}
+            - name: CBCTF_REDIS_PWD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "cbctf.redis.fullname" . }}
+                  key: redis-password
+            {{- end }}
+
+          # ── Liveness / Readiness probes ────────────────────────────────────
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            failureThreshold: 5
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 3
+
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+          volumeMounts:
+            - name: config
+              mountPath: /app/config.yaml
+              subPath: config.yaml
+              readOnly: true
+            - name: data
+              mountPath: /app/data
+
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "cbctf.fullname" . }}
+        - name: kubeconfig
+          emptyDir: {}
+        - name: data
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ default (printf "%s-shared-volume" (.Release.Namespace)) .Values.persistence.existingClaim }}
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
