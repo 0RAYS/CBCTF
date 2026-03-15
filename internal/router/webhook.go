@@ -34,7 +34,7 @@ func GetWebhooks(ctx *gin.Context) {
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"count": count, "webhooks": data}))
 }
 
-func checkWebhookWhitelist(target string) (bool, error) {
+func isInWebhookWhitelist(target string) (bool, error) {
 	if len(config.Env.Webhook.Whitelist) == 0 {
 		return false, nil
 	}
@@ -46,7 +46,7 @@ func checkWebhookWhitelist(target string) (bool, error) {
 	if err != nil {
 		for _, allowed := range config.Env.Webhook.Whitelist {
 			if allowed == u.Hostname() || allowed == u.Host {
-				return false, nil
+				return true, nil
 			}
 		}
 	} else {
@@ -57,7 +57,7 @@ func checkWebhookWhitelist(target string) (bool, error) {
 					continue
 				}
 				if prefix.Masked().Contains(hostname) {
-					return false, nil
+					return true, nil
 				}
 			} else {
 				ip, err := netip.ParseAddr(allowed)
@@ -65,12 +65,12 @@ func checkWebhookWhitelist(target string) (bool, error) {
 					continue
 				}
 				if ip.Unmap() == hostname {
-					return false, nil
+					return true, nil
 				}
 			}
 		}
 	}
-	return true, nil
+	return false, nil
 }
 
 func CreateWebhook(ctx *gin.Context) {
@@ -80,12 +80,12 @@ func CreateWebhook(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateWebhookEventType)
-	banned, err := checkWebhookWhitelist(form.URL)
+	in, err := isInWebhookWhitelist(form.URL)
 	if err != nil {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return
 	}
-	if banned {
+	if !in {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.Webhook.NotAllowedTarget})
 		return
 	}
@@ -114,12 +114,12 @@ func UpdateWebhook(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateWebhookEventType)
 	if form.URL != nil {
-		banned, err := checkWebhookWhitelist(*form.URL)
+		in, err := isInWebhookWhitelist(*form.URL)
 		if err != nil {
 			resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 			return
 		}
-		if banned {
+		if !in {
 			resp.JSON(ctx, model.RetVal{Msg: i18n.Model.Webhook.NotAllowedTarget})
 			return
 		}
