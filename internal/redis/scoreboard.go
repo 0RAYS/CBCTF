@@ -32,9 +32,9 @@ func UpdateTeamRanking(contestID uint, teams []model.Team) model.RetVal {
 			Member: fmt.Sprintf(teamKey, contestID, team.ID),
 		})
 		data, _ := msgpack.Marshal(&team)
-		pipe.Set(ctx, fmt.Sprintf(teamKey, contestID, team.ID), data, 5*time.Minute)
+		pipe.Set(ctx, fmt.Sprintf(teamKey, contestID, team.ID), data, 0)
 	}
-	pipe.Expire(ctx, key, 5*time.Minute)
+	pipe.Expire(ctx, key, 0)
 	if _, err := pipe.Exec(ctx); err != nil {
 		log.Logger.Warningf("Failed to update TeamRanking: %s", err)
 		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": key, "Error": err.Error()}}
@@ -81,9 +81,9 @@ func UpdateUserRanking(users []model.User) model.RetVal {
 			Member: fmt.Sprintf(userKey, user.ID),
 		})
 		data, _ := msgpack.Marshal(&user)
-		pipe.Set(ctx, fmt.Sprintf(userKey, user.ID), data, 12*time.Hour)
+		pipe.Set(ctx, fmt.Sprintf(userKey, user.ID), data, 0)
 	}
-	pipe.Expire(ctx, userRankingKey, 12*time.Hour)
+	pipe.Expire(ctx, userRankingKey, 0)
 	if _, err := pipe.Exec(ctx); err != nil {
 		log.Logger.Warningf("Failed to update UserRanking: %s", err)
 		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": userRankingKey, "Error": err.Error()}}
