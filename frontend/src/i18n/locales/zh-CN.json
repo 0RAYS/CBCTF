@@ -728,11 +728,13 @@
           "title": "快速操作",
           "selectChallenges": "选择题目",
           "expand": "展开",
+          "searchPlaceholder": "按题目名称搜索...",
           "randomTeams": "随机选择队伍",
           "selectAll": "全选",
           "clear": "清空",
           "estimatedTeams": "预计抽取 {{count}} 个队伍",
           "teamSelectionHint": "后端会基于当前比赛全部队伍，按该比例随机抽取并启动靶机。当前比赛队伍总数：{{total}}",
+          "noChallenges": "当前条件下没有题目",
           "startButton": "开启 ({{challenges}}×{{teams}})"
         },
         "filters": {

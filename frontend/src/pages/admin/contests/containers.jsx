@@ -93,6 +93,7 @@ function ContestContainers() {
   const [challenges, setChallenges] = useState([]);
   const [detailChallenges, setDetailChallenges] = useState([]);
   const [selectedChallenges, setSelectedChallenges] = useState([]);
+  const [challengeSearch, setChallengeSearch] = useState('');
   const [randomTeamPercentage, setRandomTeamPercentage] = useState(50); // 随机选择队伍的百分比
 
   const challengePageSize = 4;
@@ -170,13 +171,17 @@ function ContestContainers() {
     }
   };
 
-  const fetchChallenges = async (page = challengePage) => {
+  const fetchChallenges = async (page = challengePage, query = challengeSearch) => {
     try {
-      const response = await getContestChallenges(parseInt(contestId), {
+      const params = {
         type: 'pods',
         limit: challengePageSize,
         offset: (page - 1) * challengePageSize,
-      });
+      };
+      if (query.trim() !== '') {
+        params['search[name]'] = query.trim();
+      }
+      const response = await getContestChallenges(parseInt(contestId), params);
       if (response.code === 200) {
         setChallenges(response.data.challenges || []);
         setChallengeTotal(response.data.count || 0);
@@ -186,13 +191,17 @@ function ContestContainers() {
     }
   };
 
-  const fetchDetailChallenges = async (page = detailChallengePage) => {
+  const fetchDetailChallenges = async (page = detailChallengePage, query = challengeSearch) => {
     try {
-      const response = await getContestChallenges(parseInt(contestId), {
+      const params = {
         type: 'pods',
         limit: detailChallengePageSize,
         offset: (page - 1) * detailChallengePageSize,
-      });
+      };
+      if (query.trim() !== '') {
+        params['search[name]'] = query.trim();
+      }
+      const response = await getContestChallenges(parseInt(contestId), params);
       if (response.code === 200) {
         setDetailChallenges(response.data.challenges || []);
         setDetailChallengeTotal(response.data.count || 0);
@@ -216,10 +225,16 @@ function ContestContainers() {
     });
   };
 
+  const handleChallengeSearchChange = (value) => {
+    setChallengeSearch(value);
+    setChallengePage(1);
+    setDetailChallengePage(1);
+  };
+
   useEffect(() => {
     fetchContainers();
     fetchTeams();
-    fetchChallenges(1);
+    fetchChallenges(1, challengeSearch);
     setChallengePage(1);
     setDetailChallengePage(1);
   }, [contestId]);
@@ -248,13 +263,13 @@ function ContestContainers() {
   }, [refreshInterval]);
 
   useEffect(() => {
-    fetchChallenges(challengePage);
-  }, [challengePage]);
+    fetchChallenges(challengePage, challengeSearch);
+  }, [challengePage, challengeSearch]);
 
   useEffect(() => {
     if (!isChallengeDetailsOpen) return;
-    fetchDetailChallenges(detailChallengePage);
-  }, [isChallengeDetailsOpen, detailChallengePage]);
+    fetchDetailChallenges(detailChallengePage, challengeSearch);
+  }, [isChallengeDetailsOpen, detailChallengePage, challengeSearch]);
 
   // 点击外部关闭搜索结果
   useEffect(() => {
@@ -570,24 +585,45 @@ function ContestContainers() {
                   </div>
                 </div>
                 <div className="max-h-24 overflow-y-auto border border-neutral-300/30 rounded-md bg-black/10">
-                  {challenges.map((challenge) => (
-                    <div key={challenge.id} className="flex items-center p-1 hover:bg-black/30 transition-colors">
-                      <input
-                        type="checkbox"
-                        id={`challenge-${challenge.id}`}
-                        checked={selectedChallenges.includes(challenge.id)}
-                        onChange={(e) => updateChallengeSelection(challenge.id, e.target.checked)}
-                        className="w-3 h-3 rounded border-neutral-300/30 text-geek-400
-                              focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
+                  <div className="p-2 border-b border-neutral-300/20">
+                    <div className="relative">
+                      <IconSearch
+                        size={12}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none"
                       />
-                      <label
-                        htmlFor={`challenge-${challenge.id}`}
-                        className="ml-2 text-xs font-mono text-neutral-300 cursor-pointer flex-1 truncate"
-                      >
-                        {challenge.name}
-                      </label>
+                      <input
+                        type="text"
+                        value={challengeSearch}
+                        onChange={(e) => handleChallengeSearchChange(e.target.value)}
+                        placeholder={t('admin.contests.containers.quickActions.searchPlaceholder')}
+                        className="w-full h-7 pl-7 pr-2 bg-black/20 border border-neutral-300/30 rounded-md text-xs text-neutral-50 placeholder-neutral-500 focus:outline-none focus:border-geek-400 transition-all duration-200"
+                      />
                     </div>
-                  ))}
+                  </div>
+                  {challenges.length > 0 ? (
+                    challenges.map((challenge) => (
+                      <div key={challenge.id} className="flex items-center p-1 hover:bg-black/30 transition-colors">
+                        <input
+                          type="checkbox"
+                          id={`challenge-${challenge.id}`}
+                          checked={selectedChallenges.includes(challenge.id)}
+                          onChange={(e) => updateChallengeSelection(challenge.id, e.target.checked)}
+                          className="w-3 h-3 rounded border-neutral-300/30 text-geek-400
+                              focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
+                        />
+                        <label
+                          htmlFor={`challenge-${challenge.id}`}
+                          className="ml-2 text-xs font-mono text-neutral-300 cursor-pointer flex-1 truncate"
+                        >
+                          {challenge.name}
+                        </label>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-3 text-xs font-mono text-neutral-500">
+                      {t('admin.contests.containers.quickActions.noChallenges')}
+                    </div>
+                  )}
                 </div>
                 {Math.ceil(challengeTotal / challengePageSize) > 1 && (
                   <div className="flex items-center justify-between mt-1">
@@ -1138,6 +1174,20 @@ function ContestContainers() {
           }
         >
           <div className="space-y-4">
+            <div className="relative">
+              <IconSearch
+                size={14}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none"
+              />
+              <input
+                type="text"
+                value={challengeSearch}
+                onChange={(e) => handleChallengeSearchChange(e.target.value)}
+                placeholder={t('admin.contests.containers.quickActions.searchPlaceholder')}
+                className="w-full h-10 pl-10 pr-3 bg-black/20 border border-neutral-300/30 rounded-md text-sm text-neutral-50 placeholder-neutral-500 focus:outline-none focus:border-geek-400 transition-all duration-200"
+              />
+            </div>
+
             <p className="text-sm font-mono text-neutral-400">
               {t('admin.contests.containers.modals.challengeDetailsHint', { count: detailChallengeTotal })}
             </p>

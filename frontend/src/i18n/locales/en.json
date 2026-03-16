@@ -728,11 +728,13 @@
           "title": "Quick Actions",
           "selectChallenges": "Select challenges",
           "expand": "Expand",
+          "searchPlaceholder": "Search challenges by name...",
           "randomTeams": "Random team selection",
           "selectAll": "Select all",
           "clear": "Clear",
           "estimatedTeams": "Estimated {{count}} teams",
           "teamSelectionHint": "The backend will randomly select teams from all teams in this contest using this ratio. Total teams in this contest: {{total}}",
+          "noChallenges": "No challenges match the current filter",
           "startButton": "Start ({{challenges}}×{{teams}})"
         },
         "filters": {
