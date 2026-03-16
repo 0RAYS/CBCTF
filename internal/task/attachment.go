@@ -40,12 +40,12 @@ func EnqueueGenAttachmentTask(userID uint, generator model.Generator, challenge 
 	return info, err
 }
 
-func HandleGenAttachmentTask(_ context.Context, t *asynq.Task) error {
+func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
 	var payload GenAttachmentPayload
 	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	ret := k8s.GenAttachment(ctx, payload.Challenge, payload.Generator, payload.TeamID, payload.Flags)
 	cancel()
 	db.InitGeneratorRepo(db.DB).UpdateStatus(payload.Generator.ID, ret.OK, time.Now())

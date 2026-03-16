@@ -36,7 +36,7 @@ func EnqueueStartVictimTask(victim model.Victim) (*asynq.TaskInfo, error) {
 	return info, err
 }
 
-func HandleStartVictimTask(_ context.Context, t *asynq.Task) error {
+func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 	var payload StartVictimPayload
 	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
@@ -45,7 +45,7 @@ func HandleStartVictimTask(_ context.Context, t *asynq.Task) error {
 	podRepo := db.InitPodRepo(db.DB)
 	victimRepo := db.InitVictimRepo(db.DB)
 	ret := func() model.RetVal {
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+		ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 		defer cancel()
 		ipExposesMap, ret := k8s.StartVictim(ctx, victim)
 		if !ret.OK {
@@ -117,13 +117,13 @@ func EnqueueStopVictimTask(victim model.Victim) (*asynq.TaskInfo, error) {
 	return info, err
 }
 
-func HandleStopVictimTask(_ context.Context, t *asynq.Task) error {
+func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
 	var payload StopVictimPayload
 	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
 	}
 	victim := payload.Victim
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	defer cancel()
 	ret := k8s.StopVictim(ctx, victim)
 	if !ret.OK {
