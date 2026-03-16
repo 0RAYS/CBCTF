@@ -5,7 +5,7 @@ import { getChallengeList } from '../../api/admin/challenge';
 import { Modal } from '../../components/common';
 import { Button, Pagination, Card, EmptyState, StatCard } from '../../components/common';
 import { motion } from 'motion/react';
-import { IconPlayerPlay, IconBan, IconCheck, IconX, IconTrash, IconClockPlay } from '@tabler/icons-react';
+import { IconPlayerPlay, IconBan, IconCheck, IconX, IconTrash, IconClockPlay, IconRefresh } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 
 const STATUS_STYLES = {
@@ -194,6 +194,14 @@ function AdminGenerators() {
             </option>
           </select>
         </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => fetchGenerators(currentPage, showDeleted)}
+          leftIcon={<IconRefresh size={14} />}
+        >
+          {t('common.refresh')}
+        </Button>
         <Button variant="primary" size="sm" onClick={openStartModal} leftIcon={<IconPlayerPlay size={14} />}>
           {t('admin.generators.startButton')}
         </Button>
