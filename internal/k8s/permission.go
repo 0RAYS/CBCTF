@@ -25,6 +25,7 @@ func buildPermissionChecks() []permissionCheck {
 		{Resource: "pods", Verb: "get", Namespace: ns},
 		{Resource: "pods", Verb: "list", Namespace: ns},
 		{Resource: "pods", Verb: "delete", Namespace: ns},
+		{Resource: "pods", Verb: "deletecollection", Namespace: ns},
 		{Resource: "pods/exec", Verb: "create", Namespace: ns},
 		// Core: Services
 		{Resource: "services", Verb: "create", Namespace: ns},
@@ -32,62 +33,45 @@ func buildPermissionChecks() []permissionCheck {
 		{Resource: "services", Verb: "delete", Namespace: ns},
 		// Core: ConfigMaps
 		{Resource: "configmaps", Verb: "create", Namespace: ns},
-		{Resource: "configmaps", Verb: "get", Namespace: ns},
-		{Resource: "configmaps", Verb: "delete", Namespace: ns},
-		// Core: PersistentVolumes (集群级别)
-		{Resource: "persistentvolumes", Verb: "create"},
-		{Resource: "persistentvolumes", Verb: "get"},
+		{Resource: "configmaps", Verb: "deletecollection", Namespace: ns},
 		// Core: PersistentVolumeClaims
-		{Resource: "persistentvolumeclaims", Verb: "create", Namespace: ns},
 		{Resource: "persistentvolumeclaims", Verb: "get", Namespace: ns},
 		// Core: Namespaces (集群级别)
-		{Resource: "namespaces", Verb: "create"},
+		{Resource: "namespaces", Verb: "get"},
 		// Core: Nodes (集群级别)
 		{Resource: "nodes", Verb: "list"},
+		// batch: Jobs
+		{Group: "batch", Resource: "jobs", Verb: "create", Namespace: ns},
 		// networking.k8s.io: NetworkPolicies
 		{Group: "networking.k8s.io", Resource: "networkpolicies", Verb: "create", Namespace: ns},
-		{Group: "networking.k8s.io", Resource: "networkpolicies", Verb: "get", Namespace: ns},
-		{Group: "networking.k8s.io", Resource: "networkpolicies", Verb: "delete", Namespace: ns},
+		{Group: "networking.k8s.io", Resource: "networkpolicies", Verb: "deletecollection", Namespace: ns},
 		// discovery.k8s.io: EndpointSlices
-		{Group: "discovery.k8s.io", Resource: "endpointslices", Verb: "create", Namespace: ns},
-		{Group: "discovery.k8s.io", Resource: "endpointslices", Verb: "get", Namespace: ns},
-		{Group: "discovery.k8s.io", Resource: "endpointslices", Verb: "delete", Namespace: ns},
+		{Group: "discovery.k8s.io", Resource: "endpointslices", Verb: "deletecollection", Namespace: ns},
 		// Multus: NetworkAttachmentDefinitions
 		{Group: "k8s.cni.cncf.io", Resource: "network-attachment-definitions", Verb: "create", Namespace: ns},
-		{Group: "k8s.cni.cncf.io", Resource: "network-attachment-definitions", Verb: "get", Namespace: ns},
-		{Group: "k8s.cni.cncf.io", Resource: "network-attachment-definitions", Verb: "delete", Namespace: ns},
+		{Group: "k8s.cni.cncf.io", Resource: "network-attachment-definitions", Verb: "get", Namespace: "kube-system"},
+		{Group: "k8s.cni.cncf.io", Resource: "network-attachment-definitions", Verb: "deletecollection", Namespace: ns},
 		// KubeOVN: Subnets (集群级别)
 		{Group: "kubeovn.io", Resource: "subnets", Verb: "create"},
 		{Group: "kubeovn.io", Resource: "subnets", Verb: "get"},
-		{Group: "kubeovn.io", Resource: "subnets", Verb: "delete"},
 		{Group: "kubeovn.io", Resource: "subnets", Verb: "deletecollection"},
 		// KubeOVN: VPCs (集群级别)
 		{Group: "kubeovn.io", Resource: "vpcs", Verb: "create"},
-		{Group: "kubeovn.io", Resource: "vpcs", Verb: "get"},
-		{Group: "kubeovn.io", Resource: "vpcs", Verb: "delete"},
 		{Group: "kubeovn.io", Resource: "vpcs", Verb: "deletecollection"},
 		// KubeOVN: IPs (集群级别)
-		{Group: "kubeovn.io", Resource: "ips", Verb: "delete"},
 		{Group: "kubeovn.io", Resource: "ips", Verb: "deletecollection"},
 		// KubeOVN: IptablesEIPs (集群级别)
 		{Group: "kubeovn.io", Resource: "iptables-eips", Verb: "create"},
 		{Group: "kubeovn.io", Resource: "iptables-eips", Verb: "get"},
-		{Group: "kubeovn.io", Resource: "iptables-eips", Verb: "delete"},
 		{Group: "kubeovn.io", Resource: "iptables-eips", Verb: "deletecollection"},
 		// KubeOVN: IptablesDnatRules (集群级别)
 		{Group: "kubeovn.io", Resource: "iptables-dnat-rules", Verb: "create"},
-		{Group: "kubeovn.io", Resource: "iptables-dnat-rules", Verb: "get"},
-		{Group: "kubeovn.io", Resource: "iptables-dnat-rules", Verb: "delete"},
 		{Group: "kubeovn.io", Resource: "iptables-dnat-rules", Verb: "deletecollection"},
 		// KubeOVN: IptablesSnatRules (集群级别)
 		{Group: "kubeovn.io", Resource: "iptables-snat-rules", Verb: "create"},
-		{Group: "kubeovn.io", Resource: "iptables-snat-rules", Verb: "get"},
-		{Group: "kubeovn.io", Resource: "iptables-snat-rules", Verb: "delete"},
 		{Group: "kubeovn.io", Resource: "iptables-snat-rules", Verb: "deletecollection"},
 		// KubeOVN: VpcNatGateways (集群级别)
 		{Group: "kubeovn.io", Resource: "vpc-nat-gateways", Verb: "create"},
-		{Group: "kubeovn.io", Resource: "vpc-nat-gateways", Verb: "get"},
-		{Group: "kubeovn.io", Resource: "vpc-nat-gateways", Verb: "delete"},
 		{Group: "kubeovn.io", Resource: "vpc-nat-gateways", Verb: "deletecollection"},
 	}
 }
