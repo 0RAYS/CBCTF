@@ -93,7 +93,9 @@ function AdminImagesPull({
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="rounded-md border border-neutral-300/20 bg-black/20 p-4">
-              <div className="text-xs text-neutral-500 font-mono mb-2">{t('admin.contests.imagesPull.summary.nodesLabel')}</div>
+              <div className="text-xs text-neutral-500 font-mono mb-2">
+                {t('admin.contests.imagesPull.summary.nodesLabel')}
+              </div>
               <div className="text-2xl text-neutral-50 font-mono">{nodes.length}</div>
             </div>
             <div className="rounded-md border border-neutral-300/20 bg-black/20 p-4">
@@ -103,7 +105,9 @@ function AdminImagesPull({
               <div className="text-2xl text-neutral-50 font-mono">{unionImages.length}</div>
             </div>
             <div className="rounded-md border border-neutral-300/20 bg-black/20 p-4">
-              <div className="text-xs text-neutral-500 font-mono mb-2">{t('admin.contests.imagesPull.summary.totalLabel')}</div>
+              <div className="text-xs text-neutral-500 font-mono mb-2">
+                {t('admin.contests.imagesPull.summary.totalLabel')}
+              </div>
               <div className="text-2xl text-neutral-50 font-mono">{allImages.length}</div>
             </div>
           </div>
@@ -131,8 +135,8 @@ function AdminImagesPull({
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <Card variant="default" padding="md" animate>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 xl:items-stretch">
+        <Card variant="default" padding="md" animate className="flex h-full flex-col">
           <div className="flex items-start justify-between gap-4 mb-5">
             <div>
               <h2 className="text-lg font-mono text-neutral-50">{t('admin.contests.imagesPull.selection.title')}</h2>
@@ -150,7 +154,9 @@ function AdminImagesPull({
           <div className="rounded-md border border-neutral-300/20 bg-black/20 p-4">
             <div className="flex items-start justify-between gap-4 mb-3">
               <div>
-                <div className="text-sm font-mono text-neutral-300">{t('admin.contests.imagesPull.intersection.title')}</div>
+                <div className="text-sm font-mono text-neutral-300">
+                  {t('admin.contests.imagesPull.intersection.title')}
+                </div>
                 <p className="mt-1 text-xs font-mono text-neutral-500 leading-5">
                   {t('admin.contests.imagesPull.intersection.subtitle')}
                 </p>
@@ -163,7 +169,7 @@ function AdminImagesPull({
             {unionImages.length === 0 ? (
               <EmptyState title={t('admin.contests.imagesPull.intersection.empty')} />
             ) : (
-              <div className="max-h-72 overflow-y-auto pr-1 space-y-2">
+              <div className="max-h-130 overflow-y-auto pr-1 space-y-2">
                 {unionImages.map((imageName) => (
                   <div key={imageName} className="rounded-md border border-neutral-300/20 bg-black/20 p-3">
                     <div className="break-all text-sm font-mono text-neutral-50 mb-3">{imageName}</div>
@@ -180,8 +186,8 @@ function AdminImagesPull({
                               !isMissing
                                 ? 'border-neutral-300/10 bg-black/10 text-neutral-500 cursor-not-allowed'
                                 : isSelected
-                                ? 'border-geek-400/60 bg-geek-400/10 text-geek-300'
-                                : 'border-neutral-300/20 bg-black/20 text-neutral-300 hover:border-neutral-300/40'
+                                  ? 'border-geek-400/60 bg-geek-400/10 text-geek-300'
+                                  : 'border-neutral-300/20 bg-black/20 text-neutral-300 hover:border-neutral-300/40'
                             }`}
                           >
                             <span>{node.node}</span>
@@ -214,7 +220,9 @@ function AdminImagesPull({
             )}
 
             <div className="mt-4 flex items-center justify-between gap-4">
-              <div className="text-xs font-mono text-neutral-500">{t('admin.contests.imagesPull.labels.comboHint')}</div>
+              <div className="text-xs font-mono text-neutral-500">
+                {t('admin.contests.imagesPull.labels.comboHint')}
+              </div>
               <Button
                 variant="primary"
                 onClick={onPullFromSelection}
@@ -341,7 +349,9 @@ function AdminImagesPull({
                 <div className="space-y-3">
                   <div>
                     {node.images.length === 0 ? (
-                      <div className="text-sm font-mono text-neutral-500">{t('admin.contests.imagesPull.node.empty')}</div>
+                      <div className="text-sm font-mono text-neutral-500">
+                        {t('admin.contests.imagesPull.node.empty')}
+                      </div>
                     ) : (
                       <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto pr-1">
                         {node.images.map((imageName) => (
