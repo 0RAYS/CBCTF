@@ -25,7 +25,7 @@ func EnqueueSendEmailTask(to, token, id string) (*asynq.TaskInfo, error) {
 		return nil, err
 	}
 	task := asynq.NewTask(SendEmailTaskType, payload)
-	info, err := client.Enqueue(task, asynq.MaxRetry(3), asynq.Timeout(3*time.Minute))
+	info, err := client.Enqueue(task, asynq.MaxRetry(0), asynq.Timeout(3*time.Minute))
 	if err == nil {
 		prometheus.RecordTaskEnqueued(SendEmailTaskType)
 	}
