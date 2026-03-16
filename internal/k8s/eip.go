@@ -45,9 +45,17 @@ func CreateEIP(ctx context.Context, options CreateEIPOptions) (*kubeovnv1.Iptabl
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "EIP", "Error": err.Error()}}
 	}
 	for {
+		if err = ctx.Err(); err != nil {
+			log.Logger.Warningf("Failed to wait EIP %s ready: %s", options.Name, err)
+			return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "EIP", "Error": err.Error()}}
+		}
 		eip, ret = GetEIP(ctx, options.Name)
 		if !ret.OK {
-			return nil, ret
+			if ret.Msg != i18n.K8S.NotFound {
+				return nil, ret
+			}
+			time.Sleep(500 * time.Millisecond)
+			continue
 		}
 		if eip != nil {
 			if _, err = netip.ParseAddr(eip.Spec.V4ip); err == nil {

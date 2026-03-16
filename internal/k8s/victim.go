@@ -152,8 +152,11 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 						ExternalSubnet: externalSubnetName,
 					})
 					log.Logger.Debugf("Create EIP %s: %s", subnet.NatGateway.EIP.Name, ret.Msg)
-					if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-						return errors.New(err.(string))
+					if !ret.OK {
+						if err, ok := ret.Attr["Error"].(string); ok {
+							return errors.New(err)
+						}
+						return fmt.Errorf("create EIP %s failed: %s", subnet.NatGateway.EIP.Name, ret.Msg)
 					}
 					// 后续会用到
 					subnet.NatGateway.EIP.IP = e.Spec.V4ip
@@ -200,6 +203,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 		}
 	}
 	for _, pod := range victim.Pods {
+		pod := pod
 		wg.Go(func() error {
 			containers := []corev1.Container{
 				{
