@@ -26,7 +26,7 @@ function Settings() {
   // 处理密码修改
   const handlePasswordChange = async (data) => {
     try {
-      const payload = { new: data.newPassword };
+      const payload = { new: data.newPassword, old: data.currentPassword };
       if (user.has_no_pwd) {
         payload.old = 'never_login_pwd';
       }
