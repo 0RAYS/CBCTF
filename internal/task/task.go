@@ -7,15 +7,27 @@ import (
 	"CBCTF/internal/redis"
 	"context"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/hibiken/asynq"
 )
 
 var (
-	srv    *asynq.Server
-	client *asynq.Client
-	mux    *asynq.ServeMux
+	client  *asynq.Client
+	mux     *asynq.ServeMux
+	servers []*asynq.Server
+	startWG sync.WaitGroup
+)
+
+const (
+	defaultQueueName    = "default"
+	victimQueueName     = "victim"
+	generatorQueueName  = "generator"
+	attachmentQueueName = "attachment"
+	emailQueueName      = "email"
+	webhookQueueName    = "webhook"
+	imageQueueName      = "image"
 )
 
 func wrapHandler(taskType string, h asynq.HandlerFunc) asynq.HandlerFunc {
@@ -28,9 +40,81 @@ func wrapHandler(taskType string, h asynq.HandlerFunc) asynq.HandlerFunc {
 }
 
 func Init() {
+	client = asynq.NewClientFromRedisClient(redis.RDB)
+	mux = asynq.NewServeMux()
+	addServer := func(queue string, concurrency int) {
+		if concurrency <= 0 {
+			return
+		}
+		servers = append(servers, asynq.NewServerFromRedisClient(redis.RDB, newServerConfig(queue, concurrency)))
+	}
+	addServer(victimQueueName, config.Env.AsyncQ.Queues.Victim)
+	addServer(generatorQueueName, config.Env.AsyncQ.Queues.Generator)
+	addServer(attachmentQueueName, config.Env.AsyncQ.Queues.Attachment)
+	addServer(emailQueueName, config.Env.AsyncQ.Queues.Email)
+	addServer(webhookQueueName, config.Env.AsyncQ.Queues.Webhook)
+	addServer(imageQueueName, config.Env.AsyncQ.Queues.Image)
+	if len(servers) == 0 {
+		servers = append(servers, asynq.NewServerFromRedisClient(redis.RDB, newServerConfig(defaultQueueName, config.Env.AsyncQ.Concurrency)))
+	}
+
+	mux.HandleFunc(SendEmailTaskType, wrapHandler(SendEmailTaskType, HandleSendEmailTask))
+	mux.HandleFunc(StartGeneratorTaskType, wrapHandler(StartGeneratorTaskType, HandleStartGeneratorTask))
+	mux.HandleFunc(StopGeneratorTaskType, wrapHandler(StopGeneratorTaskType, HandleStopGeneratorTask))
+	mux.HandleFunc(GenAttachmentTaskType, wrapHandler(GenAttachmentTaskType, HandleGenAttachmentTask))
+	mux.HandleFunc(StartVictimTaskType, wrapHandler(StartVictimTaskType, HandleStartVictimTask))
+	mux.HandleFunc(StopVictimTaskType, wrapHandler(StopVictimTaskType, HandleStopVictimTask))
+	mux.HandleFunc(WebhookTaskType, wrapHandler(WebhookTaskType, HandleWebhookTask))
+	mux.HandleFunc(ResizeImageTaskType, wrapHandler(ResizeImageTaskType, HandleResizeImageTask))
+}
+
+func Start() {
+	startWG = sync.WaitGroup{}
+	startWG.Add(len(servers))
+	for _, srv := range servers {
+		go func(srv *asynq.Server) {
+			defer startWG.Done()
+			if err := srv.Run(mux); err != nil {
+				log.Logger.Fatalf("Failed to start task server: %s", err.Error())
+			}
+		}(srv)
+	}
+	log.Logger.Infof("Task servers started: %d", len(servers))
+}
+
+func Stop() {
+	for _, srv := range servers {
+		srv.Shutdown()
+	}
+	startWG.Wait()
+}
+
+func queueForTask(taskType string) string {
+	switch taskType {
+	case StartVictimTaskType, StopVictimTaskType:
+		return victimQueueName
+	case StartGeneratorTaskType, StopGeneratorTaskType:
+		return generatorQueueName
+	case GenAttachmentTaskType:
+		return attachmentQueueName
+	case SendEmailTaskType:
+		return emailQueueName
+	case WebhookTaskType:
+		return webhookQueueName
+	case ResizeImageTaskType:
+		return imageQueueName
+	default:
+		return defaultQueueName
+	}
+}
+
+func newServerConfig(queue string, concurrency int) asynq.Config {
 	cfg := asynq.Config{
-		Concurrency: config.Env.AsyncQ.Concurrency,
-		Logger:      log.Logger.WithField("Type", log.TaskLogType),
+		Concurrency: concurrency,
+		Logger:      log.Logger.WithField("Type", log.TaskLogType).WithField("Queue", queue),
+		Queues: map[string]int{
+			queue: 1,
+		},
 	}
 	switch strings.ToUpper(config.Env.AsyncQ.Log.Level) {
 	case "DEBUG":
@@ -44,27 +128,5 @@ func Init() {
 	default:
 		cfg.LogLevel = asynq.WarnLevel
 	}
-	srv = asynq.NewServerFromRedisClient(redis.RDB, cfg)
-	client = asynq.NewClientFromRedisClient(redis.RDB)
-	mux = asynq.NewServeMux()
-
-	mux.HandleFunc(SendEmailTaskType, wrapHandler(SendEmailTaskType, HandleSendEmailTask))
-	mux.HandleFunc(StartGeneratorTaskType, wrapHandler(StartGeneratorTaskType, HandleStartGeneratorTask))
-	mux.HandleFunc(StopGeneratorTaskType, wrapHandler(StopGeneratorTaskType, HandleStopGeneratorTask))
-	mux.HandleFunc(GenAttachmentTaskType, wrapHandler(GenAttachmentTaskType, HandleGenAttachmentTask))
-	mux.HandleFunc(StartVictimTaskType, wrapHandler(StartVictimTaskType, HandleStartVictimTask))
-	mux.HandleFunc(StopVictimTaskType, wrapHandler(StopVictimTaskType, HandleStopVictimTask))
-	mux.HandleFunc(WebhookTaskType, wrapHandler(WebhookTaskType, HandleWebhookTask))
-	mux.HandleFunc(ResizeImageTaskType, wrapHandler(ResizeImageTaskType, HandleResizeImageTask))
-}
-
-func Start() {
-	if err := srv.Run(mux); err != nil {
-		log.Logger.Fatalf("Failed to start task server: %v", err)
-	}
-	log.Logger.Info("Task server started")
-}
-
-func Stop() {
-	srv.Shutdown()
+	return cfg
 }

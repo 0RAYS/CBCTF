@@ -37,6 +37,14 @@ type Config struct {
 			Level string `mapstructure:"level" json:"level"`
 		} `mapstructure:"log" json:"log"`
 		Concurrency int `mapstructure:"concurrency" json:"concurrency"`
+		Queues      struct {
+			Victim     int `mapstructure:"victim" json:"victim"`
+			Generator  int `mapstructure:"generator" json:"generator"`
+			Attachment int `mapstructure:"attachment" json:"attachment"`
+			Email      int `mapstructure:"email" json:"email"`
+			Webhook    int `mapstructure:"webhook" json:"webhook"`
+			Image      int `mapstructure:"image" json:"image"`
+		} `mapstructure:"queues" json:"queues"`
 	} `mapstructure:"asynq" json:"asynq"`
 	Gin struct {
 		Mode   string `mapstructure:"mode" json:"mode"` // Gin 模式:debug, release, test

@@ -25,7 +25,7 @@ func EnqueueResizeImageTask(path string, width, height int) (*asynq.TaskInfo, er
 		return nil, err
 	}
 	task := asynq.NewTask(ResizeImageTaskType, payload)
-	info, err := client.Enqueue(task, asynq.MaxRetry(3), asynq.Timeout(time.Minute))
+	info, err := client.Enqueue(task, asynq.Queue(queueForTask(ResizeImageTaskType)), asynq.MaxRetry(3), asynq.Timeout(time.Minute))
 	if err == nil {
 		prometheus.RecordTaskEnqueued(ResizeImageTaskType)
 	}

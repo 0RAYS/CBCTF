@@ -33,7 +33,7 @@ func EnqueueGenAttachmentTask(userID uint, generator model.Generator, challenge 
 		return nil, err
 	}
 	task := asynq.NewTask(GenAttachmentTaskType, payload)
-	info, err := client.Enqueue(task, asynq.MaxRetry(0), asynq.Timeout(2*time.Minute))
+	info, err := client.Enqueue(task, asynq.Queue(queueForTask(GenAttachmentTaskType)), asynq.MaxRetry(0), asynq.Timeout(2*time.Minute))
 	if err == nil {
 		prometheus.RecordTaskEnqueued(GenAttachmentTaskType)
 	}

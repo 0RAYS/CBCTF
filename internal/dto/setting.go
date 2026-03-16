@@ -11,8 +11,14 @@ type UpdateSettingForm struct {
 	LogLevel *string `form:"log_level" json:"log_level" binding:"omitempty,oneof=DEBUG INFO WARNING ERROR"`
 	LogSave  *bool   `form:"log_save" json:"log_save"`
 
-	AsyncQLogLevel    *string `form:"asyncq_log_level" json:"asyncq_log_level" binding:"omitempty,oneof=DEBUG INFO WARNING ERROR"`
-	AsyncQConcurrency *int    `form:"asyncq_concurrency" json:"asyncq_concurrency" binding:"omitempty,gte=1"`
+	AsyncQLogLevel              *string `form:"asyncq_log_level" json:"asyncq_log_level" binding:"omitempty,oneof=DEBUG INFO WARNING ERROR"`
+	AsyncQConcurrency           *int    `form:"asyncq_concurrency" json:"asyncq_concurrency" binding:"omitempty,gte=1"`
+	AsyncQVictimConcurrency     *int    `form:"asyncq_victim_concurrency" json:"asyncq_victim_concurrency" binding:"omitempty,gte=1"`
+	AsyncQGeneratorConcurrency  *int    `form:"asyncq_generator_concurrency" json:"asyncq_generator_concurrency" binding:"omitempty,gte=1"`
+	AsyncQAttachmentConcurrency *int    `form:"asyncq_attachment_concurrency" json:"asyncq_attachment_concurrency" binding:"omitempty,gte=1"`
+	AsyncQEmailConcurrency      *int    `form:"asyncq_email_concurrency" json:"asyncq_email_concurrency" binding:"omitempty,gte=1"`
+	AsyncQWebhookConcurrency    *int    `form:"asyncq_webhook_concurrency" json:"asyncq_webhook_concurrency" binding:"omitempty,gte=1"`
+	AsyncQImageConcurrency      *int    `form:"asyncq_image_concurrency" json:"asyncq_image_concurrency" binding:"omitempty,gte=1"`
 
 	GinMode               *string   `form:"gin_mode" json:"gin_mode" binding:"omitempty,oneof=debug test release"`
 	GinHost               *string   `form:"gin_host" json:"gin_host" binding:"omitempty,ip"`

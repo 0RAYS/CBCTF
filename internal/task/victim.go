@@ -29,7 +29,7 @@ func EnqueueStartVictimTask(victim model.Victim) (*asynq.TaskInfo, error) {
 		return nil, err
 	}
 	task := asynq.NewTask(StartVictimTaskType, payload)
-	info, err := client.Enqueue(task, asynq.MaxRetry(0), asynq.Timeout(2*time.Minute))
+	info, err := client.Enqueue(task, asynq.Queue(queueForTask(StartVictimTaskType)), asynq.MaxRetry(0), asynq.Timeout(2*time.Minute))
 	if err == nil {
 		prometheus.RecordTaskEnqueued(StartVictimTaskType)
 	}
@@ -110,7 +110,7 @@ func EnqueueStopVictimTask(victim model.Victim) (*asynq.TaskInfo, error) {
 		return nil, err
 	}
 	task := asynq.NewTask(StopVictimTaskType, payload)
-	info, err := client.Enqueue(task, asynq.MaxRetry(0), asynq.Timeout(2*time.Minute))
+	info, err := client.Enqueue(task, asynq.Queue(queueForTask(StopVictimTaskType)), asynq.MaxRetry(0), asynq.Timeout(2*time.Minute))
 	if err == nil {
 		prometheus.RecordTaskEnqueued(StopVictimTaskType)
 	}
