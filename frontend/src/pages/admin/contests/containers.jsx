@@ -12,10 +12,10 @@ import { Modal } from '../../../components/common';
 import ModalButton from '../../../components/common/ModalButton';
 import { Button, Pagination, Card, EmptyState, StatCard, Chip } from '../../../components/common';
 import { motion } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import {
   IconPlayerPlay,
   IconBan,
-  IconFilter,
   IconTable,
   IconServer,
   IconUsers,
@@ -24,9 +24,9 @@ import {
   IconTrash,
   IconClockPlay,
   IconArrowsMaximize,
+  IconChevronLeft,
+  IconChevronRight,
 } from '@tabler/icons-react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../config/challengeChips';
 
 const VICTIM_STATUS_STYLES = {
@@ -44,8 +44,6 @@ function VictimStatusBadge({ status, t }) {
     </span>
   );
 }
-import { useTranslation } from 'react-i18next';
-import { searchModels } from '../../../api/admin/search.js';
 
 function ContestContainers() {
   const { id: contestId } = useParams();
@@ -54,32 +52,6 @@ function ContestContainers() {
   const [containers, setContainers] = useState([]);
   const [runningCount, setRunningCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-
-  // 过滤参数
-  const [filters, setFilters] = useState({
-    user_id: '',
-    team_id: '',
-    challenge_id: '',
-    limit: 20,
-    offset: 0,
-  });
-
-  // 搜索相关状态
-  const [searchResults, setSearchResults] = useState({
-    users: [],
-    teams: [],
-    challenges: [],
-  });
-  const [searchLoading, setSearchLoading] = useState({
-    users: false,
-    teams: false,
-    challenges: false,
-  });
-
-  // 搜索输入框refs
-  const usersSearchRef = useRef(null);
-  const teamsSearchRef = useRef(null);
-  const challengesSearchRef = useRef(null);
 
   // 选中的容器
   const [selectedContainers, setSelectedContainers] = useState([]);
@@ -96,8 +68,7 @@ function ContestContainers() {
   const [challengeSearch, setChallengeSearch] = useState('');
   const [randomTeamPercentage, setRandomTeamPercentage] = useState(50); // 随机选择队伍的百分比
 
-  const challengePageSize = 4;
-  const detailChallengePageSize = 20;
+  const challengePageSize = 20;
   const [challengePage, setChallengePage] = useState(1);
   const [challengeTotal, setChallengeTotal] = useState(0);
   const [detailChallengePage, setDetailChallengePage] = useState(1);
@@ -121,17 +92,10 @@ function ContestContainers() {
   const fetchContainers = async (page = currentPage, deleted = showDeleted) => {
     try {
       const params = {
-        ...filters,
         limit: pageSize,
         offset: (page - 1) * pageSize,
         ...(deleted && { deleted: true }),
       };
-      // 清除空值
-      Object.keys(params).forEach((key) => {
-        if (params[key] === '') {
-          delete params[key];
-        }
-      });
 
       const response = await getContestVictims(parseInt(contestId), params);
 
@@ -195,8 +159,8 @@ function ContestContainers() {
     try {
       const params = {
         type: 'pods',
-        limit: detailChallengePageSize,
-        offset: (page - 1) * detailChallengePageSize,
+        limit: challengePageSize,
+        offset: (page - 1) * challengePageSize,
       };
       if (query.trim() !== '') {
         params['search[name]'] = query.trim();
@@ -241,7 +205,7 @@ function ContestContainers() {
 
   useEffect(() => {
     fetchContainers();
-  }, [currentPage, filters.user_id, filters.team_id, filters.challenge_id]);
+  }, [currentPage]);
 
   const currentPageRef = useRef(currentPage);
   const showDeletedRef = useRef(showDeleted);
@@ -270,99 +234,6 @@ function ContestContainers() {
     if (!isChallengeDetailsOpen) return;
     fetchDetailChallenges(detailChallengePage, challengeSearch);
   }, [isChallengeDetailsOpen, detailChallengePage, challengeSearch]);
-
-  // 点击外部关闭搜索结果
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      const isOutsideUsers = usersSearchRef.current && !usersSearchRef.current.contains(event.target);
-      const isOutsideTeams = teamsSearchRef.current && !teamsSearchRef.current.contains(event.target);
-      const isOutsideChallenges = challengesSearchRef.current && !challengesSearchRef.current.contains(event.target);
-
-      if (isOutsideUsers && searchResults.users.length > 0) {
-        setSearchResults((prev) => ({ ...prev, users: [] }));
-      }
-      if (isOutsideTeams && searchResults.teams.length > 0) {
-        setSearchResults((prev) => ({ ...prev, teams: [] }));
-      }
-      if (isOutsideChallenges && searchResults.challenges.length > 0) {
-        setSearchResults((prev) => ({ ...prev, challenges: [] }));
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [searchResults]);
-
-  // 处理过滤器变更
-  const handleFilterChange = (key, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-    setCurrentPage(1);
-  };
-
-  // 搜索函数
-  const handleSearch = async (model, name, setResults, setLoading) => {
-    if (!name || name.trim() === '') {
-      setResults([]);
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await searchModels({
-        model,
-        'search[name]': name.trim(),
-        limit: 10,
-        offset: 0,
-      });
-
-      if (response.code === 200) {
-        let results = response.data.models || [];
-
-        // 如果是搜索团队，需要过滤contest_id
-        if (model === 'Team') {
-          results = results.filter((item) => item.contest_id === parseInt(contestId));
-        }
-
-        setResults(results);
-      } else {
-        setResults([]);
-      }
-    } catch (error) {
-      toast.danger({ description: error.message || t('admin.contests.containers.toast.searchFailed') });
-      setResults([]);
-    }
-  };
-
-  // 防抖搜索函数
-  const debounceTimerRef = useRef(null);
-  const debouncedSearch = (model, name, setResults, setLoading) => {
-    clearTimeout(debounceTimerRef.current);
-    debounceTimerRef.current = setTimeout(() => {
-      handleSearch(model, name, setResults, setLoading);
-    }, 300); // 300ms 防抖延迟
-  };
-
-  // 重置过滤器
-  const handleResetFilters = () => {
-    setFilters({
-      user_id: '',
-      team_id: '',
-      challenge_id: '',
-      limit: 20,
-      offset: 0,
-    });
-    setSearchResults({
-      users: [],
-      teams: [],
-      challenges: [],
-    });
-    setCurrentPage(1);
-  };
 
   // 处理页面切换
   const handlePageChange = (page) => {
@@ -536,14 +407,14 @@ function ContestContainers() {
           </div>
         </div>
 
-        {/* 快速操作和过滤条件 */}
+        {/* 快速操作 */}
         <motion.div
-          className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+          className="grid grid-cols-1 gap-6 items-stretch"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
         >
           {/* 快速操作区域 */}
-          <div className="border border-neutral-600 rounded-md bg-neutral-900 p-4">
+          <div className="border border-neutral-600 rounded-md bg-neutral-900 p-4 min-h-[460px] flex flex-col">
             <div className="flex items-center gap-2 mb-3">
               <IconPlayerPlay size={18} className="text-neutral-400" />
               <h3 className="text-base font-mono text-neutral-50">
@@ -551,9 +422,47 @@ function ContestContainers() {
               </h3>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-4 flex-1 min-h-0">
+              {/* 选择队伍 */}
+              <div className="border border-neutral-300/20 rounded-md bg-black/10 p-4">
+                <div className="flex justify-between items-center mb-2">
+                  <label className="text-xs font-mono text-neutral-400 flex items-center gap-1">
+                    <IconUsers size={14} />
+                    <span className="text-xs font-mono text-neutral-400">
+                      {t('admin.contests.containers.quickActions.randomTeams')}
+                    </span>
+                    <span className="text-xs font-mono text-geek-400">{randomTeamPercentage}%</span>
+                  </label>
+                  <span className="text-xs font-mono text-neutral-500">
+                    {t('admin.contests.containers.quickActions.estimatedTeams', { count: selectedTeamCount })}
+                  </span>
+                </div>
+
+                <div className="mb-3 p-2 border border-neutral-300/20 rounded-md bg-black/10">
+                  <div className="relative">
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={randomTeamPercentage}
+                      onChange={(e) => setRandomTeamPercentage(parseInt(e.target.value))}
+                      className="w-full h-1 bg-neutral-700 rounded-lg appearance-none cursor-pointer slider"
+                      style={{
+                        background: `linear-gradient(to right, #597ef7 0%, #597ef7 ${randomTeamPercentage}%, #374151 ${randomTeamPercentage}%, #374151 100%)`,
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="border border-neutral-300/30 rounded-md bg-black/10 p-3">
+                  <p className="text-xs font-mono text-neutral-400">
+                    {t('admin.contests.containers.quickActions.teamSelectionHint', { total: totalTeamCount })}
+                  </p>
+                </div>
+              </div>
+
               {/* 选择题目 */}
-              <div>
+              <div className="flex flex-col min-h-0 flex-1">
                 <div className="flex justify-between items-center mb-2">
                   <label className="text-xs font-mono text-neutral-400 flex items-center gap-1">
                     <IconTarget size={14} />
@@ -584,7 +493,7 @@ function ContestContainers() {
                     </Button>
                   </div>
                 </div>
-                <div className="max-h-24 overflow-y-auto border border-neutral-300/30 rounded-md bg-black/10">
+                <div className="flex-1 min-h-[260px] overflow-y-auto border border-neutral-300/30 rounded-md bg-black/10">
                   <div className="p-2 border-b border-neutral-300/20">
                     <div className="relative">
                       <IconSearch
@@ -626,70 +535,38 @@ function ContestContainers() {
                   )}
                 </div>
                 {Math.ceil(challengeTotal / challengePageSize) > 1 && (
-                  <div className="flex items-center justify-between mt-1">
-                    <button
-                      disabled={challengePage === 1}
-                      onClick={() => setChallengePage((p) => p - 1)}
-                      className="text-xs font-mono text-neutral-400 hover:text-neutral-200 disabled:opacity-30 px-1"
-                    >
-                      ‹
-                    </button>
-                    <span className="text-xs font-mono text-neutral-500">
-                      {challengePage} / {Math.ceil(challengeTotal / challengePageSize)}
+                  <div className="flex items-center justify-between gap-2 mt-2 px-1">
+                    <span className="text-[11px] font-mono text-geek-400/80 whitespace-nowrap">
+                      {t('admin.contests.containers.quickActions.pageHint')}
                     </span>
-                    <button
-                      disabled={challengePage >= Math.ceil(challengeTotal / challengePageSize)}
-                      onClick={() => setChallengePage((p) => p + 1)}
-                      className="text-xs font-mono text-neutral-400 hover:text-neutral-200 disabled:opacity-30 px-1"
-                    >
-                      ›
-                    </button>
+                    <div className="flex items-center gap-2 ml-auto">
+                      <button
+                        disabled={challengePage === 1}
+                        onClick={() => setChallengePage((p) => p - 1)}
+                        className="inline-flex items-center justify-center w-7 h-7 rounded-md border border-geek-400/40 bg-geek-400/10 text-geek-300 hover:bg-geek-400/20 hover:text-geek-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        aria-label={t('common.previous')}
+                      >
+                        <IconChevronLeft size={15} />
+                      </button>
+                      <span className="text-xs font-mono text-neutral-300 min-w-[56px] text-center">
+                        {challengePage} / {Math.ceil(challengeTotal / challengePageSize)}
+                      </span>
+                      <button
+                        disabled={challengePage >= Math.ceil(challengeTotal / challengePageSize)}
+                        onClick={() => setChallengePage((p) => p + 1)}
+                        className="inline-flex items-center justify-center w-7 h-7 rounded-md border border-geek-400/40 bg-geek-400/10 text-geek-300 hover:bg-geek-400/20 hover:text-geek-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        aria-label={t('common.next')}
+                      >
+                        <IconChevronRight size={15} />
+                      </button>
+                    </div>
                   </div>
                 )}
-              </div>
-
-              {/* 选择队伍 */}
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label className="text-xs font-mono text-neutral-400 flex items-center gap-1">
-                    <IconUsers size={14} />
-                    <span className="text-xs font-mono text-neutral-400">
-                      {t('admin.contests.containers.quickActions.randomTeams')}
-                    </span>
-                    <span className="text-xs font-mono text-geek-400">{randomTeamPercentage}%</span>
-                  </label>
-                  <span className="text-xs font-mono text-neutral-500">
-                    {t('admin.contests.containers.quickActions.estimatedTeams', { count: selectedTeamCount })}
-                  </span>
-                </div>
-
-                {/* 随机选择拖动条 */}
-                <div className="mb-3 p-2 border border-neutral-300/20 rounded-md bg-black/10">
-                  <div className="relative">
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={randomTeamPercentage}
-                      onChange={(e) => setRandomTeamPercentage(parseInt(e.target.value))}
-                      className="w-full h-1 bg-neutral-700 rounded-lg appearance-none cursor-pointer slider"
-                      style={{
-                        background: `linear-gradient(to right, #597ef7 0%, #597ef7 ${randomTeamPercentage}%, #374151 ${randomTeamPercentage}%, #374151 100%)`,
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div className="max-h-24 overflow-y-auto border border-neutral-300/30 rounded-md bg-black/10 p-2">
-                  <p className="text-xs font-mono text-neutral-400">
-                    {t('admin.contests.containers.quickActions.teamSelectionHint', { total: totalTeamCount })}
-                  </p>
-                </div>
               </div>
             </div>
 
             {/* 开启容器按钮 */}
-            <div className="mt-3 flex justify-end">
+            <div className="mt-4 flex justify-end">
               <Button
                 variant="primary"
                 size="sm"
@@ -706,271 +583,57 @@ function ContestContainers() {
               </Button>
             </div>
           </div>
-
-          {/* 过滤器 */}
-          <div className="border border-neutral-600 rounded-md bg-neutral-900 p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <IconFilter size={18} className="text-neutral-400" />
-                <h3 className="text-base font-mono text-neutral-50">{t('admin.contests.containers.filters.title')}</h3>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleResetFilters}
-                className="!text-neutral-400 hover:!text-neutral-300 !text-xs !h-6 !px-2"
-              >
-                {t('admin.contests.containers.filters.reset')}
-              </Button>
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              {/* 用户搜索 */}
-              <div className="relative" ref={usersSearchRef}>
-                <label className="block text-xs font-mono text-neutral-400 mb-1">
-                  {t('admin.contests.containers.filters.userName')}
-                </label>
-                <div className="relative">
-                  <IconSearch
-                    size={14}
-                    className="absolute left-2 top-1/2 transform -translate-y-1/2 text-neutral-400"
-                  />
-                  <input
-                    type="text"
-                    placeholder={t('admin.contests.containers.filters.searchUserPlaceholder')}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      debouncedSearch(
-                        'User',
-                        value,
-                        (results) => setSearchResults((prev) => ({ ...prev, users: results })),
-                        (loading) => setSearchLoading((prev) => ({ ...prev, users: loading }))
-                      );
-                    }}
-                    className="w-full h-8 pl-7 pr-2 bg-black/20 border border-neutral-300/30 rounded-md
-                            text-xs text-neutral-50 placeholder-neutral-500
-                            focus:outline-none focus:border-geek-400 focus:shadow-focus
-                            transition-all duration-200"
-                  />
-                  {searchLoading.users && (
-                    <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                      <div className="w-3 h-3 border border-geek-400 border-t-transparent rounded-full animate-spin"></div>
-                    </div>
-                  )}
-                </div>
-                {/* 搜索结果下拉 */}
-                {searchResults.users.length > 0 && (
-                  <div className="dropdown-custom max-h-32">
-                    {searchResults.users.map((user) => (
-                      <div
-                        key={user.id}
-                        className="dropdown-option text-xs"
-                        onClick={() => {
-                          handleFilterChange('user_id', user.id.toString());
-                          setSearchResults((prev) => ({ ...prev, users: [] }));
-                        }}
-                      >
-                        {user.name ||
-                          user.username ||
-                          t('admin.contests.containers.filters.userFallback', { id: user.id })}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* 团队搜索 */}
-              <div className="relative" ref={teamsSearchRef}>
-                <label className="block text-xs font-mono text-neutral-400 mb-1">
-                  {t('admin.contests.containers.filters.teamName')}
-                </label>
-                <div className="relative">
-                  <IconUsers
-                    size={14}
-                    className="absolute left-2 top-1/2 transform -translate-y-1/2 text-neutral-400"
-                  />
-                  <input
-                    type="text"
-                    placeholder={t('admin.contests.containers.filters.searchTeamPlaceholder')}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      debouncedSearch(
-                        'Team',
-                        value,
-                        (results) => setSearchResults((prev) => ({ ...prev, teams: results })),
-                        (loading) => setSearchLoading((prev) => ({ ...prev, teams: loading }))
-                      );
-                    }}
-                    className="w-full h-8 pl-7 pr-2 bg-black/20 border border-neutral-300/30 rounded-md
-                            text-xs text-neutral-50 placeholder-neutral-500
-                            focus:outline-none focus:border-geek-400 focus:shadow-focus
-                            transition-all duration-200"
-                  />
-                  {searchLoading.teams && (
-                    <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                      <div className="w-3 h-3 border border-geek-400 border-t-transparent rounded-full animate-spin"></div>
-                    </div>
-                  )}
-                </div>
-                {/* 搜索结果下拉 */}
-                {searchResults.teams.length > 0 && (
-                  <div className="dropdown-custom max-h-32">
-                    {searchResults.teams.map((team) => (
-                      <div
-                        key={team.id}
-                        className="dropdown-option text-xs"
-                        onClick={() => {
-                          handleFilterChange('team_id', team.id.toString());
-                          setSearchResults((prev) => ({ ...prev, teams: [] }));
-                        }}
-                      >
-                        {team.name || t('admin.contests.containers.filters.teamFallback', { id: team.id })}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* 题目搜索 */}
-              <div className="relative" ref={challengesSearchRef}>
-                <label className="block text-xs font-mono text-neutral-400 mb-1">
-                  {t('admin.contests.containers.filters.challengeName')}
-                </label>
-                <div className="relative">
-                  <IconTarget
-                    size={14}
-                    className="absolute left-2 top-1/2 transform -translate-y-1/2 text-neutral-400"
-                  />
-                  <input
-                    type="text"
-                    placeholder={t('admin.contests.containers.filters.searchChallengePlaceholder')}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      debouncedSearch(
-                        'Challenge',
-                        value,
-                        (results) => setSearchResults((prev) => ({ ...prev, challenges: results })),
-                        (loading) => setSearchLoading((prev) => ({ ...prev, challenges: loading }))
-                      );
-                    }}
-                    className="w-full h-8 pl-7 pr-2 bg-black/20 border border-neutral-300/30 rounded-md
-                            text-xs text-neutral-50 placeholder-neutral-500
-                            focus:outline-none focus:border-geek-400 focus:shadow-focus
-                            transition-all duration-200"
-                  />
-                  {searchLoading.challenges && (
-                    <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                      <div className="w-3 h-3 border border-geek-400 border-t-transparent rounded-full animate-spin"></div>
-                    </div>
-                  )}
-                </div>
-                {/* 搜索结果下拉 */}
-                {searchResults.challenges.length > 0 && (
-                  <div className="dropdown-custom max-h-32">
-                    {searchResults.challenges.map((challenge) => (
-                      <div
-                        key={challenge.id}
-                        className="dropdown-option text-xs"
-                        onClick={() => {
-                          handleFilterChange('challenge_id', challenge.id.toString());
-                          setSearchResults((prev) => ({ ...prev, challenges: [] }));
-                        }}
-                      >
-                        {challenge.name ||
-                          t('admin.contests.containers.filters.challengeFallback', { id: challenge.id })}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* 当前选中的过滤条件显示 */}
-            {(filters.user_id || filters.team_id || filters.challenge_id) && (
-              <div className="mt-3 pt-3 border-t border-neutral-300/20">
-                <div className="flex flex-wrap gap-2">
-                  {filters.user_id && (
-                    <span className="px-2 py-1 bg-geek-400/20 text-geek-400 text-xs font-mono rounded border border-geek-400/30">
-                      {t('admin.contests.containers.filters.userIdLabel')}: {filters.user_id}
-                      <button onClick={() => handleFilterChange('user_id', '')} className="ml-1 hover:text-red-400">
-                        ×
-                      </button>
-                    </span>
-                  )}
-                  {filters.team_id && (
-                    <span className="px-2 py-1 bg-geek-400/20 text-geek-400 text-xs font-mono rounded border border-geek-400/30">
-                      {t('admin.contests.containers.filters.teamIdLabel')}: {filters.team_id}
-                      <button onClick={() => handleFilterChange('team_id', '')} className="ml-1 hover:text-red-400">
-                        ×
-                      </button>
-                    </span>
-                  )}
-                  {filters.challenge_id && (
-                    <span className="px-2 py-1 bg-green-400/20 text-green-400 text-xs font-mono rounded border border-green-400/30">
-                      {t('admin.contests.containers.filters.challengeIdLabel')}: {filters.challenge_id}
-                      <button
-                        onClick={() => handleFilterChange('challenge_id', '')}
-                        className="ml-1 hover:text-red-400"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
         </motion.div>
-
-        {/* 容器列表 */}
-
-        {/* 工具栏 */}
-        <div className="flex flex-wrap gap-2 items-center">
-          <div className="flex items-center gap-1 px-2 h-8 rounded-md border border-neutral-700 bg-neutral-900">
-            <IconClockPlay size={13} className="text-neutral-400 shrink-0" />
-            <span className="text-xs text-neutral-400 shrink-0">{t('common.autoRefresh')}</span>
-            <select
-              value={refreshInterval}
-              onChange={(e) => setRefreshInterval(Number(e.target.value))}
-              className="bg-transparent text-xs text-neutral-300 outline-none cursor-pointer"
-            >
-              {[5, 10, 30, 60].map((s) => (
-                <option key={s} value={s} className="bg-neutral-900">
-                  {s}s
-                </option>
-              ))}
-              <option value={0} className="bg-neutral-900">
-                {t('common.autoRefreshOff')}
-              </option>
-            </select>
-          </div>
-          <Button
-            variant={showDeleted ? 'danger' : 'ghost'}
-            size="sm"
-            leftIcon={<IconTrash size={14} />}
-            onClick={toggleShowDeleted}
-          >
-            {t('admin.contests.containers.showDeleted')}
-          </Button>
-          {selectedContainers.length > 0 && (
-            <Button
-              variant="danger"
-              size="sm"
-              leftIcon={<IconBan size={14} />}
-              onClick={() => setIsStopModalOpen(true)}
-            >
-              {t('admin.contests.containers.table.stopButton')} ({selectedContainers.length})
-            </Button>
-          )}
-        </div>
 
         <Card variant="default" padding="none" className="overflow-hidden">
           {/* 列表头部 */}
-          <div className="p-4 bg-black/20 border-b border-neutral-300/30 flex items-center gap-2">
-            <IconTable size={20} className="text-neutral-400" />
-            <h3 className="text-lg font-mono text-neutral-50">{t('admin.contests.containers.table.title')}</h3>
-            <span className="text-sm font-mono text-neutral-400">
-              {t('admin.contests.containers.table.total', { count: runningCount })}
-            </span>
+          <div className="p-4 bg-black/20 border-b border-neutral-300/30 space-y-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <IconTable size={20} className="text-neutral-400" />
+              <h3 className="text-lg font-mono text-neutral-50">{t('admin.contests.containers.table.title')}</h3>
+              <span className="text-sm font-mono text-neutral-400">
+                {t('admin.contests.containers.table.total', { count: runningCount })}
+              </span>
+            </div>
+
+            <div className="flex flex-wrap gap-2 items-center">
+              <div className="flex items-center gap-1 px-2 h-8 rounded-md border border-neutral-700 bg-neutral-900">
+                <IconClockPlay size={13} className="text-neutral-400 shrink-0" />
+                <span className="text-xs text-neutral-400 shrink-0">{t('common.autoRefresh')}</span>
+                <select
+                  value={refreshInterval}
+                  onChange={(e) => setRefreshInterval(Number(e.target.value))}
+                  className="bg-transparent text-xs text-neutral-300 outline-none cursor-pointer"
+                >
+                  {[5, 10, 30, 60].map((s) => (
+                    <option key={s} value={s} className="bg-neutral-900">
+                      {s}s
+                    </option>
+                  ))}
+                  <option value={0} className="bg-neutral-900">
+                    {t('common.autoRefreshOff')}
+                  </option>
+                </select>
+              </div>
+              <Button
+                variant={showDeleted ? 'danger' : 'ghost'}
+                size="sm"
+                leftIcon={<IconTrash size={14} />}
+                onClick={toggleShowDeleted}
+              >
+                {t('admin.contests.containers.showDeleted')}
+              </Button>
+              {selectedContainers.length > 0 && (
+                <Button
+                  variant="danger"
+                  size="sm"
+                  leftIcon={<IconBan size={14} />}
+                  onClick={() => setIsStopModalOpen(true)}
+                >
+                  {t('admin.contests.containers.table.stopButton')} ({selectedContainers.length})
+                </Button>
+              )}
+            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -1159,6 +822,12 @@ function ContestContainers() {
                 {t('admin.contests.containers.modals.summarySuffix')}
               </p>
             </div>
+
+            <div className="border border-amber-400/40 rounded-md bg-amber-400/10 p-3">
+              <p className="text-xs font-mono text-amber-200">
+                {t('admin.contests.containers.modals.startWarning')}
+              </p>
+            </div>
           </div>
         </Modal>
 
@@ -1292,12 +961,12 @@ function ContestContainers() {
               </div>
             )}
 
-            {Math.ceil(detailChallengeTotal / detailChallengePageSize) > 1 ? (
+            {Math.ceil(detailChallengeTotal / challengePageSize) > 1 ? (
               <div className="pt-2 border-t border-neutral-300/20">
                 <Pagination
-                  total={Math.ceil(detailChallengeTotal / detailChallengePageSize)}
+                  total={Math.ceil(detailChallengeTotal / challengePageSize)}
                   current={detailChallengePage}
-                  pageSize={detailChallengePageSize}
+                  pageSize={challengePageSize}
                   onChange={setDetailChallengePage}
                   showTotal
                   totalItems={detailChallengeTotal}

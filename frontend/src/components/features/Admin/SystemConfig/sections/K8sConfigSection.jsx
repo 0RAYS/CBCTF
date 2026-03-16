@@ -5,14 +5,6 @@ import { ConfigField } from '../fields/ConfigField';
 import { FrpServerField } from '../fields/FrpServerField';
 import { Input } from '../../../../common';
 
-const sanitizeNumber = (value, fallbackValue = 0) => {
-  if (value === '' || value === null || value === undefined) {
-    return fallbackValue;
-  }
-  const numeric = Number(value);
-  return Number.isNaN(numeric) ? fallbackValue : numeric;
-};
-
 export function K8sConfigSection({ config, updateConfig }) {
   const { t } = useTranslation();
 
