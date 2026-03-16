@@ -482,6 +482,9 @@
           "nodes": "Target Nodes",
           "comboHint": "Select exact node/image pairs to pull."
         },
+        "filters": {
+          "placeholder": "Filter by image name..."
+        },
         "summary": {
           "nodes": "{{count}} nodes",
           "nodesLabel": "Schedulable Nodes",
