@@ -3,6 +3,7 @@ package dto
 import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,6 +13,7 @@ type GetChallengesForm struct {
 	ListModelsForm
 	Type     model.ChallengeType `form:"type" json:"type" binding:"omitempty,oneof=static question dynamic pods"`
 	Category string              `form:"category" json:"category"`
+	Search   map[string]string   `form:"search" json:"search"`
 }
 
 func (f *GetChallengesForm) Validate(ctx *gin.Context) model.RetVal {
@@ -22,6 +24,10 @@ func (f *GetChallengesForm) Validate(ctx *gin.Context) model.RetVal {
 		f.Offset = 0
 	}
 	f.Category = utils.ToTitle(f.Category)
+	f.Search = make(map[string]string)
+	for k, v := range ctx.QueryMap("search") {
+		f.Search[strings.ToLower(k)] = v
+	}
 	return model.SuccessRetVal()
 }
 

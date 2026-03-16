@@ -27,6 +27,9 @@ func GetChallenges(tx *gorm.DB, form dto.GetChallengesForm) ([]model.Challenge, 
 	if form.Category != "" {
 		options.Conditions["category"] = form.Category
 	}
+	if len(form.Search) > 0 {
+		options.Search = form.Search
+	}
 	return db.InitChallengeRepo(tx).List(form.Limit, form.Offset, options)
 }
 
