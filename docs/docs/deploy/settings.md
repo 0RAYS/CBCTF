@@ -18,6 +18,13 @@ asynq:
   log:
     level: warning
   concurrency: 50
+  queues:
+    victim: 2
+    generator: 4
+    attachment: 4
+    email: 8
+    webhook: 8
+    image: 4
 gin:
   mode: release
   host: 127.0.0.1
@@ -122,6 +129,17 @@ CBCTF_LOG_LEVEL=DEBUG
 ### `asynq.*`
 
 异步任务队列配置，负责邮件、Webhook、动态附件生成等后台任务。
+
+- `asynq.log.level`：Asynq worker 日志级别
+- `asynq.concurrency`：全局默认并发值
+- `asynq.queues.victim`：容器靶机启停任务并发
+- `asynq.queues.generator`：动态附件生成器启停任务并发
+- `asynq.queues.attachment`：附件生成任务并发
+- `asynq.queues.email`：邮件任务并发
+- `asynq.queues.webhook`：Webhook 任务并发
+- `asynq.queues.image`：图片处理任务并发
+
+当前版本会为不同任务类型启动独立的 Asynq worker 池，因此限流应优先调整 `asynq.queues.*`。`asynq.concurrency` 保留为默认值和兼容字段。
 
 ### `gin.*`
 
