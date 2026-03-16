@@ -42,6 +42,7 @@ func wrapHandler(taskType string, h asynq.HandlerFunc) asynq.HandlerFunc {
 func Init() {
 	client = asynq.NewClientFromRedisClient(redis.RDB)
 	mux = asynq.NewServeMux()
+	servers = make([]*asynq.Server, 0)
 	addServer := func(queue string, concurrency int) {
 		if concurrency <= 0 {
 			return
