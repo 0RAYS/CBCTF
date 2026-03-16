@@ -31,7 +31,7 @@ func EnqueueStartGeneratorTask(contestID uint, challenge model.Challenge) (*asyn
 		return nil, err
 	}
 	task := asynq.NewTask(StartGeneratorTaskType, payload)
-	info, err := client.Enqueue(task, asynq.MaxRetry(0), asynq.Timeout(2*time.Minute))
+	info, err := client.Enqueue(task, asynq.Queue(queueForTask(StartGeneratorTaskType)), asynq.MaxRetry(0), asynq.Timeout(2*time.Minute))
 	if err != nil {
 		prometheus.RecordTaskEnqueued(StartGeneratorTaskType)
 	}
@@ -82,7 +82,7 @@ func EnqueueStopGeneratorTask(generator model.Generator) (*asynq.TaskInfo, error
 		return nil, err
 	}
 	task := asynq.NewTask(StopGeneratorTaskType, payload)
-	info, err := client.Enqueue(task, asynq.MaxRetry(0), asynq.Timeout(2*time.Minute))
+	info, err := client.Enqueue(task, asynq.Queue(queueForTask(StopGeneratorTaskType)), asynq.MaxRetry(0), asynq.Timeout(2*time.Minute))
 	if err != nil {
 		prometheus.RecordTaskEnqueued(StopGeneratorTaskType)
 	}

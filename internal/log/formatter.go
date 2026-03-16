@@ -132,7 +132,7 @@ func (f Formatter) Format(entry *logrus.Entry) ([]byte, error) {
 		}
 		_, _ = fmt.Fprintf(ret, "%s | %s", caller, LevelColor(msg))
 	case TaskLogType:
-		_, _ = fmt.Fprintf(ret, "%-36s | %s", "Async Queue Task", LevelColor(entry.Message))
+		_, _ = fmt.Fprintf(ret, "%-36s | %s", fmt.Sprintf("Async %s Task", entry.Data["Queue"]), LevelColor(entry.Message))
 	case GinLogType:
 		StatusCodeColor := statusCodeColor(safeGetValue(entry, "StatusCode", -1))
 		MethodColor := methodColor(safeGetValue(entry, "Method", "ERROR"))

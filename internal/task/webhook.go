@@ -25,7 +25,7 @@ func EnqueueWebhookTask(event model.Event, target model.Webhook) (*asynq.TaskInf
 		return nil, err
 	}
 	task := asynq.NewTask(WebhookTaskType, payload)
-	info, err := client.Enqueue(task, asynq.MaxRetry(target.Retry), asynq.Timeout(time.Duration(target.Timeout)*time.Second))
+	info, err := client.Enqueue(task, asynq.Queue(queueForTask(WebhookTaskType)), asynq.MaxRetry(target.Retry), asynq.Timeout(time.Duration(target.Timeout)*time.Second))
 	if err == nil {
 		prometheus.RecordTaskEnqueued(WebhookTaskType)
 	}

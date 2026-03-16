@@ -90,6 +90,12 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 
 		{Key: model.AsyncQLogLevelSettingKey, Value: model.SettingValue{V: config.Env.AsyncQ.Log.Level}},
 		{Key: model.AsyncQConcurrencySettingKey, Value: model.SettingValue{V: config.Env.AsyncQ.Concurrency}},
+		{Key: model.AsyncQVictimConcurrencyKey, Value: model.SettingValue{V: config.Env.AsyncQ.Queues.Victim}},
+		{Key: model.AsyncQGeneratorConcurrencyKey, Value: model.SettingValue{V: config.Env.AsyncQ.Queues.Generator}},
+		{Key: model.AsyncQAttachmentConcurrencyKey, Value: model.SettingValue{V: config.Env.AsyncQ.Queues.Attachment}},
+		{Key: model.AsyncQEmailConcurrencyKey, Value: model.SettingValue{V: config.Env.AsyncQ.Queues.Email}},
+		{Key: model.AsyncQWebhookConcurrencyKey, Value: model.SettingValue{V: config.Env.AsyncQ.Queues.Webhook}},
+		{Key: model.AsyncQImageConcurrencyKey, Value: model.SettingValue{V: config.Env.AsyncQ.Queues.Image}},
 
 		{Key: model.GinModeSettingKey, Value: model.SettingValue{V: config.Env.Gin.Mode}},
 		{Key: model.GinHostSettingKey, Value: model.SettingValue{V: config.Env.Gin.Host}},
@@ -164,6 +170,24 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 		return ret
 	}
 	if config.Env.AsyncQ.Concurrency, ret = GetValue[int](s, model.AsyncQConcurrencySettingKey); !ret.OK {
+		return ret
+	}
+	if config.Env.AsyncQ.Queues.Victim, ret = GetValue[int](s, model.AsyncQVictimConcurrencyKey); !ret.OK {
+		return ret
+	}
+	if config.Env.AsyncQ.Queues.Generator, ret = GetValue[int](s, model.AsyncQGeneratorConcurrencyKey); !ret.OK {
+		return ret
+	}
+	if config.Env.AsyncQ.Queues.Attachment, ret = GetValue[int](s, model.AsyncQAttachmentConcurrencyKey); !ret.OK {
+		return ret
+	}
+	if config.Env.AsyncQ.Queues.Email, ret = GetValue[int](s, model.AsyncQEmailConcurrencyKey); !ret.OK {
+		return ret
+	}
+	if config.Env.AsyncQ.Queues.Webhook, ret = GetValue[int](s, model.AsyncQWebhookConcurrencyKey); !ret.OK {
+		return ret
+	}
+	if config.Env.AsyncQ.Queues.Image, ret = GetValue[int](s, model.AsyncQImageConcurrencyKey); !ret.OK {
 		return ret
 	}
 

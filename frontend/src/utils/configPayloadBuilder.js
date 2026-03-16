@@ -7,6 +7,12 @@ export function buildPayload(config) {
   return {
     asyncq_concurrency: config.asyncq.concurrency,
     asyncq_log_level: config.asyncq.log.level,
+    asyncq_victim_concurrency: config.asyncq.queues.victim,
+    asyncq_generator_concurrency: config.asyncq.queues.generator,
+    asyncq_attachment_concurrency: config.asyncq.queues.attachment,
+    asyncq_email_concurrency: config.asyncq.queues.email,
+    asyncq_webhook_concurrency: config.asyncq.queues.webhook,
+    asyncq_image_concurrency: config.asyncq.queues.image,
     cheat_ip_whitelist: config.cheat.ip_whitelist,
     gin_metrics_whitelist: config.gin.metrics.whitelist,
     geocity_db: config.geocity_db,

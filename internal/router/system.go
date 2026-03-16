@@ -122,8 +122,14 @@ func SystemConfig(ctx *gin.Context) {
 		"log_level": config.Env.Log.Level,
 		"log_save":  config.Env.Log.Save,
 
-		"asyncq_log_level":   config.Env.AsyncQ.Log.Level,
-		"asyncq_concurrency": config.Env.AsyncQ.Concurrency,
+		"asyncq_log_level":              config.Env.AsyncQ.Log.Level,
+		"asyncq_concurrency":            config.Env.AsyncQ.Concurrency,
+		"asyncq_victim_concurrency":     config.Env.AsyncQ.Queues.Victim,
+		"asyncq_generator_concurrency":  config.Env.AsyncQ.Queues.Generator,
+		"asyncq_attachment_concurrency": config.Env.AsyncQ.Queues.Attachment,
+		"asyncq_email_concurrency":      config.Env.AsyncQ.Queues.Email,
+		"asyncq_webhook_concurrency":    config.Env.AsyncQ.Queues.Webhook,
+		"asyncq_image_concurrency":      config.Env.AsyncQ.Queues.Image,
 
 		"gin_mode":                config.Env.Gin.Mode,
 		"gin_host":                config.Env.Gin.Host,
@@ -197,8 +203,14 @@ func UpdateSystem(ctx *gin.Context) {
 		model.LogLevelSettingKey: form.LogLevel,
 		model.LogSaveSettingKey:  form.LogSave,
 
-		model.AsyncQLogLevelSettingKey:    form.AsyncQLogLevel,
-		model.AsyncQConcurrencySettingKey: form.AsyncQConcurrency,
+		model.AsyncQLogLevelSettingKey:       form.AsyncQLogLevel,
+		model.AsyncQConcurrencySettingKey:    form.AsyncQConcurrency,
+		model.AsyncQVictimConcurrencyKey:     form.AsyncQVictimConcurrency,
+		model.AsyncQGeneratorConcurrencyKey:  form.AsyncQGeneratorConcurrency,
+		model.AsyncQAttachmentConcurrencyKey: form.AsyncQAttachmentConcurrency,
+		model.AsyncQEmailConcurrencyKey:      form.AsyncQEmailConcurrency,
+		model.AsyncQWebhookConcurrencyKey:    form.AsyncQWebhookConcurrency,
+		model.AsyncQImageConcurrencyKey:      form.AsyncQImageConcurrency,
 
 		model.GinModeSettingKey:               form.GinMode,
 		model.GinHostSettingKey:               form.GinHost,

@@ -89,6 +89,66 @@ export function BasicConfigSection({ config, updateConfig }) {
           })
         }
       />
+      <ConfigField
+        label={t('admin.system.labels.victimConcurrency')}
+        type="number"
+        value={config.asyncq.queues.victim}
+        onChange={(value) =>
+          updateConfig((draft) => {
+            draft.asyncq.queues.victim = sanitizeNumber(value, config.asyncq.queues.victim);
+          })
+        }
+      />
+      <ConfigField
+        label={t('admin.system.labels.generatorConcurrency')}
+        type="number"
+        value={config.asyncq.queues.generator}
+        onChange={(value) =>
+          updateConfig((draft) => {
+            draft.asyncq.queues.generator = sanitizeNumber(value, config.asyncq.queues.generator);
+          })
+        }
+      />
+      <ConfigField
+        label={t('admin.system.labels.attachmentConcurrency')}
+        type="number"
+        value={config.asyncq.queues.attachment}
+        onChange={(value) =>
+          updateConfig((draft) => {
+            draft.asyncq.queues.attachment = sanitizeNumber(value, config.asyncq.queues.attachment);
+          })
+        }
+      />
+      <ConfigField
+        label={t('admin.system.labels.emailConcurrency')}
+        type="number"
+        value={config.asyncq.queues.email}
+        onChange={(value) =>
+          updateConfig((draft) => {
+            draft.asyncq.queues.email = sanitizeNumber(value, config.asyncq.queues.email);
+          })
+        }
+      />
+      <ConfigField
+        label={t('admin.system.labels.webhookConcurrency')}
+        type="number"
+        value={config.asyncq.queues.webhook}
+        onChange={(value) =>
+          updateConfig((draft) => {
+            draft.asyncq.queues.webhook = sanitizeNumber(value, config.asyncq.queues.webhook);
+          })
+        }
+      />
+      <ConfigField
+        label={t('admin.system.labels.imageConcurrency')}
+        type="number"
+        value={config.asyncq.queues.image}
+        onChange={(value) =>
+          updateConfig((draft) => {
+            draft.asyncq.queues.image = sanitizeNumber(value, config.asyncq.queues.image);
+          })
+        }
+      />
     </ConfigSection>
   );
 }

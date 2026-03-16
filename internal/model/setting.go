@@ -14,8 +14,14 @@ const (
 	LogLevelSettingKey = "log.level"
 	LogSaveSettingKey  = "log.save"
 
-	AsyncQLogLevelSettingKey    = "asynq.log.level"
-	AsyncQConcurrencySettingKey = "asynq.concurrency"
+	AsyncQLogLevelSettingKey       = "asynq.log.level"
+	AsyncQConcurrencySettingKey    = "asynq.concurrency"
+	AsyncQVictimConcurrencyKey     = "asynq.queues.victim"
+	AsyncQGeneratorConcurrencyKey  = "asynq.queues.generator"
+	AsyncQAttachmentConcurrencyKey = "asynq.queues.attachment"
+	AsyncQEmailConcurrencyKey      = "asynq.queues.email"
+	AsyncQWebhookConcurrencyKey    = "asynq.queues.webhook"
+	AsyncQImageConcurrencyKey      = "asynq.queues.image"
 
 	GinModeSettingKey               = "gin.mode"
 	GinHostSettingKey               = "gin.host"
