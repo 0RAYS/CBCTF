@@ -21,11 +21,23 @@ export function normalizeConfig(source) {
   const logSave = fallback(source?.log_save, fallback(source?.log?.save, false));
   const asyncqConcurrency = fallback(source?.asyncq_concurrency, fallback(source?.asynq?.concurrency, 0));
   const asyncqLogLevel = fallback(source?.asyncq_log_level, fallback(source?.asynq?.log?.level, ''));
-  const asyncqVictimConcurrency = fallback(source?.asyncq_victim_concurrency, fallback(source?.asynq?.queues?.victim, 0));
-  const asyncqGeneratorConcurrency = fallback(source?.asyncq_generator_concurrency, fallback(source?.asynq?.queues?.generator, 0));
-  const asyncqAttachmentConcurrency = fallback(source?.asyncq_attachment_concurrency, fallback(source?.asynq?.queues?.attachment, 0));
+  const asyncqVictimConcurrency = fallback(
+    source?.asyncq_victim_concurrency,
+    fallback(source?.asynq?.queues?.victim, 0)
+  );
+  const asyncqGeneratorConcurrency = fallback(
+    source?.asyncq_generator_concurrency,
+    fallback(source?.asynq?.queues?.generator, 0)
+  );
+  const asyncqAttachmentConcurrency = fallback(
+    source?.asyncq_attachment_concurrency,
+    fallback(source?.asynq?.queues?.attachment, 0)
+  );
   const asyncqEmailConcurrency = fallback(source?.asyncq_email_concurrency, fallback(source?.asynq?.queues?.email, 0));
-  const asyncqWebhookConcurrency = fallback(source?.asyncq_webhook_concurrency, fallback(source?.asynq?.queues?.webhook, 0));
+  const asyncqWebhookConcurrency = fallback(
+    source?.asyncq_webhook_concurrency,
+    fallback(source?.asynq?.queues?.webhook, 0)
+  );
   const asyncqImageConcurrency = fallback(source?.asyncq_image_concurrency, fallback(source?.asynq?.queues?.image, 0));
 
   return {
