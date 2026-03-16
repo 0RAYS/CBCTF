@@ -6,11 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type PullImageForm struct {
-	Images     []string `form:"images" json:"images" binding:"required,dive,min=1"`
-	PullPolicy string   `form:"pull_policy" json:"pull_policy" binding:"required,oneof=Always Never IfNotPresent"`
-}
-
 type GetVictimsForm struct {
 	ListModelsForm
 	ChallengeID string `form:"challenge_id" json:"challenge_id" binding:"omitempty,uuid"`
