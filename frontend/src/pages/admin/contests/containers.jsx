@@ -90,6 +90,7 @@ function ContestContainers() {
   const [selectedChallenges, setSelectedChallenges] = useState([]);
   const [challengeSearch, setChallengeSearch] = useState('');
   const [randomTeamPercentage, setRandomTeamPercentage] = useState(50); // 随机选择队伍的百分比
+  const [victimDurationInput, setVictimDurationInput] = useState('7200');
 
   const challengePageSize = 20;
   const [challengePage, setChallengePage] = useState(1);
@@ -357,13 +358,44 @@ function ContestContainers() {
     }
   };
 
+  const isTeamRatioValid = randomTeamPercentage > 0 && randomTeamPercentage < 100;
+  const victimDurationSeconds = Number.parseInt(victimDurationInput, 10) || 0;
+  const isVictimDurationValid = victimDurationSeconds > 0;
   const selectedTeamCount =
-    totalTeamCount > 0 ? Math.max(1, Math.floor((totalTeamCount * randomTeamPercentage) / 100)) : 0;
+    totalTeamCount > 0 && isTeamRatioValid ? Math.max(1, Math.floor((totalTeamCount * randomTeamPercentage) / 100)) : 0;
   const typeLabels = {
     static: t('admin.challenge.types.static'),
     question: t('admin.challenge.types.question'),
     dynamic: t('admin.challenge.types.dynamic'),
     pods: t('admin.challenge.types.pods'),
+  };
+
+  const formatVictimDuration = (seconds) => {
+    if (!seconds || seconds <= 0) {
+      return t('admin.contests.containers.quickActions.invalidDuration');
+    }
+    if (seconds < 60) {
+      return t('utils.time.units.second', { count: seconds });
+    }
+    if (seconds < 3600) {
+      const minutes = Math.floor(seconds / 60);
+      const remainingSeconds = seconds % 60;
+      return remainingSeconds > 0
+        ? `${t('utils.time.units.minute', { count: minutes })}${t('utils.time.units.second', { count: remainingSeconds })}`
+        : t('utils.time.units.minute', { count: minutes });
+    }
+    if (seconds < 86400) {
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      return minutes > 0
+        ? `${t('utils.time.units.hour', { count: hours })}${t('utils.time.units.minute', { count: minutes })}`
+        : t('utils.time.units.hour', { count: hours });
+    }
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+    return hours > 0
+      ? `${t('utils.time.units.day', { count: days })}${t('utils.time.units.hour', { count: hours })}`
+      : t('utils.time.units.day', { count: days });
   };
 
   // 停止容器
@@ -388,13 +420,22 @@ function ContestContainers() {
 
   // 开启容器
   const handleStartContainers = async () => {
+    if (!isVictimDurationValid) {
+      toast.warning({ description: t('admin.contests.containers.toast.invalidDuration') });
+      return;
+    }
     if (selectedChallenges.length === 0 || selectedTeamCount === 0) {
       toast.warning({ description: t('admin.contests.containers.toast.selectStartRequired') });
       return;
     }
 
     try {
-      const response = await startContestVictims(parseInt(contestId), selectedChallenges, randomTeamPercentage / 100);
+      const response = await startContestVictims(
+        parseInt(contestId),
+        selectedChallenges,
+        randomTeamPercentage / 100,
+        victimDurationSeconds
+      );
       if (response.code === 200) {
         toast.success({ description: t('admin.contests.containers.toast.taskDispatched') });
         setSelectedChallenges([]);
@@ -558,6 +599,38 @@ function ContestContainers() {
                 </div>
               </div>
 
+              <div className="border border-neutral-300/20 rounded-md bg-black/10 p-4">
+                <div className="flex justify-between items-center gap-3 mb-2">
+                  <label className="text-xs font-mono text-neutral-400 flex items-center gap-1">
+                    <IconClockPlay size={14} />
+                    <span>{t('common.duration')}</span>
+                  </label>
+                  <span className="text-xs font-mono text-geek-400">
+                    {t('admin.contests.containers.quickActions.durationPreview', {
+                      value: formatVictimDuration(victimDurationSeconds),
+                    })}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={victimDurationInput}
+                    onChange={(e) => setVictimDurationInput(e.target.value)}
+                    className="w-full h-9 px-3 bg-black/20 border border-neutral-300/30 rounded-md text-sm text-neutral-50 placeholder-neutral-500 focus:outline-none focus:border-geek-400 transition-all duration-200"
+                  />
+                  <span className="text-xs font-mono text-neutral-400 whitespace-nowrap">
+                    {t('admin.contests.containers.quickActions.durationUnit')}
+                  </span>
+                </div>
+
+                <p className="mt-2 text-xs font-mono text-neutral-400">
+                  {t('admin.contests.containers.quickActions.durationHint')}
+                </p>
+              </div>
+
               {/* 选择题目 */}
               <div className="flex flex-col min-h-0 flex-1">
                 <div className="flex justify-between items-center mb-2">
@@ -670,7 +743,7 @@ function ContestContainers() {
                 align="icon-left"
                 icon={<IconPlayerPlay size={14} />}
                 onClick={() => setIsStartModalOpen(true)}
-                disabled={selectedChallenges.length === 0 || selectedTeamCount === 0}
+                disabled={selectedChallenges.length === 0 || selectedTeamCount === 0 || !isVictimDurationValid}
                 className="!text-xs !h-7 !px-3"
               >
                 {t('admin.contests.containers.quickActions.startButton', {
@@ -1109,6 +1182,22 @@ function ContestContainers() {
                     {t('admin.contests.containers.modals.teamRatioHint', {
                       count: selectedTeamCount,
                       total: totalTeamCount,
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-mono text-neutral-400 mb-2">
+                  {t('admin.contests.containers.modals.durationTitle')}
+                </h4>
+                <div className="border border-neutral-300/30 rounded-md bg-black/10 p-3 space-y-2">
+                  <p className="text-sm font-mono text-geek-400">
+                    {t('admin.contests.containers.modals.durationValue', { seconds: victimDurationSeconds })}
+                  </p>
+                  <p className="text-xs font-mono text-neutral-400">
+                    {t('admin.contests.containers.modals.durationHint', {
+                      value: formatVictimDuration(victimDurationSeconds),
                     })}
                   </p>
                 </div>
