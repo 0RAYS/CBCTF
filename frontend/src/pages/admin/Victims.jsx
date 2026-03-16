@@ -73,10 +73,10 @@ function AdminVictims() {
 
   const pageSize = 20;
 
-  const fetchContainers = async (page = currentPage, deleted = showDeleted) => {
+  const fetchContainers = async (page = currentPage, deleted = showDeleted, activeFilters = filtersRef.current) => {
     try {
       const params = {
-        ...filters,
+        ...activeFilters,
         limit: pageSize,
         offset: (page - 1) * pageSize,
         ...(deleted && { deleted: true }),
@@ -108,6 +108,7 @@ function AdminVictims() {
 
   const currentPageRef = useRef(currentPage);
   const showDeletedRef = useRef(showDeleted);
+  const filtersRef = useRef(filters);
 
   useEffect(() => {
     currentPageRef.current = currentPage;
@@ -115,6 +116,9 @@ function AdminVictims() {
   useEffect(() => {
     showDeletedRef.current = showDeleted;
   }, [showDeleted]);
+  useEffect(() => {
+    filtersRef.current = filters;
+  }, [filters]);
 
   useEffect(() => {
     fetchContainers();
@@ -127,7 +131,7 @@ function AdminVictims() {
   useEffect(() => {
     if (refreshInterval <= 0) return;
     const id = setInterval(
-      () => fetchContainers(currentPageRef.current, showDeletedRef.current),
+      () => fetchContainers(currentPageRef.current, showDeletedRef.current, filtersRef.current),
       refreshInterval * 1000
     );
     return () => clearInterval(id);
@@ -428,7 +432,7 @@ function AdminVictims() {
                       key={challenge.id}
                       className="dropdown-option text-xs"
                       onClick={() => {
-                        handleFilterChange('challenge_id', challenge.id.toString());
+                        handleFilterChange('challenge_id', challenge.rand_id.toString());
                         setSearchResults((prev) => ({ ...prev, challenges: [] }));
                       }}
                     >
