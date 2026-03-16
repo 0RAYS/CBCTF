@@ -18,6 +18,13 @@ data:
       concurrency: {{ .Values.cbctf.asynq.concurrency }}
       log:
         level: {{ .Values.cbctf.asynq.log.level | quote }}
+      queues:
+        victim: {{ .Values.cbctf.asynq.queues.victim }}
+        generator: {{ .Values.cbctf.asynq.queues.generator }}
+        attachment: {{ .Values.cbctf.asynq.queues.attachment }}
+        email: {{ .Values.cbctf.asynq.queues.email }}
+        webhook: {{ .Values.cbctf.asynq.queues.webhook }}
+        image: {{ .Values.cbctf.asynq.queues.image }}
 
     gin:
       mode: {{ .Values.cbctf.gin.mode | quote }}

@@ -123,6 +123,13 @@ cbctf:
     concurrency: 50
     log:
       level: info
+    queues:
+      victim: 2
+      generator: 4
+      attachment: 4
+      email: 8
+      webhook: 8
+      image: 4
 
   gorm:
     log:
