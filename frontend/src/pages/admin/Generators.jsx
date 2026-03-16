@@ -287,7 +287,7 @@ function AdminGenerators() {
                     <td className="py-3 px-4 font-mono text-xs text-neutral-500">{gen.id}</td>
                     <td className="py-3 px-4 font-mono text-xs text-neutral-200">{gen.name}</td>
                     <td className="py-3 px-4 text-neutral-400">{gen.contest_id}</td>
-                    <td className="py-3 px-4 text-neutral-400">{gen.challenge_id}</td>
+                    <td className="py-3 px-4 text-neutral-400">{gen.challenge_name || gen.challenge_id}</td>
                     <td className="py-3 px-4 text-green-400">{gen.success ?? 0}</td>
                     <td className="py-3 px-4 text-neutral-400 text-xs">{formatTime(gen.success_last)}</td>
                     <td className="py-3 px-4 text-red-400">{gen.failure ?? 0}</td>

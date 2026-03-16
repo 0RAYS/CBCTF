@@ -47,9 +47,10 @@ func HandleStartGeneratorTask(ctx context.Context, t *asynq.Task) error {
 	challenge := payload.Challenge
 	generatorRepo := db.InitGeneratorRepo(db.DB)
 	generator, ret := generatorRepo.Create(db.CreateGeneratorOptions{
-		ChallengeID: challenge.ID,
-		ContestID:   sql.Null[uint]{V: contestID, Valid: contestID > 0},
-		Name:        fmt.Sprintf("gen-%d-%d-%s", contestID, challenge.ID, utils.RandStr(6)),
+		ChallengeID:   challenge.ID,
+		ChallengeName: challenge.Name,
+		ContestID:     sql.Null[uint]{V: contestID, Valid: contestID > 0},
+		Name:          fmt.Sprintf("gen-%d-%d-%s", contestID, challenge.ID, utils.RandStr(6)),
 	})
 	if !ret.OK {
 		return fmt.Errorf("start generator fail, create generator fail: %s", ret.Msg)

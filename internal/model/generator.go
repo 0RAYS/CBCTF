@@ -16,16 +16,17 @@ const (
 // BelongsTo Challenge
 // BelongsTo Contest
 type Generator struct {
-	ChallengeID uint           `json:"challenge_id"`
-	Challenge   Challenge      `json:"-"`
-	ContestID   sql.Null[uint] `json:"contest_id"`
-	Contest     Contest        `json:"-"`
-	Name        string         `json:"pod_name"`
-	Success     int64          `gorm:"default:0" json:"success"`
-	SuccessLast time.Time      `gorm:"default:null" json:"success_last"`
-	Failure     int64          `gorm:"default:0" json:"failure"`
-	FailureLast time.Time      `gorm:"default:null" json:"failure_last"`
-	Status      string         `json:"status"`
+	ChallengeID   uint           `json:"challenge_id"`
+	ChallengeName string         `json:"challenge_name"`
+	Challenge     Challenge      `json:"-"`
+	ContestID     sql.Null[uint] `json:"contest_id"`
+	Contest       Contest        `json:"-"`
+	Name          string         `json:"pod_name"`
+	Success       int64          `gorm:"default:0" json:"success"`
+	SuccessLast   time.Time      `gorm:"default:null" json:"success_last"`
+	Failure       int64          `gorm:"default:0" json:"failure"`
+	FailureLast   time.Time      `gorm:"default:null" json:"failure_last"`
+	Status        string         `json:"status"`
 	BaseModel
 }
 
@@ -46,5 +47,5 @@ func (g Generator) UniqueFields() []string {
 }
 
 func (g Generator) QueryFields() []string {
-	return []string{"id", "challenge_id", "contest_id", "success", "failure", "status"}
+	return []string{"id", "challenge_id", "challenge_name", "contest_id", "success", "failure", "status"}
 }
