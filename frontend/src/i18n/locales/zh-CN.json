@@ -732,6 +732,7 @@
           "randomTeams": "随机选择队伍",
           "selectAll": "全选",
           "clear": "清空",
+          "pageHint": "左右翻页",
           "estimatedTeams": "预计抽取 {{count}} 个队伍",
           "teamSelectionHint": "后端会基于当前比赛全部队伍，按该比例随机抽取并启动靶机。当前比赛队伍总数：{{total}}",
           "noChallenges": "当前条件下没有题目",
@@ -804,6 +805,7 @@
           "summaryMiddle": " 个题目 × ",
           "summaryEquals": " 个团队 =",
           "summarySuffix": " 个靶机组合开启靶机",
+          "startWarning": "警告：一次性启动过多容器可能导致不可预知的问题，甚至影响服务可用性、集群稳定性或造成宕机。请谨慎确认本次启动规模。",
           "stopTitle": "停止靶机",
           "stopConfirm": "停止",
           "stopPrompt": "确定要停止选中的 {{count}} 个靶机吗？"

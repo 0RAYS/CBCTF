@@ -732,6 +732,7 @@
           "randomTeams": "Random team selection",
           "selectAll": "Select all",
           "clear": "Clear",
+          "pageHint": "Browse pages",
           "estimatedTeams": "Estimated {{count}} teams",
           "teamSelectionHint": "The backend will randomly select teams from all teams in this contest using this ratio. Total teams in this contest: {{total}}",
           "noChallenges": "No challenges match the current filter",
@@ -804,6 +805,7 @@
           "summaryMiddle": " challenges × ",
           "summaryEquals": " teams =",
           "summarySuffix": " container combinations",
+          "startWarning": "Warning: starting too many containers at once can lead to unpredictable behavior and may impact service availability, cluster stability, or even cause outages. Confirm the launch scale carefully.",
           "stopTitle": "Stop containers",
           "stopConfirm": "Stop",
           "stopPrompt": "Stop {{count}} selected containers?"
