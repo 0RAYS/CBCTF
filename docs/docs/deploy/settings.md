@@ -20,11 +20,11 @@ asynq:
   concurrency: 50
   queues:
     victim: 2
-    generator: 4
-    attachment: 4
-    email: 8
-    webhook: 8
-    image: 4
+    generator: 3
+    attachment: 10
+    email: 10
+    webhook: 15
+    image: 10
 gin:
   mode: release
   host: 127.0.0.1
