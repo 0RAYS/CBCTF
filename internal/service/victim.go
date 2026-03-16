@@ -20,6 +20,19 @@ import (
 	"gorm.io/gorm"
 )
 
+func shuffleTeams(teams []model.Team) model.RetVal {
+	for i := len(teams) - 1; i > 0; i-- {
+		n, err := rand.Int(rand.Reader, big.NewInt(int64(i+1)))
+		if err != nil {
+			log.Logger.Errorf("Failed to shuffle teams: %s", err)
+			return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		}
+		j := int(n.Int64())
+		teams[i], teams[j] = teams[j], teams[i]
+	}
+	return model.SuccessRetVal()
+}
+
 func needVPC(dockers []model.Docker) bool {
 	for _, docker := range dockers {
 		for _, network := range docker.Networks {
@@ -376,7 +389,7 @@ func GetVictims(tx *gorm.DB, contest model.Contest, form dto.GetVictimsForm) ([]
 }
 
 func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm) model.RetVal {
-	if len(form.Challenges) == 0 || len(form.Teams) == 0 {
+	if len(form.Challenges) == 0 || form.TeamRatio <= 0 || form.TeamRatio >= 1 {
 		return model.SuccessRetVal()
 	}
 	challenges, _, ret := db.InitChallengeRepo(tx).List(-1, -1, db.GetOptions{
@@ -390,7 +403,7 @@ func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm)
 		challengeIDL = append(challengeIDL, challenge.ID)
 	}
 	teams, _, ret := db.InitTeamRepo(tx).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"contest_id": contest.ID, "id": form.Teams},
+		Conditions: map[string]any{"contest_id": contest.ID},
 	})
 	if !ret.OK {
 		return ret
@@ -398,6 +411,14 @@ func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm)
 	if len(challengeIDL) == 0 || len(teams) == 0 {
 		return model.SuccessRetVal()
 	}
+	teamCount := int(float64(len(teams)) * form.TeamRatio)
+	if teamCount <= 0 {
+		teamCount = 1
+	}
+	if ret = shuffleTeams(teams); !ret.OK {
+		return ret
+	}
+	teams = teams[:teamCount]
 	contestChallenges, _, ret := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_id": contest.ID, "challenge_id": challengeIDL},
 		Preloads:   map[string]db.GetOptions{"ContestFlags": {}},

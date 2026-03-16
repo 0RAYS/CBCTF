@@ -328,13 +328,13 @@ export const stopContestVictims = (contestId, victimIds) => {
 };
 
 // 开启容器
-export const startContestVictims = (contestId, challenges, teams) => {
+export const startContestVictims = (contestId, challenges, teamRatio) => {
   return request({
     url: `/admin/contests/${contestId}/victims`,
     method: 'POST',
     data: {
       challenges,
-      teams,
+      team_ratio: teamRatio,
     },
   });
 };
