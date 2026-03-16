@@ -44,7 +44,7 @@ func needVPC(dockers []model.Docker) bool {
 	return false
 }
 
-func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID, challengeID uint) model.RetVal {
+func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID, challengeID uint, durationL ...time.Duration) model.RetVal {
 	var (
 		challengeRepo = db.InitChallengeRepo(tx)
 		victimRepo    = db.InitVictimRepo(tx)
@@ -61,6 +61,10 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 	if !ret.OK {
 		return ret
 	}
+	duration := 2 * time.Hour
+	if len(durationL) > 0 && durationL[0] > 0 {
+		duration = durationL[0]
+	}
 	vOptions := db.CreateVictimOptions{
 		UserID:             userID,
 		TeamID:             sql.Null[uint]{V: teamID, Valid: teamID > 0},
@@ -68,7 +72,7 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 		ContestChallengeID: sql.Null[uint]{V: contestChallengeID, Valid: contestChallengeID > 0},
 		ChallengeID:        challengeID,
 		Start:              time.Now(),
-		Duration:           time.Hour,
+		Duration:           duration,
 		NetworkPolicies:    challenge.NetworkPolicies,
 	}
 	var victim model.Victim
@@ -439,7 +443,7 @@ func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm)
 					continue
 				}
 			}
-			StartVictim(tx, team.CaptainID, team.ID, contest.ID, contestChallenge.ID, contestChallenge.ChallengeID)
+			StartVictim(tx, team.CaptainID, team.ID, contest.ID, contestChallenge.ID, contestChallenge.ChallengeID, form.Duration)
 		}
 	}
 	return model.SuccessRetVal()
