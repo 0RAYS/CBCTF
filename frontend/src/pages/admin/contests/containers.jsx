@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import {
   IconPlayerPlay,
   IconBan,
+  IconFilter,
   IconTable,
   IconServer,
   IconUsers,
@@ -27,6 +28,7 @@ import {
   IconChevronLeft,
   IconChevronRight,
 } from '@tabler/icons-react';
+import { searchModels } from '../../../api/admin/search.js';
 import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../config/challengeChips';
 
 const VICTIM_STATUS_STYLES = {
@@ -52,6 +54,26 @@ function ContestContainers() {
   const [containers, setContainers] = useState([]);
   const [runningCount, setRunningCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
+  const [filters, setFilters] = useState({
+    user_id: '',
+    team_id: '',
+    challenge_id: '',
+    limit: 20,
+    offset: 0,
+  });
+  const [searchResults, setSearchResults] = useState({
+    users: [],
+    teams: [],
+    challenges: [],
+  });
+  const [searchLoading, setSearchLoading] = useState({
+    users: false,
+    teams: false,
+    challenges: false,
+  });
+  const usersSearchRef = useRef(null);
+  const teamsSearchRef = useRef(null);
+  const challengesSearchRef = useRef(null);
 
   // 选中的容器
   const [selectedContainers, setSelectedContainers] = useState([]);
@@ -89,13 +111,17 @@ function ContestContainers() {
   const totalTeamCount = teamTotal;
 
   // 获取容器列表
-  const fetchContainers = async (page = currentPage, deleted = showDeleted) => {
+  const fetchContainers = async (page = currentPage, deleted = showDeleted, activeFilters = filtersRef.current) => {
     try {
       const params = {
+        ...activeFilters,
         limit: pageSize,
         offset: (page - 1) * pageSize,
         ...(deleted && { deleted: true }),
       };
+      Object.keys(params).forEach((key) => {
+        if (params[key] === '') delete params[key];
+      });
 
       const response = await getContestVictims(parseInt(contestId), params);
 
@@ -120,7 +146,7 @@ function ContestContainers() {
     setShowDeleted(next);
     setCurrentPage(1);
     setSelectedContainers([]);
-    fetchContainers(1, next);
+    fetchContainers(1, next, filtersRef.current);
   };
 
   // 获取团队列表
@@ -205,10 +231,11 @@ function ContestContainers() {
 
   useEffect(() => {
     fetchContainers();
-  }, [currentPage]);
+  }, [currentPage, filters.user_id, filters.team_id, filters.challenge_id]);
 
   const currentPageRef = useRef(currentPage);
   const showDeletedRef = useRef(showDeleted);
+  const filtersRef = useRef(filters);
 
   useEffect(() => {
     currentPageRef.current = currentPage;
@@ -216,11 +243,14 @@ function ContestContainers() {
   useEffect(() => {
     showDeletedRef.current = showDeleted;
   }, [showDeleted]);
+  useEffect(() => {
+    filtersRef.current = filters;
+  }, [filters]);
 
   useEffect(() => {
     if (refreshInterval <= 0) return;
     const id = setInterval(
-      () => fetchContainers(currentPageRef.current, showDeletedRef.current),
+      () => fetchContainers(currentPageRef.current, showDeletedRef.current, filtersRef.current),
       refreshInterval * 1000
     );
     return () => clearInterval(id);
@@ -234,6 +264,72 @@ function ContestContainers() {
     if (!isChallengeDetailsOpen) return;
     fetchDetailChallenges(detailChallengePage, challengeSearch);
   }, [isChallengeDetailsOpen, detailChallengePage, challengeSearch]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      const isOutsideUsers = usersSearchRef.current && !usersSearchRef.current.contains(event.target);
+      const isOutsideTeams = teamsSearchRef.current && !teamsSearchRef.current.contains(event.target);
+      const isOutsideChallenges = challengesSearchRef.current && !challengesSearchRef.current.contains(event.target);
+
+      if (isOutsideUsers && searchResults.users.length > 0) setSearchResults((prev) => ({ ...prev, users: [] }));
+      if (isOutsideTeams && searchResults.teams.length > 0) setSearchResults((prev) => ({ ...prev, teams: [] }));
+      if (isOutsideChallenges && searchResults.challenges.length > 0)
+        setSearchResults((prev) => ({ ...prev, challenges: [] }));
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [searchResults]);
+
+  const handleFilterChange = (key, value) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    setCurrentPage(1);
+  };
+
+  const handleSearch = async (model, name, setResults, setLoading) => {
+    if (!name || name.trim() === '') {
+      setResults([]);
+      return;
+    }
+    setLoading(true);
+    try {
+      let params = { model, 'search[name]': name.trim(), limit: 10, offset: 0 };
+      if (model === 'Team') {
+        params['search[contest_id]'] = parseInt(contestId);
+      }
+      if (model === 'Challenge') {
+        params['search[type]'] = 'pod';
+      }
+      const response = await searchModels(params);
+      if (response.code === 200) {
+        let results = response.data.models || [];
+        if (model === 'Team') {
+          results = results.filter((item) => item.contest_id === parseInt(contestId));
+        }
+        setResults(results);
+      } else {
+        setResults([]);
+      }
+    } catch (error) {
+      toast.danger({ description: error.message || t('admin.contests.containers.toast.searchFailed') });
+      setResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const debounceTimerRef = useRef(null);
+  const debouncedSearch = (model, name, setResults, setLoading) => {
+    clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = setTimeout(() => {
+      handleSearch(model, name, setResults, setLoading);
+    }, 300);
+  };
+
+  const handleResetFilters = () => {
+    setFilters({ user_id: '', team_id: '', challenge_id: '', limit: 20, offset: 0 });
+    setSearchResults({ users: [], teams: [], challenges: [] });
+    setCurrentPage(1);
+  };
 
   // 处理页面切换
   const handlePageChange = (page) => {
@@ -585,6 +681,205 @@ function ContestContainers() {
           </div>
         </motion.div>
 
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="border border-neutral-600 rounded-md bg-neutral-900 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <IconFilter size={18} className="text-neutral-400" />
+                <h3 className="text-base font-mono text-neutral-50">{t('admin.contests.containers.filters.title')}</h3>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleResetFilters}
+                className="!text-neutral-400 hover:!text-neutral-300 !text-xs !h-6 !px-2"
+              >
+                {t('admin.contests.containers.filters.reset')}
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="relative" ref={usersSearchRef}>
+                <label className="block text-xs font-mono text-neutral-400 mb-1">
+                  {t('admin.contests.containers.filters.userName')}
+                </label>
+                <div className="relative">
+                  <IconSearch
+                    size={14}
+                    className="absolute left-2 top-1/2 transform -translate-y-1/2 text-neutral-400"
+                  />
+                  <input
+                    type="text"
+                    placeholder={t('admin.contests.containers.filters.searchUserPlaceholder')}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      debouncedSearch(
+                        'User',
+                        value,
+                        (results) => setSearchResults((prev) => ({ ...prev, users: results })),
+                        (loading) => setSearchLoading((prev) => ({ ...prev, users: loading }))
+                      );
+                    }}
+                    className="w-full h-8 pl-7 pr-2 bg-black/20 border border-neutral-300/30 rounded-md text-xs text-neutral-50 placeholder-neutral-500 focus:outline-none focus:border-geek-400 focus:shadow-focus transition-all duration-200"
+                  />
+                  {searchLoading.users && (
+                    <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                      <div className="w-3 h-3 border border-geek-400 border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
+                </div>
+                {searchResults.users.length > 0 && (
+                  <div className="dropdown-custom max-h-32">
+                    {searchResults.users.map((user) => (
+                      <div
+                        key={user.id}
+                        className="dropdown-option text-xs"
+                        onClick={() => {
+                          handleFilterChange('user_id', user.id.toString());
+                          setSearchResults((prev) => ({ ...prev, users: [] }));
+                        }}
+                      >
+                        {user.name ||
+                          user.username ||
+                          t('admin.contests.containers.filters.userFallback', { id: user.id })}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="relative" ref={teamsSearchRef}>
+                <label className="block text-xs font-mono text-neutral-400 mb-1">
+                  {t('admin.contests.containers.filters.teamName')}
+                </label>
+                <div className="relative">
+                  <IconUsers
+                    size={14}
+                    className="absolute left-2 top-1/2 transform -translate-y-1/2 text-neutral-400"
+                  />
+                  <input
+                    type="text"
+                    placeholder={t('admin.contests.containers.filters.searchTeamPlaceholder')}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      debouncedSearch(
+                        'Team',
+                        value,
+                        (results) => setSearchResults((prev) => ({ ...prev, teams: results })),
+                        (loading) => setSearchLoading((prev) => ({ ...prev, teams: loading }))
+                      );
+                    }}
+                    className="w-full h-8 pl-7 pr-2 bg-black/20 border border-neutral-300/30 rounded-md text-xs text-neutral-50 placeholder-neutral-500 focus:outline-none focus:border-geek-400 focus:shadow-focus transition-all duration-200"
+                  />
+                  {searchLoading.teams && (
+                    <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                      <div className="w-3 h-3 border border-geek-400 border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
+                </div>
+                {searchResults.teams.length > 0 && (
+                  <div className="dropdown-custom max-h-32">
+                    {searchResults.teams.map((team) => (
+                      <div
+                        key={team.id}
+                        className="dropdown-option text-xs"
+                        onClick={() => {
+                          handleFilterChange('team_id', team.id.toString());
+                          setSearchResults((prev) => ({ ...prev, teams: [] }));
+                        }}
+                      >
+                        {team.name || t('admin.contests.containers.filters.teamFallback', { id: team.id })}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="relative" ref={challengesSearchRef}>
+                <label className="block text-xs font-mono text-neutral-400 mb-1">
+                  {t('admin.contests.containers.filters.challengeName')}
+                </label>
+                <div className="relative">
+                  <IconTarget
+                    size={14}
+                    className="absolute left-2 top-1/2 transform -translate-y-1/2 text-neutral-400"
+                  />
+                  <input
+                    type="text"
+                    placeholder={t('admin.contests.containers.filters.searchChallengePlaceholder')}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      debouncedSearch(
+                        'Challenge',
+                        value,
+                        (results) => setSearchResults((prev) => ({ ...prev, challenges: results })),
+                        (loading) => setSearchLoading((prev) => ({ ...prev, challenges: loading }))
+                      );
+                    }}
+                    className="w-full h-8 pl-7 pr-2 bg-black/20 border border-neutral-300/30 rounded-md text-xs text-neutral-50 placeholder-neutral-500 focus:outline-none focus:border-geek-400 focus:shadow-focus transition-all duration-200"
+                  />
+                  {searchLoading.challenges && (
+                    <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                      <div className="w-3 h-3 border border-geek-400 border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
+                </div>
+                {searchResults.challenges.length > 0 && (
+                  <div className="dropdown-custom max-h-32">
+                    {searchResults.challenges.map((challenge) => (
+                      <div
+                        key={challenge.id}
+                        className="dropdown-option text-xs"
+                        onClick={() => {
+                          handleFilterChange('challenge_id', challenge.rand_id.toString());
+                          setSearchResults((prev) => ({ ...prev, challenges: [] }));
+                        }}
+                      >
+                        {challenge.name ||
+                          t('admin.contests.containers.filters.challengeFallback', { id: challenge.id })}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {(filters.user_id || filters.team_id || filters.challenge_id) && (
+              <div className="mt-3 pt-3 border-t border-neutral-300/20">
+                <div className="flex flex-wrap gap-2">
+                  {filters.user_id && (
+                    <span className="px-2 py-1 bg-geek-400/20 text-geek-400 text-xs font-mono rounded border border-geek-400/30">
+                      {t('admin.contests.containers.filters.userIdLabel')}: {filters.user_id}
+                      <button onClick={() => handleFilterChange('user_id', '')} className="ml-1 hover:text-red-400">
+                        ×
+                      </button>
+                    </span>
+                  )}
+                  {filters.team_id && (
+                    <span className="px-2 py-1 bg-geek-400/20 text-geek-400 text-xs font-mono rounded border border-geek-400/30">
+                      {t('admin.contests.containers.filters.teamIdLabel')}: {filters.team_id}
+                      <button onClick={() => handleFilterChange('team_id', '')} className="ml-1 hover:text-red-400">
+                        ×
+                      </button>
+                    </span>
+                  )}
+                  {filters.challenge_id && (
+                    <span className="px-2 py-1 bg-green-400/20 text-green-400 text-xs font-mono rounded border border-green-400/30">
+                      {t('admin.contests.containers.filters.challengeIdLabel')}: {filters.challenge_id}
+                      <button
+                        onClick={() => handleFilterChange('challenge_id', '')}
+                        className="ml-1 hover:text-red-400"
+                      >
+                        ×
+                      </button>
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </motion.div>
+
         <Card variant="default" padding="none" className="overflow-hidden">
           {/* 列表头部 */}
           <div className="p-4 bg-black/20 border-b border-neutral-300/30 space-y-4">
@@ -824,9 +1119,7 @@ function ContestContainers() {
             </div>
 
             <div className="border border-amber-400/40 rounded-md bg-amber-400/10 p-3">
-              <p className="text-xs font-mono text-amber-200">
-                {t('admin.contests.containers.modals.startWarning')}
-              </p>
+              <p className="text-xs font-mono text-amber-200">{t('admin.contests.containers.modals.startWarning')}</p>
             </div>
           </div>
         </Modal>
