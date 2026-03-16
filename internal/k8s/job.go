@@ -33,6 +33,7 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, mod
 			ImagePullPolicy: corev1.PullPolicy(options.PullPolicy),
 			Image:           image,
 			Command:         []string{"echo", "Success"},
+			RestartPolicy:   new(corev1.ContainerRestartPolicyNever),
 		})
 	}
 	job = &batchv1.Job{
