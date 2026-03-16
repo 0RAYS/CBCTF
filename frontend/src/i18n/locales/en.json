@@ -471,38 +471,75 @@
         }
       },
       "imagesPull": {
-        "title": "Image Pull",
+        "title": "Node Images",
         "control": {
-          "title": "Pull Control",
-          "subtitle": "Warm up Docker images used in the contest"
+          "title": "Node Image Overview",
+          "subtitle": "Show all tagged images on each node and compute the union of images across nodes in the frontend."
         },
         "labels": {
-          "pullPolicy": "Pull Policy"
+          "pullPolicy": "Pull Policy",
+          "pullPolicyHint": "Always forces a pull. IfNotPresent only creates jobs for missing images on a node. Never skips creating pull jobs.",
+          "nodes": "Target Nodes",
+          "comboHint": "Select exact node/image pairs to pull."
+        },
+        "summary": {
+          "nodes": "{{count}} nodes",
+          "nodesLabel": "Schedulable Nodes",
+          "unionLabel": "Image Union",
+          "totalLabel": "All Images",
+          "total": "{{count}} images total"
+        },
+        "selection": {
+          "title": "Pull Missing Images",
+          "subtitle": "Use the union of images across all nodes, mark missing ones per node, and select exact node/image pairs to pull.",
+          "selectedNodes": "{{count}} nodes selected",
+          "selectedTargets": "{{count}} pairs selected",
+          "nodeImages": "{{count}} images"
+        },
+        "intersection": {
+          "title": "Image Union Missing View",
+          "subtitle": "This is the union of all tagged images across nodes. Present nodes are marked as present, and only missing nodes can be selected for pull.",
+          "empty": "No tagged images available",
+          "badge": "Part of the image union across all nodes"
+        },
+        "manual": {
+          "title": "Pull By Manual Input",
+          "subtitle": "After choosing nodes, enter image names manually, one per line, and the system will create pull jobs for each node/image combination.",
+          "placeholder": "registry.example.com/team/image:tag\nbusybox:latest",
+          "count": "{{count}} images entered"
+        },
+        "node": {
+          "empty": "This node has no image data",
+          "missingTitle": "Missing union images on this node",
+          "noMissing": "This node is not missing any union image"
         },
         "actions": {
-          "selectAll": "$t(common.selectAll)",
-          "deselectAll": "$t(common.deselectAll)",
-          "pull": "Start pull ({{count}})"
-        },
-        "table": {
-          "image": "Image",
-          "nodes": "Nodes"
+          "selectAllNodes": "Select All Nodes",
+          "deselectAllNodes": "Deselect All Nodes",
+          "selectAllTargets": "Select All Pairs",
+          "deselectAllTargets": "Deselect All Pairs",
+          "pullSelection": "Pull Selected Pairs ({{count}})",
+          "pullManual": "Pull Manual Pairs ({{count}})"
         },
         "pullPolicy": {
           "always": "Always - pull latest image",
           "ifNotPresent": "IfNotPresent - pull when missing locally",
           "never": "Never - use local images only"
         },
+        "statusTitle": "Node Image Inventory",
+        "statusSubtitle": "Each node shows all currently visible tagged images and also highlights the union images missing from that node.",
+        "empty": "No node image data",
         "status": {
-          "loaded": "Loaded",
-          "notLoaded": "Not loaded"
+          "present": "Present",
+          "missing": "Missing",
+          "selectedMissing": "Queued"
         },
-        "statusTitle": "Image Status",
-        "empty": "No images",
         "toast": {
-          "fetchFailed": "Failed to load pull images",
-          "selectRequired": "Select images to warm up",
-          "submitSuccess": "Pull task submitted",
+          "fetchFailed": "Failed to load node images",
+          "nodeRequired": "Select at least one node first",
+          "selectRequired": "Select at least one node/image pair",
+          "manualRequired": "Enter at least one image name",
+          "submitSuccess": "Image pull task submitted",
           "pullFailed": "Pull failed"
         }
       },
