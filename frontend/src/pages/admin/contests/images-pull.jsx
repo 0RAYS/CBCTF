@@ -14,7 +14,9 @@ function normalizeNodes(data) {
     .map((item) => ({
       node: item?.node || '',
       images: Array.isArray(item?.images)
-        ? Array.from(new Set(item.images.map((image) => String(image || '').trim()).filter((image) => hasImageTag(image)))).sort()
+        ? Array.from(
+            new Set(item.images.map((image) => String(image || '').trim()).filter((image) => hasImageTag(image)))
+          ).sort()
         : [],
     }))
     .filter((item) => item.node)
@@ -86,9 +88,7 @@ function AdminContestImagesPull() {
   const availableTargetKeys = useMemo(
     () =>
       unionImages.flatMap((image) =>
-        nodes
-          .filter((node) => !node.images.includes(image))
-          .map((node) => buildTargetKey(node.node, image))
+        nodes.filter((node) => !node.images.includes(image)).map((node) => buildTargetKey(node.node, image))
       ),
     [nodes, unionImages]
   );
@@ -121,7 +121,9 @@ function AdminContestImagesPull() {
   };
 
   const handleNodeToggle = (nodeName) => {
-    setSelectedNodes((prev) => (prev.includes(nodeName) ? prev.filter((node) => node !== nodeName) : [...prev, nodeName]));
+    setSelectedNodes((prev) =>
+      prev.includes(nodeName) ? prev.filter((node) => node !== nodeName) : [...prev, nodeName]
+    );
   };
 
   const handleToggleAllNodes = () => {
