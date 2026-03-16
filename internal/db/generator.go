@@ -15,17 +15,19 @@ type GeneratorRepo struct {
 }
 
 type CreateGeneratorOptions struct {
-	ChallengeID uint
-	ContestID   sql.Null[uint]
-	Name        string
+	ChallengeID   uint
+	ChallengeName string
+	ContestID     sql.Null[uint]
+	Name          string
 }
 
 func (c CreateGeneratorOptions) Convert2Model() model.Model {
 	return model.Generator{
-		ChallengeID: c.ChallengeID,
-		ContestID:   c.ContestID,
-		Name:        c.Name,
-		Status:      model.WaitingGeneratorStatus,
+		ChallengeID:   c.ChallengeID,
+		ChallengeName: c.ChallengeName,
+		ContestID:     c.ContestID,
+		Name:          c.Name,
+		Status:        model.WaitingGeneratorStatus,
 	}
 }
 
