@@ -3,11 +3,13 @@ import {
   IconCopy,
   IconDownload,
   IconRefresh,
+  IconSearch,
   IconServer,
   IconStack2,
   IconWriting,
 } from '@tabler/icons-react';
-import { Button, Card, Chip, EmptyState, Textarea } from '../../../common';
+import { Button, Card, Chip, EmptyState, Input, Textarea } from '../../../common';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 function AdminImagesPull({
@@ -31,6 +33,7 @@ function AdminImagesPull({
   onRefresh,
 }) {
   const { t } = useTranslation();
+  const [filterText, setFilterText] = useState('');
 
   const pullPolicyOptions = [
     { value: 'Always', label: t('admin.contests.imagesPull.pullPolicy.always') },
@@ -52,6 +55,8 @@ function AdminImagesPull({
     const node = nodes.find((item) => item.node === nodeName);
     return node ? !node.images.includes(imageName) : false;
   };
+  const normalizedFilter = filterText.trim().toLowerCase();
+  const filteredUnionImages = unionImages.filter((imageName) => imageName.toLowerCase().includes(normalizedFilter));
 
   if (loading) {
     return (
@@ -85,7 +90,7 @@ function AdminImagesPull({
                 {t('admin.contests.imagesPull.control.subtitle')}
               </p>
             </div>
-            <div className="flex items-center gap-2 text-neutral-400 font-mono text-sm">
+            <div className="flex min-w-fit shrink-0 items-center gap-2 whitespace-nowrap text-neutral-400 font-mono text-sm">
               <IconServer size={16} />
               <span>{t('admin.contests.imagesPull.summary.nodes', { count: nodes.length })}</span>
             </div>
@@ -144,11 +149,21 @@ function AdminImagesPull({
                 {t('admin.contests.imagesPull.selection.subtitle')}
               </p>
             </div>
-            <Button variant="outline" size="sm" onClick={onToggleAllTargets}>
+            <Button variant="outline" size="sm" onClick={onToggleAllTargets} className="min-w-fit shrink-0 whitespace-nowrap">
               {allTargetCount > 0 && selectedTargetKeys.length === allTargetCount
                 ? t('admin.contests.imagesPull.actions.deselectAllTargets')
                 : t('admin.contests.imagesPull.actions.selectAllTargets')}
             </Button>
+          </div>
+
+          <div className="mb-4">
+            <Input
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+              placeholder={t('admin.contests.imagesPull.filters.placeholder')}
+              icon={<IconSearch size={16} />}
+              className="font-mono"
+            />
           </div>
 
           <div className="rounded-md border border-neutral-300/20 bg-black/20 p-4">
@@ -166,11 +181,11 @@ function AdminImagesPull({
               </div>
             </div>
 
-            {unionImages.length === 0 ? (
+            {filteredUnionImages.length === 0 ? (
               <EmptyState title={t('admin.contests.imagesPull.intersection.empty')} />
             ) : (
               <div className="max-h-130 overflow-y-auto pr-1 space-y-2">
-                {unionImages.map((imageName) => (
+                {filteredUnionImages.map((imageName) => (
                   <div key={imageName} className="rounded-md border border-neutral-300/20 bg-black/20 p-3">
                     <div className="break-all text-sm font-mono text-neutral-50 mb-3">{imageName}</div>
                     <div className="flex flex-wrap gap-2">
@@ -348,26 +363,28 @@ function AdminImagesPull({
                 </div>
                 <div className="space-y-3">
                   <div>
-                    {node.images.length === 0 ? (
+                    {node.images.filter((imageName) => imageName.toLowerCase().includes(normalizedFilter)).length === 0 ? (
                       <div className="text-sm font-mono text-neutral-500">
                         {t('admin.contests.imagesPull.node.empty')}
                       </div>
                     ) : (
                       <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto pr-1">
-                        {node.images.map((imageName) => (
-                          <div
-                            key={`${node.node}-${imageName}`}
-                            className="flex items-center gap-2 rounded-md border border-neutral-300/20 bg-black/30 px-3 py-2"
-                          >
-                            <span className="break-all text-xs font-mono text-neutral-200">{imageName}</span>
-                            <Chip
-                              label={t('admin.contests.imagesPull.status.present')}
-                              variant="tag"
-                              size="sm"
-                              colorClass="border-green-400/30 text-green-300"
-                            />
-                          </div>
-                        ))}
+                        {node.images
+                          .filter((imageName) => imageName.toLowerCase().includes(normalizedFilter))
+                          .map((imageName) => (
+                            <div
+                              key={`${node.node}-${imageName}`}
+                              className="flex items-center gap-2 rounded-md border border-neutral-300/20 bg-black/30 px-3 py-2"
+                            >
+                              <span className="break-all text-xs font-mono text-neutral-200">{imageName}</span>
+                              <Chip
+                                label={t('admin.contests.imagesPull.status.present')}
+                                variant="tag"
+                                size="sm"
+                                colorClass="border-green-400/30 text-green-300"
+                              />
+                            </div>
+                          ))}
                       </div>
                     )}
                   </div>
@@ -377,7 +394,7 @@ function AdminImagesPull({
                       {t('admin.contests.imagesPull.node.missingTitle')}
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {unionImages
+                      {filteredUnionImages
                         .filter((imageName) => !node.images.includes(imageName))
                         .map((imageName) => (
                           <div
@@ -393,7 +410,7 @@ function AdminImagesPull({
                             />
                           </div>
                         ))}
-                      {unionImages.filter((imageName) => !node.images.includes(imageName)).length === 0 && (
+                      {filteredUnionImages.filter((imageName) => !node.images.includes(imageName)).length === 0 && (
                         <div className="text-sm font-mono text-neutral-500">
                           {t('admin.contests.imagesPull.node.noMissing')}
                         </div>

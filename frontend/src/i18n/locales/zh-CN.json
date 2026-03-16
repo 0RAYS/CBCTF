@@ -482,6 +482,9 @@
           "nodes": "目标节点",
           "comboHint": "可直接按节点和镜像的实际组合勾选拉取。"
         },
+        "filters": {
+          "placeholder": "按镜像名称过滤..."
+        },
         "summary": {
           "nodes": "节点 {{count}}",
           "nodesLabel": "可调度节点",
