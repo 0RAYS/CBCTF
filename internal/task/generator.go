@@ -38,7 +38,7 @@ func EnqueueStartGeneratorTask(contestID uint, challenge model.Challenge) (*asyn
 	return info, err
 }
 
-func HandleStartGeneratorTask(_ context.Context, t *asynq.Task) error {
+func HandleStartGeneratorTask(ctx context.Context, t *asynq.Task) error {
 	var payload StartGeneratorPayload
 	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
@@ -58,7 +58,7 @@ func HandleStartGeneratorTask(_ context.Context, t *asynq.Task) error {
 	if !ret.OK {
 		return fmt.Errorf("start generator fail, update generator fail: %s", ret.Msg)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	_, ret = k8s.StartGenerator(ctx, challenge, generator)
 	cancel()
 	if !ret.OK {
@@ -89,13 +89,13 @@ func EnqueueStopGeneratorTask(generator model.Generator) (*asynq.TaskInfo, error
 	return info, err
 }
 
-func HandleStopGeneratorTask(_ context.Context, t *asynq.Task) error {
+func HandleStopGeneratorTask(ctx context.Context, t *asynq.Task) error {
 	var payload StopGeneratorPayload
 	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
 	}
 	generator := payload.Generator
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	ret := k8s.StopGenerator(ctx, generator)
 	cancel()
 	if !ret.OK {

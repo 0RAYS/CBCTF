@@ -17,7 +17,6 @@ var (
 	client  *asynq.Client
 	mux     *asynq.ServeMux
 	servers []*asynq.Server
-	startWG sync.WaitGroup
 )
 
 const (
@@ -70,24 +69,24 @@ func Init() {
 }
 
 func Start() {
-	startWG = sync.WaitGroup{}
-	startWG.Add(len(servers))
 	for _, srv := range servers {
-		go func(srv *asynq.Server) {
-			defer startWG.Done()
-			if err := srv.Run(mux); err != nil {
-				log.Logger.Fatalf("Failed to start task server: %s", err.Error())
-			}
-		}(srv)
+		if err := srv.Start(mux); err != nil {
+			log.Logger.Fatalf("Failed to start task server: %s", err.Error())
+		}
 	}
 	log.Logger.Infof("Task servers started: %d", len(servers))
 }
 
 func Stop() {
+	var wg sync.WaitGroup
+	wg.Add(len(servers))
 	for _, srv := range servers {
-		srv.Shutdown()
+		go func(srv *asynq.Server) {
+			defer wg.Done()
+			srv.Shutdown()
+		}(srv)
 	}
-	startWG.Wait()
+	wg.Wait()
 }
 
 func queueForTask(taskType string) string {
