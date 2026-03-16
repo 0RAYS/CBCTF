@@ -9,6 +9,7 @@ import {
   IconPlayerPlay,
   IconBan,
   IconFilter,
+  IconRefresh,
   IconTable,
   IconServer,
   IconSearch,
@@ -499,6 +500,14 @@ function AdminVictims() {
             </option>
           </select>
         </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          leftIcon={<IconRefresh size={14} />}
+          onClick={() => fetchContainers(currentPage, showDeleted, filtersRef.current)}
+        >
+          {t('common.refresh')}
+        </Button>
         <Button
           variant={showDeleted ? 'danger' : 'ghost'}
           size="sm"
