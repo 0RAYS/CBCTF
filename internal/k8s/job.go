@@ -43,6 +43,7 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, mod
 			Labels:    options.Labels,
 		},
 		Spec: batchv1.JobSpec{
+			BackoffLimit:            new(int32(0)),
 			TTLSecondsAfterFinished: new(int32),
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
