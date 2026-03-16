@@ -10,7 +10,7 @@ import {
 } from '../../../api/admin/contest';
 import { Modal } from '../../../components/common';
 import ModalButton from '../../../components/common/ModalButton';
-import { Button, Pagination, Card, EmptyState, StatCard } from '../../../components/common';
+import { Button, Pagination, Card, EmptyState, StatCard, Chip } from '../../../components/common';
 import { motion } from 'motion/react';
 import {
   IconPlayerPlay,
@@ -23,7 +23,11 @@ import {
   IconSearch,
   IconTrash,
   IconClockPlay,
+  IconArrowsMaximize,
 } from '@tabler/icons-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../config/challengeChips';
 
 const VICTIM_STATUS_STYLES = {
   waiting: 'bg-yellow-400/10 text-yellow-400 border-yellow-400/30',
@@ -83,19 +87,20 @@ function ContestContainers() {
   // 模态框状态
   const [isStartModalOpen, setIsStartModalOpen] = useState(false);
   const [isStopModalOpen, setIsStopModalOpen] = useState(false);
+  const [isChallengeDetailsOpen, setIsChallengeDetailsOpen] = useState(false);
 
   // 开启容器相关状态
-  const [teams, setTeams] = useState([]);
   const [challenges, setChallenges] = useState([]);
-  const [selectedTeams, setSelectedTeams] = useState([]);
+  const [detailChallenges, setDetailChallenges] = useState([]);
   const [selectedChallenges, setSelectedChallenges] = useState([]);
   const [randomTeamPercentage, setRandomTeamPercentage] = useState(50); // 随机选择队伍的百分比
 
-  const challengePageSize = 50;
-  const teamPageSize = 50;
+  const challengePageSize = 4;
+  const detailChallengePageSize = 20;
   const [challengePage, setChallengePage] = useState(1);
   const [challengeTotal, setChallengeTotal] = useState(0);
-  const [teamPage, setTeamPage] = useState(1);
+  const [detailChallengePage, setDetailChallengePage] = useState(1);
+  const [detailChallengeTotal, setDetailChallengeTotal] = useState(0);
   const [teamTotal, setTeamTotal] = useState(0);
 
   // 统计信息
@@ -109,6 +114,7 @@ function ContestContainers() {
   const { t, i18n } = useTranslation();
 
   const pageSize = 20; // 增加每页显示数量
+  const totalTeamCount = teamTotal;
 
   // 获取容器列表
   const fetchContainers = async (page = currentPage, deleted = showDeleted) => {
@@ -155,12 +161,8 @@ function ContestContainers() {
   // 获取团队列表
   const fetchTeams = async () => {
     try {
-      const response = await getContestTeams(parseInt(contestId), {
-        limit: teamPageSize,
-        offset: (teamPage - 1) * teamPageSize,
-      });
+      const response = await getContestTeams(parseInt(contestId), { limit: 1, offset: 0 });
       if (response.code === 200) {
-        setTeams(response.data.teams || []);
         setTeamTotal(response.data.count || 0);
       }
     } catch (error) {
@@ -168,13 +170,12 @@ function ContestContainers() {
     }
   };
 
-  // 获取题目列表
-  const fetchChallenges = async () => {
+  const fetchChallenges = async (page = challengePage) => {
     try {
       const response = await getContestChallenges(parseInt(contestId), {
         type: 'pods',
         limit: challengePageSize,
-        offset: (challengePage - 1) * challengePageSize,
+        offset: (page - 1) * challengePageSize,
       });
       if (response.code === 200) {
         setChallenges(response.data.challenges || []);
@@ -185,10 +186,42 @@ function ContestContainers() {
     }
   };
 
+  const fetchDetailChallenges = async (page = detailChallengePage) => {
+    try {
+      const response = await getContestChallenges(parseInt(contestId), {
+        type: 'pods',
+        limit: detailChallengePageSize,
+        offset: (page - 1) * detailChallengePageSize,
+      });
+      if (response.code === 200) {
+        setDetailChallenges(response.data.challenges || []);
+        setDetailChallengeTotal(response.data.count || 0);
+      }
+    } catch (error) {
+      toast.danger({ description: error.message || t('admin.contests.containers.toast.fetchChallengesFailed') });
+    }
+  };
+
+  const openChallengeDetails = () => {
+    setDetailChallengePage(1);
+    setIsChallengeDetailsOpen(true);
+  };
+
+  const updateChallengeSelection = (challengeId, checked) => {
+    setSelectedChallenges((prev) => {
+      if (checked) {
+        return prev.includes(challengeId) ? prev : [...prev, challengeId];
+      }
+      return prev.filter((id) => id !== challengeId);
+    });
+  };
+
   useEffect(() => {
     fetchContainers();
     fetchTeams();
-    fetchChallenges();
+    fetchChallenges(1);
+    setChallengePage(1);
+    setDetailChallengePage(1);
   }, [contestId]);
 
   useEffect(() => {
@@ -215,12 +248,13 @@ function ContestContainers() {
   }, [refreshInterval]);
 
   useEffect(() => {
-    fetchChallenges();
+    fetchChallenges(challengePage);
   }, [challengePage]);
 
   useEffect(() => {
-    fetchTeams();
-  }, [teamPage]);
+    if (!isChallengeDetailsOpen) return;
+    fetchDetailChallenges(detailChallengePage);
+  }, [isChallengeDetailsOpen, detailChallengePage]);
 
   // 点击外部关闭搜索结果
   useEffect(() => {
@@ -340,19 +374,14 @@ function ContestContainers() {
     }
   };
 
-  // 监听随机选择百分比变化，自动执行随机选择
-  useEffect(() => {
-    if (teams.length > 0) {
-      const percentage = randomTeamPercentage / 100;
-      const count = Math.max(1, Math.floor(teams.length * percentage));
-
-      // 随机打乱队伍数组并选择前count个
-      const shuffledTeams = [...teams].sort(() => Math.random() - 0.5);
-      const randomTeamIds = shuffledTeams.slice(0, count).map((team) => team.id);
-
-      setSelectedTeams(randomTeamIds);
-    }
-  }, [randomTeamPercentage, teams]);
+  const selectedTeamCount =
+    totalTeamCount > 0 ? Math.max(1, Math.floor((totalTeamCount * randomTeamPercentage) / 100)) : 0;
+  const typeLabels = {
+    static: t('admin.challenge.types.static'),
+    question: t('admin.challenge.types.question'),
+    dynamic: t('admin.challenge.types.dynamic'),
+    pods: t('admin.challenge.types.pods'),
+  };
 
   // 停止容器
   const handleStopContainers = async () => {
@@ -376,17 +405,16 @@ function ContestContainers() {
 
   // 开启容器
   const handleStartContainers = async () => {
-    if (selectedChallenges.length === 0 || selectedTeams.length === 0) {
+    if (selectedChallenges.length === 0 || selectedTeamCount === 0) {
       toast.warning({ description: t('admin.contests.containers.toast.selectStartRequired') });
       return;
     }
 
     try {
-      const response = await startContestVictims(parseInt(contestId), selectedChallenges, selectedTeams);
+      const response = await startContestVictims(parseInt(contestId), selectedChallenges, randomTeamPercentage / 100);
       if (response.code === 200) {
         toast.success({ description: t('admin.contests.containers.toast.taskDispatched') });
         setSelectedChallenges([]);
-        setSelectedTeams([]);
         fetchContainers();
       }
     } catch (error) {
@@ -517,6 +545,12 @@ function ContestContainers() {
                     {t('admin.contests.containers.quickActions.selectChallenges')}
                   </label>
                   <div className="flex gap-1">
+                    <Button variant="ghost" size="sm" onClick={openChallengeDetails} className="!text-xs !h-5 !px-1">
+                      <span className="inline-flex items-center gap-1">
+                        <IconArrowsMaximize size={12} />
+                        {t('admin.contests.containers.quickActions.expand')}
+                      </span>
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -542,13 +576,7 @@ function ContestContainers() {
                         type="checkbox"
                         id={`challenge-${challenge.id}`}
                         checked={selectedChallenges.includes(challenge.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedChallenges((prev) => [...prev, challenge.id]);
-                          } else {
-                            setSelectedChallenges((prev) => prev.filter((id) => id !== challenge.id));
-                          }
-                        }}
+                        onChange={(e) => updateChallengeSelection(challenge.id, e.target.checked)}
                         className="w-3 h-3 rounded border-neutral-300/30 text-geek-400
                               focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
                       />
@@ -594,24 +622,9 @@ function ContestContainers() {
                     </span>
                     <span className="text-xs font-mono text-geek-400">{randomTeamPercentage}%</span>
                   </label>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSelectedTeams(teams.map((t) => t.id))}
-                      className="!text-xs !h-5 !px-1"
-                    >
-                      {t('admin.contests.containers.quickActions.selectAll')}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSelectedTeams([])}
-                      className="!text-xs !h-5 !px-1"
-                    >
-                      {t('admin.contests.containers.quickActions.clear')}
-                    </Button>
-                  </div>
+                  <span className="text-xs font-mono text-neutral-500">
+                    {t('admin.contests.containers.quickActions.estimatedTeams', { count: selectedTeamCount })}
+                  </span>
                 </div>
 
                 {/* 随机选择拖动条 */}
@@ -631,53 +644,11 @@ function ContestContainers() {
                   </div>
                 </div>
 
-                <div className="max-h-24 overflow-y-auto border border-neutral-300/30 rounded-md bg-black/10">
-                  {teams.map((team) => (
-                    <div key={team.id} className="flex items-center p-1 hover:bg-black/30 transition-colors">
-                      <input
-                        type="checkbox"
-                        id={`team-${team.id}`}
-                        checked={selectedTeams.includes(team.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedTeams((prev) => [...prev, team.id]);
-                          } else {
-                            setSelectedTeams((prev) => prev.filter((id) => id !== team.id));
-                          }
-                        }}
-                        className="w-3 h-3 rounded border-neutral-300/30 text-geek-400
-                                focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
-                      />
-                      <label
-                        htmlFor={`team-${team.id}`}
-                        className="ml-2 text-xs font-mono text-neutral-300 cursor-pointer flex-1 truncate"
-                      >
-                        {team.name}
-                      </label>
-                    </div>
-                  ))}
+                <div className="max-h-24 overflow-y-auto border border-neutral-300/30 rounded-md bg-black/10 p-2">
+                  <p className="text-xs font-mono text-neutral-400">
+                    {t('admin.contests.containers.quickActions.teamSelectionHint', { total: totalTeamCount })}
+                  </p>
                 </div>
-                {Math.ceil(teamTotal / teamPageSize) > 1 && (
-                  <div className="flex items-center justify-between mt-1">
-                    <button
-                      disabled={teamPage === 1}
-                      onClick={() => setTeamPage((p) => p - 1)}
-                      className="text-xs font-mono text-neutral-400 hover:text-neutral-200 disabled:opacity-30 px-1"
-                    >
-                      ‹
-                    </button>
-                    <span className="text-xs font-mono text-neutral-500">
-                      {teamPage} / {Math.ceil(teamTotal / teamPageSize)}
-                    </span>
-                    <button
-                      disabled={teamPage >= Math.ceil(teamTotal / teamPageSize)}
-                      onClick={() => setTeamPage((p) => p + 1)}
-                      className="text-xs font-mono text-neutral-400 hover:text-neutral-200 disabled:opacity-30 px-1"
-                    >
-                      ›
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -689,12 +660,12 @@ function ContestContainers() {
                 align="icon-left"
                 icon={<IconPlayerPlay size={14} />}
                 onClick={() => setIsStartModalOpen(true)}
-                disabled={selectedChallenges.length === 0 || selectedTeams.length === 0}
+                disabled={selectedChallenges.length === 0 || selectedTeamCount === 0}
                 className="!text-xs !h-7 !px-3"
               >
                 {t('admin.contests.containers.quickActions.startButton', {
                   challenges: selectedChallenges.length,
-                  teams: selectedTeams.length,
+                  teams: selectedTeamCount,
                 })}
               </Button>
             </div>
@@ -1125,17 +1096,18 @@ function ContestContainers() {
 
               <div>
                 <h4 className="text-sm font-mono text-neutral-400 mb-2">
-                  {t('admin.contests.containers.modals.selectedTeams', { count: selectedTeams.length })}
+                  {t('admin.contests.containers.modals.teamRatioTitle')}
                 </h4>
-                <div className="max-h-32 overflow-y-auto border border-neutral-300/30 rounded-md bg-black/10 p-2">
-                  {selectedTeams.map((teamId) => {
-                    const team = teams.find((t) => t.id === teamId);
-                    return team ? (
-                      <div key={teamId} className="text-sm font-mono text-geek-400 py-1">
-                        • {team.name}
-                      </div>
-                    ) : null;
-                  })}
+                <div className="border border-neutral-300/30 rounded-md bg-black/10 p-3 space-y-2">
+                  <p className="text-sm font-mono text-geek-400">
+                    {t('admin.contests.containers.modals.teamRatioValue', { ratio: randomTeamPercentage })}
+                  </p>
+                  <p className="text-xs font-mono text-neutral-400">
+                    {t('admin.contests.containers.modals.teamRatioHint', {
+                      count: selectedTeamCount,
+                      total: totalTeamCount,
+                    })}
+                  </p>
                 </div>
               </div>
             </div>
@@ -1145,12 +1117,143 @@ function ContestContainers() {
                 {t('admin.contests.containers.modals.summaryPrefix')}
                 <span className="text-geek-400">{selectedChallenges.length}</span>
                 {t('admin.contests.containers.modals.summaryMiddle')}
-                <span className="text-geek-400">{selectedTeams.length}</span>
+                <span className="text-geek-400">{selectedTeamCount}</span>
                 {t('admin.contests.containers.modals.summaryEquals')}
-                <span className="text-green-400"> {selectedChallenges.length * selectedTeams.length}</span>
+                <span className="text-green-400"> {selectedChallenges.length * selectedTeamCount}</span>
                 {t('admin.contests.containers.modals.summarySuffix')}
               </p>
             </div>
+          </div>
+        </Modal>
+
+        <Modal
+          isOpen={isChallengeDetailsOpen}
+          onClose={() => setIsChallengeDetailsOpen(false)}
+          title={t('admin.contests.containers.modals.challengeDetailsTitle')}
+          size="xl"
+          footer={
+            <>
+              <ModalButton onClick={() => setIsChallengeDetailsOpen(false)}>{t('common.cancel')}</ModalButton>
+            </>
+          }
+        >
+          <div className="space-y-4">
+            <p className="text-sm font-mono text-neutral-400">
+              {t('admin.contests.containers.modals.challengeDetailsHint', { count: detailChallengeTotal })}
+            </p>
+
+            {detailChallenges.length === 0 ? (
+              <div className="border border-neutral-300/20 rounded-md bg-black/10 p-4 text-sm font-mono text-neutral-500">
+                {t('admin.contests.containers.modals.challengeDetailsEmpty')}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {detailChallenges.map((challenge) => {
+                  const isSelected = selectedChallenges.includes(challenge.id);
+                  return (
+                    <div
+                      key={challenge.id}
+                      className="border border-neutral-300/20 rounded-md bg-black/10 p-4 space-y-4"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0 space-y-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="text-base font-mono text-neutral-50 break-all">{challenge.name}</h4>
+                            {challenge.category ? (
+                              <Chip
+                                size="sm"
+                                label={challenge.category}
+                                colorClass={getChallengeCategoryChipClass(challenge.category)}
+                              />
+                            ) : null}
+                            {challenge.type ? (
+                              <Chip
+                                size="sm"
+                                label={typeLabels[challenge.type] || challenge.type}
+                                colorClass={getChallengeTypeChipClass(challenge.type)}
+                              />
+                            ) : null}
+                            {challenge.hidden ? (
+                              <Chip
+                                size="sm"
+                                label={t('admin.contests.challenges.hidden')}
+                                colorClass="bg-red-400/20 text-red-400"
+                              />
+                            ) : null}
+                          </div>
+                          <div className="flex items-center gap-3 flex-wrap text-xs font-mono text-neutral-400">
+                            <span>
+                              {t('admin.contests.containers.modals.challengeScore', { score: challenge.score || 0 })}
+                            </span>
+                            <span>
+                              {t('admin.contests.containers.modals.challengeSolvers', {
+                                count: challenge.solvers || 0,
+                              })}
+                            </span>
+                            <span>
+                              {t('admin.contests.containers.modals.challengeAttempts', {
+                                count: challenge.attempt || 0,
+                              })}
+                            </span>
+                            <span>ID: {challenge.id}</span>
+                          </div>
+                        </div>
+
+                        <label className="inline-flex items-center gap-2 text-sm font-mono text-neutral-300 cursor-pointer shrink-0">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(e) => updateChallengeSelection(challenge.id, e.target.checked)}
+                            className="w-4 h-4 rounded border-neutral-300/30 text-geek-400 focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
+                          />
+                          {t('admin.contests.containers.modals.selectChallenge')}
+                        </label>
+                      </div>
+
+                      {challenge.type === 'question' ? (
+                        <div className="space-y-2">
+                          <h5 className="text-xs font-mono uppercase tracking-wide text-neutral-400">
+                            {t('admin.contests.containers.modals.challengeOptions')}
+                          </h5>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {(challenge.options || []).length > 0 ? (
+                              challenge.options.map((option, index) => (
+                                <div
+                                  key={`${challenge.id}-option-${option.rand_id || index}`}
+                                  className="rounded-md border border-neutral-300/20 bg-black/20 p-3 text-sm text-neutral-300 break-words"
+                                >
+                                  <div className="text-xs font-mono text-neutral-500 mb-1">
+                                    {t('admin.contests.containers.modals.challengeOptionLabel', { index: index + 1 })}
+                                  </div>
+                                  <div>{option.content}</div>
+                                </div>
+                              ))
+                            ) : (
+                              <span className="text-xs font-mono text-neutral-500">
+                                {t('admin.contests.containers.modals.challengeOptionsEmpty')}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {Math.ceil(detailChallengeTotal / detailChallengePageSize) > 1 ? (
+              <div className="pt-2 border-t border-neutral-300/20">
+                <Pagination
+                  total={Math.ceil(detailChallengeTotal / detailChallengePageSize)}
+                  current={detailChallengePage}
+                  pageSize={detailChallengePageSize}
+                  onChange={setDetailChallengePage}
+                  showTotal
+                  totalItems={detailChallengeTotal}
+                />
+              </div>
+            ) : null}
           </div>
         </Modal>
 

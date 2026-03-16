@@ -35,5 +35,5 @@ type StopVictimsForm struct {
 
 type StartVictimsForm struct {
 	Challenges []string `form:"challenges" json:"challenges" binding:"required,dive,uuid"`
-	Teams      []uint   `form:"teams" json:"teams" binding:"required,dive,gt=0"`
+	TeamRatio  float64  `form:"team_ratio" json:"team_ratio" binding:"required,gt=0,lt=1"`
 }
