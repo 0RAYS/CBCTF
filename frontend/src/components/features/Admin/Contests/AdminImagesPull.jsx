@@ -149,7 +149,12 @@ function AdminImagesPull({
                 {t('admin.contests.imagesPull.selection.subtitle')}
               </p>
             </div>
-            <Button variant="outline" size="sm" onClick={onToggleAllTargets} className="min-w-fit shrink-0 whitespace-nowrap">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onToggleAllTargets}
+              className="min-w-fit shrink-0 whitespace-nowrap"
+            >
               {allTargetCount > 0 && selectedTargetKeys.length === allTargetCount
                 ? t('admin.contests.imagesPull.actions.deselectAllTargets')
                 : t('admin.contests.imagesPull.actions.selectAllTargets')}
@@ -363,7 +368,8 @@ function AdminImagesPull({
                 </div>
                 <div className="space-y-3">
                   <div>
-                    {node.images.filter((imageName) => imageName.toLowerCase().includes(normalizedFilter)).length === 0 ? (
+                    {node.images.filter((imageName) => imageName.toLowerCase().includes(normalizedFilter)).length ===
+                    0 ? (
                       <div className="text-sm font-mono text-neutral-500">
                         {t('admin.contests.imagesPull.node.empty')}
                       </div>
