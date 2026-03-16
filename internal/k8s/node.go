@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/model"
 	"context"
 	"slices"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -51,6 +52,9 @@ func GetNodeImageList(ctx context.Context) (map[string][]string, model.RetVal) {
 		images[node.Name] = make([]string, 0)
 		for _, containerImage := range node.Status.Images {
 			for _, name := range containerImage.Names {
+				if !isTaggedImage(name) {
+					continue
+				}
 				if !slices.Contains(images[node.Name], name) {
 					images[node.Name] = append(images[node.Name], name)
 				}
@@ -58,4 +62,11 @@ func GetNodeImageList(ctx context.Context) (map[string][]string, model.RetVal) {
 		}
 	}
 	return images, model.SuccessRetVal()
+}
+
+func isTaggedImage(name string) bool {
+	if strings.TrimSpace(name) == "" {
+		return false
+	}
+	return !strings.Contains(name, "@sha256:")
 }

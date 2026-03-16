@@ -9,6 +9,7 @@ export { default as ErrorBoundary } from './ErrorBoundary';
 // Common UI
 export { default as Card } from './Card';
 export { default as Input } from './Input';
+export { default as Textarea } from './Textarea';
 export { default as Select } from './Select';
 export { default as Pagination } from './Pagination';
 export { default as EmptyState } from './EmptyState';
