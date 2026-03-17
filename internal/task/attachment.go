@@ -13,7 +13,7 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-const GenAttachmentTaskType = "tasks:attachment"
+const genAttachmentTaskType = "tasks:attachment"
 
 type GenAttachmentPayload struct {
 	UserID    uint
@@ -32,10 +32,10 @@ func EnqueueGenAttachmentTask(userID uint, generator model.Generator, challenge 
 	if err != nil {
 		return nil, err
 	}
-	task := asynq.NewTask(GenAttachmentTaskType, payload)
-	info, err := client.Enqueue(task, asynq.Queue(queueForTask(GenAttachmentTaskType)), asynq.MaxRetry(0), asynq.Timeout(2*time.Minute))
+	task := asynq.NewTask(genAttachmentTaskType, payload)
+	info, err := client.Enqueue(task, asynq.Queue(genAttachmentTaskType), asynq.MaxRetry(0), asynq.Timeout(2*time.Minute))
 	if err == nil {
-		prometheus.RecordTaskEnqueued(GenAttachmentTaskType)
+		prometheus.RecordTaskEnqueued(genAttachmentTaskType)
 	}
 	return info, err
 }

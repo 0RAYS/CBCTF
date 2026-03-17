@@ -12,7 +12,7 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-const WebhookTaskType = "tasks:webhook"
+const webhookTaskType = "tasks:webhook"
 
 type WebhookPayload struct {
 	Event  model.Event
@@ -24,10 +24,10 @@ func EnqueueWebhookTask(event model.Event, target model.Webhook) (*asynq.TaskInf
 	if err != nil {
 		return nil, err
 	}
-	task := asynq.NewTask(WebhookTaskType, payload)
-	info, err := client.Enqueue(task, asynq.Queue(queueForTask(WebhookTaskType)), asynq.MaxRetry(target.Retry), asynq.Timeout(time.Duration(target.Timeout)*time.Second))
+	task := asynq.NewTask(webhookTaskType, payload)
+	info, err := client.Enqueue(task, asynq.Queue(webhookTaskType), asynq.MaxRetry(target.Retry), asynq.Timeout(time.Duration(target.Timeout)*time.Second))
 	if err == nil {
-		prometheus.RecordTaskEnqueued(WebhookTaskType)
+		prometheus.RecordTaskEnqueued(webhookTaskType)
 	}
 	return info, err
 }

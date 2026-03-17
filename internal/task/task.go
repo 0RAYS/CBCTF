@@ -19,16 +19,6 @@ var (
 	servers []*asynq.Server
 )
 
-const (
-	defaultQueueName    = "default"
-	victimQueueName     = "victim"
-	generatorQueueName  = "generator"
-	attachmentQueueName = "attachment"
-	emailQueueName      = "email"
-	webhookQueueName    = "webhook"
-	imageQueueName      = "image"
-)
-
 func wrapHandler(taskType string, h asynq.HandlerFunc) asynq.HandlerFunc {
 	return func(ctx context.Context, t *asynq.Task) error {
 		start := time.Now()
@@ -48,24 +38,23 @@ func Init() {
 		}
 		servers = append(servers, asynq.NewServerFromRedisClient(redis.RDB, newServerConfig(queue, concurrency)))
 	}
-	addServer(victimQueueName, config.Env.AsyncQ.Queues.Victim)
-	addServer(generatorQueueName, config.Env.AsyncQ.Queues.Generator)
-	addServer(attachmentQueueName, config.Env.AsyncQ.Queues.Attachment)
-	addServer(emailQueueName, config.Env.AsyncQ.Queues.Email)
-	addServer(webhookQueueName, config.Env.AsyncQ.Queues.Webhook)
-	addServer(imageQueueName, config.Env.AsyncQ.Queues.Image)
-	if len(servers) == 0 {
-		servers = append(servers, asynq.NewServerFromRedisClient(redis.RDB, newServerConfig(defaultQueueName, config.Env.AsyncQ.Concurrency)))
-	}
+	addServer(startVictimTaskType, config.Env.AsyncQ.Queues.Victim)
+	addServer(stopVictimTaskType, config.Env.AsyncQ.Queues.Victim)
+	addServer(startGeneratorTaskType, config.Env.AsyncQ.Queues.Generator)
+	addServer(stopGeneratorTaskType, config.Env.AsyncQ.Queues.Generator)
+	addServer(genAttachmentTaskType, config.Env.AsyncQ.Queues.Attachment)
+	addServer(sendEmailTaskType, config.Env.AsyncQ.Queues.Email)
+	addServer(webhookTaskType, config.Env.AsyncQ.Queues.Webhook)
+	addServer(resizeImageTaskType, config.Env.AsyncQ.Queues.Image)
 
-	mux.HandleFunc(SendEmailTaskType, wrapHandler(SendEmailTaskType, HandleSendEmailTask))
-	mux.HandleFunc(StartGeneratorTaskType, wrapHandler(StartGeneratorTaskType, HandleStartGeneratorTask))
-	mux.HandleFunc(StopGeneratorTaskType, wrapHandler(StopGeneratorTaskType, HandleStopGeneratorTask))
-	mux.HandleFunc(GenAttachmentTaskType, wrapHandler(GenAttachmentTaskType, HandleGenAttachmentTask))
-	mux.HandleFunc(StartVictimTaskType, wrapHandler(StartVictimTaskType, HandleStartVictimTask))
-	mux.HandleFunc(StopVictimTaskType, wrapHandler(StopVictimTaskType, HandleStopVictimTask))
-	mux.HandleFunc(WebhookTaskType, wrapHandler(WebhookTaskType, HandleWebhookTask))
-	mux.HandleFunc(ResizeImageTaskType, wrapHandler(ResizeImageTaskType, HandleResizeImageTask))
+	mux.HandleFunc(sendEmailTaskType, wrapHandler(sendEmailTaskType, HandleSendEmailTask))
+	mux.HandleFunc(startGeneratorTaskType, wrapHandler(startGeneratorTaskType, HandleStartGeneratorTask))
+	mux.HandleFunc(stopGeneratorTaskType, wrapHandler(stopGeneratorTaskType, HandleStopGeneratorTask))
+	mux.HandleFunc(genAttachmentTaskType, wrapHandler(genAttachmentTaskType, HandleGenAttachmentTask))
+	mux.HandleFunc(startVictimTaskType, wrapHandler(startVictimTaskType, HandleStartVictimTask))
+	mux.HandleFunc(stopVictimTaskType, wrapHandler(stopVictimTaskType, HandleStopVictimTask))
+	mux.HandleFunc(webhookTaskType, wrapHandler(webhookTaskType, HandleWebhookTask))
+	mux.HandleFunc(resizeImageTaskType, wrapHandler(resizeImageTaskType, HandleResizeImageTask))
 }
 
 func Start() {
@@ -87,25 +76,6 @@ func Stop() {
 		}(srv)
 	}
 	wg.Wait()
-}
-
-func queueForTask(taskType string) string {
-	switch taskType {
-	case StartVictimTaskType, StopVictimTaskType:
-		return victimQueueName
-	case StartGeneratorTaskType, StopGeneratorTaskType:
-		return generatorQueueName
-	case GenAttachmentTaskType:
-		return attachmentQueueName
-	case SendEmailTaskType:
-		return emailQueueName
-	case WebhookTaskType:
-		return webhookQueueName
-	case ResizeImageTaskType:
-		return imageQueueName
-	default:
-		return defaultQueueName
-	}
 }
 
 func newServerConfig(queue string, concurrency int) asynq.Config {

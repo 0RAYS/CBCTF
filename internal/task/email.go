@@ -11,7 +11,7 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-const SendEmailTaskType = "tasks:email"
+const sendEmailTaskType = "tasks:email"
 
 type SendEmailPayload struct {
 	To    string
@@ -24,10 +24,10 @@ func EnqueueSendEmailTask(to, token, id string) (*asynq.TaskInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	task := asynq.NewTask(SendEmailTaskType, payload)
-	info, err := client.Enqueue(task, asynq.Queue(queueForTask(SendEmailTaskType)), asynq.MaxRetry(0), asynq.Timeout(3*time.Minute))
+	task := asynq.NewTask(sendEmailTaskType, payload)
+	info, err := client.Enqueue(task, asynq.Queue(sendEmailTaskType), asynq.MaxRetry(0), asynq.Timeout(3*time.Minute))
 	if err == nil {
-		prometheus.RecordTaskEnqueued(SendEmailTaskType)
+		prometheus.RecordTaskEnqueued(sendEmailTaskType)
 	}
 	return info, err
 }
