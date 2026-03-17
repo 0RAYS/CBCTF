@@ -2,6 +2,7 @@ package task
 
 import (
 	"CBCTF/internal/db"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
@@ -46,7 +47,10 @@ func HandleStartGeneratorTask(ctx context.Context, t *asynq.Task) error {
 	generator := payload.Generator
 	generatorRepo := db.InitGeneratorRepo(db.DB)
 	if _, ret := generatorRepo.GetByID(generator.ID); !ret.OK {
-		log.Logger.Warningf("The Generator %d may have already been stopped", generator.ID)
+		if ret.Msg == i18n.Model.NotFound {
+			log.Logger.Infof("The Generator %d may have already been stopped", generator.ID)
+			return nil
+		}
 		return fmt.Errorf("get generator failed: %s", ret.Msg)
 	}
 	if ret := generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.PendingGeneratorStatus)}); !ret.OK {
@@ -89,6 +93,10 @@ func HandleStopGeneratorTask(ctx context.Context, t *asynq.Task) error {
 		return err
 	}
 	generator := payload.Generator
+	if generator.Status == model.PendingGeneratorStatus {
+		log.Logger.Infof("The Generator %d is pending, skip it...", generator.ID)
+		return nil
+	}
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	ret := k8s.StopGenerator(ctx, generator)
 	cancel()

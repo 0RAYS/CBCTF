@@ -3,6 +3,7 @@ package task
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
@@ -46,7 +47,10 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 	podRepo := db.InitPodRepo(db.DB)
 	victimRepo := db.InitVictimRepo(db.DB)
 	if _, ret := victimRepo.GetByID(victim.ID); !ret.OK {
-		log.Logger.Warningf("The Victim %d may have already been stopped", victim.ID)
+		if ret.Msg == i18n.Model.NotFound {
+			log.Logger.Infof("The Victim %d may have already been stopped", victim.ID)
+			return nil
+		}
 		return fmt.Errorf("get victim failed: %s", ret.Msg)
 	}
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
@@ -123,6 +127,10 @@ func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
 		return err
 	}
 	victim := payload.Victim
+	if victim.Status == model.PendingVictimStatus {
+		log.Logger.Infof("The Victim %d is pending, skip it...", victim.ID)
+		return nil
+	}
 	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	defer cancel()
 	ret := k8s.StopVictim(ctx, victim)
