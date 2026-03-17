@@ -11,7 +11,7 @@ import (
 	"github.com/vmihailenco/msgpack/v5"
 )
 
-const ResizeImageTaskType = "tasks:image"
+const resizeImageTaskType = "tasks:image"
 
 type ResizeImagePayload struct {
 	Path   string
@@ -24,10 +24,10 @@ func EnqueueResizeImageTask(path string, width, height int) (*asynq.TaskInfo, er
 	if err != nil {
 		return nil, err
 	}
-	task := asynq.NewTask(ResizeImageTaskType, payload)
-	info, err := client.Enqueue(task, asynq.Queue(queueForTask(ResizeImageTaskType)), asynq.MaxRetry(3), asynq.Timeout(time.Minute))
+	task := asynq.NewTask(resizeImageTaskType, payload)
+	info, err := client.Enqueue(task, asynq.Queue(resizeImageTaskType), asynq.MaxRetry(3), asynq.Timeout(time.Minute))
 	if err == nil {
-		prometheus.RecordTaskEnqueued(ResizeImageTaskType)
+		prometheus.RecordTaskEnqueued(resizeImageTaskType)
 	}
 	return info, err
 }

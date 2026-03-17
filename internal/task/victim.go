@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	StartVictimTaskType = "tasks:victim:start"
-	StopVictimTaskType  = "tasks:victim:stop"
+	startVictimTaskType = "tasks:victim:start"
+	stopVictimTaskType  = "tasks:victim:stop"
 )
 
 type StartVictimPayload struct {
@@ -28,10 +28,10 @@ func EnqueueStartVictimTask(victim model.Victim) (*asynq.TaskInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	task := asynq.NewTask(StartVictimTaskType, payload)
-	info, err := client.Enqueue(task, asynq.Queue(queueForTask(StartVictimTaskType)), asynq.MaxRetry(0), asynq.Timeout(2*time.Minute))
+	task := asynq.NewTask(startVictimTaskType, payload)
+	info, err := client.Enqueue(task, asynq.Queue(startVictimTaskType), asynq.MaxRetry(0), asynq.Timeout(2*time.Minute))
 	if err == nil {
-		prometheus.RecordTaskEnqueued(StartVictimTaskType)
+		prometheus.RecordTaskEnqueued(startVictimTaskType)
 	}
 	return info, err
 }
@@ -109,10 +109,10 @@ func EnqueueStopVictimTask(victim model.Victim) (*asynq.TaskInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-	task := asynq.NewTask(StopVictimTaskType, payload)
-	info, err := client.Enqueue(task, asynq.Queue(queueForTask(StopVictimTaskType)), asynq.MaxRetry(3), asynq.Timeout(2*time.Minute))
+	task := asynq.NewTask(stopVictimTaskType, payload)
+	info, err := client.Enqueue(task, asynq.Queue(stopVictimTaskType), asynq.MaxRetry(3), asynq.Timeout(2*time.Minute))
 	if err == nil {
-		prometheus.RecordTaskEnqueued(StopVictimTaskType)
+		prometheus.RecordTaskEnqueued(stopVictimTaskType)
 	}
 	return info, err
 }

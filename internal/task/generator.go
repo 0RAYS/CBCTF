@@ -16,8 +16,8 @@ import (
 )
 
 const (
-	StartGeneratorTaskType = "tasks:generator:start"
-	StopGeneratorTaskType  = "tasks:generator:stop"
+	startGeneratorTaskType = "tasks:generator:start"
+	stopGeneratorTaskType  = "tasks:generator:stop"
 )
 
 type StartGeneratorPayload struct {
@@ -30,10 +30,10 @@ func EnqueueStartGeneratorTask(contestID uint, challenge model.Challenge) (*asyn
 	if err != nil {
 		return nil, err
 	}
-	task := asynq.NewTask(StartGeneratorTaskType, payload)
-	info, err := client.Enqueue(task, asynq.Queue(queueForTask(StartGeneratorTaskType)), asynq.MaxRetry(0), asynq.Timeout(2*time.Minute))
+	task := asynq.NewTask(startGeneratorTaskType, payload)
+	info, err := client.Enqueue(task, asynq.Queue(startGeneratorTaskType), asynq.MaxRetry(0), asynq.Timeout(2*time.Minute))
 	if err != nil {
-		prometheus.RecordTaskEnqueued(StartGeneratorTaskType)
+		prometheus.RecordTaskEnqueued(startGeneratorTaskType)
 	}
 	return info, err
 }
@@ -82,10 +82,10 @@ func EnqueueStopGeneratorTask(generator model.Generator) (*asynq.TaskInfo, error
 	if err != nil {
 		return nil, err
 	}
-	task := asynq.NewTask(StopGeneratorTaskType, payload)
-	info, err := client.Enqueue(task, asynq.Queue(queueForTask(StopGeneratorTaskType)), asynq.MaxRetry(3), asynq.Timeout(2*time.Minute))
+	task := asynq.NewTask(stopGeneratorTaskType, payload)
+	info, err := client.Enqueue(task, asynq.Queue(stopGeneratorTaskType), asynq.MaxRetry(3), asynq.Timeout(2*time.Minute))
 	if err != nil {
-		prometheus.RecordTaskEnqueued(StopGeneratorTaskType)
+		prometheus.RecordTaskEnqueued(stopGeneratorTaskType)
 	}
 	return info, err
 }
