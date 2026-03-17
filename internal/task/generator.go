@@ -44,9 +44,12 @@ func HandleStartGeneratorTask(ctx context.Context, t *asynq.Task) error {
 	challenge := payload.Challenge
 	generator := payload.Generator
 	generatorRepo := db.InitGeneratorRepo(db.DB)
-	ret := generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.PendingGeneratorStatus)})
-	if !ret.OK {
-		return fmt.Errorf("start generator fail, update generator fail: %s", ret.Msg)
+	if _, ret := generatorRepo.GetByID(generator.ID); !ret.OK {
+		log.Logger.Warningf("The Generator %d may have already been stopped", generator.ID)
+		return fmt.Errorf("get generator failed: %s", ret.Msg)
+	}
+	if ret := generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.PendingGeneratorStatus)}); !ret.OK {
+		return fmt.Errorf("update generator failed: %s", ret.Msg)
 	}
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	_, ret = k8s.StartGenerator(ctx, challenge, generator)
