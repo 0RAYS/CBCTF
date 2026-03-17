@@ -6,7 +6,10 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/task"
+	"CBCTF/internal/utils"
 	"crypto/rand"
+	"database/sql"
+	"fmt"
 	"math/big"
 
 	"gorm.io/gorm"
@@ -27,6 +30,7 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 		return ret
 	}
 	contestChallengeRepo := db.InitContestChallengeRepo(tx)
+	generatorRepo := db.InitGeneratorRepo(db.DB)
 	for _, challenge := range challenges {
 		if contestID > 0 {
 			_, ret = contestChallengeRepo.Get(db.GetOptions{
@@ -37,7 +41,16 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 			}
 		}
 		for range challengeCount[challenge.RandID] {
-			_, _ = task.EnqueueStartGeneratorTask(contestID, challenge)
+			generator, ret := generatorRepo.Create(db.CreateGeneratorOptions{
+				ChallengeID:   challenge.ID,
+				ChallengeName: challenge.Name,
+				ContestID:     sql.Null[uint]{V: contestID, Valid: contestID > 0},
+				Name:          fmt.Sprintf("gen-%d-%d-%s", contestID, challenge.ID, utils.RandStr(6)),
+			})
+			if !ret.OK {
+				continue
+			}
+			_, _ = task.EnqueueStartGeneratorTask(challenge, generator)
 		}
 	}
 	return model.SuccessRetVal()

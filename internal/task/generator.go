@@ -5,9 +5,7 @@ import (
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
-	"CBCTF/internal/utils"
 	"context"
-	"database/sql"
 	"fmt"
 	"time"
 
@@ -21,12 +19,12 @@ const (
 )
 
 type StartGeneratorPayload struct {
-	ContestID uint
 	Challenge model.Challenge
+	Generator model.Generator
 }
 
-func EnqueueStartGeneratorTask(contestID uint, challenge model.Challenge) (*asynq.TaskInfo, error) {
-	payload, err := msgpack.Marshal(StartGeneratorPayload{contestID, challenge})
+func EnqueueStartGeneratorTask(challenge model.Challenge, generator model.Generator) (*asynq.TaskInfo, error) {
+	payload, err := msgpack.Marshal(StartGeneratorPayload{challenge, generator})
 	if err != nil {
 		return nil, err
 	}
@@ -43,19 +41,10 @@ func HandleStartGeneratorTask(ctx context.Context, t *asynq.Task) error {
 	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
 	}
-	contestID := payload.ContestID
 	challenge := payload.Challenge
+	generator := payload.Generator
 	generatorRepo := db.InitGeneratorRepo(db.DB)
-	generator, ret := generatorRepo.Create(db.CreateGeneratorOptions{
-		ChallengeID:   challenge.ID,
-		ChallengeName: challenge.Name,
-		ContestID:     sql.Null[uint]{V: contestID, Valid: contestID > 0},
-		Name:          fmt.Sprintf("gen-%d-%d-%s", contestID, challenge.ID, utils.RandStr(6)),
-	})
-	if !ret.OK {
-		return fmt.Errorf("start generator fail, create generator fail: %s", ret.Msg)
-	}
-	ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.PendingGeneratorStatus)})
+	ret := generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.PendingGeneratorStatus)})
 	if !ret.OK {
 		return fmt.Errorf("start generator fail, update generator fail: %s", ret.Msg)
 	}
