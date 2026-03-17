@@ -23,6 +23,9 @@ func wrapHandler(taskType string, h asynq.HandlerFunc) asynq.HandlerFunc {
 	return func(ctx context.Context, t *asynq.Task) error {
 		start := time.Now()
 		err := h(ctx, t)
+		if err != nil {
+			log.Logger.Warningf("task %s fail: %s", taskType, err.Error())
+		}
 		prometheus.RecordTaskProcessed(taskType, time.Since(start).Seconds(), err == nil)
 		return err
 	}

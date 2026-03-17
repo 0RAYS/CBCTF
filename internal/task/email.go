@@ -2,7 +2,6 @@ package task
 
 import (
 	"CBCTF/internal/email"
-	"CBCTF/internal/log"
 	"CBCTF/internal/prometheus"
 	"context"
 	"time"
@@ -38,7 +37,6 @@ func HandleSendEmailTask(_ context.Context, t *asynq.Task) error {
 		return err
 	}
 	if err := email.SendVerifyEmail(payload.To, payload.Token, payload.ID); err != nil {
-		log.Logger.Warningf("Failed to send mail: %s", err)
 		prometheus.RecordEmailSent(false)
 		return err
 	}

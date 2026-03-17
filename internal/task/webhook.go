@@ -1,7 +1,6 @@
 package task
 
 import (
-	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/webhook"
@@ -37,9 +36,5 @@ func HandleWebhookTask(_ context.Context, task *asynq.Task) error {
 	if err := msgpack.Unmarshal(task.Payload(), &payload); err != nil {
 		return err
 	}
-	if err := webhook.SendPayload(payload.Event, payload.Target); err != nil {
-		log.Logger.Warningf("Failed to send webhook payload: %v", err)
-		return err
-	}
-	return nil
+	return webhook.SendPayload(payload.Event, payload.Target)
 }

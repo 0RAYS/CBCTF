@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/k8s"
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
 	"context"
@@ -91,11 +92,12 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 	if !ret.OK {
 		victim, ret = db.InitVictimRepo(db.DB).HasAliveVictim(victim.TeamID.V, victim.ChallengeID)
 		if !ret.OK {
-			return fmt.Errorf("start victim fail: %s", ret.Msg)
+			return fmt.Errorf("check victim failed: %s", ret.Msg)
 		}
-		_, err = EnqueueStopVictimTask(victim)
+		_, err := EnqueueStopVictimTask(victim)
+		return err
 	}
-	return err
+	return nil
 }
 
 type StopVictimPayload struct {
@@ -125,18 +127,18 @@ func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
 	defer cancel()
 	ret := k8s.StopVictim(ctx, victim)
 	if !ret.OK {
-		return fmt.Errorf("stop victim fail: %s", ret.Msg)
+		return fmt.Errorf("stop victim failed: %s", ret.Msg)
 	}
 	tx := db.DB.Begin()
 	if ret = db.InitVictimRepo(tx).Update(victim.ID, db.UpdateVictimOptions{
 		Duration: new(time.Now().Sub(victim.Start)),
 	}); !ret.OK {
 		tx.Rollback()
-		return fmt.Errorf("stop victim fail, update victim fail %s", ret.Msg)
+		return fmt.Errorf("update victim failed: %s", ret.Msg)
 	}
 	if ret = db.InitVictimRepo(tx).Delete(victim.ID); !ret.OK {
 		tx.Rollback()
-		return fmt.Errorf("stop victim fail, delete victim fail %s", ret.Msg)
+		return fmt.Errorf("delete victim failed: %s", ret.Msg)
 	}
 	tx.Commit()
 	return nil
