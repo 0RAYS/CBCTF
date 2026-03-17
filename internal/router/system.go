@@ -36,7 +36,7 @@ func HomePage(ctx *gin.Context) {
 			info := gin.H{
 				"name":     contest.Name,
 				"start":    contest.Start,
-				"duration": contest.Duration.Seconds(),
+				"duration": int64(contest.Duration.Seconds()),
 				"users":    repo.CountAssociation(contest, "Users"),
 				"teams":    repo.CountAssociation(contest, "Teams"),
 				"picture":  contest.Picture,

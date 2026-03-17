@@ -433,6 +433,7 @@ func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm)
 	if len(contestChallenges) == 0 {
 		return model.SuccessRetVal()
 	}
+	duration := time.Duration(form.Duration) * time.Second
 	for _, contestChallenge := range contestChallenges {
 		for _, team := range teams {
 			if CheckIfSolved(tx, team, contestChallenge.ContestFlags) {
@@ -443,7 +444,7 @@ func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm)
 					continue
 				}
 			}
-			StartVictim(tx, team.CaptainID, team.ID, contest.ID, contestChallenge.ID, contestChallenge.ChallengeID, form.Duration)
+			StartVictim(tx, team.CaptainID, team.ID, contest.ID, contestChallenge.ID, contestChallenge.ChallengeID, duration)
 		}
 	}
 	return model.SuccessRetVal()

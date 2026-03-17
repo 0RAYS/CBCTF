@@ -107,11 +107,9 @@ function TeamDetail({
     return (sizeInBytes / (1024 * 1024)).toFixed(2) + ' MB';
   };
 
-  // 格式化持续时间（将纳秒转为可读格式）
-  const formatDuration = (durationNs) => {
-    // 纳秒转换为秒
-    const seconds = durationNs / 1000000000;
-
+  // 格式化持续时间（秒）
+  const formatDuration = (durationSeconds) => {
+    const seconds = Number(durationSeconds) || 0;
     if (seconds < 60) {
       return t('utils.time.units.second', { count: Math.round(seconds) });
     } else if (seconds < 3600) {
@@ -133,8 +131,7 @@ function TeamDetail({
   const getContainerStatus = (startTime, duration) => {
     const now = new Date();
     const start = new Date(startTime);
-    const durationInMilliseconds = duration / 1000000; // 纳秒转毫秒
-    const end = new Date(start.getTime() + durationInMilliseconds);
+    const end = new Date(start.getTime() + duration * 1000);
 
     if (now < start) return t('admin.contests.teamDetail.traffic.status.upcoming');
     if (now > end) return t('admin.contests.teamDetail.traffic.status.ended');
@@ -723,8 +720,7 @@ function TeamDetail({
 const getContainerStatusClass = (startTime, duration) => {
   const now = new Date();
   const start = new Date(startTime);
-  const durationInMilliseconds = duration / 1000000; // 纳秒转毫秒
-  const end = new Date(start.getTime() + durationInMilliseconds);
+  const end = new Date(start.getTime() + duration * 1000);
 
   if (now < start) return 'bg-geek-400/20 text-geek-400';
   if (now > end) return 'bg-red-400/20 text-red-400';

@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -41,8 +42,12 @@ func UpdateCronJob(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateCronJobEventType)
 	cronJob := middleware.GetCronJob(ctx)
+	var schedule *time.Duration
+	if form.Schedule != nil {
+		schedule = new(time.Duration(*form.Schedule) * time.Second)
+	}
 	if ret := db.InitCronJobRepo(db.DB).Update(cronJob.ID, db.UpdateCronJobOptions{
-		Schedule: form.Schedule,
+		Schedule: schedule,
 	}); !ret.OK {
 		resp.JSON(ctx, ret)
 		return

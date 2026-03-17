@@ -7,7 +7,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -61,8 +60,7 @@ func CreateContest(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	contest.Duration = time.Duration(contest.Duration.Seconds())
-	resp.JSON(ctx, model.SuccessRetVal(contest))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetContestResp(contest, true)))
 }
 
 func UpdateContest(ctx *gin.Context) {

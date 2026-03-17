@@ -13,7 +13,7 @@ func GetContestResp(contest model.Contest, admin bool) gin.H {
 		"name":        contest.Name,
 		"description": contest.Description,
 		"start":       contest.Start,
-		"duration":    contest.Duration.Seconds(),
+		"duration":    int64(contest.Duration.Seconds()),
 		"rules":       contest.Rules,
 		"prizes":      contest.Prizes,
 		"size":        contest.Size,
