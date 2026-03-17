@@ -44,52 +44,50 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 	victim := payload.Victim
 	podRepo := db.InitPodRepo(db.DB)
 	victimRepo := db.InitVictimRepo(db.DB)
-	ret := func() model.RetVal {
-		ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
-		defer cancel()
-		ipExposesMap, ret := k8s.StartVictim(ctx, victim)
+	if _, ret := victimRepo.GetByID(victim.ID); !ret.OK {
+		log.Logger.Warningf("The Victim %d may have already been stopped", victim.ID)
+		return fmt.Errorf("get victim failed: %s", ret.Msg)
+	}
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
+	defer cancel()
+	ipExposesMap, ret := k8s.StartVictim(ctx, victim)
+	if !ret.OK {
+		return fmt.Errorf("start victim failed: %s", ret.Msg)
+	}
+	for ip, exposes := range ipExposesMap {
+		for _, expose := range exposes {
+			victim.Endpoints = append(victim.Endpoints, model.Endpoint{
+				IP:       ip,
+				Port:     expose.Port,
+				Protocol: expose.Protocol,
+			})
+		}
+	}
+	victim.ExposedEndpoints = victim.Endpoints
+	if config.Env.K8S.Frp.On {
+		var frpc []string
+		victim.ExposedEndpoints, frpc, ret = k8s.CreateFrpc(ctx, victim)
 		if !ret.OK {
-			return ret
+			return fmt.Errorf("create frpc failed: %s", ret.Msg)
 		}
-		for ip, exposes := range ipExposesMap {
-			for _, expose := range exposes {
-				victim.Endpoints = append(victim.Endpoints, model.Endpoint{
-					IP:       ip,
-					Port:     expose.Port,
-					Protocol: expose.Protocol,
-				})
-			}
-		}
-		victim.ExposedEndpoints = victim.Endpoints
-		if config.Env.K8S.Frp.On {
-			var frpc []string
-			victim.ExposedEndpoints, frpc, ret = k8s.CreateFrpc(ctx, victim)
+		for _, frpcPodName := range frpc {
+			p, ret := podRepo.Create(db.CreatePodOptions{
+				VictimID: victim.ID,
+				Name:     frpcPodName,
+			})
 			if !ret.OK {
-				return ret
+				return fmt.Errorf("create frpc pod failed: %s", ret.Msg)
 			}
-			for _, frpcPodName := range frpc {
-				p, ret := podRepo.Create(db.CreatePodOptions{
-					VictimID: victim.ID,
-					Name:     frpcPodName,
-				})
-				if !ret.OK {
-					return ret
-				}
-				victim.Pods = append(victim.Pods, p)
-			}
+			victim.Pods = append(victim.Pods, p)
 		}
-		if ret = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
-			VPC:              &victim.VPC,
-			Endpoints:        &victim.Endpoints,
-			ExposedEndpoints: &victim.ExposedEndpoints,
-			Start:            new(time.Now()),
-			Status:           new(model.RunningVictimStatus),
-		}); !ret.OK {
-			return ret
-		}
-		return model.SuccessRetVal()
-	}()
-	err := error(nil)
+	}
+	ret = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
+		VPC:              &victim.VPC,
+		Endpoints:        &victim.Endpoints,
+		ExposedEndpoints: &victim.ExposedEndpoints,
+		Start:            new(time.Now()),
+		Status:           new(model.RunningVictimStatus),
+	})
 	if !ret.OK {
 		victim, ret = db.InitVictimRepo(db.DB).HasAliveVictim(victim.TeamID.V, victim.ChallengeID)
 		if !ret.OK {
