@@ -32,6 +32,7 @@ func CreateContest(tx *gorm.DB, form dto.CreateContestForm) (model.Contest, mode
 		}
 	}
 	if len(form.Timelines) == 0 {
+		duration := time.Duration(form.Duration) * time.Second
 		form.Timelines = model.Timelines{
 			{
 				Date:        form.Start,
@@ -39,12 +40,12 @@ func CreateContest(tx *gorm.DB, form dto.CreateContestForm) (model.Contest, mode
 				Description: "题目公布, 正式开始解题",
 			},
 			{
-				Date:        form.Start.Add(time.Duration(form.Duration)),
+				Date:        form.Start.Add(duration),
 				Title:       "比赛结束",
 				Description: "停止计分, 公布最终排名",
 			},
 			{
-				Date:        form.Start.Add(time.Duration(form.Duration)).Add(time.Hour * 2),
+				Date:        form.Start.Add(duration).Add(time.Hour * 2),
 				Title:       "截至提交 WriteUp",
 				Description: "截至提交 WriteUp, 成绩作废",
 			},
@@ -78,11 +79,12 @@ func CreateContest(tx *gorm.DB, form dto.CreateContestForm) (model.Contest, mode
 
 func UpdateContest(tx *gorm.DB, contest model.Contest, form dto.UpdateContestForm) model.RetVal {
 	repo := db.InitContestRepo(tx)
-	if form.Duration != nil {
-		*form.Duration = *form.Duration * 1e9
-	}
 	if form.Victims != nil && *form.Victims < 1 {
 		form.Victims = new(int64(1))
+	}
+	var duration *time.Duration
+	if form.Duration != nil {
+		duration = new(time.Duration(*form.Duration) * time.Second)
 	}
 	return repo.Update(contest.ID, db.UpdateContestOptions{
 		Name:        form.Name,
@@ -91,7 +93,7 @@ func UpdateContest(tx *gorm.DB, contest model.Contest, form dto.UpdateContestFor
 		Prefix:      form.Prefix,
 		Size:        form.Size,
 		Start:       form.Start,
-		Duration:    (*time.Duration)(form.Duration),
+		Duration:    duration,
 		Blood:       form.Blood,
 		Hidden:      form.Hidden,
 		Victims:     form.Victims,

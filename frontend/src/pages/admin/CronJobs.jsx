@@ -6,9 +6,6 @@ import { toast } from '../../utils/toast';
 import { useTranslation } from 'react-i18next';
 
 const PAGE_SIZE = 20;
-const SECOND_NS = 1_000_000_000;
-const MINUTE_NS = 60 * SECOND_NS;
-const HOUR_NS = 60 * MINUTE_NS;
 
 const DEFAULT_FORM = {
   hours: '0',
@@ -16,25 +13,8 @@ const DEFAULT_FORM = {
   seconds: '0',
 };
 
-function parseDurationNs(value) {
-  if (typeof value === 'number' && Number.isFinite(value)) return value;
-  if (typeof value !== 'string') return 0;
-
-  const hourMatch = value.match(/(\d+)h/);
-  const minuteMatch = value.match(/(\d+)m/);
-  const secondMatch = value.match(/(\d+)s/);
-  const msMatch = value.match(/(\d+)ms/);
-
-  let total = 0;
-  if (hourMatch) total += Number(hourMatch[1]) * HOUR_NS;
-  if (minuteMatch) total += Number(minuteMatch[1]) * MINUTE_NS;
-  if (secondMatch) total += Number(secondMatch[1]) * SECOND_NS;
-  if (msMatch) total += Number(msMatch[1]) * 1_000_000;
-  return total;
-}
-
-function splitDuration(durationNs) {
-  const totalSeconds = Math.max(1, Math.floor(durationNs / SECOND_NS));
+function splitDuration(durationSeconds) {
+  const totalSeconds = Math.max(1, Math.floor(durationSeconds));
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
@@ -46,8 +26,8 @@ function splitDuration(durationNs) {
   };
 }
 
-function formatDuration(durationNs, t) {
-  const totalSeconds = Math.max(1, Math.floor(durationNs / SECOND_NS));
+function formatDuration(durationSeconds, t) {
+  const totalSeconds = Math.max(1, Math.floor(durationSeconds));
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
@@ -58,12 +38,12 @@ function formatDuration(durationNs, t) {
   return parts.join(' ');
 }
 
-function buildDurationNs(form) {
+function buildDurationSeconds(form) {
   const hours = Math.max(0, Number(form.hours) || 0);
   const minutes = Math.max(0, Number(form.minutes) || 0);
   const seconds = Math.max(0, Number(form.seconds) || 0);
-  const total = hours * HOUR_NS + minutes * MINUTE_NS + seconds * SECOND_NS;
-  return Math.max(SECOND_NS, total);
+  const total = hours * 3600 + minutes * 60 + seconds;
+  return Math.max(1, total);
 }
 
 function getLatestRunTime(successLast, failureLast) {
@@ -113,19 +93,18 @@ function CronJobs() {
   }, [currentPage]);
 
   const openEditModal = (cronJob) => {
-    const durationNs = cronJob.schedule_ns ?? parseDurationNs(cronJob.schedule);
     setSelectedCronJob(cronJob);
-    setForm(splitDuration(durationNs));
+    setForm(splitDuration(cronJob.schedule));
     setIsModalOpen(true);
   };
 
   const handleSubmit = async () => {
     try {
       if (selectedCronJob) {
-        const durationNs = buildDurationNs(form);
-        const currentNs = selectedCronJob.schedule_ns ?? parseDurationNs(selectedCronJob.schedule);
+        const durationSeconds = buildDurationSeconds(form);
+        const currentSeconds = selectedCronJob.schedule;
         const payload = {};
-        if (durationNs !== currentNs) payload.schedule = durationNs;
+        if (durationSeconds !== currentSeconds) payload.schedule = durationSeconds;
         if (Object.keys(payload).length === 0) {
           setIsModalOpen(false);
           return;
@@ -158,7 +137,7 @@ function CronJobs() {
     const latestRun = getLatestRunTime(successLast, failureLast);
     const base = latestRun || new Date();
     if (Number.isNaN(base.getTime())) return null;
-    return new Date(base.getTime() + durationNs / 1_000_000);
+    return new Date(base.getTime() + durationNs * 1000);
   };
 
   const columns = [
@@ -203,7 +182,6 @@ function CronJobs() {
   ];
 
   const renderCell = (cronJob, column) => {
-    const durationNs = cronJob.schedule_ns ?? parseDurationNs(cronJob.schedule);
     switch (column.key) {
       case 'id':
         return <span className="text-neutral-50 font-medium">#{cronJob.id}</span>;
@@ -212,7 +190,7 @@ function CronJobs() {
       case 'description':
         return <span className="text-neutral-300 text-sm">{cronJob.description || t('common.none')}</span>;
       case 'schedule':
-        return <span className="text-neutral-300 font-mono text-sm">{formatDuration(durationNs, t)}</span>;
+        return <span className="text-neutral-300 font-mono text-sm">{formatDuration(cronJob.schedule, t)}</span>;
       case 'successCount':
         return <span className="text-emerald-300 text-sm font-medium">{cronJob.success ?? 0}</span>;
       case 'failureCount':
@@ -222,7 +200,7 @@ function CronJobs() {
       case 'failureLast':
         return <span className="text-neutral-300 text-sm">{formatDateTime(cronJob.failure_last)}</span>;
       case 'next': {
-        const nextRun = getNextRun(durationNs, cronJob.success_last, cronJob.failure_last);
+        const nextRun = getNextRun(cronJob.schedule, cronJob.success_last, cronJob.failure_last);
         return (
           <span className="text-neutral-300 text-sm">
             {nextRun ? formatDateTime(nextRun) : t('admin.cronjobs.time.unknown')}
@@ -249,7 +227,7 @@ function CronJobs() {
     }
   };
 
-  const previewDurationNs = buildDurationNs(form);
+  const previewDurationNs = buildDurationSeconds(form);
   const previewNextRun = selectedCronJob
     ? getNextRun(previewDurationNs, selectedCronJob.success_last, selectedCronJob.failure_last)
     : null;

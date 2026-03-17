@@ -2,7 +2,6 @@ package dto
 
 import (
 	"CBCTF/internal/model"
-	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -30,7 +29,7 @@ type StopVictimsForm struct {
 }
 
 type StartVictimsForm struct {
-	Challenges []string      `form:"challenges" json:"challenges" binding:"required,dive,uuid"`
-	TeamRatio  float64       `form:"team_ratio" json:"team_ratio" binding:"required,gt=0,lt=1"`
-	Duration   time.Duration `form:"duration" json:"duration" binding:"omitempty,gte=1"`
+	Challenges []string `form:"challenges" json:"challenges" binding:"required,dive,uuid"`
+	TeamRatio  float64  `form:"team_ratio" json:"team_ratio" binding:"required,gt=0,lt=1"`
+	Duration   int64    `form:"duration" json:"duration" binding:"omitempty,gte=1"`
 }

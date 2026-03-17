@@ -10,7 +10,7 @@ import request from './request';
 //            {
 //                "picture": "",
 //                "description": "test123456",
-//                "duration": 7200000000000,
+//                "duration": 7200,
 //                "hidden": false,
 //                "id": 12,
 //                "name": "test123456",
@@ -40,7 +40,7 @@ export const getContestList = () => {
 //    "data": {
 //        "picture": "https://test.jbnrz.com.cn/picture/df20aa8b-b15f-4bc7-811b-16efa185ee44",
 //        "description": "contest11",
-//        "duration": 25920000000000000,
+//        "duration": 2592000,
 //        "hidden": false,
 //        "id": 11,
 //        "name": "contest11",
