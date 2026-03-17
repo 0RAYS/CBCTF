@@ -3,6 +3,7 @@ package task
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/k8s"
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
 	"context"
@@ -52,7 +53,7 @@ func HandleStartGeneratorTask(ctx context.Context, t *asynq.Task) error {
 		return fmt.Errorf("update generator failed: %s", ret.Msg)
 	}
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
-	_, ret = k8s.StartGenerator(ctx, challenge, generator)
+	_, ret := k8s.StartGenerator(ctx, challenge, generator)
 	cancel()
 	if !ret.OK {
 		_, err := EnqueueStopGeneratorTask(generator)
@@ -60,7 +61,7 @@ func HandleStartGeneratorTask(ctx context.Context, t *asynq.Task) error {
 	}
 	ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.RunningGeneratorStatus)})
 	if !ret.OK {
-		return fmt.Errorf("start generator fail, update generator fail: %s", ret.Msg)
+		return fmt.Errorf("update generator failed: %s", ret.Msg)
 	}
 	return nil
 }
@@ -92,11 +93,11 @@ func HandleStopGeneratorTask(ctx context.Context, t *asynq.Task) error {
 	ret := k8s.StopGenerator(ctx, generator)
 	cancel()
 	if !ret.OK {
-		return fmt.Errorf("stop generator fail: %s", ret.Msg)
+		return fmt.Errorf("stop generator failed: %s", ret.Msg)
 	}
 	ret = db.InitGeneratorRepo(db.DB).Delete(generator.ID)
 	if !ret.OK {
-		return fmt.Errorf("stop generator fail, delete generator fail: %s", ret.Msg)
+		return fmt.Errorf("delete generator failed: %s", ret.Msg)
 	}
 	return nil
 }

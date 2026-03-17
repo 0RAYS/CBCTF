@@ -1,7 +1,6 @@
 package task
 
 import (
-	"CBCTF/internal/log"
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/utils"
 	"context"
@@ -37,9 +36,5 @@ func HandleResizeImageTask(_ context.Context, task *asynq.Task) error {
 	if err := msgpack.Unmarshal(task.Payload(), &payload); err != nil {
 		return err
 	}
-	if err := utils.ResizeImage(payload.Path, payload.Width, payload.Height); err != nil {
-		log.Logger.Warningf("Failed to resize image: %v", err)
-		return err
-	}
-	return nil
+	return utils.ResizeImage(payload.Path, payload.Width, payload.Height)
 }
