@@ -298,9 +298,6 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 		}
 		victim.Pods = append(victim.Pods, pod)
 	}
-	if ret = victimRepo.Update(victim.ID, db.UpdateVictimOptions{Status: new(model.PendingVictimStatus)}); !ret.OK {
-		return ret
-	}
 	_, err := task.EnqueueStartVictimTask(victim)
 	if err != nil {
 		log.Logger.Warningf("Failed to enqueue start victim task: %v", err)

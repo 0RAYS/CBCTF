@@ -53,6 +53,9 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 		}
 		return fmt.Errorf("get victim failed: %s", ret.Msg)
 	}
+	if ret := victimRepo.Update(victim.ID, db.UpdateVictimOptions{Status: new(model.PendingVictimStatus)}); !ret.OK {
+		return fmt.Errorf("update victim failed: %s", ret.Msg)
+	}
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
 	ipExposesMap, ret := k8s.StartVictim(ctx, victim)
