@@ -1,5 +1,11 @@
 package dto
 
+type ListTeamForm struct {
+	ListModelsForm
+	Name        string `form:"name" json:"name"`
+	Description string `form:"description" json:"description"`
+}
+
 // CreateTeamForm for create team
 type CreateTeamForm struct {
 	Name        string `form:"name" json:"name" binding:"required"`

@@ -30,15 +30,22 @@ func GetTeam(ctx *gin.Context) {
 }
 
 func GetTeams(ctx *gin.Context) {
-	var form dto.ListModelsForm
+	var form dto.ListTeamForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	contest := middleware.GetContest(ctx)
-	teams, count, ret := db.InitTeamRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
-		Conditions: map[string]any{"contest_id": contest.ID},
-	})
+	options := db.GetOptions{
+		Conditions: map[string]any{"contest_id": middleware.GetContest(ctx).ID},
+		Search:     make(map[string]string),
+	}
+	if form.Name != "" {
+		options.Search["name"] = form.Name
+	}
+	if form.Description != "" {
+		options.Search["description"] = form.Description
+	}
+	teams, count, ret := db.InitTeamRepo(db.DB).List(form.Limit, form.Offset, options)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
