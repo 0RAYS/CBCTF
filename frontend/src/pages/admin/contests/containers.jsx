@@ -912,7 +912,7 @@ function ContestContainers() {
                         key={challenge.id}
                         className="dropdown-option text-xs"
                         onClick={() => {
-                          handleFilterChange('challenge_id', challenge.rand_id.toString());
+                          handleFilterChange('challenge_id', challenge.id.toString());
                           setSearchResults((prev) => ({ ...prev, challenges: [] }));
                         }}
                       >
