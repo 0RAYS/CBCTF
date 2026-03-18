@@ -111,6 +111,7 @@ function GameChallengesPage() {
   const [contestStatus, setContestStatus] = useState({});
   const [categories, setCategories] = useState(['ALL']);
   const [selectedCategory, setSelectedCategory] = useState('ALL');
+  const [unsolvedOnly, setUnsolvedOnly] = useState(false);
   const [challenges, setChallenges] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -181,9 +182,9 @@ function GameChallengesPage() {
   // 当当前页变化时，重新获取题目数据
   useEffect(() => {
     if (contestId && currentPage > 0) {
-      fetchChallengesWithFilters(currentPage, selectedCategory);
+      fetchChallengesWithFilters(currentPage, selectedCategory, unsolvedOnly);
     }
-  }, [currentPage, contestId]);
+  }, [currentPage, contestId, unsolvedOnly]);
 
   // 获取已上传的题解
   useEffect(() => {
@@ -221,7 +222,7 @@ function GameChallengesPage() {
 
         // 获取分类和题目数据
         await fetchCategories();
-        await fetchChallengesWithFilters(1, selectedCategory);
+        await fetchChallengesWithFilters(1, selectedCategory, unsolvedOnly);
       }
     } catch (error) {
       toast.danger({ title: t('game.challenges.toast.fetchFailed'), description: error.message });
@@ -244,11 +245,12 @@ function GameChallengesPage() {
   };
 
   // 获取带过滤器的题目数据
-  const fetchChallengesWithFilters = async (page, category) => {
+  const fetchChallengesWithFilters = async (page, category, unsolved = unsolvedOnly) => {
     try {
       const params = {
         limit: pageSize,
         offset: (page - 1) * pageSize,
+        unsolved,
       };
 
       // 添加过滤参数
@@ -423,7 +425,14 @@ function GameChallengesPage() {
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
     setCurrentPage(1); // 重置到第一页
-    fetchChallengesWithFilters(1, category);
+    fetchChallengesWithFilters(1, category, unsolvedOnly);
+  };
+
+  const handleSolvedFilterChange = () => {
+    const nextUnsolvedOnly = !unsolvedOnly;
+    setUnsolvedOnly(nextUnsolvedOnly);
+    setCurrentPage(1);
+    fetchChallengesWithFilters(1, selectedCategory, nextUnsolvedOnly);
   };
 
   // 处理题目点击
@@ -530,6 +539,8 @@ function GameChallengesPage() {
                 categories={categories}
                 selectedCategory={selectedCategory}
                 onCategoryChange={handleCategoryChange}
+                unsolvedOnly={unsolvedOnly}
+                onSolvedFilterChange={handleSolvedFilterChange}
                 challenges={challenges}
                 onChallengeClick={handleChallengeClick}
                 teamInfo={teamInfo}
@@ -580,6 +591,8 @@ function GameChallengesPage() {
               categories={categories}
               selectedCategory={selectedCategory}
               onCategoryChange={handleCategoryChange}
+              unsolvedOnly={unsolvedOnly}
+              onSolvedFilterChange={handleSolvedFilterChange}
               challenges={challenges}
               onChallengeClick={handleChallengeClick}
               teamInfo={teamInfo}

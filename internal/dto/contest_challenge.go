@@ -9,6 +9,7 @@ import (
 
 type GetContestChallengesForm struct {
 	ListModelsForm
+	Unsolved bool   `form:"unsolved" json:"unsolved"`
 	Category string `form:"category" json:"category"`
 }
 

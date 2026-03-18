@@ -28,6 +28,8 @@ function ChallengeBoard({
   categories,
   selectedCategory,
   onCategoryChange,
+  unsolvedOnly = false,
+  onSolvedFilterChange,
   challenges,
   onChallengeClick,
   teamInfo,
@@ -42,33 +44,46 @@ function ChallengeBoard({
     <Card variant="default" padding="lg" animate className="">
       {/* 分类和团队信息 */}
       <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:justify-between sm:items-center">
-        {/* 分类标签 */}
-        <div className="flex flex-wrap gap-2 md:gap-4">
-          {categories.map((category) => (
-            <Button
-              key={category}
-              variant={selectedCategory === category ? 'primary' : 'ghost'}
-              size="sm"
-              className={`min-w-0 px-4 py-1 ${
-                selectedCategory === category ? '' : 'text-neutral-400 hover:text-neutral-200'
-              }`}
-              onClick={() => onCategoryChange(category)}
-            >
-              {category}
-            </Button>
-          ))}
+        <div className="flex flex-col gap-3">
+          {/* 分类标签 */}
+          <div className="flex flex-wrap gap-2 md:gap-4">
+            {categories.map((category) => (
+              <Button
+                key={category}
+                variant={selectedCategory === category ? 'primary' : 'ghost'}
+                size="sm"
+                className={`min-w-0 px-4 py-1 ${
+                  selectedCategory === category ? '' : 'text-neutral-400 hover:text-neutral-200'
+                }`}
+                onClick={() => onCategoryChange(category)}
+              >
+                {category}
+              </Button>
+            ))}
+          </div>
         </div>
 
         {/* 团队信息 */}
-        <div className="flex items-center gap-4 min-w-0">
-          <div className="flex -space-x-2 flex-shrink-0">
-            {teamInfo.members.map((member, i) => (
-              <Avatar key={i} src={member.picture} name={member.name} size="xs" className="border-2 border-black" />
-            ))}
+        <div className="flex flex-col gap-3 min-w-0 sm:items-end">
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="flex -space-x-2 flex-shrink-0">
+              {teamInfo.members.map((member, i) => (
+                <Avatar key={i} src={member.picture} name={member.name} size="xs" className="border-2 border-black" />
+              ))}
+            </div>
+            <span className="text-neutral-400 font-mono truncate max-w-[160px]" title={teamInfo.name}>
+              {teamInfo.name}
+            </span>
           </div>
-          <span className="text-neutral-400 font-mono truncate max-w-[160px]" title={teamInfo.name}>
-            {teamInfo.name}
-          </span>
+          <label className="flex items-center gap-2 text-sm font-mono text-neutral-300 whitespace-nowrap cursor-pointer">
+            <input
+              type="checkbox"
+              checked={unsolvedOnly}
+              onChange={() => onSolvedFilterChange?.()}
+              className="h-4 w-4 rounded border border-neutral-500/60 bg-black/20 text-geek-400 focus:ring-geek-400/70"
+            />
+            <span>{t('game.challengeBoard.filters.hideSolved')}</span>
+          </label>
         </div>
       </div>
 
