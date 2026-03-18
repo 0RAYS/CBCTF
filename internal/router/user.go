@@ -47,12 +47,22 @@ func GetAccessibleRoutes(ctx *gin.Context) {
 }
 
 func GetUsers(ctx *gin.Context) {
-	var form dto.ListModelsForm
+	var form dto.ListUsersForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	users, count, ret := db.InitUserRepo(db.DB).List(form.Limit, form.Offset)
+	options := db.GetOptions{Conditions: make(map[string]any)}
+	if form.Name != "" {
+		options.Conditions["name"] = form.Name
+	}
+	if form.Email != "" {
+		options.Conditions["email"] = form.Email
+	}
+	if form.Description != "" {
+		options.Conditions["description"] = form.Description
+	}
+	users, count, ret := db.InitUserRepo(db.DB).List(form.Limit, form.Offset, options)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
