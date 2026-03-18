@@ -306,7 +306,12 @@ function ContestContainers() {
         return;
       }
       if (model === 'Challenge') {
-        const response = await getContestChallenges(parseInt(contestId, 10), { type: 'pods', limit: 10, offset: 0 });
+        const response = await getContestChallenges(parseInt(contestId, 10), {
+          name: keyword,
+          type: 'pods',
+          limit: 10,
+          offset: 0,
+        });
         if (response.code !== 200) {
           setResults([]);
           return;

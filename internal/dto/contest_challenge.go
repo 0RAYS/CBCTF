@@ -26,6 +26,7 @@ func (f *GetContestChallengesForm) Validate(ctx *gin.Context) model.RetVal {
 type GetAllContestChallengesForm struct {
 	ListModelsForm
 	Type     model.ChallengeType `form:"type" json:"type" binding:"omitempty,oneof=static question dynamic pods"`
+	Name     string              `form:"name" json:"name"`
 	Category string              `form:"category" json:"category"`
 }
 

@@ -59,6 +59,10 @@ func GetAllContestChallenges(ctx *gin.Context) {
 	options := db.GetOptions{
 		Conditions: map[string]any{"contest_id": middleware.GetContest(ctx).ID},
 		Preloads:   map[string]db.GetOptions{"Challenge": {}, "ContestFlags": {}},
+		Search:     make(map[string]string),
+	}
+	if form.Name != "" {
+		options.Search["name"] = form.Name
 	}
 	if form.Category != "" {
 		options.Conditions["category"] = form.Category
