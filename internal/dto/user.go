@@ -34,6 +34,13 @@ type ChangePasswordForm struct {
 	NewPassword string `form:"new" json:"new" binding:"required,nefield=OldPassword"`
 }
 
+type ListUsersForm struct {
+	ListModelsForm
+	Name        string `form:"name" json:"name"`
+	Email       string `form:"email" json:"email"`
+	Description string `form:"description" json:"description"`
+}
+
 // CreateUserForm for create user
 type CreateUserForm struct {
 	Name        string `form:"name" json:"name" binding:"required"`
