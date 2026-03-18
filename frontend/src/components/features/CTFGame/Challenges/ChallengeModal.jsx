@@ -378,7 +378,7 @@ function ChallengeModal({
                     ? t('game.challengeModal.instance.waiting')
                     : isPending
                       ? t('game.challengeModal.instance.pending')
-                    : t('game.challengeModal.instance.notRunning')}
+                      : t('game.challengeModal.instance.notRunning')}
               </span>
             </div>
 
