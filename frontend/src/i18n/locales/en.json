@@ -861,6 +861,10 @@
       },
       "challenges": {
         "title": "Challenge Management",
+        "search": {
+          "label": "Search by Name",
+          "placeholder": "Search challenges in this contest..."
+        },
         "table": {
           "name": "Challenge",
           "category": "Category",

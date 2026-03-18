@@ -30,6 +30,7 @@ function AdminContestChallengesPage() {
   const [categories, setCategories] = useState([]);
   const [filterType, setFilterType] = useState('all');
   const [filterCategory, setFilterCategory] = useState('all');
+  const [nameQuery, setNameQuery] = useState('');
 
   // 选择器状态
   const [isSelectorOpen, setSelectorOpen] = useState(false);
@@ -85,7 +86,7 @@ function AdminContestChallengesPage() {
     if (id) {
       filterChallenges();
     }
-  }, [filterType, filterCategory]);
+  }, [filterType, filterCategory, nameQuery]);
 
   // 当当前页变化时，重新获取数据
   useEffect(() => {
@@ -133,6 +134,9 @@ function AdminContestChallengesPage() {
 
       if (filterCategory !== 'all') {
         params.category = filterCategory;
+      }
+      if (nameQuery.trim()) {
+        params.name = nameQuery.trim();
       }
 
       const response = await getContestChallenges(parseInt(id), params);
@@ -403,6 +407,8 @@ function AdminContestChallengesPage() {
         onDeleteChallenge={handleRemoveChallenge}
         onFilterTypeChange={handleFilterTypeChange}
         onFilterCategoryChange={handleFilterCategoryChange}
+        nameQuery={nameQuery}
+        onNameChange={setNameQuery}
       />
 
       {/* 选择赛题弹窗 */}
