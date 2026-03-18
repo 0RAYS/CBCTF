@@ -2318,6 +2318,9 @@
     },
     "challengeBoard": {
       "solves": "解题数：",
+      "filters": {
+        "hideSolved": "隐藏已解出"
+      },
       "status": {
         "notInitialized": "待初始化",
         "instanceRunning": "靶机运行中"

@@ -2318,6 +2318,9 @@
     },
     "challengeBoard": {
       "solves": "Solves:",
+      "filters": {
+        "hideSolved": "Hide Solved"
+      },
       "status": {
         "notInitialized": "Not Initialized",
         "instanceRunning": "Instance Running"

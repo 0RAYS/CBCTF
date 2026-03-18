@@ -105,6 +105,51 @@ func (c *ContestChallengeRepo) ListCategories(contestID uint, t model.ChallengeT
 	return categories, model.SuccessRetVal()
 }
 
+func (c *ContestChallengeRepo) ListUnsolvedID(teamID, contestID uint, category string, limit, offset int) ([]uint, int64, model.RetVal) {
+	subSolved := c.DB.Table("submissions").
+		Select("COUNT(*)").
+		Where("submissions.contest_challenge_id = contest_challenges.id").
+		Where("submissions.team_id = ?", teamID).
+		Where("submissions.solved = ?", true).
+		Where("submissions.deleted_at IS NULL")
+
+	subFlags := c.DB.Table("contest_flags").
+		Select("COUNT(*)").
+		Where("contest_flags.contest_challenge_id = contest_challenges.id").
+		Where("contest_flags.deleted_at IS NULL")
+
+	var count int64
+	res := c.DB.Table("contest_challenges").
+		Select("COUNT(*)").
+		Where("contest_challenges.contest_id = ?", contestID).
+		Where("contest_challenges.hidden = ?", false).
+		Where("contest_challenges.deleted_at IS NULL").
+		Where("(?) < (?)", subSolved, subFlags)
+	if category != "" {
+		res = res.Where("contest_challenges.category = ?", category)
+	}
+	if res = res.Scan(&count); res.Error != nil {
+		log.Logger.Warningf("Failed to list ContestChallenge: %s", res.Error)
+		return nil, 0, model.RetVal{Msg: i18n.Model.ContestChallenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+
+	var ids []uint
+	res = c.DB.Table("contest_challenges").
+		Select("contest_challenges.id").
+		Where("contest_challenges.contest_id = ?", contestID).
+		Where("contest_challenges.hidden = ?", false).
+		Where("contest_challenges.deleted_at IS NULL").
+		Where("(?) < (?)", subSolved, subFlags)
+	if category != "" {
+		res = res.Where("contest_challenges.category = ?", category)
+	}
+	if res = res.Limit(limit).Offset(offset).Scan(&ids); res.Error != nil {
+		log.Logger.Warningf("Failed to list ContestChallenge: %s", res.Error)
+		return nil, 0, model.RetVal{Msg: i18n.Model.ContestChallenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return ids, count, model.SuccessRetVal()
+}
+
 func (c *ContestChallengeRepo) Delete(idL ...uint) model.RetVal {
 	contestChallengeL, _, ret := c.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},

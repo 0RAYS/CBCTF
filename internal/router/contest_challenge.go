@@ -18,14 +18,34 @@ func GetContestChallenges(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	options := db.GetOptions{
-		Conditions: map[string]any{"contest_id": middleware.GetContest(ctx).ID, "hidden": false},
-		Preloads:   map[string]db.GetOptions{"Challenge": {}, "ContestFlags": {}},
+	var (
+		ids               []uint
+		contestChallengeL []model.ContestChallenge
+		count             int64
+		ret               model.RetVal
+	)
+	if form.Unsolved {
+		team := middleware.GetTeam(ctx)
+		contest := middleware.GetContest(ctx)
+		ids, count, ret = db.InitContestChallengeRepo(db.DB).ListUnsolvedID(team.ID, contest.ID, form.Category, form.Limit, form.Offset)
+		if !ret.OK {
+			resp.JSON(ctx, ret)
+			return
+		}
+		contestChallengeL, count, ret = db.InitContestChallengeRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
+			Conditions: map[string]any{"id": ids},
+			Preloads:   map[string]db.GetOptions{"Challenge": {}, "ContestFlags": {}},
+		})
+	} else {
+		options := db.GetOptions{
+			Conditions: map[string]any{"contest_id": middleware.GetContest(ctx).ID, "hidden": false},
+			Preloads:   map[string]db.GetOptions{"Challenge": {}, "ContestFlags": {}},
+		}
+		if form.Category != "" {
+			options.Conditions["category"] = form.Category
+		}
+		contestChallengeL, count, ret = db.InitContestChallengeRepo(db.DB).List(form.Limit, form.Offset, options)
 	}
-	if form.Category != "" {
-		options.Conditions["category"] = form.Category
-	}
-	contestChallengeL, count, ret := db.InitContestChallengeRepo(db.DB).List(form.Limit, form.Offset, options)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -67,7 +87,7 @@ func GetAllContestChallenges(ctx *gin.Context) {
 	if form.Category != "" {
 		options.Conditions["category"] = form.Category
 	}
-	if middleware.IsFullAccess(ctx) && form.Type != "" {
+	if form.Type != "" {
 		options.Conditions["type"] = form.Type
 	}
 	contestChallengeL, count, ret := db.InitContestChallengeRepo(db.DB).List(form.Limit, form.Offset, options)
