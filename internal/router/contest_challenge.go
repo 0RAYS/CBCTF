@@ -13,7 +13,45 @@ import (
 )
 
 func GetContestChallenges(ctx *gin.Context) {
-	var form dto.GetChallengesForm
+	var form dto.GetContestChallengesForm
+	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	options := db.GetOptions{
+		Conditions: map[string]any{"contest_id": middleware.GetContest(ctx).ID, "hidden": false},
+		Preloads:   map[string]db.GetOptions{"Challenge": {}, "ContestFlags": {}},
+	}
+	if form.Category != "" {
+		options.Conditions["category"] = form.Category
+	}
+	contestChallengeL, count, ret := db.InitContestChallengeRepo(db.DB).List(form.Limit, form.Offset, options)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	data := make([]gin.H, 0)
+	team := middleware.GetTeam(ctx)
+	for _, contestChallenge := range contestChallengeL {
+		tmp := resp.GetContestChallengeResp(contestChallenge)
+		tmp["hidden"] = false
+		tmp["attempts"] = service.CountAttempts(db.DB, team, contestChallenge)
+		tmp["init"] = service.CheckIfGenerated(db.DB, team, contestChallenge.ContestFlags)
+		tmp["solved"] = service.CheckIfSolved(db.DB, team, contestChallenge.ContestFlags)
+		tmp["remote"] = service.GetVictimStatus(db.DB, team.ID, contestChallenge.Challenge)
+		tmp["file"] = func() string {
+			if _, err := os.Stat(contestChallenge.Challenge.AttachmentPath(team.ID)); err != nil {
+				return ""
+			}
+			return contestChallenge.Challenge.AttachmentPath(team.ID)
+		}()
+		data = append(data, tmp)
+	}
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"challenges": data, "count": count}))
+}
+
+func GetAllContestChallenges(ctx *gin.Context) {
+	var form dto.GetAllContestChallengesForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -21,16 +59,12 @@ func GetContestChallenges(ctx *gin.Context) {
 	options := db.GetOptions{
 		Conditions: map[string]any{"contest_id": middleware.GetContest(ctx).ID},
 		Preloads:   map[string]db.GetOptions{"Challenge": {}, "ContestFlags": {}},
-		Search:     form.Search,
 	}
 	if form.Category != "" {
 		options.Conditions["category"] = form.Category
 	}
 	if middleware.IsFullAccess(ctx) && form.Type != "" {
 		options.Conditions["type"] = form.Type
-	}
-	if !middleware.IsFullAccess(ctx) {
-		options.Conditions["hidden"] = false
 	}
 	contestChallengeL, count, ret := db.InitContestChallengeRepo(db.DB).List(form.Limit, form.Offset, options)
 	if !ret.OK {
@@ -40,20 +74,6 @@ func GetContestChallenges(ctx *gin.Context) {
 	data := make([]gin.H, 0)
 	for _, contestChallenge := range contestChallengeL {
 		tmp := resp.GetContestChallengeResp(contestChallenge)
-		if !middleware.IsFullAccess(ctx) {
-			team := middleware.GetTeam(ctx)
-			tmp["hidden"] = false
-			tmp["attempts"] = service.CountAttempts(db.DB, team, contestChallenge)
-			tmp["init"] = service.CheckIfGenerated(db.DB, team, contestChallenge.ContestFlags)
-			tmp["solved"] = service.CheckIfSolved(db.DB, team, contestChallenge.ContestFlags)
-			tmp["remote"] = service.GetVictimStatus(db.DB, team.ID, contestChallenge.Challenge)
-			tmp["file"] = func() string {
-				if _, err := os.Stat(contestChallenge.Challenge.AttachmentPath(team.ID)); err != nil {
-					return ""
-				}
-				return contestChallenge.Challenge.AttachmentPath(team.ID)
-			}()
-		}
 		data = append(data, tmp)
 	}
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"challenges": data, "count": count}))
