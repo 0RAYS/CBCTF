@@ -171,7 +171,7 @@ function ContestContainers() {
         offset: (page - 1) * challengePageSize,
       };
       if (query.trim() !== '') {
-        params['search[name]'] = query.trim();
+        params.name = query.trim();
       }
       const response = await getContestChallenges(parseInt(contestId), params);
       if (response.code === 200) {
@@ -191,7 +191,7 @@ function ContestContainers() {
         offset: (page - 1) * challengePageSize,
       };
       if (query.trim() !== '') {
-        params['search[name]'] = query.trim();
+        params.name = query.trim();
       }
       const response = await getContestChallenges(parseInt(contestId), params);
       if (response.code === 200) {

@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
-import { IconEdit, IconTrash, IconPlus } from '@tabler/icons-react';
-import { Button, Pagination, List, Chip } from '../../../common';
+import { IconEdit, IconTrash, IconPlus, IconSearch } from '@tabler/icons-react';
+import { Button, Pagination, List, Chip, Input } from '../../../common';
 import { useTranslation } from 'react-i18next';
 import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../../config/challengeChips';
 
@@ -35,6 +35,8 @@ function AdminContestChallenges({
   onDeleteChallenge,
   onFilterTypeChange,
   onFilterCategoryChange,
+  nameQuery = '',
+  onNameChange,
 }) {
   const { t } = useTranslation();
   // 自定义标签渲染
@@ -169,6 +171,19 @@ function AdminContestChallenges({
         <Button variant="primary" size="sm" align="icon-left" icon={<IconPlus size={18} />} onClick={onAddChallenge}>
           {t('admin.challenge.actions.add')}
         </Button>
+      </div>
+
+      <div className="mb-6">
+        <label className="block text-sm font-mono text-neutral-400 mb-2">
+          {t('admin.contests.challenges.search.label')}
+        </label>
+        <Input
+          type="search"
+          value={nameQuery}
+          placeholder={t('admin.contests.challenges.search.placeholder')}
+          onChange={(e) => onNameChange?.(e.target.value)}
+          icon={<IconSearch size={16} />}
+        />
       </div>
 
       {/* 过滤器 */}

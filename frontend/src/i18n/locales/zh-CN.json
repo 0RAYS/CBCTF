@@ -861,6 +861,10 @@
       },
       "challenges": {
         "title": "赛题管理",
+        "search": {
+          "label": "按名称搜索",
+          "placeholder": "搜索当前比赛中的赛题..."
+        },
         "table": {
           "name": "赛题",
           "category": "分类",
