@@ -13,6 +13,14 @@ import {
 } from '../../../api/admin/challenge';
 import { useTranslation } from 'react-i18next';
 
+const normalizeInstanceStatus = (status) => {
+  const normalizedStatus = typeof status === 'string' ? status.toLowerCase() : '';
+  if (normalizedStatus === 'waiting' || normalizedStatus === 'pending' || normalizedStatus === 'running') {
+    return normalizedStatus;
+  }
+  return '';
+};
+
 // 格式化剩余时间
 const formatTimeLeft = (seconds) => {
   seconds = Math.floor(seconds);
@@ -65,7 +73,14 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
     }
   }, []);
 
-  // 仅在弹窗打开期间轮询；检测到 Running 后停止并更新状态
+  const currentInstanceStatus = normalizeInstanceStatus(testStatus?.remote?.status);
+  const isRunning = currentInstanceStatus === 'running';
+  const isWaiting = currentInstanceStatus === 'waiting';
+  const isPending = currentInstanceStatus === 'pending';
+  const instanceDuration = Math.max(Number(testStatus?.remote?.remaining) || 0, timeLeft);
+  const progressWidth = instanceDuration > 0 ? Math.max(0, Math.min(100, (timeLeft / instanceDuration) * 100)) : 0;
+
+  // 仅在弹窗打开期间轮询；同步 waiting/pending/running 状态
   const startPolling = useCallback(
     (challengeId) => {
       stopPolling();
@@ -76,13 +91,14 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
         }
         try {
           const response = await getTestChallengeStatus(challengeId);
-          if (response.code === 200 && response.data.remote?.status === 'Running') {
-            stopPolling();
+          if (response.code === 200) {
+            const nextStatus = normalizeInstanceStatus(response.data.remote?.status);
             setTestStatus(response.data);
-            if (response.data.remote?.remaining) {
-              setTimeLeft(response.data.remote.remaining);
+            setTimeLeft(Number(response.data.remote?.remaining) || 0);
+            if (nextStatus === 'running') {
+              stopPolling();
+              setLoading((prev) => ({ ...prev, starting: false }));
             }
-            setLoading((prev) => ({ ...prev, starting: false }));
           }
         } catch {
           // 忽略轮询中的网络错误
@@ -110,14 +126,12 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
         const response = await getTestChallengeStatus(challenge.id);
         if (response.code === 200) {
           setTestStatus(response.data);
-          if (response.data.remote?.remaining) {
-            setTimeLeft(response.data.remote.remaining);
-          }
+          setTimeLeft(Number(response.data.remote?.remaining) || 0);
           if (showSuccessToast) {
             toast.success({ description: t('admin.challenge.testModal.toast.statusRefreshSuccess') });
           }
-          // Pod 仍在启动中（页面刷新后恢复）→ 自动开始轮询
-          if (response.data.remote?.status === 'pending') {
+          // Pod 仍在排队或启动中（页面刷新后恢复）→ 自动开始轮询
+          if (['waiting', 'pending'].includes(normalizeInstanceStatus(response.data.remote?.status))) {
             startPolling(challenge.id);
           }
         }
@@ -154,25 +168,23 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
 
   // 初始化时间
   useEffect(() => {
-    if (testStatus?.remote?.remaining) {
-      setTimeLeft(testStatus.remote.remaining);
-    }
+    setTimeLeft(Number(testStatus?.remote?.remaining) || 0);
   }, [testStatus?.remote?.remaining]);
 
   // 倒计时效果
   useEffect(() => {
     if (!testStatus || !isOpen) return;
-    const isRunning = testStatus.remote?.status === 'Running';
-    if (!isRunning || !timeLeft) return;
-
     if (timerRef.current) {
       clearInterval(timerRef.current);
+      timerRef.current = null;
     }
+    if (!isRunning || timeLeft <= 0) return;
 
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
-        if (prev <= 0) {
+        if (prev <= 1) {
           clearInterval(timerRef.current);
+          timerRef.current = null;
           return 0;
         }
         return prev - 1;
@@ -184,7 +196,7 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
         clearInterval(timerRef.current);
       }
     };
-  }, [testStatus?.remote?.status, isOpen, timeLeft]);
+  }, [isOpen, isRunning, testStatus, timeLeft]);
 
   // 启动测试靶机 — HTTP 成功后保持 loading，通过轮询等待 Running
   const handleStartVictim = useCallback(async () => {
@@ -192,6 +204,15 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
     try {
       const response = await startTestVictim(challenge.id);
       if (response.code === 200) {
+        setTestStatus((prev) => ({
+          ...prev,
+          remote: {
+            ...(prev?.remote || {}),
+            status: 'waiting',
+            target: prev?.remote?.target || [],
+            remaining: 0,
+          },
+        }));
         toast.success({ description: t('admin.challenge.testModal.toast.actionSuccess') });
         startPolling(challenge.id);
       } else {
@@ -252,11 +273,14 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
 
   // 靶机部分的渲染
   const renderInstanceContent = useCallback(() => {
-    const isRunning = testStatus?.remote?.status === 'running';
-    const isLaunching = (loading.starting || testStatus?.remote?.status === 'pending') && !isRunning;
     const targets = testStatus?.remote?.target || [];
+    const launchButtonLabel = isWaiting
+      ? t('admin.challenge.testModal.instance.waiting')
+      : isPending
+        ? t('admin.challenge.testModal.actions.launching')
+        : t('admin.challenge.testModal.actions.launch');
 
-    if (!testStatus && !isLaunching) return null;
+    if (!testStatus && !loading.starting) return null;
 
     return (
       <div className="space-y-3">
@@ -267,14 +291,22 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
             <div className="flex items-center gap-2">
               <span
                 className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                  isRunning ? 'bg-green-400' : isLaunching ? 'bg-yellow-400 animate-pulse' : 'bg-neutral-400'
+                  isRunning
+                    ? 'bg-green-400'
+                    : isPending
+                      ? 'bg-yellow-400 animate-pulse'
+                      : isWaiting
+                        ? 'bg-yellow-400'
+                        : 'bg-neutral-400'
                 }`}
               />
               <span className="text-neutral-50 font-mono text-sm">
                 {isRunning
                   ? t('admin.challenge.testModal.instance.running')
-                  : isLaunching
-                    ? t('admin.challenge.testModal.actions.launching')
+                  : isWaiting
+                    ? t('admin.challenge.testModal.instance.waiting')
+                    : isPending
+                      ? t('admin.challenge.testModal.instance.pending')
                     : t('admin.challenge.testModal.instance.notRunning')}
               </span>
             </div>
@@ -295,13 +327,10 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
                 variant="primary"
                 size="sm"
                 onClick={handleStartVictim}
-                disabled={isLaunching}
-                loading={isLaunching}
-                className={isLaunching ? 'border-yellow-400 text-yellow-400' : ''}
+                disabled={loading.starting || isWaiting || isPending}
+                className={isWaiting || isPending ? 'border-yellow-400 text-yellow-400' : ''}
               >
-                {isLaunching
-                  ? t('admin.challenge.testModal.actions.launching')
-                  : t('admin.challenge.testModal.actions.launch')}
+                {launchButtonLabel}
               </Button>
             ) : (
               <Button
@@ -319,16 +348,18 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
           </div>
         </div>
 
-        {/* 进度条：运行中显示倒计时进度，启动中显示不定进度条 */}
-        {(isRunning || isLaunching) && (
+        {/* 进度条：waiting 显示静态条，pending 显示闪动条，running 显示倒计时 */}
+        {(isRunning || isWaiting || isPending) && (
           <div className="h-1.5 bg-neutral-700 rounded-full overflow-hidden">
             {isRunning ? (
               <motion.div
                 className="h-full bg-yellow-400"
                 initial={{ width: 0 }}
-                animate={{ width: `${Math.max(0, Math.min(100, (timeLeft / 3600) * 100))}%` }}
+                animate={{ width: `${progressWidth}%` }}
                 transition={{ duration: 0.5 }}
               />
+            ) : isWaiting ? (
+              <div className="h-full w-full bg-yellow-400/35" />
             ) : (
               <motion.div
                 className="h-full w-2/5 bg-yellow-400/60 rounded-full"
@@ -373,6 +404,10 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
     handleStopVictim,
     handleCopyIP,
     isCopied,
+    isPending,
+    isRunning,
+    isWaiting,
+    progressWidth,
     t,
   ]);
 

@@ -29,6 +29,53 @@ import EmptyState from '../../components/common/EmptyState';
 import { Button } from '../../components/common';
 import { useTranslation } from 'react-i18next';
 
+const normalizeInstanceStatus = (status) => {
+  const normalizedStatus = typeof status === 'string' ? status.toLowerCase() : '';
+  if (normalizedStatus === 'waiting' || normalizedStatus === 'pending' || normalizedStatus === 'running') {
+    return normalizedStatus;
+  }
+  return '';
+};
+
+const mapChallengeStatusToViewModel = (challenge, statusData = null) => {
+  const remote = statusData?.remote || challenge.remote || {};
+  const instanceStatus = normalizeInstanceStatus(remote.status);
+  const timeLeft = Number(remote.remaining) || 0;
+  const previousDuration = Number(challenge.instanceDuration) || 0;
+  const instanceDuration = instanceStatus === 'running' ? Math.max(previousDuration, timeLeft) : previousDuration;
+
+  return {
+    ...challenge,
+    id: challenge.id,
+    type: challenge.type,
+    category: challenge.category,
+    title: challenge.title || challenge.name,
+    score: challenge.score,
+    description: challenge.description,
+    attachments: challenge.attachments || [],
+    attachment: statusData?.file ?? challenge.attachment ?? '',
+    hasInstance: challenge.hasInstance ?? challenge.type === 'pods',
+    hasAttachments: challenge.hasAttachments ?? challenge.type === 'dynamic',
+    instanceStatus,
+    instanceRunning: instanceStatus === 'running',
+    instancePending: instanceStatus === 'pending',
+    instanceWaiting: instanceStatus === 'waiting',
+    instanceIP: remote.target || challenge.instanceIP || [''],
+    instanceDuration,
+    instanceTimeLeft: timeLeft,
+    solves: challenge.solves ?? challenge.solvers ?? 0,
+    isInitialized: statusData?.init ?? challenge.isInitialized ?? challenge.init,
+    isSolved: statusData?.solved ?? challenge.isSolved ?? challenge.solved ?? false,
+    solved: statusData?.solved ?? challenge.solved ?? challenge.isSolved ?? false,
+    attempts: statusData?.attempts ?? challenge.attempts,
+    maxAttempts: challenge.maxAttempts ?? challenge.attempt,
+    hints: challenge.hints,
+    tags: challenge.tags,
+    hidden: challenge.hidden,
+    options: challenge.options || [],
+  };
+};
+
 // 计算比赛状态
 const getContestStatus = (contest, teamInfo) => {
   const now = new Date().getTime();
@@ -55,31 +102,7 @@ const getContestStatus = (contest, teamInfo) => {
 
 // 修改 transformChallengeData 函数
 const transformChallengeData = (challenge) => {
-  return {
-    id: challenge.id,
-    type: challenge.type,
-    category: challenge.category,
-    title: challenge.name,
-    score: challenge.score,
-    description: challenge.description,
-    attachments: [], // 默认为空，点击时再获取
-    hasInstance: challenge.type === 'pods',
-    hasAttachments: challenge.type === 'dynamic',
-    instanceRunning: challenge.remote.status === 'running',
-    instancePending: challenge.remote.status === 'pending',
-    instanceIP: challenge.remote.target || [''],
-    instanceDuration: challenge.remote.remaining || 0,
-    instanceTimeLeft: challenge.remote.remaining || 0,
-    solves: challenge.solvers || 0,
-    isInitialized: challenge.init,
-    solved: challenge.solved, // 是否已解决
-    attempts: challenge.attempts, // 尝试次数
-    maxAttempts: challenge.attempt, // 最大尝试次数
-    hints: challenge.hints,
-    tags: challenge.tags,
-    hidden: challenge.hidden,
-    options: challenge.options || [], // 添加选项字段，用于question类型
-  };
+  return mapChallengeStatusToViewModel(challenge);
 };
 
 function GameChallengesPage() {
@@ -126,9 +149,14 @@ function GameChallengesPage() {
       }
       try {
         const statusRes = await getChallengeStatus(contestId, selectedChallengeRef.current.id);
-        if (statusRes.code === 200 && statusRes.data.remote.status === 'running') {
-          stopPolling();
-          refreshChallengeStatus();
+        if (statusRes.code === 200) {
+          const updatedChallenge = mapChallengeStatusToViewModel(selectedChallengeRef.current, statusRes.data);
+          setSelectedChallenge(updatedChallenge);
+          setChallenges((prev) => prev.map((c) => (c.id === updatedChallenge.id ? updatedChallenge : c)));
+
+          if (updatedChallenge.instanceStatus === 'running') {
+            stopPolling();
+          }
         }
       } catch {
         // Silently ignore polling errors
@@ -265,17 +293,7 @@ function GameChallengesPage() {
       const statusRes = await getChallengeStatus(contestId, selectedChallengeRef.current.id);
 
       if (statusRes.code === 200) {
-        const updatedChallenge = {
-          ...selectedChallengeRef.current,
-          attachment: statusRes.data.file || '',
-          isInitialized: statusRes.data.init,
-          isSolved: statusRes.data.solved,
-          instanceRunning: statusRes.data.remote.status === 'running',
-          instancePending: statusRes.data.remote.status === 'pending',
-          instanceIP: statusRes.data.remote.target || [''],
-          instanceDuration: statusRes.data.remote.remaining || 0,
-          instanceTimeLeft: statusRes.data.remote.remaining || 0,
-        };
+        const updatedChallenge = mapChallengeStatusToViewModel(selectedChallengeRef.current, statusRes.data);
 
         setSelectedChallenge(updatedChallenge);
 
@@ -320,6 +338,30 @@ function GameChallengesPage() {
     try {
       const res = await startRemoteTarget(contestId, challengeId);
       if (res.code === 200) {
+        setSelectedChallenge((prev) =>
+          prev?.id === challengeId
+            ? {
+                ...prev,
+                instanceStatus: 'waiting',
+                instanceRunning: false,
+                instancePending: false,
+                instanceWaiting: true,
+              }
+            : prev
+        );
+        setChallenges((prev) =>
+          prev.map((challenge) =>
+            challenge.id === challengeId
+              ? {
+                  ...challenge,
+                  instanceStatus: 'waiting',
+                  instanceRunning: false,
+                  instancePending: false,
+                  instanceWaiting: true,
+                }
+              : challenge
+          )
+        );
         toast.success({ title: t('game.challenges.toast.launchSuccess') });
         startPolling();
         return true;
@@ -390,24 +432,12 @@ function GameChallengesPage() {
       // 获取题目状态，包含附件、靶机信息和初始化状态
       const statusRes = await getChallengeStatus(contestId, challenge.id);
       if (statusRes.code === 200) {
-        // 更新题目状态
-        const updatedChallenge = {
-          ...challenge,
-          attachment: statusRes.data.file || '', // 如果有附件名称则添加
-          isInitialized: statusRes.data.init, // 是否已初始化
-          isSolved: statusRes.data.solved,
-          instanceRunning: statusRes.data.remote.status === 'running',
-          instancePending: statusRes.data.remote.status === 'pending',
-          instanceIP: statusRes.data.remote.target || [''],
-          instanceTimeLeft: statusRes.data.remote.remaining || 0,
-          instanceDuration: statusRes.data.remote.duration || 3600,
-          options: challenge.options || [], // 保持选项数据
-        };
+        const updatedChallenge = mapChallengeStatusToViewModel(challenge, statusRes.data);
 
         setSelectedChallenge(updatedChallenge);
 
-        // 页面刷新后 Pod 仍在启动中 → 自动开始轮询
-        if (statusRes.data.remote.status === 'pending') {
+        // 页面刷新后 Pod 仍在排队或启动中 → 自动开始轮询
+        if (updatedChallenge.instanceStatus === 'waiting' || updatedChallenge.instanceStatus === 'pending') {
           startPolling();
         }
       }
