@@ -9,7 +9,6 @@ import { useCRUDModal } from '../../../hooks/index.js';
 import Input from '../../../components/common/Input';
 import Textarea from '../../../components/common/Textarea';
 import { useTranslation } from 'react-i18next';
-import { searchModels } from '../../../api/admin/search.js';
 
 function UsersTab() {
   const [users, setUsers] = useState([]);
@@ -104,13 +103,13 @@ function UsersTab() {
     const doSearch = async () => {
       setSearchLoading(true);
       try {
-        const params = { model: 'User', limit: 20, offset: 0 };
-        if (debouncedName.trim()) params['search[name]'] = debouncedName.trim();
-        if (debouncedEmail.trim()) params['search[email]'] = debouncedEmail.trim();
-        if (debouncedDesc.trim()) params['search[description]'] = debouncedDesc.trim();
-        const response = await searchModels(params);
+        const params = { limit: 20, offset: 0 };
+        if (debouncedName.trim()) params.name = debouncedName.trim();
+        if (debouncedEmail.trim()) params.email = debouncedEmail.trim();
+        if (debouncedDesc.trim()) params.description = debouncedDesc.trim();
+        const response = await getUserList(params);
         if (!cancelled && response.code === 200) {
-          setSearchResults(response.data.models || []);
+          setSearchResults(response.data.users || []);
         }
       } catch (error) {
         if (!cancelled) {

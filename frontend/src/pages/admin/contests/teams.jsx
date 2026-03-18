@@ -11,7 +11,6 @@ import {
   getTeamMembers,
 } from '../../../api/admin/contest';
 import { useTranslation } from 'react-i18next';
-import { searchModels } from '../../../api/admin/search.js';
 import { useDebounce, useTeamDetailDialog } from '../../../hooks';
 
 function AdminContestTeams() {
@@ -62,19 +61,15 @@ function AdminContestTeams() {
       setSearchLoading(true);
       setSearchError(null);
       try {
-        const params = { model: 'Team', limit: 10, offset: 0 };
-        if (debouncedName.trim()) params['search[name]'] = debouncedName.trim();
-        if (debouncedDesc.trim()) params['search[description]'] = debouncedDesc.trim();
-        const response = await searchModels(params);
+        const params = { limit: 10, offset: 0 };
+        if (debouncedName.trim()) params.name = debouncedName.trim();
+        if (debouncedDesc.trim()) params.description = debouncedDesc.trim();
+        const response = await getContestTeams(parseInt(id, 10), params);
         if (response.code !== 200) {
           throw new Error(response.msg || t('admin.contests.teams.toast.searchFailed'));
         }
         if (!cancelled) {
-          const contestId = parseInt(id, 10);
-          const results = response.data.models || [];
-          setSearchResults(
-            Number.isFinite(contestId) ? results.filter((item) => item.contest_id === contestId) : results
-          );
+          setSearchResults(response.data.teams || []);
         }
       } catch (error) {
         if (!cancelled) {
