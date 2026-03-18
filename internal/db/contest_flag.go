@@ -121,6 +121,8 @@ func (c *ContestFlagRepo) GetUserSolvedContestFlags(userIDL ...uint) ([]UserSolv
 	res := c.DB.Table("submissions").
 		Select("submissions.user_id, submissions.team_id, contest_flags.*").
 		Joins("INNER JOIN contest_flags ON submissions.contest_flag_id = contest_flags.id AND contest_flags.deleted_at IS NULL").
+		Joins("INNER JOIN users ON submissions.user_id = users.id AND users.deleted_at IS NULL").
+		Joins("INNER JOIN teams ON submissions.team_id = teams.id AND teams.deleted_at IS NULL").
 		Where("submissions.user_id IN ? AND submissions.solved = true AND submissions.deleted_at IS NULL", userIDL).
 		Scan(&results)
 	if res.Error != nil {
@@ -138,6 +140,7 @@ func (c *ContestFlagRepo) GetTeamSolvedContestFlags(teamIDL ...uint) ([]model.Co
 	res := c.DB.Table("submissions").
 		Select("contest_flags.*").
 		Joins("INNER JOIN contest_flags ON submissions.contest_flag_id = contest_flags.id AND contest_flags.deleted_at IS NULL").
+		Joins("INNER JOIN teams ON submissions.team_id = teams.id AND teams.deleted_at IS NULL").
 		Where("submissions.team_id IN ? AND submissions.solved = true AND submissions.deleted_at IS NULL", teamIDL).
 		Scan(&results)
 	if res.Error != nil {

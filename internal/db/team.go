@@ -130,7 +130,9 @@ func (t *TeamRepo) GetBy2ID(userID, contestID uint) (model.Team, model.RetVal) {
 	var team model.Team
 	res := t.DB.Table("teams").Select("teams.*").
 		Joins("INNER JOIN user_teams ON user_teams.team_id = teams.id").
-		Where("user_teams.user_id = ? AND teams.contest_id = ?", userID, contestID).
+		Joins("INNER JOIN users ON user_teams.user_id = users.id AND users.deleted_at IS NULL").
+		Joins("INNER JOIN contests ON teams.contest_id = contests.id AND contests.deleted_at IS NULL").
+		Where("user_teams.user_id = ? AND teams.contest_id = ? AND teams.deleted_at IS NULL", userID, contestID).
 		Limit(1).Scan(&team)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Team: %s", res.Error)

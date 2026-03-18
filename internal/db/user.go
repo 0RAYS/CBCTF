@@ -154,8 +154,9 @@ func (u *UserRepo) InitAdmin() model.RetVal {
 func (u *UserRepo) IsInGroup(userID uint, groupName string) bool {
 	var count int64
 	res := u.DB.Table("user_groups").
-		Joins("INNER JOIN `groups` ON user_groups.group_id = groups.id").
-		Where("user_groups.user_id = ? AND groups.name = ? AND groups.deleted_at IS NULL", userID, groupName).
+		Joins("INNER JOIN `groups` ON user_groups.group_id = groups.id AND `groups`.deleted_at IS NULL").
+		Joins("INNER JOIN users ON user_groups.user_id = users.id AND users.deleted_at IS NULL").
+		Where("user_groups.user_id = ? AND groups.name = ?", userID, groupName).
 		Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to check user group membership: %v", res.Error)
@@ -168,8 +169,8 @@ func (u *UserRepo) CountGroupUser(group string) (int64, model.RetVal) {
 	var count int64
 	res := u.DB.Table("users").
 		Joins("INNER JOIN user_groups ON users.id = user_groups.user_id").
-		Joins("INNER JOIN `groups` ON user_groups.group_id = groups.id").
-		Where("groups.name = ? AND users.deleted_at IS NULL AND groups.deleted_at IS NULL", group).
+		Joins("INNER JOIN `groups` ON user_groups.group_id = groups.id AND groups.deleted_at IS NULL").
+		Where("groups.name = ? AND users.deleted_at IS NULL", group).
 		Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count role users: %v", res.Error)
@@ -186,6 +187,7 @@ func (u *UserRepo) GetByTeamID(teamID uint, limit, offset int) ([]model.User, mo
 	var users []model.User
 	res := u.DB.Table("users").Select("users.*").
 		Joins("INNER JOIN user_teams ON user_teams.user_id = users.id").
+		Joins("INNER JOIN teams ON user_teams.team_id = teams.id AND teams.deleted_at IS NULL").
 		Where("user_teams.team_id = ? AND users.deleted_at IS NULL", teamID).
 		Limit(limit).Offset(offset).Scan(&users)
 	if res.Error != nil {
@@ -211,6 +213,7 @@ func (u *UserRepo) GetByContestID(contestID uint, limit, offset int) ([]model.Us
 	var users []model.User
 	res := u.DB.Table("users").Select("users.*").
 		Joins("INNER JOIN user_contests ON user_contests.user_id = users.id").
+		Joins("INNER JOIN contests ON user_contests.contest_id = contests.id AND contests.deleted_at IS NULL").
 		Where("user_contests.contest_id = ? AND users.deleted_at IS NULL", contestID).
 		Limit(limit).Offset(offset).Scan(&users)
 	if res.Error != nil {
@@ -234,13 +237,18 @@ func (u *UserRepo) GetIDByContestID(contestID uint, limit, offset int) ([]uint, 
 
 func (u *UserRepo) GetByGroupID(groupID uint, limit, offset int) ([]model.User, int64, model.RetVal) {
 	var count int64
-	if res := u.DB.Model(&model.UserGroup{}).Where("group_id = ?", groupID).Count(&count); res.Error != nil {
+	if res := u.DB.Table("user_groups").
+		Joins("INNER JOIN users ON user_groups.user_id = users.id AND users.deleted_at IS NULL").
+		Joins("INNER JOIN `groups` ON user_groups.group_id = groups.id AND `groups`.deleted_at IS NULL").
+		Where("user_groups.group_id = ?", groupID).
+		Count(&count); res.Error != nil {
 		log.Logger.Warningf("Failed to count Group Users: %s", res.Error)
 		return nil, 0, model.RetVal{Msg: i18n.Model.UserGroup.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	var users []model.User
 	res := u.DB.Table("users").Select("users.*").
 		Joins("INNER JOIN user_groups ON user_groups.user_id = users.id").
+		Joins("INNER JOIN `groups` ON user_groups.group_id = groups.id AND `groups`.deleted_at IS NULL").
 		Where("user_groups.group_id = ? AND users.deleted_at IS NULL", groupID).
 		Limit(limit).Offset(offset).Scan(&users)
 	if res.Error != nil {
