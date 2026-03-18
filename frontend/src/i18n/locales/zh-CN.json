@@ -1221,6 +1221,8 @@
           "copyIpSuccess": "IP地址已复制到剪贴板"
         },
         "instance": {
+          "waiting": "等待启动队列",
+          "pending": "启动中",
           "running": "运行中",
           "notRunning": "未运行",
           "time": "时间：",
@@ -2326,6 +2328,8 @@
         "selectOption": "请至少选择一个选项"
       },
       "instance": {
+        "waiting": "等待启动队列",
+        "pending": "启动中",
         "running": "运行中",
         "notRunning": "未运行",
         "time": "时间：",

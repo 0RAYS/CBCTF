@@ -1221,6 +1221,8 @@
           "copyIpSuccess": "IP address copied to clipboard"
         },
         "instance": {
+          "waiting": "WAITING",
+          "pending": "STARTING",
           "running": "RUNNING",
           "notRunning": "NOT RUNNING",
           "time": "Time:",
@@ -2326,6 +2328,8 @@
         "selectOption": "Please select at least one option"
       },
       "instance": {
+        "waiting": "WAITING",
+        "pending": "STARTING",
         "running": "RUNNING",
         "notRunning": "NOT RUNNING",
         "time": "Time:",

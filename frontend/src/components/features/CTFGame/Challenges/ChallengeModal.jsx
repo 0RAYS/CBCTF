@@ -36,6 +36,14 @@ import remarkGfm from 'remark-gfm';
 import { Button } from '../../../../components/common';
 import { useTranslation } from 'react-i18next';
 
+const normalizeInstanceStatus = (status) => {
+  const normalizedStatus = typeof status === 'string' ? status.toLowerCase() : '';
+  if (normalizedStatus === 'waiting' || normalizedStatus === 'pending' || normalizedStatus === 'running') {
+    return normalizedStatus;
+  }
+  return '';
+};
+
 // 将 HintItem 组件移到外部，使用 React.memo 包装以避免不必要的重新渲染
 const HintItem = React.memo(({ hint, index }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -121,21 +129,27 @@ function ChallengeModal({
 
   // 修改倒计时效果，使用 useRef 来避免不必要的重新渲染
   const timerRef = useRef(null);
-  const prevRunningRef = useRef(challenge?.instanceRunning);
+  const prevRunningRef = useRef(normalizeInstanceStatus(challenge?.instanceStatus) === 'running');
   const launchingTimeoutRef = useRef(null);
+  const instanceStatus = normalizeInstanceStatus(challenge?.instanceStatus);
+  const isRunning = instanceStatus === 'running';
+  const isWaiting = instanceStatus === 'waiting';
+  const isPending = instanceStatus === 'pending';
+  const instanceDuration = Math.max(Number(challenge?.instanceDuration) || 0, timeLeft);
+  const progressWidth = instanceDuration > 0 ? Math.max(0, Math.min(100, (timeLeft / instanceDuration) * 100)) : 0;
 
   // Clear launching state when instanceRunning transitions false → true (via polling or WS)
   useEffect(() => {
     const prev = prevRunningRef.current;
-    prevRunningRef.current = challenge?.instanceRunning;
-    if (!prev && challenge?.instanceRunning) {
+    prevRunningRef.current = isRunning;
+    if (!prev && isRunning) {
       if (launchingTimeoutRef.current) {
         clearTimeout(launchingTimeoutRef.current);
         launchingTimeoutRef.current = null;
       }
       setLoading((p) => ({ ...p, launching: false }));
     }
-  }, [challenge?.instanceRunning]);
+  }, [isRunning]);
 
   // Flag 提交错误时抖动动画
   useEffect(() => {
@@ -149,25 +163,23 @@ function ChallengeModal({
 
   // 初始化时间
   useEffect(() => {
-    if (challenge?.instanceTimeLeft) {
-      setTimeLeft(challenge.instanceTimeLeft);
-    }
+    setTimeLeft(Number(challenge?.instanceTimeLeft) || 0);
   }, [challenge?.instanceTimeLeft]);
 
   // 倒计时效果 - 优化以减少重新渲染
   useEffect(() => {
     if (!challenge || !isOpen) return;
-    if (!challenge.instanceRunning || !timeLeft) return;
-
-    // 清除之前的定时器
     if (timerRef.current) {
       clearInterval(timerRef.current);
+      timerRef.current = null;
     }
+    if (!isRunning || timeLeft <= 0) return;
 
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
-        if (prev <= 0) {
+        if (prev <= 1) {
           clearInterval(timerRef.current);
+          timerRef.current = null;
           return 0;
         }
         return prev - 1;
@@ -179,7 +191,7 @@ function ChallengeModal({
         clearInterval(timerRef.current);
       }
     };
-  }, [challenge?.instanceRunning, isOpen]);
+  }, [challenge, isOpen, isRunning, timeLeft]);
 
   // 格式化剩余时间
   const formatTimeLeft = (seconds) => {
@@ -335,8 +347,11 @@ function ChallengeModal({
 
   // 靶机部分的渲染
   const renderInstanceContent = () => {
-    const isRunning = challenge.instanceRunning;
-    const isLaunching = (loading.launching || challenge.instancePending) && !isRunning;
+    const launchButtonLabel = isWaiting
+      ? t('game.challengeModal.instance.waiting')
+      : isPending
+        ? t('game.challengeModal.actions.launching')
+        : t('game.challengeModal.actions.launch');
 
     return (
       <div className="space-y-3">
@@ -347,14 +362,22 @@ function ChallengeModal({
             <div className="flex items-center gap-2">
               <span
                 className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                  isRunning ? 'bg-green-400' : isLaunching ? 'bg-yellow-400 animate-pulse' : 'bg-neutral-500'
+                  isRunning
+                    ? 'bg-green-400'
+                    : isPending
+                      ? 'bg-yellow-400 animate-pulse'
+                      : isWaiting
+                        ? 'bg-yellow-400'
+                        : 'bg-neutral-500'
                 }`}
               />
               <span className="text-neutral-50 font-mono text-sm">
                 {isRunning
                   ? t('game.challengeModal.instance.running')
-                  : isLaunching
-                    ? t('game.challengeModal.actions.launching')
+                  : isWaiting
+                    ? t('game.challengeModal.instance.waiting')
+                    : isPending
+                      ? t('game.challengeModal.instance.pending')
                     : t('game.challengeModal.instance.notRunning')}
               </span>
             </div>
@@ -375,11 +398,10 @@ function ChallengeModal({
                 variant="primary"
                 size="sm"
                 onClick={handleLaunchInstance}
-                disabled={isLaunching}
-                loading={isLaunching}
-                className={isLaunching ? 'border-yellow-400 text-yellow-400' : ''}
+                disabled={loading.launching || isWaiting || isPending}
+                className={isWaiting || isPending ? 'border-yellow-400 text-yellow-400' : ''}
               >
-                {isLaunching ? t('game.challengeModal.actions.launching') : t('game.challengeModal.actions.launch')}
+                {launchButtonLabel}
               </Button>
             ) : (
               <>
@@ -411,16 +433,18 @@ function ChallengeModal({
           </div>
         </div>
 
-        {/* 进度条：运行中显示倒计时进度，启动中显示不定进度条 */}
-        {(isRunning || isLaunching) && (
+        {/* 进度条：waiting 显示静态条，pending 显示闪动条，running 显示倒计时 */}
+        {(isRunning || isWaiting || isPending) && (
           <div className="h-1.5 bg-neutral-700 rounded-full overflow-hidden">
             {isRunning ? (
               <motion.div
                 className="h-full bg-yellow-400"
                 initial={{ width: 0 }}
-                animate={{ width: `${(timeLeft / challenge.instanceDuration) * 100}%` }}
+                animate={{ width: `${progressWidth}%` }}
                 transition={{ duration: 0.5 }}
               />
+            ) : isWaiting ? (
+              <div className="h-full w-full bg-yellow-400/35" />
             ) : (
               <motion.div
                 className="h-full w-2/5 bg-yellow-400/60 rounded-full"
