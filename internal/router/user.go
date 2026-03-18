@@ -52,15 +52,15 @@ func GetUsers(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	options := db.GetOptions{Conditions: make(map[string]any)}
+	options := db.GetOptions{Search: make(map[string]string)}
 	if form.Name != "" {
-		options.Conditions["name"] = form.Name
+		options.Search["name"] = form.Name
 	}
 	if form.Email != "" {
-		options.Conditions["email"] = form.Email
+		options.Search["email"] = form.Email
 	}
 	if form.Description != "" {
-		options.Conditions["description"] = form.Description
+		options.Search["description"] = form.Description
 	}
 	users, count, ret := db.InitUserRepo(db.DB).List(form.Limit, form.Offset, options)
 	if !ret.OK {
