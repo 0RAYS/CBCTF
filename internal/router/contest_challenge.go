@@ -32,7 +32,7 @@ func GetContestChallenges(ctx *gin.Context) {
 			resp.JSON(ctx, ret)
 			return
 		}
-		contestChallengeL, count, ret = db.InitContestChallengeRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
+		contestChallengeL, _, ret = db.InitContestChallengeRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
 			Conditions: map[string]any{"id": ids},
 			Preloads:   map[string]db.GetOptions{"Challenge": {}, "ContestFlags": {}},
 		})
