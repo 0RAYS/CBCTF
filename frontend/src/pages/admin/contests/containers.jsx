@@ -8,6 +8,7 @@ import {
   getContestTeams,
   getContestChallenges,
 } from '../../../api/admin/contest';
+import { getUserList } from '../../../api/admin/user';
 import { Modal } from '../../../components/common';
 import ModalButton from '../../../components/common/ModalButton';
 import { Button, Pagination, Card, EmptyState, StatCard, Chip } from '../../../components/common';
@@ -29,7 +30,6 @@ import {
   IconChevronLeft,
   IconChevronRight,
 } from '@tabler/icons-react';
-import { searchModels } from '../../../api/admin/search.js';
 import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../config/challengeChips';
 
 const VICTIM_STATUS_STYLES = {
@@ -294,23 +294,30 @@ function ContestContainers() {
     }
     setLoading(true);
     try {
-      let params = { model, 'search[name]': name.trim(), limit: 10, offset: 0 };
+      const keyword = name.trim();
+      if (model === 'User') {
+        const response = await getUserList({ name: keyword, limit: 10, offset: 0 });
+        setResults(response.code === 200 ? response.data.users || [] : []);
+        return;
+      }
       if (model === 'Team') {
-        params['search[contest_id]'] = parseInt(contestId);
+        const response = await getContestTeams(parseInt(contestId, 10), { name: keyword, limit: 10, offset: 0 });
+        setResults(response.code === 200 ? response.data.teams || [] : []);
+        return;
       }
       if (model === 'Challenge') {
-        params['search[type]'] = 'pod';
-      }
-      const response = await searchModels(params);
-      if (response.code === 200) {
-        let results = response.data.models || [];
-        if (model === 'Team') {
-          results = results.filter((item) => item.contest_id === parseInt(contestId));
+        const response = await getContestChallenges(parseInt(contestId, 10), { type: 'pods', limit: 1000, offset: 0 });
+        if (response.code !== 200) {
+          setResults([]);
+          return;
         }
+        const results = (response.data.challenges || [])
+          .filter((challenge) => challenge.name?.toLowerCase().includes(keyword.toLowerCase()))
+          .slice(0, 10);
         setResults(results);
-      } else {
-        setResults([]);
+        return;
       }
+      setResults([]);
     } catch (error) {
       toast.danger({ description: error.message || t('admin.contests.containers.toast.searchFailed') });
       setResults([]);

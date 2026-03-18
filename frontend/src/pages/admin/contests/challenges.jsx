@@ -17,7 +17,6 @@ import {
   getContestChallengeCategories,
 } from '../../../api/admin/challenge';
 import { useTranslation } from 'react-i18next';
-import { searchModels } from '../../../api/admin/search.js';
 import { DEFAULT_CHALLENGE_CATEGORIES, mergeChallengeCategories } from '../../../config/challenges';
 
 function AdminContestChallengesPage() {
@@ -171,27 +170,16 @@ function AdminContestChallengesPage() {
       if (category !== 'all') {
         params.category = category;
       }
-      if (query.trim() !== '' || descQuery.trim() !== '') {
-        const searchParams = {
-          model: 'Challenge',
-          limit: 10,
-          offset: 0,
-        };
-        if (query.trim()) searchParams['search[name]'] = query;
-        if (descQuery.trim()) searchParams['search[description]'] = descQuery;
-        if (params.type) searchParams['search[type]'] = params.type;
-        if (params.category) searchParams['search[category]'] = params.category;
-        const response = await searchModels(searchParams);
-        if (response.code === 200) {
-          setAvailableChallenges(response.data.models || []);
-          setModalTotalCount(response.data.count || 0);
-        }
-      } else {
-        const response = await getNotInContestChallengeList(parseInt(id), params);
-        if (response.code === 200) {
-          setAvailableChallenges(response.data.challenges || []);
-          setModalTotalCount(response.data.count || 0);
-        }
+      if (query.trim()) {
+        params.name = query.trim();
+      }
+      if (descQuery.trim()) {
+        params.description = descQuery.trim();
+      }
+      const response = await getNotInContestChallengeList(parseInt(id), params);
+      if (response.code === 200) {
+        setAvailableChallenges(response.data.challenges || []);
+        setModalTotalCount(response.data.count || 0);
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.contests.challenges.toast.fetchPoolFailed') });

@@ -16,7 +16,6 @@ import {
 import { generateUUID } from '../../utils/uuid';
 import { useDebounce } from '../../hooks';
 import { useTranslation } from 'react-i18next';
-import { searchModels } from '../../api/admin/search.js';
 import { DEFAULT_CHALLENGE_CATEGORIES, mergeChallengeCategories } from '../../config/challenges';
 
 function ChallengesManagement() {
@@ -83,14 +82,14 @@ function ChallengesManagement() {
     const doSearch = async () => {
       setSearchLoading(true);
       try {
-        const params = { model: 'Challenge', limit: 10, offset: 0 };
-        if (debouncedName.trim()) params['search[name]'] = debouncedName.trim();
-        if (debouncedDesc.trim()) params['search[description]'] = debouncedDesc.trim();
-        if (selectedType !== 'all') params['search[type]'] = selectedType;
-        if (selectedCategory !== 'all') params['search[category]'] = selectedCategory;
-        const response = await searchModels(params);
+        const params = { limit: 10, offset: 0 };
+        if (debouncedName.trim()) params.name = debouncedName.trim();
+        if (debouncedDesc.trim()) params.description = debouncedDesc.trim();
+        if (selectedType !== 'all') params.type = selectedType;
+        if (selectedCategory !== 'all') params.category = selectedCategory;
+        const response = await getChallengeList(params);
         if (!cancelled && response.code === 200) {
-          setSearchResults((response.data.models || []).map(processFlags));
+          setSearchResults((response.data.challenges || []).map(processFlags));
         }
       } catch (error) {
         if (!cancelled) {

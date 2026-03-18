@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { toast } from '../../utils/toast';
 import { getVictims, stopVictims } from '../../api/admin/victims';
+import { getUserList } from '../../api/admin/user';
+import { getChallengeList } from '../../api/admin/challenge';
 import { Modal } from '../../components/common';
 import ModalButton from '../../components/common/ModalButton';
 import { Button, Pagination, Card, EmptyState, StatCard } from '../../components/common';
@@ -14,12 +16,10 @@ import {
   IconServer,
   IconSearch,
   IconTarget,
-  IconUsers,
   IconTrash,
   IconClockPlay,
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { searchModels } from '../../api/admin/search.js';
 
 const VICTIM_STATUS_STYLES = {
   waiting: 'bg-yellow-400/10 text-yellow-400 border-yellow-400/30',
@@ -44,7 +44,6 @@ function AdminVictims() {
 
   const [filters, setFilters] = useState({
     user_id: '',
-    team_id: '',
     challenge_id: '',
     limit: 20,
     offset: 0,
@@ -52,17 +51,14 @@ function AdminVictims() {
 
   const [searchResults, setSearchResults] = useState({
     users: [],
-    teams: [],
     challenges: [],
   });
   const [searchLoading, setSearchLoading] = useState({
     users: false,
-    teams: false,
     challenges: false,
   });
 
   const usersSearchRef = useRef(null);
-  const teamsSearchRef = useRef(null);
   const challengesSearchRef = useRef(null);
 
   const [selectedContainers, setSelectedContainers] = useState([]);
@@ -127,7 +123,7 @@ function AdminVictims() {
 
   useEffect(() => {
     fetchContainers();
-  }, [currentPage, filters.user_id, filters.team_id, filters.challenge_id]);
+  }, [currentPage, filters.user_id, filters.challenge_id]);
 
   useEffect(() => {
     if (refreshInterval <= 0) return;
@@ -141,11 +137,9 @@ function AdminVictims() {
   useEffect(() => {
     const handleClickOutside = (event) => {
       const isOutsideUsers = usersSearchRef.current && !usersSearchRef.current.contains(event.target);
-      const isOutsideTeams = teamsSearchRef.current && !teamsSearchRef.current.contains(event.target);
       const isOutsideChallenges = challengesSearchRef.current && !challengesSearchRef.current.contains(event.target);
 
       if (isOutsideUsers && searchResults.users.length > 0) setSearchResults((prev) => ({ ...prev, users: [] }));
-      if (isOutsideTeams && searchResults.teams.length > 0) setSearchResults((prev) => ({ ...prev, teams: [] }));
       if (isOutsideChallenges && searchResults.challenges.length > 0)
         setSearchResults((prev) => ({ ...prev, challenges: [] }));
     };
@@ -165,12 +159,18 @@ function AdminVictims() {
     }
     setLoading(true);
     try {
-      const response = await searchModels({ model, 'search[name]': name.trim(), limit: 10, offset: 0 });
-      if (response.code === 200) {
-        setResults(response.data.models || []);
-      } else {
-        setResults([]);
+      const keyword = name.trim();
+      if (model === 'User') {
+        const response = await getUserList({ name: keyword, limit: 10, offset: 0 });
+        setResults(response.code === 200 ? response.data.users || [] : []);
+        return;
       }
+      if (model === 'Challenge') {
+        const response = await getChallengeList({ name: keyword, type: 'pods', limit: 10, offset: 0 });
+        setResults(response.code === 200 ? response.data.challenges || [] : []);
+        return;
+      }
+      setResults([]);
     } catch (error) {
       toast.danger({ description: error.message || t('admin.victims.toast.searchFailed') });
       setResults([]);
@@ -188,8 +188,8 @@ function AdminVictims() {
   };
 
   const handleResetFilters = () => {
-    setFilters({ user_id: '', team_id: '', challenge_id: '', limit: 20, offset: 0 });
-    setSearchResults({ users: [], teams: [], challenges: [] });
+    setFilters({ user_id: '', challenge_id: '', limit: 20, offset: 0 });
+    setSearchResults({ users: [], challenges: [] });
     setCurrentPage(1);
   };
 
@@ -302,7 +302,7 @@ function AdminVictims() {
               {t('admin.victims.filters.reset')}
             </Button>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* User search */}
             <div className="relative" ref={usersSearchRef}>
               <label className="block text-xs font-mono text-neutral-400 mb-1">
@@ -350,53 +350,6 @@ function AdminVictims() {
               )}
             </div>
 
-            {/* Team search */}
-            <div className="relative" ref={teamsSearchRef}>
-              <label className="block text-xs font-mono text-neutral-400 mb-1">
-                {t('admin.victims.filters.teamName')}
-              </label>
-              <div className="relative">
-                <IconUsers size={14} className="absolute left-2 top-1/2 transform -translate-y-1/2 text-neutral-400" />
-                <input
-                  type="text"
-                  placeholder={t('admin.victims.filters.searchTeamPlaceholder')}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    debouncedSearch(
-                      'Team',
-                      value,
-                      (results) => setSearchResults((prev) => ({ ...prev, teams: results })),
-                      (loading) => setSearchLoading((prev) => ({ ...prev, teams: loading }))
-                    );
-                  }}
-                  className="w-full h-8 pl-7 pr-2 bg-black/20 border border-neutral-300/30 rounded-md
-                    text-xs text-neutral-50 placeholder-neutral-500
-                    focus:outline-none focus:border-geek-400 focus:shadow-focus transition-all duration-200"
-                />
-                {searchLoading.teams && (
-                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                    <div className="w-3 h-3 border border-geek-400 border-t-transparent rounded-full animate-spin" />
-                  </div>
-                )}
-              </div>
-              {searchResults.teams.length > 0 && (
-                <div className="dropdown-custom max-h-32">
-                  {searchResults.teams.map((team) => (
-                    <div
-                      key={team.id}
-                      className="dropdown-option text-xs"
-                      onClick={() => {
-                        handleFilterChange('team_id', team.id.toString());
-                        setSearchResults((prev) => ({ ...prev, teams: [] }));
-                      }}
-                    >
-                      {team.name || t('admin.victims.filters.teamFallback', { id: team.id })}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
             {/* Challenge search */}
             <div className="relative" ref={challengesSearchRef}>
               <label className="block text-xs font-mono text-neutral-400 mb-1">
@@ -433,7 +386,7 @@ function AdminVictims() {
                       key={challenge.id}
                       className="dropdown-option text-xs"
                       onClick={() => {
-                        handleFilterChange('challenge_id', challenge.rand_id.toString());
+                        handleFilterChange('challenge_id', challenge.id.toString());
                         setSearchResults((prev) => ({ ...prev, challenges: [] }));
                       }}
                     >
@@ -445,21 +398,13 @@ function AdminVictims() {
             </div>
           </div>
 
-          {(filters.user_id || filters.team_id || filters.challenge_id) && (
+          {(filters.user_id || filters.challenge_id) && (
             <div className="mt-3 pt-3 border-t border-neutral-300/20">
               <div className="flex flex-wrap gap-2">
                 {filters.user_id && (
                   <span className="px-2 py-1 bg-geek-400/20 text-geek-400 text-xs font-mono rounded border border-geek-400/30">
                     {t('admin.victims.filters.userIdLabel')}: {filters.user_id}
                     <button onClick={() => handleFilterChange('user_id', '')} className="ml-1 hover:text-red-400">
-                      ×
-                    </button>
-                  </span>
-                )}
-                {filters.team_id && (
-                  <span className="px-2 py-1 bg-geek-400/20 text-geek-400 text-xs font-mono rounded border border-geek-400/30">
-                    {t('admin.victims.filters.teamIdLabel')}: {filters.team_id}
-                    <button onClick={() => handleFilterChange('team_id', '')} className="ml-1 hover:text-red-400">
                       ×
                     </button>
                   </span>
