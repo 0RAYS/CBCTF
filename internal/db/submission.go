@@ -94,8 +94,8 @@ func (s *SubmissionRepo) ListFlagSolvers(contestFlagID uint) ([]FlagSolverRow, m
 	var rows []FlagSolverRow
 	res := s.DB.Table("submissions").
 		Select("submissions.user_id, users.name AS user_name, submissions.team_id, teams.name AS team_name, submissions.score, submissions.created_at AS solved_at").
-		Joins("LEFT JOIN users ON submissions.user_id = users.id AND users.deleted_at IS NULL").
-		Joins("LEFT JOIN teams ON submissions.team_id = teams.id AND teams.deleted_at IS NULL").
+		Joins("INNER JOIN users ON submissions.user_id = users.id AND users.deleted_at IS NULL").
+		Joins("INNER JOIN teams ON submissions.team_id = teams.id AND teams.deleted_at IS NULL").
 		Where("submissions.contest_flag_id = ? AND submissions.solved = true AND submissions.deleted_at IS NULL", contestFlagID).
 		Order("submissions.id ASC").
 		Scan(&rows)
