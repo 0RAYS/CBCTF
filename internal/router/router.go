@@ -370,7 +370,7 @@ func Init() *gin.Engine {
 				adminContestCheat.DELETE("", DeleteCheat(false))
 			}
 
-			adminContest.GET("/challenges", GetContestChallenges)
+			adminContest.GET("/challenges", GetAllContestChallenges)
 			adminContest.GET("/challenges/others", GetChallengeNotInContest)
 			adminContest.GET("/challenges/categories", GetContestChallengeCategories)
 			adminContest.POST("/challenges", AddContestChallenge)
