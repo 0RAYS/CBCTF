@@ -19,6 +19,7 @@ import (
 func GetChallenges(tx *gorm.DB, form dto.GetChallengesForm) ([]model.Challenge, int64, model.RetVal) {
 	options := db.GetOptions{
 		Conditions: make(map[string]any),
+		Search:     make(map[string]string),
 		Preloads:   map[string]db.GetOptions{"Dockers": {}, "ChallengeFlags": {}},
 	}
 	if form.Type != "" {
@@ -28,10 +29,10 @@ func GetChallenges(tx *gorm.DB, form dto.GetChallengesForm) ([]model.Challenge, 
 		options.Conditions["category"] = form.Category
 	}
 	if form.Name != "" {
-		options.Conditions["name"] = form.Name
+		options.Search["name"] = form.Name
 	}
 	if form.Description != "" {
-		options.Conditions["description"] = form.Description
+		options.Search["description"] = form.Description
 	}
 	return db.InitChallengeRepo(tx).List(form.Limit, form.Offset, options)
 }
