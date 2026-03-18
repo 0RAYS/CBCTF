@@ -94,11 +94,16 @@ func (c *ChallengeRepo) ListCategories(t model.ChallengeType) ([]string, model.R
 	return categories, model.SuccessRetVal()
 }
 
-func (c *ChallengeRepo) ListChallengesNotInContest(contestID uint, limit, offset int, category string, t model.ChallengeType) ([]model.Challenge, int64, model.RetVal) {
+func (c *ChallengeRepo) ListChallengesNotInContest(contestID uint, limit, offset int, name, description, category string, t model.ChallengeType) ([]model.Challenge, int64, model.RetVal) {
 	base := c.DB.Table("challenges").
 		Joins("LEFT JOIN contest_challenges ON challenges.id = contest_challenges.challenge_id AND contest_challenges.contest_id = ? AND contest_challenges.deleted_at IS NULL", contestID).
 		Where("contest_challenges.id IS NULL AND challenges.deleted_at IS NULL")
-
+	if name != "" {
+		base = base.Where("name LIKE ?", "%"+name+"%")
+	}
+	if description != "" {
+		base = base.Where("description LIKE ?", "%"+description+"%")
+	}
 	if category != "" {
 		base = base.Where("challenges.category = ?", category)
 	}

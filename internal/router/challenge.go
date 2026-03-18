@@ -38,7 +38,9 @@ func GetChallengeNotInContest(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	challenges, count, ret := service.GetChallengeNotInContest(db.DB, middleware.GetContest(ctx).ID, form)
+	contest := middleware.GetContest(ctx)
+	challenges, count, ret := db.InitChallengeRepo(db.DB).ListChallengesNotInContest(contest.ID,
+		form.Limit, form.Offset, form.Name, form.Description, form.Category, form.Type)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
