@@ -307,7 +307,7 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
                     ? t('admin.challenge.testModal.instance.waiting')
                     : isPending
                       ? t('admin.challenge.testModal.instance.pending')
-                    : t('admin.challenge.testModal.instance.notRunning')}
+                      : t('admin.challenge.testModal.instance.notRunning')}
               </span>
             </div>
 
