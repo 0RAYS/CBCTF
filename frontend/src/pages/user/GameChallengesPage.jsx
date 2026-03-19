@@ -25,7 +25,6 @@ import { getTeamMembers, getTeamInfo } from '../../api/game/team';
 import { downloadChallengeAttachment } from '../../api/challenge';
 import { getContestNotices } from '../../api/contest';
 import Loading from '../../components/common/Loading';
-import EmptyState from '../../components/common/EmptyState';
 import { Button } from '../../components/common';
 import { useTranslation } from 'react-i18next';
 
@@ -105,12 +104,14 @@ const transformChallengeData = (challenge) => {
   return mapChallengeStatusToViewModel(challenge);
 };
 
+const normalizeCategories = (categoryList) => (Array.isArray(categoryList) ? categoryList.filter(Boolean) : []);
+
 function GameChallengesPage() {
   const { contestId } = useParams();
   const navigate = useNavigate();
   const [contestStatus, setContestStatus] = useState({});
-  const [categories, setCategories] = useState(['ALL']);
-  const [selectedCategory, setSelectedCategory] = useState('ALL');
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [unsolvedOnly, setUnsolvedOnly] = useState(false);
   const [challenges, setChallenges] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -237,9 +238,10 @@ function GameChallengesPage() {
       // 获取所有题目来提取分类
       const response = await getChallengeCategories(contestId);
       if (response.code === 200) {
-        setCategories(response.data === null ? [] : response.data);
+        setCategories(normalizeCategories(response.data));
       }
     } catch (error) {
+      setCategories([]);
       toast.danger({ description: error.message || t('game.challenges.toast.fetchCategoriesFailed') });
     }
   };
@@ -254,7 +256,7 @@ function GameChallengesPage() {
       };
 
       // 添加过滤参数
-      if (category !== 'ALL') {
+      if (category) {
         params.category = category;
       }
 
@@ -423,9 +425,10 @@ function GameChallengesPage() {
 
   // 处理分类切换
   const handleCategoryChange = (category) => {
-    setSelectedCategory(category);
+    const nextCategory = selectedCategory === category ? '' : category;
+    setSelectedCategory(nextCategory);
     setCurrentPage(1); // 重置到第一页
-    fetchChallengesWithFilters(1, category, unsolvedOnly);
+    fetchChallengesWithFilters(1, nextCategory, unsolvedOnly);
   };
 
   const handleSolvedFilterChange = () => {
@@ -532,24 +535,20 @@ function GameChallengesPage() {
                 {t('game.challenges.backToSummary')}
               </Button>
             </div>
-            {challenges.length === 0 ? (
-              <EmptyState title={t('game.noChallenges')} description={t('game.noChallengesDescription')} />
-            ) : (
-              <ChallengeBoard
-                categories={categories}
-                selectedCategory={selectedCategory}
-                onCategoryChange={handleCategoryChange}
-                unsolvedOnly={unsolvedOnly}
-                onSolvedFilterChange={handleSolvedFilterChange}
-                challenges={challenges}
-                onChallengeClick={handleChallengeClick}
-                teamInfo={teamInfo}
-                totalCount={totalCount}
-                currentPage={currentPage}
-                pageSize={pageSize}
-                onPageChange={setCurrentPage}
-              />
-            )}
+            <ChallengeBoard
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onCategoryChange={handleCategoryChange}
+              unsolvedOnly={unsolvedOnly}
+              onSolvedFilterChange={handleSolvedFilterChange}
+              challenges={challenges}
+              onChallengeClick={handleChallengeClick}
+              teamInfo={teamInfo}
+              totalCount={totalCount}
+              currentPage={currentPage}
+              pageSize={pageSize}
+              onPageChange={setCurrentPage}
+            />
             <ChallengeModal
               challenge={selectedChallenge}
               contest={contestStatus}
@@ -584,24 +583,20 @@ function GameChallengesPage() {
         )
       ) : (
         <div>
-          {challenges.length === 0 ? (
-            <EmptyState title={t('game.noChallenges')} description={t('game.noChallengesDescription')} />
-          ) : (
-            <ChallengeBoard
-              categories={categories}
-              selectedCategory={selectedCategory}
-              onCategoryChange={handleCategoryChange}
-              unsolvedOnly={unsolvedOnly}
-              onSolvedFilterChange={handleSolvedFilterChange}
-              challenges={challenges}
-              onChallengeClick={handleChallengeClick}
-              teamInfo={teamInfo}
-              totalCount={totalCount}
-              currentPage={currentPage}
-              pageSize={pageSize}
-              onPageChange={setCurrentPage}
-            />
-          )}
+          <ChallengeBoard
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onCategoryChange={handleCategoryChange}
+            unsolvedOnly={unsolvedOnly}
+            onSolvedFilterChange={handleSolvedFilterChange}
+            challenges={challenges}
+            onChallengeClick={handleChallengeClick}
+            teamInfo={teamInfo}
+            totalCount={totalCount}
+            currentPage={currentPage}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+          />
           <ChallengeModal
             challenge={selectedChallenge}
             contest={contestStatus}

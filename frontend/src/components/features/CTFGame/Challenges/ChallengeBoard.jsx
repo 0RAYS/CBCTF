@@ -2,7 +2,7 @@
  * 赛题展示面板组件
  * @param {Object} props
  * @param {Array<string>} props.categories - 题目分类列表
- * @param {string} props.selectedCategory - 当前选中的分类 ('ALL' 或具体分类)
+ * @param {string} props.selectedCategory - 当前选中的分类（空字符串表示不过滤）
  * @param {Function} props.onCategoryChange - 分类切换回调 (category: string) => void
  * @param {Array<Object>} props.challenges - 题目列表
  * @param {number} props.challenges[].id - 题目ID
@@ -21,7 +21,7 @@
  */
 
 import { motion } from 'motion/react';
-import { Button, Pagination, Card, Avatar } from '../../../../components/common';
+import { Button, Pagination, Card, Avatar, EmptyState } from '../../../../components/common';
 import { useTranslation } from 'react-i18next';
 
 function ChallengeBoard({
@@ -39,6 +39,9 @@ function ChallengeBoard({
   onPageChange,
 }) {
   const { t } = useTranslation();
+  const normalizedCategories = Array.isArray(categories) ? categories.filter(Boolean) : [];
+  const members = Array.isArray(teamInfo?.members) ? teamInfo.members : [];
+  const teamName = teamInfo?.name || '-';
 
   return (
     <Card variant="default" padding="lg" animate className="">
@@ -47,7 +50,7 @@ function ChallengeBoard({
         <div className="flex flex-col gap-3">
           {/* 分类标签 */}
           <div className="flex flex-wrap gap-2 md:gap-4">
-            {categories.map((category) => (
+            {normalizedCategories.map((category) => (
               <Button
                 key={category}
                 variant={selectedCategory === category ? 'primary' : 'ghost'}
@@ -67,12 +70,12 @@ function ChallengeBoard({
         <div className="flex flex-col gap-3 min-w-0 sm:items-end">
           <div className="flex items-center gap-4 min-w-0">
             <div className="flex -space-x-2 flex-shrink-0">
-              {teamInfo.members.map((member, i) => (
+              {members.map((member, i) => (
                 <Avatar key={i} src={member.picture} name={member.name} size="xs" className="border-2 border-black" />
               ))}
             </div>
-            <span className="text-neutral-400 font-mono truncate max-w-[160px]" title={teamInfo.name}>
-              {teamInfo.name}
+            <span className="text-neutral-400 font-mono truncate max-w-[160px]" title={teamName}>
+              {teamName}
             </span>
           </div>
           <label className="flex items-center gap-2 text-sm font-mono text-neutral-300 whitespace-nowrap cursor-pointer">
@@ -88,53 +91,56 @@ function ChallengeBoard({
       </div>
 
       {/* 赛题列表 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {challenges.map((challenge, index) => (
-          <motion.div
-            key={challenge.id}
-            className={`p-4 border rounded-md transition-colors duration-200 cursor-pointer backdrop-blur-none
+      {challenges.length === 0 ? (
+        <EmptyState title={t('game.noChallenges')} description={t('game.noChallengesDescription')} className="py-12" />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {challenges.map((challenge, index) => (
+            <motion.div
+              key={challenge.id}
+              className={`p-4 border rounded-md transition-colors duration-200 cursor-pointer backdrop-blur-none
                 ${
                   challenge.solved
                     ? 'border-geek-400/50 bg-geek-400/5 hover:bg-geek-400/10'
                     : 'border-neutral-300/30 bg-black/30 hover:bg-black/50'
                 }`}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.04, ease: [0.25, 1, 0.5, 1], duration: 0.2 }}
-            whileHover={{ y: -2 }}
-            onClick={() => onChallengeClick(challenge)}
-          >
-            {/* 标题栏 */}
-            <div className="flex items-center justify-between mb-3 min-w-0">
-              <div className="flex items-center gap-3 min-w-0 flex-1">
-                <span
-                  className="text-geek-400 font-mono flex-shrink-0 truncate max-w-[80px]"
-                  title={challenge.category}
-                >
-                  {challenge.category}
-                </span>
-                <h3 className="text-neutral-50 font-mono truncate min-w-0" title={challenge.title}>
-                  {challenge.title}
-                </h3>
-                <span className="text-yellow-400 font-mono text-sm flex-shrink-0">
-                  {t('common.points', { count: challenge.score })}
-                </span>
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.04, ease: [0.25, 1, 0.5, 1], duration: 0.2 }}
+              whileHover={{ y: -2 }}
+              onClick={() => onChallengeClick(challenge)}
+            >
+              {/* 标题栏 */}
+              <div className="flex items-center justify-between mb-3 min-w-0">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <span
+                    className="text-geek-400 font-mono flex-shrink-0 truncate max-w-[80px]"
+                    title={challenge.category}
+                  >
+                    {challenge.category}
+                  </span>
+                  <h3 className="text-neutral-50 font-mono truncate min-w-0" title={challenge.title}>
+                    {challenge.title}
+                  </h3>
+                  <span className="text-yellow-400 font-mono text-sm flex-shrink-0">
+                    {t('common.points', { count: challenge.score })}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                  <span className="text-neutral-400 text-sm">{t('game.challengeBoard.solves')}</span>
+                  <span className="text-neutral-50 font-mono">{challenge.solves}</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                <span className="text-neutral-400 text-sm">{t('game.challengeBoard.solves')}</span>
-                <span className="text-neutral-50 font-mono">{challenge.solves}</span>
-              </div>
-            </div>
 
-            {/* 标签和状态区域 */}
-            <div className="flex items-center justify-between">
-              {/* 标签列表 */}
-              <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
-                {challenge.tags &&
-                  challenge.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className={`
+              {/* 标签和状态区域 */}
+              <div className="flex items-center justify-between">
+                {/* 标签列表 */}
+                <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
+                  {challenge.tags &&
+                    challenge.tags.map((tag, index) => (
+                      <span
+                        key={index}
+                        className={`
                       px-2 py-0.5 rounded
                       text-xs font-mono
                       border backdrop-blur-none
@@ -145,44 +151,45 @@ function ChallengeBoard({
                           : 'border-neutral-600 bg-neutral-900 text-neutral-300'
                       }
                     `}
-                      title={tag}
-                    >
-                      {tag}
-                    </span>
-                  ))}
+                        title={tag}
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                </div>
+
+                {/* 状态指示器 */}
+                <div className="flex items-center gap-3">
+                  {!challenge.isInitialized && (
+                    <div className="flex items-center gap-1.5 px-2 py-1 bg-black/50 border border-yellow-400/30 rounded">
+                      <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span>
+                      <span className="text-yellow-400 text-xs font-mono">
+                        {t('game.challengeBoard.status.notInitialized')}
+                      </span>
+                    </div>
+                  )}
+
+                  {challenge.hasInstance && challenge.instanceRunning && (
+                    <div className="flex items-center gap-1.5 px-2 py-1 bg-black/50 border border-green-400/30 rounded">
+                      <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                      <span className="text-green-400 text-xs font-mono">
+                        {t('game.challengeBoard.status.instanceRunning')}
+                      </span>
+                    </div>
+                  )}
+
+                  {challenge.solved && (
+                    <div className="flex items-center gap-1.5 px-2 py-1 bg-black/50 border border-geek-400/30 rounded">
+                      <span className="w-1.5 h-1.5 rounded-full bg-geek-400"></span>
+                      <span className="text-geek-400 text-xs font-mono">{t('common.solved')}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-
-              {/* 状态指示器 */}
-              <div className="flex items-center gap-3">
-                {!challenge.isInitialized && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-black/50 border border-yellow-400/30 rounded">
-                    <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse"></span>
-                    <span className="text-yellow-400 text-xs font-mono">
-                      {t('game.challengeBoard.status.notInitialized')}
-                    </span>
-                  </div>
-                )}
-
-                {challenge.hasInstance && challenge.instanceRunning && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-black/50 border border-green-400/30 rounded">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
-                    <span className="text-green-400 text-xs font-mono">
-                      {t('game.challengeBoard.status.instanceRunning')}
-                    </span>
-                  </div>
-                )}
-
-                {challenge.solved && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-black/50 border border-geek-400/30 rounded">
-                    <span className="w-1.5 h-1.5 rounded-full bg-geek-400"></span>
-                    <span className="text-geek-400 text-xs font-mono">{t('common.solved')}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
 
       {/* 分页 */}
       {totalCount > 0 && (
