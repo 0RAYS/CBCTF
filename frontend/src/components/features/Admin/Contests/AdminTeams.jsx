@@ -245,10 +245,7 @@ function AdminTeams({
             onChange={(e) => onFormChange({ ...editForm, name: e.target.value })}
           />
         </FormField>
-        <FormField
-          label={t('admin.contests.teams.form.description')}
-          className="[&_label]:font-mono [&_label]:mb-2"
-        >
+        <FormField label={t('admin.contests.teams.form.description')} className="[&_label]:font-mono [&_label]:mb-2">
           <Textarea
             value={editForm.description}
             onChange={(e) => onFormChange({ ...editForm, description: e.target.value })}
