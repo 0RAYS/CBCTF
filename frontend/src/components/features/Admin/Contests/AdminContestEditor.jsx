@@ -487,44 +487,61 @@ function AdminContestEditor({ contest: initialContest, onSave, onCancel, onImage
               <p className="mt-1 text-neutral-500 text-sm">{t('admin.contests.editor.help.captcha')}</p>
             </div>
 
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="hidden-toggle"
-                  className="w-5 h-5 bg-black border-2 border-neutral-600 rounded text-geek-400 focus:ring-geek-400"
-                  checked={contest.hidden}
-                  onChange={(e) =>
-                    setContest((prev) => ({
-                      ...prev,
-                      hidden: e.target.checked,
-                    }))
-                  }
-                />
-                <label htmlFor="hidden-toggle" className="text-neutral-300 font-medium">
-                  {t('admin.contests.editor.labels.hiddenContest')}
-                </label>
+            <div>
+              <div
+                aria-hidden="true"
+                className="block text-neutral-300 font-medium mb-2 opacity-0 pointer-events-none select-none"
+              >
+                {t('admin.contests.editor.labels.captcha')}
               </div>
-              <p className="text-neutral-500 text-sm">{t('admin.contests.editor.help.hiddenContest')}</p>
 
-              <div className="flex items-center gap-3 mt-2">
-                <input
-                  type="checkbox"
-                  id="blood-toggle"
-                  className="w-5 h-5 bg-black border-2 border-neutral-600 rounded text-geek-400 focus:ring-geek-400"
-                  checked={contest.blood}
-                  onChange={(e) =>
-                    setContest((prev) => ({
-                      ...prev,
-                      blood: e.target.checked,
-                    }))
-                  }
-                />
-                <label htmlFor="blood-toggle" className="text-neutral-300 font-medium">
-                  {t('admin.contests.editor.labels.bloodBonus')}
-                </label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="min-w-0">
+                  <label
+                    htmlFor="hidden-toggle"
+                    className="flex items-center gap-3 min-h-[50px] rounded-md border-2 border-neutral-600 bg-black/70 px-4 py-3 cursor-pointer transition-colors duration-200 hover:border-geek-400/60"
+                  >
+                    <input
+                      type="checkbox"
+                      id="hidden-toggle"
+                      className="w-5 h-5 shrink-0 bg-black border-2 border-neutral-600 rounded text-geek-400 focus:ring-geek-400"
+                      checked={contest.hidden}
+                      onChange={(e) =>
+                        setContest((prev) => ({
+                          ...prev,
+                          hidden: e.target.checked,
+                        }))
+                      }
+                    />
+                    <span className="text-neutral-300 font-medium">
+                      {t('admin.contests.editor.labels.hiddenContest')}
+                    </span>
+                  </label>
+                  <p className="mt-1 text-neutral-500 text-sm">{t('admin.contests.editor.help.hiddenContest')}</p>
+                </div>
+
+                <div className="min-w-0">
+                  <label
+                    htmlFor="blood-toggle"
+                    className="flex items-center gap-3 min-h-[50px] rounded-md border-2 border-neutral-600 bg-black/70 px-4 py-3 cursor-pointer transition-colors duration-200 hover:border-geek-400/60"
+                  >
+                    <input
+                      type="checkbox"
+                      id="blood-toggle"
+                      className="w-5 h-5 shrink-0 bg-black border-2 border-neutral-600 rounded text-geek-400 focus:ring-geek-400"
+                      checked={contest.blood}
+                      onChange={(e) =>
+                        setContest((prev) => ({
+                          ...prev,
+                          blood: e.target.checked,
+                        }))
+                      }
+                    />
+                    <span className="text-neutral-300 font-medium">{t('admin.contests.editor.labels.bloodBonus')}</span>
+                  </label>
+                  <p className="mt-1 text-neutral-500 text-sm">{t('admin.contests.editor.help.bloodBonus')}</p>
+                </div>
               </div>
-              <p className="text-neutral-500 text-sm">{t('admin.contests.editor.help.bloodBonus')}</p>
             </div>
           </div>
         </div>

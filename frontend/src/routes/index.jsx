@@ -75,10 +75,7 @@ const AppRoutes = () => {
         </Route>
 
         {/* 比赛详情路由 */}
-        <Route
-          path="/contests/:contestId"
-          element={withGuard(<ContestLayout />, UserRoute)}
-        >
+        <Route path="/contests/:contestId" element={withGuard(<ContestLayout />, UserRoute)}>
           <Route index element={withSuspense(GameDetailPage)} />
           <Route path="challenges" element={withSuspense(GameChallengesPage)} />
           <Route path="scoreboard" element={withSuspense(GameScoreBoardPage)} />
@@ -88,24 +85,60 @@ const AppRoutes = () => {
         </Route>
 
         {/* 管理员路由 */}
-        <Route
-          path="/admin"
-          element={withGuard(<AdminLayout />, AdminRoute)}
-        >
+        <Route path="/admin" element={withGuard(<AdminLayout />, AdminRoute)}>
           <Route path="settings" element={withSuspense(Settings)} />
-          <Route path="dashboard" element={withGuard(withSuspense(Dashboard), AdminRoute, { apiRoute: 'GET /admin/system/status' })} />
-          <Route path="contests" element={withGuard(withSuspense(ContestsManagement), AdminRoute, { apiRoute: 'GET /admin/contests' })} />
-          <Route path="rbac" element={withGuard(withSuspense(RbacManagement), AdminRoute, { apiRoute: 'GET /admin/roles' })} />
-          <Route path="challenges" element={withGuard(withSuspense(ChallengesManagement), AdminRoute, { apiRoute: 'GET /admin/challenges' })} />
-          <Route path="oauth" element={withGuard(withSuspense(OAuthProvidersManagement), AdminRoute, { apiRoute: 'GET /admin/oauth' })} />
-          <Route path="smtp" element={withGuard(withSuspense(SmtpManagement), AdminRoute, { apiRoute: 'GET /admin/smtp' })} />
-          <Route path="cronjobs" element={withGuard(withSuspense(CronJobsManagement), AdminRoute, { apiRoute: 'GET /admin/cronjobs' })} />
-          <Route path="webhook" element={withGuard(withSuspense(WebhookManagement), AdminRoute, { apiRoute: 'GET /admin/webhook' })} />
-          <Route path="files" element={withGuard(withSuspense(FilesManagement), AdminRoute, { apiRoute: 'GET /admin/files' })} />
-          <Route path="system" element={withGuard(withSuspense(SystemSettings), AdminRoute, { apiRoute: 'GET /admin/system/config' })} />
-          <Route path="logs" element={withGuard(withSuspense(AdminLogs), AdminRoute, { apiRoute: 'GET /admin/logs' })} />
-          <Route path="victims" element={withGuard(withSuspense(AdminVictims), AdminRoute, { apiRoute: 'GET /admin/victims' })} />
-          <Route path="generators" element={withGuard(withSuspense(AdminGenerators), AdminRoute, { apiRoute: 'GET /admin/generators' })} />
+          <Route
+            path="dashboard"
+            element={withGuard(withSuspense(Dashboard), AdminRoute, { apiRoute: 'GET /admin/system/status' })}
+          />
+          <Route
+            path="contests"
+            element={withGuard(withSuspense(ContestsManagement), AdminRoute, { apiRoute: 'GET /admin/contests' })}
+          />
+          <Route
+            path="rbac"
+            element={withGuard(withSuspense(RbacManagement), AdminRoute, { apiRoute: 'GET /admin/roles' })}
+          />
+          <Route
+            path="challenges"
+            element={withGuard(withSuspense(ChallengesManagement), AdminRoute, { apiRoute: 'GET /admin/challenges' })}
+          />
+          <Route
+            path="oauth"
+            element={withGuard(withSuspense(OAuthProvidersManagement), AdminRoute, { apiRoute: 'GET /admin/oauth' })}
+          />
+          <Route
+            path="smtp"
+            element={withGuard(withSuspense(SmtpManagement), AdminRoute, { apiRoute: 'GET /admin/smtp' })}
+          />
+          <Route
+            path="cronjobs"
+            element={withGuard(withSuspense(CronJobsManagement), AdminRoute, { apiRoute: 'GET /admin/cronjobs' })}
+          />
+          <Route
+            path="webhook"
+            element={withGuard(withSuspense(WebhookManagement), AdminRoute, { apiRoute: 'GET /admin/webhook' })}
+          />
+          <Route
+            path="files"
+            element={withGuard(withSuspense(FilesManagement), AdminRoute, { apiRoute: 'GET /admin/files' })}
+          />
+          <Route
+            path="system"
+            element={withGuard(withSuspense(SystemSettings), AdminRoute, { apiRoute: 'GET /admin/system/config' })}
+          />
+          <Route
+            path="logs"
+            element={withGuard(withSuspense(AdminLogs), AdminRoute, { apiRoute: 'GET /admin/logs' })}
+          />
+          <Route
+            path="victims"
+            element={withGuard(withSuspense(AdminVictims), AdminRoute, { apiRoute: 'GET /admin/victims' })}
+          />
+          <Route
+            path="generators"
+            element={withGuard(withSuspense(AdminGenerators), AdminRoute, { apiRoute: 'GET /admin/generators' })}
+          />
         </Route>
 
         {/* 管理端比赛详情路由 */}
@@ -114,16 +147,61 @@ const AppRoutes = () => {
           element={withGuard(<AdminContestsLayout />, AdminRoute, { apiRoute: 'GET /admin/contests/:contestID' })}
         >
           <Route index element={withSuspense(AdminContestDetail)} />
-          <Route path="challenges" element={withGuard(withSuspense(AdminContestChallenges), AdminRoute, { apiRoute: 'GET /admin/contests/:contestID/challenges' })} />
-          <Route path="scoreboard" element={withGuard(withSuspense(AdminContestScoreboard), AdminRoute, { apiRoute: 'GET /admin/contests/:contestID/scoreboard' })} />
-          <Route path="teams" element={withGuard(withSuspense(AdminContestTeams), AdminRoute, { apiRoute: 'GET /admin/contests/:contestID/teams' })} />
-          <Route path="teams/:teamId/details" element={withGuard(withSuspense(TeamDetails), AdminRoute, { apiRoute: 'GET /admin/contests/:contestID/teams' })} />
+          <Route
+            path="challenges"
+            element={withGuard(withSuspense(AdminContestChallenges), AdminRoute, {
+              apiRoute: 'GET /admin/contests/:contestID/challenges',
+            })}
+          />
+          <Route
+            path="scoreboard"
+            element={withGuard(withSuspense(AdminContestScoreboard), AdminRoute, {
+              apiRoute: 'GET /admin/contests/:contestID/scoreboard',
+            })}
+          />
+          <Route
+            path="teams"
+            element={withGuard(withSuspense(AdminContestTeams), AdminRoute, {
+              apiRoute: 'GET /admin/contests/:contestID/teams',
+            })}
+          />
+          <Route
+            path="teams/:teamId/details"
+            element={withGuard(withSuspense(TeamDetails), AdminRoute, {
+              apiRoute: 'GET /admin/contests/:contestID/teams',
+            })}
+          />
           <Route path="settings" element={withSuspense(AdminContestSettings)} />
-          <Route path="notices" element={withGuard(withSuspense(AdminContestNotices), AdminRoute, { apiRoute: 'GET /admin/contests/:contestID/notices' })} />
-          <Route path="images" element={withGuard(withSuspense(AdminContestImagesPull), AdminRoute, { apiRoute: 'GET /admin/contests/:contestID/images' })} />
-          <Route path="victims" element={withGuard(withSuspense(ContestContainers), AdminRoute, { apiRoute: 'GET /admin/contests/:contestID/victims' })} />
-          <Route path="cheats" element={withGuard(withSuspense(AdminContestCheats), AdminRoute, { apiRoute: 'GET /admin/contests/:contestID/cheats' })} />
-          <Route path="generators" element={withGuard(withSuspense(AdminContestGenerators), AdminRoute, { apiRoute: 'GET /admin/contests/:contestID/generators' })} />
+          <Route
+            path="notices"
+            element={withGuard(withSuspense(AdminContestNotices), AdminRoute, {
+              apiRoute: 'GET /admin/contests/:contestID/notices',
+            })}
+          />
+          <Route
+            path="images"
+            element={withGuard(withSuspense(AdminContestImagesPull), AdminRoute, {
+              apiRoute: 'GET /admin/contests/:contestID/images',
+            })}
+          />
+          <Route
+            path="victims"
+            element={withGuard(withSuspense(ContestContainers), AdminRoute, {
+              apiRoute: 'GET /admin/contests/:contestID/victims',
+            })}
+          />
+          <Route
+            path="cheats"
+            element={withGuard(withSuspense(AdminContestCheats), AdminRoute, {
+              apiRoute: 'GET /admin/contests/:contestID/cheats',
+            })}
+          />
+          <Route
+            path="generators"
+            element={withGuard(withSuspense(AdminContestGenerators), AdminRoute, {
+              apiRoute: 'GET /admin/contests/:contestID/generators',
+            })}
+          />
         </Route>
       </Routes>
     </ErrorBoundary>
