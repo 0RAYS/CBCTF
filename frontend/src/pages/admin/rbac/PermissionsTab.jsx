@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react';
 import { toast } from '../../../utils/toast';
 import { getPermissionList, updatePermission } from '../../../api/admin/rbac';
 import AdminPermissions from '../../../components/features/Admin/AdminPermissions';
-import { Modal } from '../../../components/common';
-import ModalButton from '../../../components/common/ModalButton';
-import Textarea from '../../../components/common/Textarea';
+import { FormField, Modal, ModalFooter, Textarea } from '../../../components/common';
 import { useTranslation } from 'react-i18next';
 
 function PermissionsTab() {
@@ -78,19 +76,16 @@ function PermissionsTab() {
         title={t('admin.rbac.permissions.modal.editTitle')}
         size="md"
         footer={
-          <>
-            <ModalButton onClick={() => setIsModalOpen(false)}>{t('common.cancel')}</ModalButton>
-            <ModalButton variant="primary" onClick={handleUpdate}>
-              {t('common.save')}
-            </ModalButton>
-          </>
+          <ModalFooter
+            onCancel={() => setIsModalOpen(false)}
+            onSubmit={handleUpdate}
+            cancelLabel={t('common.cancel')}
+            submitLabel={t('common.save')}
+          />
         }
       >
         <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-neutral-400 mb-1">
-              {t('admin.rbac.permissions.form.description')}
-            </label>
+          <FormField label={t('admin.rbac.permissions.form.description')}>
             <Textarea
               value={editDescription}
               onChange={(e) => setEditDescription(e.target.value)}
@@ -98,7 +93,7 @@ function PermissionsTab() {
               rows={3}
               fullWidth
             />
-          </div>
+          </FormField>
         </div>
       </Modal>
     </>

@@ -11,13 +11,9 @@ import {
   getGroupUsers,
 } from '../../../api/admin/rbac';
 import AdminGroups from '../../../components/features/Admin/AdminGroups';
-import { Modal, Pagination } from '../../../components/common';
+import { FormField, Input, List, Modal, Pagination, Select, Textarea } from '../../../components/common';
 import CRUDModalFooter from '../../../components/common/CRUDModalFooter';
 import ModalButton from '../../../components/common/ModalButton';
-import Input from '../../../components/common/Input';
-import Textarea from '../../../components/common/Textarea';
-import Select from '../../../components/common/Select';
-import List from '../../../components/common/List';
 import { useCRUDModal } from '../../../hooks/index.js';
 import { useTranslation } from 'react-i18next';
 
@@ -202,8 +198,7 @@ function GroupsTab() {
 
     return (
       <div className="space-y-4">
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-neutral-400 mb-1">{t('admin.rbac.groups.form.name')}</label>
+        <FormField label={t('admin.rbac.groups.form.name')}>
           <Input
             type="text"
             value={editForm.name}
@@ -213,12 +208,9 @@ function GroupsTab() {
             required={mode === 'create'}
             disabled={mode === 'edit' && selectedGroup?.default}
           />
-        </div>
+        </FormField>
 
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-neutral-400 mb-1">
-            {t('admin.rbac.groups.form.description')}
-          </label>
+        <FormField label={t('admin.rbac.groups.form.description')}>
           <Textarea
             value={editForm.description}
             onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
@@ -226,10 +218,9 @@ function GroupsTab() {
             rows={3}
             fullWidth
           />
-        </div>
+        </FormField>
 
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-neutral-400 mb-1">{t('admin.rbac.groups.form.role')}</label>
+        <FormField label={t('admin.rbac.groups.form.role')}>
           <Select
             value={editForm.role_id}
             onChange={(e) => setEditForm({ ...editForm, role_id: parseInt(e.target.value) || '' })}
@@ -237,7 +228,7 @@ function GroupsTab() {
             placeholder={t('admin.rbac.groups.form.rolePlaceholder')}
             fullWidth
           />
-        </div>
+        </FormField>
       </div>
     );
   };
@@ -322,23 +313,22 @@ function GroupsTab() {
             }
           />
           <div className="border-t border-neutral-300/10 pt-4">
-            <label className="block text-sm font-medium text-neutral-400 mb-1">
-              {t('admin.rbac.groups.form.userId')}
-            </label>
-            <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                value={userId}
-                onChange={(e) => setUserId(e.target.value)}
-                placeholder={t('admin.rbac.groups.form.userIdPlaceholder')}
-                fullWidth
-              />
-              <div className="shrink-0">
-                <ModalButton variant="primary" onClick={handleAssignUser}>
-                  {t('admin.rbac.groups.form.addUser')}
-                </ModalButton>
+            <FormField label={t('admin.rbac.groups.form.userId')}>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  value={userId}
+                  onChange={(e) => setUserId(e.target.value)}
+                  placeholder={t('admin.rbac.groups.form.userIdPlaceholder')}
+                  fullWidth
+                />
+                <div className="shrink-0">
+                  <ModalButton variant="primary" onClick={handleAssignUser}>
+                    {t('admin.rbac.groups.form.addUser')}
+                  </ModalButton>
+                </div>
               </div>
-            </div>
+            </FormField>
           </div>
         </div>
       </Modal>

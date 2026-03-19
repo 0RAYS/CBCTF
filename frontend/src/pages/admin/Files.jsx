@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { toast } from '../../utils/toast';
 import { downloadBlobResponse } from '../../utils/fileDownload';
 import AdminFiles from '../../components/features/Admin/AdminFiles';
-import { Modal } from '../../components/common';
-import ModalButton from '../../components/common/ModalButton';
+import { Modal, ModalFooter } from '../../components/common';
 import DeleteConfirmation from '../../components/common/DeleteConfirmation';
 import { getFileList, batchDeleteFiles, getFileUrl, downloadFile } from '../../api/admin/file.js';
 import { useTranslation } from 'react-i18next';
@@ -112,14 +111,13 @@ function FilesManagement() {
         title={t('admin.files.modal.confirmTitle')}
         size="sm"
         footer={
-          <>
-            <ModalButton variant="default" onClick={() => setIsModalOpen(false)}>
-              {t('common.cancel')}
-            </ModalButton>
-            <ModalButton variant="danger" onClick={handleConfirmDelete}>
-              {t('admin.files.actions.confirm')}
-            </ModalButton>
-          </>
+          <ModalFooter
+            onCancel={() => setIsModalOpen(false)}
+            onSubmit={handleConfirmDelete}
+            cancelLabel={t('common.cancel')}
+            submitLabel={t('admin.files.actions.confirm')}
+            submitVariant="danger"
+          />
         }
       >
         <DeleteConfirmation

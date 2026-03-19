@@ -11,16 +11,19 @@
  */
 
 import Modal from './Modal';
+import { useTranslation } from 'react-i18next';
 
-function ConfirmModal({ isOpen, onClose, onConfirm, title, message, confirmText = 'CONFIRM', type = 'default' }) {
+function ConfirmModal({ isOpen, onClose, onConfirm, title, message, confirmText, type = 'default' }) {
+  const { t } = useTranslation();
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={title}
       variant="confirm"
-      confirmText={confirmText}
-      cancelText="CANCEL"
+      confirmText={confirmText || t('common.confirm')}
+      cancelText={t('common.cancel')}
       onConfirm={onConfirm}
       confirmType={type === 'danger' ? 'danger' : 'primary'}
     >

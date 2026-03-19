@@ -2,13 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '../../utils/toast';
 import AdminContests from '../../components/features/Admin/AdminContests';
-import { Modal } from '../../components/common';
+import { DateTimeInput, FormField, Input, Modal, Textarea } from '../../components/common';
 import CRUDModalFooter from '../../components/common/CRUDModalFooter';
 import DeleteConfirmation from '../../components/common/DeleteConfirmation';
 import { getContestList, createContest, deleteContest, updateContestPicture } from '../../api/admin/contest';
-import Input from '../../components/common/Input';
-import Textarea from '../../components/common/Textarea';
-import { DateTimeInput } from '../../components/common';
 import { useTranslation } from 'react-i18next';
 
 // 获取明天的日期时间
@@ -146,64 +143,58 @@ function ContestsManagement() {
     if (mode === 'create') {
       return (
         <div className="space-y-4">
-          <div>
-            <label className="text-neutral-400 text-sm block mb-1">{t('admin.contests.form.name')}</label>
+          <FormField label={t('admin.contests.form.name')}>
             <Input
               type="text"
               value={createForm.name}
               onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
               fullWidth
             />
-          </div>
+          </FormField>
 
-          <div>
-            <label className="text-neutral-400 text-sm block mb-1">{t('admin.contests.form.description')}</label>
+          <FormField label={t('admin.contests.form.description')}>
             <Textarea
               value={createForm.description}
               onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
               rows={4}
               fullWidth
             />
-          </div>
+          </FormField>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-neutral-400 text-sm block mb-1">{t('admin.contests.form.flagPrefix')}</label>
+            <FormField label={t('admin.contests.form.flagPrefix')}>
               <Input
                 type="text"
                 value={createForm.prefix}
                 onChange={(e) => setCreateForm({ ...createForm, prefix: e.target.value })}
                 fullWidth
               />
-            </div>
-            <div>
-              <label className="text-neutral-400 text-sm block mb-1">{t('admin.contests.form.teamSize')}</label>
+            </FormField>
+            <FormField label={t('admin.contests.form.teamSize')}>
               <Input
                 type="number"
                 value={createForm.size}
                 onChange={(e) => setCreateForm({ ...createForm, size: parseInt(e.target.value) })}
                 fullWidth
               />
-            </div>
+            </FormField>
           </div>
 
-          <div>
-            <label className="text-neutral-400 text-sm block mb-1">{t('admin.contests.form.startTime')}</label>
+          <FormField label={t('admin.contests.form.startTime')}>
             <DateTimeInput
               value={createForm.start}
               onChange={(e) => setCreateForm({ ...createForm, start: e.target.value })}
             />
-          </div>
+          </FormField>
 
-          <div>
-            <label className="text-neutral-400 text-sm block mb-1">{t('admin.contests.form.durationHours')}</label>
+          <FormField label={t('admin.contests.form.durationHours')}>
             <Input
               type="number"
               value={createForm.duration}
               onChange={(e) => setCreateForm({ ...createForm, duration: parseInt(e.target.value) })}
               fullWidth
             />
-          </div>
+          </FormField>
         </div>
       );
     } else {
