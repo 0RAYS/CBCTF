@@ -1,5 +1,5 @@
-import ModalButton from './ModalButton';
 import { useTranslation } from 'react-i18next';
+import ModalFooter from './ModalFooter';
 
 /**
  * Standard footer for CRUD modals with cancel and action buttons.
@@ -25,14 +25,13 @@ function CRUDModalFooter({ mode, onCancel, onSubmit, labels = {} }) {
     mode === 'create' ? mergedLabels.create : mode === 'edit' ? mergedLabels.save : mergedLabels.delete;
 
   return (
-    <>
-      <ModalButton variant="default" onClick={onCancel}>
-        {mergedLabels.cancel}
-      </ModalButton>
-      <ModalButton variant={mode === 'delete' ? 'danger' : 'primary'} onClick={onSubmit}>
-        {actionLabel}
-      </ModalButton>
-    </>
+    <ModalFooter
+      onCancel={onCancel}
+      onSubmit={onSubmit}
+      cancelLabel={mergedLabels.cancel}
+      submitLabel={actionLabel}
+      submitVariant={mode === 'delete' ? 'danger' : 'primary'}
+    />
   );
 }
 

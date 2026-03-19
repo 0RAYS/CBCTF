@@ -49,31 +49,25 @@ function DateTimeInput({
   const selectedMinute = selectedDate ? selectedDate.getMinutes() : null;
   const calendarGrid = useMemo(() => getCalendarGrid(viewYear, viewMonth), [viewYear, viewMonth]);
 
-  // Sync inputText when value prop changes (adjust state during render)
-  const [prevValue, setPrevValue] = useState(value);
-  if (prevValue !== value) {
-    setPrevValue(value);
+  useEffect(() => {
     if (value) {
       const parsed = parseDateTimeString(value);
       if (parsed) {
         setInputText(formatToDateTimeLocal(parsed).replace('T', ' '));
-      } else {
-        setInputText(value);
+        return;
       }
-    } else {
-      setInputText('');
+      setInputText(value);
+      return;
     }
-  }
+    setInputText('');
+  }, [value]);
 
-  // Sync calendar view when selected date changes (adjust state during render)
-  const [prevSelectedDate, setPrevSelectedDate] = useState(selectedDate);
-  if (prevSelectedDate !== selectedDate) {
-    setPrevSelectedDate(selectedDate);
+  useEffect(() => {
     if (selectedDate) {
       setViewYear(selectedDate.getFullYear());
       setViewMonth(selectedDate.getMonth());
     }
-  }
+  }, [selectedDate]);
 
   // Scroll active time items into view when panel opens
   useEffect(() => {

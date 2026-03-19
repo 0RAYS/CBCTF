@@ -2,12 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { toast } from '../../../utils/toast';
 import { getUserList, updateUser, deleteUser, createUser, updateUserPicture } from '../../../api/admin/user';
 import AdminUsers from '../../../components/features/Admin/AdminUsers';
-import { Modal } from '../../../components/common';
+import { FormField, FormSwitch, Input, Modal, Textarea } from '../../../components/common';
 import CRUDModalFooter from '../../../components/common/CRUDModalFooter';
 import { useDebounce } from '../../../hooks';
 import { useCRUDModal } from '../../../hooks/index.js';
-import Input from '../../../components/common/Input';
-import Textarea from '../../../components/common/Textarea';
 import { useTranslation } from 'react-i18next';
 
 function UsersTab() {
@@ -157,17 +155,19 @@ function UsersTab() {
   const renderModalContent = () => {
     if (mode === 'delete') {
       return (
-        <p className="text-neutral-300">
-          {t('admin.users.modal.deletePrompt')} <span className="text-white font-semibold">{selectedUser?.name}</span>?{' '}
-          {t('admin.users.modal.deleteWarning')}
-        </p>
+        <div className="space-y-2 text-neutral-300">
+          <p>
+            {t('admin.users.modal.deletePrompt')} <span className="text-white font-semibold">{selectedUser?.name}</span>
+            ?
+          </p>
+          <p className="text-red-400 text-sm">{t('admin.users.modal.deleteWarning')}</p>
+        </div>
       );
     }
 
     return (
       <div className="space-y-4">
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-neutral-400 mb-1">{t('admin.users.form.username')}</label>
+        <FormField label={t('admin.users.form.username')}>
           <Input
             type="text"
             value={editForm.name}
@@ -176,10 +176,9 @@ function UsersTab() {
             fullWidth
             required={mode === 'create'}
           />
-        </div>
+        </FormField>
 
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-neutral-400 mb-1">{t('admin.users.form.email')}</label>
+        <FormField label={t('admin.users.form.email')}>
           <Input
             type="email"
             value={editForm.email}
@@ -188,11 +187,10 @@ function UsersTab() {
             fullWidth
             required={mode === 'create'}
           />
-        </div>
+        </FormField>
 
         {mode === 'create' && (
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-neutral-400 mb-1">{t('admin.users.form.password')}</label>
+          <FormField label={t('admin.users.form.password')}>
             <Input
               type="password"
               value={editForm.password}
@@ -201,11 +199,10 @@ function UsersTab() {
               fullWidth
               required
             />
-          </div>
+          </FormField>
         )}
 
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-neutral-400 mb-1">{t('admin.users.form.description')}</label>
+        <FormField label={t('admin.users.form.description')}>
           <Textarea
             value={editForm.description}
             onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
@@ -213,47 +210,27 @@ function UsersTab() {
             rows={3}
             fullWidth
           />
-        </div>
+        </FormField>
 
         <div className="flex flex-col gap-2">
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="verified"
-              checked={editForm.verified}
-              onChange={(e) => setEditForm({ ...editForm, verified: e.target.checked })}
-              className="mr-2"
-            />
-            <label htmlFor="verified" className="text-neutral-300">
-              {t('admin.users.status.verified')}
-            </label>
-          </div>
-
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="banned"
-              checked={editForm.banned}
-              onChange={(e) => setEditForm({ ...editForm, banned: e.target.checked })}
-              className="mr-2"
-            />
-            <label htmlFor="banned" className="text-neutral-300">
-              {t('admin.users.status.banned')}
-            </label>
-          </div>
-
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="hidden"
-              checked={editForm.hidden}
-              onChange={(e) => setEditForm({ ...editForm, hidden: e.target.checked })}
-              className="mr-2"
-            />
-            <label htmlFor="hidden" className="text-neutral-300">
-              {t('admin.users.status.hidden')}
-            </label>
-          </div>
+          <FormSwitch
+            id="verified"
+            checked={editForm.verified}
+            onChange={(e) => setEditForm({ ...editForm, verified: e.target.checked })}
+            label={t('admin.users.status.verified')}
+          />
+          <FormSwitch
+            id="banned"
+            checked={editForm.banned}
+            onChange={(e) => setEditForm({ ...editForm, banned: e.target.checked })}
+            label={t('admin.users.status.banned')}
+          />
+          <FormSwitch
+            id="hidden"
+            checked={editForm.hidden}
+            onChange={(e) => setEditForm({ ...editForm, hidden: e.target.checked })}
+            label={t('admin.users.status.hidden')}
+          />
         </div>
       </div>
     );

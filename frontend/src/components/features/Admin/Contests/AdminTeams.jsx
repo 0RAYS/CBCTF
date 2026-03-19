@@ -32,8 +32,23 @@
 
 import { IconEdit, IconTrash, IconUserMinus, IconContainer, IconSearch } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import ModalButton from '../../../common/ModalButton';
-import { Button, Pagination, ScrollingText, Modal, List, EmptyState, Avatar, Input, Spinner } from '../../../common';
+import {
+  Avatar,
+  Button,
+  EmptyState,
+  FormField,
+  FormSwitch,
+  Input,
+  List,
+  Modal,
+  ModalFooter,
+  Pagination,
+  ScrollingText,
+  Select,
+  Spinner,
+  StatusTag,
+  Textarea,
+} from '../../../common';
 
 function AdminTeams({
   teams = [],
@@ -127,20 +142,14 @@ function AdminTeams({
       case 'status':
         return (
           <div className="flex items-center gap-2">
-            <span
-              className={`px-2 py-1 rounded text-xs font-mono ${
-                team.banned ? 'bg-red-400/20 text-red-400' : 'bg-neutral-400/20 text-neutral-400'
-              }`}
-            >
-              {team.banned ? t('admin.contests.teams.status.banned') : t('admin.contests.teams.status.normal')}
-            </span>
-            <span
-              className={`px-2 py-1 rounded text-xs font-mono ${
-                team.hidden ? 'bg-yellow-400/20 text-yellow-400' : 'bg-neutral-400/20 text-neutral-400'
-              }`}
-            >
-              {team.hidden ? t('admin.contests.teams.status.hidden') : t('admin.contests.teams.status.visible')}
-            </span>
+            <StatusTag
+              type={team.banned ? 'error' : 'default'}
+              text={team.banned ? t('admin.contests.teams.status.banned') : t('admin.contests.teams.status.normal')}
+            />
+            <StatusTag
+              type={team.hidden ? 'warning' : 'default'}
+              text={team.hidden ? t('admin.contests.teams.status.hidden') : t('admin.contests.teams.status.visible')}
+            />
           </div>
         );
       case 'actions':
@@ -208,23 +217,20 @@ function AdminTeams({
           {teamMembers.length === 0 ? (
             <EmptyState title={t('admin.contests.teams.empty.noMembers')} />
           ) : (
-            <div>
-              <label className="block text-sm font-mono text-neutral-400 mb-2">
-                {t('admin.contests.teams.modal.selectMemberLabel')}
-              </label>
-              <select
+            <FormField
+              label={t('admin.contests.teams.modal.selectMemberLabel')}
+              className="[&_label]:font-mono [&_label]:mb-2"
+            >
+              <Select
                 value={selectedUserId}
                 onChange={(e) => onUserSelect(e.target.value)}
-                className="select-custom select-custom-md"
-              >
-                <option value="">{t('admin.contests.teams.modal.selectMemberPlaceholder')}</option>
-                {teamMembers.map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+                options={teamMembers.map((member) => ({
+                  value: member.id,
+                  label: member.name,
+                }))}
+                placeholder={t('admin.contests.teams.modal.selectMemberPlaceholder')}
+              />
+            </FormField>
           )}
         </div>
       );
@@ -232,102 +238,69 @@ function AdminTeams({
 
     return (
       <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-mono text-neutral-400 mb-2">{t('admin.contests.teams.form.name')}</label>
-          <input
+        <FormField label={t('admin.contests.teams.form.name')} className="[&_label]:font-mono [&_label]:mb-2">
+          <Input
             type="text"
             value={editForm.name}
             onChange={(e) => onFormChange({ ...editForm, name: e.target.value })}
-            className="w-full h-[40px] px-4 bg-black/20 border border-neutral-300/30 rounded-md
-                            text-neutral-50 placeholder-neutral-500
-                            focus:outline-none focus:border-geek-400 focus:shadow-focus
-                            transition-all duration-200"
           />
-        </div>
-        <div>
-          <label className="block text-sm font-mono text-neutral-400 mb-2">
-            {t('admin.contests.teams.form.description')}
-          </label>
-          <textarea
+        </FormField>
+        <FormField
+          label={t('admin.contests.teams.form.description')}
+          className="[&_label]:font-mono [&_label]:mb-2"
+        >
+          <Textarea
             value={editForm.description}
             onChange={(e) => onFormChange({ ...editForm, description: e.target.value })}
             rows={3}
-            className="w-full p-4 bg-black/20 border border-neutral-300/30 rounded-md
-                            text-neutral-50 placeholder-neutral-500
-                            focus:outline-none focus:border-geek-400 focus:shadow-focus
-                            transition-all duration-200 resize-none"
           />
-        </div>
-        <div>
-          <label className="block text-sm font-mono text-neutral-400 mb-2">
-            {t('admin.contests.teams.form.captain')}
-          </label>
-          <select
+        </FormField>
+        <FormField label={t('admin.contests.teams.form.captain')} className="[&_label]:font-mono [&_label]:mb-2">
+          <Select
             value={selectedUserId}
             onChange={(e) => onUserSelect(e.target.value)}
-            className="select-custom select-custom-md"
-          >
-            <option value="">{t('admin.contests.teams.form.selectCaptain')}</option>
-            {teamMembers.map((member) => (
-              <option key={member.id} value={member.id}>
-                {member.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-mono text-neutral-400 mb-2">
-            {t('admin.contests.teams.form.inviteCode')}
-          </label>
-          <input
+            options={teamMembers.map((member) => ({
+              value: member.id,
+              label: member.name,
+            }))}
+            placeholder={t('admin.contests.teams.form.selectCaptain')}
+          />
+        </FormField>
+        <FormField label={t('admin.contests.teams.form.inviteCode')} className="[&_label]:font-mono [&_label]:mb-2">
+          <Input
             type="text"
             value={editForm.captcha}
             onChange={(e) => onFormChange({ ...editForm, captcha: e.target.value })}
-            className="w-full h-[40px] px-4 bg-black/20 border border-neutral-300/30 rounded-md
-                            text-neutral-50 placeholder-neutral-500
-                            focus:outline-none focus:border-geek-400 focus:shadow-focus
-                            transition-all duration-200"
           />
-        </div>
+        </FormField>
         <div className="flex gap-6">
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="banned"
-              checked={editForm.banned}
-              onChange={(e) => onFormChange({ ...editForm, banned: e.target.checked })}
-              className="w-4 h-4 rounded border-neutral-300/30 text-geek-400
-                                focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
-            />
-            <label htmlFor="banned" className="text-sm font-mono text-neutral-400">
-              {t('admin.contests.teams.labels.banned')}
-            </label>
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="hidden"
-              checked={editForm.hidden}
-              onChange={(e) => onFormChange({ ...editForm, hidden: e.target.checked })}
-              className="w-4 h-4 rounded border-neutral-300/30 text-geek-400
-                                focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
-            />
-            <label htmlFor="hidden" className="text-sm font-mono text-neutral-400">
-              {t('admin.contests.teams.labels.hidden')}
-            </label>
-          </div>
+          <FormSwitch
+            id="banned"
+            checked={editForm.banned}
+            onChange={(e) => onFormChange({ ...editForm, banned: e.target.checked })}
+            label={t('admin.contests.teams.labels.banned')}
+            className="font-mono text-sm text-neutral-400"
+          />
+          <FormSwitch
+            id="hidden"
+            checked={editForm.hidden}
+            onChange={(e) => onFormChange({ ...editForm, hidden: e.target.checked })}
+            label={t('admin.contests.teams.labels.hidden')}
+            className="font-mono text-sm text-neutral-400"
+          />
         </div>
       </div>
     );
   };
 
   const renderModalFooter = () => (
-    <>
-      <ModalButton onClick={onModalClose}>{t('common.cancel')}</ModalButton>
-      <ModalButton variant={modalMode === 'delete' ? 'danger' : 'primary'} onClick={onModalSubmit}>
-        {t('common.confirm')}
-      </ModalButton>
-    </>
+    <ModalFooter
+      onCancel={onModalClose}
+      onSubmit={onModalSubmit}
+      cancelLabel={t('common.cancel')}
+      submitLabel={t('common.confirm')}
+      submitVariant={modalMode === 'delete' ? 'danger' : 'primary'}
+    />
   );
 
   return (

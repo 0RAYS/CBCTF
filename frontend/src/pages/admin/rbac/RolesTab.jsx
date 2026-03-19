@@ -11,11 +11,9 @@ import {
   revokePermissionFromRole,
 } from '../../../api/admin/rbac';
 import AdminRoles from '../../../components/features/Admin/AdminRoles';
-import { Modal } from '../../../components/common';
+import { FormField, Input, Modal, Textarea } from '../../../components/common';
 import CRUDModalFooter from '../../../components/common/CRUDModalFooter';
 import ModalButton from '../../../components/common/ModalButton';
-import Input from '../../../components/common/Input';
-import Textarea from '../../../components/common/Textarea';
 import { useCRUDModal } from '../../../hooks/index.js';
 import { useTranslation } from 'react-i18next';
 
@@ -162,8 +160,7 @@ function RolesTab() {
 
     return (
       <div className="space-y-4">
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-neutral-400 mb-1">{t('admin.rbac.roles.form.name')}</label>
+        <FormField label={t('admin.rbac.roles.form.name')}>
           <Input
             type="text"
             value={editForm.name}
@@ -173,12 +170,9 @@ function RolesTab() {
             required={mode === 'create'}
             disabled={mode === 'edit' && selectedRole?.default}
           />
-        </div>
+        </FormField>
 
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-neutral-400 mb-1">
-            {t('admin.rbac.roles.form.description')}
-          </label>
+        <FormField label={t('admin.rbac.roles.form.description')}>
           <Textarea
             value={editForm.description}
             onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
@@ -186,7 +180,7 @@ function RolesTab() {
             rows={3}
             fullWidth
           />
-        </div>
+        </FormField>
       </div>
     );
   };

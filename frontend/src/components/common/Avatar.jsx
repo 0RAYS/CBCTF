@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const SIZE_MAP = {
   xs: 32,
@@ -10,12 +10,10 @@ const SIZE_MAP = {
 
 function Avatar({ src, name = '', size = 'md', shape = 'rounded', className = '' }) {
   const [imgError, setImgError] = useState(false);
-  const [prevSrc, setPrevSrc] = useState(src);
 
-  if (prevSrc !== src) {
-    setPrevSrc(src);
+  useEffect(() => {
     setImgError(false);
-  }
+  }, [src]);
 
   const px = typeof size === 'number' ? size : SIZE_MAP[size] || 48;
   const radius = shape === 'circle' ? '9999px' : '0.5rem';

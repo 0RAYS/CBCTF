@@ -14,8 +14,7 @@
 import { useState } from 'react';
 import { IconEdit, IconTrash, IconPlus } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import ModalButton from '../../../common/ModalButton';
-import { Button, Pagination, Modal, List } from '../../../common';
+import { Button, FormField, Input, List, Modal, ModalFooter, Pagination, Select, Textarea } from '../../../common';
 
 function AdminNotice({
   notices = [],
@@ -134,73 +133,48 @@ function AdminNotice({
 
     return (
       <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-mono text-neutral-400 mb-2">
-            {t('admin.contests.notices.form.title')}
-          </label>
-          <input
+        <FormField label={t('admin.contests.notices.form.title')} className="[&_label]:font-mono [&_label]:mb-2">
+          <Input
             type="text"
             value={form.title}
             onChange={(e) => setForm({ ...form, title: e.target.value })}
             placeholder={t('admin.contests.notices.form.titlePlaceholder')}
-            className="w-full h-[40px] px-4 bg-black/20 border border-neutral-300/30 rounded-md
-                            text-neutral-50 placeholder-neutral-500
-                            focus:outline-none focus:border-geek-400 focus:shadow-focus
-                            transition-all duration-200"
             required
           />
-        </div>
-        <div>
-          <label className="block text-sm font-mono text-neutral-400 mb-2">
-            {t('admin.contests.notices.form.type')}
-          </label>
-          <select
+        </FormField>
+        <FormField label={t('admin.contests.notices.form.type')} className="[&_label]:font-mono [&_label]:mb-2">
+          <Select
             value={form.type}
             onChange={(e) => setForm({ ...form, type: e.target.value })}
-            className="w-full h-[40px] px-4 bg-black/20 border border-neutral-300/30 rounded-md
-                            text-neutral-50
-                            focus:outline-none focus:border-geek-400 focus:shadow-focus
-                            transition-all duration-200"
+            options={[
+              { value: 'normal', label: t('admin.contests.notices.types.normal') },
+              { value: 'important', label: t('admin.contests.notices.types.important') },
+              { value: 'update', label: t('admin.contests.notices.types.update') },
+            ]}
             required
-          >
-            <option value="normal" className="bg-black/90 text-neutral-50">
-              {t('admin.contests.notices.types.normal')}
-            </option>
-            <option value="important" className="bg-black/90 text-neutral-50">
-              {t('admin.contests.notices.types.important')}
-            </option>
-            <option value="update" className="bg-black/90 text-neutral-50">
-              {t('admin.contests.notices.types.update')}
-            </option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-mono text-neutral-400 mb-2">
-            {t('admin.contests.notices.form.content')}
-          </label>
-          <textarea
+          />
+        </FormField>
+        <FormField label={t('admin.contests.notices.form.content')} className="[&_label]:font-mono [&_label]:mb-2">
+          <Textarea
             required
             value={form.content}
             onChange={(e) => setForm({ ...form, content: e.target.value })}
             placeholder={t('admin.contests.notices.form.contentPlaceholder')}
             rows={5}
-            className="w-full p-4 bg-black/20 border border-neutral-300/30 rounded-md
-                            text-neutral-50 placeholder-neutral-500
-                            focus:outline-none focus:border-geek-400 focus:shadow-focus
-                            transition-all duration-200 resize-none"
           />
-        </div>
+        </FormField>
       </div>
     );
   };
 
   const renderModalFooter = () => (
-    <>
-      <ModalButton onClick={() => setShowModal(false)}>{t('common.cancel')}</ModalButton>
-      <ModalButton variant={mode === 'delete' ? 'danger' : 'primary'} onClick={handleSubmit}>
-        {t('common.confirm')}
-      </ModalButton>
-    </>
+    <ModalFooter
+      onCancel={() => setShowModal(false)}
+      onSubmit={handleSubmit}
+      cancelLabel={t('common.cancel')}
+      submitLabel={t('common.confirm')}
+      submitVariant={mode === 'delete' ? 'danger' : 'primary'}
+    />
   );
 
   return (
