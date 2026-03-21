@@ -9,8 +9,8 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
-	kubeovnclient "github.com/JBNRZ/kubeovn-api/pkg/client/clientset/versioned"
 	netattclient "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/client/clientset/versioned"
+	kubeovnclient "github.com/kubeovn/kube-ovn/pkg/client/clientset/versioned"
 	"k8s.io/client-go/kubernetes"
 )
 
