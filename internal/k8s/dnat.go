@@ -41,7 +41,7 @@ func CreateDNat(ctx context.Context, options CreateDNatOptions) (*kubeovnv1.Ipta
 			Protocol:     options.Protocol,
 		},
 	}
-	dnat, err = kubeOVNClient.KubeovnV1().IptablesDnatRules().Create(ctx, dnat, metav1.CreateOptions{})
+	dnat, err = ovnClient.KubeovnV1().IptablesDnatRules().Create(ctx, dnat, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create iptables DnatRule: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "DnatRule", "Error": err.Error()}}
@@ -50,7 +50,7 @@ func CreateDNat(ctx context.Context, options CreateDNatOptions) (*kubeovnv1.Ipta
 }
 
 func GetDNat(ctx context.Context, name string) (*kubeovnv1.IptablesDnatRule, model.RetVal) {
-	dnat, err := kubeOVNClient.KubeovnV1().IptablesDnatRules().Get(ctx, name, metav1.GetOptions{})
+	dnat, err := ovnClient.KubeovnV1().IptablesDnatRules().Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if apierror.IsNotFound(err) {
 			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "DnatRule"}}
@@ -72,7 +72,7 @@ func GetDNatList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.I
 			LabelSelector: strings.TrimSuffix(selector, ","),
 		}
 	}
-	dnats, err := kubeOVNClient.KubeovnV1().IptablesDnatRules().List(ctx, options)
+	dnats, err := ovnClient.KubeovnV1().IptablesDnatRules().List(ctx, options)
 	if err != nil {
 		log.Logger.Warningf("Failed to list iptables DnatRules: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "DnatRule", "Error": err.Error()}}
@@ -81,7 +81,7 @@ func GetDNatList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.I
 }
 
 func DeleteDNat(ctx context.Context, name string) model.RetVal {
-	err := kubeOVNClient.KubeovnV1().IptablesDnatRules().Delete(ctx, name, metav1.DeleteOptions{})
+	err := ovnClient.KubeovnV1().IptablesDnatRules().Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete iptables DnatRule: %s", err)
 		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "DnatRule", "Error": err.Error()}}
@@ -100,7 +100,7 @@ func DeleteDNatList(ctx context.Context, labels ...map[string]string) model.RetV
 			LabelSelector: strings.TrimSuffix(selector, ","),
 		}
 	}
-	err := kubeOVNClient.KubeovnV1().IptablesDnatRules().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
+	err := ovnClient.KubeovnV1().IptablesDnatRules().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete iptables DnatRule: %s", err)
 		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "DnatRule", "Error": err.Error()}}

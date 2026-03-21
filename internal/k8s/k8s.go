@@ -10,7 +10,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 
 	netattclient "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/client/clientset/versioned"
-	kubeovnclient "github.com/kubeovn/kube-ovn/pkg/client/clientset/versioned"
+	ovnclient "github.com/kubeovn/kube-ovn/pkg/client/clientset/versioned"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -28,7 +28,7 @@ const (
 var (
 	kubeClient         *kubernetes.Clientset
 	netattClient       *netattclient.Clientset
-	kubeOVNClient      *kubeovnclient.Clientset
+	ovnClient          *ovnclient.Clientset
 	kubeConfig         *rest.Config
 	globalNamespace    string
 	externalSubnetName string
@@ -67,7 +67,7 @@ func initClients() {
 	if err != nil {
 		log.Logger.Fatalf("Failed to init NetworkAttachmentDefinition client: %s", err)
 	}
-	kubeOVNClient, err = kubeovnclient.NewForConfig(kubeConfig)
+	ovnClient, err = ovnclient.NewForConfig(kubeConfig)
 	if err != nil {
 		log.Logger.Fatalf("Failed to init KubeOVN client: %s", err)
 	}

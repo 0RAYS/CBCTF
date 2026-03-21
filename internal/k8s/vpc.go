@@ -36,7 +36,7 @@ func CreateVPC(ctx context.Context, options CreateVPCOptions) (*kubeovnv1.Vpc, m
 			PolicyRoutes: options.PolicyRoutes,
 		},
 	}
-	vpc, err = kubeOVNClient.KubeovnV1().Vpcs().Create(ctx, vpc, metav1.CreateOptions{})
+	vpc, err = ovnClient.KubeovnV1().Vpcs().Create(ctx, vpc, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create VPC: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "VPC", "Error": err.Error()}}
@@ -45,7 +45,7 @@ func CreateVPC(ctx context.Context, options CreateVPCOptions) (*kubeovnv1.Vpc, m
 }
 
 func GetVPC(ctx context.Context, name string) (*kubeovnv1.Vpc, model.RetVal) {
-	vpc, err := kubeOVNClient.KubeovnV1().Vpcs().Get(ctx, name, metav1.GetOptions{})
+	vpc, err := ovnClient.KubeovnV1().Vpcs().Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if apierror.IsNotFound(err) {
 			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "VPC"}}
@@ -67,7 +67,7 @@ func GetVPCList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.Vp
 			LabelSelector: strings.TrimSuffix(selector, ","),
 		}
 	}
-	vpcList, err := kubeOVNClient.KubeovnV1().Vpcs().List(ctx, options)
+	vpcList, err := ovnClient.KubeovnV1().Vpcs().List(ctx, options)
 	if err != nil {
 		log.Logger.Warningf("Failed to list VPC: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "VPC", "Error": err.Error()}}
@@ -76,7 +76,7 @@ func GetVPCList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.Vp
 }
 
 func DeleteVPC(ctx context.Context, name string) model.RetVal {
-	err := kubeOVNClient.KubeovnV1().Vpcs().Delete(ctx, name, metav1.DeleteOptions{})
+	err := ovnClient.KubeovnV1().Vpcs().Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete VPC: %s", err)
 		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "VPC", "Error": err.Error()}}
@@ -95,7 +95,7 @@ func DeleteVPCList(ctx context.Context, labels ...map[string]string) model.RetVa
 			LabelSelector: strings.TrimSuffix(selector, ","),
 		}
 	}
-	err := kubeOVNClient.KubeovnV1().Vpcs().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
+	err := ovnClient.KubeovnV1().Vpcs().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete VPC: %s", err)
 		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "VPC", "Error": err.Error()}}
