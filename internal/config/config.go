@@ -276,7 +276,7 @@ func valueToNode(value any) (*yaml.Node, error) {
 		return nil, err
 	}
 	var node yaml.Node
-	if err := yaml.Unmarshal(bytes, &node); err != nil {
+	if err = yaml.Unmarshal(bytes, &node); err != nil {
 		return nil, err
 	}
 	if node.Kind == yaml.DocumentNode && len(node.Content) > 0 {
