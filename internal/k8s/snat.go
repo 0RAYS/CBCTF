@@ -35,7 +35,7 @@ func CreateSNat(ctx context.Context, options CreateSNatOptions) (*kubeovnv1.Ipta
 			InternalCIDR: options.InternalCIDR,
 		},
 	}
-	snat, err = kubeOVNClient.KubeovnV1().IptablesSnatRules().Create(ctx, snat, metav1.CreateOptions{})
+	snat, err = ovnClient.KubeovnV1().IptablesSnatRules().Create(ctx, snat, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warnf("Failed to create iptables SnatRule: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "SnatRule", "Error": err.Error()}}
@@ -44,7 +44,7 @@ func CreateSNat(ctx context.Context, options CreateSNatOptions) (*kubeovnv1.Ipta
 }
 
 func GetSNat(ctx context.Context, name string) (*kubeovnv1.IptablesSnatRule, model.RetVal) {
-	snat, err := kubeOVNClient.KubeovnV1().IptablesSnatRules().Get(ctx, name, metav1.GetOptions{})
+	snat, err := ovnClient.KubeovnV1().IptablesSnatRules().Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		log.Logger.Warnf("Failed to get iptables SnatRule: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "SnatRule", "Error": err.Error()}}
@@ -63,7 +63,7 @@ func GetSNatList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.I
 			LabelSelector: strings.TrimSuffix(selector, ","),
 		}
 	}
-	snats, err := kubeOVNClient.KubeovnV1().IptablesSnatRules().List(ctx, options)
+	snats, err := ovnClient.KubeovnV1().IptablesSnatRules().List(ctx, options)
 	if err != nil {
 		log.Logger.Warnf("Failed to list iptables SnatRules: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "SnatRule", "Error": err.Error()}}
@@ -72,7 +72,7 @@ func GetSNatList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.I
 }
 
 func DeleteSNat(ctx context.Context, name string) model.RetVal {
-	err := kubeOVNClient.KubeovnV1().IptablesSnatRules().Delete(ctx, name, metav1.DeleteOptions{})
+	err := ovnClient.KubeovnV1().IptablesSnatRules().Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warnf("Failed to delete iptables SnatRule: %s", err)
 		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "SnatRule", "Error": err.Error()}}
@@ -91,7 +91,7 @@ func DeleteSNatList(ctx context.Context, labels ...map[string]string) model.RetV
 			LabelSelector: strings.TrimSuffix(selector, ","),
 		}
 	}
-	err := kubeOVNClient.KubeovnV1().IptablesSnatRules().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
+	err := ovnClient.KubeovnV1().IptablesSnatRules().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warnf("Failed to delete iptables SnatRule: %s", err)
 		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "SnatRule", "Error": err.Error()}}

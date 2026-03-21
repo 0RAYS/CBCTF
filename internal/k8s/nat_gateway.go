@@ -40,7 +40,7 @@ func CreateVPCNatGateway(ctx context.Context, options CreateVPCNatGatewayOptions
 			ExternalSubnets: options.ExternalSubnet,
 		},
 	}
-	gateway, err = kubeOVNClient.KubeovnV1().VpcNatGateways().Create(ctx, gateway, metav1.CreateOptions{})
+	gateway, err = ovnClient.KubeovnV1().VpcNatGateways().Create(ctx, gateway, metav1.CreateOptions{})
 	if err != nil {
 		log.Logger.Warningf("Failed to create VPCNatGateway: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "VPCNatGateway", "Error": err.Error()}}
@@ -49,7 +49,7 @@ func CreateVPCNatGateway(ctx context.Context, options CreateVPCNatGatewayOptions
 }
 
 func GetVPCNatGateway(ctx context.Context, name string) (*kubeovnv1.VpcNatGateway, model.RetVal) {
-	gateway, err := kubeOVNClient.KubeovnV1().VpcNatGateways().Get(ctx, name, metav1.GetOptions{})
+	gateway, err := ovnClient.KubeovnV1().VpcNatGateways().Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		if apierror.IsNotFound(err) {
 			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "VPCNatGateway"}}
@@ -71,7 +71,7 @@ func GetVPCNatGatewayList(ctx context.Context, labels ...map[string]string) (*ku
 			LabelSelector: strings.TrimSuffix(selector, ","),
 		}
 	}
-	gatewayList, err := kubeOVNClient.KubeovnV1().VpcNatGateways().List(ctx, options)
+	gatewayList, err := ovnClient.KubeovnV1().VpcNatGateways().List(ctx, options)
 	if err != nil {
 		log.Logger.Warningf("Failed to list VPCNatGateway: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "VPCNatGateway", "Error": err.Error()}}
@@ -80,7 +80,7 @@ func GetVPCNatGatewayList(ctx context.Context, labels ...map[string]string) (*ku
 }
 
 func DeleteVPCNatGateway(ctx context.Context, name string) model.RetVal {
-	err := kubeOVNClient.KubeovnV1().VpcNatGateways().Delete(ctx, name, metav1.DeleteOptions{})
+	err := ovnClient.KubeovnV1().VpcNatGateways().Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete VPCNatGateway: %s", err)
 		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "VPCNatGateway", "Error": err.Error()}}
@@ -99,7 +99,7 @@ func DeleteVPCNatGatewayList(ctx context.Context, labels ...map[string]string) m
 			LabelSelector: strings.TrimSuffix(selector, ","),
 		}
 	}
-	err := kubeOVNClient.KubeovnV1().VpcNatGateways().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
+	err := ovnClient.KubeovnV1().VpcNatGateways().DeleteCollection(ctx, metav1.DeleteOptions{}, options)
 	if err != nil && !apierror.IsNotFound(err) {
 		log.Logger.Warningf("Failed to delete VPCNatGateway: %s", err)
 		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "VPCNatGateway", "Error": err.Error()}}
