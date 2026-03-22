@@ -74,49 +74,6 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 	return networkPolicy, model.SuccessRetVal()
 }
 
-func GetNetworkPolicy(ctx context.Context, name string) (*netv1.NetworkPolicy, model.RetVal) {
-	networkPolicy, err := kubeClient.NetworkingV1().NetworkPolicies(globalNamespace).Get(ctx, name, metav1.GetOptions{})
-	if err != nil {
-		if apierror.IsNotFound(err) {
-			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "NetworkPolicy"}}
-		}
-		log.Logger.Warningf("Failed to get NetworkPolicy: %s", err)
-		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "NetworkPolicy", "Error": err.Error()}}
-	}
-	return networkPolicy, model.SuccessRetVal()
-}
-
-func GetNetworkPolicyList(ctx context.Context, labels ...map[string]string) (*netv1.NetworkPolicyList, model.RetVal) {
-	var options metav1.ListOptions
-	if len(labels) > 0 {
-		var selector string
-		for k, v := range labels[0] {
-			selector += fmt.Sprintf("%s=%s,", k, v)
-		}
-		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector, ","),
-		}
-	}
-	networkPolicyList, err := kubeClient.NetworkingV1().NetworkPolicies(globalNamespace).List(ctx, options)
-	if err != nil {
-		if apierror.IsNotFound(err) {
-			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "NetworkPolicy"}}
-		}
-		log.Logger.Warningf("Failed to list NetworkPolicy: %s", err)
-		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "NetworkPolicy", "Error": err.Error()}}
-	}
-	return networkPolicyList, model.SuccessRetVal()
-}
-
-func DeleteNetworkPolicy(ctx context.Context, name string) model.RetVal {
-	err := kubeClient.NetworkingV1().NetworkPolicies(globalNamespace).Delete(ctx, name, metav1.DeleteOptions{})
-	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete NetworkPolicy %s: %s", name, err)
-		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "NetworkPolicy", "Error": err.Error()}}
-	}
-	return model.SuccessRetVal()
-}
-
 func DeleteNetworkPolicyList(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {

@@ -62,34 +62,6 @@ func GetSubnet(ctx context.Context, name string) (*kubeovnv1.Subnet, model.RetVa
 	return subnet, model.SuccessRetVal()
 }
 
-func GetSubnetList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.SubnetList, model.RetVal) {
-	var options metav1.ListOptions
-	if len(labels) > 0 {
-		var selector string
-		for k, v := range labels[0] {
-			selector += fmt.Sprintf("%s=%s,", k, v)
-		}
-		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector, ","),
-		}
-	}
-	subnetList, err := ovnClient.KubeovnV1().Subnets().List(ctx, options)
-	if err != nil {
-		log.Logger.Warningf("Failed to list Subnet: %s", err)
-		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "Subnet", "Error": err.Error()}}
-	}
-	return subnetList, model.SuccessRetVal()
-}
-
-func DeleteSubnet(ctx context.Context, name string) model.RetVal {
-	err := ovnClient.KubeovnV1().Subnets().Delete(ctx, name, metav1.DeleteOptions{})
-	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete Subnet: %s", err)
-		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "Subnet", "Error": err.Error()}}
-	}
-	return model.SuccessRetVal()
-}
-
 func DeleteSubnetList(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
