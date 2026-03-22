@@ -40,49 +40,6 @@ func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*core
 	return configMap, model.SuccessRetVal()
 }
 
-func GetConfigMap(ctx context.Context, name string) (*corev1.ConfigMap, model.RetVal) {
-	configMap, err := kubeClient.CoreV1().ConfigMaps(globalNamespace).Get(ctx, name, metav1.GetOptions{})
-	if err != nil {
-		if apierror.IsNotFound(err) {
-			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "ConfigMap"}}
-		}
-		log.Logger.Warningf("Failed to get ConfigMap: %s", err)
-		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "ConfigMap", "Error": err.Error()}}
-	}
-	return configMap, model.SuccessRetVal()
-}
-
-func GetConfigMapList(ctx context.Context, labels ...map[string]string) (*corev1.ConfigMapList, model.RetVal) {
-	var options metav1.ListOptions
-	if len(labels) > 0 {
-		var selector string
-		for k, v := range labels[0] {
-			selector += fmt.Sprintf("%s=%s,", k, v)
-		}
-		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector, ","),
-		}
-	}
-	configMapList, err := kubeClient.CoreV1().ConfigMaps(globalNamespace).List(ctx, options)
-	if err != nil {
-		if apierror.IsNotFound(err) {
-			return nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "ConfigMap"}}
-		}
-		log.Logger.Warningf("Failed to list ConfigMap: %s", err)
-		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "ConfigMap", "Error": err.Error()}}
-	}
-	return configMapList, model.SuccessRetVal()
-}
-
-func DeleteConfigMap(ctx context.Context, configMapName string) model.RetVal {
-	err := kubeClient.CoreV1().ConfigMaps(globalNamespace).Delete(ctx, configMapName, metav1.DeleteOptions{})
-	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete ConfigMap: %s", err)
-		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "ConfigMap", "Error": err.Error()}}
-	}
-	return model.SuccessRetVal()
-}
-
 func DeleteConfigMapList(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {

@@ -79,34 +79,6 @@ func GetEIP(ctx context.Context, name string) (*kubeovnv1.IptablesEIP, model.Ret
 	return eip, model.SuccessRetVal()
 }
 
-func GetEIPList(ctx context.Context, labels ...map[string]string) (*kubeovnv1.IptablesEIPList, model.RetVal) {
-	var options metav1.ListOptions
-	if len(labels) > 0 {
-		var selector string
-		for k, v := range labels[0] {
-			selector += fmt.Sprintf("%s=%s,", k, v)
-		}
-		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector, ","),
-		}
-	}
-	eips, err := ovnClient.KubeovnV1().IptablesEIPs().List(ctx, options)
-	if err != nil {
-		log.Logger.Warningf("Failed to get EIP list: %s", err)
-		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "EIP", "Error": err.Error()}}
-	}
-	return eips, model.SuccessRetVal()
-}
-
-func DeleteEIP(ctx context.Context, name string) model.RetVal {
-	err := ovnClient.KubeovnV1().IptablesEIPs().Delete(ctx, name, metav1.DeleteOptions{})
-	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete EIP: %s", err)
-		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "EIP", "Error": err.Error()}}
-	}
-	return model.SuccessRetVal()
-}
-
 func DeleteEIPList(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
