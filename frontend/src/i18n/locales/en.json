@@ -2288,7 +2288,7 @@
         "tailwind": "Styling",
         "motion": "Animations",
         "go": "API Server",
-        "mysql": "Database",
+        "postgres": "Database",
         "redis": "Caching",
         "docker": "Container Platform",
         "k8s": "Container Orchestration",

@@ -1,6 +1,6 @@
 /**
  * Normalizes incoming config from backend to nested structure
- * Handles both flat keys (gorm_mysql_host) and nested objects (gorm.mysql.host)
+ * Handles both flat keys (gorm_postgres_host) and nested objects (gorm.postgres.host)
  */
 
 const fallback = (value, defaultValue) => (value !== undefined && value !== null ? value : defaultValue);
@@ -88,14 +88,14 @@ export function normalizeConfig(source) {
       log: {
         level: fallback(source?.gorm_log_level, fallback(source?.gorm?.log?.level, '')),
       },
-      mysql: {
-        host: fallback(source?.gorm_mysql_host, fallback(source?.gorm?.mysql?.host, '')),
-        port: fallback(source?.gorm_mysql_port, fallback(source?.gorm?.mysql?.port, 0)),
-        db: fallback(source?.gorm_mysql_db, fallback(source?.gorm?.mysql?.db, '')),
-        user: fallback(source?.gorm_mysql_user, fallback(source?.gorm?.mysql?.user, '')),
-        mxidle: fallback(source?.gorm_mysql_mxidle, fallback(source?.gorm?.mysql?.mxidle, 0)),
-        mxopen: fallback(source?.gorm_mysql_mxopen, fallback(source?.gorm?.mysql?.mxopen, 0)),
-        pwd: normalizeSecret(fallback(source?.gorm_mysql_pwd, fallback(source?.gorm?.mysql?.pwd, ''))),
+      postgres: {
+        host: fallback(source?.gorm_postgres_host, fallback(source?.gorm?.postgres?.host, '')),
+        port: fallback(source?.gorm_postgres_port, fallback(source?.gorm?.postgres?.port, 0)),
+        db: fallback(source?.gorm_postgres_db, fallback(source?.gorm?.postgres?.db, '')),
+        user: fallback(source?.gorm_postgres_user, fallback(source?.gorm?.postgres?.user, '')),
+        mxidle: fallback(source?.gorm_postgres_mxidle, fallback(source?.gorm?.postgres?.mxidle, 0)),
+        mxopen: fallback(source?.gorm_postgres_mxopen, fallback(source?.gorm?.postgres?.mxopen, 0)),
+        pwd: normalizeSecret(fallback(source?.gorm_postgres_pwd, fallback(source?.gorm?.postgres?.pwd, ''))),
       },
     },
     redis: {

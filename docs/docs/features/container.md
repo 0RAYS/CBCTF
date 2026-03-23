@@ -35,7 +35,7 @@ services:
       - DB_PORT=3306
 
   db:
-    image: mysql:8.0
+    image: postgres:17-alpine
     environment:
       MYSQL_ROOT_PASSWORD: example
       MYSQL_DATABASE: testdb

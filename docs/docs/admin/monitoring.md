@@ -6,7 +6,7 @@ sidebar_position: 8
 
 ## 系统状态
 
-通过 `GET /admin/system/status`（`admin:system:status`）查看各服务的健康状态，包括 MySQL、Redis、Asynq 等组件的连接状态。
+通过 `GET /admin/system/status`（`admin:system:status`）查看各服务的健康状态，包括 PostgreSQL、Redis、Asynq 等组件的连接状态。
 
 ## Prometheus 指标
 

@@ -32,14 +32,14 @@ type UpdateSettingForm struct {
 	GinJWTSecret          *string   `form:"gin_jwt_secret" json:"gin_jwt_secret" binding:"omitempty,min=11"`
 	GinMetricsWhitelist   *[]string `form:"gin_metrics_whitelist" json:"gin_metrics_whitelist" binding:"omitempty,dive,ip|cidr"`
 
-	GormMySQLHost   *string `form:"gorm_mysql_host" json:"gorm_mysql_host" binding:"omitempty,ip|hostname"`
-	GormMySQLPort   *uint   `form:"gorm_mysql_port" json:"gorm_mysql_port" binding:"omitempty,port"`
-	GormMySQLUser   *string `form:"gorm_mysql_user" json:"gorm_mysql_user" binding:"omitempty,min=1,alphanum"`
-	GormMySQLPwd    *string `form:"gorm_mysql_pwd" json:"gorm_mysql_pwd" binding:"omitempty,min=1,ascii"`
-	GormMySQLDB     *string `form:"gorm_mysql_db" json:"gorm_mysql_db" binding:"omitempty,min=1,alphanum"`
-	GormMySQLMXOpen *int    `form:"gorm_mysql_mxopen" json:"gorm_mysql_mxopen" binding:"omitempty,gte=1"`
-	GormMySQLMXIdle *int    `form:"gorm_mysql_mxidle" json:"gorm_mysql_mxidle" binding:"omitempty,gte=1"`
-	GormLogLevel    *string `form:"gorm_log_level" json:"gorm_log_level" binding:"omitempty,oneof=SILENT INFO WARNING ERROR"`
+	GormPostgresHost   *string `form:"gorm_postgres_host" json:"gorm_postgres_host" binding:"omitempty,ip|hostname"`
+	GormPostgresPort   *uint   `form:"gorm_postgres_port" json:"gorm_postgres_port" binding:"omitempty,port"`
+	GormPostgresUser   *string `form:"gorm_postgres_user" json:"gorm_postgres_user" binding:"omitempty,min=1"`
+	GormPostgresPwd    *string `form:"gorm_postgres_pwd" json:"gorm_postgres_pwd" binding:"omitempty,min=1,ascii"`
+	GormPostgresDB     *string `form:"gorm_postgres_db" json:"gorm_postgres_db" binding:"omitempty,min=1"`
+	GormPostgresMXOpen *int    `form:"gorm_postgres_mxopen" json:"gorm_postgres_mxopen" binding:"omitempty,gte=1"`
+	GormPostgresMXIdle *int    `form:"gorm_postgres_mxidle" json:"gorm_postgres_mxidle" binding:"omitempty,gte=1"`
+	GormLogLevel       *string `form:"gorm_log_level" json:"gorm_log_level" binding:"omitempty,oneof=SILENT INFO WARNING ERROR"`
 
 	RedisHost *string `form:"redis_host" json:"redis_host" binding:"omitempty,ip|hostname"`
 	RedisPort *uint   `form:"redis_port" json:"redis_port" binding:"omitempty,port"`

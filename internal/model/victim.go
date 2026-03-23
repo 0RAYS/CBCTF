@@ -27,24 +27,24 @@ const (
 // BelongsTo User
 // HasMany Pod
 type Victim struct {
-	ChallengeID        uint             `json:"challenge_id"`
+	ChallengeID        uint             `gorm:"index" json:"challenge_id"`
 	Challenge          Challenge        `json:"-"`
-	ContestID          sql.Null[uint]   `json:"contest_id"`
+	ContestID          sql.Null[uint]   `gorm:"index" json:"contest_id"`
 	Contest            Contest          `json:"-"`
-	ContestChallengeID sql.Null[uint]   `json:"contest_challenge_id"`
+	ContestChallengeID sql.Null[uint]   `gorm:"index" json:"contest_challenge_id"`
 	ContestChallenge   ContestChallenge `json:"-"`
-	TeamID             sql.Null[uint]   `json:"team_id"`
+	TeamID             sql.Null[uint]   `gorm:"index" json:"team_id"`
 	Team               Team             `json:"-"`
-	UserID             uint             `json:"user_id"`
+	UserID             uint             `gorm:"index" json:"user_id"`
 	User               User             `json:"-"`
 	Pods               []Pod            `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Start              time.Time        `gorm:"default:null" json:"start"`
 	Duration           time.Duration    `json:"duration"`
-	VPC                VPC              `gorm:"default:null;type:json" json:"-"`
-	Endpoints          Endpoints        `gorm:"default:null;type:json" json:"-"`
-	ExposedEndpoints   Endpoints        `gorm:"default:null;type:json" json:"-"`
-	NetworkPolicies    NetworkPolicies  `gorm:"default:null;type:json" json:"network_policies"`
-	Status             string           `json:"status"`
+	VPC                VPC              `gorm:"default:null;type:jsonb" json:"-"`
+	Endpoints          Endpoints        `gorm:"default:null;type:jsonb" json:"-"`
+	ExposedEndpoints   Endpoints        `gorm:"default:null;type:jsonb" json:"-"`
+	NetworkPolicies    NetworkPolicies  `gorm:"default:null;type:jsonb" json:"network_policies"`
+	Status             string           `gorm:"index" json:"status"`
 	BaseModel
 }
 
@@ -153,8 +153,8 @@ func (v VPC) Value() (driver.Value, error) {
 }
 
 func (v *VPC) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
+	bytes, err := scanBytes(value)
+	if err != nil {
 		return fmt.Errorf("failed to scan VPC value: %v", value)
 	}
 	return json.Unmarshal(bytes, v)
@@ -185,8 +185,8 @@ func (e Endpoints) Value() (driver.Value, error) {
 }
 
 func (e *Endpoints) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
+	bytes, err := scanBytes(value)
+	if err != nil {
 		return fmt.Errorf("failed to scan Endpoints value: %v", value)
 	}
 	return json.Unmarshal(bytes, e)

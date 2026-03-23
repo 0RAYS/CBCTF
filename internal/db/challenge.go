@@ -99,10 +99,10 @@ func (c *ChallengeRepo) ListChallengesNotInContest(contestID uint, limit, offset
 		Joins("LEFT JOIN contest_challenges ON challenges.id = contest_challenges.challenge_id AND contest_challenges.contest_id = ? AND contest_challenges.deleted_at IS NULL", contestID).
 		Where("contest_challenges.id IS NULL AND challenges.deleted_at IS NULL")
 	if name != "" {
-		base = base.Where("challenges.name LIKE ?", "%"+name+"%")
+		base = base.Where("challenges.name ILIKE ?", "%"+name+"%")
 	}
 	if description != "" {
-		base = base.Where("challenges.description LIKE ?", "%"+description+"%")
+		base = base.Where("challenges.description ILIKE ?", "%"+description+"%")
 	}
 	if category != "" {
 		base = base.Where("challenges.category = ?", category)

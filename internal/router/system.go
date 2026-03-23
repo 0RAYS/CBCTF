@@ -11,7 +11,6 @@ import (
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"os"
-	"syscall"
 
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/net"
@@ -142,14 +141,14 @@ func SystemConfig(ctx *gin.Context) {
 		"gin_log_whitelist":       config.Env.Gin.Log.Whitelist,
 		"gin_metrics_whitelist":   config.Env.Gin.Metrics.Whitelist,
 
-		"gorm_mysql_host":   config.Env.Gorm.MySQL.Host,
-		"gorm_mysql_port":   config.Env.Gorm.MySQL.Port,
-		"gorm_mysql_user":   config.Env.Gorm.MySQL.User,
-		"gorm_mysql_pwd":    "******",
-		"gorm_mysql_db":     config.Env.Gorm.MySQL.DB,
-		"gorm_mysql_mxopen": config.Env.Gorm.MySQL.MaxOpenConns,
-		"gorm_mysql_mxidle": config.Env.Gorm.MySQL.MaxIdleConns,
-		"gorm_log_level":    config.Env.Gorm.Log.Level,
+		"gorm_postgres_host":   config.Env.Gorm.Postgres.Host,
+		"gorm_postgres_port":   config.Env.Gorm.Postgres.Port,
+		"gorm_postgres_user":   config.Env.Gorm.Postgres.User,
+		"gorm_postgres_pwd":    "******",
+		"gorm_postgres_db":     config.Env.Gorm.Postgres.DB,
+		"gorm_postgres_mxopen": config.Env.Gorm.Postgres.MaxOpenConns,
+		"gorm_postgres_mxidle": config.Env.Gorm.Postgres.MaxIdleConns,
+		"gorm_log_level":       config.Env.Gorm.Log.Level,
 
 		"redis_host": config.Env.Redis.Host,
 		"redis_port": config.Env.Redis.Port,
@@ -224,14 +223,14 @@ func UpdateSystem(ctx *gin.Context) {
 		model.GinJWTSecretSettingKey:          form.GinJWTSecret,
 		model.GinMetricsWhitelistSettingKey:   form.GinMetricsWhitelist,
 
-		model.GormMySQLHostSettingKey:   form.GormMySQLHost,
-		model.GormMySQLPortSettingKey:   form.GormMySQLPort,
-		model.GormMySQLUserSettingKey:   form.GormMySQLUser,
-		model.GormMySQLPwdSettingKey:    form.GormMySQLPwd,
-		model.GormMySQLDBSettingKey:     form.GormMySQLDB,
-		model.GormMySQLMXOpenSettingKey: form.GormMySQLMXOpen,
-		model.GormMySQLMXIdleSettingKey: form.GormMySQLMXIdle,
-		model.GormLogLevelSettingKey:    form.GormLogLevel,
+		model.GormPostgresHostSettingKey:   form.GormPostgresHost,
+		model.GormPostgresPortSettingKey:   form.GormPostgresPort,
+		model.GormPostgresUserSettingKey:   form.GormPostgresUser,
+		model.GormPostgresPwdSettingKey:    form.GormPostgresPwd,
+		model.GormPostgresDBSettingKey:     form.GormPostgresDB,
+		model.GormPostgresMXOpenSettingKey: form.GormPostgresMXOpen,
+		model.GormPostgresMXIdleSettingKey: form.GormPostgresMXIdle,
+		model.GormLogLevelSettingKey:       form.GormLogLevel,
 
 		model.RedisHostSettingKey: form.RedisHost,
 		model.RedisPortSettingKey: form.RedisPort,
@@ -278,7 +277,7 @@ func RestartSystem(ctx *gin.Context) {
 		return
 	}
 	go func(proc *os.Process) {
-		_ = proc.Signal(syscall.SIGUSR1)
+		_ = restartSignal(proc)
 	}(proc)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())

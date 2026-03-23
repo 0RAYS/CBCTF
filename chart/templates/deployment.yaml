@@ -63,12 +63,12 @@ spec:
                 secretKeyRef:
                   name: {{ include "cbctf.fullname" . }}
                   key: jwt-secret
-            {{- if .Values.mysql.enabled }}
-            - name: CBCTF_GORM_MYSQL_PWD
+            {{- if .Values.postgres.enabled }}
+            - name: CBCTF_GORM_POSTGRES_PWD
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "cbctf.mysql.fullname" . }}
-                  key: mysql-password
+                  name: {{ include "cbctf.postgres.fullname" . }}
+                  key: postgres-password
             {{- end }}
             {{- if .Values.redis.enabled }}
             - name: CBCTF_REDIS_PWD

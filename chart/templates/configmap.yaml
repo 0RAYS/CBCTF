@@ -61,13 +61,13 @@ data:
           {{- end }}
 
     gorm:
-      mysql:
-        host: {{ printf "%s.%s" (include "cbctf.mysql.host" .) .Release.Namespace | quote }}
-        port: {{ .Values.mysql.service.port }}
-        user: {{ .Values.mysql.auth.username | quote }}
-        # Value overridden by CBCTF_GORM_MYSQL_PWD env var from Secret
+      postgres:
+        host: {{ printf "%s.%s" (include "cbctf.postgres.host" .) .Release.Namespace | quote }}
+        port: {{ .Values.postgres.service.port }}
+        user: {{ .Values.postgres.auth.username | quote }}
+        # Value overridden by CBCTF_GORM_POSTGRES_PWD env var from Secret
         pwd: ""
-        db: {{ .Values.mysql.auth.database | quote }}
+        db: {{ .Values.postgres.auth.database | quote }}
         mxopen: 100
         mxidle: 10
       log:

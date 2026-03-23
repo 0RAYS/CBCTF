@@ -490,7 +490,7 @@ var Permissions = []Permission{
 // ManyToMany Role
 type Permission struct {
 	Roles       []Role `gorm:"many2many:role_permissions" json:"-"`
-	Name        string `gorm:"type:varchar(255);uniqueIndex;not null" json:"name"`
+	Name        string `gorm:"type:varchar(255);uniqueIndex:idx_permissions_name_active,where:deleted_at IS NULL;not null" json:"name"`
 	Resource    string `gorm:"type:varchar(255);index;not null" json:"resource"`
 	Operation   string `gorm:"type:varchar(255);not null" json:"operation"`
 	Description string `json:"description"`
