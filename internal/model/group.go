@@ -30,23 +30,3 @@ type Group struct {
 	Default     bool   `json:"default"`
 	BaseModel
 }
-
-func (g Group) TableName() string {
-	return "groups"
-}
-
-func (g Group) ModelName() string {
-	return "Group"
-}
-
-func (g Group) GetBaseModel() BaseModel {
-	return g.BaseModel
-}
-
-func (g Group) UniqueFields() []string {
-	return []string{"id", "name"}
-}
-
-func (g Group) QueryFields() []string {
-	return []string{"id", "role_id", "name", "description", "default"}
-}

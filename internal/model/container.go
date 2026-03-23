@@ -17,23 +17,3 @@ type Container struct {
 	Exposes     Exposes    `gorm:"type:json" json:"exposes"`
 	BaseModel
 }
-
-func (c Container) TableName() string {
-	return "containers"
-}
-
-func (c Container) ModelName() string {
-	return "Container"
-}
-
-func (c Container) GetBaseModel() BaseModel {
-	return c.BaseModel
-}
-
-func (c Container) UniqueFields() []string {
-	return []string{"id"}
-}
-
-func (c Container) QueryFields() []string {
-	return []string{}
-}

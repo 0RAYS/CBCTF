@@ -230,7 +230,7 @@ func SetFile(t model.FileType) gin.HandlerFunc {
 func SetChallengeFile(ctx *gin.Context) {
 	challenge := GetChallenge(ctx)
 	file, ret := db.InitFileRepo(db.DB).Get(db.GetOptions{
-		Conditions: map[string]any{"model": challenge.ModelName(), "model_id": challenge.ID, "type": model.ChallengeFileType}},
+		Conditions: map[string]any{"model": model.ModelName(challenge), "model_id": challenge.ID, "type": model.ChallengeFileType}},
 	)
 	if !ret.OK {
 		resp.AbortJSON(ctx, ret)
@@ -242,7 +242,7 @@ func SetChallengeFile(ctx *gin.Context) {
 
 func SetTrafficFile(ctx *gin.Context) {
 	file, ret := db.InitFileRepo(db.DB).Get(db.GetOptions{
-		Conditions: map[string]any{"model": GetVictim(ctx).ModelName(), "model_id": GetVictim(ctx).ID, "type": model.TrafficFileType},
+		Conditions: map[string]any{"model": model.ModelName(GetVictim(ctx)), "model_id": GetVictim(ctx).ID, "type": model.TrafficFileType},
 	})
 	if !ret.OK {
 		resp.AbortJSON(ctx, ret)
@@ -263,7 +263,7 @@ func SetAttachmentFile(test bool) gin.HandlerFunc {
 		}
 		path := challenge.AttachmentPath(GetTeam(ctx).ID)
 		record, ret := db.InitFileRepo(db.DB).Get(db.GetOptions{
-			Conditions: map[string]any{"model": challenge.ModelName(), "model_id": challenge.ID, "type": model.ChallengeFileType}},
+			Conditions: map[string]any{"model": model.ModelName(challenge), "model_id": challenge.ID, "type": model.ChallengeFileType}},
 		)
 		if ret.OK && string(record.Path) == path {
 			ctx.Set("File", record)

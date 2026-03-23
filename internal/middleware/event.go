@@ -36,7 +36,7 @@ func Events(ctx *gin.Context) {
 	}
 	for _, m := range models {
 		if id := m.GetBaseModel().ID; id > 0 {
-			options.Models[m.ModelName()] = id
+			options.Models[model.ModelName(m)] = id
 		}
 	}
 	if value, ok := ctx.Get(CTXEventModelsKey); ok {

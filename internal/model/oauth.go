@@ -21,23 +21,3 @@ type Oauth struct {
 	Picture          FileURL `json:"picture"`
 	BaseModel
 }
-
-func (o Oauth) TableName() string {
-	return "oauths"
-}
-
-func (o Oauth) ModelName() string {
-	return "Oauth"
-}
-
-func (o Oauth) GetBaseModel() BaseModel {
-	return o.BaseModel
-}
-
-func (o Oauth) UniqueFields() []string {
-	return []string{"id", "provider"}
-}
-
-func (o Oauth) QueryFields() []string {
-	return []string{"id", "provider", "on"}
-}

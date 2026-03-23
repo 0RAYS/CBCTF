@@ -17,11 +17,11 @@ type BaseModel struct {
 }
 
 type Model interface {
-	TableName() string
-	ModelName() string
 	GetBaseModel() BaseModel
-	UniqueFields() []string
-	QueryFields() []string
+}
+
+func (b BaseModel) GetBaseModel() BaseModel {
+	return b
 }
 
 type RetVal struct {

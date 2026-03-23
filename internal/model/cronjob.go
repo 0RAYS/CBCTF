@@ -40,23 +40,3 @@ type CronJob struct {
 	FailureLast time.Time     `gorm:"default:null" json:"failure_last"`
 	BaseModel
 }
-
-func (c CronJob) TableName() string {
-	return "cron_jobs"
-}
-
-func (c CronJob) ModelName() string {
-	return "CronJob"
-}
-
-func (c CronJob) GetBaseModel() BaseModel {
-	return c.BaseModel
-}
-
-func (c CronJob) UniqueFields() []string {
-	return []string{"id", "name"}
-}
-
-func (c CronJob) QueryFields() []string {
-	return []string{"id", "name", "description", "schedule", "success_last", "failure_last", "success", "failure"}
-}

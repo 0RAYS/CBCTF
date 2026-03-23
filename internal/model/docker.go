@@ -33,26 +33,6 @@ type Docker struct {
 	BaseModel
 }
 
-func (d Docker) TableName() string {
-	return "dockers"
-}
-
-func (d Docker) ModelName() string {
-	return "Docker"
-}
-
-func (d Docker) GetBaseModel() BaseModel {
-	return d.BaseModel
-}
-
-func (d Docker) UniqueFields() []string {
-	return []string{"id"}
-}
-
-func (d Docker) QueryFields() []string {
-	return []string{}
-}
-
 type Network struct {
 	Name     string `json:"name"`
 	CIDR     string `json:"cidr"`

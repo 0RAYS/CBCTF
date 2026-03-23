@@ -15,23 +15,3 @@ type TeamFlag struct {
 	Solved          bool          `json:"solved"`
 	BaseModel
 }
-
-func (t TeamFlag) TableName() string {
-	return "team_flags"
-}
-
-func (t TeamFlag) ModelName() string {
-	return "TeamFlag"
-}
-
-func (t TeamFlag) GetBaseModel() BaseModel {
-	return t.BaseModel
-}
-
-func (t TeamFlag) UniqueFields() []string {
-	return []string{"id"}
-}
-
-func (t TeamFlag) QueryFields() []string {
-	return []string{}
-}

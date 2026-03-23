@@ -27,23 +27,3 @@ type User struct {
 	OauthRaw       string       `json:"oauth_raw"`
 	BaseModel
 }
-
-func (u User) TableName() string {
-	return "users"
-}
-
-func (u User) ModelName() string {
-	return "User"
-}
-
-func (u User) GetBaseModel() BaseModel {
-	return u.BaseModel
-}
-
-func (u User) UniqueFields() []string {
-	return []string{"id", "name", "email"}
-}
-
-func (u User) QueryFields() []string {
-	return []string{"id", "name", "email", "description", "verified", "banned", "hidden", "provider"}
-}

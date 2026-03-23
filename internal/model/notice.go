@@ -17,23 +17,3 @@ type Notice struct {
 	Type      string `gorm:"default:'normal'" json:"type"`
 	BaseModel
 }
-
-func (n Notice) TableName() string {
-	return "notices"
-}
-
-func (n Notice) ModelName() string {
-	return "Notice"
-}
-
-func (n Notice) GetBaseModel() BaseModel {
-	return n.BaseModel
-}
-
-func (n Notice) UniqueFields() []string {
-	return []string{"id"}
-}
-
-func (n Notice) QueryFields() []string {
-	return []string{"id", "title", "content", "type", "contest_id"}
-}

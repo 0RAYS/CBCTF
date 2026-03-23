@@ -44,26 +44,6 @@ type Challenge struct {
 	BaseModel
 }
 
-func (c Challenge) TableName() string {
-	return "challenges"
-}
-
-func (c Challenge) ModelName() string {
-	return "Challenge"
-}
-
-func (c Challenge) GetBaseModel() BaseModel {
-	return c.BaseModel
-}
-
-func (c Challenge) UniqueFields() []string {
-	return []string{"id", "rand_id"}
-}
-
-func (c Challenge) QueryFields() []string {
-	return []string{"id", "rand_id", "name", "description", "category", "type", "generator_image"}
-}
-
 func (c Challenge) BasicDir() string {
 	return fmt.Sprintf("%s/challenges/%d", config.Env.Path, c.ID)
 }

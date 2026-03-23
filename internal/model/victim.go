@@ -48,26 +48,6 @@ type Victim struct {
 	BaseModel
 }
 
-func (v Victim) TableName() string {
-	return "victims"
-}
-
-func (v Victim) ModelName() string {
-	return "Victim"
-}
-
-func (v Victim) GetBaseModel() BaseModel {
-	return v.BaseModel
-}
-
-func (v Victim) UniqueFields() []string {
-	return []string{"id"}
-}
-
-func (v Victim) QueryFields() []string {
-	return []string{}
-}
-
 func (v Victim) TrafficBasePath() string {
 	return fmt.Sprintf("%s/traffics/victim-%d", config.Env.Path, v.ID)
 }

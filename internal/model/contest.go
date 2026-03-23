@@ -45,26 +45,6 @@ type Contest struct {
 	BaseModel
 }
 
-func (c Contest) TableName() string {
-	return "contests"
-}
-
-func (c Contest) ModelName() string {
-	return "Contest"
-}
-
-func (c Contest) GetBaseModel() BaseModel {
-	return c.BaseModel
-}
-
-func (c Contest) UniqueFields() []string {
-	return []string{"id", "name"}
-}
-
-func (c Contest) QueryFields() []string {
-	return []string{"id", "name", "description", "prefix", "start", "duration", "hidden"}
-}
-
 func (c Contest) IsOver() bool {
 	return time.Now().After(c.Start.Add(c.Duration))
 }
@@ -87,10 +67,12 @@ func (c Contest) Status() string {
 	return ContestIsRunning
 }
 
-type Prizes []struct {
+type Prize struct {
 	Amount      string `json:"amount"`
 	Description string `json:"description"`
 }
+
+type Prizes []Prize
 
 func (p Prizes) Value() (driver.Value, error) {
 	return json.Marshal(p)
@@ -104,11 +86,13 @@ func (p *Prizes) Scan(value any) error {
 	return json.Unmarshal(bytes, p)
 }
 
-type Timelines []struct {
+type Timeline struct {
 	Date        time.Time `json:"date"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 }
+
+type Timelines []Timeline
 
 func (t Timelines) Value() (driver.Value, error) {
 	return json.Marshal(t)

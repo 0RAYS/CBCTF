@@ -18,23 +18,3 @@ type WebhookHistory struct {
 	Error     string        `json:"error"`
 	BaseModel
 }
-
-func (w WebhookHistory) TableName() string {
-	return "webhook_histories"
-}
-
-func (w WebhookHistory) ModelName() string {
-	return "WebhookHistory"
-}
-
-func (w WebhookHistory) GetBaseModel() BaseModel {
-	return w.BaseModel
-}
-
-func (w WebhookHistory) UniqueFields() []string {
-	return []string{"id"}
-}
-
-func (w WebhookHistory) QueryFields() []string {
-	return []string{"id", "success", "webhook_id", "resp_code"}
-}
