@@ -17,15 +17,24 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+func GeneratorLabels(generator model.Generator, tags ...map[string]string) map[string]string {
+	labels := map[string]string{
+		"challenge_id": strconv.Itoa(int(generator.ChallengeID)),
+	}
+	if len(tags) > 0 {
+		for tag, value := range tags[0] {
+			labels[tag] = value
+		}
+	}
+	return labels
+}
+
 func StartGenerator(ctx context.Context, challenge model.Challenge, generator model.Generator) (*corev1.Pod, model.RetVal) {
 	var (
 		pod    *corev1.Pod
 		ret    model.RetVal
 		err    error
-		labels = map[string]string{
-			GeneratorPodTag: GeneratorPodTag,
-			"challenge_id":  strconv.Itoa(int(challenge.ID)),
-		}
+		labels = GeneratorLabels(generator, map[string]string{GeneratorPodTag: GeneratorPodTag})
 	)
 	if challenge.GeneratorImage == "" {
 		return nil, model.RetVal{Msg: i18n.Model.Challenge.EmptyImage}
@@ -86,10 +95,7 @@ func StopGenerator(ctx context.Context, generator model.Generator) model.RetVal 
 	if ret := DeletePod(ctx, generator.Name); !ret.OK {
 		return ret
 	}
-	labels := map[string]string{
-		GeneratorPodTag: generator.Name,
-		"challenge_id":  strconv.Itoa(int(generator.ChallengeID)),
-	}
+	labels := GeneratorLabels(generator, map[string]string{GeneratorPodTag: GeneratorPodTag})
 	if ret := DeleteServiceList(ctx, labels); !ret.OK {
 		return ret
 	}

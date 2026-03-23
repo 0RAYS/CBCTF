@@ -21,10 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
-// StartVictim model.Victim Preload model.Pod
-func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exposes, model.RetVal) {
-	log.Logger.Infof("Starting Victim for Team %d Challenge %d", victim.TeamID.V, victim.ChallengeID)
-	// 添加一个独立tag, 防止 NetworkPolicy 影响 frpc 通信
+func VictimLabels(victim model.Victim, tags ...map[string]string) map[string]string {
 	labels := map[string]string{
 		"victim_id":            strconv.Itoa(int(victim.ID)),
 		"user_id":              strconv.Itoa(int(victim.UserID)),
@@ -32,8 +29,20 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 		"contest_id":           strconv.Itoa(int(victim.ContestID.V)),
 		"challenge_id":         strconv.Itoa(int(victim.ChallengeID)),
 		"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID.V)),
-		VictimPodTag:           VictimPodTag,
 	}
+	if len(tags) > 0 {
+		for tag, values := range tags[0] {
+			labels[tag] = values
+		}
+	}
+	return labels
+}
+
+// StartVictim model.Victim Preload model.Pod
+func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exposes, model.RetVal) {
+	log.Logger.Infof("Starting Victim for Team %d Challenge %d", victim.TeamID.V, victim.ChallengeID)
+	// 添加一个独立tag, 防止 NetworkPolicy 影响 frpc 通信
+	labels := VictimLabels(victim, map[string]string{VictimPodTag: VictimPodTag})
 	subnetMap := make(map[string]*model.Subnet)
 	netAttchDefMap := make(map[string]*model.NetAttachDef)
 	ipExposesMap := make(map[string]model.Exposes)
@@ -382,14 +391,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 	log.Logger.Infof("Stopping Victim for Team %d Challenge %d", victim.TeamID.V, victim.ChallengeID)
 	// 不添加独立 tag, 删除时直接删除所有相关资源
-	labels := map[string]string{
-		"victim_id":            strconv.Itoa(int(victim.ID)),
-		"user_id":              strconv.Itoa(int(victim.UserID)),
-		"team_id":              strconv.Itoa(int(victim.TeamID.V)),
-		"contest_id":           strconv.Itoa(int(victim.ContestID.V)),
-		"challenge_id":         strconv.Itoa(int(victim.ChallengeID)),
-		"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID.V)),
-	}
+	labels := VictimLabels(victim)
 	for _, endpoint := range victim.ExposedEndpoints {
 		redis.UnlockFrpsPort(endpoint.IP, endpoint.Port, endpoint.Protocol)
 	}

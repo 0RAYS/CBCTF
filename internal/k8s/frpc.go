@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"math/big"
 	"slices"
-	"strconv"
 	"strings"
 
 	corev1 "k8s.io/api/core/v1"
@@ -164,15 +163,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 			frpcPodNameL = append(frpcPodNameL, podName)
 		}
 	}
-	labels := map[string]string{
-		"victim_id":            strconv.Itoa(int(victim.ID)),
-		"user_id":              strconv.Itoa(int(victim.UserID)),
-		"team_id":              strconv.Itoa(int(victim.TeamID.V)),
-		"contest_id":           strconv.Itoa(int(victim.ContestID.V)),
-		"challenge_id":         strconv.Itoa(int(victim.ChallengeID)),
-		"contest_challenge_id": strconv.Itoa(int(victim.ContestChallengeID.V)),
-		FrpcPodTag:             FrpcPodTag,
-	}
+	labels := VictimLabels(victim, map[string]string{FrpcPodTag: FrpcPodTag})
 	for _, podName := range frpcPodNameL {
 		fcm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
 			Name:   fmt.Sprintf("frpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6)),
