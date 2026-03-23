@@ -6,20 +6,19 @@ package model
 // HasMany ContestFlag
 // HasMany Submission
 type ContestChallenge struct {
-	ContestID    uint          `gorm:"index:idx_contest_challenge_deleted_salt,unique;" json:"contest_id"`
+	ContestID    uint          `gorm:"index;uniqueIndex:idx_contest_challenges_unique_active,where:deleted_at IS NULL" json:"contest_id"`
 	Contest      Contest       `json:"-"`
-	ChallengeID  uint          `gorm:"index:idx_contest_challenge_deleted_salt,unique;" json:"challenge_id"`
+	ChallengeID  uint          `gorm:"index;uniqueIndex:idx_contest_challenges_unique_active,where:deleted_at IS NULL" json:"challenge_id"`
 	Challenge    Challenge     `json:"-"`
 	ContestFlags []ContestFlag `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Submissions  []Submission  `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Name         string        `json:"name"`
 	Description  string        `json:"description"`
-	Type         ChallengeType `json:"type"`
-	Category     string        `json:"category"`
-	Hidden       bool          `json:"hidden"`
+	Type         ChallengeType `gorm:"index" json:"type"`
+	Category     string        `gorm:"index" json:"category"`
+	Hidden       bool          `gorm:"index" json:"hidden"`
 	Attempt      int64         `json:"attempt"`
-	Hints        StringList    `gorm:"default:null;type:json" json:"hints"`
-	Tags         StringList    `gorm:"default:null;type:json" json:"tags"`
-	DeletedSalt  string        `gorm:"default:'';type:varchar(36);index:idx_contest_challenge_deleted_salt,unique;" json:"-"`
+	Hints        StringList    `gorm:"default:null;type:jsonb" json:"hints"`
+	Tags         StringList    `gorm:"default:null;type:jsonb" json:"tags"`
 	BaseModel
 }

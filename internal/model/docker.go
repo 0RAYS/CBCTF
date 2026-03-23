@@ -18,7 +18,7 @@ const (
 // BelongsTo Challenge
 // HasMany ChallengeFlag
 type Docker struct {
-	ChallengeID    uint            `json:"challenge_id"`
+	ChallengeID    uint            `gorm:"index" json:"challenge_id"`
 	Challenge      Challenge       `json:"-"`
 	ChallengeFlags []ChallengeFlag `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Name           string          `json:"name"`
@@ -26,10 +26,10 @@ type Docker struct {
 	CPU            float32         `json:"cpu"`
 	Memory         int64           `json:"memory"`
 	WorkingDir     string          `json:"working_dir"`
-	Command        StringList      `gorm:"default:null;type:json" json:"command"`
-	Exposes        Exposes         `gorm:"default:null;type:json" json:"exposes"`
-	Environment    StringMap       `gorm:"default:null;type:json" json:"environment"`
-	Networks       Networks        `gorm:"default:null;type:json" json:"networks"`
+	Command        StringList      `gorm:"default:null;type:jsonb" json:"command"`
+	Exposes        Exposes         `gorm:"default:null;type:jsonb" json:"exposes"`
+	Environment    StringMap       `gorm:"default:null;type:jsonb" json:"environment"`
+	Networks       Networks        `gorm:"default:null;type:jsonb" json:"networks"`
 	BaseModel
 }
 
@@ -69,8 +69,8 @@ func (n Networks) Value() (driver.Value, error) {
 }
 
 func (n *Networks) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
+	bytes, err := scanBytes(value)
+	if err != nil {
 		return fmt.Errorf("failed to scan Networks value")
 	}
 	return json.Unmarshal(bytes, n)
@@ -94,8 +94,8 @@ func (e Exposes) Value() (driver.Value, error) {
 }
 
 func (e *Exposes) Scan(value interface{}) error {
-	bytes, ok := value.([]byte)
-	if !ok {
+	bytes, err := scanBytes(value)
+	if err != nil {
 		return fmt.Errorf("failed to scan Exposes value")
 	}
 	return json.Unmarshal(bytes, e)

@@ -8,20 +8,20 @@ package model
 // BelongsTo User
 // BelongsTo ContestFlag
 type Submission struct {
-	ContestChallengeID uint             `json:"contest_challenge_id"`
+	ContestChallengeID uint             `gorm:"index:idx_submissions_team_challenge_solved,priority:2;index" json:"contest_challenge_id"`
 	ContestChallenge   ContestChallenge `json:"-"`
-	ContestID          uint             `json:"contest_id"`
+	ContestID          uint             `gorm:"index" json:"contest_id"`
 	Contest            Contest          `json:"-"`
-	ChallengeID        uint             `json:"challenge_id"`
+	ChallengeID        uint             `gorm:"index" json:"challenge_id"`
 	Challenge          Challenge        `json:"-"`
-	TeamID             uint             `json:"team_id"`
+	TeamID             uint             `gorm:"index:idx_submissions_team_challenge_solved,priority:1;index" json:"team_id"`
 	Team               Team             `json:"-"`
-	UserID             uint             `json:"user_id"`
+	UserID             uint             `gorm:"index" json:"user_id"`
 	User               User             `json:"-"`
-	ContestFlagID      uint             `json:"contest_flag_id"`
+	ContestFlagID      uint             `gorm:"index:idx_submissions_contest_flag_solved,priority:1;index" json:"contest_flag_id"`
 	ContestFlag        ContestFlag      `json:"-"`
 	Value              string           `json:"value"`
-	Solved             bool             `json:"solved"`
+	Solved             bool             `gorm:"index:idx_submissions_team_challenge_solved,priority:3;index:idx_submissions_contest_flag_solved,priority:2" json:"solved"`
 	Score              float64          `gorm:"default:0" json:"score"`
 	IP                 string           `json:"ip"`
 	BaseModel

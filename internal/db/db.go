@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/plugin/prometheus"
 )
@@ -30,16 +30,17 @@ func Init() {
 	default:
 		level = log.Silent
 	}
+
 	dsn := fmt.Sprintf(
-		"%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&timeout=30s",
-		config.Env.Gorm.MySQL.User,
-		config.Env.Gorm.MySQL.Pwd,
-		config.Env.Gorm.MySQL.Host,
-		config.Env.Gorm.MySQL.Port,
-		config.Env.Gorm.MySQL.DB,
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable connect_timeout=30 TimeZone=Asia/Shanghai",
+		config.Env.Gorm.Postgres.Host,
+		config.Env.Gorm.Postgres.Port,
+		config.Env.Gorm.Postgres.User,
+		config.Env.Gorm.Postgres.Pwd,
+		config.Env.Gorm.Postgres.DB,
 	)
-	log.Logger.Infof("Connecting to MySQL database: %s:%d", config.Env.Gorm.MySQL.Host, config.Env.Gorm.MySQL.Port)
-	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
+	log.Logger.Infof("Connecting to PostgreSQL database: %s:%d", config.Env.Gorm.Postgres.Host, config.Env.Gorm.Postgres.Port)
+	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: log.NewGormLogger(level),
 	})
 	if err != nil {
@@ -48,22 +49,24 @@ func Init() {
 	if sql, err := DB.DB(); err != nil {
 		log.Logger.Fatalf("Failed to get database: %s", err)
 	} else {
-		sql.SetMaxIdleConns(config.Env.Gorm.MySQL.MaxIdleConns)
-		sql.SetMaxOpenConns(config.Env.Gorm.MySQL.MaxOpenConns)
+		sql.SetMaxIdleConns(config.Env.Gorm.Postgres.MaxIdleConns)
+		sql.SetMaxOpenConns(config.Env.Gorm.Postgres.MaxOpenConns)
 		sql.SetConnMaxIdleTime(time.Hour)
 		sql.SetConnMaxLifetime(24 * time.Hour)
 	}
 
 	if err = DB.Use(prometheus.New(prometheus.Config{
-		DBName:          config.Env.Gorm.MySQL.DB,
+		DBName:          config.Env.Gorm.Postgres.DB,
 		RefreshInterval: 15,
 		StartServer:     false,
 	})); err != nil {
 		log.Logger.Warningf("Failed to register prometheus: %s", err)
 	}
+	if err = DB.Exec(`CREATE EXTENSION IF NOT EXISTS pg_trgm`).Error; err != nil {
+		log.Logger.Warningf("Failed to ensure pg_trgm extension: %s", err)
+	}
 
-	// 指定数据表的存储引擎, 需要支持回滚操作
-	err = DB.Set("gorm:table_options", "ENGINE=InnoDB").AutoMigrate(
+	err = DB.AutoMigrate(
 		&model.Challenge{}, &model.ChallengeFlag{}, &model.Cheat{}, &model.Victim{}, &model.Pod{}, &model.Container{},
 		&model.ContestChallenge{}, &model.ContestFlag{}, &model.CronJob{}, &model.Device{}, &model.Docker{}, &model.Email{},
 		&model.Event{}, &model.File{}, &model.Generator{}, &model.Group{}, &model.Notice{}, &model.Oauth{},
@@ -89,6 +92,7 @@ func Init() {
 	if err != nil {
 		log.Logger.Fatalf("Failed to setup join table: %s", err)
 	}
+	createIndexes()
 	log.Logger.Info("Connected to database")
 
 	if ret := InitSettingRepo(DB).InitSettings(); !ret.OK {
@@ -112,13 +116,30 @@ func Init() {
 	InitOauthRepo(DB).RegisterDefault()
 }
 
+func createIndexes() {
+	indexes := []string{
+		`CREATE INDEX IF NOT EXISTS idx_challenges_name_trgm ON challenges USING gin (name gin_trgm_ops) WHERE deleted_at IS NULL`,
+		`CREATE INDEX IF NOT EXISTS idx_challenges_description_trgm ON challenges USING gin (description gin_trgm_ops) WHERE deleted_at IS NULL`,
+		`CREATE INDEX IF NOT EXISTS idx_contest_challenges_name_trgm ON contest_challenges USING gin (name gin_trgm_ops) WHERE deleted_at IS NULL`,
+		`CREATE INDEX IF NOT EXISTS idx_contest_challenges_description_trgm ON contest_challenges USING gin (description gin_trgm_ops) WHERE deleted_at IS NULL`,
+		`CREATE INDEX IF NOT EXISTS idx_users_name_trgm ON users USING gin (name gin_trgm_ops) WHERE deleted_at IS NULL`,
+		`CREATE INDEX IF NOT EXISTS idx_users_email_trgm ON users USING gin (email gin_trgm_ops) WHERE deleted_at IS NULL`,
+		`CREATE INDEX IF NOT EXISTS idx_contests_name_trgm ON contests USING gin (name gin_trgm_ops) WHERE deleted_at IS NULL`,
+	}
+	for _, stmt := range indexes {
+		if err := DB.Exec(stmt).Error; err != nil {
+			log.Logger.Warningf("Failed to create PostgreSQL index: %s", err)
+		}
+	}
+}
+
 func Stop() {
 	db, err := DB.DB()
 	if err != nil {
-		log.Logger.Warningf("Failed to stop MySQL connection: %s", err)
+		log.Logger.Warningf("Failed to stop PostgreSQL connection: %s", err)
 		return
 	}
 	if err = db.Close(); err != nil {
-		log.Logger.Warningf("Failed to stop MySQL connection: %s", err)
+		log.Logger.Warningf("Failed to stop PostgreSQL connection: %s", err)
 	}
 }

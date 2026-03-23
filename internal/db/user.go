@@ -154,9 +154,9 @@ func (u *UserRepo) InitAdmin() model.RetVal {
 func (u *UserRepo) IsInGroup(userID uint, groupName string) bool {
 	var count int64
 	res := u.DB.Table("user_groups").
-		Joins("INNER JOIN `groups` ON user_groups.group_id = groups.id AND `groups`.deleted_at IS NULL").
+		Joins(`INNER JOIN "groups" ON user_groups.group_id = "groups".id AND "groups".deleted_at IS NULL`).
 		Joins("INNER JOIN users ON user_groups.user_id = users.id AND users.deleted_at IS NULL").
-		Where("user_groups.user_id = ? AND groups.name = ?", userID, groupName).
+		Where(`user_groups.user_id = ? AND "groups".name = ?`, userID, groupName).
 		Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to check user group membership: %v", res.Error)
@@ -169,8 +169,8 @@ func (u *UserRepo) CountGroupUser(group string) (int64, model.RetVal) {
 	var count int64
 	res := u.DB.Table("users").
 		Joins("INNER JOIN user_groups ON users.id = user_groups.user_id").
-		Joins("INNER JOIN `groups` ON user_groups.group_id = groups.id AND groups.deleted_at IS NULL").
-		Where("groups.name = ? AND users.deleted_at IS NULL", group).
+		Joins(`INNER JOIN "groups" ON user_groups.group_id = "groups".id AND "groups".deleted_at IS NULL`).
+		Where(`"groups".name = ? AND users.deleted_at IS NULL`, group).
 		Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count role users: %v", res.Error)
@@ -239,7 +239,7 @@ func (u *UserRepo) GetByGroupID(groupID uint, limit, offset int) ([]model.User, 
 	var count int64
 	if res := u.DB.Table("user_groups").
 		Joins("INNER JOIN users ON user_groups.user_id = users.id AND users.deleted_at IS NULL").
-		Joins("INNER JOIN `groups` ON user_groups.group_id = groups.id AND `groups`.deleted_at IS NULL").
+		Joins(`INNER JOIN "groups" ON user_groups.group_id = "groups".id AND "groups".deleted_at IS NULL`).
 		Where("user_groups.group_id = ?", groupID).
 		Count(&count); res.Error != nil {
 		log.Logger.Warningf("Failed to count Group Users: %s", res.Error)
@@ -248,7 +248,7 @@ func (u *UserRepo) GetByGroupID(groupID uint, limit, offset int) ([]model.User, 
 	var users []model.User
 	res := u.DB.Table("users").Select("users.*").
 		Joins("INNER JOIN user_groups ON user_groups.user_id = users.id").
-		Joins("INNER JOIN `groups` ON user_groups.group_id = groups.id AND `groups`.deleted_at IS NULL").
+		Joins(`INNER JOIN "groups" ON user_groups.group_id = "groups".id AND "groups".deleted_at IS NULL`).
 		Where("user_groups.group_id = ? AND users.deleted_at IS NULL", groupID).
 		Limit(limit).Offset(offset).Scan(&users)
 	if res.Error != nil {

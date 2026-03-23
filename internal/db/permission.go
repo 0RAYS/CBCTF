@@ -61,8 +61,8 @@ func (p *PermissionRepo) HasAdminAccess(userID uint) bool {
 	res := p.DB.Table("permissions").
 		Joins("INNER JOIN role_permissions ON permissions.id = role_permissions.permission_id").
 		Joins("INNER JOIN roles ON role_permissions.role_id = roles.id AND roles.deleted_at IS NULL").
-		Joins("INNER JOIN `groups` ON roles.id = groups.role_id AND `groups`.deleted_at IS NULL").
-		Joins("INNER JOIN user_groups ON groups.id = user_groups.group_id").
+		Joins(`INNER JOIN "groups" ON roles.id = "groups".role_id AND "groups".deleted_at IS NULL`).
+		Joins(`INNER JOIN user_groups ON "groups".id = user_groups.group_id`).
 		Joins("INNER JOIN users ON user_groups.user_id = users.id AND users.deleted_at IS NULL").
 		Where("user_groups.user_id = ? AND permissions.resource LIKE ? AND permissions.deleted_at IS NULL", userID, "admin:%").
 		Count(&count)
@@ -78,8 +78,8 @@ func (p *PermissionRepo) GetUserPermissions(userID uint) ([]string, model.RetVal
 		Distinct("permissions.*").
 		Joins("INNER JOIN role_permissions ON permissions.id = role_permissions.permission_id").
 		Joins("INNER JOIN roles ON role_permissions.role_id = roles.id AND roles.deleted_at IS NULL").
-		Joins("INNER JOIN `groups` ON roles.id = groups.role_id AND `groups`.deleted_at IS NULL").
-		Joins("INNER JOIN user_groups ON groups.id = user_groups.group_id").
+		Joins(`INNER JOIN "groups" ON roles.id = "groups".role_id AND "groups".deleted_at IS NULL`).
+		Joins(`INNER JOIN user_groups ON "groups".id = user_groups.group_id`).
 		Joins("INNER JOIN users ON user_groups.user_id = users.id AND users.deleted_at IS NULL").
 		Where("user_groups.user_id = ? AND permissions.deleted_at IS NULL", userID).
 		Scan(&perms)

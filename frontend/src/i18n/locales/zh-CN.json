@@ -2288,7 +2288,7 @@
         "tailwind": "样式",
         "motion": "动效",
         "go": "API 服务",
-        "mysql": "数据库",
+        "postgres": "数据库",
         "redis": "缓存",
         "docker": "靶机平台",
         "k8s": "靶机编排",

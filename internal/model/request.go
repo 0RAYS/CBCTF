@@ -8,7 +8,7 @@ import (
 // Request
 // BelongsTo Device
 type Request struct {
-	IP        string         `json:"ip"`
+	IP        string         `gorm:"index:idx_requests_user_ip,priority:2;index" json:"ip"`
 	Time      time.Time      `gorm:"default:null" json:"time"`
 	Method    string         `json:"method"`
 	Path      string         `json:"path"`
@@ -17,6 +17,6 @@ type Request struct {
 	Status    int            `json:"status"`
 	Referer   string         `json:"referer"`
 	Magic     string         `json:"magic"`
-	UserID    sql.Null[uint] `json:"user_id"`
+	UserID    sql.Null[uint] `gorm:"index:idx_requests_user_ip,priority:1;index" json:"user_id"`
 	BaseModel
 }
