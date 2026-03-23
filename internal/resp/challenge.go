@@ -139,7 +139,7 @@ func GetChallengeResp(challenge model.Challenge) gin.H {
 		dockerCompose = Dockers2Yaml(challenge.Dockers, challenge.ChallengeFlags)
 	}
 	file, _ := db.InitFileRepo(db.DB).Get(db.GetOptions{
-		Conditions: map[string]any{"model": challenge.ModelName(), "model_id": challenge.ID, "type": model.ChallengeFileType},
+		Conditions: map[string]any{"model": model.ModelName(challenge), "model_id": challenge.ID, "type": model.ChallengeFileType},
 	})
 	return gin.H{
 		"id":               challenge.RandID,

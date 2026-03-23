@@ -76,7 +76,7 @@ func SaveChallengeFile(tx *gorm.DB, challenge model.Challenge, file *multipart.F
 		return model.File{}, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	record, ret := fileRepo.Get(db.GetOptions{
-		Conditions: map[string]any{"model": challenge.ModelName(), "model_id": challenge.ID, "type": model.ChallengeFileType},
+		Conditions: map[string]any{"model": model.ModelName(challenge), "model_id": challenge.ID, "type": model.ChallengeFileType},
 	})
 	if ret.OK {
 		if hash == record.Hash {
@@ -91,7 +91,7 @@ func SaveChallengeFile(tx *gorm.DB, challenge model.Challenge, file *multipart.F
 		Filename: file.Filename,
 		Size:     size,
 		Path:     model.FilePath(path),
-		Model:    challenge.ModelName(),
+		Model:    model.ModelName(challenge),
 		ModelID:  challenge.ID,
 		Suffix:   suffix,
 		Hash:     hash,
@@ -121,7 +121,7 @@ func SaveWriteUp(tx *gorm.DB, contest model.Contest, team model.Team, file *mult
 		Filename: file.Filename,
 		Size:     size,
 		Path:     model.FilePath(fmt.Sprintf("%s/writeups/contest-%d/team-%d/%s%s", config.Env.Path, contest.ID, team.ID, utils.UUID(), suffix)),
-		Model:    team.ModelName(),
+		Model:    model.ModelName(team),
 		ModelID:  team.ID,
 		Suffix:   suffix,
 		Hash:     hash,

@@ -10,23 +10,3 @@ type Traffic struct {
 	Size     int    `json:"size"`
 	BaseModel
 }
-
-func (t Traffic) TableName() string {
-	return "traffics"
-}
-
-func (t Traffic) ModelName() string {
-	return "Traffic"
-}
-
-func (t Traffic) GetBaseModel() BaseModel {
-	return t.BaseModel
-}
-
-func (t Traffic) UniqueFields() []string {
-	return []string{"id"}
-}
-
-func (t Traffic) QueryFields() []string {
-	return []string{"id", "src_ip", "dst_ip", "type", "subtype"}
-}

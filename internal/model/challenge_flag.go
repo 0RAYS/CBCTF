@@ -34,23 +34,3 @@ type ChallengeFlag struct {
 	Path         string         `json:"path"`
 	BaseModel
 }
-
-func (c ChallengeFlag) TableName() string {
-	return "challenge_flags"
-}
-
-func (c ChallengeFlag) ModelName() string {
-	return "ChallengeFlag"
-}
-
-func (c ChallengeFlag) GetBaseModel() BaseModel {
-	return c.BaseModel
-}
-
-func (c ChallengeFlag) UniqueFields() []string {
-	return []string{"id"}
-}
-
-func (c ChallengeFlag) QueryFields() []string {
-	return []string{}
-}

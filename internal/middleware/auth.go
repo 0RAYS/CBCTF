@@ -53,7 +53,7 @@ func CheckAuth(ctx *gin.Context) {
 				for _, contestID := range contestIDL {
 					db.InitCheatRepo(db.DB).Create(db.CreateCheatOptions{
 						ContestID:  contestID,
-						Model:      model.CheatRefModel{user.ModelName(): {user.ID}},
+						Model:      model.CheatRefModel{model.ModelName(user): {user.ID}},
 						Magic:      magic,
 						IP:         ip,
 						Reason:     fmt.Sprintf(string(model.DifferentTokenMagicTmpl), magic, claims.X),

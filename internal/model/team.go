@@ -27,23 +27,3 @@ type Team struct {
 	Last        time.Time    `gorm:"default:null" json:"last"`
 	BaseModel
 }
-
-func (t Team) TableName() string {
-	return "teams"
-}
-
-func (t Team) ModelName() string {
-	return "Team"
-}
-
-func (t Team) GetBaseModel() BaseModel {
-	return t.BaseModel
-}
-
-func (t Team) UniqueFields() []string {
-	return []string{"id"}
-}
-
-func (t Team) QueryFields() []string {
-	return []string{"id", "name", "description", "banned", "hidden", "contest_id"}
-}

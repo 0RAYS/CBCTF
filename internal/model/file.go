@@ -34,28 +34,6 @@ type File struct {
 	BaseModel
 }
 
-func (f File) TableName() string {
-	return "files"
-}
-
-func (f File) ModelName() string {
-	return "File"
-}
-
-func (f File) GetBaseModel() BaseModel {
-	return f.BaseModel
-}
-
-func (f File) UniqueFields() []string {
-	return []string{"id", "rand_id"}
-}
-
-func (f File) QueryFields() []string {
-	return []string{
-		"id", "rand_id", "model", "model_id", "filename", "size", "suffix", "hash", "type",
-	}
-}
-
 type FilePath string
 
 func (f FilePath) Value() (driver.Value, error) {

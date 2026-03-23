@@ -16,23 +16,3 @@ type Smtp struct {
 	FailureLast time.Time `gorm:"default:null" json:"failure_last"`
 	BaseModel
 }
-
-func (s Smtp) TableName() string {
-	return "smtps"
-}
-
-func (s Smtp) ModelName() string {
-	return "Smtp"
-}
-
-func (s Smtp) GetBaseModel() BaseModel {
-	return s.BaseModel
-}
-
-func (s Smtp) UniqueFields() []string {
-	return []string{"id"}
-}
-
-func (s Smtp) QueryFields() []string {
-	return []string{"id", "address", "host", "on"}
-}

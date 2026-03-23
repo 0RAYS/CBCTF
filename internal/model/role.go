@@ -89,23 +89,3 @@ type Role struct {
 	Default     bool         `json:"default"`
 	BaseModel
 }
-
-func (r Role) TableName() string {
-	return "roles"
-}
-
-func (r Role) ModelName() string {
-	return "Role"
-}
-
-func (r Role) GetBaseModel() BaseModel {
-	return r.BaseModel
-}
-
-func (r Role) UniqueFields() []string {
-	return []string{"id", "name"}
-}
-
-func (r Role) QueryFields() []string {
-	return []string{"id", "name", "description", "default"}
-}

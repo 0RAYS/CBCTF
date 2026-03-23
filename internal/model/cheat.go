@@ -46,26 +46,6 @@ type Cheat struct {
 	BaseModel
 }
 
-func (c Cheat) TableName() string {
-	return "cheats"
-}
-
-func (c Cheat) ModelName() string {
-	return "Cheat"
-}
-
-func (c Cheat) GetBaseModel() BaseModel {
-	return c.BaseModel
-}
-
-func (c Cheat) UniqueFields() []string {
-	return []string{"id"}
-}
-
-func (c Cheat) QueryFields() []string {
-	return []string{"id", "magic", "ip", "reason", "reason_type", "type", "checked", "hash", "comment", "time", "contest_id"}
-}
-
 type CheatRefModel map[string][]uint
 
 func (c CheatRefModel) Value() (driver.Value, error) {

@@ -23,23 +23,3 @@ type ContestChallenge struct {
 	DeletedSalt  string        `gorm:"default:'';type:varchar(36);index:idx_contest_challenge_deleted_salt,unique;" json:"-"`
 	BaseModel
 }
-
-func (c ContestChallenge) TableName() string {
-	return "contest_challenges"
-}
-
-func (c ContestChallenge) ModelName() string {
-	return "ContestChallenge"
-}
-
-func (c ContestChallenge) GetBaseModel() BaseModel {
-	return c.BaseModel
-}
-
-func (c ContestChallenge) UniqueFields() []string {
-	return []string{"id"}
-}
-
-func (c ContestChallenge) QueryFields() []string {
-	return []string{"id", "contest_id", "challenge_id", "name", "category", "type", "hidden"}
-}

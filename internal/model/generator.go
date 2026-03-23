@@ -29,23 +29,3 @@ type Generator struct {
 	Status        string         `json:"status"`
 	BaseModel
 }
-
-func (g Generator) TableName() string {
-	return "generators"
-}
-
-func (g Generator) ModelName() string {
-	return "Generator"
-}
-
-func (g Generator) GetBaseModel() BaseModel {
-	return g.BaseModel
-}
-
-func (g Generator) UniqueFields() []string {
-	return []string{"id"}
-}
-
-func (g Generator) QueryFields() []string {
-	return []string{"id", "challenge_id", "challenge_name", "contest_id", "success", "failure", "status"}
-}

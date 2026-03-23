@@ -75,23 +75,23 @@ func UploadPicture(v string) gin.HandlerFunc {
 		switch v {
 		case "self":
 			id = middleware.GetSelf(ctx).ID
-			options.Model = model.User{}.ModelName()
+			options.Model = model.ModelName(model.User{})
 			options.ModelID = id
 		case "user":
 			id = middleware.GetUser(ctx).ID
-			options.Model = model.User{}.ModelName()
+			options.Model = model.ModelName(model.User{})
 			options.ModelID = id
 		case "contest":
 			id = middleware.GetContest(ctx).ID
-			options.Model = model.Contest{}.ModelName()
+			options.Model = model.ModelName(model.Contest{})
 			options.ModelID = id
 		case "team":
 			id = middleware.GetTeam(ctx).ID
-			options.Model = model.Team{}.ModelName()
+			options.Model = model.ModelName(model.Team{})
 			options.ModelID = id
 		case "oauth":
 			id = middleware.GetOauth(ctx).ID
-			options.Model = model.Oauth{}.ModelName()
+			options.Model = model.ModelName(model.Oauth{})
 			options.ModelID = id
 		}
 		record, ret := service.SavePicture(db.DB, options, file)
@@ -203,7 +203,7 @@ func GetWriteUPs(ctx *gin.Context) {
 	}
 	team := middleware.GetTeam(ctx)
 	writeups, count, ret := db.InitFileRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
-		Conditions: map[string]any{"model": team.ModelName(), "model_id": team.ID, "type": model.WriteupFileType},
+		Conditions: map[string]any{"model": model.ModelName(team), "model_id": team.ID, "type": model.WriteupFileType},
 		Sort:       []string{"id DESC"},
 	})
 	if !ret.OK {

@@ -26,23 +26,3 @@ type Submission struct {
 	IP                 string           `json:"ip"`
 	BaseModel
 }
-
-func (s Submission) TableName() string {
-	return "submissions"
-}
-
-func (s Submission) ModelName() string {
-	return "Submission"
-}
-
-func (s Submission) GetBaseModel() BaseModel {
-	return s.BaseModel
-}
-
-func (s Submission) UniqueFields() []string {
-	return []string{"id"}
-}
-
-func (s Submission) QueryFields() []string {
-	return []string{"id", "value", "solved", "ip", "user_id", "team_id", "contest_id", "challenge_id", "contest_challenge_id"}
-}

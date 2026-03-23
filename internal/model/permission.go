@@ -496,23 +496,3 @@ type Permission struct {
 	Description string `json:"description"`
 	BaseModel
 }
-
-func (p Permission) TableName() string {
-	return "permissions"
-}
-
-func (p Permission) ModelName() string {
-	return "Permission"
-}
-
-func (p Permission) GetBaseModel() BaseModel {
-	return p.BaseModel
-}
-
-func (p Permission) UniqueFields() []string {
-	return []string{"id", "name"}
-}
-
-func (p Permission) QueryFields() []string {
-	return []string{"id", "name", "resource", "operation", "description"}
-}

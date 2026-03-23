@@ -43,26 +43,6 @@ type ContestFlag struct {
 	BaseModel
 }
 
-func (c ContestFlag) TableName() string {
-	return "contest_flags"
-}
-
-func (c ContestFlag) ModelName() string {
-	return "ContestFlag"
-}
-
-func (c ContestFlag) GetBaseModel() BaseModel {
-	return c.BaseModel
-}
-
-func (c ContestFlag) UniqueFields() []string {
-	return []string{"id"}
-}
-
-func (c ContestFlag) QueryFields() []string {
-	return []string{}
-}
-
 func (c ContestFlag) CalcScore(solvers int64) float64 {
 	if solvers < 0 {
 		solvers = 0

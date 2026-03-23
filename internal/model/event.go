@@ -139,23 +139,3 @@ type Event struct {
 	Models  UintMap `gorm:"type:json" json:"models"`
 	BaseModel
 }
-
-func (e Event) TableName() string {
-	return "events"
-}
-
-func (e Event) ModelName() string {
-	return "Event"
-}
-
-func (e Event) GetBaseModel() BaseModel {
-	return e.BaseModel
-}
-
-func (e Event) UniqueFields() []string {
-	return []string{"id"}
-}
-
-func (e Event) QueryFields() []string {
-	return []string{"id", "type", "success", "ip"}
-}

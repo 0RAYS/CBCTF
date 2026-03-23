@@ -9,23 +9,3 @@ type Email struct {
 	Success bool   `json:"success"`
 	BaseModel
 }
-
-func (e Email) TableName() string {
-	return "emails"
-}
-
-func (e Email) ModelName() string {
-	return "Email"
-}
-
-func (e Email) GetBaseModel() BaseModel {
-	return e.BaseModel
-}
-
-func (e Email) UniqueFields() []string {
-	return []string{"id"}
-}
-
-func (e Email) QueryFields() []string {
-	return []string{"id", "from", "to", "subject", "content", "success", "smtp_id"}
-}

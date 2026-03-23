@@ -80,7 +80,7 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) model.RetVal {
 			Filename: "traffics.zip",
 			Size:     size,
 			Path:     model.FilePath(victim.TrafficZipPath()),
-			Model:    victim.ModelName(),
+			Model:    model.ModelName(victim),
 			ModelID:  victim.ID,
 			Suffix:   ".zip",
 			Hash:     hash,

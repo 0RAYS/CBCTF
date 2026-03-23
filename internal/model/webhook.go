@@ -22,23 +22,3 @@ type Webhook struct {
 	FailureLast      time.Time        `gorm:"default:null" json:"failure_last"`
 	BaseModel
 }
-
-func (w Webhook) TableName() string {
-	return "webhooks"
-}
-
-func (w Webhook) ModelName() string {
-	return "Webhook"
-}
-
-func (w Webhook) GetBaseModel() BaseModel {
-	return w.BaseModel
-}
-
-func (w Webhook) UniqueFields() []string {
-	return []string{"id"}
-}
-
-func (w Webhook) QueryFields() []string {
-	return []string{"id", "name", "url", "on", "method"}
-}

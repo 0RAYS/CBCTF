@@ -72,25 +72,6 @@ type Setting struct {
 	BaseModel
 }
 
-func (s Setting) TableName() string {
-	return "settings"
-}
-func (s Setting) ModelName() string {
-	return "Setting"
-}
-
-func (s Setting) GetBaseModel() BaseModel {
-	return s.BaseModel
-}
-
-func (s Setting) UniqueFields() []string {
-	return []string{"key"}
-}
-
-func (s Setting) QueryFields() []string {
-	return []string{"id", "key"}
-}
-
 type SettingValue struct {
 	V any
 }

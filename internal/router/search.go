@@ -23,8 +23,8 @@ var models = []model.Model{
 func GetAllowQueryModels(ctx *gin.Context) {
 	data := gin.H{}
 	for _, m := range models {
-		if len(m.QueryFields()) > 0 {
-			data[m.ModelName()] = m.QueryFields()
+		if fields := model.QueryFields(m); len(fields) > 0 {
+			data[model.ModelName(m)] = fields
 		}
 	}
 	resp.JSON(ctx, model.SuccessRetVal(data))
@@ -40,7 +40,7 @@ func Search(ctx *gin.Context) {
 	var fields []string
 	var found bool
 	for _, m = range models {
-		if fields = m.QueryFields(); len(fields) > 0 && m.ModelName() == form.Model {
+		if fields = model.QueryFields(m); len(fields) > 0 && model.ModelName(m) == form.Model {
 			found = true
 			break
 		}
