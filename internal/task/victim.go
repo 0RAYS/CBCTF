@@ -38,7 +38,7 @@ func EnqueueStartVictimTask(victim model.Victim) (*asynq.TaskInfo, error) {
 	return info, err
 }
 
-func HandleStartVictimTask(_ context.Context, t *asynq.Task) error {
+func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 	var payload StartVictimPayload
 	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
@@ -56,7 +56,7 @@ func HandleStartVictimTask(_ context.Context, t *asynq.Task) error {
 	if ret := victimRepo.Update(victim.ID, db.UpdateVictimOptions{Status: new(model.PendingVictimStatus)}); !ret.OK {
 		return fmt.Errorf("update victim failed: %s", ret.Msg)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
 	ipExposesMap, ret := k8s.StartVictim(ctx, victim)
 	if !ret.OK {
