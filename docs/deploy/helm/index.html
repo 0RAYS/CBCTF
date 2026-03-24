@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.9.2">
 <title data-rh="true">Helm 部署 | CBCTF Docs</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://cbctf.0rays.club/img/docusaurus-social-card.jpg"><meta data-rh="true" name="twitter:image" content="https://cbctf.0rays.club/img/docusaurus-social-card.jpg"><meta data-rh="true" property="og:url" content="https://cbctf.0rays.club/docs/deploy/helm"><meta data-rh="true" property="og:locale" content="zh_Hans"><meta data-rh="true" name="docusaurus_locale" content="zh-Hans"><meta data-rh="true" name="docsearch:language" content="zh-Hans"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Helm 部署 | CBCTF Docs"><meta data-rh="true" name="description" content="CBCTF 提供官方 Helm Chart，可在 Kubernetes 中部署应用、共享存储接入以及可选的内置 PostgreSQL/Redis。"><meta data-rh="true" property="og:description" content="CBCTF 提供官方 Helm Chart，可在 Kubernetes 中部署应用、共享存储接入以及可选的内置 PostgreSQL/Redis。"><link data-rh="true" rel="icon" href="/img/0RAYS.png"><link data-rh="true" rel="canonical" href="https://cbctf.0rays.club/docs/deploy/helm"><link data-rh="true" rel="alternate" href="https://cbctf.0rays.club/docs/deploy/helm" hreflang="zh-Hans"><link data-rh="true" rel="alternate" href="https://cbctf.0rays.club/docs/deploy/helm" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"部署","item":"https://cbctf.0rays.club/docs/category/部署"},{"@type":"ListItem","position":2,"name":"Helm 部署","item":"https://cbctf.0rays.club/docs/deploy/helm"}]}</script><link rel="stylesheet" href="/assets/css/styles.cbb51270.css">
-<script src="/assets/js/runtime~main.ad85660a.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.96cdff5d.js" defer="defer"></script>
 <script src="/assets/js/main.6ea2377e.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -82,6 +82,12 @@
 </ul>
 <h4 class="anchor anchorTargetStickyNavbar_EVTr" id="cbctfgormloglevel"><code>cbctf.gorm.log.level</code><a href="#cbctfgormloglevel" class="hash-link" aria-label="cbctfgormloglevel的直接链接" title="cbctfgormloglevel的直接链接" translate="no">​</a></h4>
 <p>控制 GORM 日志等级。PostgreSQL 连接信息由 Chart 根据 <code>postgres.*</code> 自动拼装。</p>
+<h4 class="anchor anchorTargetStickyNavbar_EVTr" id="cbctfgormpostgressslmode"><code>cbctf.gorm.postgres.sslmode</code><a href="#cbctfgormpostgressslmode" class="hash-link" aria-label="cbctfgormpostgressslmode的直接链接" title="cbctfgormpostgressslmode的直接链接" translate="no">​</a></h4>
+<p>PostgreSQL SSL 开关，类型为布尔值：</p>
+<ul>
+<li class=""><code>false</code> -&gt; DSN <code>sslmode=disable</code></li>
+<li class=""><code>true</code> -&gt; DSN <code>sslmode=require</code></li>
+</ul>
 <h4 class="anchor anchorTargetStickyNavbar_EVTr" id="cbctfk8s"><code>cbctf.k8s.*</code><a href="#cbctfk8s" class="hash-link" aria-label="cbctfk8s的直接链接" title="cbctfk8s的直接链接" translate="no">​</a></h4>
 <ul>
 <li class=""><code>tcpdump</code></li>
