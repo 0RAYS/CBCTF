@@ -132,6 +132,9 @@ cbctf:
       image: 10
 
   gorm:
+    postgres:
+      # false -> sslmode=disable, true -> sslmode=require
+      sslmode: false
     log:
       level: warning   # INFO / WARNING / ERROR / SILENT
 

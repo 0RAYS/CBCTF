@@ -57,6 +57,7 @@ gorm:
     user: cbctf
     pwd: password
     db: cbctf
+    sslmode: false
     mxopen: 100
     mxidle: 10
   log:
@@ -106,6 +107,7 @@ geocity_db: ./data/GeoLite2-City.mmdb
 ```bash
 CBCTF_GIN_PORT=9000
 CBCTF_GORM_POSTGRES_PWD=newpassword
+CBCTF_GORM_POSTGRES_SSLMODE=true
 CBCTF_LOG_LEVEL=DEBUG
 ```
 
@@ -161,6 +163,13 @@ PostgreSQL 连接信息与连接池参数：
 - `host`、`port`、`user`、`pwd`、`db`
 - `mxopen`：最大连接数
 - `mxidle`：最大空闲连接数
+
+#### `gorm.postgres.sslmode`
+
+布尔开关：
+
+- `false` -> DSN `sslmode=disable`
+- `true` -> DSN `sslmode=require`
 
 ### `redis.*`
 

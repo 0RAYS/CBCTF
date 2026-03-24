@@ -68,6 +68,7 @@ data:
         # Value overridden by CBCTF_GORM_POSTGRES_PWD env var from Secret
         pwd: ""
         db: {{ .Values.postgres.auth.database | quote }}
+        sslmode: {{ .Values.cbctf.gorm.postgres.sslmode }}
         mxopen: 100
         mxidle: 10
       log:

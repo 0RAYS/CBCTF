@@ -55,6 +55,7 @@ gorm:
     user: cbctf
     pwd: password
     db: cbctf
+    sslmode: false
     mxopen: 100
     mxidle: 10
   log:

@@ -93,6 +93,7 @@ export function normalizeConfig(source) {
         port: fallback(source?.gorm_postgres_port, fallback(source?.gorm?.postgres?.port, 0)),
         db: fallback(source?.gorm_postgres_db, fallback(source?.gorm?.postgres?.db, '')),
         user: fallback(source?.gorm_postgres_user, fallback(source?.gorm?.postgres?.user, '')),
+        sslmode: fallback(source?.gorm_postgres_sslmode, fallback(source?.gorm?.postgres?.sslmode, false)),
         mxidle: fallback(source?.gorm_postgres_mxidle, fallback(source?.gorm?.postgres?.mxidle, 0)),
         mxopen: fallback(source?.gorm_postgres_mxopen, fallback(source?.gorm?.postgres?.mxopen, 0)),
         pwd: normalizeSecret(fallback(source?.gorm_postgres_pwd, fallback(source?.gorm?.postgres?.pwd, ''))),

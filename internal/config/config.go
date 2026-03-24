@@ -75,6 +75,7 @@ type Config struct {
 			User         string `mapstructure:"user" json:"user"`
 			Pwd          string `mapstructure:"pwd" json:"pwd"`
 			DB           string `mapstructure:"db" json:"db"`
+			SSLMode      bool   `mapstructure:"sslmode" json:"sslmode"`
 			MaxOpenConns int    `mapstructure:"mxopen" json:"mxopen"`
 			MaxIdleConns int    `mapstructure:"mxidle" json:"mxidle"`
 		} `mapstructure:"postgres" json:"postgres"`
