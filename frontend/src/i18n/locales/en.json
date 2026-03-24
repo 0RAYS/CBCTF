@@ -2039,6 +2039,7 @@
         "dbName": "DB Name",
         "dbUser": "DB User",
         "dbPassword": "Password",
+        "dbSSLMode": "SSL Mode",
         "dbIdle": "Max Idle Connections",
         "dbOpen": "Max Open Connections",
         "dbLogLevel": "DB Log Level",

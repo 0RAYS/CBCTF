@@ -114,6 +114,7 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 		{Key: model.GormPostgresUserSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.User}},
 		{Key: model.GormPostgresPwdSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.Pwd}},
 		{Key: model.GormPostgresDBSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.DB}},
+		{Key: model.GormPostgresSSLModeSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.SSLMode}},
 		{Key: model.GormPostgresMXOpenSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.MaxOpenConns}},
 		{Key: model.GormPostgresMXIdleSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.MaxIdleConns}},
 		{Key: model.GormLogLevelSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Log.Level}},
@@ -238,6 +239,9 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 		return ret
 	}
 	if config.Env.Gorm.Postgres.DB, ret = GetValue[string](s, model.GormPostgresDBSettingKey); !ret.OK {
+		return ret
+	}
+	if config.Env.Gorm.Postgres.SSLMode, ret = GetValue[bool](s, model.GormPostgresSSLModeSettingKey); !ret.OK {
 		return ret
 	}
 	if config.Env.Gorm.Postgres.MaxOpenConns, ret = GetValue[int](s, model.GormPostgresMXOpenSettingKey); !ret.OK {

@@ -32,14 +32,15 @@ type UpdateSettingForm struct {
 	GinJWTSecret          *string   `form:"gin_jwt_secret" json:"gin_jwt_secret" binding:"omitempty,min=11"`
 	GinMetricsWhitelist   *[]string `form:"gin_metrics_whitelist" json:"gin_metrics_whitelist" binding:"omitempty,dive,ip|cidr"`
 
-	GormPostgresHost   *string `form:"gorm_postgres_host" json:"gorm_postgres_host" binding:"omitempty,ip|hostname"`
-	GormPostgresPort   *uint   `form:"gorm_postgres_port" json:"gorm_postgres_port" binding:"omitempty,port"`
-	GormPostgresUser   *string `form:"gorm_postgres_user" json:"gorm_postgres_user" binding:"omitempty,min=1"`
-	GormPostgresPwd    *string `form:"gorm_postgres_pwd" json:"gorm_postgres_pwd" binding:"omitempty,min=1,ascii"`
-	GormPostgresDB     *string `form:"gorm_postgres_db" json:"gorm_postgres_db" binding:"omitempty,min=1"`
-	GormPostgresMXOpen *int    `form:"gorm_postgres_mxopen" json:"gorm_postgres_mxopen" binding:"omitempty,gte=1"`
-	GormPostgresMXIdle *int    `form:"gorm_postgres_mxidle" json:"gorm_postgres_mxidle" binding:"omitempty,gte=1"`
-	GormLogLevel       *string `form:"gorm_log_level" json:"gorm_log_level" binding:"omitempty,oneof=SILENT INFO WARNING ERROR"`
+	GormPostgresHost    *string `form:"gorm_postgres_host" json:"gorm_postgres_host" binding:"omitempty,ip|hostname"`
+	GormPostgresPort    *uint   `form:"gorm_postgres_port" json:"gorm_postgres_port" binding:"omitempty,port"`
+	GormPostgresUser    *string `form:"gorm_postgres_user" json:"gorm_postgres_user" binding:"omitempty,min=1"`
+	GormPostgresPwd     *string `form:"gorm_postgres_pwd" json:"gorm_postgres_pwd" binding:"omitempty,min=1,ascii"`
+	GormPostgresDB      *string `form:"gorm_postgres_db" json:"gorm_postgres_db" binding:"omitempty,min=1"`
+	GormPostgresSSLMode *bool   `form:"gorm_postgres_sslmode" json:"gorm_postgres_sslmode"`
+	GormPostgresMXOpen  *int    `form:"gorm_postgres_mxopen" json:"gorm_postgres_mxopen" binding:"omitempty,gte=1"`
+	GormPostgresMXIdle  *int    `form:"gorm_postgres_mxidle" json:"gorm_postgres_mxidle" binding:"omitempty,gte=1"`
+	GormLogLevel        *string `form:"gorm_log_level" json:"gorm_log_level" binding:"omitempty,oneof=SILENT INFO WARNING ERROR"`
 
 	RedisHost *string `form:"redis_host" json:"redis_host" binding:"omitempty,ip|hostname"`
 	RedisPort *uint   `form:"redis_port" json:"redis_port" binding:"omitempty,port"`

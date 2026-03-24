@@ -33,6 +33,7 @@ export function buildPayload(config) {
     gorm_postgres_mxopen: config.gorm.postgres.mxopen,
     gorm_postgres_port: config.gorm.postgres.port,
     gorm_postgres_pwd: config.gorm.postgres.pwd || undefined,
+    gorm_postgres_sslmode: config.gorm.postgres.sslmode,
     gorm_postgres_user: config.gorm.postgres.user,
     host: config.host,
     k8s_config: config.k8s.config,

@@ -32,12 +32,13 @@ func Init() {
 	}
 
 	dsn := fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable connect_timeout=30 TimeZone=Asia/Shanghai",
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s connect_timeout=30 TimeZone=Asia/Shanghai",
 		config.Env.Gorm.Postgres.Host,
 		config.Env.Gorm.Postgres.Port,
 		config.Env.Gorm.Postgres.User,
 		config.Env.Gorm.Postgres.Pwd,
 		config.Env.Gorm.Postgres.DB,
+		getPostgresSSLMode(config.Env.Gorm.Postgres.SSLMode),
 	)
 	log.Logger.Infof("Connecting to PostgreSQL database: %s:%d", config.Env.Gorm.Postgres.Host, config.Env.Gorm.Postgres.Port)
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
@@ -114,6 +115,13 @@ func Init() {
 		log.Logger.Fatalf("Failed to init Admin: %v", ret)
 	}
 	InitOauthRepo(DB).RegisterDefault()
+}
+
+func getPostgresSSLMode(enabled bool) string {
+	if enabled {
+		return "require"
+	}
+	return "disable"
 }
 
 func createIndexes() {

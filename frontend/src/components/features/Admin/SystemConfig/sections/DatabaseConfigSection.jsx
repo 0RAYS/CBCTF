@@ -65,6 +65,20 @@ export function DatabaseConfigSection({ config, updateConfig }) {
         }
       />
       <ConfigField
+        label={t('admin.system.labels.dbSSLMode')}
+        type="boolean"
+        value={config.gorm.postgres.sslmode}
+        options={[
+          { value: 'true', label: 'Enabled' },
+          { value: 'false', label: 'Disabled' },
+        ]}
+        onChange={(value) =>
+          updateConfig((draft) => {
+            draft.gorm.postgres.sslmode = value;
+          })
+        }
+      />
+      <ConfigField
         label={t('admin.system.labels.dbIdle')}
         type="number"
         value={config.gorm.postgres.mxidle}
