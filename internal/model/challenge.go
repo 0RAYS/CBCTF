@@ -81,11 +81,10 @@ func (o Options) Value() (driver.Value, error) {
 }
 
 func (o *Options) Scan(value any) error {
-	bytes, err := scanBytes(value)
-	if err != nil {
+	if err := scanJSON(value, o); err != nil {
 		return fmt.Errorf("failed to scan Options value")
 	}
-	return json.Unmarshal(bytes, o)
+	return nil
 }
 
 type NetworkPolicy struct {
@@ -124,9 +123,8 @@ func (n NetworkPolicies) Value() (driver.Value, error) {
 }
 
 func (n *NetworkPolicies) Scan(value any) error {
-	bytes, err := scanBytes(value)
-	if err != nil {
+	if err := scanJSON(value, n); err != nil {
 		return fmt.Errorf("failed to scan NetworkPolicy value")
 	}
-	return json.Unmarshal(bytes, n)
+	return nil
 }

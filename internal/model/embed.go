@@ -44,15 +44,10 @@ func (s StringList) Value() (driver.Value, error) {
 }
 
 func (s *StringList) Scan(value any) error {
-	bytes, err := scanBytes(value)
-	if err != nil {
+	if err := scanJSON(value, s); err != nil {
 		return fmt.Errorf("failed to scan StringList value")
 	}
-	if len(bytes) == 0 {
-		*s = nil
-		return nil
-	}
-	return json.Unmarshal(bytes, s)
+	return nil
 }
 
 type UintMap map[string]uint
@@ -65,15 +60,10 @@ func (u UintMap) Value() (driver.Value, error) {
 }
 
 func (u *UintMap) Scan(value any) error {
-	bytes, err := scanBytes(value)
-	if err != nil {
+	if err := scanJSON(value, u); err != nil {
 		return fmt.Errorf("failed to scan UintMap value")
 	}
-	if len(bytes) == 0 {
-		*u = nil
-		return nil
-	}
-	return json.Unmarshal(bytes, u)
+	return nil
 }
 
 type StringMap map[string]string
@@ -86,13 +76,8 @@ func (s StringMap) Value() (driver.Value, error) {
 }
 
 func (s *StringMap) Scan(value any) error {
-	bytes, err := scanBytes(value)
-	if err != nil {
+	if err := scanJSON(value, s); err != nil {
 		return fmt.Errorf("failed to scan StringMap value")
 	}
-	if len(bytes) == 0 {
-		*s = nil
-		return nil
-	}
-	return json.Unmarshal(bytes, s)
+	return nil
 }

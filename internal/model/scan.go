@@ -1,6 +1,9 @@
 package model
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 func scanBytes(value any) ([]byte, error) {
 	switch v := value.(type) {
@@ -13,4 +16,17 @@ func scanBytes(value any) ([]byte, error) {
 	default:
 		return nil, fmt.Errorf("failed to scan value of type %T", value)
 	}
+}
+
+func scanJSON[T any](value any, dest *T) error {
+	bytes, err := scanBytes(value)
+	if err != nil {
+		return err
+	}
+	if len(bytes) == 0 {
+		var zero T
+		*dest = zero
+		return nil
+	}
+	return json.Unmarshal(bytes, dest)
 }
