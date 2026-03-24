@@ -93,7 +93,6 @@ func Init() {
 	if err != nil {
 		log.Logger.Fatalf("Failed to setup join table: %s", err)
 	}
-	createIndexes()
 	log.Logger.Info("Connected to database")
 
 	if ret := InitSettingRepo(DB).InitSettings(); !ret.OK {
@@ -122,23 +121,6 @@ func getPostgresSSLMode(enabled bool) string {
 		return "require"
 	}
 	return "disable"
-}
-
-func createIndexes() {
-	indexes := []string{
-		`CREATE INDEX IF NOT EXISTS idx_challenges_name_trgm ON challenges USING gin (name gin_trgm_ops) WHERE deleted_at IS NULL`,
-		`CREATE INDEX IF NOT EXISTS idx_challenges_description_trgm ON challenges USING gin (description gin_trgm_ops) WHERE deleted_at IS NULL`,
-		`CREATE INDEX IF NOT EXISTS idx_contest_challenges_name_trgm ON contest_challenges USING gin (name gin_trgm_ops) WHERE deleted_at IS NULL`,
-		`CREATE INDEX IF NOT EXISTS idx_contest_challenges_description_trgm ON contest_challenges USING gin (description gin_trgm_ops) WHERE deleted_at IS NULL`,
-		`CREATE INDEX IF NOT EXISTS idx_users_name_trgm ON users USING gin (name gin_trgm_ops) WHERE deleted_at IS NULL`,
-		`CREATE INDEX IF NOT EXISTS idx_users_email_trgm ON users USING gin (email gin_trgm_ops) WHERE deleted_at IS NULL`,
-		`CREATE INDEX IF NOT EXISTS idx_contests_name_trgm ON contests USING gin (name gin_trgm_ops) WHERE deleted_at IS NULL`,
-	}
-	for _, stmt := range indexes {
-		if err := DB.Exec(stmt).Error; err != nil {
-			log.Logger.Warningf("Failed to create PostgreSQL index: %s", err)
-		}
-	}
 }
 
 func Stop() {
