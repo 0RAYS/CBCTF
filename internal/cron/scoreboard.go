@@ -5,7 +5,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/service"
 	"math"
-	"slices"
 	"time"
 )
 
@@ -48,51 +47,44 @@ func updateUserRankingTask() model.RetVal {
 		return ret
 	}
 
-	userSolvedContestFlagsMap := make(map[uint][]db.UserSolvedContestFlag)
-	contestIDSet := make(map[uint]bool)
+	contestFlagIDSet := make(map[uint]struct{})
 	for _, contestFlag := range solvedContestFlags {
-		userSolvedContestFlagsMap[contestFlag.UserID] = append(userSolvedContestFlagsMap[contestFlag.UserID], contestFlag)
-		contestIDSet[contestFlag.ContestID] = true
+		contestFlagIDSet[contestFlag.ID] = struct{}{}
 	}
 
-	contestIDL := make([]uint, 0, len(contestIDSet))
-	for contestID := range contestIDSet {
-		contestIDL = append(contestIDL, contestID)
+	contestFlagIDL := make([]uint, 0, len(contestFlagIDSet))
+	for contestFlagID := range contestFlagIDSet {
+		contestFlagIDL = append(contestFlagIDL, contestFlagID)
 	}
-	contests, _, ret := db.InitContestRepo(db.DB).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"id": contestIDL},
-	})
+
+	bloodRankMap, ret := db.InitSubmissionRepo(db.DB).GetBloodRankMap(contestFlagIDL...)
 	if !ret.OK {
 		return ret
 	}
-	blood := make(map[uint]bool)
-	for _, contest := range contests {
-		blood[contest.ID] = contest.Blood
-	}
-	submissionRepo := db.InitSubmissionRepo(db.DB)
+
+	userSolvedCount := make(map[uint]int64)
+	userScore := make(map[uint]float64)
 	for _, user := range users {
-		userSolvedContestFlags := userSolvedContestFlagsMap[user.ID]
-		var solved int64 = 0
-		var score float64 = 0
-		for _, contestFlag := range userSolvedContestFlags {
-			solved++
-			var rate float64
-			if blood[contestFlag.ContestID] {
-				bloodTeam, _ := submissionRepo.GetBloodTeamID(contestFlag.ID)
-				switch slices.IndexFunc(bloodTeam, func(i uint) bool {
-					return i == contestFlag.TeamID
-				}) {
-				case 0:
-					rate = model.FirstBloodRate
-				case 1:
-					rate = model.SecondBloodRate
-				case 2:
-					rate = model.ThirdBloodRate
-				}
-			}
-			score += contestFlag.CurrentScore + contestFlag.Score*rate
+		userSolvedCount[user.ID] = 0
+		userScore[user.ID] = 0
+	}
+	for _, contestFlag := range solvedContestFlags {
+		userSolvedCount[contestFlag.UserID]++
+		score := contestFlag.CurrentScore
+		switch bloodRankMap[contestFlag.ID][contestFlag.TeamID] {
+		case 1:
+			score += contestFlag.Score * model.FirstBloodRate
+		case 2:
+			score += contestFlag.Score * model.SecondBloodRate
+		case 3:
+			score += contestFlag.Score * model.ThirdBloodRate
 		}
-		score = math.Trunc(score*100) / 100
+		userScore[contestFlag.UserID] += score
+	}
+
+	for _, user := range users {
+		solved := userSolvedCount[user.ID]
+		score := math.Trunc(userScore[user.ID]*100) / 100
 		userRepo.Update(user.ID, db.UpdateUserOptions{
 			Score:  &score,
 			Solved: &solved,

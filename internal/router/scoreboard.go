@@ -32,20 +32,34 @@ func GetTeamRanking(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	repo := db.InitTeamRepo(db.DB)
+	teamIDL := make([]uint, 0, len(teams))
+	for _, team := range teams {
+		teamIDL = append(teamIDL, team.ID)
+	}
+	userCountMap, ret := db.InitTeamRepo(db.DB).CountUsersMap(teamIDL...)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+
+	solvedRows, ret := db.InitContestFlagRepo(db.DB).GetTeamsSolvedContestFlags(teamIDL...)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	solvedMap := make(map[uint][]model.ContestFlag, len(teamIDL))
+	for _, row := range solvedRows {
+		solvedMap[row.TeamID] = append(solvedMap[row.TeamID], row.ContestFlag)
+	}
+
 	data := make([]gin.H, 0)
 	for _, team := range teams {
 		if !middleware.IsFullAccess(ctx) && team.Hidden {
 			count--
 			continue
 		}
-		solved, ret := db.InitContestFlagRepo(db.DB).GetTeamSolvedContestFlags(team.ID)
-		if !ret.OK {
-			count--
-			continue
-		}
-		tmp := resp.GetTeamRankingResp(team, solved, contestFlags, middleware.IsFullAccess(ctx))
-		tmp["users"] = repo.CountAssociation(team, "Users")
+		tmp := resp.GetTeamRankingResp(team, solvedMap[team.ID], contestFlags, middleware.IsFullAccess(ctx))
+		tmp["users"] = userCountMap[team.ID]
 		data = append(data, tmp)
 	}
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"teams": data, "count": count}))
@@ -109,6 +123,12 @@ func GetScoreboard(ctx *gin.Context) {
 		}
 		teamIDL = append(teamIDL, team.ID)
 	}
+
+	userCountMap, ret := db.InitTeamRepo(db.DB).CountUsersMap(teamIDL...)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
 	teamFlags, ret := teamFlagRepo.GetTeamFlagsWithChallenge(teamIDL...)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
@@ -128,7 +148,7 @@ func GetScoreboard(ctx *gin.Context) {
 			}
 		}
 	}
-	data := resp.GetScoreboardResp(challengeMap, globalMap, teamMap, teams)
+	data := resp.GetScoreboardResp(challengeMap, globalMap, teamMap, teams, userCountMap)
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"teams": data, "count": count}))
 }
 
@@ -145,15 +165,21 @@ func GetRankTimeline(ctx *gin.Context) {
 		}
 		return false
 	})
-	for i, team := range teams {
-		submissions, _, ret := db.InitSubmissionRepo(db.DB).List(-1, -1, db.GetOptions{
-			Conditions: map[string]any{"solved": true, "team_id": team.ID},
-		})
-		if !ret.OK {
-			resp.JSON(ctx, ret)
-			return
-		}
-		teams[i].Submissions = submissions
+	teamIDL := make([]uint, 0, len(teams))
+	for _, team := range teams {
+		teamIDL = append(teamIDL, team.ID)
+	}
+	submissions, ret := db.InitSubmissionRepo(db.DB).ListSolvedByTeamID(teamIDL...)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	timelineMap := make(map[uint][]model.Submission, len(teamIDL))
+	for _, submission := range submissions {
+		timelineMap[submission.TeamID] = append(timelineMap[submission.TeamID], submission)
+	}
+	for i := range teams {
+		teams[i].Submissions = timelineMap[teams[i].ID]
 	}
 	data := resp.GetRankTimelineResp(teams)
 	resp.JSON(ctx, model.SuccessRetVal(data))

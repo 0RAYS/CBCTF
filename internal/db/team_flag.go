@@ -99,3 +99,37 @@ func (t *TeamFlagRepo) GetTeamFlagsWithChallenge(teamIDL ...uint) ([]TeamFlagWit
 	}
 	return results, model.SuccessRetVal()
 }
+
+func (t *TeamFlagRepo) Exists(teamID uint, contestFlagIDL ...uint) (bool, model.RetVal) {
+	if len(contestFlagIDL) == 0 {
+		return false, model.SuccessRetVal()
+	}
+	var exists bool
+	res := t.DB.Raw(`
+		SELECT EXISTS (
+			SELECT 1
+			FROM team_flags
+			WHERE team_id = ? AND contest_flag_id IN ? AND deleted_at IS NULL
+		)
+	`, teamID, contestFlagIDL).Scan(&exists)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to check team flag existence: %s", res.Error)
+		return false, model.RetVal{Msg: i18n.Model.TeamFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return exists, model.SuccessRetVal()
+}
+
+func (t *TeamFlagRepo) CountGenerated(teamID uint, contestFlagIDL ...uint) (int64, model.RetVal) {
+	if len(contestFlagIDL) == 0 {
+		return 0, model.SuccessRetVal()
+	}
+	var count int64
+	res := t.DB.Model(&model.TeamFlag{}).
+		Where("team_id = ? AND contest_flag_id IN ?", teamID, contestFlagIDL).
+		Count(&count)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to count generated team flags: %s", res.Error)
+		return 0, model.RetVal{Msg: i18n.Model.TeamFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return count, model.SuccessRetVal()
+}

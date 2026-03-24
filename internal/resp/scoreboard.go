@@ -1,7 +1,6 @@
 package resp
 
 import (
-	"CBCTF/internal/db"
 	"CBCTF/internal/model"
 
 	"github.com/gin-gonic/gin"
@@ -26,7 +25,7 @@ func GetTeamRankingResp(team model.Team, solved []model.ContestFlag, flags []mod
 	return data
 }
 
-func GetScoreboardResp(challengeMap map[string]model.Challenge, globalMap map[string]int, teamMap map[uint]map[string]int, teams []model.Team) []gin.H {
+func GetScoreboardResp(challengeMap map[string]model.Challenge, globalMap map[string]int, teamMap map[uint]map[string]int, teams []model.Team, userCountMap map[uint]int64) []gin.H {
 	data := make([]gin.H, 0)
 	for _, team := range teams {
 		solved := make([]gin.H, 0)
@@ -46,7 +45,7 @@ func GetScoreboardResp(challengeMap map[string]model.Challenge, globalMap map[st
 			"score":       team.Score,
 			"picture":     team.Picture,
 			"last":        team.Last,
-			"users":       db.InitTeamRepo(db.DB).CountAssociation(team, "Users"),
+			"users":       userCountMap[team.ID],
 			"challenges":  solved,
 		})
 	}

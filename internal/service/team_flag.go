@@ -115,13 +115,13 @@ func UpdateTeamFlag(tx *gorm.DB, team model.Team, contest model.Contest, contest
 }
 
 func CheckIfGenerated(tx *gorm.DB, team model.Team, contestFlags []model.ContestFlag) bool {
-	teamFlagRepo := db.InitTeamFlagRepo(tx)
-	for _, contestFlag := range contestFlags {
-		if _, ret := teamFlagRepo.Get(db.GetOptions{
-			Conditions: map[string]any{"team_id": team.ID, "contest_flag_id": contestFlag.ID},
-		}); !ret.OK {
-			return false
-		}
+	if len(contestFlags) == 0 {
+		return true
 	}
-	return true
+	contestFlagIDL := make([]uint, 0, len(contestFlags))
+	for _, contestFlag := range contestFlags {
+		contestFlagIDL = append(contestFlagIDL, contestFlag.ID)
+	}
+	count, ret := db.InitTeamFlagRepo(tx).CountGenerated(team.ID, contestFlagIDL...)
+	return ret.OK && count == int64(len(contestFlags))
 }

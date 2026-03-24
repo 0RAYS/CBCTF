@@ -25,6 +25,12 @@ func HomePage(ctx *gin.Context) {
 	repo := db.InitContestRepo(db.DB)
 	contests, count, ret := repo.List(-1, -1)
 	if ret.OK {
+		contestIDL := make([]uint, 0, len(contests))
+		for _, contest := range contests {
+			contestIDL = append(contestIDL, contest.ID)
+		}
+		userCountMap, _ := repo.CountUsersMap(contestIDL...)
+		teamCountMap, _ := repo.CountTeamsMap(contestIDL...)
 		for i := 0; i < func() int {
 			if len(contests) > 3 {
 				return 3
@@ -36,8 +42,8 @@ func HomePage(ctx *gin.Context) {
 				"name":     contest.Name,
 				"start":    contest.Start,
 				"duration": int64(contest.Duration.Seconds()),
-				"users":    repo.CountAssociation(contest, "Users"),
-				"teams":    repo.CountAssociation(contest, "Teams"),
+				"users":    userCountMap[contest.ID],
+				"teams":    teamCountMap[contest.ID],
 				"picture":  contest.Picture,
 			}
 			data["upcoming"] = append(data["upcoming"].([]gin.H), info)

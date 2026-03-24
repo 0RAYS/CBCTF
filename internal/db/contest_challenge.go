@@ -93,7 +93,7 @@ func (c *ContestChallengeRepo) ListCategories(contestID uint, t model.ChallengeT
 	if t != "" {
 		tx = tx.Where("type = ?", t)
 	}
-	if res := tx.Select("distinct category").Find(&categories); res.Error != nil {
+	if res := tx.Distinct().Order("category ASC").Pluck("category", &categories); res.Error != nil {
 		log.Logger.Warningf("Failed to list ContestChallenge categories: %s", res.Error)
 		return nil, model.RetVal{Msg: i18n.Model.ContestChallenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
