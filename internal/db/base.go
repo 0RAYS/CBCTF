@@ -4,11 +4,11 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"CBCTF/internal/utils"
 	"errors"
 	"fmt"
 	"slices"
 
-	"github.com/jackc/pgx/v5/pgconn"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -49,11 +49,13 @@ func (b *BaseRepo[M]) IsUniqueKeyValue(id uint, key string, value any) bool {
 }
 
 func (b *BaseRepo[M]) Insert(m M) (M, model.RetVal) {
-	if res := b.DB.Model(new(M)).Create(&m); res.Error != nil {
-		if attr, ok := duplicateKeyAttr(res.Error); ok {
-			attr["Model"] = model.ModelName(m)
-			return *new(M), model.RetVal{Msg: i18n.Model.DuplicateKeyValue, Attr: attr}
+	for _, key := range model.UniqueFields(m) {
+		value := utils.GetFieldByJSONTag(m, key)
+		if !b.IsUniqueKeyValue(0, key, value) {
+			return *new(M), model.RetVal{Msg: i18n.Model.DuplicateKeyValue, Attr: map[string]any{"Model": model.ModelName(m), "Key": key}}
 		}
+	}
+	if res := b.DB.Model(new(M)).Create(&m); res.Error != nil {
 		log.Logger.Warningf("Failed to create %T: %s", new(M), res.Error)
 		return *new(M), model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.ModelName(m), "Error": res.Error.Error()}}
 	}
@@ -213,6 +215,11 @@ func (b *BaseRepo[M]) Update(id uint, options UpdateOptions) model.RetVal {
 	if len(data) == 0 {
 		return model.SuccessRetVal()
 	}
+	for _, key := range model.UniqueFields(*new(M)) {
+		if value, ok := data[key]; ok && !b.IsUniqueKeyValue(id, key, value) {
+			return model.RetVal{Msg: i18n.Model.NotUniqueKey, Attr: map[string]any{"Model": model.ModelName(*new(M)), "Key": key}}
+		}
+	}
 	for {
 		count++
 		if count > 10 {
@@ -225,10 +232,6 @@ func (b *BaseRepo[M]) Update(id uint, options UpdateOptions) model.RetVal {
 		}
 		res := b.DB.Model(&m).Where("id = ?", id).Updates(data)
 		if res.Error != nil {
-			if attr, ok := duplicateKeyAttr(res.Error); ok {
-				attr["Model"] = model.ModelName(*new(M))
-				return model.RetVal{Msg: i18n.Model.NotUniqueKey, Attr: attr}
-			}
 			log.Logger.Warningf("Failed to update %s: %s", model.ModelName(*new(M)), res.Error)
 			return model.RetVal{Msg: i18n.Model.UpdateError, Attr: map[string]any{"Model": model.ModelName(*new(M)), "Error": res.Error.Error()}}
 		}
@@ -257,16 +260,4 @@ func (b *BaseRepo[M]) Delete(idL ...uint) model.RetVal {
 		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.ModelName(*new(M)), "Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
-}
-
-func duplicateKeyAttr(err error) (map[string]any, bool) {
-	var pgErr *pgconn.PgError
-	if !errors.As(err, &pgErr) || pgErr.Code != "23505" {
-		return nil, false
-	}
-	attr := map[string]any{"Error": pgErr.Error()}
-	if pgErr.ColumnName != "" {
-		attr["Key"] = pgErr.ColumnName
-	}
-	return attr, true
 }
