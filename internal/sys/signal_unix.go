@@ -1,6 +1,6 @@
 //go:build !windows
 
-package cmd
+package sys
 
 import (
 	"os"
@@ -8,10 +8,10 @@ import (
 	"syscall"
 )
 
-func registerStopSignals(ch chan<- os.Signal) {
+func RegisterStopSignals(ch chan<- os.Signal) {
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 }
 
-func registerRestartSignals(ch chan<- os.Signal) {
+func RegisterRestartSignals(ch chan<- os.Signal) {
 	signal.Notify(ch, syscall.SIGUSR1)
 }

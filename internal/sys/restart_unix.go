@@ -1,12 +1,12 @@
 //go:build !windows
 
-package router
+package sys
 
 import (
 	"os"
 	"syscall"
 )
 
-func restartSignal(proc *os.Process) error {
+func Restart(proc *os.Process) error {
 	return proc.Signal(syscall.SIGUSR1)
 }
