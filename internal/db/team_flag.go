@@ -70,6 +70,11 @@ type TeamFlagWithChallenge struct {
 	ChallengeName            string
 }
 
+type SolvedContestFlagRow struct {
+	TeamID uint
+	model.ContestFlag
+}
+
 func (t *TeamFlagRepo) GetTeamFlagsWithChallenge(teamIDL ...uint) ([]TeamFlagWithChallenge, model.RetVal) {
 	if len(teamIDL) == 0 {
 		return nil, model.SuccessRetVal()
@@ -98,6 +103,54 @@ func (t *TeamFlagRepo) GetTeamFlagsWithChallenge(teamIDL ...uint) ([]TeamFlagWit
 		return nil, model.RetVal{Msg: i18n.Model.TeamFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return results, model.SuccessRetVal()
+}
+
+func (t *TeamFlagRepo) GetSolvedContestFlags(teamIDL ...uint) ([]SolvedContestFlagRow, model.RetVal) {
+	if len(teamIDL) == 0 {
+		return nil, model.SuccessRetVal()
+	}
+	var results []SolvedContestFlagRow
+	res := t.DB.Table("team_flags").
+		Select("team_flags.team_id, contest_flags.*").
+		Joins("INNER JOIN contest_flags ON contest_flags.id = team_flags.contest_flag_id AND contest_flags.deleted_at IS NULL").
+		Where("team_flags.team_id IN ? AND team_flags.solved = true AND team_flags.deleted_at IS NULL", teamIDL).
+		Order("team_flags.team_id ASC, contest_flags.id ASC").
+		Scan(&results)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get solved team contest flags: %s", res.Error)
+		return nil, model.RetVal{Msg: i18n.Model.TeamFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return results, model.SuccessRetVal()
+}
+
+func (t *TeamFlagRepo) ExistsSolvedForChallenge(teamID uint, contestChallengeID uint) (bool, model.RetVal) {
+	var exists bool
+	res := t.DB.Raw(`
+		SELECT EXISTS (
+			SELECT 1
+			FROM team_flags
+			INNER JOIN contest_flags ON contest_flags.id = team_flags.contest_flag_id AND contest_flags.deleted_at IS NULL
+			WHERE team_flags.team_id = ? AND contest_flags.contest_challenge_id = ? AND team_flags.solved = true AND team_flags.deleted_at IS NULL
+		)
+	`, teamID, contestChallengeID).Scan(&exists)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to check solved team flag existence: %s", res.Error)
+		return false, model.RetVal{Msg: i18n.Model.TeamFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return exists, model.SuccessRetVal()
+}
+
+func (t *TeamFlagRepo) CountSolvedForChallenge(teamID uint, contestChallengeID uint) (int64, model.RetVal) {
+	var count int64
+	res := t.DB.Model(&model.TeamFlag{}).
+		Joins("INNER JOIN contest_flags ON contest_flags.id = team_flags.contest_flag_id AND contest_flags.deleted_at IS NULL").
+		Where("team_flags.team_id = ? AND contest_flags.contest_challenge_id = ? AND team_flags.solved = true", teamID, contestChallengeID).
+		Count(&count)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to count solved team flags for challenge: %s", res.Error)
+		return 0, model.RetVal{Msg: i18n.Model.TeamFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return count, model.SuccessRetVal()
 }
 
 func (t *TeamFlagRepo) Exists(teamID uint, contestFlagIDL ...uint) (bool, model.RetVal) {
@@ -132,4 +185,21 @@ func (t *TeamFlagRepo) CountGenerated(teamID uint, contestFlagIDL ...uint) (int6
 		return 0, model.RetVal{Msg: i18n.Model.TeamFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return count, model.SuccessRetVal()
+}
+
+func (t *TeamFlagRepo) GetByContestChallengeAndValue(teamID uint, contestChallengeID uint, value string) (model.TeamFlag, model.RetVal) {
+	var teamFlag model.TeamFlag
+	res := t.DB.Model(&model.TeamFlag{}).
+		Joins("INNER JOIN contest_flags ON contest_flags.id = team_flags.contest_flag_id AND contest_flags.deleted_at IS NULL").
+		Where("team_flags.team_id = ? AND contest_flags.contest_challenge_id = ? AND team_flags.value = ?", teamID, contestChallengeID, value).
+		Limit(1).
+		Find(&teamFlag)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get team flag by contest challenge and value: %s", res.Error)
+		return model.TeamFlag{}, model.RetVal{Msg: i18n.Model.TeamFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	if res.RowsAffected == 0 {
+		return model.TeamFlag{}, model.RetVal{Msg: i18n.Model.TeamFlag.NotFound}
+	}
+	return teamFlag, model.SuccessRetVal()
 }

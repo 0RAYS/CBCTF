@@ -14,7 +14,6 @@ func VerifyFlag(tx *gorm.DB, team model.Team, contestChallenge model.ContestChal
 	contestFlagRepo := db.InitContestFlagRepo(tx)
 	contestFlagL, _, ret := contestFlagRepo.List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
-		Preloads:   map[string]db.GetOptions{"TeamFlags": {Conditions: map[string]any{"team_id": team.ID}}},
 	})
 	if !ret.OK {
 		return false, model.ContestFlag{}, model.TeamFlag{}, ret
@@ -24,10 +23,12 @@ func VerifyFlag(tx *gorm.DB, team model.Team, contestChallenge model.ContestChal
 	}
 	if contestChallenge.Type == model.QuestionChallengeType {
 		contestFlag := contestFlagL[0]
-		if len(contestFlag.TeamFlags) == 0 {
+		teamFlag, ret := db.InitTeamFlagRepo(tx).Get(db.GetOptions{
+			Conditions: map[string]any{"team_id": team.ID, "contest_flag_id": contestFlag.ID},
+		})
+		if !ret.OK {
 			return false, model.ContestFlag{}, model.TeamFlag{}, model.RetVal{Msg: i18n.Model.TeamFlag.NotFound}
 		}
-		teamFlag := contestFlag.TeamFlags[0]
 		optionsIDL := strings.Split(contestFlag.Value, ",")
 		answerIDL := strings.Split(value, ",")
 		if len(optionsIDL) != len(answerIDL) {
@@ -43,14 +44,17 @@ func VerifyFlag(tx *gorm.DB, team model.Team, contestChallenge model.ContestChal
 		}
 		return true, contestFlag, teamFlag, model.SuccessRetVal()
 	}
-	for _, contestFlag := range contestFlagL {
-		for _, teamFlag := range contestFlag.TeamFlags {
-			if teamFlag.TeamID == team.ID && teamFlag.Value == value {
-				if teamFlag.Solved {
-					return false, contestFlag, teamFlag, model.RetVal{OK: true, Msg: i18n.Model.TeamFlag.AlreadySolved}
-				}
-				return true, contestFlag, teamFlag, model.SuccessRetVal()
+
+	teamFlag, ret := db.InitTeamFlagRepo(tx).GetByContestChallengeAndValue(team.ID, contestChallenge.ID, value)
+	if ret.OK {
+		for _, contestFlag := range contestFlagL {
+			if contestFlag.ID != teamFlag.ContestFlagID {
+				continue
 			}
+			if teamFlag.Solved {
+				return false, contestFlag, teamFlag, model.RetVal{OK: true, Msg: i18n.Model.TeamFlag.AlreadySolved}
+			}
+			return true, contestFlag, teamFlag, model.SuccessRetVal()
 		}
 	}
 	// 没有找到答案, 则默认为第一个flag

@@ -101,44 +101,42 @@ func (c *ContestChallengeRepo) ListCategories(contestID uint, t model.ChallengeT
 }
 
 func (c *ContestChallengeRepo) ListUnsolvedID(teamID, contestID uint, category string, limit, offset int) ([]uint, int64, model.RetVal) {
-	subSolved := c.DB.Table("submissions").
-		Select("COUNT(*)").
-		Where("submissions.contest_challenge_id = contest_challenges.id").
-		Where("submissions.team_id = ?", teamID).
-		Where("submissions.solved = ?", true).
-		Where("submissions.deleted_at IS NULL")
-
-	subFlags := c.DB.Table("contest_flags").
-		Select("COUNT(*)").
-		Where("contest_flags.contest_challenge_id = contest_challenges.id").
-		Where("contest_flags.deleted_at IS NULL")
-
-	var count int64
-	res := c.DB.Table("contest_challenges").
-		Select("COUNT(*)").
+	base := c.DB.Model(&model.ContestChallenge{}).
 		Where("contest_challenges.contest_id = ?", contestID).
 		Where("contest_challenges.hidden = ?", false).
-		Where("contest_challenges.deleted_at IS NULL").
-		Where("(?) < (?)", subSolved, subFlags)
+		Where("EXISTS (SELECT 1 FROM contest_flags WHERE contest_flags.contest_challenge_id = contest_challenges.id AND contest_flags.deleted_at IS NULL)").
+		Where(`
+			EXISTS (
+				SELECT 1
+				FROM contest_flags
+				WHERE contest_flags.contest_challenge_id = contest_challenges.id
+					AND contest_flags.deleted_at IS NULL
+					AND NOT EXISTS (
+						SELECT 1
+						FROM team_flags
+						WHERE team_flags.team_id = ?
+							AND team_flags.contest_flag_id = contest_flags.id
+							AND team_flags.solved = true
+							AND team_flags.deleted_at IS NULL
+					)
+			)
+		`, teamID)
 	if category != "" {
-		res = res.Where("contest_challenges.category = ?", category)
+		base = base.Where("contest_challenges.category = ?", category)
 	}
-	if res = res.Scan(&count); res.Error != nil {
+
+	var count int64
+	if res := base.Count(&count); res.Error != nil {
 		log.Logger.Warningf("Failed to list ContestChallenge: %s", res.Error)
 		return nil, 0, model.RetVal{Msg: i18n.Model.ContestChallenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 
 	var ids []uint
-	res = c.DB.Table("contest_challenges").
-		Select("contest_challenges.id").
-		Where("contest_challenges.contest_id = ?", contestID).
-		Where("contest_challenges.hidden = ?", false).
-		Where("contest_challenges.deleted_at IS NULL").
-		Where("(?) < (?)", subSolved, subFlags)
-	if category != "" {
-		res = res.Where("contest_challenges.category = ?", category)
-	}
-	if res = res.Limit(limit).Offset(offset).Scan(&ids); res.Error != nil {
+	res := base.Select("contest_challenges.id").
+		Order("contest_challenges.id ASC").
+		Limit(limit).Offset(offset).
+		Scan(&ids)
+	if res.Error != nil {
 		log.Logger.Warningf("Failed to list ContestChallenge: %s", res.Error)
 		return nil, 0, model.RetVal{Msg: i18n.Model.ContestChallenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}

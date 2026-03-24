@@ -95,30 +95,32 @@ func (c *ChallengeRepo) ListCategories(t model.ChallengeType) ([]string, model.R
 }
 
 func (c *ChallengeRepo) ListChallengesNotInContest(contestID uint, limit, offset int, name, description, category string, t model.ChallengeType) ([]model.Challenge, int64, model.RetVal) {
-	base := c.DB.Table("challenges").
-		Joins("LEFT JOIN contest_challenges ON challenges.id = contest_challenges.challenge_id AND contest_challenges.contest_id = ? AND contest_challenges.deleted_at IS NULL", contestID).
-		Where("contest_challenges.id IS NULL AND challenges.deleted_at IS NULL")
+	tx := c.DB.Model(&model.Challenge{}).
+		Where("NOT EXISTS (?)", c.DB.Model(&model.ContestChallenge{}).
+			Select("1").
+			Where("contest_challenges.challenge_id = challenges.id").
+			Where("contest_challenges.contest_id = ?", contestID))
 	if name != "" {
-		base = base.Where("challenges.name ILIKE ?", "%"+name+"%")
+		tx = tx.Where("challenges.name ILIKE ?", "%"+name+"%")
 	}
 	if description != "" {
-		base = base.Where("challenges.description ILIKE ?", "%"+description+"%")
+		tx = tx.Where("challenges.description ILIKE ?", "%"+description+"%")
 	}
 	if category != "" {
-		base = base.Where("challenges.category = ?", category)
+		tx = tx.Where("challenges.category = ?", category)
 	}
 	if t != "" {
-		base = base.Where("challenges.type = ?", t)
+		tx = tx.Where("challenges.type = ?", t)
 	}
 
 	var count int64
-	if res := base.Count(&count); res.Error != nil {
+	if res := tx.Count(&count); res.Error != nil {
 		log.Logger.Warningf("Failed to count Challenges not in contest: %s", res.Error)
 		return nil, 0, model.RetVal{Msg: i18n.Model.Challenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 
 	var challenges = make([]model.Challenge, 0)
-	if res := base.Select("challenges.*").Order("challenges.id DESC").Limit(limit).Offset(offset).Scan(&challenges); res.Error != nil {
+	if res := tx.Order("challenges.id DESC").Limit(limit).Offset(offset).Find(&challenges); res.Error != nil {
 		log.Logger.Warningf("Failed to list Challenges not in contest: %s", res.Error)
 		return nil, 0, model.RetVal{Msg: i18n.Model.Challenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
