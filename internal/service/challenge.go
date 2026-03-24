@@ -319,7 +319,7 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChal
 				dockerIDL = append(dockerIDL, docker.ID)
 			}
 			for _, flag := range challenge.ChallengeFlags {
-				dockerIDL = append(dockerIDL, flag.ID)
+				challengeFlagIDL = append(challengeFlagIDL, flag.ID)
 			}
 			if ret := db.InitDockerRepo(tx).Delete(dockerIDL...); !ret.OK {
 				return ret
