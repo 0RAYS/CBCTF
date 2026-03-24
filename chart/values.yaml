@@ -205,7 +205,6 @@ postgres:
     max_connections = 500
     shared_buffers = 256MB
     wal_level = replica
-    listen_addresses = '*'
 
 # ── Redis ─────────────────────────────────────────────────────────────────────
 
