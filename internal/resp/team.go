@@ -37,6 +37,7 @@ func GetSolvedStateResp(solved []model.ContestFlag, all []model.ContestFlag) []g
 }
 
 func GetTeamResp(team model.Team, isAdmin bool) gin.H {
+	users, _ := db.InitTeamRepo(db.DB).CountUsers(team.ID)
 	data := gin.H{
 		"id":          team.ID,
 		"contest_id":  team.ContestID,
@@ -45,7 +46,7 @@ func GetTeamResp(team model.Team, isAdmin bool) gin.H {
 		"picture":     team.Picture,
 		"last":        team.Last,
 		"rank":        team.Rank,
-		"users":       db.InitTeamRepo(db.DB).CountAssociation(team, "Users"),
+		"users":       users,
 		"description": team.Description,
 		"captain_id":  team.CaptainID,
 		"banned":      team.Banned,

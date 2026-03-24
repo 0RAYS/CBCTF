@@ -103,8 +103,18 @@ func CheckIfSolved(tx *gorm.DB, team model.Team, contestFlags []model.ContestFla
 	if len(contestFlags) == 0 {
 		return true
 	}
-	count, _ := db.InitSubmissionRepo(tx).Count(db.CountOptions{
-		Conditions: map[string]any{"team_id": team.ID, "contest_challenge_id": contestFlags[0].ContestChallengeID, "solved": true},
-	})
-	return count == int64(len(contestFlags))
+	solvedFlags, ret := db.InitContestFlagRepo(tx).GetTeamSolvedContestFlags(team.ID)
+	if !ret.OK {
+		return false
+	}
+	solvedMap := make(map[uint]struct{}, len(solvedFlags))
+	for _, solvedFlag := range solvedFlags {
+		solvedMap[solvedFlag.ID] = struct{}{}
+	}
+	for _, contestFlag := range contestFlags {
+		if _, ok := solvedMap[contestFlag.ID]; !ok {
+			return false
+		}
+	}
+	return true
 }

@@ -80,6 +80,16 @@ func (g *GroupRepo) InitDefaultGroups() model.RetVal {
 	return model.SuccessRetVal()
 }
 
+func (g *GroupRepo) CountUsers(groupID uint) (int64, model.RetVal) {
+	var count int64
+	res := g.DB.Model(&model.UserGroup{}).Where("group_id = ?", groupID).Count(&count)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to count group users: %s", res.Error)
+		return 0, model.RetVal{Msg: i18n.Model.Group.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return count, model.SuccessRetVal()
+}
+
 func (g *GroupRepo) Delete(idL ...uint) model.RetVal {
 	groupL, _, ret := g.List(-1, -1, GetOptions{
 		Conditions: map[string]interface{}{"id": idL},

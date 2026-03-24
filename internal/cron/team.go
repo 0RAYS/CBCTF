@@ -28,8 +28,16 @@ func clearEmptyTeamTask() model.RetVal {
 	if !ret.OK {
 		return ret
 	}
+	teamIDL := make([]uint, 0, len(teams))
 	for _, team := range teams {
-		if repo.CountAssociation(team, "Users") == 0 {
+		teamIDL = append(teamIDL, team.ID)
+	}
+	userCountMap, ret := repo.CountUsersMap(teamIDL...)
+	if !ret.OK {
+		return ret
+	}
+	for _, team := range teams {
+		if userCountMap[team.ID] == 0 {
 			if ret = repo.Delete(team.ID); ret.OK {
 				log.Logger.Infof("Delete empty team: %d", team.ID)
 			}

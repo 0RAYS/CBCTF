@@ -152,17 +152,21 @@ func (u *UserRepo) InitAdmin() model.RetVal {
 }
 
 func (u *UserRepo) IsInGroup(userID uint, groupName string) bool {
-	var count int64
-	res := u.DB.Table("user_groups").
-		Joins(`INNER JOIN "groups" ON user_groups.group_id = "groups".id AND "groups".deleted_at IS NULL`).
-		Joins("INNER JOIN users ON user_groups.user_id = users.id AND users.deleted_at IS NULL").
-		Where(`user_groups.user_id = ? AND "groups".name = ?`, userID, groupName).
-		Count(&count)
+	var exists bool
+	res := u.DB.Raw(`
+		SELECT EXISTS (
+			SELECT 1
+			FROM user_groups
+			INNER JOIN "groups" ON user_groups.group_id = "groups".id AND "groups".deleted_at IS NULL
+			INNER JOIN users ON user_groups.user_id = users.id AND users.deleted_at IS NULL
+			WHERE user_groups.user_id = ? AND "groups".name = ?
+		)
+	`, userID, groupName).Scan(&exists)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to check user group membership: %v", res.Error)
 		return false
 	}
-	return count > 0
+	return exists
 }
 
 func (u *UserRepo) CountGroupUser(group string) (int64, model.RetVal) {
@@ -198,15 +202,16 @@ func (u *UserRepo) GetByTeamID(teamID uint, limit, offset int) ([]model.User, mo
 }
 
 func (u *UserRepo) GetIDByTeamID(teamID uint, limit, offset int) ([]uint, model.RetVal) {
-	users, ret := u.GetByTeamID(teamID, limit, offset)
-	if !ret.OK {
-		return nil, ret
-	}
 	var userIDL []uint
-	for _, user := range users {
-		userIDL = append(userIDL, user.ID)
+	res := u.DB.Model(&model.UserTeam{}).
+		Where("team_id = ?", teamID).
+		Limit(limit).Offset(offset).
+		Pluck("user_id", &userIDL)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get user IDs by team: %s", res.Error)
+		return nil, model.RetVal{Msg: i18n.Model.User.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
-	return userIDL, ret
+	return userIDL, model.SuccessRetVal()
 }
 
 func (u *UserRepo) GetByContestID(contestID uint, limit, offset int) ([]model.User, model.RetVal) {
@@ -224,15 +229,16 @@ func (u *UserRepo) GetByContestID(contestID uint, limit, offset int) ([]model.Us
 }
 
 func (u *UserRepo) GetIDByContestID(contestID uint, limit, offset int) ([]uint, model.RetVal) {
-	users, ret := u.GetByContestID(contestID, limit, offset)
-	if !ret.OK {
-		return nil, ret
-	}
 	var userIDL []uint
-	for _, user := range users {
-		userIDL = append(userIDL, user.ID)
+	res := u.DB.Model(&model.UserContest{}).
+		Where("contest_id = ?", contestID).
+		Limit(limit).Offset(offset).
+		Pluck("user_id", &userIDL)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get user IDs by contest: %s", res.Error)
+		return nil, model.RetVal{Msg: i18n.Model.User.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
-	return userIDL, ret
+	return userIDL, model.SuccessRetVal()
 }
 
 func (u *UserRepo) GetByGroupID(groupID uint, limit, offset int) ([]model.User, int64, model.RetVal) {
@@ -256,6 +262,26 @@ func (u *UserRepo) GetByGroupID(groupID uint, limit, offset int) ([]model.User, 
 		return nil, 0, model.RetVal{Msg: i18n.Model.User.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return users, count, model.SuccessRetVal()
+}
+
+func (u *UserRepo) CountTeams(userID uint) (int64, model.RetVal) {
+	var count int64
+	res := u.DB.Model(&model.UserTeam{}).Where("user_id = ?", userID).Count(&count)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to count user teams: %s", res.Error)
+		return 0, model.RetVal{Msg: i18n.Model.User.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return count, model.SuccessRetVal()
+}
+
+func (u *UserRepo) CountContests(userID uint) (int64, model.RetVal) {
+	var count int64
+	res := u.DB.Model(&model.UserContest{}).Where("user_id = ?", userID).Count(&count)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to count user contests: %s", res.Error)
+		return 0, model.RetVal{Msg: i18n.Model.User.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return count, model.SuccessRetVal()
 }
 
 func (u *UserRepo) Delete(idL ...uint) model.RetVal {

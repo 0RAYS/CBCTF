@@ -113,17 +113,23 @@ type UserSolvedContestFlag struct {
 	model.ContestFlag
 }
 
+type TeamSolvedContestFlag struct {
+	TeamID uint
+	model.ContestFlag
+}
+
 func (c *ContestFlagRepo) GetUserSolvedContestFlags(userIDL ...uint) ([]UserSolvedContestFlag, model.RetVal) {
 	if len(userIDL) == 0 {
 		return nil, model.SuccessRetVal()
 	}
 	var results []UserSolvedContestFlag
 	res := c.DB.Table("submissions").
-		Select("submissions.user_id, submissions.team_id, contest_flags.*").
+		Select("DISTINCT ON (submissions.user_id, contest_flags.id) submissions.user_id, submissions.team_id, contest_flags.*").
 		Joins("INNER JOIN contest_flags ON submissions.contest_flag_id = contest_flags.id AND contest_flags.deleted_at IS NULL").
 		Joins("INNER JOIN users ON submissions.user_id = users.id AND users.deleted_at IS NULL").
 		Joins("INNER JOIN teams ON submissions.team_id = teams.id AND teams.deleted_at IS NULL").
 		Where("submissions.user_id IN ? AND submissions.solved = true AND submissions.deleted_at IS NULL", userIDL).
+		Order("submissions.user_id, contest_flags.id, submissions.created_at ASC, submissions.id ASC").
 		Scan(&results)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get ContestFlag: %s", res.Error)
@@ -133,15 +139,28 @@ func (c *ContestFlagRepo) GetUserSolvedContestFlags(userIDL ...uint) ([]UserSolv
 }
 
 func (c *ContestFlagRepo) GetTeamSolvedContestFlags(teamIDL ...uint) ([]model.ContestFlag, model.RetVal) {
+	rows, ret := c.GetTeamsSolvedContestFlags(teamIDL...)
+	if !ret.OK {
+		return nil, ret
+	}
+	results := make([]model.ContestFlag, 0, len(rows))
+	for _, row := range rows {
+		results = append(results, row.ContestFlag)
+	}
+	return results, model.SuccessRetVal()
+}
+
+func (c *ContestFlagRepo) GetTeamsSolvedContestFlags(teamIDL ...uint) ([]TeamSolvedContestFlag, model.RetVal) {
 	if len(teamIDL) == 0 {
 		return nil, model.SuccessRetVal()
 	}
-	var results []model.ContestFlag
+	var results []TeamSolvedContestFlag
 	res := c.DB.Table("submissions").
-		Select("contest_flags.*").
+		Select("DISTINCT ON (submissions.team_id, contest_flags.id) submissions.team_id, contest_flags.*").
 		Joins("INNER JOIN contest_flags ON submissions.contest_flag_id = contest_flags.id AND contest_flags.deleted_at IS NULL").
 		Joins("INNER JOIN teams ON submissions.team_id = teams.id AND teams.deleted_at IS NULL").
 		Where("submissions.team_id IN ? AND submissions.solved = true AND submissions.deleted_at IS NULL", teamIDL).
+		Order("submissions.team_id, contest_flags.id, submissions.created_at ASC, submissions.id ASC").
 		Scan(&results)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get ContestFlags: %s", res.Error)

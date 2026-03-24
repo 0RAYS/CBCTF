@@ -86,7 +86,7 @@ func (c *ChallengeRepo) ListCategories(t model.ChallengeType) ([]string, model.R
 	if t != "" {
 		res = res.Where("type = ?", t)
 	}
-	res = res.Select("distinct category").Find(&categories)
+	res = res.Distinct().Order("category ASC").Pluck("category", &categories)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Categories: %s", res.Error)
 		return nil, model.RetVal{Msg: i18n.Model.Challenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
