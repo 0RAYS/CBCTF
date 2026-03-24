@@ -109,8 +109,6 @@ spec:
         - name: config
           configMap:
             name: {{ include "cbctf.fullname" . }}
-        - name: kubeconfig
-          emptyDir: {}
         - name: data
           {{- if .Values.persistence.enabled }}
           persistentVolumeClaim:
