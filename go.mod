@@ -3,6 +3,7 @@ module CBCTF
 go 1.26.1
 
 ignore (
+	./.gocache
 	./data
 	./frontend/dist
 	./frontend/node_modules
