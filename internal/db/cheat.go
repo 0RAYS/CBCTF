@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -108,6 +109,9 @@ func (c *CheatRepo) Create(options CreateCheatOptions) (model.Cheat, model.RetVa
 	var existing model.Cheat
 	if res := c.DB.Where("hash = ?", m.Hash).First(&existing); res.Error == nil {
 		return existing, model.SuccessRetVal()
+	} else if !errors.Is(res.Error, gorm.ErrRecordNotFound) {
+		log.Logger.Warningf("Failed to query Cheat by hash: %s", res.Error)
+		return model.Cheat{}, model.RetVal{Msg: i18n.Model.Cheat.CreateError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 
 	if res := c.DB.Create(&m); res.Error != nil {

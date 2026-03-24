@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 	gormLogger "gorm.io/gorm/logger"
 	"gorm.io/gorm/utils"
 )
@@ -27,7 +28,7 @@ const (
 )
 
 // ErrRecordNotFound record not found error
-var ErrRecordNotFound = errors.New("record not found")
+var ErrRecordNotFound = gorm.ErrRecordNotFound
 
 // Config gormTraceLogger config
 type Config struct {
@@ -47,7 +48,7 @@ func NewGormLogger(level Level) gormLogger.Interface {
 	config := Config{
 		SlowThreshold:             200 * time.Millisecond,
 		LogLevel:                  level,
-		IgnoreRecordNotFoundError: false,
+		IgnoreRecordNotFoundError: true,
 	}
 
 	return &gormTraceLogger{
