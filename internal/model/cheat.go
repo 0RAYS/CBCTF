@@ -56,13 +56,8 @@ func (c CheatRefModel) Value() (driver.Value, error) {
 }
 
 func (c *CheatRefModel) Scan(value any) error {
-	bytes, err := scanBytes(value)
-	if err != nil {
+	if err := scanJSON(value, c); err != nil {
 		return fmt.Errorf("failed to scan CheatRefModel value")
 	}
-	if len(bytes) == 0 {
-		*c = nil
-		return nil
-	}
-	return json.Unmarshal(bytes, c)
+	return nil
 }

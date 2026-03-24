@@ -153,11 +153,10 @@ func (v VPC) Value() (driver.Value, error) {
 }
 
 func (v *VPC) Scan(value any) error {
-	bytes, err := scanBytes(value)
-	if err != nil {
+	if err := scanJSON(value, v); err != nil {
 		return fmt.Errorf("failed to scan VPC value: %v", value)
 	}
-	return json.Unmarshal(bytes, v)
+	return nil
 }
 
 type Endpoint struct {
@@ -185,9 +184,8 @@ func (e Endpoints) Value() (driver.Value, error) {
 }
 
 func (e *Endpoints) Scan(value any) error {
-	bytes, err := scanBytes(value)
-	if err != nil {
+	if err := scanJSON(value, e); err != nil {
 		return fmt.Errorf("failed to scan Endpoints value: %v", value)
 	}
-	return json.Unmarshal(bytes, e)
+	return nil
 }

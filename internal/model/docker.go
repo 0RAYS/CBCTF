@@ -69,11 +69,10 @@ func (n Networks) Value() (driver.Value, error) {
 }
 
 func (n *Networks) Scan(value any) error {
-	bytes, err := scanBytes(value)
-	if err != nil {
+	if err := scanJSON(value, n); err != nil {
 		return fmt.Errorf("failed to scan Networks value")
 	}
-	return json.Unmarshal(bytes, n)
+	return nil
 }
 
 type Expose struct {
@@ -94,9 +93,8 @@ func (e Exposes) Value() (driver.Value, error) {
 }
 
 func (e *Exposes) Scan(value interface{}) error {
-	bytes, err := scanBytes(value)
-	if err != nil {
+	if err := scanJSON(value, e); err != nil {
 		return fmt.Errorf("failed to scan Exposes value")
 	}
-	return json.Unmarshal(bytes, e)
+	return nil
 }

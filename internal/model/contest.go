@@ -79,11 +79,10 @@ func (p Prizes) Value() (driver.Value, error) {
 }
 
 func (p *Prizes) Scan(value any) error {
-	bytes, err := scanBytes(value)
-	if err != nil {
+	if err := scanJSON(value, p); err != nil {
 		return fmt.Errorf("failed to scan Prizes value")
 	}
-	return json.Unmarshal(bytes, p)
+	return nil
 }
 
 type Timeline struct {
@@ -99,9 +98,8 @@ func (t Timelines) Value() (driver.Value, error) {
 }
 
 func (t *Timelines) Scan(value any) error {
-	bytes, err := scanBytes(value)
-	if err != nil {
+	if err := scanJSON(value, t); err != nil {
 		return fmt.Errorf("failed to scan Timelines value")
 	}
-	return json.Unmarshal(bytes, t)
+	return nil
 }
