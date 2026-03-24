@@ -139,7 +139,7 @@ func (c *ContestFlagRepo) GetUserSolvedContestFlags(userIDL ...uint) ([]UserSolv
 }
 
 func (c *ContestFlagRepo) GetTeamSolvedContestFlags(teamIDL ...uint) ([]model.ContestFlag, model.RetVal) {
-	rows, ret := c.GetTeamsSolvedContestFlags(teamIDL...)
+	rows, ret := InitTeamFlagRepo(c.DB).GetSolvedContestFlags(teamIDL...)
 	if !ret.OK {
 		return nil, ret
 	}
@@ -154,17 +154,16 @@ func (c *ContestFlagRepo) GetTeamsSolvedContestFlags(teamIDL ...uint) ([]TeamSol
 	if len(teamIDL) == 0 {
 		return nil, model.SuccessRetVal()
 	}
-	var results []TeamSolvedContestFlag
-	res := c.DB.Table("submissions").
-		Select("DISTINCT ON (submissions.team_id, contest_flags.id) submissions.team_id, contest_flags.*").
-		Joins("INNER JOIN contest_flags ON submissions.contest_flag_id = contest_flags.id AND contest_flags.deleted_at IS NULL").
-		Joins("INNER JOIN teams ON submissions.team_id = teams.id AND teams.deleted_at IS NULL").
-		Where("submissions.team_id IN ? AND submissions.solved = true AND submissions.deleted_at IS NULL", teamIDL).
-		Order("submissions.team_id, contest_flags.id, submissions.created_at ASC, submissions.id ASC").
-		Scan(&results)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to get ContestFlags: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.ContestFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	rows, ret := InitTeamFlagRepo(c.DB).GetSolvedContestFlags(teamIDL...)
+	if !ret.OK {
+		return nil, ret
+	}
+	results := make([]TeamSolvedContestFlag, 0, len(rows))
+	for _, row := range rows {
+		results = append(results, TeamSolvedContestFlag{
+			TeamID:      row.TeamID,
+			ContestFlag: row.ContestFlag,
+		})
 	}
 	return results, model.SuccessRetVal()
 }

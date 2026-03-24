@@ -40,7 +40,7 @@ type Cheat struct {
 	ReasonType CheatReasonType `gorm:"index" json:"reason_type"`
 	Type       CheatType       `json:"type"`
 	Checked    bool            `gorm:"index" json:"checked"`
-	Hash       string          `gorm:"type:varchar(32);index" json:"hash"`
+	Hash       string          `gorm:"type:varchar(32);uniqueIndex:idx_cheats_hash_active,where:deleted_at IS NULL;not null" json:"hash"`
 	Comment    string          `json:"comment"`
 	Time       time.Time       `gorm:"default:null" json:"time"`
 	BaseModel
