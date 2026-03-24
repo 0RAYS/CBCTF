@@ -56,8 +56,6 @@ type UpdateUserOptions struct {
 	Banned         *bool
 	Score          *float64
 	Solved         *int64
-	ContestCount   *int64
-	TeamCount      *int64
 	ProviderUserID *string
 	OauthRaw       *string
 }
@@ -93,12 +91,6 @@ func (u UpdateUserOptions) Convert2Map() map[string]any {
 	}
 	if u.Solved != nil {
 		options["solved"] = *u.Solved
-	}
-	if u.ContestCount != nil {
-		options["contest_count"] = *u.ContestCount
-	}
-	if u.TeamCount != nil {
-		options["team_count"] = *u.TeamCount
 	}
 	if u.ProviderUserID != nil {
 		options["provider_user_id"] = *u.ProviderUserID

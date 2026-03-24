@@ -52,7 +52,6 @@ type UpdateTeamOptions struct {
 	Score       *float64
 	Rank        *int
 	Last        *time.Time
-	UserCount   *int64
 }
 
 func (u UpdateTeamOptions) Convert2Map() map[string]any {
@@ -86,9 +85,6 @@ func (u UpdateTeamOptions) Convert2Map() map[string]any {
 	}
 	if u.Last != nil {
 		options["last"] = *u.Last
-	}
-	if u.UserCount != nil {
-		options["user_count"] = *u.UserCount
 	}
 	return options
 }

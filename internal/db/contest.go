@@ -62,9 +62,6 @@ type UpdateContestOptions struct {
 	Duration    *time.Duration
 	Blood       *bool
 	Hidden      *bool
-	UserCount   *int64
-	TeamCount   *int64
-	NoticeCount *int64
 	Victims     *int64
 	Rules       *model.StringList
 	Prizes      *model.Prizes
@@ -102,15 +99,6 @@ func (u UpdateContestOptions) Convert2Map() map[string]any {
 	}
 	if u.Hidden != nil {
 		options["hidden"] = *u.Hidden
-	}
-	if u.UserCount != nil {
-		options["user_count"] = *u.UserCount
-	}
-	if u.TeamCount != nil {
-		options["team_count"] = *u.TeamCount
-	}
-	if u.NoticeCount != nil {
-		options["notice_count"] = *u.NoticeCount
 	}
 	if u.Victims != nil {
 		options["victims"] = *u.Victims
