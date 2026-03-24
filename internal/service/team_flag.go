@@ -9,6 +9,7 @@ import (
 	"CBCTF/internal/utils"
 	"errors"
 	"fmt"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -80,7 +81,16 @@ func CreateTeamFlag(tx *gorm.DB, team model.Team, contest model.Contest, contest
 		}
 		teamFlag, ret = teamFlagRepo.Create(options)
 		if !ret.OK {
-			return nil, ret
+			errMsg, ok := ret.Attr["Error"].(string)
+			if !ok || !strings.Contains(strings.ToLower(errMsg), "duplicate key") {
+				return nil, ret
+			}
+			teamFlag, ret = teamFlagRepo.Get(db.GetOptions{
+				Conditions: map[string]any{"team_id": team.ID, "contest_flag_id": contestFlag.ID},
+			})
+			if !ret.OK {
+				return nil, ret
+			}
 		}
 		teamFlagL = append(teamFlagL, teamFlag)
 	}
