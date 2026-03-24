@@ -203,8 +203,12 @@ func CreateTeam(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
+	if ret = service.CreateTeamFlags(tx, team, contest); !ret.OK {
+		tx.Rollback()
+		resp.JSON(ctx, ret)
+		return
+	}
 	tx.Commit()
-	go service.CreateTeamFlags(db.DB, team, contest)
 	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Team": team.ID})
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
