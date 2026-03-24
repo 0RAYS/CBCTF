@@ -9,6 +9,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/router"
+	"CBCTF/internal/sys"
 	"CBCTF/internal/task"
 	"CBCTF/internal/webhook"
 	"context"
@@ -43,8 +44,8 @@ func run() {
 	ip, port := config.Env.Gin.Host, config.Env.Gin.Port
 	quit := make(chan os.Signal, 1)
 	restart := make(chan os.Signal, 1)
-	registerStopSignals(quit)
-	registerRestartSignals(restart)
+	sys.RegisterStopSignals(quit)
+	sys.RegisterRestartSignals(restart)
 	go func() {
 		server = &http.Server{
 			Addr:    fmt.Sprintf("%s:%d", ip, port),

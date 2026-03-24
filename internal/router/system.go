@@ -10,6 +10,7 @@ import (
 	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
+	"CBCTF/internal/sys"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -283,7 +284,7 @@ func RestartSystem(ctx *gin.Context) {
 		return
 	}
 	go func(proc *os.Process) {
-		_ = restartSignal(proc)
+		_ = sys.Restart(proc)
 	}(proc)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
