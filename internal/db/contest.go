@@ -256,7 +256,7 @@ func (c *ContestRepo) Delete(idL ...uint) model.RetVal {
 		},
 	})
 	if !ret.OK {
-		if ret.Msg != i18n.Model.NotFound || ret.Msg != i18n.Model.Contest.NotFound {
+		if ret.Msg != i18n.Model.NotFound && ret.Msg != i18n.Model.Contest.NotFound {
 			return ret
 		}
 		return model.SuccessRetVal()
