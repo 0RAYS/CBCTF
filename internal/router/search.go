@@ -24,7 +24,10 @@ func GetAllowQueryModels(ctx *gin.Context) {
 	data := gin.H{}
 	for _, m := range models {
 		if fields := model.QueryFields(m); len(fields) > 0 {
-			data[model.ModelName(m)] = fields
+			data[model.ModelName(m)] = gin.H{
+				"query":  fields,
+				"search": model.SearchFields(m),
+			}
 		}
 	}
 	resp.JSON(ctx, model.SuccessRetVal(data))
@@ -37,10 +40,12 @@ func Search(ctx *gin.Context) {
 		return
 	}
 	var m model.Model
-	var fields []string
+	var queryFields []string
+	var searchFields []string
 	var found bool
 	for _, m = range models {
-		if fields = model.QueryFields(m); len(fields) > 0 && model.ModelName(m) == form.Model {
+		if queryFields = model.QueryFields(m); len(queryFields) > 0 && model.ModelName(m) == form.Model {
+			searchFields = model.SearchFields(m)
 			found = true
 			break
 		}
@@ -51,13 +56,13 @@ func Search(ctx *gin.Context) {
 	}
 	options := db.GetOptions{Search: make(map[string]string), Sort: make([]string, 0)}
 	for key, value := range form.Search {
-		if !slices.Contains(fields, key) {
+		if !slices.Contains(searchFields, key) {
 			continue
 		}
 		options.Search[key] = value
 	}
 	for key, value := range form.Sort {
-		if !slices.Contains(fields, key) {
+		if !slices.Contains(queryFields, key) {
 			continue
 		}
 		switch value {

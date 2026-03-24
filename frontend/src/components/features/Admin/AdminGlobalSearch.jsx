@@ -135,7 +135,13 @@ function AdminGlobalSearch({ isOpen, onClose }) {
     }
   }, [isOpen]);
 
-  const fields = modelsMap[selectedModel] || [];
+  const selectedModelConfig = modelsMap[selectedModel] || {};
+  const queryFields = Array.isArray(selectedModelConfig)
+    ? selectedModelConfig
+    : selectedModelConfig.query || [];
+  const searchFields = Array.isArray(selectedModelConfig)
+    ? selectedModelConfig
+    : selectedModelConfig.search || [];
 
   const modelOptions = Object.keys(modelsMap).map((name) => ({
     value: name,
@@ -202,11 +208,11 @@ function AdminGlobalSearch({ isOpen, onClose }) {
           </div>
 
           {/* Dynamic filter fields */}
-          {fields.length > 0 && (
+          {searchFields.length > 0 && (
             <div>
               <label className="block text-sm text-neutral-400 font-mono mb-1">{t('admin.globalSearch.filters')}</label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                {fields.map((field) => (
+                {searchFields.map((field) => (
                   <Input
                     key={field}
                     size="sm"
@@ -221,11 +227,11 @@ function AdminGlobalSearch({ isOpen, onClose }) {
           )}
 
           {/* Sort controls */}
-          {fields.length > 0 && (
+          {queryFields.length > 0 && (
             <div>
               <label className="block text-sm text-neutral-400 font-mono mb-1">{t('admin.globalSearch.sort')}</label>
               <div className="flex flex-wrap gap-1">
-                {fields.map((field) => (
+                {queryFields.map((field) => (
                   <Button
                     key={field}
                     size="sm"
