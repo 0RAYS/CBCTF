@@ -1,0 +1,176 @@
+  affinity: {}
+
+  nameOverride: ""
+  fullnameOverride: ""
+
+  image:
+    repository: ghcr.io/0rays/cbctf
+    pullPolicy: Always
+    tag: latest
+
+  timezone: Asia/Shanghai
+
+  imagePullSecrets: []
+  imageCredentials:
+    registry: ""
+    username: ""
+    password: ""
+
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: ""
+
+  podAnnotations: {}
+  podLabels: {}
+  podSecurityContext: {}
+  securityContext: {}
+
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+
+  service:
+    type: ClusterIP
+    port: 8000
+
+  ingress:
+    enabled: true
+    className: ""
+    annotations: {}
+    hosts:
+      - host: training.0rays.club
+        paths:
+          - path: /
+            pathType: Prefix
+    tls: []
+    # 如果线上证书已准备好，建议改成：
+    # tls:
+    #   - secretName: training-0rays-club-tls
+    #     hosts:
+    #       - training.0rays.club
+
+  cbctf:
+    host: "https://training.0rays.club"
+
+    log:
+      level: info
+      save: false
+
+    gin:
+      mode: release
+      host: "0.0.0.0"
+      port: 8000
+      upload:
+        max: 8
+      proxies:
+        - "10.16.0.0/16"
+        - "100.64.0.0/16"
+      cors:
+        - "https://training.0rays.club"
+      ratelimit:
+        global: 150
+        whitelist:
+          - "::1"
+          - "127.0.0.1"
+      log:
+        whitelist:
+          - "/metrics"
+          - "/platform/*filepath"
+          - "/admin/system/status"
+      jwt:
+        secret: ""
+      metrics:
+        whitelist: []
+
+    asynq:
+      concurrency: 50
+      log:
+        level: info
+      queues:
+        victim: 2
+        generator: 3
+        attachment: 10
+        email: 10
+        webhook: 15
+        image: 10
+
+    gorm:
+      log:
+        level: warning
+
+    k8s:
+      tcpdump: "docker.0rays.club/cbctf/netshoot:v0.13"
+      frp:
+        on: false
+        frpc: "docker.0rays.club/cbctf/frpc:0.62.1"
+        nginx: "docker.0rays.club/cbctf/nginx:1.29.1"
+        frps: []
+      externalNetwork:
+        enabled: true
+        cidr: "10.233.0.0/16"
+        gateway: "10.233.233.233"
+        interface: "ens192"
+
+    cheat:
+      ip:
+        whitelist:
+          - "127.0.0.1"
+          - "::1"
+          - "10.0.0.0/8"
+          - "192.168.0.0/16"
+          - "172.16.0.0/12"
+          - "100.64.0.0/10"
+
+    registration:
+      enabled: true
+      default_group: 0
+
+    webhook:
+      whitelist: []
+
+  persistence:
+    enabled: true
+    storageClass: ""
+    accessMode: ReadWriteMany
+    size: 20Gi
+
+  postgres:
+    enabled: true
+    image:
+      repository: postgres
+      tag: "17-alpine"
+      pullPolicy: IfNotPresent
+    auth:
+      database: "cbctf"
+      username: "cbctf"
+      password: "6a03b116-0d8e-43ab-a548-9bf14238cfff"
+    persistence:
+      enabled: true
+      storageClass: ""
+      accessMode: ReadWriteOnce
+      size: 5Gi
+    resources: {}
+    service:
+      port: 5432
+    extraConfig: |
+      max_connections = 500
+      shared_buffers = 256MB
+      wal_level = replica
+
+  redis:
+    enabled: true
+    image:
+      repository: redis
+      tag: "7-alpine"
+      pullPolicy: IfNotPresent
+    auth:
+      password: "sfETgRwckytWM8eGOYro"
+    persistence:
+      enabled: true
+      storageClass: ""
+      accessMode: ReadWriteOnce
+      size: 1Gi
+    resources: {}
+    service:
+      port: 6379
