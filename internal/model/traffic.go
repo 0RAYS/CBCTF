@@ -1,7 +1,7 @@
 package model
 
 type Traffic struct {
-	VictimID uint   `json:"victim_id"`
+	VictimID uint   `gorm:"index" json:"victim_id"`
 	SrcIP    string `json:"src_ip"`
 	DstIP    string `json:"dst_ip"`
 	Type     string `json:"type"`

@@ -18,8 +18,8 @@ func (a FileURL) Value() (driver.Value, error) {
 }
 
 func (a *FileURL) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
+	bytes, err := scanBytes(value)
+	if err != nil {
 		return fmt.Errorf("failed to scan FileURL: %v", value)
 	}
 	if len(bytes) == 0 {
@@ -44,8 +44,8 @@ func (s StringList) Value() (driver.Value, error) {
 }
 
 func (s *StringList) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
+	bytes, err := scanBytes(value)
+	if err != nil {
 		return fmt.Errorf("failed to scan StringList value")
 	}
 	if len(bytes) == 0 {
@@ -65,8 +65,8 @@ func (u UintMap) Value() (driver.Value, error) {
 }
 
 func (u *UintMap) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
+	bytes, err := scanBytes(value)
+	if err != nil {
 		return fmt.Errorf("failed to scan UintMap value")
 	}
 	if len(bytes) == 0 {
@@ -86,8 +86,8 @@ func (s StringMap) Value() (driver.Value, error) {
 }
 
 func (s *StringMap) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
+	bytes, err := scanBytes(value)
+	if err != nil {
 		return fmt.Errorf("failed to scan StringMap value")
 	}
 	if len(bytes) == 0 {

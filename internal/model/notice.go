@@ -11,7 +11,7 @@ const (
 // Notice
 // BelongsTo Contest
 type Notice struct {
-	ContestID uint   `json:"contest_id"`
+	ContestID uint   `gorm:"index" json:"contest_id"`
 	Title     string `json:"title"`
 	Content   string `json:"content"`
 	Type      string `gorm:"default:'normal'" json:"type"`

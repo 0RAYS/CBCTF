@@ -12,8 +12,8 @@ type Pod struct {
 	Victim     Victim      `json:"-"`
 	Containers []Container `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Name       string      `json:"name"`
-	PodPorts   Exposes     `gorm:"type:json" json:"pod_ports"`
-	Networks   Networks    `gorm:"type:json" json:"-"`
+	PodPorts   Exposes     `gorm:"type:jsonb" json:"pod_ports"`
+	Networks   Networks    `gorm:"type:jsonb" json:"-"`
 	BaseModel
 }
 

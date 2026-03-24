@@ -15,17 +15,16 @@ func UpdateTeamRanking(tx *gorm.DB, contest model.Contest, limit, offset int) ([
 		teams, _, ret = repo.List(-1, -1, db.GetOptions{
 			Conditions: map[string]any{"contest_id": contest.ID, "banned": false},
 		})
-		score float64
 	)
 	if !ret.OK {
 		return nil, 0, ret
 	}
-	for i, team := range teams {
-		score, ret = CalcTeamScore(tx, team, contest.Blood)
-		if !ret.OK {
-			continue
-		}
-		teams[i].Score = score
+	scoreMap, ret := CalcTeamScores(tx, contest.Blood, teams...)
+	if !ret.OK {
+		return nil, 0, ret
+	}
+	for i := range teams {
+		teams[i].Score = scoreMap[teams[i].ID]
 	}
 	if ret = redis.UpdateTeamRanking(contest.ID, teams); !ret.OK {
 		return nil, 0, ret

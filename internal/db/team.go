@@ -102,15 +102,27 @@ func InitTeamRepo(tx *gorm.DB) *TeamRepo {
 }
 
 func (t *TeamRepo) IsInTeam(teamID uint, userID uint) bool {
-	res := t.DB.Model(&model.UserTeam{}).
-		Where("team_id = ? AND user_id = ?", teamID, userID).Limit(1).Find(&model.UserTeam{})
-	return res.RowsAffected == 1
+	var exists bool
+	res := t.DB.Raw(`
+		SELECT EXISTS (
+			SELECT 1
+			FROM user_teams
+			WHERE team_id = ? AND user_id = ?
+		)
+	`, teamID, userID).Scan(&exists)
+	return res.Error == nil && exists
 }
 
 func (t *TeamRepo) IsInContest(contestID uint, userID uint) bool {
-	res := t.DB.Model(&model.UserContest{}).
-		Where("contest_id = ? AND user_id = ?", contestID, userID).Limit(1).Find(&model.UserContest{})
-	return res.RowsAffected == 1
+	var exists bool
+	res := t.DB.Raw(`
+		SELECT EXISTS (
+			SELECT 1
+			FROM user_contests
+			WHERE contest_id = ? AND user_id = ?
+		)
+	`, contestID, userID).Scan(&exists)
+	return res.Error == nil && exists
 }
 
 func (t *TeamRepo) GetByName(contestID uint, name string, optionsL ...GetOptions) (model.Team, model.RetVal) {
@@ -142,6 +154,43 @@ func (t *TeamRepo) GetBy2ID(userID, contestID uint) (model.Team, model.RetVal) {
 		return model.Team{}, model.RetVal{Msg: i18n.Model.Team.NotFound}
 	}
 	return team, model.SuccessRetVal()
+}
+
+func (t *TeamRepo) CountUsers(teamID uint) (int64, model.RetVal) {
+	var count int64
+	res := t.DB.Model(&model.UserTeam{}).Where("team_id = ?", teamID).Count(&count)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to count team users: %s", res.Error)
+		return 0, model.RetVal{Msg: i18n.Model.Team.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return count, model.SuccessRetVal()
+}
+
+func (t *TeamRepo) CountUsersMap(teamIDL ...uint) (map[uint]int64, model.RetVal) {
+	result := make(map[uint]int64)
+	if len(teamIDL) == 0 {
+		return result, model.SuccessRetVal()
+	}
+
+	type row struct {
+		TeamID uint
+		Count  int64
+	}
+
+	rows := make([]row, 0)
+	res := t.DB.Model(&model.UserTeam{}).
+		Select("team_id, COUNT(*) AS count").
+		Where("team_id IN ?", teamIDL).
+		Group("team_id").
+		Scan(&rows)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to count team users: %s", res.Error)
+		return nil, model.RetVal{Msg: i18n.Model.Team.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	for _, item := range rows {
+		result[item.TeamID] = item.Count
+	}
+	return result, model.SuccessRetVal()
 }
 
 func (t *TeamRepo) Delete(idL ...uint) model.RetVal {

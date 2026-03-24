@@ -17,7 +17,7 @@ function TechStackPage() {
         category: t('support.techStack.categories.backend'),
         items: [
           { name: 'Go', icon: '🔵', description: t('support.techStack.items.go') },
-          { name: 'MySQL', icon: '🎲', description: t('support.techStack.items.mysql') },
+          { name: 'PostgreSQL', icon: '🐘', description: t('support.techStack.items.postgres') },
           { name: 'Redis', icon: '⚡', description: t('support.techStack.items.redis') },
         ],
       },

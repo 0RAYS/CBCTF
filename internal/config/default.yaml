@@ -49,9 +49,9 @@ gin:
       - 127.0.0.1
       - ::1
 gorm:
-  mysql:
+  postgres:
     host: 127.0.0.1
-    port: 3306
+    port: 5432
     user: cbctf
     pwd: password
     db: cbctf

@@ -61,26 +61,26 @@ ServiceAccount name
 {{- end }}
 
 {{/*
-MySQL fullname
+PostgreSQL fullname
 */}}
-{{- define "cbctf.mysql.fullname" -}}
-{{- printf "%s-mysql" (include "cbctf.fullname" .) | trunc 63 | trimSuffix "-" }}
+{{- define "cbctf.postgres.fullname" -}}
+{{- printf "%s-postgres" (include "cbctf.fullname" .) | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
-MySQL labels
+PostgreSQL labels
 */}}
-{{- define "cbctf.mysql.labels" -}}
+{{- define "cbctf.postgres.labels" -}}
 helm.sh/chart: {{ include "cbctf.chart" . }}
-{{ include "cbctf.mysql.selectorLabels" . }}
+{{ include "cbctf.postgres.selectorLabels" . }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
 
 {{/*
-MySQL selector labels
+PostgreSQL selector labels
 */}}
-{{- define "cbctf.mysql.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "cbctf.name" . }}-mysql
+{{- define "cbctf.postgres.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "cbctf.name" . }}-postgres
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
@@ -109,13 +109,13 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-MySQL service hostname
+PostgreSQL service hostname
 */}}
-{{- define "cbctf.mysql.host" -}}
-{{- if .Values.mysql.enabled }}
-{{- include "cbctf.mysql.fullname" . }}
+{{- define "cbctf.postgres.host" -}}
+{{- if .Values.postgres.enabled }}
+{{- include "cbctf.postgres.fullname" . }}
 {{- else }}
-{{- required "mysql.externalHost is required when mysql.enabled is false" .Values.mysql.externalHost }}
+{{- required "postgres.externalHost is required when postgres.enabled is false" .Values.postgres.externalHost }}
 {{- end }}
 {{- end }}
 

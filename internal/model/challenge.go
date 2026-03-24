@@ -33,14 +33,14 @@ type Challenge struct {
 	ContestChallenges []ContestChallenge `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Submissions       []Submission       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Dockers           []Docker           `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	RandID            string             `gorm:"type:varchar(36);uniqueIndex;not null" json:"rand_id"`
-	Name              string             `json:"name"`
+	RandID            string             `gorm:"type:varchar(36);uniqueIndex:idx_challenges_rand_id_active,where:deleted_at IS NULL;not null" json:"rand_id"`
+	Name              string             `gorm:"index" json:"name"`
 	Description       string             `json:"description"`
-	Category          string             `json:"category"`
-	Type              ChallengeType      `json:"type"`
+	Category          string             `gorm:"index" json:"category"`
+	Type              ChallengeType      `gorm:"index" json:"type"`
 	GeneratorImage    string             `json:"generator_image"`
-	Options           Options            `gorm:"type:json" json:"options"`
-	NetworkPolicies   NetworkPolicies    `gorm:"type:json" json:"network_policies"`
+	Options           Options            `gorm:"type:jsonb" json:"options"`
+	NetworkPolicies   NetworkPolicies    `gorm:"type:jsonb" json:"network_policies"`
 	BaseModel
 }
 
@@ -81,8 +81,8 @@ func (o Options) Value() (driver.Value, error) {
 }
 
 func (o *Options) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
+	bytes, err := scanBytes(value)
+	if err != nil {
 		return fmt.Errorf("failed to scan Options value")
 	}
 	return json.Unmarshal(bytes, o)
@@ -124,8 +124,8 @@ func (n NetworkPolicies) Value() (driver.Value, error) {
 }
 
 func (n *NetworkPolicies) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
+	bytes, err := scanBytes(value)
+	if err != nil {
 		return fmt.Errorf("failed to scan NetworkPolicy value")
 	}
 	return json.Unmarshal(bytes, n)

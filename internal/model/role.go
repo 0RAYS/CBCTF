@@ -84,7 +84,7 @@ var DefaultRolePermissionMap = map[string][]string{
 // ManyToMany Permission
 type Role struct {
 	Permissions []Permission `gorm:"many2many:role_permissions;" json:"-"`
-	Name        string       `gorm:"type:varchar(255);uniqueIndex;not null" json:"name"`
+	Name        string       `gorm:"type:varchar(255);uniqueIndex:idx_roles_name_active,where:deleted_at IS NULL;not null" json:"name"`
 	Description string       `json:"description"`
 	Default     bool         `json:"default"`
 	BaseModel

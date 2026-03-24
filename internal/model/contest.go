@@ -28,7 +28,7 @@ type Contest struct {
 	ContestChallenges []ContestChallenge `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	ContestFlags      []ContestFlag      `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Submissions       []Submission       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Name              string             `gorm:"type:varchar(255);uniqueIndex;not null" json:"name"`
+	Name              string             `gorm:"type:varchar(255);uniqueIndex:idx_contests_name_active,where:deleted_at IS NULL;not null" json:"name"`
 	Description       string             `json:"description"`
 	Captcha           string             `json:"captcha"`
 	Picture           FileURL            `json:"picture"`
@@ -37,11 +37,11 @@ type Contest struct {
 	Start             time.Time          `gorm:"not null" json:"start"`
 	Duration          time.Duration      `json:"duration"`
 	Blood             bool               `gorm:"default:true" json:"blood"`
-	Hidden            bool               `gorm:"default:true" json:"hidden"`
+	Hidden            bool               `gorm:"default:true;index" json:"hidden"`
 	Victims           int64              `gorm:"default:1" json:"victims"`
-	Rules             StringList         `gorm:"type:json" json:"rules"`
-	Prizes            Prizes             `gorm:"type:json" json:"prizes"`
-	Timelines         Timelines          `gorm:"type:json" json:"timelines"`
+	Rules             StringList         `gorm:"type:jsonb" json:"rules"`
+	Prizes            Prizes             `gorm:"type:jsonb" json:"prizes"`
+	Timelines         Timelines          `gorm:"type:jsonb" json:"timelines"`
 	BaseModel
 }
 
@@ -79,8 +79,8 @@ func (p Prizes) Value() (driver.Value, error) {
 }
 
 func (p *Prizes) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
+	bytes, err := scanBytes(value)
+	if err != nil {
 		return fmt.Errorf("failed to scan Prizes value")
 	}
 	return json.Unmarshal(bytes, p)
@@ -99,8 +99,8 @@ func (t Timelines) Value() (driver.Value, error) {
 }
 
 func (t *Timelines) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
+	bytes, err := scanBytes(value)
+	if err != nil {
 		return fmt.Errorf("failed to scan Timelines value")
 	}
 	return json.Unmarshal(bytes, t)

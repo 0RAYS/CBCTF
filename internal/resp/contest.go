@@ -8,6 +8,10 @@ import (
 )
 
 func GetContestResp(contest model.Contest, admin bool) gin.H {
+	contestRepo := db.InitContestRepo(db.DB)
+	teams, _ := contestRepo.CountTeams(contest.ID)
+	users, _ := contestRepo.CountUsers(contest.ID)
+	notices, _ := contestRepo.CountNotices(contest.ID)
 	data := gin.H{
 		"id":          contest.ID,
 		"name":        contest.Name,
@@ -18,9 +22,9 @@ func GetContestResp(contest model.Contest, admin bool) gin.H {
 		"prizes":      contest.Prizes,
 		"size":        contest.Size,
 		"timelines":   contest.Timelines,
-		"teams":       db.InitContestRepo(db.DB).CountAssociation(contest, "Teams"),
-		"users":       db.InitContestRepo(db.DB).CountAssociation(contest, "Users"),
-		"notices":     db.InitContestRepo(db.DB).CountAssociation(contest, "Notices"),
+		"teams":       teams,
+		"users":       users,
+		"notices":     notices,
 		"prefix":      contest.Prefix,
 		"victims":     contest.Victims,
 		"picture":     contest.Picture,

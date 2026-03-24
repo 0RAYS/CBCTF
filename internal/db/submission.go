@@ -13,6 +13,12 @@ type SubmissionRepo struct {
 	BaseRepo[model.Submission]
 }
 
+type BloodRankRow struct {
+	ContestFlagID uint
+	TeamID        uint
+	BloodRank     int
+}
+
 type CreateSubmissionOptions struct {
 	ContestChallengeID uint
 	ContestID          uint
@@ -66,19 +72,61 @@ func InitSubmissionRepo(tx *gorm.DB) *SubmissionRepo {
 }
 
 func (s *SubmissionRepo) GetBloodTeamID(contestFlagID uint) ([]uint, model.RetVal) {
-	var submissions []model.Submission
-	teamIDL := make([]uint, 0)
-	res := s.DB.Model(&model.Submission{}).Where("contest_flag_id = ?", contestFlagID).Order("id").Limit(3).Find(&submissions)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to get Submission: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.Submission.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	rankMap, ret := s.GetBloodRankMap(contestFlagID)
+	if !ret.OK {
+		return nil, ret
 	}
-	for _, submission := range submissions {
-		if submission.TeamID != 0 {
-			teamIDL = append(teamIDL, submission.TeamID)
+	teamRanks := rankMap[contestFlagID]
+	if len(teamRanks) == 0 {
+		return nil, model.SuccessRetVal()
+	}
+	orderedTeamIDs := make([]uint, 3)
+	for teamID, rank := range teamRanks {
+		if rank <= 0 || rank > len(orderedTeamIDs) {
+			continue
+		}
+		orderedTeamIDs[rank-1] = teamID
+	}
+	teamIDL := make([]uint, 0, len(orderedTeamIDs))
+	for _, teamID := range orderedTeamIDs {
+		if teamID != 0 {
+			teamIDL = append(teamIDL, teamID)
 		}
 	}
 	return teamIDL, model.SuccessRetVal()
+}
+
+func (s *SubmissionRepo) GetBloodRankMap(contestFlagIDL ...uint) (map[uint]map[uint]int, model.RetVal) {
+	rankMap := make(map[uint]map[uint]int)
+	if len(contestFlagIDL) == 0 {
+		return rankMap, model.SuccessRetVal()
+	}
+
+	firstSolves := s.DB.Table("submissions").
+		Select("contest_flag_id, team_id, MIN(created_at) AS first_solved_at, MIN(id) AS first_submission_id").
+		Where("contest_flag_id IN ? AND solved = true AND team_id <> 0 AND deleted_at IS NULL", contestFlagIDL).
+		Group("contest_flag_id, team_id")
+
+	ranked := s.DB.Table("(?) AS first_solves", firstSolves).
+		Select("contest_flag_id, team_id, ROW_NUMBER() OVER (PARTITION BY contest_flag_id ORDER BY first_solved_at ASC, first_submission_id ASC) AS blood_rank")
+
+	var rows []BloodRankRow
+	res := s.DB.Table("(?) AS ranked", ranked).
+		Select("contest_flag_id, team_id, blood_rank").
+		Where("blood_rank <= 3").
+		Scan(&rows)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get blood rank: %s", res.Error)
+		return nil, model.RetVal{Msg: i18n.Model.Submission.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+
+	for _, row := range rows {
+		if rankMap[row.ContestFlagID] == nil {
+			rankMap[row.ContestFlagID] = make(map[uint]int)
+		}
+		rankMap[row.ContestFlagID][row.TeamID] = row.BloodRank
+	}
+	return rankMap, model.SuccessRetVal()
 }
 
 type FlagSolverRow struct {
@@ -97,11 +145,27 @@ func (s *SubmissionRepo) ListFlagSolvers(contestFlagID uint) ([]FlagSolverRow, m
 		Joins("INNER JOIN users ON submissions.user_id = users.id AND users.deleted_at IS NULL").
 		Joins("INNER JOIN teams ON submissions.team_id = teams.id AND teams.deleted_at IS NULL").
 		Where("submissions.contest_flag_id = ? AND submissions.solved = true AND submissions.deleted_at IS NULL", contestFlagID).
-		Order("submissions.id ASC").
+		Order("submissions.created_at ASC, submissions.id ASC").
 		Scan(&rows)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get flag solvers: %s", res.Error)
 		return nil, model.RetVal{Msg: i18n.Model.Submission.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return rows, model.SuccessRetVal()
+}
+
+func (s *SubmissionRepo) ListSolvedByTeamID(teamIDL ...uint) ([]model.Submission, model.RetVal) {
+	if len(teamIDL) == 0 {
+		return nil, model.SuccessRetVal()
+	}
+	submissions := make([]model.Submission, 0)
+	res := s.DB.Model(&model.Submission{}).
+		Where("team_id IN ? AND solved = true", teamIDL).
+		Order("team_id ASC, created_at ASC, id ASC").
+		Find(&submissions)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to list solved submissions: %s", res.Error)
+		return nil, model.RetVal{Msg: i18n.Model.Submission.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return submissions, model.SuccessRetVal()
 }

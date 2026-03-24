@@ -32,14 +32,14 @@ const (
 )
 
 type Cheat struct {
-	ContestID  uint            `json:"contest_id"`
-	Model      CheatRefModel   `gorm:"default:null;type:json" json:"model"`
+	ContestID  uint            `gorm:"index" json:"contest_id"`
+	Model      CheatRefModel   `gorm:"default:null;type:jsonb" json:"model"`
 	Magic      string          `json:"magic"`
 	IP         string          `json:"ip"`
 	Reason     string          `json:"reason"`
 	ReasonType CheatReasonType `gorm:"index" json:"reason_type"`
 	Type       CheatType       `json:"type"`
-	Checked    bool            `json:"checked"`
+	Checked    bool            `gorm:"index" json:"checked"`
 	Hash       string          `gorm:"type:varchar(32);index" json:"hash"`
 	Comment    string          `json:"comment"`
 	Time       time.Time       `gorm:"default:null" json:"time"`
@@ -56,8 +56,8 @@ func (c CheatRefModel) Value() (driver.Value, error) {
 }
 
 func (c *CheatRefModel) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
+	bytes, err := scanBytes(value)
+	if err != nil {
 		return fmt.Errorf("failed to scan CheatRefModel value")
 	}
 	if len(bytes) == 0 {
