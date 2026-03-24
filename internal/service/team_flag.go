@@ -2,6 +2,7 @@ package service
 
 import (
 	"CBCTF/internal/db"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/task"
@@ -21,13 +22,16 @@ func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) model.
 		return ret
 	}
 	for _, contestChallenge := range contestChallenges {
-		_ = tx.Transaction(func(tx2 *gorm.DB) error {
+		if err := tx.Transaction(func(tx2 *gorm.DB) error {
 			teamFlags, ret := CreateTeamFlag(tx2, team, contest, contestChallenge)
-			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-				return errors.New(err.(string))
+			if !ret.OK {
+				if err, ok := ret.Attr["Error"]; ok {
+					return errors.New(err.(string))
+				}
+				return fmt.Errorf("%s", ret.Msg)
 			}
 			if contestChallenge.Type == model.DynamicChallengeType {
-				generator, ret := GetGenerator(tx, contest.ID, contestChallenge.Challenge)
+				generator, ret := GetGenerator(tx2, contest.ID, contestChallenge.Challenge)
 				if !ret.OK {
 					return fmt.Errorf("generate attachment failed: %s", ret.Msg)
 				}
@@ -37,7 +41,9 @@ func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) model.
 				}
 			}
 			return nil
-		})
+		}); err != nil {
+			return model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.ModelName(model.TeamFlag{}), "Error": err.Error()}}
+		}
 	}
 	return model.SuccessRetVal()
 }
