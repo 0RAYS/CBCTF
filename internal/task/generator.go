@@ -43,37 +43,31 @@ func HandleStartGeneratorTask(_ context.Context, t *asynq.Task) error {
 	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
 	}
-	err := func() error {
-		challenge := payload.Challenge
-		generator := payload.Generator
-		generatorRepo := db.InitGeneratorRepo(db.DB)
-		if _, ret := generatorRepo.GetByID(generator.ID); !ret.OK {
-			if ret.Msg == i18n.Model.NotFound {
-				log.Logger.Infof("The Generator %d may have already been stopped", generator.ID)
-				return nil
-			}
-			return fmt.Errorf("get generator failed: %s", ret.Msg)
+	challenge := payload.Challenge
+	generator := payload.Generator
+	generatorRepo := db.InitGeneratorRepo(db.DB)
+	if _, ret := generatorRepo.GetByID(generator.ID); !ret.OK {
+		if ret.Msg == i18n.Model.NotFound {
+			log.Logger.Infof("The Generator %d may have already been stopped", generator.ID)
+			return nil
 		}
-		if ret := generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.PendingGeneratorStatus)}); !ret.OK {
-			return fmt.Errorf("update generator failed: %s", ret.Msg)
-		}
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
-		_, ret := k8s.StartGenerator(ctx, challenge, generator)
-		cancel()
-		if !ret.OK {
-			_, err := EnqueueStopGeneratorTask(generator)
-			return err
-		}
-		ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.RunningGeneratorStatus)})
-		if !ret.OK {
-			return fmt.Errorf("update generator failed: %s", ret.Msg)
-		}
-		return nil
-	}()
-	if err != nil {
-		_, _ = EnqueueStopGeneratorTask(payload.Generator)
+		return fmt.Errorf("get generator failed: %s", ret.Msg)
 	}
-	return err
+	if ret := generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.PendingGeneratorStatus)}); !ret.OK {
+		return fmt.Errorf("update generator failed: %s", ret.Msg)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+	_, ret := k8s.StartGenerator(ctx, challenge, generator)
+	cancel()
+	if !ret.OK {
+		_, err := EnqueueStopGeneratorTask(generator)
+		return err
+	}
+	ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.RunningGeneratorStatus)})
+	if !ret.OK {
+		return fmt.Errorf("update generator failed: %s", ret.Msg)
+	}
+	return nil
 }
 
 type StopGeneratorPayload struct {
