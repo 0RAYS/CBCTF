@@ -8,6 +8,7 @@ import (
 )
 
 func GetUserResp(user model.User, admin bool) gin.H {
+	userRepo := db.InitUserRepo(db.DB)
 	data := gin.H{
 		"id":               user.ID,
 		"name":             user.Name,
@@ -24,8 +25,8 @@ func GetUserResp(user model.User, admin bool) gin.H {
 		"has_admin_access": db.InitPermissionRepo(db.DB).HasAdminAccess(user.ID),
 	}
 	if admin {
-		data["teams"] = db.InitUserRepo(db.DB).CountAssociation(user, "Teams")
-		data["contests"] = db.InitUserRepo(db.DB).CountAssociation(user, "Contests")
+		data["teams"], _ = userRepo.CountTeams(user.ID)
+		data["contests"], _ = userRepo.CountContests(user.ID)
 	}
 	return data
 }

@@ -24,7 +24,9 @@ func GetTeam(ctx *gin.Context) {
 		return
 	}
 	solvedFlagL, _ := db.InitContestFlagRepo(db.DB).GetTeamSolvedContestFlags(team.ID)
+	userCount, _ := db.InitTeamRepo(db.DB).CountUsers(team.ID)
 	data := resp.GetTeamResp(team, middleware.IsFullAccess(ctx))
+	data["users"] = userCount
 	data["solved"] = resp.GetSolvedStateResp(solvedFlagL, contestFlagL)
 	resp.JSON(ctx, model.SuccessRetVal(data))
 }
@@ -50,9 +52,20 @@ func GetTeams(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
+	teamIDL := make([]uint, 0, len(teams))
+	for _, team := range teams {
+		teamIDL = append(teamIDL, team.ID)
+	}
+	userCountMap, ret := db.InitTeamRepo(db.DB).CountUsersMap(teamIDL...)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
 	data := make([]gin.H, 0)
 	for _, team := range teams {
-		data = append(data, resp.GetTeamResp(team, true))
+		item := resp.GetTeamResp(team, true)
+		item["users"] = userCountMap[team.ID]
+		data = append(data, item)
 	}
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"count": count, "teams": data}))
 }

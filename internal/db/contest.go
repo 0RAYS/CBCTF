@@ -149,15 +149,99 @@ func (c *ContestRepo) GetByUserID(userID uint) ([]model.Contest, model.RetVal) {
 }
 
 func (c *ContestRepo) GetIDByUserID(userID uint) ([]uint, model.RetVal) {
-	contests, ret := c.GetByUserID(userID)
-	if !ret.OK {
-		return nil, ret
-	}
 	var contestIDL []uint
-	for _, contest := range contests {
-		contestIDL = append(contestIDL, contest.ID)
+	res := c.DB.Model(&model.UserContest{}).
+		Where("user_id = ?", userID).
+		Pluck("contest_id", &contestIDL)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get Contest IDs by user: %s", res.Error)
+		return nil, model.RetVal{Msg: i18n.Model.Contest.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
-	return contestIDL, ret
+	return contestIDL, model.SuccessRetVal()
+}
+
+func (c *ContestRepo) CountUsers(contestID uint) (int64, model.RetVal) {
+	var count int64
+	res := c.DB.Model(&model.UserContest{}).Where("contest_id = ?", contestID).Count(&count)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to count contest users: %s", res.Error)
+		return 0, model.RetVal{Msg: i18n.Model.Contest.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return count, model.SuccessRetVal()
+}
+
+func (c *ContestRepo) CountTeams(contestID uint) (int64, model.RetVal) {
+	var count int64
+	res := c.DB.Model(&model.Team{}).Where("contest_id = ?", contestID).Count(&count)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to count contest teams: %s", res.Error)
+		return 0, model.RetVal{Msg: i18n.Model.Contest.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return count, model.SuccessRetVal()
+}
+
+func (c *ContestRepo) CountUsersMap(contestIDL ...uint) (map[uint]int64, model.RetVal) {
+	result := make(map[uint]int64)
+	if len(contestIDL) == 0 {
+		return result, model.SuccessRetVal()
+	}
+
+	type row struct {
+		ContestID uint
+		Count     int64
+	}
+
+	rows := make([]row, 0)
+	res := c.DB.Model(&model.UserContest{}).
+		Select("contest_id, COUNT(*) AS count").
+		Where("contest_id IN ?", contestIDL).
+		Group("contest_id").
+		Scan(&rows)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to count contest users: %s", res.Error)
+		return nil, model.RetVal{Msg: i18n.Model.Contest.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	for _, item := range rows {
+		result[item.ContestID] = item.Count
+	}
+	return result, model.SuccessRetVal()
+}
+
+func (c *ContestRepo) CountTeamsMap(contestIDL ...uint) (map[uint]int64, model.RetVal) {
+	result := make(map[uint]int64)
+	if len(contestIDL) == 0 {
+		return result, model.SuccessRetVal()
+	}
+
+	type row struct {
+		ContestID uint
+		Count     int64
+	}
+
+	rows := make([]row, 0)
+	res := c.DB.Model(&model.Team{}).
+		Select("contest_id, COUNT(*) AS count").
+		Where("contest_id IN ?", contestIDL).
+		Group("contest_id").
+		Scan(&rows)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to count contest teams: %s", res.Error)
+		return nil, model.RetVal{Msg: i18n.Model.Contest.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	for _, item := range rows {
+		result[item.ContestID] = item.Count
+	}
+	return result, model.SuccessRetVal()
+}
+
+func (c *ContestRepo) CountNotices(contestID uint) (int64, model.RetVal) {
+	var count int64
+	res := c.DB.Model(&model.Notice{}).Where("contest_id = ?", contestID).Count(&count)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to count contest notices: %s", res.Error)
+		return 0, model.RetVal{Msg: i18n.Model.Contest.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return count, model.SuccessRetVal()
 }
 
 func (c *ContestRepo) Delete(idL ...uint) model.RetVal {

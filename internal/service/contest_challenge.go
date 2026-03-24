@@ -4,9 +4,9 @@ import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"errors"
-	"slices"
 	"time"
 
 	"gorm.io/gorm"
@@ -82,45 +82,57 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 }
 
 func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string, model.RetVal) {
+	imageSet := make(map[string]struct{})
 	images := make([]string, 0)
-	dynamicContestChallenges, _, ret := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"type": model.DynamicChallengeType, "contest_id": contest.ID},
-		Preloads:   map[string]db.GetOptions{"Challenge": {}},
-	})
-	if !ret.OK {
-		return nil, ret
+
+	var generatorImages []string
+	if res := tx.Table("contest_challenges").
+		Distinct().
+		Select("challenges.generator_image").
+		Joins("INNER JOIN challenges ON contest_challenges.challenge_id = challenges.id AND challenges.deleted_at IS NULL").
+		Where("contest_challenges.contest_id = ? AND contest_challenges.type = ? AND contest_challenges.deleted_at IS NULL", contest.ID, model.DynamicChallengeType).
+		Where("challenges.generator_image <> ''").
+		Order("challenges.generator_image ASC").
+		Pluck("challenges.generator_image", &generatorImages); res.Error != nil {
+		return nil, model.RetVal{Msg: i18n.Model.ContestChallenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
-	for _, contestChallenge := range dynamicContestChallenges {
-		if !slices.Contains(images, contestChallenge.Challenge.GeneratorImage) {
-			images = append(images, contestChallenge.Challenge.GeneratorImage)
+	for _, image := range generatorImages {
+		if _, ok := imageSet[image]; ok {
+			continue
 		}
+		imageSet[image] = struct{}{}
+		images = append(images, image)
 	}
-	podsContestChallenge, _, ret := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"type": model.PodsChallengeType, "contest_id": contest.ID},
-		Preloads: map[string]db.GetOptions{
-			"Challenge": {
-				Preloads: map[string]db.GetOptions{"Dockers": {}},
-			},
-		},
-	})
-	if !ret.OK {
-		return nil, ret
+
+	var dockerImages []string
+	if res := tx.Table("contest_challenges").
+		Distinct().
+		Select("dockers.image").
+		Joins("INNER JOIN challenges ON contest_challenges.challenge_id = challenges.id AND challenges.deleted_at IS NULL").
+		Joins("INNER JOIN dockers ON dockers.challenge_id = challenges.id AND dockers.deleted_at IS NULL").
+		Where("contest_challenges.contest_id = ? AND contest_challenges.type = ? AND contest_challenges.deleted_at IS NULL", contest.ID, model.PodsChallengeType).
+		Where("dockers.image <> ''").
+		Order("dockers.image ASC").
+		Pluck("dockers.image", &dockerImages); res.Error != nil {
+		return nil, model.RetVal{Msg: i18n.Model.ContestChallenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
-	for _, contestChallenge := range podsContestChallenge {
-		for _, docker := range contestChallenge.Challenge.Dockers {
-			if !slices.Contains(images, docker.Image) {
-				images = append(images, docker.Image)
-			}
+	for _, image := range dockerImages {
+		if _, ok := imageSet[image]; ok {
+			continue
 		}
+		imageSet[image] = struct{}{}
+		images = append(images, image)
 	}
-	if !slices.Contains(images, config.Env.K8S.Frp.FrpcImage) {
-		images = append(images, config.Env.K8S.Frp.FrpcImage)
-	}
-	if !slices.Contains(images, config.Env.K8S.Frp.NginxImage) {
-		images = append(images, config.Env.K8S.Frp.NginxImage)
-	}
-	if !slices.Contains(images, config.Env.K8S.TCPDumpImage) {
-		images = append(images, config.Env.K8S.TCPDumpImage)
+
+	for _, image := range []string{config.Env.K8S.Frp.FrpcImage, config.Env.K8S.Frp.NginxImage, config.Env.K8S.TCPDumpImage} {
+		if image == "" {
+			continue
+		}
+		if _, ok := imageSet[image]; ok {
+			continue
+		}
+		imageSet[image] = struct{}{}
+		images = append(images, image)
 	}
 	return images, model.SuccessRetVal()
 }

@@ -35,14 +35,14 @@ const (
 	GinJWTSecretSettingKey          = "gin.jwt.secret"
 	GinMetricsWhitelistSettingKey   = "gin.metrics.whitelist"
 
-	GormMySQLHostSettingKey   = "gorm.mysql.host"
-	GormMySQLPortSettingKey   = "gorm.mysql.port"
-	GormMySQLUserSettingKey   = "gorm.mysql.user"
-	GormMySQLPwdSettingKey    = "gorm.mysql.pwd"
-	GormMySQLDBSettingKey     = "gorm.mysql.db"
-	GormMySQLMXOpenSettingKey = "gorm.mysql.mxopen"
-	GormMySQLMXIdleSettingKey = "gorm.mysql.mxidle"
-	GormLogLevelSettingKey    = "gorm.log.level"
+	GormPostgresHostSettingKey   = "gorm.postgres.host"
+	GormPostgresPortSettingKey   = "gorm.postgres.port"
+	GormPostgresUserSettingKey   = "gorm.postgres.user"
+	GormPostgresPwdSettingKey    = "gorm.postgres.pwd"
+	GormPostgresDBSettingKey     = "gorm.postgres.db"
+	GormPostgresMXOpenSettingKey = "gorm.postgres.mxopen"
+	GormPostgresMXIdleSettingKey = "gorm.postgres.mxidle"
+	GormLogLevelSettingKey       = "gorm.log.level"
 
 	RedisHostSettingKey = "redis.host"
 	RedisPortSettingKey = "redis.port"
@@ -68,7 +68,7 @@ const (
 
 type Setting struct {
 	Key   string       `gorm:"size:255;uniqueIndex" json:"key"`
-	Value SettingValue `gorm:"type:json" json:"value"`
+	Value SettingValue `gorm:"type:jsonb" json:"value"`
 	BaseModel
 }
 
@@ -88,8 +88,8 @@ func (s *SettingValue) Scan(value any) error {
 		s.V = nil
 		return nil
 	}
-	bs, ok := value.([]byte)
-	if !ok {
+	bs, err := scanBytes(value)
+	if err != nil {
 		return fmt.Errorf("failed to scan SettingValue value")
 	}
 	decoder := json.NewDecoder(bytes.NewReader(bs))

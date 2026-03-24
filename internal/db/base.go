@@ -71,7 +71,7 @@ func applyGetOptions(tx *gorm.DB, options GetOptions) *gorm.DB {
 	}
 	if search := options.Search; len(search) > 0 {
 		for key, value := range search {
-			tx = tx.Where(fmt.Sprintf("%s LIKE ?", key), "%"+value+"%")
+			tx = tx.Where(fmt.Sprintf("%s ILIKE ?", key), "%"+value+"%")
 		}
 	}
 	if preloads := options.Preloads; len(preloads) > 0 {
@@ -98,7 +98,7 @@ func applyCountOptions(tx *gorm.DB, options CountOptions) *gorm.DB {
 	}
 	if search := options.Search; len(search) > 0 {
 		for key, value := range search {
-			tx = tx.Where(fmt.Sprintf("%s LIKE ?", key), "%"+value+"%")
+			tx = tx.Where(fmt.Sprintf("%s ILIKE ?", key), "%"+value+"%")
 		}
 	}
 	if options.Deleted {

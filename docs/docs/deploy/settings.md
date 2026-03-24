@@ -51,9 +51,9 @@ gin:
       - 127.0.0.1
       - ::1
 gorm:
-  mysql:
+  postgres:
     host: 127.0.0.1
-    port: 3306
+    port: 5432
     user: cbctf
     pwd: password
     db: cbctf
@@ -105,11 +105,11 @@ geocity_db: ./data/GeoLite2-City.mmdb
 
 ```bash
 CBCTF_GIN_PORT=9000
-CBCTF_GORM_MYSQL_PWD=newpassword
+CBCTF_GORM_POSTGRES_PWD=newpassword
 CBCTF_LOG_LEVEL=DEBUG
 ```
 
-`.` 会被 `_` 替换，因此 `gorm.mysql.pwd` 对应 `CBCTF_GORM_MYSQL_PWD`。
+`.` 会被 `_` 替换，因此 `gorm.postgres.pwd` 对应 `CBCTF_GORM_POSTGRES_PWD`。
 
 ## 关键字段
 
@@ -154,9 +154,9 @@ CBCTF_LOG_LEVEL=DEBUG
 
 当前代码中 **不存在** `gin.jwt.static` 配置项。
 
-### `gorm.mysql.*`
+### `gorm.postgres.*`
 
-MySQL 连接信息与连接池参数：
+PostgreSQL 连接信息与连接池参数：
 
 - `host`、`port`、`user`、`pwd`、`db`
 - `mxopen`：最大连接数

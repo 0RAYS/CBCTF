@@ -63,7 +63,11 @@ func JoinTeam(tx *gorm.DB, contest model.Contest, user model.User, form dto.Join
 	mu, _ := JoinTeamMutex.LoadOrStore(team.ID, &sync.Mutex{})
 	mu.(*sync.Mutex).Lock()
 	defer mu.(*sync.Mutex).Unlock()
-	if int(repo.CountAssociation(team, "Users"))+1 > contest.Size {
+	memberCount, ret := repo.CountUsers(team.ID)
+	if !ret.OK {
+		return model.Team{}, ret
+	}
+	if int(memberCount)+1 > contest.Size {
 		return model.Team{}, model.RetVal{Msg: i18n.Model.Team.Full}
 	}
 	if repo.IsInContest(contest.ID, user.ID) {
@@ -128,38 +132,64 @@ func LeaveTeam(tx *gorm.DB, contest model.Contest, team model.Team, userID uint)
 }
 
 func CalcTeamScore(tx *gorm.DB, team model.Team, blood bool) (float64, model.RetVal) {
-	contestFlags, ret := db.InitContestFlagRepo(tx).GetTeamSolvedContestFlags(team.ID)
+	scoreMap, ret := CalcTeamScores(tx, blood, team)
 	if !ret.OK {
 		return 0, ret
 	}
-	totalScore := 0.0
-	submissionRepo := db.InitSubmissionRepo(tx)
-	for _, contestFlag := range contestFlags {
-		_, score, ret := CalcContestFlagState(tx, contestFlag)
+	score := math.Trunc(scoreMap[team.ID]*100) / 100
+	return score, model.SuccessRetVal()
+}
+
+func CalcTeamScores(tx *gorm.DB, blood bool, teams ...model.Team) (map[uint]float64, model.RetVal) {
+	scoreMap := make(map[uint]float64)
+	if len(teams) == 0 {
+		return scoreMap, model.SuccessRetVal()
+	}
+
+	teamIDL := make([]uint, 0, len(teams))
+	for _, team := range teams {
+		teamIDL = append(teamIDL, team.ID)
+		scoreMap[team.ID] = 0
+	}
+
+	rows, ret := db.InitContestFlagRepo(tx).GetTeamsSolvedContestFlags(teamIDL...)
+	if !ret.OK {
+		return nil, ret
+	}
+	if len(rows) == 0 {
+		return scoreMap, model.SuccessRetVal()
+	}
+
+	contestFlagIDL := make([]uint, 0, len(rows))
+	for _, row := range rows {
+		contestFlagIDL = append(contestFlagIDL, row.ID)
+	}
+
+	bloodRanks := make(map[uint]map[uint]int)
+	if blood {
+		bloodRanks, ret = db.InitSubmissionRepo(tx).GetBloodRankMap(contestFlagIDL...)
 		if !ret.OK {
-			continue
+			return nil, ret
 		}
-		var rate float64
+	}
+
+	for _, row := range rows {
+		score := row.CurrentScore
 		if blood {
-			bloodTeam, _ := submissionRepo.GetBloodTeamID(contestFlag.ID)
-			for i, teamID := range bloodTeam {
-				if teamID == team.ID {
-					switch i {
-					case 0:
-						rate = model.FirstBloodRate
-					case 1:
-						rate = model.SecondBloodRate
-					case 2:
-						rate = model.ThirdBloodRate
-					}
-				}
-				if rate > 0 {
-					break
-				}
+			switch bloodRanks[row.ID][row.TeamID] {
+			case 1:
+				score += row.Score * model.FirstBloodRate
+			case 2:
+				score += row.Score * model.SecondBloodRate
+			case 3:
+				score += row.Score * model.ThirdBloodRate
 			}
 		}
-		totalScore += score + contestFlag.Score*rate
+		scoreMap[row.TeamID] += score
 	}
-	totalScore = math.Trunc(totalScore*100) / 100
-	return totalScore, model.SuccessRetVal()
+
+	for teamID, score := range scoreMap {
+		scoreMap[teamID] = math.Trunc(score*100) / 100
+	}
+	return scoreMap, model.SuccessRetVal()
 }

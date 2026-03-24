@@ -9,28 +9,27 @@ import (
 	"strings"
 
 	"github.com/mitchellh/mapstructure"
-	"gopkg.in/yaml.v3"
-
 	"github.com/spf13/viper"
+	"gopkg.in/yaml.v3"
 )
 
 type FrpsConfig struct {
-	Host    string `json:"host" binding:"hostname"`        // Frps 服务器地址
-	Port    int32  `json:"port" binding:"gte=0,lte=65535"` // Frps 服务器端口
-	Token   string `json:"token"`                          // Frps 服务器 Token
+	Host    string `json:"host" binding:"hostname"`
+	Port    int32  `json:"port" binding:"gte=0,lte=65535"`
+	Token   string `json:"token"`
 	Allowed []struct {
-		From    int32   `json:"from" binding:"gte=0,lte=65535"`         // Frps 服务器允许的端口范围
-		To      int32   `json:"to" binding:"gte=0,lte=65535"`           // Frps 服务器允许的端口范围
-		Exclude []int32 `json:"exclude" binding:"dive,gte=0,lte=65535"` // Frps 服务器排除的端口
+		From    int32   `json:"from" binding:"gte=0,lte=65535"`
+		To      int32   `json:"to" binding:"gte=0,lte=65535"`
+		Exclude []int32 `json:"exclude" binding:"dive,gte=0,lte=65535"`
 	} `json:"allowed"`
 }
 
 type Config struct {
-	Host string `mapstructure:"host" json:"host"` // 后端地址
-	Path string `mapstructure:"path" json:"path"` // 数据存储路径
+	Host string `mapstructure:"host" json:"host"`
+	Path string `mapstructure:"path" json:"path"`
 	Log  struct {
-		Level string `mapstructure:"level" json:"level"` // 日志级别:DEBUG, INFO, WARNING, ERROR
-		Save  bool   `mapstructure:"save" json:"save"`   // 是否保存日志到文件
+		Level string `mapstructure:"level" json:"level"`
+		Save  bool   `mapstructure:"save" json:"save"`
 	} `mapstructure:"log" json:"log"`
 	AsyncQ struct {
 		Log struct {
@@ -47,55 +46,55 @@ type Config struct {
 		} `mapstructure:"queues" json:"queues"`
 	} `mapstructure:"asynq" json:"asynq"`
 	Gin struct {
-		Mode   string `mapstructure:"mode" json:"mode"` // Gin 模式:debug, release, test
-		Host   string `mapstructure:"host" json:"host"` // Gin 服务监听地址
-		Port   uint   `mapstructure:"port" json:"port"` // Gin 服务监听端口
+		Mode   string `mapstructure:"mode" json:"mode"`
+		Host   string `mapstructure:"host" json:"host"`
+		Port   uint   `mapstructure:"port" json:"port"`
 		Upload struct {
-			Max int `mapstructure:"max" json:"max"` // 上传文件最大大小(单位:MB)
+			Max int `mapstructure:"max" json:"max"`
 		} `mapstructure:"upload" json:"upload"`
-		Proxies   []string `mapstructure:"proxies" json:"proxies"` // 信任的代理服务器
+		Proxies   []string `mapstructure:"proxies" json:"proxies"`
 		RateLimit struct {
 			Global    int      `mapstructure:"global" json:"global"`
-			Whitelist []string `mapstructure:"whitelist" json:"whitelist"` // IP 白名单,不限制频率
+			Whitelist []string `mapstructure:"whitelist" json:"whitelist"`
 		} `mapstructure:"ratelimit" json:"ratelimit"`
 		CORS []string `mapstructure:"cors" json:"cors"`
 		Log  struct {
-			Whitelist []string `mapstructure:"whitelist" json:"whitelist"` // 日志白名单路径
+			Whitelist []string `mapstructure:"whitelist" json:"whitelist"`
 		} `mapstructure:"log" json:"log"`
 		JWT struct {
 			Secret string `mapstructure:"secret" json:"secret"`
 		} `mapstructure:"jwt" json:"jwt"`
 		Metrics struct {
-			Whitelist []string `mapstructure:"whitelist" json:"whitelist"` // Metrics 访问 IP 白名单
+			Whitelist []string `mapstructure:"whitelist" json:"whitelist"`
 		} `mapstructure:"metrics" json:"metrics"`
 	} `mapstructure:"gin" json:"gin"`
 	Gorm struct {
-		MySQL struct {
-			Host         string `mapstructure:"host" json:"host"`     // 数据库地址
-			Port         uint   `mapstructure:"port" json:"port"`     // 数据库端口
-			User         string `mapstructure:"user" json:"user"`     // 数据库用户名
-			Pwd          string `mapstructure:"pwd" json:"pwd"`       // 数据库密码
-			DB           string `mapstructure:"db" json:"db"`         // 数据库名称
-			MaxOpenConns int    `mapstructure:"mxopen" json:"mxopen"` // 最大连接数
-			MaxIdleConns int    `mapstructure:"mxidle" json:"mxidle"` // 最大空闲连接数
-		} `mapstructure:"mysql" json:"mysql"` // MySQL 数据库配置
+		Postgres struct {
+			Host         string `mapstructure:"host" json:"host"`
+			Port         uint   `mapstructure:"port" json:"port"`
+			User         string `mapstructure:"user" json:"user"`
+			Pwd          string `mapstructure:"pwd" json:"pwd"`
+			DB           string `mapstructure:"db" json:"db"`
+			MaxOpenConns int    `mapstructure:"mxopen" json:"mxopen"`
+			MaxIdleConns int    `mapstructure:"mxidle" json:"mxidle"`
+		} `mapstructure:"postgres" json:"postgres"`
 		Log struct {
-			Level string `mapstructure:"level" json:"level"` // GORM 日志级别:INFO, WARNING, ERROR, SILENT
+			Level string `mapstructure:"level" json:"level"`
 		} `mapstructure:"log" json:"log"`
 	} `mapstructure:"gorm" json:"gorm"`
 	Redis struct {
-		Host string `mapstructure:"host" json:"host"` // Redis 地址
-		Port uint   `mapstructure:"port" json:"port"` // Redis 端口
-		Pwd  string `mapstructure:"pwd" json:"pwd"`   // Redis 密码
+		Host string `mapstructure:"host" json:"host"`
+		Port uint   `mapstructure:"port" json:"port"`
+		Pwd  string `mapstructure:"pwd" json:"pwd"`
 	} `mapstructure:"redis" json:"redis"`
 	K8S struct {
 		Config       string `mapstructure:"config" json:"config"`
-		Namespace    string `mapstructure:"namespace" json:"namespace"` // Kubernetes 命名空间
-		TCPDumpImage string `mapstructure:"tcpdump" json:"tcpdump"`     // TCPDump 镜像
+		Namespace    string `mapstructure:"namespace" json:"namespace"`
+		TCPDumpImage string `mapstructure:"tcpdump" json:"tcpdump"`
 		Frp          struct {
 			On         bool         `mapstructure:"on" json:"on"`
-			FrpcImage  string       `mapstructure:"frpc" json:"frpc"`   // Frpc 镜像
-			NginxImage string       `mapstructure:"nginx" json:"nginx"` // Nginx 镜像
+			FrpcImage  string       `mapstructure:"frpc" json:"frpc"`
+			NginxImage string       `mapstructure:"nginx" json:"nginx"`
 			Frps       []FrpsConfig `mapstructure:"frps" json:"frps"`
 		} `mapstructure:"frp" json:"frp"`
 	} `mapstructure:"k8s" json:"k8s"`
@@ -120,7 +119,6 @@ var configFile string
 //go:embed default.yaml
 var defaultConf []byte
 
-// Init 初始化配置，path 为配置文件路径
 func Init(path string) {
 	configFile = path
 	viper.SetConfigFile(path)
@@ -142,14 +140,11 @@ func Init(path string) {
 	Tidy()
 }
 
-// Tidy 格式化配置, 简单处理部分配置
 func Tidy() {
 	Env.Host = strings.TrimSuffix(Env.Host, "/")
 	Env.Path = strings.TrimSuffix(Env.Path, "/")
 }
 
-// Save writes the current Env to config.yaml.
-// It preserves formatting only by overwriting the whole file.
 func Save() error {
 	if Env == nil {
 		return errors.New("config env is nil")

@@ -16,8 +16,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 )
 
@@ -45,8 +43,8 @@ func run() {
 	ip, port := config.Env.Gin.Host, config.Env.Gin.Port
 	quit := make(chan os.Signal, 1)
 	restart := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	signal.Notify(restart, syscall.SIGUSR1)
+	registerStopSignals(quit)
+	registerRestartSignals(restart)
 	go func() {
 		server = &http.Server{
 			Addr:    fmt.Sprintf("%s:%d", ip, port),

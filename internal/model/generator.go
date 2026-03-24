@@ -16,10 +16,10 @@ const (
 // BelongsTo Challenge
 // BelongsTo Contest
 type Generator struct {
-	ChallengeID   uint           `json:"challenge_id"`
+	ChallengeID   uint           `gorm:"index" json:"challenge_id"`
 	ChallengeName string         `json:"challenge_name"`
 	Challenge     Challenge      `json:"-"`
-	ContestID     sql.Null[uint] `json:"contest_id"`
+	ContestID     sql.Null[uint] `gorm:"index" json:"contest_id"`
 	Contest       Contest        `json:"-"`
 	Name          string         `json:"pod_name"`
 	Success       int64          `gorm:"default:0" json:"success"`

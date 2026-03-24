@@ -109,13 +109,13 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 		{Key: model.GinJWTSecretSettingKey, Value: model.SettingValue{V: config.Env.Gin.JWT.Secret}},
 		{Key: model.GinMetricsWhitelistSettingKey, Value: model.SettingValue{V: config.Env.Gin.Metrics.Whitelist}},
 
-		{Key: model.GormMySQLHostSettingKey, Value: model.SettingValue{V: config.Env.Gorm.MySQL.Host}},
-		{Key: model.GormMySQLPortSettingKey, Value: model.SettingValue{V: config.Env.Gorm.MySQL.Port}},
-		{Key: model.GormMySQLUserSettingKey, Value: model.SettingValue{V: config.Env.Gorm.MySQL.User}},
-		{Key: model.GormMySQLPwdSettingKey, Value: model.SettingValue{V: config.Env.Gorm.MySQL.Pwd}},
-		{Key: model.GormMySQLDBSettingKey, Value: model.SettingValue{V: config.Env.Gorm.MySQL.DB}},
-		{Key: model.GormMySQLMXOpenSettingKey, Value: model.SettingValue{V: config.Env.Gorm.MySQL.MaxOpenConns}},
-		{Key: model.GormMySQLMXIdleSettingKey, Value: model.SettingValue{V: config.Env.Gorm.MySQL.MaxIdleConns}},
+		{Key: model.GormPostgresHostSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.Host}},
+		{Key: model.GormPostgresPortSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.Port}},
+		{Key: model.GormPostgresUserSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.User}},
+		{Key: model.GormPostgresPwdSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.Pwd}},
+		{Key: model.GormPostgresDBSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.DB}},
+		{Key: model.GormPostgresMXOpenSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.MaxOpenConns}},
+		{Key: model.GormPostgresMXIdleSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Postgres.MaxIdleConns}},
 		{Key: model.GormLogLevelSettingKey, Value: model.SettingValue{V: config.Env.Gorm.Log.Level}},
 
 		{Key: model.RedisHostSettingKey, Value: model.SettingValue{V: config.Env.Redis.Host}},
@@ -225,25 +225,25 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 		return ret
 	}
 
-	if config.Env.Gorm.MySQL.Host, ret = GetValue[string](s, model.GormMySQLHostSettingKey); !ret.OK {
+	if config.Env.Gorm.Postgres.Host, ret = GetValue[string](s, model.GormPostgresHostSettingKey); !ret.OK {
 		return ret
 	}
-	if config.Env.Gorm.MySQL.Port, ret = GetValue[uint](s, model.GormMySQLPortSettingKey); !ret.OK {
+	if config.Env.Gorm.Postgres.Port, ret = GetValue[uint](s, model.GormPostgresPortSettingKey); !ret.OK {
 		return ret
 	}
-	if config.Env.Gorm.MySQL.User, ret = GetValue[string](s, model.GormMySQLUserSettingKey); !ret.OK {
+	if config.Env.Gorm.Postgres.User, ret = GetValue[string](s, model.GormPostgresUserSettingKey); !ret.OK {
 		return ret
 	}
-	if config.Env.Gorm.MySQL.Pwd, ret = GetValue[string](s, model.GormMySQLPwdSettingKey); !ret.OK {
+	if config.Env.Gorm.Postgres.Pwd, ret = GetValue[string](s, model.GormPostgresPwdSettingKey); !ret.OK {
 		return ret
 	}
-	if config.Env.Gorm.MySQL.DB, ret = GetValue[string](s, model.GormMySQLDBSettingKey); !ret.OK {
+	if config.Env.Gorm.Postgres.DB, ret = GetValue[string](s, model.GormPostgresDBSettingKey); !ret.OK {
 		return ret
 	}
-	if config.Env.Gorm.MySQL.MaxOpenConns, ret = GetValue[int](s, model.GormMySQLMXOpenSettingKey); !ret.OK {
+	if config.Env.Gorm.Postgres.MaxOpenConns, ret = GetValue[int](s, model.GormPostgresMXOpenSettingKey); !ret.OK {
 		return ret
 	}
-	if config.Env.Gorm.MySQL.MaxIdleConns, ret = GetValue[int](s, model.GormMySQLMXIdleSettingKey); !ret.OK {
+	if config.Env.Gorm.Postgres.MaxIdleConns, ret = GetValue[int](s, model.GormPostgresMXIdleSettingKey); !ret.OK {
 		return ret
 	}
 	if config.Env.Gorm.Log.Level, ret = GetValue[string](s, model.GormLogLevelSettingKey); !ret.OK {

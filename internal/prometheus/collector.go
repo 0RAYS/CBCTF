@@ -7,7 +7,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// CTFCollector 实现 prometheus.Collector 接口，通过 DB 实时查询避免状态漂移
+// CTFCollector implements prometheus.Collector and reads metrics from DB state.
 type CTFCollector struct {
 	contestTeamsDesc        *prometheus.Desc
 	contestParticipantsDesc *prometheus.Desc
@@ -44,26 +44,31 @@ func (c *CTFCollector) Collect(ch chan<- prometheus.Metric) {
 	if db.DB == nil {
 		return
 	}
+
 	contestRepo := db.InitContestRepo(db.DB)
 	contests, _, _ := contestRepo.List(-1, -1)
+	contestIDL := make([]uint, 0, len(contests))
 	for _, contest := range contests {
-		// 参赛选手数量
+		contestIDL = append(contestIDL, contest.ID)
+	}
+	userCountMap, _ := contestRepo.CountUsersMap(contestIDL...)
+	teamCountMap, _ := contestRepo.CountTeamsMap(contestIDL...)
+
+	for _, contest := range contests {
 		ch <- prometheus.MustNewConstMetric(
 			c.contestParticipantsDesc,
 			prometheus.GaugeValue,
-			float64(contestRepo.CountAssociation(contest, "Users")),
+			float64(userCountMap[contest.ID]),
 			fmt.Sprintf("%d", contest.ID),
 		)
-		// 参赛队伍数量
 		ch <- prometheus.MustNewConstMetric(
 			c.contestTeamsDesc,
 			prometheus.GaugeValue,
-			float64(contestRepo.CountAssociation(contest, "Teams")),
+			float64(teamCountMap[contest.ID]),
 			fmt.Sprintf("%d", contest.ID),
 		)
 	}
 
-	// 活跃靶机数
 	count, _ := db.InitVictimRepo(db.DB).Count(db.CountOptions{Conditions: map[string]any{"deleted_at": nil}})
 	ch <- prometheus.MustNewConstMetric(
 		c.victimsActiveDesc,

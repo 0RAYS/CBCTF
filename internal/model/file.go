@@ -44,8 +44,8 @@ func (f FilePath) Value() (driver.Value, error) {
 }
 
 func (f *FilePath) Scan(value any) error {
-	bytes, ok := value.([]byte)
-	if !ok {
+	bytes, err := scanBytes(value)
+	if err != nil {
 		return fmt.Errorf("failed to scan FilePath: %v", value)
 	}
 	if len(bytes) == 0 {

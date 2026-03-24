@@ -101,7 +101,11 @@ func DeleteSelf(tx *gorm.DB, user model.User, form dto.DeleteSelfForm) model.Ret
 
 func DeleteUser(tx *gorm.DB, user model.User) model.RetVal {
 	repo := db.InitUserRepo(tx)
-	if repo.CountAssociation(user, "Contests") > 0 {
+	count, ret := repo.CountContests(user.ID)
+	if !ret.OK {
+		return ret
+	}
+	if count > 0 {
 		return model.RetVal{Msg: i18n.Model.User.InContest}
 	}
 	return repo.Delete(user.ID)

@@ -174,16 +174,15 @@ persistence:
   size: 20Gi
   # existingClaim: ""  # Use an existing PVC
 
-# ── MySQL ─────────────────────────────────────────────────────────────────────
+# ── PostgreSQL ────────────────────────────────────────────────────────────────
 
-mysql:
+postgres:
   enabled: true
   image:
-    repository: mysql
-    tag: "8.0"
+    repository: postgres
+    tag: "17-alpine"
     pullPolicy: IfNotPresent
   auth:
-    rootPassword: ""  # auto-generated if empty
     database: "cbctf"
     username: "cbctf"
     password: ""      # auto-generated if empty
@@ -200,14 +199,12 @@ mysql:
     #   cpu: 500m
     #   memory: 512Mi
   service:
-    port: 3306
-  # Extra MySQL configuration appended to /etc/mysql/conf.d/custom.cnf
+    port: 5432
+  # Extra PostgreSQL configuration appended to postgresql.conf
   extraConfig: |
-    [mysqld]
-    character-set-server = utf8mb4
-    collation-server = utf8mb4_unicode_ci
     max_connections = 500
-    innodb_buffer_pool_size = 256M
+    shared_buffers = 256MB
+    wal_level = replica
 
 # ── Redis ─────────────────────────────────────────────────────────────────────
 

@@ -18,69 +18,69 @@ export function DatabaseConfigSection({ config, updateConfig }) {
     <ConfigSection title={t('admin.system.sections.database')} icon={IconDatabase}>
       <ConfigField
         label={t('admin.system.labels.dbHost')}
-        value={config.gorm.mysql.host}
+        value={config.gorm.postgres.host}
         onChange={(value) =>
           updateConfig((draft) => {
-            draft.gorm.mysql.host = value;
+            draft.gorm.postgres.host = value;
           })
         }
       />
       <ConfigField
         label={t('admin.system.labels.dbPort')}
         type="number"
-        value={config.gorm.mysql.port}
+        value={config.gorm.postgres.port}
         onChange={(value) =>
           updateConfig((draft) => {
-            draft.gorm.mysql.port = sanitizeNumber(value, config.gorm.mysql.port);
+            draft.gorm.postgres.port = sanitizeNumber(value, config.gorm.postgres.port);
           })
         }
       />
       <ConfigField
         label={t('admin.system.labels.dbName')}
-        value={config.gorm.mysql.db}
+        value={config.gorm.postgres.db}
         onChange={(value) =>
           updateConfig((draft) => {
-            draft.gorm.mysql.db = value;
+            draft.gorm.postgres.db = value;
           })
         }
       />
       <ConfigField
         label={t('admin.system.labels.dbUser')}
-        value={config.gorm.mysql.user}
+        value={config.gorm.postgres.user}
         onChange={(value) =>
           updateConfig((draft) => {
-            draft.gorm.mysql.user = value;
+            draft.gorm.postgres.user = value;
           })
         }
       />
       <ConfigField
         label={t('admin.system.labels.dbPassword')}
         type="password"
-        value={config.gorm.mysql.pwd}
+        value={config.gorm.postgres.pwd}
         placeholder={t('common.leaveBlankToKeep')}
         onChange={(value) =>
           updateConfig((draft) => {
-            draft.gorm.mysql.pwd = value;
+            draft.gorm.postgres.pwd = value;
           })
         }
       />
       <ConfigField
         label={t('admin.system.labels.dbIdle')}
         type="number"
-        value={config.gorm.mysql.mxidle}
+        value={config.gorm.postgres.mxidle}
         onChange={(value) =>
           updateConfig((draft) => {
-            draft.gorm.mysql.mxidle = sanitizeNumber(value, config.gorm.mysql.mxidle);
+            draft.gorm.postgres.mxidle = sanitizeNumber(value, config.gorm.postgres.mxidle);
           })
         }
       />
       <ConfigField
         label={t('admin.system.labels.dbOpen')}
         type="number"
-        value={config.gorm.mysql.mxopen}
+        value={config.gorm.postgres.mxopen}
         onChange={(value) =>
           updateConfig((draft) => {
-            draft.gorm.mysql.mxopen = sanitizeNumber(value, config.gorm.mysql.mxopen);
+            draft.gorm.postgres.mxopen = sanitizeNumber(value, config.gorm.postgres.mxopen);
           })
         }
       />

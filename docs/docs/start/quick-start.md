@@ -8,9 +8,9 @@ sidebar_position: 2
 
 | 方式 | 适用场景 | 优点 | 注意事项 |
 |------|---------|------|--------|
-| **Helm（推荐）** | 当前唯一支持的部署方式 | 一次性部署应用、MySQL、Redis 与所需 RBAC | 需要 Kubernetes 与 RWX 存储 |
+| **Helm（推荐）** | 当前唯一支持的部署方式 | 一次性部署应用、PostgreSQL、Redis 与所需 RBAC | 需要 Kubernetes 与 RWX 存储 |
 
-CBCTF **不支持 Docker 部署应用本体**。仓库根目录的 `docker-compose.yaml` 仅用于本地启动 MySQL 和 Redis 依赖。
+CBCTF **不支持 Docker 部署应用本体**。仓库根目录的依赖示例仅用于本地启动 PostgreSQL 和 Redis。
 
 ## Helm 快速部署
 
