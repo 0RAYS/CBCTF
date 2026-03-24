@@ -38,23 +38,27 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 			return model.User{}, ret
 		}
 		// 获取用户失败的时创建新用户
-		if !userRepo.IsUniqueKeyValue(0, "name", name) {
+		for range 5 {
+			user, ret = userRepo.Create(db.CreateUserOptions{
+				Name:           name,
+				Password:       model.NeverLoginPWD,
+				Email:          email,
+				Picture:        model.FileURL(picture),
+				Description:    description,
+				Verified:       true,
+				Provider:       provider.Provider,
+				ProviderUserID: id,
+				OauthRaw:       string(raw),
+			})
+			if ret.OK {
+				break
+			}
+			if ret.Msg != i18n.Model.DuplicateKeyValue {
+				return model.User{}, ret
+			}
 			name = fmt.Sprintf("%s_%s", provider.Provider, utils.RandStr(10))
-		}
-		if !userRepo.IsUniqueKeyValue(0, "email", email) {
 			email = fmt.Sprintf("%s_%s@example.com", provider.Provider, utils.RandStr(10))
 		}
-		user, ret = userRepo.Create(db.CreateUserOptions{
-			Name:           name,
-			Password:       model.NeverLoginPWD,
-			Email:          email,
-			Picture:        model.FileURL(picture),
-			Description:    description,
-			Verified:       true,
-			Provider:       provider.Provider,
-			ProviderUserID: id,
-			OauthRaw:       string(raw),
-		})
 		if !ret.OK {
 			return model.User{}, ret
 		}
