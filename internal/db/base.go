@@ -10,6 +10,7 @@ import (
 	"slices"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type BaseRepo[M model.Model] struct {
@@ -122,6 +123,28 @@ func (b *BaseRepo[M]) Get(options GetOptions) (M, model.RetVal) {
 
 func (b *BaseRepo[M]) GetByID(id uint, options ...GetOptions) (M, model.RetVal) {
 	return b.GetByUniqueField("id", id, options...)
+}
+
+func (b *BaseRepo[M]) GetByIDForUpdate(id uint, optionsL ...GetOptions) (M, model.RetVal) {
+	options := GetOptions{}
+	if len(optionsL) > 0 {
+		options = optionsL[0]
+	}
+	if options.Conditions == nil {
+		options.Conditions = make(map[string]any)
+	}
+	options.Conditions["id"] = id
+
+	var m M
+	res := applyGetOptions(b.DB.Model(new(M)).Clauses(clause.Locking{Strength: "UPDATE"}), options).Limit(1).Find(&m)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get %s for update: %s", model.ModelName(m), res.Error)
+		return *new(M), model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.ModelName(m), "Error": res.Error.Error()}}
+	}
+	if res.RowsAffected == 0 {
+		return *new(M), model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.ModelName(*new(M))}}
+	}
+	return m, model.SuccessRetVal()
 }
 
 func (b *BaseRepo[M]) GetByUniqueField(key string, value any, optionsL ...GetOptions) (M, model.RetVal) {
