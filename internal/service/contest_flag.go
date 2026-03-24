@@ -14,7 +14,7 @@ func VerifyFlag(tx *gorm.DB, team model.Team, contestChallenge model.ContestChal
 	contestFlagRepo := db.InitContestFlagRepo(tx)
 	contestFlagL, _, ret := contestFlagRepo.List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
-		Preloads:   map[string]db.GetOptions{"TeamFlags": {}},
+		Preloads:   map[string]db.GetOptions{"TeamFlags": {Conditions: map[string]any{"team_id": team.ID}}},
 	})
 	if !ret.OK {
 		return false, model.ContestFlag{}, model.TeamFlag{}, ret
