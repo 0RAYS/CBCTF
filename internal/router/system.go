@@ -10,8 +10,8 @@ import (
 	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
+	"CBCTF/internal/sys"
 	"os"
-	"syscall"
 
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/net"
@@ -278,7 +278,7 @@ func RestartSystem(ctx *gin.Context) {
 		return
 	}
 	go func(proc *os.Process) {
-		_ = proc.Signal(syscall.SIGUSR1)
+		_ = sys.Restart(proc)
 	}(proc)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
