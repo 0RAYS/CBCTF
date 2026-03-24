@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"errors"
+	"fmt"
 	"time"
 
 	"gorm.io/gorm"
@@ -17,7 +18,6 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 	failedL := make([]string, 0)
 	contestChallengeRepo := db.InitContestChallengeRepo(tx)
 	challengeRepo := db.InitChallengeRepo(tx)
-	contestFlagRepo := db.InitContestFlagRepo(tx)
 	for _, challengeRandID := range form.ChallengeIDs {
 		challenge, ret := challengeRepo.GetByRandID(challengeRandID, db.GetOptions{
 			Preloads: map[string]db.GetOptions{"ChallengeFlags": {}},
@@ -29,7 +29,10 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 		if !contestChallengeRepo.IsUniqueContestChallenge(contest.ID, challenge.ID) {
 			continue
 		}
-		_ = tx.Transaction(func(tx2 *gorm.DB) error {
+		if err := tx.Transaction(func(tx2 *gorm.DB) error {
+			contestChallengeRepo := db.InitContestChallengeRepo(tx2)
+			contestFlagRepo := db.InitContestFlagRepo(tx2)
+
 			options := db.CreateContestChallengeOptions{
 				ContestID:   contest.ID,
 				ChallengeID: challenge.ID,
@@ -43,9 +46,11 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 				options.Attempt = 1
 			}
 			contestChallenge, ret := contestChallengeRepo.Create(options)
-			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-				failedL = append(failedL, challengeRandID)
-				return errors.New(err.(string))
+			if !ret.OK {
+				if err, ok := ret.Attr["Error"]; ok {
+					return errors.New(err.(string))
+				}
+				return fmt.Errorf("%s", ret.Msg)
 			}
 			for _, flag := range challenge.ChallengeFlags {
 				contestFlagOptions := db.CreateContestFlagOptions{
@@ -62,21 +67,27 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 					Last:               time.Now(),
 				}
 				_, ret = contestFlagRepo.Create(contestFlagOptions)
-				if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-					failedL = append(failedL, challengeRandID)
-					return errors.New(err.(string))
+				if !ret.OK {
+					if err, ok := ret.Attr["Error"]; ok {
+						return errors.New(err.(string))
+					}
+					return fmt.Errorf("%s", ret.Msg)
 				}
 			}
 			contestChallenge, ret = contestChallengeRepo.GetByID(contestChallenge.ID, db.GetOptions{
 				Preloads: map[string]db.GetOptions{"Challenge": {}, "ContestFlags": {}},
 			})
-			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-				failedL = append(failedL, challengeRandID)
-				return errors.New(err.(string))
+			if !ret.OK {
+				if err, ok := ret.Attr["Error"]; ok {
+					return errors.New(err.(string))
+				}
+				return fmt.Errorf("%s", ret.Msg)
 			}
 			contestChallengeL = append(contestChallengeL, contestChallenge)
 			return nil
-		})
+		}); err != nil {
+			failedL = append(failedL, challengeRandID)
+		}
 	}
 	return contestChallengeL, failedL, model.SuccessRetVal()
 }
