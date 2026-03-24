@@ -60,9 +60,7 @@ func (r *RequestRepo) Insert(requests ...model.Request) model.RetVal {
 
 func (r *RequestRepo) CountIP() (int64, model.RetVal) {
 	var count int64
-	res := r.DB.Table("(?) AS request_ips",
-		r.DB.Model(&model.Request{}).Select("ip").Distinct("ip"),
-	).Count(&count)
+	res := r.DB.Model(&model.Request{}).Distinct("ip").Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count Request: %s", res.Error)
 		return 0, model.RetVal{Msg: i18n.Model.Request.GetError, Attr: map[string]any{"Error": res.Error.Error()}}

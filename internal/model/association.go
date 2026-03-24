@@ -1,21 +1,21 @@
 package model
 
 type UserTeam struct {
-	UserID uint `gorm:"index:idx_user_team,unique"`
-	TeamID uint `gorm:"index:idx_user_team,unique"`
+	UserID uint `gorm:"primaryKey;autoIncrement:false"`
+	TeamID uint `gorm:"primaryKey;autoIncrement:false"`
 }
 
 type UserContest struct {
-	UserID    uint `gorm:"index:idx_user_contest,unique"`
-	ContestID uint `gorm:"index:idx_user_contest,unique"`
+	UserID    uint `gorm:"primaryKey;autoIncrement:false"`
+	ContestID uint `gorm:"primaryKey;autoIncrement:false"`
 }
 
 type UserGroup struct {
-	UserID  uint `gorm:"index:idx_user_group,unique"`
-	GroupID uint `gorm:"index:idx_user_group,unique"`
+	UserID  uint `gorm:"primaryKey;autoIncrement:false"`
+	GroupID uint `gorm:"primaryKey;autoIncrement:false"`
 }
 
 type RolePermission struct {
-	RoleID       uint `gorm:"index:idx_role_permission,unique"`
-	PermissionID uint `gorm:"index:idx_role_permission,unique"`
+	RoleID       uint `gorm:"primaryKey;autoIncrement:false"`
+	PermissionID uint `gorm:"primaryKey;autoIncrement:false"`
 }
