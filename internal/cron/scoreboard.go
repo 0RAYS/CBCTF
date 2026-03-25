@@ -83,11 +83,9 @@ func updateUserRankingTask() model.RetVal {
 	}
 
 	for _, user := range users {
-		solved := userSolvedCount[user.ID]
-		score := math.Trunc(userScore[user.ID]*100) / 100
 		userRepo.Update(user.ID, db.UpdateUserOptions{
-			Score:  &score,
-			Solved: &solved,
+			Score:  new(math.Trunc(userScore[user.ID]*100) / 100),
+			Solved: new(userSolvedCount[user.ID]),
 		})
 	}
 	service.UpdateUserRanking(db.DB, -1, -1)
