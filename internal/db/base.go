@@ -7,7 +7,6 @@ import (
 	"CBCTF/internal/utils"
 	"errors"
 	"fmt"
-	"reflect"
 	"slices"
 
 	"gorm.io/gorm"
@@ -67,20 +66,9 @@ func (b *BaseRepo[M]) Create(options CreateOptions) (M, model.RetVal) {
 	return b.Insert(options.Convert2Model().(M))
 }
 
-func applyConditions(tx *gorm.DB, conditions map[string]any) *gorm.DB {
-	for key, value := range conditions {
-		if value != nil && (reflect.TypeOf(value).Kind() == reflect.Slice || reflect.TypeOf(value).Kind() == reflect.Array) {
-			tx = tx.Where(fmt.Sprintf("%s = ANY(?)", key), value)
-		} else {
-			tx = tx.Where(map[string]any{key: value})
-		}
-	}
-	return tx
-}
-
 func applyGetOptions(tx *gorm.DB, options GetOptions) *gorm.DB {
 	if conditions := options.Conditions; len(conditions) > 0 {
-		tx = applyConditions(tx, conditions)
+		tx = tx.Where(conditions)
 	}
 	if search := options.Search; len(search) > 0 {
 		for key, value := range search {
@@ -107,7 +95,7 @@ func applyGetOptions(tx *gorm.DB, options GetOptions) *gorm.DB {
 
 func applyCountOptions(tx *gorm.DB, options CountOptions) *gorm.DB {
 	if conditions := options.Conditions; len(conditions) > 0 {
-		tx = applyConditions(tx, conditions)
+		tx = tx.Where(conditions)
 	}
 	if search := options.Search; len(search) > 0 {
 		for key, value := range search {
@@ -266,7 +254,7 @@ func (b *BaseRepo[M]) DiffUpdate(id uint, options DiffUpdateOptions) model.RetVa
 }
 
 func (b *BaseRepo[M]) Delete(idL ...uint) model.RetVal {
-	res := b.DB.Model(new(M)).Where("id = ANY(?)", idL).Delete(new(M))
+	res := b.DB.Model(new(M)).Where("id IN ?", idL).Delete(new(M))
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to delete %s: %s", model.ModelName(*new(M)), res.Error)
 		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.ModelName(*new(M)), "Error": res.Error.Error()}}
