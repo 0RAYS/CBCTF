@@ -128,7 +128,7 @@ func (c *ContestFlagRepo) GetUserSolvedContestFlags(userIDL ...uint) ([]UserSolv
 		Joins("INNER JOIN contest_flags ON submissions.contest_flag_id = contest_flags.id AND contest_flags.deleted_at IS NULL").
 		Joins("INNER JOIN users ON submissions.user_id = users.id AND users.deleted_at IS NULL").
 		Joins("INNER JOIN teams ON submissions.team_id = teams.id AND teams.deleted_at IS NULL").
-		Where("submissions.user_id IN ? AND submissions.solved = true AND submissions.deleted_at IS NULL", userIDL).
+		Where("submissions.user_id = ANY(?) AND submissions.solved = true AND submissions.deleted_at IS NULL", userIDL).
 		Order("submissions.user_id, contest_flags.id, submissions.created_at ASC, submissions.id ASC").
 		Scan(&results)
 	if res.Error != nil {
@@ -194,7 +194,7 @@ func (c *ContestFlagRepo) Delete(idL ...uint) model.RetVal {
 	if ret = InitTeamFlagRepo(c.DB).Delete(teamFlagIDL...); !ret.OK {
 		return ret
 	}
-	if res := c.DB.Model(&model.ContestFlag{}).Where("id IN ?", idL).Delete(&model.ContestFlag{}); res.Error != nil {
+	if res := c.DB.Model(&model.ContestFlag{}).Where("id = ANY(?)", idL).Delete(&model.ContestFlag{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete ContestFlags: %s", res.Error)
 		return model.RetVal{Msg: i18n.Model.ContestFlag.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}

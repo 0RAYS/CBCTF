@@ -57,7 +57,7 @@ func (t *TrafficRepo) GetTeamVictimIP(teamIDL ...uint) ([]TeamVictimIP, model.Re
 	res := t.DB.Table("traffics").
 		Select("victims.team_id, victims.id AS victim_id, traffics.src_ip, victims.deleted_at AS stop_time").
 		Joins("INNER JOIN victims ON traffics.victim_id = victims.id AND victims.deleted_at IS NULL").
-		Where("victims.team_id IN ? AND traffics.deleted_at IS NULL", teamIDL).
+		Where("victims.team_id = ANY(?) AND traffics.deleted_at IS NULL", teamIDL).
 		Group("victims.team_id, victims.id, traffics.src_ip, victims.deleted_at").
 		Scan(&teamVictimIPL)
 	if res.Error != nil {

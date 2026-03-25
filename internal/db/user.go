@@ -311,7 +311,7 @@ func (u *UserRepo) Delete(idL ...uint) model.RetVal {
 	if ret = InitSubmissionRepo(u.DB).Delete(submissionIDL...); !ret.OK {
 		return ret
 	}
-	if res := u.DB.Model(&model.User{}).Where("id IN ?", idL).Delete(&model.User{}); res.Error != nil {
+	if res := u.DB.Model(&model.User{}).Where("id = ANY(?)", idL).Delete(&model.User{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete User: %s", res.Error)
 		return model.RetVal{Msg: i18n.Model.User.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
