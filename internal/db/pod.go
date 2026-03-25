@@ -56,7 +56,7 @@ func (p *PodRepo) Delete(idL ...uint) model.RetVal {
 	if ret = InitContainerRepo(p.DB).Delete(containerIDL...); !ret.OK {
 		return ret
 	}
-	if res := p.DB.Model(&model.Pod{}).Where("id = ANY(?)", idL).Delete(&model.Pod{}); res.Error != nil {
+	if res := p.DB.Model(&model.Pod{}).Where("id IN ?", idL).Delete(&model.Pod{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Pod: %s", res.Error)
 		return model.RetVal{Msg: i18n.Model.Pod.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}

@@ -113,7 +113,7 @@ func (g *GroupRepo) Delete(idL ...uint) model.RetVal {
 			}
 		}
 	}
-	if res := g.DB.Model(&model.Group{}).Where("id = ANY(?)", idL).Delete(&model.Group{}); res.Error != nil {
+	if res := g.DB.Model(&model.Group{}).Where("id IN ?", idL).Delete(&model.Group{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Group: %s", res.Error)
 		return model.RetVal{Msg: i18n.Model.Group.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}

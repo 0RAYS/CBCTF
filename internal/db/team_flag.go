@@ -96,7 +96,7 @@ func (t *TeamFlagRepo) GetTeamFlagsWithChallenge(teamIDL ...uint) ([]TeamFlagWit
 		Joins("INNER JOIN contest_flags ON team_flags.contest_flag_id = contest_flags.id AND contest_flags.deleted_at IS NULL").
 		Joins("INNER JOIN contest_challenges ON contest_flags.contest_challenge_id = contest_challenges.id AND contest_challenges.deleted_at IS NULL").
 		Joins("INNER JOIN challenges ON contest_challenges.challenge_id = challenges.id AND challenges.deleted_at IS NULL").
-		Where("team_flags.team_id = ANY(?) AND team_flags.deleted_at IS NULL", teamIDL).
+		Where("team_flags.team_id IN ? AND team_flags.deleted_at IS NULL", teamIDL).
 		Scan(&results)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get TeamFlags: %s", res.Error)
@@ -113,7 +113,7 @@ func (t *TeamFlagRepo) GetSolvedContestFlags(teamIDL ...uint) ([]SolvedContestFl
 	res := t.DB.Table("team_flags").
 		Select("team_flags.team_id, contest_flags.*").
 		Joins("INNER JOIN contest_flags ON contest_flags.id = team_flags.contest_flag_id AND contest_flags.deleted_at IS NULL").
-		Where("team_flags.team_id = ANY(?) AND team_flags.solved = true AND team_flags.deleted_at IS NULL", teamIDL).
+		Where("team_flags.team_id IN ? AND team_flags.solved = true AND team_flags.deleted_at IS NULL", teamIDL).
 		Order("team_flags.team_id ASC, contest_flags.id ASC").
 		Scan(&results)
 	if res.Error != nil {
@@ -162,7 +162,7 @@ func (t *TeamFlagRepo) Exists(teamID uint, contestFlagIDL ...uint) (bool, model.
 		SELECT EXISTS (
 			SELECT 1
 			FROM team_flags
-			WHERE team_id = ? AND contest_flag_id = ANY(?) AND deleted_at IS NULL
+			WHERE team_id = ? AND contest_flag_id IN ? AND deleted_at IS NULL
 		)
 	`, teamID, contestFlagIDL).Scan(&exists)
 	if res.Error != nil {
@@ -178,7 +178,7 @@ func (t *TeamFlagRepo) CountGenerated(teamID uint, contestFlagIDL ...uint) (int6
 	}
 	var count int64
 	res := t.DB.Model(&model.TeamFlag{}).
-		Where("team_id = ? AND contest_flag_id = ANY(?)", teamID, contestFlagIDL).
+		Where("team_id = ? AND contest_flag_id IN ?", teamID, contestFlagIDL).
 		Count(&count)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to count generated team flags: %s", res.Error)

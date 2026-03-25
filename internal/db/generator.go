@@ -117,7 +117,7 @@ func (g *GeneratorRepo) Delete(idL ...uint) model.RetVal {
 			return ret
 		}
 	}
-	if res := g.DB.Model(&model.Generator{}).Where("id = ANY(?)", idL).Delete(&model.Generator{}); res.Error != nil {
+	if res := g.DB.Model(&model.Generator{}).Where("id IN ?", idL).Delete(&model.Generator{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Generator: %s", res.Error)
 		return model.RetVal{Msg: i18n.Model.Generator.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}

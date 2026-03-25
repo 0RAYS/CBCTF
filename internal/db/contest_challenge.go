@@ -169,7 +169,7 @@ func (c *ContestChallengeRepo) Delete(idL ...uint) model.RetVal {
 	if ret = InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ret.OK {
 		return ret
 	}
-	if res := c.DB.Model(&model.ContestChallenge{}).Where("id = ANY(?)", idL).Delete(&model.ContestChallenge{}); res.Error != nil {
+	if res := c.DB.Model(&model.ContestChallenge{}).Where("id IN ?", idL).Delete(&model.ContestChallenge{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete ContestChallenge: %s", res.Error)
 		return model.RetVal{Msg: i18n.Model.ContestChallenge.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
