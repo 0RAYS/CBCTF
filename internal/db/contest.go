@@ -182,7 +182,7 @@ func (c *ContestRepo) CountUsersMap(contestIDL ...uint) (map[uint]int64, model.R
 	rows := make([]row, 0)
 	res := c.DB.Model(&model.UserContest{}).
 		Select("contest_id, COUNT(*) AS count").
-		Where("contest_id IN ?", contestIDL).
+		Where("contest_id = ANY(?)", contestIDL).
 		Group("contest_id").
 		Scan(&rows)
 	if res.Error != nil {
@@ -209,7 +209,7 @@ func (c *ContestRepo) CountTeamsMap(contestIDL ...uint) (map[uint]int64, model.R
 	rows := make([]row, 0)
 	res := c.DB.Model(&model.Team{}).
 		Select("contest_id, COUNT(*) AS count").
-		Where("contest_id IN ?", contestIDL).
+		Where("contest_id = ANY(?)", contestIDL).
 		Group("contest_id").
 		Scan(&rows)
 	if res.Error != nil {
@@ -287,7 +287,7 @@ func (c *ContestRepo) Delete(idL ...uint) model.RetVal {
 	if ret = InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ret.OK {
 		return ret
 	}
-	if res := c.DB.Model(&model.Contest{}).Where("id IN ?", idL).Delete(&model.Contest{}); res.Error != nil {
+	if res := c.DB.Model(&model.Contest{}).Where("id = ANY(?)", idL).Delete(&model.Contest{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Contest: %s", res.Error)
 		return model.RetVal{Msg: i18n.Model.Contest.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}

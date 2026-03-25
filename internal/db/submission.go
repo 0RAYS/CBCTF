@@ -104,7 +104,7 @@ func (s *SubmissionRepo) GetBloodRankMap(contestFlagIDL ...uint) (map[uint]map[u
 
 	firstSolves := s.DB.Table("submissions").
 		Select("contest_flag_id, team_id, MIN(created_at) AS first_solved_at, MIN(id) AS first_submission_id").
-		Where("contest_flag_id IN ? AND solved = true AND team_id <> 0 AND deleted_at IS NULL", contestFlagIDL).
+		Where("contest_flag_id = ANY(?) AND solved = true AND team_id <> 0 AND deleted_at IS NULL", contestFlagIDL).
 		Group("contest_flag_id, team_id")
 
 	ranked := s.DB.Table("(?) AS first_solves", firstSolves).
@@ -160,7 +160,7 @@ func (s *SubmissionRepo) ListSolvedByTeamID(teamIDL ...uint) ([]model.Submission
 	}
 	submissions := make([]model.Submission, 0)
 	res := s.DB.Model(&model.Submission{}).
-		Where("team_id IN ? AND solved = true", teamIDL).
+		Where("team_id = ANY(?) AND solved = true", teamIDL).
 		Order("team_id ASC, created_at ASC, id ASC").
 		Find(&submissions)
 	if res.Error != nil {

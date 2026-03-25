@@ -176,7 +176,7 @@ func (t *TeamRepo) CountUsersMap(teamIDL ...uint) (map[uint]int64, model.RetVal)
 	rows := make([]row, 0)
 	res := t.DB.Model(&model.UserTeam{}).
 		Select("team_id, COUNT(*) AS count").
-		Where("team_id IN ?", teamIDL).
+		Where("team_id = ANY(?)", teamIDL).
 		Group("team_id").
 		Scan(&rows)
 	if res.Error != nil {
@@ -232,7 +232,7 @@ func (t *TeamRepo) Delete(idL ...uint) model.RetVal {
 	if ret = InitTeamFlagRepo(t.DB).Delete(teamFlagIDL...); !ret.OK {
 		return ret
 	}
-	if res := t.DB.Model(&model.Team{}).Where("id IN ?", idL).Delete(&model.Team{}); res.Error != nil {
+	if res := t.DB.Model(&model.Team{}).Where("id = ANY(?)", idL).Delete(&model.Team{}); res.Error != nil {
 		log.Logger.Errorf("Failed to delete Team: %s", res.Error)
 		return model.RetVal{Msg: i18n.Model.Team.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}

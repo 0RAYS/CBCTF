@@ -80,7 +80,7 @@ func (r *RequestRepo) GetUserIP(userIDL ...uint) ([]UserIP, model.RetVal) {
 	}
 	var userIPL []UserIP
 	res := r.DB.Model(&model.Request{}).Select("user_id, ip, MIN(time) AS first_time").
-		Where("user_id IN ?", userIDL).
+		Where("user_id = ANY(?)", userIDL).
 		Group("user_id, ip").
 		Scan(&userIPL)
 	if res.Error != nil {

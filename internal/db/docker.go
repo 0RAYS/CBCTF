@@ -70,7 +70,7 @@ func (d *DockerRepo) Delete(idL ...uint) model.RetVal {
 	if ret = InitChallengeFlagRepo(d.DB).Delete(challengeFlagIDL...); !ret.OK {
 		return ret
 	}
-	if res := d.DB.Model(&model.Docker{}).Where("id IN ?", idL).Delete(&model.Docker{}); res.Error != nil {
+	if res := d.DB.Model(&model.Docker{}).Where("id = ANY(?)", idL).Delete(&model.Docker{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Docker: %s", res.Error)
 		return model.RetVal{Msg: i18n.Model.Docker.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}

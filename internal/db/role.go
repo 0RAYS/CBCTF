@@ -111,7 +111,7 @@ func (r *RoleRepo) Delete(idL ...uint) model.RetVal {
 			return ret
 		}
 	}
-	if res := r.DB.Model(&model.Role{}).Where("id IN ?", idL).Delete(&model.Role{}); res.Error != nil {
+	if res := r.DB.Model(&model.Role{}).Where("id = ANY(?)", idL).Delete(&model.Role{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Role: %s", res.Error)
 		return model.RetVal{Msg: i18n.Model.Role.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
