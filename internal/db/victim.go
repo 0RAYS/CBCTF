@@ -22,8 +22,7 @@ type CreateVictimOptions struct {
 	UserID             uint
 	Start              time.Time
 	Duration           time.Duration
-	VPC                model.VPC
-	NetworkPolicies    model.NetworkPolicies
+	Spec               model.VictimSpec
 }
 
 func (c CreateVictimOptions) Convert2Model() model.Model {
@@ -35,8 +34,7 @@ func (c CreateVictimOptions) Convert2Model() model.Model {
 		UserID:             c.UserID,
 		Start:              c.Start,
 		Duration:           c.Duration,
-		VPC:                c.VPC,
-		NetworkPolicies:    c.NetworkPolicies,
+		Spec:               c.Spec,
 		Status:             model.WaitingVictimStatus,
 	}
 }
@@ -44,7 +42,8 @@ func (c CreateVictimOptions) Convert2Model() model.Model {
 type UpdateVictimOptions struct {
 	Start            *time.Time
 	Duration         *time.Duration
-	VPC              *model.VPC
+	Spec             *model.VictimSpec
+	Resources        *model.VictimResources
 	Endpoints        *model.Endpoints
 	ExposedEndpoints *model.Endpoints
 	Status           *string
@@ -58,8 +57,11 @@ func (u UpdateVictimOptions) Convert2Map() map[string]any {
 	if u.Duration != nil {
 		options["duration"] = *u.Duration
 	}
-	if u.VPC != nil {
-		options["vpc"] = *u.VPC
+	if u.Spec != nil {
+		options["spec"] = *u.Spec
+	}
+	if u.Resources != nil {
+		options["resources"] = *u.Resources
 	}
 	if u.Endpoints != nil {
 		options["endpoints"] = *u.Endpoints

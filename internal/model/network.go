@@ -8,31 +8,6 @@ import (
 	"slices"
 )
 
-const (
-	EnvFlagPrefix      = "FLAG"
-	VolumeFlagPrefix   = "FLAG"
-	VolumeFlagLabelKey = "value"
-)
-
-// Docker
-// BelongsTo Challenge
-// HasMany ChallengeFlag
-type Docker struct {
-	ChallengeID    uint            `gorm:"index" json:"challenge_id"`
-	Challenge      Challenge       `json:"-"`
-	ChallengeFlags []ChallengeFlag `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Name           string          `json:"name"`
-	Image          string          `json:"image"`
-	CPU            float32         `json:"cpu"`
-	Memory         int64           `json:"memory"`
-	WorkingDir     string          `json:"working_dir"`
-	Command        StringList      `gorm:"default:null;type:jsonb" json:"command"`
-	Exposes        Exposes         `gorm:"default:null;type:jsonb" json:"exposes"`
-	Environment    StringMap       `gorm:"default:null;type:jsonb" json:"environment"`
-	Networks       Networks        `gorm:"default:null;type:jsonb" json:"networks"`
-	BaseModel
-}
-
 type Network struct {
 	Name     string `json:"name"`
 	CIDR     string `json:"cidr"`
@@ -55,9 +30,6 @@ func (n Networks) Value() (driver.Value, error) {
 		gateway, err := netip.ParseAddr(n.Gateway)
 		if err != nil || !cidr.Contains(gateway) {
 			return true
-		}
-		if n.IP == "" {
-			return false
 		}
 		ip, err := netip.ParseAddr(n.IP)
 		if err != nil {
@@ -84,10 +56,7 @@ type Exposes []Expose
 
 func (e Exposes) Value() (driver.Value, error) {
 	e = slices.DeleteFunc(e, func(n Expose) bool {
-		if n.Port < 0 || n.Port > 65535 {
-			return true
-		}
-		return false
+		return n.Port < 0 || n.Port > 65535
 	})
 	return json.Marshal(e)
 }

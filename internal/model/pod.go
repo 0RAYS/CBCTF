@@ -6,17 +6,14 @@ import (
 
 // Pod K8s Pod 实例
 // BelongsTo Victim
-// HasMany Container
 type Pod struct {
-	VictimID   uint        `json:"victim_id"`
-	Victim     Victim      `json:"-"`
-	Containers []Container `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Name       string      `json:"name"`
-	PodPorts   Exposes     `gorm:"type:jsonb" json:"pod_ports"`
-	Networks   Networks    `gorm:"type:jsonb" json:"-"`
+	VictimID uint    `json:"victim_id"`
+	Victim   Victim  `json:"-"`
+	Name     string  `json:"name"`
+	Spec     PodSpec `gorm:"type:jsonb" json:"-"`
 	BaseModel
 }
 
 func (p Pod) TrafficPcapPath() string {
-	return fmt.Sprintf("%s/pod-%d.pcap", Victim{BaseModel: BaseModel{ID: p.VictimID}}.TrafficBasePath(), p.ID)
+	return fmt.Sprintf("%s/pod-%s.pcap", Victim{BaseModel: BaseModel{ID: p.VictimID}}.TrafficBasePath(), p.Name)
 }

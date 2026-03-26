@@ -35,12 +35,6 @@ var metadataRegistry = map[reflect.Type]Metadata{
 		QueryFields:  []string{"id", "magic", "ip", "reason", "reason_type", "type", "checked", "hash", "comment", "time", "contest_id"},
 		SearchFields: []string{"magic", "ip", "reason", "reason_type", "type", "hash", "comment"},
 	},
-	reflect.TypeFor[Container](): {
-		Name:         "Container",
-		Table:        "containers",
-		UniqueFields: []string{"id"},
-		QueryFields:  []string{},
-	},
 	reflect.TypeFor[Contest](): {
 		Name:         "Contest",
 		Table:        "contests",
@@ -74,12 +68,6 @@ var metadataRegistry = map[reflect.Type]Metadata{
 		UniqueFields: []string{"id"},
 		QueryFields:  []string{"id", "user_id", "magic"},
 		SearchFields: []string{"magic"},
-	},
-	reflect.TypeFor[Docker](): {
-		Name:         "Docker",
-		Table:        "dockers",
-		UniqueFields: []string{"id"},
-		QueryFields:  []string{},
 	},
 	reflect.TypeFor[Email](): {
 		Name:         "Email",

@@ -10,98 +10,83 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Dockers2Yaml(dockers []model.Docker, challengeFlags []model.ChallengeFlag) string {
+func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.ChallengeFlag) string {
 	cfg := types.Project{
 		Services: make(types.Services, 0),
 		Networks: make(types.Networks),
 		Volumes:  make(types.Volumes),
 	}
 
-	volumeFlags := make(map[uint]map[string]string)
-	envFlags := make(map[uint]map[string]string)
+	flagMap := make(map[string]model.ChallengeFlag)
 	for _, flag := range challengeFlags {
-		if !flag.DockerID.Valid {
-			continue
-		}
-		switch flag.InjectType {
-		case model.VolumeFlagInjectType:
-			if volumeFlags[flag.DockerID.V] == nil {
-				volumeFlags[flag.DockerID.V] = make(map[string]string)
-			}
-			volumeFlags[flag.DockerID.V] = make(map[string]string)
-			volumeFlags[flag.DockerID.V][flag.Name] = flag.Path
-			cfg.Volumes[flag.Name] = types.VolumeConfig{
-				Labels: map[string]string{
-					model.VolumeFlagLabelKey: flag.Value,
-				},
-			}
-		case model.EnvFlagInjectType:
-			if envFlags[flag.DockerID.V] == nil {
-				envFlags[flag.DockerID.V] = make(map[string]string)
-			}
-			envFlags[flag.DockerID.V][flag.Name] = flag.Value
-		default:
-			continue
-		}
+		flagMap[flag.Name] = flag
 	}
 
-	var networks = make(map[string]model.Network)
-	for _, docker := range dockers {
-		service := types.ServiceConfig{
-			Name:       docker.Name,
-			Image:      docker.Image,
-			CPUS:       docker.CPU,
-			MemLimit:   types.UnitBytes(docker.Memory),
-			WorkingDir: docker.WorkingDir,
-			Command:    types.ShellCommand(docker.Command),
-		}
-		if docker.Command != nil && len(docker.Command) > 0 {
-			service.Command = types.ShellCommand(docker.Command)
-		}
-		if docker.Exposes != nil && len(docker.Exposes) > 0 {
-			service.Ports = make([]types.ServicePortConfig, 0)
-			for _, expose := range docker.Exposes {
-				service.Ports = append(service.Ports, types.ServicePortConfig{
-					Protocol:  expose.Protocol,
-					Published: strconv.Itoa(int(expose.Port)),
-					Mode:      "ingress",
-					Target:    uint32(expose.Port),
-				})
+	networks := make(map[string]model.Network)
+	for _, pod := range template.Pods {
+		for _, container := range pod.Containers {
+			service := types.ServiceConfig{
+				Name:       container.Name,
+				Image:      container.Image,
+				CPUS:       container.CPU,
+				MemLimit:   types.UnitBytes(container.Memory),
+				WorkingDir: container.WorkingDir,
+				Command:    types.ShellCommand(container.Command),
 			}
-		}
-		if docker.Environment != nil || len(envFlags[docker.ID]) > 0 {
-			service.Environment = make(map[string]*string)
-			if docker.Environment != nil && len(docker.Environment) > 0 {
-				for key, value := range docker.Environment {
-					service.Environment[key] = &value
+			if len(container.Exposes) > 0 {
+				service.Ports = make([]types.ServicePortConfig, 0, len(container.Exposes))
+				for _, expose := range container.Exposes {
+					service.Ports = append(service.Ports, types.ServicePortConfig{
+						Protocol:  expose.Protocol,
+						Published: strconv.Itoa(int(expose.Port)),
+						Mode:      "ingress",
+						Target:    uint32(expose.Port),
+					})
 				}
 			}
-			if flags, ok := envFlags[docker.ID]; ok {
-				for key, value := range flags {
-					service.Environment[key] = &value
+			if len(container.Environment) > 0 {
+				service.Environment = make(map[string]*string)
+				for key, value := range container.Environment {
+					v := value
+					service.Environment[key] = &v
 				}
 			}
-		}
-		if flags, ok := volumeFlags[docker.ID]; ok {
-			service.Volumes = make([]types.ServiceVolumeConfig, 0)
-			for key, path := range flags {
-				service.Volumes = append(service.Volumes, types.ServiceVolumeConfig{
-					Type:   "volume",
-					Source: key,
-					Target: path,
-				})
-			}
-		}
-		if docker.Networks != nil && len(docker.Networks) > 0 {
-			service.Networks = make(map[string]*types.ServiceNetworkConfig)
-			for _, network := range docker.Networks {
-				service.Networks[network.Name] = &types.ServiceNetworkConfig{
-					Ipv4Address: network.IP,
+			for _, flag := range challengeFlags {
+				if flag.Binding.PodKey != pod.Key || flag.Binding.ContainerKey != container.Key {
+					continue
 				}
-				networks[network.Name] = network
+				switch flag.Binding.Type {
+				case model.EnvFlagBindingType:
+					if service.Environment == nil {
+						service.Environment = make(map[string]*string)
+					}
+					v := flag.Value
+					service.Environment[flag.Binding.Target] = &v
+				case model.FileFlagBindingType:
+					service.Volumes = append(service.Volumes, types.ServiceVolumeConfig{
+						Type:   "volume",
+						Source: flag.Name,
+						Target: flag.Binding.Target,
+					})
+					cfg.Volumes[flag.Name] = types.VolumeConfig{
+						Labels: map[string]string{
+							model.VolumeFlagLabelKey: flag.Value,
+						},
+					}
+				}
+				_ = flagMap
 			}
+			if len(pod.Networks) > 0 {
+				service.Networks = make(map[string]*types.ServiceNetworkConfig)
+				for _, network := range pod.Networks {
+					service.Networks[network.Name] = &types.ServiceNetworkConfig{
+						Ipv4Address: network.IP,
+					}
+					networks[network.Name] = network
+				}
+			}
+			cfg.Services = append(cfg.Services, service)
 		}
-		cfg.Services = append(cfg.Services, service)
 	}
 	for name, network := range networks {
 		cfg.Networks[name] = types.NetworkConfig{
@@ -120,13 +105,12 @@ func Dockers2Yaml(dockers []model.Docker, challengeFlags []model.ChallengeFlag) 
 	}
 	res, err := cfg.MarshalYAML()
 	if err != nil {
-		log.Logger.Warningf("Failed to convert dockers to YAML: %s", err)
+		log.Logger.Warningf("Failed to convert template to YAML: %s", err)
 		return ""
 	}
 	return string(res)
 }
 
-// GetChallengeResp model.Challenge Preload model.Docker model.ChallengeFlag
 func GetChallengeResp(challenge model.Challenge) gin.H {
 	flags := make([]gin.H, 0)
 	if challenge.Type != model.PodsChallengeType {
@@ -136,7 +120,7 @@ func GetChallengeResp(challenge model.Challenge) gin.H {
 	}
 	dockerCompose := ""
 	if challenge.Type == model.PodsChallengeType {
-		dockerCompose = Dockers2Yaml(challenge.Dockers, challenge.ChallengeFlags)
+		dockerCompose = Template2Yaml(challenge.Template, challenge.ChallengeFlags)
 	}
 	file, _ := db.InitFileRepo(db.DB).Get(db.GetOptions{
 		Conditions: map[string]any{"model": model.ModelName(challenge), "model_id": challenge.ID, "type": model.ChallengeFileType},

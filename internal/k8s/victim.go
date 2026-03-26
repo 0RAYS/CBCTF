@@ -38,7 +38,7 @@ func VictimLabels(victim model.Victim, tags ...map[string]string) map[string]str
 	return labels
 }
 
-// StartVictim expects victim.Pods to be preloaded from DB.
+// StartVictim expects victim.Spec and workload pod records to be preloaded from DB.
 func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.RetVal) {
 	log.Logger.Infof("Starting Victim for Team %d Challenge %d", victim.TeamID.V, victim.ChallengeID)
 	labels := VictimLabels(victim, map[string]string{VictimPodTag: VictimPodTag})
@@ -55,11 +55,12 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 	for _, pod := range pods {
 		pod := pod
 		wg.Go(func() error {
+			podSpec := pod.Spec
 			containers := []corev1.Container{
 				{
 					Name:    "tcpdump",
 					Image:   config.Env.K8S.TCPDumpImage,
-					Command: []string{"/bin/sh", "-c", fmt.Sprintf("tcpdump -i any -w /root/mnt/pod-%d.pcap", pod.ID)},
+					Command: []string{"/bin/sh", "-c", fmt.Sprintf("tcpdump -i any -w /root/mnt/pod-%s.pcap", pod.Name)},
 					VolumeMounts: []corev1.VolumeMount{
 						{
 							Name:      nfsVolumeName,
@@ -81,9 +82,9 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					},
 				},
 			}
-			for _, container := range pod.Containers {
+			for _, container := range podSpec.Containers {
 				volumeMounts := make([]corev1.VolumeMount, 0)
-				for path, volumeFlag := range container.VolumeFlags {
+				for path, volumeFlag := range container.Files {
 					filename := path[strings.LastIndex(path, "/")+1:]
 					flagConfigMap, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
 						Name:   fmt.Sprintf("flag-%s", utils.RandStr(20)),
@@ -111,12 +112,9 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					})
 				}
 
-				envs := make([]corev1.EnvVar, 0, len(container.Environment)+len(container.EnvFlags))
+				envs := make([]corev1.EnvVar, 0, len(container.Environment))
 				for key, value := range container.Environment {
 					envs = append(envs, corev1.EnvVar{Name: key, Value: value})
-				}
-				for name, envFlag := range container.EnvFlags {
-					envs = append(envs, corev1.EnvVar{Name: name, Value: envFlag})
 				}
 
 				ports := make([]corev1.ContainerPort, 0, len(container.Exposes))
@@ -152,7 +150,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 			}
 
 			annotations := make(map[string]string)
-			for i, network := range pod.Networks {
+			for i, network := range podSpec.Networks {
 				subnet, ok := subnetMap[network.Name]
 				if !ok {
 					return fmt.Errorf("subnet %s not found", network.Name)
@@ -195,7 +193,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 			if len(annotations) == 0 {
 				service, ret := CreateService(ctx, CreateServiceOptions{
 					Name:     fmt.Sprintf("svc-%s", utils.RandStr(20)),
-					Ports:    pod.PodPorts,
+					Ports:    podSpec.ServicePorts,
 					Labels:   labels,
 					Selector: labels,
 				})
@@ -227,6 +225,11 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 		return victim, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 
+	victim.Resources.NetworkPlan = victim.Spec.NetworkPlan
+	victim.Resources.PodNames = make(model.StringList, 0, len(pods))
+	for _, pod := range pods {
+		victim.Resources.PodNames = append(victim.Resources.PodNames, pod.Name)
+	}
 	victim.ExposedEndpoints = append(model.Endpoints(nil), victim.Endpoints...)
 	if config.Env.K8S.Frp.On {
 		return AddFrpc(ctx, victim)
@@ -254,14 +257,14 @@ func createVictimNetworkResources(
 			MatchLabels: labels,
 			From: func() []*netv1.IPBlock {
 				tmp := make([]*netv1.IPBlock, 0)
-				for _, p := range victim.NetworkPolicies {
+				for _, p := range victim.Spec.NetworkPolicies {
 					tmp = append(tmp, p.From...)
 				}
 				return tmp
 			}(),
 			To: func() []*netv1.IPBlock {
 				tmp := make([]*netv1.IPBlock, 0)
-				for _, p := range victim.NetworkPolicies {
+				for _, p := range victim.Spec.NetworkPolicies {
 					tmp = append(tmp, p.To...)
 				}
 				return tmp
@@ -274,7 +277,7 @@ func createVictimNetworkResources(
 		return nil
 	})
 
-	if victim.VPC.Name == "" {
+	if victim.Spec.NetworkPlan.Name == "" {
 		if err := wg.Wait(); err != nil {
 			return nil, nil, nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 		}
@@ -282,7 +285,7 @@ func createVictimNetworkResources(
 	}
 
 	policyRoutes := make([]*kubeovnv1.PolicyRoute, 0)
-	for _, subnet := range victim.VPC.Subnets {
+	for _, subnet := range victim.Spec.NetworkPlan.Subnets {
 		if subnet != nil && subnet.NatGateway != nil {
 			policyRoutes = append(policyRoutes, &kubeovnv1.PolicyRoute{
 				Action:    kubeovnv1.PolicyRouteActionReroute,
@@ -295,18 +298,18 @@ func createVictimNetworkResources(
 
 	wg.Go(func() error {
 		_, ret := CreateVPC(ctx, CreateVPCOptions{
-			Name:         victim.VPC.Name,
+			Name:         victim.Spec.NetworkPlan.Name,
 			Labels:       labels,
 			PolicyRoutes: policyRoutes,
 		})
-		log.Logger.Debugf("Create VPC %s: %s", victim.VPC.Name, ret.Msg)
+		log.Logger.Debugf("Create VPC %s: %s", victim.Spec.NetworkPlan.Name, ret.Msg)
 		if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 			return errors.New(err.(string))
 		}
 		return nil
 	})
 
-	for _, subnet := range victim.VPC.Subnets {
+	for _, subnet := range victim.Spec.NetworkPlan.Subnets {
 		if subnet == nil {
 			continue
 		}
@@ -337,7 +340,7 @@ func createVictimNetworkResources(
 			_, ret := CreateSubnet(ctx, CreateSubnetOptions{
 				Name:       subnet.Name,
 				Labels:     labels,
-				VPC:        victim.VPC.Name,
+				VPC:        victim.Spec.NetworkPlan.Name,
 				CIDR:       subnet.CIDRBlock,
 				Gateway:    subnet.Gateway,
 				ExcludeIPs: subnet.ExcludeIps,
@@ -358,7 +361,7 @@ func createVictimNetworkResources(
 			_, ret := CreateVPCNatGateway(ctx, CreateVPCNatGatewayOptions{
 				Name:           subnet.NatGateway.Name,
 				Labels:         labels,
-				VPC:            victim.VPC.Name,
+				VPC:            victim.Spec.NetworkPlan.Name,
 				Subnet:         subnet.Name,
 				LanIP:          subnet.NatGateway.LanIP,
 				ExternalSubnet: []string{externalSubnetName},
@@ -462,7 +465,7 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 	tryDelete(DeleteEndpointList(ctx, labels))
 	tryDelete(DeleteServiceList(ctx, labels))
 	tryDelete(DeletePodList(ctx, labels))
-	for _, subnet := range victim.VPC.Subnets {
+	for _, subnet := range victim.Spec.NetworkPlan.Subnets {
 		tryDelete(DeleteIPList(ctx, map[string]string{"ovn.kubernetes.io/subnet": subnet.Name}))
 	}
 	return firstErr

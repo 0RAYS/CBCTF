@@ -68,8 +68,8 @@ func Init() {
 	}
 
 	err = DB.AutoMigrate(
-		&model.Challenge{}, &model.ChallengeFlag{}, &model.Cheat{}, &model.Victim{}, &model.Pod{}, &model.Container{},
-		&model.ContestChallenge{}, &model.ContestFlag{}, &model.CronJob{}, &model.Device{}, &model.Docker{}, &model.Email{},
+		&model.Challenge{}, &model.ChallengeFlag{}, &model.Cheat{}, &model.Victim{}, &model.Pod{},
+		&model.ContestChallenge{}, &model.ContestFlag{}, &model.CronJob{}, &model.Device{}, &model.Email{},
 		&model.Event{}, &model.File{}, &model.Generator{}, &model.Group{}, &model.Notice{}, &model.Oauth{},
 		&model.Permission{}, &model.Request{}, &model.Role{}, &model.Setting{}, &model.Smtp{}, &model.Submission{},
 		&model.Team{}, &model.TeamFlag{}, &model.Traffic{}, &model.User{}, &model.Webhook{}, &model.WebhookHistory{},

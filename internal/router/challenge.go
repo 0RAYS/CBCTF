@@ -106,13 +106,6 @@ func UpdateChallenge(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	challenge.Dockers, _, ret = db.InitDockerRepo(db.DB).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"challenge_id": challenge.ID},
-	})
-	if !ret.OK {
-		resp.JSON(ctx, ret)
-		return
-	}
 	tx := db.DB.Begin()
 	ret = service.UpdateChallenge(tx, challenge, form)
 	if !ret.OK {

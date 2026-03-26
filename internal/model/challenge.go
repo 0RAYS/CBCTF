@@ -27,12 +27,10 @@ const (
 // HasMany ChallengeFlag
 // HasMany ContestChallenge
 // HasMany Submission
-// HasMany Docker
 type Challenge struct {
 	ChallengeFlags    []ChallengeFlag    `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	ContestChallenges []ContestChallenge `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Submissions       []Submission       `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Dockers           []Docker           `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	RandID            string             `gorm:"type:varchar(36);uniqueIndex:idx_challenges_rand_id_active,where:deleted_at IS NULL;not null" json:"rand_id"`
 	Name              string             `gorm:"index" json:"name"`
 	Description       string             `json:"description"`
@@ -41,6 +39,8 @@ type Challenge struct {
 	GeneratorImage    string             `json:"generator_image"`
 	Options           Options            `gorm:"type:jsonb" json:"options"`
 	NetworkPolicies   NetworkPolicies    `gorm:"type:jsonb" json:"network_policies"`
+	Template          ChallengeTemplate  `gorm:"type:jsonb" json:"-"`
+	TemplateVersion   int                `gorm:"default:1" json:"-"`
 	BaseModel
 }
 

@@ -78,7 +78,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 	podFrpcConfigMap := make(map[string]string)
 	podNginxConfigMap := make(map[string]string)
 	podVPCGWMap := make(map[string]string)
-	if len(victim.VPC.Subnets) == 0 {
+	if len(victim.Spec.NetworkPlan.Subnets) == 0 {
 		podName := fmt.Sprintf("frpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6))
 		// 添加一个独立tag, 防止受 NetworkPolicy 影响
 		frpcConfig := fmt.Sprintf(frpcHeaderTemplate, frps.Host, frps.Port, frps.Token)
@@ -116,7 +116,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 		podNginxConfigMap[podName] = fmt.Sprintf(nginxHeaderTemplate, nginxConfig)
 		frpcPodNameL = append(frpcPodNameL, podName)
 	} else {
-		for _, subnet := range victim.VPC.Subnets {
+		for _, subnet := range victim.Spec.NetworkPlan.Subnets {
 			if subnet.NatGateway == nil {
 				continue
 			}
@@ -174,6 +174,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 		}
 		return frpcPods
 	}(victim.ID, frpcPodNameL)...)
+	victim.Resources.FrpcPodNames = append(model.StringList(nil), frpcPodNameL...)
 	labels := VictimLabels(victim, map[string]string{FrpcPodTag: FrpcPodTag})
 	for _, podName := range frpcPodNameL {
 		fcm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
