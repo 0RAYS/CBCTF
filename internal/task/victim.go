@@ -1,7 +1,6 @@
 package task
 
 import (
-	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/k8s"
@@ -43,8 +42,8 @@ func HandleStartVictimTask(_ context.Context, t *asynq.Task) error {
 	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
 	}
+	victim := payload.Victim
 	err := func() error {
-		victim := payload.Victim
 		podRepo := db.InitPodRepo(db.DB)
 		victimRepo := db.InitVictimRepo(db.DB)
 		if _, ret := victimRepo.GetByID(victim.ID); !ret.OK {
@@ -59,36 +58,25 @@ func HandleStartVictimTask(_ context.Context, t *asynq.Task) error {
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 		defer cancel()
-		ipExposesMap, ret := k8s.StartVictim(ctx, victim)
+		victim, ret := k8s.StartVictim(ctx, victim)
 		if !ret.OK {
 			return fmt.Errorf("start victim failed: %s", ret.Msg)
 		}
-		for ip, exposes := range ipExposesMap {
-			for _, expose := range exposes {
-				victim.Endpoints = append(victim.Endpoints, model.Endpoint{
-					IP:       ip,
-					Port:     expose.Port,
-					Protocol: expose.Protocol,
-				})
-			}
-		}
-		victim.ExposedEndpoints = victim.Endpoints
-		if config.Env.K8S.Frp.On {
-			var frpc []string
-			victim.ExposedEndpoints, frpc, ret = k8s.CreateFrpc(ctx, victim)
-			if !ret.OK {
-				return fmt.Errorf("create frpc failed: %s", ret.Msg)
-			}
-			for _, frpcPodName := range frpc {
+		basePodCount := len(payload.Victim.Pods)
+		if len(victim.Pods) > basePodCount {
+			frpcPods := victim.Pods[basePodCount:]
+			persistedFrpcPods := make([]model.Pod, 0, len(frpcPods))
+			for _, frpcPod := range frpcPods {
 				p, ret := podRepo.Create(db.CreatePodOptions{
 					VictimID: victim.ID,
-					Name:     frpcPodName,
+					Name:     frpcPod.Name,
 				})
 				if !ret.OK {
 					return fmt.Errorf("create frpc pod failed: %s", ret.Msg)
 				}
-				victim.Pods = append(victim.Pods, p)
+				persistedFrpcPods = append(persistedFrpcPods, p)
 			}
+			victim.Pods = append(append([]model.Pod(nil), victim.Pods[:basePodCount]...), persistedFrpcPods...)
 		}
 		ret = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
 			VPC:              &victim.VPC,
@@ -98,17 +86,13 @@ func HandleStartVictimTask(_ context.Context, t *asynq.Task) error {
 			Status:           new(model.RunningVictimStatus),
 		})
 		if !ret.OK {
-			victim, ret = db.InitVictimRepo(db.DB).HasAliveVictim(victim.TeamID.V, victim.ChallengeID)
-			if !ret.OK {
-				return fmt.Errorf("check victim failed: %s", ret.Msg)
-			}
 			_, err := EnqueueStopVictimTask(victim)
 			return err
 		}
 		return nil
 	}()
 	if err != nil {
-		_, _ = EnqueueStopVictimTask(payload.Victim)
+		_, _ = EnqueueStopVictimTask(victim)
 	}
 	return err
 }

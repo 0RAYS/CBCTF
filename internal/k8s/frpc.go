@@ -61,7 +61,7 @@ type CreateFrpcPodResult struct {
 	MSG  string
 }
 
-func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []string, model.RetVal) {
+func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetVal) {
 	idxBig, _ := rand.Int(rand.Reader, big.NewInt(int64(len(config.Env.K8S.Frp.Frps))))
 	frps := config.Env.K8S.Frp.Frps[idxBig.Int64()]
 	portRange := make([]int32, 0)
@@ -86,7 +86,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 		for _, endpoint := range victim.Endpoints {
 			exposedPort, ret := GetAvailableFrpsPort(frps.Host, portRange, endpoint.Protocol)
 			if !ret.OK {
-				return nil, nil, ret
+				return victim, ret
 			}
 			// 对于 TCP 协议, 启用 proxy_protocol
 			if protocol := strings.ToLower(endpoint.Protocol); protocol == "tcp" {
@@ -127,7 +127,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 			for _, dnat := range subnet.NatGateway.EIP.DNats {
 				exposedPort, ret := GetAvailableFrpsPort(frps.Host, portRange, dnat.Protocol)
 				if !ret.OK {
-					return nil, nil, ret
+					return victim, ret
 				}
 				// 对于 TCP 协议, 启用 proxy_protocol
 				if protocol := strings.ToLower(dnat.Protocol); protocol == "tcp" {
@@ -163,6 +163,17 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 			frpcPodNameL = append(frpcPodNameL, podName)
 		}
 	}
+	victim.ExposedEndpoints = newEndpoints
+	victim.Pods = append(victim.Pods, func(victimID uint, podNames []string) []model.Pod {
+		frpcPods := make([]model.Pod, 0, len(podNames))
+		for _, podName := range podNames {
+			frpcPods = append(frpcPods, model.Pod{
+				VictimID: victimID,
+				Name:     podName,
+			})
+		}
+		return frpcPods
+	}(victim.ID, frpcPodNameL)...)
 	labels := VictimLabels(victim, map[string]string{FrpcPodTag: FrpcPodTag})
 	for _, podName := range frpcPodNameL {
 		fcm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
@@ -171,7 +182,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 			Data:   map[string]string{"frpc.toml": podFrpcConfigMap[podName]},
 		})
 		if !ret.OK || fcm == nil {
-			return nil, nil, ret
+			return victim, ret
 		}
 		ncm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
 			Name:   fmt.Sprintf("nginx-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6)),
@@ -179,7 +190,7 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 			Data:   map[string]string{"nginx.conf": podNginxConfigMap[podName]},
 		})
 		if !ret.OK || ncm == nil {
-			return nil, nil, ret
+			return victim, ret
 		}
 		fcmVolume := corev1.Volume{
 			Name: "frpc-volume",
@@ -259,10 +270,10 @@ func CreateFrpc(ctx context.Context, victim model.Victim) (model.Endpoints, []st
 			options.PodAntiAffinity = map[string]string{"app": fmt.Sprintf("vpc-nat-gw-%s", gw)}
 		}
 		if _, ret = CreatePod(ctx, options); !ret.OK {
-			return nil, nil, ret
+			return victim, ret
 		}
 	}
-	return newEndpoints, frpcPodNameL, model.SuccessRetVal()
+	return victim, model.SuccessRetVal()
 }
 
 func GetAvailableFrpsPort(host string, portRange []int32, protocol string) (int32, model.RetVal) {

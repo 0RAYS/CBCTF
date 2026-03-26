@@ -38,180 +38,21 @@ func VictimLabels(victim model.Victim, tags ...map[string]string) map[string]str
 	return labels
 }
 
-// StartVictim model.Victim Preload model.Pod
-func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exposes, model.RetVal) {
+// StartVictim expects victim.Pods to be preloaded from DB.
+func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.RetVal) {
 	log.Logger.Infof("Starting Victim for Team %d Challenge %d", victim.TeamID.V, victim.ChallengeID)
-	// 添加一个独立tag, 防止 NetworkPolicy 影响 frpc 通信
 	labels := VictimLabels(victim, map[string]string{VictimPodTag: VictimPodTag})
-	subnetMap := make(map[string]*model.Subnet)
-	netAttchDefMap := make(map[string]*model.NetAttachDef)
-	ipExposesMap := make(map[string]model.Exposes)
-	ipExposesMapMutex := &sync.Mutex{}
-	wg := utils.NewGroup(ctx)
-	wg.Go(func() error {
-		name := fmt.Sprintf("np-%s", utils.RandStr(20))
-		_, ret := CreateNetworkPolicy(ctx, CreateNetworkPolicyOptions{
-			Name:        name,
-			Labels:      labels,
-			MatchLabels: labels,
-			From: func() []*netv1.IPBlock {
-				tmp := make([]*netv1.IPBlock, 0)
-				for _, p := range victim.NetworkPolicies {
-					tmp = append(tmp, p.From...)
-				}
-				return tmp
-			}(),
-			To: func() []*netv1.IPBlock {
-				tmp := make([]*netv1.IPBlock, 0)
-				for _, p := range victim.NetworkPolicies {
-					tmp = append(tmp, p.To...)
-				}
-				return tmp
-			}(),
-		})
-		log.Logger.Debugf("Create NetworkPolicy %s: %s", name, ret.Msg)
-		if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-			return errors.New(err.(string))
-		}
-		return nil
-	})
-	if victim.VPC.Name != "" {
-		// 首先创建 VPC 资源, 导致多跑一个循环
-		var policyRoutes []*kubeovnv1.PolicyRoute
-		for _, subnet := range victim.VPC.Subnets {
-			if subnet.NatGateway != nil {
-				policyRoutes = append(policyRoutes, &kubeovnv1.PolicyRoute{
-					Action:    kubeovnv1.PolicyRouteActionReroute,
-					Match:     fmt.Sprintf("ip4.src == %s", subnet.CIDRBlock),
-					NextHopIP: subnet.NatGateway.LanIP,
-					Priority:  1,
-				})
-			}
-		}
-		wg.Go(func() error {
-			_, ret := CreateVPC(ctx, CreateVPCOptions{
-				Name:         victim.VPC.Name,
-				Labels:       labels,
-				PolicyRoutes: policyRoutes,
-			})
-			log.Logger.Debugf("Create VPC %s: %s", victim.VPC.Name, ret.Msg)
-			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-				return errors.New(err.(string))
-			}
-			return nil
-		})
-		for _, subnet := range victim.VPC.Subnets {
-			wg.Go(func() error {
-				_, ret := CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
-					Name:      subnet.NetAttachDef.Name,
-					Namespace: globalNamespace,
-					Labels:    labels,
-					Config: fmt.Sprintf(`{
-						"cniVersion": "0.3.0",
-						"type": "kube-ovn",
-						"server_socket": "/run/openvswitch/kube-ovn-daemon.sock",
-						"provider": "%s.%s.ovn"
-					}`, subnet.NetAttachDef.Name, globalNamespace),
-				})
-				log.Logger.Debugf("Create NetAttachDef %s: %s", subnet.NetAttachDef.Name, ret.Msg)
-				if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-					return errors.New(err.(string))
-				}
-				return nil
-			})
-			wg.Go(func() error {
-				_, ret := CreateSubnet(ctx, CreateSubnetOptions{
-					Name:       subnet.Name,
-					Labels:     labels,
-					VPC:        victim.VPC.Name,
-					CIDR:       subnet.CIDRBlock,
-					Gateway:    subnet.Gateway,
-					ExcludeIPs: subnet.ExcludeIps,
-					Provider:   fmt.Sprintf("%s.%s.ovn", subnet.NetAttachDef.Name, globalNamespace),
-				})
-				log.Logger.Debugf("Create Subnet %s: %s", subnet.Name, ret.Msg)
-				if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-					return errors.New(err.(string))
-				}
-				return nil
-			})
-			subnetMap[subnet.DefName] = subnet
-			netAttchDefMap[subnet.DefName] = subnet.NetAttachDef
-			if subnet.NatGateway != nil {
-				wg.Go(func() error {
-					_, ret := CreateVPCNatGateway(ctx, CreateVPCNatGatewayOptions{
-						Name:           subnet.NatGateway.Name,
-						Labels:         labels,
-						VPC:            victim.VPC.Name,
-						Subnet:         subnet.Name,
-						LanIP:          subnet.NatGateway.LanIP,
-						ExternalSubnet: []string{externalSubnetName},
-					})
-					log.Logger.Debugf("Create VPCNatGateway %s: %s", subnet.NatGateway.Name, ret.Msg)
-					if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-						return errors.New(err.(string))
-					}
-					return nil
-				})
-				wg.Go(func() error {
-					e, ret := CreateEIP(ctx, CreateEIPOptions{
-						Name:           subnet.NatGateway.EIP.Name,
-						Labels:         labels,
-						NatGw:          subnet.NatGateway.Name,
-						ExternalSubnet: externalSubnetName,
-					})
-					log.Logger.Debugf("Create EIP %s: %s", subnet.NatGateway.EIP.Name, ret.Msg)
-					if !ret.OK {
-						if err, ok := ret.Attr["Error"].(string); ok {
-							return errors.New(err)
-						}
-						return fmt.Errorf("create EIP %s failed: %s", subnet.NatGateway.EIP.Name, ret.Msg)
-					}
-					// 后续会用到
-					subnet.NatGateway.EIP.IP = e.Spec.V4ip
-					for _, dnat := range subnet.NatGateway.EIP.DNats {
-						_, ret = CreateDNat(ctx, CreateDNatOptions{
-							Name:         dnat.Name,
-							Labels:       labels,
-							EIP:          subnet.NatGateway.EIP.Name,
-							ExternalPort: strconv.Itoa(int(dnat.ExternalPort)),
-							InternalPort: strconv.Itoa(int(dnat.InternalPort)),
-							InternalIP:   dnat.InternalIP,
-							Protocol:     dnat.Protocol,
-						})
-						log.Logger.Debugf("Create DNat %s: %s", dnat.Name, ret.Msg)
-						if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-							return errors.New(err.(string))
-						}
-						ipExposesMapMutex.Lock()
-						if !slices.ContainsFunc(ipExposesMap[e.Spec.V4ip], func(e model.Expose) bool {
-							return dnat.ExternalPort == e.Port && dnat.Protocol == e.Protocol
-						}) {
-							ipExposesMap[e.Spec.V4ip] = append(ipExposesMap[e.Spec.V4ip], model.Expose{
-								Port:     dnat.ExternalPort,
-								Protocol: dnat.Protocol,
-							})
-						}
-						ipExposesMapMutex.Unlock()
-					}
-					for _, snat := range subnet.NatGateway.EIP.SNats {
-						_, ret = CreateSNat(ctx, CreateSNatOptions{
-							Name:         snat.Name,
-							Labels:       labels,
-							EIP:          subnet.NatGateway.EIP.Name,
-							InternalCIDR: subnet.CIDRBlock,
-						})
-						log.Logger.Debugf("Create SNat %s: %s", snat.Name, ret.Msg)
-						if err, ok := ret.Attr["Error"]; ok && !ret.OK {
-							return errors.New(err.(string))
-						}
-					}
-					return nil
-				})
-			}
-		}
+
+	subnetMap, netAttachDefMap, endpoints, ret := createVictimNetworkResources(ctx, &victim, labels)
+	if !ret.OK {
+		return victim, ret
 	}
-	for _, pod := range victim.Pods {
+	victim.Endpoints = endpoints
+
+	endpointsMutex := &sync.Mutex{}
+	pods := append([]model.Pod(nil), victim.Pods...)
+	wg := utils.NewGroup(ctx)
+	for _, pod := range pods {
 		pod := pod
 		wg.Go(func() error {
 			containers := []corev1.Container{
@@ -243,7 +84,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 			for _, container := range pod.Containers {
 				volumeMounts := make([]corev1.VolumeMount, 0)
 				for path, volumeFlag := range container.VolumeFlags {
-					filename := strings.Split(path, "/")[len(strings.Split(path, "/"))-1]
+					filename := path[strings.LastIndex(path, "/")+1:]
 					flagConfigMap, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
 						Name:   fmt.Sprintf("flag-%s", utils.RandStr(20)),
 						Labels: labels,
@@ -269,25 +110,20 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 						},
 					})
 				}
-				envs := make([]corev1.EnvVar, 0)
+
+				envs := make([]corev1.EnvVar, 0, len(container.Environment)+len(container.EnvFlags))
 				for key, value := range container.Environment {
-					envs = append(envs, corev1.EnvVar{
-						Name:  key,
-						Value: value,
-					})
+					envs = append(envs, corev1.EnvVar{Name: key, Value: value})
 				}
 				for name, envFlag := range container.EnvFlags {
-					envs = append(envs, corev1.EnvVar{
-						Name:  name,
-						Value: envFlag,
-					})
+					envs = append(envs, corev1.EnvVar{Name: name, Value: envFlag})
 				}
-				ports := make([]corev1.ContainerPort, 0)
+
+				ports := make([]corev1.ContainerPort, 0, len(container.Exposes))
 				for _, p := range container.Exposes {
-					ports = append(ports, corev1.ContainerPort{
-						ContainerPort: p.Port,
-					})
+					ports = append(ports, corev1.ContainerPort{ContainerPort: p.Port})
 				}
+
 				limit := make(corev1.ResourceList)
 				if container.CPU > 0 {
 					limit["cpu"] = resource.MustParse(fmt.Sprintf("%dm", int(container.CPU*1000)))
@@ -295,6 +131,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 				if container.Memory > 0 {
 					limit["memory"] = resource.MustParse(strconv.Itoa(int(container.Memory)))
 				}
+
 				tmp := corev1.Container{
 					Name:         container.Name,
 					Image:        container.Image,
@@ -313,19 +150,18 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 				}
 				containers = append(containers, tmp)
 			}
+
 			annotations := make(map[string]string)
 			for i, network := range pod.Networks {
 				subnet, ok := subnetMap[network.Name]
 				if !ok {
 					return fmt.Errorf("subnet %s not found", network.Name)
 				}
-				netAttachDef, ok := netAttchDefMap[network.Name]
+				netAttachDef, ok := netAttachDefMap[network.Name]
 				if !ok {
 					return fmt.Errorf("netAttachDef %s not found", network.Name)
 				}
 				if i == 0 {
-					// 指定主网卡使用的子网以覆盖默认子网
-					// 兼容 kube-ovn 主 / 从 CNI 模式
 					annotations["ovn.kubernetes.io/logical_switch"] = subnet.Name
 					annotations["ovn.kubernetes.io/ip_address"] = network.IP
 					annotations["v1.multus-cni.io/default-network"] = fmt.Sprintf("%s/%s", globalNamespace, netAttachDef.Name)
@@ -335,11 +171,11 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 				}
 				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", netAttachDef.Name, globalNamespace)] = subnet.Name
 				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", netAttachDef.Name, globalNamespace)] = network.IP
-				// 需要出网则修改默认主路由, 多个出网则默认使用第一个出网路由
 				if network.External {
 					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/routes", netAttachDef.Name, globalNamespace)] = fmt.Sprintf("[{\"gw\":\"%s\"}]", network.Gateway)
 				}
 			}
+
 			pOptions := CreatePodOptions{
 				Name:        pod.Name,
 				Labels:      labels,
@@ -347,14 +183,15 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 				Containers:  containers,
 				Volumes:     volumes,
 			}
-			// 容忍不支持VPC网络的节点
 			if len(annotations) == 0 {
 				pOptions.Tolerations = map[string]string{VPCNetworkTolerationKey: VPCNetworkTolerationVal}
 			}
+
 			p, ret := CreatePod(ctx, pOptions)
 			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 				return errors.New(err.(string))
 			}
+
 			if len(annotations) == 0 {
 				service, ret := CreateService(ctx, CreateServiceOptions{
 					Name:     fmt.Sprintf("svc-%s", utils.RandStr(20)),
@@ -365,32 +202,243 @@ func StartVictim(ctx context.Context, victim model.Victim) (map[string]model.Exp
 				if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 					return errors.New(err.(string))
 				}
-				ipExposesMapMutex.Lock()
+				endpointsMutex.Lock()
 				for _, port := range service.Spec.Ports {
-					if !slices.ContainsFunc(ipExposesMap[p.Status.HostIP], func(e model.Expose) bool {
-						return port.NodePort == e.Port && strings.ToLower(e.Protocol) == strings.ToLower(string(port.Protocol))
+					endpoint := model.Endpoint{
+						IP:       p.Status.HostIP,
+						Port:     port.NodePort,
+						Protocol: string(port.Protocol),
+					}
+					if !slices.ContainsFunc(victim.Endpoints, func(e model.Endpoint) bool {
+						return e.IP == endpoint.IP && e.Port == endpoint.Port && strings.EqualFold(e.Protocol, endpoint.Protocol)
 					}) {
-						ipExposesMap[p.Status.HostIP] = append(ipExposesMap[p.Status.HostIP], model.Expose{
-							Port:     port.NodePort,
-							Protocol: string(port.Protocol),
-						})
+						victim.Endpoints = append(victim.Endpoints, endpoint)
 					}
 				}
-				ipExposesMapMutex.Unlock()
+				endpointsMutex.Unlock()
 			}
+
 			log.Logger.Debugf("Create Pod %s: %s", pod.Name, ret.Msg)
 			return nil
 		})
 	}
+
 	if err := wg.Wait(); err != nil {
-		return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		return victim, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
-	return ipExposesMap, model.SuccessRetVal()
+
+	victim.ExposedEndpoints = append(model.Endpoints(nil), victim.Endpoints...)
+	if config.Env.K8S.Frp.On {
+		return AddFrpc(ctx, victim)
+	}
+
+	return victim, model.SuccessRetVal()
+}
+
+func createVictimNetworkResources(
+	ctx context.Context,
+	victim *model.Victim,
+	labels map[string]string,
+) (map[string]*model.Subnet, map[string]*model.NetAttachDef, model.Endpoints, model.RetVal) {
+	subnetMap := make(map[string]*model.Subnet)
+	netAttachDefMap := make(map[string]*model.NetAttachDef)
+	endpoints := make(model.Endpoints, 0)
+	endpointsMutex := &sync.Mutex{}
+	wg := utils.NewGroup(ctx)
+
+	wg.Go(func() error {
+		name := fmt.Sprintf("np-%s", utils.RandStr(20))
+		_, ret := CreateNetworkPolicy(ctx, CreateNetworkPolicyOptions{
+			Name:        name,
+			Labels:      labels,
+			MatchLabels: labels,
+			From: func() []*netv1.IPBlock {
+				tmp := make([]*netv1.IPBlock, 0)
+				for _, p := range victim.NetworkPolicies {
+					tmp = append(tmp, p.From...)
+				}
+				return tmp
+			}(),
+			To: func() []*netv1.IPBlock {
+				tmp := make([]*netv1.IPBlock, 0)
+				for _, p := range victim.NetworkPolicies {
+					tmp = append(tmp, p.To...)
+				}
+				return tmp
+			}(),
+		})
+		log.Logger.Debugf("Create NetworkPolicy %s: %s", name, ret.Msg)
+		if err, ok := ret.Attr["Error"]; ok && !ret.OK {
+			return errors.New(err.(string))
+		}
+		return nil
+	})
+
+	if victim.VPC.Name == "" {
+		if err := wg.Wait(); err != nil {
+			return nil, nil, nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+		}
+		return subnetMap, netAttachDefMap, endpoints, model.SuccessRetVal()
+	}
+
+	policyRoutes := make([]*kubeovnv1.PolicyRoute, 0)
+	for _, subnet := range victim.VPC.Subnets {
+		if subnet != nil && subnet.NatGateway != nil {
+			policyRoutes = append(policyRoutes, &kubeovnv1.PolicyRoute{
+				Action:    kubeovnv1.PolicyRouteActionReroute,
+				Match:     fmt.Sprintf("ip4.src == %s", subnet.CIDRBlock),
+				NextHopIP: subnet.NatGateway.LanIP,
+				Priority:  1,
+			})
+		}
+	}
+
+	wg.Go(func() error {
+		_, ret := CreateVPC(ctx, CreateVPCOptions{
+			Name:         victim.VPC.Name,
+			Labels:       labels,
+			PolicyRoutes: policyRoutes,
+		})
+		log.Logger.Debugf("Create VPC %s: %s", victim.VPC.Name, ret.Msg)
+		if err, ok := ret.Attr["Error"]; ok && !ret.OK {
+			return errors.New(err.(string))
+		}
+		return nil
+	})
+
+	for _, subnet := range victim.VPC.Subnets {
+		if subnet == nil {
+			continue
+		}
+		subnet := subnet
+		subnetMap[subnet.DefName] = subnet
+		netAttachDefMap[subnet.DefName] = subnet.NetAttachDef
+
+		wg.Go(func() error {
+			_, ret := CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
+				Name:      subnet.NetAttachDef.Name,
+				Namespace: globalNamespace,
+				Labels:    labels,
+				Config: fmt.Sprintf(`{
+						"cniVersion": "0.3.0",
+						"type": "kube-ovn",
+						"server_socket": "/run/openvswitch/kube-ovn-daemon.sock",
+						"provider": "%s.%s.ovn"
+					}`, subnet.NetAttachDef.Name, globalNamespace),
+			})
+			log.Logger.Debugf("Create NetAttachDef %s: %s", subnet.NetAttachDef.Name, ret.Msg)
+			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
+				return errors.New(err.(string))
+			}
+			return nil
+		})
+
+		wg.Go(func() error {
+			_, ret := CreateSubnet(ctx, CreateSubnetOptions{
+				Name:       subnet.Name,
+				Labels:     labels,
+				VPC:        victim.VPC.Name,
+				CIDR:       subnet.CIDRBlock,
+				Gateway:    subnet.Gateway,
+				ExcludeIPs: subnet.ExcludeIps,
+				Provider:   fmt.Sprintf("%s.%s.ovn", subnet.NetAttachDef.Name, globalNamespace),
+			})
+			log.Logger.Debugf("Create Subnet %s: %s", subnet.Name, ret.Msg)
+			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
+				return errors.New(err.(string))
+			}
+			return nil
+		})
+
+		if subnet.NatGateway == nil {
+			continue
+		}
+
+		wg.Go(func() error {
+			_, ret := CreateVPCNatGateway(ctx, CreateVPCNatGatewayOptions{
+				Name:           subnet.NatGateway.Name,
+				Labels:         labels,
+				VPC:            victim.VPC.Name,
+				Subnet:         subnet.Name,
+				LanIP:          subnet.NatGateway.LanIP,
+				ExternalSubnet: []string{externalSubnetName},
+			})
+			log.Logger.Debugf("Create VPCNatGateway %s: %s", subnet.NatGateway.Name, ret.Msg)
+			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
+				return errors.New(err.(string))
+			}
+			return nil
+		})
+
+		wg.Go(func() error {
+			e, ret := CreateEIP(ctx, CreateEIPOptions{
+				Name:           subnet.NatGateway.EIP.Name,
+				Labels:         labels,
+				NatGw:          subnet.NatGateway.Name,
+				ExternalSubnet: externalSubnetName,
+			})
+			log.Logger.Debugf("Create EIP %s: %s", subnet.NatGateway.EIP.Name, ret.Msg)
+			if !ret.OK {
+				if err, ok := ret.Attr["Error"].(string); ok {
+					return errors.New(err)
+				}
+				return fmt.Errorf("create EIP %s failed: %s", subnet.NatGateway.EIP.Name, ret.Msg)
+			}
+
+			subnet.NatGateway.EIP.IP = e.Spec.V4ip
+			for _, dnat := range subnet.NatGateway.EIP.DNats {
+				_, ret = CreateDNat(ctx, CreateDNatOptions{
+					Name:         dnat.Name,
+					Labels:       labels,
+					EIP:          subnet.NatGateway.EIP.Name,
+					ExternalPort: strconv.Itoa(int(dnat.ExternalPort)),
+					InternalPort: strconv.Itoa(int(dnat.InternalPort)),
+					InternalIP:   dnat.InternalIP,
+					Protocol:     dnat.Protocol,
+				})
+				log.Logger.Debugf("Create DNat %s: %s", dnat.Name, ret.Msg)
+				if err, ok := ret.Attr["Error"]; ok && !ret.OK {
+					return errors.New(err.(string))
+				}
+				endpointsMutex.Lock()
+				endpoint := model.Endpoint{
+					IP:       e.Spec.V4ip,
+					Port:     dnat.ExternalPort,
+					Protocol: dnat.Protocol,
+				}
+				if !slices.ContainsFunc(victim.Endpoints, func(e model.Endpoint) bool {
+					return e.IP == endpoint.IP && e.Port == endpoint.Port && strings.EqualFold(e.Protocol, endpoint.Protocol)
+				}) {
+					victim.Endpoints = append(victim.Endpoints, endpoint)
+				}
+				endpointsMutex.Unlock()
+			}
+
+			for _, snat := range subnet.NatGateway.EIP.SNats {
+				_, ret = CreateSNat(ctx, CreateSNatOptions{
+					Name:         snat.Name,
+					Labels:       labels,
+					EIP:          subnet.NatGateway.EIP.Name,
+					InternalCIDR: subnet.CIDRBlock,
+				})
+				log.Logger.Debugf("Create SNat %s: %s", snat.Name, ret.Msg)
+				if err, ok := ret.Attr["Error"]; ok && !ret.OK {
+					return errors.New(err.(string))
+				}
+			}
+			return nil
+		})
+	}
+
+	if err := wg.Wait(); err != nil {
+		return nil, nil, nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+	}
+
+	return subnetMap, netAttachDefMap, endpoints, model.SuccessRetVal()
 }
 
 func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 	log.Logger.Infof("Stopping Victim for Team %d Challenge %d", victim.TeamID.V, victim.ChallengeID)
-	// 不添加独立 tag, 删除时直接删除所有相关资源
 	labels := VictimLabels(victim)
 	for _, endpoint := range victim.ExposedEndpoints {
 		redis.UnlockFrpsPort(endpoint.IP, endpoint.Port, endpoint.Protocol)
