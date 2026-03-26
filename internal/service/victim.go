@@ -73,6 +73,14 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 			}
 		}
 	}
+	bindingKey := func(podKey, containerKey string) string {
+		return podKey + "\x00" + containerKey
+	}
+	containerFlags := make(map[string][]model.ChallengeFlag, len(challenge.ChallengeFlags))
+	for _, flag := range challenge.ChallengeFlags {
+		key := bindingKey(flag.Binding.PodKey, flag.Binding.ContainerKey)
+		containerFlags[key] = append(containerFlags[key], flag)
+	}
 
 	buildContainerSpec := func(
 		podTemplate model.ChallengePodTemplate,
@@ -93,10 +101,7 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 		for key, value := range containerTemplate.Environment {
 			containerSpec.Environment[key] = value
 		}
-		for _, flag := range challenge.ChallengeFlags {
-			if flag.Binding.PodKey != podTemplate.Key || flag.Binding.ContainerKey != containerTemplate.Key {
-				continue
-			}
+		for _, flag := range containerFlags[bindingKey(podTemplate.Key, containerTemplate.Key)] {
 			value := flag.Value
 			if injected, ok := flagValues[flag.ID]; ok {
 				value = injected
