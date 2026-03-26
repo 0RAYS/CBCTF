@@ -136,12 +136,8 @@ function AdminGlobalSearch({ isOpen, onClose }) {
   }, [isOpen]);
 
   const selectedModelConfig = modelsMap[selectedModel] || {};
-  const queryFields = Array.isArray(selectedModelConfig)
-    ? selectedModelConfig
-    : selectedModelConfig.query || [];
-  const searchFields = Array.isArray(selectedModelConfig)
-    ? selectedModelConfig
-    : selectedModelConfig.search || [];
+  const queryFields = Array.isArray(selectedModelConfig) ? selectedModelConfig : selectedModelConfig.query || [];
+  const searchFields = Array.isArray(selectedModelConfig) ? selectedModelConfig : selectedModelConfig.search || [];
 
   const modelOptions = Object.keys(modelsMap).map((name) => ({
     value: name,

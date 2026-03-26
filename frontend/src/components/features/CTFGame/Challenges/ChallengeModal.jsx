@@ -357,9 +357,9 @@ function ChallengeModal({
       ? t('game.challengeModal.instance.waiting')
       : isTerminating
         ? t('game.challengeModal.instance.terminating')
-      : isPending
-        ? t('game.challengeModal.actions.launching')
-        : t('game.challengeModal.actions.launch');
+        : isPending
+          ? t('game.challengeModal.actions.launching')
+          : t('game.challengeModal.actions.launch');
 
     return (
       <div className="space-y-3">
@@ -374,11 +374,11 @@ function ChallengeModal({
                     ? 'bg-green-400'
                     : isTerminating
                       ? 'bg-orange-400 animate-pulse'
-                    : isPending
-                      ? 'bg-yellow-400 animate-pulse'
-                      : isWaiting
-                        ? 'bg-yellow-400'
-                        : 'bg-neutral-500'
+                      : isPending
+                        ? 'bg-yellow-400 animate-pulse'
+                        : isWaiting
+                          ? 'bg-yellow-400'
+                          : 'bg-neutral-500'
                 }`}
               />
               <span className="text-neutral-50 font-mono text-sm">
@@ -386,11 +386,11 @@ function ChallengeModal({
                   ? t('game.challengeModal.instance.running')
                   : isTerminating
                     ? t('game.challengeModal.instance.terminating')
-                  : isWaiting
-                    ? t('game.challengeModal.instance.waiting')
-                    : isPending
-                      ? t('game.challengeModal.instance.pending')
-                      : t('game.challengeModal.instance.notRunning')}
+                    : isWaiting
+                      ? t('game.challengeModal.instance.waiting')
+                      : isPending
+                        ? t('game.challengeModal.instance.pending')
+                        : t('game.challengeModal.instance.notRunning')}
               </span>
             </div>
 

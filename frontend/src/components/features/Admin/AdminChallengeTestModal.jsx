@@ -284,9 +284,9 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
       ? t('admin.challenge.testModal.instance.waiting')
       : isTerminating
         ? t('admin.challenge.testModal.instance.terminating')
-      : isPending
-        ? t('admin.challenge.testModal.actions.launching')
-        : t('admin.challenge.testModal.actions.launch');
+        : isPending
+          ? t('admin.challenge.testModal.actions.launching')
+          : t('admin.challenge.testModal.actions.launch');
 
     if (!testStatus && !loading.starting) return null;
 
@@ -303,11 +303,11 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
                     ? 'bg-green-400'
                     : isTerminating
                       ? 'bg-orange-400 animate-pulse'
-                    : isPending
-                      ? 'bg-yellow-400 animate-pulse'
-                      : isWaiting
-                        ? 'bg-yellow-400'
-                        : 'bg-neutral-400'
+                      : isPending
+                        ? 'bg-yellow-400 animate-pulse'
+                        : isWaiting
+                          ? 'bg-yellow-400'
+                          : 'bg-neutral-400'
                 }`}
               />
               <span className="text-neutral-50 font-mono text-sm">
@@ -315,11 +315,11 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
                   ? t('admin.challenge.testModal.instance.running')
                   : isTerminating
                     ? t('admin.challenge.testModal.instance.terminating')
-                  : isWaiting
-                    ? t('admin.challenge.testModal.instance.waiting')
-                    : isPending
-                      ? t('admin.challenge.testModal.instance.pending')
-                      : t('admin.challenge.testModal.instance.notRunning')}
+                    : isWaiting
+                      ? t('admin.challenge.testModal.instance.waiting')
+                      : isPending
+                        ? t('admin.challenge.testModal.instance.pending')
+                        : t('admin.challenge.testModal.instance.notRunning')}
               </span>
             </div>
 
