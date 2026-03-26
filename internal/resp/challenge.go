@@ -17,11 +17,6 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 		Volumes:  make(types.Volumes),
 	}
 
-	flagMap := make(map[string]model.ChallengeFlag)
-	for _, flag := range challengeFlags {
-		flagMap[flag.Name] = flag
-	}
-
 	networks := make(map[string]model.Network)
 	for _, pod := range template.Pods {
 		for _, container := range pod.Containers {
@@ -74,7 +69,6 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 						},
 					}
 				}
-				_ = flagMap
 			}
 			if len(pod.Networks) > 0 {
 				service.Networks = make(map[string]*types.ServiceNetworkConfig)

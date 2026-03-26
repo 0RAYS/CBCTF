@@ -55,12 +55,6 @@ stream {
 `
 )
 
-type CreateFrpcPodResult struct {
-	Name string
-	OK   bool
-	MSG  string
-}
-
 func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetVal) {
 	idxBig, _ := rand.Int(rand.Reader, big.NewInt(int64(len(config.Env.K8S.Frp.Frps))))
 	frps := config.Env.K8S.Frp.Frps[idxBig.Int64()]
