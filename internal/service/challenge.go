@@ -341,14 +341,13 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChal
 			if !ret.OK {
 				return ret
 			}
-			version := challenge.TemplateVersion + 1
 			if ret := db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
 				Name:            form.Name,
 				Description:     form.Description,
 				Category:        form.Category,
 				NetworkPolicies: form.NetworkPolicies,
 				Template:        &template,
-				TemplateVersion: &version,
+				TemplateVersion: new(challenge.TemplateVersion + 1),
 			}); !ret.OK {
 				return ret
 			}
