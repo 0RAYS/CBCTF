@@ -20,7 +20,7 @@ func closeTimeoutVictimsTask() model.RetVal {
 	}
 	for _, victim := range victims {
 		if victim.Start.Add(victim.Duration).Before(time.Now()) {
-			service.StopVictim(db.DB, victim)
+			service.ForceStopVictim(db.DB, victim)
 		}
 	}
 	return model.SuccessRetVal()

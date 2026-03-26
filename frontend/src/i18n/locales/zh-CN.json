@@ -819,6 +819,7 @@
         "statusBadge": {
           "waiting": "等待中",
           "pending": "准备中",
+          "terminating": "终止中",
           "running": "运行中",
           "stopped": "已停止"
         },
@@ -1034,6 +1035,7 @@
         "status": {
           "waiting": "等待中",
           "pending": "挂起中",
+          "terminating": "终止中",
           "running": "运行中",
           "stopped": "已停止"
         },
@@ -1110,6 +1112,7 @@
       "statusBadge": {
         "waiting": "等待中",
         "pending": "准备中",
+        "terminating": "终止中",
         "running": "运行中",
         "stopped": "已停止"
       },
@@ -1227,6 +1230,7 @@
         "instance": {
           "waiting": "等待启动队列",
           "pending": "启动中",
+          "terminating": "终止中",
           "running": "运行中",
           "notRunning": "未运行",
           "time": "时间：",
@@ -2337,6 +2341,7 @@
       "instance": {
         "waiting": "等待启动队列",
         "pending": "启动中",
+        "terminating": "终止中",
         "running": "运行中",
         "notRunning": "未运行",
         "time": "时间：",

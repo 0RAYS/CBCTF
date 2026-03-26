@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/task"
 	"CBCTF/internal/utils"
@@ -67,13 +68,43 @@ func StopGenerators(tx *gorm.DB, form dto.StopGeneratorsForm) model.RetVal {
 		return ret
 	}
 	for _, generator := range generators {
-		_, _ = task.EnqueueStopGeneratorTask(generator)
+		if ret = StopGenerator(tx, generator); !ret.OK {
+			log.Logger.Warningf("Skip stopping generator %d: %s", generator.ID, ret.Msg)
+		}
+	}
+	return model.SuccessRetVal()
+}
+
+func StopGenerator(tx *gorm.DB, generator model.Generator) model.RetVal {
+	switch generator.Status {
+	case model.WaitingGeneratorStatus, model.PendingGeneratorStatus:
+		return model.RetVal{Msg: i18n.Model.Generator.NotStoppable}
+	case model.TerminatingGeneratorStatus:
+		return model.SuccessRetVal()
+	}
+	repo := db.InitGeneratorRepo(tx)
+	if ret := repo.Update(generator.ID, db.UpdateGeneratorOptions{
+		Status: new(model.TerminatingGeneratorStatus),
+	}); !ret.OK {
+		return ret
+	}
+	generator.Status = model.TerminatingGeneratorStatus
+	_, err := task.EnqueueStopGeneratorTask(generator)
+	if err != nil {
+		log.Logger.Warningf("Failed to enqueue stop generator task: %v", err)
+		_ = repo.Update(generator.ID, db.UpdateGeneratorOptions{
+			Status: new(model.RunningGeneratorStatus),
+		})
+		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	return model.SuccessRetVal()
 }
 
 func GetGenerator(tx *gorm.DB, contestID uint, challenge model.Challenge) (model.Generator, model.RetVal) {
-	options := db.GetOptions{Conditions: map[string]any{"challenge_id": challenge.ID}}
+	options := db.GetOptions{Conditions: map[string]any{
+		"challenge_id": challenge.ID,
+		"status":       model.RunningGeneratorStatus,
+	}}
 	if contestID > 0 {
 		options.Conditions["contest_id"] = contestID
 	}

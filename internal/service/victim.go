@@ -349,10 +349,32 @@ func GetVictimStatus(tx *gorm.DB, teamID uint, challenge model.Challenge) gin.H 
 }
 
 func StopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
+	switch victim.Status {
+	case model.WaitingVictimStatus, model.PendingVictimStatus:
+		return model.RetVal{Msg: i18n.Model.Victim.NotStoppable}
+	}
+	return ForceStopVictim(tx, victim)
+}
+
+func ForceStopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
+	if victim.Status == model.TerminatingVictimStatus {
+		return model.SuccessRetVal()
+	}
+	repo := db.InitVictimRepo(tx)
+	rollbackStatus := victim.Status
+	if ret := repo.Update(victim.ID, db.UpdateVictimOptions{
+		Status: new(model.TerminatingVictimStatus),
+	}); !ret.OK {
+		return ret
+	}
+	victim.Status = model.TerminatingVictimStatus
 	LoadTraffic(tx, victim)
 	_, err := task.EnqueueStopVictimTask(victim)
 	if err != nil {
 		log.Logger.Warningf("Failed to enqueue stop victim task: %v", err)
+		_ = repo.Update(victim.ID, db.UpdateVictimOptions{
+			Status: &rollbackStatus,
+		})
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	return model.SuccessRetVal()
@@ -477,7 +499,7 @@ func StopVictims(tx *gorm.DB, form dto.StopVictimsForm) model.RetVal {
 	}
 	for _, victim := range victims {
 		if ret = StopVictim(tx, victim); !ret.OK {
-			return ret
+			log.Logger.Warningf("Skip stopping victim %d: %s", victim.ID, ret.Msg)
 		}
 	}
 	return model.SuccessRetVal()

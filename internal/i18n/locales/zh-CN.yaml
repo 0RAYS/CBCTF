@@ -61,6 +61,7 @@ model:
     notFound: "文件不存在"
   generator:
     notAvailable: "没有可用的附件生成器, 请联系管理员检查生成器状态"
+    notStoppable: "仅允许停止运行中的生成器"
     deleteError: "删除附件生成器失败: {{.Error}}"
   group:
     cannotUpdateDefault: "不允许更新默认组"
@@ -131,6 +132,7 @@ model:
   victim:
     limited: "容器数量达到上限"
     hasMuchTime: "距容器关闭20分钟内才可延长时间"
+    notStoppable: "仅允许停止运行中的靶机"
     deleteError: "删除 Victim 失败: {{.Error}}"
   webhook:
     invalidMethod: "不合法的 Webhook 请求方式"

@@ -44,7 +44,7 @@ func SubmitFlag(ctx *gin.Context) {
 			if !ret.OK {
 				return
 			}
-			service.StopVictim(db.DB, victim)
+			service.ForceStopVictim(db.DB, victim)
 		}()
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)

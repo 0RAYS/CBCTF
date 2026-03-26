@@ -15,7 +15,12 @@ import { useTranslation } from 'react-i18next';
 
 const normalizeInstanceStatus = (status) => {
   const normalizedStatus = typeof status === 'string' ? status.toLowerCase() : '';
-  if (normalizedStatus === 'waiting' || normalizedStatus === 'pending' || normalizedStatus === 'running') {
+  if (
+    normalizedStatus === 'waiting' ||
+    normalizedStatus === 'pending' ||
+    normalizedStatus === 'terminating' ||
+    normalizedStatus === 'running'
+  ) {
     return normalizedStatus;
   }
   return '';
@@ -77,6 +82,7 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
   const isRunning = currentInstanceStatus === 'running';
   const isWaiting = currentInstanceStatus === 'waiting';
   const isPending = currentInstanceStatus === 'pending';
+  const isTerminating = currentInstanceStatus === 'terminating';
   const instanceDuration = Math.max(Number(testStatus?.remote?.remaining) || 0, timeLeft);
   const progressWidth = instanceDuration > 0 ? Math.max(0, Math.min(100, (timeLeft / instanceDuration) * 100)) : 0;
 
@@ -131,7 +137,7 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
             toast.success({ description: t('admin.challenge.testModal.toast.statusRefreshSuccess') });
           }
           // Pod 仍在排队或启动中（页面刷新后恢复）→ 自动开始轮询
-          if (['waiting', 'pending'].includes(normalizeInstanceStatus(response.data.remote?.status))) {
+          if (['waiting', 'pending', 'terminating'].includes(normalizeInstanceStatus(response.data.remote?.status))) {
             startPolling(challenge.id);
           }
         }
@@ -276,6 +282,8 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
     const targets = testStatus?.remote?.target || [];
     const launchButtonLabel = isWaiting
       ? t('admin.challenge.testModal.instance.waiting')
+      : isTerminating
+        ? t('admin.challenge.testModal.instance.terminating')
       : isPending
         ? t('admin.challenge.testModal.actions.launching')
         : t('admin.challenge.testModal.actions.launch');
@@ -293,6 +301,8 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
                 className={`w-2 h-2 rounded-full transition-colors duration-300 ${
                   isRunning
                     ? 'bg-green-400'
+                    : isTerminating
+                      ? 'bg-orange-400 animate-pulse'
                     : isPending
                       ? 'bg-yellow-400 animate-pulse'
                       : isWaiting
@@ -303,6 +313,8 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
               <span className="text-neutral-50 font-mono text-sm">
                 {isRunning
                   ? t('admin.challenge.testModal.instance.running')
+                  : isTerminating
+                    ? t('admin.challenge.testModal.instance.terminating')
                   : isWaiting
                     ? t('admin.challenge.testModal.instance.waiting')
                     : isPending
@@ -327,8 +339,8 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
                 variant="primary"
                 size="sm"
                 onClick={handleStartVictim}
-                disabled={loading.starting || isWaiting || isPending}
-                className={isWaiting || isPending ? 'border-yellow-400 text-yellow-400' : ''}
+                disabled={loading.starting || isWaiting || isPending || isTerminating}
+                className={isWaiting || isPending || isTerminating ? 'border-yellow-400 text-yellow-400' : ''}
               >
                 {launchButtonLabel}
               </Button>
@@ -349,7 +361,7 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
         </div>
 
         {/* 进度条：waiting 显示静态条，pending 显示闪动条，running 显示倒计时 */}
-        {(isRunning || isWaiting || isPending) && (
+        {(isRunning || isWaiting || isPending || isTerminating) && (
           <div className="h-1.5 bg-neutral-700 rounded-full overflow-hidden">
             {isRunning ? (
               <motion.div
@@ -360,6 +372,12 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
               />
             ) : isWaiting ? (
               <div className="h-full w-full bg-yellow-400/35" />
+            ) : isTerminating ? (
+              <motion.div
+                className="h-full w-2/5 bg-orange-400/70 rounded-full"
+                animate={{ x: ['-100%', '350%'] }}
+                transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
+              />
             ) : (
               <motion.div
                 className="h-full w-2/5 bg-yellow-400/60 rounded-full"
@@ -406,6 +424,7 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
     isCopied,
     isPending,
     isRunning,
+    isTerminating,
     isWaiting,
     progressWidth,
     t,

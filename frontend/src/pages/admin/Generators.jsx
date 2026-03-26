@@ -11,9 +11,12 @@ import { useTranslation } from 'react-i18next';
 const STATUS_STYLES = {
   waiting: 'bg-yellow-400/10 text-yellow-400 border-yellow-400/30',
   pending: 'bg-geek-400/10 text-geek-400 border-geek-400/30',
+  terminating: 'bg-orange-400/10 text-orange-300 border-orange-400/30',
   running: 'bg-green-400/10 text-green-400 border-green-400/30',
   stopped: 'bg-neutral-500/10 text-neutral-400 border-neutral-500/30',
 };
+
+const isGeneratorStoppable = (generator) => generator?.status === 'running';
 
 function GeneratorStatusBadge({ status, t }) {
   const style = STATUS_STYLES[status] ?? STATUS_STYLES.stopped;
@@ -106,14 +109,21 @@ function AdminGenerators() {
   };
 
   const toggleSelect = (id) => {
+    const generator = generators.find((g) => g.id === id);
+    if (!isGeneratorStoppable(generator)) return;
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
 
   const toggleSelectAll = () => {
-    if (selectedIds.length === generators.length) {
+    const stoppableIds = generators.filter(isGeneratorStoppable).map((g) => g.id);
+    if (stoppableIds.length === 0) {
+      setSelectedIds([]);
+      return;
+    }
+    if (selectedIds.length === stoppableIds.length) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(generators.map((g) => g.id));
+      setSelectedIds(stoppableIds);
     }
   };
 
@@ -235,7 +245,10 @@ function AdminGenerators() {
                     <input
                       type="checkbox"
                       className="accent-geek-400"
-                      checked={generators.length > 0 && selectedIds.length === generators.length}
+                      checked={
+                        generators.filter(isGeneratorStoppable).length > 0 &&
+                        selectedIds.length === generators.filter(isGeneratorStoppable).length
+                      }
                       onChange={toggleSelectAll}
                     />
                   </th>
@@ -281,6 +294,7 @@ function AdminGenerators() {
                         type="checkbox"
                         className="accent-geek-400"
                         checked={selectedIds.includes(gen.id)}
+                        disabled={!isGeneratorStoppable(gen)}
                         onChange={() => toggleSelect(gen.id)}
                       />
                     </td>

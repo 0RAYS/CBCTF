@@ -15,6 +15,7 @@ import (
 const (
 	WaitingVictimStatus = "waiting"
 	PendingVictimStatus = "pending"
+	TerminatingVictimStatus = "terminating"
 	RunningVictimStatus = "running"
 	StoppedVictimStatus = "stopped"
 )
