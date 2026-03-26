@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"database/sql"
 
 	"gorm.io/gorm"
 )
@@ -15,28 +14,23 @@ type ChallengeFlagRepo struct {
 
 type CreateChallengeFlagOptions struct {
 	ChallengeID uint
-	DockerID    sql.Null[uint]
 	Name        string
 	Value       string
-	InjectType  model.FlagInjectType
-	Path        string
+	Binding     model.FlagBinding
 }
 
 func (c CreateChallengeFlagOptions) Convert2Model() model.Model {
 	return model.ChallengeFlag{
 		ChallengeID: c.ChallengeID,
-		DockerID:    c.DockerID,
 		Name:        c.Name,
 		Value:       c.Value,
-		InjectType:  c.InjectType,
-		Path:        c.Path,
+		Binding:     c.Binding,
 	}
 }
 
 type UpdateChallengeFlagOptions struct {
-	Value      *string
-	InjectType *model.FlagInjectType
-	Path       *string
+	Value   *string
+	Binding *model.FlagBinding
 }
 
 func (u UpdateChallengeFlagOptions) Convert2Map() map[string]any {
@@ -44,11 +38,8 @@ func (u UpdateChallengeFlagOptions) Convert2Map() map[string]any {
 	if u.Value != nil {
 		options["value"] = *u.Value
 	}
-	if u.InjectType != nil {
-		options["inject_type"] = *u.InjectType
-	}
-	if u.Path != nil {
-		options["path"] = *u.Path
+	if u.Binding != nil {
+		options["binding"] = *u.Binding
 	}
 	return options
 }

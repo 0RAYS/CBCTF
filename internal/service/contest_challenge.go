@@ -115,24 +115,27 @@ func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string,
 		images = append(images, image)
 	}
 
-	var dockerImages []string
-	if res := tx.Table("contest_challenges").
-		Distinct().
-		Select("dockers.image").
-		Joins("INNER JOIN challenges ON contest_challenges.challenge_id = challenges.id AND challenges.deleted_at IS NULL").
-		Joins("INNER JOIN dockers ON dockers.challenge_id = challenges.id AND dockers.deleted_at IS NULL").
-		Where("contest_challenges.contest_id = ? AND contest_challenges.type = ? AND contest_challenges.deleted_at IS NULL", contest.ID, model.PodsChallengeType).
-		Where("dockers.image <> ''").
-		Order("dockers.image ASC").
-		Pluck("dockers.image", &dockerImages); res.Error != nil {
-		return nil, model.RetVal{Msg: i18n.Model.ContestChallenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	podChallenges, _, ret := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_id": contest.ID, "type": model.PodsChallengeType},
+		Preloads:   map[string]db.GetOptions{"Challenge": {}},
+	})
+	if !ret.OK && ret.Msg != i18n.Model.NotFound {
+		return nil, ret
 	}
-	for _, image := range dockerImages {
-		if _, ok := imageSet[image]; ok {
-			continue
+	for _, contestChallenge := range podChallenges {
+		for _, pod := range contestChallenge.Challenge.Template.Pods {
+			for _, container := range pod.Containers {
+				image := container.Image
+				if image == "" {
+					continue
+				}
+				if _, ok := imageSet[image]; ok {
+					continue
+				}
+				imageSet[image] = struct{}{}
+				images = append(images, image)
+			}
 		}
-		imageSet[image] = struct{}{}
-		images = append(images, image)
 	}
 
 	for _, image := range []string{config.Env.K8S.Frp.FrpcImage, config.Env.K8S.Frp.NginxImage, config.Env.K8S.TCPDumpImage} {

@@ -79,7 +79,8 @@ func HandleStartVictimTask(_ context.Context, t *asynq.Task) error {
 			victim.Pods = append(append([]model.Pod(nil), victim.Pods[:basePodCount]...), persistedFrpcPods...)
 		}
 		ret = victimRepo.Update(victim.ID, db.UpdateVictimOptions{
-			VPC:              &victim.VPC,
+			Spec:             &victim.Spec,
+			Resources:        &victim.Resources,
 			Endpoints:        &victim.Endpoints,
 			ExposedEndpoints: &victim.ExposedEndpoints,
 			Start:            new(time.Now()),

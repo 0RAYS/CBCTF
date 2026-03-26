@@ -21,6 +21,8 @@ type CreateChallengeOptions struct {
 	GeneratorImage  string
 	Options         model.Options
 	NetworkPolicies model.NetworkPolicies
+	Template        model.ChallengeTemplate
+	TemplateVersion int
 }
 
 func (c CreateChallengeOptions) Convert2Model() model.Model {
@@ -33,6 +35,8 @@ func (c CreateChallengeOptions) Convert2Model() model.Model {
 		GeneratorImage:  c.GeneratorImage,
 		Options:         c.Options,
 		NetworkPolicies: c.NetworkPolicies,
+		Template:        c.Template,
+		TemplateVersion: c.TemplateVersion,
 	}
 }
 
@@ -43,6 +47,8 @@ type UpdateChallengeOptions struct {
 	GeneratorImage  *string
 	Options         *model.Options
 	NetworkPolicies *model.NetworkPolicies
+	Template        *model.ChallengeTemplate
+	TemplateVersion *int
 }
 
 func (u UpdateChallengeOptions) Convert2Map() map[string]any {
@@ -64,6 +70,12 @@ func (u UpdateChallengeOptions) Convert2Map() map[string]any {
 	}
 	if u.NetworkPolicies != nil {
 		options["network_policies"] = *u.NetworkPolicies
+	}
+	if u.Template != nil {
+		options["template"] = *u.Template
+	}
+	if u.TemplateVersion != nil {
+		options["template_version"] = *u.TemplateVersion
 	}
 	return options
 }
@@ -132,7 +144,6 @@ func (c *ChallengeRepo) Delete(randIDL ...string) model.RetVal {
 	challengeL, _, ret := c.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"rand_id": randIDL},
 		Preloads: map[string]GetOptions{
-			"Dockers":           {},
 			"ChallengeFlags":    {},
 			"ContestChallenges": {},
 			"Submissions":       {},
@@ -144,11 +155,8 @@ func (c *ChallengeRepo) Delete(randIDL ...string) model.RetVal {
 		}
 		return model.SuccessRetVal()
 	}
-	dockerIDL, challengeFlagIDL, contestChallengeIDL, submissionIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0), make([]uint, 0)
+	challengeFlagIDL, contestChallengeIDL, submissionIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0)
 	for _, challenge := range challengeL {
-		for _, docker := range challenge.Dockers {
-			dockerIDL = append(dockerIDL, docker.ID)
-		}
 		for _, challengeFlag := range challenge.ChallengeFlags {
 			challengeFlagIDL = append(challengeFlagIDL, challengeFlag.ID)
 		}
@@ -158,9 +166,6 @@ func (c *ChallengeRepo) Delete(randIDL ...string) model.RetVal {
 		for _, submission := range challenge.Submissions {
 			submissionIDL = append(submissionIDL, submission.ID)
 		}
-	}
-	if ret = InitDockerRepo(c.DB).Delete(dockerIDL...); !ret.OK {
-		return ret
 	}
 	if ret = InitChallengeFlagRepo(c.DB).Delete(challengeFlagIDL...); !ret.OK {
 		return ret

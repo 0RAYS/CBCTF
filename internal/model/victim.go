@@ -40,10 +40,10 @@ type Victim struct {
 	Pods               []Pod            `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	Start              time.Time        `gorm:"default:null" json:"start"`
 	Duration           time.Duration    `json:"duration"`
-	VPC                VPC              `gorm:"default:null;type:jsonb" json:"-"`
+	Spec               VictimSpec       `gorm:"default:null;type:jsonb" json:"-"`
+	Resources          VictimResources  `gorm:"default:null;type:jsonb" json:"-"`
 	Endpoints          Endpoints        `gorm:"default:null;type:jsonb" json:"-"`
 	ExposedEndpoints   Endpoints        `gorm:"default:null;type:jsonb" json:"-"`
-	NetworkPolicies    NetworkPolicies  `gorm:"default:null;type:jsonb" json:"network_policies"`
 	Status             string           `gorm:"index" json:"status"`
 	BaseModel
 }
@@ -61,6 +61,12 @@ func (v Victim) TrafficPaths() []string {
 	data := make([]string, 0)
 	for _, pod := range v.Pods {
 		data = append(data, pod.TrafficPcapPath())
+	}
+	for _, podName := range v.Resources.FrpcPodNames {
+		data = append(data, fmt.Sprintf("%s/pod-%s.pcap", v.TrafficBasePath(), podName))
+	}
+	if len(v.Resources.FrpcPodNames) > 0 {
+		data = append(data, fmt.Sprintf("%s/frpc.pcap", v.TrafficBasePath()))
 	}
 	return data
 }
