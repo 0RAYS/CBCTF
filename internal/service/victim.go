@@ -54,26 +54,105 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 	}
 	flagValues := make(map[uint]string)
 	if victim.TeamID.Valid {
-		teamFlags, _, ret := db.InitTeamFlagRepo(tx).List(-1, -1, db.GetOptions{
-			Conditions: map[string]any{"team_id": victim.TeamID.V},
-		})
-		if !ret.OK && ret.Msg != i18n.Model.NotFound {
-			return model.VictimSpec{}, ret
+		challengeFlagIDs := make([]uint, 0, len(challenge.ChallengeFlags))
+		for _, challengeFlag := range challenge.ChallengeFlags {
+			challengeFlagIDs = append(challengeFlagIDs, challengeFlag.ID)
 		}
-		for _, teamFlag := range teamFlags {
-			flagValues[teamFlag.ChallengeFlagID] = teamFlag.Value
+		if len(challengeFlagIDs) > 0 {
+			teamFlags, _, ret := db.InitTeamFlagRepo(tx).List(-1, -1, db.GetOptions{
+				Conditions: map[string]any{
+					"team_id":            victim.TeamID.V,
+					"challenge_flag_id": challengeFlagIDs,
+				},
+			})
+			if !ret.OK && ret.Msg != i18n.Model.NotFound {
+				return model.VictimSpec{}, ret
+			}
+			for _, teamFlag := range teamFlags {
+				flagValues[teamFlag.ChallengeFlagID] = teamFlag.Value
+			}
 		}
+	}
+
+	buildContainerSpec := func(
+		podTemplate model.ChallengePodTemplate,
+		containerTemplate model.ChallengeContainerTemplate,
+	) (model.VictimContainerSpec, model.RetVal) {
+		containerSpec := model.VictimContainerSpec{
+			Key:         containerTemplate.Key,
+			Name:        containerTemplate.Name,
+			Image:       containerTemplate.Image,
+			CPU:         containerTemplate.CPU,
+			Memory:      containerTemplate.Memory,
+			WorkingDir:  containerTemplate.WorkingDir,
+			Command:     append(model.StringList(nil), containerTemplate.Command...),
+			Environment: make(model.StringMap),
+			Files:       make(model.StringMap),
+			Exposes:     append(model.Exposes(nil), containerTemplate.Exposes...),
+		}
+		for key, value := range containerTemplate.Environment {
+			containerSpec.Environment[key] = value
+		}
+		for _, flag := range challenge.ChallengeFlags {
+			if flag.Binding.PodKey != podTemplate.Key || flag.Binding.ContainerKey != containerTemplate.Key {
+				continue
+			}
+			value := flag.Value
+			if injected, ok := flagValues[flag.ID]; ok {
+				value = injected
+			}
+			switch flag.Binding.Type {
+			case model.EnvFlagBindingType:
+				containerSpec.Environment[flag.Binding.Target] = value
+			case model.FileFlagBindingType:
+				containerSpec.Files[flag.Binding.Target] = value
+			default:
+				return model.VictimContainerSpec{}, model.RetVal{Msg: i18n.Model.ChallengeFlag.InvalidType}
+			}
+		}
+		return containerSpec, model.SuccessRetVal()
 	}
 
 	networkPlans := make(map[string]*model.Subnet)
 	dnatDedup := make(map[string]struct{})
 	snatDedup := make(map[string]struct{})
 	dnatPorts := make([]int32, 0)
-	if needVPC(challenge.Template.Pods) {
+	hasVPC := needVPC(challenge.Template.Pods)
+	if hasVPC {
 		spec.NetworkPlan = model.VPC{
 			Name:    fmt.Sprintf("vpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6)),
 			Subnets: make([]*model.Subnet, 0),
 		}
+	}
+	if !hasVPC {
+		containerCount := 0
+		for _, podTemplate := range challenge.Template.Pods {
+			containerCount += len(podTemplate.Containers)
+		}
+		mergedPod := model.PodSpec{
+			Key:          "default",
+			ServicePorts: make(model.Exposes, 0),
+			Networks:     make(model.Networks, 0),
+			Containers:   make([]model.VictimContainerSpec, 0, containerCount),
+		}
+		for _, podTemplate := range challenge.Template.Pods {
+			for _, expose := range podTemplate.ServicePorts {
+				if !slices.ContainsFunc(mergedPod.ServicePorts, func(p model.Expose) bool {
+					return p.Port == expose.Port && strings.EqualFold(p.Protocol, expose.Protocol)
+				}) {
+					mergedPod.ServicePorts = append(mergedPod.ServicePorts, expose)
+				}
+			}
+			for _, containerTemplate := range podTemplate.Containers {
+				containerSpec, ret := buildContainerSpec(podTemplate, containerTemplate)
+				if !ret.OK {
+					return model.VictimSpec{}, ret
+				}
+				mergedPod.Containers = append(mergedPod.Containers, containerSpec)
+			}
+		}
+		spec.Pods = append(spec.Pods, mergedPod)
+		return spec, model.SuccessRetVal()
 	}
 
 	for _, podTemplate := range challenge.Template.Pods {
@@ -84,37 +163,9 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 			Containers:   make([]model.VictimContainerSpec, 0, len(podTemplate.Containers)),
 		}
 		for _, containerTemplate := range podTemplate.Containers {
-			containerSpec := model.VictimContainerSpec{
-				Key:         containerTemplate.Key,
-				Name:        containerTemplate.Name,
-				Image:       containerTemplate.Image,
-				CPU:         containerTemplate.CPU,
-				Memory:      containerTemplate.Memory,
-				WorkingDir:  containerTemplate.WorkingDir,
-				Command:     append(model.StringList(nil), containerTemplate.Command...),
-				Environment: make(model.StringMap),
-				Files:       make(model.StringMap),
-				Exposes:     append(model.Exposes(nil), containerTemplate.Exposes...),
-			}
-			for key, value := range containerTemplate.Environment {
-				containerSpec.Environment[key] = value
-			}
-			for _, flag := range challenge.ChallengeFlags {
-				if flag.Binding.PodKey != podTemplate.Key || flag.Binding.ContainerKey != containerTemplate.Key {
-					continue
-				}
-				value := flag.Value
-				if injected, ok := flagValues[flag.ID]; ok {
-					value = injected
-				}
-				switch flag.Binding.Type {
-				case model.EnvFlagBindingType:
-					containerSpec.Environment[flag.Binding.Target] = value
-				case model.FileFlagBindingType:
-					containerSpec.Files[flag.Binding.Target] = value
-				default:
-					return model.VictimSpec{}, model.RetVal{Msg: i18n.Model.ChallengeFlag.InvalidType}
-				}
+			containerSpec, ret := buildContainerSpec(podTemplate, containerTemplate)
+			if !ret.OK {
+				return model.VictimSpec{}, ret
 			}
 			podSpec.Containers = append(podSpec.Containers, containerSpec)
 		}

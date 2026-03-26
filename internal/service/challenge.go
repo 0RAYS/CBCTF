@@ -79,9 +79,19 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 
 	template := model.ChallengeTemplate{
 		Version: 1,
-		Pods:    make([]model.ChallengePodTemplate, 0, len(config.Services)),
 	}
 	flagOptions := make([]db.CreateChallengeFlagOptions, 0)
+	groupIntoSinglePod := len(networksMap) == 0
+	var sharedPod *model.ChallengePodTemplate
+	if groupIntoSinglePod {
+		sharedPod = &model.ChallengePodTemplate{
+			Key:          "default",
+			Name:         "default",
+			ServicePorts: make(model.Exposes, 0),
+			Networks:     make(model.Networks, 0),
+			Containers:   make([]model.ChallengeContainerTemplate, 0, len(config.Services)),
+		}
+	}
 	for _, app := range config.Services {
 		name := app.Name
 		if app.ContainerName != "" {
@@ -137,25 +147,36 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 		if len(networksMap) > 0 && len(networks) == 0 {
 			return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid networks"}}
 		}
-		template.Pods = append(template.Pods, model.ChallengePodTemplate{
-			Key:          podKey,
-			Name:         name,
-			ServicePorts: append(model.Exposes(nil), ports...),
-			Networks:     networks,
-			Containers: []model.ChallengeContainerTemplate{
-				{
-					Key:         containerKey,
-					Name:        name,
-					Image:       app.Image,
-					CPU:         app.CPUS,
-					Memory:      int64(app.MemLimit),
-					WorkingDir:  app.WorkingDir,
-					Command:     model.StringList(app.Command),
-					Environment: environment,
-					Exposes:     append(model.Exposes(nil), ports...),
-				},
-			},
-		})
+		containerTemplate := model.ChallengeContainerTemplate{
+			Key:         containerKey,
+			Name:        name,
+			Image:       app.Image,
+			CPU:         app.CPUS,
+			Memory:      int64(app.MemLimit),
+			WorkingDir:  app.WorkingDir,
+			Command:     model.StringList(app.Command),
+			Environment: environment,
+			Exposes:     append(model.Exposes(nil), ports...),
+		}
+		if groupIntoSinglePod {
+			podKey = sharedPod.Key
+			for _, port := range ports {
+				if !slices.ContainsFunc(sharedPod.ServicePorts, func(expose model.Expose) bool {
+					return expose.Port == port.Port && strings.EqualFold(expose.Protocol, port.Protocol)
+				}) {
+					sharedPod.ServicePorts = append(sharedPod.ServicePorts, port)
+				}
+			}
+			sharedPod.Containers = append(sharedPod.Containers, containerTemplate)
+		} else {
+			template.Pods = append(template.Pods, model.ChallengePodTemplate{
+				Key:          podKey,
+				Name:         name,
+				ServicePorts: append(model.Exposes(nil), ports...),
+				Networks:     networks,
+				Containers:   []model.ChallengeContainerTemplate{containerTemplate},
+			})
+		}
 		for k, v := range app.Environment {
 			if strings.HasPrefix(k, model.EnvFlagPrefix) {
 				flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
@@ -184,6 +205,9 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 				})
 			}
 		}
+	}
+	if sharedPod != nil {
+		template.Pods = append(template.Pods, *sharedPod)
 	}
 	return template, flagOptions, model.SuccessRetVal()
 }
