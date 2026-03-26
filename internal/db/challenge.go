@@ -22,7 +22,6 @@ type CreateChallengeOptions struct {
 	Options         model.Options
 	NetworkPolicies model.NetworkPolicies
 	Template        model.ChallengeTemplate
-	TemplateVersion int
 }
 
 func (c CreateChallengeOptions) Convert2Model() model.Model {
@@ -36,7 +35,6 @@ func (c CreateChallengeOptions) Convert2Model() model.Model {
 		Options:         c.Options,
 		NetworkPolicies: c.NetworkPolicies,
 		Template:        c.Template,
-		TemplateVersion: c.TemplateVersion,
 	}
 }
 
@@ -48,7 +46,6 @@ type UpdateChallengeOptions struct {
 	Options         *model.Options
 	NetworkPolicies *model.NetworkPolicies
 	Template        *model.ChallengeTemplate
-	TemplateVersion *int
 }
 
 func (u UpdateChallengeOptions) Convert2Map() map[string]any {
@@ -73,9 +70,6 @@ func (u UpdateChallengeOptions) Convert2Map() map[string]any {
 	}
 	if u.Template != nil {
 		options["template"] = *u.Template
-	}
-	if u.TemplateVersion != nil {
-		options["template_version"] = *u.TemplateVersion
 	}
 	return options
 }

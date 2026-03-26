@@ -74,8 +74,7 @@ type ChallengePodTemplate struct {
 }
 
 type ChallengeTemplate struct {
-	Version int                    `json:"version"`
-	Pods    []ChallengePodTemplate `json:"pods"`
+	Pods []ChallengePodTemplate `json:"pods"`
 }
 
 func (c ChallengeTemplate) Value() (driver.Value, error) {
@@ -124,7 +123,6 @@ func (p *PodSpec) Scan(value any) error {
 }
 
 type VictimSpec struct {
-	TemplateVersion int             `json:"template_version"`
 	Pods            []PodSpec       `json:"pods"`
 	NetworkPlan     VPC             `json:"network_plan"`
 	NetworkPolicies NetworkPolicies `json:"network_policies"`
