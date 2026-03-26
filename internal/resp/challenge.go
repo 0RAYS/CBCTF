@@ -42,8 +42,7 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 			if len(container.Environment) > 0 {
 				service.Environment = make(map[string]*string)
 				for key, value := range container.Environment {
-					v := value
-					service.Environment[key] = &v
+					service.Environment[key] = new(value)
 				}
 			}
 			for _, flag := range challengeFlags {
@@ -55,8 +54,7 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 					if service.Environment == nil {
 						service.Environment = make(map[string]*string)
 					}
-					v := flag.Value
-					service.Environment[flag.Binding.Target] = &v
+					service.Environment[flag.Binding.Target] = new(flag.Value)
 				case model.FileFlagBindingType:
 					service.Volumes = append(service.Volumes, types.ServiceVolumeConfig{
 						Type:   "volume",

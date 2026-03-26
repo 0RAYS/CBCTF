@@ -61,7 +61,7 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 		if len(challengeFlagIDs) > 0 {
 			teamFlags, _, ret := db.InitTeamFlagRepo(tx).List(-1, -1, db.GetOptions{
 				Conditions: map[string]any{
-					"team_id":            victim.TeamID.V,
+					"team_id":           victim.TeamID.V,
 					"challenge_flag_id": challengeFlagIDs,
 				},
 			})
@@ -361,7 +361,6 @@ func ForceStopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
 		return model.SuccessRetVal()
 	}
 	repo := db.InitVictimRepo(tx)
-	rollbackStatus := victim.Status
 	if ret := repo.Update(victim.ID, db.UpdateVictimOptions{
 		Status: new(model.TerminatingVictimStatus),
 	}); !ret.OK {
@@ -373,7 +372,7 @@ func ForceStopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
 	if err != nil {
 		log.Logger.Warningf("Failed to enqueue stop victim task: %v", err)
 		_ = repo.Update(victim.ID, db.UpdateVictimOptions{
-			Status: &rollbackStatus,
+			Status: new(victim.Status),
 		})
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
