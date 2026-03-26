@@ -24,9 +24,12 @@ import { useTranslation } from 'react-i18next';
 const VICTIM_STATUS_STYLES = {
   waiting: 'bg-yellow-400/10 text-yellow-400 border-yellow-400/30',
   pending: 'bg-geek-400/10 text-geek-400 border-geek-400/30',
+  terminating: 'bg-orange-400/10 text-orange-300 border-orange-400/30',
   running: 'bg-green-400/10 text-green-400 border-green-400/30',
   stopped: 'bg-neutral-500/10 text-neutral-400 border-neutral-500/30',
 };
+
+const isVictimStoppable = (victim) => victim?.status === 'running';
 
 function VictimStatusBadge({ status, t }) {
   const style = VICTIM_STATUS_STYLES[status] ?? VICTIM_STATUS_STYLES.stopped;
@@ -196,16 +199,23 @@ function AdminVictims() {
   const handlePageChange = (page) => setCurrentPage(page);
 
   const handleContainerSelect = (containerId) => {
+    const container = containers.find((item) => item.id === containerId);
+    if (!isVictimStoppable(container)) return;
     setSelectedContainers((prev) =>
       prev.includes(containerId) ? prev.filter((id) => id !== containerId) : [...prev, containerId]
     );
   };
 
   const handleSelectAll = () => {
-    if (selectedContainers.length === containers.length) {
+    const stoppableIds = containers.filter(isVictimStoppable).map((c) => c.id);
+    if (stoppableIds.length === 0) {
+      setSelectedContainers([]);
+      return;
+    }
+    if (selectedContainers.length === stoppableIds.length) {
       setSelectedContainers([]);
     } else {
-      setSelectedContainers(containers.map((c) => c.id));
+      setSelectedContainers(stoppableIds);
     }
   };
 
@@ -484,7 +494,10 @@ function AdminVictims() {
                 <th className="p-4 text-left text-neutral-400 font-mono">
                   <input
                     type="checkbox"
-                    checked={selectedContainers.length === containers.length && containers.length > 0}
+                    checked={
+                      containers.filter(isVictimStoppable).length > 0 &&
+                      selectedContainers.length === containers.filter(isVictimStoppable).length
+                    }
                     onChange={handleSelectAll}
                     className="w-4 h-4 rounded border-neutral-300/30 text-geek-400
                       focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
@@ -539,6 +552,7 @@ function AdminVictims() {
                       <input
                         type="checkbox"
                         checked={selectedContainers.includes(container.id)}
+                        disabled={!isVictimStoppable(container)}
                         onChange={() => handleContainerSelect(container.id)}
                         className="w-4 h-4 rounded border-neutral-300/30 text-geek-400
                           focus:ring-geek-400 focus:ring-offset-0 bg-black/20"

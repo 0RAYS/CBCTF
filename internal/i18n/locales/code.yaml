@@ -61,6 +61,7 @@ model:
     notFound: "404"
   generator:
     notAvailable: "400"
+    notStoppable: "400"
     deleteError: "500"
   group:
     cannotUpdateDefault: "403"
@@ -131,6 +132,7 @@ model:
   victim:
     limited: "400"
     hasMuchTime: "400"
+    notStoppable: "400"
     deleteError: "500"
   webhook:
     invalidMethod: "400"

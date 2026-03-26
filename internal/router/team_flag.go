@@ -143,7 +143,7 @@ func ResetTeamFlag(ctx *gin.Context) {
 			if !ret.OK {
 				return
 			}
-			service.StopVictim(db.DB, victim)
+			service.ForceStopVictim(db.DB, victim)
 		}()
 	default:
 		tx.Commit()

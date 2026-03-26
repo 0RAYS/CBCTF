@@ -819,6 +819,7 @@
         "statusBadge": {
           "waiting": "Waiting",
           "pending": "Pending",
+          "terminating": "Terminating",
           "running": "Running",
           "stopped": "Stopped"
         },
@@ -1034,6 +1035,7 @@
         "status": {
           "waiting": "Waiting",
           "pending": "Pending",
+          "terminating": "Terminating",
           "running": "Running",
           "stopped": "Stopped"
         },
@@ -1110,6 +1112,7 @@
       "statusBadge": {
         "waiting": "Waiting",
         "pending": "Pending",
+        "terminating": "Terminating",
         "running": "Running",
         "stopped": "Stopped"
       },
@@ -1227,6 +1230,7 @@
         "instance": {
           "waiting": "WAITING",
           "pending": "STARTING",
+          "terminating": "TERMINATING",
           "running": "RUNNING",
           "notRunning": "NOT RUNNING",
           "time": "Time:",
@@ -2338,6 +2342,7 @@
       "instance": {
         "waiting": "WAITING",
         "pending": "STARTING",
+        "terminating": "TERMINATING",
         "running": "RUNNING",
         "notRunning": "NOT RUNNING",
         "time": "Time:",

@@ -69,6 +69,7 @@ type File struct {
 
 type Generator struct {
 	NotAvailable string
+	NotStoppable string
 	DeleteError  string
 }
 
@@ -173,6 +174,7 @@ type UserTeam struct {
 type Victim struct {
 	Limited     string
 	HasMuchTime string
+	NotStoppable string
 	DeleteError string
 }
 
@@ -297,6 +299,7 @@ var Model = struct {
 	},
 	Generator: Generator{
 		NotAvailable: "model.generator.notAvailable",
+		NotStoppable: "model.generator.notStoppable",
 		DeleteError:  "model.generator.deleteError",
 	},
 	Group: Group{
@@ -384,6 +387,7 @@ var Model = struct {
 	Victim: Victim{
 		Limited:     "model.victim.limited",
 		HasMuchTime: "model.victim.hasMuchTime",
+		NotStoppable: "model.victim.notStoppable",
 		DeleteError: "model.victim.deleteError",
 	},
 	Webhook: Webhook{

@@ -46,19 +46,24 @@ func HandleStartVictimTask(_ context.Context, t *asynq.Task) error {
 	err := func() error {
 		podRepo := db.InitPodRepo(db.DB)
 		victimRepo := db.InitVictimRepo(db.DB)
-		if _, ret := victimRepo.GetByID(victim.ID); !ret.OK {
+		currentVictim, ret := victimRepo.GetByID(victim.ID)
+		if !ret.OK {
 			if ret.Msg == i18n.Model.NotFound {
 				log.Logger.Infof("The Victim %d may have already been stopped", victim.ID)
 				return nil
 			}
 			return fmt.Errorf("get victim failed: %s", ret.Msg)
 		}
+		if currentVictim.Status == model.TerminatingVictimStatus {
+			log.Logger.Infof("The Victim %d is terminating, skip start...", victim.ID)
+			return nil
+		}
 		if ret := victimRepo.Update(victim.ID, db.UpdateVictimOptions{Status: new(model.PendingVictimStatus)}); !ret.OK {
 			return fmt.Errorf("update victim failed: %s", ret.Msg)
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 		defer cancel()
-		victim, ret := k8s.StartVictim(ctx, victim)
+		victim, ret = k8s.StartVictim(ctx, victim)
 		if !ret.OK {
 			return fmt.Errorf("start victim failed: %s", ret.Msg)
 		}
@@ -120,14 +125,18 @@ func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
 	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
 	}
-	victim := payload.Victim
-	if victim.Status == model.PendingVictimStatus {
-		log.Logger.Infof("The Victim %d is pending, skip it...", victim.ID)
-		return nil
+	victimRepo := db.InitVictimRepo(db.DB)
+	victim, ret := victimRepo.GetByID(payload.Victim.ID)
+	if !ret.OK {
+		if ret.Msg == i18n.Model.NotFound {
+			log.Logger.Infof("The Victim %d may have already been stopped", payload.Victim.ID)
+			return nil
+		}
+		return fmt.Errorf("get victim failed: %s", ret.Msg)
 	}
 	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	defer cancel()
-	ret := k8s.StopVictim(ctx, victim)
+	ret = k8s.StopVictim(ctx, victim)
 	if !ret.OK {
 		return fmt.Errorf("stop victim failed: %s", ret.Msg)
 	}

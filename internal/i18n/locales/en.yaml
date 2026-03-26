@@ -61,6 +61,7 @@ model:
     notFound: "File not found"
   generator:
     notAvailable: "Has no available attachment generators, please contact administrator"
+    notStoppable: "Can only stop running generators"
     deleteError: "Delete Generator error: {{.Error}}"
   group:
     cannotUpdateDefault: "Cannot update default group"
@@ -131,6 +132,7 @@ model:
   victim:
     limited: "Victims is max count"
     hasMuchTime: "Can only extend time within 20 minutes before the container closes"
+    notStoppable: "Can only stop running victims"
     deleteError: "Delete Victim error: {{.Error}}"
   webhook:
     invalidMethod: "Invalid Webhook request method"

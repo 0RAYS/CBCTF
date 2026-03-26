@@ -38,7 +38,12 @@ import { useTranslation } from 'react-i18next';
 
 const normalizeInstanceStatus = (status) => {
   const normalizedStatus = typeof status === 'string' ? status.toLowerCase() : '';
-  if (normalizedStatus === 'waiting' || normalizedStatus === 'pending' || normalizedStatus === 'running') {
+  if (
+    normalizedStatus === 'waiting' ||
+    normalizedStatus === 'pending' ||
+    normalizedStatus === 'terminating' ||
+    normalizedStatus === 'running'
+  ) {
     return normalizedStatus;
   }
   return '';
@@ -135,6 +140,7 @@ function ChallengeModal({
   const isRunning = instanceStatus === 'running';
   const isWaiting = instanceStatus === 'waiting';
   const isPending = instanceStatus === 'pending';
+  const isTerminating = instanceStatus === 'terminating';
   const instanceDuration = Math.max(Number(challenge?.instanceDuration) || 0, timeLeft);
   const progressWidth = instanceDuration > 0 ? Math.max(0, Math.min(100, (timeLeft / instanceDuration) * 100)) : 0;
 
@@ -349,6 +355,8 @@ function ChallengeModal({
   const renderInstanceContent = () => {
     const launchButtonLabel = isWaiting
       ? t('game.challengeModal.instance.waiting')
+      : isTerminating
+        ? t('game.challengeModal.instance.terminating')
       : isPending
         ? t('game.challengeModal.actions.launching')
         : t('game.challengeModal.actions.launch');
@@ -364,6 +372,8 @@ function ChallengeModal({
                 className={`w-2 h-2 rounded-full transition-colors duration-300 ${
                   isRunning
                     ? 'bg-green-400'
+                    : isTerminating
+                      ? 'bg-orange-400 animate-pulse'
                     : isPending
                       ? 'bg-yellow-400 animate-pulse'
                       : isWaiting
@@ -374,6 +384,8 @@ function ChallengeModal({
               <span className="text-neutral-50 font-mono text-sm">
                 {isRunning
                   ? t('game.challengeModal.instance.running')
+                  : isTerminating
+                    ? t('game.challengeModal.instance.terminating')
                   : isWaiting
                     ? t('game.challengeModal.instance.waiting')
                     : isPending
@@ -398,8 +410,8 @@ function ChallengeModal({
                 variant="primary"
                 size="sm"
                 onClick={handleLaunchInstance}
-                disabled={loading.launching || isWaiting || isPending}
-                className={isWaiting || isPending ? 'border-yellow-400 text-yellow-400' : ''}
+                disabled={loading.launching || isWaiting || isPending || isTerminating}
+                className={isWaiting || isPending || isTerminating ? 'border-yellow-400 text-yellow-400' : ''}
               >
                 {launchButtonLabel}
               </Button>
@@ -434,7 +446,7 @@ function ChallengeModal({
         </div>
 
         {/* 进度条：waiting 显示静态条，pending 显示闪动条，running 显示倒计时 */}
-        {(isRunning || isWaiting || isPending) && (
+        {(isRunning || isWaiting || isPending || isTerminating) && (
           <div className="h-1.5 bg-neutral-700 rounded-full overflow-hidden">
             {isRunning ? (
               <motion.div
@@ -445,6 +457,12 @@ function ChallengeModal({
               />
             ) : isWaiting ? (
               <div className="h-full w-full bg-yellow-400/35" />
+            ) : isTerminating ? (
+              <motion.div
+                className="h-full w-2/5 bg-orange-400/70 rounded-full"
+                animate={{ x: ['-100%', '350%'] }}
+                transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
+              />
             ) : (
               <motion.div
                 className="h-full w-2/5 bg-yellow-400/60 rounded-full"

@@ -30,7 +30,12 @@ import { useTranslation } from 'react-i18next';
 
 const normalizeInstanceStatus = (status) => {
   const normalizedStatus = typeof status === 'string' ? status.toLowerCase() : '';
-  if (normalizedStatus === 'waiting' || normalizedStatus === 'pending' || normalizedStatus === 'running') {
+  if (
+    normalizedStatus === 'waiting' ||
+    normalizedStatus === 'pending' ||
+    normalizedStatus === 'terminating' ||
+    normalizedStatus === 'running'
+  ) {
     return normalizedStatus;
   }
   return '';
@@ -59,6 +64,7 @@ const mapChallengeStatusToViewModel = (challenge, statusData = null) => {
     instanceRunning: instanceStatus === 'running',
     instancePending: instanceStatus === 'pending',
     instanceWaiting: instanceStatus === 'waiting',
+    instanceTerminating: instanceStatus === 'terminating',
     instanceIP: remote.target || challenge.instanceIP || [''],
     instanceDuration,
     instanceTimeLeft: timeLeft,
@@ -449,7 +455,11 @@ function GameChallengesPage() {
         setSelectedChallenge(updatedChallenge);
 
         // 页面刷新后 Pod 仍在排队或启动中 → 自动开始轮询
-        if (updatedChallenge.instanceStatus === 'waiting' || updatedChallenge.instanceStatus === 'pending') {
+        if (
+          updatedChallenge.instanceStatus === 'waiting' ||
+          updatedChallenge.instanceStatus === 'pending' ||
+          updatedChallenge.instanceStatus === 'terminating'
+        ) {
           startPolling();
         }
       }

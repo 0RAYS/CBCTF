@@ -8,6 +8,7 @@ import (
 const (
 	WaitingGeneratorStatus = "waiting"
 	PendingGeneratorStatus = "pending"
+	TerminatingGeneratorStatus = "terminating"
 	RunningGeneratorStatus = "running"
 	StoppedGeneratorStatus = "stopped"
 )
