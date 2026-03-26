@@ -40,7 +40,6 @@ type Challenge struct {
 	Options           Options            `gorm:"type:jsonb" json:"options"`
 	NetworkPolicies   NetworkPolicies    `gorm:"type:jsonb" json:"network_policies"`
 	Template          ChallengeTemplate  `gorm:"type:jsonb" json:"-"`
-	TemplateVersion   int                `gorm:"default:1" json:"-"`
 	BaseModel
 }
 

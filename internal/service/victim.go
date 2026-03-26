@@ -47,7 +47,6 @@ func needVPC(pods []model.ChallengePodTemplate) bool {
 
 func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge) (model.VictimSpec, model.RetVal) {
 	spec := model.VictimSpec{
-		TemplateVersion: challenge.TemplateVersion,
 		Pods:            make([]model.PodSpec, 0, len(challenge.Template.Pods)),
 		NetworkPolicies: challenge.NetworkPolicies,
 		FrpEnabled:      config.Env.K8S.Frp.On,

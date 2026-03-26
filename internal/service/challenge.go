@@ -78,8 +78,7 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 	}
 
 	template := model.ChallengeTemplate{
-		Version: 1,
-		Pods:    make([]model.ChallengePodTemplate, 0, len(config.Services)),
+		Pods: make([]model.ChallengePodTemplate, 0, len(config.Services)),
 	}
 	flagOptions := make([]db.CreateChallengeFlagOptions, 0)
 	for _, app := range config.Services {
@@ -198,7 +197,6 @@ func CreateChallenge(tx *gorm.DB, form dto.CreateChallengeForm) (model.Challenge
 		GeneratorImage:  form.GeneratorImage,
 		Options:         form.Options,
 		NetworkPolicies: form.NetworkPolicies,
-		TemplateVersion: 1,
 	}
 	var podFlagOptions []db.CreateChallengeFlagOptions
 	if form.Type == model.PodsChallengeType {
@@ -347,7 +345,6 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChal
 				Category:        form.Category,
 				NetworkPolicies: form.NetworkPolicies,
 				Template:        &template,
-				TemplateVersion: new(challenge.TemplateVersion + 1),
 			}); !ret.OK {
 				return ret
 			}
