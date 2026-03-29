@@ -128,8 +128,9 @@ func Init(path string) {
 	viper.AutomaticEnv()
 	if err := viper.ReadInConfig(); err != nil {
 		if errors.Is(err, os.ErrNotExist) || errors.As(err, &viper.ConfigFileNotFoundError{}) {
-			if err := os.WriteFile(path, defaultConf, 0600); err != nil {
-				log.Fatalf("Failed to init config: %s", err)
+			writeErr := os.WriteFile(path, defaultConf, 0600)
+			if writeErr != nil {
+				log.Fatalf("Failed to init config: %s", writeErr)
 			}
 			log.Fatalf("Config created at %s, please edit and restart", path)
 		}
@@ -206,11 +207,11 @@ func mergeYAMLNode(node *yaml.Node, data any) error {
 				continue
 			}
 			key := keyNode.Value
-			value, ok := remaining[key]
-			if !ok {
+			remainingValue, exists := remaining[key]
+			if !exists {
 				continue
 			}
-			if err := applyYAMLValue(valueNode, value); err != nil {
+			if err := applyYAMLValue(valueNode, remainingValue); err != nil {
 				return err
 			}
 			delete(remaining, key)

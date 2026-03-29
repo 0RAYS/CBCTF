@@ -312,9 +312,9 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 		return ret
 	}
 	for _, options := range buildPodRecords(victim) {
-		pod, ret := podRepo.Create(options)
-		if !ret.OK {
-			return ret
+		pod, createRet := podRepo.Create(options)
+		if !createRet.OK {
+			return createRet
 		}
 		victim.Pods = append(victim.Pods, pod)
 	}
