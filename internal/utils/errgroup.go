@@ -27,6 +27,6 @@ func (g *Group) Wait() error {
 }
 
 func NewGroup(ctx context.Context) *Group {
-	wg, ctx := errgroup.WithContext(ctx)
-	return &Group{wg: wg, ctx: ctx}
+	wg, groupCtx := errgroup.WithContext(ctx)
+	return &Group{wg: wg, ctx: groupCtx}
 }

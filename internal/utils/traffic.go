@@ -89,13 +89,13 @@ func ReadPcapFile(path string) ([]Connection, error) {
 		}
 		connection.Subtype = application.LayerType().String()
 		if config.Env.K8S.Frp.On {
-			if header, err := pp.Read(bufio.NewReader(bytes.NewReader(transport.LayerPayload()))); err == nil {
-				srcIP, _, err := net.SplitHostPort(header.SourceAddr.String())
-				if err != nil {
+			if header, readErr := pp.Read(bufio.NewReader(bytes.NewReader(transport.LayerPayload()))); readErr == nil {
+				srcIP, _, srcErr := net.SplitHostPort(header.SourceAddr.String())
+				if srcErr != nil {
 					continue
 				}
-				dstIP, _, err := net.SplitHostPort(header.DestinationAddr.String())
-				if err != nil {
+				dstIP, _, dstErr := net.SplitHostPort(header.DestinationAddr.String())
+				if dstErr != nil {
 					continue
 				}
 				connection.SrcIP = srcIP
@@ -125,11 +125,11 @@ func ReadPcapDir(path string) ([]Connection, error) {
 		if file.IsDir() || (!strings.HasSuffix(file.Name(), ".pcap") && !strings.HasSuffix(file.Name(), ".pcapng")) {
 			continue
 		}
-		packet, err := ReadPcapFile(fmt.Sprintf("%s/%s", path, file.Name()))
-		if err != nil {
-			return nil, err
+		packetConnections, readErr := ReadPcapFile(fmt.Sprintf("%s/%s", path, file.Name()))
+		if readErr != nil {
+			return nil, readErr
 		}
-		connections = append(connections, packet...)
+		connections = append(connections, packetConnections...)
 	}
 	if len(connections) < 1 {
 		return nil, nil

@@ -58,25 +58,25 @@ func (r *RoleRepo) InitDefaultRoles() model.RetVal {
 		if res.Error != nil {
 			return model.RetVal{Msg: i18n.Model.Role.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 		}
-		role, ret := r.GetByID(role.ID, GetOptions{Preloads: map[string]GetOptions{"Permissions": {}}})
+		savedRole, ret := r.GetByID(role.ID, GetOptions{Preloads: map[string]GetOptions{"Permissions": {}}})
 		if !ret.OK {
 			return ret
 		}
-		permissions, ok := model.DefaultRolePermissionMap[role.Name]
+		permissions, ok := model.DefaultRolePermissionMap[savedRole.Name]
 		if !ok {
 			continue
 		}
 		for _, permission := range permissions {
-			perm, ret := InitPermissionRepo(r.DB).GetByUniqueField("name", permission)
-			if !ret.OK {
-				return ret
+			perm, permRet := InitPermissionRepo(r.DB).GetByUniqueField("name", permission)
+			if !permRet.OK {
+				return permRet
 			}
-			if slices.ContainsFunc(role.Permissions, func(permission model.Permission) bool {
+			if slices.ContainsFunc(savedRole.Permissions, func(permission model.Permission) bool {
 				return permission.ID == perm.ID
 			}) {
 				continue
 			}
-			if ret = AssignPermissionToRole(r.DB, perm, role); !ret.OK {
+			if ret = AssignPermissionToRole(r.DB, perm, savedRole); !ret.OK {
 				return ret
 			}
 		}

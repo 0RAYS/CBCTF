@@ -116,7 +116,7 @@ func (u *UserRepo) InitAdmin() model.RetVal {
 	}
 	if count == 0 {
 		pwd := utils.UUID()
-		admin, ret := u.Insert(model.User{
+		admin, createRet := u.Insert(model.User{
 			Name:           "admin",
 			Password:       utils.HashPassword(pwd),
 			Email:          "admin@0rays.club",
@@ -128,12 +128,12 @@ func (u *UserRepo) InitAdmin() model.RetVal {
 			ProviderUserID: utils.UUID(),
 			OauthRaw:       "{}",
 		})
-		if !ret.OK {
-			return ret
+		if !createRet.OK {
+			return createRet
 		}
-		group, ret := InitGroupRepo(u.DB).GetByUniqueField("name", model.AdminGroupName)
-		if !ret.OK {
-			return ret
+		group, groupRet := InitGroupRepo(u.DB).GetByUniqueField("name", model.AdminGroupName)
+		if !groupRet.OK {
+			return groupRet
 		}
 		if ret = AppendUserToGroup(u.DB, admin, group); !ret.OK {
 			return ret

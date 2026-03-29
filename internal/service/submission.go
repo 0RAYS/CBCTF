@@ -37,9 +37,9 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, contest model.Contest
 	}
 
 	if !solved {
-		submission, ret := submissionRepo.Create(options)
-		if !ret.OK {
-			return model.Submission{}, ret
+		submission, createRet := submissionRepo.Create(options)
+		if !createRet.OK {
+			return model.Submission{}, createRet
 		}
 		prometheus.RecordFlagSubmission(contest.ID, string(contestChallenge.Type), false)
 		return submission, model.SuccessRetVal()
@@ -56,9 +56,9 @@ func Submit(tx *gorm.DB, user model.User, team model.Team, contest model.Contest
 	}
 	if lockedTeamFlag.Solved {
 		options.Solved = false
-		submission, ret := submissionRepo.Create(options)
-		if !ret.OK {
-			return model.Submission{}, ret
+		submission, createRet := submissionRepo.Create(options)
+		if !createRet.OK {
+			return model.Submission{}, createRet
 		}
 		prometheus.RecordFlagSubmission(contest.ID, string(contestChallenge.Type), false)
 		return submission, model.SuccessRetVal()

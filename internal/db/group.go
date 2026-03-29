@@ -61,11 +61,11 @@ func (g *GroupRepo) InitDefaultGroups() model.RetVal {
 		if res.Error != nil {
 			return model.RetVal{Msg: i18n.Model.Group.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 		}
-		group, ret := g.GetByID(group.ID, GetOptions{Preloads: map[string]GetOptions{"Role": {}}})
+		savedGroup, ret := g.GetByID(group.ID, GetOptions{Preloads: map[string]GetOptions{"Role": {}}})
 		if !ret.OK {
 			return ret
 		}
-		roleName, ok := model.DefaultGroupRoleMap[group.Name]
+		roleName, ok := model.DefaultGroupRoleMap[savedGroup.Name]
 		if !ok {
 			continue
 		}
@@ -73,7 +73,7 @@ func (g *GroupRepo) InitDefaultGroups() model.RetVal {
 		if !ret.OK {
 			return ret
 		}
-		if ret = g.Update(group.ID, UpdateGroupOptions{RoleID: new(role.ID)}); !ret.OK {
+		if ret = g.Update(savedGroup.ID, UpdateGroupOptions{RoleID: new(role.ID)}); !ret.OK {
 			return ret
 		}
 	}

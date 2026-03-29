@@ -60,11 +60,11 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 		}
 		if provider.GroupsClaim != "" {
 			groupRepo := db.InitGroupRepo(tx)
-			if groups, ok := utils.GetClaimRawValue[[]string](response, provider.GroupsClaim); ok {
+			if groups, groupsOK := utils.GetClaimRawValue[[]string](response, provider.GroupsClaim); groupsOK {
 				// 同步所有组
 				for _, groupName := range groups {
-					group, ret := groupRepo.GetByUniqueField("name", groupName)
-					if !ret.OK {
+					group, groupRet := groupRepo.GetByUniqueField("name", groupName)
+					if !groupRet.OK {
 						continue
 					}
 					if !userRepo.IsInGroup(user.ID, group.Name) {
@@ -74,8 +74,8 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 				// 尝试添加到管理员组
 				if slices.Contains(groups, provider.AdminGroup) {
 					if !userRepo.IsInGroup(user.ID, model.AdminGroupName) {
-						adminGroup, ret := db.InitGroupRepo(tx).GetByUniqueField("name", model.AdminGroupName)
-						if ret.OK {
+						adminGroup, adminGroupRet := db.InitGroupRepo(tx).GetByUniqueField("name", model.AdminGroupName)
+						if adminGroupRet.OK {
 							db.AppendUserToGroup(tx, user, adminGroup)
 						}
 					}
@@ -84,8 +84,8 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 		}
 		// 获取组声明或加组失败后尝试加入默认组
 		if provider.DefaultGroup != 0 {
-			defaultGroup, ret := db.InitGroupRepo(tx).GetByID(provider.DefaultGroup)
-			if ret.OK {
+			defaultGroup, defaultGroupRet := db.InitGroupRepo(tx).GetByID(provider.DefaultGroup)
+			if defaultGroupRet.OK {
 				// 最终都无法获取到组则放弃加组
 				if !userRepo.IsInGroup(user.ID, defaultGroup.Name) {
 					db.AppendUserToGroup(tx, user, defaultGroup)
