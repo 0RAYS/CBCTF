@@ -31,7 +31,7 @@ func EnqueueStartGeneratorTask(challenge model.Challenge, generator model.Genera
 		return nil, err
 	}
 	task := asynq.NewTask(startGeneratorTaskType, payload)
-	info, err := client.Enqueue(task, asynq.Queue(startGeneratorTaskType), asynq.MaxRetry(0), asynq.Timeout(2*time.Minute))
+	info, err := client.Enqueue(task, asynq.Queue(startGeneratorTaskType), asynq.MaxRetry(0), asynq.Timeout(3*time.Minute))
 	if err != nil {
 		prometheus.RecordTaskEnqueued(startGeneratorTaskType)
 	}
@@ -59,7 +59,7 @@ func HandleStartGeneratorTask(_ context.Context, t *asynq.Task) error {
 			log.Logger.Infof("The Generator %d is terminating, skip start...", generator.ID)
 			return nil
 		}
-		if ret := generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.PendingGeneratorStatus)}); !ret.OK {
+		if ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.PendingGeneratorStatus)}); !ret.OK {
 			return fmt.Errorf("update generator failed: %s", ret.Msg)
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
@@ -112,7 +112,7 @@ func HandleStopGeneratorTask(ctx context.Context, t *asynq.Task) error {
 		}
 		return fmt.Errorf("get generator failed: %s", ret.Msg)
 	}
-	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	ret = k8s.StopGenerator(ctx, generator)
 	cancel()
 	if !ret.OK {

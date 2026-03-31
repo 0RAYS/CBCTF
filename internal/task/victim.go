@@ -30,7 +30,7 @@ func EnqueueStartVictimTask(victim model.Victim) (*asynq.TaskInfo, error) {
 		return nil, err
 	}
 	task := asynq.NewTask(startVictimTaskType, payload)
-	info, err := client.Enqueue(task, asynq.Queue(startVictimTaskType), asynq.MaxRetry(0), asynq.Timeout(2*time.Minute))
+	info, err := client.Enqueue(task, asynq.Queue(startVictimTaskType), asynq.MaxRetry(0), asynq.Timeout(4*time.Minute))
 	if err == nil {
 		prometheus.RecordTaskEnqueued(startVictimTaskType)
 	}
@@ -58,10 +58,10 @@ func HandleStartVictimTask(_ context.Context, t *asynq.Task) error {
 			log.Logger.Infof("The Victim %d is terminating, skip start...", victim.ID)
 			return nil
 		}
-		if ret := victimRepo.Update(victim.ID, db.UpdateVictimOptions{Status: new(model.PendingVictimStatus)}); !ret.OK {
+		if ret = victimRepo.Update(victim.ID, db.UpdateVictimOptions{Status: new(model.PendingVictimStatus)}); !ret.OK {
 			return fmt.Errorf("update victim failed: %s", ret.Msg)
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 		defer cancel()
 		victim, ret = k8s.StartVictim(ctx, victim)
 		if !ret.OK {
