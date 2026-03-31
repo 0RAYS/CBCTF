@@ -134,6 +134,8 @@ const (
 	PermAdminFileRead   = "admin:file:read"
 	PermAdminFileDelete = "admin:file:delete"
 
+	PermAdminTaskRead = "admin:task:read"
+
 	PermAdminLogRead = "admin:log:read"
 )
 
@@ -345,6 +347,10 @@ var RoutePermissions = map[string]string{
 	"DELETE /admin/files":      PermAdminFileDelete,
 	"GET /admin/files/:fileID": PermAdminFileRead,
 
+	// /admin/tasks
+	"GET /admin/tasks":      PermAdminTaskRead,
+	"GET /admin/tasks/live": PermAdminTaskRead,
+
 	// /admin/logs
 	"GET /admin/logs": PermAdminLogRead,
 }
@@ -482,6 +488,8 @@ var Permissions = []Permission{
 	{Name: PermAdminFileList, Resource: "admin:file", Operation: "list", Description: "查看文件列表"},
 	{Name: PermAdminFileRead, Resource: "admin:file", Operation: "read", Description: "查看文件详情"},
 	{Name: PermAdminFileDelete, Resource: "admin:file", Operation: "delete", Description: "删除文件"},
+
+	{Name: PermAdminTaskRead, Resource: "admin:task", Operation: "read", Description: "查看任务队列"},
 
 	{Name: PermAdminLogRead, Resource: "admin:log", Operation: "read", Description: "查看日志"},
 }

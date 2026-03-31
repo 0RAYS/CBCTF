@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
 	"context"
+	"errors"
 	"strings"
 	"sync"
 	"time"
@@ -23,8 +24,16 @@ func wrapHandler(taskType string, h asynq.HandlerFunc) asynq.HandlerFunc {
 	return func(ctx context.Context, t *asynq.Task) error {
 		start := time.Now()
 		err := h(ctx, t)
+		if err == nil {
+			recordTaskExecution(ctx, t, "success", nil, nil)
+		} else if shouldRecordFailure(ctx, err) {
+			recordTaskExecution(ctx, t, "failed", nil, err)
+		}
 		if err != nil {
 			log.Logger.Warningf("task %s fail: %s", taskType, err.Error())
+			if errors.Is(err, asynq.SkipRetry) || errors.Is(err, asynq.RevokeTask) {
+				log.Logger.Debugf("task %s entered terminal failure without retry", taskType)
+			}
 		}
 		prometheus.RecordTaskProcessed(taskType, time.Since(start).Seconds(), err == nil)
 		return err
@@ -33,6 +42,7 @@ func wrapHandler(taskType string, h asynq.HandlerFunc) asynq.HandlerFunc {
 
 func Init() {
 	client = asynq.NewClientFromRedisClient(redis.RDB)
+	inspector = asynq.NewInspectorFromRedisClient(redis.RDB)
 	mux = asynq.NewServeMux()
 	servers = make([]*asynq.Server, 0)
 	addServer := func(queue string, concurrency int) {

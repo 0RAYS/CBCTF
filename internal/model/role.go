@@ -44,6 +44,7 @@ var DefaultRolePermissionMap = map[string][]string{
 		PermAdminVictimControl,
 		PermAdminGeneratorControl,
 		PermAdminFileList, PermAdminFileRead, PermAdminFileDelete,
+		PermAdminTaskRead,
 		PermAdminLogRead,
 	},
 	OrganizerRoleName: {

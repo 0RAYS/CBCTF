@@ -22,6 +22,7 @@ const OAuthProvidersManagement = lazy(() => import('../pages/admin/OAuthProvider
 const SmtpManagement = lazy(() => import('../pages/admin/Smtp'));
 const CronJobsManagement = lazy(() => import('../pages/admin/CronJobs'));
 const WebhookManagement = lazy(() => import('../pages/admin/Webhook'));
+const TaskManagement = lazy(() => import('../pages/admin/Tasks'));
 const AdminLogs = lazy(() => import('../pages/admin/Logs'));
 const OAuthCallback = lazy(() => import('../pages/OAuthCallback'));
 const Home = lazy(() => import('../pages/Home'));
@@ -122,6 +123,10 @@ const AppRoutes = () => {
           <Route
             path="files"
             element={withGuard(withSuspense(FilesManagement), AdminRoute, { apiRoute: 'GET /admin/files' })}
+          />
+          <Route
+            path="tasks"
+            element={withGuard(withSuspense(TaskManagement), AdminRoute, { apiRoute: 'GET /admin/tasks' })}
           />
           <Route
             path="system"
