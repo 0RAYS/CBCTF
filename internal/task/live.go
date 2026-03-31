@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/model"
 	"slices"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/hibiken/asynq"
@@ -12,7 +13,7 @@ import (
 
 var inspector *asynq.Inspector
 
-func ListLiveTasks(status, queue string, limit, offset int) ([]*asynq.TaskInfo, int64, []string, []string, model.RetVal) {
+func ListLiveTasks(status, queue, taskID string, limit, offset int) ([]*asynq.TaskInfo, int64, []string, []string, model.RetVal) {
 	if inspector == nil {
 		return nil, 0, nil, nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "task inspector unavailable"}}
 	}
@@ -45,6 +46,9 @@ func ListLiveTasks(status, queue string, limit, offset int) ([]*asynq.TaskInfo, 
 			return nil, 0, nil, nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 		}
 		for _, item := range tasks {
+			if taskID != "" && !strings.Contains(item.ID, taskID) {
+				continue
+			}
 			allTasks = append(allTasks, item)
 			typeSet[item.Type] = struct{}{}
 		}

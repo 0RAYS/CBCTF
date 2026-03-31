@@ -20,9 +20,6 @@ func GetTasks(ctx *gin.Context) {
 		Sort: []string{"processed_at DESC", "id DESC"},
 	}
 	conditions := make(map[string]any)
-	if form.Type != "" {
-		conditions["type"] = form.Type
-	}
 	if form.Queue != "" {
 		conditions["queue"] = form.Queue
 	}
@@ -50,12 +47,7 @@ func GetTasks(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	types, ret := repo.ListTypes()
-	if !ret.OK {
-		resp.JSON(ctx, ret)
-		return
-	}
-	resp.JSON(ctx, model.SuccessRetVal(gin.H{"tasks": data, "count": count, "queues": queues, "types": types}))
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"tasks": data, "count": count, "queues": queues}))
 }
 
 func GetLiveTasks(ctx *gin.Context) {
@@ -64,7 +56,7 @@ func GetLiveTasks(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	live, count, queues, types, ret := task.ListLiveTasks(form.Status, form.Queue, form.Limit, form.Offset)
+	live, count, queues, types, ret := task.ListLiveTasks(form.Status, form.Queue, form.TaskID, form.Limit, form.Offset)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

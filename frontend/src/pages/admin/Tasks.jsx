@@ -69,13 +69,13 @@ function FilterBar({
   onFilterChange,
   onReset,
   queueOptions,
-  typeOptions,
   refreshInterval,
   onRefreshIntervalChange,
   onRefresh,
 }) {
   const statusOptions = mode === 'history' ? HISTORY_STATUS_OPTIONS : LIVE_STATUS_OPTIONS;
   const isHistory = mode === 'history';
+  const showTaskID = isHistory || mode === 'live';
 
   return (
     <Card className="space-y-4">
@@ -114,8 +114,8 @@ function FilterBar({
         </div>
       </div>
 
-      <div className={`grid grid-cols-1 ${isHistory ? 'md:grid-cols-4' : 'md:grid-cols-2'} gap-3`}>
-        {isHistory && (
+      <div className={`grid grid-cols-1 ${showTaskID ? 'md:grid-cols-3' : 'md:grid-cols-2'} gap-3`}>
+        {showTaskID && (
           <Input
             type="search"
             value={filters.task_id}
@@ -140,16 +140,6 @@ function FilterBar({
             ...queueOptions.map((item) => ({ value: item, label: item })),
           ]}
         />
-        {isHistory && (
-          <Select
-            value={filters.type}
-            onChange={(e) => onFilterChange('type', e.target.value)}
-            options={[
-              { value: '', label: t('admin.tasks.filters.allTypes') },
-              ...typeOptions.map((item) => ({ value: item, label: item })),
-            ]}
-          />
-        )}
       </div>
     </Card>
   );
@@ -292,14 +282,13 @@ function TasksPage() {
   const [historyRows, setHistoryRows] = useState([]);
   const [historyTotal, setHistoryTotal] = useState(0);
   const [historyPage, setHistoryPage] = useState(1);
-  const [historyFilters, setHistoryFilters] = useState({ task_id: '', type: '', queue: '', status: '' });
+  const [historyFilters, setHistoryFilters] = useState({ task_id: '', queue: '', status: '' });
   const [historyQueues, setHistoryQueues] = useState([]);
-  const [historyTypes, setHistoryTypes] = useState([]);
 
   const [liveRows, setLiveRows] = useState([]);
   const [liveTotal, setLiveTotal] = useState(0);
   const [livePage, setLivePage] = useState(1);
-  const [liveFilters, setLiveFilters] = useState({ queue: '', status: 'active' });
+  const [liveFilters, setLiveFilters] = useState({ task_id: '', queue: '', status: 'active' });
   const [liveQueues, setLiveQueues] = useState([]);
   const [refreshInterval, setRefreshInterval] = useState(10);
 
@@ -327,7 +316,6 @@ function TasksPage() {
         setHistoryRows(tasks);
         setHistoryTotal(payload.count || 0);
         setHistoryQueues(Array.isArray(payload.queues) ? payload.queues : []);
-        setHistoryTypes(Array.isArray(payload.types) ? payload.types : []);
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.tasks.toast.fetchHistoryFailed') });
@@ -391,14 +379,14 @@ function TasksPage() {
   };
 
   const resetHistory = () => {
-    const next = { task_id: '', type: '', queue: '', status: '' };
+    const next = { task_id: '', queue: '', status: '' };
     setHistoryFilters(next);
     setHistoryPage(1);
     fetchHistory(1, next);
   };
 
   const resetLive = () => {
-    const next = { queue: '', status: 'active' };
+    const next = { task_id: '', queue: '', status: 'active' };
     setLiveFilters(next);
     setLivePage(1);
     fetchLive(1, next);
@@ -429,7 +417,6 @@ function TasksPage() {
             onFilterChange={handleHistoryFilterChange}
             onReset={resetHistory}
             queueOptions={historyQueues}
-            typeOptions={historyTypes}
             refreshInterval={0}
             onRefreshIntervalChange={() => {}}
             onRefresh={() => fetchHistory(historyPage, historyFilters)}
@@ -452,7 +439,6 @@ function TasksPage() {
             onFilterChange={handleLiveFilterChange}
             onReset={resetLive}
             queueOptions={liveQueues}
-            typeOptions={[]}
             refreshInterval={refreshInterval}
             onRefreshIntervalChange={setRefreshInterval}
             onRefresh={() => fetchLive(livePage, liveFilters)}

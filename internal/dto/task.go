@@ -8,7 +8,6 @@ import (
 
 type ListTasksForm struct {
 	ListModelsForm
-	Type   string `form:"type" json:"type"`
 	Queue  string `form:"queue" json:"queue"`
 	Status string `form:"status" json:"status"`
 	TaskID string `form:"task_id" json:"task_id"`
@@ -28,6 +27,7 @@ type ListLiveTasksForm struct {
 	ListModelsForm
 	Queue  string `form:"queue" json:"queue"`
 	Status string `form:"status" json:"status"`
+	TaskID string `form:"task_id" json:"task_id"`
 }
 
 func (f *ListLiveTasksForm) Validate(ctx *gin.Context) model.RetVal {
