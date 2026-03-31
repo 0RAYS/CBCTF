@@ -25,11 +25,6 @@ spec:
       "cniVersion": "0.3.0",
       "type": "macvlan",
       "master": {{ .Values.cbctf.k8s.externalNetwork.interface | quote }},
-      "mode": "bridge",
-      "ipam": {
-        "type": "kube-ovn",
-        "server_socket": "/run/openvswitch/kube-ovn-daemon.sock",
-        "provider": {{ printf "%s-external-network.kube-system" .Release.Namespace | quote }}
-      }
+      "mode": "bridge"
     }
 {{- end }}
