@@ -8,6 +8,7 @@ import (
 	"CBCTF/internal/model"
 	"errors"
 	"fmt"
+	"sort"
 	"time"
 
 	"gorm.io/gorm"
@@ -95,6 +96,16 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string, model.RetVal) {
 	imageSet := make(map[string]struct{})
 	images := make([]string, 0)
+	addImage := func(image string) {
+		if image == "" {
+			return
+		}
+		if _, ok := imageSet[image]; ok {
+			return
+		}
+		imageSet[image] = struct{}{}
+		images = append(images, image)
+	}
 
 	var generatorImages []string
 	if res := tx.Table("contest_challenges").
@@ -108,11 +119,7 @@ func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string,
 		return nil, model.RetVal{Msg: i18n.Model.ContestChallenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	for _, image := range generatorImages {
-		if _, ok := imageSet[image]; ok {
-			continue
-		}
-		imageSet[image] = struct{}{}
-		images = append(images, image)
+		addImage(image)
 	}
 
 	podChallenges, _, ret := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
@@ -122,31 +129,22 @@ func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string,
 	if !ret.OK && ret.Msg != i18n.Model.NotFound {
 		return nil, ret
 	}
+	hasPodChallenges := len(podChallenges) > 0
 	for _, contestChallenge := range podChallenges {
 		for _, pod := range contestChallenge.Challenge.Template.Pods {
 			for _, container := range pod.Containers {
-				image := container.Image
-				if image == "" {
-					continue
-				}
-				if _, ok := imageSet[image]; ok {
-					continue
-				}
-				imageSet[image] = struct{}{}
-				images = append(images, image)
+				addImage(container.Image)
 			}
 		}
 	}
 
-	for _, image := range []string{config.Env.K8S.Frp.FrpcImage, config.Env.K8S.Frp.NginxImage, config.Env.K8S.TCPDumpImage} {
-		if image == "" {
-			continue
+	if hasPodChallenges {
+		addImage(config.Env.K8S.TCPDumpImage)
+		if config.Env.K8S.Frp.On {
+			addImage(config.Env.K8S.Frp.FrpcImage)
+			addImage(config.Env.K8S.Frp.NginxImage)
 		}
-		if _, ok := imageSet[image]; ok {
-			continue
-		}
-		imageSet[image] = struct{}{}
-		images = append(images, image)
 	}
+	sort.Strings(images)
 	return images, model.SuccessRetVal()
 }

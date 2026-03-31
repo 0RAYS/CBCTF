@@ -277,6 +277,10 @@ var RoutePermissions = map[string]string{
 	"POST /admin/generators":   PermAdminGeneratorControl,
 	"DELETE /admin/generators": PermAdminGeneratorControl,
 
+	// /admin/images
+	"GET /admin/images":  PermAdminImagePull,
+	"POST /admin/images": PermAdminImagePull,
+
 	// /admin/contests
 	"GET /admin/contests":                       PermAdminContestList,
 	"POST /admin/contests":                      PermAdminContestCreate,

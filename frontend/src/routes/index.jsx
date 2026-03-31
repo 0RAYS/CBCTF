@@ -24,6 +24,7 @@ const CronJobsManagement = lazy(() => import('../pages/admin/CronJobs'));
 const WebhookManagement = lazy(() => import('../pages/admin/Webhook'));
 const TaskManagement = lazy(() => import('../pages/admin/Tasks'));
 const AdminLogs = lazy(() => import('../pages/admin/Logs'));
+const AdminImagesManagement = lazy(() => import('../pages/admin/Images.jsx'));
 const OAuthCallback = lazy(() => import('../pages/OAuthCallback'));
 const Home = lazy(() => import('../pages/Home'));
 
@@ -143,6 +144,10 @@ const AppRoutes = () => {
           <Route
             path="generators"
             element={withGuard(withSuspense(AdminGenerators), AdminRoute, { apiRoute: 'GET /admin/generators' })}
+          />
+          <Route
+            path="images"
+            element={withGuard(withSuspense(AdminImagesManagement), AdminRoute, { apiRoute: 'GET /admin/images' })}
           />
         </Route>
 

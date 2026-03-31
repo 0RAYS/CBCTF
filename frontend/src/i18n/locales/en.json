@@ -184,6 +184,35 @@
         "fetchLiveFailed": "Failed to load live tasks"
       }
     },
+    "imagesPull": {
+      "title": "Node Images",
+      "control": {
+        "title": "Global Image Overview",
+        "subtitle": "Show all tagged images on each node and use the union across all schedulable nodes as the global image set."
+      },
+      "summary": {
+        "unionLabel": "Global Image Set"
+      },
+      "selection": {
+        "title": "Pull Missing Images",
+        "subtitle": "Use the union of images across all nodes, mark missing ones per node, and select exact node/image pairs to pull."
+      },
+      "intersection": {
+        "title": "Global Image Missing View",
+        "subtitle": "This view is based on the union of tagged images currently present on all schedulable nodes.",
+        "empty": "No tagged images available in the global image set"
+      },
+      "manual": {
+        "title": "Pull By Manual Input",
+        "subtitle": "After choosing nodes, enter image names manually, one per line, and the system will create pull jobs for each node/image combination."
+      },
+      "statusTitle": "Node Image Inventory",
+      "statusSubtitle": "Each node shows all currently visible tagged images and highlights which global-set images are missing on that node.",
+      "node": {
+        "missingTitle": "Missing global-set images on this node",
+        "noMissing": "This node is not missing any global-set image"
+      }
+    },
     "dashboard": {
       "title": "System Status",
       "realtime": "Live Monitoring",
@@ -521,8 +550,8 @@
       "imagesPull": {
         "title": "Node Images",
         "control": {
-          "title": "Node Image Overview",
-          "subtitle": "Show all tagged images on each node and compute the union of images across nodes in the frontend."
+          "title": "Contest Image Overview",
+          "subtitle": "Show each node's current images and focus the target image set on images directly required by this contest."
         },
         "labels": {
           "pullPolicy": "Pull Policy",
@@ -536,20 +565,20 @@
         "summary": {
           "nodes": "{{count}} nodes",
           "nodesLabel": "Schedulable Nodes",
-          "unionLabel": "Image Union",
+          "unionLabel": "Contest Image Set",
           "totalLabel": "All Images",
           "total": "{{count}} images total"
         },
         "selection": {
-          "title": "Pull Missing Images",
-          "subtitle": "Use the union of images across all nodes, mark missing ones per node, and select exact node/image pairs to pull.",
+          "title": "Pull Contest Images",
+          "subtitle": "Use the image set required by this contest, mark missing ones per node, and select exact node/image pairs to pull.",
           "selectedNodes": "{{count}} nodes selected",
           "selectedTargets": "{{count}} pairs selected",
           "nodeImages": "{{count}} images"
         },
         "intersection": {
-          "title": "Image Union Missing View",
-          "subtitle": "This is the union of all tagged images across nodes. Present nodes are marked as present, and only missing nodes can be selected for pull.",
+          "title": "Contest Image Missing View",
+          "subtitle": "This view is based on images directly required by this contest. Present nodes are marked as present, and only missing nodes can be selected for pull.",
           "empty": "No tagged images available",
           "badge": "Part of the image union across all nodes"
         },
@@ -561,8 +590,8 @@
         },
         "node": {
           "empty": "This node has no image data",
-          "missingTitle": "Missing union images on this node",
-          "noMissing": "This node is not missing any union image"
+          "missingTitle": "Missing contest images on this node",
+          "noMissing": "This node is not missing any contest image"
         },
         "actions": {
           "selectAllNodes": "Select All Nodes",
@@ -577,8 +606,8 @@
           "ifNotPresent": "IfNotPresent - pull when missing locally",
           "never": "Never - use local images only"
         },
-        "statusTitle": "Node Image Inventory",
-        "statusSubtitle": "Each node shows all currently visible tagged images and also highlights the union images missing from that node.",
+        "statusTitle": "Contest Image Inventory",
+        "statusSubtitle": "Each node shows all currently visible tagged images and also highlights the contest images missing from that node.",
         "empty": "No node image data",
         "status": {
           "present": "Present",
