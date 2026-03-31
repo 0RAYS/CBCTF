@@ -97,8 +97,6 @@ spec:
   volumeClaimTemplates:
     - metadata:
         name: data
-        labels:
-          {{- include "cbctf.postgres.labels" . | nindent 10 }}
       spec:
         accessModes:
           - {{ .Values.postgres.persistence.accessMode | quote }}
