@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"errors"
 	"fmt"
@@ -94,8 +93,14 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 }
 
 func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string, model.RetVal) {
-	imageSet := make(map[string]struct{})
-	images := make([]string, 0)
+	images, hasPodChallenges, ret := db.InitContestChallengeRepo(tx).ListContestImages(contest.ID)
+	if !ret.OK {
+		return nil, ret
+	}
+	imageSet := make(map[string]struct{}, len(images))
+	for _, image := range images {
+		imageSet[image] = struct{}{}
+	}
 	addImage := func(image string) {
 		if image == "" {
 			return
@@ -105,37 +110,6 @@ func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string,
 		}
 		imageSet[image] = struct{}{}
 		images = append(images, image)
-	}
-
-	var generatorImages []string
-	if res := tx.Table("contest_challenges").
-		Distinct().
-		Select("challenges.generator_image").
-		Joins("INNER JOIN challenges ON contest_challenges.challenge_id = challenges.id AND challenges.deleted_at IS NULL").
-		Where("contest_challenges.contest_id = ? AND contest_challenges.type = ? AND contest_challenges.deleted_at IS NULL", contest.ID, model.DynamicChallengeType).
-		Where("challenges.generator_image <> ''").
-		Order("challenges.generator_image ASC").
-		Pluck("challenges.generator_image", &generatorImages); res.Error != nil {
-		return nil, model.RetVal{Msg: i18n.Model.ContestChallenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	for _, image := range generatorImages {
-		addImage(image)
-	}
-
-	podChallenges, _, ret := db.InitContestChallengeRepo(tx).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"contest_id": contest.ID, "type": model.PodsChallengeType},
-		Preloads:   map[string]db.GetOptions{"Challenge": {}},
-	})
-	if !ret.OK && ret.Msg != i18n.Model.NotFound {
-		return nil, ret
-	}
-	hasPodChallenges := len(podChallenges) > 0
-	for _, contestChallenge := range podChallenges {
-		for _, pod := range contestChallenge.Challenge.Template.Pods {
-			for _, container := range pod.Containers {
-				addImage(container.Image)
-			}
-		}
 	}
 
 	if hasPodChallenges {

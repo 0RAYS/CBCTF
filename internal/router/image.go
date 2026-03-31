@@ -23,6 +23,26 @@ func formatNodeImages(nodeImageMap map[string][]string) []gin.H {
 	return data
 }
 
+func intersectNodeImages(nodeImageMap map[string][]string, targetImages []string) map[string][]string {
+	targetSet := make(map[string]struct{}, len(targetImages))
+	for _, image := range targetImages {
+		targetSet[image] = struct{}{}
+	}
+
+	filtered := make(map[string][]string, len(nodeImageMap))
+	for node, images := range nodeImageMap {
+		current := make([]string, 0, len(images))
+		for _, image := range images {
+			if _, ok := targetSet[image]; ok {
+				current = append(current, image)
+			}
+		}
+		sort.Strings(current)
+		filtered[node] = current
+	}
+	return filtered
+}
+
 func collectUnionImages(nodeImageMap map[string][]string) []string {
 	imageSet := make(map[string]struct{})
 	images := make([]string, 0)
@@ -67,7 +87,7 @@ func GetContestChallengeImage(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	sort.Strings(targetImages)
+	nodeImageMap = intersectNodeImages(nodeImageMap, targetImages)
 
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{
 		"nodes":         formatNodeImages(nodeImageMap),
