@@ -2,6 +2,7 @@ package utils
 
 import (
 	"CBCTF/internal/config"
+	"CBCTF/internal/log"
 	"bufio"
 	"bytes"
 	"fmt"
@@ -127,7 +128,8 @@ func ReadPcapDir(path string) ([]Connection, error) {
 		}
 		packetConnections, readErr := ReadPcapFile(fmt.Sprintf("%s/%s", path, file.Name()))
 		if readErr != nil {
-			return nil, readErr
+			log.Logger.Warningf("Failed to read pcap file %s: %s", file.Name(), readErr.Error())
+			continue
 		}
 		connections = append(connections, packetConnections...)
 	}
