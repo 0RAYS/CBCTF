@@ -109,6 +109,7 @@
     "cronjobs": "CronJobs",
     "webhook": "Webhook",
     "files": "文件",
+    "tasks": "任务队列",
     "system": "系统",
     "logs": "日志",
     "containers": "靶机",
@@ -135,6 +136,53 @@
       "userPicture": "用户头像",
       "defaultUser": "管理员",
       "managementTitle": "{{label}}管理"
+    },
+    "tasks": {
+      "subtitle": "查看已完成/失败的任务记录，以及 Redis 中实时任务队列状态。",
+      "tabs": {
+        "history": "历史记录",
+        "live": "实时队列"
+      },
+      "history": {
+        "title": "已完成 / 失败任务",
+        "empty": "暂无终态任务记录"
+      },
+      "live": {
+        "title": "Redis 队列快照",
+        "empty": "当前状态下暂无任务"
+      },
+      "filters": {
+        "reset": "重置筛选",
+        "taskId": "搜索任务 ID...",
+        "allStatus": "全部状态",
+        "allQueues": "全部队列",
+        "allTypes": "全部类型"
+      },
+      "columns": {
+        "taskId": "任务 ID",
+        "type": "类型",
+        "queue": "队列",
+        "status": "状态",
+        "retry": "重试",
+        "processedAt": "处理时间",
+        "nextProcessAt": "下次执行",
+        "error": "错误",
+        "payload": "负载"
+      },
+      "status": {
+        "success": "成功",
+        "failed": "失败",
+        "active": "执行中",
+        "pending": "等待中",
+        "scheduled": "已计划",
+        "retry": "重试中",
+        "archived": "已归档",
+        "completed": "已完成"
+      },
+      "toast": {
+        "fetchHistoryFailed": "获取任务历史失败",
+        "fetchLiveFailed": "获取实时任务失败"
+      }
     },
     "dashboard": {
       "title": "系统状态",

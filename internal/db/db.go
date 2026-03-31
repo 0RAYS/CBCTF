@@ -72,7 +72,7 @@ func Init() {
 		&model.ContestChallenge{}, &model.ContestFlag{}, &model.CronJob{}, &model.Device{}, &model.Email{},
 		&model.Event{}, &model.File{}, &model.Generator{}, &model.Group{}, &model.Notice{}, &model.Oauth{},
 		&model.Permission{}, &model.Request{}, &model.Role{}, &model.Setting{}, &model.Smtp{}, &model.Submission{},
-		&model.Team{}, &model.TeamFlag{}, &model.Traffic{}, &model.User{}, &model.Webhook{}, &model.WebhookHistory{},
+		&model.Task{}, &model.Team{}, &model.TeamFlag{}, &model.Traffic{}, &model.User{}, &model.Webhook{}, &model.WebhookHistory{},
 	)
 	if err != nil {
 		log.Logger.Fatalf("Failed to migrate database: %s", err)

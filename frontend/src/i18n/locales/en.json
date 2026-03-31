@@ -109,6 +109,7 @@
     "cronjobs": "CRONJOBS",
     "webhook": "WEBHOOK",
     "files": "FILES",
+    "tasks": "TASKS",
     "system": "SYSTEM",
     "logs": "LOGS",
     "containers": "CONTAINERS",
@@ -135,6 +136,53 @@
       "userPicture": "User picture",
       "defaultUser": "ADMIN",
       "managementTitle": "{{label}} Management"
+    },
+    "tasks": {
+      "subtitle": "Inspect terminal task history and current Redis-backed queue state.",
+      "tabs": {
+        "history": "History",
+        "live": "Live Queue"
+      },
+      "history": {
+        "title": "Completed / Failed Tasks",
+        "empty": "No terminal task records"
+      },
+      "live": {
+        "title": "Redis Queue Snapshot",
+        "empty": "No queued tasks for this state"
+      },
+      "filters": {
+        "reset": "Reset Filters",
+        "taskId": "Search task ID...",
+        "allStatus": "All statuses",
+        "allQueues": "All queues",
+        "allTypes": "All types"
+      },
+      "columns": {
+        "taskId": "Task ID",
+        "type": "Type",
+        "queue": "Queue",
+        "status": "Status",
+        "retry": "Retry",
+        "processedAt": "Processed At",
+        "nextProcessAt": "Next Process",
+        "error": "Error",
+        "payload": "Payload"
+      },
+      "status": {
+        "success": "Success",
+        "failed": "Failed",
+        "active": "Active",
+        "pending": "Pending",
+        "scheduled": "Scheduled",
+        "retry": "Retry",
+        "archived": "Archived",
+        "completed": "Completed"
+      },
+      "toast": {
+        "fetchHistoryFailed": "Failed to load task history",
+        "fetchLiveFailed": "Failed to load live tasks"
+      }
     },
     "dashboard": {
       "title": "System Status",

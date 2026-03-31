@@ -21,6 +21,7 @@ export const getAdminNavSections = (t, routes = null) => {
     { id: 'cronjobs', label: t('nav.cronjobs'), path: '/admin/cronjobs', apiRoute: 'GET /admin/cronjobs' },
     { id: 'webhook', label: t('nav.webhook'), path: '/admin/webhook', apiRoute: 'GET /admin/webhook' },
     { id: 'files', label: t('nav.files'), path: '/admin/files', apiRoute: 'GET /admin/files' },
+    { id: 'tasks', label: t('nav.tasks'), path: '/admin/tasks', apiRoute: 'GET /admin/tasks' },
     { id: 'system', label: t('nav.system'), path: '/admin/system', apiRoute: 'GET /admin/system/config' },
     { id: 'logs', label: t('nav.logs'), path: '/admin/logs', apiRoute: 'GET /admin/logs' },
   ];

@@ -159,6 +159,13 @@ var metadataRegistry = map[reflect.Type]Metadata{
 		QueryFields:  []string{"id", "address", "host", "on"},
 		SearchFields: []string{"address", "host"},
 	},
+	reflect.TypeFor[Task](): {
+		Name:         "Task",
+		Table:        "tasks",
+		UniqueFields: []string{"id"},
+		QueryFields:  []string{"id", "task_id", "type", "queue", "status", "retry_count", "max_retry", "processed_at"},
+		SearchFields: []string{"task_id", "type", "queue", "status", "error"},
+	},
 	reflect.TypeFor[Submission](): {
 		Name:         "Submission",
 		Table:        "submissions",
