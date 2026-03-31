@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"sort"
 
 	"gorm.io/gorm"
 )
@@ -98,6 +99,50 @@ func (c *ContestChallengeRepo) ListCategories(contestID uint, t model.ChallengeT
 		return nil, model.RetVal{Msg: i18n.Model.ContestChallenge.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return categories, model.SuccessRetVal()
+}
+
+func (c *ContestChallengeRepo) ListContestImages(contestID uint) ([]string, bool, model.RetVal) {
+	imageSet := make(map[string]struct{})
+	images := make([]string, 0)
+	addImage := func(image string) {
+		if image == "" {
+			return
+		}
+		if _, ok := imageSet[image]; ok {
+			return
+		}
+		imageSet[image] = struct{}{}
+		images = append(images, image)
+	}
+
+	dynamicChallenges, _, ret := c.List(-1, -1, GetOptions{
+		Conditions: map[string]any{"contest_id": contestID, "type": model.DynamicChallengeType},
+		Preloads:   map[string]GetOptions{"Challenge": {}},
+	})
+	if !ret.OK && ret.Msg != i18n.Model.NotFound {
+		return nil, false, ret
+	}
+	for _, contestChallenge := range dynamicChallenges {
+		addImage(contestChallenge.Challenge.GeneratorImage)
+	}
+
+	podChallenges, _, ret := c.List(-1, -1, GetOptions{
+		Conditions: map[string]any{"contest_id": contestID, "type": model.PodsChallengeType},
+		Preloads:   map[string]GetOptions{"Challenge": {}},
+	})
+	if !ret.OK && ret.Msg != i18n.Model.NotFound {
+		return nil, false, ret
+	}
+	for _, contestChallenge := range podChallenges {
+		for _, pod := range contestChallenge.Challenge.Template.Pods {
+			for _, container := range pod.Containers {
+				addImage(container.Image)
+			}
+		}
+	}
+
+	sort.Strings(images)
+	return images, len(podChallenges) > 0, model.SuccessRetVal()
 }
 
 func (c *ContestChallengeRepo) ListUnsolvedID(teamID, contestID uint, category string, limit, offset int) ([]uint, int64, model.RetVal) {
