@@ -13,8 +13,9 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 function AdminImagesPull({
+  scope = 'contest',
   nodes = [],
-  unionImages = [],
+  targetImages = [],
   allImages = [],
   selectedTargetKeys = [],
   selectedNodes = [],
@@ -46,7 +47,9 @@ function AdminImagesPull({
     .map((item) => item.trim())
     .filter(Boolean).length;
 
-  const allTargetCount = unionImages.reduce(
+  const scopeKey = scope === 'global' ? 'admin.imagesPull' : 'admin.contests.imagesPull';
+
+  const allTargetCount = targetImages.reduce(
     (count, imageName) => count + nodes.filter((node) => !node.images.includes(imageName)).length,
     0
   );
@@ -56,7 +59,7 @@ function AdminImagesPull({
     return node ? !node.images.includes(imageName) : false;
   };
   const normalizedFilter = filterText.trim().toLowerCase();
-  const filteredUnionImages = unionImages.filter((imageName) => imageName.toLowerCase().includes(normalizedFilter));
+  const filteredTargetImages = targetImages.filter((imageName) => imageName.toLowerCase().includes(normalizedFilter));
 
   if (loading) {
     return (
@@ -85,9 +88,9 @@ function AdminImagesPull({
         <Card variant="default" padding="md" animate className="xl:col-span-2">
           <div className="flex items-start justify-between gap-4 mb-6">
             <div>
-              <h2 className="text-lg font-mono text-neutral-50">{t('admin.contests.imagesPull.control.title')}</h2>
+              <h2 className="text-lg font-mono text-neutral-50">{t(`${scopeKey}.control.title`)}</h2>
               <p className="mt-2 text-sm text-neutral-400 font-mono leading-6">
-                {t('admin.contests.imagesPull.control.subtitle')}
+                {t(`${scopeKey}.control.subtitle`)}
               </p>
             </div>
             <div className="flex min-w-fit shrink-0 items-center gap-2 whitespace-nowrap text-neutral-400 font-mono text-sm">
@@ -105,9 +108,9 @@ function AdminImagesPull({
             </div>
             <div className="rounded-md border border-neutral-300/20 bg-black/20 p-4">
               <div className="text-xs text-neutral-500 font-mono mb-2">
-                {t('admin.contests.imagesPull.summary.unionLabel')}
+                {t(`${scopeKey}.summary.unionLabel`)}
               </div>
-              <div className="text-2xl text-neutral-50 font-mono">{unionImages.length}</div>
+              <div className="text-2xl text-neutral-50 font-mono">{targetImages.length}</div>
             </div>
             <div className="rounded-md border border-neutral-300/20 bg-black/20 p-4">
               <div className="text-xs text-neutral-500 font-mono mb-2">
@@ -144,9 +147,9 @@ function AdminImagesPull({
         <Card variant="default" padding="md" animate className="flex h-full flex-col">
           <div className="flex items-start justify-between gap-4 mb-5">
             <div>
-              <h2 className="text-lg font-mono text-neutral-50">{t('admin.contests.imagesPull.selection.title')}</h2>
+              <h2 className="text-lg font-mono text-neutral-50">{t(`${scopeKey}.selection.title`)}</h2>
               <p className="mt-2 text-sm text-neutral-400 font-mono leading-6">
-                {t('admin.contests.imagesPull.selection.subtitle')}
+                {t(`${scopeKey}.selection.subtitle`)}
               </p>
             </div>
             <Button
@@ -175,10 +178,10 @@ function AdminImagesPull({
             <div className="flex items-start justify-between gap-4 mb-3">
               <div>
                 <div className="text-sm font-mono text-neutral-300">
-                  {t('admin.contests.imagesPull.intersection.title')}
+                  {t(`${scopeKey}.intersection.title`)}
                 </div>
                 <p className="mt-1 text-xs font-mono text-neutral-500 leading-5">
-                  {t('admin.contests.imagesPull.intersection.subtitle')}
+                  {t(`${scopeKey}.intersection.subtitle`)}
                 </p>
               </div>
               <div className="text-xs font-mono text-neutral-500">
@@ -186,11 +189,11 @@ function AdminImagesPull({
               </div>
             </div>
 
-            {filteredUnionImages.length === 0 ? (
-              <EmptyState title={t('admin.contests.imagesPull.intersection.empty')} />
+            {filteredTargetImages.length === 0 ? (
+              <EmptyState title={t(`${scopeKey}.intersection.empty`)} />
             ) : (
               <div className="max-h-130 overflow-y-auto pr-1 space-y-2">
-                {filteredUnionImages.map((imageName) => (
+                {filteredTargetImages.map((imageName) => (
                   <div key={imageName} className="rounded-md border border-neutral-300/20 bg-black/20 p-3">
                     <div className="break-all text-sm font-mono text-neutral-50 mb-3">{imageName}</div>
                     <div className="flex flex-wrap gap-2">
@@ -261,9 +264,9 @@ function AdminImagesPull({
           <div className="flex items-start gap-3 mb-5">
             <IconWriting size={18} className="mt-1 text-neutral-400" />
             <div>
-              <h2 className="text-lg font-mono text-neutral-50">{t('admin.contests.imagesPull.manual.title')}</h2>
+              <h2 className="text-lg font-mono text-neutral-50">{t(`${scopeKey}.manual.title`)}</h2>
               <p className="mt-2 text-sm text-neutral-400 font-mono leading-6">
-                {t('admin.contests.imagesPull.manual.subtitle')}
+                {t(`${scopeKey}.manual.subtitle`)}
               </p>
             </div>
           </div>
@@ -338,9 +341,9 @@ function AdminImagesPull({
       <Card variant="default" padding="md" animate>
         <div className="flex items-start justify-between gap-4 mb-5">
           <div>
-            <h2 className="text-lg font-mono text-neutral-50">{t('admin.contests.imagesPull.statusTitle')}</h2>
+            <h2 className="text-lg font-mono text-neutral-50">{t(`${scopeKey}.statusTitle`)}</h2>
             <p className="mt-2 text-sm text-neutral-400 font-mono leading-6">
-              {t('admin.contests.imagesPull.statusSubtitle')}
+              {t(`${scopeKey}.statusSubtitle`)}
             </p>
           </div>
           <Chip
@@ -397,10 +400,10 @@ function AdminImagesPull({
 
                   <div className="pt-3 border-t border-neutral-300/10">
                     <div className="text-xs font-mono text-neutral-500 mb-2">
-                      {t('admin.contests.imagesPull.node.missingTitle')}
+                      {t(`${scopeKey}.node.missingTitle`)}
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {filteredUnionImages
+                      {filteredTargetImages
                         .filter((imageName) => !node.images.includes(imageName))
                         .map((imageName) => (
                           <div
@@ -416,9 +419,9 @@ function AdminImagesPull({
                             />
                           </div>
                         ))}
-                      {filteredUnionImages.filter((imageName) => !node.images.includes(imageName)).length === 0 && (
+                      {filteredTargetImages.filter((imageName) => !node.images.includes(imageName)).length === 0 && (
                         <div className="text-sm font-mono text-neutral-500">
-                          {t('admin.contests.imagesPull.node.noMissing')}
+                          {t(`${scopeKey}.node.noMissing`)}
                         </div>
                       )}
                     </div>
