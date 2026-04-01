@@ -23,45 +23,6 @@ func formatNodeImages(nodeImageMap map[string][]string) []gin.H {
 	return data
 }
 
-func intersectNodeImages(nodeImageMap map[string][]string, targetImages []string) map[string][]string {
-	targetSet := make(map[string]struct{}, len(targetImages))
-	for _, image := range targetImages {
-		targetSet[image] = struct{}{}
-	}
-
-	filtered := make(map[string][]string, len(nodeImageMap))
-	for node, images := range nodeImageMap {
-		current := make([]string, 0, len(images))
-		for _, image := range images {
-			if _, ok := targetSet[image]; ok {
-				current = append(current, image)
-			}
-		}
-		sort.Strings(current)
-		filtered[node] = current
-	}
-	return filtered
-}
-
-func collectUnionImages(nodeImageMap map[string][]string) []string {
-	imageSet := make(map[string]struct{})
-	images := make([]string, 0)
-	for _, nodeImages := range nodeImageMap {
-		for _, image := range nodeImages {
-			if image == "" {
-				continue
-			}
-			if _, ok := imageSet[image]; ok {
-				continue
-			}
-			imageSet[image] = struct{}{}
-			images = append(images, image)
-		}
-	}
-	sort.Strings(images)
-	return images
-}
-
 func GetImages(ctx *gin.Context) {
 	nodeImageMap, ret := service.GetNodeImageList()
 	if !ret.OK {
@@ -70,8 +31,25 @@ func GetImages(ctx *gin.Context) {
 	}
 
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{
-		"nodes":         formatNodeImages(nodeImageMap),
-		"target_images": collectUnionImages(nodeImageMap),
+		"nodes": formatNodeImages(nodeImageMap),
+		"target_images": func(nodeImageMap map[string][]string) []string {
+			imageSet := make(map[string]struct{})
+			images := make([]string, 0)
+			for _, nodeImages := range nodeImageMap {
+				for _, image := range nodeImages {
+					if image == "" {
+						continue
+					}
+					if _, ok := imageSet[image]; ok {
+						continue
+					}
+					imageSet[image] = struct{}{}
+					images = append(images, image)
+				}
+			}
+			sort.Strings(images)
+			return images
+		}(nodeImageMap),
 	}))
 }
 
@@ -87,7 +65,25 @@ func GetContestChallengeImage(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	nodeImageMap = intersectNodeImages(nodeImageMap, targetImages)
+	nodeImageMap = func(nodeImageMap map[string][]string, targetImages []string) map[string][]string {
+		targetSet := make(map[string]struct{}, len(targetImages))
+		for _, image := range targetImages {
+			targetSet[image] = struct{}{}
+		}
+
+		filtered := make(map[string][]string, len(nodeImageMap))
+		for node, images := range nodeImageMap {
+			current := make([]string, 0, len(images))
+			for _, image := range images {
+				if _, ok := targetSet[image]; ok {
+					current = append(current, image)
+				}
+			}
+			sort.Strings(current)
+			filtered[node] = current
+		}
+		return filtered
+	}(nodeImageMap, targetImages)
 
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{
 		"nodes":         formatNodeImages(nodeImageMap),
