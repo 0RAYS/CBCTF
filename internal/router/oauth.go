@@ -140,14 +140,16 @@ func OauthCallback(ctx *gin.Context) {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return
 	}
-	tx := db.DB.Begin()
-	user, ret := service.OauthLogin(tx, provider, result)
+	var user model.User
+	ret = db.WithTransaction(func(tx *db.Tx) model.RetVal {
+		var ret model.RetVal
+		user, ret = service.OauthLogin(tx, provider, result)
+		return ret
+	})
 	if !ret.OK {
-		tx.Rollback()
 		resp.JSON(ctx, ret)
 		return
 	}
-	tx.Commit()
 	token, err := utils.GenerateToken(user.ID, user.Name, model.OauthLoginDeviceMagic)
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)

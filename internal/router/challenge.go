@@ -73,14 +73,16 @@ func CreateChallenge(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateChallengeEventType)
-	tx := db.DB.Begin()
-	challenge, ret := service.CreateChallenge(tx, form)
+	var challenge model.Challenge
+	ret := db.WithTransaction(func(tx *db.Tx) model.RetVal {
+		var ret model.RetVal
+		challenge, ret = service.CreateChallenge(tx, form)
+		return ret
+	})
 	if !ret.OK {
-		tx.Rollback()
 		resp.JSON(ctx, ret)
 		return
 	}
-	tx.Commit()
 	if err := os.MkdirAll(challenge.BasicDir(), 0755); err != nil {
 		log.Logger.Warningf("create challenge dir err: %s", err)
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.File.CreateDirError, Attr: map[string]any{"Error": err.Error()}})
@@ -106,14 +108,13 @@ func UpdateChallenge(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	tx := db.DB.Begin()
-	ret = service.UpdateChallenge(tx, challenge, form)
+	ret = db.WithTransaction(func(tx *db.Tx) model.RetVal {
+		return service.UpdateChallenge(tx, challenge, form)
+	})
 	if !ret.OK {
-		tx.Rollback()
 		resp.JSON(ctx, ret)
 		return
 	}
-	tx.Commit()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, ret)
 }
@@ -121,14 +122,13 @@ func UpdateChallenge(ctx *gin.Context) {
 func DeleteChallenge(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteChallengeEventType)
 	challenge := middleware.GetChallenge(ctx)
-	tx := db.DB.Begin()
-	ret := db.InitChallengeRepo(tx).Delete(challenge.RandID)
+	ret := db.WithTransaction(func(tx *db.Tx) model.RetVal {
+		return db.InitChallengeRepo(tx).Delete(challenge.RandID)
+	})
 	if !ret.OK {
-		tx.Rollback()
 		resp.JSON(ctx, ret)
 		return
 	}
-	tx.Commit()
 	if err := os.RemoveAll(challenge.BasicDir()); err != nil {
 		log.Logger.Warningf("Failed to remove challenge basic dir: %s", err)
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})

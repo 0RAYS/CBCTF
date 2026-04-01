@@ -81,12 +81,10 @@ func UpdateContest(ctx *gin.Context) {
 func DeleteContest(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteContestEventType)
 	contest := middleware.GetContest(ctx)
-	tx := db.DB.Begin()
-	ret := db.InitContestRepo(tx).Delete(contest.ID)
-	if !ret.OK {
-		tx.Rollback()
-	} else {
-		tx.Commit()
+	ret := db.WithTransaction(func(tx *db.Tx) model.RetVal {
+		return db.InitContestRepo(tx).Delete(contest.ID)
+	})
+	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
 	resp.JSON(ctx, ret)

@@ -26,6 +26,7 @@ func GetTeamFlags(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
+
 	challengeInfoMap := make(map[uint]gin.H)
 	challengeFlagsMap := make(map[uint][]gin.H)
 	for _, flag := range teamFlags {
@@ -49,6 +50,7 @@ func GetTeamFlags(ctx *gin.Context) {
 			"solvers":       flag.ContestFlag.Solvers,
 		})
 	}
+
 	data := make([]gin.H, 0, len(challengeInfoMap))
 	for id, info := range challengeInfoMap {
 		info["flags"] = challengeFlagsMap[id]
@@ -70,30 +72,33 @@ func InitTeamFlag(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
+
 	contestChallenge.ContestFlags = contestFlags
 	challenge := middleware.GetChallenge(ctx)
-	tx := db.DB.Begin()
-	teamFlags, ret := service.CreateTeamFlag(tx, team, contest, contestChallenge)
-	if !ret.OK {
-		tx.Rollback()
-		resp.JSON(ctx, ret)
-		return
-	}
-	if challenge.Type == model.DynamicChallengeType {
+	ret = db.WithTransaction(func(tx *db.Tx) model.RetVal {
+		teamFlags, ret := service.CreateTeamFlag(tx, team, contest, contestChallenge)
+		if !ret.OK {
+			return ret
+		}
+		if challenge.Type != model.DynamicChallengeType {
+			return model.SuccessRetVal()
+		}
+
 		generator, ret := service.GetGenerator(tx, contest.ID, challenge)
 		if !ret.OK {
-			tx.Rollback()
-			resp.JSON(ctx, ret)
-			return
+			return ret
 		}
 		if _, err := task.EnqueueGenAttachmentTask(user.ID, generator, challenge, team, teamFlags); err != nil {
 			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
-			tx.Rollback()
-			resp.JSON(ctx, model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}})
-			return
+			return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
 		}
+		return model.SuccessRetVal()
+	})
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
 	}
-	tx.Commit()
+
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }
@@ -111,33 +116,34 @@ func ResetTeamFlag(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
+
 	contestChallenge.ContestFlags = contestFlags
 	challenge := middleware.GetChallenge(ctx)
-	tx := db.DB.Begin()
-	teamFlags, ret := service.UpdateTeamFlag(tx, team, contest, contestChallenge)
-	if !ret.OK {
-		tx.Rollback()
-		resp.JSON(ctx, ret)
-		return
-	}
-	switch challenge.Type {
-	case model.DynamicChallengeType:
+	ret = db.WithTransaction(func(tx *db.Tx) model.RetVal {
+		teamFlags, ret := service.UpdateTeamFlag(tx, team, contest, contestChallenge)
+		if !ret.OK {
+			return ret
+		}
+		if challenge.Type != model.DynamicChallengeType {
+			return model.SuccessRetVal()
+		}
+
 		generator, ret := service.GetGenerator(tx, contest.ID, challenge)
 		if !ret.OK {
-			tx.Rollback()
-			resp.JSON(ctx, ret)
-			return
+			return ret
 		}
 		if _, err := task.EnqueueGenAttachmentTask(user.ID, generator, challenge, team, teamFlags); err != nil {
 			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
-			tx.Rollback()
-			resp.JSON(ctx, model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}})
-			return
+			return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
 		}
-		tx.Commit()
-	case model.PodsChallengeType:
-		tx.Commit()
-		// 不考虑失败
+		return model.SuccessRetVal()
+	})
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+
+	if challenge.Type == model.PodsChallengeType {
 		go func() {
 			victim, ret := db.InitVictimRepo(db.DB).HasAliveVictim(team.ID, challenge.ID)
 			if !ret.OK {
@@ -145,9 +151,8 @@ func ResetTeamFlag(ctx *gin.Context) {
 			}
 			service.ForceStopVictim(db.DB, victim)
 		}()
-	default:
-		tx.Commit()
 	}
+
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, ret)
+	resp.JSON(ctx, model.SuccessRetVal())
 }

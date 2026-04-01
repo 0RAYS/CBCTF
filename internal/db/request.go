@@ -74,6 +74,35 @@ type UserIP struct {
 	FirstTime time.Time
 }
 
+func (r *RequestRepo) ListSharedContestUserIPs(contestID uint) ([]UserIP, model.RetVal) {
+	if contestID == 0 {
+		return nil, model.SuccessRetVal()
+	}
+
+	sharedIPs := r.DB.Table("requests").
+		Select("requests.ip").
+		Joins("INNER JOIN user_contests ON user_contests.user_id = requests.user_id").
+		Joins("INNER JOIN users ON users.id = requests.user_id AND users.deleted_at IS NULL").
+		Where("user_contests.contest_id = ? AND requests.deleted_at IS NULL", contestID).
+		Group("requests.ip").
+		Having("COUNT(DISTINCT requests.user_id) > 1")
+
+	var userIPL []UserIP
+	res := r.DB.Table("requests").
+		Select("requests.user_id, requests.ip, MIN(requests.time) AS first_time").
+		Joins("INNER JOIN user_contests ON user_contests.user_id = requests.user_id").
+		Joins("INNER JOIN users ON users.id = requests.user_id AND users.deleted_at IS NULL").
+		Where("user_contests.contest_id = ? AND requests.deleted_at IS NULL AND requests.ip IN (?)", contestID, sharedIPs).
+		Group("requests.user_id, requests.ip").
+		Order("requests.ip ASC, first_time ASC, requests.user_id ASC").
+		Scan(&userIPL)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to list shared request IPs: %s", res.Error)
+		return nil, model.RetVal{Msg: i18n.Model.Request.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return userIPL, model.SuccessRetVal()
+}
+
 func (r *RequestRepo) GetUserIP(userIDL ...uint) ([]UserIP, model.RetVal) {
 	if len(userIDL) == 0 {
 		return nil, model.SuccessRetVal()

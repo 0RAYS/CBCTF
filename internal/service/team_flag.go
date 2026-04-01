@@ -7,7 +7,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/task"
 	"CBCTF/internal/utils"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -23,27 +22,45 @@ func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) model.
 		return ret
 	}
 	for _, contestChallenge := range contestChallenges {
-		if err := tx.Transaction(func(tx2 *gorm.DB) error {
+		ret = db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
 			teamFlags, ret := CreateTeamFlag(tx2, team, contest, contestChallenge)
 			if !ret.OK {
-				if err, ok := ret.Attr["Error"]; ok {
-					return errors.New(err.(string))
-				}
-				return fmt.Errorf("%s", ret.Msg)
+				return ret
 			}
 			if contestChallenge.Type == model.DynamicChallengeType {
 				generator, ret := GetGenerator(tx2, contest.ID, contestChallenge.Challenge)
 				if !ret.OK {
-					return fmt.Errorf("generate attachment failed: %s", ret.Msg)
+					return model.RetVal{
+						Msg: i18n.Model.CreateError,
+						Attr: map[string]any{
+							"Model": model.ModelName(model.TeamFlag{}),
+							"Error": fmt.Sprintf("generate attachment failed: %s", ret.Msg),
+						},
+					}
 				}
 				if _, err := task.EnqueueGenAttachmentTask(team.CaptainID, generator, contestChallenge.Challenge, team, teamFlags); err != nil {
 					log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
-					return err
+					return model.RetVal{
+						Msg: i18n.Model.CreateError,
+						Attr: map[string]any{
+							"Model": model.ModelName(model.TeamFlag{}),
+							"Error": err.Error(),
+						},
+					}
 				}
 			}
-			return nil
-		}); err != nil {
-			return model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.ModelName(model.TeamFlag{}), "Error": err.Error()}}
+			return model.SuccessRetVal()
+		})
+		if !ret.OK {
+			if ret.Attr == nil {
+				ret.Attr = map[string]any{}
+			}
+			ret.Attr["Model"] = model.ModelName(model.TeamFlag{})
+			if _, ok := ret.Attr["Error"]; !ok {
+				ret.Attr["Error"] = ret.Msg
+			}
+			ret.Msg = i18n.Model.CreateError
+			return ret
 		}
 	}
 	return model.SuccessRetVal()

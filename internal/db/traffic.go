@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -43,22 +44,32 @@ func InitTrafficRepo(tx *gorm.DB) *TrafficRepo {
 }
 
 type TeamVictimIP struct {
-	TeamID   uint
-	VictimID uint
-	SrcIP    string
-	StopTime gorm.DeletedAt
+	TeamID    uint
+	SrcIP     string
+	FirstTime time.Time
 }
 
-func (t *TrafficRepo) GetTeamVictimIP(teamIDL ...uint) ([]TeamVictimIP, model.RetVal) {
-	if len(teamIDL) == 0 {
+func (t *TrafficRepo) ListSharedContestVictimIPs(contestID uint) ([]TeamVictimIP, model.RetVal) {
+	if contestID == 0 {
 		return nil, model.SuccessRetVal()
 	}
+
+	sharedIPs := t.DB.Table("traffics").
+		Select("traffics.src_ip").
+		Joins("INNER JOIN victims ON victims.id = traffics.victim_id").
+		Joins("INNER JOIN teams ON teams.id = victims.team_id AND teams.deleted_at IS NULL").
+		Where("victims.contest_id = ? AND victims.team_id IS NOT NULL AND traffics.deleted_at IS NULL", contestID).
+		Group("traffics.src_ip").
+		Having("COUNT(DISTINCT victims.team_id) > 1")
+
 	var teamVictimIPL []TeamVictimIP
 	res := t.DB.Table("traffics").
-		Select("victims.team_id, victims.id AS victim_id, traffics.src_ip, victims.deleted_at AS stop_time").
-		Joins("INNER JOIN victims ON traffics.victim_id = victims.id AND victims.deleted_at IS NULL").
-		Where("victims.team_id IN ? AND traffics.deleted_at IS NULL", teamIDL).
-		Group("victims.team_id, victims.id, traffics.src_ip, victims.deleted_at").
+		Select("victims.team_id, traffics.src_ip, MIN(victims.created_at) AS first_time").
+		Joins("INNER JOIN victims ON victims.id = traffics.victim_id").
+		Joins("INNER JOIN teams ON teams.id = victims.team_id AND teams.deleted_at IS NULL").
+		Where("victims.contest_id = ? AND victims.team_id IS NOT NULL AND traffics.deleted_at IS NULL AND traffics.src_ip IN (?)", contestID, sharedIPs).
+		Group("victims.team_id, traffics.src_ip").
+		Order("traffics.src_ip ASC, first_time ASC, victims.team_id ASC").
 		Scan(&teamVictimIPL)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get Traffic: %s", res.Error)

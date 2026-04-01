@@ -16,6 +16,7 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func Register(ctx *gin.Context) {
@@ -29,23 +30,26 @@ func Register(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.RegisterEventType)
-	tx := db.DB.Begin()
-	user, ret := service.CreateUser(tx, form)
+	var user model.User
+	ret := db.WithTransaction(func(tx *gorm.DB) model.RetVal {
+		var ret model.RetVal
+		user, ret = service.CreateUser(tx, form)
+		if !ret.OK {
+			return ret
+		}
+		if config.Env.Registration.DefaultGroup != 0 {
+			if defaultGroup, groupRet := db.InitGroupRepo(tx).GetByID(config.Env.Registration.DefaultGroup); groupRet.OK {
+				if ret = db.AppendUserToGroup(tx, user, defaultGroup); !ret.OK {
+					return ret
+				}
+			}
+		}
+		return model.SuccessRetVal()
+	})
 	if !ret.OK {
-		tx.Rollback()
 		resp.JSON(ctx, ret)
 		return
 	}
-	if config.Env.Registration.DefaultGroup != 0 {
-		if defaultGroup, ret := db.InitGroupRepo(tx).GetByID(config.Env.Registration.DefaultGroup); ret.OK {
-			if ret = db.AppendUserToGroup(tx, user, defaultGroup); !ret.OK {
-				tx.Rollback()
-				resp.JSON(ctx, ret)
-				return
-			}
-		}
-	}
-	tx.Commit()
 	if ret = service.SendEmail(user); !ret.OK {
 		resp.JSON(ctx, ret)
 		return

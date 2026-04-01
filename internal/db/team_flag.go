@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -75,6 +76,16 @@ type SolvedContestFlagRow struct {
 	model.ContestFlag
 }
 
+type ContestWrongFlagSubmission struct {
+	SubmissionID       uint
+	TeamID             uint
+	ContestChallengeID uint
+	Value              string
+	IP                 string
+	CreatedAt          time.Time
+	MatchedTeamID      uint
+}
+
 func (t *TeamFlagRepo) GetTeamFlagsWithChallenge(teamIDL ...uint) ([]TeamFlagWithChallenge, model.RetVal) {
 	if len(teamIDL) == 0 {
 		return nil, model.SuccessRetVal()
@@ -100,6 +111,48 @@ func (t *TeamFlagRepo) GetTeamFlagsWithChallenge(teamIDL ...uint) ([]TeamFlagWit
 		Scan(&results)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to get TeamFlags: %s", res.Error)
+		return nil, model.RetVal{Msg: i18n.Model.TeamFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return results, model.SuccessRetVal()
+}
+
+func (t *TeamFlagRepo) ListContestWrongFlagSubmissions(contestID uint) ([]ContestWrongFlagSubmission, model.RetVal) {
+	if contestID == 0 {
+		return nil, model.SuccessRetVal()
+	}
+
+	submittedQuestionChallenges := t.DB.Table("contest_challenges").
+		Select("contest_challenges.id").
+		Where("contest_challenges.contest_id = ? AND contest_challenges.type = ? AND contest_challenges.deleted_at IS NULL", contestID, model.QuestionChallengeType)
+
+	var results []ContestWrongFlagSubmission
+	res := t.DB.Table("submissions").
+		Select(`submissions.id AS submission_id,
+			submissions.team_id,
+			submissions.contest_challenge_id,
+			submissions.value,
+			submissions.ip,
+			submissions.created_at,
+			team_flags.team_id AS matched_team_id`).
+		Joins("INNER JOIN team_flags ON team_flags.value = submissions.value AND team_flags.deleted_at IS NULL").
+		Joins("INNER JOIN contest_flags ON contest_flags.id = team_flags.contest_flag_id AND contest_flags.deleted_at IS NULL").
+		Joins("INNER JOIN teams AS submission_teams ON submission_teams.id = submissions.team_id AND submission_teams.deleted_at IS NULL").
+		Joins("INNER JOIN teams AS matched_teams ON matched_teams.id = team_flags.team_id AND matched_teams.deleted_at IS NULL").
+		Where("submissions.contest_id = ? AND submissions.solved = false AND submissions.deleted_at IS NULL", contestID).
+		Where("submissions.team_id <> team_flags.team_id").
+		Where("submission_teams.contest_id = ? AND matched_teams.contest_id = ?", contestID, contestID).
+		Where("submissions.contest_challenge_id NOT IN (?)", submittedQuestionChallenges).
+		Group(`submissions.id,
+			submissions.team_id,
+			submissions.contest_challenge_id,
+			submissions.value,
+			submissions.ip,
+			submissions.created_at,
+			team_flags.team_id`).
+		Order("submissions.created_at ASC, submissions.id ASC, team_flags.team_id ASC").
+		Scan(&results)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to list wrong flag submissions: %s", res.Error)
 		return nil, model.RetVal{Msg: i18n.Model.TeamFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return results, model.SuccessRetVal()
