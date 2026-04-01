@@ -2,6 +2,7 @@ package db
 
 import (
 	"CBCTF/internal/config"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"fmt"
@@ -14,6 +15,31 @@ import (
 )
 
 var DB *gorm.DB
+
+type Tx = gorm.DB
+
+func WithTransaction(fn func(tx *Tx) model.RetVal) model.RetVal {
+	return WithTransactionDB(DB, fn)
+}
+
+func WithTransactionDB(root *gorm.DB, fn func(tx *Tx) model.RetVal) model.RetVal {
+	if root == nil {
+		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "database is nil"}}
+	}
+	var ret model.RetVal
+	err := root.Transaction(func(tx *gorm.DB) error {
+		ret = fn(tx)
+		if !ret.OK {
+			return fmt.Errorf("%s", ret.Msg)
+		}
+		return nil
+	})
+	if err != nil && ret.OK {
+		log.Logger.Warningf("Failed to execute transaction: %s", err)
+		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+	}
+	return ret
+}
 
 func Init() {
 	var err error

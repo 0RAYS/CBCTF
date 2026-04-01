@@ -132,14 +132,13 @@ func UpdateCaptcha(ctx *gin.Context) {
 func DeleteTeam(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteTeamEventType)
 	team := middleware.GetTeam(ctx)
-	tx := db.DB.Begin()
-	ret := db.InitTeamRepo(tx).Delete(team.ID)
+	ret := db.WithTransaction(func(tx *db.Tx) model.RetVal {
+		return db.InitTeamRepo(tx).Delete(team.ID)
+	})
 	if !ret.OK {
-		tx.Rollback()
 		resp.JSON(ctx, ret)
 		return
 	}
-	tx.Commit()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, ret)
 }
@@ -153,13 +152,13 @@ func KickMember(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.KickMemberEventType)
 	team := middleware.GetTeam(ctx)
 	contest := middleware.GetContest(ctx)
-	tx := db.DB.Begin()
-	if ret := service.LeaveTeam(tx, contest, team, form.UserID); !ret.OK {
-		tx.Rollback()
+	ret := db.WithTransaction(func(tx *db.Tx) model.RetVal {
+		return service.LeaveTeam(tx, contest, team, form.UserID)
+	})
+	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	tx.Commit()
 	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Operator": middleware.GetSelf(ctx).ID})
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
@@ -174,14 +173,16 @@ func JoinTeam(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.JoinTeamEventType)
 	contest := middleware.GetContest(ctx)
 	user := middleware.GetSelf(ctx)
-	tx := db.DB.Begin()
-	team, ret := service.JoinTeam(tx, contest, user, form)
+	var team model.Team
+	ret := db.WithTransaction(func(tx *db.Tx) model.RetVal {
+		var ret model.RetVal
+		team, ret = service.JoinTeam(tx, contest, user, form)
+		return ret
+	})
 	if !ret.OK {
-		tx.Rollback()
 		resp.JSON(ctx, ret)
 		return
 	}
-	tx.Commit()
 	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Team": team.ID})
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
@@ -196,19 +197,19 @@ func CreateTeam(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateTeamEventType)
 	contest := middleware.GetContest(ctx)
 	user := middleware.GetSelf(ctx)
-	tx := db.DB.Begin()
-	team, ret := service.CreateTeam(tx, contest, user, form)
+	var team model.Team
+	ret := db.WithTransaction(func(tx *db.Tx) model.RetVal {
+		var ret model.RetVal
+		team, ret = service.CreateTeam(tx, contest, user, form)
+		if !ret.OK {
+			return ret
+		}
+		return service.CreateTeamFlags(tx, team, contest)
+	})
 	if !ret.OK {
-		tx.Rollback()
 		resp.JSON(ctx, ret)
 		return
 	}
-	if ret = service.CreateTeamFlags(tx, team, contest); !ret.OK {
-		tx.Rollback()
-		resp.JSON(ctx, ret)
-		return
-	}
-	tx.Commit()
 	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Team": team.ID})
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
@@ -219,13 +220,13 @@ func LeaveTeam(ctx *gin.Context) {
 	user := middleware.GetSelf(ctx)
 	contest := middleware.GetContest(ctx)
 	team := middleware.GetTeam(ctx)
-	tx := db.DB.Begin()
-	if ret := service.LeaveTeam(tx, contest, team, user.ID); !ret.OK {
-		tx.Rollback()
+	ret := db.WithTransaction(func(tx *db.Tx) model.RetVal {
+		return service.LeaveTeam(tx, contest, team, user.ID)
+	})
+	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	tx.Commit()
 	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Team": team.ID})
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())

@@ -10,7 +10,6 @@ import (
 	"CBCTF/internal/service"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 func GetUser(ctx *gin.Context) {
@@ -135,10 +134,7 @@ func UpdateUser(ctx *gin.Context) {
 }
 
 func DeleteUser(ctx *gin.Context) {
-	var (
-		tx  *gorm.DB
-		ret model.RetVal
-	)
+	var ret model.RetVal
 	var user model.User
 	if !middleware.IsFullAccess(ctx) {
 		var form dto.DeleteSelfForm
@@ -148,20 +144,21 @@ func DeleteUser(ctx *gin.Context) {
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.DeleteUserEventType)
 		user = middleware.GetSelf(ctx)
-		tx = db.DB.Begin()
-		ret = service.DeleteSelf(tx, user, form)
+		ret = db.WithTransaction(func(tx *db.Tx) model.RetVal {
+			return service.DeleteSelf(tx, user, form)
+		})
 	} else {
 		ctx.Set(middleware.CTXEventTypeKey, model.DeleteUserEventType)
 		user = middleware.GetUser(ctx)
-		tx = db.DB.Begin()
-		ret = service.DeleteUser(tx, user)
+		ret = db.WithTransaction(func(tx *db.Tx) model.RetVal {
+			return service.DeleteUser(tx, user)
+		})
 	}
 	if !ret.OK {
-		tx.Rollback()
+		resp.JSON(ctx, ret)
 	} else {
 		redis.DeleteUserRBAC(user.ID)
-		tx.Commit()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
+		resp.JSON(ctx, ret)
 	}
-	resp.JSON(ctx, ret)
 }

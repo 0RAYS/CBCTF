@@ -30,14 +30,14 @@ func SubmitFlag(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	tx := db.DB.Begin()
-	_, ret = service.Submit(tx, user, team, contest, contestChallenge, form, ctx.ClientIP())
+	ret = db.WithTransaction(func(tx *db.Tx) model.RetVal {
+		_, ret := service.Submit(tx, user, team, contest, contestChallenge, form, ctx.ClientIP())
+		return ret
+	})
 	if !ret.OK {
-		tx.Rollback()
 		resp.JSON(ctx, ret)
 		return
 	}
-	tx.Commit()
 	if contestChallenge.Type == model.PodsChallengeType && service.CheckIfSolved(db.DB, team, contestFlags) {
 		go func() {
 			victim, ret := db.InitVictimRepo(db.DB).HasAliveVictim(team.ID, challenge.ID)

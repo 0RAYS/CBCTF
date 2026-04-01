@@ -5,8 +5,6 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/model"
-	"errors"
-	"fmt"
 	"sort"
 	"time"
 
@@ -29,7 +27,7 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 		if !contestChallengeRepo.IsUniqueContestChallenge(contest.ID, challenge.ID) {
 			continue
 		}
-		if err := tx.Transaction(func(tx2 *gorm.DB) error {
+		ret = db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
 			contestChallengeRepo := db.InitContestChallengeRepo(tx2)
 			contestFlagRepo := db.InitContestFlagRepo(tx2)
 
@@ -47,10 +45,7 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 			}
 			contestChallenge, ret := contestChallengeRepo.Create(options)
 			if !ret.OK {
-				if err, ok := ret.Attr["Error"]; ok {
-					return errors.New(err.(string))
-				}
-				return fmt.Errorf("%s", ret.Msg)
+				return ret
 			}
 			for _, flag := range challenge.ChallengeFlags {
 				contestFlagOptions := db.CreateContestFlagOptions{
@@ -68,24 +63,19 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 				}
 				_, ret = contestFlagRepo.Create(contestFlagOptions)
 				if !ret.OK {
-					if err, ok := ret.Attr["Error"]; ok {
-						return errors.New(err.(string))
-					}
-					return fmt.Errorf("%s", ret.Msg)
+					return ret
 				}
 			}
 			contestChallenge, ret = contestChallengeRepo.GetByID(contestChallenge.ID, db.GetOptions{
 				Preloads: map[string]db.GetOptions{"Challenge": {}, "ContestFlags": {}},
 			})
 			if !ret.OK {
-				if err, ok := ret.Attr["Error"]; ok {
-					return errors.New(err.(string))
-				}
-				return fmt.Errorf("%s", ret.Msg)
+				return ret
 			}
 			contestChallengeL = append(contestChallengeL, contestChallenge)
-			return nil
-		}); err != nil {
+			return model.SuccessRetVal()
+		})
+		if !ret.OK {
 			failedL = append(failedL, challengeRandID)
 		}
 	}
