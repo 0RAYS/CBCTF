@@ -25,26 +25,21 @@ func compactJSON(value any) any {
 	return normalized
 }
 
-func compactPayload(raw []byte) any {
-	if len(raw) == 0 {
-		return nil
-	}
-	var normalized any
-	if err := json.Unmarshal(raw, &normalized); err == nil {
-		return normalized
-	}
-	if err := msgpack.Unmarshal(raw, &normalized); err == nil {
-		return normalizePayload(normalized)
-	}
-	return string(raw)
-}
-
 func normalizePayload(value any) any {
 	switch v := value.(type) {
 	case map[any]any:
 		data := make(map[string]any, len(v))
 		for key, item := range v {
-			data[toPayloadKey(key)] = normalizePayload(item)
+			data[func(value any) string {
+				if str, ok := value.(string); ok {
+					return str
+				}
+				raw, err := json.Marshal(value)
+				if err != nil {
+					return "unknown"
+				}
+				return string(raw)
+			}(key)] = normalizePayload(item)
 		}
 		return data
 	case map[string]any:
@@ -62,17 +57,6 @@ func normalizePayload(value any) any {
 	default:
 		return value
 	}
-}
-
-func toPayloadKey(value any) string {
-	if str, ok := value.(string); ok {
-		return str
-	}
-	raw, err := json.Marshal(value)
-	if err != nil {
-		return "unknown"
-	}
-	return string(raw)
 }
 
 func GetTaskResp(task model.Task) gin.H {
@@ -94,11 +78,23 @@ func GetTaskResp(task model.Task) gin.H {
 
 func GetLiveTaskResp(task *asynq.TaskInfo) gin.H {
 	return gin.H{
-		"task_id":         task.ID,
-		"type":            task.Type,
-		"queue":           task.Queue,
-		"status":          task.State.String(),
-		"payload":         compactPayload(task.Payload),
+		"task_id": task.ID,
+		"type":    task.Type,
+		"queue":   task.Queue,
+		"status":  task.State.String(),
+		"payload": func(raw []byte) any {
+			if len(raw) == 0 {
+				return nil
+			}
+			var normalized any
+			if err := json.Unmarshal(raw, &normalized); err == nil {
+				return normalized
+			}
+			if err := msgpack.Unmarshal(raw, &normalized); err == nil {
+				return normalizePayload(normalized)
+			}
+			return string(raw)
+		}(task.Payload),
 		"error":           task.LastErr,
 		"retry_count":     task.Retried,
 		"max_retry":       task.MaxRetry,

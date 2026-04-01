@@ -64,7 +64,12 @@ func Init() {
 		config.Env.Gorm.Postgres.User,
 		config.Env.Gorm.Postgres.Pwd,
 		config.Env.Gorm.Postgres.DB,
-		getPostgresSSLMode(config.Env.Gorm.Postgres.SSLMode),
+		func() string {
+			if config.Env.Gorm.Postgres.SSLMode {
+				return "require"
+			}
+			return "disable"
+		}(),
 	)
 	log.Logger.Infof("Connecting to PostgreSQL database: %s:%d", config.Env.Gorm.Postgres.Host, config.Env.Gorm.Postgres.Port)
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
@@ -140,13 +145,6 @@ func Init() {
 		log.Logger.Fatalf("Failed to init Admin: %v", ret)
 	}
 	InitOauthRepo(DB).RegisterDefault()
-}
-
-func getPostgresSSLMode(enabled bool) string {
-	if enabled {
-		return "require"
-	}
-	return "disable"
 }
 
 func Stop() {

@@ -211,7 +211,23 @@ func mergeYAMLNode(node *yaml.Node, data any) error {
 			if !exists {
 				continue
 			}
-			if err := applyYAMLValue(valueNode, remainingValue); err != nil {
+			if err := func(node *yaml.Node, value any) error {
+				switch node.Kind {
+				case yaml.MappingNode, yaml.SequenceNode:
+					return mergeYAMLNode(node, value)
+				default:
+					valueNode, err := valueToNode(value)
+					if err != nil {
+						return err
+					}
+					node.Kind = valueNode.Kind
+					node.Tag = valueNode.Tag
+					node.Value = valueNode.Value
+					node.Content = valueNode.Content
+					node.Style = valueNode.Style
+					return nil
+				}
+			}(valueNode, remainingValue); err != nil {
 				return err
 			}
 			delete(remaining, key)
@@ -226,7 +242,21 @@ func mergeYAMLNode(node *yaml.Node, data any) error {
 		}
 		return nil
 	case yaml.SequenceNode:
-		items, ok := toSlice(data)
+		items, ok := func(value any) ([]any, bool) {
+			val := reflect.ValueOf(value)
+			if !val.IsValid() {
+				return nil, false
+			}
+			kind := val.Kind()
+			if kind != reflect.Slice && kind != reflect.Array {
+				return nil, false
+			}
+			items := make([]any, val.Len())
+			for i := 0; i < val.Len(); i++ {
+				items[i] = val.Index(i).Interface()
+			}
+			return items, true
+		}(data)
 		if !ok {
 			return nil
 		}
@@ -249,24 +279,6 @@ func mergeYAMLNode(node *yaml.Node, data any) error {
 	}
 }
 
-func applyYAMLValue(node *yaml.Node, value any) error {
-	switch node.Kind {
-	case yaml.MappingNode, yaml.SequenceNode:
-		return mergeYAMLNode(node, value)
-	default:
-		valueNode, err := valueToNode(value)
-		if err != nil {
-			return err
-		}
-		node.Kind = valueNode.Kind
-		node.Tag = valueNode.Tag
-		node.Value = valueNode.Value
-		node.Content = valueNode.Content
-		node.Style = valueNode.Style
-		return nil
-	}
-}
-
 func valueToNode(value any) (*yaml.Node, error) {
 	bytes, err := yaml.Marshal(value)
 	if err != nil {
@@ -280,20 +292,4 @@ func valueToNode(value any) (*yaml.Node, error) {
 		return node.Content[0], nil
 	}
 	return &node, nil
-}
-
-func toSlice(value any) ([]any, bool) {
-	val := reflect.ValueOf(value)
-	if !val.IsValid() {
-		return nil, false
-	}
-	kind := val.Kind()
-	if kind != reflect.Slice && kind != reflect.Array {
-		return nil, false
-	}
-	items := make([]any, val.Len())
-	for i := 0; i < val.Len(); i++ {
-		items[i] = val.Index(i).Interface()
-	}
-	return items, true
 }
