@@ -52,11 +52,30 @@ async function generateFingerprint() {
   }
 }
 
-let magicNum;
-generateFingerprint().then((fingerprint) => {
-  magicNum = fingerprint;
-  localStorage.setItem(FINGERPRINT_KEY, fingerprint);
-});
+let magicNum = localStorage.getItem(FINGERPRINT_KEY) || '';
+let fingerprintPromise = null;
+
+async function ensureFingerprint() {
+  if (magicNum) {
+    return magicNum;
+  }
+
+  if (!fingerprintPromise) {
+    fingerprintPromise = generateFingerprint()
+      .then((fingerprint) => {
+        magicNum = fingerprint;
+        localStorage.setItem(FINGERPRINT_KEY, fingerprint);
+        return fingerprint;
+      })
+      .finally(() => {
+        fingerprintPromise = null;
+      });
+  }
+
+  return fingerprintPromise;
+}
+
+ensureFingerprint();
 
 // 创建 Axios 实例
 const request = axios.create({
@@ -82,16 +101,13 @@ const updateGlobalLoading = (count) => {
 
 // 请求拦截器
 request.interceptors.request.use(
-  (config) => {
+  async (config) => {
     // 如果没有设置 noLoading 标识，则执行全局 loading 逻辑
     if (!config.noLoading) {
       startLoading();
       updateGlobalLoading(requestCount + 1);
     }
-    if (!localStorage.getItem('LXM')) {
-      localStorage.setItem('LXM', '');
-    }
-    config.headers['X-M'] = magicNum || localStorage.getItem('LXM');
+    config.headers['X-M'] = await ensureFingerprint();
     config.headers['Accept-Language'] = i18n.language;
     const token = localStorage.getItem('token');
     if (token) {
