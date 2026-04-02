@@ -181,9 +181,6 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				Containers:  containers,
 				Volumes:     volumes,
 			}
-			if len(annotations) == 0 {
-				pOptions.Tolerations = map[string]string{VPCNetworkTolerationKey: VPCNetworkTolerationVal}
-			}
 
 			p, ret := CreatePod(ctx, pOptions)
 			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
