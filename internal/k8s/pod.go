@@ -15,13 +15,12 @@ import (
 )
 
 type CreatePodOptions struct {
-	Name            string
-	Labels          map[string]string
-	Annotations     map[string]string
-	Containers      []corev1.Container
-	Volumes         []corev1.Volume
-	PodAffinity     map[string]string
-	PodAntiAffinity map[string]string
+	Name          string
+	Labels        map[string]string
+	Annotations   map[string]string
+	AntiNatGWName string
+	Containers    []corev1.Container
+	Volumes       []corev1.Volume
 }
 
 func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, model.RetVal) {
@@ -49,53 +48,24 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 			RestartPolicy:                 corev1.RestartPolicyNever,
 		},
 	}
-	if len(options.PodAffinity) > 0 || len(options.PodAntiAffinity) > 0 {
-		pod.Spec.Affinity = &corev1.Affinity{}
-		if len(options.PodAffinity) > 0 {
-			pod.Spec.Affinity.PodAffinity = &corev1.PodAffinity{
-				RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
-					{
-						LabelSelector: &metav1.LabelSelector{
-							MatchExpressions: func() []metav1.LabelSelectorRequirement {
-								tmp := make([]metav1.LabelSelectorRequirement, 0)
-								for key, value := range options.PodAffinity {
-									tmp = append(tmp, metav1.LabelSelectorRequirement{
-										Key:      key,
-										Operator: metav1.LabelSelectorOpIn,
-										Values:   []string{value},
-									})
-								}
-								return tmp
-							}(),
+	if options.AntiNatGWName != "" {
+		// frpc pod 需要与 子网 eip 进行通信, 不能与 VPCNatGW pod 位于同一个节点, 并且跨 kube-system 与本 namespace
+		pod.Spec.Affinity.PodAntiAffinity = &corev1.PodAntiAffinity{
+			RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
+				{
+					LabelSelector: &metav1.LabelSelector{
+						MatchExpressions: []metav1.LabelSelectorRequirement{
+							{
+								Key:      "app",
+								Operator: metav1.LabelSelectorOpIn,
+								Values:   []string{fmt.Sprintf("vpc-nat-gw-%s", options.AntiNatGWName)},
+							},
 						},
-						Namespaces:  []string{globalNamespace, "kube-system"},
-						TopologyKey: "kubernetes.io/hostname",
 					},
+					Namespaces:  []string{globalNamespace, "kube-system"},
+					TopologyKey: "kubernetes.io/hostname",
 				},
-			}
-		}
-		if len(options.PodAntiAffinity) > 0 {
-			pod.Spec.Affinity.PodAntiAffinity = &corev1.PodAntiAffinity{
-				RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
-					{
-						LabelSelector: &metav1.LabelSelector{
-							MatchExpressions: func() []metav1.LabelSelectorRequirement {
-								tmp := make([]metav1.LabelSelectorRequirement, 0)
-								for key, value := range options.PodAntiAffinity {
-									tmp = append(tmp, metav1.LabelSelectorRequirement{
-										Key:      key,
-										Operator: metav1.LabelSelectorOpIn,
-										Values:   []string{value},
-									})
-								}
-								return tmp
-							}(),
-						},
-						Namespaces:  []string{globalNamespace, "kube-system"},
-						TopologyKey: "kubernetes.io/hostname",
-					},
-				},
-			}
+			},
 		}
 	}
 	pod, err = kubeClient.CoreV1().Pods(globalNamespace).Create(ctx, pod, metav1.CreateOptions{})
