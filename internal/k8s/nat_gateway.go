@@ -9,8 +9,14 @@ import (
 	"strings"
 
 	kubeovnv1 "github.com/kubeovn/kube-ovn/pkg/apis/kubeovn/v1"
+	corev1 "k8s.io/api/core/v1"
 	apierror "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+)
+
+const (
+	VPCUnsupportedNodeLabelKey   = "node.cbctf.io/vpc-unsupported"
+	VPCUnsupportedNodeLabelValue = "true"
 )
 
 type CreateVPCNatGatewayOptions struct {
@@ -38,6 +44,24 @@ func CreateVPCNatGateway(ctx context.Context, options CreateVPCNatGatewayOptions
 			Subnet:          options.Subnet,
 			LanIP:           options.LanIP,
 			ExternalSubnets: options.ExternalSubnet,
+			// Exclude nodes explicitly labeled as not supporting VPC networking.
+			Affinity: corev1.Affinity{
+				NodeAffinity: &corev1.NodeAffinity{
+					RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
+						NodeSelectorTerms: []corev1.NodeSelectorTerm{
+							{
+								MatchExpressions: []corev1.NodeSelectorRequirement{
+									{
+										Key:      VPCUnsupportedNodeLabelKey,
+										Operator: corev1.NodeSelectorOpNotIn,
+										Values:   []string{VPCUnsupportedNodeLabelValue},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 	gateway, err = ovnClient.KubeovnV1().VpcNatGateways().Create(ctx, gateway, metav1.CreateOptions{})

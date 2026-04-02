@@ -21,11 +21,6 @@ const (
 	FrpcPodTag      = "frpc"
 )
 
-const (
-	VPCNetworkTolerationKey = "vpc-network"
-	VPCNetworkTolerationVal = "unacceptable"
-)
-
 var (
 	kubeClient         *kubernetes.Clientset
 	netattClient       *netattclient.Clientset

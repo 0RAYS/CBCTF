@@ -104,10 +104,10 @@ Helm 安装后，应用启动时会检查以下资源：
 
 ## 跨云厂商节点
 
-若部分节点不支持 VPC 网络，可为其添加污点，避免调度 VPC 模式的容器题：
+若部分节点不支持 VPC 网络，可为其添加节点标签，阻止 `CreateVPCNatGateway` 生成的 Pod 调度到这些节点：
 
 ```bash
-kubectl taint node <node-name> vpc-network=unacceptable:NoSchedule
+kubectl label node <node-name> node.cbctf.io/vpc-unsupported=true
 ```
 
-Pod 网络模式题目不受此污点影响。
+该标签表示节点不支持 VPC。`CreateVPCNatGateway` 会通过节点亲和性排除这些节点，不会影响其他服务 Pod 的调度。
