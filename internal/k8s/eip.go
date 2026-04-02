@@ -25,7 +25,6 @@ type CreateEIPOptions struct {
 func CreateEIP(ctx context.Context, options CreateEIPOptions) (*kubeovnv1.IptablesEIP, model.RetVal) {
 	var (
 		eip *kubeovnv1.IptablesEIP
-		ret model.RetVal
 		err error
 	)
 	eip = &kubeovnv1.IptablesEIP{
@@ -43,26 +42,6 @@ func CreateEIP(ctx context.Context, options CreateEIPOptions) (*kubeovnv1.Iptabl
 	if err != nil {
 		log.Logger.Warningf("Failed to create EIP: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "EIP", "Error": err.Error()}}
-	}
-	for {
-		if err = ctx.Err(); err != nil {
-			log.Logger.Warningf("Failed to wait EIP %s ready: %s", options.Name, err)
-			return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "EIP", "Error": err.Error()}}
-		}
-		eip, ret = GetEIP(ctx, options.Name)
-		if !ret.OK {
-			if ret.Msg != i18n.K8S.NotFound {
-				return nil, ret
-			}
-			time.Sleep(500 * time.Millisecond)
-			continue
-		}
-		if eip != nil {
-			if _, err = netip.ParseAddr(eip.Spec.V4ip); err == nil {
-				break
-			}
-		}
-		time.Sleep(500 * time.Millisecond)
 	}
 	return eip, model.SuccessRetVal()
 }
@@ -96,4 +75,27 @@ func DeleteEIPList(ctx context.Context, labels ...map[string]string) model.RetVa
 		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "EIP", "Error": err.Error()}}
 	}
 	return model.SuccessRetVal()
+}
+
+func WaitEIP(ctx context.Context, name string) (string, model.RetVal) {
+	for {
+		if err := ctx.Err(); err != nil {
+			log.Logger.Warningf("Failed to wait EIP %s ready: %s", name, err)
+			return "", model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "EIP", "Error": err.Error()}}
+		}
+		eip, ret := GetEIP(ctx, name)
+		if !ret.OK {
+			if ret.Msg != i18n.K8S.NotFound {
+				return "", ret
+			}
+			time.Sleep(500 * time.Millisecond)
+			continue
+		}
+		if eip != nil {
+			if _, err := netip.ParseAddr(eip.Spec.V4ip); err == nil {
+				return eip.Spec.V4ip, model.SuccessRetVal()
+			}
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
 }
