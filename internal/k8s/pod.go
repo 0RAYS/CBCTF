@@ -22,7 +22,6 @@ type CreatePodOptions struct {
 	Volumes         []corev1.Volume
 	PodAffinity     map[string]string
 	PodAntiAffinity map[string]string
-	Tolerations     map[string]string
 }
 
 func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, model.RetVal) {
@@ -49,14 +48,6 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 			TerminationGracePeriodSeconds: new(int64(3)),
 			RestartPolicy:                 corev1.RestartPolicyNever,
 		},
-	}
-	for key, value := range options.Tolerations {
-		pod.Spec.Tolerations = append(pod.Spec.Tolerations, corev1.Toleration{
-			Key:      key,
-			Operator: corev1.TolerationOpEqual,
-			Value:    value,
-			Effect:   corev1.TaintEffectNoSchedule,
-		})
 	}
 	if len(options.PodAffinity) > 0 || len(options.PodAntiAffinity) > 0 {
 		pod.Spec.Affinity = &corev1.Affinity{}
