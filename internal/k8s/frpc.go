@@ -114,6 +114,11 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 			if subnet.NatGateway == nil {
 				continue
 			}
+			var ret model.RetVal
+			subnet.NatGateway.EIP.IP, ret = WaitEIP(ctx, subnet.NatGateway.EIP.Name)
+			if !ret.OK {
+				return victim, ret
+			}
 			needFrpc := false
 			podName := fmt.Sprintf("frpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6))
 			frpcConfig := fmt.Sprintf(frpcHeaderTemplate, frps.Host, frps.Port, frps.Token)

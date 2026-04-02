@@ -388,7 +388,6 @@ func createVictimNetworkResources(
 				return fmt.Errorf("create EIP %s failed: %s", subnet.NatGateway.EIP.Name, ret.Msg)
 			}
 
-			subnet.NatGateway.EIP.IP = e.Spec.V4ip
 			for _, dnat := range subnet.NatGateway.EIP.DNats {
 				_, ret = CreateDNat(ctx, CreateDNatOptions{
 					Name:         dnat.Name,
