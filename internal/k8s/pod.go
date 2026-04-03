@@ -50,20 +50,22 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 	}
 	if options.AntiNatGWName != "" {
 		// frpc pod 需要与 子网 eip 进行通信, 不能与 VPCNatGW pod 位于同一个节点, 并且跨 kube-system 与本 namespace
-		pod.Spec.Affinity.PodAntiAffinity = &corev1.PodAntiAffinity{
-			RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
-				{
-					LabelSelector: &metav1.LabelSelector{
-						MatchExpressions: []metav1.LabelSelectorRequirement{
-							{
-								Key:      "app",
-								Operator: metav1.LabelSelectorOpIn,
-								Values:   []string{fmt.Sprintf("vpc-nat-gw-%s", options.AntiNatGWName)},
+		pod.Spec.Affinity = &corev1.Affinity{
+			PodAntiAffinity: &corev1.PodAntiAffinity{
+				RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
+					{
+						LabelSelector: &metav1.LabelSelector{
+							MatchExpressions: []metav1.LabelSelectorRequirement{
+								{
+									Key:      "app",
+									Operator: metav1.LabelSelectorOpIn,
+									Values:   []string{fmt.Sprintf("vpc-nat-gw-%s", options.AntiNatGWName)},
+								},
 							},
 						},
+						Namespaces:  []string{globalNamespace, "kube-system"},
+						TopologyKey: "kubernetes.io/hostname",
 					},
-					Namespaces:  []string{globalNamespace, "kube-system"},
-					TopologyKey: "kubernetes.io/hostname",
 				},
 			},
 		}
