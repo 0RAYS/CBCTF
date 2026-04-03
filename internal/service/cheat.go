@@ -15,15 +15,42 @@ import (
 	"gorm.io/gorm"
 )
 
-func CheckSameDevice(tx *gorm.DB, contest model.Contest) {
-	rows, ret := db.InitDeviceRepo(tx).ListSharedContestDevices(contest.ID)
+type deviceInfo struct {
+	UserID    uint
+	FirstTime time.Time
+}
+
+type ipUserInfo struct {
+	UserID uint
+	Time   time.Time
+}
+
+func shouldKeepUserGroup(contestID uint, userIDs []uint, teamRepo *db.TeamRepo) bool {
+	userTeamMap, ret := teamRepo.GetUserTeamMap(contestID, userIDs...)
 	if !ret.OK {
-		return
+		return false
 	}
 
-	type deviceInfo struct {
-		UserID    uint
-		FirstTime time.Time
+	teamSet := make(map[uint]struct{})
+	missingTeam := false
+	for _, userID := range userIDs {
+		teamID, ok := userTeamMap[userID]
+		if !ok || teamID == 0 {
+			missingTeam = true
+			continue
+		}
+		teamSet[teamID] = struct{}{}
+	}
+	if len(teamSet) == 0 {
+		return missingTeam && len(userIDs) > 1
+	}
+	return len(teamSet) > 1 || missingTeam
+}
+
+func CheckSameDevice(tx *gorm.DB, contest model.Contest) {
+	rows, ret := db.InitDeviceRepo(tx).ListSharedContestDevices(contest.ID, contest.Start, contest.Start.Add(contest.Duration))
+	if !ret.OK {
+		return
 	}
 
 	deviceUserMap := make(map[string][]deviceInfo)
@@ -34,20 +61,27 @@ func CheckSameDevice(tx *gorm.DB, contest model.Contest) {
 		})
 	}
 
+	teamRepo := db.InitTeamRepo(tx)
 	repo := db.InitCheatRepo(tx)
 	for magic, infos := range deviceUserMap {
 		if len(infos) <= 1 {
 			continue
 		}
 
+		userIDs := make([]uint, 0, len(infos))
+		for _, info := range infos {
+			userIDs = append(userIDs, info.UserID)
+		}
+		if !shouldKeepUserGroup(contest.ID, userIDs, teamRepo) {
+			continue
+		}
+
 		var (
 			users    []string
-			userIDs  []uint
 			earliest time.Time
 		)
 		for i, info := range infos {
 			users = append(users, strconv.Itoa(int(info.UserID)))
-			userIDs = append(userIDs, info.UserID)
 			if i == 0 || info.FirstTime.Before(earliest) {
 				earliest = info.FirstTime
 			}
@@ -67,7 +101,7 @@ func CheckSameDevice(tx *gorm.DB, contest model.Contest) {
 }
 
 func CheckWrongFlag(tx *gorm.DB, contest model.Contest) {
-	rows, ret := db.InitTeamFlagRepo(tx).ListContestWrongFlagSubmissions(contest.ID)
+	rows, ret := db.InitTeamFlagRepo(tx).ListContestWrongFlagSubmissions(contest.ID, contest.Start, contest.Start.Add(contest.Duration))
 	if !ret.OK {
 		return
 	}
@@ -142,12 +176,7 @@ func checkWhitelistIP(ip string) bool {
 }
 
 func CheckWebReqIP(tx *gorm.DB, contest model.Contest) {
-	type ipUserInfo struct {
-		UserID uint
-		Time   time.Time
-	}
-
-	rows, ret := db.InitRequestRepo(tx).ListSharedContestUserIPs(contest.ID)
+	rows, ret := db.InitRequestRepo(tx).ListSharedContestUserIPs(contest.ID, contest.Start, contest.Start.Add(contest.Duration))
 	if !ret.OK {
 		return
 	}
@@ -163,20 +192,27 @@ func CheckWebReqIP(tx *gorm.DB, contest model.Contest) {
 		})
 	}
 
+	teamRepo := db.InitTeamRepo(tx)
 	cheatRepo := db.InitCheatRepo(tx)
 	for ip, users := range ipUserMap {
 		if len(users) <= 1 {
 			continue
 		}
 
+		userIDs := make([]uint, 0, len(users))
+		for _, user := range users {
+			userIDs = append(userIDs, user.UserID)
+		}
+		if !shouldKeepUserGroup(contest.ID, userIDs, teamRepo) {
+			continue
+		}
+
 		var (
 			str      []string
-			userIDs  []uint
 			earliest time.Time
 		)
 		for i, user := range users {
 			str = append(str, strconv.Itoa(int(user.UserID)))
-			userIDs = append(userIDs, user.UserID)
 			if i == 0 || user.Time.Before(earliest) {
 				earliest = user.Time
 			}
@@ -203,7 +239,7 @@ func CheckVictimReqIP(tx *gorm.DB, contest model.Contest) {
 		ID   uint
 	}
 
-	rows, ret := db.InitTrafficRepo(tx).ListSharedContestVictimIPs(contest.ID)
+	rows, ret := db.InitTrafficRepo(tx).ListSharedContestVictimIPs(contest.ID, contest.Start, contest.Start.Add(contest.Duration))
 	if !ret.OK {
 		return
 	}

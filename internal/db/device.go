@@ -53,7 +53,7 @@ type ContestDeviceUser struct {
 	FirstTime time.Time
 }
 
-func (d *DeviceRepo) ListSharedContestDevices(contestID uint) ([]ContestDeviceUser, model.RetVal) {
+func (d *DeviceRepo) ListSharedContestDevices(contestID uint, start, end time.Time) ([]ContestDeviceUser, model.RetVal) {
 	if contestID == 0 {
 		return nil, model.SuccessRetVal()
 	}
@@ -63,6 +63,7 @@ func (d *DeviceRepo) ListSharedContestDevices(contestID uint) ([]ContestDeviceUs
 		Joins("INNER JOIN user_contests ON user_contests.user_id = devices.user_id").
 		Joins("INNER JOIN users ON users.id = devices.user_id AND users.deleted_at IS NULL").
 		Where("user_contests.contest_id = ? AND devices.deleted_at IS NULL", contestID).
+		Where("devices.created_at <= ? AND devices.updated_at >= ?", end, start).
 		Group("devices.magic").
 		Having("COUNT(DISTINCT devices.user_id) > 1")
 
@@ -72,6 +73,7 @@ func (d *DeviceRepo) ListSharedContestDevices(contestID uint) ([]ContestDeviceUs
 		Joins("INNER JOIN user_contests ON user_contests.user_id = devices.user_id").
 		Joins("INNER JOIN users ON users.id = devices.user_id AND users.deleted_at IS NULL").
 		Where("user_contests.contest_id = ? AND devices.deleted_at IS NULL AND devices.magic IN (?)", contestID, sharedMagics).
+		Where("devices.created_at <= ? AND devices.updated_at >= ?", end, start).
 		Group("devices.magic, devices.user_id").
 		Order("devices.magic ASC, first_time ASC, devices.user_id ASC").
 		Scan(&rows)
