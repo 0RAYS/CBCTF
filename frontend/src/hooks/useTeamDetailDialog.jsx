@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import {
   getContestTeam,
@@ -19,6 +20,8 @@ const PAGE_SIZE = 20;
 
 export function useTeamDetailDialog(contestId) {
   const { t } = useTranslation();
+  const routes = useSelector((state) => state.user.routes);
+  const canViewTraffic = routes.includes('GET /admin/contests/:contestID/teams/:teamID/victims');
 
   const [show, setShow] = useState(false);
   const [teamData, setTeamData] = useState(null);
@@ -245,14 +248,17 @@ export function useTeamDetailDialog(contestId) {
         onViewTrafficGraph={handleViewTrafficGraph}
         detailFlags={flags}
         detailFlagsLoading={flagsLoading}
+        canViewTraffic={canViewTraffic}
       />
-      <TrafficGraphModal
-        isOpen={show && !!trafficGraphContainer}
-        onClose={() => setTrafficGraphContainer(null)}
-        container={trafficGraphContainer}
-        contestId={contestId}
-        teamId={teamData?.id}
-      />
+      {canViewTraffic && (
+        <TrafficGraphModal
+          isOpen={show && !!trafficGraphContainer}
+          onClose={() => setTrafficGraphContainer(null)}
+          container={trafficGraphContainer}
+          contestId={contestId}
+          teamId={teamData?.id}
+        />
+      )}
     </>
   );
 

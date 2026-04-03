@@ -44,6 +44,7 @@ function TeamDetail({
   onUserClick,
   detailFlags = [],
   detailFlagsLoading = false,
+  canViewTraffic = true,
 }) {
   const { t, i18n } = useTranslation();
   // 每页显示条数
@@ -143,7 +144,7 @@ function TeamDetail({
     { key: 'submissions', label: t('admin.contests.teamDetail.tabs.submissions') },
     { key: 'writeups', label: t('admin.contests.teamDetail.tabs.writeups') },
     { key: 'traffic', label: t('admin.contests.teamDetail.tabs.traffic') },
-  ];
+  ].filter((tab) => canViewTraffic || tab.key !== 'traffic');
 
   return (
     <div className="w-full mx-auto">
@@ -584,7 +585,7 @@ function TeamDetail({
       )}
 
       {/* 靶机流量 */}
-      {activeTab === 'traffic' && (
+      {canViewTraffic && activeTab === 'traffic' && (
         <div>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-mono text-neutral-50 flex items-center">
