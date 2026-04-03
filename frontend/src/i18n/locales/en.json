@@ -2112,7 +2112,7 @@
         "ginGlobalRate": "Global Rate Limit (RPS)",
         "ginProxies": "Trusted Proxy List",
         "ginLogWhitelist": "Request Log Filter Whitelist",
-        "ginRateWhitelist": " IP Rate Limit Whitelist",
+        "ginRateWhitelist": "IP Rate Limit Whitelist",
         "ginCORS": "CORS",
         "ginJWTSecret": "JWT Secret",
         "dbHost": "DB Host",
