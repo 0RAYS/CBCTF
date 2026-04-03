@@ -492,7 +492,8 @@
         },
         "canvas": {
           "title": "Topology Canvas",
-          "subtitle": "Left side is ingress, center is victim, right side is egress."
+          "subtitle": "Left side is ingress, center is victim, right side is egress.",
+          "zoomHint": "Wheel to zoom, drag to pan."
         },
         "legend": {
           "ingress": "Ingress",

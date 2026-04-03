@@ -37,6 +37,7 @@ function Modal({
   title,
   children,
   footer,
+  bodyClassName = '',
   size = 'md',
   variant = 'default',
   confirmText = 'CONFIRM',
@@ -212,7 +213,7 @@ function Modal({
               </div>
 
               {/* 内容区域 */}
-              <div className="p-6 max-h-[70vh] overflow-y-auto">{children}</div>
+              <div className={bodyClassName || 'p-6 max-h-[70vh] overflow-y-auto'}>{children}</div>
 
               {/* 底部 */}
               {footer && (
