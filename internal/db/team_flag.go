@@ -140,7 +140,19 @@ func (t *TeamFlagRepo) ListContestWrongFlagSubmissions(contestID uint, start, en
 		Joins("INNER JOIN teams AS matched_teams ON matched_teams.id = team_flags.team_id AND matched_teams.deleted_at IS NULL").
 		Where("submissions.contest_id = ? AND submissions.solved = false AND submissions.deleted_at IS NULL", contestID).
 		Where("submissions.created_at >= ? AND submissions.created_at <= ?", start, end).
+		Where("contest_flags.contest_challenge_id = submissions.contest_challenge_id").
 		Where("submissions.team_id <> team_flags.team_id").
+		Where(`NOT EXISTS (
+			SELECT 1
+			FROM team_flags AS own_team_flags
+			INNER JOIN contest_flags AS own_contest_flags
+				ON own_contest_flags.id = own_team_flags.contest_flag_id
+				AND own_contest_flags.deleted_at IS NULL
+			WHERE own_team_flags.team_id = submissions.team_id
+				AND own_team_flags.value = submissions.value
+				AND own_team_flags.deleted_at IS NULL
+				AND own_contest_flags.contest_challenge_id = submissions.contest_challenge_id
+		)`).
 		Where("submission_teams.contest_id = ? AND matched_teams.contest_id = ?", contestID, contestID).
 		Where("submissions.contest_challenge_id NOT IN (?)", submittedQuestionChallenges).
 		Group(`submissions.id,
