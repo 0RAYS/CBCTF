@@ -49,7 +49,7 @@ type TeamVictimIP struct {
 	FirstTime time.Time
 }
 
-func (t *TrafficRepo) ListSharedContestVictimIPs(contestID uint) ([]TeamVictimIP, model.RetVal) {
+func (t *TrafficRepo) ListSharedContestVictimIPs(contestID uint, start, end time.Time) ([]TeamVictimIP, model.RetVal) {
 	if contestID == 0 {
 		return nil, model.SuccessRetVal()
 	}
@@ -59,6 +59,7 @@ func (t *TrafficRepo) ListSharedContestVictimIPs(contestID uint) ([]TeamVictimIP
 		Joins("INNER JOIN victims ON victims.id = traffics.victim_id").
 		Joins("INNER JOIN teams ON teams.id = victims.team_id AND teams.deleted_at IS NULL").
 		Where("victims.contest_id = ? AND victims.team_id IS NOT NULL AND traffics.deleted_at IS NULL", contestID).
+		Where("victims.created_at >= ? AND victims.created_at <= ?", start, end).
 		Group("traffics.src_ip").
 		Having("COUNT(DISTINCT victims.team_id) > 1")
 
@@ -68,6 +69,7 @@ func (t *TrafficRepo) ListSharedContestVictimIPs(contestID uint) ([]TeamVictimIP
 		Joins("INNER JOIN victims ON victims.id = traffics.victim_id").
 		Joins("INNER JOIN teams ON teams.id = victims.team_id AND teams.deleted_at IS NULL").
 		Where("victims.contest_id = ? AND victims.team_id IS NOT NULL AND traffics.deleted_at IS NULL AND traffics.src_ip IN (?)", contestID, sharedIPs).
+		Where("victims.created_at >= ? AND victims.created_at <= ?", start, end).
 		Group("victims.team_id, traffics.src_ip").
 		Order("traffics.src_ip ASC, first_time ASC, victims.team_id ASC").
 		Scan(&teamVictimIPL)

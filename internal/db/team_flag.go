@@ -116,7 +116,7 @@ func (t *TeamFlagRepo) GetTeamFlagsWithChallenge(teamIDL ...uint) ([]TeamFlagWit
 	return results, model.SuccessRetVal()
 }
 
-func (t *TeamFlagRepo) ListContestWrongFlagSubmissions(contestID uint) ([]ContestWrongFlagSubmission, model.RetVal) {
+func (t *TeamFlagRepo) ListContestWrongFlagSubmissions(contestID uint, start, end time.Time) ([]ContestWrongFlagSubmission, model.RetVal) {
 	if contestID == 0 {
 		return nil, model.SuccessRetVal()
 	}
@@ -139,6 +139,7 @@ func (t *TeamFlagRepo) ListContestWrongFlagSubmissions(contestID uint) ([]Contes
 		Joins("INNER JOIN teams AS submission_teams ON submission_teams.id = submissions.team_id AND submission_teams.deleted_at IS NULL").
 		Joins("INNER JOIN teams AS matched_teams ON matched_teams.id = team_flags.team_id AND matched_teams.deleted_at IS NULL").
 		Where("submissions.contest_id = ? AND submissions.solved = false AND submissions.deleted_at IS NULL", contestID).
+		Where("submissions.created_at >= ? AND submissions.created_at <= ?", start, end).
 		Where("submissions.team_id <> team_flags.team_id").
 		Where("submission_teams.contest_id = ? AND matched_teams.contest_id = ?", contestID, contestID).
 		Where("submissions.contest_challenge_id NOT IN (?)", submittedQuestionChallenges).

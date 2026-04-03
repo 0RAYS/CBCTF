@@ -152,6 +152,34 @@ func (t *TeamRepo) GetBy2ID(userID, contestID uint) (model.Team, model.RetVal) {
 	return team, model.SuccessRetVal()
 }
 
+func (t *TeamRepo) GetUserTeamMap(contestID uint, userIDL ...uint) (map[uint]uint, model.RetVal) {
+	result := make(map[uint]uint)
+	if contestID == 0 || len(userIDL) == 0 {
+		return result, model.SuccessRetVal()
+	}
+
+	type row struct {
+		UserID uint
+		TeamID uint
+	}
+
+	var rows []row
+	res := t.DB.Table("user_teams").
+		Select("user_teams.user_id, user_teams.team_id").
+		Joins("INNER JOIN teams ON teams.id = user_teams.team_id AND teams.deleted_at IS NULL").
+		Where("teams.contest_id = ? AND user_teams.user_id IN ?", contestID, userIDL).
+		Scan(&rows)
+	if res.Error != nil {
+		log.Logger.Warningf("Failed to get user team map: %s", res.Error)
+		return nil, model.RetVal{Msg: i18n.Model.Team.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+
+	for _, row := range rows {
+		result[row.UserID] = row.TeamID
+	}
+	return result, model.SuccessRetVal()
+}
+
 func (t *TeamRepo) CountUsers(teamID uint) (int64, model.RetVal) {
 	var count int64
 	res := t.DB.Model(&model.UserTeam{}).Where("team_id = ?", teamID).Count(&count)

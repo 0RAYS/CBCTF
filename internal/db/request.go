@@ -74,7 +74,7 @@ type UserIP struct {
 	FirstTime time.Time
 }
 
-func (r *RequestRepo) ListSharedContestUserIPs(contestID uint) ([]UserIP, model.RetVal) {
+func (r *RequestRepo) ListSharedContestUserIPs(contestID uint, start, end time.Time) ([]UserIP, model.RetVal) {
 	if contestID == 0 {
 		return nil, model.SuccessRetVal()
 	}
@@ -84,6 +84,7 @@ func (r *RequestRepo) ListSharedContestUserIPs(contestID uint) ([]UserIP, model.
 		Joins("INNER JOIN user_contests ON user_contests.user_id = requests.user_id").
 		Joins("INNER JOIN users ON users.id = requests.user_id AND users.deleted_at IS NULL").
 		Where("user_contests.contest_id = ? AND requests.deleted_at IS NULL", contestID).
+		Where("requests.time >= ? AND requests.time <= ?", start, end).
 		Group("requests.ip").
 		Having("COUNT(DISTINCT requests.user_id) > 1")
 
@@ -93,6 +94,7 @@ func (r *RequestRepo) ListSharedContestUserIPs(contestID uint) ([]UserIP, model.
 		Joins("INNER JOIN user_contests ON user_contests.user_id = requests.user_id").
 		Joins("INNER JOIN users ON users.id = requests.user_id AND users.deleted_at IS NULL").
 		Where("user_contests.contest_id = ? AND requests.deleted_at IS NULL AND requests.ip IN (?)", contestID, sharedIPs).
+		Where("requests.time >= ? AND requests.time <= ?", start, end).
 		Group("requests.user_id, requests.ip").
 		Order("requests.ip ASC, first_time ASC, requests.user_id ASC").
 		Scan(&userIPL)
