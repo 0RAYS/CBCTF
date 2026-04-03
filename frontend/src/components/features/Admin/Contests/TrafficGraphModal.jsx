@@ -1,614 +1,506 @@
-import { useEffect, useRef, useState } from 'react';
-import ReactECharts from 'echarts-for-react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
-import { IconX, IconRefresh, IconPlayerPlay, IconPlayerPause } from '@tabler/icons-react';
-import { Button } from '../../../../components/common';
-import { toast } from '../../../../utils/toast';
-import { getContestTeamTraffic } from '../../../../api/admin/contest.js';
+import {
+  IconActivity,
+  IconArrowDownRight,
+  IconArrowUpRight,
+  IconDownload,
+  IconRefresh,
+  IconRoute,
+  IconTopologyComplex,
+} from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
+import { getContestTeamTraffic, downloadContainerTraffic } from '../../../../api/admin/contest.js';
+import { downloadVictimTraffic } from '../../../../api/admin/victims.js';
+import { Button, Card, Chip, Modal } from '../../../../components/common';
+import { downloadBlobResponse } from '../../../../utils/fileDownload';
+import { toast } from '../../../../utils/toast';
 
-/**
- * 流量关系图弹窗组件
- * @param {Object} props
- * @param {boolean} props.isOpen - 弹窗是否打开
- * @param {Function} props.onClose - 关闭弹窗回调
- * @param {Object} props.container - 容器信息
- * @param {number} props.contestId - 比赛ID
- * @param {number} props.teamId - 队伍ID
- */
+const W = 920;
+const H = 620;
+const PW = 156;
+const PH = 58;
+const CW = 188;
+const CH = 72;
+
+const fmtBytes = (value) => {
+  const bytes = Number(value || 0);
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
+  return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
+};
+
+const tone = (direction, protocol = '') => {
+  const base =
+    direction === 'ingress'
+      ? ['#67e8f9', '#22d3ee']
+      : direction === 'egress'
+        ? ['#6ee7b7', '#10b981']
+        : ['#c084fc', '#a855f7'];
+  const proto = protocol.toUpperCase() === 'UDP' ? '#f59e0b' : protocol.toUpperCase() === 'TCP' ? '#60a5fa' : base[1];
+  return { soft: base[0], hard: proto };
+};
+
+const demoTopology = (shift = 0, duration = 15, id = 'demo') => {
+  const s = shift % 10;
+  const nodes = [
+    { id: '10.10.0.10', label: 'Victim 10.10.0.10', ip: '10.10.0.10', kind: 'victim', side: 'center', bytes: 410000, connections: 58, protocols: ['TCP', 'HTTP'] },
+    { id: '10.10.0.11', label: 'Victim 10.10.0.11', ip: '10.10.0.11', kind: 'victim', side: 'center', bytes: 252000, connections: 37, protocols: ['TCP', 'HTTPS'] },
+    { id: '172.20.1.34', label: 'Private 172.20.1.34', ip: '172.20.1.34', kind: 'peer', side: 'left', bytes: 220000 + s * 12000, connections: 35, protocols: ['TCP', 'HTTP'] },
+    { id: '192.168.31.23', label: 'Private 192.168.31.23', ip: '192.168.31.23', kind: 'peer', side: 'left', bytes: 124000, connections: 22, protocols: ['UDP', 'DNS'] },
+    { id: '8.8.8.8', label: '8.8.8.8', ip: '8.8.8.8', kind: 'peer', side: 'right', bytes: 182000, connections: 30, protocols: ['UDP', 'DNS'] },
+    { id: '104.26.6.171', label: '104.26.6.171', ip: '104.26.6.171', kind: 'peer', side: 'right', bytes: 98000 + s * 7000, connections: 19, protocols: ['TCP', 'HTTPS'] },
+  ];
+  const edges = [
+    { id: 'a', source: '172.20.1.34', target: '10.10.0.10', direction: 'ingress', bytes: 220000 + s * 12000, packets: 118, connections: 35, dominant_proto: 'TCP', dominant_app: 'HTTP', intensity: 1 },
+    { id: 'b', source: '192.168.31.23', target: '10.10.0.11', direction: 'ingress', bytes: 124000, packets: 76, connections: 22, dominant_proto: 'UDP', dominant_app: 'DNS', intensity: 0.55 },
+    { id: 'c', source: '10.10.0.10', target: '8.8.8.8', direction: 'egress', bytes: 182000, packets: 101, connections: 30, dominant_proto: 'UDP', dominant_app: 'DNS', intensity: 0.8 },
+    { id: 'd', source: '10.10.0.11', target: '104.26.6.171', direction: 'egress', bytes: 98000 + s * 7000, packets: 62, connections: 19, dominant_proto: 'TCP', dominant_app: 'HTTPS', intensity: 0.45 },
+    { id: 'e', source: '10.10.0.10', target: '10.10.0.11', direction: 'internal', bytes: 86000, packets: 45, connections: 14, dominant_proto: 'TCP', dominant_app: 'PROXY', intensity: 0.32 },
+  ];
+  const timeline = Array.from({ length: 18 }).map((_, i) => {
+    const bytes = Math.round(18000 + Math.abs(Math.sin((i + s) * 0.65)) * 64000);
+    const ingress = Math.round(bytes * (0.45 + Math.abs(Math.cos(i * 0.4)) * 0.22));
+    return { second: i, bytes, packets: 8 + ((i + s) % 12), ingress_bytes: ingress, egress_bytes: Math.max(0, bytes - ingress) };
+  });
+  return {
+    window: { start: shift, end: Math.min(90, shift + duration), duration, total: 90, total_count: 120 },
+    total_duration: 90,
+    available_slices: [5, 15, 30, 60, 90],
+    center: { label: `Victim #${id}`, ips: ['10.10.0.10', '10.10.0.11'], exposed: ['tcp://43.155.12.20:24001'] },
+    summary: { total_bytes: 710000 + s * 20000, ingress_bytes: 362000, egress_bytes: 262000, internal_bytes: 86000, visible_edges: 5, visible_nodes: 6, peak_second: 9, peak_bytes: 82000 },
+    nodes,
+    edges,
+    timeline,
+    top_talkers: nodes.filter((n) => n.kind === 'peer').sort((a, b) => b.bytes - a.bytes).slice(0, 4).map((n) => ({ ...n, direction: n.side === 'left' ? 'ingress' : 'egress' })),
+    top_edges: edges.slice().sort((a, b) => b.bytes - a.bytes).slice(0, 4).map((e) => ({ label: `${e.source} -> ${e.target}`, ...e })),
+  };
+};
+
+function layoutGraph(nodes, edges) {
+  const pos = new Map();
+  const left = nodes.filter((n) => n.side === 'left');
+  const right = nodes.filter((n) => n.side === 'right');
+  const center = nodes.filter((n) => n.side === 'center');
+  left.forEach((node, index) => pos.set(node.id, { x: 126, y: (H / (left.length + 1)) * (index + 1), w: PW, h: PH }));
+  right.forEach((node, index) => pos.set(node.id, { x: W - 126, y: (H / (right.length + 1)) * (index + 1), w: PW, h: PH }));
+  if (center.length === 1) pos.set(center[0].id, { x: W / 2, y: H / 2, w: CW, h: CH });
+  if (center.length > 1) {
+    const startX = W / 2 - ((center.length - 1) * 96) / 2;
+    center.forEach((node, index) => pos.set(node.id, { x: startX + index * 96, y: H / 2 + (index % 2 === 0 ? -40 : 40), w: 164, h: 62 }));
+  }
+  return edges.map((edge, index) => {
+    const s = pos.get(edge.source);
+    const t = pos.get(edge.target);
+    if (!s || !t) return null;
+    const ax = edge.direction === 'ingress' ? s.x + s.w / 2 : edge.direction === 'egress' ? s.x : s.x;
+    const bx = edge.direction === 'ingress' ? t.x : edge.direction === 'egress' ? t.x - t.w / 2 : t.x;
+    const ay = s.y;
+    const by = t.y;
+    const dx = bx - ax;
+    const bend = edge.direction === 'internal' ? -88 : edge.direction === 'ingress' ? -92 : 92;
+    const c1x = ax + dx * 0.32;
+    const c2x = bx - dx * 0.32;
+    const path = `M ${ax} ${ay} C ${c1x} ${ay + bend}, ${c2x} ${by + bend}, ${bx} ${by}`;
+    return { ...edge, path, lx: (ax + bx) / 2, ly: (ay + by) / 2 + bend * 0.4, tone: tone(edge.direction, edge.dominant_proto), delay: index * 0.16 };
+  }).filter(Boolean);
+}
+
 function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetchTraffic: customFetchTraffic }) {
   const { t, i18n } = useTranslation();
-  const chartRef = useRef(null);
-  const [connections, setConnections] = useState([]);
-  const [ipL, setIpL] = useState([]);
-  const [timeShift, setTimeShift] = useState(0);
-  const [requestDuration, setRequestDuration] = useState(1);
-  const [maxDuration, setMaxDuration] = useState(60);
+  const [topology, setTopology] = useState(null);
+  const [shift, setShift] = useState(0);
+  const [slice, setSlice] = useState(15);
+  const [loading, setLoading] = useState(false);
+  const [demoMode, setDemoMode] = useState(false);
+  const [edgeId, setEdgeId] = useState('');
+  const [nodeId, setNodeId] = useState('');
 
-  // 播放相关状态
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [playInterval, setPlayInterval] = useState(null);
-  const [useDemoMode, setUseDemoMode] = useState(false);
-
-  // 生成样例数据 - 模拟20秒时长的网络流量
-  const generateDemoData = (shift) => {
-    const demoIPs = [
-      '10.0.1.1',
-      '10.0.1.2',
-      '10.0.1.3',
-      '192.168.1.100',
-      '192.168.1.101',
-      '172.16.0.5',
-      '172.16.0.10',
-      '8.8.8.8',
-    ];
-
-    // 基础连接定义，根据时间偏移产生变化
-    const baseConnections = [
-      { src: 0, dst: 3, type: 'TCP', subtype: 'HTTP' },
-      { src: 0, dst: 4, type: 'TCP', subtype: 'HTTPS' },
-      { src: 1, dst: 5, type: 'UDP', subtype: 'DNS' },
-      { src: 1, dst: 7, type: 'UDP', subtype: 'DNS' },
-      { src: 2, dst: 3, type: 'TCP', subtype: 'SSH' },
-      { src: 2, dst: 6, type: 'TCP', subtype: 'HTTPS' },
-      { src: 3, dst: 7, type: 'TCP', subtype: 'HTTP' },
-      { src: 4, dst: 5, type: 'UDP', subtype: 'QUIC' },
-      { src: 5, dst: 6, type: 'TCP', subtype: 'HTTPS' },
-      { src: 6, dst: 7, type: 'TCP', subtype: 'HTTP' },
-      { src: 0, dst: 7, type: 'TCP', subtype: 'HTTPS' },
-      { src: 1, dst: 3, type: 'UDP', subtype: 'DNS' },
-    ];
-
-    // 根据 shift 决定哪些连接可见、流量大小变化
-    const seed = shift % 20;
-    const demoConnections = baseConnections
-      .filter((_, i) => {
-        // 随时间逐步显示更多连接，shift=0 至少6条，shift=19 全部12条
-        const threshold = 6 + Math.floor((seed / 19) * 6);
-        return i < threshold;
-      })
-      .map((c, i) => ({
-        src_ip: demoIPs[c.src],
-        dst_ip: demoIPs[c.dst],
-        type: c.type,
-        subtype: c.subtype,
-        // 流量大小和次数随时间波动
-        size: 200 + Math.floor(Math.sin(seed * 0.8 + i) * 150 + 150) * (i + 1),
-        count: 5 + Math.floor(Math.abs(Math.cos(seed * 0.5 + i * 1.3)) * 40),
-      }));
-
-    return {
-      ip: demoIPs,
-      connections: demoConnections,
-      duration: 20,
-    };
-  };
-
-  // 从后端获取流量数据
-  const fetchTrafficData = async (shift = 0, dur = 1, forceLive = false) => {
+  const fetchData = async (nextShift = shift, nextSlice = slice, forceLive = false) => {
     if (!container?.id) return;
-
-    // 已处于demo模式且非强制刷新时，直接使用样例数据
-    if (useDemoMode && !forceLive) {
-      const demo = generateDemoData(shift);
-      setConnections(demo.connections);
-      setIpL(demo.ip);
-      setMaxDuration(demo.duration);
-      return;
-    }
-
+    setLoading(true);
     try {
       const response = customFetchTraffic
-        ? await customFetchTraffic(container, { time_shift: shift, duration: dur })
-        : await getContestTeamTraffic(contestId, teamId, container.id, {
-            time_shift: shift,
-            duration: dur,
-          });
-
-      if (response.code === 200) {
-        setUseDemoMode(false);
-        setConnections(response.data.connections || []);
-        setIpL(response.data.ip || []);
-        setMaxDuration(response.data.duration || 60);
-      } else {
-        throw new Error(t('admin.contests.trafficGraph.toast.fetchFailed'));
-      }
+        ? await customFetchTraffic(container, { time_shift: nextShift, duration: nextSlice })
+        : await getContestTeamTraffic(contestId, teamId, container.id, { time_shift: nextShift, duration: nextSlice });
+      if (response.code !== 200) throw new Error(t('admin.contests.trafficGraph.toast.fetchFailed'));
+      setTopology(response.data);
+      setDemoMode(false);
     } catch {
-      // 请求失败时使用样例数据
-      toast.warning({ description: t('admin.contests.trafficGraph.toast.demoFallback') });
-      setUseDemoMode(true);
-      const demo = generateDemoData(shift);
-      setConnections(demo.connections);
-      setIpL(demo.ip);
-      setMaxDuration(demo.duration);
+      if (!forceLive) toast.warning({ description: t('admin.contests.trafficGraph.toast.demoFallback') });
+      setTopology(demoTopology(nextShift, nextSlice, container.id));
+      setDemoMode(true);
+    } finally {
+      setLoading(false);
+      setEdgeId('');
+      setNodeId('');
     }
-  };
-
-  // 开始播放
-  const startPlayback = () => {
-    if (isPlaying) return;
-
-    setIsPlaying(true);
-    let currentShift = timeShift;
-
-    const interval = setInterval(() => {
-      if (currentShift >= maxDuration) {
-        // 播放完成，重置到开始
-        currentShift = 0;
-        setTimeShift(0);
-      } else {
-        currentShift += 1;
-        setTimeShift(currentShift);
-      }
-    }, 1000); // 每秒更新一次
-
-    setPlayInterval(interval);
-  };
-
-  // 停止播放
-  const stopPlayback = () => {
-    if (!isPlaying) return;
-
-    setIsPlaying(false);
-    if (playInterval) {
-      clearInterval(playInterval);
-      setPlayInterval(null);
-    }
-  };
-
-  // 生成图表数据
-  const generateChartData = () => {
-    if (!connections || !ipL) return { nodes: [], links: [], effectScatterData: [], linesData: [] };
-
-    const nodes = [];
-    const links = [];
-    const effectScatterData = [];
-    const linesData = [];
-    const nodeMap = new Map(); // ip -> { id, x, y }
-
-    // 预计算每个IP的连接数
-    const connectionCount = new Map();
-    connections.forEach((conn) => {
-      connectionCount.set(conn.src_ip, (connectionCount.get(conn.src_ip) || 0) + 1);
-      connectionCount.set(conn.dst_ip, (connectionCount.get(conn.dst_ip) || 0) + 1);
-    });
-    const maxConn = Math.max(1, ...connectionCount.values());
-
-    // 计算节点位置 - 将IP节点排列在一个圆形上
-    const radius = 200;
-
-    // 处理所有IP节点 - 在圆形上均匀分布
-    ipL.forEach((ip, index) => {
-      const nodeId = `ip_${index}`;
-      const angle = (index / ipL.length) * 2 * Math.PI;
-      const x = radius * Math.cos(angle);
-      const y = radius * Math.sin(angle);
-      const count = connectionCount.get(ip) || 0;
-      const sizeRatio = count / maxConn;
-      const symbolSize = 20 + sizeRatio * 40; // 20–60
-
-      nodes.push({
-        id: nodeId,
-        name: ip,
-        symbolSize,
-        x,
-        y,
-        connectionCount: count,
-        itemStyle: {
-          color: {
-            type: 'radial',
-            x: 0.5,
-            y: 0.5,
-            r: 0.5,
-            colorStops: [
-              { offset: 0, color: '#93c5fd' },
-              { offset: 0.7, color: '#3b82f6' },
-              { offset: 1, color: '#1e3a5f' },
-            ],
-          },
-          shadowBlur: 15,
-          shadowColor: 'rgba(59, 130, 246, 0.6)',
-        },
-      });
-      nodeMap.set(ip, { id: nodeId, x, y });
-
-      // effectScatter 涟漪数据
-      effectScatterData.push({
-        value: [x, y],
-        symbolSize: symbolSize * 0.6,
-      });
-    });
-
-    // 处理连接关系
-    connections.forEach((connection) => {
-      const sourceInfo = nodeMap.get(connection.src_ip);
-      const targetInfo = nodeMap.get(connection.dst_ip);
-
-      if (sourceInfo && targetInfo) {
-        const lineWidth = Math.min(connection.count / 10, 5) + 1;
-        const color = getConnectionColor(connection.type);
-
-        links.push({
-          source: sourceInfo.id,
-          target: targetInfo.id,
-          value: connection.size,
-          count: connection.count,
-          type: connection.type,
-          subtype: connection.subtype,
-          lineStyle: {
-            color,
-            width: lineWidth,
-          },
-        });
-
-        // lines 系列数据 - 粒子流动
-        const speed = 0.3 + (connection.count / maxConn) * 0.7; // 0.3–1
-        const trailLength = 0.1 + (connection.count / maxConn) * 0.2; // 0.1–0.3
-        const particleSize = 1.5 + (connection.count / maxConn) * 1.5; // 1.5–3
-
-        linesData.push({
-          coords: [
-            [sourceInfo.x, sourceInfo.y],
-            [targetInfo.x, targetInfo.y],
-          ],
-          lineStyle: {
-            color,
-            width: 0,
-          },
-          effect: {
-            period: 12 / speed,
-            trailLength,
-            symbolSize: particleSize,
-          },
-        });
-      }
-    });
-
-    return { nodes, links, effectScatterData, linesData };
-  };
-
-  // 根据连接类型获取颜色
-  const getConnectionColor = (type) => {
-    switch (type?.toUpperCase()) {
-      case 'TCP':
-        return '#3b82f6';
-      case 'UDP':
-        return '#ef4444';
-      default:
-        return '#6b7280';
-    }
-  };
-
-  const getChartOption = () => {
-    const { nodes, links, effectScatterData, linesData } = generateChartData();
-
-    return {
-      tooltip: {
-        trigger: 'item',
-        formatter: function (params) {
-          if (params.dataType === 'node') {
-            const connCount = params.data.connectionCount ?? 0;
-            return `<div style="color: #f3f4f6;">
-              <strong>${params.data.name}</strong><br/>
-              ${t('admin.contests.trafficGraph.tooltip.connections', { count: connCount })}
-            </div>`;
-          } else if (params.dataType === 'edge') {
-            const connectionInfo = params.data;
-            const countValue = connectionInfo.count ?? t('common.notAvailable');
-            const typeValue = connectionInfo.type || t('common.notAvailable');
-            const subtypeValue = connectionInfo.subtype || t('common.notAvailable');
-            return `<div style="color: #f3f4f6;">
-              <strong>${t('admin.contests.trafficGraph.tooltip.connectionTitle')}</strong><br/>
-              ${t('admin.contests.trafficGraph.tooltip.size', { value: connectionInfo.value })}<br/>
-              ${t('admin.contests.trafficGraph.tooltip.count', { count: countValue })}<br/>
-              ${t('admin.contests.trafficGraph.tooltip.protocol', { type: typeValue, subtype: subtypeValue })}
-            </div>`;
-          }
-          return '';
-        },
-        backgroundColor: 'rgba(0, 0, 0, 0.9)',
-        borderColor: '#374151',
-        borderWidth: 1,
-        textStyle: {
-          color: '#f3f4f6',
-        },
-      },
-      xAxis: {
-        show: false,
-        type: 'value',
-        min: -280,
-        max: 280,
-      },
-      yAxis: {
-        show: false,
-        type: 'value',
-        min: -280,
-        max: 280,
-      },
-      dataZoom: [
-        {
-          type: 'inside',
-          xAxisIndex: 0,
-          filterMode: 'none',
-        },
-        {
-          type: 'inside',
-          yAxisIndex: 0,
-          filterMode: 'none',
-        },
-      ],
-      graphic: [
-        {
-          type: 'group',
-          right: 20,
-          bottom: 20,
-          children: [
-            {
-              type: 'rect',
-              shape: { width: 120, height: 80, r: 6 },
-              style: { fill: 'rgba(0,0,0,0.6)', stroke: '#374151', lineWidth: 1 },
-            },
-            { type: 'circle', shape: { cx: 18, cy: 18, r: 5 }, style: { fill: '#3b82f6' } },
-            { type: 'text', style: { text: 'TCP', fill: '#d1d5db', fontSize: 11, x: 30, y: 13 } },
-            { type: 'circle', shape: { cx: 18, cy: 42, r: 5 }, style: { fill: '#ef4444' } },
-            { type: 'text', style: { text: 'UDP', fill: '#d1d5db', fontSize: 11, x: 30, y: 37 } },
-            { type: 'circle', shape: { cx: 18, cy: 66, r: 5 }, style: { fill: '#6b7280' } },
-            { type: 'text', style: { text: 'Other', fill: '#d1d5db', fontSize: 11, x: 30, y: 61 } },
-          ],
-        },
-      ],
-      animation: true,
-      animationDuration: 1000,
-      animationDurationUpdate: 1500,
-      animationEasingUpdate: 'quinticInOut',
-      series: [
-        // Series 0: effectScatter 涟漪脉冲
-        {
-          type: 'effectScatter',
-          coordinateSystem: 'cartesian2d',
-          data: effectScatterData,
-          symbolSize: (val, params) => params.data.symbolSize || 12,
-          showEffectOn: 'render',
-          rippleEffect: {
-            brushType: 'stroke',
-            period: 4,
-            scale: 3,
-            number: 2,
-          },
-          itemStyle: {
-            color: 'rgba(59, 130, 246, 0.4)',
-          },
-          silent: true,
-          z: 1,
-        },
-        // Series 1: graph 网络拓扑
-        {
-          type: 'graph',
-          layout: 'none',
-          coordinateSystem: 'cartesian2d',
-          data: nodes,
-          links: links,
-          edgeSymbol: ['circle', 'arrow'],
-          edgeSymbolSize: [4, 10],
-          label: {
-            show: true,
-            position: 'inside',
-            formatter: '{b}',
-            color: '#f3f4f6',
-            fontSize: 9,
-          },
-          emphasis: {
-            focus: 'adjacency',
-            itemStyle: {
-              shadowBlur: 20,
-              shadowColor: 'rgba(147, 197, 253, 0.8)',
-            },
-            lineStyle: {
-              width: 4,
-            },
-          },
-          labelLayout: {
-            hideOverlap: true,
-          },
-          lineStyle: {
-            curveness: 0.2,
-            opacity: 0.7,
-          },
-          z: 2,
-        },
-        // Series 2: lines 粒子流动
-        {
-          type: 'lines',
-          coordinateSystem: 'cartesian2d',
-          polyline: false,
-          data: linesData,
-          effect: {
-            show: true,
-            period: 16,
-            trailLength: 0.15,
-            symbol: 'arrow',
-            symbolSize: 2,
-            color: '#93c5fd',
-          },
-          lineStyle: {
-            width: 0,
-            opacity: 0,
-          },
-          silent: true,
-          z: 3,
-        },
-      ],
-    };
   };
 
   useEffect(() => {
-    if (isOpen && container?.id) {
-      fetchTrafficData(timeShift, requestDuration);
-    }
-  }, [isOpen, container?.id, timeShift, requestDuration]);
+    if (!isOpen || !container?.id) return;
+    fetchData(shift, slice);
+  }, [isOpen, container?.id]);
 
   useEffect(() => {
-    if (isOpen && chartRef.current) {
-      const chart = chartRef.current.getEchartsInstance();
-      chart.resize();
+    if (!isOpen || !container?.id) return;
+    fetchData(shift, slice, demoMode);
+  }, [shift, slice]);
+
+  const nodes = topology?.nodes || [];
+  const edges = topology?.edges || [];
+  const lines = useMemo(() => layoutGraph(nodes, edges), [nodes, edges]);
+  const positions = useMemo(() => {
+    const map = new Map();
+    nodes.filter((n) => n.side === 'left').forEach((n, i, arr) => map.set(n.id, { x: 126, y: (H / (arr.length + 1)) * (i + 1), w: PW, h: PH }));
+    nodes.filter((n) => n.side === 'right').forEach((n, i, arr) => map.set(n.id, { x: W - 126, y: (H / (arr.length + 1)) * (i + 1), w: PW, h: PH }));
+    const center = nodes.filter((n) => n.side === 'center');
+    if (center.length === 1) map.set(center[0].id, { x: W / 2, y: H / 2, w: CW, h: CH });
+    if (center.length > 1) {
+      const startX = W / 2 - ((center.length - 1) * 96) / 2;
+      center.forEach((n, i) => map.set(n.id, { x: startX + i * 96, y: H / 2 + (i % 2 === 0 ? -40 : 40), w: 164, h: 62 }));
     }
-  }, [isOpen]);
+    return map;
+  }, [nodes]);
 
-  // 清理播放定时器
-  useEffect(() => {
-    return () => {
-      if (playInterval) {
-        clearInterval(playInterval);
-      }
-    };
-  }, [playInterval]);
+  const selectedEdge = useMemo(() => edges.find((e) => e.id === edgeId) || edges[0] || null, [edges, edgeId]);
+  const selectedNode = useMemo(() => nodes.find((n) => n.id === nodeId) || nodes.find((n) => n.kind === 'victim') || nodes[0] || null, [nodes, nodeId]);
+  const summary = topology?.summary || {};
+  const windowInfo = topology?.window || { start: 0, end: 0, duration: slice, total: 0 };
+  const timeline = topology?.timeline || [];
+  const peak = Math.max(...timeline.map((i) => i.bytes || 0), 1);
 
-  const handleRefresh = () => {
-    fetchTrafficData(timeShift, requestDuration, true);
-  };
-
-  const handleTimeShiftChange = (newShift) => {
-    setTimeShift(newShift);
-  };
-
-  const handleRequestDurationChange = (newDuration) => {
-    setRequestDuration(newDuration);
-  };
-
-  const handlePlayPause = () => {
-    if (isPlaying) {
-      stopPlayback();
-    } else {
-      startPlayback();
+  const downloadTraffic = async () => {
+    if (!container?.id) return;
+    try {
+      const response = contestId && teamId
+        ? await downloadContainerTraffic(contestId, teamId, container.id)
+        : await downloadVictimTraffic(container.id);
+      if (response.headers?.['file'] === 'true') downloadBlobResponse(response, `traffic_${container.id}.zip`);
+    } catch (error) {
+      toast.danger({ description: error.message || t('admin.contests.teamContainers.toast.downloadTrafficFailed') });
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        className="relative w-full max-w-7xl h-[90vh] bg-neutral-900 border border-neutral-700 rounded-lg shadow-2xl overflow-hidden flex flex-col"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* 弹窗头部 */}
-        <div className="flex items-center justify-between p-4 border-b border-neutral-700 bg-neutral-800 flex-shrink-0">
-          <div className="flex items-center gap-4">
-            <h2 className="text-xl font-mono text-neutral-50">{t('admin.contests.trafficGraph.title')}</h2>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-neutral-400">{t('admin.contests.trafficGraph.controls.timeShift')}</span>
-              <input
-                type="number"
-                min="0"
-                max={maxDuration}
-                value={timeShift}
-                onChange={(e) => handleTimeShiftChange(parseInt(e.target.value) || 0)}
-                className="w-20 px-2 py-1 bg-neutral-700 border border-neutral-600 rounded text-white text-sm"
-              />
-              <span className="text-sm text-neutral-400">{t('admin.contests.trafficGraph.controls.seconds')}</span>
+    <>
+      <style>
+        {`
+          @keyframes traffic-flow { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -120; } }
+          @keyframes traffic-pulse { 0%,100% { opacity: .35; transform: scale(1); } 50% { opacity: .92; transform: scale(1.06); } }
+          .traffic-line { stroke-dasharray: 12 10; animation: traffic-flow 10s linear infinite; }
+          .traffic-pulse { animation: traffic-pulse 4s ease-in-out infinite; transform-origin: center; }
+        `}
+      </style>
+      <Modal isOpen={isOpen} onClose={onClose} title={t('admin.contests.trafficGraph.title')} size="2xl" className="!bg-[#07111f]/95 !border-[#2f4e73]/50">
+        <div className="space-y-5 text-neutral-100">
+          <div className="overflow-hidden rounded-2xl border border-[#2f4e73]/50 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_32%),linear-gradient(160deg,_rgba(4,11,23,0.98),_rgba(7,17,31,0.94)_45%,_rgba(10,24,44,0.96))] p-5">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-sky-300/80">
+                  <IconTopologyComplex size={16} />
+                  <span>{t('admin.contests.trafficGraph.hero.kicker')}</span>
+                </div>
+                <div className="text-2xl font-['Maple_UI'] text-white">{topology?.center?.label || `Victim #${container?.id || '-'}`}</div>
+                <div className="text-sm text-slate-300">{t('admin.contests.trafficGraph.hero.subtitle', { challenge: container?.challenge || container?.contest_challenge_name || `#${container?.id}` })}</div>
+                <div className="flex flex-wrap gap-2">
+                  {(topology?.center?.ips || []).map((ip) => (
+                    <Chip key={ip} label={ip} variant="tag" size="sm" colorClass="border-sky-400/30 bg-sky-400/10 text-sky-200" />
+                  ))}
+                  {demoMode ? <Chip label={t('admin.contests.trafficGraph.hero.demoMode')} variant="tag" size="sm" colorClass="border-amber-400/30 bg-amber-400/10 text-amber-200" /> : null}
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm">
+                  <div className="mb-1 text-xs text-slate-400">{t('admin.contests.trafficGraph.controls.timeShift')}</div>
+                  <input type="range" min="0" max={Math.max(0, windowInfo.total - windowInfo.duration)} value={shift} onChange={(e) => setShift(Number(e.target.value))} className="w-44 accent-sky-400" />
+                  <div className="mt-1 font-mono text-sky-200">{t('admin.contests.trafficGraph.hero.windowAt', { start: windowInfo.start, end: windowInfo.end })}</div>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm">
+                  <div className="mb-1 text-xs text-slate-400">{t('admin.contests.trafficGraph.controls.timeSlice')}</div>
+                  <div className="flex gap-2">
+                    {(topology?.available_slices || [5, 15, 30, 60]).map((item) => (
+                      <button key={item} type="button" onClick={() => setSlice(item)} className={`rounded-md border px-2 py-1 text-xs font-mono ${slice === item ? 'border-sky-400/60 bg-sky-400/15 text-sky-100' : 'border-white/10 bg-white/5 text-slate-300'}`}>{item}s</button>
+                    ))}
+                  </div>
+                </div>
+                <Button variant="ghost" size="icon" className="!text-slate-200 hover:!text-white" onClick={() => fetchData(shift, slice, true)}>
+                  <IconRefresh size={18} />
+                </Button>
+                <Button variant="ghost" size="icon" className="!text-slate-200 hover:!text-white" onClick={downloadTraffic}>
+                  <IconDownload size={18} />
+                </Button>
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-neutral-400">{t('admin.contests.trafficGraph.controls.timeSlice')}</span>
-              <input
-                type="number"
-                min="1"
-                max={maxDuration}
-                value={requestDuration}
-                onChange={(e) => handleRequestDurationChange(parseInt(e.target.value) || 60)}
-                className="w-20 px-2 py-1 bg-neutral-700 border border-neutral-600 rounded text-white text-sm"
-              />
-              <span className="text-sm text-neutral-400">{t('admin.contests.trafficGraph.controls.seconds')}</span>
+            <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-4">
+              {[
+                { icon: <IconActivity size={18} className="text-sky-300" />, label: t('admin.contests.trafficGraph.stats.totalTraffic'), value: fmtBytes(summary.total_bytes), valueClass: 'text-sky-300', box: 'bg-sky-400/15' },
+                { icon: <IconArrowDownRight size={18} className="text-cyan-300" />, label: t('admin.contests.trafficGraph.stats.ingress'), value: fmtBytes(summary.ingress_bytes), valueClass: 'text-cyan-300', box: 'bg-cyan-400/15' },
+                { icon: <IconArrowUpRight size={18} className="text-emerald-300" />, label: t('admin.contests.trafficGraph.stats.egress'), value: fmtBytes(summary.egress_bytes), valueClass: 'text-emerald-300', box: 'bg-emerald-400/15' },
+                { icon: <IconRoute size={18} className="text-fuchsia-300" />, label: t('admin.contests.trafficGraph.stats.peers'), value: summary.visible_nodes || 0, valueClass: 'text-fuchsia-300', box: 'bg-fuchsia-400/15' },
+              ].map((item) => (
+                <div key={item.label} className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${item.box}`}>{item.icon}</div>
+                    <div>
+                      <div className="text-xs font-mono text-slate-400">{item.label}</div>
+                      <div className={`font-mono text-xl ${item.valueClass}`}>{item.value}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-            <Button variant="ghost" size="icon" className="!text-geek-400 hover:!text-geek-300" onClick={handleRefresh}>
-              <IconRefresh size={16} />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`${isPlaying ? '!text-red-400 hover:!text-red-300' : '!text-green-400 hover:!text-green-300'}`}
-              onClick={handlePlayPause}
-            >
-              {isPlaying ? <IconPlayerPause size={16} /> : <IconPlayerPlay size={16} />}
-            </Button>
           </div>
-          <Button variant="ghost" size="icon" className="!text-neutral-400 hover:!text-neutral-200" onClick={onClose}>
-            <IconX size={20} />
-          </Button>
-        </div>
 
-        {/* 图表容器 */}
-        <div className="flex-1 p-4 min-h-0 flex flex-col">
-          {useDemoMode && (
-            <div className="mb-2 px-4 py-2 bg-yellow-900/60 border border-yellow-600/50 rounded text-yellow-300 text-sm text-center flex-shrink-0">
+          {demoMode ? (
+            <div className="rounded-xl border border-amber-400/25 bg-amber-400/10 px-4 py-3 text-sm text-amber-100">
               {t('admin.contests.trafficGraph.demoNotice')}
             </div>
-          )}
-          <div className="flex-1 min-h-0">
-            <ReactECharts
-              ref={chartRef}
-              option={getChartOption()}
-              notMerge={false}
-              lazyUpdate={true}
-              style={{ height: '100%', width: '100%' }}
-              opts={{
-                renderer: 'canvas',
-              }}
-            />
-          </div>
-        </div>
+          ) : null}
 
-        {/* 底部信息 */}
-        <div className="p-4 border-t border-neutral-700 bg-neutral-800 flex-shrink-0">
-          <div className="flex items-center justify-between text-sm text-neutral-400">
-            <div className="flex items-center gap-4">
-              {
-                <>
-                  <span className="font-mono">
-                    {t('admin.contests.trafficGraph.footer.ipCount', { count: ipL.length || 0 })}
-                  </span>
-                  <span className="font-mono">
-                    {t('admin.contests.trafficGraph.footer.connectionCount', { count: connections.length || 0 })}
-                  </span>
-                  <span className="font-mono">
-                    {t('admin.contests.trafficGraph.footer.maxDuration', { count: maxDuration || 0 })}
-                  </span>
-                  <span className="font-mono">
-                    {t('admin.contests.trafficGraph.footer.timeSlice', { count: requestDuration || 0 })}
-                  </span>
-                  {isPlaying && (
-                    <span className="font-mono text-green-400">
-                      {t('admin.contests.trafficGraph.footer.playing', {
-                        current: timeShift,
-                        total: maxDuration,
-                      })}
-                    </span>
+          <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.5fr)_380px]">
+            <Card padding="none" className="overflow-hidden rounded-2xl border-[#294564]/60 bg-[#071321]">
+              <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+                <div>
+                  <div className="text-sm font-mono text-slate-300">{t('admin.contests.trafficGraph.canvas.title')}</div>
+                  <div className="mt-1 text-xs text-slate-500">{t('admin.contests.trafficGraph.canvas.subtitle')}</div>
+                </div>
+                <div className="flex gap-2 text-xs">
+                  <Chip label={t('admin.contests.trafficGraph.legend.ingress')} variant="tag" size="sm" colorClass="border-cyan-400/30 bg-cyan-400/10 text-cyan-200" />
+                  <Chip label={t('admin.contests.trafficGraph.legend.egress')} variant="tag" size="sm" colorClass="border-emerald-400/30 bg-emerald-400/10 text-emerald-200" />
+                  <Chip label={t('admin.contests.trafficGraph.legend.internal')} variant="tag" size="sm" colorClass="border-violet-400/30 bg-violet-400/10 text-violet-200" />
+                </div>
+              </div>
+              <div className="overflow-x-auto p-4">
+                <div className="min-w-[920px]">
+                  <svg viewBox={`0 0 ${W} ${H}`} className="h-[620px] w-full">
+                    <g opacity="0.18">
+                      <path d="M 50 125 H 870" stroke="#24425f" strokeWidth="1" />
+                      <path d="M 50 310 H 870" stroke="#24425f" strokeWidth="1" />
+                      <path d="M 50 495 H 870" stroke="#24425f" strokeWidth="1" />
+                    </g>
+
+                    {lines.map((edge) => (
+                      <g key={edge.id}>
+                        <path d={edge.path} fill="none" stroke={edge.tone.hard} strokeWidth={9} opacity={selectedEdge?.id === edge.id ? 0.26 : 0.12 + edge.intensity * 0.14} />
+                        <path
+                          d={edge.path}
+                          fill="none"
+                          stroke={edge.tone.soft}
+                          strokeWidth={2 + edge.intensity * 5}
+                          className="traffic-line"
+                          opacity={0.55 + edge.intensity * 0.25}
+                          style={{ animationDelay: `${edge.delay}s` }}
+                          onClick={() => setEdgeId(edge.id)}
+                        />
+                        <g transform={`translate(${edge.lx}, ${edge.ly})`} className="cursor-pointer" onClick={() => setEdgeId(edge.id)}>
+                          <rect x={-42} y={-12} width={84} height={24} rx={12} fill="rgba(7,17,31,.92)" stroke={selectedEdge?.id === edge.id ? edge.tone.soft : 'rgba(148,163,184,.2)'} />
+                          <text x="0" y="5" textAnchor="middle" fill="#e2e8f0" fontSize="11" fontFamily="Maple Mono">
+                            {fmtBytes(edge.bytes)}
+                          </text>
+                        </g>
+                      </g>
+                    ))}
+
+                    {nodes.map((node) => {
+                      const pos = positions.get(node.id);
+                      if (!pos) return null;
+                      const active = selectedNode?.id === node.id;
+                      const x = pos.x - pos.w / 2;
+                      const y = pos.y - pos.h / 2;
+                      const fill = node.side === 'left' ? 'rgba(34,211,238,.12)' : node.side === 'right' ? 'rgba(16,185,129,.12)' : 'rgba(96,165,250,.16)';
+                      const stroke = node.side === 'left' ? '#67e8f9' : node.side === 'right' ? '#6ee7b7' : '#60a5fa';
+                      return (
+                        <g key={node.id} transform={`translate(${x}, ${y})`} className="cursor-pointer" onClick={() => setNodeId(node.id)}>
+                          <rect className={node.kind === 'victim' ? 'traffic-pulse' : ''} x={active ? -4 : 0} y={active ? -4 : 0} width={active ? pos.w + 8 : pos.w} height={active ? pos.h + 8 : pos.h} rx="18" fill={fill} stroke={active ? '#f8fafc' : stroke} strokeWidth={active ? 2 : 1.2} />
+                          <circle cx="22" cy={pos.h / 2} r={node.kind === 'victim' ? 13 : 11} fill={fill} stroke={stroke} />
+                          <text x="48" y="24" fill="#f8fafc" fontSize="12" fontFamily="Maple Mono">
+                            {node.label.length > 18 ? `${node.label.slice(0, 18)}...` : node.label}
+                          </text>
+                          <text x="48" y="42" fill="#94a3b8" fontSize="11" fontFamily="Maple Mono">
+                            {node.ip}
+                          </text>
+                          <text x={pos.w - 10} y="24" textAnchor="end" fill="#cbd5e1" fontSize="11" fontFamily="Maple Mono">
+                            {fmtBytes(node.bytes)}
+                          </text>
+                          <text x={pos.w - 10} y="42" textAnchor="end" fill="#64748b" fontSize="10" fontFamily="Maple Mono">
+                            {node.connections} conn
+                          </text>
+                        </g>
+                      );
+                    })}
+                  </svg>
+                </div>
+              </div>
+            </Card>
+
+            <div className="space-y-4">
+              <Card className="rounded-2xl border-[#294564]/60 bg-[#071321]">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-mono text-slate-300">{t('admin.contests.trafficGraph.panel.selectedFlow')}</div>
+                    <div className="mt-1 text-xs text-slate-500">{t('admin.contests.trafficGraph.panel.selectedFlowHint')}</div>
+                  </div>
+                  {selectedEdge ? (
+                    <Chip
+                      label={t(`admin.contests.trafficGraph.direction.${selectedEdge.direction || 'internal'}`)}
+                      variant="tag"
+                      size="sm"
+                      colorClass={selectedEdge.direction === 'ingress' ? 'border-cyan-400/30 bg-cyan-400/10 text-cyan-200' : selectedEdge.direction === 'egress' ? 'border-emerald-400/30 bg-emerald-400/10 text-emerald-200' : 'border-violet-400/30 bg-violet-400/10 text-violet-200'}
+                    />
+                  ) : null}
+                </div>
+                {selectedEdge ? (
+                  <div className="mt-4 space-y-3">
+                    <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                      <div className="text-xs text-slate-500">{t('admin.contests.trafficGraph.panel.edgePath')}</div>
+                      <div className="mt-2 break-all font-mono text-sm text-white">
+                        {selectedEdge.source} {'->'} {selectedEdge.target}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                        <div className="text-xs text-slate-500">{t('admin.contests.trafficGraph.panel.edgeBytes')}</div>
+                        <div className="mt-1 font-mono text-lg text-sky-200">{fmtBytes(selectedEdge.bytes)}</div>
+                      </div>
+                      <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                        <div className="text-xs text-slate-500">{t('admin.contests.trafficGraph.panel.edgePackets')}</div>
+                        <div className="mt-1 font-mono text-lg text-slate-100">{selectedEdge.packets}</div>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {((selectedEdge.protocols && selectedEdge.protocols.length > 0) ? selectedEdge.protocols : [selectedEdge.dominant_proto, selectedEdge.dominant_app]).filter(Boolean).map((item) => (
+                        <Chip key={item} label={item} size="sm" colorClass="bg-slate-400/15 text-slate-200" />
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-4 rounded-xl border border-dashed border-white/10 px-4 py-5 text-sm text-slate-400">{t('admin.contests.trafficGraph.empty')}</div>
+                )}
+              </Card>
+
+              <Card className="rounded-2xl border-[#294564]/60 bg-[#071321]">
+                <div className="text-sm font-mono text-slate-300">{t('admin.contests.trafficGraph.panel.selectedNode')}</div>
+                {selectedNode ? (
+                  <div className="mt-4 space-y-3">
+                    <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                      <div className="text-xs text-slate-500">{t('admin.contests.trafficGraph.panel.nodeLabel')}</div>
+                      <div className="mt-1 font-mono text-sm text-white">{selectedNode.label}</div>
+                      <div className="mt-2 text-xs text-slate-400">{selectedNode.ip}</div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                        <div className="text-xs text-slate-500">{t('admin.contests.trafficGraph.panel.nodeTraffic')}</div>
+                        <div className="mt-1 font-mono text-lg text-slate-100">{fmtBytes(selectedNode.bytes)}</div>
+                      </div>
+                      <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                        <div className="text-xs text-slate-500">{t('admin.contests.trafficGraph.panel.nodeConnections')}</div>
+                        <div className="mt-1 font-mono text-lg text-slate-100">{selectedNode.connections}</div>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {(selectedNode.protocols || []).map((item) => (
+                        <Chip key={item} label={item} size="sm" colorClass="bg-slate-400/15 text-slate-200" />
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </Card>
+
+              <Card className="rounded-2xl border-[#294564]/60 bg-[#071321]">
+                <div className="text-sm font-mono text-slate-300">{t('admin.contests.trafficGraph.timeline.title')}</div>
+                <div className="mt-4 space-y-2">
+                  {timeline.length === 0 ? (
+                    <div className="rounded-xl border border-dashed border-white/10 px-4 py-5 text-sm text-slate-400">{t('admin.contests.trafficGraph.empty')}</div>
+                  ) : (
+                    timeline.map((bucket) => {
+                      const ratio = Math.max((bucket.bytes || 0) / peak, 0.02);
+                      const active = bucket.second >= windowInfo.start && bucket.second <= Math.max(windowInfo.start, windowInfo.end - 1);
+                      return (
+                        <button
+                          key={bucket.second}
+                          type="button"
+                          onClick={() => setShift(bucket.second)}
+                          className={`w-full rounded-xl border px-3 py-2 text-left ${active ? 'border-sky-400/30 bg-sky-400/10' : 'border-white/8 bg-white/5'}`}
+                        >
+                          <div className="flex items-center justify-between text-xs text-slate-400">
+                            <span className="font-mono">{t('admin.contests.trafficGraph.timeline.second', { value: bucket.second })}</span>
+                            <span className="font-mono">{fmtBytes(bucket.bytes)}</span>
+                          </div>
+                          <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/5">
+                            <motion.div
+                              className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-sky-400 to-emerald-400"
+                              initial={{ width: 0 }}
+                              animate={{ width: `${ratio * 100}%` }}
+                              transition={{ duration: 0.45, ease: 'easeOut' }}
+                            />
+                          </div>
+                        </button>
+                      );
+                    })
                   )}
-                  {useDemoMode && (
-                    <span className="font-mono text-yellow-400">
-                      {t('admin.contests.trafficGraph.footer.demoMode')}
-                    </span>
-                  )}
-                </>
-              }
-              <span className="font-mono">
-                {t('admin.contests.trafficGraph.footer.updatedAt', {
-                  time: new Date().toLocaleString(i18n.language || 'en-US'),
-                })}
-              </span>
+                </div>
+              </Card>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
+            <Card className="rounded-2xl border-[#294564]/60 bg-[#071321]">
+              <div className="text-sm font-mono text-slate-300">{t('admin.contests.trafficGraph.rankings.topTalkers')}</div>
+              <div className="mt-4 space-y-2">
+                {(topology?.top_talkers || []).map((item, index) => (
+                  <div key={`${item.ip}-${index}`} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-3">
+                    <div>
+                      <div className="font-mono text-sm text-white">{item.label}</div>
+                      <div className="mt-1 text-xs text-slate-500">{item.ip}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-mono text-sm text-sky-200">{fmtBytes(item.bytes)}</div>
+                      <div className="mt-1 text-xs text-slate-400">{item.connections} conn</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            <Card className="rounded-2xl border-[#294564]/60 bg-[#071321]">
+              <div className="text-sm font-mono text-slate-300">{t('admin.contests.trafficGraph.rankings.topEdges')}</div>
+              <div className="mt-4 space-y-2">
+                {(topology?.top_edges || []).map((item, index) => (
+                  <div key={`${item.id || item.ip}-${index}`} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-3">
+                    <div>
+                      <div className="font-mono text-sm text-white">{item.label}</div>
+                      <div className="mt-1 text-xs text-slate-500">{t(`admin.contests.trafficGraph.direction.${item.direction || 'internal'}`)}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-mono text-sm text-emerald-200">{fmtBytes(item.bytes)}</div>
+                      <div className="mt-1 text-xs text-slate-400">{item.connections} conn</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#294564]/60 bg-[#081423] px-4 py-3 text-xs text-slate-400">
+            <div className="flex flex-wrap gap-4 font-mono">
+              <span>{t('admin.contests.trafficGraph.footer.window', { start: windowInfo.start, end: windowInfo.end })}</span>
+              <span>{t('admin.contests.trafficGraph.footer.connectionCount', { count: summary.visible_edges || 0 })}</span>
+              <span>{t('admin.contests.trafficGraph.footer.ipCount', { count: summary.visible_nodes || 0 })}</span>
+              <span>{t('admin.contests.trafficGraph.footer.maxDuration', { count: topology?.total_duration || 0 })}</span>
+            </div>
+            <div className="font-mono">
+              {t('admin.contests.trafficGraph.footer.updatedAt', {
+                time: new Date().toLocaleString(i18n.language || 'en-US'),
+              })}
             </div>
           </div>
         </div>
-      </motion.div>
-    </motion.div>
+      </Modal>
+    </>
   );
 }
 

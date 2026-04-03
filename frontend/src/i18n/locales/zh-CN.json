@@ -479,10 +479,55 @@
       },
       "trafficGraph": {
         "title": "网络流量关系图",
+        "hero": {
+          "kicker": "流量拓扑",
+          "subtitle": "更直观地展示 {{challenge}} 在当前时间窗内的入站、出站和内部流量路径。",
+          "windowAt": "窗口 {{start}}s - {{end}}s",
+          "demoMode": "样例数据"
+        },
         "controls": {
           "timeShift": "时间偏移:",
           "timeSlice": "时间片:",
           "seconds": "秒"
+        },
+        "stats": {
+          "totalTraffic": "窗口流量",
+          "ingress": "入站流量",
+          "egress": "出站流量",
+          "peers": "可见节点"
+        },
+        "canvas": {
+          "title": "拓扑画布",
+          "subtitle": "左侧为入站来源，中心为靶机，右侧为出站目标。"
+        },
+        "legend": {
+          "ingress": "入站",
+          "egress": "出站",
+          "internal": "内部"
+        },
+        "direction": {
+          "ingress": "入站",
+          "egress": "出站",
+          "internal": "内部"
+        },
+        "panel": {
+          "selectedFlow": "选中流量",
+          "selectedFlowHint": "点击连线查看当前窗口中最热的传输路径。",
+          "edgePath": "路径",
+          "edgeBytes": "流量",
+          "edgePackets": "报文数",
+          "selectedNode": "选中节点",
+          "nodeLabel": "节点",
+          "nodeTraffic": "流量",
+          "nodeConnections": "连接数"
+        },
+        "timeline": {
+          "title": "时间轴",
+          "second": "T+{{value}}s"
+        },
+        "rankings": {
+          "topTalkers": "热点节点",
+          "topEdges": "热点连线"
         },
         "tooltip": {
           "connectionTitle": "流量连接",
@@ -495,6 +540,7 @@
           "ipCount": "IP数量: {{count}}",
           "connectionCount": "连接数: {{count}}",
           "maxDuration": "最大时长: {{count}}秒",
+          "window": "窗口: {{start}}s - {{end}}s",
           "timeSlice": "时间片: {{count}}秒",
           "playing": "播放中: {{current}}/{{total}}秒",
           "updatedAt": "更新时间: {{time}}",
@@ -504,7 +550,8 @@
           "fetchFailed": "获取流量数据失败",
           "demoFallback": "获取流量数据失败，使用样例数据预览效果"
         },
-        "demoNotice": "无法获取真实流量数据，当前展示的是示例数据。点击刷新按钮可重新尝试获取。"
+        "demoNotice": "无法获取真实流量数据，当前展示的是示例数据。点击刷新按钮可重新尝试获取。",
+        "empty": "当前时间窗内暂无流量数据。"
       },
       "notices": {
         "title": "公告管理",
