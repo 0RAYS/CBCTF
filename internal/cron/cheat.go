@@ -8,7 +8,7 @@ import (
 )
 
 func checkCheatTask() model.RetVal {
-	job, ret := db.InitCronJobRepo(db.DB).GetByUniqueField("name", model.ClearEmptyTeamCronJob)
+	job, ret := db.InitCronJobRepo(db.DB).GetByUniqueField("name", model.CheckCheatCronJob)
 	if !ret.OK {
 		return ret
 	}
