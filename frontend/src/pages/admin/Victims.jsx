@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { toast } from '../../utils/toast';
-import { getVictims, stopVictims } from '../../api/admin/victims';
+import { downloadBlobResponse } from '../../utils/fileDownload';
+import { getVictims, stopVictims, getVictimTraffic, downloadVictimTraffic } from '../../api/admin/victims';
 import { getUserList } from '../../api/admin/user';
 import { getChallengeList } from '../../api/admin/challenge';
 import { Modal } from '../../components/common';
+import TrafficGraphModal from '../../components/features/Admin/Contests/TrafficGraphModal';
 import ModalButton from '../../components/common/ModalButton';
 import { Button, Pagination, Card, EmptyState, StatCard } from '../../components/common';
 import { motion } from 'motion/react';
@@ -18,6 +20,8 @@ import {
   IconTarget,
   IconTrash,
   IconClockPlay,
+  IconDownload,
+  IconGraph,
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 
@@ -68,6 +72,7 @@ function AdminVictims() {
   const [isStopModalOpen, setIsStopModalOpen] = useState(false);
   const [showDeleted, setShowDeleted] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState(10);
+  const [trafficGraphContainer, setTrafficGraphContainer] = useState(null);
   const [stats, setStats] = useState({ totalContainers: 0, runningContainers: 0, stoppedContainers: 0 });
   const { t, i18n } = useTranslation();
 
@@ -260,6 +265,25 @@ function AdminVictims() {
   const getContainerStatusStyle = (remaining) => {
     if (!remaining || remaining <= 0) return 'text-red-400 bg-red-400/10 border-red-400/30';
     return 'text-green-400 bg-green-400/10 border-green-400/30';
+  };
+
+  const handleViewTrafficGraph = (container) => {
+    setTrafficGraphContainer(container);
+  };
+
+  const handleDownloadTraffic = async (container) => {
+    try {
+      const response = await downloadVictimTraffic(container.id);
+      if (response.headers?.['file'] === 'true') {
+        downloadBlobResponse(response, `traffic_${container.id}.zip`);
+      }
+    } catch (error) {
+      toast.danger({ description: error.message || t('admin.contests.teamContainers.toast.downloadTrafficFailed') });
+    }
+  };
+
+  const fetchTrafficGraph = (container, params) => {
+    return getVictimTraffic(container.id, params);
   };
 
   return (
@@ -530,12 +554,15 @@ function AdminVictims() {
                 <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap" scope="col">
                   {t('admin.victims.table.columns.remaining')}
                 </th>
+                <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap" scope="col">
+                  {t('admin.contests.teamDetail.traffic.columns.actions')}
+                </th>
               </tr>
             </thead>
             <tbody>
               {containers.length === 0 ? (
                 <tr>
-                  <td colSpan="10">
+                  <td colSpan="11">
                     <EmptyState title={t('admin.victims.table.empty')} />
                   </td>
                 </tr>
@@ -594,6 +621,28 @@ function AdminVictims() {
                         {formatRemaining(container.remaining)}
                       </span>
                     </td>
+                    <td className="p-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="!text-geek-400 hover:!text-geek-300"
+                          onClick={() => handleViewTrafficGraph(container)}
+                          title={t('admin.contests.teamDetail.traffic.actions.viewTraffic')}
+                        >
+                          <IconGraph size={18} />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="!text-geek-400 hover:!text-geek-300"
+                          onClick={() => handleDownloadTraffic(container)}
+                          title={t('admin.contests.teamDetail.traffic.actions.downloadTraffic')}
+                        >
+                          <IconDownload size={18} />
+                        </Button>
+                      </div>
+                    </td>
                   </motion.tr>
                 ))
               )}
@@ -633,6 +682,13 @@ function AdminVictims() {
           {t('admin.victims.modals.stopPrompt', { count: selectedContainers.length })}
         </p>
       </Modal>
+
+      <TrafficGraphModal
+        isOpen={!!trafficGraphContainer}
+        onClose={() => setTrafficGraphContainer(null)}
+        container={trafficGraphContainer}
+        fetchTraffic={fetchTrafficGraph}
+      />
     </div>
   );
 }

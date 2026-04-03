@@ -13,6 +13,7 @@ import {
 import { toast } from '../utils/toast';
 import { downloadBlobResponse } from '../utils/fileDownload';
 import AdminTeamDetailDialog from '../components/features/Admin/Contests/AdminTeamDetailDialog';
+import TrafficGraphModal from '../components/features/Admin/Contests/TrafficGraphModal';
 
 const PAGE_SIZE = 20;
 
@@ -40,6 +41,7 @@ export function useTeamDetailDialog(contestId) {
   const [loading, setLoading] = useState({ submissions: false, writeups: false, traffic: false });
   const [flags, setFlags] = useState([]);
   const [flagsLoading, setFlagsLoading] = useState(false);
+  const [trafficGraphContainer, setTrafficGraphContainer] = useState(null);
 
   const fetchMembers = async (teamId) => {
     setMembersLoading(true);
@@ -155,6 +157,7 @@ export function useTeamDetailDialog(contestId) {
     setLoading({ submissions: false, writeups: false, traffic: false });
     setFlags([]);
     setFlagsLoading(false);
+    setTrafficGraphContainer(null);
   };
 
   const handleTabChange = (tab) => {
@@ -212,31 +215,45 @@ export function useTeamDetailDialog(contestId) {
     }
   };
 
+  const handleViewTrafficGraph = (container) => {
+    setTrafficGraphContainer(container);
+  };
+
   const renderTeamDetailDialog = () => (
-    <AdminTeamDetailDialog
-      isOpen={show}
-      onClose={handleClose}
-      team={teamData}
-      activeTab={activeTab}
-      onTabChange={handleTabChange}
-      members={members}
-      membersLoading={membersLoading}
-      detailSubmissions={submissions}
-      detailSubmissionCount={submissionCount}
-      detailSubmissionPage={submissionPage}
-      detailWriteups={writeups}
-      detailWriteupCount={writeupCount}
-      detailWriteupPage={writeupPage}
-      detailContainers={containers}
-      detailContainerCount={containerCount}
-      detailContainerPage={containerPage}
-      detailLoading={loading}
-      onDetailPageChange={handlePageChange}
-      onDetailDownloadTraffic={handleDownloadTraffic}
-      onDetailDownloadWriteup={handleDownloadWriteup}
-      detailFlags={flags}
-      detailFlagsLoading={flagsLoading}
-    />
+    <>
+      <AdminTeamDetailDialog
+        isOpen={show}
+        onClose={handleClose}
+        team={teamData}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        members={members}
+        membersLoading={membersLoading}
+        detailSubmissions={submissions}
+        detailSubmissionCount={submissionCount}
+        detailSubmissionPage={submissionPage}
+        detailWriteups={writeups}
+        detailWriteupCount={writeupCount}
+        detailWriteupPage={writeupPage}
+        detailContainers={containers}
+        detailContainerCount={containerCount}
+        detailContainerPage={containerPage}
+        detailLoading={loading}
+        onDetailPageChange={handlePageChange}
+        onDetailDownloadTraffic={handleDownloadTraffic}
+        onDetailDownloadWriteup={handleDownloadWriteup}
+        onViewTrafficGraph={handleViewTrafficGraph}
+        detailFlags={flags}
+        detailFlagsLoading={flagsLoading}
+      />
+      <TrafficGraphModal
+        isOpen={show && !!trafficGraphContainer}
+        onClose={() => setTrafficGraphContainer(null)}
+        container={trafficGraphContainer}
+        contestId={contestId}
+        teamId={teamData?.id}
+      />
+    </>
   );
 
   return { openTeamDetail, renderTeamDetailDialog };

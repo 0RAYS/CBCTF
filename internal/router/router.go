@@ -296,10 +296,12 @@ func Init() *gin.Engine {
 			}
 		}
 
-		adminVictim := admin.Group("/victims")
+		admin.GET("/victims", GetVictims)
+		admin.DELETE("/victims", StopVictims)
+		adminTraffic := admin.Group("/victims/:victimID", middleware.SetVictim)
 		{
-			adminVictim.GET("", GetVictims)
-			adminVictim.DELETE("", StopVictims)
+			adminTraffic.GET("/download", middleware.SetTrafficFile, DownloadFile(model.DownloadTrafficEventType))
+			adminTraffic.GET("", GetTraffics)
 		}
 
 		adminGenerator := admin.Group("/generators")
