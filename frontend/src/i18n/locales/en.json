@@ -5,9 +5,7 @@
   },
   "common": {
     "loading": "Loading...",
-    "loadingShort": "Loading",
     "language": "Language",
-    "login": "Login",
     "processing": "Processing...",
     "date": "Date",
     "duration": "Duration",
@@ -41,7 +39,6 @@
     "noData": "No data",
     "none": "None",
     "closeNotification": "Close notification",
-    "copy": "Copy to clipboard",
     "openUserMenu": "Open user menu",
     "mainNavigation": "Main navigation",
     "toggleMenu": "Toggle navigation menu",
@@ -73,7 +70,6 @@
       "deleteWarning": "This action cannot be undone."
     },
     "selectAll": "Select all",
-    "deselectAll": "Deselect all",
     "scoreboard": {
       "headers": {
         "rank": "RANK",
@@ -102,7 +98,6 @@
     "settings": "SETTINGS",
     "dashboard": "DASHBOARD",
     "contests": "CONTESTS",
-    "users": "USERS",
     "rbac": "RBAC",
     "oauth": "OAUTH",
     "smtp": "SMTP",
@@ -112,7 +107,6 @@
     "tasks": "TASKS",
     "system": "SYSTEM",
     "logs": "LOGS",
-    "containers": "CONTAINERS",
     "images": "IMAGES",
     "cheats": "CHEATS",
     "notices": "NOTICES",
@@ -2264,7 +2258,6 @@
   "auth": {
     "login": "LOGIN",
     "register": "REGISTER",
-    "adminLogin": "ADMIN LOGIN",
     "placeholders": {
       "username": "Username",
       "email": "Email",
@@ -2276,7 +2269,6 @@
       "passwordMin": "Password must be at least 6 characters",
       "passwordMismatch": "Passwords do not match",
       "emailInvalid": "Invalid email address",
-      "usernameRequired": "Username is required",
       "passwordRequired": "Password is required"
     },
     "oauth": {
@@ -2519,9 +2511,6 @@
         "viewFinalScoreboard": "VIEW FINAL SCOREBOARD"
       }
     },
-    "teamStatus": {
-      "rank": "Rank #{{rank}}"
-    },
     "statusPanel": {
       "contestStatus": "Contest Status",
       "startTime": "Start Time",
@@ -2723,20 +2712,11 @@
   },
   "utils": {
     "time": {
-      "stopped": "Stopped",
-      "ended": "Ended",
-      "startingSoon": "Starting soon",
-      "justNow": "Just now",
       "units": {
         "day": "{{count}}d",
         "hour": "{{count}}h",
         "minute": "{{count}}m",
         "second": "{{count}}s"
-      },
-      "ago": {
-        "minute": "{{count}} minutes ago",
-        "hour": "{{count}} hours ago",
-        "day": "{{count}} days ago"
       }
     },
     "hex": {
