@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { toast } from '../../../utils/toast';
 import { downloadBlobResponse } from '../../../utils/fileDownload';
 import {
@@ -35,6 +36,8 @@ function LoadingSpinner({ className = '' }) {
 
 function TeamDetails() {
   const { id: contestId, teamId } = useParams();
+  const routes = useSelector((state) => state.user.routes);
+  const canViewTraffic = routes.includes('GET /admin/contests/:contestID/teams/:teamID/victims');
 
   // 模态框状态
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -82,6 +85,10 @@ function TeamDetails() {
 
   // 监听标签页切换
   useEffect(() => {
+    if (!canViewTraffic && activeTab === 'traffic') {
+      setActiveTab('submissions');
+      return;
+    }
     switch (activeTab) {
       case 'submissions':
         fetchSubmissions();
@@ -98,7 +105,7 @@ function TeamDetails() {
       default:
         break;
     }
-  }, [activeTab]);
+  }, [activeTab, canViewTraffic]);
 
   // 监听分页变化，重新获取数据
   useEffect(() => {
@@ -368,6 +375,7 @@ function TeamDetails() {
         onUserClick={openUserDetail}
         detailFlags={detailFlags}
         detailFlagsLoading={detailFlagsLoading}
+        canViewTraffic={canViewTraffic}
       />
 
       {/* 使用AdminModal组件替代heroui的Modal */}
@@ -468,13 +476,15 @@ function TeamDetails() {
       </Modal>
 
       {/* 流量关系图弹窗 */}
-      <TrafficGraphModal
-        isOpen={isGraphModalOpen}
-        onClose={handleGraphModalClose}
-        container={selectedContainer}
-        contestId={parseInt(contestId)}
-        teamId={parseInt(teamId)}
-      />
+      {canViewTraffic && (
+        <TrafficGraphModal
+          isOpen={isGraphModalOpen}
+          onClose={handleGraphModalClose}
+          container={selectedContainer}
+          contestId={parseInt(contestId)}
+          teamId={parseInt(teamId)}
+        />
+      )}
 
       {renderUserDetailDialog()}
     </>

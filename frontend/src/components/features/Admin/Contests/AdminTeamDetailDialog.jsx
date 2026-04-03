@@ -33,6 +33,7 @@ function AdminTeamDetailDialog({
   // flags tab data
   detailFlags = [],
   detailFlagsLoading = false,
+  canViewTraffic = true,
 }) {
   const { t } = useTranslation();
   const { openUserDetail, renderUserDetailDialog } = useUserDetailDialog();
@@ -193,6 +194,7 @@ function AdminTeamDetailDialog({
       onDownloadWriteup={onDetailDownloadWriteup}
       onViewTrafficGraph={onViewTrafficGraph}
       onUserClick={openUserDetail}
+      canViewTraffic={canViewTraffic}
     />
   );
 
@@ -207,7 +209,7 @@ function AdminTeamDetailDialog({
         {/* Tab bar */}
         <div className="mb-6 border-b border-neutral-700">
           <div className="flex gap-8">
-            {TABS.map((tab) => (
+            {TABS.filter((tab) => canViewTraffic || tab !== 'containers').map((tab) => (
               <Button
                 key={tab}
                 variant="ghost"

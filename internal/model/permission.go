@@ -124,11 +124,17 @@ const (
 	PermAdminContestChallengeFlagRead   = "admin:contest_challenge_flag:read"
 	PermAdminContestChallengeFlagUpdate = "admin:contest_challenge_flag:update"
 
-	PermAdminImagePull = "admin:image:pull"
+	PermAdminImagePull        = "admin:image:pull"
+	PermAdminContestImagePull = "admin:contest_image:pull"
 
-	PermAdminVictimControl = "admin:victim:control"
+	PermAdminVictimControl        = "admin:victim:control"
+	PermAdminContestVictimControl = "admin:contest_victim:control"
 
-	PermAdminGeneratorControl = "admin:generator:control"
+	PermAdminGeneratorControl        = "admin:generator:control"
+	PermAdminContestGeneratorControl = "admin:contest_generator:control"
+
+	PermAdminTrafficRead        = "admin:traffic:read"
+	PermAdminContestTrafficRead = "admin:contest_traffic:read"
 
 	PermAdminFileList   = "admin:file:list"
 	PermAdminFileRead   = "admin:file:read"
@@ -246,6 +252,7 @@ var RoutePermissions = map[string]string{
 
 	// /admin/cronjobs
 	"GET /admin/cronjobs":            PermAdminCronJobList,
+	"GET /admin/cronjobs/:cronJobID": PermAdminCronJobList,
 	"PUT /admin/cronjobs/:cronJobID": PermAdminCronJobUpdate,
 
 	// /admin/webhook
@@ -270,8 +277,10 @@ var RoutePermissions = map[string]string{
 	"POST /admin/challenges/:challengeID/test/start":     PermAdminChallengeTest,
 	"POST /admin/challenges/:challengeID/test/stop":      PermAdminChallengeTest,
 
-	"GET /admin/victims":    PermAdminVictimControl,
-	"DELETE /admin/victims": PermAdminVictimControl,
+	"GET /admin/victims":                            PermAdminVictimControl,
+	"DELETE /admin/victims":                         PermAdminVictimControl,
+	"GET /admin/victims/:victimID/traffic":          PermAdminTrafficRead,
+	"GET /admin/victims/:victimID/traffic/download": PermAdminTrafficRead,
 
 	"GET /admin/generators":    PermAdminGeneratorControl,
 	"POST /admin/generators":   PermAdminGeneratorControl,
@@ -302,9 +311,9 @@ var RoutePermissions = map[string]string{
 	"POST /admin/contests/:contestID/teams/:teamID/picture":                           PermAdminTeamUpdate,
 	"GET /admin/contests/:contestID/teams/:teamID/flags":                              PermAdminTeamRead,
 	"GET /admin/contests/:contestID/teams/:teamID/submissions":                        PermAdminTeamRead,
-	"GET /admin/contests/:contestID/teams/:teamID/victims":                            PermAdminTeamRead,
-	"GET /admin/contests/:contestID/teams/:teamID/victims/:victimID/traffic":          PermAdminTeamRead,
-	"GET /admin/contests/:contestID/teams/:teamID/victims/:victimID/traffic/download": PermAdminTeamRead,
+	"GET /admin/contests/:contestID/teams/:teamID/victims":                            PermAdminContestTrafficRead,
+	"GET /admin/contests/:contestID/teams/:teamID/victims/:victimID/traffic":          PermAdminContestTrafficRead,
+	"GET /admin/contests/:contestID/teams/:teamID/victims/:victimID/traffic/download": PermAdminContestTrafficRead,
 	"GET /admin/contests/:contestID/teams/:teamID/writeups":                           PermAdminTeamWriteupList,
 	"GET /admin/contests/:contestID/teams/:teamID/writeups/:fileID":                   PermAdminTeamWriteupRead,
 
@@ -333,18 +342,18 @@ var RoutePermissions = map[string]string{
 	"GET /admin/contests/:contestID/challenges/:challengeID/flags/:flagID/solvers": PermAdminContestChallengeFlagList,
 
 	// /admin/contests/:contestID/images
-	"GET /admin/contests/:contestID/images":  PermAdminImagePull,
-	"POST /admin/contests/:contestID/images": PermAdminImagePull,
+	"GET /admin/contests/:contestID/images":  PermAdminContestImagePull,
+	"POST /admin/contests/:contestID/images": PermAdminContestImagePull,
 
 	// /admin/contests/:contestID/victims
-	"GET /admin/contests/:contestID/victims":    PermAdminVictimControl,
-	"POST /admin/contests/:contestID/victims":   PermAdminVictimControl,
-	"DELETE /admin/contests/:contestID/victims": PermAdminVictimControl,
+	"GET /admin/contests/:contestID/victims":    PermAdminContestVictimControl,
+	"POST /admin/contests/:contestID/victims":   PermAdminContestVictimControl,
+	"DELETE /admin/contests/:contestID/victims": PermAdminContestVictimControl,
 
 	// /admin/contests/:contestID/generators
-	"GET /admin/contests/:contestID/generators":    PermAdminGeneratorControl,
-	"POST /admin/contests/:contestID/generators":   PermAdminGeneratorControl,
-	"DELETE /admin/contests/:contestID/generators": PermAdminGeneratorControl,
+	"GET /admin/contests/:contestID/generators":    PermAdminContestGeneratorControl,
+	"POST /admin/contests/:contestID/generators":   PermAdminContestGeneratorControl,
+	"DELETE /admin/contests/:contestID/generators": PermAdminContestGeneratorControl,
 
 	// /admin/files
 	"GET /admin/files":         PermAdminFileList,
@@ -360,6 +369,11 @@ var RoutePermissions = map[string]string{
 }
 
 var Permissions = []Permission{
+	{Name: PermAdminContestImagePull, Resource: "admin:contest_image", Operation: "pull", Description: "拉取比赛镜像"},
+	{Name: PermAdminContestVictimControl, Resource: "admin:contest_victim", Operation: "control", Description: "控制比赛靶机"},
+	{Name: PermAdminContestGeneratorControl, Resource: "admin:contest_generator", Operation: "control", Description: "控制比赛生成器"},
+	{Name: PermAdminTrafficRead, Resource: "admin:traffic", Operation: "read", Description: "查看全局靶机流量"},
+	{Name: PermAdminContestTrafficRead, Resource: "admin:contest_traffic", Operation: "read", Description: "查看比赛靶机流量"},
 	{Name: PermSelfRead, Resource: "self", Operation: "read", Description: "查看自身信息"},
 	{Name: PermSelfUpdate, Resource: "self", Operation: "update", Description: "更新自身信息"},
 	{Name: PermSelfDelete, Resource: "self", Operation: "delete", Description: "删除自身账号"},
