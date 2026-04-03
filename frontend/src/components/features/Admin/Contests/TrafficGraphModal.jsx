@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next';
  * @param {number} props.contestId - 比赛ID
  * @param {number} props.teamId - 队伍ID
  */
-function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId }) {
+function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetchTraffic: customFetchTraffic }) {
   const { t, i18n } = useTranslation();
   const chartRef = useRef(null);
   const [connections, setConnections] = useState([]);
@@ -98,10 +98,12 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId }) {
     }
 
     try {
-      const response = await getContestTeamTraffic(contestId, teamId, container.id, {
-        time_shift: shift,
-        duration: dur,
-      });
+      const response = customFetchTraffic
+        ? await customFetchTraffic(container, { time_shift: shift, duration: dur })
+        : await getContestTeamTraffic(contestId, teamId, container.id, {
+            time_shift: shift,
+            duration: dur,
+          });
 
       if (response.code === 200) {
         setUseDemoMode(false);

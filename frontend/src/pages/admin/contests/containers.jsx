@@ -1,15 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from '../../../utils/toast';
+import { downloadBlobResponse } from '../../../utils/fileDownload';
 import {
   getContestVictims,
   stopContestVictims,
   startContestVictims,
   getContestTeams,
   getContestChallenges,
+  downloadContainerTraffic,
 } from '../../../api/admin/contest';
 import { getUserList } from '../../../api/admin/user';
 import { Modal } from '../../../components/common';
+import TrafficGraphModal from '../../../components/features/Admin/Contests/TrafficGraphModal';
 import ModalButton from '../../../components/common/ModalButton';
 import { Button, Pagination, Card, EmptyState, StatCard, Chip } from '../../../components/common';
 import { motion } from 'motion/react';
@@ -29,6 +32,8 @@ import {
   IconArrowsMaximize,
   IconChevronLeft,
   IconChevronRight,
+  IconDownload,
+  IconGraph,
 } from '@tabler/icons-react';
 import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../config/challengeChips';
 
@@ -101,6 +106,7 @@ function ContestContainers() {
   const [detailChallengePage, setDetailChallengePage] = useState(1);
   const [detailChallengeTotal, setDetailChallengeTotal] = useState(0);
   const [teamTotal, setTeamTotal] = useState(0);
+  const [trafficGraphContainer, setTrafficGraphContainer] = useState(null);
 
   // 统计信息
   const [stats, setStats] = useState({
@@ -497,6 +503,21 @@ function ContestContainers() {
       return 'text-red-400 bg-red-400/10 border-red-400/30';
     }
     return 'text-green-400 bg-green-400/10 border-green-400/30';
+  };
+
+  const handleViewTrafficGraph = (container) => {
+    setTrafficGraphContainer(container);
+  };
+
+  const handleDownloadTraffic = async (container) => {
+    try {
+      const response = await downloadContainerTraffic(parseInt(contestId, 10), container.team_id, container.id);
+      if (response.headers?.['file'] === 'true') {
+        downloadBlobResponse(response, `traffic_${container.id}.zip`);
+      }
+    } catch (error) {
+      toast.danger({ description: error.message || t('admin.contests.teamContainers.toast.downloadTrafficFailed') });
+    }
   };
 
   return (
@@ -1075,12 +1096,15 @@ function ContestContainers() {
                   <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">
                     {t('admin.contests.containers.table.columns.remaining')}
                   </th>
+                  <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">
+                    {t('admin.contests.teamDetail.traffic.columns.actions')}
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {containers.length === 0 ? (
                   <tr>
-                    <td colSpan="10">
+                    <td colSpan="11">
                       <EmptyState title={t('admin.contests.containers.table.empty')} />
                     </td>
                   </tr>
@@ -1136,6 +1160,28 @@ function ContestContainers() {
                         >
                           {formatRemaining(container.remaining)}
                         </span>
+                      </td>
+                      <td className="p-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="!text-geek-400 hover:!text-geek-300"
+                            onClick={() => handleViewTrafficGraph(container)}
+                            title={t('admin.contests.teamDetail.traffic.actions.viewTraffic')}
+                          >
+                            <IconGraph size={18} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="!text-geek-400 hover:!text-geek-300"
+                            onClick={() => handleDownloadTraffic(container)}
+                            title={t('admin.contests.teamDetail.traffic.actions.downloadTraffic')}
+                          >
+                            <IconDownload size={18} />
+                          </Button>
+                        </div>
                       </td>
                     </motion.tr>
                   ))
@@ -1414,6 +1460,14 @@ function ContestContainers() {
             </p>
           </div>
         </Modal>
+
+        <TrafficGraphModal
+          isOpen={!!trafficGraphContainer}
+          onClose={() => setTrafficGraphContainer(null)}
+          container={trafficGraphContainer}
+          contestId={parseInt(contestId, 10)}
+          teamId={trafficGraphContainer?.team_id}
+        />
       </div>
     </>
   );

@@ -4,3 +4,9 @@ export const getVictims = (params = {}) => request({ url: '/admin/victims', meth
 
 export const stopVictims = (victimIds) =>
   request({ url: '/admin/victims', method: 'DELETE', data: { victims: victimIds } });
+
+export const getVictimTraffic = (victimId, params = {}) =>
+  request({ url: `/admin/victims/${victimId}`, method: 'GET', params });
+
+export const downloadVictimTraffic = (victimId) =>
+  request({ url: `/admin/victims/${victimId}/download`, method: 'GET', responseType: 'blob' });
