@@ -89,9 +89,7 @@ function AdminImagesPull({
           <div className="flex items-start justify-between gap-4 mb-6">
             <div>
               <h2 className="text-lg font-mono text-neutral-50">{t(`${scopeKey}.control.title`)}</h2>
-              <p className="mt-2 text-sm text-neutral-400 font-mono leading-6">
-                {t(`${scopeKey}.control.subtitle`)}
-              </p>
+              <p className="mt-2 text-sm text-neutral-400 font-mono leading-6">{t(`${scopeKey}.control.subtitle`)}</p>
             </div>
             <div className="flex min-w-fit shrink-0 items-center gap-2 whitespace-nowrap text-neutral-400 font-mono text-sm">
               <IconServer size={16} />
@@ -107,9 +105,7 @@ function AdminImagesPull({
               <div className="text-2xl text-neutral-50 font-mono">{nodes.length}</div>
             </div>
             <div className="rounded-md border border-neutral-300/20 bg-black/20 p-4">
-              <div className="text-xs text-neutral-500 font-mono mb-2">
-                {t(`${scopeKey}.summary.unionLabel`)}
-              </div>
+              <div className="text-xs text-neutral-500 font-mono mb-2">{t(`${scopeKey}.summary.unionLabel`)}</div>
               <div className="text-2xl text-neutral-50 font-mono">{targetImages.length}</div>
             </div>
             <div className="rounded-md border border-neutral-300/20 bg-black/20 p-4">
@@ -148,9 +144,7 @@ function AdminImagesPull({
           <div className="flex items-start justify-between gap-4 mb-5">
             <div>
               <h2 className="text-lg font-mono text-neutral-50">{t(`${scopeKey}.selection.title`)}</h2>
-              <p className="mt-2 text-sm text-neutral-400 font-mono leading-6">
-                {t(`${scopeKey}.selection.subtitle`)}
-              </p>
+              <p className="mt-2 text-sm text-neutral-400 font-mono leading-6">{t(`${scopeKey}.selection.subtitle`)}</p>
             </div>
             <Button
               variant="outline"
@@ -177,9 +171,7 @@ function AdminImagesPull({
           <div className="rounded-md border border-neutral-300/20 bg-black/20 p-4">
             <div className="flex items-start justify-between gap-4 mb-3">
               <div>
-                <div className="text-sm font-mono text-neutral-300">
-                  {t(`${scopeKey}.intersection.title`)}
-                </div>
+                <div className="text-sm font-mono text-neutral-300">{t(`${scopeKey}.intersection.title`)}</div>
                 <p className="mt-1 text-xs font-mono text-neutral-500 leading-5">
                   {t(`${scopeKey}.intersection.subtitle`)}
                 </p>
@@ -265,9 +257,7 @@ function AdminImagesPull({
             <IconWriting size={18} className="mt-1 text-neutral-400" />
             <div>
               <h2 className="text-lg font-mono text-neutral-50">{t(`${scopeKey}.manual.title`)}</h2>
-              <p className="mt-2 text-sm text-neutral-400 font-mono leading-6">
-                {t(`${scopeKey}.manual.subtitle`)}
-              </p>
+              <p className="mt-2 text-sm text-neutral-400 font-mono leading-6">{t(`${scopeKey}.manual.subtitle`)}</p>
             </div>
           </div>
 
@@ -342,9 +332,7 @@ function AdminImagesPull({
         <div className="flex items-start justify-between gap-4 mb-5">
           <div>
             <h2 className="text-lg font-mono text-neutral-50">{t(`${scopeKey}.statusTitle`)}</h2>
-            <p className="mt-2 text-sm text-neutral-400 font-mono leading-6">
-              {t(`${scopeKey}.statusSubtitle`)}
-            </p>
+            <p className="mt-2 text-sm text-neutral-400 font-mono leading-6">{t(`${scopeKey}.statusSubtitle`)}</p>
           </div>
           <Chip
             label={t('admin.contests.imagesPull.summary.total', { count: allImages.length })}
@@ -399,9 +387,7 @@ function AdminImagesPull({
                   </div>
 
                   <div className="pt-3 border-t border-neutral-300/10">
-                    <div className="text-xs font-mono text-neutral-500 mb-2">
-                      {t(`${scopeKey}.node.missingTitle`)}
-                    </div>
+                    <div className="text-xs font-mono text-neutral-500 mb-2">{t(`${scopeKey}.node.missingTitle`)}</div>
                     <div className="flex flex-wrap gap-2">
                       {filteredTargetImages
                         .filter((imageName) => !node.images.includes(imageName))
@@ -420,9 +406,7 @@ function AdminImagesPull({
                           </div>
                         ))}
                       {filteredTargetImages.filter((imageName) => !node.images.includes(imageName)).length === 0 && (
-                        <div className="text-sm font-mono text-neutral-500">
-                          {t(`${scopeKey}.node.noMissing`)}
-                        </div>
+                        <div className="text-sm font-mono text-neutral-500">{t(`${scopeKey}.node.noMissing`)}</div>
                       )}
                     </div>
                   </div>
