@@ -6,7 +6,7 @@ export const stopVictims = (victimIds) =>
   request({ url: '/admin/victims', method: 'DELETE', data: { victims: victimIds } });
 
 export const getVictimTraffic = (victimId, params = {}) =>
-  request({ url: `/admin/victims/${victimId}`, method: 'GET', params });
+  request({ url: `/admin/victims/${victimId}/traffic`, method: 'GET', params });
 
 export const downloadVictimTraffic = (victimId) =>
-  request({ url: `/admin/victims/${victimId}/download`, method: 'GET', responseType: 'blob' });
+  request({ url: `/admin/victims/${victimId}/traffic/download`, method: 'GET', responseType: 'blob' });

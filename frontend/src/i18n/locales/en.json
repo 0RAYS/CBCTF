@@ -479,10 +479,55 @@
       },
       "trafficGraph": {
         "title": "Network Traffic Graph",
+        "hero": {
+          "kicker": "Traffic Topology",
+          "subtitle": "A clearer live topology view for {{challenge}} with ingress, egress, and internal paths separated.",
+          "windowAt": "Window {{start}}s - {{end}}s",
+          "demoMode": "Sample Data"
+        },
         "controls": {
           "timeShift": "Time Offset:",
           "timeSlice": "Time Slice:",
           "seconds": "s"
+        },
+        "stats": {
+          "totalTraffic": "Window Traffic",
+          "ingress": "Ingress",
+          "egress": "Egress",
+          "peers": "Visible Nodes"
+        },
+        "canvas": {
+          "title": "Topology Canvas",
+          "subtitle": "Left side is ingress, center is victim, right side is egress."
+        },
+        "legend": {
+          "ingress": "Ingress",
+          "egress": "Egress",
+          "internal": "Internal"
+        },
+        "direction": {
+          "ingress": "Ingress",
+          "egress": "Egress",
+          "internal": "Internal"
+        },
+        "panel": {
+          "selectedFlow": "Selected Flow",
+          "selectedFlowHint": "Click a line to inspect the hottest path in the current window.",
+          "edgePath": "Path",
+          "edgeBytes": "Traffic",
+          "edgePackets": "Packets",
+          "selectedNode": "Selected Node",
+          "nodeLabel": "Node",
+          "nodeTraffic": "Traffic",
+          "nodeConnections": "Connections"
+        },
+        "timeline": {
+          "title": "Timeline",
+          "second": "T+{{value}}s"
+        },
+        "rankings": {
+          "topTalkers": "Top Talkers",
+          "topEdges": "Top Edges"
         },
         "tooltip": {
           "connectionTitle": "Traffic Connection",
@@ -495,6 +540,7 @@
           "ipCount": "IP count: {{count}}",
           "connectionCount": "Connections: {{count}}",
           "maxDuration": "Max duration: {{count}}s",
+          "window": "Window: {{start}}s - {{end}}s",
           "timeSlice": "Time slice: {{count}}s",
           "playing": "Playing: {{current}}/{{total}}s",
           "updatedAt": "Updated at: {{time}}",
@@ -504,7 +550,8 @@
           "fetchFailed": "Failed to load traffic data",
           "demoFallback": "Failed to load traffic data, using sample data for preview"
         },
-        "demoNotice": "Unable to fetch real traffic data. Currently displaying sample data for demonstration purposes. Click refresh to retry."
+        "demoNotice": "Unable to fetch real traffic data. Currently displaying sample data for demonstration purposes. Click refresh to retry.",
+        "empty": "No traffic data in this window."
       },
       "notices": {
         "title": "Notice Management",
