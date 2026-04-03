@@ -5,9 +5,7 @@
   },
   "common": {
     "loading": "加载中...",
-    "loadingShort": "加载中",
     "language": "语言",
-    "login": "登录",
     "processing": "处理中...",
     "date": "日期",
     "duration": "时长",
@@ -41,7 +39,6 @@
     "noData": "暂无数据",
     "none": "无",
     "closeNotification": "关闭通知",
-    "copy": "复制到剪贴板",
     "openUserMenu": "打开用户菜单",
     "mainNavigation": "主导航",
     "toggleMenu": "切换导航菜单",
@@ -73,7 +70,6 @@
       "deleteWarning": "此操作不可撤销。"
     },
     "selectAll": "全选",
-    "deselectAll": "取消全选",
     "scoreboard": {
       "headers": {
         "rank": "排名",
@@ -102,7 +98,6 @@
     "settings": "设置",
     "dashboard": "仪表盘",
     "contests": "赛事",
-    "users": "用户",
     "rbac": "RBAC",
     "oauth": "OAuth",
     "smtp": "SMTP",
@@ -112,7 +107,6 @@
     "tasks": "任务队列",
     "system": "系统",
     "logs": "日志",
-    "containers": "靶机",
     "images": "镜像",
     "cheats": "风控",
     "notices": "公告",
@@ -2264,7 +2258,6 @@
   "auth": {
     "login": "登录",
     "register": "注册",
-    "adminLogin": "管理员登录",
     "placeholders": {
       "username": "用户名",
       "email": "邮箱",
@@ -2276,7 +2269,6 @@
       "passwordMin": "密码至少 6 个字符",
       "passwordMismatch": "两次密码不一致",
       "emailInvalid": "邮箱格式不正确",
-      "usernameRequired": "用户名必填",
       "passwordRequired": "密码必填"
     },
     "oauth": {
@@ -2519,9 +2511,6 @@
         "viewFinalScoreboard": "查看最终排行榜"
       }
     },
-    "teamStatus": {
-      "rank": "排名 #{{rank}}"
-    },
     "statusPanel": {
       "contestStatus": "比赛状态",
       "startTime": "开始时间",
@@ -2723,20 +2712,11 @@
   },
   "utils": {
     "time": {
-      "stopped": "已停止",
-      "ended": "已结束",
-      "startingSoon": "即将开始",
-      "justNow": "刚刚",
       "units": {
         "day": "{{count}}天",
         "hour": "{{count}}小时",
         "minute": "{{count}}分钟",
         "second": "{{count}}秒"
-      },
-      "ago": {
-        "minute": "{{count}}分钟前",
-        "hour": "{{count}}小时前",
-        "day": "{{count}}天前"
       }
     },
     "hex": {
