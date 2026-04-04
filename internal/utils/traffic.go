@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"bufio"
 	"bytes"
@@ -89,20 +88,18 @@ func ReadPcapFile(path string) ([]Connection, error) {
 			continue
 		}
 		connection.Subtype = application.LayerType().String()
-		if config.Env.K8S.Frp.On {
-			if header, readErr := pp.Read(bufio.NewReader(bytes.NewReader(transport.LayerPayload()))); readErr == nil {
-				srcIP, _, srcErr := net.SplitHostPort(header.SourceAddr.String())
-				if srcErr != nil {
-					continue
-				}
-				dstIP, _, dstErr := net.SplitHostPort(header.DestinationAddr.String())
-				if dstErr != nil {
-					continue
-				}
-				connection.SrcIP = srcIP
-				connection.DstIP = dstIP
-				connection.Subtype = "Proxy"
+		if header, readErr := pp.Read(bufio.NewReader(bytes.NewReader(transport.LayerPayload()))); readErr == nil {
+			srcIP, _, srcErr := net.SplitHostPort(header.SourceAddr.String())
+			if srcErr != nil {
+				continue
 			}
+			dstIP, _, dstErr := net.SplitHostPort(header.DestinationAddr.String())
+			if dstErr != nil {
+				continue
+			}
+			connection.SrcIP = srcIP
+			connection.DstIP = dstIP
+			connection.Subtype = "Proxy"
 		}
 		connections = append(connections, connection)
 	}
