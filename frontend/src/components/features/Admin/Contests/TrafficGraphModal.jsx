@@ -36,9 +36,10 @@ const MAX_ZOOM = 1.9;
 const LABEL_HEIGHT = 20;
 const PLAYBACK_INTERVAL_MS = 900;
 const ZOOM_STEP = 0.12;
-const DEFAULT_SLICE_MS = 15000;
+const DEFAULT_SLICE_MS = 1000;
 const MIN_SLICE_MS = 1;
 const INPUT_STEP_MS = 100;
+const TOPOLOGY_CANVAS_FIXED_HEIGHT = 'min(800px, calc(100vh - 48px))';
 
 const formatBytes = (value) => {
   const bytes = Number(value || 0);
@@ -63,6 +64,40 @@ const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 const ellipsis = (value, length = 18) => {
   const text = value || '';
   return text.length > length ? `${text.slice(0, length)}...` : text;
+};
+
+const estimateTagChipWidth = (label) => Math.max(56, Math.ceil(String(label || '').length * 7.4 + 24));
+
+const resolveVisibleInlineItems = (items, containerWidth) => {
+  if (!items.length) return { visibleItems: [], hiddenItems: [] };
+  if (!containerWidth || containerWidth < 120) return { visibleItems: items, hiddenItems: [] };
+
+  const gap = 8;
+  let usedWidth = 0;
+  let visibleCount = 0;
+
+  for (let index = 0; index < items.length; index += 1) {
+    const chipWidth = estimateTagChipWidth(items[index]);
+    const remaining = items.length - index - 1;
+    const additionalGap = visibleCount > 0 ? gap : 0;
+    const reserveWidth = remaining > 0 ? gap + estimateTagChipWidth(`+${remaining}`) : 0;
+
+    if (usedWidth + additionalGap + chipWidth + reserveWidth > containerWidth) {
+      break;
+    }
+
+    usedWidth += additionalGap + chipWidth;
+    visibleCount = index + 1;
+  }
+
+  if (visibleCount === 0) {
+    visibleCount = Math.min(1, items.length);
+  }
+
+  return {
+    visibleItems: items.slice(0, visibleCount),
+    hiddenItems: items.slice(visibleCount),
+  };
 };
 
 const edgeTone = (direction) => {
@@ -92,6 +127,64 @@ const distributeIntoLanes = (items, laneCount) => {
     lanes[index % laneCount].push(item);
   });
   return lanes;
+};
+
+const buildColumnCandidates = (count, maxColumns, preferredColumns) => {
+  const limit = Math.max(1, Math.min(maxColumns, count || 1));
+  const preferred = clamp(preferredColumns || 1, 1, limit);
+  const candidates = [];
+
+  for (let offset = 0; offset < limit; offset += 1) {
+    const higher = preferred + offset;
+    const lower = preferred - offset;
+    if (higher <= limit) candidates.push(higher);
+    if (offset > 0 && lower >= 1) candidates.push(lower);
+  }
+
+  return [...new Set(candidates)];
+};
+
+const resolveGridLayout = (count, zone, config) => {
+  const zoneWidth = zone.xMax - zone.xMin;
+  const zoneHeight = zone.yMax - zone.yMin;
+  const candidates = buildColumnCandidates(count, config.maxColumns, config.preferredColumns);
+
+  for (const columns of candidates) {
+    const rows = Math.ceil(count / columns);
+    const width = Math.floor((zoneWidth - config.minGapX * Math.max(columns - 1, 0)) / columns);
+    const height = Math.floor((zoneHeight - config.minGapY * Math.max(rows - 1, 0)) / rows);
+    if (width < config.minWidth || height < config.minHeight) continue;
+
+    const resolvedWidth = Math.min(config.baseWidth, width);
+    const resolvedHeight = Math.min(config.baseHeight, height);
+    const gapX = columns === 1 ? 0 : (zoneWidth - resolvedWidth * columns) / (columns - 1);
+    const gapY = rows === 1 ? 0 : (zoneHeight - resolvedHeight * rows) / (rows - 1);
+
+    return {
+      columns,
+      rows,
+      width: resolvedWidth,
+      height: resolvedHeight,
+      gapX,
+      gapY,
+    };
+  }
+
+  const fallbackColumns = candidates[0] || 1;
+  const rows = Math.ceil(count / fallbackColumns);
+  const width = Math.max(80, Math.floor((zoneWidth - config.minGapX * Math.max(fallbackColumns - 1, 0)) / fallbackColumns));
+  const height = Math.max(36, Math.floor((zoneHeight - config.minGapY * Math.max(rows - 1, 0)) / rows));
+  const resolvedWidth = Math.min(config.baseWidth, width);
+  const resolvedHeight = Math.min(config.baseHeight, height);
+
+  return {
+    columns: fallbackColumns,
+    rows,
+    width: resolvedWidth,
+    height: resolvedHeight,
+    gapX: fallbackColumns === 1 ? 0 : Math.max(8, (zoneWidth - resolvedWidth * fallbackColumns) / (fallbackColumns - 1)),
+    gapY: rows === 1 ? 0 : Math.max(8, (zoneHeight - resolvedHeight * rows) / (rows - 1)),
+  };
 };
 
 const getViewportMetrics = (zoom) => ({
@@ -320,67 +413,80 @@ function buildPositions(nodes) {
     }
   });
 
-  const placeSideNodes = (items, singleX, multiX) => {
+  const zones = {
+    left: { xMin: 36, xMax: 336, yMin: TOP_BOUND, yMax: BOTTOM_BOUND },
+    center: { xMin: 370, xMax: VIEWBOX_WIDTH - 370, yMin: TOP_BOUND, yMax: BOTTOM_BOUND },
+    right: { xMin: VIEWBOX_WIDTH - 336, xMax: VIEWBOX_WIDTH - 36, yMin: TOP_BOUND, yMax: BOTTOM_BOUND },
+  };
+
+  const placeSideNodes = (items, zone) => {
     if (!items.length) return;
-    const laneCount = items.length > 4 ? 2 : 1;
-    const lanes = distributeIntoLanes(items, laneCount);
+    const layout = resolveGridLayout(items.length, zone, {
+      baseWidth: PEER_WIDTH,
+      baseHeight: PEER_HEIGHT,
+      minWidth: 104,
+      minHeight: 40,
+      minGapX: 16,
+      minGapY: 12,
+      maxColumns: 3,
+      preferredColumns: Math.min(3, Math.max(1, Math.ceil(items.length / 6))),
+    });
+    const lanes = distributeIntoLanes(items, layout.columns);
+    const zoneWidth = zone.xMax - zone.xMin;
+    const zoneHeight = zone.yMax - zone.yMin;
+    const totalWidth = layout.columns * layout.width + Math.max(0, layout.columns - 1) * layout.gapX;
+    const startX = zone.xMin + (zoneWidth - totalWidth) / 2 + layout.width / 2;
+
     lanes.forEach((lane, laneIndex) => {
       if (!lane.length) return;
-      const x = laneCount === 1 ? singleX : multiX[laneIndex];
-      const gap = lane.length === 1 ? 0 : clamp((BOTTOM_BOUND - TOP_BOUND) / Math.max(lane.length - 1, 1), 62, 108);
-      const totalHeight = gap * Math.max(0, lane.length - 1);
-      const startY = CENTER_Y - totalHeight / 2;
+      const laneHeight = lane.length * layout.height + Math.max(0, lane.length - 1) * layout.gapY;
+      const startY = zone.yMin + (zoneHeight - laneHeight) / 2 + layout.height / 2;
       lane.forEach((node, index) => {
         positions.set(node.id, {
-          x,
-          y: startY + index * gap,
-          w: laneCount === 1 ? PEER_WIDTH : PEER_WIDTH - 8,
-          h: PEER_HEIGHT,
+          x: startX + laneIndex * (layout.width + layout.gapX),
+          y: startY + index * (layout.height + layout.gapY),
+          w: layout.width,
+          h: layout.height,
         });
       });
     });
   };
 
-  placeSideNodes(sortByTraffic(leftNodes), 176, [110, 240]);
-  placeSideNodes(sortByTraffic(rightNodes), VIEWBOX_WIDTH - 176, [VIEWBOX_WIDTH - 240, VIEWBOX_WIDTH - 110]);
+  placeSideNodes(sortByTraffic(leftNodes), zones.left);
+  placeSideNodes(sortByTraffic(rightNodes), zones.right);
 
   const orderedCenter = sortByTraffic(centerNodes);
-  if (orderedCenter.length === 1) {
-    positions.set(orderedCenter[0].id, { x: CENTER_X, y: CENTER_Y, w: VICTIM_WIDTH, h: VICTIM_HEIGHT });
-    return positions;
-  }
+  if (!orderedCenter.length) return positions;
 
-  if (orderedCenter.length === 2) {
-    orderedCenter.forEach((node, index) => {
+  const centerLayout = resolveGridLayout(orderedCenter.length, zones.center, {
+    baseWidth: VICTIM_WIDTH,
+    baseHeight: VICTIM_HEIGHT,
+    minWidth: 112,
+    minHeight: 46,
+    minGapX: 18,
+    minGapY: 14,
+    maxColumns: 3,
+    preferredColumns: orderedCenter.length === 1 ? 1 : orderedCenter.length <= 4 ? 2 : 3,
+  });
+  const rowCount = Math.ceil(orderedCenter.length / centerLayout.columns);
+  const zoneHeight = zones.center.yMax - zones.center.yMin;
+  const totalHeight = rowCount * centerLayout.height + Math.max(0, rowCount - 1) * centerLayout.gapY;
+  const startY = zones.center.yMin + (zoneHeight - totalHeight) / 2 + centerLayout.height / 2;
+
+  for (let row = 0; row < rowCount; row += 1) {
+    const rowItems = orderedCenter.slice(row * centerLayout.columns, (row + 1) * centerLayout.columns);
+    const rowWidth = rowItems.length * centerLayout.width + Math.max(0, rowItems.length - 1) * centerLayout.gapX;
+    const rowStartX = CENTER_X - rowWidth / 2 + centerLayout.width / 2;
+
+    rowItems.forEach((node, column) => {
       positions.set(node.id, {
-        x: CENTER_X + (index === 0 ? -88 : 88),
-        y: CENTER_Y,
-        w: VICTIM_WIDTH - 2,
-        h: VICTIM_HEIGHT,
+        x: rowStartX + column * (centerLayout.width + centerLayout.gapX),
+        y: startY + row * (centerLayout.height + centerLayout.gapY),
+        w: centerLayout.width,
+        h: centerLayout.height,
       });
     });
-    return positions;
   }
-
-  const columnCount = orderedCenter.length <= 4 ? 2 : 3;
-  const rowCount = Math.ceil(orderedCenter.length / columnCount);
-  const xGap = columnCount === 2 ? 124 : 106;
-  const yGap = rowCount === 1 ? 0 : clamp(138 / Math.max(rowCount - 1, 1), 72, 92);
-  const startX = CENTER_X - ((columnCount - 1) * xGap) / 2;
-  const startY = CENTER_Y - ((rowCount - 1) * yGap) / 2;
-  const width = orderedCenter.length > 4 ? VICTIM_WIDTH - 18 : VICTIM_WIDTH - 8;
-  const height = orderedCenter.length > 4 ? VICTIM_HEIGHT - 2 : VICTIM_HEIGHT;
-
-  orderedCenter.forEach((node, index) => {
-    const row = Math.floor(index / columnCount);
-    const column = index % columnCount;
-    positions.set(node.id, {
-      x: startX + column * xGap + (columnCount === 3 && row % 2 === 1 ? 8 : 0),
-      y: startY + row * yGap,
-      w: width,
-      h: height,
-    });
-  });
 
   return positions;
 }
@@ -543,12 +649,14 @@ function resolveEdgeLabels(lines, positions, selectedEdgeId) {
 function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetchTraffic: customFetchTraffic }) {
   const { t, i18n } = useTranslation();
   const canvasRef = useRef(null);
+  const ipRowRef = useRef(null);
   const dragRef = useRef({ active: false, moved: false, x: 0, y: 0, panX: 0, panY: 0 });
   const requestSequenceRef = useRef(0);
   const [topology, setTopology] = useState(null);
   const [shift, setShift] = useState(0);
   const [slice, setSlice] = useState(DEFAULT_SLICE_MS);
   const [sliceInput, setSliceInput] = useState(String(DEFAULT_SLICE_MS));
+  const [ipRowWidth, setIpRowWidth] = useState(0);
   const [demoMode, setDemoMode] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -656,11 +764,12 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
     [nodes, selectedNodeId]
   );
 
-  const visibleIPs = (topology?.center?.ips || []).slice(0, 3);
-  const hiddenIpCount = Math.max(0, (topology?.center?.ips || []).length - visibleIPs.length);
+  const centerIPs = topology?.center?.ips || [];
+  const { visibleItems: visibleIPs, hiddenItems: hiddenIPs } = resolveVisibleInlineItems(centerIPs, ipRowWidth);
+  const hiddenIpCount = hiddenIPs.length;
   const visibleExposed = (topology?.center?.exposed || []).slice(0, 1);
-  const topTalkers = (topology?.top_talkers || []).slice(0, 2);
-  const topEdges = (topology?.top_edges || []).slice(0, 2);
+  const topTalkers = topology?.top_talkers || [];
+  const topEdges = topology?.top_edges || [];
 
   useEffect(() => {
     setShift((current) => Math.min(current, maxShift));
@@ -669,6 +778,31 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
   useEffect(() => {
     setSliceInput(String(slice));
   }, [slice]);
+
+  useEffect(() => {
+    const element = ipRowRef.current;
+    if (!element || !isOpen) return undefined;
+
+    const updateWidth = () => {
+      const nextWidth = Math.round(element.getBoundingClientRect().width);
+      setIpRowWidth((current) => (current === nextWidth ? current : nextWidth));
+    };
+
+    updateWidth();
+
+    if (typeof ResizeObserver === 'undefined') {
+      return undefined;
+    }
+
+    const observer = new ResizeObserver(() => {
+      updateWidth();
+    });
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isPlaying || !isOpen || !container?.id) return;
@@ -682,6 +816,24 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
     }, PLAYBACK_INTERVAL_MS);
     return () => window.clearTimeout(timer);
   }, [container?.id, isFetching, isOpen, isPlaying, maxShift, shift, slice]);
+
+  useEffect(() => {
+    const element = canvasRef.current;
+    if (!element || !isOpen) return undefined;
+
+    const handleNativeWheel = (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const rect = element.getBoundingClientRect();
+      const nextZoom = clamp(zoom + (event.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP), MIN_ZOOM, MAX_ZOOM);
+      applyZoom(nextZoom, { x: event.clientX - rect.left, y: event.clientY - rect.top });
+    };
+
+    element.addEventListener('wheel', handleNativeWheel, { passive: false });
+    return () => {
+      element.removeEventListener('wheel', handleNativeWheel);
+    };
+  }, [isOpen, zoom, pan]);
 
   const applyZoom = (targetZoom, anchor) => {
     const rect = canvasRef.current?.getBoundingClientRect();
@@ -706,14 +858,6 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
     );
     setZoom(nextZoom);
     setPan(nextPan);
-  };
-
-  const handleWheel = (event) => {
-    event.preventDefault();
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const nextZoom = clamp(zoom + (event.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP), MIN_ZOOM, MAX_ZOOM);
-    applyZoom(nextZoom, { x: event.clientX - rect.left, y: event.clientY - rect.top });
   };
 
   const startDrag = (event) => {
@@ -824,14 +968,15 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
         isOpen={isOpen}
         onClose={onClose}
         title={t('admin.contests.trafficGraph.title')}
-        size="2xl"
+        size="full"
         className="!bg-neutral-900/95 !border-neutral-600"
-        bodyClassName="p-4 h-[74vh] max-h-[820px] overflow-hidden"
+        showHeader={false}
+        bodyClassName="overflow-y-auto p-4 sm:p-5"
       >
-        <div className="flex h-full min-h-0 flex-col gap-3 text-neutral-100">
+        <div className="flex flex-col gap-3 text-neutral-100">
           <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1fr)_360px]">
             <div className="rounded-2xl border border-neutral-600 bg-black/20 px-4 py-3">
-              <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex flex-col gap-3">
                 <div className="min-w-0">
                   <div className="text-[11px] uppercase tracking-[0.24em] text-geek-400/80">
                     {t('admin.contests.trafficGraph.hero.kicker')}
@@ -845,28 +990,36 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                     })}
                   </div>
                 </div>
+                <div ref={ipRowRef} className="min-w-0">
+                  <div className="flex flex-nowrap items-center gap-2 overflow-hidden">
+                    {visibleIPs.map((ip) => (
+                      <Chip
+                        key={ip}
+                        label={ip}
+                        title={ip}
+                        variant="tag"
+                        size="sm"
+                        className="shrink-0"
+                        colorClass="border-geek-400/30 bg-geek-400/10 text-geek-400"
+                      />
+                    ))}
+                    {hiddenIpCount > 0 ? (
+                      <Chip
+                        label={`+${hiddenIpCount}`}
+                        title={hiddenIPs.join('\n')}
+                        variant="tag"
+                        size="sm"
+                        className="shrink-0 cursor-help"
+                        colorClass="border-neutral-500/30 bg-neutral-500/10 text-neutral-300"
+                      />
+                    ) : null}
+                  </div>
+                </div>
                 <div className="flex flex-wrap gap-2">
-                  {visibleIPs.map((ip) => (
-                    <Chip
-                      key={ip}
-                      label={ip}
-                      variant="tag"
-                      size="sm"
-                      colorClass="border-geek-400/30 bg-geek-400/10 text-geek-400"
-                    />
-                  ))}
-                  {hiddenIpCount > 0 ? (
-                    <Chip
-                      label={`+${hiddenIpCount}`}
-                      variant="tag"
-                      size="sm"
-                      colorClass="border-neutral-500/30 bg-neutral-500/10 text-neutral-300"
-                    />
-                  ) : null}
                   {visibleExposed.map((item) => (
                     <Chip
                       key={item}
-                      label={ellipsis(item, 18)}
+                      label={ellipsis(item, 26)}
                       variant="tag"
                       size="sm"
                       colorClass="border-neutral-500/30 bg-black/20 text-neutral-300"
@@ -908,6 +1061,7 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                     className="mt-1 w-full accent-geek-400"
                   />
                 </div>
+
                 <div className="flex flex-wrap items-center gap-2">
                   <label className="mr-1 text-[11px] text-neutral-400" htmlFor="traffic-graph-slice-ms">
                     {t('admin.contests.trafficGraph.controls.timeSlice')}
@@ -956,6 +1110,7 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                     </Button>
                   </div>
                 </div>
+
                 <div className="flex flex-wrap items-center gap-2 border-t border-neutral-700/80 pt-2">
                   <Chip
                     label={t('admin.contests.trafficGraph.footer.timeSlice', { count: formatDurationMs(slice) })}
@@ -1052,9 +1207,9 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
             ))}
           </div>
 
-          <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1.55fr)_320px]">
-            <Card padding="none" className="flex min-h-0 overflow-hidden rounded-2xl border-neutral-600 bg-neutral-900">
-              <div className="flex min-h-0 flex-1 flex-col">
+          <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1.55fr)_360px]">
+            <Card padding="none" className="overflow-hidden rounded-2xl border-neutral-600 bg-neutral-900">
+              <div className="flex flex-col">
                 <div className="flex flex-wrap items-start justify-between gap-2 border-b border-neutral-600 px-4 py-3">
                   <div>
                     <div className="text-sm font-mono text-neutral-300">
@@ -1118,8 +1273,8 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
 
                 <div
                   ref={canvasRef}
-                  className="relative min-h-0 flex-1 overflow-hidden bg-[linear-gradient(180deg,rgba(0,0,0,.14),rgba(0,0,0,.05))] cursor-grab active:cursor-grabbing"
-                  onWheel={handleWheel}
+                  style={{ height: TOPOLOGY_CANVAS_FIXED_HEIGHT }}
+                  className="relative overflow-hidden bg-[linear-gradient(180deg,rgba(0,0,0,.14),rgba(0,0,0,.05))] cursor-grab active:cursor-grabbing"
                   onPointerMove={onDrag}
                   onPointerUp={stopDrag}
                   onPointerLeave={stopDrag}
@@ -1261,7 +1416,7 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
               </div>
             </Card>
 
-            <div className="grid min-h-0 grid-rows-[auto_auto_minmax(0,1fr)] gap-3">
+            <div className="grid gap-3">
               <Card padding="sm" className="rounded-2xl border-neutral-600 bg-neutral-900">
                 <div className="grid gap-2">
                   <div className="rounded-xl border border-neutral-600 bg-black/20 p-3">
@@ -1405,64 +1560,66 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
               </Card>
 
               <Card padding="sm" className="rounded-2xl border-neutral-600 bg-neutral-900">
-                <div className="grid gap-3">
-                  <div>
-                    <div className="text-xs font-mono text-neutral-300">
-                      {t('admin.contests.trafficGraph.rankings.topTalkers')}
-                    </div>
-                    <div className="mt-2 grid gap-2">
-                      {topTalkers.length > 0 ? (
-                        topTalkers.map((item, index) => (
-                          <div
-                            key={`${item.ip}-${index}`}
-                            className="flex items-center justify-between rounded-lg border border-neutral-600 bg-black/20 px-2.5 py-2"
-                          >
-                            <div className="min-w-0">
-                              <div className="truncate font-mono text-[11px] text-white">{item.label || item.ip}</div>
-                              <div className="mt-1 text-[11px] text-neutral-500">{item.ip}</div>
-                            </div>
-                            <div className="ml-3 text-right font-mono">
-                              <div className="text-[11px] text-geek-400">{formatBytes(item.bytes)}</div>
-                              <div className="mt-1 text-[11px] text-neutral-400">{item.connections || 0} conn</div>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="rounded-lg border border-neutral-600 bg-black/20 px-2.5 py-2 text-[11px] text-neutral-500">
-                          {t('admin.contests.trafficGraph.empty')}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="border-t border-neutral-700 pt-3">
-                    <div className="text-xs font-mono text-neutral-300">
-                      {t('admin.contests.trafficGraph.rankings.topEdges')}
-                    </div>
-                    <div className="mt-2 grid gap-2">
-                      {topEdges.length > 0 ? (
-                        topEdges.map((item, index) => (
-                          <div
-                            key={`${item.id || item.label}-${index}`}
-                            className="flex items-center justify-between rounded-lg border border-neutral-600 bg-black/20 px-2.5 py-2"
-                          >
-                            <div className="min-w-0">
-                              <div className="truncate font-mono text-[11px] text-white">{item.label}</div>
-                              <div className="mt-1 text-[11px] text-neutral-500">
-                                {t(`admin.contests.trafficGraph.direction.${item.direction || 'internal'}`)}
+                <div className="pr-1">
+                  <div className="grid gap-3">
+                    <div>
+                      <div className="text-xs font-mono text-neutral-300">
+                        {t('admin.contests.trafficGraph.rankings.topTalkers')}
+                      </div>
+                      <div className="mt-2 grid max-h-[126px] gap-2 overflow-y-auto pr-1">
+                        {topTalkers.length > 0 ? (
+                          topTalkers.map((item, index) => (
+                            <div
+                              key={`${item.ip}-${index}`}
+                              className="flex items-center justify-between rounded-lg border border-neutral-600 bg-black/20 px-2.5 py-2"
+                            >
+                              <div className="min-w-0">
+                                <div className="truncate font-mono text-[11px] text-white">{item.label || item.ip}</div>
+                                <div className="mt-1 text-[11px] text-neutral-500">{item.ip}</div>
+                              </div>
+                              <div className="ml-3 text-right font-mono">
+                                <div className="text-[11px] text-geek-400">{formatBytes(item.bytes)}</div>
+                                <div className="mt-1 text-[11px] text-neutral-400">{item.connections || 0} conn</div>
                               </div>
                             </div>
-                            <div className="ml-3 text-right font-mono">
-                              <div className="text-[11px] text-geek-400">{formatBytes(item.bytes)}</div>
-                              <div className="mt-1 text-[11px] text-neutral-400">{item.connections || 0} conn</div>
-                            </div>
+                          ))
+                        ) : (
+                          <div className="rounded-lg border border-neutral-600 bg-black/20 px-2.5 py-2 text-[11px] text-neutral-500">
+                            {t('admin.contests.trafficGraph.empty')}
                           </div>
-                        ))
-                      ) : (
-                        <div className="rounded-lg border border-neutral-600 bg-black/20 px-2.5 py-2 text-[11px] text-neutral-500">
-                          {t('admin.contests.trafficGraph.empty')}
-                        </div>
-                      )}
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="border-t border-neutral-700 pt-3">
+                      <div className="text-xs font-mono text-neutral-300">
+                        {t('admin.contests.trafficGraph.rankings.topEdges')}
+                      </div>
+                      <div className="mt-2 grid max-h-[126px] gap-2 overflow-y-auto pr-1">
+                        {topEdges.length > 0 ? (
+                          topEdges.map((item, index) => (
+                            <div
+                              key={`${item.id || item.label}-${index}`}
+                              className="flex items-center justify-between rounded-lg border border-neutral-600 bg-black/20 px-2.5 py-2"
+                            >
+                              <div className="min-w-0">
+                                <div className="truncate font-mono text-[11px] text-white">{item.label}</div>
+                                <div className="mt-1 text-[11px] text-neutral-500">
+                                  {t(`admin.contests.trafficGraph.direction.${item.direction || 'internal'}`)}
+                                </div>
+                              </div>
+                              <div className="ml-3 text-right font-mono">
+                                <div className="text-[11px] text-geek-400">{formatBytes(item.bytes)}</div>
+                                <div className="mt-1 text-[11px] text-neutral-400">{item.connections || 0} conn</div>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="rounded-lg border border-neutral-600 bg-black/20 px-2.5 py-2 text-[11px] text-neutral-500">
+                            {t('admin.contests.trafficGraph.empty')}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
