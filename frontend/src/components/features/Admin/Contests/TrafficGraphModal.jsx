@@ -5,6 +5,10 @@ import {
   IconArrowDownRight,
   IconArrowUpRight,
   IconDownload,
+  IconPlayerPause,
+  IconPlayerPlay,
+  IconPlayerTrackNext,
+  IconPlayerTrackPrev,
   IconRefresh,
   IconRoute,
   IconZoomIn,
@@ -13,7 +17,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { getContestTeamTraffic, downloadContainerTraffic } from '../../../../api/admin/contest.js';
 import { downloadVictimTraffic } from '../../../../api/admin/victims.js';
-import { Button, Card, Chip, Modal } from '../../../../components/common';
+import { Button, Card, Chip, Input, Modal } from '../../../../components/common';
 import { downloadBlobResponse } from '../../../../utils/fileDownload';
 import { toast } from '../../../../utils/toast';
 
@@ -30,6 +34,11 @@ const VICTIM_HEIGHT = 54;
 const MIN_ZOOM = 0.78;
 const MAX_ZOOM = 1.9;
 const LABEL_HEIGHT = 20;
+const PLAYBACK_INTERVAL_MS = 900;
+const ZOOM_STEP = 0.12;
+const DEFAULT_SLICE_MS = 15000;
+const MIN_SLICE_MS = 1;
+const INPUT_STEP_MS = 100;
 
 const formatBytes = (value) => {
   const bytes = Number(value || 0);
@@ -37,6 +46,16 @@ const formatBytes = (value) => {
   if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KB`;
   if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
   return `${(bytes / 1024 ** 3).toFixed(1)} GB`;
+};
+
+const formatDurationMs = (value) => {
+  const durationMs = Number(value || 0);
+  if (durationMs < 1000) return `${durationMs} ms`;
+  if (durationMs < 60000) return `${(durationMs / 1000).toFixed(durationMs % 1000 === 0 ? 0 : 2)} s`;
+  const minutes = Math.floor(durationMs / 60000);
+  const seconds = (durationMs % 60000) / 1000;
+  if (seconds === 0) return `${minutes}m`;
+  return `${minutes}m ${seconds.toFixed(seconds % 1 === 0 ? 0 : 2)}s`;
 };
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
@@ -75,22 +94,26 @@ const distributeIntoLanes = (items, laneCount) => {
   return lanes;
 };
 
-const clampPanToViewport = (pan, zoom, rect) => {
-  if (!rect?.width || !rect?.height) return pan;
-  const scaledWidth = rect.width * zoom;
-  const scaledHeight = rect.height * zoom;
+const getViewportMetrics = (zoom) => ({
+  width: VIEWBOX_WIDTH / zoom,
+  height: VIEWBOX_HEIGHT / zoom,
+});
 
+const clampPanToViewport = (pan, zoom) => {
+  const { width, height } = getViewportMetrics(zoom);
   if (zoom <= 1) {
     return {
-      x: (rect.width - scaledWidth) / 2,
-      y: (rect.height - scaledHeight) / 2,
+      x: (VIEWBOX_WIDTH - width) / 2,
+      y: (VIEWBOX_HEIGHT - height) / 2,
     };
   }
-
-  const slack = 28;
+  const minX = Math.min(0, VIEWBOX_WIDTH - width);
+  const maxX = Math.max(0, VIEWBOX_WIDTH - width);
+  const minY = Math.min(0, VIEWBOX_HEIGHT - height);
+  const maxY = Math.max(0, VIEWBOX_HEIGHT - height);
   return {
-    x: clamp(pan.x, rect.width - scaledWidth - slack, slack),
-    y: clamp(pan.y, rect.height - scaledHeight - slack, slack),
+    x: minX === maxX ? minX : clamp(pan.x, minX, maxX),
+    y: minY === maxY ? minY : clamp(pan.y, minY, maxY),
   };
 };
 
@@ -103,8 +126,14 @@ const buildCompactNodeLabel = (node) => {
 
 const buildCompactNodeMeta = (node) => `${formatBytes(node.bytes)} / ${node.connections || 0} conn`;
 
-const createDemoTopology = (shift = 0, duration = 15, id = 'demo') => {
+const sanitizeSlice = (value) => {
+  const nextValue = Math.round(Number(value) || 0);
+  return Math.max(MIN_SLICE_MS, nextValue);
+};
+
+const createDemoTopology = (shift = 0, duration = DEFAULT_SLICE_MS, id = 'demo') => {
   const seed = shift % 12;
+  const totalDuration = 90000;
   const nodes = [
     {
       id: '10.10.0.10',
@@ -229,10 +258,11 @@ const createDemoTopology = (shift = 0, duration = 15, id = 'demo') => {
       intensity: 0.36,
     },
   ];
-  const timeline = Array.from({ length: 18 }).map((_, index) => {
-    const bytes = Math.round(19000 + Math.abs(Math.sin((index + seed) * 0.62)) * 52000);
+  const timeline = Array.from({ length: 90 }).map((_, index) => {
+    const timestampMs = index * 1000;
+    const bytes = Math.round(16000 + Math.abs(Math.sin((index + seed) * 0.31)) * 54000 + ((index + seed) % 7) * 2100);
     return {
-      second: index,
+      timestamp_ms: timestampMs,
       bytes,
       packets: 7 + ((index + seed) % 11),
       ingress_bytes: Math.round(bytes * 0.54),
@@ -241,9 +271,9 @@ const createDemoTopology = (shift = 0, duration = 15, id = 'demo') => {
   });
 
   return {
-    window: { start: shift, end: Math.min(90, shift + duration), duration, total: 90, total_count: 115 },
-    total_duration: 90,
-    available_slices: [5, 15, 30, 60, 90],
+    window: { start: shift, end: Math.min(totalDuration, shift + duration), duration, total: totalDuration, total_count: 115 },
+    total_duration: totalDuration,
+    available_slices: [1000, 5000, 15000, 30000, 60000, totalDuration],
     center: { label: `Victim #${id}`, ips: ['10.10.0.10', '10.10.0.11'], exposed: ['tcp://43.155.12.20:24001'] },
     summary: {
       total_bytes: 690000 + seed * 18000,
@@ -514,47 +544,73 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
   const { t, i18n } = useTranslation();
   const canvasRef = useRef(null);
   const dragRef = useRef({ active: false, moved: false, x: 0, y: 0, panX: 0, panY: 0 });
+  const requestSequenceRef = useRef(0);
   const [topology, setTopology] = useState(null);
   const [shift, setShift] = useState(0);
-  const [slice, setSlice] = useState(15);
+  const [slice, setSlice] = useState(DEFAULT_SLICE_MS);
+  const [sliceInput, setSliceInput] = useState(String(DEFAULT_SLICE_MS));
   const [demoMode, setDemoMode] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [selectedEdgeId, setSelectedEdgeId] = useState('');
   const [selectedNodeId, setSelectedNodeId] = useState('');
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
 
-  const fetchData = async (nextShift = shift, nextSlice = slice, forceLive = false) => {
+  const fetchData = async ({ nextShift = shift, nextSlice = slice, forceLive = false } = {}) => {
     if (!container?.id) return;
+    const resolvedSlice = sanitizeSlice(nextSlice);
+    const requestId = requestSequenceRef.current + 1;
+    requestSequenceRef.current = requestId;
+    setIsFetching(true);
     try {
       const response = customFetchTraffic
-        ? await customFetchTraffic(container, { time_shift: nextShift, duration: nextSlice })
-        : await getContestTeamTraffic(contestId, teamId, container.id, { time_shift: nextShift, duration: nextSlice });
+        ? await customFetchTraffic(container, { time_shift: nextShift, duration: resolvedSlice })
+        : await getContestTeamTraffic(contestId, teamId, container.id, { time_shift: nextShift, duration: resolvedSlice });
+      if (requestSequenceRef.current !== requestId) return;
       if (response.code !== 200) throw new Error(t('admin.contests.trafficGraph.toast.fetchFailed'));
       setTopology(response.data);
       setDemoMode(false);
     } catch {
+      if (requestSequenceRef.current !== requestId) return;
       if (!forceLive) {
         toast.warning({ description: t('admin.contests.trafficGraph.toast.demoFallback') });
       }
-      setTopology(createDemoTopology(nextShift, nextSlice, container.id));
+      setTopology(createDemoTopology(nextShift, resolvedSlice, container.id));
       setDemoMode(true);
     } finally {
-      setSelectedEdgeId('');
-      setSelectedNodeId('');
-      setZoom(1);
-      setPan({ x: 0, y: 0 });
+      if (requestSequenceRef.current === requestId) {
+        setIsFetching(false);
+        setSelectedEdgeId('');
+        setSelectedNodeId('');
+      }
     }
   };
 
   useEffect(() => {
-    if (!isOpen || !container?.id) return;
-    fetchData(shift, slice);
+    if (isOpen) return;
+    requestSequenceRef.current += 1;
+    dragRef.current.active = false;
+    setDemoMode(false);
+    setIsFetching(false);
+    setIsPlaying(false);
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setIsPlaying(false);
+    setSelectedEdgeId('');
+    setSelectedNodeId('');
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+    setSlice(DEFAULT_SLICE_MS);
+    setSliceInput(String(DEFAULT_SLICE_MS));
   }, [isOpen, container?.id]);
 
   useEffect(() => {
     if (!isOpen || !container?.id) return;
-    fetchData(shift, slice, demoMode);
-  }, [shift, slice]);
+    fetchData({ nextShift: shift, nextSlice: slice, forceLive: demoMode });
+  }, [isOpen, container?.id, shift, slice]);
 
   const nodes = topology?.nodes || [];
   const edges = topology?.edges || [];
@@ -562,6 +618,14 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
   const windowInfo = topology?.window || { start: 0, end: 0, duration: slice, total: 0 };
   const timeline = topology?.timeline || [];
   const peakTimeline = Math.max(1, ...timeline.map((bucket) => bucket.bytes || 0));
+  const totalDuration = Math.max(windowInfo.total || 0, topology?.total_duration || 0);
+  const maxShift = Math.max(0, totalDuration - slice);
+  const playbackFrames = Math.max(1, Math.floor(maxShift / Math.max(slice, 1)) + 1);
+  const playbackIndex = Math.min(playbackFrames, Math.floor(Math.max(shift, 0) / Math.max(slice, 1)) + 1);
+  const canStepBackward = shift > 0;
+  const canStepForward = shift < maxShift;
+  const viewportMetrics = useMemo(() => getViewportMetrics(zoom), [zoom]);
+  const viewBox = `${pan.x} ${pan.y} ${viewportMetrics.width} ${viewportMetrics.height}`;
   const positions = useMemo(() => buildPositions(nodes), [nodes]);
   const lines = useMemo(() => buildLines(edges, positions), [edges, positions]);
   const labelPlacements = useMemo(
@@ -598,23 +662,47 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
   const topTalkers = (topology?.top_talkers || []).slice(0, 2);
   const topEdges = (topology?.top_edges || []).slice(0, 2);
 
-  const applyZoom = (targetZoom, anchor) => {
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) {
-      setZoom(targetZoom);
+  useEffect(() => {
+    setShift((current) => Math.min(current, maxShift));
+  }, [maxShift]);
+
+  useEffect(() => {
+    setSliceInput(String(slice));
+  }, [slice]);
+
+  useEffect(() => {
+    if (!isPlaying || !isOpen || !container?.id) return;
+    if (maxShift <= 0 || shift >= maxShift) {
+      setIsPlaying(false);
       return;
     }
+    if (isFetching) return;
+    const timer = window.setTimeout(() => {
+      setShift((current) => Math.min(current + slice, maxShift));
+    }, PLAYBACK_INTERVAL_MS);
+    return () => window.clearTimeout(timer);
+  }, [container?.id, isFetching, isOpen, isPlaying, maxShift, shift, slice]);
+
+  const applyZoom = (targetZoom, anchor) => {
+    const rect = canvasRef.current?.getBoundingClientRect();
     const nextZoom = clamp(targetZoom, MIN_ZOOM, MAX_ZOOM);
+    if (!rect?.width || !rect?.height) {
+      setZoom(nextZoom);
+      setPan((current) => clampPanToViewport(current, nextZoom));
+      return;
+    }
     const anchorX = anchor?.x ?? rect.width / 2;
     const anchorY = anchor?.y ?? rect.height / 2;
-    const ratio = nextZoom / zoom;
+    const currentViewport = getViewportMetrics(zoom);
+    const nextViewport = getViewportMetrics(nextZoom);
+    const worldX = pan.x + (anchorX / rect.width) * currentViewport.width;
+    const worldY = pan.y + (anchorY / rect.height) * currentViewport.height;
     const nextPan = clampPanToViewport(
       {
-        x: anchorX - (anchorX - pan.x) * ratio,
-        y: anchorY - (anchorY - pan.y) * ratio,
+        x: worldX - (anchorX / rect.width) * nextViewport.width,
+        y: worldY - (anchorY / rect.height) * nextViewport.height,
       },
-      nextZoom,
-      rect
+      nextZoom
     );
     setZoom(nextZoom);
     setPan(nextPan);
@@ -624,7 +712,7 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
     event.preventDefault();
     const rect = canvasRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const nextZoom = clamp(zoom + (event.deltaY < 0 ? 0.12 : -0.12), MIN_ZOOM, MAX_ZOOM);
+    const nextZoom = clamp(zoom + (event.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP), MIN_ZOOM, MAX_ZOOM);
     applyZoom(nextZoom, { x: event.clientX - rect.left, y: event.clientY - rect.top });
   };
 
@@ -643,19 +731,20 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
   const onDrag = (event) => {
     if (!dragRef.current.active) return;
     const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect?.width || !rect?.height) return;
     const dx = event.clientX - dragRef.current.x;
     const dy = event.clientY - dragRef.current.y;
     if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
       dragRef.current.moved = true;
     }
+    const currentViewport = getViewportMetrics(zoom);
     setPan(
       clampPanToViewport(
         {
-          x: dragRef.current.panX + dx,
-          y: dragRef.current.panY + dy,
+          x: dragRef.current.panX - dx * (currentViewport.width / rect.width),
+          y: dragRef.current.panY - dy * (currentViewport.height / rect.height),
         },
-        zoom,
-        rect
+        zoom
       )
     );
   };
@@ -665,9 +754,8 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
   };
 
   const resetView = () => {
-    const rect = canvasRef.current?.getBoundingClientRect();
     setZoom(1);
-    setPan(clampPanToViewport({ x: 0, y: 0 }, 1, rect));
+    setPan({ x: 0, y: 0 });
   };
 
   const handleSelectEdge = (edgeId) => {
@@ -678,6 +766,33 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
   const handleSelectNode = (nodeId) => {
     if (dragRef.current.moved) return;
     setSelectedNodeId(nodeId);
+  };
+
+  const stepPlayback = (direction) => {
+    setIsPlaying(false);
+    setShift((current) => clamp(current + direction * slice, 0, maxShift));
+  };
+
+  const handleSliceInputChange = (event) => {
+    setSliceInput(event.target.value);
+  };
+
+  const commitSliceInput = () => {
+    const nextSlice = sanitizeSlice(sliceInput);
+    setSliceInput(String(nextSlice));
+    setSlice(nextSlice);
+    setIsPlaying(false);
+  };
+
+  const togglePlayback = () => {
+    if (isPlaying) {
+      setIsPlaying(false);
+      return;
+    }
+    if (shift >= maxShift && maxShift > 0) {
+      setShift(0);
+    }
+    setIsPlaying(true);
   };
 
   const downloadTraffic = async () => {
@@ -775,48 +890,122 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                   <div className="flex items-center justify-between text-[11px] text-neutral-400">
                     <span>{t('admin.contests.trafficGraph.controls.timeShift')}</span>
                     <span className="font-mono text-geek-400">
-                      {t('admin.contests.trafficGraph.hero.windowAt', { start: windowInfo.start, end: windowInfo.end })}
+                      {t('admin.contests.trafficGraph.hero.windowAt', {
+                        start: formatDurationMs(windowInfo.start),
+                        end: formatDurationMs(windowInfo.end),
+                      })}
                     </span>
                   </div>
                   <input
                     type="range"
                     min="0"
-                    max={Math.max(0, windowInfo.total - windowInfo.duration)}
+                    max={maxShift}
                     value={shift}
-                    onChange={(event) => setShift(Number(event.target.value))}
+                    onChange={(event) => {
+                      setIsPlaying(false);
+                      setShift(Number(event.target.value));
+                    }}
                     className="mt-1 w-full accent-geek-400"
                   />
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <div className="mr-1 text-[11px] text-neutral-400">
+                  <label className="mr-1 text-[11px] text-neutral-400" htmlFor="traffic-graph-slice-ms">
                     {t('admin.contests.trafficGraph.controls.timeSlice')}
+                  </label>
+                  <div className="w-[132px]">
+                    <Input
+                      id="traffic-graph-slice-ms"
+                      type="number"
+                      min={MIN_SLICE_MS}
+                      step={INPUT_STEP_MS}
+                      value={sliceInput}
+                      onChange={handleSliceInputChange}
+                      onBlur={commitSliceInput}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          event.currentTarget.blur();
+                        }
+                      }}
+                      className="!h-8 !border-neutral-600 !bg-black/20 !px-3 text-[11px] font-mono"
+                    />
                   </div>
-                  {(topology?.available_slices || [5, 15, 30, 60]).map((item) => (
-                    <button
-                      key={item}
-                      type="button"
-                      onClick={() => setSlice(item)}
-                      className={`rounded-md border px-2 py-1 text-[11px] font-mono ${slice === item ? 'border-geek-400/60 bg-geek-400/15 text-geek-400' : 'border-neutral-600 bg-black/20 text-neutral-300'}`}
-                    >
-                      {item}s
-                    </button>
-                  ))}
+                  <Chip
+                    label={t('admin.contests.trafficGraph.controls.milliseconds')}
+                    variant="tag"
+                    size="sm"
+                    colorClass="border-neutral-500/30 bg-black/20 text-neutral-300"
+                  />
                   <div className="ml-auto flex items-center gap-1">
                     <Button
                       variant="ghost"
                       size="icon"
                       className="!h-8 !w-8 !text-neutral-300 hover:!text-neutral-100"
-                      onClick={() => fetchData(shift, slice, true)}
+                      onClick={() => fetchData({ nextShift: shift, nextSlice: slice, forceLive: true })}
+                      title={t('common.refresh')}
                     >
-                      <IconRefresh size={16} />
+                      <IconRefresh size={16} className={isFetching ? 'animate-spin' : ''} />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
                       className="!h-8 !w-8 !text-neutral-300 hover:!text-neutral-100"
                       onClick={downloadTraffic}
+                      title={t('admin.contests.teamDetail.traffic.actions.downloadTraffic')}
                     >
                       <IconDownload size={16} />
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 border-t border-neutral-700/80 pt-2">
+                  <Chip
+                    label={t('admin.contests.trafficGraph.footer.timeSlice', { count: formatDurationMs(slice) })}
+                    variant="tag"
+                    size="sm"
+                    colorClass="border-neutral-500/30 bg-black/20 text-neutral-300"
+                  />
+                  {isPlaying ? (
+                    <Chip
+                      label={t('admin.contests.trafficGraph.footer.playing', {
+                        current: playbackIndex,
+                        total: playbackFrames,
+                      })}
+                      variant="tag"
+                      size="sm"
+                      colorClass="border-geek-400/30 bg-geek-400/10 text-geek-400"
+                    />
+                  ) : null}
+                  <div className="ml-auto flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="!h-8 !w-8 !text-neutral-300 hover:!text-neutral-100"
+                      onClick={() => stepPlayback(-1)}
+                      disabled={!canStepBackward || isFetching}
+                      title={t('common.previous')}
+                    >
+                      <IconPlayerTrackPrev size={16} />
+                    </Button>
+                    <Button
+                      variant={isPlaying ? 'outline' : 'primary'}
+                      size="sm"
+                      className="!h-8 !px-3"
+                      onClick={togglePlayback}
+                      disabled={totalDuration <= 0}
+                      icon={isPlaying ? <IconPlayerPause size={14} /> : <IconPlayerPlay size={14} />}
+                    >
+                      {isPlaying
+                        ? t('admin.contests.trafficGraph.controls.pauseReplay')
+                        : t('admin.contests.trafficGraph.controls.playReplay')}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="!h-8 !w-8 !text-neutral-300 hover:!text-neutral-100"
+                      onClick={() => stepPlayback(1)}
+                      disabled={!canStepForward || isFetching}
+                      title={t('common.next')}
+                    >
+                      <IconPlayerTrackNext size={16} />
                     </Button>
                   </div>
                 </div>
@@ -904,7 +1093,7 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                       variant="ghost"
                       size="icon"
                       className="!h-8 !w-8 !text-neutral-300 hover:!text-neutral-100"
-                      onClick={() => applyZoom(zoom - 0.12)}
+                      onClick={() => applyZoom(zoom - ZOOM_STEP)}
                     >
                       <IconZoomOut size={16} />
                     </Button>
@@ -912,7 +1101,7 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                       variant="ghost"
                       size="icon"
                       className="!h-8 !w-8 !text-neutral-300 hover:!text-neutral-100"
-                      onClick={() => applyZoom(zoom + 0.12)}
+                      onClick={() => applyZoom(zoom + ZOOM_STEP)}
                     >
                       <IconZoomIn size={16} />
                     </Button>
@@ -947,19 +1136,31 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                   ) : null}
 
                   <svg
-                    viewBox={`0 0 ${VIEWBOX_WIDTH} ${VIEWBOX_HEIGHT}`}
+                    viewBox={viewBox}
                     className="absolute inset-0 h-full w-full select-none touch-none"
-                    style={{
-                      transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-                      transformOrigin: '0 0',
-                      willChange: 'transform',
-                    }}
+                    shapeRendering="geometricPrecision"
+                    textRendering="geometricPrecision"
                     onPointerDown={startDrag}
                   >
                     <g opacity="0.18">
-                      <path d={`M 34 ${CENTER_Y - 132} H ${VIEWBOX_WIDTH - 34}`} stroke="#404040" strokeWidth="1" />
-                      <path d={`M 34 ${CENTER_Y} H ${VIEWBOX_WIDTH - 34}`} stroke="#404040" strokeWidth="1" />
-                      <path d={`M 34 ${CENTER_Y + 132} H ${VIEWBOX_WIDTH - 34}`} stroke="#404040" strokeWidth="1" />
+                      <path
+                        d={`M 34 ${CENTER_Y - 132} H ${VIEWBOX_WIDTH - 34}`}
+                        stroke="#404040"
+                        strokeWidth="1"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      <path
+                        d={`M 34 ${CENTER_Y} H ${VIEWBOX_WIDTH - 34}`}
+                        stroke="#404040"
+                        strokeWidth="1"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      <path
+                        d={`M 34 ${CENTER_Y + 132} H ${VIEWBOX_WIDTH - 34}`}
+                        stroke="#404040"
+                        strokeWidth="1"
+                        vectorEffect="non-scaling-stroke"
+                      />
                     </g>
 
                     {orderedLines.map((edge) => {
@@ -973,6 +1174,7 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                             stroke={edge.tone.hard}
                             strokeWidth={selected ? 8.5 : 7}
                             opacity={selected ? 0.22 : 0.08 + edge.intensity * 0.1}
+                            vectorEffect="non-scaling-stroke"
                           />
                           <path
                             d={edge.path}
@@ -982,6 +1184,7 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                             className="traffic-line"
                             opacity={selected ? 0.95 : 0.78}
                             onClick={() => handleSelectEdge(edge.id)}
+                            vectorEffect="non-scaling-stroke"
                           />
                           {label ? (
                             <g
@@ -996,6 +1199,7 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                                 rx={10}
                                 fill="rgba(10,10,10,.95)"
                                 stroke={selected ? edge.tone.hard : 'rgba(115,115,115,.35)'}
+                                vectorEffect="non-scaling-stroke"
                               />
                               <text
                                 x="0"
@@ -1033,6 +1237,7 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                             fill={isVictim ? 'rgba(89,126,247,.12)' : 'rgba(24,24,27,.94)'}
                             stroke={active ? '#f5f5f5' : isVictim ? '#597ef7' : '#666666'}
                             strokeWidth={active ? 1.7 : 1.1}
+                            vectorEffect="non-scaling-stroke"
                           />
                           <circle
                             cx="18"
@@ -1040,6 +1245,7 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                             r={isVictim ? 9.5 : 8}
                             fill={isVictim ? 'rgba(89,126,247,.14)' : 'rgba(82,82,91,.62)'}
                             stroke={isVictim ? '#597ef7' : '#8a8a8a'}
+                            vectorEffect="non-scaling-stroke"
                           />
                           <text x="34" y={pos.h / 2 - 4} fill="#f5f5f5" fontSize="10.7" fontFamily="Maple Mono">
                             {title}
@@ -1139,7 +1345,10 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                     {t('admin.contests.trafficGraph.timeline.title')}
                   </div>
                   <div className="text-[11px] font-mono text-neutral-500">
-                    {t('admin.contests.trafficGraph.hero.windowAt', { start: windowInfo.start, end: windowInfo.end })}
+                    {t('admin.contests.trafficGraph.hero.windowAt', {
+                      start: formatDurationMs(windowInfo.start),
+                      end: formatDurationMs(windowInfo.end),
+                    })}
                   </div>
                 </div>
                 {timeline.length > 0 ? (
@@ -1147,16 +1356,18 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                     <div className="mt-3 flex h-16 items-end gap-px">
                       {timeline.map((bucket) => {
                         const active =
-                          bucket.second >= windowInfo.start &&
-                          bucket.second < Math.max(windowInfo.end, windowInfo.start + 1);
+                          bucket.timestamp_ms >= windowInfo.start &&
+                          bucket.timestamp_ms < Math.max(windowInfo.end, windowInfo.start + 1);
                         const ratio = clamp((bucket.bytes || 0) / peakTimeline, 0.08, 1);
                         return (
                           <button
-                            key={bucket.second}
+                            key={bucket.timestamp_ms}
                             type="button"
-                            title={`${t('admin.contests.trafficGraph.timeline.second', { value: bucket.second })} / ${formatBytes(bucket.bytes)}`}
+                            title={`${t('admin.contests.trafficGraph.timeline.at', {
+                              value: formatDurationMs(bucket.timestamp_ms),
+                            })} / ${formatBytes(bucket.bytes)}`}
                             onClick={() =>
-                              setShift(Math.min(bucket.second, Math.max(0, windowInfo.total - windowInfo.duration)))
+                              setShift(Math.min(bucket.timestamp_ms, Math.max(0, windowInfo.total - windowInfo.duration)))
                             }
                             className="group relative flex min-w-0 flex-1 items-end"
                           >
@@ -1173,14 +1384,16 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                     <div className="mt-2 flex items-center justify-between text-[11px] font-mono text-neutral-500">
                       <span>
                         {timeline[0]
-                          ? t('admin.contests.trafficGraph.timeline.second', { value: timeline[0].second })
+                          ? t('admin.contests.trafficGraph.timeline.at', {
+                              value: formatDurationMs(timeline[0].timestamp_ms),
+                            })
                           : '--'}
                       </span>
                       <span>{formatBytes(peakTimeline)}</span>
                       <span>
                         {timeline[timeline.length - 1]
-                          ? t('admin.contests.trafficGraph.timeline.second', {
-                              value: timeline[timeline.length - 1].second,
+                          ? t('admin.contests.trafficGraph.timeline.at', {
+                              value: formatDurationMs(timeline[timeline.length - 1].timestamp_ms),
                             })
                           : '--'}
                       </span>
@@ -1257,8 +1470,12 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                 <div className="mt-3 border-t border-neutral-700 pt-3">
                   <div className="flex flex-wrap gap-2 text-[11px] font-mono text-neutral-500">
                     <span>
-                      {t('admin.contests.trafficGraph.footer.window', { start: windowInfo.start, end: windowInfo.end })}
+                      {t('admin.contests.trafficGraph.footer.window', {
+                        start: formatDurationMs(windowInfo.start),
+                        end: formatDurationMs(windowInfo.end),
+                      })}
                     </span>
+                    <span>{t('admin.contests.trafficGraph.footer.timeSlice', { count: formatDurationMs(slice) })}</span>
                     <span>
                       {t('admin.contests.trafficGraph.footer.connectionCount', { count: summary.visible_edges || 0 })}
                     </span>
@@ -1268,6 +1485,14 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                     <span>
                       {t('admin.contests.trafficGraph.footer.maxDuration', { count: topology?.total_duration || 0 })}
                     </span>
+                    {isPlaying ? (
+                      <span>
+                        {t('admin.contests.trafficGraph.footer.playing', {
+                          current: playbackIndex,
+                          total: playbackFrames,
+                        })}
+                      </span>
+                    ) : null}
                   </div>
                   <div className="mt-2 text-[11px] font-mono text-neutral-500">
                     {t('admin.contests.trafficGraph.footer.updatedAt', {

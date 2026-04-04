@@ -27,6 +27,7 @@
     "confirm": "确认",
     "create": "创建",
     "save": "保存",
+    "reset": "重置",
     "previous": "上一页",
     "next": "下一页",
     "points": "{{count}} 分",
@@ -476,12 +477,15 @@
         "hero": {
           "kicker": "流量拓扑",
           "subtitle": "更直观地展示 {{challenge}} 在当前时间窗内的入站、出站和内部流量路径。",
-          "windowAt": "窗口 {{start}}s - {{end}}s",
+          "windowAt": "窗口 {{start}} - {{end}}",
           "demoMode": "样例数据"
         },
         "controls": {
           "timeShift": "时间偏移:",
           "timeSlice": "时间片:",
+          "milliseconds": "毫秒",
+          "playReplay": "回放",
+          "pauseReplay": "暂停",
           "seconds": "秒"
         },
         "stats": {
@@ -518,7 +522,7 @@
         },
         "timeline": {
           "title": "时间轴",
-          "second": "T+{{value}}s"
+          "at": "T+{{value}}"
         },
         "rankings": {
           "topTalkers": "热点节点",
@@ -534,10 +538,10 @@
         "footer": {
           "ipCount": "IP数量: {{count}}",
           "connectionCount": "连接数: {{count}}",
-          "maxDuration": "最大时长: {{count}}秒",
-          "window": "窗口: {{start}}s - {{end}}s",
-          "timeSlice": "时间片: {{count}}秒",
-          "playing": "播放中: {{current}}/{{total}}秒",
+          "maxDuration": "最大时长: {{count}}",
+          "window": "窗口: {{start}} - {{end}}",
+          "timeSlice": "时间片: {{count}}",
+          "playing": "播放中: 第 {{current}} / {{total}} 帧",
           "updatedAt": "更新时间: {{time}}",
           "demoMode": "演示模式（样例数据）"
         },

@@ -27,6 +27,7 @@
     "confirm": "Confirm",
     "create": "Create",
     "save": "Save",
+    "reset": "Reset",
     "previous": "Previous",
     "next": "Next",
     "points": "{{count}} pts",
@@ -476,12 +477,15 @@
         "hero": {
           "kicker": "Traffic Topology",
           "subtitle": "A clearer live topology view for {{challenge}} with ingress, egress, and internal paths separated.",
-          "windowAt": "Window {{start}}s - {{end}}s",
+          "windowAt": "Window {{start}} - {{end}}",
           "demoMode": "Sample Data"
         },
         "controls": {
           "timeShift": "Time Offset:",
           "timeSlice": "Time Slice:",
+          "milliseconds": "ms",
+          "playReplay": "Replay",
+          "pauseReplay": "Pause",
           "seconds": "s"
         },
         "stats": {
@@ -518,7 +522,7 @@
         },
         "timeline": {
           "title": "Timeline",
-          "second": "T+{{value}}s"
+          "at": "T+{{value}}"
         },
         "rankings": {
           "topTalkers": "Top Talkers",
@@ -534,10 +538,10 @@
         "footer": {
           "ipCount": "IP count: {{count}}",
           "connectionCount": "Connections: {{count}}",
-          "maxDuration": "Max duration: {{count}}s",
-          "window": "Window: {{start}}s - {{end}}s",
-          "timeSlice": "Time slice: {{count}}s",
-          "playing": "Playing: {{current}}/{{total}}s",
+          "maxDuration": "Max duration: {{count}}",
+          "window": "Window: {{start}} - {{end}}",
+          "timeSlice": "Time slice: {{count}}",
+          "playing": "Playing: frame {{current}}/{{total}}",
           "updatedAt": "Updated at: {{time}}",
           "demoMode": "Demo Mode (sample data)"
         },
