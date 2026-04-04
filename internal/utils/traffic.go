@@ -49,61 +49,136 @@ func ReadPcapFile(path string) ([]Connection, error) {
 			firstPacketTime = packet.Metadata().Timestamp
 		}
 		connection.TimeShift = packet.Metadata().Timestamp.Sub(firstPacketTime)
-		network := packet.NetworkLayer()
-		if network == nil {
+		src, dst, baseLayerIndex, ok := extractTrafficEndpoints(packet)
+		if !ok {
 			continue
 		}
-		switch network.LayerType() {
-		case layers.LayerTypeIPv4:
-			if ipv4, ok := network.(*layers.IPv4); ok {
-				connection.SrcIP = ipv4.SrcIP.String()
-				connection.DstIP = ipv4.DstIP.String()
-			} else {
-				continue
+		connection.SrcIP = src
+		connection.DstIP = dst
+		connection.Type, connection.Subtype = extractTrafficProtocols(packet, baseLayerIndex)
+		if transport := packet.TransportLayer(); transport != nil {
+			if header, readErr := pp.Read(bufio.NewReader(bytes.NewReader(transport.LayerPayload()))); readErr == nil {
+				srcIP, _, srcErr := net.SplitHostPort(header.SourceAddr.String())
+				dstIP, _, dstErr := net.SplitHostPort(header.DestinationAddr.String())
+				if srcErr == nil && dstErr == nil {
+					connection.SrcIP = srcIP
+					connection.DstIP = dstIP
+					connection.Subtype = "Proxy"
+				}
 			}
-		case layers.LayerTypeIPv6:
-			if ipv6, ok := network.(*layers.IPv6); ok {
-				connection.SrcIP = ipv6.SrcIP.String()
-				connection.DstIP = ipv6.DstIP.String()
-			} else {
-				continue
-			}
-		default:
-			continue
-		}
-		transport := packet.TransportLayer()
-		if transport == nil {
-			continue
-		}
-		switch transport.LayerType() {
-		case layers.LayerTypeTCP:
-			connection.Type = layers.LayerTypeTCP.String()
-		case layers.LayerTypeUDP:
-			connection.Type = layers.LayerTypeUDP.String()
-		default:
-			continue
-		}
-		application := packet.ApplicationLayer()
-		if application == nil {
-			continue
-		}
-		connection.Subtype = application.LayerType().String()
-		if header, readErr := pp.Read(bufio.NewReader(bytes.NewReader(transport.LayerPayload()))); readErr == nil {
-			srcIP, _, srcErr := net.SplitHostPort(header.SourceAddr.String())
-			if srcErr != nil {
-				continue
-			}
-			dstIP, _, dstErr := net.SplitHostPort(header.DestinationAddr.String())
-			if dstErr != nil {
-				continue
-			}
-			connection.SrcIP = srcIP
-			connection.DstIP = dstIP
-			connection.Subtype = "Proxy"
 		}
 		connections = append(connections, connection)
 	}
 	return connections, nil
+}
+
+func extractTrafficEndpoints(packet gopacket.Packet) (string, string, int, bool) {
+	layersL := packet.Layers()
+	if arpLayer := packet.Layer(layers.LayerTypeARP); arpLayer != nil {
+		if arp, ok := arpLayer.(*layers.ARP); ok {
+			src := formatTrafficARPAddress(arp.SourceProtAddress, arp.SourceHwAddress)
+			dst := formatTrafficARPAddress(arp.DstProtAddress, arp.DstHwAddress)
+			if src != "" && dst != "" {
+				return src, dst, findTrafficLayerIndex(layersL, arp.LayerType()), true
+			}
+		}
+	}
+	if network := packet.NetworkLayer(); network != nil {
+		src := formatTrafficEndpoint(network.NetworkFlow().Src())
+		dst := formatTrafficEndpoint(network.NetworkFlow().Dst())
+		if src != "" && dst != "" {
+			return src, dst, findTrafficLayerIndex(layersL, network.LayerType()), true
+		}
+	}
+	if link := packet.LinkLayer(); link != nil {
+		src := formatTrafficEndpoint(link.LinkFlow().Src())
+		dst := formatTrafficEndpoint(link.LinkFlow().Dst())
+		if src != "" && dst != "" {
+			return src, dst, findTrafficLayerIndex(layersL, link.LayerType()), true
+		}
+	}
+	return "", "", -1, false
+}
+
+func formatTrafficARPAddress(protocolAddress, hardwareAddress []byte) string {
+	switch len(protocolAddress) {
+	case net.IPv4len, net.IPv6len:
+		return net.IP(protocolAddress).String()
+	}
+	if len(protocolAddress) > 0 {
+		return fmt.Sprintf("%x", protocolAddress)
+	}
+	if len(hardwareAddress) > 0 {
+		return net.HardwareAddr(hardwareAddress).String()
+	}
+	return ""
+}
+
+func formatTrafficEndpoint(endpoint gopacket.Endpoint) string {
+	value := strings.TrimSpace(endpoint.String())
+	if value == "" {
+		return ""
+	}
+	return value
+}
+
+func extractTrafficProtocols(packet gopacket.Packet, baseLayerIndex int) (string, string) {
+	layersL := packet.Layers()
+	if baseLayerIndex < 0 || baseLayerIndex >= len(layersL) {
+		baseLayerIndex = -1
+	}
+
+	protocols := make([]string, 0, 2)
+	for i := baseLayerIndex + 1; i < len(layersL); i++ {
+		layerType := normalizeTrafficLayerType(layersL[i].LayerType())
+		if layerType == "" {
+			continue
+		}
+		protocols = append(protocols, layerType)
+		if len(protocols) >= 2 {
+			break
+		}
+	}
+
+	if len(protocols) == 0 && baseLayerIndex >= 0 {
+		protocols = append(protocols, normalizeTrafficLayerType(layersL[baseLayerIndex].LayerType()))
+	}
+
+	protocol := ""
+	subtype := ""
+	if len(protocols) > 0 {
+		protocol = protocols[0]
+	}
+	if len(protocols) > 1 {
+		subtype = protocols[1]
+	}
+	if subtype == "" {
+		if application := packet.ApplicationLayer(); application != nil {
+			subtype = normalizeTrafficLayerType(application.LayerType())
+		}
+	}
+	return protocol, subtype
+}
+
+func normalizeTrafficLayerType(layerType gopacket.LayerType) string {
+	switch layerType {
+	case gopacket.LayerTypePayload, gopacket.LayerTypeDecodeFailure:
+		return ""
+	}
+	name := strings.TrimSpace(layerType.String())
+	if name == "" {
+		return ""
+	}
+	return strings.TrimPrefix(name, "LayerType")
+}
+
+func findTrafficLayerIndex(layersL []gopacket.Layer, target gopacket.LayerType) int {
+	for i, layer := range layersL {
+		if layer.LayerType() == target {
+			return i
+		}
+	}
+	return -1
 }
 
 func ReadPcapDir(path string) ([]Connection, error) {
