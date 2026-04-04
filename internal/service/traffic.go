@@ -45,7 +45,7 @@ type trafficEdgeAggregate struct {
 }
 
 type trafficBucketAggregate struct {
-	Second       int64
+	TimestampMs  int64
 	Bytes        int64
 	Packets      int64
 	IngressBytes int64
@@ -63,6 +63,8 @@ type trafficRankingAggregate struct {
 	Direction     string
 }
 
+const DEFAULT_TRAFFIC_DURATION_MS int64 = 15000
+
 func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopologyResp, model.RetVal) {
 	connections, ret := loadTrafficConnections(victim)
 	if !ret.OK {
@@ -74,29 +76,20 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 
 	totalDuration := calcTrafficTotalDuration(connections)
 	start, end := clampTrafficWindow(form.TimeShift, form.Duration, totalDuration)
-	windowConnections := sliceTrafficConnections(connections, start, end)
-
 	internalIPs := collectVictimIPs(victim, connections)
+	timelineBuckets := buildTrafficTimelineBuckets(connections, internalIPs, form.Duration)
+	windowConnections := sliceTrafficConnections(connections, start, end)
 	totalPackets := int64(len(windowConnections))
 
 	nodes := make(map[string]*trafficNodeAggregate)
 	edges := make(map[string]*trafficEdgeAggregate)
-	buckets := make(map[int64]*trafficBucketAggregate)
 
 	summary := resp.TrafficSummaryResp{}
 	topTalkers := make([]trafficRankingAggregate, 0)
 	topEdges := make([]trafficRankingAggregate, 0)
 
 	for _, connection := range windowConnections {
-		second := int64(connection.TimeShift / time.Second)
-		bucket := buckets[second]
-		if bucket == nil {
-			bucket = &trafficBucketAggregate{Second: second}
-			buckets[second] = bucket
-		}
 		packetBytes := int64(connection.Size)
-		bucket.Bytes += packetBytes
-		bucket.Packets++
 		summary.TotalBytes += packetBytes
 		summary.TotalPackets++
 
@@ -105,10 +98,8 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 
 		direction := trafficDirection(srcInternal, dstInternal)
 		if direction == "ingress" {
-			bucket.IngressBytes += packetBytes
 			summary.IngressBytes += packetBytes
 		} else if direction == "egress" {
-			bucket.EgressBytes += packetBytes
 			summary.EgressBytes += packetBytes
 		} else {
 			summary.InternalBytes += packetBytes
@@ -158,7 +149,7 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 		}
 	}
 
-	summary.PeakSecond, summary.PeakBytes = computeTrafficPeak(buckets)
+	summary.PeakTimeMs, summary.PeakBytes = computeTrafficPeak(timelineBuckets)
 
 	nodeList := make([]resp.TrafficNodeResp, 0, len(nodes))
 	internalNodeCount := 0
@@ -247,16 +238,16 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 		return edgeList[i].ID < edgeList[j].ID
 	})
 
-	timeline := make([]resp.TrafficTimelineBucketResp, 0, len(buckets))
-	seconds := make([]int64, 0, len(buckets))
-	for second := range buckets {
-		seconds = append(seconds, second)
+	timeline := make([]resp.TrafficTimelineBucketResp, 0, len(timelineBuckets))
+	timestamps := make([]int64, 0, len(timelineBuckets))
+	for timestampMs := range timelineBuckets {
+		timestamps = append(timestamps, timestampMs)
 	}
-	sort.Slice(seconds, func(i, j int) bool { return seconds[i] < seconds[j] })
-	for _, second := range seconds {
-		bucket := buckets[second]
+	sort.Slice(timestamps, func(i, j int) bool { return timestamps[i] < timestamps[j] })
+	for _, timestampMs := range timestamps {
+		bucket := timelineBuckets[timestampMs]
 		timeline = append(timeline, resp.TrafficTimelineBucketResp{
-			Second:       bucket.Second,
+			TimestampMs:  bucket.TimestampMs,
 			Bytes:        bucket.Bytes,
 			Packets:      bucket.Packets,
 			IngressBytes: bucket.IngressBytes,
@@ -331,7 +322,7 @@ func loadTrafficConnections(victim model.Victim) ([]utils.Connection, model.RetV
 func emptyTrafficTopology(victim model.Victim, form dto.GetTrafficForm) resp.TrafficTopologyResp {
 	duration := form.Duration
 	if duration <= 0 {
-		duration = 15
+		duration = DEFAULT_TRAFFIC_DURATION_MS
 	}
 	return resp.TrafficTopologyResp{
 		Window: resp.TrafficWindowResp{
@@ -341,7 +332,7 @@ func emptyTrafficTopology(victim model.Victim, form dto.GetTrafficForm) resp.Tra
 			Total:    0,
 		},
 		TotalDuration:   0,
-		AvailableSlices: []int64{5, 15, 30, 60},
+		AvailableSlices: []int64{1000, 5000, 15000, 30000, 60000},
 		Center: resp.TrafficCenterResp{
 			Label:   buildTrafficCenterLabel(victim),
 			IPs:     sortedTrafficIPs(collectVictimIPs(victim, nil)),
@@ -360,8 +351,8 @@ func calcTrafficTotalDuration(connections []utils.Connection) int64 {
 	if len(connections) == 0 {
 		return 0
 	}
-	duration := int64(connections[len(connections)-1].Time.Sub(connections[0].Time) / time.Second)
-	return duration + 1
+	durationMs := connections[len(connections)-1].Time.Sub(connections[0].Time).Milliseconds()
+	return durationMs + 1
 }
 
 func clampTrafficWindow(start, duration, total int64) (int64, int64) {
@@ -369,7 +360,7 @@ func clampTrafficWindow(start, duration, total int64) (int64, int64) {
 		start = 0
 	}
 	if duration <= 0 {
-		duration = 15
+		duration = DEFAULT_TRAFFIC_DURATION_MS
 	}
 	if total > 0 && start > total {
 		start = total
@@ -388,10 +379,10 @@ func sliceTrafficConnections(connections []utils.Connection, start, end int64) [
 	if len(connections) == 0 {
 		return make([]utils.Connection, 0)
 	}
-	startAt := time.Duration(start) * time.Second
-	endAt := time.Duration(end) * time.Second
+	startAt := time.Duration(start) * time.Millisecond
+	endAt := time.Duration(end) * time.Millisecond
 	if end == start {
-		endAt = startAt + time.Second
+		endAt = startAt + time.Millisecond
 	}
 
 	windowConnections := make([]utils.Connection, 0)
@@ -399,12 +390,45 @@ func sliceTrafficConnections(connections []utils.Connection, start, end int64) [
 		if connection.TimeShift < startAt {
 			continue
 		}
-		if connection.TimeShift > endAt {
+		if connection.TimeShift >= endAt {
 			break
 		}
 		windowConnections = append(windowConnections, connection)
 	}
 	return windowConnections
+}
+
+func buildTrafficTimelineBuckets(
+	connections []utils.Connection,
+	internalIPs map[string]bool,
+	bucketSizeMs int64,
+) map[int64]*trafficBucketAggregate {
+	if bucketSizeMs <= 0 {
+		bucketSizeMs = DEFAULT_TRAFFIC_DURATION_MS
+	}
+	buckets := make(map[int64]*trafficBucketAggregate)
+	for _, connection := range connections {
+		packetBytes := int64(connection.Size)
+		timestampMs := connection.TimeShift.Milliseconds()
+		bucketStart := (timestampMs / bucketSizeMs) * bucketSizeMs
+		bucket := buckets[bucketStart]
+		if bucket == nil {
+			bucket = &trafficBucketAggregate{TimestampMs: bucketStart}
+			buckets[bucketStart] = bucket
+		}
+		bucket.Bytes += packetBytes
+		bucket.Packets++
+
+		srcInternal := internalIPs[connection.SrcIP]
+		dstInternal := internalIPs[connection.DstIP]
+		switch trafficDirection(srcInternal, dstInternal) {
+		case "ingress":
+			bucket.IngressBytes += packetBytes
+		case "egress":
+			bucket.EgressBytes += packetBytes
+		}
+	}
+	return buckets
 }
 
 func collectVictimIPs(victim model.Victim, connections []utils.Connection) map[string]bool {
@@ -616,19 +640,19 @@ func trafficIntensity(bytes, maxBytes int64) float64 {
 }
 
 func computeTrafficPeak(buckets map[int64]*trafficBucketAggregate) (int64, int64) {
-	peakSecond := int64(0)
+	peakTimeMs := int64(0)
 	peakBytes := int64(0)
-	for second, bucket := range buckets {
-		if bucket.Bytes > peakBytes || (bucket.Bytes == peakBytes && second < peakSecond) {
-			peakSecond = second
+	for timestampMs, bucket := range buckets {
+		if bucket.Bytes > peakBytes || (bucket.Bytes == peakBytes && timestampMs < peakTimeMs) {
+			peakTimeMs = timestampMs
 			peakBytes = bucket.Bytes
 		}
 	}
-	return peakSecond, peakBytes
+	return peakTimeMs, peakBytes
 }
 
 func availableTrafficSlices(totalDuration int64) []int64 {
-	base := []int64{5, 15, 30, 60}
+	base := []int64{1000, 5000, 15000, 30000, 60000}
 	if totalDuration <= 0 {
 		return base
 	}

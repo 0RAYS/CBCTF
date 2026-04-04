@@ -18,7 +18,7 @@ type TrafficSummaryResp struct {
 	InternalNodes int   `json:"internal_nodes"`
 	VisibleEdges  int   `json:"visible_edges"`
 	VisibleNodes  int   `json:"visible_nodes"`
-	PeakSecond    int64 `json:"peak_second"`
+	PeakTimeMs    int64 `json:"peak_time_ms"`
 	PeakBytes     int64 `json:"peak_bytes"`
 }
 
@@ -59,7 +59,7 @@ type TrafficEdgeResp struct {
 }
 
 type TrafficTimelineBucketResp struct {
-	Second       int64 `json:"second"`
+	TimestampMs  int64 `json:"timestamp_ms"`
 	Bytes        int64 `json:"bytes"`
 	Packets      int64 `json:"packets"`
 	IngressBytes int64 `json:"ingress_bytes"`
