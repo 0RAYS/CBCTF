@@ -63,7 +63,7 @@ type trafficRankingAggregate struct {
 	Direction     string
 }
 
-const DEFAULT_TRAFFIC_DURATION_MS int64 = 15000
+const DefaultTrafficDurationMs int64 = 1000
 
 func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopologyResp, model.RetVal) {
 	connections, ret := loadTrafficConnections(victim)
@@ -322,7 +322,7 @@ func loadTrafficConnections(victim model.Victim) ([]utils.Connection, model.RetV
 func emptyTrafficTopology(victim model.Victim, form dto.GetTrafficForm) resp.TrafficTopologyResp {
 	duration := form.Duration
 	if duration <= 0 {
-		duration = DEFAULT_TRAFFIC_DURATION_MS
+		duration = DefaultTrafficDurationMs
 	}
 	return resp.TrafficTopologyResp{
 		Window: resp.TrafficWindowResp{
@@ -360,7 +360,7 @@ func clampTrafficWindow(start, duration, total int64) (int64, int64) {
 		start = 0
 	}
 	if duration <= 0 {
-		duration = DEFAULT_TRAFFIC_DURATION_MS
+		duration = DefaultTrafficDurationMs
 	}
 	if total > 0 && start > total {
 		start = total
@@ -404,7 +404,7 @@ func buildTrafficTimelineBuckets(
 	bucketSizeMs int64,
 ) map[int64]*trafficBucketAggregate {
 	if bucketSizeMs <= 0 {
-		bucketSizeMs = DEFAULT_TRAFFIC_DURATION_MS
+		bucketSizeMs = DefaultTrafficDurationMs
 	}
 	buckets := make(map[int64]*trafficBucketAggregate)
 	for _, connection := range connections {
