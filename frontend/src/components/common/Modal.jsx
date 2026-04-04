@@ -45,6 +45,8 @@ function Modal({
   onConfirm,
   confirmType = 'primary',
   className = '',
+  showHeader = true,
+  showCloseButton = true,
 }) {
   const portalContainer = useModalPortal();
   const titleId = useId();
@@ -116,6 +118,18 @@ function Modal({
     xl: 'max-w-[1000px]',
     '2xl': 'max-w-[1200px]',
   };
+  const isFullScreen = size === 'full';
+  const dialogWrapperClassName = isFullScreen
+    ? 'relative h-[100dvh] w-[100vw] max-w-none'
+    : `relative w-full ${sizeClasses[size]} mx-4`;
+  const dialogContainerClassName = isFullScreen
+    ? `flex h-full flex-col overflow-hidden border border-neutral-300/30 bg-black/80 backdrop-blur-[8px] rounded-none ${className}`
+    : `border border-neutral-300/30 rounded-lg bg-black/80 backdrop-blur-[8px] overflow-hidden ${className}`;
+  const dialogBodyClassName = bodyClassName
+    ? `${isFullScreen ? 'min-h-0 flex-1 ' : ''}${bodyClassName}`
+    : isFullScreen
+      ? 'p-6 min-h-0 flex-1 overflow-y-auto'
+      : 'p-6 max-h-[70vh] overflow-y-auto';
 
   // Portal容器未就绪时不渲染
   if (!portalContainer) return null;
@@ -185,35 +199,48 @@ function Modal({
             aria-modal="true"
             aria-labelledby={titleId}
             tabIndex={-1}
-            className={`relative w-full ${sizeClasses[size]} mx-4`}
+            className={dialogWrapperClassName}
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
           >
-            <div
-              className={`border border-neutral-300/30 rounded-lg bg-black/80 backdrop-blur-[8px] overflow-hidden ${className}`}
-            >
-              {/* 头部 */}
-              <div className="p-6 border-b border-neutral-300/30">
-                <div className="flex items-center justify-between">
-                  <h2 id={titleId} className="text-xl font-mono text-neutral-50">
-                    {title}
-                  </h2>
+            <div className={dialogContainerClassName}>
+              {!showHeader && showCloseButton ? (
+                <div className="pointer-events-none absolute right-4 top-4 z-10">
                   <Button
                     variant="ghost"
                     size="icon"
                     aria-label="Close dialog"
-                    className="!bg-transparent !text-neutral-400 hover:!text-neutral-200"
+                    className="pointer-events-auto !bg-black/30 !text-neutral-300 backdrop-blur-sm hover:!text-neutral-100"
                     onClick={onClose}
                   >
                     <IconX size={18} />
                   </Button>
                 </div>
-              </div>
+              ) : null}
+              {/* 头部 */}
+              {showHeader ? <div className="p-6 border-b border-neutral-300/30">
+                <div className="flex items-center justify-between">
+                  <h2 id={titleId} className="text-xl font-mono text-neutral-50">
+                    {title}
+                  </h2>
+                  {showCloseButton ? (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Close dialog"
+                      className="!bg-transparent !text-neutral-400 hover:!text-neutral-200"
+                      onClick={onClose}
+                    >
+                      <IconX size={18} />
+                    </Button>
+                  ) : null}
+                </div>
+              </div> : null}
 
               {/* 内容区域 */}
-              <div className={bodyClassName || 'p-6 max-h-[70vh] overflow-y-auto'}>{children}</div>
+              <div className={dialogBodyClassName}>{children}</div>
 
               {/* 底部 */}
               {footer && (
