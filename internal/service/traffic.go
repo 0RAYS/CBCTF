@@ -6,7 +6,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	r "CBCTF/internal/redis"
+	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/utils"
 	"fmt"
@@ -307,18 +307,18 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 }
 
 func loadTrafficConnections(victim model.Victim) ([]utils.Connection, model.RetVal) {
-	connections, ret := r.GetTraffic(victim)
+	connections, ret := redis.GetTraffic(victim)
 	if !ret.OK {
 		return nil, ret
 	}
 	if len(connections) > 0 {
 		return connections, model.SuccessRetVal()
 	}
-	ret = r.UpdateTraffics(victim)
+	ret = redis.UpdateTraffics(victim)
 	if !ret.OK {
 		return nil, ret
 	}
-	connections, ret = r.GetTraffic(victim)
+	connections, ret = redis.GetTraffic(victim)
 	if !ret.OK {
 		return nil, ret
 	}
