@@ -102,7 +102,11 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 		for _, port := range app.Ports {
 			target := fmt.Sprintf("%d/%s", port.Target, port.Protocol)
 			if !slices.Contains(seenPorts, target) {
-				ports = append(ports, model.Expose{Port: int32(port.Target), Protocol: port.Protocol})
+				ports = append(ports, model.Expose{
+					Port:      int32(port.Target),
+					Protocol:  port.Protocol,
+					Published: port.Published,
+				})
 				seenPorts = append(seenPorts, target)
 			}
 		}

@@ -13,11 +13,11 @@ import (
 )
 
 const (
-	WaitingVictimStatus = "waiting"
-	PendingVictimStatus = "pending"
+	WaitingVictimStatus     = "waiting"
+	PendingVictimStatus     = "pending"
 	TerminatingVictimStatus = "terminating"
-	RunningVictimStatus = "running"
-	StoppedVictimStatus = "stopped"
+	RunningVictimStatus     = "running"
+	StoppedVictimStatus     = "stopped"
 )
 
 // Victim 靶机实例
@@ -75,7 +75,11 @@ func (v Victim) TrafficPaths() []string {
 func (v Victim) RemoteAddr() []string {
 	data := make([]string, 0)
 	for _, endpoint := range v.ExposedEndpoints {
-		data = append(data, fmt.Sprintf("%s://%s:%d", strings.ToLower(endpoint.Protocol), endpoint.IP, endpoint.Port))
+		addr := fmt.Sprintf("%s://%s:%d", strings.ToLower(endpoint.Protocol), endpoint.IP, endpoint.Port)
+		if strings.TrimSpace(endpoint.Name) != "" {
+			addr = fmt.Sprintf("%s: %s", endpoint.Name, addr)
+		}
+		data = append(data, addr)
 	}
 	return data
 }
@@ -114,6 +118,7 @@ type EIP struct {
 
 type DNat struct {
 	Name         string `json:"name"`
+	DisplayName  string `json:"display_name"`
 	ExternalPort int32  `json:"external_port"`
 	InternalIP   string `json:"internal_ip"`
 	InternalPort int32  `json:"internal_port"`
@@ -167,6 +172,7 @@ func (v *VPC) Scan(value any) error {
 }
 
 type Endpoint struct {
+	Name     string `json:"name"`
 	IP       string `json:"ip"`
 	Port     int32  `json:"port"`
 	Protocol string `json:"protocol"`

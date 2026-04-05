@@ -48,8 +48,9 @@ func (n *Networks) Scan(value any) error {
 }
 
 type Expose struct {
-	Port     int32  `json:"port"`
-	Protocol string `json:"protocol"`
+	Published string `json:"publish"`
+	Port      int32  `json:"port"`
+	Protocol  string `json:"protocol"`
 }
 
 type Exposes []Expose
