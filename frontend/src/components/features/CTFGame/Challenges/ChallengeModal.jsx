@@ -141,7 +141,7 @@ function ChallengeModal({
   const isWaiting = instanceStatus === 'waiting';
   const isPending = instanceStatus === 'pending';
   const isTerminating = instanceStatus === 'terminating';
-  const instanceDuration = Math.max(Number(challenge?.instanceDuration) || 0, timeLeft);
+  const instanceDuration = Number(challenge?.instanceDuration) || 0;
   const progressWidth = instanceDuration > 0 ? Math.max(0, Math.min(100, (timeLeft / instanceDuration) * 100)) : 0;
 
   // Clear launching state when instanceRunning transitions false → true (via polling or WS)

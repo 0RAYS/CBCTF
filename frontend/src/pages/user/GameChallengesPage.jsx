@@ -45,8 +45,13 @@ const mapChallengeStatusToViewModel = (challenge, statusData = null) => {
   const remote = statusData?.remote || challenge.remote || {};
   const instanceStatus = normalizeInstanceStatus(remote.status);
   const timeLeft = Number(remote.remaining) || 0;
+  const remoteDuration = Number(remote.duration) || 0;
   const previousDuration = Number(challenge.instanceDuration) || 0;
-  const instanceDuration = instanceStatus === 'running' ? Math.max(previousDuration, timeLeft) : previousDuration;
+  const instanceDuration = remoteDuration > 0
+    ? remoteDuration
+    : instanceStatus === 'running'
+      ? Math.max(previousDuration, timeLeft)
+      : previousDuration;
 
   return {
     ...challenge,
