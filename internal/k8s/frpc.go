@@ -2,6 +2,7 @@ package k8s
 
 import (
 	"CBCTF/internal/config"
+	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
@@ -177,103 +178,120 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 	}(victim.ID, frpcPodNameL)...)
 	victim.Resources.FrpcPodNames = append(model.StringList(nil), frpcPodNameL...)
 	labels := VictimLabels(victim, map[string]string{FrpcPodTag: FrpcPodTag})
+	wg := utils.NewGroup(ctx)
 	for _, podName := range frpcPodNameL {
-		fcm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
-			Name:   fmt.Sprintf("frpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6)),
-			Labels: labels,
-			Data:   map[string]string{"frpc.toml": podFrpcConfigMap[podName]},
+		podName := podName
+		wg.Go(func() error {
+			fcm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
+				Name:   fmt.Sprintf("frpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6)),
+				Labels: labels,
+				Data:   map[string]string{"frpc.toml": podFrpcConfigMap[podName]},
+			})
+			if !ret.OK || fcm == nil {
+				if err, ok := ret.Attr["Error"].(string); ok {
+					return fmt.Errorf("%s", err)
+				}
+				return fmt.Errorf("create frpc configmap failed: %s", ret.Msg)
+			}
+			ncm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
+				Name:   fmt.Sprintf("nginx-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6)),
+				Labels: labels,
+				Data:   map[string]string{"nginx.conf": podNginxConfigMap[podName]},
+			})
+			if !ret.OK || ncm == nil {
+				if err, ok := ret.Attr["Error"].(string); ok {
+					return fmt.Errorf("%s", err)
+				}
+				return fmt.Errorf("create nginx configmap failed: %s", ret.Msg)
+			}
+			fcmVolume := corev1.Volume{
+				Name: "frpc-volume",
+				VolumeSource: corev1.VolumeSource{
+					ConfigMap: &corev1.ConfigMapVolumeSource{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: fcm.Name,
+						},
+					},
+				},
+			}
+			ncmVolume := corev1.Volume{
+				Name: "nginx-volume",
+				VolumeSource: corev1.VolumeSource{
+					ConfigMap: &corev1.ConfigMapVolumeSource{
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: ncm.Name,
+						},
+					},
+				},
+			}
+			nfsVolume := corev1.Volume{
+				Name: nfsVolumeName,
+				VolumeSource: corev1.VolumeSource{
+					PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+						ClaimName: nfsVolumeName,
+					},
+				},
+			}
+			containers := []corev1.Container{
+				{
+					Name:  "frpc",
+					Image: config.Env.K8S.Frp.FrpcImage,
+					Args:  []string{"-c", "/etc/frp/frpc.toml"},
+					VolumeMounts: []corev1.VolumeMount{
+						{
+							Name:      fcmVolume.Name,
+							MountPath: "/etc/frp/frpc.toml",
+							SubPath:   "frpc.toml",
+						},
+					},
+				},
+				{
+					Name:  "nginx",
+					Image: config.Env.K8S.Frp.NginxImage,
+					VolumeMounts: []corev1.VolumeMount{
+						{
+							Name:      ncmVolume.Name,
+							MountPath: "/etc/nginx/nginx.conf",
+							SubPath:   "nginx.conf",
+						},
+					},
+				},
+				{
+					Name:    "tcpdump",
+					Image:   config.Env.K8S.TCPDumpImage,
+					Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/mnt/frpc.pcap"},
+					VolumeMounts: []corev1.VolumeMount{
+						{
+							Name:      nfsVolume.Name,
+							MountPath: "/root/mnt",
+							SubPath: strings.TrimPrefix(
+								strings.TrimPrefix(victim.TrafficBasePath(), config.Env.Path), "/",
+							),
+						},
+					},
+				},
+			}
+			options := CreatePodOptions{
+				Name:       podName,
+				Labels:     labels,
+				Containers: containers,
+				Volumes:    []corev1.Volume{fcmVolume, ncmVolume, nfsVolume},
+			}
+			if gw, exists := podVPCGWMap[podName]; exists {
+				// frpc pod 需要与 子网 eip 进行通信, 不能与 VPCNatGW pod 位于同一个节点, 并且跨 kube-system 与本 namespace
+				options.AntiNatGWName = gw
+			}
+			if _, ret = CreatePod(ctx, options); !ret.OK {
+				if err, ok := ret.Attr["Error"].(string); ok {
+					return fmt.Errorf("%s", err)
+				}
+				return fmt.Errorf("create frpc pod failed: %s", ret.Msg)
+			}
+			return nil
 		})
-		if !ret.OK || fcm == nil {
-			return victim, ret
-		}
-		ncm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
-			Name:   fmt.Sprintf("nginx-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6)),
-			Labels: labels,
-			Data:   map[string]string{"nginx.conf": podNginxConfigMap[podName]},
-		})
-		if !ret.OK || ncm == nil {
-			return victim, ret
-		}
-		fcmVolume := corev1.Volume{
-			Name: "frpc-volume",
-			VolumeSource: corev1.VolumeSource{
-				ConfigMap: &corev1.ConfigMapVolumeSource{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: fcm.Name,
-					},
-				},
-			},
-		}
-		ncmVolume := corev1.Volume{
-			Name: "nginx-volume",
-			VolumeSource: corev1.VolumeSource{
-				ConfigMap: &corev1.ConfigMapVolumeSource{
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: ncm.Name,
-					},
-				},
-			},
-		}
-		nfsVolume := corev1.Volume{
-			Name: nfsVolumeName,
-			VolumeSource: corev1.VolumeSource{
-				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-					ClaimName: nfsVolumeName,
-				},
-			},
-		}
-		containers := []corev1.Container{
-			{
-				Name:  "frpc",
-				Image: config.Env.K8S.Frp.FrpcImage,
-				Args:  []string{"-c", "/etc/frp/frpc.toml"},
-				VolumeMounts: []corev1.VolumeMount{
-					{
-						Name:      fcmVolume.Name,
-						MountPath: "/etc/frp/frpc.toml",
-						SubPath:   "frpc.toml",
-					},
-				},
-			},
-			{
-				Name:  "nginx",
-				Image: config.Env.K8S.Frp.NginxImage,
-				VolumeMounts: []corev1.VolumeMount{
-					{
-						Name:      ncmVolume.Name,
-						MountPath: "/etc/nginx/nginx.conf",
-						SubPath:   "nginx.conf",
-					},
-				},
-			},
-			{
-				Name:    "tcpdump",
-				Image:   config.Env.K8S.TCPDumpImage,
-				Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/mnt/frpc.pcap"},
-				VolumeMounts: []corev1.VolumeMount{
-					{
-						Name:      nfsVolume.Name,
-						MountPath: "/root/mnt",
-						SubPath: strings.TrimPrefix(
-							strings.TrimPrefix(victim.TrafficBasePath(), config.Env.Path), "/",
-						),
-					},
-				},
-			},
-		}
-		options := CreatePodOptions{
-			Name:       podName,
-			Labels:     labels,
-			Containers: containers,
-			Volumes:    []corev1.Volume{fcmVolume, ncmVolume, nfsVolume},
-		}
-		if gw, exists := podVPCGWMap[podName]; exists {
-			// frpc pod 需要与 子网 eip 进行通信, 不能与 VPCNatGW pod 位于同一个节点, 并且跨 kube-system 与本 namespace
-			options.AntiNatGWName = gw
-		}
-		if _, ret = CreatePod(ctx, options); !ret.OK {
-			return victim, ret
-		}
+	}
+	if err := wg.Wait(); err != nil {
+		return victim, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	return victim, model.SuccessRetVal()
 }
