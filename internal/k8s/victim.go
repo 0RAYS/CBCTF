@@ -62,7 +62,6 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 	pods := append([]model.Pod(nil), victim.Pods...)
 	wg := utils.NewGroup(ctx)
 	for _, pod := range pods {
-		pod := pod
 		wg.Go(func() error {
 			podSpec := pod.Spec
 			containers := []corev1.Container{
@@ -320,7 +319,6 @@ func createVictimNetworkResources(
 		if subnet == nil {
 			continue
 		}
-		subnet := subnet
 		subnetMap[subnet.DefName] = subnet
 		netAttachDefMap[subnet.DefName] = subnet.NetAttachDef
 

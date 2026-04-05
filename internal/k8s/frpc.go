@@ -180,7 +180,6 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 	labels := VictimLabels(victim, map[string]string{FrpcPodTag: FrpcPodTag})
 	wg := utils.NewGroup(ctx)
 	for _, podName := range frpcPodNameL {
-		podName := podName
 		wg.Go(func() error {
 			fcm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
 				Name:   fmt.Sprintf("frpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6)),
