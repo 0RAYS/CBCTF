@@ -45,6 +45,30 @@ func needVPC(pods []model.ChallengePodTemplate) bool {
 	return false
 }
 
+func selectExposeNetworkName(networks model.Networks) string {
+	if len(networks) == 0 {
+		return ""
+	}
+	selectedName := ""
+	for _, network := range networks {
+		if !network.External {
+			continue
+		}
+		if selectedName == "" || strings.Compare(network.Name, selectedName) < 0 {
+			selectedName = network.Name
+		}
+	}
+	if selectedName != "" {
+		return selectedName
+	}
+	for _, network := range networks {
+		if selectedName == "" || strings.Compare(network.Name, selectedName) < 0 {
+			selectedName = network.Name
+		}
+	}
+	return selectedName
+}
+
 func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge) (model.VictimSpec, model.RetVal) {
 	spec := model.VictimSpec{
 		Pods:            make([]model.PodSpec, 0, len(challenge.Template.Pods)),
@@ -174,6 +198,10 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 			podSpec.Containers = append(podSpec.Containers, containerSpec)
 		}
 		spec.Pods = append(spec.Pods, podSpec)
+		exposeNetworkName := ""
+		if len(podTemplate.ServicePorts) > 0 {
+			exposeNetworkName = selectExposeNetworkName(podTemplate.Networks)
+		}
 
 		for _, network := range podTemplate.Networks {
 			if spec.NetworkPlan.Name == "" {
@@ -191,37 +219,41 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 				networkPlans[network.Name] = subnet
 				spec.NetworkPlan.Subnets = append(spec.NetworkPlan.Subnets, subnet)
 			}
-			if network.External || len(podTemplate.ServicePorts) > 0 {
+			needSNAT := network.External
+			needDNAT := len(podTemplate.ServicePorts) > 0 && network.Name == exposeNetworkName
+			if needSNAT || needDNAT {
 				snats := make([]*model.SNat, 0)
 				dnats := make([]*model.DNat, 0)
-				if network.External {
+				if needSNAT {
 					if _, exists := snatDedup[network.Name]; !exists {
 						snats = append(snats, &model.SNat{Name: fmt.Sprintf("snat-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6))})
 						snatDedup[network.Name] = struct{}{}
 					}
 				}
-				for _, expose := range podTemplate.ServicePorts {
-					key := fmt.Sprintf("%s-%s-%d-%s", podTemplate.Key, network.Name, expose.Port, expose.Protocol)
-					if _, exists := dnatDedup[key]; exists {
-						continue
-					}
-					dnatDedup[key] = struct{}{}
-					dnats = append(dnats, &model.DNat{
-						Name: fmt.Sprintf("dnat-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6)),
-						ExternalPort: func() int32 {
-							for {
-								port, _ := rand.Int(rand.Reader, big.NewInt(65534))
-								portInt := int32(port.Int64())
-								if !slices.Contains(dnatPorts, portInt) {
-									dnatPorts = append(dnatPorts, portInt)
-									return portInt
+				if needDNAT {
+					for _, expose := range podTemplate.ServicePorts {
+						key := fmt.Sprintf("%s-%s-%d-%s", podTemplate.Key, network.Name, expose.Port, expose.Protocol)
+						if _, exists := dnatDedup[key]; exists {
+							continue
+						}
+						dnatDedup[key] = struct{}{}
+						dnats = append(dnats, &model.DNat{
+							Name: fmt.Sprintf("dnat-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6)),
+							ExternalPort: func() int32 {
+								for {
+									port, _ := rand.Int(rand.Reader, big.NewInt(65534))
+									portInt := int32(port.Int64())
+									if !slices.Contains(dnatPorts, portInt) {
+										dnatPorts = append(dnatPorts, portInt)
+										return portInt
+									}
 								}
-							}
-						}(),
-						InternalIP:   network.IP,
-						InternalPort: expose.Port,
-						Protocol:     expose.Protocol,
-					})
+							}(),
+							InternalIP:   network.IP,
+							InternalPort: expose.Port,
+							Protocol:     expose.Protocol,
+						})
+					}
 				}
 				if len(snats) > 0 || len(dnats) > 0 {
 					lanIP, err := utils.GetLastIP(subnet.CIDRBlock)
