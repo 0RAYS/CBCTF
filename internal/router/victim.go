@@ -50,6 +50,7 @@ func IncreaseVictimDuration(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{
 		"target":    victim.RemoteAddr(),
+		"duration":  (victim.Duration + time.Hour).Seconds(),
 		"remaining": victim.Remaining().Seconds(),
 		"status":    "Running",
 	}))
