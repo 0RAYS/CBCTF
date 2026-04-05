@@ -694,6 +694,7 @@ function AdminChallengeModal({
                                 minimap: { enabled: false },
                                 scrollBeyondLastLine: false,
                                 scrollbar: {
+                                  alwaysConsumeMouseWheel: false,
                                   vertical: 'auto',
                                   horizontal: 'auto',
                                 },
