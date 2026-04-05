@@ -12,7 +12,6 @@
   "dependencies": {
     "@fingerprintjs/fingerprintjs": "^5.0.1",
     "@monaco-editor/react": "^4.7.0",
-    "monaco-editor": "^0.52.0",
     "@reduxjs/toolkit": "^2.11.2",
     "@tabler/icons-react": "^3.36.1",
     "axios": "1.13.5",
@@ -20,6 +19,7 @@
     "echarts-for-react": "^3.0.6",
     "i18next": "^25.8.7",
     "immer": "^11.1.4",
+    "monaco-editor": "^0.52.0",
     "motion": "^12.34.0",
     "nprogress": "^0.2.0",
     "react": "^19.2.4",
@@ -48,5 +48,5 @@
     "tailwindcss": "^4.1.18",
     "vite": "^7.3.1"
   },
-  "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be"
+  "packageManager": "pnpm@10.33.0"
 }
