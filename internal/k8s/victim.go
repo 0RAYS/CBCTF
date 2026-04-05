@@ -38,6 +38,15 @@ func VictimLabels(victim model.Victim, tags ...map[string]string) map[string]str
 	return labels
 }
 
+func findExposeDisplayName(exposes model.Exposes, port int32, protocol string) string {
+	for _, expose := range exposes {
+		if expose.Port == port && strings.EqualFold(expose.Protocol, protocol) {
+			return expose.Published
+		}
+	}
+	return ""
+}
+
 // StartVictim expects victim.Spec and workload pod records to be preloaded from DB.
 func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.RetVal) {
 	log.Logger.Infof("Starting Victim for Team %d Challenge %d", victim.TeamID.V, victim.ChallengeID)
@@ -200,6 +209,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				endpointsMutex.Lock()
 				for _, port := range service.Spec.Ports {
 					endpoint := model.Endpoint{
+						Name:     findExposeDisplayName(podSpec.ServicePorts, port.Port, string(port.Protocol)),
 						IP:       p.Status.HostIP,
 						Port:     port.NodePort,
 						Protocol: string(port.Protocol),
@@ -401,6 +411,7 @@ func createVictimNetworkResources(
 				}
 				endpointsMutex.Lock()
 				endpoint := model.Endpoint{
+					Name:     dnat.DisplayName,
 					IP:       e.Spec.V4ip,
 					Port:     dnat.ExternalPort,
 					Protocol: dnat.Protocol,

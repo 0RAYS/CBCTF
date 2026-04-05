@@ -238,7 +238,8 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 						}
 						dnatDedup[key] = struct{}{}
 						dnats = append(dnats, &model.DNat{
-							Name: fmt.Sprintf("dnat-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6)),
+							Name:        fmt.Sprintf("dnat-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6)),
+							DisplayName: expose.Published,
 							ExternalPort: func() int32 {
 								for {
 									port, _ := rand.Int(rand.Reader, big.NewInt(65534))

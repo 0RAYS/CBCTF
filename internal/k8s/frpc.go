@@ -100,6 +100,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 				)
 			}
 			newEndpoints = append(newEndpoints, model.Endpoint{
+				Name:     endpoint.Name,
 				IP:       frps.Host,
 				Port:     exposedPort,
 				Protocol: endpoint.Protocol,
@@ -146,6 +147,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 					)
 				}
 				newEndpoints = append(newEndpoints, model.Endpoint{
+					Name:     dnat.DisplayName,
 					IP:       frps.Host,
 					Port:     exposedPort,
 					Protocol: dnat.Protocol,

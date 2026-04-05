@@ -4,7 +4,6 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
-	"strconv"
 
 	"github.com/compose-spec/compose-go/types"
 	"github.com/gin-gonic/gin"
@@ -33,7 +32,7 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 				for _, expose := range container.Exposes {
 					service.Ports = append(service.Ports, types.ServicePortConfig{
 						Protocol:  expose.Protocol,
-						Published: strconv.Itoa(int(expose.Port)),
+						Published: expose.Published,
 						Mode:      "ingress",
 						Target:    uint32(expose.Port),
 					})
