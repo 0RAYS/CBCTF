@@ -5,7 +5,7 @@ response:
   badRequest: "Bad request: {{.Error}}"
   unauthorized: "Unauthorized"
   forbidden: "Forbidden"
-  tooManyRequests: "Too many requests"
+  tooManyRequests: "Too many requests, please retry after {{.Seconds}} seconds"
 model:
   duplicateKeyValue: "{{.Model}} has duplicate key: {{.Key}}"
   notUniqueKey: "{{.Model}} {{.Key}} is not unique key"
