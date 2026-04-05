@@ -87,7 +87,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 			if protocol := strings.ToLower(endpoint.Protocol); protocol == "tcp" {
 				frpcConfig += fmt.Sprintf(
 					frpcItemTemplate,
-					utils.RandStr(10), strings.ToLower(endpoint.Protocol), "127.0.0.1", endpoint.Port, exposedPort, proxyProtocol,
+					utils.RandStr(10), protocol, "127.0.0.1", endpoint.Port, exposedPort, proxyProtocol,
 				)
 				name := utils.RandStr(10)
 				nginxConfig += fmt.Sprintf(
@@ -97,7 +97,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 			} else {
 				frpcConfig += fmt.Sprintf(
 					frpcItemTemplate,
-					utils.RandStr(10), strings.ToLower(endpoint.Protocol), endpoint.IP, endpoint.Port, exposedPort, "",
+					utils.RandStr(10), protocol, endpoint.IP, endpoint.Port, exposedPort, "",
 				)
 			}
 			newEndpoints = append(newEndpoints, model.Endpoint{
