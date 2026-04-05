@@ -83,7 +83,7 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
   const isWaiting = currentInstanceStatus === 'waiting';
   const isPending = currentInstanceStatus === 'pending';
   const isTerminating = currentInstanceStatus === 'terminating';
-  const instanceDuration = Math.max(Number(testStatus?.remote?.remaining) || 0, timeLeft);
+  const instanceDuration = Number(testStatus?.remote?.duration) || 0;
   const progressWidth = instanceDuration > 0 ? Math.max(0, Math.min(100, (timeLeft / instanceDuration) * 100)) : 0;
 
   // 仅在弹窗打开期间轮询；同步 waiting/pending/running 状态
@@ -216,6 +216,7 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
             ...(prev?.remote || {}),
             status: 'waiting',
             target: prev?.remote?.target || [],
+            duration: prev?.remote?.duration || 0,
             remaining: 0,
           },
         }));
