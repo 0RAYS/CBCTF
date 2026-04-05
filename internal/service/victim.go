@@ -362,6 +362,7 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 func GetVictimStatus(tx *gorm.DB, teamID uint, challenge model.Challenge) gin.H {
 	data := gin.H{
 		"target":    make([]string, 0),
+		"duration":  0,
 		"remaining": 0,
 		"status":    "Down",
 	}
@@ -375,6 +376,7 @@ func GetVictimStatus(tx *gorm.DB, teamID uint, challenge model.Challenge) gin.H 
 	}
 	targets := victim.RemoteAddr()
 	data["target"] = targets
+	data["duration"] = victim.Duration.Seconds()
 	data["status"] = victim.Status
 	data["remaining"] = victim.Remaining().Seconds()
 	return data
