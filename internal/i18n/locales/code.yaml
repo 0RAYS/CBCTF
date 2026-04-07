@@ -142,6 +142,7 @@ model:
 redis:
   setError: "500"
   getError: "500"
+  notFound: "404"
   deleteError: "500"
 task:
   enqueueError: "500"

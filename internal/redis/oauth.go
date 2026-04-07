@@ -5,8 +5,11 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
+	"errors"
 	"fmt"
 	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
 const oauthKey = "oauth:%s:%s"
@@ -27,6 +30,9 @@ func GetOauthVerifier(provider, state string) (string, model.RetVal) {
 	defer cancel()
 	verifier, err := RDB.Get(ctx, fmt.Sprintf(oauthKey, provider, state)).Result()
 	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return "", model.RetVal{Msg: i18n.Redis.NotFound, Attr: map[string]any{"Key": fmt.Sprintf(oauthKey, provider, state)}}
+		}
 		log.Logger.Warningf("Failed to get oauth state for provider %s: %s", provider, err)
 		return "", model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": fmt.Sprintf(oauthKey, provider, state), "Error": err.Error()}}
 	}
@@ -58,6 +64,9 @@ func GetAndDelOauthToken(code string) (string, model.RetVal) {
 	defer cancel()
 	token, err := RDB.GetDel(ctx, fmt.Sprintf(oauthCodeKey, code)).Result()
 	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return "", model.RetVal{Msg: i18n.Redis.NotFound, Attr: map[string]any{"Key": fmt.Sprintf(oauthCodeKey, code)}}
+		}
 		log.Logger.Warningf("Failed to get oauth code: %s", err)
 		return "", model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": fmt.Sprintf(oauthCodeKey, code), "Error": err.Error()}}
 	}

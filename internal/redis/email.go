@@ -5,8 +5,11 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
+	"errors"
 	"fmt"
 	"time"
+
+	"github.com/redis/go-redis/v9"
 )
 
 const emailVerifyTokenKey = "email:%d"
@@ -28,8 +31,11 @@ func GetEmailVerifyToken(userID uint) (string, model.RetVal) {
 	defer cancel()
 	token, err := RDB.Get(ctx, fmt.Sprintf(emailVerifyTokenKey, userID)).Result()
 	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return "", model.RetVal{Msg: i18n.Redis.NotFound, Attr: map[string]any{"Key": fmt.Sprintf(emailVerifyTokenKey, userID)}}
+		}
 		log.Logger.Warningf("Failed to get email verify token: %s", err)
-		return token, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": fmt.Sprintf(emailVerifyTokenKey, userID), "Error": err.Error()}}
+		return "", model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": fmt.Sprintf(emailVerifyTokenKey, userID), "Error": err.Error()}}
 	}
 	return token, model.SuccessRetVal()
 }

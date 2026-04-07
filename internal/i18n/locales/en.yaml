@@ -142,6 +142,7 @@ model:
 redis:
   setError: "Cache {{.Key}} error: {{.Error}}"
   getError: "Get {{.Key}} error: {{.Error}}"
+  notFound: "{{.Key}} not found"
   deleteError: "Delete {{.Key}} error: {{.Error}}"
 task:
   enqueueError: "Enqueue error: {{.Error}}"
