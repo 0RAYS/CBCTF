@@ -22,6 +22,10 @@ func CheckPermission(ctx *gin.Context) {
 	var permissions []string
 	pass, ret := redis.CheckUserRBAC(userID, permission)
 	if !ret.OK {
+		if ret.Msg != i18n.Redis.NotFound {
+			resp.AbortJSON(ctx, ret)
+			return
+		}
 		permissions, ret = db.InitPermissionRepo(db.DB).GetUserPermissions(userID)
 		if !ret.OK {
 			resp.AbortJSON(ctx, ret)

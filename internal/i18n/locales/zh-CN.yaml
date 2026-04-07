@@ -142,6 +142,7 @@ model:
 redis:
   setError: "缓存 {{.Key}} 失败: {{.Error}}"
   getError: "获取 {{.Key}} 缓存失败: {{.Error}}"
+  notFound: "{{.Key}} 未缓存"
   deleteError: "删除 {{.Key}} 缓存失败: {{.Error}}"
 task:
   enqueueError: "提交任务队列失败: {{.Error}}"

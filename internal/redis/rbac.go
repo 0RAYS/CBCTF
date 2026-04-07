@@ -5,11 +5,13 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
+	"errors"
 	"fmt"
 	"slices"
 	"strings"
 	"time"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/vmihailenco/msgpack/v5"
 )
 
@@ -31,6 +33,9 @@ func CheckUserRBAC(userID uint, permission string) (bool, model.RetVal) {
 	defer cancel()
 	data, err := RDB.Get(ctx, fmt.Sprintf(userRBACKey, userID)).Result()
 	if err != nil {
+		if errors.Is(err, redis.Nil) {
+			return false, model.RetVal{Msg: i18n.Redis.NotFound, Attr: map[string]any{"Key": userRBACKey}}
+		}
 		log.Logger.Warningf("Failed to get user RBAC permissions: %s", err)
 		return false, model.RetVal{Msg: i18n.Redis.GetError, Attr: map[string]any{"Key": userRBACKey, "Error": err.Error()}}
 	}
