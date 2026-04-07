@@ -130,7 +130,7 @@ func (c *ContestRepo) GetByUserID(userID uint) ([]model.Contest, model.RetVal) {
 		Where("user_contests.user_id = ? AND contests.deleted_at IS NULL", userID).
 		Scan(&contests)
 	if res.Error != nil {
-		log.Logger.Fatalf("Failed to get Contests: %s", res.Error)
+		log.Logger.Warningf("Failed to get Contests: %s", res.Error)
 		return nil, model.RetVal{Msg: i18n.Model.Contest.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return contests, model.SuccessRetVal()
