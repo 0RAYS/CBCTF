@@ -187,7 +187,7 @@ func (u *UserRepo) GetByTeamID(teamID uint, limit, offset int) ([]model.User, mo
 		Where("user_teams.team_id = ? AND users.deleted_at IS NULL", teamID).
 		Limit(limit).Offset(offset).Scan(&users)
 	if res.Error != nil {
-		log.Logger.Fatalf("Failed to get Users: %v", res.Error)
+		log.Logger.Warningf("Failed to get Users: %v", res.Error)
 		return nil, model.RetVal{Msg: i18n.Model.User.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return users, model.SuccessRetVal()
@@ -214,7 +214,7 @@ func (u *UserRepo) GetByContestID(contestID uint, limit, offset int) ([]model.Us
 		Where("user_contests.contest_id = ? AND users.deleted_at IS NULL", contestID).
 		Limit(limit).Offset(offset).Scan(&users)
 	if res.Error != nil {
-		log.Logger.Fatalf("Failed to get Users: %v", res.Error)
+		log.Logger.Warningf("Failed to get Users: %v", res.Error)
 		return nil, model.RetVal{Msg: i18n.Model.User.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return users, model.SuccessRetVal()
