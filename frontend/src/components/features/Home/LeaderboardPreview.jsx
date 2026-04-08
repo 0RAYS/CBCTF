@@ -2,14 +2,29 @@ import { motion } from 'motion/react';
 import { ScrollingText, Button } from '../../../components/common';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useBranding } from '../../../hooks/useBranding';
 
 function LeaderboardPreview({ topUsers, isLoading }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { home } = useBranding();
 
   return (
     <div className="py-12 md:py-20 px-4 md:px-8">
       <div className="w-full max-w-[1200px] mx-auto">
+        <motion.div
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ ease: [0.25, 1, 0.5, 1], duration: 0.4 }}
+        >
+          <h2 className="text-3xl font-mono text-neutral-50 mb-4">
+            {home.leaderboard.titlePrefix} <span className="text-geek-400">{home.leaderboard.titleHighlight}</span>
+          </h2>
+          <p className="text-neutral-300">{home.leaderboard.subtitle}</p>
+        </motion.div>
+
         {/* Leaderboard */}
         <motion.div
           className="border border-neutral-300/30 rounded-md overflow-hidden"
@@ -81,7 +96,7 @@ function LeaderboardPreview({ topUsers, isLoading }) {
         {!isLoading && (
           <div className="flex justify-center mt-8">
             <Button variant="outline" onClick={() => navigate('/games')}>
-              {t('home.leaderboard.viewScoreboard')}
+              {home.leaderboard.action}
             </Button>
           </div>
         )}

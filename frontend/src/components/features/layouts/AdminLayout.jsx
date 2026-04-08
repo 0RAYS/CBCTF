@@ -4,12 +4,14 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import AdminShellLayout from './AdminShellLayout';
 import { getAdminNavSections } from '../../../config/adminNavigation';
+import { useBranding } from '../../../hooks/useBranding';
 
 function AdminLayout() {
   const navigate = useNavigate();
   const user = useSelector((state) => state.user);
   const routes = useSelector((state) => state.user.routes);
   const { t } = useTranslation();
+  const { adminName } = useBranding();
 
   const sections = useMemo(() => getAdminNavSections(t, routes), [t, routes]);
 
@@ -34,7 +36,7 @@ function AdminLayout() {
       onLogoClick={handleLogoClick}
       onAvatarClick={handlePictureClick}
       user={user}
-      logo={t('branding.admin')}
+      logo={adminName}
     >
       <Outlet />
     </AdminShellLayout>

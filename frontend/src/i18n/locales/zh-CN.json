@@ -1,7 +1,7 @@
 {
   "branding": {
     "main": "DEEP DIVE CTF",
-    "admin": "CBCTF"
+    "admin": "DEEP DIVE Admin"
   },
   "common": {
     "loading": "加载中...",
@@ -112,7 +112,8 @@
     "cheats": "风控",
     "notices": "公告",
     "generators": "生成器",
-    "victims": "靶机"
+    "victims": "靶机",
+    "branding": "品牌"
   },
   "admin": {
     "title": "管理中心",
@@ -2233,6 +2234,47 @@
         "port": "端口",
         "token": "令牌",
         "allowedPorts": "允许端口"
+      }
+    },
+    "branding": {
+      "title": "品牌设置",
+      "identityHint": "统一配置前台首页、导航、页脚和浏览器标签中展示的品牌内容。",
+      "actions": {
+        "uploadLogo": "上传首页 Logo"
+      },
+      "sections": {
+        "identity": "站点标识",
+        "homeHero": "首页主视觉",
+        "homeSections": "首页区块",
+        "challengeTypes": "题型区块",
+        "upcoming": "近期赛事区块",
+        "leaderboard": "排行榜区块"
+      },
+      "labels": {
+        "siteName": "前台站点名",
+        "adminName": "后台站点名",
+        "browserTitle": "页面标题",
+        "browserDescription": "页面描述",
+        "footerCopyright": "页脚版权",
+        "homeLogo": "首页 Logo",
+        "homeLogoAlt": "Logo 替代文本",
+        "heroTitlePrefix": "主标题前缀",
+        "heroTitleHighlight": "主标题高亮",
+        "heroTitleSuffix": "主标题后缀",
+        "heroSubtitle": "主标题副文案",
+        "heroPrimaryAction": "主按钮文案",
+        "heroSecondaryAction": "副按钮文案",
+        "sectionTitlePrefix": "区块标题前缀",
+        "sectionTitleHighlight": "区块标题高亮",
+        "sectionSubtitle": "区块副文案",
+        "sectionAction": "区块按钮文案"
+      },
+      "toast": {
+        "fetchFailed": "获取品牌设置失败",
+        "updateSuccess": "品牌设置已更新",
+        "updateFailed": "更新品牌设置失败",
+        "logoUpdated": "首页 Logo 已更新",
+        "logoUpdateFailed": "首页 Logo 更新失败"
       }
     }
   },

@@ -1,9 +1,11 @@
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { IconWorld, IconLock, IconMicroscope, IconTerminal2, IconRotateClockwise, IconLink } from '@tabler/icons-react';
+import { useBranding } from '../../../hooks/useBranding';
 
 function ChallengeTypes() {
   const { t } = useTranslation();
+  const { home } = useBranding();
   const types = [
     {
       name: t('home.challengeTypes.web.name'),
@@ -55,7 +57,7 @@ function ChallengeTypes() {
             viewport={{ once: true }}
             transition={{ ease: [0.25, 1, 0.5, 1], duration: 0.4 }}
           >
-            {t('home.challengeTypes.titlePrefix')} {t('home.challengeTypes.titleHighlight')}
+            {home.challengeTypes.titlePrefix} {home.challengeTypes.titleHighlight}
           </motion.p>
           <motion.p
             className="text-neutral-300 max-w-[600px] mx-auto"
@@ -64,7 +66,7 @@ function ChallengeTypes() {
             viewport={{ once: true }}
             transition={{ delay: 0.1, ease: [0.25, 1, 0.5, 1], duration: 0.4 }}
           >
-            {t('home.challengeTypes.subtitle')}
+            {home.challengeTypes.subtitle}
           </motion.p>
         </div>
 

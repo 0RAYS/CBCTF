@@ -49,6 +49,7 @@ const (
 	UpdateWebhookEventType = "update_webhook"
 	DeleteWebhookEventType = "delete_webhook"
 
+	UpdateBrandingEventType = "update_branding"
 	UpdateSettingEventType = "update_setting"
 	RestartSystemEventType = "restart_system"
 
@@ -113,6 +114,7 @@ var EventTypes = []string{
 	CreateSmtpEventType, UpdateSmtpEventType, DeleteSmtpEventType,
 	UpdateCronJobEventType,
 	CreateWebhookEventType, UpdateWebhookEventType, DeleteWebhookEventType,
+	UpdateBrandingEventType,
 	UpdateSettingEventType, RestartSystemEventType,
 	ActivateEmailEventType, VerifyEmailEventType,
 	UploadPictureEventType, DeletePictureEventType,

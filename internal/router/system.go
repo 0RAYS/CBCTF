@@ -23,6 +23,9 @@ func HomePage(ctx *gin.Context) {
 		"stats":      []gin.H{},
 		"scoreboard": []gin.H{},
 	}
+	if branding, ret := db.InitBrandingRepo(db.DB).GetDefault(); ret.OK {
+		data["branding"] = resp.GetBrandingResp(branding)
+	}
 	repo := db.InitContestRepo(db.DB)
 	contests, count, ret := repo.List(-1, -1)
 	if ret.OK {

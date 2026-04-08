@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { getContestInfo } from '../../../api/contest';
 import { isContestEnded } from '../../../config/contest';
+import { useBranding } from '../../../hooks/useBranding';
 
 function ContestLayout() {
   const { contestId } = useParams();
@@ -12,6 +13,7 @@ function ContestLayout() {
   const location = useLocation();
   const user = useSelector((state) => state.user);
   const { t } = useTranslation();
+  const { siteName } = useBranding();
   const [contestEnded, setContestEnded] = useState(false);
 
   useEffect(() => {
@@ -71,7 +73,7 @@ function ContestLayout() {
       onTabChange={handleTabChange}
       onLogoClick={handleLogoClick}
       onPictureClick={handlePictureClick}
-      logo={t('branding.main')}
+      logo={siteName}
       pictureSrc={user.user?.picture}
       userName={user.user?.name}
     >

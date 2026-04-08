@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import AdminShellLayout from './AdminShellLayout';
 import { getAdminContestNavSections } from '../../../config/adminNavigation';
+import { useBranding } from '../../../hooks/useBranding';
 
 function AdminContestsLayout() {
   const { id } = useParams();
@@ -11,6 +12,7 @@ function AdminContestsLayout() {
   const user = useSelector((state) => state.user);
   const routes = useSelector((state) => state.user.routes);
   const { t } = useTranslation();
+  const { adminName } = useBranding();
 
   const sections = useMemo(() => getAdminContestNavSections(t, id, routes), [t, id, routes]);
 
@@ -29,7 +31,7 @@ function AdminContestsLayout() {
       onLogoClick={handleLogoClick}
       onAvatarClick={handlePictureClick}
       user={user}
-      logo={t('branding.admin')}
+      logo={adminName}
       subtitle={id ? `${t('admin.contest')} #${id}` : t('admin.contest')}
     >
       <div className="w-full">

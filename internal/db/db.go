@@ -99,7 +99,7 @@ func Init() {
 	}
 
 	err = DB.AutoMigrate(
-		&model.Challenge{}, &model.ChallengeFlag{}, &model.Cheat{}, &model.Victim{}, &model.Pod{},
+		&model.Branding{}, &model.Challenge{}, &model.ChallengeFlag{}, &model.Cheat{}, &model.Victim{}, &model.Pod{},
 		&model.ContestChallenge{}, &model.ContestFlag{}, &model.CronJob{}, &model.Device{}, &model.Email{},
 		&model.Event{}, &model.File{}, &model.Generator{}, &model.Group{}, &model.Notice{}, &model.Oauth{},
 		&model.Permission{}, &model.Request{}, &model.Role{}, &model.Setting{}, &model.Smtp{}, &model.Submission{},
@@ -128,6 +128,9 @@ func Init() {
 
 	if ret := InitSettingRepo(DB).InitSettings(); !ret.OK {
 		log.Logger.Fatalf("Failed to init settings: %s %v", ret.Msg, ret.Attr)
+	}
+	if ret := InitBrandingRepo(DB).InitDefault(); !ret.OK {
+		log.Logger.Fatalf("Failed to init branding: %s %v", ret.Msg, ret.Attr)
 	}
 	if ret := InitPermissionRepo(DB).InitPermissions(); !ret.OK {
 		log.Logger.Fatalf("Failed to init permissions: %s %v", ret.Msg, ret.Attr)

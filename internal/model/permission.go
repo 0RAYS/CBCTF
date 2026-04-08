@@ -31,10 +31,12 @@ const (
 	PermAdminIPSearch     = "admin:ip:search"
 	PermAdminModelsSearch = "admin:models:search"
 
-	PermAdminSystemStatus  = "admin:system:status"
-	PermAdminSystemRead    = "admin:system:read"
-	PermAdminSystemUpdate  = "admin:system:update"
-	PermAdminSystemRestart = "admin:system:restart"
+	PermAdminSystemStatus   = "admin:system:status"
+	PermAdminSystemRead     = "admin:system:read"
+	PermAdminSystemUpdate   = "admin:system:update"
+	PermAdminSystemRestart  = "admin:system:restart"
+	PermAdminBrandingRead   = "admin:branding:read"
+	PermAdminBrandingUpdate = "admin:branding:update"
 
 	PermAdminPermissionUpdate = "admin:permission:update"
 	PermAdminPermissionList   = "admin:permission:list"
@@ -202,6 +204,9 @@ var RoutePermissions = map[string]string{
 	"GET /admin/system/config":   PermAdminSystemRead,
 	"PUT /admin/system/config":   PermAdminSystemUpdate,
 	"POST /admin/system/restart": PermAdminSystemRestart,
+	"GET /admin/branding":        PermAdminBrandingRead,
+	"PUT /admin/branding":        PermAdminBrandingUpdate,
+	"POST /admin/branding/logo":  PermAdminBrandingUpdate,
 
 	// /admin/permissions
 	"GET /admin/permissions":               PermAdminPermissionList,
@@ -430,6 +435,8 @@ var Permissions = []Permission{
 	{Name: PermAdminSystemRead, Resource: "admin:system", Operation: "read", Description: "查看系统配置"},
 	{Name: PermAdminSystemUpdate, Resource: "admin:system", Operation: "update", Description: "更新系统配置"},
 	{Name: PermAdminSystemRestart, Resource: "admin:system", Operation: "restart", Description: "重启系统"},
+	{Name: PermAdminBrandingRead, Resource: "admin:branding", Operation: "read", Description: "查看品牌设置"},
+	{Name: PermAdminBrandingUpdate, Resource: "admin:branding", Operation: "update", Description: "更新品牌设置"},
 
 	{Name: PermAdminIPSearch, Resource: "admin:ip", Operation: "search", Description: "搜索 IP"},
 	{Name: PermAdminModelsSearch, Resource: "admin:models", Operation: "search", Description: "搜索模型"},

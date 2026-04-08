@@ -3,11 +3,13 @@ import BaseLayout from './BaseLayout';
 import { useSelector } from 'react-redux';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useBranding } from '../../../hooks/useBranding';
 function MainLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const user = useSelector((state) => state.user);
   const { t } = useTranslation();
+  const { siteName } = useBranding();
 
   const mainTabs = useMemo(() => [{ id: 'GAMES', label: t('nav.games') }], [t]);
 
@@ -37,7 +39,7 @@ function MainLayout() {
       onTabChange={handleTabChange}
       onLogoClick={handleLogoClick}
       onPictureClick={handlePictureClick}
-      logo={t('branding.main')}
+      logo={siteName}
       pictureSrc={user.user?.picture}
       userName={user.user?.name}
     >
