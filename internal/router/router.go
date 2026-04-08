@@ -63,6 +63,7 @@ func Init() *gin.Engine {
 		router.GET("/assets", DefaultAssets)
 		router.GET("/pictures/:fileID", middleware.SetFile(model.PictureFileType), DownloadFile(model.SkipEventType))
 
+		router.GET("/branding", GetBranding)
 		router.GET("/stats", HomePage)
 		router.GET("/contests", GetContests)
 	}
@@ -189,6 +190,10 @@ func Init() *gin.Engine {
 			adminSystem.PUT("/config", UpdateSystem)
 			adminSystem.POST("/restart", RestartSystem)
 		}
+
+		admin.GET("/branding", GetAdminBranding)
+		admin.PUT("/branding", UpdateBranding)
+		admin.POST("/branding/logo", UploadPicture("branding"))
 
 		admin.GET("/permissions", GetPermissions)
 		adminPermission := admin.Group("/permissions/:permissionID", middleware.SetPermission)

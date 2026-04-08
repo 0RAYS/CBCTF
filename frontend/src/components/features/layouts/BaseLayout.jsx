@@ -2,6 +2,7 @@ import NavBar from './NavBar';
 import Footer from './Footer';
 import { useTranslation } from 'react-i18next';
 import { getFooterConfig } from '../../../config/footer';
+import { useBranding } from '../../../hooks/useBranding';
 
 function BaseLayout({
   children,
@@ -15,8 +16,9 @@ function BaseLayout({
   userName = '',
 }) {
   const { t } = useTranslation();
+  const { footerCopyright } = useBranding();
   const resolvedLogo = logo || t('branding.main');
-  const footerConfig = getFooterConfig(t);
+  const footerConfig = getFooterConfig(t, footerCopyright);
 
   return (
     <div className="h-full w-full overflow-x-hidden">

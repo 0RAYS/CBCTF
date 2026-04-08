@@ -6,6 +6,7 @@ import AdminTopbar from '../Admin/AdminTopbar';
 import AdminGlobalSearch from '../Admin/AdminGlobalSearch';
 import Footer from './Footer';
 import { getFooterConfig } from '../../../config/footer';
+import { useBranding } from '../../../hooks/useBranding';
 
 function AdminShellLayout({
   children,
@@ -22,6 +23,7 @@ function AdminShellLayout({
 }) {
   const location = useLocation();
   const { t } = useTranslation();
+  const { footerCopyright } = useBranding();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const activePath = location.pathname;
@@ -62,7 +64,7 @@ function AdminShellLayout({
     setSidebarOpen(false);
   };
 
-  const footerConfig = getFooterConfig(t);
+  const footerConfig = getFooterConfig(t, footerCopyright);
 
   return (
     <div className="h-screen w-screen overflow-hidden">

@@ -93,6 +93,15 @@ func UploadPicture(v string) gin.HandlerFunc {
 			id = middleware.GetOauth(ctx).ID
 			options.Model = model.ModelName(model.Oauth{})
 			options.ModelID = id
+		case "branding":
+			branding, ret := db.InitBrandingRepo(db.DB).GetDefault()
+			if !ret.OK {
+				resp.JSON(ctx, ret)
+				return
+			}
+			id = branding.ID
+			options.Model = model.ModelName(model.Branding{})
+			options.ModelID = id
 		}
 		record, ret := service.SavePicture(db.DB, options, file)
 		if !ret.OK {

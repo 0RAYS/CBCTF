@@ -1,7 +1,7 @@
 {
   "branding": {
     "main": "DEEP DIVE CTF",
-    "admin": "CBCTF"
+    "admin": "DEEP DIVE Admin"
   },
   "common": {
     "loading": "Loading...",
@@ -112,7 +112,8 @@
     "cheats": "CHEATS",
     "notices": "NOTICES",
     "generators": "GENERATORS",
-    "victims": "VICTIMS"
+    "victims": "VICTIMS",
+    "branding": "BRANDING"
   },
   "admin": {
     "title": "Admin Center",
@@ -2233,6 +2234,47 @@
         "port": "Port",
         "token": "Token",
         "allowedPorts": "Allowed Ports"
+      }
+    },
+    "branding": {
+      "title": "Branding",
+      "identityHint": "Control the brand shown on the home page, navigation, footer, and browser tabs from one place.",
+      "actions": {
+        "uploadLogo": "Upload Home Logo"
+      },
+      "sections": {
+        "identity": "Identity",
+        "homeHero": "Home Hero",
+        "homeSections": "Home Sections",
+        "challengeTypes": "Challenge Types",
+        "upcoming": "Upcoming Section",
+        "leaderboard": "Leaderboard Section"
+      },
+      "labels": {
+        "siteName": "Main Site Name",
+        "adminName": "Admin Site Name",
+        "browserTitle": "Browser Title",
+        "browserDescription": "Browser Description",
+        "footerCopyright": "Footer Copyright",
+        "homeLogo": "Home Logo",
+        "homeLogoAlt": "Logo Alt Text",
+        "heroTitlePrefix": "Hero Title Prefix",
+        "heroTitleHighlight": "Hero Title Highlight",
+        "heroTitleSuffix": "Hero Title Suffix",
+        "heroSubtitle": "Hero Subtitle",
+        "heroPrimaryAction": "Primary CTA",
+        "heroSecondaryAction": "Secondary CTA",
+        "sectionTitlePrefix": "Section Title Prefix",
+        "sectionTitleHighlight": "Section Title Highlight",
+        "sectionSubtitle": "Section Subtitle",
+        "sectionAction": "Section CTA"
+      },
+      "toast": {
+        "fetchFailed": "Failed to fetch branding settings",
+        "updateSuccess": "Branding settings updated",
+        "updateFailed": "Failed to update branding settings",
+        "logoUpdated": "Home logo updated",
+        "logoUpdateFailed": "Failed to update home logo"
       }
     }
   },

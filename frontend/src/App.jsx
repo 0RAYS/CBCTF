@@ -3,6 +3,8 @@ import { HashRouter as Router } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import AppRoutes from './routes';
 import { fetchUserInfo, fetchAccessibleRoutes, setInitialized } from './store/user';
+import { fetchBranding } from './store/branding';
+import BrandingHead from './components/features/Branding/BrandingHead';
 
 function App() {
   const dispatch = useDispatch();
@@ -10,9 +12,11 @@ function App() {
 
   useEffect(() => {
     const initializeAuth = async () => {
+      const tasks = [dispatch(fetchBranding())];
       if (token) {
-        await Promise.all([dispatch(fetchUserInfo()), dispatch(fetchAccessibleRoutes())]);
+        tasks.push(dispatch(fetchUserInfo()), dispatch(fetchAccessibleRoutes()));
       }
+      await Promise.all(tasks);
       dispatch(setInitialized());
     };
     initializeAuth();
@@ -21,6 +25,7 @@ function App() {
   return (
     <div className="relative h-screen w-screen">
       <Router>
+        <BrandingHead />
         <AppRoutes />
       </Router>
     </div>

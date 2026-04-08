@@ -22,6 +22,13 @@ var metadataRegistry = map[reflect.Type]Metadata{
 		QueryFields:  []string{"id", "rand_id", "name", "description", "category", "type", "generator_image"},
 		SearchFields: []string{"rand_id", "name", "description", "category", "type", "generator_image"},
 	},
+	reflect.TypeFor[Branding](): {
+		Name:         "Branding",
+		Table:        "brandings",
+		UniqueFields: []string{"id", "code"},
+		QueryFields:  []string{"id", "code"},
+		SearchFields: []string{"code"},
+	},
 	reflect.TypeFor[ChallengeFlag](): {
 		Name:         "ChallengeFlag",
 		Table:        "challenge_flags",

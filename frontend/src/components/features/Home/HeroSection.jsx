@@ -1,11 +1,11 @@
 import { motion } from 'motion/react';
 import { Button } from '../../../components/common';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useBranding } from '../../../hooks/useBranding';
 
 function HeroSection() {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { home, homeLogo, homeLogoAlt } = useBranding();
 
   return (
     <div className="min-h-[480px] md:min-h-[600px] flex items-center justify-center px-4 md:px-8">
@@ -18,17 +18,17 @@ function HeroSection() {
           transition={{ duration: 0.5, ease: [0.25, 1, 0.5, 1] }}
         >
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-mono text-neutral-50 leading-tight">
-            {t('home.hero.titlePrefix')}
-            <span className="text-geek-400"> {t('home.hero.titleHighlight')} </span>
-            {t('home.hero.titleSuffix')}
+            {home.hero.titlePrefix}
+            <span className="text-geek-400"> {home.hero.titleHighlight} </span>
+            {home.hero.titleSuffix}
           </h1>
-          <p className="text-neutral-300 text-lg">{t('home.hero.subtitle')}</p>
+          <p className="text-neutral-300 text-lg">{home.hero.subtitle}</p>
           <div className="flex gap-4">
             <Button variant="primary" size="lg" className="shadow-focus-strong" onClick={() => navigate('/games')}>
-              {t('home.hero.start')}
+              {home.hero.primaryAction}
             </Button>
             <Button variant="outline" size="lg" onClick={() => navigate('/support')}>
-              {t('home.hero.learnMore')}
+              {home.hero.secondaryAction}
             </Button>
           </div>
         </motion.div>
@@ -42,7 +42,13 @@ function HeroSection() {
         >
           {/* 这里可以添加一些科技感的SVG动画或3D模型 */}
           <div className="absolute inset-0 border border-neutral-300/30 rounded-md">
-            <img alt="CBCTF" src="./logo.png" width="400" height="400" />
+            <img
+              alt={homeLogoAlt}
+              src={homeLogo || './logo.png'}
+              width="400"
+              height="400"
+              className="w-full h-full object-contain"
+            />
           </div>
         </motion.div>
       </div>

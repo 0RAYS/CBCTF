@@ -2,10 +2,12 @@ import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../../components/common';
+import { useBranding } from '../../../hooks/useBranding';
 
 function UpcomingContests({ contests = [], isLoading }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { home } = useBranding();
 
   return (
     <div className="py-12 md:py-20 px-4 md:px-8">
@@ -19,9 +21,9 @@ function UpcomingContests({ contests = [], isLoading }) {
           transition={{ ease: [0.25, 1, 0.5, 1], duration: 0.4 }}
         >
           <h2 className="text-3xl font-mono text-neutral-50 mb-4">
-            {t('home.upcoming.titlePrefix')} <span className="text-geek-400">{t('home.upcoming.titleHighlight')}</span>
+            {home.upcoming.titlePrefix} <span className="text-geek-400">{home.upcoming.titleHighlight}</span>
           </h2>
-          <p className="text-neutral-300">{t('home.upcoming.subtitle')}</p>
+          <p className="text-neutral-300">{home.upcoming.subtitle}</p>
         </motion.div>
 
         {/* Contest list */}
@@ -80,7 +82,7 @@ function UpcomingContests({ contests = [], isLoading }) {
         {!isLoading && (
           <div className="flex justify-center mt-8">
             <Button variant="outline" onClick={() => navigate('/games')}>
-              {t('home.upcoming.viewAll')}
+              {home.upcoming.action}
             </Button>
           </div>
         )}

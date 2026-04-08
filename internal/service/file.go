@@ -59,6 +59,8 @@ func UpdatePicture(tx *gorm.DB, v string, id uint, record model.File) (string, m
 		ret = db.InitTeamRepo(tx).Update(id, db.UpdateTeamOptions{Picture: &path})
 	case "oauth":
 		ret = db.InitOauthRepo(tx).Update(id, db.UpdateOauthOptions{Picture: &path})
+	case "branding":
+		ret = db.InitBrandingRepo(tx).Update(id, db.UpdateBrandingOptions{HomeLogo: &path})
 	default:
 		ret = model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": "Invalid Picture"}}
 	}

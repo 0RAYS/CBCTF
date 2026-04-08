@@ -1,8 +1,8 @@
 export const REPO_URL = 'https://github.com/0RAYS/CBCTF';
 
-export function getFooterConfig(t) {
+export function getFooterConfig(t, footerCopyright = null) {
   return {
-    copyright: t('footer.copyright'),
+    copyright: footerCopyright || t('footer.copyright'),
     icp: {
       number: t('footer.icp'),
       link: 'https://beian.miit.gov.cn/',
