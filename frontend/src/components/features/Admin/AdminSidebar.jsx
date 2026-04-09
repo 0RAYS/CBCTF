@@ -11,6 +11,7 @@ function AdminSidebar({
   onLogoClick = () => {},
   open = false,
   onClose = () => {},
+  footerOffset = 0,
 }) {
   const { t } = useTranslation();
   const resolvedLogo = logo || t('branding.admin');
@@ -35,9 +36,12 @@ function AdminSidebar({
       )}
       <aside
         aria-label={t('admin.sidebar.navigation')}
-        className={`fixed md:static z-40 top-0 left-0 h-full w-[240px] border-r border-neutral-300/30 bg-black/60 backdrop-blur-[2px] transition-transform duration-200 flex flex-col ${
+        className={`fixed md:static z-40 top-0 left-0 w-[240px] border-r border-neutral-300/30 bg-black/60 backdrop-blur-[2px] transition-transform duration-200 flex flex-col ${
           open ? 'translate-x-0' : '-translate-x-full'
         } md:translate-x-0`}
+        style={{
+          height: footerOffset > 0 ? `calc(100vh - ${footerOffset}px)` : '100vh',
+        }}
       >
         <div className="p-4 border-b border-neutral-300/30">
           <div className="relative">
