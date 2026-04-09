@@ -27,6 +27,7 @@ function AdminShellLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const activePath = location.pathname;
+  const footerHeight = showFooter ? 60 : 0;
 
   // Ctrl+F / Cmd+F opens global search
   const handleKeyDown = useCallback((e) => {
@@ -79,6 +80,7 @@ function AdminShellLayout({
             onLogoClick={onLogoClick}
             open={sidebarOpen}
             onClose={() => setSidebarOpen(false)}
+            footerOffset={footerHeight}
           />
         )}
         <div className="flex-1 flex flex-col min-w-0">
