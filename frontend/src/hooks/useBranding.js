@@ -6,7 +6,8 @@ export function useBranding() {
   const { i18n, t } = useTranslation();
   const brandingState = useSelector((state) => state.branding?.data);
   const branding = mergeBranding(brandingState || DEFAULT_BRANDING);
-  const resolve = (value, fallback = '') => resolveLocalizedText(value, i18n.resolvedLanguage || i18n.language, fallback);
+  const resolve = (value, fallback = '') =>
+    resolveLocalizedText(value, i18n.resolvedLanguage || i18n.language, fallback);
 
   return {
     branding,
@@ -29,7 +30,10 @@ export function useBranding() {
       },
       challengeTypes: {
         titlePrefix: resolve(branding.home?.challenge_types?.title_prefix, t('home.challengeTypes.titlePrefix')),
-        titleHighlight: resolve(branding.home?.challenge_types?.title_highlight, t('home.challengeTypes.titleHighlight')),
+        titleHighlight: resolve(
+          branding.home?.challenge_types?.title_highlight,
+          t('home.challengeTypes.titleHighlight')
+        ),
         subtitle: resolve(branding.home?.challenge_types?.subtitle, t('home.challengeTypes.subtitle')),
       },
       upcoming: {

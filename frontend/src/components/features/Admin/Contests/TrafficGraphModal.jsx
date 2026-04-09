@@ -172,7 +172,10 @@ const resolveGridLayout = (count, zone, config) => {
 
   const fallbackColumns = candidates[0] || 1;
   const rows = Math.ceil(count / fallbackColumns);
-  const width = Math.max(80, Math.floor((zoneWidth - config.minGapX * Math.max(fallbackColumns - 1, 0)) / fallbackColumns));
+  const width = Math.max(
+    80,
+    Math.floor((zoneWidth - config.minGapX * Math.max(fallbackColumns - 1, 0)) / fallbackColumns)
+  );
   const height = Math.max(36, Math.floor((zoneHeight - config.minGapY * Math.max(rows - 1, 0)) / rows));
   const resolvedWidth = Math.min(config.baseWidth, width);
   const resolvedHeight = Math.min(config.baseHeight, height);
@@ -182,7 +185,8 @@ const resolveGridLayout = (count, zone, config) => {
     rows,
     width: resolvedWidth,
     height: resolvedHeight,
-    gapX: fallbackColumns === 1 ? 0 : Math.max(8, (zoneWidth - resolvedWidth * fallbackColumns) / (fallbackColumns - 1)),
+    gapX:
+      fallbackColumns === 1 ? 0 : Math.max(8, (zoneWidth - resolvedWidth * fallbackColumns) / (fallbackColumns - 1)),
     gapY: rows === 1 ? 0 : Math.max(8, (zoneHeight - resolvedHeight * rows) / (rows - 1)),
   };
 };
@@ -364,7 +368,13 @@ const createDemoTopology = (shift = 0, duration = DEFAULT_SLICE_MS, id = 'demo')
   });
 
   return {
-    window: { start: shift, end: Math.min(totalDuration, shift + duration), duration, total: totalDuration, total_count: 115 },
+    window: {
+      start: shift,
+      end: Math.min(totalDuration, shift + duration),
+      duration,
+      total: totalDuration,
+      total_count: 115,
+    },
     total_duration: totalDuration,
     available_slices: [1000, 5000, 15000, 30000, 60000, totalDuration],
     center: { label: `Victim #${id}`, ips: ['10.10.0.10', '10.10.0.11'], exposed: ['tcp://43.155.12.20:24001'] },
@@ -674,7 +684,10 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
     try {
       const response = customFetchTraffic
         ? await customFetchTraffic(container, { time_shift: nextShift, duration: resolvedSlice })
-        : await getContestTeamTraffic(contestId, teamId, container.id, { time_shift: nextShift, duration: resolvedSlice });
+        : await getContestTeamTraffic(contestId, teamId, container.id, {
+            time_shift: nextShift,
+            duration: resolvedSlice,
+          });
       if (requestSequenceRef.current !== requestId) return;
       if (response.code !== 200) throw new Error(t('admin.contests.trafficGraph.toast.fetchFailed'));
       setTopology(response.data);
@@ -1522,7 +1535,9 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                               value: formatDurationMs(bucket.timestamp_ms),
                             })} / ${formatBytes(bucket.bytes)}`}
                             onClick={() =>
-                              setShift(Math.min(bucket.timestamp_ms, Math.max(0, windowInfo.total - windowInfo.duration)))
+                              setShift(
+                                Math.min(bucket.timestamp_ms, Math.max(0, windowInfo.total - windowInfo.duration))
+                              )
                             }
                             className="group relative flex min-w-0 flex-1 items-end"
                           >

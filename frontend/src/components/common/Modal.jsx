@@ -220,24 +220,26 @@ function Modal({
                 </div>
               ) : null}
               {/* 头部 */}
-              {showHeader ? <div className="p-6 border-b border-neutral-300/30">
-                <div className="flex items-center justify-between">
-                  <h2 id={titleId} className="text-xl font-mono text-neutral-50">
-                    {title}
-                  </h2>
-                  {showCloseButton ? (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Close dialog"
-                      className="!bg-transparent !text-neutral-400 hover:!text-neutral-200"
-                      onClick={onClose}
-                    >
-                      <IconX size={18} />
-                    </Button>
-                  ) : null}
+              {showHeader ? (
+                <div className="p-6 border-b border-neutral-300/30">
+                  <div className="flex items-center justify-between">
+                    <h2 id={titleId} className="text-xl font-mono text-neutral-50">
+                      {title}
+                    </h2>
+                    {showCloseButton ? (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Close dialog"
+                        className="!bg-transparent !text-neutral-400 hover:!text-neutral-200"
+                        onClick={onClose}
+                      >
+                        <IconX size={18} />
+                      </Button>
+                    ) : null}
+                  </div>
                 </div>
-              </div> : null}
+              ) : null}
 
               {/* 内容区域 */}
               <div className={dialogBodyClassName}>{children}</div>

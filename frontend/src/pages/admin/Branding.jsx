@@ -143,7 +143,11 @@ function BrandingSettings() {
             <div className="border border-neutral-300/20 rounded-md bg-black/20 p-4">
               <div className="text-sm text-neutral-400 mb-3">{t('admin.branding.labels.homeLogo')}</div>
               <div className="aspect-square rounded-md border border-neutral-300/20 bg-neutral-950 flex items-center justify-center overflow-hidden">
-                <img src={branding.home_logo} alt={branding.home_logo_alt?.zh_cn || 'logo'} className="w-full h-full object-contain" />
+                <img
+                  src={branding.home_logo}
+                  alt={branding.home_logo_alt?.zh_cn || 'logo'}
+                  className="w-full h-full object-contain"
+                />
               </div>
               <div className="text-xs text-neutral-500 mt-3 break-all">{branding.home_logo}</div>
             </div>
@@ -260,14 +264,18 @@ function BrandingSettings() {
                 value={branding.home[sectionKey].title_prefix}
                 placeholderZh="标题前缀"
                 placeholderEn="Title prefix"
-                onChange={(language, value) => updateLocalizedField(['home', sectionKey, 'title_prefix'], language, value)}
+                onChange={(language, value) =>
+                  updateLocalizedField(['home', sectionKey, 'title_prefix'], language, value)
+                }
               />
               <LocalizedField
                 label={t('admin.branding.labels.sectionTitleHighlight')}
                 value={branding.home[sectionKey].title_highlight}
                 placeholderZh="标题高亮"
                 placeholderEn="Title highlight"
-                onChange={(language, value) => updateLocalizedField(['home', sectionKey, 'title_highlight'], language, value)}
+                onChange={(language, value) =>
+                  updateLocalizedField(['home', sectionKey, 'title_highlight'], language, value)
+                }
               />
               <LocalizedField
                 label={t('admin.branding.labels.sectionSubtitle')}
