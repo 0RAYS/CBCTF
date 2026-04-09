@@ -20,7 +20,7 @@ func GetChallenges(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	challenges, count, ret := service.GetChallenges(db.DB, form)
+	challenges, count, ret := service.ListChallengeViews(db.DB, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -38,9 +38,7 @@ func GetChallengeNotInContest(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	contest := middleware.GetContest(ctx)
-	challenges, count, ret := db.InitChallengeRepo(db.DB).ListChallengesNotInContest(contest.ID,
-		form.Limit, form.Offset, form.Name, form.Description, form.Category, form.Type)
+	challenges, count, ret := service.ListChallengesNotInContest(db.DB, middleware.GetContest(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -58,7 +56,7 @@ func GetChallengeCategories(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	categories, ret := db.InitChallengeRepo(db.DB).ListCategories(form.Type)
+	categories, ret := service.ListChallengeCategories(db.DB, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -73,12 +71,7 @@ func CreateChallenge(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateChallengeEventType)
-	var challenge model.Challenge
-	ret := db.WithTransaction(func(tx *db.Tx) model.RetVal {
-		var ret model.RetVal
-		challenge, ret = service.CreateChallenge(tx, form)
-		return ret
-	})
+	challenge, ret := service.CreateChallengeWithTransaction(db.DB, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -89,7 +82,7 @@ func CreateChallenge(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetChallengeResp(challenge)))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetChallengeResp(service.GetChallengeView(db.DB, challenge))))
 }
 
 func UpdateChallenge(ctx *gin.Context) {
@@ -99,18 +92,7 @@ func UpdateChallenge(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateChallengeEventType)
-	var ret model.RetVal
-	challenge := middleware.GetChallenge(ctx)
-	challenge.ChallengeFlags, _, ret = db.InitChallengeFlagRepo(db.DB).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"challenge_id": challenge.ID},
-	})
-	if !ret.OK {
-		resp.JSON(ctx, ret)
-		return
-	}
-	ret = db.WithTransaction(func(tx *db.Tx) model.RetVal {
-		return service.UpdateChallenge(tx, challenge, form)
-	})
+	ret := service.UpdateChallengeWithTransaction(db.DB, middleware.GetChallenge(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -122,9 +104,7 @@ func UpdateChallenge(ctx *gin.Context) {
 func DeleteChallenge(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteChallengeEventType)
 	challenge := middleware.GetChallenge(ctx)
-	ret := db.WithTransaction(func(tx *db.Tx) model.RetVal {
-		return db.InitChallengeRepo(tx).Delete(challenge.RandID)
-	})
+	ret := service.DeleteChallengeWithTransaction(db.DB, challenge)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

@@ -7,7 +7,7 @@ import (
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
-	"time"
+	"CBCTF/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,7 +18,7 @@ func GetCronJobs(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	cronJobs, count, ret := db.InitCronJobRepo(db.DB).List(form.Limit, form.Offset)
+	cronJobs, count, ret := service.ListCronJobs(db.DB, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -41,26 +41,15 @@ func UpdateCronJob(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateCronJobEventType)
-	cronJob := middleware.GetCronJob(ctx)
-	var schedule *time.Duration
-	if form.Schedule != nil {
-		schedule = new(time.Duration(*form.Schedule) * time.Second)
-	}
-	if ret := db.InitCronJobRepo(db.DB).Update(cronJob.ID, db.UpdateCronJobOptions{
-		Schedule: schedule,
-	}); !ret.OK {
-		resp.JSON(ctx, ret)
-		return
-	}
-	newCronJob, ret := db.InitCronJobRepo(db.DB).GetByID(cronJob.ID)
+	cronJob, ret := service.UpdateCronJob(db.DB, middleware.GetCronJob(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	if ret = cron.ReloadCronJob(newCronJob.Name); !ret.OK {
+	if ret = cron.ReloadCronJob(cronJob.Name); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetCronJobResp(newCronJob)))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetCronJobResp(cronJob)))
 }

@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
+	"CBCTF/internal/view"
 	"math"
 	"sync"
 	"time"
@@ -25,6 +26,34 @@ func UpdateTeam(tx *gorm.DB, team model.Team, form dto.UpdateTeamForm) model.Ret
 		Name:        form.Name,
 		CaptainID:   form.CaptainID,
 	})
+}
+
+func BuildTeamView(tx *gorm.DB, team model.Team) view.TeamView {
+	count, _ := db.InitTeamRepo(tx).CountUsers(team.ID)
+	return view.TeamView{
+		Team:      team,
+		UserCount: count,
+	}
+}
+
+func BuildTeamViews(tx *gorm.DB, teams []model.Team) []view.TeamView {
+	views := make([]view.TeamView, 0, len(teams))
+	if len(teams) == 0 {
+		return views
+	}
+
+	teamIDs := make([]uint, 0, len(teams))
+	for _, team := range teams {
+		teamIDs = append(teamIDs, team.ID)
+	}
+	userCountMap, _ := db.InitTeamRepo(tx).CountUsersMap(teamIDs...)
+	for _, team := range teams {
+		views = append(views, view.TeamView{
+			Team:      team,
+			UserCount: userCountMap[team.ID],
+		})
+	}
+	return views
 }
 
 func AdminUpdateTeam(tx *gorm.DB, team model.Team, form dto.AdminUpdateTeamForm) model.RetVal {
@@ -192,4 +221,96 @@ func CalcTeamScores(tx *gorm.DB, blood bool, teams ...model.Team) (map[uint]floa
 		scoreMap[teamID] = math.Trunc(score*100) / 100
 	}
 	return scoreMap, model.SuccessRetVal()
+}
+
+func GetTeamView(tx *gorm.DB, team model.Team) view.TeamView {
+	return BuildTeamView(tx, team)
+}
+
+func ListTeams(tx *gorm.DB, contest model.Contest, form dto.ListTeamForm) ([]view.TeamView, int64, model.RetVal) {
+	options := db.GetOptions{
+		Conditions: map[string]any{"contest_id": contest.ID},
+		Search:     make(map[string]string),
+	}
+	if form.Name != "" {
+		options.Search["name"] = form.Name
+	}
+	if form.Description != "" {
+		options.Search["description"] = form.Description
+	}
+	teams, count, ret := db.InitTeamRepo(tx).List(form.Limit, form.Offset, options)
+	if !ret.OK {
+		return nil, 0, ret
+	}
+	return BuildTeamViews(tx, teams), count, model.SuccessRetVal()
+}
+
+func GetTeammates(tx *gorm.DB, team model.Team, includeCounts bool) ([]view.UserView, model.RetVal) {
+	users, ret := db.InitUserRepo(tx).GetByTeamID(team.ID, -1, -1)
+	if !ret.OK {
+		return nil, ret
+	}
+	return BuildUserViews(tx, users, includeCounts), model.SuccessRetVal()
+}
+
+func GetTeamSolvedFlags(tx *gorm.DB, contest model.Contest, team model.Team) ([]model.ContestFlag, []model.ContestFlag, model.RetVal) {
+	contestFlagRepo := db.InitContestFlagRepo(tx)
+	contestFlagL, _, ret := contestFlagRepo.List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_id": contest.ID},
+		Preloads:   map[string]db.GetOptions{"ContestChallenge": {}},
+	})
+	if !ret.OK {
+		return nil, nil, ret
+	}
+	solvedFlagL, _ := contestFlagRepo.GetTeamSolvedContestFlags(team.ID)
+	return solvedFlagL, contestFlagL, model.SuccessRetVal()
+}
+
+func UpdateTeamCaptcha(tx *gorm.DB, team model.Team, captcha string) model.RetVal {
+	return db.InitTeamRepo(tx).Update(team.ID, db.UpdateTeamOptions{Captcha: &captcha})
+}
+
+func DeleteTeam(tx *gorm.DB, team model.Team) model.RetVal {
+	return db.InitTeamRepo(tx).Delete(team.ID)
+}
+
+func DeleteTeamWithTransaction(tx *gorm.DB, team model.Team) model.RetVal {
+	return db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
+		return DeleteTeam(tx2, team)
+	})
+}
+
+func KickMember(tx *gorm.DB, contest model.Contest, team model.Team, userID uint) model.RetVal {
+	return db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
+		return LeaveTeam(tx2, contest, team, userID)
+	})
+}
+
+func JoinTeamWithTransaction(tx *gorm.DB, contest model.Contest, user model.User, form dto.JoinTeamForm) (model.Team, model.RetVal) {
+	var team model.Team
+	ret := db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
+		var joinRet model.RetVal
+		team, joinRet = JoinTeam(tx2, contest, user, form)
+		return joinRet
+	})
+	return team, ret
+}
+
+func CreateTeamWithTransaction(tx *gorm.DB, contest model.Contest, user model.User, form dto.CreateTeamForm) (model.Team, model.RetVal) {
+	var team model.Team
+	ret := db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
+		var createRet model.RetVal
+		team, createRet = CreateTeam(tx2, contest, user, form)
+		if !createRet.OK {
+			return createRet
+		}
+		return CreateTeamFlags(tx2, team, contest)
+	})
+	return team, ret
+}
+
+func LeaveTeamWithTransaction(tx *gorm.DB, contest model.Contest, team model.Team, userID uint) model.RetVal {
+	return db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
+		return LeaveTeam(tx2, contest, team, userID)
+	})
 }

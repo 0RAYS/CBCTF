@@ -9,6 +9,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/task"
 	"CBCTF/internal/utils"
+	"CBCTF/internal/view"
 	"crypto/rand"
 	"database/sql"
 	"fmt"
@@ -17,7 +18,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
@@ -359,33 +359,67 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 	return model.SuccessRetVal()
 }
 
-func GetVictimStatus(tx *gorm.DB, teamID uint, challenge model.Challenge) gin.H {
-	data := gin.H{
-		"target":    make([]string, 0),
-		"duration":  0,
-		"remaining": 0,
-		"status":    "Down",
+func GetVictimStatus(tx *gorm.DB, teamID uint, challenge model.Challenge) view.VictimStatusView {
+	data := view.VictimStatusView{
+		Targets:   make([]string, 0),
+		Duration:  0,
+		Remaining: 0,
+		Status:    "Down",
 	}
 	if challenge.Type != model.PodsChallengeType {
-		data["status"] = "not_docker"
+		data.Status = "not_docker"
 		return data
 	}
 	victim, ret := db.InitVictimRepo(tx).HasAliveVictim(teamID, challenge.ID)
 	if !ret.OK {
 		return data
 	}
-	targets := victim.RemoteAddr()
-	data["target"] = targets
-	data["duration"] = victim.Duration.Seconds()
-	data["status"] = victim.Status
-	data["remaining"] = victim.Remaining().Seconds()
+	data.Targets = victim.RemoteAddr()
+	data.Duration = victim.Duration.Seconds()
+	data.Status = victim.Status
+	data.Remaining = victim.Remaining().Seconds()
 	return data
+}
+
+func IncreaseVictimDuration(tx *gorm.DB, team model.Team, challenge model.Challenge) (model.Victim, model.RetVal) {
+	repo := db.InitVictimRepo(tx)
+	victim, ret := repo.HasAliveVictim(team.ID, challenge.ID)
+	if !ret.OK {
+		return model.Victim{}, ret
+	}
+	if !victim.Start.Add(victim.Duration).Before(time.Now().Add(20 * time.Minute)) {
+		return model.Victim{}, model.RetVal{Msg: i18n.Model.Victim.HasMuchTime}
+	}
+	duration := victim.Duration + time.Hour
+	if ret = repo.Update(victim.ID, db.UpdateVictimOptions{
+		Duration: &duration,
+	}); !ret.OK {
+		return model.Victim{}, ret
+	}
+	victim.Duration = duration
+	return victim, model.SuccessRetVal()
 }
 
 func StopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
 	switch victim.Status {
 	case model.WaitingVictimStatus, model.PendingVictimStatus:
 		return model.RetVal{Msg: i18n.Model.Victim.NotStoppable}
+	}
+	return ForceStopVictim(tx, victim)
+}
+
+func StopAliveVictim(tx *gorm.DB, team model.Team, challenge model.Challenge) model.RetVal {
+	victim, ret := db.InitVictimRepo(tx).HasAliveVictim(team.ID, challenge.ID)
+	if !ret.OK {
+		return ret
+	}
+	return StopVictim(tx, victim)
+}
+
+func ForceStopAliveVictim(tx *gorm.DB, teamID, challengeID uint) model.RetVal {
+	victim, ret := db.InitVictimRepo(tx).HasAliveVictim(teamID, challengeID)
+	if !ret.OK {
+		return ret
 	}
 	return ForceStopVictim(tx, victim)
 }
@@ -462,6 +496,14 @@ func GetVictims(tx *gorm.DB, contest model.Contest, form dto.GetVictimsForm) ([]
 		total = count
 	}
 	return victims, count, total, ret
+}
+
+func ListVictimHistories(tx *gorm.DB, team model.Team, form dto.ListModelsForm) ([]model.Victim, int64, model.RetVal) {
+	return db.InitVictimRepo(tx).List(form.Limit, form.Offset, db.GetOptions{
+		Conditions: map[string]any{"team_id": team.ID},
+		Preloads:   map[string]db.GetOptions{"ContestChallenge": {}},
+		Deleted:    true,
+	})
 }
 
 func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm) model.RetVal {

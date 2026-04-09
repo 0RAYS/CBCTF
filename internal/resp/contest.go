@@ -1,17 +1,13 @@
 package resp
 
 import (
-	"CBCTF/internal/db"
-	"CBCTF/internal/model"
+	"CBCTF/internal/view"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GetContestResp(contest model.Contest, admin bool) gin.H {
-	contestRepo := db.InitContestRepo(db.DB)
-	teams, _ := contestRepo.CountTeams(contest.ID)
-	users, _ := contestRepo.CountUsers(contest.ID)
-	notices, _ := contestRepo.CountNotices(contest.ID)
+func GetContestResp(contestView view.ContestView, admin bool) gin.H {
+	contest := contestView.Contest
 	data := gin.H{
 		"id":          contest.ID,
 		"name":        contest.Name,
@@ -22,14 +18,18 @@ func GetContestResp(contest model.Contest, admin bool) gin.H {
 		"prizes":      contest.Prizes,
 		"size":        contest.Size,
 		"timelines":   contest.Timelines,
-		"teams":       teams,
-		"users":       users,
-		"notices":     notices,
+		"teams":       contestView.TeamCount,
+		"users":       contestView.UserCount,
+		"notices":     contestView.NoticeCount,
 		"prefix":      contest.Prefix,
 		"victims":     contest.Victims,
 		"picture":     contest.Picture,
 		"hidden":      contest.Hidden,
 		"blood":       contest.Blood,
+	}
+	if contestView.StatsReady {
+		data["highest"] = contestView.Highest
+		data["solved"] = contestView.SolvedCount
 	}
 	if admin {
 		data["captcha"] = contest.Captcha

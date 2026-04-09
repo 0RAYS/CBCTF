@@ -3,11 +3,11 @@ package router
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
+	"CBCTF/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,18 +18,16 @@ func GetRole(ctx *gin.Context) {
 }
 
 func GetRolePermissions(ctx *gin.Context) {
-	role, ret := db.InitRoleRepo(db.DB).GetByID(middleware.GetRole(ctx).ID, db.GetOptions{
-		Preloads: map[string]db.GetOptions{"Permissions": {}},
-	})
+	permissions, ret := service.GetRolePermissions(db.DB, middleware.GetRole(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	permissions := make([]gin.H, 0, len(role.Permissions))
-	for _, perm := range role.Permissions {
-		permissions = append(permissions, resp.GetPermissionResp(perm))
+	data := make([]gin.H, 0, len(permissions))
+	for _, perm := range permissions {
+		data = append(data, resp.GetPermissionResp(perm))
 	}
-	resp.JSON(ctx, model.SuccessRetVal(gin.H{"permissions": permissions}))
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"permissions": data}))
 }
 
 func GetRoles(ctx *gin.Context) {
@@ -38,7 +36,7 @@ func GetRoles(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	roles, count, ret := db.InitRoleRepo(db.DB).List(form.Limit, form.Offset)
+	roles, count, ret := service.ListRoles(db.DB, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -57,10 +55,7 @@ func CreateRole(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateRoleEventType)
-	role, ret := db.InitRoleRepo(db.DB).Create(db.CreateRoleOptions{
-		Name:        form.Name,
-		Description: form.Description,
-	})
+	role, ret := service.CreateRole(db.DB, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -78,14 +73,7 @@ func UpdateRole(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateRoleEventType)
 	role := middleware.GetRole(ctx)
-	if role.Default && form.Name != nil {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.Role.CannotUpdateDefault})
-		return
-	}
-	ret := db.InitRoleRepo(db.DB).Update(role.ID, db.UpdateRoleOptions{
-		Name:        form.Name,
-		Description: form.Description,
-	})
+	ret := service.UpdateRole(db.DB, role, form)
 	if ret.OK {
 		redis.DeleteRBAC()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
@@ -96,11 +84,7 @@ func UpdateRole(ctx *gin.Context) {
 func DeleteRole(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteRoleEventType)
 	role := middleware.GetRole(ctx)
-	if role.Default {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.Role.CannotDeleteDefault})
-		return
-	}
-	ret := db.InitRoleRepo(db.DB).Delete(role.ID)
+	ret := service.DeleteRole(db.DB, role)
 	if ret.OK {
 		redis.DeleteRBAC()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
@@ -116,12 +100,7 @@ func AssignPermission(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.AssignPermissionEventType)
 	role := middleware.GetRole(ctx)
-	permission, ret := db.InitPermissionRepo(db.DB).GetByID(form.PermissionID)
-	if !ret.OK {
-		resp.JSON(ctx, ret)
-		return
-	}
-	ret = db.AssignPermissionToRole(db.DB, permission, role)
+	ret := service.AssignPermission(db.DB, role, form)
 	if ret.OK {
 		redis.DeleteRBAC()
 		ctx.Set(middleware.CTXEventSuccessKey, true)
@@ -137,12 +116,7 @@ func RevokePermission(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.RevokePermissionEventType)
 	role := middleware.GetRole(ctx)
-	permission, ret := db.InitPermissionRepo(db.DB).GetByID(form.PermissionID)
-	if !ret.OK {
-		resp.JSON(ctx, ret)
-		return
-	}
-	ret = db.RevokePermissionFromRole(db.DB, permission, role)
+	ret := service.RevokePermission(db.DB, role, form)
 	if ret.OK {
 		redis.DeleteRBAC()
 		ctx.Set(middleware.CTXEventSuccessKey, true)

@@ -1,14 +1,14 @@
 package resp
 
 import (
-	"CBCTF/internal/db"
 	"CBCTF/internal/model"
+	"CBCTF/internal/view"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GetUserResp(user model.User, admin bool) gin.H {
-	userRepo := db.InitUserRepo(db.DB)
+func GetUserResp(userView view.UserView, admin bool) gin.H {
+	user := userView.User
 	data := gin.H{
 		"id":               user.ID,
 		"name":             user.Name,
@@ -22,11 +22,11 @@ func GetUserResp(user model.User, admin bool) gin.H {
 		"has_no_pwd":       user.Password == model.NeverLoginPWD,
 		"hidden":           user.Hidden,
 		"banned":           user.Banned,
-		"has_admin_access": db.InitPermissionRepo(db.DB).HasAdminAccess(user.ID),
+		"has_admin_access": userView.HasAdminAccess,
 	}
 	if admin {
-		data["teams"], _ = userRepo.CountTeams(user.ID)
-		data["contests"], _ = userRepo.CountContests(user.ID)
+		data["teams"] = userView.TeamCount
+		data["contests"] = userView.ContestCount
 	}
 	return data
 }

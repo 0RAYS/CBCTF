@@ -17,26 +17,7 @@ func GetCheats(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	options := db.GetOptions{
-		Conditions: map[string]any{"contest_id": middleware.GetContest(ctx).ID},
-		Sort:       []string{"id DESC"},
-	}
-	if form.Type != "" {
-		options.Conditions["type"] = form.Type
-	}
-	if form.ReasonType != "" {
-		options.Conditions["reason_type"] = form.ReasonType
-	}
-	cheats, count, ret := db.InitCheatRepo(db.DB).List(form.Limit, form.Offset, options)
-	if !ret.OK {
-		resp.JSON(ctx, ret)
-		return
-	}
-	countOptions := db.CountOptions{
-		Conditions: options.Conditions,
-	}
-	countOptions.Conditions["checked"] = true
-	checked, ret := db.InitCheatRepo(db.DB).Count(countOptions)
+	cheats, count, checked, ret := service.ListCheats(db.DB, middleware.GetContest(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -56,12 +37,7 @@ func UpdateCheat(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateCheatEventType)
 	cheat := middleware.GetCheat(ctx)
-	ret := db.InitCheatRepo(db.DB).Update(cheat.ID, db.UpdateCheatRepo{
-		Reason:  form.Reason,
-		Type:    form.Type,
-		Checked: form.Checked,
-		Comment: form.Comment,
-	})
+	ret := service.UpdateCheat(db.DB, cheat, form)
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
@@ -73,11 +49,10 @@ func DeleteCheat(all bool) gin.HandlerFunc {
 		var ret model.RetVal
 		if all {
 			ctx.Set(middleware.CTXEventTypeKey, model.DeleteAllCheatEventType)
-			ret = db.InitCheatRepo(db.DB).DeleteByContestID(middleware.GetContest(ctx).ID)
+			ret = service.DeleteContestCheats(db.DB, middleware.GetContest(ctx))
 		} else {
 			ctx.Set(middleware.CTXEventTypeKey, model.DeleteCheatEventType)
-			cheat := middleware.GetCheat(ctx)
-			ret = db.InitCheatRepo(db.DB).Delete(cheat.ID)
+			ret = service.DeleteCheat(db.DB, middleware.GetCheat(ctx))
 		}
 		if ret.OK {
 			ctx.Set(middleware.CTXEventSuccessKey, true)

@@ -1,21 +1,20 @@
 package resp
 
 import (
-	"CBCTF/internal/db"
-	"CBCTF/internal/model"
+	"CBCTF/internal/view"
 
 	"github.com/gin-gonic/gin"
 )
 
-func GetGroupResp(group model.Group) gin.H {
-	users, _ := db.InitGroupRepo(db.DB).CountUsers(group.ID)
+func GetGroupResp(groupView view.GroupView) gin.H {
+	group := groupView.Group
 	data := gin.H{
 		"id":          group.ID,
 		"name":        group.Name,
 		"description": group.Description,
 		"default":     group.Default,
 		"role_id":     group.RoleID,
-		"users":       users,
+		"users":       groupView.UserCount,
 	}
 	return data
 }

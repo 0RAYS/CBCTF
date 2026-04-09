@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/model"
+	"CBCTF/internal/view"
 	"context"
 	"time"
 
@@ -31,4 +32,22 @@ func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) model.RetVal {
 	cancel()
 	db.InitGeneratorRepo(tx).UpdateStatus(generator.ID, ret.OK, time.Now())
 	return ret
+}
+
+func GetTestChallengeStatus(tx *gorm.DB, challenge model.Challenge) view.ContestChallengeStatusView {
+	return view.ContestChallengeStatusView{
+		Attempts: 0,
+		Init:     true,
+		Solved:   false,
+		Remote:   GetVictimStatus(tx, 0, challenge),
+		FileName: buildContestChallengeFileName(tx, challenge, 0),
+	}
+}
+
+func StopTestVictim(tx *gorm.DB, challenge model.Challenge) model.RetVal {
+	victim, ret := db.InitVictimRepo(tx).HasAliveVictim(0, challenge.ID)
+	if !ret.OK {
+		return ret
+	}
+	return StopVictim(tx, victim)
 }

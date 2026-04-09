@@ -12,17 +12,8 @@ import (
 )
 
 func GetContest(ctx *gin.Context) {
-	contest := middleware.GetContest(ctx)
-	champion, _, _ := service.GetTeamRanking(db.DB, contest, 1, 0)
-	data := resp.GetContestResp(contest, middleware.IsFullAccess(ctx))
-	data["highest"] = 0
-	if len(champion) > 0 {
-		data["highest"] = champion[0].Score
-	}
-	data["solved"], _ = db.InitSubmissionRepo(db.DB).Count(db.CountOptions{
-		Conditions: map[string]any{"solved": true, "contest_id": contest.ID},
-	})
-	resp.JSON(ctx, model.SuccessRetVal(data))
+	contestView := service.GetContestView(db.DB, middleware.GetContest(ctx))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetContestResp(contestView, middleware.IsFullAccess(ctx))))
 }
 
 func GetContests(ctx *gin.Context) {
@@ -31,11 +22,7 @@ func GetContests(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	options := db.GetOptions{Sort: []string{"id DESC"}}
-	if !middleware.IsFullAccess(ctx) {
-		options.Conditions = map[string]any{"hidden": false}
-	}
-	contests, count, ret := db.InitContestRepo(db.DB).List(form.Limit, form.Offset, options)
+	contests, count, ret := service.ListContests(db.DB, form, middleware.IsFullAccess(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -60,7 +47,7 @@ func CreateContest(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetContestResp(contest, true)))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetContestResp(service.GetContestView(db.DB, contest), true)))
 }
 
 func UpdateContest(ctx *gin.Context) {
@@ -80,10 +67,7 @@ func UpdateContest(ctx *gin.Context) {
 
 func DeleteContest(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteContestEventType)
-	contest := middleware.GetContest(ctx)
-	ret := db.WithTransaction(func(tx *db.Tx) model.RetVal {
-		return db.InitContestRepo(tx).Delete(contest.ID)
-	})
+	ret := service.DeleteContestWithTransaction(db.DB, middleware.GetContest(ctx))
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}

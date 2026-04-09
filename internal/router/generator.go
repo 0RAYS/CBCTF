@@ -17,15 +17,7 @@ func GetGenerators(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	options := db.GetOptions{
-		Deleted: form.Deleted,
-		Sort:    []string{"id DESC"},
-	}
-	contest := middleware.GetContest(ctx)
-	if contest.ID > 0 {
-		options.Conditions = map[string]any{"contest_id": contest.ID}
-	}
-	generators, count, ret := db.InitGeneratorRepo(db.DB).List(form.Limit, form.Offset, options)
+	generators, count, ret := service.ListGenerators(db.DB, middleware.GetContest(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

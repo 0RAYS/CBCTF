@@ -18,57 +18,7 @@ import (
 )
 
 func HomePage(ctx *gin.Context) {
-	data := gin.H{
-		"upcoming":   []gin.H{},
-		"stats":      []gin.H{},
-		"scoreboard": []gin.H{},
-	}
-	if branding, ret := db.InitBrandingRepo(db.DB).GetDefault(); ret.OK {
-		data["branding"] = resp.GetBrandingResp(branding)
-	}
-	repo := db.InitContestRepo(db.DB)
-	contests, count, ret := repo.List(-1, -1)
-	if ret.OK {
-		contestIDL := make([]uint, 0, len(contests))
-		for _, contest := range contests {
-			contestIDL = append(contestIDL, contest.ID)
-		}
-		userCountMap, _ := repo.CountUsersMap(contestIDL...)
-		teamCountMap, _ := repo.CountTeamsMap(contestIDL...)
-		for i := 0; i < func() int {
-			if len(contests) > 3 {
-				return 3
-			}
-			return len(contests)
-		}(); i++ {
-			contest := contests[i]
-			info := gin.H{
-				"name":     contest.Name,
-				"start":    contest.Start,
-				"duration": int64(contest.Duration.Seconds()),
-				"users":    userCountMap[contest.ID],
-				"teams":    teamCountMap[contest.ID],
-				"picture":  contest.Picture,
-			}
-			data["upcoming"] = append(data["upcoming"].([]gin.H), info)
-		}
-	}
-	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "CTF Events", "value": count})
-	count, _ = db.InitUserRepo(db.DB).Count()
-	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "Activate CTFers", "value": count})
-	count, _ = db.InitChallengeRepo(db.DB).Count()
-	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "Challenges", "value": count})
-	count, _ = db.InitSubmissionRepo(db.DB).Count()
-	data["stats"] = append(data["stats"].([]gin.H), gin.H{"label": "Submissions", "value": count})
-	users, _, _ := service.GetUserRanking(db.DB, 5, 0)
-	for _, user := range users {
-		data["scoreboard"] = append(data["scoreboard"].([]gin.H), gin.H{
-			"name":   user.Name,
-			"score":  user.Score,
-			"solved": user.Solved,
-		})
-	}
-	resp.JSON(ctx, model.SuccessRetVal(data))
+	resp.JSON(ctx, model.SuccessRetVal(service.GetHomePageData(db.DB)))
 }
 
 func SystemStatus(ctx *gin.Context) {
@@ -86,13 +36,9 @@ func SystemStatus(ctx *gin.Context) {
 		ret["recv"] = ioStats[0].BytesRecv
 	}
 
-	ret["users"], _ = db.InitUserRepo(db.DB).Count()
-	ret["contests"], _ = db.InitContestRepo(db.DB).Count()
-	ret["ip"], _ = db.InitRequestRepo(db.DB).CountIP()
-	ret["challenges"], _ = db.InitChallengeRepo(db.DB).Count()
-	ret["submissions"], _ = db.InitSubmissionRepo(db.DB).Count(db.CountOptions{Deleted: true})
-	ret["victims"], _ = db.InitVictimRepo(db.DB).Count(db.CountOptions{Deleted: true})
-	ret["requests"], _ = db.InitRequestRepo(db.DB).Count(db.CountOptions{Deleted: true})
+	for key, value := range service.GetSystemStatus(db.DB) {
+		ret[key] = value
+	}
 	middleware.MU.Lock()
 	if middleware.TotalRequests == 0 {
 		ret["duration"] = 0
@@ -100,8 +46,6 @@ func SystemStatus(ctx *gin.Context) {
 		ret["duration"] = middleware.TotalDuration.Milliseconds() / int64(middleware.TotalRequests)
 	}
 	middleware.MU.Unlock()
-
-	ret["cache"] = redis.Count()
 	resp.JSON(ctx, model.SuccessRetVal(ret))
 }
 
@@ -193,87 +137,7 @@ func UpdateSystem(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateSettingEventType)
-	// 恢复被脱敏的 FRP Server Token
-	if form.K8SFrpFrps != nil {
-		for i, server := range *form.K8SFrpFrps {
-			if server.Token == "" {
-				for _, existing := range config.Env.K8S.Frp.Frps {
-					if existing.Host == server.Host && existing.Port == server.Port {
-						(*form.K8SFrpFrps)[i].Token = existing.Token
-						break
-					}
-				}
-			}
-		}
-	}
-	kv := map[string]any{
-		model.HostSettingKey: form.Host,
-		model.PathSettingKey: form.Path,
-
-		model.LogLevelSettingKey: form.LogLevel,
-		model.LogSaveSettingKey:  form.LogSave,
-
-		model.AsyncQLogLevelSettingKey:       form.AsyncQLogLevel,
-		model.AsyncQConcurrencySettingKey:    form.AsyncQConcurrency,
-		model.AsyncQVictimConcurrencyKey:     form.AsyncQVictimConcurrency,
-		model.AsyncQGeneratorConcurrencyKey:  form.AsyncQGeneratorConcurrency,
-		model.AsyncQAttachmentConcurrencyKey: form.AsyncQAttachmentConcurrency,
-		model.AsyncQEmailConcurrencyKey:      form.AsyncQEmailConcurrency,
-		model.AsyncQWebhookConcurrencyKey:    form.AsyncQWebhookConcurrency,
-		model.AsyncQImageConcurrencyKey:      form.AsyncQImageConcurrency,
-
-		model.GinModeSettingKey:               form.GinMode,
-		model.GinHostSettingKey:               form.GinHost,
-		model.GinPortSettingKey:               form.GinPort,
-		model.GinUploadMaxSettingKey:          form.GinUploadMax,
-		model.GinProxiesSettingKey:            form.GinProxies,
-		model.GinRateLimitGlobalSettingKey:    form.GinRateLimitGlobal,
-		model.GinRateLimitWhitelistSettingKey: form.GinRateLimitWhitelist,
-		model.GinCORSSettingKey:               form.GinCORS,
-		model.GinLogWhitelistSettingKey:       form.GinLogWhitelist,
-		model.GinJWTSecretSettingKey:          form.GinJWTSecret,
-		model.GinMetricsWhitelistSettingKey:   form.GinMetricsWhitelist,
-
-		model.GormPostgresHostSettingKey:    form.GormPostgresHost,
-		model.GormPostgresPortSettingKey:    form.GormPostgresPort,
-		model.GormPostgresUserSettingKey:    form.GormPostgresUser,
-		model.GormPostgresPwdSettingKey:     form.GormPostgresPwd,
-		model.GormPostgresDBSettingKey:      form.GormPostgresDB,
-		model.GormPostgresSSLModeSettingKey: form.GormPostgresSSLMode,
-		model.GormPostgresMXOpenSettingKey:  form.GormPostgresMXOpen,
-		model.GormPostgresMXIdleSettingKey:  form.GormPostgresMXIdle,
-		model.GormLogLevelSettingKey:        form.GormLogLevel,
-
-		model.RedisHostSettingKey: form.RedisHost,
-		model.RedisPortSettingKey: form.RedisPort,
-		model.RedisPwdSettingKey:  form.RedisPwd,
-
-		model.K8SConfigSettingKey:        form.K8SConfig,
-		model.K8SNamespaceSettingKey:     form.K8SNamespace,
-		model.K8STCPDumpImageSettingKey:  form.K8STCPDumpImage,
-		model.K8SFrpOnSettingKey:         form.K8SFrpOn,
-		model.K8SFrpFrpcImageSettingKey:  form.K8SFrpFrpcImage,
-		model.K8SFrpNginxImageSettingKey: form.K8SFrpNginxImage,
-		model.K8SFrpFrpsSettingKey:       form.K8SFrpFrps,
-
-		model.CheatIPWhitelistSettingKey: form.CheatIPWhitelist,
-
-		model.WebhookWhitelistSettingKey: form.WebhookWhitelist,
-
-		model.RegistrationEnabledSettingKey:      form.RegistrationEnabled,
-		model.RegistrationDefaultGroupSettingKey: form.RegistrationDefaultGroup,
-
-		model.GeoCityDBSettingKey: form.GeoCityDB,
-	}
-	repo := db.InitSettingRepo(db.DB)
-	for key, value := range kv {
-		if ret := repo.Update(key, db.UpdateSettingOptions{Value: &model.SettingValue{V: value}}); !ret.OK {
-			resp.JSON(ctx, ret)
-			return
-		}
-	}
-	// 读取数据库配置至内存并覆写配置文件
-	if ret := repo.ReadSettings(); !ret.OK {
+	if ret := service.UpdateSystemSettings(db.DB, form); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}

@@ -1,8 +1,8 @@
 package resp
 
 import (
-	"CBCTF/internal/db"
 	"CBCTF/internal/model"
+	"CBCTF/internal/view"
 	"slices"
 	"strings"
 
@@ -36,8 +36,8 @@ func GetSolvedStateResp(solved []model.ContestFlag, all []model.ContestFlag) []g
 	return data
 }
 
-func GetTeamResp(team model.Team, isAdmin bool) gin.H {
-	users, _ := db.InitTeamRepo(db.DB).CountUsers(team.ID)
+func GetTeamResp(teamView view.TeamView, isAdmin bool) gin.H {
+	team := teamView.Team
 	data := gin.H{
 		"id":          team.ID,
 		"contest_id":  team.ContestID,
@@ -46,7 +46,7 @@ func GetTeamResp(team model.Team, isAdmin bool) gin.H {
 		"picture":     team.Picture,
 		"last":        team.Last,
 		"rank":        team.Rank,
-		"users":       users,
+		"users":       teamView.UserCount,
 		"description": team.Description,
 		"captain_id":  team.CaptainID,
 		"banned":      team.Banned,

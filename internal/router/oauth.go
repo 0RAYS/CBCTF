@@ -30,9 +30,7 @@ var (
 )
 
 func RegisterOauthRouter() {
-	oauthProviders, _, ret := db.InitOauthRepo(db.DB).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"on": true},
-	})
+	oauthProviders, ret := service.ListEnabledOauthProviders(db.DB)
 	if !ret.OK {
 		return
 	}
@@ -140,12 +138,7 @@ func OauthCallback(ctx *gin.Context) {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return
 	}
-	var user model.User
-	ret = db.WithTransaction(func(tx *db.Tx) model.RetVal {
-		var ret model.RetVal
-		user, ret = service.OauthLogin(tx, provider, result)
-		return ret
-	})
+	user, ret := service.OauthLoginWithTransaction(db.DB, provider, result)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -187,7 +180,7 @@ func GetOauthProviders(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	oauthProviders, count, ret := db.InitOauthRepo(db.DB).List(form.Limit, form.Offset)
+	oauthProviders, count, ret := service.ListOauthProviders(db.DB, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -206,25 +199,7 @@ func CreateOauthProvider(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateOauthEventType)
-	provider, ret := db.InitOauthRepo(db.DB).Create(db.CreateOauthOptions{
-		AuthURL:          form.AuthURL,
-		TokenURL:         form.TokenURL,
-		UserInfoURL:      form.UserInfoURL,
-		CallbackURL:      form.CallbackURL,
-		ClientID:         form.ClientID,
-		ClientSecret:     form.ClientSecret,
-		Provider:         form.Provider,
-		Uri:              form.Uri,
-		IDClaim:          form.IDClaim,
-		NameClaim:        form.NameClaim,
-		EmailClaim:       form.EmailClaim,
-		PictureClaim:     form.PictureClaim,
-		DescriptionClaim: form.DescriptionClaim,
-		GroupsClaim:      form.GroupsClaim,
-		AdminGroup:       form.AdminGroup,
-		DefaultGroup:     form.DefaultGroup,
-		On:               false,
-	})
+	provider, ret := service.CreateOauthProvider(db.DB, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -241,30 +216,7 @@ func UpdateOauthProvider(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateOauthEventType)
 	oldOauth := middleware.GetOauth(ctx)
-	if ret := db.InitOauthRepo(db.DB).Update(oldOauth.ID, db.UpdateOauthOptions{
-		AuthURL:          form.AuthURL,
-		TokenURL:         form.TokenURL,
-		UserInfoURL:      form.UserInfoURL,
-		CallbackURL:      form.CallbackURL,
-		ClientID:         form.ClientID,
-		ClientSecret:     form.ClientSecret,
-		Provider:         form.Provider,
-		Uri:              form.Uri,
-		IDClaim:          form.IDClaim,
-		NameClaim:        form.NameClaim,
-		EmailClaim:       form.EmailClaim,
-		PictureClaim:     form.PictureClaim,
-		DescriptionClaim: form.DescriptionClaim,
-		GroupsClaim:      form.GroupsClaim,
-		AdminGroup:       form.AdminGroup,
-		DefaultGroup:     form.DefaultGroup,
-		On:               form.On,
-		Picture:          form.Picture,
-	}); !ret.OK {
-		resp.JSON(ctx, ret)
-		return
-	}
-	newOauth, ret := db.InitOauthRepo(db.DB).GetByID(oldOauth.ID)
+	newOauth, ret := service.UpdateOauthProvider(db.DB, oldOauth, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -284,7 +236,7 @@ func UpdateOauthProvider(ctx *gin.Context) {
 func DeleteOauthProvider(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteOauthEventType)
 	oauth := middleware.GetOauth(ctx)
-	if ret := db.InitOauthRepo(db.DB).Delete(oauth.ID); !ret.OK {
+	if ret := service.DeleteOauthProvider(db.DB, oauth); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}

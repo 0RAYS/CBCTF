@@ -48,3 +48,11 @@ func VerifyEmail(tx *gorm.DB, form dto.VerifyEmail) model.RetVal {
 	}
 	return model.SuccessRetVal()
 }
+
+func ListEmails(tx *gorm.DB, smtp model.Smtp, form dto.ListModelsForm) ([]model.Email, int64, model.RetVal) {
+	options := db.GetOptions{}
+	if smtp.ID > 0 {
+		options.Conditions = map[string]any{"smtp_id": smtp.ID}
+	}
+	return db.InitEmailRepo(tx).List(form.Limit, form.Offset, options)
+}

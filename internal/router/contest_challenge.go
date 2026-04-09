@@ -7,7 +7,6 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,54 +17,16 @@ func GetContestChallenges(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	var (
-		ids               []uint
-		contestChallengeL []model.ContestChallenge
-		count             int64
-		ret               model.RetVal
-	)
-	if form.Unsolved {
-		team := middleware.GetTeam(ctx)
-		contest := middleware.GetContest(ctx)
-		ids, count, ret = db.InitContestChallengeRepo(db.DB).ListUnsolvedID(team.ID, contest.ID, form.Category, form.Limit, form.Offset)
-		if !ret.OK {
-			resp.JSON(ctx, ret)
-			return
-		}
-		contestChallengeL, _, ret = db.InitContestChallengeRepo(db.DB).List(-1, -1, db.GetOptions{
-			Conditions: map[string]any{"id": ids},
-			Preloads:   map[string]db.GetOptions{"Challenge": {}, "ContestFlags": {}},
-		})
-	} else {
-		options := db.GetOptions{
-			Conditions: map[string]any{"contest_id": middleware.GetContest(ctx).ID, "hidden": false},
-			Preloads:   map[string]db.GetOptions{"Challenge": {}, "ContestFlags": {}},
-		}
-		if form.Category != "" {
-			options.Conditions["category"] = form.Category
-		}
-		contestChallengeL, count, ret = db.InitContestChallengeRepo(db.DB).List(form.Limit, form.Offset, options)
-	}
+	challenges, count, ret := service.ListContestChallengeViews(db.DB, middleware.GetContest(ctx), middleware.GetTeam(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	data := make([]gin.H, 0)
-	team := middleware.GetTeam(ctx)
-	for _, contestChallenge := range contestChallengeL {
-		tmp := resp.GetContestChallengeResp(contestChallenge)
-		tmp["hidden"] = false
-		tmp["attempts"] = service.CountAttempts(db.DB, team, contestChallenge)
-		tmp["init"] = service.CheckIfGenerated(db.DB, team, contestChallenge.ContestFlags)
-		tmp["solved"] = service.CheckIfSolved(db.DB, team, contestChallenge.ContestFlags)
-		tmp["remote"] = service.GetVictimStatus(db.DB, team.ID, contestChallenge.Challenge)
-		tmp["file"] = func() string {
-			if _, err := os.Stat(contestChallenge.Challenge.AttachmentPath(team.ID)); err != nil {
-				return ""
-			}
-			return contestChallenge.Challenge.AttachmentPath(team.ID)
-		}()
-		data = append(data, tmp)
+	data := make([]gin.H, 0, len(challenges))
+	for _, challenge := range challenges {
+		item := resp.GetContestChallengeResp(challenge)
+		item["hidden"] = false
+		data = append(data, item)
 	}
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"challenges": data, "count": count}))
 }
@@ -76,29 +37,14 @@ func GetAllContestChallenges(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	options := db.GetOptions{
-		Conditions: map[string]any{"contest_id": middleware.GetContest(ctx).ID},
-		Preloads:   map[string]db.GetOptions{"Challenge": {}, "ContestFlags": {}},
-		Search:     make(map[string]string),
-	}
-	if form.Name != "" {
-		options.Search["name"] = form.Name
-	}
-	if form.Category != "" {
-		options.Conditions["category"] = form.Category
-	}
-	if form.Type != "" {
-		options.Conditions["type"] = form.Type
-	}
-	contestChallengeL, count, ret := db.InitContestChallengeRepo(db.DB).List(form.Limit, form.Offset, options)
+	contestChallenges, count, ret := service.ListAdminContestChallenges(db.DB, middleware.GetContest(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	data := make([]gin.H, 0)
-	for _, contestChallenge := range contestChallengeL {
-		tmp := resp.GetContestChallengeResp(contestChallenge)
-		data = append(data, tmp)
+	data := make([]gin.H, 0, len(contestChallenges))
+	for _, contestChallenge := range contestChallenges {
+		data = append(data, resp.GetAdminContestChallengeResp(contestChallenge))
 	}
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"challenges": data, "count": count}))
 }
@@ -109,8 +55,7 @@ func GetContestChallengeCategories(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	contest := middleware.GetContest(ctx)
-	categories, ret := db.InitContestChallengeRepo(db.DB).ListCategories(contest.ID, form.Type)
+	categories, ret := service.ListContestChallengeCategories(db.DB, middleware.GetContest(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -119,37 +64,17 @@ func GetContestChallengeCategories(ctx *gin.Context) {
 }
 
 func GetContestChallengeStatus(ctx *gin.Context) {
-	team := middleware.GetTeam(ctx)
-	challenge := middleware.GetChallenge(ctx)
-	contestChallenge := middleware.GetContestChallenge(ctx)
-	contestFlags, _, ret := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
-	})
+	status, ret := service.GetContestChallengeStatus(
+		db.DB,
+		middleware.GetTeam(ctx),
+		middleware.GetChallenge(ctx),
+		middleware.GetContestChallenge(ctx),
+	)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	data := gin.H{
-		"attempts": service.CountAttempts(db.DB, team, contestChallenge),
-		"init":     service.CheckIfGenerated(db.DB, team, contestFlags),
-		"solved":   service.CheckIfSolved(db.DB, team, contestFlags),
-		"remote":   service.GetVictimStatus(db.DB, team.ID, challenge),
-		"file": func() string {
-			path := challenge.AttachmentPath(team.ID)
-			record, _ := db.InitFileRepo(db.DB).Get(db.GetOptions{
-				Conditions: map[string]any{"model": model.ModelName(challenge), "model_id": challenge.ID, "type": model.ChallengeFileType}},
-			)
-			filename := "attachment.zip"
-			if string(record.Path) == path {
-				filename = record.Filename
-			}
-			if _, err := os.Stat(path); err != nil {
-				return ""
-			}
-			return filename
-		}(),
-	}
-	resp.JSON(ctx, model.SuccessRetVal(data))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetContestChallengeStatusResp(status)))
 }
 
 func AddContestChallenge(ctx *gin.Context) {
@@ -159,13 +84,13 @@ func AddContestChallenge(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateContestChallengeEventType)
-	contestChallengeL, failedL, _ := service.CreateContestChallenge(db.DB, middleware.GetContest(ctx), form)
-	data := make([]gin.H, 0)
-	for _, contestChallenge := range contestChallengeL {
-		data = append(data, resp.GetContestChallengeResp(contestChallenge))
+	contestChallenges, failed, _ := service.CreateContestChallenge(db.DB, middleware.GetContest(ctx), form)
+	data := make([]gin.H, 0, len(contestChallenges))
+	for _, contestChallenge := range contestChallenges {
+		data = append(data, resp.GetAdminContestChallengeResp(contestChallenge))
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal(gin.H{"contest_challenge": data, "failed": failedL}))
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"contest_challenge": data, "failed": failed}))
 }
 
 func UpdateContestChallenge(ctx *gin.Context) {
@@ -175,15 +100,7 @@ func UpdateContestChallenge(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateContestChallengeEventType)
-	contestChallenge := middleware.GetContestChallenge(ctx)
-	ret := db.InitContestChallengeRepo(db.DB).Update(contestChallenge.ID, db.UpdateContestChallengeOptions{
-		Name:        form.Name,
-		Description: form.Description,
-		Hidden:      form.Hidden,
-		Attempt:     form.Attempt,
-		Hints:       form.Hints,
-		Tags:        form.Tags,
-	})
+	ret := service.UpdateContestChallenge(db.DB, middleware.GetContestChallenge(ctx), form)
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
@@ -192,10 +109,7 @@ func UpdateContestChallenge(ctx *gin.Context) {
 
 func DeleteContestChallenge(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteContestChallengeEventType)
-	contestChallenge := middleware.GetContestChallenge(ctx)
-	ret := db.WithTransaction(func(tx *db.Tx) model.RetVal {
-		return db.InitContestChallengeRepo(tx).Delete(contestChallenge.ID)
-	})
+	ret := service.DeleteContestChallenge(db.DB, middleware.GetContestChallenge(ctx))
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
@@ -203,22 +117,14 @@ func DeleteContestChallenge(ctx *gin.Context) {
 }
 
 func GetContestFlagSolvers(ctx *gin.Context) {
-	contestFlag := middleware.GetContestFlag(ctx)
-	rows, ret := db.InitSubmissionRepo(db.DB).ListFlagSolvers(contestFlag.ID)
+	solvers, ret := service.ListContestFlagSolvers(db.DB, middleware.GetContestFlag(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	data := make([]gin.H, 0, len(rows))
-	for _, row := range rows {
-		data = append(data, gin.H{
-			"user_id":   row.UserID,
-			"user_name": row.UserName,
-			"team_id":   row.TeamID,
-			"team_name": row.TeamName,
-			"score":     row.Score,
-			"solved_at": row.SolvedAt,
-		})
+	data := make([]gin.H, 0, len(solvers))
+	for _, solver := range solvers {
+		data = append(data, resp.GetContestFlagSolverResp(solver))
 	}
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"solvers": data, "count": int64(len(data))}))
 }

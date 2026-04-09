@@ -118,3 +118,14 @@ func GetGenerator(tx *gorm.DB, contestID uint, challenge model.Challenge) (model
 	index, _ := rand.Int(rand.Reader, big.NewInt(int64(len(generators))))
 	return generators[index.Int64()], model.SuccessRetVal()
 }
+
+func ListGenerators(tx *gorm.DB, contest model.Contest, form dto.ListGeneratorsForm) ([]model.Generator, int64, model.RetVal) {
+	options := db.GetOptions{
+		Deleted: form.Deleted,
+		Sort:    []string{"id DESC"},
+	}
+	if contest.ID > 0 {
+		options.Conditions = map[string]any{"contest_id": contest.ID}
+	}
+	return db.InitGeneratorRepo(tx).List(form.Limit, form.Offset, options)
+}

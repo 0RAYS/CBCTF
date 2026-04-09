@@ -2,157 +2,79 @@ package router
 
 import (
 	"CBCTF/internal/db"
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
-	"CBCTF/internal/task"
 
 	"github.com/gin-gonic/gin"
 )
 
 func GetTeamFlags(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.ReadFlagEventType)
-	team := middleware.GetTeam(ctx)
-	teamFlags, _, ret := db.InitTeamFlagRepo(db.DB).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"team_id": team.ID},
-		Preloads: map[string]db.GetOptions{"ContestFlag": {
-			Preloads: map[string]db.GetOptions{"ContestChallenge": {}},
-		}},
-	})
+	teamFlags, ret := service.ListTeamFlagViews(db.DB, middleware.GetTeam(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-
-	challengeInfoMap := make(map[uint]gin.H)
-	challengeFlagsMap := make(map[uint][]gin.H)
-	for _, flag := range teamFlags {
-		id := flag.ContestFlag.ContestChallengeID
-		if _, ok := challengeInfoMap[id]; !ok {
-			challengeInfoMap[id] = gin.H{
-				"name":     flag.ContestFlag.ContestChallenge.Name,
-				"type":     flag.ContestFlag.ContestChallenge.Type,
-				"category": flag.ContestFlag.ContestChallenge.Category,
-				"hidden":   flag.ContestFlag.ContestChallenge.Hidden,
-			}
+	data := make([]gin.H, 0, len(teamFlags))
+	for _, challenge := range teamFlags {
+		flags := make([]gin.H, 0, len(challenge.Flags))
+		for _, flag := range challenge.Flags {
+			flags = append(flags, gin.H{
+				"value":         flag.Value,
+				"solved":        flag.Solved,
+				"template":      flag.Template,
+				"init_score":    flag.InitScore,
+				"current_score": flag.CurrentScore,
+				"decay":         flag.Decay,
+				"min_score":     flag.MinScore,
+				"solvers":       flag.Solvers,
+			})
 		}
-		challengeFlagsMap[id] = append(challengeFlagsMap[id], gin.H{
-			"value":         flag.Value,
-			"solved":        flag.Solved,
-			"template":      flag.ContestFlag.Value,
-			"init_score":    flag.ContestFlag.Score,
-			"current_score": flag.ContestFlag.CurrentScore,
-			"decay":         flag.ContestFlag.Decay,
-			"min_score":     flag.ContestFlag.MinScore,
-			"solvers":       flag.ContestFlag.Solvers,
+		data = append(data, gin.H{
+			"name":     challenge.Name,
+			"type":     challenge.Type,
+			"category": challenge.Category,
+			"hidden":   challenge.Hidden,
+			"flags":    flags,
 		})
-	}
-
-	data := make([]gin.H, 0, len(challengeInfoMap))
-	for id, info := range challengeInfoMap {
-		info["flags"] = challengeFlagsMap[id]
-		data = append(data, info)
 	}
 	resp.JSON(ctx, model.SuccessRetVal(data))
 }
 
 func InitTeamFlag(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.InitChallengeEventType)
-	user := middleware.GetSelf(ctx)
-	team := middleware.GetTeam(ctx)
-	contest := middleware.GetContest(ctx)
-	contestChallenge := middleware.GetContestChallenge(ctx)
-	contestFlags, _, ret := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
-	})
+	ret := service.InitTeamChallenge(
+		db.DB,
+		middleware.GetSelf(ctx),
+		middleware.GetTeam(ctx),
+		middleware.GetContest(ctx),
+		middleware.GetChallenge(ctx),
+		middleware.GetContestChallenge(ctx),
+	)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-
-	contestChallenge.ContestFlags = contestFlags
-	challenge := middleware.GetChallenge(ctx)
-	ret = db.WithTransaction(func(tx *db.Tx) model.RetVal {
-		teamFlags, ret := service.CreateTeamFlag(tx, team, contest, contestChallenge)
-		if !ret.OK {
-			return ret
-		}
-		if challenge.Type != model.DynamicChallengeType {
-			return model.SuccessRetVal()
-		}
-
-		generator, ret := service.GetGenerator(tx, contest.ID, challenge)
-		if !ret.OK {
-			return ret
-		}
-		if _, err := task.EnqueueGenAttachmentTask(user.ID, generator, challenge, team, teamFlags); err != nil {
-			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
-			return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
-		}
-		return model.SuccessRetVal()
-	})
-	if !ret.OK {
-		resp.JSON(ctx, ret)
-		return
-	}
-
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }
 
 func ResetTeamFlag(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.ResetChallengeEventType)
-	user := middleware.GetSelf(ctx)
-	team := middleware.GetTeam(ctx)
-	contest := middleware.GetContest(ctx)
-	contestChallenge := middleware.GetContestChallenge(ctx)
-	contestFlags, _, ret := db.InitContestFlagRepo(db.DB).List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
-	})
+	ret := service.ResetTeamChallenge(
+		db.DB,
+		middleware.GetSelf(ctx),
+		middleware.GetTeam(ctx),
+		middleware.GetContest(ctx),
+		middleware.GetChallenge(ctx),
+		middleware.GetContestChallenge(ctx),
+	)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-
-	contestChallenge.ContestFlags = contestFlags
-	challenge := middleware.GetChallenge(ctx)
-	ret = db.WithTransaction(func(tx *db.Tx) model.RetVal {
-		teamFlags, ret := service.UpdateTeamFlag(tx, team, contest, contestChallenge)
-		if !ret.OK {
-			return ret
-		}
-		if challenge.Type != model.DynamicChallengeType {
-			return model.SuccessRetVal()
-		}
-
-		generator, ret := service.GetGenerator(tx, contest.ID, challenge)
-		if !ret.OK {
-			return ret
-		}
-		if _, err := task.EnqueueGenAttachmentTask(user.ID, generator, challenge, team, teamFlags); err != nil {
-			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
-			return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
-		}
-		return model.SuccessRetVal()
-	})
-	if !ret.OK {
-		resp.JSON(ctx, ret)
-		return
-	}
-
-	if challenge.Type == model.PodsChallengeType {
-		go func() {
-			victim, ret := db.InitVictimRepo(db.DB).HasAliveVictim(team.ID, challenge.ID)
-			if !ret.OK {
-				return
-			}
-			service.ForceStopVictim(db.DB, victim)
-		}()
-	}
-
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }

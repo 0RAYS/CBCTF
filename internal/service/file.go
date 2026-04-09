@@ -3,6 +3,7 @@ package service
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
@@ -17,7 +18,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func SavePicture(tx *gorm.DB, options db.CreateFileOptions, file *multipart.FileHeader) (model.File, model.RetVal) {
+func SavePicture(tx *gorm.DB, modelName string, modelID uint, file *multipart.FileHeader) (model.File, model.RetVal) {
 	var (
 		fileRepo = db.InitFileRepo(tx)
 		allowed  = []string{".png", ".jpg", ".jpeg"}
@@ -31,13 +32,17 @@ func SavePicture(tx *gorm.DB, options db.CreateFileOptions, file *multipart.File
 		log.Logger.Warningf("Failed to get file info: %s", err)
 		return model.File{}, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
-	options.RandID = utils.UUID()
-	options.Filename = file.Filename
-	options.Size = size
-	options.Path = model.FilePath(fmt.Sprintf("%s/pictures/%s%s", config.Env.Path, utils.UUID(), suffix))
-	options.Suffix = suffix
-	options.Hash = hash
-	options.Type = model.PictureFileType
+	options := db.CreateFileOptions{
+		RandID:   utils.UUID(),
+		Filename: file.Filename,
+		Size:     size,
+		Path:     model.FilePath(fmt.Sprintf("%s/pictures/%s%s", config.Env.Path, utils.UUID(), suffix)),
+		Model:    modelName,
+		ModelID:  modelID,
+		Suffix:   suffix,
+		Hash:     hash,
+		Type:     model.PictureFileType,
+	}
 	record, ret := fileRepo.Create(options)
 	if ret.OK {
 		prometheus.RecordFileUpload(record.Suffix, record.Size)
@@ -133,4 +138,23 @@ func SaveWriteUp(tx *gorm.DB, contest model.Contest, team model.Team, file *mult
 		prometheus.RecordFileUpload(record.Suffix, file.Size)
 	}
 	return record, ret
+}
+
+func ListFiles(tx *gorm.DB, form dto.GetFilesForm) ([]model.File, int64, model.RetVal) {
+	options := db.GetOptions{Sort: []string{"id DESC"}}
+	if form.Type != "" {
+		options.Conditions = map[string]any{"type": form.Type}
+	}
+	return db.InitFileRepo(tx).List(form.Limit, form.Offset, options)
+}
+
+func ListWriteUps(tx *gorm.DB, team model.Team, form dto.ListModelsForm) ([]model.File, int64, model.RetVal) {
+	return db.InitFileRepo(tx).List(form.Limit, form.Offset, db.GetOptions{
+		Conditions: map[string]any{"model": model.ModelName(team), "model_id": team.ID, "type": model.WriteupFileType},
+		Sort:       []string{"id DESC"},
+	})
+}
+
+func DeleteFiles(tx *gorm.DB, form dto.DeleteFileForm) model.RetVal {
+	return db.InitFileRepo(tx).DeleteByRandID(form.FileIDs...)
 }

@@ -14,19 +14,13 @@ import (
 
 func GetTeam(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
-	contestFlagRepo := db.InitContestFlagRepo(db.DB)
-	contestFlagL, _, ret := contestFlagRepo.List(-1, -1, db.GetOptions{
-		Conditions: map[string]any{"contest_id": middleware.GetContest(ctx).ID},
-		Preloads:   map[string]db.GetOptions{"ContestChallenge": {}},
-	})
+	view := service.GetTeamView(db.DB, team)
+	solvedFlagL, contestFlagL, ret := service.GetTeamSolvedFlags(db.DB, middleware.GetContest(ctx), team)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	solvedFlagL, _ := db.InitContestFlagRepo(db.DB).GetTeamSolvedContestFlags(team.ID)
-	userCount, _ := db.InitTeamRepo(db.DB).CountUsers(team.ID)
-	data := resp.GetTeamResp(team, middleware.IsFullAccess(ctx))
-	data["users"] = userCount
+	data := resp.GetTeamResp(view, middleware.IsFullAccess(ctx))
 	data["solved"] = resp.GetSolvedStateResp(solvedFlagL, contestFlagL)
 	resp.JSON(ctx, model.SuccessRetVal(data))
 }
@@ -37,35 +31,14 @@ func GetTeams(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	options := db.GetOptions{
-		Conditions: map[string]any{"contest_id": middleware.GetContest(ctx).ID},
-		Search:     make(map[string]string),
-	}
-	if form.Name != "" {
-		options.Search["name"] = form.Name
-	}
-	if form.Description != "" {
-		options.Search["description"] = form.Description
-	}
-	teams, count, ret := db.InitTeamRepo(db.DB).List(form.Limit, form.Offset, options)
-	if !ret.OK {
-		resp.JSON(ctx, ret)
-		return
-	}
-	teamIDL := make([]uint, 0, len(teams))
-	for _, team := range teams {
-		teamIDL = append(teamIDL, team.ID)
-	}
-	userCountMap, ret := db.InitTeamRepo(db.DB).CountUsersMap(teamIDL...)
+	teams, count, ret := service.ListTeams(db.DB, middleware.GetContest(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
 	data := make([]gin.H, 0)
 	for _, team := range teams {
-		item := resp.GetTeamResp(team, true)
-		item["users"] = userCountMap[team.ID]
-		data = append(data, item)
+		data = append(data, resp.GetTeamResp(team, true))
 	}
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"count": count, "teams": data}))
 }
@@ -76,7 +49,7 @@ func GetTeamCaptcha(ctx *gin.Context) {
 
 func GetTeammates(ctx *gin.Context) {
 	team := middleware.GetTeam(ctx)
-	users, ret := db.InitUserRepo(db.DB).GetByTeamID(team.ID, -1, -1)
+	users, ret := service.GetTeammates(db.DB, team, middleware.IsFullAccess(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -120,7 +93,7 @@ func UpdateCaptcha(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateTeamEventType)
 	captcha := utils.UUID()
 	team := middleware.GetTeam(ctx)
-	ret := db.InitTeamRepo(db.DB).Update(team.ID, db.UpdateTeamOptions{Captcha: &captcha})
+	ret := service.UpdateTeamCaptcha(db.DB, team, captcha)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -131,10 +104,7 @@ func UpdateCaptcha(ctx *gin.Context) {
 
 func DeleteTeam(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteTeamEventType)
-	team := middleware.GetTeam(ctx)
-	ret := db.WithTransaction(func(tx *db.Tx) model.RetVal {
-		return db.InitTeamRepo(tx).Delete(team.ID)
-	})
+	ret := service.DeleteTeamWithTransaction(db.DB, middleware.GetTeam(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -150,11 +120,7 @@ func KickMember(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.KickMemberEventType)
-	team := middleware.GetTeam(ctx)
-	contest := middleware.GetContest(ctx)
-	ret := db.WithTransaction(func(tx *db.Tx) model.RetVal {
-		return service.LeaveTeam(tx, contest, team, form.UserID)
-	})
+	ret := service.KickMember(db.DB, middleware.GetContest(ctx), middleware.GetTeam(ctx), form.UserID)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -171,14 +137,7 @@ func JoinTeam(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.JoinTeamEventType)
-	contest := middleware.GetContest(ctx)
-	user := middleware.GetSelf(ctx)
-	var team model.Team
-	ret := db.WithTransaction(func(tx *db.Tx) model.RetVal {
-		var ret model.RetVal
-		team, ret = service.JoinTeam(tx, contest, user, form)
-		return ret
-	})
+	team, ret := service.JoinTeamWithTransaction(db.DB, middleware.GetContest(ctx), middleware.GetSelf(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -195,17 +154,7 @@ func CreateTeam(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateTeamEventType)
-	contest := middleware.GetContest(ctx)
-	user := middleware.GetSelf(ctx)
-	var team model.Team
-	ret := db.WithTransaction(func(tx *db.Tx) model.RetVal {
-		var ret model.RetVal
-		team, ret = service.CreateTeam(tx, contest, user, form)
-		if !ret.OK {
-			return ret
-		}
-		return service.CreateTeamFlags(tx, team, contest)
-	})
+	team, ret := service.CreateTeamWithTransaction(db.DB, middleware.GetContest(ctx), middleware.GetSelf(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -217,17 +166,12 @@ func CreateTeam(ctx *gin.Context) {
 
 func LeaveTeam(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.LeaveTeamEventType)
-	user := middleware.GetSelf(ctx)
-	contest := middleware.GetContest(ctx)
-	team := middleware.GetTeam(ctx)
-	ret := db.WithTransaction(func(tx *db.Tx) model.RetVal {
-		return service.LeaveTeam(tx, contest, team, user.ID)
-	})
+	ret := service.LeaveTeamWithTransaction(db.DB, middleware.GetContest(ctx), middleware.GetTeam(ctx), middleware.GetSelf(ctx).ID)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Team": team.ID})
+	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Team": middleware.GetTeam(ctx).ID})
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }
