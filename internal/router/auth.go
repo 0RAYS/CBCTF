@@ -16,7 +16,6 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 func Register(ctx *gin.Context) {
@@ -30,22 +29,7 @@ func Register(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.RegisterEventType)
-	var user model.User
-	ret := db.WithTransaction(func(tx *gorm.DB) model.RetVal {
-		var ret model.RetVal
-		user, ret = service.CreateUser(tx, form)
-		if !ret.OK {
-			return ret
-		}
-		if config.Env.Registration.DefaultGroup != 0 {
-			if defaultGroup, groupRet := db.InitGroupRepo(tx).GetByID(config.Env.Registration.DefaultGroup); groupRet.OK {
-				if ret = db.AppendUserToGroup(tx, user, defaultGroup); !ret.OK {
-					return ret
-				}
-			}
-		}
-		return model.SuccessRetVal()
-	})
+	user, ret := service.RegisterUser(db.DB, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -65,7 +49,7 @@ func Register(ctx *gin.Context) {
 	ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	prometheus.RecordUserRegister(oauth.LocalProvider)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(user, false)))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.GetUserView(db.DB, user, false), false)))
 }
 
 func Login(ctx *gin.Context) {
@@ -91,5 +75,5 @@ func Login(ctx *gin.Context) {
 	ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	prometheus.RecordUserLogin(oauth.LocalProvider)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(user, false)))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.GetUserView(db.DB, user, false), false)))
 }

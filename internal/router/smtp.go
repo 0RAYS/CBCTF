@@ -3,10 +3,10 @@ package router
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
-	"CBCTF/internal/email"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
+	"CBCTF/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -17,7 +17,7 @@ func GetSmtps(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	smtps, count, ret := db.InitSmtpRepo(db.DB).List(form.Limit, form.Offset)
+	smtps, count, ret := service.ListSmtps(db.DB, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -36,12 +36,7 @@ func CreateSmtp(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateSmtpEventType)
-	smtp, ret := db.InitSmtpRepo(db.DB).Create(db.CreateSmtpOptions{
-		Address: form.Address,
-		Host:    form.Host,
-		Port:    form.Port,
-		Pwd:     form.Pwd,
-	})
+	smtp, ret := service.CreateSmtp(db.DB, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -57,38 +52,20 @@ func UpdateSmtp(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateSmtpEventType)
-	smtp := middleware.GetSmtp(ctx)
-	if ret := db.InitSmtpRepo(db.DB).Update(smtp.ID, db.UpdateSmtpOptions{
-		Address: form.Address,
-		Host:    form.Host,
-		Port:    form.Port,
-		Pwd:     form.Pwd,
-		On:      form.On,
-	}); !ret.OK {
+	if _, ret := service.UpdateSmtp(db.DB, middleware.GetSmtp(ctx), form); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
-	}
-	newSmtp, ret := db.InitSmtpRepo(db.DB).GetByID(smtp.ID)
-	if !ret.OK {
-		resp.JSON(ctx, ret)
-		return
-	}
-	email.DelSenders(smtp)
-	if newSmtp.On {
-		email.AddSenders(smtp)
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, ret)
+	resp.JSON(ctx, model.SuccessRetVal())
 }
 
 func DeleteSmtp(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteSmtpEventType)
-	smtp := middleware.GetSmtp(ctx)
-	if ret := db.InitSmtpRepo(db.DB).Delete(smtp.ID); !ret.OK {
+	if ret := service.DeleteSmtp(db.DB, middleware.GetSmtp(ctx)); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	email.DelSenders(smtp)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }

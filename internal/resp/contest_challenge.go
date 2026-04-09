@@ -2,14 +2,23 @@ package resp
 
 import (
 	"CBCTF/internal/model"
+	"CBCTF/internal/view"
 	"crypto/rand"
 	"math/big"
 
 	"github.com/gin-gonic/gin"
 )
 
-// GetContestChallengeResp model.ContestChallenge Preload model.Challenge model.ContestFlag
-func GetContestChallengeResp(contestChallenge model.ContestChallenge) gin.H {
+func GetVictimStatusResp(status view.VictimStatusView) gin.H {
+	return gin.H{
+		"target":    status.Targets,
+		"duration":  status.Duration,
+		"remaining": status.Remaining,
+		"status":    status.Status,
+	}
+}
+
+func getContestChallengeBaseResp(contestChallenge model.ContestChallenge) gin.H {
 	options := make([]gin.H, 0)
 	for _, option := range contestChallenge.Challenge.Options {
 		options = append(options, gin.H{
@@ -51,4 +60,28 @@ func GetContestChallengeResp(contestChallenge model.ContestChallenge) gin.H {
 		"tags":  contestChallenge.Tags,
 	}
 	return data
+}
+
+func GetContestChallengeResp(contestChallengeView view.ContestChallengeView) gin.H {
+	data := getContestChallengeBaseResp(contestChallengeView.ContestChallenge)
+	data["attempts"] = contestChallengeView.Attempts
+	data["init"] = contestChallengeView.Init
+	data["solved"] = contestChallengeView.Solved
+	data["remote"] = GetVictimStatusResp(contestChallengeView.Remote)
+	data["file"] = contestChallengeView.FileName
+	return data
+}
+
+func GetAdminContestChallengeResp(contestChallenge model.ContestChallenge) gin.H {
+	return getContestChallengeBaseResp(contestChallenge)
+}
+
+func GetContestChallengeStatusResp(status view.ContestChallengeStatusView) gin.H {
+	return gin.H{
+		"attempts": status.Attempts,
+		"init":     status.Init,
+		"solved":   status.Solved,
+		"remote":   GetVictimStatusResp(status.Remote),
+		"file":     status.FileName,
+	}
 }

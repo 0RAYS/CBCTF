@@ -147,3 +147,10 @@ func CheckIfSolved(tx *gorm.DB, team model.Team, contestFlags []model.ContestFla
 	}
 	return solvedCount == int64(len(contestFlags))
 }
+
+func ListTeamSubmissions(tx *gorm.DB, team model.Team, form dto.ListModelsForm) ([]model.Submission, int64, model.RetVal) {
+	return db.InitSubmissionRepo(tx).List(form.Limit, form.Offset, db.GetOptions{
+		Conditions: map[string]any{"team_id": team.ID},
+		Sort:       []string{"id DESC"},
+	})
+}

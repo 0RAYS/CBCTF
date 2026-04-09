@@ -2,6 +2,7 @@ package resp
 
 import (
 	"CBCTF/internal/model"
+	"CBCTF/internal/view"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,5 +21,16 @@ func GetContestFlagResp(contestFlag model.ContestFlag) gin.H {
 		"score_type":           contestFlag.ScoreType,
 		"solvers":              contestFlag.Solvers,
 		"last":                 contestFlag.Last,
+	}
+}
+
+func GetContestFlagSolverResp(solver view.ContestFlagSolverView) gin.H {
+	return gin.H{
+		"user_id":   solver.UserID,
+		"user_name": solver.UserName,
+		"team_id":   solver.TeamID,
+		"team_name": solver.TeamName,
+		"score":     solver.Score,
+		"solved_at": solver.SolvedAt,
 	}
 }

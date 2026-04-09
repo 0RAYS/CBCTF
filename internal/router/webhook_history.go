@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
+	"CBCTF/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,14 +17,7 @@ func GetWebhookHistory(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	options := db.GetOptions{
-		Preloads: map[string]db.GetOptions{"Webhook": {}, "Event": {}},
-	}
-	webhook := middleware.GetWebhook(ctx)
-	if webhook.ID > 0 {
-		options.Conditions = map[string]any{"webhook_id": webhook.ID}
-	}
-	histories, count, ret := db.InitWebhookHistoryRepo(db.DB).List(form.Limit, form.Offset, options)
+	histories, count, ret := service.ListWebhookHistories(db.DB, middleware.GetWebhook(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

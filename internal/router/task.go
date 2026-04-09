@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/dto"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
+	"CBCTF/internal/service"
 	"CBCTF/internal/task"
 
 	"github.com/gin-gonic/gin"
@@ -16,24 +17,7 @@ func GetTasks(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	options := db.GetOptions{
-		Sort: []string{"processed_at DESC", "id DESC"},
-	}
-	conditions := make(map[string]any)
-	if form.Queue != "" {
-		conditions["queue"] = form.Queue
-	}
-	if form.Status != "" {
-		conditions["status"] = form.Status
-	}
-	if len(conditions) > 0 {
-		options.Conditions = conditions
-	}
-	if form.TaskID != "" {
-		options.Search = map[string]string{"task_id": form.TaskID}
-	}
-	repo := db.InitTaskRepo(db.DB)
-	tasks, count, ret := repo.List(form.Limit, form.Offset, options)
+	tasks, count, queues, ret := service.ListTasks(db.DB, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -41,11 +25,6 @@ func GetTasks(ctx *gin.Context) {
 	data := make([]gin.H, 0, len(tasks))
 	for _, item := range tasks {
 		data = append(data, resp.GetTaskResp(item))
-	}
-	queues, ret := repo.ListQueues()
-	if !ret.OK {
-		resp.JSON(ctx, ret)
-		return
 	}
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"tasks": data, "count": count, "queues": queues}))
 }

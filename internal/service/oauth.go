@@ -2,6 +2,7 @@ package service
 
 import (
 	"CBCTF/internal/db"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
@@ -44,7 +45,7 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 		if !userRepo.IsUniqueKeyValue(0, "email", email) {
 			email = fmt.Sprintf("%s_%s@example.com", provider.Provider, utils.RandStr(10))
 		}
-		user, ret = userRepo.Create(db.CreateUserOptions{
+		user, ret = userRepo.Insert(model.User{
 			Name:           name,
 			Password:       model.NeverLoginPWD,
 			Email:          email,
@@ -106,4 +107,77 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 		prometheus.RecordUserLogin(provider.Provider)
 	}
 	return userRepo.Get(db.GetOptions{Conditions: map[string]any{"provider": provider.Provider, "provider_user_id": id}})
+}
+
+func OauthLoginWithTransaction(tx *gorm.DB, provider model.Oauth, response map[string]any) (model.User, model.RetVal) {
+	var user model.User
+	ret := db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
+		var loginRet model.RetVal
+		user, loginRet = OauthLogin(tx2, provider, response)
+		return loginRet
+	})
+	return user, ret
+}
+
+func ListEnabledOauthProviders(tx *gorm.DB) ([]model.Oauth, model.RetVal) {
+	providers, _, ret := db.InitOauthRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"on": true},
+	})
+	return providers, ret
+}
+
+func ListOauthProviders(tx *gorm.DB, form dto.ListModelsForm) ([]model.Oauth, int64, model.RetVal) {
+	return db.InitOauthRepo(tx).List(form.Limit, form.Offset)
+}
+
+func CreateOauthProvider(tx *gorm.DB, form dto.CreateOauthProviderForm) (model.Oauth, model.RetVal) {
+	return db.InitOauthRepo(tx).Create(db.CreateOauthOptions{
+		AuthURL:          form.AuthURL,
+		TokenURL:         form.TokenURL,
+		UserInfoURL:      form.UserInfoURL,
+		CallbackURL:      form.CallbackURL,
+		ClientID:         form.ClientID,
+		ClientSecret:     form.ClientSecret,
+		Provider:         form.Provider,
+		Uri:              form.Uri,
+		IDClaim:          form.IDClaim,
+		NameClaim:        form.NameClaim,
+		EmailClaim:       form.EmailClaim,
+		PictureClaim:     form.PictureClaim,
+		DescriptionClaim: form.DescriptionClaim,
+		GroupsClaim:      form.GroupsClaim,
+		AdminGroup:       form.AdminGroup,
+		DefaultGroup:     form.DefaultGroup,
+		On:               false,
+	})
+}
+
+func UpdateOauthProvider(tx *gorm.DB, oldOauth model.Oauth, form dto.UpdateOauthProviderForm) (model.Oauth, model.RetVal) {
+	if ret := db.InitOauthRepo(tx).Update(oldOauth.ID, db.UpdateOauthOptions{
+		AuthURL:          form.AuthURL,
+		TokenURL:         form.TokenURL,
+		UserInfoURL:      form.UserInfoURL,
+		CallbackURL:      form.CallbackURL,
+		ClientID:         form.ClientID,
+		ClientSecret:     form.ClientSecret,
+		Provider:         form.Provider,
+		Uri:              form.Uri,
+		IDClaim:          form.IDClaim,
+		NameClaim:        form.NameClaim,
+		EmailClaim:       form.EmailClaim,
+		PictureClaim:     form.PictureClaim,
+		DescriptionClaim: form.DescriptionClaim,
+		GroupsClaim:      form.GroupsClaim,
+		AdminGroup:       form.AdminGroup,
+		DefaultGroup:     form.DefaultGroup,
+		On:               form.On,
+		Picture:          form.Picture,
+	}); !ret.OK {
+		return model.Oauth{}, ret
+	}
+	return db.InitOauthRepo(tx).GetByID(oldOauth.ID)
+}
+
+func DeleteOauthProvider(tx *gorm.DB, oauth model.Oauth) model.RetVal {
+	return db.InitOauthRepo(tx).Delete(oauth.ID)
 }

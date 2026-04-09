@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
+	"CBCTF/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,11 +17,7 @@ func GetSubmissions(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	team := middleware.GetTeam(ctx)
-	submissions, count, ret := db.InitSubmissionRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
-		Conditions: map[string]any{"team_id": team.ID},
-		Sort:       []string{"id DESC"},
-	})
+	submissions, count, ret := service.ListTeamSubmissions(db.DB, middleware.GetTeam(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

@@ -70,40 +70,34 @@ func UploadPicture(v string) gin.HandlerFunc {
 			return
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.UploadPictureEventType)
-		options := db.CreateFileOptions{}
+		var modelName string
 		var id uint
 		switch v {
 		case "self":
 			id = middleware.GetSelf(ctx).ID
-			options.Model = model.ModelName(model.User{})
-			options.ModelID = id
+			modelName = model.ModelName(model.User{})
 		case "user":
 			id = middleware.GetUser(ctx).ID
-			options.Model = model.ModelName(model.User{})
-			options.ModelID = id
+			modelName = model.ModelName(model.User{})
 		case "contest":
 			id = middleware.GetContest(ctx).ID
-			options.Model = model.ModelName(model.Contest{})
-			options.ModelID = id
+			modelName = model.ModelName(model.Contest{})
 		case "team":
 			id = middleware.GetTeam(ctx).ID
-			options.Model = model.ModelName(model.Team{})
-			options.ModelID = id
+			modelName = model.ModelName(model.Team{})
 		case "oauth":
 			id = middleware.GetOauth(ctx).ID
-			options.Model = model.ModelName(model.Oauth{})
-			options.ModelID = id
+			modelName = model.ModelName(model.Oauth{})
 		case "branding":
-			branding, ret := db.InitBrandingRepo(db.DB).GetDefault()
+			var ret model.RetVal
+			id, ret = service.GetDefaultBrandingID(db.DB)
 			if !ret.OK {
 				resp.JSON(ctx, ret)
 				return
 			}
-			id = branding.ID
-			options.Model = model.ModelName(model.Branding{})
-			options.ModelID = id
+			modelName = model.ModelName(model.Branding{})
 		}
-		record, ret := service.SavePicture(db.DB, options, file)
+		record, ret := service.SavePicture(db.DB, modelName, id, file)
 		if !ret.OK {
 			resp.JSON(ctx, ret)
 			return
@@ -188,11 +182,7 @@ func GetFiles(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	options := db.GetOptions{Sort: []string{"id DESC"}}
-	if form.Type != "" {
-		options.Conditions = map[string]any{"type": form.Type}
-	}
-	files, count, ret := db.InitFileRepo(db.DB).List(form.Limit, form.Offset, options)
+	files, count, ret := service.ListFiles(db.DB, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -210,11 +200,7 @@ func GetWriteUPs(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	team := middleware.GetTeam(ctx)
-	writeups, count, ret := db.InitFileRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
-		Conditions: map[string]any{"model": model.ModelName(team), "model_id": team.ID, "type": model.WriteupFileType},
-		Sort:       []string{"id DESC"},
-	})
+	writeups, count, ret := service.ListWriteUps(db.DB, middleware.GetTeam(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -233,7 +219,7 @@ func DeleteFiles(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.DeletePictureEventType)
-	ret := db.InitFileRepo(db.DB).DeleteByRandID(form.FileIDs...)
+	ret := service.DeleteFiles(db.DB, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

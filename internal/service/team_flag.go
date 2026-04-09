@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/task"
 	"CBCTF/internal/utils"
+	"CBCTF/internal/view"
 	"fmt"
 	"strings"
 
@@ -157,4 +158,121 @@ func CheckIfGenerated(tx *gorm.DB, team model.Team, contestFlags []model.Contest
 	}
 	count, ret := db.InitTeamFlagRepo(tx).CountGenerated(team.ID, contestFlagIDL...)
 	return ret.OK && count == int64(len(contestFlags))
+}
+
+func ListTeamFlagViews(tx *gorm.DB, team model.Team) ([]view.TeamFlagChallengeView, model.RetVal) {
+	teamFlags, _, ret := db.InitTeamFlagRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"team_id": team.ID},
+		Preloads: map[string]db.GetOptions{"ContestFlag": {
+			Preloads: map[string]db.GetOptions{"ContestChallenge": {}},
+		}},
+	})
+	if !ret.OK {
+		return nil, ret
+	}
+
+	type groupData struct {
+		index int
+		view  view.TeamFlagChallengeView
+	}
+	groupMap := make(map[uint]*groupData)
+	result := make([]view.TeamFlagChallengeView, 0)
+	for _, flag := range teamFlags {
+		id := flag.ContestFlag.ContestChallengeID
+		group, ok := groupMap[id]
+		if !ok {
+			result = append(result, view.TeamFlagChallengeView{
+				Name:     flag.ContestFlag.ContestChallenge.Name,
+				Type:     flag.ContestFlag.ContestChallenge.Type,
+				Category: flag.ContestFlag.ContestChallenge.Category,
+				Hidden:   flag.ContestFlag.ContestChallenge.Hidden,
+				Flags:    make([]view.TeamFlagInfoView, 0),
+			})
+			group = &groupData{index: len(result) - 1, view: result[len(result)-1]}
+			groupMap[id] = group
+		}
+		result[group.index].Flags = append(result[group.index].Flags, view.TeamFlagInfoView{
+			Value:        flag.Value,
+			Solved:       flag.Solved,
+			Template:     flag.ContestFlag.Value,
+			InitScore:    flag.ContestFlag.Score,
+			CurrentScore: flag.ContestFlag.CurrentScore,
+			Decay:        flag.ContestFlag.Decay,
+			MinScore:     flag.ContestFlag.MinScore,
+			Solvers:      flag.ContestFlag.Solvers,
+		})
+	}
+	return result, model.SuccessRetVal()
+}
+
+func InitTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, challenge model.Challenge, contestChallenge model.ContestChallenge) model.RetVal {
+	contestFlags, _, ret := db.InitContestFlagRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
+	})
+	if !ret.OK {
+		return ret
+	}
+	contestChallenge.ContestFlags = contestFlags
+	return db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
+		teamFlags, createRet := CreateTeamFlag(tx2, team, contest, contestChallenge)
+		if !createRet.OK {
+			return createRet
+		}
+		if challenge.Type != model.DynamicChallengeType {
+			return model.SuccessRetVal()
+		}
+
+		generator, generatorRet := GetGenerator(tx2, contest.ID, challenge)
+		if !generatorRet.OK {
+			return generatorRet
+		}
+		if _, err := task.EnqueueGenAttachmentTask(user.ID, generator, challenge, team, teamFlags); err != nil {
+			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
+			return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
+		}
+		return model.SuccessRetVal()
+	})
+}
+
+func ResetTeamChallenge(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, challenge model.Challenge, contestChallenge model.ContestChallenge) model.RetVal {
+	contestFlags, _, ret := db.InitContestFlagRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
+	})
+	if !ret.OK {
+		return ret
+	}
+	contestChallenge.ContestFlags = contestFlags
+	ret = db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
+		teamFlags, updateRet := UpdateTeamFlag(tx2, team, contest, contestChallenge)
+		if !updateRet.OK {
+			return updateRet
+		}
+		if challenge.Type != model.DynamicChallengeType {
+			return model.SuccessRetVal()
+		}
+
+		generator, generatorRet := GetGenerator(tx2, contest.ID, challenge)
+		if !generatorRet.OK {
+			return generatorRet
+		}
+		if _, err := task.EnqueueGenAttachmentTask(user.ID, generator, challenge, team, teamFlags); err != nil {
+			log.Logger.Warningf("Failed to enqueue gen attachment task: %s", err)
+			return model.RetVal{Msg: i18n.Task.EnqueueError, Attr: map[string]any{"Error": err.Error()}}
+		}
+		return model.SuccessRetVal()
+	})
+	if !ret.OK {
+		return ret
+	}
+
+	if challenge.Type == model.PodsChallengeType {
+		go func() {
+			victim, victimRet := db.InitVictimRepo(tx).HasAliveVictim(team.ID, challenge.ID)
+			if !victimRet.OK {
+				return
+			}
+			_ = ForceStopVictim(tx, victim)
+		}()
+	}
+	return model.SuccessRetVal()
 }

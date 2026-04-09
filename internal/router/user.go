@@ -14,34 +14,22 @@ import (
 
 func GetUser(ctx *gin.Context) {
 	var user model.User
+	includeCounts := middleware.IsFullAccess(ctx)
 	if middleware.IsFullAccess(ctx) {
 		user = middleware.GetUser(ctx)
 	} else {
 		user = middleware.GetSelf(ctx)
 	}
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(user, middleware.IsFullAccess(ctx))))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.GetUserView(db.DB, user, includeCounts), includeCounts)))
 }
 
 func GetAccessibleRoutes(ctx *gin.Context) {
 	userID := middleware.GetSelf(ctx).ID
-	permNames, ret := db.InitPermissionRepo(db.DB).GetUserPermissions(userID)
+	routes, ret := service.GetAccessibleRoutes(db.DB, userID)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-
-	permSet := make(map[string]struct{}, len(permNames))
-	for _, name := range permNames {
-		permSet[name] = struct{}{}
-	}
-
-	routes := make([]string, 0)
-	for route, perm := range model.RoutePermissions {
-		if _, ok := permSet[perm]; ok {
-			routes = append(routes, route)
-		}
-	}
-
 	resp.JSON(ctx, model.SuccessRetVal(routes))
 }
 
@@ -51,17 +39,7 @@ func GetUsers(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	options := db.GetOptions{Search: make(map[string]string)}
-	if form.Name != "" {
-		options.Search["name"] = form.Name
-	}
-	if form.Email != "" {
-		options.Search["email"] = form.Email
-	}
-	if form.Description != "" {
-		options.Search["description"] = form.Description
-	}
-	users, count, ret := db.InitUserRepo(db.DB).List(form.Limit, form.Offset, options)
+	users, count, ret := service.ListUsers(db.DB, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -86,7 +64,7 @@ func CreateUser(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventSuccessKey, true)
-	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(user, true)))
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetUserResp(service.GetUserView(db.DB, user, true), true)))
 }
 
 func ChangePwd(ctx *gin.Context) {
@@ -144,15 +122,11 @@ func DeleteUser(ctx *gin.Context) {
 		}
 		ctx.Set(middleware.CTXEventTypeKey, model.DeleteUserEventType)
 		user = middleware.GetSelf(ctx)
-		ret = db.WithTransaction(func(tx *db.Tx) model.RetVal {
-			return service.DeleteSelf(tx, user, form)
-		})
+		ret = service.DeleteSelfWithTransaction(db.DB, user, form)
 	} else {
 		ctx.Set(middleware.CTXEventTypeKey, model.DeleteUserEventType)
 		user = middleware.GetUser(ctx)
-		ret = db.WithTransaction(func(tx *db.Tx) model.RetVal {
-			return service.DeleteUser(tx, user)
-		})
+		ret = service.DeleteUserWithTransaction(db.DB, user)
 	}
 	if !ret.OK {
 		resp.JSON(ctx, ret)

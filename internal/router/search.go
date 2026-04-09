@@ -1,33 +1,20 @@
 package router
 
 import (
-	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
-	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
-	"fmt"
-	"slices"
+	"CBCTF/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
 
-var models = []model.Model{
-	model.Challenge{}, model.ChallengeFlag{}, model.Cheat{}, model.Contest{},
-	model.ContestChallenge{}, model.ContestFlag{}, model.Device{}, model.Email{}, model.Event{},
-	model.File{}, model.Generator{}, model.Group{}, model.Notice{}, model.Oauth{}, model.Permission{}, model.Pod{},
-	model.Request{}, model.Role{}, model.Setting{}, model.Smtp{}, model.Submission{}, model.Team{}, model.TeamFlag{},
-	model.Traffic{}, model.User{}, model.Victim{}, model.Webhook{}, model.WebhookHistory{},
-}
-
 func GetAllowQueryModels(ctx *gin.Context) {
 	data := gin.H{}
-	for _, m := range models {
-		if fields := model.QueryFields(m); len(fields) > 0 {
-			data[model.ModelName(m)] = gin.H{
-				"query":  fields,
-				"search": model.SearchFields(m),
-			}
+	for name, info := range service.GetAllowQueryModels() {
+		data[name] = gin.H{
+			"query":  info.Query,
+			"search": info.Search,
 		}
 	}
 	resp.JSON(ctx, model.SuccessRetVal(data))
@@ -39,40 +26,7 @@ func Search(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	var m model.Model
-	var queryFields []string
-	var searchFields []string
-	var found bool
-	for _, m = range models {
-		if queryFields = model.QueryFields(m); len(queryFields) > 0 && model.ModelName(m) == form.Model {
-			searchFields = model.SearchFields(m)
-			found = true
-			break
-		}
-	}
-	if !found {
-		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest, Attr: map[string]any{"Error": "Not allowed model"}})
-		return
-	}
-	options := db.GetOptions{Search: make(map[string]string), Sort: make([]string, 0)}
-	for key, value := range form.Search {
-		if !slices.Contains(searchFields, key) {
-			continue
-		}
-		options.Search[key] = value
-	}
-	for key, value := range form.Sort {
-		if !slices.Contains(queryFields, key) {
-			continue
-		}
-		switch value {
-		case "asc", "desc":
-		default:
-			continue
-		}
-		options.Sort = append(options.Sort, fmt.Sprintf("%s %s", key, value))
-	}
-	ms, count, ret := db.Search(m, form.Limit, form.Offset, options)
+	ms, count, ret := service.SearchModels(nil, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

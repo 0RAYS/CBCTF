@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
+	"CBCTF/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,7 +17,7 @@ func GetPermissions(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	permissions, count, ret := db.InitPermissionRepo(db.DB).List(form.Limit, form.Offset)
+	permissions, count, ret := service.ListPermissions(db.DB, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -36,9 +37,7 @@ func UpdatePermission(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdatePermissionEventType)
 	permission := middleware.GetPermission(ctx)
-	ret := db.InitPermissionRepo(db.DB).Update(permission.ID, db.UpdatePermissionOptions{
-		Description: form.Description,
-	})
+	ret := service.UpdatePermission(db.DB, permission, form)
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}

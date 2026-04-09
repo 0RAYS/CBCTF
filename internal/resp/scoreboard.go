@@ -1,13 +1,25 @@
 package resp
 
 import (
-	"CBCTF/internal/model"
+	"CBCTF/internal/view"
 
 	"github.com/gin-gonic/gin"
 )
 
-// GetTeamRankingResp model.ContestFlag Preload model.ContestChallenge
-func GetTeamRankingResp(team model.Team, solved []model.ContestFlag, flags []model.ContestFlag, isAdmin bool) gin.H {
+func GetSolvedStateViewResp(states []view.ScoreboardSolvedStateView) []gin.H {
+	data := make([]gin.H, 0, len(states))
+	for _, state := range states {
+		data = append(data, gin.H{
+			"category": state.Category,
+			"solved":   state.Solved,
+			"all":      state.All,
+		})
+	}
+	return data
+}
+
+func GetTeamRankingResp(teamView view.TeamRankingView, isAdmin bool) gin.H {
+	team := teamView.Team
 	data := gin.H{
 		"id":          team.ID,
 		"name":        team.Name,
@@ -17,7 +29,7 @@ func GetTeamRankingResp(team model.Team, solved []model.ContestFlag, flags []mod
 		"last":        team.Last,
 		"hidden":      team.Hidden,
 		"captain_id":  team.CaptainID,
-		"solved":      GetSolvedStateResp(solved, flags),
+		"solved":      GetSolvedStateViewResp(teamView.Solved),
 	}
 	if isAdmin {
 		data["captcha"] = team.Captcha
@@ -25,17 +37,18 @@ func GetTeamRankingResp(team model.Team, solved []model.ContestFlag, flags []mod
 	return data
 }
 
-func GetScoreboardResp(challengeMap map[string]model.Challenge, globalMap map[string]int, teamMap map[uint]map[string]int, teams []model.Team, userCountMap map[uint]int64) []gin.H {
+func GetScoreboardResp(teams []view.ScoreboardTeamView) []gin.H {
 	data := make([]gin.H, 0)
-	for _, team := range teams {
+	for _, teamView := range teams {
+		team := teamView.Team
 		solved := make([]gin.H, 0)
-		for challengeRandID, count := range teamMap[team.ID] {
+		for _, challenge := range teamView.Challenges {
 			solved = append(solved, gin.H{
-				"id":       challengeRandID,
-				"total":    globalMap[challengeRandID],
-				"solved":   count,
-				"name":     challengeMap[challengeRandID].Name,
-				"category": challengeMap[challengeRandID].Category,
+				"id":       challenge.ID,
+				"total":    challenge.Total,
+				"solved":   challenge.Solved,
+				"name":     challenge.Name,
+				"category": challenge.Category,
 			})
 		}
 		data = append(data, gin.H{
@@ -45,22 +58,21 @@ func GetScoreboardResp(challengeMap map[string]model.Challenge, globalMap map[st
 			"score":       team.Score,
 			"picture":     team.Picture,
 			"last":        team.Last,
-			"users":       userCountMap[team.ID],
+			"users":       teamView.UserCount,
 			"challenges":  solved,
 		})
 	}
 	return data
 }
 
-// GetRankTimelineResp model.Team Preload model.Submission
-func GetRankTimelineResp(teams []model.Team) []gin.H {
+func GetRankTimelineResp(teams []view.RankTimelineTeamView) []gin.H {
 	data := make([]gin.H, 0)
 	for _, team := range teams {
 		timeline := make([]gin.H, 0)
-		for _, submission := range team.Submissions {
+		for _, point := range team.Timeline {
 			timeline = append(timeline, gin.H{
-				"time":  submission.CreatedAt,
-				"score": submission.Score,
+				"time":  point.Time,
+				"score": point.Score,
 			})
 		}
 		data = append(data, gin.H{

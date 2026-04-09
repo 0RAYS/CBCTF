@@ -3,6 +3,7 @@ package service
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/db"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
 	"fmt"
@@ -14,6 +15,50 @@ import (
 
 	"gorm.io/gorm"
 )
+
+func ListCheats(tx *gorm.DB, contest model.Contest, form dto.GetCheatsForm) ([]model.Cheat, int64, int64, model.RetVal) {
+	options := db.GetOptions{
+		Conditions: map[string]any{"contest_id": contest.ID},
+		Sort:       []string{"id DESC"},
+	}
+	if form.Type != "" {
+		options.Conditions["type"] = form.Type
+	}
+	if form.ReasonType != "" {
+		options.Conditions["reason_type"] = form.ReasonType
+	}
+	cheats, count, ret := db.InitCheatRepo(tx).List(form.Limit, form.Offset, options)
+	if !ret.OK {
+		return nil, 0, 0, ret
+	}
+	countOptions := db.CountOptions{Conditions: map[string]any{}}
+	for key, value := range options.Conditions {
+		countOptions.Conditions[key] = value
+	}
+	countOptions.Conditions["checked"] = true
+	checked, ret := db.InitCheatRepo(tx).Count(countOptions)
+	if !ret.OK {
+		return nil, 0, 0, ret
+	}
+	return cheats, count, checked, model.SuccessRetVal()
+}
+
+func UpdateCheat(tx *gorm.DB, cheat model.Cheat, form dto.UpdateCheatForm) model.RetVal {
+	return db.InitCheatRepo(tx).Update(cheat.ID, db.UpdateCheatRepo{
+		Reason:  form.Reason,
+		Type:    form.Type,
+		Checked: form.Checked,
+		Comment: form.Comment,
+	})
+}
+
+func DeleteContestCheats(tx *gorm.DB, contest model.Contest) model.RetVal {
+	return db.InitCheatRepo(tx).DeleteByContestID(contest.ID)
+}
+
+func DeleteCheat(tx *gorm.DB, cheat model.Cheat) model.RetVal {
+	return db.InitCheatRepo(tx).Delete(cheat.ID)
+}
 
 type deviceInfo struct {
 	UserID    uint

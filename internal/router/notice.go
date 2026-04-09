@@ -6,6 +6,7 @@ import (
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/resp"
+	"CBCTF/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,11 +17,7 @@ func GetNotices(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	contest := middleware.GetContest(ctx)
-	notices, count, ret := db.InitNoticeRepo(db.DB).List(form.Limit, form.Offset, db.GetOptions{
-		Conditions: map[string]any{"contest_id": contest.ID},
-		Sort:       []string{"id DESC"},
-	})
+	notices, count, ret := service.ListNotices(db.DB, middleware.GetContest(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -39,13 +36,7 @@ func CreateNotice(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.CreateNoticeEventType)
-	contest := middleware.GetContest(ctx)
-	notice, ret := db.InitNoticeRepo(db.DB).Create(db.CreateNoticeOptions{
-		ContestID: contest.ID,
-		Title:     form.Title,
-		Content:   form.Content,
-		Type:      form.Type,
-	})
+	notice, ret := service.CreateNotice(db.DB, middleware.GetContest(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -62,11 +53,7 @@ func UpdateNotice(ctx *gin.Context) {
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UpdateNoticeEventType)
 	notice := middleware.GetNotice(ctx)
-	ret := db.InitNoticeRepo(db.DB).Update(notice.ID, db.UpdateNoticeOptions{
-		Title:   form.Title,
-		Content: form.Content,
-		Type:    form.Type,
-	})
+	ret := service.UpdateNotice(db.DB, notice, form)
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}
@@ -76,7 +63,7 @@ func UpdateNotice(ctx *gin.Context) {
 func DeleteNotice(ctx *gin.Context) {
 	ctx.Set(middleware.CTXEventTypeKey, model.DeleteNoticeEventType)
 	notice := middleware.GetNotice(ctx)
-	ret := db.InitNoticeRepo(db.DB).Delete(notice.ID)
+	ret := service.DeleteNotice(db.DB, notice)
 	if ret.OK {
 		ctx.Set(middleware.CTXEventSuccessKey, true)
 	}

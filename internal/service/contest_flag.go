@@ -2,6 +2,7 @@ package service
 
 import (
 	"CBCTF/internal/db"
+	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"slices"
@@ -69,4 +70,61 @@ func CalcContestFlagState(tx *gorm.DB, contestFlag model.ContestFlag) (int64, fl
 		return 0, 0, ret
 	}
 	return solvers, contestFlag.CalcScore(solvers - 1), model.SuccessRetVal()
+}
+
+func SubmitContestFlag(tx *gorm.DB, user model.User, team model.Team, contest model.Contest, challenge model.Challenge, contestChallenge model.ContestChallenge, form dto.SubmitFlagForm, ip string) model.RetVal {
+	var solved bool
+	ret := db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
+		_, submitRet := Submit(tx2, user, team, contest, contestChallenge, form, ip)
+		if !submitRet.OK {
+			return submitRet
+		}
+
+		contestFlags, _, listRet := db.InitContestFlagRepo(tx2).List(-1, -1, db.GetOptions{
+			Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
+		})
+		if !listRet.OK {
+			return listRet
+		}
+		solved = contestChallenge.Type == model.PodsChallengeType && CheckIfSolved(tx2, team, contestFlags)
+		return model.SuccessRetVal()
+	})
+	if !ret.OK {
+		return ret
+	}
+	if solved {
+		go func() {
+			victim, victimRet := db.InitVictimRepo(tx).HasAliveVictim(team.ID, challenge.ID)
+			if !victimRet.OK {
+				return
+			}
+			_ = ForceStopVictim(tx, victim)
+		}()
+	}
+	return model.SuccessRetVal()
+}
+
+func ListContestFlags(tx *gorm.DB, contestChallenge model.ContestChallenge) ([]model.ContestFlag, model.RetVal) {
+	flags, _, ret := db.InitContestFlagRepo(tx).List(-1, -1, db.GetOptions{
+		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
+	})
+	return flags, ret
+}
+
+func UpdateContestFlag(tx *gorm.DB, contestChallenge model.ContestChallenge, contestFlag model.ContestFlag, form dto.UpdateContestFlagForm) model.RetVal {
+	if contestChallenge.Type == model.QuestionChallengeType && form.Value != nil {
+		form.Value = &contestFlag.Value
+	}
+	currentScore := contestFlag.CurrentScore
+	if form.Score != nil && *form.Score < currentScore {
+		currentScore = *form.Score
+	}
+	return db.InitContestFlagRepo(tx).Update(contestFlag.ID, db.UpdateContestFlagOptions{
+		Value:        form.Value,
+		Score:        form.Score,
+		CurrentScore: &currentScore,
+		Decay:        form.Decay,
+		MinScore:     form.MinScore,
+		ScoreType:    form.ScoreType,
+	})
 }

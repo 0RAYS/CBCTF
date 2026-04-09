@@ -20,12 +20,7 @@ func GetEmails(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	options := db.GetOptions{}
-	smtp := middleware.GetSmtp(ctx)
-	if smtp.ID > 0 {
-		options.Conditions = map[string]any{"smtp_id": smtp.ID}
-	}
-	emails, count, ret := db.InitEmailRepo(db.DB).List(form.Limit, form.Offset, options)
+	emails, count, ret := service.ListEmails(db.DB, middleware.GetSmtp(ctx), form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
