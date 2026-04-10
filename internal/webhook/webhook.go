@@ -77,7 +77,11 @@ func SendPayload(event model.Event, target model.Webhook) error {
 	for k, v := range target.Headers {
 		req.Header.Set(k, v)
 	}
-	client := &http.Client{Timeout: time.Duration(target.Timeout) * time.Second}
+	timeout := time.Duration(target.Timeout) * time.Second
+	if timeout <= 0 {
+		timeout = 30 * time.Second
+	}
+	client := &http.Client{Timeout: timeout}
 	resp, err := client.Do(req)
 	options := db.CreateWebhookHistoryOptions{
 		WebhookID: target.ID,
