@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"CBCTF/internal/log"
 	"crypto/sha256"
 	"encoding/hex"
 	"io"
@@ -16,9 +15,7 @@ func GetFileInfoByPath(path string) (int64, string, error) {
 		return 0, "", err
 	}
 	defer func(file *os.File) {
-		if err = file.Close(); err != nil {
-			log.Logger.Warningf("Failed to close file: %s", err)
-		}
+		_ = file.Close()
 	}(file)
 	hash := sha256.New()
 	size, err = io.Copy(hash, file)
@@ -35,9 +32,7 @@ func GetFileInfoByHeader(file *multipart.FileHeader) (int64, string, error) {
 		return 0, "", err
 	}
 	defer func(src multipart.File) {
-		if err = src.Close(); err != nil {
-			log.Logger.Warningf("Failed to close file: %s", err)
-		}
+		_ = src.Close()
 	}(src)
 	sha256Sum := sha256.New()
 	size, err = io.Copy(sha256Sum, src)

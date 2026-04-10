@@ -1,6 +1,7 @@
 package config
 
 import (
+	"CBCTF/internal/utils"
 	_ "embed"
 	"errors"
 	"log"
@@ -8,7 +9,6 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
@@ -147,7 +147,7 @@ func tidy() {
 	Env.Host = strings.TrimSuffix(Env.Host, "/")
 	Env.Path = strings.TrimSuffix(Env.Path, "/")
 	if Env.Gin.JWT.Secret == "" {
-		Env.Gin.JWT.Secret = uuid.New().String()
+		Env.Gin.JWT.Secret = utils.UUID()
 	}
 }
 

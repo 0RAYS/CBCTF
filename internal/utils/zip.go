@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"CBCTF/internal/log"
 	"archive/zip"
 	"io"
 	"os"
@@ -14,15 +13,11 @@ func Zip(src string, destZip string) error {
 		return err
 	}
 	defer func() {
-		if cerr := zipFile.Close(); cerr != nil {
-			log.Logger.Warningf("Failed to close zip file: %s", cerr)
-		}
+		_ = zipFile.Close()
 	}()
 	zipWriter := zip.NewWriter(zipFile)
 	defer func() {
-		if cerr := zipWriter.Close(); cerr != nil {
-			log.Logger.Warningf("Failed to close zip writer: %s", cerr)
-		}
+		_ = zipWriter.Close()
 	}()
 
 	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
@@ -48,9 +43,7 @@ func Zip(src string, destZip string) error {
 			return err
 		}
 		defer func(f *os.File) {
-			if cerr := f.Close(); cerr != nil {
-				log.Logger.Warningf("Failed to close zip file: %s", cerr)
-			}
+			_ = f.Close()
 		}(f)
 		w, err := zipWriter.Create(relPath)
 		if err != nil {

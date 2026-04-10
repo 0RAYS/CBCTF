@@ -37,9 +37,10 @@ func GetChallenges(tx *gorm.DB, form dto.GetChallengesForm) ([]model.Challenge, 
 }
 
 func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db.CreateChallengeFlagOptions, model.RetVal) {
-	config, ret := utils.LoadDockerComposeYaml(dockerCompose)
-	if !ret.OK || config == nil {
-		return model.ChallengeTemplate{}, nil, ret
+	config, err := utils.LoadDockerComposeYaml(dockerCompose)
+	if err != nil {
+		log.Logger.Warningf("Failed to load DockerCompose: %v", err)
+		return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	volumeFlag := make(map[string]string)
 	for _, volume := range config.Volumes {
