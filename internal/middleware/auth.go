@@ -1,9 +1,9 @@
 package middleware
 
 import (
+	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/i18n"
-	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/resp"
@@ -17,12 +17,22 @@ import (
 
 // CheckAuth 是否登录, 用户是否被 ban, 记录设备
 func CheckAuth(ctx *gin.Context) {
-	auth := strings.Fields(ctx.GetHeader("Authorization"))
-	if len(auth) != 2 || auth[0] != "Bearer" {
+	var token string
+	// 优先从 httpOnly Cookie 读取 token
+	if cookie, err := ctx.Cookie("token"); err == nil && cookie != "" {
+		token = cookie
+	} else {
+		// 回退到 Authorization 请求头
+		auth := strings.Fields(ctx.GetHeader("Authorization"))
+		if len(auth) == 2 && auth[0] == "Bearer" {
+			token = auth[1]
+		}
+	}
+	if token == "" {
 		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Unauthorized})
 		return
 	}
-	claims, err := utils.ParseToken(auth[1])
+	claims, err := utils.ParseToken(token, config.Env.Gin.JWT.Secret)
 	if err != nil {
 		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Unauthorized})
 		return
@@ -34,40 +44,30 @@ func CheckAuth(ctx *gin.Context) {
 	}
 	magic := GetMagic(ctx)
 	if !utils.CompareMagic(magic, claims.X) {
-		if utils.CompareMagic(model.OauthLoginDeviceMagic, claims.X) {
-			token, err := utils.GenerateToken(user.ID, user.Name, magic)
-			if err != nil {
-				log.Logger.Warningf("Failed to generate token: %s", err)
-				resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
-				return
-			}
-			ctx.Writer.Header().Set("Authorization", fmt.Sprintf("Bearer %s", token))
-		} else {
-			contestIDL, ret := db.InitContestRepo(db.DB).GetIDByUserID(user.ID)
-			if !ret.OK {
-				resp.JSON(ctx, ret)
-				return
-			}
-			ip := ctx.ClientIP()
-			go func(contestIDL []uint) {
-				for _, contestID := range contestIDL {
-					db.InitCheatRepo(db.DB).Create(db.CreateCheatOptions{
-						ContestID:  contestID,
-						Model:      model.CheatRefModel{model.ModelName(user): {user.ID}},
-						Magic:      magic,
-						IP:         ip,
-						Reason:     fmt.Sprintf(string(model.DifferentTokenMagicTmpl), magic, claims.X),
-						ReasonType: model.ReasonTypeTokenMagicType,
-						Type:       model.SuspiciousType,
-						Checked:    false,
-						Time:       time.Now(),
-					})
-				}
-				prometheus.RecordCheatDetection(string(model.ReasonTypeTokenMagicType))
-			}(contestIDL)
-			resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Unauthorized})
+		contestIDL, ret := db.InitContestRepo(db.DB).GetIDByUserID(user.ID)
+		if !ret.OK {
+			resp.JSON(ctx, ret)
 			return
 		}
+		ip := ctx.ClientIP()
+		go func(contestIDL []uint) {
+			for _, contestID := range contestIDL {
+				db.InitCheatRepo(db.DB).Create(db.CreateCheatOptions{
+					ContestID:  contestID,
+					Model:      model.CheatRefModel{model.ModelName(user): {user.ID}},
+					Magic:      magic,
+					IP:         ip,
+					Reason:     fmt.Sprintf(string(model.DifferentTokenMagicTmpl), magic, claims.X),
+					ReasonType: model.ReasonTypeTokenMagicType,
+					Type:       model.SuspiciousType,
+					Checked:    false,
+					Time:       time.Now(),
+				})
+			}
+			prometheus.RecordCheatDetection(string(model.ReasonTypeTokenMagicType))
+		}(contestIDL)
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Unauthorized})
+		return
 	}
 	RecordRequestDevice(user.ID, magic, 1)
 	if user.Banned {

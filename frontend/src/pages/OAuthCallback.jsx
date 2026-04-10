@@ -34,19 +34,11 @@ function OAuthCallback() {
         throw new Error(t('oauth.callback.tokenMissing'));
       }
 
-      // 用一次性 code 换取真实 token
+      // 用一次性 code 换取真实 token（服务端写入 httpOnly cookie）
       const res = await exchangeOauthCode(code);
-      const token = res?.data?.token;
-      if (!token) {
+      if (res?.code !== 200) {
         throw new Error(t('oauth.callback.tokenMissing'));
       }
-
-      // 将token保存到localStorage
-      localStorage.setItem('token', 'Bearer ' + token);
-      localStorage.setItem('userType', 'user');
-
-      // 等待一下确保token已保存
-      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // 获取用户信息及可访问路由（需两者都完成才能正确判断权限）
       await dispatch(fetchUserInfo());

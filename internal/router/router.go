@@ -45,6 +45,7 @@ func Init() *gin.Engine {
 	{
 		router.POST("/register", middleware.RateLimit("register", 1, time.Minute), Register)
 		router.POST("/login", middleware.RateLimit("login", 10, time.Minute), Login)
+		router.DELETE("/logout", Logout)
 
 		RegisterOauthRouter()
 		router.GET("/oauth", ListOauth)

@@ -77,9 +77,18 @@ async function ensureFingerprint() {
 
 ensureFingerprint();
 
+// 清除设备指纹缓存（登出时调用）
+export function clearFingerprint() {
+  magicNum = '';
+  fingerprintPromise = null;
+  localStorage.removeItem(FINGERPRINT_KEY);
+  localStorage.removeItem(NONCE_KEY);
+}
+
 // 创建 Axios 实例
 const request = axios.create({
   baseURL: API_CONFIG.BASE_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -109,10 +118,6 @@ request.interceptors.request.use(
     }
     config.headers['X-M'] = await ensureFingerprint();
     config.headers['Accept-Language'] = i18n.language;
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `${token}`;
-    }
     return config;
   },
   (error) => {
@@ -132,12 +137,6 @@ request.interceptors.response.use(
       finishLoading();
       updateGlobalLoading(requestCount - 1);
     }
-    // 处理 Authorization 头
-    const authHeader = response.headers['authorization'];
-    if (authHeader) {
-      localStorage.setItem('token', authHeader);
-    }
-
     // 处理文件下载
     if (response.data instanceof Blob && response.headers?.['file'] === 'true') {
       return response;
@@ -167,6 +166,7 @@ request.interceptors.response.use(
     if (code === 401) {
       import('../store').then(({ store }) => {
         import('../store/user').then(({ logout }) => {
+          clearFingerprint();
           store.dispatch(logout());
         });
       });
@@ -203,6 +203,7 @@ request.interceptors.response.use(
           // 使用动态导入避免循环依赖
           import('../store').then(({ store }) => {
             import('../store/user').then(({ logout }) => {
+              clearFingerprint();
               store.dispatch(logout());
             });
           });
