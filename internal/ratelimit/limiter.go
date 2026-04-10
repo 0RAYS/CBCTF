@@ -1,9 +1,24 @@
 package ratelimit
 
 import (
+	"CBCTF/internal/config"
+	redisclient "CBCTF/internal/redis"
 	"context"
 	"time"
+
+	goredis "github.com/redis/go-redis/v9"
 )
+
+var RateLimiter *Limiter
+
+func Init() {
+	RateLimiter = New(
+		NewRedisStoreFunc(func() *goredis.Client {
+			return redisclient.RDB
+		}),
+		config.Env.Gin.RateLimit.Whitelist,
+	)
+}
 
 type Rule struct {
 	Name   string

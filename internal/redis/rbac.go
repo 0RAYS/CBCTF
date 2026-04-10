@@ -21,7 +21,7 @@ func SetUserRBAC(userID uint, permissions []string) model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	data, _ := msgpack.Marshal(permissions)
-	if err := RDB.Set(ctx, fmt.Sprintf(userRBACKey, userID), data, time.Hour).Err(); err != nil {
+	if err := RDB.Set(ctx, fmt.Sprintf(userRBACKey, userID), data, 5*time.Minute).Err(); err != nil {
 		log.Logger.Warningf("Failed to set user RBAC permissions: %s", err)
 		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": userRBACKey, "Error": err.Error()}}
 	}

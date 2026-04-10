@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/email"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
+	"CBCTF/internal/ratelimit"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/router"
 	"CBCTF/internal/sys"
@@ -47,6 +48,7 @@ func run() {
 	sys.RegisterStopSignals(quit)
 	sys.RegisterRestartSignals(restart)
 	go func() {
+		ratelimit.Init()
 		server = &http.Server{
 			Addr:    fmt.Sprintf("%s:%d", ip, port),
 			Handler: router.Init(),
