@@ -40,10 +40,6 @@ func Init() *gin.Engine {
 		middleware.RateLimit("globals", config.Env.Gin.RateLimit.Global, time.Minute), middleware.Events,
 	)
 
-	if strings.ToLower(config.Env.Gin.Mode) != gin.ReleaseMode {
-		pprof.Register(router)
-	}
-
 	RegisterMetricsRouter(router)
 
 	{
@@ -69,6 +65,10 @@ func Init() *gin.Engine {
 	}
 
 	auth := router.Group("", middleware.CheckAuth, middleware.CheckPermission)
+
+	if strings.ToLower(config.Env.Gin.Mode) != gin.ReleaseMode {
+		pprof.Register(auth)
+	}
 
 	user := auth.Group("/me")
 	{
