@@ -1,6 +1,7 @@
 package config
 
 import (
+	"CBCTF/internal/utils"
 	_ "embed"
 	"errors"
 	"log"
@@ -139,18 +140,22 @@ func Init(path string) {
 	if err := viper.Unmarshal(&Env); err != nil {
 		log.Fatalf("error unmarshalling config: %s", err)
 	}
-	Tidy()
+	tidy()
 }
 
-func Tidy() {
+func tidy() {
 	Env.Host = strings.TrimSuffix(Env.Host, "/")
 	Env.Path = strings.TrimSuffix(Env.Path, "/")
+	if Env.Gin.JWT.Secret == "" {
+		Env.Gin.JWT.Secret = utils.UUID()
+	}
 }
 
 func Save() error {
 	if Env == nil {
 		return errors.New("config env is nil")
 	}
+	tidy()
 	settings := make(map[string]any)
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		TagName: "mapstructure",

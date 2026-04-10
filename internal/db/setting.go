@@ -304,7 +304,6 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 	if config.Env.GeoCityDB, ret = GetValue[string](s, model.GeoCityDBSettingKey); !ret.OK {
 		return ret
 	}
-	config.Tidy()
 	if err := config.Save(); err != nil {
 		log.Logger.Warningf("Failed to save config: %s, but it's not important, all config will be read from database", err.Error())
 	}
