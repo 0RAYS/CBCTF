@@ -5,6 +5,7 @@ import { ansiToHtml } from '../../utils/ansi';
 import { Button } from '../../components/common';
 import { IconRefresh } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
+import DOMPurify from 'dompurify';
 
 function AdminLogs() {
   const [logs, setLogs] = useState([]);
@@ -81,12 +82,16 @@ function AdminLogs() {
   }, [fetchLogs]);
 
   const rendered = useMemo(() => {
-    return logs
+    const raw = logs
       .map((line) => {
         const html = ansiToHtml(line).replace(/\n$/, '');
         return `<div class="whitespace-pre-wrap break-words leading-6 font-mono text-sm">${html}</div>`;
       })
       .join('');
+    return DOMPurify.sanitize(raw, {
+      ALLOWED_TAGS: ['div', 'span'],
+      ALLOWED_ATTR: ['class', 'style'],
+    });
   }, [logs]);
 
   return (

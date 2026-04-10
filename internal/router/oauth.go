@@ -152,7 +152,7 @@ func OauthCallback(ctx *gin.Context) {
 	ctx.Set("Self", user)
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	code := utils.UUID()
-	if ret := redis.SetOauthCode(code, token); !ret.OK {
+	if ret = redis.SetOauthCode(code, token); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
@@ -166,12 +166,25 @@ func ExchangeOauthCode(ctx *gin.Context) {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
-	token, ret := redis.GetAndDelOauthToken(code)
+	tempToken, ret := redis.GetAndDelOauthToken(code)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	resp.JSON(ctx, model.SuccessRetVal(gin.H{"token": token}))
+	claims, err := utils.ParseToken(tempToken, config.Env.Gin.JWT.Secret)
+	if err != nil {
+		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.Unauthorized})
+		return
+	}
+	magic := middleware.GetMagic(ctx)
+	token, err := utils.GenerateToken(claims.UserID, claims.Name, magic, config.Env.Gin.JWT.Secret)
+	if err != nil {
+		log.Logger.Warningf("Failed to generate token: %s", err)
+		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		return
+	}
+	setAuthCookie(ctx, token)
+	resp.JSON(ctx, model.SuccessRetVal())
 }
 
 func GetOauthProviders(ctx *gin.Context) {

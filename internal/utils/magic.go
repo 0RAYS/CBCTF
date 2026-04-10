@@ -1,16 +1,19 @@
 package utils
 
 import (
-	"crypto/md5"
+	"crypto/sha256"
+	"crypto/subtle"
 	"fmt"
 )
 
 // HashMagic 对设备指纹进行hash
 func HashMagic(magic string) string {
-	return fmt.Sprintf("%x", md5.Sum([]byte(magic+fmt.Sprintf("%x", md5.Sum([]byte(magic))))))
+	inner := sha256.Sum256([]byte(magic))
+	outer := sha256.Sum256([]byte(magic + fmt.Sprintf("%x", inner)))
+	return fmt.Sprintf("%x", outer)
 }
 
 // CompareMagic 校验设备指纹
 func CompareMagic(magic string, hash string) bool {
-	return HashMagic(magic) == hash
+	return subtle.ConstantTimeCompare([]byte(HashMagic(magic)), []byte(hash)) == 1
 }

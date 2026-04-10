@@ -8,19 +8,14 @@ import BrandingHead from './components/features/Branding/BrandingHead';
 
 function App() {
   const dispatch = useDispatch();
-  const token = localStorage.getItem('token');
 
   useEffect(() => {
     const initializeAuth = async () => {
-      const tasks = [dispatch(fetchBranding())];
-      if (token) {
-        tasks.push(dispatch(fetchUserInfo()), dispatch(fetchAccessibleRoutes()));
-      }
-      await Promise.all(tasks);
+      await Promise.all([dispatch(fetchBranding()), dispatch(fetchUserInfo()), dispatch(fetchAccessibleRoutes())]);
       dispatch(setInitialized());
     };
     initializeAuth();
-  }, [dispatch, token]);
+  }, [dispatch]);
 
   return (
     <div className="relative h-screen w-screen">

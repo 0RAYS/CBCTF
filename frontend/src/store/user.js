@@ -4,7 +4,7 @@ import i18n from '../i18n';
 
 const initialState = {
   user: null,
-  token: localStorage.getItem('token') || null,
+  token: null,
   isAuthenticated: false,
   loading: true,
   initialized: false, // true once userInfo + routes have both been fetched on startup
@@ -48,8 +48,9 @@ const userSlice = createSlice({
       state.hasAdminAccess = false;
       state.hasUserAccess = false;
       state.routes = [];
-      localStorage.removeItem('token');
       localStorage.removeItem('userType');
+      localStorage.removeItem('LXM');
+      localStorage.removeItem('LXM_NONCE');
     },
     clearError: (state) => {
       state.error = null;
@@ -104,6 +105,10 @@ export const fetchAccessibleRoutes = () => async (dispatch) => {
  * 登出用户
  */
 export const logoutUser = () => (dispatch) => {
+  import('../api/request').then(({ clearFingerprint, default: request }) => {
+    clearFingerprint();
+    request({ url: '/logout', method: 'DELETE', noLoading: true }).catch(() => {});
+  });
   dispatch(logout());
 };
 
