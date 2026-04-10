@@ -42,12 +42,6 @@ type RedisStore struct {
 	timeout time.Duration
 }
 
-func NewRedisStore(client *redis.Client) *RedisStore {
-	return NewRedisStoreFunc(func() *redis.Client {
-		return client
-	})
-}
-
 func NewRedisStoreFunc(client func() *redis.Client) *RedisStore {
 	return &RedisStore{
 		client:  client,

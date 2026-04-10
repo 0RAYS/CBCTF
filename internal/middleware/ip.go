@@ -1,18 +1,15 @@
 package middleware
 
 import (
-	"CBCTF/internal/config"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/ratelimit"
-	redisclient "CBCTF/internal/redis"
 	"CBCTF/internal/resp"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	goredis "github.com/redis/go-redis/v9"
 )
 
 func RateLimit(name string, maxRequests int, window time.Duration) gin.HandlerFunc {
@@ -22,17 +19,11 @@ func RateLimit(name string, maxRequests int, window time.Duration) gin.HandlerFu
 		Window: window,
 	}
 	return func(ctx *gin.Context) {
-		limiter := ratelimit.New(
-			ratelimit.NewRedisStoreFunc(func() *goredis.Client {
-				return redisclient.RDB
-			}),
-			config.Env.Gin.RateLimit.Whitelist,
-		)
 		subject := "ip:" + ctx.ClientIP()
 		if userID := GetSelf(ctx).ID; userID != 0 {
 			subject = "user:" + strconv.Itoa(int(userID))
 		}
-		decision, err := limiter.Allow(ctx.Request.Context(), rule, ratelimit.Subject{
+		decision, err := ratelimit.RateLimiter.Allow(ctx.Request.Context(), rule, ratelimit.Subject{
 			Key:      subject,
 			ClientIP: ctx.ClientIP(),
 		})
