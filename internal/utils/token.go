@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"CBCTF/internal/config"
 	"errors"
 	"time"
 
@@ -16,7 +15,7 @@ type Claims struct {
 }
 
 // GenerateToken 生成token
-func GenerateToken(id uint, name string, magic string) (tokenString string, err error) {
+func GenerateToken(id uint, name, magic, secret string) (tokenString string, err error) {
 	claim := Claims{
 		UserID: id,
 		Name:   name,
@@ -27,14 +26,14 @@ func GenerateToken(id uint, name string, magic string) (tokenString string, err 
 			NotBefore: jwt.NewNumericDate(time.Now()),
 		}}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
-	tokenString, err = token.SignedString([]byte(config.Env.Gin.JWT.Secret))
+	tokenString, err = token.SignedString([]byte(secret))
 	return tokenString, err
 }
 
 // ParseToken 解析token
-func ParseToken(t string) (*Claims, error) {
+func ParseToken(t, secret string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(t, &Claims{}, func(token *jwt.Token) (any, error) {
-		return []byte(config.Env.Gin.JWT.Secret), nil
+		return []byte(secret), nil
 	})
 	if err != nil {
 		return nil, err

@@ -143,7 +143,7 @@ func OauthCallback(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	token, err := utils.GenerateToken(user.ID, user.Name, model.OauthLoginDeviceMagic)
+	token, err := utils.GenerateToken(user.ID, user.Name, model.OauthLoginDeviceMagic, config.Env.Gin.JWT.Secret)
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})

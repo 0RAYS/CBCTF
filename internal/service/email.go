@@ -1,6 +1,7 @@
 package service
 
 import (
+	"CBCTF/internal/config"
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
@@ -15,7 +16,7 @@ import (
 
 func SendEmail(user model.User) model.RetVal {
 	id := utils.UUID()
-	token, err := utils.GenerateToken(user.ID, user.Name, id)
+	token, err := utils.GenerateToken(user.ID, user.Name, id, config.Env.Gin.JWT.Secret)
 	if err != nil {
 		log.Logger.Warningf("Failed to generate token: %s", err)
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
@@ -31,7 +32,7 @@ func SendEmail(user model.User) model.RetVal {
 }
 
 func VerifyEmail(tx *gorm.DB, form dto.VerifyEmail) model.RetVal {
-	claims, err := utils.ParseToken(form.Token)
+	claims, err := utils.ParseToken(form.Token, config.Env.Gin.JWT.Secret)
 	if err != nil || !utils.CompareMagic(form.ID, claims.X) {
 		return model.RetVal{Msg: i18n.Model.Email.InvalidVerifyToken}
 	}

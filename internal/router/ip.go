@@ -1,6 +1,7 @@
 package router
 
 import (
+	"CBCTF/internal/config"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
@@ -18,7 +19,7 @@ func SearchIP(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	ip, err := utils.SearchIP(form.IP)
+	ip, err := utils.SearchIP(form.IP, config.Env.GeoCityDB)
 	if err != nil {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return
