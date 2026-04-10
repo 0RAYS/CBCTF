@@ -90,6 +90,13 @@ CBCTF 使用基于角色的访问控制（RBAC）：
 | `admin:system:update` | 更新系统配置 |
 | `admin:system:restart` | 重启系统 |
 
+### admin:branding — 品牌化管理
+
+| 权限 | 说明 |
+|------|------|
+| `admin:branding:read` | 查看品牌化配置（站点名称、Logo 等） |
+| `admin:branding:update` | 更新品牌化配置（含上传 Logo） |
+
 ### admin:permission — 权限管理
 
 | 权限 | 说明 |
@@ -142,6 +149,13 @@ CBCTF 使用基于角色的访问控制（RBAC）：
 | 权限 | 说明 |
 |------|------|
 | `admin:smtp:create/read/update/delete/list` | SMTP 服务器的 CRUD 操作 |
+
+### admin:cronjob — 定时任务
+
+| 权限 | 说明 |
+|------|------|
+| `admin:cronjob:update` | 更新定时任务配置 |
+| `admin:cronjob:list` | 查看定时任务列表 |
 
 ### admin:webhook — Webhook
 
@@ -223,13 +237,29 @@ CBCTF 使用基于角色的访问控制（RBAC）：
 
 | 权限 | 说明 |
 |------|------|
-| `admin:image:pull` | 触发镜像预热（拉取到各节点） |
+| `admin:image:pull` | 触发全局镜像预热（拉取到各节点） |
+| `admin:contest_image:pull` | 触发特定比赛的镜像预热 |
 
 ### admin:victim — 靶机控制（管理视角）
 
 | 权限 | 说明 |
 |------|------|
-| `admin:victim:control` | 管理员批量启停靶机 |
+| `admin:victim:control` | 管理员全局批量启停靶机 |
+| `admin:contest_victim:control` | 管理员批量启停特定比赛的靶机 |
+
+### admin:generator — 生成器控制
+
+| 权限 | 说明 |
+|------|------|
+| `admin:generator:control` | 控制全局附件生成器（启停） |
+| `admin:contest_generator:control` | 控制特定比赛的附件生成器（启停） |
+
+### admin:traffic — 流量查看
+
+| 权限 | 说明 |
+|------|------|
+| `admin:traffic:read` | 查看全局靶机流量（下载 pcap） |
+| `admin:contest_traffic:read` | 查看特定比赛靶机流量（下载 pcap） |
 
 ### admin:file — 文件管理
 
@@ -244,6 +274,12 @@ CBCTF 使用基于角色的访问控制（RBAC）：
 | 权限 | 说明 |
 |------|------|
 | `admin:log:read` | 查看系统日志 |
+
+### admin:task — 任务队列
+
+| 权限 | 说明 |
+|------|------|
+| `admin:task:read` | 查看后台任务队列状态 |
 
 ### admin:ip / admin:models — 搜索
 
@@ -267,8 +303,10 @@ admin:team:read/list
 admin:team_writeup:list/read
 admin:notice:create/update/delete/list
 admin:cheat:list/update
-admin:image:pull
-admin:victim:control
+admin:contest_image:pull
+admin:contest_victim:control
+admin:contest_generator:control
+admin:contest_traffic:read
 ```
 
 :::warning

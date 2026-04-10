@@ -8,6 +8,10 @@ sidebar_position: 8
 
 通过 `GET /admin/system/status`（`admin:system:status`）查看各服务的健康状态，包括 PostgreSQL、Redis、Asynq 等组件的连接状态。
 
+## 任务队列
+
+通过 `GET /admin/tasks` 和 `GET /admin/tasks/live`（`admin:task:read`）查看 Asynq 后台任务的执行状态，包括各队列积压量、正在处理的任务、历史执行记录等。
+
 ## Prometheus 指标
 
 平台在 `/metrics` 端点暴露 Prometheus 格式的指标数据。
