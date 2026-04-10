@@ -55,7 +55,7 @@ sidebar_position: 5
 GET /admin/contests/:contestID/teams/:teamID/victims/:victimID/traffic/download
 ```
 
-需要 `admin:team:read` 权限。下载的 pcap 文件可用 Wireshark 分析。
+需要 `admin:contest_traffic:read` 权限。下载的 pcap 文件可用 Wireshark 分析。
 
 ## 公告发布
 
