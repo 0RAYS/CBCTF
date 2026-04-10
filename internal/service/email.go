@@ -39,15 +39,10 @@ func VerifyEmail(tx *gorm.DB, form dto.VerifyEmail) model.RetVal {
 	if _, ret := redis.GetEmailVerifyToken(claims.UserID); !ret.OK {
 		return ret
 	}
-	repo := db.InitUserRepo(tx)
-	ret := repo.Update(claims.UserID, db.UpdateUserOptions{Verified: new(true)})
-	if !ret.OK {
+	if ret := redis.DelEmailVerifyToken(claims.UserID); !ret.OK {
 		return ret
 	}
-	if ret = redis.DelEmailVerifyToken(claims.UserID); !ret.OK {
-		return ret
-	}
-	return model.SuccessRetVal()
+	return db.InitUserRepo(tx).Update(claims.UserID, db.UpdateUserOptions{Verified: new(true)})
 }
 
 func ListEmails(tx *gorm.DB, smtp model.Smtp, form dto.ListModelsForm) ([]model.Email, int64, model.RetVal) {
