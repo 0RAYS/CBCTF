@@ -13,16 +13,37 @@ import (
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"CBCTF/internal/utils"
+	"net/http"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-// setAuthCookie 写入 httpOnly 认证 cookie
+// setAuthCookie 写入 httpOnly 认证 cookie。
+// 当请求 Origin 在 CORS 允许列表内（跨域前端）时，设置 SameSite=None 使浏览器可携带 cookie；
+// 其余情况保持 SameSite=Lax，避免无谓降低安全级别。
 func setAuthCookie(ctx *gin.Context, token string) {
 	secure := strings.HasPrefix(config.Env.Host, "https://")
-	ctx.SetCookie("token", token, int(time.Hour.Seconds()), "/", "", secure, true)
+	sameSite := http.SameSiteLaxMode
+	origin := ctx.GetHeader("Origin")
+	if origin != "" {
+		for _, allowed := range config.Env.Gin.CORS {
+			if allowed == origin {
+				sameSite = http.SameSiteNoneMode
+				break
+			}
+		}
+	}
+	http.SetCookie(ctx.Writer, &http.Cookie{
+		Name:     "token",
+		Value:    token,
+		MaxAge:   int(time.Hour.Seconds()),
+		Path:     "/",
+		Secure:   secure || sameSite == http.SameSiteNoneMode,
+		HttpOnly: true,
+		SameSite: sameSite,
+	})
 }
 
 func Register(ctx *gin.Context) {
@@ -87,6 +108,24 @@ func Login(ctx *gin.Context) {
 
 func Logout(ctx *gin.Context) {
 	secure := strings.HasPrefix(config.Env.Host, "https://")
-	ctx.SetCookie("token", "", -1, "/", "", secure, true)
+	sameSite := http.SameSiteLaxMode
+	origin := ctx.GetHeader("Origin")
+	if origin != "" {
+		for _, allowed := range config.Env.Gin.CORS {
+			if allowed == origin {
+				sameSite = http.SameSiteNoneMode
+				break
+			}
+		}
+	}
+	http.SetCookie(ctx.Writer, &http.Cookie{
+		Name:     "token",
+		Value:    "",
+		MaxAge:   -1,
+		Path:     "/",
+		Secure:   secure || sameSite == http.SameSiteNoneMode,
+		HttpOnly: true,
+		SameSite: sameSite,
+	})
 	resp.JSON(ctx, model.SuccessRetVal())
 }
