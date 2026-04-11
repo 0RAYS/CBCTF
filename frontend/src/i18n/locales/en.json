@@ -500,6 +500,10 @@
           "subtitle": "Left side is ingress, center is victim, right side is egress.",
           "zoomHint": "Wheel to zoom, drag to pan."
         },
+        "filter": {
+          "label": "Protocol filter:",
+          "clear": "Clear"
+        },
         "legend": {
           "ingress": "Ingress",
           "egress": "Egress",

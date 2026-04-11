@@ -75,7 +75,9 @@ function EditTeamModal({ isOpen, onClose, team, onSave }) {
 
               {/* 转让队长 */}
               <div>
-                <label className="block text-neutral-400 text-sm mb-2">{t('game.team.editModal.transferLeadership')}</label>
+                <label className="block text-neutral-400 text-sm mb-2">
+                  {t('game.team.editModal.transferLeadership')}
+                </label>
                 <select
                   value={formData.newLeader}
                   onChange={(e) => setFormData((prev) => ({ ...prev, newLeader: e.target.value }))}

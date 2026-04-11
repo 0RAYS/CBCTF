@@ -108,7 +108,9 @@ function TeamSettings({
             </div>
             <div>
               <div className="text-neutral-50 font-mono text-lg">{team.name}</div>
-              <div className="text-neutral-400 text-sm">{t('game.team.settings.members', { count: team.members.length + 1 })}</div>
+              <div className="text-neutral-400 text-sm">
+                {t('game.team.settings.members', { count: team.members.length + 1 })}
+              </div>
             </div>
           </div>
           {/* 队伍信息卡片底部添加解散按钮 */}
