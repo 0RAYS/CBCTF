@@ -508,7 +508,8 @@
         "direction": {
           "ingress": "入站",
           "egress": "出站",
-          "internal": "内部"
+          "internal": "内部",
+          "external": "外部"
         },
         "panel": {
           "selectedFlow": "选中流量",
@@ -2677,6 +2678,37 @@
     },
     "team": {
       "empty": "暂无队伍信息",
+      "settings": {
+        "members": "{{count}} 名成员",
+        "changeAvatar": "更换",
+        "disbandTeam": "解散队伍",
+        "editTeam": "编辑队伍",
+        "description": "队伍描述",
+        "noDescription": "暂无队伍描述。",
+        "invitationCode": "邀请码",
+        "teamMembers": "队伍成员",
+        "leader": "队长",
+        "member": "成员",
+        "kickModal": {
+          "title": "移除队员",
+          "message": "确定要将 {{name}} 移出队伍吗？",
+          "confirm": "移除"
+        },
+        "disbandModal": {
+          "title": "解散队伍",
+          "message": "确定要解散队伍吗？此操作不可撤销。",
+          "confirm": "解散"
+        }
+      },
+      "editModal": {
+        "title": "编辑队伍",
+        "teamName": "队伍名称",
+        "description": "队伍描述",
+        "transferLeadership": "转让队长",
+        "selectNewLeader": "选择新队长",
+        "cancel": "取消",
+        "saveChanges": "保存"
+      },
       "joinModal": {
         "title": {
           "select": "加入比赛",

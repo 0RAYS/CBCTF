@@ -9,9 +9,11 @@
 
 import { motion, AnimatePresence } from 'motion/react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../../../components/common';
 
 function EditTeamModal({ isOpen, onClose, team, onSave }) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: team.name,
     description: team.description,
@@ -41,13 +43,13 @@ function EditTeamModal({ isOpen, onClose, team, onSave }) {
             exit={{ scale: 0.9, opacity: 0 }}
           >
             <div className="p-6 border-b border-neutral-300/30">
-              <h3 className="text-lg font-mono text-neutral-50">Edit Team</h3>
+              <h3 className="text-lg font-mono text-neutral-50">{t('game.team.editModal.title')}</h3>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
               {/* 队伍名称 */}
               <div>
-                <label className="block text-neutral-400 text-sm mb-2">Team Name</label>
+                <label className="block text-neutral-400 text-sm mb-2">{t('game.team.editModal.teamName')}</label>
                 <input
                   type="text"
                   value={formData.name}
@@ -60,7 +62,7 @@ function EditTeamModal({ isOpen, onClose, team, onSave }) {
 
               {/* 队伍描述 */}
               <div>
-                <label className="block text-neutral-400 text-sm mb-2">Description</label>
+                <label className="block text-neutral-400 text-sm mb-2">{t('game.team.editModal.description')}</label>
                 <textarea
                   value={formData.description.slice(0, 100)}
                   onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value.slice(0, 100) }))}
@@ -73,13 +75,13 @@ function EditTeamModal({ isOpen, onClose, team, onSave }) {
 
               {/* 转让队长 */}
               <div>
-                <label className="block text-neutral-400 text-sm mb-2">Transfer Leadership</label>
+                <label className="block text-neutral-400 text-sm mb-2">{t('game.team.editModal.transferLeadership')}</label>
                 <select
                   value={formData.newLeader}
                   onChange={(e) => setFormData((prev) => ({ ...prev, newLeader: e.target.value }))}
                   className="select-custom select-custom-md"
                 >
-                  <option value="">Select a new leader</option>
+                  <option value="">{t('game.team.editModal.selectNewLeader')}</option>
                   {team.members.map((member) => (
                     <option key={member.name} value={member.name}>
                       {member.name}
@@ -90,10 +92,10 @@ function EditTeamModal({ isOpen, onClose, team, onSave }) {
 
               <div className="flex justify-end gap-4">
                 <Button variant="ghost" size="sm" onClick={onClose}>
-                  CANCEL
+                  {t('game.team.editModal.cancel')}
                 </Button>
                 <Button variant="primary" size="sm" type="submit">
-                  SAVE CHANGES
+                  {t('game.team.editModal.saveChanges')}
                 </Button>
               </div>
             </form>

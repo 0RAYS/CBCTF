@@ -508,7 +508,8 @@
         "direction": {
           "ingress": "Ingress",
           "egress": "Egress",
-          "internal": "Internal"
+          "internal": "Internal",
+          "external": "External"
         },
         "panel": {
           "selectedFlow": "Selected Flow",
@@ -2677,6 +2678,37 @@
     },
     "team": {
       "empty": "No team information available",
+      "settings": {
+        "members": "{{count}} members",
+        "changeAvatar": "CHANGE",
+        "disbandTeam": "DISBAND TEAM",
+        "editTeam": "EDIT TEAM",
+        "description": "Description",
+        "noDescription": "No team description available.",
+        "invitationCode": "Invitation Code",
+        "teamMembers": "Team Members",
+        "leader": "LEADER",
+        "member": "MEMBER",
+        "kickModal": {
+          "title": "Kick Member",
+          "message": "Are you sure you want to kick {{name}} from the team?",
+          "confirm": "KICK"
+        },
+        "disbandModal": {
+          "title": "Disband Team",
+          "message": "Are you sure you want to disband the team? This action cannot be undone.",
+          "confirm": "DISBAND"
+        }
+      },
+      "editModal": {
+        "title": "Edit Team",
+        "teamName": "Team Name",
+        "description": "Description",
+        "transferLeadership": "Transfer Leadership",
+        "selectNewLeader": "Select a new leader",
+        "cancel": "CANCEL",
+        "saveChanges": "SAVE CHANGES"
+      },
       "joinModal": {
         "title": {
           "select": "JOIN CONTEST",

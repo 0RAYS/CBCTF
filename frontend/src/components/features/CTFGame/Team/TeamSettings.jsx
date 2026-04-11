@@ -49,6 +49,7 @@
  */
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import ConfirmModal from '../../../common/ConfirmModal';
 import Avatar from '../../../common/Avatar';
 import EditTeamModal from '../EditTeamModal';
@@ -70,6 +71,7 @@ function TeamSettings({
   const [showEditModal, setShowEditModal] = useState(false);
   const [showKickModal, setShowKickModal] = useState(null);
   const [showDisbandModal, setShowDisbandModal] = useState(false);
+  const { t } = useTranslation();
 
   const handleCopyCode = () => {
     onCopyCode();
@@ -100,25 +102,25 @@ function TeamSettings({
                                     cursor-pointer rounded-lg"
                 >
                   <input type="file" className="hidden" accept="image/*" onChange={handlePictureUpload} />
-                  <span className="text-neutral-50 text-sm font-mono">CHANGE</span>
+                  <span className="text-neutral-50 text-sm font-mono">{t('game.team.settings.changeAvatar')}</span>
                 </label>
               )}
             </div>
             <div>
               <div className="text-neutral-50 font-mono text-lg">{team.name}</div>
-              <div className="text-neutral-400 text-sm">{team.members.length + 1} members</div>
+              <div className="text-neutral-400 text-sm">{t('game.team.settings.members', { count: team.members.length + 1 })}</div>
             </div>
           </div>
           {/* 队伍信息卡片底部添加解散按钮 */}
           <div className="flex items-center gap-2">
             {isLeader && (
               <Button variant="danger" size="sm" onClick={() => setShowDisbandModal(true)}>
-                DISBAND TEAM
+                {t('game.team.settings.disbandTeam')}
               </Button>
             )}
             {isLeader && (
               <Button variant="primary" size="sm" onClick={() => setShowEditModal(true)}>
-                EDIT TEAM
+                {t('game.team.settings.editTeam')}
               </Button>
             )}
           </div>
@@ -126,11 +128,11 @@ function TeamSettings({
 
         {/* 队伍描述 */}
         <div className="mb-6">
-          <div className="text-neutral-400 text-sm mb-2">Description</div>
+          <div className="text-neutral-400 text-sm mb-2">{t('game.team.settings.description')}</div>
           <div className="p-3 bg-neutral-900 rounded-md">
             <div className="text-neutral-300 text-sm prose prose-invert prose-sm line-clamp-3">
               <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {team.description || 'No team description available.'}
+                {team.description || t('game.team.settings.noDescription')}
               </ReactMarkdown>
             </div>
           </div>
@@ -138,7 +140,7 @@ function TeamSettings({
 
         {/* 邀请码部分 */}
         <div className="space-y-2">
-          <div className="text-neutral-400 text-sm">Invitation Code</div>
+          <div className="text-neutral-400 text-sm">{t('game.team.settings.invitationCode')}</div>
           <div className="flex items-center gap-2">
             <div className="flex-1 flex items-center justify-between p-3 bg-neutral-900 rounded-md">
               <span className="font-mono text-neutral-50">{team.inviteCode}</span>
@@ -163,7 +165,7 @@ function TeamSettings({
       {/* 成员列表 */}
       <Card variant="default" padding="none" animate className="overflow-hidden">
         <div className="p-4 border-b border-neutral-300/30">
-          <h2 className="text-neutral-50 font-mono">Team Members</h2>
+          <h2 className="text-neutral-50 font-mono">{t('game.team.settings.teamMembers')}</h2>
         </div>
 
         <div className="divide-y divide-neutral-300/10">
@@ -178,7 +180,7 @@ function TeamSettings({
               />
               <div>
                 <div className="text-neutral-50 font-mono">{team.leader.name}</div>
-                <div className="text-yellow-400 text-sm font-mono">LEADER</div>
+                <div className="text-yellow-400 text-sm font-mono">{t('game.team.settings.leader')}</div>
               </div>
             </div>
             <div className="text-neutral-400 text-sm">{team.leader.email}</div>
@@ -191,7 +193,7 @@ function TeamSettings({
                 <Avatar src={member.picture} name={member.name} size="sm" className="border-2 border-neutral-300" />
                 <div>
                   <div className="text-neutral-50 font-mono">{member.name}</div>
-                  <div className="text-neutral-400 text-sm font-mono">MEMBER</div>
+                  <div className="text-neutral-400 text-sm font-mono">{t('game.team.settings.member')}</div>
                 </div>
               </div>
               <div className="flex items-center gap-4">
@@ -231,9 +233,9 @@ function TeamSettings({
           onKickMember(showKickModal);
           setShowKickModal(null);
         }}
-        title="Kick Member"
-        message={`Are you sure you want to kick ${showKickModal} from the team?`}
-        confirmText="KICK"
+        title={t('game.team.settings.kickModal.title')}
+        message={t('game.team.settings.kickModal.message', { name: showKickModal })}
+        confirmText={t('game.team.settings.kickModal.confirm')}
         type="danger"
       />
 
@@ -245,9 +247,9 @@ function TeamSettings({
           onDisbandTeam();
           setShowDisbandModal(false);
         }}
-        title="Disband Team"
-        message="Are you sure you want to disband the team? This action cannot be undone."
-        confirmText="DISBAND"
+        title={t('game.team.settings.disbandModal.title')}
+        message={t('game.team.settings.disbandModal.message')}
+        confirmText={t('game.team.settings.disbandModal.confirm')}
         type="danger"
       />
     </div>
