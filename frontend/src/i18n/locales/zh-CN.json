@@ -500,6 +500,10 @@
           "subtitle": "左侧为入站来源，中心为靶机，右侧为出站目标。",
           "zoomHint": "滚轮缩放，按住拖动画布。"
         },
+        "filter": {
+          "label": "协议过滤:",
+          "clear": "清除"
+        },
         "legend": {
           "ingress": "入站",
           "egress": "出站",

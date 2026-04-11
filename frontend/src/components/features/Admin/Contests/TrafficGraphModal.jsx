@@ -667,6 +667,7 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
   const [slice, setSlice] = useState(DEFAULT_SLICE_MS);
   const [sliceInput, setSliceInput] = useState(String(DEFAULT_SLICE_MS));
   const [ipRowWidth, setIpRowWidth] = useState(0);
+  const [protocolFilter, setProtocolFilter] = useState(new Set());
   const [demoMode, setDemoMode] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -726,6 +727,7 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
     setPan({ x: 0, y: 0 });
     setSlice(DEFAULT_SLICE_MS);
     setSliceInput(String(DEFAULT_SLICE_MS));
+    setProtocolFilter(new Set());
   }, [isOpen, container?.id]);
 
   useEffect(() => {
@@ -733,9 +735,44 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
     fetchData({ nextShift: shift, nextSlice: slice, forceLive: demoMode });
   }, [isOpen, container?.id, shift, slice]);
 
-  const nodes = topology?.nodes || [];
-  const edges = topology?.edges || [];
+  const rawNodes = topology?.nodes || [];
+  const rawEdges = topology?.edges || [];
   const summary = topology?.summary || {};
+
+  const allProtocols = useMemo(() => {
+    const set = new Set();
+    rawNodes.forEach((node) => (node.protocols || []).forEach((p) => set.add(p)));
+    rawEdges.forEach((edge) => (edge.protocols || []).forEach((p) => set.add(p)));
+    return [...set].sort();
+  }, [rawNodes, rawEdges]);
+
+  const toggleProtocol = (proto) => {
+    setProtocolFilter((current) => {
+      const next = new Set(current);
+      if (next.has(proto)) {
+        next.delete(proto);
+      } else {
+        next.add(proto);
+      }
+      return next;
+    });
+  };
+
+  const nodes = useMemo(() => {
+    if (protocolFilter.size === 0) return rawNodes;
+    return rawNodes.filter((node) => (node.protocols || []).some((p) => protocolFilter.has(p)));
+  }, [rawNodes, protocolFilter]);
+
+  const edges = useMemo(() => {
+    if (protocolFilter.size === 0) return rawEdges;
+    const visibleNodeIds = new Set(nodes.map((n) => n.id));
+    return rawEdges.filter(
+      (edge) =>
+        (edge.protocols || []).some((p) => protocolFilter.has(p)) &&
+        visibleNodeIds.has(edge.source) &&
+        visibleNodeIds.has(edge.target)
+    );
+  }, [rawEdges, nodes, protocolFilter]);
   const windowInfo = topology?.window || { start: 0, end: 0, duration: slice, total: 0 };
   const timeline = topology?.timeline || [];
   const peakTimeline = Math.max(1, ...timeline.map((bucket) => bucket.bytes || 0));
@@ -1283,6 +1320,41 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                     </Button>
                   </div>
                 </div>
+
+                {allProtocols.length > 0 ? (
+                  <div className="flex flex-wrap items-center gap-2 border-b border-neutral-700/80 px-4 py-2">
+                    <span className="text-[11px] text-neutral-400 shrink-0">
+                      {t('admin.contests.trafficGraph.filter.label')}
+                    </span>
+                    {allProtocols.map((proto) => {
+                      const active = protocolFilter.has(proto);
+                      return (
+                        <button
+                          key={proto}
+                          type="button"
+                          onClick={() => toggleProtocol(proto)}
+                          className={[
+                            'inline-flex items-center rounded border px-2 py-0.5 text-[11px] font-mono transition-colors',
+                            active
+                              ? 'border-geek-400/60 bg-geek-400/20 text-geek-300'
+                              : 'border-neutral-600 bg-black/20 text-neutral-400 hover:border-neutral-500 hover:text-neutral-300',
+                          ].join(' ')}
+                        >
+                          {proto}
+                        </button>
+                      );
+                    })}
+                    {protocolFilter.size > 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => setProtocolFilter(new Set())}
+                        className="ml-1 text-[11px] text-neutral-500 hover:text-neutral-300 transition-colors"
+                      >
+                        {t('admin.contests.trafficGraph.filter.clear')}
+                      </button>
+                    ) : null}
+                  </div>
+                ) : null}
 
                 <div
                   ref={canvasRef}
