@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"CBCTF/internal/config"
-	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -21,9 +20,6 @@ func Cors() gin.HandlerFunc {
 			"Content-Language", "Content-Type", "Authorization", "File",
 		},
 		AllowCredentials: true,
-	}
-	if strings.ToLower(config.Env.Gin.Mode) != gin.ReleaseMode {
-		conf.AllowOrigins = []string{"*"}
 	}
 	return cors.New(conf)
 }
