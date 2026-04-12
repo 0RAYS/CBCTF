@@ -11,6 +11,7 @@ type ProviderMatcher func(provider model.Oauth) bool
 
 type providerHandler struct {
 	match    ProviderMatcher
+	scopes   []string
 	callback ProviderCallback
 }
 
@@ -20,8 +21,21 @@ func Init() {
 	providerHandlers = make([]providerHandler, 0)
 	providerHandlers = append(providerHandlers, providerHandler{
 		match:    IsGithubProvider,
+		scopes:   []string{"read:user", "user:email"},
 		callback: SetGithubEmail,
 	})
+}
+
+func GetScopes(provider model.Oauth) []string {
+	for _, handler := range providerHandlers {
+		if handler.match != nil && handler.match(provider) {
+			if len(handler.scopes) == 0 {
+				return nil
+			}
+			return append([]string(nil), handler.scopes...)
+		}
+	}
+	return nil
 }
 
 func ApplyUserInfoCallback(provider model.Oauth, client *http.Client, response map[string]any) error {

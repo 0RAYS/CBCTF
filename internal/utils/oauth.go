@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+const EmptyValue = "<nil>"
+
 func GetClaimKeys(field string) []string {
 	re := regexp.MustCompile(`\{([^{}]*)}`)
 	matches := re.FindAllStringSubmatch(field, -1)
@@ -65,6 +67,9 @@ func GetClaimStringValue(resp map[string]any, field string) (string, bool) {
 			return "", false
 		}
 		field = strings.Replace(field, fmt.Sprintf("{%s}", key), fmt.Sprintf("%v", out), 1)
+	}
+	if field == EmptyValue {
+		return "", false
 	}
 	return field, true
 }

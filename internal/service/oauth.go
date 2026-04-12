@@ -27,7 +27,7 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 	}
 	email, ok := utils.GetClaimStringValue(response, provider.EmailClaim)
 	if !ok {
-		email = fmt.Sprintf("%s_%s@example.com", provider.Provider, utils.RandStr(10))
+		email = fmt.Sprintf("%s@%s.com", provider.Uri, utils.RandStr(10))
 	}
 	picture, _ := utils.GetClaimStringValue(response, provider.PictureClaim)
 	description, _ := utils.GetClaimStringValue(response, provider.DescriptionClaim)
@@ -43,7 +43,7 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 			name = fmt.Sprintf("%s_%s", provider.Provider, utils.RandStr(10))
 		}
 		if !userRepo.IsUniqueKeyValue(0, "email", email) {
-			email = fmt.Sprintf("%s_%s@example.com", provider.Provider, utils.RandStr(10))
+			email = fmt.Sprintf("%s@%s.com", provider.Uri, utils.RandStr(10))
 		}
 		user, ret = userRepo.Insert(model.User{
 			Name:           name,
@@ -96,12 +96,15 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 		prometheus.RecordUserRegister(provider.Provider)
 	} else {
 		// 获取用户成功的时更新用户信息
-		ret = userRepo.Update(user.ID, db.UpdateUserOptions{
+		updateOptions := db.UpdateUserOptions{
 			Description: &description,
 			Picture:     new(model.FileURL(picture)),
 			OauthRaw:    new(string(raw)),
-			Email:       &email,
-		})
+		}
+		if email != user.Email && !userRepo.IsUniqueKeyValue(user.ID, "email", email) {
+			updateOptions.Email = &email
+		}
+		ret = userRepo.Update(user.ID, updateOptions)
 		if !ret.OK {
 			return model.User{}, ret
 		}
