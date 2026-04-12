@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '../../utils/toast';
-import GameSlider from '../../components/features/Games/GameSlider';
+import GameList from '../../components/features/Games/GameList';
 import TeamJoinModal from '../../components/features/CTFGame/Team/TeamJoinModal';
 import { getContestList } from '../../api/contest';
 import { useSelector } from 'react-redux';
@@ -79,7 +79,6 @@ function WelcomeBanner({ onDismiss }) {
 function GamesPage() {
   const [games, setGames] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentIndex, setCurrentIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentGameId, setCurrentGameId] = useState(null);
   const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem(WELCOME_KEY));
@@ -186,10 +185,8 @@ function GamesPage() {
           <EmptyState title={t('game.noGames')} description={t('game.noGamesDescription')} />
         </div>
       ) : (
-        <GameSlider
+        <GameList
           games={games}
-          currentIndex={currentIndex}
-          onIndexChange={setCurrentIndex}
           onGameAction={handleGameAction}
           user={user}
         />
