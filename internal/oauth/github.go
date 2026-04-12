@@ -33,6 +33,7 @@ func GetDefaultGithubOauth() model.Oauth {
 		ClientSecret:     "",
 		Provider:         "Github",
 		Uri:              "github",
+		Scopes:           model.StringList{"read:user", "user:email"},
 		IDClaim:          "{id}",
 		NameClaim:        "{login}",
 		EmailClaim:       "{email}",
@@ -69,7 +70,7 @@ func SetGithubEmail(_ model.Oauth, client *http.Client, data map[string]any) err
 	}
 	for _, email := range emails {
 		if email.Primary && email.Verified && email.Email != "" {
-			data["email"] = email
+			data["email"] = email.Email
 			return nil
 		}
 	}

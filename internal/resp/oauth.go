@@ -16,6 +16,7 @@ func GetOauthResp(oauth model.Oauth) gin.H {
 		"client_id":         oauth.ClientID,
 		"provider":          oauth.Provider,
 		"uri":               oauth.Uri,
+		"scopes":            oauth.Scopes,
 		"id_claim":          oauth.IDClaim,
 		"name_claim":        oauth.NameClaim,
 		"email_claim":       oauth.EmailClaim,

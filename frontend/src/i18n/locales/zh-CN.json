@@ -2038,6 +2038,8 @@
         "providerPlaceholder": "例如: GitHub",
         "uriLabel": "URI *",
         "uriPlaceholder": "例如: github, URL 将拼接为 /oauth/github",
+        "scopesLabel": "Scopes",
+        "scopesPlaceholder": "例如: read:user, user:email",
         "authUrlLabel": "授权URL *",
         "authUrlPlaceholder": "https://example.com/oauth/authorize",
         "tokenUrlLabel": "Token URL *",

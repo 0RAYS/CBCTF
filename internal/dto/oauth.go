@@ -18,6 +18,7 @@ type CreateOauthProviderForm struct {
 	ClientSecret     string `form:"client_secret" json:"client_secret" binding:"required"`
 	Provider         string `form:"provider" json:"provider" binding:"required"`
 	Uri              string `form:"uri" json:"uri" binding:"required,alphanum"`
+	Scopes           model.StringList `form:"scopes" json:"scopes"`
 	IDClaim          string `form:"id_claim" json:"id_claim" binding:"required"`
 	NameClaim        string `form:"name_claim" json:"name_claim" binding:"required"`
 	EmailClaim       string `form:"email_claim" json:"email_claim" binding:"required"`
@@ -37,6 +38,7 @@ type UpdateOauthProviderForm struct {
 	ClientSecret     *string        `form:"client_secret" json:"client_secret" binding:"omitempty,min=1"`
 	Provider         *string        `form:"provider" json:"provider" binding:"omitempty,min=1"`
 	Uri              *string        `form:"uri" json:"uri" binding:"omitempty,min=1,alphanum"`
+	Scopes           *model.StringList `form:"scopes" json:"scopes"`
 	IDClaim          *string        `form:"id_claim" json:"id_claim" binding:"omitempty,min=1"`
 	NameClaim        *string        `form:"name_claim" json:"name_claim" binding:"omitempty,min=1"`
 	EmailClaim       *string        `form:"email_claim" json:"email_claim" binding:"omitempty,min=1"`

@@ -20,6 +20,7 @@ type CreateOauthOptions struct {
 	ClientSecret     string
 	Provider         string
 	Uri              string
+	Scopes           model.StringList
 	IDClaim          string
 	NameClaim        string
 	EmailClaim       string
@@ -42,6 +43,7 @@ func (c CreateOauthOptions) Convert2Model() model.Model {
 		ClientSecret:     c.ClientSecret,
 		Provider:         c.Provider,
 		Uri:              c.Uri,
+		Scopes:           c.Scopes,
 		IDClaim:          c.IDClaim,
 		NameClaim:        c.NameClaim,
 		EmailClaim:       c.EmailClaim,
@@ -64,6 +66,7 @@ type UpdateOauthOptions struct {
 	ClientSecret     *string
 	Provider         *string
 	Uri              *string
+	Scopes           *model.StringList
 	IDClaim          *string
 	NameClaim        *string
 	EmailClaim       *string
@@ -101,6 +104,9 @@ func (u UpdateOauthOptions) Convert2Map() map[string]any {
 	}
 	if u.Uri != nil {
 		options["uri"] = *u.Uri
+	}
+	if u.Scopes != nil {
+		options["scopes"] = *u.Scopes
 	}
 	if u.IDClaim != nil {
 		options["id_claim"] = *u.IDClaim
