@@ -15,9 +15,6 @@ import (
 
 // Download from: https://github.com/logos
 var (
-	//go:embed logo/github-mark-white.png
-	githubMarkWhiteFile embed.FS
-	GithubMarkWhite, _  = githubMarkWhiteFile.ReadFile("logo/github-mark-white.png")
 	//go:embed logo/github-mark.png
 	githubMarkFile embed.FS
 	GithubMark, _  = githubMarkFile.ReadFile("logo/github-mark.png")
