@@ -2038,6 +2038,8 @@
         "providerPlaceholder": "e.g. GitHub",
         "uriLabel": "URI *",
         "uriPlaceholder": "e.g. github, URL becomes /oauth/github",
+        "scopesLabel": "Scopes",
+        "scopesPlaceholder": "e.g. read:user, user:email",
         "authUrlLabel": "Authorization URL *",
         "authUrlPlaceholder": "https://example.com/oauth/authorize",
         "tokenUrlLabel": "Token URL *",

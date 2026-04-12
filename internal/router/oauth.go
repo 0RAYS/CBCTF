@@ -72,7 +72,7 @@ func Oauth(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	url := provider.Config(oauth.GetScopes(provider)).AuthCodeURL(state, oauth2.AccessTypeOnline, oauth2.S256ChallengeOption(verifier))
+	url := provider.Config().AuthCodeURL(state, oauth2.AccessTypeOnline, oauth2.S256ChallengeOption(verifier))
 	ctx.Redirect(http.StatusTemporaryRedirect, url)
 }
 
@@ -90,7 +90,7 @@ func OauthCallback(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	oauthConfig := provider.Config(oauth.GetScopes(provider))
+	oauthConfig := provider.Config()
 	ctx.Set(middleware.CTXEventTypeKey, model.OauthLoginEventType)
 	defer redis.DelOauthState(provider.Provider, form.State)
 	verifier, ret := redis.GetOauthVerifier(provider.Provider, form.State)

@@ -15,6 +15,12 @@ import Input from '../../components/common/Input';
 import { useTranslation } from 'react-i18next';
 
 function OAuthProvidersManagement() {
+  const formatScopes = (scopes) => (Array.isArray(scopes) ? scopes.join(', ') : '');
+  const parseScopes = (value) =>
+    value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
   // 状态管理
   const [providers, setProviders] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -29,6 +35,7 @@ function OAuthProvidersManagement() {
   const [editForm, setEditForm] = useState({
     provider: '',
     uri: '',
+    scopes: '',
     auth_url: '',
     token_url: '',
     user_info_url: '',
@@ -81,6 +88,7 @@ function OAuthProvidersManagement() {
     setEditForm({
       provider: '',
       uri: '',
+      scopes: '',
       auth_url: '',
       token_url: '',
       user_info_url: '',
@@ -107,6 +115,7 @@ function OAuthProvidersManagement() {
     setEditForm({
       provider: provider.provider,
       uri: provider.uri,
+      scopes: formatScopes(provider.scopes),
       auth_url: provider.auth_url,
       token_url: provider.token_url,
       user_info_url: provider.user_info_url,
@@ -139,7 +148,10 @@ function OAuthProvidersManagement() {
 
   const handleCreateProvider = async () => {
     try {
-      const response = await createOAuthProvider(editForm);
+      const response = await createOAuthProvider({
+        ...editForm,
+        scopes: parseScopes(editForm.scopes),
+      });
       if (response.code === 200) {
         toast.success({ description: t('admin.oauthProviders.toast.createSuccess') });
         setIsModalOpen(false);
@@ -154,6 +166,7 @@ function OAuthProvidersManagement() {
     try {
       const response = await updateOAuthProvider(selectedProvider.id, {
         ...editForm,
+        scopes: parseScopes(editForm.scopes),
         client_secret: editForm.client_secret || undefined,
       });
       if (response.code === 200) {
@@ -241,6 +254,18 @@ function OAuthProvidersManagement() {
               placeholder={t('admin.oauthProviders.form.uriPlaceholder')}
               fullWidth
               required={mode === 'create'}
+            />
+          </div>
+          <div className="col-span-2">
+            <label className="block text-neutral-300 text-sm font-medium mb-2">
+              {t('admin.oauthProviders.form.scopesLabel')}
+            </label>
+            <Input
+              type="text"
+              value={editForm.scopes}
+              onChange={(e) => setEditForm({ ...editForm, scopes: e.target.value })}
+              placeholder={t('admin.oauthProviders.form.scopesPlaceholder')}
+              fullWidth
             />
           </div>
         </div>
