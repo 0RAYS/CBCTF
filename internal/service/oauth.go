@@ -96,18 +96,11 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 		prometheus.RecordUserRegister(provider.Provider)
 	} else {
 		// 获取用户成功的时更新用户信息
-		updateOptions := db.UpdateUserOptions{
+		ret = userRepo.Update(user.ID, db.UpdateUserOptions{
 			Description: &description,
 			Picture:     new(model.FileURL(picture)),
 			OauthRaw:    new(string(raw)),
-		}
-		if email != user.Email {
-			if !userRepo.IsUniqueKeyValue(user.ID, "email", email) {
-				email = fmt.Sprintf("%s@%s.com", utils.RandStr(10), provider.Uri)
-			}
-			updateOptions.Email = &email
-		}
-		ret = userRepo.Update(user.ID, updateOptions)
+		})
 		if !ret.OK {
 			return model.User{}, ret
 		}
