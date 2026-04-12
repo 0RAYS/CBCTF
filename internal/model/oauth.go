@@ -1,6 +1,8 @@
 package model
 
-import "golang.org/x/oauth2"
+import (
+	"golang.org/x/oauth2"
+)
 
 type Oauth struct {
 	AuthURL          string  `json:"auth_url"`
@@ -24,8 +26,8 @@ type Oauth struct {
 	BaseModel
 }
 
-func (o *Oauth) Config() *oauth2.Config {
-	return &oauth2.Config{
+func (o *Oauth) Config(scopes []string) *oauth2.Config {
+	config := &oauth2.Config{
 		ClientID:     o.ClientID,
 		ClientSecret: o.ClientSecret,
 		Endpoint: oauth2.Endpoint{
@@ -34,4 +36,8 @@ func (o *Oauth) Config() *oauth2.Config {
 		},
 		RedirectURL: o.CallbackURL,
 	}
+	if len(scopes) > 0 {
+		config.Scopes = scopes
+	}
+	return config
 }
