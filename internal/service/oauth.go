@@ -23,7 +23,7 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 	}
 	name, ok := utils.GetClaimStringValue(response, provider.NameClaim)
 	if !ok {
-		name = fmt.Sprintf("%s_%s", provider.Provider, utils.RandStr(10))
+		name = fmt.Sprintf("%s_%s", utils.RandStr(10), provider.Provider)
 	}
 	email, ok := utils.GetClaimStringValue(response, provider.EmailClaim)
 	if !ok {
@@ -40,7 +40,7 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 		}
 		// 获取用户失败的时创建新用户
 		if !userRepo.IsUniqueKeyValue(0, "name", name) {
-			name = fmt.Sprintf("%s_%s", provider.Provider, utils.RandStr(10))
+			name = fmt.Sprintf("%s_%s", utils.RandStr(10), provider.Provider)
 		}
 		if !userRepo.IsUniqueKeyValue(0, "email", email) {
 			email = fmt.Sprintf("%s@%s.com", utils.RandStr(10), provider.Uri)
