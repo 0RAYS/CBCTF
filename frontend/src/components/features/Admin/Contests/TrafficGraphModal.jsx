@@ -662,7 +662,9 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
   const ipRowRef = useRef(null);
   const dragRef = useRef({ active: false, moved: false, x: 0, y: 0, panX: 0, panY: 0 });
   const requestSequenceRef = useRef(0);
+  const universeFetchedForRef = useRef(null);
   const [topology, setTopology] = useState(null);
+  const [universeNodes, setUniverseNodes] = useState(null);
   const [shift, setShift] = useState(0);
   const [slice, setSlice] = useState(DEFAULT_SLICE_MS);
   const [sliceInput, setSliceInput] = useState(String(DEFAULT_SLICE_MS));
@@ -693,6 +695,12 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
       if (response.code !== 200) throw new Error(t('admin.contests.trafficGraph.toast.fetchFailed'));
       setTopology(response.data);
       setDemoMode(false);
+      if (universeFetchedForRef.current !== container.id) {
+        const totalDur = response.data?.total_duration || 0;
+        if (totalDur > 0) {
+          fetchUniverseNodes(totalDur);
+        }
+      }
     } catch {
       if (requestSequenceRef.current !== requestId) return;
       if (!forceLive) {
@@ -706,6 +714,23 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
         setSelectedEdgeId('');
         setSelectedNodeId('');
       }
+    }
+  };
+
+  const fetchUniverseNodes = async (totalDuration) => {
+    if (!container?.id || totalDuration <= 0) return;
+    try {
+      const response = customFetchTraffic
+        ? await customFetchTraffic(container, { time_shift: 0, duration: totalDuration })
+        : await getContestTeamTraffic(contestId, teamId, container.id, {
+            time_shift: 0,
+            duration: totalDuration,
+          });
+      if (response.code !== 200) return;
+      universeFetchedForRef.current = container.id;
+      setUniverseNodes(response.data?.nodes || []);
+    } catch {
+      // 失败则 universeNodes 保持 null，降级为当前帧行为
     }
   };
 
@@ -728,6 +753,8 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
     setSlice(DEFAULT_SLICE_MS);
     setSliceInput(String(DEFAULT_SLICE_MS));
     setProtocolFilter(new Set());
+    setUniverseNodes(null);
+    universeFetchedForRef.current = null;
   }, [isOpen, container?.id]);
 
   useEffect(() => {
@@ -745,6 +772,15 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
     rawEdges.forEach((edge) => (edge.protocols || []).forEach((p) => set.add(p)));
     return [...set].sort();
   }, [rawNodes, rawEdges]);
+
+  const universeProtocols = useMemo(() => {
+    if (!universeNodes) return allProtocols;
+    const set = new Set();
+    universeNodes.forEach((node) => (node.protocols || []).forEach((p) => set.add(p)));
+    return [...set].sort();
+  }, [universeNodes, allProtocols]);
+
+  const activeProtocolSet = useMemo(() => new Set(allProtocols), [allProtocols]);
 
   const toggleProtocol = (proto) => {
     setProtocolFilter((current) => {
@@ -784,7 +820,9 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
   const canStepForward = shift < maxShift;
   const viewportMetrics = useMemo(() => getViewportMetrics(zoom), [zoom]);
   const viewBox = `${pan.x} ${pan.y} ${viewportMetrics.width} ${viewportMetrics.height}`;
-  const positions = useMemo(() => buildPositions(nodes), [nodes]);
+  const allLayoutNodes = universeNodes ?? nodes;
+  const positions = useMemo(() => buildPositions(allLayoutNodes), [allLayoutNodes]);
+  const activeNodeIds = useMemo(() => new Set(nodes.map((n) => n.id)), [nodes]);
   const lines = useMemo(() => buildLines(edges, positions), [edges, positions]);
   const labelPlacements = useMemo(
     () => resolveEdgeLabels(lines, positions, selectedEdgeId),
@@ -1321,13 +1359,14 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                   </div>
                 </div>
 
-                {allProtocols.length > 0 ? (
+                {universeProtocols.length > 0 ? (
                   <div className="flex flex-wrap items-center gap-2 border-b border-neutral-700/80 px-4 py-2">
                     <span className="text-[11px] text-neutral-400 shrink-0">
                       {t('admin.contests.trafficGraph.filter.label')}
                     </span>
-                    {allProtocols.map((proto) => {
+                    {universeProtocols.map((proto) => {
                       const active = protocolFilter.has(proto);
+                      const inCurrentFrame = activeProtocolSet.has(proto);
                       return (
                         <button
                           key={proto}
@@ -1337,7 +1376,9 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                             'inline-flex items-center rounded border px-2 py-0.5 text-[11px] font-mono transition-colors',
                             active
                               ? 'border-geek-400/60 bg-geek-400/20 text-geek-300'
-                              : 'border-neutral-600 bg-black/20 text-neutral-400 hover:border-neutral-500 hover:text-neutral-300',
+                              : inCurrentFrame
+                                ? 'border-neutral-600 bg-black/20 text-neutral-400 hover:border-neutral-500 hover:text-neutral-300'
+                                : 'border-neutral-600/60 bg-black/15 text-neutral-500 hover:border-neutral-500 hover:text-neutral-400',
                           ].join(' ')}
                         >
                           {proto}
@@ -1368,12 +1409,6 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                   <div className="absolute left-3 top-3 z-10 text-[11px] text-neutral-400">
                     {t('admin.contests.trafficGraph.canvas.zoomHint')}
                   </div>
-
-                  {nodes.length === 0 ? (
-                    <div className="absolute inset-0 flex items-center justify-center px-6 text-center text-sm text-neutral-500">
-                      {t('admin.contests.trafficGraph.empty')}
-                    </div>
-                  ) : null}
 
                   <svg
                     viewBox={viewBox}
@@ -1457,25 +1492,36 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                       );
                     })}
 
-                    {nodes.map((node) => {
+                    {allLayoutNodes.map((node) => {
                       const pos = positions.get(node.id);
                       if (!pos) return null;
-                      const active = selectedNode?.id === node.id;
+                      const isGhost = !activeNodeIds.has(node.id);
+                      const active = !isGhost && selectedNode?.id === node.id;
                       const isVictim = node.kind === 'victim';
                       const x = pos.x - pos.w / 2;
                       const y = pos.y - pos.h / 2;
                       const title = buildCompactNodeLabel(node);
                       const meta = buildCompactNodeMeta(node);
                       return (
-                        <g key={node.id} transform={`translate(${x}, ${y})`} onClick={() => handleSelectNode(node.id)}>
+                        <g
+                          key={node.id}
+                          transform={`translate(${x}, ${y})`}
+                          onClick={isGhost ? undefined : () => handleSelectNode(node.id)}
+                          style={{ cursor: isGhost ? 'default' : 'pointer' }}
+                          opacity={isGhost ? 0.45 : 1}
+                        >
                           <rect
                             x={active ? -2.5 : 0}
                             y={active ? -2.5 : 0}
                             width={active ? pos.w + 5 : pos.w}
                             height={active ? pos.h + 5 : pos.h}
                             rx="15"
-                            fill={isVictim ? 'rgba(89,126,247,.12)' : 'rgba(24,24,27,.94)'}
-                            stroke={active ? '#f5f5f5' : isVictim ? '#597ef7' : '#666666'}
+                            fill={
+                              isGhost ? 'rgba(24,24,27,0.7)' : isVictim ? 'rgba(89,126,247,.12)' : 'rgba(24,24,27,.94)'
+                            }
+                            stroke={
+                              active ? '#f5f5f5' : isGhost ? 'rgba(100,100,100,0.55)' : isVictim ? '#597ef7' : '#666666'
+                            }
                             strokeWidth={active ? 1.7 : 1.1}
                             vectorEffect="non-scaling-stroke"
                           />
@@ -1483,14 +1529,28 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                             cx="18"
                             cy={pos.h / 2}
                             r={isVictim ? 9.5 : 8}
-                            fill={isVictim ? 'rgba(89,126,247,.14)' : 'rgba(82,82,91,.62)'}
-                            stroke={isVictim ? '#597ef7' : '#8a8a8a'}
+                            fill={
+                              isGhost ? 'rgba(55,55,62,0.7)' : isVictim ? 'rgba(89,126,247,.14)' : 'rgba(82,82,91,.62)'
+                            }
+                            stroke={isGhost ? 'rgba(130,130,130,0.5)' : isVictim ? '#597ef7' : '#8a8a8a'}
                             vectorEffect="non-scaling-stroke"
                           />
-                          <text x="34" y={pos.h / 2 - 4} fill="#f5f5f5" fontSize="10.7" fontFamily="Maple Mono">
+                          <text
+                            x="34"
+                            y={pos.h / 2 - 4}
+                            fill={isGhost ? '#707070' : '#f5f5f5'}
+                            fontSize="10.7"
+                            fontFamily="Maple Mono"
+                          >
                             {title}
                           </text>
-                          <text x="34" y={pos.h / 2 + 11} fill="#a3a3a3" fontSize="9.4" fontFamily="Maple Mono">
+                          <text
+                            x="34"
+                            y={pos.h / 2 + 11}
+                            fill={isGhost ? '#565656' : '#a3a3a3'}
+                            fontSize="9.4"
+                            fontFamily="Maple Mono"
+                          >
                             {ellipsis(meta, 20)}
                           </text>
                         </g>
@@ -1591,7 +1651,7 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                     })}
                   </div>
                 </div>
-                {timeline.length > 0 ? (
+                {timeline.length > 0 && (
                   <>
                     <div className="mt-3 flex h-16 items-end gap-px">
                       {timeline.map((bucket) => {
@@ -1641,8 +1701,6 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                       </span>
                     </div>
                   </>
-                ) : (
-                  <div className="mt-3 text-sm text-neutral-500">{t('admin.contests.trafficGraph.empty')}</div>
                 )}
               </Card>
 
@@ -1654,7 +1712,7 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                         {t('admin.contests.trafficGraph.rankings.topTalkers')}
                       </div>
                       <div className="mt-2 grid max-h-[126px] gap-2 overflow-y-auto pr-1">
-                        {topTalkers.length > 0 ? (
+                        {topTalkers.length > 0 &&
                           topTalkers.map((item, index) => (
                             <div
                               key={`${item.ip}-${index}`}
@@ -1669,12 +1727,7 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                                 <div className="mt-1 text-[11px] text-neutral-400">{item.connections || 0} conn</div>
                               </div>
                             </div>
-                          ))
-                        ) : (
-                          <div className="rounded-lg border border-neutral-600 bg-black/20 px-2.5 py-2 text-[11px] text-neutral-500">
-                            {t('admin.contests.trafficGraph.empty')}
-                          </div>
-                        )}
+                          ))}
                       </div>
                     </div>
 
@@ -1683,7 +1736,7 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                         {t('admin.contests.trafficGraph.rankings.topEdges')}
                       </div>
                       <div className="mt-2 grid max-h-[126px] gap-2 overflow-y-auto pr-1">
-                        {topEdges.length > 0 ? (
+                        {topEdges.length > 0 &&
                           topEdges.map((item, index) => (
                             <div
                               key={`${item.id || item.label}-${index}`}
@@ -1700,12 +1753,7 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                                 <div className="mt-1 text-[11px] text-neutral-400">{item.connections || 0} conn</div>
                               </div>
                             </div>
-                          ))
-                        ) : (
-                          <div className="rounded-lg border border-neutral-600 bg-black/20 px-2.5 py-2 text-[11px] text-neutral-500">
-                            {t('admin.contests.trafficGraph.empty')}
-                          </div>
-                        )}
+                          ))}
                       </div>
                     </div>
                   </div>

@@ -555,8 +555,7 @@
           "fetchFailed": "Failed to load traffic data",
           "demoFallback": "Failed to load traffic data, using sample data for preview"
         },
-        "demoNotice": "Unable to fetch real traffic data. Currently displaying sample data for demonstration purposes. Click refresh to retry.",
-        "empty": "No traffic data in this window."
+        "demoNotice": "Unable to fetch real traffic data. Currently displaying sample data for demonstration purposes. Click refresh to retry."
       },
       "notices": {
         "title": "Notice Management",
