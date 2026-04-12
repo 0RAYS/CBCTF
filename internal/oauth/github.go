@@ -4,7 +4,11 @@ import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/model"
 	"embed"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"strings"
 
 	"golang.org/x/oauth2/github"
 )
@@ -37,4 +41,37 @@ func GetDefaultGithubOauth() model.Oauth {
 		On:               false,
 		Picture:          model.FileURL(fmt.Sprintf("%s/assets?filename=github", config.Env.Host)),
 	}
+}
+
+func IsGithubProvider(provider model.Oauth) bool {
+	return strings.HasPrefix(strings.ToLower(provider.UserInfoURL), "https://api.github.com/")
+}
+
+func SetGithubEmail(_ model.Oauth, client *http.Client, data map[string]any) error {
+	response, err := client.Get("https://api.github.com/user/emails")
+	if err != nil {
+		return err
+	}
+	defer func(Body io.ReadCloser) {
+		_ = Body.Close()
+	}(response.Body)
+	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
+		body, _ := io.ReadAll(io.LimitReader(response.Body, 4096))
+		return fmt.Errorf("unexpected status %d: %s", response.StatusCode, strings.TrimSpace(string(body)))
+	}
+	var emails []struct {
+		Email    string `json:"email"`
+		Primary  bool   `json:"primary"`
+		Verified bool   `json:"verified"`
+	}
+	if err = json.NewDecoder(response.Body).Decode(&emails); err != nil {
+		return err
+	}
+	for _, email := range emails {
+		if email.Primary && email.Verified && email.Email != "" {
+			data["email"] = email
+			return nil
+		}
+	}
+	return nil
 }

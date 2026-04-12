@@ -1,5 +1,7 @@
 package model
 
+import "golang.org/x/oauth2"
+
 type Oauth struct {
 	AuthURL          string  `json:"auth_url"`
 	TokenURL         string  `json:"token_url"`
@@ -20,4 +22,16 @@ type Oauth struct {
 	On               bool    `json:"on"`
 	Picture          FileURL `json:"picture"`
 	BaseModel
+}
+
+func (o *Oauth) Config() *oauth2.Config {
+	return &oauth2.Config{
+		ClientID:     o.ClientID,
+		ClientSecret: o.ClientSecret,
+		Endpoint: oauth2.Endpoint{
+			AuthURL:  o.AuthURL,
+			TokenURL: o.TokenURL,
+		},
+		RedirectURL: o.CallbackURL,
+	}
 }

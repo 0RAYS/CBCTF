@@ -7,6 +7,7 @@ import (
 	"CBCTF/internal/email"
 	"CBCTF/internal/k8s"
 	"CBCTF/internal/log"
+	"CBCTF/internal/oauth"
 	"CBCTF/internal/ratelimit"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/router"
@@ -34,6 +35,7 @@ func preInit() {
 
 func run() {
 	log.Init()
+	oauth.Init()
 	db.Init()
 	redis.Init()
 	k8s.Init()
