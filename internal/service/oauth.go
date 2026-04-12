@@ -100,6 +100,7 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 			Description: &description,
 			Picture:     new(model.FileURL(picture)),
 			OauthRaw:    new(string(raw)),
+			Email:       &email,
 		})
 		if !ret.OK {
 			return model.User{}, ret

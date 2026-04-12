@@ -8,6 +8,7 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
+	"CBCTF/internal/oauth"
 	"CBCTF/internal/redis"
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
@@ -16,6 +17,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -64,22 +66,13 @@ func Oauth(ctx *gin.Context) {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
-	oauthConfig := &oauth2.Config{
-		ClientID:     provider.ClientID,
-		ClientSecret: provider.ClientSecret,
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  provider.AuthURL,
-			TokenURL: provider.TokenURL,
-		},
-		RedirectURL: provider.CallbackURL,
-	}
 	state := utils.UUID()
 	verifier := oauth2.GenerateVerifier()
 	if ret := redis.SetOauthState(provider.Provider, state, verifier); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	url := oauthConfig.AuthCodeURL(state, oauth2.AccessTypeOnline, oauth2.S256ChallengeOption(verifier))
+	url := provider.Config().AuthCodeURL(state, oauth2.AccessTypeOnline, oauth2.S256ChallengeOption(verifier))
 	ctx.Redirect(http.StatusTemporaryRedirect, url)
 }
 
@@ -97,15 +90,7 @@ func OauthCallback(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	oauthConfig := &oauth2.Config{
-		ClientID:     provider.ClientID,
-		ClientSecret: provider.ClientSecret,
-		Endpoint: oauth2.Endpoint{
-			AuthURL:  provider.AuthURL,
-			TokenURL: provider.TokenURL,
-		},
-		RedirectURL: provider.CallbackURL,
-	}
+	oauthConfig := provider.Config()
 	ctx.Set(middleware.CTXEventTypeKey, model.OauthLoginEventType)
 	defer redis.DelOauthState(provider.Provider, form.State)
 	verifier, ret := redis.GetOauthVerifier(provider.Provider, form.State)
@@ -133,10 +118,20 @@ func OauthCallback(ctx *gin.Context) {
 		}
 	}(response.Body)
 	var result map[string]any
+	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
+		body, _ := io.ReadAll(io.LimitReader(response.Body, 4096))
+		err = fmt.Errorf("unexpected status %d: %s", response.StatusCode, strings.TrimSpace(string(body)))
+		log.Logger.Warningf("Failed to get User info by provider %s: %s", provider.Provider, err)
+		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		return
+	}
 	if err = json.NewDecoder(response.Body).Decode(&result); err != nil {
 		log.Logger.Warningf("Failed to decode response body for provider %s: %s", provider.Provider, err)
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return
+	}
+	if err = oauth.ApplyUserInfoCallback(provider, client, result); err != nil {
+		log.Logger.Warningf("Failed to apply oauth callback for provider %s: %s", provider.Provider, err)
 	}
 	user, ret := service.OauthLoginWithTransaction(db.DB, provider, result)
 	if !ret.OK {
