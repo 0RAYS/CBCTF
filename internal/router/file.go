@@ -21,9 +21,8 @@ import (
 )
 
 var DefaultPicture = map[string][]byte{
-	"github":       oauth.GithubMark,
-	"github-white": oauth.GithubMarkWhite,
-	"hduhelp":      oauth.HDUHelpPicture,
+	"github":  oauth.GithubMark,
+	"hduhelp": oauth.HDUHelpPicture,
 }
 
 func DefaultAssets(ctx *gin.Context) {
