@@ -30,10 +30,10 @@ func GetDefaultGithubOauth() model.Oauth {
 		Provider:         "Github",
 		Uri:              "github",
 		IDClaim:          "{id}",
-		NameClaim:        "{name}",
+		NameClaim:        "{login}",
 		EmailClaim:       "{email}",
 		PictureClaim:     "{picture_url}",
-		DescriptionClaim: "{bio}",
+		DescriptionClaim: "{html_url}",
 		On:               false,
 		Picture:          model.FileURL(fmt.Sprintf("%s/assets?filename=github", config.Env.Host)),
 	}
