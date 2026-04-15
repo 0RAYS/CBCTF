@@ -38,11 +38,18 @@ function GroupsTab() {
   const [userTotalCount, setUserTotalCount] = useState(0);
   const userPageSize = 10;
 
-  const [candidateSearch, setCandidateSearch] = useState('');
+  const [candidateNameQuery, setCandidateNameQuery] = useState('');
+  const [candidateEmailQuery, setCandidateEmailQuery] = useState('');
+  const [candidateDescQuery, setCandidateDescQuery] = useState('');
   const [candidateUsers, setCandidateUsers] = useState([]);
   const [loadingCandidateUsers, setLoadingCandidateUsers] = useState(false);
+  const [candidatePage, setCandidatePage] = useState(1);
+  const [candidateTotalCount, setCandidateTotalCount] = useState(0);
+  const candidatePageSize = 10;
   const [selectedCandidateIds, setSelectedCandidateIds] = useState([]);
-  const debouncedCandidateSearch = useDebounce(candidateSearch, 300);
+  const debouncedCandidateNameQuery = useDebounce(candidateNameQuery, 300);
+  const debouncedCandidateEmailQuery = useDebounce(candidateEmailQuery, 300);
+  const debouncedCandidateDescQuery = useDebounce(candidateDescQuery, 300);
 
   function fetchGroups() {
     getGroupList({
@@ -177,8 +184,12 @@ function GroupsTab() {
     setGroupUserIds([]);
     setUserPage(1);
     setUserTotalCount(0);
-    setCandidateSearch('');
+    setCandidateNameQuery('');
+    setCandidateEmailQuery('');
+    setCandidateDescQuery('');
     setCandidateUsers([]);
+    setCandidatePage(1);
+    setCandidateTotalCount(0);
     setSelectedCandidateIds([]);
   };
 
@@ -232,49 +243,34 @@ function GroupsTab() {
     const fetchCandidateUsers = async () => {
       setLoadingCandidateUsers(true);
       try {
-        const keyword = debouncedCandidateSearch.trim();
-        let mergedUsers = [];
+        const params = {
+          limit: candidatePageSize,
+          offset: (candidatePage - 1) * candidatePageSize,
+        };
+        if (debouncedCandidateNameQuery.trim()) {
+          params.name = debouncedCandidateNameQuery.trim();
+        }
+        if (debouncedCandidateEmailQuery.trim()) {
+          params.email = debouncedCandidateEmailQuery.trim();
+        }
+        if (debouncedCandidateDescQuery.trim()) {
+          params.description = debouncedCandidateDescQuery.trim();
+        }
 
-        if (!keyword) {
-          const response = await getUserList({ limit: 20, offset: 0 });
-          if (response.code === 200) {
-            mergedUsers = response.data.users || [];
-          }
-        } else {
-          const results = await Promise.allSettled([
-            getUserList({ name: keyword, limit: 20, offset: 0 }),
-            getUserList({ email: keyword, limit: 20, offset: 0 }),
-            getUserList({ description: keyword, limit: 20, offset: 0 }),
-          ]);
-
-          const usersMap = new Map();
-          let hasSuccess = false;
-
-          results.forEach((result) => {
-            if (result.status === 'fulfilled' && result.value.code === 200) {
-              hasSuccess = true;
-              (result.value.data.users || []).forEach((user) => {
-                if (!usersMap.has(user.id)) {
-                  usersMap.set(user.id, user);
-                }
-              });
-            }
-          });
-
-          if (!hasSuccess) {
-            throw new Error(t('admin.rbac.groups.toast.fetchCandidatesFailed'));
-          }
-
-          mergedUsers = Array.from(usersMap.values());
+        const response = await getUserList(params);
+        if (response.code !== 200) {
+          throw new Error(t('admin.rbac.groups.toast.fetchCandidatesFailed'));
         }
 
         if (!cancelled) {
-          setCandidateUsers(mergedUsers);
+          setCandidateUsers(response.data.users || []);
+          setCandidateTotalCount(response.data.count || 0);
         }
       } catch (error) {
         if (!cancelled) {
           toast.danger({ description: error.message || t('admin.rbac.groups.toast.fetchCandidatesFailed') });
           setCandidateUsers([]);
+          setCandidateTotalCount(0);
         }
       } finally {
         if (!cancelled) {
@@ -288,7 +284,22 @@ function GroupsTab() {
     return () => {
       cancelled = true;
     };
-  }, [userModalOpen, debouncedCandidateSearch, t]);
+  }, [
+    userModalOpen,
+    candidatePage,
+    candidatePageSize,
+    debouncedCandidateNameQuery,
+    debouncedCandidateEmailQuery,
+    debouncedCandidateDescQuery,
+    t,
+  ]);
+
+  useEffect(() => {
+    if (!userModalOpen) {
+      return;
+    }
+    setCandidatePage(1);
+  }, [userModalOpen, debouncedCandidateNameQuery, debouncedCandidateEmailQuery, debouncedCandidateDescQuery]);
 
   const availableCandidateUsers = useMemo(
     () => candidateUsers.filter((user) => !groupUserIds.includes(user.id)),
@@ -318,6 +329,10 @@ function GroupsTab() {
       availableCandidateUsers.forEach((user) => next.add(user.id));
       return Array.from(next);
     });
+  };
+
+  const handleCandidatePageChange = (page) => {
+    setCandidatePage(page);
   };
 
   const handleAssignSelectedUsers = async () => {
@@ -520,13 +535,31 @@ function GroupsTab() {
           <div className="border-t border-neutral-300/10 pt-6">
             <div className="space-y-4">
               <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-                <div className="flex-1">
-                  <FormField label={t('admin.rbac.groups.form.userSearch')}>
+                <div className="grid flex-1 gap-3 md:grid-cols-3">
+                  <FormField label={t('admin.rbac.groups.form.userNameSearch')}>
                     <Input
-                      type="search"
-                      value={candidateSearch}
-                      onChange={(e) => setCandidateSearch(e.target.value)}
-                      placeholder={t('admin.rbac.groups.form.userSearchPlaceholder')}
+                      type="text"
+                      value={candidateNameQuery}
+                      onChange={(e) => setCandidateNameQuery(e.target.value)}
+                      placeholder={t('admin.rbac.groups.form.userNameSearchPlaceholder')}
+                      fullWidth
+                    />
+                  </FormField>
+                  <FormField label={t('admin.rbac.groups.form.userEmailSearch')}>
+                    <Input
+                      type="text"
+                      value={candidateEmailQuery}
+                      onChange={(e) => setCandidateEmailQuery(e.target.value)}
+                      placeholder={t('admin.rbac.groups.form.userEmailSearchPlaceholder')}
+                      fullWidth
+                    />
+                  </FormField>
+                  <FormField label={t('admin.rbac.groups.form.userDescSearch')}>
+                    <Input
+                      type="text"
+                      value={candidateDescQuery}
+                      onChange={(e) => setCandidateDescQuery(e.target.value)}
+                      placeholder={t('admin.rbac.groups.form.userDescSearchPlaceholder')}
                       fullWidth
                     />
                   </FormField>
@@ -561,7 +594,9 @@ function GroupsTab() {
                 loading={loadingCandidateUsers || loadingGroupUserIds}
                 empty={!loadingCandidateUsers && !loadingGroupUserIds && availableCandidateUsers.length === 0}
                 emptyContent={
-                  debouncedCandidateSearch.trim()
+                  debouncedCandidateNameQuery.trim() ||
+                  debouncedCandidateEmailQuery.trim() ||
+                  debouncedCandidateDescQuery.trim()
                     ? t('admin.rbac.groups.empty.searchCandidates')
                     : t('admin.rbac.groups.empty.availableUsers')
                 }
@@ -579,6 +614,17 @@ function GroupsTab() {
                   }
                   return item[column.key] || '-';
                 }}
+                footer={
+                  candidateTotalCount > candidatePageSize && (
+                    <Pagination
+                      total={Math.ceil(candidateTotalCount / candidatePageSize)}
+                      current={candidatePage}
+                      onChange={handleCandidatePageChange}
+                      showTotal
+                      totalItems={candidateTotalCount}
+                    />
+                  )
+                }
               />
             </div>
           </div>
