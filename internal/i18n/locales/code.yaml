@@ -70,6 +70,7 @@ model:
     deleteError: "500"
   notice:
     invalidType: "400"
+    deleteError: "500"
   permission:
     getError: "500"
     notFound: "404"
