@@ -8,10 +8,10 @@ type UpdateSettingForm struct {
 	Host *string `form:"host" json:"host" binding:"omitempty,url"`
 	Path *string `form:"path" json:"path" binding:"omitempty,dir"`
 
-	LogLevel *string `form:"log_level" json:"log_level" binding:"omitempty,oneof=DEBUG INFO WARNING ERROR"`
+	LogLevel *string `form:"log_level" json:"log_level" binding:"omitempty,oneof=DEBUG INFO WARNING ERROR debug info warning error"`
 	LogSave  *bool   `form:"log_save" json:"log_save"`
 
-	AsyncQLogLevel              *string `form:"asyncq_log_level" json:"asyncq_log_level" binding:"omitempty,oneof=DEBUG INFO WARNING ERROR"`
+	AsyncQLogLevel              *string `form:"asyncq_log_level" json:"asyncq_log_level" binding:"omitempty,oneof=DEBUG INFO WARNING ERROR debug info warning error"`
 	AsyncQConcurrency           *int    `form:"asyncq_concurrency" json:"asyncq_concurrency" binding:"omitempty,gte=1"`
 	AsyncQVictimConcurrency     *int    `form:"asyncq_victim_concurrency" json:"asyncq_victim_concurrency" binding:"omitempty,gte=1"`
 	AsyncQGeneratorConcurrency  *int    `form:"asyncq_generator_concurrency" json:"asyncq_generator_concurrency" binding:"omitempty,gte=1"`
@@ -20,7 +20,7 @@ type UpdateSettingForm struct {
 	AsyncQWebhookConcurrency    *int    `form:"asyncq_webhook_concurrency" json:"asyncq_webhook_concurrency" binding:"omitempty,gte=1"`
 	AsyncQImageConcurrency      *int    `form:"asyncq_image_concurrency" json:"asyncq_image_concurrency" binding:"omitempty,gte=1"`
 
-	GinMode               *string   `form:"gin_mode" json:"gin_mode" binding:"omitempty,oneof=debug test release"`
+	GinMode               *string   `form:"gin_mode" json:"gin_mode" binding:"omitempty,oneof=DEBUG TEST RELEASE debug test release"`
 	GinHost               *string   `form:"gin_host" json:"gin_host" binding:"omitempty,ip"`
 	GinPort               *uint     `form:"gin_port" json:"gin_port" binding:"omitempty,port"`
 	GinUploadMax          *int      `form:"gin_upload_max" json:"gin_upload_max" binding:"omitempty,gte=1"`
@@ -40,7 +40,7 @@ type UpdateSettingForm struct {
 	GormPostgresSSLMode *bool   `form:"gorm_postgres_sslmode" json:"gorm_postgres_sslmode"`
 	GormPostgresMXOpen  *int    `form:"gorm_postgres_mxopen" json:"gorm_postgres_mxopen" binding:"omitempty,gte=1"`
 	GormPostgresMXIdle  *int    `form:"gorm_postgres_mxidle" json:"gorm_postgres_mxidle" binding:"omitempty,gte=1"`
-	GormLogLevel        *string `form:"gorm_log_level" json:"gorm_log_level" binding:"omitempty,oneof=SILENT INFO WARNING ERROR"`
+	GormLogLevel        *string `form:"gorm_log_level" json:"gorm_log_level" binding:"omitempty,oneof=SILENT INFO WARNING ERROR silent info warning error"`
 
 	RedisHost *string `form:"redis_host" json:"redis_host" binding:"omitempty,ip|hostname"`
 	RedisPort *uint   `form:"redis_port" json:"redis_port" binding:"omitempty,port"`
