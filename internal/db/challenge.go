@@ -149,28 +149,31 @@ func (c *ChallengeRepo) Delete(randIDL ...string) model.RetVal {
 		}
 		return model.SuccessRetVal()
 	}
-	challengeFlagIDL, contestChallengeIDL, submissionIDL := make([]uint, 0), make([]uint, 0), make([]uint, 0)
+	idL := make([]uint, 0)
 	for _, challenge := range challengeL {
-		for _, challengeFlag := range challenge.ChallengeFlags {
-			challengeFlagIDL = append(challengeFlagIDL, challengeFlag.ID)
-		}
-		for _, contestChallenge := range challenge.ContestChallenges {
-			contestChallengeIDL = append(contestChallengeIDL, contestChallenge.ID)
-		}
-		for _, submission := range challenge.Submissions {
-			submissionIDL = append(submissionIDL, submission.ID)
-		}
+		idL = append(idL, challenge.ID)
 	}
-	if ret = InitChallengeFlagRepo(c.DB).Delete(challengeFlagIDL...); !ret.OK {
-		return ret
+	if res := c.DB.Where("challenge_id IN ?", idL).Delete(&model.ContestFlag{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete ContestFlag for challenges %v: %s", idL, res.Error)
+		return model.RetVal{Msg: i18n.Model.ContestFlag.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
-	if ret = InitContestChallengeRepo(c.DB).Delete(contestChallengeIDL...); !ret.OK {
-		return ret
+	if res := c.DB.Where("challenge_id IN ?", idL).Delete(&model.ContestChallenge{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete ContestChallenge for challenges %v: %s", idL, res.Error)
+		return model.RetVal{Msg: i18n.Model.ContestChallenge.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
-	if ret = InitSubmissionRepo(c.DB).Delete(submissionIDL...); !ret.OK {
-		return ret
+	if res := c.DB.Where("challenge_id IN ?", idL).Delete(&model.Submission{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete Submissions for challenges %v: %s", idL, res.Error)
+		return model.RetVal{Msg: i18n.Model.Submission.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
-	if res := c.DB.Model(&model.Challenge{}).Where("rand_id IN ?", randIDL).Delete(&model.Challenge{}); res.Error != nil {
+	if res := c.DB.Where("challenge_id IN ?", idL).Delete(&model.Generator{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete Generators for challenges %v: %s", idL, res.Error)
+		return model.RetVal{Msg: i18n.Model.Generator.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	if res := c.DB.Where("challenge_id IN ?", idL).Delete(&model.Victim{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete Victims for challenges %v: %s", idL, res.Error)
+		return model.RetVal{Msg: i18n.Model.Victim.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	if res := c.DB.Model(&model.Challenge{}).Where("id IN ?", idL).Delete(&model.Challenge{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Challenge: %s", res.Error)
 		return model.RetVal{Msg: i18n.Model.Challenge.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
