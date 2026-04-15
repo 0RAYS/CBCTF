@@ -238,53 +238,24 @@ function GroupsTab() {
     const fetchCandidateUsers = async () => {
       setLoadingCandidateUsers(true);
       try {
-        const nameKeyword = debouncedCandidateNameQuery.trim();
-        const emailKeyword = debouncedCandidateEmailQuery.trim();
-        const descKeyword = debouncedCandidateDescQuery.trim();
-        let mergedUsers = [];
+        const params = { limit: 20, offset: 0 };
+        if (debouncedCandidateNameQuery.trim()) {
+          params.name = debouncedCandidateNameQuery.trim();
+        }
+        if (debouncedCandidateEmailQuery.trim()) {
+          params.email = debouncedCandidateEmailQuery.trim();
+        }
+        if (debouncedCandidateDescQuery.trim()) {
+          params.description = debouncedCandidateDescQuery.trim();
+        }
 
-        if (!nameKeyword && !emailKeyword && !descKeyword) {
-          const response = await getUserList({ limit: 20, offset: 0 });
-          if (response.code !== 200) {
-            throw new Error(t('admin.rbac.groups.toast.fetchCandidatesFailed'));
-          }
-          mergedUsers = response.data.users || [];
-        } else {
-          const requests = [];
-          if (nameKeyword) {
-            requests.push(getUserList({ name: nameKeyword, limit: 20, offset: 0 }));
-          }
-          if (emailKeyword) {
-            requests.push(getUserList({ email: emailKeyword, limit: 20, offset: 0 }));
-          }
-          if (descKeyword) {
-            requests.push(getUserList({ description: descKeyword, limit: 20, offset: 0 }));
-          }
-
-          const results = await Promise.allSettled(requests);
-          const usersMap = new Map();
-          let hasSuccess = false;
-
-          results.forEach((result) => {
-            if (result.status === 'fulfilled' && result.value.code === 200) {
-              hasSuccess = true;
-              (result.value.data.users || []).forEach((user) => {
-                if (!usersMap.has(user.id)) {
-                  usersMap.set(user.id, user);
-                }
-              });
-            }
-          });
-
-          if (!hasSuccess) {
-            throw new Error(t('admin.rbac.groups.toast.fetchCandidatesFailed'));
-          }
-
-          mergedUsers = Array.from(usersMap.values());
+        const response = await getUserList(params);
+        if (response.code !== 200) {
+          throw new Error(t('admin.rbac.groups.toast.fetchCandidatesFailed'));
         }
 
         if (!cancelled) {
-          setCandidateUsers(mergedUsers);
+          setCandidateUsers(response.data.users || []);
         }
       } catch (error) {
         if (!cancelled) {
