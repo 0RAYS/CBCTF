@@ -227,6 +227,7 @@ var RoutePermissions = map[string]string{
 	"POST /admin/groups":                  PermAdminGroupCreate,
 	"GET /admin/groups/:groupID":          PermAdminGroupRead,
 	"GET /admin/groups/:groupID/users":    PermAdminUserList,
+	"GET /admin/groups/:groupID/users/available": PermAdminUserList,
 	"PUT /admin/groups/:groupID":          PermAdminGroupUpdate,
 	"DELETE /admin/groups/:groupID":       PermAdminGroupDelete,
 	"POST /admin/groups/:groupID/users":   PermAdminUserAssign,

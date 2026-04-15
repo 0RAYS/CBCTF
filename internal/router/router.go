@@ -220,6 +220,7 @@ func Init() *gin.Engine {
 		{
 			adminGroup.GET("", GetGroup)
 			adminGroup.GET("/users", GetGroupUsers)
+			adminGroup.GET("/users/available", GetGroupAvailableUsers)
 			adminGroup.PUT("", UpdateGroup)
 			adminGroup.DELETE("", DeleteGroup)
 			adminGroup.POST("/users", AssignUserToGroup)

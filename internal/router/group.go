@@ -36,6 +36,25 @@ func GetGroupUsers(ctx *gin.Context) {
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"count": count, "users": data}))
 }
 
+func GetGroupAvailableUsers(ctx *gin.Context) {
+	var form dto.ListUsersForm
+	if ret := dto.Bind(ctx, &form); !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	group := middleware.GetGroup(ctx)
+	users, count, ret := service.ListUsersNotInGroup(db.DB, group, form)
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
+	data := make([]gin.H, 0, len(users))
+	for _, user := range users {
+		data = append(data, resp.GetUserResp(user, true))
+	}
+	resp.JSON(ctx, model.SuccessRetVal(gin.H{"count": count, "users": data}))
+}
+
 func GetGroups(ctx *gin.Context) {
 	var form dto.ListModelsForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
