@@ -279,7 +279,7 @@ func (u *UserRepo) CountContests(userID uint) (int64, model.RetVal) {
 func (u *UserRepo) Delete(idL ...uint) model.RetVal {
 	userL, _, ret := u.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},
-		Preloads:   map[string]GetOptions{"Teams": {}, "Submissions": {}},
+		Preloads:   map[string]GetOptions{"Teams": {}, "Groups": {}, "Submissions": {}},
 	})
 	if !ret.OK {
 		if ret.Msg != i18n.Model.NotFound {
@@ -301,6 +301,11 @@ func (u *UserRepo) Delete(idL ...uint) model.RetVal {
 				return ret
 			}
 			if ret = DeleteUserFromTeam(u.DB, user, team); !ret.OK {
+				return ret
+			}
+		}
+		for _, group := range user.Groups {
+			if ret = DeleteUserFromGroup(u.DB, user, group); !ret.OK {
 				return ret
 			}
 		}
