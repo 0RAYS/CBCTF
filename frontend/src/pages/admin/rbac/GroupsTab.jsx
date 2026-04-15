@@ -9,8 +9,8 @@ import {
   assignUserToGroup,
   removeUserFromGroup,
   getGroupUsers,
+  getGroupAvailableUsers,
 } from '../../../api/admin/rbac';
-import { getUserList } from '../../../api/admin/user';
 import AdminGroups from '../../../components/features/Admin/AdminGroups';
 import { FormField, Input, List, Modal, Pagination, Select, Textarea } from '../../../components/common';
 import CRUDModalFooter from '../../../components/common/CRUDModalFooter';
@@ -31,9 +31,7 @@ function GroupsTab() {
   const [userModalOpen, setUserModalOpen] = useState(false);
   const [selectedGroupForUsers, setSelectedGroupForUsers] = useState(null);
   const [groupUsers, setGroupUsers] = useState([]);
-  const [groupUserIds, setGroupUserIds] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
-  const [loadingGroupUserIds, setLoadingGroupUserIds] = useState(false);
   const [userPage, setUserPage] = useState(1);
   const [userTotalCount, setUserTotalCount] = useState(0);
   const userPageSize = 10;
@@ -43,6 +41,9 @@ function GroupsTab() {
   const [candidateDescQuery, setCandidateDescQuery] = useState('');
   const [candidateUsers, setCandidateUsers] = useState([]);
   const [loadingCandidateUsers, setLoadingCandidateUsers] = useState(false);
+  const [candidatePage, setCandidatePage] = useState(1);
+  const [candidateTotalCount, setCandidateTotalCount] = useState(0);
+  const candidatePageSize = 10;
   const [selectedCandidateIds, setSelectedCandidateIds] = useState([]);
   const debouncedCandidateNameQuery = useDebounce(candidateNameQuery, 300);
   const debouncedCandidateEmailQuery = useDebounce(candidateEmailQuery, 300);
@@ -142,49 +143,61 @@ function GroupsTab() {
     }
   };
 
-  const fetchAllGroupUserIds = async (groupId) => {
-    setLoadingGroupUserIds(true);
+  const fetchCandidateUsers = async (groupId, page = candidatePage) => {
+    setLoadingCandidateUsers(true);
     try {
-      const ids = new Set();
-      const limit = 100;
-      let offset = 0;
-      let total = 0;
+      const params = {
+        limit: candidatePageSize,
+        offset: (page - 1) * candidatePageSize,
+      };
+      if (candidateNameQuery.trim()) {
+        params.name = candidateNameQuery.trim();
+      }
+      if (candidateEmailQuery.trim()) {
+        params.email = candidateEmailQuery.trim();
+      }
+      if (candidateDescQuery.trim()) {
+        params.description = candidateDescQuery.trim();
+      }
 
-      do {
-        const response = await getGroupUsers(groupId, {
-          limit,
-          offset,
-        });
+      const response = await getGroupAvailableUsers(groupId, params);
+      if (response.code !== 200) {
+        throw new Error(t('admin.rbac.groups.toast.fetchCandidatesFailed'));
+      }
 
-        if (response.code !== 200) {
-          break;
-        }
+      const users = response.data.users || [];
+      const count = response.data.count || 0;
+      const totalPages = Math.max(1, Math.ceil(count / candidatePageSize));
 
-        const users = response.data.users || [];
-        users.forEach((user) => ids.add(user.id));
-        total = response.data.count || users.length;
-        offset += limit;
-      } while (offset < total);
+      if (page > totalPages) {
+        setCandidateUsers([]);
+        setCandidateTotalCount(count);
+        setCandidatePage(totalPages);
+        return;
+      }
 
-      setGroupUserIds(Array.from(ids));
+      setCandidateUsers(users);
+      setCandidateTotalCount(count);
     } catch (error) {
-      toast.danger({ description: error.message || t('admin.rbac.groups.toast.fetchUsersFailed') });
-      setGroupUserIds([]);
+      toast.danger({ description: error.message || t('admin.rbac.groups.toast.fetchCandidatesFailed') });
+      setCandidateUsers([]);
+      setCandidateTotalCount(0);
     } finally {
-      setLoadingGroupUserIds(false);
+      setLoadingCandidateUsers(false);
     }
   };
 
   const resetUserModalState = () => {
     setSelectedGroupForUsers(null);
     setGroupUsers([]);
-    setGroupUserIds([]);
     setUserPage(1);
     setUserTotalCount(0);
     setCandidateNameQuery('');
     setCandidateEmailQuery('');
     setCandidateDescQuery('');
     setCandidateUsers([]);
+    setCandidatePage(1);
+    setCandidateTotalCount(0);
     setSelectedCandidateIds([]);
   };
 
@@ -198,7 +211,6 @@ function GroupsTab() {
     setSelectedGroupForUsers(group);
     setUserModalOpen(true);
     fetchGroupUsers(group.id, 1);
-    fetchAllGroupUserIds(group.id);
   };
 
   const handleRemoveUserFromList = async (user) => {
@@ -206,8 +218,6 @@ function GroupsTab() {
       const response = await removeUserFromGroup(selectedGroupForUsers.id, { user_id: user.id });
       if (response.code === 200) {
         toast.success({ description: t('admin.rbac.groups.toast.removeUserSuccess') });
-        setGroupUserIds((prev) => prev.filter((id) => id !== user.id));
-        setCandidateUsers((prev) => prev.filter((candidate) => candidate.id !== user.id));
         fetchGroups();
 
         const nextPage = groupUsers.length === 1 && userPage > 1 ? userPage - 1 : userPage;
@@ -215,6 +225,7 @@ function GroupsTab() {
           setUserPage(nextPage);
         }
         fetchGroupUsers(selectedGroupForUsers.id, nextPage);
+        fetchCandidateUsers(selectedGroupForUsers.id, candidatePage);
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.rbac.groups.toast.removeUserFailed') });
@@ -228,69 +239,33 @@ function GroupsTab() {
     }
   };
 
+  const handleCandidatePageChange = (page) => {
+    setCandidatePage(page);
+  };
+
+  useEffect(() => {
+    if (!userModalOpen || !selectedGroupForUsers) {
+      return;
+    }
+    fetchCandidateUsers(selectedGroupForUsers.id, candidatePage);
+  }, [
+    userModalOpen,
+    selectedGroupForUsers,
+    candidatePage,
+    debouncedCandidateNameQuery,
+    debouncedCandidateEmailQuery,
+    debouncedCandidateDescQuery,
+  ]);
+
   useEffect(() => {
     if (!userModalOpen) {
       return;
     }
+    setCandidatePage(1);
+  }, [userModalOpen, debouncedCandidateNameQuery, debouncedCandidateEmailQuery, debouncedCandidateDescQuery]);
 
-    let cancelled = false;
-
-    const fetchCandidateUsers = async () => {
-      setLoadingCandidateUsers(true);
-      try {
-        const params = { limit: 20, offset: 0 };
-        if (debouncedCandidateNameQuery.trim()) {
-          params.name = debouncedCandidateNameQuery.trim();
-        }
-        if (debouncedCandidateEmailQuery.trim()) {
-          params.email = debouncedCandidateEmailQuery.trim();
-        }
-        if (debouncedCandidateDescQuery.trim()) {
-          params.description = debouncedCandidateDescQuery.trim();
-        }
-
-        const response = await getUserList(params);
-        if (response.code !== 200) {
-          throw new Error(t('admin.rbac.groups.toast.fetchCandidatesFailed'));
-        }
-
-        if (!cancelled) {
-          setCandidateUsers(response.data.users || []);
-        }
-      } catch (error) {
-        if (!cancelled) {
-          toast.danger({ description: error.message || t('admin.rbac.groups.toast.fetchCandidatesFailed') });
-          setCandidateUsers([]);
-        }
-      } finally {
-        if (!cancelled) {
-          setLoadingCandidateUsers(false);
-        }
-      }
-    };
-
-    fetchCandidateUsers();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [
-    userModalOpen,
-    debouncedCandidateNameQuery,
-    debouncedCandidateEmailQuery,
-    debouncedCandidateDescQuery,
-    t,
-  ]);
-
-  const availableCandidateUsers = useMemo(
-    () => candidateUsers.filter((user) => !groupUserIds.includes(user.id)),
-    [candidateUsers, groupUserIds]
-  );
-
-  const assignableSelectedIds = useMemo(
-    () => selectedCandidateIds.filter((id) => !groupUserIds.includes(id)),
-    [selectedCandidateIds, groupUserIds]
-  );
+  const availableCandidateUsers = useMemo(() => candidateUsers, [candidateUsers]);
+  const assignableSelectedIds = useMemo(() => selectedCandidateIds, [selectedCandidateIds]);
 
   const allVisibleCandidatesSelected =
     availableCandidateUsers.length > 0 &&
@@ -329,10 +304,10 @@ function GroupsTab() {
     });
 
     if (successfulIds.length > 0) {
-      setGroupUserIds((prev) => Array.from(new Set([...prev, ...successfulIds])));
       setSelectedCandidateIds((prev) => prev.filter((id) => !successfulIds.includes(id)));
       fetchGroups();
       fetchGroupUsers(selectedGroupForUsers.id, userPage);
+      fetchCandidateUsers(selectedGroupForUsers.id, candidatePage);
     }
 
     if (successfulIds.length === assignableSelectedIds.length) {
@@ -458,7 +433,7 @@ function GroupsTab() {
             <ModalButton
               variant="primary"
               onClick={handleAssignSelectedUsers}
-              disabled={assignableSelectedIds.length === 0 || loadingCandidateUsers || loadingGroupUserIds}
+              disabled={assignableSelectedIds.length === 0 || loadingCandidateUsers}
             >
               {t('admin.rbac.groups.form.addSelected')}
             </ModalButton>
@@ -568,8 +543,8 @@ function GroupsTab() {
                   { key: 'description', label: t('admin.rbac.groups.columns.description'), width: '26%' },
                 ]}
                 data={availableCandidateUsers}
-                loading={loadingCandidateUsers || loadingGroupUserIds}
-                empty={!loadingCandidateUsers && !loadingGroupUserIds && availableCandidateUsers.length === 0}
+                loading={loadingCandidateUsers}
+                empty={!loadingCandidateUsers && availableCandidateUsers.length === 0}
                 emptyContent={
                   debouncedCandidateNameQuery.trim() ||
                   debouncedCandidateEmailQuery.trim() ||
@@ -591,6 +566,17 @@ function GroupsTab() {
                   }
                   return item[column.key] || '-';
                 }}
+                footer={
+                  candidateTotalCount > candidatePageSize && (
+                    <Pagination
+                      total={Math.ceil(candidateTotalCount / candidatePageSize)}
+                      current={candidatePage}
+                      onChange={handleCandidatePageChange}
+                      showTotal
+                      totalItems={candidateTotalCount}
+                    />
+                  )
+                }
               />
             </div>
           </div>

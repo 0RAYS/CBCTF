@@ -256,6 +256,42 @@ func (u *UserRepo) GetByGroupID(groupID uint, limit, offset int) ([]model.User, 
 	return users, count, model.SuccessRetVal()
 }
 
+func (u *UserRepo) GetNotInGroupID(groupID uint, limit, offset int, optionsL ...GetOptions) ([]model.User, int64, model.RetVal) {
+	options := GetOptions{}
+	if len(optionsL) > 0 {
+		options = optionsL[0]
+	}
+
+	baseQuery := u.DB.Model(&model.User{}).
+		Where("users.deleted_at IS NULL").
+		Where(`
+			NOT EXISTS (
+				SELECT 1
+				FROM user_groups
+				INNER JOIN "groups" ON user_groups.group_id = "groups".id AND "groups".deleted_at IS NULL
+				WHERE user_groups.user_id = users.id AND user_groups.group_id = ?
+			)
+		`, groupID)
+
+	var count int64
+	if res := applyGetOptions(baseQuery.Session(&gorm.Session{}), options).Count(&count); res.Error != nil {
+		log.Logger.Warningf("Failed to count available Group Users: %s", res.Error)
+		return nil, 0, model.RetVal{Msg: i18n.Model.User.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+
+	query := applyGetOptions(baseQuery.Session(&gorm.Session{}), options)
+	if len(options.Sort) == 0 {
+		query = query.Order("users.id")
+	}
+
+	var users []model.User
+	if res := query.Limit(limit).Offset(offset).Find(&users); res.Error != nil {
+		log.Logger.Warningf("Failed to get available Group Users: %s", res.Error)
+		return nil, 0, model.RetVal{Msg: i18n.Model.User.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	return users, count, model.SuccessRetVal()
+}
+
 func (u *UserRepo) CountTeams(userID uint) (int64, model.RetVal) {
 	var count int64
 	res := u.DB.Model(&model.UserTeam{}).Where("user_id = ?", userID).Count(&count)

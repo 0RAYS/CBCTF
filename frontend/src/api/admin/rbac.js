@@ -130,3 +130,11 @@ export const getGroupUsers = (groupId, params = { limit: 10, offset: 0 }) => {
     params,
   });
 };
+
+export const getGroupAvailableUsers = (groupId, params = { limit: 10, offset: 0 }) => {
+  return request({
+    url: `/admin/groups/${groupId}/users/available`,
+    method: 'GET',
+    params,
+  });
+};

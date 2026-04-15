@@ -189,6 +189,24 @@ func ListUsers(tx *gorm.DB, form dto.ListUsersForm) ([]view.UserView, int64, mod
 	return BuildUserViews(tx, users, true), count, model.SuccessRetVal()
 }
 
+func ListUsersNotInGroup(tx *gorm.DB, group model.Group, form dto.ListUsersForm) ([]view.UserView, int64, model.RetVal) {
+	options := db.GetOptions{Search: make(map[string]string)}
+	if form.Name != "" {
+		options.Search["name"] = form.Name
+	}
+	if form.Email != "" {
+		options.Search["email"] = form.Email
+	}
+	if form.Description != "" {
+		options.Search["description"] = form.Description
+	}
+	users, count, ret := db.InitUserRepo(tx).GetNotInGroupID(group.ID, form.Limit, form.Offset, options)
+	if !ret.OK {
+		return nil, 0, ret
+	}
+	return BuildUserViews(tx, users, true), count, model.SuccessRetVal()
+}
+
 func GetAccessibleRoutes(tx *gorm.DB, userID uint) ([]string, model.RetVal) {
 	permNames, ret := db.InitPermissionRepo(tx).GetUserPermissions(userID)
 	if !ret.OK {
