@@ -44,7 +44,9 @@ func DeleteRole(tx *gorm.DB, role model.Role) model.RetVal {
 	if role.Default {
 		return model.RetVal{Msg: i18n.Model.Role.CannotDeleteDefault}
 	}
-	return db.InitRoleRepo(tx).Delete(role.ID)
+	return db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
+		return db.InitRoleRepo(tx2).Delete(role.ID)
+	})
 }
 
 func AssignPermission(tx *gorm.DB, role model.Role, form dto.AssignPermissionForm) model.RetVal {

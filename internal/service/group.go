@@ -69,7 +69,9 @@ func DeleteGroup(tx *gorm.DB, group model.Group) model.RetVal {
 	if group.Default {
 		return model.RetVal{Msg: i18n.Model.Group.CannotDeleteDefault}
 	}
-	return db.InitGroupRepo(tx).Delete(group.ID)
+	return db.WithTransactionDB(tx, func(tx2 *gorm.DB) model.RetVal {
+		return db.InitGroupRepo(tx2).Delete(group.ID)
+	})
 }
 
 func AssignUserToGroup(tx *gorm.DB, group model.Group, form dto.AssignUserGroupForm) (model.User, model.RetVal) {
