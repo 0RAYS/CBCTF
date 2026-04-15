@@ -116,8 +116,9 @@ type Setting struct {
 }
 
 type Submission struct {
-	NotAllowed string
-	GetError   string
+	NotAllowed  string
+	GetError    string
+	DeleteError string
 }
 
 type Team struct {
@@ -172,10 +173,10 @@ type UserTeam struct {
 }
 
 type Victim struct {
-	Limited     string
-	HasMuchTime string
+	Limited      string
+	HasMuchTime  string
 	NotStoppable string
-	DeleteError string
+	DeleteError  string
 }
 
 type Webhook struct {
@@ -337,8 +338,9 @@ var Model = struct {
 		UpdateError: "model.setting.updateError",
 	},
 	Submission: Submission{
-		NotAllowed: "model.submission.notAllowed",
-		GetError:   "model.submission.getError",
+		NotAllowed:  "model.submission.notAllowed",
+		GetError:    "model.submission.getError",
+		DeleteError: "model.submission.deleteError",
 	},
 	Team: Team{
 		Banned:             "model.team.banned",
@@ -385,10 +387,10 @@ var Model = struct {
 		DeleteError: "model.userTeam.deleteError",
 	},
 	Victim: Victim{
-		Limited:     "model.victim.limited",
-		HasMuchTime: "model.victim.hasMuchTime",
+		Limited:      "model.victim.limited",
+		HasMuchTime:  "model.victim.hasMuchTime",
 		NotStoppable: "model.victim.notStoppable",
-		DeleteError: "model.victim.deleteError",
+		DeleteError:  "model.victim.deleteError",
 	},
 	Webhook: Webhook{
 		InvalidMethod:    "model.webhook.invalidMethod",
