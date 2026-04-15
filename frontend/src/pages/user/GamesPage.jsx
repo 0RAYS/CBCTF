@@ -185,11 +185,7 @@ function GamesPage() {
           <EmptyState title={t('game.noGames')} description={t('game.noGamesDescription')} />
         </div>
       ) : (
-        <GameList
-          games={games}
-          onGameAction={handleGameAction}
-          user={user}
-        />
+        <GameList games={games} onGameAction={handleGameAction} user={user} />
       )}
       <TeamJoinModal
         isOpen={isModalOpen}
