@@ -84,6 +84,27 @@ func (r *RoleRepo) InitDefaultRoles() model.RetVal {
 	return model.SuccessRetVal()
 }
 
+func (r *RoleRepo) GetFallbackRoleID(excludedRoleIDL ...uint) (uint, model.RetVal) {
+	if config.Env.Registration.DefaultGroup != 0 {
+		defaultGroup, ret := InitGroupRepo(r.DB).GetByID(config.Env.Registration.DefaultGroup)
+		if ret.OK && defaultGroup.RoleID != 0 && !slices.Contains(excludedRoleIDL, defaultGroup.RoleID) {
+			return defaultGroup.RoleID, model.SuccessRetVal()
+		}
+	}
+
+	userRole, ret := r.GetByUniqueField("name", model.UserRoleName)
+	if !ret.OK {
+		return 0, ret
+	}
+	if slices.Contains(excludedRoleIDL, userRole.ID) {
+		return 0, model.RetVal{
+			Msg: i18n.Model.Role.GetError,
+			Attr: map[string]any{"Error": "no fallback role available"},
+		}
+	}
+	return userRole.ID, model.SuccessRetVal()
+}
+
 func (r *RoleRepo) Delete(idL ...uint) model.RetVal {
 	roleL, _, ret := r.List(-1, -1, GetOptions{Conditions: map[string]interface{}{"id": idL}})
 	if !ret.OK {
@@ -99,8 +120,12 @@ func (r *RoleRepo) Delete(idL ...uint) model.RetVal {
 	if !ret.OK {
 		return ret
 	}
+	fallbackRoleID, ret := r.GetFallbackRoleID(idL...)
+	if !ret.OK {
+		return ret
+	}
 	for _, group := range groupL {
-		if ret = groupRepo.Update(group.ID, UpdateGroupOptions{RoleID: &config.Env.Registration.DefaultGroup}); !ret.OK {
+		if ret = groupRepo.Update(group.ID, UpdateGroupOptions{RoleID: &fallbackRoleID}); !ret.OK {
 			return ret
 		}
 	}
