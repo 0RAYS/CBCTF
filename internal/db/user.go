@@ -306,7 +306,7 @@ func (u *UserRepo) Delete(idL ...uint) model.RetVal {
 	}
 	if res := u.DB.Where("user_id IN ?", idL).Delete(&model.Submission{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete Submissions for users %v: %s", idL, res.Error)
-		return model.RetVal{Msg: i18n.Model.UserGroup.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+		return model.RetVal{Msg: i18n.Model.Submission.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	if res := u.DB.Where("user_id IN ?", idL).Delete(&model.UserGroup{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete UserGroup for users %v: %s", idL, res.Error)

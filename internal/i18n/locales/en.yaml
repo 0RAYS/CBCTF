@@ -92,6 +92,7 @@ model:
   submission:
     notAllowed: "Not allowed submit flag"
     getError: "Get Submission error: {{.Error}}"
+    deleteError: "Delete Submission error: {{.Error}}"
   team:
     banned: "Team is banned"
     full: "Team is full"

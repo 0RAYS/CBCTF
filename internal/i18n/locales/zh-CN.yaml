@@ -92,6 +92,7 @@ model:
   submission:
     notAllowed: "不允许提交 flag"
     getError: "获取 Submission 失败: {{.Error}}"
+    deleteError: "删除 Submission 失败: {{.Error}}"
   team:
     banned: "队伍被封禁"
     full: "队伍已满"

@@ -92,6 +92,7 @@ model:
   submission:
     notAllowed: "400"
     getError: "500"
+    deleteError: "500"
   team:
     banned: "403"
     full: "400"
