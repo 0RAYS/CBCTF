@@ -1681,7 +1681,6 @@
           "rolePlaceholder": "请选择角色",
           "userSearch": "搜索用户",
           "userSearchPlaceholder": "按用户名、邮箱或描述搜索",
-          "userSearchHint": "搜索基于现有用户字段查询，当前已在组内的用户会在前端过滤掉。",
           "selectedUsers": "已选择 {{count}} 个用户",
           "currentUsersCount": "共 {{count}} 人",
           "addSelected": "添加所选",

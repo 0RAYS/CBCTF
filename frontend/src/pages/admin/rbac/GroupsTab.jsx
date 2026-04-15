@@ -537,7 +537,6 @@ function GroupsTab() {
               </div>
 
               <div className="flex flex-col gap-2 text-sm text-neutral-400 md:flex-row md:items-center md:justify-between">
-                <span>{t('admin.rbac.groups.form.userSearchHint')}</span>
                 <label className="inline-flex items-center gap-2">
                   <input
                     type="checkbox"

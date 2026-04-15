@@ -1681,7 +1681,6 @@
           "rolePlaceholder": "Select a role",
           "userSearch": "Search users",
           "userSearchPlaceholder": "Search by username, email, or description",
-          "userSearchHint": "Search results come from existing user fields and current group members are filtered on the frontend.",
           "selectedUsers": "{{count}} selected",
           "currentUsersCount": "{{count}} members",
           "addSelected": "Add selected",
