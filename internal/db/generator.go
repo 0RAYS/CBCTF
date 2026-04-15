@@ -123,3 +123,33 @@ func (g *GeneratorRepo) Delete(idL ...uint) model.RetVal {
 	}
 	return model.SuccessRetVal()
 }
+
+func (g *GeneratorRepo) DeleteByChallengeID(challengeIDL ...uint) model.RetVal {
+	if len(challengeIDL) == 0 {
+		return model.SuccessRetVal()
+	}
+	var generatorIDL []uint
+	if res := g.DB.Model(&model.Generator{}).Where("challenge_id IN ?", challengeIDL).Pluck("id", &generatorIDL); res.Error != nil {
+		log.Logger.Warningf("Failed to get Generators by challenge IDs %v: %s", challengeIDL, res.Error)
+		return model.RetVal{Msg: i18n.Model.Generator.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	if len(generatorIDL) == 0 {
+		return model.SuccessRetVal()
+	}
+	return g.Delete(generatorIDL...)
+}
+
+func (g *GeneratorRepo) DeleteByContestID(contestIDL ...uint) model.RetVal {
+	if len(contestIDL) == 0 {
+		return model.SuccessRetVal()
+	}
+	var generatorIDL []uint
+	if res := g.DB.Model(&model.Generator{}).Where("contest_id IN ?", contestIDL).Pluck("id", &generatorIDL); res.Error != nil {
+		log.Logger.Warningf("Failed to get Generators by contest IDs %v: %s", contestIDL, res.Error)
+		return model.RetVal{Msg: i18n.Model.Generator.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	if len(generatorIDL) == 0 {
+		return model.SuccessRetVal()
+	}
+	return g.Delete(generatorIDL...)
+}
