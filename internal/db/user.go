@@ -279,7 +279,7 @@ func (u *UserRepo) CountContests(userID uint) (int64, model.RetVal) {
 func (u *UserRepo) Delete(idL ...uint) model.RetVal {
 	userL, _, ret := u.List(-1, -1, GetOptions{
 		Conditions: map[string]any{"id": idL},
-		Preloads:   map[string]GetOptions{"Teams": {}, "Groups": {}, "Submissions": {}},
+		Preloads:   map[string]GetOptions{"Teams": {}},
 	})
 	if !ret.OK {
 		if ret.Msg != i18n.Model.NotFound {
@@ -287,7 +287,6 @@ func (u *UserRepo) Delete(idL ...uint) model.RetVal {
 		}
 		return model.SuccessRetVal()
 	}
-	submissionIDL := make([]uint, 0)
 	for _, user := range userL {
 		if ret = u.Update(user.ID, UpdateUserOptions{
 			Name:           new(fmt.Sprintf("%s_deleted_%s", user.Name, utils.RandStr(6))),
@@ -304,17 +303,14 @@ func (u *UserRepo) Delete(idL ...uint) model.RetVal {
 				return ret
 			}
 		}
-		for _, group := range user.Groups {
-			if ret = DeleteUserFromGroup(u.DB, user, group); !ret.OK {
-				return ret
-			}
-		}
-		for _, submission := range user.Submissions {
-			submissionIDL = append(submissionIDL, submission.ID)
-		}
 	}
-	if ret = InitSubmissionRepo(u.DB).Delete(submissionIDL...); !ret.OK {
-		return ret
+	if res := u.DB.Where("user_id IN ?", idL).Delete(&model.Submission{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete Submissions for users %v: %s", idL, res.Error)
+		return model.RetVal{Msg: i18n.Model.UserGroup.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
+	}
+	if res := u.DB.Where("user_id IN ?", idL).Delete(&model.UserGroup{}); res.Error != nil {
+		log.Logger.Warningf("Failed to delete UserGroup for users %v: %s", idL, res.Error)
+		return model.RetVal{Msg: i18n.Model.UserGroup.DeleteError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	if res := u.DB.Model(&model.User{}).Where("id IN ?", idL).Delete(&model.User{}); res.Error != nil {
 		log.Logger.Warningf("Failed to delete User: %s", res.Error)
