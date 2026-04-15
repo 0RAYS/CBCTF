@@ -43,9 +43,6 @@ function GroupsTab() {
   const [candidateDescQuery, setCandidateDescQuery] = useState('');
   const [candidateUsers, setCandidateUsers] = useState([]);
   const [loadingCandidateUsers, setLoadingCandidateUsers] = useState(false);
-  const [candidatePage, setCandidatePage] = useState(1);
-  const [candidateTotalCount, setCandidateTotalCount] = useState(0);
-  const candidatePageSize = 10;
   const [selectedCandidateIds, setSelectedCandidateIds] = useState([]);
   const debouncedCandidateNameQuery = useDebounce(candidateNameQuery, 300);
   const debouncedCandidateEmailQuery = useDebounce(candidateEmailQuery, 300);
@@ -188,8 +185,6 @@ function GroupsTab() {
     setCandidateEmailQuery('');
     setCandidateDescQuery('');
     setCandidateUsers([]);
-    setCandidatePage(1);
-    setCandidateTotalCount(0);
     setSelectedCandidateIds([]);
   };
 
@@ -243,34 +238,58 @@ function GroupsTab() {
     const fetchCandidateUsers = async () => {
       setLoadingCandidateUsers(true);
       try {
-        const params = {
-          limit: candidatePageSize,
-          offset: (candidatePage - 1) * candidatePageSize,
-        };
-        if (debouncedCandidateNameQuery.trim()) {
-          params.name = debouncedCandidateNameQuery.trim();
-        }
-        if (debouncedCandidateEmailQuery.trim()) {
-          params.email = debouncedCandidateEmailQuery.trim();
-        }
-        if (debouncedCandidateDescQuery.trim()) {
-          params.description = debouncedCandidateDescQuery.trim();
-        }
+        const nameKeyword = debouncedCandidateNameQuery.trim();
+        const emailKeyword = debouncedCandidateEmailQuery.trim();
+        const descKeyword = debouncedCandidateDescQuery.trim();
+        let mergedUsers = [];
 
-        const response = await getUserList(params);
-        if (response.code !== 200) {
-          throw new Error(t('admin.rbac.groups.toast.fetchCandidatesFailed'));
+        if (!nameKeyword && !emailKeyword && !descKeyword) {
+          const response = await getUserList({ limit: 20, offset: 0 });
+          if (response.code !== 200) {
+            throw new Error(t('admin.rbac.groups.toast.fetchCandidatesFailed'));
+          }
+          mergedUsers = response.data.users || [];
+        } else {
+          const requests = [];
+          if (nameKeyword) {
+            requests.push(getUserList({ name: nameKeyword, limit: 20, offset: 0 }));
+          }
+          if (emailKeyword) {
+            requests.push(getUserList({ email: emailKeyword, limit: 20, offset: 0 }));
+          }
+          if (descKeyword) {
+            requests.push(getUserList({ description: descKeyword, limit: 20, offset: 0 }));
+          }
+
+          const results = await Promise.allSettled(requests);
+          const usersMap = new Map();
+          let hasSuccess = false;
+
+          results.forEach((result) => {
+            if (result.status === 'fulfilled' && result.value.code === 200) {
+              hasSuccess = true;
+              (result.value.data.users || []).forEach((user) => {
+                if (!usersMap.has(user.id)) {
+                  usersMap.set(user.id, user);
+                }
+              });
+            }
+          });
+
+          if (!hasSuccess) {
+            throw new Error(t('admin.rbac.groups.toast.fetchCandidatesFailed'));
+          }
+
+          mergedUsers = Array.from(usersMap.values());
         }
 
         if (!cancelled) {
-          setCandidateUsers(response.data.users || []);
-          setCandidateTotalCount(response.data.count || 0);
+          setCandidateUsers(mergedUsers);
         }
       } catch (error) {
         if (!cancelled) {
           toast.danger({ description: error.message || t('admin.rbac.groups.toast.fetchCandidatesFailed') });
           setCandidateUsers([]);
-          setCandidateTotalCount(0);
         }
       } finally {
         if (!cancelled) {
@@ -286,20 +305,11 @@ function GroupsTab() {
     };
   }, [
     userModalOpen,
-    candidatePage,
-    candidatePageSize,
     debouncedCandidateNameQuery,
     debouncedCandidateEmailQuery,
     debouncedCandidateDescQuery,
     t,
   ]);
-
-  useEffect(() => {
-    if (!userModalOpen) {
-      return;
-    }
-    setCandidatePage(1);
-  }, [userModalOpen, debouncedCandidateNameQuery, debouncedCandidateEmailQuery, debouncedCandidateDescQuery]);
 
   const availableCandidateUsers = useMemo(
     () => candidateUsers.filter((user) => !groupUserIds.includes(user.id)),
@@ -329,10 +339,6 @@ function GroupsTab() {
       availableCandidateUsers.forEach((user) => next.add(user.id));
       return Array.from(next);
     });
-  };
-
-  const handleCandidatePageChange = (page) => {
-    setCandidatePage(page);
   };
 
   const handleAssignSelectedUsers = async () => {
@@ -614,17 +620,6 @@ function GroupsTab() {
                   }
                   return item[column.key] || '-';
                 }}
-                footer={
-                  candidateTotalCount > candidatePageSize && (
-                    <Pagination
-                      total={Math.ceil(candidateTotalCount / candidatePageSize)}
-                      current={candidatePage}
-                      onChange={handleCandidatePageChange}
-                      showTotal
-                      totalItems={candidateTotalCount}
-                    />
-                  )
-                }
               />
             </div>
           </div>
