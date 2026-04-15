@@ -1654,11 +1654,14 @@
           "deleteSuccess": "删除分组成功",
           "deleteFailed": "删除分组失败",
           "assignUserSuccess": "添加用户成功",
+          "assignUsersSuccess": "成功添加 {{count}} 个用户",
+          "assignUsersPartial": "已成功添加 {{success}} / {{total}} 个用户",
           "assignUserFailed": "添加用户失败",
           "removeUserSuccess": "移除用户成功",
           "removeUserFailed": "移除用户失败",
           "fetchRolesFailed": "获取角色列表失败",
-          "fetchUsersFailed": "获取分组用户失败"
+          "fetchUsersFailed": "获取分组用户失败",
+          "fetchCandidatesFailed": "获取可添加用户失败"
         },
         "modal": {
           "createTitle": "创建分组",
@@ -1666,7 +1669,8 @@
           "deleteTitle": "删除分组",
           "deletePrompt": "确定要删除分组",
           "deleteWarning": "$t(common.modal.deleteWarning)",
-          "usersTitle": "用户管理"
+          "usersTitle": "用户管理",
+          "currentUsersTitle": "当前组内用户"
         },
         "form": {
           "name": "分组名",
@@ -1675,11 +1679,19 @@
           "namePlaceholder": "请输入分组名",
           "descriptionPlaceholder": "请输入分组描述",
           "rolePlaceholder": "请选择角色",
-          "userId": "用户 ID",
-          "userIdPlaceholder": "请输入用户 ID",
-          "addUser": "添加",
+          "userSearch": "搜索用户",
+          "userSearchPlaceholder": "按用户名、邮箱或描述搜索",
+          "userSearchHint": "搜索基于现有用户字段查询，当前已在组内的用户会在前端过滤掉。",
+          "selectedUsers": "已选择 {{count}} 个用户",
+          "currentUsersCount": "共 {{count}} 人",
+          "addSelected": "添加所选",
           "removeUser": "移除",
           "remove": "移除"
+        },
+        "empty": {
+          "currentUsers": "当前分组暂无用户",
+          "availableUsers": "暂无可添加用户",
+          "searchCandidates": "没有匹配的用户"
         }
       },
       "permissions": {

@@ -34,11 +34,7 @@ function GameCard({ game, onGameAction, user }) {
       {/* 封面图（保持原比例） */}
       {game.image && (
         <div className="sm:w-48 shrink-0 bg-neutral-900/50">
-          <img
-            src={game.image}
-            alt={game.title}
-            className="w-full h-full object-contain"
-          />
+          <img src={game.image} alt={game.title} className="w-full h-full object-contain" />
         </div>
       )}
 
@@ -112,9 +108,10 @@ function GameList({ games = [], onGameAction, user }) {
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
             className={`w-9 h-9 border rounded-md flex items-center justify-center transition-colors duration-200
-              ${page === 1
-                ? 'border-neutral-700 text-neutral-600 cursor-not-allowed'
-                : 'border-neutral-500 text-neutral-300 hover:border-geek-400 hover:text-geek-400'
+              ${
+                page === 1
+                  ? 'border-neutral-700 text-neutral-600 cursor-not-allowed'
+                  : 'border-neutral-500 text-neutral-300 hover:border-geek-400 hover:text-geek-400'
               }`}
           >
             <IconChevronLeft size={15} />
@@ -125,9 +122,10 @@ function GameList({ games = [], onGameAction, user }) {
               key={p}
               onClick={() => setPage(p)}
               className={`w-9 h-9 border rounded-md flex items-center justify-center font-mono text-sm transition-colors duration-200
-                ${p === page
-                  ? 'border-geek-400 text-geek-400 bg-geek-400/10'
-                  : 'border-neutral-600 text-neutral-400 hover:border-neutral-400 hover:text-neutral-200'
+                ${
+                  p === page
+                    ? 'border-geek-400 text-geek-400 bg-geek-400/10'
+                    : 'border-neutral-600 text-neutral-400 hover:border-neutral-400 hover:text-neutral-200'
                 }`}
             >
               {p}
@@ -138,9 +136,10 @@ function GameList({ games = [], onGameAction, user }) {
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
             className={`w-9 h-9 border rounded-md flex items-center justify-center transition-colors duration-200
-              ${page === totalPages
-                ? 'border-neutral-700 text-neutral-600 cursor-not-allowed'
-                : 'border-neutral-500 text-neutral-300 hover:border-geek-400 hover:text-geek-400'
+              ${
+                page === totalPages
+                  ? 'border-neutral-700 text-neutral-600 cursor-not-allowed'
+                  : 'border-neutral-500 text-neutral-300 hover:border-geek-400 hover:text-geek-400'
               }`}
           >
             <IconChevronRight size={15} />

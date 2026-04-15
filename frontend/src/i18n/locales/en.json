@@ -1654,11 +1654,14 @@
           "deleteSuccess": "Group deleted",
           "deleteFailed": "Failed to delete group",
           "assignUserSuccess": "User added",
+          "assignUsersSuccess": "{{count}} users added",
+          "assignUsersPartial": "Added {{success}} of {{total}} selected users",
           "assignUserFailed": "Failed to add user",
           "removeUserSuccess": "User removed",
           "removeUserFailed": "Failed to remove user",
           "fetchRolesFailed": "Failed to load roles",
-          "fetchUsersFailed": "Failed to load group users"
+          "fetchUsersFailed": "Failed to load group users",
+          "fetchCandidatesFailed": "Failed to load available users"
         },
         "modal": {
           "createTitle": "Create Group",
@@ -1666,7 +1669,8 @@
           "deleteTitle": "Delete Group",
           "deletePrompt": "Are you sure you want to delete group",
           "deleteWarning": "$t(common.modal.deleteWarning)",
-          "usersTitle": "Manage Users"
+          "usersTitle": "Manage Users",
+          "currentUsersTitle": "Current group members"
         },
         "form": {
           "name": "Name",
@@ -1675,11 +1679,19 @@
           "namePlaceholder": "Enter group name",
           "descriptionPlaceholder": "Enter group description",
           "rolePlaceholder": "Select a role",
-          "userId": "User ID",
-          "userIdPlaceholder": "Enter user ID",
-          "addUser": "Add",
+          "userSearch": "Search users",
+          "userSearchPlaceholder": "Search by username, email, or description",
+          "userSearchHint": "Search results come from existing user fields and current group members are filtered on the frontend.",
+          "selectedUsers": "{{count}} selected",
+          "currentUsersCount": "{{count}} members",
+          "addSelected": "Add selected",
           "removeUser": "Remove",
           "remove": "Remove"
+        },
+        "empty": {
+          "currentUsers": "No users in this group",
+          "availableUsers": "No available users",
+          "searchCandidates": "No matching users"
         }
       },
       "permissions": {
