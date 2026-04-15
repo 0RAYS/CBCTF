@@ -82,6 +82,7 @@ type Group struct {
 
 type Notice struct {
 	InvalidType string
+	DeleteError string
 }
 
 type Permission struct {
@@ -311,6 +312,7 @@ var Model = struct {
 	},
 	Notice: Notice{
 		InvalidType: "model.notice.invalidType",
+		DeleteError: "model.notice.deleteError",
 	},
 	Permission: Permission{
 		GetError: "model.permission.getError",

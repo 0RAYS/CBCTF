@@ -70,6 +70,7 @@ model:
     deleteError: "删除 Group 失败: {{.Error}}"
   notice:
     invalidType: "不合法的通知类型"
+    deleteError: "删除通知失败: {{.Error}}"
   permission:
     getError: "获取 Permission 失败: {{.Error}}"
     notFound: "权限不存在"

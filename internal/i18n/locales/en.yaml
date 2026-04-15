@@ -70,6 +70,7 @@ model:
     deleteError: "Delete Group error: {{.Error}}"
   notice:
     invalidType: "Invalid notice type"
+    deleteError: "Delete Notice error: {{.Error}}"
   permission:
     getError: "Get Permission error: {{.Error}}"
     notFound: "Permission not found"
