@@ -213,7 +213,7 @@
       "title": "System Status",
       "realtime": "Live Monitoring",
       "cards": {
-        "serverIp": "Server IP",
+        "requestIp": "IP",
         "users": "Users",
         "contests": "Contests",
         "challenges": "Challenges",
