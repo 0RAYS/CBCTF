@@ -6,7 +6,7 @@ function AdminContestSettings() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // 重定向到主编辑页面，两个页面已合并
+    // 重定向到主编辑页面, 两个页面已合并
     navigate(`/admin/contests/${id}`);
   }, [id, navigate]);
 

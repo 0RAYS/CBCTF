@@ -2,7 +2,7 @@ import { Component } from 'react';
 
 /**
  * React 错误边界组件
- * 捕获子组件渲染时抛出的未处理错误，显示降级 UI。
+ * 捕获子组件渲染时抛出的未处理错误, 显示降级 UI
  */
 class ErrorBoundary extends Component {
   constructor(props) {

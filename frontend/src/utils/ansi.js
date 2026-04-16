@@ -1,5 +1,5 @@
-// 简单 ANSI 转 HTML（保留常见颜色），不引入外部依赖
-// 仅处理 SGR（Select Graphic Rendition）码，如 \u001b[31m, \u001b[0m 等
+// 简单 ANSI 转 HTML（保留常见颜色）, 不引入外部依赖
+// 仅处理 SGR（Select Graphic Rendition）码, 如 \u001b[31m, \u001b[0m 等
 
 const COLOR_MAP = {
   // standard (brightened for dark background)
@@ -51,7 +51,7 @@ export function ansiToHtml(input) {
   let openTags = [];
   const closeAll = () => (openTags.length ? '</span>'.repeat(openTags.length) : '');
 
-  // 通过字符串拼接构造匹配 ESC 的正则，避免源码中直接出现控制字符
+  // 通过字符串拼接构造匹配 ESC 的正则, 避免源码中直接出现控制字符
   const ESC = String.fromCharCode(27);
   const sgrPattern = new RegExp(ESC + '\\[[0-9;]*m', 'g');
   const ctrlPattern = new RegExp(ESC + '\\[[0-9;]*[A-Za-z]', 'g');
@@ -93,7 +93,7 @@ export function ansiToHtml(input) {
       // 移除其余不可见控制符
       .replace(ctrlPattern, '') + closeAll();
 
-  // 用白色作为默认前景色，子 span 的 color 会覆盖
+  // 用白色作为默认前景色, 子 span 的 color 会覆盖
   return `<span style="color:#ffffff">${converted}</span>`;
 }
 

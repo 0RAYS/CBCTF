@@ -20,12 +20,12 @@
  * @param {string} props.contest.prefix - flag前缀
  * @param {boolean} props.isOpen - 控制模态框显示/隐藏
  * @param {Function} props.onClose - 关闭模态框的回调函数
- * @param {Function} props.onInitialize - 初始化题目的回调函数，返回Promise
- * @param {Function} props.onLaunchInstance - 启动靶机的回调函数，返回Promise
- * @param {Function} props.onExtendInstance - 延长靶机时间的回调函数，返回Promise
- * @param {Function} props.onDestroyInstance - 销毁靶机的回调函数，返回Promise
- * @param {Function} props.onSubmitFlag - 提交flag的回调函数，返回Promise
- * @param {Function} props.onDownloadAttachment - 下载附件的回调函数，参数为附件对象
+ * @param {Function} props.onInitialize - 初始化题目的回调函数, 返回Promise
+ * @param {Function} props.onLaunchInstance - 启动靶机的回调函数, 返回Promise
+ * @param {Function} props.onExtendInstance - 延长靶机时间的回调函数, 返回Promise
+ * @param {Function} props.onDestroyInstance - 销毁靶机的回调函数, 返回Promise
+ * @param {Function} props.onSubmitFlag - 提交flag的回调函数, 返回Promise
+ * @param {Function} props.onDownloadAttachment - 下载附件的回调函数, 参数为附件对象
  */
 
 import { motion, AnimatePresence, useAnimationControls } from 'motion/react';
@@ -49,7 +49,7 @@ const normalizeInstanceStatus = (status) => {
   return '';
 };
 
-// 将 HintItem 组件移到外部，使用 React.memo 包装以避免不必要的重新渲染
+// 将 HintItem 组件移到外部, 使用 React.memo 包装以避免不必要的重新渲染
 const HintItem = React.memo(({ hint, index }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const { t } = useTranslation();
@@ -132,7 +132,7 @@ function ChallengeModal({
   const [isCopied, setIsCopied] = useState({});
   const [timeLeft, setTimeLeft] = useState(0);
 
-  // 修改倒计时效果，使用 useRef 来避免不必要的重新渲染
+  // 修改倒计时效果, 使用 useRef 来避免不必要的重新渲染
   const timerRef = useRef(null);
   const prevRunningRef = useRef(normalizeInstanceStatus(challenge?.instanceStatus) === 'running');
   const launchingTimeoutRef = useRef(null);
@@ -234,7 +234,7 @@ function ChallengeModal({
     handleAsyncAction('resetting', onReset, challenge.id);
   };
 
-  // 启动靶机 — 从点击瞬间到 Pod Ready 全程 loading，3 分钟超时兜底
+  // 启动靶机 — 从点击瞬间到 Pod Ready 全程 loading, 3 分钟超时兜底
   const handleLaunchInstance = async () => {
     setError(null);
     setLoading((p) => ({ ...p, launching: true }));
@@ -243,7 +243,7 @@ function ChallengeModal({
       if (!ok) {
         setLoading((p) => ({ ...p, launching: false }));
       } else {
-        // HTTP 成功，等待 Pod Ready（由 Fix3 / WS 清除），3 分钟后强制清除
+        // HTTP 成功, 等待 Pod Ready（由 Fix3 / WS 清除）, 3 分钟后强制清除
         launchingTimeoutRef.current = setTimeout(
           () => {
             setLoading((p) => ({ ...p, launching: false }));
@@ -299,7 +299,7 @@ function ChallengeModal({
   const handleSubmitFlag = async (e) => {
     e.preventDefault();
 
-    // 如果是question类型，检查是否选择了选项
+    // 如果是question类型, 检查是否选择了选项
     if (challenge.type === 'question') {
       if (selectedOptions.length === 0) {
         setError(t('game.challengeModal.errors.selectOption'));
@@ -445,7 +445,7 @@ function ChallengeModal({
           </div>
         </div>
 
-        {/* 进度条：waiting 显示静态条，pending 显示闪动条，running 显示倒计时 */}
+        {/* 进度条：waiting 显示静态条, pending 显示闪动条, running 显示倒计时 */}
         {(isRunning || isWaiting || isPending || isTerminating) && (
           <div className="h-1.5 bg-neutral-700 rounded-full overflow-hidden">
             {isRunning ? (
@@ -498,7 +498,7 @@ function ChallengeModal({
     );
   };
 
-  // 在渲染 hint 部分时，为每个 hint 提供一个稳定的 key
+  // 在渲染 hint 部分时, 为每个 hint 提供一个稳定的 key
   const renderHints = () => {
     if (!challenge.hints || challenge.hints.length === 0) return null;
 
@@ -617,7 +617,7 @@ function ChallengeModal({
     );
   }
 
-  // 已初始化状态，显示完整内容
+  // 已初始化状态, 显示完整内容
   return (
     <AnimatePresence>
       {isOpen && (

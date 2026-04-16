@@ -34,7 +34,7 @@ function ScrollingText({ text, className = '', speed = 30, maxWidth = 200 }) {
           const elapsed = Date.now() - startTime;
           const translateX = -(elapsed / 1000) * speed;
 
-          // 当文本完全移出容器时，重置位置
+          // 当文本完全移出容器时, 重置位置
           if (translateX < -(textElement.scrollWidth - container.clientWidth)) {
             startTime = Date.now();
             textElement.style.transform = 'translateX(0)';

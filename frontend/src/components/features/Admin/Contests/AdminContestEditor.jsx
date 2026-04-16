@@ -103,7 +103,7 @@ function AdminContestEditor({ contest: initialContest, onSave, onCancel, onImage
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // 如果传入了onImageUpload回调，则调用它
+    // 如果传入了onImageUpload回调, 则调用它
     if (onImageUpload) {
       onImageUpload(file).then((imageUrl) => {
         if (imageUrl) {
@@ -112,7 +112,7 @@ function AdminContestEditor({ contest: initialContest, onSave, onCancel, onImage
         }
       });
     } else {
-      // 如果没有回调，则创建本地预览
+      // 如果没有回调, 则创建本地预览
       const reader = new FileReader();
       reader.onload = (e) => {
         const imageUrl = e.target.result;
@@ -122,7 +122,7 @@ function AdminContestEditor({ contest: initialContest, onSave, onCancel, onImage
       reader.readAsDataURL(file);
     }
 
-    // 清空文件输入框，以便再次选择同一文件时触发change事件
+    // 清空文件输入框, 以便再次选择同一文件时触发change事件
     e.target.value = '';
   };
 
@@ -164,7 +164,7 @@ function AdminContestEditor({ contest: initialContest, onSave, onCancel, onImage
     } else {
       setContest((prev) => ({ ...prev, [name]: value }));
 
-      // 如果该字段有验证错误，则在用户输入后清除
+      // 如果该字段有验证错误, 则在用户输入后清除
       if (validationErrors[name]) {
         setValidationErrors((prev) => ({ ...prev, [name]: '' }));
       }

@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 function AuthPanel({ onSubmit }) {
   const { t } = useTranslation();
-  const [isLogin, setIsLogin] = useState(true); // true为登录模式，false为注册模式
+  const [isLogin, setIsLogin] = useState(true); // true为登录模式, false为注册模式
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -77,7 +77,7 @@ function AuthPanel({ onSubmit }) {
         },
       });
     } catch (error) {
-      // 处理错误，可能是显示错误消息
+      // 处理错误, 可能是显示错误消息
       setErrors((prev) => ({
         ...prev,
         submit: error.message,

@@ -208,7 +208,7 @@ function Pagination({
       className={`flex flex-wrap items-center justify-center gap-2 max-w-full ${className}`}
       {...containerProps}
     >
-      {/* 隐藏的 aria-live 区域，宣告翻页结果 */}
+      {/* 隐藏的 aria-live 区域, 宣告翻页结果 */}
       <span ref={liveRef} aria-live="polite" aria-atomic="true" className="sr-only" />
 
       {/* 总数显示 */}

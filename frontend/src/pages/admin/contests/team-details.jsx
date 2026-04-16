@@ -107,7 +107,7 @@ function TeamDetails() {
     }
   }, [activeTab, canViewTraffic]);
 
-  // 监听分页变化，重新获取数据
+  // 监听分页变化, 重新获取数据
   useEffect(() => {
     if (activeTab === 'submissions') {
       fetchSubmissions();

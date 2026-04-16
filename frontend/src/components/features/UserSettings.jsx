@@ -10,7 +10,7 @@
  * @param {Function} props.onUpdate - 更新基本信息的回调函数
  * @param {Function} props.onPasswordChange - 修改密码的回调函数
  * @param {Function} props.onEmailVerify - 发送验证邮件的回调函数
- * @param {Function} props.onDeleteAccount - 删除账户的回调函数，接收 password
+ * @param {Function} props.onDeleteAccount - 删除账户的回调函数, 接收 password
  * @param {Function} props.onPictureChange - 更新头像的回调函数
  * @example
  * <UserSettings

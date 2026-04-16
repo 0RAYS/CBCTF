@@ -38,7 +38,7 @@ function Card({ children, variant = 'default', padding = 'md', className = '', a
     .trim()
     .replace(/\s+/g, ' ');
 
-  // 动画属性：clickable 卡片改用 opacity 替代 scale，避免抖动感
+  // 动画属性：clickable 卡片改用 opacity 替代 scale, 避免抖动感
   const motionProps =
     animate && !onClick
       ? {

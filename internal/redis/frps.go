@@ -24,7 +24,7 @@ if n == 0 then
     return {0, 0}
 end
 
--- 记录已尝试的索引，避免重复尝试
+-- 记录已尝试的索引, 避免重复尝试
 local tried = {}
 local triedCount = 0
 

@@ -29,7 +29,7 @@ const transformContestData = (apiData, defaults) => {
     rules: apiData.rules || defaults.rules,
     prizes: apiData.prizes || defaults.prizes,
     timeline: apiData.timelines || defaults.timeline,
-    // 额外信息，可用于后续功能扩展
+    // 额外信息, 可用于后续功能扩展
     teamSize: apiData.size,
     teamsCount: apiData.teams,
     noticesCount: apiData.notices,

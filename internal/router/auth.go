@@ -20,9 +20,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// setAuthCookie 写入 httpOnly 认证 cookie。
-// 当请求 Origin 在 CORS 允许列表内（跨域前端）时，设置 SameSite=None 使浏览器可携带 cookie；
-// 其余情况保持 SameSite=Lax，避免无谓降低安全级别。
+// setAuthCookie 写入 httpOnly 认证 cookie
+// 当请求 Origin 在 CORS 允许列表内（跨域前端）时, 设置 SameSite=None 使浏览器可携带 cookie
+// 其余情况保持 SameSite=Lax, 避免无谓降低安全级别
 func setAuthCookie(ctx *gin.Context, token string) {
 	secure := strings.HasPrefix(config.Env.Host, "https://")
 	sameSite := http.SameSiteLaxMode

@@ -17,10 +17,10 @@
  * @param {boolean} props.isLeader - 当前用户是否为队长
  * @param {Function} props.onCopyCode - 复制邀请码处理函数
  * @param {Function} props.onRefreshCode - 刷新邀请码处理函数
- * @param {Function} props.onEditTeam - 编辑队伍信息处理函数，参数为更新后的队伍数据
- * @param {Function} props.onKickMember - 踢出队员处理函数，参数为队员用户名
+ * @param {Function} props.onEditTeam - 编辑队伍信息处理函数, 参数为更新后的队伍数据
+ * @param {Function} props.onKickMember - 踢出队员处理函数, 参数为队员用户名
  * @param {Function} props.onDisbandTeam - 解散队伍处理函数
- * @param {Function} props.onPictureUpload - 头像上传处理函数，参数为File对象
+ * @param {Function} props.onPictureUpload - 头像上传处理函数, 参数为File对象
  * @example
  * const team = {
  *   name: "Binary Bandits",

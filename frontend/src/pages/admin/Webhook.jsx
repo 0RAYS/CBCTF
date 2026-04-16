@@ -35,7 +35,7 @@ function WebhookManagement() {
     on: false,
   });
 
-  // 防抖状态，用于优化请求头key的更新
+  // 防抖状态, 用于优化请求头key的更新
   const [headerKeyUpdates, setHeaderKeyUpdates] = useState({});
 
   // 历史记录状态
@@ -283,7 +283,7 @@ function WebhookManagement() {
   // 防抖更新请求头key
   const debouncedUpdateHeaderKey = useCallback(
     (oldKey, newKey, value) => {
-      // 如果新key为空或与旧key相同，不进行更新
+      // 如果新key为空或与旧key相同, 不进行更新
       if (!newKey || newKey.trim() === '' || newKey === oldKey) {
         return;
       }

@@ -191,7 +191,7 @@ function GameScoreBoardPage() {
     fetchScoreboardData(1);
   }, [contestId]);
 
-  // 当视图模式改变时，获取相应的数据
+  // 当视图模式改变时, 获取相应的数据
   useEffect(() => {
     let ignore = false;
     if (viewMode === 'table' && tableTeams.length === 0) {

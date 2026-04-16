@@ -57,14 +57,14 @@ function Modal({
     onCloseRef.current = onClose;
   });
 
-  // 保存触发元素，关闭时恢复焦点
+  // 保存触发元素, 关闭时恢复焦点
   useEffect(() => {
     if (isOpen) {
       triggerRef.current = document.activeElement;
     }
   }, [isOpen]);
 
-  // 焦点陷阱：将焦点移入模态框，并限制 Tab 键在内部循环
+  // 焦点陷阱：将焦点移入模态框, 并限制 Tab 键在内部循环
   useEffect(() => {
     if (!isOpen || !dialogRef.current) return;
 

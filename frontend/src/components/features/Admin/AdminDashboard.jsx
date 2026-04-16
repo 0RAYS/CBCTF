@@ -15,7 +15,7 @@
  * @param {number} props.status.victims - 靶机数量
  * @param {number} props.status.submissions - 提交次数
  * @param {React.ReactNode} props.chartContent - 图表内容
- * @param {React.ReactNode} props.extraContent - 额外内容，如表格等
+ * @param {React.ReactNode} props.extraContent - 额外内容, 如表格等
  */
 
 import { motion } from 'motion/react';
