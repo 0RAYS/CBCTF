@@ -38,7 +38,7 @@ function Card({ children, variant = 'default', padding = 'md', className = '', a
     .trim()
     .replace(/\s+/g, ' ');
 
-  // 动画属性：clickable 卡片改用 opacity 替代 scale, 避免抖动感
+  // 动画属性: clickable 卡片改用 opacity 替代 scale, 避免抖动感
   const motionProps =
     animate && !onClick
       ? {
@@ -64,17 +64,17 @@ function Card({ children, variant = 'default', padding = 'md', className = '', a
   );
 }
 
-// 子组件：卡片头部
+// 子组件: 卡片头部
 Card.Header = function CardHeader({ children, className = '' }) {
   return <div className={`mb-4 ${className}`}>{children}</div>;
 };
 
-// 子组件：卡片主体
+// 子组件: 卡片主体
 Card.Body = function CardBody({ children, className = '' }) {
   return <div className={className}>{children}</div>;
 };
 
-// 子组件：卡片底部
+// 子组件: 卡片底部
 Card.Footer = function CardFooter({ children, className = '' }) {
   return <div className={`mt-4 ${className}`}>{children}</div>;
 };

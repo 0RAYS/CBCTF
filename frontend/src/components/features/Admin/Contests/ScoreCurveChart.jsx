@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 /**
  * 分数曲线预览图表（支持拖拽控制点调整 decay）
  *
- * 控制点设计：
+ * 控制点设计: 
  * - Static:  无控制点（水平线, 无 decay）
  * - Linear:  一个控制点在曲线中段 ── 沿曲线拖动改变 decay（下降速率）
  * - Exponential: 一个控制点在曲线中段 ── 自由拖动, 根据拖到的 (x,y) 反算 decay
@@ -86,7 +86,7 @@ function ScoreCurveChart({ scoreType = 0, score = 1000, decay = 50, minScore = 1
     return inst.convertToPixel({ gridIndex: 0 }, [dx, dy]);
   }, []);
 
-  // 拖拽回调：根据拖到的 (x, y) 反算 decay
+  // 拖拽回调: 根据拖到的 (x, y) 反算 decay
   const onHandleDrag = useCallback(
     (e) => {
       const pos = pixelToData(e.offsetX, e.offsetY);
@@ -117,7 +117,7 @@ function ScoreCurveChart({ scoreType = 0, score = 1000, decay = 50, minScore = 1
     [pixelToData, onChange]
   );
 
-  // 控制点位置：放在曲线中段（score 与 minScore 的中点对应的 solvers 处）
+  // 控制点位置: 放在曲线中段（score 与 minScore 的中点对应的 solvers 处）
   const handleDataPos = useMemo(() => {
     if (scoreType === 0) return null;
     const midY = (score + minScore) / 2;

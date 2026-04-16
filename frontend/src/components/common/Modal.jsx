@@ -64,7 +64,7 @@ function Modal({
     }
   }, [isOpen]);
 
-  // 焦点陷阱：将焦点移入模态框, 并限制 Tab 键在内部循环
+  // 焦点陷阱: 将焦点移入模态框, 并限制 Tab 键在内部循环
   useEffect(() => {
     if (!isOpen || !dialogRef.current) return;
 
@@ -134,7 +134,7 @@ function Modal({
   // Portal容器未就绪时不渲染
   if (!portalContainer) return null;
 
-  // Confirm模式：简化的确认对话框
+  // Confirm模式: 简化的确认对话框
   if (variant === 'confirm') {
     return createPortal(
       <AnimatePresence>
@@ -178,7 +178,7 @@ function Modal({
     );
   }
 
-  // Default模式：完整的模态框
+  // Default模式: 完整的模态框
   return createPortal(
     <AnimatePresence>
       {isOpen && (
@@ -259,17 +259,17 @@ function Modal({
   );
 }
 
-// 子组件：模态框头部
+// 子组件: 模态框头部
 Modal.Header = function ModalHeader({ children, className = '' }) {
   return <div className={`mb-4 ${className}`}>{children}</div>;
 };
 
-// 子组件：模态框主体
+// 子组件: 模态框主体
 Modal.Body = function ModalBody({ children, className = '' }) {
   return <div className={className}>{children}</div>;
 };
 
-// 子组件：模态框底部
+// 子组件: 模态框底部
 Modal.Footer = function ModalFooter({ children, className = '' }) {
   return <div className={`mt-4 ${className}`}>{children}</div>;
 };

@@ -4,7 +4,7 @@ sidebar_position: 8
 
 # Webhook
 
-Webhook 允许平台在特定事件发生时，向外部系统（Slack、Discord、自动化脚本等）发送 HTTP 通知。
+Webhook 允许平台在特定事件发生时, 向外部系统（Slack、Discord、自动化脚本等）发送 HTTP 通知。
 
 ## Webhook 字段
 
@@ -13,7 +13,7 @@ Webhook 允许平台在特定事件发生时，向外部系统（Slack、Discord
 | `name` | string | Webhook 名称（仅用于标识） |
 | `url` | string | 目标 URL |
 | `method` | string | HTTP 方法（`POST`、`GET` 等） |
-| `headers` | object | 自定义 HTTP 请求头，如 `{"Authorization": "Bearer token"}` |
+| `headers` | object | 自定义 HTTP 请求头, 如 `{"Authorization": "Bearer token"}` |
 | `timeout` | int | 请求超时（毫秒） |
 | `retry` | int | 失败后重试次数 |
 | `on` | bool | 是否启用此 Webhook |
@@ -21,7 +21,7 @@ Webhook 允许平台在特定事件发生时，向外部系统（Slack、Discord
 
 ## 触发事件
 
-Webhook 支持订阅平台的多种事件，主要包括：
+Webhook 支持订阅平台的多种事件, 主要包括: 
 
 **用户事件**
 - 用户注册、登录、修改信息
@@ -42,10 +42,10 @@ Webhook 支持订阅平台的多种事件，主要包括：
 
 ## 投递历史
 
-每个 Webhook 都维护投递历史记录，包含：
+每个 Webhook 都维护投递历史记录, 包含: 
 
-- `success`：累计成功投递次数
-- `failure`：累计失败投递次数
+- `success`: 累计成功投递次数
+- `failure`: 累计失败投递次数
 - 最后成功/失败时间
 - 详细历史日志（包含完整请求和响应内容）
 
@@ -53,7 +53,7 @@ Webhook 支持订阅平台的多种事件，主要包括：
 
 ## 安全配置
 
-在 `config.yaml` 中配置 Webhook 目标 URL 白名单：
+在 `config.yaml` 中配置 Webhook 目标 URL 白名单: 
 
 ```yaml
 webhook:
@@ -62,11 +62,11 @@ webhook:
     - "https://discord.com/api/webhooks/"
 ```
 
-配置后，平台仅允许向匹配前缀的 URL 发送 Webhook 请求，防止 SSRF 攻击。留空 `[]` 表示不限制。
+配置后, 平台仅允许向匹配前缀的 URL 发送 Webhook 请求, 防止 SSRF 攻击。留空 `[]` 表示不限制。
 
 ## 自定义认证
 
-通过 `headers` 字段添加认证信息：
+通过 `headers` 字段添加认证信息: 
 
 ```json
 {
@@ -77,9 +77,9 @@ webhook:
 
 ## 重试机制
 
-Webhook 投递通过 Asynq 异步队列处理。若请求失败（超时、非 2xx 响应），按 `retry` 配置的次数自动重试，重试间隔指数递增。
+Webhook 投递通过 Asynq 异步队列处理。若请求失败（超时、非 2xx 响应）, 按 `retry` 配置的次数自动重试, 重试间隔指数递增。
 
-## 示例：Slack 通知
+## 示例: Slack 通知
 
 ```json
 {

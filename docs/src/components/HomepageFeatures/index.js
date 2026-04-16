@@ -9,7 +9,7 @@ const FeatureList = [
     description: (
       <>
         支持问答题、静态题、动态附件题、容器题四种类型。
-        每道题可配置多个 flag，支持静态、动态、UUID 三种 flag 格式。
+        每道题可配置多个 flag, 支持静态、动态、UUID 三种 flag 格式。
       </>
     ),
   },
@@ -18,8 +18,8 @@ const FeatureList = [
     icon: '🐳',
     description: (
       <>
-        基于 Kubernetes 为每支队伍部署独立靶机，支持 Pod 网络和
-        KubeOVN VPC 网络隔离，支持流量捕获和 FRP 端口转发。
+        基于 Kubernetes 为每支队伍部署独立靶机, 支持 Pod 网络和
+        KubeOVN VPC 网络隔离, 支持流量捕获和 FRP 端口转发。
       </>
     ),
   },

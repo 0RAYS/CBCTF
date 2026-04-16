@@ -261,9 +261,9 @@
         "duration": "持续时间"
       },
       "metrics": {
-        "teamSize": "每队人数：{{count}}人",
-        "registrations": "报名总数：{{count}}人",
-        "teams": "队伍总数：{{count}}队"
+        "teamSize": "每队人数: {{count}}人",
+        "registrations": "报名总数: {{count}}人",
+        "teams": "队伍总数: {{count}}队"
       },
       "units": {
         "hours": "{{count}}小时"
@@ -321,7 +321,7 @@
         "payload": {
           "expand": "展开",
           "collapse": "收起",
-          "parseError": "解析错误：{{message}}"
+          "parseError": "解析错误: {{message}}"
         }
       },
       "teamDetail": {
@@ -408,7 +408,7 @@
           "description": "题目描述",
           "attempts": "尝试次数",
           "hidden": "隐藏题目",
-          "flagValueHint": "格式：static{value} | uuid{} | dynamic{value}",
+          "flagValueHint": "格式: static{value} | uuid{} | dynamic{value}",
           "scoreCurve": "分数曲线",
           "initialScore": "初始分值",
           "currentScore": "当前分值",
@@ -726,7 +726,7 @@
             "kick": "移除团队成员"
           },
           "deletePrompt": "确定要删除团队 {{name}} 吗？此操作不可恢复",
-          "kickPrompt": "从团队 {{name}} 中移出成员：",
+          "kickPrompt": "从团队 {{name}} 中移出成员: ",
           "selectMemberLabel": "选择要移出的成员",
           "selectMemberPlaceholder": "请选择成员"
         },
@@ -827,7 +827,7 @@
           "newRule": "添加新规则..."
         },
         "help": {
-          "flagPrefix": "用于生成flag的前缀, 例如：CBCTF{flag}",
+          "flagPrefix": "用于生成flag的前缀, 例如: CBCTF{flag}",
           "teamSize": "每个参赛团队的最大人数",
           "teamVictims": "每个参赛团队的最大靶机数",
           "captcha": "加入比赛所需的邀请码, 留空则允许任意报名",
@@ -853,7 +853,7 @@
           "other": "第{{rank}}名"
         },
         "validation": {
-          "invalidDate": "日期格式无效, 请使用格式：YYYY-MM-DD HH:MM",
+          "invalidDate": "日期格式无效, 请使用格式: YYYY-MM-DD HH:MM",
           "titleRequired": "标题不能为空",
           "startTimeRequired": "请选择开始时间",
           "endTimeRequired": "请选择结束时间",
@@ -903,10 +903,10 @@
           "clear": "清空",
           "pageHint": "左右翻页",
           "estimatedTeams": "预计抽取 {{count}} 个队伍",
-          "teamSelectionHint": "后端会基于当前比赛全部队伍, 按该比例随机抽取并启动靶机当前比赛队伍总数：{{total}}",
+          "teamSelectionHint": "后端会基于当前比赛全部队伍, 按该比例随机抽取并启动靶机当前比赛队伍总数: {{total}}",
           "durationUnit": "秒",
           "durationHint": "批量启动的每个靶机会按该时长自动过期",
-          "durationPreview": "预览：{{value}}",
+          "durationPreview": "预览: {{value}}",
           "invalidDuration": "请输入大于 0 的秒数",
           "noChallenges": "当前条件下没有题目",
           "startButton": "开启 ({{challenges}}×{{teams}})"
@@ -982,7 +982,7 @@
           "summaryMiddle": " 个题目 × ",
           "summaryEquals": " 个团队 =",
           "summarySuffix": " 个靶机组合开启靶机",
-          "startWarning": "警告：一次性启动过多容器可能导致不可预知的问题, 甚至影响服务可用性、集群稳定性或造成宕机请谨慎确认本次启动规模",
+          "startWarning": "警告: 一次性启动过多容器可能导致不可预知的问题, 甚至影响服务可用性、集群稳定性或造成宕机请谨慎确认本次启动规模",
           "stopTitle": "停止靶机",
           "stopConfirm": "停止",
           "stopPrompt": "确定要停止选中的 {{count}} 个靶机吗？"
@@ -1319,8 +1319,8 @@
         "search": "未找到匹配的题目"
       },
       "labels": {
-        "flags": "Flag：",
-        "files": "附件："
+        "flags": "Flag: ",
+        "files": "附件: "
       },
       "types": {
         "static": "$t(common.challengeTypes.static)",
@@ -1361,8 +1361,8 @@
           "terminating": "终止中",
           "running": "运行中",
           "notRunning": "未运行",
-          "time": "时间：",
-          "address": "地址："
+          "time": "时间: ",
+          "address": "地址: "
         },
         "actions": {
           "launching": "启动中...",
@@ -2168,7 +2168,7 @@
       "update": {
         "title": "更新配置确认",
         "prompt": "即将更新系统配置, 是否继续？",
-        "warning": "提示：配置错误可能导致服务异常, 请仔细核查后再继续",
+        "warning": "提示: 配置错误可能导致服务异常, 请仔细核查后再继续",
         "confirm": "继续更新",
         "cancel": "取消"
       },
@@ -2177,7 +2177,7 @@
         "manualTitle": "重启系统确认",
         "prompt": "系统配置已更新, 是否立即重启以使配置生效？",
         "manualPrompt": "系统即将重启, 是否继续？",
-        "warning": "提示：重启期间系统将短暂不可用",
+        "warning": "提示: 重启期间系统将短暂不可用",
         "confirm": "立即重启",
         "cancel": "暂不重启",
         "inProgress": "正在重启..."
@@ -2379,7 +2379,7 @@
   },
   "oauth": {
     "callback": {
-      "errorWithReason": "登录失败：{{reason}}",
+      "errorWithReason": "登录失败: {{reason}}",
       "tokenMissing": "登录会话已过期, 请重试",
       "toast": {
         "success": "OAuth登录成功",
@@ -2539,7 +2539,7 @@
       "ended": "查看结果"
     },
     "challengeBoard": {
-      "solves": "解题数：",
+      "solves": "解题数: ",
       "filters": {
         "hideSolved": "隐藏已解出"
       },
@@ -2562,8 +2562,8 @@
         "terminating": "终止中",
         "running": "运行中",
         "notRunning": "未运行",
-        "time": "时间：",
-        "address": "地址："
+        "time": "时间: ",
+        "address": "地址: "
       },
       "actions": {
         "launching": "启动中...",
@@ -2659,15 +2659,15 @@
       "defaultPrizes": [
         {
           "amount": "¥10,000",
-          "description": "一等奖：奖金与 CBCTF 纪念品"
+          "description": "一等奖: 奖金与 CBCTF 纪念品"
         },
         {
           "amount": "¥5,000",
-          "description": "二等奖：奖金与礼品"
+          "description": "二等奖: 奖金与礼品"
         },
         {
           "amount": "¥3,000",
-          "description": "三等奖：奖金"
+          "description": "三等奖: 奖金"
         }
       ],
       "defaultTimeline": [

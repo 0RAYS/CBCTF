@@ -83,7 +83,7 @@ function Button({
     ${className}
   `;
 
-  // 动画属性：使用 opacity 替代 scale, 更克制
+  // 动画属性: 使用 opacity 替代 scale, 更克制
   const motionProps =
     animate && !disabled && !loading
       ? {

@@ -6,34 +6,34 @@ sidebar_position: 7
 
 ## 本地认证
 
-CBCTF 默认使用用户名 + 密码登录。登录成功后，后端会在 `Authorization` 响应头中返回 JWT，前端将其保存在 `localStorage`。
+CBCTF 默认使用用户名 + 密码登录。登录成功后, 后端会在 `Authorization` 响应头中返回 JWT, 前端将其保存在 `localStorage`。
 
 ### JWT 配置
 
 | 配置项 | 说明 |
 |--------|------|
-| `gin.jwt.secret` | JWT 签名密钥，必须替换默认值 |
+| `gin.jwt.secret` | JWT 签名密钥, 必须替换默认值 |
 
 当前代码中 **不存在** `gin.jwt.static` 配置项。
 
 ### 设备绑定
 
-前端会使用 FingerprintJS 生成设备标识，并通过请求头 `X-M` 发送给后端。JWT 中也会绑定该标识；若同一账号从不同设备使用，可能触发 `token_magic` 作弊检测。
+前端会使用 FingerprintJS 生成设备标识, 并通过请求头 `X-M` 发送给后端。JWT 中也会绑定该标识; 若同一账号从不同设备使用, 可能触发 `token_magic` 作弊检测。
 
 ### 邮箱验证
 
-需要先配置 SMTP，并为用户分配 `self:activate` 权限。用户调用 `POST /me/activate` 后，平台发送验证邮件；用户访问邮件中的 `/verify` 链接后，账号会被标记为已验证。
+需要先配置 SMTP, 并为用户分配 `self:activate` 权限。用户调用 `POST /me/activate` 后, 平台发送验证邮件; 用户访问邮件中的 `/verify` 链接后, 账号会被标记为已验证。
 
 ## OAuth / OIDC
 
-平台支持配置多个 OAuth / OIDC 提供商。公开入口为：
+平台支持配置多个 OAuth / OIDC 提供商。公开入口为: 
 
 - `GET /oauth`
 - `GET /oauth/{uri}`
 - `GET /oauth/{uri}/callback`
 - `GET /oauth/token`
 
-后端完成第三方回调后，会跳转到前端 `#/oauth/callback` 页面继续登录流程。
+后端完成第三方回调后, 会跳转到前端 `#/oauth/callback` 页面继续登录流程。
 
 ### OAuth 配置字段
 
@@ -46,7 +46,7 @@ CBCTF 默认使用用户名 + 密码登录。登录成功后，后端会在 `Aut
 | `callback_url` | 第三方回调地址 |
 | `client_id` | 客户端 ID |
 | `client_secret` | 客户端密钥 |
-| `uri` | 平台路由标识，对应 `/oauth/{uri}` |
+| `uri` | 平台路由标识, 对应 `/oauth/{uri}` |
 | `id_claim` | 用户 ID 提取表达式 |
 | `name_claim` | 用户名提取表达式 |
 | `email_claim` | 邮箱提取表达式 |
@@ -59,7 +59,7 @@ CBCTF 默认使用用户名 + 密码登录。登录成功后，后端会在 `Aut
 
 ### GitHub 示例
 
-GitHub OAuth App 回调地址示例：
+GitHub OAuth App 回调地址示例: 
 
 ```text
 https://your.domain.com/oauth/github/callback
@@ -88,7 +88,7 @@ https://your.domain.com/oauth/github/callback
 | 配置 | 说明 |
 |------|------|
 | `registration.enabled: true` | 开放公开注册 |
-| `registration.enabled: false` | 禁止自助注册，仅管理员可创建用户 |
+| `registration.enabled: false` | 禁止自助注册, 仅管理员可创建用户 |
 | `registration.default_group` | 注册用户自动加入的分组 ID |
 
 ## 多提供商并存

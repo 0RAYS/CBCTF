@@ -39,7 +39,7 @@ function GameCard({ game, onGameAction, user }) {
       )}
 
       <div className="flex-1 p-5 flex flex-col sm:flex-row sm:items-center gap-4">
-        {/* 左侧：标题 + 描述 */}
+        {/* 左侧: 标题 + 描述 */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-2 flex-wrap">
             <h3 className="text-base font-mono text-neutral-50 tracking-wide">{game.title}</h3>
@@ -52,7 +52,7 @@ function GameCard({ game, onGameAction, user }) {
           </div>
         </div>
 
-        {/* 右侧：时间 + 操作按钮 */}
+        {/* 右侧: 时间 + 操作按钮 */}
         <div className="flex flex-col items-start sm:items-end gap-3 shrink-0">
           <div className="text-xs font-mono text-neutral-400 space-y-1 sm:text-right">
             <div>

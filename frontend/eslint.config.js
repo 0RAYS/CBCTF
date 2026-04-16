@@ -40,8 +40,8 @@ export default [
             'react/jsx-pascal-case': 'off', // 允许 JSX 标签不使用 PascalCase
             'react/no-unescaped-entities': 'off', // 允许在 JSX 中直接使用 ' 和 " 字符
             'react/react-in-jsx-scope': 'off', // React 17+ 不需要再显式引入 React
-            'no-console': 'warn', // 允许使用 console，但会提示警告
-            'no-debugger': 'warn', // 允许 debugger，但会提示警告
+            'no-console': 'warn', // 允许使用 console, 但会提示警告
+            'no-debugger': 'warn', // 允许 debugger, 但会提示警告
 
             // Prettier 相关规则
             'prettier/prettier': [
@@ -56,13 +56,13 @@ export default [
                     "endOfLine": "auto",
                 },
             ],
-            // 如果希望 React Hooks 更宽松，可以禁用这两个规则
+            // 如果希望 React Hooks 更宽松, 可以禁用这两个规则
             'react-hooks/rules-of-hooks': 'off',
             'react-hooks/exhaustive-deps': 'off',
             'react-hooks/set-state-in-effect': 'off',
 
-            // 如果有使用 TypeScript 的话，可以适当放宽这些规则
-            'no-unused-vars': ['warn'], // 仅发出警告，允许有未使用的变量
+            // 如果有使用 TypeScript 的话, 可以适当放宽这些规则
+            'no-unused-vars': ['warn'], // 仅发出警告, 允许有未使用的变量
         },
         linterOptions: {
             reportUnusedDisableDirectives: true, // 将该选项移动到这里

@@ -6,11 +6,11 @@ sidebar_position: 8
 
 ## 系统状态
 
-通过 `GET /admin/system/status`（`admin:system:status`）查看各服务的健康状态，包括 PostgreSQL、Redis、Asynq 等组件的连接状态。
+通过 `GET /admin/system/status`（`admin:system:status`）查看各服务的健康状态, 包括 PostgreSQL、Redis、Asynq 等组件的连接状态。
 
 ## 任务队列
 
-通过 `GET /admin/tasks` 和 `GET /admin/tasks/live`（`admin:task:read`）查看 Asynq 后台任务的执行状态，包括各队列积压量、正在处理的任务、历史执行记录等。
+通过 `GET /admin/tasks` 和 `GET /admin/tasks/live`（`admin:task:read`）查看 Asynq 后台任务的执行状态, 包括各队列积压量、正在处理的任务、历史执行记录等。
 
 ## Prometheus 指标
 
@@ -18,7 +18,7 @@ sidebar_position: 8
 
 ### 访问控制
 
-通过 `gin.metrics.whitelist` 配置允许访问的 IP：
+通过 `gin.metrics.whitelist` 配置允许访问的 IP: 
 
 ```yaml
 gin:
@@ -39,27 +39,27 @@ gin:
 
 ## 日志系统
 
-平台使用 Logrus 记录日志，支持文件轮转。
+平台使用 Logrus 记录日志, 支持文件轮转。
 
 ### 日志级别
 
-通过 `log.level` 配置，支持 `DEBUG` `INFO` `WARNING` `ERROR`。
+通过 `log.level` 配置, 支持 `DEBUG` `INFO` `WARNING` `ERROR`。
 
 ### 日志持久化
 
-设置 `log.save: true` 后，日志持久化到 `{path}/logs/` 目录下，自动按日期轮转。
+设置 `log.save: true` 后, 日志持久化到 `{path}/logs/` 目录下, 自动按日期轮转。
 
 ### 在线查看日志
 
-通过 `GET /admin/logs`（`admin:log:read`）在管理后台查看日志内容，无需登录服务器。
+通过 `GET /admin/logs`（`admin:log:read`）在管理后台查看日志内容, 无需登录服务器。
 
 ## 访问日志
 
-Gin 框架记录每个 HTTP 请求的访问日志，包含请求方法、路径、状态码、耗时等。
+Gin 框架记录每个 HTTP 请求的访问日志, 包含请求方法、路径、状态码、耗时等。
 
 ### 排除噪声路径
 
-通过 `gin.log.whitelist` 排除不需要记录的路径：
+通过 `gin.log.whitelist` 排除不需要记录的路径: 
 
 ```yaml
 gin:
@@ -71,7 +71,7 @@ gin:
 
 ## 文件管理
 
-通过 `GET /admin/files`（`admin:file:list`）查看和管理平台上所有已上传的文件，包括：
+通过 `GET /admin/files`（`admin:file:list`）查看和管理平台上所有已上传的文件, 包括: 
 
 - 题目附件（`attachment.zip`、`generator.zip`）
 - 流量捕获文件（`.pcap`）
@@ -81,7 +81,7 @@ gin:
 
 ## 系统配置在线更新
 
-无需重启服务器即可更新配置：
+无需重启服务器即可更新配置: 
 
 ```bash
 # 读取当前配置
