@@ -10,7 +10,7 @@ import FlagSolversModal from './FlagSolversModal';
  * 赛事内部赛题编辑弹窗组件
  * @param {Object} props
  * @param {boolean} props.isOpen - 是否显示弹窗
- * @param {string} props.mode - 模式，'add'或'edit'
+ * @param {string} props.mode - 模式, 'add'或'edit'
  * @param {Object} props.challenge - 当前编辑的赛题对象
  * @param {Array} props.flags - 赛题的flag列表
  * @param {Function} props.onClose - 关闭弹窗回调
@@ -67,7 +67,7 @@ function AdminContestChallengeModal({
   const [editingFlags, setEditingFlags] = useState([...flags]);
   const [solversModal, setSolversModal] = useState({ open: false, flagId: null, flagIndex: 0 });
 
-  // 本地更新flag，不触发onFlagChange
+  // 本地更新flag, 不触发onFlagChange
   const handleFlagChange = (index, updatedFlag) => {
     const newFlags = [...editingFlags];
     newFlags[index] = updatedFlag;

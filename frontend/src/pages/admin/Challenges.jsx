@@ -243,17 +243,17 @@ function ChallengesManagement() {
   };
 
   const handleChallengeChange = (updatedChallenge) => {
-    // 如果题目类型发生变化，需要相应调整flags和options
+    // 如果题目类型发生变化, 需要相应调整flags和options
     if (updatedChallenge.type !== editChallenge.type) {
       if (updatedChallenge.type === 'pods') {
         // 切换到pods类型时清空flags
         updatedChallenge.flags = [];
       } else if (editChallenge.type === 'pods') {
-        // 从pods类型切换到其他类型时，确保有默认flags
+        // 从pods类型切换到其他类型时, 确保有默认flags
         updatedChallenge.flags = [{ id: 0, value: '' }];
       }
 
-      // 如果切换到question类型，初始化options
+      // 如果切换到question类型, 初始化options
       if (updatedChallenge.type === 'question') {
         updatedChallenge.options = [];
       }
@@ -380,16 +380,16 @@ function ChallengesManagement() {
           type: challenge.type,
         };
 
-        // 如果是question类型，添加options字段
+        // 如果是question类型, 添加options字段
         if (challenge.type === 'question') {
           apiChallenge.options = challenge.options || [];
         }
 
-        // 处理flags格式，根据模式和类型确定正确的格式
+        // 处理flags格式, 根据模式和类型确定正确的格式
         let processedFlags;
 
         if (challenge.type === 'pods') {
-          // pods类型不需要flags，由后端自动生成
+          // pods类型不需要flags, 由后端自动生成
           processedFlags = [];
         } else if (mode === 'add') {
           // 创建模式：flags是字符串数组
@@ -397,7 +397,7 @@ function ChallengesManagement() {
             return typeof flag === 'string' ? flag : flag.value || '';
           });
         } else if (mode === 'edit') {
-          // 编辑模式：flags是对象数组，包含id和value
+          // 编辑模式：flags是对象数组, 包含id和value
           processedFlags = challenge.flags.map((flag) => {
             if (typeof flag === 'string') {
               return { id: 0, value: flag };
@@ -429,7 +429,7 @@ function ChallengesManagement() {
               to: policy.to || [],
             })) || [];
         } else if (challenge.type === 'question') {
-          // 对于question类型，flags不需要，直接使用options
+          // 对于question类型, flags不需要, 直接使用options
           apiChallenge.flags = []; // 清空flags
           apiChallenge.options = challenge.options || [];
         }

@@ -154,7 +154,7 @@ func DefaultBranding() Branding {
 					En:   "Challenge",
 				},
 				Subtitle: LocalizedText{
-					ZhCN: "加入深潜 CTF 社区，在真实场景中对抗、练习与成长。",
+					ZhCN: "加入深潜 CTF 社区, 在真实场景中对抗、练习与成长",
 					En:   "Join the elite community of hackers, compete in real-world challenges, and master the art of cybersecurity through hands-on experience.",
 				},
 				PrimaryAction: LocalizedText{
@@ -176,7 +176,7 @@ func DefaultBranding() Branding {
 					En:   "Cyber Security",
 				},
 				Subtitle: LocalizedText{
-					ZhCN: "从 Web 渗透到二进制分析，覆盖网络安全核心方向。",
+					ZhCN: "从 Web 渗透到二进制分析, 覆盖网络安全核心方向",
 					En:   "From web exploitation to binary analysis, our challenges cover every major domain of cybersecurity",
 				},
 			},
@@ -190,7 +190,7 @@ func DefaultBranding() Branding {
 					En:   "Competitions",
 				},
 				Subtitle: LocalizedText{
-					ZhCN: "报名即将开启的 CTF 赛事，与高手同场竞技。",
+					ZhCN: "报名即将开启的 CTF 赛事, 与高手同场竞技",
 					En:   "Register now for our upcoming CTF events and compete with the best",
 				},
 				Action: LocalizedText{
@@ -208,7 +208,7 @@ func DefaultBranding() Branding {
 					En:   "Performers",
 				},
 				Subtitle: LocalizedText{
-					ZhCN: "查看当前积分榜上的领先队伍。",
+					ZhCN: "查看当前积分榜上的领先队伍",
 					En:   "Meet the elite teams leading our global leaderboard",
 				},
 				Action: LocalizedText{

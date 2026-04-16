@@ -6,7 +6,7 @@ import Modal from './Modal';
 import Card from './Card';
 
 /**
- * IP 地址显示组件，点击后弹出 IP 地理位置反查对话框
+ * IP 地址显示组件, 点击后弹出 IP 地理位置反查对话框
  * @param {Object} props
  * @param {string} props.ip - IP 地址
  * @param {string} [props.className] - 额外的 CSS 类名

@@ -7,7 +7,7 @@ import StatusTag from './StatusTag';
 /**
  * 通用列表/表格组件（扩展自AdminList）
  * @param {Object} props
- * @param {Array} props.columns - 列定义，格式: [{key: 'id', label: 'ID', width: '10%'}, ...]
+ * @param {Array} props.columns - 列定义, 格式: [{key: 'id', label: 'ID', width: '10%'}, ...]
  * @param {Array} props.data - 列表数据
  * @param {Function} props.renderCell - 自定义单元格渲染函数 (item, column, rowIndex, colIndex) => ReactNode
  * @param {Function} props.onRowClick - 行点击事件
@@ -15,7 +15,7 @@ import StatusTag from './StatusTag';
  * @param {boolean} props.empty - 是否为空
  * @param {ReactNode|string} props.emptyContent - 空状态内容
  * @param {string} props.emptyMessage - 空状态文案（向后兼容）
- * @param {ReactNode} props.footer - 底部内容，通常是分页
+ * @param {ReactNode} props.footer - 底部内容, 通常是分页
  * @param {Function} props.rowClassName - 自定义行类名函数 (item, index) => string
  * @param {'default'|'striped'|'bordered'} props.variant - 表格变体
  * @param {boolean} props.animate - 是否启用行动画

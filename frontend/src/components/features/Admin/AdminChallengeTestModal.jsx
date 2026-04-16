@@ -62,7 +62,7 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
   const pollingTimeoutRef = useRef(null);
   const isOpenRef = useRef(isOpen);
 
-  // 保持 isOpenRef 与 isOpen 同步，供轮询回调使用
+  // 保持 isOpenRef 与 isOpen 同步, 供轮询回调使用
   useEffect(() => {
     isOpenRef.current = isOpen;
   }, [isOpen]);
@@ -86,7 +86,7 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
   const instanceDuration = Number(testStatus?.remote?.duration) || 0;
   const progressWidth = instanceDuration > 0 ? Math.max(0, Math.min(100, (timeLeft / instanceDuration) * 100)) : 0;
 
-  // 仅在弹窗打开期间轮询；同步 waiting/pending/running 状态
+  // 仅在弹窗打开期间轮询; 同步 waiting/pending/running 状态
   const startPolling = useCallback(
     (challengeId) => {
       stopPolling();
@@ -204,7 +204,7 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
     };
   }, [isOpen, isRunning, testStatus, timeLeft]);
 
-  // 启动测试靶机 — HTTP 成功后保持 loading，通过轮询等待 Running
+  // 启动测试靶机 — HTTP 成功后保持 loading, 通过轮询等待 Running
   const handleStartVictim = useCallback(async () => {
     setLoading((prev) => ({ ...prev, starting: true }));
     try {
@@ -231,7 +231,7 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
     }
   }, [challenge?.id, startPolling, t]);
 
-  // 停止测试靶机 — 后端同步执行，HTTP 返回后直接刷新状态
+  // 停止测试靶机 — 后端同步执行, HTTP 返回后直接刷新状态
   const handleStopVictim = useCallback(async () => {
     setLoading((prev) => ({ ...prev, stopping: true }));
     try {
@@ -361,7 +361,7 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
           </div>
         </div>
 
-        {/* 进度条：waiting 显示静态条，pending 显示闪动条，running 显示倒计时 */}
+        {/* 进度条：waiting 显示静态条, pending 显示闪动条, running 显示倒计时 */}
         {(isRunning || isWaiting || isPending || isTerminating) && (
           <div className="h-1.5 bg-neutral-700 rounded-full overflow-hidden">
             {isRunning ? (

@@ -227,7 +227,7 @@ function BrandingSettings() {
           <LocalizedField
             label={t('admin.branding.labels.heroSubtitle')}
             value={branding.home.hero.subtitle}
-            placeholderZh="加入深潜 CTF 社区，在真实场景中对抗、练习与成长。"
+            placeholderZh="加入深潜 CTF 社区, 在真实场景中对抗、练习与成长"
             placeholderEn="Join the elite community of hackers..."
             multiline
             rows={4}

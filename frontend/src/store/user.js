@@ -88,7 +88,7 @@ export const fetchUserInfo = () => async (dispatch) => {
 };
 
 /**
- * 获取当前用户可访问的 API 路由列表，存入 store 并派生访问标志
+ * 获取当前用户可访问的 API 路由列表, 存入 store 并派生访问标志
  */
 export const fetchAccessibleRoutes = () => async (dispatch) => {
   try {
@@ -97,7 +97,7 @@ export const fetchAccessibleRoutes = () => async (dispatch) => {
       dispatch(setRoutes(response.data ?? []));
     }
   } catch {
-    // 静默失败，routes 保持为空数组
+    // 静默失败, routes 保持为空数组
   }
 };
 

@@ -10,7 +10,7 @@ const FINGERPRINT_KEY = 'LXM';
 
 const fpPromise = FingerprintJS.load();
 
-// SHA-256 哈希，带非安全上下文回退
+// SHA-256 哈希, 带非安全上下文回退
 async function sha256Hex(input) {
   if (crypto.subtle) {
     const data = new TextEncoder().encode(input);
@@ -19,7 +19,7 @@ async function sha256Hex(input) {
       .map((b) => b.toString(16).padStart(2, '0'))
       .join('');
   }
-  // 非 HTTPS 环境回退：直接返回原始拼接字符串，后端会做 double-MD5
+  // 非 HTTPS 环境回退：直接返回原始拼接字符串, 后端会做 double-MD5
   return input;
 }
 
@@ -46,7 +46,7 @@ async function generateFingerprint() {
     const nonce = getOrCreateNonce();
     return await sha256Hex(result.visitorId + ':' + nonce);
   } catch {
-    // FingerprintJS 失败时仅用 nonce，仍保证唯一性
+    // FingerprintJS 失败时仅用 nonce, 仍保证唯一性
     const nonce = getOrCreateNonce();
     return await sha256Hex('fp-fallback:' + nonce);
   }
@@ -111,7 +111,7 @@ const updateGlobalLoading = (count) => {
 // 请求拦截器
 request.interceptors.request.use(
   async (config) => {
-    // 如果没有设置 noLoading 标识，则执行全局 loading 逻辑
+    // 如果没有设置 noLoading 标识, 则执行全局 loading 逻辑
     if (!config.noLoading) {
       startLoading();
       updateGlobalLoading(requestCount + 1);
@@ -131,7 +131,7 @@ request.interceptors.request.use(
 // 响应拦截器
 request.interceptors.response.use(
   async (response) => {
-    // 如果没有设置 noLoading 标识，则执行全局 loading 逻辑
+    // 如果没有设置 noLoading 标识, 则执行全局 loading 逻辑
     const { config } = response;
     if (!config.noLoading) {
       finishLoading();
@@ -183,7 +183,7 @@ request.interceptors.response.use(
     let errorMessage;
     if (error.response) {
       const { status, data } = error.response;
-      // responseType: 'blob' 时错误体也是 Blob，需异步解析
+      // responseType: 'blob' 时错误体也是 Blob, 需异步解析
       const resolveData = async () => {
         if (data instanceof Blob) {
           try {

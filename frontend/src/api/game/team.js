@@ -1,7 +1,7 @@
 import request from '../request';
 
 // 上传队伍头像
-// 请求参数: FormData，包含picture字段
+// 请求参数: FormData, 包含picture字段
 // 响应示例:
 // {
 //    "code": 200,

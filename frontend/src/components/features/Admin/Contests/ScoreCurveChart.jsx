@@ -6,11 +6,11 @@ import { useTranslation } from 'react-i18next';
  * 分数曲线预览图表（支持拖拽控制点调整 decay）
  *
  * 控制点设计：
- * - Static:  无控制点（水平线，无 decay）
+ * - Static:  无控制点（水平线, 无 decay）
  * - Linear:  一个控制点在曲线中段 ── 沿曲线拖动改变 decay（下降速率）
- * - Exponential: 一个控制点在曲线中段 ── 自由拖动，根据拖到的 (x,y) 反算 decay
+ * - Exponential: 一个控制点在曲线中段 ── 自由拖动, 根据拖到的 (x,y) 反算 decay
  *
- * score 和 minScore 仅通过输入框调整，不通过拖拽。
+ * score 和 minScore 仅通过输入框调整, 不通过拖拽
  */
 function ScoreCurveChart({ scoreType = 0, score = 1000, decay = 50, minScore = 100, onChange }) {
   const { t } = useTranslation();

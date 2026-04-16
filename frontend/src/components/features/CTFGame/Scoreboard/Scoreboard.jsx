@@ -19,7 +19,7 @@
  * @param {number} props.teams[].solves.PWN - PWN类题目解题数
  * @param {number} props.teams[].solves.REVERSE - 逆向类题目解题数
  * @param {number} props.teams[].solves.MISC - 杂项类题目解题数
- * @param {Object|null} props.userTeam - 当前用户所在队伍信息，格式同teams元素，null表示未加入队伍
+ * @param {Object|null} props.userTeam - 当前用户所在队伍信息, 格式同teams元素, null表示未加入队伍
  * @param {number} props.currentPage - 当前页码
  * @param {number} props.totalPages - 总页数
  * @param {Function} props.onPageChange - 页码变化处理函数

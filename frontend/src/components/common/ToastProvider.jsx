@@ -22,7 +22,7 @@ const ToastProvider = ({ children, position = 'top-right', maxToasts = 5 }) => {
             return prevToasts;
           }
         }
-        // FIFO: 若已满，移除最旧的（末尾），再添加新通知
+        // FIFO: 若已满, 移除最旧的（末尾）, 再添加新通知
         const existing = prevToasts.length >= maxToasts ? prevToasts.slice(0, maxToasts - 1) : prevToasts;
         return [{ id, title, description, color, timeout, hasCloseButton }, ...existing];
       });

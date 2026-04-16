@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// GenTestAttachment 不使用任务队列生成附件，直接生成
+// GenTestAttachment 不使用任务队列生成附件, 直接生成
 func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) model.RetVal {
 	challengeFlags, _, ret := db.InitChallengeFlagRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"challenge_id": challenge.ID},

@@ -40,7 +40,7 @@ function OAuthLogin() {
     );
   }
 
-  // 如果没有可用的OAuth提供商，不显示任何内容
+  // 如果没有可用的OAuth提供商, 不显示任何内容
   if (Object.keys(providers).length === 0) {
     return null;
   }

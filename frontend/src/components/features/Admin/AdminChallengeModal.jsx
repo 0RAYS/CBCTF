@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
  * 题目管理弹窗组件
  * @param {Object} props
  * @param {boolean} props.isOpen - 是否显示弹窗
- * @param {string} props.mode - 模式，'add'或'edit'
+ * @param {string} props.mode - 模式, 'add'或'edit'
  * @param {Object} props.challenge - 当前编辑的题目对象
  * @param {Array} props.categories - 分类列表
  * @param {Function} props.onClose - 关闭弹窗回调
@@ -195,7 +195,7 @@ function AdminChallengeModal({
   };
 
   const saveFullscreenEditor = () => {
-    // 如果值为空，使用默认模板
+    // 如果值为空, 使用默认模板
     const finalValue = fullscreenEditor.value || defaultYAML;
     onChange({ ...challenge, docker_compose: finalValue });
     closeFullscreenEditor();
@@ -210,7 +210,7 @@ function AdminChallengeModal({
 
   // docker_compose 更新
   const updateDockerCompose = (value) => {
-    // 如果值为空，使用默认模板
+    // 如果值为空, 使用默认模板
     const finalValue = value || defaultYAML;
     onChange({ ...challenge, docker_compose: finalValue });
   };
@@ -497,7 +497,7 @@ function AdminChallengeModal({
                 </div>
               </div>
 
-              {/* 如果是动态类型题目，显示输入 generator */}
+              {/* 如果是动态类型题目, 显示输入 generator */}
               {challenge.type === 'dynamic' && (
                 <div className="border-t border-neutral-700 pt-4">
                   <h3 className="text-lg font-mono text-neutral-50 mb-3">

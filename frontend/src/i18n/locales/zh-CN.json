@@ -68,7 +68,7 @@
       "disabled": "已禁用"
     },
     "modal": {
-      "deleteWarning": "此操作不可撤销。"
+      "deleteWarning": "此操作不可撤销"
     },
     "selectAll": "全选",
     "scoreboard": {
@@ -134,7 +134,7 @@
       "managementTitle": "{{label}}管理"
     },
     "tasks": {
-      "subtitle": "查看已完成/失败的任务记录，以及 Redis 中实时任务队列状态。",
+      "subtitle": "查看已完成/失败的任务记录, 以及 Redis 中实时任务队列状态",
       "tabs": {
         "history": "历史记录",
         "live": "实时队列"
@@ -184,26 +184,26 @@
       "title": "节点镜像",
       "control": {
         "title": "全局镜像总览",
-        "subtitle": "展示每个节点上的全部带可用 tag 镜像，并以各节点镜像并集作为全局镜像集合。"
+        "subtitle": "展示每个节点上的全部带可用 tag 镜像, 并以各节点镜像并集作为全局镜像集合"
       },
       "summary": {
         "unionLabel": "全局镜像集合"
       },
       "selection": {
         "title": "缺失镜像拉取",
-        "subtitle": "以各节点镜像并集为基准，展示每个节点缺失的镜像，并允许按节点和镜像组合选择拉取。"
+        "subtitle": "以各节点镜像并集为基准, 展示每个节点缺失的镜像, 并允许按节点和镜像组合选择拉取"
       },
       "intersection": {
         "title": "全局镜像缺失视图",
-        "subtitle": "此视图以各节点当前已存在的带 tag 镜像并集为基准。",
+        "subtitle": "此视图以各节点当前已存在的带 tag 镜像并集为基准",
         "empty": "全局镜像集合中暂无可用镜像"
       },
       "manual": {
         "title": "手动输入镜像拉取",
-        "subtitle": "选择节点后，可手动输入镜像名称，每行一个镜像，系统会按节点和镜像组合创建拉取任务。"
+        "subtitle": "选择节点后, 可手动输入镜像名称, 每行一个镜像, 系统会按节点和镜像组合创建拉取任务"
       },
       "statusTitle": "节点镜像清单",
-      "statusSubtitle": "每个节点会展示其当前可见的全部带 tag 镜像，并标出缺失的全局镜像。",
+      "statusSubtitle": "每个节点会展示其当前可见的全部带 tag 镜像, 并标出缺失的全局镜像",
       "node": {
         "missingTitle": "该节点缺失的全局镜像",
         "noMissing": "该节点没有缺失的全局镜像"
@@ -477,7 +477,7 @@
         "title": "网络流量关系图",
         "hero": {
           "kicker": "流量拓扑",
-          "subtitle": "更直观地展示 {{challenge}} 在当前时间窗内的入站、出站和内部流量路径。",
+          "subtitle": "更直观地展示 {{challenge}} 在当前时间窗内的入站、出站和内部流量路径",
           "windowAt": "窗口 {{start}} - {{end}}",
           "demoMode": "样例数据"
         },
@@ -497,8 +497,8 @@
         },
         "canvas": {
           "title": "拓扑画布",
-          "subtitle": "左侧为入站来源，中心为靶机，右侧为出站目标。",
-          "zoomHint": "滚轮缩放，按住拖动画布。"
+          "subtitle": "左侧为入站来源, 中心为靶机, 右侧为出站目标",
+          "zoomHint": "滚轮缩放, 按住拖动画布"
         },
         "filter": {
           "label": "协议过滤:",
@@ -517,7 +517,7 @@
         },
         "panel": {
           "selectedFlow": "选中流量",
-          "selectedFlowHint": "点击连线查看当前窗口中最热的传输路径。",
+          "selectedFlowHint": "点击连线查看当前窗口中最热的传输路径",
           "edgePath": "路径",
           "edgeBytes": "流量",
           "edgePackets": "报文数",
@@ -553,9 +553,9 @@
         },
         "toast": {
           "fetchFailed": "获取流量数据失败",
-          "demoFallback": "获取流量数据失败，使用样例数据预览效果"
+          "demoFallback": "获取流量数据失败, 使用样例数据预览效果"
         },
-        "demoNotice": "无法获取真实流量数据，当前展示的是示例数据。点击刷新按钮可重新尝试获取。"
+        "demoNotice": "无法获取真实流量数据, 当前展示的是示例数据点击刷新按钮可重新尝试获取"
       },
       "notices": {
         "title": "公告管理",
@@ -586,7 +586,7 @@
             "edit": "编辑公告",
             "delete": "删除公告"
           },
-          "deletePrompt": "确定要删除公告 \"{{title}}\" 吗？此操作不可恢复。"
+          "deletePrompt": "确定要删除公告 \"{{title}}\" 吗？此操作不可恢复"
         },
         "toast": {
           "fetchFailed": "获取公告列表失败",
@@ -602,13 +602,13 @@
         "title": "节点镜像",
         "control": {
           "title": "比赛镜像总览",
-          "subtitle": "展示每个节点当前的镜像，并聚焦于本次比赛直接所需的目标镜像集合。"
+          "subtitle": "展示每个节点当前的镜像, 并聚焦于本次比赛直接所需的目标镜像集合"
         },
         "labels": {
           "pullPolicy": "拉取策略",
-          "pullPolicyHint": "Always 强制拉取。IfNotPresent 仅对节点上缺失的镜像创建任务。Never 跳过创建拉取任务。",
+          "pullPolicyHint": "Always 强制拉取IfNotPresent 仅对节点上缺失的镜像创建任务Never 跳过创建拉取任务",
           "nodes": "目标节点",
-          "comboHint": "选择要拉取的节点/镜像组合。"
+          "comboHint": "选择要拉取的节点/镜像组合"
         },
         "filters": {
           "placeholder": "按镜像名称过滤..."
@@ -622,20 +622,20 @@
         },
         "selection": {
           "title": "拉取比赛镜像",
-          "subtitle": "以本次比赛所需镜像为基准，标记每个节点上缺失的镜像，并选择要拉取的节点/镜像组合。",
+          "subtitle": "以本次比赛所需镜像为基准, 标记每个节点上缺失的镜像, 并选择要拉取的节点/镜像组合",
           "selectedNodes": "已选择 {{count}} 个节点",
           "selectedTargets": "已选择 {{count}} 个组合",
           "nodeImages": "{{count}} 个镜像"
         },
         "intersection": {
           "title": "比赛镜像缺失视图",
-          "subtitle": "此视图以本次比赛直接所需的镜像为基准，已存在的节点标记为已存在，仅缺失的节点可选择拉取。",
+          "subtitle": "此视图以本次比赛直接所需的镜像为基准, 已存在的节点标记为已存在, 仅缺失的节点可选择拉取",
           "empty": "暂无可用镜像",
           "badge": "属于所有节点镜像并集的一部分"
         },
         "manual": {
           "title": "手动输入镜像拉取",
-          "subtitle": "选择节点后，可手动输入镜像名称，每行一个镜像，系统会按节点和镜像组合创建拉取任务。",
+          "subtitle": "选择节点后, 可手动输入镜像名称, 每行一个镜像, 系统会按节点和镜像组合创建拉取任务",
           "placeholder": "registry.example.com/team/image:tag\nbusybox:latest",
           "count": "已输入 {{count}} 个镜像"
         },
@@ -658,7 +658,7 @@
           "never": "Never - 仅使用本地镜像"
         },
         "statusTitle": "比赛镜像清单",
-        "statusSubtitle": "每个节点会展示其当前可见的全部带 tag 镜像，并标出缺失的比赛镜像。",
+        "statusSubtitle": "每个节点会展示其当前可见的全部带 tag 镜像, 并标出缺失的比赛镜像",
         "empty": "暂无节点镜像数据",
         "status": {
           "present": "已存在",
@@ -725,7 +725,7 @@
             "delete": "删除团队",
             "kick": "移除团队成员"
           },
-          "deletePrompt": "确定要删除团队 {{name}} 吗？此操作不可恢复。",
+          "deletePrompt": "确定要删除团队 {{name}} 吗？此操作不可恢复",
           "kickPrompt": "从团队 {{name}} 中移出成员：",
           "selectMemberLabel": "选择要移出的成员",
           "selectMemberPlaceholder": "请选择成员"
@@ -827,10 +827,10 @@
           "newRule": "添加新规则..."
         },
         "help": {
-          "flagPrefix": "用于生成flag的前缀，例如：CBCTF{flag}",
+          "flagPrefix": "用于生成flag的前缀, 例如：CBCTF{flag}",
           "teamSize": "每个参赛团队的最大人数",
           "teamVictims": "每个参赛团队的最大靶机数",
-          "captcha": "加入比赛所需的邀请码，留空则允许任意报名。",
+          "captcha": "加入比赛所需的邀请码, 留空则允许任意报名",
           "hiddenContest": "隐藏后比赛将无法访问",
           "bloodBonus": "对前三个解出题目的队伍提供额外加分"
         },
@@ -853,7 +853,7 @@
           "other": "第{{rank}}名"
         },
         "validation": {
-          "invalidDate": "日期格式无效，请使用格式：YYYY-MM-DD HH:MM",
+          "invalidDate": "日期格式无效, 请使用格式：YYYY-MM-DD HH:MM",
           "titleRequired": "标题不能为空",
           "startTimeRequired": "请选择开始时间",
           "endTimeRequired": "请选择结束时间",
@@ -884,7 +884,7 @@
         },
         "page": {
           "title": "靶机管理",
-          "subtitle": "管理比赛中的靶机实例，支持批量开启和停止操作",
+          "subtitle": "管理比赛中的靶机实例, 支持批量开启和停止操作",
           "refresh": "刷新"
         },
         "showDeleted": "显示已删除",
@@ -903,9 +903,9 @@
           "clear": "清空",
           "pageHint": "左右翻页",
           "estimatedTeams": "预计抽取 {{count}} 个队伍",
-          "teamSelectionHint": "后端会基于当前比赛全部队伍，按该比例随机抽取并启动靶机。当前比赛队伍总数：{{total}}",
+          "teamSelectionHint": "后端会基于当前比赛全部队伍, 按该比例随机抽取并启动靶机当前比赛队伍总数：{{total}}",
           "durationUnit": "秒",
-          "durationHint": "批量启动的每个靶机会按该时长自动过期。",
+          "durationHint": "批量启动的每个靶机会按该时长自动过期",
           "durationPreview": "预览：{{value}}",
           "invalidDuration": "请输入大于 0 的秒数",
           "noChallenges": "当前条件下没有题目",
@@ -956,8 +956,8 @@
           "startConfirm": "确认开启",
           "startPrompt": "确定要为以下选中的组合开启靶机吗？",
           "challengeDetailsTitle": "题目详情",
-          "challengeDetailsHint": "当前共有 {{count}} 道题目，可分页查看更完整的信息并直接勾选。",
-          "challengeDetailsEmpty": "当前没有可显示的题目信息。",
+          "challengeDetailsHint": "当前共有 {{count}} 道题目, 可分页查看更完整的信息并直接勾选",
+          "challengeDetailsEmpty": "当前没有可显示的题目信息",
           "selectChallenge": "选择此题",
           "challengeDescription": "题目描述",
           "challengeDescriptionEmpty": "暂无描述",
@@ -974,15 +974,15 @@
           "selectedChallenges": "选中的题目 ({{count}}个):",
           "teamRatioTitle": "队伍抽取比例",
           "teamRatioValue": "随机抽取 {{ratio}}% 的队伍",
-          "teamRatioHint": "按当前比赛总队伍数估算，约为 {{total}} 个队伍中的 {{count}} 个。实际抽样由后端执行。",
+          "teamRatioHint": "按当前比赛总队伍数估算, 约为 {{total}} 个队伍中的 {{count}} 个实际抽样由后端执行",
           "durationTitle": "靶机生存时长",
           "durationValue": "{{seconds}} 秒",
-          "durationHint": "本次批量启动的每个靶机都会使用相同的生存时长，预览为 {{value}}。",
+          "durationHint": "本次批量启动的每个靶机都会使用相同的生存时长, 预览为 {{value}}",
           "summaryPrefix": "将为 ",
           "summaryMiddle": " 个题目 × ",
           "summaryEquals": " 个团队 =",
           "summarySuffix": " 个靶机组合开启靶机",
-          "startWarning": "警告：一次性启动过多容器可能导致不可预知的问题，甚至影响服务可用性、集群稳定性或造成宕机。请谨慎确认本次启动规模。",
+          "startWarning": "警告：一次性启动过多容器可能导致不可预知的问题, 甚至影响服务可用性、集群稳定性或造成宕机请谨慎确认本次启动规模",
           "stopTitle": "停止靶机",
           "stopConfirm": "停止",
           "stopPrompt": "确定要停止选中的 {{count}} 个靶机吗？"
@@ -1091,9 +1091,9 @@
           "confirmDeleteTitle": "确认删除",
           "confirmDeletePrompt": "确定要删除此作弊事件吗？",
           "confirmDeleteAllTitle": "确认清空全部",
-          "confirmDeleteAllPrompt": "确定要删除此比赛的所有作弊事件吗？此操作不可撤销。",
+          "confirmDeleteAllPrompt": "确定要删除此比赛的所有作弊事件吗？此操作不可撤销",
           "confirmCheckTitle": "手动作弊检测",
-          "confirmCheckPrompt": "将对此比赛执行全部作弊检测，是否继续？"
+          "confirmCheckPrompt": "将对此比赛执行全部作弊检测, 是否继续？"
         },
         "form": {
           "verdict": "判断结果",
@@ -1144,7 +1144,7 @@
         "startButton": "启动生成器",
         "stopButton": "停止所选",
         "noGenerators": "当前没有运行中的生成器",
-        "noGeneratorsDesc": "为动态题目启动生成器，以启用按队伍生成文件附件功能。",
+        "noGeneratorsDesc": "为动态题目启动生成器, 以启用按队伍生成文件附件功能",
         "noDynamicChallenges": "此比赛中没有动态类型题目",
         "selectChallenges": "选择要启动生成器的题目",
         "startSelected": "启动所选",
@@ -1255,7 +1255,7 @@
       "startButton": "启动生成器",
       "stopButton": "停止所选",
       "noGenerators": "当前没有运行中的生成器",
-      "noGeneratorsDesc": "为动态题目启动生成器，以启用按队伍生成文件附件功能。",
+      "noGeneratorsDesc": "为动态题目启动生成器, 以启用按队伍生成文件附件功能",
       "noDynamicChallenges": "系统中暂无动态类型题目",
       "selectChallenges": "选择要启动生成器的题目",
       "startSelected": "启动所选",
@@ -1391,7 +1391,7 @@
       "delete": {
         "title": "确认删除题目",
         "prompt": "您确定要删除这个题目吗？",
-        "warning": "⚠️ 此操作无法撤销，请谨慎操作"
+        "warning": "⚠️ 此操作无法撤销, 请谨慎操作"
       },
       "sections": {
         "basic": "基本信息",
@@ -1440,11 +1440,11 @@
         "confirmDelete": "确认删除"
       },
       "empty": {
-        "options": "暂无选项，请添加选项"
+        "options": "暂无选项, 请添加选项"
       },
       "podsNotice": {
         "flagFormat": "flag格式: {{format}}",
-        "flagPrefix": "flag `环境变量` / `文件挂载` 必须以 `FLAG` 为前缀; 变量名可重复，不作为注入时的标识符使用",
+        "flagPrefix": "flag `环境变量` / `文件挂载` 必须以 `FLAG` 为前缀; 变量名可重复, 不作为注入时的标识符使用",
         "flagVolume": "flag `文件挂载` 通过 volumes.FLAG_x.labels.value 字段指定值",
         "services": "services参数只接受: image, ports, environment, volumes, working_dir, command, cpus, mem_limit",
         "networks": "可通过networks配置多个网段, 每个容器可占据多个网段",
@@ -1455,7 +1455,7 @@
       },
       "yamlNotice": {
         "flagFormat": "flag格式: {{format}}",
-        "flagPrefix": "flag `环境变量` / `文件挂载` 必须以 `FLAG` 为前缀; 变量名可重复，不作为注入时的标识符使用",
+        "flagPrefix": "flag `环境变量` / `文件挂载` 必须以 `FLAG` 为前缀; 变量名可重复, 不作为注入时的标识符使用",
         "flagVolume": "flag `文件挂载` 通过 labels value 字段指定值",
         "dockerParams": "Docker参数只接受: image, ports, environment, volumes, working_dir, command",
         "containerUnique": "同一道题目中, 所有的容器名必须唯一, 作为唯一 DNS Hostname",
@@ -1890,7 +1890,7 @@
           },
           "update": "更新密码",
           "hintTitle": "账户安全提示",
-          "hintBody": "作为管理员，请确保使用强密码并定期更新。请勿与他人共享您的登录凭据，并确保您的操作设备安全。"
+          "hintBody": "作为管理员, 请确保使用强密码并定期更新请勿与他人共享您的登录凭据, 并确保您的操作设备安全"
         }
       },
       "validation": {
@@ -2167,17 +2167,17 @@
       },
       "update": {
         "title": "更新配置确认",
-        "prompt": "即将更新系统配置，是否继续？",
-        "warning": "提示：配置错误可能导致服务异常，请仔细核查后再继续。",
+        "prompt": "即将更新系统配置, 是否继续？",
+        "warning": "提示：配置错误可能导致服务异常, 请仔细核查后再继续",
         "confirm": "继续更新",
         "cancel": "取消"
       },
       "restart": {
         "title": "需要重启服务",
         "manualTitle": "重启系统确认",
-        "prompt": "系统配置已更新，是否立即重启以使配置生效？",
-        "manualPrompt": "系统即将重启，是否继续？",
-        "warning": "提示：重启期间系统将短暂不可用。",
+        "prompt": "系统配置已更新, 是否立即重启以使配置生效？",
+        "manualPrompt": "系统即将重启, 是否继续？",
+        "warning": "提示：重启期间系统将短暂不可用",
         "confirm": "立即重启",
         "cancel": "暂不重启",
         "inProgress": "正在重启..."
@@ -2259,7 +2259,7 @@
     },
     "branding": {
       "title": "品牌设置",
-      "identityHint": "统一配置前台首页、导航、页脚和浏览器标签中展示的品牌内容。",
+      "identityHint": "统一配置前台首页、导航、页脚和浏览器标签中展示的品牌内容",
       "actions": {
         "uploadLogo": "上传首页 Logo"
       },
@@ -2380,14 +2380,14 @@
   "oauth": {
     "callback": {
       "errorWithReason": "登录失败：{{reason}}",
-      "tokenMissing": "登录会话已过期，请重试。",
+      "tokenMissing": "登录会话已过期, 请重试",
       "toast": {
         "success": "OAuth登录成功",
         "failed": "OAuth登录失败"
       },
       "processing": {
         "title": "正在处理OAuth登录...",
-        "subtitle": "请稍候，正在验证您的身份"
+        "subtitle": "请稍候, 正在验证您的身份"
       },
       "success": {
         "title": "登录成功！",
@@ -2408,8 +2408,8 @@
     },
     "auth": {
       "loginSuccess": "登录成功",
-      "loginFailed": "登录失败，请检查用户名和密码。",
-      "registerFailed": "注册失败，请检查填写内容后重试。"
+      "loginFailed": "登录失败, 请检查用户名和密码",
+      "registerFailed": "注册失败, 请检查填写内容后重试"
     },
     "user": {
       "profileUpdated": "个人资料已更新",
@@ -2423,10 +2423,10 @@
       "fetchAdminFailed": "获取管理员信息失败"
     },
     "common": {
-      "updateFailed": "更新失败，请重试。",
-      "sendFailed": "发送失败，请重试。",
-      "deleteFailed": "删除失败，请重试。",
-      "operationFailed": "操作失败，请重试。"
+      "updateFailed": "更新失败, 请重试",
+      "sendFailed": "发送失败, 请重试",
+      "deleteFailed": "删除失败, 请重试",
+      "operationFailed": "操作失败, 请重试"
     },
     "game": {
       "fetchListFailed": "获取比赛列表失败"
@@ -2440,16 +2440,16 @@
     }
   },
   "errors": {
-    "unauthorized": "登录已过期，请重新登录。",
-    "forbidden": "您没有权限访问该资源。",
-    "notFound": "该页面或资源不存在。",
-    "serverError": "服务器出现问题，请稍后重试。",
-    "badGateway": "服务器暂时无法访问，请稍后再试。",
-    "serviceUnavailable": "服务暂时不可用，请稍后再试。",
-    "gatewayTimeout": "服务器响应超时，请重试。",
-    "requestFailed": "请求失败，请重试。",
-    "requestTimeout": "请求超时，请检查网络连接。",
-    "networkError": "无法连接到服务器，请检查网络后重试。"
+    "unauthorized": "登录已过期, 请重新登录",
+    "forbidden": "您没有权限访问该资源",
+    "notFound": "该页面或资源不存在",
+    "serverError": "服务器出现问题, 请稍后重试",
+    "badGateway": "服务器暂时无法访问, 请稍后再试",
+    "serviceUnavailable": "服务暂时不可用, 请稍后再试",
+    "gatewayTimeout": "服务器响应超时, 请重试",
+    "requestFailed": "请求失败, 请重试",
+    "requestTimeout": "请求超时, 请检查网络连接",
+    "networkError": "无法连接到服务器, 请检查网络后重试"
   },
   "user": {
     "settings": {
@@ -2472,11 +2472,11 @@
       },
       "updatePassword": "更新密码",
       "deleteAccount": "删除账户",
-      "deleteAccountHint": "删除账户后无法恢复，请谨慎操作。",
+      "deleteAccountHint": "删除账户后无法恢复, 请谨慎操作",
       "deleteAccountAction": "删除账户",
-      "deleteAccountConfirm": "确定要删除你的账户吗？此操作无法撤销。",
+      "deleteAccountConfirm": "确定要删除你的账户吗？此操作无法撤销",
       "verifyEmail": "验证邮箱",
-      "verifyEmailHint": "我们会向你的邮箱发送验证链接，请检查收件箱并按提示操作。",
+      "verifyEmailHint": "我们会向你的邮箱发送验证链接, 请检查收件箱并按提示操作",
       "validation": {
         "currentPasswordRequired": "当前密码为必填"
       }
@@ -2584,7 +2584,7 @@
         "submitFlag": "提交 Flag"
       },
       "initialize": {
-        "message": "该题目尚未初始化，初始化后即可查看内容。",
+        "message": "该题目尚未初始化, 初始化后即可查看内容",
         "loading": "初始化中...",
         "action": "初始化题目"
       },
@@ -2674,12 +2674,12 @@
         {
           "date": "2024-02-15",
           "title": "报名开启",
-          "description": "报名开启，队伍可开始报名"
+          "description": "报名开启, 队伍可开始报名"
         },
         {
           "date": "2024-02-16",
           "title": "比赛开始",
-          "description": "题目发布，比赛开始"
+          "description": "题目发布, 比赛开始"
         },
         {
           "date": "2024-02-17",
@@ -2704,7 +2704,7 @@
         "disbandTeam": "解散队伍",
         "editTeam": "编辑队伍",
         "description": "队伍描述",
-        "noDescription": "暂无队伍描述。",
+        "noDescription": "暂无队伍描述",
         "invitationCode": "邀请码",
         "teamMembers": "队伍成员",
         "leader": "队长",
@@ -2716,7 +2716,7 @@
         },
         "disbandModal": {
           "title": "解散队伍",
-          "message": "确定要解散队伍吗？此操作不可撤销。",
+          "message": "确定要解散队伍吗？此操作不可撤销",
           "confirm": "解散"
         }
       },
@@ -2784,9 +2784,9 @@
         "initSuccess": "题目初始化成功",
         "initFailed": "初始化失败",
         "resetSuccess": "Flag 重置中",
-        "resetFailed": "重置失败，请重试。",
+        "resetFailed": "重置失败, 请重试",
         "launchSuccess": "靶机启动中",
-        "launchFailed": "靶机启动失败，请重试。",
+        "launchFailed": "靶机启动失败, 请重试",
         "extendSuccess": "延长时间成功",
         "extendFailed": "延长时间失败",
         "destroySuccess": "靶机已销毁",
@@ -2830,17 +2830,17 @@
     },
     "welcome": {
       "title": "欢迎来到 CBCTF",
-      "subtitle": "初次参加 CTF？了解一下比赛流程。",
+      "subtitle": "初次参加 CTF？了解一下比赛流程",
       "step1": "加入比赛",
-      "step1Desc": "浏览赛事，和队伍一起报名参赛",
+      "step1Desc": "浏览赛事, 和队伍一起报名参赛",
       "step2": "解题得旗",
       "step2Desc": "在 Web、密码、逆向、取证、二进制等方向中寻找 flag",
       "step3": "积分排名",
       "step3Desc": "一血奖励最快解出每道题目的参赛者",
       "dismiss": "知道了"
     },
-    "noGamesDescription": "暂无已发布的比赛，请稍后再来查看，或联系主办方。",
-    "noChallengesDescription": "题目尚未发布，主办方将在比赛开始时释放题目。"
+    "noGamesDescription": "暂无已发布的比赛, 请稍后再来查看, 或联系主办方",
+    "noChallengesDescription": "题目尚未发布, 主办方将在比赛开始时释放题目"
   },
   "utils": {
     "time": {

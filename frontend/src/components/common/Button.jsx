@@ -5,12 +5,12 @@ import { useTranslation } from 'react-i18next';
  * 通用按钮组件
  * @param {Object} props
  * @param {React.ReactNode} props.children - 按钮内容
- * @param {React.ReactNode} props.icon - 按钮图标，显示在文字左侧
+ * @param {React.ReactNode} props.icon - 按钮图标, 显示在文字左侧
  * @param {function} props.onClick - 点击事件回调
  * @param {string} props.variant - 按钮风格: 'default', 'primary', 'danger', 'outline', 'ghost'
  * @param {string} props.size - 按钮大小: 'sm', 'md', 'lg', 'action', 'icon'
  * @param {string} props.align - 内容对齐方式: 'center', 'left', 'right', 'icon-left'
- * @param {string} props.textColor - 文字颜色，覆盖variant默认文字颜色
+ * @param {string} props.textColor - 文字颜色, 覆盖variant默认文字颜色
  * @param {boolean} props.fullWidth - 是否占满宽度
  * @param {boolean} props.disabled - 是否禁用
  * @param {boolean} props.loading - 是否加载中
@@ -36,7 +36,7 @@ function Button({
 }) {
   const { t } = useTranslation();
 
-  // 按钮风格变体（已移除 hover glow，改用 border/opacity 过渡）
+  // 按钮风格变体（已移除 hover glow, 改用 border/opacity 过渡）
   const variants = {
     default: 'bg-black/30 border-neutral-300/30 text-neutral-400 hover:border-neutral-300 hover:text-neutral-300',
     primary: 'border-geek-400 text-geek-400 hover:bg-geek-400/10 hover:border-geek-400/80',
@@ -70,7 +70,7 @@ function Button({
     return 'px-6';
   };
 
-  // 基础样式（含 focus-visible ring，替代原先的 outline-none）
+  // 基础样式（含 focus-visible ring, 替代原先的 outline-none）
   const buttonClasses = `
     relative border rounded-md font-mono transition-colors
     focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70 focus-visible:ring-offset-1 focus-visible:ring-offset-black
@@ -83,7 +83,7 @@ function Button({
     ${className}
   `;
 
-  // 动画属性：使用 opacity 替代 scale，更克制
+  // 动画属性：使用 opacity 替代 scale, 更克制
   const motionProps =
     animate && !disabled && !loading
       ? {

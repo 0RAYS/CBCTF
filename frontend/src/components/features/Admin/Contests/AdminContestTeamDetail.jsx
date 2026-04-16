@@ -5,7 +5,7 @@ import { Button, Pagination, Card, EmptyState, IpAddress } from '../../../../com
 import { useTranslation } from 'react-i18next';
 
 /**
- * 队伍详情展示组件，展示最近提交、队伍题解、靶机访问流量和Flag信息
+ * 队伍详情展示组件, 展示最近提交、队伍题解、靶机访问流量和Flag信息
  * @param {Object} props
  * @param {Array} props.recentSubmissions - 最近提交数据
  * @param {Array} props.teamWriteups - 队伍提交的题解

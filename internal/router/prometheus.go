@@ -15,7 +15,7 @@ import (
 )
 
 func RegisterMetricsRouter(router *gin.Engine) {
-	// 不使用默认 registry，防止重启时重复注册导致 panic
+	// 不使用默认 registry, 防止重启时重复注册导致 panic
 	var (
 		registry                         = prometheus.NewRegistry()
 		registerer prometheus.Registerer = registry

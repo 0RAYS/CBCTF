@@ -91,7 +91,7 @@ const mapChallengeStatusToViewModel = (challenge, statusData = null) => {
 const getContestStatus = (contest, teamInfo) => {
   const now = new Date().getTime();
   const start = new Date(contest.start).getTime();
-  const end = start + contest.duration * 1000; // duration 是秒，转换为毫秒
+  const end = start + contest.duration * 1000; // duration 是秒, 转换为毫秒
 
   return {
     status: now < start ? 'upcoming' : now > end ? 'ended' : 'running',
@@ -192,7 +192,7 @@ function GameChallengesPage() {
     fetchContestAndChallenges();
   }, [contestId]);
 
-  // 当当前页变化时，重新获取题目数据
+  // 当当前页变化时, 重新获取题目数据
   useEffect(() => {
     if (contestId && currentPage > 0) {
       fetchChallengesWithFilters(currentPage, selectedCategory, unsolvedOnly);
@@ -453,7 +453,7 @@ function GameChallengesPage() {
   // 处理题目点击
   const handleChallengeClick = async (challenge) => {
     try {
-      // 获取题目状态，包含附件、靶机信息和初始化状态
+      // 获取题目状态, 包含附件、靶机信息和初始化状态
       const statusRes = await getChallengeStatus(contestId, challenge.id);
       if (statusRes.code === 200) {
         const updatedChallenge = mapChallengeStatusToViewModel(challenge, statusRes.data);

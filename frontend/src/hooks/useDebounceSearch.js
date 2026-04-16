@@ -2,11 +2,11 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 
 /**
  * 防抖搜索 Hook
- * @param {Function} searchFn - 搜索函数，接收 query 参数
+ * @param {Function} searchFn - 搜索函数, 接收 query 参数
  * @param {Object} options - 配置选项
- * @param {number} options.delay - 防抖延迟时间（毫秒），默认 300ms
- * @param {number} options.minLength - 最小搜索长度，默认 1
- * @param {boolean} options.immediate - 是否立即执行首次搜索，默认 false
+ * @param {number} options.delay - 防抖延迟时间（毫秒）, 默认 300ms
+ * @param {number} options.minLength - 最小搜索长度, 默认 1
+ * @param {boolean} options.immediate - 是否立即执行首次搜索, 默认 false
  * @returns {Object} { query, setQuery, results, loading, error, reset }
  *
  * @example
@@ -29,7 +29,7 @@ export function useDebounceSearch(searchFn, options = {}) {
   // 使用 ref 追踪最新的搜索请求
   const abortControllerRef = useRef(null);
   const mountedRef = useRef(true);
-  // 用 ref 持有 searchFn，避免因 inline 函数引用变化导致 executeSearch 重建
+  // 用 ref 持有 searchFn, 避免因 inline 函数引用变化导致 executeSearch 重建
   const searchFnRef = useRef(searchFn);
   useEffect(() => {
     searchFnRef.current = searchFn;
@@ -74,7 +74,7 @@ export function useDebounceSearch(searchFn, options = {}) {
 
   // 防抖效果
   useEffect(() => {
-    // 如果查询为空或长度不足，清空结果
+    // 如果查询为空或长度不足, 清空结果
     if (!query || query.length < minLength) {
       setResults([]);
       setLoading(false);

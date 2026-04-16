@@ -173,7 +173,7 @@ export const resetChallenge = (contestId, challengeId) => {
 };
 
 // 上传题解
-// 请求参数为FormData，包含writeup文件
+// 请求参数为FormData, 包含writeup文件
 // 请求示例响应:
 // {
 //    "code": 200,

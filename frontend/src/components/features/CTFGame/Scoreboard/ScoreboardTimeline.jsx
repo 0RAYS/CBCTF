@@ -14,7 +14,7 @@ function ScoreboardTimeline({ timelineData = [] }) {
   const [selectedTeams, setSelectedTeams] = useState([]);
   const [chartKey, setChartKey] = useState(0);
 
-  // 处理时间线数据，转换为图表格式
+  // 处理时间线数据, 转换为图表格式
   useEffect(() => {
     if (!timelineData || timelineData.length === 0) {
       setChartData([]);
@@ -42,7 +42,7 @@ function ScoreboardTimeline({ timelineData = [] }) {
           .filter((point) => point.time <= time)
           .sort((a, b) => new Date(b.time) - new Date(a.time))[0];
 
-        // 如果找到分数，使用该分数；否则使用0（从0开始）
+        // 如果找到分数, 使用该分数; 否则使用0（从0开始）
         dataPoint[`team_${team.id}`] = teamScore ? teamScore.score : 0;
       });
 
@@ -142,7 +142,7 @@ function ScoreboardTimeline({ timelineData = [] }) {
         formatter: function (params) {
           let result = `<div style="margin-bottom: 8px; font-family: 'Maple Mono', 'Source Han Sans SC', ui-monospace, monospace; color: #9CA3AF;">${params[0].axisValue}</div>`;
           params.forEach((param) => {
-            // 显示所有队伍，包括0分
+            // 显示所有队伍, 包括0分
             const team = timelineData.find((t) => `#${t.rank} ${t.name}` === param.seriesName);
             if (team) {
               result += `<div style="color: ${param.color}; margin: 2px 0;">${param.seriesName}: ${formatScore(param.value)}</div>`;

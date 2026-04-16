@@ -88,7 +88,7 @@ function AdminContestChallengesPage() {
     }
   }, [filterType, filterCategory, nameQuery]);
 
-  // 当当前页变化时，重新获取数据
+  // 当当前页变化时, 重新获取数据
   useEffect(() => {
     if (id && currentPage > 0) {
       fetchChallengesWithFilters(currentPage);
