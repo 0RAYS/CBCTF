@@ -213,7 +213,7 @@
       "title": "系统状态",
       "realtime": "实时监控",
       "cards": {
-        "serverIp": "服务器IP",
+        "requestIp": "IP",
         "users": "用户数量",
         "contests": "赛事数量",
         "challenges": "题目数量",

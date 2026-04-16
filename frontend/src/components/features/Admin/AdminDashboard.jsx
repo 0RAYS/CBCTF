@@ -49,7 +49,7 @@ function AdminDashboard({ status, chartContent, extraContent }) {
 
         {/* 状态卡片网格 */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <StatCard title={t('admin.dashboard.cards.serverIp')} value={status?.ip || t('common.notAvailable')} />
+          <StatCard title={t('admin.dashboard.cards.requestIp')} value={status?.ip || t('common.notAvailable')} />
           <StatCard title={t('admin.dashboard.cards.users')} value={status?.users || 0} />
           <StatCard title={t('admin.dashboard.cards.contests')} value={status?.contests || 0} />
           <StatCard title={t('admin.dashboard.cards.challenges')} value={status?.challenges || 0} />
