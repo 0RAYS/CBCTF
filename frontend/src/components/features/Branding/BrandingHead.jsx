@@ -36,17 +36,17 @@ const resolveRouteTitle = (pathname, t) => {
 function BrandingHead() {
   const location = useLocation();
   const { t, i18n } = useTranslation();
-  const { browserTitle, browserDescription } = useBranding();
+  const { browserTitle, browserDescription, siteName } = useBranding();
 
   useEffect(() => {
     const titleSuffix = resolveRouteTitle(location.pathname, t);
-    document.title = titleSuffix ? `${browserTitle} - ${titleSuffix}` : browserTitle;
+    document.title = titleSuffix ? `${browserTitle} - ${titleSuffix}` : siteName || browserTitle;
 
     const description = document.querySelector('meta[name="description"]');
     if (description) {
       description.setAttribute('content', browserDescription);
     }
-  }, [browserDescription, browserTitle, i18n.resolvedLanguage, location.pathname, t]);
+  }, [browserDescription, browserTitle, i18n.resolvedLanguage, location.pathname, siteName, t]);
 
   return null;
 }

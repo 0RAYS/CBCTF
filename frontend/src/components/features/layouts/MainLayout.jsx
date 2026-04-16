@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useBranding } from '../../../hooks/useBranding';
+
 function MainLayout() {
   const location = useLocation();
   const navigate = useNavigate();
