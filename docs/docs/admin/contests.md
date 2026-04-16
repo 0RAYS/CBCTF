@@ -10,16 +10,16 @@ sidebar_position: 5
 创建 → 配置题目 → 参赛者注册 → 比赛进行中 → 结束后处理
 ```
 
-1. **创建比赛**：配置名称、时间、flag 前缀、队伍规模等基础信息
-2. **添加题目**：从全局题库选择并加入比赛，可覆盖比赛特定参数
-3. **配置计分**：为每个 flag 设置计分类型和参数
-4. **镜像预热**：比赛开始前 30-60 分钟拉取镜像到所有节点
-5. **参赛管理**：比赛中管理队伍、发布公告、处理作弊
-6. **赛后处理**：收集 Writeup、导出数据
+1. **创建比赛**: 配置名称、时间、flag 前缀、队伍规模等基础信息
+2. **添加题目**: 从全局题库选择并加入比赛, 可覆盖比赛特定参数
+3. **配置计分**: 为每个 flag 设置计分类型和参数
+4. **镜像预热**: 比赛开始前 30-60 分钟拉取镜像到所有节点
+5. **参赛管理**: 比赛中管理队伍、发布公告、处理作弊
+6. **赛后处理**: 收集 Writeup、导出数据
 
 ## 比赛状态切换
 
-平台根据 `start` 和 `duration` 字段自动切换状态，无需手动操作：
+平台根据 `start` 和 `duration` 字段自动切换状态, 无需手动操作: 
 
 | 时间条件 | 状态 |
 |---------|------|
@@ -31,7 +31,7 @@ sidebar_position: 5
 
 通过 `GET /admin/contests/:contestID/teams`（`admin:team:list`）查看所有队伍。
 
-管理操作：
+管理操作: 
 
 | 操作 | API | 权限 |
 |------|-----|------|
@@ -49,7 +49,7 @@ sidebar_position: 5
 
 ## 流量捕获
 
-管理员可为指定队伍的靶机下载流量捕获文件：
+管理员可为指定队伍的靶机下载流量捕获文件: 
 
 ```
 GET /admin/contests/:contestID/teams/:teamID/victims/:victimID/traffic/download
@@ -59,17 +59,17 @@ GET /admin/contests/:contestID/teams/:teamID/victims/:victimID/traffic/download
 
 ## 公告发布
 
-通过 `POST /admin/contests/:contestID/notices`（`admin:notice:create`）发布公告，平台通过 WebSocket 实时推送给所有在线的参赛者。
+通过 `POST /admin/contests/:contestID/notices`（`admin:notice:create`）发布公告, 平台通过 WebSocket 实时推送给所有在线的参赛者。
 
 ## 镜像预热
 
-通过 `POST /admin/contests/:contestID/images`（`admin:image:pull`）触发将该比赛所有题目的容器镜像预拉取到各 Kubernetes 节点，避免比赛开始时因拉取镜像导致延迟。
+通过 `POST /admin/contests/:contestID/images`（`admin:image:pull`）触发将该比赛所有题目的容器镜像预拉取到各 Kubernetes 节点, 避免比赛开始时因拉取镜像导致延迟。
 
 **建议在比赛开始前 30-60 分钟执行。**
 
 ## Writeup 收集
 
-选手上传 Writeup 后，管理员可通过以下方式访问：
+选手上传 Writeup 后, 管理员可通过以下方式访问: 
 
 ```
 GET /admin/contests/:contestID/teams/:teamID/writeups        # 列表（需 admin:team_writeup:list）
@@ -82,4 +82,4 @@ GET /admin/contests/:contestID/teams/:teamID/writeups/:fileID  # 下载（需 ad
 
 ## 排行榜
 
-管理员视角排行榜通过 `GET /admin/contests/:contestID/rank` 查看（`admin:contest:rank`），功能与选手视图相同但不受隐藏比赛限制。
+管理员视角排行榜通过 `GET /admin/contests/:contestID/rank` 查看（`admin:contest:rank`）, 功能与选手视图相同但不受隐藏比赛限制。

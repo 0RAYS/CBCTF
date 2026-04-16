@@ -32,7 +32,7 @@ export default function Home() {
   return (
     <Layout
       title={`${siteConfig.title}`}
-      description="Kubernetes 原生 CTF 竞赛平台，支持动态容器靶机、VPC 网络隔离、完整赛事管理">
+      description="Kubernetes 原生 CTF 竞赛平台, 支持动态容器靶机、VPC 网络隔离、完整赛事管理">
       <HomepageHeader />
       <main>
         <HomepageFeatures />

@@ -34,7 +34,7 @@ export const restartSystem = () => {
 };
 
 // 获取系统运行日志（带颜色的ANSI文本数组）
-// 支持分页参数：limit, offset
+// 支持分页参数: limit, offset
 export const getSystemLogs = (params = { limit: 100, offset: 0 }) => {
   return request({
     url: '/admin/logs',

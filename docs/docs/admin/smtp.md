@@ -18,7 +18,7 @@ CBCTF 通过 SMTP 发送邮件（目前用于邮箱验证功能）。
 
 ## 添加 SMTP 服务器
 
-通过 `POST /admin/smtp`（`admin:smtp:create`）创建：
+通过 `POST /admin/smtp`（`admin:smtp:create`）创建: 
 
 ```json
 {
@@ -32,19 +32,19 @@ CBCTF 通过 SMTP 发送邮件（目前用于邮箱验证功能）。
 
 ## 多 SMTP 服务器
 
-可以配置多个 SMTP 服务器，平台发送邮件时会从启用的服务器列表中随机选择一个。适用于负载均衡或备用 SMTP 场景。
+可以配置多个 SMTP 服务器, 平台发送邮件时会从启用的服务器列表中随机选择一个。适用于负载均衡或备用 SMTP 场景。
 
 ## 邮件使用场景
 
-目前 CBCTF 使用邮件的场景：
+目前 CBCTF 使用邮件的场景: 
 
-- **邮箱验证**：用户调用 `POST /me/activate` 后，平台发送含激活链接的验证邮件
+- **邮箱验证**: 用户调用 `POST /me/activate` 后, 平台发送含激活链接的验证邮件
 
 ## 启用邮箱验证的前置条件
 
 1. 配置至少一个启用状态的 SMTP 服务器
-2. 为 `user` 角色（或相关角色）分配 `self:activate` 权限，用户才能触发发送激活邮件
+2. 为 `user` 角色（或相关角色）分配 `self:activate` 权限, 用户才能触发发送激活邮件
 
 ## 发送统计
 
-通过 `GET /admin/smtp/:smtpID/email`（`admin:smtp:list`）查看该 SMTP 服务器的邮件发送历史，包含成功/失败次数和详细日志。
+通过 `GET /admin/smtp/:smtpID/email`（`admin:smtp:list`）查看该 SMTP 服务器的邮件发送历史, 包含成功/失败次数和详细日志。

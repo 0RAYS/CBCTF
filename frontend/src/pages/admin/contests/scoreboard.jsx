@@ -98,7 +98,7 @@ function AdminContestScoreboard({ viewMode: externalViewMode, onViewModeChange: 
       if (!dateString) return '-';
       const date = new Date(dateString);
 
-      // 格式化为：YYYY-MM-DD HH:MM:SS
+      // 格式化为: YYYY-MM-DD HH:MM:SS
       return date
         .toLocaleString(i18n.language || 'en-US', {
           year: 'numeric',

@@ -361,7 +361,7 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
           </div>
         </div>
 
-        {/* 进度条：waiting 显示静态条, pending 显示闪动条, running 显示倒计时 */}
+        {/* 进度条: waiting 显示静态条, pending 显示闪动条, running 显示倒计时 */}
         {(isRunning || isWaiting || isPending || isTerminating) && (
           <div className="h-1.5 bg-neutral-700 rounded-full overflow-hidden">
             {isRunning ? (

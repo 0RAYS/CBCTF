@@ -392,12 +392,12 @@ function ChallengesManagement() {
           // pods类型不需要flags, 由后端自动生成
           processedFlags = [];
         } else if (mode === 'add') {
-          // 创建模式：flags是字符串数组
+          // 创建模式: flags是字符串数组
           processedFlags = challenge.flags.map((flag) => {
             return typeof flag === 'string' ? flag : flag.value || '';
           });
         } else if (mode === 'edit') {
-          // 编辑模式：flags是对象数组, 包含id和value
+          // 编辑模式: flags是对象数组, 包含id和value
           processedFlags = challenge.flags.map((flag) => {
             if (typeof flag === 'string') {
               return { id: 0, value: flag };

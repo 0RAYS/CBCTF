@@ -19,7 +19,7 @@ async function sha256Hex(input) {
       .map((b) => b.toString(16).padStart(2, '0'))
       .join('');
   }
-  // 非 HTTPS 环境回退：直接返回原始拼接字符串, 后端会做 double-MD5
+  // 非 HTTPS 环境回退: 直接返回原始拼接字符串, 后端会做 double-MD5
   return input;
 }
 
@@ -38,7 +38,7 @@ function getOrCreateNonce() {
   return nonce;
 }
 
-// 混合指纹：visitorId（硬件特征）+ nonce（实例标识）→ SHA-256
+// 混合指纹: visitorId（硬件特征）+ nonce（实例标识）→ SHA-256
 async function generateFingerprint() {
   try {
     const fp = await fpPromise;
