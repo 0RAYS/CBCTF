@@ -59,16 +59,16 @@
 :root {
   --scrollbar-size: 10px;
   --scrollbar-radius: 999px;
-  /* Scrollbar — reference geek-blue hue via oklch for cohesion with the design token */
-  --scrollbar-track:        oklch(8% 0.015 265 / 0.9);
-  --scrollbar-track-border: oklch(75% 0.01 265 / 0.1);
-  --scrollbar-thumb:        oklch(62% 0.22 265 / 0.32);
-  --scrollbar-thumb-hover:  oklch(62% 0.22 265 / 0.52);
-  --scrollbar-thumb-active: oklch(62% 0.22 265 / 0.72);
-  /* Base surface — tinted dark bg used by cards/panels */
-  --surface-base:   #07070f;
-  --surface-raised: #0d0d1a;
-  --surface-overlay:#1a1a2e;
+  /* Scrollbar — geek-blue thumb on dark gray track */
+  --scrollbar-track:        rgba(15, 15, 15, 0.9);
+  --scrollbar-track-border: rgba(179, 179, 179, 0.08);
+  --scrollbar-thumb:        rgba(89, 126, 247, 0.35);
+  --scrollbar-thumb-hover:  rgba(89, 126, 247, 0.55);
+  --scrollbar-thumb-active: rgba(89, 126, 247, 0.72);
+  /* Base surface */
+  --surface-base:   #0a0a0a;
+  --surface-raised: #0f0f0f;
+  --surface-overlay:#1a1a1a;
 }
 
 html {
