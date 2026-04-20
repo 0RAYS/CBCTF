@@ -137,7 +137,7 @@ function GameChallengesPage() {
   const { t } = useTranslation();
 
   // 分页配置
-  const pageSize = 10;
+  const pageSize = 12;
 
   const selectedChallengeRef = useRef(null);
   const pollingIntervalRef = useRef(null);
