@@ -46,37 +46,34 @@ function ChallengeTypes() {
   ];
 
   return (
-    <div className="py-12 md:py-20 px-4 md:px-8 bg-black/30">
+    <div className="py-14 md:py-20 px-4 md:px-8 bg-neutral-800/20 border-y border-neutral-700/40">
       <div className="w-full max-w-[1200px] mx-auto">
-        {/* Section label */}
-        <div className="text-center mb-12">
-          <motion.p
-            className="text-sm uppercase tracking-widest text-neutral-400 mb-3"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ ease: [0.25, 1, 0.5, 1], duration: 0.4 }}
-          >
-            {home.challengeTypes.titlePrefix} {home.challengeTypes.titleHighlight}
-          </motion.p>
-          <motion.p
-            className="text-neutral-300 max-w-[600px] mx-auto"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1, ease: [0.25, 1, 0.5, 1], duration: 0.4 }}
-          >
-            {home.challengeTypes.subtitle}
-          </motion.p>
-        </div>
+        <motion.div
+          className="mb-10"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ ease: [0.16, 1, 0.3, 1], duration: 0.4 }}
+        >
+          <div className="flex items-center gap-4 mb-3">
+            <div className="w-6 h-[2px] bg-geek-400" />
+            <span className="text-xs font-mono text-geek-400 tracking-[0.2em] uppercase">
+              {home.challengeTypes.titlePrefix}
+            </span>
+          </div>
+          <h2 className="text-2xl md:text-3xl font-mono text-neutral-50">
+            {home.challengeTypes.titleHighlight}
+          </h2>
+          <p className="text-neutral-400 text-sm mt-2 max-w-[60ch]">{home.challengeTypes.subtitle}</p>
+        </motion.div>
 
         {/* Type cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {types.map((type, index) => (
             <motion.div
               key={index}
-              className="p-6 border border-neutral-300/30 rounded-md bg-neutral-900
-                         hover:bg-neutral-800 hover:border-geek-400/50 transition-colors duration-200 cursor-pointer group"
+              className="p-6 border border-neutral-600/50 rounded-md bg-neutral-800/40
+                         hover:bg-neutral-800/60 hover:border-geek-400/50 transition-colors duration-200 cursor-pointer group"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}

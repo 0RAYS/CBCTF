@@ -104,7 +104,7 @@ function AuthPanel({ onSubmit }) {
 
   return (
     <motion.div
-      className="w-full max-w-[400px] bg-neutral-900 border border-neutral-600 rounded-md p-8"
+      className="w-full max-w-[400px] bg-neutral-800/80 border border-neutral-600/60 rounded-md p-8"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
@@ -114,7 +114,7 @@ function AuthPanel({ onSubmit }) {
         <div className="absolute -top-[3px] -right-[3px] w-[10px] h-[10px] border-t border-r border-neutral-300" />
         <div className="absolute -bottom-[3px] -left-[3px] w-[10px] h-[10px] border-b border-l border-neutral-300" />
         <motion.h1
-          className="text-neutral-300 text-2xl font-mono tracking-wider"
+      className="text-neutral-50 text-2xl font-mono tracking-wider"
           key={isLogin ? 'login' : 'register'}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

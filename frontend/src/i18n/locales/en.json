@@ -37,7 +37,7 @@
     "yes": "Yes",
     "no": "No",
     "notAvailable": "N/A",
-    "noData": "No data",
+    "noData": "Nothing here yet",
     "none": "None",
     "closeNotification": "Close notification",
     "openUserMenu": "Open user menu",
@@ -237,7 +237,7 @@
     },
     "contests": {
       "title": "Contest Management",
-      "empty": "No contests",
+      "empty": "No contests created yet",
       "table": {
         "cover": "Cover",
         "name": "Contest",
@@ -279,7 +279,7 @@
       "modal": {
         "createTitle": "Create Contest",
         "deleteTitle": "Delete Contest",
-        "deletePrompt": "Are you sure you want to delete the contest",
+        "deletePrompt": "Delete this contest? All associated data will be permanently removed.",
         "deleteWarning": "$t(common.modal.deleteWarning)"
       },
       "toast": {
@@ -444,7 +444,7 @@
             "score": "Score",
             "solvedAt": "Solved At"
           },
-          "empty": "No solvers yet",
+          "empty": "No solvers yet — be the first",
           "loading": "Loading..."
         }
       },
@@ -684,7 +684,7 @@
         },
         "empty": {
           "noMembers": "No team members",
-          "noResults": "No matching teams",
+          "noResults": "No teams match this search",
           "noData": "No data"
         },
         "table": {
@@ -2527,7 +2527,7 @@
   },
   "game": {
     "noGames": "No contests available",
-    "noChallenges": "No challenges published yet",
+    "noChallenges": "No challenges released yet",
     "status": {
       "upcoming": "UPCOMING",
       "active": "ACTIVE",
@@ -2840,7 +2840,7 @@
       "dismiss": "Got it"
     },
     "noGamesDescription": "No contests have been published yet. Check back soon, or contact the organizer.",
-    "noChallengesDescription": "Challenges haven't been released yet. The organizer will publish them when the competition opens."
+    "noChallengesDescription": "Challenges will appear here when the organizer releases them."
   },
   "utils": {
     "time": {

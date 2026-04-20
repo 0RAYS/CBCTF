@@ -30,7 +30,7 @@ function GameCard({ game, onGameAction, user }) {
   };
 
   return (
-    <div className="border border-neutral-300/20 rounded-md overflow-hidden bg-black/30 hover:border-neutral-300/50 transition-colors duration-200 flex flex-col sm:flex-row">
+    <div className="border border-neutral-600/50 rounded-md overflow-hidden bg-neutral-800/40 hover:border-neutral-500/60 transition-colors duration-200 flex flex-col sm:flex-row">
       {/* 封面图（保持原比例） */}
       {game.image && (
         <div className="sm:w-48 shrink-0 bg-neutral-900/50">

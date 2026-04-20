@@ -36,14 +36,14 @@ function AdminSidebar({
       )}
       <aside
         aria-label={t('admin.sidebar.navigation')}
-        className={`fixed md:static z-40 top-0 left-0 w-[240px] border-r border-neutral-300/30 bg-black/60 backdrop-blur-[2px] transition-transform duration-200 flex flex-col ${
+        className={`fixed md:static z-40 top-0 left-0 w-[240px] border-r border-neutral-600/40 bg-neutral-900/80 backdrop-blur-[4px] transition-transform duration-200 flex flex-col ${
           open ? 'translate-x-0' : '-translate-x-full'
         } md:translate-x-0`}
         style={{
           height: footerOffset > 0 ? `calc(100vh - ${footerOffset}px)` : '100vh',
         }}
       >
-        <div className="p-4 border-b border-neutral-300/30">
+        <div className="p-4 border-b border-neutral-600/40">
           <div className="relative">
             <Button variant="outline" size="md" className="w-full justify-center" onClick={onLogoClick}>
               {resolvedLogo}
@@ -53,28 +53,29 @@ function AdminSidebar({
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+        <div className="flex-1 overflow-y-auto px-3 py-5 space-y-5">
           {sections.map((section) => (
             <div key={section.id}>
               {section.title && (
-                <div className="text-xs font-mono text-neutral-500 uppercase tracking-[0.2em] mb-3">
+                <div className="text-[10px] font-mono text-neutral-500 uppercase tracking-[0.22em] mb-2 px-1">
                   {section.title}
                 </div>
               )}
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {section.items.map((item) => {
                   const isActive = item.id === activeItemId;
                   return (
                     <motion.button
                       key={item.id}
                       type="button"
-                      className={`w-full text-left px-4 py-3 border rounded-md font-mono text-sm transition-all duration-150 ${
+                      className={`w-full text-left px-3 py-2.5 border rounded font-mono text-sm transition-all duration-150 ${
                         isActive
-                          ? 'border-geek-400/50 text-geek-300 bg-geek-400/10 shadow-[0_0_12px_rgba(89,126,247,0.15)]'
-                          : 'border-neutral-300/20 text-neutral-300 hover:text-neutral-100 hover:border-neutral-300/60 hover:bg-white/5'
+                          ? 'border-geek-400/40 text-geek-300 bg-geek-400/10 shadow-glow-primary'
+                          : 'border-transparent text-neutral-400 hover:text-neutral-100 hover:border-neutral-600/60 hover:bg-neutral-700/30'
                       }`}
                       onClick={() => onNavigate(item.path)}
                       whileHover={{ x: 2 }}
+                      transition={{ duration: 0.12 }}
                     >
                       {item.label}
                     </motion.button>

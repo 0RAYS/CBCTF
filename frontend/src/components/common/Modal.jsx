@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { IconX } from '@tabler/icons-react';
 import Button from './Button';
 import { useModalPortal } from './ModalProvider';
+import { backdropVariants, panelVariants } from '../../config/motion';
 
 // 可聚焦元素选择器
 const FOCUSABLE_SELECTORS = [
@@ -123,8 +124,8 @@ function Modal({
     ? 'relative h-[100dvh] w-[100vw] max-w-none'
     : `relative w-full ${sizeClasses[size]} mx-4`;
   const dialogContainerClassName = isFullScreen
-    ? `flex h-full flex-col overflow-hidden border border-neutral-300/30 bg-black/80 backdrop-blur-[8px] rounded-none ${className}`
-    : `border border-neutral-300/30 rounded-lg bg-black/80 backdrop-blur-[8px] overflow-hidden ${className}`;
+    ? `flex h-full flex-col overflow-hidden border border-neutral-600/50 bg-neutral-900/90 backdrop-blur-[8px] rounded-none ${className}`
+    : `border border-neutral-600/50 rounded-lg bg-neutral-900/90 backdrop-blur-[8px] overflow-hidden ${className}`;
   const dialogBodyClassName = bodyClassName
     ? `${isFullScreen ? 'min-h-0 flex-1 ' : ''}${bodyClassName}`
     : isFullScreen
@@ -141,10 +142,11 @@ function Modal({
         {isOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center">
             <motion.div
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-neutral-900/70 backdrop-blur-sm"
+              variants={backdropVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
               onClick={onClose}
             />
             <motion.div
@@ -153,10 +155,11 @@ function Modal({
               aria-modal="true"
               aria-labelledby={titleId}
               tabIndex={-1}
-              className={`relative w-full ${sizeClasses.sm} m-4 p-6 border border-neutral-300 rounded-md bg-black/80 ${className}`}
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              className={`relative w-full ${sizeClasses.sm} m-4 p-6 border border-neutral-600/60 rounded-md bg-neutral-800/90 ${className}`}
+              variants={panelVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
             >
               <h3 id={titleId} className="text-lg font-mono text-neutral-50 mb-4">
                 {title}
@@ -185,10 +188,11 @@ function Modal({
         <div className="fixed inset-0 z-[999] flex items-center justify-center">
           {/* 背景遮罩 */}
           <motion.div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-neutral-900/70 backdrop-blur-sm"
+            variants={backdropVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             onClick={onClose}
           />
 
@@ -200,10 +204,10 @@ function Modal({
             aria-labelledby={titleId}
             tabIndex={-1}
             className={dialogWrapperClassName}
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
+            variants={panelVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
           >
             <div className={dialogContainerClassName}>
               {!showHeader && showCloseButton ? (
@@ -221,7 +225,7 @@ function Modal({
               ) : null}
               {/* 头部 */}
               {showHeader ? (
-                <div className="p-6 border-b border-neutral-300/30">
+                <div className="p-6 border-b border-neutral-600/50">
                   <div className="flex items-center justify-between">
                     <h2 id={titleId} className="text-xl font-mono text-neutral-50">
                       {title}
@@ -246,7 +250,7 @@ function Modal({
 
               {/* 底部 */}
               {footer && (
-                <div className="p-6 border-t border-neutral-300/30 bg-black/40">
+                <div className="p-6 border-t border-neutral-600/50 bg-neutral-800/40">
                   <div className="flex justify-end gap-3">{footer}</div>
                 </div>
               )}

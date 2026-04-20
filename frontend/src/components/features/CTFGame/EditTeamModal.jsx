@@ -30,19 +30,19 @@ function EditTeamModal({ isOpen, onClose, team, onSave }) {
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center">
           <motion.div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 bg-neutral-900/70 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
           />
           <motion.div
-            className="relative w-full max-w-[600px] m-4 border border-neutral-300 rounded-md bg-black/80"
+            className="relative w-full max-w-[600px] m-4 border border-neutral-600/60 rounded-md bg-neutral-800/90"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
           >
-            <div className="p-6 border-b border-neutral-300/30">
+            <div className="p-6 border-b border-neutral-600/50">
               <h3 className="text-lg font-mono text-neutral-50">{t('game.team.editModal.title')}</h3>
             </div>
 
@@ -54,7 +54,7 @@ function EditTeamModal({ isOpen, onClose, team, onSave }) {
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                  className="w-full p-3 bg-neutral-900 border border-neutral-300/30 rounded-md
+                  className="w-full p-3 bg-neutral-800/60 border border-neutral-600/60 rounded-md
                                         text-neutral-50 font-mono
                                         focus:outline-none focus:border-geek-400"
                 />
@@ -67,7 +67,7 @@ function EditTeamModal({ isOpen, onClose, team, onSave }) {
                   value={formData.description.slice(0, 100)}
                   onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value.slice(0, 100) }))}
                   rows={4}
-                  className="w-full p-3 bg-neutral-900 border border-neutral-300/30 rounded-md
+                  className="w-full p-3 bg-neutral-800/60 border border-neutral-600/60 rounded-md
                                         text-neutral-50
                                         focus:outline-none focus:border-geek-400"
                 />

@@ -35,6 +35,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Button } from '../../../../components/common';
 import { useTranslation } from 'react-i18next';
+import { EASE_T2, backdropVariants } from '../../../../config/motion';
 
 const normalizeInstanceStatus = (status) => {
   const normalizedStatus = typeof status === 'string' ? status.toLowerCase() : '';
@@ -546,7 +547,7 @@ function ChallengeModal({
     return (
       <div className="fixed inset-0 z-[900] flex items-center justify-center">
         <motion.div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 bg-neutral-900/70 backdrop-blur-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -558,14 +559,14 @@ function ChallengeModal({
 
         <div className="relative z-10 w-full max-w-[800px] p-4">
           <motion.div
-            className="relative w-full bg-black/80 border border-neutral-300 rounded-md"
+            className="relative w-full bg-neutral-800/90 border border-neutral-600/60 rounded-md"
             initial={{ scale: 0.97, opacity: 0, y: 8 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.97, opacity: 0, y: 8 }}
-            transition={{ type: 'tween', ease: [0.25, 1, 0.5, 1], duration: 0.22 }}
+            transition={{ type: 'tween', ease: EASE_T2, duration: 0.22 }}
           >
             {/* 头部 */}
-            <div className="p-5 border-b border-neutral-300/30">
+            <div className="p-5 border-b border-neutral-600/50">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <span className="text-geek-400 font-mono">{challenge.category}</span>
@@ -624,7 +625,7 @@ function ChallengeModal({
         <div className="fixed inset-0 z-[900] flex items-center justify-center">
           {/* 背景遮罩 - 确保完全覆盖 */}
           <motion.div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 bg-neutral-900/70 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -645,7 +646,7 @@ function ChallengeModal({
               transition={{ type: 'tween', ease: [0.25, 1, 0.5, 1], duration: 0.22 }}
             >
               {/* 头部 - 减小内边距 */}
-              <div className="p-5 border-b border-neutral-300/30">
+              <div className="p-5 border-b border-neutral-600/50">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <span className="text-geek-400 font-mono">{challenge.category}</span>

@@ -45,29 +45,30 @@ function Footer({ copyright, icp, links }) {
 
   return (
     <motion.div
-      className="fixed bottom-0 left-0 w-full h-[60px] bg-black/30 backdrop-blur-[2px] border-t border-neutral-300"
+      className="fixed bottom-0 left-0 w-full bg-neutral-900/80 backdrop-blur-[4px] border-t border-neutral-600/50"
+      style={{ minHeight: '60px' }}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2 }}
     >
-      <div className="h-full max-w-[1200px] mx-auto px-8 flex items-center justify-between">
+      <div className="min-h-[60px] max-w-[1200px] mx-auto px-4 md:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 py-2 sm:py-0">
         {/* 左侧装饰和备案信息 */}
         <div className="relative flex items-center">
           {/* 装饰线条 */}
-          <div className="absolute left-0 top-0 w-[100px] h-[2px] bg-gradient-to-r from-neutral-300 to-transparent"></div>
-          <div className="absolute left-0 bottom-0 w-[60px] h-[2px] bg-gradient-to-r from-neutral-300 to-transparent"></div>
+          <div className="absolute left-0 top-0 w-[100px] h-[1px] bg-gradient-to-r from-neutral-300/60 to-transparent hidden sm:block"></div>
+          <div className="absolute left-0 bottom-0 w-[60px] h-[1px] bg-gradient-to-r from-neutral-300/60 to-transparent hidden sm:block"></div>
 
           {/* 备案信息 */}
-          <div className="flex items-center space-x-4 ml-8">
-            <span className="text-neutral-300 text-sm tracking-wider font-mono">{resolvedCopyright}</span>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 sm:ml-8">
+            <span className="text-neutral-300 text-xs tracking-wider font-mono">{resolvedCopyright}</span>
             {resolvedIcp && (
               <>
-                <div className="w-[1px] h-[14px] bg-neutral-300/30"></div>
+                <div className="w-[1px] h-[12px] bg-neutral-600/60 hidden sm:block"></div>
                 <a
                   href={resolvedIcp.link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-neutral-300 text-sm tracking-wider hover:text-geek-400 transition-colors duration-200"
+                  className="text-neutral-400 text-xs tracking-wider hover:text-geek-400 transition-colors duration-200"
                 >
                   {resolvedIcp.number}
                 </a>
@@ -80,11 +81,11 @@ function Footer({ copyright, icp, links }) {
         {resolvedLinks.length > 0 && (
           <div className="relative flex items-center">
             {/* 装饰线条 */}
-            <div className="absolute right-0 top-0 w-[80px] h-[2px] bg-gradient-to-l from-neutral-300 to-transparent"></div>
-            <div className="absolute right-0 bottom-0 w-[40px] h-[2px] bg-gradient-to-l from-neutral-300 to-transparent"></div>
+            <div className="absolute right-0 top-0 w-[80px] h-[1px] bg-gradient-to-l from-neutral-300/60 to-transparent hidden sm:block"></div>
+            <div className="absolute right-0 bottom-0 w-[40px] h-[1px] bg-gradient-to-l from-neutral-300/60 to-transparent hidden sm:block"></div>
 
             {/* 链接区域 */}
-            <div className="flex items-center space-x-6 mr-8">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 sm:mr-8">
               {resolvedLinks.map((link, index) => renderLink(link, index))}
             </div>
           </div>

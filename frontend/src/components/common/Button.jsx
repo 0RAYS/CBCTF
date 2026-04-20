@@ -38,7 +38,7 @@ function Button({
 
   // 按钮风格变体（已移除 hover glow, 改用 border/opacity 过渡）
   const variants = {
-    default: 'bg-black/30 border-neutral-300/30 text-neutral-400 hover:border-neutral-300 hover:text-neutral-300',
+    default: 'bg-neutral-800/40 border-neutral-600/50 text-neutral-400 hover:border-neutral-400 hover:text-neutral-300',
     primary: 'border-geek-400 text-geek-400 hover:bg-geek-400/10 hover:border-geek-400/80',
     danger: 'border-red-400 text-red-400 hover:bg-red-400/10 hover:border-red-400/80',
     outline:
@@ -48,11 +48,11 @@ function Button({
 
   // 按钮尺寸
   const sizes = {
-    sm: 'h-[36px] text-sm',
-    md: 'h-[42px] text-sm',
-    lg: 'h-[50px] text-lg tracking-wider',
+    sm:     'h-[40px] text-sm',
+    md:     'h-[42px] text-sm',
+    lg:     'h-[50px] text-lg tracking-wider',
     action: 'h-[40px] font-mono tracking-wider',
-    icon: 'w-[36px] h-[36px] p-0', // 正方形图标按钮
+    icon:   'w-[40px] h-[40px] p-0', // min 40px — dense admin UI compromise
   };
 
   // 内容对齐方式

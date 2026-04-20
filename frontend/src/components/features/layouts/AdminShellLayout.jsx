@@ -69,7 +69,7 @@ function AdminShellLayout({
 
   return (
     <div className="h-screen w-screen overflow-hidden">
-      <div className="fixed top-0 left-0 w-full h-full bg-black" />
+      <div className="fixed top-0 left-0 w-full h-full bg-neutral-900" />
       <div className="relative z-10 flex h-full">
         {showSidebar && (
           <AdminSidebar
