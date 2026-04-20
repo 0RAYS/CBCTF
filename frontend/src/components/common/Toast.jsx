@@ -1,12 +1,7 @@
 import { forwardRef } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-
-const toastVariants = {
-  initial: { opacity: 0, y: -20, scale: 0.95 },
-  animate: { opacity: 1, y: 0, scale: 1 },
-  exit: { opacity: 0, y: -10, scale: 0.95 },
-};
+import { toastVariants } from '../../config/motion';
 
 const TOAST_CONFIG = {
   primary: {
@@ -92,8 +87,8 @@ const Toast = forwardRef(({ id, title, description, color = 'default', onClose, 
       ref={ref}
       className={`border rounded-md ${config.container} p-3.5 shadow-lg max-w-md z-[10000] overflow-hidden`}
       variants={toastVariants}
-      initial="initial"
-      animate="animate"
+      initial="hidden"
+      animate="visible"
       exit="exit"
       layout
     >

@@ -21,8 +21,9 @@
  */
 
 import { motion } from 'motion/react';
-import { Button, Pagination, Card, Avatar, EmptyState } from '../../../../components/common';
+import { Button, Pagination, Card, Avatar, EmptyState, ChallengeSkeleton } from '../../../../components/common';
 import { useTranslation } from 'react-i18next';
+import { EASE_T2, staggerDelay } from '../../../../config/motion';
 
 function ChallengeBoard({
   categories,
@@ -37,6 +38,7 @@ function ChallengeBoard({
   currentPage = 1,
   pageSize = 12,
   onPageChange,
+  isLoading = false,
 }) {
   const { t } = useTranslation();
   const normalizedCategories = Array.isArray(categories) ? categories.filter(Boolean) : [];
@@ -91,44 +93,54 @@ function ChallengeBoard({
       </div>
 
       {/* 赛题列表 */}
-      {challenges.length === 0 ? (
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {Array.from({ length: pageSize }).map((_, i) => (
+            <ChallengeSkeleton key={i} />
+          ))}
+        </div>
+      ) : challenges.length === 0 ? (
         <EmptyState title={t('game.noChallenges')} description={t('game.noChallengesDescription')} className="py-12" />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {challenges.map((challenge, index) => (
             <motion.div
               key={challenge.id}
-              className={`p-4 border rounded-md transition-colors duration-200 cursor-pointer backdrop-blur-none
+              className={`p-4 border rounded-md transition-colors duration-200 cursor-pointer
                 ${
                   challenge.solved
-                    ? 'border-geek-400/50 bg-geek-400/5 hover:bg-geek-400/10'
-                    : 'border-neutral-300/30 bg-black/30 hover:bg-black/50'
+                    ? 'border-geek-400/40 bg-geek-400/8 hover:bg-geek-400/12'
+                    : 'border-neutral-600/50 bg-neutral-800/40 hover:bg-neutral-800/60'
                 }`}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.04, ease: [0.25, 1, 0.5, 1], duration: 0.2 }}
+              transition={{ delay: staggerDelay(index), ease: EASE_T2, duration: 0.22 }}
               whileHover={{ y: -2 }}
               onClick={() => onChallengeClick(challenge)}
             >
               {/* 标题栏 */}
-              <div className="flex items-center justify-between mb-3 min-w-0">
-                <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div className="mb-3 min-w-0">
+                {/* Category — small label tier */}
+                <div className="flex items-center justify-between mb-1.5">
                   <span
-                    className="text-geek-400 font-mono flex-shrink-0 truncate max-w-[80px]"
+                    className="text-[10px] font-mono tracking-[0.2em] uppercase text-geek-400/80 flex-shrink-0 truncate max-w-[100px]"
                     title={challenge.category}
                   >
                     {challenge.category}
                   </span>
-                  <h3 className="text-neutral-50 font-mono truncate min-w-0" title={challenge.title}>
+                  <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                    <span className="text-neutral-500 text-xs">{t('game.challengeBoard.solves')}</span>
+                    <span className="text-neutral-300 font-mono text-xs tabular-nums">{challenge.solves}</span>
+                  </div>
+                </div>
+                {/* Title — primary size tier */}
+                <div className="flex items-end justify-between gap-2">
+                  <h3 className="text-neutral-50 font-mono text-base leading-snug truncate min-w-0 font-medium" title={challenge.title}>
                     {challenge.title}
                   </h3>
-                  <span className="text-yellow-400 font-mono text-sm flex-shrink-0">
+                  <span className="text-yellow-400 font-mono text-sm flex-shrink-0 tabular-nums">
                     {t('common.points', { count: challenge.score })}
                   </span>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                  <span className="text-neutral-400 text-sm">{t('game.challengeBoard.solves')}</span>
-                  <span className="text-neutral-50 font-mono">{challenge.solves}</span>
                 </div>
               </div>
 
@@ -143,12 +155,12 @@ function ChallengeBoard({
                         className={`
                       px-2 py-0.5 rounded
                       text-xs font-mono
-                      border backdrop-blur-none
+                      border
                       truncate max-w-[96px]
                       ${
                         challenge.solved
-                          ? 'border-geek-400/30 bg-geek-400/20 text-neutral-50'
-                          : 'border-neutral-600 bg-neutral-900 text-neutral-300'
+                          ? 'border-geek-400/30 bg-geek-400/15 text-geek-300'
+                          : 'border-neutral-600/60 bg-neutral-700/40 text-neutral-400'
                       }
                     `}
                         title={tag}

@@ -25,3 +25,4 @@ export { default as IpAddress } from './IpAddress';
 export { default as Spinner } from './Spinner';
 export { default as Chip } from './Chip';
 export { default as StatCard } from './StatCard';
+export { default as Skeleton, ChallengeSkeleton } from './Skeleton';

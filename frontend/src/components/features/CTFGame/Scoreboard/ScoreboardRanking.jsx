@@ -20,21 +20,21 @@ function ScoreboardRanking({ teams = [], labels = {}, locale = 'en-US', emptyMes
     <div className="w-full space-y-6">
       <Card variant="default" padding="none" animate className="overflow-hidden">
         <div
-          className="grid gap-4 p-4 border-b border-neutral-300/30 place-items-center"
+          className="grid gap-4 p-3 border-b border-neutral-600/50 place-items-center bg-neutral-800/40"
           style={{ gridTemplateColumns: gridCols }}
         >
-          <div className="text-neutral-400 font-mono text-sm">{resolvedLabels.rank}</div>
-          <div className="text-neutral-400 font-mono text-sm">{resolvedLabels.team}</div>
-          <div className="text-neutral-400 font-mono text-sm flex items-center justify-end">{resolvedLabels.score}</div>
-          <div className="text-neutral-400 font-mono text-sm flex items-center justify-center">
+          <div className="text-[10px] font-mono text-neutral-500 tracking-[0.18em] uppercase">{resolvedLabels.rank}</div>
+          <div className="text-[10px] font-mono text-neutral-500 tracking-[0.18em] uppercase">{resolvedLabels.team}</div>
+          <div className="text-[10px] font-mono text-neutral-500 tracking-[0.18em] uppercase flex items-center justify-end">{resolvedLabels.score}</div>
+          <div className="text-[10px] font-mono text-neutral-500 tracking-[0.18em] uppercase flex items-center justify-center">
             {resolvedLabels.challenges}
           </div>
-          <div className="text-neutral-400 font-mono text-sm flex items-center justify-end">
+          <div className="text-[10px] font-mono text-neutral-500 tracking-[0.18em] uppercase flex items-center justify-end">
             {resolvedLabels.lastSubmit}
           </div>
         </div>
 
-        <div className="divide-y divide-neutral-300/10">
+        <div className="overflow-hidden">
           {teams.length === 0 ? (
             <div className="py-10">
               <EmptyState title={resolvedEmptyMessage} />
@@ -49,23 +49,32 @@ function ScoreboardRanking({ teams = [], labels = {}, locale = 'en-US', emptyMes
               return (
                 <motion.div
                   key={team.id || team.name || index}
-                  className={`grid gap-4 p-4 hover:bg-neutral-300/5 transition-colors duration-200 ${onRowClick ? 'cursor-pointer' : ''}`}
+                  className={`grid gap-4 p-4 transition-colors duration-200 ${onRowClick ? 'cursor-pointer' : ''}
+                    ${
+                      rankValue === 1
+                        ? 'bg-rank-gold/5 hover:bg-rank-gold/8 border-b border-rank-gold/15'
+                        : rankValue === 2
+                          ? 'bg-rank-silver/4 hover:bg-rank-silver/7 border-b border-neutral-600/30'
+                          : rankValue === 3
+                            ? 'bg-rank-bronze/4 hover:bg-rank-bronze/7 border-b border-neutral-600/30'
+                            : 'hover:bg-neutral-300/5 border-b border-neutral-700/30 last:border-b-0'
+                    }`}
                   style={{ gridTemplateColumns: gridCols }}
                   onClick={() => onRowClick && onRowClick(team, index)}
                 >
                   <div className="flex items-center justify-center">
                     <span
-                      className={`font-mono text-xl ${
+                      className={`font-mono tabular-nums leading-none ${
                         rankValue === 1
-                          ? 'text-yellow-400'
+                          ? 'text-rank-gold text-2xl font-bold'
                           : rankValue === 2
-                            ? 'text-neutral-300'
+                            ? 'text-rank-silver text-xl font-semibold'
                             : rankValue === 3
-                              ? 'text-orange-400'
-                              : 'text-neutral-400'
+                              ? 'text-rank-bronze text-lg font-semibold'
+                              : 'text-neutral-500 text-sm'
                       }`}
                     >
-                      #{rankValue}
+                      {rankValue}
                     </span>
                   </div>
 
@@ -75,7 +84,7 @@ function ScoreboardRanking({ teams = [], labels = {}, locale = 'en-US', emptyMes
                   </div>
 
                   <div className="flex items-center justify-center">
-                    <span className="text-geek-400 font-mono">{scoreValue}</span>
+                    <span className="text-geek-400 font-mono tabular-nums">{scoreValue}</span>
                   </div>
 
                   {hasSolved ? (

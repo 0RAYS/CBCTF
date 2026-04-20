@@ -199,13 +199,13 @@ function DateTimeInput({
   };
 
   const inputClasses = `
-    bg-black/20 border rounded-md text-neutral-50 placeholder-neutral-500
+    bg-neutral-800/60 border rounded-md text-neutral-50 placeholder-neutral-500
     focus:outline-none transition-all duration-200 font-mono
     ${sizes[size] || sizes.md}
     pl-10 pr-10
     ${fullWidth ? 'w-full' : ''}
-    ${error ? 'border-red-400 focus:border-red-400 focus:shadow-error' : 'border-neutral-300/30 focus:border-geek-400 focus:shadow-focus'}
-    ${disabled ? 'opacity-50 cursor-not-allowed bg-black/10' : ''}
+    ${error ? 'border-red-400 focus:border-red-400 focus:shadow-error' : 'border-neutral-600/60 focus:border-geek-400 focus:shadow-focus'}
+    ${disabled ? 'opacity-50 cursor-not-allowed bg-neutral-800/30' : ''}
     ${className}
   `
     .trim()

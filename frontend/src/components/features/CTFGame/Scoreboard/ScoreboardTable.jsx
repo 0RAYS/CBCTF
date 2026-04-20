@@ -119,18 +119,18 @@ function ScoreboardTable({
               ))}
             </colgroup>
             <thead>
-              <tr className="bg-black/50">
+              <tr className="bg-neutral-800/60">
                 {/* 固定列 */}
                 <th
                   scope="col"
-                  className="sticky left-0 z-10 bg-black/50 p-3 text-center text-neutral-400 font-mono text-sm border-r border-neutral-300/30"
+                  className="sticky left-0 z-10 bg-neutral-800/80 p-3 text-center text-[10px] text-neutral-500 font-mono tracking-[0.18em] uppercase border-r border-neutral-600/40"
                   style={{ width: 'var(--sb-rank-width)', minWidth: 'var(--sb-rank-width)' }}
                 >
                   {t('game.scoreboardTable.headers.rank')}
                 </th>
                 <th
                   scope="col"
-                  className="sticky z-10 bg-black/50 p-3 text-center text-neutral-400 font-mono text-sm border-r border-neutral-300/30"
+                  className="sticky z-10 bg-neutral-800/80 p-3 text-center text-[10px] text-neutral-500 font-mono tracking-[0.18em] uppercase border-r border-neutral-600/40"
                   style={{
                     width: 'var(--sb-team-width)',
                     minWidth: 'var(--sb-team-width)',
@@ -141,7 +141,7 @@ function ScoreboardTable({
                 </th>
                 <th
                   scope="col"
-                  className="sticky z-10 bg-black/50 p-3 text-center text-neutral-400 font-mono text-sm border-r border-neutral-300/30"
+                  className="sticky z-10 bg-neutral-800/80 p-3 text-center text-[10px] text-neutral-500 font-mono tracking-[0.18em] uppercase border-r border-neutral-600/40"
                   style={{
                     width: 'var(--sb-score-width)',
                     minWidth: 'var(--sb-score-width)',
@@ -169,13 +169,13 @@ function ScoreboardTable({
               </tr>
 
               {/* 题目名称行 */}
-              <tr className="bg-black/40 border-t border-neutral-300/30">
+              <tr className="bg-neutral-800/40 border-t border-neutral-600/40">
                 <th
-                  className="sticky left-0 z-10 bg-black/40 p-2 border-r border-neutral-300/30"
+                  className="sticky left-0 z-10 bg-neutral-800/60 p-2 border-r border-neutral-600/40"
                   style={{ width: 'var(--sb-rank-width)', minWidth: 'var(--sb-rank-width)' }}
                 ></th>
                 <th
-                  className="sticky z-10 bg-black/40 p-2 border-r border-neutral-300/30"
+                  className="sticky z-10 bg-neutral-800/60 p-2 border-r border-neutral-600/40"
                   style={{
                     width: 'var(--sb-team-width)',
                     minWidth: 'var(--sb-team-width)',
@@ -183,7 +183,7 @@ function ScoreboardTable({
                   }}
                 ></th>
                 <th
-                  className="sticky z-10 bg-black/40 p-2 border-r border-neutral-300/30"
+                  className="sticky z-10 bg-neutral-800/60 p-2 border-r border-neutral-600/40"
                   style={{
                     width: 'var(--sb-score-width)',
                     minWidth: 'var(--sb-score-width)',
@@ -221,7 +221,7 @@ function ScoreboardTable({
                 >
                   {/* 排名 */}
                   <td
-                    className="sticky left-0 z-10 bg-black/30 p-3 text-center text-neutral-300 font-mono border-r border-neutral-300/30"
+                    className="sticky left-0 z-10 bg-neutral-800/70 p-3 text-center text-neutral-300 font-mono tabular-nums border-r border-neutral-600/40"
                     style={{ width: 'var(--sb-rank-width)', minWidth: 'var(--sb-rank-width)' }}
                   >
                     {getTeamRank(teamIndex)}
@@ -229,7 +229,7 @@ function ScoreboardTable({
 
                   {/* 队伍信息 */}
                   <td
-                    className="sticky z-10 bg-black/30 p-3 border-r border-neutral-300/30"
+                    className="sticky z-10 bg-neutral-800/70 p-3 border-r border-neutral-600/40"
                     style={{
                       width: 'var(--sb-team-width)',
                       minWidth: 'var(--sb-team-width)',
@@ -237,15 +237,15 @@ function ScoreboardTable({
                     }}
                   >
                     <div className="flex items-center gap-2">
-                      <Avatar src={team.picture} name={team.name} size="xs" className="border border-neutral-300" />
+                      <Avatar src={team.picture} name={team.name} size="xs" className="border border-neutral-600/60" />
                       <div className="min-w-0 flex-1">
                         <ScrollingText
                           text={team.name}
-                          className="text-neutral-50 font-medium text-sm"
+                          className="text-neutral-50 font-mono text-sm"
                           maxWidth={240}
                           speed={15}
                         />
-                        <div className="text-xs text-neutral-400">
+                        <div className="text-xs text-neutral-500 tabular-nums">
                           {t('game.scoreboardTable.members', { count: team.users })}
                         </div>
                       </div>
@@ -254,7 +254,7 @@ function ScoreboardTable({
 
                   {/* 分数 */}
                   <td
-                    className="sticky z-10 bg-black/30 p-3 text-center text-neutral-50 font-mono border-r border-neutral-300/30"
+                    className="sticky z-10 bg-neutral-800/70 p-3 text-center text-geek-400 font-mono tabular-nums border-r border-neutral-600/40"
                     style={{
                       width: 'var(--sb-score-width)',
                       minWidth: 'var(--sb-score-width)',

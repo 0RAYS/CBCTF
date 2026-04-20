@@ -17,7 +17,7 @@ function Chip({ label, variant = 'pill', size = 'md', colorClass, className = ''
   if (variant === 'tag') {
     return (
       <span
-        className={`px-2 ${py} bg-black/30 border rounded text-xs font-mono ${colorClass || 'border-neutral-300/30 text-neutral-300'} ${className}`}
+        className={`px-2 ${py} bg-neutral-700/40 border rounded text-xs font-mono ${colorClass || 'border-neutral-600/60 text-neutral-300'} ${className}`}
         title={title}
       >
         {label}

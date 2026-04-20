@@ -6,7 +6,7 @@ function FormSwitch({ id, checked = false, onChange, label, className = '' }) {
         type="checkbox"
         checked={checked}
         onChange={onChange}
-        className="w-4 h-4 rounded border-neutral-300/30 text-geek-400 focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
+        className="w-4 h-4 rounded border-neutral-600/60 text-geek-400 focus:ring-geek-400 focus:ring-offset-0 bg-neutral-800/60"
       />
       <span>{label}</span>
     </label>

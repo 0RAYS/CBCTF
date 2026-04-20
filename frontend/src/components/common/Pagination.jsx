@@ -129,7 +129,7 @@ function Pagination({
         size="sm"
         disabled={disabled}
         onClick={() => !disabled && onChange?.(isNext ? current + 1 : current - 1)}
-        className={`!bg-black/30 ${disabled ? '!border-neutral-300/10 !text-neutral-600' : ''}`}
+        className={`!bg-neutral-900/50 ${disabled ? '!border-neutral-300/10 !text-neutral-600' : ''}`}
         animate={false}
         aria-label={
           isNext
@@ -154,7 +154,7 @@ function Pagination({
           size="icon"
           disabled={disabledFirst}
           onClick={() => !disabledFirst && onChange?.(1)}
-          className={`!w-8 !h-8 !bg-black/30 ${disabledFirst ? '!border-neutral-300/10 !text-neutral-600' : ''}`}
+          className={`!w-10 !h-10 !bg-neutral-900/50 ${disabledFirst ? '!border-neutral-300/10 !text-neutral-600' : ''}`}
           animate={false}
           aria-label={t('common.pagination.firstPage', { defaultValue: 'First page' })}
         >
@@ -165,7 +165,7 @@ function Pagination({
           size="icon"
           disabled={disabledLast}
           onClick={() => !disabledLast && onChange?.(total)}
-          className={`!w-8 !h-8 !bg-black/30 ${disabledLast ? '!border-neutral-300/10 !text-neutral-600' : ''}`}
+          className={`!w-10 !h-10 !bg-neutral-900/50 ${disabledLast ? '!border-neutral-300/10 !text-neutral-600' : ''}`}
           animate={false}
           aria-label={t('common.pagination.lastPage', { defaultValue: 'Last page' })}
         >

@@ -57,13 +57,14 @@ function Input({
 
   // 基础样式
   const inputClasses = `
-    bg-black/20 border rounded-md text-neutral-50 placeholder-neutral-500
+    bg-neutral-800/60 border rounded-md text-neutral-50 placeholder-neutral-500 font-mono
     focus:outline-none focus-visible:ring-2 focus-visible:ring-geek-400/70 transition-all duration-200
+    ${type === 'number' ? 'tabular-nums' : ''}
     ${sizes[size] || sizes.md}
     ${getPadding()}
     ${fullWidth ? 'w-full' : ''}
-    ${error ? 'border-red-400 focus:border-red-400 focus:shadow-error' : 'border-neutral-300/30 focus:border-geek-400 focus:shadow-focus'}
-    ${disabled ? 'opacity-50 cursor-not-allowed bg-black/10' : ''}
+    ${error ? 'border-red-400 focus:border-red-400 focus:shadow-error' : 'border-neutral-600/60 focus:border-geek-400 focus:shadow-focus'}
+    ${disabled ? 'opacity-50 cursor-not-allowed bg-neutral-800/30' : ''}
     ${className}
   `
     .trim()
