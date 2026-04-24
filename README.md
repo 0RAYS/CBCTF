@@ -56,6 +56,7 @@ CBCTF 是一个基于 Go 语言开发的高性能 CTF 竞赛平台, 前后端一
 | 定时任务      | robfig/cron       | v3    |
 | 容器编排      | Kubernetes        | 1.20+ |
 | 网络插件      | Kube-OVN / Multus | -     |
+| 虚拟机编排      | KubeVirt          | -     |
 | JWT       | golang-jwt        | v5    |
 | 配置管理      | Viper             | 1.21  |
 
@@ -114,7 +115,7 @@ CGO_ENABLED=1 go build -ldflags="-s -w" -trimpath -o CBCTF .
 | `gin`        | 服务监听地址/端口、上传限制、速率限制、CORS、JWT          |
 | `gorm.postgres` | PostgreSQL 连接配置、连接池参数                 |
 | `redis`      | Redis 连接配置                            |
-| `k8s`        | Kubeconfig 路径、命名空间、外部网络 CIDR、Frp 配置   |
+| `k8s`        | Kubeconfig 路径、命名空间、Tcpdump 镜像、Frp 配置   |
 | `cheat`      | 作弊检测 IP 白名单                           |
 | `webhook`    | Webhook 目标地址黑名单                       |
 | `asynq`      | 异步任务并发数                               |
@@ -206,6 +207,7 @@ networks:
 |------------------------------------------------------------------|------------|
 | [Kube-OVN](https://kubeovn.github.io/docs/stable/start/prepare/) | VPC 网络隔离支持 |
 | [Multus](https://github.com/k8snetworkplumbingwg/multus-cni)     | 多网络接口支持    |
+| [KubeVirt](https://kubevirt.io/)                                 | 虚拟机编排（实验性） |
 
 **Multus 插件选择建议: **
 

@@ -6,7 +6,7 @@ sidebar_position: 7
 
 ## 本地认证
 
-CBCTF 默认使用用户名 + 密码登录。登录成功后, 后端会在 `Authorization` 响应头中返回 JWT, 前端将其保存在 `localStorage`。
+CBCTF 默认使用用户名 + 密码登录
 
 ### JWT 配置
 
