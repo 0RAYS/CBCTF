@@ -25,9 +25,9 @@ func StartVictim(ctx *gin.Context) {
 	resp.JSON(ctx, ret)
 }
 
-func IncreaseVictimDuration(ctx *gin.Context) {
-	ctx.Set(middleware.CTXEventTypeKey, model.IncreaseVictimEventType)
-	victim, ret := service.IncreaseVictimDuration(db.DB, middleware.GetTeam(ctx), middleware.GetChallenge(ctx))
+func ExtendVictimDuration(ctx *gin.Context) {
+	ctx.Set(middleware.CTXEventTypeKey, model.ExtendVictimEventType)
+	victim, ret := service.ExtendVictimDuration(db.DB, middleware.GetTeam(ctx), middleware.GetChallenge(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

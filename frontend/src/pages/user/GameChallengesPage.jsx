@@ -13,7 +13,7 @@ import {
   getChallengeStatus,
   initChallenge,
   startRemoteTarget,
-  increaseContainerTime,
+  extendContainerTime,
   stopContainer,
   submitFlag,
   resetChallenge,
@@ -391,7 +391,7 @@ function GameChallengesPage() {
   // 处理延长靶机时间
   const handleExtendInstance = async (challengeId) => {
     try {
-      const res = await increaseContainerTime(contestId, challengeId);
+      const res = await extendContainerTime(contestId, challengeId);
       if (res.code === 200) {
         toast.success({ title: res.msg || t('game.challenges.toast.extendSuccess') });
         await refreshChallengeStatus();

@@ -123,9 +123,9 @@ export const startRemoteTarget = (contestId, challengeId) => {
 //    "data": null,
 //    "trace": "fb370260-a941-4afa-8953-7a481a861d48"
 // }
-export const increaseContainerTime = (contestId, challengeId) => {
+export const extendContainerTime = (contestId, challengeId) => {
   return request({
-    url: `/contests/${contestId}/challenges/${challengeId}/increase`,
+    url: `/contests/${contestId}/challenges/${challengeId}/extend`,
     method: 'POST',
   });
 };

@@ -381,7 +381,7 @@ func GetVictimStatus(tx *gorm.DB, teamID uint, challenge model.Challenge) view.V
 	return data
 }
 
-func IncreaseVictimDuration(tx *gorm.DB, team model.Team, challenge model.Challenge) (model.Victim, model.RetVal) {
+func ExtendVictimDuration(tx *gorm.DB, team model.Team, challenge model.Challenge) (model.Victim, model.RetVal) {
 	repo := db.InitVictimRepo(tx)
 	victim, ret := repo.HasAliveVictim(team.ID, challenge.ID)
 	if !ret.OK {

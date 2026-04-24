@@ -187,7 +187,7 @@ var RoutePermissions = map[string]string{
 	"POST /contests/:contestID/challenges/:challengeID/init":      PermUserChallengeInit,
 	"POST /contests/:contestID/challenges/:challengeID/reset":     PermUserChallengeReset,
 	"POST /contests/:contestID/challenges/:challengeID/start":     PermUserVictimControl,
-	"POST /contests/:contestID/challenges/:challengeID/increase":  PermUserVictimControl,
+	"POST /contests/:contestID/challenges/:challengeID/extend":    PermUserVictimControl,
 	"POST /contests/:contestID/challenges/:challengeID/stop":      PermUserVictimControl,
 	"POST /contests/:contestID/challenges/:challengeID/submit":    PermUserChallengeSubmit,
 
@@ -223,15 +223,15 @@ var RoutePermissions = map[string]string{
 	"DELETE /admin/roles/:roleID/permissions": PermAdminRoleRevoke,
 
 	// /admin/groups
-	"GET /admin/groups":                   PermAdminGroupList,
-	"POST /admin/groups":                  PermAdminGroupCreate,
-	"GET /admin/groups/:groupID":          PermAdminGroupRead,
-	"GET /admin/groups/:groupID/users":    PermAdminUserList,
+	"GET /admin/groups":                          PermAdminGroupList,
+	"POST /admin/groups":                         PermAdminGroupCreate,
+	"GET /admin/groups/:groupID":                 PermAdminGroupRead,
+	"GET /admin/groups/:groupID/users":           PermAdminUserList,
 	"GET /admin/groups/:groupID/users/available": PermAdminUserList,
-	"PUT /admin/groups/:groupID":          PermAdminGroupUpdate,
-	"DELETE /admin/groups/:groupID":       PermAdminGroupDelete,
-	"POST /admin/groups/:groupID/users":   PermAdminUserAssign,
-	"DELETE /admin/groups/:groupID/users": PermAdminUserRevoke,
+	"PUT /admin/groups/:groupID":                 PermAdminGroupUpdate,
+	"DELETE /admin/groups/:groupID":              PermAdminGroupDelete,
+	"POST /admin/groups/:groupID/users":          PermAdminUserAssign,
+	"DELETE /admin/groups/:groupID/users":        PermAdminUserRevoke,
 
 	// /admin/users
 	"GET /admin/users":                  PermAdminUserList,
