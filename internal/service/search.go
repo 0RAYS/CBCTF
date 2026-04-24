@@ -13,11 +13,10 @@ import (
 )
 
 var searchableModels = []model.Model{
-	model.Challenge{}, model.ChallengeFlag{}, model.Cheat{}, model.Contest{},
-	model.ContestChallenge{}, model.ContestFlag{}, model.Device{}, model.Email{}, model.Event{},
-	model.File{}, model.Generator{}, model.Group{}, model.Notice{}, model.Oauth{}, model.Permission{}, model.Pod{},
-	model.Request{}, model.Role{}, model.Setting{}, model.Smtp{}, model.Submission{}, model.Team{}, model.TeamFlag{},
-	model.Traffic{}, model.User{}, model.Victim{}, model.Webhook{}, model.WebhookHistory{},
+	model.Challenge{}, model.Cheat{}, model.Contest{}, model.ContestChallenge{}, model.Device{}, model.Email{},
+	model.Event{}, model.File{}, model.Group{}, model.Notice{}, model.Oauth{}, model.Permission{}, model.Request{},
+	model.Role{}, model.Setting{}, model.Smtp{}, model.Submission{}, model.Team{}, model.TeamFlag{}, model.Traffic{},
+	model.User{}, model.Victim{}, model.Webhook{}, model.WebhookHistory{},
 }
 
 func GetAllowQueryModels() map[string]view.SearchModelView {
