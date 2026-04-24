@@ -13,10 +13,10 @@ import { motion } from 'motion/react';
 function Card({ children, variant = 'default', padding = 'md', className = '', animate = false, onClick, ...rest }) {
   // 卡片风格变体
   const variants = {
-    default:  'bg-neutral-800/80 border border-neutral-600/60 rounded-md',
+    default: 'bg-neutral-800/80 border border-neutral-600/60 rounded-md',
     bordered: 'bg-neutral-800/60 border border-neutral-600 rounded-md',
-    glass:    'bg-neutral-700/40 border border-neutral-600/80 rounded-lg backdrop-blur-sm',
-    dark:     'bg-neutral-900 border border-neutral-300/20 rounded-md',
+    glass: 'bg-neutral-700/40 border border-neutral-600/80 rounded-lg backdrop-blur-sm',
+    dark: 'bg-neutral-900 border border-neutral-300/20 rounded-md',
   };
 
   // 内边距

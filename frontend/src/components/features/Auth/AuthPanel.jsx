@@ -4,9 +4,9 @@ import { Button, Input } from '../../common';
 import OAuthLogin from './OAuthLogin';
 import { useTranslation } from 'react-i18next';
 
-function AuthPanel({ onSubmit }) {
+function AuthPanel({ onSubmit, registrationEnabled = false }) {
   const { t } = useTranslation();
-  const [isLogin, setIsLogin] = useState(true); // true为登录模式, false为注册模式
+  const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -16,6 +16,21 @@ function AuthPanel({ onSubmit }) {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const formControls = useAnimationControls();
+  const registrationClosedText = t('auth.registrationClosed', {
+    defaultValue: 'Registration is currently disabled.',
+  });
+
+  useEffect(() => {
+    if (!registrationEnabled && !isLogin) {
+      setIsLogin(true);
+      setErrors((prev) => {
+        if (!prev.submit) {
+          return prev;
+        }
+        return { ...prev, submit: '' };
+      });
+    }
+  }, [registrationEnabled, isLogin]);
 
   useEffect(() => {
     if (errors.submit) {
@@ -24,29 +39,24 @@ function AuthPanel({ onSubmit }) {
         transition: { duration: 0.35 },
       });
     }
-  }, [errors.submit]);
+  }, [errors.submit, formControls]);
 
   const validateForm = () => {
     const newErrors = {};
 
-    // 用户名验证
     if (formData.username.length < 3) {
       newErrors.username = t('auth.validation.usernameMin');
     }
 
-    // 密码验证
     if (formData.password.length < 6) {
       newErrors.password = t('auth.validation.passwordMin');
     }
 
-    // 注册模式的额外验证
     if (!isLogin) {
-      // 确认密码验证
       if (formData.confirmPassword !== formData.password) {
         newErrors.confirmPassword = t('auth.validation.passwordMismatch');
       }
 
-      // 邮箱验证
       if (!/\S+@\S+\.\S+/.test(formData.email)) {
         newErrors.email = t('auth.validation.emailInvalid');
       }
@@ -58,11 +68,19 @@ function AuthPanel({ onSubmit }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!registrationEnabled && !isLogin) {
+      setErrors((prev) => ({
+        ...prev,
+        submit: registrationClosedText,
+      }));
+      return;
+    }
+
     if (!validateForm()) return;
 
     setIsSubmitting(true);
     try {
-      // 调用外部传入的处理函数
       await onSubmit({
         type: isLogin ? 'login' : 'register',
         data: {
@@ -77,7 +95,6 @@ function AuthPanel({ onSubmit }) {
         },
       });
     } catch (error) {
-      // 处理错误, 可能是显示错误消息
       setErrors((prev) => ({
         ...prev,
         submit: error.message,
@@ -93,11 +110,12 @@ function AuthPanel({ onSubmit }) {
       ...prev,
       [name]: value,
     }));
-    // 清除对应字段的错误
-    if (errors[name]) {
+
+    if (errors[name] || errors.submit) {
       setErrors((prev) => ({
         ...prev,
         [name]: '',
+        submit: '',
       }));
     }
   };
@@ -109,12 +127,11 @@ function AuthPanel({ onSubmit }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: [0.25, 1, 0.5, 1] }}
     >
-      {/* 标题区域 */}
       <div className="relative flex justify-center mb-8">
         <div className="absolute -top-[3px] -right-[3px] w-[10px] h-[10px] border-t border-r border-neutral-300" />
         <div className="absolute -bottom-[3px] -left-[3px] w-[10px] h-[10px] border-b border-l border-neutral-300" />
         <motion.h1
-      className="text-neutral-50 text-2xl font-mono tracking-wider"
+          className="text-neutral-50 text-2xl font-mono tracking-wider"
           key={isLogin ? 'login' : 'register'}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -125,27 +142,27 @@ function AuthPanel({ onSubmit }) {
         </motion.h1>
       </div>
 
-      {/* 切换按钮 */}
       <div className="flex justify-center gap-4 mb-8">
         <Button
           variant={isLogin ? 'primary' : 'outline'}
           size="sm"
-          className="min-w-[100px]"
+          className={registrationEnabled ? 'min-w-[100px]' : 'min-w-[220px]'}
           onClick={() => setIsLogin(true)}
         >
           {t('auth.login')}
         </Button>
-        <Button
-          variant={!isLogin ? 'primary' : 'outline'}
-          size="sm"
-          className="min-w-[100px]"
-          onClick={() => setIsLogin(false)}
-        >
-          {t('auth.register')}
-        </Button>
+        {registrationEnabled && (
+          <Button
+            variant={!isLogin ? 'primary' : 'outline'}
+            size="sm"
+            className="min-w-[100px]"
+            onClick={() => setIsLogin(false)}
+          >
+            {t('auth.register')}
+          </Button>
+        )}
       </div>
 
-      {/* 账号密码表单 */}
       <motion.form onSubmit={handleSubmit} className="space-y-4" animate={formControls}>
         <AnimatePresence mode="wait">
           <motion.div
@@ -234,6 +251,12 @@ function AuthPanel({ onSubmit }) {
           {isSubmitting ? t('common.processing') : isLogin ? t('auth.login') : t('auth.register')}
         </Button>
 
+        {!registrationEnabled && (
+          <p className="text-neutral-400 text-sm font-mono text-center" role="status">
+            {registrationClosedText}
+          </p>
+        )}
+
         {errors.submit && (
           <p className="text-red-400 text-sm font-mono text-center" role="alert">
             {errors.submit}
@@ -241,7 +264,6 @@ function AuthPanel({ onSubmit }) {
         )}
       </motion.form>
 
-      {/* OAuth登录 - 独立于表单 */}
       <OAuthLogin />
     </motion.div>
   );

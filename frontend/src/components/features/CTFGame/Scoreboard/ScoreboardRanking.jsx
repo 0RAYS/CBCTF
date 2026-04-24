@@ -23,9 +23,15 @@ function ScoreboardRanking({ teams = [], labels = {}, locale = 'en-US', emptyMes
           className="grid gap-4 p-3 border-b border-neutral-600/50 place-items-center bg-neutral-800/40"
           style={{ gridTemplateColumns: gridCols }}
         >
-          <div className="text-[10px] font-mono text-neutral-500 tracking-[0.18em] uppercase">{resolvedLabels.rank}</div>
-          <div className="text-[10px] font-mono text-neutral-500 tracking-[0.18em] uppercase">{resolvedLabels.team}</div>
-          <div className="text-[10px] font-mono text-neutral-500 tracking-[0.18em] uppercase flex items-center justify-end">{resolvedLabels.score}</div>
+          <div className="text-[10px] font-mono text-neutral-500 tracking-[0.18em] uppercase">
+            {resolvedLabels.rank}
+          </div>
+          <div className="text-[10px] font-mono text-neutral-500 tracking-[0.18em] uppercase">
+            {resolvedLabels.team}
+          </div>
+          <div className="text-[10px] font-mono text-neutral-500 tracking-[0.18em] uppercase flex items-center justify-end">
+            {resolvedLabels.score}
+          </div>
           <div className="text-[10px] font-mono text-neutral-500 tracking-[0.18em] uppercase flex items-center justify-center">
             {resolvedLabels.challenges}
           </div>
