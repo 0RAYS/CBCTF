@@ -227,7 +227,7 @@ func (t *TeamRepo) Delete(idL ...uint) model.RetVal {
 		},
 	})
 	if !ret.OK {
-		if ret.Msg != i18n.Model.NotFound {
+		if ret.Msg != i18n.Model.NotFound && ret.Msg != i18n.Model.Team.NotFound {
 			return ret
 		}
 		return model.SuccessRetVal()

@@ -26,6 +26,7 @@ model:
   cheat:
     invalidType: "不合法的作弊类型"
     createError: "创建 Cheat 失败: {{.Error}}"
+    notFound: "Cheat 不存在"
     deleteError: "删除 Cheat 失败: {{.Error}}"
   contest:
     captchaWrong: "比赛邀请码错误"
@@ -70,6 +71,7 @@ model:
     deleteError: "删除 Group 失败: {{.Error}}"
   notice:
     invalidType: "不合法的通知类型"
+    notFound: "通知不存在"
     deleteError: "删除通知失败: {{.Error}}"
   permission:
     getError: "获取 Permission 失败: {{.Error}}"
@@ -135,6 +137,7 @@ model:
     limited: "容器数量达到上限"
     hasMuchTime: "距容器关闭20分钟内才可延长时间"
     notStoppable: "仅允许停止运行中的靶机"
+    notFound: "靶机不存在"
     deleteError: "删除 Victim 失败: {{.Error}}"
   webhook:
     invalidMethod: "不合法的 Webhook 请求方式"

@@ -26,6 +26,7 @@ model:
   cheat:
     invalidType: "Invalid cheat type"
     createError: "Create Cheat error: {{.Error}}"
+    notFound: "Cheat not found"
     deleteError: "Delete Cheat error: {{.Error}}"
   contest:
     captchaWrong: "Captcha is wrong"
@@ -69,7 +70,8 @@ model:
     getError: "Get Group error: {{.Error}}"
     deleteError: "Delete Group error: {{.Error}}"
   notice:
-    invalidType: "Invalid notice type"
+    invalidType: "Invalid Notice type"
+    notFound: "Notice not found"
     deleteError: "Delete Notice error: {{.Error}}"
   permission:
     getError: "Get Permission error: {{.Error}}"
@@ -135,6 +137,7 @@ model:
     limited: "Victims is max count"
     hasMuchTime: "Can only extend time within 20 minutes before the container closes"
     notStoppable: "Can only stop running victims"
+    notFound: "Victim not found"
     deleteError: "Delete Victim error: {{.Error}}"
   webhook:
     invalidMethod: "Invalid Webhook request method"

@@ -97,7 +97,7 @@ func (v *VictimRepo) Delete(idL ...uint) model.RetVal {
 		Preloads:   map[string]GetOptions{"Pods": {}},
 	})
 	if !ret.OK {
-		if ret.Msg != i18n.Model.NotFound {
+		if ret.Msg != i18n.Model.NotFound && ret.Msg != i18n.Model.Victim.NotFound {
 			return ret
 		}
 		return model.SuccessRetVal()

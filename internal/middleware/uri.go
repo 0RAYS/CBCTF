@@ -178,6 +178,10 @@ func SetTeam(ctx *gin.Context) {
 		resp.AbortJSON(ctx, ret)
 		return
 	}
+	if team.ContestID != GetContest(ctx).ID {
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Team.NotFound})
+		return
+	}
 	ctx.Set("Team", team)
 	ctx.Next()
 }
@@ -299,6 +303,10 @@ func SetNotice(ctx *gin.Context) {
 		resp.AbortJSON(ctx, ret)
 		return
 	}
+	if notice.ContestID != GetContest(ctx).ID {
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Notice.NotFound})
+		return
+	}
 	ctx.Set("Notice", notice)
 	ctx.Next()
 }
@@ -393,6 +401,14 @@ func SetContestFlag(ctx *gin.Context) {
 		resp.AbortJSON(ctx, ret)
 		return
 	}
+	if contestFlag.ContestID != GetContest(ctx).ID {
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.ContestFlag.NotFound})
+		return
+	}
+	if contestFlag.ContestChallengeID != GetContestChallenge(ctx).ID {
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.ContestFlag.NotFound})
+		return
+	}
 	ctx.Set("ContestFlag", contestFlag)
 	ctx.Next()
 }
@@ -419,6 +435,14 @@ func SetVictim(ctx *gin.Context) {
 		resp.AbortJSON(ctx, ret)
 		return
 	}
+	if !victim.ContestID.Valid || victim.ContestID.V != GetContest(ctx).ID {
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Victim.NotFound})
+		return
+	}
+	if !victim.TeamID.Valid || victim.TeamID.V != GetTeam(ctx).ID {
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Victim.NotFound})
+		return
+	}
 	ctx.Set("Victim", victim)
 	ctx.Next()
 }
@@ -443,6 +467,10 @@ func SetCheat(ctx *gin.Context) {
 	cheat, ret := db.InitCheatRepo(db.DB).GetByID(cheatID.CheatID)
 	if !ret.OK {
 		resp.AbortJSON(ctx, ret)
+		return
+	}
+	if cheat.ContestID != GetContest(ctx).ID {
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Cheat.NotFound})
 		return
 	}
 	ctx.Set("Cheat", cheat)

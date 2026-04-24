@@ -27,6 +27,7 @@ model:
     invalidType: "400"
     createError: "500"
     deleteError: "500"
+    notFound: "404"
   contest:
     captchaWrong: "400"
     duplicateMember: "400"
@@ -70,6 +71,7 @@ model:
     deleteError: "500"
   notice:
     invalidType: "400"
+    notFound: "404"
     deleteError: "500"
   permission:
     getError: "500"
@@ -135,6 +137,7 @@ model:
     limited: "400"
     hasMuchTime: "400"
     notStoppable: "400"
+    notFound: "404"
     deleteError: "500"
   webhook:
     invalidMethod: "400"
