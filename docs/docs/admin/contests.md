@@ -59,7 +59,7 @@ GET /admin/contests/:contestID/teams/:teamID/victims/:victimID/traffic/download
 
 ## 公告发布
 
-通过 `POST /admin/contests/:contestID/notices`（`admin:notice:create`）发布公告, 平台通过 WebSocket 实时推送给所有在线的参赛者。
+通过 `POST /admin/contests/:contestID/notices`（`admin:notice:create`）发布公告, 参赛者可在比赛公告页面实时查看。
 
 ## 镜像预热
 

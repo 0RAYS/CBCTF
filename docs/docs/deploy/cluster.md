@@ -77,7 +77,7 @@ kubectl apply -f https://raw.githubusercontent.com/k8snetworkplumbingwg/multus-c
 示例: 
 
 ```bash
-wget https://raw.githubusercontent.com/kubeovn/kube-ovn/refs/tags/v1.14.5/dist/images/install.sh
+wget https://raw.githubusercontent.com/kubeovn/kube-ovn/refs/tags/v1.16.0/dist/images/install.sh
 bash install.sh
 ```
 
