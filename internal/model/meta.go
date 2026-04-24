@@ -27,13 +27,11 @@ var metadataRegistry = map[reflect.Type]Metadata{
 		Table:        "brandings",
 		UniqueFields: []string{"id", "code"},
 		QueryFields:  []string{"id", "code"},
-		SearchFields: []string{"code"},
 	},
 	reflect.TypeFor[ChallengeFlag](): {
 		Name:         "ChallengeFlag",
 		Table:        "challenge_flags",
 		UniqueFields: []string{"id"},
-		QueryFields:  []string{},
 	},
 	reflect.TypeFor[Cheat](): {
 		Name:         "Cheat",
@@ -60,14 +58,12 @@ var metadataRegistry = map[reflect.Type]Metadata{
 		Name:         "ContestFlag",
 		Table:        "contest_flags",
 		UniqueFields: []string{"id"},
-		QueryFields:  []string{},
 	},
 	reflect.TypeFor[CronJob](): {
 		Name:         "CronJob",
 		Table:        "cron_jobs",
 		UniqueFields: []string{"id", "name"},
 		QueryFields:  []string{"id", "name", "description", "schedule", "success_last", "failure_last", "success", "failure"},
-		SearchFields: []string{"name", "description"},
 	},
 	reflect.TypeFor[Device](): {
 		Name:         "Device",
@@ -102,7 +98,6 @@ var metadataRegistry = map[reflect.Type]Metadata{
 		Table:        "generators",
 		UniqueFields: []string{"id"},
 		QueryFields:  []string{"id", "challenge_id", "challenge_name", "contest_id", "success", "failure", "status"},
-		SearchFields: []string{"challenge_name", "status"},
 	},
 	reflect.TypeFor[Group](): {
 		Name:         "Group",
@@ -130,13 +125,11 @@ var metadataRegistry = map[reflect.Type]Metadata{
 		Table:        "permissions",
 		UniqueFields: []string{"id", "name"},
 		QueryFields:  []string{"id", "name", "resource", "operation", "description"},
-		SearchFields: []string{"name", "resource", "operation", "description"},
 	},
 	reflect.TypeFor[Pod](): {
 		Name:         "Pod",
 		Table:        "pods",
 		UniqueFields: []string{"id"},
-		QueryFields:  []string{},
 	},
 	reflect.TypeFor[Request](): {
 		Name:         "Request",
@@ -157,7 +150,6 @@ var metadataRegistry = map[reflect.Type]Metadata{
 		Table:        "settings",
 		UniqueFields: []string{"key"},
 		QueryFields:  []string{"id", "key"},
-		SearchFields: []string{"key"},
 	},
 	reflect.TypeFor[Smtp](): {
 		Name:         "Smtp",
@@ -191,7 +183,7 @@ var metadataRegistry = map[reflect.Type]Metadata{
 		Name:         "TeamFlag",
 		Table:        "team_flags",
 		UniqueFields: []string{"id"},
-		QueryFields:  []string{},
+		SearchFields: []string{"value"},
 	},
 	reflect.TypeFor[Traffic](): {
 		Name:         "Traffic",
@@ -211,7 +203,6 @@ var metadataRegistry = map[reflect.Type]Metadata{
 		Name:         "Victim",
 		Table:        "victims",
 		UniqueFields: []string{"id"},
-		QueryFields:  []string{},
 	},
 	reflect.TypeFor[Webhook](): {
 		Name:         "Webhook",
@@ -225,6 +216,7 @@ var metadataRegistry = map[reflect.Type]Metadata{
 		Table:        "webhook_histories",
 		UniqueFields: []string{"id"},
 		QueryFields:  []string{"id", "success", "webhook_id", "resp_code"},
+		SearchFields: []string{"error"},
 	},
 }
 
