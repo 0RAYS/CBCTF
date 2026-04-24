@@ -367,7 +367,7 @@ func Init() *gin.Engine {
 
 				adminContestTeam.GET("/writeups", GetWriteUPs)
 				adminContestTeam.GET("/writeups/:fileID",
-					middleware.SetFile(model.WriteupFileType), DownloadFile(model.DownloadWriteUpEventType),
+					middleware.SetTeamWriteUpFile, DownloadFile(model.DownloadWriteUpEventType),
 				)
 			}
 
