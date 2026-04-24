@@ -4,7 +4,7 @@ import BaseLayout from './BaseLayout';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { getContestInfo } from '../../../api/contest';
-import { isContestEnded } from '../../../config/contest';
+import { getContestStatus } from '../../../config/contest';
 import { useBranding } from '../../../hooks/useBranding';
 
 function ContestLayout() {
@@ -14,13 +14,13 @@ function ContestLayout() {
   const user = useSelector((state) => state.user);
   const { t } = useTranslation();
   const { siteName } = useBranding();
-  const [contestEnded, setContestEnded] = useState(false);
+  const [contestStatus, setContestStatus] = useState(null);
 
   useEffect(() => {
     getContestInfo(contestId).then((res) => {
       if (res.code === 200) {
         const contest = res.data;
-        setContestEnded(isContestEnded(contest.start, contest.duration));
+        setContestStatus(getContestStatus(contest.start, contest.duration));
       }
     });
   }, [contestId]);
@@ -34,12 +34,12 @@ function ContestLayout() {
       { id: 'notice', label: t('nav.notice') },
     ];
 
-    if (!contestEnded) {
+    if (contestStatus && contestStatus !== 'upcoming') {
       tabs.splice(4, 0, { id: 'writeup', label: t('nav.writeup') });
     }
 
     return tabs;
-  }, [t, contestEnded]);
+  }, [t, contestStatus]);
 
   const activeTab = useMemo(() => {
     const currentTab = location.pathname.split('/').pop();
