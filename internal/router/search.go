@@ -26,7 +26,7 @@ func Search(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	ms, count, ret := service.SearchModels(nil, form)
+	ms, count, ret := service.SearchModels(form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
