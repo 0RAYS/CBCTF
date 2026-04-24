@@ -56,7 +56,6 @@ CBCTF 是一个基于 Go 语言开发的高性能 CTF 竞赛平台, 前后端一
 | 定时任务      | robfig/cron       | v3    |
 | 容器编排      | Kubernetes        | 1.20+ |
 | 网络插件      | Kube-OVN / Multus | -     |
-| 虚拟机编排      | KubeVirt          | -     |
 | JWT       | golang-jwt        | v5    |
 | 配置管理      | Viper             | 1.21  |
 
@@ -207,7 +206,6 @@ networks:
 |------------------------------------------------------------------|------------|
 | [Kube-OVN](https://kubeovn.github.io/docs/stable/start/prepare/) | VPC 网络隔离支持 |
 | [Multus](https://github.com/k8snetworkplumbingwg/multus-cni)     | 多网络接口支持    |
-| [KubeVirt](https://kubevirt.io/)                                 | 虚拟机编排（实验性） |
 
 **Multus 插件选择建议: **
 
