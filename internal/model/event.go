@@ -50,8 +50,8 @@ const (
 	DeleteWebhookEventType = "delete_webhook"
 
 	UpdateBrandingEventType = "update_branding"
-	UpdateSettingEventType = "update_setting"
-	RestartSystemEventType = "restart_system"
+	UpdateSettingEventType  = "update_setting"
+	RestartSystemEventType  = "restart_system"
 
 	ActivateEmailEventType = "activate_email"
 	VerifyEmailEventType   = "verify_email"
@@ -71,7 +71,7 @@ const (
 	DownloadAttachmentEventType = "download_attachment"
 	PullImageEventType          = "pull_image"
 	StartVictimEventType        = "start_victim"
-	IncreaseVictimEventType     = "increase_victim"
+	ExtendVictimEventType       = "extend_victim"
 	StopVictimEventType         = "stop_victim"
 	DownloadTrafficEventType    = "download_traffic"
 	ReadFlagEventType           = "read_flag"
@@ -121,7 +121,7 @@ var EventTypes = []string{
 	JoinTeamEventType, CreateTeamEventType, UpdateTeamEventType, DeleteTeamEventType,
 	LeaveTeamEventType, KickMemberEventType,
 	InitChallengeEventType, ResetChallengeEventType,
-	DownloadAttachmentEventType, PullImageEventType, StartVictimEventType, IncreaseVictimEventType, StopVictimEventType,
+	DownloadAttachmentEventType, PullImageEventType, StartVictimEventType, ExtendVictimEventType, StopVictimEventType,
 	DownloadTrafficEventType,
 	ReadFlagEventType, SubmitFlagEventType,
 	StartGeneratorEventType, StopGeneratorEventType,
