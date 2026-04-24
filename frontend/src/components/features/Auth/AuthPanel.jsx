@@ -16,9 +16,6 @@ function AuthPanel({ onSubmit, registrationEnabled = false }) {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const formControls = useAnimationControls();
-  const registrationClosedText = t('auth.registrationClosed', {
-    defaultValue: 'Registration is currently disabled.',
-  });
 
   useEffect(() => {
     if (!registrationEnabled && !isLogin) {
@@ -70,10 +67,7 @@ function AuthPanel({ onSubmit, registrationEnabled = false }) {
     e.preventDefault();
 
     if (!registrationEnabled && !isLogin) {
-      setErrors((prev) => ({
-        ...prev,
-        submit: registrationClosedText,
-      }));
+      setIsLogin(true);
       return;
     }
 
@@ -250,12 +244,6 @@ function AuthPanel({ onSubmit, registrationEnabled = false }) {
         <Button type="submit" variant="primary" fullWidth className="shadow-focus-strong" disabled={isSubmitting}>
           {isSubmitting ? t('common.processing') : isLogin ? t('auth.login') : t('auth.register')}
         </Button>
-
-        {!registrationEnabled && (
-          <p className="text-neutral-400 text-sm font-mono text-center" role="status">
-            {registrationClosedText}
-          </p>
-        )}
 
         {errors.submit && (
           <p className="text-red-400 text-sm font-mono text-center" role="alert">
