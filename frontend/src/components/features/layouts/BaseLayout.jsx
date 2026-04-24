@@ -57,7 +57,9 @@ function BaseLayout({
       </div>
 
       {/* 内容区域 */}
-      <main id="main-content" className="w-full min-h-full pt-[110px] pb-[80px] px-4 md:px-8 relative z-1">{children}</main>
+      <main id="main-content" className="w-full min-h-full pt-[110px] pb-[80px] px-4 md:px-8 relative z-1">
+        {children}
+      </main>
 
       <div className="relative z-2">
         <Footer {...footerConfig} />

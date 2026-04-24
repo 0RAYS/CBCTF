@@ -157,3 +157,9 @@ func UpdateSystemSettings(tx *gorm.DB, form dto.UpdateSettingForm) model.RetVal 
 	}
 	return repo.ReadSettings()
 }
+
+func GetPublicSystemConfig() map[string]any {
+	return map[string]any{
+		"registration_enabled": config.Env.Registration.Enabled,
+	}
+}

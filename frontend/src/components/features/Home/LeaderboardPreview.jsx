@@ -28,9 +28,7 @@ function LeaderboardPreview({ topUsers, isLoading }) {
               {home.leaderboard.titlePrefix || 'Rankings'}
             </span>
           </div>
-          <h2 className="text-2xl md:text-3xl font-mono text-neutral-50">
-            {home.leaderboard.titleHighlight}
-          </h2>
+          <h2 className="text-2xl md:text-3xl font-mono text-neutral-50">{home.leaderboard.titleHighlight}</h2>
           <p className="text-neutral-400 text-sm mt-2">{home.leaderboard.subtitle}</p>
         </motion.div>
 
@@ -77,9 +75,7 @@ function LeaderboardPreview({ topUsers, isLoading }) {
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.06, ease: [0.16, 1, 0.3, 1], duration: 0.3 }}
                 >
-                  <span className={`text-sm font-mono ${RANK_COLORS[index] ?? 'text-neutral-500'}`}>
-                    {index + 1}
-                  </span>
+                  <span className={`text-sm font-mono ${RANK_COLORS[index] ?? 'text-neutral-500'}`}>{index + 1}</span>
                   <ScrollingText
                     text={team.name}
                     className="text-sm text-neutral-200 font-mono group-hover:text-geek-400 transition-colors duration-150"

@@ -21,6 +21,10 @@ func HomePage(ctx *gin.Context) {
 	resp.JSON(ctx, model.SuccessRetVal(service.GetHomePageData(db.DB)))
 }
 
+func PublicSystemConfig(ctx *gin.Context) {
+	resp.JSON(ctx, model.SuccessRetVal(service.GetPublicSystemConfig()))
+}
+
 func SystemStatus(ctx *gin.Context) {
 	ret := make(map[string]any)
 	ret["metrics"] = redis.GetMetrics()

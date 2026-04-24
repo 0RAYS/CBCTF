@@ -12,7 +12,6 @@ function HeroSection() {
     <div className="min-h-[560px] md:min-h-[700px] flex items-center px-4 md:px-8">
       <div className="w-full max-w-[1200px] mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-[5fr_3fr] gap-12 md:gap-20 items-center">
-
           {/* Text column */}
           <motion.div
             className="space-y-10"
@@ -24,7 +23,10 @@ function HeroSection() {
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-geek-400 animate-pulse" />
-                <span className="w-1 h-1 rounded-full bg-geek-400/50 animate-pulse" style={{ animationDelay: '0.3s' }} />
+                <span
+                  className="w-1 h-1 rounded-full bg-geek-400/50 animate-pulse"
+                  style={{ animationDelay: '0.3s' }}
+                />
               </div>
               <span className="text-xs font-mono text-geek-400 tracking-[0.3em] uppercase">
                 {home.hero.titlePrefix || 'CTF Platform'}
@@ -46,19 +48,12 @@ function HeroSection() {
             {/* Rule separator — structural boldness */}
             <div className="flex items-center gap-4">
               <div className="w-8 h-[1px] bg-neutral-600" />
-              <p className="text-neutral-400 text-sm leading-relaxed max-w-[50ch]">
-                {home.hero.subtitle}
-              </p>
+              <p className="text-neutral-400 text-sm leading-relaxed max-w-[50ch]">{home.hero.subtitle}</p>
             </div>
 
             {/* Actions */}
             <div className="flex flex-wrap gap-3">
-              <Button
-                variant="primary"
-                size="lg"
-                className="shadow-focus-strong"
-                onClick={() => navigate('/games')}
-              >
+              <Button variant="primary" size="lg" className="shadow-focus-strong" onClick={() => navigate('/games')}>
                 {home.hero.primaryAction}
               </Button>
               <Button variant="outline" size="lg" onClick={() => navigate('/support')}>
@@ -92,7 +87,6 @@ function HeroSection() {
               />
             </div>
           </motion.div>
-
         </div>
       </div>
     </div>

@@ -27,9 +27,7 @@ function EmptyState({ icon, title, description, hint, action, className = '' }) 
       {description && (
         <p className="text-xs text-neutral-500 text-center max-w-[320px] leading-relaxed mt-1">{description}</p>
       )}
-      {hint && (
-        <p className="text-xs text-neutral-600 text-center mt-2 font-mono">{hint}</p>
-      )}
+      {hint && <p className="text-xs text-neutral-600 text-center mt-2 font-mono">{hint}</p>}
       {action && <div className="mt-4">{action}</div>}
     </div>
   );

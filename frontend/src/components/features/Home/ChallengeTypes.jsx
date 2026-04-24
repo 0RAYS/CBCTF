@@ -61,9 +61,7 @@ function ChallengeTypes() {
               {home.challengeTypes.titlePrefix}
             </span>
           </div>
-          <h2 className="text-2xl md:text-3xl font-mono text-neutral-50">
-            {home.challengeTypes.titleHighlight}
-          </h2>
+          <h2 className="text-2xl md:text-3xl font-mono text-neutral-50">{home.challengeTypes.titleHighlight}</h2>
           <p className="text-neutral-400 text-sm mt-2 max-w-[60ch]">{home.challengeTypes.subtitle}</p>
         </motion.div>
 

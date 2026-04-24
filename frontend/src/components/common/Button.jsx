@@ -48,11 +48,11 @@ function Button({
 
   // 按钮尺寸
   const sizes = {
-    sm:     'h-[40px] text-sm',
-    md:     'h-[42px] text-sm',
-    lg:     'h-[50px] text-lg tracking-wider',
+    sm: 'h-[40px] text-sm',
+    md: 'h-[42px] text-sm',
+    lg: 'h-[50px] text-lg tracking-wider',
     action: 'h-[40px] font-mono tracking-wider',
-    icon:   'w-[40px] h-[40px] p-0', // min 40px — dense admin UI compromise
+    icon: 'w-[40px] h-[40px] p-0', // min 40px — dense admin UI compromise
   };
 
   // 内容对齐方式

@@ -135,7 +135,10 @@ function ChallengeBoard({
                 </div>
                 {/* Title — primary size tier */}
                 <div className="flex items-end justify-between gap-2">
-                  <h3 className="text-neutral-50 font-mono text-base leading-snug truncate min-w-0 font-medium" title={challenge.title}>
+                  <h3
+                    className="text-neutral-50 font-mono text-base leading-snug truncate min-w-0 font-medium"
+                    title={challenge.title}
+                  >
                     {challenge.title}
                   </h3>
                   <span className="text-yellow-400 font-mono text-sm flex-shrink-0 tabular-nums">

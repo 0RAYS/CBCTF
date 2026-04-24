@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { store } from '../store/index';
 import { login, register } from '../api/auth';
 import { fetchUserInfo, fetchAccessibleRoutes } from '../store/user';
@@ -12,8 +13,16 @@ function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { t } = useTranslation();
+  const registrationEnabled = useSelector((state) => state.publicConfig.data.registration_enabled);
+  const registrationClosedText = t('auth.registrationClosed', {
+    defaultValue: 'Registration is currently disabled.',
+  });
 
   const handleAuth = async ({ type, data }) => {
+    if (type === 'register' && !registrationEnabled) {
+      throw new Error(registrationClosedText);
+    }
+
     const msg = type === 'login' ? t('toast.auth.loginFailed') : t('toast.auth.registerFailed');
     try {
       let response;
@@ -45,7 +54,7 @@ function Login() {
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-190px)] px-4">
-      <AuthPanel onSubmit={handleAuth} />
+      <AuthPanel onSubmit={handleAuth} registrationEnabled={registrationEnabled} />
     </div>
   );
 }

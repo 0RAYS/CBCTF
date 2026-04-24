@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import AppRoutes from './routes';
 import { fetchUserInfo, fetchAccessibleRoutes, setInitialized } from './store/user';
 import { fetchBranding } from './store/branding';
+import { fetchPublicConfig } from './store/settings.js';
 import BrandingHead from './components/features/Branding/BrandingHead';
 
 function App() {
@@ -11,7 +12,12 @@ function App() {
 
   useEffect(() => {
     const initializeAuth = async () => {
-      await Promise.all([dispatch(fetchBranding()), dispatch(fetchUserInfo()), dispatch(fetchAccessibleRoutes())]);
+      await Promise.all([
+        dispatch(fetchBranding()),
+        dispatch(fetchPublicConfig()),
+        dispatch(fetchUserInfo()),
+        dispatch(fetchAccessibleRoutes()),
+      ]);
       dispatch(setInitialized());
     };
     initializeAuth();
