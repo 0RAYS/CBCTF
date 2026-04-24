@@ -2,18 +2,6 @@ module CBCTF
 
 go 1.26.2
 
-ignore (
-	./.gocache
-	./data
-	./frontend/dist
-	./frontend/node_modules
-	./frontend/public
-	./frontend/src
-	./logs
-	./uploads
-	./volumes
-)
-
 replace (
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20210105115604-44119421ec6b
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20260330154417-16be699c7b31
