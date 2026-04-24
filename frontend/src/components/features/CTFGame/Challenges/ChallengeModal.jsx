@@ -35,7 +35,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Button } from '../../../../components/common';
 import { useTranslation } from 'react-i18next';
-import { EASE_T2, backdropVariants } from '../../../../config/motion';
+import { EASE_T2 } from '../../../../config/motion';
 
 const normalizeInstanceStatus = (status) => {
   const normalizedStatus = typeof status === 'string' ? status.toLowerCase() : '';
