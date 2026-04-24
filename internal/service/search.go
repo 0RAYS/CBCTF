@@ -8,8 +8,6 @@ import (
 	"CBCTF/internal/view"
 	"fmt"
 	"slices"
-
-	"gorm.io/gorm"
 )
 
 var searchableModels = []model.Model{
@@ -32,7 +30,7 @@ func GetAllowQueryModels() map[string]view.SearchModelView {
 	return data
 }
 
-func SearchModels(_ *gorm.DB, form dto.SearchModelsForm) (any, int64, model.RetVal) {
+func SearchModels(form dto.SearchModelsForm) (any, int64, model.RetVal) {
 	var (
 		m            model.Model
 		queryFields  []string
