@@ -136,6 +136,8 @@ model:
   victim:
     limited: "Victims is max count"
     hasMuchTime: "Can only extend time within 20 minutes before the container closes"
+    notStartable: "Can only start victims when no instance is active"
+    notExtendable: "Can only extend running victims"
     notStoppable: "Can only stop running victims"
     notFound: "Victim not found"
     deleteError: "Delete Victim error: {{.Error}}"

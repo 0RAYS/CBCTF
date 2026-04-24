@@ -139,6 +139,8 @@ model:
     notStoppable: "400"
     notFound: "404"
     deleteError: "500"
+    notStartable: "400"
+    notExtendable: "400"
   webhook:
     invalidMethod: "400"
     notAllowedTarget: "403"

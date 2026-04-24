@@ -308,7 +308,7 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 		podRepo       = db.InitPodRepo(tx)
 	)
 	if _, ret := victimRepo.HasAliveVictim(teamID, challengeID); ret.OK {
-		return model.SuccessRetVal()
+		return model.RetVal{Msg: i18n.Model.Victim.NotStartable}
 	}
 	challenge, ret := challengeRepo.GetByID(challengeID, db.GetOptions{
 		Preloads: map[string]db.GetOptions{"ChallengeFlags": {}},
@@ -387,6 +387,9 @@ func IncreaseVictimDuration(tx *gorm.DB, team model.Team, challenge model.Challe
 	if !ret.OK {
 		return model.Victim{}, ret
 	}
+	if victim.Status != model.RunningVictimStatus {
+		return model.Victim{}, model.RetVal{Msg: i18n.Model.Victim.NotExtendable}
+	}
 	if !victim.Start.Add(victim.Duration).Before(time.Now().Add(20 * time.Minute)) {
 		return model.Victim{}, model.RetVal{Msg: i18n.Model.Victim.HasMuchTime}
 	}
@@ -401,8 +404,7 @@ func IncreaseVictimDuration(tx *gorm.DB, team model.Team, challenge model.Challe
 }
 
 func StopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
-	switch victim.Status {
-	case model.WaitingVictimStatus, model.PendingVictimStatus:
+	if victim.Status != model.RunningVictimStatus {
 		return model.RetVal{Msg: i18n.Model.Victim.NotStoppable}
 	}
 	return ForceStopVictim(tx, victim)
