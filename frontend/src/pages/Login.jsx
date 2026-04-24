@@ -14,13 +14,10 @@ function Login() {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const registrationEnabled = useSelector((state) => state.publicConfig.data.registration_enabled);
-  const registrationClosedText = t('auth.registrationClosed', {
-    defaultValue: 'Registration is currently disabled.',
-  });
 
   const handleAuth = async ({ type, data }) => {
     if (type === 'register' && !registrationEnabled) {
-      throw new Error(registrationClosedText);
+      return;
     }
 
     const msg = type === 'login' ? t('toast.auth.loginFailed') : t('toast.auth.registerFailed');
