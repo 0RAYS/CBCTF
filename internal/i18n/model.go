@@ -176,11 +176,13 @@ type UserTeam struct {
 }
 
 type Victim struct {
-	Limited      string
-	HasMuchTime  string
-	NotStoppable string
-	NotFound     string
-	DeleteError  string
+	Limited       string
+	HasMuchTime   string
+	NotStoppable  string
+	NotFound      string
+	DeleteError   string
+	NotStartable  string
+	NotExtendable string
 }
 
 type Webhook struct {
@@ -394,11 +396,13 @@ var Model = struct {
 		DeleteError: "model.userTeam.deleteError",
 	},
 	Victim: Victim{
-		Limited:      "model.victim.limited",
-		HasMuchTime:  "model.victim.hasMuchTime",
-		NotStoppable: "model.victim.notStoppable",
-		NotFound:     "model.victim.notFound",
-		DeleteError:  "model.victim.deleteError",
+		Limited:       "model.victim.limited",
+		HasMuchTime:   "model.victim.hasMuchTime",
+		NotStoppable:  "model.victim.notStoppable",
+		NotFound:      "model.victim.notFound",
+		DeleteError:   "model.victim.deleteError",
+		NotStartable:  "model.victim.notStartable",
+		NotExtendable: "model.victim.notExtendable",
 	},
 	Webhook: Webhook{
 		InvalidMethod:    "model.webhook.invalidMethod",

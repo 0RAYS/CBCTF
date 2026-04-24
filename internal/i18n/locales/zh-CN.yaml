@@ -139,6 +139,8 @@ model:
     notStoppable: "仅允许停止运行中的靶机"
     notFound: "靶机不存在"
     deleteError: "删除 Victim 失败: {{.Error}}"
+    notStartable: "靶机已启动"
+    notExtendable: "靶机未运行"
   webhook:
     invalidMethod: "不合法的 Webhook 请求方式"
     notAllowedTarget: "不允许的 Webhook 地址"
