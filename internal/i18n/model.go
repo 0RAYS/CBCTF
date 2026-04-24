@@ -15,6 +15,7 @@ type ChallengeFlag struct {
 type Cheat struct {
 	InvalidType string
 	CreateError string
+	NotFound    string
 	DeleteError string
 }
 
@@ -82,6 +83,7 @@ type Group struct {
 
 type Notice struct {
 	InvalidType string
+	NotFound    string
 	DeleteError string
 }
 
@@ -177,6 +179,7 @@ type Victim struct {
 	Limited      string
 	HasMuchTime  string
 	NotStoppable string
+	NotFound     string
 	DeleteError  string
 }
 
@@ -258,6 +261,7 @@ var Model = struct {
 	Cheat: Cheat{
 		InvalidType: "model.cheat.invalidType",
 		CreateError: "model.cheat.createError",
+		NotFound:    "model.cheat.notFound",
 		DeleteError: "model.cheat.deleteError",
 	},
 	Contest: Contest{
@@ -312,6 +316,7 @@ var Model = struct {
 	},
 	Notice: Notice{
 		InvalidType: "model.notice.invalidType",
+		NotFound:    "model.notice.notFound",
 		DeleteError: "model.notice.deleteError",
 	},
 	Permission: Permission{
@@ -392,6 +397,7 @@ var Model = struct {
 		Limited:      "model.victim.limited",
 		HasMuchTime:  "model.victim.hasMuchTime",
 		NotStoppable: "model.victim.notStoppable",
+		NotFound:     "model.victim.notFound",
 		DeleteError:  "model.victim.deleteError",
 	},
 	Webhook: Webhook{

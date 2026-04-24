@@ -174,7 +174,7 @@ func (c *ContestFlagRepo) Delete(idL ...uint) model.RetVal {
 		Preloads:   map[string]GetOptions{"Submissions": {}, "TeamFlags": {}},
 	})
 	if !ret.OK {
-		if ret.Msg != i18n.Model.NotFound {
+		if ret.Msg != i18n.Model.NotFound && ret.Msg != i18n.Model.ContestFlag.NotFound {
 			return ret
 		}
 		return model.SuccessRetVal()
