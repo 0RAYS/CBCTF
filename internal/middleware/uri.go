@@ -361,6 +361,10 @@ func SetContestChallenge(ctx *gin.Context) {
 		resp.AbortJSON(ctx, ret)
 		return
 	}
+	if contestChallenge.Hidden && !IsFullAccess(ctx) {
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Contest.NotFound})
+		return
+	}
 	ctx.Set("ContestChallenge", contestChallenge)
 	ctx.Set("Challenge", challenge)
 	ctx.Next()
