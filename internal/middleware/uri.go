@@ -178,7 +178,7 @@ func SetTeam(ctx *gin.Context) {
 		resp.AbortJSON(ctx, ret)
 		return
 	}
-	if team.ContestID != GetContest(ctx).ID {
+	if contest := GetContest(ctx); contest.ID != 0 && team.ContestID != contest.ID {
 		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Team.NotFound})
 		return
 	}
@@ -303,7 +303,7 @@ func SetNotice(ctx *gin.Context) {
 		resp.AbortJSON(ctx, ret)
 		return
 	}
-	if notice.ContestID != GetContest(ctx).ID {
+	if contest := GetContest(ctx); contest.ID != 0 && notice.ContestID != contest.ID {
 		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Notice.NotFound})
 		return
 	}
@@ -401,11 +401,11 @@ func SetContestFlag(ctx *gin.Context) {
 		resp.AbortJSON(ctx, ret)
 		return
 	}
-	if contestFlag.ContestID != GetContest(ctx).ID {
+	if contest := GetContest(ctx); contest.ID != 0 && contestFlag.ContestID != contest.ID {
 		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.ContestFlag.NotFound})
 		return
 	}
-	if contestFlag.ContestChallengeID != GetContestChallenge(ctx).ID {
+	if contestChallenge := GetContestChallenge(ctx); contestChallenge.ID != 0 && contestFlag.ContestChallengeID != contestChallenge.ID {
 		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.ContestFlag.NotFound})
 		return
 	}
@@ -435,11 +435,11 @@ func SetVictim(ctx *gin.Context) {
 		resp.AbortJSON(ctx, ret)
 		return
 	}
-	if !victim.ContestID.Valid || victim.ContestID.V != GetContest(ctx).ID {
+	if contest := GetContest(ctx); contest.ID != 0 && (!victim.ContestID.Valid || victim.ContestID.V != contest.ID) {
 		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Victim.NotFound})
 		return
 	}
-	if !victim.TeamID.Valid || victim.TeamID.V != GetTeam(ctx).ID {
+	if team := GetTeam(ctx); team.ID != 0 && (!victim.TeamID.Valid || victim.TeamID.V != team.ID) {
 		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Victim.NotFound})
 		return
 	}
@@ -469,7 +469,7 @@ func SetCheat(ctx *gin.Context) {
 		resp.AbortJSON(ctx, ret)
 		return
 	}
-	if cheat.ContestID != GetContest(ctx).ID {
+	if contest := GetContest(ctx); contest.ID != 0 && cheat.ContestID != contest.ID {
 		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.Cheat.NotFound})
 		return
 	}
