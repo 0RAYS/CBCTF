@@ -48,7 +48,7 @@ CBCTF 是一个基于 Go 语言开发的高性能 CTF 竞赛平台, 前后端一
 | 组件        | 技术                | 版本    |
 |-----------|-------------------|-------|
 | 语言        | Go                | 1.26  |
-| Web 框架    | Gin               | 1.11  |
+| Web 框架    | Gin               | 1.12  |
 | ORM       | GORM              | 1.31  |
 | 数据库       | PostgreSQL        | 16+   |
 | 缓存 / 消息队列 | Redis             | 6.0+  |
@@ -66,7 +66,7 @@ CBCTF 是一个基于 Go 语言开发的高性能 CTF 竞赛平台, 前后端一
 | 框架       | React         | 19   |
 | 构建工具     | Vite          | 7    |
 | 状态管理     | Redux Toolkit | 2    |
-| HTTP 客户端 | Axios         | 1.13 |
+| HTTP 客户端 | Axios         | 1.15 |
 | CSS      | Tailwind CSS  | 4    |
 | 路由       | React Router  | 7    |
 | 国际化      | i18next       | 25   |
@@ -79,18 +79,10 @@ CBCTF 是一个基于 Go 语言开发的高性能 CTF 竞赛平台, 前后端一
 ### 环境要求
 
 - Go 1.26+
-- Node.js 22+ / pnpm
+- Node.js 24+ / pnpm
 - PostgreSQL 16+
 - Redis 6.0+
 - Kubernetes 1.20+（动态容器功能需要）
-
-### 启动依赖服务
-
-项目根目录提供的依赖示例可用于本地启动 PostgreSQL 和 Redis: 
-
-```bash
-docker compose up -d
-```
 
 ### 构建
 
@@ -98,8 +90,8 @@ docker compose up -d
 # 构建前端
 cd frontend && pnpm install && pnpm run build && cd ..
 
-# 构建后端（前端静态文件会被嵌入二进制）
-go build -ldflags="-s -w" -trimpath
+# 构建后端（前端静态文件会被嵌入二进制，流量抓取功能依赖 libpcap）
+CGO_ENABLED=1 go build -ldflags="-s -w" -trimpath -o CBCTF .
 ```
 
 ### 运行
@@ -108,12 +100,6 @@ go build -ldflags="-s -w" -trimpath
 
 ```bash
 ./CBCTF
-```
-
-如需使用动态容器功能, 需先初始化 Kubernetes 资源（命名空间、NFS PV/PVC、外部网络子网）: 
-
-```bash
-./CBCTF k8s init
 ```
 
 ## 配置说明
@@ -132,6 +118,8 @@ go build -ldflags="-s -w" -trimpath
 | `cheat`      | 作弊检测 IP 白名单                           |
 | `webhook`    | Webhook 目标地址黑名单                       |
 | `asynq`      | 异步任务并发数                               |
+| `registration` | 是否允许注册、新用户默认分组 ID               |
+| `geocity_db` | GeoIP 数据库路径（GeoLite2-City.mmdb）       |
 
 支持环境变量覆盖, 前缀为 `CBCTF_`, 例如 `CBCTF_GIN_PORT=9000`。
 
@@ -157,7 +145,7 @@ go build -ldflags="-s -w" -trimpath
 
 - **静态分数** - 分值固定, 不随解题人数变化
 - **线性分数** - 随解题人数增加等量递减
-- **非线性分数** - 计算公式: `(MinScore - InitScore) / (Decay^2) * (Solvers^2) + InitScore`
+- **非线性分数** - 指数衰减公式: `(Score - MinScore) × e^(-5/Decay × Solvers) + MinScore`
 
 三血奖励: 一血 / 二血 / 三血分别额外获得初始分数的 5% / 3% / 1%。
 
