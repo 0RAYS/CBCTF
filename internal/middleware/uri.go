@@ -256,6 +256,28 @@ func SetTrafficFile(ctx *gin.Context) {
 	ctx.Next()
 }
 
+func SetTeamWriteUpFile(ctx *gin.Context) {
+	type fileIDUri struct {
+		FileID string `uri:"fileID" binding:"required"`
+	}
+	var fileID fileIDUri
+	if err := ctx.ShouldBindUri(&fileID); err != nil {
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		return
+	}
+	file, ret := db.InitFileRepo(db.DB).GetByRandID(fileID.FileID)
+	if !ret.OK {
+		resp.AbortJSON(ctx, ret)
+		return
+	}
+	if team := GetTeam(ctx); !(file.Model == model.ModelName(team) && file.ModelID == team.ID) {
+		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Model.File.NotFound})
+		return
+	}
+	ctx.Set("File", file)
+	ctx.Next()
+}
+
 func SetAttachmentFile(test bool) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		challenge := GetChallenge(ctx)
