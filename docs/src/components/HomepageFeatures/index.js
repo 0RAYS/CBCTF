@@ -8,7 +8,7 @@ const FeatureList = [
     icon: '🎯',
     description: (
       <>
-        支持问答题、静态题、动态附件题、容器题四种类型。
+        支持静态题、动态附件题、容器题三种类型。
         每道题可配置多个 flag, 支持静态、动态、UUID 三种 flag 格式。
       </>
     ),

@@ -59,7 +59,6 @@
     },
     "challengeTypes": {
       "static": "静态题目",
-      "question": "问答题目",
       "dynamic": "动态题目",
       "pods": "容器题目"
     },
@@ -460,7 +459,6 @@
         },
         "types": {
           "static": "$t(common.challengeTypes.static)",
-          "question": "$t(common.challengeTypes.question)",
           "dynamic": "$t(common.challengeTypes.dynamic)",
           "pods": "$t(common.challengeTypes.pods)"
         },
@@ -965,9 +963,6 @@
           "challengeTagsEmpty": "暂无标签",
           "challengeHints": "提示",
           "challengeHintsEmpty": "暂无提示",
-          "challengeOptions": "题目选项",
-          "challengeOptionsEmpty": "暂无选项",
-          "challengeOptionLabel": "选项 {{index}}",
           "challengeScore": "分值 {{score}}",
           "challengeSolvers": "解出 {{count}}",
           "challengeAttempts": "尝试上限 {{count}}",
@@ -1308,7 +1303,6 @@
       "filters": {
         "all": "全部",
         "static": "静态题目",
-        "question": "问答题目",
         "dynamic": "动态题目",
         "pods": "容器题目"
       },
@@ -1324,7 +1318,6 @@
       },
       "types": {
         "static": "$t(common.challengeTypes.static)",
-        "question": "$t(common.challengeTypes.question)",
         "dynamic": "$t(common.challengeTypes.dynamic)",
         "pods": "$t(common.challengeTypes.pods)"
       },
@@ -1397,7 +1390,6 @@
         "basic": "基本信息",
         "generator": "生成器镜像",
         "flags": "Flag设置",
-        "options": "选项设置",
         "podsNotice": "容器配置说明",
         "containers": "容器设置"
       },
@@ -1415,7 +1407,6 @@
       },
       "types": {
         "static": "$t(common.challengeTypes.static)",
-        "question": "$t(common.challengeTypes.question)",
         "dynamic": "$t(common.challengeTypes.dynamic)",
         "pods": "$t(common.challengeTypes.pods)"
       },
@@ -1424,23 +1415,16 @@
         "category": "请选择分类",
         "description": "输入题目描述内容",
         "generatorImage": "输入Generator镜像地址",
-        "flag": "Flag {{index}}",
-        "option": "选项 {{index}}"
+        "flag": "Flag {{index}}"
       },
       "actions": {
         "addFlag": "添加Flag",
-        "addOption": "添加选项",
-        "setCorrect": "设为正确答案",
-        "unsetCorrect": "取消正确答案",
         "fullscreen": "全屏编辑",
         "addPolicy": "添加策略",
         "addRule": "添加规则",
         "addExclude": "添加排除",
         "add": "添加题目",
         "confirmDelete": "确认删除"
-      },
-      "empty": {
-        "options": "暂无选项, 请添加选项"
       },
       "podsNotice": {
         "flagFormat": "flag格式: {{format}}",
@@ -2577,10 +2561,8 @@
       },
       "sections": {
         "hints": "提示",
-        "questionOptions": "选择答案",
         "description": "描述",
         "attachments": "附件",
-        "submitAnswer": "提交答案",
         "submitFlag": "提交 Flag"
       },
       "initialize": {
@@ -2589,8 +2571,6 @@
         "action": "初始化题目"
       },
       "submit": {
-        "selectedOptions": "已选择 {{count}} 个选项",
-        "selectOptions": "请选择答案选项",
         "submitting": "提交中...",
         "button": "{{status}} {{attempts}}/{{max}}"
       }

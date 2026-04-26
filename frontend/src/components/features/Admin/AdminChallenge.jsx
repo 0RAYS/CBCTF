@@ -1,9 +1,26 @@
-import { motion } from 'motion/react';
-import { IconEdit, IconTrash, IconPlus, IconUpload, IconDownload, IconSearch, IconFlask } from '@tabler/icons-react';
-import { Button, Pagination, Input, Spinner, Chip } from '../../../components/common';
-import { List } from '../../common';
-import { useTranslation } from 'react-i18next';
-import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../config/challengeChips';
+import { motion } from "motion/react";
+import {
+  IconEdit,
+  IconTrash,
+  IconPlus,
+  IconUpload,
+  IconDownload,
+  IconSearch,
+  IconFlask,
+} from "@tabler/icons-react";
+import {
+  Button,
+  Pagination,
+  Input,
+  Spinner,
+  Chip,
+} from "../../../components/common";
+import { List } from "../../common";
+import { useTranslation } from "react-i18next";
+import {
+  getChallengeCategoryChipClass,
+  getChallengeTypeChipClass,
+} from "../../../config/challengeChips";
 
 /**
  * 题目管理组件
@@ -33,8 +50,8 @@ function AdminChallenge({
   currentPage = 1,
   pageSize = 10,
   categories = [],
-  filterCategory = 'all',
-  filterType = 'all',
+  filterCategory = "all",
+  filterType = "all",
   onPageChange,
   onAddChallenge,
   onEditChallenge,
@@ -44,8 +61,8 @@ function AdminChallenge({
   onTestChallenge,
   onFilterTypeChange,
   onFilterCategoryChange,
-  nameQuery = '',
-  descQuery = '',
+  nameQuery = "",
+  descQuery = "",
   searchLoading = false,
   isSearchMode = false,
   onNameChange,
@@ -56,7 +73,11 @@ function AdminChallenge({
   // Flag 展示
   const renderFlags = (flags) => {
     if (!flags || flags.length === 0)
-      return <span className="text-neutral-500 font-mono text-sm">{t('common.none')}</span>;
+      return (
+        <span className="text-neutral-500 font-mono text-sm">
+          {t("common.none")}
+        </span>
+      );
 
     return (
       <div className="flex flex-wrap gap-1">
@@ -64,7 +85,11 @@ function AdminChallenge({
           <Chip
             key={index}
             variant="tag"
-            label={flag.value.length > 15 ? `${flag.value.substring(0, 15)}...` : flag.value}
+            label={
+              flag.value.length > 15
+                ? `${flag.value.substring(0, 15)}...`
+                : flag.value
+            }
             title={flag.value}
           />
         ))}
@@ -73,35 +98,45 @@ function AdminChallenge({
   };
 
   const columns = [
-    { key: 'name', label: t('admin.challenge.table.name'), width: '10%' },
-    { key: 'category', label: t('admin.challenge.table.category'), width: '5%' },
-    { key: 'type', label: t('admin.challenge.table.type'), width: '5%' },
-    { key: 'flags', label: t('admin.challenge.table.flags'), width: '5%' },
-    { key: 'file', label: t('admin.challenge.table.file'), width: '5%' },
-    { key: 'actions', label: t('admin.challenge.table.actions'), width: '5%' },
+    { key: "name", label: t("admin.challenge.table.name"), width: "10%" },
+    {
+      key: "category",
+      label: t("admin.challenge.table.category"),
+      width: "5%",
+    },
+    { key: "type", label: t("admin.challenge.table.type"), width: "5%" },
+    { key: "flags", label: t("admin.challenge.table.flags"), width: "5%" },
+    { key: "file", label: t("admin.challenge.table.file"), width: "5%" },
+    { key: "actions", label: t("admin.challenge.table.actions"), width: "5%" },
   ];
 
   const renderCell = (challenge, column) => {
     switch (column.key) {
-      case 'name':
+      case "name":
         return (
           <div className="flex flex-col gap-1 min-w-0 whitespace-normal">
-            <span className="text-neutral-50 font-mono truncate">{challenge.name}</span>
-            <span className="text-xs text-neutral-400 line-clamp-2">{challenge.description || '-'}</span>
+            <span className="text-neutral-50 font-mono truncate">
+              {challenge.name}
+            </span>
+            <span className="text-xs text-neutral-400 line-clamp-2">
+              {challenge.description || "-"}
+            </span>
           </div>
         );
-      case 'category':
+      case "category":
         return challenge.category ? (
-          <Chip label={challenge.category} colorClass={getChallengeCategoryChipClass(challenge.category)} />
+          <Chip
+            label={challenge.category}
+            colorClass={getChallengeCategoryChipClass(challenge.category)}
+          />
         ) : (
           <span className="text-neutral-500">-</span>
         );
-      case 'type': {
+      case "type": {
         const typeLabels = {
-          static: t('admin.challenge.types.static'),
-          question: t('admin.challenge.types.question'),
-          dynamic: t('admin.challenge.types.dynamic'),
-          pods: t('admin.challenge.types.pods'),
+          static: t("admin.challenge.types.static"),
+          dynamic: t("admin.challenge.types.dynamic"),
+          pods: t("admin.challenge.types.pods"),
         };
         return (
           <Chip
@@ -110,18 +145,33 @@ function AdminChallenge({
           />
         );
       }
-      case 'flags':
-        if (challenge.type === 'pods' || challenge.type === 'question') {
-          return <span className="text-neutral-500 font-mono text-sm">{t('common.notAvailable')}</span>;
+      case "flags":
+        if (challenge.type === "pods") {
+          return (
+            <span className="text-neutral-500 font-mono text-sm">
+              {t("common.notAvailable")}
+            </span>
+          );
         }
-        return <div className="whitespace-normal">{renderFlags(challenge.flags)}</div>;
-      case 'file':
-        return challenge.file ? (
-          <Chip variant="tag" label={challenge.file} title={challenge.file} className="whitespace-normal" />
-        ) : (
-          <span className="text-neutral-500 font-mono text-sm">{t('common.none')}</span>
+        return (
+          <div className="whitespace-normal">
+            {renderFlags(challenge.flags)}
+          </div>
         );
-      case 'actions':
+      case "file":
+        return challenge.file ? (
+          <Chip
+            variant="tag"
+            label={challenge.file}
+            title={challenge.file}
+            className="whitespace-normal"
+          />
+        ) : (
+          <span className="text-neutral-500 font-mono text-sm">
+            {t("common.none")}
+          </span>
+        );
+      case "actions":
         return (
           <div className="flex items-center gap-2">
             <Button
@@ -146,7 +196,7 @@ function AdminChallenge({
               size="icon"
               className="!bg-transparent !text-orange-400 hover:!text-orange-300"
               onClick={() => onTestChallenge(challenge)}
-              title={t('admin.challenge.actions.test')}
+              title={t("admin.challenge.actions.test")}
             >
               <IconFlask size={18} />
             </Button>
@@ -187,8 +237,14 @@ function AdminChallenge({
   return (
     <div className="w-full mx-auto">
       <div className="flex justify-end items-center mb-8">
-        <Button variant="primary" size="sm" align="icon-left" icon={<IconPlus size={16} />} onClick={onAddChallenge}>
-          {t('admin.challenge.actions.add')}
+        <Button
+          variant="primary"
+          size="sm"
+          align="icon-left"
+          icon={<IconPlus size={16} />}
+          onClick={onAddChallenge}
+        >
+          {t("admin.challenge.actions.add")}
         </Button>
       </div>
 
@@ -196,11 +252,13 @@ function AdminChallenge({
       <div className="mb-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-mono text-neutral-400 mb-2">{t('admin.challenge.search.label')}</label>
+            <label className="block text-sm font-mono text-neutral-400 mb-2">
+              {t("admin.challenge.search.label")}
+            </label>
             <Input
               type="text"
               value={nameQuery}
-              placeholder={t('admin.challenge.search.placeholder')}
+              placeholder={t("admin.challenge.search.placeholder")}
               onChange={(e) => onNameChange?.(e.target.value)}
               icon={<IconSearch size={16} />}
               iconRight={searchLoading && <Spinner size="sm" />}
@@ -208,12 +266,12 @@ function AdminChallenge({
           </div>
           <div>
             <label className="block text-sm font-mono text-neutral-400 mb-2">
-              {t('admin.challenge.search.descLabel')}
+              {t("admin.challenge.search.descLabel")}
             </label>
             <Input
               type="text"
               value={descQuery}
-              placeholder={t('admin.challenge.search.descPlaceholder')}
+              placeholder={t("admin.challenge.search.descPlaceholder")}
               onChange={(e) => onDescChange?.(e.target.value)}
               icon={<IconSearch size={16} />}
             />
@@ -227,18 +285,19 @@ function AdminChallenge({
           <div className="flex items-center">
             <div className="flex gap-8">
               {[
-                { id: 'all', label: t('admin.challenge.filters.all') },
-                { id: 'static', label: t('admin.challenge.filters.static') },
-                { id: 'question', label: t('admin.challenge.filters.question') },
-                { id: 'dynamic', label: t('admin.challenge.filters.dynamic') },
-                { id: 'pods', label: t('admin.challenge.filters.pods') },
+                { id: "all", label: t("admin.challenge.filters.all") },
+                { id: "static", label: t("admin.challenge.filters.static") },
+                { id: "dynamic", label: t("admin.challenge.filters.dynamic") },
+                { id: "pods", label: t("admin.challenge.filters.pods") },
               ].map((type) => (
                 <div key={type.id} className="relative">
                   <Button
-                    variant={filterType === type.id ? 'primary' : 'ghost'}
+                    variant={filterType === type.id ? "primary" : "ghost"}
                     size="sm"
                     className={`!px-2 !min-w-0 !border-0 pb-3 ${
-                      filterType === type.id ? '!bg-transparent !text-geek-400' : '!text-neutral-400'
+                      filterType === type.id
+                        ? "!bg-transparent !text-geek-400"
+                        : "!text-neutral-400"
                     }`}
                     onClick={() => onFilterTypeChange(type.id)}
                   >
@@ -261,7 +320,7 @@ function AdminChallenge({
                 onChange={(e) => onFilterCategoryChange(e.target.value)}
                 className="select-custom select-custom-sm"
               >
-                <option value="all">{t('admin.challenge.category.all')}</option>
+                <option value="all">{t("admin.challenge.category.all")}</option>
                 {categories.map((category) => (
                   <option key={category} value={category}>
                     {category}
@@ -282,7 +341,12 @@ function AdminChallenge({
         emptyContent={
           isSearchMode ? (
             <div className="flex flex-col items-center justify-center space-y-2">
-              <svg className="w-12 h-12 text-neutral-300/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                className="w-12 h-12 text-neutral-300/30"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -290,7 +354,9 @@ function AdminChallenge({
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
               </svg>
-              <span className="font-mono text-neutral-400">{t('admin.challenge.empty.search')}</span>
+              <span className="font-mono text-neutral-400">
+                {t("admin.challenge.empty.search")}
+              </span>
             </div>
           ) : undefined
         }

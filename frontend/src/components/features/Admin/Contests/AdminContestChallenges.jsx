@@ -1,8 +1,11 @@
-import { motion } from 'motion/react';
-import { IconEdit, IconTrash, IconPlus, IconSearch } from '@tabler/icons-react';
-import { Button, Pagination, List, Chip, Input } from '../../../common';
-import { useTranslation } from 'react-i18next';
-import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../../config/challengeChips';
+import { motion } from "motion/react";
+import { IconEdit, IconTrash, IconPlus, IconSearch } from "@tabler/icons-react";
+import { Button, Pagination, List, Chip, Input } from "../../../common";
+import { useTranslation } from "react-i18next";
+import {
+  getChallengeCategoryChipClass,
+  getChallengeTypeChipClass,
+} from "../../../../config/challengeChips";
 
 /**
  * 赛事内部赛题管理组件
@@ -27,22 +30,26 @@ function AdminContestChallenges({
   currentPage = 1,
   pageSize = 10,
   categories = [],
-  filterCategory = 'all',
-  filterType = 'all',
+  filterCategory = "all",
+  filterType = "all",
   onPageChange,
   onAddChallenge,
   onEditChallenge,
   onDeleteChallenge,
   onFilterTypeChange,
   onFilterCategoryChange,
-  nameQuery = '',
+  nameQuery = "",
   onNameChange,
 }) {
   const { t } = useTranslation();
   // 自定义标签渲染
   const renderTags = (tags) => {
     if (!tags || tags.length === 0)
-      return <span className="text-neutral-500 font-mono text-sm">{t('common.none')}</span>;
+      return (
+        <span className="text-neutral-500 font-mono text-sm">
+          {t("common.none")}
+        </span>
+      );
 
     return (
       <div className="flex flex-wrap gap-1">
@@ -51,7 +58,7 @@ function AdminContestChallenges({
             key={index}
             variant="tag"
             size="sm"
-            label={tag.length > 4 ? tag.slice(0, 4) + '…' : tag}
+            label={tag.length > 4 ? tag.slice(0, 4) + "…" : tag}
             colorClass="border-geek-600/30 text-geek-300"
             className="rounded-full"
           />
@@ -63,7 +70,11 @@ function AdminContestChallenges({
   // 提示信息渲染
   const renderHints = (hints) => {
     if (!hints || hints.length === 0)
-      return <span className="text-neutral-500 font-mono text-sm">{t('common.none')}</span>;
+      return (
+        <span className="text-neutral-500 font-mono text-sm">
+          {t("common.none")}
+        </span>
+      );
 
     return (
       <div className="flex flex-wrap gap-1">
@@ -72,7 +83,7 @@ function AdminContestChallenges({
             key={index}
             variant="tag"
             size="sm"
-            label={hint.length > 8 ? hint.slice(0, 8) + '…' : hint}
+            label={hint.length > 8 ? hint.slice(0, 8) + "…" : hint}
             colorClass="border-yellow-400/30 text-yellow-300"
             title={hint}
           />
@@ -82,41 +93,79 @@ function AdminContestChallenges({
   };
 
   const columns = [
-    { key: 'name', label: t('admin.contests.challenges.table.name'), width: '15%' },
-    { key: 'category', label: t('admin.contests.challenges.table.category'), width: '10%' },
-    { key: 'type', label: t('admin.contests.challenges.table.type'), width: '10%' },
-    { key: 'metrics', label: t('admin.contests.challenges.table.metrics'), width: '10%' },
-    { key: 'tags', label: t('admin.contests.challenges.table.tags'), width: '10%' },
-    { key: 'hints', label: t('admin.contests.challenges.table.hints'), width: '10%' },
-    { key: 'actions', label: t('admin.contests.challenges.table.actions'), width: '7%' },
+    {
+      key: "name",
+      label: t("admin.contests.challenges.table.name"),
+      width: "15%",
+    },
+    {
+      key: "category",
+      label: t("admin.contests.challenges.table.category"),
+      width: "10%",
+    },
+    {
+      key: "type",
+      label: t("admin.contests.challenges.table.type"),
+      width: "10%",
+    },
+    {
+      key: "metrics",
+      label: t("admin.contests.challenges.table.metrics"),
+      width: "10%",
+    },
+    {
+      key: "tags",
+      label: t("admin.contests.challenges.table.tags"),
+      width: "10%",
+    },
+    {
+      key: "hints",
+      label: t("admin.contests.challenges.table.hints"),
+      width: "10%",
+    },
+    {
+      key: "actions",
+      label: t("admin.contests.challenges.table.actions"),
+      width: "7%",
+    },
   ];
 
   const renderCell = (challenge, column) => {
     switch (column.key) {
-      case 'name':
+      case "name":
         return (
           <div className="flex flex-col gap-1 min-w-0">
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-neutral-50 font-mono truncate">{challenge.name}</span>
+              <span className="text-neutral-50 font-mono truncate">
+                {challenge.name}
+              </span>
               {challenge.hidden && (
-                <Chip size="sm" label={t('admin.contests.challenges.hidden')} colorClass="bg-red-400/20 text-red-400" />
+                <Chip
+                  size="sm"
+                  label={t("admin.contests.challenges.hidden")}
+                  colorClass="bg-red-400/20 text-red-400"
+                />
               )}
             </div>
-            <span className="text-xs text-neutral-400 line-clamp-1 break-all">{challenge.description || '-'}</span>
+            <span className="text-xs text-neutral-400 line-clamp-1 break-all">
+              {challenge.description || "-"}
+            </span>
           </div>
         );
-      case 'category':
+      case "category":
         return challenge.category ? (
-          <Chip label={challenge.category} colorClass={getChallengeCategoryChipClass(challenge.category)} />
+          <Chip
+            label={challenge.category}
+            colorClass={getChallengeCategoryChipClass(challenge.category)}
+          />
         ) : (
           <span className="text-neutral-500">-</span>
         );
-      case 'type': {
+      case "type": {
         const typeLabels = {
-          static: t('admin.challenge.types.static'),
-          question: t('admin.challenge.types.question'),
-          dynamic: t('admin.challenge.types.dynamic'),
-          pods: t('admin.challenge.types.pods'),
+          static: t("admin.challenge.types.static"),
+          dynamic: t("admin.challenge.types.dynamic"),
+          pods: t("admin.challenge.types.pods"),
         };
         return (
           <Chip
@@ -125,21 +174,32 @@ function AdminContestChallenges({
           />
         );
       }
-      case 'metrics':
+      case "metrics":
         return (
           <div className="flex flex-col gap-1 text-xs font-mono text-neutral-400">
             <span>
-              {t('admin.contests.challenges.attemptsLabel')} {challenge.attempt || 0}
+              {t("admin.contests.challenges.attemptsLabel")}{" "}
+              {challenge.attempt || 0}
             </span>
-            <span>{t('common.points', { count: challenge.score || 0 })}</span>
-            <span>{t('admin.contests.challenges.solves', { count: challenge.solvers || 0 })}</span>
+            <span>{t("common.points", { count: challenge.score || 0 })}</span>
+            <span>
+              {t("admin.contests.challenges.solves", {
+                count: challenge.solvers || 0,
+              })}
+            </span>
           </div>
         );
-      case 'tags':
-        return <div className="whitespace-normal">{renderTags(challenge.tags)}</div>;
-      case 'hints':
-        return <div className="whitespace-normal">{renderHints(challenge.hints)}</div>;
-      case 'actions':
+      case "tags":
+        return (
+          <div className="whitespace-normal">{renderTags(challenge.tags)}</div>
+        );
+      case "hints":
+        return (
+          <div className="whitespace-normal">
+            {renderHints(challenge.hints)}
+          </div>
+        );
+      case "actions":
         return (
           <div className="flex items-center gap-2">
             <Button
@@ -168,19 +228,25 @@ function AdminContestChallenges({
   return (
     <div className="w-full mx-auto">
       <div className="flex justify-end items-center mb-8">
-        <Button variant="primary" size="sm" align="icon-left" icon={<IconPlus size={18} />} onClick={onAddChallenge}>
-          {t('admin.challenge.actions.add')}
+        <Button
+          variant="primary"
+          size="sm"
+          align="icon-left"
+          icon={<IconPlus size={18} />}
+          onClick={onAddChallenge}
+        >
+          {t("admin.challenge.actions.add")}
         </Button>
       </div>
 
       <div className="mb-6">
         <label className="block text-sm font-mono text-neutral-400 mb-2">
-          {t('admin.contests.challenges.search.label')}
+          {t("admin.contests.challenges.search.label")}
         </label>
         <Input
           type="search"
           value={nameQuery}
-          placeholder={t('admin.contests.challenges.search.placeholder')}
+          placeholder={t("admin.contests.challenges.search.placeholder")}
           onChange={(e) => onNameChange?.(e.target.value)}
           icon={<IconSearch size={16} />}
         />
@@ -193,11 +259,11 @@ function AdminContestChallenges({
             <div className="flex gap-8">
               <Button
                 variant="ghost"
-                className={`pb-3 px-2 relative font-mono text-sm ${filterType === 'all' ? 'text-geek-400' : 'text-neutral-400'}`}
-                onClick={() => onFilterTypeChange('all')}
+                className={`pb-3 px-2 relative font-mono text-sm ${filterType === "all" ? "text-geek-400" : "text-neutral-400"}`}
+                onClick={() => onFilterTypeChange("all")}
               >
-                {t('admin.challenge.filters.all')}
-                {filterType === 'all' && (
+                {t("admin.challenge.filters.all")}
+                {filterType === "all" && (
                   <motion.div
                     className="absolute bottom-0 left-0 right-0 h-0.5 bg-geek-400"
                     layoutId="filterTypeIndicator"
@@ -206,11 +272,11 @@ function AdminContestChallenges({
               </Button>
               <Button
                 variant="ghost"
-                className={`pb-3 px-2 relative font-mono text-sm ${filterType === 'static' ? 'text-geek-400' : 'text-neutral-400'}`}
-                onClick={() => onFilterTypeChange('static')}
+                className={`pb-3 px-2 relative font-mono text-sm ${filterType === "static" ? "text-geek-400" : "text-neutral-400"}`}
+                onClick={() => onFilterTypeChange("static")}
               >
-                {t('admin.challenge.types.static')}
-                {filterType === 'static' && (
+                {t("admin.challenge.types.static")}
+                {filterType === "static" && (
                   <motion.div
                     className="absolute bottom-0 left-0 right-0 h-0.5 bg-geek-400"
                     layoutId="filterTypeIndicator"
@@ -219,11 +285,11 @@ function AdminContestChallenges({
               </Button>
               <Button
                 variant="ghost"
-                className={`pb-3 px-2 relative font-mono text-sm ${filterType === 'question' ? 'text-geek-400' : 'text-neutral-400'}`}
-                onClick={() => onFilterTypeChange('question')}
+                className={`pb-3 px-2 relative font-mono text-sm ${filterType === "dynamic" ? "text-geek-400" : "text-neutral-400"}`}
+                onClick={() => onFilterTypeChange("dynamic")}
               >
-                {t('admin.challenge.types.question')}
-                {filterType === 'question' && (
+                {t("admin.challenge.types.dynamic")}
+                {filterType === "dynamic" && (
                   <motion.div
                     className="absolute bottom-0 left-0 right-0 h-0.5 bg-geek-400"
                     layoutId="filterTypeIndicator"
@@ -232,24 +298,11 @@ function AdminContestChallenges({
               </Button>
               <Button
                 variant="ghost"
-                className={`pb-3 px-2 relative font-mono text-sm ${filterType === 'dynamic' ? 'text-geek-400' : 'text-neutral-400'}`}
-                onClick={() => onFilterTypeChange('dynamic')}
+                className={`pb-3 px-2 relative font-mono text-sm ${filterType === "pods" ? "text-geek-400" : "text-neutral-400"}`}
+                onClick={() => onFilterTypeChange("pods")}
               >
-                {t('admin.challenge.types.dynamic')}
-                {filterType === 'dynamic' && (
-                  <motion.div
-                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-geek-400"
-                    layoutId="filterTypeIndicator"
-                  />
-                )}
-              </Button>
-              <Button
-                variant="ghost"
-                className={`pb-3 px-2 relative font-mono text-sm ${filterType === 'pods' ? 'text-geek-400' : 'text-neutral-400'}`}
-                onClick={() => onFilterTypeChange('pods')}
-              >
-                {t('admin.challenge.types.pods')}
-                {filterType === 'pods' && (
+                {t("admin.challenge.types.pods")}
+                {filterType === "pods" && (
                   <motion.div
                     className="absolute bottom-0 left-0 right-0 h-0.5 bg-geek-400"
                     layoutId="filterTypeIndicator"
@@ -264,7 +317,7 @@ function AdminContestChallenges({
               onChange={(e) => onFilterCategoryChange(e.target.value)}
               className="select-custom select-custom-sm"
             >
-              <option value="all">{t('admin.challenge.category.all')}</option>
+              <option value="all">{t("admin.challenge.category.all")}</option>
               {categories.map((category) => (
                 <option key={category} value={category}>
                   {category}
@@ -281,7 +334,7 @@ function AdminContestChallenges({
         data={challenges}
         renderCell={renderCell}
         empty={challenges.length === 0}
-        emptyContent={t('common.noData')}
+        emptyContent={t("common.noData")}
         footer={
           totalCount > pageSize ? (
             <Pagination
