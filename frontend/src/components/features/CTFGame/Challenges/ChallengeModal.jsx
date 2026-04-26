@@ -28,27 +28,26 @@
  * @param {Function} props.onDownloadAttachment - 下载附件的回调函数, 参数为附件对象
  */
 
-import { motion, AnimatePresence, useAnimationControls } from "motion/react";
-import { useState, useEffect, useRef } from "react";
-import React from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { Button } from "../../../../components/common";
-import { useTranslation } from "react-i18next";
-import { EASE_T2 } from "../../../../config/motion";
+import { motion, AnimatePresence, useAnimationControls } from 'motion/react';
+import { useState, useEffect, useRef } from 'react';
+import React from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import { Button } from '../../../../components/common';
+import { useTranslation } from 'react-i18next';
+import { EASE_T2 } from '../../../../config/motion';
 
 const normalizeInstanceStatus = (status) => {
-  const normalizedStatus =
-    typeof status === "string" ? status.toLowerCase() : "";
+  const normalizedStatus = typeof status === 'string' ? status.toLowerCase() : '';
   if (
-    normalizedStatus === "waiting" ||
-    normalizedStatus === "pending" ||
-    normalizedStatus === "terminating" ||
-    normalizedStatus === "running"
+    normalizedStatus === 'waiting' ||
+    normalizedStatus === 'pending' ||
+    normalizedStatus === 'terminating' ||
+    normalizedStatus === 'running'
   ) {
     return normalizedStatus;
   }
-  return "";
+  return '';
 };
 
 // 将 HintItem 组件移到外部, 使用 React.memo 包装以避免不必要的重新渲染
@@ -61,7 +60,7 @@ const HintItem = React.memo(({ hint, index }) => {
       className={`
                 border border-neutral-300/30 rounded-md overflow-hidden
                 transition-colors duration-200
-                ${isExpanded ? "bg-neutral-900/50" : "bg-black/20"}
+                ${isExpanded ? 'bg-neutral-900/50' : 'bg-black/20'}
             `}
     >
       <div
@@ -71,9 +70,7 @@ const HintItem = React.memo(({ hint, index }) => {
         <div className="flex items-center gap-2">
           <span className="text-geek-400 font-mono text-sm">#{index + 1}</span>
           <span className="text-neutral-300 font-mono text-sm">
-            {isExpanded
-              ? t("game.challengeModal.hint.hide")
-              : t("game.challengeModal.hint.show")}
+            {isExpanded ? t('game.challengeModal.hint.hide') : t('game.challengeModal.hint.show')}
           </span>
         </div>
         <motion.span
@@ -88,7 +85,7 @@ const HintItem = React.memo(({ hint, index }) => {
       <motion.div
         initial={false}
         animate={{
-          height: isExpanded ? "auto" : 0,
+          height: isExpanded ? 'auto' : 0,
           opacity: isExpanded ? 1 : 0,
         }}
         transition={{ duration: 0.2 }}
@@ -103,7 +100,7 @@ const HintItem = React.memo(({ hint, index }) => {
 });
 
 // 添加 displayName
-HintItem.displayName = "HintItem";
+HintItem.displayName = 'HintItem';
 
 function ChallengeModal({
   challenge,
@@ -131,26 +128,21 @@ function ChallengeModal({
     submitting: false,
   });
   const [error, setError] = useState(null);
-  const [flag, setFlag] = useState("");
+  const [flag, setFlag] = useState('');
   const [isCopied, setIsCopied] = useState({});
   const [timeLeft, setTimeLeft] = useState(0);
 
   // 修改倒计时效果, 使用 useRef 来避免不必要的重新渲染
   const timerRef = useRef(null);
-  const prevRunningRef = useRef(
-    normalizeInstanceStatus(challenge?.instanceStatus) === "running",
-  );
+  const prevRunningRef = useRef(normalizeInstanceStatus(challenge?.instanceStatus) === 'running');
   const launchingTimeoutRef = useRef(null);
   const instanceStatus = normalizeInstanceStatus(challenge?.instanceStatus);
-  const isRunning = instanceStatus === "running";
-  const isWaiting = instanceStatus === "waiting";
-  const isPending = instanceStatus === "pending";
-  const isTerminating = instanceStatus === "terminating";
+  const isRunning = instanceStatus === 'running';
+  const isWaiting = instanceStatus === 'waiting';
+  const isPending = instanceStatus === 'pending';
+  const isTerminating = instanceStatus === 'terminating';
   const instanceDuration = Number(challenge?.instanceDuration) || 0;
-  const progressWidth =
-    instanceDuration > 0
-      ? Math.max(0, Math.min(100, (timeLeft / instanceDuration) * 100))
-      : 0;
+  const progressWidth = instanceDuration > 0 ? Math.max(0, Math.min(100, (timeLeft / instanceDuration) * 100)) : 0;
 
   // Clear launching state when instanceRunning transitions false → true (via polling or WS)
   useEffect(() => {
@@ -213,7 +205,7 @@ function ChallengeModal({
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = Math.floor(seconds % 60); // 确保秒数也是整数
-    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   // 处理异步操作的通用函数
@@ -226,7 +218,7 @@ function ChallengeModal({
     } catch (err) {
       setError(err.message);
     } finally {
-      if (actionType !== "launching") {
+      if (actionType !== 'launching') {
         setLoading((prev) => ({ ...prev, [actionType]: false }));
       }
     }
@@ -234,12 +226,12 @@ function ChallengeModal({
 
   // 初始化题目
   const handleInitialize = () => {
-    handleAsyncAction("initializing", onInitialize, challenge.id);
+    handleAsyncAction('initializing', onInitialize, challenge.id);
   };
 
   // 重置题目
   const handleReset = () => {
-    handleAsyncAction("resetting", onReset, challenge.id);
+    handleAsyncAction('resetting', onReset, challenge.id);
   };
 
   // 启动靶机 — 从点击瞬间到 Pod Ready 全程 loading, 3 分钟超时兜底
@@ -257,7 +249,7 @@ function ChallengeModal({
             setLoading((p) => ({ ...p, launching: false }));
             launchingTimeoutRef.current = null;
           },
-          3 * 60 * 1000,
+          3 * 60 * 1000
         );
       }
     } catch (err) {
@@ -303,7 +295,7 @@ function ChallengeModal({
     try {
       const result = await onSubmitFlag(challenge.id, flag);
       if (result.success) {
-        setFlag("");
+        setFlag('');
         onClose();
       }
     } catch (err) {
@@ -325,12 +317,12 @@ function ChallengeModal({
   // 靶机部分的渲染
   const renderInstanceContent = () => {
     const launchButtonLabel = isWaiting
-      ? t("game.challengeModal.instance.waiting")
+      ? t('game.challengeModal.instance.waiting')
       : isTerminating
-        ? t("game.challengeModal.instance.terminating")
+        ? t('game.challengeModal.instance.terminating')
         : isPending
-          ? t("game.challengeModal.actions.launching")
-          : t("game.challengeModal.actions.launch");
+          ? t('game.challengeModal.actions.launching')
+          : t('game.challengeModal.actions.launch');
 
     return (
       <div className="space-y-3">
@@ -342,38 +334,34 @@ function ChallengeModal({
               <span
                 className={`w-2 h-2 rounded-full transition-colors duration-300 ${
                   isRunning
-                    ? "bg-green-400"
+                    ? 'bg-green-400'
                     : isTerminating
-                      ? "bg-orange-400 animate-pulse"
+                      ? 'bg-orange-400 animate-pulse'
                       : isPending
-                        ? "bg-yellow-400 animate-pulse"
+                        ? 'bg-yellow-400 animate-pulse'
                         : isWaiting
-                          ? "bg-yellow-400"
-                          : "bg-neutral-500"
+                          ? 'bg-yellow-400'
+                          : 'bg-neutral-500'
                 }`}
               />
               <span className="text-neutral-50 font-mono text-sm">
                 {isRunning
-                  ? t("game.challengeModal.instance.running")
+                  ? t('game.challengeModal.instance.running')
                   : isTerminating
-                    ? t("game.challengeModal.instance.terminating")
+                    ? t('game.challengeModal.instance.terminating')
                     : isWaiting
-                      ? t("game.challengeModal.instance.waiting")
+                      ? t('game.challengeModal.instance.waiting')
                       : isPending
-                        ? t("game.challengeModal.instance.pending")
-                        : t("game.challengeModal.instance.notRunning")}
+                        ? t('game.challengeModal.instance.pending')
+                        : t('game.challengeModal.instance.notRunning')}
               </span>
             </div>
 
             {/* 运行中时显示剩余时间 */}
             {isRunning && (
               <div className="flex items-center gap-1.5">
-                <span className="text-neutral-400 text-xs">
-                  {t("game.challengeModal.instance.time")}
-                </span>
-                <span className="text-yellow-400 font-mono text-sm">
-                  {formatTimeLeft(timeLeft)}
-                </span>
+                <span className="text-neutral-400 text-xs">{t('game.challengeModal.instance.time')}</span>
+                <span className="text-yellow-400 font-mono text-sm">{formatTimeLeft(timeLeft)}</span>
               </div>
             )}
           </div>
@@ -385,14 +373,8 @@ function ChallengeModal({
                 variant="primary"
                 size="sm"
                 onClick={handleLaunchInstance}
-                disabled={
-                  loading.launching || isWaiting || isPending || isTerminating
-                }
-                className={
-                  isWaiting || isPending || isTerminating
-                    ? "border-yellow-400 text-yellow-400"
-                    : ""
-                }
+                disabled={loading.launching || isWaiting || isPending || isTerminating}
+                className={isWaiting || isPending || isTerminating ? 'border-yellow-400 text-yellow-400' : ''}
               >
                 {launchButtonLabel}
               </Button>
@@ -407,8 +389,8 @@ function ChallengeModal({
                   className="border-yellow-400 text-yellow-400 hover:bg-yellow-400/10"
                 >
                   {loading.extending
-                    ? t("game.challengeModal.actions.extending")
-                    : t("game.challengeModal.actions.extend")}
+                    ? t('game.challengeModal.actions.extending')
+                    : t('game.challengeModal.actions.extend')}
                 </Button>
                 <Button
                   variant="danger"
@@ -418,8 +400,8 @@ function ChallengeModal({
                   loading={loading.destroying}
                 >
                   {loading.destroying
-                    ? t("game.challengeModal.actions.destroying")
-                    : t("game.challengeModal.actions.destroy")}
+                    ? t('game.challengeModal.actions.destroying')
+                    : t('game.challengeModal.actions.destroy')}
                 </Button>
               </>
             )}
@@ -441,21 +423,21 @@ function ChallengeModal({
             ) : isTerminating ? (
               <motion.div
                 className="h-full w-2/5 bg-orange-400/70 rounded-full"
-                animate={{ x: ["-100%", "350%"] }}
+                animate={{ x: ['-100%', '350%'] }}
                 transition={{
                   duration: 1.1,
                   repeat: Infinity,
-                  ease: "easeInOut",
+                  ease: 'easeInOut',
                 }}
               />
             ) : (
               <motion.div
                 className="h-full w-2/5 bg-yellow-400/60 rounded-full"
-                animate={{ x: ["-100%", "350%"] }}
+                animate={{ x: ['-100%', '350%'] }}
                 transition={{
                   duration: 1.4,
                   repeat: Infinity,
-                  ease: "easeInOut",
+                  ease: 'easeInOut',
                 }}
               />
             )}
@@ -466,15 +448,10 @@ function ChallengeModal({
         {isRunning && challenge.instanceIP && (
           <div>
             <div className="p-2 bg-neutral-900 rounded-md">
-              <span className="text-neutral-400 text-xs">
-                {t("game.challengeModal.instance.address")}
-              </span>
+              <span className="text-neutral-400 text-xs">{t('game.challengeModal.instance.address')}</span>
             </div>
             {challenge.instanceIP.map((ip, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-1.5"
-              >
+              <div key={index} className="flex items-center justify-between p-1.5">
                 <span className="font-mono text-neutral-50 text-sm">{ip}</span>
                 <Button
                   variant="ghost"
@@ -482,7 +459,7 @@ function ChallengeModal({
                   className="!text-neutral-400 hover:!text-geek-400"
                   onClick={() => handleCopyIP(ip)}
                 >
-                  {isCopied[ip] ? "✓" : "📋"}
+                  {isCopied[ip] ? '✓' : '📋'}
                 </Button>
               </div>
             ))}
@@ -498,16 +475,10 @@ function ChallengeModal({
 
     return (
       <div className="space-y-1.5">
-        <h3 className="text-neutral-400 font-mono text-sm">
-          {t("game.challengeModal.sections.hints")}
-        </h3>
+        <h3 className="text-neutral-400 font-mono text-sm">{t('game.challengeModal.sections.hints')}</h3>
         <div className="space-y-2">
           {challenge.hints.map((hint, index) => (
-            <HintItem
-              key={`hint-${challenge.id}-${index}`}
-              hint={hint}
-              index={index}
-            />
+            <HintItem key={`hint-${challenge.id}-${index}`} hint={hint} index={index} />
           ))}
         </div>
       </div>
@@ -526,7 +497,7 @@ function ChallengeModal({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={() => {
-            setFlag("");
+            setFlag('');
             onClose();
           }}
         />
@@ -537,28 +508,22 @@ function ChallengeModal({
             initial={{ scale: 0.97, opacity: 0, y: 8 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.97, opacity: 0, y: 8 }}
-            transition={{ type: "tween", ease: EASE_T2, duration: 0.22 }}
+            transition={{ type: 'tween', ease: EASE_T2, duration: 0.22 }}
           >
             {/* 头部 */}
             <div className="p-5 border-b border-neutral-600/50">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <span className="text-geek-400 font-mono">
-                    {challenge.category}
-                  </span>
-                  <h2 className="text-2xl text-neutral-50 font-mono">
-                    {challenge.title}
-                  </h2>
-                  <span className="text-yellow-400 font-mono">
-                    {t("common.points", { count: challenge.score })}
-                  </span>
+                  <span className="text-geek-400 font-mono">{challenge.category}</span>
+                  <h2 className="text-2xl text-neutral-50 font-mono">{challenge.title}</h2>
+                  <span className="text-yellow-400 font-mono">{t('common.points', { count: challenge.score })}</span>
                 </div>
                 <Button
                   variant="ghost"
                   size="icon"
                   className="!text-neutral-400 hover:!text-neutral-50"
                   onClick={() => {
-                    setFlag("");
+                    setFlag('');
                     onClose();
                   }}
                 >
@@ -578,24 +543,18 @@ function ChallengeModal({
                   {error}
                 </motion.div>
               )}
-              <span className="text-neutral-400 text-sm">
-                {t("game.challengeModal.initialize.message")}
-              </span>
+              <span className="text-neutral-400 text-sm">{t('game.challengeModal.initialize.message')}</span>
               <Button
                 variant="primary"
                 size="action"
                 onClick={handleInitialize}
                 disabled={loading.initializing}
                 loading={loading.initializing}
-                className={
-                  loading.initializing
-                    ? "border-yellow-400 text-yellow-400"
-                    : ""
-                }
+                className={loading.initializing ? 'border-yellow-400 text-yellow-400' : ''}
               >
                 {loading.initializing
-                  ? t("game.challengeModal.initialize.loading")
-                  : t("game.challengeModal.initialize.action")}
+                  ? t('game.challengeModal.initialize.loading')
+                  : t('game.challengeModal.initialize.action')}
               </Button>
             </div>
           </motion.div>
@@ -616,7 +575,7 @@ function ChallengeModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => {
-              setFlag("");
+              setFlag('');
               onClose();
             }}
           />
@@ -630,7 +589,7 @@ function ChallengeModal({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.97, opacity: 0, y: 8 }}
               transition={{
-                type: "tween",
+                type: 'tween',
                 ease: [0.25, 1, 0.5, 1],
                 duration: 0.22,
               }}
@@ -639,22 +598,16 @@ function ChallengeModal({
               <div className="p-5 border-b border-neutral-600/50">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <span className="text-geek-400 font-mono">
-                      {challenge.category}
-                    </span>
-                    <h2 className="text-2xl text-neutral-50 font-mono">
-                      {challenge.title}
-                    </h2>
-                    <span className="text-yellow-400 font-mono">
-                      {t("common.points", { count: challenge.score })}
-                    </span>
+                    <span className="text-geek-400 font-mono">{challenge.category}</span>
+                    <h2 className="text-2xl text-neutral-50 font-mono">{challenge.title}</h2>
+                    <span className="text-yellow-400 font-mono">{t('common.points', { count: challenge.score })}</span>
                   </div>
                   <Button
                     variant="ghost"
                     size="icon"
                     className="!text-neutral-400 hover:!text-neutral-50"
                     onClick={() => {
-                      setFlag("");
+                      setFlag('');
                       onClose();
                     }}
                   >
@@ -669,12 +622,10 @@ function ChallengeModal({
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1.5 flex-1 min-w-0">
                     <h3 className="text-neutral-400 font-mono text-sm">
-                      {t("game.challengeModal.sections.description")}
+                      {t('game.challengeModal.sections.description')}
                     </h3>
                     <div className="text-neutral-50 prose prose-invert prose-sm max-w-none">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                        {challenge.description || ""}
-                      </ReactMarkdown>
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{challenge.description || ''}</ReactMarkdown>
                     </div>
                   </div>
                   <div className="flex-shrink-0">
@@ -684,15 +635,11 @@ function ChallengeModal({
                       onClick={handleReset}
                       disabled={loading.resetting}
                       loading={loading.resetting}
-                      className={
-                        loading.resetting
-                          ? "border-yellow-400 text-yellow-400"
-                          : ""
-                      }
+                      className={loading.resetting ? 'border-yellow-400 text-yellow-400' : ''}
                     >
                       {loading.resetting
-                        ? t("game.challengeModal.actions.resetting")
-                        : t("game.challengeModal.actions.reset")}
+                        ? t('game.challengeModal.actions.resetting')
+                        : t('game.challengeModal.actions.reset')}
                     </Button>
                   </div>
                 </div>
@@ -701,7 +648,7 @@ function ChallengeModal({
                 {challenge.attachment && (
                   <div className="space-y-1.5">
                     <h3 className="text-neutral-400 font-mono text-sm">
-                      {t("game.challengeModal.sections.attachments")}
+                      {t('game.challengeModal.sections.attachments')}
                     </h3>
                     <div className="space-y-1.5">
                       <motion.a
@@ -717,9 +664,7 @@ function ChallengeModal({
                         }}
                       >
                         <span className="text-sm">📎</span>
-                        <span className="font-mono text-sm">
-                          {challenge.attachment}
-                        </span>
+                        <span className="font-mono text-sm">{challenge.attachment}</span>
                       </motion.a>
                     </div>
                   </div>
@@ -733,9 +678,7 @@ function ChallengeModal({
 
                 {/* Flag 提交 - 调整间距 */}
                 <motion.div className="space-y-1.5" animate={flagControls}>
-                  <h3 className="text-neutral-400 font-mono text-sm">
-                    {t("game.challengeModal.sections.submitFlag")}
-                  </h3>
+                  <h3 className="text-neutral-400 font-mono text-sm">{t('game.challengeModal.sections.submitFlag')}</h3>
                   <form onSubmit={handleSubmitFlag} className="flex gap-2">
                     <input
                       type="text"
@@ -750,18 +693,14 @@ function ChallengeModal({
                       type="submit"
                       variant="primary"
                       size="action"
-                      disabled={
-                        challenge.isSolved || loading.submitting || !flag.trim()
-                      }
+                      disabled={challenge.isSolved || loading.submitting || !flag.trim()}
                     >
                       {loading.submitting
-                        ? t("game.challengeModal.submit.submitting")
-                        : t("game.challengeModal.submit.button", {
-                            status: challenge.isSolved
-                              ? t("common.solved")
-                              : t("common.submit"),
+                        ? t('game.challengeModal.submit.submitting')
+                        : t('game.challengeModal.submit.button', {
+                            status: challenge.isSolved ? t('common.solved') : t('common.submit'),
                             attempts: challenge.attempts,
-                            max: challenge.maxAttempts || "∞",
+                            max: challenge.maxAttempts || '∞',
                           })}
                     </Button>
                   </form>
