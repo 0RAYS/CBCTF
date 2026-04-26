@@ -1428,22 +1428,25 @@
       },
       "podsNotice": {
         "flagFormat": "Flag format: {{format}}",
-        "flagPrefix": "Flag environment variables / file mounts must start with `FLAG`; variable names can repeat and are not used as injection identifiers",
-        "flagVolume": "Flag file mounts use volumes.FLAG_x.labels.value to specify the value",
-        "services": "services only accepts: image, ports, environment, volumes, working_dir, command, cpus, mem_limit",
-        "networks": "You can configure multiple networks; each container may belong to multiple networks",
-        "networksWithIp": "When networks are set, each container must specify its network; if no IP is specified, one is assigned from the subnet",
-        "networksShared": "Without networks, containers share a random IP; for inter-container access use 127.0.0.1",
-        "portUnique": "When sharing an IP, ensure ports are unique",
-        "exampleIndent": "The example below includes all supported fields; other fields are ignored. Use 2-space indentation."
+        "flagPrefix": "Flag environment variables / file mounts must start with `FLAG`; environment variable names are the injection targets, while file mount names are only bindings",
+        "flagVolume": "Flag file mounts use top-level volumes.FLAG_x.labels.value for the value; the service volume target is the write path",
+        "services": "The backend only reads these service fields: image, container_name, ports, environment, volumes, working_dir, command, cpus, mem_limit, networks",
+        "networks": "Top-level networks can define multiple subnets; every non-default network must include ipam.config[0].subnet and gateway",
+        "networksWithIp": "If any non-default network is defined, every service must attach to at least one non-default network and provide a valid ipv4_address inside that subnet",
+        "networksShared": "Without non-default networks, all services are merged into one Pod; containers communicate through 127.0.0.1 and exposed ports are served by a Kubernetes Service",
+        "portUnique": "ports are deduplicated by target/protocol; published is only a display name and the platform assigns the actual external port",
+        "exampleIndent": "The example below includes fields read by the backend; other compose fields are not written into the challenge template"
       },
       "yamlNotice": {
         "flagFormat": "Flag format: {{format}}",
-        "flagPrefix": "Flag environment variables / file mounts must start with `FLAG`; variable names can repeat and are not used as injection identifiers",
-        "flagVolume": "Flag file mounts use labels value to specify the value",
-        "dockerParams": "Docker parameters only accept: image, ports, environment, volumes, working_dir, command",
-        "containerUnique": "Within a challenge, all container names must be unique and serve as the DNS hostname",
-        "containerNetwork": "Containers communicate via Hostname or localhost"
+        "flagPrefix": "Flag environment variables / file mounts must start with `FLAG`; environment variable names are the injection targets, while file mount names are only bindings",
+        "flagVolume": "Flag file mounts use top-level volumes.FLAG_x.labels.value for the value; the service volume target is the write path",
+        "dockerParams": "The backend only reads these service fields: image, container_name, ports, environment, volumes, working_dir, command, cpus, mem_limit, networks",
+        "containerUnique": "The service name or container_name becomes the container/Pod identifier and should be unique within one challenge",
+        "networkIpRequired": "When non-default networks are defined, every service must attach to at least one non-default network and explicitly set a valid ipv4_address",
+        "exposeNetwork": "ports are deduplicated by target/protocol; published is only a display name and the platform assigns the actual external port",
+        "noNetworkMerge": "Without non-default networks, all services are merged into one Pod and communicate through 127.0.0.1",
+        "containerNetwork": "With networks configured, services are created as separate Pods using their ipv4_address; external: true networks enable outbound/NAT exposure priority"
       },
       "fullscreen": {
         "title": "Fullscreen Edit - docker-compose.yaml",

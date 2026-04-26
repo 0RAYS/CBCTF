@@ -390,6 +390,9 @@ function AdminChallengeModal({
     t("admin.challengeModal.yamlNotice.flagVolume"),
     t("admin.challengeModal.yamlNotice.dockerParams"),
     t("admin.challengeModal.yamlNotice.containerUnique"),
+    t("admin.challengeModal.yamlNotice.networkIpRequired"),
+    t("admin.challengeModal.yamlNotice.exposeNetwork"),
+    t("admin.challengeModal.yamlNotice.noNetworkMerge"),
     t("admin.challengeModal.yamlNotice.containerNetwork"),
   ];
 

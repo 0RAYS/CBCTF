@@ -1428,22 +1428,25 @@
       },
       "podsNotice": {
         "flagFormat": "flag格式: {{format}}",
-        "flagPrefix": "flag `环境变量` / `文件挂载` 必须以 `FLAG` 为前缀; 变量名可重复, 不作为注入时的标识符使用",
-        "flagVolume": "flag `文件挂载` 通过 volumes.FLAG_x.labels.value 字段指定值",
-        "services": "services参数只接受: image, ports, environment, volumes, working_dir, command, cpus, mem_limit",
-        "networks": "可通过networks配置多个网段, 每个容器可占据多个网段",
-        "networksWithIp": "当设置networks时, 每个容器必须指定所使用的network; 不指定时具体IP时, 随机从定义的网段中选取",
-        "networksShared": "当不设置networks时, 容器之间共用同一个随机IP地址, 容器间通信请使用本地地址: 127.0.0.1",
-        "portUnique": "共用IP地址时, 请注意端口唯一性",
-        "exampleIndent": "下述示例中包含了所有可接受字段, 未在其中的字段将被忽略; 务必使用2个空格进行缩进"
+        "flagPrefix": "flag `环境变量` / `文件挂载` 必须以 `FLAG` 为前缀; 环境变量名就是注入目标, 文件挂载名只用于绑定",
+        "flagVolume": "flag `文件挂载` 通过顶层 volumes.FLAG_x.labels.value 指定值, service.volumes 的挂载目标就是写入路径",
+        "services": "后端只读取 service 的 image, container_name, ports, environment, volumes, working_dir, command, cpus, mem_limit, networks",
+        "networks": "可通过顶层 networks 配置多个网段; 每个非 default 网络必须配置 ipam.config[0].subnet 和 gateway",
+        "networksWithIp": "只要定义了非 default 网络, 每个 service 都必须挂载至少一个非 default 网络, 且 ipv4_address 必须合法并落在对应 subnet 内",
+        "networksShared": "不定义非 default 网络时, 所有 service 会合并到同一个 Pod, 容器间通信使用 127.0.0.1, 暴露端口由 Kubernetes Service 提供",
+        "portUnique": "ports 按 target/protocol 去重; published 仅作为展示名称, 实际外部端口由平台分配",
+        "exampleIndent": "下述示例包含后端会读取的字段; 其它 compose 字段不会写入题目模板"
       },
       "yamlNotice": {
         "flagFormat": "flag格式: {{format}}",
-        "flagPrefix": "flag `环境变量` / `文件挂载` 必须以 `FLAG` 为前缀; 变量名可重复, 不作为注入时的标识符使用",
-        "flagVolume": "flag `文件挂载` 通过 labels value 字段指定值",
-        "dockerParams": "Docker参数只接受: image, ports, environment, volumes, working_dir, command",
-        "containerUnique": "同一道题目中, 所有的容器名必须唯一, 作为唯一 DNS Hostname",
-        "containerNetwork": "容器间通过 Hostname 或 本地地址 通信"
+        "flagPrefix": "flag `环境变量` / `文件挂载` 必须以 `FLAG` 为前缀; 环境变量名就是注入目标, 文件挂载名只用于绑定",
+        "flagVolume": "flag `文件挂载` 通过顶层 volumes.FLAG_x.labels.value 指定值, service.volumes 的挂载目标就是写入路径",
+        "dockerParams": "后端只读取 service 的 image, container_name, ports, environment, volumes, working_dir, command, cpus, mem_limit, networks",
+        "containerUnique": "service 名或 container_name 会作为容器/Pod 标识, 同一道题中应保持唯一",
+        "networkIpRequired": "定义非 default 网络时, 每个 service 都必须挂载至少一个非 default 网络并显式填写合法 ipv4_address",
+        "exposeNetwork": "ports 按 target/protocol 去重; published 仅作展示名称, 外部端口由平台分配",
+        "noNetworkMerge": "不定义非 default 网络时, 所有 service 会合并到同一个 Pod, 容器间使用 127.0.0.1 通信",
+        "containerNetwork": "配置网络后, service 会按各自 ipv4_address 分 Pod 创建; external: true 的网络会开启出网/NAT 暴露优先级"
       },
       "fullscreen": {
         "title": "全屏编辑 - docker-compose.yaml",
