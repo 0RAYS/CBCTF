@@ -36,5 +36,5 @@ func HandleResizeImageTask(_ context.Context, task *asynq.Task) error {
 	if err := msgpack.Unmarshal(task.Payload(), &payload); err != nil {
 		return err
 	}
-	return utils.ResizeImage(payload.Path, payload.Width, payload.Height)
+	return utils.ResizePicture(payload.Path, payload.Width, payload.Height)
 }

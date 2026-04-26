@@ -101,7 +101,12 @@ function TeamSettings({
                                     bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity 
                                     cursor-pointer rounded-lg"
                 >
-                  <input type="file" className="hidden" accept="image/*" onChange={handlePictureUpload} />
+			  <input
+			    type="file"
+			    className="hidden"
+			    accept="image/png,image/jpeg,image/jpg,image/gif"
+			    onChange={handlePictureUpload}
+			  />
                   <span className="text-neutral-50 text-sm font-mono">{t('game.team.settings.changeAvatar')}</span>
                 </label>
               )}

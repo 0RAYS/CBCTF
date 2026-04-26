@@ -352,7 +352,13 @@ function AdminContestEditor({ contest: initialContest, onSave, onCancel, onImage
               </div>
 
               {/* 隐藏的文件输入 */}
-              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+		      <input
+			ref={fileInputRef}
+			type="file"
+			accept="image/png,image/jpeg,image/jpg,image/gif"
+			className="hidden"
+			onChange={handleImageUpload}
+		      />
             </div>
           </div>
         </div>
