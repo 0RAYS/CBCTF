@@ -42,9 +42,6 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 				Category:    challenge.Category,
 				Hidden:      true,
 			}
-			if challenge.Type == model.QuestionChallengeType {
-				options.Attempt = 1
-			}
 			contestChallenge, ret := contestChallengeRepo.Create(options)
 			if !ret.OK {
 				return ret

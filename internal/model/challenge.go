@@ -14,10 +14,9 @@ import (
 type ChallengeType string
 
 const (
-	StaticChallengeType   ChallengeType = "static"
-	QuestionChallengeType ChallengeType = "question"
-	DynamicChallengeType  ChallengeType = "dynamic"
-	PodsChallengeType     ChallengeType = "pods"
+	StaticChallengeType  ChallengeType = "static"
+	DynamicChallengeType ChallengeType = "dynamic"
+	PodsChallengeType    ChallengeType = "pods"
 
 	AttachmentFileName = "attachment.zip"
 	GeneratorFileName  = "generator.zip"
@@ -37,7 +36,6 @@ type Challenge struct {
 	Category          string             `gorm:"index" json:"category"`
 	Type              ChallengeType      `gorm:"index" json:"type"`
 	GeneratorImage    string             `json:"generator_image"`
-	Options           Options            `gorm:"type:jsonb" json:"options"`
 	NetworkPolicies   NetworkPolicies    `gorm:"type:jsonb" json:"network_policies"`
 	Template          ChallengeTemplate  `gorm:"type:jsonb" json:"-"`
 	BaseModel
@@ -65,25 +63,6 @@ func (c Challenge) AttachmentPath(teamID uint) string {
 	default:
 		return c.StaticPath()
 	}
-}
-
-type Option struct {
-	RandID  string `json:"rand_id"`
-	Content string `json:"content"`
-	Correct bool   `json:"correct"`
-}
-
-type Options []Option
-
-func (o Options) Value() (driver.Value, error) {
-	return json.Marshal(o)
-}
-
-func (o *Options) Scan(value any) error {
-	if err := scanJSON(value, o); err != nil {
-		return fmt.Errorf("failed to scan Options value")
-	}
-	return nil
 }
 
 type NetworkPolicy struct {

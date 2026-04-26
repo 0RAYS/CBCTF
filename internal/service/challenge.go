@@ -200,7 +200,6 @@ func CreateChallenge(tx *gorm.DB, form dto.CreateChallengeForm) (model.Challenge
 		Type:            form.Type,
 		Category:        form.Category,
 		GeneratorImage:  form.GeneratorImage,
-		Options:         form.Options,
 		NetworkPolicies: form.NetworkPolicies,
 	}
 	var podFlagOptions []db.CreateChallengeFlagOptions
@@ -225,19 +224,6 @@ func CreateChallenge(tx *gorm.DB, form dto.CreateChallengeForm) (model.Challenge
 			}); !ret.OK {
 				return model.Challenge{}, ret
 			}
-		}
-	case model.QuestionChallengeType:
-		answer := make([]string, 0)
-		for _, option := range form.Options {
-			if option.Correct {
-				answer = append(answer, option.RandID)
-			}
-		}
-		if _, ret = challengeFlagRepo.Create(db.CreateChallengeFlagOptions{
-			ChallengeID: challenge.ID,
-			Value:       strings.Join(answer, ","),
-		}); !ret.OK {
-			return model.Challenge{}, ret
 		}
 	case model.DynamicChallengeType:
 		for _, flag := range form.Flags {
@@ -297,39 +283,7 @@ func UpdateChallenge(tx *gorm.DB, challenge model.Challenge, form dto.UpdateChal
 			Name:           form.Name,
 			Description:    form.Description,
 			Category:       form.Category,
-			Options:        form.Options,
 			GeneratorImage: form.GeneratorImage,
-		})
-	case model.QuestionChallengeType:
-		if form.Options != nil {
-			answer := ""
-			for _, option := range *form.Options {
-				if option.Correct {
-					answer += fmt.Sprintf("%s,", option.RandID)
-				}
-			}
-			answer = strings.TrimSuffix(answer, ",")
-			repo := db.InitChallengeFlagRepo(tx)
-			if len(challenge.ChallengeFlags) > 0 {
-				if ret := repo.Update(challenge.ChallengeFlags[0].ID, db.UpdateChallengeFlagOptions{
-					Value: &answer,
-				}); !ret.OK {
-					return ret
-				}
-			} else {
-				if _, ret := repo.Create(db.CreateChallengeFlagOptions{
-					ChallengeID: challenge.ID,
-					Value:       answer,
-				}); !ret.OK {
-					return ret
-				}
-			}
-		}
-		return db.InitChallengeRepo(tx).Update(challenge.ID, db.UpdateChallengeOptions{
-			Name:        form.Name,
-			Description: form.Description,
-			Category:    form.Category,
-			Options:     form.Options,
 		})
 	case model.PodsChallengeType:
 		if form.DockerCompose != nil {

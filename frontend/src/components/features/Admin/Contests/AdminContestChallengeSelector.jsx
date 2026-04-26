@@ -1,8 +1,17 @@
-import { motion } from 'motion/react';
-import { IconX, IconSearch } from '@tabler/icons-react';
-import { useTranslation } from 'react-i18next';
-import { Button, Pagination, Card, EmptyState, Chip } from '../../../../components/common';
-import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../../config/challengeChips';
+import { motion } from "motion/react";
+import { IconX, IconSearch } from "@tabler/icons-react";
+import { useTranslation } from "react-i18next";
+import {
+  Button,
+  Pagination,
+  Card,
+  EmptyState,
+  Chip,
+} from "../../../../components/common";
+import {
+  getChallengeCategoryChipClass,
+  getChallengeTypeChipClass,
+} from "../../../../config/challengeChips";
 
 /**
  * 赛事赛题选择弹窗组件
@@ -43,7 +52,7 @@ function AdminContestChallengeSelector({
 
   // 统一输入框样式
   const inputBaseClass =
-    'w-full bg-black/20 border border-neutral-300/30 rounded-md p-3 text-neutral-50 font-mono focus:border-geek-400 focus:outline-none transition-colors duration-200';
+    "w-full bg-black/20 border border-neutral-300/30 rounded-md p-3 text-neutral-50 font-mono focus:border-geek-400 focus:outline-none transition-colors duration-200";
 
   // 分类标签 / 类型标签由 Chip 组件统一渲染
 
@@ -60,8 +69,15 @@ function AdminContestChallengeSelector({
       >
         {/* 标题栏 */}
         <div className="flex justify-between items-center p-4 border-b border-neutral-700">
-          <h2 className="text-xl font-mono text-neutral-50">{t('admin.contests.challengeSelector.title')}</h2>
-          <Button variant="ghost" size="icon" className="!text-neutral-400 hover:!text-neutral-300" onClick={onClose}>
+          <h2 className="text-xl font-mono text-neutral-50">
+            {t("admin.contests.challengeSelector.title")}
+          </h2>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="!text-neutral-400 hover:!text-neutral-300"
+            onClick={onClose}
+          >
             <IconX size={18} />
           </Button>
         </div>
@@ -70,20 +86,30 @@ function AdminContestChallengeSelector({
         <div className="p-4 border-b border-neutral-700">
           <div className="flex gap-4 mb-3">
             <div className="flex-1 relative">
-              <IconSearch size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" />
+              <IconSearch
+                size={18}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"
+              />
               <input
                 type="text"
                 className={`${inputBaseClass} pl-10`}
-                placeholder={t('admin.contests.challengeSelector.search.placeholder')}
+                placeholder={t(
+                  "admin.contests.challengeSelector.search.placeholder",
+                )}
                 onChange={(e) => onSearch(e.target.value)}
               />
             </div>
             <div className="flex-1 relative">
-              <IconSearch size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400" />
+              <IconSearch
+                size={18}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400"
+              />
               <input
                 type="text"
                 className={`${inputBaseClass} pl-10`}
-                placeholder={t('admin.contests.challengeSelector.search.descPlaceholder')}
+                placeholder={t(
+                  "admin.contests.challengeSelector.search.descPlaceholder",
+                )}
                 onChange={(e) => onDescSearch?.(e.target.value)}
               />
             </div>
@@ -94,7 +120,9 @@ function AdminContestChallengeSelector({
                 onChange={(e) => onFilterCategoryChange(e.target.value)}
                 className="select-custom select-custom-lg"
               >
-                <option value="all">{t('admin.contests.challengeSelector.filters.categoryAll')}</option>
+                <option value="all">
+                  {t("admin.contests.challengeSelector.filters.categoryAll")}
+                </option>
                 {categories.map((category) => (
                   <option key={category} value={category}>
                     {category}
@@ -104,12 +132,22 @@ function AdminContestChallengeSelector({
             </div>
 
             <div className="w-48">
-              <select onChange={(e) => onFilterTypeChange(e.target.value)} className="select-custom select-custom-lg">
-                <option value="all">{t('admin.contests.challengeSelector.filters.typeAll')}</option>
-                <option value="question">{t('admin.contests.challengeSelector.types.question')}</option>
-                <option value="static">{t('admin.contests.challengeSelector.types.static')}</option>
-                <option value="dynamic">{t('admin.contests.challengeSelector.types.dynamic')}</option>
-                <option value="pods">{t('admin.contests.challengeSelector.types.pods')}</option>
+              <select
+                onChange={(e) => onFilterTypeChange(e.target.value)}
+                className="select-custom select-custom-lg"
+              >
+                <option value="all">
+                  {t("admin.contests.challengeSelector.filters.typeAll")}
+                </option>
+                <option value="static">
+                  {t("admin.contests.challengeSelector.types.static")}
+                </option>
+                <option value="dynamic">
+                  {t("admin.contests.challengeSelector.types.dynamic")}
+                </option>
+                <option value="pods">
+                  {t("admin.contests.challengeSelector.types.pods")}
+                </option>
               </select>
             </div>
           </div>
@@ -118,21 +156,32 @@ function AdminContestChallengeSelector({
         {/* 赛题列表 */}
         <div className="flex-1 overflow-y-auto p-4">
           {challenges.length === 0 ? (
-            <Card variant="default" padding="md" className="flex justify-center items-center h-full">
-              <EmptyState title={t('admin.contests.challengeSelector.empty.noMatch')} />
+            <Card
+              variant="default"
+              padding="md"
+              className="flex justify-center items-center h-full"
+            >
+              <EmptyState
+                title={t("admin.contests.challengeSelector.empty.noMatch")}
+              />
             </Card>
           ) : (
             <div className="space-y-3">
               {challenges.map((challenge) => {
-                const isSelected = selectedChallenges.some((c) => c.id === challenge.id);
+                const isSelected = selectedChallenges.some(
+                  (c) => c.id === challenge.id,
+                );
 
                 return (
                   <motion.div
                     key={challenge.id || challenge.name}
                     className={`border rounded-md bg-neutral-900 overflow-hidden transition-colors duration-200 ${
-                      isSelected ? 'border-geek-400' : 'border-neutral-300/30'
+                      isSelected ? "border-geek-400" : "border-neutral-300/30"
                     }`}
-                    whileHover={{ y: -1, boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}
+                    whileHover={{
+                      y: -1,
+                      boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+                    }}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                   >
@@ -140,8 +189,8 @@ function AdminContestChallengeSelector({
                       <div
                         className={`w-5 h-5 border-2 cursor-pointer transition-all duration-200 flex items-center justify-center flex-shrink-0 mt-1 ${
                           isSelected
-                            ? 'bg-geek-400 border-geek-400 text-white'
-                            : 'border-neutral-400 text-transparent hover:border-geek-400 hover:bg-geek-400/10'
+                            ? "bg-geek-400 border-geek-400 text-white"
+                            : "border-neutral-400 text-transparent hover:border-geek-400 hover:bg-geek-400/10"
                         }`}
                         onClick={() => onSelect(challenge)}
                       >
@@ -163,22 +212,33 @@ function AdminContestChallengeSelector({
 
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-mono text-neutral-50">{challenge.name}</h3>
+                          <h3 className="text-lg font-mono text-neutral-50">
+                            {challenge.name}
+                          </h3>
                           <div className="flex gap-2">
                             <Chip
                               label={challenge.category}
-                              colorClass={getChallengeCategoryChipClass(challenge.category)}
+                              colorClass={getChallengeCategoryChipClass(
+                                challenge.category,
+                              )}
                             />
                             <Chip
-                              label={t(`admin.contests.challengeSelector.types.${challenge.type}`, {
-                                defaultValue: challenge.type,
-                              })}
-                              colorClass={getChallengeTypeChipClass(challenge.type)}
+                              label={t(
+                                `admin.contests.challengeSelector.types.${challenge.type}`,
+                                {
+                                  defaultValue: challenge.type,
+                                },
+                              )}
+                              colorClass={getChallengeTypeChipClass(
+                                challenge.type,
+                              )}
                             />
                           </div>
                         </div>
 
-                        <p className="text-neutral-300 text-sm font-mono line-clamp-2">{challenge.description}</p>
+                        <p className="text-neutral-300 text-sm font-mono line-clamp-2">
+                          {challenge.description}
+                        </p>
                       </div>
                     </div>
                   </motion.div>
@@ -205,16 +265,22 @@ function AdminContestChallengeSelector({
         {/* 已选赛题计数和确认按钮 */}
         <div className="flex justify-between items-center p-4 border-t border-neutral-700">
           <div className="text-neutral-300 font-mono">
-            {t('admin.contests.challengeSelector.selectedPrefix')}
-            <span className="text-geek-400 font-bold">{selectedChallenges.length}</span>
-            {t('admin.contests.challengeSelector.selectedSuffix')}
+            {t("admin.contests.challengeSelector.selectedPrefix")}
+            <span className="text-geek-400 font-bold">
+              {selectedChallenges.length}
+            </span>
+            {t("admin.contests.challengeSelector.selectedSuffix")}
           </div>
           <div className="flex gap-4">
             <Button variant="ghost" onClick={onClose}>
-              {t('common.cancel')}
+              {t("common.cancel")}
             </Button>
-            <Button variant="primary" onClick={onConfirm} disabled={selectedChallenges.length === 0}>
-              {t('admin.contests.challengeSelector.actions.confirmAdd')}
+            <Button
+              variant="primary"
+              onClick={onConfirm}
+              disabled={selectedChallenges.length === 0}
+            >
+              {t("admin.contests.challengeSelector.actions.confirmAdd")}
             </Button>
           </div>
         </div>

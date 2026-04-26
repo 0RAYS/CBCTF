@@ -59,7 +59,6 @@
     },
     "challengeTypes": {
       "static": "Static",
-      "question": "Question",
       "dynamic": "Dynamic",
       "pods": "Container"
     },
@@ -460,7 +459,6 @@
         },
         "types": {
           "static": "$t(common.challengeTypes.static)",
-          "question": "$t(common.challengeTypes.question)",
           "dynamic": "$t(common.challengeTypes.dynamic)",
           "pods": "$t(common.challengeTypes.pods)"
         },
@@ -965,9 +963,6 @@
           "challengeTagsEmpty": "No tags",
           "challengeHints": "Hints",
           "challengeHintsEmpty": "No hints",
-          "challengeOptions": "Question options",
-          "challengeOptionsEmpty": "No options",
-          "challengeOptionLabel": "Option {{index}}",
           "challengeScore": "Score {{score}}",
           "challengeSolvers": "{{count}} solves",
           "challengeAttempts": "Attempt limit {{count}}",
@@ -1308,7 +1303,6 @@
       "filters": {
         "all": "All",
         "static": "Static",
-        "question": "Question",
         "dynamic": "Dynamic",
         "pods": "Container"
       },
@@ -1324,7 +1318,6 @@
       },
       "types": {
         "static": "$t(common.challengeTypes.static)",
-        "question": "$t(common.challengeTypes.question)",
         "dynamic": "$t(common.challengeTypes.dynamic)",
         "pods": "$t(common.challengeTypes.pods)"
       },
@@ -1397,7 +1390,6 @@
         "basic": "Basic Info",
         "generator": "Generator Image",
         "flags": "Flag Settings",
-        "options": "Option Settings",
         "podsNotice": "Container Config Notes",
         "containers": "Container Settings"
       },
@@ -1415,7 +1407,6 @@
       },
       "types": {
         "static": "$t(common.challengeTypes.static)",
-        "question": "$t(common.challengeTypes.question)",
         "dynamic": "$t(common.challengeTypes.dynamic)",
         "pods": "$t(common.challengeTypes.pods)"
       },
@@ -1424,23 +1415,16 @@
         "category": "Select category",
         "description": "Enter challenge description",
         "generatorImage": "Enter generator image",
-        "flag": "Flag {{index}}",
-        "option": "Option {{index}}"
+        "flag": "Flag {{index}}"
       },
       "actions": {
         "addFlag": "Add Flag",
-        "addOption": "Add Option",
-        "setCorrect": "Mark as correct",
-        "unsetCorrect": "Unmark correct",
         "fullscreen": "Fullscreen Edit",
         "addPolicy": "Add Policy",
         "addRule": "Add Rule",
         "addExclude": "Add Exclusion",
         "add": "Add Challenge",
         "confirmDelete": "Confirm Delete"
-      },
-      "empty": {
-        "options": "No options yet, please add options"
       },
       "podsNotice": {
         "flagFormat": "Flag format: {{format}}",
@@ -2577,10 +2561,8 @@
       },
       "sections": {
         "hints": "Hints",
-        "questionOptions": "Select Answer",
         "description": "Description",
         "attachments": "Attachments",
-        "submitAnswer": "Submit Answer",
         "submitFlag": "Submit Flag"
       },
       "initialize": {
@@ -2589,8 +2571,6 @@
         "action": "INITIALIZE CHALLENGE"
       },
       "submit": {
-        "selectedOptions": "Selected {{count}} options",
-        "selectOptions": "Please select answer options",
         "submitting": "SUBMITTING...",
         "button": "{{status}} {{attempts}}/{{max}}"
       }

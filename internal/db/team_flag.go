@@ -121,10 +121,6 @@ func (t *TeamFlagRepo) ListContestWrongFlagSubmissions(contestID uint, start, en
 		return nil, model.SuccessRetVal()
 	}
 
-	submittedQuestionChallenges := t.DB.Table("contest_challenges").
-		Select("contest_challenges.id").
-		Where("contest_challenges.contest_id = ? AND contest_challenges.type = ? AND contest_challenges.deleted_at IS NULL", contestID, model.QuestionChallengeType)
-
 	var results []ContestWrongFlagSubmission
 	res := t.DB.Table("submissions").
 		Select(`submissions.id AS submission_id,
@@ -154,7 +150,6 @@ func (t *TeamFlagRepo) ListContestWrongFlagSubmissions(contestID uint, start, en
 				AND own_contest_flags.contest_challenge_id = submissions.contest_challenge_id
 		)`).
 		Where("submission_teams.contest_id = ? AND matched_teams.contest_id = ?", contestID, contestID).
-		Where("submissions.contest_challenge_id NOT IN (?)", submittedQuestionChallenges).
 		Group(`submissions.id,
 			submissions.team_id,
 			submissions.contest_challenge_id,

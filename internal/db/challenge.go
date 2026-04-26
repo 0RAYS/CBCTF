@@ -19,7 +19,6 @@ type CreateChallengeOptions struct {
 	Category        string
 	Type            model.ChallengeType
 	GeneratorImage  string
-	Options         model.Options
 	NetworkPolicies model.NetworkPolicies
 	Template        model.ChallengeTemplate
 }
@@ -32,7 +31,6 @@ func (c CreateChallengeOptions) Convert2Model() model.Model {
 		Category:        c.Category,
 		Type:            c.Type,
 		GeneratorImage:  c.GeneratorImage,
-		Options:         c.Options,
 		NetworkPolicies: c.NetworkPolicies,
 		Template:        c.Template,
 	}
@@ -43,7 +41,6 @@ type UpdateChallengeOptions struct {
 	Description     *string
 	Category        *string
 	GeneratorImage  *string
-	Options         *model.Options
 	NetworkPolicies *model.NetworkPolicies
 	Template        *model.ChallengeTemplate
 }
@@ -61,9 +58,6 @@ func (u UpdateChallengeOptions) Convert2Map() map[string]any {
 	}
 	if u.GeneratorImage != nil {
 		options["generator_image"] = *u.GeneratorImage
-	}
-	if u.Options != nil {
-		options["options"] = u.Options
 	}
 	if u.NetworkPolicies != nil {
 		options["network_policies"] = *u.NetworkPolicies

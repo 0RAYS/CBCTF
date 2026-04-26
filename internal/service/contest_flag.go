@@ -5,8 +5,6 @@ import (
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
 	"CBCTF/internal/model"
-	"slices"
-	"strings"
 
 	"gorm.io/gorm"
 )
@@ -22,30 +20,6 @@ func VerifyFlag(tx *gorm.DB, team model.Team, contestChallenge model.ContestChal
 	if len(contestFlagL) == 0 {
 		return false, model.ContestFlag{}, model.TeamFlag{}, model.RetVal{Msg: i18n.Model.ContestFlag.NotFound}
 	}
-	if contestChallenge.Type == model.QuestionChallengeType {
-		contestFlag := contestFlagL[0]
-		teamFlag, ret := db.InitTeamFlagRepo(tx).Get(db.GetOptions{
-			Conditions: map[string]any{"team_id": team.ID, "contest_flag_id": contestFlag.ID},
-		})
-		if !ret.OK {
-			return false, model.ContestFlag{}, model.TeamFlag{}, model.RetVal{Msg: i18n.Model.TeamFlag.NotFound}
-		}
-		optionsIDL := strings.Split(contestFlag.Value, ",")
-		answerIDL := strings.Split(value, ",")
-		if len(optionsIDL) != len(answerIDL) {
-			return false, contestFlag, model.TeamFlag{}, model.RetVal{OK: true, Msg: i18n.Model.TeamFlag.NotMatch}
-		}
-		for _, answerID := range answerIDL {
-			if !slices.Contains(optionsIDL, answerID) {
-				return false, contestFlag, model.TeamFlag{}, model.RetVal{OK: true, Msg: i18n.Model.TeamFlag.NotMatch}
-			}
-		}
-		if teamFlag.Solved {
-			return false, contestFlag, teamFlag, model.RetVal{OK: true, Msg: i18n.Model.TeamFlag.AlreadySolved}
-		}
-		return true, contestFlag, teamFlag, model.SuccessRetVal()
-	}
-
 	teamFlag, ret := db.InitTeamFlagRepo(tx).GetByContestChallengeAndValue(team.ID, contestChallenge.ID, value)
 	if ret.OK {
 		for _, contestFlag := range contestFlagL {
@@ -112,9 +86,6 @@ func ListContestFlags(tx *gorm.DB, contestChallenge model.ContestChallenge) ([]m
 }
 
 func UpdateContestFlag(tx *gorm.DB, contestChallenge model.ContestChallenge, contestFlag model.ContestFlag, form dto.UpdateContestFlagForm) model.RetVal {
-	if contestChallenge.Type == model.QuestionChallengeType && form.Value != nil {
-		form.Value = &contestFlag.Value
-	}
 	currentScore := contestFlag.CurrentScore
 	if form.Score != nil && *form.Score < currentScore {
 		currentScore = *form.Score

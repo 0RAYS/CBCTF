@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # K8s 集群搭建
 
-本文介绍如何搭建支持 CBCTF 动态附件题和容器题的 Kubernetes 集群。由于项目当前仅支持 Helm 部署, 若仅使用问答题和静态题, 也建议至少准备基础的 Kubernetes、PostgreSQL 和 Redis 运行环境。
+本文介绍如何搭建支持 CBCTF 动态附件题和容器题的 Kubernetes 集群。由于项目当前仅支持 Helm 部署, 若仅使用静态题, 也建议至少准备基础的 Kubernetes、PostgreSQL 和 Redis 运行环境。
 
 ## 硬件要求
 

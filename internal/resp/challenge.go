@@ -21,7 +21,6 @@ func GetChallengeResp(challengeView view.ChallengeView) gin.H {
 		"generator_image":  challenge.GeneratorImage,
 		"flags":            flags,
 		"docker_compose":   challengeView.DockerCompose,
-		"options":          challenge.Options,
 		"network_policies": challenge.NetworkPolicies,
 		"file":             challengeView.FileName,
 	}
@@ -36,7 +35,6 @@ func GetSimpleChallengeResp(challengeView view.SimpleChallengeView) gin.H {
 		"category":         challenge.Category,
 		"type":             challenge.Type,
 		"generator_image":  challenge.GeneratorImage,
-		"options":          challenge.Options,
 		"network_policies": challenge.NetworkPolicies,
 	}
 }

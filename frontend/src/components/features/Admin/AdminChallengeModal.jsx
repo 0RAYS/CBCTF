@@ -1,4 +1,4 @@
-import { motion } from 'motion/react';
+import { motion } from "motion/react";
 import {
   IconX,
   IconPlus,
@@ -6,12 +6,11 @@ import {
   IconMaximize,
   IconMinimize,
   IconDeviceFloppy,
-  IconCheck,
-} from '@tabler/icons-react';
-import { Button } from '../../../components/common';
-import { lazy, Suspense, useState, useEffect } from 'react';
-const Editor = lazy(() => import('@monaco-editor/react'));
-import { useTranslation } from 'react-i18next';
+} from "@tabler/icons-react";
+import { Button } from "../../../components/common";
+import { lazy, Suspense, useState, useEffect } from "react";
+const Editor = lazy(() => import("@monaco-editor/react"));
+import { useTranslation } from "react-i18next";
 
 /**
  * 题目管理弹窗组件
@@ -26,10 +25,6 @@ import { useTranslation } from 'react-i18next';
  * @param {Function} props.onAddFlag - 添加Flag回调
  * @param {Function} props.onRemoveFlag - 移除Flag回调
  * @param {Function} props.onFlagChange - Flag变更回调
- * @param {Function} props.onAddOption - 添加选项回调
- * @param {Function} props.onRemoveOption - 移除选项回调
- * @param {Function} props.onOptionChange - 选项变更回调
- * @param {Function} props.onCorrectOptionChange - 正确选项变更回调
  */
 
 const defaultYAML = `
@@ -125,28 +120,27 @@ networks:
 
 function AdminChallengeModal({
   isOpen = false,
-  mode = 'add',
+  mode = "add",
   challenge = {
-    name: '',
-    description: '',
-    category: '',
-    type: 'static',
-    generator_image: '',
-    flags: [''],
-    options: [],
-    docker_compose: '',
+    name: "",
+    description: "",
+    category: "",
+    type: "static",
+    generator_image: "",
+    flags: [""],
+    docker_compose: "",
     network_policies: [
       {
         from: [
           {
-            cidr: '',
-            except: [''],
+            cidr: "",
+            except: [""],
           },
         ],
         to: [
           {
-            cidr: '',
-            except: [''],
+            cidr: "",
+            except: [""],
           },
         ],
       },
@@ -159,17 +153,13 @@ function AdminChallengeModal({
   onAddFlag,
   onRemoveFlag,
   onFlagChange,
-  onAddOption,
-  onRemoveOption,
-  onOptionChange,
-  onCorrectOptionChange,
 }) {
   const { t } = useTranslation();
 
   // 全屏编辑器状态
   const [fullscreenEditor, setFullscreenEditor] = useState({
     isOpen: false,
-    value: '',
+    value: "",
   });
 
   // 全屏编辑器控制
@@ -182,7 +172,7 @@ function AdminChallengeModal({
 
   // 初始化时确保docker_compose有默认值
   useEffect(() => {
-    if (challenge.type === 'pods' && !challenge.docker_compose) {
+    if (challenge.type === "pods" && !challenge.docker_compose) {
       onChange({ ...challenge, docker_compose: defaultYAML });
     }
   }, [challenge.type, challenge.docker_compose, onChange]);
@@ -190,7 +180,7 @@ function AdminChallengeModal({
   const closeFullscreenEditor = () => {
     setFullscreenEditor({
       isOpen: false,
-      value: '',
+      value: "",
     });
   };
 
@@ -222,14 +212,19 @@ function AdminChallengeModal({
       {
         from: [
           {
-            cidr: '',
-            except: [''],
+            cidr: "",
+            except: [""],
           },
         ],
         to: [
           {
-            cidr: '0.0.0.0/0',
-            except: ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '100.64.0.0/10'],
+            cidr: "0.0.0.0/0",
+            except: [
+              "10.0.0.0/8",
+              "172.16.0.0/12",
+              "192.168.0.0/16",
+              "100.64.0.0/10",
+            ],
           },
         ],
       },
@@ -238,7 +233,9 @@ function AdminChallengeModal({
   };
 
   const removeNetworkPolicy = (policyIndex) => {
-    const newNetworkPolicies = challenge.network_policies.filter((_, i) => i !== policyIndex);
+    const newNetworkPolicies = challenge.network_policies.filter(
+      (_, i) => i !== policyIndex,
+    );
     onChange({ ...challenge, network_policies: newNetworkPolicies });
   };
 
@@ -250,8 +247,8 @@ function AdminChallengeModal({
     policy[ruleType] = [
       ...policy[ruleType],
       {
-        cidr: '',
-        except: [''],
+        cidr: "",
+        except: [""],
       },
     ];
 
@@ -291,7 +288,7 @@ function AdminChallengeModal({
     const policy = { ...newNetworkPolicies[policyIndex] };
     const rule = { ...policy[ruleType][ruleIndex] };
 
-    rule.except = [...rule.except, ''];
+    rule.except = [...rule.except, ""];
 
     policy[ruleType] = [...policy[ruleType]];
     policy[ruleType][ruleIndex] = rule;
@@ -301,7 +298,12 @@ function AdminChallengeModal({
   };
 
   // 移除 except 规则
-  const removePolicyExcept = (policyIndex, ruleType, ruleIndex, exceptIndex) => {
+  const removePolicyExcept = (
+    policyIndex,
+    ruleType,
+    ruleIndex,
+    exceptIndex,
+  ) => {
     const newNetworkPolicies = [...challenge.network_policies];
     const policy = { ...newNetworkPolicies[policyIndex] };
     const rule = { ...policy[ruleType][ruleIndex] };
@@ -316,7 +318,13 @@ function AdminChallengeModal({
   };
 
   // 更新 except 值
-  const updatePolicyExcept = (policyIndex, ruleType, ruleIndex, exceptIndex, value) => {
+  const updatePolicyExcept = (
+    policyIndex,
+    ruleType,
+    ruleIndex,
+    exceptIndex,
+    value,
+  ) => {
     const newNetworkPolicies = [...challenge.network_policies];
     const policy = { ...newNetworkPolicies[policyIndex] };
     const rule = { ...policy[ruleType][ruleIndex] };
@@ -335,50 +343,54 @@ function AdminChallengeModal({
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (fullscreenEditor.isOpen) {
-        if (event.key === 'Escape') {
+        if (event.key === "Escape") {
           closeFullscreenEditor();
-        } else if (event.ctrlKey && event.key === 's') {
+        } else if (event.ctrlKey && event.key === "s") {
           event.preventDefault();
           saveFullscreenEditor();
         }
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [fullscreenEditor.isOpen, fullscreenEditor.value]);
 
   // 常用样式类
   const inputBaseClass =
-    'w-full h-10 bg-black/20 border border-neutral-300/30 rounded-md px-4 text-neutral-50 focus:outline-none focus:border-geek-400';
-  const selectClass = 'select-custom select-custom-md';
+    "w-full h-10 bg-black/20 border border-neutral-300/30 rounded-md px-4 text-neutral-50 focus:outline-none focus:border-geek-400";
+  const selectClass = "select-custom select-custom-md";
   const textareaClass =
-    'w-full h-20 bg-black/20 border border-neutral-300/30 rounded-md px-4 py-2 text-neutral-50 focus:outline-none focus:border-geek-400 resize-none';
+    "w-full h-20 bg-black/20 border border-neutral-300/30 rounded-md px-4 py-2 text-neutral-50 focus:outline-none focus:border-geek-400 resize-none";
 
   const podNoticeLines = [
-    t('admin.challengeModal.podsNotice.flagFormat', { format: '`static{}`, `dynamic{}`, `uuid{}`' }),
-    t('admin.challengeModal.podsNotice.flagPrefix'),
-    t('admin.challengeModal.podsNotice.flagVolume'),
-    '',
-    t('admin.challengeModal.podsNotice.services'),
-    '',
-    t('admin.challengeModal.podsNotice.networks'),
-    t('admin.challengeModal.podsNotice.networksWithIp'),
-    t('admin.challengeModal.podsNotice.networksShared'),
-    t('admin.challengeModal.podsNotice.portUnique'),
-    '',
-    t('admin.challengeModal.podsNotice.exampleIndent'),
+    t("admin.challengeModal.podsNotice.flagFormat", {
+      format: "`static{}`, `dynamic{}`, `uuid{}`",
+    }),
+    t("admin.challengeModal.podsNotice.flagPrefix"),
+    t("admin.challengeModal.podsNotice.flagVolume"),
+    "",
+    t("admin.challengeModal.podsNotice.services"),
+    "",
+    t("admin.challengeModal.podsNotice.networks"),
+    t("admin.challengeModal.podsNotice.networksWithIp"),
+    t("admin.challengeModal.podsNotice.networksShared"),
+    t("admin.challengeModal.podsNotice.portUnique"),
+    "",
+    t("admin.challengeModal.podsNotice.exampleIndent"),
   ];
 
   const yamlNoticeLines = [
-    t('admin.challengeModal.yamlNotice.flagFormat', { format: '`static{}`, `dynamic{}`, `uuid{}`' }),
-    t('admin.challengeModal.yamlNotice.flagPrefix'),
-    t('admin.challengeModal.yamlNotice.flagVolume'),
-    t('admin.challengeModal.yamlNotice.dockerParams'),
-    t('admin.challengeModal.yamlNotice.containerUnique'),
-    t('admin.challengeModal.yamlNotice.containerNetwork'),
+    t("admin.challengeModal.yamlNotice.flagFormat", {
+      format: "`static{}`, `dynamic{}`, `uuid{}`",
+    }),
+    t("admin.challengeModal.yamlNotice.flagPrefix"),
+    t("admin.challengeModal.yamlNotice.flagVolume"),
+    t("admin.challengeModal.yamlNotice.dockerParams"),
+    t("admin.challengeModal.yamlNotice.containerUnique"),
+    t("admin.challengeModal.yamlNotice.containerNetwork"),
   ];
 
   if (!isOpen) return null;
@@ -395,11 +407,11 @@ function AdminChallengeModal({
         {/* 标题栏 */}
         <div className="flex justify-between items-center p-4 border-b border-neutral-700">
           <h2 className="text-xl font-mono text-neutral-50">
-            {mode === 'add'
-              ? t('admin.challengeModal.title.add')
-              : mode === 'edit'
-                ? t('admin.challengeModal.title.edit')
-                : t('admin.challengeModal.title.delete')}
+            {mode === "add"
+              ? t("admin.challengeModal.title.add")
+              : mode === "edit"
+                ? t("admin.challengeModal.title.edit")
+                : t("admin.challengeModal.title.delete")}
           </h2>
           <Button
             variant="ghost"
@@ -413,49 +425,65 @@ function AdminChallengeModal({
 
         {/* 表单内容 */}
         <div className="p-6 max-h-[70vh] overflow-y-auto">
-          {mode === 'delete' ? (
+          {mode === "delete" ? (
             <div className="text-center py-12">
               <div className="mb-8">
                 <div className="mx-auto w-20 h-20 bg-red-400/20 rounded-full flex items-center justify-center mb-6">
                   <IconTrash size={40} className="text-red-400" />
                 </div>
-                <h3 className="text-2xl font-mono text-neutral-50 mb-4">{t('admin.challengeModal.delete.title')}</h3>
-                <p className="text-neutral-400 font-mono text-lg mb-2">{t('admin.challengeModal.delete.prompt')}</p>
-                <p className="text-red-400 font-mono text-sm">{t('admin.challengeModal.delete.warning')}</p>
+                <h3 className="text-2xl font-mono text-neutral-50 mb-4">
+                  {t("admin.challengeModal.delete.title")}
+                </h3>
+                <p className="text-neutral-400 font-mono text-lg mb-2">
+                  {t("admin.challengeModal.delete.prompt")}
+                </p>
+                <p className="text-red-400 font-mono text-sm">
+                  {t("admin.challengeModal.delete.warning")}
+                </p>
               </div>
             </div>
           ) : (
             <div className="space-y-4">
               {/* 基本信息 */}
               <div className="mb-4">
-                <h3 className="text-lg font-mono text-neutral-50 mb-3">{t('admin.challengeModal.sections.basic')}</h3>
+                <h3 className="text-lg font-mono text-neutral-50 mb-3">
+                  {t("admin.challengeModal.sections.basic")}
+                </h3>
 
                 <div className="space-y-3">
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="md:col-span-2">
                       <label className="block text-sm font-mono text-neutral-400 mb-1">
-                        {t('admin.challengeModal.labels.name')}
+                        {t("admin.challengeModal.labels.name")}
                       </label>
                       <input
                         type="text"
                         value={challenge.name}
-                        onChange={(e) => onChange({ ...challenge, name: e.target.value })}
+                        onChange={(e) =>
+                          onChange({ ...challenge, name: e.target.value })
+                        }
                         className={inputBaseClass}
-                        placeholder={t('admin.challengeModal.placeholders.name')}
+                        placeholder={t(
+                          "admin.challengeModal.placeholders.name",
+                        )}
                         required
                       />
                     </div>
 
                     <div>
                       <label className="block text-sm font-mono text-neutral-400 mb-1">
-                        {t('admin.challengeModal.labels.category')}
+                        {t("admin.challengeModal.labels.category")}
                       </label>
                       <input
                         type="text"
                         value={challenge.category}
-                        onChange={(e) => onChange({ ...challenge, category: e.target.value })}
+                        onChange={(e) =>
+                          onChange({ ...challenge, category: e.target.value })
+                        }
                         className={selectClass}
-                        placeholder={t('admin.challengeModal.placeholders.category')}
+                        placeholder={t(
+                          "admin.challengeModal.placeholders.category",
+                        )}
                         list="category-options"
                       />
                       <datalist id="category-options">
@@ -467,63 +495,83 @@ function AdminChallengeModal({
 
                     <div>
                       <label className="block text-sm font-mono text-neutral-400 mb-1">
-                        {t('admin.challengeModal.labels.type')}
+                        {t("admin.challengeModal.labels.type")}
                       </label>
                       <select
                         value={challenge.type}
-                        onChange={(e) => onChange({ ...challenge, type: e.target.value })}
+                        onChange={(e) =>
+                          onChange({ ...challenge, type: e.target.value })
+                        }
                         className={selectClass}
                         required
                       >
-                        <option value="static">{t('admin.challengeModal.types.static')}</option>
-                        <option value="question">{t('admin.challengeModal.types.question')}</option>
-                        <option value="dynamic">{t('admin.challengeModal.types.dynamic')}</option>
-                        <option value="pods">{t('admin.challengeModal.types.pods')}</option>
+                        <option value="static">
+                          {t("admin.challengeModal.types.static")}
+                        </option>
+                        <option value="dynamic">
+                          {t("admin.challengeModal.types.dynamic")}
+                        </option>
+                        <option value="pods">
+                          {t("admin.challengeModal.types.pods")}
+                        </option>
                       </select>
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-mono text-neutral-400 mb-1">
-                      {t('admin.challengeModal.labels.description')}
+                      {t("admin.challengeModal.labels.description")}
                     </label>
                     <textarea
                       value={challenge.description}
-                      onChange={(e) => onChange({ ...challenge, description: e.target.value })}
+                      onChange={(e) =>
+                        onChange({ ...challenge, description: e.target.value })
+                      }
                       className={textareaClass}
-                      placeholder={t('admin.challengeModal.placeholders.description')}
+                      placeholder={t(
+                        "admin.challengeModal.placeholders.description",
+                      )}
                     />
                   </div>
                 </div>
               </div>
 
               {/* 如果是动态类型题目, 显示输入 generator */}
-              {challenge.type === 'dynamic' && (
+              {challenge.type === "dynamic" && (
                 <div className="border-t border-neutral-700 pt-4">
                   <h3 className="text-lg font-mono text-neutral-50 mb-3">
-                    {t('admin.challengeModal.sections.generator')}
+                    {t("admin.challengeModal.sections.generator")}
                   </h3>
                   <div>
                     <label className="block text-sm font-mono text-neutral-400 mb-1">
-                      {t('admin.challengeModal.labels.generatorImage')}
+                      {t("admin.challengeModal.labels.generatorImage")}
                     </label>
                     <input
                       type="text"
                       value={challenge.generator_image}
-                      onChange={(e) => onChange({ ...challenge, generator_image: e.target.value })}
+                      onChange={(e) =>
+                        onChange({
+                          ...challenge,
+                          generator_image: e.target.value,
+                        })
+                      }
                       className={inputBaseClass}
-                      placeholder={t('admin.challengeModal.placeholders.generatorImage')}
+                      placeholder={t(
+                        "admin.challengeModal.placeholders.generatorImage",
+                      )}
                       required
                     />
                   </div>
                 </div>
               )}
 
-              {/* flag 设置 - 非pods, question类型才显示 */}
-              {challenge.type !== 'pods' && challenge.type !== 'question' && (
+              {/* flag 设置 - 非pods类型才显示 */}
+              {challenge.type !== "pods" && (
                 <div className="border-t border-neutral-700 pt-4">
                   <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-lg font-mono text-neutral-50">{t('admin.challengeModal.sections.flags')}</h3>
+                    <h3 className="text-lg font-mono text-neutral-50">
+                      {t("admin.challengeModal.sections.flags")}
+                    </h3>
                     <Button
                       variant="primary"
                       size="sm"
@@ -531,25 +579,33 @@ function AdminChallengeModal({
                       icon={<IconPlus size={16} />}
                       onClick={onAddFlag}
                     >
-                      {t('admin.challengeModal.actions.addFlag')}
+                      {t("admin.challengeModal.actions.addFlag")}
                     </Button>
                   </div>
                   <div className="space-y-3">
                     <label className="block text-sm font-mono text-neutral-400 mb-1">
-                      {challenge.type === 'static' ? 'static{}' : 'dynamic{} / uuid{}'}
+                      {challenge.type === "static"
+                        ? "static{}"
+                        : "dynamic{} / uuid{}"}
                     </label>
                     {challenge.flags.map((flag, index) => (
                       <div key={index} className="flex gap-2 items-center">
                         <input
                           type="text"
                           value={
-                            typeof flag === 'string'
+                            typeof flag === "string"
                               ? flag
-                              : flag.value || (challenge.type === 'static' ? 'static{}' : 'uuid{}')
+                              : flag.value ||
+                                (challenge.type === "static"
+                                  ? "static{}"
+                                  : "uuid{}")
                           }
                           onChange={(e) => onFlagChange(index, e.target.value)}
                           className={inputBaseClass}
-                          placeholder={t('admin.challengeModal.placeholders.flag', { index: index + 1 })}
+                          placeholder={t(
+                            "admin.challengeModal.placeholders.flag",
+                            { index: index + 1 },
+                          )}
                         />
                         {challenge.flags.length > 1 && (
                           <Button
@@ -567,72 +623,11 @@ function AdminChallengeModal({
                 </div>
               )}
 
-              {/* 选项设置 - question类型才显示 */}
-              {challenge.type === 'question' && (
-                <div className="border-t border-neutral-700 pt-4">
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-lg font-mono text-neutral-50">{t('admin.challengeModal.sections.options')}</h3>
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      align="icon-left"
-                      icon={<IconPlus size={16} />}
-                      onClick={onAddOption}
-                    >
-                      {t('admin.challengeModal.actions.addOption')}
-                    </Button>
-                  </div>
-                  <div className="space-y-3">
-                    {(challenge.options || []).map((option, index) => (
-                      <div key={option.rand_id || index} className="flex gap-2 items-center">
-                        <div className="flex-1 flex gap-2 items-center">
-                          <input
-                            type="text"
-                            value={option.content || ''}
-                            onChange={(e) => onOptionChange(index, e.target.value)}
-                            className={inputBaseClass}
-                            placeholder={t('admin.challengeModal.placeholders.option', { index: index + 1 })}
-                          />
-                          <Button
-                            variant={option.correct ? 'primary' : 'ghost'}
-                            size="icon"
-                            className={`!bg-transparent ${option.correct ? '!text-green-400 hover:!text-green-300' : '!text-red-400 hover:!text-red-300'}`}
-                            onClick={() => onCorrectOptionChange(index)}
-                            title={
-                              option.correct
-                                ? t('admin.challengeModal.actions.unsetCorrect')
-                                : t('admin.challengeModal.actions.setCorrect')
-                            }
-                          >
-                            {option.correct ? <IconCheck size={18} /> : <IconX size={18} />}
-                          </Button>
-                        </div>
-                        {(challenge.options || []).length > 1 && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="!bg-transparent !text-red-400 hover:!text-red-300"
-                            onClick={() => onRemoveOption(index)}
-                          >
-                            <IconTrash size={18} />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                    {(challenge.options || []).length === 0 && (
-                      <div className="text-center py-4 text-neutral-500 font-mono text-sm">
-                        {t('admin.challengeModal.empty.options')}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
               {/* pods类型的flag说明 */}
-              {challenge.type === 'pods' && (
+              {challenge.type === "pods" && (
                 <div className="border-t border-neutral-700 pt-4">
                   <h3 className="text-lg font-mono text-neutral-50 mb-3">
-                    {t('admin.challengeModal.sections.podsNotice')}
+                    {t("admin.challengeModal.sections.podsNotice")}
                   </h3>
                   <div className="p-3 bg-geek-400/10 border border-geek-400/20 rounded-md">
                     <p className="text-sm text-geek-400 font-mono">
@@ -644,7 +639,7 @@ function AdminChallengeModal({
                           </span>
                         ) : (
                           <br key={index} />
-                        )
+                        ),
                       )}
                     </p>
                   </div>
@@ -652,11 +647,11 @@ function AdminChallengeModal({
               )}
 
               {/* 容器设置 */}
-              {challenge.type === 'pods' && (
+              {challenge.type === "pods" && (
                 <div className="border-t border-neutral-700 pt-4">
                   <div className="flex justify-between items-center mb-3">
                     <h3 className="text-lg font-mono text-neutral-50">
-                      {t('admin.challengeModal.sections.containers')}
+                      {t("admin.challengeModal.sections.containers")}
                     </h3>
                   </div>
 
@@ -665,7 +660,9 @@ function AdminChallengeModal({
                       {/* YAML 配置 */}
                       <div>
                         <div className="flex justify-between items-center mb-1">
-                          <label className="block text-sm font-mono text-neutral-400">docker-compose.yaml</label>
+                          <label className="block text-sm font-mono text-neutral-400">
+                            docker-compose.yaml
+                          </label>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -674,7 +671,7 @@ function AdminChallengeModal({
                             className="!bg-transparent !text-neutral-400 hover:!text-neutral-300 !text-xs"
                             onClick={openFullscreenEditor}
                           >
-                            {t('admin.challengeModal.actions.fullscreen')}
+                            {t("admin.challengeModal.actions.fullscreen")}
                           </Button>
                         </div>
                         <div className="border border-neutral-300/30 rounded-md overflow-hidden">
@@ -695,19 +692,20 @@ function AdminChallengeModal({
                                 scrollBeyondLastLine: false,
                                 scrollbar: {
                                   alwaysConsumeMouseWheel: false,
-                                  vertical: 'auto',
-                                  horizontal: 'auto',
+                                  vertical: "auto",
+                                  horizontal: "auto",
                                 },
-                                lineNumbers: 'on',
+                                lineNumbers: "on",
                                 folding: true,
-                                wordWrap: 'on',
+                                wordWrap: "on",
                                 fontSize: 14,
-                                fontFamily: '"Maple Mono", "Source Han Sans SC", ui-monospace, monospace',
+                                fontFamily:
+                                  '"Maple Mono", "Source Han Sans SC", ui-monospace, monospace',
                                 tabSize: 2,
                                 insertSpaces: true,
-                                renderLineHighlight: 'line',
+                                renderLineHighlight: "line",
                               }}
-                              height={`${19 * (challenge.docker_compose || defaultYAML).split('\n').length}px`}
+                              height={`${19 * (challenge.docker_compose || defaultYAML).split("\n").length}px`}
                               theme="vs-dark"
                             />
                           </Suspense>
@@ -726,7 +724,7 @@ function AdminChallengeModal({
                       <div className="mt-4">
                         <div className="flex justify-between items-center mb-2">
                           <label className="block text-sm font-mono text-neutral-400">
-                            {t('admin.challengeModal.labels.networkPolicy')}
+                            {t("admin.challengeModal.labels.networkPolicy")}
                           </label>
                           <Button
                             variant="ghost"
@@ -736,222 +734,321 @@ function AdminChallengeModal({
                             className="!bg-transparent !text-geek-400 hover:!text-geek-300"
                             onClick={addNetworkPolicy}
                           >
-                            {t('admin.challengeModal.actions.addPolicy')}
+                            {t("admin.challengeModal.actions.addPolicy")}
                           </Button>
                         </div>
 
                         <div className="space-y-4">
-                          {(challenge.network_policies || []).map((policy, policyIndex) => (
-                            <div key={policyIndex} className="border border-neutral-700 rounded-md p-3 bg-black/20">
-                              <div className="flex justify-between items-center mb-3">
-                                <h5 className="text-sm font-mono text-neutral-200">
-                                  {t('admin.challengeModal.labels.policy', { index: policyIndex + 1 })}
-                                </h5>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="!bg-transparent !text-red-400 hover:!text-red-300"
-                                  onClick={() => removeNetworkPolicy(policyIndex)}
-                                >
-                                  <IconTrash size={16} />
-                                </Button>
-                              </div>
-
-                              {/* From 策略 */}
-                              <div className="mb-3">
-                                <div className="flex justify-between items-center mb-2">
-                                  <label className="text-xs font-mono text-neutral-400">
-                                    {t('admin.challengeModal.labels.allowInbound')}
-                                  </label>
+                          {(challenge.network_policies || []).map(
+                            (policy, policyIndex) => (
+                              <div
+                                key={policyIndex}
+                                className="border border-neutral-700 rounded-md p-3 bg-black/20"
+                              >
+                                <div className="flex justify-between items-center mb-3">
+                                  <h5 className="text-sm font-mono text-neutral-200">
+                                    {t("admin.challengeModal.labels.policy", {
+                                      index: policyIndex + 1,
+                                    })}
+                                  </h5>
                                   <Button
                                     variant="ghost"
-                                    size="sm"
-                                    align="icon-left"
-                                    icon={<IconPlus size={12} />}
-                                    className="!bg-transparent !text-geek-400 hover:!text-geek-300 !text-xs"
-                                    onClick={() => addPolicyRule(policyIndex, 'from')}
+                                    size="icon"
+                                    className="!bg-transparent !text-red-400 hover:!text-red-300"
+                                    onClick={() =>
+                                      removeNetworkPolicy(policyIndex)
+                                    }
                                   >
-                                    {t('admin.challengeModal.actions.addRule')}
+                                    <IconTrash size={16} />
                                   </Button>
                                 </div>
 
-                                <div className="space-y-2">
-                                  {(policy.from || []).map((fromRule, fromIndex) => (
-                                    <div key={fromIndex} className="border border-neutral-700/50 p-2 rounded">
-                                      <div className="flex justify-between items-center mb-2">
-                                        <label className="text-xs font-mono text-neutral-400">CIDR</label>
-                                        {policy.from.length > 1 && (
-                                          <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="!bg-transparent !text-red-400 hover:!text-red-300"
-                                            onClick={() => removePolicyRule(policyIndex, 'from', fromIndex)}
-                                          >
-                                            <IconTrash size={12} />
-                                          </Button>
-                                        )}
-                                      </div>
+                                {/* From 策略 */}
+                                <div className="mb-3">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <label className="text-xs font-mono text-neutral-400">
+                                      {t(
+                                        "admin.challengeModal.labels.allowInbound",
+                                      )}
+                                    </label>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      align="icon-left"
+                                      icon={<IconPlus size={12} />}
+                                      className="!bg-transparent !text-geek-400 hover:!text-geek-300 !text-xs"
+                                      onClick={() =>
+                                        addPolicyRule(policyIndex, "from")
+                                      }
+                                    >
+                                      {t(
+                                        "admin.challengeModal.actions.addRule",
+                                      )}
+                                    </Button>
+                                  </div>
 
-                                      <input
-                                        type="text"
-                                        value={fromRule.cidr}
-                                        onChange={(e) =>
-                                          updatePolicyCidr(policyIndex, 'from', fromIndex, e.target.value)
-                                        }
-                                        className="w-full h-8 bg-black/30 border border-neutral-700 rounded px-2 text-neutral-50 text-xs"
-                                        placeholder="192.168.1.0/24"
-                                      />
-
-                                      <div className="mt-2">
-                                        <div className="flex justify-between items-center mb-1">
-                                          <label className="text-xs font-mono text-neutral-400">
-                                            {t('admin.challengeModal.labels.excludeList')}
-                                          </label>
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            align="icon-left"
-                                            icon={<IconPlus size={10} />}
-                                            className="!bg-transparent !text-geek-400 hover:!text-geek-300 !text-xs"
-                                            onClick={() => addPolicyExcept(policyIndex, 'from', fromIndex)}
-                                          >
-                                            {t('admin.challengeModal.actions.addExclude')}
-                                          </Button>
-                                        </div>
-                                        <div className="space-y-1">
-                                          {(fromRule.except || []).map((exceptItem, exceptIndex) => (
-                                            <div key={exceptIndex} className="flex gap-1 items-center">
-                                              <input
-                                                type="text"
-                                                value={exceptItem}
-                                                onChange={(e) =>
-                                                  updatePolicyExcept(
+                                  <div className="space-y-2">
+                                    {(policy.from || []).map(
+                                      (fromRule, fromIndex) => (
+                                        <div
+                                          key={fromIndex}
+                                          className="border border-neutral-700/50 p-2 rounded"
+                                        >
+                                          <div className="flex justify-between items-center mb-2">
+                                            <label className="text-xs font-mono text-neutral-400">
+                                              CIDR
+                                            </label>
+                                            {policy.from.length > 1 && (
+                                              <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="!bg-transparent !text-red-400 hover:!text-red-300"
+                                                onClick={() =>
+                                                  removePolicyRule(
                                                     policyIndex,
-                                                    'from',
+                                                    "from",
                                                     fromIndex,
-                                                    exceptIndex,
-                                                    e.target.value
                                                   )
                                                 }
-                                                className="flex-1 h-6 bg-black/30 border border-neutral-700 rounded px-2 text-neutral-50 text-xs"
-                                                placeholder="192.168.1.1"
-                                              />
+                                              >
+                                                <IconTrash size={12} />
+                                              </Button>
+                                            )}
+                                          </div>
+
+                                          <input
+                                            type="text"
+                                            value={fromRule.cidr}
+                                            onChange={(e) =>
+                                              updatePolicyCidr(
+                                                policyIndex,
+                                                "from",
+                                                fromIndex,
+                                                e.target.value,
+                                              )
+                                            }
+                                            className="w-full h-8 bg-black/30 border border-neutral-700 rounded px-2 text-neutral-50 text-xs"
+                                            placeholder="192.168.1.0/24"
+                                          />
+
+                                          <div className="mt-2">
+                                            <div className="flex justify-between items-center mb-1">
+                                              <label className="text-xs font-mono text-neutral-400">
+                                                {t(
+                                                  "admin.challengeModal.labels.excludeList",
+                                                )}
+                                              </label>
                                               <Button
                                                 variant="ghost"
-                                                size="icon"
-                                                className="!bg-transparent !text-red-400 hover:!text-red-300 !w-6 !h-6"
+                                                size="sm"
+                                                align="icon-left"
+                                                icon={<IconPlus size={10} />}
+                                                className="!bg-transparent !text-geek-400 hover:!text-geek-300 !text-xs"
                                                 onClick={() =>
-                                                  removePolicyExcept(policyIndex, 'from', fromIndex, exceptIndex)
-                                                }
-                                              >
-                                                <IconTrash size={10} />
-                                              </Button>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-
-                              {/* To 策略 */}
-                              <div>
-                                <div className="flex justify-between items-center mb-2">
-                                  <label className="text-xs font-mono text-neutral-400">
-                                    {t('admin.challengeModal.labels.allowOutbound')}
-                                  </label>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    align="icon-left"
-                                    icon={<IconPlus size={12} />}
-                                    className="!bg-transparent !text-geek-400 hover:!text-geek-300 !text-xs"
-                                    onClick={() => addPolicyRule(policyIndex, 'to')}
-                                  >
-                                    {t('admin.challengeModal.actions.addRule')}
-                                  </Button>
-                                </div>
-
-                                <div className="space-y-2">
-                                  {(policy.to || []).map((toRule, toIndex) => (
-                                    <div key={toIndex} className="border border-neutral-700/50 p-2 rounded">
-                                      <div className="flex justify-between items-center mb-2">
-                                        <label className="text-xs font-mono text-neutral-400">CIDR</label>
-                                        {policy.to.length > 1 && (
-                                          <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="!bg-transparent !text-red-400 hover:!text-red-300"
-                                            onClick={() => removePolicyRule(policyIndex, 'to', toIndex)}
-                                          >
-                                            <IconTrash size={12} />
-                                          </Button>
-                                        )}
-                                      </div>
-
-                                      <input
-                                        type="text"
-                                        value={toRule.cidr}
-                                        onChange={(e) => updatePolicyCidr(policyIndex, 'to', toIndex, e.target.value)}
-                                        className="w-full h-8 bg-black/30 border border-neutral-700 rounded px-2 text-neutral-50 text-xs"
-                                        placeholder="0.0.0.0/0"
-                                      />
-
-                                      <div className="mt-2">
-                                        <div className="flex justify-between items-center mb-1">
-                                          <label className="text-xs font-mono text-neutral-400">
-                                            {t('admin.challengeModal.labels.excludeList')}
-                                          </label>
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            align="icon-left"
-                                            icon={<IconPlus size={10} />}
-                                            className="!bg-transparent !text-geek-400 hover:!text-geek-300 !text-xs"
-                                            onClick={() => addPolicyExcept(policyIndex, 'to', toIndex)}
-                                          >
-                                            {t('admin.challengeModal.actions.addExclude')}
-                                          </Button>
-                                        </div>
-                                        <div className="space-y-1">
-                                          {(toRule.except || []).map((exceptItem, exceptIndex) => (
-                                            <div key={exceptIndex} className="flex gap-1 items-center">
-                                              <input
-                                                type="text"
-                                                value={exceptItem}
-                                                onChange={(e) =>
-                                                  updatePolicyExcept(
+                                                  addPolicyExcept(
                                                     policyIndex,
-                                                    'to',
-                                                    toIndex,
-                                                    exceptIndex,
-                                                    e.target.value
+                                                    "from",
+                                                    fromIndex,
                                                   )
                                                 }
-                                                className="flex-1 h-6 bg-black/30 border border-neutral-700 rounded px-2 text-neutral-50 text-xs"
-                                                placeholder="10.0.0.0/8"
-                                              />
+                                              >
+                                                {t(
+                                                  "admin.challengeModal.actions.addExclude",
+                                                )}
+                                              </Button>
+                                            </div>
+                                            <div className="space-y-1">
+                                              {(fromRule.except || []).map(
+                                                (exceptItem, exceptIndex) => (
+                                                  <div
+                                                    key={exceptIndex}
+                                                    className="flex gap-1 items-center"
+                                                  >
+                                                    <input
+                                                      type="text"
+                                                      value={exceptItem}
+                                                      onChange={(e) =>
+                                                        updatePolicyExcept(
+                                                          policyIndex,
+                                                          "from",
+                                                          fromIndex,
+                                                          exceptIndex,
+                                                          e.target.value,
+                                                        )
+                                                      }
+                                                      className="flex-1 h-6 bg-black/30 border border-neutral-700 rounded px-2 text-neutral-50 text-xs"
+                                                      placeholder="192.168.1.1"
+                                                    />
+                                                    <Button
+                                                      variant="ghost"
+                                                      size="icon"
+                                                      className="!bg-transparent !text-red-400 hover:!text-red-300 !w-6 !h-6"
+                                                      onClick={() =>
+                                                        removePolicyExcept(
+                                                          policyIndex,
+                                                          "from",
+                                                          fromIndex,
+                                                          exceptIndex,
+                                                        )
+                                                      }
+                                                    >
+                                                      <IconTrash size={10} />
+                                                    </Button>
+                                                  </div>
+                                                ),
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ),
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* To 策略 */}
+                                <div>
+                                  <div className="flex justify-between items-center mb-2">
+                                    <label className="text-xs font-mono text-neutral-400">
+                                      {t(
+                                        "admin.challengeModal.labels.allowOutbound",
+                                      )}
+                                    </label>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      align="icon-left"
+                                      icon={<IconPlus size={12} />}
+                                      className="!bg-transparent !text-geek-400 hover:!text-geek-300 !text-xs"
+                                      onClick={() =>
+                                        addPolicyRule(policyIndex, "to")
+                                      }
+                                    >
+                                      {t(
+                                        "admin.challengeModal.actions.addRule",
+                                      )}
+                                    </Button>
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    {(policy.to || []).map(
+                                      (toRule, toIndex) => (
+                                        <div
+                                          key={toIndex}
+                                          className="border border-neutral-700/50 p-2 rounded"
+                                        >
+                                          <div className="flex justify-between items-center mb-2">
+                                            <label className="text-xs font-mono text-neutral-400">
+                                              CIDR
+                                            </label>
+                                            {policy.to.length > 1 && (
                                               <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="!bg-transparent !text-red-400 hover:!text-red-300 !w-6 !h-6"
+                                                className="!bg-transparent !text-red-400 hover:!text-red-300"
                                                 onClick={() =>
-                                                  removePolicyExcept(policyIndex, 'to', toIndex, exceptIndex)
+                                                  removePolicyRule(
+                                                    policyIndex,
+                                                    "to",
+                                                    toIndex,
+                                                  )
                                                 }
                                               >
-                                                <IconTrash size={10} />
+                                                <IconTrash size={12} />
+                                              </Button>
+                                            )}
+                                          </div>
+
+                                          <input
+                                            type="text"
+                                            value={toRule.cidr}
+                                            onChange={(e) =>
+                                              updatePolicyCidr(
+                                                policyIndex,
+                                                "to",
+                                                toIndex,
+                                                e.target.value,
+                                              )
+                                            }
+                                            className="w-full h-8 bg-black/30 border border-neutral-700 rounded px-2 text-neutral-50 text-xs"
+                                            placeholder="0.0.0.0/0"
+                                          />
+
+                                          <div className="mt-2">
+                                            <div className="flex justify-between items-center mb-1">
+                                              <label className="text-xs font-mono text-neutral-400">
+                                                {t(
+                                                  "admin.challengeModal.labels.excludeList",
+                                                )}
+                                              </label>
+                                              <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                align="icon-left"
+                                                icon={<IconPlus size={10} />}
+                                                className="!bg-transparent !text-geek-400 hover:!text-geek-300 !text-xs"
+                                                onClick={() =>
+                                                  addPolicyExcept(
+                                                    policyIndex,
+                                                    "to",
+                                                    toIndex,
+                                                  )
+                                                }
+                                              >
+                                                {t(
+                                                  "admin.challengeModal.actions.addExclude",
+                                                )}
                                               </Button>
                                             </div>
-                                          ))}
+                                            <div className="space-y-1">
+                                              {(toRule.except || []).map(
+                                                (exceptItem, exceptIndex) => (
+                                                  <div
+                                                    key={exceptIndex}
+                                                    className="flex gap-1 items-center"
+                                                  >
+                                                    <input
+                                                      type="text"
+                                                      value={exceptItem}
+                                                      onChange={(e) =>
+                                                        updatePolicyExcept(
+                                                          policyIndex,
+                                                          "to",
+                                                          toIndex,
+                                                          exceptIndex,
+                                                          e.target.value,
+                                                        )
+                                                      }
+                                                      className="flex-1 h-6 bg-black/30 border border-neutral-700 rounded px-2 text-neutral-50 text-xs"
+                                                      placeholder="10.0.0.0/8"
+                                                    />
+                                                    <Button
+                                                      variant="ghost"
+                                                      size="icon"
+                                                      className="!bg-transparent !text-red-400 hover:!text-red-300 !w-6 !h-6"
+                                                      onClick={() =>
+                                                        removePolicyExcept(
+                                                          policyIndex,
+                                                          "to",
+                                                          toIndex,
+                                                          exceptIndex,
+                                                        )
+                                                      }
+                                                    >
+                                                      <IconTrash size={10} />
+                                                    </Button>
+                                                  </div>
+                                                ),
+                                              )}
+                                            </div>
+                                          </div>
                                         </div>
-                                      </div>
-                                    </div>
-                                  ))}
+                                      ),
+                                    )}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          ))}
+                            ),
+                          )}
                         </div>
                       </div>
                     </div>
@@ -965,14 +1062,18 @@ function AdminChallengeModal({
         {/* 底部按钮 */}
         <div className="flex justify-end gap-4 p-4 border-t border-neutral-700">
           <Button variant="ghost" size="sm" onClick={onClose}>
-            {t('common.cancel')}
+            {t("common.cancel")}
           </Button>
-          <Button variant="primary" size="sm" onClick={() => onSubmit(challenge)}>
-            {mode === 'add'
-              ? t('admin.challengeModal.actions.add')
-              : mode === 'edit'
-                ? t('common.saveChanges')
-                : t('admin.challengeModal.actions.confirmDelete')}
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => onSubmit(challenge)}
+          >
+            {mode === "add"
+              ? t("admin.challengeModal.actions.add")
+              : mode === "edit"
+                ? t("common.saveChanges")
+                : t("admin.challengeModal.actions.confirmDelete")}
           </Button>
         </div>
       </motion.div>
@@ -988,15 +1089,25 @@ function AdminChallengeModal({
             transition={{ duration: 0.2 }}
           >
             <div className="flex justify-between items-center p-4 border-b border-neutral-700">
-              <h3 className="text-lg font-mono text-neutral-50">{t('admin.challengeModal.fullscreen.title')}</h3>
+              <h3 className="text-lg font-mono text-neutral-50">
+                {t("admin.challengeModal.fullscreen.title")}
+              </h3>
               <div className="flex gap-2">
-                <Button variant="primary" size="sm" onClick={saveFullscreenEditor}>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={saveFullscreenEditor}
+                >
                   <IconDeviceFloppy size={16} className="mr-2" />
-                  {t('admin.challengeModal.fullscreen.save')}
+                  {t("admin.challengeModal.fullscreen.save")}
                 </Button>
-                <Button variant="ghost" size="sm" onClick={closeFullscreenEditor}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={closeFullscreenEditor}
+                >
                   <IconMinimize size={16} className="mr-2" />
-                  {t('admin.challengeModal.fullscreen.exit')}
+                  {t("admin.challengeModal.fullscreen.exit")}
                 </Button>
               </div>
             </div>
@@ -1016,14 +1127,14 @@ function AdminChallengeModal({
                     readOnly: false,
                     minimap: { enabled: true },
                     scrollBeyondLastLine: false,
-                    lineNumbers: 'on',
+                    lineNumbers: "on",
                     folding: true,
-                    wordWrap: 'on',
+                    wordWrap: "on",
                     fontSize: 16,
                     fontFamily: 'Consolas, "Courier New", monospace',
                     tabSize: 2,
                     insertSpaces: true,
-                    renderLineHighlight: 'line',
+                    renderLineHighlight: "line",
                   }}
                   height="calc(95vh - 70px)"
                   theme="vs-dark"
