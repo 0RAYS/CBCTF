@@ -236,13 +236,13 @@ function ContestsManagement() {
         {renderModalContent()}
       </Modal>
 
-	      <input
-		type="file"
-		ref={fileInputRef}
-		className="hidden"
-		accept="image/png,image/jpeg,image/jpg,image/gif"
-		onChange={handlePictureChange}
-	      />
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept="image/png,image/jpeg,image/jpg,image/gif"
+        onChange={handlePictureChange}
+      />
     </>
   );
 }

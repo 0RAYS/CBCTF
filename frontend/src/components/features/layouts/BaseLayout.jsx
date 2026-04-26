@@ -14,6 +14,7 @@ function BaseLayout({
   logo = '',
   pictureSrc = '',
   userName = '',
+  backgroundImage = '',
 }) {
   const { t } = useTranslation();
   const { footerCopyright } = useBranding();
@@ -22,14 +23,21 @@ function BaseLayout({
 
   return (
     <div className="h-full w-full overflow-x-hidden">
-      {/* Skip-to-content — keyboard accessibility */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-neutral-800 focus:border focus:border-geek-400 focus:rounded-md focus:text-geek-400 focus:font-mono focus:text-sm focus:outline-none"
-      >
-        Skip to main content
-      </a>
-      <div className="fixed top-0 left-0 w-full h-full bg-neutral-900">
+      <div className="fixed inset-0 bg-neutral-900">
+        {backgroundImage && (
+          <>
+            <div
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-45"
+              style={{ backgroundImage: `url(${backgroundImage})` }}
+              aria-hidden="true"
+            />
+            <div className="absolute inset-0 bg-neutral-900/65 backdrop-blur-[2px]" aria-hidden="true" />
+            <div
+              className="absolute inset-0 bg-gradient-to-b from-neutral-900/45 via-neutral-900/55 to-neutral-900/90"
+              aria-hidden="true"
+            />
+          </>
+        )}
         {/* <Squares
           speed={0.03}
           hoverFillColor="#434343"

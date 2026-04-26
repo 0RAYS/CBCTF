@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
-import { toast } from "../../../utils/toast";
-import { downloadBlobResponse } from "../../../utils/fileDownload";
+import { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
+import { toast } from '../../../utils/toast';
+import { downloadBlobResponse } from '../../../utils/fileDownload';
 import {
   getContestVictims,
   stopContestVictims,
@@ -9,21 +9,14 @@ import {
   getContestTeams,
   getContestChallenges,
   downloadContainerTraffic,
-} from "../../../api/admin/contest";
-import { getUserList } from "../../../api/admin/user";
-import { Modal } from "../../../components/common";
-import TrafficGraphModal from "../../../components/features/Admin/Contests/TrafficGraphModal";
-import ModalButton from "../../../components/common/ModalButton";
-import {
-  Button,
-  Pagination,
-  Card,
-  EmptyState,
-  StatCard,
-  Chip,
-} from "../../../components/common";
-import { motion } from "motion/react";
-import { useTranslation } from "react-i18next";
+} from '../../../api/admin/contest';
+import { getUserList } from '../../../api/admin/user';
+import { Modal } from '../../../components/common';
+import TrafficGraphModal from '../../../components/features/Admin/Contests/TrafficGraphModal';
+import ModalButton from '../../../components/common/ModalButton';
+import { Button, Pagination, Card, EmptyState, StatCard, Chip } from '../../../components/common';
+import { motion } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import {
   IconPlayerPlay,
   IconBan,
@@ -41,28 +34,23 @@ import {
   IconChevronRight,
   IconDownload,
   IconGraph,
-} from "@tabler/icons-react";
-import {
-  getChallengeCategoryChipClass,
-  getChallengeTypeChipClass,
-} from "../../../config/challengeChips";
+} from '@tabler/icons-react';
+import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../config/challengeChips';
 
 const VICTIM_STATUS_STYLES = {
-  waiting: "bg-yellow-400/10 text-yellow-400 border-yellow-400/30",
-  pending: "bg-geek-400/10 text-geek-400 border-geek-400/30",
-  terminating: "bg-orange-400/10 text-orange-300 border-orange-400/30",
-  running: "bg-green-400/10 text-green-400 border-green-400/30",
-  stopped: "bg-neutral-500/10 text-neutral-400 border-neutral-500/30",
+  waiting: 'bg-yellow-400/10 text-yellow-400 border-yellow-400/30',
+  pending: 'bg-geek-400/10 text-geek-400 border-geek-400/30',
+  terminating: 'bg-orange-400/10 text-orange-300 border-orange-400/30',
+  running: 'bg-green-400/10 text-green-400 border-green-400/30',
+  stopped: 'bg-neutral-500/10 text-neutral-400 border-neutral-500/30',
 };
 
-const isVictimStoppable = (victim) => victim?.status === "running";
+const isVictimStoppable = (victim) => victim?.status === 'running';
 
 function VictimStatusBadge({ status, t }) {
   const style = VICTIM_STATUS_STYLES[status] ?? VICTIM_STATUS_STYLES.stopped;
   return (
-    <span
-      className={`inline-block px-2 py-0.5 rounded border text-xs font-mono ${style}`}
-    >
+    <span className={`inline-block px-2 py-0.5 rounded border text-xs font-mono ${style}`}>
       {t(`admin.contests.containers.statusBadge.${status}`, status)}
     </span>
   );
@@ -76,9 +64,9 @@ function ContestContainers() {
   const [runningCount, setRunningCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState({
-    user_id: "",
-    team_id: "",
-    challenge_id: "",
+    user_id: '',
+    team_id: '',
+    challenge_id: '',
     limit: 20,
     offset: 0,
   });
@@ -108,9 +96,9 @@ function ContestContainers() {
   const [challenges, setChallenges] = useState([]);
   const [detailChallenges, setDetailChallenges] = useState([]);
   const [selectedChallenges, setSelectedChallenges] = useState([]);
-  const [challengeSearch, setChallengeSearch] = useState("");
+  const [challengeSearch, setChallengeSearch] = useState('');
   const [randomTeamPercentage, setRandomTeamPercentage] = useState(50); // 随机选择队伍的百分比
-  const [victimDurationInput, setVictimDurationInput] = useState("7200");
+  const [victimDurationInput, setVictimDurationInput] = useState('7200');
 
   const challengePageSize = 20;
   const [challengePage, setChallengePage] = useState(1);
@@ -134,11 +122,7 @@ function ContestContainers() {
   const totalTeamCount = teamTotal;
 
   // 获取容器列表
-  const fetchContainers = async (
-    page = currentPage,
-    deleted = showDeleted,
-    activeFilters = filtersRef.current,
-  ) => {
+  const fetchContainers = async (page = currentPage, deleted = showDeleted, activeFilters = filtersRef.current) => {
     try {
       const params = {
         ...activeFilters,
@@ -147,7 +131,7 @@ function ContestContainers() {
         ...(deleted && { deleted: true }),
       };
       Object.keys(params).forEach((key) => {
-        if (params[key] === "") delete params[key];
+        if (params[key] === '') delete params[key];
       });
 
       const response = await getContestVictims(parseInt(contestId), params);
@@ -165,9 +149,7 @@ function ContestContainers() {
       }
     } catch (error) {
       toast.danger({
-        description:
-          error.message ||
-          t("admin.contests.containers.toast.fetchContainersFailed"),
+        description: error.message || t('admin.contests.containers.toast.fetchContainersFailed'),
       });
     }
   };
@@ -192,24 +174,19 @@ function ContestContainers() {
       }
     } catch (error) {
       toast.danger({
-        description:
-          error.message ||
-          t("admin.contests.containers.toast.fetchTeamsFailed"),
+        description: error.message || t('admin.contests.containers.toast.fetchTeamsFailed'),
       });
     }
   };
 
-  const fetchChallenges = async (
-    page = challengePage,
-    query = challengeSearch,
-  ) => {
+  const fetchChallenges = async (page = challengePage, query = challengeSearch) => {
     try {
       const params = {
-        type: "pods",
+        type: 'pods',
         limit: challengePageSize,
         offset: (page - 1) * challengePageSize,
       };
-      if (query.trim() !== "") {
+      if (query.trim() !== '') {
         params.name = query.trim();
       }
       const response = await getContestChallenges(parseInt(contestId), params);
@@ -219,24 +196,19 @@ function ContestContainers() {
       }
     } catch (error) {
       toast.danger({
-        description:
-          error.message ||
-          t("admin.contests.containers.toast.fetchChallengesFailed"),
+        description: error.message || t('admin.contests.containers.toast.fetchChallengesFailed'),
       });
     }
   };
 
-  const fetchDetailChallenges = async (
-    page = detailChallengePage,
-    query = challengeSearch,
-  ) => {
+  const fetchDetailChallenges = async (page = detailChallengePage, query = challengeSearch) => {
     try {
       const params = {
-        type: "pods",
+        type: 'pods',
         limit: challengePageSize,
         offset: (page - 1) * challengePageSize,
       };
-      if (query.trim() !== "") {
+      if (query.trim() !== '') {
         params.name = query.trim();
       }
       const response = await getContestChallenges(parseInt(contestId), params);
@@ -246,9 +218,7 @@ function ContestContainers() {
       }
     } catch (error) {
       toast.danger({
-        description:
-          error.message ||
-          t("admin.contests.containers.toast.fetchChallengesFailed"),
+        description: error.message || t('admin.contests.containers.toast.fetchChallengesFailed'),
       });
     }
   };
@@ -302,13 +272,8 @@ function ContestContainers() {
   useEffect(() => {
     if (refreshInterval <= 0) return;
     const id = setInterval(
-      () =>
-        fetchContainers(
-          currentPageRef.current,
-          showDeletedRef.current,
-          filtersRef.current,
-        ),
-      refreshInterval * 1000,
+      () => fetchContainers(currentPageRef.current, showDeletedRef.current, filtersRef.current),
+      refreshInterval * 1000
     );
     return () => clearInterval(id);
   }, [refreshInterval]);
@@ -324,25 +289,17 @@ function ContestContainers() {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      const isOutsideUsers =
-        usersSearchRef.current &&
-        !usersSearchRef.current.contains(event.target);
-      const isOutsideTeams =
-        teamsSearchRef.current &&
-        !teamsSearchRef.current.contains(event.target);
-      const isOutsideChallenges =
-        challengesSearchRef.current &&
-        !challengesSearchRef.current.contains(event.target);
+      const isOutsideUsers = usersSearchRef.current && !usersSearchRef.current.contains(event.target);
+      const isOutsideTeams = teamsSearchRef.current && !teamsSearchRef.current.contains(event.target);
+      const isOutsideChallenges = challengesSearchRef.current && !challengesSearchRef.current.contains(event.target);
 
-      if (isOutsideUsers && searchResults.users.length > 0)
-        setSearchResults((prev) => ({ ...prev, users: [] }));
-      if (isOutsideTeams && searchResults.teams.length > 0)
-        setSearchResults((prev) => ({ ...prev, teams: [] }));
+      if (isOutsideUsers && searchResults.users.length > 0) setSearchResults((prev) => ({ ...prev, users: [] }));
+      if (isOutsideTeams && searchResults.teams.length > 0) setSearchResults((prev) => ({ ...prev, teams: [] }));
       if (isOutsideChallenges && searchResults.challenges.length > 0)
         setSearchResults((prev) => ({ ...prev, challenges: [] }));
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [searchResults]);
 
   const handleFilterChange = (key, value) => {
@@ -351,14 +308,14 @@ function ContestContainers() {
   };
 
   const handleSearch = async (model, name, setResults, setLoading) => {
-    if (!name || name.trim() === "") {
+    if (!name || name.trim() === '') {
       setResults([]);
       return;
     }
     setLoading(true);
     try {
       const keyword = name.trim();
-      if (model === "User") {
+      if (model === 'User') {
         const response = await getUserList({
           name: keyword,
           limit: 10,
@@ -367,7 +324,7 @@ function ContestContainers() {
         setResults(response.code === 200 ? response.data.users || [] : []);
         return;
       }
-      if (model === "Team") {
+      if (model === 'Team') {
         const response = await getContestTeams(parseInt(contestId, 10), {
           name: keyword,
           limit: 10,
@@ -376,10 +333,10 @@ function ContestContainers() {
         setResults(response.code === 200 ? response.data.teams || [] : []);
         return;
       }
-      if (model === "Challenge") {
+      if (model === 'Challenge') {
         const response = await getContestChallenges(parseInt(contestId, 10), {
           name: keyword,
-          type: "pods",
+          type: 'pods',
           limit: 10,
           offset: 0,
         });
@@ -388,9 +345,7 @@ function ContestContainers() {
           return;
         }
         const results = (response.data.challenges || [])
-          .filter((challenge) =>
-            challenge.name?.toLowerCase().includes(keyword.toLowerCase()),
-          )
+          .filter((challenge) => challenge.name?.toLowerCase().includes(keyword.toLowerCase()))
           .slice(0, 10);
         setResults(results);
         return;
@@ -398,8 +353,7 @@ function ContestContainers() {
       setResults([]);
     } catch (error) {
       toast.danger({
-        description:
-          error.message || t("admin.contests.containers.toast.searchFailed"),
+        description: error.message || t('admin.contests.containers.toast.searchFailed'),
       });
       setResults([]);
     } finally {
@@ -417,9 +371,9 @@ function ContestContainers() {
 
   const handleResetFilters = () => {
     setFilters({
-      user_id: "",
-      team_id: "",
-      challenge_id: "",
+      user_id: '',
+      team_id: '',
+      challenge_id: '',
       limit: 20,
       offset: 0,
     });
@@ -459,74 +413,66 @@ function ContestContainers() {
     }
   };
 
-  const isTeamRatioValid =
-    randomTeamPercentage > 0 && randomTeamPercentage < 100;
+  const isTeamRatioValid = randomTeamPercentage > 0 && randomTeamPercentage < 100;
   const victimDurationSeconds = Number.parseInt(victimDurationInput, 10) || 0;
   const isVictimDurationValid = victimDurationSeconds > 0;
   const selectedTeamCount =
-    totalTeamCount > 0 && isTeamRatioValid
-      ? Math.max(1, Math.floor((totalTeamCount * randomTeamPercentage) / 100))
-      : 0;
+    totalTeamCount > 0 && isTeamRatioValid ? Math.max(1, Math.floor((totalTeamCount * randomTeamPercentage) / 100)) : 0;
   const typeLabels = {
-    static: t("admin.challenge.types.static"),
-    dynamic: t("admin.challenge.types.dynamic"),
-    pods: t("admin.challenge.types.pods"),
+    static: t('admin.challenge.types.static'),
+    dynamic: t('admin.challenge.types.dynamic'),
+    pods: t('admin.challenge.types.pods'),
   };
 
   const formatVictimDuration = (seconds) => {
     if (!seconds || seconds <= 0) {
-      return t("admin.contests.containers.quickActions.invalidDuration");
+      return t('admin.contests.containers.quickActions.invalidDuration');
     }
     if (seconds < 60) {
-      return t("utils.time.units.second", { count: seconds });
+      return t('utils.time.units.second', { count: seconds });
     }
     if (seconds < 3600) {
       const minutes = Math.floor(seconds / 60);
       const remainingSeconds = seconds % 60;
       return remainingSeconds > 0
-        ? `${t("utils.time.units.minute", { count: minutes })}${t("utils.time.units.second", { count: remainingSeconds })}`
-        : t("utils.time.units.minute", { count: minutes });
+        ? `${t('utils.time.units.minute', { count: minutes })}${t('utils.time.units.second', { count: remainingSeconds })}`
+        : t('utils.time.units.minute', { count: minutes });
     }
     if (seconds < 86400) {
       const hours = Math.floor(seconds / 3600);
       const minutes = Math.floor((seconds % 3600) / 60);
       return minutes > 0
-        ? `${t("utils.time.units.hour", { count: hours })}${t("utils.time.units.minute", { count: minutes })}`
-        : t("utils.time.units.hour", { count: hours });
+        ? `${t('utils.time.units.hour', { count: hours })}${t('utils.time.units.minute', { count: minutes })}`
+        : t('utils.time.units.hour', { count: hours });
     }
     const days = Math.floor(seconds / 86400);
     const hours = Math.floor((seconds % 86400) / 3600);
     return hours > 0
-      ? `${t("utils.time.units.day", { count: days })}${t("utils.time.units.hour", { count: hours })}`
-      : t("utils.time.units.day", { count: days });
+      ? `${t('utils.time.units.day', { count: days })}${t('utils.time.units.hour', { count: hours })}`
+      : t('utils.time.units.day', { count: days });
   };
 
   // 停止容器
   const handleStopContainers = async () => {
     if (selectedContainers.length === 0) {
       toast.warning({
-        description: t("admin.contests.containers.toast.selectStopRequired"),
+        description: t('admin.contests.containers.toast.selectStopRequired'),
       });
       return;
     }
 
     try {
-      const response = await stopContestVictims(
-        parseInt(contestId),
-        selectedContainers,
-      );
+      const response = await stopContestVictims(parseInt(contestId), selectedContainers);
       if (response.code === 200) {
         toast.success({
-          description: t("admin.contests.containers.toast.taskDispatched"),
+          description: t('admin.contests.containers.toast.taskDispatched'),
         });
         setSelectedContainers([]);
         fetchContainers();
       }
     } catch (error) {
       toast.danger({
-        description:
-          error.message ||
-          t("admin.contests.containers.toast.taskDispatchFailed"),
+        description: error.message || t('admin.contests.containers.toast.taskDispatchFailed'),
       });
     }
     setIsStopModalOpen(false);
@@ -536,13 +482,13 @@ function ContestContainers() {
   const handleStartContainers = async () => {
     if (!isVictimDurationValid) {
       toast.warning({
-        description: t("admin.contests.containers.toast.invalidDuration"),
+        description: t('admin.contests.containers.toast.invalidDuration'),
       });
       return;
     }
     if (selectedChallenges.length === 0 || selectedTeamCount === 0) {
       toast.warning({
-        description: t("admin.contests.containers.toast.selectStartRequired"),
+        description: t('admin.contests.containers.toast.selectStartRequired'),
       });
       return;
     }
@@ -552,20 +498,18 @@ function ContestContainers() {
         parseInt(contestId),
         selectedChallenges,
         randomTeamPercentage / 100,
-        victimDurationSeconds,
+        victimDurationSeconds
       );
       if (response.code === 200) {
         toast.success({
-          description: t("admin.contests.containers.toast.taskDispatched"),
+          description: t('admin.contests.containers.toast.taskDispatched'),
         });
         setSelectedChallenges([]);
         fetchContainers();
       }
     } catch (error) {
       toast.danger({
-        description:
-          error.message ||
-          t("admin.contests.containers.toast.taskDispatchFailed"),
+        description: error.message || t('admin.contests.containers.toast.taskDispatchFailed'),
       });
     }
     setIsStartModalOpen(false);
@@ -573,21 +517,20 @@ function ContestContainers() {
 
   // 格式化时间
   const formatTime = (timeStr) => {
-    if (!timeStr) return "-";
-    return new Date(timeStr).toLocaleString(i18n.language || "en-US", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
+    if (!timeStr) return '-';
+    return new Date(timeStr).toLocaleString(i18n.language || 'en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
     });
   };
 
   // 格式化剩余时间
   const formatRemaining = (remaining) => {
-    if (!remaining || remaining <= 0)
-      return t("admin.contests.containers.status.stopped");
+    if (!remaining || remaining <= 0) return t('admin.contests.containers.status.stopped');
     const hours = Math.floor(remaining / 3600);
     const minutes = Math.floor((remaining % 3600) / 60);
     const seconds = Math.floor(remaining % 60);
@@ -597,9 +540,9 @@ function ContestContainers() {
   // 获取容器状态样式
   const getContainerStatusStyle = (remaining) => {
     if (!remaining || remaining <= 0) {
-      return "text-red-400 bg-red-400/10 border-red-400/30";
+      return 'text-red-400 bg-red-400/10 border-red-400/30';
     }
-    return "text-green-400 bg-green-400/10 border-green-400/30";
+    return 'text-green-400 bg-green-400/10 border-green-400/30';
   };
 
   const handleViewTrafficGraph = (container) => {
@@ -608,19 +551,13 @@ function ContestContainers() {
 
   const handleDownloadTraffic = async (container) => {
     try {
-      const response = await downloadContainerTraffic(
-        parseInt(contestId, 10),
-        container.team_id,
-        container.id,
-      );
-      if (response.headers?.["file"] === "true") {
+      const response = await downloadContainerTraffic(parseInt(contestId, 10), container.team_id, container.id);
+      if (response.headers?.['file'] === 'true') {
         downloadBlobResponse(response, `traffic_${container.id}.zip`);
       }
     } catch (error) {
       toast.danger({
-        description:
-          error.message ||
-          t("admin.contests.teamContainers.toast.downloadTrafficFailed"),
+        description: error.message || t('admin.contests.teamContainers.toast.downloadTrafficFailed'),
       });
     }
   };
@@ -663,21 +600,19 @@ function ContestContainers() {
         {/* 页面标题和统计信息 */}
         <div className="mb-8">
           <div className="mb-4">
-            <p className="text-neutral-400 font-mono">
-              {t("admin.contests.containers.page.subtitle")}
-            </p>
+            <p className="text-neutral-400 font-mono">{t('admin.contests.containers.page.subtitle')}</p>
           </div>
 
           {/* 统计卡片 */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <StatCard
-              title={t("admin.contests.containers.stats.total")}
+              title={t('admin.contests.containers.stats.total')}
               value={stats.totalContainers}
               valueColor="text-neutral-50"
               icon={<IconServer size={20} className="text-geek-400" />}
             />
             <StatCard
-              title={t("admin.contests.containers.stats.running")}
+              title={t('admin.contests.containers.stats.running')}
               value={stats.runningContainers}
               valueColor="text-green-400"
               icon={<IconPlayerPlay size={20} className="text-green-400" />}
@@ -685,7 +620,7 @@ function ContestContainers() {
               delay={0.1}
             />
             <StatCard
-              title={t("admin.contests.containers.stats.stopped")}
+              title={t('admin.contests.containers.stats.stopped')}
               value={stats.stoppedContainers}
               valueColor="text-red-400"
               icon={<IconBan size={20} className="text-red-400" />}
@@ -706,7 +641,7 @@ function ContestContainers() {
             <div className="flex items-center gap-2 mb-3">
               <IconPlayerPlay size={18} className="text-neutral-400" />
               <h3 className="text-base font-mono text-neutral-50">
-                {t("admin.contests.containers.quickActions.title")}
+                {t('admin.contests.containers.quickActions.title')}
               </h3>
             </div>
 
@@ -717,17 +652,12 @@ function ContestContainers() {
                   <label className="text-xs font-mono text-neutral-400 flex items-center gap-1">
                     <IconUsers size={14} />
                     <span className="text-xs font-mono text-neutral-400">
-                      {t("admin.contests.containers.quickActions.randomTeams")}
+                      {t('admin.contests.containers.quickActions.randomTeams')}
                     </span>
-                    <span className="text-xs font-mono text-geek-400">
-                      {randomTeamPercentage}%
-                    </span>
+                    <span className="text-xs font-mono text-geek-400">{randomTeamPercentage}%</span>
                   </label>
                   <span className="text-xs font-mono text-neutral-500">
-                    {t(
-                      "admin.contests.containers.quickActions.estimatedTeams",
-                      { count: selectedTeamCount },
-                    )}
+                    {t('admin.contests.containers.quickActions.estimatedTeams', { count: selectedTeamCount })}
                   </span>
                 </div>
 
@@ -738,9 +668,7 @@ function ContestContainers() {
                       min="0"
                       max="100"
                       value={randomTeamPercentage}
-                      onChange={(e) =>
-                        setRandomTeamPercentage(parseInt(e.target.value))
-                      }
+                      onChange={(e) => setRandomTeamPercentage(parseInt(e.target.value))}
                       className="w-full h-1 bg-neutral-700 rounded-lg appearance-none cursor-pointer slider"
                       style={{
                         background: `linear-gradient(to right, #597ef7 0%, #597ef7 ${randomTeamPercentage}%, #374151 ${randomTeamPercentage}%, #374151 100%)`,
@@ -751,10 +679,7 @@ function ContestContainers() {
 
                 <div className="border border-neutral-300/30 rounded-md bg-black/10 p-3">
                   <p className="text-xs font-mono text-neutral-400">
-                    {t(
-                      "admin.contests.containers.quickActions.teamSelectionHint",
-                      { total: totalTeamCount },
-                    )}
+                    {t('admin.contests.containers.quickActions.teamSelectionHint', { total: totalTeamCount })}
                   </p>
                 </div>
               </div>
@@ -763,15 +688,12 @@ function ContestContainers() {
                 <div className="flex justify-between items-center gap-3 mb-2">
                   <label className="text-xs font-mono text-neutral-400 flex items-center gap-1">
                     <IconClockPlay size={14} />
-                    <span>{t("common.duration")}</span>
+                    <span>{t('common.duration')}</span>
                   </label>
                   <span className="text-xs font-mono text-geek-400">
-                    {t(
-                      "admin.contests.containers.quickActions.durationPreview",
-                      {
-                        value: formatVictimDuration(victimDurationSeconds),
-                      },
-                    )}
+                    {t('admin.contests.containers.quickActions.durationPreview', {
+                      value: formatVictimDuration(victimDurationSeconds),
+                    })}
                   </span>
                 </div>
 
@@ -785,12 +707,12 @@ function ContestContainers() {
                     className="w-full h-9 px-3 bg-black/20 border border-neutral-300/30 rounded-md text-sm text-neutral-50 placeholder-neutral-500 focus:outline-none focus:border-geek-400 transition-all duration-200"
                   />
                   <span className="text-xs font-mono text-neutral-400 whitespace-nowrap">
-                    {t("admin.contests.containers.quickActions.durationUnit")}
+                    {t('admin.contests.containers.quickActions.durationUnit')}
                   </span>
                 </div>
 
                 <p className="mt-2 text-xs font-mono text-neutral-400">
-                  {t("admin.contests.containers.quickActions.durationHint")}
+                  {t('admin.contests.containers.quickActions.durationHint')}
                 </p>
               </div>
 
@@ -799,31 +721,22 @@ function ContestContainers() {
                 <div className="flex justify-between items-center mb-2">
                   <label className="text-xs font-mono text-neutral-400 flex items-center gap-1">
                     <IconTarget size={14} />
-                    {t(
-                      "admin.contests.containers.quickActions.selectChallenges",
-                    )}
+                    {t('admin.contests.containers.quickActions.selectChallenges')}
                   </label>
                   <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={openChallengeDetails}
-                      className="!text-xs !h-5 !px-1"
-                    >
+                    <Button variant="ghost" size="sm" onClick={openChallengeDetails} className="!text-xs !h-5 !px-1">
                       <span className="inline-flex items-center gap-1">
                         <IconArrowsMaximize size={12} />
-                        {t("admin.contests.containers.quickActions.expand")}
+                        {t('admin.contests.containers.quickActions.expand')}
                       </span>
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() =>
-                        setSelectedChallenges(challenges.map((c) => c.id))
-                      }
+                      onClick={() => setSelectedChallenges(challenges.map((c) => c.id))}
                       className="!text-xs !h-5 !px-1"
                     >
-                      {t("admin.contests.containers.quickActions.selectAll")}
+                      {t('admin.contests.containers.quickActions.selectAll')}
                     </Button>
                     <Button
                       variant="ghost"
@@ -831,7 +744,7 @@ function ContestContainers() {
                       onClick={() => setSelectedChallenges([])}
                       className="!text-xs !h-5 !px-1"
                     >
-                      {t("admin.contests.containers.quickActions.clear")}
+                      {t('admin.contests.containers.quickActions.clear')}
                     </Button>
                   </div>
                 </div>
@@ -845,32 +758,20 @@ function ContestContainers() {
                       <input
                         type="text"
                         value={challengeSearch}
-                        onChange={(e) =>
-                          handleChallengeSearchChange(e.target.value)
-                        }
-                        placeholder={t(
-                          "admin.contests.containers.quickActions.searchPlaceholder",
-                        )}
+                        onChange={(e) => handleChallengeSearchChange(e.target.value)}
+                        placeholder={t('admin.contests.containers.quickActions.searchPlaceholder')}
                         className="w-full h-7 pl-7 pr-2 bg-black/20 border border-neutral-300/30 rounded-md text-xs text-neutral-50 placeholder-neutral-500 focus:outline-none focus:border-geek-400 transition-all duration-200"
                       />
                     </div>
                   </div>
                   {challenges.length > 0 ? (
                     challenges.map((challenge) => (
-                      <div
-                        key={challenge.id}
-                        className="flex items-center p-1 hover:bg-black/30 transition-colors"
-                      >
+                      <div key={challenge.id} className="flex items-center p-1 hover:bg-black/30 transition-colors">
                         <input
                           type="checkbox"
                           id={`challenge-${challenge.id}`}
                           checked={selectedChallenges.includes(challenge.id)}
-                          onChange={(e) =>
-                            updateChallengeSelection(
-                              challenge.id,
-                              e.target.checked,
-                            )
-                          }
+                          onChange={(e) => updateChallengeSelection(challenge.id, e.target.checked)}
                           className="w-3 h-3 rounded border-neutral-300/30 text-geek-400
                               focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
                         />
@@ -884,36 +785,32 @@ function ContestContainers() {
                     ))
                   ) : (
                     <div className="p-3 text-xs font-mono text-neutral-500">
-                      {t("admin.contests.containers.quickActions.noChallenges")}
+                      {t('admin.contests.containers.quickActions.noChallenges')}
                     </div>
                   )}
                 </div>
                 {Math.ceil(challengeTotal / challengePageSize) > 1 && (
                   <div className="flex items-center justify-between gap-2 mt-2 px-1">
                     <span className="text-[11px] font-mono text-geek-400/80 whitespace-nowrap">
-                      {t("admin.contests.containers.quickActions.pageHint")}
+                      {t('admin.contests.containers.quickActions.pageHint')}
                     </span>
                     <div className="flex items-center gap-2 ml-auto">
                       <button
                         disabled={challengePage === 1}
                         onClick={() => setChallengePage((p) => p - 1)}
                         className="inline-flex items-center justify-center w-7 h-7 rounded-md border border-geek-400/40 bg-geek-400/10 text-geek-300 hover:bg-geek-400/20 hover:text-geek-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                        aria-label={t("common.previous")}
+                        aria-label={t('common.previous')}
                       >
                         <IconChevronLeft size={15} />
                       </button>
                       <span className="text-xs font-mono text-neutral-300 min-w-[56px] text-center">
-                        {challengePage} /{" "}
-                        {Math.ceil(challengeTotal / challengePageSize)}
+                        {challengePage} / {Math.ceil(challengeTotal / challengePageSize)}
                       </span>
                       <button
-                        disabled={
-                          challengePage >=
-                          Math.ceil(challengeTotal / challengePageSize)
-                        }
+                        disabled={challengePage >= Math.ceil(challengeTotal / challengePageSize)}
                         onClick={() => setChallengePage((p) => p + 1)}
                         className="inline-flex items-center justify-center w-7 h-7 rounded-md border border-geek-400/40 bg-geek-400/10 text-geek-300 hover:bg-geek-400/20 hover:text-geek-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                        aria-label={t("common.next")}
+                        aria-label={t('common.next')}
                       >
                         <IconChevronRight size={15} />
                       </button>
@@ -931,14 +828,10 @@ function ContestContainers() {
                 align="icon-left"
                 icon={<IconPlayerPlay size={14} />}
                 onClick={() => setIsStartModalOpen(true)}
-                disabled={
-                  selectedChallenges.length === 0 ||
-                  selectedTeamCount === 0 ||
-                  !isVictimDurationValid
-                }
+                disabled={selectedChallenges.length === 0 || selectedTeamCount === 0 || !isVictimDurationValid}
                 className="!text-xs !h-7 !px-3"
               >
-                {t("admin.contests.containers.quickActions.startButton", {
+                {t('admin.contests.containers.quickActions.startButton', {
                   challenges: selectedChallenges.length,
                   teams: selectedTeamCount,
                 })}
@@ -947,17 +840,12 @@ function ContestContainers() {
           </div>
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <div className="border border-neutral-600 rounded-md bg-neutral-900 p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <IconFilter size={18} className="text-neutral-400" />
-                <h3 className="text-base font-mono text-neutral-50">
-                  {t("admin.contests.containers.filters.title")}
-                </h3>
+                <h3 className="text-base font-mono text-neutral-50">{t('admin.contests.containers.filters.title')}</h3>
               </div>
               <Button
                 variant="ghost"
@@ -965,14 +853,14 @@ function ContestContainers() {
                 onClick={handleResetFilters}
                 className="!text-neutral-400 hover:!text-neutral-300 !text-xs !h-6 !px-2"
               >
-                {t("admin.contests.containers.filters.reset")}
+                {t('admin.contests.containers.filters.reset')}
               </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="relative" ref={usersSearchRef}>
                 <label className="block text-xs font-mono text-neutral-400 mb-1">
-                  {t("admin.contests.containers.filters.userName")}
+                  {t('admin.contests.containers.filters.userName')}
                 </label>
                 <div className="relative">
                   <IconSearch
@@ -981,13 +869,11 @@ function ContestContainers() {
                   />
                   <input
                     type="text"
-                    placeholder={t(
-                      "admin.contests.containers.filters.searchUserPlaceholder",
-                    )}
+                    placeholder={t('admin.contests.containers.filters.searchUserPlaceholder')}
                     onChange={(e) => {
                       const value = e.target.value;
                       debouncedSearch(
-                        "User",
+                        'User',
                         value,
                         (results) =>
                           setSearchResults((prev) => ({
@@ -998,7 +884,7 @@ function ContestContainers() {
                           setSearchLoading((prev) => ({
                             ...prev,
                             users: loading,
-                          })),
+                          }))
                       );
                     }}
                     className="w-full h-8 pl-7 pr-2 bg-black/20 border border-neutral-300/30 rounded-md text-xs text-neutral-50 placeholder-neutral-500 focus:outline-none focus:border-geek-400 focus:shadow-focus transition-all duration-200"
@@ -1016,13 +902,13 @@ function ContestContainers() {
                         key={user.id}
                         className="dropdown-option text-xs"
                         onClick={() => {
-                          handleFilterChange("user_id", user.id.toString());
+                          handleFilterChange('user_id', user.id.toString());
                           setSearchResults((prev) => ({ ...prev, users: [] }));
                         }}
                       >
                         {user.name ||
                           user.username ||
-                          t("admin.contests.containers.filters.userFallback", {
+                          t('admin.contests.containers.filters.userFallback', {
                             id: user.id,
                           })}
                       </div>
@@ -1033,7 +919,7 @@ function ContestContainers() {
 
               <div className="relative" ref={teamsSearchRef}>
                 <label className="block text-xs font-mono text-neutral-400 mb-1">
-                  {t("admin.contests.containers.filters.teamName")}
+                  {t('admin.contests.containers.filters.teamName')}
                 </label>
                 <div className="relative">
                   <IconUsers
@@ -1042,13 +928,11 @@ function ContestContainers() {
                   />
                   <input
                     type="text"
-                    placeholder={t(
-                      "admin.contests.containers.filters.searchTeamPlaceholder",
-                    )}
+                    placeholder={t('admin.contests.containers.filters.searchTeamPlaceholder')}
                     onChange={(e) => {
                       const value = e.target.value;
                       debouncedSearch(
-                        "Team",
+                        'Team',
                         value,
                         (results) =>
                           setSearchResults((prev) => ({
@@ -1059,7 +943,7 @@ function ContestContainers() {
                           setSearchLoading((prev) => ({
                             ...prev,
                             teams: loading,
-                          })),
+                          }))
                       );
                     }}
                     className="w-full h-8 pl-7 pr-2 bg-black/20 border border-neutral-300/30 rounded-md text-xs text-neutral-50 placeholder-neutral-500 focus:outline-none focus:border-geek-400 focus:shadow-focus transition-all duration-200"
@@ -1077,12 +961,12 @@ function ContestContainers() {
                         key={team.id}
                         className="dropdown-option text-xs"
                         onClick={() => {
-                          handleFilterChange("team_id", team.id.toString());
+                          handleFilterChange('team_id', team.id.toString());
                           setSearchResults((prev) => ({ ...prev, teams: [] }));
                         }}
                       >
                         {team.name ||
-                          t("admin.contests.containers.filters.teamFallback", {
+                          t('admin.contests.containers.filters.teamFallback', {
                             id: team.id,
                           })}
                       </div>
@@ -1093,7 +977,7 @@ function ContestContainers() {
 
               <div className="relative" ref={challengesSearchRef}>
                 <label className="block text-xs font-mono text-neutral-400 mb-1">
-                  {t("admin.contests.containers.filters.challengeName")}
+                  {t('admin.contests.containers.filters.challengeName')}
                 </label>
                 <div className="relative">
                   <IconTarget
@@ -1102,13 +986,11 @@ function ContestContainers() {
                   />
                   <input
                     type="text"
-                    placeholder={t(
-                      "admin.contests.containers.filters.searchChallengePlaceholder",
-                    )}
+                    placeholder={t('admin.contests.containers.filters.searchChallengePlaceholder')}
                     onChange={(e) => {
                       const value = e.target.value;
                       debouncedSearch(
-                        "Challenge",
+                        'Challenge',
                         value,
                         (results) =>
                           setSearchResults((prev) => ({
@@ -1119,7 +1001,7 @@ function ContestContainers() {
                           setSearchLoading((prev) => ({
                             ...prev,
                             challenges: loading,
-                          })),
+                          }))
                       );
                     }}
                     className="w-full h-8 pl-7 pr-2 bg-black/20 border border-neutral-300/30 rounded-md text-xs text-neutral-50 placeholder-neutral-500 focus:outline-none focus:border-geek-400 focus:shadow-focus transition-all duration-200"
@@ -1137,10 +1019,7 @@ function ContestContainers() {
                         key={challenge.id}
                         className="dropdown-option text-xs"
                         onClick={() => {
-                          handleFilterChange(
-                            "challenge_id",
-                            challenge.id.toString(),
-                          );
+                          handleFilterChange('challenge_id', challenge.id.toString());
                           setSearchResults((prev) => ({
                             ...prev,
                             challenges: [],
@@ -1148,10 +1027,7 @@ function ContestContainers() {
                         }}
                       >
                         {challenge.name ||
-                          t(
-                            "admin.contests.containers.filters.challengeFallback",
-                            { id: challenge.id },
-                          )}
+                          t('admin.contests.containers.filters.challengeFallback', { id: challenge.id })}
                       </div>
                     ))}
                   </div>
@@ -1164,34 +1040,25 @@ function ContestContainers() {
                 <div className="flex flex-wrap gap-2">
                   {filters.user_id && (
                     <span className="px-2 py-1 bg-geek-400/20 text-geek-400 text-xs font-mono rounded border border-geek-400/30">
-                      {t("admin.contests.containers.filters.userIdLabel")}:{" "}
-                      {filters.user_id}
-                      <button
-                        onClick={() => handleFilterChange("user_id", "")}
-                        className="ml-1 hover:text-red-400"
-                      >
+                      {t('admin.contests.containers.filters.userIdLabel')}: {filters.user_id}
+                      <button onClick={() => handleFilterChange('user_id', '')} className="ml-1 hover:text-red-400">
                         ×
                       </button>
                     </span>
                   )}
                   {filters.team_id && (
                     <span className="px-2 py-1 bg-geek-400/20 text-geek-400 text-xs font-mono rounded border border-geek-400/30">
-                      {t("admin.contests.containers.filters.teamIdLabel")}:{" "}
-                      {filters.team_id}
-                      <button
-                        onClick={() => handleFilterChange("team_id", "")}
-                        className="ml-1 hover:text-red-400"
-                      >
+                      {t('admin.contests.containers.filters.teamIdLabel')}: {filters.team_id}
+                      <button onClick={() => handleFilterChange('team_id', '')} className="ml-1 hover:text-red-400">
                         ×
                       </button>
                     </span>
                   )}
                   {filters.challenge_id && (
                     <span className="px-2 py-1 bg-green-400/20 text-green-400 text-xs font-mono rounded border border-green-400/30">
-                      {t("admin.contests.containers.filters.challengeIdLabel")}:{" "}
-                      {filters.challenge_id}
+                      {t('admin.contests.containers.filters.challengeIdLabel')}: {filters.challenge_id}
                       <button
-                        onClick={() => handleFilterChange("challenge_id", "")}
+                        onClick={() => handleFilterChange('challenge_id', '')}
                         className="ml-1 hover:text-red-400"
                       >
                         ×
@@ -1209,11 +1076,9 @@ function ContestContainers() {
           <div className="p-4 bg-black/20 border-b border-neutral-300/30 space-y-4">
             <div className="flex flex-wrap items-center gap-2">
               <IconTable size={20} className="text-neutral-400" />
-              <h3 className="text-lg font-mono text-neutral-50">
-                {t("admin.contests.containers.table.title")}
-              </h3>
+              <h3 className="text-lg font-mono text-neutral-50">{t('admin.contests.containers.table.title')}</h3>
               <span className="text-sm font-mono text-neutral-400">
-                {t("admin.contests.containers.table.total", {
+                {t('admin.contests.containers.table.total', {
                   count: runningCount,
                 })}
               </span>
@@ -1221,13 +1086,8 @@ function ContestContainers() {
 
             <div className="flex flex-wrap gap-2 items-center">
               <div className="flex items-center gap-1 px-2 h-8 rounded-md border border-neutral-700 bg-neutral-900">
-                <IconClockPlay
-                  size={13}
-                  className="text-neutral-400 shrink-0"
-                />
-                <span className="text-xs text-neutral-400 shrink-0">
-                  {t("common.autoRefresh")}
-                </span>
+                <IconClockPlay size={13} className="text-neutral-400 shrink-0" />
+                <span className="text-xs text-neutral-400 shrink-0">{t('common.autoRefresh')}</span>
                 <select
                   value={refreshInterval}
                   onChange={(e) => setRefreshInterval(Number(e.target.value))}
@@ -1239,7 +1099,7 @@ function ContestContainers() {
                     </option>
                   ))}
                   <option value={0} className="bg-neutral-900">
-                    {t("common.autoRefreshOff")}
+                    {t('common.autoRefreshOff')}
                   </option>
                 </select>
               </div>
@@ -1247,19 +1107,17 @@ function ContestContainers() {
                 variant="ghost"
                 size="sm"
                 leftIcon={<IconRefresh size={14} />}
-                onClick={() =>
-                  fetchContainers(currentPage, showDeleted, filtersRef.current)
-                }
+                onClick={() => fetchContainers(currentPage, showDeleted, filtersRef.current)}
               >
-                {t("common.refresh")}
+                {t('common.refresh')}
               </Button>
               <Button
-                variant={showDeleted ? "danger" : "ghost"}
+                variant={showDeleted ? 'danger' : 'ghost'}
                 size="sm"
                 leftIcon={<IconTrash size={14} />}
                 onClick={toggleShowDeleted}
               >
-                {t("admin.contests.containers.showDeleted")}
+                {t('admin.contests.containers.showDeleted')}
               </Button>
               {selectedContainers.length > 0 && (
                 <Button
@@ -1268,8 +1126,7 @@ function ContestContainers() {
                   leftIcon={<IconBan size={14} />}
                   onClick={() => setIsStopModalOpen(true)}
                 >
-                  {t("admin.contests.containers.table.stopButton")} (
-                  {selectedContainers.length})
+                  {t('admin.contests.containers.table.stopButton')} ({selectedContainers.length})
                 </Button>
               )}
             </div>
@@ -1284,8 +1141,7 @@ function ContestContainers() {
                       type="checkbox"
                       checked={
                         containers.filter(isVictimStoppable).length > 0 &&
-                        selectedContainers.length ===
-                          containers.filter(isVictimStoppable).length
+                        selectedContainers.length === containers.filter(isVictimStoppable).length
                       }
                       onChange={handleSelectAll}
                       className="w-4 h-4 rounded border-neutral-300/30 text-geek-400 
@@ -1293,31 +1149,31 @@ function ContestContainers() {
                     />
                   </th>
                   <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">
-                    {t("admin.contests.containers.table.columns.id")}
+                    {t('admin.contests.containers.table.columns.id')}
                   </th>
                   <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">
-                    {t("admin.contests.containers.table.columns.challenge")}
+                    {t('admin.contests.containers.table.columns.challenge')}
                   </th>
                   <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">
-                    {t("admin.contests.containers.table.columns.team")}
+                    {t('admin.contests.containers.table.columns.team')}
                   </th>
                   <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">
-                    {t("admin.contests.containers.table.columns.user")}
+                    {t('admin.contests.containers.table.columns.user')}
                   </th>
                   <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">
-                    {t("admin.contests.containers.table.columns.remote")}
+                    {t('admin.contests.containers.table.columns.remote')}
                   </th>
                   <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">
-                    {t("admin.contests.containers.table.columns.startTime")}
+                    {t('admin.contests.containers.table.columns.startTime')}
                   </th>
                   <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">
-                    {t("admin.contests.containers.table.columns.status")}
+                    {t('admin.contests.containers.table.columns.status')}
                   </th>
                   <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">
-                    {t("admin.contests.containers.table.columns.remaining")}
+                    {t('admin.contests.containers.table.columns.remaining')}
                   </th>
                   <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">
-                    {t("admin.contests.teamDetail.traffic.columns.actions")}
+                    {t('admin.contests.teamDetail.traffic.columns.actions')}
                   </th>
                 </tr>
               </thead>
@@ -1325,9 +1181,7 @@ function ContestContainers() {
                 {containers.length === 0 ? (
                   <tr>
                     <td colSpan="11">
-                      <EmptyState
-                        title={t("admin.contests.containers.table.empty")}
-                      />
+                      <EmptyState title={t('admin.contests.containers.table.empty')} />
                     </td>
                   </tr>
                 ) : (
@@ -1338,7 +1192,7 @@ function ContestContainers() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: index * 0.02 }}
-                      whileHover={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
+                      whileHover={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
                     >
                       <td className="p-4 text-neutral-300 font-mono">
                         <input
@@ -1350,18 +1204,10 @@ function ContestContainers() {
                                   focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
                         />
                       </td>
-                      <td className="p-4 text-neutral-300 font-mono whitespace-nowrap">
-                        {container.id}
-                      </td>
-                      <td className="p-4 text-neutral-300 font-mono whitespace-nowrap">
-                        {container.challenge}
-                      </td>
-                      <td className="p-4 text-neutral-300 font-mono whitespace-nowrap">
-                        {container.team}
-                      </td>
-                      <td className="p-4 text-neutral-300 font-mono whitespace-nowrap">
-                        {container.user}
-                      </td>
+                      <td className="p-4 text-neutral-300 font-mono whitespace-nowrap">{container.id}</td>
+                      <td className="p-4 text-neutral-300 font-mono whitespace-nowrap">{container.challenge}</td>
+                      <td className="p-4 text-neutral-300 font-mono whitespace-nowrap">{container.team}</td>
+                      <td className="p-4 text-neutral-300 font-mono whitespace-nowrap">{container.user}</td>
                       <td className="p-4 text-neutral-300 font-mono">
                         {container.remote && container.remote.length > 0 ? (
                           <div className="space-y-1">
@@ -1398,9 +1244,7 @@ function ContestContainers() {
                             size="icon"
                             className="!text-geek-400 hover:!text-geek-300"
                             onClick={() => handleViewTrafficGraph(container)}
-                            title={t(
-                              "admin.contests.teamDetail.traffic.actions.viewTraffic",
-                            )}
+                            title={t('admin.contests.teamDetail.traffic.actions.viewTraffic')}
                           >
                             <IconGraph size={18} />
                           </Button>
@@ -1409,9 +1253,7 @@ function ContestContainers() {
                             size="icon"
                             className="!text-geek-400 hover:!text-geek-300"
                             onClick={() => handleDownloadTraffic(container)}
-                            title={t(
-                              "admin.contests.teamDetail.traffic.actions.downloadTraffic",
-                            )}
+                            title={t('admin.contests.teamDetail.traffic.actions.downloadTraffic')}
                           >
                             <IconDownload size={18} />
                           </Button>
@@ -1443,14 +1285,12 @@ function ContestContainers() {
         <Modal
           isOpen={isStartModalOpen}
           onClose={() => setIsStartModalOpen(false)}
-          title={t("admin.contests.containers.modals.startTitle")}
+          title={t('admin.contests.containers.modals.startTitle')}
           footer={
             <>
-              <ModalButton onClick={() => setIsStartModalOpen(false)}>
-                {t("common.cancel")}
-              </ModalButton>
+              <ModalButton onClick={() => setIsStartModalOpen(false)}>{t('common.cancel')}</ModalButton>
               <ModalButton variant="primary" onClick={handleStartContainers}>
-                {t("admin.contests.containers.modals.startConfirm")}
+                {t('admin.contests.containers.modals.startConfirm')}
               </ModalButton>
             </>
           }
@@ -1458,28 +1298,21 @@ function ContestContainers() {
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <IconPlayerPlay size={20} className="text-geek-400" />
-              <p className="text-neutral-300 font-mono">
-                {t("admin.contests.containers.modals.startPrompt")}
-              </p>
+              <p className="text-neutral-300 font-mono">{t('admin.contests.containers.modals.startPrompt')}</p>
             </div>
 
             <div className="space-y-4">
               <div>
                 <h4 className="text-sm font-mono text-neutral-400 mb-2">
-                  {t("admin.contests.containers.modals.selectedChallenges", {
+                  {t('admin.contests.containers.modals.selectedChallenges', {
                     count: selectedChallenges.length,
                   })}
                 </h4>
                 <div className="max-h-32 overflow-y-auto border border-neutral-300/30 rounded-md bg-black/10 p-2">
                   {selectedChallenges.map((challengeId) => {
-                    const challenge = challenges.find(
-                      (c) => c.id === challengeId,
-                    );
+                    const challenge = challenges.find((c) => c.id === challengeId);
                     return challenge ? (
-                      <div
-                        key={challengeId}
-                        className="text-sm font-mono text-geek-400 py-1"
-                      >
+                      <div key={challengeId} className="text-sm font-mono text-geek-400 py-1">
                         • {challenge.name}
                       </div>
                     ) : null;
@@ -1489,16 +1322,16 @@ function ContestContainers() {
 
               <div>
                 <h4 className="text-sm font-mono text-neutral-400 mb-2">
-                  {t("admin.contests.containers.modals.teamRatioTitle")}
+                  {t('admin.contests.containers.modals.teamRatioTitle')}
                 </h4>
                 <div className="border border-neutral-300/30 rounded-md bg-black/10 p-3 space-y-2">
                   <p className="text-sm font-mono text-geek-400">
-                    {t("admin.contests.containers.modals.teamRatioValue", {
+                    {t('admin.contests.containers.modals.teamRatioValue', {
                       ratio: randomTeamPercentage,
                     })}
                   </p>
                   <p className="text-xs font-mono text-neutral-400">
-                    {t("admin.contests.containers.modals.teamRatioHint", {
+                    {t('admin.contests.containers.modals.teamRatioHint', {
                       count: selectedTeamCount,
                       total: totalTeamCount,
                     })}
@@ -1508,16 +1341,16 @@ function ContestContainers() {
 
               <div>
                 <h4 className="text-sm font-mono text-neutral-400 mb-2">
-                  {t("admin.contests.containers.modals.durationTitle")}
+                  {t('admin.contests.containers.modals.durationTitle')}
                 </h4>
                 <div className="border border-neutral-300/30 rounded-md bg-black/10 p-3 space-y-2">
                   <p className="text-sm font-mono text-geek-400">
-                    {t("admin.contests.containers.modals.durationValue", {
+                    {t('admin.contests.containers.modals.durationValue', {
                       seconds: victimDurationSeconds,
                     })}
                   </p>
                   <p className="text-xs font-mono text-neutral-400">
-                    {t("admin.contests.containers.modals.durationHint", {
+                    {t('admin.contests.containers.modals.durationHint', {
                       value: formatVictimDuration(victimDurationSeconds),
                     })}
                   </p>
@@ -1527,25 +1360,18 @@ function ContestContainers() {
 
             <div className="bg-neutral-800/50 border border-neutral-600/30 rounded-md p-3">
               <p className="text-xs font-mono text-neutral-400">
-                {t("admin.contests.containers.modals.summaryPrefix")}
-                <span className="text-geek-400">
-                  {selectedChallenges.length}
-                </span>
-                {t("admin.contests.containers.modals.summaryMiddle")}
+                {t('admin.contests.containers.modals.summaryPrefix')}
+                <span className="text-geek-400">{selectedChallenges.length}</span>
+                {t('admin.contests.containers.modals.summaryMiddle')}
                 <span className="text-geek-400">{selectedTeamCount}</span>
-                {t("admin.contests.containers.modals.summaryEquals")}
-                <span className="text-green-400">
-                  {" "}
-                  {selectedChallenges.length * selectedTeamCount}
-                </span>
-                {t("admin.contests.containers.modals.summarySuffix")}
+                {t('admin.contests.containers.modals.summaryEquals')}
+                <span className="text-green-400"> {selectedChallenges.length * selectedTeamCount}</span>
+                {t('admin.contests.containers.modals.summarySuffix')}
               </p>
             </div>
 
             <div className="border border-amber-400/40 rounded-md bg-amber-400/10 p-3">
-              <p className="text-xs font-mono text-amber-200">
-                {t("admin.contests.containers.modals.startWarning")}
-              </p>
+              <p className="text-xs font-mono text-amber-200">{t('admin.contests.containers.modals.startWarning')}</p>
             </div>
           </div>
         </Modal>
@@ -1553,13 +1379,11 @@ function ContestContainers() {
         <Modal
           isOpen={isChallengeDetailsOpen}
           onClose={() => setIsChallengeDetailsOpen(false)}
-          title={t("admin.contests.containers.modals.challengeDetailsTitle")}
+          title={t('admin.contests.containers.modals.challengeDetailsTitle')}
           size="xl"
           footer={
             <>
-              <ModalButton onClick={() => setIsChallengeDetailsOpen(false)}>
-                {t("common.cancel")}
-              </ModalButton>
+              <ModalButton onClick={() => setIsChallengeDetailsOpen(false)}>{t('common.cancel')}</ModalButton>
             </>
           }
         >
@@ -1573,22 +1397,20 @@ function ContestContainers() {
                 type="text"
                 value={challengeSearch}
                 onChange={(e) => handleChallengeSearchChange(e.target.value)}
-                placeholder={t(
-                  "admin.contests.containers.quickActions.searchPlaceholder",
-                )}
+                placeholder={t('admin.contests.containers.quickActions.searchPlaceholder')}
                 className="w-full h-10 pl-10 pr-3 bg-black/20 border border-neutral-300/30 rounded-md text-sm text-neutral-50 placeholder-neutral-500 focus:outline-none focus:border-geek-400 transition-all duration-200"
               />
             </div>
 
             <p className="text-sm font-mono text-neutral-400">
-              {t("admin.contests.containers.modals.challengeDetailsHint", {
+              {t('admin.contests.containers.modals.challengeDetailsHint', {
                 count: detailChallengeTotal,
               })}
             </p>
 
             {detailChallenges.length === 0 ? (
               <div className="border border-neutral-300/20 rounded-md bg-black/10 p-4 text-sm font-mono text-neutral-500">
-                {t("admin.contests.containers.modals.challengeDetailsEmpty")}
+                {t('admin.contests.containers.modals.challengeDetailsEmpty')}
               </div>
             ) : (
               <div className="space-y-4">
@@ -1602,59 +1424,42 @@ function ContestContainers() {
                       <div className="flex items-start justify-between gap-4">
                         <div className="min-w-0 space-y-2">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="text-base font-mono text-neutral-50 break-all">
-                              {challenge.name}
-                            </h4>
+                            <h4 className="text-base font-mono text-neutral-50 break-all">{challenge.name}</h4>
                             {challenge.category ? (
                               <Chip
                                 size="sm"
                                 label={challenge.category}
-                                colorClass={getChallengeCategoryChipClass(
-                                  challenge.category,
-                                )}
+                                colorClass={getChallengeCategoryChipClass(challenge.category)}
                               />
                             ) : null}
                             {challenge.type ? (
                               <Chip
                                 size="sm"
-                                label={
-                                  typeLabels[challenge.type] || challenge.type
-                                }
-                                colorClass={getChallengeTypeChipClass(
-                                  challenge.type,
-                                )}
+                                label={typeLabels[challenge.type] || challenge.type}
+                                colorClass={getChallengeTypeChipClass(challenge.type)}
                               />
                             ) : null}
                             {challenge.hidden ? (
                               <Chip
                                 size="sm"
-                                label={t("admin.contests.challenges.hidden")}
+                                label={t('admin.contests.challenges.hidden')}
                                 colorClass="bg-red-400/20 text-red-400"
                               />
                             ) : null}
                           </div>
                           <div className="flex items-center gap-3 flex-wrap text-xs font-mono text-neutral-400">
                             <span>
-                              {t(
-                                "admin.contests.containers.modals.challengeScore",
-                                { score: challenge.score || 0 },
-                              )}
+                              {t('admin.contests.containers.modals.challengeScore', { score: challenge.score || 0 })}
                             </span>
                             <span>
-                              {t(
-                                "admin.contests.containers.modals.challengeSolvers",
-                                {
-                                  count: challenge.solvers || 0,
-                                },
-                              )}
+                              {t('admin.contests.containers.modals.challengeSolvers', {
+                                count: challenge.solvers || 0,
+                              })}
                             </span>
                             <span>
-                              {t(
-                                "admin.contests.containers.modals.challengeAttempts",
-                                {
-                                  count: challenge.attempt || 0,
-                                },
-                              )}
+                              {t('admin.contests.containers.modals.challengeAttempts', {
+                                count: challenge.attempt || 0,
+                              })}
                             </span>
                             <span>ID: {challenge.id}</span>
                           </div>
@@ -1664,17 +1469,10 @@ function ContestContainers() {
                           <input
                             type="checkbox"
                             checked={isSelected}
-                            onChange={(e) =>
-                              updateChallengeSelection(
-                                challenge.id,
-                                e.target.checked,
-                              )
-                            }
+                            onChange={(e) => updateChallengeSelection(challenge.id, e.target.checked)}
                             className="w-4 h-4 rounded border-neutral-300/30 text-geek-400 focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
                           />
-                          {t(
-                            "admin.contests.containers.modals.selectChallenge",
-                          )}
+                          {t('admin.contests.containers.modals.selectChallenge')}
                         </label>
                       </div>
                     </div>
@@ -1702,14 +1500,12 @@ function ContestContainers() {
         <Modal
           isOpen={isStopModalOpen}
           onClose={() => setIsStopModalOpen(false)}
-          title={t("admin.contests.containers.modals.stopTitle")}
+          title={t('admin.contests.containers.modals.stopTitle')}
           footer={
             <>
-              <ModalButton onClick={() => setIsStopModalOpen(false)}>
-                {t("common.cancel")}
-              </ModalButton>
+              <ModalButton onClick={() => setIsStopModalOpen(false)}>{t('common.cancel')}</ModalButton>
               <ModalButton variant="danger" onClick={handleStopContainers}>
-                {t("admin.contests.containers.modals.stopConfirm")}
+                {t('admin.contests.containers.modals.stopConfirm')}
               </ModalButton>
             </>
           }
@@ -1717,7 +1513,7 @@ function ContestContainers() {
           <div className="flex items-center gap-3">
             <IconBan size={20} className="text-red-400" />
             <p className="text-neutral-300 font-mono">
-              {t("admin.contests.containers.modals.stopPrompt", {
+              {t('admin.contests.containers.modals.stopPrompt', {
                 count: selectedContainers.length,
               })}
             </p>

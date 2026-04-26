@@ -15,12 +15,15 @@ function ContestLayout() {
   const { t } = useTranslation();
   const { siteName } = useBranding();
   const [contestStatus, setContestStatus] = useState(null);
+  const [contestPicture, setContestPicture] = useState('');
 
   useEffect(() => {
+    setContestPicture('');
     getContestInfo(contestId).then((res) => {
       if (res.code === 200) {
         const contest = res.data;
         setContestStatus(getContestStatus(contest.start, contest.duration));
+        setContestPicture(contest.picture || '');
       }
     });
   }, [contestId]);
@@ -76,6 +79,7 @@ function ContestLayout() {
       logo={siteName}
       pictureSrc={user.user?.picture}
       userName={user.user?.name}
+      backgroundImage={contestPicture}
     >
       <div className="w-full">
         <Outlet />

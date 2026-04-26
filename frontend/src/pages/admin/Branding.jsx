@@ -304,7 +304,7 @@ function BrandingSettings() {
         ref={fileInputRef}
         type="file"
         className="hidden"
-		accept="image/png,image/jpeg,image/jpg,image/gif"
+        accept="image/png,image/jpeg,image/jpg,image/gif"
         onChange={handleLogoChange}
       />
     </div>
