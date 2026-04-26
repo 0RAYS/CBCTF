@@ -21,7 +21,7 @@ import (
 func SavePicture(tx *gorm.DB, modelName string, modelID uint, file *multipart.FileHeader) (model.File, model.RetVal) {
 	var (
 		fileRepo = db.InitFileRepo(tx)
-		allowed  = []string{".png", ".jpg", ".jpeg"}
+		allowed  = []string{".png", ".jpg", ".jpeg", ".gif"}
 		suffix   = strings.ToLower(filepath.Ext(file.Filename))
 	)
 	if !slices.Contains(allowed, suffix) {
