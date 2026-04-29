@@ -7,7 +7,7 @@ export const getTaskHistory = (params = { limit: 20, offset: 0 }) =>
     params,
   });
 
-export const getLiveTasks = (params = { limit: 20, offset: 0, status: 'active' }) =>
+export const getLiveTasks = (params = { limit: 20, offset: 0 }) =>
   request({
     url: '/admin/tasks/live',
     method: 'GET',

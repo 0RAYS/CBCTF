@@ -14,6 +14,7 @@ const HISTORY_STATUS_OPTIONS = [
 ];
 
 const LIVE_STATUS_OPTIONS = [
+  { value: '', label: 'All' },
   { value: 'active', label: 'Active' },
   { value: 'pending', label: 'Pending' },
   { value: 'scheduled', label: 'Scheduled' },
@@ -288,7 +289,7 @@ function TasksPage() {
   const [liveRows, setLiveRows] = useState([]);
   const [liveTotal, setLiveTotal] = useState(0);
   const [livePage, setLivePage] = useState(1);
-  const [liveFilters, setLiveFilters] = useState({ task_id: '', queue: '', status: 'active' });
+  const [liveFilters, setLiveFilters] = useState({ task_id: '', queue: '', status: '' });
   const [liveQueues, setLiveQueues] = useState([]);
   const [refreshInterval, setRefreshInterval] = useState(10);
 
@@ -386,7 +387,7 @@ function TasksPage() {
   };
 
   const resetLive = () => {
-    const next = { task_id: '', queue: '', status: 'active' };
+    const next = { task_id: '', queue: '', status: '' };
     setLiveFilters(next);
     setLivePage(1);
     fetchLive(1, next);
