@@ -37,8 +37,5 @@ func (f *ListLiveTasksForm) Validate(ctx *gin.Context) model.RetVal {
 	if _, ok := ctx.GetQuery("offset"); !ok {
 		f.Offset = 0
 	}
-	if f.Status == "" {
-		f.Status = "active"
-	}
 	return model.SuccessRetVal()
 }

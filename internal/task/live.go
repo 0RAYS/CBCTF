@@ -107,7 +107,25 @@ func listAllTaskState(state string, queue string) ([]*asynq.TaskInfo, error) {
 	case "completed":
 		return listCompletedTasks(queue, info.Completed)
 	default:
-		return listActiveTasks(queue, info.Active)
+		allTasks := make([]*asynq.TaskInfo, 0, info.Pending+info.Active+info.Scheduled+info.Retry+info.Archived+info.Completed)
+		for _, list := range []struct {
+			fn   func(string, int) ([]*asynq.TaskInfo, error)
+			size int
+		}{
+			{fn: listActiveTasks, size: info.Active},
+			{fn: listPendingTasks, size: info.Pending},
+			{fn: listScheduledTasks, size: info.Scheduled},
+			{fn: listRetryTasks, size: info.Retry},
+			{fn: listArchivedTasks, size: info.Archived},
+			{fn: listCompletedTasks, size: info.Completed},
+		} {
+			tasks, err := list.fn(queue, list.size)
+			if err != nil {
+				return nil, err
+			}
+			allTasks = append(allTasks, tasks...)
+		}
+		return allTasks, nil
 	}
 }
 
