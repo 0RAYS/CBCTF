@@ -11,7 +11,6 @@ import (
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/plugin/prometheus"
 )
 
 var DB *gorm.DB
@@ -87,13 +86,6 @@ func Init() {
 		sql.SetConnMaxLifetime(24 * time.Hour)
 	}
 
-	if err = DB.Use(prometheus.New(prometheus.Config{
-		DBName:          config.Env.Gorm.Postgres.DB,
-		RefreshInterval: 15,
-		StartServer:     false,
-	})); err != nil {
-		log.Logger.Warningf("Failed to register prometheus: %s", err)
-	}
 	if err = DB.Exec(`CREATE EXTENSION IF NOT EXISTS pg_trgm`).Error; err != nil {
 		log.Logger.Warningf("Failed to ensure pg_trgm extension: %s", err)
 	}
