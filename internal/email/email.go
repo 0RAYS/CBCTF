@@ -30,7 +30,7 @@ func Init() {
 	Senders = make([]*Sender, 0)
 	smtpL, _, ret := db.InitSmtpRepo(db.DB).List(-1, -1, db.GetOptions{Conditions: map[string]any{"on": true}})
 	if !ret.OK {
-		log.Logger.Warningf("No smtp configured, email sending will be failed")
+		log.Logger.Info("No enabled SMTP sender configured")
 		return
 	}
 	for _, smtp := range smtpL {

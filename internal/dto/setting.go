@@ -8,9 +8,6 @@ type UpdateSettingForm struct {
 	Host *string `form:"host" json:"host" binding:"omitempty,url"`
 	Path *string `form:"path" json:"path" binding:"omitempty,dir"`
 
-	LogLevel *string `form:"log_level" json:"log_level" binding:"omitempty,oneof=DEBUG INFO WARNING ERROR debug info warning error"`
-	LogSave  *bool   `form:"log_save" json:"log_save"`
-
 	AsyncQLogLevel              *string `form:"asyncq_log_level" json:"asyncq_log_level" binding:"omitempty,oneof=DEBUG INFO WARNING ERROR debug info warning error"`
 	AsyncQConcurrency           *int    `form:"asyncq_concurrency" json:"asyncq_concurrency" binding:"omitempty,gte=1"`
 	AsyncQVictimConcurrency     *int    `form:"asyncq_victim_concurrency" json:"asyncq_victim_concurrency" binding:"omitempty,gte=1"`

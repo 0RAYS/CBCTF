@@ -54,12 +54,12 @@ func SystemStatus(ctx *gin.Context) {
 }
 
 func GetLogs(ctx *gin.Context) {
-	var form dto.ListModelsForm
+	var form dto.ListLogForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
-	data, _ := redis.GetLogs(int64(form.Offset), int64(form.Offset+form.Limit))
+	data, _ := redis.GetLogs(int64(form.Offset), int64(form.Offset+form.Limit-1), form.Level)
 	resp.JSON(ctx, model.SuccessRetVal(data))
 }
 
@@ -75,9 +75,6 @@ func SystemConfig(ctx *gin.Context) {
 	data := gin.H{
 		"host": config.Env.Host,
 		"path": config.Env.Path,
-
-		"log_level": config.Env.Log.Level,
-		"log_save":  config.Env.Log.Save,
 
 		"asyncq_log_level":              config.Env.AsyncQ.Log.Level,
 		"asyncq_concurrency":            config.Env.AsyncQ.Concurrency,

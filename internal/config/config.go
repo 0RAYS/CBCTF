@@ -26,12 +26,8 @@ type FrpsConfig struct {
 }
 
 type Config struct {
-	Host string `mapstructure:"host" json:"host"`
-	Path string `mapstructure:"path" json:"path"`
-	Log  struct {
-		Level string `mapstructure:"level" json:"level"`
-		Save  bool   `mapstructure:"save" json:"save"`
-	} `mapstructure:"log" json:"log"`
+	Host   string `mapstructure:"host" json:"host"`
+	Path   string `mapstructure:"path" json:"path"`
 	AsyncQ struct {
 		Log struct {
 			Level string `mapstructure:"level" json:"level"`

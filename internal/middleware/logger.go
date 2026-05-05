@@ -1,8 +1,10 @@
 package middleware
 
 import (
+	"CBCTF/internal/config"
 	"CBCTF/internal/log"
 	"CBCTF/internal/resp"
+	"slices"
 	"sync"
 	"time"
 
@@ -34,6 +36,9 @@ func Logger(ctx *gin.Context) {
 	if raw != "" {
 		path = path + "?" + raw
 	}
+	if slices.Contains(config.Env.Gin.Log.Whitelist, ctx.FullPath()) {
+		return
+	}
 	statusCode := ctx.GetInt(resp.CTXStatusCodeKey)
 	if statusCode == 0 {
 		statusCode = ctx.Writer.Status()
@@ -49,6 +54,10 @@ func Logger(ctx *gin.Context) {
 
 	if ctx.Errors != nil {
 		e.Error(ctx.Errors.String())
+	} else if statusCode >= 500 {
+		e.Error()
+	} else if statusCode >= 400 {
+		e.Warning()
 	} else {
 		e.Info()
 	}

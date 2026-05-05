@@ -43,8 +43,6 @@ export function buildPayload(config) {
     k8s_frp_on: config.k8s.frp.on,
     k8s_namespace: config.k8s.namespace,
     k8s_tcpdump: config.k8s.tcpdump,
-    log_level: config.log.level,
-    log_save: config.log.save,
     path: config.path,
     redis_host: config.redis.host,
     redis_port: config.redis.port,

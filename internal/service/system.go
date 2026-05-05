@@ -95,9 +95,6 @@ func UpdateSystemSettings(tx *gorm.DB, form dto.UpdateSettingForm) model.RetVal 
 		model.HostSettingKey: form.Host,
 		model.PathSettingKey: form.Path,
 
-		model.LogLevelSettingKey: form.LogLevel,
-		model.LogSaveSettingKey:  form.LogSave,
-
 		model.AsyncQLogLevelSettingKey:       form.AsyncQLogLevel,
 		model.AsyncQConcurrencySettingKey:    form.AsyncQConcurrency,
 		model.AsyncQVictimConcurrencyKey:     form.AsyncQVictimConcurrency,

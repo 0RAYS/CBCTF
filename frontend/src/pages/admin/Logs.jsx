@@ -7,9 +7,12 @@ import { IconRefresh } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import DOMPurify from 'dompurify';
 
+const LOG_LEVELS = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'FATAL', 'PANIC'];
+
 function AdminLogs() {
   const [logs, setLogs] = useState([]);
   const [hasMore, setHasMore] = useState(true);
+  const [level, setLevel] = useState('DEBUG');
   const pageSize = 100;
   const containerRef = useRef(null);
   const sentinelRef = useRef(null);
@@ -23,7 +26,7 @@ function AdminLogs() {
       if (loadingRef.current) return;
       loadingRef.current = true;
       try {
-        const res = await getSystemLogs({ limit: pageSize, offset: (nextPage - 1) * pageSize });
+        const res = await getSystemLogs({ limit: pageSize, offset: (nextPage - 1) * pageSize, level });
         if (res.code === 200) {
           const list = Array.isArray(res.data) ? res.data : [];
           setLogs((prev) => (nextPage === 1 ? list : [...prev, ...list]));
@@ -44,12 +47,8 @@ function AdminLogs() {
         loadingRef.current = false;
       }
     },
-    [t]
+    [level, t]
   );
-
-  useEffect(() => {
-    fetchLogs(1);
-  }, [fetchLogs]);
 
   const handleRefresh = () => {
     hasMoreRef.current = true;
@@ -60,6 +59,14 @@ function AdminLogs() {
     if (containerRef.current) containerRef.current.scrollTop = 0;
     fetchLogs(1);
   };
+
+  const handleLevelChange = (event) => {
+    setLevel(event.target.value);
+  };
+
+  useEffect(() => {
+    handleRefresh();
+  }, [level]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -96,7 +103,21 @@ function AdminLogs() {
 
   return (
     <div className="w-full mx-auto">
-      <div className="mb-8 flex items-center justify-end">
+      <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+        <label className="flex items-center gap-2 text-sm text-neutral-300">
+          <span>{t('admin.logs.levelFilter')}</span>
+          <select
+            value={level}
+            onChange={handleLevelChange}
+            className="rounded-md border border-neutral-300/20 bg-black/30 px-3 py-2 text-sm text-neutral-100 outline-none focus:border-primary-400"
+          >
+            {LOG_LEVELS.map((item) => (
+              <option key={item} value={item} className="bg-neutral-950 text-neutral-100">
+                {item}
+              </option>
+            ))}
+          </select>
+        </label>
         <Button variant="primary" size="sm" align="icon-left" icon={<IconRefresh size={16} />} onClick={handleRefresh}>
           {t('common.refresh')}
         </Button>

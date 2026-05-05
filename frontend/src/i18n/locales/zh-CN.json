@@ -1709,6 +1709,7 @@
     },
     "logs": {
       "title": "系统日志",
+      "levelFilter": "日志等级",
       "loadMore": "下拉加载更多",
       "noMore": "没有更多了",
       "toast": {
