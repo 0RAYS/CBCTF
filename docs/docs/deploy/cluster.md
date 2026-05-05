@@ -21,9 +21,18 @@ sidebar_position: 1
 
 > 不支持 macvlan 的云服务商通常无法使用 VPC 网络模式, 只能运行 Pod 网络模式的容器题。
 
-### 网卡命名一致性
+### 外部网络网卡标签
 
-所有节点用于外部网络的主网卡名称必须一致, 例如都为 `eth0` 或都为 `ens192`。Helm Chart 的 `cbctf.k8s.external_networks.interface` 依赖这一点。
+CBCTF 支持为不同节点配置不同的外部网卡。Helm values 中的 `cbctf.k8s.external_networks.interfaces` 定义每个外部网络使用的宿主机网卡名、CIDR 和网关。后端启动时会为每一项创建对应的 Kube-OVN Subnet 与 Multus NAD。
+
+需要为可承载该外部网络的节点添加固定标签, 标签值必须等于配置中的 `interface`: 
+
+```bash
+kubectl label node <node-with-eth0> node.cbctf.io/external-network=eth0
+kubectl label node <node-with-ens192> node.cbctf.io/external-network=ens192
+```
+
+`VpcNatGateway` 会根据所选外部网络自动添加节点亲和性, 仅调度到匹配 `node.cbctf.io/external-network=<interface>` 的节点。
 
 ## 安装 NFS 客户端
 
@@ -91,16 +100,16 @@ bash install.sh
 2. 安装支持 RWX 的 StorageClass, 例如 `nfs-subdir-external-provisioner`。
 3. 将 RWX 存储类设为默认, 或在 Helm `persistence.storageClass` 中显式指定。
 
-## Chart 依赖的资源
+## 启动时资源检查与创建
 
-Helm 安装后, 应用启动时会检查以下资源: 
+Helm 安装后, 应用启动时会检查或创建以下资源: 
 
 - 命名空间: `{namespace}`
 - 共享存储 PVC: `{namespace}-shared-volume`
-- 外部网络 Subnet: `{namespace}-external-network`
-- 外部网络 NAD: `kube-system/{namespace}-external-network`
+- 外部网络 Subnet: `{namespace}-external-network-{interface}`
+- 外部网络 NAD: `kube-system/{namespace}-external-network-{interface}`
 
-其中 PVC 缺失会导致动态附件不可用, 外部网络资源缺失会导致 VPC 模式不可用。
+其中 PVC 缺失会导致动态附件不可用。外部网络资源由后端按 `external_networks.interfaces` 创建; 若配置为空、创建失败或没有匹配节点标签, VPC 模式不可用。
 
 ## 跨云厂商节点
 

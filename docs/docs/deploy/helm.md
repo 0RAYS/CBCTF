@@ -144,9 +144,9 @@ PostgreSQL SSL 开关, 类型为布尔值:
 - `frp.nginx`
 - `frp.frps`
 - `external_networks.enabled`
-- `external_networks.cidr`
-- `external_networks.gateway`
-- `external_networks.interface`
+- `external_networks.interfaces[].interface`
+- `external_networks.interfaces[].cidr`
+- `external_networks.interfaces[].gateway`
 
 当前 Chart 和应用代码中 **不存在** `cbctf.k8s.generator_worker`、`cbctf.k8s.kubeovnRBAC`、`cbctf.k8s.multusRBAC` 这些可配置项。
 
@@ -225,9 +225,13 @@ cbctf:
   k8s:
     external_networks:
       enabled: true
-      cidr: "192.168.0.0/24"
-      gateway: "192.168.0.1"
-      interface: "eth0"
+      interfaces:
+        - interface: "eth0"
+          cidr: "192.168.0.0/24"
+          gateway: "192.168.0.1"
+        - interface: "ens192"
+          cidr: "192.168.1.0/24"
+          gateway: "192.168.1.1"
 
 ingress:
   enabled: true
@@ -255,6 +259,6 @@ persistence:
 - ServiceAccount / ClusterRole / ClusterRoleBinding
 - 共享 PVC
 - 可选的 PostgreSQL 与 Redis StatefulSet
-- 可选的外部网络 Subnet 与 NAD
+- 后端启动时按 `external_networks.interfaces` 创建外部网络 Subnet 与 NAD
 
 Chart 已内置 Kube-OVN 与 Multus 所需 ClusterRole 规则, 无需额外启用开关。
