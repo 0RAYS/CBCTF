@@ -44,6 +44,9 @@ func CreateSubnet(ctx context.Context, options CreateSubnetOptions) (*kubeovnv1.
 	}
 	subnet, err = ovnClient.KubeovnV1().Subnets().Create(ctx, subnet, metav1.CreateOptions{})
 	if err != nil {
+		if apierror.IsAlreadyExists(err) {
+			return GetSubnet(ctx, options.Name)
+		}
 		log.Logger.Warningf("Failed to create Subnet: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "Subnet", "Error": err.Error()}}
 	}
@@ -60,14 +63,6 @@ func GetSubnet(ctx context.Context, name string) (*kubeovnv1.Subnet, model.RetVa
 		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "Subnet", "Error": err.Error()}}
 	}
 	return subnet, model.SuccessRetVal()
-}
-
-func DeleteSubnet(ctx context.Context, name string) model.RetVal {
-	if err := ovnClient.KubeovnV1().Subnets().Delete(ctx, name, metav1.DeleteOptions{}); err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete Subnet: %s", err)
-		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "Subnet", "Error": err.Error()}}
-	}
-	return model.SuccessRetVal()
 }
 
 func DeleteSubnetList(ctx context.Context, labels ...map[string]string) model.RetVal {
