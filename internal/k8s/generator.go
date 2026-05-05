@@ -39,7 +39,7 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 	if challenge.GeneratorImage == "" {
 		return nil, model.RetVal{Msg: i18n.Model.Challenge.EmptyImage}
 	}
-	log.Logger.Infof("Starting Generator %s for Challenge %d-%s", generator.Name, challenge.ID, challenge.Name)
+	log.Logger.Debugf("Creating generator pod: generator_id=%d name=%s challenge_id=%d image=%s", generator.ID, generator.Name, challenge.ID, challenge.GeneratorImage)
 	pod, ret = CreatePod(ctx, CreatePodOptions{
 		Name:   generator.Name,
 		Labels: labels,
@@ -78,20 +78,20 @@ func StartGenerator(ctx context.Context, challenge model.Challenge, generator mo
 	if _, err = os.Stat(challenge.GeneratorPath()); err == nil {
 		commands = append(commands, fmt.Sprintf("unzip /root/mnt/generator.zip -d /root"))
 	} else {
-		log.Logger.Info("Generator file not found, make sure the generator docker can work correctly")
+		log.Logger.Infof("Generator archive not found, skip unpack: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, challenge.ID)
 	}
 	for _, command := range commands {
 		log.Logger.Debugf("Executing command: %s", command)
 		if _, _, err = Exec(ctx, generator.Name, pod.Spec.Containers[0].Name, command, nil); err != nil {
-			log.Logger.Warningf("Failed to execute command %s: %s", command, err)
 			return nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 		}
 	}
+	log.Logger.Debugf("Created generator pod: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, challenge.ID)
 	return pod, model.SuccessRetVal()
 }
 
 func StopGenerator(ctx context.Context, generator model.Generator) model.RetVal {
-	log.Logger.Infof("Stopping generator %s for Challenge %d", generator.Name, generator.ChallengeID)
+	log.Logger.Debugf("Deleting generator k8s resources: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)
 	if ret := DeletePod(ctx, generator.Name); !ret.OK {
 		return ret
 	}
@@ -99,13 +99,14 @@ func StopGenerator(ctx context.Context, generator model.Generator) model.RetVal 
 	if ret := DeleteServiceList(ctx, labels); !ret.OK {
 		return ret
 	}
+	log.Logger.Debugf("Deleted generator k8s resources: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)
 	return model.SuccessRetVal()
 }
 
 // GenAttachment 附加容器命令, 生成附件
 func GenAttachment(ctx context.Context, challenge model.Challenge, generator model.Generator, teamID uint, flags []string) model.RetVal {
 	var err error
-	log.Logger.Debugf("Generating attachment for Team %d Challenge %d", teamID, challenge.ID)
+	log.Logger.Debugf("Running attachment generator: team_id=%d challenge_id=%d generator_id=%d", teamID, challenge.ID, generator.ID)
 	pod, ret := GetPod(ctx, generator.Name)
 	if !ret.OK {
 		return ret
@@ -122,9 +123,8 @@ func GenAttachment(ctx context.Context, challenge model.Challenge, generator mod
 	filepath := challenge.AttachmentPath(teamID)
 	_ = os.Remove(filepath)
 	command := fmt.Sprintf("/root/run.sh %d %s", teamID, flag)
-	log.Logger.Debugf("Executing command in %s: %s", generator.Name, command)
+	log.Logger.Debugf("Executing attachment command: generator=%s team_id=%d challenge_id=%d", generator.Name, teamID, challenge.ID)
 	if _, _, err = Exec(ctx, generator.Name, pod.Spec.Containers[0].Name, command, nil); err != nil {
-		log.Logger.Warningf("Failed to execute command %s: %s", command, err)
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	for {
@@ -140,5 +140,6 @@ func GenAttachment(ctx context.Context, challenge model.Challenge, generator mod
 		}
 		time.Sleep(time.Second)
 	}
+	log.Logger.Debugf("Attachment file is ready: team_id=%d challenge_id=%d path=%s", teamID, challenge.ID, filepath)
 	return model.SuccessRetVal()
 }

@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"slices"
 	"sync"
 	"time"
@@ -55,6 +56,14 @@ func SelectWebhook(event model.Event) []model.Webhook {
 	return targets
 }
 
+func logURL(rawURL string) string {
+	parsed, err := url.Parse(rawURL)
+	if err != nil {
+		return "invalid-url"
+	}
+	return parsed.Scheme + "://" + parsed.Host + parsed.Path
+}
+
 func SendPayload(event model.Event, target model.Webhook) error {
 	payload := Payload{
 		Type:   event.Type,
@@ -63,13 +72,11 @@ func SendPayload(event model.Event, target model.Webhook) error {
 	}
 	data, err := json.Marshal(payload)
 	if err != nil {
-		log.Logger.Warningf("Failed to marshal payload: %v", err)
 		return err
 	}
 	start := time.Now()
 	req, err := http.NewRequest(target.Method, target.URL, bytes.NewBuffer(data))
 	if err != nil {
-		log.Logger.Warningf("Failed to create request: %v", err)
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -83,26 +90,30 @@ func SendPayload(event model.Event, target model.Webhook) error {
 	}
 	client := &http.Client{Timeout: timeout}
 	resp, err := client.Do(req)
+	duration := time.Since(start)
 	options := db.CreateWebhookHistoryOptions{
 		WebhookID: target.ID,
 		EventID:   event.ID,
 		RespCode:  0,
-		Duration:  time.Since(start),
+		Duration:  duration,
 		Success:   false,
 		Error:     "",
 	}
 	if err != nil {
-		log.Logger.Warningf("Failed to send request: %v", err)
 		options.Success = false
 		options.Error = err.Error()
 		db.InitWebhookHistoryRepo(db.DB).Create(options)
 		return err
 	}
+	defer resp.Body.Close()
 	options.RespCode = resp.StatusCode
 	options.Success = resp.StatusCode >= 200 && resp.StatusCode < 300
 	if !options.Success {
 		options.Error = resp.Status
+		log.Logger.Warningf("Webhook returned non-success status: event_id=%d webhook_id=%d method=%s url=%s status=%s duration=%s", event.ID, target.ID, target.Method, logURL(target.URL), resp.Status, duration)
+	} else {
+		log.Logger.Debugf("Webhook sent: event_id=%d webhook_id=%d method=%s url=%s status=%d duration=%s", event.ID, target.ID, target.Method, logURL(target.URL), resp.StatusCode, duration)
 	}
 	db.InitWebhookHistoryRepo(db.DB).Create(options)
-	return resp.Body.Close()
+	return nil
 }

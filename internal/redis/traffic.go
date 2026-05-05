@@ -24,9 +24,10 @@ func UpdateTraffics(victim model.Victim) model.RetVal {
 
 	connections, err := utils.ReadPcapDir(victim.TrafficBasePath())
 	if err != nil {
-		log.Logger.Warningf("Failed to read pcap: %s", err)
+		log.Logger.Warningf("Failed to read victim pcaps for cache: victim_id=%d path=%s error=%s", victim.ID, victim.TrafficBasePath(), err)
 		return model.RetVal{Msg: i18n.Model.File.ReadPcapError, Attr: map[string]any{"Error": err.Error()}}
 	}
+	log.Logger.Debugf("Caching victim traffic: victim_id=%d packets=%d", victim.ID, len(connections))
 
 	key := fmt.Sprintf(trafficsKey, victim.ID)
 	pipe := RDB.Pipeline()
@@ -42,9 +43,10 @@ func UpdateTraffics(victim model.Victim) model.RetVal {
 	}
 	pipe.Expire(ctx, key, 30*time.Minute)
 	if _, err = pipe.Exec(ctx); err != nil {
-		log.Logger.Warningf("Failed to update traffics: %s", err)
+		log.Logger.Warningf("Failed to cache victim traffic: victim_id=%d error=%s", victim.ID, err)
 		return model.RetVal{Msg: i18n.Redis.SetError, Attr: map[string]any{"Key": trafficsKey, "Error": err.Error()}}
 	}
+	log.Logger.Debugf("Cached victim traffic: victim_id=%d packets=%d", victim.ID, len(connections))
 	return model.SuccessRetVal()
 }
 

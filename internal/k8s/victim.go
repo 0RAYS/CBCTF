@@ -49,7 +49,10 @@ func findExposeDisplayName(exposes model.Exposes, port int32, protocol string) s
 
 // StartVictim expects victim.Spec and workload pod records to be preloaded from DB.
 func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.RetVal) {
-	log.Logger.Infof("Starting Victim for Team %d Challenge %d", victim.TeamID.V, victim.ChallengeID)
+	log.Logger.Debugf(
+		"Creating victim k8s resources: victim_id=%d team_id=%d challenge_id=%d pods=%d vpc=%t frp=%t",
+		victim.ID, victim.TeamID.V, victim.ChallengeID, len(victim.Pods), victim.Spec.NetworkPlan.Name != "", config.Env.K8S.Frp.On,
+	)
 	labels := VictimLabels(victim, map[string]string{VictimPodTag: VictimPodTag})
 
 	subnetMap, netAttachDefMap, endpoints, ret := createVictimNetworkResources(ctx, &victim, labels)
@@ -222,7 +225,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				endpointsMutex.Unlock()
 			}
 
-			log.Logger.Debugf("Create Pod %s: %s", pod.Name, ret.Msg)
+			log.Logger.Debugf("Created victim pod: victim_id=%d pod=%s", victim.ID, pod.Name)
 			return nil
 		})
 	}
@@ -241,6 +244,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 		return AddFrpc(ctx, victim)
 	}
 
+	log.Logger.Debugf("Victim k8s resources created: victim_id=%d pods=%d endpoints=%d", victim.ID, len(victim.Resources.PodNames), len(victim.ExposedEndpoints))
 	return victim, model.SuccessRetVal()
 }
 
@@ -276,10 +280,10 @@ func createVictimNetworkResources(
 				return tmp
 			}(),
 		})
-		log.Logger.Debugf("Create NetworkPolicy %s: %s", name, ret.Msg)
 		if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 			return errors.New(err.(string))
 		}
+		log.Logger.Debugf("Created victim network policy: victim_id=%d network_policy=%s", victim.ID, name)
 		return nil
 	})
 
@@ -308,10 +312,10 @@ func createVictimNetworkResources(
 			Labels:       labels,
 			PolicyRoutes: policyRoutes,
 		})
-		log.Logger.Debugf("Create VPC %s: %s", victim.Spec.NetworkPlan.Name, ret.Msg)
 		if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 			return errors.New(err.(string))
 		}
+		log.Logger.Debugf("Created victim vpc: victim_id=%d vpc=%s", victim.ID, victim.Spec.NetworkPlan.Name)
 		return nil
 	})
 
@@ -334,10 +338,10 @@ func createVictimNetworkResources(
 						"provider": "%s.%s.ovn"
 					}`, subnet.NetAttachDef.Name, globalNamespace),
 			})
-			log.Logger.Debugf("Create NetAttachDef %s: %s", subnet.NetAttachDef.Name, ret.Msg)
 			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 				return errors.New(err.(string))
 			}
+			log.Logger.Debugf("Created victim net attach def: victim_id=%d net_attach_def=%s", victim.ID, subnet.NetAttachDef.Name)
 			return nil
 		})
 
@@ -351,10 +355,10 @@ func createVictimNetworkResources(
 				ExcludeIPs: subnet.ExcludeIps,
 				Provider:   fmt.Sprintf("%s.%s.ovn", subnet.NetAttachDef.Name, globalNamespace),
 			})
-			log.Logger.Debugf("Create Subnet %s: %s", subnet.Name, ret.Msg)
 			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 				return errors.New(err.(string))
 			}
+			log.Logger.Debugf("Created victim subnet: victim_id=%d subnet=%s", victim.ID, subnet.Name)
 			return nil
 		})
 
@@ -371,10 +375,10 @@ func createVictimNetworkResources(
 				LanIP:          subnet.NatGateway.LanIP,
 				ExternalSubnet: []string{externalSubnetName},
 			})
-			log.Logger.Debugf("Create VPCNatGateway %s: %s", subnet.NatGateway.Name, ret.Msg)
 			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 				return errors.New(err.(string))
 			}
+			log.Logger.Debugf("Created victim nat gateway: victim_id=%d nat_gateway=%s", victim.ID, subnet.NatGateway.Name)
 			return nil
 		})
 
@@ -385,13 +389,13 @@ func createVictimNetworkResources(
 				NatGw:          subnet.NatGateway.Name,
 				ExternalSubnet: externalSubnetName,
 			})
-			log.Logger.Debugf("Create EIP %s: %s", subnet.NatGateway.EIP.Name, ret.Msg)
 			if !ret.OK {
 				if err, ok := ret.Attr["Error"].(string); ok {
 					return errors.New(err)
 				}
 				return fmt.Errorf("create EIP %s failed: %s", subnet.NatGateway.EIP.Name, ret.Msg)
 			}
+			log.Logger.Debugf("Created victim eip: victim_id=%d eip=%s", victim.ID, subnet.NatGateway.EIP.Name)
 
 			for _, dnat := range subnet.NatGateway.EIP.DNats {
 				_, ret = CreateDNat(ctx, CreateDNatOptions{
@@ -403,10 +407,13 @@ func createVictimNetworkResources(
 					InternalIP:   dnat.InternalIP,
 					Protocol:     dnat.Protocol,
 				})
-				log.Logger.Debugf("Create DNat %s: %s", dnat.Name, ret.Msg)
 				if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 					return errors.New(err.(string))
 				}
+				log.Logger.Debugf(
+					"Created victim dnat: victim_id=%d dnat=%s external_port=%d internal_ip=%s internal_port=%d protocol=%s",
+					victim.ID, dnat.Name, dnat.ExternalPort, dnat.InternalIP, dnat.InternalPort, dnat.Protocol,
+				)
 				endpointsMutex.Lock()
 				endpoint := model.Endpoint{
 					Name:     dnat.DisplayName,
@@ -429,10 +436,10 @@ func createVictimNetworkResources(
 					EIP:          subnet.NatGateway.EIP.Name,
 					InternalCIDR: subnet.CIDRBlock,
 				})
-				log.Logger.Debugf("Create SNat %s: %s", snat.Name, ret.Msg)
 				if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 					return errors.New(err.(string))
 				}
+				log.Logger.Debugf("Created victim snat: victim_id=%d snat=%s cidr=%s", victim.ID, snat.Name, subnet.CIDRBlock)
 			}
 			return nil
 		})
@@ -446,7 +453,10 @@ func createVictimNetworkResources(
 }
 
 func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
-	log.Logger.Infof("Stopping Victim for Team %d Challenge %d", victim.TeamID.V, victim.ChallengeID)
+	log.Logger.Debugf(
+		"Deleting victim k8s resources: victim_id=%d team_id=%d challenge_id=%d exposed_endpoints=%d",
+		victim.ID, victim.TeamID.V, victim.ChallengeID, len(victim.ExposedEndpoints),
+	)
 	labels := VictimLabels(victim)
 	for _, endpoint := range victim.ExposedEndpoints {
 		redis.UnlockFrpsPort(endpoint.IP, endpoint.Port, endpoint.Protocol)
@@ -472,6 +482,11 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 	tryDelete(DeletePodList(ctx, labels))
 	for _, subnet := range victim.Spec.NetworkPlan.Subnets {
 		tryDelete(DeleteIPList(ctx, map[string]string{"ovn.kubernetes.io/subnet": subnet.Name}))
+	}
+	if firstErr.OK {
+		log.Logger.Debugf("Deleted victim k8s resources: victim_id=%d", victim.ID)
+	} else {
+		log.Logger.Warningf("Victim k8s cleanup incomplete: victim_id=%d error=%s", victim.ID, firstErr.Msg)
 	}
 	return firstErr
 }

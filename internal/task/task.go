@@ -30,9 +30,13 @@ func wrapHandler(taskType string, h asynq.HandlerFunc) asynq.HandlerFunc {
 			recordTaskExecution(ctx, t, "failed", nil, err)
 		}
 		if err != nil {
-			log.Logger.Warningf("task %s fail: %s", taskType, err.Error())
+			log.Logger.Warningf("task %s failed: %s", taskType, err.Error())
 			if errors.Is(err, asynq.SkipRetry) || errors.Is(err, asynq.RevokeTask) {
 				log.Logger.Debugf("task %s entered terminal failure without retry", taskType)
+			}
+		} else {
+			if duration := time.Since(start); duration > 5*time.Second {
+				log.Logger.Debugf("task %s completed slowly: %s", taskType, duration)
 			}
 		}
 		prometheus.RecordTaskProcessed(taskType, time.Since(start).Seconds(), err == nil)

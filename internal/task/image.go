@@ -1,9 +1,11 @@
 package task
 
 import (
+	"CBCTF/internal/log"
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/utils"
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/hibiken/asynq"
@@ -36,5 +38,10 @@ func HandleResizeImageTask(_ context.Context, task *asynq.Task) error {
 	if err := msgpack.Unmarshal(task.Payload(), &payload); err != nil {
 		return err
 	}
-	return utils.ResizePicture(payload.Path, payload.Width, payload.Height)
+	log.Logger.Debugf("Resizing image: path=%s width=%d height=%d", payload.Path, payload.Width, payload.Height)
+	if err := utils.ResizePicture(payload.Path, payload.Width, payload.Height); err != nil {
+		return fmt.Errorf("resize image %s failed: %w", payload.Path, err)
+	}
+	log.Logger.Debugf("Image resized: path=%s width=%d height=%d", payload.Path, payload.Width, payload.Height)
+	return nil
 }

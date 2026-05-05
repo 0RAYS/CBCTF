@@ -43,6 +43,7 @@ func HandleStartGeneratorTask(_ context.Context, t *asynq.Task) error {
 	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
 	}
+	cleanupQueued := false
 	err := func() error {
 		challenge := payload.Challenge
 		generator := payload.Generator
@@ -50,33 +51,40 @@ func HandleStartGeneratorTask(_ context.Context, t *asynq.Task) error {
 		currentGenerator, ret := generatorRepo.GetByID(generator.ID)
 		if !ret.OK {
 			if ret.Msg == i18n.Model.NotFound {
-				log.Logger.Infof("The Generator %d may have already been stopped", generator.ID)
+				log.Logger.Debugf("Start generator skipped: generator_id=%d no longer exists", generator.ID)
 				return nil
 			}
 			return fmt.Errorf("get generator failed: %s", ret.Msg)
 		}
 		if currentGenerator.Status == model.TerminatingGeneratorStatus {
-			log.Logger.Infof("The Generator %d is terminating, skip start...", generator.ID)
+			log.Logger.Infof("Start generator skipped: generator_id=%d is terminating", generator.ID)
 			return nil
 		}
 		if ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.PendingGeneratorStatus)}); !ret.OK {
 			return fmt.Errorf("update generator failed: %s", ret.Msg)
 		}
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
+		log.Logger.Infof("Starting generator provisioning: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, challenge.ID)
 		_, ret = k8s.StartGenerator(ctx, challenge, generator)
 		cancel()
 		if !ret.OK {
-			_, err := EnqueueStopGeneratorTask(generator)
-			return err
+			if _, err := EnqueueStopGeneratorTask(generator); err != nil {
+				return fmt.Errorf("start generator failed: %s; enqueue cleanup failed: %w", ret.Msg, err)
+			}
+			cleanupQueued = true
+			return fmt.Errorf("start generator failed: %s", ret.Msg)
 		}
 		ret = generatorRepo.Update(generator.ID, db.UpdateGeneratorOptions{Status: new(model.RunningGeneratorStatus)})
 		if !ret.OK {
 			return fmt.Errorf("update generator failed: %s", ret.Msg)
 		}
+		log.Logger.Infof("Generator is running: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, challenge.ID)
 		return nil
 	}()
-	if err != nil {
-		_, _ = EnqueueStopGeneratorTask(payload.Generator)
+	if err != nil && !cleanupQueued {
+		if _, enqueueErr := EnqueueStopGeneratorTask(payload.Generator); enqueueErr != nil {
+			log.Logger.Warningf("Failed to enqueue generator cleanup after start failure: generator_id=%d error=%v", payload.Generator.ID, enqueueErr)
+		}
 	}
 	return err
 }
@@ -107,11 +115,12 @@ func HandleStopGeneratorTask(ctx context.Context, t *asynq.Task) error {
 	generator, ret := generatorRepo.GetByID(payload.Generator.ID)
 	if !ret.OK {
 		if ret.Msg == i18n.Model.NotFound {
-			log.Logger.Infof("The Generator %d may have already been stopped", payload.Generator.ID)
+			log.Logger.Debugf("Stop generator skipped: generator_id=%d no longer exists", payload.Generator.ID)
 			return nil
 		}
 		return fmt.Errorf("get generator failed: %s", ret.Msg)
 	}
+	log.Logger.Infof("Stopping generator: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)
 	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	ret = k8s.StopGenerator(ctx, generator)
 	cancel()
@@ -122,5 +131,6 @@ func HandleStopGeneratorTask(ctx context.Context, t *asynq.Task) error {
 	if !ret.OK {
 		return fmt.Errorf("delete generator failed: %s", ret.Msg)
 	}
+	log.Logger.Infof("Generator stopped: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)
 	return nil
 }

@@ -308,6 +308,7 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 		podRepo       = db.InitPodRepo(tx)
 	)
 	if _, ret := victimRepo.HasAliveVictim(teamID, challengeID); ret.OK {
+		log.Logger.Debugf("Start victim rejected: team_id=%d challenge_id=%d already has alive victim", teamID, challengeID)
 		return model.RetVal{Msg: i18n.Model.Victim.NotStartable}
 	}
 	challenge, ret := challengeRepo.GetByID(challengeID, db.GetOptions{
@@ -353,9 +354,13 @@ func StartVictim(tx *gorm.DB, userID, teamID, contestID uint, contestChallengeID
 	}
 	_, err := task.EnqueueStartVictimTask(victim)
 	if err != nil {
-		log.Logger.Warningf("Failed to enqueue start victim task: %v", err)
+		log.Logger.Warningf("Failed to enqueue start victim task: victim_id=%d user_id=%d team_id=%d challenge_id=%d error=%v", victim.ID, userID, teamID, challengeID, err)
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
+	log.Logger.Infof(
+		"Start victim queued: victim_id=%d user_id=%d team_id=%d challenge_id=%d contest_id=%d duration=%s pods=%d",
+		victim.ID, userID, teamID, challengeID, contestID, duration, len(victim.Pods),
+	)
 	return model.SuccessRetVal()
 }
 
@@ -400,6 +405,7 @@ func ExtendVictimDuration(tx *gorm.DB, team model.Team, challenge model.Challeng
 		return model.Victim{}, ret
 	}
 	victim.Duration = duration
+	log.Logger.Infof("Victim duration extended: victim_id=%d team_id=%d challenge_id=%d duration=%s", victim.ID, victim.TeamID.V, victim.ChallengeID, duration)
 	return victim, model.SuccessRetVal()
 }
 
@@ -428,6 +434,7 @@ func ForceStopAliveVictim(tx *gorm.DB, teamID, challengeID uint) model.RetVal {
 
 func ForceStopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
 	if victim.Status == model.TerminatingVictimStatus {
+		log.Logger.Debugf("Stop victim skipped: victim_id=%d already terminating", victim.ID)
 		return model.SuccessRetVal()
 	}
 	repo := db.InitVictimRepo(tx)
@@ -440,12 +447,13 @@ func ForceStopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
 	LoadTraffic(tx, victim)
 	_, err := task.EnqueueStopVictimTask(victim)
 	if err != nil {
-		log.Logger.Warningf("Failed to enqueue stop victim task: %v", err)
+		log.Logger.Warningf("Failed to enqueue stop victim task: victim_id=%d user_id=%d team_id=%d challenge_id=%d error=%v", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID, err)
 		_ = repo.Update(victim.ID, db.UpdateVictimOptions{
 			Status: new(victim.Status),
 		})
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
+	log.Logger.Infof("Stop victim queued: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID)
 	return model.SuccessRetVal()
 }
 
@@ -512,6 +520,7 @@ func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm)
 	if len(form.Challenges) == 0 || form.TeamRatio <= 0 || form.TeamRatio >= 1 {
 		return model.SuccessRetVal()
 	}
+	requestedChallenges := len(form.Challenges)
 	challenges, _, ret := db.InitChallengeRepo(tx).List(-1, -1, db.GetOptions{
 		Conditions: map[string]any{"type": model.PodsChallengeType, "rand_id": form.Challenges},
 	})
@@ -550,19 +559,30 @@ func StartVictims(tx *gorm.DB, contest model.Contest, form dto.StartVictimsForm)
 		return model.SuccessRetVal()
 	}
 	duration := time.Duration(form.Duration) * time.Second
+	queued, skippedSolved, skippedFlag, failedStart := 0, 0, 0, 0
 	for _, contestChallenge := range contestChallenges {
 		for _, team := range teams {
 			if CheckIfSolved(tx, team, contestChallenge.ContestFlags) {
+				skippedSolved++
 				continue
 			}
 			if !CheckIfGenerated(tx, team, contestChallenge.ContestFlags) {
 				if _, ret = CreateTeamFlag(tx, team, contest, contestChallenge); !ret.OK {
+					skippedFlag++
 					continue
 				}
 			}
-			StartVictim(tx, team.CaptainID, team.ID, contest.ID, contestChallenge.ID, contestChallenge.ChallengeID, duration)
+			if ret = StartVictim(tx, team.CaptainID, team.ID, contest.ID, contestChallenge.ID, contestChallenge.ChallengeID, duration); ret.OK {
+				queued++
+			} else {
+				failedStart++
+			}
 		}
 	}
+	log.Logger.Infof(
+		"Batch start victims completed: contest_id=%d requested_challenges=%d matched_challenges=%d selected_teams=%d queued=%d skipped_solved=%d skipped_flag=%d failed_start=%d duration=%s",
+		contest.ID, requestedChallenges, len(contestChallenges), len(teams), queued, skippedSolved, skippedFlag, failedStart, duration,
+	)
 	return model.SuccessRetVal()
 }
 
@@ -576,8 +596,9 @@ func StopVictims(tx *gorm.DB, form dto.StopVictimsForm) model.RetVal {
 	}
 	for _, victim := range victims {
 		if ret = StopVictim(tx, victim); !ret.OK {
-			log.Logger.Warningf("Skip stopping victim %d: %s", victim.ID, ret.Msg)
+			log.Logger.Warningf("Skip stopping victim: victim_id=%d status=%s reason=%s", victim.ID, victim.Status, ret.Msg)
 		}
 	}
+	log.Logger.Infof("Batch stop victims requested: requested=%d matched=%d", len(form.Victims), len(victims))
 	return model.SuccessRetVal()
 }
