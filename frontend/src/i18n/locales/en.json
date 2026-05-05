@@ -1345,8 +1345,7 @@
           "actionSuccess": "Action dispatched",
           "actionFailed": "Action failed",
           "downloadSuccess": "Test attachment downloaded",
-          "downloadFailed": "Failed to download test attachment",
-          "copyIpSuccess": "IP address copied to clipboard"
+          "downloadFailed": "Failed to download test attachment"
         },
         "instance": {
           "waiting": "WAITING",
