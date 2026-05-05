@@ -128,5 +128,5 @@ func parseLogEntry(raw string) (LogEntry, bool) {
 
 func logLevelAtLeast(level string, minWeight logrus.Level) bool {
 	weight, ok := logLevelWeight[strings.ToLower(level)]
-	return ok && weight >= minWeight
+	return ok && weight <= minWeight
 }
