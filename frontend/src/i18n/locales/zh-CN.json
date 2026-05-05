@@ -1345,8 +1345,7 @@
           "actionSuccess": "任务下发成功",
           "actionFailed": "操作失败",
           "downloadSuccess": "测试附件下载成功",
-          "downloadFailed": "下载测试附件失败",
-          "copyIpSuccess": "IP地址已复制到剪贴板"
+          "downloadFailed": "下载测试附件失败"
         },
         "instance": {
           "waiting": "等待启动队列",

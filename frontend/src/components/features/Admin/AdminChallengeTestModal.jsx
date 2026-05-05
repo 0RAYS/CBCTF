@@ -270,7 +270,6 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
     (ip) => {
       navigator.clipboard.writeText(ip);
       setIsCopied((prev) => ({ ...prev, [ip]: true }));
-      toast.success({ description: t('admin.challenge.testModal.toast.copyIpSuccess') });
       setTimeout(() => {
         setIsCopied((prev) => ({ ...prev, [ip]: false }));
       }, 2000);
@@ -392,11 +391,11 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
         {/* 靶机地址 - 只在运行中显示 */}
         {isRunning && targets.length > 0 && (
           <div>
-            <div className="flex items-center justify-between p-2 bg-neutral-900 rounded-md">
+            <div className="flex items-center justify-between p-1 rounded-md">
               <span className="text-neutral-400 text-xs">{t('admin.challenge.testModal.instance.address')}</span>
             </div>
             {targets.map((target, index) => (
-              <div key={index} className="flex justify-between p-1.5">
+              <div key={index} className="flex items-center justify-between bg-neutral-900">
                 <span className="font-mono text-neutral-50 text-sm cursor-pointer" onClick={() => handleCopyIP(target)}>
                   {target}
                 </span>

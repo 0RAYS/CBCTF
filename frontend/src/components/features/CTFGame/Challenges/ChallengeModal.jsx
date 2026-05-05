@@ -447,12 +447,14 @@ function ChallengeModal({
         {/* 靶机地址 - 只在运行中显示 */}
         {isRunning && challenge.instanceIP && (
           <div>
-            <div className="p-2 bg-neutral-900 rounded-md">
+            <div className="flex items-center justify-between p-1 rounded-md">
               <span className="text-neutral-400 text-xs">{t('game.challengeModal.instance.address')}</span>
             </div>
             {challenge.instanceIP.map((ip, index) => (
-              <div key={index} className="flex items-center justify-between p-1.5">
-                <span className="font-mono text-neutral-50 text-sm">{ip}</span>
+              <div key={index} className="flex items-center justify-between bg-neutral-900">
+                <span className="font-mono text-neutral-50 text-sm cursor-pointer" onClick={() => handleCopyIP(ip)}>
+                  {ip}
+                </span>
                 <Button
                   variant="ghost"
                   size="icon"
