@@ -117,6 +117,7 @@ const transformChallengeData = (challenge) => {
 };
 
 const normalizeCategories = (categoryList) => (Array.isArray(categoryList) ? categoryList.filter(Boolean) : []);
+const isInstanceTransitioning = (status) => ['waiting', 'pending', 'terminating'].includes(status);
 
 function GameChallengesPage() {
   const { contestId } = useParams();
@@ -154,7 +155,7 @@ function GameChallengesPage() {
     }
   };
 
-  const startPolling = () => {
+  const startPolling = (targetStatus = 'running') => {
     stopPolling();
     pollingIntervalRef.current = setInterval(async () => {
       if (!selectedChallengeRef.current) {
@@ -168,7 +169,12 @@ function GameChallengesPage() {
           setSelectedChallenge(updatedChallenge);
           setChallenges((prev) => prev.map((c) => (c.id === updatedChallenge.id ? updatedChallenge : c)));
 
-          if (updatedChallenge.instanceStatus === 'running') {
+          if (
+            (targetStatus === 'running' && updatedChallenge.instanceStatus === 'running') ||
+            (targetStatus === 'stopped' &&
+              updatedChallenge.instanceStatus !== 'running' &&
+              !isInstanceTransitioning(updatedChallenge.instanceStatus))
+          ) {
             stopPolling();
           }
         }
@@ -379,7 +385,7 @@ function GameChallengesPage() {
           )
         );
         toast.success({ title: t('game.challenges.toast.launchSuccess') });
-        startPolling();
+        startPolling('running');
         return true;
       }
     } catch (error) {
@@ -410,6 +416,7 @@ function GameChallengesPage() {
       if (res.code === 200) {
         toast.success({ title: res.msg || t('game.challenges.toast.destroySuccess') });
         await refreshChallengeStatus();
+        startPolling('stopped');
         return true;
       }
     } catch (error) {
@@ -461,12 +468,8 @@ function GameChallengesPage() {
         setSelectedChallenge(updatedChallenge);
 
         // 页面刷新后 Pod 仍在排队或启动中 → 自动开始轮询
-        if (
-          updatedChallenge.instanceStatus === 'waiting' ||
-          updatedChallenge.instanceStatus === 'pending' ||
-          updatedChallenge.instanceStatus === 'terminating'
-        ) {
-          startPolling();
+        if (isInstanceTransitioning(updatedChallenge.instanceStatus)) {
+          startPolling(updatedChallenge.instanceStatus === 'terminating' ? 'stopped' : 'running');
         }
       }
     } catch (error) {

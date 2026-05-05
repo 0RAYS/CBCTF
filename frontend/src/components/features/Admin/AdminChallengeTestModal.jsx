@@ -26,6 +26,8 @@ const normalizeInstanceStatus = (status) => {
   return '';
 };
 
+const isInstanceTransitioning = (status) => ['waiting', 'pending', 'terminating'].includes(status);
+
 // 格式化剩余时间
 const formatTimeLeft = (seconds) => {
   seconds = Math.floor(seconds);
@@ -86,9 +88,9 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
   const instanceDuration = Number(testStatus?.remote?.duration) || 0;
   const progressWidth = instanceDuration > 0 ? Math.max(0, Math.min(100, (timeLeft / instanceDuration) * 100)) : 0;
 
-  // 仅在弹窗打开期间轮询; 同步 waiting/pending/running 状态
+  // 仅在弹窗打开期间轮询; 启动等待 running, 停止等待退出过渡状态
   const startPolling = useCallback(
-    (challengeId) => {
+    (challengeId, targetStatus = 'running') => {
       stopPolling();
       pollingIntervalRef.current = setInterval(async () => {
         if (!isOpenRef.current) {
@@ -101,9 +103,12 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
             const nextStatus = normalizeInstanceStatus(response.data.remote?.status);
             setTestStatus(response.data);
             setTimeLeft(Number(response.data.remote?.remaining) || 0);
-            if (nextStatus === 'running') {
+            if (
+              (targetStatus === 'running' && nextStatus === 'running') ||
+              (targetStatus === 'stopped' && nextStatus !== 'running' && !isInstanceTransitioning(nextStatus))
+            ) {
               stopPolling();
-              setLoading((prev) => ({ ...prev, starting: false }));
+              setLoading((prev) => ({ ...prev, starting: false, stopping: false }));
             }
           }
         } catch {
@@ -114,7 +119,7 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
       pollingTimeoutRef.current = setTimeout(
         () => {
           stopPolling();
-          setLoading((prev) => ({ ...prev, starting: false }));
+          setLoading((prev) => ({ ...prev, starting: false, stopping: false }));
         },
         3 * 60 * 1000
       );
@@ -137,8 +142,9 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
             toast.success({ description: t('admin.challenge.testModal.toast.statusRefreshSuccess') });
           }
           // Pod 仍在排队或启动中（页面刷新后恢复）→ 自动开始轮询
-          if (['waiting', 'pending', 'terminating'].includes(normalizeInstanceStatus(response.data.remote?.status))) {
-            startPolling(challenge.id);
+          const nextStatus = normalizeInstanceStatus(response.data.remote?.status);
+          if (isInstanceTransitioning(nextStatus)) {
+            startPolling(challenge.id, nextStatus === 'terminating' ? 'stopped' : 'running');
           }
         }
       } catch (error) {
@@ -221,7 +227,7 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
           },
         }));
         toast.success({ description: t('admin.challenge.testModal.toast.actionSuccess') });
-        startPolling(challenge.id);
+        startPolling(challenge.id, 'running');
       } else {
         setLoading((prev) => ({ ...prev, starting: false }));
       }
@@ -238,14 +244,16 @@ function AdminChallengeTestModal({ challenge, isOpen, onClose }) {
       const response = await stopTestVictim(challenge.id);
       if (response.code === 200) {
         await fetchTestStatus(false);
+        startPolling(challenge.id, 'stopped');
         toast.success({ description: t('admin.challenge.testModal.toast.actionSuccess') });
+      } else {
+        setLoading((prev) => ({ ...prev, stopping: false }));
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.challenge.testModal.toast.actionFailed') });
-    } finally {
       setLoading((prev) => ({ ...prev, stopping: false }));
     }
-  }, [challenge?.id, fetchTestStatus, t]);
+  }, [challenge?.id, fetchTestStatus, startPolling, t]);
 
   // 下载测试附件
   const handleDownloadAttachment = useCallback(async () => {
