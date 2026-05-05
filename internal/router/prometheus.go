@@ -1,12 +1,8 @@
 package router
 
 import (
-	"CBCTF/internal/config"
-	"CBCTF/internal/i18n"
-	"CBCTF/internal/model"
+	"CBCTF/internal/middleware"
 	p "CBCTF/internal/prometheus"
-	"CBCTF/internal/resp"
-	"net"
 
 	"github.com/gin-gonic/gin"
 	"github.com/prometheus/client_golang/prometheus"
@@ -24,6 +20,7 @@ func RegisterMetricsRouter(router *gin.Engine) {
 
 	// 注册 DB 驱动的自定义 Collector
 	registerer.MustRegister(p.NewCTFCollector())
+	registerer.MustRegister(p.NewGormCollector())
 
 	// 注册 HTTP 基础指标
 	registerer.MustRegister(p.HttpRequestsTotal)
@@ -55,22 +52,7 @@ func RegisterMetricsRouter(router *gin.Engine) {
 	registerer.MustRegister(collectors.NewGoCollector())
 	registerer.MustRegister(collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 
-	router.GET("/metrics", func(ctx *gin.Context) {
-		clientIP := ctx.ClientIP()
-		ip := net.ParseIP(clientIP)
-		for _, entry := range config.Env.Gin.Metrics.Whitelist {
-			if entry == clientIP {
-				ctx.Next()
-				return
-			}
-			_, cidr, err := net.ParseCIDR(entry)
-			if err == nil && ip != nil && cidr.Contains(ip) {
-				ctx.Next()
-				return
-			}
-		}
-		resp.AbortJSON(ctx, model.RetVal{Msg: i18n.Response.Forbidden})
-	}, gin.WrapH(promhttp.InstrumentMetricHandler(
+	router.GET("/metrics", middleware.MetricsWhitelist, gin.WrapH(promhttp.InstrumentMetricHandler(
 		registerer, promhttp.HandlerFor(gatherer, promhttp.HandlerOpts{}),
 	)))
 }
