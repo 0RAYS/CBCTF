@@ -21,6 +21,7 @@ func RegisterMetricsRouter(router *gin.Engine) {
 	// 注册 DB 驱动的自定义 Collector
 	registerer.MustRegister(p.NewCTFCollector())
 	registerer.MustRegister(p.NewGormCollector())
+	registerer.MustRegister(p.NewPostgresCollector())
 
 	// 注册 HTTP 基础指标
 	registerer.MustRegister(p.HttpRequestsTotal)
