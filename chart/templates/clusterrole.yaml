@@ -55,12 +55,12 @@ rules:
   # ── Multus CNI (NetworkAttachmentDefinitions) ────────────────────────────
   - apiGroups: ["k8s.cni.cncf.io"]
     resources: ["network-attachment-definitions"]
-    verbs: ["create", "get", "deletecollection"]
+    verbs: ["create", "get", "delete", "deletecollection"]
 
   # ── KubeOVN resources (VPC networking mode) ──────────────────────────────
   - apiGroups: ["kubeovn.io"]
     resources: ["subnets"]
-    verbs: ["create", "get", "deletecollection"]
+    verbs: ["create", "get", "delete", "deletecollection"]
   - apiGroups: ["kubeovn.io"]
     resources: ["vpcs"]
     verbs: ["create", "deletecollection"]
