@@ -49,6 +49,7 @@ func buildPermissionChecks() []permissionCheck {
 		{Group: "discovery.k8s.io", Resource: "endpointslices", Verb: "deletecollection", Namespace: ns},
 		// Multus: NetworkAttachmentDefinitions
 		{Group: "k8s.cni.cncf.io", Resource: "network-attachment-definitions", Verb: "create", Namespace: ns},
+		{Group: "k8s.cni.cncf.io", Resource: "network-attachment-definitions", Verb: "create", Namespace: "kube-system"},
 		{Group: "k8s.cni.cncf.io", Resource: "network-attachment-definitions", Verb: "get", Namespace: "kube-system"},
 		{Group: "k8s.cni.cncf.io", Resource: "network-attachment-definitions", Verb: "deletecollection", Namespace: ns},
 		// KubeOVN: Subnets (集群级别)

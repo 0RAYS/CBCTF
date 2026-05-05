@@ -21,21 +21,28 @@ const (
 )
 
 var (
-	kubeClient         *kubernetes.Clientset
-	netattClient       *netattclient.Clientset
-	ovnClient          *ovnclient.Clientset
-	kubeConfig         *rest.Config
-	globalNamespace    string
-	externalSubnetName string
-	nfsVolumeName      string
+	kubeClient       *kubernetes.Clientset
+	netattClient     *netattclient.Clientset
+	ovnClient        *ovnclient.Clientset
+	kubeConfig       *rest.Config
+	globalNamespace  string
+	externalNetworks []ExternalNetwork
+	nfsVolumeName    string
 )
+
+type ExternalNetwork struct {
+	SubnetName string
+	Interface  string
+	CIDR       string
+	Gateway    string
+}
 
 func Init() {
 	globalNamespace = config.Env.K8S.Namespace
-	externalSubnetName = fmt.Sprintf("%s-external-network", globalNamespace)
 	nfsVolumeName = fmt.Sprintf("%s-shared-volume", globalNamespace)
 	initClients()
 	checkPermissions()
+	initExternalNetworks()
 	checkResources()
 }
 
@@ -51,8 +58,8 @@ func initClients() {
 			log.Logger.Fatalf("Failed to create client config: %s", err)
 		}
 	}
-	kubeConfig.QPS = 700
-	kubeConfig.Burst = 1000
+	kubeConfig.QPS = 100
+	kubeConfig.Burst = 150
 	log.Logger.Info("Admin config loaded")
 	kubeClient, err = kubernetes.NewForConfig(kubeConfig)
 	if err != nil {

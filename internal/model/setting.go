@@ -46,13 +46,15 @@ const (
 	RedisPortSettingKey = "redis.port"
 	RedisPwdSettingKey  = "redis.pwd"
 
-	K8SConfigSettingKey        = "k8s.config"
-	K8SNamespaceSettingKey     = "k8s.namespace"
-	K8STCPDumpImageSettingKey  = "k8s.tcpdump"
-	K8SFrpOnSettingKey         = "k8s.frp.on"
-	K8SFrpFrpcImageSettingKey  = "k8s.frp.frpc"
-	K8SFrpNginxImageSettingKey = "k8s.frp.nginx"
-	K8SFrpFrpsSettingKey       = "k8s.frp.frps"
+	K8SConfigSettingKey                     = "k8s.config"
+	K8SNamespaceSettingKey                  = "k8s.namespace"
+	K8STCPDumpImageSettingKey               = "k8s.tcpdump"
+	K8SExternalNetworksEnabledSettingKey    = "k8s.external_networks.enabled"
+	K8SExternalNetworksInterfacesSettingKey = "k8s.external_networks.interfaces"
+	K8SFrpOnSettingKey                      = "k8s.frp.on"
+	K8SFrpFrpcImageSettingKey               = "k8s.frp.frpc"
+	K8SFrpNginxImageSettingKey              = "k8s.frp.nginx"
+	K8SFrpFrpsSettingKey                    = "k8s.frp.frps"
 
 	CheatIPWhitelistSettingKey = "cheat.ip.whitelist"
 

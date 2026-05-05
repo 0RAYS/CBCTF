@@ -8,8 +8,10 @@ import (
 	"CBCTF/internal/redis"
 	"CBCTF/internal/utils"
 	"context"
+	"crypto/rand"
 	"errors"
 	"fmt"
+	"math/big"
 	"slices"
 	"strconv"
 	"strings"
@@ -258,6 +260,9 @@ func createVictimNetworkResources(
 	endpoints := make(model.Endpoints, 0)
 	endpointsMutex := &sync.Mutex{}
 	wg := utils.NewGroup(ctx)
+	if victim.Spec.NetworkPlan.Name != "" && len(externalNetworks) == 0 {
+		return nil, nil, nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "ExternalNetwork"}}
+	}
 
 	wg.Go(func() error {
 		name := fmt.Sprintf("np-%s", utils.RandStr(20))
@@ -323,6 +328,10 @@ func createVictimNetworkResources(
 		if subnet == nil {
 			continue
 		}
+		externalNetwork, err := selectExternalNetwork()
+		if err != nil {
+			return nil, nil, nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "ExternalNetwork", "Error": err.Error()}}
+		}
 		subnetMap[subnet.DefName] = subnet
 		netAttachDefMap[subnet.DefName] = subnet.NetAttachDef
 
@@ -373,7 +382,8 @@ func createVictimNetworkResources(
 				VPC:            victim.Spec.NetworkPlan.Name,
 				Subnet:         subnet.Name,
 				LanIP:          subnet.NatGateway.LanIP,
-				ExternalSubnet: []string{externalSubnetName},
+				ExternalSubnet: []string{externalNetwork.SubnetName},
+				Interface:      externalNetwork.Interface,
 			})
 			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 				return errors.New(err.(string))
@@ -387,7 +397,7 @@ func createVictimNetworkResources(
 				Name:           subnet.NatGateway.EIP.Name,
 				Labels:         labels,
 				NatGw:          subnet.NatGateway.Name,
-				ExternalSubnet: externalSubnetName,
+				ExternalSubnet: externalNetwork.SubnetName,
 			})
 			if !ret.OK {
 				if err, ok := ret.Attr["Error"].(string); ok {
@@ -450,6 +460,17 @@ func createVictimNetworkResources(
 	}
 
 	return subnetMap, netAttachDefMap, endpoints, model.SuccessRetVal()
+}
+
+func selectExternalNetwork() (ExternalNetwork, error) {
+	if len(externalNetworks) == 1 {
+		return externalNetworks[0], nil
+	}
+	n, err := rand.Int(rand.Reader, big.NewInt(int64(len(externalNetworks))))
+	if err != nil {
+		return ExternalNetwork{}, err
+	}
+	return externalNetworks[n.Int64()], nil
 }
 
 func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {

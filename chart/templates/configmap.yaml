@@ -86,6 +86,9 @@ data:
       namespace: {{ .Release.Namespace | quote }}
       tcpdump: {{ .Values.cbctf.k8s.tcpdump | quote }}
       generator_worker: {{ .Values.cbctf.k8s.generator_worker }}
+      external_networks:
+        enabled: {{ .Values.cbctf.k8s.external_networks.enabled }}
+        interfaces: {{ toYaml .Values.cbctf.k8s.external_networks.interfaces | nindent 10 }}
       frp:
         on: {{ .Values.cbctf.k8s.frp.on }}
         frpc: {{ .Values.cbctf.k8s.frp.frpc | quote }}

@@ -21,6 +21,9 @@ export function FrpServerField({ frpsList = [], updateConfig }) {
 
   const addFrpsServer = () => {
     updateConfig((draft) => {
+      if (!Array.isArray(draft.k8s.frp.frps)) {
+        draft.k8s.frp.frps = [];
+      }
       draft.k8s.frp.frps.push({ host: '', port: 0, token: '', allowed: [] });
     });
   };
@@ -39,6 +42,9 @@ export function FrpServerField({ frpsList = [], updateConfig }) {
 
   const addAllowedRange = (frpsIndex) => {
     updateConfig((draft) => {
+      if (!Array.isArray(draft.k8s.frp.frps[frpsIndex].allowed)) {
+        draft.k8s.frp.frps[frpsIndex].allowed = [];
+      }
       draft.k8s.frp.frps[frpsIndex].allowed.push({ from: 0, to: 0, exclude: [] });
     });
   };
@@ -57,6 +63,9 @@ export function FrpServerField({ frpsList = [], updateConfig }) {
 
   const addExcludePort = (frpsIndex, allowedIndex) => {
     updateConfig((draft) => {
+      if (!Array.isArray(draft.k8s.frp.frps[frpsIndex].allowed[allowedIndex].exclude)) {
+        draft.k8s.frp.frps[frpsIndex].allowed[allowedIndex].exclude = [];
+      }
       draft.k8s.frp.frps[frpsIndex].allowed[allowedIndex].exclude.push(0);
     });
   };
