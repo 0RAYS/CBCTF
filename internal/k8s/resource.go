@@ -27,7 +27,7 @@ func initExternalNetworks() {
 			CIDR:       iface.CIDR,
 			Gateway:    iface.Gateway,
 		}
-		DeleteNetAttachDef(ctx, network.SubnetName)
+		DeleteNetAttachDef(ctx, network.SubnetName, "kube-system")
 		if _, ret := CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
 			Name:      network.SubnetName,
 			Namespace: "kube-system",
