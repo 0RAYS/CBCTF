@@ -52,8 +52,6 @@ func exec(name string, task func() model.RetVal) func() {
 			log.Logger.Warningf("%s failed: %s, processing time: %s", name, result.Msg, time.Duration(duration*float64(time.Second)))
 		} else if duration > time.Second.Seconds() {
 			log.Logger.Warningf("%s processing time: %s", name, time.Duration(duration*float64(time.Second)))
-		} else {
-			log.Logger.Debugf("%s processing time: %s", name, time.Duration(duration*float64(time.Second)))
 		}
 	}
 }

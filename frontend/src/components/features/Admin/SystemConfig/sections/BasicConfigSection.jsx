@@ -44,31 +44,6 @@ export function BasicConfigSection({ config, updateConfig }) {
         }
       />
       <ConfigField
-        label={t('admin.system.labels.logLevel')}
-        type="select"
-        value={config.log.level}
-        options={['DEBUG', 'INFO', 'WARNING', 'ERROR']}
-        onChange={(value) =>
-          updateConfig((draft) => {
-            draft.log.level = value;
-          })
-        }
-      />
-      <ConfigField
-        label={t('admin.system.labels.saveLogs')}
-        type="boolean"
-        value={config.log.save}
-        options={[
-          { value: 'true', label: t('common.yes') },
-          { value: 'false', label: t('common.no') },
-        ]}
-        onChange={(value) =>
-          updateConfig((draft) => {
-            draft.log.save = value;
-          })
-        }
-      />
-      <ConfigField
         label={t('admin.system.labels.workerLog')}
         type="select"
         value={config.asyncq.log.level}

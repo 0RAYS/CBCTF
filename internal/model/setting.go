@@ -11,9 +11,6 @@ const (
 	HostSettingKey = "host"
 	PathSettingKey = "path"
 
-	LogLevelSettingKey = "log.level"
-	LogSaveSettingKey  = "log.save"
-
 	AsyncQLogLevelSettingKey       = "asynq.log.level"
 	AsyncQConcurrencySettingKey    = "asynq.concurrency"
 	AsyncQVictimConcurrencyKey     = "asynq.queues.victim"

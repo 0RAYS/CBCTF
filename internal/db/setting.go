@@ -85,9 +85,6 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 		{Key: model.HostSettingKey, Value: model.SettingValue{V: config.Env.Host}},
 		{Key: model.PathSettingKey, Value: model.SettingValue{V: config.Env.Path}},
 
-		{Key: model.LogLevelSettingKey, Value: model.SettingValue{V: config.Env.Log.Level}},
-		{Key: model.LogSaveSettingKey, Value: model.SettingValue{V: config.Env.Log.Save}},
-
 		{Key: model.AsyncQLogLevelSettingKey, Value: model.SettingValue{V: config.Env.AsyncQ.Log.Level}},
 		{Key: model.AsyncQConcurrencySettingKey, Value: model.SettingValue{V: config.Env.AsyncQ.Concurrency}},
 		{Key: model.AsyncQVictimConcurrencyKey, Value: model.SettingValue{V: config.Env.AsyncQ.Queues.Victim}},
@@ -157,13 +154,6 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 		return ret
 	}
 	if config.Env.Path, ret = GetValue[string](s, model.PathSettingKey); !ret.OK {
-		return ret
-	}
-
-	if config.Env.Log.Level, ret = GetValue[string](s, model.LogLevelSettingKey); !ret.OK {
-		return ret
-	}
-	if config.Env.Log.Save, ret = GetValue[bool](s, model.LogSaveSettingKey); !ret.OK {
 		return ret
 	}
 

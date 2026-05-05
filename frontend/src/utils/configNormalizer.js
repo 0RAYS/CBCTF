@@ -17,8 +17,6 @@ export function normalizeConfig(source) {
     return null;
   }
 
-  const logLevel = fallback(source?.log_level, fallback(source?.log?.level, ''));
-  const logSave = fallback(source?.log_save, fallback(source?.log?.save, false));
   const asyncqConcurrency = fallback(source?.asyncq_concurrency, fallback(source?.asynq?.concurrency, 0));
   const asyncqLogLevel = fallback(source?.asyncq_log_level, fallback(source?.asynq?.log?.level, ''));
   const asyncqVictimConcurrency = fallback(
@@ -43,10 +41,6 @@ export function normalizeConfig(source) {
   return {
     host: fallback(source?.host, ''),
     path: fallback(source?.path, ''),
-    log: {
-      level: logLevel,
-      save: logSave,
-    },
     asyncq: {
       concurrency: asyncqConcurrency,
       log: {

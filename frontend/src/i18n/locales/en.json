@@ -1709,6 +1709,7 @@
     },
     "logs": {
       "title": "System Logs",
+      "levelFilter": "Log Level",
       "loadMore": "Load more",
       "noMore": "No more logs",
       "toast": {
