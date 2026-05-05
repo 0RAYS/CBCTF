@@ -43,24 +43,27 @@ func HandleStartVictimTask(_ context.Context, t *asynq.Task) error {
 		return err
 	}
 	victim := payload.Victim
+	log.Logger.Debugf("Start victim task received: victim_id=%d user_id=%d team_id=%d challenge_id=%d pods=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID, len(victim.Pods))
+	cleanupQueued := false
 	err := func() error {
 		podRepo := db.InitPodRepo(db.DB)
 		victimRepo := db.InitVictimRepo(db.DB)
 		currentVictim, ret := victimRepo.GetByID(victim.ID)
 		if !ret.OK {
 			if ret.Msg == i18n.Model.NotFound {
-				log.Logger.Infof("The Victim %d may have already been stopped", victim.ID)
+				log.Logger.Debugf("Start victim skipped: victim_id=%d no longer exists", victim.ID)
 				return nil
 			}
 			return fmt.Errorf("get victim failed: %s", ret.Msg)
 		}
 		if currentVictim.Status == model.TerminatingVictimStatus {
-			log.Logger.Infof("The Victim %d is terminating, skip start...", victim.ID)
+			log.Logger.Infof("Start victim skipped: victim_id=%d is terminating", victim.ID)
 			return nil
 		}
 		if ret = victimRepo.Update(victim.ID, db.UpdateVictimOptions{Status: new(model.PendingVictimStatus)}); !ret.OK {
 			return fmt.Errorf("update victim failed: %s", ret.Msg)
 		}
+		log.Logger.Infof("Starting victim provisioning: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID)
 		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
 		defer cancel()
 		victim, ret = k8s.StartVictim(ctx, victim)
@@ -93,12 +96,19 @@ func HandleStartVictimTask(_ context.Context, t *asynq.Task) error {
 		})
 		if !ret.OK {
 			_, err := EnqueueStopVictimTask(victim)
+			cleanupQueued = err == nil
 			return err
 		}
+		log.Logger.Infof(
+			"Victim is running: victim_id=%d user_id=%d team_id=%d challenge_id=%d endpoints=%d exposed_endpoints=%d",
+			victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID, len(victim.Endpoints), len(victim.ExposedEndpoints),
+		)
 		return nil
 	}()
-	if err != nil {
-		_, _ = EnqueueStopVictimTask(victim)
+	if err != nil && !cleanupQueued {
+		if _, enqueueErr := EnqueueStopVictimTask(victim); enqueueErr != nil {
+			log.Logger.Warningf("Failed to enqueue victim cleanup after start failure: victim_id=%d error=%v", victim.ID, enqueueErr)
+		}
 	}
 	return err
 }
@@ -129,11 +139,12 @@ func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
 	victim, ret := victimRepo.GetByID(payload.Victim.ID)
 	if !ret.OK {
 		if ret.Msg == i18n.Model.NotFound {
-			log.Logger.Infof("The Victim %d may have already been stopped", payload.Victim.ID)
+			log.Logger.Debugf("Stop victim skipped: victim_id=%d no longer exists", payload.Victim.ID)
 			return nil
 		}
 		return fmt.Errorf("get victim failed: %s", ret.Msg)
 	}
+	log.Logger.Infof("Stopping victim: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID)
 	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	defer cancel()
 	ret = k8s.StopVictim(ctx, victim)
@@ -154,5 +165,6 @@ func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
 	if !ret.OK {
 		return fmt.Errorf("%s", ret.Msg)
 	}
+	log.Logger.Infof("Victim stopped: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID)
 	return nil
 }

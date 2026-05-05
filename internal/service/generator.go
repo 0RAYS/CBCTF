@@ -32,6 +32,7 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 	}
 	contestChallengeRepo := db.InitContestChallengeRepo(tx)
 	generatorRepo := db.InitGeneratorRepo(db.DB)
+	queued, failedCreate, failedEnqueue := 0, 0, 0
 	for _, challenge := range challenges {
 		if contestID > 0 {
 			_, ret = contestChallengeRepo.Get(db.GetOptions{
@@ -49,11 +50,21 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 				Name:          fmt.Sprintf("gen-%d-%d-%s", contestID, challenge.ID, utils.RandStr(6)),
 			})
 			if !ret.OK {
+				failedCreate++
 				continue
 			}
-			_, _ = task.EnqueueStartGeneratorTask(challenge, generator)
+			if _, err := task.EnqueueStartGeneratorTask(challenge, generator); err != nil {
+				failedEnqueue++
+				log.Logger.Warningf("Failed to enqueue start generator task: generator_id=%d name=%s challenge_id=%d error=%v", generator.ID, generator.Name, challenge.ID, err)
+				continue
+			}
+			queued++
 		}
 	}
+	log.Logger.Infof(
+		"Batch start generators completed: contest_id=%d requested=%d matched_challenges=%d queued=%d failed_create=%d failed_enqueue=%d",
+		contestID, len(form.Challenges), len(challenges), queued, failedCreate, failedEnqueue,
+	)
 	return model.SuccessRetVal()
 }
 
@@ -69,9 +80,10 @@ func StopGenerators(tx *gorm.DB, form dto.StopGeneratorsForm) model.RetVal {
 	}
 	for _, generator := range generators {
 		if ret = StopGenerator(tx, generator); !ret.OK {
-			log.Logger.Warningf("Skip stopping generator %d: %s", generator.ID, ret.Msg)
+			log.Logger.Warningf("Skip stopping generator: generator_id=%d name=%s status=%s reason=%s", generator.ID, generator.Name, generator.Status, ret.Msg)
 		}
 	}
+	log.Logger.Infof("Batch stop generators requested: requested=%d matched=%d", len(form.Generators), len(generators))
 	return model.SuccessRetVal()
 }
 
@@ -91,12 +103,13 @@ func StopGenerator(tx *gorm.DB, generator model.Generator) model.RetVal {
 	generator.Status = model.TerminatingGeneratorStatus
 	_, err := task.EnqueueStopGeneratorTask(generator)
 	if err != nil {
-		log.Logger.Warningf("Failed to enqueue stop generator task: %v", err)
+		log.Logger.Warningf("Failed to enqueue stop generator task: generator_id=%d name=%s challenge_id=%d error=%v", generator.ID, generator.Name, generator.ChallengeID, err)
 		_ = repo.Update(generator.ID, db.UpdateGeneratorOptions{
 			Status: new(model.RunningGeneratorStatus),
 		})
 		return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
+	log.Logger.Infof("Stop generator queued: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)
 	return model.SuccessRetVal()
 }
 

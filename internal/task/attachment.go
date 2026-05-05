@@ -3,6 +3,7 @@ package task
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/k8s"
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
 	"context"
@@ -45,6 +46,7 @@ func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
 	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
 	}
+	log.Logger.Infof("Generating attachment: user_id=%d team_id=%d challenge_id=%d generator_id=%d", payload.UserID, payload.TeamID, payload.Challenge.ID, payload.Generator.ID)
 	ctx, cancel := context.WithTimeout(ctx, time.Minute)
 	ret := k8s.GenAttachment(ctx, payload.Challenge, payload.Generator, payload.TeamID, payload.Flags)
 	cancel()
@@ -52,5 +54,6 @@ func HandleGenAttachmentTask(ctx context.Context, t *asynq.Task) error {
 	if !ret.OK {
 		return fmt.Errorf("generate attachment failed: %s", ret.Msg)
 	}
+	log.Logger.Infof("Attachment generated: user_id=%d team_id=%d challenge_id=%d generator_id=%d", payload.UserID, payload.TeamID, payload.Challenge.ID, payload.Generator.ID)
 	return nil
 }

@@ -59,6 +59,7 @@ stream {
 func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetVal) {
 	idxBig, _ := rand.Int(rand.Reader, big.NewInt(int64(len(config.Env.K8S.Frp.Frps))))
 	frps := config.Env.K8S.Frp.Frps[idxBig.Int64()]
+	log.Logger.Debugf("Creating frpc resources: victim_id=%d frps=%s endpoints=%d", victim.ID, frps.Host, len(victim.Endpoints))
 	portRange := make([]int32, 0)
 	for _, pr := range frps.Allowed {
 		for i := pr.From; i <= pr.To; i++ {
@@ -106,7 +107,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 				Port:     exposedPort,
 				Protocol: endpoint.Protocol,
 			})
-			log.Logger.Infof("Frpc started: %s:%d -> %s:%d", frps.Host, exposedPort, endpoint.IP, endpoint.Port)
+			log.Logger.Debugf("Reserved frpc endpoint: victim_id=%d %s:%d -> %s:%d protocol=%s", victim.ID, frps.Host, exposedPort, endpoint.IP, endpoint.Port, endpoint.Protocol)
 		}
 		podFrpcConfigMap[podName] = frpcConfig
 		podNginxConfigMap[podName] = fmt.Sprintf(nginxHeaderTemplate, nginxConfig)
@@ -153,7 +154,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 					Port:     exposedPort,
 					Protocol: dnat.Protocol,
 				})
-				log.Logger.Infof("Frpc started: %s:%d -> %s:%d", frps.Host, exposedPort, subnet.NatGateway.EIP.IP, dnat.ExternalPort)
+				log.Logger.Debugf("Reserved frpc endpoint: victim_id=%d %s:%d -> %s:%d protocol=%s", victim.ID, frps.Host, exposedPort, subnet.NatGateway.EIP.IP, dnat.ExternalPort, dnat.Protocol)
 				needFrpc = true
 			}
 			if !needFrpc {
@@ -292,6 +293,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 	if err := wg.Wait(); err != nil {
 		return victim, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
+	log.Logger.Debugf("Created frpc resources: victim_id=%d frpc_pods=%d exposed_endpoints=%d", victim.ID, len(frpcPodNameL), len(victim.ExposedEndpoints))
 	return victim, model.SuccessRetVal()
 }
 

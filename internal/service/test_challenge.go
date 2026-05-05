@@ -3,6 +3,7 @@ package service
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/k8s"
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"CBCTF/internal/view"
 	"context"
@@ -27,10 +28,14 @@ func GenTestAttachment(tx *gorm.DB, challenge model.Challenge) model.RetVal {
 	if !ret.OK {
 		return ret
 	}
+	log.Logger.Infof("Generating test attachment: challenge_id=%d generator_id=%d", challenge.ID, generator.ID)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	ret = k8s.GenAttachment(ctx, challenge, generator, 0, flags)
 	cancel()
 	db.InitGeneratorRepo(tx).UpdateStatus(generator.ID, ret.OK, time.Now())
+	if ret.OK {
+		log.Logger.Infof("Test attachment generated: challenge_id=%d generator_id=%d", challenge.ID, generator.ID)
+	}
 	return ret
 }
 

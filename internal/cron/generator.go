@@ -3,6 +3,7 @@ package cron
 import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/k8s"
+	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 	"context"
 	"slices"
@@ -26,7 +27,11 @@ func stopUnCtrlGeneratorTask() model.RetVal {
 			return generator.Name == pod.Name
 		}) {
 			ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
-			k8s.DeletePod(ctx, pod.Name)
+			if ret = k8s.DeletePod(ctx, pod.Name); ret.OK {
+				log.Logger.Infof("Deleted uncontrolled generator pod: pod=%s", pod.Name)
+			} else {
+				log.Logger.Warningf("Failed to delete uncontrolled generator pod: pod=%s reason=%s", pod.Name, ret.Msg)
+			}
 			cancel()
 		}
 	}
