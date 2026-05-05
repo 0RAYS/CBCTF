@@ -143,10 +143,10 @@ PostgreSQL SSL 开关, 类型为布尔值:
 - `frp.frpc`
 - `frp.nginx`
 - `frp.frps`
-- `externalNetwork.enabled`
-- `externalNetwork.cidr`
-- `externalNetwork.gateway`
-- `externalNetwork.interface`
+- `external_networks.enabled`
+- `external_networks.cidr`
+- `external_networks.gateway`
+- `external_networks.interface`
 
 当前 Chart 和应用代码中 **不存在** `cbctf.k8s.generator_worker`、`cbctf.k8s.kubeovnRBAC`、`cbctf.k8s.multusRBAC` 这些可配置项。
 
@@ -223,7 +223,7 @@ cbctf:
     proxies:
       - "10.244.0.0/16"
   k8s:
-    externalNetwork:
+    external_networks:
       enabled: true
       cidr: "192.168.0.0/24"
       gateway: "192.168.0.1"

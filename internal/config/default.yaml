@@ -68,6 +68,12 @@ k8s:
   namespace: cbctf
   # Docker image
   tcpdump: nicolaka/netshoot:latest
+  external_networks:
+    enabled: true
+    interfaces:
+      - interface: ens192
+        cidr: 192.168.0.0/24
+        gateway: 192.168.0.1
   frp:
     on: false
     # Docker image

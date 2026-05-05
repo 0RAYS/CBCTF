@@ -43,14 +43,16 @@ type UpdateSettingForm struct {
 	RedisPort *uint   `form:"redis_port" json:"redis_port" binding:"omitempty,port"`
 	RedisPwd  *string `form:"redis_pwd" json:"redis_pwd" binding:"omitempty,min=1,ascii"`
 
-	K8SConfig       *string `form:"k8s_config" json:"k8s_config" binding:"omitempty,filepath"`
-	K8SNamespace    *string `form:"k8s_namespace" json:"k8s_namespace" binding:"omitempty,min=1,alphanum"`
-	K8STCPDumpImage *string `form:"k8s_tcpdump" json:"k8s_tcpdump" binding:"omitempty,min=1"`
+	K8SConfig                     *string             `form:"k8s_config" json:"k8s_config" binding:"omitempty,filepath"`
+	K8SNamespace                  *string             `form:"k8s_namespace" json:"k8s_namespace" binding:"omitempty,min=1,alphanum"`
+	K8STCPDumpImage               *string             `form:"k8s_tcpdump" json:"k8s_tcpdump" binding:"omitempty,min=1"`
+	K8SExternalNetworksEnabled    *bool               `form:"k8s_external_networks_enabled" json:"k8s_external_networks_enabled"`
+	K8SExternalNetworksInterfaces *[]config.Interface `form:"k8s_external_networks_interfaces" json:"k8s_external_networks_interfaces" binding:"omitempty,dive"`
 
 	K8SFrpOn         *bool                `form:"k8s_frp_on" json:"k8s_frp_on"`
 	K8SFrpFrpcImage  *string              `form:"k8s_frp_frpc" json:"k8s_frp_frpc" binding:"omitempty,min=1"`
 	K8SFrpNginxImage *string              `form:"k8s_frp_nginx" json:"k8s_frp_nginx" binding:"omitempty,min=1"`
-	K8SFrpFrps       *[]config.FrpsConfig `form:"k8s_frp_frps" json:"k8s_frp_frps"`
+	K8SFrpFrps       *[]config.FrpsConfig `form:"k8s_frp_frps" json:"k8s_frp_frps" binding:"omitempty,dive"`
 
 	CheatIPWhitelist *[]string `form:"cheat_ip_whitelist" json:"cheat_ip_whitelist" binding:"omitempty,dive,ip|cidr"`
 

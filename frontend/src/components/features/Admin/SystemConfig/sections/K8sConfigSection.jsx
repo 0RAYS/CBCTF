@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ConfigSection } from '../fields/ConfigSection';
 import { ConfigField } from '../fields/ConfigField';
 import { FrpServerField } from '../fields/FrpServerField';
+import { ExternalNetworkField } from '../fields/ExternalNetworkField';
 import { Input } from '../../../../common';
 
 export function K8sConfigSection({ config, updateConfig }) {
@@ -37,6 +38,10 @@ export function K8sConfigSection({ config, updateConfig }) {
           })
         }
       />
+
+      <div className="border-b border-neutral-300/20" />
+
+      <ExternalNetworkField externalNetworks={config.k8s.external_networks} updateConfig={updateConfig} />
 
       <div className="border-b border-neutral-300/20" />
 

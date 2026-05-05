@@ -12,6 +12,21 @@ const normalizeSecret = (value) => {
   return value;
 };
 
+const normalizeFrps = (frps) => {
+  if (!Array.isArray(frps)) {
+    return [];
+  }
+  return frps.map((server) => ({
+    ...server,
+    allowed: Array.isArray(server?.allowed)
+      ? server.allowed.map((allowed) => ({
+          ...allowed,
+          exclude: Array.isArray(allowed?.exclude) ? allowed.exclude : [],
+        }))
+      : [],
+  }));
+};
+
 export function normalizeConfig(source) {
   if (!source) {
     return null;
@@ -102,11 +117,21 @@ export function normalizeConfig(source) {
       config: fallback(source?.k8s_config, fallback(source?.k8s?.config, '')),
       namespace: fallback(source?.k8s_namespace, fallback(source?.k8s?.namespace, '')),
       tcpdump: fallback(source?.k8s_tcpdump, fallback(source?.k8s?.tcpdump, '')),
+      external_networks: {
+        enabled: fallback(
+          source?.k8s_external_networks_enabled,
+          fallback(source?.k8s_external_networks?.enabled, fallback(source?.k8s?.external_networks?.enabled, false))
+        ),
+        interfaces: fallback(
+          source?.k8s_external_networks_interfaces,
+          fallback(source?.k8s_external_networks?.interfaces, fallback(source?.k8s?.external_networks?.interfaces, []))
+        ),
+      },
       frp: {
         frpc: fallback(source?.k8s_frp_frpc, fallback(source?.k8s?.frp?.frpc, '')),
         nginx: fallback(source?.k8s_frp_nginx, fallback(source?.k8s?.frp?.nginx, '')),
         on: fallback(source?.k8s_frp_on, fallback(source?.k8s?.frp?.on, false)),
-        frps: fallback(source?.k8s_frp_frps, fallback(source?.k8s?.frp?.frps, [])),
+        frps: normalizeFrps(fallback(source?.k8s_frp_frps, fallback(source?.k8s?.frp?.frps, []))),
       },
     },
     cheat: {

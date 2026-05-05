@@ -14,15 +14,21 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type Interface struct {
+	Interface string `mapstructure:"interface" json:"interface" binding:"required,min=1"`
+	CIDR      string `mapstructure:"cidr" json:"cidr" binding:"required,cidr"`
+	Gateway   string `mapstructure:"gateway" json:"gateway" binding:"required,ip"`
+}
+
 type FrpsConfig struct {
-	Host    string `json:"host" binding:"hostname"`
-	Port    int32  `json:"port" binding:"gte=0,lte=65535"`
+	Host    string `json:"host" binding:"required,hostname"`
+	Port    int32  `json:"port" binding:"required,gte=0,lte=65535"`
 	Token   string `json:"token"`
 	Allowed []struct {
-		From    int32   `json:"from" binding:"gte=0,lte=65535"`
-		To      int32   `json:"to" binding:"gte=0,lte=65535"`
+		From    int32   `json:"from" binding:"required,gte=0,lte=65535"`
+		To      int32   `json:"to" binding:"required,gte=0,lte=65535"`
 		Exclude []int32 `json:"exclude" binding:"dive,gte=0,lte=65535"`
-	} `json:"allowed"`
+	} `json:"allowed" binding:"required,dive"`
 }
 
 type Config struct {
@@ -86,10 +92,14 @@ type Config struct {
 		Pwd  string `mapstructure:"pwd" json:"pwd"`
 	} `mapstructure:"redis" json:"redis"`
 	K8S struct {
-		Config       string `mapstructure:"config" json:"config"`
-		Namespace    string `mapstructure:"namespace" json:"namespace"`
-		TCPDumpImage string `mapstructure:"tcpdump" json:"tcpdump"`
-		Frp          struct {
+		Config           string `mapstructure:"config" json:"config"`
+		Namespace        string `mapstructure:"namespace" json:"namespace"`
+		TCPDumpImage     string `mapstructure:"tcpdump" json:"tcpdump"`
+		ExternalNetworks struct {
+			Enabled    bool        `mapstructure:"enabled" json:"enabled"`
+			Interfaces []Interface `mapstructure:"interfaces" json:"interfaces"`
+		} `mapstructure:"external_networks" json:"external_networks"`
+		Frp struct {
 			On         bool         `mapstructure:"on" json:"on"`
 			FrpcImage  string       `mapstructure:"frpc" json:"frpc"`
 			NginxImage string       `mapstructure:"nginx" json:"nginx"`

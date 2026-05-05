@@ -61,6 +61,14 @@ func GetNetAttachDef(ctx context.Context, name string, namespace ...string) (*ne
 	return netAttachDef, model.SuccessRetVal()
 }
 
+func DeleteNetAttachDef(ctx context.Context, name string) model.RetVal {
+	if err := netattClient.K8sCniCncfIoV1().NetworkAttachmentDefinitions(globalNamespace).Delete(ctx, name, metav1.DeleteOptions{}); err != nil && !apierror.IsNotFound(err) {
+		log.Logger.Warningf("Failed to delete NetworkAttachmentDefinition: %s", err)
+		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "NetworkAttachmentDefinition", "Error": err.Error()}}
+	}
+	return model.SuccessRetVal()
+}
+
 func DeleteNetAttachDefList(ctx context.Context, namespace string, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {

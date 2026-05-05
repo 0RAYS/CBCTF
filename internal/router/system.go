@@ -110,9 +110,10 @@ func SystemConfig(ctx *gin.Context) {
 		"redis_port": config.Env.Redis.Port,
 		"redis_pwd":  "******",
 
-		"k8s_config":    config.Env.K8S.Config,
-		"k8s_namespace": config.Env.K8S.Namespace,
-		"k8s_tcpdump":   config.Env.K8S.TCPDumpImage,
+		"k8s_config":            config.Env.K8S.Config,
+		"k8s_namespace":         config.Env.K8S.Namespace,
+		"k8s_tcpdump":           config.Env.K8S.TCPDumpImage,
+		"k8s_external_networks": config.Env.K8S.ExternalNetworks,
 
 		"k8s_frp_on":    config.Env.K8S.Frp.On,
 		"k8s_frp_frpc":  config.Env.K8S.Frp.FrpcImage,

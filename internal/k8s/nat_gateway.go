@@ -17,6 +17,7 @@ import (
 const (
 	VPCUnsupportedNodeLabelKey   = "node.cbctf.io/vpc-unsupported"
 	VPCUnsupportedNodeLabelValue = "true"
+	ExternalNetworkNodeLabelKey  = "node.cbctf.io/external-network"
 )
 
 type CreateVPCNatGatewayOptions struct {
@@ -26,6 +27,7 @@ type CreateVPCNatGatewayOptions struct {
 	Subnet         string
 	LanIP          string
 	ExternalSubnet []string
+	Interface      string
 }
 
 func CreateVPCNatGateway(ctx context.Context, options CreateVPCNatGatewayOptions) (*kubeovnv1.VpcNatGateway, model.RetVal) {
@@ -33,6 +35,21 @@ func CreateVPCNatGateway(ctx context.Context, options CreateVPCNatGatewayOptions
 		gateway *kubeovnv1.VpcNatGateway
 		err     error
 	)
+	matchExpressions := []corev1.NodeSelectorRequirement{
+		{
+			Key:      VPCUnsupportedNodeLabelKey,
+			Operator: corev1.NodeSelectorOpNotIn,
+			Values:   []string{VPCUnsupportedNodeLabelValue},
+		},
+	}
+	if options.Interface != "" {
+		matchExpressions = append(matchExpressions, corev1.NodeSelectorRequirement{
+			Key:      ExternalNetworkNodeLabelKey,
+			Operator: corev1.NodeSelectorOpIn,
+			Values:   []string{options.Interface},
+		})
+	}
+
 	gateway = &kubeovnv1.VpcNatGateway{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      options.Name,
@@ -44,19 +61,12 @@ func CreateVPCNatGateway(ctx context.Context, options CreateVPCNatGatewayOptions
 			Subnet:          options.Subnet,
 			LanIP:           options.LanIP,
 			ExternalSubnets: options.ExternalSubnet,
-			// Exclude nodes explicitly labeled as not supporting VPC networking.
 			Affinity: corev1.Affinity{
 				NodeAffinity: &corev1.NodeAffinity{
 					RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
 						NodeSelectorTerms: []corev1.NodeSelectorTerm{
 							{
-								MatchExpressions: []corev1.NodeSelectorRequirement{
-									{
-										Key:      VPCUnsupportedNodeLabelKey,
-										Operator: corev1.NodeSelectorOpNotIn,
-										Values:   []string{VPCUnsupportedNodeLabelValue},
-									},
-								},
+								MatchExpressions: matchExpressions,
 							},
 						},
 					},

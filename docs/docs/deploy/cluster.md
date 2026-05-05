@@ -23,7 +23,7 @@ sidebar_position: 1
 
 ### 网卡命名一致性
 
-所有节点用于外部网络的主网卡名称必须一致, 例如都为 `eth0` 或都为 `ens192`。Helm Chart 的 `cbctf.k8s.externalNetwork.interface` 依赖这一点。
+所有节点用于外部网络的主网卡名称必须一致, 例如都为 `eth0` 或都为 `ens192`。Helm Chart 的 `cbctf.k8s.external_networks.interface` 依赖这一点。
 
 ## 安装 NFS 客户端
 
