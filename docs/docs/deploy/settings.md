@@ -180,6 +180,8 @@ Redis 既用作缓存, 也用作 Asynq 的任务队列后端。
 - `k8s.config`: kubeconfig 路径; 容器内 Helm 部署时会写成 `/admin/admin.yaml`
 - `k8s.namespace`: 题目相关资源所在命名空间
 - `k8s.tcpdump`: 流量捕获 sidecar 镜像
+- `k8s.external_networks.enabled`: 是否启用 VPC 外部网络
+- `k8s.external_networks.interfaces`: 外部网络列表, 每项包含 `interface`、`cidr`、`gateway`
 - `k8s.frp.on`: 是否启用 FRP 暴露题目端口
 - `k8s.frp.frpc` / `k8s.frp.nginx`: FRP 相关镜像
 - `k8s.frp.frps`: FRPS 服务端配置列表
@@ -205,18 +207,20 @@ GeoLite2-City 数据库路径。配置后, 可在后台查看 IP 的地理位置
 
 ## 启动时的 K8s 资源检查
 
-程序启动后会检查以下 K8s 资源: 
+程序启动后会检查或创建以下 K8s 资源: 
 
 - 命名空间 `{namespace}`
 - PVC `{namespace}-shared-volume`
-- Subnet `{namespace}-external-network`
-- `kube-system/{namespace}-external-network` 对应的 NAD
+- Subnet `{namespace}-external-network-{interface}`
+- `kube-system/{namespace}-external-network-{interface}` 对应的 NAD
 
 含义如下: 
 
 - 命名空间缺失: 启动失败
 - PVC 缺失: 动态附件不可用
-- 外部网络资源缺失: VPC 网络模式不可用
+- 外部网络未启用、配置为空或创建失败: VPC 网络模式不可用
+
+VPC NAT Gateway Pod 会调度到带有 `node.cbctf.io/external-network=<interface>` 标签的节点。多个外部网络可以对应不同节点上的不同主网卡名称。
 
 ## 在线配置更新
 
