@@ -21,7 +21,7 @@ type Interface struct {
 }
 
 type FrpsConfig struct {
-	Host    string `json:"host" binding:"required,hostname"`
+	Host    string `json:"host" binding:"required,hostname|ip"`
 	Port    int32  `json:"port" binding:"required,gte=0,lte=65535"`
 	Token   string `json:"token"`
 	Allowed []struct {
