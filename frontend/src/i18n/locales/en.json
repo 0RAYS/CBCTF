@@ -26,6 +26,9 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "create": "Create",
+    "add": "Add",
+    "remove": "Remove",
+    "close": "Close",
     "save": "Save",
     "reset": "Reset",
     "previous": "Previous",
@@ -133,7 +136,7 @@
       "managementTitle": "{{label}} Management"
     },
     "tasks": {
-      "subtitle": "Inspect terminal task history and current Redis-backed queue state.",
+      "subtitle": "View task history and live queue state.",
       "tabs": {
         "history": "History",
         "live": "Live Queue"
@@ -183,26 +186,26 @@
       "title": "Node Images",
       "control": {
         "title": "Global Image Overview",
-        "subtitle": "Show all tagged images on each node and use the union across all schedulable nodes as the global image set."
+        "subtitle": "Global image set across schedulable nodes."
       },
       "summary": {
         "unionLabel": "Global Image Set"
       },
       "selection": {
         "title": "Pull Missing Images",
-        "subtitle": "Use the union of images across all nodes, mark missing ones per node, and select exact node/image pairs to pull."
+        "subtitle": "Select missing node/image pairs to pull."
       },
       "intersection": {
         "title": "Global Image Missing View",
-        "subtitle": "This view is based on the union of tagged images currently present on all schedulable nodes.",
+        "subtitle": "Based on tagged images across schedulable nodes.",
         "empty": "No tagged images available in the global image set"
       },
       "manual": {
         "title": "Pull By Manual Input",
-        "subtitle": "After choosing nodes, enter image names manually, one per line, and the system will create pull jobs for each node/image combination."
+        "subtitle": "Choose nodes and enter one image per line."
       },
       "statusTitle": "Node Image Inventory",
-      "statusSubtitle": "Each node shows all currently visible tagged images and highlights which global-set images are missing on that node.",
+      "statusSubtitle": "Shows tagged images and missing global images per node.",
       "node": {
         "missingTitle": "Missing global-set images on this node",
         "noMissing": "This node is not missing any global-set image"
@@ -278,7 +281,7 @@
       "modal": {
         "createTitle": "Create Contest",
         "deleteTitle": "Delete Contest",
-        "deletePrompt": "Delete this contest? All associated data will be permanently removed.",
+        "deletePrompt": "Delete this contest?",
         "deleteWarning": "$t(common.modal.deleteWarning)"
       },
       "toast": {
@@ -475,7 +478,7 @@
         "title": "Network Traffic Graph",
         "hero": {
           "kicker": "Traffic Topology",
-          "subtitle": "A clearer live topology view for {{challenge}} with ingress, egress, and internal paths separated.",
+          "subtitle": "Live traffic topology for {{challenge}}.",
           "windowAt": "Window {{start}} - {{end}}",
           "demoMode": "Sample Data"
         },
@@ -495,7 +498,7 @@
         },
         "canvas": {
           "title": "Topology Canvas",
-          "subtitle": "Left side is ingress, center is victim, right side is egress.",
+          "subtitle": "Ingress left, victim center, egress right.",
           "zoomHint": "Wheel to zoom, drag to pan."
         },
         "filter": {
@@ -515,7 +518,7 @@
         },
         "panel": {
           "selectedFlow": "Selected Flow",
-          "selectedFlowHint": "Click a line to inspect the hottest path in the current window.",
+          "selectedFlowHint": "Click a line to inspect the hottest path.",
           "edgePath": "Path",
           "edgeBytes": "Traffic",
           "edgePackets": "Packets",
@@ -551,9 +554,9 @@
         },
         "toast": {
           "fetchFailed": "Failed to load traffic data",
-          "demoFallback": "Failed to load traffic data, using sample data for preview"
+          "demoFallback": "Failed to load traffic; showing sample data"
         },
-        "demoNotice": "Unable to fetch real traffic data. Currently displaying sample data for demonstration purposes. Click refresh to retry."
+        "demoNotice": "Showing sample data. Refresh to retry."
       },
       "notices": {
         "title": "Notice Management",
@@ -584,7 +587,7 @@
             "edit": "Edit Notice",
             "delete": "Delete Notice"
           },
-          "deletePrompt": "Are you sure you want to delete notice \"{{title}}\"? This action cannot be undone."
+          "deletePrompt": "Delete notice \"{{title}}\"? This action cannot be undone."
         },
         "toast": {
           "fetchFailed": "Failed to load notices",
@@ -600,11 +603,11 @@
         "title": "Node Images",
         "control": {
           "title": "Contest Image Overview",
-          "subtitle": "Show each node's current images and focus the target image set on images directly required by this contest."
+          "subtitle": "Show node images required by this contest."
         },
         "labels": {
           "pullPolicy": "Pull Policy",
-          "pullPolicyHint": "Always forces a pull. IfNotPresent only creates jobs for missing images on a node. Never skips creating pull jobs.",
+          "pullPolicyHint": "Always pulls; IfNotPresent pulls missing images; Never skips jobs.",
           "nodes": "Target Nodes",
           "comboHint": "Select exact node/image pairs to pull."
         },
@@ -620,20 +623,20 @@
         },
         "selection": {
           "title": "Pull Contest Images",
-          "subtitle": "Use the image set required by this contest, mark missing ones per node, and select exact node/image pairs to pull.",
+          "subtitle": "Select missing contest image pairs to pull.",
           "selectedNodes": "{{count}} nodes selected",
           "selectedTargets": "{{count}} pairs selected",
           "nodeImages": "{{count}} images"
         },
         "intersection": {
           "title": "Contest Image Missing View",
-          "subtitle": "This view is based on images directly required by this contest. Present nodes are marked as present, and only missing nodes can be selected for pull.",
+          "subtitle": "Shows where contest images are missing.",
           "empty": "No tagged images available",
-          "badge": "Part of the image union across all nodes"
+          "badge": "Node image union"
         },
         "manual": {
           "title": "Pull By Manual Input",
-          "subtitle": "After choosing nodes, enter image names manually, one per line, and the system will create pull jobs for each node/image combination.",
+          "subtitle": "Choose nodes and enter one image per line.",
           "placeholder": "registry.example.com/team/image:tag\nbusybox:latest",
           "count": "{{count}} images entered"
         },
@@ -656,7 +659,7 @@
           "never": "Never - use local images only"
         },
         "statusTitle": "Contest Image Inventory",
-        "statusSubtitle": "Each node shows all currently visible tagged images and also highlights the contest images missing from that node.",
+        "statusSubtitle": "Shows tagged images and missing contest images per node.",
         "empty": "No node image data",
         "status": {
           "present": "Present",
@@ -723,7 +726,7 @@
             "delete": "Delete Team",
             "kick": "Remove Team Member"
           },
-          "deletePrompt": "Are you sure you want to delete team {{name}}? This action cannot be undone.",
+          "deletePrompt": "Delete team {{name}}? This action cannot be undone.",
           "kickPrompt": "Remove a member from team {{name}}:",
           "selectMemberLabel": "Select member to remove",
           "selectMemberPlaceholder": "Select a member"
@@ -828,7 +831,7 @@
           "flagPrefix": "Prefix used to generate flags, e.g. CBCTF{flag}",
           "teamSize": "Maximum members per team",
           "teamVictims": "Maximum instances per team",
-          "captcha": "Invitation code required to join the contest. Leave empty to allow open registration.",
+          "captcha": "Leave empty for open registration.",
           "hiddenContest": "Hidden contests cannot be accessed",
           "bloodBonus": "Extra points for the first three solves"
         },
@@ -901,9 +904,9 @@
           "clear": "Clear",
           "pageHint": "Browse pages",
           "estimatedTeams": "Estimated {{count}} teams",
-          "teamSelectionHint": "The backend will randomly select teams from all teams in this contest using this ratio. Total teams in this contest: {{total}}",
+          "teamSelectionHint": "Randomly select from {{total}} teams",
           "durationUnit": "seconds",
-          "durationHint": "Each victim started in this batch will expire after this duration.",
+          "durationHint": "Applies to this batch",
           "durationPreview": "Preview: {{value}}",
           "invalidDuration": "Enter a value greater than 0 seconds",
           "noChallenges": "No challenges match the current filter",
@@ -954,8 +957,8 @@
           "startConfirm": "Confirm start",
           "startPrompt": "Start containers for the selected combinations?",
           "challengeDetailsTitle": "Challenge details",
-          "challengeDetailsHint": "There are {{count}} challenges in total. You can page through them, review more details, and select challenges here.",
-          "challengeDetailsEmpty": "No challenge details are currently available.",
+          "challengeDetailsHint": "{{count}} challenges",
+          "challengeDetailsEmpty": "No challenge details",
           "selectChallenge": "Select challenge",
           "challengeDescription": "Description",
           "challengeDescriptionEmpty": "No description",
@@ -966,18 +969,19 @@
           "challengeScore": "Score {{score}}",
           "challengeSolvers": "{{count}} solves",
           "challengeAttempts": "Attempt limit {{count}}",
+          "challengeId": "ID: {{id}}",
           "selectedChallenges": "Selected challenges ({{count}}):",
           "teamRatioTitle": "Team selection ratio",
           "teamRatioValue": "Randomly select {{ratio}}% of teams",
-          "teamRatioHint": "Based on the total teams in this contest, this is about {{count}} out of {{total}} teams. The backend will perform the actual sampling.",
+          "teamRatioHint": "About {{count}} / {{total}} teams",
           "durationTitle": "Victim lifetime",
           "durationValue": "{{seconds}} seconds",
-          "durationHint": "Each victim started in this batch will use the same lifetime. Preview: {{value}}.",
+          "durationHint": "Preview: {{value}}",
           "summaryPrefix": "Will start ",
           "summaryMiddle": " challenges × ",
           "summaryEquals": " teams =",
-          "summarySuffix": " container combinations",
-          "startWarning": "Warning: starting too many containers at once can lead to unpredictable behavior and may impact service availability, cluster stability, or even cause outages. Confirm the launch scale carefully.",
+          "summarySuffix": " containers",
+          "startWarning": "Large batches may impact cluster stability. Confirm the scale before starting.",
           "stopTitle": "Stop containers",
           "stopConfirm": "Stop",
           "stopPrompt": "Stop {{count}} selected containers?"
@@ -1084,11 +1088,11 @@
           "deleteAll": "Clear",
           "check": "Check",
           "confirmDeleteTitle": "Confirm Delete",
-          "confirmDeletePrompt": "Are you sure you want to delete this cheat event?",
+          "confirmDeletePrompt": "Delete this cheat event? This action cannot be undone.",
           "confirmDeleteAllTitle": "Confirm Delete All",
-          "confirmDeleteAllPrompt": "Are you sure you want to delete all cheat events for this contest? This action cannot be undone.",
+          "confirmDeleteAllPrompt": "Delete all cheat events for this contest? This action cannot be undone.",
           "confirmCheckTitle": "Manual Cheat Detection",
-          "confirmCheckPrompt": "This will run all cheat detection checks for this contest. Continue?"
+          "confirmCheckPrompt": "Run all cheat checks for this contest?"
         },
         "form": {
           "verdict": "Verdict",
@@ -1139,7 +1143,7 @@
         "startButton": "Start Generator",
         "stopButton": "Stop Selected",
         "noGenerators": "No generators running",
-        "noGeneratorsDesc": "Start generators for dynamic challenges to enable per-team file generation.",
+        "noGeneratorsDesc": "Start file generators for dynamic challenges.",
         "noDynamicChallenges": "No dynamic challenges in this contest",
         "selectChallenges": "Select challenges to start generators for",
         "startSelected": "Start Selected",
@@ -1190,7 +1194,7 @@
       },
       "page": {
         "title": "Global Container Management",
-        "subtitle": "View and stop all running containers across contests"
+        "subtitle": "View and stop running containers"
       },
       "showDeleted": "Show Deleted",
       "stats": {
@@ -1250,7 +1254,7 @@
       "startButton": "Start Generator",
       "stopButton": "Stop Selected",
       "noGenerators": "No generators running",
-      "noGeneratorsDesc": "Start generators for dynamic challenges to enable per-team file generation.",
+      "noGeneratorsDesc": "Start file generators for dynamic challenges.",
       "noDynamicChallenges": "No dynamic challenges in the system",
       "selectChallenges": "Select challenges to start generators for",
       "startSelected": "Start Selected",
@@ -1382,14 +1386,14 @@
       },
       "delete": {
         "title": "Confirm Delete Challenge",
-        "prompt": "Are you sure you want to delete this challenge?",
-        "warning": "⚠️ This action cannot be undone. Proceed with caution."
+        "prompt": "Delete this challenge?",
+        "warning": "This action cannot be undone. Proceed with caution."
       },
       "sections": {
         "basic": "Basic Info",
         "generator": "Generator Image",
         "flags": "Flag Settings",
-        "podsNotice": "Container Config Notes",
+        "podsNotice": "Container Config",
         "containers": "Container Settings"
       },
       "labels": {
@@ -1427,25 +1431,25 @@
       },
       "podsNotice": {
         "flagFormat": "Flag format: {{format}}",
-        "flagPrefix": "Flag environment variables / file mounts must start with `FLAG`; environment variable names are the injection targets, while file mount names are only bindings",
-        "flagVolume": "Flag file mounts use top-level volumes.FLAG_x.labels.value for the value; the service volume target is the write path",
-        "services": "The backend only reads these service fields: image, container_name, ports, environment, volumes, working_dir, command, cpus, mem_limit, networks",
-        "networks": "Top-level networks can define multiple subnets; every non-default network must include ipam.config[0].subnet and gateway",
-        "networksWithIp": "If any non-default network is defined, every service must attach to at least one non-default network and provide a valid ipv4_address inside that subnet",
-        "networksShared": "Without non-default networks, all services are merged into one Pod; containers communicate through 127.0.0.1 and exposed ports are served by a Kubernetes Service",
-        "portUnique": "ports are deduplicated by target/protocol; published is only a display name and the platform assigns the actual external port",
-        "exampleIndent": "The example below includes fields read by the backend; other compose fields are not written into the challenge template"
+        "flagPrefix": "Flag env vars and file mounts must start with `FLAG`.",
+        "flagVolume": "Flag files use volumes.FLAG_x.labels.value; mount target is the write path.",
+        "services": "Supported service fields: image, container_name, ports, environment, volumes, working_dir, command, cpus, mem_limit, networks.",
+        "networks": "Custom networks require subnet and gateway.",
+        "networksWithIp": "Custom networks require a valid ipv4_address per container.",
+        "networksShared": "Without custom networks, all containers share one Pod and use 127.0.0.1.",
+        "portUnique": "Ports dedupe by target/protocol; external ports are platform-assigned.",
+        "exampleIndent": "Only supported fields are written to the challenge template."
       },
       "yamlNotice": {
         "flagFormat": "Flag format: {{format}}",
-        "flagPrefix": "Flag environment variables / file mounts must start with `FLAG`; environment variable names are the injection targets, while file mount names are only bindings",
-        "flagVolume": "Flag file mounts use top-level volumes.FLAG_x.labels.value for the value; the service volume target is the write path",
-        "dockerParams": "The backend only reads these service fields: image, container_name, ports, environment, volumes, working_dir, command, cpus, mem_limit, networks",
-        "containerUnique": "The service name or container_name becomes the container/Pod identifier and should be unique within one challenge",
-        "networkIpRequired": "When non-default networks are defined, every service must attach to at least one non-default network and explicitly set a valid ipv4_address",
-        "exposeNetwork": "ports are deduplicated by target/protocol; published is only a display name and the platform assigns the actual external port",
-        "noNetworkMerge": "Without non-default networks, all services are merged into one Pod and communicate through 127.0.0.1",
-        "containerNetwork": "With networks configured, services are created as separate Pods using their ipv4_address; external: true networks enable outbound/NAT exposure priority"
+        "flagPrefix": "Flag env vars and file mounts must start with `FLAG`.",
+        "flagVolume": "Flag files use volumes.FLAG_x.labels.value; mount target is the write path.",
+        "dockerParams": "Supported fields: image, container_name, ports, environment, volumes, working_dir, command, cpus, mem_limit, networks.",
+        "containerUnique": "Service name or container_name must be unique.",
+        "networkIpRequired": "Custom networks require a valid ipv4_address per container.",
+        "exposeNetwork": "Ports dedupe by target/protocol; external ports are platform-assigned.",
+        "noNetworkMerge": "Without custom networks, services share one Pod and use 127.0.0.1.",
+        "containerNetwork": "With networks, services run as separate Pods by ipv4_address."
       },
       "fullscreen": {
         "title": "Fullscreen Edit - docker-compose.yaml",
@@ -1877,7 +1881,7 @@
           },
           "update": "Update Password",
           "hintTitle": "Account Security Tips",
-          "hintBody": "As an admin, please use strong passwords and update them regularly. Do not share your credentials and keep your devices secure."
+          "hintBody": "Use strong passwords and protect your credentials."
         }
       },
       "validation": {
@@ -2155,7 +2159,7 @@
       "update": {
         "title": "Confirm Update",
         "prompt": "You are about to update system configuration. Continue?",
-        "warning": "Warning: Incorrect settings may disrupt service. Review carefully before proceeding.",
+        "warning": "Incorrect settings may disrupt service. Confirm before continuing.",
         "confirm": "Update",
         "cancel": "Cancel"
       },
@@ -2164,7 +2168,7 @@
         "manualTitle": "Confirm Restart",
         "prompt": "Configuration updated. Restart now to apply changes?",
         "manualPrompt": "The system will restart now. Continue?",
-        "warning": "Warning: The system will be briefly unavailable during restart.",
+        "warning": "The system will be briefly unavailable. Confirm before continuing.",
         "confirm": "Restart Now",
         "cancel": "Restart Later",
         "inProgress": "Restarting..."
@@ -2251,7 +2255,7 @@
     },
     "branding": {
       "title": "Branding",
-      "identityHint": "Control the brand shown on the home page, navigation, footer, and browser tabs from one place.",
+      "identityHint": "Manage site branding in one place.",
       "actions": {
         "uploadLogo": "Upload Home Logo"
       },
@@ -2296,7 +2300,7 @@
       "titlePrefix": "Dive Deep into the",
       "titleHighlight": "Cyber Security",
       "titleSuffix": "Challenge",
-      "subtitle": "Join the elite community of hackers, compete in real-world challenges, and master the art of cybersecurity through hands-on experience.",
+      "subtitle": "Compete in real-world cybersecurity challenges.",
       "start": "START HACKING",
       "learnMore": "LEARN MORE"
     },
@@ -2309,7 +2313,7 @@
     "challengeTypes": {
       "titlePrefix": "Master All Aspects of",
       "titleHighlight": "Cyber Security",
-      "subtitle": "From web exploitation to binary analysis, our challenges cover every major domain of cybersecurity",
+      "subtitle": "Covering major cybersecurity domains",
       "web": {
         "name": "Web Security",
         "description": "Exploit web vulnerabilities, master XSS, SQLi, and more"
@@ -2338,13 +2342,13 @@
     "upcoming": {
       "titlePrefix": "Upcoming",
       "titleHighlight": "Competitions",
-      "subtitle": "Register now for our upcoming CTF events and compete with the best",
+      "subtitle": "Register for upcoming CTF events",
       "viewAll": "VIEW ALL CONTESTS"
     },
     "leaderboard": {
       "titlePrefix": "Top",
       "titleHighlight": "Performers",
-      "subtitle": "Meet the elite teams leading our global leaderboard",
+      "subtitle": "Top teams on the leaderboard",
       "viewScoreboard": "VIEW SCOREBOARD"
     }
   },
@@ -2400,8 +2404,8 @@
     },
     "auth": {
       "loginSuccess": "Login successful",
-      "loginFailed": "Login failed. Please check your credentials.",
-      "registerFailed": "Registration failed. Please check your details and try again."
+      "loginFailed": "Login failed. Check your credentials.",
+      "registerFailed": "Registration failed. Check your details."
     },
     "user": {
       "profileUpdated": "Profile updated",
@@ -2415,10 +2419,10 @@
       "fetchAdminFailed": "Failed to fetch admin info"
     },
     "common": {
-      "updateFailed": "Update failed. Please try again.",
-      "sendFailed": "Couldn't send. Please try again.",
-      "deleteFailed": "Delete failed. Please try again.",
-      "operationFailed": "Something went wrong. Please try again."
+      "updateFailed": "Update failed.",
+      "sendFailed": "Send failed.",
+      "deleteFailed": "Delete failed.",
+      "operationFailed": "Operation failed."
     },
     "game": {
       "fetchListFailed": "Failed to load contests"
@@ -2432,16 +2436,16 @@
     }
   },
   "errors": {
-    "unauthorized": "Your session has expired. Please log in again.",
-    "forbidden": "You don't have permission to access this resource.",
-    "notFound": "This page or resource doesn't exist.",
-    "serverError": "Something went wrong on our end. Please try again.",
-    "badGateway": "Our server is temporarily unreachable. Please try again shortly.",
+    "unauthorized": "Session expired. Log in again.",
+    "forbidden": "You don't have access.",
+    "notFound": "Page or resource not found.",
+    "serverError": "Server error. Please try again.",
+    "badGateway": "Server temporarily unreachable.",
     "serviceUnavailable": "Service temporarily unavailable. Please try again later.",
-    "gatewayTimeout": "The server took too long to respond. Please try again.",
-    "requestFailed": "Unable to complete your request. Please try again.",
-    "requestTimeout": "Request timed out. Please check your network connection.",
-    "networkError": "Unable to connect to the server. Check your network and try again."
+    "gatewayTimeout": "Server response timed out.",
+    "requestFailed": "Request failed.",
+    "requestTimeout": "Request timed out.",
+    "networkError": "Unable to connect to the server."
   },
   "user": {
     "settings": {
@@ -2464,11 +2468,11 @@
       },
       "updatePassword": "UPDATE PASSWORD",
       "deleteAccount": "Delete Account",
-      "deleteAccountHint": "Once you delete your account, there is no going back. Please be certain.",
+      "deleteAccountHint": "Account deletion cannot be undone. Proceed with caution.",
       "deleteAccountAction": "DELETE ACCOUNT",
-      "deleteAccountConfirm": "Are you sure you want to delete your account? This action cannot be undone.",
+      "deleteAccountConfirm": "Delete your account? This action cannot be undone.",
       "verifyEmail": "Verify Email",
-      "verifyEmailHint": "We will send a verification link to your email address. Please check your inbox and follow the instructions.",
+      "verifyEmailHint": "We will send a verification link to your email.",
       "validation": {
         "currentPasswordRequired": "Current password is required"
       }
@@ -2574,7 +2578,7 @@
         "submitFlag": "Submit Flag"
       },
       "initialize": {
-        "message": "This challenge hasn't been set up yet. Initialize it to view its content.",
+        "message": "This challenge is not initialized.",
         "loading": "INITIALIZING...",
         "action": "INITIALIZE CHALLENGE"
       },
@@ -2591,7 +2595,7 @@
       },
       "writeups": {
         "title": "Writeups",
-        "dropzone": "Drag and drop files or click here to upload your writeups",
+        "dropzone": "Drag or click to upload writeups",
         "supports": "Supports PDF, DOC, DOCX",
         "uploaded": "Uploaded Writeups"
       },
@@ -2692,19 +2696,19 @@
         "disbandTeam": "DISBAND TEAM",
         "editTeam": "EDIT TEAM",
         "description": "Description",
-        "noDescription": "No team description available.",
+        "noDescription": "No team description",
         "invitationCode": "Invitation Code",
         "teamMembers": "Team Members",
         "leader": "LEADER",
         "member": "MEMBER",
         "kickModal": {
           "title": "Kick Member",
-          "message": "Are you sure you want to kick {{name}} from the team?",
+          "message": "Remove {{name}} from the team?",
           "confirm": "KICK"
         },
         "disbandModal": {
           "title": "Disband Team",
-          "message": "Are you sure you want to disband the team? This action cannot be undone.",
+          "message": "Disband the team? This action cannot be undone.",
           "confirm": "DISBAND"
         }
       },
@@ -2745,14 +2749,14 @@
         }
       },
       "toast": {
-        "fetchFailed": "Failed to load team information",
+        "fetchFailed": "Failed to load team info",
         "inviteCopied": "Invite code copied",
         "inviteRefreshed": "Invite code refreshed",
         "inviteRefreshFailed": "Failed to refresh invite code",
         "updateSuccess": "Team info updated",
         "updateFailed": "Failed to update team info",
         "memberRemoved": "Member removed",
-        "memberRemovedDescription": "{{name}} has been removed from the team",
+        "memberRemovedDescription": "{{name}} removed from the team",
         "removeFailed": "Failed to remove member",
         "disbanded": "Team disbanded",
         "disbandFailed": "Failed to disband team",
@@ -2827,8 +2831,8 @@
       "step3Desc": "First-blood bonuses reward the fastest solvers on each challenge",
       "dismiss": "Got it"
     },
-    "noGamesDescription": "No contests have been published yet. Check back soon, or contact the organizer.",
-    "noChallengesDescription": "Challenges will appear here when the organizer releases them."
+    "noGamesDescription": "No contests published yet.",
+    "noChallengesDescription": "No challenges released yet."
   },
   "utils": {
     "time": {

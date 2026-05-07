@@ -9,7 +9,7 @@ import { Button } from '../../../components/common';
 import { IconTable, IconList, IconChartLine } from '@tabler/icons-react';
 import ScoreboardStats from '../../../components/features/CTFGame/Scoreboard/ScoreboardStats.jsx';
 import { useTranslation } from 'react-i18next';
-import { useTeamDetailDialog } from '../../../hooks';
+import { useTeamDetailDialog } from '../../../hooks/useTeamDetailDialog.jsx';
 
 function AdminContestScoreboard({ viewMode: externalViewMode, onViewModeChange: externalOnViewModeChange }) {
   const { id } = useParams();

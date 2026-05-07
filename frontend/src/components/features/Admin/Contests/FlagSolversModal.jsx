@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '../../../../components/common';
 import { getFlagSolvers } from '../../../../api/admin/challenge';
 import { toast } from '../../../../utils/toast';
-import { useUserDetailDialog, useTeamDetailDialog } from '../../../../hooks';
+import { useUserDetailDialog } from '../../../../hooks/useUserDetailDialog.jsx';
+import { useTeamDetailDialog } from '../../../../hooks/useTeamDetailDialog.jsx';
 
 function FlagSolversModal({ isOpen, onClose, flagIndex, contestId, challengeId, flagId }) {
   const { t } = useTranslation();
@@ -47,7 +48,13 @@ function FlagSolversModal({ isOpen, onClose, flagIndex, contestId, challengeId, 
           <h2 className="text-lg font-mono text-neutral-50">
             {t('admin.contests.challengeModal.solversModal.title', { index: flagIndex + 1 })}
           </h2>
-          <Button variant="ghost" size="icon" className="!text-neutral-400 hover:!text-neutral-300" onClick={onClose}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="!text-neutral-400 hover:!text-neutral-300"
+            aria-label={t('common.close')}
+            onClick={onClose}
+          >
             <IconX size={18} />
           </Button>
         </div>

@@ -48,7 +48,7 @@ export function ExternalNetworkField({ externalNetworks, updateConfig }) {
 
       <div className="flex items-center justify-between">
         <span className="text-xs font-mono text-neutral-400">{t('admin.system.labels.externalNetworkInterfaces')}</span>
-        <Button size="icon" variant="ghost" onClick={addInterface}>
+        <Button size="icon" variant="ghost" aria-label={t('common.add')} onClick={addInterface}>
           <IconPlus size={14} />
         </Button>
       </div>
@@ -60,7 +60,12 @@ export function ExternalNetworkField({ externalNetworks, updateConfig }) {
               <span className="text-xs font-mono text-neutral-400">
                 {t('admin.system.labels.externalNetwork')} #{index + 1}
               </span>
-              <Button size="icon" variant="ghost" onClick={() => removeInterface(index)}>
+              <Button
+                size="icon"
+                variant="ghost"
+                aria-label={t('common.remove')}
+                onClick={() => removeInterface(index)}
+              >
                 <IconX size={14} />
               </Button>
             </div>
@@ -77,7 +82,9 @@ export function ExternalNetworkField({ externalNetworks, updateConfig }) {
                 />
               </div>
               <div className="space-y-1">
-                <span className="text-xs font-mono text-neutral-400">{t('admin.system.labels.externalNetworkCidr')}</span>
+                <span className="text-xs font-mono text-neutral-400">
+                  {t('admin.system.labels.externalNetworkCidr')}
+                </span>
                 <Input
                   size="sm"
                   value={item.cidr || ''}

@@ -109,7 +109,13 @@ function AdminContestChallengeModal({
               ? t('admin.contests.challengeModal.titleAdd')
               : t('admin.contests.challengeModal.titleEdit')}
           </h2>
-          <Button variant="ghost" size="icon" className="!text-neutral-400 hover:!text-neutral-300" onClick={onClose}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="!text-neutral-400 hover:!text-neutral-300"
+            aria-label={t('common.close')}
+            onClick={onClose}
+          >
             <IconX size={18} />
           </Button>
         </div>

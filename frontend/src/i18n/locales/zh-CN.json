@@ -26,6 +26,9 @@
     "cancel": "取消",
     "confirm": "确认",
     "create": "创建",
+    "add": "添加",
+    "remove": "移除",
+    "close": "关闭",
     "save": "保存",
     "reset": "重置",
     "previous": "上一页",
@@ -133,7 +136,7 @@
       "managementTitle": "{{label}}管理"
     },
     "tasks": {
-      "subtitle": "查看已完成/失败的任务记录, 以及 Redis 中实时任务队列状态",
+      "subtitle": "查看任务历史和实时队列状态",
       "tabs": {
         "history": "历史记录",
         "live": "实时队列"
@@ -183,26 +186,26 @@
       "title": "节点镜像",
       "control": {
         "title": "全局镜像总览",
-        "subtitle": "展示每个节点上的全部带可用 tag 镜像, 并以各节点镜像并集作为全局镜像集合"
+        "subtitle": "展示可调度节点的全局镜像集合"
       },
       "summary": {
         "unionLabel": "全局镜像集合"
       },
       "selection": {
         "title": "缺失镜像拉取",
-        "subtitle": "以各节点镜像并集为基准, 展示每个节点缺失的镜像, 并允许按节点和镜像组合选择拉取"
+        "subtitle": "选择缺失的节点/镜像组合"
       },
       "intersection": {
         "title": "全局镜像缺失视图",
-        "subtitle": "此视图以各节点当前已存在的带 tag 镜像并集为基准",
+        "subtitle": "基于可调度节点的镜像并集",
         "empty": "全局镜像集合中暂无可用镜像"
       },
       "manual": {
         "title": "手动输入镜像拉取",
-        "subtitle": "选择节点后, 可手动输入镜像名称, 每行一个镜像, 系统会按节点和镜像组合创建拉取任务"
+        "subtitle": "选择节点后, 每行输入一个镜像"
       },
       "statusTitle": "节点镜像清单",
-      "statusSubtitle": "每个节点会展示其当前可见的全部带 tag 镜像, 并标出缺失的全局镜像",
+      "statusSubtitle": "展示各节点镜像和缺失项",
       "node": {
         "missingTitle": "该节点缺失的全局镜像",
         "noMissing": "该节点没有缺失的全局镜像"
@@ -475,7 +478,7 @@
         "title": "网络流量关系图",
         "hero": {
           "kicker": "流量拓扑",
-          "subtitle": "更直观地展示 {{challenge}} 在当前时间窗内的入站、出站和内部流量路径",
+          "subtitle": "展示 {{challenge}} 的实时流量拓扑",
           "windowAt": "窗口 {{start}} - {{end}}",
           "demoMode": "样例数据"
         },
@@ -495,7 +498,7 @@
         },
         "canvas": {
           "title": "拓扑画布",
-          "subtitle": "左侧为入站来源, 中心为靶机, 右侧为出站目标",
+          "subtitle": "左侧入站, 中心靶机, 右侧出站",
           "zoomHint": "滚轮缩放, 按住拖动画布"
         },
         "filter": {
@@ -515,7 +518,7 @@
         },
         "panel": {
           "selectedFlow": "选中流量",
-          "selectedFlowHint": "点击连线查看当前窗口中最热的传输路径",
+          "selectedFlowHint": "点击连线查看热点路径",
           "edgePath": "路径",
           "edgeBytes": "流量",
           "edgePackets": "报文数",
@@ -551,9 +554,9 @@
         },
         "toast": {
           "fetchFailed": "获取流量数据失败",
-          "demoFallback": "获取流量数据失败, 使用样例数据预览效果"
+          "demoFallback": "获取流量失败, 已切换为示例数据"
         },
-        "demoNotice": "无法获取真实流量数据, 当前展示的是示例数据点击刷新按钮可重新尝试获取"
+        "demoNotice": "当前展示示例数据, 可刷新重试"
       },
       "notices": {
         "title": "公告管理",
@@ -584,7 +587,7 @@
             "edit": "编辑公告",
             "delete": "删除公告"
           },
-          "deletePrompt": "确定要删除公告 \"{{title}}\" 吗？此操作不可恢复"
+          "deletePrompt": "确定删除公告 \"{{title}}\" 吗？此操作不可恢复"
         },
         "toast": {
           "fetchFailed": "获取公告列表失败",
@@ -600,11 +603,11 @@
         "title": "节点镜像",
         "control": {
           "title": "比赛镜像总览",
-          "subtitle": "展示每个节点当前的镜像, 并聚焦于本次比赛直接所需的目标镜像集合"
+          "subtitle": "展示各节点镜像和比赛所需镜像"
         },
         "labels": {
           "pullPolicy": "拉取策略",
-          "pullPolicyHint": "Always 强制拉取IfNotPresent 仅对节点上缺失的镜像创建任务Never 跳过创建拉取任务",
+          "pullPolicyHint": "Always 强制拉取; IfNotPresent 仅拉取缺失镜像; Never 不创建任务",
           "nodes": "目标节点",
           "comboHint": "选择要拉取的节点/镜像组合"
         },
@@ -620,20 +623,20 @@
         },
         "selection": {
           "title": "拉取比赛镜像",
-          "subtitle": "以本次比赛所需镜像为基准, 标记每个节点上缺失的镜像, 并选择要拉取的节点/镜像组合",
+          "subtitle": "选择缺失的比赛镜像组合",
           "selectedNodes": "已选择 {{count}} 个节点",
           "selectedTargets": "已选择 {{count}} 个组合",
           "nodeImages": "{{count}} 个镜像"
         },
         "intersection": {
           "title": "比赛镜像缺失视图",
-          "subtitle": "此视图以本次比赛直接所需的镜像为基准, 已存在的节点标记为已存在, 仅缺失的节点可选择拉取",
+          "subtitle": "展示比赛镜像缺失情况",
           "empty": "暂无可用镜像",
-          "badge": "属于所有节点镜像并集的一部分"
+          "badge": "节点镜像并集"
         },
         "manual": {
           "title": "手动输入镜像拉取",
-          "subtitle": "选择节点后, 可手动输入镜像名称, 每行一个镜像, 系统会按节点和镜像组合创建拉取任务",
+          "subtitle": "选择节点后, 每行输入一个镜像",
           "placeholder": "registry.example.com/team/image:tag\nbusybox:latest",
           "count": "已输入 {{count}} 个镜像"
         },
@@ -656,7 +659,7 @@
           "never": "Never - 仅使用本地镜像"
         },
         "statusTitle": "比赛镜像清单",
-        "statusSubtitle": "每个节点会展示其当前可见的全部带 tag 镜像, 并标出缺失的比赛镜像",
+        "statusSubtitle": "展示各节点镜像和缺失项",
         "empty": "暂无节点镜像数据",
         "status": {
           "present": "已存在",
@@ -723,7 +726,7 @@
             "delete": "删除团队",
             "kick": "移除团队成员"
           },
-          "deletePrompt": "确定要删除团队 {{name}} 吗？此操作不可恢复",
+          "deletePrompt": "确定删除团队 {{name}} 吗？此操作不可恢复",
           "kickPrompt": "从团队 {{name}} 中移出成员: ",
           "selectMemberLabel": "选择要移出的成员",
           "selectMemberPlaceholder": "请选择成员"
@@ -828,7 +831,7 @@
           "flagPrefix": "用于生成flag的前缀, 例如: CBCTF{flag}",
           "teamSize": "每个参赛团队的最大人数",
           "teamVictims": "每个参赛团队的最大靶机数",
-          "captcha": "加入比赛所需的邀请码, 留空则允许任意报名",
+          "captcha": "留空则开放报名",
           "hiddenContest": "隐藏后比赛将无法访问",
           "bloodBonus": "对前三个解出题目的队伍提供额外加分"
         },
@@ -882,7 +885,7 @@
         },
         "page": {
           "title": "靶机管理",
-          "subtitle": "管理比赛中的靶机实例, 支持批量开启和停止操作",
+          "subtitle": "管理比赛靶机实例",
           "refresh": "刷新"
         },
         "showDeleted": "显示已删除",
@@ -901,9 +904,9 @@
           "clear": "清空",
           "pageHint": "左右翻页",
           "estimatedTeams": "预计抽取 {{count}} 个队伍",
-          "teamSelectionHint": "后端会基于当前比赛全部队伍, 按该比例随机抽取并启动靶机当前比赛队伍总数: {{total}}",
+          "teamSelectionHint": "随机抽取 {{total}} 个队伍",
           "durationUnit": "秒",
-          "durationHint": "批量启动的每个靶机会按该时长自动过期",
+          "durationHint": "应用于本批次",
           "durationPreview": "预览: {{value}}",
           "invalidDuration": "请输入大于 0 的秒数",
           "noChallenges": "当前条件下没有题目",
@@ -952,10 +955,10 @@
         "modals": {
           "startTitle": "确认开启靶机",
           "startConfirm": "确认开启",
-          "startPrompt": "确定要为以下选中的组合开启靶机吗？",
+          "startPrompt": "确定开启所选靶机吗？",
           "challengeDetailsTitle": "题目详情",
-          "challengeDetailsHint": "当前共有 {{count}} 道题目, 可分页查看更完整的信息并直接勾选",
-          "challengeDetailsEmpty": "当前没有可显示的题目信息",
+          "challengeDetailsHint": "共 {{count}} 道题目",
+          "challengeDetailsEmpty": "暂无题目详情",
           "selectChallenge": "选择此题",
           "challengeDescription": "题目描述",
           "challengeDescriptionEmpty": "暂无描述",
@@ -966,18 +969,19 @@
           "challengeScore": "分值 {{score}}",
           "challengeSolvers": "解出 {{count}}",
           "challengeAttempts": "尝试上限 {{count}}",
+          "challengeId": "ID: {{id}}",
           "selectedChallenges": "选中的题目 ({{count}}个):",
           "teamRatioTitle": "队伍抽取比例",
           "teamRatioValue": "随机抽取 {{ratio}}% 的队伍",
-          "teamRatioHint": "按当前比赛总队伍数估算, 约为 {{total}} 个队伍中的 {{count}} 个实际抽样由后端执行",
+          "teamRatioHint": "约 {{count}} / {{total}} 个队伍",
           "durationTitle": "靶机生存时长",
           "durationValue": "{{seconds}} 秒",
-          "durationHint": "本次批量启动的每个靶机都会使用相同的生存时长, 预览为 {{value}}",
+          "durationHint": "时长预览: {{value}}",
           "summaryPrefix": "将为 ",
           "summaryMiddle": " 个题目 × ",
           "summaryEquals": " 个团队 =",
-          "summarySuffix": " 个靶机组合开启靶机",
-          "startWarning": "警告: 一次性启动过多容器可能导致不可预知的问题, 甚至影响服务可用性、集群稳定性或造成宕机请谨慎确认本次启动规模",
+          "summarySuffix": " 个靶机",
+          "startWarning": "批量启动可能影响集群稳定性, 请确认规模后继续",
           "stopTitle": "停止靶机",
           "stopConfirm": "停止",
           "stopPrompt": "确定要停止选中的 {{count}} 个靶机吗？"
@@ -1084,11 +1088,11 @@
           "deleteAll": "清空",
           "check": "检测",
           "confirmDeleteTitle": "确认删除",
-          "confirmDeletePrompt": "确定要删除此作弊事件吗？",
+          "confirmDeletePrompt": "确定删除此作弊事件吗？此操作不可撤销",
           "confirmDeleteAllTitle": "确认清空全部",
-          "confirmDeleteAllPrompt": "确定要删除此比赛的所有作弊事件吗？此操作不可撤销",
+          "confirmDeleteAllPrompt": "确定删除此比赛的所有作弊事件吗？此操作不可撤销",
           "confirmCheckTitle": "手动作弊检测",
-          "confirmCheckPrompt": "将对此比赛执行全部作弊检测, 是否继续？"
+          "confirmCheckPrompt": "执行全部作弊检测？"
         },
         "form": {
           "verdict": "判断结果",
@@ -1139,7 +1143,7 @@
         "startButton": "启动生成器",
         "stopButton": "停止所选",
         "noGenerators": "当前没有运行中的生成器",
-        "noGeneratorsDesc": "为动态题目启动生成器, 以启用按队伍生成文件附件功能",
+        "noGeneratorsDesc": "为动态题目启动附件生成器",
         "noDynamicChallenges": "此比赛中没有动态类型题目",
         "selectChallenges": "选择要启动生成器的题目",
         "startSelected": "启动所选",
@@ -1190,7 +1194,7 @@
       },
       "page": {
         "title": "全局靶机管理",
-        "subtitle": "查看并停止所有比赛中的运行中靶机"
+        "subtitle": "查看并停止运行中的靶机"
       },
       "showDeleted": "显示已删除",
       "stats": {
@@ -1250,7 +1254,7 @@
       "startButton": "启动生成器",
       "stopButton": "停止所选",
       "noGenerators": "当前没有运行中的生成器",
-      "noGeneratorsDesc": "为动态题目启动生成器, 以启用按队伍生成文件附件功能",
+      "noGeneratorsDesc": "为动态题目启动附件生成器",
       "noDynamicChallenges": "系统中暂无动态类型题目",
       "selectChallenges": "选择要启动生成器的题目",
       "startSelected": "启动所选",
@@ -1382,14 +1386,14 @@
       },
       "delete": {
         "title": "确认删除题目",
-        "prompt": "您确定要删除这个题目吗？",
-        "warning": "⚠️ 此操作无法撤销, 请谨慎操作"
+        "prompt": "确定删除此题目吗？",
+        "warning": "此操作不可撤销, 请谨慎操作"
       },
       "sections": {
         "basic": "基本信息",
         "generator": "生成器镜像",
         "flags": "Flag设置",
-        "podsNotice": "容器配置说明",
+        "podsNotice": "容器配置",
         "containers": "容器设置"
       },
       "labels": {
@@ -1427,25 +1431,25 @@
       },
       "podsNotice": {
         "flagFormat": "flag格式: {{format}}",
-        "flagPrefix": "flag `环境变量` / `文件挂载` 必须以 `FLAG` 为前缀; 环境变量名就是注入目标, 文件挂载名只用于绑定",
-        "flagVolume": "flag `文件挂载` 通过顶层 volumes.FLAG_x.labels.value 指定值, service.volumes 的挂载目标就是写入路径",
-        "services": "后端只读取 service 的 image, container_name, ports, environment, volumes, working_dir, command, cpus, mem_limit, networks",
-        "networks": "可通过顶层 networks 配置多个网段; 每个非 default 网络必须配置 ipam.config[0].subnet 和 gateway",
-        "networksWithIp": "只要定义了非 default 网络, 每个 service 都必须挂载至少一个非 default 网络, 且 ipv4_address 必须合法并落在对应 subnet 内",
-        "networksShared": "不定义非 default 网络时, 所有 service 会合并到同一个 Pod, 容器间通信使用 127.0.0.1, 暴露端口由 Kubernetes Service 提供",
-        "portUnique": "ports 按 target/protocol 去重; published 仅作为展示名称, 实际外部端口由平台分配",
-        "exampleIndent": "下述示例包含后端会读取的字段; 其它 compose 字段不会写入题目模板"
+        "flagPrefix": "flag 环境变量和文件挂载需以 `FLAG` 开头",
+        "flagVolume": "文件 flag 使用 volumes.FLAG_x.labels.value, 挂载目标为写入路径",
+        "services": "支持 service 字段: image, container_name, ports, environment, volumes, working_dir, command, cpus, mem_limit, networks",
+        "networks": "自定义网络须配置 subnet 和 gateway",
+        "networksWithIp": "自定义网络需为每个容器配置合法 ipv4_address",
+        "networksShared": "无自定义网络时, 所有容器共享一个 Pod 并使用 127.0.0.1 进行通信",
+        "portUnique": "ports 按 target/protocol 去重, 外部端口由平台分配",
+        "exampleIndent": "仅支持字段会写入题目模板"
       },
       "yamlNotice": {
         "flagFormat": "flag格式: {{format}}",
-        "flagPrefix": "flag `环境变量` / `文件挂载` 必须以 `FLAG` 为前缀; 环境变量名就是注入目标, 文件挂载名只用于绑定",
-        "flagVolume": "flag `文件挂载` 通过顶层 volumes.FLAG_x.labels.value 指定值, service.volumes 的挂载目标就是写入路径",
-        "dockerParams": "后端只读取 service 的 image, container_name, ports, environment, volumes, working_dir, command, cpus, mem_limit, networks",
-        "containerUnique": "service 名或 container_name 会作为容器/Pod 标识, 同一道题中应保持唯一",
-        "networkIpRequired": "定义非 default 网络时, 每个 service 都必须挂载至少一个非 default 网络并显式填写合法 ipv4_address",
-        "exposeNetwork": "ports 按 target/protocol 去重; published 仅作展示名称, 外部端口由平台分配",
-        "noNetworkMerge": "不定义非 default 网络时, 所有 service 会合并到同一个 Pod, 容器间使用 127.0.0.1 通信",
-        "containerNetwork": "配置网络后, service 会按各自 ipv4_address 分 Pod 创建; external: true 的网络会开启出网/NAT 暴露优先级"
+        "flagPrefix": "flag 环境变量和文件挂载必须以 `FLAG` 开头",
+        "flagVolume": "文件 flag 使用 volumes.FLAG_x.labels.value, 挂载目标为写入路径",
+        "dockerParams": "支持字段: image, container_name, ports, environment, volumes, working_dir, command, cpus, mem_limit, networks",
+        "containerUnique": "service 名或 container_name 必须唯一",
+        "networkIpRequired": "自定义网络需为每个容器配置合法 ipv4_address",
+        "exposeNetwork": "ports 按 target/protocol 去重, 外部端口由平台分配",
+        "noNetworkMerge": "无自定义网络时, services 共享一个 Pod 并使用 127.0.0.1 进行通信",
+        "containerNetwork": "配置网络后, services 按 ipv4_address 分 Pod 运行"
       },
       "fullscreen": {
         "title": "全屏编辑 - docker-compose.yaml",
@@ -1877,7 +1881,7 @@
           },
           "update": "更新密码",
           "hintTitle": "账户安全提示",
-          "hintBody": "作为管理员, 请确保使用强密码并定期更新请勿与他人共享您的登录凭据, 并确保您的操作设备安全"
+          "hintBody": "请使用强密码, 并妥善保管登录凭据"
         }
       },
       "validation": {
@@ -2155,7 +2159,7 @@
       "update": {
         "title": "更新配置确认",
         "prompt": "即将更新系统配置, 是否继续？",
-        "warning": "提示: 配置错误可能导致服务异常, 请仔细核查后再继续",
+        "warning": "配置错误可能导致服务异常, 请确认后继续",
         "confirm": "继续更新",
         "cancel": "取消"
       },
@@ -2164,7 +2168,7 @@
         "manualTitle": "重启系统确认",
         "prompt": "系统配置已更新, 是否立即重启以使配置生效？",
         "manualPrompt": "系统即将重启, 是否继续？",
-        "warning": "提示: 重启期间系统将短暂不可用",
+        "warning": "重启期间系统将短暂不可用, 请确认后继续",
         "confirm": "立即重启",
         "cancel": "暂不重启",
         "inProgress": "正在重启..."
@@ -2251,7 +2255,7 @@
     },
     "branding": {
       "title": "品牌设置",
-      "identityHint": "统一配置前台首页、导航、页脚和浏览器标签中展示的品牌内容",
+      "identityHint": "统一配置站点品牌内容",
       "actions": {
         "uploadLogo": "上传首页 Logo"
       },
@@ -2296,7 +2300,7 @@
       "titlePrefix": "Dive Deep into the",
       "titleHighlight": "Cyber Security",
       "titleSuffix": "Challenge",
-      "subtitle": "Join the elite community of hackers, compete in real-world challenges, and master the art of cybersecurity through hands-on experience.",
+      "subtitle": "Compete in real-world cybersecurity challenges.",
       "start": "START HACKING",
       "learnMore": "LEARN MORE"
     },
@@ -2309,7 +2313,7 @@
     "challengeTypes": {
       "titlePrefix": "Master All Aspects of",
       "titleHighlight": "Cyber Security",
-      "subtitle": "From web exploitation to binary analysis, our challenges cover every major domain of cybersecurity",
+      "subtitle": "Covering major cybersecurity domains",
       "web": {
         "name": "Web Security",
         "description": "Exploit web vulnerabilities, master XSS, SQLi, and more"
@@ -2338,13 +2342,13 @@
     "upcoming": {
       "titlePrefix": "Upcoming",
       "titleHighlight": "Competitions",
-      "subtitle": "Register now for our upcoming CTF events and compete with the best",
+      "subtitle": "Register for upcoming CTF events",
       "viewAll": "查看全部赛事"
     },
     "leaderboard": {
       "titlePrefix": "Top",
       "titleHighlight": "Performers",
-      "subtitle": "Meet the elite teams leading our global leaderboard",
+      "subtitle": "Top teams on the leaderboard",
       "viewScoreboard": "查看排行榜"
     }
   },
@@ -2466,9 +2470,9 @@
       "deleteAccount": "删除账户",
       "deleteAccountHint": "删除账户后无法恢复, 请谨慎操作",
       "deleteAccountAction": "删除账户",
-      "deleteAccountConfirm": "确定要删除你的账户吗？此操作无法撤销",
+      "deleteAccountConfirm": "确定删除你的账户吗？此操作无法撤销",
       "verifyEmail": "验证邮箱",
-      "verifyEmailHint": "我们会向你的邮箱发送验证链接, 请检查收件箱并按提示操作",
+      "verifyEmailHint": "我们会发送验证链接到你的邮箱",
       "validation": {
         "currentPasswordRequired": "当前密码为必填"
       }
@@ -2574,7 +2578,7 @@
         "submitFlag": "提交 Flag"
       },
       "initialize": {
-        "message": "该题目尚未初始化, 初始化后即可查看内容",
+        "message": "题目尚未初始化",
         "loading": "初始化中...",
         "action": "初始化题目"
       },
@@ -2591,7 +2595,7 @@
       },
       "writeups": {
         "title": "题解",
-        "dropzone": "拖拽文件或点击此处上传题解",
+        "dropzone": "拖拽或点击上传题解",
         "supports": "支持 PDF、DOC、DOCX",
         "uploaded": "已上传题解"
       },
@@ -2704,7 +2708,7 @@
         },
         "disbandModal": {
           "title": "解散队伍",
-          "message": "确定要解散队伍吗？此操作不可撤销",
+          "message": "确定解散队伍吗？此操作不可撤销",
           "confirm": "解散"
         }
       },
@@ -2827,8 +2831,8 @@
       "step3Desc": "一血奖励最快解出每道题目的参赛者",
       "dismiss": "知道了"
     },
-    "noGamesDescription": "暂无已发布的比赛, 请稍后再来查看, 或联系主办方",
-    "noChallengesDescription": "题目尚未发布, 主办方将在比赛开始时释放题目"
+    "noGamesDescription": "暂无已发布的比赛",
+    "noChallengesDescription": "题目尚未发布"
   },
   "utils": {
     "time": {
