@@ -1550,6 +1550,7 @@
           "networkUndefined": "{{label}}: network {{network}} is not defined",
           "ipRequired": "{{label}}: {{network}} ipv4_address is required",
           "ipInvalid": "{{label}}: {{network}} ipv4_address is invalid",
+          "ipUnique": "{{label}}: {{network}} ipv4_address must be unique within the same network",
           "ipOutOfSubnet": "{{label}}: {{network}} ipv4_address is outside subnet range",
           "networkDefinitionNameRequired": "{{label}}: name is required",
           "networkDefinitionNameUnique": "{{label}}: name must be unique",

@@ -431,6 +431,14 @@ const validateGuidedCompose = (config, t = (key) => key) => {
   const networkNames = new Set(definedNetworks.map((network) => network.name.trim()));
   const fileFlagSources = new Set();
   const networkCidrs = new Map(definedNetworks.map((network) => [network.name.trim(), network.subnet.trim()]));
+  const networkAssignedIps = new Map();
+
+  definedNetworks.forEach((network) => {
+    const name = network.name.trim();
+    const gateway = network.gateway.trim();
+    if (!name || !validateIp4(gateway)) return;
+    networkAssignedIps.set(name, new Set([gateway]));
+  });
 
   if (!config.services?.length) addError('services', t('admin.challengeModal.composeGuide.validation.serviceRequired'));
   (config.services || []).forEach((service, serviceIndex) => {
@@ -590,6 +598,17 @@ const validateGuidedCompose = (config, t = (key) => key) => {
             `service.${serviceIndex}.networks.${networkIndex}.ipv4Address`,
             t('admin.challengeModal.composeGuide.validation.ipInvalid', { label, network: networkLabel })
           );
+        if (networkName && validateIp4(ipv4Address)) {
+          const assignedIps = networkAssignedIps.get(networkName) || new Set();
+          if (assignedIps.has(ipv4Address)) {
+            addError(
+              `service.${serviceIndex}.networks.${networkIndex}.ipv4Address`,
+              t('admin.challengeModal.composeGuide.validation.ipUnique', { label, network: networkLabel })
+            );
+          }
+          assignedIps.add(ipv4Address);
+          networkAssignedIps.set(networkName, assignedIps);
+        }
         if (
           networkName &&
           ipv4Address &&
