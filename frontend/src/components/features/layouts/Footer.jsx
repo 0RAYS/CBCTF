@@ -13,7 +13,7 @@ function Footer({ copyright, icp, links }) {
   };
   const resolvedLinks = links ?? [
     { label: t('footer.support'), href: '/support', isExternal: false },
-    { label: t('footer.contact'), href: '/contact', isExternal: false },
+    { label: 'support@0rays.club', href: 'mailto:support@0rays.club', isExternal: true },
     { label: t('footer.github'), href: REPO_URL, isExternal: true },
   ];
   // 渲染链接的辅助函数

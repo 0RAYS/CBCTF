@@ -84,7 +84,7 @@
     }
   },
   "footer": {
-    "copyright": "© 2025 DEEP DIVE CTF",
+    "copyright": "© 2026 CBCTF",
     "icp": "陕ICP备2025076339号-1",
     "support": "支持",
     "contact": "联系",
@@ -2273,6 +2273,10 @@
         "browserTitle": "页面标题",
         "browserDescription": "页面描述",
         "footerCopyright": "页脚版权",
+        "footerICPNumber": "页脚备案号",
+        "footerICPLink": "页脚备案链接",
+        "footerContactEmail": "页脚联系邮箱",
+        "footerGithubURL": "页脚 GitHub 链接",
         "homeLogo": "首页 Logo",
         "homeLogoAlt": "Logo 替代文本",
         "heroTitlePrefix": "主标题前缀",

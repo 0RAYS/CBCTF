@@ -79,6 +79,10 @@ function BrandingSettings() {
         browser_title: branding.browser_title,
         browser_description: branding.browser_description,
         footer_copyright: branding.footer_copyright,
+        footer_icp_number: branding.footer_icp_number,
+        footer_icp_link: branding.footer_icp_link,
+        footer_contact_email: branding.footer_contact_email,
+        footer_github_url: branding.footer_github_url,
         home_logo_alt: branding.home_logo_alt,
         home: branding.home,
       };
@@ -156,28 +160,28 @@ function BrandingSettings() {
               <LocalizedField
                 label={t('admin.branding.labels.siteName')}
                 value={branding.site_name}
-                placeholderZh="深潜 CTF"
+                placeholderZh="CBCTF"
                 placeholderEn="DEEP DIVE CTF"
                 onChange={(language, value) => updateLocalizedField(['site_name'], language, value)}
               />
               <LocalizedField
                 label={t('admin.branding.labels.adminName')}
                 value={branding.admin_name}
-                placeholderZh="深潜管理台"
+                placeholderZh="管理台"
                 placeholderEn="DEEP DIVE Admin"
                 onChange={(language, value) => updateLocalizedField(['admin_name'], language, value)}
               />
               <LocalizedField
                 label={t('admin.branding.labels.browserTitle')}
                 value={branding.browser_title}
-                placeholderZh="深潜 CTF"
+                placeholderZh="CBCTF"
                 placeholderEn="DEEP DIVE CTF"
                 onChange={(language, value) => updateLocalizedField(['browser_title'], language, value)}
               />
               <LocalizedField
                 label={t('admin.branding.labels.browserDescription')}
                 value={branding.browser_description}
-                placeholderZh="深潜 CTF 网络安全竞赛平台"
+                placeholderZh="CBCTF 网络安全竞赛平台"
                 placeholderEn="DEEP DIVE CTF competition platform"
                 multiline
                 rows={3}
@@ -186,14 +190,54 @@ function BrandingSettings() {
               <LocalizedField
                 label={t('admin.branding.labels.footerCopyright')}
                 value={branding.footer_copyright}
-                placeholderZh="© 2025 深潜 CTF"
-                placeholderEn="© 2025 DEEP DIVE CTF"
+                placeholderZh="© 2026 CBCTF"
+                placeholderEn="© 2026 CBCTF"
                 onChange={(language, value) => updateLocalizedField(['footer_copyright'], language, value)}
+              />
+              <Input
+                label={t('admin.branding.labels.footerICPNumber')}
+                value={branding.footer_icp_number || ''}
+                placeholder="陕ICP备2025076339号-1"
+                onChange={(event) =>
+                  updateBrandingState((draft) => {
+                    draft.footer_icp_number = event.target.value;
+                  })
+                }
+              />
+              <Input
+                label={t('admin.branding.labels.footerICPLink')}
+                value={branding.footer_icp_link || ''}
+                placeholder="https://beian.miit.gov.cn/"
+                onChange={(event) =>
+                  updateBrandingState((draft) => {
+                    draft.footer_icp_link = event.target.value;
+                  })
+                }
+              />
+              <Input
+                label={t('admin.branding.labels.footerContactEmail')}
+                value={branding.footer_contact_email || ''}
+                placeholder="support@0rays.club"
+                onChange={(event) =>
+                  updateBrandingState((draft) => {
+                    draft.footer_contact_email = event.target.value;
+                  })
+                }
+              />
+              <Input
+                label={t('admin.branding.labels.footerGithubURL')}
+                value={branding.footer_github_url || ''}
+                placeholder="https://github.com/0RAYS/CBCTF"
+                onChange={(event) =>
+                  updateBrandingState((draft) => {
+                    draft.footer_github_url = event.target.value;
+                  })
+                }
               />
               <LocalizedField
                 label={t('admin.branding.labels.homeLogoAlt')}
                 value={branding.home_logo_alt}
-                placeholderZh="深潜 CTF 首页 Logo"
+                placeholderZh="CBCTF 首页 Logo"
                 placeholderEn="DEEP DIVE CTF home logo"
                 onChange={(language, value) => updateLocalizedField(['home_logo_alt'], language, value)}
               />
@@ -227,7 +271,7 @@ function BrandingSettings() {
           <LocalizedField
             label={t('admin.branding.labels.heroSubtitle')}
             value={branding.home.hero.subtitle}
-            placeholderZh="加入深潜 CTF 社区, 在真实场景中对抗、练习与成长"
+            placeholderZh="加入CBCTF 社区, 在真实场景中对抗、练习与成长"
             placeholderEn="Join the elite community of hackers..."
             multiline
             rows={4}

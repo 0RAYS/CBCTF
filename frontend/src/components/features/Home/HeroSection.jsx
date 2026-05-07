@@ -29,7 +29,7 @@ function HeroSection() {
                 />
               </div>
               <span className="text-xs font-mono text-geek-400 tracking-[0.3em] uppercase">
-                {home.hero.titlePrefix || 'CTF Platform'}
+                {home.hero.titlePrefix || 'CBCTF Platform'}
               </span>
               <div className="h-px flex-1 bg-geek-400/20 max-w-[120px]" />
             </div>

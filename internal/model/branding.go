@@ -105,6 +105,10 @@ type Branding struct {
 	BrowserTitle       LocalizedText       `gorm:"type:jsonb;not null" json:"browser_title"`
 	BrowserDescription LocalizedText       `gorm:"type:jsonb;not null" json:"browser_description"`
 	FooterCopyright    LocalizedText       `gorm:"type:jsonb;not null" json:"footer_copyright"`
+	FooterICPNumber    string              `gorm:"type:varchar(128)" json:"footer_icp_number"`
+	FooterICPLink      string              `gorm:"type:varchar(255)" json:"footer_icp_link"`
+	FooterContactEmail string              `gorm:"type:varchar(255)" json:"footer_contact_email"`
+	FooterGithubURL    string              `gorm:"type:varchar(255)" json:"footer_github_url"`
 	HomeLogo           FileURL             `json:"home_logo"`
 	HomeLogoAlt        LocalizedText       `gorm:"type:jsonb;not null" json:"home_logo_alt"`
 	Home               BrandingHomeContent `gorm:"type:jsonb;not null" json:"home"`
@@ -115,28 +119,32 @@ func DefaultBranding() Branding {
 	return Branding{
 		Code: DefaultBrandingCode,
 		SiteName: LocalizedText{
-			ZhCN: "深潜 CTF",
+			ZhCN: "CBCTF",
 			En:   "DEEP DIVE CTF",
 		},
 		AdminName: LocalizedText{
-			ZhCN: "深潜管理台",
+			ZhCN: "CBCTF管理台",
 			En:   "DEEP DIVE Admin",
 		},
 		BrowserTitle: LocalizedText{
-			ZhCN: "深潜 CTF",
+			ZhCN: "CBCTF",
 			En:   "DEEP DIVE CTF",
 		},
 		BrowserDescription: LocalizedText{
-			ZhCN: "深潜 CTF 网络安全竞赛平台",
+			ZhCN: "CBCTF 网络安全竞赛平台",
 			En:   "DEEP DIVE CTF competition platform",
 		},
 		FooterCopyright: LocalizedText{
-			ZhCN: "© 2025 深潜 CTF",
-			En:   "© 2025 DEEP DIVE CTF",
+			ZhCN: "© 2026 CBCTF",
+			En:   "© 2026 CBCTF",
 		},
-		HomeLogo: FileURL(fmt.Sprintf("%s/platform/logo.png", config.Env.Host)),
+		FooterICPNumber:    "陕ICP备2025076339号-1",
+		FooterICPLink:      "https://beian.miit.gov.cn/",
+		FooterContactEmail: "support@0rays.club",
+		FooterGithubURL:    "https://github.com/0RAYS/CBCTF",
+		HomeLogo:           FileURL(fmt.Sprintf("%s/platform/logo.png", config.Env.Host)),
 		HomeLogoAlt: LocalizedText{
-			ZhCN: "深潜 CTF 首页 Logo",
+			ZhCN: "CBCTF 首页 Logo",
 			En:   "DEEP DIVE CTF home logo",
 		},
 		Home: BrandingHomeContent{
@@ -154,7 +162,7 @@ func DefaultBranding() Branding {
 					En:   "Challenge",
 				},
 				Subtitle: LocalizedText{
-					ZhCN: "加入深潜 CTF 社区, 在真实场景中对抗、练习与成长",
+					ZhCN: "加入CBCTF 社区, 在真实场景中对抗、练习与成长",
 					En:   "Join the elite community of hackers, compete in real-world challenges, and master the art of cybersecurity through hands-on experience.",
 				},
 				PrimaryAction: LocalizedText{
