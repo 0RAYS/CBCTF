@@ -14,6 +14,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func GetChallenge(ctx *gin.Context) {
+	challenge := middleware.GetChallenge(ctx)
+	resp.JSON(ctx, model.SuccessRetVal(resp.GetChallengeResp(service.GetChallengeView(db.DB, challenge))))
+}
+
 func GetChallenges(ctx *gin.Context) {
 	var form dto.GetChallengesForm
 	if ret := dto.Bind(ctx, &form); !ret.OK {
