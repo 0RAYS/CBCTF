@@ -11,7 +11,8 @@ import {
   getTeamMembers,
 } from '../../../api/admin/contest';
 import { useTranslation } from 'react-i18next';
-import { useDebounce, useTeamDetailDialog } from '../../../hooks';
+import { useDebounce } from '../../../hooks';
+import { useTeamDetailDialog } from '../../../hooks/useTeamDetailDialog.jsx';
 
 function AdminContestTeams() {
   const { id } = useParams();

@@ -86,7 +86,7 @@ export function FrpServerField({ frpsList = [], updateConfig }) {
     <div className="space-y-1">
       <div className="flex items-center justify-between">
         <span className="text-xs font-mono text-neutral-400">{t('admin.system.labels.frps')}</span>
-        <Button size="icon" variant="ghost" onClick={addFrpsServer}>
+        <Button size="icon" variant="ghost" aria-label={t('common.add')} onClick={addFrpsServer}>
           <IconPlus size={14} />
         </Button>
       </div>
@@ -97,7 +97,12 @@ export function FrpServerField({ frpsList = [], updateConfig }) {
               <span className="text-xs font-mono text-neutral-400">
                 {t('admin.system.k8s.host')} #{frpsIndex + 1} {t('admin.system.labels.frpsHostname')}
               </span>
-              <Button size="icon" variant="ghost" onClick={() => removeFrpsServer(frpsIndex)}>
+              <Button
+                size="icon"
+                variant="ghost"
+                aria-label={t('common.remove')}
+                onClick={() => removeFrpsServer(frpsIndex)}
+              >
                 <IconX size={14} />
               </Button>
             </div>
@@ -129,7 +134,12 @@ export function FrpServerField({ frpsList = [], updateConfig }) {
             <div className="space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-mono text-neutral-400">{t('admin.system.k8s.allowedPorts')}</span>
-                <Button size="icon" variant="ghost" onClick={() => addAllowedRange(frpsIndex)}>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  aria-label={t('common.add')}
+                  onClick={() => addAllowedRange(frpsIndex)}
+                >
                   <IconPlus size={14} />
                 </Button>
               </div>
@@ -166,14 +176,24 @@ export function FrpServerField({ frpsList = [], updateConfig }) {
                           )
                         }
                       />
-                      <Button size="icon" variant="ghost" onClick={() => removeAllowedRange(frpsIndex, allowedIndex)}>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        aria-label={t('common.remove')}
+                        onClick={() => removeAllowedRange(frpsIndex, allowedIndex)}
+                      >
                         <IconX size={14} />
                       </Button>
                     </div>
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-mono text-neutral-400">Exclude</span>
-                        <Button size="icon" variant="ghost" onClick={() => addExcludePort(frpsIndex, allowedIndex)}>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          aria-label={t('common.add')}
+                          onClick={() => addExcludePort(frpsIndex, allowedIndex)}
+                        >
                           <IconPlus size={14} />
                         </Button>
                       </div>
@@ -195,6 +215,7 @@ export function FrpServerField({ frpsList = [], updateConfig }) {
                           <Button
                             size="icon"
                             variant="ghost"
+                            aria-label={t('common.remove')}
                             onClick={() => removeExcludePort(frpsIndex, allowedIndex, excludeIndex)}
                           >
                             <IconX size={14} />

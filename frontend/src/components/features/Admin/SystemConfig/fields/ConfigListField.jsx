@@ -1,5 +1,6 @@
 import { IconPlus, IconX } from '@tabler/icons-react';
 import { Input, Button } from '../../../../common';
+import { useTranslation } from 'react-i18next';
 
 /**
  * ConfigListField - Generic list field component with add/remove capabilities
@@ -11,11 +12,13 @@ import { Input, Button } from '../../../../common';
  * @param {Function} renderItem - Optional custom renderer for items (item, index) => ReactNode
  */
 export function ConfigListField({ label, items = [], onAdd, onUpdate, onRemove, renderItem }) {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
         <span className="text-xs font-mono text-neutral-400">{label}</span>
-        <Button size="icon" variant="ghost" onClick={onAdd}>
+        <Button size="icon" variant="ghost" aria-label={t('common.add')} onClick={onAdd}>
           <IconPlus size={14} />
         </Button>
       </div>
@@ -27,7 +30,7 @@ export function ConfigListField({ label, items = [], onAdd, onUpdate, onRemove, 
             ) : (
               <Input size="sm" value={item ?? ''} onChange={(event) => onUpdate(index, event.target.value)} />
             )}
-            <Button size="icon" variant="ghost" onClick={() => onRemove(index)}>
+            <Button size="icon" variant="ghost" aria-label={t('common.remove')} onClick={() => onRemove(index)}>
               <IconX size={14} />
             </Button>
           </div>

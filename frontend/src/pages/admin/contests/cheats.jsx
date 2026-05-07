@@ -15,7 +15,8 @@ import { Modal } from '../../../components/common';
 import ModalButton from '../../../components/common/ModalButton';
 import { Button, Pagination, EmptyState } from '../../../components/common';
 import { useTranslation } from 'react-i18next';
-import { useUserDetailDialog, useTeamDetailDialog } from '../../../hooks';
+import { useUserDetailDialog } from '../../../hooks/useUserDetailDialog.jsx';
+import { useTeamDetailDialog } from '../../../hooks/useTeamDetailDialog.jsx';
 
 function AdminContestCheats() {
   const { id } = useParams();

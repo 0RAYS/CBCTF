@@ -61,7 +61,13 @@ function AdminContestChallengeSelector({
         {/* 标题栏 */}
         <div className="flex justify-between items-center p-4 border-b border-neutral-700">
           <h2 className="text-xl font-mono text-neutral-50">{t('admin.contests.challengeSelector.title')}</h2>
-          <Button variant="ghost" size="icon" className="!text-neutral-400 hover:!text-neutral-300" onClick={onClose}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="!text-neutral-400 hover:!text-neutral-300"
+            aria-label={t('common.close')}
+            onClick={onClose}
+          >
             <IconX size={18} />
           </Button>
         </div>

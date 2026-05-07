@@ -11,31 +11,25 @@ import {
   downloadContainerTraffic,
 } from '../../../api/admin/contest';
 import { getUserList } from '../../../api/admin/user';
-import { Modal } from '../../../components/common';
 import TrafficGraphModal from '../../../components/features/Admin/Contests/TrafficGraphModal';
-import ModalButton from '../../../components/common/ModalButton';
-import { Button, Pagination, Card, EmptyState, StatCard, Chip } from '../../../components/common';
+import { Button } from '../../../components/common';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import {
   IconPlayerPlay,
-  IconBan,
-  IconFilter,
-  IconTable,
-  IconServer,
   IconUsers,
   IconTarget,
   IconSearch,
-  IconTrash,
   IconClockPlay,
-  IconRefresh,
   IconArrowsMaximize,
   IconChevronLeft,
   IconChevronRight,
-  IconDownload,
-  IconGraph,
 } from '@tabler/icons-react';
 import { getChallengeCategoryChipClass, getChallengeTypeChipClass } from '../../../config/challengeChips';
+import { ContainerStats } from './_blocks/ContainerStats';
+import { ContainerFilters } from './_blocks/ContainerFilters';
+import { ContainersTable } from './_blocks/ContainersTable';
+import { ChallengeDetailsModal, StartContainerModal, StopContainerModal } from './_blocks/ContainerModals';
 
 const VICTIM_STATUS_STYLES = {
   waiting: 'bg-yellow-400/10 text-yellow-400 border-yellow-400/30',
@@ -597,38 +591,7 @@ function ContestContainers() {
         `}
       </style>
       <div className="w-full mx-auto space-y-6">
-        {/* 页面标题和统计信息 */}
-        <div className="mb-8">
-          <div className="mb-4">
-            <p className="text-neutral-400 font-mono">{t('admin.contests.containers.page.subtitle')}</p>
-          </div>
-
-          {/* 统计卡片 */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <StatCard
-              title={t('admin.contests.containers.stats.total')}
-              value={stats.totalContainers}
-              valueColor="text-neutral-50"
-              icon={<IconServer size={20} className="text-geek-400" />}
-            />
-            <StatCard
-              title={t('admin.contests.containers.stats.running')}
-              value={stats.runningContainers}
-              valueColor="text-green-400"
-              icon={<IconPlayerPlay size={20} className="text-green-400" />}
-              iconBgClass="bg-green-400/20"
-              delay={0.1}
-            />
-            <StatCard
-              title={t('admin.contests.containers.stats.stopped')}
-              value={stats.stoppedContainers}
-              valueColor="text-red-400"
-              icon={<IconBan size={20} className="text-red-400" />}
-              iconBgClass="bg-red-400/20"
-              delay={0.2}
-            />
-          </div>
-        </div>
+        <ContainerStats stats={stats} t={t} />
 
         {/* 快速操作 */}
         <motion.div
@@ -840,685 +803,85 @@ function ContestContainers() {
           </div>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="border border-neutral-600 rounded-md bg-neutral-900 p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <IconFilter size={18} className="text-neutral-400" />
-                <h3 className="text-base font-mono text-neutral-50">{t('admin.contests.containers.filters.title')}</h3>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleResetFilters}
-                className="!text-neutral-400 hover:!text-neutral-300 !text-xs !h-6 !px-2"
-              >
-                {t('admin.contests.containers.filters.reset')}
-              </Button>
-            </div>
+        <ContainerFilters
+          t={t}
+          filters={filters}
+          searchResults={searchResults}
+          searchLoading={searchLoading}
+          usersSearchRef={usersSearchRef}
+          teamsSearchRef={teamsSearchRef}
+          challengesSearchRef={challengesSearchRef}
+          onResetFilters={handleResetFilters}
+          onFilterChange={handleFilterChange}
+          onSearch={debouncedSearch}
+          onSetSearchResults={setSearchResults}
+          onSetSearchLoading={setSearchLoading}
+        />
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="relative" ref={usersSearchRef}>
-                <label className="block text-xs font-mono text-neutral-400 mb-1">
-                  {t('admin.contests.containers.filters.userName')}
-                </label>
-                <div className="relative">
-                  <IconSearch
-                    size={14}
-                    className="absolute left-2 top-1/2 transform -translate-y-1/2 text-neutral-400"
-                  />
-                  <input
-                    type="text"
-                    placeholder={t('admin.contests.containers.filters.searchUserPlaceholder')}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      debouncedSearch(
-                        'User',
-                        value,
-                        (results) =>
-                          setSearchResults((prev) => ({
-                            ...prev,
-                            users: results,
-                          })),
-                        (loading) =>
-                          setSearchLoading((prev) => ({
-                            ...prev,
-                            users: loading,
-                          }))
-                      );
-                    }}
-                    className="w-full h-8 pl-7 pr-2 bg-black/20 border border-neutral-300/30 rounded-md text-xs text-neutral-50 placeholder-neutral-500 focus:outline-none focus:border-geek-400 focus:shadow-focus transition-all duration-200"
-                  />
-                  {searchLoading.users && (
-                    <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                      <div className="w-3 h-3 border border-geek-400 border-t-transparent rounded-full animate-spin" />
-                    </div>
-                  )}
-                </div>
-                {searchResults.users.length > 0 && (
-                  <div className="dropdown-custom max-h-32">
-                    {searchResults.users.map((user) => (
-                      <div
-                        key={user.id}
-                        className="dropdown-option text-xs"
-                        onClick={() => {
-                          handleFilterChange('user_id', user.id.toString());
-                          setSearchResults((prev) => ({ ...prev, users: [] }));
-                        }}
-                      >
-                        {user.name ||
-                          user.username ||
-                          t('admin.contests.containers.filters.userFallback', {
-                            id: user.id,
-                          })}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+        <ContainersTable
+          t={t}
+          containers={containers}
+          runningCount={runningCount}
+          selectedContainers={selectedContainers}
+          refreshInterval={refreshInterval}
+          showDeleted={showDeleted}
+          currentPage={currentPage}
+          pageSize={pageSize}
+          onRefreshIntervalChange={setRefreshInterval}
+          onRefresh={() => fetchContainers(currentPage, showDeleted, filtersRef.current)}
+          onToggleShowDeleted={toggleShowDeleted}
+          onOpenStopModal={() => setIsStopModalOpen(true)}
+          onSelectAll={handleSelectAll}
+          onContainerSelect={handleContainerSelect}
+          onPageChange={handlePageChange}
+          onViewTrafficGraph={handleViewTrafficGraph}
+          onDownloadTraffic={handleDownloadTraffic}
+          isVictimStoppable={isVictimStoppable}
+          formatTime={formatTime}
+          formatRemaining={formatRemaining}
+          getContainerStatusStyle={getContainerStatusStyle}
+          VictimStatusBadge={VictimStatusBadge}
+        />
 
-              <div className="relative" ref={teamsSearchRef}>
-                <label className="block text-xs font-mono text-neutral-400 mb-1">
-                  {t('admin.contests.containers.filters.teamName')}
-                </label>
-                <div className="relative">
-                  <IconUsers
-                    size={14}
-                    className="absolute left-2 top-1/2 transform -translate-y-1/2 text-neutral-400"
-                  />
-                  <input
-                    type="text"
-                    placeholder={t('admin.contests.containers.filters.searchTeamPlaceholder')}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      debouncedSearch(
-                        'Team',
-                        value,
-                        (results) =>
-                          setSearchResults((prev) => ({
-                            ...prev,
-                            teams: results,
-                          })),
-                        (loading) =>
-                          setSearchLoading((prev) => ({
-                            ...prev,
-                            teams: loading,
-                          }))
-                      );
-                    }}
-                    className="w-full h-8 pl-7 pr-2 bg-black/20 border border-neutral-300/30 rounded-md text-xs text-neutral-50 placeholder-neutral-500 focus:outline-none focus:border-geek-400 focus:shadow-focus transition-all duration-200"
-                  />
-                  {searchLoading.teams && (
-                    <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                      <div className="w-3 h-3 border border-geek-400 border-t-transparent rounded-full animate-spin" />
-                    </div>
-                  )}
-                </div>
-                {searchResults.teams.length > 0 && (
-                  <div className="dropdown-custom max-h-32">
-                    {searchResults.teams.map((team) => (
-                      <div
-                        key={team.id}
-                        className="dropdown-option text-xs"
-                        onClick={() => {
-                          handleFilterChange('team_id', team.id.toString());
-                          setSearchResults((prev) => ({ ...prev, teams: [] }));
-                        }}
-                      >
-                        {team.name ||
-                          t('admin.contests.containers.filters.teamFallback', {
-                            id: team.id,
-                          })}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="relative" ref={challengesSearchRef}>
-                <label className="block text-xs font-mono text-neutral-400 mb-1">
-                  {t('admin.contests.containers.filters.challengeName')}
-                </label>
-                <div className="relative">
-                  <IconTarget
-                    size={14}
-                    className="absolute left-2 top-1/2 transform -translate-y-1/2 text-neutral-400"
-                  />
-                  <input
-                    type="text"
-                    placeholder={t('admin.contests.containers.filters.searchChallengePlaceholder')}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      debouncedSearch(
-                        'Challenge',
-                        value,
-                        (results) =>
-                          setSearchResults((prev) => ({
-                            ...prev,
-                            challenges: results,
-                          })),
-                        (loading) =>
-                          setSearchLoading((prev) => ({
-                            ...prev,
-                            challenges: loading,
-                          }))
-                      );
-                    }}
-                    className="w-full h-8 pl-7 pr-2 bg-black/20 border border-neutral-300/30 rounded-md text-xs text-neutral-50 placeholder-neutral-500 focus:outline-none focus:border-geek-400 focus:shadow-focus transition-all duration-200"
-                  />
-                  {searchLoading.challenges && (
-                    <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                      <div className="w-3 h-3 border border-geek-400 border-t-transparent rounded-full animate-spin" />
-                    </div>
-                  )}
-                </div>
-                {searchResults.challenges.length > 0 && (
-                  <div className="dropdown-custom max-h-32">
-                    {searchResults.challenges.map((challenge) => (
-                      <div
-                        key={challenge.id}
-                        className="dropdown-option text-xs"
-                        onClick={() => {
-                          handleFilterChange('challenge_id', challenge.id.toString());
-                          setSearchResults((prev) => ({
-                            ...prev,
-                            challenges: [],
-                          }));
-                        }}
-                      >
-                        {challenge.name ||
-                          t('admin.contests.containers.filters.challengeFallback', { id: challenge.id })}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {(filters.user_id || filters.team_id || filters.challenge_id) && (
-              <div className="mt-3 pt-3 border-t border-neutral-300/20">
-                <div className="flex flex-wrap gap-2">
-                  {filters.user_id && (
-                    <span className="px-2 py-1 bg-geek-400/20 text-geek-400 text-xs font-mono rounded border border-geek-400/30">
-                      {t('admin.contests.containers.filters.userIdLabel')}: {filters.user_id}
-                      <button onClick={() => handleFilterChange('user_id', '')} className="ml-1 hover:text-red-400">
-                        ×
-                      </button>
-                    </span>
-                  )}
-                  {filters.team_id && (
-                    <span className="px-2 py-1 bg-geek-400/20 text-geek-400 text-xs font-mono rounded border border-geek-400/30">
-                      {t('admin.contests.containers.filters.teamIdLabel')}: {filters.team_id}
-                      <button onClick={() => handleFilterChange('team_id', '')} className="ml-1 hover:text-red-400">
-                        ×
-                      </button>
-                    </span>
-                  )}
-                  {filters.challenge_id && (
-                    <span className="px-2 py-1 bg-green-400/20 text-green-400 text-xs font-mono rounded border border-green-400/30">
-                      {t('admin.contests.containers.filters.challengeIdLabel')}: {filters.challenge_id}
-                      <button
-                        onClick={() => handleFilterChange('challenge_id', '')}
-                        className="ml-1 hover:text-red-400"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </motion.div>
-
-        <Card variant="default" padding="none" className="overflow-hidden">
-          {/* 列表头部 */}
-          <div className="p-4 bg-black/20 border-b border-neutral-300/30 space-y-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <IconTable size={20} className="text-neutral-400" />
-              <h3 className="text-lg font-mono text-neutral-50">{t('admin.contests.containers.table.title')}</h3>
-              <span className="text-sm font-mono text-neutral-400">
-                {t('admin.contests.containers.table.total', {
-                  count: runningCount,
-                })}
-              </span>
-            </div>
-
-            <div className="flex flex-wrap gap-2 items-center">
-              <div className="flex items-center gap-1 px-2 h-8 rounded-md border border-neutral-700 bg-neutral-900">
-                <IconClockPlay size={13} className="text-neutral-400 shrink-0" />
-                <span className="text-xs text-neutral-400 shrink-0">{t('common.autoRefresh')}</span>
-                <select
-                  value={refreshInterval}
-                  onChange={(e) => setRefreshInterval(Number(e.target.value))}
-                  className="bg-transparent text-xs text-neutral-300 outline-none cursor-pointer"
-                >
-                  {[5, 10, 30, 60].map((s) => (
-                    <option key={s} value={s} className="bg-neutral-900">
-                      {s}s
-                    </option>
-                  ))}
-                  <option value={0} className="bg-neutral-900">
-                    {t('common.autoRefreshOff')}
-                  </option>
-                </select>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                leftIcon={<IconRefresh size={14} />}
-                onClick={() => fetchContainers(currentPage, showDeleted, filtersRef.current)}
-              >
-                {t('common.refresh')}
-              </Button>
-              <Button
-                variant={showDeleted ? 'danger' : 'ghost'}
-                size="sm"
-                leftIcon={<IconTrash size={14} />}
-                onClick={toggleShowDeleted}
-              >
-                {t('admin.contests.containers.showDeleted')}
-              </Button>
-              {selectedContainers.length > 0 && (
-                <Button
-                  variant="danger"
-                  size="sm"
-                  leftIcon={<IconBan size={14} />}
-                  onClick={() => setIsStopModalOpen(true)}
-                >
-                  {t('admin.contests.containers.table.stopButton')} ({selectedContainers.length})
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-black/40">
-                  <th className="p-4 text-left text-neutral-400 font-mono">
-                    <input
-                      type="checkbox"
-                      checked={
-                        containers.filter(isVictimStoppable).length > 0 &&
-                        selectedContainers.length === containers.filter(isVictimStoppable).length
-                      }
-                      onChange={handleSelectAll}
-                      className="w-4 h-4 rounded border-neutral-300/30 text-geek-400 
-                              focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
-                    />
-                  </th>
-                  <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">
-                    {t('admin.contests.containers.table.columns.id')}
-                  </th>
-                  <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">
-                    {t('admin.contests.containers.table.columns.challenge')}
-                  </th>
-                  <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">
-                    {t('admin.contests.containers.table.columns.team')}
-                  </th>
-                  <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">
-                    {t('admin.contests.containers.table.columns.user')}
-                  </th>
-                  <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">
-                    {t('admin.contests.containers.table.columns.remote')}
-                  </th>
-                  <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">
-                    {t('admin.contests.containers.table.columns.startTime')}
-                  </th>
-                  <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">
-                    {t('admin.contests.containers.table.columns.status')}
-                  </th>
-                  <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">
-                    {t('admin.contests.containers.table.columns.remaining')}
-                  </th>
-                  <th className="p-4 text-left text-neutral-400 font-mono whitespace-nowrap">
-                    {t('admin.contests.teamDetail.traffic.columns.actions')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {containers.length === 0 ? (
-                  <tr>
-                    <td colSpan="11">
-                      <EmptyState title={t('admin.contests.containers.table.empty')} />
-                    </td>
-                  </tr>
-                ) : (
-                  containers.map((container, index) => (
-                    <motion.tr
-                      key={container.id}
-                      className="border-t border-neutral-300/10 hover:bg-black/40 transition-colors"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.02 }}
-                      whileHover={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
-                    >
-                      <td className="p-4 text-neutral-300 font-mono">
-                        <input
-                          type="checkbox"
-                          checked={selectedContainers.includes(container.id)}
-                          disabled={!isVictimStoppable(container)}
-                          onChange={() => handleContainerSelect(container.id)}
-                          className="w-4 h-4 rounded border-neutral-300/30 text-geek-400 
-                                  focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
-                        />
-                      </td>
-                      <td className="p-4 text-neutral-300 font-mono whitespace-nowrap">{container.id}</td>
-                      <td className="p-4 text-neutral-300 font-mono whitespace-nowrap">{container.challenge}</td>
-                      <td className="p-4 text-neutral-300 font-mono whitespace-nowrap">{container.team}</td>
-                      <td className="p-4 text-neutral-300 font-mono whitespace-nowrap">{container.user}</td>
-                      <td className="p-4 text-neutral-300 font-mono">
-                        {container.remote && container.remote.length > 0 ? (
-                          <div className="space-y-1">
-                            {container.remote.map((addr, index) => (
-                              <div
-                                key={index}
-                                className="text-xs bg-black/30 text-geek-400 px-2 py-1 rounded border border-geek-400/30"
-                              >
-                                {addr}
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="text-neutral-400">-</span>
-                        )}
-                      </td>
-                      <td className="p-4 text-neutral-300 font-mono whitespace-nowrap">
-                        {formatTime(container.start)}
-                      </td>
-                      <td className="p-4 whitespace-nowrap">
-                        <VictimStatusBadge status={container.status} t={t} />
-                      </td>
-                      <td className="p-4 text-neutral-300 font-mono whitespace-nowrap">
-                        <span
-                          className={`px-2 py-1 rounded-md text-xs font-mono border ${getContainerStatusStyle(container.remaining)}`}
-                        >
-                          {formatRemaining(container.remaining)}
-                        </span>
-                      </td>
-                      <td className="p-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="!text-geek-400 hover:!text-geek-300"
-                            onClick={() => handleViewTrafficGraph(container)}
-                            title={t('admin.contests.teamDetail.traffic.actions.viewTraffic')}
-                          >
-                            <IconGraph size={18} />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="!text-geek-400 hover:!text-geek-300"
-                            onClick={() => handleDownloadTraffic(container)}
-                            title={t('admin.contests.teamDetail.traffic.actions.downloadTraffic')}
-                          >
-                            <IconDownload size={18} />
-                          </Button>
-                        </div>
-                      </td>
-                    </motion.tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* 分页 */}
-          {runningCount > 0 && (
-            <div className="p-4 border-t border-neutral-300/30 bg-black/20 flex justify-center">
-              <Pagination
-                total={Math.ceil(runningCount / pageSize)}
-                current={currentPage}
-                pageSize={pageSize}
-                onChange={handlePageChange}
-                showTotal
-                totalItems={runningCount}
-              />
-            </div>
-          )}
-        </Card>
-
-        {/* 开启容器确认模态框 */}
-        <Modal
+        <StartContainerModal
+          t={t}
           isOpen={isStartModalOpen}
           onClose={() => setIsStartModalOpen(false)}
-          title={t('admin.contests.containers.modals.startTitle')}
-          footer={
-            <>
-              <ModalButton onClick={() => setIsStartModalOpen(false)}>{t('common.cancel')}</ModalButton>
-              <ModalButton variant="primary" onClick={handleStartContainers}>
-                {t('admin.contests.containers.modals.startConfirm')}
-              </ModalButton>
-            </>
-          }
-        >
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <IconPlayerPlay size={20} className="text-geek-400" />
-              <p className="text-neutral-300 font-mono">{t('admin.contests.containers.modals.startPrompt')}</p>
-            </div>
+          onConfirm={handleStartContainers}
+          selectedChallenges={selectedChallenges}
+          challenges={challenges}
+          randomTeamPercentage={randomTeamPercentage}
+          selectedTeamCount={selectedTeamCount}
+          totalTeamCount={totalTeamCount}
+          victimDurationSeconds={victimDurationSeconds}
+          formatVictimDuration={formatVictimDuration}
+        />
 
-            <div className="space-y-4">
-              <div>
-                <h4 className="text-sm font-mono text-neutral-400 mb-2">
-                  {t('admin.contests.containers.modals.selectedChallenges', {
-                    count: selectedChallenges.length,
-                  })}
-                </h4>
-                <div className="max-h-32 overflow-y-auto border border-neutral-300/30 rounded-md bg-black/10 p-2">
-                  {selectedChallenges.map((challengeId) => {
-                    const challenge = challenges.find((c) => c.id === challengeId);
-                    return challenge ? (
-                      <div key={challengeId} className="text-sm font-mono text-geek-400 py-1">
-                        • {challenge.name}
-                      </div>
-                    ) : null;
-                  })}
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-sm font-mono text-neutral-400 mb-2">
-                  {t('admin.contests.containers.modals.teamRatioTitle')}
-                </h4>
-                <div className="border border-neutral-300/30 rounded-md bg-black/10 p-3 space-y-2">
-                  <p className="text-sm font-mono text-geek-400">
-                    {t('admin.contests.containers.modals.teamRatioValue', {
-                      ratio: randomTeamPercentage,
-                    })}
-                  </p>
-                  <p className="text-xs font-mono text-neutral-400">
-                    {t('admin.contests.containers.modals.teamRatioHint', {
-                      count: selectedTeamCount,
-                      total: totalTeamCount,
-                    })}
-                  </p>
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-sm font-mono text-neutral-400 mb-2">
-                  {t('admin.contests.containers.modals.durationTitle')}
-                </h4>
-                <div className="border border-neutral-300/30 rounded-md bg-black/10 p-3 space-y-2">
-                  <p className="text-sm font-mono text-geek-400">
-                    {t('admin.contests.containers.modals.durationValue', {
-                      seconds: victimDurationSeconds,
-                    })}
-                  </p>
-                  <p className="text-xs font-mono text-neutral-400">
-                    {t('admin.contests.containers.modals.durationHint', {
-                      value: formatVictimDuration(victimDurationSeconds),
-                    })}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-neutral-800/50 border border-neutral-600/30 rounded-md p-3">
-              <p className="text-xs font-mono text-neutral-400">
-                {t('admin.contests.containers.modals.summaryPrefix')}
-                <span className="text-geek-400">{selectedChallenges.length}</span>
-                {t('admin.contests.containers.modals.summaryMiddle')}
-                <span className="text-geek-400">{selectedTeamCount}</span>
-                {t('admin.contests.containers.modals.summaryEquals')}
-                <span className="text-green-400"> {selectedChallenges.length * selectedTeamCount}</span>
-                {t('admin.contests.containers.modals.summarySuffix')}
-              </p>
-            </div>
-
-            <div className="border border-amber-400/40 rounded-md bg-amber-400/10 p-3">
-              <p className="text-xs font-mono text-amber-200">{t('admin.contests.containers.modals.startWarning')}</p>
-            </div>
-          </div>
-        </Modal>
-
-        <Modal
+        <ChallengeDetailsModal
+          t={t}
           isOpen={isChallengeDetailsOpen}
           onClose={() => setIsChallengeDetailsOpen(false)}
-          title={t('admin.contests.containers.modals.challengeDetailsTitle')}
-          size="xl"
-          footer={
-            <>
-              <ModalButton onClick={() => setIsChallengeDetailsOpen(false)}>{t('common.cancel')}</ModalButton>
-            </>
-          }
-        >
-          <div className="space-y-4">
-            <div className="relative">
-              <IconSearch
-                size={14}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 pointer-events-none"
-              />
-              <input
-                type="text"
-                value={challengeSearch}
-                onChange={(e) => handleChallengeSearchChange(e.target.value)}
-                placeholder={t('admin.contests.containers.quickActions.searchPlaceholder')}
-                className="w-full h-10 pl-10 pr-3 bg-black/20 border border-neutral-300/30 rounded-md text-sm text-neutral-50 placeholder-neutral-500 focus:outline-none focus:border-geek-400 transition-all duration-200"
-              />
-            </div>
+          detailChallenges={detailChallenges}
+          detailChallengeTotal={detailChallengeTotal}
+          detailChallengePage={detailChallengePage}
+          challengePageSize={challengePageSize}
+          challengeSearch={challengeSearch}
+          selectedChallenges={selectedChallenges}
+          typeLabels={typeLabels}
+          onChallengeSearchChange={handleChallengeSearchChange}
+          onChallengeSelectionChange={updateChallengeSelection}
+          onPageChange={setDetailChallengePage}
+          getChallengeCategoryChipClass={getChallengeCategoryChipClass}
+          getChallengeTypeChipClass={getChallengeTypeChipClass}
+        />
 
-            <p className="text-sm font-mono text-neutral-400">
-              {t('admin.contests.containers.modals.challengeDetailsHint', {
-                count: detailChallengeTotal,
-              })}
-            </p>
-
-            {detailChallenges.length === 0 ? (
-              <div className="border border-neutral-300/20 rounded-md bg-black/10 p-4 text-sm font-mono text-neutral-500">
-                {t('admin.contests.containers.modals.challengeDetailsEmpty')}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {detailChallenges.map((challenge) => {
-                  const isSelected = selectedChallenges.includes(challenge.id);
-                  return (
-                    <div
-                      key={challenge.id}
-                      className="border border-neutral-300/20 rounded-md bg-black/10 p-4 space-y-4"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="min-w-0 space-y-2">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="text-base font-mono text-neutral-50 break-all">{challenge.name}</h4>
-                            {challenge.category ? (
-                              <Chip
-                                size="sm"
-                                label={challenge.category}
-                                colorClass={getChallengeCategoryChipClass(challenge.category)}
-                              />
-                            ) : null}
-                            {challenge.type ? (
-                              <Chip
-                                size="sm"
-                                label={typeLabels[challenge.type] || challenge.type}
-                                colorClass={getChallengeTypeChipClass(challenge.type)}
-                              />
-                            ) : null}
-                            {challenge.hidden ? (
-                              <Chip
-                                size="sm"
-                                label={t('admin.contests.challenges.hidden')}
-                                colorClass="bg-red-400/20 text-red-400"
-                              />
-                            ) : null}
-                          </div>
-                          <div className="flex items-center gap-3 flex-wrap text-xs font-mono text-neutral-400">
-                            <span>
-                              {t('admin.contests.containers.modals.challengeScore', { score: challenge.score || 0 })}
-                            </span>
-                            <span>
-                              {t('admin.contests.containers.modals.challengeSolvers', {
-                                count: challenge.solvers || 0,
-                              })}
-                            </span>
-                            <span>
-                              {t('admin.contests.containers.modals.challengeAttempts', {
-                                count: challenge.attempt || 0,
-                              })}
-                            </span>
-                            <span>ID: {challenge.id}</span>
-                          </div>
-                        </div>
-
-                        <label className="inline-flex items-center gap-2 text-sm font-mono text-neutral-300 cursor-pointer shrink-0">
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={(e) => updateChallengeSelection(challenge.id, e.target.checked)}
-                            className="w-4 h-4 rounded border-neutral-300/30 text-geek-400 focus:ring-geek-400 focus:ring-offset-0 bg-black/20"
-                          />
-                          {t('admin.contests.containers.modals.selectChallenge')}
-                        </label>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {Math.ceil(detailChallengeTotal / challengePageSize) > 1 ? (
-              <div className="pt-2 border-t border-neutral-300/20">
-                <Pagination
-                  total={Math.ceil(detailChallengeTotal / challengePageSize)}
-                  current={detailChallengePage}
-                  pageSize={challengePageSize}
-                  onChange={setDetailChallengePage}
-                  showTotal
-                  totalItems={detailChallengeTotal}
-                />
-              </div>
-            ) : null}
-          </div>
-        </Modal>
-
-        {/* 停止容器确认模态框 */}
-        <Modal
+        <StopContainerModal
+          t={t}
           isOpen={isStopModalOpen}
           onClose={() => setIsStopModalOpen(false)}
-          title={t('admin.contests.containers.modals.stopTitle')}
-          footer={
-            <>
-              <ModalButton onClick={() => setIsStopModalOpen(false)}>{t('common.cancel')}</ModalButton>
-              <ModalButton variant="danger" onClick={handleStopContainers}>
-                {t('admin.contests.containers.modals.stopConfirm')}
-              </ModalButton>
-            </>
-          }
-        >
-          <div className="flex items-center gap-3">
-            <IconBan size={20} className="text-red-400" />
-            <p className="text-neutral-300 font-mono">
-              {t('admin.contests.containers.modals.stopPrompt', {
-                count: selectedContainers.length,
-              })}
-            </p>
-          </div>
-        </Modal>
+          onConfirm={handleStopContainers}
+          selectedCount={selectedContainers.length}
+        />
 
         <TrafficGraphModal
           isOpen={!!trafficGraphContainer}
