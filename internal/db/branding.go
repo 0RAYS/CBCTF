@@ -18,6 +18,10 @@ type CreateBrandingOptions struct {
 	BrowserTitle       model.LocalizedText
 	BrowserDescription model.LocalizedText
 	FooterCopyright    model.LocalizedText
+	FooterICPNumber    string
+	FooterICPLink      string
+	FooterContactEmail string
+	FooterGithubURL    string
 	HomeLogo           model.FileURL
 	HomeLogoAlt        model.LocalizedText
 	Home               model.BrandingHomeContent
@@ -31,6 +35,10 @@ func (c CreateBrandingOptions) Convert2Model() model.Model {
 		BrowserTitle:       c.BrowserTitle,
 		BrowserDescription: c.BrowserDescription,
 		FooterCopyright:    c.FooterCopyright,
+		FooterICPNumber:    c.FooterICPNumber,
+		FooterICPLink:      c.FooterICPLink,
+		FooterContactEmail: c.FooterContactEmail,
+		FooterGithubURL:    c.FooterGithubURL,
 		HomeLogo:           c.HomeLogo,
 		HomeLogoAlt:        c.HomeLogoAlt,
 		Home:               c.Home,
@@ -43,6 +51,10 @@ type UpdateBrandingOptions struct {
 	BrowserTitle       *model.LocalizedText
 	BrowserDescription *model.LocalizedText
 	FooterCopyright    *model.LocalizedText
+	FooterICPNumber    *string
+	FooterICPLink      *string
+	FooterContactEmail *string
+	FooterGithubURL    *string
 	HomeLogo           *model.FileURL
 	HomeLogoAlt        *model.LocalizedText
 	Home               *model.BrandingHomeContent
@@ -64,6 +76,18 @@ func (u UpdateBrandingOptions) Convert2Map() map[string]any {
 	}
 	if u.FooterCopyright != nil {
 		options["footer_copyright"] = *u.FooterCopyright
+	}
+	if u.FooterICPNumber != nil {
+		options["footer_icp_number"] = *u.FooterICPNumber
+	}
+	if u.FooterICPLink != nil {
+		options["footer_icp_link"] = *u.FooterICPLink
+	}
+	if u.FooterContactEmail != nil {
+		options["footer_contact_email"] = *u.FooterContactEmail
+	}
+	if u.FooterGithubURL != nil {
+		options["footer_github_url"] = *u.FooterGithubURL
 	}
 	if u.HomeLogo != nil {
 		options["home_logo"] = *u.HomeLogo
@@ -97,6 +121,10 @@ func (b *BrandingRepo) InitDefault() model.RetVal {
 		BrowserTitle:       model.DefaultBranding().BrowserTitle,
 		BrowserDescription: model.DefaultBranding().BrowserDescription,
 		FooterCopyright:    model.DefaultBranding().FooterCopyright,
+		FooterICPNumber:    model.DefaultBranding().FooterICPNumber,
+		FooterICPLink:      model.DefaultBranding().FooterICPLink,
+		FooterContactEmail: model.DefaultBranding().FooterContactEmail,
+		FooterGithubURL:    model.DefaultBranding().FooterGithubURL,
 		HomeLogo:           model.DefaultBranding().HomeLogo,
 		HomeLogoAlt:        model.DefaultBranding().HomeLogoAlt,
 		Home:               model.DefaultBranding().Home,

@@ -7,7 +7,11 @@ export const DEFAULT_BRANDING = {
     zh_cn: 'DEEP DIVE CTF competition platform',
     en: 'DEEP DIVE CTF competition platform',
   },
-  footer_copyright: { zh_cn: '© 2025 CBCTF', en: '© 2025 CBCTF' },
+  footer_copyright: { zh_cn: '© 2026 CBCTF', en: '© 2026 CBCTF' },
+  footer_icp_number: '陕ICP备2025076339号-1',
+  footer_icp_link: 'https://beian.miit.gov.cn/',
+  footer_contact_email: 'support@0rays.club',
+  footer_github_url: 'https://github.com/0RAYS/CBCTF',
   home_logo: '/platform/logo.png',
   home_logo_alt: { zh_cn: 'CBCTF 首页 Logo', en: 'CBCTF home logo' },
   home: {
@@ -71,6 +75,10 @@ export function mergeBranding(branding = {}) {
     browser_title: { ...DEFAULT_BRANDING.browser_title, ...(branding.browser_title || {}) },
     browser_description: { ...DEFAULT_BRANDING.browser_description, ...(branding.browser_description || {}) },
     footer_copyright: { ...DEFAULT_BRANDING.footer_copyright, ...(branding.footer_copyright || {}) },
+    footer_icp_number: branding.footer_icp_number || DEFAULT_BRANDING.footer_icp_number,
+    footer_icp_link: branding.footer_icp_link || DEFAULT_BRANDING.footer_icp_link,
+    footer_contact_email: branding.footer_contact_email || DEFAULT_BRANDING.footer_contact_email,
+    footer_github_url: branding.footer_github_url || DEFAULT_BRANDING.footer_github_url,
     home_logo_alt: { ...DEFAULT_BRANDING.home_logo_alt, ...(branding.home_logo_alt || {}) },
     home: {
       ...DEFAULT_BRANDING.home,

@@ -1,16 +1,18 @@
 export const REPO_URL = 'https://github.com/0RAYS/CBCTF';
 
-export function getFooterConfig(t, footerCopyright = null) {
+export function getFooterConfig(t, footerBranding = {}) {
+  const contactEmail = footerBranding.contactEmail || 'support@0rays.club';
+
   return {
-    copyright: footerCopyright || t('footer.copyright'),
+    copyright: footerBranding.copyright || t('footer.copyright'),
     icp: {
-      number: t('footer.icp'),
-      link: 'https://beian.miit.gov.cn/',
+      number: footerBranding.icpNumber || t('footer.icp'),
+      link: footerBranding.icpLink || 'https://beian.miit.gov.cn/',
     },
     links: [
       { label: t('footer.support'), href: '/support', isExternal: false },
-      { label: t('footer.contact'), href: '/contact', isExternal: false },
-      { label: t('footer.github'), href: REPO_URL, isExternal: true },
+      { label: contactEmail, href: `mailto:${contactEmail}`, isExternal: true },
+      { label: t('footer.github'), href: footerBranding.githubURL || REPO_URL, isExternal: true },
     ],
   };
 }

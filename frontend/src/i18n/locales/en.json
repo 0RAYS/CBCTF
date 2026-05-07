@@ -84,7 +84,7 @@
     }
   },
   "footer": {
-    "copyright": "© 2025 DEEP DIVE CTF",
+    "copyright": "© 2026 CBCTF",
     "icp": "陕ICP备2025076339号-1",
     "support": "Support",
     "contact": "Contact",
@@ -2273,6 +2273,10 @@
         "browserTitle": "Browser Title",
         "browserDescription": "Browser Description",
         "footerCopyright": "Footer Copyright",
+        "footerICPNumber": "Footer ICP Number",
+        "footerICPLink": "Footer ICP Link",
+        "footerContactEmail": "Footer Contact Email",
+        "footerGithubURL": "Footer GitHub URL",
         "homeLogo": "Home Logo",
         "homeLogoAlt": "Logo Alt Text",
         "heroTitlePrefix": "Hero Title Prefix",

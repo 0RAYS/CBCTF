@@ -17,9 +17,15 @@ function BaseLayout({
   backgroundImage = '',
 }) {
   const { t } = useTranslation();
-  const { footerCopyright } = useBranding();
+  const { footerCopyright, footerICPNumber, footerICPLink, footerContactEmail, footerGithubURL } = useBranding();
   const resolvedLogo = logo || t('branding.main');
-  const footerConfig = getFooterConfig(t, footerCopyright);
+  const footerConfig = getFooterConfig(t, {
+    copyright: footerCopyright,
+    icpNumber: footerICPNumber,
+    icpLink: footerICPLink,
+    contactEmail: footerContactEmail,
+    githubURL: footerGithubURL,
+  });
 
   return (
     <div className="h-full w-full overflow-x-hidden">
