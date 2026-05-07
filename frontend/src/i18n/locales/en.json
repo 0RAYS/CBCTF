@@ -1329,6 +1329,7 @@
         "searchFailed": "Search failed",
         "fetchCategoriesFailed": "Failed to fetch categories",
         "fetchListFailed": "Failed to load challenges",
+        "fetchDetailFailed": "Failed to load challenge details",
         "downloadFailed": "Failed to download attachment",
         "uploadSuccess": "Attachment uploaded",
         "uploadFailed": "Failed to upload attachment",
