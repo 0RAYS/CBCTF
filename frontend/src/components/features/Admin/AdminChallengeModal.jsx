@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { IconX, IconPlus, IconTrash, IconMaximize, IconMinimize, IconDeviceFloppy } from '@tabler/icons-react';
+import { IconX, IconPlus, IconTrash } from '@tabler/icons-react';
 import { Button } from '../../../components/common';
 import { lazy, Suspense, useState, useEffect } from 'react';
 const Editor = lazy(() => import('@monaco-editor/react'));
@@ -20,124 +20,38 @@ import { useTranslation } from 'react-i18next';
  * @param {Function} props.onFlagChange - Flag变更回调
  */
 
-const defaultYAML = `
-services:
-  service1:
-    container_name: service1
-    image: nicolaka/netshoot:latest
-    ports:
-      - "80:80/tcp"
-    cpus: 0.5
-    mem_limit: 500m
-    environment:
-      - FLAG=static{static_flag}
-    volumes:
-      - FLAG_0:/flag
-    working_dir: /root
-    command:
-      - "sleep"
-      - "infinity"
-    networks:
-      network1:
-        ipv4_address: 192.168.0.2
-
-  service2:
-    container_name: service2
-    image: nicolaka/netshoot:latest
-    cpus: 0.5
-    mem_limit: 500m
-    environment:
-      - FLAG=dynamic{dynamic_flag}
-    volumes:
-      - FLAG_1:/flag
-    working_dir: /root
-    command:
-      - "sleep"
-      - "infinity"
-    networks:
-      network1:
-        ipv4_address: 192.168.0.3
-      network2:
-        ipv4_address: 192.168.1.3
-
-  service3:
-    container_name: service3
-    image: nicolaka/netshoot:latest
-    cpus: 0.5
-    mem_limit: 500m
-    environment:
-      - FLAG=uuid{}
-    volumes:
-      - FLAG_2:/flag
-    working_dir: /root
-    command:
-      - "sleep"
-      - "infinity"
-    networks:
-      network2:
-        ipv4_address: 192.168.1.4
-      network3:
-        ipv4_address: 192.168.2.4
-
-volumes:
-  FLAG_0:
-    labels:
-      - value=static{static_flag}
-  FLAG_1:
-    labels:
-      - value=dynamic{dynamic_flag}
-  FLAG_2:
-    labels:
-      - value=uuid{}
-
-networks:
-  network1:
-    external: true
-    ipam:
-      config:
-        - subnet: 192.168.0.0/24
-          gateway: 192.168.0.1
-
-  network2:
-    ipam:
-      config:
-        - subnet: 192.168.1.0/24
-          gateway: 192.168.1.1
-
-  network3:
-    ipam:
-      config:
-        - subnet: 192.168.2.0/24
-          gateway: 192.168.2.1
-`.trim();
-
 const createGuideService = () => ({
-  name: 'service1',
-  containerName: 'service1',
-  image: 'nicolaka/netshoot:latest',
-  cpus: '0.5',
-  memLimit: '500m',
-  workingDir: '/root',
-  command: 'sleep\ninfinity',
-  ports: [{ published: '80', target: '80', protocol: 'tcp' }],
-  environment: [{ key: 'FLAG', value: 'static{}' }],
-  volumes: [{ source: 'FLAG_0', target: '/flag', value: 'static{}' }],
-  networks: [{ name: 'network1', ipv4Address: '192.168.0.2' }],
+  name: '',
+  containerName: '',
+  image: '',
+  cpus: '',
+  memLimit: '',
+  workingDir: '',
+  command: '',
+  ports: [],
+  environment: [],
+  volumes: [],
+  networks: [],
 });
 
 const createGuideNetwork = () => ({
-  name: 'network1',
-  external: true,
-  subnet: '192.168.0.0/24',
-  gateway: '192.168.0.1',
+  name: '',
+  external: false,
+  subnet: '',
+  gateway: '',
 });
 
 const createGuideConfig = () => ({
-  services: [createGuideService()],
-  networks: [createGuideNetwork()],
+  services: [],
+  networks: [],
 });
 
-const yamlQuote = (value) => `"${String(value ?? '').replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+const emptyComposeYaml = 'services:';
+
+const yamlQuote = (value) =>
+  `"${String(value ?? '')
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')}"`;
 
 const appendYamlList = (lines, values, indent) => {
   values
@@ -221,7 +135,12 @@ const buildGuidedComposeYaml = (config) => {
     networks.forEach((network) => {
       lines.push(`  ${network.name.trim()}:`);
       if (network.external) lines.push('    external: true');
-      lines.push('    ipam:', '      config:', `        - subnet: ${network.subnet.trim()}`, `          gateway: ${network.gateway.trim()}`);
+      lines.push(
+        '    ipam:',
+        '      config:',
+        `        - subnet: ${network.subnet.trim()}`,
+        `          gateway: ${network.gateway.trim()}`
+      );
     });
   }
 
@@ -230,7 +149,7 @@ const buildGuidedComposeYaml = (config) => {
 
 const ip4Segment = '(\\d|[1-9]\\d|1\\d\\d|2([0-4]\\d|5[0-5]))';
 const ip4Regex = new RegExp(`^(${ip4Segment}\\.){3}${ip4Segment}$`);
-const cidrRegex = new RegExp(`^(${ip4Segment}\\.){3}${ip4Segment}\/(\\d|[1-2]\\d|3[0-2])$`);
+const cidrRegex = new RegExp(`^(${ip4Segment}\\.){3}${ip4Segment}/(\\d|[1-2]\\d|3[0-2])$`);
 
 const validateIp4 = (ip) => ip4Regex.test(String(ip || '').trim());
 
@@ -284,7 +203,6 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
     .map((raw, index) => ({ raw, index: index + 1, text: raw.replace(/#.*$/, '') }))
     .filter((line) => line.text.trim());
   const errors = [];
-  const warnings = [];
   const services = [];
   const networks = [];
   const volumeValues = new Map();
@@ -298,7 +216,8 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
   let currentVolume = null;
 
   for (const line of lines) {
-    if (/\t/.test(line.raw)) errors.push(t('admin.challengeModal.composeGuide.validation.noTabs', { line: line.index }));
+    if (/\t/.test(line.raw))
+      errors.push(t('admin.challengeModal.composeGuide.validation.noTabs', { line: line.index }));
     const indent = line.text.match(/^ */)[0].length;
     const text = line.text.trim();
 
@@ -312,7 +231,9 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
       currentPort = null;
       currentVolume = null;
       if (!['services', 'volumes', 'networks'].includes(section)) {
-        errors.push(t('admin.challengeModal.composeGuide.validation.unsupportedTopLevel', { line: line.index, field: section }));
+        errors.push(
+          t('admin.challengeModal.composeGuide.validation.unsupportedTopLevel', { line: line.index, field: section })
+        );
       }
       continue;
     }
@@ -359,7 +280,13 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
         else if (pair.key === 'cpus') service.cpus = pair.value;
         else if (pair.key === 'mem_limit') service.memLimit = pair.value;
         else if (pair.key === 'working_dir') service.workingDir = pair.value;
-        else errors.push(t('admin.challengeModal.composeGuide.validation.unsupportedServiceField', { line: line.index, field: pair.key }));
+        else
+          errors.push(
+            t('admin.challengeModal.composeGuide.validation.unsupportedServiceField', {
+              line: line.index,
+              field: pair.key,
+            })
+          );
         continue;
       }
       if (indent === 6 && serviceList === 'command' && text.startsWith('- ')) {
@@ -369,7 +296,10 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
       if (indent === 6 && serviceList === 'environment' && text.startsWith('- ')) {
         const env = stripYamlValue(text.slice(2));
         const equalIndex = env.indexOf('=');
-        service.environment.push({ key: equalIndex === -1 ? env : env.slice(0, equalIndex), value: equalIndex === -1 ? '' : env.slice(equalIndex + 1) });
+        service.environment.push({
+          key: equalIndex === -1 ? env : env.slice(0, equalIndex),
+          value: equalIndex === -1 ? '' : env.slice(equalIndex + 1),
+        });
         continue;
       }
       if (indent === 6 && serviceList === 'volumes' && text.startsWith('- ')) {
@@ -380,7 +310,7 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
             currentVolume = { source: '', target: '', value: '' };
             service.volumes.push(currentVolume);
             if (pair.key === 'type' && pair.value !== 'volume') {
-              warnings.push(t('admin.challengeModal.composeGuide.validation.volumeTypeWarning', { line: line.index, type: pair.value }));
+              errors.push(t('admin.challengeModal.composeGuide.validation.volumeTypeInvalid', { line: line.index }));
             } else if (pair.key === 'source') currentVolume.source = pair.value;
             else if (pair.key === 'target') currentVolume.target = pair.value;
           } else {
@@ -396,7 +326,7 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
       if (indent === 8 && serviceList === 'volumes' && currentVolume) {
         const pair = parseKeyValueLine(text);
         if (pair?.key === 'type' && pair.value !== 'volume') {
-          warnings.push(t('admin.challengeModal.composeGuide.validation.volumeTypeWarning', { line: line.index, type: pair.value }));
+          errors.push(t('admin.challengeModal.composeGuide.validation.volumeTypeInvalid', { line: line.index }));
         } else if (pair?.key === 'source') currentVolume.source = pair.value;
         else if (pair?.key === 'target') currentVolume.target = pair.value;
         continue;
@@ -412,7 +342,7 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
             else if (pair.key === 'published') currentPort.published = pair.value;
             else if (pair.key === 'protocol') currentPort.protocol = pair.value;
             else if (pair.key === 'mode' && pair.value !== 'ingress') {
-              warnings.push(t('admin.challengeModal.composeGuide.validation.portModeWarning', { line: line.index, mode: pair.value }));
+              errors.push(t('admin.challengeModal.composeGuide.validation.portModeInvalid', { line: line.index }));
             }
           } else {
             service.ports.push(parsePortString(value));
@@ -430,7 +360,7 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
         else if (pair?.key === 'published') currentPort.published = pair.value;
         else if (pair?.key === 'protocol') currentPort.protocol = pair.value;
         else if (pair?.key === 'mode' && pair.value !== 'ingress') {
-          warnings.push(t('admin.challengeModal.composeGuide.validation.portModeWarning', { line: line.index, mode: pair.value }));
+          errors.push(t('admin.challengeModal.composeGuide.validation.portModeInvalid', { line: line.index }));
         }
         continue;
       }
@@ -457,11 +387,16 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
         networks.push(network);
       } else if (network && indent === 4) {
         const pair = parseKeyValueLine(text);
-        if (pair?.key === 'external') network.external = pair.value === 'true';
+        if (pair?.key === 'external') {
+          if (!['true', 'false'].includes(pair.value))
+            errors.push(t('admin.challengeModal.composeGuide.validation.networkExternalInvalid', { line: line.index }));
+          network.external = pair.value === 'true';
+        }
       } else if (network && indent >= 8) {
         const pair = parseKeyValueLine(text);
-        if (pair?.key === 'subnet') network.subnet = pair.value;
-        else if (pair?.key === 'gateway') network.gateway = pair.value;
+        const key = pair?.key.replace(/^-\s*/, '');
+        if (key === 'subnet') network.subnet = pair.value;
+        else if (key === 'gateway') network.gateway = pair.value;
       }
     }
   }
@@ -471,14 +406,14 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
   });
 
   if (services.length === 0) errors.push(t('admin.challengeModal.composeGuide.validation.servicesMissing'));
-  return { ok: errors.length === 0, errors, warnings, config: { services, networks } };
+  return { ok: errors.length === 0, errors, config: { services, networks } };
 };
 
 const validateRawCompose = (yaml, t) => {
   const parsed = parseComposeYamlToGuideConfig(yaml, t);
-  if (!parsed.ok) return { list: parsed.errors, warnings: parsed.warnings, fields: {}, config: null };
+  if (!parsed.ok) return { list: parsed.errors, fields: {}, config: null };
   const validation = validateGuidedCompose(parsed.config, t);
-  return { ...validation, warnings: parsed.warnings, config: parsed.config };
+  return { ...validation, config: parsed.config };
 };
 
 const validateGuidedCompose = (config, t = (key) => key) => {
@@ -501,94 +436,228 @@ const validateGuidedCompose = (config, t = (key) => key) => {
   (config.services || []).forEach((service, serviceIndex) => {
     const name = service.name.trim();
     const label = name || t('admin.challengeModal.composeGuide.serviceIndexed', { index: serviceIndex + 1 });
-    if (!name) addError(`service.${serviceIndex}.name`, t('admin.challengeModal.composeGuide.validation.serviceNameRequired', { label }));
-    if (name && serviceNames.has(name)) addError(`service.${serviceIndex}.name`, t('admin.challengeModal.composeGuide.validation.serviceNameUnique', { label }));
+    if (!name)
+      addError(
+        `service.${serviceIndex}.name`,
+        t('admin.challengeModal.composeGuide.validation.serviceNameRequired', { label })
+      );
+    if (name && serviceNames.has(name))
+      addError(
+        `service.${serviceIndex}.name`,
+        t('admin.challengeModal.composeGuide.validation.serviceNameUnique', { label })
+      );
     serviceNames.add(name);
     const containerName = service.containerName.trim();
     if (containerName && serviceContainerNames.has(containerName)) {
-      addError(`service.${serviceIndex}.containerName`, t('admin.challengeModal.composeGuide.validation.containerNameUnique', { label }));
+      addError(
+        `service.${serviceIndex}.containerName`,
+        t('admin.challengeModal.composeGuide.validation.containerNameUnique', { label })
+      );
     }
     if (containerName) serviceContainerNames.add(containerName);
-    if (!service.image.trim()) addError(`service.${serviceIndex}.image`, t('admin.challengeModal.composeGuide.validation.imageRequired', { label }));
-    if (service.cpus.trim() && !/^\d+(\.\d+)?$/.test(service.cpus.trim())) addError(`service.${serviceIndex}.cpus`, t('admin.challengeModal.composeGuide.validation.cpusNumber', { label }));
+    if (!service.image.trim())
+      addError(
+        `service.${serviceIndex}.image`,
+        t('admin.challengeModal.composeGuide.validation.imageRequired', { label })
+      );
+    if (service.cpus.trim() && !/^\d+(\.\d+)?$/.test(service.cpus.trim()))
+      addError(`service.${serviceIndex}.cpus`, t('admin.challengeModal.composeGuide.validation.cpusNumber', { label }));
     if (service.memLimit.trim() && !/^\d+(\.\d+)?[bkmgBKMG]?$/.test(service.memLimit.trim())) {
-      addError(`service.${serviceIndex}.memLimit`, t('admin.challengeModal.composeGuide.validation.memLimitFormat', { label }));
+      addError(
+        `service.${serviceIndex}.memLimit`,
+        t('admin.challengeModal.composeGuide.validation.memLimitFormat', { label })
+      );
     }
     const servicePortTargets = new Set();
     (service.ports || []).forEach((port, portIndex) => {
-      if (!port.target.trim()) addError(`service.${serviceIndex}.ports.${portIndex}.target`, t('admin.challengeModal.composeGuide.validation.portTargetRequired', { label, index: portIndex + 1 }));
-      if (port.target.trim() && !/^\d+$/.test(port.target.trim())) addError(`service.${serviceIndex}.ports.${portIndex}.target`, t('admin.challengeModal.composeGuide.validation.portTargetNumber', { label, index: portIndex + 1 }));
+      if (!port.target.trim())
+        addError(
+          `service.${serviceIndex}.ports.${portIndex}.target`,
+          t('admin.challengeModal.composeGuide.validation.portTargetRequired', { label, index: portIndex + 1 })
+        );
+      if (port.target.trim() && !/^\d+$/.test(port.target.trim()))
+        addError(
+          `service.${serviceIndex}.ports.${portIndex}.target`,
+          t('admin.challengeModal.composeGuide.validation.portTargetNumber', { label, index: portIndex + 1 })
+        );
       if (port.target.trim() && servicePortTargets.has(port.target.trim())) {
-        addError(`service.${serviceIndex}.ports.${portIndex}.target`, t('admin.challengeModal.composeGuide.validation.portTargetUnique', { label, index: portIndex + 1 }));
+        addError(
+          `service.${serviceIndex}.ports.${portIndex}.target`,
+          t('admin.challengeModal.composeGuide.validation.portTargetUnique', { label, index: portIndex + 1 })
+        );
       }
       if (port.target.trim()) servicePortTargets.add(port.target.trim());
       if (port.published.trim() && !/^[A-Za-z0-9_-]+$/.test(port.published.trim())) {
-        addError(`service.${serviceIndex}.ports.${portIndex}.published`, t('admin.challengeModal.composeGuide.validation.portNameFormat', { label, index: portIndex + 1 }));
+        addError(
+          `service.${serviceIndex}.ports.${portIndex}.published`,
+          t('admin.challengeModal.composeGuide.validation.portNameFormat', { label, index: portIndex + 1 })
+        );
+      }
+      if (port.protocol.trim() && !['tcp', 'udp'].includes(port.protocol.trim())) {
+        addError(
+          `service.${serviceIndex}.ports.${portIndex}.protocol`,
+          t('admin.challengeModal.composeGuide.validation.portProtocolInvalid', { label, index: portIndex + 1 })
+        );
       }
     });
     (service.environment || []).forEach((env, envIndex) => {
-      if (!env.key.trim()) addError(`service.${serviceIndex}.environment.${envIndex}.key`, t('admin.challengeModal.composeGuide.validation.envKeyRequired', { label, index: envIndex + 1 }));
+      if (!env.key.trim())
+        addError(
+          `service.${serviceIndex}.environment.${envIndex}.key`,
+          t('admin.challengeModal.composeGuide.validation.envKeyRequired', { label, index: envIndex + 1 })
+        );
       if (env.key.trim() && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(env.key.trim())) {
-        addError(`service.${serviceIndex}.environment.${envIndex}.key`, t('admin.challengeModal.composeGuide.validation.envKeyFormat', { label, index: envIndex + 1 }));
+        addError(
+          `service.${serviceIndex}.environment.${envIndex}.key`,
+          t('admin.challengeModal.composeGuide.validation.envKeyFormat', { label, index: envIndex + 1 })
+        );
       }
     });
     const serviceVolumeTargets = new Set();
     (service.volumes || []).forEach((volume, volumeIndex) => {
       const source = volume.source.trim();
       const target = volume.target.trim();
-      if (!volume.source.trim()) addError(`service.${serviceIndex}.volumes.${volumeIndex}.source`, t('admin.challengeModal.composeGuide.validation.volumeSourceRequired', { label, index: volumeIndex + 1 }));
-      if (!volume.target.trim()) addError(`service.${serviceIndex}.volumes.${volumeIndex}.target`, t('admin.challengeModal.composeGuide.validation.volumeTargetRequired', { label, index: volumeIndex + 1 }));
+      if (!volume.source.trim())
+        addError(
+          `service.${serviceIndex}.volumes.${volumeIndex}.source`,
+          t('admin.challengeModal.composeGuide.validation.volumeSourceRequired', { label, index: volumeIndex + 1 })
+        );
+      if (!volume.target.trim())
+        addError(
+          `service.${serviceIndex}.volumes.${volumeIndex}.target`,
+          t('admin.challengeModal.composeGuide.validation.volumeTargetRequired', { label, index: volumeIndex + 1 })
+        );
       if (source && !source.startsWith('FLAG')) {
-        addError(`service.${serviceIndex}.volumes.${volumeIndex}.source`, t('admin.challengeModal.composeGuide.validation.volumeSourcePrefix', { label, index: volumeIndex + 1 }));
+        addError(
+          `service.${serviceIndex}.volumes.${volumeIndex}.source`,
+          t('admin.challengeModal.composeGuide.validation.volumeSourcePrefix', { label, index: volumeIndex + 1 })
+        );
       }
-      if (source && fileFlagSources.has(source)) addError(`service.${serviceIndex}.volumes.${volumeIndex}.source`, t('admin.challengeModal.composeGuide.validation.volumeSourceUnique', { label, index: volumeIndex + 1 }));
+      if (source && fileFlagSources.has(source))
+        addError(
+          `service.${serviceIndex}.volumes.${volumeIndex}.source`,
+          t('admin.challengeModal.composeGuide.validation.volumeSourceUnique', { label, index: volumeIndex + 1 })
+        );
       if (source) fileFlagSources.add(source);
-      if (target && serviceVolumeTargets.has(target)) addError(`service.${serviceIndex}.volumes.${volumeIndex}.target`, t('admin.challengeModal.composeGuide.validation.volumeTargetUnique', { label, index: volumeIndex + 1 }));
+      if (target && serviceVolumeTargets.has(target))
+        addError(
+          `service.${serviceIndex}.volumes.${volumeIndex}.target`,
+          t('admin.challengeModal.composeGuide.validation.volumeTargetUnique', { label, index: volumeIndex + 1 })
+        );
       if (target) serviceVolumeTargets.add(target);
     });
     if (networkNames.size === 0 && service.networks?.length > 0) {
-      addError(`service.${serviceIndex}.networks`, t('admin.challengeModal.composeGuide.validation.serviceNetworksWithoutDefinitions', { label }));
+      addError(
+        `service.${serviceIndex}.networks`,
+        t('admin.challengeModal.composeGuide.validation.serviceNetworksWithoutDefinitions', { label })
+      );
     }
     if (networkNames.size > 0) {
-      if (!service.networks?.length) addError(`service.${serviceIndex}.networks`, t('admin.challengeModal.composeGuide.validation.serviceNetworkRequired', { label }));
+      if (!service.networks?.length)
+        addError(
+          `service.${serviceIndex}.networks`,
+          t('admin.challengeModal.composeGuide.validation.serviceNetworkRequired', { label })
+        );
       const serviceNetworkNames = new Set();
       (service.networks || []).forEach((network, networkIndex) => {
         const networkName = network.name.trim();
         const ipv4Address = network.ipv4Address.trim();
-        const networkLabel = networkName || t('admin.challengeModal.composeGuide.networkIndexed', { index: networkIndex + 1 });
-        if (!networkName) addError(`service.${serviceIndex}.networks.${networkIndex}.name`, t('admin.challengeModal.composeGuide.validation.networkNameRequired', { label, network: networkLabel }));
-        if (networkName && serviceNetworkNames.has(networkName)) addError(`service.${serviceIndex}.networks.${networkIndex}.name`, t('admin.challengeModal.composeGuide.validation.networkDuplicateSelect', { label, network: networkName }));
+        const networkLabel =
+          networkName || t('admin.challengeModal.composeGuide.networkIndexed', { index: networkIndex + 1 });
+        if (!networkName)
+          addError(
+            `service.${serviceIndex}.networks.${networkIndex}.name`,
+            t('admin.challengeModal.composeGuide.validation.networkNameRequired', { label, network: networkLabel })
+          );
+        if (networkName && serviceNetworkNames.has(networkName))
+          addError(
+            `service.${serviceIndex}.networks.${networkIndex}.name`,
+            t('admin.challengeModal.composeGuide.validation.networkDuplicateSelect', { label, network: networkName })
+          );
         if (networkName) serviceNetworkNames.add(networkName);
-        if (networkName && !networkNames.has(networkName)) addError(`service.${serviceIndex}.networks.${networkIndex}.name`, t('admin.challengeModal.composeGuide.validation.networkUndefined', { label, network: network.name }));
-        if (!ipv4Address) addError(`service.${serviceIndex}.networks.${networkIndex}.ipv4Address`, t('admin.challengeModal.composeGuide.validation.ipRequired', { label, network: networkLabel }));
-        if (ipv4Address && !validateIp4(ipv4Address)) addError(`service.${serviceIndex}.networks.${networkIndex}.ipv4Address`, t('admin.challengeModal.composeGuide.validation.ipInvalid', { label, network: networkLabel }));
-        if (networkName && ipv4Address && networkCidrs.has(networkName) && !isIp4InCidr(ipv4Address)(networkCidrs.get(networkName))) {
-          addError(`service.${serviceIndex}.networks.${networkIndex}.ipv4Address`, t('admin.challengeModal.composeGuide.validation.ipOutOfSubnet', { label, network: networkLabel }));
+        if (networkName && !networkNames.has(networkName))
+          addError(
+            `service.${serviceIndex}.networks.${networkIndex}.name`,
+            t('admin.challengeModal.composeGuide.validation.networkUndefined', { label, network: network.name })
+          );
+        if (!ipv4Address)
+          addError(
+            `service.${serviceIndex}.networks.${networkIndex}.ipv4Address`,
+            t('admin.challengeModal.composeGuide.validation.ipRequired', { label, network: networkLabel })
+          );
+        if (ipv4Address && !validateIp4(ipv4Address))
+          addError(
+            `service.${serviceIndex}.networks.${networkIndex}.ipv4Address`,
+            t('admin.challengeModal.composeGuide.validation.ipInvalid', { label, network: networkLabel })
+          );
+        if (
+          networkName &&
+          ipv4Address &&
+          networkCidrs.has(networkName) &&
+          !isIp4InCidr(ipv4Address)(networkCidrs.get(networkName))
+        ) {
+          addError(
+            `service.${serviceIndex}.networks.${networkIndex}.ipv4Address`,
+            t('admin.challengeModal.composeGuide.validation.ipOutOfSubnet', { label, network: networkLabel })
+          );
         }
       });
     }
   });
   (config.networks || []).forEach((network, networkIndex) => {
-    const label = network.name.trim() || t('admin.challengeModal.composeGuide.networkIndexed', { index: networkIndex + 1 });
-    if (!network.name.trim()) addError(`network.${networkIndex}.name`, t('admin.challengeModal.composeGuide.validation.networkDefinitionNameRequired', { label }));
+    const label =
+      network.name.trim() || t('admin.challengeModal.composeGuide.networkIndexed', { index: networkIndex + 1 });
+    if (!network.name.trim())
+      addError(
+        `network.${networkIndex}.name`,
+        t('admin.challengeModal.composeGuide.validation.networkDefinitionNameRequired', { label })
+      );
     if (network.name.trim() && networkDefinitionNames.has(network.name.trim())) {
-      addError(`network.${networkIndex}.name`, t('admin.challengeModal.composeGuide.validation.networkDefinitionNameUnique', { label }));
+      addError(
+        `network.${networkIndex}.name`,
+        t('admin.challengeModal.composeGuide.validation.networkDefinitionNameUnique', { label })
+      );
     }
     if (network.name.trim()) networkDefinitionNames.add(network.name.trim());
-    if (!network.subnet.trim()) addError(`network.${networkIndex}.subnet`, t('admin.challengeModal.composeGuide.validation.subnetRequired', { label }));
-    if (network.subnet.trim() && !validateCidr(network.subnet)) addError(`network.${networkIndex}.subnet`, t('admin.challengeModal.composeGuide.validation.subnetInvalid', { label }));
+    if (!network.subnet.trim())
+      addError(
+        `network.${networkIndex}.subnet`,
+        t('admin.challengeModal.composeGuide.validation.subnetRequired', { label })
+      );
+    if (network.subnet.trim() && !validateCidr(network.subnet))
+      addError(
+        `network.${networkIndex}.subnet`,
+        t('admin.challengeModal.composeGuide.validation.subnetInvalid', { label })
+      );
     if (network.subnet.trim() && networkIps.has(network.subnet.trim())) {
-      addError(`network.${networkIndex}.subnet`, t('admin.challengeModal.composeGuide.validation.subnetUnique', { label }));
+      addError(
+        `network.${networkIndex}.subnet`,
+        t('admin.challengeModal.composeGuide.validation.subnetUnique', { label })
+      );
     }
     if (network.subnet.trim()) networkIps.add(network.subnet.trim());
-    if (!network.gateway.trim()) addError(`network.${networkIndex}.gateway`, t('admin.challengeModal.composeGuide.validation.gatewayRequired', { label }));
-    if (network.gateway.trim() && !validateIp4(network.gateway)) addError(`network.${networkIndex}.gateway`, t('admin.challengeModal.composeGuide.validation.gatewayInvalid', { label }));
+    if (!network.gateway.trim())
+      addError(
+        `network.${networkIndex}.gateway`,
+        t('admin.challengeModal.composeGuide.validation.gatewayRequired', { label })
+      );
+    if (network.gateway.trim() && !validateIp4(network.gateway))
+      addError(
+        `network.${networkIndex}.gateway`,
+        t('admin.challengeModal.composeGuide.validation.gatewayInvalid', { label })
+      );
     if (network.gateway.trim() && networkIps.has(network.gateway.trim())) {
-      addError(`network.${networkIndex}.gateway`, t('admin.challengeModal.composeGuide.validation.gatewayUnique', { label }));
+      addError(
+        `network.${networkIndex}.gateway`,
+        t('admin.challengeModal.composeGuide.validation.gatewayUnique', { label })
+      );
     }
     if (network.gateway.trim()) networkIps.add(network.gateway.trim());
     if (network.gateway.trim() && validateCidr(network.subnet) && !isIp4InCidr(network.gateway)(network.subnet)) {
-      addError(`network.${networkIndex}.gateway`, t('admin.challengeModal.composeGuide.validation.gatewayOutOfSubnet', { label }));
+      addError(
+        `network.${networkIndex}.gateway`,
+        t('admin.challengeModal.composeGuide.validation.gatewayOutOfSubnet', { label })
+      );
     }
   });
   return { list: errors, fields };
@@ -687,102 +756,48 @@ function AdminChallengeModal({
   const { t } = useTranslation();
   const ct = (key, options) => t(`admin.challengeModal.composeGuide.${key}`, options);
 
-  // 全屏编辑器状态
-  const [fullscreenEditor, setFullscreenEditor] = useState({
-    isOpen: false,
-    value: '',
-  });
-  const [composeMode, setComposeMode] = useState('raw');
   const [guideConfig, setGuideConfig] = useState(createGuideConfig);
 
-  const guidedComposeYaml = buildGuidedComposeYaml(guideConfig);
   const guideValidation = validateGuidedCompose(guideConfig, t);
   const guideValidationErrors = guideValidation.list;
   const guideFieldErrors = guideValidation.fields;
-  const rawValidation = validateRawCompose(challenge.docker_compose || defaultYAML, t);
+  const rawValidation = validateRawCompose(challenge.docker_compose || emptyComposeYaml, t);
 
-  useEffect(() => {
-    if (challenge.type === 'pods' && composeMode === 'guide') {
-      onChange({ ...challenge, docker_compose: guidedComposeYaml });
-    }
-  }, [challenge.type, composeMode, guidedComposeYaml]);
-
-  // 全屏编辑器控制
-  const openFullscreenEditor = () => {
-    setFullscreenEditor({
-      isOpen: true,
-      value: challenge.docker_compose || defaultYAML,
-    });
+  const syncGuideConfig = (nextConfig) => {
+    setGuideConfig(nextConfig);
+    onChange({ ...challenge, docker_compose: buildGuidedComposeYaml(nextConfig) });
   };
 
-  // 初始化时确保docker_compose有默认值
   useEffect(() => {
-    if (challenge.type === 'pods' && !challenge.docker_compose) {
-      onChange({ ...challenge, docker_compose: defaultYAML });
-    }
-  }, [challenge.type, challenge.docker_compose, onChange]);
-
-  const closeFullscreenEditor = () => {
-    setFullscreenEditor({
-      isOpen: false,
-      value: '',
-    });
-  };
-
-  const saveFullscreenEditor = () => {
-    // 如果值为空, 使用默认模板
-    const finalValue = fullscreenEditor.value || defaultYAML;
-    const parsed = parseComposeYamlToGuideConfig(finalValue, t);
+    if (challenge.type !== 'pods' || !challenge.docker_compose) return;
+    const parsed = parseComposeYamlToGuideConfig(challenge.docker_compose, t);
     if (parsed.ok) setGuideConfig(parsed.config);
-    onChange({ ...challenge, docker_compose: finalValue });
-    closeFullscreenEditor();
-  };
-
-  const updateFullscreenValue = (value) => {
-    setFullscreenEditor({
-      ...fullscreenEditor,
-      value,
-    });
-  };
+  }, [challenge.type, challenge.docker_compose]);
 
   // docker_compose 更新
   const updateDockerCompose = (value) => {
-    // 如果值为空, 使用默认模板
-    const finalValue = value || defaultYAML;
+    const finalValue = value || '';
     const parsed = parseComposeYamlToGuideConfig(finalValue, t);
     if (parsed.ok) setGuideConfig(parsed.config);
     onChange({ ...challenge, docker_compose: finalValue });
   };
 
-  const switchComposeMode = (nextMode) => {
-    if (nextMode === composeMode) return;
-    if (nextMode === 'guide') {
-      const parsed = parseComposeYamlToGuideConfig(challenge.docker_compose || defaultYAML, t);
-      if (parsed.ok) setGuideConfig(parsed.config);
-    }
-    setComposeMode(nextMode);
-  };
-
   const addGuideService = () => {
-    const nextIndex = guideConfig.services.length + 1;
-    setGuideConfig({
+    syncGuideConfig({
       ...guideConfig,
       services: [
         ...guideConfig.services,
         {
           ...createGuideService(),
-          name: `service${nextIndex}`,
-          containerName: `service${nextIndex}`,
-          networks: guideConfig.networks[0]
-            ? [{ name: guideConfig.networks[0].name, ipv4Address: `192.168.0.${nextIndex + 1}` }]
-            : [],
+          name: '',
+          containerName: '',
         },
       ],
     });
   };
 
   const removeGuideService = (serviceIndex) => {
-    setGuideConfig({
+    syncGuideConfig({
       ...guideConfig,
       services: guideConfig.services.filter((_, index) => index !== serviceIndex),
     });
@@ -792,7 +807,7 @@ function AdminChallengeModal({
     const services = guideConfig.services.map((service, index) =>
       index === serviceIndex ? { ...service, [field]: value } : service
     );
-    setGuideConfig({ ...guideConfig, services });
+    syncGuideConfig({ ...guideConfig, services });
   };
 
   const updateGuideServiceList = (serviceIndex, field, itemIndex, itemField, value) => {
@@ -805,41 +820,42 @@ function AdminChallengeModal({
         ),
       };
     });
-    setGuideConfig({ ...guideConfig, services });
+    syncGuideConfig({ ...guideConfig, services });
   };
 
   const addGuideServiceListItem = (serviceIndex, field, item) => {
     const services = guideConfig.services.map((service, index) =>
       index === serviceIndex ? { ...service, [field]: [...service[field], item] } : service
     );
-    setGuideConfig({ ...guideConfig, services });
+    syncGuideConfig({ ...guideConfig, services });
   };
 
   const removeGuideServiceListItem = (serviceIndex, field, itemIndex) => {
     const services = guideConfig.services.map((service, index) =>
-      index === serviceIndex ? { ...service, [field]: service[field].filter((_, currentIndex) => currentIndex !== itemIndex) } : service
+      index === serviceIndex
+        ? { ...service, [field]: service[field].filter((_, currentIndex) => currentIndex !== itemIndex) }
+        : service
     );
-    setGuideConfig({ ...guideConfig, services });
+    syncGuideConfig({ ...guideConfig, services });
   };
 
   const addGuideNetwork = () => {
-    const nextIndex = guideConfig.networks.length + 1;
-    setGuideConfig({
+    syncGuideConfig({
       ...guideConfig,
       networks: [
         ...guideConfig.networks,
         {
           ...createGuideNetwork(),
-          name: `network${nextIndex}`,
-          subnet: `192.168.${nextIndex - 1}.0/24`,
-          gateway: `192.168.${nextIndex - 1}.1`,
+          name: '',
+          subnet: '',
+          gateway: '',
         },
       ],
     });
   };
 
   const updateGuideNetwork = (networkIndex, field, value) => {
-    setGuideConfig({
+    syncGuideConfig({
       ...guideConfig,
       networks: guideConfig.networks.map((network, index) =>
         index === networkIndex ? { ...network, [field]: value } : network
@@ -849,7 +865,7 @@ function AdminChallengeModal({
 
   const removeGuideNetwork = (networkIndex) => {
     const removedName = guideConfig.networks[networkIndex]?.name;
-    setGuideConfig({
+    syncGuideConfig({
       networks: guideConfig.networks.filter((_, index) => index !== networkIndex),
       services: guideConfig.services.map((service) => ({
         ...service,
@@ -973,25 +989,6 @@ function AdminChallengeModal({
     newNetworkPolicies[policyIndex] = policy;
     onChange({ ...challenge, network_policies: newNetworkPolicies });
   };
-
-  // 添加全屏编辑器的键盘事件监听
-  useEffect(() => {
-    const handleKeyDown = (event) => {
-      if (fullscreenEditor.isOpen) {
-        if (event.key === 'Escape') {
-          closeFullscreenEditor();
-        } else if (event.ctrlKey && event.key === 's') {
-          event.preventDefault();
-          saveFullscreenEditor();
-        }
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [fullscreenEditor.isOpen, fullscreenEditor.value]);
 
   // 常用样式类
   const inputBaseClass =
@@ -1259,273 +1256,503 @@ function AdminChallengeModal({
                       <div>
                         <div className="flex flex-wrap justify-between items-center gap-3 mb-3">
                           <label className="block text-sm font-mono text-neutral-400">docker-compose.yaml</label>
-                          <div className="flex flex-wrap items-center gap-2">
-                            <Button
-                              variant={composeMode === 'raw' ? 'primary' : 'ghost'}
-                              size="sm"
-                              className="!text-xs"
-                              onClick={() => switchComposeMode('raw')}
-                            >
-                              {ct('modes.raw')}
-                            </Button>
-                            <Button
-                              variant={composeMode === 'guide' ? 'primary' : 'ghost'}
-                              size="sm"
-                              className="!text-xs"
-                              onClick={() => switchComposeMode('guide')}
-                            >
-                              {ct('modes.guide')}
-                            </Button>
-                            {composeMode === 'raw' && (
+                        </div>
+
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                          <div className="space-y-4">
+                            <div className="flex justify-between items-center">
+                              <h4 className="text-sm font-mono text-neutral-200">{ct('sections.services')}</h4>
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 align="icon-left"
-                                icon={<IconMaximize size={14} />}
-                                className="!bg-transparent !text-neutral-400 hover:!text-neutral-300 !text-xs"
-                                onClick={openFullscreenEditor}
+                                icon={<IconPlus size={14} />}
+                                onClick={addGuideService}
                               >
-                                {t('admin.challengeModal.actions.fullscreen')}
+                                {ct('actions.addService')}
                               </Button>
-                            )}
+                            </div>
+                            {guideConfig.services.map((service, serviceIndex) => (
+                              <div
+                                key={serviceIndex}
+                                className="border border-neutral-700 rounded-md p-3 bg-black/20 space-y-3"
+                              >
+                                <div className="flex justify-between items-center">
+                                  <span className="text-xs font-mono text-neutral-400">
+                                    {ct('serviceIndexed', { index: serviceIndex + 1 })}
+                                  </span>
+                                  {guideConfig.services.length > 1 && (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="!bg-transparent !text-red-400 hover:!text-red-300 !w-8 !h-8"
+                                      onClick={() => removeGuideService(serviceIndex)}
+                                    >
+                                      <IconTrash size={14} />
+                                    </Button>
+                                  )}
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                  <GuideField label={ct('fields.serviceName')}>
+                                    <input
+                                      className={inputBaseClass}
+                                      value={service.name}
+                                      required
+                                      placeholder={ct('placeholders.serviceName')}
+                                      onChange={(e) => updateGuideService(serviceIndex, 'name', e.target.value)}
+                                    />
+                                    <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.name`]} />
+                                  </GuideField>
+                                  <GuideField label={ct('fields.containerName')}>
+                                    <input
+                                      className={inputBaseClass}
+                                      value={service.containerName}
+                                      placeholder={ct('placeholders.containerName')}
+                                      onChange={(e) =>
+                                        updateGuideService(serviceIndex, 'containerName', e.target.value)
+                                      }
+                                    />
+                                    <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.containerName`]} />
+                                  </GuideField>
+                                  <GuideField label={ct('fields.image')}>
+                                    <input
+                                      className={inputBaseClass}
+                                      value={service.image}
+                                      required
+                                      placeholder={ct('placeholders.image')}
+                                      onChange={(e) => updateGuideService(serviceIndex, 'image', e.target.value)}
+                                    />
+                                    <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.image`]} />
+                                  </GuideField>
+                                  <GuideField label={ct('fields.cpus')}>
+                                    <input
+                                      className={inputBaseClass}
+                                      value={service.cpus}
+                                      placeholder={ct('placeholders.cpus')}
+                                      onChange={(e) => updateGuideService(serviceIndex, 'cpus', e.target.value)}
+                                    />
+                                    <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.cpus`]} />
+                                  </GuideField>
+                                  <GuideField label={ct('fields.memLimit')}>
+                                    <input
+                                      className={inputBaseClass}
+                                      value={service.memLimit}
+                                      placeholder={ct('placeholders.memLimit')}
+                                      onChange={(e) => updateGuideService(serviceIndex, 'memLimit', e.target.value)}
+                                    />
+                                    <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.memLimit`]} />
+                                  </GuideField>
+                                  <GuideField label={ct('fields.workingDir')}>
+                                    <input
+                                      className={inputBaseClass}
+                                      value={service.workingDir}
+                                      placeholder={ct('placeholders.workingDir')}
+                                      onChange={(e) => updateGuideService(serviceIndex, 'workingDir', e.target.value)}
+                                    />
+                                  </GuideField>
+                                  <GuideField label={ct('fields.command')}>
+                                    <textarea
+                                      className={textareaClass}
+                                      value={service.command}
+                                      placeholder={ct('placeholders.command')}
+                                      onChange={(e) => updateGuideService(serviceIndex, 'command', e.target.value)}
+                                    />
+                                  </GuideField>
+                                </div>
+
+                                <GuideListHeader
+                                  title={ct('sections.ports')}
+                                  addLabel={ct('actions.add')}
+                                  onAdd={() =>
+                                    addGuideServiceListItem(serviceIndex, 'ports', {
+                                      published: '',
+                                      target: '',
+                                      protocol: '',
+                                    })
+                                  }
+                                />
+                                {service.ports.map((port, portIndex) => (
+                                  <div key={portIndex} className="grid grid-cols-[1fr_1fr_90px_32px] gap-2">
+                                    <GuideField label={ct('fields.name')}>
+                                      <input
+                                        className={inputBaseClass}
+                                        value={port.published}
+                                        placeholder={ct('placeholders.name')}
+                                        onChange={(e) =>
+                                          updateGuideServiceList(
+                                            serviceIndex,
+                                            'ports',
+                                            portIndex,
+                                            'published',
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                      <GuideErrors
+                                        errors={
+                                          guideFieldErrors[`service.${serviceIndex}.ports.${portIndex}.published`]
+                                        }
+                                      />
+                                    </GuideField>
+                                    <GuideField label={ct('fields.target')}>
+                                      <input
+                                        className={inputBaseClass}
+                                        value={port.target}
+                                        required
+                                        placeholder={ct('placeholders.target')}
+                                        onChange={(e) =>
+                                          updateGuideServiceList(
+                                            serviceIndex,
+                                            'ports',
+                                            portIndex,
+                                            'target',
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                      <GuideErrors
+                                        errors={guideFieldErrors[`service.${serviceIndex}.ports.${portIndex}.target`]}
+                                      />
+                                    </GuideField>
+                                    <GuideField label={ct('fields.protocol')}>
+                                      <select
+                                        className={selectClass}
+                                        value={port.protocol}
+                                        onChange={(e) =>
+                                          updateGuideServiceList(
+                                            serviceIndex,
+                                            'ports',
+                                            portIndex,
+                                            'protocol',
+                                            e.target.value
+                                          )
+                                        }
+                                      >
+                                        <option value="">{ct('fields.protocol')}</option>
+                                        <option value="tcp">tcp</option>
+                                        <option value="udp">udp</option>
+                                      </select>
+                                    </GuideField>
+                                    <IconButton
+                                      onClick={() => removeGuideServiceListItem(serviceIndex, 'ports', portIndex)}
+                                    />
+                                  </div>
+                                ))}
+
+                                <GuideListHeader
+                                  title={ct('sections.environment')}
+                                  addLabel={ct('actions.add')}
+                                  onAdd={() =>
+                                    addGuideServiceListItem(serviceIndex, 'environment', { key: '', value: '' })
+                                  }
+                                />
+                                {service.environment.map((env, envIndex) => (
+                                  <div key={envIndex} className="grid grid-cols-[1fr_1fr_32px] gap-2">
+                                    <GuideField label={ct('fields.key')}>
+                                      <input
+                                        className={inputBaseClass}
+                                        value={env.key}
+                                        required
+                                        placeholder={ct('placeholders.key')}
+                                        onChange={(e) =>
+                                          updateGuideServiceList(
+                                            serviceIndex,
+                                            'environment',
+                                            envIndex,
+                                            'key',
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                      <GuideErrors
+                                        errors={guideFieldErrors[`service.${serviceIndex}.environment.${envIndex}.key`]}
+                                      />
+                                    </GuideField>
+                                    <GuideField label={ct('fields.value')}>
+                                      <input
+                                        className={inputBaseClass}
+                                        value={env.value}
+                                        placeholder={ct('placeholders.value')}
+                                        onChange={(e) =>
+                                          updateGuideServiceList(
+                                            serviceIndex,
+                                            'environment',
+                                            envIndex,
+                                            'value',
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                    </GuideField>
+                                    <IconButton
+                                      onClick={() => removeGuideServiceListItem(serviceIndex, 'environment', envIndex)}
+                                    />
+                                  </div>
+                                ))}
+
+                                <GuideListHeader
+                                  title={ct('sections.fileFlags')}
+                                  addLabel={ct('actions.add')}
+                                  onAdd={() =>
+                                    addGuideServiceListItem(serviceIndex, 'volumes', {
+                                      source: '',
+                                      target: '',
+                                      value: '',
+                                    })
+                                  }
+                                />
+                                {service.volumes.map((volume, volumeIndex) => (
+                                  <div key={volumeIndex} className="grid grid-cols-[1fr_1fr_1fr_32px] gap-2">
+                                    <GuideField label={ct('fields.source')}>
+                                      <input
+                                        className={inputBaseClass}
+                                        value={volume.source}
+                                        required
+                                        placeholder={ct('placeholders.source')}
+                                        onChange={(e) =>
+                                          updateGuideServiceList(
+                                            serviceIndex,
+                                            'volumes',
+                                            volumeIndex,
+                                            'source',
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                      <GuideErrors
+                                        errors={
+                                          guideFieldErrors[`service.${serviceIndex}.volumes.${volumeIndex}.source`]
+                                        }
+                                      />
+                                    </GuideField>
+                                    <GuideField label={ct('fields.target')}>
+                                      <input
+                                        className={inputBaseClass}
+                                        value={volume.target}
+                                        required
+                                        placeholder={ct('placeholders.flagTarget')}
+                                        onChange={(e) =>
+                                          updateGuideServiceList(
+                                            serviceIndex,
+                                            'volumes',
+                                            volumeIndex,
+                                            'target',
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                      <GuideErrors
+                                        errors={
+                                          guideFieldErrors[`service.${serviceIndex}.volumes.${volumeIndex}.target`]
+                                        }
+                                      />
+                                    </GuideField>
+                                    <GuideField label={ct('fields.value')}>
+                                      <input
+                                        className={inputBaseClass}
+                                        value={volume.value}
+                                        placeholder="uuid{}"
+                                        onChange={(e) =>
+                                          updateGuideServiceList(
+                                            serviceIndex,
+                                            'volumes',
+                                            volumeIndex,
+                                            'value',
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                    </GuideField>
+                                    <IconButton
+                                      onClick={() => removeGuideServiceListItem(serviceIndex, 'volumes', volumeIndex)}
+                                    />
+                                  </div>
+                                ))}
+
+                                <GuideListHeader
+                                  title={ct('sections.networks')}
+                                  addLabel={ct('actions.add')}
+                                  disabled={guideConfig.networks.length === 0}
+                                  onAdd={() =>
+                                    addGuideServiceListItem(serviceIndex, 'networks', { name: '', ipv4Address: '' })
+                                  }
+                                />
+                                <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.networks`]} />
+                                {service.networks.map((network, networkIndex) => (
+                                  <div key={networkIndex} className="grid grid-cols-[1fr_1fr_32px] gap-2">
+                                    <GuideField label={ct('fields.network')}>
+                                      <select
+                                        className={selectClass}
+                                        value={network.name}
+                                        required
+                                        onChange={(e) =>
+                                          updateGuideServiceList(
+                                            serviceIndex,
+                                            'networks',
+                                            networkIndex,
+                                            'name',
+                                            e.target.value
+                                          )
+                                        }
+                                      >
+                                        <option value="">{ct('placeholders.network')}</option>
+                                        {guideConfig.networks.map((item, index) => (
+                                          <option key={index} value={item.name}>
+                                            {item.name}
+                                          </option>
+                                        ))}
+                                      </select>
+                                      <GuideErrors
+                                        errors={
+                                          guideFieldErrors[`service.${serviceIndex}.networks.${networkIndex}.name`]
+                                        }
+                                      />
+                                    </GuideField>
+                                    <GuideField label={ct('fields.ipv4Address')}>
+                                      <input
+                                        className={inputBaseClass}
+                                        value={network.ipv4Address}
+                                        required
+                                        placeholder={ct('placeholders.ipv4Address')}
+                                        onChange={(e) =>
+                                          updateGuideServiceList(
+                                            serviceIndex,
+                                            'networks',
+                                            networkIndex,
+                                            'ipv4Address',
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                      <GuideErrors
+                                        errors={
+                                          guideFieldErrors[
+                                            `service.${serviceIndex}.networks.${networkIndex}.ipv4Address`
+                                          ]
+                                        }
+                                      />
+                                    </GuideField>
+                                    <IconButton
+                                      onClick={() => removeGuideServiceListItem(serviceIndex, 'networks', networkIndex)}
+                                    />
+                                  </div>
+                                ))}
+                              </div>
+                            ))}
+
+                            <div className="flex justify-between items-center">
+                              <h4 className="text-sm font-mono text-neutral-200">{ct('sections.networks')}</h4>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                align="icon-left"
+                                icon={<IconPlus size={14} />}
+                                onClick={addGuideNetwork}
+                              >
+                                {ct('actions.addNetwork')}
+                              </Button>
+                            </div>
+                            {guideConfig.networks.map((network, networkIndex) => (
+                              <div key={networkIndex} className="grid grid-cols-[1fr_1fr_1fr_88px_32px] gap-2">
+                                <GuideField label={ct('fields.nameRequired')}>
+                                  <input
+                                    className={inputBaseClass}
+                                    value={network.name}
+                                    required
+                                    placeholder={ct('placeholders.nameRequired')}
+                                    onChange={(e) => updateGuideNetwork(networkIndex, 'name', e.target.value)}
+                                  />
+                                  <GuideErrors errors={guideFieldErrors[`network.${networkIndex}.name`]} />
+                                </GuideField>
+                                <GuideField label={ct('fields.subnet')}>
+                                  <input
+                                    className={inputBaseClass}
+                                    value={network.subnet}
+                                    required
+                                    placeholder={ct('placeholders.subnet')}
+                                    onChange={(e) => updateGuideNetwork(networkIndex, 'subnet', e.target.value)}
+                                  />
+                                  <GuideErrors errors={guideFieldErrors[`network.${networkIndex}.subnet`]} />
+                                </GuideField>
+                                <GuideField label={ct('fields.gateway')}>
+                                  <input
+                                    className={inputBaseClass}
+                                    value={network.gateway}
+                                    required
+                                    placeholder={ct('placeholders.gateway')}
+                                    onChange={(e) => updateGuideNetwork(networkIndex, 'gateway', e.target.value)}
+                                  />
+                                  <GuideErrors errors={guideFieldErrors[`network.${networkIndex}.gateway`]} />
+                                </GuideField>
+                                <GuideField label={ct('fields.external')}>
+                                  <select
+                                    className={selectClass}
+                                    value={network.external ? 'true' : 'false'}
+                                    onChange={(e) =>
+                                      updateGuideNetwork(networkIndex, 'external', e.target.value === 'true')
+                                    }
+                                  >
+                                    <option value="true">true</option>
+                                    <option value="false">false</option>
+                                  </select>
+                                </GuideField>
+                                <IconButton onClick={() => removeGuideNetwork(networkIndex)} />
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="border border-neutral-300/30 rounded-md overflow-hidden bg-black/30">
+                            <div className="px-3 py-2 border-b border-neutral-700 text-xs font-mono text-neutral-400">
+                              docker-compose.yaml
+                            </div>
+                            <Suspense
+                              fallback={
+                                <div className="flex items-center justify-center h-[200px] text-neutral-400 font-mono text-sm">
+                                  {ct('loadingEditor')}
+                                </div>
+                              }
+                            >
+                              <Editor
+                                value={challenge.docker_compose || emptyComposeYaml}
+                                onChange={updateDockerCompose}
+                                language="yaml"
+                                options={{
+                                  readOnly: false,
+                                  minimap: { enabled: false },
+                                  scrollBeyondLastLine: false,
+                                  scrollbar: {
+                                    alwaysConsumeMouseWheel: false,
+                                    vertical: 'auto',
+                                    horizontal: 'auto',
+                                  },
+                                  lineNumbers: 'on',
+                                  folding: true,
+                                  wordWrap: 'on',
+                                  fontSize: 14,
+                                  fontFamily: '"Maple Mono", "Source Han Sans SC", ui-monospace, monospace',
+                                  tabSize: 2,
+                                  insertSpaces: true,
+                                  renderLineHighlight: 'line',
+                                }}
+                                height={`${19 * (challenge.docker_compose || emptyComposeYaml).split('\n').length}px`}
+                                theme="vs-dark"
+                              />
+                            </Suspense>
                           </div>
                         </div>
-
-                        {composeMode === 'raw' ? (
-                          <>
-                            <div className="border border-neutral-300/30 rounded-md overflow-hidden">
-                              <Suspense
-                                fallback={
-                                  <div className="flex items-center justify-center h-[200px] text-neutral-400 font-mono text-sm">
-                                    {ct('loadingEditor')}
-                                  </div>
-                                }
-                              >
-                                <Editor
-                                  value={challenge.docker_compose || defaultYAML}
-                                  onChange={updateDockerCompose}
-                                  language="yaml"
-                                  options={{
-                                    readOnly: false,
-                                    minimap: { enabled: false },
-                                    scrollBeyondLastLine: false,
-                                    scrollbar: {
-                                      alwaysConsumeMouseWheel: false,
-                                      vertical: 'auto',
-                                      horizontal: 'auto',
-                                    },
-                                    lineNumbers: 'on',
-                                    folding: true,
-                                    wordWrap: 'on',
-                                    fontSize: 14,
-                                    fontFamily: '"Maple Mono", "Source Han Sans SC", ui-monospace, monospace',
-                                    tabSize: 2,
-                                    insertSpaces: true,
-                                    renderLineHighlight: 'line',
-                                  }}
-                                  height={`${19 * (challenge.docker_compose || defaultYAML).split('\n').length}px`}
-                                  theme="vs-dark"
-                                />
-                              </Suspense>
-                            </div>
-                            <div className="mt-1 text-xs text-neutral-500 font-mono">
-                              {yamlNoticeLines.map((line, index) => (
-                                <span key={index}>
-                                  {line}
-                                  <br />
-                                </span>
-                              ))}
-                            </div>
-                            {rawValidation.list.length > 0 && (
-                              <div className="mt-3 rounded-md border border-red-400/30 bg-red-400/10 p-3 text-xs font-mono text-red-200 space-y-1">
-                                {rawValidation.list.map((error, index) => (
-                                  <div key={index}>{error}</div>
-                                ))}
-                              </div>
-                            )}
-                            {rawValidation.warnings?.length > 0 && (
-                              <div className="mt-3 rounded-md border border-amber-400/30 bg-amber-400/10 p-3 text-xs font-mono text-amber-100 space-y-1">
-                                {rawValidation.warnings.map((warning, index) => (
-                                  <div key={index}>{warning}</div>
-                                ))}
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                            <div className="space-y-4">
-                              <div className="flex justify-between items-center">
-                                <h4 className="text-sm font-mono text-neutral-200">{ct('sections.services')}</h4>
-                                <Button variant="ghost" size="sm" align="icon-left" icon={<IconPlus size={14} />} onClick={addGuideService}>
-                                  {ct('actions.addService')}
-                                </Button>
-                              </div>
-                              {guideConfig.services.map((service, serviceIndex) => (
-                                <div key={serviceIndex} className="border border-neutral-700 rounded-md p-3 bg-black/20 space-y-3">
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-xs font-mono text-neutral-400">
-                                      {ct('serviceIndexed', { index: serviceIndex + 1 })}
-                                    </span>
-                                    {guideConfig.services.length > 1 && (
-                                      <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="!bg-transparent !text-red-400 hover:!text-red-300 !w-8 !h-8"
-                                        onClick={() => removeGuideService(serviceIndex)}
-                                      >
-                                        <IconTrash size={14} />
-                                      </Button>
-                                    )}
-                                  </div>
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    <GuideField label={ct('fields.serviceName')}>
-                                      <input className={inputBaseClass} value={service.name} required placeholder={ct('placeholders.serviceName')} onChange={(e) => updateGuideService(serviceIndex, 'name', e.target.value)} />
-                                      <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.name`]} />
-                                    </GuideField>
-                                    <GuideField label={ct('fields.containerName')}>
-                                      <input className={inputBaseClass} value={service.containerName} placeholder={ct('placeholders.containerName')} onChange={(e) => updateGuideService(serviceIndex, 'containerName', e.target.value)} />
-                                      <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.containerName`]} />
-                                    </GuideField>
-                                    <GuideField label={ct('fields.image')}>
-                                      <input className={inputBaseClass} value={service.image} required placeholder={ct('placeholders.image')} onChange={(e) => updateGuideService(serviceIndex, 'image', e.target.value)} />
-                                      <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.image`]} />
-                                    </GuideField>
-                                    <GuideField label={ct('fields.cpus')}>
-                                      <input className={inputBaseClass} value={service.cpus} placeholder={ct('placeholders.cpus')} onChange={(e) => updateGuideService(serviceIndex, 'cpus', e.target.value)} />
-                                      <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.cpus`]} />
-                                    </GuideField>
-                                    <GuideField label={ct('fields.memLimit')}>
-                                      <input className={inputBaseClass} value={service.memLimit} placeholder={ct('placeholders.memLimit')} onChange={(e) => updateGuideService(serviceIndex, 'memLimit', e.target.value)} />
-                                      <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.memLimit`]} />
-                                    </GuideField>
-                                    <GuideField label={ct('fields.workingDir')}>
-                                      <input className={inputBaseClass} value={service.workingDir} placeholder={ct('placeholders.workingDir')} onChange={(e) => updateGuideService(serviceIndex, 'workingDir', e.target.value)} />
-                                    </GuideField>
-                                    <GuideField label={ct('fields.command')}>
-                                      <textarea className={textareaClass} value={service.command} placeholder={ct('placeholders.command')} onChange={(e) => updateGuideService(serviceIndex, 'command', e.target.value)} />
-                                    </GuideField>
-                                  </div>
-
-                                  <GuideListHeader title={ct('sections.ports')} addLabel={ct('actions.add')} onAdd={() => addGuideServiceListItem(serviceIndex, 'ports', { published: '', target: '', protocol: 'tcp' })} />
-                                  {service.ports.map((port, portIndex) => (
-                                    <div key={portIndex} className="grid grid-cols-[1fr_1fr_90px_32px] gap-2">
-                                      <GuideField label={ct('fields.name')}>
-                                        <input className={inputBaseClass} value={port.published} placeholder={ct('placeholders.name')} onChange={(e) => updateGuideServiceList(serviceIndex, 'ports', portIndex, 'published', e.target.value)} />
-                                        <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.ports.${portIndex}.published`]} />
-                                      </GuideField>
-                                      <GuideField label={ct('fields.target')}>
-                                        <input className={inputBaseClass} value={port.target} required placeholder={ct('placeholders.target')} onChange={(e) => updateGuideServiceList(serviceIndex, 'ports', portIndex, 'target', e.target.value)} />
-                                        <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.ports.${portIndex}.target`]} />
-                                      </GuideField>
-                                      <GuideField label={ct('fields.protocol')}>
-                                        <select className={selectClass} value={port.protocol} onChange={(e) => updateGuideServiceList(serviceIndex, 'ports', portIndex, 'protocol', e.target.value)}>
-                                          <option value="tcp">tcp</option>
-                                          <option value="udp">udp</option>
-                                        </select>
-                                      </GuideField>
-                                      <IconButton onClick={() => removeGuideServiceListItem(serviceIndex, 'ports', portIndex)} />
-                                    </div>
-                                  ))}
-
-                                  <GuideListHeader title={ct('sections.environment')} addLabel={ct('actions.add')} onAdd={() => addGuideServiceListItem(serviceIndex, 'environment', { key: '', value: '' })} />
-                                  {service.environment.map((env, envIndex) => (
-                                    <div key={envIndex} className="grid grid-cols-[1fr_1fr_32px] gap-2">
-                                      <GuideField label={ct('fields.key')}>
-                                        <input className={inputBaseClass} value={env.key} required placeholder={ct('placeholders.key')} onChange={(e) => updateGuideServiceList(serviceIndex, 'environment', envIndex, 'key', e.target.value)} />
-                                        <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.environment.${envIndex}.key`]} />
-                                      </GuideField>
-                                      <GuideField label={ct('fields.value')}>
-                                        <input className={inputBaseClass} value={env.value} placeholder={ct('placeholders.value')} onChange={(e) => updateGuideServiceList(serviceIndex, 'environment', envIndex, 'value', e.target.value)} />
-                                      </GuideField>
-                                      <IconButton onClick={() => removeGuideServiceListItem(serviceIndex, 'environment', envIndex)} />
-                                    </div>
-                                  ))}
-
-                                  <GuideListHeader title={ct('sections.fileFlags')} addLabel={ct('actions.add')} onAdd={() => addGuideServiceListItem(serviceIndex, 'volumes', { source: 'FLAG_0', target: '/flag', value: 'uuid{}' })} />
-                                  {service.volumes.map((volume, volumeIndex) => (
-                                    <div key={volumeIndex} className="grid grid-cols-[1fr_1fr_1fr_32px] gap-2">
-                                      <GuideField label={ct('fields.source')}>
-                                        <input className={inputBaseClass} value={volume.source} required placeholder={ct('placeholders.source')} onChange={(e) => updateGuideServiceList(serviceIndex, 'volumes', volumeIndex, 'source', e.target.value)} />
-                                        <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.volumes.${volumeIndex}.source`]} />
-                                      </GuideField>
-                                      <GuideField label={ct('fields.target')}>
-                                        <input className={inputBaseClass} value={volume.target} required placeholder={ct('placeholders.flagTarget')} onChange={(e) => updateGuideServiceList(serviceIndex, 'volumes', volumeIndex, 'target', e.target.value)} />
-                                        <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.volumes.${volumeIndex}.target`]} />
-                                      </GuideField>
-                                      <GuideField label={ct('fields.value')}>
-                                        <input className={inputBaseClass} value={volume.value} placeholder="uuid{}" onChange={(e) => updateGuideServiceList(serviceIndex, 'volumes', volumeIndex, 'value', e.target.value)} />
-                                      </GuideField>
-                                      <IconButton onClick={() => removeGuideServiceListItem(serviceIndex, 'volumes', volumeIndex)} />
-                                    </div>
-                                  ))}
-
-                                  <GuideListHeader
-                                    title={ct('sections.networks')}
-                                    addLabel={ct('actions.add')}
-                                    disabled={guideConfig.networks.length === 0}
-                                    onAdd={() => addGuideServiceListItem(serviceIndex, 'networks', { name: guideConfig.networks[0]?.name || '', ipv4Address: '' })}
-                                  />
-                                  <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.networks`]} />
-                                  {service.networks.map((network, networkIndex) => (
-                                    <div key={networkIndex} className="grid grid-cols-[1fr_1fr_32px] gap-2">
-                                      <GuideField label={ct('fields.network')}>
-                                        <select className={selectClass} value={network.name} required onChange={(e) => updateGuideServiceList(serviceIndex, 'networks', networkIndex, 'name', e.target.value)}>
-                                          <option value="">{ct('placeholders.network')}</option>
-                                          {guideConfig.networks.map((item, index) => (
-                                            <option key={index} value={item.name}>{item.name}</option>
-                                          ))}
-                                        </select>
-                                        <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.networks.${networkIndex}.name`]} />
-                                      </GuideField>
-                                      <GuideField label={ct('fields.ipv4Address')}>
-                                        <input className={inputBaseClass} value={network.ipv4Address} required placeholder={ct('placeholders.ipv4Address')} onChange={(e) => updateGuideServiceList(serviceIndex, 'networks', networkIndex, 'ipv4Address', e.target.value)} />
-                                        <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.networks.${networkIndex}.ipv4Address`]} />
-                                      </GuideField>
-                                      <IconButton onClick={() => removeGuideServiceListItem(serviceIndex, 'networks', networkIndex)} />
-                                    </div>
-                                  ))}
-                                </div>
-                              ))}
-
-                              <div className="flex justify-between items-center">
-                                <h4 className="text-sm font-mono text-neutral-200">{ct('sections.networks')}</h4>
-                                <Button variant="ghost" size="sm" align="icon-left" icon={<IconPlus size={14} />} onClick={addGuideNetwork}>
-                                  {ct('actions.addNetwork')}
-                                </Button>
-                              </div>
-                              {guideConfig.networks.map((network, networkIndex) => (
-                                <div key={networkIndex} className="grid grid-cols-[1fr_1fr_1fr_88px_32px] gap-2">
-                                  <GuideField label={ct('fields.nameRequired')}>
-                                    <input className={inputBaseClass} value={network.name} required placeholder={ct('placeholders.nameRequired')} onChange={(e) => updateGuideNetwork(networkIndex, 'name', e.target.value)} />
-                                    <GuideErrors errors={guideFieldErrors[`network.${networkIndex}.name`]} />
-                                  </GuideField>
-                                  <GuideField label={ct('fields.subnet')}>
-                                    <input className={inputBaseClass} value={network.subnet} required placeholder={ct('placeholders.subnet')} onChange={(e) => updateGuideNetwork(networkIndex, 'subnet', e.target.value)} />
-                                    <GuideErrors errors={guideFieldErrors[`network.${networkIndex}.subnet`]} />
-                                  </GuideField>
-                                  <GuideField label={ct('fields.gateway')}>
-                                    <input className={inputBaseClass} value={network.gateway} required placeholder={ct('placeholders.gateway')} onChange={(e) => updateGuideNetwork(networkIndex, 'gateway', e.target.value)} />
-                                    <GuideErrors errors={guideFieldErrors[`network.${networkIndex}.gateway`]} />
-                                  </GuideField>
-                                  <GuideField label={ct('fields.external')}>
-                                    <select className={selectClass} value={network.external ? 'true' : 'false'} onChange={(e) => updateGuideNetwork(networkIndex, 'external', e.target.value === 'true')}>
-                                      <option value="true">true</option>
-                                      <option value="false">false</option>
-                                    </select>
-                                  </GuideField>
-                                  <IconButton onClick={() => removeGuideNetwork(networkIndex)} />
-                                </div>
-                              ))}
-                            </div>
-
-                            <div className="border border-neutral-700 rounded-md overflow-hidden bg-black/30">
-                              <div className="px-3 py-2 border-b border-neutral-700 text-xs font-mono text-neutral-400">
-                                {ct('previewTitle')}
-                              </div>
-                              <pre className="p-3 text-xs font-mono text-neutral-200 whitespace-pre-wrap overflow-auto max-h-[720px]">
-                                {guidedComposeYaml}
-                              </pre>
-                            </div>
+                        <div className="mt-1 text-xs text-neutral-500 font-mono">
+                          {yamlNoticeLines.map((line, index) => (
+                            <span key={index}>
+                              {line}
+                              <br />
+                            </span>
+                          ))}
+                        </div>
+                        {rawValidation.list.length > 0 && (
+                          <div className="mt-3 rounded-md border border-red-400/30 bg-red-400/10 p-3 text-xs font-mono text-red-200 space-y-1">
+                            {rawValidation.list.map((error, index) => (
+                              <div key={index}>{error}</div>
+                            ))}
                           </div>
                         )}
                       </div>
@@ -1780,11 +2007,7 @@ function AdminChallengeModal({
           <Button
             variant="primary"
             size="sm"
-            disabled={
-              challenge.type === 'pods' &&
-              ((composeMode === 'guide' && guideValidationErrors.length > 0) ||
-                (composeMode === 'raw' && rawValidation.list.length > 0))
-            }
+            disabled={challenge.type === 'pods' && (guideValidationErrors.length > 0 || rawValidation.list.length > 0)}
             onClick={() => onSubmit(challenge)}
           >
             {mode === 'add'
@@ -1795,63 +2018,6 @@ function AdminChallengeModal({
           </Button>
         </div>
       </motion.div>
-
-      {/* 全屏YAML编辑器 */}
-      {fullscreenEditor.isOpen && (
-        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center">
-          <motion.div
-            className="w-[95vw] h-[95vh] bg-neutral-900 border border-neutral-700 rounded-lg overflow-hidden"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-          >
-            <div className="flex justify-between items-center p-4 border-b border-neutral-700">
-              <h3 className="text-lg font-mono text-neutral-50">{t('admin.challengeModal.fullscreen.title')}</h3>
-              <div className="flex gap-2">
-                <Button variant="primary" size="sm" onClick={saveFullscreenEditor}>
-                  <IconDeviceFloppy size={16} className="mr-2" />
-                  {t('admin.challengeModal.fullscreen.save')}
-                </Button>
-                <Button variant="ghost" size="sm" onClick={closeFullscreenEditor}>
-                  <IconMinimize size={16} className="mr-2" />
-                  {t('admin.challengeModal.fullscreen.exit')}
-                </Button>
-              </div>
-            </div>
-            <div className="flex-1 h-full">
-              <Suspense
-                fallback={
-                  <div className="flex items-center justify-center h-full text-neutral-400 font-mono text-sm">
-                    {ct('loadingEditor')}
-                  </div>
-                }
-              >
-                <Editor
-                  value={fullscreenEditor.value}
-                  onChange={updateFullscreenValue}
-                  language="yaml"
-                  options={{
-                    readOnly: false,
-                    minimap: { enabled: true },
-                    scrollBeyondLastLine: false,
-                    lineNumbers: 'on',
-                    folding: true,
-                    wordWrap: 'on',
-                    fontSize: 16,
-                    fontFamily: 'Consolas, "Courier New", monospace',
-                    tabSize: 2,
-                    insertSpaces: true,
-                    renderLineHighlight: 'line',
-                  }}
-                  height="calc(95vh - 70px)"
-                  theme="vs-dark"
-                />
-              </Suspense>
-            </div>
-          </motion.div>
-        </div>
-      )}
     </div>
   );
 }
