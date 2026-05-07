@@ -33,6 +33,14 @@ export const getChallengeList = (params = { limit: 20, offset: 0 }) => {
   });
 };
 
+// 获取题目详情
+export const getChallenge = (challengeId) => {
+  return request({
+    url: `/admin/challenges/${challengeId}`,
+    method: 'GET',
+  });
+};
+
 // 创建题目
 export const createChallenge = (data) => {
   return request({

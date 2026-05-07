@@ -7,6 +7,7 @@ import AdminChallengeTestModal from '../../components/features/Admin/AdminChalle
 import {
   getChallengeCategories,
   getChallengeList,
+  getChallenge,
   createChallenge,
   updateChallenge,
   deleteChallenge,
@@ -192,13 +193,28 @@ function ChallengesManagement() {
     setIsModalOpen(true);
   };
 
-  const handleEditChallenge = (challenge) => {
-    setMode('edit');
-    setSelectedChallenge(challenge);
-    setEditChallenge({
-      ...challenge,
-    });
-    setIsModalOpen(true);
+  const handleEditChallenge = async (challenge) => {
+    try {
+      const response = await getChallenge(challenge.id);
+      if (response.code === 200) {
+        const detail = processFlags(response.data);
+        setMode('edit');
+        setSelectedChallenge(detail);
+        setEditChallenge({
+          ...detail,
+        });
+        setInitDockerCompose((prev) => {
+          const next = prev.filter((item) => item.id !== detail.id);
+          next.push({ id: detail.id, value: detail.docker_compose });
+          return next;
+        });
+        setIsModalOpen(true);
+      }
+    } catch (error) {
+      toast.danger({
+        description: error.message || t('admin.challenge.toast.fetchDetailFailed'),
+      });
+    }
   };
 
   const handleDeleteChallenge = (challenge) => {

@@ -1329,6 +1329,7 @@
         "searchFailed": "搜索失败",
         "fetchCategoriesFailed": "获取题目分类失败",
         "fetchListFailed": "获取题目列表失败",
+        "fetchDetailFailed": "获取题目详情失败",
         "downloadFailed": "下载附件失败",
         "uploadSuccess": "上传附件成功",
         "uploadFailed": "上传附件失败",
