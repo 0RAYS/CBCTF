@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 
 /**
  * 题目管理弹窗组件
- * @param {Object} props
  * @param {boolean} props.isOpen - 是否显示弹窗
  * @param {string} props.mode - 模式, 'add'或'edit'
  * @param {Object} props.challenge - 当前编辑的题目对象
@@ -1672,7 +1671,7 @@ function AdminChallengeModal({
                               </Button>
                             </div>
                             {guideConfig.networks.map((network, networkIndex) => (
-                              <div key={networkIndex} className="grid grid-cols-[1fr_1fr_1fr_88px_32px] gap-2">
+                              <div key={networkIndex} className="grid grid-cols-[2fr_3fr_2fr_112px_32px] gap-2">
                                 <GuideField label={ct('fields.nameRequired')}>
                                   <input
                                     className={inputBaseClass}
