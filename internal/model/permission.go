@@ -274,6 +274,7 @@ var RoutePermissions = map[string]string{
 	"GET /admin/challenges":                              PermAdminChallengeList,
 	"GET /admin/challenges/categories":                   PermAdminChallengeList,
 	"POST /admin/challenges":                             PermAdminChallengeCreate,
+	"GET /admin/challenges/:challengeID":                 PermAdminChallengeRead,
 	"GET /admin/challenges/:challengeID/download":        PermAdminChallengeRead,
 	"PUT /admin/challenges/:challengeID":                 PermAdminChallengeUpdate,
 	"DELETE /admin/challenges/:challengeID":              PermAdminChallengeDelete,
