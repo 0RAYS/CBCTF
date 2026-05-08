@@ -26,7 +26,7 @@ func Init() *gin.Engine {
 
 	router.MaxMultipartMemory = int64(config.Env.Gin.Upload.Max << 20)
 
-	router.Use(gin.Recovery(), middleware.Cors())
+	router.Use(middleware.Recovery(), middleware.Cors())
 
 	{
 		router.GET("/", func(ctx *gin.Context) {
