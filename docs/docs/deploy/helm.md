@@ -4,213 +4,139 @@ sidebar_position: 3
 
 # Helm 部署
 
-CBCTF 提供官方 Helm Chart, 可在 Kubernetes 中部署应用、共享存储接入以及可选的内置 PostgreSQL/Redis。
+CBCTF Chart 位于仓库根目录的 `chart/`。默认会创建应用 Deployment、Service、Ingress、ServiceAccount、ClusterRole、共享 PVC，以及内置 PostgreSQL 和 Redis。
 
 ## 前置要求
 
-- Helm 3.10+
-- 可用的 Kubernetes 集群
-- 支持 `ReadWriteMany` 的存储类, 用于附件与动态附件共享
-- 如需 VPC 网络, 需提前安装 Kube-OVN 与 Multus
+- Kubernetes 集群可用。
+- Helm 可用。
+- 集群可以拉取 `ghcr.io/0rays/cbctf`、PostgreSQL、Redis 以及题目镜像。
+- 如启用持久化，集群需要可用 StorageClass。
+- 动态附件建议使用支持 `ReadWriteMany` 的共享存储。
+- VPC 靶机需要提前安装 Kube-OVN 和 Multus CNI。
 
-## 基本操作
+## 安装
 
-### 添加仓库
+创建命名空间并安装：
 
 ```bash
-helm repo add 0rays https://cbctf.0rays.club/CBCTF
-helm repo update
+helm install cbctf ./chart -n cbctf --create-namespace
 ```
 
-### 安装
+推荐使用自定义 values：
 
 ```bash
-helm install cbctf 0rays/cbctf \
-  --namespace cbctf \
-  --create-namespace \
-  --set cbctf.host=https://ctf.example.com
+cp chart/values.yaml my-values.yaml
+helm install cbctf ./chart -n cbctf --create-namespace -f my-values.yaml
 ```
 
-推荐先导出默认值再修改: 
+查看状态：
 
 ```bash
-helm show values 0rays/cbctf > my-values.yaml
-helm install cbctf 0rays/cbctf \
-  --namespace cbctf \
-  --create-namespace \
-  -f my-values.yaml
+kubectl get pods -n cbctf
+kubectl get svc -n cbctf
+kubectl get ingress -n cbctf
+kubectl logs -n cbctf deployment/cbctf
 ```
 
-### 升级与卸载
+没有 Ingress 时可用端口转发：
 
 ```bash
-helm upgrade cbctf 0rays/cbctf -n cbctf -f my-values.yaml
+kubectl port-forward -n cbctf svc/cbctf 8000:8000
+```
+
+访问 `http://127.0.0.1:8000/platform/#/login`。
+
+## 升级和卸载
+
+```bash
+helm upgrade cbctf ./chart -n cbctf -f my-values.yaml
 helm uninstall cbctf -n cbctf
 ```
 
-:::caution
-卸载不会自动清理 PVC; 若需清空数据, 请手动删除对应 PVC。
-:::
+共享 PVC 默认带有保留策略，卸载不会删除 `/app/data` 中的数据。PostgreSQL 和 Redis 的 PVC 也应在确认备份后再手动清理。
 
-### 查看初始管理员密码
+## 常用 Values
 
-```bash
-kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
-```
+| 配置项 | 说明 | 示例 |
+|---|---|---|
+| `image.repository` | 应用镜像仓库 | `ghcr.io/0rays/cbctf` |
+| `image.tag` | 应用镜像标签 | `latest` |
+| `imagePullSecrets` | 私有镜像拉取 Secret | `[{name: regcred}]` |
+| `imageCredentials.*` | Chart 自动创建镜像仓库 Secret 的内联凭据 | `registry: ghcr.io` |
+| `timezone` | 容器时区 | `Asia/Shanghai` |
+| `service.type` | Service 类型 | `ClusterIP` |
+| `service.port` | Service 端口 | `8000` |
+| `ingress.enabled` | 是否启用 Ingress | `true` |
+| `ingress.className` | IngressClass | `nginx` |
+| `ingress.hosts` | 域名和路径 | `ctf.example.com` |
+| `ingress.tls` | TLS Secret 配置 | `cbctf-tls` |
+| `resources` | 应用 Pod 资源限制 | `requests.cpu: 500m` |
+| `persistence.enabled` | 是否创建共享 PVC | `true` |
+| `persistence.storageClass` | 共享 PVC 的 StorageClass | `nfs-client` |
+| `persistence.accessMode` | 访问模式 | `ReadWriteMany` |
+| `persistence.size` | 共享 PVC 容量 | `20Gi` |
+| `persistence.existingClaim` | 复用已有 PVC | `cbctf-data` |
 
-## 核心 Values
+## 应用配置
 
-### 镜像与运行环境
+| 配置项 | 说明 | 示例 |
+|---|---|---|
+| `cbctf.host` | 平台公开访问地址，不要带尾部 `/` | `https://ctf.example.com` |
+| `cbctf.log.level` | 应用日志级别 | `info` |
+| `cbctf.log.save` | 是否持久化日志 | `false` |
+| `cbctf.gin.mode` | Gin 运行模式 | `release` |
+| `cbctf.gin.host` | 容器内监听地址 | `0.0.0.0` |
+| `cbctf.gin.port` | 容器内监听端口 | `8000` |
+| `cbctf.gin.upload.max` | 上传大小限制，单位 MiB | `8` |
+| `cbctf.gin.proxies` | 可信代理 IP 或 CIDR | `10.244.0.0/16` |
+| `cbctf.gin.cors` | CORS 允许来源 | `https://ctf.example.com` |
+| `cbctf.gin.ratelimit.global` | 全局限流 | `100` |
+| `cbctf.gin.jwt.secret` | JWT 签名密钥，留空时 Chart 自动生成并复用 | `change-me-long-random` |
+| `cbctf.gin.metrics.whitelist` | 允许访问 `/metrics` 的 IP 或 CIDR | `10.0.0.0/8` |
+| `cbctf.registration.enabled` | 是否允许公开注册 | `true` |
+| `cbctf.registration.default_group` | 新用户默认分组 ID，`0` 表示不指定 | `0` |
+| `cbctf.cheat.ip.whitelist` | 作弊检测 IP 白名单 | `10.0.0.0/8` |
+| `cbctf.webhook.whitelist` | Webhook 目标白名单 | `example.com` |
 
-| 参数 | 说明 |
-|------|------|
-| `image.repository` / `image.tag` | CBCTF 应用镜像 |
-| `image.pullPolicy` | 镜像拉取策略 |
-| `timezone` | 容器时区 |
-| `imagePullSecrets` | 额外拉取凭据 |
-| `imageCredentials.*` | 自动生成 registry Secret 的内联凭据 |
+Chart 会把 JWT 密钥写入 Secret，并通过 `CBCTF_GIN_JWT_SECRET` 注入容器。数据库和 Redis 密码也通过 Secret 注入。
 
-### 服务暴露
+## PostgreSQL 和 Redis
 
-| 参数 | 说明 |
-|------|------|
-| `service.type` | `ClusterIP` / `NodePort` / `LoadBalancer` |
-| `service.port` | 应用服务端口 |
-| `ingress.*` | Ingress 主机、路径和 TLS |
+| 配置项 | 说明 | 示例 |
+|---|---|---|
+| `postgres.enabled` | 是否部署内置 PostgreSQL | `true` |
+| `postgres.auth.database` | 数据库名 | `cbctf` |
+| `postgres.auth.username` | 用户名 | `cbctf` |
+| `postgres.auth.password` | 密码，留空时自动生成并复用 | `example-postgres-password` |
+| `postgres.persistence.enabled` | PostgreSQL 数据持久化 | `true` |
+| `postgres.persistence.size` | PostgreSQL PVC 容量 | `5Gi` |
+| `postgres.extraConfig` | 追加到 `postgresql.conf` 的配置 | `max_connections = 500` |
+| `redis.enabled` | 是否部署内置 Redis | `true` |
+| `redis.auth.password` | Redis 密码，留空时自动生成并复用 | `example-redis-password` |
+| `redis.persistence.enabled` | Redis 数据持久化 | `true` |
+| `redis.persistence.size` | Redis PVC 容量 | `1Gi` |
 
-### `cbctf.*`
+当前 Chart values 中没有外部 PostgreSQL 或外部 Redis 的 `externalHost` 配置项。如果需要使用外部数据库，需要同步调整 Chart 模板或用等价的 Service 名称接入。
 
-#### `cbctf.host`
+## Kubernetes 靶机配置
 
-平台公开访问地址。必须与最终对外地址一致, 并且不要带尾部 `/`。
+| 配置项 | 说明 | 示例 |
+|---|---|---|
+| `serviceAccount.create` | 是否创建应用 ServiceAccount | `true` |
+| `cbctf.k8s.tcpdump` | 流量捕获镜像 | `nicolaka/netshoot:latest` |
+| `cbctf.k8s.frp.on` | 是否启用 FRP 端口暴露 | `false` |
+| `cbctf.k8s.frp.frpc` | FRP client 镜像 | `snowdreamtech/frpc:latest` |
+| `cbctf.k8s.frp.nginx` | FRP 转发辅助 Nginx 镜像 | `nginx:latest` |
+| `cbctf.k8s.frp.frps` | FRPS 服务端、token 和端口池 | `host: frps.example.com` |
+| `cbctf.k8s.external_networks.enabled` | 是否初始化外部网络资源 | `true` |
+| `cbctf.k8s.external_networks.interfaces[].interface` | 节点外部网卡名 | `ens192` |
+| `cbctf.k8s.external_networks.interfaces[].cidr` | 外部网络 CIDR | `192.168.0.0/24` |
+| `cbctf.k8s.external_networks.interfaces[].gateway` | 外部网络网关 | `192.168.0.1` |
 
-#### `cbctf.log.*`
+Chart 创建的 ClusterRole 包含 Pod、Service、Job、NetworkPolicy、EndpointSlice、Multus NAD、Kube-OVN Subnet/VPC/IP/NAT Gateway 等资源权限。应用启动时会用 ServiceAccount 生成 kubeconfig，并将 `k8s.namespace` 设置为 Release namespace。
 
-- `cbctf.log.level`
-- `cbctf.log.save`
-
-#### `cbctf.gin.*`
-
-- `mode`
-- `host`
-- `port`
-- `upload.max`
-- `proxies`
-- `cors`
-- `ratelimit.global`
-- `ratelimit.whitelist`
-- `log.whitelist`
-- `jwt.secret`
-- `metrics.whitelist`
-
-Chart 会将 `cbctf.gin.jwt.secret` 写入 Secret, 并通过环境变量注入容器。
-
-#### `cbctf.asynq.*`
-
-- `concurrency`
-- `log.level`
-- `queues.victim`
-- `queues.generator`
-- `queues.attachment`
-- `queues.email`
-- `queues.webhook`
-- `queues.image`
-
-`cbctf.asynq.concurrency` 保留为全局默认值; 当前应用会按任务类型分别启动独立的 Asynq worker 池, 实际生效的并发主要由 `cbctf.asynq.queues.*` 控制: 
-
-- `queues.victim`: 容器靶机启停任务
-- `queues.generator`: 动态附件生成器启停任务
-- `queues.attachment`: 附件生成任务
-- `queues.email`: 邮件任务
-- `queues.webhook`: Webhook 任务
-- `queues.image`: 图片处理任务
-
-#### `cbctf.gorm.log.level`
-
-控制 GORM 日志等级。PostgreSQL 连接信息由 Chart 根据 `postgres.*` 自动拼装。
-
-#### `cbctf.gorm.postgres.sslmode`
-
-PostgreSQL SSL 开关, 类型为布尔值: 
-
-- `false` -> DSN `sslmode=disable`
-- `true` -> DSN `sslmode=require`
-
-#### `cbctf.k8s.*`
-
-- `tcpdump`
-- `frp.on`
-- `frp.frpc`
-- `frp.nginx`
-- `frp.frps`
-- `external_networks.enabled`
-- `external_networks.interfaces[].interface`
-- `external_networks.interfaces[].cidr`
-- `external_networks.interfaces[].gateway`
-
-当前 Chart 和应用代码中 **不存在** `cbctf.k8s.generator_worker`、`cbctf.k8s.kubeovnRBAC`、`cbctf.k8s.multusRBAC` 这些可配置项。
-
-#### 其他配置
-
-- `cbctf.cheat.ip.whitelist`
-- `cbctf.registration.enabled`
-- `cbctf.registration.default_group`
-- `cbctf.webhook.whitelist`
-
-### 持久化
-
-| 参数 | 说明 |
-|------|------|
-| `persistence.enabled` | 是否启用共享存储 |
-| `persistence.storageClass` | RWX 存储类 |
-| `persistence.accessMode` | 默认 `ReadWriteMany` |
-| `persistence.size` | 共享卷容量 |
-| `persistence.existingClaim` | 复用已有 PVC |
-
-动态附件依赖共享卷; 若使用不支持 RWX 的存储类, 动态附件会失败。
-
-### PostgreSQL / Redis
-
-| 参数 | 说明 |
-|------|------|
-| `postgres.enabled` | 是否部署内置 PostgreSQL |
-| `postgres.externalHost` | 关闭内置 PostgreSQL 时必须提供 |
-| `postgres.auth.*` | 用户名、密码、数据库名 |
-| `postgres.persistence.*` | PostgreSQL 数据卷 |
-| `postgres.extraConfig` | 额外 PostgreSQL 配置 |
-| `redis.enabled` | 是否部署内置 Redis |
-| `redis.externalHost` | 关闭内置 Redis 时必须提供 |
-| `redis.auth.password` | Redis 密码 |
-| `redis.persistence.*` | Redis 数据卷 |
-
-## 示例
-
-### 最小部署
-
-```yaml
-cbctf:
-  host: "http://localhost:8000"
-  gin:
-    cors:
-      - "http://localhost:8000"
-    jwt:
-      secret: "my-dev-secret"
-
-postgres:
-  auth:
-    password: "postgres-password"
-
-redis:
-  auth:
-    password: "redis-password"
-```
-
-```bash
-helm install cbctf 0rays/cbctf -n cbctf --create-namespace -f values.yaml
-kubectl port-forward svc/cbctf 8000:8000 -n cbctf
-```
-
-### Ingress + TLS + 外部网络
+## Ingress 示例
 
 ```yaml
 cbctf:
@@ -218,20 +144,10 @@ cbctf:
   gin:
     cors:
       - "https://ctf.example.com"
-    jwt:
-      secret: "your-very-long-random-secret"
     proxies:
       - "10.244.0.0/16"
-  k8s:
-    external_networks:
-      enabled: true
-      interfaces:
-        - interface: "eth0"
-          cidr: "192.168.0.0/24"
-          gateway: "192.168.0.1"
-        - interface: "ens192"
-          cidr: "192.168.1.0/24"
-          gateway: "192.168.1.1"
+    jwt:
+      secret: "change-me-long-random-secret"
 
 ingress:
   enabled: true
@@ -245,20 +161,21 @@ ingress:
     - secretName: cbctf-tls
       hosts:
         - ctf.example.com
-
-persistence:
-  storageClass: nfs-client
-  size: 50Gi
 ```
 
-## Chart 生成的资源
+## 安装后检查
 
-默认会创建: 
+```bash
+kubectl get pods -n cbctf
+kubectl logs -n cbctf deployment/cbctf
+kubectl get pvc -n cbctf
+kubectl get ingress -n cbctf
+```
 
-- Deployment / Service / Ingress
-- ServiceAccount / ClusterRole / ClusterRoleBinding
-- 共享 PVC
-- 可选的 PostgreSQL 与 Redis StatefulSet
-- 后端启动时按 `external_networks.interfaces` 创建外部网络 Subnet 与 NAD
+检查初始管理员密码：
 
-Chart 已内置 Kube-OVN 与 Multus 所需 ClusterRole 规则, 无需额外启用开关。
+```bash
+kubectl logs -n cbctf deployment/cbctf | grep "Init Admin"
+```
+
+如果 Pod 反复重启，优先检查日志中的数据库、Redis、RBAC、PVC 和 Kube-OVN/Multus 相关错误。
