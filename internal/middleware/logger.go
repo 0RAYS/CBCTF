@@ -17,10 +17,7 @@ var TotalRequests int
 var MU sync.Mutex
 
 func Logger(ctx *gin.Context) {
-	l := log.Logger.WithField("Type", log.GinLogType)
 	start := time.Now()
-	path := ctx.Request.URL.Path
-	raw := ctx.Request.URL.RawQuery
 
 	// Process request
 	ctx.Next()
@@ -33,6 +30,8 @@ func Logger(ctx *gin.Context) {
 		TotalRequests++
 		MU.Unlock()
 	}
+	path := ctx.Request.URL.Path
+	raw := ctx.Request.URL.RawQuery
 	if raw != "" {
 		path = path + "?" + raw
 	}
@@ -43,7 +42,8 @@ func Logger(ctx *gin.Context) {
 	if statusCode == 0 {
 		statusCode = ctx.Writer.Status()
 	}
-	e := l.WithFields(logrus.Fields{
+	e := log.Logger.WithFields(logrus.Fields{
+		"Type":       log.GinLogType,
 		"Latency":    latency,
 		"StatusCode": statusCode,
 		"Method":     ctx.Request.Method,
