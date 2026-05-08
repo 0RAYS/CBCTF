@@ -37,6 +37,9 @@ func Prometheus(ctx *gin.Context) {
 	ctx.Next()
 
 	status := ctx.GetInt(resp.CTXStatusCodeKey)
+	if status == 0 {
+		status = ctx.Writer.Status()
+	}
 	path := ctx.FullPath()
 	if path == "" {
 		path = ctx.Request.URL.Path

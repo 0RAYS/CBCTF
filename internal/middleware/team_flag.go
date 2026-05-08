@@ -18,7 +18,7 @@ func CheckIfGenerated(ctx *gin.Context) {
 		Conditions: map[string]any{"contest_challenge_id": contestChallenge.ID},
 	})
 	if !ret.OK {
-		resp.JSON(ctx, ret)
+		resp.AbortJSON(ctx, ret)
 		return
 	}
 	if !service.CheckIfGenerated(db.DB, team, contestFlags) {
