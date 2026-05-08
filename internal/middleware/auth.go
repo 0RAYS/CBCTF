@@ -46,7 +46,7 @@ func CheckAuth(ctx *gin.Context) {
 	if !utils.CompareMagic(magic, claims.X) {
 		contestIDL, ret := db.InitContestRepo(db.DB).GetIDByUserID(user.ID)
 		if !ret.OK {
-			resp.JSON(ctx, ret)
+			resp.AbortJSON(ctx, ret)
 			return
 		}
 		ip := ctx.ClientIP()

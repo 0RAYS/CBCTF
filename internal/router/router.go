@@ -26,7 +26,7 @@ func Init() *gin.Engine {
 
 	router.MaxMultipartMemory = int64(config.Env.Gin.Upload.Max << 20)
 
-	router.Use(middleware.Recovery(), middleware.Cors())
+	router.Use(middleware.SetTrace, middleware.SetMagic, middleware.Cors())
 
 	{
 		router.GET("/", func(ctx *gin.Context) {
@@ -36,8 +36,8 @@ func Init() *gin.Engine {
 	}
 
 	router.Use(
-		middleware.SetTrace, middleware.SetMagic, middleware.Logger, middleware.Prometheus, middleware.AccessLog,
-		middleware.RateLimit("globals", config.Env.Gin.RateLimit.Global, time.Minute), middleware.Events,
+		middleware.Logger, middleware.Prometheus, middleware.AccessLog, middleware.Events, middleware.Recovery,
+		middleware.RateLimit("globals", config.Env.Gin.RateLimit.Global, time.Minute),
 	)
 
 	RegisterMetricsRouter(router)
