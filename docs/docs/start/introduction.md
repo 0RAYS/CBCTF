@@ -2,58 +2,61 @@
 sidebar_position: 1
 ---
 
-# 简介
+# 项目简介
 
-[![Go Version](https://img.shields.io/badge/Go-1.26-blue.svg)](https://golang.org)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-blue.svg)](https://www.postgresql.org)
-[![Redis](https://img.shields.io/badge/Redis-6.0+-red.svg)](https://redis.io)
-[![Kubernetes](https://img.shields.io/badge/Kubernetes-1.20+-blue.svg)](https://kubernetes.io)
-[![License](https://img.shields.io/badge/License-Apache_2.0-green.svg)](https://github.com/0RAYS/CBCTF/blob/main/LICENSE)
+CBCTF 是一个面向 CTF 比赛的管理与参赛平台。平台提供管理端和选手端，后端使用 Go、Gin、GORM，前端使用 React、Vite，运行时依赖 PostgreSQL 和 Redis；动态附件和动态靶机功能依赖 Kubernetes。
 
-**CBCTF** 是由 0RAYS 开发的 Kubernetes 原生 CTF 竞赛平台。平台使用 Go 语言编写, 将 React 前端嵌入单一二进制, 部署简单, 同时深度集成 Kubernetes, 支持动态容器靶机、VPC 网络隔离、流量捕获等高级功能。
+前端构建产物默认嵌入后端服务，并通过 `/platform/` 对外提供页面。选手和管理员通常从 `/platform/#/login` 登录。
 
-## 核心功能
+## 主要功能
 
-| 功能 | 静态题 | 动态附件题 | 容器题 |
-|------|:------:|:----------:|:------:|
-| 共享附件 | ✓ | — | ✓ |
-| 动态附件（per-team） | — | ✓ | — |
-| 静态 Flag | ✓ | ✓ | ✓ |
-| 动态 Flag | — | ✓ | ✓ |
-| UUID Flag | — | ✓ | ✓ |
-| 容器靶机 | — | — | ✓ |
-| Pod 网络 | — | — | ✓ |
-| VPC 网络隔离 | — | — | ✓ |
-| 流量捕获 | — | — | ✓ |
-| 需要 Kubernetes | — | ✓ | ✓ |
-
-## 架构
-
-CBCTF 后端采用 Go 1.26 + Gin 框架, 前端使用 React 19 + Vite 7, 生产构建产物通过 `go:embed` 嵌入 Go 二进制。平台运行时依赖 PostgreSQL 存储数据、Redis 缓存与任务队列, 并通过 client-go 与 Kubernetes 集群交互以管理容器靶机。
-
-## 依赖说明
-
-| 组件 | 版本要求 | 用途 |
-|------|---------|------|
-| PostgreSQL | 16+ | 主数据存储 |
-| Redis | 6.0+ | 缓存、Asynq 任务队列 |
-| Kubernetes | 1.20+ | 动态附件生成、容器靶机 |
-| KubeOVN | 推荐 v1.16+ | VPC 网络隔离（可选） |
-| Multus CNI | 最新稳定版 | 多网卡支持, VPC 模式必须（可选） |
-
-> Kubernetes、KubeOVN 和 Multus 仅在使用动态附件题或容器题时需要。若仅使用静态题, 只需 PostgreSQL 和 Redis。
+| 功能 | 说明 |
+|---|---|
+| 用户注册和登录 | 支持本地账号，配置后可使用 OAuth/OIDC 登录 |
+| 用户和队伍 | 用户资料、队伍创建、加入、成员管理、队伍头像 |
+| 比赛管理 | 比赛时间、隐藏状态、队伍人数、规则、奖项、时间线、公告 |
+| 题目管理 | 静态题、动态附件题、容器靶机题，支持分类和附件上传 |
+| Flag 管理 | 静态 Flag、动态 Flag、UUID Flag，容器题可注入环境变量或文件 |
+| 提交和排行榜 | Flag 提交、解题状态、比赛排行榜、排名时间线 |
+| 动态靶机 | 基于 Kubernetes 为队伍启动独立靶机，支持启动、延长、停止 |
+| 动态附件 | 使用 Kubernetes Job 运行生成器，为队伍生成附件 |
+| 管理后台 | 用户、分组、角色权限、题库、比赛、公告、作弊记录、靶机、生成器、镜像预热、文件、任务、日志、系统配置 |
+| 通知集成 | SMTP 邮件、Webhook、OAuth/OIDC 提供商 |
 
 ## 技术栈
 
-| 层 | 技术 |
-|----|------|
-| 后端语言 | Go 1.26 |
-| Web 框架 | Gin v1.12 |
-| 前端框架 | React 19 + Vite 7 |
-| 任务队列 | Asynq v0.26（基于 Redis） |
-| ORM | GORM v1.31 + PostgreSQL 驱动 |
-| K8s SDK | client-go v0.35 |
-| 网络隔离 | KubeOVN + Multus CNI |
-| 认证 | JWT（golang-jwt/jwt v5）+ 设备指纹 |
-| 流量捕获 | gopacket v1.5（需 libpcap） |
-| 地理信息 | MaxMind GeoLite2-City |
+| 组件 | 当前项目使用 |
+|---|---|
+| 后端 | Go 1.26、Gin、GORM |
+| 前端 | React 19、Vite 7、JavaScript、pnpm |
+| 数据库 | PostgreSQL |
+| 缓存和任务队列 | Redis、Asynq |
+| 靶机调度 | Kubernetes |
+| 可选网络能力 | Kube-OVN、Multus CNI、FRP |
+| 部署 | Docker 镜像、Helm Chart |
+
+## 访问路径
+
+| 页面 | 路径 |
+|---|---|
+| 首页 | `/platform/#/` |
+| 登录 | `/platform/#/login` |
+| 比赛列表 | `/platform/#/games` |
+| 比赛详情 | `/platform/#/contests/:contestId` |
+| 个人设置 | `/platform/#/settings` |
+| 管理后台 | `/platform/#/admin` |
+
+根路径 `/` 会重定向到 `/platform`。如果通过 Ingress、反向代理或端口转发访问，排障时应优先确认 `/platform/` 路径是否可访问。
+
+## 环境要求
+
+| 场景 | 要求 |
+|---|---|
+| 基础运行 | PostgreSQL、Redis |
+| Helm 部署 | Kubernetes、Helm、可用 StorageClass |
+| 文件和动态附件 | 可写的 `/app/data` 数据卷，动态附件建议使用 RWX 存储 |
+| 动态靶机 | Kubernetes 命名空间、RBAC、可拉取题目镜像 |
+| VPC 靶机 | Kube-OVN、Multus CNI、外部网络节点标签 |
+| 本地构建 | Go 1.26、Node.js 24、pnpm、CGO、libpcap 开发库 |
+
+如果只使用静态题，平台仍需要 PostgreSQL 和 Redis，但不一定需要 Kubernetes 靶机能力。当前 Helm Chart 默认会在 Kubernetes 中部署应用、PostgreSQL、Redis 和所需 RBAC。
