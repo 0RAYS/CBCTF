@@ -132,7 +132,7 @@ func UpdateSystemSettings(tx *gorm.DB, form dto.UpdateSettingForm) model.RetVal 
 
 		model.K8SConfigSettingKey:                     form.K8SConfig,
 		model.K8SNamespaceSettingKey:                  form.K8SNamespace,
-		model.K8STCPDumpImageSettingKey:               form.K8STCPDumpImage,
+		model.K8SCaptureImageSettingKey:               form.K8SCaptureImage,
 		model.K8SExternalNetworksEnabledSettingKey:    form.K8SExternalNetworksEnabled,
 		model.K8SExternalNetworksInterfacesSettingKey: form.K8SExternalNetworksInterfaces,
 		model.K8SFrpOnSettingKey:                      form.K8SFrpOn,

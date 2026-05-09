@@ -48,7 +48,7 @@ const (
 
 	K8SConfigSettingKey                     = "k8s.config"
 	K8SNamespaceSettingKey                  = "k8s.namespace"
-	K8STCPDumpImageSettingKey               = "k8s.tcpdump"
+	K8SCaptureImageSettingKey               = "k8s.capture"
 	K8SExternalNetworksEnabledSettingKey    = "k8s.external_networks.enabled"
 	K8SExternalNetworksInterfacesSettingKey = "k8s.external_networks.interfaces"
 	K8SFrpOnSettingKey                      = "k8s.frp.on"

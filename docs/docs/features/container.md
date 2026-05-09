@@ -13,7 +13,7 @@ sidebar_position: 5
 | Kubernetes | 动态靶机由 Kubernetes 调度 |
 | 命名空间 | `k8s.namespace` 必须存在，Helm 部署时通常为 Release namespace |
 | RBAC | 应用需要创建/删除 Pod、Service、NetworkPolicy、Job、Multus 和 Kube-OVN 相关资源的权限 |
-| 镜像拉取 | 集群节点必须能拉取题目镜像、tcpdump 镜像和 FRP 镜像 |
+| 镜像拉取 | 集群节点必须能拉取题目镜像、流量捕获镜像和 FRP 镜像 |
 | 存储 | 题目附件、流量文件、动态附件依赖 `/app/data` 数据卷 |
 | 可选网络组件 | VPC 模式需要 Kube-OVN 和 Multus CNI |
 
@@ -93,11 +93,11 @@ kubectl label node worker-1 node.cbctf.io/external-network=ens192
 
 ## 流量捕获
 
-容器题可使用 `k8s.tcpdump` 配置的镜像进行流量捕获。管理员可在靶机或队伍详情中查看并下载 pcap 文件。
+容器题可使用 `k8s.capture` 配置的镜像进行流量捕获。管理员可在靶机或队伍详情中查看并下载 pcap 文件。
 
 排查流量文件为空或下载失败时，检查：
 
-- `k8s.tcpdump` 镜像是否可拉取。
+- `k8s.capture` 镜像是否可拉取。
 - `/app/data` 数据卷是否可写。
 - 靶机是否实际产生流量。
 - 管理后台文件和流量接口权限是否正常。

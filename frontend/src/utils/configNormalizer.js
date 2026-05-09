@@ -116,7 +116,7 @@ export function normalizeConfig(source) {
     k8s: {
       config: fallback(source?.k8s_config, fallback(source?.k8s?.config, '')),
       namespace: fallback(source?.k8s_namespace, fallback(source?.k8s?.namespace, '')),
-      tcpdump: fallback(source?.k8s_tcpdump, fallback(source?.k8s?.tcpdump, '')),
+      capture: fallback(source?.k8s_capture, fallback(source?.k8s?.capture, '')),
       external_networks: {
         enabled: fallback(
           source?.k8s_external_networks_enabled,

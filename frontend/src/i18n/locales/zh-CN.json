@@ -2333,7 +2333,7 @@
         "redisPassword": "密码",
         "k8sConfig": "Kubeconfig 文件路径",
         "k8sNamespace": "命名空间",
-        "k8sTcpdump": "TCPdump 容器镜像",
+        "k8sCapture": "流量捕获容器镜像",
         "externalNetwork": "外部网络配置",
         "externalNetworkEnabled": "启用外部网络",
         "externalNetworkInterfaces": "外部网络网卡",

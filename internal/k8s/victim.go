@@ -71,8 +71,8 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 			podSpec := pod.Spec
 			containers := []corev1.Container{
 				{
-					Name:    "tcpdump",
-					Image:   config.Env.K8S.TCPDumpImage,
+					Name:    "capture",
+					Image:   config.Env.K8S.CaptureImage,
 					Command: []string{"/bin/sh", "-c", fmt.Sprintf("tcpdump -i any -w /root/mnt/pod-%s.pcap", pod.Name)},
 					VolumeMounts: []corev1.VolumeMount{
 						{

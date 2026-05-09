@@ -139,7 +139,7 @@ cbctf:
       level: warning   # INFO / WARNING / ERROR / SILENT
 
   k8s:
-    tcpdump: "nicolaka/netshoot:latest"
+    capture: "ghcr.io/domcyrus/rustnet:latest"
     frp:
       on: false
       frpc: "snowdreamtech/frpc:latest"

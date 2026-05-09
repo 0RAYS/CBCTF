@@ -45,7 +45,7 @@ type UpdateSettingForm struct {
 
 	K8SConfig                     *string             `form:"k8s_config" json:"k8s_config" binding:"omitempty,filepath"`
 	K8SNamespace                  *string             `form:"k8s_namespace" json:"k8s_namespace" binding:"omitempty,min=1,alphanum"`
-	K8STCPDumpImage               *string             `form:"k8s_tcpdump" json:"k8s_tcpdump" binding:"omitempty,min=1"`
+	K8SCaptureImage               *string             `form:"k8s_capture" json:"k8s_capture" binding:"omitempty,min=1"`
 	K8SExternalNetworksEnabled    *bool               `form:"k8s_external_networks_enabled" json:"k8s_external_networks_enabled"`
 	K8SExternalNetworksInterfaces *[]config.Interface `form:"k8s_external_networks_interfaces" json:"k8s_external_networks_interfaces" binding:"omitempty,dive"`
 

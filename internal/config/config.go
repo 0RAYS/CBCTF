@@ -94,7 +94,7 @@ type Config struct {
 	K8S struct {
 		Config           string `mapstructure:"config" json:"config"`
 		Namespace        string `mapstructure:"namespace" json:"namespace"`
-		TCPDumpImage     string `mapstructure:"tcpdump" json:"tcpdump"`
+		CaptureImage     string `mapstructure:"capture" json:"capture"`
 		ExternalNetworks struct {
 			Enabled    bool        `mapstructure:"enabled" json:"enabled"`
 			Interfaces []Interface `mapstructure:"interfaces" json:"interfaces"`

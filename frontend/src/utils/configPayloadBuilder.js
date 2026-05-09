@@ -44,7 +44,7 @@ export function buildPayload(config) {
     k8s_external_networks_enabled: config.k8s.external_networks?.enabled,
     k8s_external_networks_interfaces: config.k8s.external_networks?.interfaces || [],
     k8s_namespace: config.k8s.namespace,
-    k8s_tcpdump: config.k8s.tcpdump,
+    k8s_capture: config.k8s.capture,
     path: config.path,
     redis_host: config.redis.host,
     redis_port: config.redis.port,

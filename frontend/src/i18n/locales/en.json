@@ -2333,7 +2333,7 @@
         "redisPassword": "Password",
         "k8sConfig": "Kubeconfig Path",
         "k8sNamespace": "Namespace",
-        "k8sTcpdump": "TCPdump Image",
+        "k8sCapture": "Capture Image",
         "externalNetwork": "External Network",
         "externalNetworkEnabled": "Enable External Networks",
         "externalNetworkInterfaces": "External Network Interfaces",
