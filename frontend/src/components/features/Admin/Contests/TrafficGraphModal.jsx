@@ -117,6 +117,9 @@ const rectsOverlap = (a, b, padding = 0) =>
 
 const sortByTraffic = (items) =>
   [...items].sort((a, b) => {
+    const aService = a.service || (a.services || [])[0] || '';
+    const bService = b.service || (b.services || [])[0] || '';
+    if (aService !== bService) return aService.localeCompare(bService);
     if ((b.bytes || 0) !== (a.bytes || 0)) return (b.bytes || 0) - (a.bytes || 0);
     return String(a.ip || a.id || '').localeCompare(String(b.ip || b.id || ''));
   });
@@ -215,6 +218,9 @@ const clampPanToViewport = (pan, zoom) => {
 };
 
 const buildCompactNodeLabel = (node) => {
+  if (node.service) {
+    return ellipsis(node.service, 16);
+  }
   if (node.kind === 'victim') {
     return ellipsis(node.label || node.ip || node.id, 16);
   }
@@ -233,6 +239,7 @@ const formatProcessLabel = (process) => {
 const buildCompactNodeMeta = (node) => {
   const process = node.dominant_process || formatProcessLabel((node.processes || [])[0]);
   if (process) return ellipsis(process, 22);
+  if (node.service) return ellipsis(node.ip || node.id, 22);
   return `${formatBytes(node.bytes)} / ${node.connections || 0} conn`;
 };
 
@@ -1642,7 +1649,22 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                         <div className="mt-1 truncate text-[11px] text-white">
                           {selectedNode.label || selectedNode.ip}
                         </div>
-                        <div className="mt-1 truncate text-[11px] text-neutral-500">{selectedNode.ip}</div>
+                        <div className="mt-1 truncate text-[11px] text-neutral-500">
+                          {selectedNode.service ? `${selectedNode.service} / ${selectedNode.ip}` : selectedNode.ip}
+                        </div>
+                        {(selectedNode.services || []).length > 1 ? (
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {(selectedNode.services || []).slice(0, 4).map((service) => (
+                              <Chip
+                                key={service}
+                                label={ellipsis(service, 18)}
+                                variant="tag"
+                                size="sm"
+                                colorClass="border-geek-400/30 bg-geek-400/10 text-geek-400"
+                              />
+                            ))}
+                          </div>
+                        ) : null}
                         <div className="mt-3 grid grid-cols-3 gap-2 text-[11px] font-mono">
                           <div className="rounded-lg border border-neutral-700 bg-black/20 px-2 py-1.5">
                             <div className="text-neutral-500">{t('admin.contests.trafficGraph.panel.nodeTraffic')}</div>

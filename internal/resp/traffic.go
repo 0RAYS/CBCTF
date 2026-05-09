@@ -51,6 +51,8 @@ type TrafficNodeResp struct {
 	Kind          string               `json:"kind"`
 	Side          string               `json:"side"`
 	Zone          string               `json:"zone"`
+	Service       string               `json:"service,omitempty"`
+	Services      []string             `json:"services,omitempty"`
 	Bytes         int64                `json:"bytes"`
 	Packets       int64                `json:"packets"`
 	Connections   int64                `json:"connections"`
@@ -66,6 +68,8 @@ type TrafficEdgeResp struct {
 	Target        string               `json:"target"`
 	Direction     string               `json:"direction"`
 	Kind          string               `json:"kind"`
+	SourceService string               `json:"source_service,omitempty"`
+	TargetService string               `json:"target_service,omitempty"`
 	Bytes         int64                `json:"bytes"`
 	Packets       int64                `json:"packets"`
 	Connections   int64                `json:"connections"`

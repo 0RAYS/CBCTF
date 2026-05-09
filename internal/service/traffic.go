@@ -20,6 +20,8 @@ type trafficNodeAggregate struct {
 	Kind          string
 	Side          string
 	Zone          string
+	Service       string
+	Services      []string
 	Bytes         int64
 	Packets       int64
 	Connections   int64
@@ -33,6 +35,8 @@ type trafficEdgeAggregate struct {
 	Target        string
 	Direction     string
 	Kind          string
+	SourceService string
+	TargetService string
 	Bytes         int64
 	Packets       int64
 	Connections   int64
@@ -82,6 +86,7 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 	totalDuration := calcTrafficTotalDuration(connections)
 	start, end := clampTrafficWindow(form.TimeShift, form.Duration, totalDuration)
 	internalIPs := collectVictimIPs(victim, connections)
+	servicesByIP := collectVictimServicesByIP(victim)
 	timelineBuckets := buildTrafficTimelineBuckets(connections, internalIPs, form.Duration)
 	windowConnections := sliceTrafficConnections(connections, start, end)
 	totalPackets := int64(len(windowConnections))
@@ -122,6 +127,8 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 				Target:        connection.DstIP,
 				Direction:     direction,
 				Kind:          trafficEdgeKind(srcInternal, dstInternal),
+				SourceService: dominantTrafficService(servicesByIP[connection.SrcIP]),
+				TargetService: dominantTrafficService(servicesByIP[connection.DstIP]),
 				protocolBytes: make(map[string]int64),
 				appBytes:      make(map[string]int64),
 				processes:     make(map[string]*trafficProcessAggregate),
@@ -136,15 +143,18 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 		addTrafficProcess(edge.processes, connection.Process, packetBytes)
 
 		for _, ip := range []string{connection.SrcIP, connection.DstIP} {
+			services := servicesByIP[ip]
 			node := nodes[ip]
 			if node == nil {
 				node = &trafficNodeAggregate{
 					ID:            ip,
-					Label:         buildTrafficNodeLabel(ip, internalIPs[ip]),
+					Label:         buildTrafficNodeLabel(ip, internalIPs[ip], services),
 					IP:            ip,
 					Kind:          trafficNodeKind(internalIPs[ip]),
 					Side:          trafficNodeSide(ip, srcInternal, dstInternal, internalIPs),
 					Zone:          trafficNodeZone(ip, internalIPs),
+					Service:       dominantTrafficService(services),
+					Services:      services,
 					protocolBytes: make(map[string]int64),
 					processes:     make(map[string]*trafficProcessAggregate),
 				}
@@ -174,6 +184,8 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 			Kind:          node.Kind,
 			Side:          node.Side,
 			Zone:          node.Zone,
+			Service:       node.Service,
+			Services:      node.Services,
 			Bytes:         node.Bytes,
 			Packets:       node.Packets,
 			Connections:   node.Connections,
@@ -228,6 +240,8 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 			Target:        edge.Target,
 			Direction:     edge.Direction,
 			Kind:          edge.Kind,
+			SourceService: edge.SourceService,
+			TargetService: edge.TargetService,
 			Bytes:         edge.Bytes,
 			Packets:       edge.Packets,
 			Connections:   edge.Connections,
@@ -511,6 +525,70 @@ func collectVictimIPs(victim model.Victim, connections []utils.Connection) map[s
 	return internalIPs
 }
 
+func collectVictimServicesByIP(victim model.Victim) map[string][]string {
+	servicesByIP := make(map[string][]string)
+	for _, pod := range victim.Pods {
+		addPodServicesByIP(servicesByIP, pod.Spec)
+	}
+	for _, podSpec := range victim.Spec.Pods {
+		addPodServicesByIP(servicesByIP, podSpec)
+	}
+	for ip, services := range servicesByIP {
+		servicesByIP[ip] = uniqueSortedTrafficServices(services)
+	}
+	return servicesByIP
+}
+
+func addPodServicesByIP(servicesByIP map[string][]string, podSpec model.PodSpec) {
+	services := make([]string, 0, len(podSpec.Containers))
+	for _, container := range podSpec.Containers {
+		name := strings.TrimSpace(container.Name)
+		if name == "" || isTrafficInfraContainer(name) {
+			continue
+		}
+		services = append(services, name)
+	}
+	if len(services) == 0 {
+		return
+	}
+	for _, network := range podSpec.Networks {
+		if network.IP != "" {
+			servicesByIP[network.IP] = append(servicesByIP[network.IP], services...)
+		}
+	}
+}
+
+func isTrafficInfraContainer(name string) bool {
+	switch strings.ToLower(strings.TrimSpace(name)) {
+	case "capture", "nginx", "frpc":
+		return true
+	default:
+		return false
+	}
+}
+
+func uniqueSortedTrafficServices(services []string) []string {
+	seen := make(map[string]bool)
+	result := make([]string, 0, len(services))
+	for _, service := range services {
+		service = strings.TrimSpace(service)
+		if service == "" || seen[service] {
+			continue
+		}
+		seen[service] = true
+		result = append(result, service)
+	}
+	sort.Strings(result)
+	return result
+}
+
+func dominantTrafficService(services []string) string {
+	if len(services) == 0 {
+		return ""
+	}
+	return services[0]
+}
+
 func trafficDirection(srcInternal, dstInternal bool) string {
 	switch {
 	case !srcInternal && dstInternal:
@@ -537,7 +615,10 @@ func buildTrafficEdgeID(srcIP, dstIP, direction string) string {
 	return fmt.Sprintf("%s>%s#%s", srcIP, dstIP, direction)
 }
 
-func buildTrafficNodeLabel(ip string, internal bool) string {
+func buildTrafficNodeLabel(ip string, internal bool, services []string) string {
+	if len(services) > 0 {
+		return fmt.Sprintf("%s %s", dominantTrafficService(services), ip)
+	}
 	if internal {
 		return fmt.Sprintf("Victim %s", ip)
 	}
