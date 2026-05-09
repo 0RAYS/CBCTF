@@ -274,6 +274,8 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 							Add: []corev1.Capability{"NET_RAW", "SYS_ADMIN"},
 						},
 					},
+					Stdin: true,
+					TTY:   true,
 				},
 			}
 			options := CreatePodOptions{
