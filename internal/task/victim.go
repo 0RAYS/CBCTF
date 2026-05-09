@@ -152,12 +152,12 @@ func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
 		return fmt.Errorf("stop victim failed: %s", ret.Msg)
 	}
 	ret = db.WithTransaction(func(tx *db.Tx) model.RetVal {
-		if ret := db.InitVictimRepo(tx).Update(victim.ID, db.UpdateVictimOptions{
+		if ret = db.InitVictimRepo(tx).Update(victim.ID, db.UpdateVictimOptions{
 			Duration: new(time.Now().Sub(victim.Start)),
 		}); !ret.OK {
 			return model.RetVal{Msg: fmt.Sprintf("update victim failed: %s", ret.Msg)}
 		}
-		if ret := db.InitVictimRepo(tx).Delete(victim.ID); !ret.OK {
+		if ret = db.InitVictimRepo(tx).Delete(victim.ID); !ret.OK {
 			return model.RetVal{Msg: fmt.Sprintf("delete victim failed: %s", ret.Msg)}
 		}
 		return model.SuccessRetVal()
