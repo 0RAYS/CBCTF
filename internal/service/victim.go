@@ -436,7 +436,6 @@ func ForceStopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
 		return ret
 	}
 	victim.Status = model.TerminatingVictimStatus
-	LoadTraffic(tx, victim)
 	_, err := task.EnqueueStopVictimTask(victim)
 	if err != nil {
 		log.Logger.Warningf("Failed to enqueue stop victim task: victim_id=%d user_id=%d team_id=%d challenge_id=%d error=%v", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID, err)

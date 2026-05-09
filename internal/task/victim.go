@@ -151,6 +151,9 @@ func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
 	if !ret.OK {
 		return fmt.Errorf("stop victim failed: %s", ret.Msg)
 	}
+	db.WithTransaction(func(tx *db.Tx) model.RetVal {
+		return LoadTraffic(tx, victim)
+	})
 	ret = db.WithTransaction(func(tx *db.Tx) model.RetVal {
 		if ret = db.InitVictimRepo(tx).Update(victim.ID, db.UpdateVictimOptions{
 			Duration: new(time.Now().Sub(victim.Start)),
