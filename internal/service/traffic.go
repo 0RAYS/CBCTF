@@ -842,6 +842,12 @@ func LoadTraffic(tx *gorm.DB, victim model.Victim) model.RetVal {
 	}
 	go func(victim model.Victim) {
 		start := time.Now()
+		log.Logger.Debugf("Enrich pcap with process info: victim_id=%d path=%s", victim.ID, victim.TrafficBasePath())
+		if errs := utils.EnrichPcapDir(victim.TrafficBasePath()); len(errs) > 0 {
+			for _, err := range errs {
+				log.Logger.Warningf("Enrich pcap error: %v", err)
+			}
+		}
 		log.Logger.Debugf("Archiving victim traffic pcaps: victim_id=%d path=%s", victim.ID, victim.TrafficBasePath())
 		if err := utils.Zip(victim.TrafficBasePath(), victim.TrafficZipPath()); err != nil {
 			log.Logger.Warningf("Failed to archive victim traffic pcaps: victim_id=%d error=%s", victim.ID, err)
