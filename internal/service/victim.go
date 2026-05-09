@@ -424,14 +424,6 @@ func StopAliveVictim(tx *gorm.DB, team model.Team, challenge model.Challenge) mo
 	return StopVictim(tx, victim)
 }
 
-func ForceStopAliveVictim(tx *gorm.DB, teamID, challengeID uint) model.RetVal {
-	victim, ret := db.InitVictimRepo(tx).HasAliveVictim(teamID, challengeID)
-	if !ret.OK {
-		return ret
-	}
-	return ForceStopVictim(tx, victim)
-}
-
 func ForceStopVictim(tx *gorm.DB, victim model.Victim) model.RetVal {
 	if victim.Status == model.TerminatingVictimStatus {
 		log.Logger.Debugf("Stop victim skipped: victim_id=%d already terminating", victim.ID)

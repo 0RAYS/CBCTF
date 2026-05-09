@@ -113,7 +113,7 @@ func GenAttachment(ctx context.Context, challenge model.Challenge, generator mod
 	}
 	if pod.Status.Phase != corev1.PodRunning {
 		StopGenerator(ctx, generator)
-		return model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.ModelName(generator)}}
+		return model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.Name(generator)}}
 	}
 	var flag string
 	for _, value := range flags {

@@ -116,7 +116,7 @@ func buildContestChallengeFileName(tx *gorm.DB, challenge model.Challenge, teamI
 	path := challenge.AttachmentPath(teamID)
 	record, _ := db.InitFileRepo(tx).Get(db.GetOptions{
 		Conditions: map[string]any{
-			"model":    model.ModelName(challenge),
+			"model":    model.Name(challenge),
 			"model_id": challenge.ID,
 			"type":     model.ChallengeFileType,
 		},

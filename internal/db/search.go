@@ -16,14 +16,14 @@ func Search(m model.Model, limit, offset int, options GetOptions) (any, int64, m
 	}
 	res := applyCountOptions(DB.Model(m), countOptions).Count(&count)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to search %s: %s", model.ModelName(m), res.Error)
-		return nil, 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.ModelName(m), "Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to search %s: %s", model.Name(m), res.Error)
+		return nil, 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Name(m), "Error": res.Error.Error()}}
 	}
 	ms := reflect.MakeSlice(reflect.SliceOf(reflect.TypeOf(m)), 0, 0).Interface()
 	res = applyGetOptions(DB.Model(m), options).Limit(limit).Offset(offset).Find(&ms)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to search %s: %s", model.ModelName(m), res.Error)
-		return nil, 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.ModelName(m), "Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to search %s: %s", model.Name(m), res.Error)
+		return nil, 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Name(m), "Error": res.Error.Error()}}
 	}
 	return ms, count, model.SuccessRetVal()
 }

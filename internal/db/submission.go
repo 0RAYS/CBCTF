@@ -71,31 +71,6 @@ func InitSubmissionRepo(tx *gorm.DB) *SubmissionRepo {
 	}
 }
 
-func (s *SubmissionRepo) GetBloodTeamID(contestFlagID uint) ([]uint, model.RetVal) {
-	rankMap, ret := s.GetBloodRankMap(contestFlagID)
-	if !ret.OK {
-		return nil, ret
-	}
-	teamRanks := rankMap[contestFlagID]
-	if len(teamRanks) == 0 {
-		return nil, model.SuccessRetVal()
-	}
-	orderedTeamIDs := make([]uint, 3)
-	for teamID, rank := range teamRanks {
-		if rank <= 0 || rank > len(orderedTeamIDs) {
-			continue
-		}
-		orderedTeamIDs[rank-1] = teamID
-	}
-	teamIDL := make([]uint, 0, len(orderedTeamIDs))
-	for _, teamID := range orderedTeamIDs {
-		if teamID != 0 {
-			teamIDL = append(teamIDL, teamID)
-		}
-	}
-	return teamIDL, model.SuccessRetVal()
-}
-
 func (s *SubmissionRepo) GetBloodRankMap(contestFlagIDL ...uint) (map[uint]map[uint]int, model.RetVal) {
 	rankMap := make(map[uint]map[uint]int)
 	if len(contestFlagIDL) == 0 {

@@ -134,7 +134,7 @@ func CheckSameDevice(tx *gorm.DB, contest model.Contest) {
 
 		repo.Create(db.CreateCheatOptions{
 			ContestID:  contest.ID,
-			Model:      model.CheatRefModel{model.ModelName(model.User{}): userIDs},
+			Model:      model.CheatRefModel{model.Name(model.User{}): userIDs},
 			Magic:      magic,
 			Reason:     fmt.Sprintf(string(model.SameDeviceMagicTmpl), fmt.Sprintf("User %s", strings.Join(users, ","))),
 			ReasonType: model.ReasonTypeSameDeviceType,
@@ -193,7 +193,7 @@ func CheckWrongFlag(tx *gorm.DB, contest model.Contest) {
 
 		cheatRepo.Create(db.CreateCheatOptions{
 			ContestID:  contest.ID,
-			Model:      model.CheatRefModel{model.ModelName(model.Team{}): teamIDs},
+			Model:      model.CheatRefModel{model.Name(model.Team{}): teamIDs},
 			IP:         submission.IP,
 			Comment:    submission.Value,
 			Reason:     fmt.Sprintf(string(model.SubmitOtherTeamFlagTmpl), submission.TeamID, strings.Trim(tmp.String(), ", "), contest.ID),
@@ -265,7 +265,7 @@ func CheckWebReqIP(tx *gorm.DB, contest model.Contest) {
 
 		cheatRepo.Create(db.CreateCheatOptions{
 			ContestID:  contest.ID,
-			Model:      model.CheatRefModel{model.ModelName(model.User{}): userIDs},
+			Model:      model.CheatRefModel{model.Name(model.User{}): userIDs},
 			IP:         ip,
 			Comment:    ip,
 			Reason:     fmt.Sprintf(string(model.ReqWebSameIPTmpl), fmt.Sprintf("User %s", strings.Join(str, ","))),
@@ -321,7 +321,7 @@ func CheckVictimReqIP(tx *gorm.DB, contest model.Contest) {
 
 		cheatRepo.Create(db.CreateCheatOptions{
 			ContestID:  contest.ID,
-			Model:      model.CheatRefModel{model.ModelName(model.Team{}): teamIDs},
+			Model:      model.CheatRefModel{model.Name(model.Team{}): teamIDs},
 			IP:         ip,
 			Comment:    ip,
 			Reason:     fmt.Sprintf(string(model.ReqVictimSameIPTmpl), fmt.Sprintf("Team %s", strings.Join(str, ","))),

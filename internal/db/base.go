@@ -52,12 +52,12 @@ func (b *BaseRepo[M]) Insert(m M) (M, model.RetVal) {
 	for _, key := range model.UniqueFields(m) {
 		value := utils.GetFieldByJSONTag(m, key)
 		if !b.IsUniqueKeyValue(0, key, value) {
-			return *new(M), model.RetVal{Msg: i18n.Model.DuplicateKeyValue, Attr: map[string]any{"Model": model.ModelName(m), "Key": key}}
+			return *new(M), model.RetVal{Msg: i18n.Model.DuplicateKeyValue, Attr: map[string]any{"Model": model.Name(m), "Key": key}}
 		}
 	}
 	if res := b.DB.Model(new(M)).Create(&m); res.Error != nil {
 		log.Logger.Warningf("Failed to create %T: %s", new(M), res.Error)
-		return *new(M), model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.ModelName(m), "Error": res.Error.Error()}}
+		return *new(M), model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.Name(m), "Error": res.Error.Error()}}
 	}
 	return m, model.SuccessRetVal()
 }
@@ -112,11 +112,11 @@ func (b *BaseRepo[M]) Get(options GetOptions) (M, model.RetVal) {
 	var m M
 	res := applyGetOptions(b.DB.Model(new(M)), options).Limit(1).Find(&m)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to get %s: %s", model.ModelName(m), res.Error)
-		return *new(M), model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.ModelName(m), "Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to get %s: %s", model.Name(m), res.Error)
+		return *new(M), model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Name(m), "Error": res.Error.Error()}}
 	}
 	if res.RowsAffected == 0 {
-		return *new(M), model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.ModelName(m)}}
+		return *new(M), model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.Name(m)}}
 	}
 	return m, model.SuccessRetVal()
 }
@@ -138,18 +138,18 @@ func (b *BaseRepo[M]) GetByIDForUpdate(id uint, optionsL ...GetOptions) (M, mode
 	var m M
 	res := applyGetOptions(b.DB.Model(new(M)).Clauses(clause.Locking{Strength: "UPDATE"}), options).Limit(1).Find(&m)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to get %s for update: %s", model.ModelName(m), res.Error)
-		return *new(M), model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.ModelName(m), "Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to get %s for update: %s", model.Name(m), res.Error)
+		return *new(M), model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Name(m), "Error": res.Error.Error()}}
 	}
 	if res.RowsAffected == 0 {
-		return *new(M), model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.ModelName(*new(M))}}
+		return *new(M), model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.Name(*new(M))}}
 	}
 	return m, model.SuccessRetVal()
 }
 
 func (b *BaseRepo[M]) GetByUniqueField(key string, value any, optionsL ...GetOptions) (M, model.RetVal) {
 	if !slices.Contains(model.UniqueFields(*new(M)), key) {
-		return *new(M), model.RetVal{Msg: i18n.Model.NotUniqueKey, Attr: map[string]any{"Model": model.ModelName(*new(M)), "Key": key}}
+		return *new(M), model.RetVal{Msg: i18n.Model.NotUniqueKey, Attr: map[string]any{"Model": model.Name(*new(M)), "Key": key}}
 	}
 	options := GetOptions{}
 	if len(optionsL) > 0 {
@@ -169,14 +169,10 @@ func (b *BaseRepo[M]) Count(optionsL ...CountOptions) (int64, model.RetVal) {
 		res = applyCountOptions(res, optionsL[0])
 	}
 	if res = res.Count(&count); res.Error != nil {
-		log.Logger.Warningf("Failed to count %s: %s", model.ModelName(*new(M)), res.Error)
-		return 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.ModelName(*new(M)), "Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to count %s: %s", model.Name(*new(M)), res.Error)
+		return 0, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Name(*new(M)), "Error": res.Error.Error()}}
 	}
 	return count, model.SuccessRetVal()
-}
-
-func (b *BaseRepo[M]) CountAssociation(m M, association string) int64 {
-	return b.DB.Model(&m).Association(association).Count()
 }
 
 func (b *BaseRepo[M]) List(limit, offset int, optionsL ...GetOptions) ([]M, int64, model.RetVal) {
@@ -201,10 +197,10 @@ func (b *BaseRepo[M]) List(limit, offset int, optionsL ...GetOptions) ([]M, int6
 	}
 	if res := tx.Limit(limit).Offset(offset).Find(&ms); res.Error != nil {
 		if errors.Is(res.Error, gorm.ErrRecordNotFound) {
-			return nil, count, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.ModelName(*new(M))}}
+			return nil, count, model.RetVal{Msg: i18n.Model.NotFound, Attr: map[string]any{"Model": model.Name(*new(M))}}
 		}
-		log.Logger.Warningf("Failed to get %s: %s", model.ModelName(*new(M)), res.Error)
-		return nil, count, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.ModelName(*new(M)), "Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to get %s: %s", model.Name(*new(M)), res.Error)
+		return nil, count, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Name(*new(M)), "Error": res.Error.Error()}}
 	}
 	return ms, count, model.SuccessRetVal()
 }
@@ -217,14 +213,14 @@ func (b *BaseRepo[M]) Update(id uint, options UpdateOptions) model.RetVal {
 	}
 	for _, key := range model.UniqueFields(*new(M)) {
 		if value, ok := data[key]; ok && !b.IsUniqueKeyValue(id, key, value) {
-			return model.RetVal{Msg: i18n.Model.NotUniqueKey, Attr: map[string]any{"Model": model.ModelName(*new(M)), "Key": key}}
+			return model.RetVal{Msg: i18n.Model.NotUniqueKey, Attr: map[string]any{"Model": model.Name(*new(M)), "Key": key}}
 		}
 	}
 	for {
 		count++
 		if count > 10 {
-			log.Logger.Warningf("Failed to update %s: too many times failed due to optimistic lock", model.ModelName(*new(M)))
-			return model.RetVal{Msg: i18n.Model.DeadLock, Attr: map[string]any{"Model": model.ModelName(*new(M))}}
+			log.Logger.Warningf("Failed to update %s: too many times failed due to optimistic lock", model.Name(*new(M)))
+			return model.RetVal{Msg: i18n.Model.DeadLock, Attr: map[string]any{"Model": model.Name(*new(M))}}
 		}
 		m, ret := b.GetByID(id)
 		if !ret.OK {
@@ -232,8 +228,8 @@ func (b *BaseRepo[M]) Update(id uint, options UpdateOptions) model.RetVal {
 		}
 		res := b.DB.Model(&m).Where("id = ?", id).Updates(data)
 		if res.Error != nil {
-			log.Logger.Warningf("Failed to update %s: %s", model.ModelName(*new(M)), res.Error)
-			return model.RetVal{Msg: i18n.Model.UpdateError, Attr: map[string]any{"Model": model.ModelName(*new(M)), "Error": res.Error.Error()}}
+			log.Logger.Warningf("Failed to update %s: %s", model.Name(*new(M)), res.Error)
+			return model.RetVal{Msg: i18n.Model.UpdateError, Attr: map[string]any{"Model": model.Name(*new(M)), "Error": res.Error.Error()}}
 		}
 		if res.RowsAffected == 0 {
 			continue
@@ -247,8 +243,8 @@ func (b *BaseRepo[M]) DiffUpdate(id uint, options DiffUpdateOptions) model.RetVa
 	data := options.Convert2Expr()
 	res := b.DB.Model(new(M)).Where("id = ?", id).Updates(data)
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to update %s: %s", model.ModelName(*new(M)), res.Error)
-		return model.RetVal{Msg: i18n.Model.UpdateError, Attr: map[string]any{"Model": model.ModelName(*new(M)), "Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to update %s: %s", model.Name(*new(M)), res.Error)
+		return model.RetVal{Msg: i18n.Model.UpdateError, Attr: map[string]any{"Model": model.Name(*new(M)), "Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }
@@ -256,8 +252,8 @@ func (b *BaseRepo[M]) DiffUpdate(id uint, options DiffUpdateOptions) model.RetVa
 func (b *BaseRepo[M]) Delete(idL ...uint) model.RetVal {
 	res := b.DB.Model(new(M)).Where("id IN ?", idL).Delete(new(M))
 	if res.Error != nil {
-		log.Logger.Warningf("Failed to delete %s: %s", model.ModelName(*new(M)), res.Error)
-		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.ModelName(*new(M)), "Error": res.Error.Error()}}
+		log.Logger.Warningf("Failed to delete %s: %s", model.Name(*new(M)), res.Error)
+		return model.RetVal{Msg: i18n.Model.DeleteError, Attr: map[string]any{"Model": model.Name(*new(M)), "Error": res.Error.Error()}}
 	}
 	return model.SuccessRetVal()
 }

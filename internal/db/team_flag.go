@@ -184,23 +184,6 @@ func (t *TeamFlagRepo) GetSolvedContestFlags(teamIDL ...uint) ([]SolvedContestFl
 	return results, model.SuccessRetVal()
 }
 
-func (t *TeamFlagRepo) ExistsSolvedForChallenge(teamID uint, contestChallengeID uint) (bool, model.RetVal) {
-	var exists bool
-	res := t.DB.Raw(`
-		SELECT EXISTS (
-			SELECT 1
-			FROM team_flags
-			INNER JOIN contest_flags ON contest_flags.id = team_flags.contest_flag_id AND contest_flags.deleted_at IS NULL
-			WHERE team_flags.team_id = ? AND contest_flags.contest_challenge_id = ? AND team_flags.solved = true AND team_flags.deleted_at IS NULL
-		)
-	`, teamID, contestChallengeID).Scan(&exists)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to check solved team flag existence: %s", res.Error)
-		return false, model.RetVal{Msg: i18n.Model.TeamFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	return exists, model.SuccessRetVal()
-}
-
 func (t *TeamFlagRepo) CountSolvedForChallenge(teamID uint, contestChallengeID uint) (int64, model.RetVal) {
 	var count int64
 	res := t.DB.Model(&model.TeamFlag{}).
@@ -212,25 +195,6 @@ func (t *TeamFlagRepo) CountSolvedForChallenge(teamID uint, contestChallengeID u
 		return 0, model.RetVal{Msg: i18n.Model.TeamFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return count, model.SuccessRetVal()
-}
-
-func (t *TeamFlagRepo) Exists(teamID uint, contestFlagIDL ...uint) (bool, model.RetVal) {
-	if len(contestFlagIDL) == 0 {
-		return false, model.SuccessRetVal()
-	}
-	var exists bool
-	res := t.DB.Raw(`
-		SELECT EXISTS (
-			SELECT 1
-			FROM team_flags
-			WHERE team_id = ? AND contest_flag_id IN ? AND deleted_at IS NULL
-		)
-	`, teamID, contestFlagIDL).Scan(&exists)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to check team flag existence: %s", res.Error)
-		return false, model.RetVal{Msg: i18n.Model.TeamFlag.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	return exists, model.SuccessRetVal()
 }
 
 func (t *TeamFlagRepo) CountGenerated(teamID uint, contestFlagIDL ...uint) (int64, model.RetVal) {

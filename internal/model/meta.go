@@ -235,11 +235,7 @@ func MetadataOf(m any) Metadata {
 	return meta
 }
 
-func TableName(m any) string {
-	return MetadataOf(m).Table
-}
-
-func ModelName(m any) string {
+func Name(m any) string {
 	return MetadataOf(m).Name
 }
 

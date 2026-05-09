@@ -57,21 +57,6 @@ func (v Victim) TrafficZipPath() string {
 	return fmt.Sprintf("%s/traffics.zip", v.TrafficBasePath())
 }
 
-// TrafficPaths Victim 需要预加载 Pod
-func (v Victim) TrafficPaths() []string {
-	data := make([]string, 0)
-	for _, pod := range v.Pods {
-		data = append(data, pod.TrafficPcapPath())
-	}
-	for _, podName := range v.Resources.FrpcPodNames {
-		data = append(data, fmt.Sprintf("%s/pod-%s.pcap", v.TrafficBasePath(), podName))
-	}
-	if len(v.Resources.FrpcPodNames) > 0 {
-		data = append(data, fmt.Sprintf("%s/frpc.pcap", v.TrafficBasePath()))
-	}
-	return data
-}
-
 func (v Victim) RemoteAddr() []string {
 	data := make([]string, 0)
 	for _, endpoint := range v.ExposedEndpoints {

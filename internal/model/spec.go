@@ -37,22 +37,6 @@ func (f *FlagBinding) Scan(value any) error {
 	return nil
 }
 
-type FlagBindings []FlagBinding
-
-func (f FlagBindings) Value() (driver.Value, error) {
-	if len(f) == 0 {
-		return nil, nil
-	}
-	return json.Marshal(f)
-}
-
-func (f *FlagBindings) Scan(value any) error {
-	if err := scanJSON(value, f); err != nil {
-		return fmt.Errorf("failed to scan FlagBindings value")
-	}
-	return nil
-}
-
 type ChallengeContainerTemplate struct {
 	Key         string     `json:"key"`
 	Name        string     `json:"name"`

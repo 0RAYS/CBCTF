@@ -56,21 +56,8 @@ func (t *TaskRepo) ListQueues() ([]string, model.RetVal) {
 		Where("queue <> ''").
 		Order("queue ASC").
 		Pluck("queue", &queues).Error; err != nil {
-		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.ModelName(model.Task{}), "Error": err.Error()}}
+		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Name(model.Task{}), "Error": err.Error()}}
 	}
 	sort.Strings(queues)
 	return queues, model.SuccessRetVal()
-}
-
-func (t *TaskRepo) ListTypes() ([]string, model.RetVal) {
-	types := make([]string, 0)
-	if err := t.DB.Model(&model.Task{}).
-		Distinct("type").
-		Where("type <> ''").
-		Order("type ASC").
-		Pluck("type", &types).Error; err != nil {
-		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.ModelName(model.Task{}), "Error": err.Error()}}
-	}
-	sort.Strings(types)
-	return types, model.SuccessRetVal()
 }
