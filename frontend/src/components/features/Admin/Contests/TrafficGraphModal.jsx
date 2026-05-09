@@ -221,7 +221,20 @@ const buildCompactNodeLabel = (node) => {
   return ellipsis(node.ip || node.label || node.id, 16);
 };
 
-const buildCompactNodeMeta = (node) => `${formatBytes(node.bytes)} / ${node.connections || 0} conn`;
+const formatProcessLabel = (process) => {
+  if (!process) return '';
+  const name = process.process_name || process.dominant_process || '';
+  if (name && process.pid) return `${name} (${process.pid})`;
+  if (name) return name;
+  if (process.pid) return `PID ${process.pid}`;
+  return '';
+};
+
+const buildCompactNodeMeta = (node) => {
+  const process = node.dominant_process || formatProcessLabel((node.processes || [])[0]);
+  if (process) return ellipsis(process, 22);
+  return `${formatBytes(node.bytes)} / ${node.connections || 0} conn`;
+};
 
 const sanitizeSlice = (value) => {
   const nextValue = Math.round(Number(value) || 0);
@@ -1278,8 +1291,8 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
               },
               {
                 icon: <IconRoute size={15} className="text-neutral-300" />,
-                label: t('admin.contests.trafficGraph.stats.peers'),
-                value: summary.visible_nodes || 0,
+                label: t('admin.contests.trafficGraph.stats.processes'),
+                value: summary.process_count || 0,
                 tone: 'text-neutral-100',
               },
             ].map((item) => (
@@ -1586,6 +1599,7 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                       ) : null}
                     </div>
                     {selectedEdge ? (
+                      <>
                       <div className="mt-3 grid grid-cols-3 gap-2 text-[11px] font-mono">
                         <div className="rounded-lg border border-neutral-700 bg-black/20 px-2 py-1.5">
                           <div className="text-neutral-500">{t('admin.contests.trafficGraph.panel.edgeBytes')}</div>
@@ -1602,6 +1616,20 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                           </div>
                         </div>
                       </div>
+                      {(selectedEdge.processes || []).length > 0 ? (
+                        <div className="mt-3 rounded-lg border border-neutral-700 bg-black/20 px-2 py-2">
+                          <div className="text-[11px] text-neutral-500">{t('admin.contests.trafficGraph.panel.processes')}</div>
+                          <div className="mt-2 grid gap-1.5">
+                            {(selectedEdge.processes || []).slice(0, 3).map((process, index) => (
+                              <div key={`${formatProcessLabel(process)}-${index}`} className="flex items-center justify-between gap-2 text-[11px] font-mono">
+                                <span className="min-w-0 truncate text-neutral-100">{formatProcessLabel(process) || '--'}</span>
+                                <span className="shrink-0 text-geek-400">{formatBytes(process.bytes)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                      </>
                     ) : null}
                   </div>
 
@@ -1633,6 +1661,19 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                             </div>
                           </div>
                         </div>
+                        {(selectedNode.processes || []).length > 0 ? (
+                          <div className="mt-3 rounded-lg border border-neutral-700 bg-black/20 px-2 py-2">
+                            <div className="text-[11px] text-neutral-500">{t('admin.contests.trafficGraph.panel.processes')}</div>
+                            <div className="mt-2 grid gap-1.5">
+                              {(selectedNode.processes || []).slice(0, 3).map((process, index) => (
+                                <div key={`${formatProcessLabel(process)}-${index}`} className="flex items-center justify-between gap-2 text-[11px] font-mono">
+                                  <span className="min-w-0 truncate text-neutral-100">{formatProcessLabel(process) || '--'}</span>
+                                  <span className="shrink-0 text-geek-400">{formatBytes(process.bytes)}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ) : null}
                       </>
                     ) : null}
                   </div>
@@ -1720,7 +1761,9 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                             >
                               <div className="min-w-0">
                                 <div className="truncate font-mono text-[11px] text-white">{item.label || item.ip}</div>
-                                <div className="mt-1 text-[11px] text-neutral-500">{item.ip}</div>
+                                <div className="mt-1 truncate text-[11px] text-neutral-500">
+                                  {item.dominant_process || formatProcessLabel((item.processes || [])[0]) || item.ip}
+                                </div>
                               </div>
                               <div className="ml-3 text-right font-mono">
                                 <div className="text-[11px] text-geek-400">{formatBytes(item.bytes)}</div>
@@ -1744,8 +1787,10 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                             >
                               <div className="min-w-0">
                                 <div className="truncate font-mono text-[11px] text-white">{item.label}</div>
-                                <div className="mt-1 text-[11px] text-neutral-500">
-                                  {t(`admin.contests.trafficGraph.direction.${item.direction || 'internal'}`)}
+                                <div className="mt-1 truncate text-[11px] text-neutral-500">
+                                  {item.dominant_process ||
+                                    formatProcessLabel((item.processes || [])[0]) ||
+                                    t(`admin.contests.trafficGraph.direction.${item.direction || 'internal'}`)}
                                 </div>
                               </div>
                               <div className="ml-3 text-right font-mono">

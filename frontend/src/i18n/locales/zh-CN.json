@@ -494,7 +494,8 @@
           "totalTraffic": "窗口流量",
           "ingress": "入站流量",
           "egress": "出站流量",
-          "peers": "可见节点"
+          "peers": "可见节点",
+          "processes": "关联进程"
         },
         "canvas": {
           "title": "拓扑画布",
@@ -525,7 +526,8 @@
           "selectedNode": "选中节点",
           "nodeLabel": "节点",
           "nodeTraffic": "流量",
-          "nodeConnections": "连接数"
+          "nodeConnections": "连接数",
+          "processes": "关联进程"
         },
         "timeline": {
           "title": "时间轴",
