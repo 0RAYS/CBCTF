@@ -257,8 +257,8 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 					},
 				},
 				{
-					Name:    "tcpdump",
-					Image:   config.Env.K8S.TCPDumpImage,
+					Name:    "capture",
+					Image:   config.Env.K8S.CaptureImage,
 					Command: []string{"/bin/sh", "-c", "tcpdump -i any -w /root/mnt/frpc.pcap"},
 					VolumeMounts: []corev1.VolumeMount{
 						{

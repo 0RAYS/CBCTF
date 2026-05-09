@@ -30,11 +30,11 @@ export function K8sConfigSection({ config, updateConfig }) {
         }
       />
       <ConfigField
-        label={t('admin.system.labels.k8sTcpdump')}
-        value={config.k8s.tcpdump}
+        label={t('admin.system.labels.k8sCapture')}
+        value={config.k8s.capture}
         onChange={(value) =>
           updateConfig((draft) => {
-            draft.k8s.tcpdump = value;
+            draft.k8s.capture = value;
           })
         }
       />

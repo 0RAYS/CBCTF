@@ -114,11 +114,11 @@ CGO_ENABLED=1 go build -ldflags="-s -w" -trimpath -o CBCTF .
 | `gin`        | 服务监听地址/端口、上传限制、速率限制、CORS、JWT          |
 | `gorm.postgres` | PostgreSQL 连接配置、连接池参数                 |
 | `redis`      | Redis 连接配置                            |
-| `k8s`        | Kubeconfig 路径、命名空间、Tcpdump 镜像、Frp 配置   |
+| `k8s`        | Kubeconfig 路径、命名空间、流量捕获镜像、Frp 配置      |
 | `cheat`      | 作弊检测 IP 白名单                           |
 | `webhook`    | Webhook 目标地址黑名单                       |
 | `asynq`      | 异步任务并发数                               |
-| `registration` | 是否允许注册、新用户默认分组 ID               |
+| `registration` | 是否允许注册、新用户默认分组 ID                     |
 | `geocity_db` | GeoIP 数据库路径（GeoLite2-City.mmdb）       |
 
 支持环境变量覆盖, 前缀为 `CBCTF_`, 例如 `CBCTF_GIN_PORT=9000`。

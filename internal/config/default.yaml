@@ -67,7 +67,7 @@ k8s:
   # Also as prefix of resources
   namespace: cbctf
   # Docker image
-  tcpdump: nicolaka/netshoot:latest
+  capture: ghcr.io/domcyrus/rustnet:latest
   external_networks:
     enabled: true
     interfaces:

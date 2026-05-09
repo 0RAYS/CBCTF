@@ -84,7 +84,7 @@ data:
       # Kubeconfig generated at startup by init container using ServiceAccount token
       config: /admin/admin.yaml
       namespace: {{ .Release.Namespace | quote }}
-      tcpdump: {{ .Values.cbctf.k8s.tcpdump | quote }}
+      capture: {{ .Values.cbctf.k8s.capture | quote }}
       generator_worker: {{ .Values.cbctf.k8s.generator_worker }}
       external_networks:
         enabled: {{ .Values.cbctf.k8s.external_networks.enabled }}
