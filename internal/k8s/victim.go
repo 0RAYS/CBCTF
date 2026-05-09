@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	kubeovnv1 "github.com/kubeovn/kube-ovn/pkg/apis/kubeovn/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -511,10 +512,31 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 	for _, subnet := range victim.Spec.NetworkPlan.Subnets {
 		tryDelete(DeleteIPList(ctx, map[string]string{"ovn.kubernetes.io/subnet": subnet.Name}))
 	}
+	tryDelete(WaitVictimPodsDeleted(ctx, victim))
 	if firstErr.OK {
 		log.Logger.Debugf("Deleted victim k8s resources: victim_id=%d", victim.ID)
 	} else {
 		log.Logger.Warningf("Victim k8s cleanup incomplete: victim_id=%d error=%s", victim.ID, firstErr.Msg)
 	}
 	return firstErr
+}
+
+func WaitVictimPodsDeleted(ctx context.Context, victim model.Victim) model.RetVal {
+	labels := VictimLabels(victim, map[string]string{VictimPodTag: VictimPodTag})
+	ticker := time.NewTicker(500 * time.Millisecond)
+	defer ticker.Stop()
+	for {
+		podList, ret := GetPodList(ctx, labels)
+		if !ret.OK {
+			return ret
+		}
+		if len(podList.Items) == 0 {
+			return model.SuccessRetVal()
+		}
+		select {
+		case <-ctx.Done():
+			return model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": ctx.Err().Error()}}
+		case <-ticker.C:
+		}
+	}
 }

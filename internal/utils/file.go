@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"io"
@@ -9,6 +10,10 @@ import (
 )
 
 func GetFileInfoByPath(path string) (int64, string, error) {
+	return GetFileInfoByPathWithContext(context.Background(), path)
+}
+
+func GetFileInfoByPathWithContext(ctx context.Context, path string) (int64, string, error) {
 	var size int64
 	file, err := os.Open(path)
 	if err != nil {
@@ -18,7 +23,7 @@ func GetFileInfoByPath(path string) (int64, string, error) {
 		_ = file.Close()
 	}(file)
 	hash := sha256.New()
-	size, err = io.Copy(hash, file)
+	size, err = io.Copy(hash, contextReader{ctx: ctx, reader: file})
 	if err != nil {
 		return 0, "", err
 	}

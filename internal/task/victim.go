@@ -64,8 +64,6 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 			return fmt.Errorf("update victim failed: %s", ret.Msg)
 		}
 		log.Logger.Infof("Starting victim provisioning: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID)
-		ctx, cancel := context.WithTimeout(ctx, 3*time.Minute)
-		defer cancel()
 		victim, ret = k8s.StartVictim(ctx, victim)
 		if !ret.OK {
 			return fmt.Errorf("start victim failed: %s", ret.Msg)
@@ -145,15 +143,13 @@ func HandleStopVictimTask(ctx context.Context, t *asynq.Task) error {
 		return fmt.Errorf("get victim failed: %s", ret.Msg)
 	}
 	log.Logger.Infof("Stopping victim: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID)
-	ctx, cancel := context.WithTimeout(ctx, time.Minute)
-	defer cancel()
 	ret = k8s.StopVictim(ctx, victim)
 	if !ret.OK {
 		return fmt.Errorf("stop victim failed: %s", ret.Msg)
 	}
-	db.WithTransaction(func(tx *db.Tx) model.RetVal {
-		return LoadTraffic(tx, victim)
-	})
+	if _, err := EnqueueLoadTrafficTask(victim); err != nil {
+		log.Logger.Warningf("Failed to enqueue load traffic task: victim_id=%d user_id=%d team_id=%d challenge_id=%d error=%v", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID, err)
+	}
 	ret = db.WithTransaction(func(tx *db.Tx) model.RetVal {
 		if ret = db.InitVictimRepo(tx).Update(victim.ID, db.UpdateVictimOptions{
 			Duration: new(time.Now().Sub(victim.Start)),
