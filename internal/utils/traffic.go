@@ -8,6 +8,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
@@ -16,6 +17,7 @@ import (
 	"github.com/gopacket/gopacket"
 	"github.com/gopacket/gopacket/layers"
 	"github.com/gopacket/gopacket/pcap"
+	"github.com/gopacket/gopacket/pcapgo"
 	pp "github.com/pires/go-proxyproto"
 )
 
@@ -101,35 +103,112 @@ func ReadPcapFile(path string) ([]Connection, error) {
 	var connections []Connection
 	var firstPacketTime time.Time
 	for packet := range traffic.Packets() {
-		connection := Connection{Size: packet.Metadata().CaptureLength, Time: packet.Metadata().Timestamp}
+		connection, ok := extractTrafficConnection(packet, processLookup)
+		if !ok {
+			continue
+		}
 		if firstPacketTime.IsZero() {
 			firstPacketTime = packet.Metadata().Timestamp
 		}
 		connection.TimeShift = packet.Metadata().Timestamp.Sub(firstPacketTime)
-		src, dst, srcPort, dstPort, baseLayerIndex, ok := extractTrafficEndpoints(packet)
-		if !ok {
-			continue
-		}
-		connection.SrcIP = src
-		connection.DstIP = dst
-		connection.SrcPort = srcPort
-		connection.DstPort = dstPort
-		connection.Type, connection.Subtype = extractTrafficProtocols(packet, baseLayerIndex)
-		connection.Process = findTrafficProcess(processLookup, connection)
-		if transport := packet.TransportLayer(); transport != nil {
-			if header, readErr := pp.Read(bufio.NewReader(bytes.NewReader(transport.LayerPayload()))); readErr == nil {
-				srcIP, _, srcErr := net.SplitHostPort(header.SourceAddr.String())
-				dstIP, _, dstErr := net.SplitHostPort(header.DestinationAddr.String())
-				if srcErr == nil && dstErr == nil {
-					connection.SrcIP = srcIP
-					connection.DstIP = dstIP
-					connection.Subtype = "Proxy"
-				}
-			}
-		}
 		connections = append(connections, connection)
 	}
 	return connections, nil
+}
+
+func EnrichPcap(pcapPath, jsonlPath, outputPath string) error {
+	handle, err := pcap.OpenOffline(pcapPath)
+	if err != nil {
+		return err
+	}
+	defer handle.Close()
+
+	processLookup, err := loadTrafficProcessLookup(jsonlPath)
+	if err != nil {
+		return err
+	}
+
+	file, err := os.Create(outputPath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	writer, err := pcapgo.NewNgWriter(file, handle.LinkType())
+	if err != nil {
+		return err
+	}
+
+	traffic := gopacket.NewPacketSource(handle, handle.LinkType())
+	for packet := range traffic.Packets() {
+		connection, _ := extractTrafficConnection(packet, processLookup)
+		options := pcapgo.NgPacketOptions{}
+		if comment := buildTrafficProcessComment(connection.Process); comment != "" {
+			options.Comments = []string{comment}
+		}
+		if err = writer.WritePacketWithOptions(packet.Metadata().CaptureInfo, packet.Data(), options); err != nil {
+			return err
+		}
+	}
+	return writer.Flush()
+}
+
+func extractTrafficConnection(packet gopacket.Packet, processLookup trafficProcessLookup) (Connection, bool) {
+	connection := Connection{Size: packet.Metadata().CaptureLength, Time: packet.Metadata().Timestamp}
+	src, dst, srcPort, dstPort, baseLayerIndex, ok := extractTrafficEndpoints(packet)
+	if !ok {
+		return Connection{}, false
+	}
+	connection.SrcIP = src
+	connection.DstIP = dst
+	connection.SrcPort = srcPort
+	connection.DstPort = dstPort
+	connection.Type, connection.Subtype = extractTrafficProtocols(packet, baseLayerIndex)
+	connection.Process = findTrafficProcess(processLookup, connection)
+	if transport := packet.TransportLayer(); transport != nil {
+		if header, readErr := pp.Read(bufio.NewReader(bytes.NewReader(transport.LayerPayload()))); readErr == nil {
+			srcIP, _, srcErr := net.SplitHostPort(header.SourceAddr.String())
+			dstIP, _, dstErr := net.SplitHostPort(header.DestinationAddr.String())
+			if srcErr == nil && dstErr == nil {
+				connection.SrcIP = srcIP
+				connection.DstIP = dstIP
+				connection.Subtype = "Proxy"
+			}
+		}
+	}
+	return connection, true
+}
+
+func buildTrafficProcessComment(process *TrafficProcessInfo) string {
+	if process == nil {
+		return ""
+	}
+	parts := make([]string, 0, 8)
+	if process.GeoIPCountryCode != "" {
+		parts = append(parts, "Loc:"+process.GeoIPCountryCode)
+	}
+	if process.GeoIPCity != "" {
+		parts = append(parts, "City:"+process.GeoIPCity)
+	}
+	if process.GeoIPPostalCode != "" {
+		parts = append(parts, "ZIP:"+process.GeoIPPostalCode)
+	}
+	if process.GeoIPASN != nil {
+		parts = append(parts, fmt.Sprintf("AS%d", *process.GeoIPASN))
+	}
+	if process.PID != nil {
+		parts = append(parts, fmt.Sprintf("PID:%d", *process.PID))
+	}
+	if process.ProcessName != "" {
+		parts = append(parts, "Process:"+process.ProcessName)
+	}
+	if process.BytesSent > 0 {
+		parts = append(parts, fmt.Sprintf("Sent:%d", process.BytesSent))
+	}
+	if process.BytesReceived > 0 {
+		parts = append(parts, fmt.Sprintf("Recv:%d", process.BytesReceived))
+	}
+	return strings.Join(parts, " ")
 }
 
 func extractTrafficEndpoints(packet gopacket.Packet) (string, string, string, string, int, bool) {
@@ -438,6 +517,33 @@ func formatTrafficAddrPort(ip, port string) string {
 		return ip
 	}
 	return net.JoinHostPort(ip, port)
+}
+
+func EnrichPcapDir(path string) []error {
+	d, err := os.Stat(path)
+	if err != nil {
+		return []error{err}
+	}
+	if !d.IsDir() {
+		return []error{fmt.Errorf("%s is a file", path)}
+	}
+	dir, err := os.ReadDir(path)
+	if err != nil {
+		return []error{err}
+	}
+	errors := make([]error, 0)
+	for _, file := range dir {
+		if file.IsDir() || (!strings.HasSuffix(file.Name(), ".pcap") && !strings.HasSuffix(file.Name(), ".pcapng")) {
+			continue
+		}
+		path = filepath.Join(path, file.Name())
+		jsonl := fmt.Sprintf("%s.connections.jsonl", path)
+		output := fmt.Sprintf("enrich-%s", path)
+		if err = EnrichPcap(path, jsonl, output); err != nil {
+			errors = append(errors, err)
+		}
+	}
+	return errors
 }
 
 func ReadPcapDir(path string) ([]Connection, error) {
