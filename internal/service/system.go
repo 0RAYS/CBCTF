@@ -98,6 +98,7 @@ func UpdateSystemSettings(tx *gorm.DB, form dto.UpdateSettingForm) model.RetVal 
 		model.AsyncQLogLevelSettingKey:       form.AsyncQLogLevel,
 		model.AsyncQConcurrencySettingKey:    form.AsyncQConcurrency,
 		model.AsyncQVictimConcurrencyKey:     form.AsyncQVictimConcurrency,
+		model.AsyncQTrafficConcurrencyKey:    form.AsyncQTrafficConcurrency,
 		model.AsyncQGeneratorConcurrencyKey:  form.AsyncQGeneratorConcurrency,
 		model.AsyncQAttachmentConcurrencyKey: form.AsyncQAttachmentConcurrency,
 		model.AsyncQEmailConcurrencyKey:      form.AsyncQEmailConcurrency,

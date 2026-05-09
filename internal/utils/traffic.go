@@ -3,6 +3,7 @@ package utils
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -83,6 +84,10 @@ type trafficProcessKey struct {
 }
 
 func ReadPcapFile(path string) ([]Connection, error) {
+	return ReadPcapFileWithContext(context.Background(), path)
+}
+
+func ReadPcapFileWithContext(ctx context.Context, path string) ([]Connection, error) {
 	file, err := os.Stat(path)
 	if err != nil {
 		return nil, err
@@ -103,6 +108,9 @@ func ReadPcapFile(path string) ([]Connection, error) {
 	var connections []Connection
 	var firstPacketTime time.Time
 	for packet := range traffic.Packets() {
+		if err = ctx.Err(); err != nil {
+			return nil, err
+		}
 		connection, ok := extractTrafficConnection(packet, processLookup)
 		if !ok {
 			continue
@@ -117,6 +125,10 @@ func ReadPcapFile(path string) ([]Connection, error) {
 }
 
 func EnrichPcap(pcapPath, jsonlPath, outputPath string) error {
+	return EnrichPcapWithContext(context.Background(), pcapPath, jsonlPath, outputPath)
+}
+
+func EnrichPcapWithContext(ctx context.Context, pcapPath, jsonlPath, outputPath string) error {
 	handle, err := pcap.OpenOffline(pcapPath)
 	if err != nil {
 		return err
@@ -141,6 +153,9 @@ func EnrichPcap(pcapPath, jsonlPath, outputPath string) error {
 
 	traffic := gopacket.NewPacketSource(handle, handle.LinkType())
 	for packet := range traffic.Packets() {
+		if err = ctx.Err(); err != nil {
+			return err
+		}
 		connection, _ := extractTrafficConnection(packet, processLookup)
 		options := pcapgo.NgPacketOptions{}
 		if comment := buildTrafficProcessComment(connection.Process); comment != "" {
@@ -515,6 +530,10 @@ func formatTrafficAddrPort(ip, port string) string {
 }
 
 func EnrichPcapDir(path string) []error {
+	return EnrichPcapDirWithContext(context.Background(), path)
+}
+
+func EnrichPcapDirWithContext(ctx context.Context, path string) []error {
 	d, err := os.Stat(path)
 	if err != nil {
 		return []error{err}
@@ -528,13 +547,16 @@ func EnrichPcapDir(path string) []error {
 	}
 	errors := make([]error, 0)
 	for _, file := range dir {
+		if err = ctx.Err(); err != nil {
+			return append(errors, err)
+		}
 		if file.IsDir() || (!strings.HasSuffix(file.Name(), ".pcap") && !strings.HasSuffix(file.Name(), ".pcapng")) {
 			continue
 		}
-		path = filepath.Join(path, file.Name())
-		jsonl := fmt.Sprintf("%s.connections.jsonl", path)
-		output := fmt.Sprintf("enrich-%s", path)
-		if err = EnrichPcap(path, jsonl, output); err != nil {
+		pcapPath := filepath.Join(path, file.Name())
+		jsonl := fmt.Sprintf("%s.connections.jsonl", pcapPath)
+		output := fmt.Sprintf("enrich-%s", pcapPath)
+		if err = EnrichPcapWithContext(ctx, pcapPath, jsonl, output); err != nil {
 			errors = append(errors, err)
 		}
 	}
@@ -542,6 +564,10 @@ func EnrichPcapDir(path string) []error {
 }
 
 func ReadPcapDir(path string) ([]Connection, error) {
+	return ReadPcapDirWithContext(context.Background(), path)
+}
+
+func ReadPcapDirWithContext(ctx context.Context, path string) ([]Connection, error) {
 	d, err := os.Stat(path)
 	if err != nil {
 		return nil, err
@@ -555,10 +581,13 @@ func ReadPcapDir(path string) ([]Connection, error) {
 		return nil, err
 	}
 	for _, file := range dir {
+		if err = ctx.Err(); err != nil {
+			return nil, err
+		}
 		if file.IsDir() || (!strings.HasSuffix(file.Name(), ".pcap") && !strings.HasSuffix(file.Name(), ".pcapng")) {
 			continue
 		}
-		packetConnections, readErr := ReadPcapFile(fmt.Sprintf("%s/%s", path, file.Name()))
+		packetConnections, readErr := ReadPcapFileWithContext(ctx, fmt.Sprintf("%s/%s", path, file.Name()))
 		if readErr != nil {
 			continue
 		}

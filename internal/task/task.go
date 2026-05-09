@@ -57,6 +57,7 @@ func Init() {
 	}
 	addServer(startVictimTaskType, config.Env.AsyncQ.Queues.Victim)
 	addServer(stopVictimTaskType, config.Env.AsyncQ.Queues.Victim)
+	addServer(loadTrafficTaskType, config.Env.AsyncQ.Queues.Traffic)
 	addServer(startGeneratorTaskType, config.Env.AsyncQ.Queues.Generator)
 	addServer(stopGeneratorTaskType, config.Env.AsyncQ.Queues.Generator)
 	addServer(genAttachmentTaskType, config.Env.AsyncQ.Queues.Attachment)
@@ -70,6 +71,7 @@ func Init() {
 	mux.HandleFunc(genAttachmentTaskType, wrapHandler(genAttachmentTaskType, HandleGenAttachmentTask))
 	mux.HandleFunc(startVictimTaskType, wrapHandler(startVictimTaskType, HandleStartVictimTask))
 	mux.HandleFunc(stopVictimTaskType, wrapHandler(stopVictimTaskType, HandleStopVictimTask))
+	mux.HandleFunc(loadTrafficTaskType, wrapHandler(loadTrafficTaskType, HandleLoadTrafficTask))
 	mux.HandleFunc(webhookTaskType, wrapHandler(webhookTaskType, HandleWebhookTask))
 	mux.HandleFunc(resizeImageTaskType, wrapHandler(resizeImageTaskType, HandleResizeImageTask))
 }

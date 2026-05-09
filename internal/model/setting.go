@@ -14,6 +14,7 @@ const (
 	AsyncQLogLevelSettingKey       = "asynq.log.level"
 	AsyncQConcurrencySettingKey    = "asynq.concurrency"
 	AsyncQVictimConcurrencyKey     = "asynq.queues.victim"
+	AsyncQTrafficConcurrencyKey    = "asynq.queues.traffic"
 	AsyncQGeneratorConcurrencyKey  = "asynq.queues.generator"
 	AsyncQAttachmentConcurrencyKey = "asynq.queues.attachment"
 	AsyncQEmailConcurrencyKey      = "asynq.queues.email"

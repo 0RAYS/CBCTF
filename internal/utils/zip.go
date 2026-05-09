@@ -2,12 +2,17 @@ package utils
 
 import (
 	"archive/zip"
+	"context"
 	"io"
 	"os"
 	"path/filepath"
 )
 
 func Zip(src string, destZip string) error {
+	return ZipWithContext(context.Background(), src, destZip)
+}
+
+func ZipWithContext(ctx context.Context, src string, destZip string) error {
 	zipFile, err := os.Create(destZip)
 	if err != nil {
 		return err
@@ -21,6 +26,9 @@ func Zip(src string, destZip string) error {
 	}()
 
 	return filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+		if err = ctx.Err(); err != nil {
+			return err
+		}
 		if err != nil {
 			return err
 		}
@@ -49,7 +57,19 @@ func Zip(src string, destZip string) error {
 		if err != nil {
 			return err
 		}
-		_, err = io.Copy(w, f)
+		_, err = io.Copy(w, contextReader{ctx: ctx, reader: f})
 		return err
 	})
+}
+
+type contextReader struct {
+	ctx    context.Context
+	reader io.Reader
+}
+
+func (r contextReader) Read(p []byte) (int, error) {
+	if err := r.ctx.Err(); err != nil {
+		return 0, err
+	}
+	return r.reader.Read(p)
 }

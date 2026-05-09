@@ -88,6 +88,7 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 		{Key: model.AsyncQLogLevelSettingKey, Value: model.SettingValue{V: config.Env.AsyncQ.Log.Level}},
 		{Key: model.AsyncQConcurrencySettingKey, Value: model.SettingValue{V: config.Env.AsyncQ.Concurrency}},
 		{Key: model.AsyncQVictimConcurrencyKey, Value: model.SettingValue{V: config.Env.AsyncQ.Queues.Victim}},
+		{Key: model.AsyncQTrafficConcurrencyKey, Value: model.SettingValue{V: config.Env.AsyncQ.Queues.Traffic}},
 		{Key: model.AsyncQGeneratorConcurrencyKey, Value: model.SettingValue{V: config.Env.AsyncQ.Queues.Generator}},
 		{Key: model.AsyncQAttachmentConcurrencyKey, Value: model.SettingValue{V: config.Env.AsyncQ.Queues.Attachment}},
 		{Key: model.AsyncQEmailConcurrencyKey, Value: model.SettingValue{V: config.Env.AsyncQ.Queues.Email}},
@@ -166,6 +167,9 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 		return ret
 	}
 	if config.Env.AsyncQ.Queues.Victim, ret = GetValue[int](s, model.AsyncQVictimConcurrencyKey); !ret.OK {
+		return ret
+	}
+	if config.Env.AsyncQ.Queues.Traffic, ret = GetValue[int](s, model.AsyncQTrafficConcurrencyKey); !ret.OK {
 		return ret
 	}
 	if config.Env.AsyncQ.Queues.Generator, ret = GetValue[int](s, model.AsyncQGeneratorConcurrencyKey); !ret.OK {
