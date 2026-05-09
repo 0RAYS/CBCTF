@@ -29,6 +29,7 @@ type trafficNodeAggregate struct {
 	Packets       int64
 	Connections   int64
 	protocolBytes map[string]int64
+	processes     map[string]*trafficProcessAggregate
 }
 
 type trafficEdgeAggregate struct {
@@ -42,6 +43,13 @@ type trafficEdgeAggregate struct {
 	Connections   int64
 	protocolBytes map[string]int64
 	appBytes      map[string]int64
+	processes     map[string]*trafficProcessAggregate
+}
+
+type trafficProcessAggregate struct {
+	Info    utils.TrafficProcessInfo
+	Bytes   int64
+	Packets int64
 }
 
 type trafficBucketAggregate struct {
@@ -60,7 +68,9 @@ type trafficRankingAggregate struct {
 	Connections   int64
 	DominantProto string
 	DominantApp   string
+	DominantProc  string
 	Direction     string
+	Processes     []resp.TrafficProcessResp
 }
 
 const DefaultTrafficDurationMs int64 = 1000
@@ -119,6 +129,7 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 				Kind:          trafficEdgeKind(srcInternal, dstInternal),
 				protocolBytes: make(map[string]int64),
 				appBytes:      make(map[string]int64),
+				processes:     make(map[string]*trafficProcessAggregate),
 			}
 			edges[edgeID] = edge
 		}
@@ -127,6 +138,7 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 		edge.Connections++
 		edge.protocolBytes[protocol] += packetBytes
 		edge.appBytes[app] += packetBytes
+		addTrafficProcess(edge.processes, connection.Process, packetBytes)
 
 		for _, ip := range []string{connection.SrcIP, connection.DstIP} {
 			node := nodes[ip]
@@ -139,6 +151,7 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 					Side:          trafficNodeSide(ip, srcInternal, dstInternal, internalIPs),
 					Zone:          trafficNodeZone(ip, internalIPs),
 					protocolBytes: make(map[string]int64),
+					processes:     make(map[string]*trafficProcessAggregate),
 				}
 				nodes[ip] = node
 			}
@@ -146,6 +159,7 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 			node.Packets++
 			node.Connections++
 			node.protocolBytes[protocol] += packetBytes
+			addTrafficProcess(node.processes, connection.Process, packetBytes)
 		}
 	}
 
@@ -156,6 +170,8 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 	externalNodeCount := 0
 	for _, node := range nodes {
 		protocols := sortTrafficProtocolKeys(node.protocolBytes)
+		processes := buildTrafficProcessResp(node.processes, 4)
+		dominantProc := dominantTrafficProcess(processes)
 		nodeList = append(nodeList, resp.TrafficNodeResp{
 			ID:            node.ID,
 			Label:         node.Label,
@@ -168,6 +184,8 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 			Connections:   node.Connections,
 			Protocols:     protocols,
 			DominantProto: dominantTrafficKey(node.protocolBytes),
+			DominantProc:  dominantProc,
+			Processes:     processes,
 		})
 		if node.Kind == "victim" {
 			internalNodeCount++
@@ -180,6 +198,8 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 				Packets:       node.Packets,
 				Connections:   node.Connections,
 				DominantProto: dominantTrafficKey(node.protocolBytes),
+				DominantProc:  dominantProc,
+				Processes:     processes,
 			})
 		}
 	}
@@ -205,6 +225,8 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 		protocols := sortTrafficProtocolKeys(edge.protocolBytes)
 		dominantProto := dominantTrafficKey(edge.protocolBytes)
 		dominantApp := dominantTrafficKey(edge.appBytes)
+		processes := buildTrafficProcessResp(edge.processes, 4)
+		dominantProc := dominantTrafficProcess(processes)
 		edgeList = append(edgeList, resp.TrafficEdgeResp{
 			ID:            edge.ID,
 			Source:        edge.Source,
@@ -219,6 +241,8 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 			Protocols:     protocols,
 			DominantProto: dominantProto,
 			DominantApp:   dominantApp,
+			DominantProc:  dominantProc,
+			Processes:     processes,
 		})
 		topEdges = append(topEdges, trafficRankingAggregate{
 			Label:         fmt.Sprintf("%s -> %s", edge.Source, edge.Target),
@@ -228,7 +252,9 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 			Connections:   edge.Connections,
 			DominantProto: dominantProto,
 			DominantApp:   dominantApp,
+			DominantProc:  dominantProc,
 			Direction:     edge.Direction,
+			Processes:     processes,
 		})
 	}
 	sort.Slice(edgeList, func(i, j int) bool {
@@ -272,6 +298,7 @@ func GetTraffic(victim model.Victim, form dto.GetTrafficForm) (resp.TrafficTopol
 	summary.ExternalNodes = externalNodeCount
 	summary.VisibleEdges = len(edgeList)
 	summary.VisibleNodes = len(nodeList)
+	summary.ProcessCount = countTrafficProcesses(windowConnections)
 
 	return resp.TrafficTopologyResp{
 		Window: resp.TrafficWindowResp{
@@ -625,6 +652,101 @@ func sortTrafficProtocolKeys(items map[string]int64) []string {
 	return keys
 }
 
+func addTrafficProcess(items map[string]*trafficProcessAggregate, process *utils.TrafficProcessInfo, bytes int64) {
+	if items == nil || process == nil {
+		return
+	}
+	key := trafficProcessKey(*process)
+	if key == "" {
+		return
+	}
+	item := items[key]
+	if item == nil {
+		info := *process
+		item = &trafficProcessAggregate{Info: info}
+		items[key] = item
+	}
+	item.Bytes += bytes
+	item.Packets++
+}
+
+func trafficProcessKey(process utils.TrafficProcessInfo) string {
+	pid := ""
+	if process.PID != nil {
+		pid = fmt.Sprintf("%d", *process.PID)
+	}
+	name := strings.TrimSpace(process.ProcessName)
+	if pid == "" && name == "" {
+		return ""
+	}
+	return pid + ":" + name
+}
+
+func buildTrafficProcessResp(items map[string]*trafficProcessAggregate, limit int) []resp.TrafficProcessResp {
+	if len(items) == 0 {
+		return nil
+	}
+	processes := make([]*trafficProcessAggregate, 0, len(items))
+	for _, item := range items {
+		processes = append(processes, item)
+	}
+	sort.Slice(processes, func(i, j int) bool {
+		if processes[i].Bytes != processes[j].Bytes {
+			return processes[i].Bytes > processes[j].Bytes
+		}
+		return trafficProcessKey(processes[i].Info) < trafficProcessKey(processes[j].Info)
+	})
+	if limit <= 0 || len(processes) < limit {
+		limit = len(processes)
+	}
+	result := make([]resp.TrafficProcessResp, 0, limit)
+	for i := 0; i < limit; i++ {
+		process := processes[i]
+		result = append(result, resp.TrafficProcessResp{
+			PID:              process.Info.PID,
+			ProcessName:      process.Info.ProcessName,
+			Bytes:            process.Bytes,
+			Packets:          process.Packets,
+			BytesSent:        process.Info.BytesSent,
+			BytesReceived:    process.Info.BytesReceived,
+			GeoIPCountryCode: process.Info.GeoIPCountryCode,
+			GeoIPCountryName: process.Info.GeoIPCountryName,
+			GeoIPASN:         process.Info.GeoIPASN,
+			GeoIPASOrg:       process.Info.GeoIPASOrg,
+			GeoIPCity:        process.Info.GeoIPCity,
+			GeoIPPostalCode:  process.Info.GeoIPPostalCode,
+		})
+	}
+	return result
+}
+
+func dominantTrafficProcess(processes []resp.TrafficProcessResp) string {
+	if len(processes) == 0 {
+		return ""
+	}
+	if processes[0].ProcessName != "" {
+		return processes[0].ProcessName
+	}
+	if processes[0].PID != nil {
+		return fmt.Sprintf("PID %d", *processes[0].PID)
+	}
+	return ""
+}
+
+func countTrafficProcesses(connections []utils.Connection) int {
+	seen := make(map[string]bool)
+	for _, connection := range connections {
+		if connection.Process == nil {
+			continue
+		}
+		key := trafficProcessKey(*connection.Process)
+		if key != "" {
+			seen[key] = true
+		}
+	}
+	return len(seen)
+}
+
 func trafficIntensity(bytes, maxBytes int64) float64 {
 	if maxBytes <= 0 {
 		return 0
@@ -701,7 +823,9 @@ func buildTrafficRankingResp(items []trafficRankingAggregate, limit int) []resp.
 			Connections:   item.Connections,
 			DominantProto: item.DominantProto,
 			DominantApp:   item.DominantApp,
+			DominantProc:  item.DominantProc,
 			Direction:     item.Direction,
+			Processes:     item.Processes,
 		})
 	}
 	return result

@@ -3,10 +3,13 @@ package utils
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -21,9 +24,60 @@ type Connection struct {
 	Time      time.Time
 	SrcIP     string
 	DstIP     string
+	SrcPort   string
+	DstPort   string
 	Type      string
 	Subtype   string
 	Size      int
+	Process   *TrafficProcessInfo
+}
+
+type TrafficProcessInfo struct {
+	PID              *int64 `json:"pid,omitempty"`
+	ProcessName      string `json:"process_name,omitempty"`
+	BytesSent        int64  `json:"bytes_sent,omitempty"`
+	BytesReceived    int64  `json:"bytes_received,omitempty"`
+	GeoIPCountryCode string `json:"geoip_country_code,omitempty"`
+	GeoIPCountryName string `json:"geoip_country_name,omitempty"`
+	GeoIPASN         *int64 `json:"geoip_asn,omitempty"`
+	GeoIPASOrg       string `json:"geoip_as_org,omitempty"`
+	GeoIPCity        string `json:"geoip_city,omitempty"`
+	GeoIPPostalCode  string `json:"geoip_postal_code,omitempty"`
+	FirstSeen        *int64 `json:"first_seen,omitempty"`
+	LastSeen         *int64 `json:"last_seen,omitempty"`
+	matchFirstSeen   *time.Time
+	matchLastSeen    *time.Time
+}
+
+type trafficConnectionSidecar struct {
+	Protocol         string            `json:"protocol"`
+	LocalAddr        string            `json:"local_addr"`
+	RemoteAddr       string            `json:"remote_addr"`
+	PID              any               `json:"pid"`
+	ProcessName      string            `json:"process_name"`
+	FirstSeen        trafficSystemTime `json:"first_seen"`
+	LastSeen         trafficSystemTime `json:"last_seen"`
+	BytesSent        int64             `json:"bytes_sent"`
+	BytesReceived    int64             `json:"bytes_received"`
+	GeoIPCountryCode string            `json:"geoip_country_code"`
+	GeoIPCountryName string            `json:"geoip_country_name"`
+	GeoIPASN         any               `json:"geoip_asn"`
+	GeoIPASOrg       string            `json:"geoip_as_org"`
+	GeoIPCity        string            `json:"geoip_city"`
+	GeoIPPostalCode  string            `json:"geoip_postal_code"`
+}
+
+type trafficSystemTime struct {
+	Secs  int64 `json:"secs_since_epoch"`
+	Nanos int64 `json:"nanos_since_epoch"`
+}
+
+type trafficProcessLookup map[trafficProcessKey][]TrafficProcessInfo
+
+type trafficProcessKey struct {
+	Protocol string
+	Local    string
+	Remote   string
 }
 
 func ReadPcapFile(path string) ([]Connection, error) {
@@ -40,6 +94,10 @@ func ReadPcapFile(path string) ([]Connection, error) {
 	}
 	defer handle.Close()
 	traffic := gopacket.NewPacketSource(handle, handle.LinkType())
+	processLookup, err := loadTrafficProcessLookup(path + ".connections.jsonl")
+	if err != nil {
+		return nil, err
+	}
 	var connections []Connection
 	var firstPacketTime time.Time
 	for packet := range traffic.Packets() {
@@ -48,13 +106,16 @@ func ReadPcapFile(path string) ([]Connection, error) {
 			firstPacketTime = packet.Metadata().Timestamp
 		}
 		connection.TimeShift = packet.Metadata().Timestamp.Sub(firstPacketTime)
-		src, dst, baseLayerIndex, ok := extractTrafficEndpoints(packet)
+		src, dst, srcPort, dstPort, baseLayerIndex, ok := extractTrafficEndpoints(packet)
 		if !ok {
 			continue
 		}
 		connection.SrcIP = src
 		connection.DstIP = dst
+		connection.SrcPort = srcPort
+		connection.DstPort = dstPort
 		connection.Type, connection.Subtype = extractTrafficProtocols(packet, baseLayerIndex)
+		connection.Process = findTrafficProcess(processLookup, connection)
 		if transport := packet.TransportLayer(); transport != nil {
 			if header, readErr := pp.Read(bufio.NewReader(bytes.NewReader(transport.LayerPayload()))); readErr == nil {
 				srcIP, _, srcErr := net.SplitHostPort(header.SourceAddr.String())
@@ -71,14 +132,14 @@ func ReadPcapFile(path string) ([]Connection, error) {
 	return connections, nil
 }
 
-func extractTrafficEndpoints(packet gopacket.Packet) (string, string, int, bool) {
+func extractTrafficEndpoints(packet gopacket.Packet) (string, string, string, string, int, bool) {
 	layersL := packet.Layers()
 	if arpLayer := packet.Layer(layers.LayerTypeARP); arpLayer != nil {
 		if arp, ok := arpLayer.(*layers.ARP); ok {
 			src := formatTrafficARPAddress(arp.SourceProtAddress, arp.SourceHwAddress)
 			dst := formatTrafficARPAddress(arp.DstProtAddress, arp.DstHwAddress)
 			if src != "" && dst != "" {
-				return src, dst, findTrafficLayerIndex(layersL, arp.LayerType()), true
+				return src, dst, "", "", findTrafficLayerIndex(layersL, arp.LayerType()), true
 			}
 		}
 	}
@@ -86,17 +147,32 @@ func extractTrafficEndpoints(packet gopacket.Packet) (string, string, int, bool)
 		src := formatTrafficEndpoint(network.NetworkFlow().Src())
 		dst := formatTrafficEndpoint(network.NetworkFlow().Dst())
 		if src != "" && dst != "" {
-			return src, dst, findTrafficLayerIndex(layersL, network.LayerType()), true
+			srcPort, dstPort := extractTrafficPorts(packet)
+			return src, dst, srcPort, dstPort, findTrafficLayerIndex(layersL, network.LayerType()), true
 		}
 	}
 	if link := packet.LinkLayer(); link != nil {
 		src := formatTrafficEndpoint(link.LinkFlow().Src())
 		dst := formatTrafficEndpoint(link.LinkFlow().Dst())
 		if src != "" && dst != "" {
-			return src, dst, findTrafficLayerIndex(layersL, link.LayerType()), true
+			return src, dst, "", "", findTrafficLayerIndex(layersL, link.LayerType()), true
 		}
 	}
-	return "", "", -1, false
+	return "", "", "", "", -1, false
+}
+
+func extractTrafficPorts(packet gopacket.Packet) (string, string) {
+	if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {
+		if tcp, ok := tcpLayer.(*layers.TCP); ok {
+			return fmt.Sprintf("%d", tcp.SrcPort), fmt.Sprintf("%d", tcp.DstPort)
+		}
+	}
+	if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
+		if udp, ok := udpLayer.(*layers.UDP); ok {
+			return fmt.Sprintf("%d", udp.SrcPort), fmt.Sprintf("%d", udp.DstPort)
+		}
+	}
+	return "", ""
 }
 
 func formatTrafficARPAddress(protocolAddress, hardwareAddress []byte) string {
@@ -178,6 +254,190 @@ func findTrafficLayerIndex(layersL []gopacket.Layer, target gopacket.LayerType) 
 		}
 	}
 	return -1
+}
+
+func loadTrafficProcessLookup(path string) (trafficProcessLookup, error) {
+	lookup := make(trafficProcessLookup)
+	file, err := os.Open(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return lookup, nil
+		}
+		return nil, err
+	}
+	defer func(file *os.File) {
+		_ = file.Close()
+	}(file)
+
+	reader := bufio.NewReader(file)
+	for {
+		line, readErr := reader.ReadString('\n')
+		line = strings.TrimSpace(line)
+		if line != "" {
+			var sidecar trafficConnectionSidecar
+			if err = json.Unmarshal([]byte(line), &sidecar); err != nil {
+				return nil, fmt.Errorf("read traffic sidecar %s: %w", path, err)
+			}
+			info := sidecar.toProcessInfo()
+			protocol := strings.ToUpper(strings.TrimSpace(sidecar.Protocol))
+			local := strings.TrimSpace(sidecar.LocalAddr)
+			remote := strings.TrimSpace(sidecar.RemoteAddr)
+			if protocol != "" && local != "" && remote != "" {
+				for _, key := range []trafficProcessKey{
+					{Protocol: protocol, Local: local, Remote: remote},
+					{Protocol: protocol, Local: remote, Remote: local},
+				} {
+					lookup[key] = append(lookup[key], info)
+				}
+			}
+		}
+		if readErr != nil {
+			if readErr == io.EOF {
+				break
+			}
+			return nil, readErr
+		}
+	}
+	return lookup, nil
+}
+
+func (sidecar trafficConnectionSidecar) toProcessInfo() TrafficProcessInfo {
+	firstSeen := sidecar.FirstSeen.toTime()
+	lastSeen := sidecar.LastSeen.toTime()
+	return TrafficProcessInfo{
+		PID:              parseTrafficInt(sidecar.PID),
+		ProcessName:      sidecar.ProcessName,
+		BytesSent:        sidecar.BytesSent,
+		BytesReceived:    sidecar.BytesReceived,
+		GeoIPCountryCode: sidecar.GeoIPCountryCode,
+		GeoIPCountryName: sidecar.GeoIPCountryName,
+		GeoIPASN:         parseTrafficInt(sidecar.GeoIPASN),
+		GeoIPASOrg:       sidecar.GeoIPASOrg,
+		GeoIPCity:        sidecar.GeoIPCity,
+		GeoIPPostalCode:  sidecar.GeoIPPostalCode,
+		FirstSeen:        timePtrToUnixNano(firstSeen),
+		LastSeen:         timePtrToUnixNano(lastSeen),
+		matchFirstSeen:   firstSeen,
+		matchLastSeen:    lastSeen,
+	}
+}
+
+func (st trafficSystemTime) toTime() *time.Time {
+	if st.Secs == 0 && st.Nanos == 0 {
+		return nil
+	}
+	value := time.Unix(st.Secs, st.Nanos)
+	return &value
+}
+
+func timePtrToUnixNano(value *time.Time) *int64 {
+	if value == nil {
+		return nil
+	}
+	nano := value.UnixNano()
+	return &nano
+}
+
+func parseTrafficInt(value any) *int64 {
+	switch typed := value.(type) {
+	case nil:
+		return nil
+	case float64:
+		result := int64(typed)
+		return &result
+	case int64:
+		result := typed
+		return &result
+	case int:
+		result := int64(typed)
+		return &result
+	case string:
+		if typed == "" {
+			return nil
+		}
+		parsed, err := strconv.ParseInt(typed, 10, 64)
+		if err != nil {
+			return nil
+		}
+		return &parsed
+	default:
+		return nil
+	}
+}
+
+func findTrafficProcess(lookup trafficProcessLookup, connection Connection) *TrafficProcessInfo {
+	if len(lookup) == 0 {
+		return nil
+	}
+	protocol := strings.ToUpper(strings.TrimSpace(connection.Type))
+	if protocol == "IPV4" || protocol == "IPV6" || protocol == "IP" {
+		protocol = strings.ToUpper(strings.TrimSpace(connection.Subtype))
+	}
+	if protocol == "" {
+		return nil
+	}
+	keys := []trafficProcessKey{
+		{
+			Protocol: protocol,
+			Local:    formatTrafficAddrPort(connection.SrcIP, connection.SrcPort),
+			Remote:   formatTrafficAddrPort(connection.DstIP, connection.DstPort),
+		},
+	}
+	if connection.SrcPort == "" || connection.DstPort == "" {
+		keys = append(keys, trafficProcessKey{Protocol: protocol, Local: connection.SrcIP, Remote: connection.DstIP})
+	}
+	for _, key := range keys {
+		if match := findTrafficProcessByKey(lookup, key, connection.Time); match != nil {
+			return match
+		}
+	}
+	return nil
+}
+
+func findTrafficProcessByKey(lookup trafficProcessLookup, key trafficProcessKey, packetTime time.Time) *TrafficProcessInfo {
+	matches := lookup[key]
+	if len(matches) == 0 {
+		return nil
+	}
+	const slack = 2 * time.Second
+	var fallback *TrafficProcessInfo
+	var best *TrafficProcessInfo
+	bestScore := time.Duration(1<<63 - 1)
+	for i := range matches {
+		match := &matches[i]
+		if match.matchFirstSeen == nil || match.matchLastSeen == nil {
+			if fallback == nil {
+				fallback = match
+			}
+			continue
+		}
+		first := match.matchFirstSeen.Add(-slack)
+		last := match.matchLastSeen.Add(slack)
+		if packetTime.Before(first) || packetTime.After(last) {
+			continue
+		}
+		score := time.Duration(0)
+		if packetTime.Before(*match.matchFirstSeen) {
+			score = match.matchFirstSeen.Sub(packetTime)
+		} else if packetTime.After(*match.matchLastSeen) {
+			score = packetTime.Sub(*match.matchLastSeen)
+		}
+		if score < bestScore {
+			bestScore = score
+			best = match
+		}
+	}
+	if best != nil {
+		return best
+	}
+	return fallback
+}
+
+func formatTrafficAddrPort(ip, port string) string {
+	if port == "" {
+		return ip
+	}
+	return net.JoinHostPort(ip, port)
 }
 
 func ReadPcapDir(path string) ([]Connection, error) {

@@ -494,7 +494,8 @@
           "totalTraffic": "Window Traffic",
           "ingress": "Ingress",
           "egress": "Egress",
-          "peers": "Visible Nodes"
+          "peers": "Visible Nodes",
+          "processes": "Processes"
         },
         "canvas": {
           "title": "Topology Canvas",
@@ -525,7 +526,8 @@
           "selectedNode": "Selected Node",
           "nodeLabel": "Node",
           "nodeTraffic": "Traffic",
-          "nodeConnections": "Connections"
+          "nodeConnections": "Connections",
+          "processes": "Processes"
         },
         "timeline": {
           "title": "Timeline",
