@@ -144,7 +144,9 @@ func EnrichPcapWithContext(ctx context.Context, pcapPath, jsonlPath, outputPath 
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func(file *os.File) {
+		_ = file.Close()
+	}(file)
 
 	writer, err := pcapgo.NewNgWriter(file, handle.LinkType())
 	if err != nil {
@@ -529,10 +531,6 @@ func formatTrafficAddrPort(ip, port string) string {
 	return net.JoinHostPort(ip, port)
 }
 
-func EnrichPcapDir(path string) []error {
-	return EnrichPcapDirWithContext(context.Background(), path)
-}
-
 func EnrichPcapDirWithContext(ctx context.Context, path string) []error {
 	d, err := os.Stat(path)
 	if err != nil {
@@ -555,7 +553,7 @@ func EnrichPcapDirWithContext(ctx context.Context, path string) []error {
 		}
 		pcapPath := filepath.Join(path, file.Name())
 		jsonl := fmt.Sprintf("%s.connections.jsonl", pcapPath)
-		output := fmt.Sprintf("enrich-%s", pcapPath)
+		output := fmt.Sprintf("%s.enrich.pcap", pcapPath)
 		if err = EnrichPcapWithContext(ctx, pcapPath, jsonl, output); err != nil {
 			errors = append(errors, err)
 		}
