@@ -73,7 +73,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				{
 					Name:    "capture",
 					Image:   config.Env.K8S.CaptureImage,
-					Command: []string{"/bin/sh", "-c", fmt.Sprintf("tcpdump -i any -w /root/mnt/pod-%s.pcap", pod.Name)},
+					Command: []string{"/bin/sh", "-c", fmt.Sprintf("rustnet -i any --pcap-export /root/mnt/pod-%s.pcap", pod.Name)},
 					VolumeMounts: []corev1.VolumeMount{
 						{
 							Name:      nfsVolumeName,
@@ -81,6 +81,11 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 							SubPath: strings.TrimPrefix(
 								strings.TrimPrefix(victim.TrafficBasePath(), config.Env.Path), "/",
 							),
+						},
+					},
+					SecurityContext: &corev1.SecurityContext{
+						Capabilities: &corev1.Capabilities{
+							Add: []corev1.Capability{"NET_RAW", "SYS_ADMIN"},
 						},
 					},
 				},
