@@ -37,7 +37,7 @@ func EnqueueStartVictimTask(victim model.Victim) (*asynq.TaskInfo, error) {
 	return info, err
 }
 
-func HandleStartVictimTask(_ context.Context, t *asynq.Task) error {
+func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 	var payload StartVictimPayload
 	if err := msgpack.Unmarshal(t.Payload(), &payload); err != nil {
 		return err
@@ -64,7 +64,7 @@ func HandleStartVictimTask(_ context.Context, t *asynq.Task) error {
 			return fmt.Errorf("update victim failed: %s", ret.Msg)
 		}
 		log.Logger.Infof("Starting victim provisioning: victim_id=%d user_id=%d team_id=%d challenge_id=%d", victim.ID, victim.UserID, victim.TeamID.V, victim.ChallengeID)
-		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Minute)
+		ctx, cancel := context.WithTimeout(ctx, 3*time.Minute)
 		defer cancel()
 		victim, ret = k8s.StartVictim(ctx, victim)
 		if !ret.OK {
