@@ -21,7 +21,7 @@ func GetAllowQueryModels() map[string]view.SearchModelView {
 	data := make(map[string]view.SearchModelView)
 	for _, m := range searchableModels {
 		if fields := model.QueryFields(m); len(fields) > 0 {
-			data[model.ModelName(m)] = view.SearchModelView{
+			data[model.Name(m)] = view.SearchModelView{
 				Query:  fields,
 				Search: model.SearchFields(m),
 			}
@@ -38,7 +38,7 @@ func SearchModels(form dto.SearchModelsForm) (any, int64, model.RetVal) {
 		found        bool
 	)
 	for _, m = range searchableModels {
-		if queryFields = model.QueryFields(m); len(queryFields) > 0 && model.ModelName(m) == form.Model {
+		if queryFields = model.QueryFields(m); len(queryFields) > 0 && model.Name(m) == form.Model {
 			searchFields = model.SearchFields(m)
 			found = true
 			break

@@ -79,7 +79,7 @@ func (d *DeviceRepo) ListSharedContestDevices(contestID uint, start, end time.Ti
 		Scan(&rows)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to list shared contest devices: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.ModelName(model.Device{}), "Error": res.Error.Error()}}
+		return nil, model.RetVal{Msg: i18n.Model.GetError, Attr: map[string]any{"Model": model.Name(model.Device{}), "Error": res.Error.Error()}}
 	}
 	return rows, model.SuccessRetVal()
 }

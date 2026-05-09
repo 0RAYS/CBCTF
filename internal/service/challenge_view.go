@@ -27,7 +27,7 @@ func BuildChallengeView(tx *gorm.DB, challenge model.Challenge) view.ChallengeVi
 
 	file, _ := db.InitFileRepo(tx).Get(db.GetOptions{
 		Conditions: map[string]any{
-			"model":    model.ModelName(challenge),
+			"model":    model.Name(challenge),
 			"model_id": challenge.ID,
 			"type":     model.ChallengeFileType,
 		},
@@ -46,10 +46,6 @@ func BuildChallengeViews(tx *gorm.DB, challenges []model.Challenge) []view.Chall
 
 func GetChallengeView(tx *gorm.DB, challenge model.Challenge) view.ChallengeView {
 	return BuildChallengeView(tx, challenge)
-}
-
-func GetSimpleChallengeView(challenge model.Challenge) view.SimpleChallengeView {
-	return view.SimpleChallengeView{Challenge: challenge}
 }
 
 func ListChallengeViews(tx *gorm.DB, form dto.GetChallengesForm) ([]view.ChallengeView, int64, model.RetVal) {

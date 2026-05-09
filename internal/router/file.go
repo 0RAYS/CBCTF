@@ -74,19 +74,19 @@ func UploadPicture(v string) gin.HandlerFunc {
 		switch v {
 		case "self":
 			id = middleware.GetSelf(ctx).ID
-			modelName = model.ModelName(model.User{})
+			modelName = model.Name(model.User{})
 		case "user":
 			id = middleware.GetUser(ctx).ID
-			modelName = model.ModelName(model.User{})
+			modelName = model.Name(model.User{})
 		case "contest":
 			id = middleware.GetContest(ctx).ID
-			modelName = model.ModelName(model.Contest{})
+			modelName = model.Name(model.Contest{})
 		case "team":
 			id = middleware.GetTeam(ctx).ID
-			modelName = model.ModelName(model.Team{})
+			modelName = model.Name(model.Team{})
 		case "oauth":
 			id = middleware.GetOauth(ctx).ID
-			modelName = model.ModelName(model.Oauth{})
+			modelName = model.Name(model.Oauth{})
 		case "branding":
 			var ret model.RetVal
 			id, ret = service.GetDefaultBrandingID(db.DB)
@@ -94,7 +94,7 @@ func UploadPicture(v string) gin.HandlerFunc {
 				resp.JSON(ctx, ret)
 				return
 			}
-			modelName = model.ModelName(model.Branding{})
+			modelName = model.Name(model.Branding{})
 		}
 		record, ret := service.SavePicture(db.DB, modelName, id, file)
 		if !ret.OK {

@@ -83,22 +83,6 @@ func (c UpdateContestFlagOptions) Convert2Map() map[string]any {
 	return options
 }
 
-type DiffUpdateContestFlagOptions struct {
-	CurrentScore float64
-	Solvers      int64
-}
-
-func (d DiffUpdateContestFlagOptions) Convert2Expr() map[string]any {
-	options := make(map[string]any)
-	if d.CurrentScore != 0 {
-		options["current_score"] = gorm.Expr("current_score + ?", d.CurrentScore)
-	}
-	if d.Solvers != 0 {
-		options["solvers"] = gorm.Expr("solvers + ?", d.Solvers)
-	}
-	return options
-}
-
 func InitContestFlagRepo(tx *gorm.DB) *ContestFlagRepo {
 	return &ContestFlagRepo{
 		BaseRepo: BaseRepo[model.ContestFlag]{

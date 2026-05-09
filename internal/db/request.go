@@ -53,7 +53,7 @@ func InitRequestRepo(tx *gorm.DB) *RequestRepo {
 func (r *RequestRepo) Insert(requests ...model.Request) model.RetVal {
 	if res := r.DB.CreateInBatches(requests, len(requests)); res.Error != nil {
 		log.Logger.Warningf("Failed to create requests: %s", res.Error)
-		return model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.ModelName(model.Request{}), "Error": res.Error}}
+		return model.RetVal{Msg: i18n.Model.CreateError, Attr: map[string]any{"Model": model.Name(model.Request{}), "Error": res.Error}}
 	}
 	return model.SuccessRetVal()
 }
@@ -100,22 +100,6 @@ func (r *RequestRepo) ListSharedContestUserIPs(contestID uint, start, end time.T
 		Scan(&userIPL)
 	if res.Error != nil {
 		log.Logger.Warningf("Failed to list shared request IPs: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.Request.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	return userIPL, model.SuccessRetVal()
-}
-
-func (r *RequestRepo) GetUserIP(userIDL ...uint) ([]UserIP, model.RetVal) {
-	if len(userIDL) == 0 {
-		return nil, model.SuccessRetVal()
-	}
-	var userIPL []UserIP
-	res := r.DB.Model(&model.Request{}).Select("user_id, ip, MIN(time) AS first_time").
-		Where("user_id IN ?", userIDL).
-		Group("user_id, ip").
-		Scan(&userIPL)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to get Request: %s", res.Error)
 		return nil, model.RetVal{Msg: i18n.Model.Request.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return userIPL, model.SuccessRetVal()

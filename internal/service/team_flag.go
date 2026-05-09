@@ -34,7 +34,7 @@ func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) model.
 					return model.RetVal{
 						Msg: i18n.Model.CreateError,
 						Attr: map[string]any{
-							"Model": model.ModelName(model.TeamFlag{}),
+							"Model": model.Name(model.TeamFlag{}),
 							"Error": fmt.Sprintf("generate attachment failed: %s", ret.Msg),
 						},
 					}
@@ -44,7 +44,7 @@ func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) model.
 					return model.RetVal{
 						Msg: i18n.Model.CreateError,
 						Attr: map[string]any{
-							"Model": model.ModelName(model.TeamFlag{}),
+							"Model": model.Name(model.TeamFlag{}),
 							"Error": err.Error(),
 						},
 					}
@@ -56,7 +56,7 @@ func CreateTeamFlags(tx *gorm.DB, team model.Team, contest model.Contest) model.
 			if ret.Attr == nil {
 				ret.Attr = map[string]any{}
 			}
-			ret.Attr["Model"] = model.ModelName(model.TeamFlag{})
+			ret.Attr["Model"] = model.Name(model.TeamFlag{})
 			if _, ok := ret.Attr["Error"]; !ok {
 				ret.Attr["Error"] = ret.Msg
 			}

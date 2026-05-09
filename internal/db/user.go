@@ -175,10 +175,6 @@ func (u *UserRepo) CountGroupUser(group string) (int64, model.RetVal) {
 	return count, model.SuccessRetVal()
 }
 
-func (u *UserRepo) GetByName(name string, optionsL ...GetOptions) (model.User, model.RetVal) {
-	return u.GetByUniqueField("name", name, optionsL...)
-}
-
 func (u *UserRepo) GetByTeamID(teamID uint, limit, offset int) ([]model.User, model.RetVal) {
 	var users []model.User
 	res := u.DB.Table("users").Select("users.*").
@@ -191,46 +187,6 @@ func (u *UserRepo) GetByTeamID(teamID uint, limit, offset int) ([]model.User, mo
 		return nil, model.RetVal{Msg: i18n.Model.User.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
 	}
 	return users, model.SuccessRetVal()
-}
-
-func (u *UserRepo) GetIDByTeamID(teamID uint, limit, offset int) ([]uint, model.RetVal) {
-	var userIDL []uint
-	res := u.DB.Model(&model.UserTeam{}).
-		Where("team_id = ?", teamID).
-		Limit(limit).Offset(offset).
-		Pluck("user_id", &userIDL)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to get user IDs by team: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.User.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	return userIDL, model.SuccessRetVal()
-}
-
-func (u *UserRepo) GetByContestID(contestID uint, limit, offset int) ([]model.User, model.RetVal) {
-	var users []model.User
-	res := u.DB.Table("users").Select("users.*").
-		Joins("INNER JOIN user_contests ON user_contests.user_id = users.id").
-		Joins("INNER JOIN contests ON user_contests.contest_id = contests.id AND contests.deleted_at IS NULL").
-		Where("user_contests.contest_id = ? AND users.deleted_at IS NULL", contestID).
-		Limit(limit).Offset(offset).Scan(&users)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to get Users: %v", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.User.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	return users, model.SuccessRetVal()
-}
-
-func (u *UserRepo) GetIDByContestID(contestID uint, limit, offset int) ([]uint, model.RetVal) {
-	var userIDL []uint
-	res := u.DB.Model(&model.UserContest{}).
-		Where("contest_id = ?", contestID).
-		Limit(limit).Offset(offset).
-		Pluck("user_id", &userIDL)
-	if res.Error != nil {
-		log.Logger.Warningf("Failed to get user IDs by contest: %s", res.Error)
-		return nil, model.RetVal{Msg: i18n.Model.User.GetError, Attr: map[string]any{"Error": res.Error.Error()}}
-	}
-	return userIDL, model.SuccessRetVal()
 }
 
 func (u *UserRepo) GetByGroupID(groupID uint, limit, offset int) ([]model.User, int64, model.RetVal) {
