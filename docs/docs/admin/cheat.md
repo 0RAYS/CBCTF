@@ -32,9 +32,9 @@ CBCTF 内置多维度自动作弊检测, 管理员可查看、确认或驳回检
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
-| `type` | string | 检测类型（见上） |
+| `type` | string | 处理状态（`suspicious` / `cheater` / `pass`） |
 | `reason` | string | 详细原因描述 |
-| `reason_type` | string | 触发类型（`auto` 自动 / `manual` 手动） |
+| `reason_type` | string | 检测规则类型（`same_device` / `same_web_ip` / `same_victim_ip` / `wrong_flag` / `token_magic`） |
 | `magic` | string | 涉及的设备指纹（仅设备类检测） |
 | `ip` | string | 涉及的 IP 地址 |
 | `time` | datetime | 检测时间 |
