@@ -517,10 +517,8 @@ func trafficDirection(srcInternal, dstInternal bool) string {
 		return "ingress"
 	case srcInternal && !dstInternal:
 		return "egress"
-	case srcInternal && dstInternal:
-		return "internal"
 	default:
-		return "external"
+		return "internal"
 	}
 }
 
