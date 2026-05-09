@@ -405,16 +405,14 @@ func (st trafficSystemTime) toTime() *time.Time {
 	if st.Secs == 0 && st.Nanos == 0 {
 		return nil
 	}
-	value := time.Unix(st.Secs, st.Nanos)
-	return &value
+	return new(time.Unix(st.Secs, st.Nanos))
 }
 
 func timePtrToUnixNano(value *time.Time) *int64 {
 	if value == nil {
 		return nil
 	}
-	nano := value.UnixNano()
-	return &nano
+	return new(value.UnixNano())
 }
 
 func parseTrafficInt(value any) *int64 {
@@ -422,14 +420,11 @@ func parseTrafficInt(value any) *int64 {
 	case nil:
 		return nil
 	case float64:
-		result := int64(typed)
-		return &result
+		return new(int64(typed))
 	case int64:
-		result := typed
-		return &result
+		return new(typed)
 	case int:
-		result := int64(typed)
-		return &result
+		return new(int64(typed))
 	case string:
 		if typed == "" {
 			return nil
