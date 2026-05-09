@@ -38,6 +38,10 @@ export function normalizeConfig(source) {
     source?.asyncq_victim_concurrency,
     fallback(source?.asynq?.queues?.victim, 0)
   );
+  const asyncqTrafficConcurrency = fallback(
+    source?.asyncq_traffic_concurrency,
+    fallback(source?.asynq?.queues?.traffic, 0)
+  );
   const asyncqGeneratorConcurrency = fallback(
     source?.asyncq_generator_concurrency,
     fallback(source?.asynq?.queues?.generator, 0)
@@ -63,6 +67,7 @@ export function normalizeConfig(source) {
       },
       queues: {
         victim: asyncqVictimConcurrency,
+        traffic: asyncqTrafficConcurrency,
         generator: asyncqGeneratorConcurrency,
         attachment: asyncqAttachmentConcurrency,
         email: asyncqEmailConcurrency,

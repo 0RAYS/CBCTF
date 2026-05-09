@@ -2306,6 +2306,7 @@
         "workerLog": "任务队列日志级别",
         "concurrency": "任务队列最大线程",
         "victimConcurrency": "Victim 任务并发数",
+        "trafficConcurrency": "流量解析任务并发数",
         "generatorConcurrency": "Generator 任务并发数",
         "attachmentConcurrency": "附件生成任务并发数",
         "emailConcurrency": "邮件任务并发数",
