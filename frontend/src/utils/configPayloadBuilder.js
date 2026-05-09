@@ -8,6 +8,7 @@ export function buildPayload(config) {
     asyncq_concurrency: config.asyncq.concurrency,
     asyncq_log_level: config.asyncq.log.level,
     asyncq_victim_concurrency: config.asyncq.queues.victim,
+    asyncq_traffic_concurrency: config.asyncq.queues.traffic,
     asyncq_generator_concurrency: config.asyncq.queues.generator,
     asyncq_attachment_concurrency: config.asyncq.queues.attachment,
     asyncq_email_concurrency: config.asyncq.queues.email,

@@ -20,6 +20,7 @@ data:
         level: {{ .Values.cbctf.asynq.log.level | quote }}
       queues:
         victim: {{ .Values.cbctf.asynq.queues.victim }}
+        traffic: {{ .Values.cbctf.asynq.queues.traffic }}
         generator: {{ .Values.cbctf.asynq.queues.generator }}
         attachment: {{ .Values.cbctf.asynq.queues.attachment }}
         email: {{ .Values.cbctf.asynq.queues.email }}

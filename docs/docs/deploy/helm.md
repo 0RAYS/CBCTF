@@ -94,6 +94,7 @@ helm uninstall cbctf -n cbctf
 | `cbctf.gin.ratelimit.global` | 全局限流 | `100` |
 | `cbctf.gin.jwt.secret` | JWT 签名密钥，留空时 Chart 自动生成并复用 | `change-me-long-random` |
 | `cbctf.gin.metrics.whitelist` | 允许访问 `/metrics` 的 IP 或 CIDR | `10.0.0.0/8` |
+| `cbctf.asynq.queues.traffic` | 靶机流量解析任务并发 | `2` |
 | `cbctf.registration.enabled` | 是否允许公开注册 | `true` |
 | `cbctf.registration.default_group` | 新用户默认分组 ID，`0` 表示不指定 | `0` |
 | `cbctf.cheat.ip.whitelist` | 作弊检测 IP 白名单 | `10.0.0.0/8` |

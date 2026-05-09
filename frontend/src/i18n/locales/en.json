@@ -2306,6 +2306,7 @@
         "workerLog": "Task Queue Log Level",
         "concurrency": "Task Queue Max Concurrency",
         "victimConcurrency": "Victim Task Concurrency",
+        "trafficConcurrency": "Traffic Task Concurrency",
         "generatorConcurrency": "Generator Task Concurrency",
         "attachmentConcurrency": "Attachment Task Concurrency",
         "emailConcurrency": "Email Task Concurrency",

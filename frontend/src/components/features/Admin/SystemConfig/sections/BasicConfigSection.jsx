@@ -75,6 +75,16 @@ export function BasicConfigSection({ config, updateConfig }) {
         }
       />
       <ConfigField
+        label={t('admin.system.labels.trafficConcurrency')}
+        type="number"
+        value={config.asyncq.queues.traffic}
+        onChange={(value) =>
+          updateConfig((draft) => {
+            draft.asyncq.queues.traffic = sanitizeNumber(value, config.asyncq.queues.traffic);
+          })
+        }
+      />
+      <ConfigField
         label={t('admin.system.labels.generatorConcurrency')}
         type="number"
         value={config.asyncq.queues.generator}
