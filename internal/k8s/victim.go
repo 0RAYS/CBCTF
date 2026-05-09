@@ -88,6 +88,8 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 							Add: []corev1.Capability{"NET_RAW", "SYS_ADMIN"},
 						},
 					},
+					Stdin: true,
+					TTY:   true,
 				},
 			}
 			volumes := []corev1.Volume{
