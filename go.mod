@@ -4,7 +4,7 @@ go 1.26.2
 
 replace (
 	github.com/openshift/api => github.com/openshift/api v0.0.0-20260504142306-00d9d554030a
-	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20260502001324-b7f5293f4787
+	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20260509192518-b540ad9def2b
 )
 
 require (
