@@ -264,6 +264,15 @@ export const downloadContestTeamWriteup = (contestId, teamId, writeupId) => {
   });
 };
 
+// 批量导出比赛题解
+export const exportContestWriteups = (contestId) => {
+  return request({
+    url: `/admin/contests/${contestId}/writeups/export`,
+    method: 'GET',
+    responseType: 'blob',
+  });
+};
+
 // 获取比赛团队流量列表
 export const getContestTeamTraffic = (contestId, teamId, victimID, params) => {
   return request({

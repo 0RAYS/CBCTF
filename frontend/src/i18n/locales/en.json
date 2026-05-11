@@ -1034,12 +1034,12 @@
         },
         "total": "TOTAL",
         "title": "Scoreboard Management",
-        "export": "Export scoreboard",
+        "export": "Export Writeups",
         "toast": {
           "fetchTimelineFailed": "Failed to load timeline",
           "fetchTeamsFailed": "Failed to load rankings",
           "fetchScoreboardFailed": "Failed to load scoreboard",
-          "exportUnavailable": "Export not implemented yet"
+          "exportWriteupsFailed": "Failed to export Writeups"
         }
       },
       "cheats": {

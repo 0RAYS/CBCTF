@@ -12,9 +12,11 @@ import (
 	"CBCTF/internal/resp"
 	"CBCTF/internal/service"
 	"CBCTF/internal/task"
+	"CBCTF/internal/utils"
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -209,6 +211,27 @@ func GetWriteUPs(ctx *gin.Context) {
 		data = append(data, resp.GetFileResp(writeup))
 	}
 	resp.JSON(ctx, model.SuccessRetVal(gin.H{"count": count, "writeups": data}))
+}
+
+func ExportContestWriteUps(ctx *gin.Context) {
+	contest := middleware.GetContest(ctx)
+	src := filepath.Join(config.Env.Path, "writeups", fmt.Sprintf("contest-%d", contest.ID))
+	if stat, err := os.Stat(src); err != nil || !stat.IsDir() {
+		if err != nil && !os.IsNotExist(err) {
+			log.Logger.Warningf("Failed to stat writeup directory: %s", err)
+		}
+		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.File.NotFound})
+		return
+	}
+	filename := fmt.Sprintf("contest-%d.zip", contest.ID)
+	dest := filepath.Join(src, "writeups.zip")
+	if err := utils.Zip(src, dest); err != nil {
+		log.Logger.Warningf("Failed to archive contest writeups: %s", err)
+		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		return
+	}
+	ctx.Writer.Header().Set("File", "true")
+	ctx.FileAttachment(dest, filename)
 }
 
 func DeleteFiles(ctx *gin.Context) {

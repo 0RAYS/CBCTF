@@ -1034,12 +1034,12 @@
         },
         "total": "总计",
         "title": "积分榜管理",
-        "export": "导出积分榜",
+        "export": "导出 Writeup",
         "toast": {
           "fetchTimelineFailed": "获取时间线数据失败",
           "fetchTeamsFailed": "获取团队列表失败",
           "fetchScoreboardFailed": "获取积分榜失败",
-          "exportUnavailable": "此功能暂未实现"
+          "exportWriteupsFailed": "导出 Writeup 失败"
         }
       },
       "cheats": {
