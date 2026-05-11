@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from '../../../utils/toast';
-import { getContestInfo, getContestRank, getContestScoreboard, getContestTimeline } from '../../../api/admin/contest';
+import {
+  exportContestWriteups,
+  getContestInfo,
+  getContestRank,
+  getContestScoreboard,
+  getContestTimeline,
+} from '../../../api/admin/contest';
+import { downloadBlobResponse } from '../../../utils/fileDownload';
 import AdminScoreboard from '../../../components/features/Admin/Contests/AdminScoreboard';
 import AdminScoreboardTable from '../../../components/features/Admin/Contests/AdminScoreboardTable';
 import ScoreboardTimeline from '../../../components/features/CTFGame/Scoreboard/ScoreboardTimeline';
@@ -203,7 +210,12 @@ function AdminContestScoreboard({ viewMode: externalViewMode, onViewModeChange: 
   };
 
   const handleExportScoreboard = async () => {
-    toast.info({ description: t('admin.contests.scoreboard.toast.exportUnavailable') });
+    try {
+      const response = await exportContestWriteups(parseInt(id));
+      downloadBlobResponse(response, `contest-${id}.zip`, 'application/zip');
+    } catch (error) {
+      toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.exportWriteupsFailed') });
+    }
   };
 
   const handleRowClick = (team) => {
