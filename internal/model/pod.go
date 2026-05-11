@@ -1,8 +1,6 @@
 package model
 
-import (
-	"fmt"
-)
+import "path/filepath"
 
 // Pod K8s Pod 实例
 // BelongsTo Victim
@@ -15,5 +13,5 @@ type Pod struct {
 }
 
 func (p Pod) TrafficPcapPath() string {
-	return fmt.Sprintf("%s/pod-%s.pcap", Victim{BaseModel: BaseModel{ID: p.VictimID}}.TrafficBasePath(), p.Name)
+	return filepath.Join(Victim{BaseModel: BaseModel{ID: p.VictimID}}.TrafficBasePath(), "pod-"+p.Name+".pcap")
 }

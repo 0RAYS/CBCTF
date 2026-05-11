@@ -7,7 +7,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/netip"
+	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -50,11 +52,11 @@ type Victim struct {
 }
 
 func (v Victim) TrafficBasePath() string {
-	return fmt.Sprintf("%s/traffics/victim-%d", config.Env.Path, v.ID)
+	return filepath.Join(config.Env.Path, "traffics", "victim-"+strconv.FormatUint(uint64(v.ID), 10))
 }
 
 func (v Victim) TrafficZipPath() string {
-	return fmt.Sprintf("%s/traffics.zip", v.TrafficBasePath())
+	return filepath.Join(v.TrafficBasePath(), "traffics.zip")
 }
 
 func (v Victim) RemoteAddr() []string {

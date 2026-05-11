@@ -4,6 +4,7 @@ import (
 	"CBCTF/internal/config"
 	"database/sql/driver"
 	"fmt"
+	"path/filepath"
 	"strings"
 )
 
@@ -52,6 +53,6 @@ func (f *FilePath) Scan(value any) error {
 		*f = ""
 		return nil
 	}
-	*f = FilePath(config.Env.Path + string(bytes))
+	*f = FilePath(filepath.Join(config.Env.Path, strings.TrimLeft(string(bytes), `/\`)))
 	return nil
 }

@@ -13,7 +13,9 @@ import (
 	"mime/multipart"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -36,7 +38,7 @@ func SavePicture(tx *gorm.DB, modelName string, modelID uint, file *multipart.Fi
 		RandID:   utils.UUID(),
 		Filename: file.Filename,
 		Size:     size,
-		Path:     model.FilePath(fmt.Sprintf("%s/pictures/%s%s", config.Env.Path, utils.UUID(), suffix)),
+		Path:     model.FilePath(filepath.Join(config.Env.Path, "pictures", utils.UUID()+suffix)),
 		Model:    modelName,
 		ModelID:  modelID,
 		Suffix:   suffix,
@@ -127,12 +129,18 @@ func SaveWriteUp(tx *gorm.DB, contest model.Contest, team model.Team, file *mult
 		RandID:   utils.UUID(),
 		Filename: file.Filename,
 		Size:     size,
-		Path:     model.FilePath(fmt.Sprintf("%s/writeups/contest-%d/team-%d/%s%s", config.Env.Path, contest.ID, team.ID, utils.UUID(), suffix)),
-		Model:    model.Name(team),
-		ModelID:  team.ID,
-		Suffix:   suffix,
-		Hash:     hash,
-		Type:     model.WriteupFileType,
+		Path: model.FilePath(filepath.Join(
+			config.Env.Path,
+			"writeups",
+			"contest-"+strconv.FormatUint(uint64(contest.ID), 10),
+			"team-"+strconv.FormatUint(uint64(team.ID), 10),
+			time.Now().Format("2006-01-02 15:04:05")+suffix,
+		)),
+		Model:   model.Name(team),
+		ModelID: team.ID,
+		Suffix:  suffix,
+		Hash:    hash,
+		Type:    model.WriteupFileType,
 	})
 	if ret.OK {
 		prometheus.RecordFileUpload(record.Suffix, file.Size)

@@ -17,6 +17,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -133,9 +134,9 @@ func UploadChallengeFile(ctx *gin.Context) {
 	challenge := middleware.GetChallenge(ctx)
 	switch challenge.Type {
 	case model.StaticChallengeType, model.PodsChallengeType:
-		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), model.AttachmentFileName)
+		path = challenge.StaticPath()
 	case model.DynamicChallengeType:
-		path = fmt.Sprintf("%s/%s", challenge.BasicDir(), model.GeneratorFileName)
+		path = challenge.GeneratorPath()
 	default:
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.Challenge.InvalidType})
 		return
@@ -215,7 +216,7 @@ func GetWriteUPs(ctx *gin.Context) {
 
 func ExportContestWriteUps(ctx *gin.Context) {
 	contest := middleware.GetContest(ctx)
-	src := filepath.Join(config.Env.Path, "writeups", fmt.Sprintf("contest-%d", contest.ID))
+	src := filepath.Join(config.Env.Path, "writeups", "contest-"+strconv.FormatUint(uint64(contest.ID), 10))
 	if stat, err := os.Stat(src); err != nil || !stat.IsDir() {
 		if err != nil && !os.IsNotExist(err) {
 			log.Logger.Warningf("Failed to stat writeup directory: %s", err)

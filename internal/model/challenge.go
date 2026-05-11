@@ -6,7 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/netip"
+	"path/filepath"
 	"slices"
+	"strconv"
 
 	netv1 "k8s.io/api/networking/v1"
 )
@@ -42,24 +44,24 @@ type Challenge struct {
 }
 
 func (c Challenge) BasicDir() string {
-	return fmt.Sprintf("%s/challenges/%d", config.Env.Path, c.ID)
+	return filepath.Join(config.Env.Path, "challenges", strconv.FormatUint(uint64(c.ID), 10))
 }
 
 // StaticPath 获取静态题目文件的路径
 func (c Challenge) StaticPath() string {
-	return fmt.Sprintf("%s/%s", c.BasicDir(), AttachmentFileName)
+	return filepath.Join(c.BasicDir(), AttachmentFileName)
 }
 
 // GeneratorPath 获取动态题目生成器的路径
 func (c Challenge) GeneratorPath() string {
-	return fmt.Sprintf("%s/%s", c.BasicDir(), GeneratorFileName)
+	return filepath.Join(c.BasicDir(), GeneratorFileName)
 }
 
 // AttachmentPath 获取下载时, 题目附件的路径
 func (c Challenge) AttachmentPath(teamID uint) string {
 	switch c.Type {
 	case DynamicChallengeType:
-		return fmt.Sprintf("%s/attachments/%d.zip", c.BasicDir(), teamID)
+		return filepath.Join(c.BasicDir(), "attachments", strconv.FormatUint(uint64(teamID), 10)+".zip")
 	default:
 		return c.StaticPath()
 	}
