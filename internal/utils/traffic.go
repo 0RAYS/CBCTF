@@ -83,11 +83,7 @@ type trafficProcessKey struct {
 	Remote   string
 }
 
-func ReadPcapFile(path string) ([]Connection, error) {
-	return ReadPcapFileWithContext(context.Background(), path)
-}
-
-func ReadPcapFileWithContext(ctx context.Context, path string) ([]Connection, error) {
+func ReadPcapFile(ctx context.Context, path string) ([]Connection, error) {
 	file, err := os.Stat(path)
 	if err != nil {
 		return nil, err
@@ -124,11 +120,7 @@ func ReadPcapFileWithContext(ctx context.Context, path string) ([]Connection, er
 	return connections, nil
 }
 
-func EnrichPcap(pcapPath, jsonlPath, outputPath string) error {
-	return EnrichPcapWithContext(context.Background(), pcapPath, jsonlPath, outputPath)
-}
-
-func EnrichPcapWithContext(ctx context.Context, pcapPath, jsonlPath, outputPath string) error {
+func EnrichPcap(ctx context.Context, pcapPath, jsonlPath, outputPath string) error {
 	handle, err := pcap.OpenOffline(pcapPath)
 	if err != nil {
 		return err
@@ -554,7 +546,7 @@ func EnrichPcapDirWithContext(ctx context.Context, path string) []error {
 		pcapPath := filepath.Join(path, file.Name())
 		jsonl := filepath.Join(path, file.Name()+".connections.jsonl")
 		output := filepath.Join(path, file.Name()+".enrich.pcap")
-		if err = EnrichPcapWithContext(ctx, pcapPath, jsonl, output); err != nil {
+		if err = EnrichPcap(ctx, pcapPath, jsonl, output); err != nil {
 			errors = append(errors, err)
 		}
 	}
@@ -585,7 +577,7 @@ func ReadPcapDirWithContext(ctx context.Context, path string) ([]Connection, err
 		if file.IsDir() || (!strings.HasSuffix(file.Name(), ".pcap") && !strings.HasSuffix(file.Name(), ".pcapng")) {
 			continue
 		}
-		packetConnections, readErr := ReadPcapFileWithContext(ctx, filepath.Join(path, file.Name()))
+		packetConnections, readErr := ReadPcapFile(ctx, filepath.Join(path, file.Name()))
 		if readErr != nil {
 			continue
 		}

@@ -9,11 +9,7 @@ import (
 	"os"
 )
 
-func GetFileInfoByPath(path string) (int64, string, error) {
-	return GetFileInfoByPathWithContext(context.Background(), path)
-}
-
-func GetFileInfoByPathWithContext(ctx context.Context, path string) (int64, string, error) {
+func GetFileInfoByPath(ctx context.Context, path string) (int64, string, error) {
 	var size int64
 	file, err := os.Open(path)
 	if err != nil {
