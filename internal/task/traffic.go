@@ -82,7 +82,7 @@ func LoadTraffic(ctx context.Context, root *gorm.DB, victim model.Victim) model.
 			log.Logger.Warningf("Traffic archive cancelled after zip: victim_id=%d error=%s", victim.ID, err)
 			return db.CreateFileOptions{}, false
 		}
-		size, hash, err := utils.GetFileInfoByPathWithContext(ctx, victim.TrafficZipPath())
+		size, hash, err := utils.GetFileInfoByPath(ctx, victim.TrafficZipPath())
 		if err != nil {
 			log.Logger.Warningf("Failed to get traffic archive info: victim_id=%d path=%s error=%s", victim.ID, victim.TrafficZipPath(), err)
 			return db.CreateFileOptions{}, false
