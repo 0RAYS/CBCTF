@@ -145,7 +145,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 
 				limit := make(corev1.ResourceList)
 				if container.CPU > 0 {
-					limit["cpu"] = resource.MustParse(fmt.Sprintf("%dm", int(container.CPU*1000)))
+					limit["cpu"] = resource.MustParse(strconv.Itoa(int(container.CPU*1000)) + "m")
 				}
 				if container.Memory > 0 {
 					limit["memory"] = resource.MustParse(strconv.Itoa(int(container.Memory)))

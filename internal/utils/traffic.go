@@ -203,19 +203,19 @@ func buildTrafficProcessComment(process *TrafficProcessInfo) string {
 		parts = append(parts, "ZIP:"+process.GeoIPPostalCode)
 	}
 	if process.GeoIPASN != nil {
-		parts = append(parts, fmt.Sprintf("AS%d", *process.GeoIPASN))
+		parts = append(parts, "AS"+strconv.FormatInt(*process.GeoIPASN, 10))
 	}
 	if process.PID != nil {
-		parts = append(parts, fmt.Sprintf("PID:%d", *process.PID))
+		parts = append(parts, "PID:"+strconv.FormatInt(*process.PID, 10))
 	}
 	if process.ProcessName != "" {
 		parts = append(parts, "Process:"+process.ProcessName)
 	}
 	if process.BytesSent > 0 {
-		parts = append(parts, fmt.Sprintf("Sent:%d", process.BytesSent))
+		parts = append(parts, "Sent:"+strconv.FormatInt(process.BytesSent, 10))
 	}
 	if process.BytesReceived > 0 {
-		parts = append(parts, fmt.Sprintf("Recv:%d", process.BytesReceived))
+		parts = append(parts, "Recv:"+strconv.FormatInt(process.BytesReceived, 10))
 	}
 	return strings.Join(parts, " ")
 }
@@ -252,12 +252,12 @@ func extractTrafficEndpoints(packet gopacket.Packet) (string, string, string, st
 func extractTrafficPorts(packet gopacket.Packet) (string, string) {
 	if tcpLayer := packet.Layer(layers.LayerTypeTCP); tcpLayer != nil {
 		if tcp, ok := tcpLayer.(*layers.TCP); ok {
-			return fmt.Sprintf("%d", tcp.SrcPort), fmt.Sprintf("%d", tcp.DstPort)
+			return strconv.Itoa(int(tcp.SrcPort)), strconv.Itoa(int(tcp.DstPort))
 		}
 	}
 	if udpLayer := packet.Layer(layers.LayerTypeUDP); udpLayer != nil {
 		if udp, ok := udpLayer.(*layers.UDP); ok {
-			return fmt.Sprintf("%d", udp.SrcPort), fmt.Sprintf("%d", udp.DstPort)
+			return strconv.Itoa(int(udp.SrcPort)), strconv.Itoa(int(udp.DstPort))
 		}
 	}
 	return "", ""

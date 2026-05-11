@@ -1,17 +1,17 @@
 package prometheus
 
-import "fmt"
+import "strconv"
 
 func RecordFlagSubmission(contestID uint, challengeType string, solved bool) {
 	status := "failed"
 	if solved {
 		status = "success"
 	}
-	FlagSubmissionsTotal.WithLabelValues(fmt.Sprintf("%d", contestID), challengeType, status).Inc()
+	FlagSubmissionsTotal.WithLabelValues(strconv.FormatUint(uint64(contestID), 10), challengeType, status).Inc()
 }
 
 func RecordBlood(contestID uint, order string) {
-	BloodTotal.WithLabelValues(fmt.Sprintf("%d", contestID), order).Inc()
+	BloodTotal.WithLabelValues(strconv.FormatUint(uint64(contestID), 10), order).Inc()
 }
 
 func RecordUserRegister(provider string) {

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/netip"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -747,7 +748,7 @@ func addTrafficProcess(items map[string]*trafficProcessAggregate, process *utils
 func trafficProcessKey(process utils.TrafficProcessInfo) string {
 	pid := ""
 	if process.PID != nil {
-		pid = fmt.Sprintf("%d", *process.PID)
+		pid = strconv.FormatInt(*process.PID, 10)
 	}
 	name := strings.TrimSpace(process.ProcessName)
 	if pid == "" && name == "" {
@@ -802,7 +803,7 @@ func dominantTrafficProcess(processes []resp.TrafficProcessResp) string {
 		return processes[0].ProcessName
 	}
 	if processes[0].PID != nil {
-		return fmt.Sprintf("PID %d", *processes[0].PID)
+		return "PID " + strconv.FormatInt(*processes[0].PID, 10)
 	}
 	return ""
 }
@@ -868,9 +869,9 @@ func availableTrafficSlices(totalDuration int64) []int64 {
 
 func buildTrafficCenterLabel(victim model.Victim) string {
 	if victim.ContestChallengeID.Valid && victim.ContestChallengeID.V > 0 {
-		return fmt.Sprintf("Victim #%d", victim.ID)
+		return "Victim #" + strconv.FormatUint(uint64(victim.ID), 10)
 	}
-	return fmt.Sprintf("Instance #%d", victim.ID)
+	return "Instance #" + strconv.FormatUint(uint64(victim.ID), 10)
 }
 
 func sortedTrafficIPs(items map[string]bool) []string {
