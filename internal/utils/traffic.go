@@ -552,8 +552,8 @@ func EnrichPcapDirWithContext(ctx context.Context, path string) []error {
 			continue
 		}
 		pcapPath := filepath.Join(path, file.Name())
-		jsonl := fmt.Sprintf("%s.connections.jsonl", pcapPath)
-		output := fmt.Sprintf("%s.enrich.pcap", pcapPath)
+		jsonl := filepath.Join(path, file.Name()+".connections.jsonl")
+		output := filepath.Join(path, file.Name()+".enrich.pcap")
 		if err = EnrichPcapWithContext(ctx, pcapPath, jsonl, output); err != nil {
 			errors = append(errors, err)
 		}
@@ -585,7 +585,7 @@ func ReadPcapDirWithContext(ctx context.Context, path string) ([]Connection, err
 		if file.IsDir() || (!strings.HasSuffix(file.Name(), ".pcap") && !strings.HasSuffix(file.Name(), ".pcapng")) {
 			continue
 		}
-		packetConnections, readErr := ReadPcapFileWithContext(ctx, fmt.Sprintf("%s/%s", path, file.Name()))
+		packetConnections, readErr := ReadPcapFileWithContext(ctx, filepath.Join(path, file.Name()))
 		if readErr != nil {
 			continue
 		}
