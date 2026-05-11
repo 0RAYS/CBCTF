@@ -224,7 +224,7 @@ func ExportContestWriteUps(ctx *gin.Context) {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Model.File.NotFound})
 		return
 	}
-	filename := fmt.Sprintf("contest-%d.zip", contest.ID)
+	filename := "contest-" + strconv.FormatUint(uint64(contest.ID), 10) + ".zip"
 	dest := filepath.Join(src, "writeups.zip")
 	if err := utils.Zip(src, dest); err != nil {
 		log.Logger.Warningf("Failed to archive contest writeups: %s", err)

@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -38,14 +39,14 @@ func (c CreateCheatOptions) Convert2Model() model.Model {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
-	hash := fmt.Sprintf("%d-", c.ContestID)
+	hash := strconv.FormatUint(uint64(c.ContestID), 10) + "-"
 	for _, k := range keys {
 		ids := make([]uint, len(c.Model[k]))
 		copy(ids, c.Model[k])
 		sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
 		hash += fmt.Sprintf("%s-", k)
 		for _, id := range ids {
-			hash += fmt.Sprintf("%d-,", id)
+			hash += strconv.FormatUint(uint64(id), 10) + "-,"
 		}
 		hash = strings.TrimSuffix(hash, "-")
 	}

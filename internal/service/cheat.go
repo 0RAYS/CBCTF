@@ -186,7 +186,7 @@ func CheckWrongFlag(tx *gorm.DB, contest model.Contest) {
 		var tmp strings.Builder
 		teamIDs := make([]uint, 0, len(submission.Others)+1)
 		for _, teamID := range submission.Others {
-			tmp.WriteString(fmt.Sprintf("Team-%d, ", teamID))
+			tmp.WriteString("Team-" + strconv.FormatUint(uint64(teamID), 10) + ", ")
 			teamIDs = append(teamIDs, teamID)
 		}
 		teamIDs = append(teamIDs, submission.TeamID)

@@ -2,7 +2,7 @@ package prometheus
 
 import (
 	"CBCTF/internal/db"
-	"fmt"
+	"strconv"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -59,13 +59,13 @@ func (c *CTFCollector) Collect(ch chan<- prometheus.Metric) {
 			c.contestParticipantsDesc,
 			prometheus.GaugeValue,
 			float64(userCountMap[contest.ID]),
-			fmt.Sprintf("%d", contest.ID),
+			strconv.FormatUint(uint64(contest.ID), 10),
 		)
 		ch <- prometheus.MustNewConstMetric(
 			c.contestTeamsDesc,
 			prometheus.GaugeValue,
 			float64(teamCountMap[contest.ID]),
-			fmt.Sprintf("%d", contest.ID),
+			strconv.FormatUint(uint64(contest.ID), 10),
 		)
 	}
 
