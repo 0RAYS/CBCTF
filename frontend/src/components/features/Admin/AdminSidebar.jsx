@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { motion } from 'motion/react';
-import { Button } from '../../common';
+import Button from '../../common/Button';
 import { useTranslation } from 'react-i18next';
 
 function AdminSidebar({
@@ -19,7 +19,7 @@ function AdminSidebar({
   const activeItemId = useMemo(() => {
     const allItems = sections.flatMap((s) => s.items || []);
     const matches = allItems.filter((item) => activePath.startsWith(item.path));
-    const winner = matches.sort((a, b) => b.path.length - a.path.length)[0];
+    const winner = matches.reduce((best, item) => (item.path.length > (best?.path.length ?? 0) ? item : best), null);
     return winner?.id ?? null;
   }, [activePath, sections]);
 

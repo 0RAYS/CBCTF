@@ -1,12 +1,13 @@
-import { useMemo, useState, useEffect, useCallback } from 'react';
+import { Suspense, lazy, useMemo, useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import AdminSidebar from '../Admin/AdminSidebar';
 import AdminTopbar from '../Admin/AdminTopbar';
-import AdminGlobalSearch from '../Admin/AdminGlobalSearch';
 import Footer from './Footer';
 import { getFooterConfig } from '../../../config/footer';
 import { useBranding } from '../../../hooks/useBranding';
+
+const AdminGlobalSearch = lazy(() => import('../Admin/AdminGlobalSearch'));
 
 function AdminShellLayout({
   children,
@@ -45,7 +46,7 @@ function AdminShellLayout({
   const activeItem = useMemo(() => {
     const items = sections.flatMap((section) => section.items || []);
     const matches = items.filter((item) => activePath.startsWith(item.path));
-    return matches.sort((a, b) => b.path.length - a.path.length)[0];
+    return matches.reduce((best, item) => (item.path.length > (best?.path.length ?? 0) ? item : best), null);
   }, [activePath, sections]);
 
   const fallbackLabel = useMemo(() => {
@@ -103,7 +104,11 @@ function AdminShellLayout({
           <Footer {...footerConfig} />
         </div>
       )}
-      <AdminGlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+      {searchOpen && (
+        <Suspense fallback={null}>
+          <AdminGlobalSearch isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+        </Suspense>
+      )}
     </div>
   );
 }

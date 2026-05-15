@@ -12,7 +12,7 @@ import { downloadBlobResponse } from '../../../utils/fileDownload';
 import AdminScoreboard from '../../../components/features/Admin/Contests/AdminScoreboard';
 import AdminScoreboardTable from '../../../components/features/Admin/Contests/AdminScoreboardTable';
 import ScoreboardTimeline from '../../../components/features/CTFGame/Scoreboard/ScoreboardTimeline';
-import { Button } from '../../../components/common';
+import Button from '../../../components/common/Button';
 import { IconTable, IconList, IconChartLine } from '@tabler/icons-react';
 import ScoreboardStats from '../../../components/features/CTFGame/Scoreboard/ScoreboardStats.jsx';
 import { useTranslation } from 'react-i18next';
@@ -145,15 +145,18 @@ function AdminContestScoreboard({ viewMode: externalViewMode, onViewModeChange: 
 
   const fetchRankings = async (noLoading = false) => {
     try {
-      const contestInfoResponse = await getContestInfo(parseInt(id));
-      const response = await getContestRank(
-        parseInt(id),
-        {
-          limit: pageSize,
-          offset: (currentPage - 1) * pageSize,
-        },
-        noLoading
-      );
+      const contestId = parseInt(id);
+      const [contestInfoResponse, response] = await Promise.all([
+        getContestInfo(contestId),
+        getContestRank(
+          contestId,
+          {
+            limit: pageSize,
+            offset: (currentPage - 1) * pageSize,
+          },
+          noLoading
+        ),
+      ]);
       if (response.code === 200 && contestInfoResponse.code === 200) {
         setStats({
           totalTeams: contestInfoResponse.data.teams || 0,
@@ -195,14 +198,14 @@ function AdminContestScoreboard({ viewMode: externalViewMode, onViewModeChange: 
         });
 
         // 按分类分组排序
-        allChallenges.sort((a, b) => {
+        const sortedChallenges = allChallenges.toSorted((a, b) => {
           if (a.category !== b.category) {
             return a.category.localeCompare(b.category);
           }
           return a.name.localeCompare(b.name);
         });
 
-        setChallenges(allChallenges);
+        setChallenges(sortedChallenges);
       }
     } catch (error) {
       toast.danger({ description: error.message || t('admin.contests.scoreboard.toast.fetchScoreboardFailed') });

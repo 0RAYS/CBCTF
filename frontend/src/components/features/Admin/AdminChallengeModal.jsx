@@ -1,9 +1,10 @@
 import { motion } from 'motion/react';
 import { IconX, IconPlus, IconTrash } from '@tabler/icons-react';
-import { Button } from '../../../components/common';
+import Button from '../../common/Button';
 import { lazy, Suspense, useState, useEffect } from 'react';
-const Editor = lazy(() => import('@monaco-editor/react'));
 import { useTranslation } from 'react-i18next';
+
+const Editor = lazy(() => import('../../../lib/monacoSetup').then(() => import('@monaco-editor/react')));
 
 /**
  * 题目管理弹窗组件

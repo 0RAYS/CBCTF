@@ -4,7 +4,7 @@ import Scoreboard from '../../components/features/CTFGame/Scoreboard/Scoreboard'
 import ScoreboardTimeline from '../../components/features/CTFGame/Scoreboard/ScoreboardTimeline';
 import { getContestRank, getContestInfo, getContestScoreboard, getContestTimeline } from '../../api/contest';
 import { getTeamInfo } from '../../api/game/team';
-import { Button } from '../../components/common';
+import Button from '../../components/common/Button';
 import { IconList, IconTable, IconChartLine } from '@tabler/icons-react';
 import ScoreboardStats from '../../components/features/CTFGame/Scoreboard/ScoreboardStats';
 import { toast } from '../../utils/toast.js';
@@ -149,14 +149,14 @@ function GameScoreBoardPage() {
         });
 
         // 按分类分组排序
-        allChallenges.sort((a, b) => {
+        const sortedChallenges = allChallenges.toSorted((a, b) => {
           if (a.category !== b.category) {
             return a.category.localeCompare(b.category);
           }
           return a.name.localeCompare(b.name);
         });
 
-        setTableChallenges(allChallenges);
+        setTableChallenges(sortedChallenges);
       }
     } catch (error) {
       toast.danger({ description: error.message || t('game.scoreboard.toast.fetchFailed') });
@@ -165,9 +165,11 @@ function GameScoreBoardPage() {
 
   const fetchScoreboardData = async (newPage) => {
     try {
-      const rankResponse = await getContestRank(contestId, pageSize, (newPage - 1) * pageSize);
-      const teamResponse = await getTeamInfo(contestId);
-      const contestInfoResponse = await getContestInfo(contestId);
+      const [rankResponse, teamResponse, contestInfoResponse] = await Promise.all([
+        getContestRank(contestId, pageSize, (newPage - 1) * pageSize),
+        getTeamInfo(contestId),
+        getContestInfo(contestId),
+      ]);
       if (rankResponse.code === 200 && teamResponse.code === 200) {
         setScoreboardData({
           stats: {
@@ -215,11 +217,11 @@ function GameScoreBoardPage() {
                 }
               });
             });
-            allChallenges.sort((a, b) => {
+            const sortedChallenges = allChallenges.toSorted((a, b) => {
               if (a.category !== b.category) return a.category.localeCompare(b.category);
               return a.name.localeCompare(b.name);
             });
-            setTableChallenges(allChallenges);
+            setTableChallenges(sortedChallenges);
           }
         })
         .catch((error) => {
