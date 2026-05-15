@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react';
-import ReactECharts from 'echarts-for-react';
-import { Button, Card } from '../../../../components/common';
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+import Button from '../../../common/Button';
+import Card from '../../../common/Card';
 import { useTranslation } from 'react-i18next';
+
+const ReactECharts = lazy(() => import('echarts-for-react'));
 
 /**
  * 分数时间线图表组件
@@ -10,15 +12,13 @@ import { useTranslation } from 'react-i18next';
  */
 function ScoreboardTimeline({ timelineData = [] }) {
   const { t, i18n } = useTranslation();
-  const [chartData, setChartData] = useState([]);
   const [selectedTeams, setSelectedTeams] = useState([]);
   const [chartKey, setChartKey] = useState(0);
 
   // 处理时间线数据, 转换为图表格式
-  useEffect(() => {
+  const chartData = useMemo(() => {
     if (!timelineData || timelineData.length === 0) {
-      setChartData([]);
-      return;
+      return [];
     }
 
     // 获取所有时间点
@@ -30,17 +30,18 @@ function ScoreboardTimeline({ timelineData = [] }) {
     });
 
     // 按时间排序
-    const sortedTimePoints = Array.from(allTimePoints).sort();
+    const sortedTimePoints = Array.from(allTimePoints).toSorted();
 
     // 构建图表数据
-    const processedData = sortedTimePoints.map((time) => {
+    return sortedTimePoints.map((time) => {
       const dataPoint = { time };
 
       timelineData.forEach((team) => {
         // 找到该时间点或之前最近的分数
-        const teamScore = team.timeline
-          .filter((point) => point.time <= time)
-          .sort((a, b) => new Date(b.time) - new Date(a.time))[0];
+        const teamScore = team.timeline.reduce(
+          (latest, point) => (point.time <= time && (!latest || point.time > latest.time) ? point : latest),
+          null
+        );
 
         // 如果找到分数, 使用该分数; 否则使用0（从0开始）
         dataPoint[`team_${team.id}`] = teamScore ? teamScore.score : 0;
@@ -48,9 +49,9 @@ function ScoreboardTimeline({ timelineData = [] }) {
 
       return dataPoint;
     });
+  }, [timelineData]);
 
-    setChartData(processedData);
-
+  useEffect(() => {
     setSelectedTeams(timelineData.map((team) => team.id));
   }, [timelineData]);
 
@@ -228,7 +229,9 @@ function ScoreboardTimeline({ timelineData = [] }) {
 
       {/* 图表 */}
       <div className="h-96">
-        <ReactECharts key={chartKey} option={chartOption} style={{ height: '100%', width: '100%' }} />
+        <Suspense fallback={<div className="h-full flex items-center justify-center text-neutral-400">{t('common.loading')}</div>}>
+          <ReactECharts key={chartKey} option={chartOption} style={{ height: '100%', width: '100%' }} />
+        </Suspense>
       </div>
     </Card>
   );
