@@ -154,6 +154,8 @@ func Init(path string) {
 func tidy() {
 	Env.Host = strings.TrimSuffix(Env.Host, "/")
 	Env.Path = filepath.Clean(Env.Path)
+	Env.K8S.Config = filepath.Clean(Env.K8S.Config)
+	Env.GeoCityDB = filepath.Clean(Env.GeoCityDB)
 	if Env.Gin.JWT.Secret == "" {
 		Env.Gin.JWT.Secret = utils.UUID()
 	}
