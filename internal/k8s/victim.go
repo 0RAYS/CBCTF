@@ -12,6 +12,8 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"os"
+	"path/filepath"
 	"slices"
 	"strconv"
 	"strings"
@@ -70,29 +72,38 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 	for _, pod := range pods {
 		wg.Go(func() error {
 			podSpec := pod.Spec
-			containers := []corev1.Container{
-				{
-					Name:    "capture",
-					Image:   config.Env.K8S.CaptureImage,
-					Command: []string{"/bin/sh", "-c", fmt.Sprintf("rustnet -i any --pcap-export /root/mnt/pod-%s.pcap", pod.Name)},
-					VolumeMounts: []corev1.VolumeMount{
-						{
-							Name:      nfsVolumeName,
-							MountPath: "/root/mnt",
-							SubPath: strings.TrimPrefix(
-								strings.TrimPrefix(victim.TrafficBasePath(), config.Env.Path), "/",
-							),
-						},
+			capture := corev1.Container{
+				Name:    "capture",
+				Image:   config.Env.K8S.CaptureImage,
+				Command: []string{"/bin/sh", "-c"},
+				VolumeMounts: []corev1.VolumeMount{
+					{
+						Name:      nfsVolumeName,
+						MountPath: "/root/mnt",
+						SubPath: strings.TrimPrefix(
+							strings.TrimPrefix(victim.TrafficBasePath(), config.Env.Path), "/",
+						),
 					},
-					SecurityContext: &corev1.SecurityContext{
-						Capabilities: &corev1.Capabilities{
-							Add: []corev1.Capability{"NET_RAW", "SYS_ADMIN"},
-						},
-					},
-					Stdin: true,
-					TTY:   true,
 				},
+				SecurityContext: &corev1.SecurityContext{
+					Capabilities: &corev1.Capabilities{
+						Add: []corev1.Capability{"NET_RAW", "SYS_ADMIN"},
+					},
+				},
+				Stdin: true,
+				TTY:   true,
 			}
+			command := fmt.Sprintf("rustnet -i any --pcap-export /root/mnt/pod-%s.pcap", pod.Name)
+			if _, err := os.Stat(filepath.Join(config.Env.Path, "GeoLite2-City.mmdb")); err == nil {
+				command = fmt.Sprintf("rustnet -i any --geoip-city /root/GeoLite2-City.mmdb --pcap-export /root/mnt/pod-%s.pcap", pod.Name)
+				capture.VolumeMounts = append(capture.VolumeMounts, corev1.VolumeMount{
+					Name:      nfsVolumeName,
+					MountPath: "/root",
+					SubPath:   "GeoLite2-City.mmdb",
+				})
+			}
+			capture.Command = append(capture.Command, command)
+			containers := []corev1.Container{capture}
 			volumes := []corev1.Volume{
 				{
 					Name: nfsVolumeName,

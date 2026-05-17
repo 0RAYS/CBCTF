@@ -11,6 +11,8 @@ import (
 	"crypto/rand"
 	"fmt"
 	"math/big"
+	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 
@@ -256,28 +258,39 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 						},
 					},
 				},
-				{
-					Name:    "capture",
-					Image:   config.Env.K8S.CaptureImage,
-					Command: []string{"/bin/sh", "-c", "rustnet -i any --pcap-export /root/mnt/frpc.pcap"},
-					VolumeMounts: []corev1.VolumeMount{
-						{
-							Name:      nfsVolume.Name,
-							MountPath: "/root/mnt",
-							SubPath: strings.TrimPrefix(
-								strings.TrimPrefix(victim.TrafficBasePath(), config.Env.Path), "/",
-							),
-						},
-					},
-					SecurityContext: &corev1.SecurityContext{
-						Capabilities: &corev1.Capabilities{
-							Add: []corev1.Capability{"NET_RAW", "SYS_ADMIN"},
-						},
-					},
-					Stdin: true,
-					TTY:   true,
-				},
 			}
+			capture := corev1.Container{
+				Name:    "capture",
+				Image:   config.Env.K8S.CaptureImage,
+				Command: []string{"/bin/sh", "-c"},
+				VolumeMounts: []corev1.VolumeMount{
+					{
+						Name:      nfsVolumeName,
+						MountPath: "/root/mnt",
+						SubPath: strings.TrimPrefix(
+							strings.TrimPrefix(victim.TrafficBasePath(), config.Env.Path), "/",
+						),
+					},
+				},
+				SecurityContext: &corev1.SecurityContext{
+					Capabilities: &corev1.Capabilities{
+						Add: []corev1.Capability{"NET_RAW", "SYS_ADMIN"},
+					},
+				},
+				Stdin: true,
+				TTY:   true,
+			}
+			command := "rustnet -i any --pcap-export /root/mnt/frpc.pcap"
+			if _, err := os.Stat(filepath.Join(config.Env.Path, "GeoLite2-City.mmdb")); err == nil {
+				command = "rustnet -i any --geoip-city /root/GeoLite2-City.mmdb  --pcap-export /root/mnt/frpc.pcap"
+				capture.VolumeMounts = append(capture.VolumeMounts, corev1.VolumeMount{
+					Name:      nfsVolumeName,
+					MountPath: "/root",
+					SubPath:   "GeoLite2-City.mmdb",
+				})
+			}
+			capture.Command = append(capture.Command, command)
+			containers = append(containers, capture)
 			options := CreatePodOptions{
 				Name:       podName,
 				Labels:     labels,
