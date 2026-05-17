@@ -25,6 +25,7 @@ type CreateVPCNatGatewayOptions struct {
 	Labels         map[string]string
 	VPC            string
 	Subnet         string
+	NetAttachDef   string
 	LanIP          string
 	ExternalSubnet []string
 	Interface      string
@@ -72,6 +73,9 @@ func CreateVPCNatGateway(ctx context.Context, options CreateVPCNatGatewayOptions
 					},
 				},
 			},
+			// 临时补救操作: kube-ovn 作为副 CNI 时, 通过注解注入 lanIp 到 eth0
+			// https://github.com/kubeovn/kube-ovn/issues/6744
+			Annotations: map[string]string{"v1.multus-cni.io/default-network": fmt.Sprintf("%s/%s", globalNamespace, options.NetAttachDef)},
 		},
 	}
 	gateway, err = ovnClient.KubeovnV1().VpcNatGateways().Create(ctx, gateway, metav1.CreateOptions{})

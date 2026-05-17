@@ -390,6 +390,7 @@ func createVictimNetworkResources(
 				Labels:         labels,
 				VPC:            victim.Spec.NetworkPlan.Name,
 				Subnet:         subnet.Name,
+				NetAttachDef:   subnet.NetAttachDef.Name,
 				LanIP:          subnet.NatGateway.LanIP,
 				ExternalSubnet: []string{externalNetwork.SubnetName},
 				Interface:      externalNetwork.Interface,
