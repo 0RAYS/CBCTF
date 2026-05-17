@@ -2260,12 +2260,15 @@
       "actions": {
         "update": "Update Config",
         "reset": "Reset",
+        "uploadGeoCityDB": "Upload GeoCityDB",
         "restart": "Restart System"
       },
       "toast": {
         "fetchFailed": "Failed to fetch system configuration",
         "updateSuccess": "System configuration updated",
         "updateFailed": "Failed to update system configuration",
+        "uploadGeoCityDBSuccess": "GeoCityDB uploaded",
+        "uploadGeoCityDBFailed": "Failed to upload GeoCityDB",
         "restartSuccess": "System restarted successfully",
         "restartFailed": "Failed to restart system",
         "invalidJsonArray": "Enter a valid JSON array or object"
@@ -2357,6 +2360,9 @@
         "registrationEnabled": "Allow Registration",
         "registrationDefaultGroup": "Default Group for New Users",
         "registrationDefaultGroupNone": "None"
+      },
+      "hints": {
+        "uploadGeoCityDB": "The file will overwrite the current GeoCityDB path. If the file is not exists, "
       },
       "k8s": {
         "frp": "Frp",

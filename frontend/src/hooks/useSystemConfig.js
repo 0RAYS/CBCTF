@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useImmerState } from './useImmerState';
 import { normalizeConfig } from '../utils/configNormalizer';
 import { buildPayload } from '../utils/configPayloadBuilder';
-import { updateSystemConfig, restartSystem } from '../api/admin/system';
+import { updateSystemConfig, uploadGeoCityDB, restartSystem } from '../api/admin/system';
 import { toast } from '../utils/toast';
 
 /**
@@ -14,6 +14,7 @@ import { toast } from '../utils/toast';
 export function useSystemConfig(initialConfig, t) {
   const [config, updateConfig] = useImmerState(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isUploadingGeoCityDB, setIsUploadingGeoCityDB] = useState(false);
   const [isRestarting, setIsRestarting] = useState(false);
   const [error, setError] = useState(null);
 
@@ -59,6 +60,37 @@ export function useSystemConfig(initialConfig, t) {
     [t]
   );
 
+  const handleUploadGeoCityDB = useCallback(
+    async (file) => {
+      if (!file) {
+        return { success: false, error: 'No file provided' };
+      }
+
+      setIsUploadingGeoCityDB(true);
+      setError(null);
+
+      try {
+        const response = await uploadGeoCityDB(file);
+        if (response.code === 200) {
+          toast.success({ description: t('admin.system.toast.uploadGeoCityDBSuccess') });
+          return { success: true };
+        }
+        const errorMsg = response.msg || t('admin.system.toast.uploadGeoCityDBFailed');
+        toast.danger({ description: errorMsg });
+        setError(errorMsg);
+        return { success: false, error: errorMsg };
+      } catch (err) {
+        const errorMsg = err.message || t('admin.system.toast.uploadGeoCityDBFailed');
+        toast.danger({ description: errorMsg });
+        setError(errorMsg);
+        return { success: false, error: errorMsg };
+      } finally {
+        setIsUploadingGeoCityDB(false);
+      }
+    },
+    [t]
+  );
+
   // Restart system
   const handleRestartSystem = useCallback(async () => {
     setIsRestarting(true);
@@ -89,9 +121,11 @@ export function useSystemConfig(initialConfig, t) {
     config,
     updateConfig,
     isUpdating,
+    isUploadingGeoCityDB,
     isRestarting,
     error,
     handleUpdateConfig,
+    handleUploadGeoCityDB,
     handleRestartSystem,
   };
 }

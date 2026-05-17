@@ -49,9 +49,10 @@ const (
 	UpdateWebhookEventType = "update_webhook"
 	DeleteWebhookEventType = "delete_webhook"
 
-	UpdateBrandingEventType = "update_branding"
-	UpdateSettingEventType  = "update_setting"
-	RestartSystemEventType  = "restart_system"
+	UpdateBrandingEventType  = "update_branding"
+	UpdateSettingEventType   = "update_setting"
+	UploadGeoCityDBEventType = "upload_geocity_db"
+	RestartSystemEventType   = "restart_system"
 
 	ActivateEmailEventType = "activate_email"
 	VerifyEmailEventType   = "verify_email"
@@ -115,7 +116,7 @@ var EventTypes = []string{
 	UpdateCronJobEventType,
 	CreateWebhookEventType, UpdateWebhookEventType, DeleteWebhookEventType,
 	UpdateBrandingEventType,
-	UpdateSettingEventType, RestartSystemEventType,
+	UpdateSettingEventType, UploadGeoCityDBEventType, RestartSystemEventType,
 	ActivateEmailEventType, VerifyEmailEventType,
 	UploadPictureEventType, DeletePictureEventType,
 	JoinTeamEventType, CreateTeamEventType, UpdateTeamEventType, DeleteTeamEventType,

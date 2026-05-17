@@ -5,6 +5,7 @@ import (
 	"CBCTF/internal/db"
 	"CBCTF/internal/dto"
 	"CBCTF/internal/i18n"
+	"CBCTF/internal/log"
 	"CBCTF/internal/middleware"
 	"CBCTF/internal/model"
 	"CBCTF/internal/redis"
@@ -14,6 +15,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/oschwald/geoip2-golang/v2"
 	"github.com/shirou/gopsutil/net"
 )
 
@@ -144,6 +146,29 @@ func UpdateSystem(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
+	ctx.Set(middleware.CTXEventSuccessKey, true)
+	resp.JSON(ctx, model.SuccessRetVal())
+}
+
+func UploadGeoCityDB(ctx *gin.Context) {
+	file, err := ctx.FormFile("file")
+	if err != nil {
+		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
+		return
+	}
+	ctx.Set(middleware.CTXEventTypeKey, model.UploadGeoCityDBEventType)
+	if err = ctx.SaveUploadedFile(file, config.Env.GeoCityDB); err != nil {
+		log.Logger.Warningf("Failed to save GeoCityDB: %s", err)
+		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		return
+	}
+	tmp, err := geoip2.Open(config.Env.GeoCityDB)
+	if err != nil {
+		log.Logger.Warningf("Failed to load GeoCityDB: %s", err)
+		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
+		return
+	}
+	_ = tmp.Close()
 	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }

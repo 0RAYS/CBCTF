@@ -26,6 +26,19 @@ export const updateSystemConfig = (data) => {
   });
 };
 
+export const uploadGeoCityDB = (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return request({
+    url: '/admin/system/geocity-db',
+    method: 'POST',
+    data: formData,
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+};
+
 export const restartSystem = () => {
   return request({
     url: '/admin/system/restart',

@@ -201,13 +201,14 @@ var RoutePermissions = map[string]string{
 	"GET /admin/search": PermAdminModelsSearch,
 
 	// /admin/system
-	"GET /admin/system/status":   PermAdminSystemStatus,
-	"GET /admin/system/config":   PermAdminSystemRead,
-	"PUT /admin/system/config":   PermAdminSystemUpdate,
-	"POST /admin/system/restart": PermAdminSystemRestart,
-	"GET /admin/branding":        PermAdminBrandingRead,
-	"PUT /admin/branding":        PermAdminBrandingUpdate,
-	"POST /admin/branding/logo":  PermAdminBrandingUpdate,
+	"GET /admin/system/status":      PermAdminSystemStatus,
+	"GET /admin/system/config":      PermAdminSystemRead,
+	"PUT /admin/system/config":      PermAdminSystemUpdate,
+	"POST /admin/system/geocity-db": PermAdminSystemUpdate,
+	"POST /admin/system/restart":    PermAdminSystemRestart,
+	"GET /admin/branding":           PermAdminBrandingRead,
+	"PUT /admin/branding":           PermAdminBrandingUpdate,
+	"POST /admin/branding/logo":     PermAdminBrandingUpdate,
 
 	// /admin/permissions
 	"GET /admin/permissions":               PermAdminPermissionList,
