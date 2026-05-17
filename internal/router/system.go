@@ -169,6 +169,7 @@ func UploadGeoCityDB(ctx *gin.Context) {
 	}
 	tmp, err := geoip2.Open(filepath.Join(config.Env.Path, "GeoLite2-City.mmdb"))
 	if err != nil {
+		_ = os.Remove(filepath.Join(config.Env.Path, "GeoLite2-City.mmdb"))
 		log.Logger.Warningf("Failed to load GeoCityDB: %s", err)
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return
