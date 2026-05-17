@@ -4,6 +4,7 @@ const (
 	SkipEventType = "skip"
 
 	LoginEventType      = "login"
+	LogoutEventType     = "logout"
 	RegisterEventType   = "register"
 	OauthLoginEventType = "oauth_login"
 
@@ -58,7 +59,6 @@ const (
 	VerifyEmailEventType   = "verify_email"
 
 	UploadPictureEventType = "upload_picture"
-	DeletePictureEventType = "delete_picture"
 
 	JoinTeamEventType   = "join_team"
 	CreateTeamEventType = "create_team"
@@ -85,6 +85,7 @@ const (
 	DownloadWriteUpEventType = "download_writeup"
 
 	DownloadFileEventType = "download_file"
+	DeleteFileEventType   = "delete_file"
 
 	CreateRoleEventType = "create_role"
 	UpdateRoleEventType = "update_role"
@@ -103,7 +104,7 @@ const (
 )
 
 var EventTypes = []string{
-	LoginEventType, RegisterEventType, OauthLoginEventType,
+	LoginEventType, LogoutEventType, RegisterEventType, OauthLoginEventType,
 	CreateUserEventType, UpdateUserEventType, DeleteUserEventType,
 	CreateContestEventType, UpdateContestEventType, DeleteContestEventType,
 	CreateChallengeEventType, UpdateChallengeEventType, DeleteChallengeEventType, UploadChallengeFileEventType,
@@ -118,7 +119,7 @@ var EventTypes = []string{
 	UpdateBrandingEventType,
 	UpdateSettingEventType, UploadGeoCityDBEventType, RestartSystemEventType,
 	ActivateEmailEventType, VerifyEmailEventType,
-	UploadPictureEventType, DeletePictureEventType,
+	UploadPictureEventType,
 	JoinTeamEventType, CreateTeamEventType, UpdateTeamEventType, DeleteTeamEventType,
 	LeaveTeamEventType, KickMemberEventType,
 	InitChallengeEventType, ResetChallengeEventType,
@@ -127,7 +128,7 @@ var EventTypes = []string{
 	ReadFlagEventType, SubmitFlagEventType,
 	StartGeneratorEventType, StopGeneratorEventType,
 	UploadWriteUpEventType, DownloadWriteUpEventType,
-	DownloadFileEventType,
+	DownloadFileEventType, DeleteFileEventType,
 	CreateRoleEventType, UpdateRoleEventType, DeleteRoleEventType,
 	CreateGroupEventType, UpdateGroupEventType, DeleteGroupEventType,
 	UpdatePermissionEventType, AssignPermissionEventType, RevokePermissionEventType,
