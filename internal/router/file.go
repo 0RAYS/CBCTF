@@ -241,7 +241,7 @@ func DeleteFiles(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	ctx.Set(middleware.CTXEventTypeKey, model.DeletePictureEventType)
+	ctx.Set(middleware.CTXEventTypeKey, model.DeleteFileEventType)
 	ret := service.DeleteFiles(db.DB, form)
 	if !ret.OK {
 		resp.JSON(ctx, ret)

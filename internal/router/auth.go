@@ -107,6 +107,7 @@ func Login(ctx *gin.Context) {
 }
 
 func Logout(ctx *gin.Context) {
+	ctx.Set(middleware.CTXEventTypeKey, model.LogoutEventType)
 	secure := strings.HasPrefix(config.Env.Host, "https://")
 	sameSite := http.SameSiteLaxMode
 	origin := ctx.GetHeader("Origin")
@@ -127,5 +128,6 @@ func Logout(ctx *gin.Context) {
 		HttpOnly: true,
 		SameSite: sameSite,
 	})
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }

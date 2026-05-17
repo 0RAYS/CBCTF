@@ -161,6 +161,7 @@ func ExchangeOauthCode(ctx *gin.Context) {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Response.BadRequest})
 		return
 	}
+	ctx.Set(middleware.CTXEventTypeKey, model.OauthLoginEventType)
 	tempToken, ret := redis.GetAndDelOauthToken(code)
 	if !ret.OK {
 		resp.JSON(ctx, ret)
@@ -179,6 +180,8 @@ func ExchangeOauthCode(ctx *gin.Context) {
 		return
 	}
 	setAuthCookie(ctx, token)
+	ctx.Set(middleware.CTXEventModelsKey, model.UintMap{"Self": claims.UserID})
+	ctx.Set(middleware.CTXEventSuccessKey, true)
 	resp.JSON(ctx, model.SuccessRetVal())
 }
 
