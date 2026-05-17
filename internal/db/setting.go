@@ -137,8 +137,6 @@ func (s *SettingRepo) InitSettings() model.RetVal {
 
 		{Key: model.RegistrationEnabledSettingKey, Value: model.SettingValue{V: config.Env.Registration.Enabled}},
 		{Key: model.RegistrationDefaultGroupSettingKey, Value: model.SettingValue{V: config.Env.Registration.DefaultGroup}},
-
-		{Key: model.GeoCityDBSettingKey, Value: model.SettingValue{V: config.Env.GeoCityDB}},
 	} {
 		if _, ret := s.Create(CreateSettingOptions{
 			Key:   setting.Key,
@@ -303,9 +301,6 @@ func (s *SettingRepo) ReadSettings() model.RetVal {
 		return ret
 	}
 
-	if config.Env.GeoCityDB, ret = GetValue[string](s, model.GeoCityDBSettingKey); !ret.OK {
-		return ret
-	}
 	if err := config.Save(); err != nil {
 		log.Logger.Warningf("Failed to save config: %s, but it's not important, all config will be read from database", err.Error())
 	}

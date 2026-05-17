@@ -61,6 +61,4 @@ type UpdateSettingForm struct {
 
 	RegistrationEnabled      *bool `form:"registration_enabled" json:"registration_enabled"`
 	RegistrationDefaultGroup *uint `form:"registration_default_group" json:"registration_default_group" binding:"omitempty,gte=0"`
-
-	GeoCityDB *string `form:"geocity_db" json:"geocity_db" binding:"omitempty,file"`
 }

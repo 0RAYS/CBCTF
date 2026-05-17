@@ -146,8 +146,6 @@ func UpdateSystemSettings(tx *gorm.DB, form dto.UpdateSettingForm) model.RetVal 
 
 		model.RegistrationEnabledSettingKey:      form.RegistrationEnabled,
 		model.RegistrationDefaultGroupSettingKey: form.RegistrationDefaultGroup,
-
-		model.GeoCityDBSettingKey: form.GeoCityDB,
 	}
 	repo := db.InitSettingRepo(tx)
 	for key, value := range kv {

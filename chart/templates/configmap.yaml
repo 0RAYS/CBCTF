@@ -109,5 +109,3 @@ data:
     registration:
       enabled: {{ .Values.cbctf.registration.enabled }}
       default_group: {{ .Values.cbctf.registration.default_group }}
-
-    geocity_db: /app/data/GeoLite2-City.mmdb

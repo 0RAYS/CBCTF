@@ -63,8 +63,6 @@ const (
 
 	RegistrationEnabledSettingKey      = "registration.enabled"
 	RegistrationDefaultGroupSettingKey = "registration.default_group"
-
-	GeoCityDBSettingKey = "geocity_db"
 )
 
 type Setting struct {

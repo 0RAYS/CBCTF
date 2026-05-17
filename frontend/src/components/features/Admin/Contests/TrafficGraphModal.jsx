@@ -1607,35 +1607,42 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                     </div>
                     {selectedEdge ? (
                       <>
-                      <div className="mt-3 grid grid-cols-3 gap-2 text-[11px] font-mono">
-                        <div className="rounded-lg border border-neutral-700 bg-black/20 px-2 py-1.5">
-                          <div className="text-neutral-500">{t('admin.contests.trafficGraph.panel.edgeBytes')}</div>
-                          <div className="mt-1 text-geek-400">{formatBytes(selectedEdge.bytes)}</div>
-                        </div>
-                        <div className="rounded-lg border border-neutral-700 bg-black/20 px-2 py-1.5">
-                          <div className="text-neutral-500">{t('admin.contests.trafficGraph.panel.edgePackets')}</div>
-                          <div className="mt-1 text-neutral-100">{selectedEdge.packets || 0}</div>
-                        </div>
-                        <div className="rounded-lg border border-neutral-700 bg-black/20 px-2 py-1.5">
-                          <div className="text-neutral-500">Proto</div>
-                          <div className="mt-1 truncate text-neutral-100">
-                            {selectedEdge.dominant_proto || selectedEdge.dominant_app || '--'}
+                        <div className="mt-3 grid grid-cols-3 gap-2 text-[11px] font-mono">
+                          <div className="rounded-lg border border-neutral-700 bg-black/20 px-2 py-1.5">
+                            <div className="text-neutral-500">{t('admin.contests.trafficGraph.panel.edgeBytes')}</div>
+                            <div className="mt-1 text-geek-400">{formatBytes(selectedEdge.bytes)}</div>
+                          </div>
+                          <div className="rounded-lg border border-neutral-700 bg-black/20 px-2 py-1.5">
+                            <div className="text-neutral-500">{t('admin.contests.trafficGraph.panel.edgePackets')}</div>
+                            <div className="mt-1 text-neutral-100">{selectedEdge.packets || 0}</div>
+                          </div>
+                          <div className="rounded-lg border border-neutral-700 bg-black/20 px-2 py-1.5">
+                            <div className="text-neutral-500">Proto</div>
+                            <div className="mt-1 truncate text-neutral-100">
+                              {selectedEdge.dominant_proto || selectedEdge.dominant_app || '--'}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      {(selectedEdge.processes || []).length > 0 ? (
-                        <div className="mt-3 rounded-lg border border-neutral-700 bg-black/20 px-2 py-2">
-                          <div className="text-[11px] text-neutral-500">{t('admin.contests.trafficGraph.panel.processes')}</div>
-                          <div className="mt-2 grid gap-1.5">
-                            {(selectedEdge.processes || []).slice(0, 3).map((process, index) => (
-                              <div key={`${formatProcessLabel(process)}-${index}`} className="flex items-center justify-between gap-2 text-[11px] font-mono">
-                                <span className="min-w-0 truncate text-neutral-100">{formatProcessLabel(process) || '--'}</span>
-                                <span className="shrink-0 text-geek-400">{formatBytes(process.bytes)}</span>
-                              </div>
-                            ))}
+                        {(selectedEdge.processes || []).length > 0 ? (
+                          <div className="mt-3 rounded-lg border border-neutral-700 bg-black/20 px-2 py-2">
+                            <div className="text-[11px] text-neutral-500">
+                              {t('admin.contests.trafficGraph.panel.processes')}
+                            </div>
+                            <div className="mt-2 grid gap-1.5">
+                              {(selectedEdge.processes || []).slice(0, 3).map((process, index) => (
+                                <div
+                                  key={`${formatProcessLabel(process)}-${index}`}
+                                  className="flex items-center justify-between gap-2 text-[11px] font-mono"
+                                >
+                                  <span className="min-w-0 truncate text-neutral-100">
+                                    {formatProcessLabel(process) || '--'}
+                                  </span>
+                                  <span className="shrink-0 text-geek-400">{formatBytes(process.bytes)}</span>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      ) : null}
+                        ) : null}
                       </>
                     ) : null}
                   </div>
@@ -1685,11 +1692,18 @@ function TrafficGraphModal({ isOpen, onClose, container, contestId, teamId, fetc
                         </div>
                         {(selectedNode.processes || []).length > 0 ? (
                           <div className="mt-3 rounded-lg border border-neutral-700 bg-black/20 px-2 py-2">
-                            <div className="text-[11px] text-neutral-500">{t('admin.contests.trafficGraph.panel.processes')}</div>
+                            <div className="text-[11px] text-neutral-500">
+                              {t('admin.contests.trafficGraph.panel.processes')}
+                            </div>
                             <div className="mt-2 grid gap-1.5">
                               {(selectedNode.processes || []).slice(0, 3).map((process, index) => (
-                                <div key={`${formatProcessLabel(process)}-${index}`} className="flex items-center justify-between gap-2 text-[11px] font-mono">
-                                  <span className="min-w-0 truncate text-neutral-100">{formatProcessLabel(process) || '--'}</span>
+                                <div
+                                  key={`${formatProcessLabel(process)}-${index}`}
+                                  className="flex items-center justify-between gap-2 text-[11px] font-mono"
+                                >
+                                  <span className="min-w-0 truncate text-neutral-100">
+                                    {formatProcessLabel(process) || '--'}
+                                  </span>
                                   <span className="shrink-0 text-geek-400">{formatBytes(process.bytes)}</span>
                                 </div>
                               ))}

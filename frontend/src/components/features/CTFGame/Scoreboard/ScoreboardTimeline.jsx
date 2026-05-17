@@ -229,7 +229,11 @@ function ScoreboardTimeline({ timelineData = [] }) {
 
       {/* 图表 */}
       <div className="h-96">
-        <Suspense fallback={<div className="h-full flex items-center justify-center text-neutral-400">{t('common.loading')}</div>}>
+        <Suspense
+          fallback={
+            <div className="h-full flex items-center justify-center text-neutral-400">{t('common.loading')}</div>
+          }
+        >
           <ReactECharts key={chartKey} option={chartOption} style={{ height: '100%', width: '100%' }} />
         </Suspense>
       </div>

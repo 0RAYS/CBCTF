@@ -8,6 +8,7 @@ import (
 	"CBCTF/internal/resp"
 	"CBCTF/internal/utils"
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -19,7 +20,7 @@ func SearchIP(ctx *gin.Context) {
 		resp.JSON(ctx, ret)
 		return
 	}
-	ip, err := utils.SearchIP(form.IP, config.Env.GeoCityDB)
+	ip, err := utils.SearchIP(form.IP, filepath.Join(config.Env.Path, "GeoLite2-City.mmdb"))
 	if err != nil {
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return

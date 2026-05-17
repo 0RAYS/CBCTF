@@ -46,15 +46,7 @@ export function BasicConfigSection({ config, updateConfig, onUploadGeoCityDB, is
         }
       />
       <div className="space-y-2">
-        <ConfigField
-          label={t('admin.system.labels.geocity_db')}
-          value={config.geocity_db}
-          onChange={(value) =>
-            updateConfig((draft) => {
-              draft.geocity_db = value;
-            })
-          }
-        />
+        <ConfigField label={t('admin.system.labels.geocity_db')} value={config.geocity_db} />
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <input ref={fileInputRef} type="file" className="hidden" onChange={handleGeoCityDBFileChange} />
           <Button
@@ -63,7 +55,6 @@ export function BasicConfigSection({ config, updateConfig, onUploadGeoCityDB, is
             icon={<IconUpload size={16} />}
             onClick={() => fileInputRef.current?.click()}
             loading={isUploadingGeoCityDB}
-            disabled={isUploadingGeoCityDB || !config.geocity_db}
           >
             {t('admin.system.actions.uploadGeoCityDB')}
           </Button>
