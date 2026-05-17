@@ -67,11 +67,11 @@ func Init() *gin.Engine {
 		router.GET("/contests", GetContests)
 	}
 
-	auth := router.Group("", middleware.CheckAuth, middleware.CheckPermission)
-
 	if strings.ToLower(config.Env.Gin.Mode) != gin.ReleaseMode {
-		pprof.Register(auth)
+		pprof.Register(router)
 	}
+
+	auth := router.Group("", middleware.CheckAuth, middleware.CheckPermission)
 
 	user := auth.Group("/me")
 	{
