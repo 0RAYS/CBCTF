@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 
@@ -152,7 +153,7 @@ func Init(path string) {
 
 func tidy() {
 	Env.Host = strings.TrimSuffix(Env.Host, "/")
-	Env.Path = strings.TrimSuffix(Env.Path, "/")
+	Env.Path = filepath.Clean(Env.Path)
 	if Env.Gin.JWT.Secret == "" {
 		Env.Gin.JWT.Secret = utils.UUID()
 	}
