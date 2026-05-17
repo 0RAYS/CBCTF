@@ -21,7 +21,16 @@ const tabs = [
   { key: 'registration', i18nKey: 'admin.system.sections.registration', Component: RegistrationConfigSection },
 ];
 
-export function SystemConfigForm({ config, updateConfig, onUpdate, onRestart, isUpdating, isRestarting }) {
+export function SystemConfigForm({
+  config,
+  updateConfig,
+  onUpdate,
+  onUploadGeoCityDB,
+  onRestart,
+  isUpdating,
+  isUploadingGeoCityDB,
+  isRestarting,
+}) {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('basic');
 
@@ -51,7 +60,14 @@ export function SystemConfigForm({ config, updateConfig, onUpdate, onRestart, is
         items={tabs.map((tab) => ({ key: tab.key, label: t(tab.i18nKey) }))}
       />
 
-      {ActiveComponent && <ActiveComponent config={config} updateConfig={updateConfig} />}
+      {ActiveComponent && (
+        <ActiveComponent
+          config={config}
+          updateConfig={updateConfig}
+          onUploadGeoCityDB={onUploadGeoCityDB}
+          isUploadingGeoCityDB={isUploadingGeoCityDB}
+        />
+      )}
     </div>
   );
 }

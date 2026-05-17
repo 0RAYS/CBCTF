@@ -15,8 +15,10 @@ function SystemConfig({ config }) {
     config: editableConfig,
     updateConfig,
     isUpdating,
+    isUploadingGeoCityDB,
     isRestarting,
     handleUpdateConfig,
+    handleUploadGeoCityDB,
     handleRestartSystem,
   } = useSystemConfig(config, t);
 
@@ -50,8 +52,10 @@ function SystemConfig({ config }) {
           config={editableConfig}
           updateConfig={updateConfig}
           onUpdate={handleUpdateClick}
+          onUploadGeoCityDB={handleUploadGeoCityDB}
           onRestart={handleRestartClick}
           isUpdating={isUpdating}
+          isUploadingGeoCityDB={isUploadingGeoCityDB}
           isRestarting={isRestarting}
         />
       </motion.div>

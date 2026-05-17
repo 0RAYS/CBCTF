@@ -1,5 +1,7 @@
-import { IconServer } from '@tabler/icons-react';
+import { useRef } from 'react';
+import { IconServer, IconUpload } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
+import { Button } from '../../../../common';
 import { ConfigSection } from '../fields/ConfigSection';
 import { ConfigField } from '../fields/ConfigField';
 
@@ -11,8 +13,17 @@ const sanitizeNumber = (value, fallbackValue = 0) => {
   return Number.isNaN(numeric) ? fallbackValue : numeric;
 };
 
-export function BasicConfigSection({ config, updateConfig }) {
+export function BasicConfigSection({ config, updateConfig, onUploadGeoCityDB, isUploadingGeoCityDB }) {
   const { t } = useTranslation();
+  const fileInputRef = useRef(null);
+
+  const handleGeoCityDBFileChange = async (event) => {
+    const file = event.target.files?.[0];
+    if (file && onUploadGeoCityDB) {
+      await onUploadGeoCityDB(file);
+    }
+    event.target.value = '';
+  };
 
   return (
     <ConfigSection title={t('admin.system.sections.basic')} icon={IconServer}>
@@ -34,15 +45,31 @@ export function BasicConfigSection({ config, updateConfig }) {
           })
         }
       />
-      <ConfigField
-        label={t('admin.system.labels.geocity_db')}
-        value={config.geocity_db}
-        onChange={(value) =>
-          updateConfig((draft) => {
-            draft.geocity_db = value;
-          })
-        }
-      />
+      <div className="space-y-2">
+        <ConfigField
+          label={t('admin.system.labels.geocity_db')}
+          value={config.geocity_db}
+          onChange={(value) =>
+            updateConfig((draft) => {
+              draft.geocity_db = value;
+            })
+          }
+        />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <input ref={fileInputRef} type="file" className="hidden" onChange={handleGeoCityDBFileChange} />
+          <Button
+            variant="outline"
+            size="sm"
+            icon={<IconUpload size={16} />}
+            onClick={() => fileInputRef.current?.click()}
+            loading={isUploadingGeoCityDB}
+            disabled={isUploadingGeoCityDB || !config.geocity_db}
+          >
+            {t('admin.system.actions.uploadGeoCityDB')}
+          </Button>
+          <span className="text-xs text-neutral-500">{t('admin.system.hints.uploadGeoCityDB')}</span>
+        </div>
+      </div>
       <ConfigField
         label={t('admin.system.labels.workerLog')}
         type="select"
