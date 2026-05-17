@@ -100,6 +100,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					Name:      nfsVolumeName,
 					MountPath: "/root/GeoLite2-City.mmdb",
 					SubPath:   "GeoLite2-City.mmdb",
+					ReadOnly:  true,
 				})
 			}
 			capture.Command = append(capture.Command, command)
