@@ -44,7 +44,7 @@ type UpdateSettingForm struct {
 	RedisPort *uint   `form:"redis_port" json:"redis_port" binding:"omitempty,port"`
 	RedisPwd  *string `form:"redis_pwd" json:"redis_pwd" binding:"omitempty,min=1,ascii"`
 
-	K8SConfig                     *string             `form:"k8s_config" json:"k8s_config" binding:"omitempty,filepath"`
+	K8SConfig                     *string             `form:"k8s_config" json:"k8s_config" binding:"omitempty,file"`
 	K8SNamespace                  *string             `form:"k8s_namespace" json:"k8s_namespace" binding:"omitempty,min=1,alphanum"`
 	K8SCaptureImage               *string             `form:"k8s_capture" json:"k8s_capture" binding:"omitempty,min=1"`
 	K8SExternalNetworksEnabled    *bool               `form:"k8s_external_networks_enabled" json:"k8s_external_networks_enabled"`
