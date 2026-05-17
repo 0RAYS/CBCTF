@@ -98,7 +98,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				command = fmt.Sprintf("rustnet -i any --geoip-city /root/GeoLite2-City.mmdb --pcap-export /root/mnt/pod-%s.pcap", pod.Name)
 				capture.VolumeMounts = append(capture.VolumeMounts, corev1.VolumeMount{
 					Name:      nfsVolumeName,
-					MountPath: "/root",
+					MountPath: "/root/GeoLite2-City.mmdb",
 					SubPath:   "GeoLite2-City.mmdb",
 				})
 			}
