@@ -285,7 +285,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 				command = "rustnet -i any --geoip-city /root/GeoLite2-City.mmdb  --pcap-export /root/mnt/frpc.pcap"
 				capture.VolumeMounts = append(capture.VolumeMounts, corev1.VolumeMount{
 					Name:      nfsVolumeName,
-					MountPath: "/root",
+					MountPath: "/root/GeoLite2-City.mmdb",
 					SubPath:   "GeoLite2-City.mmdb",
 				})
 			}
