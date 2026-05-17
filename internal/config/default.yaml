@@ -109,6 +109,3 @@ registration:
   enabled: true
   # Group ID to assign new registrants to (0 = none)
   default_group: 0
-# GeoCityDB Path
-# https://github.com/wp-statistics/GeoLite2-City
-geocity_db: ./data/GeoLite2-City.mmdb

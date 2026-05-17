@@ -2303,7 +2303,7 @@
       "labels": {
         "host": "外部访问地址",
         "path": "数据路径",
-        "geocity_db": "GeoCityDB 路径",
+        "geocity_db": "GeoCityDB 数据库",
         "logLevel": "日志级别",
         "saveLogs": "是否保存日志",
         "workerLog": "任务队列日志级别",
@@ -2362,7 +2362,7 @@
         "registrationDefaultGroupNone": "无"
       },
       "hints": {
-        "uploadGeoCityDB": "文件将覆盖保存到当前 GeoCityDB 路径；如修改路径，请先更新配置。"
+        "uploadGeoCityDB": "文件将固定保存到数据目录下的 GeoLite2-City.mmdb。"
       },
       "k8s": {
         "frp": "Frp",

@@ -2303,7 +2303,7 @@
       "labels": {
         "host": "External Host",
         "path": "Data Path",
-        "geocity_db": "GeoCityDB Path",
+        "geocity_db": "GeoCityDB Database",
         "logLevel": "Log Level",
         "saveLogs": "Save Logs to files",
         "workerLog": "Task Queue Log Level",
@@ -2362,7 +2362,7 @@
         "registrationDefaultGroupNone": "None"
       },
       "hints": {
-        "uploadGeoCityDB": "The file will overwrite the current GeoCityDB path. If the file is not exists, "
+        "uploadGeoCityDB": "The file is always saved as GeoLite2-City.mmdb under the data path."
       },
       "k8s": {
         "frp": "Frp",

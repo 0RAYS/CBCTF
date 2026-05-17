@@ -13,6 +13,7 @@ import (
 	"CBCTF/internal/service"
 	"CBCTF/internal/sys"
 	"os"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 	"github.com/oschwald/geoip2-golang/v2"
@@ -74,6 +75,10 @@ func SystemConfig(ctx *gin.Context) {
 			"allowed": frps.Allowed,
 		}
 	}
+	geocityDBPath := filepath.Join(config.Env.Path, "GeoLite2-City.mmdb")
+	if _, err := os.Stat(geocityDBPath); err != nil {
+		geocityDBPath = ""
+	}
 	data := gin.H{
 		"host": config.Env.Host,
 		"path": config.Env.Path,
@@ -130,7 +135,7 @@ func SystemConfig(ctx *gin.Context) {
 		"registration_enabled":       config.Env.Registration.Enabled,
 		"registration_default_group": config.Env.Registration.DefaultGroup,
 
-		"geocity_db": config.Env.GeoCityDB,
+		"geocity_db": geocityDBPath,
 	}
 	resp.JSON(ctx, model.SuccessRetVal(data))
 }
@@ -157,12 +162,12 @@ func UploadGeoCityDB(ctx *gin.Context) {
 		return
 	}
 	ctx.Set(middleware.CTXEventTypeKey, model.UploadGeoCityDBEventType)
-	if err = ctx.SaveUploadedFile(file, config.Env.GeoCityDB); err != nil {
+	if err = ctx.SaveUploadedFile(file, filepath.Join(config.Env.Path, "GeoLite2-City.mmdb")); err != nil {
 		log.Logger.Warningf("Failed to save GeoCityDB: %s", err)
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
 		return
 	}
-	tmp, err := geoip2.Open(config.Env.GeoCityDB)
+	tmp, err := geoip2.Open(filepath.Join(config.Env.Path, "GeoLite2-City.mmdb"))
 	if err != nil {
 		log.Logger.Warningf("Failed to load GeoCityDB: %s", err)
 		resp.JSON(ctx, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}})
