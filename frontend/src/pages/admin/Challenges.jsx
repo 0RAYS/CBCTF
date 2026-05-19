@@ -18,6 +18,8 @@ import { useDebounce } from '../../hooks';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_CHALLENGE_CATEGORIES, mergeChallengeCategories } from '../../config/challenges';
 
+const hasVpcNetworks = (dockerCompose = '') => /^networks\s*:/m.test(String(dockerCompose));
+
 function ChallengesManagement() {
   const [challenges, setChallenges] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -379,8 +381,10 @@ function ChallengesManagement() {
               }
             });
           }
+          const vpcMode = hasVpcNetworks(challenge.docker_compose);
           apiChallenge.network_policies =
             challenge.network_policies?.map((policy) => ({
+              ...(vpcMode ? { service: policy.service || '' } : {}),
               from: policy.from || [],
               to: policy.to || [],
             })) || [];
