@@ -47,7 +47,7 @@ const createGuideConfig = () => ({
 });
 
 const defaultNetworkPolicy = (target = {}) => ({
-  service: target.service || '',
+  ...(target.service ? { service: target.service } : {}),
   from: [
     {
       cidr: '',
