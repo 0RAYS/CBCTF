@@ -46,6 +46,36 @@ const createGuideConfig = () => ({
   networks: [],
 });
 
+const defaultNetworkPolicy = (target = {}) => ({
+  pod_key: target.pod_key || '',
+  container_key: target.container_key || '',
+  from: [
+    {
+      cidr: '',
+      except: [''],
+    },
+  ],
+  to: [
+    {
+      cidr: '0.0.0.0/0',
+      except: ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '100.64.0.0/10'],
+    },
+  ],
+});
+
+const getGuideServiceTargets = (config) =>
+  (config.services || []).map((service, index) => {
+    const name = service.containerName.trim() || service.name.trim() || `service${index + 1}`;
+    const key = name.toLowerCase();
+    return {
+      label: name,
+      pod_key: key,
+      container_key: key,
+    };
+  });
+
+const hasVpcNetworks = (config) => (config.networks || []).some((network) => network.name.trim());
+
 const emptyComposeYaml = 'services:';
 
 const yamlQuote = (value) =>
@@ -781,6 +811,8 @@ function AdminChallengeModal({
   const guideValidationErrors = guideValidation.list;
   const guideFieldErrors = guideValidation.fields;
   const rawValidation = validateRawCompose(challenge.docker_compose || emptyComposeYaml, t);
+  const vpcMode = hasVpcNetworks(guideConfig);
+  const policyTargets = getGuideServiceTargets(guideConfig);
 
   const syncGuideConfig = (nextConfig) => {
     setGuideConfig(nextConfig);
@@ -895,28 +927,23 @@ function AdminChallengeModal({
 
   // 网络策略操作
   const addNetworkPolicy = () => {
-    const newNetworkPolicies = [
-      ...(challenge.network_policies || []),
-      {
-        from: [
-          {
-            cidr: '',
-            except: [''],
-          },
-        ],
-        to: [
-          {
-            cidr: '0.0.0.0/0',
-            except: ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '100.64.0.0/10'],
-          },
-        ],
-      },
-    ];
+    const newNetworkPolicies = [...(challenge.network_policies || []), defaultNetworkPolicy(vpcMode ? policyTargets[0] : {})];
     onChange({ ...challenge, network_policies: newNetworkPolicies });
   };
 
   const removeNetworkPolicy = (policyIndex) => {
     const newNetworkPolicies = challenge.network_policies.filter((_, i) => i !== policyIndex);
+    onChange({ ...challenge, network_policies: newNetworkPolicies });
+  };
+
+  const updatePolicyTarget = (policyIndex, value) => {
+    const target = policyTargets.find((item) => item.container_key === value || item.pod_key === value) || {};
+    const newNetworkPolicies = [...(challenge.network_policies || [])];
+    newNetworkPolicies[policyIndex] = {
+      ...newNetworkPolicies[policyIndex],
+      pod_key: target.pod_key || '',
+      container_key: target.container_key || '',
+    };
     onChange({ ...challenge, network_policies: newNetworkPolicies });
   };
 
@@ -1812,6 +1839,23 @@ function AdminChallengeModal({
                                   <IconTrash size={16} />
                                 </Button>
                               </div>
+
+                              {vpcMode && (
+                                <GuideField label={t('admin.challengeModal.labels.policyTarget')}>
+                                  <select
+                                    value={policy.container_key || policy.pod_key || ''}
+                                    onChange={(e) => updatePolicyTarget(policyIndex, e.target.value)}
+                                    className={`${selectClass} mb-3`}
+                                  >
+                                    <option value="">{t('admin.challengeModal.placeholders.policyTarget')}</option>
+                                    {policyTargets.map((target) => (
+                                      <option key={target.container_key} value={target.container_key}>
+                                        {target.label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </GuideField>
+                              )}
 
                               {/* From 策略 */}
                               <div className="mb-3">

@@ -381,6 +381,8 @@ function ChallengesManagement() {
           }
           apiChallenge.network_policies =
             challenge.network_policies?.map((policy) => ({
+              pod_key: policy.pod_key || '',
+              container_key: policy.container_key || '',
               from: policy.from || [],
               to: policy.to || [],
             })) || [];
