@@ -1418,7 +1418,6 @@ function AdminChallengeModal({
                                     })
                                   }
                                 />
-                                {serviceIndex === 0 && <GuideErrors errors={guideFieldErrors.ports} />}
                                 {service.ports.map((port, portIndex) => (
                                   <div key={portIndex} className="grid grid-cols-[1fr_1fr_90px_32px] gap-2">
                                     <GuideField label={ct('fields.name')}>
