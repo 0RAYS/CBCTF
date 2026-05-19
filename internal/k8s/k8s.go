@@ -15,9 +15,11 @@ import (
 )
 
 const (
-	VictimPodTag    = "victim"
-	GeneratorPodTag = "generator"
-	FrpcPodTag      = "frpc"
+	VictimPodTag      = "victim"
+	GeneratorPodTag   = "generator"
+	FrpcPodTag        = "frpc"
+	PodKeyLabel       = "pod_key"
+	ContainerKeyLabel = "container_key"
 )
 
 var (

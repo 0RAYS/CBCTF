@@ -90,6 +90,7 @@ type VictimContainerSpec struct {
 
 type PodSpec struct {
 	Key          string                `json:"key"`
+	ContainerKey string                `json:"container_key"`
 	ServicePorts Exposes               `json:"service_ports"`
 	Networks     Networks              `json:"networks"`
 	Containers   []VictimContainerSpec `json:"containers"`

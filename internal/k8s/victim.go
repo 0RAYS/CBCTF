@@ -72,6 +72,16 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 	for _, pod := range pods {
 		wg.Go(func() error {
 			podSpec := pod.Spec
+			podLabels := make(map[string]string, len(labels)+2)
+			for key, value := range labels {
+				podLabels[key] = value
+			}
+			if podSpec.Key != "" {
+				podLabels[PodKeyLabel] = podSpec.Key
+			}
+			if podSpec.ContainerKey != "" {
+				podLabels[ContainerKeyLabel] = podSpec.ContainerKey
+			}
 			capture := corev1.Container{
 				Name:    "capture",
 				Image:   config.Env.K8S.CaptureImage,
@@ -210,7 +220,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 
 			pOptions := CreatePodOptions{
 				Name:        pod.Name,
-				Labels:      labels,
+				Labels:      podLabels,
 				Annotations: annotations,
 				Containers:  containers,
 				Volumes:     volumes,
@@ -285,22 +295,22 @@ func createVictimNetworkResources(
 		return nil, nil, nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "ExternalNetwork"}}
 	}
 
-	wg.Go(func() error {
+	createNetworkPolicy := func(matchLabels map[string]string, policies model.NetworkPolicies) error {
 		name := fmt.Sprintf("np-%s", utils.RandStr(20))
 		_, ret := CreateNetworkPolicy(ctx, CreateNetworkPolicyOptions{
 			Name:        name,
 			Labels:      labels,
-			MatchLabels: labels,
+			MatchLabels: matchLabels,
 			From: func() []*netv1.IPBlock {
 				tmp := make([]*netv1.IPBlock, 0)
-				for _, p := range victim.Spec.NetworkPolicies {
+				for _, p := range policies {
 					tmp = append(tmp, p.From...)
 				}
 				return tmp
 			}(),
 			To: func() []*netv1.IPBlock {
 				tmp := make([]*netv1.IPBlock, 0)
-				for _, p := range victim.Spec.NetworkPolicies {
+				for _, p := range policies {
 					tmp = append(tmp, p.To...)
 				}
 				return tmp
@@ -311,7 +321,33 @@ func createVictimNetworkResources(
 		}
 		log.Logger.Debugf("Created victim network policy: victim_id=%d network_policy=%s", victim.ID, name)
 		return nil
-	})
+	}
+
+	if victim.Spec.NetworkPlan.Name == "" {
+		wg.Go(func() error {
+			return createNetworkPolicy(labels, victim.Spec.NetworkPolicies)
+		})
+	} else {
+		for _, podSpec := range victim.Spec.Pods {
+			matchLabels := make(map[string]string, len(labels)+2)
+			for key, value := range labels {
+				matchLabels[key] = value
+			}
+			matchLabels[PodKeyLabel] = podSpec.Key
+			if podSpec.ContainerKey != "" {
+				matchLabels[ContainerKeyLabel] = podSpec.ContainerKey
+			}
+			policies := make(model.NetworkPolicies, 0)
+			for _, policy := range victim.Spec.NetworkPolicies {
+				if policy.PodKey == podSpec.Key || policy.ContainerKey == podSpec.ContainerKey {
+					policies = append(policies, policy)
+				}
+			}
+			wg.Go(func() error {
+				return createNetworkPolicy(matchLabels, policies)
+			})
+		}
+	}
 
 	if victim.Spec.NetworkPlan.Name == "" {
 		if err := wg.Wait(); err != nil {

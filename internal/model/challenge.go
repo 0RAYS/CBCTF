@@ -68,8 +68,10 @@ func (c Challenge) AttachmentPath(teamID uint) string {
 }
 
 type NetworkPolicy struct {
-	From []*netv1.IPBlock `json:"from"`
-	To   []*netv1.IPBlock `json:"to"`
+	PodKey       string           `json:"pod_key"`
+	ContainerKey string           `json:"container_key"`
+	From         []*netv1.IPBlock `json:"from"`
+	To           []*netv1.IPBlock `json:"to"`
 }
 
 type NetworkPolicies []NetworkPolicy
