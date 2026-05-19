@@ -120,7 +120,6 @@ cbctf:
         - "192.168.0.0/16"
 
   asynq:
-    concurrency: 50
     log:
       level: info
     queues:

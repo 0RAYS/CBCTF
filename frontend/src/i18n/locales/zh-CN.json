@@ -2310,7 +2310,6 @@
         "logLevel": "日志级别",
         "saveLogs": "是否保存日志",
         "workerLog": "任务队列日志级别",
-        "concurrency": "任务队列最大线程",
         "victimConcurrency": "Victim 任务并发数",
         "trafficConcurrency": "流量解析任务并发数",
         "generatorConcurrency": "Generator 任务并发数",

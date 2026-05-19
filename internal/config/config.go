@@ -39,8 +39,7 @@ type Config struct {
 		Log struct {
 			Level string `mapstructure:"level" json:"level"`
 		} `mapstructure:"log" json:"log"`
-		Concurrency int `mapstructure:"concurrency" json:"concurrency"`
-		Queues      struct {
+		Queues struct {
 			Victim     int `mapstructure:"victim" json:"victim"`
 			Traffic    int `mapstructure:"traffic" json:"traffic"`
 			Generator  int `mapstructure:"generator" json:"generator"`

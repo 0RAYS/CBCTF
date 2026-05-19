@@ -5,7 +5,6 @@
  */
 export function buildPayload(config) {
   return {
-    asyncq_concurrency: config.asyncq.concurrency,
     asyncq_log_level: config.asyncq.log.level,
     asyncq_victim_concurrency: config.asyncq.queues.victim,
     asyncq_traffic_concurrency: config.asyncq.queues.traffic,
