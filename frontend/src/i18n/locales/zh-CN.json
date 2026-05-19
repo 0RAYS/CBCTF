@@ -1535,6 +1535,7 @@
           "imageRequired": "{{label}}: image 必填",
           "cpusNumber": "{{label}}: cpus 必须是数字",
           "memLimitFormat": "{{label}}: mem_limit 格式应类似 500m",
+          "portRequired": "容器题目必须至少开放一个端口",
           "portTargetRequired": "{{label}}: 端口 {{index}} target 必填",
           "portTargetNumber": "{{label}}: 端口 {{index}} target 必须是数字",
           "portTargetUnique": "{{label}}: 端口 {{index}} target 在同一 service 内不能重复",

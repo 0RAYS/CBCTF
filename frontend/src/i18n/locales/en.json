@@ -1535,6 +1535,7 @@
           "imageRequired": "{{label}}: image is required",
           "cpusNumber": "{{label}}: cpus must be a number",
           "memLimitFormat": "{{label}}: mem_limit should look like 500m",
+          "portRequired": "Container challenges must expose at least one port",
           "portTargetRequired": "{{label}}: port {{index}} target is required",
           "portTargetNumber": "{{label}}: port {{index}} target must be numeric",
           "portTargetUnique": "{{label}}: port {{index}} target must be unique within the same service",

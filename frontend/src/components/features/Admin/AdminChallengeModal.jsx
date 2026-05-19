@@ -73,6 +73,9 @@ const getGuideServiceTargets = (config) =>
 
 const hasVpcNetworks = (config) => (config.networks || []).some((network) => network.name.trim());
 
+const hasOpenPort = (config) =>
+  (config.services || []).some((service) => (service.ports || []).some((port) => port.target.trim()));
+
 const emptyComposeYaml = 'services:';
 
 const yamlQuote = (value) =>
@@ -468,6 +471,9 @@ const validateGuidedCompose = (config, t = (key) => key) => {
   });
 
   if (!config.services?.length) addError('services', t('admin.challengeModal.composeGuide.validation.serviceRequired'));
+  if (config.services?.length && !hasOpenPort(config)) {
+    addError('ports', t('admin.challengeModal.composeGuide.validation.portRequired'));
+  }
   (config.services || []).forEach((service, serviceIndex) => {
     const name = service.name.trim();
     const label = name || t('admin.challengeModal.composeGuide.serviceIndexed', { index: serviceIndex + 1 });
@@ -1412,6 +1418,7 @@ function AdminChallengeModal({
                                     })
                                   }
                                 />
+                                {serviceIndex === 0 && <GuideErrors errors={guideFieldErrors.ports} />}
                                 {service.ports.map((port, portIndex) => (
                                   <div key={portIndex} className="grid grid-cols-[1fr_1fr_90px_32px] gap-2">
                                     <GuideField label={ct('fields.name')}>
