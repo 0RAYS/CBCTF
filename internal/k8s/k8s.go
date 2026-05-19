@@ -18,6 +18,7 @@ const (
 	VictimPodTag    = "victim"
 	GeneratorPodTag = "generator"
 	FrpcPodTag      = "frpc"
+	ServiceLabel    = "service"
 )
 
 var (

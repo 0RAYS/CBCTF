@@ -1407,6 +1407,7 @@
         "generatorImage": "Generator Image",
         "networkPolicy": "Network Policy",
         "policy": "Policy {{index}}",
+        "policyTarget": "Policy Target Container",
         "allowInbound": "Allow Inbound",
         "allowOutbound": "Allow Outbound",
         "excludeList": "Exclude List"
@@ -1421,6 +1422,7 @@
         "category": "Select category",
         "description": "Enter challenge description",
         "generatorImage": "Enter generator image",
+        "policyTarget": "Select target container",
         "flag": "Flag {{index}}"
       },
       "actions": {

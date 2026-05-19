@@ -1407,6 +1407,7 @@
         "generatorImage": "Generator镜像地址",
         "networkPolicy": "网络策略",
         "policy": "策略 {{index}}",
+        "policyTarget": "策略目标容器",
         "allowInbound": "允许入站",
         "allowOutbound": "允许出站",
         "excludeList": "排除列表"
@@ -1421,6 +1422,7 @@
         "category": "请选择分类",
         "description": "输入题目描述内容",
         "generatorImage": "输入Generator镜像地址",
+        "policyTarget": "请选择目标容器",
         "flag": "Flag {{index}}"
       },
       "actions": {
