@@ -5,8 +5,6 @@ asynq:
   log:
     # DEBUG INFO WARNING ERROR
     level: warning
-  # Concurrent workers
-  concurrency: 50
   queues:
     victim: 2
     traffic: 2

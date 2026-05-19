@@ -9,7 +9,6 @@ type UpdateSettingForm struct {
 	Path *string `form:"path" json:"path" binding:"omitempty,dir"`
 
 	AsyncQLogLevel              *string `form:"asyncq_log_level" json:"asyncq_log_level" binding:"omitempty,oneof=DEBUG INFO WARNING ERROR debug info warning error"`
-	AsyncQConcurrency           *int    `form:"asyncq_concurrency" json:"asyncq_concurrency" binding:"omitempty,gte=1"`
 	AsyncQVictimConcurrency     *int    `form:"asyncq_victim_concurrency" json:"asyncq_victim_concurrency" binding:"omitempty,gte=1"`
 	AsyncQTrafficConcurrency    *int    `form:"asyncq_traffic_concurrency" json:"asyncq_traffic_concurrency" binding:"omitempty,gte=1"`
 	AsyncQGeneratorConcurrency  *int    `form:"asyncq_generator_concurrency" json:"asyncq_generator_concurrency" binding:"omitempty,gte=1"`

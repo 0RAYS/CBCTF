@@ -15,7 +15,6 @@ data:
       save: {{ .Values.cbctf.log.save }}
 
     asynq:
-      concurrency: {{ .Values.cbctf.asynq.concurrency }}
       log:
         level: {{ .Values.cbctf.asynq.log.level | quote }}
       queues:

@@ -12,7 +12,6 @@ const (
 	PathSettingKey = "path"
 
 	AsyncQLogLevelSettingKey       = "asynq.log.level"
-	AsyncQConcurrencySettingKey    = "asynq.concurrency"
 	AsyncQVictimConcurrencyKey     = "asynq.queues.victim"
 	AsyncQTrafficConcurrencyKey    = "asynq.queues.traffic"
 	AsyncQGeneratorConcurrencyKey  = "asynq.queues.generator"

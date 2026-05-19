@@ -73,16 +73,6 @@ export function BasicConfigSection({ config, updateConfig, onUploadGeoCityDB, is
         }
       />
       <ConfigField
-        label={t('admin.system.labels.concurrency')}
-        type="number"
-        value={config.asyncq.concurrency}
-        onChange={(value) =>
-          updateConfig((draft) => {
-            draft.asyncq.concurrency = sanitizeNumber(value, config.asyncq.concurrency);
-          })
-        }
-      />
-      <ConfigField
         label={t('admin.system.labels.victimConcurrency')}
         type="number"
         value={config.asyncq.queues.victim}
