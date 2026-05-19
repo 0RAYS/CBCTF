@@ -235,7 +235,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				return errors.New(err.(string))
 			}
 
-			if len(annotations) == 0 {
+			if len(annotations) == 0 && len(podSpec.ServicePorts) > 0 {
 				service, ret := CreateService(ctx, CreateServiceOptions{
 					Name:     fmt.Sprintf("svc-%s", utils.RandStr(20)),
 					Ports:    podSpec.ServicePorts,
