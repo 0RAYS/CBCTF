@@ -47,8 +47,7 @@ const createGuideConfig = () => ({
 });
 
 const defaultNetworkPolicy = (target = {}) => ({
-  pod_key: target.pod_key || '',
-  container_key: target.container_key || '',
+  service: target.service || '',
   from: [
     {
       cidr: '',
@@ -66,11 +65,9 @@ const defaultNetworkPolicy = (target = {}) => ({
 const getGuideServiceTargets = (config) =>
   (config.services || []).map((service, index) => {
     const name = service.containerName.trim() || service.name.trim() || `service${index + 1}`;
-    const key = name.toLowerCase();
     return {
       label: name,
-      pod_key: key,
-      container_key: key,
+      service: name,
     };
   });
 
@@ -937,12 +934,10 @@ function AdminChallengeModal({
   };
 
   const updatePolicyTarget = (policyIndex, value) => {
-    const target = policyTargets.find((item) => item.container_key === value || item.pod_key === value) || {};
     const newNetworkPolicies = [...(challenge.network_policies || [])];
     newNetworkPolicies[policyIndex] = {
       ...newNetworkPolicies[policyIndex],
-      pod_key: target.pod_key || '',
-      container_key: target.container_key || '',
+      service: value,
     };
     onChange({ ...challenge, network_policies: newNetworkPolicies });
   };
@@ -1843,13 +1838,13 @@ function AdminChallengeModal({
                               {vpcMode && (
                                 <GuideField label={t('admin.challengeModal.labels.policyTarget')}>
                                   <select
-                                    value={policy.container_key || policy.pod_key || ''}
+                                    value={policy.service || ''}
                                     onChange={(e) => updatePolicyTarget(policyIndex, e.target.value)}
                                     className={`${selectClass} mb-3`}
                                   >
                                     <option value="">{t('admin.challengeModal.placeholders.policyTarget')}</option>
                                     {policyTargets.map((target) => (
-                                      <option key={target.container_key} value={target.container_key}>
+                                      <option key={target.service} value={target.service}>
                                         {target.label}
                                       </option>
                                     ))}

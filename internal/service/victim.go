@@ -196,9 +196,6 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 				return model.VictimSpec{}, ret
 			}
 			podSpec.Containers = append(podSpec.Containers, containerSpec)
-			if podSpec.ContainerKey == "" {
-				podSpec.ContainerKey = containerSpec.Key
-			}
 		}
 		spec.Pods = append(spec.Pods, podSpec)
 		exposeNetworkName := ""

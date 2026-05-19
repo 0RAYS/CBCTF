@@ -52,6 +52,13 @@ func findExposeDisplayName(exposes model.Exposes, port int32, protocol string) s
 	return ""
 }
 
+func podServiceName(podSpec model.PodSpec) string {
+	if len(podSpec.Containers) > 0 {
+		return podSpec.Containers[0].Name
+	}
+	return podSpec.Key
+}
+
 // StartVictim expects victim.Spec and workload pod records to be preloaded from DB.
 func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.RetVal) {
 	log.Logger.Debugf(
@@ -72,15 +79,12 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 	for _, pod := range pods {
 		wg.Go(func() error {
 			podSpec := pod.Spec
-			podLabels := make(map[string]string, len(labels)+2)
+			podLabels := make(map[string]string, len(labels)+1)
 			for key, value := range labels {
 				podLabels[key] = value
 			}
-			if podSpec.Key != "" {
-				podLabels[PodKeyLabel] = podSpec.Key
-			}
-			if podSpec.ContainerKey != "" {
-				podLabels[ContainerKeyLabel] = podSpec.ContainerKey
+			if serviceName := podServiceName(podSpec); serviceName != "" {
+				podLabels[ServiceLabel] = serviceName
 			}
 			capture := corev1.Container{
 				Name:    "capture",
@@ -329,17 +333,17 @@ func createVictimNetworkResources(
 		})
 	} else {
 		for _, podSpec := range victim.Spec.Pods {
-			matchLabels := make(map[string]string, len(labels)+2)
+			serviceName := podServiceName(podSpec)
+			matchLabels := make(map[string]string, len(labels)+1)
 			for key, value := range labels {
 				matchLabels[key] = value
 			}
-			matchLabels[PodKeyLabel] = podSpec.Key
-			if podSpec.ContainerKey != "" {
-				matchLabels[ContainerKeyLabel] = podSpec.ContainerKey
+			if serviceName != "" {
+				matchLabels[ServiceLabel] = serviceName
 			}
 			policies := make(model.NetworkPolicies, 0)
 			for _, policy := range victim.Spec.NetworkPolicies {
-				if policy.PodKey == podSpec.Key || policy.ContainerKey == podSpec.ContainerKey {
+				if policy.Service == serviceName {
 					policies = append(policies, policy)
 				}
 			}
