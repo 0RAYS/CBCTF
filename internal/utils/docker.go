@@ -3,6 +3,7 @@ package utils
 import (
 	"context"
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/compose-spec/compose-go/v2/loader"
@@ -11,20 +12,23 @@ import (
 )
 
 func LoadDockerComposeYaml(data string) (*types.Project, error) {
+	if strings.TrimSpace(data) == "" {
+		return nil, errors.New("empty yaml")
+	}
 	var raw map[string]any
 	if err := yaml.Unmarshal([]byte(data), &raw); err != nil {
 		return nil, err
-	}
-	if len(data) == 0 {
-		return nil, errors.New("empty yaml")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	return loader.LoadWithContext(ctx, types.ConfigDetails{
 		ConfigFiles: []types.ConfigFile{
 			{
-				Config: raw,
+				Filename: "-",
+				Config:   raw,
 			},
 		},
+	}, func(options *loader.Options) {
+		options.SetProjectName("test", true)
 	})
 }
