@@ -472,7 +472,7 @@ func collectVictimIPs(victim model.Victim, connections []utils.Connection) map[s
 	internalIPs := make(map[string]bool)
 	for _, pod := range victim.Pods {
 		for _, network := range pod.Spec.Networks {
-			attachment := network.Attachment()
+			attachment := network.Attachment
 			if attachment.IP != "" {
 				internalIPs[attachment.IP] = true
 			}
@@ -480,7 +480,7 @@ func collectVictimIPs(victim model.Victim, connections []utils.Connection) map[s
 	}
 	for _, pod := range victim.Spec.Pods {
 		for _, network := range pod.Networks {
-			attachment := network.Attachment()
+			attachment := network.Attachment
 			if attachment.IP != "" {
 				internalIPs[attachment.IP] = true
 			}
@@ -555,7 +555,7 @@ func addPodServicesByIP(servicesByIP map[string][]string, podSpec model.PodSpec)
 		return
 	}
 	for _, network := range podSpec.Networks {
-		attachment := network.Attachment()
+		attachment := network.Attachment
 		if attachment.IP != "" {
 			servicesByIP[attachment.IP] = append(servicesByIP[attachment.IP], services...)
 		}

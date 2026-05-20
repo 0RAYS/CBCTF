@@ -131,7 +131,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 			}
 			for _, container := range podSpec.Containers {
 				volumeMounts := make([]corev1.VolumeMount, 0)
-				for _, fileMount := range container.FileMounts() {
+				for _, fileMount := range container.FileMounts {
 					path := fileMount.Path
 					filename := path[strings.LastIndex(path, "/")+1:]
 					flagConfigMap, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
@@ -170,7 +170,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					ports = append(ports, corev1.ContainerPort{ContainerPort: p.Port})
 				}
 
-				resources := container.Resources()
+				resources := container.Resources
 				limit := make(corev1.ResourceList)
 				if resources.CPUMillis > 0 {
 					limit["cpu"] = resource.MustParse(strconv.FormatInt(resources.CPUMillis, 10) + "m")
@@ -200,8 +200,8 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 
 			annotations := make(map[string]string)
 			for i, network := range podSpec.Networks {
-				networkDefinition := network.Definition()
-				networkAttachment := network.Attachment()
+				networkDefinition := network.Definition
+				networkAttachment := network.Attachment
 				subnet, ok := subnetMap[networkDefinition.Name]
 				if !ok {
 					return fmt.Errorf("subnet %s not found", networkDefinition.Name)

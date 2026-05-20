@@ -68,12 +68,10 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 			if len(pod.Networks) > 0 {
 				service.Networks = make(map[string]*types.ServiceNetworkConfig)
 				for _, network := range pod.Networks {
-					attachment := network.Attachment()
-					definition := network.Definition()
-					service.Networks[attachment.Name] = &types.ServiceNetworkConfig{
-						Ipv4Address: attachment.IP,
+					service.Networks[network.Attachment.Name] = &types.ServiceNetworkConfig{
+						Ipv4Address: network.Attachment.IP,
 					}
-					networks[definition.Name] = definition
+					networks[network.Definition.Name] = network.Definition
 				}
 			}
 			cfg.Services[service.Name] = service

@@ -37,7 +37,7 @@ func shuffleTeams(teams []model.Team) model.RetVal {
 func needVPC(pods []model.ChallengePodTemplate) bool {
 	for _, pod := range pods {
 		for _, network := range pod.Networks {
-			if network.Definition().CIDR != "" {
+			if network.Definition.CIDR != "" {
 				return true
 			}
 		}
@@ -51,10 +51,10 @@ func selectExposeNetworkName(networks model.Networks) string {
 	}
 	selectedName := ""
 	for _, network := range networks {
-		if !network.Definition().External {
+		if !network.Definition.External {
 			continue
 		}
-		name := network.Attachment().Name
+		name := network.Attachment.Name
 		if selectedName == "" || strings.Compare(name, selectedName) < 0 {
 			selectedName = name
 		}
@@ -63,7 +63,7 @@ func selectExposeNetworkName(networks model.Networks) string {
 		return selectedName
 	}
 	for _, network := range networks {
-		name := network.Attachment().Name
+		name := network.Attachment.Name
 		if selectedName == "" || strings.Compare(name, selectedName) < 0 {
 			selectedName = name
 		}
@@ -115,12 +115,14 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 			Key:         containerTemplate.Key,
 			Name:        containerTemplate.Name,
 			Image:       containerTemplate.Image,
-			CPU:         containerTemplate.CPU,
-			Memory:      containerTemplate.Memory,
+			Resources: model.ResourceSpec{
+				CPUMillis:   int64(containerTemplate.CPU * 1000),
+				MemoryBytes: containerTemplate.Memory,
+			},
 			WorkingDir:  containerTemplate.WorkingDir,
 			Command:     append(model.StringList(nil), containerTemplate.Command...),
 			Environment: make(model.StringMap),
-			Files:       make(model.StringMap),
+			FileMounts:  make([]model.FileMountSpec, 0),
 			Exposes:     append(model.Exposes(nil), containerTemplate.Exposes...),
 		}
 		for key, value := range containerTemplate.Environment {
@@ -135,7 +137,7 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 			case model.EnvFlagBindingType:
 				containerSpec.Environment[flag.Binding.Target] = value
 			case model.FileFlagBindingType:
-				containerSpec.Files[flag.Binding.Target] = value
+				containerSpec.FileMounts = append(containerSpec.FileMounts, model.FileMountSpec{Path: flag.Binding.Target, Content: value})
 			default:
 				return model.VictimContainerSpec{}, model.RetVal{Msg: i18n.Model.ChallengeFlag.InvalidType}
 			}
@@ -206,8 +208,8 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 		}
 
 		for _, network := range podTemplate.Networks {
-			networkDefinition := network.Definition()
-			networkAttachment := network.Attachment()
+			networkDefinition := network.Definition
+			networkAttachment := network.Attachment
 			if spec.NetworkPlan.Name == "" {
 				continue
 			}

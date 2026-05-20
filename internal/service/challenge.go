@@ -135,10 +135,13 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 			if !subnet.Contains(ip) {
 				return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid subnet"}}
 			}
-			networks = append(networks, model.NewNetwork(networkDefinition, model.NetworkAttachment{
-				Name: key,
-				IP:   value.Ipv4Address,
-			}))
+			networks = append(networks, model.Network{
+				Definition: networkDefinition,
+				Attachment: model.NetworkAttachment{
+					Name: key,
+					IP:   value.Ipv4Address,
+				},
+			})
 		}
 		if len(networksMap) > 0 && len(networks) == 0 {
 			return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid networks"}}
