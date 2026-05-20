@@ -5,7 +5,6 @@ import (
 	"CBCTF/internal/log"
 	"context"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -68,9 +67,6 @@ func decodeTaskPayload(payload []byte) any {
 		return nil
 	}
 	var normalized any
-	if err := json.Unmarshal(payload, &normalized); err == nil {
-		return normalized
-	}
 	if err := msgpack.Unmarshal(payload, &normalized); err == nil {
 		return normalizeMsgpack(normalized)
 	}

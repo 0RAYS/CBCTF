@@ -87,9 +87,6 @@ func GetLiveTaskResp(task *asynq.TaskInfo) gin.H {
 				return nil
 			}
 			var normalized any
-			if err := json.Unmarshal(raw, &normalized); err == nil {
-				return normalized
-			}
 			if err := msgpack.Unmarshal(raw, &normalized); err == nil {
 				return normalizePayload(normalized)
 			}
