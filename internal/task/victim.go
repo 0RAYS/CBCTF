@@ -48,7 +48,9 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 	err := func() error {
 		podRepo := db.InitPodRepo(db.DB)
 		victimRepo := db.InitVictimRepo(db.DB)
-		currentVictim, ret := victimRepo.GetByID(victim.ID)
+		currentVictim, ret := victimRepo.GetByID(victim.ID, db.GetOptions{
+			Preloads: map[string]db.GetOptions{"Pods": {}},
+		})
 		if !ret.OK {
 			if ret.Msg == i18n.Model.NotFound {
 				log.Logger.Debugf("Start victim skipped: victim_id=%d no longer exists", victim.ID)
@@ -60,6 +62,7 @@ func HandleStartVictimTask(ctx context.Context, t *asynq.Task) error {
 			log.Logger.Infof("Start victim skipped: victim_id=%d is terminating", victim.ID)
 			return nil
 		}
+		victim = currentVictim
 		if ret = victimRepo.Update(victim.ID, db.UpdateVictimOptions{Status: new(model.PendingVictimStatus)}); !ret.OK {
 			return fmt.Errorf("update victim failed: %s", ret.Msg)
 		}
