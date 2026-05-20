@@ -4,12 +4,12 @@ import (
 	"CBCTF/internal/log"
 	"CBCTF/internal/model"
 
-	"github.com/compose-spec/compose-go/types"
+	"github.com/compose-spec/compose-go/v2/types"
 )
 
 func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.ChallengeFlag) string {
 	cfg := types.Project{
-		Services: make(types.Services, 0),
+		Services: make(types.Services),
 		Networks: make(types.Networks),
 		Volumes:  make(types.Volumes),
 	}
@@ -74,14 +74,12 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 					networks[network.Name] = network
 				}
 			}
-			cfg.Services = append(cfg.Services, service)
+			cfg.Services[service.Name] = service
 		}
 	}
 	for name, network := range networks {
 		cfg.Networks[name] = types.NetworkConfig{
-			External: types.External{
-				External: network.External,
-			},
+			External: types.External(network.External),
 			Ipam: types.IPAMConfig{
 				Config: []*types.IPAMPool{
 					{

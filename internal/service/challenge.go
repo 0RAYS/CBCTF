@@ -71,7 +71,7 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 			return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid gateway"}}
 		}
 		networksMap[network.Name] = model.Network{
-			External: network.External.External,
+			External: bool(network.External),
 			Name:     network.Name,
 			CIDR:     network.Ipam.Config[0].Subnet,
 			Gateway:  network.Ipam.Config[0].Gateway,
