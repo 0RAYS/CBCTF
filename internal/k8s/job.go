@@ -29,7 +29,7 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, mod
 	containers := make([]corev1.Container, 0)
 	for _, image := range options.Images {
 		containers = append(containers, corev1.Container{
-			Name:            utils.RandStr(10),
+			Name:            utils.RandHexStr(10),
 			ImagePullPolicy: corev1.PullPolicy(options.PullPolicy),
 			Image:           image,
 			Command:         []string{"echo", "Success"},
@@ -47,7 +47,7 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, mod
 			TTLSecondsAfterFinished: new(int32),
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      fmt.Sprintf("image-puller-%s", utils.RandStr(5)),
+					Name:      fmt.Sprintf("image-puller-%s", utils.RandHexStr(5)),
 					Namespace: globalNamespace,
 				},
 				Spec: corev1.PodSpec{

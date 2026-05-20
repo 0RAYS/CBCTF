@@ -112,9 +112,9 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 		containerTemplate model.ChallengeContainerTemplate,
 	) (model.VictimContainerSpec, model.RetVal) {
 		containerSpec := model.VictimContainerSpec{
-			Key:         containerTemplate.Key,
-			Name:        containerTemplate.Name,
-			Image:       containerTemplate.Image,
+			Key:   containerTemplate.Key,
+			Name:  containerTemplate.Name,
+			Image: containerTemplate.Image,
 			Resources: model.ResourceSpec{
 				CPUMillis:   int64(containerTemplate.CPU * 1000),
 				MemoryBytes: containerTemplate.Memory,
@@ -152,7 +152,7 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 	hasVPC := needVPC(challenge.Template.Pods)
 	if hasVPC {
 		spec.NetworkPlan = model.VPC{
-			Name:    fmt.Sprintf("vpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6)),
+			Name:    fmt.Sprintf("vpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandHexStr(6)),
 			Subnets: make([]*model.Subnet, 0),
 		}
 	}
@@ -217,10 +217,10 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 			if !ok {
 				subnet = &model.Subnet{
 					DefName:      networkDefinition.Name,
-					Name:         fmt.Sprintf("net-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6)),
+					Name:         fmt.Sprintf("net-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandHexStr(6)),
 					CIDRBlock:    networkDefinition.CIDR,
 					Gateway:      networkDefinition.Gateway,
-					NetAttachDef: &model.NetAttachDef{Name: fmt.Sprintf("nad-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6))},
+					NetAttachDef: &model.NetAttachDef{Name: fmt.Sprintf("nad-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandHexStr(6))},
 				}
 				networkPlans[networkDefinition.Name] = subnet
 				spec.NetworkPlan.Subnets = append(spec.NetworkPlan.Subnets, subnet)
@@ -232,7 +232,7 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 				dnats := make([]*model.DNat, 0)
 				if needSNAT {
 					if _, exists := snatDedup[networkDefinition.Name]; !exists {
-						snats = append(snats, &model.SNat{Name: fmt.Sprintf("snat-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6))})
+						snats = append(snats, &model.SNat{Name: fmt.Sprintf("snat-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandHexStr(6))})
 						snatDedup[networkDefinition.Name] = struct{}{}
 					}
 				}
@@ -244,7 +244,7 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 						}
 						dnatDedup[key] = struct{}{}
 						dnats = append(dnats, &model.DNat{
-							Name:        fmt.Sprintf("dnat-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6)),
+							Name:        fmt.Sprintf("dnat-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandHexStr(6)),
 							DisplayName: expose.Published,
 							ExternalPort: func() int32 {
 								for {
@@ -272,10 +272,10 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 					}
 					if subnet.NatGateway == nil {
 						subnet.NatGateway = &model.NatGateway{
-							Name:  fmt.Sprintf("nat-%s", utils.RandStr(20)),
+							Name:  fmt.Sprintf("nat-%s", utils.RandHexStr(20)),
 							LanIP: lanIP,
 							EIP: &model.EIP{
-								Name: fmt.Sprintf("eip-%s", utils.RandStr(20)),
+								Name: fmt.Sprintf("eip-%s", utils.RandHexStr(20)),
 							},
 						}
 					}
@@ -300,7 +300,7 @@ func buildPodRecords(victim model.Victim) []db.CreatePodOptions {
 					return name
 				}
 				return name[:15]
-			}(), utils.RandStr(6)),
+			}(), utils.RandHexStr(6)),
 			Spec: podSpec,
 		})
 	}

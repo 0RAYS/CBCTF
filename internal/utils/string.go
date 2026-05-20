@@ -13,8 +13,8 @@ func UUID() string {
 	return uuid.New().String()
 }
 
-// RandStr 生成随机字符串
-func RandStr(n int) string {
+// RandHexStr 生成随机字符串
+func RandHexStr(n int) string {
 	result := make([]byte, n)
 	_, err := rand.Read(result)
 	if err != nil {

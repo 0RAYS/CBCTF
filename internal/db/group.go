@@ -103,7 +103,7 @@ func (g *GroupRepo) Delete(idL ...uint) model.RetVal {
 	}
 	for _, group := range groupL {
 		if ret = g.Update(group.ID, UpdateGroupOptions{
-			Name: new(fmt.Sprintf("%s_deleted_%s", group.Name, utils.RandStr(6))),
+			Name: new(fmt.Sprintf("%s_deleted_%s", group.Name, utils.RandHexStr(6))),
 		}); !ret.OK {
 			return ret
 		}

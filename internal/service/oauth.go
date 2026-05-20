@@ -23,11 +23,11 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 	}
 	name, ok := utils.GetClaimStringValue(response, provider.NameClaim)
 	if !ok {
-		name = fmt.Sprintf("%s_%s", utils.RandStr(10), provider.Provider)
+		name = fmt.Sprintf("%s_%s", utils.RandHexStr(10), provider.Provider)
 	}
 	email, ok := utils.GetClaimStringValue(response, provider.EmailClaim)
 	if !ok {
-		email = fmt.Sprintf("%s@%s.com", utils.RandStr(10), provider.Uri)
+		email = fmt.Sprintf("%s@%s.com", utils.RandHexStr(10), provider.Uri)
 	}
 	picture, _ := utils.GetClaimStringValue(response, provider.PictureClaim)
 	description, _ := utils.GetClaimStringValue(response, provider.DescriptionClaim)
@@ -40,10 +40,10 @@ func OauthLogin(tx *gorm.DB, provider model.Oauth, response map[string]any) (mod
 		}
 		// 获取用户失败的时创建新用户
 		if !userRepo.IsUniqueKeyValue(0, "name", name) {
-			name = fmt.Sprintf("%s_%s", utils.RandStr(10), provider.Provider)
+			name = fmt.Sprintf("%s_%s", utils.RandHexStr(10), provider.Provider)
 		}
 		if !userRepo.IsUniqueKeyValue(0, "email", email) {
-			email = fmt.Sprintf("%s@%s.com", utils.RandStr(10), provider.Uri)
+			email = fmt.Sprintf("%s@%s.com", utils.RandHexStr(10), provider.Uri)
 		}
 		user, ret = userRepo.Insert(model.User{
 			Name:           name,

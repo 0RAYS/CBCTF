@@ -37,7 +37,7 @@ func GetChallenges(tx *gorm.DB, form dto.GetChallengesForm) ([]model.Challenge, 
 }
 
 func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db.CreateChallengeFlagOptions, model.RetVal) {
-	prefix := utils.RandStr(10)
+	prefix := utils.RandHexStr(10)
 	config, err := utils.LoadDockerComposeYaml(dockerCompose, prefix)
 	if err != nil {
 		log.Logger.Warningf("Failed to load DockerCompose: %v", err)

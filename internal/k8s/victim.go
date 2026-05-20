@@ -135,14 +135,14 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					path := fileMount.Path
 					filename := path[strings.LastIndex(path, "/")+1:]
 					flagConfigMap, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
-						Name:   fmt.Sprintf("flag-%s", utils.RandStr(20)),
+						Name:   fmt.Sprintf("flag-%s", utils.RandHexStr(20)),
 						Labels: labels,
 						Data:   map[string]string{filename: fileMount.Content},
 					})
 					if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 						return errors.New(err.(string))
 					}
-					volumeName := fmt.Sprintf("flag-%s", utils.RandStr(10))
+					volumeName := fmt.Sprintf("flag-%s", utils.RandHexStr(10))
 					volumeMounts = append(volumeMounts, corev1.VolumeMount{
 						Name:      volumeName,
 						MountPath: path,
@@ -242,7 +242,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 			// 非 VPC 模式创建 NodePort 类型的 Service
 			if victim.Spec.NetworkPlan.Name == "" && len(podSpec.ServicePorts) > 0 {
 				service, ret := CreateService(ctx, CreateServiceOptions{
-					Name:     fmt.Sprintf("svc-%s", utils.RandStr(20)),
+					Name:     fmt.Sprintf("svc-%s", utils.RandHexStr(20)),
 					Ports:    podSpec.ServicePorts,
 					Labels:   labels,
 					Selector: labels,
@@ -305,7 +305,7 @@ func createVictimNetworkResources(
 	}
 
 	createNetworkPolicy := func(matchLabels map[string]string, policies model.NetworkPolicies) error {
-		name := fmt.Sprintf("np-%s", utils.RandStr(20))
+		name := fmt.Sprintf("np-%s", utils.RandHexStr(20))
 		_, ret := CreateNetworkPolicy(ctx, CreateNetworkPolicyOptions{
 			Name:        name,
 			Labels:      labels,

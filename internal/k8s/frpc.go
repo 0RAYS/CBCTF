@@ -77,7 +77,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 	podNginxConfigMap := make(map[string]string)
 	podVPCGWMap := make(map[string]string)
 	if len(victim.Spec.NetworkPlan.Subnets) == 0 {
-		podName := fmt.Sprintf("frpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6))
+		podName := fmt.Sprintf("frpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandHexStr(6))
 		// 添加一个独立tag, 防止受 NetworkPolicy 影响
 		frpcConfig := fmt.Sprintf(frpcHeaderTemplate, frps.Host, frps.Port, frps.Token)
 		nginxConfig := ""
@@ -90,9 +90,9 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 			if protocol := strings.ToLower(endpoint.Protocol); protocol == "tcp" {
 				frpcConfig += fmt.Sprintf(
 					frpcItemTemplate,
-					utils.RandStr(10), protocol, "127.0.0.1", endpoint.Port, exposedPort, proxyProtocol,
+					utils.RandHexStr(10), protocol, "127.0.0.1", endpoint.Port, exposedPort, proxyProtocol,
 				)
-				name := utils.RandStr(10)
+				name := utils.RandHexStr(10)
 				nginxConfig += fmt.Sprintf(
 					nginxItemTemplate,
 					name, endpoint.IP, endpoint.Port, endpoint.Port, name,
@@ -100,7 +100,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 			} else {
 				frpcConfig += fmt.Sprintf(
 					frpcItemTemplate,
-					utils.RandStr(10), protocol, endpoint.IP, endpoint.Port, exposedPort, "",
+					utils.RandHexStr(10), protocol, endpoint.IP, endpoint.Port, exposedPort, "",
 				)
 			}
 			newEndpoints = append(newEndpoints, model.Endpoint{
@@ -125,7 +125,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 				return victim, ret
 			}
 			needFrpc := false
-			podName := fmt.Sprintf("frpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6))
+			podName := fmt.Sprintf("frpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandHexStr(6))
 			frpcConfig := fmt.Sprintf(frpcHeaderTemplate, frps.Host, frps.Port, frps.Token)
 			nginxConfig := ""
 			for _, dnat := range subnet.NatGateway.EIP.DNats {
@@ -137,9 +137,9 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 				if protocol := strings.ToLower(dnat.Protocol); protocol == "tcp" {
 					frpcConfig += fmt.Sprintf(
 						frpcItemTemplate,
-						utils.RandStr(10), strings.ToLower(dnat.Protocol), "127.0.0.1", dnat.ExternalPort, exposedPort, proxyProtocol,
+						utils.RandHexStr(10), strings.ToLower(dnat.Protocol), "127.0.0.1", dnat.ExternalPort, exposedPort, proxyProtocol,
 					)
-					name := utils.RandStr(10)
+					name := utils.RandHexStr(10)
 					nginxConfig += fmt.Sprintf(
 						nginxItemTemplate,
 						name, subnet.NatGateway.EIP.IP, dnat.ExternalPort, dnat.ExternalPort, name,
@@ -147,7 +147,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 				} else {
 					frpcConfig += fmt.Sprintf(
 						frpcItemTemplate,
-						utils.RandStr(10), strings.ToLower(dnat.Protocol), subnet.NatGateway.EIP.IP, dnat.ExternalPort, exposedPort, "",
+						utils.RandHexStr(10), strings.ToLower(dnat.Protocol), subnet.NatGateway.EIP.IP, dnat.ExternalPort, exposedPort, "",
 					)
 				}
 				newEndpoints = append(newEndpoints, model.Endpoint{
@@ -185,7 +185,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 	for _, podName := range frpcPodNameL {
 		wg.Go(func() error {
 			fcm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
-				Name:   fmt.Sprintf("frpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6)),
+				Name:   fmt.Sprintf("frpc-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandHexStr(6)),
 				Labels: labels,
 				Data:   map[string]string{"frpc.toml": podFrpcConfigMap[podName]},
 			})
@@ -196,7 +196,7 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 				return fmt.Errorf("create frpc configmap failed: %s", ret.Msg)
 			}
 			ncm, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
-				Name:   fmt.Sprintf("nginx-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6)),
+				Name:   fmt.Sprintf("nginx-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandHexStr(6)),
 				Labels: labels,
 				Data:   map[string]string{"nginx.conf": podNginxConfigMap[podName]},
 			})

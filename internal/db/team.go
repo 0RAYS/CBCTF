@@ -235,7 +235,7 @@ func (t *TeamRepo) Delete(idL ...uint) model.RetVal {
 	submissionIDL, teamFlagIDL := make([]uint, 0), make([]uint, 0)
 	for _, team := range teamL {
 		if ret = t.Update(team.ID, UpdateTeamOptions{
-			Name: new(fmt.Sprintf("%s_deleted_%s", team.Name, utils.RandStr(6))),
+			Name: new(fmt.Sprintf("%s_deleted_%s", team.Name, utils.RandHexStr(6))),
 		}); !ret.OK {
 			return ret
 		}

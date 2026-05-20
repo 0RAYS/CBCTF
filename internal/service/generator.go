@@ -47,7 +47,7 @@ func StartGenerators(tx *gorm.DB, contestID uint, form dto.StartGeneratorsForm) 
 				ChallengeID:   challenge.ID,
 				ChallengeName: challenge.Name,
 				ContestID:     sql.Null[uint]{V: contestID, Valid: contestID > 0},
-				Name:          fmt.Sprintf("gen-%d-%d-%s", contestID, challenge.ID, utils.RandStr(6)),
+				Name:          fmt.Sprintf("gen-%d-%d-%s", contestID, challenge.ID, utils.RandHexStr(6)),
 			})
 			if !ret.OK {
 				failedCreate++
