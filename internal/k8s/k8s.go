@@ -12,6 +12,7 @@ import (
 	netattclient "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/client/clientset/versioned"
 	ovnclient "github.com/kubeovn/kube-ovn/pkg/client/clientset/versioned"
 	"k8s.io/client-go/kubernetes"
+	virtclient "kubevirt.io/client-go/kubevirt"
 )
 
 const (
@@ -25,6 +26,7 @@ var (
 	kubeClient       *kubernetes.Clientset
 	netattClient     *netattclient.Clientset
 	ovnClient        *ovnclient.Clientset
+	virtClient       *virtclient.Clientset
 	kubeConfig       *rest.Config
 	globalNamespace  string
 	externalNetworks []ExternalNetwork
@@ -73,5 +75,9 @@ func initClients() {
 	ovnClient, err = ovnclient.NewForConfig(kubeConfig)
 	if err != nil {
 		log.Logger.Fatalf("Failed to init KubeOVN client: %s", err)
+	}
+	virtClient, err = virtclient.NewForConfig(kubeConfig)
+	if err != nil {
+		log.Logger.Fatalf("Failed to init KubeVirt client: %s", err)
 	}
 }
