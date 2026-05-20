@@ -47,8 +47,16 @@
     "toggleMenu": "切换导航菜单",
     "leaveBlankToKeep": "留空则不修改",
     "pagination": {
+      "label": "分页导航",
+      "liveAnnounce": "第 {{current}} 页，共 {{total}} 页",
+      "goToPage": "跳转到第 {{page}} 页",
+      "prevPage": "上一页",
+      "nextPage": "下一页",
+      "firstPage": "第一页",
+      "lastPage": "最后一页",
       "totalItems": "共 {{count}} 条",
       "jumpTo": "跳转到",
+      "jumpToLabel": "跳转页码",
       "page": "页",
       "pagePlaceholder": "页码",
       "jump": "跳转"
@@ -855,6 +863,7 @@
           "title": "靶机列表",
           "total": "(共 {{count}} 个靶机)",
           "stopButton": "停止靶机",
+          "selectContainer": "选择靶机 {{id}}",
           "columns": {
             "id": "ID",
             "challenge": "题目",
