@@ -575,6 +575,7 @@
           "title": "公告标题",
           "titlePlaceholder": "请输入公告标题",
           "type": "公告类型",
+          "typePlaceholder": "请输入自定义公告类型, 如 normal / event / maintenance",
           "content": "公告内容",
           "contentPlaceholder": "请输入公告内容"
         },

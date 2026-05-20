@@ -14,7 +14,7 @@
 import { useState } from 'react';
 import { IconEdit, IconTrash, IconPlus } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { Button, FormField, Input, List, Modal, ModalFooter, Pagination, Select, Textarea } from '../../../common';
+import { Button, FormField, Input, List, Modal, ModalFooter, Pagination, Textarea } from '../../../common';
 
 function AdminNotice({
   notices = [],
@@ -38,10 +38,26 @@ function AdminNotice({
   });
 
   const columns = [
-    { key: 'title', label: t('admin.contests.notices.table.title'), width: '15%' },
-    { key: 'type', label: t('admin.contests.notices.table.type'), width: '10%' },
-    { key: 'content', label: t('admin.contests.notices.table.content'), width: '48%' },
-    { key: 'actions', label: t('admin.contests.notices.table.actions'), width: '7%' },
+    {
+      key: 'title',
+      label: t('admin.contests.notices.table.title'),
+      width: '15%',
+    },
+    {
+      key: 'type',
+      label: t('admin.contests.notices.table.type'),
+      width: '10%',
+    },
+    {
+      key: 'content',
+      label: t('admin.contests.notices.table.content'),
+      width: '48%',
+    },
+    {
+      key: 'actions',
+      label: t('admin.contests.notices.table.actions'),
+      width: '7%',
+    },
   ];
 
   const typeLabels = {
@@ -126,7 +142,9 @@ function AdminNotice({
     if (mode === 'delete') {
       return (
         <p className="text-neutral-300">
-          {t('admin.contests.notices.modal.deletePrompt', { title: selectedNotice?.title || '' })}
+          {t('admin.contests.notices.modal.deletePrompt', {
+            title: selectedNotice?.title || '',
+          })}
         </p>
       );
     }
@@ -143,14 +161,11 @@ function AdminNotice({
           />
         </FormField>
         <FormField label={t('admin.contests.notices.form.type')} className="[&_label]:font-mono [&_label]:mb-2">
-          <Select
+          <Input
+            type="text"
             value={form.type}
             onChange={(e) => setForm({ ...form, type: e.target.value })}
-            options={[
-              { value: 'normal', label: t('admin.contests.notices.types.normal') },
-              { value: 'important', label: t('admin.contests.notices.types.important') },
-              { value: 'update', label: t('admin.contests.notices.types.update') },
-            ]}
+            placeholder={t('admin.contests.notices.form.typePlaceholder')}
             required
           />
         </FormField>

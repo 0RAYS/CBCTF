@@ -575,6 +575,7 @@
           "title": "Notice Title",
           "titlePlaceholder": "Enter notice title",
           "type": "Notice Type",
+          "typePlaceholder": "Enter a custom notice type, e.g. normal / event / maintenance",
           "content": "Notice Content",
           "contentPlaceholder": "Enter notice content"
         },

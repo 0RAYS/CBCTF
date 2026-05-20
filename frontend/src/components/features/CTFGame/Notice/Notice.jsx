@@ -7,7 +7,7 @@
  *   id: 1,
  *   title: "Challenge 'Web Injection' Updated",
  *   content: "We've updated the challenge description...",
- *   type: "update", // update/important/normal
+ *   type: "update",
  *   timestamp: "2024-03-15 14:30:22"
  * }]
  */
@@ -54,7 +54,7 @@ function Notice({ notices }) {
             <motion.div
               key={notice.id}
               className={`border rounded-md overflow-hidden transition-colors duration-200
-                                ${typeColors[notice.type]}
+                                ${typeColors[notice.type] || typeColors.normal}
                                 hover:border-neutral-100`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -64,8 +64,13 @@ function Notice({ notices }) {
               <div className="p-4 cursor-pointer transition-colors duration-200 hover:bg-white/5">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
-                    <span className="text-xl select-none">{typeIcons[notice.type]}</span>
-                    <h3 className="font-mono text-neutral-50 transition-colors duration-200">{notice.title}</h3>
+                    <span className="text-xl select-none">{typeIcons[notice.type] || typeIcons.normal}</span>
+                    <div>
+                      <div className="text-[11px] uppercase tracking-[0.2em] text-neutral-500 font-mono">
+                        {notice.type || 'normal'}
+                      </div>
+                      <h3 className="font-mono text-neutral-50 transition-colors duration-200">{notice.title}</h3>
+                    </div>
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="text-neutral-400 text-sm font-mono">{notice.timestamp}</span>

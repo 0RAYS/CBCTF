@@ -16,7 +16,6 @@ type CheatReasonType string
 const (
 	CheaterType    CheatType = "cheater"
 	SuspiciousType CheatType = "suspicious"
-	PassType       CheatType = "pass"
 
 	DifferentTokenMagicTmpl CheatReasonTmpl = "Device magic %s is different from token magic %s"
 	SameDeviceMagicTmpl     CheatReasonTmpl = "%s has the same Device magic"

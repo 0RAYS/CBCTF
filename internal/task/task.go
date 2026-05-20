@@ -3,6 +3,7 @@ package task
 import (
 	"CBCTF/internal/config"
 	"CBCTF/internal/log"
+	"CBCTF/internal/model"
 	"CBCTF/internal/prometheus"
 	"CBCTF/internal/redis"
 	"context"
@@ -25,9 +26,9 @@ func wrapHandler(taskType string, h asynq.HandlerFunc) asynq.HandlerFunc {
 		start := time.Now()
 		err := h(ctx, t)
 		if err == nil {
-			recordTaskExecution(ctx, t, "success", nil, nil)
+			recordTaskExecution(ctx, t, model.TaskSuccessStatus, nil, nil)
 		} else if shouldRecordFailure(ctx, err) {
-			recordTaskExecution(ctx, t, "failed", nil, err)
+			recordTaskExecution(ctx, t, model.TaskFailedStatus, nil, err)
 		}
 		if err != nil {
 			log.Logger.Warningf("task %s failed: %s", taskType, err.Error())
