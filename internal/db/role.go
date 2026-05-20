@@ -98,7 +98,7 @@ func (r *RoleRepo) GetFallbackRoleID(excludedRoleIDL ...uint) (uint, model.RetVa
 	}
 	if slices.Contains(excludedRoleIDL, userRole.ID) {
 		return 0, model.RetVal{
-			Msg: i18n.Model.Role.GetError,
+			Msg:  i18n.Model.Role.GetError,
 			Attr: map[string]any{"Error": "no fallback role available"},
 		}
 	}
@@ -131,7 +131,7 @@ func (r *RoleRepo) Delete(idL ...uint) model.RetVal {
 	}
 	for _, role := range roleL {
 		if ret = r.Update(role.ID, UpdateRoleOptions{
-			Name: new(fmt.Sprintf("%s_deleted_%s", role.Name, utils.RandStr(6))),
+			Name: new(fmt.Sprintf("%s_deleted_%s", role.Name, utils.RandHexStr(6))),
 		}); !ret.OK {
 			return ret
 		}
