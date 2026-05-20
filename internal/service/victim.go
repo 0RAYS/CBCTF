@@ -37,7 +37,7 @@ func shuffleTeams(teams []model.Team) model.RetVal {
 func needVPC(pods []model.ChallengePodTemplate) bool {
 	for _, pod := range pods {
 		for _, network := range pod.Networks {
-			if network.CIDR != "" {
+			if network.Definition().CIDR != "" {
 				return true
 			}
 		}
@@ -51,19 +51,21 @@ func selectExposeNetworkName(networks model.Networks) string {
 	}
 	selectedName := ""
 	for _, network := range networks {
-		if !network.External {
+		if !network.Definition().External {
 			continue
 		}
-		if selectedName == "" || strings.Compare(network.Name, selectedName) < 0 {
-			selectedName = network.Name
+		name := network.Attachment().Name
+		if selectedName == "" || strings.Compare(name, selectedName) < 0 {
+			selectedName = name
 		}
 	}
 	if selectedName != "" {
 		return selectedName
 	}
 	for _, network := range networks {
-		if selectedName == "" || strings.Compare(network.Name, selectedName) < 0 {
-			selectedName = network.Name
+		name := network.Attachment().Name
+		if selectedName == "" || strings.Compare(name, selectedName) < 0 {
+			selectedName = name
 		}
 	}
 	return selectedName
@@ -204,35 +206,37 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 		}
 
 		for _, network := range podTemplate.Networks {
+			networkDefinition := network.Definition()
+			networkAttachment := network.Attachment()
 			if spec.NetworkPlan.Name == "" {
 				continue
 			}
-			subnet, ok := networkPlans[network.Name]
+			subnet, ok := networkPlans[networkDefinition.Name]
 			if !ok {
 				subnet = &model.Subnet{
-					DefName:      network.Name,
+					DefName:      networkDefinition.Name,
 					Name:         fmt.Sprintf("net-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6)),
-					CIDRBlock:    network.CIDR,
-					Gateway:      network.Gateway,
+					CIDRBlock:    networkDefinition.CIDR,
+					Gateway:      networkDefinition.Gateway,
 					NetAttachDef: &model.NetAttachDef{Name: fmt.Sprintf("nad-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6))},
 				}
-				networkPlans[network.Name] = subnet
+				networkPlans[networkDefinition.Name] = subnet
 				spec.NetworkPlan.Subnets = append(spec.NetworkPlan.Subnets, subnet)
 			}
-			needSNAT := network.External
-			needDNAT := len(podTemplate.ServicePorts) > 0 && network.Name == exposeNetworkName
+			needSNAT := networkDefinition.External
+			needDNAT := len(podTemplate.ServicePorts) > 0 && networkDefinition.Name == exposeNetworkName
 			if needSNAT || needDNAT {
 				snats := make([]*model.SNat, 0)
 				dnats := make([]*model.DNat, 0)
 				if needSNAT {
-					if _, exists := snatDedup[network.Name]; !exists {
+					if _, exists := snatDedup[networkDefinition.Name]; !exists {
 						snats = append(snats, &model.SNat{Name: fmt.Sprintf("snat-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandStr(6))})
-						snatDedup[network.Name] = struct{}{}
+						snatDedup[networkDefinition.Name] = struct{}{}
 					}
 				}
 				if needDNAT {
 					for _, expose := range podTemplate.ServicePorts {
-						key := fmt.Sprintf("%s-%s-%d-%s", podTemplate.Key, network.Name, expose.Port, expose.Protocol)
+						key := fmt.Sprintf("%s-%s-%d-%s", podTemplate.Key, networkDefinition.Name, expose.Port, expose.Protocol)
 						if _, exists := dnatDedup[key]; exists {
 							continue
 						}
@@ -250,7 +254,7 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 									}
 								}
 							}(),
-							InternalIP:   network.IP,
+							InternalIP:   networkAttachment.IP,
 							InternalPort: expose.Port,
 							Protocol:     expose.Protocol,
 						})

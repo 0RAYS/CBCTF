@@ -14,7 +14,7 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 		Volumes:  make(types.Volumes),
 	}
 
-	networks := make(map[string]model.Network)
+	networks := make(map[string]model.NetworkDefinition)
 	for _, pod := range template.Pods {
 		for _, container := range pod.Containers {
 			service := types.ServiceConfig{
@@ -68,10 +68,12 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 			if len(pod.Networks) > 0 {
 				service.Networks = make(map[string]*types.ServiceNetworkConfig)
 				for _, network := range pod.Networks {
-					service.Networks[network.Name] = &types.ServiceNetworkConfig{
-						Ipv4Address: network.IP,
+					attachment := network.Attachment()
+					definition := network.Definition()
+					service.Networks[attachment.Name] = &types.ServiceNetworkConfig{
+						Ipv4Address: attachment.IP,
 					}
-					networks[network.Name] = network
+					networks[definition.Name] = definition
 				}
 			}
 			cfg.Services[service.Name] = service
