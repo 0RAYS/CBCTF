@@ -53,7 +53,7 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 			}
 		}
 	}
-	networksMap := make(map[string]model.Network)
+	networksMap := make(map[string]model.NetworkDefinition)
 	for _, network := range config.Networks {
 		network.Name = strings.TrimPrefix(network.Name, "_")
 		if network.Name == "default" {
@@ -70,7 +70,7 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 		if err != nil || !subnet.Contains(gateway) {
 			return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid gateway"}}
 		}
-		networksMap[network.Name] = model.Network{
+		networksMap[network.Name] = model.NetworkDefinition{
 			External: bool(network.External),
 			Name:     network.Name,
 			CIDR:     network.Ipam.Config[0].Subnet,
@@ -123,20 +123,22 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 			if err != nil {
 				return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid ip"}}
 			}
-			network, ok := networksMap[key]
+			networkDefinition, ok := networksMap[key]
 			if !ok {
 				log.Logger.Warningf("Network %s not found in networks", key)
 				return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid network"}}
 			}
-			subnet, err := netip.ParsePrefix(network.CIDR)
+			subnet, err := netip.ParsePrefix(networkDefinition.CIDR)
 			if err != nil {
 				return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": err.Error()}}
 			}
 			if !subnet.Contains(ip) {
 				return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid subnet"}}
 			}
-			network.IP = value.Ipv4Address
-			networks = append(networks, network)
+			networks = append(networks, model.NewNetwork(networkDefinition, model.NetworkAttachment{
+				Name: key,
+				IP:   value.Ipv4Address,
+			}))
 		}
 		if len(networksMap) > 0 && len(networks) == 0 {
 			return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": "Invalid networks"}}

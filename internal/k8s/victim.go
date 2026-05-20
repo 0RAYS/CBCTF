@@ -198,17 +198,19 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 
 			annotations := make(map[string]string)
 			for i, network := range podSpec.Networks {
-				subnet, ok := subnetMap[network.Name]
+				networkDefinition := network.Definition()
+				networkAttachment := network.Attachment()
+				subnet, ok := subnetMap[networkDefinition.Name]
 				if !ok {
-					return fmt.Errorf("subnet %s not found", network.Name)
+					return fmt.Errorf("subnet %s not found", networkDefinition.Name)
 				}
-				netAttachDef, ok := netAttachDefMap[network.Name]
+				netAttachDef, ok := netAttachDefMap[networkDefinition.Name]
 				if !ok {
-					return fmt.Errorf("netAttachDef %s not found", network.Name)
+					return fmt.Errorf("netAttachDef %s not found", networkDefinition.Name)
 				}
 				if i == 0 {
 					annotations["ovn.kubernetes.io/logical_switch"] = subnet.Name
-					annotations["ovn.kubernetes.io/ip_address"] = network.IP
+					annotations["ovn.kubernetes.io/ip_address"] = networkAttachment.IP
 					// 兼容 kube-ovn 作为 副 CNI 时注入 eth0 网卡
 					annotations["v1.multus-cni.io/default-network"] = fmt.Sprintf("%s/%s", globalNamespace, netAttachDef.Name)
 				} else {
@@ -216,9 +218,9 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
 				}
 				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", netAttachDef.Name, globalNamespace)] = subnet.Name
-				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", netAttachDef.Name, globalNamespace)] = network.IP
-				if network.External {
-					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/routes", netAttachDef.Name, globalNamespace)] = fmt.Sprintf("[{\"gw\":\"%s\"}]", network.Gateway)
+				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", netAttachDef.Name, globalNamespace)] = networkAttachment.IP
+				if networkDefinition.External {
+					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/routes", netAttachDef.Name, globalNamespace)] = fmt.Sprintf("[{\"gw\":\"%s\"}]", networkDefinition.Gateway)
 				}
 			}
 
