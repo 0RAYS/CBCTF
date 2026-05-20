@@ -208,37 +208,35 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 		}
 
 		for _, network := range podTemplate.Networks {
-			networkDefinition := network.Definition
-			networkAttachment := network.Attachment
 			if spec.NetworkPlan.Name == "" {
 				continue
 			}
-			subnet, ok := networkPlans[networkDefinition.Name]
+			subnet, ok := networkPlans[network.Definition.Name]
 			if !ok {
 				subnet = &model.Subnet{
-					DefName:      networkDefinition.Name,
+					DefName:      network.Definition.Name,
 					Name:         fmt.Sprintf("net-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandHexStr(6)),
-					CIDRBlock:    networkDefinition.CIDR,
-					Gateway:      networkDefinition.Gateway,
+					CIDRBlock:    network.Definition.CIDR,
+					Gateway:      network.Definition.Gateway,
 					NetAttachDef: &model.NetAttachDef{Name: fmt.Sprintf("nad-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandHexStr(6))},
 				}
-				networkPlans[networkDefinition.Name] = subnet
+				networkPlans[network.Definition.Name] = subnet
 				spec.NetworkPlan.Subnets = append(spec.NetworkPlan.Subnets, subnet)
 			}
-			needSNAT := networkDefinition.External
-			needDNAT := len(podTemplate.ServicePorts) > 0 && networkDefinition.Name == exposeNetworkName
+			needSNAT := network.Definition.External
+			needDNAT := len(podTemplate.ServicePorts) > 0 && network.Definition.Name == exposeNetworkName
 			if needSNAT || needDNAT {
 				snats := make([]*model.SNat, 0)
 				dnats := make([]*model.DNat, 0)
 				if needSNAT {
-					if _, exists := snatDedup[networkDefinition.Name]; !exists {
+					if _, exists := snatDedup[network.Definition.Name]; !exists {
 						snats = append(snats, &model.SNat{Name: fmt.Sprintf("snat-%d-%d-%s", victim.ContestChallengeID.V, victim.UserID, utils.RandHexStr(6))})
-						snatDedup[networkDefinition.Name] = struct{}{}
+						snatDedup[network.Definition.Name] = struct{}{}
 					}
 				}
 				if needDNAT {
 					for _, expose := range podTemplate.ServicePorts {
-						key := fmt.Sprintf("%s-%s-%d-%s", podTemplate.Key, networkDefinition.Name, expose.Port, expose.Protocol)
+						key := fmt.Sprintf("%s-%s-%d-%s", podTemplate.Key, network.Definition.Name, expose.Port, expose.Protocol)
 						if _, exists := dnatDedup[key]; exists {
 							continue
 						}
@@ -256,7 +254,7 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 									}
 								}
 							}(),
-							InternalIP:   networkAttachment.IP,
+							InternalIP:   network.Attachment.IP,
 							InternalPort: expose.Port,
 							Protocol:     expose.Protocol,
 						})

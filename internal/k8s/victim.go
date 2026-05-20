@@ -170,13 +170,12 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					ports = append(ports, corev1.ContainerPort{ContainerPort: p.Port})
 				}
 
-				resources := container.Resources
 				limit := make(corev1.ResourceList)
-				if resources.CPUMillis > 0 {
-					limit["cpu"] = resource.MustParse(strconv.FormatInt(resources.CPUMillis, 10) + "m")
+				if container.Resources.CPUMillis > 0 {
+					limit["cpu"] = resource.MustParse(strconv.FormatInt(container.Resources.CPUMillis, 10) + "m")
 				}
-				if resources.MemoryBytes > 0 {
-					limit["memory"] = resource.MustParse(strconv.FormatInt(resources.MemoryBytes, 10))
+				if container.Resources.MemoryBytes > 0 {
+					limit["memory"] = resource.MustParse(strconv.FormatInt(container.Resources.MemoryBytes, 10))
 				}
 
 				tmp := corev1.Container{
@@ -200,29 +199,29 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 
 			annotations := make(map[string]string)
 			for i, network := range podSpec.Networks {
-				networkDefinition := network.Definition
-				networkAttachment := network.Attachment
-				subnet, ok := subnetMap[networkDefinition.Name]
+				subnet, ok := subnetMap[network.Definition.Name]
 				if !ok {
-					return fmt.Errorf("subnet %s not found", networkDefinition.Name)
+					return fmt.Errorf("subnet %s not found", network.Definition.Name)
 				}
-				netAttachDef, ok := netAttachDefMap[networkDefinition.Name]
+				netAttachDef, ok := netAttachDefMap[network.Definition.Name]
 				if !ok {
-					return fmt.Errorf("netAttachDef %s not found", networkDefinition.Name)
+					return fmt.Errorf("netAttachDef %s not found", network.Definition.Name)
 				}
-				if i == 0 {
+				if i == 0 { // 第一张网卡配置
 					annotations["ovn.kubernetes.io/logical_switch"] = subnet.Name
-					annotations["ovn.kubernetes.io/ip_address"] = networkAttachment.IP
+					annotations["ovn.kubernetes.io/ip_address"] = network.Attachment.IP
 					// 兼容 kube-ovn 作为 副 CNI 时注入 eth0 网卡
 					annotations["v1.multus-cni.io/default-network"] = fmt.Sprintf("%s/%s", globalNamespace, netAttachDef.Name)
-				} else {
+				} else { // 后续多张网卡配置
 					annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", globalNamespace, netAttachDef.Name)
 					annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
 				}
+				// 指定当前网卡 IP
 				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", netAttachDef.Name, globalNamespace)] = subnet.Name
-				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", netAttachDef.Name, globalNamespace)] = networkAttachment.IP
-				if networkDefinition.External {
-					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/routes", netAttachDef.Name, globalNamespace)] = fmt.Sprintf("[{\"gw\":\"%s\"}]", networkDefinition.Gateway)
+				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", netAttachDef.Name, globalNamespace)] = network.Attachment.IP
+				// 需要出网时, 设定网关
+				if network.Definition.External {
+					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/routes", netAttachDef.Name, globalNamespace)] = fmt.Sprintf("[{\"gw\":\"%s\"}]", network.Definition.Gateway)
 				}
 			}
 
