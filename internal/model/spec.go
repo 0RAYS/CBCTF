@@ -4,7 +4,6 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
-	"sort"
 )
 
 type FlagBindingType string
@@ -77,16 +76,15 @@ func (c *ChallengeTemplate) Scan(value any) error {
 }
 
 type VictimContainerSpec struct {
-	Key         string     `json:"key"`
-	Name        string     `json:"name"`
-	Image       string     `json:"image"`
-	CPU         float32    `json:"cpu"`
-	Memory      int64      `json:"memory"`
-	WorkingDir  string     `json:"working_dir"`
-	Command     StringList `json:"command"`
-	Environment StringMap  `json:"environment"`
-	Files       StringMap  `json:"files"`
-	Exposes     Exposes    `json:"exposes"`
+	Key         string          `json:"key"`
+	Name        string          `json:"name"`
+	Image       string          `json:"image"`
+	Resources   ResourceSpec    `json:"resources"`
+	WorkingDir  string          `json:"working_dir"`
+	Command     StringList      `json:"command"`
+	Environment StringMap       `json:"environment"`
+	FileMounts  []FileMountSpec `json:"file_mounts"`
+	Exposes     Exposes         `json:"exposes"`
 }
 
 type ResourceSpec struct {
@@ -94,30 +92,9 @@ type ResourceSpec struct {
 	MemoryBytes int64 `json:"memory_bytes"`
 }
 
-func (v VictimContainerSpec) Resources() ResourceSpec {
-	return ResourceSpec{
-		CPUMillis:   int64(v.CPU * 1000),
-		MemoryBytes: v.Memory,
-	}
-}
-
 type FileMountSpec struct {
 	Path    string `json:"path"`
 	Content string `json:"content"`
-}
-
-func (v VictimContainerSpec) FileMounts() []FileMountSpec {
-	paths := make([]string, 0, len(v.Files))
-	for path := range v.Files {
-		paths = append(paths, path)
-	}
-	sort.Strings(paths)
-
-	files := make([]FileMountSpec, 0, len(paths))
-	for _, path := range paths {
-		files = append(files, FileMountSpec{Path: path, Content: v.Files[path]})
-	}
-	return files
 }
 
 type PodSpec struct {
