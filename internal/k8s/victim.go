@@ -131,12 +131,13 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 			}
 			for _, container := range podSpec.Containers {
 				volumeMounts := make([]corev1.VolumeMount, 0)
-				for path, volumeFlag := range container.Files {
+				for _, fileMount := range container.FileMounts() {
+					path := fileMount.Path
 					filename := path[strings.LastIndex(path, "/")+1:]
 					flagConfigMap, ret := CreateConfigMap(ctx, CreateConfigMapOptions{
 						Name:   fmt.Sprintf("flag-%s", utils.RandStr(20)),
 						Labels: labels,
-						Data:   map[string]string{filename: volumeFlag},
+						Data:   map[string]string{filename: fileMount.Content},
 					})
 					if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 						return errors.New(err.(string))
@@ -169,12 +170,13 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					ports = append(ports, corev1.ContainerPort{ContainerPort: p.Port})
 				}
 
+				resources := container.Resources()
 				limit := make(corev1.ResourceList)
-				if container.CPU > 0 {
-					limit["cpu"] = resource.MustParse(strconv.Itoa(int(container.CPU*1000)) + "m")
+				if resources.CPUMillis > 0 {
+					limit["cpu"] = resource.MustParse(strconv.FormatInt(resources.CPUMillis, 10) + "m")
 				}
-				if container.Memory > 0 {
-					limit["memory"] = resource.MustParse(strconv.Itoa(int(container.Memory)))
+				if resources.MemoryBytes > 0 {
+					limit["memory"] = resource.MustParse(strconv.FormatInt(resources.MemoryBytes, 10))
 				}
 
 				tmp := corev1.Container{

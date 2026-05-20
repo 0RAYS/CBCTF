@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"sort"
 )
 
 type FlagBindingType string
@@ -86,6 +87,37 @@ type VictimContainerSpec struct {
 	Environment StringMap  `json:"environment"`
 	Files       StringMap  `json:"files"`
 	Exposes     Exposes    `json:"exposes"`
+}
+
+type ResourceSpec struct {
+	CPUMillis   int64 `json:"cpu_millis"`
+	MemoryBytes int64 `json:"memory_bytes"`
+}
+
+func (v VictimContainerSpec) Resources() ResourceSpec {
+	return ResourceSpec{
+		CPUMillis:   int64(v.CPU * 1000),
+		MemoryBytes: v.Memory,
+	}
+}
+
+type FileMountSpec struct {
+	Path    string `json:"path"`
+	Content string `json:"content"`
+}
+
+func (v VictimContainerSpec) FileMounts() []FileMountSpec {
+	paths := make([]string, 0, len(v.Files))
+	for path := range v.Files {
+		paths = append(paths, path)
+	}
+	sort.Strings(paths)
+
+	files := make([]FileMountSpec, 0, len(paths))
+	for _, path := range paths {
+		files = append(files, FileMountSpec{Path: path, Content: v.Files[path]})
+	}
+	return files
 }
 
 type PodSpec struct {
