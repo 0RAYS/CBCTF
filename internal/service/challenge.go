@@ -37,14 +37,16 @@ func GetChallenges(tx *gorm.DB, form dto.GetChallengesForm) ([]model.Challenge, 
 }
 
 func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db.CreateChallengeFlagOptions, model.RetVal) {
-	config, err := utils.LoadDockerComposeYaml(dockerCompose)
+	prefix := utils.RandStr(10)
+	config, err := utils.LoadDockerComposeYaml(dockerCompose, prefix)
 	if err != nil {
 		log.Logger.Warningf("Failed to load DockerCompose: %v", err)
 		return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
+	prefix = fmt.Sprintf("%s_", prefix)
 	volumeFlag := make(map[string]string)
 	for _, volume := range config.Volumes {
-		volumeName := strings.TrimPrefix(volume.Name, "_")
+		volumeName := strings.TrimPrefix(volume.Name, prefix)
 		if strings.HasPrefix(volumeName, model.VolumeFlagPrefix) {
 			for k, v := range volume.Labels {
 				if k == model.VolumeFlagLabelKey {
@@ -55,7 +57,7 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 	}
 	networksMap := make(map[string]model.NetworkDefinition)
 	for _, network := range config.Networks {
-		network.Name = strings.TrimPrefix(network.Name, "_")
+		network.Name = strings.TrimPrefix(network.Name, prefix)
 		if network.Name == "default" {
 			continue
 		}
