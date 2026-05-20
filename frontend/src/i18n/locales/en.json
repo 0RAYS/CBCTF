@@ -47,8 +47,16 @@
     "toggleMenu": "Toggle navigation menu",
     "leaveBlankToKeep": "Leave blank to keep unchanged",
     "pagination": {
+      "label": "Pagination",
+      "liveAnnounce": "Page {{current}} of {{total}}",
+      "goToPage": "Go to page {{page}}",
+      "prevPage": "Previous page",
+      "nextPage": "Next page",
+      "firstPage": "First page",
+      "lastPage": "Last page",
       "totalItems": "Total {{count}} items",
       "jumpTo": "Go to",
+      "jumpToLabel": "Jump to page number",
       "page": "page",
       "pagePlaceholder": "Page",
       "jump": "Go"
@@ -855,6 +863,7 @@
           "title": "Containers",
           "total": "(Total {{count}} containers)",
           "stopButton": "Stop containers",
+          "selectContainer": "Select container {{id}}",
           "columns": {
             "id": "ID",
             "challenge": "Challenge",
