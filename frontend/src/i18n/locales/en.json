@@ -9,7 +9,6 @@
     "processing": "Processing...",
     "date": "Date",
     "duration": "Duration",
-    "registrations": "Registrations",
     "teams": "Teams",
     "challenges": "Challenges",
     "score": "Score",
@@ -121,9 +120,7 @@
     "title": "Admin Center",
     "navigation": "Navigation",
     "contest": "Contest",
-    "overview": "Overview",
     "welcome": "Welcome",
-    "quickActions": "Quick Actions",
     "sidebar": {
       "close": "Close sidebar",
       "navigation": "Admin navigation"
@@ -131,7 +128,6 @@
     "topbar": {
       "toggleSidebar": "Toggle sidebar",
       "role": "ADMIN",
-      "userPicture": "User picture",
       "defaultUser": "ADMIN",
       "managementTitle": "{{label}} Management"
     },
@@ -153,8 +149,7 @@
         "reset": "Reset Filters",
         "taskId": "Search task ID...",
         "allStatus": "All statuses",
-        "allQueues": "All queues",
-        "allTypes": "All types"
+        "allQueues": "All queues"
       },
       "columns": {
         "taskId": "Task ID",
@@ -182,37 +177,7 @@
         "fetchLiveFailed": "Failed to load live tasks"
       }
     },
-    "imagesPull": {
-      "title": "Node Images",
-      "control": {
-        "title": "Global Image Overview",
-        "subtitle": "Global image set across schedulable nodes."
-      },
-      "summary": {
-        "unionLabel": "Global Image Set"
-      },
-      "selection": {
-        "title": "Pull Missing Images",
-        "subtitle": "Select missing node/image pairs to pull."
-      },
-      "intersection": {
-        "title": "Global Image Missing View",
-        "subtitle": "Based on tagged images across schedulable nodes.",
-        "empty": "No tagged images available in the global image set"
-      },
-      "manual": {
-        "title": "Pull By Manual Input",
-        "subtitle": "Choose nodes and enter one image per line."
-      },
-      "statusTitle": "Node Image Inventory",
-      "statusSubtitle": "Shows tagged images and missing global images per node.",
-      "node": {
-        "missingTitle": "Missing global-set images on this node",
-        "noMissing": "This node is not missing any global-set image"
-      }
-    },
     "dashboard": {
-      "title": "System Status",
       "realtime": "Live Monitoring",
       "cards": {
         "requestIp": "IP",
@@ -238,7 +203,6 @@
       }
     },
     "contests": {
-      "title": "Contest Management",
       "empty": "No contests created yet",
       "table": {
         "cover": "Cover",
@@ -327,7 +291,6 @@
         }
       },
       "teamDetail": {
-        "title": "Team Detail",
         "tabs": {
           "submissions": "Submissions",
           "writeups": "Writeups",
@@ -431,7 +394,6 @@
           "log": "Exponential decay"
         },
         "actions": {
-          "updateFlag": "Update flag",
           "viewSolvers": "View Solvers",
           "addTag": "Add tag",
           "addHint": "Add hint",
@@ -487,14 +449,12 @@
           "timeSlice": "Time Slice:",
           "milliseconds": "ms",
           "playReplay": "Replay",
-          "pauseReplay": "Pause",
-          "seconds": "s"
+          "pauseReplay": "Pause"
         },
         "stats": {
           "totalTraffic": "Window Traffic",
           "ingress": "Ingress",
           "egress": "Egress",
-          "peers": "Visible Nodes",
           "processes": "Processes"
         },
         "canvas": {
@@ -520,11 +480,9 @@
         "panel": {
           "selectedFlow": "Selected Flow",
           "selectedFlowHint": "Click a line to inspect the hottest path.",
-          "edgePath": "Path",
           "edgeBytes": "Traffic",
           "edgePackets": "Packets",
           "selectedNode": "Selected Node",
-          "nodeLabel": "Node",
           "nodeTraffic": "Traffic",
           "nodeConnections": "Connections",
           "processes": "Processes"
@@ -537,13 +495,6 @@
           "topTalkers": "Top Talkers",
           "topEdges": "Top Edges"
         },
-        "tooltip": {
-          "connectionTitle": "Traffic Connection",
-          "size": "Traffic size: {{value}} bytes",
-          "count": "Connections: {{count}}",
-          "protocol": "Protocol: {{type}} / {{subtype}}",
-          "connections": "Connections: {{count}}"
-        },
         "footer": {
           "ipCount": "IP count: {{count}}",
           "connectionCount": "Connections: {{count}}",
@@ -551,17 +502,14 @@
           "window": "Window: {{start}} - {{end}}",
           "timeSlice": "Time slice: {{count}}",
           "playing": "Playing: frame {{current}}/{{total}}",
-          "updatedAt": "Updated at: {{time}}",
-          "demoMode": "Demo Mode (sample data)"
+          "updatedAt": "Updated at: {{time}}"
         },
         "toast": {
           "fetchFailed": "Failed to load traffic data",
           "demoFallback": "Failed to load traffic; showing sample data"
-        },
-        "demoNotice": "Showing sample data. Refresh to retry."
+        }
       },
       "notices": {
-        "title": "Notice Management",
         "actions": {
           "create": "Publish Notice"
         },
@@ -603,11 +551,6 @@
         }
       },
       "imagesPull": {
-        "title": "Node Images",
-        "control": {
-          "title": "Contest Image Overview",
-          "subtitle": "Show node images required by this contest."
-        },
         "labels": {
           "pullPolicy": "Pull Policy",
           "pullPolicyHint": "Always pulls; IfNotPresent pulls missing images; Never skips jobs.",
@@ -620,33 +563,19 @@
         "summary": {
           "nodes": "{{count}} nodes",
           "nodesLabel": "Schedulable Nodes",
-          "unionLabel": "Contest Image Set",
           "totalLabel": "All Images",
           "total": "{{count}} images total"
         },
         "selection": {
-          "title": "Pull Contest Images",
-          "subtitle": "Select missing contest image pairs to pull.",
-          "selectedNodes": "{{count}} nodes selected",
           "selectedTargets": "{{count}} pairs selected",
           "nodeImages": "{{count}} images"
         },
-        "intersection": {
-          "title": "Contest Image Missing View",
-          "subtitle": "Shows where contest images are missing.",
-          "empty": "No tagged images available",
-          "badge": "Node image union"
-        },
         "manual": {
-          "title": "Pull By Manual Input",
-          "subtitle": "Choose nodes and enter one image per line.",
           "placeholder": "registry.example.com/team/image:tag\nbusybox:latest",
           "count": "{{count}} images entered"
         },
         "node": {
-          "empty": "This node has no image data",
-          "missingTitle": "Missing contest images on this node",
-          "noMissing": "This node is not missing any contest image"
+          "empty": "This node has no image data"
         },
         "actions": {
           "selectAllNodes": "Select All Nodes",
@@ -661,8 +590,6 @@
           "ifNotPresent": "IfNotPresent - pull when missing locally",
           "never": "Never - use local images only"
         },
-        "statusTitle": "Contest Image Inventory",
-        "statusSubtitle": "Shows tagged images and missing contest images per node.",
         "empty": "No node image data",
         "status": {
           "present": "Present",
@@ -679,7 +606,6 @@
         }
       },
       "teams": {
-        "title": "Team Management",
         "search": {
           "label": "Search teams",
           "placeholder": "Search by team name...",
@@ -791,8 +717,7 @@
             "hidden": "Hidden"
           },
           "empty": {
-            "members": "No team members",
-            "flags": "No flag data"
+            "members": "No team members"
           }
         }
       },
@@ -820,7 +745,6 @@
         "sections": {
           "advanced": "Advanced Settings",
           "rules": "Contest Rules",
-          "prizes": "Prize Settings",
           "timeline": "Timeline"
         },
         "placeholders": {
@@ -859,8 +783,6 @@
         "validation": {
           "invalidDate": "Invalid date. Use format: YYYY-MM-DD HH:MM",
           "titleRequired": "Title is required",
-          "startTimeRequired": "Start time is required",
-          "endTimeRequired": "End time is required",
           "endTimeAfterStart": "End time must be after start time"
         },
         "toast": {
@@ -887,9 +809,7 @@
           "stopped": "Stopped"
         },
         "page": {
-          "title": "Container Management",
-          "subtitle": "Manage contest containers with batch start/stop actions",
-          "refresh": "Refresh"
+          "subtitle": "Manage contest containers with batch start/stop actions"
         },
         "showDeleted": "Show Deleted",
         "stats": {
@@ -934,7 +854,6 @@
         "table": {
           "title": "Containers",
           "total": "(Total {{count}} containers)",
-          "selectedCount": "Selected: {{count}}",
           "stopButton": "Stop containers",
           "columns": {
             "id": "ID",
@@ -963,12 +882,6 @@
           "challengeDetailsHint": "{{count}} challenges",
           "challengeDetailsEmpty": "No challenge details",
           "selectChallenge": "Select challenge",
-          "challengeDescription": "Description",
-          "challengeDescriptionEmpty": "No description",
-          "challengeTags": "Tags",
-          "challengeTagsEmpty": "No tags",
-          "challengeHints": "Hints",
-          "challengeHintsEmpty": "No hints",
           "challengeScore": "Score {{score}}",
           "challengeSolvers": "{{count}} solves",
           "challengeAttempts": "Attempt limit {{count}}",
@@ -991,7 +904,6 @@
         }
       },
       "challenges": {
-        "title": "Challenge Management",
         "search": {
           "label": "Search by Name",
           "placeholder": "Search challenges in this contest..."
@@ -1005,11 +917,8 @@
           "hints": "Hints",
           "actions": "Actions"
         },
-        "hintLabel": "Hint {{index}}",
         "hidden": "Hidden",
         "attemptsLabel": "Attempts:",
-        "tagsLabel": "Tags:",
-        "hintsLabel": "Hints:",
         "solves": "{{count}} solves",
         "toast": {
           "fetchCategoriesFailed": "Failed to load categories",
@@ -1034,7 +943,6 @@
           "lastSubmit": "$t(common.scoreboard.headers.lastSubmit)"
         },
         "total": "TOTAL",
-        "title": "Scoreboard Management",
         "export": "Export Writeups",
         "toast": {
           "fetchTimelineFailed": "Failed to load timeline",
@@ -1044,7 +952,6 @@
         }
       },
       "cheats": {
-        "title": "Cheat Events",
         "filterButton": "Filter",
         "filterLabel": "Filter by type:",
         "stats": {
@@ -1142,7 +1049,6 @@
         }
       },
       "generators": {
-        "title": "Generator Management",
         "startButton": "Start Generator",
         "stopButton": "Stop Selected",
         "noGenerators": "No generators running",
@@ -1176,7 +1082,6 @@
         },
         "toast": {
           "fetchFailed": "Failed to load generators",
-          "startSuccess": "Generators started",
           "startFailed": "Failed to start generators",
           "stopSuccess": "Generators stopped",
           "stopFailed": "Failed to stop generators",
@@ -1196,7 +1101,6 @@
         "stopped": "Stopped"
       },
       "page": {
-        "title": "Global Container Management",
         "subtitle": "View and stop running containers"
       },
       "showDeleted": "Show Deleted",
@@ -1209,22 +1113,17 @@
         "title": "Filters",
         "reset": "Reset",
         "userName": "User name",
-        "teamName": "Team name",
         "challengeName": "Challenge name",
         "searchUserPlaceholder": "Search users...",
-        "searchTeamPlaceholder": "Search teams...",
         "searchChallengePlaceholder": "Search challenges...",
         "userFallback": "User {{id}}",
-        "teamFallback": "Team {{id}}",
         "challengeFallback": "Challenge {{id}}",
         "userIdLabel": "User ID",
-        "teamIdLabel": "Team ID",
         "challengeIdLabel": "Challenge ID"
       },
       "table": {
         "title": "Containers",
         "total": "(Total {{count}} running)",
-        "selectedCount": "Selected: {{count}}",
         "stopButton": "Stop containers",
         "columns": {
           "id": "ID",
@@ -1253,7 +1152,6 @@
       }
     },
     "generators": {
-      "title": "Global Generator Management",
       "startButton": "Start Generator",
       "stopButton": "Stop Selected",
       "noGenerators": "No generators running",
@@ -1280,7 +1178,6 @@
       },
       "toast": {
         "fetchFailed": "Failed to load generators",
-        "startSuccess": "Generators started",
         "startFailed": "Failed to start generators",
         "stopSuccess": "Generators stopped",
         "stopFailed": "Failed to stop generators",
@@ -1288,7 +1185,6 @@
       }
     },
     "challenge": {
-      "title": "Challenge Management",
       "table": {
         "name": "Challenge",
         "category": "Category",
@@ -1319,10 +1215,6 @@
       "empty": {
         "search": "No matching challenges found"
       },
-      "labels": {
-        "flags": "Flags:",
-        "files": "Files:"
-      },
       "types": {
         "static": "$t(common.challengeTypes.static)",
         "dynamic": "$t(common.challengeTypes.dynamic)",
@@ -1346,8 +1238,6 @@
       "testModal": {
         "title": "Test",
         "toast": {
-          "startCompleted": "Instance started",
-          "stopCompleted": "Instance stopped",
           "statusRefreshSuccess": "Status refreshed",
           "fetchStatusFailed": "Failed to fetch test status",
           "actionSuccess": "Action dispatched",
@@ -1428,7 +1318,6 @@
       },
       "actions": {
         "addFlag": "Add Flag",
-        "fullscreen": "Fullscreen Edit",
         "addPolicy": "Add Policy",
         "addRule": "Add Rule",
         "addExclude": "Add Exclusion",
@@ -1568,15 +1457,9 @@
           "gatewayUnique": "{{label}}: gateway must be unique",
           "gatewayOutOfSubnet": "{{label}}: gateway is outside subnet range"
         }
-      },
-      "fullscreen": {
-        "title": "Fullscreen Edit - docker-compose.yaml",
-        "save": "Save (Ctrl+S)",
-        "exit": "Exit (Esc)"
       }
     },
     "users": {
-      "title": "User Management",
       "actions": {
         "create": "Create User"
       },
@@ -1640,7 +1523,6 @@
         "info": {
           "id": "User ID",
           "email": "Email",
-          "description": "Description",
           "score": "Score",
           "solved": "Solved",
           "provider": "Provider",
@@ -1659,8 +1541,7 @@
       },
       "roles": {
         "actions": {
-          "create": "Create Role",
-          "permissions": "Permissions"
+          "create": "Create Role"
         },
         "columns": {
           "id": "ID",
@@ -1739,8 +1620,7 @@
       },
       "groups": {
         "actions": {
-          "create": "Create Group",
-          "users": "Users"
+          "create": "Create Group"
         },
         "columns": {
           "id": "ID",
@@ -1796,7 +1676,6 @@
           "selectedUsers": "{{count}} selected",
           "currentUsersCount": "{{count}} members",
           "addSelected": "Add selected",
-          "removeUser": "Remove",
           "remove": "Remove"
         },
         "empty": {
@@ -1829,7 +1708,6 @@
       }
     },
     "logs": {
-      "title": "System Logs",
       "levelFilter": "Log Level",
       "loadMore": "Load more",
       "noMore": "No more logs",
@@ -1838,7 +1716,6 @@
       }
     },
     "smtp": {
-      "title": "SMTP Management",
       "tabs": {
         "config": "SMTP Config",
         "history": "Email History"
@@ -1903,7 +1780,6 @@
         "noContent": "No content"
       },
       "history": {
-        "title": "Email History",
         "currentViewing": "Viewing: {{address}}",
         "empty": "No email history",
         "columns": {
@@ -1926,7 +1802,6 @@
       }
     },
     "cronjobs": {
-      "title": "Cron Job Management",
       "columns": {
         "id": "ID",
         "name": "Name",
@@ -1964,7 +1839,6 @@
         "seconds": "{{count}} second"
       },
       "time": {
-        "invalid": "Invalid time",
         "unknown": "Unable to calculate"
       },
       "toast": {
@@ -1973,57 +1847,12 @@
         "updateFailed": "Failed to update cron job"
       }
     },
-    "settings": {
-      "ui": {
-        "title": "Admin Settings",
-        "sections": {
-          "profile": "Profile",
-          "security": "Security",
-          "logout": "Logout"
-        },
-        "avatar": {
-          "change": "Change avatar"
-        },
-        "accountLabel": "Admin Account",
-        "form": {
-          "username": "Username",
-          "email": "Email",
-          "save": "Save Changes"
-        },
-        "security": {
-          "title": "Change Password",
-          "placeholders": {
-            "current": "Current password",
-            "new": "New password",
-            "confirm": "Confirm new password"
-          },
-          "update": "Update Password",
-          "hintTitle": "Account Security Tips",
-          "hintBody": "Use strong passwords and protect your credentials."
-        }
-      },
-      "validation": {
-        "currentRequired": "Current password is required",
-        "newMin": "Password must be at least 6 characters",
-        "confirmMismatch": "Passwords do not match"
-      },
-      "toast": {
-        "updateInfoSuccess": "Admin profile updated",
-        "updateInfoFailed": "Failed to update admin profile",
-        "passwordUpdated": "Password updated",
-        "passwordUpdateFailed": "Failed to update password",
-        "avatarUpdated": "Avatar updated",
-        "avatarUpdateFailed": "Failed to update avatar",
-        "logoutSuccess": "Logged out"
-      }
-    },
     "webhook": {
       "tabs": {
         "webhook": "Webhook Config",
         "history": "History"
       },
       "list": {
-        "title": "Webhook Management",
         "empty": "No webhook configs",
         "columns": {
           "id": "ID",
@@ -2087,7 +1916,6 @@
         "error": "Error"
       },
       "historyList": {
-        "title": "Webhook Call History",
         "currentViewing": "Viewing: {{name}}",
         "empty": "No webhook call history",
         "columns": {
@@ -2120,7 +1948,6 @@
       }
     },
     "oauthProviders": {
-      "title": "OAuth Providers",
       "actions": {
         "add": "Add OAuth Provider",
         "uploadLogo": "Click to upload logo"
@@ -2192,7 +2019,6 @@
       }
     },
     "files": {
-      "title": "File Management",
       "types": {
         "file": "Attachments",
         "picture": "Images",
@@ -2229,22 +2055,6 @@
         "batchDelete": "Delete Selected ({{count}})"
       }
     },
-    "images": {
-      "title": "Image Management",
-      "selectAll": "$t(common.selectAll)",
-      "empty": "No images",
-      "columns": {
-        "preview": "Preview",
-        "filename": "Filename",
-        "size": "Size",
-        "type": "Type",
-        "uploaded": "Uploaded",
-        "actions": "Actions"
-      },
-      "actions": {
-        "batchDelete": "Delete Selected ({{count}})"
-      }
-    },
     "globalSearch": {
       "title": "Global Search",
       "model": "Model",
@@ -2259,11 +2069,9 @@
       }
     },
     "system": {
-      "title": "System Settings",
       "noData": "No configuration data available",
       "actions": {
         "update": "Update Config",
-        "reset": "Reset",
         "uploadGeoCityDB": "Upload GeoCityDB",
         "restart": "Restart System"
       },
@@ -2274,8 +2082,7 @@
         "uploadGeoCityDBSuccess": "GeoCityDB uploaded",
         "uploadGeoCityDBFailed": "Failed to upload GeoCityDB",
         "restartSuccess": "System restarted successfully",
-        "restartFailed": "Failed to restart system",
-        "invalidJsonArray": "Enter a valid JSON array or object"
+        "restartFailed": "Failed to restart system"
       },
       "update": {
         "title": "Confirm Update",
@@ -2285,9 +2092,7 @@
         "cancel": "Cancel"
       },
       "restart": {
-        "title": "Restart Required",
         "manualTitle": "Confirm Restart",
-        "prompt": "Configuration updated. Restart now to apply changes?",
         "manualPrompt": "The system will restart now. Continue?",
         "warning": "The system will be briefly unavailable. Confirm before continuing.",
         "confirm": "Restart Now",
@@ -2308,8 +2113,6 @@
         "host": "External Host",
         "path": "Data Path",
         "geocity_db": "GeoCityDB Database",
-        "logLevel": "Log Level",
-        "saveLogs": "Save Logs to files",
         "workerLog": "Task Queue Log Level",
         "victimConcurrency": "Victim Task Concurrency",
         "trafficConcurrency": "Traffic Task Concurrency",
@@ -2349,7 +2152,6 @@
         "externalNetworkInterface": "Host Interface",
         "externalNetworkCidr": "CIDR",
         "externalNetworkGateway": "Gateway",
-        "frp": "Frp",
         "frpOn": "Use Frp to Expose Victims",
         "frpc": "Frpc Image",
         "nginx": "Nginx Image",
@@ -2378,7 +2180,6 @@
       }
     },
     "branding": {
-      "title": "Branding",
       "identityHint": "Manage site branding in one place.",
       "actions": {
         "uploadLogo": "Upload Home Logo"
@@ -2431,12 +2232,6 @@
       "subtitle": "Compete in real-world cybersecurity challenges.",
       "start": "START HACKING",
       "learnMore": "LEARN MORE"
-    },
-    "stats": {
-      "activePlayers": "Active Players",
-      "challenges": "Challenges",
-      "events": "CTF Events",
-      "successRate": "Success Rate"
     },
     "challengeTypes": {
       "titlePrefix": "Master All Aspects of",
@@ -2531,26 +2326,18 @@
       "providersFailed": "Failed to load OAuth providers"
     },
     "auth": {
-      "loginSuccess": "Login successful",
       "loginFailed": "Login failed. Check your credentials.",
       "registerFailed": "Registration failed. Check your details."
     },
     "user": {
-      "profileUpdated": "Profile updated",
-      "passwordUpdated": "Password updated",
       "passwordUpdateFailed": "Password update failed",
-      "verifyEmailSent": "Verification email sent",
-      "verifyEmailHint": "Please check your inbox",
-      "accountDeleted": "Account deleted",
       "avatarUpdated": "Avatar updated",
-      "fetchFailed": "Failed to fetch user info",
-      "fetchAdminFailed": "Failed to fetch admin info"
+      "fetchFailed": "Failed to fetch user info"
     },
     "common": {
       "updateFailed": "Update failed.",
       "sendFailed": "Send failed.",
-      "deleteFailed": "Delete failed.",
-      "operationFailed": "Operation failed."
+      "deleteFailed": "Delete failed."
     },
     "game": {
       "fetchListFailed": "Failed to load contests"
@@ -2676,9 +2463,6 @@
       "hint": {
         "show": "Show Hint",
         "hide": "Hide Hint"
-      },
-      "errors": {
-        "selectOption": "Please select at least one option"
       },
       "instance": {
         "waiting": "WAITING",
