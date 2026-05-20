@@ -930,7 +930,10 @@ function AdminChallengeModal({
 
   // 网络策略操作
   const addNetworkPolicy = () => {
-    const newNetworkPolicies = [...(challenge.network_policies || []), defaultNetworkPolicy(vpcMode ? policyTargets[0] : {})];
+    const newNetworkPolicies = [
+      ...(challenge.network_policies || []),
+      defaultNetworkPolicy(vpcMode ? policyTargets[0] : {}),
+    ];
     onChange({ ...challenge, network_policies: newNetworkPolicies });
   };
 
