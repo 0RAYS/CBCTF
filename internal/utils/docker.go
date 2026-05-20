@@ -5,8 +5,8 @@ import (
 	"errors"
 	"time"
 
-	"github.com/compose-spec/compose-go/loader"
-	"github.com/compose-spec/compose-go/types"
+	"github.com/compose-spec/compose-go/v2/loader"
+	"github.com/compose-spec/compose-go/v2/types"
 	"go.yaml.in/yaml/v4"
 )
 
