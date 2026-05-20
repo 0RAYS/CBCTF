@@ -46,7 +46,7 @@ func NewGormLogger(level Level) gormLogger.Interface {
 	)
 
 	config := Config{
-		SlowThreshold:             200 * time.Millisecond,
+		SlowThreshold:             500 * time.Millisecond,
 		LogLevel:                  level,
 		IgnoreRecordNotFoundError: true,
 	}
