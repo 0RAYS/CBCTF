@@ -676,6 +676,12 @@ const validateGuidedCompose = (config, t = (key) => key) => {
             t('admin.challengeModal.composeGuide.validation.ipOutOfSubnet', { label, network: networkLabel })
           );
         }
+        if (service.kubeVirt && !network.macAddress?.trim()) {
+          addError(
+            `service.${serviceIndex}.networks.${networkIndex}.macAddress`,
+            t('admin.challengeModal.composeGuide.validation.macAddressRequired', { label, network: networkLabel })
+          );
+        }
         if (network.macAddress?.trim() && !macAddressRegex.test(network.macAddress.trim())) {
           addError(
             `service.${serviceIndex}.networks.${networkIndex}.macAddress`,
@@ -1792,6 +1798,7 @@ function AdminChallengeModal({
                                       <input
                                         className={inputBaseClass}
                                         value={network.macAddress || ''}
+                                        required={service.kubeVirt}
                                         placeholder={ct('placeholders.macAddress')}
                                         onChange={(e) =>
                                           updateGuideServiceList(
