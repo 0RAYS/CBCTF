@@ -85,7 +85,6 @@ data:
       config: /admin/admin.yaml
       namespace: {{ .Release.Namespace | quote }}
       capture: {{ .Values.cbctf.k8s.capture | quote }}
-      generator_worker: {{ .Values.cbctf.k8s.generator_worker }}
       external_networks:
         enabled: {{ .Values.cbctf.k8s.external_networks.enabled }}
         interfaces: {{ toYaml .Values.cbctf.k8s.external_networks.interfaces | nindent 10 }}

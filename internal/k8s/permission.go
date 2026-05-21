@@ -52,6 +52,10 @@ func buildPermissionChecks() []permissionCheck {
 		{Group: "k8s.cni.cncf.io", Resource: "network-attachment-definitions", Verb: "create", Namespace: "kube-system"},
 		{Group: "k8s.cni.cncf.io", Resource: "network-attachment-definitions", Verb: "get", Namespace: "kube-system"},
 		{Group: "k8s.cni.cncf.io", Resource: "network-attachment-definitions", Verb: "deletecollection", Namespace: ns},
+		// KubeVirt: VirtualMachines
+		{Group: "kubevirt.io", Resource: "virtualmachines", Verb: "create", Namespace: ns},
+		{Group: "kubevirt.io", Resource: "virtualmachines", Verb: "get", Namespace: ns},
+		{Group: "kubevirt.io", Resource: "virtualmachines", Verb: "deletecollection", Namespace: ns},
 		// KubeOVN: Subnets (集群级别)
 		{Group: "kubeovn.io", Resource: "subnets", Verb: "create"},
 		{Group: "kubeovn.io", Resource: "subnets", Verb: "get"},
