@@ -8,12 +8,198 @@ import (
 	"CBCTF/internal/model"
 	"CBCTF/internal/utils"
 	"fmt"
+	"net"
 	"net/netip"
+	"regexp"
 	"slices"
 	"strings"
 
+	"github.com/compose-spec/compose-go/v2/types"
 	"gorm.io/gorm"
 )
+
+var (
+	composePortNameRegex = regexp.MustCompile(`^[A-Za-z0-9_-]+$`)
+	composeEnvKeyRegex   = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
+)
+
+func invalidComposeYamlRetVal(err string) model.RetVal {
+	return model.RetVal{Msg: i18n.Model.Docker.InvalidComposeYaml, Attr: map[string]any{"Error": err}}
+}
+
+func serviceKubeVirt(service types.ServiceConfig) bool {
+	kubeVirt, _ := service.Extensions[model.XKubeVirtExtension].(bool)
+	return kubeVirt
+}
+
+func validateChallengeCompose(config *types.Project) model.RetVal {
+	if len(config.Services) == 0 {
+		return invalidComposeYamlRetVal("At least one service is required")
+	}
+
+	hasVpcNetworks := false
+	networkSubnets := make(map[string]struct{})
+	networkGateways := make(map[string]struct{})
+	for _, network := range config.Networks {
+		name := strings.TrimSpace(strings.TrimPrefix(network.Name, config.Name+"_"))
+		if name == "" || name == "default" {
+			continue
+		}
+		hasVpcNetworks = true
+		if len(network.Ipam.Config) == 0 {
+			return invalidComposeYamlRetVal("Empty IPAM")
+		}
+		subnet := strings.TrimSpace(network.Ipam.Config[0].Subnet)
+		gateway := strings.TrimSpace(network.Ipam.Config[0].Gateway)
+		if subnet == "" {
+			return invalidComposeYamlRetVal(fmt.Sprintf("network %s subnet is required", name))
+		}
+		if _, ok := networkSubnets[subnet]; ok {
+			return invalidComposeYamlRetVal(fmt.Sprintf("network %s subnet must be unique", name))
+		}
+		networkSubnets[subnet] = struct{}{}
+		if gateway == "" {
+			return invalidComposeYamlRetVal(fmt.Sprintf("network %s gateway is required", name))
+		}
+		if _, ok := networkGateways[gateway]; ok {
+			return invalidComposeYamlRetVal(fmt.Sprintf("network %s gateway must be unique", name))
+		}
+		networkGateways[gateway] = struct{}{}
+	}
+
+	serviceNames := make(map[string]struct{})
+	containerNames := make(map[string]struct{})
+	nonKubeVirtServiceCount := 0
+	openPortCount := 0
+	assignedIPs := make(map[string]map[string]struct{})
+
+	for _, service := range config.Services {
+		name := strings.TrimSpace(service.Name)
+		if name == "" {
+			return invalidComposeYamlRetVal("service name is required")
+		}
+		if _, ok := serviceNames[name]; ok {
+			return invalidComposeYamlRetVal(fmt.Sprintf("service %s name must be unique", name))
+		}
+		serviceNames[name] = struct{}{}
+		label := name
+
+		containerName := strings.TrimSpace(service.ContainerName)
+		if containerName != "" {
+			if _, ok := containerNames[containerName]; ok {
+				return invalidComposeYamlRetVal(fmt.Sprintf("%s container_name must be unique", label))
+			}
+			containerNames[containerName] = struct{}{}
+		}
+
+		if strings.TrimSpace(service.Image) == "" {
+			return model.RetVal{Msg: i18n.Model.Challenge.EmptyImage}
+		}
+		kubeVirt := serviceKubeVirt(service)
+		if kubeVirt && !hasVpcNetworks {
+			return invalidComposeYamlRetVal(fmt.Sprintf("%s x-kubevirt requires VPC networks", label))
+		}
+		if boot, ok := service.Extensions[model.XBootExtension].(model.XBoot); ok {
+			bootloader := strings.TrimSpace(boot.Bootloader)
+			if kubeVirt && bootloader != "" && bootloader != "bios" && bootloader != "efi" {
+				return invalidComposeYamlRetVal(fmt.Sprintf("%s bootloader should be bios or efi", label))
+			}
+		}
+
+		if !kubeVirt {
+			nonKubeVirtServiceCount++
+			servicePortTargets := make(map[uint32]struct{})
+			for _, port := range service.Ports {
+				if port.Target == 0 {
+					return invalidComposeYamlRetVal(fmt.Sprintf("%s port target is required", label))
+				}
+				if _, ok := servicePortTargets[port.Target]; ok {
+					return invalidComposeYamlRetVal(fmt.Sprintf("%s port target must be unique within the same service", label))
+				}
+				servicePortTargets[port.Target] = struct{}{}
+				if strings.TrimSpace(port.Published) != "" && !composePortNameRegex.MatchString(port.Published) {
+					return invalidComposeYamlRetVal(fmt.Sprintf("%s port name can only contain letters, numbers, underscores, and hyphens", label))
+				}
+				protocol := strings.TrimSpace(port.Protocol)
+				if protocol != "" && protocol != "tcp" && protocol != "udp" {
+					return invalidComposeYamlRetVal(fmt.Sprintf("%s port protocol should be tcp or udp", label))
+				}
+				openPortCount++
+			}
+
+			for key := range service.Environment {
+				if strings.TrimSpace(key) == "" {
+					return invalidComposeYamlRetVal(fmt.Sprintf("%s environment variable name is required", label))
+				}
+				if !composeEnvKeyRegex.MatchString(key) {
+					return invalidComposeYamlRetVal(fmt.Sprintf("%s environment variable name format is invalid", label))
+				}
+			}
+
+			volumeTargets := make(map[string]struct{})
+			if volumes, ok := service.Extensions[model.XVolumesExtension].(model.XVolumes); ok {
+				for _, volume := range volumes {
+					target := strings.TrimSpace(volume.Path)
+					if target == "" {
+						return invalidComposeYamlRetVal(fmt.Sprintf("%s file Flag mount path is required", label))
+					}
+					if _, ok := volumeTargets[target]; ok {
+						return invalidComposeYamlRetVal(fmt.Sprintf("%s file Flag target must be unique within the same service", label))
+					}
+					volumeTargets[target] = struct{}{}
+				}
+			}
+		}
+
+		if hasVpcNetworks && len(service.Networks) == 0 {
+			return invalidComposeYamlRetVal(fmt.Sprintf("%s choose a network and fill in IP after configuring custom networks", label))
+		}
+		serviceNetworkNames := make(map[string]struct{})
+		for networkName, network := range service.Networks {
+			if network == nil {
+				return invalidComposeYamlRetVal(fmt.Sprintf("%s empty network config", label))
+			}
+			name := strings.TrimSpace(networkName)
+			if name == "" {
+				return invalidComposeYamlRetVal(fmt.Sprintf("%s network name is required", label))
+			}
+			if _, ok := serviceNetworkNames[name]; ok {
+				return invalidComposeYamlRetVal(fmt.Sprintf("%s network cannot be selected more than once", label))
+			}
+			serviceNetworkNames[name] = struct{}{}
+			ipv4Address := strings.TrimSpace(network.Ipv4Address)
+			if ipv4Address == "" {
+				return invalidComposeYamlRetVal(fmt.Sprintf("%s %s ipv4_address is required", label, name))
+			}
+			ip, err := netip.ParseAddr(ipv4Address)
+			if err != nil || !ip.Is4() {
+				return invalidComposeYamlRetVal(fmt.Sprintf("%s %s ipv4_address is invalid", label, name))
+			}
+			if _, ok := assignedIPs[name]; !ok {
+				assignedIPs[name] = make(map[string]struct{})
+			}
+			if _, ok := assignedIPs[name][ipv4Address]; ok {
+				return invalidComposeYamlRetVal(fmt.Sprintf("%s %s ipv4_address must be unique within the same network", label, name))
+			}
+			assignedIPs[name][ipv4Address] = struct{}{}
+
+			macAddress := strings.TrimSpace(network.MacAddress)
+			if kubeVirt && macAddress == "" {
+				return invalidComposeYamlRetVal(fmt.Sprintf("%s %s mac_address is required when x-kubevirt is true", label, name))
+			}
+			if macAddress != "" {
+				if _, err := net.ParseMAC(macAddress); err != nil {
+					return invalidComposeYamlRetVal(fmt.Sprintf("%s %s mac_address is invalid", label, name))
+				}
+			}
+		}
+	}
+
+	if nonKubeVirtServiceCount > 0 && openPortCount == 0 {
+		return invalidComposeYamlRetVal("Container challenges must expose at least one port")
+	}
+	return model.SuccessRetVal()
+}
 
 func GetChallenges(tx *gorm.DB, form dto.GetChallengesForm) ([]model.Challenge, int64, model.RetVal) {
 	options := db.GetOptions{
@@ -47,6 +233,9 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 	if err != nil {
 		log.Logger.Warningf("Failed to load DockerCompose: %v", err)
 		return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
+	}
+	if ret := validateChallengeCompose(config); !ret.OK {
+		return model.ChallengeTemplate{}, nil, ret
 	}
 	prefix = fmt.Sprintf("%s_", prefix)
 	networksMap := make(map[string]model.NetworkDefinition)
