@@ -210,6 +210,9 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				if i == 0 { // 第一张网卡配置
 					annotations["ovn.kubernetes.io/logical_switch"] = subnet.Name
 					annotations["ovn.kubernetes.io/ip_address"] = network.Attachment.IP
+					if network.Attachment.MAC != "" {
+						annotations["ovn.kubernetes.io/mac_address"] = network.Attachment.MAC
+					}
 					// 兼容 kube-ovn 作为 副 CNI 时注入 eth0 网卡
 					annotations["v1.multus-cni.io/default-network"] = fmt.Sprintf("%s/%s", globalNamespace, netAttachDef.Name)
 				} else { // 后续多张网卡配置
@@ -219,6 +222,9 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				// 指定当前网卡 IP
 				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", netAttachDef.Name, globalNamespace)] = subnet.Name
 				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", netAttachDef.Name, globalNamespace)] = network.Attachment.IP
+				if network.Attachment.MAC != "" {
+					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/mac_address", netAttachDef.Name, globalNamespace)] = network.Attachment.MAC
+				}
 				// 需要出网时, 设定网关
 				if network.Definition.External {
 					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/routes", netAttachDef.Name, globalNamespace)] = fmt.Sprintf("[{\"gw\":\"%s\"}]", network.Definition.Gateway)

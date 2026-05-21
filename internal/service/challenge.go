@@ -38,7 +38,11 @@ func GetChallenges(tx *gorm.DB, form dto.GetChallengesForm) ([]model.Challenge, 
 
 func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db.CreateChallengeFlagOptions, model.RetVal) {
 	prefix := utils.RandHexStr(10)
-	config, err := utils.LoadDockerComposeYaml(dockerCompose, prefix, map[string]any{model.XVolumesExtension: model.XVolumes{}})
+	config, err := utils.LoadDockerComposeYaml(dockerCompose, prefix, map[string]any{
+		model.XVolumesExtension:   model.XVolumes{},
+		model.XBootExtension:      model.XBoot{},
+		model.XCloudInitExtension: model.XCloudInit{},
+	})
 	if err != nil {
 		log.Logger.Warningf("Failed to load DockerCompose: %v", err)
 		return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
@@ -131,6 +135,7 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 				Attachment: model.NetworkAttachment{
 					Name: key,
 					IP:   value.Ipv4Address,
+					MAC:  value.MacAddress,
 				},
 			})
 		}
@@ -147,6 +152,13 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 			Command:     model.StringList(app.Command),
 			Environment: environment,
 			Exposes:     append(model.Exposes(nil), ports...),
+		}
+		if boot, ok := app.Extensions[model.XBootExtension].(model.XBoot); ok {
+			containerTemplate.Bootloader = boot.Bootloader
+			containerTemplate.SecureBoot = boot.SecureBoot
+		}
+		if cloudInit, ok := app.Extensions[model.XCloudInitExtension].(model.XCloudInit); ok {
+			containerTemplate.UserData = cloudInit.UserData
 		}
 		template.Pods = append(template.Pods, model.ChallengePodTemplate{
 			Key:          podKey,

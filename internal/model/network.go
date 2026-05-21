@@ -18,6 +18,7 @@ type NetworkDefinition struct {
 type NetworkAttachment struct {
 	Name string `json:"name"`
 	IP   string `json:"ip"`
+	MAC  string `json:"mac"`
 }
 
 type Network struct {

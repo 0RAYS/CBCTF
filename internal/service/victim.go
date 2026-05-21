@@ -122,6 +122,9 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 			WorkingDir:  containerTemplate.WorkingDir,
 			Command:     append(model.StringList(nil), containerTemplate.Command...),
 			Environment: make(model.StringMap),
+			Bootloader:  containerTemplate.Bootloader,
+			SecureBoot:  containerTemplate.SecureBoot,
+			UserData:    containerTemplate.UserData,
 			FileMounts:  make([]model.FileMountSpec, 0),
 			Exposes:     append(model.Exposes(nil), containerTemplate.Exposes...),
 		}

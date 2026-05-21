@@ -65,11 +65,27 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 				}
 				service.Extensions[model.XVolumesExtension] = xVolumes
 			}
+			if container.Bootloader != "" {
+				if service.Extensions == nil {
+					service.Extensions = make(types.Extensions)
+				}
+				service.Extensions[model.XBootExtension] = model.XBoot{
+					Bootloader: container.Bootloader,
+					SecureBoot: container.SecureBoot,
+				}
+			}
+			if container.UserData != "" {
+				if service.Extensions == nil {
+					service.Extensions = make(types.Extensions)
+				}
+				service.Extensions[model.XCloudInitExtension] = model.XCloudInit{UserData: container.UserData}
+			}
 			if len(pod.Networks) > 0 {
 				service.Networks = make(map[string]*types.ServiceNetworkConfig)
 				for _, network := range pod.Networks {
 					service.Networks[network.Attachment.Name] = &types.ServiceNetworkConfig{
 						Ipv4Address: network.Attachment.IP,
+						MacAddress:  network.Attachment.MAC,
 					}
 					networks[network.Definition.Name] = network.Definition
 				}

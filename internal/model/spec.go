@@ -11,7 +11,9 @@ type FlagBindingType string
 const EnvFlagPrefix = "FLAG"
 
 const (
-	XVolumesExtension = "x-volumes"
+	XVolumesExtension   = "x-volumes"
+	XBootExtension      = "x-boot"
+	XCloudInitExtension = "x-cloudinit"
 )
 
 type XVolume struct {
@@ -20,6 +22,15 @@ type XVolume struct {
 }
 
 type XVolumes []XVolume
+
+type XBoot struct {
+	Bootloader string `json:"bootloader" yaml:"bootloader"`
+	SecureBoot bool   `json:"secure_boot,omitempty" yaml:"secure_boot,omitempty"`
+}
+
+type XCloudInit struct {
+	UserData string `json:"user_data" yaml:"user_data"`
+}
 
 const (
 	EnvFlagBindingType  FlagBindingType = "env"
@@ -53,6 +64,9 @@ type ChallengeContainerTemplate struct {
 	WorkingDir  string     `json:"working_dir"`
 	Command     StringList `json:"command"`
 	Environment StringMap  `json:"environment"`
+	Bootloader  string     `json:"bootloader"`
+	SecureBoot  bool       `json:"secure_boot"`
+	UserData    string     `json:"user_data"`
 	Exposes     Exposes    `json:"exposes"`
 }
 
@@ -90,6 +104,9 @@ type VictimContainerSpec struct {
 	WorkingDir  string          `json:"working_dir"`
 	Command     StringList      `json:"command"`
 	Environment StringMap       `json:"environment"`
+	Bootloader  string          `json:"bootloader"`
+	SecureBoot  bool            `json:"secure_boot"`
+	UserData    string          `json:"user_data"`
 	FileMounts  []FileMountSpec `json:"file_mounts"`
 	Exposes     Exposes         `json:"exposes"`
 }
