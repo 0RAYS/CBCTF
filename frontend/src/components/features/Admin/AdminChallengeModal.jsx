@@ -125,7 +125,7 @@ const buildGuidedComposeYaml = (config) => {
     if (volumes.length > 0) {
       lines.push('    x-volumes:');
       volumes.forEach((volume) => {
-        lines.push('      - path: ' + yamlQuote(volume.target.trim()), `        content: ${yamlQuote(volume.value || 'uuid{}')}`);
+        lines.push('      - path: ' + yamlQuote(volume.target.trim()), `        content: ${yamlQuote(volume.content || 'uuid{}')}`);
       });
     }
 
@@ -209,11 +209,6 @@ const parsePortString = (value) => {
   return { published: parts[0] || '', target: parts[1] || '', protocol };
 };
 
-const parseVolumeString = (value) => {
-  const parts = stripYamlValue(value).split(':');
-  return { source: parts[0] || '', target: parts[1] || '', value: '' };
-};
-
 const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${values?.line ? ` ${values.line}` : ''}`) => {
   const lines = String(yaml || '')
     .replace(/\r\n/g, '\n')
@@ -223,11 +218,9 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
   const errors = [];
   const services = [];
   const networks = [];
-  const volumeValues = new Map();
   let section = '';
   let service = null;
   let network = null;
-  let volumeName = '';
   let serviceList = '';
   let serviceNetwork = null;
   let currentPort = null;
@@ -243,7 +236,6 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
       section = text.replace(/:$/, '');
       service = null;
       network = null;
-      volumeName = '';
       serviceList = '';
       serviceNetwork = null;
       currentPort = null;
@@ -320,47 +312,18 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
         });
         continue;
       }
-      if (indent === 6 && serviceList === 'volumes' && text.startsWith('- ')) {
-        const value = text.slice(2).trim();
-        if (value.includes(':')) {
-          const pair = parseKeyValueLine(value);
-          if (pair && ['type', 'source', 'target'].includes(pair.key)) {
-            currentVolume = { source: '', target: '', value: '' };
-            service.volumes.push(currentVolume);
-            if (pair.key === 'type' && pair.value !== 'volume') {
-              errors.push(t('admin.challengeModal.composeGuide.validation.volumeTypeInvalid', { line: line.index }));
-            } else if (pair.key === 'source') currentVolume.source = pair.value;
-            else if (pair.key === 'target') currentVolume.target = pair.value;
-          } else {
-            service.volumes.push(parseVolumeString(value));
-            currentVolume = null;
-          }
-        } else {
-          service.volumes.push(parseVolumeString(value));
-          currentVolume = null;
-        }
-        continue;
-      }
-      if (indent === 8 && serviceList === 'volumes' && currentVolume) {
-        const pair = parseKeyValueLine(text);
-        if (pair?.key === 'type' && pair.value !== 'volume') {
-          errors.push(t('admin.challengeModal.composeGuide.validation.volumeTypeInvalid', { line: line.index }));
-        } else if (pair?.key === 'source') currentVolume.source = pair.value;
-        else if (pair?.key === 'target') currentVolume.target = pair.value;
-        continue;
-      }
       if (indent === 6 && serviceList === 'x-volumes' && text.startsWith('- ')) {
         const pair = parseKeyValueLine(text.slice(2).trim());
-        currentVolume = { source: '', target: '', value: '' };
+        currentVolume = { target: '', content: '' };
         service.volumes.push(currentVolume);
         if (pair?.key === 'path') currentVolume.target = pair.value;
-        else if (pair?.key === 'content') currentVolume.value = pair.value;
+        else if (pair?.key === 'content') currentVolume.content = pair.value;
         continue;
       }
       if (indent === 8 && serviceList === 'x-volumes' && currentVolume) {
         const pair = parseKeyValueLine(text);
         if (pair?.key === 'path') currentVolume.target = pair.value;
-        else if (pair?.key === 'content') currentVolume.value = pair.value;
+        else if (pair?.key === 'content') currentVolume.content = pair.value;
         continue;
       }
       if (indent === 6 && serviceList === 'ports' && text.startsWith('- ')) {
@@ -407,12 +370,6 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
         continue;
       }
       errors.push(t('admin.challengeModal.composeGuide.validation.unparseableLine', { line: line.index }));
-    } else if (section === 'volumes') {
-      if (indent === 2 && text.endsWith(':')) {
-        volumeName = text.slice(0, -1);
-      } else if (indent === 6 && text.startsWith('- value=')) {
-        volumeValues.set(volumeName, text.slice('- value='.length));
-      }
     } else if (section === 'networks') {
       if (indent === 2 && text.endsWith(':')) {
         network = { name: text.slice(0, -1), external: false, subnet: '', gateway: '' };
@@ -432,10 +389,6 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
       }
     }
   }
-
-  services.forEach((item) => {
-    item.volumes = item.volumes.map((volume) => ({ ...volume, value: volumeValues.get(volume.source) || '' }));
-  });
 
   if (services.length === 0) errors.push(t('admin.challengeModal.composeGuide.validation.servicesMissing'));
   return { ok: errors.length === 0, errors, config: { services, networks } };
@@ -1527,7 +1480,7 @@ function AdminChallengeModal({
                                   title={ct('sections.fileFlags')}
                                   addLabel={ct('actions.add')}
                                   onAdd={() =>
-                                    addGuideServiceListItem(serviceIndex, 'volumes', { target: '', value: '' })
+                                    addGuideServiceListItem(serviceIndex, 'volumes', { target: '', content: '' })
                                   }
                                 />
                                 {service.volumes.map((volume, volumeIndex) => (
@@ -1554,17 +1507,17 @@ function AdminChallengeModal({
                                         }
                                       />
                                     </GuideField>
-                                    <GuideField label={ct('fields.value')}>
+                                    <GuideField label={ct('fields.content')}>
                                       <input
                                         className={inputBaseClass}
-                                        value={volume.value}
+                                        value={volume.content || ''}
                                         placeholder="uuid{}"
                                         onChange={(e) =>
                                           updateGuideServiceList(
                                             serviceIndex,
                                             'volumes',
                                             volumeIndex,
-                                            'value',
+                                            'content',
                                             e.target.value
                                           )
                                         }
