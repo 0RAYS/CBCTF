@@ -11,10 +11,15 @@ type FlagBindingType string
 const EnvFlagPrefix = "FLAG"
 
 const (
-	XVolumesExtension        = "x-volumes"
-	XVolumesPathExtension    = "path"
-	XVolumesContentExtension = "content"
+	XVolumesExtension = "x-volumes"
 )
+
+type XVolume struct {
+	Path    string `yaml:"path"`
+	Content string `yaml:"content"`
+}
+
+type XVolumes []XVolume
 
 const (
 	EnvFlagBindingType  FlagBindingType = "env"
