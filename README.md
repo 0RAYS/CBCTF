@@ -169,6 +169,7 @@ version: '3'
 services:
   web:
     image: nginx:alpine
+    x-kubevirt: false
     ports:
       - "80:80"
 ```
@@ -182,9 +183,17 @@ version: '3'
 services:
   web:
     image: nginx:alpine
+    x-kubevirt: true
+    x-boot:
+      bootloader: efi
+      secure_boot: false
+    x-cloudinit:
+      user_data: |
+        #cloud-config
     networks:
       vpc:
         ipv4_address: 192.168.1.10
+        mac_address: "00:00:00:00:01:01"
 networks:
   vpc:
     external: true

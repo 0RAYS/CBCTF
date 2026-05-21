@@ -122,6 +122,7 @@ func buildVictimSpec(tx *gorm.DB, victim model.Victim, challenge model.Challenge
 			WorkingDir:  containerTemplate.WorkingDir,
 			Command:     append(model.StringList(nil), containerTemplate.Command...),
 			Environment: make(model.StringMap),
+			KubeVirt:    containerTemplate.KubeVirt,
 			Bootloader:  containerTemplate.Bootloader,
 			SecureBoot:  containerTemplate.SecureBoot,
 			UserData:    containerTemplate.UserData,

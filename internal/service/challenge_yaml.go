@@ -65,6 +65,12 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 				}
 				service.Extensions[model.XVolumesExtension] = xVolumes
 			}
+			if container.KubeVirt {
+				if service.Extensions == nil {
+					service.Extensions = make(types.Extensions)
+				}
+				service.Extensions[model.XKubeVirtExtension] = true
+			}
 			if container.Bootloader != "" {
 				if service.Extensions == nil {
 					service.Extensions = make(types.Extensions)

@@ -12,6 +12,7 @@ const EnvFlagPrefix = "FLAG"
 
 const (
 	XVolumesExtension   = "x-volumes"
+	XKubeVirtExtension  = "x-kubevirt"
 	XBootExtension      = "x-boot"
 	XCloudInitExtension = "x-cloudinit"
 )
@@ -64,6 +65,7 @@ type ChallengeContainerTemplate struct {
 	WorkingDir  string     `json:"working_dir"`
 	Command     StringList `json:"command"`
 	Environment StringMap  `json:"environment"`
+	KubeVirt    bool       `json:"kubevirt"`
 	Bootloader  string     `json:"bootloader"`
 	SecureBoot  bool       `json:"secure_boot"`
 	UserData    string     `json:"user_data"`
@@ -104,6 +106,7 @@ type VictimContainerSpec struct {
 	WorkingDir  string          `json:"working_dir"`
 	Command     StringList      `json:"command"`
 	Environment StringMap       `json:"environment"`
+	KubeVirt    bool            `json:"kubevirt"`
 	Bootloader  string          `json:"bootloader"`
 	SecureBoot  bool            `json:"secure_boot"`
 	UserData    string          `json:"user_data"`

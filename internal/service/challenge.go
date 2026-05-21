@@ -40,6 +40,7 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 	prefix := utils.RandHexStr(10)
 	config, err := utils.LoadDockerComposeYaml(dockerCompose, prefix, map[string]any{
 		model.XVolumesExtension:   model.XVolumes{},
+		model.XKubeVirtExtension:  false,
 		model.XBootExtension:      model.XBoot{},
 		model.XCloudInitExtension: model.XCloudInit{},
 	})
@@ -156,6 +157,9 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 		if boot, ok := app.Extensions[model.XBootExtension].(model.XBoot); ok {
 			containerTemplate.Bootloader = boot.Bootloader
 			containerTemplate.SecureBoot = boot.SecureBoot
+		}
+		if kubeVirt, ok := app.Extensions[model.XKubeVirtExtension].(bool); ok {
+			containerTemplate.KubeVirt = kubeVirt
 		}
 		if cloudInit, ok := app.Extensions[model.XCloudInitExtension].(model.XCloudInit); ok {
 			containerTemplate.UserData = cloudInit.UserData
