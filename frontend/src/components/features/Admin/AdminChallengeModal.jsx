@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import { IconX, IconPlus, IconTrash } from '@tabler/icons-react';
 import Button from '../../common/Button';
-import { lazy, Suspense, useState, useEffect } from 'react';
+import { lazy, Suspense, useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const Editor = lazy(() => import('../../../lib/monacoSetup').then(() => import('@monaco-editor/react')));
@@ -745,6 +745,7 @@ function AdminChallengeModal({
   const ct = (key, options) => t(`admin.challengeModal.composeGuide.${key}`, options);
 
   const [guideConfig, setGuideConfig] = useState(createGuideConfig);
+  const guideGeneratedComposeRef = useRef('');
 
   const guideValidation = validateGuidedCompose(guideConfig, t);
   const guideValidationErrors = guideValidation.list;
@@ -754,19 +755,34 @@ function AdminChallengeModal({
   const policyTargets = getGuideServiceTargets(guideConfig);
 
   const syncGuideConfig = (nextConfig) => {
+    const dockerCompose = buildGuidedComposeYaml(nextConfig);
+    guideGeneratedComposeRef.current = dockerCompose;
     setGuideConfig(nextConfig);
-    onChange({ ...challenge, docker_compose: buildGuidedComposeYaml(nextConfig) });
+    onChange({ ...challenge, docker_compose: dockerCompose });
   };
 
   useEffect(() => {
-    if (challenge.type !== 'pods' || !challenge.docker_compose) return;
-    const parsed = parseComposeYamlToGuideConfig(challenge.docker_compose, t);
+    if (!isOpen || challenge.type !== 'pods') {
+      guideGeneratedComposeRef.current = '';
+      setGuideConfig(createGuideConfig());
+      return;
+    }
+    const dockerCompose = challenge.docker_compose || '';
+    if (!dockerCompose) {
+      guideGeneratedComposeRef.current = '';
+      setGuideConfig(createGuideConfig());
+      return;
+    }
+    if (guideGeneratedComposeRef.current === dockerCompose) return;
+    guideGeneratedComposeRef.current = '';
+    const parsed = parseComposeYamlToGuideConfig(dockerCompose, t);
     if (parsed.ok) setGuideConfig(parsed.config);
-  }, [challenge.type, challenge.docker_compose]);
+  }, [isOpen, challenge.id, challenge.type, challenge.docker_compose, t]);
 
   // docker_compose 更新
   const updateDockerCompose = (value) => {
     const finalValue = value || '';
+    guideGeneratedComposeRef.current = '';
     const parsed = parseComposeYamlToGuideConfig(finalValue, t);
     if (parsed.ok) setGuideConfig(parsed.config);
     onChange({ ...challenge, docker_compose: finalValue });
