@@ -1461,6 +1461,7 @@
           "ipInvalid": "{{label}}: {{network}} ipv4_address is invalid",
           "ipUnique": "{{label}}: {{network}} ipv4_address must be unique within the same network",
           "ipOutOfSubnet": "{{label}}: {{network}} ipv4_address is outside subnet range",
+          "macAddressRequired": "{{label}}: {{network}} mac_address is required when x-kubevirt is true",
           "macAddressInvalid": "{{label}}: {{network}} mac_address is invalid",
           "networkDefinitionNameRequired": "{{label}}: name is required",
           "networkDefinitionNameUnique": "{{label}}: name must be unique",

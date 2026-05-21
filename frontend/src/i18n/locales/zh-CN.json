@@ -1461,6 +1461,7 @@
           "ipInvalid": "{{label}}: {{network}} ipv4_address 不合法",
           "ipUnique": "{{label}}: {{network}} ipv4_address 在同一 network 内不能重复",
           "ipOutOfSubnet": "{{label}}: {{network}} ipv4_address 不在 subnet 范围内",
+          "macAddressRequired": "{{label}}: x-kubevirt 为 true 时 {{network}} mac_address 必填",
           "macAddressInvalid": "{{label}}: {{network}} mac_address 不合法",
           "networkDefinitionNameRequired": "{{label}}: 名称必填",
           "networkDefinitionNameUnique": "{{label}}: name 不能重复",
