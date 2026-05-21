@@ -162,8 +162,8 @@ func AddFrpc(ctx context.Context, victim model.Victim) (model.Victim, model.RetV
 			if !needFrpc {
 				continue
 			}
-			podFrpcConfigMap[podName] = frpcConfig
-			podNginxConfigMap[podName] = fmt.Sprintf(nginxHeaderTemplate, nginxConfig)
+			podFrpcConfigMap[podName] = strings.TrimSpace(frpcConfig)
+			podNginxConfigMap[podName] = strings.TrimSpace(fmt.Sprintf(nginxHeaderTemplate, nginxConfig))
 			podVPCGWMap[podName] = subnet.NatGateway.Name
 			frpcPodNameL = append(frpcPodNameL, podName)
 		}

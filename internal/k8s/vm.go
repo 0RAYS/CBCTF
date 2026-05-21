@@ -172,9 +172,12 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 									NetworkData: func() string {
 										ethernets := make([]string, 0)
 										for _, network := range options.Networks {
-											ethernets = append(ethernets, fmt.Sprintf(NetworkDataEthernetTmpl, network.Interface, network.MAC, network.Interface))
+											ethernets = append(
+												ethernets,
+												strings.TrimSpace(fmt.Sprintf(NetworkDataEthernetTmpl, network.Interface, network.MAC, network.Interface)),
+											)
 										}
-										return fmt.Sprintf(NetworkDataTmpl, strings.Join(ethernets, "\n"))
+										return strings.TrimSpace(fmt.Sprintf(NetworkDataTmpl, strings.Join(ethernets, "\n")))
 									}(),
 								},
 							},
