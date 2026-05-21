@@ -186,6 +186,9 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 	}
 	vm, err = virtClient.KubevirtV1().VirtualMachines(globalNamespace).Create(ctx, vm, metav1.CreateOptions{})
 	if err != nil {
+		if apierror.IsAlreadyExists(err) {
+			return GetVM(ctx, options.Name)
+		}
 		log.Logger.Warningf("Failed to create virtual machine: %s", err)
 		return nil, model.RetVal{Msg: i18n.K8S.CreateError, Attr: map[string]any{"Model": "VirtualMachine", "Error": err.Error()}}
 	}
@@ -202,34 +205,6 @@ func GetVM(ctx context.Context, name string) (*v1.VirtualMachine, model.RetVal) 
 		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "VirtualMachine", "Error": err.Error()}}
 	}
 	return vm, model.SuccessRetVal()
-}
-
-func ListVM(ctx context.Context, labels ...map[string]string) (*v1.VirtualMachineList, model.RetVal) {
-	var options metav1.ListOptions
-	if len(labels) > 0 {
-		var selector string
-		for k, v := range labels[0] {
-			selector += fmt.Sprintf("%s=%s,", k, v)
-		}
-		options = metav1.ListOptions{
-			LabelSelector: strings.TrimSuffix(selector, ","),
-		}
-	}
-	vmList, err := virtClient.KubevirtV1().VirtualMachines(globalNamespace).List(ctx, options)
-	if err != nil {
-		log.Logger.Warningf("Failed to list VirtualMachines: %s", err)
-		return nil, model.RetVal{Msg: i18n.K8S.GetError, Attr: map[string]any{"Model": "VirtualMachine", "Error": err.Error()}}
-	}
-	return vmList, model.SuccessRetVal()
-}
-
-func DeleteVM(ctx context.Context, name string) model.RetVal {
-	err := virtClient.KubevirtV1().VirtualMachines(globalNamespace).Delete(ctx, name, metav1.DeleteOptions{})
-	if err != nil && !apierror.IsNotFound(err) {
-		log.Logger.Warningf("Failed to delete VirtualMachine: %s", err)
-		return model.RetVal{Msg: i18n.K8S.DeleteError, Attr: map[string]any{"Model": "VirtualMachine", "Error": err.Error()}}
-	}
-	return model.SuccessRetVal()
 }
 
 func DeleteVMCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
