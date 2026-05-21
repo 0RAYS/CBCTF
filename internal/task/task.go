@@ -90,10 +90,10 @@ func Stop() {
 	var wg sync.WaitGroup
 	wg.Add(len(servers))
 	for _, srv := range servers {
-		go func(srv *asynq.Server) {
+		go func() {
 			defer wg.Done()
 			srv.Shutdown()
-		}(srv)
+		}()
 	}
 	wg.Wait()
 }
