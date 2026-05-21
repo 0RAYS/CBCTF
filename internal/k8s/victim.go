@@ -552,6 +552,7 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 	tryDelete(DeleteEndpointCollection(ctx, labels))
 	tryDelete(DeleteServiceCollection(ctx, labels))
 	tryDelete(DeletePodCollection(ctx, labels))
+	tryDelete(DeleteVMCollection(ctx, labels))
 	for _, subnet := range victim.Spec.NetworkPlan.Subnets {
 		tryDelete(DeleteIPCollection(ctx, map[string]string{"ovn.kubernetes.io/subnet": subnet.Name}))
 	}
