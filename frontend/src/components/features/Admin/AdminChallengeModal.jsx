@@ -136,15 +136,17 @@ const buildGuidedComposeYaml = (config) => {
       });
     }
 
-    if (service.kubeVirt) lines.push('    x-kubevirt: true');
+    if (service.kubeVirt) {
+      lines.push('    x-kubevirt: true');
+    }
 
-    if (service.bootloader.trim() || service.secureBoot) {
+    if (service.kubeVirt && (service.bootloader.trim() || service.secureBoot)) {
       lines.push('    x-boot:');
       if (service.bootloader.trim()) lines.push(`      bootloader: ${service.bootloader.trim()}`);
       lines.push(`      secure_boot: ${service.secureBoot ? 'true' : 'false'}`);
     }
 
-    if (service.userData.trim()) {
+    if (service.kubeVirt && service.userData.trim()) {
       lines.push('    x-cloudinit:', '      user_data: |');
       service.userData.split('\n').forEach((item) => lines.push(`        ${item}`));
     }
@@ -526,7 +528,7 @@ const validateGuidedCompose = (config, t = (key) => key) => {
         t('admin.challengeModal.composeGuide.validation.memLimitFormat', { label })
       );
     }
-    if (service.bootloader.trim() && !['bios', 'efi'].includes(service.bootloader.trim())) {
+    if (service.kubeVirt && service.bootloader.trim() && !['bios', 'efi'].includes(service.bootloader.trim())) {
       addError(
         `service.${serviceIndex}.bootloader`,
         t('admin.challengeModal.composeGuide.validation.bootloaderInvalid', { label })
@@ -1447,40 +1449,48 @@ function AdminChallengeModal({
                                       <option value="true">true</option>
                                     </select>
                                   </GuideField>
-                                  <GuideField label={ct('fields.bootloader')}>
-                                    <select
-                                      className={selectClass}
-                                      value={service.bootloader}
-                                      onChange={(e) => updateGuideService(serviceIndex, 'bootloader', e.target.value)}
-                                    >
-                                      <option value="">{ct('placeholders.bootloader')}</option>
-                                      <option value="bios">bios</option>
-                                      <option value="efi">efi</option>
-                                    </select>
-                                    <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.bootloader`]} />
-                                  </GuideField>
-                                  <GuideField label={ct('fields.secureBoot')}>
-                                    <select
-                                      className={selectClass}
-                                      value={service.secureBoot ? 'true' : 'false'}
-                                      onChange={(e) =>
-                                        updateGuideService(serviceIndex, 'secureBoot', e.target.value === 'true')
-                                      }
-                                    >
-                                      <option value="false">false</option>
-                                      <option value="true">true</option>
-                                    </select>
-                                  </GuideField>
-                                  <div className="md:col-span-2">
-                                    <GuideField label={ct('fields.userData')}>
-                                      <textarea
-                                        className={textareaClass}
-                                        value={service.userData}
-                                        placeholder={ct('placeholders.userData')}
-                                        onChange={(e) => updateGuideService(serviceIndex, 'userData', e.target.value)}
-                                      />
-                                    </GuideField>
-                                  </div>
+                                  {service.kubeVirt ? (
+                                    <>
+                                      <GuideField label={ct('fields.bootloader')}>
+                                        <select
+                                          className={selectClass}
+                                          value={service.bootloader}
+                                          onChange={(e) =>
+                                            updateGuideService(serviceIndex, 'bootloader', e.target.value)
+                                          }
+                                        >
+                                          <option value="">{ct('placeholders.bootloader')}</option>
+                                          <option value="bios">bios</option>
+                                          <option value="efi">efi</option>
+                                        </select>
+                                        <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.bootloader`]} />
+                                      </GuideField>
+                                      <GuideField label={ct('fields.secureBoot')}>
+                                        <select
+                                          className={selectClass}
+                                          value={service.secureBoot ? 'true' : 'false'}
+                                          onChange={(e) =>
+                                            updateGuideService(serviceIndex, 'secureBoot', e.target.value === 'true')
+                                          }
+                                        >
+                                          <option value="false">false</option>
+                                          <option value="true">true</option>
+                                        </select>
+                                      </GuideField>
+                                      <div className="md:col-span-2">
+                                        <GuideField label={ct('fields.userData')}>
+                                          <textarea
+                                            className={textareaClass}
+                                            value={service.userData}
+                                            placeholder={ct('placeholders.userData')}
+                                            onChange={(e) =>
+                                              updateGuideService(serviceIndex, 'userData', e.target.value)
+                                            }
+                                          />
+                                        </GuideField>
+                                      </div>
+                                    </>
+                                  ) : null}
                                 </div>
 
                                 <GuideListHeader
