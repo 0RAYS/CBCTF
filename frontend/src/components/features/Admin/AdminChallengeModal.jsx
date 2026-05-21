@@ -92,7 +92,6 @@ const appendYamlList = (lines, values, indent) => {
 
 const buildGuidedComposeYaml = (config) => {
   const lines = ['services:'];
-  const flagVolumes = new Map();
   const networks = (config.networks || []).filter((network) => network.name.trim());
 
   (config.services || []).forEach((service, index) => {
@@ -122,15 +121,11 @@ const buildGuidedComposeYaml = (config) => {
       envs.forEach((env) => lines.push(`      - ${yamlQuote(`${env.key.trim()}=${env.value}`)}`));
     }
 
-    const volumes = (service.volumes || []).filter((volume) => volume.source.trim() && volume.target.trim());
+    const volumes = (service.volumes || []).filter((volume) => volume.target.trim());
     if (volumes.length > 0) {
-      lines.push('    volumes:');
+      lines.push('    x-volumes:');
       volumes.forEach((volume) => {
-        const source = volume.source.trim();
-        lines.push('      - type: volume', `        source: ${source}`, `        target: ${volume.target.trim()}`);
-        if (source.startsWith('FLAG')) {
-          flagVolumes.set(source, volume.value || 'uuid{}');
-        }
+        lines.push('      - path: ' + yamlQuote(volume.target.trim()), `        content: ${yamlQuote(volume.value || 'uuid{}')}`);
       });
     }
 
@@ -152,13 +147,6 @@ const buildGuidedComposeYaml = (config) => {
         });
     }
   });
-
-  if (flagVolumes.size > 0) {
-    lines.push('', 'volumes:');
-    flagVolumes.forEach((value, source) => {
-      lines.push(`  ${source}:`, '    labels:', `      - value=${value}`);
-    });
-  }
 
   if (networks.length > 0) {
     lines.push('', 'networks:');
@@ -260,7 +248,7 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
       serviceNetwork = null;
       currentPort = null;
       currentVolume = null;
-      if (!['services', 'volumes', 'networks'].includes(section)) {
+      if (!['services', 'networks'].includes(section)) {
         errors.push(
           t('admin.challengeModal.composeGuide.validation.unsupportedTopLevel', { line: line.index, field: section })
         );
@@ -300,7 +288,7 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
         serviceNetwork = null;
         currentPort = null;
         currentVolume = null;
-        if (['ports', 'environment', 'volumes', 'command', 'networks'].includes(pair.key) && pair.value === '') {
+        if (['ports', 'environment', 'x-volumes', 'command', 'networks'].includes(pair.key) && pair.value === '') {
           serviceList = pair.key;
           continue;
         }
@@ -359,6 +347,20 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
           errors.push(t('admin.challengeModal.composeGuide.validation.volumeTypeInvalid', { line: line.index }));
         } else if (pair?.key === 'source') currentVolume.source = pair.value;
         else if (pair?.key === 'target') currentVolume.target = pair.value;
+        continue;
+      }
+      if (indent === 6 && serviceList === 'x-volumes' && text.startsWith('- ')) {
+        const pair = parseKeyValueLine(text.slice(2).trim());
+        currentVolume = { source: '', target: '', value: '' };
+        service.volumes.push(currentVolume);
+        if (pair?.key === 'path') currentVolume.target = pair.value;
+        else if (pair?.key === 'content') currentVolume.value = pair.value;
+        continue;
+      }
+      if (indent === 8 && serviceList === 'x-volumes' && currentVolume) {
+        const pair = parseKeyValueLine(text);
+        if (pair?.key === 'path') currentVolume.target = pair.value;
+        else if (pair?.key === 'content') currentVolume.value = pair.value;
         continue;
       }
       if (indent === 6 && serviceList === 'ports' && text.startsWith('- ')) {
@@ -459,7 +461,6 @@ const validateGuidedCompose = (config, t = (key) => key) => {
   const networkIps = new Set();
   const definedNetworks = (config.networks || []).filter((network) => network.name.trim());
   const networkNames = new Set(definedNetworks.map((network) => network.name.trim()));
-  const fileFlagSources = new Set();
   const networkCidrs = new Map(definedNetworks.map((network) => [network.name.trim(), network.subnet.trim()]));
   const networkAssignedIps = new Map();
 
@@ -556,30 +557,12 @@ const validateGuidedCompose = (config, t = (key) => key) => {
     });
     const serviceVolumeTargets = new Set();
     (service.volumes || []).forEach((volume, volumeIndex) => {
-      const source = volume.source.trim();
       const target = volume.target.trim();
-      if (!volume.source.trim())
-        addError(
-          `service.${serviceIndex}.volumes.${volumeIndex}.source`,
-          t('admin.challengeModal.composeGuide.validation.volumeSourceRequired', { label, index: volumeIndex + 1 })
-        );
       if (!volume.target.trim())
         addError(
           `service.${serviceIndex}.volumes.${volumeIndex}.target`,
           t('admin.challengeModal.composeGuide.validation.volumeTargetRequired', { label, index: volumeIndex + 1 })
         );
-      if (source && !source.startsWith('FLAG')) {
-        addError(
-          `service.${serviceIndex}.volumes.${volumeIndex}.source`,
-          t('admin.challengeModal.composeGuide.validation.volumeSourcePrefix', { label, index: volumeIndex + 1 })
-        );
-      }
-      if (source && fileFlagSources.has(source))
-        addError(
-          `service.${serviceIndex}.volumes.${volumeIndex}.source`,
-          t('admin.challengeModal.composeGuide.validation.volumeSourceUnique', { label, index: volumeIndex + 1 })
-        );
-      if (source) fileFlagSources.add(source);
       if (target && serviceVolumeTargets.has(target))
         addError(
           `service.${serviceIndex}.volumes.${volumeIndex}.target`,
@@ -1544,37 +1527,11 @@ function AdminChallengeModal({
                                   title={ct('sections.fileFlags')}
                                   addLabel={ct('actions.add')}
                                   onAdd={() =>
-                                    addGuideServiceListItem(serviceIndex, 'volumes', {
-                                      source: '',
-                                      target: '',
-                                      value: '',
-                                    })
+                                    addGuideServiceListItem(serviceIndex, 'volumes', { target: '', value: '' })
                                   }
                                 />
                                 {service.volumes.map((volume, volumeIndex) => (
-                                  <div key={volumeIndex} className="grid grid-cols-[1fr_1fr_1fr_32px] gap-2">
-                                    <GuideField label={ct('fields.source')}>
-                                      <input
-                                        className={inputBaseClass}
-                                        value={volume.source}
-                                        required
-                                        placeholder={ct('placeholders.source')}
-                                        onChange={(e) =>
-                                          updateGuideServiceList(
-                                            serviceIndex,
-                                            'volumes',
-                                            volumeIndex,
-                                            'source',
-                                            e.target.value
-                                          )
-                                        }
-                                      />
-                                      <GuideErrors
-                                        errors={
-                                          guideFieldErrors[`service.${serviceIndex}.volumes.${volumeIndex}.source`]
-                                        }
-                                      />
-                                    </GuideField>
+                                  <div key={volumeIndex} className="grid grid-cols-[1fr_1fr_32px] gap-2">
                                     <GuideField label={ct('fields.target')}>
                                       <input
                                         className={inputBaseClass}

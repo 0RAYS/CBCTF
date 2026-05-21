@@ -42,6 +42,7 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 					service.Environment[key] = new(value)
 				}
 			}
+			xVolumes := make([]map[string]string, 0)
 			for _, flag := range challengeFlags {
 				if flag.Binding.PodKey != pod.Key || flag.Binding.ContainerKey != container.Key {
 					continue
@@ -53,17 +54,17 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 					}
 					service.Environment[flag.Binding.Target] = new(flag.Value)
 				case model.FileFlagBindingType:
-					service.Volumes = append(service.Volumes, types.ServiceVolumeConfig{
-						Type:   "volume",
-						Source: flag.Name,
-						Target: flag.Binding.Target,
+					xVolumes = append(xVolumes, map[string]string{
+						model.XVolumesPathExtension:    flag.Binding.Target,
+						model.XVolumesContentExtension: flag.Value,
 					})
-					cfg.Volumes[flag.Name] = types.VolumeConfig{
-						Labels: map[string]string{
-							model.VolumeFlagLabelKey: flag.Value,
-						},
-					}
 				}
+			}
+			if len(xVolumes) > 0 {
+				if service.Extensions == nil {
+					service.Extensions = make(map[string]any)
+				}
+				service.Extensions[model.XVolumesExtension] = xVolumes
 			}
 			if len(pod.Networks) > 0 {
 				service.Networks = make(map[string]*types.ServiceNetworkConfig)

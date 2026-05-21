@@ -17,7 +17,6 @@ type ChallengeFlag struct {
 	Challenge    Challenge     `json:"-"`
 	ContestFlags []ContestFlag `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
 	TeamFlags    []TeamFlag    `gorm:"constraint:OnDelete:CASCADE;" json:"-"`
-	Name         string        `json:"name"`
 	Value        string        `json:"value"`
 	Binding      FlagBinding   `gorm:"type:jsonb" json:"binding"`
 	BaseModel
