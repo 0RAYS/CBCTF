@@ -20,7 +20,7 @@ type CreateIPOptions struct {
 	IP      string
 }
 
-func DeleteIPList(ctx context.Context, labels ...map[string]string) model.RetVal {
+func DeleteIPCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string

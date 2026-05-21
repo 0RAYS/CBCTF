@@ -96,7 +96,7 @@ func StopGenerator(ctx context.Context, generator model.Generator) model.RetVal 
 		return ret
 	}
 	labels := GeneratorLabels(generator, map[string]string{GeneratorPodTag: GeneratorPodTag})
-	if ret := DeleteServiceList(ctx, labels); !ret.OK {
+	if ret := DeleteServiceCollection(ctx, labels); !ret.OK {
 		return ret
 	}
 	log.Logger.Debugf("Deleted generator k8s resources: generator_id=%d name=%s challenge_id=%d", generator.ID, generator.Name, generator.ChallengeID)

@@ -64,7 +64,7 @@ func GetNetAttachDef(ctx context.Context, name string, namespace ...string) (*ne
 	return netAttachDef, model.SuccessRetVal()
 }
 
-func DeleteNetAttachDefList(ctx context.Context, namespace string, labels ...map[string]string) model.RetVal {
+func DeleteNetAttachDefCollection(ctx context.Context, namespace string, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string

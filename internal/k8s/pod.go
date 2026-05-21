@@ -105,7 +105,7 @@ func GetPod(ctx context.Context, name string) (*corev1.Pod, model.RetVal) {
 	return pod, model.SuccessRetVal()
 }
 
-func GetPodList(ctx context.Context, labels ...map[string]string) (*corev1.PodList, model.RetVal) {
+func ListPods(ctx context.Context, labels ...map[string]string) (*corev1.PodList, model.RetVal) {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string
@@ -134,7 +134,7 @@ func DeletePod(ctx context.Context, name string) model.RetVal {
 	return model.SuccessRetVal()
 }
 
-func DeletePodList(ctx context.Context, labels ...map[string]string) model.RetVal {
+func DeletePodCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string

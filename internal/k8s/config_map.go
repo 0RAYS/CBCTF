@@ -40,7 +40,7 @@ func CreateConfigMap(ctx context.Context, options CreateConfigMapOptions) (*core
 	return configMap, model.SuccessRetVal()
 }
 
-func DeleteConfigMapList(ctx context.Context, labels ...map[string]string) model.RetVal {
+func DeleteConfigMapCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string

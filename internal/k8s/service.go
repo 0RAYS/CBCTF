@@ -59,7 +59,7 @@ func CreateService(ctx context.Context, options CreateServiceOptions) (*corev1.S
 	return service, model.SuccessRetVal()
 }
 
-func GetServiceList(ctx context.Context, labels ...map[string]string) (*corev1.ServiceList, model.RetVal) {
+func ListServices(ctx context.Context, labels ...map[string]string) (*corev1.ServiceList, model.RetVal) {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string
@@ -91,9 +91,9 @@ func DeleteService(ctx context.Context, name string) model.RetVal {
 	return model.SuccessRetVal()
 }
 
-// DeleteServiceList Service 不支持 DeleteCollection
-func DeleteServiceList(ctx context.Context, labels ...map[string]string) model.RetVal {
-	services, ret := GetServiceList(ctx, labels...)
+// DeleteServiceCollection Service 不支持 DeleteCollection
+func DeleteServiceCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
+	services, ret := ListServices(ctx, labels...)
 	if !ret.OK || services == nil {
 		return ret
 	}

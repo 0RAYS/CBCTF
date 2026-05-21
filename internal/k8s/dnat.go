@@ -49,7 +49,7 @@ func CreateDNat(ctx context.Context, options CreateDNatOptions) (*kubeovnv1.Ipta
 	return dnat, model.SuccessRetVal()
 }
 
-func DeleteDNatList(ctx context.Context, labels ...map[string]string) model.RetVal {
+func DeleteDNatCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string

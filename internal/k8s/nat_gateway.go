@@ -86,7 +86,7 @@ func CreateVPCNatGateway(ctx context.Context, options CreateVPCNatGatewayOptions
 	return gateway, model.SuccessRetVal()
 }
 
-func DeleteVPCNatGatewayList(ctx context.Context, labels ...map[string]string) model.RetVal {
+func DeleteVPCNatGatewayCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string

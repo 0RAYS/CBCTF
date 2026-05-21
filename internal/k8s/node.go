@@ -42,7 +42,7 @@ func ListSchedulableNodes(ctx context.Context) ([]*corev1.Node, model.RetVal) {
 	return nodes, model.SuccessRetVal()
 }
 
-func GetNodeImageList(ctx context.Context) (map[string][]string, model.RetVal) {
+func ListNodeImages(ctx context.Context) (map[string][]string, model.RetVal) {
 	nodes, ret := ListSchedulableNodes(ctx)
 	if !ret.OK {
 		return nil, ret

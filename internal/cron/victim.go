@@ -37,7 +37,7 @@ func closeTimeoutVictimsTask() model.RetVal {
 // closeUnCtrlVictimsTask 关闭数据库中记录关闭, 但仍在运行的靶机
 func closeUnCtrlVictimsTask() model.RetVal {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
-	pods, ret := k8s.GetPodList(ctx)
+	pods, ret := k8s.ListPods(ctx)
 	cancel()
 	if !ret.OK {
 		return ret
@@ -63,7 +63,7 @@ func closeUnCtrlVictimsTask() model.RetVal {
 	}
 	for _, id := range idL {
 		ctx, cancel = context.WithTimeout(context.Background(), time.Minute)
-		if ret = k8s.DeletePodList(ctx, map[string]string{"victim_id": id}); ret.OK {
+		if ret = k8s.DeletePodCollection(ctx, map[string]string{"victim_id": id}); ret.OK {
 			log.Logger.Infof("Deleted uncontrolled victim pods: victim_id=%s", id)
 		} else {
 			log.Logger.Warningf("Failed to delete uncontrolled victim pods: victim_id=%s reason=%s", id, ret.Msg)
