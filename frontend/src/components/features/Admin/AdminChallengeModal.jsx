@@ -125,7 +125,10 @@ const buildGuidedComposeYaml = (config) => {
     if (volumes.length > 0) {
       lines.push('    x-volumes:');
       volumes.forEach((volume) => {
-        lines.push('      - path: ' + yamlQuote(volume.target.trim()), `        content: ${yamlQuote(volume.content || 'uuid{}')}`);
+        lines.push(
+          '      - path: ' + yamlQuote(volume.target.trim()),
+          `        content: ${yamlQuote(volume.content || 'uuid{}')}`
+        );
       });
     }
 
