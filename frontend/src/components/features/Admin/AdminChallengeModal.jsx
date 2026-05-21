@@ -78,7 +78,9 @@ const getGuideServiceTargets = (config) =>
 const hasVpcNetworks = (config) => (config.networks || []).some((network) => network.name.trim());
 
 const hasOpenPort = (config) =>
-  (config.services || []).some((service) => (service.ports || []).some((port) => port.target.trim()));
+  (config.services || []).some(
+    (service) => !service.kubeVirt && (service.ports || []).some((port) => port.target.trim())
+  );
 
 const emptyComposeYaml = 'services:';
 
@@ -106,7 +108,7 @@ const buildGuidedComposeYaml = (config) => {
     if (service.cpus.trim()) lines.push(`    cpus: ${service.cpus.trim()}`);
     if (service.memLimit.trim()) lines.push(`    mem_limit: ${service.memLimit.trim()}`);
 
-    const ports = (service.ports || []).filter((port) => port.target.trim());
+    const ports = service.kubeVirt ? [] : (service.ports || []).filter((port) => port.target.trim());
     if (ports.length > 0) {
       lines.push('    ports:');
       ports.forEach((port) => {
@@ -119,13 +121,13 @@ const buildGuidedComposeYaml = (config) => {
       });
     }
 
-    const envs = (service.environment || []).filter((env) => env.key.trim());
+    const envs = service.kubeVirt ? [] : (service.environment || []).filter((env) => env.key.trim());
     if (envs.length > 0) {
       lines.push('    environment:');
       envs.forEach((env) => lines.push(`      - ${yamlQuote(`${env.key.trim()}=${env.value}`)}`));
     }
 
-    const volumes = (service.volumes || []).filter((volume) => volume.target.trim());
+    const volumes = service.kubeVirt ? [] : (service.volumes || []).filter((volume) => volume.target.trim());
     if (volumes.length > 0) {
       lines.push('    x-volumes:');
       volumes.forEach((volume) => {
@@ -151,10 +153,10 @@ const buildGuidedComposeYaml = (config) => {
       service.userData.split('\n').forEach((item) => lines.push(`        ${item}`));
     }
 
-    if (service.workingDir.trim()) lines.push(`    working_dir: ${service.workingDir.trim()}`);
+    if (!service.kubeVirt && service.workingDir.trim()) lines.push(`    working_dir: ${service.workingDir.trim()}`);
 
     const command = String(service.command || '').split('\n');
-    if (command.some((item) => item.trim())) {
+    if (!service.kubeVirt && command.some((item) => item.trim())) {
       lines.push('    command:');
       appendYamlList(lines, command, '      ');
     }
@@ -490,7 +492,7 @@ const validateGuidedCompose = (config, t = (key) => key) => {
   });
 
   if (!config.services?.length) addError('services', t('admin.challengeModal.composeGuide.validation.serviceRequired'));
-  if (config.services?.length && !hasOpenPort(config)) {
+  if (config.services?.some((service) => !service.kubeVirt) && !hasOpenPort(config)) {
     addError('ports', t('admin.challengeModal.composeGuide.validation.portRequired'));
   }
   (config.services || []).forEach((service, serviceIndex) => {
@@ -535,7 +537,7 @@ const validateGuidedCompose = (config, t = (key) => key) => {
       );
     }
     const servicePortTargets = new Set();
-    (service.ports || []).forEach((port, portIndex) => {
+    (service.kubeVirt ? [] : service.ports || []).forEach((port, portIndex) => {
       if (!port.target.trim())
         addError(
           `service.${serviceIndex}.ports.${portIndex}.target`,
@@ -566,7 +568,7 @@ const validateGuidedCompose = (config, t = (key) => key) => {
         );
       }
     });
-    (service.environment || []).forEach((env, envIndex) => {
+    (service.kubeVirt ? [] : service.environment || []).forEach((env, envIndex) => {
       if (!env.key.trim())
         addError(
           `service.${serviceIndex}.environment.${envIndex}.key`,
@@ -580,7 +582,7 @@ const validateGuidedCompose = (config, t = (key) => key) => {
       }
     });
     const serviceVolumeTargets = new Set();
-    (service.volumes || []).forEach((volume, volumeIndex) => {
+    (service.kubeVirt ? [] : service.volumes || []).forEach((volume, volumeIndex) => {
       const target = volume.target.trim();
       if (!volume.target.trim())
         addError(
@@ -1421,22 +1423,28 @@ function AdminChallengeModal({
                                     />
                                     <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.memLimit`]} />
                                   </GuideField>
-                                  <GuideField label={ct('fields.workingDir')}>
-                                    <input
-                                      className={inputBaseClass}
-                                      value={service.workingDir}
-                                      placeholder={ct('placeholders.workingDir')}
-                                      onChange={(e) => updateGuideService(serviceIndex, 'workingDir', e.target.value)}
-                                    />
-                                  </GuideField>
-                                  <GuideField label={ct('fields.command')}>
-                                    <textarea
-                                      className={textareaClass}
-                                      value={service.command}
-                                      placeholder={ct('placeholders.command')}
-                                      onChange={(e) => updateGuideService(serviceIndex, 'command', e.target.value)}
-                                    />
-                                  </GuideField>
+                                  {!service.kubeVirt ? (
+                                    <>
+                                      <GuideField label={ct('fields.workingDir')}>
+                                        <input
+                                          className={inputBaseClass}
+                                          value={service.workingDir}
+                                          placeholder={ct('placeholders.workingDir')}
+                                          onChange={(e) =>
+                                            updateGuideService(serviceIndex, 'workingDir', e.target.value)
+                                          }
+                                        />
+                                      </GuideField>
+                                      <GuideField label={ct('fields.command')}>
+                                        <textarea
+                                          className={textareaClass}
+                                          value={service.command}
+                                          placeholder={ct('placeholders.command')}
+                                          onChange={(e) => updateGuideService(serviceIndex, 'command', e.target.value)}
+                                        />
+                                      </GuideField>
+                                    </>
+                                  ) : null}
                                   <GuideField label={ct('fields.kubeVirt')}>
                                     <select
                                       className={selectClass}
@@ -1493,188 +1501,208 @@ function AdminChallengeModal({
                                   ) : null}
                                 </div>
 
-                                <GuideListHeader
-                                  title={ct('sections.ports')}
-                                  addLabel={ct('actions.add')}
-                                  onAdd={() =>
-                                    addGuideServiceListItem(serviceIndex, 'ports', {
-                                      published: '',
-                                      target: '',
-                                      protocol: '',
-                                    })
-                                  }
-                                />
-                                {service.ports.map((port, portIndex) => (
-                                  <div key={portIndex} className="grid grid-cols-[1fr_1fr_90px_32px] gap-2">
-                                    <GuideField label={ct('fields.name')}>
-                                      <input
-                                        className={inputBaseClass}
-                                        value={port.published}
-                                        placeholder={ct('placeholders.name')}
-                                        onChange={(e) =>
-                                          updateGuideServiceList(
-                                            serviceIndex,
-                                            'ports',
-                                            portIndex,
-                                            'published',
-                                            e.target.value
-                                          )
-                                        }
-                                      />
-                                      <GuideErrors
-                                        errors={
-                                          guideFieldErrors[`service.${serviceIndex}.ports.${portIndex}.published`]
-                                        }
-                                      />
-                                    </GuideField>
-                                    <GuideField label={ct('fields.target')}>
-                                      <input
-                                        className={inputBaseClass}
-                                        value={port.target}
-                                        required
-                                        placeholder={ct('placeholders.target')}
-                                        onChange={(e) =>
-                                          updateGuideServiceList(
-                                            serviceIndex,
-                                            'ports',
-                                            portIndex,
-                                            'target',
-                                            e.target.value
-                                          )
-                                        }
-                                      />
-                                      <GuideErrors
-                                        errors={guideFieldErrors[`service.${serviceIndex}.ports.${portIndex}.target`]}
-                                      />
-                                    </GuideField>
-                                    <GuideField label={ct('fields.protocol')}>
-                                      <select
-                                        className={selectClass}
-                                        value={port.protocol}
-                                        onChange={(e) =>
-                                          updateGuideServiceList(
-                                            serviceIndex,
-                                            'ports',
-                                            portIndex,
-                                            'protocol',
-                                            e.target.value
-                                          )
-                                        }
-                                      >
-                                        <option value="">{ct('fields.protocol')}</option>
-                                        <option value="tcp">tcp</option>
-                                        <option value="udp">udp</option>
-                                      </select>
-                                    </GuideField>
-                                    <IconButton
-                                      onClick={() => removeGuideServiceListItem(serviceIndex, 'ports', portIndex)}
+                                {!service.kubeVirt ? (
+                                  <>
+                                    <GuideListHeader
+                                      title={ct('sections.ports')}
+                                      addLabel={ct('actions.add')}
+                                      onAdd={() =>
+                                        addGuideServiceListItem(serviceIndex, 'ports', {
+                                          published: '',
+                                          target: '',
+                                          protocol: '',
+                                        })
+                                      }
                                     />
-                                  </div>
-                                ))}
+                                    {service.ports.map((port, portIndex) => (
+                                      <div key={portIndex} className="grid grid-cols-[1fr_1fr_90px_32px] gap-2">
+                                        <GuideField label={ct('fields.name')}>
+                                          <input
+                                            className={inputBaseClass}
+                                            value={port.published}
+                                            placeholder={ct('placeholders.name')}
+                                            onChange={(e) =>
+                                              updateGuideServiceList(
+                                                serviceIndex,
+                                                'ports',
+                                                portIndex,
+                                                'published',
+                                                e.target.value
+                                              )
+                                            }
+                                          />
+                                          <GuideErrors
+                                            errors={
+                                              guideFieldErrors[`service.${serviceIndex}.ports.${portIndex}.published`]
+                                            }
+                                          />
+                                        </GuideField>
+                                        <GuideField label={ct('fields.target')}>
+                                          <input
+                                            className={inputBaseClass}
+                                            value={port.target}
+                                            required
+                                            placeholder={ct('placeholders.target')}
+                                            onChange={(e) =>
+                                              updateGuideServiceList(
+                                                serviceIndex,
+                                                'ports',
+                                                portIndex,
+                                                'target',
+                                                e.target.value
+                                              )
+                                            }
+                                          />
+                                          <GuideErrors
+                                            errors={
+                                              guideFieldErrors[`service.${serviceIndex}.ports.${portIndex}.target`]
+                                            }
+                                          />
+                                        </GuideField>
+                                        <GuideField label={ct('fields.protocol')}>
+                                          <select
+                                            className={selectClass}
+                                            value={port.protocol}
+                                            onChange={(e) =>
+                                              updateGuideServiceList(
+                                                serviceIndex,
+                                                'ports',
+                                                portIndex,
+                                                'protocol',
+                                                e.target.value
+                                              )
+                                            }
+                                          >
+                                            <option value="">{ct('fields.protocol')}</option>
+                                            <option value="tcp">tcp</option>
+                                            <option value="udp">udp</option>
+                                          </select>
+                                        </GuideField>
+                                        <IconButton
+                                          onClick={() => removeGuideServiceListItem(serviceIndex, 'ports', portIndex)}
+                                        />
+                                      </div>
+                                    ))}
+                                  </>
+                                ) : null}
 
-                                <GuideListHeader
-                                  title={ct('sections.environment')}
-                                  addLabel={ct('actions.add')}
-                                  onAdd={() =>
-                                    addGuideServiceListItem(serviceIndex, 'environment', { key: '', value: '' })
-                                  }
-                                />
-                                {service.environment.map((env, envIndex) => (
-                                  <div key={envIndex} className="grid grid-cols-[1fr_1fr_32px] gap-2">
-                                    <GuideField label={ct('fields.key')}>
-                                      <input
-                                        className={inputBaseClass}
-                                        value={env.key}
-                                        required
-                                        placeholder={ct('placeholders.key')}
-                                        onChange={(e) =>
-                                          updateGuideServiceList(
-                                            serviceIndex,
-                                            'environment',
-                                            envIndex,
-                                            'key',
-                                            e.target.value
-                                          )
-                                        }
-                                      />
-                                      <GuideErrors
-                                        errors={guideFieldErrors[`service.${serviceIndex}.environment.${envIndex}.key`]}
-                                      />
-                                    </GuideField>
-                                    <GuideField label={ct('fields.value')}>
-                                      <input
-                                        className={inputBaseClass}
-                                        value={env.value}
-                                        placeholder={ct('placeholders.value')}
-                                        onChange={(e) =>
-                                          updateGuideServiceList(
-                                            serviceIndex,
-                                            'environment',
-                                            envIndex,
-                                            'value',
-                                            e.target.value
-                                          )
-                                        }
-                                      />
-                                    </GuideField>
-                                    <IconButton
-                                      onClick={() => removeGuideServiceListItem(serviceIndex, 'environment', envIndex)}
+                                {!service.kubeVirt ? (
+                                  <>
+                                    <GuideListHeader
+                                      title={ct('sections.environment')}
+                                      addLabel={ct('actions.add')}
+                                      onAdd={() =>
+                                        addGuideServiceListItem(serviceIndex, 'environment', { key: '', value: '' })
+                                      }
                                     />
-                                  </div>
-                                ))}
+                                    {service.environment.map((env, envIndex) => (
+                                      <div key={envIndex} className="grid grid-cols-[1fr_1fr_32px] gap-2">
+                                        <GuideField label={ct('fields.key')}>
+                                          <input
+                                            className={inputBaseClass}
+                                            value={env.key}
+                                            required
+                                            placeholder={ct('placeholders.key')}
+                                            onChange={(e) =>
+                                              updateGuideServiceList(
+                                                serviceIndex,
+                                                'environment',
+                                                envIndex,
+                                                'key',
+                                                e.target.value
+                                              )
+                                            }
+                                          />
+                                          <GuideErrors
+                                            errors={
+                                              guideFieldErrors[`service.${serviceIndex}.environment.${envIndex}.key`]
+                                            }
+                                          />
+                                        </GuideField>
+                                        <GuideField label={ct('fields.value')}>
+                                          <input
+                                            className={inputBaseClass}
+                                            value={env.value}
+                                            placeholder={ct('placeholders.value')}
+                                            onChange={(e) =>
+                                              updateGuideServiceList(
+                                                serviceIndex,
+                                                'environment',
+                                                envIndex,
+                                                'value',
+                                                e.target.value
+                                              )
+                                            }
+                                          />
+                                        </GuideField>
+                                        <IconButton
+                                          onClick={() =>
+                                            removeGuideServiceListItem(serviceIndex, 'environment', envIndex)
+                                          }
+                                        />
+                                      </div>
+                                    ))}
+                                  </>
+                                ) : null}
 
-                                <GuideListHeader
-                                  title={ct('sections.fileFlags')}
-                                  addLabel={ct('actions.add')}
-                                  onAdd={() =>
-                                    addGuideServiceListItem(serviceIndex, 'volumes', { target: '', content: '' })
-                                  }
-                                />
-                                {service.volumes.map((volume, volumeIndex) => (
-                                  <div key={volumeIndex} className="grid grid-cols-[1fr_1fr_32px] gap-2">
-                                    <GuideField label={ct('fields.target')}>
-                                      <input
-                                        className={inputBaseClass}
-                                        value={volume.target}
-                                        required
-                                        placeholder={ct('placeholders.flagTarget')}
-                                        onChange={(e) =>
-                                          updateGuideServiceList(
-                                            serviceIndex,
-                                            'volumes',
-                                            volumeIndex,
-                                            'target',
-                                            e.target.value
-                                          )
-                                        }
-                                      />
-                                      <GuideErrors
-                                        errors={
-                                          guideFieldErrors[`service.${serviceIndex}.volumes.${volumeIndex}.target`]
-                                        }
-                                      />
-                                    </GuideField>
-                                    <GuideField label={ct('fields.content')}>
-                                      <input
-                                        className={inputBaseClass}
-                                        value={volume.content || ''}
-                                        placeholder="uuid{}"
-                                        onChange={(e) =>
-                                          updateGuideServiceList(
-                                            serviceIndex,
-                                            'volumes',
-                                            volumeIndex,
-                                            'content',
-                                            e.target.value
-                                          )
-                                        }
-                                      />
-                                    </GuideField>
-                                    <IconButton
-                                      onClick={() => removeGuideServiceListItem(serviceIndex, 'volumes', volumeIndex)}
+                                {!service.kubeVirt ? (
+                                  <>
+                                    <GuideListHeader
+                                      title={ct('sections.fileFlags')}
+                                      addLabel={ct('actions.add')}
+                                      onAdd={() =>
+                                        addGuideServiceListItem(serviceIndex, 'volumes', { target: '', content: '' })
+                                      }
                                     />
-                                  </div>
-                                ))}
+                                    {service.volumes.map((volume, volumeIndex) => (
+                                      <div key={volumeIndex} className="grid grid-cols-[1fr_1fr_32px] gap-2">
+                                        <GuideField label={ct('fields.target')}>
+                                          <input
+                                            className={inputBaseClass}
+                                            value={volume.target}
+                                            required
+                                            placeholder={ct('placeholders.flagTarget')}
+                                            onChange={(e) =>
+                                              updateGuideServiceList(
+                                                serviceIndex,
+                                                'volumes',
+                                                volumeIndex,
+                                                'target',
+                                                e.target.value
+                                              )
+                                            }
+                                          />
+                                          <GuideErrors
+                                            errors={
+                                              guideFieldErrors[`service.${serviceIndex}.volumes.${volumeIndex}.target`]
+                                            }
+                                          />
+                                        </GuideField>
+                                        <GuideField label={ct('fields.content')}>
+                                          <input
+                                            className={inputBaseClass}
+                                            value={volume.content || ''}
+                                            placeholder="uuid{}"
+                                            onChange={(e) =>
+                                              updateGuideServiceList(
+                                                serviceIndex,
+                                                'volumes',
+                                                volumeIndex,
+                                                'content',
+                                                e.target.value
+                                              )
+                                            }
+                                          />
+                                        </GuideField>
+                                        <IconButton
+                                          onClick={() =>
+                                            removeGuideServiceListItem(serviceIndex, 'volumes', volumeIndex)
+                                          }
+                                        />
+                                      </div>
+                                    ))}
+                                  </>
+                                ) : null}
 
                                 <GuideListHeader
                                   title={ct('sections.networks')}
