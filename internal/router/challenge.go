@@ -15,7 +15,11 @@ import (
 )
 
 func GetChallenge(ctx *gin.Context) {
-	challenge := middleware.GetChallenge(ctx)
+	challenge, ret := service.GetChallengeWithFlags(db.DB, middleware.GetChallenge(ctx))
+	if !ret.OK {
+		resp.JSON(ctx, ret)
+		return
+	}
 	resp.JSON(ctx, model.SuccessRetVal(resp.GetChallengeResp(service.GetChallengeView(db.DB, challenge))))
 }
 
