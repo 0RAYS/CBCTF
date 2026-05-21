@@ -78,14 +78,12 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 	wg := utils.NewGroup(ctx)
 	for _, pod := range pods {
 		wg.Go(func() error {
-			podSpec := pod.Spec
-
 			// VPC 模式下, 支持多 NetworkPolicy 根据 Labels 绑定到指定 Pod 上
 			podLabels := make(map[string]string, len(labels)+1)
 			for key, value := range labels {
 				podLabels[key] = value
 			}
-			if serviceName := podServiceName(podSpec); serviceName != "" {
+			if serviceName := podServiceName(pod.Spec); serviceName != "" {
 				podLabels[ServiceLabel] = serviceName
 			}
 
@@ -132,7 +130,8 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					},
 				},
 			}
-			for _, container := range podSpec.Containers {
+			// 兼容非 VPC 模式下, 一个 Pod 多个 Container, 使用循环来处理
+			for _, container := range pod.Spec.Containers {
 				volumeMounts := make([]corev1.VolumeMount, 0)
 				for _, fileMount := range container.FileMounts {
 					path := fileMount.Path
@@ -175,10 +174,10 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 
 				limit := make(corev1.ResourceList)
 				if container.Resources.CPUMillis > 0 {
-					limit["cpu"] = resource.MustParse(strconv.FormatInt(container.Resources.CPUMillis, 10) + "m")
+					limit[corev1.ResourceCPU] = resource.MustParse(strconv.FormatInt(container.Resources.CPUMillis, 10) + "m")
 				}
 				if container.Resources.MemoryBytes > 0 {
-					limit["memory"] = resource.MustParse(strconv.FormatInt(container.Resources.MemoryBytes, 10))
+					limit[corev1.ResourceMemory] = resource.MustParse(strconv.FormatInt(container.Resources.MemoryBytes, 10))
 				}
 
 				tmp := corev1.Container{
@@ -201,7 +200,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 			}
 
 			annotations := make(map[string]string)
-			for i, network := range podSpec.Networks {
+			for i, network := range pod.Spec.Networks {
 				subnet, ok := subnetMap[network.Definition.Name]
 				if !ok {
 					return fmt.Errorf("subnet %s not found", network.Definition.Name)
@@ -248,10 +247,10 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 			}
 
 			// 非 VPC 模式创建 NodePort 类型的 Service
-			if victim.Spec.NetworkPlan.Name == "" && len(podSpec.ServicePorts) > 0 {
+			if victim.Spec.NetworkPlan.Name == "" && len(pod.Spec.ServicePorts) > 0 {
 				service, ret := CreateService(ctx, CreateServiceOptions{
 					Name:     fmt.Sprintf("svc-%s", utils.RandHexStr(20)),
-					Ports:    podSpec.ServicePorts,
+					Ports:    pod.Spec.ServicePorts,
 					Labels:   labels,
 					Selector: labels,
 				})
@@ -261,7 +260,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				endpointsMutex.Lock()
 				for _, port := range service.Spec.Ports {
 					endpoint := model.Endpoint{
-						Name:     findExposeDisplayName(podSpec.ServicePorts, port.Port, string(port.Protocol)),
+						Name:     findExposeDisplayName(pod.Spec.ServicePorts, port.Port, string(port.Protocol)),
 						IP:       p.Status.HostIP,
 						Port:     port.NodePort,
 						Protocol: string(port.Protocol),
