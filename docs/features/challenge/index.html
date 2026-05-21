@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="generator" content="Docusaurus v3.9.2">
 <title data-rh="true">题目类型 | CBCTF Docs</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://cbctf.0rays.club/img/docusaurus-social-card.jpg"><meta data-rh="true" name="twitter:image" content="https://cbctf.0rays.club/img/docusaurus-social-card.jpg"><meta data-rh="true" property="og:url" content="https://cbctf.0rays.club/docs/features/challenge"><meta data-rh="true" property="og:locale" content="zh_Hans"><meta data-rh="true" name="docusaurus_locale" content="zh-Hans"><meta data-rh="true" name="docsearch:language" content="zh-Hans"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="题目类型 | CBCTF Docs"><meta data-rh="true" name="description" content="CBCTF 支持三种题目类型, 覆盖从传统静态题到复杂网络靶机的完整场景。"><meta data-rh="true" property="og:description" content="CBCTF 支持三种题目类型, 覆盖从传统静态题到复杂网络靶机的完整场景。"><link data-rh="true" rel="icon" href="/img/0RAYS.png"><link data-rh="true" rel="canonical" href="https://cbctf.0rays.club/docs/features/challenge"><link data-rh="true" rel="alternate" href="https://cbctf.0rays.club/docs/features/challenge" hreflang="zh-Hans"><link data-rh="true" rel="alternate" href="https://cbctf.0rays.club/docs/features/challenge" hreflang="x-default"><script data-rh="true" type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"题目类型","item":"https://cbctf.0rays.club/docs/features/challenge"}]}</script><link rel="stylesheet" href="/assets/css/styles.cbb51270.css">
-<script src="/assets/js/runtime~main.68575eba.js" defer="defer"></script>
+<script src="/assets/js/runtime~main.f5eaa863.js" defer="defer"></script>
 <script src="/assets/js/main.828d2876.js" defer="defer"></script>
 </head>
 <body class="navigation-with-keyboard">
@@ -38,6 +38,7 @@
 <ul>
 <li class="">每队拥有独立的容器实例, 互不干扰</li>
 <li class="">支持 Pod 网络模式（简单多容器）和 VPC 网络模式（复杂网络拓扑）</li>
+<li class=""><code>docker-compose.yaml</code> 支持 service 级扩展字段 <code>x-kubevirt: true</code>, 用于标记该 service 按 KubeVirt VM 配置处理；可配合 <code>x-boot</code> 和 <code>x-cloudinit.user_data</code> 传递启动与 cloud-init 配置</li>
 <li class="">flag 通过环境变量或文件 volume 注入容器</li>
 <li class="">需要 Kubernetes 集群（VPC 模式还需要 KubeOVN + Multus）</li>
 </ul>
