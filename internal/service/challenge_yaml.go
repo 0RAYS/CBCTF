@@ -11,7 +11,6 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 	cfg := types.Project{
 		Services: make(types.Services),
 		Networks: make(types.Networks),
-		Volumes:  make(types.Volumes),
 	}
 
 	networks := make(map[string]model.NetworkDefinition)
@@ -62,7 +61,7 @@ func Template2Yaml(template model.ChallengeTemplate, challengeFlags []model.Chal
 			}
 			if len(xVolumes) > 0 {
 				if service.Extensions == nil {
-					service.Extensions = make(map[string]any)
+					service.Extensions = make(types.Extensions)
 				}
 				service.Extensions[model.XVolumesExtension] = xVolumes
 			}
