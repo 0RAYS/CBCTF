@@ -86,6 +86,38 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				podLabels[ServiceLabel] = serviceName
 			}
 
+			networks := make([]Network, 0)
+			for _, network := range pod.Spec.Networks {
+				networks = append(networks, Network{
+					IPv4:         network.Attachment.IP,
+					MAC:          network.Attachment.MAC,
+					Gateway:      network.Definition.Gateway,
+					Subnet:       subnetMap[network.Definition.Name].Name,
+					NetAttachDef: netAttachDefMap[network.Definition.Name].Name,
+					External:     network.Definition.External,
+				})
+			}
+
+			// 当 VPC 模式下, 一个 Pod 只有一个 Container
+			if victim.Spec.NetworkPlan.Name != "" && pod.Spec.Containers[0].KubeVirt {
+				container := pod.Spec.Containers[0]
+				_, ret = CreateVM(ctx, CreateVMOptions{
+					Name:        pod.Name,
+					Labels:      podLabels,
+					Image:       container.Image,
+					Bootloader:  container.Bootloader,
+					SecureBoot:  container.SecureBoot,
+					CPUMillis:   container.Resources.CPUMillis,
+					MemoryBytes: container.Resources.MemoryBytes,
+					UserData:    container.UserData,
+					Networks:    networks,
+				})
+				if err, ok := ret.Attr["Error"]; ok && !ret.OK {
+					return errors.New(err.(string))
+				}
+				log.Logger.Debugf("Created victim vm: victim_id=%d vm=%s", victim.ID, pod.Name)
+				return nil
+			}
 			capture := corev1.Container{
 				Name:    "capture",
 				Image:   config.Env.K8S.CaptureImage,
@@ -196,26 +228,6 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 					tmp.WorkingDir = container.WorkingDir
 				}
 				containers = append(containers, tmp)
-			}
-
-			networks := make([]Network, 0, len(pod.Spec.Networks))
-			for _, network := range pod.Spec.Networks {
-				subnet, ok := subnetMap[network.Definition.Name]
-				if !ok {
-					return fmt.Errorf("subnet %s not found", network.Definition.Name)
-				}
-				netAttachDef, ok := netAttachDefMap[network.Definition.Name]
-				if !ok {
-					return fmt.Errorf("netAttachDef %s not found", network.Definition.Name)
-				}
-				networks = append(networks, Network{
-					IPv4:         network.Attachment.IP,
-					MAC:          network.Attachment.MAC,
-					Gateway:      network.Definition.Gateway,
-					Subnet:       subnet.Name,
-					NetAttachDef: netAttachDef.Name,
-					External:     network.Definition.External,
-				})
 			}
 
 			pOptions := CreatePodOptions{
