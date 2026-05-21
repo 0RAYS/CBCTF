@@ -79,6 +79,8 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 	for _, pod := range pods {
 		wg.Go(func() error {
 			podSpec := pod.Spec
+
+			// VPC 模式下, 支持多 NetworkPolicy 根据 Labels 绑定到指定 Pod 上
 			podLabels := make(map[string]string, len(labels)+1)
 			for key, value := range labels {
 				podLabels[key] = value
@@ -86,6 +88,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 			if serviceName := podServiceName(podSpec); serviceName != "" {
 				podLabels[ServiceLabel] = serviceName
 			}
+
 			capture := corev1.Container{
 				Name:    "capture",
 				Image:   config.Env.K8S.CaptureImage,
