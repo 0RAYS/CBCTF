@@ -1750,7 +1750,9 @@ function AdminChallengeModal({
                                       />
                                       <GuideErrors
                                         errors={
-                                          guideFieldErrors[`service.${serviceIndex}.networks.${networkIndex}.macAddress`]
+                                          guideFieldErrors[
+                                            `service.${serviceIndex}.networks.${networkIndex}.macAddress`
+                                          ]
                                         }
                                       />
                                     </GuideField>
