@@ -30,20 +30,9 @@ const NetworkDataEthernetTmpl = `
     dhcp4: true
 `
 
-type Network struct {
-	Interface    string
-	IPv4         string
-	MAC          string
-	Gateway      string
-	Subnet       string
-	NetAttachDef string
-	External     bool
-}
-
 type CreateVMOptions struct {
 	Name        string
 	Labels      map[string]string
-	Annotations map[string]string
 	Image       string
 	Bootloader  string
 	SecureBoot  bool
@@ -60,10 +49,9 @@ func CreateVM(ctx context.Context, options CreateVMOptions) (*v1.VirtualMachine,
 	)
 	vm = &v1.VirtualMachine{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        options.Name,
-			Namespace:   globalNamespace,
-			Labels:      options.Labels,
-			Annotations: options.Annotations,
+			Name:      options.Name,
+			Namespace: globalNamespace,
+			Labels:    options.Labels,
 		},
 		Spec: v1.VirtualMachineSpec{
 			RunStrategy: new(v1.RunStrategyAlways),

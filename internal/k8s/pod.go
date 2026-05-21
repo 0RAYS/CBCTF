@@ -14,6 +14,16 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+type Network struct {
+	Interface    string
+	IPv4         string
+	MAC          string
+	Gateway      string
+	Subnet       string
+	NetAttachDef string
+	External     bool
+}
+
 type CreatePodOptions struct {
 	Name          string
 	Labels        map[string]string
