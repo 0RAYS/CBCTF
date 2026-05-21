@@ -15,11 +15,21 @@ services:
     x-volumes:
       - path: /flag
         content: dynamic{this_is_a_file_flag}
+    x-boot:
+      bootloader: efi
+      secure_boot: false
+    x-cloudinit:
+      user_data: |
+        #cloud-config
+        users:
+          - name: root
     networks:
       network1:
         ipv4_address: 192.168.0.2
+        mac_address: "00:00:00:00:01:01"
       network2:
         ipv4_address: 192.168.1.2
+        mac_address: "00:00:00:00:01:02"
 
   web2:
     container_name: web2
@@ -34,11 +44,21 @@ services:
     x-volumes:
       - path: /flag
         content: dynamic{this_is_a_file_flag}
+    x-boot:
+      bootloader: efi
+      secure_boot: false
+    x-cloudinit:
+      user_data: |
+        #cloud-config
+        users:
+          - name: root
     networks:
       network2:
         ipv4_address: 192.168.1.3
+        mac_address: "00:00:00:00:02:01"
       network3:
         ipv4_address: 192.168.2.3
+        mac_address: "00:00:00:00:02:02"
 
   web3:
     container_name: web3
@@ -54,9 +74,17 @@ services:
     x-volumes:
       - path: /flag
         content: dynamic{this_is_a_file_flag}
+    x-boot:
+      bootloader: bios
+    x-cloudinit:
+      user_data: |
+        #cloud-config
+        users:
+          - name: root
     networks:
       network3:
         ipv4_address: 192.168.2.4
+        mac_address: "00:00:00:00:03:01"
 
 networks:
   network1:

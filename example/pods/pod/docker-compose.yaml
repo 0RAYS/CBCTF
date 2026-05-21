@@ -18,6 +18,14 @@ services:
     x-volumes:
       - path: /flag
         content: dynamic{this_is_a_file_flag}
+    x-boot:
+      bootloader: efi
+      secure_boot: false
+    x-cloudinit:
+      user_data: |
+        #cloud-config
+        users:
+          - name: root
 
   db:
     container_name: db
@@ -27,3 +35,5 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: example
       MYSQL_DATABASE: testdb
+    x-boot:
+      bootloader: bios
