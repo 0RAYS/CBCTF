@@ -77,6 +77,18 @@ const getGuideServiceTargets = (config) =>
 
 const hasVpcNetworks = (config) => (config.networks || []).some((network) => network.name.trim());
 
+const normalizeGuideConfigForMode = (config) => {
+  if (hasVpcNetworks(config)) return config;
+
+  return {
+    ...config,
+    services: (config.services || []).map((service) => ({
+      ...service,
+      kubeVirt: false,
+    })),
+  };
+};
+
 const hasOpenPort = (config) =>
   (config.services || []).some(
     (service) => !service.kubeVirt && (service.ports || []).some((port) => port.target.trim())
@@ -99,8 +111,10 @@ const appendYamlList = (lines, values, indent) => {
 const buildGuidedComposeYaml = (config) => {
   const lines = ['services:'];
   const networks = (config.networks || []).filter((network) => network.name.trim());
+  const vpcMode = networks.length > 0;
 
   (config.services || []).forEach((service, index) => {
+    const kubeVirt = vpcMode && service.kubeVirt;
     const serviceName = service.name.trim() || `service${index + 1}`;
     lines.push(`  ${serviceName}:`);
     if (service.containerName.trim()) lines.push(`    container_name: ${service.containerName.trim()}`);
@@ -108,7 +122,7 @@ const buildGuidedComposeYaml = (config) => {
     if (service.cpus.trim()) lines.push(`    cpus: ${service.cpus.trim()}`);
     if (service.memLimit.trim()) lines.push(`    mem_limit: ${service.memLimit.trim()}`);
 
-    const ports = service.kubeVirt ? [] : (service.ports || []).filter((port) => port.target.trim());
+    const ports = kubeVirt ? [] : (service.ports || []).filter((port) => port.target.trim());
     if (ports.length > 0) {
       lines.push('    ports:');
       ports.forEach((port) => {
@@ -121,13 +135,13 @@ const buildGuidedComposeYaml = (config) => {
       });
     }
 
-    const envs = service.kubeVirt ? [] : (service.environment || []).filter((env) => env.key.trim());
+    const envs = kubeVirt ? [] : (service.environment || []).filter((env) => env.key.trim());
     if (envs.length > 0) {
       lines.push('    environment:');
       envs.forEach((env) => lines.push(`      - ${yamlQuote(`${env.key.trim()}=${env.value}`)}`));
     }
 
-    const volumes = service.kubeVirt ? [] : (service.volumes || []).filter((volume) => volume.target.trim());
+    const volumes = kubeVirt ? [] : (service.volumes || []).filter((volume) => volume.target.trim());
     if (volumes.length > 0) {
       lines.push('    x-volumes:');
       volumes.forEach((volume) => {
@@ -138,25 +152,25 @@ const buildGuidedComposeYaml = (config) => {
       });
     }
 
-    if (service.kubeVirt) {
+    if (kubeVirt) {
       lines.push('    x-kubevirt: true');
     }
 
-    if (service.kubeVirt && (service.bootloader.trim() || service.secureBoot)) {
+    if (kubeVirt && (service.bootloader.trim() || service.secureBoot)) {
       lines.push('    x-boot:');
       if (service.bootloader.trim()) lines.push(`      bootloader: ${service.bootloader.trim()}`);
       lines.push(`      secure_boot: ${service.secureBoot ? 'true' : 'false'}`);
     }
 
-    if (service.kubeVirt && service.userData.trim()) {
+    if (kubeVirt && service.userData.trim()) {
       lines.push('    x-cloudinit:', '      user_data: |');
       service.userData.split('\n').forEach((item) => lines.push(`        ${item}`));
     }
 
-    if (!service.kubeVirt && service.workingDir.trim()) lines.push(`    working_dir: ${service.workingDir.trim()}`);
+    if (!kubeVirt && service.workingDir.trim()) lines.push(`    working_dir: ${service.workingDir.trim()}`);
 
     const command = String(service.command || '').split('\n');
-    if (!service.kubeVirt && command.some((item) => item.trim())) {
+    if (!kubeVirt && command.some((item) => item.trim())) {
       lines.push('    command:');
       appendYamlList(lines, command, '      ');
     }
@@ -834,9 +848,10 @@ function AdminChallengeModal({
   const policyTargets = getGuideServiceTargets(guideConfig);
 
   const syncGuideConfig = (nextConfig) => {
-    const dockerCompose = buildGuidedComposeYaml(nextConfig);
+    const normalizedConfig = normalizeGuideConfigForMode(nextConfig);
+    const dockerCompose = buildGuidedComposeYaml(normalizedConfig);
     guideGeneratedComposeRef.current = dockerCompose;
-    setGuideConfig(nextConfig);
+    setGuideConfig(normalizedConfig);
     onChange({ ...challenge, docker_compose: dockerCompose });
   };
 
@@ -855,7 +870,7 @@ function AdminChallengeModal({
     if (guideGeneratedComposeRef.current === dockerCompose) return;
     guideGeneratedComposeRef.current = '';
     const parsed = parseComposeYamlToGuideConfig(dockerCompose, t);
-    if (parsed.ok) setGuideConfig(parsed.config);
+    if (parsed.ok) setGuideConfig(normalizeGuideConfigForMode(parsed.config));
   }, [isOpen, challenge.id, challenge.type, challenge.docker_compose, t]);
 
   // docker_compose 更新
@@ -863,7 +878,7 @@ function AdminChallengeModal({
     const finalValue = value || '';
     guideGeneratedComposeRef.current = '';
     const parsed = parseComposeYamlToGuideConfig(finalValue, t);
-    if (parsed.ok) setGuideConfig(parsed.config);
+    if (parsed.ok) setGuideConfig(normalizeGuideConfigForMode(parsed.config));
     onChange({ ...challenge, docker_compose: finalValue });
   };
 
@@ -1445,18 +1460,20 @@ function AdminChallengeModal({
                                       </GuideField>
                                     </>
                                   ) : null}
-                                  <GuideField label={ct('fields.kubeVirt')}>
-                                    <select
-                                      className={selectClass}
-                                      value={service.kubeVirt ? 'true' : 'false'}
-                                      onChange={(e) =>
-                                        updateGuideService(serviceIndex, 'kubeVirt', e.target.value === 'true')
-                                      }
-                                    >
-                                      <option value="false">false</option>
-                                      <option value="true">true</option>
-                                    </select>
-                                  </GuideField>
+                                  {vpcMode ? (
+                                    <GuideField label={ct('fields.kubeVirt')}>
+                                      <select
+                                        className={selectClass}
+                                        value={service.kubeVirt ? 'true' : 'false'}
+                                        onChange={(e) =>
+                                          updateGuideService(serviceIndex, 'kubeVirt', e.target.value === 'true')
+                                        }
+                                      >
+                                        <option value="false">false</option>
+                                        <option value="true">true</option>
+                                      </select>
+                                    </GuideField>
+                                  ) : null}
                                   {service.kubeVirt ? (
                                     <>
                                       <GuideField label={ct('fields.bootloader')}>
