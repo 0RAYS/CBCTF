@@ -57,6 +57,11 @@ rules:
     resources: ["network-attachment-definitions"]
     verbs: ["create", "get", "deletecollection"]
 
+  # ── KubeVirt resources (VM challenge mode) ─────────────────────────────────
+  - apiGroups: ["kubevirt.io"]
+    resources: ["virtualmachines"]
+    verbs: ["create", "get", "deletecollection"]
+
   # ── KubeOVN resources (VPC networking mode) ──────────────────────────────
   - apiGroups: ["kubeovn.io"]
     resources: ["subnets"]

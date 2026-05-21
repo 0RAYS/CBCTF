@@ -141,7 +141,7 @@ cbctf:
   k8s:
     capture: "ghcr.io/domcyrus/rustnet:latest"
     frp:
-      on: false
+      "on": false
       frpc: "snowdreamtech/frpc:latest"
       nginx: "nginx:latest"
       frps: []
