@@ -11,7 +11,7 @@ import (
 	"go.yaml.in/yaml/v4"
 )
 
-func LoadDockerComposeYaml(data, project string) (*types.Project, error) {
+func LoadDockerComposeYaml(data, project string, knownExtensions ...map[string]any) (*types.Project, error) {
 	if strings.TrimSpace(data) == "" {
 		return nil, errors.New("empty yaml")
 	}
@@ -30,5 +30,8 @@ func LoadDockerComposeYaml(data, project string) (*types.Project, error) {
 		},
 	}, func(options *loader.Options) {
 		options.SetProjectName(project, true)
+		if len(knownExtensions) > 0 {
+			options.KnownExtensions = knownExtensions[0]
+		}
 	})
 }

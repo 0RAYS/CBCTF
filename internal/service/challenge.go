@@ -38,7 +38,7 @@ func GetChallenges(tx *gorm.DB, form dto.GetChallengesForm) ([]model.Challenge, 
 
 func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db.CreateChallengeFlagOptions, model.RetVal) {
 	prefix := utils.RandHexStr(10)
-	config, err := utils.LoadDockerComposeYaml(dockerCompose, prefix)
+	config, err := utils.LoadDockerComposeYaml(dockerCompose, prefix, map[string]any{model.XVolumesExtension: model.XVolumes{}})
 	if err != nil {
 		log.Logger.Warningf("Failed to load DockerCompose: %v", err)
 		return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
@@ -168,31 +168,20 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 				})
 			}
 		}
-		if xVolumes, ok := app.Extensions[model.XVolumesExtension]; ok {
-			if volumes, ok := xVolumes.([]any); ok {
-				for _, volume := range volumes {
-					var path, content string
-					switch flag := volume.(type) {
-					case map[string]string:
-						path = flag[model.XVolumesPathExtension]
-						content = flag[model.XVolumesContentExtension]
-					case map[string]any:
-						path, _ = flag[model.XVolumesPathExtension].(string)
-						content, _ = flag[model.XVolumesContentExtension].(string)
-					}
-					if path == "" || content == "" {
-						continue
-					}
-					flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
-						Value: content,
-						Binding: model.FlagBinding{
-							PodKey:       podKey,
-							ContainerKey: containerKey,
-							Type:         model.FileFlagBindingType,
-							Target:       path,
-						},
-					})
+		if volumes, ok := app.Extensions[model.XVolumesExtension].(model.XVolumes); ok {
+			for _, volume := range volumes {
+				if volume.Path == "" || volume.Content == "" {
+					continue
 				}
+				flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
+					Value: volume.Content,
+					Binding: model.FlagBinding{
+						PodKey:       podKey,
+						ContainerKey: containerKey,
+						Type:         model.FileFlagBindingType,
+						Target:       volume.Path,
+					},
+				})
 			}
 		}
 	}
