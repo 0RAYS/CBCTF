@@ -89,6 +89,7 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 			networks := make([]Network, 0)
 			for _, network := range pod.Spec.Networks {
 				networks = append(networks, Network{
+					Interface:    network.Attachment.Name,
 					IPv4:         network.Attachment.IP,
 					MAC:          network.Attachment.MAC,
 					Gateway:      network.Definition.Gateway,
