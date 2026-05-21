@@ -79,27 +79,21 @@ services:
       - "80:80"
 ```
 
-**方式二: Volume 文件注入**
+**方式二: 文件注入**
 
-通过 volume labels 配置 flag, 平台将 flag 写入容器内挂载的文件路径: 
+通过 service 下的 `x-volumes` 扩展字段配置 flag, 平台将 flag 写入容器内的指定文件路径:
 
 ```yaml
 services:
   web:
     image: nginx:latest
-    volumes:
-      - FLAG_1:/flags/flag1.txt
-      - FLAG_2:/flags/flag2.txt
+    x-volumes:
+      - path: /flags/flag1.txt
+        content: uuid{}
+      - path: /flags/flag2.txt
+        content: dynamic{this_is_a_dynamic_flag}
     ports:
       - "80:80"
-
-volumes:
-  FLAG_1:
-    labels:
-      - value=uuid{}
-  FLAG_2:
-    labels:
-      - value=dynamic{this_is_a_dynamic_flag}
 ```
 
 ## Flag 生成时机

@@ -44,17 +44,6 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 		return model.ChallengeTemplate{}, nil, model.RetVal{Msg: i18n.Common.UnknownError, Attr: map[string]any{"Error": err.Error()}}
 	}
 	prefix = fmt.Sprintf("%s_", prefix)
-	volumeFlag := make(map[string]string)
-	for _, volume := range config.Volumes {
-		volumeName := strings.TrimPrefix(volume.Name, prefix)
-		if strings.HasPrefix(volumeName, model.VolumeFlagPrefix) {
-			for k, v := range volume.Labels {
-				if k == model.VolumeFlagLabelKey {
-					volumeFlag[volumeName] = v
-				}
-			}
-		}
-	}
 	networksMap := make(map[string]model.NetworkDefinition)
 	for _, network := range config.Networks {
 		network.Name = strings.TrimPrefix(network.Name, prefix)
@@ -169,7 +158,6 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 		for k, v := range app.Environment {
 			if strings.HasPrefix(k, model.EnvFlagPrefix) {
 				flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
-					Name:  k,
 					Value: *v,
 					Binding: model.FlagBinding{
 						PodKey:       podKey,
@@ -180,18 +168,31 @@ func buildChallengeTemplate(dockerCompose string) (model.ChallengeTemplate, []db
 				})
 			}
 		}
-		for _, volume := range app.Volumes {
-			if value, ok := volumeFlag[volume.Source]; ok {
-				flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
-					Name:  volume.Source,
-					Value: value,
-					Binding: model.FlagBinding{
-						PodKey:       podKey,
-						ContainerKey: containerKey,
-						Type:         model.FileFlagBindingType,
-						Target:       volume.Target,
-					},
-				})
+		if xVolumes, ok := app.Extensions[model.XVolumesExtension]; ok {
+			if volumes, ok := xVolumes.([]any); ok {
+				for _, volume := range volumes {
+					var path, content string
+					switch flag := volume.(type) {
+					case map[string]string:
+						path = flag[model.XVolumesPathExtension]
+						content = flag[model.XVolumesContentExtension]
+					case map[string]any:
+						path, _ = flag[model.XVolumesPathExtension].(string)
+						content, _ = flag[model.XVolumesContentExtension].(string)
+					}
+					if path == "" || content == "" {
+						continue
+					}
+					flagOptions = append(flagOptions, db.CreateChallengeFlagOptions{
+						Value: content,
+						Binding: model.FlagBinding{
+							PodKey:       podKey,
+							ContainerKey: containerKey,
+							Type:         model.FileFlagBindingType,
+							Target:       path,
+						},
+					})
+				}
 			}
 		}
 	}

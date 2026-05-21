@@ -8,10 +8,12 @@ import (
 
 type FlagBindingType string
 
+const EnvFlagPrefix = "FLAG"
+
 const (
-	EnvFlagPrefix      = "FLAG"
-	VolumeFlagPrefix   = "FLAG"
-	VolumeFlagLabelKey = "value"
+	XVolumesExtension        = "x-volumes"
+	XVolumesPathExtension    = "path"
+	XVolumesContentExtension = "content"
 )
 
 const (
