@@ -28,6 +28,7 @@ const createGuideService = () => ({
   memLimit: '',
   workingDir: '',
   command: '',
+  kubeVirt: false,
   bootloader: '',
   secureBoot: false,
   userData: '',
@@ -134,6 +135,8 @@ const buildGuidedComposeYaml = (config) => {
         );
       });
     }
+
+    if (service.kubeVirt) lines.push('    x-kubevirt: true');
 
     if (service.bootloader.trim() || service.secureBoot) {
       lines.push('    x-boot:');
@@ -286,6 +289,7 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
           memLimit: '',
           workingDir: '',
           command: '',
+          kubeVirt: false,
           bootloader: '',
           secureBoot: false,
           userData: '',
@@ -326,6 +330,7 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
         else if (pair.key === 'cpus') service.cpus = pair.value;
         else if (pair.key === 'mem_limit') service.memLimit = pair.value;
         else if (pair.key === 'working_dir') service.workingDir = pair.value;
+        else if (pair.key === 'x-kubevirt') service.kubeVirt = pair.value === 'true';
         else
           errors.push(
             t('admin.challengeModal.composeGuide.validation.unsupportedServiceField', {
@@ -1429,6 +1434,18 @@ function AdminChallengeModal({
                                       placeholder={ct('placeholders.command')}
                                       onChange={(e) => updateGuideService(serviceIndex, 'command', e.target.value)}
                                     />
+                                  </GuideField>
+                                  <GuideField label={ct('fields.kubeVirt')}>
+                                    <select
+                                      className={selectClass}
+                                      value={service.kubeVirt ? 'true' : 'false'}
+                                      onChange={(e) =>
+                                        updateGuideService(serviceIndex, 'kubeVirt', e.target.value === 'true')
+                                      }
+                                    >
+                                      <option value="false">false</option>
+                                      <option value="true">true</option>
+                                    </select>
                                   </GuideField>
                                   <GuideField label={ct('fields.bootloader')}>
                                     <select

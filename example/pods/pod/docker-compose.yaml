@@ -18,6 +18,7 @@ services:
     x-volumes:
       - path: /flag
         content: dynamic{this_is_a_file_flag}
+    x-kubevirt: false
     x-boot:
       bootloader: efi
       secure_boot: false
@@ -35,5 +36,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: example
       MYSQL_DATABASE: testdb
+    x-kubevirt: false
     x-boot:
       bootloader: bios

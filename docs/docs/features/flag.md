@@ -87,6 +87,7 @@ services:
 services:
   web:
     image: nginx:latest
+    x-kubevirt: false
     x-volumes:
       - path: /flags/flag1.txt
         content: uuid{}
