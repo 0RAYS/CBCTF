@@ -28,23 +28,18 @@ func initExternalNetworks() {
 			Gateway:    iface.Gateway,
 		}
 		if _, ret := CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
-			Name:      network.SubnetName,
-			Namespace: "kube-system",
-			Config: fmt.Sprintf(`{
-				"cniVersion": "0.3.0",
-				"type": "macvlan",
-				"master": %q,
-				"mode": "bridge"
-			}`, network.Interface),
+			Name:              network.SubnetName,
+			Interface:         network.Interface,
+			IsExternalNetwork: true,
 		}); !ret.OK {
 			continue
 		}
 
 		if _, ret := CreateSubnet(ctx, CreateSubnetOptions{
-			Name:     network.SubnetName,
-			CIDR:     network.CIDR,
-			Gateway:  network.Gateway,
-			Provider: fmt.Sprintf("%s.kube-system", network.SubnetName),
+			Name:              network.SubnetName,
+			CIDR:              network.CIDR,
+			Gateway:           network.Gateway,
+			IsExternalNetwork: true,
 		}); !ret.OK {
 			continue
 		}

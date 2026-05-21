@@ -82,12 +82,10 @@ func PullContestChallengeImage(form dto.PullImageForm) model.RetVal {
 		}
 		for _, chunk := range chunks {
 			if _, ret = k8s.CreateJob(ctx, k8s.CreateJobOptions{
-				Name:       fmt.Sprintf("image-puller-%s", utils.RandHexStr(5)),
-				Images:     chunk,
-				PullPolicy: form.PullPolicy,
-				NodeSelector: map[string]string{
-					"kubernetes.io/hostname": nodeName,
-				},
+				Name:         fmt.Sprintf("image-puller-%s", utils.RandHexStr(5)),
+				Images:       chunk,
+				PullPolicy:   form.PullPolicy,
+				SelectedNode: nodeName,
 			}); !ret.OK {
 				return ret
 			}

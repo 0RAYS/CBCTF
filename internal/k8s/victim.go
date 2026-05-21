@@ -22,7 +22,6 @@ import (
 
 	kubeovnv1 "github.com/kubeovn/kube-ovn/pkg/apis/kubeovn/v1"
 	corev1 "k8s.io/api/core/v1"
-	netv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
@@ -199,8 +198,8 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				containers = append(containers, tmp)
 			}
 
-			annotations := make(map[string]string)
-			for i, network := range pod.Spec.Networks {
+			networks := make([]Network, 0, len(pod.Spec.Networks))
+			for _, network := range pod.Spec.Networks {
 				subnet, ok := subnetMap[network.Definition.Name]
 				if !ok {
 					return fmt.Errorf("subnet %s not found", network.Definition.Name)
@@ -209,36 +208,22 @@ func StartVictim(ctx context.Context, victim model.Victim) (model.Victim, model.
 				if !ok {
 					return fmt.Errorf("netAttachDef %s not found", network.Definition.Name)
 				}
-				if i == 0 { // 第一张网卡配置
-					annotations["ovn.kubernetes.io/logical_switch"] = subnet.Name
-					annotations["ovn.kubernetes.io/ip_address"] = network.Attachment.IP
-					if network.Attachment.MAC != "" {
-						annotations["ovn.kubernetes.io/mac_address"] = network.Attachment.MAC
-					}
-					// 兼容 kube-ovn 作为 副 CNI 时注入 eth0 网卡
-					annotations["v1.multus-cni.io/default-network"] = fmt.Sprintf("%s/%s", globalNamespace, netAttachDef.Name)
-				} else { // 后续多张网卡配置
-					annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", globalNamespace, netAttachDef.Name)
-					annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
-				}
-				// 指定当前网卡 IP
-				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", netAttachDef.Name, globalNamespace)] = subnet.Name
-				annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", netAttachDef.Name, globalNamespace)] = network.Attachment.IP
-				if network.Attachment.MAC != "" {
-					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/mac_address", netAttachDef.Name, globalNamespace)] = network.Attachment.MAC
-				}
-				// 需要出网时, 设定网关
-				if network.Definition.External {
-					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/routes", netAttachDef.Name, globalNamespace)] = fmt.Sprintf("[{\"gw\":\"%s\"}]", network.Definition.Gateway)
-				}
+				networks = append(networks, Network{
+					IPv4:         network.Attachment.IP,
+					MAC:          network.Attachment.MAC,
+					Gateway:      network.Definition.Gateway,
+					Subnet:       subnet.Name,
+					NetAttachDef: netAttachDef.Name,
+					External:     network.Definition.External,
+				})
 			}
 
 			pOptions := CreatePodOptions{
-				Name:        pod.Name,
-				Labels:      podLabels,
-				Annotations: annotations,
-				Containers:  containers,
-				Volumes:     volumes,
+				Name:       pod.Name,
+				Labels:     podLabels,
+				Networks:   networks,
+				Containers: containers,
+				Volumes:    volumes,
 			}
 
 			p, ret := CreatePod(ctx, pOptions)
@@ -311,26 +296,12 @@ func createVictimNetworkResources(
 		return nil, nil, nil, model.RetVal{Msg: i18n.K8S.NotFound, Attr: map[string]any{"Model": "ExternalNetwork"}}
 	}
 
-	createNetworkPolicy := func(matchLabels map[string]string, policies model.NetworkPolicies) error {
+	createNetworkPolicy := func(labels map[string]string, policies model.NetworkPolicies) error {
 		name := fmt.Sprintf("np-%s", utils.RandHexStr(20))
 		_, ret := CreateNetworkPolicy(ctx, CreateNetworkPolicyOptions{
-			Name:        name,
-			Labels:      labels,
-			MatchLabels: matchLabels,
-			From: func() []*netv1.IPBlock {
-				tmp := make([]*netv1.IPBlock, 0)
-				for _, p := range policies {
-					tmp = append(tmp, p.From...)
-				}
-				return tmp
-			}(),
-			To: func() []*netv1.IPBlock {
-				tmp := make([]*netv1.IPBlock, 0)
-				for _, p := range policies {
-					tmp = append(tmp, p.To...)
-				}
-				return tmp
-			}(),
+			Name:     name,
+			Labels:   labels,
+			Policies: policies,
 		})
 		if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 			return errors.New(err.(string))
@@ -372,23 +343,24 @@ func createVictimNetworkResources(
 		return subnetMap, netAttachDefMap, endpoints, model.SuccessRetVal()
 	}
 
-	policyRoutes := make([]*kubeovnv1.PolicyRoute, 0)
-	for _, subnet := range victim.Spec.NetworkPlan.Subnets {
-		if subnet != nil && subnet.NatGateway != nil {
-			policyRoutes = append(policyRoutes, &kubeovnv1.PolicyRoute{
-				Action:    kubeovnv1.PolicyRouteActionReroute,
-				Match:     fmt.Sprintf("ip4.src == %s", subnet.CIDRBlock),
-				NextHopIP: subnet.NatGateway.LanIP,
-				Priority:  1,
-			})
-		}
-	}
-
 	wg.Go(func() error {
 		_, ret := CreateVPC(ctx, CreateVPCOptions{
-			Name:         victim.Spec.NetworkPlan.Name,
-			Labels:       labels,
-			PolicyRoutes: policyRoutes,
+			Name:   victim.Spec.NetworkPlan.Name,
+			Labels: labels,
+			PolicyRoutes: func() []*kubeovnv1.PolicyRoute {
+				policyRoutes := make([]*kubeovnv1.PolicyRoute, 0)
+				for _, subnet := range victim.Spec.NetworkPlan.Subnets {
+					if subnet != nil && subnet.NatGateway != nil {
+						policyRoutes = append(policyRoutes, &kubeovnv1.PolicyRoute{
+							Action:    kubeovnv1.PolicyRouteActionReroute,
+							Match:     fmt.Sprintf("ip4.src == %s", subnet.CIDRBlock),
+							NextHopIP: subnet.NatGateway.LanIP,
+							Priority:  1,
+						})
+					}
+				}
+				return policyRoutes
+			}(),
 		})
 		if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 			return errors.New(err.(string))
@@ -410,15 +382,8 @@ func createVictimNetworkResources(
 
 		wg.Go(func() error {
 			_, ret := CreateNetAttachDef(ctx, CreateNetAttachDefOptions{
-				Name:      subnet.NetAttachDef.Name,
-				Namespace: globalNamespace,
-				Labels:    labels,
-				Config: fmt.Sprintf(`{
-						"cniVersion": "0.3.0",
-						"type": "kube-ovn",
-						"server_socket": "/run/openvswitch/kube-ovn-daemon.sock",
-						"provider": "%s.%s.ovn"
-					}`, subnet.NetAttachDef.Name, globalNamespace),
+				Name:   subnet.NetAttachDef.Name,
+				Labels: labels,
 			})
 			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 				return errors.New(err.(string))
@@ -429,13 +394,13 @@ func createVictimNetworkResources(
 
 		wg.Go(func() error {
 			_, ret := CreateSubnet(ctx, CreateSubnetOptions{
-				Name:       subnet.Name,
-				Labels:     labels,
-				VPC:        victim.Spec.NetworkPlan.Name,
-				CIDR:       subnet.CIDRBlock,
-				Gateway:    subnet.Gateway,
-				ExcludeIPs: subnet.ExcludeIps,
-				Provider:   fmt.Sprintf("%s.%s.ovn", subnet.NetAttachDef.Name, globalNamespace),
+				Name:         subnet.Name,
+				Labels:       labels,
+				VPC:          victim.Spec.NetworkPlan.Name,
+				CIDR:         subnet.CIDRBlock,
+				Gateway:      subnet.Gateway,
+				ExcludeIPs:   subnet.ExcludeIps,
+				NetAttachDef: subnet.NetAttachDef.Name,
 			})
 			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
 				return errors.New(err.(string))
@@ -456,7 +421,7 @@ func createVictimNetworkResources(
 				Subnet:         subnet.Name,
 				NetAttachDef:   subnet.NetAttachDef.Name,
 				LanIP:          subnet.NatGateway.LanIP,
-				ExternalSubnet: []string{externalNetwork.SubnetName},
+				ExternalSubnet: externalNetwork.SubnetName,
 				Interface:      externalNetwork.Interface,
 			})
 			if err, ok := ret.Attr["Error"]; ok && !ret.OK {
