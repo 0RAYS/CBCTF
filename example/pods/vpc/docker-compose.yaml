@@ -1,44 +1,70 @@
 services:
   web1:
+    container_name: web1
+    image: docker.0rays.club/cbctf/test-web:20250717
+    cpus: 0.5
+    mem_limit: 256m
+    working_dir: /app
+    command: ["python", "app.py"]
     ports:
       - "5000:5000"
     environment:
+      APP_ENV: production
       FLAG_1: uuid{}
-    image: docker.0rays.club/cbctf/test-web:20250717
+      FLAG_2: dynamic{this_is_a_dynamic_flag}
+    x-volumes:
+      - path: /flag
+        content: dynamic{this_is_a_file_flag}
     networks:
       network1:
         ipv4_address: 192.168.0.2
       network2:
         ipv4_address: 192.168.1.2
-    volumes:
-      - FLAG_2:/flag
+
   web2:
-    environment:
-      FLAG_3: uuid{}
+    container_name: web2
     image: docker.0rays.club/cbctf/test-web:20250717
+    cpus: 0.5
+    mem_limit: 256m
+    working_dir: /app
+    command: ["python", "app.py"]
+    environment:
+      APP_ENV: production
+      FLAG_3: uuid{}
+    x-volumes:
+      - path: /flag
+        content: dynamic{this_is_a_file_flag}
     networks:
       network2:
         ipv4_address: 192.168.1.3
       network3:
         ipv4_address: 192.168.2.3
-    volumes:
-      - FLAG_4:/flag
+
   web3:
-    environment:
-      FLAG_5: uuid{}
+    container_name: web3
     image: docker.0rays.club/cbctf/test-web:20250717
+    cpus: 0.5
+    mem_limit: 256m
+    working_dir: /app
+    command: ["python", "app.py"]
+    environment:
+      APP_ENV: production
+      FLAG_5: uuid{}
+      FLAG_6: static{this_is_a_static_flag}
+    x-volumes:
+      - path: /flag
+        content: dynamic{this_is_a_file_flag}
     networks:
       network3:
         ipv4_address: 192.168.2.4
-    volumes:
-      - FLAG_6:/flag
+
 networks:
   network1:
+    external: true
     ipam:
       config:
         - subnet: 192.168.0.0/24
           gateway: 192.168.0.1
-    external: true
   network2:
     ipam:
       config:
@@ -49,13 +75,3 @@ networks:
       config:
         - subnet: 192.168.2.0/24
           gateway: 192.168.2.1
-volumes:
-  FLAG_2:
-    labels:
-      value: dynamic{this_is_a_dynamic_flag}
-  FLAG_4:
-    labels:
-      value: dynamic{this_is_a_dynamic_flag}
-  FLAG_6:
-    labels:
-      value: dynamic{this_is_a_dynamic_flag}

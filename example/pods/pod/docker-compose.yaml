@@ -1,21 +1,29 @@
 services:
   web:
+    container_name: web
     image: docker.0rays.club/cbctf/test-web:20250717
+    cpus: 0.5
+    mem_limit: 256m
+    working_dir: /app
+    command: ["python", "app.py"]
     ports:
       - "5000:5000"
     environment:
-      - FLAG_0=uuid{}
-      - FLAG_1=dynamic{this_is_a_dynamic_flag}
-    volumes:
-      - FLAG_3:/flag
+      APP_ENV: production
+      MYSQL_HOST: 127.0.0.1
+      MYSQL_DATABASE: testdb
+      FLAG_0: uuid{}
+      FLAG_1: dynamic{this_is_a_dynamic_flag}
+      FLAG_2: static{this_is_a_static_flag}
+    x-volumes:
+      - path: /flag
+        content: dynamic{this_is_a_file_flag}
 
   db:
+    container_name: db
     image: docker.0rays.club/library/mysql:8.0
+    cpus: 0.25
+    mem_limit: 512m
     environment:
       MYSQL_ROOT_PASSWORD: example
       MYSQL_DATABASE: testdb
-
-volumes:
-  FLAG_3:
-    labels:
-      - value=static{this_is_a_static_flag}
