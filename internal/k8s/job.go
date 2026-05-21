@@ -18,7 +18,7 @@ type CreateJobOptions struct {
 	Labels       map[string]string
 	Images       []string
 	PullPolicy   string
-	NodeSelector map[string]string
+	SelectedNode string
 }
 
 func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, model.RetVal) {
@@ -26,16 +26,6 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, mod
 		job *batchv1.Job
 		err error
 	)
-	containers := make([]corev1.Container, 0)
-	for _, image := range options.Images {
-		containers = append(containers, corev1.Container{
-			Name:            utils.RandHexStr(10),
-			ImagePullPolicy: corev1.PullPolicy(options.PullPolicy),
-			Image:           image,
-			Command:         []string{"echo", "Success"},
-			RestartPolicy:   new(corev1.ContainerRestartPolicyNever),
-		})
-	}
 	job = &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      options.Name,
@@ -51,8 +41,25 @@ func CreateJob(ctx context.Context, options CreateJobOptions) (*batchv1.Job, mod
 					Namespace: globalNamespace,
 				},
 				Spec: corev1.PodSpec{
-					NodeSelector:  options.NodeSelector,
-					Containers:    containers,
+					NodeSelector: func() map[string]string {
+						if options.SelectedNode != "" {
+							return map[string]string{"kubernetes.io/hostname": options.SelectedNode}
+						}
+						return nil
+					}(),
+					Containers: func() []corev1.Container {
+						containers := make([]corev1.Container, 0, len(options.Images))
+						for _, image := range options.Images {
+							containers = append(containers, corev1.Container{
+								Name:            utils.RandHexStr(10),
+								ImagePullPolicy: corev1.PullPolicy(options.PullPolicy),
+								Image:           image,
+								Command:         []string{"echo", "Success"},
+								RestartPolicy:   new(corev1.ContainerRestartPolicyNever),
+							})
+						}
+						return containers
+					}(),
 					RestartPolicy: corev1.RestartPolicyNever,
 				},
 			},

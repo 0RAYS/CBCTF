@@ -27,7 +27,7 @@ type CreateVPCNatGatewayOptions struct {
 	Subnet         string
 	NetAttachDef   string
 	LanIP          string
-	ExternalSubnet []string
+	ExternalSubnet string
 	Interface      string
 }
 
@@ -36,21 +36,6 @@ func CreateVPCNatGateway(ctx context.Context, options CreateVPCNatGatewayOptions
 		gateway *kubeovnv1.VpcNatGateway
 		err     error
 	)
-	matchExpressions := []corev1.NodeSelectorRequirement{
-		{
-			Key:      VPCUnsupportedNodeLabelKey,
-			Operator: corev1.NodeSelectorOpNotIn,
-			Values:   []string{VPCUnsupportedNodeLabelValue},
-		},
-	}
-	if options.Interface != "" {
-		matchExpressions = append(matchExpressions, corev1.NodeSelectorRequirement{
-			Key:      ExternalNetworkNodeLabelKey,
-			Operator: corev1.NodeSelectorOpIn,
-			Values:   []string{options.Interface},
-		})
-	}
-
 	gateway = &kubeovnv1.VpcNatGateway{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      options.Name,
@@ -61,19 +46,35 @@ func CreateVPCNatGateway(ctx context.Context, options CreateVPCNatGatewayOptions
 			Vpc:             options.VPC,
 			Subnet:          options.Subnet,
 			LanIP:           options.LanIP,
-			ExternalSubnets: options.ExternalSubnet,
+			ExternalSubnets: []string{options.ExternalSubnet},
 			Affinity: corev1.Affinity{
 				NodeAffinity: &corev1.NodeAffinity{
 					RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
 						NodeSelectorTerms: []corev1.NodeSelectorTerm{
 							{
-								MatchExpressions: matchExpressions,
+								MatchExpressions: func() []corev1.NodeSelectorRequirement {
+									matchExpressions := []corev1.NodeSelectorRequirement{
+										{
+											Key:      VPCUnsupportedNodeLabelKey,
+											Operator: corev1.NodeSelectorOpNotIn,
+											Values:   []string{VPCUnsupportedNodeLabelValue},
+										},
+									}
+									if options.Interface != "" {
+										matchExpressions = append(matchExpressions, corev1.NodeSelectorRequirement{
+											Key:      ExternalNetworkNodeLabelKey,
+											Operator: corev1.NodeSelectorOpIn,
+											Values:   []string{options.Interface},
+										})
+									}
+									return matchExpressions
+								}(),
 							},
 						},
 					},
 				},
 			},
-			// 临时补救操作: kube-ovn 作为副 CNI 时, 通过注解注入 lanIp 到 eth0
+			// kube-ovn 作为副 CNI 时, 通过注解注入 lanIp 到 eth0
 			// https://github.com/kubeovn/kube-ovn/issues/6744
 			Annotations: map[string]string{"v1.multus-cni.io/default-network": fmt.Sprintf("%s/%s", globalNamespace, options.NetAttachDef)},
 		},

@@ -19,6 +19,7 @@ type CreatePodOptions struct {
 	Labels        map[string]string
 	Annotations   map[string]string
 	AntiNatGWName string
+	Networks      []Network
 	Containers    []corev1.Container
 	Volumes       []corev1.Volume
 }
@@ -34,41 +35,73 @@ func CreatePod(ctx context.Context, options CreatePodOptions) (*corev1.Pod, mode
 	}
 	pod = &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        options.Name,
-			Namespace:   globalNamespace,
-			Labels:      options.Labels,
-			Annotations: options.Annotations,
+			Name:      options.Name,
+			Namespace: globalNamespace,
+			Labels:    options.Labels,
+			Annotations: func() map[string]string {
+				annotations := make(map[string]string)
+				for key, value := range options.Annotations {
+					annotations[key] = value
+				}
+				for i, network := range options.Networks {
+					if i == 0 {
+						annotations["ovn.kubernetes.io/logical_switch"] = network.Subnet
+						annotations["ovn.kubernetes.io/ip_address"] = network.IPv4
+						if network.MAC != "" {
+							annotations["ovn.kubernetes.io/mac_address"] = network.MAC
+						}
+						annotations["v1.multus-cni.io/default-network"] = fmt.Sprintf("%s/%s", globalNamespace, network.NetAttachDef)
+					} else {
+						annotations["k8s.v1.cni.cncf.io/networks"] += fmt.Sprintf(",%s/%s", globalNamespace, network.NetAttachDef)
+						annotations["k8s.v1.cni.cncf.io/networks"] = strings.Trim(annotations["k8s.v1.cni.cncf.io/networks"], ",")
+					}
+					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/logical_switch", network.NetAttachDef, globalNamespace)] = network.Subnet
+					annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/ip_address", network.NetAttachDef, globalNamespace)] = network.IPv4
+					if network.MAC != "" {
+						annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/mac_address", network.NetAttachDef, globalNamespace)] = network.MAC
+					}
+					if network.External {
+						annotations[fmt.Sprintf("%s.%s.ovn.kubernetes.io/routes", network.NetAttachDef, globalNamespace)] = fmt.Sprintf("[{\"gw\":\"%s\"}]", network.Gateway)
+					}
+				}
+				if len(annotations) == 0 {
+					return nil
+				}
+				return annotations
+			}(),
 		},
 		Spec: corev1.PodSpec{
-			EnableServiceLinks:            new(false),
-			AutomountServiceAccountToken:  new(false),
+			EnableServiceLinks:           new(false),
+			AutomountServiceAccountToken: new(false),
+			Affinity: func() *corev1.Affinity {
+				if options.AntiNatGWName == "" {
+					return nil
+				}
+				return &corev1.Affinity{
+					PodAntiAffinity: &corev1.PodAntiAffinity{
+						RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
+							{
+								LabelSelector: &metav1.LabelSelector{
+									MatchExpressions: []metav1.LabelSelectorRequirement{
+										{
+											Key:      "app",
+											Operator: metav1.LabelSelectorOpIn,
+											Values:   []string{fmt.Sprintf("vpc-nat-gw-%s", options.AntiNatGWName)},
+										},
+									},
+								},
+								Namespaces:  []string{globalNamespace, "kube-system"},
+								TopologyKey: "kubernetes.io/hostname",
+							},
+						},
+					},
+				}
+			}(),
 			Containers:                    options.Containers,
 			Volumes:                       options.Volumes,
 			TerminationGracePeriodSeconds: new(int64(3)),
 			RestartPolicy:                 corev1.RestartPolicyNever,
 		},
-	}
-	if options.AntiNatGWName != "" {
-		// frpc pod 需要与 子网 eip 进行通信, 不能与 VPCNatGW pod 位于同一个节点, 并且跨 kube-system 与本 namespace
-		pod.Spec.Affinity = &corev1.Affinity{
-			PodAntiAffinity: &corev1.PodAntiAffinity{
-				RequiredDuringSchedulingIgnoredDuringExecution: []corev1.PodAffinityTerm{
-					{
-						LabelSelector: &metav1.LabelSelector{
-							MatchExpressions: []metav1.LabelSelectorRequirement{
-								{
-									Key:      "app",
-									Operator: metav1.LabelSelectorOpIn,
-									Values:   []string{fmt.Sprintf("vpc-nat-gw-%s", options.AntiNatGWName)},
-								},
-							},
-						},
-						Namespaces:  []string{globalNamespace, "kube-system"},
-						TopologyKey: "kubernetes.io/hostname",
-					},
-				},
-			},
-		}
 	}
 	pod, err = kubeClient.CoreV1().Pods(globalNamespace).Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil {

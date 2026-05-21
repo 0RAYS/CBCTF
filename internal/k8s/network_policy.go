@@ -14,11 +14,9 @@ import (
 )
 
 type CreateNetworkPolicyOptions struct {
-	Name        string
-	Labels      map[string]string
-	MatchLabels map[string]string
-	From        []*netv1.IPBlock
-	To          []*netv1.IPBlock
+	Name     string
+	Labels   map[string]string
+	Policies model.NetworkPolicies
 }
 
 func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions) (*netv1.NetworkPolicy, model.RetVal) {
@@ -26,9 +24,15 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 		networkPolicy *netv1.NetworkPolicy
 		err           error
 	)
-	ingress, egress := func(from []*netv1.IPBlock, to []*netv1.IPBlock) ([]netv1.NetworkPolicyIngressRule, []netv1.NetworkPolicyEgressRule) {
+	ingress, egress := func(policies model.NetworkPolicies) ([]netv1.NetworkPolicyIngressRule, []netv1.NetworkPolicyEgressRule) {
 		var ingress []netv1.NetworkPolicyIngressRule
 		var egress []netv1.NetworkPolicyEgressRule
+		var from []*netv1.IPBlock
+		var to []*netv1.IPBlock
+		for _, policy := range policies {
+			from = append(from, policy.From...)
+			to = append(to, policy.To...)
+		}
 		if len(from) > 0 {
 			var peers []netv1.NetworkPolicyPeer
 			for _, f := range from {
@@ -44,7 +48,7 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 			egress = append(egress, netv1.NetworkPolicyEgressRule{To: peers})
 		}
 		return ingress, egress
-	}(options.From, options.To)
+	}(options.Policies)
 	networkPolicy = &netv1.NetworkPolicy{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      options.Name,
@@ -53,18 +57,18 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 		},
 		Spec: netv1.NetworkPolicySpec{
 			PodSelector: metav1.LabelSelector{
-				MatchLabels: options.MatchLabels,
+				MatchLabels: options.Labels,
 			},
-			// 默认不允许出网
-			PolicyTypes: []netv1.PolicyType{netv1.PolicyTypeEgress},
+			PolicyTypes: func() []netv1.PolicyType {
+				policyTypes := []netv1.PolicyType{netv1.PolicyTypeEgress}
+				if len(ingress) > 0 {
+					policyTypes = append(policyTypes, netv1.PolicyTypeIngress)
+				}
+				return policyTypes
+			}(),
+			Ingress: ingress,
+			Egress:  egress,
 		},
-	}
-	if len(ingress) > 0 {
-		networkPolicy.Spec.PolicyTypes = append(networkPolicy.Spec.PolicyTypes, netv1.PolicyTypeIngress)
-		networkPolicy.Spec.Ingress = ingress
-	}
-	if len(egress) > 0 {
-		networkPolicy.Spec.Egress = egress
 	}
 	networkPolicy, err = kubeClient.NetworkingV1().NetworkPolicies(globalNamespace).Create(ctx, networkPolicy, metav1.CreateOptions{})
 	if err != nil {
