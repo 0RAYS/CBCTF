@@ -20,7 +20,7 @@ type CreateEndpointOptions struct {
 	Protocol string
 }
 
-func DeleteEndpointList(ctx context.Context, labels ...map[string]string) model.RetVal {
+func DeleteEndpointCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string

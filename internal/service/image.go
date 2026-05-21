@@ -15,10 +15,10 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func GetNodeImageList() (map[string][]string, model.RetVal) {
+func ListNodeImages() (map[string][]string, model.RetVal) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
-	return k8s.GetNodeImageList(ctx)
+	return k8s.ListNodeImages(ctx)
 }
 
 func PullContestChallengeImage(form dto.PullImageForm) model.RetVal {

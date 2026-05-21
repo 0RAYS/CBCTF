@@ -74,7 +74,7 @@ func CreateNetworkPolicy(ctx context.Context, options CreateNetworkPolicyOptions
 	return networkPolicy, model.SuccessRetVal()
 }
 
-func DeleteNetworkPolicyList(ctx context.Context, labels ...map[string]string) model.RetVal {
+func DeleteNetworkPolicyCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string

@@ -43,7 +43,7 @@ func CreateSNat(ctx context.Context, options CreateSNatOptions) (*kubeovnv1.Ipta
 	return snat, model.SuccessRetVal()
 }
 
-func DeleteSNatList(ctx context.Context, labels ...map[string]string) model.RetVal {
+func DeleteSNatCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string

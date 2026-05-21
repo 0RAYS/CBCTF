@@ -555,20 +555,20 @@ func StopVictim(ctx context.Context, victim model.Victim) model.RetVal {
 		}
 	}
 	firstErr = model.SuccessRetVal()
-	tryDelete(DeleteDNatList(ctx, labels))
-	tryDelete(DeleteSNatList(ctx, labels))
-	tryDelete(DeleteEIPList(ctx, labels))
-	tryDelete(DeleteSubnetList(ctx, labels))
-	tryDelete(DeleteNetAttachDefList(ctx, globalNamespace, labels))
-	tryDelete(DeleteVPCNatGatewayList(ctx, labels))
-	tryDelete(DeleteVPCList(ctx, labels))
-	tryDelete(DeleteConfigMapList(ctx, labels))
-	tryDelete(DeleteNetworkPolicyList(ctx, labels))
-	tryDelete(DeleteEndpointList(ctx, labels))
-	tryDelete(DeleteServiceList(ctx, labels))
-	tryDelete(DeletePodList(ctx, labels))
+	tryDelete(DeleteDNatCollection(ctx, labels))
+	tryDelete(DeleteSNatCollection(ctx, labels))
+	tryDelete(DeleteEIPCollection(ctx, labels))
+	tryDelete(DeleteSubnetCollection(ctx, labels))
+	tryDelete(DeleteNetAttachDefCollection(ctx, globalNamespace, labels))
+	tryDelete(DeleteVPCNatGatewayCollection(ctx, labels))
+	tryDelete(DeleteVPCCollection(ctx, labels))
+	tryDelete(DeleteConfigMapCollection(ctx, labels))
+	tryDelete(DeleteNetworkPolicyCollection(ctx, labels))
+	tryDelete(DeleteEndpointCollection(ctx, labels))
+	tryDelete(DeleteServiceCollection(ctx, labels))
+	tryDelete(DeletePodCollection(ctx, labels))
 	for _, subnet := range victim.Spec.NetworkPlan.Subnets {
-		tryDelete(DeleteIPList(ctx, map[string]string{"ovn.kubernetes.io/subnet": subnet.Name}))
+		tryDelete(DeleteIPCollection(ctx, map[string]string{"ovn.kubernetes.io/subnet": subnet.Name}))
 	}
 	tryDelete(WaitVictimPodsDeleted(ctx, victim))
 	if firstErr.OK {
@@ -584,7 +584,7 @@ func WaitVictimPodsDeleted(ctx context.Context, victim model.Victim) model.RetVa
 	ticker := time.NewTicker(500 * time.Millisecond)
 	defer ticker.Stop()
 	for {
-		podList, ret := GetPodList(ctx, labels)
+		podList, ret := ListPods(ctx, labels)
 		if !ret.OK {
 			return ret
 		}

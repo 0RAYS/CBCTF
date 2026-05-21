@@ -24,7 +24,7 @@ func formatNodeImages(nodeImageMap map[string][]string) []gin.H {
 }
 
 func GetImages(ctx *gin.Context) {
-	nodeImageMap, ret := service.GetNodeImageList()
+	nodeImageMap, ret := service.ListNodeImages()
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
@@ -54,13 +54,13 @@ func GetImages(ctx *gin.Context) {
 }
 
 func GetContestChallengeImage(ctx *gin.Context) {
-	nodeImageMap, ret := service.GetNodeImageList()
+	nodeImageMap, ret := service.ListNodeImages()
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return
 	}
 
-	targetImages, ret := service.GetContestChallengeImageList(db.DB, middleware.GetContest(ctx))
+	targetImages, ret := service.ListContestChallengeImages(db.DB, middleware.GetContest(ctx))
 	if !ret.OK {
 		resp.JSON(ctx, ret)
 		return

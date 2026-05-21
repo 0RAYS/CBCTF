@@ -58,7 +58,7 @@ func GetEIP(ctx context.Context, name string) (*kubeovnv1.IptablesEIP, model.Ret
 	return eip, model.SuccessRetVal()
 }
 
-func DeleteEIPList(ctx context.Context, labels ...map[string]string) model.RetVal {
+func DeleteEIPCollection(ctx context.Context, labels ...map[string]string) model.RetVal {
 	var options metav1.ListOptions
 	if len(labels) > 0 {
 		var selector string

@@ -81,7 +81,7 @@ func CreateContestChallenge(tx *gorm.DB, contest model.Contest, form dto.CreateC
 	return contestChallengeL, failedL, model.SuccessRetVal()
 }
 
-func GetContestChallengeImageList(tx *gorm.DB, contest model.Contest) ([]string, model.RetVal) {
+func ListContestChallengeImages(tx *gorm.DB, contest model.Contest) ([]string, model.RetVal) {
 	images, hasPodChallenges, ret := db.InitContestChallengeRepo(tx).ListContestImages(contest.ID)
 	if !ret.OK {
 		return nil, ret
