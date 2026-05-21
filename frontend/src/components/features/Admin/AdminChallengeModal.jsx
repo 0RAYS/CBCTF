@@ -28,6 +28,9 @@ const createGuideService = () => ({
   memLimit: '',
   workingDir: '',
   command: '',
+  bootloader: '',
+  secureBoot: false,
+  userData: '',
   ports: [],
   environment: [],
   volumes: [],
@@ -132,6 +135,17 @@ const buildGuidedComposeYaml = (config) => {
       });
     }
 
+    if (service.bootloader.trim() || service.secureBoot) {
+      lines.push('    x-boot:');
+      if (service.bootloader.trim()) lines.push(`      bootloader: ${service.bootloader.trim()}`);
+      lines.push(`      secure_boot: ${service.secureBoot ? 'true' : 'false'}`);
+    }
+
+    if (service.userData.trim()) {
+      lines.push('    x-cloudinit:', '      user_data: |');
+      service.userData.split('\n').forEach((item) => lines.push(`        ${item}`));
+    }
+
     if (service.workingDir.trim()) lines.push(`    working_dir: ${service.workingDir.trim()}`);
 
     const command = String(service.command || '').split('\n');
@@ -147,6 +161,7 @@ const buildGuidedComposeYaml = (config) => {
         .forEach((network) => {
           lines.push(`      ${network.name.trim()}:`);
           lines.push(`        ipv4_address: ${network.ipv4Address.trim()}`);
+          if (network.macAddress?.trim()) lines.push(`        mac_address: ${yamlQuote(network.macAddress.trim())}`);
         });
     }
   });
@@ -171,6 +186,7 @@ const buildGuidedComposeYaml = (config) => {
 const ip4Segment = '(\\d|[1-9]\\d|1\\d\\d|2([0-4]\\d|5[0-5]))';
 const ip4Regex = new RegExp(`^(${ip4Segment}\\.){3}${ip4Segment}$`);
 const cidrRegex = new RegExp(`^(${ip4Segment}\\.){3}${ip4Segment}/(\\d|[1-2]\\d|3[0-2])$`);
+const macAddressRegex = /^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$/;
 
 const validateIp4 = (ip) => ip4Regex.test(String(ip || '').trim());
 
@@ -228,12 +244,20 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
   let serviceNetwork = null;
   let currentPort = null;
   let currentVolume = null;
+  let blockScalar = null;
 
   for (const line of lines) {
     if (/\t/.test(line.raw))
       errors.push(t('admin.challengeModal.composeGuide.validation.noTabs', { line: line.index }));
     const indent = line.text.match(/^ */)[0].length;
     const text = line.text.trim();
+
+    if (blockScalar && indent >= blockScalar.indent) {
+      blockScalar.lines.push(line.raw.slice(blockScalar.indent));
+      blockScalar.target[blockScalar.field] = blockScalar.lines.join('\n');
+      continue;
+    }
+    if (blockScalar && indent < blockScalar.indent) blockScalar = null;
 
     if (indent === 0) {
       section = text.replace(/:$/, '');
@@ -243,6 +267,7 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
       serviceNetwork = null;
       currentPort = null;
       currentVolume = null;
+      blockScalar = null;
       if (!['services', 'networks'].includes(section)) {
         errors.push(
           t('admin.challengeModal.composeGuide.validation.unsupportedTopLevel', { line: line.index, field: section })
@@ -261,6 +286,9 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
           memLimit: '',
           workingDir: '',
           command: '',
+          bootloader: '',
+          secureBoot: false,
+          userData: '',
           ports: [],
           environment: [],
           volumes: [],
@@ -271,6 +299,7 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
         serviceNetwork = null;
         currentPort = null;
         currentVolume = null;
+        blockScalar = null;
         continue;
       }
       if (!service) {
@@ -283,7 +312,11 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
         serviceNetwork = null;
         currentPort = null;
         currentVolume = null;
-        if (['ports', 'environment', 'x-volumes', 'command', 'networks'].includes(pair.key) && pair.value === '') {
+        blockScalar = null;
+        if (
+          ['ports', 'environment', 'x-volumes', 'x-boot', 'x-cloudinit', 'command', 'networks'].includes(pair.key) &&
+          pair.value === ''
+        ) {
           serviceList = pair.key;
           continue;
         }
@@ -313,6 +346,27 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
           key: equalIndex === -1 ? env : env.slice(0, equalIndex),
           value: equalIndex === -1 ? '' : env.slice(equalIndex + 1),
         });
+        continue;
+      }
+      if (indent === 6 && serviceList === 'environment') {
+        const pair = parseKeyValueLine(text);
+        if (pair) {
+          service.environment.push({ key: pair.key, value: pair.value });
+          continue;
+        }
+      }
+      if (indent === 6 && serviceList === 'x-boot') {
+        const pair = parseKeyValueLine(text);
+        if (pair?.key === 'bootloader') service.bootloader = pair.value;
+        else if (pair?.key === 'secure_boot') service.secureBoot = pair.value === 'true';
+        continue;
+      }
+      if (indent === 6 && serviceList === 'x-cloudinit') {
+        const pair = parseKeyValueLine(text);
+        if (pair?.key === 'user_data') {
+          service.userData = pair.value === '|' ? '' : pair.value;
+          if (pair.value === '|') blockScalar = { target: service, field: 'userData', indent: 8, lines: [] };
+        }
         continue;
       }
       if (indent === 6 && serviceList === 'x-volumes' && text.startsWith('- ')) {
@@ -363,13 +417,14 @@ const parseComposeYamlToGuideConfig = (yaml, t = (key, values) => `${key}${value
         continue;
       }
       if (indent === 6 && serviceList === 'networks' && text.endsWith(':')) {
-        serviceNetwork = { name: text.slice(0, -1), ipv4Address: '' };
+        serviceNetwork = { name: text.slice(0, -1), ipv4Address: '', macAddress: '' };
         service.networks.push(serviceNetwork);
         continue;
       }
       if (indent === 8 && serviceList === 'networks' && serviceNetwork) {
         const pair = parseKeyValueLine(text);
         if (pair?.key === 'ipv4_address') serviceNetwork.ipv4Address = pair.value;
+        else if (pair?.key === 'mac_address') serviceNetwork.macAddress = pair.value;
         continue;
       }
       errors.push(t('admin.challengeModal.composeGuide.validation.unparseableLine', { line: line.index }));
@@ -464,6 +519,12 @@ const validateGuidedCompose = (config, t = (key) => key) => {
       addError(
         `service.${serviceIndex}.memLimit`,
         t('admin.challengeModal.composeGuide.validation.memLimitFormat', { label })
+      );
+    }
+    if (service.bootloader.trim() && !['bios', 'efi'].includes(service.bootloader.trim())) {
+      addError(
+        `service.${serviceIndex}.bootloader`,
+        t('admin.challengeModal.composeGuide.validation.bootloaderInvalid', { label })
       );
     }
     const servicePortTargets = new Set();
@@ -590,6 +651,12 @@ const validateGuidedCompose = (config, t = (key) => key) => {
           addError(
             `service.${serviceIndex}.networks.${networkIndex}.ipv4Address`,
             t('admin.challengeModal.composeGuide.validation.ipOutOfSubnet', { label, network: networkLabel })
+          );
+        }
+        if (network.macAddress?.trim() && !macAddressRegex.test(network.macAddress.trim())) {
+          addError(
+            `service.${serviceIndex}.networks.${networkIndex}.macAddress`,
+            t('admin.challengeModal.composeGuide.validation.macAddressInvalid', { label, network: networkLabel })
           );
         }
       });
@@ -1363,6 +1430,40 @@ function AdminChallengeModal({
                                       onChange={(e) => updateGuideService(serviceIndex, 'command', e.target.value)}
                                     />
                                   </GuideField>
+                                  <GuideField label={ct('fields.bootloader')}>
+                                    <select
+                                      className={selectClass}
+                                      value={service.bootloader}
+                                      onChange={(e) => updateGuideService(serviceIndex, 'bootloader', e.target.value)}
+                                    >
+                                      <option value="">{ct('placeholders.bootloader')}</option>
+                                      <option value="bios">bios</option>
+                                      <option value="efi">efi</option>
+                                    </select>
+                                    <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.bootloader`]} />
+                                  </GuideField>
+                                  <GuideField label={ct('fields.secureBoot')}>
+                                    <select
+                                      className={selectClass}
+                                      value={service.secureBoot ? 'true' : 'false'}
+                                      onChange={(e) =>
+                                        updateGuideService(serviceIndex, 'secureBoot', e.target.value === 'true')
+                                      }
+                                    >
+                                      <option value="false">false</option>
+                                      <option value="true">true</option>
+                                    </select>
+                                  </GuideField>
+                                  <div className="md:col-span-2">
+                                    <GuideField label={ct('fields.userData')}>
+                                      <textarea
+                                        className={textareaClass}
+                                        value={service.userData}
+                                        placeholder={ct('placeholders.userData')}
+                                        onChange={(e) => updateGuideService(serviceIndex, 'userData', e.target.value)}
+                                      />
+                                    </GuideField>
+                                  </div>
                                 </div>
 
                                 <GuideListHeader
@@ -1553,12 +1654,16 @@ function AdminChallengeModal({
                                   addLabel={ct('actions.add')}
                                   disabled={guideConfig.networks.length === 0}
                                   onAdd={() =>
-                                    addGuideServiceListItem(serviceIndex, 'networks', { name: '', ipv4Address: '' })
+                                    addGuideServiceListItem(serviceIndex, 'networks', {
+                                      name: '',
+                                      ipv4Address: '',
+                                      macAddress: '',
+                                    })
                                   }
                                 />
                                 <GuideErrors errors={guideFieldErrors[`service.${serviceIndex}.networks`]} />
                                 {service.networks.map((network, networkIndex) => (
-                                  <div key={networkIndex} className="grid grid-cols-[1fr_1fr_32px] gap-2">
+                                  <div key={networkIndex} className="grid grid-cols-[1fr_1fr_1fr_32px] gap-2">
                                     <GuideField label={ct('fields.network')}>
                                       <select
                                         className={selectClass}
@@ -1608,6 +1713,27 @@ function AdminChallengeModal({
                                           guideFieldErrors[
                                             `service.${serviceIndex}.networks.${networkIndex}.ipv4Address`
                                           ]
+                                        }
+                                      />
+                                    </GuideField>
+                                    <GuideField label={ct('fields.macAddress')}>
+                                      <input
+                                        className={inputBaseClass}
+                                        value={network.macAddress || ''}
+                                        placeholder={ct('placeholders.macAddress')}
+                                        onChange={(e) =>
+                                          updateGuideServiceList(
+                                            serviceIndex,
+                                            'networks',
+                                            networkIndex,
+                                            'macAddress',
+                                            e.target.value
+                                          )
+                                        }
+                                      />
+                                      <GuideErrors
+                                        errors={
+                                          guideFieldErrors[`service.${serviceIndex}.networks.${networkIndex}.macAddress`]
                                         }
                                       />
                                     </GuideField>
